@@ -1,1 +1,23 @@
-change-requests: []
+change-requests:
+  - id: CR-2026-002
+    title: P1 治理核心 — crctl 接入（同步协议 · 签名审批 · controlled-shell 下沉）
+    summary: 基于 P0 权威域划分（git 权威 / PG 投影），落地 CR 事件从 git 到 Multica 投影表的三层同步链路（crctl outbox + commit 扫描兜底 + reconcile 对账）、Ed25519 签名审批替代 TTY（强度不降级，含 EVIDENCE_DRIFT 两轨统一与留证）、controlled-shell 白名单下沉 daemon execenv（rules.json 单一事实源 + pkg/gitguard + AI 行为审计），交付 D1-D7 七项。
+    owner: Ray
+    owners:
+      requirement:
+        id: Ray
+        assigned-at: "2026-07-31T07:17:01+08:00"
+      development:
+        id: Ray
+        assigned-at: "2026-07-31T07:17:01+08:00"
+      test:
+        id: Ray
+        assigned-at: "2026-07-31T07:17:01+08:00"
+    target-version: "0.11"
+    source: docs/product/P1-crctl接入设计.md
+    status: drafting
+    created: "2026-07-31T07:17:01+08:00"
+    updated: "2026-07-31T07:17:01+08:00"
+    remote-ref: ""
+    last-push-at: ""
+    last-push-by: ""
