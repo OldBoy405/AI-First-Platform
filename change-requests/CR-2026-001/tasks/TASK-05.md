@@ -5,7 +5,7 @@ cr-ref: CR-2026-001
 plan-ref: "change-requests/CR-2026-001/plan.md"
 sdd-ref: "change-requests/CR-2026-001/sdd.md"
 title: tools-consistency-ci — agents.contract 四不变式接入 fork 仓库 CI
-status: pending
+status: done
 estimate: 6h
 depends-on: []
 assignee: ""
@@ -37,3 +37,9 @@ created: "2026-07-30T22:43:34+08:00"
 ## 完成标志
 
 两条验收全过，脚本与 workflow 变更提交进 tools 仓库。
+
+## 完成记录（2026-07-30）
+
+- 交付物：`tools/skills/shared/crctl/scripts/check-agents-contract.mjs`（新增，零依赖，逐行状态机解析）；`.github/workflows/check-skill-matrix.yml` 补 `agents/**` 触发路径 + 新校验步骤；`.githooks/pre-commit` 串联两个校验器；README 同步。tools 仓库 commit `033a4a3`。
+- 验收 1（红）：向 `agents/_index.yml` 注入 `fake/not-a-real-skill` 引用 → 校验失败 exit 1，报错精确到 agent 与 skill 名（3 处命中）。
+- 验收 2（绿）：恢复后校验通过，输出含不变式 4"由 crctl 运行时承担"的显式说明；提交 `033a4a3` 时 pre-commit 钩子实际触发并通过。
