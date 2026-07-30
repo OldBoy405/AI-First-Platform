@@ -1,0 +1,26 @@
+# dir-graph.yaml — AI First Platform 工作区目录规约
+# 权威来源：本文件描述本仓库自身结构与 repositories 声明。
+# CR 状态机、gates、pipeline 模板不在本文件重复声明，由 ../tools/ 包提供，
+# crctl 在本地找不到声明时自动回退到 tools 包同名文件（见 AGENTS.md）。
+schema: "ai-first.tools.dir-graph/v1"
+
+workspace:
+  root: "."
+  timezone: "Asia/Shanghai"
+  edition: ai-first-platform-docs
+  path_basis: "workspace-root"
+  tools_package_path: "../tools"
+
+repositories:
+  - id: ai-first-platform-docs
+    path: "."
+    trunk: master
+    role: docs-and-baseline-repo
+    description: "AI First 平台设计文档与知识库仓库；承载 docs/（平台级设计文档、分析、外部仓库引用）与 CR 回写后的 specs/、delivery/"
+
+target_workspace_contract:
+  required_roots:
+    specs: "specs/"
+    change-requests: "change-requests/"
+    docs: "docs/"
+    delivery: "delivery/"
