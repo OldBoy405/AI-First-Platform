@@ -1,0 +1,72 @@
+# specs/ai-first-platform/traceability.yml — CR-2026-001 回写生成
+# 五段链路：需求 FR ↔ 技术设计 SDD ↔ 交付 TASK ↔ 代码 merge SHA ↔ CR-ID
+spec-id: ai-first-platform
+cr-ref: CR-2026-001
+target-version: "0.10"
+generated-at: "2026-07-31T01:28:39+08:00"
+
+merge-commits:
+  - repo: ai-first-platform-docs
+    trunk: master
+    sha: a065158
+    message: "merge(CR-2026-001): AI First 研发协同平台 M0 — knowledge-base worktree"
+  - repo: multica
+    trunk: main
+    sha: 0980f3bfc
+    message: "merge(CR-2026-001): AI First 研发协同平台 M0 — multica fork worktree"
+
+fr-chain:
+  - fr: FR-1
+    sdd: "SDD §6 selfhost-compose 行（§1.1 组件表）"
+    tasks: [CR-2026-001-TASK-01]
+    code: "multica@0980f3bfc: server/cmd/server/router.go（摘 2 处计费挂载）+ CUSTOM.md C1-C4"
+    evidence: "test-report §3 AC-1 三行"
+  - fr: FR-2
+    sdd: "SDD §2 数据模型映射表 + §4 适配器伪代码"
+    tasks: [CR-2026-001-TASK-02, CR-2026-001-TASK-03]
+    code: "multica@0980f3bfc: aifirst/agent-import.mjs"
+    evidence: "test-report §3 AC-2 行 + §2 适配器三次运行记录"
+  - fr: FR-3
+    sdd: "SDD §1.2 关键流程 + §4 issue-dispatch-smoke"
+    tasks: [CR-2026-001-TASK-04]
+    code: "无新增代码（验收动作）；附带根修 multica@0980f3bfc: server/pkg/agent/claude.go 宿主标记过滤"
+    evidence: "test-report §3 AC-3 行（TES-4/TES-5）"
+  - fr: FR-4
+    sdd: "SDD §5 选型表 tools-consistency-ci 行"
+    tasks: [CR-2026-001-TASK-05]
+    code: "tools@033a4a3: check-agents-contract.mjs + CI/pre-commit；tools@3297c12: 2 Agent 补 name"
+    evidence: "test-report §3 AC-4 行"
+
+reviews:
+  requirement:
+    reviewer: ai-reviewer
+    verdict: pass
+    attempts: 2
+    final-reviewed-at: "2026-07-30T21:42:53+08:00"
+  sdd:
+    reviewer: ai-reviewer
+    verdict: pass
+    attempts: 2
+    final-reviewed-at: "2026-07-30T22:38:47+08:00"
+  code:
+    reviewer: ai-reviewer
+    verdict: pass
+    attempts: 1
+    final-reviewed-at: "2026-07-31T01:15:16+08:00"
+
+tests:
+  report: "CR 过程报告见 change-requests/CR-2026-001/test-report.md（归档后保留）"
+  status: pass
+  tester: Ray
+  generated-at: "2026-07-31T01:12:32+08:00"
+
+approvals:
+  requirement: { approver: OldBoy405, via: crctl-approve }
+  tech-design: { approver: OldBoy405, via: crctl-approve }
+  development-start: { approver: OldBoy405, via: crctl-approve, approved-at: "2026-07-30T22:52:00+08:00" }
+  code: { approver: OldBoy405, via: crctl-approve, approved-at: "2026-07-31T01:21:21+08:00", evidence-sha256-16: "8a8a76a5333875f5" }
+
+deferred:
+  - "AC-1③ 字面场景（第二个 workspace 被拒）留待首次生产锁定时补验（test-report §5-1）"
+  - "上游 3 个 Traecli/Qoder 测试失败基线（multica CUSTOM.md 台账）"
+  - "候选上游回馈 PR：claude.go 宿主标记过滤（CUSTOM.md 代码改动 #2）+ crctl 证据哈希行尾规范化（tools@5a52cd4）"

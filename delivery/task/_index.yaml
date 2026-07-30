@@ -1,1 +1,31 @@
-tasks: []
+tasks:
+  - id: CR-2026-001-TASK-01
+    file: TASK-0.10-CR-2026-001-01-fork-selfhost.md
+    title: fork Multica、剥离云端专属能力并在内网起全栈
+    status: done
+    cr-ref: CR-2026-001
+    target-version: "0.10"
+  - id: CR-2026-001-TASK-02
+    file: TASK-0.10-CR-2026-001-02-agent-create-contract.md
+    title: 查证 multica agent create 的参数面与校验规则（编码前置）
+    status: done
+    cr-ref: CR-2026-001
+    target-version: "0.10"
+  - id: CR-2026-001-TASK-03
+    file: TASK-0.10-CR-2026-001-03-agent-import-adapter.md
+    title: 实现 agent-frontmatter-adapter 并注册 9 个 tools Agent
+    status: done
+    cr-ref: CR-2026-001
+    target-version: "0.10"
+  - id: CR-2026-001-TASK-04
+    file: TASK-0.10-CR-2026-001-04-issue-dispatch-smoke.md
+    title: issue-dispatch-smoke — 派 Issue 给 Agent 的端到端冒烟
+    status: done
+    cr-ref: CR-2026-001
+    target-version: "0.10"
+  - id: CR-2026-001-TASK-05
+    file: TASK-0.10-CR-2026-001-05-agents-contract-ci.md
+    title: tools-consistency-ci — agents.contract 四不变式接入 fork 仓库 CI
+    status: done
+    cr-ref: CR-2026-001
+    target-version: "0.10"
