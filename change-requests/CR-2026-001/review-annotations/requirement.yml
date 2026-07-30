@@ -1,7 +1,7 @@
 cr-id: CR-2026-001
 review-type: requirement
 reviewer: ai-reviewer
-reviewed-at: "2026-07-30T21:36:27+08:00"
+reviewed-at: "2026-07-30T21:42:53+08:00"
 verdict: pass
 blockers: []
 review-loop:
@@ -13,13 +13,17 @@ review-loop:
         isEmpty: true
   on-block: route-to-repair-node
   max-attempts: 3
-  current-attempt: 0
+  current-attempt: 1
   attempts:
     - attempt: 0
       reviewed-at: "2026-07-30T21:36:27+08:00"
       result: pass
       blocker-count: 0
       repair-target: write-requirement-prd
-suggestions:
-  - "FR-3/AC-3（派 Issue 给 Agent 本机跑通）目前的完成信号偏定性（'执行日志/结果可在系统中查看'）；实际执行时建议钉死一个具体判定信号，例如 Issue 状态字段变为 done 或 daemon 返回的执行摘要包含预期的结果标记，避免验收时各说各话。"
-  - "PRD 未单列'依赖识别'小节。实际依赖关系是隐含的（FR-2/FR-3 依赖 FR-1 起的服务已可用；本 CR 是本仓库第一个 CR，不依赖其他在途 CR），建议在进入 write-dev-tasks 拆任务时把这条顺序依赖显式写进任务依赖关系，避免开发阶段并行拆错顺序。"
+    - attempt: 1
+      reviewed-at: "2026-07-30T21:42:53+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: write-requirement-prd
+      note: "非阻塞修订：采纳 attempt 0 的两条 suggestions（FR-3/AC-3 补具体判定信号；新增第 8 章依赖关系），prd.md v0.1.0 -> v0.1.1"
+suggestions: []
