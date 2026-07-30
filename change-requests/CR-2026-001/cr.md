@@ -15,7 +15,7 @@ owners:
     assigned-at: "2026-07-30T21:22:32+08:00"
 target-version: "0.10"
 source: docs/product/AI-First平台-PRD.md
-status: drafting
+status: requirement-reviewing
 created: "2026-07-30T21:22:32+08:00"
 updated: "2026-07-30T21:22:32+08:00"
 remote-ref: ""
