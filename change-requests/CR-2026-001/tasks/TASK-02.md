@@ -5,7 +5,7 @@ cr-ref: CR-2026-001
 plan-ref: "change-requests/CR-2026-001/plan.md"
 sdd-ref: "change-requests/CR-2026-001/sdd.md"
 title: 查证 multica agent create 的参数面与校验规则（编码前置）
-status: pending
+status: done
 estimate: 4h
 depends-on: [CR-2026-001-TASK-01]
 assignee: ""
@@ -37,3 +37,20 @@ SDD §3 的硬性约定任务（评审建议落地）：在写适配器代码**�
 ## 完成标志
 
 查证结论落盘且 TASK-03 可直接按结论编码，不需要再回头翻源码。
+
+## 查证结论（2026-07-31，来源：`multica-creating-agents/SKILL.md` + `references/creating-agents-source-map.md` + `router.go` 实读）
+
+**① 选型：直接调 `POST /api/agents`，不装 CLI。** `multica agent create` 本质是拼 JSON body 发同一端点（`runAgentCreate`），本机未装 CLI（Windows 需另跑 install.ps1），适配器用零依赖 Node 脚本直接 POST 反而少一层。
+
+**② 完整参数面**（`CreateAgentRequest`）：
+- 必填：`name`（空 → 400）、`runtime_id`（空 → 400；必须能解析为本 workspace 的 runtime，否则 400 "invalid runtime_id"）
+- 我们要填的：`description`（≤255 Unicode 码点，超限 400——tools 9 个 Agent 的中文描述均 ~40 字，安全）、`instructions`（无校验，daemon 领任务时读，发给 provider 的运行时行为契约——**这才是提示词，description 只是目录元数据不进提示词**）
+- 全部不发、吃服务端默认值：`model`/`thinking_level`（空=runtime 默认）、`custom_args`→`[]`、`runtime_config`→`{}`、`custom_env`→`{}`、`visibility`→`private`、`max_concurrent_tasks`→`6`、`mcp_config` 不发
+
+**③ 查重途径**：服务端对 `name` **无唯一性约束**（source-map 通篇无 unique 校验）——幂等必须由适配器自己做：先 `GET /api/agents` 列表、按 name 比对、命中即跳过。
+
+**④ `permission.bash: deny` 落点定论**：**只进适配器运行日志**（`fieldsReadNotPersisted` 结构化行，SDD §2 口径）。否决 SDD 里"或塞 `custom_env`"的备选——查证发现 `custom_env` 是密钥语义字段（读取要走 owner/admin 专用 env 端点、审计留痕），拿它存文档性备注是滥用。真正的执行期强制等 P1 gitguard。
+
+**⑤ 新发现的前置依赖（TASK-03/04 执行序）**：`runtime_id` 必须指向已存在的 runtime，而 runtime = 用户配对本机 daemon 后才产生（`GET /api/runtimes` 可列）。所以适配器运行前，用户必须先完成：注册账号 → 建 workspace → 配对本机 daemon。适配器凭据用 `mul_` PAT（Web UI 生成）经环境变量传入，不写死。
+
+**⑥ 范围澄清**：创建 Agent **不会**绑定 Skill（绑定是独立的 `POST /api/agents/{id}/skills/add`）。AC-2 的 Skill 检查口径是 tools 侧 `_index.yml`（已由 check-agents-contract.mjs 覆盖），把 59 个 Skill 导入 Multica `skill` 表并绑定属于安装器工作（P0 映射表 §6），不在本 CR 的 M0 范围，TASK-03 不做、不装作做了。
