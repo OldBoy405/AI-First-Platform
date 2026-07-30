@@ -1,0 +1,33 @@
+cr-id: CR-2026-001
+review-type: tech-design
+reviewer: ai-reviewer
+reviewed-at: "2026-07-30T22:38:47+08:00"
+verdict: pass
+blockers: []
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 1
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-07-30T22:34:44+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: write-tech-design
+    - attempt: 1
+      reviewed-at: "2026-07-30T22:38:47+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: write-tech-design
+      note: "非阻塞修订：采纳 attempt 0 的两条 suggestions（§3 CLI 参数核对定为拆任务硬性前置任务；§2 mode/permission 读取不落库补每 Agent 一行结构化日志的可验收口径），sdd.md v0.1.0 -> v0.1.1"
+suggestions: []
+fr-coverage:
+  total: 4
+  covered: 4
+  missing: []

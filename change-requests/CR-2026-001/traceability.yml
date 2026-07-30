@@ -1,0 +1,77 @@
+cr-id: CR-2026-001
+reviews:
+  requirement:
+    reviewer: ai-reviewer
+    verdict: pass
+    reviewed-at: "2026-07-30T21:42:53+08:00"
+    blocker-count: 0
+    review-loop:
+      current-attempt: 1
+      max-attempts: 3
+      attempts:
+        - attempt: 0
+          reviewed-at: "2026-07-30T21:36:27+08:00"
+          result: pass
+          blocker-count: 0
+          repair-target: write-requirement-prd
+        - attempt: 1
+          reviewed-at: "2026-07-30T21:42:53+08:00"
+          result: pass
+          blocker-count: 0
+          repair-target: write-requirement-prd
+  sdd:
+    reviewer: ai-reviewer
+    verdict: pass
+    reviewed-at: "2026-07-30T22:38:47+08:00"
+    blocker-count: 0
+    review-loop:
+      current-attempt: 1
+      max-attempts: 3
+      attempts:
+        - attempt: 0
+          reviewed-at: "2026-07-30T22:34:44+08:00"
+          result: pass
+          blocker-count: 0
+          repair-target: write-tech-design
+        - attempt: 1
+          reviewed-at: "2026-07-30T22:38:47+08:00"
+          result: pass
+          blocker-count: 0
+          repair-target: write-tech-design
+  code:
+    reviewer: ai-reviewer
+    verdict: pass
+    reviewed-at: "2026-07-31T01:15:16+08:00"
+    blocker-count: 0
+    review-loop:
+      current-attempt: 0
+      max-attempts: 3
+      attempts:
+        - attempt: 0
+          reviewed-at: "2026-07-31T01:15:16+08:00"
+          result: pass
+          blocker-count: 0
+          repair-target: implement-code
+tests:
+  report: change-requests/CR-2026-001/test-report.md
+  status: pass
+  owner: Ray
+  owner-assigned-at: "2026-07-30T21:22:32+08:00"
+  generated-at: "2026-07-31T01:12:32+08:00"
+  repair-target: implement-code
+  review-loop:
+    current-attempt: 0
+    max-attempts: 3
+    attempts:
+      - attempt: 0
+        generated-at: "2026-07-31T01:12:32+08:00"
+        result: pass
+        blocker-count: 0
+        repair-target: implement-code
+  commands:
+    - name: lint
+      result: pass
+    - name: test
+      result: pass
+    - name: build
+      result: pass
