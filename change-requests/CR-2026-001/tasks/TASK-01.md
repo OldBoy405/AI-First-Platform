@@ -5,7 +5,7 @@ cr-ref: CR-2026-001
 plan-ref: "change-requests/CR-2026-001/plan.md"
 sdd-ref: "change-requests/CR-2026-001/sdd.md"
 title: fork Multica、剥离云端专属能力并在内网起全栈
-status: pending
+status: in-progress
 estimate: 24h
 depends-on: []
 assignee: ""
