@@ -1,0 +1,26 @@
+tasks:
+  - id: CR-2026-001-TASK-01
+    title: fork Multica、剥离云端专属能力并在内网起全栈
+    status: pending
+    estimate: 24h
+    depends-on: []
+  - id: CR-2026-001-TASK-02
+    title: 查证 multica agent create 的参数面与校验规则（编码前置）
+    status: pending
+    estimate: 4h
+    depends-on: [CR-2026-001-TASK-01]
+  - id: CR-2026-001-TASK-03
+    title: 实现 agent-frontmatter-adapter 并注册 9 个 tools Agent
+    status: pending
+    estimate: 16h
+    depends-on: [CR-2026-001-TASK-02]
+  - id: CR-2026-001-TASK-04
+    title: issue-dispatch-smoke — 派 Issue 给 Agent 的端到端冒烟
+    status: pending
+    estimate: 4h
+    depends-on: [CR-2026-001-TASK-03]
+  - id: CR-2026-001-TASK-05
+    title: tools-consistency-ci — agents.contract 四不变式接入 fork 仓库 CI
+    status: pending
+    estimate: 6h
+    depends-on: []
