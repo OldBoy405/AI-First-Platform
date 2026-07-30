@@ -1,7 +1,7 @@
 cr-id: CR-2026-001
 review-type: tech-design
 reviewer: ai-reviewer
-reviewed-at: "2026-07-30T22:34:44+08:00"
+reviewed-at: "2026-07-30T22:38:47+08:00"
 verdict: pass
 blockers: []
 review-loop:
@@ -13,16 +13,20 @@ review-loop:
         isEmpty: true
   on-block: route-to-repair-node
   max-attempts: 3
-  current-attempt: 0
+  current-attempt: 1
   attempts:
     - attempt: 0
       reviewed-at: "2026-07-30T22:34:44+08:00"
       result: pass
       blocker-count: 0
       repair-target: write-tech-design
-suggestions:
-  - "§3 接口契约把 CLI 参数细节（multica agent create 的具体 flag）推迟到开发计划阶段核对，这个推迟本身是合理的（M0 不新增接口），但 write-dev-plan/write-dev-tasks 阶段必须把'先读 server/internal/service/builtin_skills/multica-creating-agents/SKILL.md 确认参数'列成一个显式任务项，不能默认开发时顺手就查到。"
-  - "§2 数据模型里 mode/permission 字段'读取但不落库'的处理，建议在 write-dev-tasks 拆任务时对应一条可验收的任务（例如：适配器运行日志里能看到这两个字段被读取的记录），否则'不静默丢弃'这条设计意图在验收时无法核查。"
+    - attempt: 1
+      reviewed-at: "2026-07-30T22:38:47+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: write-tech-design
+      note: "非阻塞修订：采纳 attempt 0 的两条 suggestions（§3 CLI 参数核对定为拆任务硬性前置任务；§2 mode/permission 读取不落库补每 Agent 一行结构化日志的可验收口径），sdd.md v0.1.0 -> v0.1.1"
+suggestions: []
 fr-coverage:
   total: 4
   covered: 4
