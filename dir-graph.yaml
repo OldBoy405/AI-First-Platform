@@ -17,6 +17,11 @@ repositories:
     trunk: master
     role: knowledge-base
     description: "AI First 平台设计文档与知识库仓库；承载 docs/（平台级设计文档、分析、外部仓库引用）与 CR 回写后的 specs/、delivery/"
+  - id: multica
+    path: "../multica"
+    trunk: main
+    role: code
+    description: "Multica fork（平台底座代码仓）；CR-2026-001 起参与 CR worktree 派生与合入。local main 含 CONTRIBUTING.AIFIRST.md 隔离约定，尚未配置 fork remote"
 
 target_workspace_contract:
   required_roots:
