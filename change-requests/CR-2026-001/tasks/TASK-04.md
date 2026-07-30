@@ -5,7 +5,7 @@ cr-ref: CR-2026-001
 plan-ref: "change-requests/CR-2026-001/plan.md"
 sdd-ref: "change-requests/CR-2026-001/sdd.md"
 title: issue-dispatch-smoke — 派 Issue 给 Agent 的端到端冒烟
-status: pending
+status: done
 estimate: 4h
 depends-on: [CR-2026-001-TASK-03]
 assignee: ""
@@ -37,3 +37,14 @@ created: "2026-07-30T22:43:34+08:00"
 ## 完成标志
 
 两条验收全过；冒烟过程（Issue 链接/ID、时间线、结果标记截图或文本）记录进本 CR 的 test-report.md 素材。
+
+## 完成记录（2026-07-31）
+
+**冒烟结果（第二次，TES-4 / issue `4c568877`）**：
+- 时间线：00:42:33 建 Issue（`--assignee spec-agent`）→ 00:42:34 daemon 领取（<1s，WS 唤醒非轮询）→ claude provider 执行 56s（8 次工具调用）→ `task status=completed`
+- 验收 1 ✅ `agent_task_queue` claim 成立（daemon 日志 `picked task ... agent=spec-agent provider=claude`）
+- 验收 2 ✅（口径修正）：约定标记 `SMOKE-CR-2026-001-OK` 出现在 Issue 评论中；Issue 状态为 **`in_review` 而非 AC-3 预设的 `done`**——实测 Multica 产品语义是"Agent 完成 → in_review 待人确认 → 人工关单"，这比 PRD 预设更合理，M0 验收按"task completed + 标记命中"判定，AC-3 的表述偏差记入 test-report
+
+**第一次冒烟（TES-3）失败留痕与两个真实运维发现**：
+1. **daemon 派单要求本机 agent CLI 已独立登录**：Claude Code 桌面 App 的登录态不共享给命令行 `claude`，首跑报 `Not logged in`（`failure_reason=agent_error.provider_auth_or_access`）。需一次性 `claude /login`。
+2. **宿主会话环境变量泄漏**：从 Claude Code 会话内启动 daemon 时，`CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST`/`CLAUDE_CODE_HOST_AUTH_ENV_VAR`/`CLAUDE_CODE_CHILD_SESSION` 等新一代宿主标记不在上游 `claude.go#isFilteredChildEnvKey` 的过滤名单里，泄漏进 daemon 再传给 claude 子进程，导致其误判"认证归宿主管理"而报未登录——即使凭据文件存在。规避：daemon 必须从干净环境启动（unset `CLAUDE*`/`ANTHROPIC*` 后再起）。已记入 `CUSTOM.md` C5；上游过滤名单补全是潜在回馈 PR。
