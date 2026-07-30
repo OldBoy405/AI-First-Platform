@@ -5,7 +5,7 @@ cr-ref: CR-2026-001
 plan-ref: "change-requests/CR-2026-001/plan.md"
 sdd-ref: "change-requests/CR-2026-001/sdd.md"
 title: 实现 agent-frontmatter-adapter 并注册 9 个 tools Agent
-status: pending
+status: done
 estimate: 16h
 depends-on: [CR-2026-001-TASK-02]
 assignee: ""
@@ -41,3 +41,14 @@ created: "2026-07-30T22:43:34+08:00"
 ## 完成标志
 
 四条验收全过，适配器脚本与运行输出（或其摘要）提交进 fork 仓库。
+
+## 完成记录（2026-07-31）
+
+- **交付物**：`aifirst/agent-import.mjs`（fork 仓库新独立目录，CONTRIBUTING 规则一；零依赖 Node，按 TASK-02 结论直接 `POST /api/agents`）。
+- **前置执行**（TASK-02 ⑤）：用户建 test workspace + 生成 `mul_` PAT；daemon 从源码起（token 写入 `~/.multica/config.json`——daemon 只读配置文件不读 `MULTICA_TOKEN` 环境变量，实测确认），注册出 claude/kimi 两个 runtime，适配器绑 claude runtime。
+- **验收 1** ✅ `GET /api/agents` 共 9 个，与 `agents/_index.yml` active 清单一一对应。
+- **验收 2** ✅ 引用 Skill 均 active——由 tools 仓库 check-agents-contract.mjs（CI+pre-commit）持续覆盖。
+- **验收 3** ✅ 运行输出 9 行 `{agent, fieldsReadNotPersisted: {mode, permission.bash}}` 结构化记录。
+- **验收 4** ✅ 幂等：末次运行 0 created / 9 skipped / 0 failed，退出码 0。
+- **顺带修复**：首跑暴露总 PRD 点名的已知不一致"2 个 Agent 缺 frontmatter name"（product-planning-agent、competitive-analyst-agent），已修复并提交 tools 仓库（`3297c12`），提交时 agents.contract 校验钩子通过。
+- **实现备注**：Windows 下 `process.exit()` 与 undici 未收尾句柄相撞会触发 libuv 断言中止，改用 `process.exitCode` 自然退出。
