@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI First 平台 · 完整技术方案</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --card:#fff; --ink:#161c28; --soft:#48526a; --mute:#8b93a6;
+    --brand:#f5b301; --brand-d:#b07d00; --blue:#2563eb; --blue-s:#eaf1fe;
+    --grn:#0f9d58; --grn-s:#e8f5ee; --vio:#7c3aed; --vio-s:#f1eafe;
+    --rose:#dc2663; --rose-s:#fdeaf1; --teal:#0d9488; --teal-s:#e6f7f5;
+    --amber-s:#fdf3d7; --line:#e2e6ee; --code:#eef1f6;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:"Segoe UI","PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.72;font-size:15px}
+  .wrap{display:flex;max-width:1440px;margin:0 auto}
+  nav#toc{position:sticky;top:0;align-self:flex-start;width:260px;flex:0 0 260px;height:100vh;
+    overflow-y:auto;padding:24px 12px 48px 20px;border-right:1px solid var(--line);background:var(--card);font-size:13px}
+  nav#toc .t{font-weight:800;color:var(--mute);letter-spacing:.14em;font-size:10.5px;margin:14px 8px 6px}
+  nav#toc a{display:block;color:var(--soft);text-decoration:none;padding:4px 10px;border-radius:7px;margin:1px 0}
+  nav#toc a:hover{background:var(--blue-s);color:var(--blue)}
+  nav#toc a.l2{padding-left:22px;font-size:12.4px;color:var(--mute)}
+  main{flex:1;min-width:0;padding:0 46px 100px}
+  header.hero{margin:0 -46px 0;padding:58px 52px 46px;background:linear-gradient(135deg,#10151f 0%,#1e2c46 55%,#2f4368 100%);color:#fff}
+  header.hero .k{display:inline-block;background:var(--brand);color:#231a00;font-weight:800;font-size:11.5px;letter-spacing:.16em;padding:4px 13px;border-radius:999px;margin-bottom:16px}
+  header.hero h1{margin:0 0 12px;font-size:36px;line-height:1.24;font-weight:800}
+  header.hero p{margin:0;max-width:840px;font-size:15.5px;color:#c4cfe2}
+  header.hero .meta{margin-top:22px;display:flex;flex-wrap:wrap;gap:9px;font-size:12px;color:#9fb0cc}
+  header.hero .meta span{border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:3px 12px}
+  section{margin-top:52px}
+  h2{font-size:25px;font-weight:800;margin:0 0 4px;padding-top:10px}
+  h2 .n{color:var(--brand-d);font-family:Georgia,serif;margin-right:10px}
+  h2::after{content:"";display:block;width:52px;height:4px;border-radius:2px;background:var(--brand);margin-top:9px}
+  h3{font-size:18px;font-weight:700;margin:30px 0 8px}
+  h4{font-size:14.5px;font-weight:700;margin:18px 0 6px;color:var(--soft)}
+  p.lead{color:var(--soft);max-width:920px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:22px 26px;margin:16px 0;box-shadow:0 1px 2px rgba(20,30,60,.04)}
+  .grid{display:grid;gap:14px;margin:16px 0}
+  .g2{grid-template-columns:repeat(auto-fit,minmax(330px,1fr))}
+  .g3{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+  .tile{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:18px 20px}
+  .tile h4{margin:0 0 7px;font-size:14.5px;color:var(--ink)}
+  .tile p{margin:0;font-size:13.3px;color:var(--soft)}
+  .tile .ic{font-size:20px;display:block;margin-bottom:6px}
+  .badge{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:2px 10px;margin-right:5px}
+  .b-blue{background:var(--blue-s);color:var(--blue)} .b-grn{background:var(--grn-s);color:var(--grn)}
+  .b-vio{background:var(--vio-s);color:var(--vio)} .b-rose{background:var(--rose-s);color:var(--rose)}
+  .b-teal{background:var(--teal-s);color:var(--teal)} .b-amber{background:var(--amber-s);color:#a06b00}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border:1px solid var(--line);border-radius:11px;overflow:hidden;font-size:13.3px}
+  th{background:#eef1f6;text-align:left;padding:10px 14px;font-weight:700;white-space:nowrap}
+  td{padding:10px 14px;border-top:1px solid var(--line);color:var(--soft);vertical-align:top}
+  tr:nth-child(even) td{background:#fafbfd}
+  code{background:var(--code);border-radius:5px;padding:1px 6px;font-size:12.5px;font-family:Consolas,"JetBrains Mono",monospace;color:#33415c}
+  blockquote{margin:16px 0;padding:14px 20px;border-left:4px solid var(--brand);background:#fffdf3;border-radius:0 9px 9px 0;color:var(--soft);font-size:14px}
+  blockquote strong{color:var(--ink)}
+  ul,ol{padding-left:22px;color:var(--soft)} li{margin:3px 0} li strong{color:var(--ink)}
+  .figure{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:20px 18px 10px;margin:18px 0;overflow-x:auto;text-align:center}
+  .figure .cap{font-size:12px;color:var(--mute);margin:10px 0 6px;font-weight:600}
+  .mermaid{display:flex;justify-content:center;min-height:50px}
+  .kpi{display:flex;gap:14px;flex-wrap:wrap;margin:18px 0}
+  .kpi .k{flex:1;min-width:150px;background:linear-gradient(160deg,#fffceb,#fff);border:1px solid #f0e2b0;border-radius:13px;padding:16px 18px;text-align:center}
+  .kpi .k .v{font-size:26px;font-weight:800;color:var(--brand-d)}
+  .kpi .k .l{font-size:12px;color:var(--soft);margin-top:3px}
+  .pill{font-size:11px;font-weight:700;padding:2px 9px;border-radius:6px}
+  .p-must{background:var(--rose-s);color:var(--rose)} .p-opt{background:var(--grn-s);color:var(--grn)}
+  .note{font-size:12.5px;color:var(--mute);margin-top:5px}
+  footer{margin-top:64px;padding-top:22px;border-top:1px solid var(--line);font-size:12px;color:var(--mute)}
+  @media(max-width:1040px){nav#toc{display:none}main{padding:0 20px 60px}header.hero{margin:0 -20px;padding:40px 22px}}
+  @media print{nav#toc{display:none}.card,.figure,.tile{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav id="toc">
+  <p class="t">目录</p>
+  <a href="#s0">摘要与三项决策</a>
+  <a href="#s1">1. 设计理念</a>
+  <a href="#s2">2. 产品目标</a>
+  <a href="#s3">3. 总体架构</a>
+  <a class="l2" href="#s3-1">3.1 五层架构</a>
+  <a class="l2" href="#s3-2">3.2 五方组装分工</a>
+  <a class="l2" href="#s3-3">3.3 实体关系</a>
+  <a href="#s4">4. 数据模型（方案B）</a>
+  <a href="#s5">5. 核心机制</a>
+  <a class="l2" href="#s5-1">5.1 CR 治理 · crctl</a>
+  <a class="l2" href="#s5-2">5.2 三模式聊天</a>
+  <a class="l2" href="#s5-3">5.3 Claude 四路接入</a>
+  <a class="l2" href="#s5-4">5.4 runner 轻量档</a>
+  <a class="l2" href="#s5-5">5.5 上游跟随策略</a>
+  <a class="l2" href="#s5-6">5.6 Wiki 子系统</a>
+  <a href="#s6">6. 里程碑与甘特</a>
+  <a href="#s7">7. 人力配置</a>
+  <a href="#s8">8. 风险清单</a>
+  <a href="#s9">9. 详细开发任务</a>
+  <a href="#s10">10. 验收与不做清单</a>
+</nav>
+<main>
+<header class="hero">
+  <span class="k">TECHNICAL PROPOSAL · v1.1</span>
+  <h1>AI First 平台 · 完整技术方案</h1>
+  <p>一个企业内部使用的 AI 原生研发协同平台：融合 CodeBanana 的协作体验、Multica 的本地执行底座、
+  OpenClaw 的渠道生态、Claude Agent 的智能内核，与自研 tools 工程治理方法论。本地执行、隐私优先、工程可追溯。</p>
+  <div class="meta">
+    <span>📅 编制日期 2026-07-28 · v1.1 修订 2026-07-29（S1–S6 理念对齐增补）</span>
+    <span>🏗 底座 Multica（fork，长期跟随上游）</span>
+    <span>🧠 内核 Claude（本机 CLI + Agent SDK）</span>
+    <span>📐 数据模型 方案B（Issue / CR / TASK 两层）</span>
+    <span>⏱ 内部可用 ≈10–12 周 · 完整形态 ≈5–6 月</span>
+  </div>
+</header>
+
+<!-- ===== 摘要 ===== -->
+<section id="s0">
+  <h2><span class="n">0</span>执行摘要与三项已定决策</h2>
+  <p class="lead">本平台不做云端 SaaS，而是走 <strong>Multica 的"本地执行、隐私优先"路线</strong>：Agent 跑在用户自己机器的 daemon 上，
+  平台只做编排、协作与治理，服务器永远看不到用户的模型凭据与源代码。产品体验对标 CodeBanana，工程治理深度超越它——
+  这正是差异化所在：<strong>AI 原生的工程可追溯</strong>（证据链、质量门、漂移检测），而非卖 Token 和沙箱。</p>
+  <div class="card">
+    <h4 style="margin-top:0">本方案锁定的三项关键决策</h4>
+    <table>
+      <tr><th>决策</th><th>结论</th><th>理由</th></tr>
+      <tr><td><strong>① Multica fork 策略</strong></td><td><span class="badge b-grn">长期跟随上游</span></td>
+        <td>Multica 迭代极快（3 个月 10.7k star），上游持续吸收的 Agent 后端适配、渠道引擎、安全修复值得跟进；参照 tools 自身的 <code>CUSTOM.md</code> fork 治理台账模式管理二开改动，降低长期分叉成本</td></tr>
+      <tr><td><strong>② CR 与 Issue 关系</strong></td><td><span class="badge b-blue">两层 · 方案 B</span></td>
+        <td>Issue = 统一轻量工作入口（万物先是 Issue）；CR = 可选挂载的"治理信封"（16 态门禁）；TASK = CR 壳 Issue 的子 Issue。让 Multica 协作原语对所有工作项免费生效，同时把 tools 门禁复杂度封装在 CR 内部</td></tr>
+      <tr><td><strong>③ 共享 runner 池规模</strong></td><td><span class="badge b-teal">先上轻量档</span></td>
+        <td>池只承载只读与文档类 Agent（customer-support 问答、spec 查询、规划草稿、Discussion 的 DC、审批操作）；无代码执行、无预览，威胁面低、Token 消耗小，覆盖非技术人员 60–70% 的参与场景；重度代码/预览需求观察 1–2 月真实用量后再决定是否上完整档</td></tr>
+    </table>
+  </div>
+  <div class="kpi">
+    <div class="k"><div class="v">10–12<span style="font-size:14px">周</span></div><div class="l">内部可用（P0+P1 完成，一条需求走完全流程）</div></div>
+    <div class="k"><div class="v">5–6<span style="font-size:14px">月</span></div><div class="l">完整形态（P0–P3 + runner 轻量档）</div></div>
+    <div class="k"><div class="v">6–8<span style="font-size:14px">人</span></div><div class="l">核心团队规模</div></div>
+    <div class="k"><div class="v">≈30<span style="font-size:14px">张表</span></div><div class="l">Multica 原样复用，仅改 2 张、新增 5 张</div></div>
+  </div>
+</section>
+
+<!-- ===== 1 理念 ===== -->
+<section id="s1">
+  <h2><span class="n">1</span>设计思想与理念</h2>
+  <div class="grid g3">
+    <div class="tile"><span class="ic">🤖</span><h4>AI 是队友，不是工具</h4><p>每个项目自带同名 Agent；Agent 作为一等成员参与执行、评审、协作。承自 CodeBanana「AI as a Teammate」与 Multica「Agents as Teammates」。</p></div>
+    <div class="tile"><span class="ic">💬</span><h4>沟通发生在执行发生的地方</h4><p>讨论、AI 执行、代码环境在同一"项目容器"内，讨论可一键转化为执行。CodeBanana 的核心设计原则。</p></div>
+    <div class="tile"><span class="ic">🔒</span><h4>本地执行、隐私优先</h4><p>Agent 跑在用户本机 daemon，模型凭据与源码不出内网。这是选择 Multica 底座的根本原因，也是与 SaaS 路线的分水岭。</p></div>
+    <div class="tile"><span class="ic">📐</span><h4>工程可追溯是第一性卖点</h4><p>CR 状态机 + 五道质量门 + traceability 五段链路 + 漂移检测。CodeBanana 都没有的东西，来自 tools 方法论。</p></div>
+    <div class="tile"><span class="ic">🧩</span><h4>组装而非造轮子</h4><p>五方组装：Multica 底座 + OpenClaw 渠道 + Claude 内核 + tools 方法论 + 自研协作层。连 Multica 上游都是这么干的（内建 OpenClaw 后端）。</p></div>
+    <div class="tile"><span class="ic">📊</span><h4>度量而非监控</h4><p>AI 成熟度看板量化组织转型；数量指标与质量护栏强制同屏，个人排名默认关闭——防止行为数据沦为绩效竞赛。v1.1 补交付效能板块与 AI 净价值框架：既看"转型多深"，也看"交付变好没有"。</p></div>
+    <div class="tile"><span class="ic">📚</span><h4>知识分层：事实可信 · 知识好用</h4><p>v1.1 增补（S1）：Git 管事实生产与变更治理，LLM Wiki 最小版管知识消费（带出处问答），图谱作可删可重建的关系索引——"LLM Wiki 擅长解释，不擅长负责"。高频问答经知识晋升巡检回写事实源。</p></div>
+    <div class="tile"><span class="ic">🌱</span><h4>超级个体能力资产化</h4><p>v1.1 增补（S2）：会话可导出 Skill 草稿、资产带元数据卡（场景/依赖/权限/失败处理）、复用进度量（SII 资产复用率）、发布=授权+敏感扫描——高手的工作方式可被看见、复用、验证和扩散。</p></div>
+  </div>
+  <blockquote><strong>一句话理念：</strong>把 CodeBanana 的协作体验、Multica 的执行底座、tools 的治理方法论叠成一个东西——
+  让非技术角色能参与、让 AI 大胆执行、让每一次变更都留下可追溯的证据链。</blockquote>
+</section>
+
+<!-- ===== 2 目标 ===== -->
+<section id="s2">
+  <h2><span class="n">2</span>产品要实现的目标</h2>
+  <table>
+    <tr><th>层次</th><th>目标</th><th>可度量的成功标志</th></tr>
+    <tr><td><strong>协作</strong></td><td>团队在同一平台完成需求→设计→编码→回写→归档全流程，不再靠 IDE 各自为战</td><td>一条需求端到端跑完四条主 pipeline，产出完整 traceability</td></tr>
+    <tr><td><strong>治理</strong></td><td>AI 产出的代码有证据链、过质量门、可追溯、可回滚</td><td>门禁一次通过率可度量；绕过流程的直接提交（bypass-commit）可被检测</td></tr>
+    <tr><td><strong>包容</strong></td><td>非技术角色（PM/设计/QA/客服）无门槛参与</td><td>轻量档 runner 上线后，非技术用户可用只读/文档 Agent 提需求、查文档、审批、参与讨论</td></tr>
+    <tr><td><strong>智能</strong></td><td>Agent 作为自主队友执行任务，人类专注决策</td><td>Team Agent 单一写者 + 队列跑通；A2A 跨项目协作可用</td></tr>
+    <tr><td><strong>组织</strong></td><td>管理层能看到 AI 原生转型的量化进度<strong>与交付价值</strong></td><td>AI 成熟度看板五维十指标 + 治理板块 + 交付效能板块（Lead Time/Review 负担/变更失败率）上线，周报 Autopilot 按 AI 净价值框架产出诊断；M3 后 3 个月完成四类指标价值复盘</td></tr>
+    <tr><td><strong>知识</strong>（v1.1）</td><td>个人经验沉淀为可复用组织资产；知识可被问答消费并回流事实源</td><td>资产复用率可度量；LLM Wiki 问答带出处；高频问答自动触发知识晋升 Issue</td></tr>
+    <tr><td><strong>自主</strong></td><td>平台可企业内网自托管，不依赖外部 SaaS</td><td>Docker Compose / Helm 两条命令内网起全栈</td></tr>
+  </table>
+</section>
+
+<!-- ===== 3 架构 ===== -->
+<section id="s3">
+  <h2><span class="n">3</span>总体架构</h2>
+
+  <h3 id="s3-1">3.1 五层架构总览</h3>
+  <div class="figure">
+  <svg viewBox="0 0 1100 700" width="100%" style="max-width:1080px" font-family="Segoe UI,PingFang SC,Microsoft YaHei,sans-serif">
+    <defs>
+      <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b93a6"/></marker>
+      <linearGradient id="l1" x1="0" x2="1"><stop offset="0" stop-color="#2563eb"/><stop offset="1" stop-color="#5187f7"/></linearGradient>
+      <linearGradient id="l5" x1="0" x2="1"><stop offset="0" stop-color="#10151f"/><stop offset="1" stop-color="#2f4368"/></linearGradient>
+    </defs>
+    <!-- L1 -->
+    <rect x="18" y="14" width="1064" height="94" rx="13" fill="url(#l1)"/>
+    <text x="42" y="43" fill="#fff" font-size="16" font-weight="800">① 客户端接入层</text>
+    <text x="42" y="64" fill="#cfe0ff" font-size="11">同一账号 · 数据同步</text>
+    <g font-size="12" fill="#161c28">
+      <rect x="270" y="32" width="150" height="56" rx="9" fill="#fff"/><text x="345" y="55" text-anchor="middle" font-weight="700">Web 工作台</text><text x="345" y="73" text-anchor="middle" font-size="10.5" fill="#48526a">Next.js · 三模式聊天</text>
+      <rect x="432" y="32" width="150" height="56" rx="9" fill="#fff"/><text x="507" y="55" text-anchor="middle" font-weight="700">桌面端 CBBot</text><text x="507" y="73" text-anchor="middle" font-size="10.5" fill="#48526a">Electron · 本地自动化</text>
+      <rect x="594" y="32" width="150" height="56" rx="9" fill="#fff"/><text x="669" y="55" text-anchor="middle" font-weight="700">移动端</text><text x="669" y="73" text-anchor="middle" font-size="10.5" fill="#48526a">Expo/RN · 收件箱</text>
+      <rect x="756" y="32" width="150" height="56" rx="9" fill="#fff"/><text x="831" y="55" text-anchor="middle" font-weight="700">IM 渠道</text><text x="831" y="73" text-anchor="middle" font-size="10.5" fill="#48526a">飞书/Slack/企微…</text>
+      <rect x="918" y="32" width="150" height="56" rx="9" fill="#fff"/><text x="993" y="55" text-anchor="middle" font-weight="700">CLI / Webhook</text><text x="993" y="73" text-anchor="middle" font-size="10.5" fill="#48526a">脚本 · 外部事件</text>
+    </g>
+    <line x1="550" y1="108" x2="550" y2="128" stroke="#8b93a6" stroke-width="2" marker-end="url(#ar)"/>
+    <!-- L2 -->
+    <rect x="18" y="132" width="1064" height="112" rx="13" fill="#eaf1fe" stroke="#2563eb" stroke-width="1.4"/>
+    <text x="42" y="160" fill="#1d4ed8" font-size="16" font-weight="800">② 协作层</text>
+    <text x="42" y="181" fill="#48526a" font-size="11">组织→项目→Issue/CR/TASK 两层</text>
+    <g font-size="12">
+      <rect x="270" y="150" width="176" height="80" rx="9" fill="#fff" stroke="#bcd0f5"/><text x="358" y="174" text-anchor="middle" font-weight="700" fill="#161c28">Issue（统一入口）</text><text x="358" y="193" text-anchor="middle" font-size="10.5" fill="#48526a">看板/评论/订阅/@提及</text><text x="358" y="211" text-anchor="middle" font-size="10.5" fill="#48526a">反馈·杂事·咨询·CR壳</text>
+      <rect x="458" y="150" width="176" height="80" rx="9" fill="#fff" stroke="#bcd0f5"/><text x="546" y="174" text-anchor="middle" font-weight="700" fill="#161c28">CR（治理信封）</text><text x="546" y="193" text-anchor="middle" font-size="10.5" fill="#48526a">16 态门禁 · git 权威</text><text x="546" y="211" text-anchor="middle" font-size="10.5" fill="#48526a">PG 只读投影</text>
+      <rect x="646" y="150" width="176" height="80" rx="9" fill="#fff" stroke="#bcd0f5"/><text x="734" y="174" text-anchor="middle" font-weight="700" fill="#161c28">三模式群聊</text><text x="734" y="193" text-anchor="middle" font-size="10.5" fill="#48526a">Team Agent · Private Ask</text><text x="734" y="211" text-anchor="middle" font-size="10.5" fill="#48526a">Discussion（+DC）</text>
+      <rect x="834" y="150" width="176" height="80" rx="9" fill="#fff" stroke="#bcd0f5"/><text x="922" y="174" text-anchor="middle" font-weight="700" fill="#161c28">组织 / Squad</text><text x="922" y="193" text-anchor="middle" font-size="10.5" fill="#48526a">单组织 · 部门树</text><text x="922" y="211" text-anchor="middle" font-size="10.5" fill="#48526a">人机混编小队</text>
+    </g>
+    <line x1="550" y1="244" x2="550" y2="264" stroke="#8b93a6" stroke-width="2" marker-end="url(#ar)"/>
+    <!-- L3 治理 -->
+    <rect x="18" y="268" width="1064" height="92" rx="13" fill="#e6f7f5" stroke="#0d9488" stroke-width="1.4"/>
+    <text x="42" y="296" fill="#0f766e" font-size="16" font-weight="800">③ 治理层（差异化核心 · 来自 tools）</text>
+    <g font-size="12">
+      <rect x="440" y="284" width="150" height="60" rx="9" fill="#fff" stroke="#b5e3dd"/><text x="515" y="308" text-anchor="middle" font-weight="700" fill="#161c28">crctl 门禁引擎</text><text x="515" y="326" text-anchor="middle" font-size="10.5" fill="#48526a">状态权威 · CAS · 签名审批</text>
+      <rect x="602" y="284" width="150" height="60" rx="9" fill="#fff" stroke="#b5e3dd"/><text x="677" y="308" text-anchor="middle" font-weight="700" fill="#161c28">5 道质量门</text><text x="677" y="326" text-anchor="middle" font-size="10.5" fill="#48526a">证据链 · reviewLoop</text>
+      <rect x="764" y="284" width="150" height="60" rx="9" fill="#fff" stroke="#b5e3dd"/><text x="839" y="308" text-anchor="middle" font-weight="700" fill="#161c28">traceability</text><text x="839" y="326" text-anchor="middle" font-size="10.5" fill="#48526a">五段链路 · 漂移检测</text>
+    </g>
+    <line x1="550" y1="360" x2="550" y2="380" stroke="#8b93a6" stroke-width="2" marker-end="url(#ar)"/>
+    <!-- L4 Agent -->
+    <rect x="18" y="384" width="1064" height="112" rx="13" fill="#f1eafe" stroke="#7c3aed" stroke-width="1.4"/>
+    <text x="42" y="412" fill="#6d28d9" font-size="16" font-weight="800">④ Agent 智能层</text>
+    <text x="42" y="433" fill="#48526a" font-size="11">9 tools Agent + 项目/个人 Agent</text>
+    <g font-size="11.5">
+      <rect x="270" y="402" width="170" height="80" rx="9" fill="#fff" stroke="#d8c6f7"/><text x="355" y="425" text-anchor="middle" font-weight="700" fill="#161c28">pkg/agent 后端抽象</text><text x="355" y="443" text-anchor="middle" font-size="10.5" fill="#48526a">14 CLI 子进程包装</text><text x="355" y="461" text-anchor="middle" font-size="10.5" fill="#48526a">Claude Code / Codex…</text>
+      <rect x="452" y="402" width="170" height="80" rx="9" fill="#fff" stroke="#d8c6f7"/><text x="537" y="425" text-anchor="middle" font-weight="700" fill="#161c28">9 内置 Agent</text><text x="537" y="443" text-anchor="middle" font-size="10.5" fill="#48526a">规划/需求/开发/评审…</text><text x="537" y="461" text-anchor="middle" font-size="10.5" fill="#48526a">Basic Info 上下文注入</text>
+      <rect x="634" y="402" width="170" height="80" rx="9" fill="#fff" stroke="#d8c6f7"/><text x="719" y="425" text-anchor="middle" font-weight="700" fill="#161c28">A2A + DC</text><text x="719" y="443" text-anchor="middle" font-size="10.5" fill="#48526a">跨项目协作 · 协调者</text><text x="719" y="461" text-anchor="middle" font-size="10.5" fill="#48526a">50 槽 FIFO 队列</text>
+      <rect x="816" y="402" width="170" height="80" rx="9" fill="#fff" stroke="#d8c6f7"/><text x="901" y="425" text-anchor="middle" font-weight="700" fill="#161c28">MCP 记忆端点</text><text x="901" y="443" text-anchor="middle" font-size="10.5" fill="#48526a">写入/检索/反思（预留）</text><text x="901" y="461" text-anchor="middle" font-size="10.5" fill="#48526a">非结构化召回，不作状态权威</text>
+    </g>
+    <line x1="550" y1="496" x2="550" y2="516" stroke="#8b93a6" stroke-width="2" marker-end="url(#ar)"/>
+    <!-- L5 执行 -->
+    <rect x="18" y="520" width="1064" height="164" rx="13" fill="url(#l5)"/>
+    <text x="42" y="548" fill="#fff" font-size="16" font-weight="800">⑤ 执行层</text>
+    <text x="42" y="569" fill="#9fb0cc" font-size="11">本地为主 · 池为辅</text>
+    <g font-size="12" fill="#161c28">
+      <rect x="270" y="536" width="330" height="132" rx="10" fill="#fff"/>
+      <text x="435" y="560" text-anchor="middle" font-weight="800" fill="#1d4ed8">A. 本机 daemon（主路径）</text>
+      <text x="435" y="581" text-anchor="middle" font-size="10.5" fill="#48526a">每人一套 · execenv 隔离 worktree</text>
+      <text x="435" y="599" text-anchor="middle" font-size="10.5" fill="#48526a">controlled-shell git 白名单网关</text>
+      <text x="435" y="617" text-anchor="middle" font-size="10.5" fill="#48526a">本机 Claude Code CLI（自带认证）</text>
+      <text x="435" y="640" text-anchor="middle" font-size="10.5" fill="#0f9d58" font-weight="700">开发者流量 → 用户本人订阅</text>
+      <rect x="616" y="536" width="330" height="132" rx="10" fill="#fff"/>
+      <text x="781" y="560" text-anchor="middle" font-weight="800" fill="#0f766e">B. 共享 runner 池（轻量档）</text>
+      <text x="781" y="581" text-anchor="middle" font-size="10.5" fill="#48526a">只读/文档 Agent · 无代码执行/预览</text>
+      <text x="781" y="599" text-anchor="middle" font-size="10.5" fill="#48526a">Claude Agent SDK 承载</text>
+      <text x="781" y="617" text-anchor="middle" font-size="10.5" fill="#48526a">customer-support / spec-query / DC / 审批</text>
+      <text x="781" y="640" text-anchor="middle" font-size="10.5" fill="#dc2663" font-weight="700">平台侧流量 → 组织 API Key（分列计量）</text>
+    </g>
+  </svg>
+  <p class="cap">图 3-1　五层总体架构（SVG）· 执行层双路：本机 daemon 为主，轻量 runner 池为辅</p>
+  </div>
+
+  <h3 id="s3-2">3.2 五方组装分工</h3>
+  <table>
+    <tr><th>来源</th><th>承担</th><th>集成方式</th></tr>
+    <tr><td><span class="badge b-blue">Multica（fork）</span></td><td>Go 后端骨架、Issue/看板体系、任务队列与租约、pkg/agent 后端抽象（14 CLI）、execenv 上下文注入、渠道引擎、五类令牌权限、WS/Redis 实时层、三端共享包、Helm/Compose 部署</td><td>fork + 长期跟随上游，按 <code>CUSTOM.md</code> 台账管理二开</td></tr>
+    <tr><td><span class="badge b-vio">tools（本地包）</span></td><td>方法论层：9 Agent、59 Skill、8 Pipeline、CR 16 态状态机、5 道质量门、crctl 门禁引擎、controlled-shell 白名单、traceability 五段链路</td><td>装入目标 workspace 的 <code>tools/</code>；写 frontmatter 适配器（OpenCode 风格→目标格式）</td></tr>
+    <tr><td><span class="badge b-grn">OpenClaw</span></td><td>补齐 IM 渠道插件（Telegram/Discord/企微/QQ/钉钉）、心跳守护范式、Markdown 记忆约定、A2A 协议</td><td>Multica 上游已内建 OpenClaw 后端，同源低摩擦</td></tr>
+    <tr><td><span class="badge b-amber">Claude</span></td><td>Agent 智能内核：本机 Claude Code CLI（主）+ Claude Agent SDK（runner 池）+ Anthropic API SDK（平台内部轻量 LLM 功能）</td><td>Multica <code>pkg/agent/claude.go</code> 已接好；<code>ExecOptions</code> 已映射 effort/会话恢复/MCP</td></tr>
+    <tr><td><span class="badge b-rose">自研</span></td><td>三模式聊天 UI、Presenter 状态机、Pipeline Runner、服务端签名审批、组织/部门治理、AI 成熟度看板、Skill Market、runner 轻量档编排、cr 投影同步 worker</td><td>基于上述底座开发</td></tr>
+  </table>
+
+  <h3 id="s3-3">3.3 核心实体关系（方案 B）</h3>
+  <div class="figure">
+    <div class="mermaid">
+flowchart TB
+  ORG["🏢 Organization（单组织）"]
+  USER["👤 用户"]
+  ORG -->|包含| PRJ
+  USER -->|加入| ORG
+  subgraph PRJ["📦 Project = Agent + 群聊 + 执行环境"]
+    direction LR
+    AG["🤖 项目 Agent"]:::a
+    CHAT["💬 三模式群聊"]:::c
+    ENV["🖥️ 执行环境"]:::e
+  end
+  PRJ -->|包含多个| ISSUE
+  ISSUE["📋 Issue（统一工作入口）<br/>反馈·杂事·咨询·CR壳"]:::i
+  ISSUE -.->|"issue.cr_id 1:1（可选）"| CR
+  CR["📑 CR（治理信封 · git 权威）<br/>16 态门禁 · 五段追溯"]:::cr
+  CR -->|投影| CRP["cr / spec_trace（PG 只读）"]:::p
+  ISSUE -->|"parent_issue_id"| TASK["📌 TASK 子 Issue<br/>投影自 tasks/TASK-NN.md"]:::i
+  CR -->|"crctl advance"| GIT["git worktree（本机）"]:::e
+  GIT -->|"[cr] commit → daemon 上报"| CRP
+  CFG["⚙️ Basic Info · Skills · Cron · Model"]:::cfg -->|注入| AG
+  classDef a fill:#f1eafe,stroke:#7c3aed
+  classDef c fill:#e8f5ee,stroke:#0f9d58
+  classDef e fill:#10151f,stroke:#2f4368,color:#fff
+  classDef i fill:#eaf1fe,stroke:#2563eb
+  classDef cr fill:#fffdf3,stroke:#b07d00,stroke-width:2px
+  classDef p fill:#e6f7f5,stroke:#0d9488
+  classDef cfg fill:#fdf3d7,stroke:#b07d00
+    </div>
+    <p class="cap">图 3-2　方案 B 实体关系：Issue 为壳、CR 为可选治理内容、TASK 为子 Issue（Mermaid）</p>
+  </div>
+  <blockquote><strong>权威铁律：</strong>CR 状态权威在 git（<code>_backlog.yml</code> + <code>cr.md</code>，crctl 用 sha256 CAS 写入），Postgres 只做只读投影。
+  服务端<strong>永不写 CR 状态</strong>——只有同步 worker 依据 daemon 上报的 <code>[cr]</code> commit 更新投影。全表仅一处反向流动（PG→git）：
+  pipeline runner 的 reviewLoop 轮次经 crctl 回写 <code>review-loop.yml</code>。</blockquote>
+</section>
+
+<!-- ===== 4 数据模型 ===== -->
+<section id="s4">
+  <h2><span class="n">4</span>数据模型（方案 B）</h2>
+  <p class="lead">基于 Multica 真实 schema（396 迁移文件已逐列核对）。改动量极小是方案 B 的直接收益。</p>
+  <div class="grid g3">
+    <div class="tile"><h4><span class="badge b-grn">原样复用 ≈30 张</span></h4><p><code>workspace</code>(=组织) · <code>issue</code> 全家桶 · <code>agent_task_queue</code> · <code>chat_session</code> · <code>comment</code> · <code>daemon/runtime</code> · <code>channel/lark</code> · <code>autopilot/sys_cron</code> · <code>inbox_item</code> · <code>skill</code> · <code>squad</code> —— 一行 DDL 不改</p></div>
+    <div class="tile"><h4><span class="badge b-amber">改 2 张</span></h4><p><code>issue</code> 加 <code>cr_id TEXT</code>（部分唯一索引，1:1）；<code>agent_task_queue</code> 加 <code>cr_id</code> + <code>pipeline_node_run_id</code>（沿用既有可选来源外键家族）</p></div>
+    <div class="tile"><h4><span class="badge b-rose">新增 5 张</span></h4><p><code>cr</code>（投影，含 <code>projected_commit</code> 对账锚点）· <code>cr_sync_event</code>（幂等入站账本）· <code>approval_record</code>（Ed25519 签名审批）· <code>pipeline_run</code> / <code>pipeline_node_run</code>（补 tools 的 P6 runner）· <code>spec_trace</code>（追溯投影）· <code>department</code> + <code>maturity_snapshot</code>（P3）</p></div>
+  </div>
+  <table>
+    <tr><th>映射</th><th>git 权威</th><th>PG 投影 / 载体</th></tr>
+    <tr><td>CR 生命周期</td><td><code>_backlog.yml</code> + <code>cr.md</code>（CAS 双写）</td><td><code>cr</code> 表（status/owners/checkpoints/review_summary）</td></tr>
+    <tr><td>CR ≈ Issue</td><td><code>cr.md#origin={type:issue, ref}</code></td><td><code>issue.cr_id</code>（唯一索引）+ 壳 Issue</td></tr>
+    <tr><td>TASK 子任务</td><td><code>tasks/TASK-NN.md</code></td><td>子 Issue（<code>parent_issue_id</code> = CR 壳 Issue）</td></tr>
+    <tr><td>16 态 → 7 态看板</td><td>状态机权威</td><td><code>issue.metadata.cr_status_bucket</code>（看板禁拖拽 CR 壳）</td></tr>
+    <tr><td>任务执行</td><td>—</td><td><code>agent_task_queue</code>（claim SQL 的 NOT EXISTS 串行化）</td></tr>
+    <tr><td>可追溯</td><td><code>specs/{id}/traceability.yml</code></td><td><code>spec_trace</code>（FR↔SDD↔TASK↔merge SHA↔CR）</td></tr>
+  </table>
+  <p class="note">停用/剥离：Stripe 计费路由（表保留不用）、<code>mcn_</code> Cloud Node（配置为空天然 401）、营销页、多 workspace 注册（环境变量关闭）、Multica 自带 feedback 表。详见<a href="P0-数据模型映射表.md">《P0-数据模型映射表.md》</a>。</p>
+</section>
+
+<!-- ===== 5 核心机制 ===== -->
+<section id="s5">
+  <h2><span class="n">5</span>核心机制</h2>
+
+  <h3 id="s5-1">5.1 CR 治理与 crctl 接入</h3>
+  <p>crctl（1006 行零依赖 Node CLI）是唯一真正可执行的门禁引擎，保持权威在 git。同步走三层防漏通道：</p>
+  <div class="figure">
+    <div class="mermaid">
+flowchart LR
+  A["crctl advance/approve/git push<br/>写 git + CAS"] --> OB["📤 .crctl/outbox/*.json<br/>结构化事件（主通道）"]
+  A --> CM["[cr] 前缀 commit<br/>（兜底通道）"]
+  OB --> D["daemon 采集<br/>POST /api/daemon/cr-events"]
+  CM --> D
+  D --> W["同步 worker<br/>幂等键 cr_id+commit_sha+kind"]
+  W --> CRP["cr 投影 + issue.metadata"]
+  W --> WS["WS 推送 workspace/issue"]
+  RC["reconcile 定时对账<br/>projected_commit vs origin HEAD"] -.->|漂移则重投影| CRP
+  classDef g fill:#e8f5ee,stroke:#0f9d58
+  class A,OB g
+    </div>
+    <p class="cap">图 5-1　CR 事件同步协议：outbox 主通道 + commit 兜底 + reconcile 安全网（Mermaid）</p>
+  </div>
+  <ul>
+    <li><strong>签名审批替代 TTY</strong>：crctl 原设计审批强制交互式终端（云 SaaS 不可用）。改为服务端 Ed25519 签发 grant → daemon 落盘 <code>approval.yml</code> → crctl 验签 + 本地重算 evidence digest。gate 每次重算 digest——批后改证据立即 <code>EVIDENCE_DRIFT</code> 失效，比 TTY 版更强。配合 Multica <code>RequireHumanActor</code>：任务令牌访问审批端点直接 403。</li>
+    <li><strong>controlled-shell 下沉 daemon</strong>：三元白名单（19 git 子命令 + 形态正则 + 调用者，<code>spawnSync(shell:false)</code>）实现在 execenv，Agent 物理拿不到裸 shell。抽 <code>rules.json</code> 单一事实源，crctl / Go gitguard / Claude Code hooks 三方共读。</li>
+    <li><strong>Pipeline Runner</strong>：tools 承认未实现（P6）。格式好实现——线性 <code>nodes[]</code>、唯一 <code>reviewLoop</code> 回边、3 种 kind、<code>passCondition</code> 只有 <code>equals</code>/<code>isEmpty</code>。Multica TaskService + Autopilot 承载。v1.1（S6）：writeback pipeline 补「发布材料回写」节点声明，发布记录与检查单落 <code>delivery/release/</code>——测试→发布段在事实源中获得一等公民位置。</li>
+    <li><strong>AI 行为审计（v1.1，S5）</strong>：五类质量门中「AI 行为门」补留证一半——gitguard FORBIDDEN 拒绝事件计数上报（落 activity_log，供治理板块「越权尝试次数」）；工具调用摘要（工具名/路径/结果码，不含正文）随任务回调持久化，与 review-annotations 合成完整 AI 行为证据链。零新增探针，约 2–3 天。</li>
+  </ul>
+
+  <h3 id="s5-2">5.2 三模式聊天</h3>
+  <table>
+    <tr><th>维度</th><th>Team Agent</th><th>Private Ask</th><th>Discussion</th></tr>
+    <tr><td>定位</td><td>共享 AI 执行层</td><td>个人只读探索</td><td>人类沟通层（+DC 协调者）</td></tr>
+    <tr><td>并发</td><td>单一写者（claim SQL 串行化键换 <code>project_id</code>）</td><td>人人可用、用户级独立队列</td><td>全员自由</td></tr>
+    <tr><td>后端</td><td><code>agent_task_queue</code></td><td><code>chat_session</code>（沙箱）</td><td><code>comment</code></td></tr>
+    <tr><td>WS 房间</td><td><code>workspace</code>+<code>task</code></td><td><code>chat</code>（仅本人）</td><td><code>workspace</code></td></tr>
+  </table>
+  <p class="note">P2 交互设计以 CodeBanana 真实 i18n 字典（86 命名空间，<code>shadowchat</code> 646 键）为功能清单：presenter 6 态通知、toolExecutionCard 工具卡、50 槽队列、恢复检查点三态回滚、转发/点踩/敏感拦截等。模型列表 = 用户本机 Runtime 可用模型（非云端全集）。</p>
+
+  <h3 id="s5-3">5.3 Claude 四路接入</h3>
+  <table>
+    <tr><th>路径</th><th>用途</th><th>凭据</th></tr>
+    <tr><td><strong>① Claude Code CLI</strong>（主，零新增代码）</td><td>开发者本机 Agent 执行，覆盖 90% 流量。Multica <code>pkg/agent/claude.go</code> 已接</td><td>用户本人订阅</td></tr>
+    <tr><td><strong>② Claude Agent SDK</strong></td><td>共享 runner 池载体：Personal Agent、customer-support、DC、Org Admin 周报</td><td>组织 API Key</td></tr>
+    <tr><td><strong>③ Anthropic API SDK</strong></td><td>平台内部轻量 LLM：聊天标题、看板建议生成、敏感判定</td><td>组织 API Key</td></tr>
+    <tr><td><strong>④ Managed Agents</strong></td><td>不用（与本地执行前提冲突）</td><td>—</td></tr>
+  </table>
+  <blockquote><strong>凭据两本账：</strong>开发者流量走本人订阅（隐私边界严格成立），平台侧流量（runner 池 + 内部功能）走组织 Key。看板用量必须分列统计。当前服务器端直连默认 <code>claude-opus-5</code>（$5/$25 每百万 token，1M 上下文，effort 调深度）。</blockquote>
+
+  <h3 id="s5-4">5.4 共享 runner 池 · 轻量档</h3>
+  <p>只承载<strong>只读与文档类 Agent</strong>——无代码执行、无预览、威胁面低、Token 省。覆盖非技术人员 60–70% 参与场景。</p>
+  <div class="grid g2">
+    <div class="tile"><h4>✅ 轻量档承载</h4><p>customer-support 问答 · spec-query/spec-show 查询 · <strong>LLM Wiki 知识问答</strong>（v1.1，S1：跨 specs/delivery/docs/change-requests 只读问答，回答强制带出处，问答日志落 wiki_query_log 供知识晋升巡检）· 规划草稿（planning-draft）· Discussion 的 DC 协调者 · 审批操作 · Personal Agent 只读应答</p></div>
+    <div class="tile"><h4>⛔ 轻量档不含（留完整档）</h4><p>dev-agent 代码执行 · 端口预览 · 一键部署 · implement-code · 任何写 worktree 的 Coding 模式</p></div>
+  </div>
+  <p class="note">载体 = Claude Agent SDK（可编程、可注入 hooks）。凭据经短时签发/代理注入，不明文进容器。完整档（每会话真容器 + 预览反代 + 部署）观察 1–2 月真实用量后再评估，作为独立 P2.5+ 轨道，不阻塞主线。判断标准：非技术用户"让 Agent 直接建页面/工具"的请求频率。</p>
+
+  <h3 id="s5-5">5.5 上游跟随策略</h3>
+  <ul>
+    <li><strong>分支模型</strong>：<code>upstream/main</code>（只读镜像）→ <code>custom/main</code>（二开主线）；功能分支从 <code>custom/main</code> 切。定期（建议双周）merge upstream。</li>
+    <li><strong>二开台账</strong>：仿 tools 的 <code>CUSTOM.md</code>——记录二开专属文件、修复的上游 Bug、新增能力、故意禁用的内容、合并冲突总则（两边保留/逻辑整合/加法优先/标记区块）。</li>
+    <li><strong>隔离原则</strong>：治理层（crctl 接入、gitguard、cr 投影、签名审批、runner 池）尽量做成<strong>新增文件/新增表</strong>而非改上游核心，降低合并冲突面。outbox、rules.json、<code>server-approve</code> 扩展等通用增强建议回馈上游 PR。</li>
+  </ul>
+
+  <h3 id="s5-6">5.6 Wiki 子系统：维护 · 查询 · 晋升（v1.1 增补，详见《Wiki子系统设计》）</h3>
+  <p><strong>定位铁律：Wiki 是衍生解释层，不是事实源</strong>——"Git 负责让事实可信，Wiki 负责让知识好用"。<code>wiki/</code> 目录可整目录删除重建、永不作状态权威；治理事实（CR 状态/追溯/审批）直查投影表，不经 Wiki 转述。方法论借鉴 OpenWiki（langchain-ai）源码级调研——<strong>借纪律与模式，不引其依赖</strong>。</p>
+  <div class="grid g3">
+    <div class="tile"><h4>📖 维护：wiki-maintain Skill</h4><p>owner=knowledge-agent，daemon 本机执行（开发者流量）。init（清单→计划→quickstart 先行→≤8 页预算→Backlog 兜底）/ update（gitHead 差量、docs impact plan、软 diff 预算 &lt;5 文件改 ≤2 页、禁 formatting-only、no-op 合法）双模式；Autopilot 定时触发，daemon 侧 no-op 门槛——无新 commit 零 token。</p></div>
+    <div class="tile"><h4>🛡 确定性护栏</h4><p>"生成靠模型，合规靠代码"：写白名单在 execenv 工具层只放行 <code>wiki/**</code>（含 <code>../</code> 折叠防逃逸，越界计入 P1 行为审计）；三段式校验——前置 frontmatter 迁移、写后即时校验回注 WARNING 当轮修复、收尾 mermaid 失败降级 + index.md 确定性生成（模型禁写索引）。</p></div>
+    <div class="tile"><h4>🔍 查询与晋升</h4><p>wiki-first 三层检索（wiki/ → 事实源原文 → 代码，下探要窄）+ 出处强制（路径+行号）+ 治理查询分流；知识晋升双信号：问答日志聚类（≥3 次）+ open-questions.md 缺口，周巡检汇总开回写 Issue。外部资料按 confirmed/contested 等标注置信度，内容一律视为不可信证据。</p></div>
+  </div>
+  <p class="note">数据面零新表：Wiki 内容与增量锚点（<code>.last-update.json</code>）在 git，问答日志复用 P2.5 的 <code>wiki_query_log</code>，写白名单挂 P1 的 <code>rules.json</code>。页面 frontmatter + 概念链接即"图谱种子"——将来接图谱 MCP 从 Wiki 解析重建全图，无需独立图数据库（N8 条款的实现路径）。</p>
+</section>
+
+<!-- ===== 6 甘特 ===== -->
+<section id="s6">
+  <h2><span class="n">6</span>里程碑与甘特</h2>
+  <div class="figure">
+    <div class="mermaid">
+gantt
+    title AI First 平台开发甘特（2026-08 起）
+    dateFormat YYYY-MM-DD
+    axisFormat %m/%d
+    section P0 地基
+    fork+剥离+Agent注册表     :p0a, 2026-08-03, 18d
+    tools一致性修复+CI         :p0b, 2026-08-14, 12d
+    冒烟：派Issue本机跑完      :milestone, m0, 2026-08-28, 0d
+    section P1 治理核心
+    crctl接入+cr投影同步       :p1a, 2026-08-31, 21d
+    Pipeline Runner            :p1b, 2026-09-14, 21d
+    签名审批+shell下沉         :p1c, 2026-09-28, 21d
+    里程碑：四条主pipeline跑通 :milestone, m1, 2026-10-26, 0d
+    section P2 协作体验
+    三模式聊天+Presenter       :p2a, 2026-10-26, 28d
+    A2A+IM渠道                 :p2b, 2026-11-16, 21d
+    恢复检查点三态回滚         :p2c, 2026-12-07, 14d
+    里程碑：团队日常协作       :milestone, m2, 2026-12-21, 0d
+    section P2.5 runner轻量档(并行)
+    池编排+短时凭据+计量       :p25, 2026-11-23, 21d
+    section P3 组织智能
+    成熟度看板+周报Autopilot   :p3a, 2026-12-21, 28d
+    追溯查询+漂移巡检          :p3b, 2027-01-11, 21d
+    场景工坊+交付效能(并行)    :p3c, 2027-01-04, 28d
+    里程碑：完整形态           :milestone, m3, 2027-02-01, 0d
+    section 贯穿
+    上游双周同步               :sync, 2026-08-03, 182d
+    </div>
+    <p class="cap">图 6-1　开发甘特（Mermaid）· P2.5 runner 轻量档并行不阻塞主线</p>
+  </div>
+  <table>
+    <tr><th>里程碑</th><th>时点</th><th>交付标志</th></tr>
+    <tr><td><strong>M0 地基就绪</strong></td><td>≈8/28（第 4 周）</td><td>能给一个 Agent 派 Issue 并在本机跑完；tools 9 Agent 注册；一致性 CI 通过</td></tr>
+    <tr><td><strong>M1 内部可用</strong></td><td>≈10/26（第 12 周）</td><td>一条需求走完 <code>/requirement→/architecture→/coding→/writeback</code>，产出完整 traceability；签名审批跑通</td></tr>
+    <tr><td><strong>M2 协作体验</strong></td><td>≈12/21（第 20 周）</td><td>三模式聊天 + Presenter + A2A + IM 渠道；团队日常在平台协作</td></tr>
+    <tr><td><strong>M3 完整形态</strong></td><td>≈次年 2/1（第 26 周）</td><td>成熟度看板 + 追溯查询 + 漂移检测 + runner 轻量档全上线</td></tr>
+  </table>
+</section>
+
+<!-- ===== 7 人力 ===== -->
+<section id="s7">
+  <h2><span class="n">7</span>人力配置</h2>
+  <table>
+    <tr><th>角色</th><th>人数</th><th>主要职责</th><th>关键阶段</th></tr>
+    <tr><td>技术负责人 / 架构师</td><td>1</td><td>fork 治理、权威边界把关、五方组装决策、上游同步评审</td><td>全程</td></tr>
+    <tr><td>Go 后端</td><td>2</td><td>Multica fork 改造、cr 投影同步 worker、gitguard、Pipeline Runner 宿主、签名审批 API</td><td>P0–P1 重</td></tr>
+    <tr><td>前端</td><td>2</td><td>Next.js Web、三模式聊天 UI、Presenter 状态机、看板、Electron 桌面端</td><td>P2–P3 重</td></tr>
+    <tr><td>全栈 / 方法论集成</td><td>1</td><td>tools 包集成、frontmatter 适配器、crctl 接入、Pipeline JSON 落地、一致性 CI</td><td>P0–P1 重</td></tr>
+    <tr><td>DevOps / 基础设施</td><td>1</td><td>自托管（Compose/Helm）、runner 轻量档池编排、短时凭据、CI/CD、上游镜像</td><td>P2.5 重</td></tr>
+    <tr><td>QA</td><td>1</td><td>端到端流程验证、门禁/回滚/越权测试、验收清单执行</td><td>P1 起</td></tr>
+    <tr><td>PM（兼）</td><td>0.5</td><td>需求节奏、用量观察（决定 runner 完整档时机）</td><td>全程</td></tr>
+  </table>
+  <p class="note">核心 6–8 人。峰值在 P1（后端 + 方法论集成）与 P2（前端）。runner 轻量档由 DevOps 主导、后端配合，与 P2 并行。</p>
+</section>
+
+<!-- ===== 8 风险 ===== -->
+<section id="s8">
+  <h2><span class="n">8</span>风险清单</h2>
+  <table>
+    <tr><th>风险</th><th>概率</th><th>影响</th><th>缓解</th></tr>
+    <tr><td>上游 Multica 大重构导致合并冲突激增</td><td>中</td><td>高</td><td>治理层做成新增文件/表而非改核心；双周同步及时消化；CUSTOM.md 台账；通用增强回馈 PR 减少分叉</td></tr>
+    <tr><td>权威 split-brain：git 与 PG 状态不一致</td><td>中</td><td>高</td><td>铁律"服务端永不写 CR 状态"；幂等键去重；reconcile 定时对账自愈；乱序事件标 needs_reconcile 不强写</td></tr>
+    <tr><td>tools 是 OpenCode 风格 + 8 项内部不一致</td><td>高</td><td>中</td><td>P0 先做 frontmatter 适配器 + 修复 8 项不一致 + 把 dir-graph 的 agents.contract 4 条不变式接进 CI</td></tr>
+    <tr><td>Pipeline 条件分支写在自然语言 prompt 里</td><td>高</td><td>中</td><td>Runner 侧支持显式 <code>when</code> 字段；pipeline JSON 逐步补写；过渡期交模型处理</td></tr>
+    <tr><td>非技术角色参与被本地执行削弱</td><td>高</td><td>中</td><td>runner 轻量档覆盖只读/文档场景（60–70%）；重度需求观察后再上完整档</td></tr>
+    <tr><td>runner 池组织 API Key 成本失控</td><td>中</td><td>中</td><td>轻量档只跑省 Token 的只读/文档 Agent；P3 配额与余量预警先行；用量分列监控</td></tr>
+    <tr><td>runner 池多用户越权（提示注入读到他人数据）</td><td>低</td><td>高</td><td>轻量档无代码执行/写权限，威胁面天然低；短时凭据不明文进容器；完整档才需真容器隔离</td></tr>
+    <tr><td>签名审批被绕过 / 弱化人在环</td><td>低</td><td>高</td><td>Ed25519 服务端签发不可伪造；gate 每次重算 evidence digest；RequireHumanActor 拒任务令牌</td></tr>
+    <tr><td>Claude API 版本漂移（模型/参数变更）</td><td>中</td><td>低</td><td>本机 CLI 路径平台不感知版本；服务端直连用 claude-api skill 核对；封装薄适配层</td></tr>
+    <tr><td>治理强度上限 = "证据的形状"（tools 诚实边界）</td><td>—</td><td>—</td><td>明示：crctl 只校验证据存在与形状不校验真伪；审批保证有人按键不保证认真看。产品文案不夸大</td></tr>
+  </table>
+</section>
+
+<!-- ===== 9 开发任务 ===== -->
+<section id="s9">
+  <h2><span class="n">9</span>详细开发任务（WBS）</h2>
+
+  <h3>P0 地基 · 3–4 周　<span class="pill p-must">必做</span></h3>
+  <div class="card">
+  <ol>
+    <li><strong>fork 与剥离</strong>：fork Multica → <code>custom/main</code>；建立 upstream 镜像与双周同步流程；剥离计费路由/云节点/多 workspace 注册（环境变量 <code>DISABLE_WORKSPACE_CREATION</code> + <code>ALLOWED_EMAIL_DOMAINS</code>）；<code>make selfhost</code> 内网跑通。</li>
+    <li><strong>Agent 注册表替换</strong>：写 frontmatter 适配器（<code>mode:primary/subagent</code> + <code>permission</code> → 目标格式；<code>{domain}/{skill-id}</code> 两级目录发现）；导入 tools 9 Agent + 59 Skill + project_resource。</li>
+    <li><strong>tools 一致性修复</strong>：修 8 项内部不一致（2 Agent 缺 name、CLAUDE.MD 读取顺序漏 matrix、knowledge-agent 陈旧路径、2 Agent owns 为空等）；把 <code>dir-graph.yaml#agents.contract</code> 4 条不变式写成 CI 校验。</li>
+    <li><strong>数据模型 P0 迁移</strong>：<code>issue</code>+<code>agent_task_queue</code> 两条 ALTER；5 张新表 CREATE（cr/cr_sync_event/approval_record/pipeline_run/pipeline_node_run）；过 Multica 迁移运行器（advisory lock）。</li>
+    <li><strong>Claude CLI 接入验证</strong>：确认 <code>pkg/agent/claude.go</code> 在本机拉起 <code>claude --output-format stream-json</code>；<code>ExecOptions</code> effort/会话恢复/MCP 映射通。</li>
+  </ol>
+  <p class="note"><strong>M0 验收</strong>：给一个 Agent 派 Issue，daemon 领取并在本机跑完；一致性 CI 绿。</p>
+  </div>
+
+  <h3>P1 治理核心 · 6–8 周　<span class="pill p-must">必做</span></h3>
+  <div class="card">
+  <ol>
+    <li><strong>crctl outbox</strong>：advance/approve/git push 三挂点原子写 <code>.crctl/outbox/*.json</code>；断网可积压、上线补传。</li>
+    <li><strong>daemon 采集 + worker</strong>：<code>POST /api/daemon/cr-events</code>（DaemonAuth 组）；双通道（outbox + <code>[cr]</code> commit 扫描）幂等合并；worker 更新 cr 投影 + issue.metadata + WS 推送；reconcile 定时对账。</li>
+    <li><strong>Pipeline Runner</strong>：线性 nodes + reviewLoop 回边 + 3 kind；<code>passCondition</code>（equals/isEmpty）解释器；prompt 自然语言条件提升为显式 <code>when</code>；持久化 pipeline_run/pipeline_node_run。</li>
+    <li><strong>签名审批</strong>：服务端 Ed25519 签发 grant（<code>evidence_digest</code>）；crctl 加 <code>--grant</code> 分支（:652）跳 TTY；gate（:453）+ validate（:783）扩展承认 <code>via:server-approve</code> + 每次重算 digest；RequireHumanActor 拒任务令牌。</li>
+    <li><strong>controlled-shell 下沉</strong>：抽 <code>rules.json</code>；Go <code>pkg/gitguard</code>（三元白名单移植）；execenv 四改（PATH shim、daemon 自身走 gitguard、per-task 物化 Claude Code hooks、<code>--disallowedTools Bash</code>）。</li>
+    <li><strong>AI 行为审计（v1.1，S5）</strong>：gitguard 拒绝事件上报 + 工具调用摘要持久化（详见 P1 设计 §C.5），依赖上一项，约 2–3 天。</li>
+  </ol>
+  <p class="note"><strong>M1 验收</strong>：一条需求走完四条主 pipeline 产出完整 traceability；无 TTY 环境 grant 审批走通；批后篡改证据触发 <code>EVIDENCE_DRIFT</code>；任务内 <code>git push --force</code> 报 <code>FORBIDDEN_SUBCOMMAND</code> 且 activity_log 出现越权计数行。</p>
+  </div>
+
+  <h3>P2 协作体验 · 6–8 周　<span class="pill p-opt">M2</span></h3>
+  <div class="card">
+  <ol>
+    <li><strong>三模式聊天 UI</strong>：以 i18n 字典为清单实现 Team Agent/Private Ask/Discussion tab；toolExecutionCard 消费 pkg/agent 六类 Message 流；输入区差异化能力；模型列表来自 daemon 上报 Runtime。</li>
+    <li><strong>Presenter 控制权</strong>：claim SQL 串行化键换 <code>project_id</code>；6 态通知（申请/批准/撤销/转让/释放）；Admin 空闲接管。</li>
+    <li><strong>门禁接合聊天</strong>：pipeline 任务在消息流渲染审批卡（服务端签名）+ blocker 列表 + reviewLoop attempt + CR 16 态徽标。</li>
+    <li><strong>A2A 跨项目</strong>：成员面板 Add Agent；<code>@agent</code> 派单；A2A 队列（50 槽 FIFO，与 Team Agent 共用语义）；A2A 记录面板。</li>
+    <li><strong>IM 渠道</strong>：Multica 飞书长连接 + Slack Socket Mode；OpenClaw 补 Telegram/Discord/企微/QQ/钉钉；1 Bot:1 Project 绑定。</li>
+    <li><strong>恢复检查点</strong>：三态回滚（worktree git 快照 + 消息树截断 + session 版本）；crctl CAS + 补偿事务语义为骨架。</li>
+    <li><strong>斜杠命令入口（v1.1，S4）</strong>：<code>/</code> 唤起命令面板（/需求 /评审摘要 /进度 /工作流），映射既有 Pipeline 触发与查询 API，补齐 Command 资源层（P2 设计 §6.1）。</li>
+    <li><strong>导出 Skill 草稿（v1.1，S2）</strong>：Team Agent 会话多选 → SKILL.md 草稿入私有技能库（P2 设计 §7），发布另走 P3 门禁。</li>
+  </ol>
+  <p class="note"><strong>M2 验收</strong>：团队在平台完成一轮真实协作（讨论→转执行→审批→归档）；三模式切换保留草稿；恢复检查点三态一致；斜杠命令触发 pipeline 走通。</p>
+  </div>
+
+  <h3>P2.5 runner 轻量档 · ≈3 周（与 P2 并行）　<span class="pill p-opt">并行</span></h3>
+  <div class="card">
+  <ol>
+    <li><strong>池编排</strong>：Claude Agent SDK 节点池；只注册只读/文档 Agent（customer-support/spec-query/planning-draft/DC/审批）；无代码执行、无预览。v1.1（S1）：spec-query 升级为 LLM Wiki 知识问答——wiki-first 三层检索、回答强制带出处、治理事实分流直查投影表、问答日志落 <code>wiki_query_log</code>（详见《Wiki子系统设计》§4）。</li>
+    <li><strong>短时凭据</strong>：组织 API Key 经代理注入或短时签发，不明文进节点；用量按用户归因上报（供看板分列）。</li>
+    <li><strong>配额</strong>：接 P3 配额与余量预警（≤10% 通知）；非技术用户入口引导。</li>
+  </ol>
+  <p class="note"><strong>验收</strong>：非技术用户经 Web/IM 用只读 Agent 提问/查 spec/审批跑通；用量分列可见。</p>
+  </div>
+
+  <h3>P3 组织智能 · 5–7 周（v1.1 含增补项，场景工坊可并行）　<span class="pill p-opt">M3</span></h3>
+  <div class="card">
+  <ol>
+    <li><strong>成熟度看板</strong>：<code>department</code> 表 + <code>maturity_snapshot</code> + <code>maturity-config.yaml</code>；五维十指标（AIF/SII/OFI/EPC/ACM，v1.1 SII 增资产复用率）全从既有表算；治理板块（门禁通过率/EVIDENCE_DRIFT/追溯完整率/审批时延/越权尝试次数）单列不进总分；<strong>交付效能板块</strong>（v1.1，S3：Lead Time / Review 负担 / 变更失败率）+ AI 净价值叙事条；个人排名默认关闭。</li>
+    <li><strong>周报 Autopilot</strong>：Org Admin Workspace 内置项目挂周 Autopilot，读 snapshot 序列生成诊断落 <code>docs/org-admin/</code>，看板渲染。v1.1：诊断模板按 AI 净价值四收益一成本框架组织；M3+3 个月出季度价值复盘。</li>
+    <li><strong>追溯查询 + 漂移</strong>：<code>spec_trace</code> 投影（加 trace 事件类型走 outbox 通道）；<code>review-alignment</code> 周巡检 + <code>change-impact-analysis</code> + <code>bypass-commit</code> 探测 → <code>drift_finding</code>。v1.1（S1）：加知识晋升巡检——wiki_query_log 聚类，同类问题 ≥3 次自动开「建议回写事实源」Issue。</li>
+    <li><strong>Skill Market</strong>：<code>skill</code> 加 visibility/version/owner_actor；<code>skill_usage_event</code> 排行；发布门禁（4 条不变式 + v1.1 资产元数据卡 4 必填字段：适用场景/依赖上下文/权限声明/失败处理）；「发布=授权」明示 + 敏感信息扫描；builtin 不可编辑。</li>
+    <li><strong>场景工坊（v1.1，S4）</strong>：需求工坊（PM）/ 质量中心（QA）/ 效能驾驶舱（=看板）三个 route 级角色化视图，同数据不同投影、读侧+入口、写操作跳既有交互；开发工坊=三模式聊天本身不重做。与看板前端并行，约 +2–3 周。</li>
+    <li><strong>代码 Wiki 维护（2026-07-30 增补，《Wiki子系统设计》W2/W3）</strong>：wiki-maintain Skill（init/update 双模式全纪律）+ Autopilot 挂载 + daemon no-op 门槛；写白名单 + 确定性三段式校验；知识晋升接入 open-questions 第二信号源。daemon 侧与 runner 侧可并行，约 +2 周。</li>
+  </ol>
+  <p class="note"><strong>M3 验收</strong>：连续 3 天快照；看板数量指标与质量护栏同屏；人为 PRD 改动不改 SDD → 周扫描出 alignment-drift；直接向 trunk 提交 → bypass-commit 进治理板块。v1.1 增补：他人使用 Skill 后资产复用率变化；缺元数据卡的 org 发布被拒；PM 在需求工坊一键达待审批；重复提问 3 次触发知识晋升 Issue。</p>
+  </div>
+</section>
+
+<!-- ===== 10 验收/不做 ===== -->
+<section id="s10">
+  <h2><span class="n">10</span>整体验收基线与明确不做清单</h2>
+  <div class="grid g2">
+    <div class="tile"><h4>✅ 交付验收基线</h4><p>① 内网自托管两命令起全栈；② 一条需求端到端走完四主 pipeline + 完整 traceability；③ 签名审批不可绕过、批后改证据即失效；④ Agent 拿不到裸 shell（gitguard 生效，越权尝试留痕计数）；⑤ CR 状态 git↔PG 投影一致、篡改自愈；⑥ 三模式协作 + Presenter 跑通（含斜杠命令入口）；⑦ 非技术用户经轻量档 runner 参与（含 LLM Wiki 带出处问答）；⑧ 成熟度看板 + 交付效能板块 + 漂移检测 + 场景工坊上线；⑨ <strong>价值复盘</strong>（v1.1，S3）：M3 上线满 3 个月，按个人效率 / 团队交付 / 知识复利 / 风险收益四类指标产出季度复盘——回答"平台值不值"，而不止"功能跑没跑通"。</p></div>
+    <div class="tile"><h4>⛔ 明确不做（防蔓延）</h4><p>① 云端沙箱 SaaS 与 Token 计费；② runner 完整档（代码执行/预览/部署）——观察后独立立项；③ 多组织与 External 跨组织可见性；④ 多供应商 Auto 模型路由（组织 Key 只 Claude）；⑤ TicNote 硬件联动；⑥ 指标实时化（日粒度足够）；⑦ Skill 付费/积分；⑧ 记忆系统具体实现（仅预留 MCP 端点）。</p></div>
+  </div>
+  <blockquote><strong>记忆系统预留：</strong>不选具体实现，只定 MCP 接口契约——通过 <code>ExecOptions.McpConfig</code> 注入端点（Claude Code / Agent SDK 原生消费 MCP，Multica 通道已存在）；约定写入/检索/反思三操作；<strong>钉死边界：记忆层只做非结构化召回，结构化事实一律留在 specs/traceability，记忆永不作为状态权威</strong>——否则 crctl 单一事实源设计作废。将来接 GBrain/Zep/Mem0 皆可，无需改 Claude 侧。
+  <br/><br/><strong>知识图谱同走此预留（v1.1，S1）：</strong>图谱定位为"关系索引与上下文装配"，与记忆共用 MCP 契约，追加两条安全条款——<strong>索引可删除、可重建</strong>（衍生数据：不备份、不跨用户共享、可从事实源全量重建）；AI 先查关系再读事实源原文，图谱内容本身不作为回答依据。文档与源码是事实源，图谱永远是索引。</blockquote>
+</section>
+
+<footer>
+  AI First 平台 · 完整技术方案 v1.1 · 编制 2026-07-28 · 修订 2026-07-29（吸收《AI-First 研发协同平台》理念对比的 S1–S6 改进）· 修订 2026-07-30（新增 §5.6 Wiki 子系统，借鉴 OpenWiki 方法论）<br/>
+  配套文档：《CodeBanana产品解析报告》《P0-数据模型映射表》《P1-crctl接入设计》《P2-三模式聊天交互设计》《P3-组织智能设计》《Wiki子系统设计》《Multica架构解析》《对比分析-AI-First研发协同理念与当前方案》。
+  本方案基于对 Multica 真实源码（396 迁移）、tools 包（9 Agent/59 Skill/8 Pipeline/crctl 1006 行）与 CodeBanana 产品快照（86 命名空间 i18n）的核对整合生成。
+  图表使用 Mermaid v11 + 手绘 SVG（Mermaid 需联网加载 CDN；离线打开则显示源码，SVG 架构图不受影响）。
+</footer>
+</main>
+</div>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({
+    startOnLoad:true, theme:"base",
+    themeVariables:{fontFamily:"Segoe UI, PingFang SC, Microsoft YaHei, sans-serif", fontSize:"13px",
+      primaryColor:"#eaf1fe", primaryBorderColor:"#2563eb", primaryTextColor:"#161c28",
+      lineColor:"#8b93a6", secondaryColor:"#fdf3d7", tertiaryColor:"#f6f7f9"},
+    flowchart:{curve:"basis", htmlLabels:true},
+    gantt:{barHeight:20, barGap:5, topPadding:38, leftPadding:150, fontSize:11, sectionFontSize:12, numberSectionStyles:5}
+  });
+</script>
+</body>
+</html>

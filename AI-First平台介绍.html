@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI-First 平台 · 产品介绍</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --card:#fff; --ink:#161c28; --soft:#48526a; --mute:#8b93a6;
+    --brand:#f5b301; --brand-d:#b07d00; --blue:#2563eb; --blue-s:#eaf1fe;
+    --grn:#0f9d58; --grn-s:#e8f5ee; --vio:#7c3aed; --vio-s:#f1eafe;
+    --rose:#dc2663; --rose-s:#fdeaf1; --teal:#0d9488; --teal-s:#e6f7f5;
+    --amber-s:#fdf3d7; --line:#e2e6ee; --code:#eef1f6;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:"Segoe UI","PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.72;font-size:15px}
+  .wrap{display:flex;max-width:1440px;margin:0 auto}
+  nav#toc{position:sticky;top:0;align-self:flex-start;width:250px;flex:0 0 250px;height:100vh;
+    overflow-y:auto;padding:24px 12px 48px 20px;border-right:1px solid var(--line);background:var(--card);font-size:13px}
+  nav#toc .t{font-weight:800;color:var(--mute);letter-spacing:.14em;font-size:10.5px;margin:14px 8px 6px}
+  nav#toc a{display:block;color:var(--soft);text-decoration:none;padding:4px 10px;border-radius:7px;margin:1px 0}
+  nav#toc a:hover{background:var(--blue-s);color:var(--blue)}
+  main{flex:1;min-width:0;padding:0 46px 100px}
+  header.hero{margin:0 -46px 0;padding:64px 52px 50px;background:linear-gradient(135deg,#10151f 0%,#1e2c46 55%,#2f4368 100%);color:#fff}
+  header.hero .k{display:inline-block;background:var(--brand);color:#231a00;font-weight:800;font-size:11.5px;letter-spacing:.16em;padding:4px 13px;border-radius:999px;margin-bottom:16px}
+  header.hero h1{margin:0 0 14px;font-size:38px;line-height:1.24;font-weight:800}
+  header.hero p{margin:0;max-width:860px;font-size:16px;color:#c4cfe2}
+  header.hero .formula{margin-top:24px;font-family:Georgia,serif;font-size:19px;color:#ffe9a8;background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:14px 20px;display:inline-block}
+  header.hero .meta{margin-top:22px;display:flex;flex-wrap:wrap;gap:9px;font-size:12px;color:#9fb0cc}
+  header.hero .meta span{border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:3px 12px}
+  section{margin-top:56px}
+  h2{font-size:26px;font-weight:800;margin:0 0 4px;padding-top:10px}
+  h2 .n{color:var(--brand-d);font-family:Georgia,serif;margin-right:10px}
+  h2::after{content:"";display:block;width:52px;height:4px;border-radius:2px;background:var(--brand);margin-top:9px}
+  h3{font-size:18.5px;font-weight:700;margin:32px 0 8px}
+  h4{font-size:14.5px;font-weight:700;margin:18px 0 6px;color:var(--soft)}
+  p.lead{color:var(--soft);max-width:920px;font-size:15.5px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:22px 26px;margin:16px 0;box-shadow:0 1px 2px rgba(20,30,60,.04)}
+  .grid{display:grid;gap:14px;margin:16px 0}
+  .g2{grid-template-columns:repeat(auto-fit,minmax(330px,1fr))}
+  .g3{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+  .g4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+  .tile{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:18px 20px}
+  .tile h4{margin:0 0 7px;font-size:14.5px;color:var(--ink)}
+  .tile p{margin:0;font-size:13.3px;color:var(--soft)}
+  .tile .ic{font-size:22px;display:block;margin-bottom:6px}
+  .badge{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:2px 10px;margin-right:5px}
+  .b-blue{background:var(--blue-s);color:var(--blue)} .b-grn{background:var(--grn-s);color:var(--grn)}
+  .b-vio{background:var(--vio-s);color:var(--vio)} .b-rose{background:var(--rose-s);color:var(--rose)}
+  .b-teal{background:var(--teal-s);color:var(--teal)} .b-amber{background:var(--amber-s);color:#a06b00}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border:1px solid var(--line);border-radius:11px;overflow:hidden;font-size:13.4px}
+  th{background:#eef1f6;text-align:left;padding:10px 14px;font-weight:700;white-space:nowrap}
+  td{padding:10px 14px;border-top:1px solid var(--line);color:var(--soft);vertical-align:top}
+  tr:nth-child(even) td{background:#fafbfd}
+  code{background:var(--code);border-radius:5px;padding:1px 6px;font-size:12.5px;font-family:Consolas,"JetBrains Mono",monospace;color:#33415c}
+  blockquote{margin:16px 0;padding:14px 20px;border-left:4px solid var(--brand);background:#fffdf3;border-radius:0 9px 9px 0;color:var(--soft);font-size:14.3px}
+  blockquote strong{color:var(--ink)}
+  ul,ol{padding-left:22px;color:var(--soft)} li{margin:4px 0} li strong{color:var(--ink)}
+  .figure{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:20px 18px 10px;margin:18px 0;overflow-x:auto;text-align:center}
+  .figure .cap{font-size:12px;color:var(--mute);margin:10px 0 6px;font-weight:600}
+  .mermaid{display:flex;justify-content:center;min-height:50px}
+  .kpi{display:flex;gap:14px;flex-wrap:wrap;margin:18px 0}
+  .kpi .k{flex:1;min-width:150px;background:linear-gradient(160deg,#fffceb,#fff);border:1px solid #f0e2b0;border-radius:13px;padding:16px 18px;text-align:center}
+  .kpi .k .v{font-size:25px;font-weight:800;color:var(--brand-d)}
+  .kpi .k .l{font-size:12px;color:var(--soft);margin-top:3px}
+  .step{display:flex;gap:14px;align-items:flex-start;margin:14px 0;padding:16px 18px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+  .step .no{flex:0 0 34px;height:34px;border-radius:50%;background:var(--vio-s);color:var(--vio);font-weight:800;
+    display:flex;align-items:center;justify-content:center;font-size:14px}
+  .step.done .no{background:var(--grn-s);color:var(--grn)}
+  .note{font-size:12.5px;color:var(--mute);margin-top:5px}
+  footer{margin-top:64px;padding-top:22px;border-top:1px solid var(--line);font-size:12px;color:var(--mute)}
+  @media(max-width:1040px){nav#toc{display:none}main{padding:0 20px 60px}header.hero{margin:0 -20px;padding:40px 22px}}
+  @media print{nav#toc{display:none}.card,.figure,.tile{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav id="toc">
+  <p class="t">目录</p>
+  <a href="#s0">为什么是现在</a>
+  <a href="#s1">超级个体 → 超级团队</a>
+  <a href="#s2">六大核心能力</a>
+  <a href="#s3">五层技术架构</a>
+  <a href="#s4">核心设计理念</a>
+  <a href="#sgoal">产品要实现的目标</a>
+  <a href="#s5">一个端到端例子</a>
+  <a href="#s6">AI 净价值与度量</a>
+  <a href="#s7">差异化定位</a>
+  <a href="#s9">结语：受控放大</a>
+</nav>
+<main>
+
+<header class="hero">
+  <span class="k">AI-FIRST 研发协同平台 · 产品介绍</span>
+  <h1>把"超级个体"的能力，稳定转化成"超级团队"的能力</h1>
+  <p>AI-First 平台不是又一个更好看的 AI 工作台，而是企业把个人 AI 效率转化为组织级、可信、可复用交付能力所需要的新基础设施——不做锦上添花的效率工具，而是 AI 进入正式研发交付后，团队必须补上的新基础设施—— 知识有主事实源，流程有状态机，Agent 有职责和权限，质量有门禁和证据，度量看结果不看热闹。</p>
+  <div class="formula">组织竞争力 = 人才密度 × AI 杠杆 ／ 组织摩擦</div>
+  <div class="meta">
+    <span>📅 2026-07-30</span>
+    <span>🏗 本地优先 · 隐私边界严格</span>
+    <span>📐 CR 16 态门禁 + 5 道质量门</span>
+    <span>🧠 Claude 内核 · 9 内置 Agent</span>
+    <span>📚 配套：PRD v1.2 · 完整技术方案 · P0–P3 设计 · Wiki 子系统设计</span>
+  </div>
+</header>
+
+<!-- ============ S0 ============ -->
+<section id="s0">
+  <h2><span class="n">01</span>为什么是现在：AI 放大的是系统，不是个人</h2>
+  <p class="lead">很多团队现在真正的问题，不是没有会用 AI 的人，而是<strong>团队里已经有人被 AI 放大了，但组织系统没有跟上</strong>。
+  AI 进来以后，代码、需求、原型、测试都变快了太多——但如果知识、流程、质量仍然靠人肉传递，
+  个人效率提升得越快，团队级损耗就越明显。这不是自然升级，而是把旧研发系统的短板放大了。</p>
+
+  <div class="figure">
+    <div class="mermaid">
+flowchart LR
+  subgraph OLD["传统研发：人肉传递，AI 放大混乱"]
+    direction TB
+    a1["需求：飞书 / Word / 群聊"] --> a2["设计：脑子里 / PPT"]
+    a2 --> a3["开发：各自 IDE"]
+    a3 --> a4["测试：Excel"]
+    a4 --> a5["发布：项目经理记忆"]
+    a1 -.->|"断点"| a2
+    a2 -.->|"断点"| a3
+    a3 -.->|"断点"| a4
+    a4 -.->|"断点"| a5
+  end
+  subgraph NEW["AI-First 平台：统一事实底座，AI 放大能力"]
+    direction TB
+    b1["需求进 CR"] --> b2["设计进 CR"]
+    b2 --> b3["开发进 CR"]
+    b3 --> b4["测试进 CR"]
+    b4 --> b5["发布回写事实源"]
+  end
+  OLD -.->|"AI 进入前的短板<br/>被 AI 速度放大"| NEW
+  style OLD fill:#fdeaf1,stroke:#dc2663
+  style NEW fill:#e8f5ee,stroke:#0f9d58
+    </div>
+    <p class="cap">图 0-1　断点是旧系统的病灶，AI 只是放大镜（Mermaid）</p>
+  </div>
+
+  <blockquote><strong>核心判断：</strong>AI-First 研发协同平台的重要性，不在于它能不能再做一个更好看的 AI 工作台，
+  而在于它能不能把"超级个体"的能力，<strong>稳定</strong>转化成"超级团队"的能力——把组织扩张公式从"更多的人"
+  改写为"人 × Agent"，超级个体提升分子（人才密度 × AI 杠杆），超级团队要解决分母（组织摩擦）。</blockquote>
+
+  <div class="kpi">
+    <div class="k"><div class="v">3–4×</div><div class="l">同类平台落地后的研发生产力提升参考区间</div></div>
+    <div class="k"><div class="v">人 × Agent</div><div class="l">组织扩张公式，取代"更多的人"</div></div>
+    <div class="k"><div class="v">受控放大</div><div class="l">超级团队的本质：AI 放大系统的能力，而非系统的混乱</div></div>
+  </div>
+</section>
+
+<!-- ============ S1 ============ -->
+<section id="s1">
+  <h2><span class="n">02</span>两条路径的交汇点：超级个体自下而上，超级团队自上而下</h2>
+  <p class="lead"><strong>超级个体不是全栈岗位，而是完整交付能力</strong>——能力边界不再由岗位定义，而是由目标、上下文和工具链定义。
+  一个后端工程师借助 Agent 可以完成从需求理解、影响面分析、方案设计、代码实现到测试补全、发布检查的完整闭环。
+  但超级个体只是起点：如果他的 Prompt、检查清单、失败经验只留在自己电脑里，团队不会真正进化。</p>
+
+  <h3>超级团队的六步构建法 —— 平台在哪一步接手</h3>
+  <div class="figure">
+    <div class="mermaid">
+flowchart TD
+  s1["① 先跑出超级个体样板<br/>个人用 AI 做完整任务闭环"] --> s2["② 个人经验沉淀为团队资产<br/>模板 · 清单 · Skill · AGENTS.md"]
+  s2 --> s3["③ 建设团队级事实底座<br/>PRD/SDD/接口契约/测试索引统一"]
+  s3 --> s4["④ 把 AI 嵌进研发流程<br/>需求/设计/编码/测试/发布各阶段触发"]
+  s4 --> s5["⑤ 建立质量·安全·责任门禁<br/>高风险变更强制门禁"]
+  s5 --> s6["⑥ 打造 AI First 统一工作平台<br/>把①-⑤全部串成一个系统"]
+  s3 -.->|"平台承载起点"| PLATFORM["AI-First 平台"]
+  s4 -.-> PLATFORM
+  s5 -.-> PLATFORM
+  s6 -.-> PLATFORM
+  style s1 fill:#eaf1fe,stroke:#2563eb
+  style s2 fill:#eaf1fe,stroke:#2563eb
+  style s3 fill:#fdf3d7,stroke:#c78a00,stroke-width:2px
+  style s4 fill:#fdf3d7,stroke:#c78a00,stroke-width:2px
+  style s5 fill:#fdf3d7,stroke:#c78a00,stroke-width:2px
+  style s6 fill:#e8f5ee,stroke:#0f9d58,stroke-width:2px
+  style PLATFORM fill:#f1eafe,stroke:#7c3aed,stroke-width:2px
+    </div>
+    <p class="cap">图 1-1　超级团队六步构建法，AI-First 平台从第③步开始承载并最终完成第⑥步（Mermaid）</p>
+  </div>
+
+  <div class="step"><div class="no">①②</div><div><strong>组织自己先跑通</strong>——超级个体样板与个人经验沉淀是团队的组织能力，平台不替代这一步，
+  但 Skill Market 与"导出为 Skill 草稿"（P2）为②提供承接口：一段打得漂亮的 Agent 会话可以直接沉淀为可复用资产。</div></div>
+  <div class="step done"><div class="no">③</div><div><strong>事实底座 —— 平台的地基</strong>：<code>specs/ delivery/ change-requests/ docs/</code> 目录契约 +
+  Git 权威 + traceability 五段链路，把"人和 AI 基于同一套事实工作"变成工程结构，而不是一句口号。</div></div>
+  <div class="step done"><div class="no">④</div><div><strong>流程嵌入 —— CR 16 态状态机</strong>：需求进入研发前触发需求评审，方案提交前触发设计评审，
+  代码完成后触发质量门，发布前触发审批——Agent 沿轨道推进，不靠人肉提醒。</div></div>
+  <div class="step done"><div class="no">⑤</div><div><strong>质量安全责任门禁 —— 5 道质量门 + 签名审批 + 受控工具</strong>：
+  高风险的 git 操作走白名单网关，审批由服务端 Ed25519 签名不可伪造，AI 行为留痕可审计。</div></div>
+  <div class="step done"><div class="no">⑥</div><div><strong>统一工作平台 —— 就是本平台本身</strong>：把①–⑤全部串成一个系统，
+  任务、事实底座、Agent、工具调用、权限、流程、质量门禁与过程记录汇聚在同一个"项目容器"里。</div></div>
+
+  <p class="note">管理者在这个过程中真正要做的四件事——定清边界（哪些事 Agent 做、哪些事人判断）、管好事实（可追溯）、
+  卡住质量和安全（门禁前移）、推动平台化——正好对应平台的四组能力：Agent 执行模式（Ask-only/Coding）、事实底座、质量门、组织智能看板。</p>
+</section>
+
+<!-- ============ S2 ============ -->
+<section id="s2">
+  <h2><span class="n">03</span>六大核心能力：平台如何逐一兑现</h2>
+  <p class="lead">一个 AI-First 研发协同平台至少要具备六类核心能力——本平台按此框架逐项对照实现，无一空缺。</p>
+
+  <table>
+    <tr><th>核心能力</th><th>要解决的问题</th><th>本平台的实现</th></tr>
+    <tr><td><strong>① 事实源能力</strong></td><td>PRD 在飞书、设计在 Word、接口约定在群聊——Agent 再强也只能靠猜</td>
+      <td>Git 权威事实源：<code>specs/</code>(PRD/SDD/traceability)、<code>delivery/</code>(任务/发布)、<code>change-requests/</code>(在途变更)、<code>docs/</code>(探索型知识)四目录契约</td></tr>
+    <tr><td><strong>② 超级个体协同层</strong></td><td>高手的工作过程只留在自己电脑里，团队不会真正进化</td>
+      <td>Skill Market（私有→组织→公共三级发布）+ 资产元数据卡（适用场景/依赖/权限/失败处理）+ 会话一键导出 Skill 草稿 + 资产复用率进成熟度看板</td></tr>
+    <tr><td><strong>③ 流程编排能力</strong></td><td>看板只有"待办/进行中/已完成"，AI 不知道什么时候能做什么</td>
+      <td>CR 16 态门禁状态机，每步有 trigger / gate / 产物 / 回写规则；8 条 Pipeline 承载常用流程</td></tr>
+    <tr><td><strong>④ Agent 工作单元能力</strong></td><td>Prompt 只是话术，容易失效；Agent 需要明确职责与工具权限</td>
+      <td>9 个角色化 Agent（规划/需求/开发/评审/交付/竞品/知识/客服 + 系统编排器）+ 每项目专属 Agent + A2A 跨项目协作</td></tr>
+    <tr><td><strong>⑤ 质量与安全护栏能力</strong></td><td>AI 写得更快，但没有证据链就没法进入企业级研发主链路</td>
+      <td>5 道质量门（文档/设计/测试证据/代码/规划）+ 签名审批（Ed25519，批后改证据即失效）+ 受控 git 白名单 + AI 行为审计</td></tr>
+    <tr><td><strong>⑥ 场景视图与度量能力</strong></td><td>不同角色看到的不该是同一组信息；不能只统计调用次数</td>
+      <td>场景工坊（需求工坊/质量中心/效能驾驶舱）+ AI 成熟度看板五维十指标 + 治理板块 + 交付效能板块</td></tr>
+  </table>
+
+  <blockquote><strong>一句话立场：</strong>这类平台的核心，不是"AI 能不能干活"，而是"AI 干活能不能被团队信任、复用、追溯和持续改进"。
+  常规 AI 工具看单次产出好不好，研发协同平台要看<strong>整条交付链有没有变好</strong>。</blockquote>
+</section>
+
+<!-- ============ S3 ============ -->
+<section id="s3">
+  <h2><span class="n">04</span>五层技术架构：桌面优先 · 事实源留在本地 · 薄服务</h2>
+  <p class="lead">面向企业研发、私有代码、数据安全要求较高的场景，本平台采用"本地执行、隐私优先"路线——
+  Agent 跑在用户自己机器的 daemon 上，平台只做编排、协作与治理，<strong>服务器永远看不到用户的模型凭据与源代码</strong>。</p>
+
+  <div class="figure">
+  <svg viewBox="0 0 1100 760" width="100%" style="max-width:1080px" font-family="Segoe UI,PingFang SC,Microsoft YaHei,sans-serif">
+    <defs>
+      <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b93a6"/></marker>
+      <linearGradient id="l1" x1="0" x2="1"><stop offset="0" stop-color="#2563eb"/><stop offset="1" stop-color="#5187f7"/></linearGradient>
+      <linearGradient id="l5" x1="0" x2="1"><stop offset="0" stop-color="#10151f"/><stop offset="1" stop-color="#2f4368"/></linearGradient>
+    </defs>
+    <rect x="18" y="14" width="1064" height="86" rx="13" fill="url(#l1)"/>
+    <text x="42" y="42" fill="#fff" font-size="16" font-weight="800">① 客户端接入层</text>
+    <text x="42" y="63" fill="#cfe0ff" font-size="11">同一账号 · 数据同步</text>
+    <g font-size="12" fill="#161c28">
+      <rect x="300" y="30" width="150" height="52" rx="9" fill="#fff"/><text x="375" y="52" text-anchor="middle" font-weight="700">Web 工作台</text><text x="375" y="69" text-anchor="middle" font-size="10.5" fill="#48526a">三模式聊天</text>
+      <rect x="462" y="30" width="150" height="52" rx="9" fill="#fff"/><text x="537" y="52" text-anchor="middle" font-weight="700">桌面端</text><text x="537" y="69" text-anchor="middle" font-size="10.5" fill="#48526a">本地自动化</text>
+      <rect x="624" y="30" width="150" height="52" rx="9" fill="#fff"/><text x="699" y="52" text-anchor="middle" font-weight="700">IM 渠道</text><text x="699" y="69" text-anchor="middle" font-size="10.5" fill="#48526a">飞书/Slack/企微…</text>
+      <rect x="786" y="30" width="150" height="52" rx="9" fill="#fff"/><text x="861" y="52" text-anchor="middle" font-weight="700">CLI / 斜杠命令</text><text x="861" y="69" text-anchor="middle" font-size="10.5" fill="#48526a">高频动作入口</text>
+    </g>
+    <line x1="550" y1="100" x2="550" y2="120" stroke="#8b93a6" stroke-width="2" marker-end="url(#ar)"/>
+
+    <rect x="18" y="124" width="1064" height="100" rx="13" fill="#eaf1fe" stroke="#2563eb" stroke-width="1.4"/>
+    <text x="42" y="152" fill="#1d4ed8" font-size="16" font-weight="800">② 协作层</text>
+    <text x="42" y="173" fill="#48526a" font-size="11">组织→项目→Issue/CR/TASK</text>
+    <g font-size="12">
+      <rect x="300" y="142" width="176" height="68" rx="9" fill="#fff" stroke="#bcd0f5"/><text x="388" y="166" text-anchor="middle" font-weight="700" fill="#161c28">Issue（统一入口）</text><text x="388" y="185" text-anchor="middle" font-size="10.5" fill="#48526a">看板/评论/@提及/CR壳</text>
+      <rect x="490" y="142" width="176" height="68" rx="9" fill="#fff" stroke="#bcd0f5"/><text x="578" y="166" text-anchor="middle" font-weight="700" fill="#161c28">CR（治理信封）</text><text x="578" y="185" text-anchor="middle" font-size="10.5" fill="#48526a">16 态门禁 · git 权威</text>
+      <rect x="680" y="142" width="176" height="68" rx="9" fill="#fff" stroke="#bcd0f5"/><text x="768" y="166" text-anchor="middle" font-weight="700" fill="#161c28">三模式群聊</text><text x="768" y="185" text-anchor="middle" font-size="10.5" fill="#48526a">Team Agent/Ask/Discussion</text>
+      <rect x="870" y="142" width="176" height="68" rx="9" fill="#fff" stroke="#bcd0f5"/><text x="958" y="166" text-anchor="middle" font-weight="700" fill="#161c28">组织 / 场景工坊</text><text x="958" y="185" text-anchor="middle" font-size="10.5" fill="#48526a">需求/质量/效能三视图</text>
+    </g>
+    <line x1="550" y1="224" x2="550" y2="244" stroke="#8b93a6" stroke-width="2" marker-end="url(#ar)"/>
+
+    <rect x="18" y="248" width="1064" height="86" rx="13" fill="#e6f7f5" stroke="#0d9488" stroke-width="1.4"/>
+    <text x="42" y="276" fill="#0f766e" font-size="16" font-weight="800">③ 治理层 + 知识层（差异化核心）</text>
+    <g font-size="11.5">
+      <rect x="270" y="264" width="150" height="56" rx="9" fill="#fff" stroke="#b5e3dd"/><text x="345" y="286" text-anchor="middle" font-weight="700" fill="#161c28">crctl 门禁引擎</text><text x="345" y="304" text-anchor="middle" font-size="10" fill="#48526a">状态权威 · 签名审批</text>
+      <rect x="432" y="264" width="150" height="56" rx="9" fill="#fff" stroke="#b5e3dd"/><text x="507" y="286" text-anchor="middle" font-weight="700" fill="#161c28">5 道质量门</text><text x="507" y="304" text-anchor="middle" font-size="10" fill="#48526a">证据链 · reviewLoop</text>
+      <rect x="594" y="264" width="150" height="56" rx="9" fill="#fff" stroke="#b5e3dd"/><text x="669" y="286" text-anchor="middle" font-weight="700" fill="#161c28">traceability</text><text x="669" y="304" text-anchor="middle" font-size="10" fill="#48526a">五段链路 · 漂移检测</text>
+      <rect x="756" y="264" width="150" height="56" rx="9" fill="#fff" stroke="#b5e3dd"/><text x="831" y="286" text-anchor="middle" font-weight="700" fill="#161c28">Wiki 子系统</text><text x="831" y="304" text-anchor="middle" font-size="10" fill="#48526a">维护·查询·知识晋升</text>
+      <rect x="918" y="264" width="150" height="56" rx="9" fill="#fff" stroke="#b5e3dd"/><text x="993" y="286" text-anchor="middle" font-weight="700" fill="#161c28">AI 行为审计</text><text x="993" y="304" text-anchor="middle" font-size="10" fill="#48526a">越权计数·工具摘要</text>
+    </g>
+    <line x1="550" y1="334" x2="550" y2="354" stroke="#8b93a6" stroke-width="2" marker-end="url(#ar)"/>
+
+    <rect x="18" y="358" width="1064" height="100" rx="13" fill="#f1eafe" stroke="#7c3aed" stroke-width="1.4"/>
+    <text x="42" y="386" fill="#6d28d9" font-size="16" font-weight="800">④ Agent 智能层</text>
+    <text x="42" y="407" fill="#48526a" font-size="11">9 个角色化 Agent + 项目/个人 Agent</text>
+    <g font-size="11.5">
+      <rect x="270" y="376" width="170" height="68" rx="9" fill="#fff" stroke="#d8c6f7"/><text x="355" y="398" text-anchor="middle" font-weight="700" fill="#161c28">项目 Agent（1:1）</text><text x="355" y="416" text-anchor="middle" font-size="10" fill="#48526a">Ask-only / Coding 双模式</text>
+      <rect x="452" y="376" width="170" height="68" rx="9" fill="#fff" stroke="#d8c6f7"/><text x="537" y="398" text-anchor="middle" font-weight="700" fill="#161c28">9 内置方法论 Agent</text><text x="537" y="416" text-anchor="middle" font-size="10" fill="#48526a">规划/需求/开发/评审…</text>
+      <rect x="634" y="376" width="170" height="68" rx="9" fill="#fff" stroke="#d8c6f7"/><text x="719" y="398" text-anchor="middle" font-weight="700" fill="#161c28">A2A + DC</text><text x="719" y="416" text-anchor="middle" font-size="10" fill="#48526a">跨项目协作 · 讨论协调</text>
+      <rect x="816" y="376" width="170" height="68" rx="9" fill="#fff" stroke="#d8c6f7"/><text x="901" y="398" text-anchor="middle" font-weight="700" fill="#161c28">Skill Market</text><text x="901" y="416" text-anchor="middle" font-size="10" fill="#48526a">资产元数据卡 · 排行</text>
+    </g>
+    <line x1="550" y1="458" x2="550" y2="478" stroke="#8b93a6" stroke-width="2" marker-end="url(#ar)"/>
+
+    <rect x="18" y="482" width="1064" height="150" rx="13" fill="url(#l5)"/>
+    <text x="42" y="510" fill="#fff" font-size="16" font-weight="800">⑤ 执行层</text>
+    <text x="42" y="531" fill="#9fb0cc" font-size="11">本地为主 · 池为辅</text>
+    <g font-size="12" fill="#161c28">
+      <rect x="270" y="498" width="330" height="118" rx="10" fill="#fff"/>
+      <text x="435" y="522" text-anchor="middle" font-weight="800" fill="#1d4ed8">A. 本机 daemon（主路径）</text>
+      <text x="435" y="543" text-anchor="middle" font-size="10.5" fill="#48526a">每人一套 · 隔离 worktree</text>
+      <text x="435" y="561" text-anchor="middle" font-size="10.5" fill="#48526a">controlled-shell git 白名单网关</text>
+      <text x="435" y="579" text-anchor="middle" font-size="10.5" fill="#48526a">本机 Claude Code CLI（自带认证）</text>
+      <text x="435" y="600" text-anchor="middle" font-size="10.5" fill="#0f9d58" font-weight="700">开发者流量 → 用户本人订阅</text>
+      <rect x="616" y="498" width="330" height="118" rx="10" fill="#fff"/>
+      <text x="781" y="522" text-anchor="middle" font-weight="800" fill="#0f766e">B. 共享 runner 池（轻量档）</text>
+      <text x="781" y="543" text-anchor="middle" font-size="10.5" fill="#48526a">只读/文档 Agent · LLM Wiki 问答</text>
+      <text x="781" y="561" text-anchor="middle" font-size="10.5" fill="#48526a">无代码执行、无预览，威胁面低</text>
+      <text x="781" y="579" text-anchor="middle" font-size="10.5" fill="#48526a">customer-support / spec-query / DC</text>
+      <text x="781" y="600" text-anchor="middle" font-size="10.5" fill="#dc2663" font-weight="700">平台侧流量 → 组织 API Key</text>
+    </g>
+  </svg>
+  <p class="cap">图 4-1　AI-First 平台五层架构：本地事实源 + 薄服务治理 + Agent 执行平面（SVG）</p>
+  </div>
+
+  <p><strong>业务事实尽量留在客户自己的 workspace，平台做工作台、编排、治理、Wiki 消费层和度量；AI 执行尽量靠近代码和文档现场，
+  而不是把所有上下文复制到一个远端黑盒里。</strong>这是本平台架构选择背后唯一的原则。</p>
+</section>
+
+<!-- ============ S4 ============ -->
+<section id="s4">
+  <h2><span class="n">05</span>核心设计理念</h2>
+  <p class="lead">AI-First 平台最容易被误解成"更聪明的工具集合"。但真正难的是把研发系统中那些过去靠人默契维持的东西，
+  变成 AI 能运行的工程结构——知识要有主事实源，流程要有状态机，Agent 要有职责和权限，质量要有门禁和证据，度量要看结果不看热闹。</p>
+
+  <h3>核心设计思想与理念</h3>
+
+  <div class="grid g2">
+    <div class="tile"><span class="ic">🤖</span><h4>AI 是队友，不是工具</h4><p>
+    每个项目自带一个与项目同名的专属 Agent，作为团队的一等成员参与代码生成、评审、执行与协作，而不是一个被动等待指令的问答框。
+     Agent 有自己的身份配置（Basic Info 七维：Agent/Soul/Identity/User/Memory/Teams/Tools）、有跨会话记忆、有明确的职责边界——
+    你不是"打开一个工具"，而是"叫醒一个团队成员"。</p></div>
+    <div class="tile"><span class="ic">💬</span><h4>沟通发生在执行发生的地方</h4><p>核心设计原则——讨论、AI 执行、代码环境必须共享同一个"项目容器"，
+    而不是分散在群聊、邮件、Jira 与 IDE 之间。三模式聊天（Team Agent 共享执行 / Private Ask 个人探索 / Discussion 人类讨论）物理分离又共享同一上下文；
+    Discussion 里的一段讨论可以被直接合并转发给 Team Agent 作为执行任务的上下文——沟通不需要先"翻译"成工单再排队，讨论本身就是任务的起点。</p></div>
+    <div class="tile"><span class="ic">🔒</span><h4>本地执行、隐私优先</h4><p>
+    Agent 运行在用户自己机器的 daemon 上，模型凭据、源代码、执行痕迹都不出内网；服务器只做编排、协作与治理，永远看不到用户的实际工作内容。
+    这不是性能优化，而是安全边界的第一性选择——用 AI 强控人、压缩个人隐私空间的路线，是本平台明确不走的路。</p></div>
+	
+    <div class="tile"><span class="ic">🧬</span><h4>多 Agent 智能编排</h4><p>Agent 智能编排提供的不只是"跑代码的 daemon"，而是一整套多 Agent 编排底座——
+    <code>pkg/agent</code> 后端抽象统一了 14 种 CLI 子进程包装（Claude Code/Codex 等）；<code>claim SQL</code> 的原子语义让同一 Agent 天然串行、
+    不同 Agent 天然并行，无需分布式锁；A2A 协议让一个项目的 Agent 可以被"借"到另一个项目执行任务，50 槽 FIFO 队列保证任务不丢不乱序；
+    Discussion Coordinator 只协调不执行，负责把人类讨论路由给合适的执行 Agent。这套编排能力是"Agent 作为自主队友"得以规模化的工程基础。</p></div>
+    <div class="tile"><span class="ic">📊</span><h4>度量而非监控</h4><p>AI 成熟度看板用来量化组织转型，但设计上刻意反 Goodhart——
+    数量指标（Token 强度、AI 渗透率）与质量护栏（门禁通过率、EVIDENCE_DRIFT）强制同屏呈现，个人排名默认关闭，只有部门聚合默认可见。
+    这不是一个盯着每个人敲了多少字的监控系统，而是一面镜子：告诉组织"AI 原生转型走到哪了"、"交付有没有真的变好"，
+    而不是把 Token 消耗这种行为数据异化为绩效竞赛的弹药。</p></div>
+  </div>
+
+  <h3>结构化设计：把默契变成工程结构的六个设计</h3>
+  <div class="grid g3">
+    <div class="tile"><span class="ic">📚</span><h4>可信知识底座</h4><p>三类知识分级——交付关键知识进 Git 强治理基线，过程态知识留在 CR 目录待稳定回写，
+    探索型知识（竞品/访谈/纪要）可被 Wiki 消费但不强制入基线。"Git 负责让事实可信，Wiki 负责让知识好用"。高频问答经知识晋升巡检回写事实源。</p></div>
+    <div class="tile"><span class="ic">🌱</span><h4>超级个体协同层-能力资产化</h4><p>过程记录（会话/执行记录可见）+ 资产沉淀（Skill Market）+ 复用授权（元数据卡：场景/依赖/权限/失败处理）
+    + 贡献度量（资产复用率进看板）：会话可导出 Skill 草稿、资产带元数据卡（场景/依赖/权限/失败处理）、复用进度量（SII 资产复用率）、发布=授权+敏感扫描——高手的工作方式可以被看见、复用、验证和扩散。</p></div>
+    <div class="tile"><span class="ic">🔀</span><h4>工程可追溯是第一性买点</h4><p>CR 16 态门禁 + 五道质量门 + traceability 五段链路 + 漂移检测。从 <code>drafting</code> 到 <code>archived</code>，
+    每步有 trigger、gate、产物、回写规则。人可以临场变通，Agent 需要明确轨道。</p></div>
+    <div class="tile"><span class="ic">🛠</span><h4>Agent · Skill · 受控工具</h4><p>Skill 沉淀稳定做法，Agent 承担角色化任务，MCP 连接外部工具，
+    Command（斜杠命令）把高频动作变成入口；git 操作走白名单受控工具，AI 能力越强，权限边界越要清楚。</p></div>
+    <div class="tile"><span class="ic">🛡</span><h4>质量门与度量系统</h4><p>五类质量门（文档/设计/代码/追溯/AI 行为）前移到流程节点上；
+    度量重建为 Lead Time、Review 负担、变更失败率、资产复用率，而不是只统计"用了多少次 AI"。</p></div>
+    <div class="tile"><span class="ic">🧭</span><h4>场景工坊</h4><p>产品、架构、开发、测试、管理者看到的不是同一组信息——
+    需求工坊、质量中心、效能驾驶舱按角色组织同一份数据的不同投影，AI 内嵌在工作场景里，而非工作之外再挂一个聊天入口。</p></div>
+  </div>
+
+  <blockquote><strong>关键纪律：</strong>AI First 不是给 Agent 无限自由，而是给它足够清晰的责任、上下文和护栏。
+  AI 能力越强，权限边界越要清楚——否则你会得到一个很能干、也很容易越界的同事。</blockquote>
+</section>
+
+<!-- ============ SGOAL ============ -->
+<section id="sgoal">
+  <h2><span class="n">06</span>产品要实现的目标</h2>
+  <p class="lead">七个层次的目标，每一个都配了可度量的成功标志——不是"我们希望团队更高效"这种无法验收的愿景，
+  而是能在系统里查得到的数字。</p>
+
+  <table>
+    <tr><th>层次</th><th>目标</th><th>可度量的成功标志</th></tr>
+    <tr><td><strong>协作</strong></td><td>团队在同一平台完成需求→设计→编码→回写→归档全流程，不再靠 IDE 各自为战</td><td>一条需求端到端跑完四条主 pipeline，产出完整 traceability</td></tr>
+    <tr><td><strong>治理</strong></td><td>AI 产出的代码有证据链、过质量门、可追溯、可回滚</td><td>门禁一次通过率可度量；绕过流程的直接提交（bypass-commit）可被检测</td></tr>
+    <tr><td><strong>包容</strong></td><td>非技术角色（PM/设计/QA/客服）无门槛参与</td><td>轻量档 runner 上线后，非技术用户可用只读/文档 Agent 提需求、查文档、审批、参与讨论</td></tr>
+    <tr><td><strong>智能</strong></td><td>Agent 作为自主队友执行任务，人类专注决策</td><td>Team Agent 单一写者 + 队列跑通；A2A 跨项目协作可用</td></tr>
+    <tr><td><strong>组织</strong></td><td>管理层能看到 AI 原生转型的量化进度<strong>与交付价值</strong></td><td>AI 成熟度看板五维十指标 + 治理板块 + 交付效能板块（Lead Time/Review 负担/变更失败率）上线，周报 Autopilot 按 AI 净价值框架产出诊断；M3 后 3 个月完成四类指标价值复盘</td></tr>
+    <tr><td><strong>知识</strong></td><td>个人经验沉淀为可复用组织资产；知识可被问答消费并回流事实源</td><td>资产复用率可度量；LLM Wiki 问答带出处；高频问答自动触发知识晋升 Issue</td></tr>
+    <tr><td><strong>自主</strong></td><td>平台可企业内网自托管，不依赖外部 SaaS</td><td>Docker Compose / Helm 两条命令内网起全栈</td></tr>
+  </table>
+
+  <p class="note">这七个目标合在一起回答的正是 §01 提出的问题：怎么把"人才密度 × AI 杠杆"的分子做大之余，把"组织摩擦"这个分母持续压低。</p>
+</section>
+
+<!-- ============ S5 ============ -->
+<section id="s5">
+  <h2><span class="n">07</span>一个端到端例子：一条需求如何流经平台</h2>
+  <div class="figure">
+    <div class="mermaid">
+sequenceDiagram
+  participant PM as PM（需求工坊）
+  participant CR as CR 状态机
+  participant DEV as dev-agent
+  participant REV as quality-reviewer-agent
+  participant GATE as 质量门 · 签名审批
+  participant GIT as Git 事实源
+  PM->>CR: 创建 CR，requirement-writer 澄清需求
+  CR->>GIT: prd.md 写入 · drafting → requirement-reviewing
+  GATE-->>CR: 需求质量门通过 → requirement-approved
+  CR->>DEV: 触发技术设计
+  DEV->>GIT: sdd.md 写入
+  GATE-->>CR: 设计质量门通过 → developing
+  DEV->>GIT: 拆任务 · 编码 · 补单测（受控 git 白名单）
+  DEV->>REV: 提交代码评审
+  REV->>GATE: 生成风险摘要 + review-annotations
+  GATE-->>CR: 代码质量门通过 → code-approved
+  CR->>GIT: 合并分支 · writing-back
+  GIT->>GIT: PRD/SDD/TASK/traceability 回写稳定基线
+  Note over GIT: 后续 Agent 默认读主事实源，<br/>不是一堆历史聊天记录
+    </div>
+    <p class="cap">图 6-1　需求到交付的端到端流程：每个节点都有事实、状态、权限、质量门和证据（Mermaid 时序图）</p>
+  </div>
+  <p class="lead">这就是 AI-First 平台真正要做的事：让 AI 参与每个节点，但每个节点都有事实、状态、权限、质量门和证据——
+  而不是让 AI 只在聊天窗口里生成一段听起来合理、实际踩了历史约束的代码。</p>
+</section>
+
+<!-- ============ S6 ============ -->
+<section id="s6">
+  <h2><span class="n">08</span>AI 净价值与度量：看结果，不看热闹</h2>
+  <p class="lead">判断一个 AI-First 平台有没有价值，不看它接了多少模型、做了多少 Agent、页面多炫，
+  而看它有没有<strong>持续降低组织损耗</strong>。度量框架：</p>
+
+  <div class="figure">
+    <div style="font-family:Georgia,serif;font-size:20px;color:var(--brand-d);padding:10px 0">
+      AI 净价值 = 时间收益 + 质量收益 + 知识收益 + 风险收益 − 模型与重跑成本
+    </div>
+    <p class="cap">管理口径框架，非精确财务核算——早期人工估算，后续由 Pipeline 执行数据、Agent 执行记录与质量门结果自动统计</p>
+  </div>
+
+  <table>
+    <tr><th>四类指标</th><th>关键问题</th><th>看板对应能力</th></tr>
+    <tr><td><strong>个人效率</strong></td><td>PRD / 方案起草时长有没有下降？代码理解与问题定位时间呢？</td><td>AI 成熟度看板 AIF/SII 维度</td></tr>
+    <tr><td><strong>团队交付</strong></td><td>Lead Time、Review 负担、变更失败率有没有改善？追溯链完不完整？</td><td>交付效能板块（Lead Time/Review 负担/变更失败率）</td></tr>
+    <tr><td><strong>知识复利</strong></td><td>可复用 Skill/Agent 数量有没有增加？有没有被他人复用？</td><td>SII 资产复用率 + Skill Market 排行</td></tr>
+    <tr><td><strong>风险收益</strong></td><td>质量风险有没有更早发现？越权、返工有没有减少？</td><td>治理板块（门禁通过率/EVIDENCE_DRIFT/越权尝试次数）</td></tr>
+  </table>
+
+  <p class="note">若这些问题没有改善，说明团队只是买了工具，或者多了几个超级个体；若持续改善，
+  AI-First 平台才算真正开始落地——这也是平台 M3 上线满 3 个月后的<strong>价值复盘</strong>验收项。</p>
+</section>
+
+<!-- ============ S7 ============ -->
+<section id="s7">
+  <h2><span class="n">09</span>差异化定位</h2>
+  <p class="lead">市面上"半个此类"的优秀产品各有所长，但对企业级大型软件研发团队而言仍显不足——本平台的定位是把这些能力
+  综合进一个面向<strong>产品、设计、研发、测试、发布、运维、管理者</strong>全员的正式交付系统。</p>
+  <table>
+    <tr><th>维度</th><th>Multica 类协作层</th><th>Devin 类自治工程师</th><th>本 AI-First 平台</th></tr>
+    <tr><td>核心定位</td><td>人和 Agent 共用的任务协作与调度平台</td><td>面向软件任务的自治 AI 工程师</td><td>企业研发协同系统的 AI First 重构</td></tr>
+    <tr><td>主要对象</td><td>多个编码 Agent、任务、issue、workspace</td><td>单个或多个软件工程任务</td><td>产品、设计、研发、测试、发布、运维、管理者</td></tr>
+    <tr><td>知识治理</td><td>偏任务和技能层</td><td>偏代码仓库与执行过程</td><td>主事实源 + Wiki 消费层 + 知识晋升回路</td></tr>
+    <tr><td>流程治理</td><td>issue 生命周期 + 任务队列</td><td>任务执行过程 + 人工接管</td><td>需求→设计→研发→测试→发布→复盘全流程状态机</td></tr>
+    <tr><td>质量治理</td><td>依赖任务状态与团队 Review</td><td>依赖测试、PR、人工验收</td><td>5 道质量门 + 证据链 + 签名审批 + AI 行为审计</td></tr>
+    <tr><td>更适合解决</td><td>多 Agent 如何像团队成员一样协同</td><td>单个工程任务交给 AI 异步完成</td><td>企业如何把个人 AI 效率变成稳定、可治理、可复用的团队交付能力</td></tr>
+  </table>
+</section>
+
+<!-- ============ S9 ============ -->
+<section id="s9">
+  <h2><span class="n">10</span>结语：超级团队的本质是受控放大</h2>
+  <p class="lead">AI 会放大已有系统。事实混乱，它放大混乱；流程松散，它放大松散；质量薄弱，它放大风险。
+  但如果团队有统一事实底座、AI First 工作平台、质量门禁和数据安全治理，AI 也会放大这些能力。</p>
+  <blockquote><strong>超级团队的本质：</strong>不是每个人都更快，而是整个团队在受控系统里更快、更稳、更可持续。
+  AI First 是执行方式的变化，不是责任主体的变化——AI 可以优先执行，系统必须完整留痕，但最终判断和结果责任仍然在人和组织这里。</blockquote>
+  <p>这正是本平台存在的理由：<strong>不做锦上添花的效率工具，而是 AI 进入正式研发交付后，团队必须补上的新基础设施</strong>——
+  知识有主事实源，流程有状态机，Agent 有职责和权限，质量有门禁和证据，度量看结果不看热闹。</p>
+</section>
+
+<footer>
+  AI-First 平台 · 产品介绍 · 2026-07-30<br/>
+  理念参考：《AI-First的研发协同平台：（一）整体设计与落地》《AI工程团队：超级个体与超级团队的打造方法总结》（欣逸AI）。
+  产品事实基于本项目<a href="docs/product/AI-First平台-PRD.md">《AI-First平台-PRD.md》</a>v1.2、<a href="docs/product/AI-First平台-完整技术方案.html">《AI-First平台-完整技术方案.html》</a>v1.1 与 <a href="docs/product/">P0–P3 / Wiki 子系统设计文档</a>。<br/>
+  图表使用 Mermaid v11 + 手绘 SVG（Mermaid 需联网加载 CDN；离线打开则显示源码，SVG 架构图不受影响）。
+</footer>
+
+</main>
+</div>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({
+    startOnLoad:true, theme:"base",
+    themeVariables:{fontFamily:"Segoe UI, PingFang SC, Microsoft YaHei, sans-serif", fontSize:"13px",
+      primaryColor:"#eaf1fe", primaryBorderColor:"#2563eb", primaryTextColor:"#161c28",
+      lineColor:"#8b93a6", secondaryColor:"#fdf3d7", tertiaryColor:"#f6f7f9"},
+    flowchart:{curve:"basis", htmlLabels:true},
+    sequence:{actorMargin:70, width:190},
+    gantt:{barHeight:20, barGap:5, topPadding:38, leftPadding:150, fontSize:11, sectionFontSize:12, numberSectionStyles:4}
+  });
+</script>
+</body>
+</html>
