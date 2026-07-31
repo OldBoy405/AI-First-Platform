@@ -5,7 +5,7 @@ cr-ref: CR-2026-002
 plan-ref: "change-requests/CR-2026-002/plan.md"
 sdd-ref: "change-requests/CR-2026-002/sdd.md"
 title: evidence-digest 统一（canonical 唯一实现）+ crctl approve --grant 验签
-status: pending
+status: done
 estimate: 12h
 depends-on: []
 assignee: ""
@@ -35,3 +35,14 @@ FR-7 tools 侧 + FR-4 crctl 侧：canonical digest 唯一函数（SDD §4.1，�
 
 ## 完成标志
 tools 测试全绿（含新增 ≥6 用例）+ 完成记录回填。
+
+## 完成记录（2026-07-31）
+
+- **提交**：tools@63f5f0c（custom/main，已推 origin）。测试 19/19（新增 5 个 test 块，覆盖 ≥8 个断言场景）。
+- **`canonicalEvidenceDigest()`**：唯一实现（AC-7⑤），TTY 写入 / --grant 验证 / gate 复核 / validate 复核四处调同一函数；含 normalizeEol（继承 M0 行尾坑）；任一证据缺失返回 null（无法计算 ≠ 漂移）。
+- **TTY approve**：改写统一字段 `evidence-digest`（canonical 覆盖 stage 全部证据文件），不再写 `evidence-sha256-16`。
+- **`approve --grant`**：非 TTY 放行链 = schema 校验 → decision 校验（reject 拒收并指路回退转移）→ cr/stage 匹配（GRANT_MISMATCH）→ 状态/passCondition/requireFiles（grant 不豁免 blocker）→ 本地重算 digest 比对（EVIDENCE_DRIFT）→ Ed25519 验签（SIGNATURE_INVALID/KEY_NOT_FOUND，公钥 `.crctl/keys/{key_id}.pub`）→ 写 server-approve 段（含 key-id/signature/grant-approved-at 存档以供 gate 重验签）→ 级联 advance + outbox 证据事件。
+- **gate/validate 两轨统一**：via 承认 crctl-approve 与 server-approve；`evidence-digest` 存在即重算比对（两轨都测）；server-approve 额外从存档字段重建 canonical 重验签（摘要漂移与签名有效性分开判断）；CI cr-guard 模板经 validate 自动获得远端复核能力。
+- **兼容性决策（偏离源方案一处，记录在案）**：源方案 §B.3 说旧字段"视为无摘要"；实现改为**保留旧字段的兼容复核**（单文件短哈希继续检测漂移）——M0 与本 CR 已有的 4 次审批不因此失去保护，"不报错不阻塞"的 AC-7② 语义不变。代码评审时可复核该取舍。
+- **共享测试向量**：`test/fixtures/digest-vectors/`（两文件 + expected.json，digest c28c5b93…）；tools 侧 conformance 测试证明 crctl 实现与向量一致，TASK-08 的 Go 实现必须过同一组向量。
+- **待 live 验证**：TTY 路径写 evidence-digest（AC-7①）在下一次真实审批（tech-design 之后的 code 阶段审批）自然发生。
