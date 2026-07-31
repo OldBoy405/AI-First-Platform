@@ -60,3 +60,53 @@ history:
         branch: requirement/CR-2026-002
         source-sha: 37cb17eeccbb1152ca017cc196807d9779fa2bf5
         merged-at: "2026-07-31T19:27:35+08:00"
+  - id: CR-2026-003
+    title: P1 治理核心修补 — embedded 事件幂等键碰撞 + 归档 CR 失去自愈能力
+    summary: >-
+      CR-2026-002 归档收尾核对时发现两个真缺陷：① cr_sync_event 幂等键
+      (cr_id, commit_sha, event_kind) 在 --embedded 模式下因 commit_sha 为空串而互相碰撞，
+      同一 CR 连续两次 embedded advance 时第二条 status 事件被 ON CONFLICT DO NOTHING 静默丢弃；
+      ② reconcile 只读 change-requests/_backlog.yml，而归档的 CR 已被移出 backlog 进 _history.yml，
+      导致 archived 状态的 CR 永久失去对账自愈能力（CR-2026-001/002 目前均卡在
+      status=writing-back / needs_reconcile=true，与真实 archived 状态不符）。本 CR 修复这两处并
+      收敛两条历史脏投影行。
+    owner: Ray
+    owners:
+      requirement:
+        id: Ray
+        assigned-at: "2026-07-31T20:20:07+08:00"
+      development:
+        id: Ray
+        assigned-at: "2026-07-31T20:20:07+08:00"
+      test:
+        id: Ray
+        assigned-at: "2026-07-31T20:20:07+08:00"
+    target-version: "0.11.1"
+    source: "CR-2026-002 归档收尾核对（change-requests/CR-2026-002/traceability.yml process-deviations 之外的新发现）"
+    prd-path: change-requests/CR-2026-003/prd.md
+    status: archived
+    final-status: archived
+    archive-reason: >-
+      P1 治理核心补丁交付完成回写归档：specs/ai-first-platform 累积基线升至 v0.2.1（PRD §8 / SDD §9
+      缺陷修补附记）+ delivery/task 3 项；双仓 merge（docs@42bec5f / multica@28e562c21）；AC-3 真机收敛
+      ——CR-2026-001（卡 12h）与 CR-2026-002（卡 1h）两条脏投影行在部署后首个对账周期（13:19:14 UTC）
+      自然收敛为 archived/false，全程只 SELECT；AC-1 真机终验——本 CR 自己 writeback 期两次独立
+      embedded advance（merging、writing-back）各产出互异 pending: 占位符事件，均落库处理无碰撞，
+      投影两步跟进，projected_commit 全程未见占位符污染，复现并证伪了 CR-2026-002 原故障序列。
+    writeback-spec-id: ai-first-platform
+    archived-at: "2026-07-31T22:00:30+08:00"
+    created: "2026-07-31T20:20:07+08:00"
+    updated-at: "2026-07-31T22:00:30+08:00"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 42bec5f
+        branch: requirement/CR-2026-003
+        source-sha: 604a8fe466e3925da94c595236af14c7df02753e
+        merged-at: "2026-07-31T21:47:00+08:00"
+      - repo: multica
+        trunk: main
+        sha: 28e562c21
+        branch: requirement/CR-2026-003
+        source-sha: 6bad142ec
+        merged-at: "2026-07-31T21:46:00+08:00"
