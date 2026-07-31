@@ -1,72 +1,195 @@
-# specs/ai-first-platform/traceability.yml — CR-2026-001 回写生成
+# specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 # 五段链路：需求 FR ↔ 技术设计 SDD ↔ 交付 TASK ↔ 代码 merge SHA ↔ CR-ID
 spec-id: ai-first-platform
-cr-ref: CR-2026-001
-target-version: "0.10"
-generated-at: "2026-07-31T01:28:39+08:00"
+cr-ref: CR-2026-002
+cr-history: [CR-2026-001, CR-2026-002]
+target-version: "0.11"
+baseline-since: "0.10"
+generated-at: "2026-07-31T19:40:00+08:00"
 
-merge-commits:
-  - repo: ai-first-platform-docs
-    trunk: master
-    sha: a065158
-    message: "merge(CR-2026-001): AI First 研发协同平台 M0 — knowledge-base worktree"
-  - repo: multica
-    trunk: main
-    sha: 0980f3bfc
-    message: "merge(CR-2026-001): AI First 研发协同平台 M0 — multica fork worktree"
+milestones:
 
-fr-chain:
-  - fr: FR-1
-    sdd: "SDD §6 selfhost-compose 行（§1.1 组件表）"
-    tasks: [CR-2026-001-TASK-01]
-    code: "multica@0980f3bfc: server/cmd/server/router.go（摘 2 处计费挂载）+ CUSTOM.md C1-C4"
-    evidence: "test-report §3 AC-1 三行"
-  - fr: FR-2
-    sdd: "SDD §2 数据模型映射表 + §4 适配器伪代码"
-    tasks: [CR-2026-001-TASK-02, CR-2026-001-TASK-03]
-    code: "multica@0980f3bfc: aifirst/agent-import.mjs"
-    evidence: "test-report §3 AC-2 行 + §2 适配器三次运行记录"
-  - fr: FR-3
-    sdd: "SDD §1.2 关键流程 + §4 issue-dispatch-smoke"
-    tasks: [CR-2026-001-TASK-04]
-    code: "无新增代码（验收动作）；附带根修 multica@0980f3bfc: server/pkg/agent/claude.go 宿主标记过滤"
-    evidence: "test-report §3 AC-3 行（TES-4/TES-5）"
-  - fr: FR-4
-    sdd: "SDD §5 选型表 tools-consistency-ci 行"
-    tasks: [CR-2026-001-TASK-05]
-    code: "tools@033a4a3: check-agents-contract.mjs + CI/pre-commit；tools@3297c12: 2 Agent 补 name"
-    evidence: "test-report §3 AC-4 行"
+  # M0 地基（v0.10 · CR-2026-001 · archived）
+  - cr: CR-2026-001
+    milestone: M0
+    target-version: "0.10"
+    status: archived
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: a065158
+        message: "merge(CR-2026-001): AI First 研发协同平台 M0 — knowledge-base worktree"
+      - repo: multica
+        trunk: main
+        sha: 0980f3bfc
+        message: "merge(CR-2026-001): AI First 研发协同平台 M0 — multica fork worktree"
 
-reviews:
-  requirement:
-    reviewer: ai-reviewer
-    verdict: pass
-    attempts: 2
-    final-reviewed-at: "2026-07-30T21:42:53+08:00"
-  sdd:
-    reviewer: ai-reviewer
-    verdict: pass
-    attempts: 2
-    final-reviewed-at: "2026-07-30T22:38:47+08:00"
-  code:
-    reviewer: ai-reviewer
-    verdict: pass
-    attempts: 1
-    final-reviewed-at: "2026-07-31T01:15:16+08:00"
+    fr-chain:
+      - fr: FR-1
+        sdd: "SDD §6 selfhost-compose 行（§1.1 组件表）"
+        tasks: [CR-2026-001-TASK-01]
+        code: "multica@0980f3bfc: server/cmd/server/router.go（摘 2 处计费挂载）+ CUSTOM.md C1-C4"
+        evidence: "test-report §3 AC-1 三行"
+      - fr: FR-2
+        sdd: "SDD §2 数据模型映射表 + §4 适配器伪代码"
+        tasks: [CR-2026-001-TASK-02, CR-2026-001-TASK-03]
+        code: "multica@0980f3bfc: aifirst/agent-import.mjs"
+        evidence: "test-report §3 AC-2 行 + §2 适配器三次运行记录"
+      - fr: FR-3
+        sdd: "SDD §1.2 关键流程 + §4 issue-dispatch-smoke"
+        tasks: [CR-2026-001-TASK-04]
+        code: "无新增代码（验收动作）；附带根修 multica@0980f3bfc: server/pkg/agent/claude.go 宿主标记过滤"
+        evidence: "test-report §3 AC-3 行（TES-4/TES-5）"
+      - fr: FR-4
+        sdd: "SDD §5 选型表 tools-consistency-ci 行"
+        tasks: [CR-2026-001-TASK-05]
+        code: "tools@033a4a3: check-agents-contract.mjs + CI/pre-commit；tools@3297c12: 2 Agent 补 name"
+        evidence: "test-report §3 AC-4 行"
 
-tests:
-  report: "CR 过程报告见 change-requests/CR-2026-001/test-report.md（归档后保留）"
-  status: pass
-  tester: Ray
-  generated-at: "2026-07-31T01:12:32+08:00"
+    reviews:
+      requirement:
+        reviewer: ai-reviewer
+        verdict: pass
+        attempts: 2
+        final-reviewed-at: "2026-07-30T21:42:53+08:00"
+      sdd:
+        reviewer: ai-reviewer
+        verdict: pass
+        attempts: 2
+        final-reviewed-at: "2026-07-30T22:38:47+08:00"
+      code:
+        reviewer: ai-reviewer
+        verdict: pass
+        attempts: 1
+        final-reviewed-at: "2026-07-31T01:15:16+08:00"
 
-approvals:
-  requirement: { approver: OldBoy405, via: crctl-approve }
-  tech-design: { approver: OldBoy405, via: crctl-approve }
-  development-start: { approver: OldBoy405, via: crctl-approve, approved-at: "2026-07-30T22:52:00+08:00" }
-  code: { approver: OldBoy405, via: crctl-approve, approved-at: "2026-07-31T01:21:21+08:00", evidence-sha256-16: "8a8a76a5333875f5" }
+    tests:
+      report: "CR 过程报告见 change-requests/CR-2026-001/test-report.md（归档后保留）"
+      status: pass
+      tester: Ray
+      generated-at: "2026-07-31T01:12:32+08:00"
 
-deferred:
-  - "AC-1③ 字面场景（第二个 workspace 被拒）留待首次生产锁定时补验（test-report §5-1）"
-  - "上游 3 个 Traecli/Qoder 测试失败基线（multica CUSTOM.md 台账）"
-  - "候选上游回馈 PR：claude.go 宿主标记过滤（CUSTOM.md 代码改动 #2）+ crctl 证据哈希行尾规范化（tools@5a52cd4）"
+    approvals:
+      requirement: { approver: OldBoy405, via: crctl-approve }
+      tech-design: { approver: OldBoy405, via: crctl-approve }
+      development-start: { approver: OldBoy405, via: crctl-approve, approved-at: "2026-07-30T22:52:00+08:00" }
+      code: { approver: OldBoy405, via: crctl-approve, approved-at: "2026-07-31T01:21:21+08:00", evidence-sha256-16: "8a8a76a5333875f5" }
+
+    deferred:
+      - "AC-1③ 字面场景（第二个 workspace 被拒）留待首次生产锁定时补验（test-report §5-1）"
+      - "上游 3 个 Traecli/Qoder 测试失败基线（multica CUSTOM.md 台账）"
+      - "候选上游回馈 PR：claude.go 宿主标记过滤（CUSTOM.md 代码改动 #2）+ crctl 证据哈希行尾规范化（tools@5a52cd4）"
+
+  # P1 治理核心（v0.11 · CR-2026-002）
+  - cr: CR-2026-002
+    milestone: P1
+    target-version: "0.11"
+    status: writing-back
+    owners:
+      requirement: { id: Ray, assigned-at: "2026-07-31T07:17:01+08:00" }
+      development: { id: Ray, assigned-at: "2026-07-31T07:17:01+08:00" }
+      test:        { id: Ray, assigned-at: "2026-07-31T07:17:01+08:00" }
+    prd:
+      file: specs/ai-first-platform/PRD.md
+      section: "P1 — 治理核心：crctl 接入（v0.11 · CR-2026-002）"
+      cr-source: change-requests/CR-2026-002/prd.md
+      revision: "0.1.1"
+    sdd:
+      file: specs/ai-first-platform/SDD.md
+      section: "P1 — 治理核心技术设计（v0.11 · CR-2026-002）"
+      cr-source: change-requests/CR-2026-002/sdd.md
+      revision: "0.1.2"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: b495c1a79a18823c362a8a61e16e3c25c2da1157
+        branch: requirement/CR-2026-002
+        source-sha: 83f5b0243b8d1378625fee2b7e6d967386d1ef69
+        merged-at: "2026-07-31T19:27:40+08:00"
+      - repo: multica
+        trunk: main
+        sha: 8a3f513492c60742484ceb476e78c4b643248c36
+        branch: requirement/CR-2026-002
+        source-sha: 37cb17eeccbb1152ca017cc196807d9779fa2bf5
+        merged-at: "2026-07-31T19:27:35+08:00"
+    fr-chain:
+      - fr: FR-1
+        title: crctl outbox 事件通道（D1）
+        sdd: "SDD P1 组件 C1 + 事件写入流程"
+        tasks: [CR-2026-002-TASK-02]
+        code: "tools@1333226 + tools@63f5f0c: crctl.mjs（emitOutboxEvent / canonicalEvidenceDigest）"
+        evidence: "test-report 验证矩阵 crctl JS 20/20；TASK-11 AC-1 真机 43 条积压补传"
+      - fr: FR-2
+        title: daemon 采集与服务端投影（D2）
+        sdd: "SDD P1 组件 C2/C5 + 双通道合并与投影流程"
+        tasks: [CR-2026-002-TASK-04, CR-2026-002-TASK-05, CR-2026-002-TASK-06]
+        code: "multica@8a3f513: internal/daemon/crevents.go + internal/governance/{crsync,transitions_gen}.go + migrations/158"
+        evidence: "governance 集成测试 6 项 + daemon 采集 5 项；TASK-11 AC-2 真机投影"
+      - fr: FR-3
+        title: reconcile 对账（D3）
+        sdd: "SDD P1 组件 C7 + 对账双模式"
+        tasks: [CR-2026-002-TASK-07]
+        code: "multica@8a3f513: internal/governance/{reconcile,reconcile_github}.go + cmd/server/main.go（sys_cron 注册）"
+        evidence: "TestReconcileLiveGitHub 对真实 origin；TASK-11 AC-3 双模式真机自愈（server 75s / daemon 8s）"
+      - fr: FR-4
+        title: 签名审批（D4）
+        sdd: "SDD P1 组件 C3/C6 + grant canonical 契约"
+        tasks: [CR-2026-002-TASK-03, CR-2026-002-TASK-08]
+        code: "multica@8a3f513: internal/governance/approval.go + crevents.go（grant 投递）；tools@63f5f0c + tools@7e91626: crctl approve --grant"
+        evidence: "跨工具接缝测试（Go 签发 → 真 crctl 验签）；TASK-11 AC-4 全链真机；生产首条 approval_record"
+      - fr: FR-5
+        title: controlled-shell 白名单下沉（D5）
+        sdd: "SDD P1 组件 C4/C8/C9 + 五层防线"
+        tasks: [CR-2026-002-TASK-01, CR-2026-002-TASK-09]
+        code: "tools@af7c2ec + tools@4907539: rules.json 单一事实源（RE2 兼容修复）；multica@8a3f513: pkg/gitguard + execenv/crguard_config.go + cmd/multica/cmd_gitguard.go"
+        evidence: "gitguard 6 项含 RE2 conformance 锁；TASK-11 AC-5①②③ 真机三连拒"
+      - fr: FR-6
+        title: AI 行为审计（D6）
+        sdd: "SDD P1 组件 C10 + 零新增探针原则"
+        tasks: [CR-2026-002-TASK-10]
+        code: "multica@8a3f513: internal/governance/{audit,toolcalls}.go + pkg/gitguard/spool.go + internal/handler/daemon.go（CompleteTask 聚合）"
+        evidence: "TASK-11 AC-6① activity_log 两行 gitguard_denied（无参数正文）；AC-6②③ 真库端点测试"
+      - fr: FR-7
+        title: EVIDENCE_DRIFT 两轨统一与留证（D7）
+        sdd: "SDD P1 canonical 单实现 + 漂移留证"
+        tasks: [CR-2026-002-TASK-03, CR-2026-002-TASK-10]
+        code: "tools@63f5f0c + tools@364ee90: canonicalEvidenceDigest 单实现 + emitDriftAudit；multica@8a3f513: governance/audit.go"
+        evidence: "共享摘要向量跨语言锁定；TASK-11 AC-7③ 真仓篡改 → gate 检出 → activity_log evidence_drift 行"
+    tasks:
+      total: 11
+      all-done: true
+      index: delivery/task/_index.yaml
+      files: "delivery/task/TASK-0.11-CR-2026-002-01..11-*.md"
+    reviews:
+      requirement: { reviewer: ai-reviewer, verdict: pass, attempts: 2, final-reviewed-at: "2026-07-31T08:57:30+08:00", file: change-requests/CR-2026-002/review-annotations/requirement.yml }
+      sdd:         { reviewer: ai-reviewer, verdict: pass, attempts: 2, final-reviewed-at: "2026-07-31T09:20:30+08:00", file: change-requests/CR-2026-002/review-annotations/sdd.yml }
+      code:        { reviewer: ai-reviewer, verdict: pass, attempts: 1, final-reviewed-at: "2026-07-31T18:32:00+08:00", file: change-requests/CR-2026-002/review-annotations/code.yml, suggestions: 3 }
+    tests:
+      report: change-requests/CR-2026-002/test-report.md
+      status: pass
+      tester: Ray
+      generated-at: "2026-07-31T18:10:37+08:00"
+      commands: { lint: pass, test: pass, build: pass }
+      uncovered-risks:
+        - "AC-5 组合面（首次生产任务派发时观察确认）"
+        - "server 对账不自举空投影（设计约束；部署顺序口径见 multica CUSTOM.md #10）"
+        - "上游测试失败基线 40 项（A/B 核实非本 fork 引入）"
+        - "PAT 单仓范围外部不可证实（两仓均 public，增量风险为零）"
+    approvals:
+      requirement:       { approver: OldBoy405, via: crctl-approve, approved-at: "2026-07-31T08:58:42+08:00" }
+      tech-design:       { approver: OldBoy405, via: crctl-approve, approved-at: "2026-07-31T09:29:33+08:00" }
+      development-start: { approver: OldBoy405, via: crctl-approve, approved-at: "2026-07-31T09:40:06+08:00" }
+      code:
+        approver: "c924ed99-f03a-4ba3-9fd8-6d5167f4a2b5"
+        via: server-approve
+        approved-at: "2026-07-31T19:19:50+08:00"
+        key-id: aifirst-approval-2026-07
+        evidence-digest: "2c3bcca0324634a791613279ea01fa84b8f1c7d32961d56e07b7c4db0257651d"
+        note: "本平台首条 Ed25519 签名审批（无 TTY 全链：API 签发 → daemon 投递 → crctl 验签 → 级联推进）"
+    notes-on-record:
+      - "审批签名密钥 fail-closed 语义与公钥落点：见 change-requests/CR-2026-002/traceability.yml NOTE-T08-1"
+      - "审批人角色策略当前边界＝workspace 成员 + 人类身份；收紧待 owners 与平台用户体系打通：NOTE-T08-2"
+      - "实现期对设计的四处偏差（审计通道 / 摘要落点 / daemon 对账实现 / workspace 绑定）见 SDD 基线变更记录"
+    process-deviations:
+      - "merge 期状态推进曾手改 _backlog.yml 而非 crctl advance --embedded，造成投影漂移，由 T07 reconcile 安全网自愈；writeback 期已改用 --embedded"
+      - "PRD/SDD 回写采用累积式合并而非 Skill 字面 cp 覆盖，避免 M0 基线内容丢失；历次基线原文备份在 change-requests/{CR-ID}/writeback-backups/"

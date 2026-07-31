@@ -29,3 +29,80 @@ tasks:
     status: done
     cr-ref: CR-2026-001
     target-version: "0.10"
+  - id: CR-2026-002-TASK-01
+    file: TASK-0.11-CR-2026-002-01-rules-json-single-source-hooks.md
+    title: rules.json 白名单单一事实源抽取（crctl/hooks 改读）
+    status: done
+    cr-ref: CR-2026-002
+    target-version: "0.11"
+    estimate: 8h
+  - id: CR-2026-002-TASK-02
+    file: TASK-0.11-CR-2026-002-02-crctl-outbox-canonical-digest.md
+    title: crctl outbox 事件通道（advance/approve/push 三挂点）
+    status: done
+    cr-ref: CR-2026-002
+    target-version: "0.11"
+    estimate: 8h
+  - id: CR-2026-002-TASK-03
+    file: TASK-0.11-CR-2026-002-03-crctl-grant-approve-two-track-drift.md
+    title: evidence-digest 统一（canonical 唯一实现）+ crctl approve --grant 验签
+    status: done
+    cr-ref: CR-2026-002
+    target-version: "0.11"
+    estimate: 12h
+  - id: CR-2026-002-TASK-04
+    file: TASK-0.11-CR-2026-002-04-migrations-158-governance-transitions.md
+    title: migrations（cr / cr_sync_event / approval_record）+ transitions_gen.go 入库
+    status: done
+    cr-ref: CR-2026-002
+    target-version: "0.11"
+    estimate: 8h
+  - id: CR-2026-002-TASK-05
+    file: TASK-0.11-CR-2026-002-05-crsync-projection-worker.md
+    title: 服务端投影 worker（governance/crsync.go）+ POST /api/daemon/cr-events + WS 广播
+    status: done
+    cr-ref: CR-2026-002
+    target-version: "0.11"
+    estimate: 16h
+  - id: CR-2026-002-TASK-06
+    file: TASK-0.11-CR-2026-002-06-daemon-crevents-collector.md
+    title: daemon CR 事件收集器（crevents.go：outbox 扫描 + commit 兜底 + 上报）
+    status: done
+    cr-ref: CR-2026-002
+    target-version: "0.11"
+    estimate: 12h
+  - id: CR-2026-002-TASK-07
+    file: TASK-0.11-CR-2026-002-07-reconcile-dual-mode.md
+    title: reconcile 对账（server/daemon 双模式）
+    status: done
+    cr-ref: CR-2026-002
+    target-version: "0.11"
+    estimate: 8h
+  - id: CR-2026-002-TASK-08
+    file: TASK-0.11-CR-2026-002-08-ed25519-signed-approval-service.md
+    title: 签名审批服务端（approval.go + grant 签发 API + 私钥方案 + daemon 下发）
+    status: done
+    cr-ref: CR-2026-002
+    target-version: "0.11"
+    estimate: 16h
+  - id: CR-2026-002-TASK-09
+    file: TASK-0.11-CR-2026-002-09-pkg-gitguard-execenv-forging.md
+    title: pkg/gitguard + execenv 四处改造（PATH shim / 自守 / 上下文注入 / hooks 物化）
+    status: done
+    cr-ref: CR-2026-002
+    target-version: "0.11"
+    estimate: 16h
+  - id: CR-2026-002-TASK-10
+    file: TASK-0.11-CR-2026-002-10-ai-behavior-audit-activity-log.md
+    title: AI 行为审计 + EVIDENCE_DRIFT 留证（activity_log 双 action）
+    status: done
+    cr-ref: CR-2026-002
+    target-version: "0.11"
+    estimate: 8h
+  - id: CR-2026-002-TASK-11
+    file: TASK-0.11-CR-2026-002-11-end-to-end-acceptance-ac1-7.md
+    title: 端到端验收串联（AC-1..7 冒烟 + 证据记录）
+    status: done
+    cr-ref: CR-2026-002
+    target-version: "0.11"
+    estimate: 8h
