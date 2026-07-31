@@ -1,4 +1,26 @@
 cr-id: CR-2026-002
+notes-on-record:
+  - id: NOTE-T08-1
+    topic: 审批签名密钥的 fail-closed 语义（部署必读）
+    content: >-
+      APPROVAL_SIGNING_KEY 未配置 = 审批端点整体不挂载（自托管无签名审批照常启动，
+      审批走 crctl TTY 路径）；配置但无效（解析失败/非 Ed25519/冒烟验签不过）= 服务端
+      拒绝启动（fail-closed，宁停不带病签发）；任何日志只输出 key_id，不输出密钥材料。
+      配套：APPROVAL_SIGNING_KEY_ID 必须成对设置；公钥（PublicKeyPEM 输出）提交进
+      knowledge-base 仓 .crctl/keys/{key_id}.pub。
+    recorded-at: "2026-07-31"
+    source: "TASK-08 完成记录 / multica CUSTOM.md #7 / P1 设计 §B.5"
+  - id: NOTE-T08-2
+    topic: 审批人角色策略的当前边界（待收紧项）
+    content: >-
+      当前策略 = workspace 成员（RequireWorkspaceMemberFromURL）+ 人类身份
+      （task_token 一律 403）。源方案"审批人 ∈ cr.owners 对应角色"未实现：
+      cr.owners 存的是外部负责人名字（如 Ray），与平台 user 表无映射关系，
+      强行按名字匹配是伪安全。源方案 §B.1 本就标注"策略可配"。收紧前置条件：
+      owners 与平台用户体系打通（联营映射或邀请绑定），届时在
+      governance/approval.go 的 HandleApprove 收紧并补对应 403 用例。
+    recorded-at: "2026-07-31"
+    source: "TASK-08 完成记录 / P1 设计 §B.1"
 reviews:
   tech-design:
     reviewer: ai-reviewer
