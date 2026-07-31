@@ -1,0 +1,60 @@
+cr-id: CR-2026-003
+tests:
+  report: change-requests/CR-2026-003/test-report.md
+  status: pass
+  owner: Ray
+  owner-assigned-at: "2026-07-31T20:20:07+08:00"
+  generated-at: "2026-07-31T21:27:16+08:00"
+  repair-target: implement-code
+  review-loop:
+    current-attempt: 0
+    max-attempts: 3
+    attempts:
+      - attempt: 0
+        generated-at: "2026-07-31T21:27:16+08:00"
+        result: pass
+        blocker-count: 0
+        repair-target: implement-code
+  commands:
+    - name: lint
+      result: pass
+    - name: test
+      result: pass
+    - name: build
+      result: pass
+reviews:
+  tech-design:
+    reviewer: ai-reviewer
+    verdict: pass
+    reviewed-at: "2026-07-31T21:05:00+08:00"
+    blocker-count: 0
+    fr-coverage: "2/2"
+    review-loop:
+      current-attempt: 1
+      max-attempts: 3
+      attempts:
+        - attempt: 0
+          reviewed-at: "2026-07-31T20:55:00+08:00"
+          result: block
+          blocker-count: 1
+          repair-target: write-tech-design
+          note: "SDD-BLOCK-001: 占位符会污染 cr.projected_commit，缺服务端防护"
+        - attempt: 1
+          reviewed-at: "2026-07-31T21:05:00+08:00"
+          result: pass
+          blocker-count: 0
+          note: "SDD v0.1.1 修复核验通过（pendingShaPrefix 服务端半边 + §2 断言如实化）"
+  requirement:
+    reviewer: ai-reviewer
+    verdict: pass
+    reviewed-at: "2026-07-31T20:35:00+08:00"
+    blocker-count: 0
+    review-loop:
+      current-attempt: 0
+      max-attempts: 3
+      attempts:
+        - attempt: 0
+          reviewed-at: "2026-07-31T20:35:00+08:00"
+          result: pass
+          blocker-count: 0
+          repair-target: write-requirement-prd
