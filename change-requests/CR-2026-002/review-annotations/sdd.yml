@@ -1,0 +1,45 @@
+cr-id: CR-2026-002
+review-type: tech-design
+reviewer: ai-reviewer
+reviewed-at: "2026-07-31T09:12:00+08:00"
+verdict: pass
+blockers: []
+repair-target: write-tech-design
+repair-instructions: []
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 0
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-07-31T09:12:00+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: write-tech-design
+review-dimensions:
+  prd-sdd-alignment: "pass — FR-1..7 在 §6 逐条映射到组件 C1-C10 与落点仓；AC-7⑤（digest 唯一实现）在 §4.1 有对应设计（共享测试向量）"
+  architecture: "pass — 自研 Go 代码全部入 internal/governance/ 与 pkg/gitguard/ 新包，上游文件仅 AIFIRST 标记挂钩，符合 CONTRIBUTING.AIFIRST.md 规则一；且修正了源方案 internal/service 路径错误"
+  data-model: "pass — 3 新表字段完整、幂等键明确、权威域声明清晰（git 权威/PG 投影）；见建议 SDD-SUG-001/002"
+  interface-contract: "pass — daemon 族/人类审批族/CLI/WS 四类接口定义完整，错误码（409 漂移/403 身份）明确"
+  security-performance: "pass — 私钥四措施、防重放绑定、mat_ 拒绝、审计最小化、heartbeat 便车均在 §7"
+  testability: "pass — §8 按 AC 逐条给出验证方式；gitguard 表驱动、governance 三拒绝路径单测可行"
+fr-coverage:
+  total: 7
+  covered: 7
+  missing: []
+suggestions:
+  - id: SDD-SUG-001
+    location: "§2.1 approval_record"
+    note: "UNIQUE(cr_id, stage, evidence_digest) 会挡住'同一版证据先 reject 后 approve'——reject 也写记录，第二次 approve 同三元组直接撞唯一键报 500。建议改为部分唯一索引：UNIQUE ... WHERE decision='approve'（approve 幂等保留，reject 允许多条留痕）"
+  - id: SDD-SUG-002
+    location: "§2.1 cr 表 / §3.1"
+    note: "事件只带 workspace_root_hash，cr 行的 workspace_id 从哪来未写明。建议明示：由 DaemonAuth 上下文解析（daemon 配对时已绑定 workspace），事件体不自带 workspace_id、不信任客户端自报"
+  - id: SDD-SUG-003
+    location: "§4.4 transitions_gen.go"
+    note: "go:generate 运行时读 tools 的 dir-graph.yaml，意味着 multica CI 构建需要 tools 仓 checkout。建议生成文件直接入库（文件头注释记来源 tools commit SHA），CI 只校验'重新生成 == 已入库'，构建本身不跨仓依赖"
