@@ -5,7 +5,8 @@ cr-ref: CR-2026-002
 title: P1 治理核心 — crctl 接入（同步协议 · 签名审批 · controlled-shell 下沉）技术设计
 status: draft
 created: "2026-07-31T09:00:46+08:00"
-updated: "2026-07-31T09:00:46+08:00"
+updated: "2026-07-31T09:18:00+08:00"
+revision: "0.1.1 — 落地技术评审建议 SDD-SUG-001/002/003"
 ---
 
 # SDD — P1 治理核心：crctl 接入
@@ -94,10 +95,14 @@ CREATE TABLE approval_record (
   key_id          TEXT NOT NULL,
   signature       TEXT NOT NULL,               -- base64
   reject_reason   TEXT NOT NULL DEFAULT '',
-  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-  UNIQUE (cr_id, stage, evidence_digest)       -- 同证据版本幂等
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+-- approve 幂等、reject 允许多条留痕：同一版证据先 reject 后 approve 不得撞键（SDD-SUG-001）
+CREATE UNIQUE INDEX approval_record_approve_uniq
+  ON approval_record (cr_id, stage, evidence_digest) WHERE decision = 'approve';
 ```
+
+`cr.workspace_id` 的解析（SDD-SUG-002）：事件体**不携带、不信任** workspace 标识；C5 从 DaemonAuth 上下文取该 daemon 配对时绑定的 workspace（`workspace_root_hash` 仅用于 daemon 侧多 workspace 区分与日志关联，不作为服务端信任输入）。
 
 `activity_log`：不建新表，新增 action 枚举值 `aifirst.gitguard_denied`、`aifirst.evidence_drift`（Go 侧常量 + 校验放开；表结构不动）。工具调用摘要随任务完成回调入既有 `task` 详情 JSONB（与 `skills_used[]` 同层），不新建表。
 
@@ -185,7 +190,7 @@ if isLegalTransition(cur.status, ev.to_status)：更新 cr 行 + projected_commi
 else：cr.needs_reconcile = true（不强行应用）
 commit_sha == "" 的事件：延迟 60s 处理，等 push 补全事件合并（源方案 §A.5）
 ```
-状态机 23 条转移表只读副本：构建时从 tools `dir-graph.yaml` 生成 Go 常量文件（`go:generate` 脚本读 YAML 产出 `transitions_gen.go`），部署不依赖运行时读 tools 包。
+状态机 23 条转移表只读副本：从 tools `dir-graph.yaml` 生成 Go 常量文件 `transitions_gen.go` 并**提交入库**（文件头注释记录来源 tools commit SHA）；CI 只校验"重新生成 == 已入库"（漂移即红），multica 构建本身不跨仓依赖 tools checkout（SDD-SUG-003）。
 
 ### 4.5 execenv 铸造（C9）
 
