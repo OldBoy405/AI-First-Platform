@@ -3,11 +3,11 @@ reviews:
   tech-design:
     reviewer: ai-reviewer
     verdict: pass
-    reviewed-at: "2026-07-31T09:12:00+08:00"
+    reviewed-at: "2026-07-31T09:20:30+08:00"
     blocker-count: 0
     fr-coverage: "7/7"
     review-loop:
-      current-attempt: 0
+      current-attempt: 1
       max-attempts: 3
       attempts:
         - attempt: 0
@@ -15,6 +15,11 @@ reviews:
           result: pass
           blocker-count: 0
           repair-target: write-tech-design
+        - attempt: 1
+          reviewed-at: "2026-07-31T09:20:30+08:00"
+          result: pass
+          blocker-count: 0
+          note: "3 条非阻塞建议落地复核（sdd.md revision 0.1.1）"
   requirement:
     reviewer: ai-reviewer
     verdict: pass
