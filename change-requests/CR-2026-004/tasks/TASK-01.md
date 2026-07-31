@@ -5,7 +5,7 @@ cr-ref: CR-2026-004
 plan-ref: "change-requests/CR-2026-004/plan.md"
 sdd-ref: "change-requests/CR-2026-004/sdd.md"
 title: multica 后端 — 队列容量守卫 + 插队 + 撤回权限边界
-status: pending
+status: done
 estimate: 8h
 depends-on: []
 assignee: ""
@@ -37,3 +37,18 @@ created: "2026-08-01T00:55:00+08:00"
 
 ## 完成标志
 上述测试全绿 + worktree commit + 完成记录回填本文件。
+
+## 完成记录（2026-08-01）
+
+- **实现 commit**：multica worktree `requirement/CR-2026-004` @ `44d58b155`（15 文件，+640）。
+- **交付内容**：迁移 159（project.settings JSONB）、`CountProjectPendingTasks`、`GetProjectSettings`/`UpdateProjectSettings`、`guardProjectQueueCapacity`（新文件 `internal/service/task_queue_capacity.go`）、两常量（DefaultTeamAgentQueueLimit=50 / PreemptPriorityOwnerAdmin=100）、quick-create 429 映射（`writeProjectQueueFull`）、`CancelTaskByUser` 停止权限收紧（403 `not_task_originator`）、`UpdateProject` settings 白名单合并（owner/admin 门禁 + 正整数校验）。
+- **验收条件核验**：
+  1. ✅ 真库集成测试 6 个全绿（`project_queue_capacity_test.go`）：满队拒绝（limit=2，`ErrProjectQueueFull` 且无新行）、owner 插队（落库 priority=100）、非法配置回退默认 50、deferred 路径绕过守卫、非发起人成员撤回 403（行未动）+ 发起人撤回软删成功、owner 撤任意成功。
+  2. ✅ 不过守卫路径验证：deferred 显式测试；retry/autopilot/chat 由守卫只挂在两个用户路径的构造保证（SDD INSERT 点裁决表）。
+  3. ✅ `go build ./...`、`go vet`、handler 包全量测试 ok；service 包排除 10 个 SKILL.md frontmatter 检查后 ok——该 10 个失败在未改动的 main 主检出同样失败（Windows CRLF checkout 环境问题，非本 CR 引入，留证）。
+  4. ✅ sqlc generate 干净（生成物已入库，行尾噪音未入 diff）。
+- **实现期设计修正**（相对 SDD §3.2/§3.3，均记录归档）：
+  1. 评论触发的入队是既有 fire-and-forget 结构（评论先落库，enqueue 失败仅 warn 日志）——429 契约落在 quick-create 等"入队即请求本体"的端点；评论路径满队反馈由前端禁用态承担（T02）。人类发言不因 Agent 队列满而被阻断，语义更合理。
+  2. 撤回复用既有 `POST /api/tasks/{taskId}/cancel`，不新建路由；成员对**自己的**任务不限 queued 状态（P2 停止语义本就允许停自己运行中的任务），故 409 `task_not_queued` 未引入——收紧点只有一个：非 owner/admin 不能动别人的任务。
+  3. quick-create 任务入队时未挂 issue，不占用计数口径的槽位（很快转为 issue），软限制语义下可接受，代码注释已标注。
+- **迁移已应用**至开发库（`ALTER TABLE project ADD COLUMN IF NOT EXISTS settings ...`，schema 部署动作，非业务数据写入）。
