@@ -1,0 +1,72 @@
+cr-id: CR-2026-002
+review-type: code
+reviewer: ai-reviewer
+reviewed-at: "2026-07-31T18:32:00+08:00"
+verdict: pass
+blockers: []
+repair-target: implement-code
+repair-instructions: []
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+      - path: test-report.status
+        equals: pass
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 0
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-07-31T18:32:00+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: implement-code
+suggestions:
+  - id: CODE-SUG-001
+    severity: minor
+    file: "server/internal/handler/daemon.go (CompleteTask AIFIRST 钩子)"
+    issue: "工具调用摘要聚合用 ListTaskMessages 全量读取（SQL 无 LIMIT），超长任务（数千 tool call、每条 output ≤8KB）完成时一次性载入内存"
+    suggestion: "后续 CR 可加只取 tool_use/tool_result 两类且限行的专用查询；当前任务规模下不构成风险"
+  - id: CODE-SUG-002
+    severity: minor
+    file: "server/internal/middleware/daemon_auth.go（上游文件，本 CR 未改）"
+    issue: "mdt_ 分支不覆写客户端自带的 X-User-ID 头（PAT/JWT/mcn_ 分支均覆写）。本 CR 的 resolveDaemonWorkspace 先读 context 绑定故无影响，但未来任何在 mdt_ 路径下读 X-User-ID 的 handler 可被伪造"
+    suggestion: "候选回馈上游：mdt_ 分支入口统一 r.Header.Del(\"X-User-ID\")；或在 fork 侧等 mdt_ 流程接线时一并处理"
+  - id: CODE-SUG-003
+    severity: minor
+    file: "server/internal/governance/daemon_workspace.go"
+    issue: "上游 mdt_ 签发流程接线后，PAT 成员资格回退路径应有退役计划，避免长期双轨"
+    suggestion: "在 CUSTOM.md #11 已记录；建议 rebase 时检查 GenerateDaemonToken 是否有了调用方，有则开 CR 收敛到 mdt_ 单轨"
+task-coverage:
+  total: 11
+  verified: 11
+  unverified: []
+verification:
+  lint: pass
+  test: pass
+  build: pass
+test-report:
+  file: "change-requests/CR-2026-002/test-report.md"
+  status: pass
+  uncovered-risks:
+    - "AC-5 组合面（首次生产任务观察项）"
+    - "server 对账不自举空投影（部署顺序口径已入 CUSTOM.md）"
+    - "上游测试失败基线 40 项（A/B 核实，见 CUSTOM.md 基线表）"
+    - "PAT 单仓范围外部不可证实（两仓均 public，增量风险为零）"
+evidence:
+  diff-range:
+    multica: "0980f3bfc(merge-base origin/main)...37cb17eec，43 files，+4739/-32"
+    tools: "af7c2ec~1...7e91626（controlled-shell + crctl），8 files，+656/-58"
+    knowledge-base: "crctl 状态机驱动的全程提交序列（master 及 requirement/CR-2026-002）"
+  changed-files-note: "上游文件仅 8 个、全部带 AIFIRST 标记（main.go 1/router.go 6/config.go 2/daemon.go 2/execenv 4/handler 2）；其余自研代码全部住新目录（internal/governance、pkg/gitguard、execenv/crguard_config.go），符合 CONTRIBUTING.AIFIRST.md 规则一"
+  security-review: >-
+    重点核过四条信任边界：① daemon_workspace.go PAT 绑定——X-User-ID 在 PAT/JWT/mcn_
+    三条认证路径均被服务端覆写（Header.Set），mdt_ 路径 context 绑定短路于头读取之前，
+    无伪造通路；成员资格全部服务端验证，请求体永不作为信任输入。② audit/snapshot
+    无账本事件——action 白名单锁死两常量 + 4KB/1MB 载荷上限，伪造文件三振进 dead/。
+    ③ 密钥与凭据——私钥仅内存、日志只出 key_id，GitHub PAT 永不入日志（错误只报状态码）。
+    ④ fail-closed 一致性——rules.json 缺失/损坏拒一切 git；签名密钥无效拒绝启动；
+    审批 task_token 一律 403。
