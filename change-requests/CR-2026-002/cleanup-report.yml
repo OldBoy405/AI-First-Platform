@@ -1,0 +1,44 @@
+cr-id: CR-2026-002
+generated-at: "2026-07-31T20:03:00+08:00"
+cleanup-status: done
+preflight:
+  # 删除远端分支前的强制预检：两仓 trunk 必须已包含各自 merge SHA
+  - repo: ai-first-platform-docs
+    trunk: master
+    merge-sha: b495c1a79a18823c362a8a61e16e3c25c2da1157
+    is-ancestor-of-trunk: true
+  - repo: multica
+    trunk: main
+    merge-sha: 8a3f513492c60742484ceb476e78c4b643248c36
+    is-ancestor-of-trunk: true
+worktrees:
+  - repo: ai-first-platform-docs
+    path: .rayai-worktrees/knowledge-base/requirement/CR-2026-002
+    git-deregistered: true
+    directory-removed: true
+    status: done
+  - repo: multica
+    path: .rayai-worktrees/multica/requirement/CR-2026-002
+    git-deregistered: true       # git worktree list 中已不存在
+    directory-removed: false     # 空目录残留（0 文件）
+    status: done-with-residue
+    residue-reason: >-
+      Windows 文件句柄占用：本次归档所在会话的 shell 进程曾以该目录为工作目录，
+      git 已删除全部内容并解除 worktree 注册，但空目录本身无法删除（Device or resource busy）。
+      非治理问题、无数据残留；会话结束后手动 rmdir 即可，或下次 crctl 归档 cleanup-retry 时自动清掉。
+    manual-followup: 'rmdir /s /q ".rayai-worktrees\multica\requirement\CR-2026-002"（会话结束后执行）'
+remote-branches:
+  - repo: ai-first-platform-docs
+    branch: requirement/CR-2026-002
+    deleted: true
+  - repo: multica
+    branch: requirement/CR-2026-002
+    deleted: true
+side-effects-handled:
+  - item: docker compose 项目工作目录迁移
+    detail: >-
+      T11 环境刷新时从 multica CR worktree 起过 backend，compose 项目（-p multica）的
+      working_dir 因此指向该 worktree。归档清理前已把项目重新指向 multica 主检出
+      （C:\Users\GOBAO\Downloads\AI\multica，含合并后 trunk main@8a3f513），
+      重建 backend 容器并确认 health + 治理任务在线（reconcile job registered / approvals 端点 200），
+      .env 以 LF 行尾重建（CUSTOM.md C4）。此后 compose 操作不再依赖任何 CR worktree。
