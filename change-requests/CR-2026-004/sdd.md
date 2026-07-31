@@ -32,13 +32,26 @@ updated: "2026-08-01T00:30:00+08:00"
 └──────────────────────────────────────────────────────────┘
 ```
 
-**入队链路选点**：Team Agent 任务即 issue 挂钩任务（`agent_task_queue.issue_id` → `issue.project_id`，034 迁移已有索引 `idx_issue_project`）。`TaskService` 的 issue 系入队函数（`EnqueueTaskForIssue` / `ForMention` / `ForThreadParent` / `ForSquadLeader*` / `EnqueueQuickCreateTask`，`service/task.go:651-1010`）在 INSERT 前统一调用新守卫 `guardProjectQueueCapacity`。`EnqueueChatTask`（Private Ask 沙箱，chat_session 挂钩）**不过守卫**——个人队列不设共享上限（PRD 范围）。`EnqueueDeferredAssigneeFallback`（系统 deferred 补偿）不过守卫——系统动作非用户入队。
+**入队链路选点**：Team Agent 任务即 issue 挂钩任务（`agent_task_queue.issue_id` → `issue.project_id`，034 迁移已有索引 `idx_issue_project`）。`TaskService` 的 issue 系入队函数（`EnqueueTaskForIssue` / `ForMention` / `ForThreadParent` / `ForSquadLeader*` / `EnqueueQuickCreateTask`，`service/task.go:651-1010`）在 INSERT 前统一调用新守卫 `guardProjectQueueCapacity`。
+
+**INSERT 点全量清单**（技术评审建议 1 落地——`grep "INSERT INTO agent_task_queue" server/pkg/db/queries/` 共 6 处，逐一裁决，实现期以此表为准，新增 INSERT 点须同步更新本表）：
+
+| sqlc 查询 | 位置 | 过守卫？ | 理由 |
+|---|---|---|---|
+| `CreateAgentTask` | agent.sql:170 | ✅ | issue 系用户入队主路径（mention/指派/thread/squad 全走它） |
+| `CreateQuickCreateTask` | agent.sql:198 | ✅ | 快速创建，用户入队且带 project |
+| `CreateDeferredAgentTask` | agent.sql:214 | ❌ | 系统 deferred 补偿，非用户入队 |
+| `CreateRetryTask` | agent.sql:257 | ❌ | 已入队任务的失败重建（复制原 priority），原任务已占过槽，卡容量会丢工作 |
+| `CreateAutopilotTask` | autopilot.sql:335 | ❌ | autopilot 系统调度 |
+| `CreateChatTask` | chat.sql:174 | ❌ | Private Ask 个人沙箱，不设共享上限（PRD 范围） |
+
+（评论合并 coalescing 不建行——它靠 `HasPendingTaskForIssue` 去重跳过入队，天然不增队列深度，无守卫问题。）
 
 ## 2. 数据模型
 
 **零改动**：`agent_task_queue`（`priority INT` 默认 0、`status` 含 `cancelled`、`originator_user_id` 均既有，001/022 等迁移）。
 
-**新迁移 `1XX_project_settings.up.sql`**（编号取当时最新，当前最新 158）：
+**新迁移 `1XX_project_settings.up.sql`**（编号合入时按最新取值，当前最新 158；若与 upstream 迁移撞号，随 rebase 重排编号——沿用 fork 迁移管理惯例，技术评审建议 3）：
 
 ```sql
 ALTER TABLE project ADD COLUMN settings JSONB NOT NULL DEFAULT '{}';
@@ -121,7 +134,7 @@ DELETE /api/tasks/{id}/queue-entry   （或挂接既有 cancel 端点，实现�
 
 `packages/views` 队列条组件（web + desktop 自动共享，mobile 不在范围）：
 
-- 队列数来源：既有 WS `task:queued` / `task:cancelled` / `task:dispatch` 事件（protocol/events.go:33-41）驱动的 query 失效重取，附带 `queue_depth/queue_limit`。
+- 队列数来源：既有 WS 事件（protocol/events.go:33-41）驱动的 query 失效重取，附带 `queue_depth/queue_limit`。触发列表（技术评审建议 2 落地）：`task:queued`（+1）、`task:cancelled`（-1）、**`task:running`**（dispatched→running 离开 queued+dispatched 口径，-1，漏了会滞后一步）、`task:completed` / `task:failed`（兜底对账，正常路径深度已在 running 时减过）。`task:dispatch` 不改深度（queued→dispatched 仍在口径内），无需监听。
 - 满 & 非 owner/admin：输入区禁用 + 「Agent 忙，请稍后」提示；收到 429 `project_queue_full` 同样进入禁用态；深度降回上限以下自动恢复。
 
 ## 4. 关键流程（入队守卫伪代码）
