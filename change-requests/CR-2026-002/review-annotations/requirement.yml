@@ -1,0 +1,40 @@
+cr-id: CR-2026-002
+review-type: requirement
+reviewer: ai-reviewer
+reviewed-at: "2026-07-31T08:46:59+08:00"
+verdict: pass
+blockers: []
+repair-target: write-requirement-prd
+repair-instructions: []
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 0
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-07-31T08:46:59+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: write-requirement-prd
+review-dimensions:
+  structure: "pass — 概述/US×5/FR×7/NFR×5/AC×7/成功指标/范围排除 全部在位"
+  fr-testability: "pass — FR-1..7 与 AC-1..7 一一对应；AC 含可量化边界（403/仅一行/≤100条/8测试通过等）"
+  scope: "pass — 排除项明确（P2 交互层、P3 看板本体、inbox handled 位、多节点锁、上游 rebase、内核级沙箱）"
+  alignment: "pass — 源方案 §D 的 D1-D7 全覆盖；源 D4 验收②（批后篡改两轨检出）归组至 AC-7④，链路可追溯；M0 实测缺口（evidence-sha256-16 无人读、白名单两处漂移）写入问题陈述"
+  dependencies: "pass — 前置 P0 与三仓远端条件已声明；D 间依赖顺序见 cr.md 范围表（见建议 S1）"
+suggestions:
+  - id: REQ-SUG-001
+    location: "§3 功能需求"
+    note: "交付依赖顺序（D1→D2→D3；D4依赖D2；D6依赖D5；D7依赖D4）在 cr.md 有表但 PRD 未标注，建议在 FR 章节或 §3 开头明示，供拆任务直接引用排序"
+  - id: REQ-SUG-002
+    location: "AC-3"
+    note: "server 模式实测依赖 GitHub 只读凭据（建议 fine-grained PAT，仅 AI-First-Platform 仓 Contents: Read-only），属环境前置条件，建议在 AC-3 明示，避免验收时临时受阻"
+  - id: REQ-SUG-003
+    location: "FR-7 / AC-7"
+    note: "源方案 §B.2 要求摘要算法'唯一实现、两轨复用同一代码'，PRD 仅在 FR-7 描述层提及，建议升格为可验收条目（如 AC-7 增补：digest 计算在 crctl 中仅一处实现，grant 与 TTY 路径调用同一函数）"
