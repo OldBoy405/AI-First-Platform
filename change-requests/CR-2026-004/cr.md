@@ -20,7 +20,7 @@ owners:
     assigned-at: "2026-07-31T23:25:40+08:00"
 target-version: "0.12"
 source: "docs/product/P2-三模式聊天交互设计.md §11 交付切分 D1"
-status: task-breakdown
+status: developing
 created: "2026-07-31T23:25:40+08:00"
 updated: "2026-07-31T23:25:40+08:00"
 remote-ref: ""
