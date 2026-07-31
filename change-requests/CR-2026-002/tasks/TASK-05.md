@@ -5,7 +5,7 @@ cr-ref: CR-2026-002
 plan-ref: "change-requests/CR-2026-002/plan.md"
 sdd-ref: "change-requests/CR-2026-002/sdd.md"
 title: 服务端投影 worker（governance/crsync.go）+ POST /api/daemon/cr-events + WS 广播
-status: pending
+status: done
 estimate: 16h
 depends-on: [CR-2026-002-TASK-04]
 assignee: ""
@@ -36,3 +36,13 @@ FR-2 服务端半边：事件入库、幂等去重、per-CR 串行消费、合�
 
 ## 完成标志
 go test ./internal/governance/... 绿 + 既有测试基线不回归（3 个 Traecli/Qoder 已知失败除外）+ 完成记录回填。
+
+## 完成记录（2026-07-31）
+
+- **提交**：multica worktree c23748904（requirement/CR-2026-002，已推 fork）。
+- **crsync.go**（~280 行，纯 governance 包 + router 1 处 AIFIRST 挂载）：批量 ≤100 校验 → 逐事件 schema 校验（BAD_EVENT/UNKNOWN_KIND 按 file 回执）→ `ON CONFLICT DO NOTHING` 幂等入账（重复到达仍 ack accepted，daemon 才会删两个通道的源文件）→ per-CR `sync.Map` 互斥 → `IsLegalTransition` 校验（T04 产物）→ 合法更新 / 乱序或非法只置 `needs_reconcile` 不强写 → `cr:updated` 发 events.Bus（`SubscribeAll` 既有监听自动广播 workspace 房间，零接线）。
+- **信任边界**（SUG-002 落实）：workspace 绑定只取 `middleware.DaemonWorkspaceIDFromContext`；缺失 → 403；请求体 `workspace_root_hash` 仅日志。测试助手用上游现成 `WithDaemonContext`。
+- **有意简化（偏离源方案一处，记录在案）**：§A.5 的"空 SHA 事件延迟 60s"未实现——状态应用从不依赖 SHA，checkpoint 事件到达时补写 `projected_commit` 即可，延迟机制无存在必要（代码注释同步说明）。
+- **测试 9/9**（6 新集成 + 3 个 T04）：合法链投影+WS 双事件、双通道单行、乱序→needs_reconcile 且状态不变、非法转移同、checkpoint 补全空 SHA、403/400/逐条拒绝码。跑在真实 PG 上（socat 边车把容器 5432 发布到宿主；迁移 158 已按 runner 口径应用到本机库并记 schema_migrations）。
+- **sqlc 决策**：governance 直接用 pgx，不动上游 sqlc query 文件（规则一冲突面考量，代码注释注明）。
+- **全量基线 A/B**：新发现 `cmd/multica` 7 项 + `internal/cli` 4 项失败，在未改动的 main 检出复跑**完全一致**→ 上游既有（Windows 环境类），已扩充 CUSTOM.md 基线表；另记录本机 gofmt 对上游 794 文件报格式差异（工具链版本差异，fork 新文件必须过本机 gofmt，上游文件不动）。
