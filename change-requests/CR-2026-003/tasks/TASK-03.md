@@ -5,7 +5,7 @@ cr-ref: CR-2026-003
 plan-ref: "change-requests/CR-2026-003/plan.md"
 sdd-ref: "change-requests/CR-2026-003/sdd.md"
 title: 端到端验收 + 历史脏投影真实收敛（AC-1/2/3）
-status: pending
+status: done
 estimate: 5h
 depends-on: [CR-2026-003-TASK-01, CR-2026-003-TASK-02]
 assignee: ""
@@ -30,3 +30,13 @@ created: "2026-07-31T21:00:00+08:00"
 
 ## 完成标志
 三条 AC 证据记录 + 完成记录回填 → write-test-report。
+
+## 完成记录（2026-07-31）
+
+- **环境刷新**：backend 镜像 efaa9fc5a89c（multica worktree@6bad142ec 构建，VERSION=dev-cr2026003）+ daemon 二进制 multica-daemon-cr2026003.exe，21:19 双双上线（compose 项目在 multica 主检出操作，镜像从 CR worktree 构建——修复尚未合 trunk，与 CR-2026-002 T11 同口径）。
+- **AC-3 ✅（本 CR 的核心验收）**：
+  - 篡改前留档（21:17:01）：CR-2026-001=writing-back/true（卡自 08:46 UTC）、CR-2026-002=writing-back/true（卡自 12:05 UTC）——卡死约 12 小时与 1 小时的真实生产脏数据。
+  - 收敛：两行 healed_at 均为 13:19:14 UTC——**server 模式对账在部署后第一个周期治愈**（backend 日志 plan_time=13:19 执行记录在案；早于 daemon 首拍快照到达）。终态 archived/false，projected_commit 校准到真实 GitHub HEAD 2623e9cd。
+  - 审计口径达成：全程数据库只发 SELECT，收敛完全由修复代码 + 真实对账周期完成。
+- **AC-2 ✅**：真库集成测试（T02 的 TestArchivedCRHealsFromHistorySnapshot，用与生产完全相同的卡死形态造数据）+ 本次真机收敛双重覆盖。
+- **AC-1 组件级 ✅ / 真机组合观察点后移（按本任务实现要点预先声明的口径）**：crctl 占位符（JS 21/21）与服务端幂等/防泄漏（Go 真库）各自已证；「真机双 embedded 连推投影两步跟上」的天然测试场是**本 CR 自己的 writeback 期两连推**（writing-back → archived），届时观察并在归档记录补录。这正是 CR-2026-002 当初丢事件的同一序列——本 CR 用自己的收官动作复现原故障场景做最终验证。
