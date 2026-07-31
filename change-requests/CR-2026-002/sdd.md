@@ -6,7 +6,7 @@ title: P1 治理核心 — crctl 接入（同步协议 · 签名审批 · contro
 status: draft
 created: "2026-07-31T09:00:46+08:00"
 updated: "2026-07-31T09:18:00+08:00"
-revision: "0.1.1 — 落地技术评审建议 SDD-SUG-001/002/003"
+revision: "0.1.2 — TASK-04 实施期修订：更正 §5 internal/service 论据（事实错误）；状态数口径统一（15 具名态 + (new)）；转移数标注声明/展开双口径"
 ---
 
 # SDD — P1 治理核心：crctl 接入
@@ -62,7 +62,7 @@ CREATE TABLE cr (
   workspace_id  UUID NOT NULL REFERENCES workspace(id),
   cr_id         TEXT NOT NULL,                 -- "CR-2026-002"
   title         TEXT NOT NULL DEFAULT '',
-  status        TEXT NOT NULL,                 -- 16 态之一（状态机只读副本校验）
+  status        TEXT NOT NULL,                 -- 15 具名态之一（(new) 不入投影；状态机只读副本校验）
   owners        JSONB NOT NULL DEFAULT '{}',
   target_version TEXT NOT NULL DEFAULT '',
   projected_commit TEXT NOT NULL DEFAULT '',   -- 投影所至的 knowledge-base SHA
@@ -190,7 +190,7 @@ if isLegalTransition(cur.status, ev.to_status)：更新 cr 行 + projected_commi
 else：cr.needs_reconcile = true（不强行应用）
 commit_sha == "" 的事件：延迟 60s 处理，等 push 补全事件合并（源方案 §A.5）
 ```
-状态机 23 条转移表只读副本：从 tools `dir-graph.yaml` 生成 Go 常量文件 `transitions_gen.go` 并**提交入库**（文件头注释记录来源 tools commit SHA）；CI 只校验"重新生成 == 已入库"（漂移即红），multica 构建本身不跨仓依赖 tools checkout（SDD-SUG-003）。
+状态机转移表只读副本（23 条声明，wildcard `any-active` 展开后 45 条）：从 tools `dir-graph.yaml` 生成 Go 常量文件 `transitions_gen.go` 并**提交入库**（文件头注释记录来源 tools commit SHA）；CI 只校验"重新生成 == 已入库"（漂移即红），multica 构建本身不跨仓依赖 tools checkout（SDD-SUG-003）。
 
 ### 4.5 execenv 铸造（C9）
 
@@ -215,7 +215,7 @@ Windows 注意：.bin/git 需成对物化 git.cmd（cmd/PowerShell）与 git（b
 | 审批下发 | grant 文件落盘 worktree | 长连接在线审批：断网即瘫；文件模式与 outbox 对称，离线补投 |
 | 白名单事实源 | rules.json 数据文件三方共读 | 各自维护：M0 已实测漂移（15 vs 19 条）；代码生成：过重 |
 | 投影更新范围 | server 持状态机只读副本做合法性校验 | 无校验直写：乱序/漏事件会产生错误投影且无法察觉 |
-| 自研代码落点 | `internal/governance/` 新包（规则一） | 源方案原文 `internal/service/`：multica 无此包，且违反 fork 隔离规则——**本 SDD 修正源方案该处路径** |
+| 自研代码落点 | `internal/governance/` 新包（规则一） | 源方案原文 `internal/service/`：该包**存在且是上游活跃包**（TASK-04 实施期核实；本行初稿误写"无此包"，0.1.2 更正论据）——把自研代码放进上游活跃包会扩大双周 rebase 冲突面，违反 CONTRIBUTING.AIFIRST.md 规则一，故仍改落新包 `internal/governance/`。**结论不变，论据更正** |
 
 ## 6. FR → 技术实现映射
 
