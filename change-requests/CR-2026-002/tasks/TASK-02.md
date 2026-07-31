@@ -5,7 +5,7 @@ cr-ref: CR-2026-002
 plan-ref: "change-requests/CR-2026-002/plan.md"
 sdd-ref: "change-requests/CR-2026-002/sdd.md"
 title: crctl outbox 事件通道（advance/approve/push 三挂点）
-status: pending
+status: done
 estimate: 8h
 depends-on: []
 assignee: ""
@@ -32,3 +32,14 @@ FR-1/D1：crctl 在 `advance`、`approve`、`git push` 成功后向 `{workspace}
 
 ## 完成标志
 tools 测试全绿（含新增 ≥3 用例）+ 完成记录回填。
+
+## 完成记录（2026-07-31）
+
+- **提交**：tools@1333226（custom/main，已推 origin）。
+- **emitOutboxEvent()**：单函数实现，临时名 + rename 原子写；事件写失败只记 audit（EMIT_FAILED），**不阻塞主操作**——outbox 是投影通道，git 是权威。文件名 `{utc-ts}-{cr}-{kind}-{shortsha|nosha}.json` 字典序即时序。
+- **三挂点落位**：
+  - advance 成功 → `status` 事件（from/to/trigger/actor；有 commit 时带 HEAD sha，`--embedded`/`--no-commit` 留空）；
+  - approve → **不单独发事件**（设计决策）：级联 advance 的那条 status 事件携带 `evidence`（approvalStages 声明的全部证据文件 → 行尾规范化后 sha256），一个 approve 恰好一条事件，避免与去重键 `(cr_id, commit_sha, event_kind)` 双发冲突；
+  - `git push` 成功 → `checkpoint` 事件（被推仓 HEAD sha + headMessage + pushed args），CR-ID 从 HEAD 提交信息/分支参数按 `CR-\d{4}-\d{3}` 提取，提不到则不发（非 CR 上下文推送）；`--delete` 分支删除不发。
+- **测试 14/14**：新增 3 用例（advance→合 schema 事件+空 sha；非法转换→零事件；真实 bare-origin push→checkpoint 带 40 位 sha 与提取的 CR-ID）。过程中修了一个测试夹具错误：CR-TEST-1 不符合生产 ID 正则，push 用例改用 CR-2026-001 格式。
+- **备注**：本工作区此后每次 advance 都会积累 outbox 事件，T06 daemon 采集器上线前无人消费——无害（gitignored），且届时正好是现成的补传测试数据。
