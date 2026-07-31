@@ -15,7 +15,7 @@ owners:
     assigned-at: "2026-07-31T07:17:01+08:00"
 target-version: "0.11"
 source: docs/product/P1-crctl接入设计.md
-status: developing
+status: code-reviewing
 created: "2026-07-31T07:17:01+08:00"
 updated: "2026-07-31T07:17:01+08:00"
 remote-ref: ""
