@@ -16,7 +16,20 @@ change-requests:
     target-version: "0.11"
     source: docs/product/P1-crctl接入设计.md
     prd-path: change-requests/CR-2026-002/prd.md
-    status: code-approved
+    status: merging
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: b495c1a79a18823c362a8a61e16e3c25c2da1157
+        branch: requirement/CR-2026-002
+        source-sha: 83f5b0243b8d1378625fee2b7e6d967386d1ef69
+        merged-at: "2026-07-31T19:27:40+08:00"
+      - repo: multica
+        trunk: main
+        sha: 8a3f513492c60742484ceb476e78c4b643248c36
+        branch: requirement/CR-2026-002
+        source-sha: 37cb17eeccbb1152ca017cc196807d9779fa2bf5
+        merged-at: "2026-07-31T19:27:35+08:00"
     updated-at: "2026-07-31T19:19:50+08:00"
     created: "2026-07-31T07:17:01+08:00"
     updated: "2026-07-31T07:17:01+08:00"
