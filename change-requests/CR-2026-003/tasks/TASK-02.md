@@ -5,7 +5,7 @@ cr-ref: CR-2026-003
 plan-ref: "change-requests/CR-2026-003/plan.md"
 sdd-ref: "change-requests/CR-2026-003/sdd.md"
 title: multica 服务端 pending 防护 + reconcile 历史快照扩展
-status: pending
+status: done
 estimate: 4h
 depends-on: []
 assignee: ""
@@ -36,3 +36,11 @@ created: "2026-07-31T21:00:00+08:00"
 
 ## 完成标志
 go test 真库全绿（-v 确认 --- PASS，防静默跳过）+ fmt/vet 干净 + 完成记录回填。
+
+## 完成记录（2026-07-31）
+
+- **提交**：multica worktree 6bad142ec。
+- **pending 防护（FR-1 服务端半边）**：`pendingShaPrefix` 常量 + `projectableSha()`，接入 `applyStatus()` INSERT 与 UPDATE CASE 两处——占位符只进幂等键，投影指针按空串语义（保留现值，等 checkpoint 真实 sha 追上）。
+- **历史快照（FR-2）**：`ParseHistory`（EOL 规范化、坏 YAML 硬失败、空文件合法）+ `mergeAuthority`（backlog 防御性优先）；`snapshotPayload.History` 可选字段（旧 daemon 不发=旧行为，向后兼容）；server 模式同一 pinned sha 追加拉取 `_history.yml`（404=从未归档，合法）；daemon 模式本地读文件缺失降级为空。`ApplySnapshot` 本体零改动（SDD 预期兑现）。
+- **测试**：governance 全包 33 项 PASS（真库 -v 口径，新增 4：占位符不漏投影指针+真实 sha 去重不变(NFR-1)、ParseHistory 四态、mergeAuthority 覆盖序、**AC-2 卡死形态自愈**——用 CR-2026-001/002 的真实卡死形态 writing-back/needs_reconcile=true 造数据，历史快照治愈为 archived）+ daemon 快照带 history 1 项。vet/build 干净。
+- **行尾说明**：本 worktree 为 autocrlf 全量检出，gofmt -l 报全目录假差异（CUSTOM.md 基线既有记录）；diff 核实仅 4 文件 +90/-5 真实改动，提交经 autocrlf 归一化回 LF。
