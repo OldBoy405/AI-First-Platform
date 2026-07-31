@@ -1,0 +1,75 @@
+cr-id: CR-2026-003
+review-type: code
+reviewer: ai-reviewer
+reviewed-at: "2026-07-31T21:35:00+08:00"
+verdict: pass
+blockers: []
+repair-target: implement-code
+repair-instructions: []
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+      - path: test-report.status
+        equals: pass
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 0
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-07-31T21:35:00+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: implement-code
+suggestions:
+  - id: CODE-SUG-001
+    severity: minor
+    file: "server/internal/governance/crsync.go:224（checkpoint 分支）+ reconcile.go ApplySnapshot 两处 snap.HeadSHA"
+    issue: >-
+      全量核对 5 处 projected_commit 写入点：applyStatus 两处已接 projectableSha ✓；
+      checkpoint 分支与 ApplySnapshot 两处未包——SDD 论证「这些来源恒为真实 sha」对
+      行为良好的 crctl/daemon 成立，但 ingest 接受任意 outbox 文件，伪造/未来有 bug 的
+      发射方可以在 checkpoint 或 snapshot 里塞 pending: 值直达指针
+    suggestion: >-
+      纵深防御：三处也包 projectableSha（对 checkpoint 是干净 no-op——包完为空串即
+      命中既有 WHERE $3 <> '' 短路）。一行/处，后续小 CR 或 rebase 时顺手做；当前
+      风险依赖不存在的错误发射方，不阻塞
+  - id: CODE-SUG-002
+    severity: minor
+    file: "tools skills/shared/crctl/scripts/crctl.mjs（emitOutboxEvent 文件名）"
+    issue: >-
+      占位符消毒后文件名片段恒为 pending1（pending:17…去符号取 8 位），同一 UTC 毫秒内
+      两次 embedded advance 会同名互覆丢事件。属既有风险平移（旧代码空串 → 恒为 nosha，
+      完全同型），且两次 advance 是独立进程 spawn（现实 ≥50ms），当前不可触发
+    suggestion: "若未来出现程序化批量 embedded 推进，把 pending 事件的文件名片段延长（如取消毒后 16 位）即可；现在不动"
+task-coverage:
+  total: 3
+  verified: 3
+  unverified: []
+verification:
+  lint: pass
+  test: pass
+  build: pass
+test-report:
+  file: "change-requests/CR-2026-003/test-report.md"
+  status: pass
+  uncovered-risks:
+    - "AC-1 真机组合观察点排期在本 CR writeback 两连推（原故障序列复现验证）"
+    - "_history.yml 体量优化点（SDD §7 已记录）"
+    - "缺陷 B 明确不修（SDD §5 范围决策，本次真机收敛佐证兜底有效）"
+evidence:
+  diff-range:
+    tools: "7e91626..0c8e306，2 files，+63/-5"
+    multica: "8a3f513(merge-base main)...6bad142ec，6 files，+255/-5"
+  review-focus-findings: >-
+    ① projectableSha 覆盖面：5 处写入点逐一核对（结论见 CODE-SUG-001，applyStatus
+    两处已护、其余三处来源可信但建议纵深防御）。② mergeAuthority：backlog 优先语义
+    正确；cr-archive 崩溃窗两种残留形态（两处都在 → backlog 胜出保在途；两处都不在 →
+    快照缺席即不动，等 archive-repair 补齐）均安全。③ 旧 daemon 兼容：History 缺失 →
+    ParseHistory("") → 空 map → merge 退化为纯 backlog，与修复前逐位等价（有测试锁定）。
+    跨语言契约：两侧测试均引用 "pending:" 字面量（JS 断言 /^pending:/ 正则、Go 用
+    strings.HasPrefix 同字面量构造事件），漂移即红灯——SDD 锁定方案兑现。
+  security-note: "无新信任边界：_history.yml 读取与既有 _backlog.yml 同权限同通道；占位符值无敏感信息可安全入日志"
