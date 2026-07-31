@@ -1,0 +1,28 @@
+cr-id: CR-2026-004
+review-type: requirement
+reviewer: ai-reviewer
+reviewed-at: "2026-07-31T23:55:00+08:00"
+verdict: pass
+blockers: []
+repair-target: write-requirement-prd
+repair-instructions: []
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 0
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-07-31T23:55:00+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: write-requirement-prd
+suggestions:
+  - "FR-1 容量统计口径写的是 status='queued'——SDD 阶段需明确 dispatched/running 是否计入「在队」：若只数 queued，一个满负荷项目实际占用 = 上限 + 执行中任务数；建议 SDD 给出明确取舍并在 AC-1 测试数据中体现"
+  - "FR-2 的 owner/admin 判定来源（multica member 角色表的哪个字段/枚举）与插队 priority 的具体取值（固定值还是相对提升）留给 SDD 定；注意 priority 是既有字段，取值需避开既有语义（如 autopilot/system 已占用的档位）"
+  - "FR-3 的 project 级配置存储位置（复用 project 表既有 settings JSONB 还是独立配置表）SDD 阶段决策；PRD 的 NFR-1 只约束了不动 agent_task_queue 本身"
