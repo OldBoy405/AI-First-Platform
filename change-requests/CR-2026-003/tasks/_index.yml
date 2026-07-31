@@ -1,0 +1,21 @@
+cr-ref: CR-2026-003
+total-estimate: 12h
+tasks:
+  - id: CR-2026-003-TASK-01
+    title: crctl embedded 事件 commit_sha 占位符（pendingCommitSha）
+    status: pending
+    estimate: 3h
+    depends-on: []
+    repo: tools
+  - id: CR-2026-003-TASK-02
+    title: multica 服务端 pending 防护 + reconcile 历史快照扩展
+    status: pending
+    estimate: 4h
+    depends-on: []
+    repo: multica
+  - id: CR-2026-003-TASK-03
+    title: 端到端验收 + 历史脏投影真实收敛（AC-1/2/3）
+    status: pending
+    estimate: 5h
+    depends-on: [CR-2026-003-TASK-01, CR-2026-003-TASK-02]
+    repo: 验收动作
