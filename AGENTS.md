@@ -67,3 +67,6 @@ AI First Platform/
 2. **状态数口径**：状态机 = **15 个具名状态 + 注册前 `(new)`**（口语"16 态"含 (new)）；转移 = **23 条声明，wildcard 展开后 45 条**。写文档/断言/DDL 注释时必须写明用的是哪个口径。
 3. **multica 仓代码注释一律英文**（其 CLAUDE.md 硬规则）；本仓库与 tools 仓的文档、CR 产物用中文。进 multica 写代码前先读其 CLAUDE.md。
 4. **事实断言先核实**：写进 PRD/SDD 的"某仓库有/没有某包、某行为"类断言，落笔前用命令核实（ls/grep），实施期发现不符须以 revision 修订并注明"结论是否受影响"（先例：SDD 0.1.2 更正 internal/service 论据）。
+
+5. **状态推进一律走 crctl，禁止手改 `_backlog.yml`/`cr.md` 的 status**（CR-2026-002 merge 期咬过一次）：需要把状态与其他文件放进同一个提交时，用 `crctl advance --to X --trigger Y --expect Z --embedded`——它会跑门禁、发状态事件、把文件留给调用方一起提交。手改的后果是**门禁没跑 + 投影漂移**（当次靠 reconcile 安全网自愈，但那是兜底不是流程）。回写期 `--to writing-back` 还需带 `--spec-id`，否则 specs 落点门禁无法校验。
+6. **specs/ 基线是累积文档，不是最近一次 CR 的副本**：`writeback-prd-sdd` Skill 字面写的是 `cp` 覆盖，直接照做会用单阶段文档覆掉整个平台基线（CR-2026-002 回写时发现 v0.10 基线正是被 cp 成了 CR-2026-001 原文）。正确做法：按里程碑分节累积（节内保留该 CR 原文、H 级下沉一级），FR/AC 跨节引用加里程碑前缀（`M0-FR-3`/`P1-AC-5`），并把旧基线备份进 `change-requests/{CR-ID}/writeback-backups/{spec}/{timestamp}/` 附 metadata.yml。
