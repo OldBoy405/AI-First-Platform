@@ -5,12 +5,13 @@ cr-ref: CR-2026-003
 title: P1 治理核心修补 — embedded 事件幂等键碰撞 + 归档 CR 失去自愈能力 技术设计
 status: draft
 created: "2026-07-31T20:45:00+08:00"
-updated: "2026-07-31T20:45:00+08:00"
-version: v0.1.0
+updated: "2026-07-31T20:58:00+08:00"
+version: v0.1.1
+revision: "0.1.1 — 修复 SDD-BLOCK-001：补服务端 pending: 前缀防护，改写 §2 错误断言"
 refs:
   upstream: [CR-2026-003-prd]
   downstream: []
-components: [crctl-embedded-disambiguator, governance-history-snapshot]
+components: [crctl-embedded-disambiguator, governance-pending-sha-guard, governance-history-snapshot]
 ---
 
 # SDD — P1 治理核心修补 技术设计
@@ -61,7 +62,9 @@ reconcile 周期（server 模式 / daemon 模式均适用）
 
 ## 2. 数据模型
 
-**无新增表、无新增列。** `cr_sync_event.commit_sha` 列（`TEXT NOT NULL DEFAULT ''`）语义轻微扩展：对 embedded 事件不再是空串，而是形如 `pending:{unix-ms}:{pid}:{seq}` 的占位符字符串——**该列在业务逻辑中只被用作幂等键的一部分（从未被反查语义化），因此这个扩展不影响任何现有读取路径**（`apply()`/`applyStatus()`/`checkpoint` 分支均从内存中的 `OutboxEvent` 结构体读取 `CommitSHA`，不是从表里回查这一列）。
+**无新增表、无新增列。** `cr_sync_event.commit_sha` 列（`TEXT NOT NULL DEFAULT ''`）语义扩展：对 embedded 事件不再是空串，而是形如 `pending:{unix-ms}:{pid}:{seq}` 的占位符字符串。
+
+**必须如实指出（评审 SDD-BLOCK-001 修订）**：`commit_sha` 的值**并非只用作幂等键**——`crsync.go applyStatus()` 的 INSERT 分支与 UPDATE 分支（`CASE WHEN $4 <> '' THEN $4 ELSE projected_commit END`）都会把非空 `commit_sha` 写入 `cr.projected_commit`（投影表的 commit 指针，看板可见）。因此占位符方案**必须带服务端配套防护**（见 §4.1 服务端半边）：`pending:` 前缀的 sha 在投影指针语义上按空串对待，仅在幂等键中使用完整占位符。
 
 ## 3. 接口契约
 
@@ -98,10 +101,31 @@ function pendingCommitSha() {
 commit_sha: committed ? gitHeadSha(ws) : pendingCommitSha(),
 ```
 
+**服务端半边（评审 SDD-BLOCK-001 修订新增）**：`pending:` 前缀是 crctl(JS) 与 multica(Go) 的跨语言契约（常量 `pendingShaPrefix = "pending:"`），服务端 `crsync.go` 增加一个判断函数并接入 `applyStatus()` 的两处 `projected_commit` 写入点：
+
+```go
+// pendingShaPrefix marks an embedded-mode placeholder commit sha (crctl
+// pendingCommitSha() emits "pending:{ms}:{pid}:{seq}"). Placeholders exist
+// solely to keep the idempotency key unique — they must never be projected
+// as a commit pointer.
+const pendingShaPrefix = "pending:"
+
+func projectableSha(sha string) string {
+	if strings.HasPrefix(sha, pendingShaPrefix) {
+		return "" // treat like the pre-fix empty sha: keep existing pointer
+	}
+	return sha
+}
+```
+
+`applyStatus()` 中 INSERT 分支的 `ev.CommitSHA` 与 UPDATE 分支 CASE 表达式的 `$4` 均改为传 `projectableSha(ev.CommitSHA)`；幂等键（`ingest()` 的 INSERT INTO cr_sync_event）保持使用完整占位符不变。`checkpoint` 分支无需改动——checkpoint 事件恒带真实 sha，到达后自然把指针从旧值推进到位（与修复前"空串等 checkpoint 补全"的语义完全一致）。
+
+跨语言契约锁定（同 digest-vectors 先例）：tools 侧 `crctl.test.mjs` 断言 `pendingCommitSha()` 输出以 `pending:` 开头且两次调用不同；multica 侧 crsync 测试用同一字面量 `"pending:"` 构造事件并断言 `cr.projected_commit` 不含占位符。两侧测试引用同一前缀字面量，漂移即红灯。
+
 **为什么不用其他方案**：
 - ❌ 改唯一键为 `(cr_id, event_kind, from_status, to_status)`（去掉 `commit_sha`）：会让"同一次转移因网络重试上报两次"从"正常去重"变成"被当作两次不同事件重复处理"——**这是把幂等性本身改坏**，NFR-1 明确禁止。
 - ❌ embedded 事件完全不写入 `cr_sync_event`（只更新 `cr` 表）：会丢失 outbox 通道"先记账、再投影、可重放"的审计闭环，且需要绕开 `ingest()` 现有的锁与并发控制路径，改动面远大于收益。
-- ✅ 占位符方案：改动仅两行（生成函数 + 调用点），不碰服务端、不碰数据库结构、不改变非 embedded 路径的任何行为。
+- ✅ 占位符方案：crctl 侧改动仅两行（生成函数 + 调用点）+ 服务端一个小防护函数接入两处写入点（SDD-BLOCK-001 修订后如实口径），不碰数据库结构、不改变非 embedded 路径的任何行为。
 
 ### 4.2 FR-2：reconcile 快照来源扩展
 
@@ -166,6 +190,7 @@ func mergeAuthority(backlog, history map[string]string) map[string]string {
 | FR | 组件 | 文件 | 函数/改动点 |
 |---|---|---|---|
 | FR-1 | crctl-embedded-disambiguator | tools `skills/shared/crctl/scripts/crctl.mjs` | 新增 `pendingCommitSha()`；`cmdAdvance` 中 status 事件的 `commit_sha` 生成表达式 |
+| FR-1 | governance-pending-sha-guard | multica `server/internal/governance/crsync.go` | 新增 `pendingShaPrefix` 常量与 `projectableSha()`；`applyStatus()` 两处 `projected_commit` 写入点接入（SDD-BLOCK-001 服务端半边） |
 | FR-2 | governance-history-snapshot | multica `server/internal/governance/reconcile.go` | 新增 `ParseHistory`、`mergeAuthority`；`snapshotPayload` 加 `History` 字段；`ingestSnapshot` 合并调用 |
 | FR-2 | governance-history-snapshot | multica `server/internal/governance/reconcile_github.go` | `FetchGitHubSnapshot` 增加一次 `_history.yml` 拉取 + 合并 |
 | FR-2 | governance-history-snapshot | multica `server/internal/daemon/crevents.go` | `buildSnapshotEvent` 增加本地 `_history.yml` 读取 |
@@ -180,6 +205,6 @@ func mergeAuthority(backlog, history map[string]string) map[string]string {
 
 | AC | 测试方式 |
 |---|---|
-| AC-1 | Go 集成测试（`crctl.mjs` 侧配 JS 单测）：连续两次 `crctl advance --embedded` 同一 CR，断言两次的 `commit_sha` 字段不同；服务端集成测试断言两条 `cr_sync_event` 行均 `processed_at IS NOT NULL` 且都被 `apply()` 处理（用可观察的投影结果间接验证，而非直接断言私有函数被调用） |
+| AC-1 | Go 集成测试（`crctl.mjs` 侧配 JS 单测）：连续两次 `crctl advance --embedded` 同一 CR，断言两次的 `commit_sha` 字段不同；服务端集成测试断言两条 `cr_sync_event` 行均 `processed_at IS NOT NULL` 且都被 `apply()` 处理（用可观察的投影结果间接验证）；**追加断言：处理完两条占位符事件后 `cr.projected_commit` 不含 `pending:` 前缀**（SDD-BLOCK-001 防护生效的直接证据） |
 | AC-2 | Go 集成测试：构造 `_history.yml` 含一条 `final-status: archived` 的 CR，手工把对应 `cr` 投影行 `status` 设为不一致值，调用 `ApplySnapshot`（喂入合并后的快照）后断言该行收敛为 `archived` 且 `needs_reconcile=false` |
 | AC-3 | 验收动作（非新增代码路径）：修复上线后跑过真实 reconcile 周期，直接查询生产 `cr` 表，断言 CR-2026-001 与 CR-2026-002 的 `status` 均为 `archived`、`needs_reconcile` 均为 `false`——过程记录在 TASK 完成记录，不允许手工 `UPDATE` |

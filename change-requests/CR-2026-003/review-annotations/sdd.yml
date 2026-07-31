@@ -1,28 +1,11 @@
 cr-id: CR-2026-003
 review-type: tech-design
 reviewer: ai-reviewer
-reviewed-at: "2026-07-31T20:55:00+08:00"
-verdict: block
-blockers:
-  - id: SDD-BLOCK-001
-    location: "§2 数据模型 + §4.1 占位符方案"
-    issue: >-
-      §2 的关键断言「commit_sha 列在业务逻辑中只被用作幂等键的一部分（从未被反查语义化）」
-      与实际代码不符：multica crsync.go applyStatus() 的 INSERT 分支（L242）和 UPDATE 分支
-      （L255 的 CASE WHEN $4 <> '' THEN $4）都会把非空 commit_sha 写入 cr.projected_commit。
-      按 §4.1 的占位符方案，pending:{ms}:{pid}:{seq} 这类字符串会被当作真实 commit 指针
-      污染投影表——看板会显示一个不存在的 commit，且在下一个 checkpoint/reconcile 覆盖前
-      持续可见。修复方案缺服务端配套防护。
-    suggestion: >-
-      SDD 需补充服务端半边：applyStatus 的两处写入点把「pending: 前缀的 sha」按空串对待
-      （仅用于幂等键，不写入 projected_commit）；§2 的错误断言改写为如实描述；
-      占位符前缀 "pending:" 是 crctl(JS) 与 multica(Go) 的跨语言契约，需仿照
-      digest-vectors 的做法在两侧测试中锁定（至少各有一条断言引用同一字面量）。
+reviewed-at: "2026-07-31T21:05:00+08:00"
+verdict: pass
+blockers: []
 repair-target: write-tech-design
-repair-instructions:
-  - "§4.1 增加服务端配套：crsync.go applyStatus 两处 projected_commit 写入点对 pending: 前缀 sha 按空串语义处理（幂等键仍用完整占位符）"
-  - "§2 改写 commit_sha 列语义描述：如实写明该值会进入 cr.projected_commit，因此占位符必须被服务端识别并排除"
-  - "§6 映射表补 crsync.go 一行；§8 AC-1 测试设计补『占位符不得出现在 cr.projected_commit』断言"
+repair-instructions: []
 review-loop:
   pass-condition:
     allOf:
@@ -32,16 +15,36 @@ review-loop:
         isEmpty: true
   on-block: route-to-repair-node
   max-attempts: 3
-  current-attempt: 0
+  current-attempt: 1
   attempts:
     - attempt: 0
       reviewed-at: "2026-07-31T20:55:00+08:00"
       result: block
       blocker-count: 1
       repair-target: write-tech-design
-suggestions:
-  - "pending: 前缀契约建议在 tools 侧 crctl.test.mjs 与 multica 侧 crsync 测试中用同一字面量各锁一条断言（跨语言契约防漂移，同 digest-vectors 先例）"
+      note: >-
+        SDD-BLOCK-001：§2 断言「commit_sha 从未被语义化使用」与 crsync.go applyStatus
+        实际代码（L242 INSERT / L255 UPDATE CASE 均写入 cr.projected_commit）不符，
+        占位符方案缺服务端防护，pending:{ms}:{pid}:{seq} 会污染投影表 commit 指针
+    - attempt: 1
+      reviewed-at: "2026-07-31T21:05:00+08:00"
+      result: pass
+      blocker-count: 0
+      note: >-
+        SDD v0.1.1 修复核验：① §4.1 补服务端半边（pendingShaPrefix 常量 + projectableSha()
+        接入 applyStatus 两处写入点，幂等键仍用完整占位符，checkpoint 分支不动的理由成立——
+        checkpoint 恒带真实 sha）；② §2 断言改为如实描述；③ §6 映射表补
+        governance-pending-sha-guard 行；④ §8 AC-1 追加「cr.projected_commit 不含 pending:
+        前缀」断言；⑤ 备选方案表的「不碰服务端」旧措辞同步修正。
+        复核其余写入点：flagUnknownCR 不触碰 projected_commit、ApplySnapshot 用
+        snap.HeadSHA（恒为真实 HEAD）、checkpoint 事件只产自 push 路径（恒真实 sha）——
+        占位符无其他泄漏路径。跨语言契约锁定方案（两侧测试引用同一 "pending:" 字面量）
+        采纳了 round 0 的 suggestion。
+suggestions: []
 fr-coverage:
   total: 2
   covered: 2
   missing: []
+requirement-review-suggestions-addressed:
+  - "建议#1（AC-3 须等真实对账周期而非手工触发）→ SDD §8 AC-3 行已明确"
+  - "建议#2（_history.yml 读取体量取舍）→ SDD §7 性能段已明确：当前量级全量解析，记录未来分片/旁路缓存优化点，不在本 CR 做"
