@@ -1,0 +1,70 @@
+cr-ref: CR-2026-002
+total-estimate: 120h
+tasks:
+  - id: CR-2026-002-TASK-01
+    title: rules.json 白名单单一事实源抽取（crctl/hooks 改读）
+    status: pending
+    estimate: 8h
+    depends-on: []
+    repo: tools
+  - id: CR-2026-002-TASK-02
+    title: crctl outbox 事件通道（advance/approve/push 三挂点）
+    status: pending
+    estimate: 8h
+    depends-on: []
+    repo: tools
+  - id: CR-2026-002-TASK-03
+    title: evidence-digest 统一（canonical 唯一实现）+ crctl approve --grant 验签
+    status: pending
+    estimate: 12h
+    depends-on: []
+    repo: tools
+  - id: CR-2026-002-TASK-04
+    title: migrations（cr / cr_sync_event / approval_record）+ transitions_gen.go 入库
+    status: pending
+    estimate: 8h
+    depends-on: []
+    repo: multica
+  - id: CR-2026-002-TASK-05
+    title: 服务端投影 worker（governance/crsync.go）+ POST /api/daemon/cr-events + WS 广播
+    status: pending
+    estimate: 16h
+    depends-on: [CR-2026-002-TASK-04]
+    repo: multica
+  - id: CR-2026-002-TASK-06
+    title: daemon CR 事件收集器（crevents.go：outbox 扫描 + commit 兜底 + 上报）
+    status: pending
+    estimate: 12h
+    depends-on: [CR-2026-002-TASK-02, CR-2026-002-TASK-05]
+    repo: multica
+  - id: CR-2026-002-TASK-07
+    title: reconcile 对账（server/daemon 双模式）
+    status: pending
+    estimate: 8h
+    depends-on: [CR-2026-002-TASK-05]
+    repo: multica
+    precondition: "GitHub fine-grained PAT（AI-First-Platform 单仓，Contents: Read-only）"
+  - id: CR-2026-002-TASK-08
+    title: 签名审批服务端（approval.go + grant 签发 API + 私钥方案 + daemon 下发）
+    status: pending
+    estimate: 16h
+    depends-on: [CR-2026-002-TASK-04, CR-2026-002-TASK-03]
+    repo: multica
+  - id: CR-2026-002-TASK-09
+    title: pkg/gitguard + execenv 四处改造（PATH shim / 自守 / 上下文注入 / hooks 物化）
+    status: pending
+    estimate: 16h
+    depends-on: [CR-2026-002-TASK-01]
+    repo: multica
+  - id: CR-2026-002-TASK-10
+    title: AI 行为审计 + EVIDENCE_DRIFT 留证（activity_log 双 action）
+    status: pending
+    estimate: 8h
+    depends-on: [CR-2026-002-TASK-09, CR-2026-002-TASK-03]
+    repo: multica
+  - id: CR-2026-002-TASK-11
+    title: 端到端验收串联（AC-1..7 冒烟 + 证据记录）
+    status: pending
+    estimate: 8h
+    depends-on: [CR-2026-002-TASK-05, CR-2026-002-TASK-06, CR-2026-002-TASK-07, CR-2026-002-TASK-08, CR-2026-002-TASK-09, CR-2026-002-TASK-10]
+    repo: cross
