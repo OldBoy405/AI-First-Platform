@@ -22,7 +22,7 @@ owners:
     assigned-at: "2026-07-31T20:20:07+08:00"
 target-version: "0.11.1"
 source: "CR-2026-002 归档收尾核对（change-requests/CR-2026-002/traceability.yml process-deviations 之外的新发现）"
-status: merging
+status: writing-back
 created: "2026-07-31T20:20:07+08:00"
 updated: "2026-07-31T20:20:07+08:00"
 remote-ref: ""
