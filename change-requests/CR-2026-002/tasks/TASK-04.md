@@ -5,7 +5,7 @@ cr-ref: CR-2026-002
 plan-ref: "change-requests/CR-2026-002/plan.md"
 sdd-ref: "change-requests/CR-2026-002/sdd.md"
 title: migrations（cr / cr_sync_event / approval_record）+ transitions_gen.go 入库
-status: pending
+status: done
 estimate: 8h
 depends-on: []
 assignee: ""
@@ -34,3 +34,13 @@ FR-2 数据前置：三张新表迁移（DDL 见 SDD §2.1，注意 approval_rec
 
 ## 完成标志
 构建通过 + 迁移可重放（down/up 或重建卷）+ 单测绿 + 完成记录回填。
+
+## 完成记录（2026-07-31）
+
+- **提交**：multica worktree b78434bd2（requirement/CR-2026-002，已推 origin fork——multica 侧首个 CR 分支推送）。
+- **迁移 158**：三表 DDL 落地。**实测验证**（临时库 aifirst_t04，001 基表 + 158，生产 multica 库未动）：① 同证据 reject×2 + approve×1 = 3 行共存；② approve 重复插入 → 撞 `approval_record_approve_uniq`（SDD-SUG-001 部分唯一索引双向验证）；③ cr_sync_event `ON CONFLICT DO NOTHING` 幂等 → 1 行；④ down 迁移三表干净回滚。
+- **governance 包**：`transitions_gen.go`（45 条展开转移 = 21 直接 + 2 wildcard×12，来源 tools@63f5f0c）+ `IsLegalTransition`（空 trigger 只按 from/to 匹配，为 commit 兜底扫描留口）+ `actions.go` 两个 `aifirst.` 常量（activity_log 免迁移）。Go 测试 3 项全绿，gofmt/vet/全仓 build 通过。
+- **gen --check 红绿验证**：篡改 gen 文件 → exit 1；恢复 → exit 0。比对忽略"来源 SHA"行——tools 提交推进但状态机没变不算漂移。CI 挂接留待 fork CI 就位（记 CUSTOM.md #4 备注），当前由本地 --check 承担。
+- **过程发现两个真 bug（都被当场修掉）**：① 生成器的跨行正则被 CRLF 检出静默失配，wildcard 两条转移（rejected/withdrawn 入口）差点丢失——加行尾规范化 + 解析失败即 exit 2 硬失败；② 状态数断言：具名状态实为 15，"16 态"的口径含 (new)。
+- **两个如实记录**：① SDD §5 曾写"multica 无 internal/service 包"——**事实错误**（该包存在）；governance 新包的决策依据（规则一冲突面隔离）不受影响，但 SDD 的论据行需在评审时知悉；② multica CLAUDE.md 规定代码注释必须英文，初稿中文注释已全部重写（迁移 SQL/Go/生成器及其产物）。
+- **CUSTOM.md**：新增台账 #3（迁移）#4（governance 包，含状态机变更流程：改 tools → 重跑 gen → 提交两仓）。
