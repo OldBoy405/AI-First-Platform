@@ -15,7 +15,9 @@ owners:
     assigned-at: "2026-07-31T07:17:01+08:00"
 target-version: "0.11"
 source: docs/product/P1-crctl接入设计.md
-status: writing-back
+status: archived
+archived-at: "2026-07-31T19:53:00+08:00"
+writeback-spec-id: ai-first-platform
 created: "2026-07-31T07:17:01+08:00"
 updated: "2026-07-31T07:17:01+08:00"
 remote-ref: ""
