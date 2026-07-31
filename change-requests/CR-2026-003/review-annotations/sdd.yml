@@ -1,0 +1,47 @@
+cr-id: CR-2026-003
+review-type: tech-design
+reviewer: ai-reviewer
+reviewed-at: "2026-07-31T20:55:00+08:00"
+verdict: block
+blockers:
+  - id: SDD-BLOCK-001
+    location: "§2 数据模型 + §4.1 占位符方案"
+    issue: >-
+      §2 的关键断言「commit_sha 列在业务逻辑中只被用作幂等键的一部分（从未被反查语义化）」
+      与实际代码不符：multica crsync.go applyStatus() 的 INSERT 分支（L242）和 UPDATE 分支
+      （L255 的 CASE WHEN $4 <> '' THEN $4）都会把非空 commit_sha 写入 cr.projected_commit。
+      按 §4.1 的占位符方案，pending:{ms}:{pid}:{seq} 这类字符串会被当作真实 commit 指针
+      污染投影表——看板会显示一个不存在的 commit，且在下一个 checkpoint/reconcile 覆盖前
+      持续可见。修复方案缺服务端配套防护。
+    suggestion: >-
+      SDD 需补充服务端半边：applyStatus 的两处写入点把「pending: 前缀的 sha」按空串对待
+      （仅用于幂等键，不写入 projected_commit）；§2 的错误断言改写为如实描述；
+      占位符前缀 "pending:" 是 crctl(JS) 与 multica(Go) 的跨语言契约，需仿照
+      digest-vectors 的做法在两侧测试中锁定（至少各有一条断言引用同一字面量）。
+repair-target: write-tech-design
+repair-instructions:
+  - "§4.1 增加服务端配套：crsync.go applyStatus 两处 projected_commit 写入点对 pending: 前缀 sha 按空串语义处理（幂等键仍用完整占位符）"
+  - "§2 改写 commit_sha 列语义描述：如实写明该值会进入 cr.projected_commit，因此占位符必须被服务端识别并排除"
+  - "§6 映射表补 crsync.go 一行；§8 AC-1 测试设计补『占位符不得出现在 cr.projected_commit』断言"
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 0
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-07-31T20:55:00+08:00"
+      result: block
+      blocker-count: 1
+      repair-target: write-tech-design
+suggestions:
+  - "pending: 前缀契约建议在 tools 侧 crctl.test.mjs 与 multica 侧 crsync 测试中用同一字面量各锁一条断言（跨语言契约防漂移，同 digest-vectors 先例）"
+fr-coverage:
+  total: 2
+  covered: 2
+  missing: []
