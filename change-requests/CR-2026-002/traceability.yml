@@ -1,4 +1,27 @@
 cr-id: CR-2026-002
+tests:
+  report: change-requests/CR-2026-002/test-report.md
+  status: pass
+  owner: Ray
+  owner-assigned-at: "2026-07-31T07:17:01+08:00"
+  generated-at: "2026-07-31T18:10:37+08:00"
+  repair-target: implement-code
+  review-loop:
+    current-attempt: 0
+    max-attempts: 3
+    attempts:
+      - attempt: 0
+        generated-at: "2026-07-31T18:10:37+08:00"
+        result: pass
+        blocker-count: 0
+        repair-target: implement-code
+  commands:
+    - name: lint
+      result: pass
+    - name: test
+      result: pass
+    - name: build
+      result: pass
 notes-on-record:
   - id: NOTE-T08-1
     topic: 审批签名密钥的 fail-closed 语义（部署必读）
