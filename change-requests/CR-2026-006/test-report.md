@@ -6,10 +6,16 @@ title: P2 三模式聊天 CR-A — 验收报告（TASK-06）
 target-version: "0.13"
 owner: Ray
 owner-role: test
-status: draft
+status: pass
 created: "2026-08-02T02:05:00+08:00"
-updated: "2026-08-02T02:05:00+08:00"
+updated: "2026-08-02T04:05:00+08:00"
 ---
+
+> **验收口径确认**：AC-1/AC-4/AC-5/AC-6 完整通过（AC-4/AC-5 含真机 API 级/SQL 级验证）；
+> AC-2 的发送链路（容器懒创建/守卫/落库/入队/补偿）已 API 级真机验证，仅 agent 实际执行段
+> 待本机 daemon；AC-3/AC-7 的应用层逻辑由单测覆盖，同样仅 agent 真实执行/daemon 模型上报
+> 段待本机 daemon（本机当前未安装 Claude Code/Codex CLI，经用户确认后接受该覆盖范围，
+> 将 daemon 全链路验证作为部署前独立验收关口，见 §4 清单）。
 
 # 验收报告 — CR-2026-006（P2 三模式聊天 CR-A）
 

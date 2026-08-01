@@ -1,0 +1,67 @@
+cr-id: CR-2026-006
+review-type: code
+reviewer: ai-reviewer
+reviewed-at: "2026-08-02T04:00:00+08:00"
+verdict: pass
+blockers: []
+diff-range: "d0e25fe8d..3373f75af"
+task-progress: "6/6"
+review-note: >-
+  两轴（Standards/Spec）并行子 agent 评审，本次全部发现均已修复并再验证（views 179 测试 +
+  core 10 测试全绿，tsc 干净），故直接以 pass 记录，无 outstanding suggestions。
+findings:
+  - id: CODE-FIND-001
+    axis: spec
+    severity: real-gap
+    location: "packages/views/projects/components/project-chat-panel.tsx"
+    issue: >-
+      SDD §5.2 要求未配置态 owner/admin 见内联 agent 选择器（选定即写
+      settings.team_agent_id），但从 TASK-03 到 TASK-05 该 CTA 始终是 disabled 按钮 +
+      TODO(TASK-05) 注释，选择器与 PUT 调用从未真正接上，影响 FR-8/AC-7 完整闭环。
+    outcome: fixed
+    fix-commit: dad3f07c7
+    fix-summary: >-
+      新增 TeamAgentSetupPicker（复用 PropertyPicker/agentListOptions/ActorAvatar）+
+      useSetProjectTeamAgent 非乐观 mutation（PUT settings.team_agent_id，成功后
+      invalidate projectKeys.chat）。
+  - id: CODE-FIND-002
+    axis: standards
+    severity: hard-violation
+    location: "packages/views/projects/components/project-team-agent-chat.test.tsx"
+    issue: >-
+      mock useProjectChatStore 为纯 selector 函数，未附加 getState，违反测试规则
+      "mock @multica/core store 用 Zustand callable-store shape (selectorFn + getState)"
+      （对照 chat-input.test.tsx 的 Object.assign 写法）。
+    outcome: fixed
+    fix-commit: dad3f07c7
+    fix-summary: 改为 Object.assign(selectorFn, { getState }) 的 callable-store 形态。
+  - id: CODE-FIND-003
+    axis: standards
+    severity: hard-violation
+    location: "packages/views/projects/components/project-team-agent-chat.tsx"
+    issue: >-
+      发送时只在按钮显示 spinner，未在消息流插入可见 pending 占位，偏离 CLAUDE.md
+      "chat/message send 用 pending-message 模式（立即渲染可见 pending + 失败重试，非静默乐观）"。
+    outcome: fixed
+    fix-commit: dad3f07c7
+    fix-summary: >-
+      新增 pendingMessage 本地状态，点击发送同步渲染可见 pending 气泡，finally 清除
+      （成功/失败均清，草稿保留语义不变）。
+  - id: CODE-FIND-004
+    axis: standards
+    severity: smell
+    location: "packages/views/projects/components/project-chat-panel.tsx"
+    issue: "!!chat?.team_agent_id && !!chat.issue_id 对字符串字段用真值判断（server 字段默认值为空字符串非 undefined）"
+    outcome: fixed
+    fix-commit: dad3f07c7
+    fix-summary: 改为显式非空字符串比较 chat.team_agent_id !== "" && chat.issue_id !== ""。
+  - id: CODE-FIND-005
+    axis: standards
+    severity: smell
+    location: "packages/views/projects/components/project-team-agent-chat.tsx"
+    issue: "TeamAgentComposer 混合 draft/model-picker/queue-lock/send 四类关注点，轻度 Divergent Change 倾向"
+    outcome: skipped
+    fix-summary: >-
+      分区注释清晰、四类关注点耦合度低，强行拆分收益不明确；判断性 smell，风险可控，
+      有意保留不做拆分。
+suggestions: []
