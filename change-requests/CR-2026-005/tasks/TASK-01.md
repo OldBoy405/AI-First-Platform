@@ -5,7 +5,7 @@ cr-ref: CR-2026-005
 plan-ref: "change-requests/CR-2026-005/plan.md"
 sdd-ref: "change-requests/CR-2026-005/sdd.md"
 title: deliveryIndexComplete 门禁 + writeback-tasks skill + write-dev-tasks slug 提示
-status: pending
+status: done
 estimate: 5h
 depends-on: []
 assignee: ""
@@ -37,3 +37,16 @@ created: "2026-08-01T15:25:00+08:00"
 
 ## 完成标志
 上述 5 项验证通过 + tools 仓 commit（仅暂存本任务改动的具体文件，不动仓内其他未提交的无关文件）+ 完成记录回填本文件。
+
+## 完成记录（2026-08-01）
+
+- **实现 commit**：tools 仓 `custom/main` @ `9d65fb6`（已推 origin，4 文件 +76/-46）。
+- **重要发现**：`writeback-tasks/SKILL.md` 早已存在（工具包初始脚手架时生成，`git log` 只有一次提交），但其描述的 id/字段/文件名格式与 CR-2026-001~004 实际采用的格式完全不兼容，从未被真正调用过——本任务按实际数据重写，而非新建。
+- **验收条件核验**：
+  1. ✅ AC-1 用 CR-2026-001~004 真实历史数据重放 `deliveryIndexComplete`，全部 `ok:true`。**过程中发现并修复一个真实 bug**：`delivery/task/_index.yaml` 顶层是 `{tasks:[...]}` 而非裸列表，初版实现假设错误导致 `TypeError: .map is not a function`；用手造 fixture 测试时因 fixture 恰好符合错误假设而未测出，改用真实数据重放后才暴露——这正是 SDD 里强调"用真实历史数据做 AC-1"的价值所在。
+  2. ✅ AC-2：fixture 复现 CR-2026-003 当年漏登场景（done 任务未登记），门禁正确拒绝并列出缺失 id。
+  3. ✅ AC-3：手工按 `writeback-tasks` SKILL.md 新版步骤走查——TASK-01 fixture 显式 `slug` 字段与 TASK-02 fixture 无 slug 回退 `task-{NN}` 两条分支均正确；索引追加后门禁转 `ok:true`（自证闭环）。
+  4. ✅ AC-4：重复执行同一回写逻辑，0 新增文件、0 重复索引行。
+  5. ✅ AC-5：无 done 任务的 CR、全局索引文件不存在两个边界均正确处理，不误报不崩溃。
+- **技术评审 3 条建议全部落地**：slug 建议字段已写入 `write-dev-tasks` 模板；孤儿索引行反向检查明确未实现（按计划留作独立评估项）；`writeback-tasks` 调用时机已在 SKILL.md 头部显式写明。
+- 提交前确认 tools 仓内其他 9 个无关的未提交文件（`AGENT-SKILL-MATRIX.md` 等）未被触碰——仅精确暂存本任务改动的 4 个文件。
