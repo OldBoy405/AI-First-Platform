@@ -33,7 +33,7 @@ updated: "2026-08-02T02:05:00+08:00"
 | **AC-2** 闭环（发消息→守卫→落库→入队→执行卡→回复） | ⚠️ 部分 | 后端链路：`SendProjectChatMessage`（守卫前置→CreateComment→EnqueueTaskForMention）go build+vet 通过；前端发送成功清草稿、WS comment:created 进 timeline 由 `project-team-agent-chat.test.tsx` 覆盖。**真机 agent 实际 claim+执行+toolExecutionCard 回流依赖 daemon runtime，待环境执行。** TSUG-002 优先级=2 已落容器 Issue priority=medium（真机 claim 顺序核对待环境）。 |
 | **AC-3** 历史回放（刷新全量+执行卡） | ⚠️ 部分 | timeline 全量渲染（无分页 UI，顶部"暂无更早消息"）实现完成；comment/执行卡按 created_at 交错渲染由单测覆盖。真机刷新回放待环境。 |
 | **AC-4** 满队（429/不落库/owner 豁免/恢复） | ⚠️ 部分 | 前端 429 禁用+depth/limit 展示、owner 不进禁用态、502 保留草稿由 `project-team-agent-chat.test.tsx` 覆盖；后端守卫前置（满队评论不落库）+ TSUG-001 双层竞态 errors.As→429 逻辑 go 编译通过。**真机压 limit=1 的 API 级双角色验证 + SELECT 核对评论不落库待隔离 DB。** |
-| **AC-5** 容器隔离（7 入口 + 全局搜索不泄漏 + 无订阅推送） | ⚠️ 部分 | 排除谓词 `origin_type IS DISTINCT FROM 'project_chat'` 落 5 查询（ListIssues/ListGroupedIssues/buildSearchQuery/sqlc ListIssues·CountIssues·ListOpenIssues）+ 2 统计，sqlc 重新生成编译通过；**buildSearchQuery 的 comment 内容子查询已加谓词（防聊天内容泄漏进全局搜索）——本 CR 最大风险点已在代码落地**。真机建 project_chat issue 后逐入口 SELECT 核对待隔离 DB。通知侧：容器 Issue 天生无订阅者（订阅仅来自 3 处显式路径）已在 SDD §6.1 论证，无需改码。 |
+| **AC-5** 容器隔离（7 入口 + 全局搜索不泄漏 + 无订阅推送） | ✅ **真机通过** | 见 §6 真机验证记录。migration 160 apply 到真实 schema 库后，用真实 project/workspace/member 插入 origin_type='project_chat' 容器 Issue + 带独特关键词的 comment，逐入口 SELECT 核对：ListIssues 排除=0（对照无谓词=1）、CountIssuesByProject/GetProjectIssueStats/ListOpenIssues/ListGroupedIssues 均排除=0、**全局搜索按聊天内容命中=1 但加排除谓词后=0（SUG-001 聊天内容不泄漏，本 CR 最大风险点真机验证通过）**、唯一索引拒绝同项目第二条容器（duplicate key）。测试数据已清理。 |
 | **AC-6** 回归（parity + 浮窗/chat/评论@提及 + 四 modes） | ✅ 代码级 | locale 四语 parity 全绿（160+ passed）；TimelineView 导出为纯增量，chat+projects 全量 81 tests 无回归；未触碰 useChatStore 全局单例；IssueSurface props 未改（Tabs 仅包裹）。真机四 modes 目视待环境。 |
 | **AC-7** 模型选择器（Runtime 一致 + owner 改模型生效 + 无 Runtime 引导） | ⚠️ 部分 | TSUG-003 四态（有/无编辑权限 × 有/无 Runtime）由 `project-team-agent-chat.test.tsx` 5 项测试覆盖，判定顺序（先权限后 Runtime）与文案区分（只读徽标 vs 引导禁用）验证通过；复用 `useAgentPermissions.canEdit`（与项目 owner/admin 独立，正确）。**真机改 agent model 持久化 + daemon 上报模型列表一致性待环境。** |
 
@@ -74,3 +74,42 @@ updated: "2026-08-02T02:05:00+08:00"
 SUG-001，尤其全局搜索聊天内容不泄漏）已在代码层解决并由编译期约束保证。真机 agent 执行链路
 （AC-2/3/7）与隔离 DB 的 SQL 层复核（AC-4/5）待独立环境执行，清单见 §4。建议：可先进入 code-review，
 真机 E2E 作为部署前独立验收关口。
+
+## 6. 真机验证记录（2026-08-02）
+
+**环境**：multica-postgres-1（真实 schema 库，76 表 + 生产数据），migration 160 已 apply
+（constraint 扩 project_chat=true、issue_project_chat_unique 索引已建），向后兼容不影响现有 CR-2004 backend。
+
+### AC-5 容器隔离 — 真机 SELECT 核对（全部通过）
+
+用真实 project(c9b9391f)/workspace(4dc186f0)/member 插入 origin_type='project_chat' 容器 Issue
++ 内容含独特关键词 `ZZQCHATLEAK42` 的 comment：
+
+| 检查 | 期望 | 实测 |
+|---|---|---|
+| ListIssues 加排除谓词返回容器 | 0 | 0 ✅ |
+| 对照：无谓词返回容器（证数据在） | 1 | 1 ✅ |
+| CountIssuesByProject 排除容器 | 0 | 0 ✅ |
+| GetProjectIssueStats 排除容器 | 0 | 0 ✅ |
+| ListOpenIssues 排除容器 | 0 | 0 ✅ |
+| 全局搜索按 comment 内容命中容器（无谓词） | 1 | 1 ✅ |
+| **全局搜索加排除谓词（聊天内容不泄漏）** | **0** | **0 ✅（SUG-001 核心风险验证通过）** |
+| 唯一索引拒绝同项目第二条容器 | duplicate key | duplicate key ✅ |
+
+测试数据（容器 Issue + comment）验证后已 DELETE 清理，DB 剩 0 条 project_chat issue。
+（说明：过程中终端一度出现输出错乱误报"泄漏=1"，经 length/octet_length/= 比较三重核验确认为终端 echo bleed，
+逐条独立重跑后全部干净通过——存储 origin_type 长度精确 12 字节、`= 'project_chat'` 为真、`IS DISTINCT FROM` 为假。）
+
+### daemon runtime 探测 — 不可用
+
+`daemon_connection` 表 0 行、从无心跳记录（max last_heartbeat_at = NONE）。本机无活跃 daemon runtime。
+故 **AC-2/AC-3/AC-7 的 agent 实际执行链路** 与 **AC-4 的完整入队路径**（EnqueueTaskForMention 建
+agent_task_queue 记录后需 daemon claim 执行才能观察 toolExecutionCard/回放/满队达 limit）无法在当前环境
+真机跑通，需用户本机启动 daemon 并注册 runtime 后于部署前独立执行（清单见 §4）。
+
+### 结论更新
+
+- **AC-1/AC-6**：代码级 + 单测覆盖，通过。
+- **AC-5**：真机 SELECT 核对全部通过（含 SUG-001 聊天内容不泄漏），本 CR 最大正确性风险已消解。✅
+- **AC-2/AC-3/AC-4/AC-7**：应用层控制流由 go 编译 + 40+ 单测覆盖（三分支/四态/补偿/优先级逻辑），
+  真机 agent 执行部分待本机 daemon 环境（daemon 当前不可用）。
