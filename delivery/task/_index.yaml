@@ -106,3 +106,45 @@ tasks:
     cr-ref: CR-2026-002
     target-version: "0.11"
     estimate: 8h
+  - id: CR-2026-003-TASK-01
+    file: TASK-0.11.1-CR-2026-003-01-crctl-pending-commit-sha-placeholder.md
+    title: crctl pendingCommitSha 占位符（embedded 幂等键防碰撞）
+    status: done
+    cr-ref: CR-2026-003
+    target-version: "0.11.1"
+    estimate: 3h
+  - id: CR-2026-003-TASK-02
+    file: TASK-0.11.1-CR-2026-003-02-multica-projectable-sha-history-snapshot.md
+    title: multica 服务端 pending 防护 + reconcile 历史快照自愈
+    status: done
+    cr-ref: CR-2026-003
+    target-version: "0.11.1"
+    estimate: 4h
+  - id: CR-2026-003-TASK-03
+    file: TASK-0.11.1-CR-2026-003-03-end-to-end-acceptance-history-convergence.md
+    title: 端到端验收 + 历史脏投影真实收敛（AC-1/2/3）
+    status: done
+    cr-ref: CR-2026-003
+    target-version: "0.11.1"
+    estimate: 5h
+  - id: CR-2026-004-TASK-01
+    file: TASK-0.12-CR-2026-004-01-queue-capacity-guard-preempt-withdraw.md
+    title: multica 后端 — 队列容量守卫 + 插队 + 撤回权限边界
+    status: done
+    cr-ref: CR-2026-004
+    target-version: "0.12"
+    estimate: 8h
+  - id: CR-2026-004-TASK-02
+    file: TASK-0.12-CR-2026-004-02-queue-indicator-frontend-ws.md
+    title: multica 前端 — 队列条禁用态 + WS 实时刷新（packages/views）
+    status: done
+    cr-ref: CR-2026-004
+    target-version: "0.12"
+    estimate: 6h
+  - id: CR-2026-004-TASK-03
+    file: TASK-0.12-CR-2026-004-03-end-to-end-acceptance.md
+    title: 端到端验收（AC-1~5 真机）
+    status: done
+    cr-ref: CR-2026-004
+    target-version: "0.12"
+    estimate: 4h
