@@ -23,7 +23,7 @@ owners:
     assigned-at: "2026-08-01T13:00:00+08:00"
 target-version: "0.12.1"
 source: "CR-2026-004 归档收尾核对发现的治理工具链空白（delivery/task 回写无 skill 无 gate）"
-status: tech-design-review-pending
+status: tech-design-reviewed
 created: "2026-08-01T13:00:00+08:00"
 updated: "2026-08-01T13:00:00+08:00"
 remote-ref: ""
