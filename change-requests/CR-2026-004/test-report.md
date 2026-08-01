@@ -3,7 +3,7 @@ id: CR-2026-004-test-report
 type: TEST-REPORT
 cr-ref: CR-2026-004
 title: Team Agent 共享队列容量上限 — 端到端验收报告
-status: final
+status: pass
 created: "2026-08-01T11:00:00+08:00"
 ---
 

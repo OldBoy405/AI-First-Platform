@@ -1,0 +1,45 @@
+cr-id: CR-2026-004
+review-type: code
+reviewer: ai-reviewer
+reviewed-at: "2026-08-01T11:10:00+08:00"
+verdict: pass
+blockers: []
+repair-target: implement-code
+repair-instructions: []
+evidence:
+  diff-range: "28e562c21...da03782a8（multica worktree，31 文件 +847/-18）"
+  commits:
+    - "44d58b155 T01 后端（迁移 159 + 守卫 + 插队 + 撤回权限 + 6 真库集成测试）"
+    - "da03782a8 T02 前端（queue-status 读端点 + core/views 组件 + 四语言 locale + 3 组件测试）"
+  verification:
+    - "go build ./... / go vet 通过"
+    - "handler 包全量测试 ok（含新增 9 个用例）；service 包排除 10 个 main 上同样失败的 SKILL.md frontmatter 检查后 ok"
+    - "views 218 + core 66 测试全绿；两包 tsc --noEmit 干净；eslint 改动文件 0 error"
+    - "test-report.md：AC-1/2/3/4 真机全过（真实部署镜像 d2c68b46ecc2/2f985eebbc7a），AC-5 双端分别验证"
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 0
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-08-01T11:10:00+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: implement-code
+suggestions:
+  - id: CODE-SUG-001
+    location: "server/internal/handler/issue.go writeProjectQueueFull"
+    note: "用了裸 json.NewEncoder 而非 writeJSON（后者带 Content-Length 缓冲）；行为正确但与仓内响应写法不一致，下次触碰时顺手统一"
+  - id: CODE-SUG-002
+    location: "server/internal/handler/project.go UpdateProject"
+    note: "settings patch 与主字段 UpdateProject 是两次独立写（非事务）：若后者失败 settings 已生效。当前 settings 只有一个键、语义独立可接受；将来 settings 键增多或与主字段耦合时改为同事务"
+  - id: CODE-SUG-003
+    location: "packages/views/modals/quick-create-issue.tsx"
+    note: "project_queue_full 分支无组件测试（agent_unavailable 分支同样没有，仓内既有状态）；补一个带 429 mock 的分支测试成本低，随下个前端任务带上"
+task-coverage: "3/3（T01/T02 代码 + T03 验收动作无新代码）"
