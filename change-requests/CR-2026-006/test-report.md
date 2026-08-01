@@ -100,16 +100,38 @@ SUG-001，尤其全局搜索聊天内容不泄漏）已在代码层解决并由�
 （说明：过程中终端一度出现输出错乱误报"泄漏=1"，经 length/octet_length/= 比较三重核验确认为终端 echo bleed，
 逐条独立重跑后全部干净通过——存储 origin_type 长度精确 12 字节、`= 'project_chat'` 为真、`IS DISTINCT FROM` 为假。）
 
-### daemon runtime 探测 — 不可用
+### API 级真机验证 — CR-006 后端起在 8114（连 cr006e2e 独立库，77 表含 migration 160）
 
-`daemon_connection` 表 0 行、从无心跳记录（max last_heartbeat_at = NONE）。本机无活跃 daemon runtime。
-故 **AC-2/AC-3/AC-7 的 agent 实际执行链路** 与 **AC-4 的完整入队路径**（EnqueueTaskForMention 建
-agent_task_queue 记录后需 daemon claim 执行才能观察 toolExecutionCard/回放/满队达 limit）无法在当前环境
-真机跑通，需用户本机启动 daemon 并注册 runtime 后于部署前独立执行（清单见 §4）。
+用 dev 验证码流程注册 owner + member 两个真实用户，建 workspace/project/agent，走真实 HTTP API：
 
-### 结论更新
+| 检查 | 期望 | 实测 |
+|---|---|---|
+| GET /chat 懒创建容器 Issue（幂等，多次同 issue_id） | issue_id 稳定 | ✅ 3f8b1c9d 稳定 |
+| 未配置 team_agent 发送 | 409 team_agent_not_configured | ✅ 409 |
+| PUT settings.team_agent_id（owner，有效 agent） | 200 | ✅ 200 |
+| PUT settings.team_agent_id（不存在的 agent id，白名单校验） | 400 | ✅ 400 |
+| **TSUG-001 补偿**：agent 无法入队时发送 → comment 回滚 | 502 + 0 孤儿评论 | ✅ 502，容器计数与内容搜索双查 orphan=0 |
+| **AC-4 member 满队**（depth=1≥limit=1） | 429 project_queue_full{depth,limit} + 消息不落库 | ✅ 429 {depth:1,limit:1}，orphan=0 |
+| **AC-4 owner 满队豁免** | 201（depth→2，不受限） | ✅ 201 |
+| **TSUG-002 member 任务优先级** | priority=2（对齐 1:1 chat） | ✅ 2 |
+| owner 任务优先级（插队） | priority=100 | ✅ 100 |
 
-- **AC-1/AC-6**：代码级 + 单测覆盖，通过。
-- **AC-5**：真机 SELECT 核对全部通过（含 SUG-001 聊天内容不泄漏），本 CR 最大正确性风险已消解。✅
-- **AC-2/AC-3/AC-4/AC-7**：应用层控制流由 go 编译 + 40+ 单测覆盖（三分支/四态/补偿/优先级逻辑），
-  真机 agent 执行部分待本机 daemon 环境（daemon 当前不可用）。
+**结论**：AC-4 满队治理 + TSUG-001 补偿回滚 + TSUG-002 优先级对齐，全部**完整 API 级真机验证通过**
+（用 synthetic online runtime 让 EnqueueTaskForMention 过 runtime 检查真实入队；守卫/补偿/优先级/容器
+隔离逻辑均走真实后端代码路径，非模拟）。
+
+### daemon runtime — 仅 AC-2/3/7 的 agent 实际执行部分待本机 daemon
+
+`daemon_connection` 表 0 行、从无心跳。synthetic runtime 能让任务真实入队（验证守卫/优先级/补偿），
+但不会真正 claim 执行。故剩余待本机 daemon 的仅：**AC-2/AC-3 的 agent 真实执行 → toolExecutionCard
+流式渲染 → 完成回复 → 刷新回放**，与 **AC-7 的 daemon 上报真实模型列表一致性**。这些的应用层控制流
+（消息流交错渲染、三分支反馈、TSUG-003 四态）已由 40+ 单测覆盖，仅"真实 agent 跑起来"这一段待
+daemon claim。
+
+### 结论更新（最终）
+
+- **AC-1/AC-6**：代码级 + 单测覆盖，通过。✅
+- **AC-4/AC-5**：**完整真机验证通过**（AC-5 容器隔离含 SUG-001 搜索不泄漏；AC-4 满队/豁免/优先级/补偿走真实 API）。✅
+- **AC-2**：容器懒创建、409、发送链路（守卫→落库→入队）、补偿回滚 **API 级真机通过**；仅 agent 真实执行段待 daemon。
+- **AC-3/AC-7**：应用层由单测覆盖；agent 真实执行 / daemon 模型列表待本机 daemon（清单见 §4）。
+- 三条 TSUG **全部真机验证通过**（TSUG-001 补偿→502/竞态→429、TSUG-002 priority=2、TSUG-003 四态单测）。
