@@ -110,3 +110,54 @@ history:
         branch: requirement/CR-2026-003
         source-sha: 6bad142ec
         merged-at: "2026-07-31T21:46:00+08:00"
+  - id: CR-2026-004
+    title: P2 三模式聊天 D1 — Team Agent 共享队列容量上限（容量校验 · owner/admin 插队 · 排队项撤回）
+    summary: >-
+      P2 三模式聊天交互设计 §11 唯一后端待建项 D1：agent_task_queue 表与 claim SQL 语义已有（P0），
+      缺容量上限与插队规则这层业务逻辑。交付：① 队列达配置上限（默认 50）时非 owner/admin 入队被拒、
+      前端满队禁用提示；② owner/admin 不受上限限制且 claim 时优先（priority=100）；③ 上限按 project
+      可配置（project.settings JSONB）；④ 撤回自己的排队项（软删除留审计），深度经既有 WS 通道实时可见。
+    owner: Ray
+    owners:
+      requirement:
+        id: Ray
+        assigned-at: "2026-07-31T23:25:40+08:00"
+      development:
+        id: Ray
+        assigned-at: "2026-07-31T23:25:40+08:00"
+      test:
+        id: Ray
+        assigned-at: "2026-07-31T23:25:40+08:00"
+    target-version: "0.12"
+    source: "docs/product/P2-三模式聊天交互设计.md §11 交付切分 D1"
+    prd-path: change-requests/CR-2026-004/prd.md
+    status: archived
+    final-status: archived
+    archive-reason: >-
+      P2 D1 交付完成回写归档：specs/ai-first-platform 累积基线升至 v0.3.0（PRD/SDD 新增 P2 D1
+      里程碑节，feature 0.11.1 → 0.12）+ delivery/task 3 项（并补录 CR-2026-003 三项漏登索引条目）；
+      双仓 merge（docs@cfe4d85 / multica@d0e25fe8d）；AC-1/2/3/4 真机全过（部署镜像
+      d2c68b46ecc2/2f985eebbc7a，验收数据库全程只 SELECT、造数走真实 API，member 主体经
+      send-code→验证码 SELECT→verify→邀请→accept 全 API 建立）；AC-2 插队用 dispatched_at
+      时间戳证明（owner 任务晚建 90s 仍先被 claim）；AC-5 双端分别验证 + 双浏览器人工补验项挂账；
+      代码评审 pass 0 blocker，3 条建议 2 落地 1 有意保留（CODE-SUG-002 单键事务属过度设计）。
+      后续依赖：排队列表 + 逐项撤回的完整聊天窗口 UI 归属 D3（见
+      docs/product/P2-三模式聊天窗口主体-交付切分.md，未排期）。
+    writeback-spec-id: ai-first-platform
+    archived-at: "2026-08-01T12:18:00+08:00"
+    created: "2026-07-31T23:25:40+08:00"
+    updated-at: "2026-08-01T12:18:00+08:00"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: cfe4d85
+        branch: requirement/CR-2026-004
+        source-sha: 766fc77
+        merged-at: "2026-08-01T12:10:00+08:00"
+      - repo: multica
+        trunk: main
+        sha: d0e25fe8d
+        branch: requirement/CR-2026-004
+        source-sha: 196a938d4
+        merged-at: "2026-08-01T12:09:00+08:00"
+
