@@ -1,0 +1,12 @@
+backup-of: specs/ai-first-platform
+backed-up-at: "2026-08-01T22:02:12+08:00"
+cr-ref: CR-2026-005
+reason: >-
+  CR-2026-005（治理工具链补丁 — delivery/task 回写一致性门禁 + writeback-tasks
+  原子化 Skill）回写前基线快照。回写方式为累积追加（新增里程碑分段 + 基线变更记录行），
+  不覆盖既有内容；本快照用于回写事故时恢复。
+files:
+  - path: PRD.md
+    sha256: e5bfcf8d8745db898a7c65f8b4c33514943036968190af8a5f6c64a7f1ed4355
+  - path: SDD.md
+    sha256: dfa4e00b0faf7b6da0839e6daf579921497de25445f31894731e55be432cb91b
