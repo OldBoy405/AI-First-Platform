@@ -8,8 +8,8 @@ owner: Ray
 owner-role: requirement
 status: draft
 created: "2026-08-01T23:40:00+08:00"
-updated: "2026-08-01T23:40:00+08:00"
-revision: "0.1.0"
+updated: "2026-08-01T23:48:00+08:00"
+revision: "0.1.1"
 ---
 
 # PRD — P2 三模式聊天 CR-A：三 tab 窗口骨架 + Team Agent 消息流核心
@@ -82,6 +82,7 @@ revision: "0.1.0"
 - **AC-4**（FR-5/7，满队路径）队列满（利用 D1 的 project 级 limit 配置压低上限构造）时：普通成员发送同步收到 429 且消息不落库、输入区禁用并展示 depth/limit、队列释放后恢复；owner/admin 同场景仍可正常发送入队。
 - **AC-5**（FR-4，容器隔离）`team-agent-chat` 容器 Issue 不出现在 Issue 列表/看板/泳道/甘特/my-issues；群聊消息不在 Issue 面板产生可见噪音。
 - **AC-6**（NFR-2/3，回归）locale parity 测试全绿；既有浮窗 chat、全页 /chat、Issue 页评论 @提及路径回归通过。
+- **AC-7**（FR-8，模型选择器）输入区模型选择器展示 daemon 上报的本机 Runtime 可用模型列表（与 runtimes 页数据一致）；无可用 Runtime 时展示「请先在设置中启动本地 Agent」引导且发送不可用。
 
 ## 6. 成功指标
 
