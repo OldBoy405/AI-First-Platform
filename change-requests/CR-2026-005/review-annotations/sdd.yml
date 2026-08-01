@@ -1,0 +1,32 @@
+cr-id: CR-2026-005
+review-type: tech-design
+reviewer: ai-reviewer
+reviewed-at: "2026-08-01T13:50:00+08:00"
+verdict: pass
+blockers: []
+repair-target: write-tech-design
+repair-instructions: []
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 0
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-08-01T13:50:00+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: write-tech-design
+suggestions:
+  - "SDD §3.4 的 slug 兜底方案（task-{NN}）会导致新写的 delivery/task 文件名与历史 4 个 CR 人工拟定的语义化 slug 风格不一致（如 queue-capacity-guard-preempt-withdraw vs task-01）；建议在 write-dev-tasks skill 里把 slug 字段列为『建议填写』而非纯可选，减少新 CR 落入兜底分支的比例"
+  - "checkDeliveryIndexComplete 的 missing 计算目前只单向检查『done 任务是否登记』，没有反向检查『全局索引是否有本 CR 引用但源任务已不是 done（如被撤销）的孤儿行』；孤儿行不影响 archived 门禁通过，但长期可能积累失真数据。可作为独立的 sanity 脚本另行处理，不阻塞本 CR"
+  - "SDD 未提及 writeback-tasks skill 与既有 write-test-report/cr-status-set 等 skill 的调用顺序约定（该 skill 应该在 writing-back 阶段、write-test-report 之后被调用）；建议任务拆分阶段在 plan.md 里写清楚调用时机，避免实现期误放进 archived 阶段之后"
+fr-coverage:
+  total: 3
+  covered: 3
+  missing: []

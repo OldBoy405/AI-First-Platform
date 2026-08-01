@@ -1,0 +1,28 @@
+cr-id: CR-2026-005
+review-type: requirement
+reviewer: ai-reviewer
+reviewed-at: "2026-08-01T13:20:00+08:00"
+verdict: pass
+blockers: []
+repair-target: write-requirement-prd
+repair-instructions: []
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 0
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-08-01T13:20:00+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: write-requirement-prd
+suggestions:
+  - "FR-1 的『按 id 匹配』需要在 SDD 阶段明确 tasks/_index.yaml 的任务 id（如 CR-2026-003-TASK-01）与 delivery/task/_index.yaml 索引行 id 字段是否同名同值——若两者 id 命名约定一致（观察现有 4 个 CR 的索引确实同名），门禁实现可以是简单集合差；否则需要额外映射表"
+  - "FR-2 的 slug 派生规则（从任务标题生成文件名 slug）目前只在既有文件命名里是人工拟定的（如 queue-capacity-guard-preempt-withdraw），SDD 阶段需要给出确定性算法（如标题分词+连字符+长度截断)，否则同一 skill 两次运行可能因人工判断产生不同 slug，破坏 NFR-2 幂等性"
+  - "范围排除提到 backlog→history 归档迁移的同类空白不在本次治理范围，建议 SDD 或本 PRD 附一句『后续若立项，天然可复用本 CR 的 gate 检查模式』，避免团队误以为两个问题彼此无关"

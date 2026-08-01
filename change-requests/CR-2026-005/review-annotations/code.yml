@@ -1,0 +1,42 @@
+cr-id: CR-2026-005
+review-type: code
+reviewer: ai-reviewer
+reviewed-at: "2026-08-01T16:15:00+08:00"
+verdict: pass
+blockers: []
+repair-target: implement-code
+repair-instructions: []
+evidence:
+  diff-range: "tools 仓 0c8e306..9d65fb6（4 文件 +76/-46），另有评审期修正 1 处未单独 commit（见下）"
+  commits:
+    - "9d65fb6 TASK-01（gate check + gates.json 挂点 + writeback-tasks 重写 + write-dev-tasks slug 提示）"
+  verification:
+    - "node --check crctl.mjs 语法通过；JSON.parse gates.json 通过"
+    - "pre-commit hook: skill matrix 一致性校验通过（59 active skill）；agents.contract 校验通过（9 agent）"
+    - "test-report.md：AC-1（CR-2026-001~004 真实数据重放 ok:true，含发现并修复 delivery/task/_index.yaml 顶层 schema 假设 bug）/AC-2（fixture 复现原故障）/AC-3（skill 步骤走查+自证闭环）/AC-4（幂等）/AC-5（两个边界）全绿"
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 0
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-08-01T16:15:00+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: implement-code
+suggestions:
+  - id: CODE-SUG-001
+    location: "tools/skills/shared/crctl/scripts/crctl.mjs checkDeliveryIndexComplete 函数注释"
+    note: "评审时发现注释原文『doneIds 为空或全局索引文件不存在时视为该维度暂无待核对项，不误报』有歧义，容易让人误读成『索引文件不存在=直接放行』，但实际代码把不存在的文件当空集，若有 done 任务仍会正确报告 missing（不是无条件放行）"
+    resolved: "已落地 @ tools b6889ff（就地改写注释，明确两个边界处理方式不同：doneIds 为空才是真正放行；全局文件不存在但 doneIds 非空时是当空集计算、正常报缺失）"
+  - id: CODE-SUG-002
+    location: "tools/skills/writeback/writeback-tasks/SKILL.md"
+    note: "本 skill 目前只有文档（供人/AI 执行者按步骤操作），没有可执行脚本；下次有精力时可以考虑写成 crctl 子命令或独立脚本，减少人工执行时的偏差风险（当前 CR 验收阶段是手工按步骤走查，未来若频繁使用值得脚本化）"
+    resolved: "有意保留——本 CR 范围是治理门禁+格式修正，skill 脚本化是更大的工作量，且当前使用频率（每 CR 一次）不足以证明脚本化投入的必要性，留作使用频率上升后再评估"
+task-coverage: "2/2"
