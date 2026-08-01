@@ -1,0 +1,33 @@
+cr-id: CR-2026-006
+review-type: tech-design
+reviewer: ai-reviewer
+reviewed-at: "2026-08-02T00:50:00+08:00"
+verdict: pass
+blockers: []
+repair-target: write-tech-design
+repair-instructions: []
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 0
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-08-02T00:50:00+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: write-tech-design
+review-notes: >-
+  FR 覆盖 8/8（§7 映射表齐）；需求评审 3 条建议全部定案且有代码级依据（§6，
+  影响面清单/补偿语义/模型选择器核实均落到文件行号）；设计决策 DD-1~DD-6 各有
+  实证依据；两个 PRD 未预见问题（project 无 agent 绑定、timeline 无分页）均给出
+  带先例的方案并标注 ceiling。复用密度高，后端新增面积小，符合 NFR-4 复用优先。
+suggestions:
+  - "TSUG-001: §4.3 守卫是双层的（薄端点前置 guard + EnqueueTaskForMention 内部既有 guard），前置通过后、入队时仍可能因并发竞态从内部冒出 ErrProjectQueueFull——补偿分支必须对该错误单独 errors.As 判断并映射 429（同样删除评论），不能笼统落进 502 enqueue_failed，否则满队竞态会以『系统错误』误报给用户"
+  - "TSUG-002: 群聊消息经 mention 路径入队默认 priority=0，而既有 1:1 chat 任务固定 priority=2——同一 agent 同时服务两者时，1:1 会话会持续插队项目群聊。任务拆分时确认群聊任务优先级取值（建议对齐 2），并在 AC-2 验收时顺带核对 claim 顺序"
+  - "TSUG-003: DD-4 模型选择器的编辑权限沿 agent 编辑权限，与项目 owner/admin 身份可能错位（项目 owner 对他人创建的 agent 无编辑权时只读）——前端需区分『无编辑权限（只读徽标）』与『无可用 Runtime（引导+发送禁用）』两种态的文案，避免把权限问题误导为环境问题"
