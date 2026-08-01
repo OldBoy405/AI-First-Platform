@@ -64,12 +64,14 @@ function checkDeliveryIndexComplete(ws, cr) {
   if (doneIds.length === 0) return { ok: true, missing: [] };            // FR-3 边界①：无 done 任务
   const globalPath = path.join(ws, 'delivery/task/_index.yaml');
   const globalIds = fs.existsSync(globalPath)
-    ? (parseYaml(fs.readFileSync(globalPath, 'utf8')) || []).map(e => e.id)
+    ? (parseYaml(fs.readFileSync(globalPath, 'utf8'))?.tasks || []).map(e => e.id)
     : [];                                                                 // FR-3 边界②：全局索引不存在
   const missing = doneIds.filter(id => !globalIds.includes(id));
   return { ok: missing.length === 0, missing };
 }
 ```
+
+> **实现期修正**：初版误以为 `delivery/task/_index.yaml` 顶层是裸列表（`- id: ...`），实际和 `tasks/_index.yml` 一样有 `tasks:` 包裹键——`grep` 抽查历史数据时只看了深层条目，没确认顶层结构，导致首次真机重放（AC-1，对 CR-2026-001~004 四个历史 CR）时直接抛 `TypeError: .map is not a function`。用真实历史数据做 AC-1 验证的价值正在于此：fixture 自造数据很容易无意中假设成"我以为的格式"而不是"实际的格式"，两者一致时测试全绿但没测出问题。已改为 `?.tasks || []` 并用真实 4 个 CR 数据重新验证通过。
 
 `readEvidenceDoc` 的 `{cr}` 占位替换与已有的 `evaluatePassCondition` 复用同一惯例（`.replaceAll('{cr}', cr)`）；`delivery/task/_index.yaml` 是仓根全局路径，不经过 `{cr}`/`{spec}` 占位替换。
 
