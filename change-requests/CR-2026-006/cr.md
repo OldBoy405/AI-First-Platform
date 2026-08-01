@@ -25,7 +25,7 @@ owners:
     assigned-at: "2026-08-01T23:36:00+08:00"
 target-version: "0.13"
 source: "docs/product/P2-三模式聊天窗口主体-交付切分.md v2（d7e4ece）CR-A"
-status: drafting
+status: requirement-reviewing
 created: "2026-08-01T23:36:00+08:00"
 updated: "2026-08-01T23:36:00+08:00"
 remote-ref: ""

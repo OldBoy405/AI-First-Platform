@@ -1,0 +1,34 @@
+cr-id: CR-2026-006
+review-type: requirement
+reviewer: ai-reviewer
+reviewed-at: "2026-08-01T23:50:00+08:00"
+verdict: pass
+blockers: []
+repair-target: write-requirement-prd
+repair-instructions: []
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 0
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-08-01T23:50:00+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: write-requirement-prd
+review-notes: >-
+  结构完整（概述/US/FR/NFR/AC/指标/排除齐备）；FR→AC 映射经自检修补后全覆盖
+  （评审前发现 FR-8 无对应 AC，已在 PRD 0.1.1 补 AC-7 后再评审）；范围排除逐条
+  指回 CR-B~G 与切分文档 §0.4，范围清晰；依赖识别完整（后向 D1/CR-2026-004，
+  前向 CR-B~G）；与规划对齐（source=交付切分 v2 CR-A 节，FR 覆盖 D2 全部 +
+  D3 核心 + B1/B3/B5）。
+suggestions:
+  - "SUG-001: AC-5 列出的容器 Issue 隐藏点（列表/看板/泳道/甘特/my-issues）之外，容器 Issue 还可能出现在全局搜索、通知、订阅摘要、inbox 等路径；SDD 需给出隐藏过滤的完整影响面清单，逐一处理或论证不受影响，避免验收时才发现遗漏入口"
+  - "SUG-002: FR-5 薄发送端点需在 SDD 明确『comment 已落库但 enqueue 失败』的补偿语义（回滚评论 / 标记失败可重试 / 仅日志）——这是方案甲从 fire-and-forget 升级为同步链路后新引入的部分失败面，不定义会出现『消息可见但 Agent 永不响应』的静默态"
+  - "SUG-003: FR-8 的前置核实（既有 chat 输入区是否已带模型选择器）应作为 SDD 第一批调查项落字并给出结论，复用/新建两分支工作量差异大，直接影响任务拆分与估时"
