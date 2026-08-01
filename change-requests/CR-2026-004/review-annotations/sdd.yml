@@ -1,0 +1,32 @@
+cr-id: CR-2026-004
+review-type: tech-design
+reviewer: ai-reviewer
+reviewed-at: "2026-08-01T00:40:00+08:00"
+verdict: pass
+blockers: []
+repair-target: write-tech-design
+repair-instructions: []
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 0
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-08-01T00:40:00+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: write-tech-design
+suggestions:
+  - "SDD §1 守卫触点列的是 Enqueue* 服务函数清单，但评论合并（coalescing，agent.sql CreateCoalescedTask 一带）若存在独立建行点，实现期须确认它同样路由过 guardProjectQueueCapacity——任务拆分时把「grep 全部 agent_task_queue INSERT 点并逐一核对是否需过守卫」列为显式检查项"
+  - "SDD §3.5 前端队列数刷新触发事件列了 task:queued/task:cancelled/task:dispatch，但 dispatched→running（task:running）会使任务离开 queued+dispatched 口径（深度减一），不监听则显示滞后一步；建议实现期把 task:running（顺带 task:completed/failed 兜底）加入失效重取触发列表"
+  - "迁移编号 1XX 按合入时最新编号取值（当前 158），若与上游 upstream 迁移撞号需 rebase 时重排——沿用平台既有 fork 迁移管理惯例即可，标注为实现期注意项"
+fr-coverage:
+  total: 5
+  covered: 5
+  missing: []
