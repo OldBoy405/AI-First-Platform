@@ -6,7 +6,7 @@ plan-ref: "change-requests/CR-2026-006/plan.md"
 sdd-ref: "change-requests/CR-2026-006/sdd.md"
 title: 模型选择器（绑定 Team Agent 配置）+ 权限态/Runtime 态文案区分
 slug: model-picker
-status: pending
+status: done
 estimate: 3h
 depends-on: [CR-2026-006-TASK-01, CR-2026-006-TASK-03]
 assignee: ""

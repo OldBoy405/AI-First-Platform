@@ -6,7 +6,7 @@ plan-ref: "change-requests/CR-2026-006/plan.md"
 sdd-ref: "change-requests/CR-2026-006/sdd.md"
 title: 容器 Issue 迁移 + 排除谓词 + settings 白名单键
 slug: container-issue-exclusion
-status: pending
+status: done
 estimate: 6h
 depends-on: []
 assignee: ""

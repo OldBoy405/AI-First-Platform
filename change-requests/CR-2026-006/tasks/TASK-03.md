@@ -6,7 +6,7 @@ plan-ref: "change-requests/CR-2026-006/plan.md"
 sdd-ref: "change-requests/CR-2026-006/sdd.md"
 title: 入口 Tabs + 三模式 tab 骨架 + project-chat-store + 四语文案
 slug: chat-window-shell
-status: pending
+status: done
 estimate: 4h
 depends-on: [CR-2026-006-TASK-01]
 assignee: ""

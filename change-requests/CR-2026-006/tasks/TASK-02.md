@@ -6,7 +6,7 @@ plan-ref: "change-requests/CR-2026-006/plan.md"
 sdd-ref: "change-requests/CR-2026-006/sdd.md"
 title: 薄发送端点（守卫→落库→入队→补偿）+ 优先级对齐 + 双层守卫竞态处理
 slug: chat-send-endpoint
-status: pending
+status: done
 estimate: 5h
 depends-on: [CR-2026-006-TASK-01]
 assignee: ""

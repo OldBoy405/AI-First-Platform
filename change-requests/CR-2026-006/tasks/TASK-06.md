@@ -6,7 +6,7 @@ plan-ref: "change-requests/CR-2026-006/plan.md"
 sdd-ref: "change-requests/CR-2026-006/sdd.md"
 title: 端到端验收（AC-1~7）
 slug: e2e-acceptance
-status: pending
+status: done
 estimate: 5h
 depends-on: [CR-2026-006-TASK-02, CR-2026-006-TASK-04, CR-2026-006-TASK-05]
 assignee: ""

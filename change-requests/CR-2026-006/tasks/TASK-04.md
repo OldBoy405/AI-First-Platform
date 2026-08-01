@@ -6,7 +6,7 @@ plan-ref: "change-requests/CR-2026-006/plan.md"
 sdd-ref: "change-requests/CR-2026-006/sdd.md"
 title: Team Agent 消息流（timeline+task-runs+TimelineView）+ 输入区 + 满队反馈
 slug: team-agent-message-stream
-status: pending
+status: done
 estimate: 6h
 depends-on: [CR-2026-006-TASK-02, CR-2026-006-TASK-03]
 assignee: ""
