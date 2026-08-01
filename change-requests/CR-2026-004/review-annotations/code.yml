@@ -35,11 +35,14 @@ review-loop:
 suggestions:
   - id: CODE-SUG-001
     location: "server/internal/handler/issue.go writeProjectQueueFull"
-    note: "用了裸 json.NewEncoder 而非 writeJSON（后者带 Content-Length 缓冲）；行为正确但与仓内响应写法不一致，下次触碰时顺手统一"
+    note: "用了裸 json.NewEncoder 而非 writeJSON（后者带 Content-Length 缓冲）；行为正确但与仓内响应写法不一致"
+    resolved: "已落地 @ multica 196a938d4（改用 writeJSON）"
   - id: CODE-SUG-002
     location: "server/internal/handler/project.go UpdateProject"
     note: "settings patch 与主字段 UpdateProject 是两次独立写（非事务）：若后者失败 settings 已生效。当前 settings 只有一个键、语义独立可接受；将来 settings 键增多或与主字段耦合时改为同事务"
+    resolved: "有意保留——单键场景引入事务属过度设计，触发条件（键增多/耦合）明确"
   - id: CODE-SUG-003
     location: "packages/views/modals/quick-create-issue.tsx"
-    note: "project_queue_full 分支无组件测试（agent_unavailable 分支同样没有，仓内既有状态）；补一个带 429 mock 的分支测试成本低，随下个前端任务带上"
+    note: "project_queue_full 分支无组件测试；补一个带 429 mock 的分支测试"
+    resolved: "已落地 @ multica 196a938d4（新增分支测试：错误文案含 depth/limit、modal 不关闭、草稿不清空；modals 套件 10/10 绿）"
 task-coverage: "3/3（T01/T02 代码 + T03 验收动作无新代码）"
