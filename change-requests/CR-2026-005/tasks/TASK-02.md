@@ -5,7 +5,7 @@ cr-ref: CR-2026-005
 plan-ref: "change-requests/CR-2026-005/plan.md"
 sdd-ref: "change-requests/CR-2026-005/sdd.md"
 title: 端到端验收（AC-1~5）
-status: pending
+status: done
 estimate: 3h
 depends-on: [CR-2026-005-TASK-01]
 assignee: ""
@@ -31,3 +31,7 @@ created: "2026-08-01T15:25:00+08:00"
 
 ## 完成标志
 五条 AC 证据记录 + 完成记录回填 → write-test-report。
+
+## 完成记录（2026-08-01）
+
+详见 `change-requests/CR-2026-005/test-report.md`。五条 AC 全绿，AC-1 真实数据重放过程中发现并修复一处 schema 假设错误（delivery/task/_index.yaml 顶层 `tasks:` 包裹键）。
