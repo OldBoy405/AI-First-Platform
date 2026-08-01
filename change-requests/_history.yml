@@ -160,4 +160,55 @@ history:
         branch: requirement/CR-2026-004
         source-sha: 196a938d4
         merged-at: "2026-08-01T12:09:00+08:00"
+  - id: CR-2026-005
+    title: 治理工具链补丁 — delivery/task 回写一致性门禁 + writeback-tasks 原子化 Skill
+    summary: >-
+      CR-2026-003 归档时 delivery/task 回写漏登 3 条索引行，直到 CR-2026-004 归档时才被
+      偶然发现补registered——根因是回写全靠手工记忆同步、无 skill 承载、无 gate 校验。本 CR
+      治理两层：① crctl archived 门禁新增 deliveryIndexComplete 检查（检测控制，交叉核对
+      CR 的 tasks/_index.yml 与全局 delivery/task/_index.yaml，缺失即拒绝归档）；② 重写
+      writeback-tasks skill 为原子操作（预防控制，消除手工分步同步；发现该 skill 文件早已
+      存在但格式与实际做法完全不兼容，从未被真正调用过）。
+    owner: Ray
+    owners:
+      requirement:
+        id: Ray
+        assigned-at: "2026-08-01T13:00:00+08:00"
+      development:
+        id: Ray
+        assigned-at: "2026-08-01T13:00:00+08:00"
+      test:
+        id: Ray
+        assigned-at: "2026-08-01T13:00:00+08:00"
+    target-version: "0.12.1"
+    source: "CR-2026-004 归档收尾核对发现的治理工具链空白（delivery/task 回写无 skill 无 gate）"
+    prd-path: change-requests/CR-2026-005/prd.md
+    status: archived
+    final-status: archived
+    archive-reason: >-
+      治理工具链补丁交付完成回写归档：specs/ai-first-platform 累积基线升至 v0.3.1（PRD/SDD
+      新增治理工具链补丁节），feature 0.12 → 0.12.1；delivery/task 2 项——用本 CR 自建的
+      writeback-tasks 步骤对自己回写，完成"制造问题→治理→自我验证"闭环；改动落在 tools 仓
+      （custom/main @ b6889ff，无 multica 代码）；AC-1 用 CR-2026-001~004 真实历史数据重放
+      deliveryIndexComplete 门禁时发现并修复一处真实 bug（delivery/task/_index.yaml 顶层
+      {tasks:[...]} 包裹键，初版误判为裸列表）；本 CR 归档动作本身是 deliveryIndexComplete
+      门禁上线后的第一次真实生产验证，正确放行。代码评审 pass，2 条建议 1 落地（注释歧义
+      修正）1 有意保留（skill 脚本化留待使用频率上升后评估）。
+    writeback-spec-id: ai-first-platform
+    archived-at: "2026-08-01T22:20:00+08:00"
+    created: "2026-08-01T13:00:00+08:00"
+    updated-at: "2026-08-01T22:20:00+08:00"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 609f0c0
+        branch: requirement/CR-2026-005
+        source-sha: cfe4d85
+        merged-at: "2026-08-01T22:00:00+08:00"
+      - repo: tools
+        trunk: custom/main
+        sha: b6889ff
+        branch: "（无 worktree，直接提交，tools 不在 dir-graph.yaml 声明范围内，沿用 CR-2026-002/003 先例）"
+        source-sha: ""
+        merged-at: "2026-08-01T16:15:00+08:00"
 
