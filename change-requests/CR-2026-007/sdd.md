@@ -9,7 +9,7 @@ owner-role: development
 status: draft
 created: "2026-08-02T11:05:00+08:00"
 updated: "2026-08-02T12:10:00+08:00"
-revision: "0.2.0"
+revision: "0.2.1"
 ---
 
 # SDD — CR-2026-007：D3 完整形态（队列条 + 撤回 + 停止 + 过滤开关）
@@ -56,8 +56,10 @@ trigger_comment_id→timeline 作者映射在 coalesce 合并（MUL-4195 re-stam
 门槛）。UI 文案：queued/dispatched 项「清除对话」，running 项与运行卡「停止」。
 
 **竞态语义（rev 0.2.0 修正，blocker 1）**：服务端对已完成任务是**幂等 200 + 原状态任务体**
-（I-2），不拒绝。前端判定：响应 `task.status !== 'cancelled'` → toast「任务已结束，无法
-撤回」；403 → toast 服务端 message。已同步 PRD 0.1.2 AC-2 口径。无 409/400 竞态分支。
+（I-2），不拒绝。前端判定三分支 [TSUG-007]：① `status === 'cancelled'` → 成功（含重复
+撤回已 cancelled 项的幂等 200——**静默成功不弹错**，双击撤回不误报）；② 其它终态
+（completed/failed）→ toast「任务已结束，无法撤回」；③ 403 → toast 服务端 message。
+已同步 PRD 0.1.3。无 409/400 竞态分支。mutation 测试覆盖三分支。
 
 **私有 agent 权限不对称（blocker 2，服务端唯一写路径小改）**：I-8 证实"发得进撤不回"。
 **决策：`CancelTaskByUser` 非 chat 分支调整检查顺序——`originator == caller` 时直接放行
@@ -197,3 +199,5 @@ AC-3 在**被停者浏览器**断言以上两点。
 | TSUG-004 两个测试面 | §3 测试面加粗两项 |
 | TSUG-005 查询坐标 agent.sql | DD-3/§3 修正 |
 | TSUG-006 queueStatus 前缀 key | DD-3 采纳，失效处零改动 |
+| attempt 1 blocker：PRD 正文三处残留（FR-3 旧竞态口径+漏 dispatched、NFR-1/技术前提"零改动"与 DD-2 冲突） | PRD 0.1.3 三处同步 |
+| TSUG-007 重复撤回幂等静默 | DD-2 三分支明确 + mutation 测试 |

@@ -8,8 +8,8 @@ owner: Ray
 owner-role: requirement
 status: draft
 created: "2026-08-02T10:20:00+08:00"
-updated: "2026-08-02T12:10:00+08:00"
-revision: "0.1.2"
+updated: "2026-08-02T12:40:00+08:00"
+revision: "0.1.3"
 ---
 
 # PRD — P2 三模式聊天 CR-B：D3 完整形态（队列条 + 撤回 + 停止 + 过滤开关）
@@ -39,8 +39,8 @@ revision: "0.1.2"
 发起人"缺数据源**。本 CR 含一处小后端读侧扩展（FR-6），只加读、不动 D1 写侧与治理语义。
 
 **技术前提**：
-- 撤回/停止全部消费既有 `POST /api/tasks/{taskId}/cancel`（CancelTaskByUser，D1 已收紧权限：
-  queued 项 originator-or-owner，running 沿既有停止语义），**服务端权限逻辑零改动**。
+- 撤回/停止全部消费既有 `POST /api/tasks/{taskId}/cancel`（CancelTaskByUser，originator-or-owner/admin
+  对全部可取消状态一律适用）；服务端仅做 SDD DD-2 的一处权限调序（originator 先行放行），其余零改动。
 - 队列实时性沿 D1 既有 WS 事件驱动（task:queued/cancelled/running/completed/failed 失效重取），不加新连接、不加新事件类型。
 
 ## 2. 用户故事
@@ -60,7 +60,7 @@ revision: "0.1.2"
 |---|---|---|
 | FR-1 | **队列条常驻**：Team Agent 面消息流与输入区之间固定位置常驻队列条，显示「{count} 条排队」（口径=D1 queue-status 的 queue_depth，即 queued+dispatched）；count=0 时收起为不占注意力的形态；随 WS 事件实时更新，无手动刷新 | P0 |
 | FR-2 | **展开列表**：点击队列条展开排队项列表，逐项显示：发起人（头像+显示名，交互稿 `fromUser` 锚点）、请求摘要（触发消息截断）、状态（排队中/已派发）、入队时间；顺序与 claim 顺序一致（priority DESC, created_at ASC，owner/admin 插队项排前） | P0 |
-| FR-3 | **逐项撤回**：列表中**自己发起且仍为 queued** 的项显示「清除对话」按钮 → 调 `POST /api/tasks/{taskId}/cancel`；成功后该项移出列表、计数减一（WS 驱动）、其对应的群聊请求消息标注已撤回；他人项无按钮；竞态兜底：请求已开跑/已撤时服务端拒绝（403/409/非 queued），前端结构化 toast 呈现原因，不静默 | P0 |
+| FR-3 | **逐项撤回**：列表中**自己发起且为 queued/dispatched** 的项显示「清除对话」按钮 → 调 `POST /api/tasks/{taskId}/cancel`；成功后该项移出列表、计数减一（WS 驱动）、其对应的群聊请求消息标注已撤回；他人项无按钮；竞态兜底：任务恰已完成时服务端幂等返回 200+原状态，前端据返回状态提示「任务已结束，无法撤回」（不静默）；非发起人直接调 API 被 403 | P0 |
 | FR-4 | **停止**：① 自己的请求运行中时，输入区「发送」变「停止」（字典 `chat.agentGenerating`「Agent 回复中」）；② Owner 对任意运行中/排队中任务有停止入口（展开列表项 + 运行中工具卡区域）；③ 停止后已生成内容保留（interrupted 徽标，CR-A 已有渲染），槽位立即释放、下一条排队项自动开始；④ 普通成员停他人 → 服务端拒绝原样呈现 | P0 |
 | FR-5 | **「只看 Agent 请求」过滤开关**：Team Agent tab 旁迷你开关；开启后消息流只保留用户请求消息与 Agent 最终结果，隐藏中间工具执行卡与过程性条目；纯本地渲染过滤——不触发网络请求、不动缓存数据、关闭即全量还原；开关状态按项目本地持久化 | P1 |
 | FR-6 | **队列明细数据源（后端读侧小扩展）**：为 FR-2 提供项目级排队明细——预设方案：扩展 `GET /api/projects/{id}/queue-status` 增加 `items[]`（task_id、originator 显示信息、status、priority、created_at、请求摘要），既有 `queue_depth`/`queue_limit` 字段与语义不变（向后兼容，D1 的 ProjectQueueStatus 组件零改动）；权限=工作区成员可读（与现端点一致，交互稿"全员可见"）；明细含**全部占用项目队列的任务**（群聊发起 + Issue 页 @提及/quick-create 发起），不限容器 Issue；等价替代方案（独立明细端点）SDD 定案 | P0 |
@@ -68,8 +68,9 @@ revision: "0.1.2"
 
 ## 4. 非功能需求
 
-- **NFR-1 D1 治理语义零改动**：不修改容量守卫、插队、撤回、cancel 权限的任何服务端写路径；
-  FR-6 仅新增读侧数据，queue-status 既有消费方（右侧 sidebar 指示、CR-A 满队恢复轮询）行为不变。
+- **NFR-1 D1 治理语义零改动**：不修改容量守卫、插队、撤回的服务端语义；cancel 权限仅允许
+  SDD DD-2 所述的一处调序（originator 先行放行，修复私有 agent 下"发得进撤不回"的不对称），
+  其余 cancel 权限路径零改动；FR-6 仅新增读侧数据，queue-status 既有消费方行为不变。
 - **NFR-2 四语文案**：全部新增 UI 文案 en/ja/ko/zh-Hans 四语，locale parity 测试全绿；
   沿用交互稿字典锚点（`fromUser`、`chat.agentGenerating` 等）。
 - **NFR-3 零回归**：CR-A 已交付行为（发送/429 禁用/恢复、消息流渲染、草稿、模型选择器）不变；
