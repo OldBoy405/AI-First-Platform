@@ -267,3 +267,61 @@ history:
         branch: requirement/CR-2026-006
         source-sha: dad3f07c7
         merged-at: "2026-08-02T04:12:00+08:00"
+  - id: CR-2026-008
+    title: P2 三模式聊天 CR-C — D5 Private Ask（chat_session 项目维度 + 项目内私聊面）
+    summary: >-
+      三模式窗口第二 tab 从占位变为可用：B2 后端给 chat_session 加 nullable project_id
+      （与全局 1:1 chat 并存，迁移零改写存量行），前端绕开 use-chat-controller/全局
+      useChatStore 单例。语义四差异：个人独立队列、默认 Ask-only 只读、仅本人可见、与
+      Team Agent 并行。隐私红线（仅本人可见须服务端 per-user 推送保证）实施中核实发现
+      也是既有全局 1:1 chat 一直存在的泄漏面，一并收敛修复。代码评审首轮 block（3
+      blocker）：Ask-only 强制的判定键可被同一受限 agent 进程伪造绕过（严重，改用服务端
+      per-task token 校验修复）、composer 未实现 CLAUDE.md pending-message 模式（主要）、
+      chatCreators 缓存无界（次要），修复后二轮 pass。FR-8 附件/@提及未交付：ChatInput
+      实测非纯 props（内耦合全局 store），技术债留档待 ChatInput 解耦后补。
+    owner: Ray
+    owners:
+      requirement:
+        id: Ray
+        assigned-at: "2026-08-02T10:00:39+08:00"
+      development:
+        id: Ray
+        assigned-at: "2026-08-02T10:00:39+08:00"
+      test:
+        id: Ray
+        assigned-at: "2026-08-02T10:00:39+08:00"
+    target-version: "0.15"
+    source: "docs/product/P2-三模式聊天窗口主体-交付切分.md v2（d7e4ece）CR-C"
+    prd-path: change-requests/CR-2026-008/prd.md
+    status: archived
+    final-status: archived
+    archive-reason: >-
+      P2 三模式聊天 CR-C 交付完成回写归档：specs/ai-first-platform 累积基线升至 v0.5.0
+      （PRD/SDD 新增 P2 CR-C 里程碑节，含既有全局 chat 隐私泄漏面修复记录 + 代码评审
+      3 项发现留痕），feature 0.13 → 0.15；specs/ai-first-platform/traceability.yml 补跑
+      writeback-traceability 新增本里程碑段（并注明 CR-2026-003~006 历史缺口未回填）；
+      delivery/task 5 项任务全部回写（deliveryIndexComplete 门禁正常放行，源任务状态
+      同步补标 done）。代码评审：首轮 verdict=block（CODE-BLOCK-001 严重——ask-only
+      判定键 req.TaskID 客户端可控可绕过，改用服务端签发的 per-task MULTICA_TOKEN 校验；
+      CODE-BLOCK-002 主要——composer 缺 CLAUDE.md 强制的 pending-message 可见态；
+      CODE-BLOCK-003 次要——chatCreators 无界缓存），修复后二轮 verdict=pass，Go/前端
+      全量回归与 main 基线逐项 diff 确认零新增回归。真机验证：AC-1（隐私抓包，首要）/
+      AC-2（并行）/AC-3（Ask-only）/AC-6（双端）转人工清单（见 test-report.md §5），
+      AC-4（三处会话隔离）/AC-5（迁移回归）真实 PG 集成测试验证通过。
+    writeback-spec-id: ai-first-platform
+    archived-at: "2026-08-02T17:51:04+08:00"
+    created: "2026-08-02T10:00:39+08:00"
+    updated-at: "2026-08-02T17:51:04+08:00"
+    merge-commits:
+      - repo: multica
+        trunk: main
+        sha: e2b3777d235685c5991d7743cd6fd0279f952784
+        branch: requirement/CR-2026-008
+        source-sha: d1eef5f5fb174cf473b0c90aaa94d63ee260d1f9
+        merged-at: "2026-08-02T15:53:59+08:00"
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 3a6ef5d1d196ebdc84b25bf39f590f2d624b4f43
+        branch: requirement/CR-2026-008
+        source-sha: 9f7a20c759a15b273d3e8d4858efa1e24cb2e697
+        merged-at: "2026-08-02T15:53:59+08:00"
