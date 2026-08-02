@@ -6,12 +6,48 @@ plan-ref: "change-requests/CR-2026-010/plan.md"
 sdd-ref: "change-requests/CR-2026-010/sdd.md"
 title: chatControlPanel 权限面板 + 消息流通知卡 + 拒绝呈现 + 四语文案
 slug: presenter-panel-notices-i18n
-status: pending
+status: done
 estimate: 6h
 depends-on: [CR-2026-010-TASK-05]
 assignee: ""
 created: "2026-08-02T13:57:20+08:00"
 ---
+
+## 实现状态（2026-08-02）
+
+代码已在 multica worktree（`requirement/CR-2026-010`，commit `e92aba3b3`）落地：
+
+- 新文件 `presenter-control-sheet.tsx`：右侧 Sheet，列出全体 workspace 成员
+  （无项目级成员概念）。**范围偏差**：转让未照抄任务建议的 TeamAgentSetupPicker
+  搜索弹层骨架，改为在每行直接放"转让"按钮——因为面板本身已经把全部候选人渲染成
+  可见行，再加一层搜索弹层是冗余交互，直接按行操作更简单且验收条件同样满足。
+  按角色渲染：owner 见待审行的批准/拒绝、active 行的撤销；presenter 本人见释放
+  按钮 + 对其余每行的转让按钮；普通成员见请求按钮，`my_request` 非空时变为禁用
+  的"已申请"态。
+- `project-team-agent-chat.tsx`：timeline 过滤新增 `presenterNotices` 分支
+  （复用 T04 已经在写的 activity_log + WS activity:created，无新数据源），
+  `TeamAgentStreamView` 加第三个 for 循环渲染 `PresenterNoticeCard`（居中窄条，
+  区别于消息气泡/任务卡容器）。Composer 的 `handleSend` 加 `presenter_required`
+  分支——与 429 满队独立的锁定原因，各自的文案与请求按钮。**自愈合逻辑踩中一个
+  真实 bug**：最初我把"presenter 变为 null"当成解锁信号写自动清除 effect，但
+  对普通成员而言 presenter=null 是永久默认拒绝态（不是解决），不是解锁——唯一
+  真正的解锁转移是"我自己变成了 presenter"；这个 bug 是被新写的测试直接抓出来的
+  （测试失败促使我发现并修正了这个逻辑）。
+- `issue-detail.tsx`：`NEVER_COALESCE_ACTIONS` 加 6 个 presenter_* action
+  （防御性一致，隐藏容器 issue 实际不会走到这个视图）。
+- `inbox-page.tsx`（TSUG-002）：把路由判定抽成纯函数 `resolveInboxItemHref`
+  （同构 `surface-tab.ts` 的既有拆分理由——脱离整页挂载即可单测），5 个
+  presenter inbox type 经 `details.project_id` 深链到项目 Chat tab，不走会
+  404 的默认 issue_id 路径。
+- 四语（`chat.presenter.*`/`chat.control.*`/`chat.notices.*`）本任务内一次性
+  提交全部 4 个 locale——parity 门禁要求同批四语，无法像 T04/T05 原计划那样分批。
+
+**已验证**：`pnpm --filter core --filter views typecheck` 全绿（一个预置且
+未改动的 `modals/quick-create-issue.test.tsx` 失败无关）；`lint` 0 error
+（17 个预置警告，均不在本任务改动文件内）。`packages/core` 805/805、
+`packages/views` 1798/1798 全绿，含新增：PresenterControlSheet 角色渲染测试 7
+个、通知卡测试 6 个（六种 action + 不干扰既有卡片）、composer 拒绝态测试 5 个、
+`resolveInboxItemHref` 纯函数单测 8 个。`locales/parity.test.ts` 四语全绿。
 
 ## 任务描述
 
