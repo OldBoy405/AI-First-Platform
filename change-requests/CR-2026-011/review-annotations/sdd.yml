@@ -1,0 +1,36 @@
+cr-id: CR-2026-011
+review-type: tech-design
+reviewer: ai-reviewer
+reviewed-at: "2026-08-02T12:25:00+08:00"
+verdict: pass
+blockers: []
+repair-target: write-tech-design
+repair-instructions: []
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 0
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-08-02T12:25:00+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: write-tech-design
+review-notes: >-
+  FR 覆盖 6/6（§7 映射齐）；需求评审 3 条建议全部定案且有代码级依据（§6：归因收窄
+  给出七路入队点行号级论证、多 CR 徽标规则落 DD-7、attempt/blocker 来路三选一含
+  弃用理由）；FR-2 收窄（pipeline_node_run_id 本期恒 NULL）在 PRD 技术前提第 3 条
+  授权范围内且论证充分（审批节点本质无对应队列任务，强行 1:1 是虚假数据）；
+  已交付面两个缺口（cr:updated 前端半边、HandleApprove 无角色策略）的识别与闭合
+  方案有调查报告实证；DD-2 的降级安全设计（审批卡不依赖投影器）是正确的容错取向；
+  迁移编号/lint 冻结区/retry 克隆清单/claim 谓词四个陷阱全部提前踩点。
+suggestions:
+  - "TSUG-001: DD-2 的 expect 态判定存在『已批准待推进』窗口——网页批准后 grant 已签发但 cr.status 仍停在 expect 态，直到 daemon 落盘、crctl --grant 级联 advance、事件回流才变化；§5.2 目前只用客户端乐观中间态，刷新/他端会看到卡片退回可批准态且重复点击（幂等 grant 兜底但体验错误）。gates 端点应 join approval_record（同 cr+stage+当前 evidence_digest 的最新 decision）服务端派生 pending_advance 状态，卡片按此渲染跨端一致的『已批准，等待推进』态"
+  - "TSUG-002: node_id 的 UUIDv5 派生函数必须固化为 governance 包公共函数并配测试向量——CR-H Runner 将成为 pipeline_node_run 第二写者，若两处各自决议 node_id（模板真 UUID vs 派生 UUID 混用），同一节点会裂成两行；任务期核实 tools 模板有无稳定节点 UUID，无论结论如何，决议逻辑单点化写进代码而非文档约定"
+  - "TSUG-003: §4.3 gates 端点是 governance 组首个 project 级路由——既有组全部 workspace 级（RequireWorkspaceMemberFromURL），项目成员校验需对齐 project 路由组的既有中间件模式而非新写；同时 cr.shell_issue_id 为 NULL 的历史行（壳 Issue 投影链路接通前注册的 CR）会从 join 中静默消失，需确认存量数据或在查询中显式声明该边界（NULL 行不展示是可接受语义，但要写进验收说明而非留作意外）"
