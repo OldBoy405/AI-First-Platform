@@ -1,0 +1,88 @@
+cr-id: CR-2026-008
+review-type: code
+reviewer: ai-reviewer
+reviewed-at: "2026-08-02T15:35:21+08:00"
+verdict: pass
+blockers: []
+repair-target: implement-code
+repair-instructions: []
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+      - path: test-report.status
+        equals: pass
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 1
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-08-02T14:50:44+08:00"
+      result: block
+      blocker-count: 3
+      repair-target: implement-code
+    - attempt: 1
+      reviewed-at: "2026-08-02T15:35:21+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: implement-code
+suggestions:
+  - "CODE-BLOCK-001 修复引入的 activeTaskAuth 生命周期仍绑定 handleTask（daemon 重启期间正在跑的任务会丢失注册）——与原 askOnlyTasks 的既有限制相同、非本次新增，daemon 崩溃恢复期间的 checkout 韧性留作独立议题，不阻塞本 CR"
+  - "chatCreatorCacheMax=4096 与 taskAnalyticsContextCacheMax 用同一个量级但分别维护两个常量，未来若需要调整可考虑合并成一个共享的『TaskService 进程级缓存上限』配置项，非阻塞"
+task-coverage:
+  total: 5
+  verified: 5
+  unverified: []
+verification:
+  lint: not-applicable
+  test: pass
+  build: pass
+test-report:
+  file: "change-requests/CR-2026-008/test-report.md"
+  status: pass
+  uncovered-risks: []
+evidence:
+  diff-range: "52b571774d284c362825858d91769039d47fe492...HEAD"
+  changed-files:
+    - "server/migrations/161_chat_session_project.up.sql"
+    - "server/migrations/161_chat_session_project.down.sql"
+    - "server/pkg/db/queries/chat.sql"
+    - "server/pkg/db/generated/chat.sql.go"
+    - "server/pkg/db/generated/models.go"
+    - "server/internal/handler/project_chat.go"
+    - "server/internal/handler/project_private_chat_test.go"
+    - "server/cmd/server/router.go"
+    - "server/internal/events/bus.go"
+    - "server/internal/handler/handler.go"
+    - "server/internal/handler/chat.go"
+    - "server/internal/handler/chat_title.go"
+    - "server/internal/handler/daemon.go"
+    - "server/internal/handler/agent.go"
+    - "server/internal/service/task.go"
+    - "server/cmd/server/listeners.go"
+    - "server/cmd/server/listeners_scope_test.go"
+    - "server/cmd/server/chat_event_privacy_test.go"
+    - "server/cmd/server/runtime_sweeper.go"
+    - "server/internal/daemon/daemon.go"
+    - "server/internal/daemon/health.go"
+    - "server/internal/daemon/health_test.go"
+    - "server/internal/daemon/types.go"
+    - "server/internal/daemon/execenv/execenv.go"
+    - "server/internal/daemon/execenv/runtime_config_sections.go"
+    - "server/internal/daemon/execenv/runtime_config_kind_test.go"
+    - "server/cmd/multica/cmd_repo.go"
+    - "packages/core/api/client.ts"
+    - "packages/core/projects/queries.ts"
+    - "packages/core/projects/index.ts"
+    - "packages/views/projects/components/project-chat-panel.tsx"
+    - "packages/views/projects/components/project-chat-panel.test.tsx"
+    - "packages/views/projects/components/project-private-ask.tsx"
+    - "packages/views/projects/components/project-private-ask.test.tsx"
+    - "packages/views/locales/en/projects.json"
+    - "packages/views/locales/ja/projects.json"
+    - "packages/views/locales/ko/projects.json"
+    - "packages/views/locales/zh-Hans/projects.json"
+  fix-commit: "d1eef5f5f"

@@ -7,13 +7,14 @@ tester-assigned-at: "2026-08-02T10:00:39+08:00"
 status: pass
 blockers: []
 created: "2026-08-02T13:05:00+08:00"
-updated: "2026-08-02T13:05:00+08:00"
+updated: "2026-08-02T15:30:00+08:00"
 ---
 
 # CR-2026-008 测试报告 — D5 Private Ask（含 B2 迁移）
 
 > 代码落在 multica worktree `requirement/CR-2026-008`（base：main `52b5717`，含 CR-A）。
-> 提交序列：TASK-01 `7a9bf18` → TASK-02 `61a6778` → TASK-03 `1c5fe0a` → TASK-04 `d6c8e25`。
+> 提交序列：TASK-01 `7a9bf18` → TASK-02 `61a6778` → TASK-03 `1c5fe0a` → TASK-04 `d6c8e25` →
+> review-code 修复 `d1eef5f`（见 §7）。
 > 测试环境：Windows 10 本机 PostgreSQL（无 Docker）；daemon/浏览器双端真机项见 §5 人工清单。
 
 ## 1. 验证命令与结果
@@ -71,7 +72,26 @@ updated: "2026-08-02T13:05:00+08:00"
 4. **AC-6 双端**：desktop（Electron 共享 views 包）目视一致性。
 5. Runtime 缺失引导态目视（pill/availability 文案）。
 
-## 6. 残余与事故记录
+## 6. review-code 修复记录（attempt 0 → 1）
+
+review-code 首轮（attempt 0）verdict=block，3 条 blocker，见
+`review-annotations/code.yml`。逐条修复并验证如下，commit `d1eef5f`：
+
+| Blocker | 修复 | 验证 |
+|---|---|---|
+| CODE-BLOCK-001（严重）：`/repo/checkout` 的 ask-only 判定键是客户端可控的 `req.TaskID`，同一个受限 agent 进程可省略/伪造以绕过 | daemon 侧改用任务自身已持有的 `MULTICA_TOKEN`（服务端 claim 时铸造的 per-task 凭证）做身份校验，`activeTaskAuth` 替换 `askOnlyTasks`；**全部任务**（非仅 ask-only）统一校验 token 匹配，缺省/伪造/冒充他任务一律拒绝 | `TestRepoCheckoutRequiresMatchingTaskToken`（4 反面 case）+ `TestRepoCheckoutRejectedForAskOnlyTask` 新增冒充分支断言；两个既有 checkout 测试同步补 token |
+| CODE-BLOCK-002（主要）：Private Ask composer 未实现 CLAUDE.md 强制的 pending-message 模式，与同 CR 家族 TeamAgentComposer 既有模式不一致 | 补 `pendingMessage` 本地气泡（发送中可见、失败清空保留草稿）+ composer 输入禁用态 | 新测试：气泡内容/空态互斥/composer disabled 三项断言，成功后气泡消失 |
+| CODE-BLOCK-003（次要）：`chatCreators` 是进程级 `sync.Map` 且无淘汰，慢性内存增长 | 换成与相邻 `analyticsContextCache` 同款有界 FIFO（`chatCreatorCacheMax=4096`） | 复跑 T01/T02 相关测试确认零回归 |
+
+两条非阻塞建议（`ProjectPrivateAsk` isLoading 闪烁、composer textarea disabled 一致性）一并顺手修复。
+
+全量回归：Go 侧 handler/cmd-server/service/events/realtime/daemon/execenv 全部重跑，
+失败集与 main `52b5717` 基线逐项 diff **完全一致**（含本节新确认的 `TestShouldCleanTaskDir_NoMetaOldOrphan`
+与 openclaw 配置路径两组——均为本机用户目录/mtime 相关的既有环境失败，与本 CR 无关，
+main 上同样复现）；前端 `project-private-ask`/`project-chat-panel` 套件 11/11 通过；
+`core`/`views` typecheck 状态不变（views 仅剩 §4 已记录的既有 CR-2026-004 遗留错误）。
+
+## 7. 残余与事故记录
 
 - **FR-8 部分延后（需求偏差，需评审知悉）**：附件与 @提及未随本面交付——实施中核实 `ChatInput`
   内部读全局 `useChatStore`（chat-input.tsx:111-112 draft 键），并非 SDD 0.1.1 所述纯 props；
