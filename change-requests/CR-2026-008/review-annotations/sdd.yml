@@ -1,0 +1,65 @@
+cr-id: CR-2026-008
+review-type: tech-design
+reviewer: ai-reviewer
+reviewed-at: "2026-08-02T10:58:44+08:00"
+verdict: pass
+blockers: []
+repair-target: write-tech-design
+repair-instructions: []
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 0
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-08-02T10:58:44+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: write-tech-design
+fr-coverage:
+  total: 9
+  covered: 9
+  missing: []
+review-notes:
+  prd-sdd-alignment: >-
+    §7 映射表 9/9 全覆盖；NFR-1（fail-closed 隐私）落 §4.3、NFR-2（回归）落 DD-5+§8、
+    NFR-4（四语）落 §5.2、NFR-5（复用优先）是设计主轴（零新消息组件/零新表/零新 WS 连接）。
+    需求评审 3 条建议在 §6 逐条定案。
+  architecture: >-
+    基于 multica main 52b5717 实地调查，断言带文件:行号（工程纪律 4）；隐私收敛选
+    per-user SendToUser 而非启用 MUL-1138 scope 订阅（DD-1）论证充分——语义等价、前端零改动、
+    避免客户端订阅协议改造；既有全局 chat 泄漏面顺带修复（§4.4）判定为同一红线同一修复点，
+    非范围蔓延，成立。multica 代码注释英文约定在 §4.3 代码片段中已遵守。
+  data-model: "M1 单列 + 双部分索引 + down 迁移 + CASCADE 依据齐备；存量行零改写满足 AC-5 无损要求；唯一索引防并发双开照抄 CR-A M1 先例"
+  interface-contract: "get-or-create 端点鉴权/409/响应形状明确；会话消息读写/停止全复用既有 creator-only 端点；events.Event 加 ChatRecipientID 的发布点清单给出 6 处具名位置"
+  security-performance: >-
+    fail-closed 分支是 NFR-1 的正确技术表达（宁丢事件不回落广播，前端 invalidate 自愈模式
+    PR#5018 已有先例）；chat:done 收件人取值一次/任务、task:message 一次/批次，无高频查询热点。
+  testability: "§9 逐 AC 给出可操作验证（抓包逐帧/SELECT 核对/满队构造/双设备）；§6.3 四条检查单可直接进测试报告"
+suggestions:
+  - id: SDD-SUG-001
+    location: "§4.3 发布点清单末行"
+    note: >-
+      task:* 发布点的"实施时 grep 全量过一遍"应前移到 write-dev-tasks 阶段完成——
+      任务拆分时即产出 ChatSessionID.Valid 发布点的全量清单并落入对应 TASK 的验收，
+      避免隐私红线的覆盖面依赖实施期自觉；AC-1 的并行抓包场景保留为兜底。
+  - id: SDD-SUG-002
+    location: "DD-6 / AC-3"
+    note: >-
+      "chat 任务不做项目 worktree checkout"的断言未在代码中 100% 闭环（daemon.go:3539
+      convertReposForEnv(task.Repos) 对任务类型无条件传递，chat 任务是否实际触发 repo
+      checkout 取决于 daemon brief 行为，未逐行核实）。按工程纪律 4：TASK 阶段核实该路径；
+      若 chat 任务确实会 checkout 工作区 repo，Ask-only 的机制保证需改在 execenv/brief 层
+      对 chat 任务禁用 checkout，并以 SDD revision 修订 DD-6（结论是否受影响需注明）。
+      AC-3 真机验证保持为最终裁决。
+  - id: SDD-SUG-003
+    location: "§5.1 模型选择器"
+    note: >-
+      Private Ask 面模型只读徽标与 Team Agent 面可编辑（CR-A DD-4）存在同 agent 双入口
+      不一致观感，实施时在只读徽标 tooltip 注明"模型随 Team Agent 配置"，文案计入四语。

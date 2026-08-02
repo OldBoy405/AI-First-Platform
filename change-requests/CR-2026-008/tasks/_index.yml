@@ -1,0 +1,34 @@
+cr-id: CR-2026-008
+generated: "2026-08-02T11:25:00+08:00"
+total-estimate: 24h
+tasks:
+  - id: CR-2026-008-TASK-01
+    title: B2 迁移 + get-or-create 端点（chat_session 项目维度）
+    slug: chat-session-project-dimension
+    status: pending
+    estimate: 4h
+    depends-on: []
+  - id: CR-2026-008-TASK-02
+    title: 隐私收敛——chat 事件 per-user 定向推送（fail-closed）
+    slug: chat-events-per-user-push
+    status: pending
+    estimate: 6h
+    depends-on: []
+  - id: CR-2026-008-TASK-03
+    title: Ask-only 最小强制——ask_only 标记贯穿 enqueue→claim→execenv
+    slug: ask-only-enforcement
+    status: pending
+    estimate: 4h
+    depends-on: ["CR-2026-008-TASK-01"]
+  - id: CR-2026-008-TASK-04
+    title: 前端 Private Ask 面（纯 props 组合 + 只读模型徽标 + 四语）
+    slug: private-ask-panel-frontend
+    status: pending
+    estimate: 5h
+    depends-on: ["CR-2026-008-TASK-01"]
+  - id: CR-2026-008-TASK-05
+    title: 端到端验收 AC-1~6（隐私抓包首要）
+    slug: e2e-acceptance-ac1-6
+    status: pending
+    estimate: 5h
+    depends-on: ["CR-2026-008-TASK-02", "CR-2026-008-TASK-03", "CR-2026-008-TASK-04"]
