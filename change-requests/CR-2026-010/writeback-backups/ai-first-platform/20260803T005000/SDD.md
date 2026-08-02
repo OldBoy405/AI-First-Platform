@@ -2,14 +2,14 @@
 id: ai-first-platform-sdd
 spec-id: ai-first-platform
 type: SDD
-cr-ref: CR-2026-010
-cr-history: [CR-2026-001, CR-2026-002, CR-2026-003, CR-2026-004, CR-2026-005, CR-2026-006, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010]
+cr-ref: CR-2026-007
+cr-history: [CR-2026-001, CR-2026-002, CR-2026-003, CR-2026-004, CR-2026-005, CR-2026-006, CR-2026-008, CR-2026-009, CR-2026-007]
 title: AI First 研发协同平台 — 技术设计基线
-target-version: "0.17"
+target-version: "0.16"
 status: ga
 created: "2026-07-30T21:49:02+08:00"
-updated: "2026-08-03T00:50:00+08:00"
-version: v0.8.0
+updated: "2026-08-02T21:45:00+08:00"
+version: v0.7.0
 refs:
   upstream: [ai-first-platform-prd]
   downstream: []
@@ -643,54 +643,6 @@ workspace 级 `member`），仅有瞬时 `member:added` WS 广播、不落任何
 允许值 + 部分唯一索引 `issue_project_discussion_unique`（每项目至多一个容器，并发 lazy 创建
 下由索引兜底幂等）；down 对称回收，先删容器数据（`comment.issue_id` CASCADE 级联）再收紧约束。
 
-## P2 CR-E — presenter 控制权 + claim 串行化键改造 技术设计（v0.17 · CR-2026-010）
-
-> 完整 SDD 见 change-requests/CR-2026-010/sdd.md（含 9 条设计决策 DD-1~DD-9、3 个 migration、
-> FR→设计映射表、AC→验证方式表）；本节为基线摘要。
-
-### 1. 设计要点
-
-- **presenter 状态单表（DD-1）**：`project_presenter_grant`，状态即审计（不删除只改状态），
-  `(project_id) WHERE status='active'` 部分唯一索引保证单主持人。
-- **claim 串行化键改造范围核实（SDD 开篇修正 PRD 前提）**：既有串行化键实为三分支
-  （issue/chat_session/全 NULL），非单一 `agent_id`；本 CR 只把 issue 分支从"同 issue"放宽为
-  "同 project"且跨 agent 互斥，`chat_session` 分支（Private Ask）原样保留，使 PRD"并行不受
-  影响"由结构天然成立而非需要额外设计保证。
-- **冗余 `project_id` 列（DD-3）**：入队时从 issue stamp，避免 claim 热路径双侧 JOIN issue。
-- **claim 竞态防护三层（DD-4）**：入队守卫 + claim `NOT EXISTS` 谓词 + 提交前 advisory xact
-  lock 复核，冲突方走既有 `RequeueAgentTaskAfterClaimFailure` 回队；12-agent 并发压测证明
-  任意时刻恰一 active。
-- **presenter 非空时插队优先级抑制（DD-6）**：容量豁免保留，priority 100 覆盖降为普通序——
-  管理员可发送但不抢占 presenter 的排队消息。
-- **撤销/转让不打断运行中任务（DD-7）**：只改 grant 行，运行中任务自然完成；紧急打断走既有
-  CR-B 停止能力，未纳入本 CR 范围。
-- **通知双通道（DD-8）**：六转移全部写 activity_log（挂容器 Issue，消息流卡片可回放）；
-  五种转移另发 `notifyDirect` 定向 inbox（release 无定向对象）。跨包约束
-  （`internal/service` 不可导入 `cmd/server`）以事件 payload 携带收件人列表 + `cmd/server`
-  侧薄监听器解决，未引入循环依赖。
-- **WS 零新增前端 handler（DD-9）**：新事件 `project:presenter_changed` 复用既有 `project:`
-  前缀失效；流内卡片复用既有 `activity:created` 直写。
-
-### 2. 实现期与设计的偏差 / 代码评审发现（TASK 完成记录留痕）
-
-| 项 | 设计 | 实现 | 原因 |
-|---|---|---|---|
-| 发送端控制权守卫 | presenter==null 分支未在设计文档中显式排除全员放行的可能 | 实现期发现草稿版在 presenter==null 时提前放行所有成员（应仅 owner/admin），测试直接抓出后改为始终按完整公式判定 | 测试驱动开发发现的设计歧义：presenter=null 默认态仍需 owner/admin 门禁，不能因"无主持人"而放宽 |
-| 权限面板转让交互 | 任务文档建议照抄 CR-A TeamAgentSetupPicker 搜索弹层骨架 | 改为面板内逐行直接放转让按钮 | 面板本身已把全部候选成员渲染成可见行，二次弹层是冗余交互；验收条件未受影响的实现期偏差，非设计缺陷 |
-| composer 解锁判定 | 隐含假设 presenter 变为 null 即可视为解锁信号 | 测试驱动发现该假设对普通成员是错误的（null 是永久默认拒绝态非解决），改为仅在"presenter.user_id===本人"时才清除锁定 | 测试驱动开发直接抓出的真实生产 bug（原实现会导致拒绝提示条闪现即消失） |
-
-### 3. 范围排除
-
-presenter 申请的全局收件箱/站内信通知中心（通知触达以消息流卡片 + WS 实时 + 定向 inbox 为准）、
-计费归属（Owner/Presenter 可配，仅留判定基础）、清空上下文对接 presenter 权限均不在本 CR。
-
-### 4. 数据模型（3 个 migration，161–163）
-
-`161_agent_task_queue_project_id`：加冗余 `project_id` 列 + 全量回填（含 active 行，使新 claim
-SQL 上线即对在途任务生效）。`162_atq_project_active_index`：CONCURRENTLY 部分索引
-`(project_id) WHERE status IN (active集)`。`163_project_presenter_grant`：presenter 状态表 +
-两个 partial unique 索引（单 active、单 pending-per-user）。
-
 ## 基线变更记录
 
 | 日期 | 基线版本 | CR | 说明 |
@@ -704,7 +656,6 @@ SQL 上线即对在途任务生效）。`162_atq_project_active_index`：CONCURR
 | 2026-08-02 | v0.5.0 | CR-2026-008 | 新增 P2 CR-C 里程碑节：B2 迁移 + WS 隐私收敛（含既有全局 chat 同一泄漏面修复）+ Ask-only 双重强制技术设计；5 项实现期偏差/代码评审发现留痕 |
 | 2026-08-02 | v0.6.0 | CR-2026-009 | 新增 P2 CR-D 里程碑节：discussion 容器同构方案 + 触发豁免单点短路 + migration down→up 真机演练技术设计；3 项实现期偏差/代码评审发现留痕；补齐 frontmatter cr-ref/cr-history/version 漂移 |
 | 2026-08-02 | v0.7.0 | CR-2026-007 | 补跑新增 P2 CR-B 里程碑节：D3 完整形态技术设计（停止入口/撤回=停止同端点+幂等竞态语义/队列明细读侧 opt-in 扩展/过滤开关谓词/既有关联复用）；3 项代码评审发现留痕（initials 去重、冗余条件拍平、prop-drilling 判断性保留）；本 CR 排期先于 CR-C/CR-D（target-version 0.14）但实际回写晚于两者，按版本号插入于 CR-A 与 CR-C 之间，target-version 维持 0.16 不回退 |
-| 2026-08-03 | v0.8.0 | CR-2026-010 | 新增 P2 CR-E 里程碑节：presenter 控制权单表状态机 + claim 串行化键 agent_id→project_id 技术设计（三层竞态防护、通知双通道跨包方案）；3 项实现期偏差/测试驱动发现留痕；target-version 0.16 → 0.17 |
 
 ### 实现期与设计的偏差（已在各 TASK 完成记录留痕）
 
