@@ -6,12 +6,32 @@ plan-ref: "change-requests/CR-2026-010/plan.md"
 sdd-ref: "change-requests/CR-2026-010/sdd.md"
 title: presenter 服务（grant 状态机 6 转移）+ 7 个 API 路由 + 成员移除联动
 slug: presenter-grant-service
-status: pending
+status: done
 estimate: 6h
 depends-on: [CR-2026-010-TASK-01]
 assignee: ""
 created: "2026-08-02T13:57:20+08:00"
 ---
+
+## 实现状态（2026-08-02）
+
+代码已在 multica worktree（`requirement/CR-2026-010`，commit `68e0551be`）落地：
+`project_presenter.sql`（9 条查询）、`service/project_presenter.go`（六转移 + GetPresenterState，
+每次转移都在 `presenter|workspaceID|projectID` advisory lock 内完成"读状态→校验→写"，
+approve/reject/revoke 严格要求 Owner 角色而非 Owner/Admin——presenter 默认可用范围是
+Owner+Admin，但"谁能管理 presenter 归属"只有 Owner）、`handler/project_presenter.go`
+（7 个 handler + 错误码→HTTP 状态映射）、router.go 7 条路由、workspace_revoke.go 的成员
+移除联动（关闭该成员在整个 workspace 内持有的 active/pending grant，行为对齐既有
+`agent_invocation_target` 的 FK-free 清理先例）。
+
+**已用真实 DB 验证**：15 个测试用例（申请→批准/拒绝、转让、撤销、释放五条happy path；
+非法转移矩阵 7 项——非 owner 批准 403、非 presenter 转让 403、owner/admin 申请 400、
+重复申请 409、撤销不存在的 presenter 404、批准不存在的申请 404、presenter 已存在时
+批准 409；GetPresenterState 三角色可见性；成员移除联动含"未受影响成员的请求不受牵连"
+断言）全部 PASS。`go build`/`go vet`/`gofmt`（限定改动文件）全绿；`internal/service` +
+`internal/handler` 全量套件跑过，回归结果与 TASK-01 完成时一致（12 个与本 CR 无关的
+预置环境问题：Windows CRLF 检出导致的 builtin_skills 测试失败 + Windows 路径分隔符
+断言差异，均未受本任务改动影响）。
 
 ## 任务描述
 
