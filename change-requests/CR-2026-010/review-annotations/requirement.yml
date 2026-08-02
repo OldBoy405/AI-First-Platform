@@ -1,0 +1,38 @@
+cr-id: CR-2026-010
+review-type: requirement
+reviewer: ai-reviewer
+reviewed-at: "2026-08-02T10:58:00+08:00"
+verdict: pass
+blockers: []
+repair-target: write-requirement-prd
+repair-instructions: []
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 0
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-08-02T10:58:00+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: write-requirement-prd
+review-notes: >-
+  结构完整（概述/US/FR/NFR/AC/指标/排除齐备）；FR→AC 映射经自检修补后全覆盖
+  （评审前发现 FR-8 拒绝呈现 UI 无对应验收，已在 PRD 0.1.1 并入 AC-1 后再评审）；
+  与规划对齐（source=交付切分 v2 CR-E 节：6 通知文案/chatControlPanel/chatHeader
+  主持人/claim 串行化键改造/presenter 判定接入入队与 claim 路径全部覆盖，切分文档
+  3 条验收在 AC-1~3 逐条对应且 AC-3 细化为 4 个可验证子项）；范围排除逐条指回
+  CR-B/C/D/F/G 与切分文档 §0.4；依赖识别完整（前置 CR-A 已合并、D1 语义不动、
+  与并行 CR-C 的串行化边界已显式约束）。PRD 额外解决了两处上游文档歧义并落字：
+  ① 非 presenter 消息"排队或拒绝"定为普通成员拒绝/Owner-Admin 排队（§1 口径，
+  评审确认项）；② P0 §2.2 与切分文档的串行化键表述冲突列为回写项。
+suggestions:
+  - "SUG-001: presenter 状态与申请的存储模型（project 表加列 vs 独立表含申请/转移审计历史）、待审申请的唯一性约束与过期/项目成员变更时的清理策略，SDD 定案——FR-1 只定义了转移语义，存储形态直接影响审计能力与迁移量"
+  - "SUG-002: 撤销/转让发生在 presenter 任务运行中时的语义 PRD 未定义（运行中任务自然完成后新 presenter 生效，还是立即中断）——这是 NFR-5 竞态面的最大用户可感知场景，SDD 需定案并补进 AC-3 回归用例"
+  - "SUG-003: claim 串行化键切换的上线兼容顺序（部署瞬间在途 active task 按老键 agent_id 判定、新任务按 project_id 判定的共存窗口如何收敛）与 AC-3 四项回归的测试清单，应作为 SDD 第一批调查项落字"
