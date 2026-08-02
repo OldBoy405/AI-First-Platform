@@ -8,7 +8,7 @@ owner: Ray
 owner-role: test
 status: pass
 created: "2026-08-02T15:40:00+08:00"
-updated: "2026-08-02T15:40:00+08:00"
+updated: "2026-08-02T16:10:00+08:00"
 ---
 
 > **验收口径确认**：AC-1/AC-3（红线）/AC-4（红线）/AC-5/AC-6 完整通过，含真机浏览器 + 隔离
@@ -30,8 +30,13 @@ updated: "2026-08-02T15:40:00+08:00"
 **真机 E2E**：本轮在隔离 worktree（独立 postgres 库 `multica_cr_2026_009_368`、独立后端 18448、
 独立前端 13368）跑通完整用户旅程——注册→onboarding→建工作区→建项目→打开 Discussion tab→发送
 消息→DB 级核对红线——详见 §2。与 CR-2026-006 报告不同，本 CR 不依赖 daemon runtime（Discussion
-本身不驱动 agent），因此没有"待 daemon 环境"的遗留项；唯一待补的是跨用户 @提及通知的真机验证
-（需要两个真实浏览器会话，本轮单用户会话内未覆盖，见 AC-2）。
+本身不驱动 agent），因此没有"待 daemon 环境"的遗留项。
+
+**migration 161 down→up 往返演练**：在挂有真实数据（discussion 容器 + 1 条评论）的隔离库上完整
+执行，验证通过，详见 §2 附录。代码评审 SUG-002 已关闭。
+
+**唯一待补项**：跨用户 @提及通知的真机验证（需要两个真实浏览器会话，本轮单用户会话内未覆盖，
+见 AC-2），不阻塞交付。
 
 ## 1. 逐 AC 验收结果
 
@@ -87,6 +92,33 @@ SELECT count(*) FROM agent_task_queue;
 - 控制台报错逐条核对：全部为 `TeamAgentSetupPicker`/`PropertyPicker`（CR-2026-006 既有代码）的
   按钮嵌套 hydration 警告，与本 CR 改动无关；无 Discussion 相关报错。
 
+### migration 161 down→up 往返演练（2026-08-02 补充）
+
+针对代码评审 SUG-002（down 迁移未做真机往返验证），在同一隔离数据库（含真机 E2E 产生的真实
+discussion 容器 + 1 条评论）上直接执行 down.sql / up.sql 内容（绕开 `cmd/migrate` 工具——该工具
+的 `down` 模式会反向执行**全部**已应用迁移而非单步回滚，不适合单迁移演练）：
+
+| 步骤 | 检查 | 结果 |
+|---|---|---|
+| down 前 | discussion 容器 issue 存在 + 挂 1 条 comment | 1 issue / 1 comment |
+| 执行 down.sql | `DELETE FROM issue WHERE origin_type='project_discussion'` | `DELETE 1` |
+| down 后 | discussion issue 行数 | **0** |
+| down 后 | 原评论是否变孤儿（`comment.issue_id` FK 是 `ON DELETE CASCADE`） | **0**（随 issue 级联删除，非孤儿） |
+| down 后 | CHECK 约束是否正确剔除 `project_discussion` | ✅ 剔除，值列表退回 149/160 状态 |
+| down 后 | 唯一索引 `issue_project_discussion_unique` 是否移除 | ✅ 已移除 |
+| down 后 | 无关容器 `project_chat`（migration 160）是否被误伤 | 0 行受影响，1 条 project_chat 容器原样保留（证 down 范围精确，非连带清空） |
+| 执行 up.sql | 重新 ALTER 约束 + CREATE INDEX | 成功 |
+| up 后 | CHECK 约束恢复含 `project_discussion` | ✅ |
+| up 后 | 唯一索引恢复 | ✅ |
+| up 后 | 可再次创建新 discussion 容器 | ✅ 成功插入 |
+| up 后 | 唯一索引仍生效（第二次同项目插入应拒绝） | ✅ `duplicate key value violates unique constraint` |
+| 收尾 | 重跑本 CR 全部 Go discussion 测试（`TestDiscussionContainerExcludedFrom*`、
+  `TestComputeCommentAgentTriggers_DiscussionContainerNeverEnqueuesAgent`、`TestGetProjectDiscussion`） | 全部 PASS，DB 恢复到与往返演练前等价的可用状态 |
+
+**结论**：down.sql 的"先 DELETE 再收紧约束"顺序（吸取 migration 160 down 脚本未做级联删除、
+在容器已有数据时会直接失败的教训）在真实 CASCADE 场景下验证正确；up/down 均具备幂等性和范围
+精确性（不影响其他容器类型）。SUG-002 关闭。
+
 ## 3. 已知偏离与限制
 
 1. **AC-2 跨用户验证未覆盖**：单浏览器会话无法模拟"用户 B 收到用户 A 的 @提及通知"，需要第二个
@@ -104,5 +136,6 @@ SELECT count(*) FROM agent_task_queue;
 ## 4. 结论
 
 代码实现完整，两条验收红线（AC-3 零 agent 触发、AC-4 容器隐藏）均已在真机 + DB 级、单测双重验证
-下确认成立。AC-1/AC-5/AC-6 真机验证通过。AC-7 裁剪结论复核有效、无遗留代码债。AC-2 的跨用户链路
-建议作为部署前独立验收项补齐（不阻塞本 CR 交付，落点组件本身已验证正确）。建议进入 code-review。
+下确认成立。AC-1/AC-5/AC-6 真机验证通过。AC-7 裁剪结论复核有效、无遗留代码债。migration 161 的
+down→up 往返在真实数据上验证通过（SUG-002 关闭）。AC-2 的跨用户链路建议作为部署前独立验收项补齐
+（不阻塞本 CR 交付，落点组件本身已验证正确）。建议进入 code-review。

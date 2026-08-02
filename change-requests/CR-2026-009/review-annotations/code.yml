@@ -26,7 +26,7 @@ review-loop:
       repair-target: implement-code
 suggestions:
   - "SUG-001: AC-2（跨用户 @提及通知跳转）本轮只做到组件级验证，建议在下一次多用户可用的测试窗口补一次真机端到端（评论创建→notifyMentionedMembers→inbox 出现→点击跳转条→落对应 tab），不阻塞本次交付。"
-  - "SUG-002: down 迁移（161_issue_origin_project_discussion.down.sql）在本次真机验证中未做 down→up 往返演练（SDD 评审 SUG-001 建议项）；up 方向已在隔离 worktree 反复验证多次（含并发 ensure），down 路径的正确性目前只有代码走查（DELETE 先于 DROP CONSTRAINT，镜像 160 的教训）支撑，建议部署前补一次演练。"
+  - "SUG-002（已关闭）: down 迁移（161_issue_origin_project_discussion.down.sql）已在挂有真实数据（discussion 容器 + 1 条评论）的隔离库上完整执行 down→up 往返演练——DELETE 正确级联删除评论（非孤儿）、CHECK 约束与唯一索引正确复原、无关的 project_chat 容器未受影响、往返后可再次创建新容器且唯一性仍生效。详见 test-report.md §2「migration 161 down→up 往返演练」。"
 task-coverage:
   total: 5
   verified: 5
