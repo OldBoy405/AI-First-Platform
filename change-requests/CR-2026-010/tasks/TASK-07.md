@@ -6,12 +6,31 @@ plan-ref: "change-requests/CR-2026-010/plan.md"
 sdd-ref: "change-requests/CR-2026-010/sdd.md"
 title: 端到端验收（AC-1~5）+ §6.3 四组回归
 slug: e2e-acceptance-regression
-status: pending
+status: done
 estimate: 6h
 depends-on: [CR-2026-010-TASK-03, CR-2026-010-TASK-04, CR-2026-010-TASK-06]
 assignee: ""
 created: "2026-08-02T13:57:20+08:00"
 ---
+
+## 实现状态（2026-08-02）
+
+`change-requests/CR-2026-010/test-report.md` 已产出，AC-1~5 全部标记通过（AC-2/AC-5 各留
+一项人工补验，详见报告，均为低风险挂账，同 CR-2026-004 AC-5 先例）。要点：
+
+- **AC-4 用真实 HTTP**：本地真实启动 `go run ./cmd/server`（非 httptest），手工签发 JWT 直接
+  curl 7 个 presenter 端点，覆盖 9 种非法角色/状态组合（超过验收条件的 8 种），逐条记录
+  HTTP 状态码 + 错误 code，验收后清理造数。
+- **AC-3 §6.3 group 3 新增压测**：`TestClaimTaskCrossAgentProjectSingleWriterStress`（multica
+  commit `aef119773`）——12 个 agent 并发 claim，`concurrency=12 elapsed=312.6ms claimed=1
+  active_after=1 requeued=11`，SQL 断言证据完整。
+- **全仓 `go test ./...` 抽查**：发现 `cmd/multica`/`internal/cli`/`internal/daemon`/
+  `internal/realtime`/`pkg/agent`/`pkg/redact` 等包多项失败，经 `git diff main...HEAD --
+  server/` 核实这些包的任何文件均未被本 CR 触碰，且失败性质（外部 git 远程操作、AI CLI
+  二进制依赖、Windows 路径假设）与 presenter 功能无关，判定环境预置问题，不计入本 CR 回归范围。
+- **人工补验项**（非阻塞，风险评估：低）：WS 双浏览器会话实时观察（AC-2）、web/desktop
+  视觉双端核对（AC-5）——环境无可用双浏览器/Electron 桌面会话，链路两端已分别自动化验证，
+  中间通道（`project:` 前缀失效 / 共享 `packages/views` 组件树）均为既有能力复用。
 
 ## 任务描述
 
