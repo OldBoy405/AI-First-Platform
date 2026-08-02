@@ -1,0 +1,38 @@
+cr-id: CR-2026-011
+review-type: requirement
+reviewer: ai-reviewer
+reviewed-at: "2026-08-02T11:35:00+08:00"
+verdict: pass
+blockers: []
+repair-target: write-requirement-prd
+repair-instructions: []
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 0
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-08-02T11:35:00+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: write-requirement-prd
+review-notes: >-
+  结构完整（概述/US/FR/NFR/AC/指标/排除齐备）；FR→AC 映射全覆盖（FR-1→AC-5、
+  FR-2/3→AC-1、FR-4→AC-1/2/6、FR-5→AC-3、FR-6→AC-4，NFR 由 AC-6/7 兜底）；
+  范围合理——PRD 起草期核实出切分文档未明说的前置缺口（pipeline_run/
+  pipeline_node_run 两表未建、Runner P1-F2 未交付）并在技术前提第 3 条显式定案
+  （本 CR 建表 + 最小归因路径，Runner 本体排除），排除项全部给出归宿且已落
+  docs/product/CR-F范围排除项-后续交付规划.md；与规划对齐（source=交付切分 v2
+  CR-F 节，FR 覆盖 B4 + D7 三项交付物，AC-1/2/3 与切分文档 D7 三条验收一一对应）；
+  依赖识别完整（后向 CR-A/CR-2026-002 已交付面逐项列明，前向 CR-H/审批周边指回
+  规划文档）。
+suggestions:
+  - "REQ-SUG-001: FR-2 最小归因路径的验收目前只隐含在 AC-1 端到端链路中；SDD 定案写入挂点后，测试计划应补数据级直接断言（pipeline 节点任务的 agent_task_queue 行两列非空、与对应 pipeline_node_run 行一致），与 AC-5 的 NULL 侧断言对称，避免端到端跑通但归因写错也能过验收"
+  - "REQ-SUG-002: FR-6 多 CR 并存时的徽标取值规则留 SDD 定案是合理的，但定案后应回填 AC-4 的多 CR 场景边界（一个项目同时有 2+ 在途 CR 时徽标取哪个、切换语义），否则验收口径会在测试期才争议"
+  - "REQ-SUG-003: AC-2 的 attempt 轮次与 AC-3 的 blocker 列表的数据来路需 SDD 显式定案——cr 投影表 review_summary 现仅 {verdict, blockers_n} 计数无明细、无 attempt 字段；候选来路为 pipeline_node_run.attempt（B4 建表后可用）、审批 API 证据摘要透出、或 cr 投影扩列，三者工作量与实时性不同，直接影响任务拆分"
