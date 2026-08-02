@@ -6,12 +6,37 @@ plan-ref: "change-requests/CR-2026-010/plan.md"
 sdd-ref: "change-requests/CR-2026-010/sdd.md"
 title: presenter 数据层（schemas/client/queries/mutations）+ chatHeader 主持人显示
 slug: presenter-data-layer-header
-status: pending
+status: done
 estimate: 3h
 depends-on: [CR-2026-010-TASK-02, CR-2026-010-TASK-04]
 assignee: ""
 created: "2026-08-02T13:57:20+08:00"
 ---
+
+## 实现状态（2026-08-02）
+
+代码已在 multica worktree（`requirement/CR-2026-010`，commit `2563e65c1`）落地：
+`schemas.ts` 的 `ProjectPresenterGrantSchema`/`ProjectPresenterStateSchema`
+（均 `.loose()`，对齐 `ProjectChatSchema` 写法）+ `EMPTY_*` 兜底；`client.ts` 的
+`getProjectPresenter` + 6 个 POST（全部经 schema 解析后返回，不直接强转裸 JSON，
+符合 CLAUDE.md API 兼容性规则）；`queries.ts` 的 `projectPresenterOptions`
+（WS 侧确认 `project:presenter_changed` 与既有 `project:` 前缀失效路径天然
+命中，未加任何新代码）；`mutations.ts` 的 6 个非乐观 mutation（`onSettled`
+同时 invalidate presenter 与 chat 两个 query key）；`project-chat-panel.tsx`
+的 `PresenterHeader`（挂 TabsList 右侧空位，仅 Team Agent tab 显示；空态显示
+「Owner/Admin」，非空显示「当前主持人：{{name}}」；一个占位控制按钮，
+本地 useState，面板本体归 T06）。
+
+**范围偏差说明**：locale 侧新增了 `locales/parity.test.ts` 强校验四语 key
+一致（本任务开工前未预料到有这道门禁），迫使 5 个 inbox presenter_* type
+与 3 个 chat.presenter.* key 提前补齐 ja/ko/zh-Hans 译文（而非按原计划全部
+留给 T06）——T06 仍可精修措辞，但不能让门禁一直红着。
+
+**已验证**：`pnpm --filter core --filter views typecheck` 全绿（一个预置且
+未改动的 `modals/quick-create-issue.test.tsx` 失败无关）；`packages/core`
+全量套件 805/805 绿，`packages/views` 全量套件 1777/1777 绿（含新增
+`PresenterHeader` 渲染测试 3 个覆盖两态+tab 作用域、`mutations.test.tsx`
+新增 12 个覆盖 6 个 mutation 的成功/失败路径，均断言双 query key invalidate）。
 
 ## 任务描述
 
