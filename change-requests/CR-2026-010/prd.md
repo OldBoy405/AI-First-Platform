@@ -8,8 +8,8 @@ owner: Ray
 owner-role: requirement
 status: draft
 created: "2026-08-02T10:51:04+08:00"
-updated: "2026-08-02T10:51:04+08:00"
-revision: "0.1"
+updated: "2026-08-02T10:56:00+08:00"
+revision: "0.1.1"
 ---
 
 # PRD — P2 三模式聊天 CR-E：presenter 控制权（含 claim 串行化键改造）
@@ -95,7 +95,8 @@ Owner+Admin 默认可驱动，其余成员须申请 presenter（主持人）；�
 
 ## 5. 验收标准
 
-- **AC-1**（FR-1/2/3，单一写者）presenter 非空时：普通成员发送被同步拒绝且不落库不入队；
+- **AC-1**（FR-1/2/3/8，单一写者）presenter 非空时：普通成员发送被同步拒绝且不落库不入队，
+  输入区就地提示当前主持人并给出「请求 Agent 访问权限」入口（与满队 429 禁用态并存不冲突）；
   Owner/Admin 发送入队但在 presenter 任务运行期间不被执行（排队等待）；presenter 消息正常执行。
   Agent 空闲时 Admin 直接发送即执行（免申请接管）。
 - **AC-2**（FR-1/4/5/6，状态机全覆盖）申请→批准、申请→拒绝、转让、撤销、释放五条路径真机走通，
