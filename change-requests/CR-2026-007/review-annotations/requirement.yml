@@ -1,0 +1,38 @@
+cr-id: CR-2026-007
+review-type: requirement
+reviewer: ai-reviewer
+reviewed-at: "2026-08-02T10:40:00+08:00"
+verdict: pass
+blockers: []
+repair-target: write-requirement-prd
+repair-instructions: []
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 0
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-08-02T10:40:00+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: write-requirement-prd
+review-notes: >-
+  独立评审（子代理，非作者自评）。PRD 质量高于其输入：主动实查并修正了切分文档
+  "CR-B 纯前端"的错误结论，FR-6 补数据源的动机与兼容约束扎实；FR→AC 一对一全覆盖，
+  依赖假设与 D1/CR-A 代码事实吻合，与 CR-C~G 边界清晰（presenter 语义变化只影响
+  入队侧，队列 UI 本体不会被 CR-E 推翻）。真问题集中在三处未闭合的语义缝：
+  发送/停止按钮冲突、dispatched 项无操作路径、过滤开关缺可测谓词——均可在 SDD
+  解决，不构成进设计的硬伤。
+suggestions:
+  - "SUG-001: FR-4① '发送变停止'沿自 1:1 chat 语义，与共享队列'自己任务运行中仍可继续入队'直接冲突（AC-1 要求 A 连发两条），SDD 必须定案停止入口与发送按钮如何并存（如输入非空时保留发送、停止移至独立位）"
+  - "SUG-002: dispatched 项是操作空洞——D1 cancel 权限要求 status=='queued'（originator 路径），running 走停止语义，dispatched 两头不沾；FR-2 列表会展示'已派发'项但 FR-3/FR-4 均未定义其可操作性，SDD 需明确（放开 cancel 覆盖 dispatched，或列表禁用态+原因提示）"
+  - "SUG-003: FR-5 的'Agent 最终结果'无数据判定依据——timeline 由 transcript 六类消息构建，最终回复只是最后的 text 条目，中间也有过程性 text/thinking；不给出可测的过滤谓词，AC-4 '仅请求与最终结果可见'无法执行"
+  - "SUG-004: FR-3 '对应群聊请求消息标注已撤回'依赖 task↔comment 反向关联，B1 方案甲的 enqueue 是否落了 comment_id/task_id 双向链接未核实，SDD 需给数据方案（同一关联也是 FR-6 items[] '请求摘要'的来源）"
+  - "SUG-005: queue-status 是 CR-A 满队恢复的轮询端点，FR-6 预设方案把最多 50 项含摘要的 items[] 挂上去会放大高频轮询 payload——SDD 评估独立明细端点或 ?include=items 按需参数，这是 PRD 未列出的替代约束"
+  - "SUG-006: Owner 停他人运行中任务后，对方输入区（若处于'停止'态）与队列条如何经 WS 对账回正常态未定义，SDD 需指明依赖的事件（task:cancelled/failed）与 interrupted 徽标来源，避免 AC-3 '无幽灵状态'只对操作者成立"
