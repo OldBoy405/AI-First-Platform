@@ -439,3 +439,64 @@ history:
         branch: requirement/CR-2026-007
         source-sha: 7ae822e1bcf394458e57c55c7237dd72388399c7
         merged-at: "2026-08-02T21:31:00+08:00"
+  - id: CR-2026-010
+    title: P2 三模式聊天 CR-E — D4 presenter 控制权（claim 串行化键 agent_id→project_id）
+    summary: >-
+      presenter 控制权：后端 claim SQL 串行化键 agent_id→project_id + presenter
+      判定接入入队/claim 路径（单一写者：presenter 非空时其他成员消息不被执行；
+      Admin 在 Agent 空闲时可直接接管）；前端 §3.1 状态机 6 个通知文案、
+      chatControlPanel 权限面板、chatHeader 主持人实时显示。
+      首要风险与独立成 CR 的主因：串行化键改造后既有并发语义（D1 容量守卫/插队/
+      撤回与 CR-A 群聊入队）回归必须全绿。
+    owner: Ray
+    owners:
+      requirement:
+        id: Ray
+        assigned-at: "2026-08-02T10:00:39+08:00"
+      development:
+        id: Ray
+        assigned-at: "2026-08-02T10:00:39+08:00"
+      test:
+        id: Ray
+        assigned-at: "2026-08-02T10:00:39+08:00"
+    target-version: "0.17"
+    source: "docs/product/P2-三模式聊天窗口主体-交付切分.md v2（d7e4ece）CR-E"
+    prd-path: change-requests/CR-2026-010/prd.md
+    status: archived
+    final-status: archived
+    archive-reason: >-
+      P2 三模式聊天 CR-E 交付完成回写归档：presenter 单表状态机六转移 + claim 串行化键
+      agent_id→project_id 改造，12-agent 并发压测验证任意时刻恰一 active。
+      specs/ai-first-platform 累积基线升至 v0.8.0（PRD/SDD 新增 P2 CR-E 里程碑节，
+      target-version 0.16 → 0.17）；specs/ai-first-platform/traceability.yml 新增本
+      里程碑段（FR-1~8 全链路）；delivery/task 7 项任务全部回写（deliveryIndexComplete
+      门禁正常放行）。代码评审：verdict=pass，0 blocker，1 处非阻塞建议（presenter
+      控制面板转让交互改逐行按钮而非搜索弹层，判断性保留，验收条件未受影响）。实现期
+      测试驱动发现并修正 2 处会放宽单一写者语义的自身草稿 bug（发送端守卫在
+      presenter==nil 时曾提前放行所有成员；composer 自动清除逻辑曾把 presenter 变为
+      null 误判为解锁信号）。merge-feature-branch 阶段与已合入的 CR-2026-007/008/009
+      在 14 个文件上产生真实合并冲突（router.go、agent.sql、packages/core 数据层、
+      4 语言 projects.json、project-chat-panel.tsx、project-team-agent-chat.tsx(+test)），
+      均为多 CR 独立新增内容的位置性冲突，both-side-keep 解决（其中 2 处需要真正合并
+      逻辑而非拼接：TeamAgentStreamView 合并循环的 useMemo 依赖数组、composer 容器内
+      重复的 TeamAgentStreamView 调用去重合并），解决后 core+views 全量测试
+      （815+1837）与 go build/vet 复跑全绿。真机验证缺口：AC-2 WS 双浏览器会话实时
+      观察、AC-5 web/Electron 视觉双端核对均未做（环境无可用双用户会话/桌面端渲染
+      环境），按 CR-2026-004 AC-5 先例降级为低风险挂账。
+    writeback-spec-id: ai-first-platform
+    archived-at: "2026-08-03T01:15:00+08:00"
+    created: "2026-08-02T10:00:39+08:00"
+    updated-at: "2026-08-03T01:15:00+08:00"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: b186a6674f54de972dc50165dc340739a94ab183
+        branch: requirement/CR-2026-010
+        source-sha: 4ba83ffe67c27f2ad2914acb56a25f8012f1af04
+        merged-at: "2026-08-03T00:30:00+08:00"
+      - repo: multica
+        trunk: main
+        sha: 73fecaeca1f6661637d9821c055b7113ad5abbf1
+        branch: requirement/CR-2026-010
+        source-sha: aef1197736afada1362b0c49dbf00ecffe3827ed
+        merged-at: "2026-08-03T00:30:00+08:00"
