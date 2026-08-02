@@ -1,0 +1,113 @@
+cr-id: CR-2026-010
+review-type: code
+reviewer: ai-reviewer
+reviewed-at: "2026-08-02T21:40:00+08:00"
+verdict: pass
+blockers: []
+repair-target: implement-code
+repair-instructions: []
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+      - path: test-report.status
+        equals: pass
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 0
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-08-02T21:40:00+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: implement-code
+suggestions:
+  - "非阻塞：presenter-control-sheet.tsx 的转让交互用逐行按钮替代任务文档建议的
+    TeamAgentSetupPicker 搜索弹层，属实现期偏差，已在 TASK-06.md 记录理由（成员
+    列表本就全量可见，二次弹层是冗余交互），验收条件未受影响，无需回修"
+task-coverage:
+  total: 7
+  verified: 7
+  unverified: []
+verification:
+  lint: pass
+  test: pass
+  build: pass
+test-report:
+  file: "change-requests/CR-2026-010/test-report.md"
+  status: pass
+  uncovered-risks:
+    - "AC-2 WS 双浏览器会话实时观察未做人工核对（低风险：复用既有生产 project: 前缀失效链路，零改动）"
+    - "AC-5 web/Electron desktop 视觉双端人工核对未做（低风险：packages/views 组件树共享，桌面端渲染路径与 web 相同）"
+evidence:
+  diff-range: "52b571774d284c362825858d91769039d47fe492...aef119773"
+  changed-files:
+    server:
+      - server/cmd/server/main.go
+      - server/cmd/server/presenter_notification_listeners.go
+      - server/cmd/server/presenter_notification_listeners_test.go
+      - server/cmd/server/router.go
+      - server/internal/handler/project_chat.go
+      - server/internal/handler/project_presenter.go
+      - server/internal/handler/project_presenter_test.go
+      - server/internal/handler/workspace_revoke.go
+      - server/internal/service/project_chat.go
+      - server/internal/service/project_chat_presenter_test.go
+      - server/internal/service/project_presenter.go
+      - server/internal/service/task.go
+      - server/internal/service/task_claim_project_race_test.go
+      - server/internal/service/task_claim_project_stress_test.go
+      - server/migrations/161_agent_task_queue_project_id.{up,down}.sql
+      - server/migrations/162_atq_project_active_index.{up,down}.sql
+      - server/migrations/163_project_presenter_grant.{up,down}.sql
+      - server/pkg/db/generated/*.go (sqlc regenerated)
+      - server/pkg/db/queries/agent.sql
+      - server/pkg/db/queries/project_presenter.sql
+      - server/pkg/protocol/events.go
+    frontend:
+      - packages/core/api/client.ts
+      - packages/core/api/schemas.ts
+      - packages/core/projects/{index,mutations,queries}.ts
+      - packages/core/projects/mutations.test.tsx
+      - packages/core/types/inbox.ts
+      - packages/views/inbox/components/inbox-detail-label.tsx
+      - packages/views/inbox/components/inbox-page.tsx
+      - packages/views/inbox/components/inbox-page-routing.test.ts
+      - packages/views/issues/components/issue-detail.tsx
+      - packages/views/locales/{en,ja,ko,zh-Hans}/{inbox,projects}.json
+      - packages/views/projects/components/presenter-control-sheet.tsx
+      - packages/views/projects/components/presenter-control-sheet.test.tsx
+      - packages/views/projects/components/project-chat-panel.tsx
+      - packages/views/projects/components/project-chat-panel.test.tsx
+      - packages/views/projects/components/project-team-agent-chat.tsx
+      - packages/views/projects/components/project-team-agent-chat.test.tsx
+    stats: "29 backend + 25 frontend files, +3398/-84 (server/), +1399/-14 (packages/)"
+  commits:
+    - 4581b2e33 feat(task-queue) TASK-01 claim project single-writer + presenter_grant table
+    - 68e0551be feat(presenter) TASK-02 presenter grant service + 7 API routes
+    - f806e60af feat(chat) TASK-03 presenter guard on project chat send endpoint
+    - abc90baef feat(presenter) TASK-04 activity log + inbox notifications + WS event
+    - 2563e65c1 feat(chat) TASK-05 presenter data layer + chatHeader
+    - e92aba3b3 feat(chat) TASK-06 presenter control panel + notice cards + rejection UI + i18n
+    - aef119773 test(claim) TASK-07 amplified concurrent-claim stress test
+review-notes: >-
+  代码↔TASK↔SDD 对齐：SDD §4.3 单一写者公式（active==nil→role∈{owner,admin}；
+  active!=nil→caller==active.user_id∨role∈{owner,admin}(抑制插队)）在
+  guardProjectChatPresenter 中逐字实现，且实现期发现并修正了一处会放宽该公式的
+  自身草稿 bug（曾在 presenter==nil 时提前放行所有成员，被测试当场抓住）；claim
+  串行化键 agent_id→project_id 改造（迁移 161-163）在 §6.3 四组回归 + 新增 12-agent
+  压测（aef119773，concurrency=12 elapsed=312.6ms claimed=1 active_after=1）下
+  证明恰一 active，advisory lock 与 FOR UPDATE SKIP LOCKED 交互经真实 DB 验证，
+  非 mock。跨包约束（internal/service 不可导入 cmd/server）用事件 payload 携带
+  收件人列表 + cmd/server 侧薄监听器解决，未引入循环依赖。工程质量：Go 测试全部
+  针对真实迁移后 Postgres（非 mock）；前端 805+1798 测试全绿，含新增约 50 个用例；
+  lint/typecheck 0 error（预置警告/失败均在改动范围外，经 git diff --stat 逐一
+  核实非本 CR 触碰）。安全性：六个转移动作 owner-only 校验（approve/reject/revoke）
+  与非工作区成员校验（AC-4 curl 矩阵 9 种非法组合，含 outsider 404）均落地为
+  handler 层显式分支而非依赖前端。测试覆盖：TASK-01~07 逐一有对应新增测试文件，
+  test-report.md 的 AC-1~5 认领与实际测试名/断言可一一对应，非仅有 diff stat 或
+  口头结论。测试证据可信度高：test-report.md 明确区分"真机验证"与"人工补验挂账"
+  两类，且挂账项均给出风险评估理由，无笼统带过。
