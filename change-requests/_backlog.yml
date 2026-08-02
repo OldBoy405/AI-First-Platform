@@ -30,3 +30,131 @@ change-requests:
     updated-at: "2026-08-02T09:42:17+08:00"
     created: "2026-08-01T23:36:00+08:00"
     updated: "2026-08-01T23:36:00+08:00"
+  - id: CR-2026-007
+    title: P2 三模式聊天 CR-B — D3 完整形态（队列条展开/逐项撤回/停止/过滤开关）
+    summary: >-
+      Team Agent 面的队列与控制完整形态（纯前端，D1 后端能力已全量交付不再动）：
+      队列条常驻+展开列表逐项 fromUser；发起人撤回自己的排队项（D1 cancel 端点，
+      403/409 结构化反馈）；停止双权限（发送者停自己、Owner 停任意，停止后内容保留、
+      下一条自动开始）；「只看 Agent 请求」本地过滤开关；消息悬浮操作仅复制。
+      队列条 WS 实时无手动刷新。
+    owner: Ray
+    owners:
+      requirement:
+        id: Ray
+        assigned-at: "2026-08-02T10:00:39+08:00"
+      development:
+        id: Ray
+        assigned-at: "2026-08-02T10:00:39+08:00"
+      test:
+        id: Ray
+        assigned-at: "2026-08-02T10:00:39+08:00"
+    target-version: "0.14"
+    source: "docs/product/P2-三模式聊天窗口主体-交付切分.md v2（d7e4ece）CR-B"
+    prd-path: ""
+    status: drafting
+    created: "2026-08-02T10:00:39+08:00"
+    updated: "2026-08-02T10:00:39+08:00"
+  - id: CR-2026-008
+    title: P2 三模式聊天 CR-C — D5 Private Ask（chat_session 项目维度 + 项目内私聊面）
+    summary: >-
+      Private Ask 面：B2 后端（chat_session 加 nullable project_id +
+      (project_id, creator_id) 会话查询，与全局 1:1 chat 并存）+ 前端第二 tab
+      （绕开 use-chat-controller 全局单例，纯 props 组合，sessionId 自管）。
+      语义四差异：个人独立队列、默认 Ask-only 只读、仅本人可见、与 Team Agent 并行。
+      隐私红线：仅本人可见须由服务端 per-user 推送逻辑保证（单 socket 架构下前端
+      过滤不算数），是首要验收对象；回归既有浮窗/全页 chat 不受影响。
+    owner: Ray
+    owners:
+      requirement:
+        id: Ray
+        assigned-at: "2026-08-02T10:00:39+08:00"
+      development:
+        id: Ray
+        assigned-at: "2026-08-02T10:00:39+08:00"
+      test:
+        id: Ray
+        assigned-at: "2026-08-02T10:00:39+08:00"
+    target-version: "0.15"
+    source: "docs/product/P2-三模式聊天窗口主体-交付切分.md v2（d7e4ece）CR-C"
+    prd-path: ""
+    status: drafting
+    created: "2026-08-02T10:00:39+08:00"
+    updated: "2026-08-02T10:00:39+08:00"
+  - id: CR-2026-009
+    title: P2 三模式聊天 CR-D — D6 Discussion（discussion 容器 Issue + 纯人类多人聊天）
+    summary: >-
+      Discussion 面：B3 后端（discussion 容器 Issue lazily 创建，复用 CR-2026-006
+      已落地的 origin_type 容器模式与隐藏过滤基建，新增 discussion 类型值）+ 前端
+      第三 tab（纯人类多人聊天，复用 comment-card/reply-input/@提及/通知/订阅；
+      输入区无模式/模型下拉，纯人类输入仅留 @）。验收红线：Discussion 消息不产生
+      任何 agent_task_queue 行；容器 Issue 不出现在列表/看板。CR-G 依赖本 CR。
+    owner: Ray
+    owners:
+      requirement:
+        id: Ray
+        assigned-at: "2026-08-02T10:00:39+08:00"
+      development:
+        id: Ray
+        assigned-at: "2026-08-02T10:00:39+08:00"
+      test:
+        id: Ray
+        assigned-at: "2026-08-02T10:00:39+08:00"
+    target-version: "0.16"
+    source: "docs/product/P2-三模式聊天窗口主体-交付切分.md v2（d7e4ece）CR-D"
+    prd-path: ""
+    status: drafting
+    created: "2026-08-02T10:00:39+08:00"
+    updated: "2026-08-02T10:00:39+08:00"
+  - id: CR-2026-010
+    title: P2 三模式聊天 CR-E — D4 presenter 控制权（claim 串行化键 agent_id→project_id）
+    summary: >-
+      presenter 控制权：后端 claim SQL 串行化键 agent_id→project_id + presenter
+      判定接入入队/claim 路径（单一写者：presenter 非空时其他成员消息不被执行；
+      Admin 在 Agent 空闲时可直接接管）；前端 §3.1 状态机 6 个通知文案、
+      chatControlPanel 权限面板、chatHeader 主持人实时显示。
+      首要风险与独立成 CR 的主因：串行化键改造后既有并发语义（D1 容量守卫/插队/
+      撤回与 CR-A 群聊入队）回归必须全绿。
+    owner: Ray
+    owners:
+      requirement:
+        id: Ray
+        assigned-at: "2026-08-02T10:00:39+08:00"
+      development:
+        id: Ray
+        assigned-at: "2026-08-02T10:00:39+08:00"
+      test:
+        id: Ray
+        assigned-at: "2026-08-02T10:00:39+08:00"
+    target-version: "0.17"
+    source: "docs/product/P2-三模式聊天窗口主体-交付切分.md v2（d7e4ece）CR-E"
+    prd-path: ""
+    status: drafting
+    created: "2026-08-02T10:00:39+08:00"
+    updated: "2026-08-02T10:00:39+08:00"
+  - id: CR-2026-011
+    title: P2 三模式聊天 CR-F — D7 门禁接合（B4 迁移 + 审批卡/blocker/CR 徽标）
+    summary: >-
+      门禁接合：B4 迁移（agent_task_queue 增 cr_id/pipeline_node_run_id 两列）+
+      消息流内门禁状态条——human_approval 审批卡走 P1 服务端签名审批（Ed25519，
+      非 TTY），驳回 reject_reason 注入 review_feedback；review verdict=block 显示
+      blocker 列表 + reviewLoop attempt N/3；chatHeader CR 16 态徽标消费 P1 cr
+      投影表。核心验收：真实 pipeline 网页批准 → 签名 grant → crctl 验签推进，
+      全链路不落 TTY。
+    owner: Ray
+    owners:
+      requirement:
+        id: Ray
+        assigned-at: "2026-08-02T10:00:39+08:00"
+      development:
+        id: Ray
+        assigned-at: "2026-08-02T10:00:39+08:00"
+      test:
+        id: Ray
+        assigned-at: "2026-08-02T10:00:39+08:00"
+    target-version: "0.18"
+    source: "docs/product/P2-三模式聊天窗口主体-交付切分.md v2（d7e4ece）CR-F"
+    prd-path: ""
+    status: drafting
+    created: "2026-08-02T10:00:39+08:00"
+    updated: "2026-08-02T10:00:39+08:00"
