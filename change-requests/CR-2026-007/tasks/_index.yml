@@ -2,17 +2,17 @@ cr-id: CR-2026-007
 tasks:
   - id: CR-2026-007-TASK-01
     title: queue-status include=items 端点扩展 + AgentTaskResponse originator 字段
-    status: pending
+    status: done
     estimate: 5h
     depends-on: []
   - id: CR-2026-007-TASK-02
     title: CancelTaskByUser 权限调序（originator 先行放行）+ 幂等/权限单测
-    status: pending
+    status: done
     estimate: 3h
     depends-on: []
   - id: CR-2026-007-TASK-03
     title: core 层：items schema/query + 撤回 mutation 三分支 + store 过滤字段
-    status: pending
+    status: in-progress
     estimate: 4h
     depends-on: [CR-2026-007-TASK-01]
   - id: CR-2026-007-TASK-04

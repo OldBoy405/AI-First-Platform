@@ -6,7 +6,7 @@ plan-ref: "change-requests/CR-2026-007/plan.md"
 sdd-ref: "change-requests/CR-2026-007/sdd.md"
 title: CancelTaskByUser 权限调序（originator 先行放行）+ 幂等/权限单测
 slug: cancel-permission-reorder
-status: pending
+status: done
 estimate: 3h
 depends-on: []
 assignee: ""

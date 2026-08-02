@@ -6,7 +6,7 @@ plan-ref: "change-requests/CR-2026-007/plan.md"
 sdd-ref: "change-requests/CR-2026-007/sdd.md"
 title: queue-status include=items 端点扩展 + AgentTaskResponse originator 字段
 slug: queue-items-endpoint
-status: pending
+status: done
 estimate: 5h
 depends-on: []
 assignee: ""
