@@ -1,11 +1,11 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 # 五段链路：需求 FR ↔ 技术设计 SDD ↔ 交付 TASK ↔ 代码 merge SHA ↔ CR-ID
 spec-id: ai-first-platform
-cr-ref: CR-2026-007
-cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007]
-target-version: "0.16"
+cr-ref: CR-2026-010
+cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010]
+target-version: "0.17"
 baseline-since: "0.10"
-generated-at: "2026-08-02T21:50:00+08:00"
+generated-at: "2026-08-03T01:00:00+08:00"
 
 # 已知缺口：CR-2026-003~CR-2026-006 未生成本文件的里程碑段（writeback-traceability 在那四个
 # CR 回写时被跳过，PRD.md/SDD.md/_index.yml 侧的累积记录不受影响、仍完整）。本次（CR-2026-008）
@@ -523,3 +523,109 @@ milestones:
       - "merge-feature-branch 阶段与 CR-2026-008/009 在 packages/core/api/client.ts 与 4 语言 projects.json 上产生真实冲突（因本 CR 分支基于早于两者的 trunk 切出）；两侧均为独立新增内容（本 CR 的 queue_bar/chat 新增 vs CR-2026-008 的 private 新增），both-side-keep 解决，解决后 core+views 全量 vitest（803+1813）与 go build 复跑全绿，详见 multica requirement/CR-2026-007 分支 commit 7ae822e1b"
     process-deviations:
       - "本 CR 排期序号先于 CR-2026-008/009（target-version 0.14 < 0.15/0.16）但因开发/评审排期延后，实际 merge/writeback 晚于两者完成；PRD.md/SDD.md 按版本号插入章节顺序，本文件与 _backlog.yml 按实际事件发生顺序追加，target-version/current 基线维持 0.16 不回退"
+
+  - cr: CR-2026-010
+    milestone: P2 CR-E
+    target-version: "0.17"
+    status: writing-back
+    owners:
+      requirement: { id: Ray, assigned-at: "2026-08-02T10:00:39+08:00" }
+      development: { id: Ray, assigned-at: "2026-08-02T10:00:39+08:00" }
+      test:        { id: Ray, assigned-at: "2026-08-02T10:00:39+08:00" }
+    prd:
+      file: specs/ai-first-platform/PRD.md
+      section: "P2 CR-E — presenter 控制权：claim 串行化键 agent_id→project_id + 单一写者（v0.17 · CR-2026-010）"
+      cr-source: change-requests/CR-2026-010/prd.md
+      revision: "0.1.1"
+    sdd:
+      file: specs/ai-first-platform/SDD.md
+      section: "P2 CR-E — presenter 控制权 + claim 串行化键改造 技术设计（v0.17 · CR-2026-010）"
+      cr-source: change-requests/CR-2026-010/sdd.md
+      revision: "0.1.0"
+    merge-commits:
+      - repo: multica
+        trunk: main
+        sha: 73fecaeca1f6661637d9821c055b7113ad5abbf1
+        branch: requirement/CR-2026-010
+        source-sha: aef1197736afada1362b0c49dbf00ecffe3827ed
+        merged-at: "2026-08-03T00:30:00+08:00"
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: b186a6674f54de972dc50165dc340739a94ab183
+        branch: requirement/CR-2026-010
+        source-sha: 4ba83ffe67c27f2ad2914acb56a25f8012f1af04
+        merged-at: "2026-08-03T00:30:00+08:00"
+    fr-chain:
+      - fr: FR-1
+        title: presenter 状态模型（单表六转移）
+        sdd: "SDD DD-1 + §4.2（转移表 + advisory lock 模板 + 403/404/409 结构化）"
+        tasks: [CR-2026-010-TASK-02]
+        code: "multica@73fecaeca1: server/internal/service/project_presenter.go + server/pkg/db/queries/project_presenter.sql + server/migrations/163_project_presenter_grant.up.sql"
+        evidence: "project_presenter_test.go 15 用例（五条 happy path + 7 项非法转移矩阵 + GetPresenterState 三角色可见性 + 成员移除联动）"
+      - fr: FR-2
+        title: 入队路径接入 presenter 判定（403 presenter_required，不落库不入队）
+        sdd: "SDD §4.3（守卫前置于容量守卫）"
+        tasks: [CR-2026-010-TASK-03]
+        code: "multica@73fecaeca1: server/internal/service/project_chat.go（guardProjectChatPresenter/ErrPresenterRequired）+ server/internal/handler/project_chat.go（writePresenterRequired）"
+        evidence: "TestSendProjectChatMessagePresenterGuard 6 子用例，含 before/after 行数断言证明未落 comment、未入队"
+      - fr: FR-3
+        title: claim 串行化键改造（agent_id→project_id，跨 agent 互斥）
+        sdd: "SDD §3 M161/M162 + §4.1 + DD-2/DD-3/DD-4"
+        tasks: [CR-2026-010-TASK-01]
+        code: "multica@73fecaeca1: server/pkg/db/queries/agent.sql（ClaimAgentTask 新分支）+ server/internal/service/task.go（ClaimTask advisory lock 复核）"
+        evidence: "TestClaimTaskCrossAgentProjectSingleWriter + TestClaimTaskCrossAgentProjectSingleWriterStress（12-agent 并发压测：concurrency=12 elapsed=312.6ms claimed=1 active_after=1 requeued=11）+ TestClaimTaskChatSessionParallelWithProjectTask（chat_session 分支不受影响）"
+      - fr: FR-4
+        title: 六种通知（activity_log 流内卡 + 5 种定向 inbox）
+        sdd: "SDD DD-8 + §4.5"
+        tasks: [CR-2026-010-TASK-04]
+        code: "multica@73fecaeca1: server/internal/service/project_presenter.go（recordPresenterActivity）+ server/cmd/server/presenter_notification_listeners.go"
+        evidence: "cmd/server TestPresenterNotifications：9 次转移调用，activity_log/inbox_item 扇出/EventActivityCreated/EventProjectPresenterChanged 各恰好 9 次断言"
+      - fr: FR-5
+        title: chatControlPanel 权限面板
+        sdd: "SDD §5.3"
+        tasks: [CR-2026-010-TASK-06]
+        code: "multica@73fecaeca1: packages/views/projects/components/presenter-control-sheet.tsx"
+        evidence: "presenter-control-sheet.test.tsx 7 个角色渲染用例（owner/presenter 本人/普通成员）"
+      - fr: FR-6
+        title: chatHeader 当前主持人（WS 实时）
+        sdd: "SDD §5.2"
+        tasks: [CR-2026-010-TASK-05]
+        code: "multica@73fecaeca1: packages/views/projects/components/project-chat-panel.tsx（PresenterHeader）"
+        evidence: "project-chat-panel.test.tsx PresenterHeader 两态（空/非空）+ tab 作用域渲染断言"
+      - fr: FR-7
+        title: WS 事件 project:presenter_changed（零新增前端 handler）
+        sdd: "SDD DD-9 + §4.5"
+        tasks: [CR-2026-010-TASK-04, CR-2026-010-TASK-05]
+        code: "multica@73fecaeca1: server/pkg/protocol/events.go + packages/core/projects/queries.ts（projectPresenterOptions 挂 project: 前缀失效树）"
+        evidence: "既有 use-realtime-sync.ts project: 前缀失效路径覆盖，无新增前端 WS handler 代码"
+      - fr: FR-8
+        title: 发送端拒绝呈现（presenter_required 与 429 满队独立锁定原因）
+        sdd: "SDD §5.5"
+        tasks: [CR-2026-010-TASK-06]
+        code: "multica@73fecaeca1: packages/views/projects/components/project-team-agent-chat.tsx（TeamAgentComposer handleSend presenter_required 分支）"
+        evidence: "project-team-agent-chat.test.tsx composer 拒绝态测试 5 个，含「presenter_required 从不渲染 queue-full 文案」隔离断言"
+    tasks:
+      total: 7
+      all-done: true
+      index: delivery/task/_index.yaml
+      files: "delivery/task/TASK-0.17-CR-2026-010-01..07-*.md"
+    reviews:
+      code: { reviewer: ai-reviewer, verdict: pass, attempts: 1, final-reviewed-at: "2026-08-02T21:40:00+08:00", file: change-requests/CR-2026-010/review-annotations/code.yml, findings: 1, blockers-fixed: 0, fixed-post-review: 0 }
+    tests:
+      report: change-requests/CR-2026-010/test-report.md
+      status: pass
+      tester: Ray
+      commands: { lint: pass, test: pass, build: pass }
+      uncovered-risks:
+        - "AC-2 WS 双浏览器会话实时观察未做人工核对（环境无可用双用户会话），复用既有生产 project: 前缀失效链路，风险评估低"
+        - "AC-5 web/Electron desktop 视觉双端人工核对未做（Electron 在本环境不可截图/交互），packages/views 组件树共享、渲染路径与 web 相同，风险评估低"
+    approvals:
+      requirement:       { approver: OldBoy405, via: crctl-approve }
+      tech-design:       { approver: OldBoy405, via: crctl-approve }
+      development-start: { approver: OldBoy405, via: crctl-approve }
+      code:               { approver: Ray, via: crctl-approve }
+    notes-on-record:
+      - "T03 实现期发现并修正一处会放宽单一写者语义的自身草稿 bug：guardProjectChatPresenter 最初在 presenter==nil 时提前放行所有成员（应仅 owner/admin），被新写测试当场抓出后改为始终按 SDD §4.3 完整公式判定"
+      - "T06 composer 自愈合逻辑发现一处真实生产 bug：最初把 presenter 变为 null 当成解锁信号写自动清除 effect，但对普通成员而言 presenter=null 是永久默认拒绝态而非解决——测试驱动开发直接抓出并修正为仅在 presenter.user_id===本人时才清除锁定"
+      - "T06 权限面板转让交互未采纳任务文档建议的 TeamAgentSetupPicker 搜索弹层骨架，改为面板内逐行直接放转让按钮——面板已把全部候选成员渲染成可见行，二次弹层是冗余交互，验收条件未受影响"
+      - "merge-feature-branch 阶段与已合入的 CR-2026-007/008/009 在 14 个文件上产生真实冲突（router.go、agent.sql、packages/core 数据层、4 语言 projects.json、project-chat-panel.tsx、project-team-agent-chat.tsx(+test)），均为多个 CR 各自独立新增内容在同一文件的不同位置追加，both-side-keep 解决（两处需要真正合并代码逻辑而非简单拼接：TeamAgentStreamView 的合并循环 useMemo 依赖数组需同时纳入两个 CR 各自新增的字段；composer 容器的双 div/双 TeamAgentStreamView 调用需去重合并为一次调用并携带全部 props），解决后 core+views 全量 vitest（815+1837）与 go build/vet 复跑全绿，详见 multica requirement/CR-2026-010 分支 commit aef119773 的合并结果 73fecaeca1"
