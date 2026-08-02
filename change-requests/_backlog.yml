@@ -117,10 +117,23 @@ change-requests:
     target-version: "0.16"
     source: "docs/product/P2-三模式聊天窗口主体-交付切分.md v2（d7e4ece）CR-D"
     prd-path: ""
-    status: code-approved
-    updated-at: "2026-08-02T18:24:51+08:00"
+    status: merging
+    updated-at: "2026-08-02T19:29:06+08:00"
     created: "2026-08-02T10:00:39+08:00"
     updated: "2026-08-02T10:00:39+08:00"
+    merge-commits:
+      - repo: multica
+        trunk: main
+        sha: 3bce9ade0a0ab6647f72b00e2893ef60cd26a1a6
+        branch: requirement/CR-2026-009
+        source-sha: 59b4c9063ae521c9faa8fa55e6e51e57206affa8
+        merged-at: "2026-08-02T19:23:00+08:00"
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 7e1b333608858210a56b69a62fc243812f65a0ff
+        branch: requirement/CR-2026-009
+        source-sha: fca15aff381a88107cc3537bc4a0342267f5cf60
+        merged-at: "2026-08-02T19:29:06+08:00"
   - id: CR-2026-010
     title: P2 三模式聊天 CR-E — D4 presenter 控制权（claim 串行化键 agent_id→project_id）
     summary: >-
