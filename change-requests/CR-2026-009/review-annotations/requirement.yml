@@ -1,0 +1,37 @@
+cr-id: CR-2026-009
+review-type: requirement
+reviewer: ai-reviewer
+reviewed-at: "2026-08-02T10:55:00+08:00"
+verdict: pass
+blockers: []
+repair-target: write-requirement-prd
+repair-instructions: []
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 0
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-08-02T10:55:00+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: write-requirement-prd
+review-notes: >-
+  结构完整（概述/US/FR/NFR/AC/指标/排除齐备）；FR→AC 映射经自检修补后全覆盖
+  （评审前发现 FR-6 无对应 AC，已在 PRD 0.1.1 补 AC-7 后再评审）；cr.md 的两条
+  验收红线（零 agent_task_queue 行、容器 Issue 列表/看板隐藏）分别落为
+  FR-5/AC-3 与 FR-1/AC-4，且 AC-3 含 DB 级验证与豁免不外溢的反向验证；范围排除
+  逐条指回 CR-G 与切分文档 §0.4，范围清晰；依赖识别完整（后向 CR-2026-006/CR-A
+  的容器模式与隐藏过滤基建、前向 CR-G 依赖本 CR）；与规划对齐（source=交付切分
+  v2 CR-D 节，FR 覆盖 D6 全部 + B3 discussion 容器）；FR-6 未核实事实断言按
+  AGENTS.md 纪律 4 降 P1 并显式留 SDD 核实口，处理得当。
+suggestions:
+  - "SUG-001: FR-5 的提及入队豁免机制（按容器类型短路 vs 提及解析跳过 Agent）是本 CR 唯一动既有入队路径的点，SDD 应优先定案并给出既有 Issue 页评论路径不受影响的回归验证方案——豁免面写宽会误伤 team-agent-chat 容器（其 comment 恰恰需要入队），写窄会漏 discussion 容器的边缘入口（如 API 直接建 comment）"
+  - "SUG-002: 006 评审 SUG-001 提出的容器 Issue 隐藏影响面清单（全局搜索/通知/订阅摘要/inbox 等）同样适用于 discussion 类型值，CR-A 的 SDD 若已给出该清单，本 CR 的 SDD 直接复核 discussion 值逐点生效即可，不必重做调查"
+  - "SUG-003: FR-6 行内系统条的 SDD 核实（既有基建是否产生成员变更事件流）建议作为 SDD 第一批调查项，结论直接决定 AC-7 的验收口径与任务拆分"

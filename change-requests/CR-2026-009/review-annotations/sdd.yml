@@ -1,0 +1,43 @@
+cr-id: CR-2026-009
+review-type: tech-design
+reviewer: ai-reviewer
+reviewed-at: "2026-08-02T11:35:00+08:00"
+verdict: pass
+blockers: []
+repair-target: write-tech-design
+repair-instructions: []
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 0
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-08-02T11:35:00+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: write-tech-design
+review-notes: >-
+  PRD↔SDD 对齐 6/6：FR-1~5 各有实地核实（multica main 52b5717 文件:行号）的落点；
+  FR-6 按 PRD AC-7 预留裁剪口径定案（§6.3 留痕：无 project_member 表、member:added
+  仅瞬时 WS 事件，workspace 级变更落项目讨论流属错误作用域），属有效设计决议而非遗漏。
+  架构合理：完全沿 CR-A 容器模式做减法（无队列/无守卫/无薄端点），红线豁免选在
+  computeCommentAgentTriggers 单一汇聚点（3 调用点共用，含 API 直建 comment 边缘入口），
+  需求评审 SUG-001 的宽窄两个失败面均有自证排除。数据模型仅 1 个 migration 且照抄 160
+  先例、down 对称；谓词 NULL 安全性有 042 列定义佐证。接口契约清晰（新端点与
+  GetProjectChat 同构 + 复用既有评论端点）。可测试性好：负向单测（@agent 评论 →
+  triggers 空）、grep 断言（零残留单值谓词）、AC 逐条验证方式落字。DD-8 inbox 跳转条
+  是对 PRD AC-2 落点缺口的正确补强且让 CR-A 顺带受益。
+suggestions:
+  - "SUG-001: M1 down 迁移照抄 160.down 的『先删容器数据再收约束』顺序时，注意 discussion 容器可能已挂大量 comment——确认 comment 对 issue 的外键级联行为（CASCADE 或先删 comment），down 脚本里显式处理并在实现期用本地库演练一次 down→up 往返"
+  - "SUG-002: §4.2 的 ensureContainerIssue 抽取会重构 CR-A 已上线的 EnsureProjectChatIssue——实现期保留其既有单测并补 discussion 侧同构用例，抽取后两条 ensure 路径行为逐字节等价（title/origin_type 之外零差异）"
+  - "SUG-003: §5.1 的 ?mode= 深链读参做白名单校验（team_agent|private_ask|discussion 之外忽略），避免任意字符串写入 activeMode 持久化 store"
+fr-coverage:
+  total: 6
+  covered: 6
+  missing: []

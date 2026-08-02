@@ -1,0 +1,96 @@
+cr-id: CR-2026-009
+review-type: code
+reviewer: ai-reviewer
+reviewed-at: "2026-08-02T15:50:00+08:00"
+verdict: pass
+blockers: []
+repair-target: implement-code
+repair-instructions: []
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+      - path: test-report.status
+        equals: pass
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 0
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-08-02T15:50:00+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: implement-code
+suggestions:
+  - "SUG-001: AC-2（跨用户 @提及通知跳转）本轮只做到组件级验证，建议在下一次多用户可用的测试窗口补一次真机端到端（评论创建→notifyMentionedMembers→inbox 出现→点击跳转条→落对应 tab），不阻塞本次交付。"
+  - "SUG-002（已关闭）: down 迁移（161_issue_origin_project_discussion.down.sql）已在挂有真实数据（discussion 容器 + 1 条评论）的隔离库上完整执行 down→up 往返演练——DELETE 正确级联删除评论（非孤儿）、CHECK 约束与唯一索引正确复原、无关的 project_chat 容器未受影响、往返后可再次创建新容器且唯一性仍生效。详见 test-report.md §2「migration 161 down→up 往返演练」。"
+task-coverage:
+  total: 5
+  verified: 5
+  unverified: []
+verification:
+  lint: pass
+  test: pass
+  build: pass
+test-report:
+  file: "change-requests/CR-2026-009/test-report.md"
+  status: pass
+  uncovered-risks:
+    - "AC-2 跨用户 @提及通知的真机端到端链路（组件级已验证，见 test-report.md §3.1）"
+evidence:
+  diff-range: "52b5717...HEAD"
+  changed-files:
+    - server/migrations/161_issue_origin_project_discussion.up.sql
+    - server/migrations/161_issue_origin_project_discussion.down.sql
+    - server/internal/handler/issue.go
+    - server/internal/handler/comment.go
+    - server/internal/handler/project_chat.go
+    - server/internal/handler/project_chat_test.go
+    - server/internal/handler/discussion_trigger_exemption_test.go
+    - server/internal/handler/discussion_container_exclusion_test.go
+    - server/internal/service/project_chat.go
+    - server/internal/service/project_chat_test.go
+    - server/cmd/server/router.go
+    - server/pkg/db/queries/issue.sql
+    - server/pkg/db/queries/project.sql
+    - packages/core/api/client.ts
+    - packages/core/api/schemas.ts
+    - packages/core/projects/queries.ts
+    - packages/core/projects/index.ts
+    - packages/core/types/issue.ts
+    - packages/views/projects/components/discussion-pane.tsx
+    - packages/views/projects/components/discussion-pane.test.tsx
+    - packages/views/projects/components/project-chat-panel.tsx
+    - packages/views/projects/components/project-chat-panel.test.tsx
+    - packages/views/inbox/components/container-jump-banner.tsx
+    - packages/views/inbox/components/container-jump-banner.test.tsx
+    - packages/views/inbox/components/inbox-page.tsx
+    - packages/views/locales/en/inbox.json
+    - packages/views/locales/ja/inbox.json
+    - packages/views/locales/ko/inbox.json
+    - packages/views/locales/zh-Hans/inbox.json
+    - packages/views/locales/en/projects.json
+    - packages/views/locales/ja/projects.json
+    - packages/views/locales/ko/projects.json
+    - packages/views/locales/zh-Hans/projects.json
+review-notes: >-
+  代码↔TASK↔SDD 对齐：5 个 TASK 全部核对完成，实现覆盖 SDD §3-§7 全部设计点，且实现期发现并
+  修正两处 SDD 假设有误的地方（IssueResponse 实际未带 origin_type，已补充字段；ensureContainerIssue
+  抽取时采用 (q *db.Queries, ctx, ...) 闭包签名而非 SDD 描述的直接复用，因 sqlc 为每个 origin type
+  生成独立 Params 结构体，实测确认后调整，行为等价）。
+  工程质量：go build/vet/test 全绿（handler+service 包，含新增 3 个测试文件）；pnpm typecheck/test/lint
+  全绿（core 793 项 + views 1782 项 + locale parity 160 项），仅两处与本 CR 无关的预置失败已在
+  test-report.md §3.3 核实为 main 分支同 commit 独立复现。
+  关键路径可读性：红线短路（comment.go computeCommentAgentTriggers）注释清楚说明四类触发分支均被
+  覆盖及边缘入口（API 直建 comment）不外溢的理由；ensureContainerIssue 抽取保留了原函数的全部注释
+  语境（TSUG-002 优先级论证等）。
+  安全性：无新增外部输入面（discussion 容器创建/查询均走既有鉴权中间件）；红线豁免是纯服务端逻辑，
+  前端无法绕过。
+  测试覆盖：单测覆盖 8 处排除谓词（含全局搜索的关键泄漏场景）、并发 ensure 幂等、四类触发豁免负向
+  用例+回归、DiscussionPane 组件行为、ContainerJumpBanner 文案/跳转；真机验证（test-report.md）
+  额外覆盖了单测无法覆盖的端到端场景（真实 WS 实时上屏、真实浏览器输入区控件清点、真实 DB 级红线
+  核对）。测试证据可信度高——test-report.md 对判定为"部分"/"裁剪"的两项（AC-2、AC-7）均给出具体
+  原因而非笼统带过。
