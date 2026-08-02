@@ -316,3 +316,52 @@ tasks:
     cr-ref: CR-2026-007
     target-version: "0.14"
     estimate: 4h
+  - id: CR-2026-010-TASK-01
+    file: TASK-0.17-CR-2026-010-01-claim-project-serialization.md
+    title: 迁移（project_id 列+回填+索引、presenter_grant 表）+ claim SQL 改造 + advisory lock 竞态复核
+    status: done
+    cr-ref: CR-2026-010
+    target-version: "0.17"
+    estimate: 6h
+  - id: CR-2026-010-TASK-02
+    file: TASK-0.17-CR-2026-010-02-presenter-grant-service.md
+    title: presenter 服务（grant 状态机 6 转移）+ 7 个 API 路由 + 成员移除联动
+    status: done
+    cr-ref: CR-2026-010
+    target-version: "0.17"
+    estimate: 6h
+  - id: CR-2026-010-TASK-03
+    file: TASK-0.17-CR-2026-010-03-send-endpoint-presenter-guard.md
+    title: 发送端点控制权守卫接入（403 presenter_required）+ 插队优先级抑制
+    status: done
+    cr-ref: CR-2026-010
+    target-version: "0.17"
+    estimate: 3h
+  - id: CR-2026-010-TASK-04
+    file: TASK-0.17-CR-2026-010-04-presenter-notifications.md
+    title: 通知双通道（activity_log + notifyDirect + WS 事件）
+    status: done
+    cr-ref: CR-2026-010
+    target-version: "0.17"
+    estimate: 4h
+  - id: CR-2026-010-TASK-05
+    file: TASK-0.17-CR-2026-010-05-presenter-data-layer-header.md
+    title: presenter 数据层（schemas/client/queries/mutations）+ chatHeader 主持人显示
+    status: done
+    cr-ref: CR-2026-010
+    target-version: "0.17"
+    estimate: 3h
+  - id: CR-2026-010-TASK-06
+    file: TASK-0.17-CR-2026-010-06-presenter-panel-notices-i18n.md
+    title: chatControlPanel 权限面板 + 消息流通知卡 + 拒绝呈现 + 四语文案
+    status: done
+    cr-ref: CR-2026-010
+    target-version: "0.17"
+    estimate: 6h
+  - id: CR-2026-010-TASK-07
+    file: TASK-0.17-CR-2026-010-07-e2e-acceptance-regression.md
+    title: 端到端验收（AC-1~5）+ §6.3 四组回归
+    status: done
+    cr-ref: CR-2026-010
+    target-version: "0.17"
+    estimate: 6h
