@@ -6,7 +6,7 @@ plan-ref: "change-requests/CR-2026-011/plan.md"
 sdd-ref: "change-requests/CR-2026-011/sdd.md"
 title: migration 161：pipeline 两表 + agent_task_queue B4 两列 + retry 克隆清单
 slug: migration-pipeline-tables
-status: pending
+status: done
 estimate: 4h
 depends-on: []
 assignee: ""

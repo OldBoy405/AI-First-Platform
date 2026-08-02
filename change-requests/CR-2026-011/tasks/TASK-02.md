@@ -6,7 +6,7 @@ plan-ref: "change-requests/CR-2026-011/plan.md"
 sdd-ref: "change-requests/CR-2026-011/sdd.md"
 title: 门禁节点投影器（状态映射表 + node_id 决议单点 + cr:updated 发布）
 slug: gate-node-projector
-status: pending
+status: done
 estimate: 6h
 depends-on: [CR-2026-011-TASK-01]
 assignee: ""

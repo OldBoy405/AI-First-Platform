@@ -6,7 +6,7 @@ plan-ref: "change-requests/CR-2026-011/plan.md"
 sdd-ref: "change-requests/CR-2026-011/sdd.md"
 title: CrGateCard 三变体 + 消息流插入 + 执行卡迷你条 + 批准/驳回交互
 slug: gate-card-interactions
-status: pending
+status: done
 estimate: 6h
 depends-on: [CR-2026-011-TASK-04, CR-2026-011-TASK-05]
 assignee: ""

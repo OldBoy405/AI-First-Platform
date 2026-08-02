@@ -6,7 +6,7 @@ plan-ref: "change-requests/CR-2026-011/plan.md"
 sdd-ref: "change-requests/CR-2026-011/sdd.md"
 title: 前端 client 层 + cr:updated 接线 + CrStatusBadge + 四语文案
 slug: client-layer-badge
-status: pending
+status: done
 estimate: 4h
 depends-on: [CR-2026-011-TASK-01]
 assignee: ""

@@ -6,7 +6,7 @@ plan-ref: "change-requests/CR-2026-011/plan.md"
 sdd-ref: "change-requests/CR-2026-011/sdd.md"
 title: gates 端点 + canApprove 角色策略 + pending_advance + StartTask 归因
 slug: gates-endpoint-approval-policy
-status: pending
+status: done
 estimate: 6h
 depends-on: [CR-2026-011-TASK-01]
 assignee: ""

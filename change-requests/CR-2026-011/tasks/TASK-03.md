@@ -6,7 +6,7 @@ plan-ref: "change-requests/CR-2026-011/plan.md"
 sdd-ref: "change-requests/CR-2026-011/sdd.md"
 title: review 事件通道（daemon 扫描正则 + yml payload + 服务端放行）
 slug: review-event-channel
-status: pending
+status: done
 estimate: 4h
 depends-on: [CR-2026-011-TASK-02]
 assignee: ""
