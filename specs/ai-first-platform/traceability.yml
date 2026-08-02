@@ -1,11 +1,11 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 # 五段链路：需求 FR ↔ 技术设计 SDD ↔ 交付 TASK ↔ 代码 merge SHA ↔ CR-ID
 spec-id: ai-first-platform
-cr-ref: CR-2026-008
-cr-history: [CR-2026-001, CR-2026-002, CR-2026-008]
-target-version: "0.15"
+cr-ref: CR-2026-009
+cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009]
+target-version: "0.16"
 baseline-since: "0.10"
-generated-at: "2026-08-02T17:45:47+08:00"
+generated-at: "2026-08-02T19:45:00+08:00"
 
 # 已知缺口：CR-2026-003~CR-2026-006 未生成本文件的里程碑段（writeback-traceability 在那四个
 # CR 回写时被跳过，PRD.md/SDD.md/_index.yml 侧的累积记录不受影响、仍完整）。本次（CR-2026-008）
@@ -319,3 +319,101 @@ milestones:
     process-deviations:
       - "本 CR 起 writeback-traceability 补齐执行（CR-2026-003~006 曾跳过，见文件头部已知缺口说明）"
       - "review-code 首轮 verdict=block（3 blocker：CODE-BLOCK-001 严重/002 主要/003 次要），修复后二轮 pass，见 code.yml attempts[]"
+
+  # P2 CR-D — D6 Discussion（v0.16 · CR-2026-009）
+  - cr: CR-2026-009
+    milestone: P2 CR-D
+    target-version: "0.16"
+    status: writing-back
+    owners:
+      requirement: { id: Ray, assigned-at: "2026-08-02T10:00:39+08:00" }
+      development: { id: Ray, assigned-at: "2026-08-02T10:00:39+08:00" }
+      test:        { id: Ray, assigned-at: "2026-08-02T10:00:39+08:00" }
+    prd:
+      file: specs/ai-first-platform/PRD.md
+      section: "P2 CR-D — D6 Discussion：discussion 容器 Issue + 纯人类多人聊天（v0.16 · CR-2026-009）"
+      cr-source: change-requests/CR-2026-009/prd.md
+      revision: "0.1.1"
+    sdd:
+      file: specs/ai-first-platform/SDD.md
+      section: "P2 CR-D — D6 Discussion 技术设计（v0.16 · CR-2026-009）"
+      cr-source: change-requests/CR-2026-009/sdd.md
+      revision: "0.1.0"
+    merge-commits:
+      - repo: multica
+        trunk: main
+        sha: 3bce9ade0a0ab6647f72b00e2893ef60cd26a1a6
+        branch: requirement/CR-2026-009
+        source-sha: 59b4c9063ae521c9faa8fa55e6e51e57206affa8
+        merged-at: "2026-08-02T19:23:00+08:00"
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 7e1b333608858210a56b69a62fc243812f65a0ff
+        branch: requirement/CR-2026-009
+        source-sha: fca15aff381a88107cc3537bc4a0342267f5cf60
+        merged-at: "2026-08-02T19:29:06+08:00"
+    fr-chain:
+      - fr: FR-1
+        title: discussion 容器 Issue（B3，lazily 创建 + 隐藏过滤）
+        sdd: "SDD DD-1/DD-4 + §3 migration 161 + §4.1 排除谓词扩值"
+        tasks: [CR-2026-009-TASK-01]
+        code: "multica@3bce9ade0: server/migrations/161_issue_origin_project_discussion.{up,down}.sql + internal/handler/issue.go（8 处谓词）+ pkg/db/queries/{issue,project}.sql"
+        evidence: "单测覆盖 8 处排除谓词（含全局搜索 comment 子查询）+ 并发 ensure 幂等；test-report §2 migration 161 down→up 往返演练（真实数据）"
+      - fr: FR-2
+        title: Discussion 消息流（容器 comment 流 + WS 广播 + 分页回放）
+        sdd: "SDD DD-3 + §5.1"
+        tasks: [CR-2026-009-TASK-03]
+        code: "multica@3bce9ade0: packages/views/projects/components/discussion-pane.tsx"
+        evidence: "discussion-pane.test.tsx；真机双浏览器实时上屏 + 刷新全量回放（test-report）"
+      - fr: FR-3
+        title: 输入区纯人类形态（仅附件 + @提及）
+        sdd: "SDD DD-6 + §5.1"
+        tasks: [CR-2026-009-TASK-03]
+        code: "multica@3bce9ade0: discussion-pane.tsx（ReplyInput 原生 draftKey，不复用 project-chat-store）"
+        evidence: "组件测试锁定输入区形态 + 草稿独立持久化（AC-5）"
+      - fr: FR-4
+        title: "@提及 + 通知 + 订阅（零改动复用）"
+        sdd: "SDD §4.4 通知链"
+        tasks: [CR-2026-009-TASK-01, CR-2026-009-TASK-04]
+        code: "multica@3bce9ade0: internal/handler/notification_listeners.go（既有 notifyMentionedMembers，无改动）+ packages/views/inbox/components/container-jump-banner.tsx（DD-8 跳转条）"
+        evidence: "AC-2 组件级验证；真机跨用户端到端待多用户测试窗口补验（SUG-001，不阻塞交付）"
+      - fr: FR-5
+        title: 零 Agent 触发红线（豁免单点短路）
+        sdd: "SDD DD-2 + §4.3"
+        tasks: [CR-2026-009-TASK-02]
+        code: "multica@3bce9ade0: internal/handler/comment.go（computeCommentAgentTriggers 顶部短路）"
+        evidence: "discussion_trigger_exemption_test.go 四类触发负向用例 + 既有单测全量回归；AC-3 DB 级验证（agent_task_queue 零新增行）"
+      - fr: FR-6
+        title: 行内系统条（裁剪不实现）
+        sdd: "SDD §6.3 裁剪定案：multica 无项目级成员模型"
+        tasks: []
+        code: "无实现项（裁剪）"
+        evidence: "AC-7 按裁剪口径验收，评审记录留痕（review-annotations/requirement.yml、sdd.yml）"
+    tasks:
+      total: 5
+      all-done: true
+      index: delivery/task/_index.yaml
+      files: "delivery/task/TASK-0.16-CR-2026-009-01..05-*.md"
+    reviews:
+      requirement: { reviewer: ai-reviewer, verdict: pass, attempts: 1, final-reviewed-at: "2026-08-02T10:55:00+08:00", file: change-requests/CR-2026-009/review-annotations/requirement.yml }
+      sdd:         { reviewer: ai-reviewer, verdict: pass, attempts: 1, final-reviewed-at: "2026-08-02T11:35:00+08:00", file: change-requests/CR-2026-009/review-annotations/sdd.yml }
+      code:        { reviewer: ai-reviewer, verdict: pass, attempts: 1, final-reviewed-at: "2026-08-02T15:50:00+08:00", file: change-requests/CR-2026-009/review-annotations/code.yml, suggestions: 2 }
+    tests:
+      report: change-requests/CR-2026-009/test-report.md
+      status: pass
+      tester: Ray
+      generated-at: "2026-08-02T16:10:00+08:00"
+      commands: { lint: pass, test: pass, build: pass }
+      uncovered-risks:
+        - "AC-2 跨用户 @提及通知的真机端到端链路（组件级已验证，见 test-report.md §3.1）"
+    approvals:
+      requirement:       { approver: OldBoy405, via: crctl-approve }
+      tech-design:       { approver: OldBoy405, via: crctl-approve }
+      development-start: { approver: OldBoy405, via: crctl-approve }
+      code:               { approver: OldBoy405, via: crctl-approve }
+    notes-on-record:
+      - "SUG-001（AC-2 跨用户端到端）：组件级验证已完成，真机多用户验收留待下一次多用户可用测试窗口补验，不阻塞本次交付"
+      - "SUG-002（已关闭）：down 迁移在挂有真实数据（discussion 容器 + 1 条评论）的隔离库上完整执行 down→up 往返演练，确认 CASCADE 删除评论正确、约束/索引复原、project_chat 容器未受影响；详见 test-report.md §2"
+      - "实施期发现并修正两处 SDD 假设有误：IssueResponse 实际未带 origin_type（已补充字段）；ensureContainerIssue 抽取因 sqlc 每 origin type 生成独立 Params 结构体，改用闭包签名而非直接复用（行为等价）"
+    process-deviations:
+      - "PRD/SDD/traceability.yml 回写沿用累积式合并；顺带修正 PRD.md/SDD.md frontmatter 的 cr-ref/cr-history/version 自 CR-2026-004 起遗漏同步的漂移（见 PRD.md/SDD.md 基线变更记录本次条目）"
