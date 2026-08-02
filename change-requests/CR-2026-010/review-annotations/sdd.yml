@@ -1,0 +1,37 @@
+cr-id: CR-2026-010
+review-type: tech-design
+reviewer: ai-reviewer
+reviewed-at: "2026-08-02T12:14:00+08:00"
+verdict: pass
+blockers: []
+repair-target: write-tech-design
+repair-instructions: []
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 0
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-08-02T12:14:00+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: write-tech-design
+review-notes: >-
+  FR 覆盖 8/8（§7 映射齐）；需求评审 3 条建议全部定案且有代码级依据（§6：grant 单表
+  状态机、DD-7 不打断语义、M161 回填 + NULL 回退的上线兼容）。SDD 开篇显式修正了 PRD
+  的一处技术前提（串行化键实为三分支而非 agent_id 单键，改造缩小为 issue 分支换键），
+  修正有 SQL 原文佐证且使 Private Ask 并行约束从"需要设计保证"降为"结构天然成立"。
+  单写者三层保证（入队守卫/claim 谓词/advisory 复核）+ DB 层 partial unique 兜底，
+  竞态分析覆盖跨 agent 窗口与死锁论证；既有 idx_one_pending_task_per_issue_agent 的
+  消息合并行为被识别并显式登记为已知行为而非回归。WS 零新增前端 handler 与通知双通道
+  均有行号级先例。架构与 CR-A SDD 的复用约定一致，无平行基础设施。
+suggestions:
+  - "TSUG-001: M161 的全表回填 UPDATE 在热表上有锁窗口且对终态行无意义——建议限定 WHERE atq.status NOT IN ('completed','failed','cancelled')（claim 谓词只探测 active 集，终态行的 project_id 永不被读），或分批执行；任务拆分时定案"
+  - "TSUG-002: §4.5 定向 inbox 的 IssueID 指向隐藏容器 Issue，前端 inbox 项的默认点击路由会深链到被全入口隐藏的 Issue 页——5 个 presenter type 的 label/路由分支必须改走 details.project_id 深链到项目 Chat tab（?tab=chat），验收 AC-2 时点击每类通知核对落点"
+  - "TSUG-003: GET /presenter 对普通成员过滤 pending 列表时必须仍返回本人的 pending（§5.3 请求按钮'申请中'禁用态的数据源）——响应形状建议显式分 presenter/pending_requests(按角色)/my_request 三段，任务拆分时把 own-vs-all 两档写进接口契约测试"
