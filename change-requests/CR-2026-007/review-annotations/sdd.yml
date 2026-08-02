@@ -1,0 +1,51 @@
+cr-id: CR-2026-007
+review-type: tech-design
+reviewer: ai-reviewer
+reviewed-at: "2026-08-02T12:55:00+08:00"
+verdict: pass
+blockers: []
+repair-target: write-tech-design
+repair-instructions: []
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 2
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-08-02T11:55:00+08:00"
+      result: block
+      blocker-count: 3
+      repair-target: write-tech-design
+      blockers-summary: "I-2 假断言（cancel 已完成任务是幂等 200 非 400，连带 PRD AC-2 改错）；私有 agent 下发起人'发得进撤不回'权限不对称（canAccessPrivateAgent 前置于 originator 检查）；DD-3 INNER JOIN users 丢 NULL originator 系统任务致 items 与 depth 不一致"
+    - attempt: 1
+      reviewed-at: "2026-08-02T12:30:00+08:00"
+      result: block
+      blocker-count: 1
+      repair-target: write-tech-design
+      blockers-summary: "SDD 修复全部与实码核实一致，但 PRD 仅改 AC-2：FR-3 残留 409 旧口径且漏 dispatched 可撤、NFR-1 与技术前提'零改动'同 DD-2 冲突（同时要求和禁止同一改动）"
+    - attempt: 2
+      reviewed-at: "2026-08-02T12:55:00+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: write-tech-design
+review-notes: >-
+  独立评审（子代理）三轮收敛。最终态（SDD 0.2.1 + PRD 0.1.3）：五处修复 diff 全部
+  实码核实闭合——FR-3 幂等口径+dispatched 可撤、NFR-1/技术前提精确豁免 DD-2 调序、
+  DD-2 三分支（重复撤回 cancelled 静默成功）与实码语义一致；DD-2 权限调序数学上
+  "只放宽不收紧"成立（原放行集 {access∧originator} 严格包含于新集 {originator}，
+  非发起人路径原样），无新增泄漏面；items key 前缀确会被 use-realtime-sync.ts:541
+  的 queueStatusAll 前缀失效命中。I-1~I-9 调查断言经抽查全部为真。
+suggestions:
+  - "TSUG-001: items[].summary 直接 SELECT 既有 agent_task_queue.trigger_summary 列（入队时已截断+跨 workspace 防泄漏 MUL-4252），不 JOIN comment 不二次截断（已进 DD-3/DD-5）"
+  - "TSUG-002: '是我发起的'前端判定用 AgentTaskResponse 新增只读 originator_user_id 字段（omitempty），不依赖 trigger_comment_id→作者映射（coalesce re-stamp 有漂移边界）（已进 DD-1）"
+  - "TSUG-003: 过滤摘要形态渲染 result.output 而非 result 整包 JSON（{output, pr_url, tool_calls,…}），output 空串占位（已进 DD-4）"
+  - "TSUG-004: 测试面补 cancel 已完成任务幂等 200 断言 + NULL originator 的 items 渲染/口径用例（已进 §3 测试面）"
+  - "TSUG-005: ListProjectPendingTasks 放 agent.sql（CountProjectPendingTasks 实际在 agent.sql:1017 非 project.sql）（已进 DD-3/§3）"
+  - "TSUG-006: queueItems query key 挂 queueStatus 前缀下白拿 use-realtime-sync.ts:541 前缀失效，失效处零改动（已进 DD-3）"
+  - "TSUG-007: 重复撤回已 cancelled 项走幂等 200 且静默成功（不弹'已结束'toast），mutation 测试覆盖三分支（已进 DD-2）"

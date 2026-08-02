@@ -14,7 +14,7 @@ revision: "0.2.1"
 
 # SDD — CR-2026-007：D3 完整形态（队列条 + 撤回 + 停止 + 过滤开关）
 
-> 输入：PRD rev 0.1.2（FR-1~7 / NFR-1~5 / AC-1~6）+ 需求评审 6 条 SUG（DD 标注闭合）。
+> 输入：PRD rev 0.1.3（FR-1~7 / NFR-1~5 / AC-1~6）+ 需求评审 6 条 SUG（DD 标注闭合）。
 > rev 0.2.0：技术评审 attempt 0 = block，修复 3 条 blocker（cancel 幂等语义、私有 agent
 > cancel 前置门槛、NULL originator 丢项）并吸收 TSUG-001/002/003/005/006（见 §6）。
 > 全部设计决策基于对 multica main（52b571774，含 CR-A 合并）的实码调查。
