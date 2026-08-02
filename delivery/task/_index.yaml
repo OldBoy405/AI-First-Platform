@@ -274,3 +274,45 @@ tasks:
     cr-ref: CR-2026-009
     target-version: "0.16"
     estimate: 4h
+  - id: CR-2026-007-TASK-01
+    file: TASK-0.14-CR-2026-007-01-queue-items-endpoint.md
+    title: queue-status include=items 端点扩展 + AgentTaskResponse originator 字段
+    status: done
+    cr-ref: CR-2026-007
+    target-version: "0.14"
+    estimate: 5h
+  - id: CR-2026-007-TASK-02
+    file: TASK-0.14-CR-2026-007-02-cancel-permission-reorder.md
+    title: CancelTaskByUser 权限调序（originator 先行放行）+ 幂等/权限单测
+    status: done
+    cr-ref: CR-2026-007
+    target-version: "0.14"
+    estimate: 3h
+  - id: CR-2026-007-TASK-03
+    file: TASK-0.14-CR-2026-007-03-core-queue-items.md
+    title: core 层：items schema/query + 撤回 mutation 三分支 + store 过滤字段
+    status: done
+    cr-ref: CR-2026-007
+    target-version: "0.14"
+    estimate: 4h
+  - id: CR-2026-007-TASK-04
+    file: TASK-0.14-CR-2026-007-04-queue-bar.md
+    title: project-queue-bar 组件（常驻/展开/撤回/停止/占位）+ 四语文案
+    status: done
+    cr-ref: CR-2026-007
+    target-version: "0.14"
+    estimate: 5h
+  - id: CR-2026-007-TASK-05
+    file: TASK-0.14-CR-2026-007-05-stream-enhancements.md
+    title: 消息流增强：运行卡停止钮 + 过滤摘要形态 + 已撤回角标 + 复制
+    status: done
+    cr-ref: CR-2026-007
+    target-version: "0.14"
+    estimate: 5h
+  - id: CR-2026-007-TASK-06
+    file: TASK-0.14-CR-2026-007-06-e2e-acceptance.md
+    title: 端到端验收（AC-1~6）
+    status: done
+    cr-ref: CR-2026-007
+    target-version: "0.14"
+    estimate: 4h
