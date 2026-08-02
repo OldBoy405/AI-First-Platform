@@ -2,14 +2,14 @@
 id: ai-first-platform-sdd
 spec-id: ai-first-platform
 type: SDD
-cr-ref: CR-2026-007
-cr-history: [CR-2026-001, CR-2026-002, CR-2026-003, CR-2026-004, CR-2026-005, CR-2026-006, CR-2026-008, CR-2026-009, CR-2026-007]
+cr-ref: CR-2026-009
+cr-history: [CR-2026-001, CR-2026-002, CR-2026-003, CR-2026-004, CR-2026-005, CR-2026-006, CR-2026-008, CR-2026-009]
 title: AI First 研发协同平台 — 技术设计基线
 target-version: "0.16"
 status: ga
 created: "2026-07-30T21:49:02+08:00"
-updated: "2026-08-02T21:45:00+08:00"
-version: v0.7.0
+updated: "2026-08-02T19:35:00+08:00"
+version: v0.6.0
 refs:
   upstream: [ai-first-platform-prd]
   downstream: []
@@ -503,52 +503,6 @@ backlog→history 归档迁移的同类空白留待独立评估，可复用本 C
 队列条完整形态/停止/过滤开关（CR-B）、Private Ask/Discussion 内容面（CR-C/D）、presenter（CR-E）、
 门禁接合（CR-F）、DC+合并转发（CR-G）——均不在本 CR 范围，见切分文档 v2。
 
-## P2 CR-B — D3 完整形态 技术设计（v0.14 · CR-2026-007）
-
-> 完整 SDD 见 change-requests/CR-2026-007/sdd.md（含 6 条设计决策 DD-1~DD-6、9 条调查结论、
-> 技术评审 attempt 0→1 的 3 处 blocker 修复记录）；本节为基线摘要。
-> 回写顺序说明同 PRD.md 对应节：本 CR 按版本号插入于 CR-A（0.13）与 CR-C（0.15）之间，
-> 实际回写晚于两者。
-
-### 1. 设计要点
-
-- **停止入口与判定（DD-1）**：发送键恒为发送，「停止」按钮放运行中任务卡与队列展开列表项；
-  `AgentTaskResponse` 新增只读 `originator_user_id`（omitempty，向后兼容），供前端判定"是我
-  发起的"。
-- **撤回=停止=同一端点（DD-2）**：全部走既有 `POST /api/tasks/{taskId}/cancel`；服务端对已
-  完成任务是幂等 200+原状态（非 400/409），前端三分支处理；`CancelTaskByUser` 唯一写路径
-  改动——`originator==caller` 先行放行，修复私有 agent 下"发得进撤不回"的权限不对称，非发
-  起人路径校验原样保留。
-- **队列明细读侧扩展（DD-3）**：`GET /api/projects/{id}/queue-status?include=items` opt-in
-  扩展（不带参逐字节零变化）；新查询 `ListProjectPendingTasks`（agent.sql）LEFT JOIN users
-  保留 NULL originator 任务、口径与 `queue_depth` 完全一致；summary 直读既有
-  `trigger_summary` 列（已截断落库，跨 workspace 防泄漏），不二次 JOIN comment；query key
-  挂 `queueStatus` 前缀下白拿既有 WS 失效覆盖。
-- **过滤开关谓词（DD-4）**：开启时 comment 全保留，`TaskExecutionCard` 只渲染卡头+
-  `result.output` 最终文本（不渲染 TimelineView）；`project-chat-store` 增
-  `agentRequestFilter` map，走既有 `createWorkspaceAwareStorage` 持久化。
-- **已撤回标注/摘要复用既有关联（DD-5）**、**被停者对账链路全既有（DD-6）**：零新增写路径，
-  复用 WS 队列失效与既有 interrupted 徽标渲染分支。
-
-### 2. 技术评审记录（attempt 0 → 修复映射，摘要）
-
-3 处 blocker 修复：① I-2 幂等 200 假断言（非 400）→ DD-2 竞态语义改按响应状态判定；
-② 私有 agent 撤回权限不对称 → `CancelTaskByUser` 服务端小改 + 单测双向覆盖；
-③ INNER JOIN 丢 NULL originator → 改 LEFT JOIN + 前端占位 + 口径单测。
-
-### 3. 实现期与设计的偏差 / 代码评审发现（TASK 完成记录留痕）
-
-| 项 | 设计 | 实现 | 原因 |
-|---|---|---|---|
-| initials 计算 | 未预先设计共享位置 | 代码评审（Standards 轴）发现 `project-queue-bar.tsx` 与 `workspace/hooks.ts` 的 `getActorInitials` 同形重复，抽取 `packages/core/utils.ts` 的 `nameToInitials(name)`，两处改调用共享函数 | Duplicated Code |
-| `CancelTaskByUser` 内层条件 | DD-2 决策为"originator==caller 先行放行" | T02 调序后 originator 快速路径内遗留一个条件恒真的冗余 `if`（外层已保证成立），代码评审（Standards 轴）发现后拍平，注释同步说明结论来自外层 else-if | Dead/Redundant Conditional |
-| `project-team-agent-chat.tsx` prop 传递 | — | wsId/projectId/canConfigure/filterOn 经 `TeamAgentStreamView` 一跳转发，代码评审识别为轻度 prop-drilling，权衡后判断性保留（一跳转发，引入 context/对象封装属于非必要抽象） | 保留，非缺陷 |
-
-### 4. 范围排除
-
-队列上限配置管理界面（D1 已交付写入口，本 CR 不做界面）；消息回复/转发/reaction → CR-G；
-presenter → CR-E；门禁接合 → CR-F。
-
 ## P2 CR-C — D5 Private Ask 技术设计（v0.15 · CR-2026-008）
 
 > 完整 SDD 见 change-requests/CR-2026-008/sdd.md（含 7 条设计决策 DD-1~DD-7、FR→设计映射表、
@@ -655,7 +609,6 @@ workspace 级 `member`），仅有瞬时 `member:added` WS 广播、不落任何
 | 2026-08-02 | v0.4.0 | CR-2026-006 | 新增 P2 CR-A 里程碑节：容器 Issue 方案+薄发送端点+模型选择器技术设计；3 项实现期偏差/代码评审发现留痕 |
 | 2026-08-02 | v0.5.0 | CR-2026-008 | 新增 P2 CR-C 里程碑节：B2 迁移 + WS 隐私收敛（含既有全局 chat 同一泄漏面修复）+ Ask-only 双重强制技术设计；5 项实现期偏差/代码评审发现留痕 |
 | 2026-08-02 | v0.6.0 | CR-2026-009 | 新增 P2 CR-D 里程碑节：discussion 容器同构方案 + 触发豁免单点短路 + migration down→up 真机演练技术设计；3 项实现期偏差/代码评审发现留痕；补齐 frontmatter cr-ref/cr-history/version 漂移 |
-| 2026-08-02 | v0.7.0 | CR-2026-007 | 补跑新增 P2 CR-B 里程碑节：D3 完整形态技术设计（停止入口/撤回=停止同端点+幂等竞态语义/队列明细读侧 opt-in 扩展/过滤开关谓词/既有关联复用）；3 项代码评审发现留痕（initials 去重、冗余条件拍平、prop-drilling 判断性保留）；本 CR 排期先于 CR-C/CR-D（target-version 0.14）但实际回写晚于两者，按版本号插入于 CR-A 与 CR-C 之间，target-version 维持 0.16 不回退 |
 
 ### 实现期与设计的偏差（已在各 TASK 完成记录留痕）
 
