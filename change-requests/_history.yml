@@ -380,3 +380,62 @@ history:
         branch: requirement/CR-2026-009
         source-sha: fca15aff381a88107cc3537bc4a0342267f5cf60
         merged-at: "2026-08-02T19:29:06+08:00"
+  - id: CR-2026-007
+    title: P2 三模式聊天 CR-B — D3 完整形态（队列条展开/逐项撤回/停止/过滤开关）
+    summary: >-
+      Team Agent 面的队列与控制完整形态（纯前端，D1 后端能力已全量交付不再动）：
+      队列条常驻+展开列表逐项 fromUser；发起人撤回自己的排队项（D1 cancel 端点，
+      403/409 结构化反馈）；停止双权限（发送者停自己、Owner 停任意，停止后内容保留、
+      下一条自动开始）；「只看 Agent 请求」本地过滤开关；消息悬浮操作仅复制。
+      队列条 WS 实时无手动刷新。排期序号先于 CR-2026-008/009（target-version 0.14）
+      但因开发/评审延后，实际 merge/writeback 晚于两者完成，回写按实际事件发生顺序
+      记录（不回填历史章节顺序）。
+    owner: Ray
+    owners:
+      requirement:
+        id: Ray
+        assigned-at: "2026-08-02T10:00:39+08:00"
+      development:
+        id: Ray
+        assigned-at: "2026-08-02T10:00:39+08:00"
+      test:
+        id: Ray
+        assigned-at: "2026-08-02T10:00:39+08:00"
+    target-version: "0.14"
+    source: "docs/product/P2-三模式聊天窗口主体-交付切分.md v2（d7e4ece）CR-B"
+    prd-path: change-requests/CR-2026-007/prd.md
+    status: archived
+    final-status: archived
+    archive-reason: >-
+      P2 三模式聊天 CR-B 交付完成回写归档：specs/ai-first-platform 累积基线升至 v0.7.0
+      （PRD/SDD 新增 P2 CR-B 里程碑节，按版本号插入于 CR-A 与 CR-C 之间，含代码评审
+      3 项发现留痕），target-version/current 维持 0.16（0.14 不高于已交付基线，不回退）；
+      specs/ai-first-platform/traceability.yml 补跑 writeback-traceability 新增本里程碑段
+      （FR-1~7 全链路，milestones 按实际回写顺序追加在 CR-2026-009 之后）；delivery/task
+      6 项任务全部回写（deliveryIndexComplete 门禁正常放行）。代码评审：verdict=pass，
+      0 blocker，4 处 judgement-call 级发现，其中 2 处（Duplicated Code：initials 计算
+      重复、Dead Conditional：CancelTaskByUser 内层恒真冗余判断）已修复（fix-commit
+      5887e3e9d），1 处（TeamAgentStreamView 一跳 prop-drilling）判断性保留不引入非必要
+      抽象，1 处（Spec 轴：过滤开关位置措辞偏差）判断性保留不影响功能正确性。
+      merge-feature-branch 阶段与 CR-2026-008/009 在 packages/core/api/client.ts 与
+      4 语言 projects.json 上产生真实合并冲突（本 CR 分支切出时间早于两者），both-side-keep
+      解决后 core+views 全量测试（803+1813）与 go build 复跑全绿。真机验证缺口：AC-3
+      running→interrupted 真实转移因本机无 daemon 无法真机回放，仅由单测覆盖（沿用
+      CR-2026-006 一致的诚实标注），部署前独立验收时应补真机验证。
+    writeback-spec-id: ai-first-platform
+    archived-at: "2026-08-02T21:55:00+08:00"
+    created: "2026-08-02T10:00:39+08:00"
+    updated-at: "2026-08-02T21:55:00+08:00"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 516bdb6942028658a320dc9eb03ef212c4583a54
+        branch: requirement/CR-2026-007
+        source-sha: 01fb3be68ca41127332b1549469c472f76baa57d
+        merged-at: "2026-08-02T21:31:00+08:00"
+      - repo: multica
+        trunk: main
+        sha: 1bcad2ace1267bf8f04b3b97c5ff1e7822f2ef87
+        branch: requirement/CR-2026-007
+        source-sha: 7ae822e1bcf394458e57c55c7237dd72388399c7
+        merged-at: "2026-08-02T21:31:00+08:00"
