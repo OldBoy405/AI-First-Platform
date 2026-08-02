@@ -6,12 +6,30 @@ plan-ref: "change-requests/CR-2026-010/plan.md"
 sdd-ref: "change-requests/CR-2026-010/sdd.md"
 title: 迁移（project_id 列+回填+索引、presenter_grant 表）+ claim SQL 改造 + advisory lock 竞态复核
 slug: claim-project-serialization
-status: pending
+status: in_progress
 estimate: 6h
 depends-on: []
 assignee: ""
 created: "2026-08-02T13:57:20+08:00"
 ---
+
+## 实现状态（2026-08-02）
+
+代码已在 multica worktree（`requirement/CR-2026-010`，commit `4581b2e33`）落地：
+迁移 161-163、`ClaimAgentTask` 新分支、`ClaimTask` advisory lock 复核、
+`CreateAgentTask`/`CreateDeferredAgentTask`/`CreateRetryTask` 三处 project_id
+stamp/继承（后两处是实现中发现的补充范围，任务描述原未列出：deferred fallback
+与 retry 任务如不 stamp/继承 project_id，会在提升/重试后悄悄跌回旧的
+per-(agent,issue) 序列化分支，绕开单写者保证）。`go build`/`go vet`/`gofmt` 全绿，
+`make sqlc` 生成 diff 审查通过（仅 agent.sql.go 的 project_id 相关 `SELECT *`/
+`RETURNING *` 联动 + models.go 新结构体，无关文件零改动）。
+
+**未完成项**：4 条并发单测（`task_claim_project_race_test.go`）已按验收条件
+2/3 写好但**未实际跑通**——本机沙箱 Docker 不可用，无法启动 multica 的 Postgres
+容器（`docker.exe: No such file or directory`），现有 localhost:5432 上的
+Postgres 与仓库预期凭据不匹配（SASL 认证失败），已跑 `go test` 确认测试能编译
+且按既有先例（`newTaskClaimRacePool`）优雅 skip，而非编译错误。真正的并发验证
+（"任意时刻恰一个 active"）需要在有可用 Postgres 的环境重跑本任务的测试文件。
 
 ## 任务描述
 
