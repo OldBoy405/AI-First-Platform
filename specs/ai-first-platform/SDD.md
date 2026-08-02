@@ -503,6 +503,51 @@ backlog→history 归档迁移的同类空白留待独立评估，可复用本 C
 队列条完整形态/停止/过滤开关（CR-B）、Private Ask/Discussion 内容面（CR-C/D）、presenter（CR-E）、
 门禁接合（CR-F）、DC+合并转发（CR-G）——均不在本 CR 范围，见切分文档 v2。
 
+## P2 CR-C — D5 Private Ask 技术设计（v0.15 · CR-2026-008）
+
+> 完整 SDD 见 change-requests/CR-2026-008/sdd.md（含 7 条设计决策 DD-1~DD-7、FR→设计映射表、
+> rev 0.1.1 修订记录 DD-6、代码评审发现 CODE-BLOCK-001~003 的修复方案）；本节为基线摘要。
+
+### 1. 设计要点
+
+- **隐私收敛（DD-1/DD-2）**：核实发现 multica 实时层实为单条 workspace 级 socket、按 payload
+  字段过滤，MUL-1138 的 per-channel 订阅基建已存在但客户端未接线，含 `ChatSessionID` 的事件
+  （聊天消息/流式转录）当前仍全量走 workspace 广播——这是**既有全局 1:1 chat 一直存在的隐私
+  泄漏面**，非本 CR 新增。方案：`events.Event` 加 `ChatRecipientID`，全部 9 处发布点填入会话
+  creator（`TaskService.ChatSessionCreatorID` 有界 FIFO 缓存，容量 4096，同 `analyticsContextCache`
+  同款模式），WS 桥接层对含 `ChatSessionID` 的事件一律 `SendToUser`，**fail-closed**（无收件人
+  直接丢弃+ERROR 日志，不回落广播）——修复面覆盖 CR-2026-008 新增的 Private Ask 与既有全局 chat。
+- **Ask-only 双重强制（DD-6 rev 0.1.1 + 代码评审 CODE-BLOCK-001）**：核实发现 chat 任务的
+  brief 默认带 Repositories 节、`multica repo checkout` 无任务级只读机制——"Ask-only"最初设计
+  假设的"既有语义天然满足"不成立，需本 CR 实现最小强制。首版实现（brief 省略 Repositories 节
+  + daemon 拒绝 checkout）在代码评审中发现判定键 `req.TaskID` 由客户端（被限制的 agent 进程
+  自身）完全控制，可省略/伪造以绕过；修复为改用服务端已为每个任务铸造的 `MULTICA_TOKEN`
+  （claim 时签发、agent 进程自身持有但看不到其他任务的），daemon 侧 `activeTaskAuth` 对**全部
+  任务**统一校验 token 匹配后才放行/拒绝，缺省或冒充一律拒绝。
+- **B2 迁移 + get-or-create（DD-3/DD-4）**：`chat_session` 加 nullable `project_id` + 部分唯一
+  索引（`(project_id, creator_id) WHERE status='active'`）防并发双开创建；get-or-create 取该键
+  下最新 active 会话，无则建；全局 chat 列表/pending 聚合加排除谓词防止 Private Ask 会话串入。
+- **前端（DD-7）**：`ChatMessageList`/`TaskStatusPill` 纯 props 直接复用；`ChatInput` 实测非纯
+  props（内部读全局 `useChatStore` 的 draft 键），改手写 composer（对齐 CR-A Team Agent 面既有
+  模式），并按 CLAUDE.md 的 pending-message 模式补本地待发气泡（代码评审 CODE-BLOCK-002 发现
+  首版遗漏）。
+
+### 2. 实现期与设计的偏差 / 代码评审发现（TASK 完成记录留痕）
+
+| 项 | 设计 | 实现 | 原因 |
+|---|---|---|---|
+| Ask-only 强制机制 | 0.1.0 版假设"chat 任务本不做 worktree checkout，语义天然满足" | 核实证伪后 rev 0.1.1：brief 省略 + daemon 拒绝双重强制 | 工程纪律 4（事实断言先核实）：实地读 execenv 代码发现假设不成立 |
+| Ask-only checkout 校验键 | daemon 侧按 `task_id` 判定是否限制 | 代码评审发现 `task_id` 客户端可控可伪造，改用服务端签发的 per-task `MULTICA_TOKEN` 校验，全任务统一校验 | CODE-BLOCK-001（严重）：判定键必须是被限制方拿不到的凭证，否则强制形同虚设 |
+| 隐私收敛范围 | 仅覆盖 Private Ask 新增事件 | 核实既有全局 1:1 chat 同样受影响，一并收敛（同一处代码分支） | 修复点是共享的 WS 桥接层，无法只修一半 |
+| 发送反馈 | 隐含复用 ChatInput 现成能力 | ChatInput 因全局 store 耦合放弃复用，改手写 composer；随即发现遗漏 pending-message 可见态，代码评审补齐 | CODE-BLOCK-002（主要）：CLAUDE.md 明文规则，且同 CR 家族 Team Agent 面已有先例未被沿用 |
+| chatCreators 缓存 | 未明确设计缓存淘汰策略 | 代码评审发现进程级 `sync.Map` 无淘汰是慢性内存增长，改为与 `analyticsContextCache` 同款有界 FIFO | CODE-BLOCK-003（次要）：长期运行进程的缓存必须有界 |
+
+### 3. 范围排除
+
+附件/@提及（随 ChatInput 解耦后补，技术债见 docs/product/P2-ChatInput组件与全局store解耦-技术债务.md）、
+技能选择器（全平台缺口，含 CR-A，同一文档 §7 记录）、会话列表/多会话切换、清空上下文——均不在
+本 CR 范围。
+
 ## 基线变更记录
 
 | 日期 | 基线版本 | CR | 说明 |
@@ -513,6 +558,7 @@ backlog→history 归档迁移的同类空白留待独立评估，可复用本 C
 | 2026-08-01 | v0.3.0 | CR-2026-004 | 新增 P2 D1 里程碑节：共享队列容量治理（守卫/插队/撤回/读侧）；4 项实现期偏差留痕 |
 | 2026-08-01 | v0.3.1 | CR-2026-005 | 新增治理工具链补丁节：deliveryIndexComplete 门禁 + writeback-tasks 重写；2 项实现期偏差留痕 |
 | 2026-08-02 | v0.4.0 | CR-2026-006 | 新增 P2 CR-A 里程碑节：容器 Issue 方案+薄发送端点+模型选择器技术设计；3 项实现期偏差/代码评审发现留痕 |
+| 2026-08-02 | v0.5.0 | CR-2026-008 | 新增 P2 CR-C 里程碑节：B2 迁移 + WS 隐私收敛（含既有全局 chat 同一泄漏面修复）+ Ask-only 双重强制技术设计；5 项实现期偏差/代码评审发现留痕 |
 
 ### 实现期与设计的偏差（已在各 TASK 完成记录留痕）
 
