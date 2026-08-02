@@ -6,7 +6,7 @@ plan-ref: "change-requests/CR-2026-007/plan.md"
 sdd-ref: "change-requests/CR-2026-007/sdd.md"
 title: 消息流增强：运行卡停止钮 + 过滤摘要形态 + 已撤回角标 + 复制
 slug: stream-enhancements
-status: in-progress
+status: done
 estimate: 5h
 depends-on: [CR-2026-007-TASK-03]
 assignee: ""
