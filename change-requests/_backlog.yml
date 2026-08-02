@@ -95,45 +95,6 @@ change-requests:
         branch: requirement/CR-2026-008
         source-sha: 9f7a20c759a15b273d3e8d4858efa1e24cb2e697
         merged-at: "2026-08-02T15:53:59+08:00"
-  - id: CR-2026-009
-    title: P2 三模式聊天 CR-D — D6 Discussion（discussion 容器 Issue + 纯人类多人聊天）
-    summary: >-
-      Discussion 面：B3 后端（discussion 容器 Issue lazily 创建，复用 CR-2026-006
-      已落地的 origin_type 容器模式与隐藏过滤基建，新增 discussion 类型值）+ 前端
-      第三 tab（纯人类多人聊天，复用 comment-card/reply-input/@提及/通知/订阅；
-      输入区无模式/模型下拉，纯人类输入仅留 @）。验收红线：Discussion 消息不产生
-      任何 agent_task_queue 行；容器 Issue 不出现在列表/看板。CR-G 依赖本 CR。
-    owner: Ray
-    owners:
-      requirement:
-        id: Ray
-        assigned-at: "2026-08-02T10:00:39+08:00"
-      development:
-        id: Ray
-        assigned-at: "2026-08-02T10:00:39+08:00"
-      test:
-        id: Ray
-        assigned-at: "2026-08-02T10:00:39+08:00"
-    target-version: "0.16"
-    source: "docs/product/P2-三模式聊天窗口主体-交付切分.md v2（d7e4ece）CR-D"
-    prd-path: ""
-    status: writing-back
-    updated-at: "2026-08-02T19:37:51+08:00"
-    created: "2026-08-02T10:00:39+08:00"
-    updated: "2026-08-02T10:00:39+08:00"
-    merge-commits:
-      - repo: multica
-        trunk: main
-        sha: 3bce9ade0a0ab6647f72b00e2893ef60cd26a1a6
-        branch: requirement/CR-2026-009
-        source-sha: 59b4c9063ae521c9faa8fa55e6e51e57206affa8
-        merged-at: "2026-08-02T19:23:00+08:00"
-      - repo: ai-first-platform-docs
-        trunk: master
-        sha: 7e1b333608858210a56b69a62fc243812f65a0ff
-        branch: requirement/CR-2026-009
-        source-sha: fca15aff381a88107cc3537bc4a0342267f5cf60
-        merged-at: "2026-08-02T19:29:06+08:00"
   - id: CR-2026-010
     title: P2 三模式聊天 CR-E — D4 presenter 控制权（claim 串行化键 agent_id→project_id）
     summary: >-

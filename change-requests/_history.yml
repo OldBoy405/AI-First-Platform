@@ -325,3 +325,58 @@ history:
         branch: requirement/CR-2026-008
         source-sha: 9f7a20c759a15b273d3e8d4858efa1e24cb2e697
         merged-at: "2026-08-02T15:53:59+08:00"
+  - id: CR-2026-009
+    title: P2 三模式聊天 CR-D — D6 Discussion（discussion 容器 Issue + 纯人类多人聊天）
+    summary: >-
+      三模式窗口第三 tab 从占位变为可用：B3 后端（discussion 容器 Issue lazily 创建，
+      复用 CR-2026-006 已落地的 origin_type 容器模式与隐藏过滤基建，仅新增 discussion
+      类型值）+ 前端第三 tab（纯人类多人聊天，复用 comment-card/reply-input/@提及/
+      通知/订阅既有基础设施；输入区无模式/模型/技能下拉，纯人类输入仅留附件 + @）。
+      验收红线：Discussion 消息零 agent_task_queue 行、容器 Issue 隐藏于全部列表入口，
+      均以 DB 级证据验证通过。FR-6 行内系统条核实 multica 无项目级成员模型后裁剪不实现。
+      代码评审首轮 verdict=pass（0 blocker，2 项建议：SUG-001 跨用户提及通知留人工验收，
+      SUG-002 down 迁移真机往返演练——评审通过后本会话补做，在含真实数据的隔离库上完整
+      验证 CASCADE 删除/约束索引复原/兄弟容器不受影响，SUG-002 已关闭）。
+    owner: Ray
+    owners:
+      requirement:
+        id: Ray
+        assigned-at: "2026-08-02T10:00:39+08:00"
+      development:
+        id: Ray
+        assigned-at: "2026-08-02T10:00:39+08:00"
+      test:
+        id: Ray
+        assigned-at: "2026-08-02T10:00:39+08:00"
+    target-version: "0.16"
+    source: "docs/product/P2-三模式聊天窗口主体-交付切分.md v2（d7e4ece）CR-D"
+    prd-path: change-requests/CR-2026-009/prd.md
+    status: archived
+    final-status: archived
+    archive-reason: >-
+      P2 三模式聊天 CR-D 交付完成回写归档：specs/ai-first-platform 累积基线升至 v0.6.0
+      （PRD/SDD 新增 P2 CR-D 里程碑节：discussion 容器 Issue + 纯人类多人聊天技术设计，
+      FR-6 裁剪留痕；顺带补齐 frontmatter cr-ref/cr-history/version 自 CR-2026-004 起
+      四次回写遗漏同步的漂移），feature 0.15 → 0.16；specs/ai-first-platform/traceability.yml
+      新增本里程碑段（FR-1~6 全链路追溯）；delivery/task 5 项任务全部回写
+      （deliveryIndexComplete 门禁正常放行）。真机验证：AC-1（多人实时）/AC-3（红线，
+      DB 级 + migration down→up 往返演练）/AC-4（容器隔离逐入口核对）/AC-6（回归+四语）
+      通过；AC-5（输入区形态）组件测试锁定；AC-2（跨用户提及通知）组件级验证，真机跨用户
+      端到端留待下一次多用户测试窗口补验（不阻塞交付）；AC-7 按裁剪口径验收。
+    writeback-spec-id: ai-first-platform
+    archived-at: "2026-08-02T19:48:05+08:00"
+    created: "2026-08-02T10:00:39+08:00"
+    updated-at: "2026-08-02T19:48:05+08:00"
+    merge-commits:
+      - repo: multica
+        trunk: main
+        sha: 3bce9ade0a0ab6647f72b00e2893ef60cd26a1a6
+        branch: requirement/CR-2026-009
+        source-sha: 59b4c9063ae521c9faa8fa55e6e51e57206affa8
+        merged-at: "2026-08-02T19:23:00+08:00"
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 7e1b333608858210a56b69a62fc243812f65a0ff
+        branch: requirement/CR-2026-009
+        source-sha: fca15aff381a88107cc3537bc4a0342267f5cf60
+        merged-at: "2026-08-02T19:29:06+08:00"
