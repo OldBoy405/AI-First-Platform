@@ -6,7 +6,7 @@ plan-ref: "change-requests/CR-2026-010/plan.md"
 sdd-ref: "change-requests/CR-2026-010/sdd.md"
 title: 迁移（project_id 列+回填+索引、presenter_grant 表）+ claim SQL 改造 + advisory lock 竞态复核
 slug: claim-project-serialization
-status: in_progress
+status: done
 estimate: 6h
 depends-on: []
 assignee: ""
@@ -24,12 +24,25 @@ per-(agent,issue) 序列化分支，绕开单写者保证）。`go build`/`go ve
 `make sqlc` 生成 diff 审查通过（仅 agent.sql.go 的 project_id 相关 `SELECT *`/
 `RETURNING *` 联动 + models.go 新结构体，无关文件零改动）。
 
-**未完成项**：4 条并发单测（`task_claim_project_race_test.go`）已按验收条件
-2/3 写好但**未实际跑通**——本机沙箱 Docker 不可用，无法启动 multica 的 Postgres
-容器（`docker.exe: No such file or directory`），现有 localhost:5432 上的
-Postgres 与仓库预期凭据不匹配（SASL 认证失败），已跑 `go test` 确认测试能编译
-且按既有先例（`newTaskClaimRacePool`）优雅 skip，而非编译错误。真正的并发验证
-（"任意时刻恰一个 active"）需要在有可用 Postgres 的环境重跑本任务的测试文件。
+**并发验证已完成**：定位到本机 `docker` 命令被一个失效的 shell 别名指向已不存在的
+旧安装路径（`/c/Program Files/Docker/Docker/...`，真实安装已在 D 盘），绕开别名后
+发现本机已有一套长期运行的 multica dev 容器栈（`multica-postgres-1` 等，非本次
+新启动）。取得其真实 Postgres 密码后为 worktree 建库、跑通全部 163 个迁移
+（含本任务的 161-163），针对真实数据库执行：
+
+- `TestClaimTaskCrossAgentProjectSingleWriter`（新增）：两个不同 agent 各一条
+  同项目 queued 任务并发 claim，日志实证一个成功 claim、另一个被 advisory lock
+  复核检出冲突并 requeue（`task claim: lost project single-writer race, requeued`）
+  ——PASS。
+- `TestClaimTaskChatSessionParallelWithProjectTask`（新增）：同 agent 下 chat_session
+  任务与 project 任务依次可claim（chat 分支不受影响）——PASS。
+- `TestClaimTaskConcurrentCapacityRespected`（既有回归）：PASS，未受影响。
+- `go test ./internal/service/...` 与 `./internal/handler/...` 全量跑过，除本任务
+  代码外零回归；失败项均为与本 CR 无关的预置环境问题（`builtin_skills` 测试因仓库
+  在 Windows 上 CRLF 检出失败——该库已知的行尾问题，本仓 knowledge-base AGENTS.md
+  §工程纪律 1 也记录过同类教训；`TestShortTaskIDMatchesDaemon`/
+  `TestParseSkillArchive_RejectsUnsafeSkillMdPath` 是 Windows vs Unix 路径分隔符
+  断言差异），均与 agent_task_queue/claim 逻辑无关，未修改。
 
 ## 任务描述
 
