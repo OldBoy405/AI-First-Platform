@@ -11,6 +11,8 @@ estimate: 4h
 depends-on: ["CR-2026-008-TASK-01"]
 assignee: ""
 created: "2026-08-02T11:25:00+08:00"
+spec-id: ai-first-platform
+version: "0.15"
 ---
 
 # TASK-03 — Ask-only 最小强制（SDD rev 0.1.1 DD-6 修订的落地）

@@ -11,6 +11,8 @@ estimate: 5h
 depends-on: ["CR-2026-008-TASK-02", "CR-2026-008-TASK-03", "CR-2026-008-TASK-04"]
 assignee: ""
 created: "2026-08-02T11:25:00+08:00"
+spec-id: ai-first-platform
+version: "0.15"
 ---
 
 # TASK-05 — 端到端验收

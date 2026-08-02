@@ -11,6 +11,8 @@ estimate: 6h
 depends-on: []
 assignee: ""
 created: "2026-08-02T11:25:00+08:00"
+spec-id: ai-first-platform
+version: "0.15"
 ---
 
 # TASK-02 — 隐私收敛：chat 事件 per-user 定向推送

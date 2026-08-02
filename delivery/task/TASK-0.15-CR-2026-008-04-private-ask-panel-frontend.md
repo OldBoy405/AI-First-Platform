@@ -11,6 +11,8 @@ estimate: 5h
 depends-on: ["CR-2026-008-TASK-01"]
 assignee: ""
 created: "2026-08-02T11:25:00+08:00"
+spec-id: ai-first-platform
+version: "0.15"
 ---
 
 # TASK-04 — 前端 Private Ask 面

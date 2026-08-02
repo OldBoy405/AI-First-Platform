@@ -204,3 +204,38 @@ tasks:
     cr-ref: CR-2026-006
     target-version: "0.13"
     estimate: 5h
+  - id: CR-2026-008-TASK-01
+    file: TASK-0.15-CR-2026-008-01-chat-session-project-dimension.md
+    title: B2 迁移 + get-or-create 端点（chat_session 项目维度）
+    status: done
+    cr-ref: CR-2026-008
+    target-version: "0.15"
+    estimate: 4h
+  - id: CR-2026-008-TASK-02
+    file: TASK-0.15-CR-2026-008-02-chat-events-per-user-push.md
+    title: 隐私收敛——chat 事件 per-user 定向推送（fail-closed）
+    status: done
+    cr-ref: CR-2026-008
+    target-version: "0.15"
+    estimate: 6h
+  - id: CR-2026-008-TASK-03
+    file: TASK-0.15-CR-2026-008-03-ask-only-enforcement.md
+    title: Ask-only 最小强制——ask_only 标记贯穿 enqueue→claim→execenv
+    status: done
+    cr-ref: CR-2026-008
+    target-version: "0.15"
+    estimate: 4h
+  - id: CR-2026-008-TASK-04
+    file: TASK-0.15-CR-2026-008-04-private-ask-panel-frontend.md
+    title: 前端 Private Ask 面（纯 props 组合 + 只读模型徽标 + 四语）
+    status: done
+    cr-ref: CR-2026-008
+    target-version: "0.15"
+    estimate: 5h
+  - id: CR-2026-008-TASK-05
+    file: TASK-0.15-CR-2026-008-05-e2e-acceptance-ac1-6.md
+    title: 端到端验收 AC-1~6（隐私抓包首要）
+    status: done
+    cr-ref: CR-2026-008
+    target-version: "0.15"
+    estimate: 5h
