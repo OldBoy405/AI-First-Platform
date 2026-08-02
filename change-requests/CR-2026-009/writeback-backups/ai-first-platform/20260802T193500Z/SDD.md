@@ -2,14 +2,14 @@
 id: ai-first-platform-sdd
 spec-id: ai-first-platform
 type: SDD
-cr-ref: CR-2026-009
-cr-history: [CR-2026-001, CR-2026-002, CR-2026-003, CR-2026-004, CR-2026-005, CR-2026-006, CR-2026-008, CR-2026-009]
+cr-ref: CR-2026-002
+cr-history: [CR-2026-001, CR-2026-002]
 title: AI First 研发协同平台 — 技术设计基线
-target-version: "0.16"
+target-version: "0.11"
 status: ga
 created: "2026-07-30T21:49:02+08:00"
-updated: "2026-08-02T19:35:00+08:00"
-version: v0.6.0
+updated: "2026-07-31T19:35:26+08:00"
+version: v0.2.0
 refs:
   upstream: [ai-first-platform-prd]
   downstream: []
@@ -548,55 +548,6 @@ backlog→history 归档迁移的同类空白留待独立评估，可复用本 C
 技能选择器（全平台缺口，含 CR-A，同一文档 §7 记录）、会话列表/多会话切换、清空上下文——均不在
 本 CR 范围。
 
-## P2 CR-D — D6 Discussion 技术设计（v0.16 · CR-2026-009）
-
-> 完整 SDD 见 change-requests/CR-2026-009/sdd.md（含 8 条设计决策 DD-1~DD-8、FR→设计映射表、
-> AC→验证方式表）；本节为基线摘要。
-
-### 1. 设计要点
-
-- **容器同构（DD-1）**：`origin_type='project_discussion'`，migration 161 照抄 160
-  （`project_chat`）的 DROP+ADD CHECK + 部分唯一索引模式；`origin_type` 列可空，谓词必须
-  NULL 安全。
-- **红线豁免落点（DD-2）**：`computeCommentAgentTriggers`（comment.go）顶部单点短路——该函数
-  是 @agent/@squad 提及、父评论续聊路由、squad-leader fallback 四类触发的唯一汇聚点，一处短路
-  覆盖全部 3 个调用点，API 直建 comment 的边缘入口同样被覆盖；成员提及通知走独立的
-  `notifyMentionedMembers`，不受影响，FR-4 白拿。
-- **发送不建新端点（DD-3）**：Discussion 复用既有 `POST /api/issues/{id}/comments`；薄发送端点
-  的守卫→入队三段式在 Discussion 无一适用。
-- **排除谓词清单化（DD-4）**：单值判断改为 NULL 安全的容器类型清单，8 处同步替换，保持一份
-  可 grep 的容器清单。
-- **独立入口端点（DD-5）**：`GET /api/projects/{id}/discussion` 与 `GetProjectChat` 同构，
-  但不并入 chat 端点——避免打开 Team Agent 面时预创建从不使用的 discussion 容器。
-- **草稿复用 ReplyInput 原生 draftKey（DD-6）**：以容器 issueId 为键天然隔离，不复用
-  project-chat-store。
-- **提及选择器不做前端过滤（DD-7）**：红线由服务端 DD-2 保证；ponytail 标注若实测误 @agent
-  频繁，升级路径是 ContentEditor 增加 mention 目标过滤 prop。
-- **inbox 跳转条（DD-8）**：容器起源 Issue 的 inbox 预览加「前往项目聊天」跳转条，
-  `project_chat`/`project_discussion` 共用，`?tab=chat&mode=discussion` 深链；CR-A 的
-  team-agent 提及通知同样受益。
-
-### 2. 实现期与设计的偏差 / 代码评审发现（TASK 完成记录留痕）
-
-| 项 | 设计 | 实现 | 原因 |
-|---|---|---|---|
-| `IssueResponse` 是否带 `origin_type` | SDD 假设已有该字段可直接读取 | 核实证伪：实际未带，补充 Go `IssueResponse.OriginType` 与 TS `Issue.origin_type` 两处字段 | 工程纪律 4（事实断言先核实）：实施期发现假设不成立，以 revision 修订 |
-| `ensureContainerIssue` 抽取签名 | 直接复用 `GetProjectChatIssueParams` 结构体 | sqlc 为每个 origin type 生成独立 Params 结构体，无法直接复用；改为 `(q *db.Queries, ctx, projectID, workspaceID)` 闭包签名，调用方各自传入具体 sqlc 方法闭包 | sqlc 生成机制核实后调整，行为等价，非设计缺陷 |
-| down 迁移真机验证 | 设计假设 down.sql 语义正确（先删容器数据再收约束） | 代码评审 SUG-002：在含真实 E2E 数据的隔离库上完整执行 down→up 往返演练，确认 CASCADE 删除评论正确、约束/索引复原、`project_chat` 容器不受影响 | 迁移类改动的 down 路径此前只静态审查未实测，本次补足真机验证闭环 |
-
-### 3. 范围排除
-
-FR-6 行内系统条本 CR 裁剪不实现——已核实 multica 无 project 级成员模型（成员唯一模型是
-workspace 级 `member`），仅有瞬时 `member:added` WS 广播、不落任何持久化消息流，把 workspace
-级成员变更持久化进每个项目的 Discussion 流属于错误作用域（见 §6.3）。DC 协调者、合并转发、
-消息回复线程/转发/语音输入均不在本 CR 范围。
-
-### 4. 数据模型（1 个 migration，无新表新列）
-
-`161_issue_origin_project_discussion.{up,down}.sql`：CHECK 约束追加 `project_discussion`
-允许值 + 部分唯一索引 `issue_project_discussion_unique`（每项目至多一个容器，并发 lazy 创建
-下由索引兜底幂等）；down 对称回收，先删容器数据（`comment.issue_id` CASCADE 级联）再收紧约束。
-
 ## 基线变更记录
 
 | 日期 | 基线版本 | CR | 说明 |
@@ -608,7 +559,6 @@ workspace 级 `member`），仅有瞬时 `member:added` WS 广播、不落任何
 | 2026-08-01 | v0.3.1 | CR-2026-005 | 新增治理工具链补丁节：deliveryIndexComplete 门禁 + writeback-tasks 重写；2 项实现期偏差留痕 |
 | 2026-08-02 | v0.4.0 | CR-2026-006 | 新增 P2 CR-A 里程碑节：容器 Issue 方案+薄发送端点+模型选择器技术设计；3 项实现期偏差/代码评审发现留痕 |
 | 2026-08-02 | v0.5.0 | CR-2026-008 | 新增 P2 CR-C 里程碑节：B2 迁移 + WS 隐私收敛（含既有全局 chat 同一泄漏面修复）+ Ask-only 双重强制技术设计；5 项实现期偏差/代码评审发现留痕 |
-| 2026-08-02 | v0.6.0 | CR-2026-009 | 新增 P2 CR-D 里程碑节：discussion 容器同构方案 + 触发豁免单点短路 + migration down→up 真机演练技术设计；3 项实现期偏差/代码评审发现留痕；补齐 frontmatter cr-ref/cr-history/version 漂移 |
 
 ### 实现期与设计的偏差（已在各 TASK 完成记录留痕）
 

@@ -2,16 +2,16 @@
 id: ai-first-platform-prd
 spec-id: ai-first-platform
 type: PRD
-cr-ref: CR-2026-009
-cr-history: [CR-2026-001, CR-2026-002, CR-2026-003, CR-2026-004, CR-2026-005, CR-2026-006, CR-2026-008, CR-2026-009]
+cr-ref: CR-2026-002
+cr-history: [CR-2026-001, CR-2026-002]
 title: AI First 研发协同平台
-target-version: "0.16"
+target-version: "0.11"
 owner: Ray
 owner-role: requirement
 status: ga
 created: "2026-07-30T21:27:12+08:00"
-updated: "2026-08-02T19:35:00+08:00"
-version: v0.6.0
+updated: "2026-07-31T19:35:26+08:00"
+version: v0.2.0
 refs:
   upstream:
     - docs/product/AI-First平台-PRD.md
@@ -345,45 +345,6 @@ AC-1（隐私，首要）：per-user 推送契约与 fail-closed 分支单元层
 后补（技术债已记录于 docs/product/P2-ChatInput组件与全局store解耦-技术债务.md）。技能选择器、
 斜杠命令、会话列表/多会话切换、清空上下文、消息回复/转发/导出 Skill 草稿均不在本 CR 范围。
 
-## P2 CR-D — D6 Discussion：discussion 容器 Issue + 纯人类多人聊天（v0.16 · CR-2026-009）
-
-> 来源：docs/product/P2-三模式聊天窗口主体-交付切分.md v2 的 CR-D 节（D6 + B3 的 discussion 容器）。
-> 前置 CR-A（CR-2026-006）已交付三 tab 窗口骨架、Discussion 空态占位、容器 Issue 的 origin_type 模式。
-> 完整 PRD/SDD 见 change-requests/CR-2026-009/{prd.md, sdd.md}；本节为基线摘要。
-
-### 1. 概述
-
-三模式窗口第三 tab 从占位变为可用：discussion 系统容器 Issue lazily 创建（复用 CR-A 的
-origin_type 容器模式，仅新增 discussion 类型值），前端复用 comment-card/reply-input/@提及/
-通知/订阅既有基础设施渲染为纯人类多人聊天——无模式/模型/技能下拉、无队列、全员可见。验收
-红线：Discussion 消息零 `agent_task_queue` 行、容器 Issue 隐藏于全部列表入口。
-
-### 2. 功能需求（摘要）
-
-| ID | 需求 | 状态 |
-|---|---|---|
-| FR-1 | discussion 容器 Issue：lazily 创建 + 复用隐藏过滤基建，每项目至多一个（部分唯一索引兜底幂等） | ✅ |
-| FR-2 | Discussion 消息流：容器 comment 流为数据源，workspace 级 WS 广播实时上屏，分页历史回放 | ✅ |
-| FR-3 | 输入区纯人类形态：仅附件 + @提及，无模式/模型/技能下拉，草稿独立持久化 | ✅ |
-| FR-4 | @提及 + 通知 + 订阅：复用既有基础设施，不新建通知类型 | ✅ |
-| FR-5 | 零 Agent 触发红线：Discussion comment 不经过入队路径，既有 Issue 页评论豁免不外溢 | ✅ |
-| FR-6 | 行内系统条：核实 multica 无项目级成员模型（仅 workspace 级），本 CR 裁剪不实现（SDD §6.3） | 裁剪 |
-
-### 3. 验收结论
-
-AC-1（多人实时）/AC-3（红线，DB 级验证 + migration 161 down→up 往返演练）/AC-4（容器隔离，
-逐入口核对）/AC-6（回归 + 四语 parity）真机与 DB 级验证通过；AC-5（输入区形态）组件测试锁定。
-AC-2（跨用户提及通知跳转）本轮验证到组件级，真机跨用户端到端待下一次多用户可用测试窗口补验
-（不阻塞本次交付）。AC-7 按 SDD §6.3 裁剪结论验收（无实现项——成员唯一模型是 workspace 级、
-非项目级，持久化系统条留待未来引入项目级成员模型后再实现）。证据：
-change-requests/CR-2026-009/test-report.md。
-
-### 4. 范围排除（要点）
-
-DC 协调者（@提及激活）+ 合并转发/讨论升级 → CR-G（依赖本 CR）；消息回复线程/转发/语音输入、
-恢复检查点、导出 Skill 草稿、点踩反馈、斜杠命令、成员管理增强、免打扰设置、项目/消息双入口、
-右侧 work-viewer、上下文用量指示器均不在本 CR 范围；mobile 全程不在 P2 范围。
-
 ## 基线变更记录
 
 | 日期 | 基线版本 | CR | 说明 |
@@ -395,4 +356,3 @@ DC 协调者（@提及激活）+ 合并转发/讨论升级 → CR-G（依赖本 
 | 2026-08-01 | v0.3.1 | CR-2026-005 | 治理工具链补丁附记：delivery/task 回写一致性门禁 + writeback-tasks 原子化；target-version 0.12 → 0.12.1 |
 | 2026-08-02 | v0.4.0 | CR-2026-006 | 新增 P2 CR-A 里程碑节：三模式聊天窗口骨架 + Team Agent 消息流核心；target-version 0.12.1 → 0.13 |
 | 2026-08-02 | v0.5.0 | CR-2026-008 | 新增 P2 CR-C 里程碑节：D5 Private Ask（B2 迁移 + 隐私 per-user 推送收敛 + Ask-only 双重强制）；target-version 0.13 → 0.15 |
-| 2026-08-02 | v0.6.0 | CR-2026-009 | 新增 P2 CR-D 里程碑节：D6 Discussion（discussion 容器 Issue + 纯人类多人聊天，FR-6 裁剪留痕）；补齐 frontmatter cr-ref/cr-history/version 此前四次回写（CR-2026-004~006/008）遗漏同步的漂移；target-version 0.15 → 0.16 |
