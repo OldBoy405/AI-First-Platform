@@ -1,11 +1,16 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 # 五段链路：需求 FR ↔ 技术设计 SDD ↔ 交付 TASK ↔ 代码 merge SHA ↔ CR-ID
 spec-id: ai-first-platform
-cr-ref: CR-2026-002
-cr-history: [CR-2026-001, CR-2026-002]
-target-version: "0.11"
+cr-ref: CR-2026-008
+cr-history: [CR-2026-001, CR-2026-002, CR-2026-008]
+target-version: "0.15"
 baseline-since: "0.10"
-generated-at: "2026-07-31T19:40:00+08:00"
+generated-at: "2026-08-02T17:45:47+08:00"
+
+# 已知缺口：CR-2026-003~CR-2026-006 未生成本文件的里程碑段（writeback-traceability 在那四个
+# CR 回写时被跳过，PRD.md/SDD.md/_index.yml 侧的累积记录不受影响、仍完整）。本次（CR-2026-008）
+# 起补齐流程，未回填历史缺口——如需追溯 CR-2026-003~006，参见各自 change-requests/{CR-ID}/
+# traceability.yml（CR 目录内单 CR 版本，归档前生成，独立于本累积基线）。
 
 milestones:
 
@@ -193,3 +198,124 @@ milestones:
     process-deviations:
       - "merge 期状态推进曾手改 _backlog.yml 而非 crctl advance --embedded，造成投影漂移，由 T07 reconcile 安全网自愈；writeback 期已改用 --embedded"
       - "PRD/SDD 回写采用累积式合并而非 Skill 字面 cp 覆盖，避免 M0 基线内容丢失；历次基线原文备份在 change-requests/{CR-ID}/writeback-backups/"
+
+  # P2 CR-C — D5 Private Ask（v0.15 · CR-2026-008）
+  - cr: CR-2026-008
+    milestone: P2 CR-C
+    target-version: "0.15"
+    status: writing-back
+    owners:
+      requirement: { id: Ray, assigned-at: "2026-08-02T10:00:39+08:00" }
+      development: { id: Ray, assigned-at: "2026-08-02T10:00:39+08:00" }
+      test:        { id: Ray, assigned-at: "2026-08-02T10:00:39+08:00" }
+    prd:
+      file: specs/ai-first-platform/PRD.md
+      section: "P2 CR-C — D5 Private Ask：chat_session 项目维度 + 项目内私聊面（v0.15 · CR-2026-008）"
+      cr-source: change-requests/CR-2026-008/prd.md
+      revision: "0.1.0"
+    sdd:
+      file: specs/ai-first-platform/SDD.md
+      section: "P2 CR-C — D5 Private Ask 技术设计（v0.15 · CR-2026-008）"
+      cr-source: change-requests/CR-2026-008/sdd.md
+      revision: "0.1.1"
+    merge-commits:
+      - repo: multica
+        trunk: main
+        sha: e2b3777d235685c5991d7743cd6fd0279f952784
+        branch: requirement/CR-2026-008
+        source-sha: d1eef5f5fb174cf473b0c90aaa94d63ee260d1f9
+        merged-at: "2026-08-02T15:53:59+08:00"
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 3a6ef5d1d196ebdc84b25bf39f590f2d624b4f43
+        branch: requirement/CR-2026-008
+        source-sha: 9f7a20c759a15b273d3e8d4858efa1e24cb2e697
+        merged-at: "2026-08-02T15:53:59+08:00"
+    fr-chain:
+      - fr: FR-1
+        title: B2 迁移（chat_session 项目维度）
+        sdd: "SDD §3 M1 迁移 + DD-3/DD-4"
+        tasks: [CR-2026-008-TASK-01]
+        code: "multica@e2b3777d2: server/migrations/161_chat_session_project.{up,down}.sql + queries/chat.sql"
+        evidence: "test-report §1 up/down/up 三遍无损；§2 T01 证据"
+      - fr: FR-2
+        title: 会话获取（get-or-create）
+        sdd: "SDD §4.2 + §6.1（DEC-1 取法）"
+        tasks: [CR-2026-008-TASK-01]
+        code: "multica@e2b3777d2: internal/handler/project_chat.go GetProjectPrivateChat"
+        evidence: "TestGetProjectPrivateChat_GetOrCreate/_ArchivedStartsFresh/_NoTeamAgent"
+      - fr: FR-3
+        title: Private Ask 面（纯 props 组合）
+        sdd: "SDD §5.1 DD-7"
+        tasks: [CR-2026-008-TASK-04]
+        code: "multica@e2b3777d2: packages/views/projects/components/project-private-ask.tsx"
+        evidence: "project-private-ask.test.tsx 静态 import 守卫 + 11 项组件测试"
+      - fr: FR-4
+        title: 个人独立队列
+        sdd: "SDD DD-7（EnqueueChatTask 既有路径零开发）"
+        tasks: [CR-2026-008-TASK-01]
+        code: "结构性成立，无新增代码路径"
+        evidence: "AC-2 并行场景验证（test-report §5-2 人工清单）"
+      - fr: FR-5
+        title: Ask-only 只读（双重强制）
+        sdd: "SDD DD-6 rev 0.1.1 + 代码评审 CODE-BLOCK-001 修复"
+        tasks: [CR-2026-008-TASK-03]
+        code: "multica@e2b3777d2: internal/daemon/{daemon.go,health.go}（activeTaskAuth）+ execenv/runtime_config_sections.go + cmd/multica/cmd_repo.go"
+        evidence: "TestAskOnlyChatBriefOmitsRepositories + TestRepoCheckoutRequiresMatchingTaskToken(4 反面用例) + TestRepoCheckoutRejectedForAskOnlyTask"
+      - fr: FR-6
+        title: 隐私推送（per-user + fail-closed）
+        sdd: "SDD §4.3/§4.4 DD-1/DD-2"
+        tasks: [CR-2026-008-TASK-02]
+        code: "multica@e2b3777d2: internal/events/bus.go + cmd/server/listeners.go + internal/service/task.go（ChatSessionCreatorID）+ internal/handler/{handler.go,chat.go,chat_title.go,daemon.go}"
+        evidence: "TestRegisterListeners_TaskChatGoToWorkspace(6 case) + TestChatEventFailsClosedWithoutRecipient；AC-1 抓包转人工清单"
+      - fr: FR-7
+        title: 与 Team Agent 并行
+        sdd: "SDD FR→设计映射（结构性：两面独立队列/任务类型）"
+        tasks: [CR-2026-008-TASK-05]
+        code: "无新增代码（验收动作）"
+        evidence: "AC-2（test-report §5-2 人工清单）"
+      - fr: FR-8
+        title: 输入区能力（部分：模型只读徽标）
+        sdd: "SDD §5.1"
+        tasks: [CR-2026-008-TASK-04]
+        code: "multica@e2b3777d2: project-private-ask.tsx PrivateAskModelBadge"
+        evidence: "组件测试断言 data-value/data-canedit；附件/@提及见 test-report §6 FR-8 部分延后记录"
+      - fr: FR-9
+        title: 停止（仅停自己，内容保留）
+        sdd: "SDD §5.1 + FR→设计映射"
+        tasks: [CR-2026-008-TASK-04]
+        code: "multica@e2b3777d2: project-private-ask.tsx handleStop（cancelTaskById）"
+        evidence: "组件测试：pill→stop→cancelTaskById 断言"
+    tasks:
+      total: 5
+      all-done: true
+      index: delivery/task/_index.yaml
+      files: "delivery/task/TASK-0.15-CR-2026-008-01..05-*.md"
+    reviews:
+      requirement: { reviewer: ai-reviewer, verdict: pass, attempts: 1, final-reviewed-at: "2026-08-02T10:32:21+08:00", file: change-requests/CR-2026-008/review-annotations/requirement.yml }
+      sdd:         { reviewer: ai-reviewer, verdict: pass, attempts: 1, final-reviewed-at: "2026-08-02T10:58:44+08:00", file: change-requests/CR-2026-008/review-annotations/sdd.yml, suggestions: 3 }
+      code:        { reviewer: ai-reviewer, verdict: pass, attempts: 2, final-reviewed-at: "2026-08-02T15:35:21+08:00", file: change-requests/CR-2026-008/review-annotations/code.yml, blockers-fixed: 3, suggestions: 2 }
+    tests:
+      report: change-requests/CR-2026-008/test-report.md
+      status: pass
+      tester: Ray
+      generated-at: "2026-08-02T15:30:00+08:00"
+      commands: { lint: not-applicable, test: pass, build: pass }
+      uncovered-risks:
+        - "AC-1 隐私抓包（首要）：双浏览器 WS 帧人工核对，单元层已锁桥接契约 + fail-closed"
+        - "AC-2 并行：真实 daemon 下 Team Agent + Private Ask 并行人工验证"
+        - "AC-3 Ask-only：真机 repo checkout 拒绝 + git status 干净人工验证，单元层已锁双防线+token 校验"
+        - "AC-6 双端：desktop（Electron）目视一致性"
+        - "Runtime 缺失引导态目视（pill/availability 文案）"
+    approvals:
+      requirement:       { approver: OldBoy405, via: crctl-approve, approved-at: "2026-08-02T10:38:46+08:00", evidence-digest: "e2e84a8ec089baaa5240b9b4086f810a910445c78184d91598cf958a0b5ba267" }
+      tech-design:       { approver: OldBoy405, via: crctl-approve, approved-at: "2026-08-02T11:01:50+08:00", evidence-digest: "33442ee26de8913de5fdfe7094eb021649a46eff4b7e183cccf4a314c68f4152" }
+      development-start: { approver: OldBoy405, via: crctl-approve, approved-at: "2026-08-02T11:16:21+08:00" }
+      code:               { approver: OldBoy405, via: crctl-approve, approved-at: "2026-08-02T15:40:18+08:00", evidence-digest: "b336b66d3f6db3c8d50b63663cdb2000f0d0342a774c4e9ae1204a61435491b5" }
+    notes-on-record:
+      - "隐私收敛（FR-6）核实发现既有全局 1:1 chat 同样受影响（非本 CR 新增），一并修复；详见 SDD §4.4"
+      - "Ask-only 强制（FR-5）代码评审发现首版判定键可被同一受限进程伪造绕过（CODE-BLOCK-001，严重），改用服务端 per-task token 校验后修复；详见 review-annotations/code.yml"
+      - "FR-8 附件/@提及未交付：ChatInput 组件实测非纯 props（内耦合全局 useChatStore），技术债见 docs/product/P2-ChatInput组件与全局store解耦-技术债务.md"
+    process-deviations:
+      - "本 CR 起 writeback-traceability 补齐执行（CR-2026-003~006 曾跳过，见文件头部已知缺口说明）"
+      - "review-code 首轮 verdict=block（3 blocker：CODE-BLOCK-001 严重/002 主要/003 次要），修复后二轮 pass，见 code.yml attempts[]"
