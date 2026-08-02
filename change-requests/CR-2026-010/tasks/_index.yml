@@ -1,0 +1,37 @@
+cr-id: CR-2026-010
+tasks:
+  - id: CR-2026-010-TASK-01
+    title: 迁移（project_id 列+回填+索引、presenter_grant 表）+ claim SQL 改造 + advisory lock 竞态复核
+    status: pending
+    estimate: 6h
+    depends-on: []
+  - id: CR-2026-010-TASK-02
+    title: presenter 服务（grant 状态机 6 转移）+ 7 个 API 路由 + 成员移除联动
+    status: pending
+    estimate: 6h
+    depends-on: [CR-2026-010-TASK-01]
+  - id: CR-2026-010-TASK-03
+    title: 发送端点控制权守卫接入（403 presenter_required）+ 插队优先级抑制
+    status: pending
+    estimate: 3h
+    depends-on: [CR-2026-010-TASK-02]
+  - id: CR-2026-010-TASK-04
+    title: 通知双通道（activity_log + notifyDirect + WS 事件）
+    status: pending
+    estimate: 4h
+    depends-on: [CR-2026-010-TASK-02]
+  - id: CR-2026-010-TASK-05
+    title: presenter 数据层（schemas/client/queries/mutations）+ chatHeader 主持人显示
+    status: pending
+    estimate: 3h
+    depends-on: [CR-2026-010-TASK-02, CR-2026-010-TASK-04]
+  - id: CR-2026-010-TASK-06
+    title: chatControlPanel 权限面板 + 消息流通知卡 + 拒绝呈现 + 四语文案
+    status: pending
+    estimate: 6h
+    depends-on: [CR-2026-010-TASK-05]
+  - id: CR-2026-010-TASK-07
+    title: 端到端验收（AC-1~5）+ §6.3 四组回归
+    status: pending
+    estimate: 6h
+    depends-on: [CR-2026-010-TASK-03, CR-2026-010-TASK-04, CR-2026-010-TASK-06]
