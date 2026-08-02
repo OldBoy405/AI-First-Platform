@@ -52,10 +52,23 @@ change-requests:
     target-version: "0.14"
     source: "docs/product/P2-三模式聊天窗口主体-交付切分.md v2（d7e4ece）CR-B"
     prd-path: ""
-    status: code-approved
-    updated-at: "2026-08-02T21:00:17+08:00"
+    status: merging
+    updated-at: "2026-08-02T21:31:22+08:00"
     created: "2026-08-02T10:00:39+08:00"
     updated: "2026-08-02T10:00:39+08:00"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 516bdb6942028658a320dc9eb03ef212c4583a54
+        branch: requirement/CR-2026-007
+        source-sha: 01fb3be68ca41127332b1549469c472f76baa57d
+        merged-at: "2026-08-02T21:31:00+08:00"
+      - repo: multica
+        trunk: main
+        sha: 1bcad2ace1267bf8f04b3b97c5ff1e7822f2ef87
+        branch: requirement/CR-2026-007
+        source-sha: 7ae822e1bcf394458e57c55c7237dd72388399c7
+        merged-at: "2026-08-02T21:31:00+08:00"
   - id: CR-2026-008
     title: P2 三模式聊天 CR-C — D5 Private Ask（chat_session 项目维度 + 项目内私聊面）
     summary: >-
