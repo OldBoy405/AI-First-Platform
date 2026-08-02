@@ -1,0 +1,71 @@
+cr-id: CR-2026-007
+review-type: code
+reviewer: ai-reviewer
+reviewed-at: "2026-08-02T12:40:35+08:00"
+verdict: pass
+blockers: []
+diff-range: "52b571774..HEAD"
+task-progress: "6/6"
+review-note: >-
+  两轴（Standards/Spec）并行子 agent 评审。Spec 轴逐行核实 3 条技术评审 blocker
+  （幂等 200/私有 agent 撤回权限对称/NULL originator 不丢项）与 DD-2 单端点复用，
+  均与代码实际行为一致，未发现硬缺陷。Standards 轴未发现文档标准硬违反，3 处
+  judgement-call 级别的 smell 中 2 处（Duplicated Code/Dead Conditional）已按
+  用户要求修复并重新跑测（commit 5887e3e9d），1 处（TeamAgentStreamView 单跳
+  prop-drilling）经权衡后有意保留，不引入非必要抽象。
+findings:
+  - id: CODE-FIND-001
+    axis: spec
+    severity: smell
+    location: "packages/views/projects/components/project-team-agent-chat.tsx"
+    issue: >-
+      PRD FR-5 描述"只看 Agent 请求"过滤开关位于 "Team Agent tab 旁"，实际实现是面板内
+      消息列表上方的一条 bar，非紧贴 tab 本身。功能等价（本地过滤、开关往返幂等、
+      NFR-4 不发新请求均已验证），纯位置措辞偏差。
+    outcome: skipped
+    fix-summary: 位置差异不影响功能正确性，判断性偏差，暂不改动。
+  - id: CODE-FIND-002
+    axis: standards
+    severity: smell
+    location: "packages/views/projects/components/project-queue-bar.tsx"
+    issue: >-
+      initials 计算（split(" ").filter(Boolean).map(w=>w[0]).join("").toUpperCase().slice(0,2)）
+      与 packages/core/workspace/hooks.ts 里 getActorInitials 的实现同形，属 Duplicated Code；
+      队列项自带已解析的 name（非 actor id 查表），现有 hook 不能直接复用，需要抽一个共享的
+      nameToInitials(name) 才能消除重复。
+    outcome: fixed
+    fix-commit: 5887e3e9d
+    fix-summary: >-
+      抽出 packages/core/utils.ts 的 nameToInitials(name)，getActorInitials 与
+      project-queue-bar.tsx 均改为调用该共享函数，消除重复实现。
+  - id: CODE-FIND-003
+    axis: standards
+    severity: smell
+    location: "server/internal/handler/chat.go:1143"
+    issue: >-
+      T02 调整 CancelTaskByUser 权限判断顺序后，originator 快速路径分支内部遗留一个
+      条件恒真的 if uuidToString(task.OriginatorUserID) != userID 判断（外层已保证该条件
+      成立），非 bug（owner/admin 校验逻辑仍正确执行），但读起来像是可能为 false 而实际不能，
+      属轻度 Dead/Redundant Conditional。
+    outcome: fixed
+    fix-commit: 5887e3e9d
+    fix-summary: >-
+      拍平内层恒真判断，直接执行 owner/admin 校验，注释同步说明该结论来自外层
+      else-if 已保证。15 项 TestCancelTaskByUser* 用例（含 originator/
+      non-originator/plain-member/owner 权限矩阵）真实 DB 跑通全绿。
+  - id: CODE-FIND-004
+    axis: standards
+    severity: smell
+    location: "packages/views/projects/components/project-team-agent-chat.tsx"
+    issue: >-
+      wsId/projectId/canConfigure（现新增 filterOn）四个值持续通过
+      ProjectTeamAgentChat -> TeamAgentStreamView -> TaskExecutionCard 传递，
+      TeamAgentStreamView 自身不使用只做转发，属轻度 Data Clump/prop-drilling，
+      与文件既有风格一致，非本次改动新增模式。
+    outcome: skipped
+    fix-summary: >-
+      有意保留：只有一跳转发（ProjectTeamAgentChat -> TeamAgentStreamView），
+      为 4 个原始值引入 context/对象封装属于 CLAUDE.md "避免非必要的大改动"
+      要禁止的过度抽象，直白 props 在此处更易读，风险可控。
+suggestions:
+  - "AC-3 的 running→interrupted 真实转移因本机无 daemon 无法真机回放，仅由单测覆盖 —— 沿用与 CR-2026-006 一致的诚实标注，非本次改动引入的缺口，部署前独立验收时应补真机验证。"
