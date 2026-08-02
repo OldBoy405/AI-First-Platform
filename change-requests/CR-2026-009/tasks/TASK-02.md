@@ -6,7 +6,7 @@ plan-ref: "change-requests/CR-2026-009/plan.md"
 sdd-ref: "change-requests/CR-2026-009/sdd.md"
 title: 触发豁免短路 + 负向/回归单测（验收红线）
 slug: discussion-trigger-exemption
-status: pending
+status: done
 estimate: 2h
 depends-on: [CR-2026-009-TASK-01]
 assignee: ""

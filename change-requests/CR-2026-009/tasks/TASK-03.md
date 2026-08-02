@@ -6,7 +6,7 @@ plan-ref: "change-requests/CR-2026-009/plan.md"
 sdd-ref: "change-requests/CR-2026-009/sdd.md"
 title: DiscussionPane（消息流 + 输入区）+ ?mode= 深链 + 四语文案
 slug: discussion-pane-frontend
-status: pending
+status: done
 estimate: 5h
 depends-on: [CR-2026-009-TASK-01]
 assignee: ""

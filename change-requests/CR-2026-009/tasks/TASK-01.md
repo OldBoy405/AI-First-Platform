@@ -6,7 +6,7 @@ plan-ref: "change-requests/CR-2026-009/plan.md"
 sdd-ref: "change-requests/CR-2026-009/sdd.md"
 title: discussion 容器迁移 + 谓词清单化 + ensure 抽取与端点
 slug: discussion-container-issue
-status: pending
+status: done
 estimate: 5h
 depends-on: []
 assignee: ""

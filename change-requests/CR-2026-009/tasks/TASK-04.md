@@ -6,7 +6,7 @@ plan-ref: "change-requests/CR-2026-009/plan.md"
 sdd-ref: "change-requests/CR-2026-009/sdd.md"
 title: inbox 容器起源跳转条（project_chat / project_discussion 共用）
 slug: inbox-container-jump-banner
-status: pending
+status: done
 estimate: 2h
 depends-on: [CR-2026-009-TASK-01]
 assignee: ""
