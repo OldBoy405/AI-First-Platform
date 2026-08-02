@@ -1,16 +1,21 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 # 五段链路：需求 FR ↔ 技术设计 SDD ↔ 交付 TASK ↔ 代码 merge SHA ↔ CR-ID
 spec-id: ai-first-platform
-cr-ref: CR-2026-009
-cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009]
+cr-ref: CR-2026-007
+cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007]
 target-version: "0.16"
 baseline-since: "0.10"
-generated-at: "2026-08-02T19:45:00+08:00"
+generated-at: "2026-08-02T21:50:00+08:00"
 
 # 已知缺口：CR-2026-003~CR-2026-006 未生成本文件的里程碑段（writeback-traceability 在那四个
 # CR 回写时被跳过，PRD.md/SDD.md/_index.yml 侧的累积记录不受影响、仍完整）。本次（CR-2026-008）
 # 起补齐流程，未回填历史缺口——如需追溯 CR-2026-003~006，参见各自 change-requests/{CR-ID}/
 # traceability.yml（CR 目录内单 CR 版本，归档前生成，独立于本累积基线）。
+#
+# 回写顺序说明：CR-2026-007（target-version 0.14，P2 CR-B）排期先于 CR-2026-008/009 但因故
+# 延后完成，本文件的 milestones 顺序按 writeback 实际发生顺序追加（CR-2026-007 段落排在
+# CR-2026-009 之后），与 PRD.md/SDD.md 里按版本号插在 CR-A/CR-C 之间的章节顺序不同——两份
+# 文档的排序目的不同（本文件记录治理事件时间线，PRD/SDD 记录产品版本演进），不需要对齐。
 
 milestones:
 
@@ -417,3 +422,104 @@ milestones:
       - "实施期发现并修正两处 SDD 假设有误：IssueResponse 实际未带 origin_type（已补充字段）；ensureContainerIssue 抽取因 sqlc 每 origin type 生成独立 Params 结构体，改用闭包签名而非直接复用（行为等价）"
     process-deviations:
       - "PRD/SDD/traceability.yml 回写沿用累积式合并；顺带修正 PRD.md/SDD.md frontmatter 的 cr-ref/cr-history/version 自 CR-2026-004 起遗漏同步的漂移（见 PRD.md/SDD.md 基线变更记录本次条目）"
+
+  # P2 CR-B — D3 完整形态（v0.14 · CR-2026-007；排期先于 CR-C/CR-D，实际回写晚于两者）
+  - cr: CR-2026-007
+    milestone: P2 CR-B
+    target-version: "0.14"
+    status: writing-back
+    owners:
+      requirement: { id: Ray, assigned-at: "2026-08-02T10:00:39+08:00" }
+      development: { id: Ray, assigned-at: "2026-08-02T10:00:39+08:00" }
+      test:        { id: Ray, assigned-at: "2026-08-02T10:00:39+08:00" }
+    prd:
+      file: specs/ai-first-platform/PRD.md
+      section: "P2 CR-B — D3 完整形态：队列条 + 逐项撤回 + 停止 + 过滤开关（v0.14 · CR-2026-007）"
+      cr-source: change-requests/CR-2026-007/prd.md
+      revision: "0.1.3"
+    sdd:
+      file: specs/ai-first-platform/SDD.md
+      section: "P2 CR-B — D3 完整形态 技术设计（v0.14 · CR-2026-007）"
+      cr-source: change-requests/CR-2026-007/sdd.md
+      revision: "0.2.1"
+    merge-commits:
+      - repo: multica
+        trunk: main
+        sha: 1bcad2ace1267bf8f04b3b97c5ff1e7822f2ef87
+        branch: requirement/CR-2026-007
+        source-sha: 7ae822e1bcf394458e57c55c7237dd72388399c7
+        merged-at: "2026-08-02T21:31:00+08:00"
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 516bdb6942028658a320dc9eb03ef212c4583a54
+        branch: requirement/CR-2026-007
+        source-sha: 01fb3be68ca41127332b1549469c472f76baa57d
+        merged-at: "2026-08-02T21:31:00+08:00"
+    fr-chain:
+      - fr: FR-1
+        title: 队列条常驻「{count} 条排队」
+        sdd: "SDD DD-3 + DD-6（WS 前缀失效驱动）"
+        tasks: [CR-2026-007-TASK-04]
+        code: "multica@1bcad2ace1: packages/views/projects/components/project-queue-bar.tsx"
+        evidence: "project-queue-bar.test.tsx 覆盖 count=0 收起态 + WS 失效重取"
+      - fr: FR-2
+        title: 展开列表逐项（发起人/摘要/状态/入队时间）
+        sdd: "SDD DD-3（items[] 结构 + ORDER BY 同 claim 顺序）"
+        tasks: [CR-2026-007-TASK-01, CR-2026-007-TASK-03, CR-2026-007-TASK-04]
+        code: "multica@1bcad2ace1: server/pkg/db/queries/agent.sql（ListProjectPendingTasks）+ packages/core/projects/queries.ts（projectQueueItemsOptions）+ project-queue-bar.tsx"
+        evidence: "project_queue_status_items_test.go 161 行 + project-queue-bar.test.tsx 211 行"
+      - fr: FR-3
+        title: 逐项撤回（幂等三分支 + 非发起人 403）
+        sdd: "SDD DD-2（竞态语义幂等 200 三分支判定）"
+        tasks: [CR-2026-007-TASK-02, CR-2026-007-TASK-03]
+        code: "multica@1bcad2ace1: packages/core/projects/mutations.ts（useCancelProjectQueueTask）+ server/internal/handler/chat.go（CancelTaskByUser）"
+        evidence: "mutations.test.tsx 幂等竞态分支 + cancel_task_by_user_test.go 123 行（originator/非 originator/owner 权限矩阵）"
+      - fr: FR-4
+        title: 停止双权限（发送者停自己、Owner 停任意）
+        sdd: "SDD DD-1（停止入口与 originator_user_id 判定）+ DD-2（同一 cancel 端点）"
+        tasks: [CR-2026-007-TASK-02, CR-2026-007-TASK-05]
+        code: "multica@1bcad2ace1: server/internal/handler/agent.go（originator_user_id 字段）+ chat.go（CancelTaskByUser 调序）+ project-team-agent-chat.tsx（运行卡停止钮）"
+        evidence: "cancel_task_by_user_test.go 权限矩阵 + project-team-agent-chat.test.tsx 停止钮断言"
+      - fr: FR-5
+        title: 「只看 Agent 请求」本地过滤开关
+        sdd: "SDD DD-4（result.output 渲染谓词 + 无 TimelineView 断言）"
+        tasks: [CR-2026-007-TASK-03, CR-2026-007-TASK-05]
+        code: "multica@1bcad2ace1: packages/core/projects/project-chat-store.ts（agentRequestFilter）+ project-team-agent-chat.tsx"
+        evidence: "project-chat-store.test.ts + project-team-agent-chat.test.tsx 过滤态 DOM 断言（无 TimelineView 节点、无网络请求）"
+      - fr: FR-6
+        title: 队列明细读侧扩展（?include=items，opt-in 零回归）
+        sdd: "SDD DD-3（LEFT JOIN 保留 NULL originator + opt-in 逐字节零变化）"
+        tasks: [CR-2026-007-TASK-01]
+        code: "multica@1bcad2ace1: server/internal/handler/project.go（GetProjectQueueStatus include 分支）+ pkg/db/queries/agent.sql + pkg/db/generated/agent.sql.go"
+        evidence: "project_queue_status_items_test.go：无参逐字节对拍 + NULL originator 造数用例 + count==len(items) 断言"
+      - fr: FR-7
+        title: 消息悬浮复制
+        sdd: "SDD FR→设计映射（唯一悬浮操作）"
+        tasks: [CR-2026-007-TASK-05]
+        code: "multica@1bcad2ace1: project-team-agent-chat.tsx（气泡悬浮复制）"
+        evidence: "project-team-agent-chat.test.tsx 复制断言（取消息完整文本）"
+    tasks:
+      total: 6
+      all-done: true
+      index: delivery/task/_index.yaml
+      files: "delivery/task/TASK-0.14-CR-2026-007-01..06-*.md"
+    reviews:
+      code: { reviewer: ai-reviewer, verdict: pass, attempts: 1, final-reviewed-at: "2026-08-02T12:40:35+08:00", file: change-requests/CR-2026-007/review-annotations/code.yml, findings: 4, blockers-fixed: 0, fixed-post-review: 2 }
+    tests:
+      report: change-requests/CR-2026-007/test-report.md
+      status: pass
+      tester: Ray
+      commands: { lint: not-applicable, test: pass, build: pass }
+      uncovered-risks:
+        - "AC-3 running→interrupted 真实转移因本机无 daemon 无法真机回放，仅由单测覆盖（沿用 CR-2026-006 一致的诚实标注），部署前独立验收时应补真机验证"
+    approvals:
+      requirement:       { approver: OldBoy405, via: crctl-approve }
+      tech-design:       { approver: OldBoy405, via: crctl-approve }
+      development-start: { approver: OldBoy405, via: crctl-approve }
+      code:               { approver: OldBoy405, via: crctl-approve }
+    notes-on-record:
+      - "代码评审（Standards 轴）发现 2 处 smell 并在同一 CR 内修复：initials 计算重复（project-queue-bar.tsx 与 workspace/hooks.ts 同形）抽取为 packages/core/utils.ts 的 nameToInitials(name)；CancelTaskByUser 内层恒真冗余条件拍平（fix-commit 5887e3e9d，见 review-annotations/code.yml CODE-FIND-002/003）"
+      - "1 处 prop-drilling（project-team-agent-chat.tsx → TeamAgentStreamView 一跳转发）判断性保留，未引入 context/对象封装（CODE-FIND-004，权衡后不属过度抽象）"
+      - "merge-feature-branch 阶段与 CR-2026-008/009 在 packages/core/api/client.ts 与 4 语言 projects.json 上产生真实冲突（因本 CR 分支基于早于两者的 trunk 切出）；两侧均为独立新增内容（本 CR 的 queue_bar/chat 新增 vs CR-2026-008 的 private 新增），both-side-keep 解决，解决后 core+views 全量 vitest（803+1813）与 go build 复跑全绿，详见 multica requirement/CR-2026-007 分支 commit 7ae822e1b"
+    process-deviations:
+      - "本 CR 排期序号先于 CR-2026-008/009（target-version 0.14 < 0.15/0.16）但因开发/评审排期延后，实际 merge/writeback 晚于两者完成；PRD.md/SDD.md 按版本号插入章节顺序，本文件与 _backlog.yml 按实际事件发生顺序追加，target-version/current 基线维持 0.16 不回退"
