@@ -8,8 +8,8 @@ owner: Ray
 owner-role: development
 status: draft
 created: "2026-08-02T10:48:45+08:00"
-updated: "2026-08-02T10:48:45+08:00"
-revision: "0.1.0"
+updated: "2026-08-02T11:20:00+08:00"
+revision: "0.1.1"
 prd-ref: "change-requests/CR-2026-008/prd.md"
 ---
 
@@ -48,8 +48,20 @@ per-user 定向推送（§6.2 核实：当前 main 上聊天内容仍在全工�
 | DD-3 | **get-or-create 端点挂项目路由** `GET /api/projects/{id}/private-chat`，语义=取 `(project_id, creator_id)` 最新 active 会话、无则建 | 对照 CR-A 的 `GET /api/projects/{id}/chat`（router.go:1080，项目成员鉴权先例）；单活跃会话语义=CUSTOM.md DEC-1，SUG-1 落地见 §6.1 |
 | DD-4 | **并发防重用部分唯一索引**，不用应用层锁 | `CREATE UNIQUE INDEX ... ON chat_session(project_id, creator_id) WHERE project_id IS NOT NULL AND status='active'`，冲突方重查——照抄 CR-A M1 容器 Issue 的防并发模式（160_issue_origin_project_chat.up.sql） |
 | DD-5 | **既有全局 chat 面加排除谓词 `project_id IS NULL`**，Private Ask 会话不进浮窗/全页 chat 列表与 pending 聚合 | `ListChatSessionsByCreator`/`ListAllChatSessionsByCreator`（queries/chat.sql）按 (workspace, creator) 全量列会话，不加谓词则 Private Ask 会话会串进全局 chat 列表（NFR-2 回归红线）；pending 聚合（/api/chat/pending-tasks，router.go:1299-1300）同理——否则全局 FAB 徽标会指向列表里不存在的会话 |
-| DD-6 | **Private Ask 会话不暴露 work_dir**，创建时 work_dir=NULL，面板不提供本地目录设定 | chat task 的 execenv 默认在 scratch 目录运行（execenv.go:227-236），仅当用户给 session 设了 work_dir 才重定向到本地目录（execenv.go:59-66 LocalWorkDir）；不暴露该入口 + chat 任务本就不做项目 worktree checkout = Ask-only「无法写 worktree」的机制保证，AC-3 真机验证 |
+| DD-6 | **Ask-only = work_dir 不暴露 + `ask_only` 标记贯穿 claim/execenv 的最小强制**（rev 0.1.1 修订，见表下注） | chat task 的 execenv 默认在 scratch 目录运行（execenv.go:227-236），仅当用户给 session 设了 work_dir 才重定向到本地目录（execenv.go:59-66 LocalWorkDir）；**但** repo 按需 checkout 对 chat 任务可用且无只读机制（见修订注），故需最小强制 |
 | DD-7 | **个人队列零开发**：chat 任务走既有 `EnqueueChatTask`（priority=2，task.go:1104-1121），不触碰 `guardProjectQueueCapacity` | 已核实 EnqueueChatTask 全路径无项目队列守卫调用；chat 任务无 issue/project 维度，不计入 D1 项目队列深度——FR-4「不受项目满队影响」天然成立，验收即证 |
+
+> **rev 0.1.1 修订注（DD-6，SDD-SUG-002 核实闭环，工程纪律 4）**：0.1.0 版「chat 任务本就不做项目
+> worktree checkout」的断言**不成立**——已核实 slim brief 的 Section×Kind 矩阵中 chat 任务带
+> Repositories 节（runtime_config_sections.go:509-525 矩阵、:556 gating 仅排除 quick-create），
+> agent 被明确告知可 `multica repo checkout <url>`（workdir 起始为空但可按需 checkout，
+> execenv.go:193-194），且不存在任何任务级只读机制。**结论受影响**：Ask-only 不是既有语义白拿，
+> 本 CR 需实现最小强制——`chat_session.project_id` 非空（即 Private Ask）的任务在
+> enqueue→claim→execenv 链路携带 `ask_only` 标记：① brief 组装对 ask_only 任务省略
+> Repositories 节（buildMetaSkillContentSlim 的 kind 分支加一个条件）；② daemon 的
+> `multica repo checkout` 处理对 ask_only 任务拒绝（结构化错误「read-only chat session」）。
+> **既有全局 1:1 chat（project_id 为空）不受限**——让 1:1 助手检出代码是合法用例，限制范围
+> 精确等于 Private Ask 语义边界。work_dir 不暴露的既有决策维持。FR-5 映射与 §8 风险随此更新。
 
 ## 3. 数据模型与迁移（1 个 migration）
 
@@ -209,7 +221,7 @@ availability 机制）。
 | FR-2 会话获取 | §4.2 get-or-create + §6.1 取法（DD-3/DD-4） |
 | FR-3 Private Ask 面 | §5.1（纯 props 组合，不触 controller/store 单例） |
 | FR-4 个人独立队列 | DD-7（EnqueueChatTask 既有路径，零开发，验收证明） |
-| FR-5 Ask-only 只读 | DD-6（work_dir 不暴露 + scratch execenv + 无切换控件） |
+| FR-5 Ask-only 只读 | DD-6 rev 0.1.1（work_dir 不暴露 + 无切换控件 + ask_only 标记：brief 省略 Repositories 节、checkout 拒绝） |
 | FR-6 隐私推送 | §4.3 + §4.4（DD-1/DD-2，fail-closed） |
 | FR-7 与 Team Agent 并行 | 结构性成立：两面异队列异任务类型（DD-7），AC-2 验证 |
 | FR-8 输入区能力 | §5.1（ChatInput 纯 props 现成 + 模型只读徽标 + 无斜杠命令） |
@@ -225,6 +237,7 @@ availability 机制）。
 | 全局 chat 列表排除谓词遗漏入口 | §4.1 清单 + 实施时 grep chat_session 全部 SELECT；AC-4 三处会话互不串的验收覆盖 |
 | 唯一索引与存量脏数据冲突 | 索引条件 `project_id IS NOT NULL`，存量行全部 NULL，不可能冲突 |
 | mobile（独立 RN 组件集）消费同批 chat 端点 | 服务端排除谓词与 per-user 推送对 mobile 同样生效（服务端过滤）；mobile UI 不在 P2 范围，抽查列表接口一处即可 |
+| ask_only 标记贯穿 claim 协议波及 daemon 兼容性（rev 0.1.1 新增） | 标记为 claim 响应新增可选字段，旧 daemon 忽略之（宽松反序列化）——降级行为=回到 0.1.0 的现状（brief 仍带 Repositories），不破坏功能只弱化约束；AC-3 验收要求新 daemon 全链路 |
 
 ## 9. AC → 验证方式
 
