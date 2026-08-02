@@ -6,7 +6,7 @@ plan-ref: "change-requests/CR-2026-007/plan.md"
 sdd-ref: "change-requests/CR-2026-007/sdd.md"
 title: project-queue-bar 组件（常驻/展开/撤回/停止/占位）+ 四语文案
 slug: queue-bar
-status: pending
+status: in-progress
 estimate: 5h
 depends-on: [CR-2026-007-TASK-03]
 assignee: ""

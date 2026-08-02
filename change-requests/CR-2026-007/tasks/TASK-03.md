@@ -6,7 +6,7 @@ plan-ref: "change-requests/CR-2026-007/plan.md"
 sdd-ref: "change-requests/CR-2026-007/sdd.md"
 title: core 层：items schema/query + 撤回 mutation 三分支 + store 过滤字段
 slug: core-queue-items
-status: in-progress
+status: done
 estimate: 4h
 depends-on: [CR-2026-007-TASK-01]
 assignee: ""
