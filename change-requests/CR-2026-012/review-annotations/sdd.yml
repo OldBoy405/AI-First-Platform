@@ -1,25 +1,11 @@
 cr-id: CR-2026-012
 review-type: tech-design
 reviewer: ai-reviewer
-reviewed-at: "2026-08-03T18:32:05+08:00"
-verdict: block
-blockers:
-  - id: SDD-BLOCK-001
-    location: "§4.1 触发过滤改造 / §4.2 DC 路由 re-target"
-    issue: >-
-      两节内部矛盾：§4.1 伪代码 filterToAgent(triggers, dcAgentID) 只保留"目标为 DC"
-      的触发，而 §4.2 的 re-target 分支前提是"DC 作者的 @{team agent} 触发到达
-      enqueueSingleCommentTrigger"——该触发在 §4.1 已被丢弃，永远进不了 §4.2 分支；
-      §4.2 自述"DC @其他 agent 已被 4.1 过滤，不进本分支"与自身前提冲突。按两节
-      各自实现会得到"DC 永远无法路由到 Team Agent"，FR-3/AC-3 不可达。
-    suggestion: >-
-      §4.1 过滤谓词改为两类并集：①目标为 DC 的触发（激活）；②作者为 DC 且目标为
-      项目 team_agent_id 的显式提及触发（路由，交 §4.2 re-target 消费）。同步修正
-      §4.2 的分支前提描述与 §4.1 的测试分支清单（补"DC 作者 @团队Agent 放行、
-      DC 作者 @第三方 agent 拒"两个用例）。
+reviewed-at: "2026-08-03T18:41:13+08:00"
+verdict: pass
+blockers: []
 repair-target: write-tech-design
-repair-instructions:
-  - "按 SDD-BLOCK-001 修正 §4.1 过滤谓词为两类并集（DC 目标触发 ∪ DC 作者×team_agent 目标触发），并同步 §4.2 前提描述与测试分支清单"
+repair-instructions: []
 review-loop:
   pass-condition:
     allOf:
@@ -29,25 +15,32 @@ review-loop:
         isEmpty: true
   on-block: route-to-repair-node
   max-attempts: 3
-  current-attempt: 0
+  current-attempt: 1
   attempts:
     - attempt: 0
       reviewed-at: "2026-08-03T18:32:05+08:00"
       result: block
       blocker-count: 1
       repair-target: write-tech-design
+    - attempt: 1
+      reviewed-at: "2026-08-03T18:41:13+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: write-tech-design
 suggestions:
-  - "TSUG-001: DD-5 断言『originator 经 trigger comment 链解析为激活 DC 的人类，容量守卫正常适用』未经代码证实——re-target 的 trigger comment（路由 comment）作者是 DC（agent），resolveOriginatorForIssueTask（task.go:863）能否穿透到激活 DC 的人类需任务期核实；若解析不到人类 originator，按 task_queue_capacity.go:49-57 注释该 enqueue 走 a2a 直通、不受容量守卫。两种结果都可接受，但 SDD 应改为二选一的显式定案（显式透传 originator，或声明路由 enqueue 为 a2a 直通并写进验收口径），不能留一个可能为假的断言"
-  - "TSUG-002: CompleteTask 的 isTrivialDoneOutput 抑制（task.go:1951，TriggerCommentID 有效且输出 trivial 时不落 comment）会吞掉 DC 的简短协调输出，导致 AC-2『激活后必有可见输出』偶发不成立——DC 模板 instructions 需强制要求实质性总结输出，且测试计划补『DC 输出极简时仍有 comment 落地』的边界用例（或在该抑制处为 discussion 容器豁免）"
-  - "TSUG-003: DD-8 的默认勾选态依赖 projectGates——该端点挂载受 approvalSvc 特性开关保护（签名密钥未配置则整组路由不存在，router.go:720-727），前端读取需容错端点缺失（404/网络错误 → 默认不勾选），§5.1 应写明该回落分支，避免治理未启用的环境合并转发预览报错"
+  - "TSUG-001（已落地 §4.2）：originator 定案为显式解析激活人类（DC 完成 comment 的 parent_id 链），解析失败沿 a2a 直通语义并记日志；任务期核实 resolveOriginatorForIssueTask 穿透能力"
+  - "TSUG-002（已落地 DD-4）：isTrivialDoneOutput 对 discussion 容器任务豁免（机制保证），模板 instructions 双管，AC-2 补边界用例"
+  - "TSUG-003（已落地 §5.1）：projectGates 端点缺失/报错回落默认不勾选（approvalSvc 特性开关环境）"
 fr-coverage:
   total: 8
   covered: 8
   missing: []
 review-notes: >-
-  FR 覆盖 8/8（§7 映射齐）；架构取向正确——激活收窄落在 CR-D 验证过的唯一 choke
-  point、DC 只读复用 CR-C AskOnly 三层链、可见输出用完成不变量零新增通道、合并转发
-  复用薄发送端点守卫/补偿序、零 migration，全部有行号级代码依据；PRD 两处引用假设
-  （shadowchat 字典、Issue→CR 升级链路）的纠正有探查实证；需求评审 4 条 SUG 的落地
-  （§6）定案清晰。唯一 blocker 是 §4.1/§4.2 的过滤谓词内部矛盾（见 SDD-BLOCK-001），
-  属规格自洽性缺陷，修复面小但不修必然实现错误。
+  attempt 1 重审：SDD-BLOCK-001 修复到位——§4.1 过滤谓词改为两类并集（DC 目标触发 ∪
+  DC 作者×team_agent 目标触发），伪代码、调用点说明（daemon.go:2730 completion
+  reconcile 与 comment.go:1358 两路汇入 re-target）、测试分支清单（新增 DC 作者
+  @团队Agent 放行 / @第三方拒 / @DC 自触发拒）三处同步一致；§4.2 前提改为"消费
+  §4.1 第②类触发"，矛盾消除，FR-3/AC-3 链路可达。三条 TSUG 全部升级为 SDD 内
+  显式定案（originator 显式解析+fail-open 留痕、trivial 抑制机制级豁免、gates
+  特性开关回落），非悬空建议。维持 attempt 0 的整体评价：架构取向正确、行号级
+  依据充分、零 migration、可测试性好。FR 覆盖 8/8。
