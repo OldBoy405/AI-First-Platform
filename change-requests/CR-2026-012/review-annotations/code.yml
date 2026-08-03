@@ -37,6 +37,13 @@ suggestions:
     suggestion: >-
       后续可将 AC-3 段改为经 POST comment handler 驱动（真机 E2E 清单 #3 部署前
       执行时也会覆盖该入口）；本轮不阻塞。
+    outcome: fixed
+    fix-note: >-
+      commit 485f2af90：AC-3 段改为经真实 CreateComment HTTP handler 驱动
+      （X-Actor-Source: task_token，与 DC mentioning skill CLI 调用同一入口），
+      验证 X-Task-ID 触发 resumed-session drift 守卫（parent_id 必须等于
+      dcTaskID.TriggerCommentID）亦一并通过。go test ./internal/handler/...
+      -run Discussion|MergeForward 全绿。
   - id: CODE-SUG-002
     severity: minor
     file: "server/internal/service/discussion_coordinator.go:120-146"
@@ -56,6 +63,13 @@ suggestions:
     suggestion: >-
       已确认为 SDD 设计定案而非偏离，留痕即可；若未来要求"严格仅 @提及"，在
       class ① 加 source == mention_agent 一行即可。
+    outcome: fixed
+    fix-note: >-
+      commit 485f2af90：class ① 加 Source == commentTriggerSourceMentionAgent
+      判断，收紧到严格仅 @提及；新增回归用例"reply to DC-authored parent does
+      not activate"。副作用：SDD DD-2/§6.1 中"未来 reply-to 落地零额外改动"的
+      表述已过时并同步修正为"需放开 source 限定（一行）"——文档-代码一致性
+      已核对。
 task-coverage:
   total: 8
   verified: 8
@@ -71,10 +85,10 @@ test-report:
     - "真机 E2E 待执行清单（test-report §4，6 项）：daemon/agent runtime 实跑、双浏览器实时、requirement-register 实跑、两面真机走查——部署前独立验收"
     - "internal/service 的 10 项 builtin_skills 契约测试在本机失败——已核实为 Windows autocrlf 环境性失败（主仓干净基线 44769bbb8 同样失败），与本 CR 代码无关"
 evidence:
-  diff-range: "44769bbb8...91acef8ee"
+  diff-range: "44769bbb8...485f2af90"
   changed-files-count: 38
-  diff-stat: "+3864 / -228"
-  commits: 8
+  diff-stat: "+3864 / -228 (8 TASK commits) + follow-up fix commit 485f2af90 (CODE-SUG-001/003)"
+  commits: 9
   changed-files:
     - server/internal/handler/comment.go
     - server/internal/handler/daemon.go
@@ -96,9 +110,11 @@ evidence:
     - "…（含 8 个新增/扩展测试文件与 4 语 locale，全量见 diff-range）"
   verification-commands:
     - "go build ./... && go vet ./... —— 通过"
-    - "go test ./internal/handler/ —— ok（含本 CR 新增 5 个测试文件）"
+    - "DATABASE_URL 指向 .env.worktree 的隔离测试库（multica_cr_2026_012）后 go test ./internal/handler/... -run Discussion|MergeForward —— 全绿（含 CODE-SUG-001/003 修复后新增/改造用例）"
     - "go test ./internal/agenttmpl/ —— ok"
     - "go test ./internal/service/ —— 仅 10 项 builtin_skills 环境性失败（主仓基线同败，已核实）"
+    - "go test ./internal/handler/... 全量 —— 除 TestParseSkillArchive_RejectsUnsafeSkillMdPath（Windows 路径分隔符环境性失败，test-report §5 已知项）外全绿"
+    - "gofmt -l —— 修复后改动文件全部通过"
     - "pnpm --filter @multica/core test —— 826/826 通过"
     - "pnpm --filter @multica/views test —— 1866/1866 通过（含 locale parity）"
     - "tsc --noEmit（core/views 双包）—— 零报错"
