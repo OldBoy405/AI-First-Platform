@@ -1,0 +1,57 @@
+cr-id: CR-2026-011
+review-type: code
+reviewer: ai-reviewer
+reviewed-at: "2026-08-03T02:00:00+08:00"
+verdict: pass
+blockers: []
+diff-range: "52b571774d..9e0dccd9b"
+task-progress: "7/7"
+review-note: >-
+  独立评审 subagent + 人工复核（读表结构、复现、临时回退验证 regression test 真实捕获问题）。
+  一项 real-gap 已在评审中修复并加测试验证，故以 pass 记录；两项非阻塞项记录在案供
+  writeback 时处理。
+findings:
+  - id: CODE-FIND-001
+    axis: security
+    severity: real-gap
+    location: "server/internal/governance/approval.go:169 (latestEvidence)"
+    issue: >-
+      latestEvidence 只按 cr_id 查 cr_sync_event，该表无 workspace_id 列，而 cr_id 仅
+      workspace 内唯一（cr 表 UNIQUE(workspace_id, cr_id)）。另一 workspace 同名 CR 的
+      evidence（文件路径 + sha256 摘要）可经本 workspace 的审批卡片泄露；本 CR 新增的
+      /api/projects/{id}/gates 端点（project_gates.go）复用同一逻辑，把暴露面从"需知道
+      workspaceID+crID 直调 API"扩大到"任意项目成员"。违反 CLAUDE.md "All queries filter
+      by workspace_id" 硬规则。
+    outcome: fixed
+    fix-commit: 9e0dccd9b
+    fix-summary: >-
+      latestEvidence 改为 JOIN cr ON cr.cr_id = cse.cr_id 并按 cr.workspace_id 过滤；
+      新增 TestApprovalCardDoesNotLeakEvidenceAcrossWorkspaces，临时回退验证过该测试确实
+      在旧查询下失败（真实捕获跨 workspace 泄露），新查询下通过。
+  - id: CODE-FIND-002
+    axis: spec
+    severity: smell
+    location: "sdd.md DD-5 vs server/internal/governance/project_gates.go:44 (canApprove)"
+    issue: >-
+      SDD DD-5 定义 canApprove = workspace owner/admin ∨ cr.owners 对应角色，但实现只做了
+      前半（owner/admin），cr.owners 角色匹配因缺少 crctl 自由文本 --caller 到 Multica
+      user id 的身份桥接而被有意收窄（ponytail 注释 + test-report.md §3.1 已说明理由，判断
+      合理——强行实现会是假安全感）。但 SDD 文档本身（仍是 status: draft, 0.1.0）未同步
+      记录这一收窄，单看 SDD 会误以为 cr.owners 分支已实现。
+    outcome: skipped
+    fix-summary: >-
+      非阻塞：收窄决策已在代码注释和 test-report.md 里说得清楚，属于"未来若接上身份桥接
+      再补"的已知债务，不影响本次 pass。writeback 时把这条决策写回 SDD baseline
+      （沿本仓库既有"writeback 回写收窄"惯例）。
+  - id: CODE-FIND-003
+    axis: quality
+    severity: suggestion
+    location: "server/internal/governance/gen/generate-gate-nodes.mjs"
+    issue: >-
+      --check 一致性校验（防 gate_nodes_gen.go 与 tools pipeline-templates 漂移）未接入
+      CI/Makefile，可能静默漂移而无任何失败信号。
+    outcome: skipped
+    fix-summary: >-
+      非本 CR 引入的回归：同名的 generate-transitions.mjs 也是同样未接入 CI 的既有模式，
+      风险不因本 CR 扩大，留作独立债务。
+suggestions: []

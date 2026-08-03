@@ -1,0 +1,37 @@
+cr-id: CR-2026-011
+tasks:
+  - id: CR-2026-011-TASK-01
+    title: migration 161：pipeline 两表 + agent_task_queue B4 两列 + retry 克隆清单
+    status: done
+    estimate: 4h
+    depends-on: []
+  - id: CR-2026-011-TASK-02
+    title: 门禁节点投影器（状态映射表 + node_id 决议单点 + cr:updated 发布）
+    status: done
+    estimate: 6h
+    depends-on: [CR-2026-011-TASK-01]
+  - id: CR-2026-011-TASK-03
+    title: review 事件通道（daemon 扫描正则 + yml payload + 服务端放行）
+    status: done
+    estimate: 4h
+    depends-on: [CR-2026-011-TASK-02]
+  - id: CR-2026-011-TASK-04
+    title: gates 端点 + canApprove 角色策略 + pending_advance + StartTask 归因
+    status: done
+    estimate: 6h
+    depends-on: [CR-2026-011-TASK-01]
+  - id: CR-2026-011-TASK-05
+    title: 前端 client 层 + cr:updated 接线 + CrStatusBadge + 四语文案
+    status: done
+    estimate: 4h
+    depends-on: [CR-2026-011-TASK-01]
+  - id: CR-2026-011-TASK-06
+    title: CrGateCard 三变体 + 消息流插入 + 执行卡迷你条 + 批准/驳回交互
+    status: done
+    estimate: 6h
+    depends-on: [CR-2026-011-TASK-04, CR-2026-011-TASK-05]
+  - id: CR-2026-011-TASK-07
+    title: 端到端验收（AC-1~7，含无 TTY grant 链路实跑）
+    status: done
+    estimate: 6h
+    depends-on: [CR-2026-011-TASK-02, CR-2026-011-TASK-03, CR-2026-011-TASK-04, CR-2026-011-TASK-06]
