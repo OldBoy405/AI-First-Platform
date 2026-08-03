@@ -1,11 +1,11 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 # 五段链路：需求 FR ↔ 技术设计 SDD ↔ 交付 TASK ↔ 代码 merge SHA ↔ CR-ID
 spec-id: ai-first-platform
-cr-ref: CR-2026-011
-cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011]
-target-version: "0.18"
+cr-ref: CR-2026-012
+cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012]
+target-version: "0.19"
 baseline-since: "0.10"
-generated-at: "2026-08-03T13:45:00+08:00"
+generated-at: "2026-08-04T01:40:00+08:00"
 
 # 已知缺口：CR-2026-003~CR-2026-006 未生成本文件的里程碑段（writeback-traceability 在那四个
 # CR 回写时被跳过，PRD.md/SDD.md/_index.yml 侧的累积记录不受影响、仍完整）。本次（CR-2026-008）
@@ -724,3 +724,113 @@ milestones:
       - "TestGrantCrossVerifiesWithCrctl 此前因环境路径探测问题被静默跳过多个 CR 周期，本次显式传入 CRCTL_PATH 后首次真正跑通，关闭一个此前被当作「通过」实际从未执行的验证缺口"
       - "review-code 阶段（独立 subagent + 人工复核）发现并修复真实安全缺陷：latestEvidence 只按 cr_id 查 cr_sync_event（该表无 workspace_id 列，cr_id 仅 workspace 内唯一），另一 workspace 同名 CR 的 evidence 可经本 CR 新增的 /api/projects/{id}/gates 端点泄露；改为 JOIN cr 按 workspace_id 过滤，新增回归测试 TestApprovalCardDoesNotLeakEvidenceAcrossWorkspaces（临时回退验证过确实能捕获该泄露）"
       - "merge-feature-branch 阶段经历两轮与 origin/main 的同步合并（CR-2026-007/008/009 一轮，CR-2026-010 一轮），均为多 CR 各自独立新增内容在同一文件的不同位置追加，both-side-keep 解决；第二轮发现并修正一处静默自动合并缺陷（project-chat-panel.tsx 出现两次 const wsId = useWorkspaceId() 声明，tsc 报重复声明），以及一处迁移编号撞号（CR-2026-010 的 161-163 与本 CR/CR-008/CR-009 已占用编号冲突，顺延为 164-166）；解决后 core+views 全量 vitest（820+1856）、go build/vet、migration lint 复跑全绿"
+
+  - cr: CR-2026-012
+    milestone: P2 CR-G
+    target-version: "0.19"
+    status: writing-back
+    owners:
+      requirement: { id: Ray, assigned-at: "2026-08-03T14:55:00+08:00" }
+      development: { id: Ray, assigned-at: "2026-08-03T14:55:00+08:00" }
+      test:        { id: Ray, assigned-at: "2026-08-03T14:55:00+08:00" }
+    prd:
+      file: specs/ai-first-platform/PRD.md
+      section: "P2 CR-G · D8 DC 协调者 + 讨论转执行（合并转发）（v0.19 · CR-2026-012）"
+      cr-source: change-requests/CR-2026-012/prd.md
+      revision: "0.1.0"
+    sdd:
+      file: specs/ai-first-platform/SDD.md
+      section: "P2 CR-G · D8 DC 协调者 + 讨论转执行 技术设计（v0.19 · CR-2026-012）"
+      cr-source: change-requests/CR-2026-012/sdd.md
+      revision: "0.1.1"
+    merge-commits:
+      - repo: multica
+        trunk: main
+        sha: 8cde4c5de071521972fb0cbefa38e45a24177fa1
+        branch: requirement/CR-2026-012
+        source-sha: 91acef8eeb298d9a39d2c5e858fe44b63445d5f4
+        merged-at: "2026-08-04T01:24:30+08:00"
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 8304226dafce3dc2089f99d5672b538526888bb4
+        branch: requirement/CR-2026-012
+        source-sha: 92745b91c2c49580c64a23bf32993ed941bef9e2
+        merged-at: "2026-08-04T01:24:30+08:00"
+    fr-chain:
+      - fr: FR-1
+        title: DC 特殊 Agent 角色（模板 + project setting 绑定，execenv 只读 + forbidden 写 Skill）
+        sdd: "SDD DD-1 + §4.5"
+        tasks: [CR-2026-012-TASK-01]
+        code: "multica@8cde4c5: server/internal/agenttmpl/templates/discussion-coordinator.json + service/discussion_coordinator.go（settings 读取） + handler/project.go（discussion_coordinator_agent_id 校验分支） + project_chat.go（GetProjectDiscussion 响应补 coordinator_agent_id）"
+        evidence: "TestDiscussionCoordinatorIDFromSettings 7 分支；agenttmpl loader 测试通过（模板 schema 合法）"
+      - fr: FR-2
+        title: 静默/激活边界（未配置全拒；已配置仅 @DC 激活 ∪ DC→团队Agent 路由两类放行）
+        sdd: "SDD §4.1（DD-2）+ SDD-BLOCK-001 两类并集"
+        tasks: [CR-2026-012-TASK-02]
+        code: "multica@8cde4c5: server/internal/handler/comment.go（computeCommentAgentTriggers dispatcher + filterDiscussionContainerTriggers）"
+        evidence: "exemption 测试 11 分支（5 旧 + 6 新）全绿；e2e 链 A AC-1 段 DB 级零增量断言"
+      - fr: FR-3
+        title: 可见协调输出 + 路由（DC 完成必落 comment（trivial 豁免）；@团队Agent 输出 re-target 到 chat 容器）
+        sdd: "SDD DD-4 + §4.2（DD-5）+ TSUG-001/002"
+        tasks: [CR-2026-012-TASK-01, CR-2026-012-TASK-03]
+        code: "multica@8cde4c5: service/task.go（issueIsDiscussionContainer 豁免 isTrivialDoneOutput + enqueueMentionTaskWithCommentPlanAndOriginator） + handler/comment.go（handleDiscussionContainerMentionTrigger / retargetDiscussionCoordinatorRoute） + service/discussion_coordinator.go（RouteDiscussionToTeamAgent）"
+        evidence: "TestCompleteTask_DiscussionContainer_DoesNotSuppressTrivialDoneOutput + TestDiscussionRoute_RetargetsToChatContainer（originator=激活人类）+ e2e 链 A AC-2/AC-3 段"
+      - fr: FR-4
+        title: 多选态 + 合并预览（DiscussionPane 本地 Set 状态 + 预览 Dialog 三段结构）
+        sdd: "SDD §5.1（自研交互定案）"
+        tasks: [CR-2026-012-TASK-07]
+        code: "multica@8cde4c5: packages/views/projects/components/discussion-pane.tsx（selectMode/selected/batch-bar/MergeForwardPreviewDialog）"
+        evidence: "discussion-pane.test.tsx 9 项（升序预览/429 保留多选与预览/取消零副作用/权限分支）"
+      - fr: FR-5
+        title: 合并生成单任务（一次确认 = 1 comment + 1 task，triggerMessage + chatHistory 结构）
+        sdd: "SDD §4.3（DD-7）"
+        tasks: [CR-2026-012-TASK-04]
+        code: "multica@8cde4c5: handler/project_chat.go（MergeForwardDiscussion 端点 + 校验面） + service/project_chat.go（sendProjectChatCore 内核抽取 + buildMergedForwardContent）"
+        evidence: "TestMergeForwardDiscussion_MergesIntoSingleCommentAndTask（三段结构+计数+乱序去重）+ e2e 链 B（claim TriggerCommentContent 全结构断言）"
+      - fr: FR-6
+        title: 升级 CR（register_cr 指令块；无在途 gate 默认勾选，approvalSvc 缺失默认不勾）
+        sdd: "SDD DD-8 + REQ-SUG-002 + TSUG-003"
+        tasks: [CR-2026-012-TASK-04, CR-2026-012-TASK-07]
+        code: "multica@8cde4c5: service/project_chat.go（mergedForwardRegisterCRBlock） + discussion-pane.tsx（register-cr checkbox 默认态读 projectGatesOptions）"
+        evidence: "TestMergeForwardDiscussion_RegisterCRAppendsInstructionBlock + e2e 链 B 反向断言 + gates 报错默认不勾用例"
+      - fr: FR-7
+        title: ChatInput draftAdapter 解耦（ChatInputCore 只认 adapter，默认包装等价）
+        sdd: "SDD DD-9 + §5.2 + §5.4（技术债方案 A）"
+        tasks: [CR-2026-012-TASK-05]
+        code: "multica@8cde4c5: packages/views/chat/components/chat-input.tsx（ChatInputDraftAdapter + ChatInputCore + useGlobalChatDraftAdapter）"
+        evidence: "chat-input.test.tsx 双重锁定 5 项（静态零调用 + 4 行为锁）+ 既有 17 项默认包装回归"
+      - fr: FR-8
+        title: 两面回填（Team Agent / Private Ask 换 ChatInputCore，附件 + 仅成员提及 + 富文本）
+        sdd: "SDD §5.3（DD-10/DD-11）"
+        tasks: [CR-2026-012-TASK-06]
+        code: "multica@8cde4c5: core/projects/project-chat-store.ts（draftAttachments 槽） + editor/extensions/mention-suggestion.tsx（itemTypes 过滤三处） + 两面 composer（project-team-agent-chat.tsx / project-private-ask.tsx）"
+        evidence: "project-chat-store.test.ts 6 项（隔离/联动清附件/旧快照兼容）+ 两面 pane 测试全绿（39 项）"
+    tasks:
+      total: 8
+      all-done: true
+      index: delivery/task/_index.yaml
+      files: "delivery/task/TASK-0.19-CR-2026-012-01..08-*.md"
+    reviews:
+      requirement: { file: change-requests/CR-2026-012/review-annotations/requirement.yml }
+      sdd: { file: change-requests/CR-2026-012/review-annotations/sdd.yml }
+      code: { file: change-requests/CR-2026-012/review-annotations/code.yml }
+    tests:
+      report: change-requests/CR-2026-012/test-report.md
+      status: pass
+      tester: Ray
+      commands: { lint: pass, test: pass, build: pass }
+      uncovered-risks:
+        - "AC-2/3/5 的 daemon 实跑与双浏览器实时、AC-7 真机走查未执行（本环境无运行中 daemon/前端），已列 test-report.md §4 部署前待执行清单"
+        - "Windows 环境 3 项既有失败（builtin_skills CRLF 契约 10 项 + 2 项路径分隔符用例）已在主仓基线核实为环境问题，与本 CR 无关"
+    approvals:
+      requirement:       { approver: OldBoy405, via: crctl-approve, approved-at: "2026-08-03T18:00:48+08:00" }
+      tech-design:       { approver: OldBoy405, via: crctl-approve, approved-at: "2026-08-03T18:43:33+08:00" }
+      development-start: { approver: OldBoy405, via: crctl-approve, approved-at: "2026-08-03T19:01:57+08:00" }
+      code:               { approver: OldBoy405, via: crctl-approve, approved-at: "2026-08-04T00:55:23+08:00" }
+    notes-on-record:
+      - "SDD §4.5 '新 key 零后端改动' 论述不成立（project.go settings 是白名单 patch）：T01 按 team_agent_id 同款补 discussion_coordinator_agent_id 校验分支，DD-1 设计不变"
+      - "SDD 引用的 health_test.go:437 实为 server/internal/daemon/health_test.go（TestRepoCheckoutRejectedForAskOnlyTask），引用已按实际位置理解"
+      - "合并转发持久内容节标题为服务端固定英文（agent-facing，不做 i18n），chat.merged_forward.* locale 键服务前端预览 chrome"
+      - "restore 会话感知用例补显式 rerender：真实 zustand 写通知 vs mock 无订阅机制的差异留痕（注释在测试内）"
+      - "T07 补 GetProjectDiscussion 响应 coordinator_agent_id 字段（SDD §4.5 未定义的读取面），与 GetProjectChat.team_agent_id 形态对齐"
+      - "merge-feature-branch 阶段：knowledge-base 分支与 master 的 _backlog.yml 双向修改产生冲突，rebase 后 force-with-lease 同步（9 个状态推进提交逐一取分支侧权威值）；本地代理 SSL 拦截经命令级环境变量绕开，未改 git 配置"
