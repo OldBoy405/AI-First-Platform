@@ -1,0 +1,112 @@
+cr-id: CR-2026-012
+review-type: code
+reviewer: ai-reviewer
+reviewed-at: "2026-08-04T00:15:38+08:00"
+verdict: pass
+blockers: []
+repair-target: implement-code
+repair-instructions: []
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+      - path: test-report.status
+        equals: pass
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 0
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-08-04T00:15:38+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: implement-code
+suggestions:
+  - id: CODE-SUG-001
+    severity: minor
+    file: "server/internal/handler/discussion_coordinator_e2e_test.go:237-247"
+    issue: >-
+      e2e 链 AC-3 段手动调用 computeCommentAgentTriggers +
+      enqueueSingleCommentTrigger 驱动路由，绕过了生产入口
+      triggerTasksForComment（comment.go:1330，agent 经 mentioning skill 发
+      comment 的实际路径）。该 shim 是既有薄层（isNote 过滤 + suppress 过滤），
+      风险很低，但严格意义上"DC 发路由 comment → 触发"的 HTTP 入口未被 e2e 覆盖。
+    suggestion: >-
+      后续可将 AC-3 段改为经 POST comment handler 驱动（真机 E2E 清单 #3 部署前
+      执行时也会覆盖该入口）；本轮不阻塞。
+  - id: CODE-SUG-002
+    severity: minor
+    file: "server/internal/service/discussion_coordinator.go:120-146"
+    issue: >-
+      RouteDiscussionToTeamAgent 的 comment:created 广播 payload 为手写 map，
+      与 SendProjectChatMessage 的广播组装存在重复；字段漂移时需要两处同步。
+    suggestion: 后续与 sendProjectChatCore 的广播抽成共享 helper；本轮不阻塞。
+  - id: CODE-SUG-003
+    severity: minor
+    file: "server/internal/handler/comment.go:1614-1621"
+    issue: >-
+      filterDiscussionContainerTriggers 的 class ①（激活）不限定 trigger source，
+      thread_parent/conversation 触发指向 DC 时同样放行。这与 SDD DD-2/§6.1 的
+      定案一致（"未来 reply-to 落地时父评论路由触发天然被同一过滤覆盖，零额外
+      改动"，且 Discussion UI 无 reply 入口），但意味着经直连 API 构造 parent_id
+      的回复评论即可激活 DC——行为面比 UI 面宽。
+    suggestion: >-
+      已确认为 SDD 设计定案而非偏离，留痕即可；若未来要求"严格仅 @提及"，在
+      class ① 加 source == mention_agent 一行即可。
+task-coverage:
+  total: 8
+  verified: 8
+  unverified: []
+verification:
+  lint: pass
+  test: pass
+  build: pass
+test-report:
+  file: "change-requests/CR-2026-012/test-report.md"
+  status: pass
+  uncovered-risks:
+    - "真机 E2E 待执行清单（test-report §4，6 项）：daemon/agent runtime 实跑、双浏览器实时、requirement-register 实跑、两面真机走查——部署前独立验收"
+    - "internal/service 的 10 项 builtin_skills 契约测试在本机失败——已核实为 Windows autocrlf 环境性失败（主仓干净基线 44769bbb8 同样失败），与本 CR 代码无关"
+evidence:
+  diff-range: "44769bbb8...91acef8ee"
+  changed-files-count: 38
+  diff-stat: "+3864 / -228"
+  commits: 8
+  changed-files:
+    - server/internal/handler/comment.go
+    - server/internal/handler/daemon.go
+    - server/internal/handler/project.go
+    - server/internal/handler/project_chat.go
+    - server/internal/service/discussion_coordinator.go
+    - server/internal/service/project_chat.go
+    - server/internal/service/task.go
+    - server/internal/agenttmpl/templates/discussion-coordinator.json
+    - server/cmd/server/router.go
+    - packages/views/chat/components/chat-input.tsx
+    - packages/views/projects/components/discussion-pane.tsx
+    - packages/views/projects/components/project-team-agent-chat.tsx
+    - packages/views/projects/components/project-private-ask.tsx
+    - packages/views/editor/extensions/mention-suggestion.tsx
+    - packages/views/editor/content-editor.tsx
+    - packages/core/projects/project-chat-store.ts
+    - packages/core/api/client.ts
+    - "…（含 8 个新增/扩展测试文件与 4 语 locale，全量见 diff-range）"
+  verification-commands:
+    - "go build ./... && go vet ./... —— 通过"
+    - "go test ./internal/handler/ —— ok（含本 CR 新增 5 个测试文件）"
+    - "go test ./internal/agenttmpl/ —— ok"
+    - "go test ./internal/service/ —— 仅 10 项 builtin_skills 环境性失败（主仓基线同败，已核实）"
+    - "pnpm --filter @multica/core test —— 826/826 通过"
+    - "pnpm --filter @multica/views test —— 1866/1866 通过（含 locale parity）"
+    - "tsc --noEmit（core/views 双包）—— 零报错"
+    - "eslint 改动文件（core 3 + views 5）—— 零报错"
+key-findings:
+  - "SDD 契约对齐：DD-1~DD-12 全部落地且与代码一一对应；TSUG-001/002/003 三条评审建议均以机制形式落地（显式 originator parent 链解析 / trivial 抑制容器豁免 / gates isError 默认不勾）"
+  - "红线保持：未配置 DC 时 computeCommentAgentTriggers 对 discussion 容器 return nil 与 CR-2026-009 逐字节等价；配置后仅两类并集放行，DC@DC 自触发显式排除"
+  - "fail-closed 纪律良好：issueIsDiscussionContainer 查询失败回 false（不改变普通抑制）；retarget 对非 DC 署名触发 comment 拒绝处理；settings 读取全分支降级为未配置"
+  - "生产触发链核实闭环：DC 经 mentioning skill 发 comment → triggerTasksForComment（comment.go:1330）→ 两类过滤 → enqueueSingleCommentTrigger retarget；builtin skills 在 claim 时无条件附加（daemon.go:1498），模板 skills:[] 仍具 mentioning"
+  - "ChatInputCore 解耦为结构性事实：Core 组件体内零 useChatStore 引用，默认行为收敛到 useGlobalChatDraftAdapter；双重锁定单测（静态零调用 + 行为路由断言）+ 既有 17 项用例跑在新包装上证明等价"
+  - "安全面：merge-forward 全量选择校验（本项目 discussion 容器归属 + 50 条上限 + 去重）、settings 白名单 patch 补 UUID/工作区存在性校验、AskOnly 按容器 keyed 在 claim 层强制"
