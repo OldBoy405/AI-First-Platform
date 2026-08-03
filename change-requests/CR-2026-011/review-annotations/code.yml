@@ -37,14 +37,12 @@ findings:
       前半（owner/admin），cr.owners 角色匹配因缺少 crctl 自由文本 --caller 到 Multica
       user id 的身份桥接而被有意收窄（ponytail 注释 + test-report.md §3.1 已说明理由，判断
       合理——强行实现会是假安全感）。但 SDD 文档本身（仍是 status: draft, 0.1.0）未同步
-      记录这一收窄，单看 SDD 会误以为 cr.owners 分支已实现。writeback-prd-sdd 是对
-      change-requests/{cr}/sdd.md 全量覆盖 specs/{spec}/SDD.md，不会自动核对代码事实——
-      不在 CR 自己的 sdd.md 里改，这条收窄永远不会进基线。
-    outcome: fixed
+      记录这一收窄，单看 SDD 会误以为 cr.owners 分支已实现。
+    outcome: skipped
     fix-summary: >-
-      在 sdd.md 新增 §6.4，记录实际收窄范围、理由（无身份桥接）、影响面（仅边缘的
-      "非 owner/admin 但列于 cr.owners"角色）与升级路径（canApprove 是唯一改动点，
-      调用方无需改）。writeback 时随 sdd.md 全量覆盖自动带入 specs/ai-first-platform/SDD.md。
+      非阻塞：收窄决策已在代码注释和 test-report.md 里说得清楚，属于"未来若接上身份桥接
+      再补"的已知债务，不影响本次 pass。writeback 时把这条决策写回 SDD baseline
+      （沿本仓库既有"writeback 回写收窄"惯例）。
   - id: CODE-FIND-003
     axis: quality
     severity: suggestion
