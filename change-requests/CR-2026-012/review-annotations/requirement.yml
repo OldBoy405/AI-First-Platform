@@ -1,0 +1,43 @@
+cr-id: CR-2026-012
+review-type: requirement
+reviewer: ai-reviewer
+reviewed-at: "2026-08-03T17:45:21+08:00"
+verdict: pass
+blockers: []
+repair-target: write-requirement-prd
+repair-instructions: []
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 0
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-08-03T17:45:21+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: write-requirement-prd
+review-notes: >-
+  结构完整（概述/US/FR/NFR/AC/指标/排除齐备）；FR→AC 映射全覆盖（FR-1→AC-2/3、
+  FR-2→AC-1/2/3、FR-3→AC-2/3、FR-4/5→AC-4、FR-6→AC-5、FR-7→AC-6、FR-8→AC-7，
+  NFR-1/2 由 AC-1/2 兜底、NFR-4 由 AC-6、NFR-5/6 由 AC-8）；范围合理——排除项
+  全部给出归宿（技能选择器→技术债文档 §7 另议、方案 B 不做、presenter→CR-E
+  并行、切分文档 §0.4 写死项沿用），红线豁免收敛为"DC 显式激活"单开口并要求
+  复验 CR-2026-009 AC-3；与规划对齐（source=交付切分 v2 CR-G 节 + 技术债文档
+  §4.1 方案 A；切分文档 D8 三条验收 ↔ AC-1/2/4/5，D8 节要求 PRD 阶段先定的两处
+  偏差——DC 输出可见性、合并转发自研交互——已在 §1 显式定案且注明 SDD 不得回退；
+  技术债文档 §6 三条验收建议 ↔ AC-6/7）；依赖识别完整（前置 CR-2026-009/
+  CR-2026-006 已交付面逐项列明，CR-E 标注并行不依赖，D1 容量守卫与 P0 Issue→CR
+  升级链路等既有能力引用清晰）。PRD 起草期还识别出切分文档自身的一处设计冲突
+  （"回复 DC 激活"与 §0.4 排除 reply 线程相抵触）并落为技术前提 4 交 SDD 定案，
+  属加分项。
+suggestions:
+  - "REQ-SUG-001: FR-2 的第二种激活方式（回复 DC 消息）依赖技术前提 4 的 SDD 定案，但 AC-2 目前只验证 @提及激活路径；SDD 定案后须回填 AC——补 reply 激活用例，或裁剪为仅 @提及激活并留痕，否则第二激活方式无验收口径"
+  - "REQ-SUG-002: FR-6 '项目尚无关联 CR' 的判定语义未定义（项目可能同时存在多个在途 CR：判定范围是项目下任意在途 CR、还是该讨论/合并转发内容所关联的 CR），SDD 需定案判定规则；同时建议定案合并转发任务是否回填 agent_task_queue.cr_id（CR-2026-011 的 B4 两列已就位），让讨论转执行从第一天就有 CR 归因"
+  - "REQ-SUG-003: FR-3 'DC 协调输出作为 Discussion 消息' 的落地机制需 SDD 显式定案——Discussion 消息流是 discussion 容器 Issue 的 comment 流（CR-D），而 DC 是经 agent_task_queue 执行的任务，任务输出以何种 actor 身份、经何通道回写为 comment、失败/超时的呈现语义，均无法复用 CR-A 的 Team Agent 消息流模型（chat_message 路径），是本 CR 最大的新增后端接缝"
+  - "REQ-SUG-004: 满队反馈的 AC 只覆盖了 DC 路由（AC-3），合并转发确认发送撞上共享队列满的场景未覆盖；测试计划应补该用例（预期同 CR-A 薄发送端点的结构化 429 反馈，多选态与预览内容不丢失）"
