@@ -11,6 +11,8 @@ estimate: 6h
 depends-on: [CR-2026-012-TASK-04]
 assignee: ""
 created: "2026-08-03T18:45:31+08:00"
+spec-id: ai-first-platform
+version: "0.19"
 ---
 
 ## 任务描述
