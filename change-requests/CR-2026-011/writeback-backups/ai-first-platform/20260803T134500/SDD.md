@@ -2,14 +2,14 @@
 id: ai-first-platform-sdd
 spec-id: ai-first-platform
 type: SDD
-cr-ref: CR-2026-011
-cr-history: [CR-2026-001, CR-2026-002, CR-2026-003, CR-2026-004, CR-2026-005, CR-2026-006, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011]
+cr-ref: CR-2026-010
+cr-history: [CR-2026-001, CR-2026-002, CR-2026-003, CR-2026-004, CR-2026-005, CR-2026-006, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010]
 title: AI First 研发协同平台 — 技术设计基线
-target-version: "0.18"
+target-version: "0.17"
 status: ga
 created: "2026-07-30T21:49:02+08:00"
-updated: "2026-08-03T13:45:00+08:00"
-version: v0.9.0
+updated: "2026-08-03T00:50:00+08:00"
+version: v0.8.0
 refs:
   upstream: [ai-first-platform-prd]
   downstream: []
@@ -691,61 +691,6 @@ SQL 上线即对在途任务生效）。`162_atq_project_active_index`：CONCURR
 `(project_id) WHERE status IN (active集)`。`163_project_presenter_grant`：presenter 状态表 +
 两个 partial unique 索引（单 active、单 pending-per-user）。
 
-## P2 CR-F — CR 门禁接合 技术设计（v0.9.0 · CR-2026-011）
-
-> 完整 SDD 见 change-requests/CR-2026-011/sdd.md（含 8 条设计决策 DD-1~DD-8、1 个 migration、
-> FR→设计映射表、AC→验证方式表）；本节为基线摘要。
-
-### 1. 设计要点
-
-- **门禁节点投影器（DD-1/DD-2）**：CR 状态机的合法转移事件投影为每项目的
-  `pipeline_run`/`pipeline_node_run` 两表行（迁移 `162_aifirst_pipeline_runs`，因与
-  CR-2026-008/CR-2026-009 撞号从 161 顺延），`detail JSONB` 存 review 节点的
-  {verdict, blockers[], reviewer, reviewed_at}；投影更新复用既有 `cr:updated` WS 事件
-  （DD-6，零新增事件类型）。
-- **review 事件兜底通道（DD-3）**：daemon commit 扫描新增第 5 类正则匹配
-  `[cr] review-(requirement|tech-design|code) verdict=...`，读取 `review-annotations/{stage}.yml`
-  作为 payload（新 `event_kind=review`），tools/crctl 零改动。
-- **cr_id 归因走 StartTask 回调（DD-4）**：daemon 从任务 workdir 的 git 分支派生 cr_id，
-  服务端校验 cr 表存在同 workspace 行才落列（不信 daemon 自报）；`pipeline_node_run_id`
-  本期无写者、恒 NULL（收窄 PRD FR-2，原因：七路入队点入队时点无 CR 上下文，且审批类
-  gate node_run 本质没有对应队列任务，强行 1:1 关联是虚假数据）。
-- **审批权限收口单函数（DD-5）**：`canApprove` 定案为 workspace owner/admin 单支，
-  `cr.owners` 角色匹配因缺少 crctl 自由文本 `--caller` 到 Multica user id 的身份桥接而收窄
-  （详见 change-requests/CR-2026-011/sdd.md §6.4）；`HandleApprove` 与新增的
-  `GET /api/projects/{id}/gates` 均只依赖这一单点，升级路径是身份桥接就位后仅改
-  `canApprove` 一处。
-- **`GET /api/projects/{projectID}/gates`（DD-2 衍生）**：16 态 CR 徽标 + 待审批卡片
-  （evidence 摘要 + digest + key_id）+ 各 CR 的 gate node 历史，一把返回；整组端点挂在既有
-  `approvalSvc != nil` 条件组下（DD-8），前端 404 静默降级为门禁 UI 不显示。
-- **前端消息流三源合并（DD-7 徽标挂点 + §5.2 CrGateCard）**：`CrStatusBadge` 挂在模式
-  TabsList 右侧（多 CR 取 `updated_at` 最新的非终态者，popover 列全部在途 CR）；
-  `CrGateCard` 三变体（待审批卡/blocked 卡/历史行）按时间戳与评论、Agent 执行卡一起
-  合并进 `TeamAgentStreamView` 的同一时间轴。
-
-### 2. 实现期偏差 / 代码评审发现（TASK 完成记录 + review-code 留痕）
-
-| 项 | 设计 | 实现 | 原因 |
-|---|---|---|---|
-| gate_nodes.detail 序列化 | 未明确类型 | 实现期一度用 `[]byte`（HTTP 响应里被 base64 编码），测试 `TestProjectGatesDetailIsEmbeddedJSONNotBase64` 抓出后改为 `json.RawMessage` | 测试驱动开发发现的真实序列化 bug，非设计缺陷 |
-| gate 节点历史标签 | 假设 `passed` 与 `kind===human_approval` 可独立判断标签 | 实现期发现失败/取消节点被先按 `kind` 分支误标成"审批段名"而非"已取消"，改为先判 `!passed` | 前端测试直接抓出的真实文案 bug |
-| gate 节点 stage 归属 | 假设可直接复用 CR 当前 `pending_stage` | 实现期发现已通过节点的 stage 标签会被 CR 的"当前阶段"覆盖（同一 CR 多阶段场景下历史行会显示错误阶段名），改为服务端 `Stage` 字段 + `stageForNodeID` 反查 | 双端补测试才抓出的数据关联 bug |
-| `TestGrantCrossVerifiesWithCrctl` | 假设路径自动探测能定位 nested worktree 下的 crctl | 该测试因路径不匹配已被静默跳过多个 CR 周期，本次改为显式 `CRCTL_PATH` 环境变量后首次真正跑通 | 关闭一个此前被当作"通过"、实际从未执行的验证缺口 |
-| **[review-code 安全发现]** 审批 evidence 查询跨 workspace 泄露 | `latestEvidence` 只按 `cr_id` 查 `cr_sync_event`，未意识到该表无 `workspace_id` 列而 `cr_id` 仅 workspace 内唯一 | 本 CR 新增的 `/api/projects/{id}/gates` 端点复用同一逻辑，把"另一 workspace 同名 CR 的 evidence 可被本 workspace 看到"这一暴露面从"需直调 API"扩大到"任意项目成员"；review-code 阶段发现并修复：`latestEvidence` 改为 `JOIN cr` 按 `cr.workspace_id` 过滤，新增回归测试 `TestApprovalCardDoesNotLeakEvidenceAcrossWorkspaces`（临时回退验证过确实能捕获该泄露） | 独立评审 subagent + 人工复核发现的真实跨租户数据暴露面，非本 CR 引入但由本 CR 扩大，已在合并前修复 |
-
-### 3. 范围排除
-
-Pipeline Runner（首个 skill 节点写者，`pipeline_node_run_id` 才会有真实写入）、
-审批周边的批量/委派/超时策略，均不在本 CR；见
-`docs/product/CR-F范围排除项-后续交付规划.md` 的后续 CR 规划。
-
-### 4. 数据模型（1 个 migration，162）
-
-`162_aifirst_pipeline_runs`（原编号 161，因与 CR-2026-008/CR-2026-009 撞号顺延）：
-`pipeline_run`/`pipeline_node_run` 两表 + `agent_task_queue.cr_id`/`pipeline_node_run_id`
-两列。`pipeline_node_run.detail JSONB` 是对 P0 §3.4 的单列增补，存 review 节点的
-blocker 明细；`UNIQUE(run_id, node_id, attempt)`。
-
 ## 基线变更记录
 
 | 日期 | 基线版本 | CR | 说明 |
@@ -760,7 +705,6 @@ blocker 明细；`UNIQUE(run_id, node_id, attempt)`。
 | 2026-08-02 | v0.6.0 | CR-2026-009 | 新增 P2 CR-D 里程碑节：discussion 容器同构方案 + 触发豁免单点短路 + migration down→up 真机演练技术设计；3 项实现期偏差/代码评审发现留痕；补齐 frontmatter cr-ref/cr-history/version 漂移 |
 | 2026-08-02 | v0.7.0 | CR-2026-007 | 补跑新增 P2 CR-B 里程碑节：D3 完整形态技术设计（停止入口/撤回=停止同端点+幂等竞态语义/队列明细读侧 opt-in 扩展/过滤开关谓词/既有关联复用）；3 项代码评审发现留痕（initials 去重、冗余条件拍平、prop-drilling 判断性保留）；本 CR 排期先于 CR-C/CR-D（target-version 0.14）但实际回写晚于两者，按版本号插入于 CR-A 与 CR-C 之间，target-version 维持 0.16 不回退 |
 | 2026-08-03 | v0.8.0 | CR-2026-010 | 新增 P2 CR-E 里程碑节：presenter 控制权单表状态机 + claim 串行化键 agent_id→project_id 技术设计（三层竞态防护、通知双通道跨包方案）；3 项实现期偏差/测试驱动发现留痕；target-version 0.16 → 0.17 |
-| 2026-08-03 | v0.9.0 | CR-2026-011 | 新增 P2 CR-F 里程碑节：CR 门禁接合技术设计（门禁节点投影器 + review 事件兜底通道 + Ed25519 签名审批网页化 + CrStatusBadge/CrGateCard 消息流合并）；4 项实现期偏差留痕 + 1 项 review-code 阶段发现并修复的跨 workspace evidence 泄露（`latestEvidence` 补 workspace 过滤）；target-version 0.17 → 0.18 |
 
 ### 实现期与设计的偏差（已在各 TASK 完成记录留痕）
 

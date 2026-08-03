@@ -1,11 +1,11 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 # 五段链路：需求 FR ↔ 技术设计 SDD ↔ 交付 TASK ↔ 代码 merge SHA ↔ CR-ID
 spec-id: ai-first-platform
-cr-ref: CR-2026-010
-cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010]
-target-version: "0.17"
+cr-ref: CR-2026-011
+cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011]
+target-version: "0.18"
 baseline-since: "0.10"
-generated-at: "2026-08-03T01:00:00+08:00"
+generated-at: "2026-08-03T13:45:00+08:00"
 
 # 已知缺口：CR-2026-003~CR-2026-006 未生成本文件的里程碑段（writeback-traceability 在那四个
 # CR 回写时被跳过，PRD.md/SDD.md/_index.yml 侧的累积记录不受影响、仍完整）。本次（CR-2026-008）
@@ -629,3 +629,98 @@ milestones:
       - "T06 composer 自愈合逻辑发现一处真实生产 bug：最初把 presenter 变为 null 当成解锁信号写自动清除 effect，但对普通成员而言 presenter=null 是永久默认拒绝态而非解决——测试驱动开发直接抓出并修正为仅在 presenter.user_id===本人时才清除锁定"
       - "T06 权限面板转让交互未采纳任务文档建议的 TeamAgentSetupPicker 搜索弹层骨架，改为面板内逐行直接放转让按钮——面板已把全部候选成员渲染成可见行，二次弹层是冗余交互，验收条件未受影响"
       - "merge-feature-branch 阶段与已合入的 CR-2026-007/008/009 在 14 个文件上产生真实冲突（router.go、agent.sql、packages/core 数据层、4 语言 projects.json、project-chat-panel.tsx、project-team-agent-chat.tsx(+test)），均为多个 CR 各自独立新增内容在同一文件的不同位置追加，both-side-keep 解决（两处需要真正合并代码逻辑而非简单拼接：TeamAgentStreamView 的合并循环 useMemo 依赖数组需同时纳入两个 CR 各自新增的字段；composer 容器的双 div/双 TeamAgentStreamView 调用需去重合并为一次调用并携带全部 props），解决后 core+views 全量 vitest（815+1837）与 go build/vet 复跑全绿，详见 multica requirement/CR-2026-010 分支 commit aef119773 的合并结果 73fecaeca1"
+  - cr: CR-2026-011
+    milestone: P2 CR-F
+    target-version: "0.18"
+    status: merging
+    owners:
+      requirement: { id: Ray, assigned-at: "2026-08-02T10:00:39+08:00" }
+      development: { id: Ray, assigned-at: "2026-08-02T10:00:39+08:00" }
+      test:        { id: Ray, assigned-at: "2026-08-02T10:00:39+08:00" }
+    prd:
+      file: specs/ai-first-platform/PRD.md
+      section: "P2 CR-F — CR 门禁接合：B4 迁移 + 审批卡/blocker/CR 徽标（v0.9.0 · CR-2026-011）"
+      cr-source: change-requests/CR-2026-011/prd.md
+      revision: "0.1.0"
+    sdd:
+      file: specs/ai-first-platform/SDD.md
+      section: "P2 CR-F — CR 门禁接合 技术设计（v0.9.0 · CR-2026-011）"
+      cr-source: change-requests/CR-2026-011/sdd.md
+      revision: "0.1.0"
+    merge-commits:
+      - repo: multica
+        trunk: main
+        sha: 44769bbb838e5659e9106d6b8314009b230a71a2
+        branch: requirement/CR-2026-011
+        source-sha: b4ff76ee1e1d304baef1c1929d0f587695e0ae7b
+        merged-at: "2026-08-03T13:32:08+08:00"
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 0df2f189701a25c4d6827ba1fb6bff5c8cce88cc
+        branch: requirement/CR-2026-011
+        source-sha: 381373ef4b89f87571371dbe0fbb498026ce26e0
+        merged-at: "2026-08-03T13:31:33+08:00"
+    fr-chain:
+      - fr: FR-1
+        title: B4 迁移（pipeline_run/pipeline_node_run 两表 + agent_task_queue.cr_id/pipeline_node_run_id 两列）
+        sdd: "SDD §3 + DD-1"
+        tasks: [CR-2026-011-TASK-01]
+        code: "multica@44769bbb8: server/migrations/162_aifirst_pipeline_runs.up.sql（原编号 161，因与 CR-2026-008/009 撞号顺延）+ server/pkg/db/queries/agent.sql（CreateRetryTask 克隆清单补两列）"
+        evidence: "migrations 包 3 个 lint 测试全绿；CreateRetryTask 继承断言"
+      - fr: FR-2
+        title: 最小节点运行归因（cr_id 于 StartTask 后置写入，pipeline_node_run_id 本期恒 NULL）
+        sdd: "SDD DD-4 + §4.5 + §6.1（FR-2 收窄论证）"
+        tasks: [CR-2026-011-TASK-04]
+        code: "multica@44769bbb8: server/internal/handler/daemon.go（StartTask TaskStartRequest.cr_id）+ server/internal/service/task.go（AttributeTaskToCR）"
+        evidence: "cr_attribution_test.go：cr_id 落列断言 + 非 CR 任务恒 NULL + pipeline_node_run_id 全表恒 NULL 断言"
+      - fr: FR-3
+        title: 门禁状态条（消息流内 CrGateCard 渲染节点名/类型/门禁状态，WS 实时）
+        sdd: "SDD §5.2"
+        tasks: [CR-2026-011-TASK-06]
+        code: "multica@44769bbb8: packages/views/projects/components/cr-gate-card.tsx + project-team-agent-chat.tsx（TeamAgentStreamView crs 合并循环）"
+        evidence: "cr-gate-card.test.tsx 三变体渲染用例 + project-team-agent-chat.test.tsx 时间戳交织断言"
+      - fr: FR-4
+        title: 审批卡（批准/驳回，服务端签名 grant，非 TTY）
+        sdd: "SDD DD-5 + §4.4"
+        tasks: [CR-2026-011-TASK-04, CR-2026-011-TASK-06]
+        code: "multica@44769bbb8: server/internal/governance/approval.go（HandleApprove canApprove 角色策略）+ project_gates.go（HandleProjectGates）+ cr-gate-card.tsx（ApprovalCard）"
+        evidence: "project_gates_test.go + approval_test.go（含 TestApprovalCardDoesNotLeakEvidenceAcrossWorkspaces review-code 阶段新增回归）；真机 AC-1/AC-6 完整链路见 test-report.md §6"
+      - fr: FR-5
+        title: blocker 列表 + reviewLoop attempt N/3
+        sdd: "SDD DD-3 + §4.2"
+        tasks: [CR-2026-011-TASK-03, CR-2026-011-TASK-06]
+        code: "multica@44769bbb8: server/internal/daemon/crevents.go（review 事件通道）+ gate_projection.go（detail JSONB 投影）+ cr-gate-card.tsx（BlockedCard）"
+        evidence: "gate_review_test.go + crevents_test.go review 事件通道用例"
+      - fr: FR-6
+        title: CR 16 态徽标（chatHeader，WS 实时，多 CR 取最新活跃者）
+        sdd: "SDD DD-7"
+        tasks: [CR-2026-011-TASK-05]
+        code: "multica@44769bbb8: packages/views/projects/components/cr-status-badge.tsx + project-chat-panel.tsx"
+        evidence: "cr-status-badge.test.tsx 含多 CR popover 用例"
+    tasks:
+      total: 7
+      all-done: true
+      index: delivery/task/_index.yaml
+      files: "delivery/task/TASK-0.18-CR-2026-011-01..07-*.md"
+    reviews:
+      code: { reviewer: ai-reviewer, verdict: pass, attempts: 1, final-reviewed-at: "2026-08-03T02:00:00+08:00", file: change-requests/CR-2026-011/review-annotations/code.yml, findings: 3, blockers-fixed: 0, fixed-post-review: 0 }
+    tests:
+      report: change-requests/CR-2026-011/test-report.md
+      status: pass
+      tester: Ray
+      commands: { lint: pass, test: pass, build: pass }
+      uncovered-risks:
+        - "AC-2/3/4/5/7 由 T01-T06 各自 Go/TS 测试套件覆盖，未额外驱动真机浏览器/桌面端人工核对（AC-1/AC-6 已做真机完整链路，风险评估低，见 test-report.md §0/§6）"
+        - "canApprove 未实现 cr.owners 角色分支（仅 workspace owner/admin），因缺少 crctl --caller 到 Multica user id 的身份桥接而有意收窄，SDD §6.4 记录"
+    approvals:
+      requirement:       { approver: OldBoy405, via: crctl-approve }
+      tech-design:       { approver: OldBoy405, via: crctl-approve }
+      development-start: { approver: OldBoy405, via: crctl-approve }
+      code:               { approver: OldBoy405, via: crctl-approve }
+    notes-on-record:
+      - "T02 实现期发现并修正 gate_nodes.detail 序列化 bug：曾用 []byte 导致 HTTP 响应里被 base64 编码，TestProjectGatesDetailIsEmbeddedJSONNotBase64 抓出后改为 json.RawMessage"
+      - "T06 实现期发现并修正 gate 节点历史标签 bug：先判 kind===human_approval 再判 passed，导致失败/取消节点误显示阶段名而非「已取消」，改为先判 !passed"
+      - "T06 实现期发现并修正 gate 节点 stage 归属 bug：已通过节点的 stage 标签被 CR 当前 pending_stage 覆盖，改为服务端 Stage 字段 + stageForNodeID 反查"
+      - "TestGrantCrossVerifiesWithCrctl 此前因环境路径探测问题被静默跳过多个 CR 周期，本次显式传入 CRCTL_PATH 后首次真正跑通，关闭一个此前被当作「通过」实际从未执行的验证缺口"
+      - "review-code 阶段（独立 subagent + 人工复核）发现并修复真实安全缺陷：latestEvidence 只按 cr_id 查 cr_sync_event（该表无 workspace_id 列，cr_id 仅 workspace 内唯一），另一 workspace 同名 CR 的 evidence 可经本 CR 新增的 /api/projects/{id}/gates 端点泄露；改为 JOIN cr 按 workspace_id 过滤，新增回归测试 TestApprovalCardDoesNotLeakEvidenceAcrossWorkspaces（临时回退验证过确实能捕获该泄露）"
+      - "merge-feature-branch 阶段经历两轮与 origin/main 的同步合并（CR-2026-007/008/009 一轮，CR-2026-010 一轮），均为多 CR 各自独立新增内容在同一文件的不同位置追加，both-side-keep 解决；第二轮发现并修正一处静默自动合并缺陷（project-chat-panel.tsx 出现两次 const wsId = useWorkspaceId() 声明，tsc 报重复声明），以及一处迁移编号撞号（CR-2026-010 的 161-163 与本 CR/CR-008/CR-009 已占用编号冲突，顺延为 164-166）；解决后 core+views 全量 vitest（820+1856）、go build/vet、migration lint 复跑全绿"
