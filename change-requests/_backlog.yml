@@ -177,3 +177,178 @@ change-requests:
     created: "2026-08-02T10:00:39+08:00"
     updated: "2026-08-02T10:00:39+08:00"
         merged-at: "2026-08-04T01:24:30+08:00"
+  - id: CR-2026-013
+    title: P3 组织智能 CR-A — AI 成熟度看板数据地基与前端（E1+E2）
+    summary: >-
+      P3 组织智能第一个 CR（交付切分 CR-A，唯一硬前置）：① E1 数据地基——department 表 +
+      成员归属 + maturity-config.yaml 版本化配置 + maturity_snapshot 快照表 +
+      每日 00:30 水位线增量 rollup 任务（照抄 task_usage_rollup_state 模式）。
+      ② E2 看板前端——主应用新 route 复用 packages/views 体系：日期区间选择 +
+      统计条（活跃成员/Token 总消耗/可选估算成本）+ Token 趋势图（可下钻部门/个人/项目/模型）+
+      排名区（部门/个人 Tab，个人榜默认关闭）+ 五维雷达图（AIF/SII/OFI/EPC/ACM 总分 +
+      子指标卡片 + 环比箭头）+ 治理板块（门禁一次通过率/证据漂移/追溯完整率/越权尝试）+
+      隐私与反 Goodhart 约束（个人排名 Owner 显式开启且全员可见、数量指标与质量护栏强制同屏）。
+      不做：独立子域名 iframe（内部平台无隔离发布需要）、精确成本核算（token × 价目表估算，
+      UI 明确标注"估算"）。
+    owner: Ray
+    owners:
+      requirement:
+        id: Ray
+        assigned-at: "2026-08-04T06:52:00+08:00"
+      development:
+        id: Ray
+        assigned-at: "2026-08-04T06:52:00+08:00"
+      test:
+        id: Ray
+        assigned-at: "2026-08-04T06:52:00+08:00"
+    target-version: "0.20"
+    source: "docs/product/P3-组织智能设计.md §1（E1+E2）"
+    prd-path: ""
+    status: drafting
+    created: "2026-08-04T06:52:00+08:00"
+    updated: "2026-08-04T06:52:00+08:00"
+  - id: CR-2026-014
+    title: P3 组织智能 CR-B — Org Admin Workspace 与交付效能板块（E3+E7）
+    summary: >-
+      P3 组织智能第二个 CR（依赖 CR-A 数据地基）：① E3 Org Admin Workspace 内置项目 +
+      周报 Autopilot——内置 Agent 挂每周 Autopilot：读取最近 maturity_snapshot 序列 +
+      治理板块异常 → 生成诊断报告落盘 docs/org-admin/maturity-review-{YYYY-Www}.md →
+      经 inbox 通知 Owner；诊断模板按 AI 净价值四收益一成本框架组织（个人效率/团队交付/
+      知识复利/风险收益 + 成本）；看板「建议」区直接渲染该目录最新文件，历史 = 目录里的
+      历史文件；建议生成过程走 Team Agent 消息流，可追问可继续对话。② E7 交付效能板块 +
+      SII 资产复用率 + AI 净价值叙事条——Lead Time（drafting 首事件 → archived 的时长
+      P50/P90）/ Review 负担（reviewLoop 平均 attempt 数）/ 变更失败率（归档后 14 天内
+      同 spec fix 类 CR 占比）三卡从既有表算出并可下钻；SII 资产复用率（成员发布的 org
+      可见 Skill 被他人项目任务使用次数 / 该成员发布的 Skill 数）；AI 净价值叙事条
+      （时间收益 ← Lead Time 趋势；质量收益 ← 门禁一次通过率 + 变更失败率趋势；知识收益
+      ← 资产复用率；风险收益 ← EVIDENCE_DRIFT/越权尝试下降趋势；成本 ← token × 价目表估算）。
+    owner: Ray
+    owners:
+      requirement:
+        id: Ray
+        assigned-at: "2026-08-04T06:53:00+08:00"
+      development:
+        id: Ray
+        assigned-at: "2026-08-04T06:53:00+08:00"
+      test:
+        id: Ray
+        assigned-at: "2026-08-04T06:53:00+08:00"
+    target-version: "0.21"
+    source: "docs/product/P3-组织智能设计.md §1.4 + §1.2（E3+E7）"
+    prd-path: ""
+    status: drafting
+    created: "2026-08-04T06:53:00+08:00"
+    updated: "2026-08-04T06:53:00+08:00"
+  - id: CR-2026-015
+    title: P3 组织智能 CR-C — 跨 CR 追溯与漂移检测（E4+E5+E9）
+    summary: >-
+      P3 组织智能第三个 CR（追溯与漂移检测线，E4→E5 走 P1 outbox 通道，E9 依赖 P2.5
+      wiki_query_log 已落库）：① E4 trace 事件 + spec_trace 投影 + spec 详情页——
+      writeback-traceability 完成时 crctl outbox 发 trace 事件（event_kind 枚举加一项），
+      payload 即 traceability.yml 内容；spec_trace 表投影进 PG 支撑查询：这个功能（FR）
+      由哪些 CR 演进而来 → 时间线；这次上线的 merge commit / 测试证据 / 评审记录在哪 →
+      一跳直达；某个人经手过哪些 spec → 按 owners 反查。② E5 两个巡检 Autopilot +
+      drift_finding + bypass-commit 探测——基线对齐扫描（review-alignment 检测 PRD↔SDD↔
+      TASK↔代码 drift，每周日夜间每个活跃 spec 一个任务，quality-reviewer-agent 执行只读，
+      drift 写 traceability.yml#drift → outbox → drift_finding 投影 → 严重项进 Owner inbox）+
+      变更影响扫描（change-impact-analysis，trunk 有非 CR 流程直接提交时触发，下游
+      reviews.*.result 置 stale + change-log，同时是「绕过流程写代码」检测器计入治理板块）；
+      drift_finding 表（kind: alignment-drift/impact-stale/bypass-commit，severity:
+      info/warn/block）。③ E9 知识晋升巡检（双信号源）——信号一：问答日志聚类（近 30 天
+      同类问题 ≥3 次且命中文件分散，说明事实源没有一处权威回答，数据源 wiki_query_log）+
+      信号二：open-questions 条目（wiki-maintain Skill 维护 Wiki 时发现的缺口记入
+      wiki/open-questions.md 的 Active 节）；knowledge-agent 每周与 review-alignment 同批
+      执行，两路信号汇总去重 → 自动开普通 Issue「建议将〈主题〉回写事实源」，附问题样本/
+      open-question 条目与建议落点（specs/ 或 docs/）——只开 Issue 不动文件，回写仍走人审
+      的正常 CR/文档流程。
+    owner: Ray
+    owners:
+      requirement:
+        id: Ray
+        assigned-at: "2026-08-04T06:54:00+08:00"
+      development:
+        id: Ray
+        assigned-at: "2026-08-04T06:54:00+08:00"
+      test:
+        id: Ray
+        assigned-at: "2026-08-04T06:54:00+08:00"
+    target-version: "0.22"
+    source: "docs/product/P3-组织智能设计.md §2（E4+E5+E9）"
+    prd-path: ""
+    status: drafting
+    created: "2026-08-04T06:54:00+08:00"
+    updated: "2026-08-04T06:54:00+08:00"
+  - id: CR-2026-016
+    title: P3 组织智能 CR-D — 场景工坊三视图（E8）
+    summary: >-
+      P3 组织智能第四个 CR（依赖 CR-A 看板前端体系，E8 与 E2 同前端技术栈可并行）：
+      场景工坊三视图——同一份数据按角色投影，零新增数据源，复用 packages/views 体系与
+      既有 API。① 需求工坊 /workshop/requirement（PM/需求方）——我相关的 CR 按 16 态
+      分组（cr 投影）+ 待我审批卡片（approval_record pending）+ PRD 快捷入口 +
+      /需求 斜杠命令入口（P2 §6.1）。② 质量中心 /workshop/quality（QA/Tech Lead）——
+      治理板块四+一指标（门禁一次通过率/证据漂移/追溯完整率/越权尝试）+ 当前 blocker
+      列表（pipeline_node_run blocked）+ drift_finding 流（open 优先）+ 越权尝试趋势。
+      ③ 效能驾驶舱 /workshop/dashboard（管理者）——即 CR-A 成熟度看板 + CR-B 交付效能
+      板块 + AI 净价值叙事条（归入工坊概念，不重复开发）。设计约束：工坊是读侧 + 入口，
+      一切写操作（审批、触发 pipeline）跳转到既有交互（审批卡、聊天窗），不开新的写通路
+      ——保证权限与审计路径唯一。开发工坊 = 三模式聊天本身（P2 已交付，不重做）。
+    owner: Ray
+    owners:
+      requirement:
+        id: Ray
+        assigned-at: "2026-08-04T06:54:00+08:00"
+      development:
+        id: Ray
+        assigned-at: "2026-08-04T06:54:00+08:00"
+      test:
+        id: Ray
+        assigned-at: "2026-08-04T06:54:00+08:00"
+    target-version: "0.23"
+    source: "docs/product/P3-组织智能设计.md §4（E8）"
+    prd-path: ""
+    status: drafting
+    created: "2026-08-04T06:54:00+08:00"
+    updated: "2026-08-04T06:54:00+08:00"
+  - id: CR-2026-017
+    title: P3 组织智能 CR-E — 内部 Skill Market（E6）
+    summary: >-
+      P3 组织智能第五个 CR（独立线，与其他 CR 无依赖）：内部 Skill Market——把个人工作流
+      沉淀为组织资产的流通面。① 数据模型扩展——skill 表加 visibility（private/org/builtin，
+      对齐 CodeBanana 私有/组织可见，builtin=tools 包内置）+ version + owner_actor
+      （对齐 agent-skill-matrix 唯一 owns）；skill_usage_event 表（排行与"哪些技能真的被用"，
+      任务完成回调附带 skills_used[] 落库，零额外探针）。② 生命周期——创建（与 Agent
+      对话打包/上传/P2 §7 会话导出草稿）→ 私有库 → Add to Project → 发布到组织（选可见
+      范围，内部版只有 org 一档）→ 版本更新（新版本号）；列表带作者、版本、使用量排行
+      （skill_usage_event 聚合）、运行时要求标签（该 Skill 需要哪些本机 CLI/网络/TTY，
+      从 SKILL.md 前置要求半自动提取）。③ 发布 = 授权——Skill 从 private 升 org 的发布
+      动作即视为作者对"团队复用该工作方法"的显式授权，发布确认框明示此含义；发布校验含
+      敏感信息扫描（API Key/内网凭据/个人路径等模式匹配，复用平台内部敏感判定能力）。
+      ④ 治理钩子——发布/更新时服务端校验（dir-graph.yaml#agents.contract 4 条不变式
+      变成代码）：name+description frontmatter 必填；org 可见 Skill 必须指定唯一
+      owner_actor；SKILL.md 需通过 validate-doc 结构校验（daemon 侧跑）；内置 59 个
+      builtin Skill 只随 tools 包版本更新，Market 内不可编辑。⑤ 资产元数据卡——org 可见
+      Skill 增加 4 个必填 frontmatter 字段：applicable-scenarios（适用场景）/
+      context-dependencies（依赖上下文）/ permission-declaration（能读写哪些目录）/
+      failure-handling（失败后怎么办）；四字段渲染为 Market 详情页"使用说明卡"；
+      permission-declaration 与 P1 rules.json#protectedPaths 做一致性提示；builtin Skill
+      四字段由 tools 包一次性补齐。⑥ 过程记录资产化（可选，P3+）——对接 P2 §7「导出为
+      Skill 草稿」：Team Agent 会话多选 → SKILL.md 草稿 → 私有库 → 人工修订 → 经治理
+      钩子发布；导出草稿带 source: session-export 标记（Market 列表可筛），不单独排期，
+      随 Market 前端顺带。
+    owner: Ray
+    owners:
+      requirement:
+        id: Ray
+        assigned-at: "2026-08-04T06:55:00+08:00"
+      development:
+        id: Ray
+        assigned-at: "2026-08-04T06:55:00+08:00"
+      test:
+        id: Ray
+        assigned-at: "2026-08-04T06:55:00+08:00"
+    target-version: "0.24"
+    source: "docs/product/P3-组织智能设计.md §3（E6）"
+    prd-path: ""
+    status: drafting
+    created: "2026-08-04T06:55:00+08:00"
+    updated: "2026-08-04T06:55:00+08:00"
