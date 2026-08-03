@@ -63,13 +63,12 @@ suggestions:
     suggestion: >-
       已确认为 SDD 设计定案而非偏离，留痕即可；若未来要求"严格仅 @提及"，在
       class ① 加 source == mention_agent 一行即可。
-    outcome: fixed
+    outcome: no_change_needed
     fix-note: >-
-      commit 485f2af90：class ① 加 Source == commentTriggerSourceMentionAgent
-      判断，收紧到严格仅 @提及；新增回归用例"reply to DC-authored parent does
-      not activate"。副作用：SDD DD-2/§6.1 中"未来 reply-to 落地零额外改动"的
-      表述已过时并同步修正为"需放开 source 限定（一行）"——文档-代码一致性
-      已核对。
+      曾短暂在 commit 485f2af90 加 Source == commentTriggerSourceMentionAgent
+      收紧，用户明确要求撤回（保持原 SDD DD-2/§6.1 设计定案：仅按 agentID 过滤，
+      不额外限定 source），已在 commit 5000b4b04 revert 代码与测试，SDD 文字
+      恢复原状。CODE-SUG-003 维持"留痕不改"结论。
 task-coverage:
   total: 8
   verified: 8
@@ -85,10 +84,10 @@ test-report:
     - "真机 E2E 待执行清单（test-report §4，6 项）：daemon/agent runtime 实跑、双浏览器实时、requirement-register 实跑、两面真机走查——部署前独立验收"
     - "internal/service 的 10 项 builtin_skills 契约测试在本机失败——已核实为 Windows autocrlf 环境性失败（主仓干净基线 44769bbb8 同样失败），与本 CR 代码无关"
 evidence:
-  diff-range: "44769bbb8...485f2af90"
+  diff-range: "44769bbb8...5000b4b04"
   changed-files-count: 38
-  diff-stat: "+3864 / -228 (8 TASK commits) + follow-up fix commit 485f2af90 (CODE-SUG-001/003)"
-  commits: 9
+  diff-stat: "+3864 / -228 (8 TASK commits) + CODE-SUG-001 fix (485f2af90) + CODE-SUG-003 tighten-then-revert (485f2af90 -> 5000b4b04, net no-op on comment.go's filter)"
+  commits: 10
   changed-files:
     - server/internal/handler/comment.go
     - server/internal/handler/daemon.go
