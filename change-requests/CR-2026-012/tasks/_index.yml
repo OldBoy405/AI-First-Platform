@@ -1,0 +1,42 @@
+cr-id: CR-2026-012
+tasks:
+  - id: CR-2026-012-TASK-01
+    title: DC 基座：agenttmpl 模板 + settings 读取 + AskOnly claim 规则 + trivial 抑制豁免
+    status: pending
+    estimate: 6h
+    depends-on: []
+  - id: CR-2026-012-TASK-02
+    title: 触发过滤改造：discussion 分支两类并集 + exemption 测试扩展
+    status: pending
+    estimate: 4h
+    depends-on: [CR-2026-012-TASK-01]
+  - id: CR-2026-012-TASK-03
+    title: DC 路由 re-target + originator 显式解析 + 满队 system comment
+    status: pending
+    estimate: 6h
+    depends-on: [CR-2026-012-TASK-02]
+  - id: CR-2026-012-TASK-04
+    title: merge-forward 端点 + 薄发送端点扩 attachment_ids
+    status: pending
+    estimate: 6h
+    depends-on: []
+  - id: CR-2026-012-TASK-05
+    title: ChatInputCore 拆分 + 默认包装 + 双重锁定单测
+    status: pending
+    estimate: 6h
+    depends-on: []
+  - id: CR-2026-012-TASK-06
+    title: project-chat-store 附件槽 + mentionItemTypes 过滤 + 两面回填
+    status: pending
+    estimate: 8h
+    depends-on: [CR-2026-012-TASK-04, CR-2026-012-TASK-05]
+  - id: CR-2026-012-TASK-07
+    title: DiscussionPane 多选态 + 合并预览 Dialog + DC 设置项 + 四语文案
+    status: pending
+    estimate: 6h
+    depends-on: [CR-2026-012-TASK-04]
+  - id: CR-2026-012-TASK-08
+    title: 端到端验收：AC-1~8 全场景（含 DC 只读审计与升级 CR 实跑）
+    status: pending
+    estimate: 6h
+    depends-on: [CR-2026-012-TASK-03, CR-2026-012-TASK-06, CR-2026-012-TASK-07]
