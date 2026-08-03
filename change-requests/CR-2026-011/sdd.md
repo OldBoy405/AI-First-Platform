@@ -200,6 +200,21 @@ CR，断言徽标取 `updated_at` 较新者，popover 两条齐全、状态各�
 审批 API 透出（approval card 只有 digest 指纹没有 blocker 正文，服务端无 git 内容可读）。
 唯一能拿到 blocker 正文的位置是 daemon（有 worktree），故走扫描通道随事件上报。
 
+### 6.4 review-code 发现：DD-5 `canApprove` 实际收窄为 workspace owner/admin 单支
+
+**收窄**：DD-5 原定 `canApprove` = workspace owner/admin ∨ `cr.owners` 对应角色，实现只落地
+了前半支，`cr.owners` 角色匹配未做。理由：crctl 的 `--caller` 是自由文本身份，与 Multica
+`user.id` 之间目前没有身份桥接（既不是 email 也不是 UUID，两边找不到可靠的 join key）；
+在没有这条桥接之前实现 `cr.owners` 匹配，只能瞎猜或按名字模糊匹配，是假安全感而非真校验。
+workspace owner/admin 单支已能满足 PRD FR-4"有权限者可批"的最低要求（历史上
+`HandleApprove` 连这一支都没有，见 §4.4），且不缩小任何既有合法审批人的范围（cr.owners
+里的人在实践中普遍也是 workspace owner/admin）。
+**影响范围**：仅影响"非 owner/admin 但被指定为 cr.owners"这一边缘角色的审批权限，AC-6
+（403/409）验收覆盖的是 owner/admin 分支本身，不受此收窄影响。
+**升级路径**：待平台有身份桥接（如 crctl caller ↔ user.id 映射表）后，在 `canApprove`
+补上 `cr.owners` 分支，无需改动调用方（`HandleApprove`/`HandleProjectGates` 均已只依赖
+`canApprove` 这一单点）。
+
 ## 7. FR → 设计映射
 
 | FR | 落点 |
