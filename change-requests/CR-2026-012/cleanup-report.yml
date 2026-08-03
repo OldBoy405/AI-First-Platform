@@ -1,0 +1,21 @@
+cr-id: CR-2026-012
+status: done
+git-worktree-deregistered: true
+filesystem-removal:
+  knowledge-base:
+    path: ".rayai-worktrees/knowledge-base/requirement/CR-2026-012"
+    removed: true
+    error: ""
+  multica:
+    path: ".rayai-worktrees/multica/requirement/CR-2026-012"
+    removed: true
+    error: "git worktree remove 首次因 node_modules 路径超限失败（Filename too long），git worktree 注册已先移除；随后 Remove-Item -Recurse -Force 清理目录成功"
+remote-branch-removal:
+  ai-first-platform-docs:
+    branch: requirement/CR-2026-012
+    deleted: true
+  multica:
+    branch: requirement/CR-2026-012
+    deleted: true
+preflight: trunk 已包含 merge-commits SHA（master 8304226 / main 8cde4c5）后执行删除
+note: "归档账本提交 b1262ec 已推送；worktree 与远端分支清理全部完成"
