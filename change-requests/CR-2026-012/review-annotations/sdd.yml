@@ -1,0 +1,46 @@
+cr-id: CR-2026-012
+review-type: tech-design
+reviewer: ai-reviewer
+reviewed-at: "2026-08-03T18:41:13+08:00"
+verdict: pass
+blockers: []
+repair-target: write-tech-design
+repair-instructions: []
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 1
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-08-03T18:32:05+08:00"
+      result: block
+      blocker-count: 1
+      repair-target: write-tech-design
+    - attempt: 1
+      reviewed-at: "2026-08-03T18:41:13+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: write-tech-design
+suggestions:
+  - "TSUG-001（已落地 §4.2）：originator 定案为显式解析激活人类（DC 完成 comment 的 parent_id 链），解析失败沿 a2a 直通语义并记日志；任务期核实 resolveOriginatorForIssueTask 穿透能力"
+  - "TSUG-002（已落地 DD-4）：isTrivialDoneOutput 对 discussion 容器任务豁免（机制保证），模板 instructions 双管，AC-2 补边界用例"
+  - "TSUG-003（已落地 §5.1）：projectGates 端点缺失/报错回落默认不勾选（approvalSvc 特性开关环境）"
+fr-coverage:
+  total: 8
+  covered: 8
+  missing: []
+review-notes: >-
+  attempt 1 重审：SDD-BLOCK-001 修复到位——§4.1 过滤谓词改为两类并集（DC 目标触发 ∪
+  DC 作者×team_agent 目标触发），伪代码、调用点说明（daemon.go:2730 completion
+  reconcile 与 comment.go:1358 两路汇入 re-target）、测试分支清单（新增 DC 作者
+  @团队Agent 放行 / @第三方拒 / @DC 自触发拒）三处同步一致；§4.2 前提改为"消费
+  §4.1 第②类触发"，矛盾消除，FR-3/AC-3 链路可达。三条 TSUG 全部升级为 SDD 内
+  显式定案（originator 显式解析+fail-open 留痕、trivial 抑制机制级豁免、gates
+  特性开关回落），非悬空建议。维持 attempt 0 的整体评价：架构取向正确、行号级
+  依据充分、零 migration、可测试性好。FR 覆盖 8/8。
