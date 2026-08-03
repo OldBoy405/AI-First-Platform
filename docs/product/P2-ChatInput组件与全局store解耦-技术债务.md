@@ -108,8 +108,7 @@ interface ChatInputDraftAdapter {
 - 项目内各聊天面各自写一个薄 adapter，接到 `project-chat-store`（CR-A 已建，Private Ask 面
   已在用它存纯文本草稿）的 `{projectId}:{mode}` 命名空间上，草稿隔离语义不变。
 
-**代价**：`ChatInput` 内部的 `useEffect`（`restoreDraftRequest` 处理、focus 管理）需要跟着从
-"直接读 store" 改成"读 adapter 提供的字段"，改动集中在 40 行区间（111–220），不动渲染 JSX。
+**代价**：`ChatInput` 内部对 store 的全部读写点都要从"直接读 store"改为"读 adapter 提供的字段"，实际分布比初稿估计的 40 行（111–220）更广——逐行核实后共四处：① 读订阅点（112–113 `activeSessionId`/`selectedAgentId`、141 `draftKey` 派生、143–150 `inputDraft`/`draftAttachments` 与四个写方法的选择）；② `restoreDraftRequest` effect（186–220，`setInputDraft`/`setInputDraftAttachments` 两处写）；③ `handleUpload`（231，`addInputDraftAttachment`）；④ `handleSend` 的 `commitInput`（284 的 `keyAtSend` 捕获语义、309–312 的 `clearInputDraft` 与 extraDraftKeys 清理）。合计约 112–340 区间（约 230 行），覆盖读、restore、upload、send/commit 全部 store 语义，但均为同一文件内的机械替换，渲染 JSX（342 行起）与 props 接口不变。
 
 ### 4.2 方案 B（更彻底，量级更大）：`ChatInput` 变成完全受控组件
 
@@ -128,7 +127,7 @@ interface ChatInputDraftAdapter {
 
 ## 5. 影响面与工作量估算
 
-- **`chat-input.tsx` 本体改造**：抽 adapter 接口 + 落回默认实现，约 0.5–1 人日（含既有单测
+- **`chat-input.tsx` 本体改造**：抽 adapter 接口 + 落回默认实现，约 1–1.5 人日（四处改动点共约 230 行，按修正后范围；含既有单测
   `chat-input.test.tsx` 回归 + 新增 adapter 分支单测）。
 - **`/chat` 页、浮窗**：零改动（默认行为路径）。
 - **回填 Private Ask 面**：接 adapter 后补附件/@提及，约 0.5 人日（`ChatMessageList`/composer
@@ -137,7 +136,7 @@ interface ChatInputDraftAdapter {
 - **技能选择器**：不在本次范围——它是独立平台缺口（§3.1），需要先有一个技能选择 UI 组件本身
   （目前不存在于任何聊天面），解耦完成后才谈得上"复用到哪些面"。
 
-合计约 1.5–2 人日，纯前端，不涉及后端/数据库改动。
+合计约 2–2.5 人日（本体 1–1.5 + 回填两面各 0.5），纯前端，不涉及后端/数据库改动。
 
 ---
 
