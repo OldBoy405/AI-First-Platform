@@ -30,7 +30,7 @@ owners:
     assigned-at: "2026-08-03T14:55:00+08:00"
 target-version: "0.19"
 source: "docs/product/P2-三模式聊天窗口主体-交付切分.md v2（d7e4ece）CR-G；docs/product/P2-ChatInput组件与全局store解耦-技术债务.md §4.1 方案A"
-status: code-reviewing
+status: code-approved
 created: "2026-08-03T14:55:00+08:00"
 updated: "2026-08-04T00:15:38+08:00"
 remote-ref: ""
