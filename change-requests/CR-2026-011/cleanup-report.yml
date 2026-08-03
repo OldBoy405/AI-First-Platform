@@ -1,0 +1,20 @@
+cr-id: CR-2026-011
+status: cleanup-pending
+git-worktree-deregistered: true
+filesystem-removal:
+  knowledge-base:
+    path: ".rayai-worktrees/knowledge-base/requirement/CR-2026-011"
+    removed: false
+    error: "Device or resource busy — a process still holds an open handle under change-requests/CR-2026-011/"
+  multica:
+    path: ".rayai-worktrees/multica/requirement/CR-2026-011"
+    removed: false
+    error: "Filename too long — Windows long-path limit under node_modules/"
+note: >-
+  git worktree remove unregistered both worktrees from git (git worktree list
+  shows neither, prune found nothing stale); this only affects leftover
+  directories on disk, not the CR's archived state or any git history —
+  archive is fully committed and pushed on both trunks. Retry by closing any
+  process with the knowledge-base path open, then manually rm -rf both paths
+  above (or re-run git worktree remove, which will now report "not a working
+  tree" for git's own bookkeeping but the directories can still be deleted).
