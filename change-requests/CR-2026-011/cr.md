@@ -27,8 +27,10 @@ owners:
 target-version: "0.18"
 source: "docs/product/P2-三模式聊天窗口主体-交付切分.md v2（d7e4ece）CR-F"
 status: archived
+archived-at: "2026-08-03T14:40:00+08:00"
+writeback-spec-id: ai-first-platform
 created: "2026-08-02T10:00:39+08:00"
-updated: "2026-08-02T10:00:39+08:00"
+updated: "2026-08-03T14:40:00+08:00"
 remote-ref: ""
 last-push-at: ""
 last-push-by: ""

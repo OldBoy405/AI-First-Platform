@@ -500,3 +500,59 @@ history:
         branch: requirement/CR-2026-010
         source-sha: aef1197736afada1362b0c49dbf00ecffe3827ed
         merged-at: "2026-08-03T00:30:00+08:00"
+
+  - id: CR-2026-011
+    title: P2 三模式聊天 CR-F — D7 门禁接合（B4 迁移 + 审批卡/blocker/CR 徽标）
+    summary: >-
+      门禁接合：B4 迁移（agent_task_queue 增 cr_id/pipeline_node_run_id 两列）+
+      消息流内门禁状态条——human_approval 审批卡走 P1 服务端签名审批（Ed25519，
+      非 TTY），驳回 reject_reason 注入 review_feedback；review verdict=block 显示
+      blocker 列表 + reviewLoop attempt N/3；chatHeader CR 16 态徽标消费 P1 cr
+      投影表。核心验收：真实 pipeline 网页批准 → 签名 grant → crctl 验签推进，
+      全链路不落 TTY。
+    owner: Ray
+    owners:
+      requirement:
+        id: Ray
+        assigned-at: "2026-08-02T10:00:39+08:00"
+      development:
+        id: Ray
+        assigned-at: "2026-08-02T10:00:39+08:00"
+      test:
+        id: Ray
+        assigned-at: "2026-08-02T10:00:39+08:00"
+    target-version: "0.18"
+    source: "docs/product/P2-三模式聊天窗口主体-交付切分.md v2（d7e4ece）CR-F"
+    prd-path: change-requests/CR-2026-011/prd.md
+    status: archived
+    final-status: archived
+    archive-reason: >-
+      P2 三模式聊天 CR-F 交付完成回写归档：specs/ai-first-platform 累积基线升至 v0.9.0
+      （PRD/SDD 新增 P2 CR-F 里程碑节），target-version 0.17 → 0.18；delivery/task 7
+      项任务全部回写（deliveryIndexComplete 门禁正常放行）。真机验证：AC-1（核心链路）
+      与 AC-6（安全回归）在真实运行的 multica server + 真实 crctl 上完整走通，包括真实
+      Ed25519 签发/验签、真实状态推进、真实 daemon-events 投影回流；AC-2/3/4/5/7 由
+      各 TASK 的 Go/TS 测试套件覆盖，真机浏览器/桌面端人工核对未做，风险评估低。代码
+      评审 pass，3 项发现（1 项 review-code 阶段发现并修复的跨 workspace evidence 泄露
+      安全缺陷——latestEvidence 补 workspace 过滤 + 新回归测试；1 项 SDD DD-5 收窄决策
+      同步进基线 §6.4；1 项继承自既有代码生成脚本的 CI 未接入债务，判断性保留不阻塞）。
+      merge-feature-branch 阶段经历两轮与 origin/main 的同步合并（CR-007/008/009 一轮 +
+      CR-2026-010 一轮），发现并修正一处静默自动合并缺陷（重复 wsId 声明）与一处迁移编号
+      撞号（CR-2026-010 的 161-163 顺延为 164-166）。
+    writeback-spec-id: ai-first-platform
+    archived-at: "2026-08-03T14:40:00+08:00"
+    created: "2026-08-02T10:00:39+08:00"
+    updated-at: "2026-08-03T14:40:00+08:00"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 0df2f189701a25c4d6827ba1fb6bff5c8cce88cc
+        branch: requirement/CR-2026-011
+        source-sha: 381373ef4b89f87571371dbe0fbb498026ce26e0
+        merged-at: "2026-08-03T13:31:33+08:00"
+      - repo: multica
+        trunk: main
+        sha: 44769bbb838e5659e9106d6b8314009b230a71a2
+        branch: requirement/CR-2026-011
+        source-sha: b4ff76ee1e1d304baef1c1929d0f587695e0ae7b
+        merged-at: "2026-08-03T13:32:08+08:00"
