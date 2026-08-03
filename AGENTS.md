@@ -70,3 +70,5 @@ AI First Platform/
 
 5. **状态推进一律走 crctl，禁止手改 `_backlog.yml`/`cr.md` 的 status**（CR-2026-002 merge 期咬过一次）：需要把状态与其他文件放进同一个提交时，用 `crctl advance --to X --trigger Y --expect Z --embedded`——它会跑门禁、发状态事件、把文件留给调用方一起提交。手改的后果是**门禁没跑 + 投影漂移**（当次靠 reconcile 安全网自愈，但那是兜底不是流程）。回写期 `--to writing-back` 还需带 `--spec-id`，否则 specs 落点门禁无法校验。
 6. **specs/ 基线是累积文档，不是最近一次 CR 的副本**：`writeback-prd-sdd` Skill 字面写的是 `cp` 覆盖，直接照做会用单阶段文档覆掉整个平台基线（CR-2026-002 回写时发现 v0.10 基线正是被 cp 成了 CR-2026-001 原文）。正确做法：按里程碑分节累积（节内保留该 CR 原文、H 级下沉一级），FR/AC 跨节引用加里程碑前缀（`M0-FR-3`/`P1-AC-5`），并把旧基线备份进 `change-requests/{CR-ID}/writeback-backups/{spec}/{timestamp}/` 附 metadata.yml。
+7. **YAML 账本类操作禁止会话内现写脚本，一律使用入库的版本化脚本**（CR-2026-012 收尾期咬过一次）：`_backlog.yml`、`traceability.yml`、任务 `_index.yml` 这类账本文件，会话内现写 PowerShell/Python 脚本处理会被转义问题反噬——当次一次坏脚本把 9 个 rebase 冲突块原样提交进历史，事后手工修复。正确做法：账本操作沉淀为入库脚本（如 `../tools/skills/shared/scripts/` 下），版本化、可测试、可复用；会话内只做调用，不现写。
+8. **任务完成即时在 `_index.yml` 标记 done，不积压到回写期补标**（CR-2026-012 回写期咬过一次）：8 个任务做完了但 `_index.yml` 全 `pending`，回写期被迫中断流程补账。正确做法：`implement-code` 完成标志里包含"任务状态已登记 done"，做完一个标一个——回写期补账既打断流程又容易漏标。
