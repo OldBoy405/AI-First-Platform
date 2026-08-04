@@ -80,7 +80,7 @@ updated: "2026-08-04T17:00:00+08:00"
 | TASK-10 | 端到端 merge-tree 零冲突演练（AC-9） | 验证脚本（不入库，一次性演练） |
 | — | fixture 契约同步（F3+F5 复盘落地：`writeBacklog`/`writeCrMd` 默认 owners + `writeCrEntry`） | `fb85faf` |
 
-分支累计 10 个 commit，21 个文件，+490/-112 行（tools 仓 `requirement/CR-2026-018`）。
+分支累计 11 个 commit，22 个文件，+494/-115 行（tools 仓 `requirement/CR-2026-018`；review-code 阶段补 1 个 commit `8c07d7d` 修正 cr-status-set 错误码表，统计行同步修正——原"21 个文件，+490/-112"为编写报告时的过期快照）。
 
 ## 5. 未覆盖风险与不适用说明
 
@@ -92,8 +92,6 @@ updated: "2026-08-04T17:00:00+08:00"
 
 ## 6. 下一步建议
 
-代码审批按用户指示暂缓（不执行 `crctl advance` 至 code-reviewing）。建议下一步：
-
-1. 由人类在交互式终端运行 `crctl approve --stage code`（tools 仓 `requirement/CR-2026-018` 分支 10 个 commit 为评审对象）；
+1. 由人类在交互式终端运行 `crctl approve --stage code`（tools 仓 `requirement/CR-2026-018` 分支 11 个 commit 为评审对象）；
 2. 审批通过后合并分支，并在发布说明中给出 `crctl migrate-backlog` 迁移指引（含"统一 crctl 版本"警告）；
 3. 后续 CR 建议：① AC-9 merge-tree 演练沉淀为入库测试；② P2（账本操作 crctl 子命令化）立项——本 CR 是其前置，现已定型。
