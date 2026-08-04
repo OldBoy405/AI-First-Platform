@@ -5,7 +5,7 @@ cr-ref: CR-2026-019
 title: 治理工具链 — YAML 账本操作收敛为 crctl 子命令（P2）+ AC-9 演练入库 技术设计
 status: draft
 created: "2026-08-04T17:09:39+08:00"
-updated: "2026-08-04T17:09:39+08:00"
+updated: "2026-08-04T17:25:00+08:00"
 ---
 
 # SDD — YAML 账本操作收敛为 crctl 子命令（P2）+ AC-9 演练入库
@@ -106,9 +106,14 @@ function editTaskDone(text, taskId) {
   const block = matchTaskBlock(norm, taskId);
   if (!block) fail('TASK_NOT_FOUND', `${taskId} 不在 tasks/_index.yml`);
   if (/^\s*status:\s*done\b/m.test(block.text)) fail('TASK_ALREADY_DONE', taskId);
-  let nb = block.text.replace(/^(\s*)status:\s*.*$/m, `$1status: done`);
-  if (!/done-at:/.test(nb)) nb = nb.replace(/^(\s*status: done.*)$/m, `$1\n$1`.replace('status: done','done-at: "'+nowIso()+'"'));
-  return norm.slice(0, block.start) + nb + norm.slice(block.end);  // 匹配不到即上面已 fail
+  // status 行替换与 done-at 插入一次完成：replace 回调直接产出两行（同缩进）
+  let hit = false;
+  const nb = block.text.replace(/^(\s*)status:\s*\S.*$/m, (_, indent) => {
+    hit = true;
+    return `${indent}status: done\n${indent}done-at: "${nowIso()}"`;
+  });
+  if (!hit) fail('TASK_INDEX_SHAPE', `${taskId} 块内无 status 行`);   // 匹配不到硬失败（纪律 #1）
+  return norm.slice(0, block.start) + nb + norm.slice(block.end);
 }
 ```
 > matchTaskBlock 用块锚定正则；**匹配失败硬失败**，禁止静默返回原文（纪律 #1，T04 教训）。
