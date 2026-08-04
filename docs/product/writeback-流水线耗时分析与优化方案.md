@@ -77,7 +77,8 @@ CR-2026-019 踩的四个坑（锚点措辞不符、锚点命中两次、非幂�
 
 | 文件类型 | 处理方式 | 理由 |
 |---|---|---|
-| `specs/_index.yml` / `delivery/task/_index.yaml` / `specs/{spec_id}/traceability.yml` | **全量重建**：脚本扫描权威来源、整份重新生成文件 | 天然幂等（重跑结果不变）、没有锚点、不存在"命中两次"，四个坑里三个直接消失 |
+| `delivery/task/_index.yaml` | **全量重建**：脚本扫描 delivery 目录、整份重新生成文件 | 天然幂等（重跑结果不变）、没有锚点、不存在"命中两次"，四个坑里三个直接消失 |
+| `specs/_index.yml` / `specs/{spec_id}/traceability.yml` | **头部/结构化字段更新 + 追加**：字段行级更新（cr-ref/cr-history/current 等）、本 CR 条目/段末尾追加 | 这两个文件是跨 CR 累积产物（含编辑性字段与手工注释），全量重建会摧毁历史（据 CR-2026-020 SDD §8 D3 核实修正：traceability.yml 曾在 PRD 阶段误判为可全量重建，架构设计阶段核实真实文件形态为 989 行跨 CR 累积后修正） |
 | `specs/{spec_id}/PRD.md` / `SDD.md` 的里程碑节追加 | **保留结构锚点纪律**：锚定 frontmatter 字段名 + 行首/缩进，不做语义措辞匹配；锚点唯一性断言失败即硬失败（纪律 #1） | 这是真正的累积性正文，历史里程碑节必须原样保留、无法重建，只能追加 |
 
 对仍需锚点追加的 PRD/SDD 环节，脚本仍应带 dry-run 模式（打印将产生的 diff 不落盘）+ 末尾自检断言，不再单独写 verify 脚本。
