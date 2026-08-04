@@ -1,0 +1,83 @@
+cr-id: CR-2026-020
+review-type: code
+reviewer: ai-reviewer
+reviewed-at: "2026-08-05T01:15:30+08:00"
+verdict: pass
+blockers: []
+repair-target: implement-code
+repair-instructions: []
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+      - path: test-report.status
+        equals: pass
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 1
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-08-05T00:52:00+08:00"
+      result: block
+      blocker-count: 2
+      repair-target: implement-code
+      blockers:
+        - id: CODE-BLOCK-001
+          severity: major
+          file: "tools/skills/writeback/scripts/writeback-tasks.mjs rebuildIndex"
+          issue: "索引全量重建从交付文件 frontmatter 投影 status/target-version——真实文件是 status: pending 且无 target-version 字段，重建会把既有条目 done 翻 pending、target-version 清空；fixture 自造 done 掩盖了真实形态（SDD §0 '七字段可投影'事实基线错误）"
+        - id: CODE-BLOCK-002
+          severity: major
+          file: "writeback-prd-sdd.mjs / writeback-traceability.mjs"
+          issue: "版本入参归一不一致：仅 tasks 剥 v 前缀；pipeline 占位符 'v0.16.0' 形态会产出 'vv0.16.0' 标题、_index current: \"v0.16.0\"、traceability target-version: \"v0.16.0\"，与基线裸值惯例冲突"
+    - attempt: 1
+      reviewed-at: "2026-08-05T01:15:30+08:00"
+      result: pass
+      blocker-count: 0
+      fixed-blockers: [CODE-BLOCK-001, CODE-BLOCK-002]
+      fix: "tools@a113db0：索引改'既有条目逐字保留 + 新增从源数据构造追加'（投影路径整体移除，比单修 status 更彻底——target-version 同类失真一并消除）；三脚本版本入参统一归一（裸值用于标题/_index/traceability，v 前缀仅 PRD/SDD frontmatter version）；fixture 改真实形态（文件 pending/索引 done）+ v 前缀用例。writeback 9/9 + crctl 45/45 全绿，test-report 经 crctl test 重新生成（status: pass）"
+review-dimensions:
+  code-task-sdd-alignment: pass  # 8 TASK 验收条件逐条核对；SDD §3 CLI 契约/错误码/dry-run/自检齐备；attempt 0 两处偏离真实数据形态已修复
+  engineering-quality: pass      # lint/build 不适用（零依赖脚本包，无配置）；test 实跑复核两套件全绿
+  readability: pass              # 三脚本 + lib 注释含设计依据引用（SDD §、blocker ID、真实文件实测），边界注释明确
+  security: pass                 # 账本四类文件只读（AC-4 静态断言入库）；入参存在性校验；先验证后写；无网络/shell 外呼
+  test-coverage: pass            # 9 用例覆盖幂等/锚点/CRLF/硬失败/账本隔离/真实形态保真/v 前缀归一
+  test-evidence-credibility: pass # test-report 由 crctl test 真实退出码生成；未覆盖风险诚实标注（真实基线 dry-run 留回写期自举）
+suggestions:
+  - "6cddb97（write-tech-design SKILL 防漂移边界补丁）是任务清单外搭车 commit，内容无害且主题相关，随本 CR 合入可接受"
+  - "索引 title/estimate 未加引号：ASCII 冒号+空格的标题会产生非法 YAML；当前真实数据安全（全角冒号不触发），后续 CR 可统一加引号（非阻塞）"
+  - "CODE-BLOCK-001 的元教训值得沉淀：'临时目录自造 fixture'必须按真实文件实测形态构造，否则测试全绿也挡不住真实数据损坏——可作为复盘素材"
+task-coverage:
+  total: 8
+  verified: 8
+  unverified: []
+verification:
+  lint: not-applicable   # tools 仓无 lint 配置（零依赖包）
+  test: pass             # writeback 9/9 + crctl 45/45（attempt 1 实跑复核）
+  build: not-applicable  # 纯脚本包
+test-report:
+  file: "change-requests/CR-2026-020/test-report.md"
+  status: pass
+  uncovered-risks:
+    - "真实基线 dry-run 比对留待回写期自举（fixture 已改真实形态，风险收窄未归零）"
+    - "跨平台（Linux/macOS）未实测，normalize 平台无关，风险低"
+evidence:
+  diff-range: "12281e4...a113db0 (tools, origin/custom/main merge-base)"
+  changed-files:
+    - ARCHITECTURE.md
+    - pipeline-templates/feature-writeback.pipeline.json
+    - skills/develop/write-tech-design/SKILL.md
+    - skills/writeback/merge-feature-branch/SKILL.md
+    - skills/writeback/scripts/lib.mjs
+    - skills/writeback/scripts/test/writeback.test.mjs
+    - skills/writeback/scripts/writeback-prd-sdd.mjs
+    - skills/writeback/scripts/writeback-tasks.mjs
+    - skills/writeback/scripts/writeback-traceability.mjs
+    - skills/writeback/writeback-prd-sdd/SKILL.md
+    - skills/writeback/writeback-tasks/SKILL.md
+    - skills/writeback/writeback-traceability/SKILL.md
+  knowledge-base-files:
+    - docs/product/writeback-流水线耗时分析与优化方案.md

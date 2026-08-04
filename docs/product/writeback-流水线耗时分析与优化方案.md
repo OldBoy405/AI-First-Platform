@@ -57,13 +57,13 @@ SKILL.md 只提供**描述性步骤**，精确文件结构、锚点、格式每�
 
 ### 4.1 P0 — 回写机械步骤固化为入库脚本
 
-把三个节点的机械步骤沉淀为 `tools/skills/shared/scripts/` 下的版本化独立脚本，SKILL.md 改为"调用脚本 + 核对 dry-run diff"：
+把三个节点的机械步骤沉淀为 `tools/skills/writeback/scripts/` 下的版本化独立脚本（非 `skills/shared/scripts/`——该路径与 ARCHITECTURE.md §6 否决条目点名路径冲突，落点收窄为 writeback 组内聚目录，范围澄清见 CR-2026-020 SDD §8 D1），SKILL.md 改为"调用脚本 + 核对 dry-run diff"：
 
 | 脚本 | 职责 | 对应 SKILL |
 |---|---|---|
-| `writeback-prd-sdd.mjs` | PRD/SDD 增量回写：frontmatter 更新、历史表追加、里程碑节构造（H 下沉）、specs/_index.yml 全量重建 | writeback-prd-sdd |
+| `writeback-prd-sdd.mjs` | PRD/SDD 增量回写：frontmatter 更新、历史表追加、里程碑节构造（H 下沉）、specs/_index.yml 结构化字段更新（current/cr-ref/cr-history） | writeback-prd-sdd |
 | `writeback-tasks.mjs` | 任务文件拷贝 + frontmatter 补 spec-id/version + delivery/task/_index.yaml 全量重建 | writeback-tasks |
-| `writeback-traceability.mjs` | specs/{spec_id}/traceability.yml 全量重建（唯一权威版本，详见 4.6） | writeback-traceability |
+| `writeback-traceability.mjs` | specs/{spec_id}/traceability.yml 头部字段更新 + 本 CR milestone 段追加（唯一权威版本，详见 4.6；非全量重建，据 CR-2026-020 SDD §8 D3 核实修正） | writeback-traceability |
 
 **不做成 crctl 子命令，不接入 casWriteMulti / CAS 审计基础设施。** 账本（`_backlog.yml`）需要 CAS 是因为它承载状态机、有并发写入语义；specs/delivery 回写的对象是 git 仓里的 markdown/yaml 文件，git 本身就是它们的 CAS 和审计——每次回写一个 commit，diff 可查、可 revert。三个脚本作为独立 `.mjs`（可 import crctl.mjs 中现成的 YAML 解析函数，不重复造轮子）即可，无需借用账本的并发控制机制。
 
@@ -77,7 +77,8 @@ CR-2026-019 踩的四个坑（锚点措辞不符、锚点命中两次、非幂�
 
 | 文件类型 | 处理方式 | 理由 |
 |---|---|---|
-| `specs/_index.yml` / `delivery/task/_index.yaml` / `specs/{spec_id}/traceability.yml` | **全量重建**：脚本扫描权威来源、整份重新生成文件 | 天然幂等（重跑结果不变）、没有锚点、不存在"命中两次"，四个坑里三个直接消失 |
+| `delivery/task/_index.yaml` | **全量重建**：脚本扫描 delivery 目录、整份重新生成文件 | 天然幂等（重跑结果不变）、没有锚点、不存在"命中两次"，四个坑里三个直接消失 |
+| `specs/_index.yml` / `specs/{spec_id}/traceability.yml` | **头部/结构化字段更新 + 追加**：字段行级更新（cr-ref/cr-history/current 等）、本 CR 条目/段末尾追加 | 这两个文件是跨 CR 累积产物（含编辑性字段与手工注释），全量重建会摧毁历史（据 CR-2026-020 SDD §8 D3 核实修正：traceability.yml 曾在 PRD 阶段误判为可全量重建，架构设计阶段核实真实文件形态为 989 行跨 CR 累积后修正） |
 | `specs/{spec_id}/PRD.md` / `SDD.md` 的里程碑节追加 | **保留结构锚点纪律**：锚定 frontmatter 字段名 + 行首/缩进，不做语义措辞匹配；锚点唯一性断言失败即硬失败（纪律 #1） | 这是真正的累积性正文，历史里程碑节必须原样保留、无法重建，只能追加 |
 
 对仍需锚点追加的 PRD/SDD 环节，脚本仍应带 dry-run 模式（打印将产生的 diff 不落盘）+ 末尾自检断言，不再单独写 verify 脚本。
@@ -109,7 +110,7 @@ worktree 清理的 sandbox 权限问题属环境因素，保留既有兜底链�
 
 **删掉 writeback-backups 步骤。** writeback-prd-sdd 现要求回写前把旧版 `specs/{spec_id}/PRD.md`、`SDD.md` 拷到 `change-requests/{cr_id}/writeback-backups/{spec_id}/{timestamp}/` 并写 `metadata.yml`（记录 SHA、时间戳）。回写本身就是一次 git commit，旧版本已完整存在于 git 历史中（`git log`/`git show`/`git revert` 均可直接取用），手工再拷一份是在 git 之上重复实现 git 自带的能力，只会新增文件操作与出错点，且长期无人查阅。`writeback-prd-sdd.mjs` 不再实现此步骤，SKILL.md Step 2 与 Step 6 输出中的"备份位置"一并删除。
 
-**收敛双份 traceability.yml 为单一权威文件。** 现状 `change-requests/{cr_id}/traceability.yml`（需求期/开发期产出）与 `specs/{spec_id}/traceability.yml`（writeback-traceability 节点生成）两份并存、约定后者权威、pipeline 要求二者"保持一致"——这是标准的"两份数据、一份权威"反模式，一旦有人只改了其中一份就会静默分叉，且没有机制能检测分叉。改为：`change-requests/{cr_id}/traceability.yml` 仅作为该 CR 开发期的工作稿，归档后不再维护、不再要求与 specs 侧同步；`specs/{spec_id}/traceability.yml` 是唯一的、跨 CR 累积的权威文件，由 `writeback-traceability.mjs` 全量重建生成（见 4.2）。writeback-traceability 节点不再需要"与 change-requests 侧一致性校验"这道工序。
+**收敛双份 traceability.yml 为单一权威文件。** 现状 `change-requests/{cr_id}/traceability.yml`（需求期/开发期产出）与 `specs/{spec_id}/traceability.yml`（writeback-traceability 节点生成）两份并存、约定后者权威、pipeline 要求二者"保持一致"——这是标准的"两份数据、一份权威"反模式，一旦有人只改了其中一份就会静默分叉，且没有机制能检测分叉。改为：`change-requests/{cr_id}/traceability.yml` 仅作为该 CR 开发期的工作稿，归档后不再维护、不再要求与 specs 侧同步；`specs/{spec_id}/traceability.yml` 是唯一的、跨 CR 累积的权威文件，由 `writeback-traceability.mjs` 以"头部字段更新 + milestone 段末尾追加"方式维护（非全量重建，见 4.2 与 CR-2026-020 SDD §8 D3）。writeback-traceability 节点不再需要"与 change-requests 侧一致性校验"这道工序。
 
 ## 5. 预期收益
 
@@ -132,5 +133,5 @@ worktree 清理的 sandbox 权限问题属环境因素，保留既有兜底链�
 ## 7. 落地建议
 
 1. 以本方案为 PRD 素材立项下一个治理工具链 CR（建议编号 CR-2026-020，前置 CR-2026-019 已归档定型）。
-2. 范围建议：三脚本入库（索引/traceability 类全量重建，PRD/SDD 类锚点追加）+ 三份 SKILL.md 改调 + 事实基线段补充 + 删除 writeback-backups 步骤 + 收敛 traceability.yml 为单一权威文件；不含状态机与账本结构改动，不引入 crctl 子命令或 CAS 机制。
+2. 范围建议：三脚本入库（索引类全量重建、traceability/_index 类头部或结构化字段更新 + 追加、PRD/SDD 类锚点追加）+ 三份 SKILL.md 改调 + 事实基线段补充 + 删除 writeback-backups 步骤 + 收敛 traceability.yml 为单一权威文件；不含状态机与账本结构改动，不引入 crctl 子命令或 CAS 机制。
 3. 验收指标：下一个走完整 writeback 的 CR，流水线耗时 ≤15 min，回写环节零脚本调试循环（基线：CR-2026-019 三次调试循环 + 30 min）。
