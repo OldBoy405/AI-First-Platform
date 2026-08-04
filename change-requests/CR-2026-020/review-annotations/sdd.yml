@@ -1,0 +1,35 @@
+cr-id: CR-2026-020
+review-type: tech-design
+reviewer: ai-reviewer
+reviewed-at: "2026-08-04T22:18:00+08:00"
+verdict: block
+blockers:
+  - id: SDD-BLOCK-001
+    location: "§4.2 writeback-tasks 幂等判据"
+    issue: "SDD 用'目标文件名已存在'作幂等判据，与 PRD FR-2 明确规定的'目标索引中的 id 集合'不一致；且源任务后补 slug 字段重跑时目标文件名变化，同一任务会落两份交付文件，违反 NFR-2/AC-2"
+    suggestion: "幂等判据改为扫描 delivery/task/*.md frontmatter 的 id 集合（索引全量重建后与'索引 id 集合'等价且更稳健），§6 FR-2 行同步修正"
+repair-target: write-tech-design
+repair-instructions:
+  - "修订 sdd.md §4.2：幂等判据改为 delivery/task/*.md frontmatter id 集合；§6 FR-2 行同步"
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 0
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-08-04T22:18:00+08:00"
+      result: block
+      blocker-count: 1
+      repair-target: write-tech-design
+suggestions:
+  - "§8 三处偏差（D1 落点路径 / D2 不抽取 crctl 函数 / D3 traceability 追加模式）已逐条核实证据（ARCHITECTURE.md §6 原文、crctl.mjs:1636 顶层 main() 无导出、specs 侧 989 行累积文件），判定为有据的设计消解，需人工审批时显式确认"
+fr-coverage:
+  total: 9
+  covered: 9
+  missing: []
