@@ -1,5 +1,24 @@
 cr-id: CR-2026-020
 reviews:
+  code:
+    reviewer: ai-reviewer
+    verdict: pass
+    reviewed-at: "2026-08-05T01:15:30+08:00"
+    blocker-count: 0
+    review-loop:
+      current-attempt: 1
+      max-attempts: 3
+      attempts:
+        - attempt: 0
+          reviewed-at: "2026-08-05T00:52:00+08:00"
+          result: block
+          blocker-count: 2
+          repair-target: implement-code
+        - attempt: 1
+          reviewed-at: "2026-08-05T01:15:30+08:00"
+          result: pass
+          blocker-count: 0
+          fixed-blockers: [CODE-BLOCK-001, CODE-BLOCK-002]
   sdd:
     reviewer: ai-reviewer
     verdict: pass
