@@ -1,0 +1,46 @@
+cr-id: CR-2026-019
+review-type: tech-design
+reviewer: ai-reviewer
+reviewed-at: "2026-08-04T17:20:00+08:00"
+verdict: block
+blockers:
+  - id: SDD-BLOCK-001
+    location: "§4.1 task done 伪代码 done-at 插入行"
+    issue: >-
+      `nb.replace(/^(\s*status: done.*)$/m, `$1\n$1`.replace('status: done','done-at: ...'))`
+      中内层 .replace 作用于字面量 "$1\n$1"（不含 'status: done'）为 no-op，
+      实际效果是复制 status 行两遍且永不写入 done-at——照此实现 AC-1（done-at 时间戳断言）必挂。
+      关键算法节的伪代码是实现蓝本，错误会直接传导进 implement-code。
+    suggestion: "改为两步定向替换：先替换 status 行，再在该行后插入同缩进的 done-at 行；或单次替换直接产出两行结果"
+repair-target: write-tech-design
+repair-instructions:
+  - "重写 §4.1 editTaskDone 伪代码的 done-at 插入逻辑：status 行替换与 done-at 行插入必须是可直译为正确代码的表达（如 replace 回调返回 `${indent}status: done\\n${indent}done-at: \"...\"` 两行），并保持'匹配不到硬失败'语义不变"
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 0
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-08-04T17:20:00+08:00"
+      result: block
+      blocker-count: 1
+      repair-target: write-tech-design
+suggestions:
+  - "ARCHITECTURE.md 在本仓与 tools 仓均不存在，架构约束参照 AGENTS.md 与 crctl.mjs 头部约定评审；建议后续 CR 补一份 tools 仓 ARCHITECTURE.md（非本 CR 范围）"
+fr-coverage:
+  total: 7
+  covered: 7
+  missing: []
+review-notes:
+  - "PRD↔SDD 对齐：§6 映射表 FR-1..7 全覆盖，含 FR-2 入参结构化修订（{repo,trunk,sha}，§0 有核实依据，PRD 意图不变）"
+  - "架构合理性：单文件落点、复用 casWrite/auditLog 原语、三子命令不改 status 保住 advance 单一状态写者不变量（纪律 #5）"
+  - "数据模型完整性：三类账本编辑字段与语义明确（§2），audit 记录 schema 给出"
+  - "接口契约：CLI 契约含前置态、行为、错误码（§3），幂等语义明确"
+  - "性能与安全：CAS 复用、casWriteMulti 崩溃窗口有分析与升级路径（ponytail 天花板标注）、行尾纪律与硬失败落到 NFR"
+  - "可测试性：§7.2 测试矩阵覆盖 AC-1/2/3/5/7/8，AC-9 演练入库路径明确"
