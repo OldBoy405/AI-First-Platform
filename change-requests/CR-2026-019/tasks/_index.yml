@@ -1,0 +1,39 @@
+cr-ref: CR-2026-019
+plan-ref: "change-requests/CR-2026-019/plan.md"
+generated-at: "2026-08-04T17:36:00+08:00"
+tasks:
+  - id: CR-2026-019-TASK-01
+    title: 新增 casWriteMulti 双文件原子写原语
+    status: pending
+    estimate: 4h
+    depends-on: []
+  - id: CR-2026-019-TASK-02
+    title: 实现 crctl task done 子命令
+    status: pending
+    estimate: 5h
+    depends-on: []
+  - id: CR-2026-019-TASK-03
+    title: 实现 crctl merge-metadata 子命令
+    status: pending
+    estimate: 5h
+    depends-on: []
+  - id: CR-2026-019-TASK-04
+    title: 实现 crctl archive-move 子命令
+    status: pending
+    estimate: 6h
+    depends-on: ["CR-2026-019-TASK-01"]
+  - id: CR-2026-019-TASK-05
+    title: 测试固化含 AC-9 merge-tree 演练入库
+    status: pending
+    estimate: 8h
+    depends-on: ["CR-2026-019-TASK-02", "CR-2026-019-TASK-03", "CR-2026-019-TASK-04"]
+  - id: CR-2026-019-TASK-06
+    title: 同步三份 SKILL.md 改调子命令并禁手写 YAML
+    status: pending
+    estimate: 4h
+    depends-on: ["CR-2026-019-TASK-02", "CR-2026-019-TASK-03", "CR-2026-019-TASK-04"]
+  - id: CR-2026-019-TASK-07
+    title: 回归与 AC 逐条验收收口
+    status: pending
+    estimate: 4h
+    depends-on: ["CR-2026-019-TASK-05", "CR-2026-019-TASK-06"]
