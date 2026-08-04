@@ -1,0 +1,71 @@
+cr-id: CR-2026-020
+review-type: code
+reviewer: ai-reviewer
+reviewed-at: "2026-08-05T00:52:00+08:00"
+verdict: block
+blockers:
+  - id: CODE-BLOCK-001
+    severity: major
+    file: "tools/skills/writeback/scripts/writeback-tasks.mjs:99-135 rebuildIndex"
+    issue: "索引全量重建从交付文件 frontmatter 投影 status——但真实交付文件 frontmatter 是 status: pending（回写原样拷贝、从不更新，实测 TASK-0.20.1-CR-2026-019-01），真实 _index.yaml 对应条目是 status: done。首次真实重建会把既有全部条目从 done 翻成 pending，静默污染交付索引。测试未捕获：fixture 自造数据把 done 写进了文件 frontmatter，掩盖了真实数据形态（SDD §0 '七字段可投影'事实基线在 status 字段上错误）"
+    suggestion: "status 不投影，固定输出 'done'（delivery/task/ 只经 done 回写进入，SKILL Step 5 亦为字面 done）；同时修 fixture 为真实形态（文件 frontmatter pending、断言重建后索引为 done），防回归"
+  - id: CODE-BLOCK-002
+    severity: major
+    file: "tools/skills/writeback/scripts/writeback-prd-sdd.mjs:42 / writeback-traceability.mjs:135"
+    issue: "版本入参归一不一致：writeback-tasks 剥 v 前缀（verNoV），prd-sdd 与 traceability 不剥。真实惯例是裸版本号（_index current: \"0.20.1\"、traceability target-version: \"0.20.1\"），而 feature-writeback pipeline 的 target_version 输入占位符是 \"v0.16.0\"——照占位符调用 prd-sdd 会产出 'vv0.16.0' 里程碑标题（幂等探针同错）、_index current: \"v0.16.0\"，traceability 会写 target-version: \"v0.16.0\"，三处与既有基线数据约定冲突"
+    suggestion: "prd-sdd 与 traceability 与 tasks 同样在入口归一（verNoV = version.replace(/^v/,'')），裸值用于 heading（v{verNoV}）/_index（current/since）/traceability（target-version），frontmatter version 用 v{verNoV}（对齐真实 PRD.md 的 version: v0.10.0 约定）"
+repair-target: implement-code
+repair-instructions:
+  - "按 CODE-BLOCK-001 修 writeback-tasks.mjs rebuildIndex：status 固定 'done'；test fixture 改为真实形态（源/交付文件 frontmatter status: pending）并断言重建后索引 status: done"
+  - "按 CODE-BLOCK-002 修 writeback-prd-sdd.mjs 与 writeback-traceability.mjs：入口统一剥 v 前缀，heading/_index/traceability 用裸值，PRD/SDD frontmatter version 用 v 前缀形式；补 v 前缀入参用例"
+  - "修复后重跑 crctl test 重新生成 test-report.md（两个 node --test 套件）"
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+      - path: test-report.status
+        equals: pass
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 0
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-08-05T00:52:00+08:00"
+      result: block
+      blocker-count: 2
+      repair-target: implement-code
+suggestions:
+  - "6cddb97（write-tech-design SKILL 防漂移边界补丁）是任务清单外的搭车 commit，内容无害且与本 CR 主题相关，随本 CR 合入可接受——留档说明即可"
+  - "writeback-tasks.mjs 索引 title 未加引号：若未来任务标题含 ASCII 冒号+空格会产生非法 YAML；当前全部真实标题安全（全角冒号不触发），可在后续 CR 统一加 JSON.stringify（非阻塞）"
+task-coverage:
+  total: 8
+  verified: 8
+  unverified: []
+verification:
+  lint: not-applicable   # tools 仓无 lint 配置（零依赖包，无 package.json script）
+  test: pass             # writeback 9/9 + crctl 45/45（评审时实跑复核，与 test-report 一致）
+  build: not-applicable  # 纯脚本包，无构建步骤
+test-report:
+  file: "change-requests/CR-2026-020/test-report.md"
+  status: pass
+  uncovered-risks:
+    - "真实基线 dry-run 比对留待回写期自举（test-report §未覆盖风险 1，已知并接受）"
+    - "CODE-BLOCK-001 证明'临时目录自造 fixture'可掩盖真实数据形态——修复时按 repair-instructions 用真实形态 fixture"
+evidence:
+  diff-range: "12281e4...9a7ccc8 (tools, origin/custom/main merge-base)"
+  changed-files:
+    - ARCHITECTURE.md
+    - pipeline-templates/feature-writeback.pipeline.json
+    - skills/develop/write-tech-design/SKILL.md
+    - skills/writeback/merge-feature-branch/SKILL.md
+    - skills/writeback/scripts/lib.mjs
+    - skills/writeback/scripts/test/writeback.test.mjs
+    - skills/writeback/scripts/writeback-prd-sdd.mjs
+    - skills/writeback/scripts/writeback-tasks.mjs
+    - skills/writeback/scripts/writeback-traceability.mjs
+    - skills/writeback/writeback-prd-sdd/SKILL.md
+    - skills/writeback/writeback-tasks/SKILL.md
+    - skills/writeback/writeback-traceability/SKILL.md
