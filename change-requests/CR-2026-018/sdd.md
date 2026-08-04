@@ -5,7 +5,7 @@ cr-ref: CR-2026-018
 title: 治理工具链 — 状态推进单写 cr.md，_backlog.yml 退化为注册索引（T1-full）技术设计
 status: draft
 created: "2026-08-04T14:00:00+08:00"
-updated: "2026-08-04T14:00:00+08:00"
+updated: "2026-08-04T15:00:00+08:00"
 ---
 
 # SDD — 状态推进单写 cr.md，_backlog.yml 退化为注册索引（T1-full）
@@ -89,13 +89,15 @@ removed-lines: N
 schema: cr-backlog/v1 -> cr-backlog/v2
 ```
 
+**决策（评审 suggestion #2）**：迁移报告**保持 gitignored**，与既有 `.crctl/audit.log` 约定一致——迁移是一次性运维动作而非 CR 交付物，不进 specs 追溯链。库内可追性由迁移 commit message 承载：`[cr] migrate backlog to v2: {N} entries, status->cr.md`（携带条目数与 schema 版本摘要），不额外将报告文件入库。
+
 ## 3. 接口契约
 
 ### 3.1 crctl 子命令行为变化
 
 | 子命令 | 变化 | 输出变化 |
 |---|---|---|
-| `status` | 状态源 cr.md 优先 | `source` 增加 `crMd: <path>`；回退时增加 `legacySource: "_backlog.yml"` 顶层标记 |
+| `status` | 状态源 cr.md 优先；检测到混版布局时告警（见 §3.2 `MIXED_LAYOUT_WARN`） | `source` 增加 `crMd: <path>`；回退时增加 `legacySource: "_backlog.yml"` 顶层标记；混版时增加 `warnings: [MIXED_LAYOUT_WARN]` |
 | `advance` | 只写 cr.md；前置读走 resolveCrState | `files[]` 只含 cr.md；commit 涉及文件减半 |
 | `gate` | 读路径切换，校验逻辑不变 | 无 |
 | `approve` | 前置读与级联 advance 随之切换 | 无 |
@@ -111,6 +113,7 @@ schema: cr-backlog/v1 -> cr-backlog/v2
 | `CR_MD_STATUS_MISSING` | 新布局（backlog v2）下 cr.md 也无 status——无处可读 | fatal |
 | `LEGACY_STATUS_FIELD` | v2 schema 但条目仍含 status 行 | warning |
 | `MIGRATE_STATUS_MISMATCH` | 迁移预检发现 backlog 与 cr.md 状态不一致 | fatal，不写文件 |
+| `MIXED_LAYOUT_WARN` | `status` 命令检测到混版布局迹象：cr.md 与 backlog 双写且不一致、或走了 legacySource 回退（提示 workspace 可能被新旧 crctl 混用，旧版读 v2 布局会静默把 status 读空） | warning（退出码 0，不阻断只读命令） |
 
 ### 3.3 兼容读弃用时间线（评审 suggestion #2 落实）
 
@@ -183,7 +186,7 @@ fixture workspace → 注册 CR-X（分支）推进 3 次状态 → master 侧�
 | FR | 实现位点 | 变更类型 |
 |---|---|---|
 | FR-1 advance 单写 | crctl.mjs :814 删调用、:674-:705 删函数、updateCrMdStatus 硬失败化、:820 add 范围收窄 | 代码 |
-| FR-2 兼容读 | 新增 resolveCrState + readCrMdFrontmatter；:766/:800/:857/:919/:1140 五处改调 | 代码 |
+| FR-2 兼容读 | 新增 resolveCrState + readCrMdFrontmatter；:766/:800/:857/:919/:1140 五处改调；cmdStatus 增混版检测输出 `MIXED_LAYOUT_WARN`（缓解旧版 crctl 读 v2 布局静默读空的运维风险，与 §7 残余风险呼应） | 代码 |
 | FR-3 注册索引 schema v2 | validate（:1018-:1024 段）条目规则调整 + `LEGACY_STATUS_FIELD` 告警 | 代码 |
 | FR-4 探测不变 | :289 无改动（回归断言覆盖） | 仅测试 |
 | FR-5 迁移命令 | 新增 cmdMigrateBacklog + CLI 帮助（:1235 段） | 代码 |
@@ -192,7 +195,9 @@ fixture workspace → 注册 CR-X（分支）推进 3 次状态 → master 侧�
 | FR-8 适配器 | inject-cr-status.mjs 改造（§4.4，PRD 假设修正见 §0）；CI 模板零改动 + 双适配器 fixture 回归 | 代码 + 测试 |
 | FR-9 归档流 | cr-archive 移动条目逻辑保持；final-status 读取源改 cr.md（并入 FR-6 文档修订） | 文档 |
 
-测试增量（AC-10）：现有 21 个用例全绿为回归线；新增 ≥6：单写 diff 断言（AC-1）、新旧布局双向读（AC-2）、validate 三态（AC-3）、迁移成功/失败/幂等（AC-5）、merge-tree 零冲突端到端（AC-9）、cr.md 缺失硬失败（CR_MD_WRITE_FAILED）。
+测试增量（AC-10）：现有 21 个用例全绿为回归线；新增 ≥7：单写 diff 断言（AC-1）、新旧布局双向读（AC-2）、validate 三态（AC-3）、迁移成功/失败/幂等（AC-5）、merge-tree 零冲突端到端（AC-9）、cr.md 缺失硬失败（CR_MD_WRITE_FAILED）、混版布局告警（AC-11）。
+
+**AC-11（对应 FR-2 混版检测）**：构造 cr.md 与 backlog status 双写且不一致的 workspace，`crctl status` 以 cr.md 值为准返回，且输出 `warnings` 含 `MIXED_LAYOUT_WARN`、退出码为 0；构造纯 v2（backlog 无 status、cr.md 有）workspace，`status` 无该告警。
 
 ## 7. 安全与性能考量
 
