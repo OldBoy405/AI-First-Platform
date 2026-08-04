@@ -1,11 +1,11 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 # 五段链路：需求 FR ↔ 技术设计 SDD ↔ 交付 TASK ↔ 代码 merge SHA ↔ CR-ID
 spec-id: ai-first-platform
-cr-ref: CR-2026-012
-cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012]
-target-version: "0.19"
+cr-ref: CR-2026-018
+cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018]
+target-version: "0.20"
 baseline-since: "0.10"
-generated-at: "2026-08-04T01:40:00+08:00"
+generated-at: "2026-08-04T15:40:00+08:00"
 
 # 已知缺口：CR-2026-003~CR-2026-006 未生成本文件的里程碑段（writeback-traceability 在那四个
 # CR 回写时被跳过，PRD.md/SDD.md/_index.yml 侧的累积记录不受影响、仍完整）。本次（CR-2026-008）
@@ -834,3 +834,100 @@ milestones:
       - "restore 会话感知用例补显式 rerender：真实 zustand 写通知 vs mock 无订阅机制的差异留痕（注释在测试内）"
       - "T07 补 GetProjectDiscussion 响应 coordinator_agent_id 字段（SDD §4.5 未定义的读取面），与 GetProjectChat.team_agent_id 形态对齐"
       - "merge-feature-branch 阶段：knowledge-base 分支与 master 的 _backlog.yml 双向修改产生冲突，rebase 后 force-with-lease 同步（9 个状态推进提交逐一取分支侧权威值）；本地代理 SSL 拦截经命令级环境变量绕开，未改 git 配置"
+
+  # 治理工具链 T1-full（v0.20 · CR-2026-018 · archived）
+  - cr: CR-2026-018
+    milestone: T1
+    target-version: "0.20"
+    status: archived
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: d56e1249715511634036ef9c3927f2e8f1b3c5d0
+        branch: requirement/CR-2026-018
+      - repo: tools
+        trunk: custom/main
+        sha: e37c26c4cf2bdcebbaa5a6e707925cd6fcd92081
+        branch: requirement/CR-2026-018
+    frs:
+      - fr: FR-1
+        title: advance 单写 cr.md（删除 updateBacklogStatus 调用路径）
+        sdd: "SDD §4.2 cmdAdvance 改造"
+        tasks: [CR-2026-018-TASK-02]
+        code: "tools@e37c26c: crctl.mjs cmdAdvance/updateCrMdStatus 硬失败化 + add 范围收窄"
+        evidence: "AC-1 测试用例（advance 后 _backlog.yml diff 为空，result.files 仅 cr.md）"
+      - fr: FR-2
+        title: 读取路径切换 + 兼容读（resolveCrState 收敛 5 处）
+        sdd: "SDD §4.1 resolveCrState"
+        tasks: [CR-2026-018-TASK-01]
+        code: "tools@e37c26c: crctl.mjs resolveCrState/readCrMdFrontmatter + cmdStatus/cmdAdvance/cmdApprove/approveWithGrant/cmdNext 改调"
+        evidence: "AC-2a/2b + AC-11 测试用例（v1 回退/v2 权威/混版 cr.md 胜）"
+      - fr: FR-3
+        title: _backlog.yml 退化为注册索引（schema v2 + validate 规则）
+        sdd: "SDD §2.2/§3.1 schema v2"
+        tasks: [CR-2026-018-TASK-03]
+        code: "tools@e37c26c: crctl.mjs validate 段（LEGACY_STATUS_FIELD/漂移告警）"
+        evidence: "AC-3a/3b/3c 测试用例"
+      - fr: FR-4
+        title: workspace 探测不变（_backlog.yml 文件保留）
+        sdd: "SDD §1.2 核心不变量"
+        tasks: [CR-2026-018-TASK-03]
+        code: "零改动（:289 未动）"
+        evidence: "既有 21 用例回归线"
+      - fr: FR-5
+        title: 一次性迁移命令 crctl migrate-backlog
+        sdd: "SDD §4.3 migrate-backlog"
+        tasks: [CR-2026-018-TASK-04]
+        code: "tools@e37c26c: crctl.mjs cmdMigrateBacklog（预检硬失败 + 行级定点删除 + 幂等）"
+        evidence: "AC-5a/5b/5c 测试用例 + 真实 workspace 演练（11 条目迁移后回滚）"
+      - fr: FR-6
+        title: skill 文档同步修订（17 个消费 status 改指向 cr.md）
+        sdd: "SDD §6 FR-6"
+        tasks: [CR-2026-018-TASK-08]
+        code: "tools@e37c26c: 17 个 SKILL.md（含 2 次盘点补漏：list-remote-checkpoints、cr-status-set/cr-inbox）"
+        evidence: "AC-6 grep 断言（9 处命中全为迁移/权威源说明）"
+      - fr: FR-7
+        title: 状态机声明 scope 指向 cr.md
+        sdd: "SDD §6 FR-7"
+        tasks: [CR-2026-018-TASK-07]
+        code: "tools@e37c26c: dir-graph.yaml state_machine.scope"
+        evidence: "AC-7 scope 核对"
+      - fr: FR-8
+        title: 双适配器同版本回归 + 多 IDE hooks 适配器落地
+        sdd: "SDD §0/§4.4 + 多 IDE 扩展"
+        tasks: [CR-2026-018-TASK-06, CR-2026-018-TASK-09]
+        code: "tools@e37c26c: inject-cr-status.mjs 改读 cr.md + adapters/qoder|cursor|codex 三套新适配器"
+        evidence: "AC-8 三种布局 fixture 3/3 PASS + 四 IDE 工具名回归 15/15 PASS"
+      - fr: FR-9
+        title: 归档流兼容（cr-archive final-status 读 cr.md）
+        sdd: "SDD §6 FR-9"
+        tasks: [CR-2026-018-TASK-08]
+        code: "tools@e37c26c: cr-archive SKILL.md Step 3"
+        evidence: "AC-9 merge-tree 零冲突演练 PASS"
+    tasks:
+      total: 10
+      all-done: true
+      index: change-requests/CR-2026-018/tasks/_index.yml
+      files: "change-requests/CR-2026-018/tasks/TASK-01..10.md"
+    reviews:
+      requirement: { file: change-requests/CR-2026-018/review-annotations/requirement.yml }
+      sdd: { file: change-requests/CR-2026-018/review-annotations/sdd.yml }
+      code: { file: change-requests/CR-2026-018/review-annotations/code.yml }
+    tests:
+      report: change-requests/CR-2026-018/test-report.md
+      status: pass
+      tester: Ray
+      commands: { unit: pass, syntax: pass, matrix: pass }
+      uncovered-risks:
+        - "AC-9 merge-tree 演练为会话内一次性脚本，未沉淀入库测试（建议 P2 固化）"
+        - "主仓 _backlog.yml 迁移（v1→v2）在发布动作中执行（本 CR 合并后统一 migrate-backlog）"
+        - "混版布局运维风险：迁移后必须统一 crctl 版本（SDD §7）"
+    approvals:
+      requirement:       { approver: OldBoy405, via: crctl-approve, approved-at: "2026-08-04T08:45:34+08:00" }
+      tech-design:       { approver: OldBoy405, via: crctl-approve, approved-at: "2026-08-04T10:04:06+08:00" }
+      development-start: { approver: OldBoy405, via: crctl-approve, approved-at: "2026-08-04T10:13:56+08:00" }
+      code:               { approver: OldBoy405, via: crctl-approve, approved-at: "2026-08-04T15:13:39+08:00" }
+    notes-on-record:
+      - "测试报告编写前的 AC-6 盘点发现 TASK-08 两处遗漏（cr-status-set 输出段、cr-inbox status-filter），已补漏提交"
+      - "多 IDE hooks 适配器（Qoder/Cursor/Codex）为评审后扩展，与 FR-8 同版本发布约束一致"
+      - "F3+F5 复盘落地：测试 fixture 默认合规模板（writeBacklog/writeCrMd 含 owners + writeCrEntry）"

@@ -470,3 +470,73 @@ tasks:
     cr-ref: CR-2026-012
     target-version: "0.19"
     estimate: 6h
+  - id: CR-2026-018-TASK-01
+    file: TASK-0.20-CR-2026-018-01-*.md
+    title: 新增 resolveCrState，收敛 5 处状态读取点（FR-2）
+    status: done
+    cr-ref: CR-2026-018
+    target-version: "0.20"
+    estimate: 12h
+  - id: CR-2026-018-TASK-02
+    file: TASK-0.20-CR-2026-018-02-*.md
+    title: advance 改为只写 cr.md，删除 updateBacklogStatus 调用（FR-1）
+    status: done
+    cr-ref: CR-2026-018
+    target-version: "0.20"
+    estimate: 10h
+  - id: CR-2026-018-TASK-03
+    file: TASK-0.20-CR-2026-018-03-*.md
+    title: _backlog.yml 升级 schema v2 + validate 规则调整（FR-3）
+    status: done
+    cr-ref: CR-2026-018
+    target-version: "0.20"
+    estimate: 8h
+  - id: CR-2026-018-TASK-04
+    file: TASK-0.20-CR-2026-018-04-*.md
+    title: 新增 crctl migrate-backlog 子命令（FR-5）
+    status: done
+    cr-ref: CR-2026-018
+    target-version: "0.20"
+    estimate: 10h
+  - id: CR-2026-018-TASK-05
+    file: TASK-0.20-CR-2026-018-05-*.md
+    title: crctl 测试套件扩展（AC-1/2/3/5/9/10/11 汇总回归）
+    status: done
+    cr-ref: CR-2026-018
+    target-version: "0.20"
+    estimate: 8h
+  - id: CR-2026-018-TASK-06
+    file: TASK-0.20-CR-2026-018-06-*.md
+    title: inject-cr-status.mjs 改为读 cr.md（FR-8，PRD 假设修正落地）
+    status: done
+    cr-ref: CR-2026-018
+    target-version: "0.20"
+    estimate: 6h
+  - id: CR-2026-018-TASK-07
+    file: TASK-0.20-CR-2026-018-07-*.md
+    title: dir-graph.yaml 状态机 scope 字段更新（FR-7）
+    status: done
+    cr-ref: CR-2026-018
+    target-version: "0.20"
+    estimate: 2h
+  - id: CR-2026-018-TASK-08
+    file: TASK-0.20-CR-2026-018-08-*.md
+    title: 17 个 skill 文档修订 — status 消费点改指向 cr.md（FR-6+FR-9）
+    status: done
+    cr-ref: CR-2026-018
+    target-version: "0.20"
+    estimate: 17h
+  - id: CR-2026-018-TASK-09
+    file: TASK-0.20-CR-2026-018-09-*.md
+    title: 双适配器回归验证（claude-code + CI，含混版 fixture）
+    status: done
+    cr-ref: CR-2026-018
+    target-version: "0.20"
+    estimate: 6h
+  - id: CR-2026-018-TASK-10
+    file: TASK-0.20-CR-2026-018-10-*.md
+    title: 端到端 merge-tree 零冲突演练（AC-9，核心目标验收）
+    status: done
+    cr-ref: CR-2026-018
+    target-version: "0.20"
+    estimate: 6h
