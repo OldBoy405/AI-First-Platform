@@ -1,0 +1,64 @@
+cr-id: CR-2026-019
+review-type: code
+reviewer: ai-reviewer
+reviewed-at: "2026-08-04T19:55:00+08:00"
+verdict: pass
+blockers: []
+repair-target: implement-code
+repair-instructions: []
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+      - path: test-report.status
+        equals: pass
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 0
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-08-04T19:55:00+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: implement-code
+suggestions:
+  - "冗余：matchEntryBlock 内 '- id:' 锚定正则字面量出现两次（crctl.mjs 首/次块扫描），可提为一个共享 const；行为无差异，纯去重"
+  - "冗余（微）：dispatch 与 HELP 文本新增段各多一空行；cmdTaskDone/cmdMergeMetadata/cmdArchiveMove 的 gates 形参未使用（与既有 cmdAttempt 签名惯例一致，保留可接受）"
+  - "audit 摘要 before.from 硬编码 'pending'，而 editTaskDone 实际接受任意非 done 前值；如未来任务状态扩展需改为记录真实前值"
+  - "cr-archive/SKILL.md 旧 Step 4 并入 Step 3 后编号跳变（Step 3 → Step 5），建议顺手重排编号"
+  - "test-report.md tester=OldBoy405 与 cr.md owners.test.id=Ray 不一致，approve-code 时需记录偏差原因（同一人多身份标识）"
+task-coverage:
+  total: 7
+  verified: 7
+  unverified: []
+verification:
+  lint: not-applicable
+  test: pass
+  build: not-applicable
+verification-notes: "tools 仓为零依赖单文件 Node 脚本包，无 package.json/lint/build 链；验证 = node --test 全量 45/45 通过（基线 32 + 本 CR 新增 13）+ import 仅 node:* 内建（NFR-4）核查通过"
+test-report:
+  file: "change-requests/CR-2026-019/test-report.md"
+  status: pass
+  uncovered-risks:
+    - "archive-move 真实文件系统层 CAS 读后改时序黑盒不可注入，已降级为 casWriteMulti 组件级三阶段语义验证（测试文件内有注明），行为契约不变"
+evidence:
+  diff-range: "e37c26c...fb93b88"
+  changed-files:
+    - skills/cr/cr-archive/SKILL.md
+    - skills/develop/implement-code/SKILL.md
+    - skills/shared/crctl/scripts/crctl.mjs
+    - skills/shared/crctl/scripts/test/crctl.test.mjs
+    - skills/writeback/merge-feature-branch/SKILL.md
+review-notes:
+  - "代码↔TASK↔SDD 对齐：TASK-01..07 全覆盖。casWriteMulti 三阶段（全校验→全 temp→连续 rename）与 SDD §4.3 一致，且扩展了 expectedHash=null 语义（_history.yml 首次归档可缺省），扩展合理并有注释与用例"
+  - "单一写入路径不变量（FR-4/纪律 #5）：三子命令均不改 cr.md status、不发 status outbox 事件；状态守卫走 resolveCrState 只读"
+  - "硬失败纪律（纪律 #1）：三个 edit 纯函数入口先 CRLF 归一，matchEntryBlock 抽不到块/status 行匹配不到均 fail，无静默降级路径"
+  - "editTaskDone 块替换补尾部换行修复（fb93b88）有专门回归用例（紧凑多块中间任务不粘连），T04 教训闭环"
+  - "merge-metadata 幂等：sha 双侧 String 归一比较；merge-commits: [] 空数组行正确展开为块；段尾插入点计算含嵌套字段行推进，逻辑正确"
+  - "SKILL.md 同步（FR-6）：三份文档手工编辑步骤全部替换为子命令调用并加纪律 #7 禁令；grep 全仓仅剩 approve-dev-start 一处'不跳过…手工编辑'禁止类措辞，合规"
+  - "冗余检查（用户加验）：无重复实现——matchEntryBlock 为三个 edit 函数唯一共享块锚定器，与 loadBacklogEntry（YAML 解析只读）职责不重叠；前置态守卫三处各一行，提助手函数无净收益，判定保留；其余见 suggestions 四条微冗余，均非 blocker"
+  - "范围纪律：diff 仅 5 文件，无新增文件、无独立脚本库（CR-2026-012 否决项未复活）；_scratch/patch-task10b.mjs 已清理，AC-9 演练固化为常驻用例"
+  - "工作区遗留：ARCHITECTURE.md 与 ARCHITECTURE-template.md 两个未跟踪文件在 tools 仓工作区，非本 CR 范围、未混入本 CR 提交，保持 untracked 正确"

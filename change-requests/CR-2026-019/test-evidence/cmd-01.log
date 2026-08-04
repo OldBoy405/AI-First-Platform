@@ -1,0 +1,58 @@
+$ node --test test/crctl.test.mjs
+(exit=0)
+--- stdout ---
+✔ approve 拒绝非交互式调用（spawnSync 下 stdin 恒非 TTY），无 --stage 之外的旁路参数 (46.3838ms)
+✔ approve 对未知 --stage 直接拒绝（在 TTY 检查之前） (44.6271ms)
+✔ advance：合法转换（drafting -> rejected，无门禁声明的终态）成功 (106.1841ms)
+✔ advance：非法转换（状态机中不存在的 trigger）被拒绝，不写入任何文件 (53.0403ms)
+✔ gate：approval 段哈希与证据文件当前内容一致 -> 通过，不报 EVIDENCE_DRIFT (50.9766ms)
+✔ gate：审批后证据文件被改动 -> approval 段报 EVIDENCE_DRIFT（此前该场景完全检测不到，是本次修的缺口） (51.447ms)
+✔ gate：证据文件仅行尾从 LF 变为 CRLF（autocrlf 检出）-> 不误报 EVIDENCE_DRIFT（CR-2026-001 回写期实测回归） (49.1254ms)
+✔ gate：approval 段缺失字段（未经 crctl approve 写入）-> 拒绝，且不会误判为 EVIDENCE_DRIFT (58.5815ms)
+✔ git：rules.json 缺失 -> SHELL_UNAVAILABLE 结构化错误，不崩溃不放行 (50.2158ms)
+✔ git：rules.json 损坏（非法 JSON）-> SHELL_UNAVAILABLE 结构化错误 (53.4366ms)
+✔ git：rules.json 正常加载后语义与原硬编码表一致（禁子命令/禁旗标仍拦截） (154.6766ms)
+✔ outbox：advance 成功（--no-commit，即 embedded 半边）-> 写入合 schema 的 status 事件且 commit_sha 为 pending: 占位符（CR-2026-003 契约更新，旧契约为空串） (109.8174ms)
+✔ outbox：advance 被拒（非法转换）-> 不写任何事件 (51.629ms)
+✔ outbox：git push 成功 -> checkpoint 事件携带 HEAD sha 与从提交信息提取的 CR-ID（embedded 补全通道） (1119.8681ms)
+✔ digest-vectors：共享测试向量自洽（expected.json 与 §B.2 公式一致），供 Go 侧对照 (0.4415ms)
+✔ gate：evidence-digest（统一字段，多文件 canonical）一致 -> 通过；篡改任一文件 -> EVIDENCE_DRIFT (97.2482ms)
+✔ gate：历史 evidence-sha256-16 字段（废弃）仍被兼容复核，不报错不阻塞（AC-7②） (50.5131ms)
+✔ approve --grant：验签通过 -> 非 TTY 放行，写 server-approve 段并级联 advance（AC-4⑥ 通过路径） (546.4717ms)
+✔ approve --grant：签名伪造 -> SIGNATURE_INVALID；digest 不符 -> EVIDENCE_DRIFT；挪用他 CR -> GRANT_MISMATCH (234.5271ms)
+✔ gate：检出 EVIDENCE_DRIFT -> outbox 出现 audit 事件（payload 只有摘要，无证据内容）；重复 gate 不重复堆积 (97.229ms)
+✔ advance --embedded：连续两次 embedded 的 outbox 事件 commit_sha 均以 pending: 开头且互不相同；非 embedded 仍为真实 HEAD sha (978.3721ms)
+✔ CR-2026-018 AC-1：advance 后 _backlog.yml 内容不变（单写 cr.md） (106.5545ms)
+✔ CR-2026-018 AC-2a：v1 布局回退读（backlog 有 status，cr.md 无） (52.67ms)
+✔ CR-2026-018 AC-2b：v2 布局权威读（backlog 无 status，cr.md 有） (52.9179ms)
+✔ CR-2026-018 AC-3a：validate v1 布局一致，无告警 (51.2712ms)
+✔ CR-2026-018 AC-3b：validate v1 漂移告警（backlog 与 cr.md 不一致） (49.316ms)
+✔ CR-2026-018 AC-3c：validate v2 LEGACY_STATUS_FIELD 告警 (48.4649ms)
+✔ CR-2026-018 AC-5a：migrate-backlog 成功迁移 v1 → v2 (80.0628ms)
+✔ CR-2026-018 AC-5b：migrate-backlog 不一致硬失败 (50.2161ms)
+✔ CR-2026-018 AC-5c：migrate-backlog 幂等（already-migrated） (49.4268ms)
+✔ CR-2026-018：advance 时 cr.md 缺失 → CR_MD_WRITE_FAILED (50.5091ms)
+✔ CR-2026-018 AC-11：混版布局告警（cr.md 与 backlog 不一致） (53.3543ms)
+✔ task done：正常路径 pending→done + done-at + audit 记录（AC-1） (79.336ms)
+✔ task done：不存在的 --task 非零退出且文件无变更（AC-1） (49.1733ms)
+✔ task done：已 done 的任务非零退出且文件无变更（AC-1） (50.7726ms)
+✔ task done：紧凑多块 _index.yml 中标记中间任务不粘连相邻块（T04 教训延伸） (81.243ms)
+✔ task done：非 developing 态非零退出（ILLEGAL_LEDGER_STATE）且无写（AC-5） (50.3424ms)
+✔ merge-metadata：无 merge-commits 键时创建并追加 {repo,trunk,sha}（AC-2） (79.1027ms)
+✔ merge-metadata：已有键时追加 + 同 sha 幂等去重（AC-2） (151.5898ms)
+✔ merge-metadata：非 merging/writing-back 态非零退出且无写（AC-5） (48.7177ms)
+✔ archive-move：正常路径 backlog 移除 + history 富化（final-status/archived-at）（AC-3） (78.4163ms)
+✔ archive-move：重复归档（已在 history）→ ENTRY_ALREADY_IN_HISTORY 且两文件均无变更（AC-3 无半状态） (50.2805ms)
+✔ archive-move：非 archived 态非零退出且无写（AC-5） (48.7866ms)
+✔ casWriteMulti：任一侧 CAS 失配则全部不落盘，无 write/rename（组件级三阶段语义，SDD §4.3） (3.1665ms)
+✔ AC-9：merge-tree 对 _backlog.yml 零冲突（分支推进只写 cr.md，master 注册新 CR）（FR-7/AC-7） (1978.1341ms)
+ℹ tests 45
+ℹ suites 0
+ℹ pass 45
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7469.3241
+
+--- stderr ---
