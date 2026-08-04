@@ -1,16 +1,11 @@
 cr-id: CR-2026-020
 review-type: tech-design
 reviewer: ai-reviewer
-reviewed-at: "2026-08-04T22:18:00+08:00"
-verdict: block
-blockers:
-  - id: SDD-BLOCK-001
-    location: "§4.2 writeback-tasks 幂等判据"
-    issue: "SDD 用'目标文件名已存在'作幂等判据，与 PRD FR-2 明确规定的'目标索引中的 id 集合'不一致；且源任务后补 slug 字段重跑时目标文件名变化，同一任务会落两份交付文件，违反 NFR-2/AC-2"
-    suggestion: "幂等判据改为扫描 delivery/task/*.md frontmatter 的 id 集合（索引全量重建后与'索引 id 集合'等价且更稳健），§6 FR-2 行同步修正"
+reviewed-at: "2026-08-04T22:17:30+08:00"
+verdict: pass
+blockers: []
 repair-target: write-tech-design
-repair-instructions:
-  - "修订 sdd.md §4.2：幂等判据改为 delivery/task/*.md frontmatter id 集合；§6 FR-2 行同步"
+repair-instructions: []
 review-loop:
   pass-condition:
     allOf:
@@ -20,15 +15,33 @@ review-loop:
         isEmpty: true
   on-block: route-to-repair-node
   max-attempts: 3
-  current-attempt: 0
+  current-attempt: 1
   attempts:
     - attempt: 0
-      reviewed-at: "2026-08-04T22:18:00+08:00"
+      reviewed-at: "2026-08-04T22:15:55+08:00"
       result: block
       blocker-count: 1
       repair-target: write-tech-design
+      blockers:
+        - id: SDD-BLOCK-001
+          location: "§4.2 writeback-tasks 幂等判据"
+          issue: "SDD 用'目标文件名已存在'作幂等判据，与 PRD FR-2 规定的'目标索引 id 集合'不一致；slug 后补重跑会落两份交付文件，违反 NFR-2/AC-2"
+    - attempt: 1
+      reviewed-at: "2026-08-04T22:17:30+08:00"
+      result: pass
+      blocker-count: 0
+      fixed-blockers: [SDD-BLOCK-001]
+      fix: "sdd.md §4.2 幂等判据改为扫描 delivery/task/*.md frontmatter 的 id 集合；§6 FR-2 行同步（commit 148b96c）"
+review-dimensions:
+  prd-sdd-alignment: pass    # FR-1~9 全映射（fr-coverage 9/9）；三处偏差 D1/D2/D3 记录于 sdd.md §8，逐条核实有据
+  architecture: pass         # 对照 tools/ARCHITECTURE.md §4 依赖方向、§5 七条不变量、§6 否决表逐条核查：账本只读、零依赖、CRLF+硬失败、不动状态写入口；§3/§6 修订按 §8 维护规则随本 CR 落地
+  data-model: pass           # §2 读写面 + 格式契约完整；traceability 累积形态按真实文件（989 行）核实
+  interface-contract: pass   # §3 CLI 旗标/退出码/错误码/dry-run/状态前置齐备
+  perf-security: pass        # §7 信任边界、账本只读硬边界、先验证后写、无性能敏感点
+  testability: pass          # test/writeback.test.mjs（node --test）覆盖幂等/锚点/CRLF/硬失败路径
 suggestions:
-  - "§8 三处偏差（D1 落点路径 / D2 不抽取 crctl 函数 / D3 traceability 追加模式）已逐条核实证据（ARCHITECTURE.md §6 原文、crctl.mjs:1636 顶层 main() 无导出、specs 侧 989 行累积文件），判定为有据的设计消解，需人工审批时显式确认"
+  - "sdd.md §8 三处 PRD 偏差（D1 落点 skills/writeback/scripts/、D2 不抽取 crctl 函数、D3 traceability 头部更新+段追加）证据已核实（ARCHITECTURE.md §6 原文、crctl.mjs:1636 顶层 main() 无导出、specs 侧累积文件实测），属有据设计消解——请人工审批时显式确认这三条"
+  - "attempt 0 批注中 reviewed-at 曾手写为 22:18:00（先于实际时钟），本版已按 git commit 权威时间（778e40b @22:15:55）修正；后续脚本化后此类时间戳应取自系统时钟而非手填"
 fr-coverage:
   total: 9
   covered: 9
