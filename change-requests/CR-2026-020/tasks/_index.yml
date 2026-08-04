@@ -1,0 +1,41 @@
+tasks:
+  - id: CR-2026-020-TASK-01
+    title: lib.mjs 公共库（CRLF 归一 / frontmatter 读改 / 锚点断言 / dry-run diff / fail）
+    status: pending
+    estimate: 4h
+    depends-on: []
+  - id: CR-2026-020-TASK-02
+    title: writeback-prd-sdd.mjs 入库脚本
+    status: pending
+    estimate: 6h
+    depends-on: [CR-2026-020-TASK-01]
+  - id: CR-2026-020-TASK-03
+    title: writeback-tasks.mjs 入库脚本
+    status: pending
+    estimate: 5h
+    depends-on: [CR-2026-020-TASK-01]
+  - id: CR-2026-020-TASK-04
+    title: writeback-traceability.mjs 入库脚本
+    status: pending
+    estimate: 6h
+    depends-on: [CR-2026-020-TASK-01]
+  - id: CR-2026-020-TASK-05
+    title: test/writeback.test.mjs 回归自检套件
+    status: pending
+    estimate: 4h
+    depends-on: [CR-2026-020-TASK-02, CR-2026-020-TASK-03, CR-2026-020-TASK-04]
+  - id: CR-2026-020-TASK-06
+    title: 三份 writeback SKILL.md 改调 + 事实基线段
+    status: pending
+    estimate: 4h
+    depends-on: [CR-2026-020-TASK-02, CR-2026-020-TASK-03, CR-2026-020-TASK-04]
+  - id: CR-2026-020-TASK-07
+    title: merge-feature-branch 事实基线 + pipeline prompt 修订 + ARCHITECTURE.md §3/§6 修订
+    status: pending
+    estimate: 3h
+    depends-on: []
+  - id: CR-2026-020-TASK-08
+    title: "knowledge-base：优化方案文档 §4.2 traceability 表述修正"
+    status: pending
+    estimate: 1h
+    depends-on: []
