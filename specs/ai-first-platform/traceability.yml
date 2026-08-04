@@ -1,11 +1,11 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 # 五段链路：需求 FR ↔ 技术设计 SDD ↔ 交付 TASK ↔ 代码 merge SHA ↔ CR-ID
 spec-id: ai-first-platform
-cr-ref: CR-2026-018
-cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018]
-target-version: "0.20"
+cr-ref: CR-2026-019
+cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019]
+target-version: "0.20.1"
 baseline-since: "0.10"
-generated-at: "2026-08-04T15:40:00+08:00"
+generated-at: "2026-08-04T20:16:56+08:00"
 
 # 已知缺口：CR-2026-003~CR-2026-006 未生成本文件的里程碑段（writeback-traceability 在那四个
 # CR 回写时被跳过，PRD.md/SDD.md/_index.yml 侧的累积记录不受影响、仍完整）。本次（CR-2026-008）
@@ -931,3 +931,59 @@ milestones:
       - "测试报告编写前的 AC-6 盘点发现 TASK-08 两处遗漏（cr-status-set 输出段、cr-inbox status-filter），已补漏提交"
       - "多 IDE hooks 适配器（Qoder/Cursor/Codex）为评审后扩展，与 FR-8 同版本发布约束一致"
       - "F3+F5 复盘落地：测试 fixture 默认合规模板（writeBacklog/writeCrMd 含 owners + writeCrEntry）"
+  - cr: CR-2026-019
+    milestone: T1.1
+    target-version: "0.20.1"
+    status: archived
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 89ccd9f59b4fe38dd414349f4c43f86ccea96d6c
+        branch: requirement/CR-2026-019
+      - repo: tools
+        trunk: custom/main
+        sha: 790908b86fc4488fd9eaae4603d24cd868b66f94
+        branch: requirement/CR-2026-019
+    frs:
+      - fr: FR-1
+        title: crctl task done 子命令
+        sdd: "SDD §4.1 editTaskDone（块锚定 + done-at 一次替换）"
+        tasks: [CR-2026-019-TASK-02]
+        code: "tools@790908b: crctl.mjs cmdTaskDone/editTaskDone + dispatch case 'task'"
+        evidence: "AC-1 测试用例（正常/不存在/已 done + audit.log 记录）；紧凑多块粘连回归用例"
+      - fr: FR-2
+        title: crctl merge-metadata 子命令
+        sdd: "SDD §4.2 editMergeMetadata（SDD §0 修订契约 --repo/--trunk/--sha）"
+        tasks: [CR-2026-019-TASK-03]
+        code: "tools@790908b: crctl.mjs cmdMergeMetadata/editMergeMetadata（段尾插入 + sha 去重幂等）"
+        evidence: "AC-2 测试用例（无键创建/有键追加/同 sha dup-idempotent）"
+      - fr: FR-3
+        title: crctl archive-move 子命令
+        sdd: "SDD §4.3 editArchiveMove + casWriteMulti 三阶段"
+        tasks: [CR-2026-019-TASK-04, CR-2026-019-TASK-01]
+        code: "tools@790908b: crctl.mjs cmdArchiveMove/editArchiveMove/casWriteMulti"
+        evidence: "AC-3 测试用例（backlog 移除 + history 富化/ENTRY_ALREADY_IN_HISTORY 无半状态/casWriteMulti 组件级原子性）"
+      - fr: FR-4
+        title: 单一写入路径不变量
+        sdd: "SDD §1.2（复用 casWrite/casWriteMulti/auditLog，无独立脚本库）"
+        tasks: [CR-2026-019-TASK-01]
+        code: "tools@790908b: casWriteMulti（全校验→全 temp→连续 rename）+ 三子命令零裸写"
+        evidence: "AC-4 grep 断言（写入全经 CAS/审计、scripts/ 无新增目录、import 仅 node:*）"
+      - fr: FR-5
+        title: 门禁与非法调用防护
+        sdd: "SDD §1.3 前置态守卫（resolveCrState 只读）"
+        tasks: [CR-2026-019-TASK-02, CR-2026-019-TASK-03, CR-2026-019-TASK-04]
+        code: "tools@790908b: 三子命令 ILLEGAL_LEDGER_STATE 守卫（developing/merging+writing-back/archived）"
+        evidence: "AC-5 测试用例（非法前置态非零退出且文件无变更）"
+      - fr: FR-6
+        title: skill 文档同步收敛调用
+        sdd: "SDD §6 FR-6"
+        tasks: [CR-2026-019-TASK-06]
+        code: "tools@790908b: implement-code/merge-feature-branch/cr-archive 三 SKILL.md 改调子命令 + 禁手写 YAML 明文"
+        evidence: "AC-6 grep 断言（三文档均含子命令调用与纪律 #7 禁令，无残留手工编辑指引）"
+      - fr: FR-7
+        title: AC-9 演练入库为测试用例
+        sdd: "SDD §7.2 测试矩阵（固化 _scratch/patch-task10b.mjs）"
+        tasks: [CR-2026-019-TASK-05]
+        code: "tools@790908b: crctl.test.mjs AC-9 merge-tree 零冲突用例"
+        evidence: "AC-7 测试用例（git merge-tree --write-tree 对 _backlog.yml 冲突数=0、exit 0）"
