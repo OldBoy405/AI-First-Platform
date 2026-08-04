@@ -22,7 +22,7 @@ owners:
     assigned-at: "2026-08-04T16:00:00+08:00"
 target-version: tbd
 source: "docs/analysis/CR-2026-012-合并回写归档复盘.md §3.2 P2 + CR-2026-018 测试报告 §6"
-status: developing
+status: code-reviewing
 created: "2026-08-04T16:00:00+08:00"
 updated: "2026-08-04T16:00:00+08:00"
 remote-ref: ""
