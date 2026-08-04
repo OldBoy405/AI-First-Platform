@@ -22,7 +22,9 @@ owners:
     assigned-at: "2026-08-04T12:00:00+08:00"
 target-version: tbd
 source: "docs/analysis/CR-2026-012-合并回写归档复盘.md §3.1 T1-full"
-status: writing-back
+status: archived
+archived-at: "2026-08-04T15:50:00+08:00"
+writeback-spec-id: ai-first-platform
 created: "2026-08-04T12:00:00+08:00"
 updated: "2026-08-04T12:00:00+08:00"
 remote-ref: ""
