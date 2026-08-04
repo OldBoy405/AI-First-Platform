@@ -26,7 +26,7 @@ owners:
     assigned-at: "2026-08-04T21:38:00+08:00"
 target-version: tbd
 source: "docs/product/writeback-流水线耗时分析与优化方案.md"
-status: requirement-approved
+status: tech-designing
 created: "2026-08-04T21:38:00+08:00"
 updated: "2026-08-04T21:38:00+08:00"
 remote-ref: ""
