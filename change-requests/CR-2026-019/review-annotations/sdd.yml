@@ -1,20 +1,11 @@
 cr-id: CR-2026-019
 review-type: tech-design
 reviewer: ai-reviewer
-reviewed-at: "2026-08-04T17:20:00+08:00"
-verdict: block
-blockers:
-  - id: SDD-BLOCK-001
-    location: "§4.1 task done 伪代码 done-at 插入行"
-    issue: >-
-      `nb.replace(/^(\s*status: done.*)$/m, `$1\n$1`.replace('status: done','done-at: ...'))`
-      中内层 .replace 作用于字面量 "$1\n$1"（不含 'status: done'）为 no-op，
-      实际效果是复制 status 行两遍且永不写入 done-at——照此实现 AC-1（done-at 时间戳断言）必挂。
-      关键算法节的伪代码是实现蓝本，错误会直接传导进 implement-code。
-    suggestion: "改为两步定向替换：先替换 status 行，再在该行后插入同缩进的 done-at 行；或单次替换直接产出两行结果"
+reviewed-at: "2026-08-04T17:28:00+08:00"
+verdict: pass
+blockers: []
 repair-target: write-tech-design
-repair-instructions:
-  - "重写 §4.1 editTaskDone 伪代码的 done-at 插入逻辑：status 行替换与 done-at 行插入必须是可直译为正确代码的表达（如 replace 回调返回 `${indent}status: done\\n${indent}done-at: \"...\"` 两行），并保持'匹配不到硬失败'语义不变"
+repair-instructions: []
 review-loop:
   pass-condition:
     allOf:
@@ -24,13 +15,25 @@ review-loop:
         isEmpty: true
   on-block: route-to-repair-node
   max-attempts: 3
-  current-attempt: 0
+  current-attempt: 1
   attempts:
     - attempt: 0
       reviewed-at: "2026-08-04T17:20:00+08:00"
       result: block
       blocker-count: 1
       repair-target: write-tech-design
+    - attempt: 1
+      reviewed-at: "2026-08-04T17:28:00+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: write-tech-design
+fixed-blockers:
+  - id: SDD-BLOCK-001
+    fixed-at: "2026-08-04T17:25:00+08:00"
+    fix: >-
+      §4.1 done-at 插入重写为 replace 回调一次产出两行（同缩进 status: done + done-at），
+      新增 hit 标志，匹配不到 fail('TASK_INDEX_SHAPE')——硬失败语义保持（纪律 #1）。
+      commit 9aba1b8。
 suggestions:
   - "ARCHITECTURE.md 在本仓与 tools 仓均不存在，架构约束参照 AGENTS.md 与 crctl.mjs 头部约定评审；建议后续 CR 补一份 tools 仓 ARCHITECTURE.md（非本 CR 范围）"
 fr-coverage:
@@ -44,3 +47,4 @@ review-notes:
   - "接口契约：CLI 契约含前置态、行为、错误码（§3），幂等语义明确"
   - "性能与安全：CAS 复用、casWriteMulti 崩溃窗口有分析与升级路径（ponytail 天花板标注）、行尾纪律与硬失败落到 NFR"
   - "可测试性：§7.2 测试矩阵覆盖 AC-1/2/3/5/7/8，AC-9 演练入库路径明确"
+  - "attempt 1 复核：SDD-BLOCK-001 修复确认，§4.1 伪代码可直译为正确实现且保持匹配失败硬报错"
