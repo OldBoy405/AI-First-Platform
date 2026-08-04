@@ -375,6 +375,19 @@ change-requests:
     target-version: tbd
     source: "docs/analysis/CR-2026-012-合并回写归档复盘.md §3.1 T1-full"
     prd-path: "change-requests/CR-2026-018/prd.md"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: d56e1249715511634036ef9c3927f2e8f1b3c5d0
+        branch: requirement/CR-2026-018
+        source-sha: 5f723cc9d321b5c729777efea08cf2d9eb0310d3
+        merged-at: "2026-08-04T15:25:00+08:00"
+      - repo: tools
+        trunk: custom/main
+        sha: e37c26c4cf2bdcebbaa5a6e707925cd6fcd92081
+        branch: requirement/CR-2026-018
+        source-sha: 2062969ce5ae8ab169063cb07f0017c63457e548
+        merged-at: "2026-08-04T15:25:00+08:00"
     status: developing
     updated-at: "2026-08-04T10:13:56+08:00"
     created: "2026-08-04T12:00:00+08:00"
