@@ -116,8 +116,10 @@ SDD.md 同法。specs/_index.yml：定位 "- id: {spec}" 块 → 字段行级更
 ### 4.2 writeback-tasks
 
 ```
+扫描 delivery/task/*.md frontmatter 收集已交付 id 集合（幂等唯一判据，同 PRD FR-2；
+  索引全量重建后与"索引 id 集合"等价，且对 slug 后补导致的文件名变化稳健）
 读 CR tasks/_index.yml（只读）筛 status=done → 对每个任务：
-  目标文件名已存在于 delivery/task/ → 跳过（幂等）
+  其 id ∈ 已交付集合 → 跳过（幂等，不看文件名、不比内容）
   否则拷贝 + frontmatter 闭合 --- 前插入 spec-id/version 两行
 全量重建 delivery/task/_index.yaml：扫描 delivery/task/*.md frontmatter 投影七字段，
   顺序 = 既有 id 原序 + 新增按 id 排序（§2.2）
@@ -157,7 +159,7 @@ SDD.md 同法。specs/_index.yml：定位 "- id: {spec}" 块 → 字段行级更
 | FR | 实现 |
 |---|---|
 | FR-1 | §4.1 脚本 + `--brief` 入参；AC-1 由 test/writeback.test.mjs 断言（含 brief 落位，回应需求评审 suggestion-1） |
-| FR-2 | §4.2 脚本（幂等=目标文件名 + 索引重建天然幂等） |
+| FR-2 | §4.2 脚本（幂等=扫描 delivery/task/*.md frontmatter 的 id 集合，同 FR-2 字面；索引重建天然幂等） |
 | FR-3 | §4.3 脚本；**偏差：全量重建→头部更新+段追加**（§8-D3） |
 | FR-4 | §1.1 落点 + §5 选型；**偏差：路径与"抽取共享模块"**（§8-D1/D2）；不接 CAS/审计/门禁，账本只读 |
 | FR-5 | 三类处理精化为：重建（delivery 索引）/ 结构化字段更新（specs/_index、traceability 头部）/ 锚点追加（PRD/SDD 节、traceability 段——均为 EOF 追加 + 行级 frontmatter 锚点） |
