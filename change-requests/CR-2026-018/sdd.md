@@ -190,7 +190,7 @@ fixture workspace → 注册 CR-X（分支）推进 3 次状态 → master 侧�
 | FR-3 注册索引 schema v2 | validate（:1018-:1024 段）条目规则调整 + `LEGACY_STATUS_FIELD` 告警 | 代码 |
 | FR-4 探测不变 | :289 无改动（回归断言覆盖） | 仅测试 |
 | FR-5 迁移命令 | 新增 cmdMigrateBacklog + CLI 帮助（:1235 段） | 代码 |
-| FR-6 skill 文档修订（16 个消费 status；另 15 个仅引用路径不改） | cr-archive（Step 3 条目移动以 cr.md final-status 为准）、cr-dashboard（状态分组改扫 cr.md）、cr-inbox、cr-review-record、cr-status-set（契约描述）、approve-code / approve-dev-start / approve-tech-design / approve-requirement（前置读描述）、analyze-current-product、focus-briefing、requirement-register（**注册时新条目不再写 status/updated-at 字段，status 只落 cr.md**）、review-alignment、crctl SKILL.md、spec-dashboard、merge-feature-branch（Step 5 embedded patch 只落 cr.md，merge-commits[] 仍写 _backlog） | 文档 |
+| FR-6 skill 文档修订（**17 个**消费 status；另 14 个仅引用路径不改） | cr-archive（Step 3 条目移动以 cr.md final-status 为准）、cr-dashboard（状态分组改扫 cr.md）、cr-inbox、cr-review-record、cr-status-set（契约描述）、approve-code / approve-dev-start / approve-tech-design / approve-requirement（前置读描述）、analyze-current-product、focus-briefing、requirement-register（**注册时新条目不再写 status/updated-at 字段，status 只落 cr.md**）、review-alignment、crctl SKILL.md、spec-dashboard、merge-feature-branch（Step 5 embedded patch 只落 cr.md，merge-commits[] 仍写 _backlog）、**list-remote-checkpoints**（Step 2 消费字段改读各 CR 的 cr.md status，`filter_status` 参数与输出"状态"列语义不变，仅数据源切换；task-breakdown 阶段核实补入，原 SDD 评审时的 16 项盘点遗漏此项） | 文档 |
 | FR-7 状态机声明 | tools/dir-graph.yaml :210 `scope` 改为 `change-requests/{CR-ID}/cr.md`；gates.json 实测无 backlog 引用，不动 | 文档 |
 | FR-8 适配器 | inject-cr-status.mjs 改造（§4.4，PRD 假设修正见 §0）；CI 模板零改动 + 双适配器 fixture 回归 | 代码 + 测试 |
 | FR-9 归档流 | cr-archive 移动条目逻辑保持；final-status 读取源改 cr.md（并入 FR-6 文档修订） | 文档 |
