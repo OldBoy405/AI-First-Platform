@@ -645,3 +645,157 @@ tasks:
     cr-ref: CR-2026-020
     target-version: "0.21"
     estimate: 1h
+  - id: CR-2026-021-TASK-01
+    file: TASK-0.22-CR-2026-021-01-d13-schema-validator-investigation.md
+    title: D13 溯源调查 — engineering-docs schema validator v0.4.0 下线原因
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 3h
+  - id: CR-2026-021-TASK-02
+    file: TASK-0.22-CR-2026-021-02-crctl-review-record.md
+    title: crctl review-record（S1，判断/写入分离）
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 5h
+  - id: CR-2026-021-TASK-03
+    file: TASK-0.22-CR-2026-021-03-crctl-review-note.md
+    title: crctl review-note（S2，supplemental-reviews 追加）
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 3h
+  - id: CR-2026-021-TASK-04
+    file: TASK-0.22-CR-2026-021-04-crctl-checkpoint-owner-backlog-set.md
+    title: crctl checkpoint-add / owner-set / backlog-set（S3/S4/S5，白名单字段写子命令）
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 6h
+  - id: CR-2026-021-TASK-05
+    file: TASK-0.22-CR-2026-021-05-crctl-inbox-emit.md
+    title: crctl inbox-emit（_backlog notify-log 事件追加）
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 3h
+  - id: CR-2026-021-TASK-06
+    file: TASK-0.22-CR-2026-021-06-crctl-next-cr-id-cr-init.md
+    title: crctl next-cr-id（只读预览）+ cr-init（原子权威分配，合并实现）
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 6h
+  - id: CR-2026-021-TASK-07
+    file: TASK-0.22-CR-2026-021-07-crctl-task-allocate.md
+    title: crctl task allocate（S7，TASK-ID CAS 分配）
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 4h
+  - id: CR-2026-021-TASK-08
+    file: TASK-0.22-CR-2026-021-08-crctl-worktree-path-report-metrics.md
+    title: crctl worktree-path + report/cr-metrics（S9/S11，只读聚合）
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 4h
+  - id: CR-2026-021-TASK-09
+    file: TASK-0.22-CR-2026-021-09-crctl-git-commit-template.md
+    title: crctl git commit --template（S10，既有命令扩展）
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 3h
+  - id: CR-2026-021-TASK-10
+    file: TASK-0.22-CR-2026-021-10-crctl-docs-whitelist-closeout.md
+    title: 文档更新 + rules.json#git 白名单补齐（FR-13，收尾核对）
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 4h
+  - id: CR-2026-021-TASK-11
+    file: TASK-0.22-CR-2026-021-11-lint-prompts-linter.md
+    title: lint-prompts.mjs — R1~R6 漂移检测 + ignore 豁免 + report/enforce 双模式
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 6h
+  - id: CR-2026-021-TASK-12
+    file: TASK-0.22-CR-2026-021-12-lint-prompts-two-layer-gate.md
+    title: 两层机械防线接入 — pre-commit（分阶段 report→enforce）+ CI cr-guard
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 4h
+  - id: CR-2026-021-TASK-13
+    file: TASK-0.22-CR-2026-021-13-phase1-merge-commits-approve-fold.md
+    title: Phase 1 — D7 merge-commits 3 字段 + approve-* 折叠为 crctl approve
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 5h
+  - id: CR-2026-021-TASK-14
+    file: TASK-0.22-CR-2026-021-14-phase1c-bare-git-migration.md
+    title: Phase 1-C — 裸 git 迁移为 crctl git
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 4h
+  - id: CR-2026-021-TASK-15
+    file: TASK-0.22-CR-2026-021-15-phase1-test-report-frontmatter.md
+    title: Phase 1 — D3 test-report frontmatter 交 crctl test 生成
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 2h
+  - id: CR-2026-021-TASK-16
+    file: TASK-0.22-CR-2026-021-16-phase2-cr-status-set-deprecate.md
+    title: Phase 2 — cr-status-set 系统性清理
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 5h
+  - id: CR-2026-021-TASK-17
+    file: TASK-0.22-CR-2026-021-17-phase3-review-skills-migrate.md
+    title: Phase 3 — review-* 三个评审 SKILL + write-test-report 改调 S1/attempt
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 4h
+  - id: CR-2026-021-TASK-18
+    file: TASK-0.22-CR-2026-021-18-phase3-sync-skills-migrate.md
+    title: Phase 3 — cr-review-record/handover-cr/push-progress/write-requirement-prd/inbox-emit 改调 S2/S4/S3/S5/inbox-emit
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 5h
+  - id: CR-2026-021-TASK-19
+    file: TASK-0.22-CR-2026-021-19-phase3-requirement-register-migrate.md
+    title: Phase 3 — requirement-register 全量改造（S6 预览 + S8 cr-init + S9 worktree-path + S10 commit template）
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 5h
+  - id: CR-2026-021-TASK-20
+    file: TASK-0.22-CR-2026-021-20-phase3-write-dev-tasks-worktree-dedup.md
+    title: Phase 3/4 — write-dev-tasks 改造（S7+S10+D15）+ worktree-path 剩余去重（S9）
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 5h
+  - id: CR-2026-021-TASK-21
+    file: TASK-0.22-CR-2026-021-21-phase3-dashboard-validate-doc.md
+    title: Phase 3 — cr-dashboard/spec-dashboard 改调 S11；validate-doc 视 D13 结论处理
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 4h
+  - id: CR-2026-021-TASK-22
+    file: TASK-0.22-CR-2026-021-22-phase4-closeout-gate-enforce.md
+    title: Phase 4 收尾 — D8 状态映射去重 + 冗余精简 + 回写清单新增项 + gate 切换 enforce
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 5h
