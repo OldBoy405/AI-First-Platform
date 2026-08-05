@@ -5,7 +5,7 @@ cr-ref: CR-2026-022
 title: 治理工具链 — tools 包 prompt 审查修复（97 条发现全量落地）技术设计
 status: draft
 created: "2026-08-06T07:35:00+08:00"
-updated: "2026-08-06T07:35:00+08:00"
+updated: "2026-08-06T08:05:00+08:00"
 ---
 
 # SDD — tools 包 prompt 审查修复（批 1/2/2.5/3/3.5/4 + 收尾）
@@ -54,16 +54,18 @@ Skill 层      skills/{cr,develop,requirement,writeback,sync,planning,competitiv
 
 ### 2.2 状态机声明变更（FR-12 ①，D-1 决策落地）
 
-`tools/dir-graph.yaml#change-request-track.state_machine.transitions` 新增一条：
+`tools/dir-graph.yaml#change-request-track.state_machine.transitions` 新增**两条**转换（均已 grep 核实现状后定稿）：
 
 ```yaml
-- { from: requirement-reviewing, to: drafting, trigger: "review-requirement:block -> write-requirement-prd" }  # ← 不加这条，见下
+# ① D-1：需求阶段人工审批驳回回退（现状无任何驳回出口，唯一通道是 cr-review-record:reject 判死刑）
 - { from: requirement-reviewing, to: drafting, trigger: "approve-requirement:reject -> write-requirement-prd" }
+# ② B3 修复：开发启动审批驳回回退（现状 task-breakdown 只有自环与 -> developing，approve-dev-start 驳回无路可退）
+- { from: task-breakdown, to: tech-design-reviewed, trigger: "approve-dev-start:reject -> write-dev-plan" }
 ```
 
-实际只新增**一条**（`approve-requirement:reject -> write-requirement-prd`）：`review-requirement:block` 的自环/回退已由现有 `drafting→requirement-reviewing` + block 后保持 drafting 的语义覆盖，无需重复声明。命名与既有 `approve-tech-design:reject -> write-tech-design`、`approve-code:reject -> implement-code` 同构（`{approve-skill}:reject -> {回退目标 skill}`）。
+命名与既有 `approve-tech-design:reject -> write-tech-design`、`approve-code:reject -> implement-code` 同构（`{approve-skill}:reject -> {回退目标 skill}`）。需求阶段 `review-requirement:block` 的语义是**保持 `drafting` 不推进**（现有 `drafting→drafting` 自环，:215），与 tech-design 的显式回退不同，无需新增转换。
 
-**口径变更（§5 不变量 5 联动）**：转移声明 23 → **24** 条，wildcard 展开 45 → **46** 条（新转换不含 wildcard）。所有引用该口径的文档/注释/测试断言同步更新：`tools/ARCHITECTURE.md §3`、主仓 AGENTS.md #2、`crctl.test.mjs` 中的口径断言（如有）。
+**口径变更（§5 不变量 5 联动）**：转移声明 23 → **25** 条，wildcard 展开 45 → **47** 条（两条新转换均不含 wildcard）。所有引用该口径的文档/注释/测试断言同步更新：`tools/ARCHITECTURE.md §3`、主仓 AGENTS.md #2、`crctl.test.mjs` 中的口径断言（如有）。
 
 ### 2.3 gates.json 死配置删除（FR-13，D-2 决策落地）
 
@@ -83,7 +85,7 @@ insights:                       # 顶层 key（conduct-market-research 从 entri
     created: "..."
 ```
 
-`market-to-plan.pipeline.json` 节点 5 终态 `planned` → `published`，执行方明确为 `write-planning-entry`（它是规划台账写入方，状态推进随其执行步骤发生，不再只存在于 pipeline prompt）。历史数据若存在旧字段名，用入库版本化脚本一次性迁移（落点 `skills/planning/scripts/migrate-market-insights.mjs` + 同目录测试，遵守纪律 #7，不放 `skills/shared/scripts/`——那是被否决的账本脚本库位置，本文件是内容文件迁移不是账本操作）。
+`market-to-plan.pipeline.json` 节点 5 终态 `planned` → `published`，执行方明确为 `write-planning-entry`（它是规划台账写入方，状态推进随其执行步骤发生，不再只存在于 pipeline prompt）。历史数据若存在旧字段名，用入库版本化脚本一次性迁移（落点 `skills/writeback/scripts/migrate-market-insights.mjs` + 同目录测试——该目录是 ARCHITECTURE.md §6 范围澄清后内容文件脚本的既有先例落点，planning 域无 scripts/ 先例、不新建目录；遵守纪律 #7 会话内不现写脚本）。
 
 ### 2.5 inbox-emit 事件枚举扩展（FR-15）
 
@@ -109,10 +111,11 @@ crctl checkpoint-add <cr> --repo <r> --sha <sha> [--remote-ref <ref>]
 
 # FR-12（approve 行为扩展，命令签名不变）
 crctl approve <cr> --stage <requirement|tech-design|dev-start|code>
-  # decline 分支：查回退转换 → 执行回退 → 非零退出但输出回退结果（见 §4.3 退出码决策）
+  # decline 分支：查回退转换 → 执行回退 → 非零退出（错误码 APPROVAL_DECLINED_ROLLED_BACK，
+  # extra 携带 {rolledBackTo, rerunHint}，见 §4.3；无回退转换时维持 APPROVAL_DECLINED）
 ```
 
-**退出码契约（FR-12 关键点）**：decline 且回退成功时，进程仍以**非零**退出（审批未通过这一事实对调用方 pipeline 必须可见，`onFail:abort` 语义不变），但 stdout 输出结构化 JSON `{result:'declined-rolled-back', rolledBackTo:<status>, rerunHint:<write-skill>}`，错误消息从"未写入任何文件"改为"审批未通过，CR 已回退到 {to}，请重跑 {skill}"。无回退转换的 stage（理论上不存在，四个 stage 都有或经 D-1 补齐）维持现状 `fail('APPROVAL_DECLINED')`。
+**退出码契约（FR-12 关键点）**：decline 且回退成功时，进程以**非零**退出（审批未通过这一事实对调用方 pipeline 必须可见，`onFail:abort` 语义不变），错误码 `APPROVAL_DECLINED_ROLLED_BACK`，`fail()` 的 extra 字段携带 `{rolledBackTo: <status>, rerunHint: <write-skill>}`，错误消息为"审批未通过，CR 已回退到 {to}，请重跑 {skill}"。无回退转换的 stage 维持现状 `fail('APPROVAL_DECLINED')`（四 stage 经 D-1 + B3 修复后均有回退转换，该兜底理论上不触发）。
 
 ### 3.2 lint-prompts 规则契约（批 3.5）
 
@@ -141,7 +144,7 @@ R7（inbox-emit 接口）：
 |---|---|---|
 | architecture-design.pipeline.json | 5 节点 UUID 前缀 `0014-*` → `0016-*`（含 `repairNodeId` 自引用同步） | seed 幂等恢复（与 resume-cr 不再撞前缀）；**已占用前缀表更新至 0016** |
 | code-implementation.pipeline.json | 节点 12 prompt 补 checkpoint-add 描述 | 无节点增删，UUID 不动 |
-| 三条流水线 push-progress 节点 | `onFail: skip` → 产出可见告警的实现：改为 `abort` 以外的显式告警节点行为不可行（JSON 只有 skip/abort 二值），故保持 `skip` 但节点 prompt 内嵌"失败时必须在 node-N.md 写 CHECKPOINT_ALERT 段"的强制输出要求 + FR-11 让失败率趋零 | 运行时行为说明在提交信息中标注 |
+| 三条流水线 push-progress 节点 | `onFail: skip` 维持不变（JSON 仅 skip/abort 二值，abort 会在 git push 已成功时造成更大混乱）；可见告警改由**工具层**承担——FR-11 ② 重写 push-progress Step 3 时，skill 内逐仓调用 `crctl checkpoint-add` 失败即非零退出并在 node-N.md 摘要中强制输出 `CHECKPOINT_ALERT` 段（skill 执行失败本身即告警，不依赖 onFail 语义） | 运行时行为说明在提交信息中标注 |
 | competitive-radar / market-to-plan | 镜像节点 `onFail` 统一 `abort`（D-3） | 运行时行为变更：原静默跳过变为中止，提交信息显式标注 |
 
 > `onFail` 告警的设计取舍见 §5 决策 D-4。
@@ -180,10 +183,11 @@ cmdCheckpointAdd:
 cmdApprove 非 TTY-yes 分支（约 :1074）改为：
   auditLog(..., { result: 'declined' })
   const target = REJECT_ROLLBACK[stage]
-    // 静态映射表：requirement → drafting
-    //             tech-design → tech-designing
-    //             dev-start   → tech-design-reviewed
-    //             code        → developing
+    // 静态映射表（与 gates.json approvalStages 一一对应，评审逐条对照）：
+    //   requirement → drafting            （经 D-1 新增转换）
+    //   tech-design → tech-designing      （既有 :220）
+    //   dev-start   → tech-design-reviewed（经 B3 修复新增转换）
+    //   code        → developing          （既有 :228）
   const trigger = `${approveSkillOf(stage)}:reject -> ${rollbackSkillOf(stage)}`
   const t = findTransition(sm, current, target, trigger)
   if (!t) fail('APPROVAL_DECLINED', '审批人未确认，且状态机未声明回退转换', { stage, current })
@@ -193,7 +197,7 @@ cmdApprove 非 TTY-yes 分支（约 :1074）改为：
        { rolledBackTo: target, rerunHint: rerunSkill })
 ```
 
-`REJECT_ROLLBACK`/`approveSkillOf`/`rollbackSkillOf` 为 crctl.mjs 顶部静态常量表（与 gates.json `approvalStages` 一一对应，评审时逐条对照）。`dev-start` 的回退目标取 `tech-design-reviewed`（write-dev-plan 的前置态，订正 approve-dev-start 现错误表中不可达的"重跑 write-dev-plan"建议——正确重跑对象是 `write-dev-plan`，回退态是它能执行的前置态）。
+`REJECT_ROLLBACK`/`approveSkillOf`/`rollbackSkillOf` 为 crctl.mjs 顶部静态常量表。dev-start 的回退目标 `tech-design-reviewed` 是 write-dev-plan 的前置态（订正 approve-dev-start 现错误表中不可达的"重跑 write-dev-plan"建议——回退后重跑对象正是 write-dev-plan，前置态匹配）。
 
 ### 4.4 lint 豁免收窄（FR-25）
 
@@ -210,7 +214,20 @@ Step1.4 增补：`git rev-parse HEAD` 与 `git rev-parse origin/requirement/{cr_
 
 ### 4.6 cmdNext 判断依据修正（FR-21）
 
-`writing-back` 分支"可归档"判断从 `change-requests/{cr}/traceability.yml`（开发期工作稿，恒存在）改为 `specs/{spec_id}/traceability.yml`（writeback-traceability 产物，`spec_id` 取 `_backlog` 条目 `spec-id` 字段，缺失则建议先跑 writeback-traceability）。只读逻辑 bug 修复，不新增写口。
+`writing-back` 分支（:2219-2222）现状：`fs.existsSync(change-requests/{cr}/traceability.yml)`（开发期工作稿，恒存在）→ 误判"可归档"。改为检查 writeback-traceability 的产物 `specs/{spec_id}/traceability.yml`。
+
+**spec_id 取值来源（已核实）**：`_backlog` 条目**没有** spec-id 字段（grep 坐实）；specId 在 crctl 内一律是**调用方经 `--spec-id` 旗标传入**的参数（`advance --to writing-back/archived` 缺它即 BAD_ARGS fail-fast，:987-991），不落账本。因此 cmdNext 不能从账本读 spec_id，改为**从文件系统推断**：扫描 `specs/` 目录，若存在唯一子目录则取其名；多个子目录时取 `_backlog` 条目 `merge-commits` 所在仓对应的 spec 目录不可行（无映射），此时输出"多 spec 目录，请显式确认"而非猜。实现：
+
+```text
+case 'writing-back':
+  const specsDir = path.join(ws, 'specs')
+  const subs = fs.existsSync(specsDir) ? fs.readdirSync(specsDir, {withFileTypes:true}).filter(d=>d.isDirectory()).map(d=>d.name) : []
+  if (subs.length !== 1) return suggest('writeback-prd-sdd', `specs/ 子目录数=${subs.length}，无法唯一确定 spec_id，先完成 PRD/SDD 回写`)
+  const trace = fs.existsSync(path.join(specsDir, subs[0], 'traceability.yml'))
+  return suggest(trace ? 'cr-archive' : 'writeback-tasks → writeback-traceability', ...)
+```
+
+只读逻辑 bug 修复，不新增写口。
 
 ## 5. 技术选型与替代方案
 
@@ -219,10 +236,10 @@ Step1.4 增补：`git rev-parse HEAD` 与 `git rev-parse origin/requirement/{cr_
 | D-1 | 新增 `requirement-reviewing:reject -> drafting`（PRD §1.3 已拍板） | 替代方案"维持 CR 死刑"被否：与其余三阶段不对称且过于刚性 |
 | D-2 | 删 gates.json 死配置（PRD 已拍板） | 替代方案"新开不依赖 CR 上下文的 attempts 子命令"被否：单消费者收益不成比例，违反 §6 YAGNI |
 | D-3 | onFail 统一 abort（PRD 已拍板） | 替代方案"skip + 空文件降级展示"被否：额外复杂度换不来可用性 |
-| D-4 | push-progress 节点 onFail 维持 `skip` + prompt 强制 CHECKPOINT_ALERT 输出 | pipeline JSON `onFail` 只有 skip/abort 二值；abort 会在 git push 已成功时造成更大状态混乱（报告 2.1-G 明示不宜 abort）。告警落在 node-N.md 可见输出 + 5.2 监控指标，等未来 onFail 支持 `warn` 语义再升级 |
+| D-4 | push-progress 节点 onFail 维持 `skip`，可见告警由工具层承担（skill 内 checkpoint-add 失败即非零退出 + 摘要强制 CHECKPOINT_ALERT 段） | pipeline JSON `onFail` 只有 skip/abort 二值；abort 会在 git push 已成功时造成更大状态混乱（报告 2.1-G 明示不宜 abort）。告警不依赖 onFail 语义，由 skill 执行失败本身承担——这是可执行形态，非"等未来 warn 语义"的悬置方案 |
 | D-5 | LEGAL 白名单从状态机派生而非硬编码 12 态 | 报告 §4.1 参考骨架为全量硬编码；派生方案与 cmdOwnerSet 同源、未来增态零成本漂移。代价：checkpoint-add 对"语义上不该记账"的状态（如 rejected 前的边界态）也放行——但终态已由 sm.terminal 排除，非终态记 checkpoint 无副作用 |
 | D-6 | decline 回退后仍非零退出 | 替代方案"回退成功即零退出"被否：pipeline onFail 依赖退出码区分"审批通过"，零退出会让流水线误入下一节点 |
-| D-7 | 迁移脚本落点 `skills/planning/scripts/` | `skills/shared/scripts/` 是 §6 否决的账本脚本库位置；market-insights 是内容文件不是账本，但为避嫌落业务域目录 |
+| D-7 | 迁移脚本落点 `skills/writeback/scripts/` | 该目录是 ARCHITECTURE.md §6 范围澄清（CR-2026-020）后**内容文件脚本**的既有先例落点（writeback-prd-sdd.mjs 等）；market-insights 迁移是内容文件操作不是账本操作，与先例同构。planning 域无 scripts/ 先例，不新建目录 |
 | D-8 | UUID 前缀选 `0016-*` | 0002/0003/0010/0011/0013/0014/0015 已占用，取最小未占用值（沿用报告建议） |
 
 ## 6. FR 到技术实现映射
@@ -234,7 +251,7 @@ Step1.4 增补：`git rev-parse HEAD` 与 `git rev-parse origin/requirement/{cr_
 | FR-9 | §2.1/§4.1 cr-init 旗标注入 | 批 2.5 |
 | FR-10 | §3.1 `--cr` 旗标优先 + 兜底保留 | 批 2.5 |
 | FR-11 | §4.2 LEGAL 派生 + push-progress Step 3 逐仓调用 + 节点 12 补齐 + §3.3/D-4 告警 | 批 2.5 |
-| FR-12 | §2.2 状态机新转移 + §4.3 decline 回退 + 四份 approve-* 错误表订正 + "无旁路"表述修正 | 批 2.5 |
+| FR-12 | §2.2 状态机新增**两条**转移（D-1 需求驳回 + B3 修复 dev-start 驳回）+ §4.3 decline 回退（含 REJECT_ROLLBACK 四 stage 映射）+ 四份 approve-* 错误表订正 + "无旁路"表述修正 | 批 2.5 |
 | FR-13 | §2.3 删死配置 + node-6 prompt 如实描述 | 批 2.5 |
 | FR-14 | requirement-register 错误表补 STALE_BASE 降级行 | 批 2.5 |
 | FR-15 | §2.5 枚举三处同步 + feedback-writeback/handover-cr 迁 CLI 形态 | 批 3 |
@@ -250,7 +267,7 @@ Step1.4 增补：`git rev-parse HEAD` 与 `git rev-parse origin/requirement/{cr_
 | FR-25 | §4.4 豁免收窄（radius=1 契约化） | 批 3.5 |
 | FR-26 | lint-prompts.test.mjs 三类向量（含 product-planning:109 复现场景） | 批 3.5 |
 | FR-27~FR-32 | approve-* 对齐、writeback 抽 shared、sync 收敛 + worktree-path、constraints 删、push-progress 样板抽取（以 FR-11 为前提）、评估项下线（write-insight-brief/run-competitive-analysis 合并下线 + 去重 + 跳过检查单份化） | 批 4 |
-| FR-33 | 三台账同步 + check-skill-matrix + JSON 自检 + crctl.test.mjs 全量回归 | 收尾 |
+| FR-33 | 三台账同步 + check-skill-matrix + JSON 自检 + crctl.test.mjs 全量回归 + 状态机口径 25/47 全仓引用核查 | 收尾 |
 | FR-34 | ARCHITECTURE.md §8 登记本 CR + crctl/SKILL.md 新旗标 + lint 头部说明 + AGENTS.md 抽 shared 原则 | 收尾 |
 
 FR 覆盖率：34/34。
@@ -259,7 +276,7 @@ FR 覆盖率：34/34。
 
 - **并发安全**：cr-init 扩旗标不改变 `casWriteMulti` 事务边界；checkpoint-add/approve 改动均走既有 CAS + audit 路径，无新写入范式（NFR-1）。
 - **状态机回归风险**：D-1 新转移是纯增量，不改任何既有转换；decline 回退只发生在审批人显式回答非 yes 的分支，`--grant` 签名路径不经过该分支（不变量 7 不受影响）。
-- **口径同步**：状态机 24/46 口径变更列入 FR-33 核查清单（grep "23 条声明" 全仓清零旧口径）。
+- **口径同步**：状态机 25/47 口径变更列入 FR-33 核查清单（grep "23 条声明" 全仓清零旧口径）。
 - **行尾纪律**：R6/R7 规则与豁免逐行判定前统一 `replaceAll('\r\n','\n')`；`splitPipelineJson` 跨行正则匹配失败维持硬失败（不变量 4）。
 - **性能**：lint 新增两规则为行级正则，全仓扫描耗时增量 <10%（现有 R1~R5 同量级）；crctl 改动均为 O(1) 分支，无性能面变化。
 - **回滚**：批 2.5 每子项单 commit（cr-init/--cr/LEGAL/approve/gates 各一），任一可独立 revert；dir-graph.yaml 回退转换删除前留存改前对照（NFR-2）。
@@ -284,7 +301,7 @@ FR 覆盖率：34/34。
 
 | 层 | 内容 |
 |---|---|
-| crctl.test.mjs | cr-init 三旗标（缺省兼容/覆写/转义）；`--cr` 直传与兜底路径；checkpoint-add 12 非终态参数化 + 3 终态拒绝；approve decline 四 stage 回退（含 requirement 新转换）+ 回退失败兜底；cmdNext writing-back 两分支；状态机口径断言更新 24/46 |
+| crctl.test.mjs | cr-init 三旗标（缺省兼容/覆写/转义）；`--cr` 直传与兜底路径；checkpoint-add 12 非终态参数化 + 3 终态拒绝；approve decline 四 stage 回退（含 requirement 新转换与 dev-start 新转换）+ 回退失败兜底；cmdNext writing-back 三分支（无 specs 目录/唯一目录/多目录）；状态机口径断言更新 25/47 |
 | lint-prompts.test.mjs | R6 三类违例 + backlog-set/--template 覆盖；R7 两类违例；豁免 radius 边界（±1 行命中/±2 行不豁免）；product-planning:109 复现场景 |
 | writeback/pipeline 自检 | architecture-design/resume-cr JSON 解析 + seed 幂等（重复 seed 无重复节点）；market-insights 迁移脚本 fixture 测试 |
 | 端到端（AC-20） | 报告 §6.2 三场景：完整生命周期串联 / 通知链两事件 / lint 三类违规注入 |
@@ -294,4 +311,4 @@ FR 覆盖率：34/34。
 - **批 4 抽 shared 的引用失效风险**：前置 FR-24 lint「shared 引用一致性」检查必须先落地（NFR-4），否则把 N 处漂移换成引用失效。
 - **focus-briefing pipeline 注册表路径**：运行时路径确认不了时整体删除该数据源（文档已声明可选、删除零副作用）——确认动作在实施期向运行时方取证，取证结果记录在任务产出中。
 - **record-adr/adrs.yml 删除**：删前必须完成全仓引用计数核实（含前端/agent 读取面），核实记录入任务证据。
-- **onFail 语义限制（D-4）**：CHECKPOINT_ALERT 依赖执行者照 prompt 输出，非机械强制；接受为当前 pipeline schema 下的最优解。
+- **onFail 语义限制（D-4）**：可见告警由 skill 执行失败（非零退出）承担，pipeline onFail 维持 skip 不升级——这是当前 schema 下的确定方案，非悬置；若未来 pipeline JSON 支持 `warn` 语义可再评估。
