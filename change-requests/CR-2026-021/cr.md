@@ -35,7 +35,7 @@ owners:
     assigned-at: "2026-08-05T09:37:00+08:00"
 target-version: tbd
 source: "docs/analysis/tools包-prompt对齐crctl-修改方案.md"
-status: code-reviewing
+status: code-approved
 created: "2026-08-05T09:37:00+08:00"
 updated: "2026-08-05T10:11:00+08:00"
 remote-ref: ""
