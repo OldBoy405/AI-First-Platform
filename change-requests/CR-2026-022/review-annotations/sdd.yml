@@ -1,23 +1,17 @@
 cr-id: CR-2026-022
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-06T07:32:52+08:00"
-verdict: block
-blockers:
-  - "B1（§2.2 状态机变更自相矛盾，纪律 #4 事实断言未核实）：正文先插入一条 `review-requirement:block -> write-requirement-prd` 转换再划掉说『不加这条』——且该转换在 dir-graph.yaml 中本就不存在（需求阶段 block 语义是保持 drafting 不推进，与 tech-design 的显式回退不同），插入再划掉的写法会让实施者误读为需要删除一条不存在的转换。应改为：只声明新增 `approve-requirement:reject -> write-requirement-prd` 一条，并如实说明『review-requirement:block 在需求阶段无显式转换、语义为保持 drafting』"
-  - "B2（§3.1/§4.3 与 §5 D-6 自相矛盾，纪律 #4）：§3.1 写 decline 回退成功时 stdout 输出结构化 JSON `{result:'declined-rolled-back',...}`，§4.3 伪代码却是 fail('APPROVAL_DECLINED_ROLLED_BACK')（错误通道输出），§5 D-6 又强调非零退出。三处对『成功回退的输出形态』表述不一致（stdout JSON vs stderr 错误 vs 仅非零退出），实施者无法确定契约。应统一为：非零退出 + fail() 的 extra 字段携带 {rolledBackTo, rerunHint}，删除 §3.1 的 stdout JSON 表述"
-  - "B3（§4.3 REJECT_ROLLBACK 映射表 dev-start 回退目标与状态机不符）：dev-start 阶段当前状态是 task-breakdown，dir-graph.yaml 无 `task-breakdown -> tech-design-reviewed` 转换（只有 task-breakdown 自环与 -> developing）；且 gates.json approvalStages 中 dev-start 没有 reject 触发器声明，approve-tech-design/approve-code 有。映射表写 dev-start → tech-design-reviewed 属凭空发明转换，findTransition 必查不到、decline 必走 fail 兜底。应改为：dev-start 回退目标 = tech-design-reviewed 且需同步在 dir-graph.yaml 补声明 `task-breakdown -> tech-design-reviewed`（trigger `approve-dev-start:reject -> write-dev-plan`），或如实说明 dev-start 驳回维持现状不回退"
-  - "B4（§4.6 cmdNext 的 spec_id 取值来源未坐实，纪律 #4）：写『spec_id 取 _backlog 条目 spec-id 字段』，但未核实 _backlog 条目是否真有 spec-id 字段（cr-init 生成的条目无此字段，merge-metadata 写的是 merge-commits）。若字段不存在，cmdNext 在 writing-back 态永远拿不到 spec_id。应核实字段真实名称（或改为从 change-requests/{cr}/ 目录扫描/从 specs/ 目录推断），并写明核实命令"
-  - "B5（§2.4 迁移脚本落点与 §5 D-7 的理由链不成立）：§2.4 说脚本放 skills/planning/scripts/ 是因为 skills/shared/scripts/ 是『被否决的账本脚本库位置』——但 ARCHITECTURE.md §6 否决的是账本操作脚本库，market-insights 迁移是内容文件操作，按 §6 范围澄清（CR-2026-020）内容文件脚本落点先例是 skills/writeback/scripts/，planning 域并无 scripts/ 目录先例。凭空新建 skills/planning/scripts/ 目录属新增结构，应先核实 planning 域是否已有脚本落点先例，或改放与内容回写脚本同构的位置"
-  - "B6（§3.3 onFail 告警方案与 D-4 循环引用、未给出可执行形态）：§3.3 表格说 onFail 保持 skip 但 prompt 内嵌『失败时必须写 CHECKPOINT_ALERT 段』，D-4 又说等未来 onFail 支持 warn 语义再升级——但 pipeline JSON 的 onFail 只有 skip/abort 二值是现状约束，prompt 内嵌输出要求对执行者无强制力（§10 自己也承认非机械强制）。该方案实质是『无方案』，应改为可执行形态：要么接受 skip 但由 FR-11 的 checkpoint-add 自身在失败时输出可见错误（工具层告警），要么明确记录为已知残余风险不在本 CR 解决"
+reviewed-at: "2026-08-06T07:37:43+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  PRD↔SDD对齐: "通过——§6 映射表 FR-1~FR-34 全覆盖，D-1/D-2/D-3 有对应设计"
-  架构合理性: "不通过——B3 凭空发明状态机转换、B5 凭空新建目录结构，均违反纪律 #4（事实断言先核实）"
-  数据模型完整性: "不通过——B1 状态机声明描述自相矛盾、B4 spec_id 字段来源未坐实"
-  接口契约: "不通过——B2 退出码/输出形态三处表述冲突，契约不确定"
-  性能与安全: "通过——§7 覆盖完整"
-  可测试性: "通过——§9 分层明确，但 B2 不修则 decline 测试断言无依据"
-  Prompt采纳影响: "通过——§8 小节存在且 6 项对照完整"
+  PRD↔SDD对齐: "通过——§6 映射表 FR-1~FR-34 全覆盖（34/34），D-1/D-2/D-3 有对应设计；B3 修复后 dev-start 驳回路径与 PRD FR-12 ③ 的 approve-dev-start 错误表订正闭环"
+  架构合理性: "通过——B3/B5 已修：状态机两转移均 grep 核实后声明（requirement-reviewing→drafting、task-breakdown→tech-design-reviewed），无凭空发明；迁移脚本落点更正为 skills/writeback/scripts/（§6 内容文件脚本先例），不新建 planning/scripts 目录"
+  数据模型完整性: "通过——B1/B4 已修：§2.2 只声明两条真实新增转换并如实说明 review-requirement:block 语义（保持 drafting 自环）；§4.6 spec_id 取值已核实（_backlog 无 spec-id 字段、specId 是 --spec-id 旗标参数不落账本），改为 specs/ 目录文件系统推断（唯一子目录取名/多目录显式报错）"
+  接口契约: "通过——B2 已修：§3.1/§4.3/§5 D-6 三处统一为非零退出 + fail() extra 携带 {rolledBackTo, rerunHint}，删除 stdout JSON 矛盾表述；§3.2 R6/R7 判据源与豁免 radius 契约明确"
+  性能与安全: "通过——§7 覆盖完整；口径同步更新为 25/47（两条新转移），FR-33 核查清单同步"
+  可测试性: "通过——§9 测试断言与 §3.1 退出码契约对齐（decline 四 stage 含 dev-start 新转换）；cmdNext 三分支（无目录/唯一/多目录）可测"
+  Prompt采纳影响: "通过——§8 小节 6 项对照完整，全部采纳动作在 FR 清单内无欠账"
 suggestions:
-  - "修复 B1~B6 后重审；B3 若选择补 dir-graph.yaml 转换，需同步更新 §2.2 的口径计数（24→25 条声明）"
-  - "B4 建议先跑 `grep -n 'spec-id\|spec_id' ../tools/skills/shared/crctl/scripts/crctl.mjs` 与 `grep 'spec' change-requests/_backlog.yml` 坐实字段名再落笔"
+  - "B6 修复后 D-4 为确定方案（工具层告警），实施期注意 push-progress Step 3 重写时把 CHECKPOINT_ALERT 段写入 skill 的错误处理路径而非依赖 pipeline onFail"
+  - "FR-18 UUID 迁移后同步更新报告 2.1-C 已占用前缀表（0016 标记占用）"
