@@ -1,0 +1,17 @@
+cr-id: CR-2026-022
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-06T07:29:32+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  PRD↔SDD对齐: "通过——§6 映射表 FR-1~FR-34 全覆盖（34/34），每条 FR 有对应实现条目与批次归属；PRD §1.3 拍板的 D-1/D-2/D-3 在 SDD §2.2/§2.3/§3.3 均有落地设计"
+  架构合理性: "通过——改动严格贴合 ARCHITECTURE.md §4 分层（Pipeline→Skill→crctl 单向朝下）；不新增模块/顶层分组；crctl.mjs 单文件哲学维持；§5 硬不变量逐条兼容（状态单一写者/账本单一通道/零依赖/行尾纪律/口径唯一/git 权威/审批无旁路），§8 维护规则触发项（新增写入旗标+状态机转移 23→24）已列入 FR-34 登记"
+  数据模型完整性: "通过——§2 覆盖全部数据面变更：cr-init 三字段写口（含 BACKLOG_SET_FIELDS 不扩的语义边界说明）、状态机新转移声明、gates.json 死配置删除、market-insights 统一 schema（含迁移脚本落点）、inbox-emit 枚举扩展"
+  接口契约: "通过——§3 给出 crctl 命令面变更精确签名（含缺省值向后兼容、--cr 校验规则、退出码契约 D-6）、lint R6/R7 判据源与豁免 radius 契约、pipeline JSON 变更的幂等影响逐文件分析"
+  性能与安全: "通过——§7 覆盖并发安全（CAS 事务边界不变）、状态机回归风险（纯增量转移、--grant 路径不经 decline 分支）、行尾纪律、性能增量评估（lint 行级正则 <10%）、单 commit 可 revert 回滚策略与灰度方案"
+  可测试性: "通过——§9 测试设计分层明确：crctl.test.mjs 参数化用例（12 非终态/3 终态/四 stage decline）、lint 三类向量含 product-planning:109 复现场景、pipeline seed 幂等自检、AC-20 端到端三场景"
+  Prompt采纳影响: "通过——本 CR diff 触及 crctl.mjs dispatch（cr-init/--cr/checkpoint-add/approve 分支），§8 小节存在且逐项列出 6 项能力变更与采纳 skill 对照，全部采纳动作已在 FR 清单内无欠账，符合 CR-2026-021 FR-25 强制要求"
+suggestions:
+  - "实施期注意 D-4 的残余风险：CHECKPOINT_ALERT 靠 prompt 输出约束非机械强制，批 2.5 落地后建议用一次演练注册验证告警可见性（NFR-5 已覆盖）"
+  - "FR-18 UUID 迁移后需同步更新报告 2.1-C 的已占用前缀表（0016 标记占用），防止后续 pipeline 再撞号"
