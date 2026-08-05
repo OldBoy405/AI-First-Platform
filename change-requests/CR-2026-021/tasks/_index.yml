@@ -2,72 +2,86 @@ cr-id: CR-2026-021
 tasks:
   - id: CR-2026-021-TASK-01
     title: D13 溯源调查 — engineering-docs schema validator v0.4.0 下线原因
-    status: pending
+    status: done
+    done-at: "2026-08-05T13:42:38+08:00"
     estimate: 3h
     depends-on: []
   - id: CR-2026-021-TASK-02
     title: crctl review-record（S1，判断/写入分离）
-    status: pending
+    status: done
+    done-at: "2026-08-05T13:42:38+08:00"
     estimate: 5h
     depends-on: []
   - id: CR-2026-021-TASK-03
     title: crctl review-note（S2，supplemental-reviews 追加）
-    status: pending
+    status: done
+    done-at: "2026-08-05T13:42:38+08:00"
     estimate: 3h
     depends-on: []
   - id: CR-2026-021-TASK-04
     title: crctl checkpoint-add / owner-set / backlog-set（S3/S4/S5）
-    status: pending
+    status: done
+    done-at: "2026-08-05T13:42:38+08:00"
     estimate: 6h
     depends-on: []
   - id: CR-2026-021-TASK-05
     title: crctl inbox-emit
-    status: pending
+    status: done
+    done-at: "2026-08-05T13:42:38+08:00"
     estimate: 3h
     depends-on: []
   - id: CR-2026-021-TASK-06
     title: crctl next-cr-id（只读预览）+ cr-init（原子权威分配，合并实现）
-    status: pending
+    status: done
+    done-at: "2026-08-05T13:42:38+08:00"
     estimate: 6h
     depends-on: []
   - id: CR-2026-021-TASK-07
     title: crctl task allocate（S7）
-    status: pending
+    status: done
+    done-at: "2026-08-05T13:42:38+08:00"
     estimate: 4h
     depends-on: []
   - id: CR-2026-021-TASK-08
     title: crctl worktree-path + report/cr-metrics（S9/S11，只读）
-    status: pending
+    status: done
+    done-at: "2026-08-05T13:42:38+08:00"
     estimate: 4h
     depends-on: []
   - id: CR-2026-021-TASK-09
     title: crctl git commit --template（S10）
-    status: pending
+    status: done
+    done-at: "2026-08-05T13:42:38+08:00"
     estimate: 3h
     depends-on: []
   - id: CR-2026-021-TASK-10
     title: 文档更新 + rules.json#git 白名单补齐（FR-13）
-    status: pending
+    status: done
+    done-at: "2026-08-05T13:42:38+08:00"
     estimate: 4h
     depends-on: [CR-2026-021-TASK-02, CR-2026-021-TASK-03, CR-2026-021-TASK-04, CR-2026-021-TASK-05, CR-2026-021-TASK-06, CR-2026-021-TASK-07, CR-2026-021-TASK-08, CR-2026-021-TASK-09]
   - id: CR-2026-021-TASK-11
     title: lint-prompts.mjs — R1~R6 + ignore 豁免 + report/enforce 双模式
-    status: pending
+    status: done
+    done-at: "2026-08-05T13:42:38+08:00"
     estimate: 6h
     depends-on: []
   - id: CR-2026-021-TASK-12
     title: 两层机械防线接入 — pre-commit（report）+ CI cr-guard
-    status: pending
+    status: done
+    done-at: "2026-08-05T13:42:38+08:00"
     estimate: 4h
     depends-on: [CR-2026-021-TASK-11]
   - id: CR-2026-021-TASK-13
     title: Phase 1 — D7 merge-commits 3 字段 + approve-* 折叠为 crctl approve
-    status: pending
+    status: done
+    done-at: "2026-08-05T13:42:39+08:00"
     estimate: 5h
     depends-on: []
   - id: CR-2026-021-TASK-14
     title: Phase 1-C — 裸 git 迁移为 crctl git
-    status: pending
+    status: done
+    done-at: "2026-08-05T13:42:39+08:00"
     estimate: 4h
     depends-on: [CR-2026-021-TASK-10]
   - id: CR-2026-021-TASK-15
