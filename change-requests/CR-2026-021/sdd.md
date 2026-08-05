@@ -5,7 +5,7 @@ cr-ref: CR-2026-021
 title: prompt 对齐 crctl（写入面补齐 + prompt 收敛 + 漂移防线）技术设计
 status: draft
 created: "2026-08-05T11:10:00+08:00"
-updated: "2026-08-05T11:10:00+08:00"
+updated: "2026-08-05T11:30:00+08:00"
 ---
 
 # SDD — prompt 对齐 crctl（写入面补齐 + prompt 收敛 + 漂移防线）
@@ -107,9 +107,9 @@ canonical 目标由 stage 显式映射（**非同名**,`tech-design`→`sdd.yml`
 
 CR-ID / TASK-ID 的「不撞号」不来自「读时抢占」,而来自**写时 CAS**：
 
-- **S6 next-cr-id = 只读预览**：扫 `_index.yml`/`_backlog.yml` 现有 max、返回 `CR-{Y}-{NNN+1}` 候选。**不写文件、非权威**——两个并发调用会返回同一候选（不保证唯一）。仅供 prompt/人预览下一个号,不作为登记依据。
-- **S8 cr-init = 权威原子分配**：以 `casWriteMulti` 一次写 `cr.md`(新建,`expectedHash==null`)+`_backlog`(追加条目)+`_index`(登记),`expectedHash` 取读时 sha256。并发下第二个写者见 `_index`/`_backlog` hash 已变 → `CAS_CONFLICT`,两侧不落盘 → 调用方(requirement-register SKILL)重跑 cr-init(重读 max、拿新号)。**与 crctl「无内部重试」惯例一致**（§0：重试是调用方责任）,不在 crctl 内加 retry 循环、不引 WAL（合 §6 YAGNI）。
-- **S7 task allocate** 同理：以 `casWrite` 写 `tasks/_index.yml`,冲突即 `CAS_CONFLICT` 由调用方重跑。
+- **S6 next-cr-id = 纯只读预览（不参与分配）**：扫 `_index.yml`/`_backlog.yml` 现有 max、返回 `CR-{Y}-{NNN+1}` 候选,仅供 prompt/人「看一眼下一个号」。**不写文件、非权威、不是登记依据**——分配权完全不在此命令。
+- **S8 cr-init = 唯一权威原子分配（自行分配并返回 id）**：**不取显式 cr-id 入参**,内部读 max → 计算 `CR-{Y}-{NNN+1}` → 以 `casWriteMulti` 一次写 `cr.md`(新建,`expectedHash==null`)+`_backlog`(追加条目)+`_index`(登记),`expectedHash` 取读时 sha256,**成功后在输出 JSON 返回分配到的 `cr-id`**。并发下第二个写者见 `_index`/`_backlog` hash 已变 → `CAS_CONFLICT`,两侧不落盘 → 调用方(requirement-register SKILL)重跑 cr-init(重读 max、自动拿到新号)。**唯一并发冲突码是 `CAS_CONFLICT`**（不存在 TOCTOU 的 `CR_ALREADY_EXISTS` 竞态,因为无人从外部传入 id）;`CR_ALREADY_EXISTS` 仅保留给「误用：显式要求一个已存在号」的边缘接口,不在正常注册路径出现。**与 crctl「无内部重试」惯例一致**（§0：重试是调用方责任）,不在 crctl 内加 retry 循环、不引 WAL（合 §6 YAGNI）。
+- **S7 task allocate** 同理：内部分配 `TASK-{NN}` 并以 `casWrite` 写 `tasks/_index.yml`,唯一冲突码 `CAS_CONFLICT`,由调用方重跑。
 
 ## 3. 接口契约（CLI）
 
@@ -124,8 +124,8 @@ crctl checkpoint-add <cr> --repo <r> --sha <sha> [--remote-ref <ref>]
 crctl owner-set     <cr> --role <requirement|development|test> --id <id>   # --id=被指派人(业务数据),非操作者身份
 crctl backlog-set   <cr> --field <prd-path|sdd-path> --value <v>     # 白名单标量;硬拒 status/updated-at/owners/merge-commits
 crctl inbox-emit    <cr> --event <...>                                # notify-log 事件追加
-crctl next-cr-id    [--year Y]                                        # 只读预览(§2.3),不写
-crctl cr-init       <cr-id> --title <t> --owner-requirement <id>     # 原子 casWriteMulti 建档+登记
+crctl next-cr-id    [--year Y]                                        # 纯只读预览(§2.3),不写、不参与分配
+crctl cr-init       --title <t> --owner-requirement <id> [--year Y]  # 内部分配 max+1 + 原子 casWriteMulti 建档+登记;输出返回分配到的 cr-id(无显式 cr-id 入参)
 crctl task allocate <cr> [--slug <s>]                                # 扩展现有 task 族;CAS 写 tasks/_index.yml
 ```
 
@@ -149,7 +149,7 @@ node skills/shared/crctl/scripts/lint-prompts.mjs [--mode report|enforce] [--jso
 
 ### 3.4 错误码（新增,风格同既有 fail()）
 
-`SCHEMA_INVALID`(payload 校验失败) / `STAGE_UNKNOWN` / `FIELD_NOT_ALLOWED`(backlog-set 白名单外) / `CAS_CONFLICT`(复用) / `ILLEGAL_LEDGER_STATE`(前置态非法,复用) / `CR_ALREADY_EXISTS`(cr-init 撞已存在) / `LINT_DRIFT`(lint-prompts enforce 命中)。
+`SCHEMA_INVALID`(payload 校验失败) / `STAGE_UNKNOWN` / `FIELD_NOT_ALLOWED`(backlog-set 白名单外) / `CAS_CONFLICT`(复用;cr-init/task-allocate 的**唯一**并发冲突码) / `ILLEGAL_LEDGER_STATE`(前置态非法,复用) / `CR_ALREADY_EXISTS`(**仅**边缘误用——非正常注册路径,正常 cr-init 无显式 id 不触发) / `LINT_DRIFT`(lint-prompts enforce 命中)。
 
 ## 4. 关键算法与流程
 
@@ -165,18 +165,23 @@ stage → canonical 文件名显式映射(requirement→requirement.yml / tech-d
 成功 → 删除 .crctl/tmp/review-{stage}.yml(避免残留/跨 CR 串味) → emitOutbox
 ```
 
-### 4.2 cr-init 原子分配（S8，回应 next-cr-id 并发安全）
+### 4.2 cr-init 原子分配（S8，唯一权威分配点）
+
+**无显式 cr-id 入参**——分配与写入是同一步,消除「调用方先拿号、cr-init 再建档」的 TOCTOU：
 
 ```
-读 _index.yml/_backlog.yml → 计算候选 CR-ID(或采用入参 cr-id) → 校验该 id 尚不存在(否则 CR_ALREADY_EXISTS)
+读 _index.yml/_backlog.yml → 内部计算 CR-ID = CR-{year}-{max+1}
 构造三文件新内容(cr.md 全量 frontmatter: owners/owner-history/时间戳全 crctl 生成)
 casWriteMulti([
-  {path: cr.md,     expectedHash: null},        # 期望不存在
+  {path: cr.md,     expectedHash: null},        # 期望不存在(创建)
   {path: _backlog,  expectedHash: sha256(读时)}, # 追加条目
   {path: _index,    expectedHash: sha256(读时)}, # 登记
 ])
-  CAS_CONFLICT → 两侧不落盘,返回错误 → 调用方 SKILL 重跑(重读 max)
+  成功 → 输出 JSON 返回分配到的 cr-id
+  CAS_CONFLICT(唯一并发冲突码) → 两侧不落盘 → 调用方 SKILL 重跑(重读 max,自动拿新号)
 ```
+
+并发安全论证：两个并发 cr-init 都读到 max=N、都想写 CR-{N+1}。先到者 casWriteMulti 成功;后到者的 `_backlog`/`_index` expectedHash 已失配 → `CAS_CONFLICT`,三文件全不落盘 → 重跑读到 max=N+1 → 写 CR-{N+2}。**不撞号,且不产生半状态**。因无外部传入 id,不存在「校验 id 不存在」与「写入」之间的 TOCTOU,故正常路径不出现 `CR_ALREADY_EXISTS`。
 
 ### 4.3 lint-prompts R1~R6（检测算法）
 
@@ -223,7 +228,7 @@ R1 判据直读 `rules.json`——未来 deny 面新增文件,R1 自动覆盖,�
 | FR-1 review-record | §4.1 + §2.2 payload schema + stage 显式映射 | AC-1(含临时文件删除) |
 | FR-2 review-note | §3.1;只写 supplemental-reviews,身份 crctl 生成 | AC-2(拒 --by) |
 | FR-3/4/5/6 | §3.1 各子命令 + `_backlog` 定向字段 casWrite | AC-3(backlog-set 硬拒 status) |
-| FR-7 next-cr-id+cr-init | §2.3 + §4.2 分配即写,合并实现共享 casWriteMulti | AC-4(并发不撞号:组件级测) |
+| FR-7 next-cr-id+cr-init | §2.3 + §4.2：cr-init 内部分配并返回 id(唯一权威),next-cr-id 纯预览;唯一并发冲突码 CAS_CONFLICT | AC-4(并发两次 cr-init 断言分配到不同 CR-ID、冲突方收 CAS_CONFLICT 重跑得新号;§5 组件级抽函数注入 mismatch hash 构造) |
 | FR-8 task allocate | §2.3 casWrite tasks/_index.yml | AC-5 |
 | FR-9/10/11 | §3.2 只读派生 + git commit --template | AC-6 |
 | FR-12 D13 溯源 | Phase 0 门槛调查,结论二选一(§1.7 PRD);**本 SDD 不预判路线**,调查产出后若"复活"再补设计小节 | AC-7(结论入 SDD) |
