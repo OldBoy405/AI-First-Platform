@@ -21,11 +21,11 @@ reviews:
           repair-target: null
   tech-design:
     reviewer: ai-reviewer
-    verdict: block
-    reviewed-at: "2026-08-05T11:25:00+08:00"
-    blocker-count: 1
+    verdict: pass
+    reviewed-at: "2026-08-05T11:33:00+08:00"
+    blocker-count: 0
     review-loop:
-      current-attempt: 0
+      current-attempt: 1
       max-attempts: 3
       attempts:
         - attempt: 0
@@ -33,3 +33,8 @@ reviews:
           result: block
           blocker-count: 1
           repair-target: write-tech-design
+        - attempt: 1
+          reviewed-at: "2026-08-05T11:33:00+08:00"
+          result: pass
+          blocker-count: 0
+          repair-target: null
