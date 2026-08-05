@@ -1,0 +1,50 @@
+cr-id: CR-2026-021
+review-type: tech-design
+reviewer: ai-reviewer
+reviewed-at: "2026-08-05T11:25:00+08:00"
+verdict: block
+blockers:
+  - id: SDD-BLOCK-001
+    location: "§3.1 接口契约 / §2.3 / §4.2"
+    issue: >-
+      cr-init 的签名与语义自相矛盾，且并发错误码路径未定义。§3.1 签名
+      `crctl cr-init <cr-id> --title ...` 要求调用方传入显式 cr-id（隐含分配权在上游
+      next-cr-id 预览），但 §2.3/§4.2 又把 cr-init 定为「权威原子分配」。二者不能同时成立：
+      若 id 由调用方传入，并发下两个 cr-init 拿到同一预览 id，冲突表现是 CR_ALREADY_EXISTS
+      （id 已被占）；若 cr-init 自行分配，则并发冲突是 casWriteMulti 的 CAS_CONFLICT（hash 失配）。
+      §4.2 只写了 CAS_CONFLICT 一条重试路径，AC-4「并发不撞号」的验收因此无法判定重试该 catch
+      哪个错误码——接口语义歧义直接影响可测试性。
+    suggestion: >-
+      二选一并贯通全文：(推荐) cr-init 不取显式 cr-id，改为内部分配 max+1、原子写入后
+      **返回**分配到的 id，next-cr-id 退为纯人肉预览；这样消除 TOCTOU、只剩 CAS_CONFLICT
+      一条冲突路径。或：保留显式 cr-id 签名，但在 §4.2 明确 cr-init 的重试同时覆盖
+      CAS_CONFLICT 与 CR_ALREADY_EXISTS，并在 AC-4 指明两码均触发调用方重跑。修订 §3.1 签名、
+      §2.3、§4.2、§3.4 错误码表使三处口径一致。
+repair-target: write-tech-design
+repair-instructions:
+  - "统一 cr-init 的分配语义：采用「cr-init 内部分配并返回 id」方案——§3.1 签名去掉必填 <cr-id>（改为可选或移除），标注返回分配到的 CR-ID；§2.3/§4.2 明确唯一权威分配点是 cr-init 的 casWriteMulti，next-cr-id 仅只读预览不参与分配；§3.4 错误码相应保留 CAS_CONFLICT 为唯一并发冲突码（CR_ALREADY_EXISTS 仅用于显式传入已存在 id 的误用场景）。"
+  - "AC-4（在 SDD §6 映射行）对齐：并发两次 cr-init 断言分配到不同 CR-ID，冲突方收到 CAS_CONFLICT 后重跑得新号——用 §5 组件级抽函数注入 mismatch hash 的范式构造。"
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 0
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-08-05T11:25:00+08:00"
+      result: block
+      blocker-count: 1
+      repair-target: write-tech-design
+suggestions:
+  - "§4.4/§8-D1 归档硬门禁挂在 CI cr-guard 适配器，但 SDD 未确证 CI enforcement 是否真为 tools 仓接线生效；建议开发期确认，否则「CI 远端兜底」是理论的，pre-commit 本地钩子才是实际主防线（不阻断评审，属实现期核实项）。"
+  - "FR-12（D13）SDD 明示「调查后若复活再补设计小节」——SDD 对该 FR 是条件不完整。建议评审接受「D13 设计随 Phase 0 门槛调查结论补充」为已知例外（PRD 已定为门槛调查，非遗漏）。"
+  - "lint-prompts R1 的「段落」边界对 pipeline JSON（无 Markdown 标题结构）如何切分可更明确：§4.3 说「JSON node 边界」，但单个 node 的 prompt 是长字符串，段内再切分（分句/分行）粒度未定，建议实现期明确以免邻近判定误报/漏报。"
+fr-coverage:
+  total: 25
+  covered: 25
+  missing: []
