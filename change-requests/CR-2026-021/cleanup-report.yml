@@ -1,0 +1,14 @@
+cr: CR-2026-021
+cleanup-status: done
+cleaned-at: "2026-08-05T17:10:00+08:00"
+repos:
+  - id: ai-first-platform-docs
+    worktree: .rayai-worktrees/knowledge-base/requirement/CR-2026-021
+    result: removed
+    remote-branch: skipped-no-remote-access
+  - id: multica
+    worktree: .rayai-worktrees/multica/requirement/CR-2026-021
+    result: skipped-missing
+    remote-branch: skipped-no-remote-access
+  - id: tools
+    note: 不在 dir-graph repositories 声明内（phase0-tools），无 worktree；本地分支 requirement/CR-2026-021 保留待人工确认
