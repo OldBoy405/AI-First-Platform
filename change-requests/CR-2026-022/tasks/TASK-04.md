@@ -27,6 +27,7 @@ FR-10（2.1-F）：`resolveTemplateCr` 补显式 `--cr <cr-id>` 旗标，调用�
 1. `--cr` 提供时：校验格式 `^CR-\d{4}-\d{3}$`（不合 BAD_ARGS）+ `_backlog` 条目存在性（不在则 fail），直用，不调 `resolveTemplateCr`
 2. `--cr` 缺省：走原分支探测 → subject 正则兜底 → fail 路径，存量调用零破坏
 3. requirement-register Step 4 示例改为 `crctl git commit --template register --cr {cr_id} -m "..."`（cr_id 为 Step 2 cr-init 返回值）
+4. **实施期现场坐实（本 CR 任务拆分 commit）**：`--template task-breakdown` 生成的 `feat({cr}): task breakdown (N tasks)` 形态被 controlled-shell commit 白名单拒绝（白名单仅 `-m (wip: |[cr] |merge()`），`write-dev-tasks` SKILL 教的形态与其自身生成器矛盾——顺带核查 COMMIT_TEMPLATES 全部模板生成形态与 rules.json 白名单对齐，不一致的模板一并修正（register 模板生成 `[cr] register ...` 可用，task-breakdown/writeback 等逐一验证）
 
 ## 验收条件
 
@@ -34,6 +35,7 @@ FR-10（2.1-F）：`resolveTemplateCr` 补显式 `--cr <cr-id>` 旗标，调用�
 2. 非法格式 `--cr abc` 被 BAD_ARGS 拒绝；不存在 CR 被拒绝
 3. 不带 --cr 在 requirement/CR-* 分支上原逻辑可用
 4. requirement-register SKILL 示例含 `--cr`
+5. 全部 COMMIT_TEMPLATES 生成形态与 rules.json 白名单对齐（逐个模板实测一次 commit 不被 FORBIDDEN_SUBCOMMAND）
 
 ## 完成标志
 
