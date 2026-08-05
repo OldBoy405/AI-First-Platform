@@ -4,6 +4,7 @@
 > 触发：crctl（CR-2026-019 账本子命令 / CR-2026-020 回写脚本 / 本轮 FR-2/4/5/8）与 PreToolUse guard 的能力跑在了 prompt 前面
 > 日期：2026-08-05　范围：本文件是修改方案（未改动任何 tools 文件）
 > 结论先行：分两大块——**① crctl 补齐对 `_backlog`/`review-annotations` 的写入面（消除"guard 锁死但无工具出口"的孤儿写入，含用户点名的 supplemental-reviews）；② 把一批 SKILL/pipeline prompt 从"手把手教手动操作"改为"调用 crctl"**。②依赖①，故①先行。
+> **范围更新（按决定单轮做完）**：原 §2.1 列的 D9~D16（CR-ID/TASK-ID 分配、cr.md 首次建档、worktree 路径拼接、PRD/SDD schema 校验、commit message 格式化、dashboard 统计）不再拆到下一轮，全部并入本方案 Phase 0/3，新增 S6~S11 子命令承接（唯一例外：D13 PRD/SDD schema 校验需先做溯源调查再决定落点，见 §1.7；D15 工时求和量小，直接并入 Phase 4 的 prompt 精简，不开新命令）。
 
 ---
 
@@ -28,7 +29,7 @@
 | **`_backlog` prd-path / owners / remote-ref / checkpoints / notify-log** | **无** | ❌ 孤儿：guard deny、无工具、prompt 只能硬写→被拦 |
 | **`review-annotations/{stage}.yml`** | **无（只有 validate 读）** | ❌ 孤儿：评审必写、guard deny、无工具 |
 
-### 1.3 新增子命令族（5 个，按优先级）
+### 1.3 新增子命令族（11 个，按优先级——含本轮并入的 D9/D10/D11/D12/D14/D16）
 
 所有新命令复用现有 `matchEntryBlock` + `casWrite` + `auditLog` + `nowIso`（时间戳/身份一律 crctl 生成，拒绝调用方传入），零新依赖。
 
@@ -39,6 +40,14 @@
 | S3 | `crctl checkpoint-add <cr> --repo <r> --sha <sha> [--remote-ref <ref>]` | `_backlog` 条目 `checkpoints[]` 追加 + 更新 `remote-ref`/`last-push-at`(crctl 生成)/`last-push-by`(identity) | developing~writing-back | push-progress 手写推送元数据 | P1 |
 | S4 | `crctl owner-set <cr> --role <requirement\|development\|test> --id <id>` | 写 `_backlog` 条目 `owners.{role}.id` + `assigned-at`(crctl 生成)。**`--id` 与 S2 的 `--by` 不同**：这是"指派给谁"的业务数据（被指派人的身份，本就该由调用方传入），不是"谁在操作 crctl"的操作者身份，不违反§1.3 的时间戳/身份生成原则 | 任意非终态 | handover-cr / resume-from-remote 手改 owners | P1 |
 | S5 | `crctl backlog-set <cr> --field <name> --value <v>` | 白名单标量字段写入：仅允许 `prd-path`、`sdd-path`（及未来静态注册字段）；**硬拒** `status`/`updated-at`/`owners`/`merge-commits`（各有专命令） | 任意非终态 | write-requirement-prd 手改 prd-path | **P1**（与 S3/S4 同属"每 CR 必经 + 当场被 guard 拦"的孤儿，原判 P2 仅按频率排序，应与 S3/S4 同级） |
+| S6 | `crctl next-cr-id [--year Y]` | **CAS 保护**的 CR-ID 分配：读 `_index.yml`/`_backlog.yml` 现有最大编号，抢占式返回下一个 `CR-{Y}-{NNN}`（并发请求下失败重试，不会撞号） | 无（纯分配，不改任何已有记录） | requirement-register 手算 max+1、无 CAS | **P0（对应 D9，与 S1/S2 同一"guard/CAS 缺位"病根，且处于生命周期最前端，撞号会污染所有下游记录）** |
+| S7 | `crctl task allocate <cr> [--slug <s>]` | 扩展现有 `task` 子命令族：CAS 保护的 TASK-ID 分配，`TASK-{NN}` + slug 兜底命名 | developing 态 | write-dev-tasks 手动顺序分配、手拼 slug | **P0（对应 D10，与 S6 同病根、同 `develop/` skill family，建议一起设计一起测）** |
+| S8 | `crctl cr-init <cr-id> --title <t> --owner-requirement <id>` | 生成初始 `cr.md`（owners/owner-history/时间戳全部 crctl 生成）+ 级联首次登记进 `_backlog` | 前置：`cr-id` 尚未存在（通常紧跟 S6 分配结果） | requirement-register 手写整份 frontmatter | **P0（对应 D12，与 S6 是同一注册流程相邻两步，建议合并实现与测试，不单独拆）** |
+| S9 | `crctl worktree-path <cr> --repo <r>` | 只读派生输出 worktree bucket/path（`role==knowledge-base?"knowledge-base":repo.id` + 固定模板拼接），不写文件、无需 CAS | 无 | requirement-register/merge-feature-branch/push-progress/resume-from-remote 4+ 处各自重复 prose | P1（对应 D11，去重非当场失败，但既然本轮已动 requirement-register，顺手做） |
+| S10 | 扩展现有 `crctl git commit`，加 `--template <kind>` | 按 kind（`register`/`task-breakdown`/`writeback`/…）生成规范 commit message；**不是新增顶层子命令**，是给现有 git commit 分支加一个格式化分支 | 同现有 git commit 白名单（`^-m (wip: \|\[cr\] \|merge\().*$`） | requirement-register:114 / write-dev-tasks:80 / writeback-traceability:75 各自拼 prose | P2（对应 D14，随 Phase 1-C 裸 git 迁移顺手做，边际成本低） |
+| S11 | `crctl report`/`crctl cr-metrics [--period P]` | 只读聚合：跨 CR 状态直方图、SLA 阈值比较、周期活动计数 | 无（只读） | cr-dashboard/spec-dashboard Step 2 手动统计 | P2（对应 D16，只读风险低，优先级最末） |
+
+**不在此列的两项**：**D13**（PRD/SDD schema 校验）不是"该不该开新子命令"，而是"该不该复活已被下线的代码"的调查决策，处理路径见 §1.7，不预先分配子命令名。**D15**（工时估算求和）纯加法、量小，不值得开命令，直接在 Phase 4 里改 prompt 措辞。
 
 **inbox-emit 的 `notify-log`/`notify-pending`**：同属 `_backlog` 孤儿写入（`_backlog.yml` 在 deny 名单，agent 早前判"非 deny"有误）。两条路线择一（方案里列，落地时定）：
 - (a) 扩 S5 白名单允许 `notify-log`（数组追加语义）；或
@@ -54,6 +63,24 @@ review-annotations 的**内容是评审 agent 的判断**（verdict=pass/block�
 这样"判断=agent、确定性文件写入=crctl"的缝切干净，且让 gate 依赖的 review-annotations 变成 crctl 独占写、有审计——与 approval.yml/review-loop 同一治理模型，**顺带消除 guard 锁死却无写口的 latent bug**。
 
 > 更省的替代：把 `review-annotations/*.yml` 从 deny 降为 ask（人工放行每次评审写）。**不推荐**，但理由要说准确：无论 deny+S1 还是 ask，agent 都仍是"判断"的来源（S1 的 payload 里 verdict 照样由 agent 写），S1 并不能阻止 agent 在 payload 里写假 verdict——真正兜底造假的是 `crctl approve` 的人工/TTY 环节，不是 S1 本身。S1 相对 ask 的真实收益是：schema 校验（拒绝格式错误的 payload）+ CAS（防并发覆盖）+ 审计（可追溯谁在什么时候写了什么）+ 消除"guard 锁死但无合法写口"的孤儿状态 + 免去每次评审都要人工放行的摩擦。这些收益已经足够支撑"不用 ask"的结论，不必夸大成"防造假"。
+
+### 1.5 S6/S7/S8：把"分配新 ID/建档"和"更新已有记录"用同一套机制统一
+
+S1~S5 解决的是"改已有记录的字段缺写口"；S6~S8 解决的是同一件事发生在**生命周期最前端**（CR 还不存在的那一刻）：分配编号（S6/S7）和建初始档（S8）本质上也是"crctl 该独占却没有写口"的写入，只是对象从"字段"换成了"主键/新记录本身"。三者应合并实现和测试，理由：
+- S6（CR-ID）→ S8（cr.md 建档）是同一注册流程里前后相邻的两步，实现上可以共享同一个 `casWrite` 事务（分配到号即顺带建档，减少中间态窗口）。
+- S7（TASK-ID）独立于 S6/S8（发生在 `write-dev-tasks` 而非 `requirement-register`），但校验/测试模式（max+1 + CAS + 补零/slug 格式化）与 S6 完全同构，共享一份测试用例骨架即可。
+
+### 1.6 S9~S11：只读辅助类，不涉及 CAS/审计
+
+S9（worktree-path）、S11（report/cr-metrics）是纯读操作，给定输入只有一个正确输出，但不修改任何受保护文件，因此不需要 `casWrite`/`auditLog`，实现成本明显低于 S1~S8，可以作为 Phase 0 里"顺手做"的部分。S10 甚至不是新 dispatch case，只是给已有的 `git commit` 分支加一个可选格式化模板，成本最低。
+
+### 1.7 D13：先调查再决定，不是直接写代码
+
+`validate-doc/SKILL.md` 现在教 agent 用眼睛核对 PRD/SDD 的 frontmatter/命名/路径完整性，而 engineering-docs 自带的 `prd.schema.json`/`sdd.schema.json` + `validateFrontmatter`/`validateNaming` 在 v0.4.0 被主动下线。这条**不能像 S1~S11 一样直接定设计**，因为不知道当初下线的原因——贸然复活可能重新踩到当时下线的坑。作为 Phase 0 的第一个任务（可与 S1~S11 的实现并行，只是 D13 自身的落地要等这一步的结论）：
+
+1. 查 engineering-docs 的 `v0.4.0` changelog/commit 历史，确认下线的具体原因（已知 bug？被更大改造取代？性能问题？）。
+2. 若原因已解决或不再成立 → 复活，二选一：(a) 并入 `crctl validate` 新增 `--doc-type prd|sdd`；(b) `validate-doc` 改为直接调用 engineering-docs 自己的 CLI（更合适——PRD/SDD 校验本不属于 CR 账本类产物，不必挤进 crctl 的职责边界）。
+3. 若原因仍成立 → 本轮不复活，在 SDD 里记录"已排查、暂缓，原因 XXX"，避免重蹈覆辙——这本身也是"留痕而非靠记性"的一次实践。
 
 ---
 
@@ -71,8 +98,16 @@ review-annotations 的**内容是评审 agent 的判断**（verdict=pass/block�
 | D6 | **状态推进**（cr.md status 写 + 门禁 + commit） | crctl advance 已是唯一入口，但全仓仍引用 cr-status-set（直接写 cr.md、不跑门禁） | → 一律 `crctl advance`（已存在） |
 | D7 | **merge-commits 字段校验口径** | 生产者 3 字段，下游 prompt 仍校验 6 字段 → 必失败 | → 改 prompt 为 3 字段（无需新命令） |
 | D8 | **status→下一节点决策** | `crctl next` 已存在，但 resume-cr node-3 / resume-from-remote Step5 各硬编码一张状态映射表（两处重复维护） | → 一律 `crctl next` |
+| D9 | **CR-ID 分配**（`CR-{YYYY}-{NNN}` 顺序编号） | `requirement-register/SKILL.md:48` agent 读 `_index.yml` 扫最大 `NNN`、手算 `+1`、补零——**无 CAS**，并发注册会撞号 | → **S6 next-cr-id** |
+| D10 | **TASK-ID 分配**（`TASK-{NN}` 顺序编号 + slug 兜底命名） | `write-dev-tasks/SKILL.md:45,64` agent 手动顺序分配、拼 slug | → **S7 task allocate** |
+| D11 | **worktree bucket/path 拼接** | `requirement-register:127-133`、`merge-feature-branch`、`push-progress`、`resume-from-remote` 4+ 处各自用 prose 重复描述同一条拼接规则 | → **S9 worktree-path** |
+| D12 | **cr.md 首次建档**（初始 frontmatter：owners/owner-history/时间戳） | `requirement-register:53-97` 全量手写；`crctl validate` 认得这个 shape 但没有对应写入口 | → **S8 cr-init** |
+| D13 | **PRD/SDD schema/命名/路径校验** | `validate-doc/SKILL.md` 教 agent 用眼睛核对；而 engineering-docs 自带的 `prd.schema.json`/`sdd.schema.json` + `validateFrontmatter`/`validateNaming` 在 v0.4.0 已被下线弃用 | → **§1.7 先调查再定路线**（不预先开子命令） |
+| D14 | **commit message 格式化** | `requirement-register:114`、`write-dev-tasks:80`、`writeback-traceability:75` 等各自用 prose 拼固定格式字符串 | → **S10（扩展 `crctl git commit --template`）** |
+| D15 | **工时估算求和** | `write-dev-tasks:87` 手动加总 TASK 估时 | → 量小，Phase 4 直接改 prompt 措辞，不开子命令 |
+| D16 | **dashboard 跨 CR 统计**（状态直方图/SLA 阈值/周期活动计数） | `cr-dashboard`/`spec-dashboard` Step 2 手动统计 | → **S11 report/cr-metrics** |
 
-D2/D3/D6/D7/D8 **不需要新 crctl 能力**，纯 prompt 改（工具早已就位，prompt 没跟上）。D1/D4/D5 需要第一部分的新子命令。
+D2/D3/D6/D7/D8 **不需要新 crctl 能力**，纯 prompt 改（工具早已就位，prompt 没跟上）。D1/D4/D5/D9/D10/D11/D12/D14/D16 均已并入本轮 §1.3 的 S1~S11 子命令族。D13 走 §1.7 的"先调查再定路线"，D15 走 Phase 4 的纯 prompt 精简。**本轮不再保留"下一轮候选"分类**——全部合并为一次施工，详细设计见 §1.3~§1.7，本节只做速查映射（不重复展开，避免和 §1.3~§1.7 的描述漂移）。
 
 ---
 
@@ -80,13 +115,16 @@ D2/D3/D6/D7/D8 **不需要新 crctl 能力**，纯 prompt 改（工具早已就�
 
 依赖顺序：**Phase 0（crctl 补命令）→ 依赖新命令的 prompt 改（Phase 3）**；不依赖新命令的 prompt 改（Phase 1/2）可与 Phase 0 并行。
 
-### Phase 0 — crctl 能力补齐（前置，需测试）
+### Phase 0 — crctl 能力补齐（前置，需测试；本轮已合并原 D9~D16）
 
-- 实现 S1~S5 + inbox-emit 子命令（§1.3），各配 crctl 测试（正常 / 前置态非法 / CAS 冲突 / schema 拒绝）。
-- 更新 `crctl help`、`ARCHITECTURE.md §3 code map`、`skills/_index.yml:274` 的 crctl brief（补全 CR-2026-019 已加但漏列的 `task done`/`merge-metadata`/`archive-move`/`migrate-backlog` + 本次新增子命令）。
+- **Step 0（先做，门槛任务）**：D13 溯源调查（§1.7）——查清 engineering-docs schema validator 在 v0.4.0 下线的原因，产出结论（复活/不复活）。不阻塞下面其余子命令的实现，可并行，只是 D13 自身能否落地要等这一步。
+- 实现 S1~S5 + inbox-emit（§1.3 原有 6 项）+ **S6~S9、S11（新并入的 5 项：next-cr-id、task allocate、cr-init、worktree-path、report/cr-metrics）**，各配 crctl 测试（正常 / 前置态非法 / CAS 冲突 / schema 拒绝；S9/S11 是只读，测试只需覆盖输入→输出映射，无需 CAS 用例）。S6/S8 建议合并实现（§1.5：同一注册流程相邻两步，共享一个 casWrite 事务）。
+- **S10**：在实现 Phase 1-C（裸 git 迁移）时顺手给 `crctl git commit` 加 `--template <kind>` 分支，不单独排期。
+- 若 D13 结论是"复活"：视路线 (a)/(b) 决定是否需要扩展 `crctl validate`（见 §1.7），随本 Phase 一并实现；若结论是"不复活"，在 SDD 记录排查结论即可，不写代码。
+- 更新 `crctl help`、`ARCHITECTURE.md §3 code map`、`skills/_index.yml:274` 的 crctl brief（补全 CR-2026-019 已加但漏列的 `task done`/`merge-metadata`/`archive-move`/`migrate-backlog` + 本次全部新增/扩展子命令 S1~S11）。
 - **S1 payload 落点约定**：agent 判断写入的临时 payload（§1.4）统一放 `.crctl/tmp/review-{stage}.yml`，需在 `.gitignore` 补一条 `.crctl/tmp/`，且 `review-record` 消费成功后自动删除该临时文件，避免残留误提交或跨 CR 串味。
 - 逐条核对 Phase 1-C 待迁移的裸 git 命令是否已在 `controlled-shell/rules.json#git` 白名单内，缺的 shape（例如 `ls-remote` 带分支参数的形态）随本 Phase 一并补齐。
-- **落点**：tools 仓 `crctl.mjs` + `test/crctl.test.mjs`。这是账本权威工具的写入面扩张，**必须走 CR**（见文末"是否开 CR"）。
+- **落点**：tools 仓 `crctl.mjs` + `test/crctl.test.mjs`。这是账本权威工具的写入面扩张（9 个写子命令 + 2 个只读子命令 + 1 处既有命令扩展），**必须走 CR**（见文末"是否开 CR"）。
 
 ### Phase 1 — P0 prompt 修正（会当场失败/被拦，且不依赖新命令）
 
@@ -114,12 +152,20 @@ D2/D3/D6/D7/D8 **不需要新 crctl 能力**，纯 prompt 改（工具早已就�
 | push-progress:63-77 | 手写 remote-ref/last-push/checkpoints | `crctl checkpoint-add`（S3） |
 | write-requirement-prd:87-89 | 手改 `_backlog` prd-path | `crctl backlog-set --field prd-path`（S5） |
 | inbox-emit | 手写 `_backlog` notify-log | `crctl inbox-emit`（§1.3 路线 b） |
+| requirement-register:48 | 手算 CR-ID max+1，无 CAS | `crctl next-cr-id`（S6，D9） |
+| write-dev-tasks:45,64 | 手动分配 TASK-ID + 拼 slug | `crctl task allocate`（S7，D10） |
+| requirement-register:53-97 | 手写整份 cr.md 初始 frontmatter | `crctl cr-init`（S8，D12，通常紧跟 S6） |
+| requirement-register:127-133 / merge-feature-branch / push-progress / resume-from-remote | 各自 prose 重复拼 worktree bucket/path | `crctl worktree-path`（S9，D11） |
+| requirement-register:114 / write-dev-tasks:80 / writeback-traceability:75 | 各自 prose 拼 commit message | `crctl git commit --template <kind>`（S10，D14） |
+| cr-dashboard / spec-dashboard Step 2 | 手动统计状态直方图/SLA/周期活动 | `crctl report`/`crctl cr-metrics`（S11，D16） |
+| validate-doc（视 §1.7 调查结论） | 手工核对 PRD/SDD frontmatter/命名/路径 | 复活后并入 `crctl validate --doc-type` 或改调用 engineering-docs CLI（D13，若结论为"不复活"则本行不改） |
 
-### Phase 4 — 冗余精简 + 文档 staleness（D8 + 主题 G/H）
+### Phase 4 — 冗余精简 + 文档 staleness（D8/D15 + 主题 G/H）
 
 - **D8 状态映射去重**：`resume-cr` node-3、`resume-from-remote:99-113`、`pull-progress:64-66`、`implement-code:67` → 收敛为"跑 `crctl status`（含 STATUS_DIVERGED）+ `crctl next`"，删两处重复的硬编码状态表。
+- **D15 工时估算求和精简**：`write-dev-tasks:87` 手动加总 TASK 估时的措辞改为"按 TASK 列表求和"一句话带过或直接删（求和不值得单独强调步骤），不开新命令。
 - **主题 G spec-id/version prose**：`feature-writeback.pipeline.json` inputs/node-2/node-3 冗长"必须显式提供否则空路径" → 精简（缺参现 BAD_ARGS fail-fast 兜底）。
-- **主题 H 文档**：`skills/_index.yml` 各 brief 补齐；`AGENTS.md（主仓）#6` 把"cp 覆盖"危害降为历史注脚（writeback-prd-sdd 已脚本化，危害已消除）；writeback 系 brief 补提 CR-2026-020 脚本。
+- **主题 H 文档**：`skills/_index.yml` 各 brief 补齐（含 S1~S11 全部新增/扩展子命令）；`AGENTS.md（主仓）#6` 把"cp 覆盖"危害降为历史注脚（writeback-prd-sdd 已脚本化，危害已消除）；writeback 系 brief 补提 CR-2026-020 脚本。
 - **流程改进（治本）**：把"crctl 能力变更 → prompt 对齐"从"记得扫一遍"升级为**机械化防线**（linter + gate，diff 本身即触发器，不设专门快照测试——见 §4.0），详见 **第四部分**（这是防止本次清理若干个 CR 后重新漂移的关键，不做则本方案只是又一次一次性清理）。
 
 ---
@@ -180,10 +226,12 @@ linter 机械覆盖的是 **"prompt 多做了 crctl 已接管/已禁的事"（CO
 ## 是否开 CR：这次建议开（与上一个轻量修复相反）
 
 上一个漂移修复我判"不开 CR"（几处小改）。这次相反，**建议开一个治理 CR**，因为：
-1. **动账本权威工具的写入面**（Phase 0 新增 6 个写子命令），是 CR-2026-019 同级别的 scope，必须走门禁 + 人工审批 + 测试。
-2. **跨 20+ SKILL/pipeline 的协同改动**，且 Phase 有严格依赖顺序（0→3），需要 plan/tasks 编排。
-3. **有真实设计决策待评审**：review-record 的判断/写入分离、supplemental-reviews 落点、review-annotations deny-vs-ask、inbox-emit 路线 a/b——这些正是 SDD 评审该拍的。
+1. **动账本权威工具的写入面**（Phase 0 新增 9 个写子命令 + 2 个只读子命令 + 1 处既有命令扩展，含本轮并入的 D9~D16），比原判的 6 个写子命令 scope 更大，与 CR-2026-019 同级或更高，必须走门禁 + 人工审批 + 测试。
+2. **跨 20+ SKILL/pipeline 的协同改动**（本轮并入 requirement-register/write-dev-tasks/cr-dashboard 等注册与仪表盘链路后，实际改动文件数进一步增加），且 Phase 有严格依赖顺序（0→3），需要 plan/tasks 编排，颗粒度要比原判更细。
+3. **有真实设计决策待评审**：review-record 的判断/写入分离、supplemental-reviews 落点、review-annotations deny-vs-ask、inbox-emit 路线 a/b、**D13 是否复活 engineering-docs schema validator（§1.7，需先出溯源结论再评审）**——这些正是 SDD 评审该拍的。
 4. dogfooding：这是治理工具链自身的改进，最不该跳过治理流程。
+
+**范围决定**：按单轮做完（不再拆"下一轮候选"），Phase 0 的子命令数从 6 增至 12（S1~S11 + 视 D13 结论的 validate 扩展），SDD/plan/tasks 编排需相应放大颗粒度，评审也需要相应更充分的时间，但仍归入同一个 CR、同一次评审。
 
 **里程碑建议 T1.3**（延续 CR-2026-019 T1.1 / CR-2026-020 T1.2）。可作为 CR 立项素材直接引用本方案 + 审计报告。
 
@@ -191,8 +239,9 @@ linter 机械覆盖的是 **"prompt 多做了 crctl 已接管/已禁的事"（CO
 
 ## 优先级速览（若资源受限先做哪些）
 
+0. **Phase 0 Step 0（门槛任务，最先做）**：D13 溯源调查（§1.7）——查清 engineering-docs schema validator v0.4.0 下线原因，出结论后其余 S1~S11 的实现和测试可继续并行，不必等它。
 1. **P0 立即（会当场失败）**：Phase 1 全部——尤其 D7 merge-commits 3 字段（否则回写必挂）、approve-* 手写 approval.yml（被 guard deny）。这些**不依赖新命令**，可在 Phase 0 完成前先改；主题 C 裸 git 迁移前记得核对 rules.json git shape 白名单（见 Phase 1 表内 `ls-remote` 反例）。
-2. **P0 需 Phase 0**：S1 review-record（修 guard 孤儿 + 高频，注意 stage→文件名映射，`tech-design`→`sdd.yml`）、S2 review-note（用户点名）。
+2. **P0 需 Phase 0**：S1 review-record（修 guard 孤儿 + 高频，注意 stage→文件名映射，`tech-design`→`sdd.yml`）、S2 review-note（用户点名）、**S6 next-cr-id + S8 cr-init（D9/D12，注册流程最前端，建议合并实现）**、**S7 task allocate（D10，同病根，与 S6 一起设计测试）**——这五个子命令共享"guard/CAS 缺位、且处在生命周期关键节点"的紧迫性，建议同批开工。
 3. **防复发单点最高杠杆**：第四部分层 1 `lint-prompts`——把本次审计固化为可重复检查，投入小、价值最高。**建议随 Phase 0 落，并作为 Phase 1~3 的验收工具**（改完跑一遍确认 CONTRADICTS/STALE 清零）。层 2 gate 接入（pre-commit + feature-writeback）可紧随其后一起做，成本很低，不必单列后补项；原方案的快照测试层已砍（§4.0）。
-4. **P1**：Phase 2（cr-status-set 系统性清理）、S3/S4/S5（sync 账本写入，S5 由 P2 上调为 P1）。
-5. **P2**：inbox-emit、Phase 4 其余（精简 + 文档）。
+4. **P1**：Phase 2（cr-status-set 系统性清理）、S3/S4/S5（sync 账本写入，S5 由 P2 上调为 P1）、**S9 worktree-path（D11，去重非当场失败，但顺手做）**。
+5. **P2**：inbox-emit、**S10 git commit --template（D14，随 Phase 1-C 顺手做）**、**S11 report/cr-metrics（D16，只读风险低）**、Phase 4 其余（含 D15 工时求和的 prompt 精简、精简 + 文档）。
