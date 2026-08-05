@@ -6,7 +6,8 @@ plan-ref: "change-requests/CR-2026-021/plan.md"
 sdd-ref: "change-requests/CR-2026-021/sdd.md"
 title: Phase 4 收尾 — D8 状态映射去重 + 冗余精简 + 回写清单新增项 + gate 切换 enforce
 slug: phase4-closeout-gate-enforce
-status: pending
+status: done
+done-at: "2026-08-05T15:30:00+08:00"
 estimate: 5h
 depends-on: ["CR-2026-021-TASK-17", "CR-2026-021-TASK-18", "CR-2026-021-TASK-19", "CR-2026-021-TASK-20", "CR-2026-021-TASK-21"]
 assignee: ""
