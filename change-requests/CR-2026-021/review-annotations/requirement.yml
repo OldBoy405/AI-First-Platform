@@ -1,0 +1,45 @@
+cr-id: CR-2026-021
+review-type: requirement
+reviewer: ai-reviewer
+reviewed-at: "2026-08-05T10:45:00+08:00"
+verdict: block
+blockers:
+  - id: REQ-BLOCK-001
+    location: "FR-24 / AC-14"
+    issue: >-
+      lint-prompts 硬 gate 的启用时序与 Phase 0→3 依赖顺序自相矛盾。FR-24 将 pre-commit
+      钩子接入「归入 Phase 0」，但清理存量漂移的 Phase 1~3 在其后执行；gate 一旦在 Phase 0
+      即生效并硬阻断，本 CR 自身开发期（tools 仓 crctl.mjs / skills / pipeline 的每次 commit）
+      会被尚未清理的既有漂移当场拦死，导致 Phase 1~3 无法增量提交。而 AC-14 又要求「构造带
+      漂移的 commit 被本地钩子拦截」，与「开发期漂移 commit 必须能流转」直接冲突——PRD 内部
+      验收标准不自洽。
+    suggestion: >-
+      FR-24 明确 gate 的强制拦截仅在 Phase 3 漂移清零后启用；Phase 0~2 期间 lint-prompts
+      以 report-only / warn 非阻断模式运行（输出 file:line 但不 fail 提交）。AC-14 增补一条
+      验收点：「Phase 0~2 期间对 tools 仓的 commit 不被既有未清理漂移阻断」，并把「带漂移
+      commit 被拦截」的验收明确限定在 gate 转为强制模式之后。
+repair-target: write-requirement-prd
+repair-instructions:
+  - "修订 FR-24：区分 lint-prompts 的两种运行模式——Phase 0~2 report-only（不阻断提交），Phase 3 漂移清零后转为 pre-commit 硬阻断；feature-writeback 归档 gate 不受此影响（归档必发生在 Phase 3 之后）。"
+  - "修订 AC-14：新增「CR 自身开发期（Phase 0~2）commit 不被既有漂移阻断」验收点；把「带漂移 commit 被拦截」限定为 gate 转强制模式后的行为。"
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 0
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-08-05T10:45:00+08:00"
+      result: block
+      blocker-count: 1
+      repair-target: write-requirement-prd
+suggestions:
+  - "target-version 仍为 tbd：建议在里程碑 T1.3 定项时明确目标版本号（属编辑性字段，不阻断）。"
+  - "FR-24 引用的 feature-writeback「cr-guard」挂点名未确证，SDD 阶段需确认该挂点确实存在（方案已给「或归档前 passCondition」备选）。"
+  - "NFR-7 / AC-4 / AC-5 的并发撞号验收在单进程测试中难以真实复现，建议 SDD 说明 CAS 冲突的测试构造方式（注入并发写 / 模拟 stale read）。"
+  - "FR-19（Phase 3）单条覆盖 13 处 prompt 改动，PRD 层可接受，但建议 SDD/tasks 阶段拆到任务级以便逐条追踪与验收。"
