@@ -1,11 +1,11 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 # 五段链路：需求 FR ↔ 技术设计 SDD ↔ 交付 TASK ↔ 代码 merge SHA ↔ CR-ID
 spec-id: ai-first-platform
-cr-ref: CR-2026-020
-cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020]
-target-version: "0.21"
+cr-ref: CR-2026-021
+cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021]
+target-version: "0.22"
 baseline-since: "0.10"
-generated-at: "2026-08-05T01:35:21+08:00"
+generated-at: "2026-08-05T17:06:57+08:00"
 
 # 已知缺口：CR-2026-003~CR-2026-006 未生成本文件的里程碑段（writeback-traceability 在那四个
 # CR 回写时被跳过，PRD.md/SDD.md/_index.yml 侧的累积记录不受影响、仍完整）。本次（CR-2026-008）
@@ -1053,3 +1053,179 @@ milestones:
         tasks: [CR-2026-020-TASK-01, CR-2026-020-TASK-05]
         code: tools@518a45c: lib.mjs normalize/fail + 三脚本
         evidence: AC-9/AC-10：CRLF 用例 + writeback 9/9 + crctl 45/45
+  - cr: CR-2026-021
+    milestone: T1.3
+    target-version: "0.22"
+    status: writing-back
+    merge-commits:
+      - repo: tools
+        trunk: custom/main
+        sha: de48aa822e55010dcbe828ac12daebeefb074e58
+        branch: requirement/CR-2026-021
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 1a363362eab1da86e8064d2d3db3abd1c80d2913
+        branch: requirement/CR-2026-021
+    frs:
+      - fr: FR-1
+        title: crctl review-record（S1，判断/写入分离 + stage→文件名显式映射）
+        sdd: SDD §4.1/§2.2
+        tasks: [CR-2026-021-TASK-02]
+        code: tools@de48aa8: skills/shared/crctl/scripts/crctl.mjs
+        evidence: AC-1：payload 删除 + SCHEMA_INVALID 不落盘 + 前置态守卫用例
+      - fr: FR-2
+        title: crctl review-note（S2，supplemental-reviews 追加，拒 --by）
+        sdd: SDD §3.1
+        tasks: [CR-2026-021-TASK-03]
+        code: tools@de48aa8: skills/shared/crctl/scripts/crctl.mjs
+        evidence: AC-2：无 approval.yml 时创建 + 拒 --by 用例
+      - fr: FR-3
+        title: crctl checkpoint-add（S3，_backlog checkpoints/remote-ref/last-push 定向写）
+        sdd: SDD §3.1
+        tasks: [CR-2026-021-TASK-04]
+        code: tools@de48aa8: skills/shared/crctl/scripts/crctl.mjs
+        evidence: AC-3：checkpoints[] 追加 + 前置态 developing~writing-back 守卫用例
+      - fr: FR-4
+        title: crctl owner-set（S4，owners.{role} 指派，非终态）
+        sdd: SDD §3.1
+        tasks: [CR-2026-021-TASK-04]
+        code: tools@de48aa8: skills/shared/crctl/scripts/crctl.mjs
+        evidence: AC-3：owner 指派 + 终态拒绝用例
+      - fr: FR-5
+        title: crctl backlog-set（S5，白名单字段定向写，硬拒 status）
+        sdd: SDD §3.1
+        tasks: [CR-2026-021-TASK-04]
+        code: tools@de48aa8: skills/shared/crctl/scripts/crctl.mjs
+        evidence: AC-3：FIELD_NOT_ALLOWED 硬拒 status 用例
+      - fr: FR-6
+        title: crctl inbox-emit（notify-log 事件追加 + notify-pending 合并去重）
+        sdd: SDD §3.1
+        tasks: [CR-2026-021-TASK-05]
+        code: tools@de48aa8: skills/shared/crctl/scripts/crctl.mjs
+        evidence: AC-3：notify-pending 去重用例
+      - fr: FR-7
+        title: crctl next-cr-id + cr-init（S6/S8 合并实现，原子权威分配，无显式 cr-id 入参）
+        sdd: SDD §2.3/§4.2
+        tasks: [CR-2026-021-TASK-06]
+        code: tools@de48aa8: skills/shared/crctl/scripts/crctl.mjs
+        evidence: AC-4：并发两次 cr-init 分配到不同 CR-ID、冲突方 CAS_CONFLICT 重跑得新号
+      - fr: FR-8
+        title: crctl task allocate（S7，TASK-ID CAS 分配 + slug 兜底）
+        sdd: SDD §2.3
+        tasks: [CR-2026-021-TASK-07]
+        code: tools@de48aa8: skills/shared/crctl/scripts/crctl.mjs
+        evidence: AC-5：TASK-ID 分配 + CAS 冲突用例
+      - fr: FR-9
+        title: crctl worktree-path（S9，只读权威拼接规则）
+        sdd: SDD §3.2
+        tasks: [CR-2026-021-TASK-08]
+        code: tools@de48aa8: skills/shared/crctl/scripts/crctl.mjs
+        evidence: AC-6：bucket/path 派生用例
+      - fr: FR-10
+        title: crctl report / cr-metrics（S11，只读聚合：状态直方图/SLA/periodActivity）
+        sdd: SDD §3.2
+        tasks: [CR-2026-021-TASK-08]
+        code: tools@de48aa8: skills/shared/crctl/scripts/crctl.mjs
+        evidence: AC-6：--period 窗口过滤回归用例（Standards 轴修复实装）
+      - fr: FR-11
+        title: crctl git commit --template（S10，register/task-breakdown/writeback 模板）
+        sdd: SDD §3.2
+        tasks: [CR-2026-021-TASK-09]
+        code: tools@de48aa8: skills/shared/crctl/scripts/crctl.mjs
+        evidence: AC-6：模板 message 生成用例
+      - fr: FR-12
+        title: D13 溯源调查（engineering-docs schema validator v0.4.0 下线）
+        sdd: SDD §1.7（调查后结论入 SDD）
+        tasks: [CR-2026-021-TASK-01]
+        code: docs@1a36336: change-requests/CR-2026-021/investigations/d13-schema-validator.md
+        evidence: AC-7：结论=不复活（去 MCP 化 + 契约不匹配 + 零第三方依赖不变量）落盘
+      - fr: FR-13
+        title: 文档更新 + rules.json#git 白名单补齐
+        sdd: SDD §9
+        tasks: [CR-2026-021-TASK-10]
+        code: tools@de48aa8: ARCHITECTURE.md + skills/shared/controlled-shell/rules.json
+        evidence: AC-8：git ls-remote 带分支 shape 用例
+      - fr: FR-14
+        title: Phase 1 — D7 merge-commits 3 字段 + approve-* 折叠为 crctl approve
+        sdd: SDD §6.1（P1-xx 改点）
+        tasks: [CR-2026-021-TASK-13]
+        code: tools@de48aa8: skills/ 多 SKILL + pipeline-templates/
+        evidence: AC-9：prompt 改口径
+      - fr: FR-15
+        title: Phase 1-C — 裸 git 迁移为 crctl git
+        sdd: SDD §6.1（P1-C）
+        tasks: [CR-2026-021-TASK-14]
+        code: tools@de48aa8: skills/ 多 SKILL
+        evidence: AC-9：resume-cr.pipeline.json --cwd 回归修复后全量 JSON 校验
+      - fr: FR-16
+        title: Phase 1 — D3 test-report frontmatter 交 crctl test 生成
+        sdd: SDD §6.1（P3-02）
+        tasks: [CR-2026-021-TASK-15]
+        code: tools@de48aa8: skills/develop/write-test-report/SKILL.md + crctl test 子命令
+        evidence: AC-9：本 CR test-report.md 由 crctl test 真实退出码生成
+      - fr: FR-17
+        title: Phase 1 — attempt 记账收敛（crctl attempt 唯一记账点）
+        sdd: SDD §6.1
+        tasks: [CR-2026-021-TASK-15, CR-2026-021-TASK-17]
+        code: tools@de48aa8: crctl attempt + review-record --bump-attempt
+        evidence: AC-9：review-loop.yml 由 crctl 级联生成
+      - fr: FR-18
+        title: Phase 2 — cr-status-set 系统性清理
+        sdd: SDD §6.1（P2）
+        tasks: [CR-2026-021-TASK-16]
+        code: tools@de48aa8: skills/ 多 SKILL + pipeline-templates/
+        evidence: AC-10：grep -rln cr-status-set skills 仅命中自身 SKILL
+      - fr: FR-19
+        title: Phase 3 — review-*/write-test-report 改调 S1/attempt（13 处改点）
+        sdd: SDD §6.1（P3-01/P3-02）
+        tasks: [CR-2026-021-TASK-17]
+        code: tools@de48aa8: skills/develop/review-code 等 3 评审 SKILL + write-test-report
+        evidence: AC-11：review-* Step 顺序与 REVIEW_STAGE_EXPECT 对齐（开发期死锁修复）
+      - fr: FR-20
+        title: Phase 3 — cr-review-record/handover-cr/push-progress/write-requirement-prd/inbox-emit 改调 S2/S4/S3/S5/inbox-emit
+        sdd: SDD §6.1（P3-03~P3-06）
+        tasks: [CR-2026-021-TASK-18]
+        code: tools@de48aa8: skills/cr/cr-review-record 等 5 SKILL
+        evidence: AC-11：lint-prompts enforce 0 findings
+      - fr: FR-21
+        title: Phase 3 — requirement-register 全量改造（S6 预览 + S8 cr-init + S9 + S10）
+        sdd: SDD §6.1（P3-07+）
+        tasks: [CR-2026-021-TASK-19]
+        code: tools@de48aa8: skills/requirement/requirement-register/SKILL.md
+        evidence: AC-11：注册链路全部改调 crctl 子命令
+      - fr: FR-22
+        title: Phase 3/4 — write-dev-tasks 改造（S7+S10+D15）+ worktree-path 剩余去重（S9）
+        sdd: SDD §6.1（P3-08）
+        tasks: [CR-2026-021-TASK-20]
+        code: tools@de48aa8: skills/develop/write-dev-tasks/SKILL.md
+        evidence: AC-11：TASK 分配与索引登记收敛到 crctl
+      - fr: FR-23
+        title: Phase 3 — cr-dashboard/spec-dashboard 改调 S11；validate-doc 视 D13 结论处理
+        sdd: SDD §6.1（P3-09）
+        tasks: [CR-2026-021-TASK-21]
+        code: tools@de48aa8: skills/spec/spec-dashboard + skills/shared/crctl/report
+        evidence: AC-11：dashboard→S11 report/cr-metrics
+      - fr: FR-24
+        title: Phase 4 — D8 状态映射去重 + 工时措辞 + brief 补齐 + gate 切换 enforce
+        sdd: SDD §6.1（P4）/§4.4 分阶段
+        tasks: [CR-2026-021-TASK-22]
+        code: tools@de48aa8: pipeline-templates/resume-cr + skills/sync/resume-from-remote + .githooks/pre-commit
+        evidence: AC-12/AC-14：D8 改调 crctl next + enforce 切换后首笔提交自举通过
+      - fr: FR-25
+        title: lint-prompts 漂移防线（R1~R6 + ignore 豁免 + report/enforce 双模式）
+        sdd: SDD §4.3
+        tasks: [CR-2026-021-TASK-11]
+        code: tools@de48aa8: skills/shared/crctl/scripts/lint-prompts.mjs
+        evidence: AC-13：10 用例 + 全仓 enforce 0 findings
+      - fr: FR-26
+        title: 两层机械防线接入（pre-commit + CI cr-guard）
+        sdd: SDD §4.4
+        tasks: [CR-2026-021-TASK-12]
+        code: tools@de48aa8: .githooks/pre-commit + skills/shared/crctl/adapters/ci/cr-guard.template.yml
+        evidence: AC-14：Phase 0~2 report 非阻断 + TASK-22 切 enforce
+      - fr: FR-27
+        title: 回写清单项（feature-writeback 回写清单模板 + SDD「prompt 采纳影响」强制小节）
+        sdd: SDD §6 FR-25（Spec 轴补实现）
+        tasks: [CR-2026-021-TASK-22]
+        code: tools@de48aa8: pipeline-templates/feature-writeback + skills/develop/write-tech-design + review-tech-design
+        evidence: AC-15：diff 触及 crctl.mjs dispatch 或 rules.json deny 即触发
