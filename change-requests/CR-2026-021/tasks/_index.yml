@@ -1,0 +1,112 @@
+cr-id: CR-2026-021
+tasks:
+  - id: CR-2026-021-TASK-01
+    title: D13 溯源调查 — engineering-docs schema validator v0.4.0 下线原因
+    status: pending
+    estimate: 3h
+    depends-on: []
+  - id: CR-2026-021-TASK-02
+    title: crctl review-record（S1，判断/写入分离）
+    status: pending
+    estimate: 5h
+    depends-on: []
+  - id: CR-2026-021-TASK-03
+    title: crctl review-note（S2，supplemental-reviews 追加）
+    status: pending
+    estimate: 3h
+    depends-on: []
+  - id: CR-2026-021-TASK-04
+    title: crctl checkpoint-add / owner-set / backlog-set（S3/S4/S5）
+    status: pending
+    estimate: 6h
+    depends-on: []
+  - id: CR-2026-021-TASK-05
+    title: crctl inbox-emit
+    status: pending
+    estimate: 3h
+    depends-on: []
+  - id: CR-2026-021-TASK-06
+    title: crctl next-cr-id（只读预览）+ cr-init（原子权威分配，合并实现）
+    status: pending
+    estimate: 6h
+    depends-on: []
+  - id: CR-2026-021-TASK-07
+    title: crctl task allocate（S7）
+    status: pending
+    estimate: 4h
+    depends-on: []
+  - id: CR-2026-021-TASK-08
+    title: crctl worktree-path + report/cr-metrics（S9/S11，只读）
+    status: pending
+    estimate: 4h
+    depends-on: []
+  - id: CR-2026-021-TASK-09
+    title: crctl git commit --template（S10）
+    status: pending
+    estimate: 3h
+    depends-on: []
+  - id: CR-2026-021-TASK-10
+    title: 文档更新 + rules.json#git 白名单补齐（FR-13）
+    status: pending
+    estimate: 4h
+    depends-on: [CR-2026-021-TASK-02, CR-2026-021-TASK-03, CR-2026-021-TASK-04, CR-2026-021-TASK-05, CR-2026-021-TASK-06, CR-2026-021-TASK-07, CR-2026-021-TASK-08, CR-2026-021-TASK-09]
+  - id: CR-2026-021-TASK-11
+    title: lint-prompts.mjs — R1~R6 + ignore 豁免 + report/enforce 双模式
+    status: pending
+    estimate: 6h
+    depends-on: []
+  - id: CR-2026-021-TASK-12
+    title: 两层机械防线接入 — pre-commit（report）+ CI cr-guard
+    status: pending
+    estimate: 4h
+    depends-on: [CR-2026-021-TASK-11]
+  - id: CR-2026-021-TASK-13
+    title: Phase 1 — D7 merge-commits 3 字段 + approve-* 折叠为 crctl approve
+    status: pending
+    estimate: 5h
+    depends-on: []
+  - id: CR-2026-021-TASK-14
+    title: Phase 1-C — 裸 git 迁移为 crctl git
+    status: pending
+    estimate: 4h
+    depends-on: [CR-2026-021-TASK-10]
+  - id: CR-2026-021-TASK-15
+    title: Phase 1 — D3 test-report frontmatter 交 crctl test 生成
+    status: pending
+    estimate: 2h
+    depends-on: []
+  - id: CR-2026-021-TASK-16
+    title: Phase 2 — cr-status-set 系统性清理
+    status: pending
+    estimate: 5h
+    depends-on: []
+  - id: CR-2026-021-TASK-17
+    title: Phase 3 — review-* 三个评审 SKILL + write-test-report 改调 S1/attempt
+    status: pending
+    estimate: 4h
+    depends-on: [CR-2026-021-TASK-02]
+  - id: CR-2026-021-TASK-18
+    title: Phase 3 — cr-review-record/handover-cr/push-progress/write-requirement-prd/inbox-emit 改调 S2/S4/S3/S5/inbox-emit
+    status: pending
+    estimate: 5h
+    depends-on: [CR-2026-021-TASK-03, CR-2026-021-TASK-04, CR-2026-021-TASK-05]
+  - id: CR-2026-021-TASK-19
+    title: Phase 3 — requirement-register 全量改造（S6 预览 + S8 cr-init + S9 + S10）
+    status: pending
+    estimate: 5h
+    depends-on: [CR-2026-021-TASK-06, CR-2026-021-TASK-08, CR-2026-021-TASK-09]
+  - id: CR-2026-021-TASK-20
+    title: Phase 3/4 — write-dev-tasks 改造（S7+S10+D15）+ worktree-path 剩余去重（S9）
+    status: pending
+    estimate: 5h
+    depends-on: [CR-2026-021-TASK-07, CR-2026-021-TASK-08, CR-2026-021-TASK-09]
+  - id: CR-2026-021-TASK-21
+    title: Phase 3 — cr-dashboard/spec-dashboard 改调 S11；validate-doc 视 D13 结论处理
+    status: pending
+    estimate: 4h
+    depends-on: [CR-2026-021-TASK-08, CR-2026-021-TASK-01]
+  - id: CR-2026-021-TASK-22
+    title: Phase 4 收尾 — D8 去重 + 冗余精简 + 回写清单新增项 + gate 切换 enforce
+    status: pending
+    estimate: 5h
+    depends-on: [CR-2026-021-TASK-17, CR-2026-021-TASK-18, CR-2026-021-TASK-19, CR-2026-021-TASK-20, CR-2026-021-TASK-21]
