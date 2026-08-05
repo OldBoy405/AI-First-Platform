@@ -16,23 +16,25 @@ updated: "2026-08-06T08:30:00+08:00"
 | 里程碑 | 批次 | TASK | 内容 | 估算 |
 |---|---|---|---|---|
 | M1 机械修正与死内容清理 | 批 1 + 批 2 | TASK-01~02 | 12 处命令串、豁免注释外移、死引用、cr-status-set 下线、validate-doc/focus-briefing 订正、pending 清空、record-adr 下线 | 12h |
-| M2 crctl 核心能力补齐 | 批 2.5 | TASK-03~08 | cr-init 旗标、--cr 直传、checkpoint-add LEGAL 派生、approve decline 回退（含状态机两条新转换）、gates.json 死配置、STALE_BASE 降级 | 26h |
-| M3 功能正确性修复 | 批 3 | TASK-09~14 | inbox-emit 对齐、HEAD 校验、UUID 迁移、market-insights 统一、owner-set 改调、cmdNext/cr-show、planning 域歧义 | 30h |
+| M2 crctl 核心能力补齐 | 批 2.5 | TASK-03~08 | cr-init 旗标、--cr 直传、checkpoint-add LEGAL 派生、approve decline 回退（含状态机两条新转换）、gates.json 死配置、STALE_BASE 降级 | 27h |
+| M3 功能正确性修复 | 批 3 | TASK-09~14 | inbox-emit 对齐、HEAD 校验、UUID 迁移、market-insights 统一、owner-set 改调、cmdNext/cr-show、planning 域歧义 | 31h |
 | M4 lint 护栏 | 批 3.5 | TASK-15 | R6/R7 + 豁免范围修复 + 测试向量 | 8h |
 | M5 冗余收敛 | 批 4 | TASK-16~18 | approve-* 对齐、writeback 抽 shared、sync 收敛、样板抽取、评估项下线 | 20h |
 | M6 收尾验收 | 收尾 | TASK-19 | 三台账、check-skill-matrix、JSON 自检、crctl.test.mjs 全量回归、口径 25/47 核查、端到端验收 | 10h |
 
-估算总工时：约 106h（约 13 人天）。
+估算总工时：108h（约 13.5 人天）；TASK 级求和与里程碑分段核对一致（M1 12 + M2 27 + M3 31 + M4 8 + M5 20 + M6 10）。
 
-## 2. 任务依赖图
+## 2. 任务依赖图（与 tasks/_index.yml depends-on 一致）
 
 ```
-TASK-01 ── TASK-02 ── TASK-15 ── TASK-16 ── TASK-19
-   │          │          │          │
-TASK-03 ── TASK-05 ── TASK-17 ──────┘
-TASK-04 ── TASK-06 ── TASK-18
-   │        │
-TASK-07 ── TASK-08 ── TASK-09 ── TASK-10 ── TASK-11 ── TASK-12 ── TASK-13 ── TASK-14
+批 1/2：  TASK-01 → TASK-02 → TASK-15（R6/R7 落地后复扫批 1/2 修复面验证零命中）
+批 2.5： TASK-03/04/05/06/07/08 批内互相独立无依赖（报告 §三 批 2.5：各项互相独立、不冲突）
+批 3：   TASK-09~14 互相独立可并行
+批 3.5： TASK-15 依赖 TASK-01/02（复扫验证面）
+批 4：   TASK-16/17/18 均依赖 TASK-15（护栏先于批 4，NFR-4）
+         TASK-05 → TASK-17（样板抽取以 FR-11 修对 push-progress 为前提，FR-31）
+         TASK-06 → TASK-16（approve-* 对齐以错误表订正为前提，否则对齐后再次漂移）
+收尾：   TASK-19 依赖全部（FR-33/34）
 ```
 
 关键链：M2（批 2.5）与 M3（批 3）互相独立可并行；TASK-15（批 3.5）必须先于 TASK-16~18（批 4）；TASK-17 的 push-progress 样板抽取以 TASK-05（FR-11）为前提；TASK-19 收尾依赖全部。

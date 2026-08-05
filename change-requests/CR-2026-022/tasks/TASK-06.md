@@ -8,7 +8,7 @@ title: 批 2.5 — dir-graph 两条 reject 转换 + cmdApprove decline 回退 + 
 slug: approve-decline-rollback
 status: pending
 estimate: 8h
-depends-on: [CR-2026-022-TASK-04]
+depends-on: []
 assignee: ""
 created: "2026-08-06T08:30:00+08:00"
 ---

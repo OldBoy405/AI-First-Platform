@@ -8,7 +8,7 @@ title: 批 2.5 — checkpoint-add LEGAL 白名单派生 + push-progress Step 3 �
 slug: checkpoint-add-legal
 status: pending
 estimate: 6h
-depends-on: [CR-2026-022-TASK-03]
+depends-on: []
 assignee: ""
 created: "2026-08-06T08:30:00+08:00"
 ---
