@@ -8,7 +8,7 @@ owner: Ray
 owner-role: requirement
 status: draft
 created: "2026-08-05T10:30:00+08:00"
-updated: "2026-08-05T10:30:00+08:00"
+updated: "2026-08-05T10:50:00+08:00"
 ---
 
 # PRD — prompt 对齐 crctl（写入面补齐 + prompt 收敛 + 漂移防线）
@@ -124,7 +124,10 @@ crctl（CR-2026-019 账本子命令 / CR-2026-020 回写脚本）与 `controlled
   | R6 手写 test-report frontmatter | `test-report.md` 配合手写 `status:`/`commands:` | `crctl test` 生成 | CONTRADICTS |
 
   判据直接读 `rules.json`/`crctl.mjs` 源码，不经过任何派生快照（`crctl capabilities` 之类），与 crctl 能力面变更天然解耦——deny 面/dispatch 改了，linter 判据自动跟着变。R1 用"提及 deny 文件写动作且同段无 crctl 调用"的邻近判定而非裸关键词，避免"教手写"和"解释为什么不该手写"的说明性文本混淆。提供显式豁免：`<!-- lint-prompts:ignore -->` 注释使 linter 跳过该段落检测。
-- **FR-24（两层机械防线接入）**：接进 tools 仓 pre-commit 钩子（`.githooks/pre-commit` 已有 `check-skill-matrix`/`check-agents-contract` 先例），加 `lint-prompts`，漂移提交不进来；再接进 feature-writeback 的 cr-guard（或归档前 passCondition），CR 归档前 `lint-prompts` 必须 pass，兜住绕过本地钩子的路径。不设专门的"crctl 能力快照测试"层——git diff 本身即"能力面变了"的信号。
+- **FR-24（两层机械防线接入，分阶段启用）**：`lint-prompts` 接入两处 gate，但**强制阻断模式的启用有严格时序，避免与 Phase 0→3 依赖顺序自举冲突**：
+  - **pre-commit 钩子**（tools 仓 `.githooks/pre-commit`，已有 `check-skill-matrix`/`check-agents-contract` 先例）：**Phase 0~2 期间以 report-only / warn 非阻断模式运行**（输出 `file:line` 漂移清单但不 fail 提交），使本 CR 自身开发期（含 tools 仓 crctl.mjs/skills/pipeline 的增量提交）不被尚未清理的存量漂移拦死；**Phase 3 漂移清零后转为硬阻断模式**，此后漂移提交不进来。
+  - **feature-writeback 归档 gate**（cr-guard 或归档前 passCondition）：CR 归档前 `lint-prompts` 必须 pass。此 gate 不受上述分阶段影响——归档必然发生在 Phase 3 漂移清零之后，天然安全，作为兜住绕过本地钩子的 CI 侧兜底。
+  - 不设专门的"crctl 能力快照测试"层——git diff 本身即"能力面变了"的信号。
 - **FR-25（人工残余回写清单项）**：feature-writeback 回写清单新增一条：「本 CR 若 diff 触及 `crctl.mjs` 的 dispatch 或 `rules.json` 的 `protectedPaths.deny`：① 跑 `crctl lint-prompts` 清零 CONTRADICTS/STALE；② 对新增子命令，在 SDD『prompt 采纳影响』小节列出应改为调用它的 skill 清单并逐一改，由评审兜底。」该清单项承接 linter 抓不到的"新增能力未被采纳"类漂移。
 
 ## 4. 非功能需求
@@ -152,7 +155,7 @@ crctl（CR-2026-019 账本子命令 / CR-2026-020 回写脚本）与 `controlled
 - **AC-11**（FR-19，Phase 3）：Phase 3 表内列出的每个文件均已改调对应新子命令，`grep` 相应 SKILL.md 不再含手写受控文件的指引。
 - **AC-12**（FR-20~FR-22，Phase 4）：`resume-cr`/`resume-from-remote`/`pull-progress`/`implement-code` 不再各自硬编码状态映射表；`write-dev-tasks:87` 措辞已精简；`skills/_index.yml` brief 含全部新增子命令。
 - **AC-13**（FR-23）：对 6 类规则各构造一个已知漂移的 fixture prompt，`lint-prompts` 全部命中且输出 `file:line`；对含 `<!-- lint-prompts:ignore -->` 的段落不误报；对 Phase 1~3 改造完成后的仓库运行 `lint-prompts`，CONTRADICTS/STALE-REF 计数为 0。
-- **AC-14**（FR-24）：`.githooks/pre-commit` 新增 `lint-prompts` 步骤，构造一个带漂移的 commit 尝试被本地钩子拦截（非零退出）；feature-writeback 归档前 passCondition 含 `lint-prompts` 校验。
+- **AC-14**（FR-24）：`.githooks/pre-commit` 新增 `lint-prompts` 步骤；**Phase 0~2 期间对 tools 仓的 commit（即使存量漂移未清）不被阻断**（report-only 模式，非零退出仅出现在归档 gate）；**Phase 3 漂移清零并将钩子转为硬阻断模式后**，构造一个带漂移的 commit 尝试被本地钩子拦截（非零退出）；feature-writeback 归档前 passCondition 含 `lint-prompts` 校验，任意阶段带漂移的 CR 无法归档。
 - **AC-15**（FR-25）：feature-writeback 回写清单模板中存在该新增条目文本；对一个 diff 触及 `crctl.mjs` dispatch 的测试 CR，SDD 模板渲染出"prompt 采纳影响"小节。
 
 ## 6. 成功指标
