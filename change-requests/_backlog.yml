@@ -337,3 +337,34 @@ change-requests:
     prd-path: ""
     created: "2026-08-04T06:55:00+08:00"
     updated: "2026-08-04T06:55:00+08:00"
+  - id: CR-2026-021
+    title: 治理工具链 — prompt 对齐 crctl（写入面补齐 S1~S5+inbox-emit + prompt 分阶段收敛 + lint-prompts 漂移防线）
+    summary: >-
+      crctl（CR-2026-019 账本子命令 / CR-2026-020 回写脚本 / FR-2/4/5/8）与 PreToolUse guard
+      的能力跑在了 prompt 前面：guard deny 锁死 _backlog.yml/review-annotations/approval.yml
+      等受控文件但 crctl 无对应写口 → "guard 锁死但无工具出口"的孤儿写入；20+ SKILL/pipeline
+      prompt 仍手把手教手动操作（手写 approval.yml、裸 git、cr-status-set、merge-commits
+      6 字段校验等）。按 docs/analysis/tools包-prompt对齐crctl-修改方案.md 落地：Phase 0
+      crctl 新增 6 个受控白名单写子命令（review-record / review-note / checkpoint-add /
+      owner-set / backlog-set / inbox-emit，前置态守卫 + CAS + 审计，不做通用 patch）；
+      Phase 1~4 分阶段把 prompt 收敛为调用 crctl（D7 merge-commits 3 字段、approve-* 折叠
+      为 crctl approve、裸 git→crctl git、cr-status-set 清退、账本写入改走新子命令）；
+      根治机制 lint-prompts 漂移 linter（规则直读 rules.json/crctl.mjs 源码）+ pre-commit
+      与 feature-writeback gate 两层机械防线。落点 tools 仓 crctl.mjs + skills/ +
+      pipeline-templates/ + scripts/lint-prompts.mjs，里程碑 T1.3。
+    owner: Ray
+    owners:
+      requirement:
+        id: Ray
+        assigned-at: "2026-08-05T09:37:00+08:00"
+      development:
+        id: Ray
+        assigned-at: "2026-08-05T09:37:00+08:00"
+      test:
+        id: Ray
+        assigned-at: "2026-08-05T09:37:00+08:00"
+    target-version: tbd
+    source: "docs/analysis/tools包-prompt对齐crctl-修改方案.md"
+    prd-path: ""
+    created: "2026-08-05T09:37:00+08:00"
+    updated: "2026-08-05T09:37:00+08:00"
