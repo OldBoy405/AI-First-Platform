@@ -1,11 +1,11 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 # 五段链路：需求 FR ↔ 技术设计 SDD ↔ 交付 TASK ↔ 代码 merge SHA ↔ CR-ID
 spec-id: ai-first-platform
-cr-ref: CR-2026-022
-cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022]
-target-version: "0.23"
+cr-ref: CR-2026-023
+cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023]
+target-version: "0.24"
 baseline-since: "0.10"
-generated-at: "2026-08-06T13:01:09+08:00"
+generated-at: "2026-08-07T07:50:54+08:00"
 
 # 已知缺口：CR-2026-003~CR-2026-006 未生成本文件的里程碑段（writeback-traceability 在那四个
 # CR 回写时被跳过，PRD.md/SDD.md/_index.yml 侧的累积记录不受影响、仍完整）。本次（CR-2026-008）
@@ -1451,3 +1451,101 @@ milestones:
         tasks: [CR-2026-022-TASK-19]
         code: tools@8e7da95 + 主仓 AGENTS.md（25/47）+ docs/analysis/prompt-audit-report-2026-08-05.md §九勾验表
         evidence: AC-20：97 条勾验表 100% 闭合 + 口径 25/47 全仓核查（历史文档例外标注）+ test-report 入库
+  - cr: CR-2026-023
+    milestone: T1.5
+    target-version: "0.24"
+    status: writing-back
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: dca18b4f87b754562524043de230b949797faacc
+        branch: requirement/CR-2026-023
+      - repo: tools
+        trunk: custom/main
+        sha: none
+        branch: requirement/CR-2026-023
+    frs:
+      - fr: FR-1
+        title: code-implementation inputs 追加 review_llm 可选输入（预选评审模型）
+        sdd: SDD §2.1 数据模型（inputs 增补契约）
+        tasks: [CR-2026-023-TASK-04]
+        code: tools@b35c7b2: inputs 数组追加 {key: review_llm, required: false}，留空则评审前暂停人工选择
+        evidence: AC-1：JSON 解析通过 + inputs 含 review_llm（TASK-04 脚本断言）
+      - fr: FR-2
+        title: 插入 human_approval 节点「选择代码评审 LLM」（0013，评审前暂停）
+        sdd: SDD §2.2/§3.1 节点定稿 JSON 与三分支 approvalPrompt 契约
+        tasks: [CR-2026-023-TASK-04]
+        code: tools@b35c7b2: nodes 12→13，0013 位于 0008/0009 之间，onFail abort、timeout 4320、不写 CR 状态
+        evidence: AC-1：13 节点 + 0013 位置断言（TASK-04 脚本内置）+ human_approval 合规边界
+      - fr: FR-3
+        title: review-code prompt 头部承接选定评审 LLM + reviewer-model 留痕（自报）
+        sdd: SDD §3.2 prompt 头部追加段契约
+        tasks: [CR-2026-023-TASK-04]
+        code: tools@b35c7b2: prompt 最前追加确认段，dimensions 记录 reviewer-model，落盘链路不变
+        evidence: AC-2：评审证据 dimensions 含 reviewer-model（CR-2026-023 code.yml 实战留痕 claude-opus-4-8）
+      - fr: FR-4
+        title: replayNodes 零改动（一次选择全程复用，repair 不重复询问）
+        sdd: SDD §4.2 节点插入流程
+        tasks: [CR-2026-023-TASK-04]
+        code: tools@b35c7b2: reviewLoop.replayNodes 恰 4 项不含 0013（零改动验证）
+        evidence: AC-3：脚本断言 replayNodes 未变
+      - fr: FR-5
+        title: pipeline-templates/_index.yml nodes 12→13 + brief 补选择环节
+        sdd: SDD §4.2 台账同步
+        tasks: [CR-2026-023-TASK-05]
+        code: tools@b35c7b2: _index.yml 该条 nodes=13、brief 补「选择代码评审 LLM（人工确认）」
+        evidence: AC-4：nodes 口径与 JSON 实际一致
+      - fr: FR-6
+        title: README 节点表插行 + mermaid D8→D8S→D9 中转同步
+        sdd: SDD §4.2 第 5 步（超出附件1 §2.6 的补漏项）
+        tasks: [CR-2026-023-TASK-05]
+        code: tools@b35c7b2: 节点表新行五列齐全、mermaid 经新节点中转无直连残留
+        evidence: AC-4：README 回读核对
+      - fr: FR-7
+        title: lint-prompts 新增 R9 规则（CR 上下文「下一步」收敛 crctl next，CONTRADICTS）
+        sdd: SDD §4.1 R9 判定算法（判据源直读 skills/_index.yml，__dirname 固定解析）
+        tasks: [CR-2026-023-TASK-01]
+        code: tools@b0dd616: 常量/loadJudgements/runRules 四处改动 + 头注释规则清单
+        evidence: AC-5：构造违例命中 CONTRADICTS、crctl next 形态与域外零误报（测试向量固化）
+      - fr: FR-8
+        title: 17 处存量手写「下一步」副本清零（统一形态，分支语义保留）
+        sdd: SDD §3.3 统一改写形态契约（括号内无字面 skill id，D-4）
+        tasks: [CR-2026-023-TASK-03]
+        code: tools@b0dd616: requirement 4 + develop 9 + writeback 4 共 17 处 SKILL.md 改写
+        evidence: AC-6：规则上线前 --mode report 命中恰 17 处；改写后 enforce 归零 + 无自触发
+      - fr: FR-9
+        title: push-progress 输出摘要补「下一步 : 以 crctl next 为准」（引导链闭环 D2）
+        sdd: SDD §3.3 统一形态
+        tasks: [CR-2026-023-TASK-03]
+        code: tools@b0dd616: 输出摘要 last-push-at 行后追加（实施期纠正首次落点后定稿）
+        evidence: AC-7：摘要含 crctl next 指引
+      - fr: FR-10
+        title: requirement-writer 映射表 approve-requirement 前置注记（verdict=pass 且 blockers=[]）
+        sdd: SDD §3.3/§6（D3 修复）
+        tasks: [CR-2026-023-TASK-03]
+        code: tools@b0dd616: 映射表行后注记，表头列数不受影响
+        evidence: AC-7：注记含前置条件
+      - fr: FR-11
+        title: tools AGENTS.md「修改 Skill」追加第 7 条（R9 强制，五域枚举）
+        sdd: SDD §3.4 新增条目契约
+        tasks: [CR-2026-023-TASK-03]
+        code: tools@b0dd616: AGENTS.md 编辑规则追加第 7 条
+        evidence: AC-8：第 7 条与 R9 scope 表述一致
+      - fr: FR-12
+        title: R9 四类测试向量（正向/域外/pipeline 名捕获/记述性豁免）
+        sdd: SDD §4.1 测试落点（记述性豁免用例承接需求期 S4/技术评审 T1）
+        tasks: [CR-2026-023-TASK-02]
+        code: tools@b0dd616: lint-prompts.test.mjs 追加 4 条 R9 向量（行号断言 + 域外含真实 skill id 强化）
+        evidence: AC-9：lint-prompts.test.mjs 19/19 绿
+      - fr: FR-13
+        title: 同批 commit 原子（R9+测试+清零同 commit 1）+ 五步自检
+        sdd: SDD §4.3 提交批次序列（NFR-1）
+        tasks: [CR-2026-023-TASK-06]
+        code: tools@b0dd616: commit 1 原子批 22 文件；tools@b35c7b2: commit 2 块 A
+        evidence: AC-10：enforce 归零 + 三件套过钩 + JSON 全解析 + 87 用例回归绿
+      - fr: FR-14
+        title: 溯源标注（漂移治理编号 + CR-2026-023 来源，可移植路径）
+        sdd: SDD §6 FR-14 映射
+        tasks: [CR-2026-023-TASK-06]
+        code: tools@b0dd616/b35c7b2: commit message 延续漂移治理风格并注明 CR 溯源
+        evidence: AC-10：commit message 核对
