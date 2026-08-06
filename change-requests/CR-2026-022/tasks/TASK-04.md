@@ -39,4 +39,4 @@ FR-10（2.1-F）：`resolveTemplateCr` 补显式 `--cr <cr-id>` 旗标，调用�
 
 ## 完成标志
 
-验收 1~4 通过 + crctl.test.mjs 新增用例全绿 + 既有 commit --template 用例不回归。
+验收 1~5 通过 + crctl.test.mjs 新增用例全绿 + 既有 commit --template 用例不回归。
