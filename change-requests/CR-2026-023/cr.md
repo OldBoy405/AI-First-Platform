@@ -15,7 +15,7 @@ owners:
     assigned-at: "2026-08-06T23:16:15+08:00"
 target-version: tbd
 source: "docs/analysis/code-review-llm-selection-plan-2026-08-06.md; docs/analysis/review-skip-drift-and-r9-guard-2026-08-06.md"
-status: requirement-reviewing
+status: requirement-approved
 created: "2026-08-06T23:16:15+08:00"
 updated: "2026-08-06T23:16:15+08:00"
 remote-ref: ""
