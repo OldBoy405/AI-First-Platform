@@ -551,3 +551,32 @@ node ../tools/skills/shared/scripts/check-skill-matrix.mjs
   2. 原稿曾建议 review-requirement:91 写死 `--expect drafting`，经核对状态机自环转换定义后**改判为省略 `--expect`**（见 2.1-A）；同批还纠正了 architecture-design 的 UUID 迁移范围（全部 5 节点而非只改撞号的 3 个，且必须同步 `repairNodeId`）、sync 组的 owner 变更问题定性（由「冗余」改判为「正确性缺陷」，移入高危批）、以及 focus-briefing/report-to-planning-suggestion/validate-doc 三处死内容的修复方向（均改为「先确认或反向修」而非直接删/直接标注）。
 - **CR-2026-022 补充坐实（2.1-F、2.4 Step 5）**：来源 `docs/analysis/CR-2026-022-注册流程复盘.md`——这是本报告注册为 CR 后的一次真实注册执行记录，不是二次通读。它暴露了原方法论的一个盲区：引用图静态分析 + 精读覆盖的是「skill 之间怎么互相引用」，没有覆盖「入口 skill 自身被实际执行一遍会撞上什么」——`requirement-register` 恰好是全仓唯一的流程入口节点，静态分析反而对它扫得最浅（原稿 2.4 只抓到编号跳号这类表面问题）。**结论**：静态引用图分析对入口/单次性流程类 skill 有系统性盲区，宜配合至少一次实际执行走查。
 - **7 条流水线执行走查（2.1-G/H/I/J/K 及 2.3/2.4 新增各项）**：针对除 requirement-register 之外的全部流水线（架构设计/代码实现前后半段/需求编写剩余节点/回写+接手/竞品雷达+洞察转规划/调研规划），派 7 组并行精读，方法与 CR-2026-022 一致——不满足于通读找 typo，而是逐节点模拟「照着这份 SKILL.md 执行的人/AI 走到这一步会不会卡住、矛盾、多此一举」，任何涉及 crctl 命令/字段的判断都回 `crctl.mjs` 源码坐实，不采信 SKILL 文档自身的描述。**这一轮的性质与前两轮不同**：CR-2026-022 暴露的是「入口 skill 文档写错了」，这一轮暴露的是**crctl 本体的代码缺陷**——`push-progress` 从未真正调用它自己承诺的 `crctl checkpoint-add`（且 `checkpoint-add` 的状态白名单本就覆盖不到 push-progress 实际被调用的阶段）、`cmdApprove` 的驳回分支从不执行状态机声明的回退转换、`review-planning-report` 的 reviewLoop 在 `gates.json` 里是从未被调用的死配置，外加 lint-prompts 自身「豁免注释整段生效」的 bug——这些都不是靠改 SKILL.md 文案能解决的，需要过 ARCHITECTURE.md §8 评审并改 crctl.mjs 核心代码（见「三」批 2.5）。**结论**：静态方法论的盲区不止「入口 skill」一类，任何被多条流水线复用的公共 skill（push-progress）、任何声明了但缺少调用方的 gate 配置（reviewLoop）、任何审批/驳回这类"异常路径"，都需要执行走查才能发现——通读文档看不出"正常路径写得对、异常路径无路可走"这种问题。
+
+---
+
+## 九、97 条发现落地核对表（CR-2026-022 实施期追加，2026-08-06）
+
+> 本 CR 全量落地 97 条发现（不采纳「批 1/2/3.5/4 可现场直改」分流，PRD §1.2 口径）。tools 仓提交链：`f0b8a54`（批 1）→ `e5bcb31`（批 2）→ `73250dd/acdcfc0/a1c36e2/199e3b8/1192c0b`（批 2.5）→ `42a518b/de65bbc`（批 3）→ `905eb63`（批 3.5）→ `f103e61/114cf97/3308d14`（批 4）→ `62f34d8`（收尾文档）；multica `cf43f14f8`（transitions_gen.go 重生成）；主仓 AGENTS.md #2 口径 25/47。
+
+| 批次 | FR | 落地内容 | 验证 |
+|---|---|---|---|
+| 批 1 | FR-1~3 | 12 处命令串权威形态（review-requirement 省 --expect）；豁免注释移出 frontmatter/并入关联行；tools/old 与 validate-doc 死引用清零；三件事→四件事、两阶段→四阶段、spec-dashboard 状态表补齐 | lint R7 复扫零命中；反引号配对校验全过 |
+| 批 2 | FR-4~8 | cr-status-set/record-adr 下线（matrix/QODER/agent 引用同步清退）；validate-doc 死维度与失实声明删除；focus-briefing 反向修（status:new 生产侧补齐 + 消费翻转 seen + 删不可确认数据源）；pending 清空；降级路径 | 55 active skills matrix 一致；cr-status-set 仅历史文档/黑名单残留 |
+| 批 2.5 | FR-9 | cr-init 三旗标（缺省同义）+ cr_id 僵尸参数删除 + pipeline 提示对齐 | 测试：三旗标一次写齐 + 缺省兼容 |
+| 批 2.5 | FR-10 | --cr 显式直传 + COMMIT_TEMPLATES 形态对齐白名单（现场坐实修复） | 测试：master 直传/非法格式拒绝/模板白名单 |
+| 批 2.5 | FR-11 | checkpoint-add LEGAL 状态机派生 + push-progress Step 3 逐仓调用 + CHECKPOINT_ALERT + 节点 12 补齐 | 测试：终态拒绝/非终态可用；CR-2026-022 真实落账 |
+| 批 2.5 | FR-12 | 状态机两条 reject 转换（25/47）+ REJECT_ROLLBACK 回退 + 四 approve-* 错误表 + 无旁路表述 | 测试：四 stage legalNext 含 reject 转换；multica gen 重生成 |
+| 批 2.5 | FR-13 | gates.json 死配置删除 + node-6 承诺订正与 R5 违规面清理 | JSON 解析通过 |
+| 批 2.5 | FR-14 | fetch 失败 STALE_BASE 降级 | lint 复扫零命中 |
+| 批 3 | FR-15 | inbox-emit 三处同步（owner-handover）+ 两调用方迁 CLI | lint R8 复扫零命中 |
+| 批 3 | FR-16/17 | HEAD 一致性校验；competitive-radar 两阶段确认 + reports/_index.yml 目标 | 文档落地 |
+| 批 3 | FR-18 | UUID 0014→0016 全量迁移含 repairNodeId | JSON 解析 + 无撞号（resume-cr 0014 保留） |
+| 批 3 | FR-19 | market-insights 统一 schema + 单一事实源声明 + 节点 5 终态 published | 三写入方对齐 |
+| 批 3 | FR-20~22 | owner-set 改调；cmdNext writing-back 改查 specs 产物；cr-show 收敛 crctl next | 测试：cmdNext 三分支 |
+| 批 3 | FR-23 | 八项歧义订正（SKIPPED 文案/onFail abort/intent-context/6 章节 P0-P2/cr_id 过滤/worktree prune/估算交叉校验） | lint 复扫零命中 |
+| 批 3.5 | FR-24~26 | lint R7/R8（命令形态+inbox-emit 接口，判据直读）+ 豁免 ±1 行契约 + 5 类测试向量；存量 10 处违例修复 + write-test-report R5 手写块清理（报告 2.4 补漏项） | lint 15 + crctl 87 用例全绿；全仓 0 findings |
+| 批 4 | FR-27/28 | approve-* 对齐（删前置条件节）；writeback 抽 shared 评估定案不抽（报告 2.3 原则 2） | lint 复扫零命中 |
+| 批 4 | FR-29~31 | sync bucket 改调 worktree-path；SHELL_UNAVAILABLE 已单行摘要；constraints 9 处删除；push-progress 样板已由 TASK-05 统一 | agents.contract 通过 |
+| 批 4 | FR-32 | write-insight-brief/run-competitive-analysis 合并下线（简报区块 + 市场竞品章节 + node ref 切换 + 全引用清退）；list-remote 去重；跳过检查单份化定案 | 55 active skills 一致；lint 0 |
+| 收尾 | FR-33/34 | 三台账同步；口径 25/47 全仓核查（历史备份除外）；ARCHITECTURE.md §8 登记；crctl/SKILL.md 更新；AGENTS.md #2 同步 | 全回归绿；pipeline JSON 全解析通过 |
+
