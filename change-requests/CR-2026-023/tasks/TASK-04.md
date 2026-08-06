@@ -8,14 +8,14 @@ title: 块 A — code-implementation pipeline 插入「选择代码评审 LLM」
 slug: pipeline-review-llm-node
 status: pending
 estimate: 5h
-depends-on: [CR-2026-023-TASK-01]
+depends-on: [CR-2026-023-TASK-03]
 assignee: ""
 created: "2026-08-07T00:40:00+08:00"
 ---
 
 ## 任务描述
 
-在 `code-implementation.pipeline.json` 落地块 A 四处改动：新增 `review_llm` 输入（FR-1）、插入 0013 human_approval 节点（FR-2）、review-code prompt 头部追加段（FR-3）、验证 replayNodes 不含 0013（FR-4）。**前置**：与用户确认 tools 仓 3 处未提交 pipeline JSON 修改的归属（本文件含 `auto_push_after_task` default 改动，同文件不同 hunk，按 hunk 拆分 add，SDD §4.3 基线协调）。
+在 `code-implementation.pipeline.json` 落地块 A 四处改动：新增 `review_llm` 输入（FR-1）、插入 0013 human_approval 节点（FR-2）、review-code prompt 头部追加段（FR-3）、验证 replayNodes 不含 0013（FR-4）。**依赖**：depends-on 指向 TASK-03（commit 1 收口）——commit 1 = TASK-01+02+03 原子批，commit 2（本任务）必须在 commit 1 整体落地后执行，故依赖连到 commit 1 的收口任务而非仅 TASK-01，保证图语义与「commit 1 先于 commit 2」约束一致。**前置**：与用户确认 tools 仓 3 处未提交 pipeline JSON 修改的归属（本文件含 `auto_push_after_task` default 改动，同文件不同 hunk，按 hunk 拆分 add，SDD §4.3 基线协调）。
 
 ## 涉及文件 / 模块
 

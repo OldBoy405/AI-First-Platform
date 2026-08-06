@@ -26,12 +26,12 @@ updated: "2026-08-07T00:30:00+08:00"
 ```
 M1 块 B：TASK-01（R9 规则）→ TASK-02（测试向量，依赖规则落地）→ TASK-03（17 处清零，需 R9 上线后 --mode report 核对命中恰为 17）
          TASK-01/02/03 三者同 commit 1 原子提交（NFR-1：规则 + 测试 + 清零拆分提交会让 pre-commit enforce 自阻断）
-M2 块 A：TASK-04（pipeline JSON）→ TASK-05（_index.yml + README 同步，nodes 计数以 TASK-04 结果为准）
+M2 块 A：TASK-04（pipeline JSON，depends-on TASK-03 = commit 1 收口）→ TASK-05（_index.yml + README 同步，nodes 计数以 TASK-04 结果为准）
          M2 依赖 M1（护栏先行，SDD §4.3；pipeline-templates/ 不在 R9 scope，块 A 不触发 R9，但顺序上 commit 1 先于 commit 2）
 M3 收尾：TASK-06 依赖 TASK-01~05 全部完成（FR-13 五步自检 + AC-11 端到端）
 ```
 
-关键链：TASK-01 → TASK-02 → TASK-03（块 B 内串行，同 commit）；TASK-04 → TASK-05（块 A 内串行）；M1 整体先于 M2（护栏先行）；TASK-06 收尾依赖全部。
+关键链：TASK-01 → TASK-02 → TASK-03（块 B 内串行，同 commit 1）；TASK-04 depends-on TASK-03（commit 2 须在 commit 1 整体落地后，依赖连 commit 1 收口而非仅 TASK-01）→ TASK-05（块 A 内串行）；M1 整体先于 M2（护栏先行）；TASK-06 收尾依赖全部。
 
 ## 3. 资源与分工
 
