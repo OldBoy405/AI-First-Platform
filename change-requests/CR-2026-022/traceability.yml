@@ -38,6 +38,31 @@ reviews:
           result: pass
           blocker-count: 0
           repair-target: write-tech-design
+  code:
+    reviewer: "OldBoy405"
+    verdict: pass
+    reviewed-at: "2026-08-06T12:37:17+08:00"
+    blocker-count: 0
+    review-loop:
+      current-attempt: 2
+      max-attempts: 3
+      attempts:
+        - attempt: 1
+          reviewed-at: "2026-08-06T10:59:04+08:00"
+          result: pass
+          blocker-count: 0
+          repair-target: implement-code
+          note: >-
+            官方记录 pass/0 blocker；独立复审于 approval.yml#supplemental-reviews 发现
+            1 处 blocker（product-planning.pipeline.json node-3 ref 悬空指向已删 skill
+            run-competitive-analysis），approve-code 人工 decline 触发 REJECT_ROLLBACK
+            回退 developing（audit.log 2026-08-06T12:00:45+08:00）。
+        - attempt: 2
+          reviewed-at: "2026-08-06T12:37:17+08:00"
+          result: pass
+          blocker-count: 0
+          repair-target: implement-code
+          note: "修复 tools@8e7da95（FR-32 引用清退补全 4 处）后复审，独立重跑全部验证证据确认。"
 tests:
   report: change-requests/CR-2026-022/test-report.md
   status: pass

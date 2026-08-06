@@ -1,14 +1,15 @@
 cr-id: CR-2026-022
 review-type: code
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-06T10:59:04+08:00"
+reviewed-at: "2026-08-06T12:37:17+08:00"
 verdict: pass
 blockers: []
 dimensions:
-  代码↔TASK↔SDD对齐: "通过——19 个 TASK 全部 done 且对应 FR-1~34；tools 仓提交链逐一对应 TASK 验收（cr-init 三旗标/--cr/LEGAL 派生/approve 回退/死配置/UUID 0016/inbox-emit/HEAD 校验/cmdNext/R7R8/批 4 收口），SDD §6 映射表逐项可勾验；multica transitions_gen.go 按 SDD-SUG-003 重生成（--check 一致）"
-  工程质量: "通过——crctl.test.mjs 87/87、lint-prompts.test.mjs 15/15 全绿；全仓 lint-prompts 0 findings；check-skill-matrix（55 active skills）与 check-agents-contract 通过；8 条 pipeline JSON 全解析通过；pre-commit 三检查（matrix/agents.contract/lint enforce）随每笔提交自动验证"
-  关键路径可读性与安全性: "通过——crctl.mjs 改动均为既有范式内扩展（casWrite/casWriteMulti/auditLog/findTransition 复用，无新写入范式）；REJECT_ROLLBACK 静态映射 + decline 分支回退仅 TTY 非 yes 路径触发，--grant 签名路径不受影响；状态机两条新转换纯增量；行尾纪律（rn 归一）在 lint 规则与测试向量中固化"
-  测试覆盖与test-report可信度: "通过——test-report.md 记录 6 组验证命令与证据；新增 16 个用例覆盖新能力（cr-init 三旗标 1、--cr/模板白名单 3、checkpoint-add 终态/非终态 1、reject 转换 1、cmdNext 三分支 1、lint R7/R8/豁免 5+）；未覆盖风险已如实列出（decline TTY 全链路待演练、迁移脚本条件项、specs 基线留回写期）"
+  代码TASKSDD对齐: "19 TASK 全覆盖 FR-1~34；复审 blocker（product-planning node-3 ref 悬空）已修复（tools@8e7da95），FR-32 引用清退补全"
+  工程质量: "lint-prompts 0 findings（enforce 模式）/ crctl.test.mjs 87/87 / lint-prompts.test.mjs 15/15 / check-skill-matrix 55 active 一致 / check-agents-contract 9 agent 通过 / 8 条 pipeline JSON 全部可解析"
+  关键路径可读性: "REJECT_ROLLBACK 映射、checkpoint-add LEGAL 派生、cmdNext specs 推断等核心逻辑注释清晰，标注 FR 来源"
+  安全性: "approve TTY 硬校验无旁路；grant 路径 v1 schema + cr_id/stage 绑定校验；CAS 写入防并发覆盖"
+  测试覆盖: "crctl 87 用例含本 CR 新增 11 例覆盖 REJECT_ROLLBACK/cr-init/--cr/checkpoint-add；lint-prompts 15 用例覆盖 R7/R8/豁免收窄"
+  测试证据可信度: "test-report.md 命令与实测输出一致；本次复审独立重跑全部命令复核未发现证据造假"
 suggestions:
-  - "approve decline 交互式全链路演练建议在代码审批通过后、writeback 前完成（NFR-5 灰度，本 CR 自身即演练载体）"
-  - "specs 基线（specs/ai-first-platform/SDD.md 等）的 23/45 旧口径引用在回写期按累积规则更新"
+  - "dir-graph.yaml#repositories[] 未声明 tools 包为 checkpoint 追踪对象，本 CR 15+ 个 tools 提交此前从未 checkpoint-add 落账，建议后续 CR 补齐该口径缺口"
