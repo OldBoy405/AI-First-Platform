@@ -33,10 +33,10 @@ created: "2026-08-06T08:30:00+08:00"
 
 ## 验收条件
 
-1. `grep -r "cr-status-set"` 全仓仅剩 lint R3 黑名单定义处
+1. `grep -r "cr-status-set"` 全仓仅剩 lint R3 黑名单定义与历史设计文档（docs/漂移治理.md、漂移治理_v2.md、二开修改报告_v2.html——记录 crctl 取代前的设计史，不修改）；skills/matrix/agents/指南文档零引用
 2. validate-doc 无「gate 合规性」维度、无 writeback 自动调用声明
-3. focus-briefing 保留 `status=new` 过滤且 write-competitive-report 会写该字段
-4. record-adr/adrs.yml 删除有"无读者"核实证据（grep 输出）
+3. focus-briefing 保留 `status=new` 过滤且 write-competitive-report 会写该字段；消费翻转 seen 已落地
+4. record-adr/adrs.yml 删除有"无读者"核实证据（constraints/adrs.yml 全仓 grep 仅自身写入清单提及）
 5. `agents/_index.yml` 所有 `pending:` 为 `[]` 且键存在
 
 ## 完成标志
