@@ -1,0 +1,32 @@
+cr-id: CR-2026-023
+review-type: code
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-07T07:25:54+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  reviewer-model: "claude-opus-4-8（自报留痕 —— dogfood 本 CR 新增维度：本次 review-code 由该模型执行）"
+  代码TASK_SDD对齐: "pass — 三 commit 完整覆盖 TASK-01~05 并与 SDD 契约逐条对上（实跑/回读核实）：
+lint-prompts.mjs R9 四处改动与 SDD §4.1 伪代码一致(SKILLS_INDEX_PATH __dirname 上溯3级
+解析 skills/_index.yml、loadJudgements 返回 skillIds、runRules R9 块 scope+逐行判定、
+头注释规则清单加 R9)；pipeline nodes=13、0013 数组位=8 夹在 0008/0009 间、
+inputs 含 review_llm、review-code prompt 头部承接 review_llm+reviewer-model 留痕、
+replayNodes 恰4项不含0013；17 处改写符合 §3.3 统一形态(pipeline/分支/顺序三型均正确、
+括号内无字面 skill id 遵 D-4)；_index nodes→13+brief、README 节点表五列齐+mermaid
+D8→D8S→D9 中转无直连残留。"
+  工程质量: "pass — 实跑核实：lint-prompts --mode enforce 全库 0 findings(R9 归零)；
+lint-prompts.test.mjs 19/19 绿；crctl.test.mjs 87/87 绿(本 CR 未触及 crctl.mjs)；
+check-skill-matrix(55 skill 一致)/check-agents-contract 均过。test-report 5 命令真实 exit 0。"
+  关键路径可读性与安全性: "pass — R9 代码清晰、每块带 CR-2026-023 溯源注释；判据源 __dirname 固定解析不随 --root、
+CRLF 归一(纪律#1)、豁免 radius=1 收窄；0013 节点不写 CR 状态、onFail abort 无残留
+(human_approval 合规边界)；lint 为本地静态扫描无外部输入信任边界。approvalPrompt/prompt
+文案不含「下一步」与字面 skill id(纵深防御，防被抄入 SKILL.md 触发 R9)。"
+  测试覆盖: "pass — 四类 R9 向量：正向命中(行号断言)/域外含真实 skill id 不报/pipeline 名捕获/
+记述性豁免(域内无 skill id 的「下一步」标题行不报——锁定子串匹配边界，即需求期 S4·
+技术设计期 T1 建议，实施采纳新增)；pipeline 脚本内置断言 13 节点+replayNodes 未变。"
+  测试证据可信度: "pass — test-report.md 由 crctl test 依真实退出码生成(模型不得改写)，5 命令 exit 0，
+TASK 验收覆盖矩阵齐全，原始日志落 test-evidence/；且诚实标注 AC-11 场景 A(/coding 运行时
+端到端暂停)为未覆盖风险，未虚报——符合本维度\"说明未覆盖风险\"要求。"
+suggestions:
+  - "C1(承接 S2/T2，非阻断)：AC-11 场景 A(/coding 运行时走到节点8暂停选择模型、repair 不重问)依赖目标平台 pipeline 运行时(D4/范围排除，不在 tools 包管辖)，test-report 已诚实标注为未覆盖风险。建议本 CR 合入 custom/main 并安装到目标 workspace 后，做一次真实 /coding 端到端手工验收关闭场景 A，作为 CR 边界外的集成确认(不阻断本轮代码评审)。"
+  - "C2(观察，非阻断)：本轮 review-code 已 dogfood 新增的 reviewer-model 留痕维度并成功写入 dimensions，证明块 A 的核心交付(评审模型可追溯)在真实评审链路可用。"
