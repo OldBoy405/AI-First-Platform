@@ -38,7 +38,7 @@ owners:
     assigned-at: "2026-08-05T23:32:54+08:00"
 target-version: tbd
 source: "docs/analysis/prompt-audit-report-2026-08-05.md"
-status: task-breakdown
+status: developing
 created: "2026-08-05T23:32:54+08:00"
 updated: "2026-08-06T06:56:50+08:00"
 remote-ref: ""
