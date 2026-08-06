@@ -10,8 +10,8 @@ repos:
     remote-branch: skipped-no-remote-branch（开发期从未推送，远端不存在）
   - id: multica
     worktree: .rayai-worktrees/multica/requirement/CR-2026-021
-    result: skipped-missing
-    remote-branch: skipped-no-remote-branch（无改动仓，从未推送）
+    result: removed（2026-08-06 补清理：此前误记为 skipped-missing，实际 worktree 存在且分支 requirement/CR-2026-021 已删，was 8cde4c5de）
+    remote-branch: skipped-no-remote-branch（无改动仓，从未推送；origin 访问受 SSL 证书限制）
   - id: tools
     worktree: 无（phase0-tools 不在 dir-graph repositories 声明内）
     result: n/a
