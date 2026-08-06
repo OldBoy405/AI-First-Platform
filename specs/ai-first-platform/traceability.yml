@@ -1,11 +1,11 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 # 五段链路：需求 FR ↔ 技术设计 SDD ↔ 交付 TASK ↔ 代码 merge SHA ↔ CR-ID
 spec-id: ai-first-platform
-cr-ref: CR-2026-021
-cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021]
-target-version: "0.22"
+cr-ref: CR-2026-022
+cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022]
+target-version: "0.23"
 baseline-since: "0.10"
-generated-at: "2026-08-05T17:06:57+08:00"
+generated-at: "2026-08-06T13:01:09+08:00"
 
 # 已知缺口：CR-2026-003~CR-2026-006 未生成本文件的里程碑段（writeback-traceability 在那四个
 # CR 回写时被跳过，PRD.md/SDD.md/_index.yml 侧的累积记录不受影响、仍完整）。本次（CR-2026-008）
@@ -1229,3 +1229,225 @@ milestones:
         tasks: [CR-2026-021-TASK-22]
         code: tools@de48aa8: pipeline-templates/feature-writeback + skills/develop/write-tech-design + review-tech-design
         evidence: AC-15：diff 触及 crctl.mjs dispatch 或 rules.json deny 即触发
+  - cr: CR-2026-022
+    milestone: T1.4
+    target-version: "0.23"
+    status: writing-back
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 2d1676a15eb39011bcc359791505061615a6d286
+        branch: requirement/CR-2026-022
+      - repo: multica
+        trunk: main
+        sha: d71403e0731563c9e66be221382f85dcca5a334d
+        branch: requirement/CR-2026-022
+      - repo: tools
+        trunk: custom/main
+        sha: none
+        branch: requirement/CR-2026-022
+    frs:
+      - fr: FR-1
+        title: crctl advance 命令串畸形 12 处修正（review-requirement 省略 --expect 兼容自环）
+        sdd: SDD §3.1 命令形态契约
+        tasks: [CR-2026-022-TASK-01]
+        code: tools@f0b8a54: 8 个 SKILL.md 共 12 处 crctl advance 命令串对齐权威形态
+        evidence: AC-1：grep 全仓无 trigger=/expected_current_status=/全角分隔符残留 + lint 0 findings
+      - fr: FR-2
+        title: frontmatter 豁免注释外移（review-code/requirement-register/implement-code 3 处）
+        sdd: SDD §3.1/§4.4 豁免注释契约
+        tasks: [CR-2026-022-TASK-01]
+        code: tools@f0b8a54: 3 处 <!-- lint-prompts:ignore --> 移出 frontmatter/孤立行，并入关联行尾
+        evidence: AC-2：lint-prompts R1 复扫 0 findings（豁免收窄后仍零违例）
+      - fr: FR-3
+        title: 死引用与措辞订正（tools/old 死引用、validate-doc 死路径、编号/阶段措辞）
+        sdd: SDD §3.2 文本订正清单
+        tasks: [CR-2026-022-TASK-01]
+        code: tools@f0b8a54: pipeline-templates/_index.yml、agents/knowledge-agent.md、spec-dashboard 等 5 文件
+        evidence: AC-3：grep tools/old 清零 + spec-dashboard 状态表六列补全
+      - fr: FR-4
+        title: cr-status-set 整体下线（SKILL 文件 + 台账条目 + 引用清退）
+        sdd: SDD §4.1 下线流程
+        tasks: [CR-2026-022-TASK-02]
+        code: tools@e5bcb31: skills/cr/cr-status-set/ 删除 + _index/matrix/README/QODER 引用清退
+        evidence: AC-4：grep cr-status-set 仅剩 lint R3 黑名单与历史文档
+      - fr: FR-5
+        title: validate-doc 订正（删 gate 合规性死维度 + 移除失实自动调用声明）
+        sdd: SDD §3.2 死维度删除
+        tasks: [CR-2026-022-TASK-02]
+        code: tools@e5bcb31: skills/shared/validate-doc/SKILL.md
+        evidence: AC-5：validate-doc 无 gate 合规性维度、无 writeback 自动调用声明
+      - fr: FR-6
+        title: focus-briefing 反向修（status:new 生产侧补齐 + 消费翻转 seen + 删不可确认数据源）
+        sdd: SDD §3.2 数据流订正
+        tasks: [CR-2026-022-TASK-02]
+        code: tools@e5bcb31: skills/planning/focus-briefing + skills/competitive/write-competitive-report
+        evidence: AC-6：write-competitive-report 写 status:new、focus-briefing 消费翻转 seen、数据源 6→5 编号连续
+      - fr: FR-7
+        title: 降级路径与 pending 清空（report-to-planning-suggestion 委托降级 + agents pending 清空）
+        sdd: SDD §3.2 降级路径
+        tasks: [CR-2026-022-TASK-02]
+        code: tools@e5bcb31: skills/competitive/report-to-planning-suggestion + agents/_index.yml（5 处 pending:[]）
+        evidence: AC-7：降级路径落盘 + agents/_index.yml 所有 pending 为 [] 且键存在
+      - fr: FR-8
+        title: record-adr 下线（无读者核实后连产物删除）
+        sdd: SDD §4.1 下线流程
+        tasks: [CR-2026-022-TASK-02]
+        code: tools@e5bcb31: skills/spec/record-adr/ 删除 + constraints/adrs.yml 删除（无读者证据入 commit）
+        evidence: AC-8：全仓 grep record-adr/adrs.yml 零引用
+      - fr: FR-9
+        title: cr-init 补 --summary/--source/--target-version 旗标 + 删 cr_id 僵尸参数
+        sdd: SDD §3.1 cr-init 三旗标设计
+        tasks: [CR-2026-022-TASK-03]
+        code: tools@73250dd: crctl.mjs cmdCrInit/casWriteMulti + requirement-register SKILL + pipeline 节点 1
+        evidence: AC-4：cr-init 三旗标用例（覆写/缺省兼容/冒号转义）+ crctl.test.mjs 86 用例全绿
+      - fr: FR-10
+        title: git commit --template 补显式 --cr 旗标 + COMMIT_TEMPLATES 形态与白名单对齐
+        sdd: SDD §3.1 --cr 直传设计
+        tasks: [CR-2026-022-TASK-04]
+        code: tools@acdcfc0: crctl.mjs resolveTemplateCr/CRCTL_FLAGS/COMMIT_TEMPLATES + write-dev-tasks SKILL
+        evidence: AC-4：--cr 直传/非法格式/模板白名单 3 用例 + 85 用例全绿
+      - fr: FR-11
+        title: checkpoint-add LEGAL 从状态机派生全非终态 + push-progress Step 3 逐仓落账 + 节点 12 补齐
+        sdd: SDD §4.2 LEGAL 派生设计
+        tasks: [CR-2026-022-TASK-05]
+        code: tools@a1c36e2: crctl.mjs cmdCheckpointAdd + push-progress SKILL + code-implementation 节点 12
+        evidence: AC-5：终态拒绝/非终态可用用例 + 本 CR 真实落账 7ab6c9e（developing 态 checkpoint-add 成功）
+      - fr: FR-12
+        title: approve 驳回回退（状态机两条 reject 转换 + decline 分支查表回退 + 错误表订正 + 无旁路表述）
+        sdd: SDD §2.2/§4.3 REJECT_ROLLBACK 设计
+        tasks: [CR-2026-022-TASK-06]
+        code: tools@199e3b8: crctl.mjs cmdApprove/REJECT_ROLLBACK + dir-graph.yaml 两转换 + 四份 approve-* SKILL
+        evidence: AC-6：四 stage legalNext 含 reject 转换用例 + 86 用例全绿 + multica transitions_gen.go 重生成（25/47）
+      - fr: FR-13
+        title: gates.json review-planning-report 死配置删除 + product-planning node-6 失实承诺订正
+        sdd: SDD §2.3 D-2 决策落地
+        tasks: [CR-2026-022-TASK-07]
+        code: tools@1192c0b: gates.json reviewLoops + product-planning.pipeline.json node-6
+        evidence: AC-7：gates.json 解析合法 + reviewLoops 仅剩 3 项 + product-planning JSON 解析通过
+      - fr: FR-14
+        title: requirement-register fetch 失败 STALE_BASE 降级（不 abort 不静默成功）
+        sdd: SDD §3.3 降级语义
+        tasks: [CR-2026-022-TASK-08]
+        code: tools@1192c0b: skills/requirement/requirement-register/SKILL.md 错误表补行
+        evidence: AC-8：错误表含 STALE_BASE 降级行 + 正文语义澄清（注册实录坐实场景）
+      - fr: FR-15
+        title: inbox-emit 接口对齐（owner-handover 三处同步 + feedback-writeback/handover-cr 迁 CLI）
+        sdd: SDD §3.1 inbox-emit 契约
+        tasks: [CR-2026-022-TASK-09]
+        code: tools@42a518b: inbox-emit/feedback-writeback/handover-cr 三份 SKILL.md
+        evidence: AC-9：R8 复扫零命中 + 三文件事件枚举/参数表一致
+      - fr: FR-16
+        title: merge-feature-branch HEAD 一致性校验（本地 vs 远端，缺证据分支禁合并）
+        sdd: SDD §3.4 FR-16 校验
+        tasks: [CR-2026-022-TASK-10]
+        code: tools@42a518b: skills/writeback/merge-feature-branch/SKILL.md Step1.4
+        evidence: AC-10：本 CR 回写实跑——multica 分支先补 push 再合并（FR-16 现场生效）
+      - fr: FR-17
+        title: write-competitive-report 写入目标订正 + 两阶段确认（草稿 confirmed=false，落盘挪至审批后）
+        sdd: SDD §3.3 两阶段确认协议
+        tasks: [CR-2026-022-TASK-10]
+        code: tools@42a518b: competitive-radar.pipeline.json 节点 2
+        evidence: AC-10：节点 2 写入目标 docs/competitive/reports/_index.yml + confirmed=false 显式传参
+      - fr: FR-18
+        title: architecture-design pipeline UUID 0014→0016 全量迁移（含 repairNodeId + seed 幂等）
+        sdd: SDD §3.2 UUID 迁移
+        tasks: [CR-2026-022-TASK-11]
+        code: tools@42a518b: pipeline-templates/architecture-design.pipeline.json（6 处 0014- 迁移）
+        evidence: AC-11：JSON 解析通过 + 与 resume-cr 0014 前缀不再撞号 + 迁移前后计数校验
+      - fr: FR-19
+        title: market-insights 索引统一 schema（insights:/MARKET_INSIGHT/生命周期）+ 节点 5 终态 published
+        sdd: SDD §2.4 schema 统一
+        tasks: [CR-2026-022-TASK-12]
+        code: tools@42a518b: conduct-market-research/extract-market-insight SKILL + market-to-plan 节点 5
+        evidence: AC-12：三写入方 schema 一致 + 单一事实源声明落盘 + 迁移脚本按需创建
+      - fr: FR-20
+        title: sync owner 改调 crctl（handover-cr/resume-from-remote 手写 owners 段统一改调 owner-set）
+        sdd: SDD §3.1 唯一写入口
+        tasks: [CR-2026-022-TASK-13]
+        code: tools@de65bbc: skills/sync/handover-cr + resume-from-remote
+        evidence: AC-13：grep 无手写 owners 段残留 + owner-set 调用形态一致
+      - fr: FR-21
+        title: cmdNext writing-back 误判修复（改查 specs/{spec_id}/traceability.yml 产物）
+        sdd: SDD §3.4 产物判定
+        tasks: [CR-2026-022-TASK-13]
+        code: tools@de65bbc: crctl.mjs cmdNext + crctl.test.mjs 三分支用例
+        evidence: AC-13：cmdNext writing-back 三分支测试（87 用例全绿）
+      - fr: FR-22
+        title: cr-show 删硬编码映射表改调 crctl next
+        sdd: SDD §3.1 收敛
+        tasks: [CR-2026-022-TASK-13]
+        code: tools@de65bbc: skills/cr/cr-show/SKILL.md
+        evidence: AC-13：cr-show 无 status→下一节点硬编码表
+      - fr: FR-23
+        title: planning 域八项歧义订正（SKIPPED 文案/onFail 统一/intent-context/6 章节/cr_id 过滤/worktree prune/估算交叉校验）
+        sdd: SDD §3.3 歧义清单
+        tasks: [CR-2026-022-TASK-14]
+        code: tools@de65bbc: write-planning-report/report-to-planning-suggestion/resume-cr/market-to-plan 等 7 文件
+        evidence: AC-14：八项逐条对照报告目标形态 + 三条流水线 JSON 解析通过
+      - fr: FR-24
+        title: lint-prompts 补 R7/R8（命令参数形态 + inbox-emit 接口，触发面覆盖 backlog-set/--template 编号）
+        sdd: SDD §4.4 规则设计
+        tasks: [CR-2026-022-TASK-15]
+        code: tools@905eb63: lint-prompts.mjs runRules/R7/R8 实现
+        evidence: AC-15：R7/R8 5 类测试向量命中 + 全仓复扫 0 findings
+      - fr: FR-25
+        title: 豁免范围 bug 修复（整段生效收窄为 ±1 行邻近契约）
+        sdd: SDD §4.4 豁免契约
+        tasks: [CR-2026-022-TASK-15]
+        code: tools@905eb63: lint-prompts.mjs isIgnored radius 收窄
+        evidence: AC-15：豁免范围测试向量（同段违规仍命中）+ 存量 10 处违例治理
+      - fr: FR-26
+        title: 三类测试向量入库（R6 违规/R7 违规/豁免范围复现）
+        sdd: SDD §4.4 测试向量
+        tasks: [CR-2026-022-TASK-15]
+        code: tools@905eb63: lint-prompts.test.mjs 新增 5 用例
+        evidence: AC-15：lint-prompts.test.mjs 15/15 全绿
+      - fr: FR-27
+        title: approve-* 四兄弟对齐（删 approve-dev-start 独有前置条件节，结构 diff 仅 stage/status 差异）
+        sdd: SDD §4.5 对齐原则
+        tasks: [CR-2026-022-TASK-16]
+        code: tools@f103e61: 四份 approve-* SKILL.md
+        evidence: AC-16：四文件结构一致（diff 仅 stage/status）+ 抽 shared 评估定案不抽（样板不长，报告 2.3 原则 2）
+      - fr: FR-28
+        title: writeback 三兄弟抽 shared 评估（定案：样板不长不抽，统一措辞前缀）
+        sdd: SDD §4.5 评估结论
+        tasks: [CR-2026-022-TASK-16]
+        code: tools@f103e61: writeback-prd-sdd/writeback-tasks/writeback-traceability SKILL.md
+        evidence: AC-16：评估结论入 TASK-16 验收记录 + 三兄弟自检回归通过
+      - fr: FR-29
+        title: sync 免责收敛 + bucket/worktreePath 改调 crctl worktree-path（三处）
+        sdd: SDD §4.5 收敛
+        tasks: [CR-2026-022-TASK-17]
+        code: tools@114cf97: pull-progress/push-progress/resume-from-remote/handover-cr
+        evidence: AC-17：grep 无 bucket =/worktreePath = 手拼逻辑 + SHELL_UNAVAILABLE 单行摘要保留
+      - fr: FR-30
+        title: agents/_index.yml constraints prose 删除（机读台账只留结构化字段）
+        sdd: SDD §4.5 台账精简
+        tasks: [CR-2026-022-TASK-17]
+        code: tools@114cf97: agents/_index.yml（9 处 constraints 块删除）
+        evidence: AC-17：check-agents-contract 通过 + constraints 字段清零
+      - fr: FR-31
+        title: pipeline push-progress 样板抽取（三流水线节点 prompt 收敛为 skill 默认说明）
+        sdd: SDD §4.5 样板抽取（前置 FR-11）
+        tasks: [CR-2026-022-TASK-17]
+        code: tools@114cf97: requirement-authoring/architecture-design/code-implementation 三流水线
+        evidence: AC-17：节点引用 push-progress 默认说明 + 模拟执行一致
+      - fr: FR-32
+        title: 评估项落地（write-insight-brief/run-competitive-analysis 合并下线 + list-remote 去重 + 跳过检查单份化）
+        sdd: SDD §4.5 下线流程
+        tasks: [CR-2026-022-TASK-18]
+        code: tools@3308d14: extract-market-insight/write-planning-report 并入 + market-to-plan 节点 ref 切换 + 引用清退
+        evidence: AC-18：55 active skills 一致 + matrix 绿 + 引用计数清零（含 review-code 复审补 4 处 tools@8e7da95）
+      - fr: FR-33
+        title: 三台账同步 + 全量自检回归（check-skill-matrix/crctl.test/lint-prompts/pipeline JSON）
+        sdd: SDD §6 映射表收尾
+        tasks: [CR-2026-022-TASK-19]
+        code: tools@8e7da95: 三台账 + ARCHITECTURE.md §8 + crctl SKILL 用途表
+        evidence: AC-19：crctl 87/87 + lint 15/15 + lint 0 findings + matrix/agents.contract 绿 + 8 条 pipeline JSON 解析通过
+      - fr: FR-34
+        title: 文档更新（ARCHITECTURE.md §8 登记 + crctl/SKILL 新旗标 + lint 规则说明 + AGENTS.md 口径 25/47）
+        sdd: SDD §6.4 时机表
+        tasks: [CR-2026-022-TASK-19]
+        code: tools@8e7da95 + 主仓 AGENTS.md（25/47）+ docs/analysis/prompt-audit-report-2026-08-05.md §九勾验表
+        evidence: AC-20：97 条勾验表 100% 闭合 + 口径 25/47 全仓核查（历史文档例外标注）+ test-report 入库
