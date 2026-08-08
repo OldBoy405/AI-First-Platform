@@ -1,0 +1,20 @@
+cr-id: CR-2026-025
+review-type: code
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-09T03:30:36+08:00"
+verdict: block
+blockers:
+  - "[Critical] skills/shared/crctl/scripts/crctl.mjs:768-773 的 guardDependsOn 把 parseYaml 后缺失或非数组的 tasks 根节点静默降级为 []，随后目标不存在即 return；而 editTaskDone 仍按文本匹配任意 - id: 块，因此错误根结构下可绕过 depends-on 校验并写成 done。应在守卫中对顶层映射与 tasks 数组形状硬失败，并补错误根结构下退出非 0、文件哈希不变的回归向量。"
+  - "[Major] skills/shared/crctl/scripts/crctl.mjs:1515-1517 把已存在的 reviews.<stage>: null 与 undefined 同等视为合法首写，违反 TASK-03 明定的仅 stageNode === undefined 才可首写；应让 null 进入 TRACE_SHAPE，并补三账本不变、payload 保留向量。"
+  - "[Major] skills/shared/crctl/scripts/crctl.mjs:1455-1463 只 findIndex 第一个顶层 reviews:，未拒绝重复顶层 reviews 段；该输入无法唯一定位却会静默编辑首段，违反 FR-18/AC-21。应先确认顶层 reviews: 唯一，否则 TRACE_SHAPE，并补原子拒写向量。"
+  - "[Major] commit 5e0629e 的 message 仅为 feat: CR-2026-025 TASK-03，未注明方案 v2.6、CR-2026-024 SDD 评审实测或 CR-2026-025 评审发现等来源，未满足 FR-23/AC-17 的 commit 来源溯源要求；请在不夹带无关工作区修改的前提下修正该提交信息。"
+dimensions:
+  code-task-sdd-alignment: "BLOCK：TASK-01/NFR-6 的解析硬失败、TASK-03/FR-18 的 trace 形状硬失败及 FR-23 溯源未完整落实。"
+  engineering-quality: "验证命令全绿，但两个账本写路径仍存在结构损坏时静默降级，不能凭现有绿测放行。"
+  critical-path-readability: "核心流程与注释总体清晰；问题集中在过宽的空值兜底和非唯一定位。"
+  security: "未发现权限、注入或敏感数据新增风险；账本完整性缺口按阻塞处理。"
+  test-coverage: "108+19+8 个测试通过；缺少 malformed tasks 根、stage null、重复顶层 reviews 三个负向向量。"
+  test-evidence-trust: "本轮无条件重跑 test-report 的 6 条命令，全部 exit 0，与报告一致。"
+  frontend-quality: "N/A：diff 不涉及前端文件。"
+  suggestion-policy: "strict"
+suggestions: []
