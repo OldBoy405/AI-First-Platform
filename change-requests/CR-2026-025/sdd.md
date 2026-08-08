@@ -5,7 +5,7 @@ cr-ref: CR-2026-025
 title: crctl 守卫与回显收敛（check-skill-matrix external 引用校验 + depends-on 依赖守卫 + gate/advance blockers 回显截断 + review-record 投影一致性）技术设计
 status: draft
 created: "2026-08-09T01:20:00+08:00"
-updated: "2026-08-09T01:45:00+08:00"
+updated: "2026-08-09T01:55:00+08:00"
 ---
 
 # SDD — crctl 守卫与回显收敛
@@ -211,8 +211,12 @@ why: Array.isArray(val)
 2. const recordedAt = nowIso()                # 一次生成，三账本共用
 2b. attempts 历史合并（TD-BL-1：上一轮 result/blocker-count 的唯一来源是 trace 现有投影，
     review-loop.yml 只有 attempt/at/by，canonical annotation 会被覆盖，均不得作为历史数据源）：
-    oldAttempts = trace 存在 ? parseYaml(traceText)?.reviews?.[stage]?.['review-loop']?.attempts : []
-    shape 校验：列表，且每项含 attempt/result/blocker-count/repair-target；不合 → fail('TRACE_SHAPE')
+    stageNode = trace 存在 ? parseYaml(traceText)?.reviews?.[stage] : undefined
+    # TD-BL-4：区分两种情形，不得用宽泛空值兜底掩盖形状损坏：
+    #   stageNode === undefined → 目标 stage 首次写入（合法，FR-18 定点新增）：oldAttempts = []
+    #   stageNode 存在 → 读 stageNode['review-loop']?.attempts：键缺失 → []；
+    #     存在但形状不合 → fail('TRACE_SHAPE')
+    shape 校验（仅对存在的 attempts）：列表，且每项含 attempt/result/blocker-count/repair-target；不合 → fail('TRACE_SHAPE')
     bump 时：新条目 { attempt: current+1, reviewed-at: recordedAt, result: verdict,
               blocker-count, repair-target } 追加于尾部；若 oldAttempts 已含同 attempt 号
               → fail('TRACE_SHAPE')（不静默覆盖历史）
@@ -303,7 +307,7 @@ PRD D-1~D-12 已全部拍板，此处不复述理由，只补两个实施级选�
 | FR-13 | F-2 数组类型保持 | AC-12，F-4 断言② |
 | FR-14 | F-2 改动处注释 | AC-14 |
 | FR-15 | F-4 五类向量 | AC-15 |
-| FR-16 | F-2 `upsertReviewsStage` 三 stage 同一函数（§4.4c） | AC-19，F-4 项④向量① |
+| FR-16 | F-2 `upsertReviewsStage` 三 stage 同一函数（§4.4c） | AC-19，F-4 项④向量①（含"trace 已有 requirement 投影、首次写 tech-design/code"向量，钉住 §4.4a 步骤 2b 的 stage 缺失合法分支，TD-BL-4） |
 | FR-17 | F-2 全校验→单时间戳→attempts 历史合并（§4.4a 步骤 2b）→`casWriteMulti` | AC-20，F-4 向量②④ |
 | FR-18 | F-2 骨架创建 + 定点替换 + 硬失败（§4.4c） | AC-21，F-4 向量③④ |
 | FR-19 | F-2 `subject-file`/`subject-sha256`（§4.4b） | AC-22 |
@@ -327,7 +331,7 @@ PRD D-1~D-12 已全部拍板，此处不复述理由，只补两个实施级选�
 - `task done` 守卫复用 `cmdTaskDone` 已读入文本，只增一次 `parseYaml`（同文件），无新增 I/O。
 - `cmdNext` 新增一次 annotation 读取与一次 PRD 摘要计算，仅 drafting 态触发，可忽略。
 
-**边界条件清单**（全部进测试向量）：环（A→B→A / A→A）、带引号 TASK-ID、`depends-on` 缺失/空/悬空/非数组（`SCHEMA_INVALID`）、CRLF↔LF 等价、checker 三份输入各自空结构硬失败、traceability 缺失/含未知段/CR-ID 不匹配/重复 stage/attempts 形状非法或重号、无摘要旧 annotation、CAS 注入失败三文件不动。
+**边界条件清单**（全部进测试向量）：环（A→B→A / A→A）、带引号 TASK-ID、`depends-on` 缺失/空/悬空/非数组（`SCHEMA_INVALID`）、CRLF↔LF 等价、checker 三份输入各自空结构硬失败、traceability 缺失/含未知段/已有其他 stage 时首次写入目标 stage/CR-ID 不匹配/重复 stage/attempts 形状非法或重号、无摘要旧 annotation、CAS 注入失败三文件不动。
 
 **已知文档同步缺口（非 blocker）**：`openwiki/architecture/agent-skill-matrix.md` 描述 checker 为"3 项检查"，项①上线后过时；openwiki 为文档镜像、非门禁面，实施期顺手同步一句，不单独成任务。
 
@@ -351,3 +355,4 @@ P-2~P-4 的提示词修订随本 CR 代码同批提交（纯 prompt 修改不另
 |------|------|------|------|
 | 2026-08-09 | v0.1.0 | Ray | 初始草稿：四项目标落点映射、`guardDependsOn`/`briefArray`/`upsertReviewsStage`/`cmdNext` 决策表设计、I-1~I-3 实施级选型、P-1~P-5 采纳清单；FR 覆盖 24/24 |
 | 2026-08-09 | v0.2.0 | Ray | 技术评审 attempt-1 回修（3 blocker）：TD-BL-1 补 §4.4a 步骤 2b attempts 历史合并契约（唯一数据源 = trace 现有投影，shape 校验 + bump 追加/非 bump 按轮替换，禁从 review-loop.yml 臆造）；TD-BL-2 补 §4.1 三段解析空结构硬失败守卫与 `split(/\r?\n/)` 替换，夹具进 F-3；TD-BL-3 删除未授权的 `DEPENDS_ON_SHAPE`，非数组形态复用 `SCHEMA_INVALID` 并补向量。采纳 TD-SUG-1（P-4 确定为事实）、TD-SUG-2（AC-19 口径限定 LF 规范化后非目标片段）。 |
+| 2026-08-09 | v0.3.0 | Ray | 技术评审 attempt-2 回修（1 blocker）：TD-BL-4 修正 §4.4a 步骤 2b——区分"目标 stage 缺失（合法，oldAttempts=[]，走 §4.4c 新增分支）"与"stage 存在但 review-loop/attempts 形状损坏（TRACE_SHAPE）"，不用宽泛空值兜底；FR-16 测试锚点与边界清单补"已有其他 stage 时首次写入"向量。 |

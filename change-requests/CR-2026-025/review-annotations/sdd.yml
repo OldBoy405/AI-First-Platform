@@ -1,20 +1,16 @@
 cr-id: CR-2026-025
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-09T01:28:01+08:00"
+reviewed-at: "2026-08-09T01:40:07+08:00"
 verdict: block
 blockers:
-  - "TD-BL-1（trace attempts 历史来源缺失）：PRD FR-16/17、AC-20 要求第二轮投影保留 attempts 第 1、2 轮的 result/blocker-count/repair-target，但 review-loop.yml 只有 attempt/at/by，canonical annotation 又会覆盖上一轮；SDD §4.4a/c 只描述整块替换，没有定义从现有 reviews.<stage>.review-loop.attempts 读取、校验并追加/同轮替换的算法，按当前设计无法生成 AC-20 要求的历史。须补最小读取契约：复用既有 parseYaml 只读现有 target stage 投影，校验 attempts 形状；bump 时追加本轮，非 bump 时按 current-attempt 定义覆盖或新增，随后再用行级 upsert 渲染目标块，禁止从 review-loop.yml 臆造缺失的 verdict/blocker-count。"
-  - "TD-BL-2（FR-3 行尾与硬失败未落到设计）：PRD 明确要求逐行解析使用 split(/\r?\n/) 且匹配不到预期结构硬失败；SDD §4.1 只引入 readNorm，并声称检查 1/2/3 零改动，未定义 active skill、actor/external 或主责矩阵段为空/缺失时的失败条件，也未明确替换现有 split('\n')。须补 parser shape 校验与结构化失败路径，并把三个逐行入口改为 split(/\r?\n/)；对应 CRLF 与空结构夹具进入 F-3。"
-  - "TD-BL-3（未授权错误码扩面）：SDD §4.2 为 depends-on 非数组新增 DEPENDS_ON_SHAPE，但 PRD FR-7/FR-9 与接口验收只批准 DEPENDS_ON_NOT_DONE、DEPENDS_ON_UNKNOWN 两个新增错误码，SDD §3.1 也未列第三个，导致实现、文档和测试口径分裂。遵循不过度设计，非数组形态应复用既有 SCHEMA_INVALID（detail 指向 depends-on），并补一条测试；若坚持专用错误码则必须先回修 PRD/用途表/AC，不得在 SDD 单方面新增。"
+  - "TD-BL-4（首个新 stage 的 trace attempts 默认值错误）：§4.4a 步骤 2b 把 oldAttempts 定义为 `trace 存在 ? parseYaml(traceText)?.reviews?.[stage]?.['review-loop']?.attempts : []`，当 traceability.yml 已有 requirement 投影、而本次首次写入 tech-design 或 code（FR-16/AC-19 的正常三阶段路径）时，该表达式返回 undefined；下一步的“列表且每项含字段”shape 校验必然报 TRACE_SHAPE，导致无法按 §4.4c 的未命中分支新增目标 stage，违背 FR-18 的“定点新增或替换”。须区分“目标 stage 缺失”（合法，oldAttempts=[]）与“目标 stage 存在但 review-loop/attempts 形状错误”（TRACE_SHAPE）；不可用宽泛空值兜底掩盖后者。"
 dimensions:
-  PRD-SDD对齐: "block — 24/24 FR 均有映射，但 FR-3 的 split/硬失败契约和 FR-17/AC-20 的历史 attempts 语义未形成可实施算法；项②另新增了 PRD 未批准的错误码。"
-  架构合理性: "block — 总体遵循 crctl 单写者、casWriteMulti、零依赖和行级定点编辑；但 checker 继续允许空解析静默通过会违反 ARCHITECTURE.md 不变量 4。"
-  数据模型完整性: "block — trace 当前轮次字段齐全，但上一轮 result/blocker-count 的唯一数据来源和合并规则缺失，第二轮会丢历史或只能臆造。"
-  接口契约: "block — review-record/cmdNext 主接口清晰；DEPENDS_ON_SHAPE 未进入 PRD 与 §3.1 公共错误码契约。"
-  性能与安全: "pass — 扫描复杂度、单次 parse、摘要计算与 CAS 崩溃窗口均有边界说明，无新增外部输入或审批旁路。"
-  可测试性: "block — 大部分 AC 有测试锚点，但 trace 第二轮历史没有可执行生成规则，checker 空结构硬失败也没有测试向量。"
-  Prompt采纳影响: "pass — §8 已覆盖 requirement/tech-design/code 三个 review Skill 与 implement-code/crctl；P-4 仍应在回修时去掉条件措辞。"
-suggestions:
-  - "TD-SUG-1：已实测 review-code/SKILL.md Step 5 明确手写 reviews.code；将 P-4 的“若有对应投影步骤，实施期核实”改为确定事实和确定改法，符合事实断言先核实纪律。"
-  - "TD-SUG-2：AC-19 的“其他段字节不变”建议在 SDD 中限定为 LF 规范化后的非目标文本片段不变，避免 CRLF 全文规范化与字节级措辞产生歧义。"
+  PRD-SDD对齐: "block — 上轮 TD-BL-1/2/3 已分别补齐历史合并、CRLF/空结构硬失败和 SCHEMA_INVALID 复用；但 FR-16/FR-18 要求的已有其他 stage 时新增目标 stage，在 §4.4a 的 oldAttempts 分支上会必然失败。"
+  架构合理性: "block — 总体仍遵循 crctl 单写者、casWriteMulti、零依赖和行级定点编辑；但新投影路径把合法的缺失 stage 误判为账本结构损坏，破坏共享三阶段映射的正常工作流。"
+  数据模型完整性: "block — attempts 历史字段和合并规则已明确；仍缺失“stage 不存在时空历史”的合法模型分支，致使新增 stage 无法构造首条 attempt。"
+  接口契约: "block — review-record 的三 stage 共用契约应支持 requirement、tech-design、code 依次投影；当前算法仅在 trace 缺失时有 [] 初值，不能支持 trace 已存在而当前 stage 缺失的接口情形。"
+  性能与安全性: "pass — 单次解析、CAS 多写、无新增外部输入或审批旁路；修复只需补最小分支判定，不改变复杂度。"
+  可测试性: "block — F-4 虽列三 stage 投影向量，但设计尚未规定“已有 requirement/tests/未知段，首次写入 tech-design/code”应成功的算法，测试无法据此锁定正确行为。"
+  Prompt采纳影响: "pass — §8 已将 requirement、tech-design、code 三个 review Skill 的 trace 手写步骤统一改为由 review-record 落盘后核对，且 P-4 已改为已核实事实。"
+suggestions: []
