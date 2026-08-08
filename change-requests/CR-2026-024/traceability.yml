@@ -40,12 +40,31 @@ reviews:
           result: pass
           blocker-count: 0
           note: "B-5~B-8 修复核实，blockers=0；FR↔AC↔SDD 三方对齐恢复（FR-1/FR-2/FR-11/FR-14 正文同步），进入人工审批"
+  code:
+    reviewer: "OldBoy405"
+    verdict: block
+    reviewed-at: "2026-08-08T23:11:16+08:00"
+    blocker-count: 2
+    suggestion-count: 3
+    task-coverage: "3/3"
+    test-report-status: pass
+    annotation: "change-requests/CR-2026-024/review-annotations/code.yml"
+    repair-target: implement-code
+    review-loop:
+      current-attempt: 1
+      max-attempts: 3
+      attempts:
+        - attempt: 1
+          reviewed-at: "2026-08-08T23:11:16+08:00"
+          result: block
+          blocker-count: 2
+          repair-target: implement-code
 tests:
   report: change-requests/CR-2026-024/test-report.md
   status: pass
   owner: OldBoy405
   owner-assigned-at: "2026-08-08T16:44:35+08:00"
-  generated-at: "2026-08-08T22:50:24+08:00"
+  generated-at: "2026-08-08T23:34:23+08:00"
   repair-target: implement-code
   commands:
     - name: check-skill-matrix
