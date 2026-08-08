@@ -95,7 +95,7 @@ updated: "2026-08-08T17:20:00+08:00"
   - **甲路线措辞**：已装完整 external 技能（ponytail/systematic-debugging/writing-plans）时优先走其完整流程，未装按本节规则执行，二者等价；`coding-discipline` 是兜底事实源，不依赖跨运行时探测。
 - **FR-8（coding-discipline 登记与归属）**：`skills/_index.yml` 登记为 active；`agent-skill-matrix.yml` 下 `dev-agent` owns、`quality-reviewer-agent` can-call；`AGENT-SKILL-MATRIX.md` 主责矩阵表格同步；tools 仓 `dir-graph.yaml` 登记路径；`ARCHITECTURE.md` §8 代码地图登记。
 - **FR-9（implement-code 消费 coding-discipline，§4.3/§4.8）**：`implement-code/SKILL.md` Step 3 引用 §1+§2，自修复分支额外引用 §3；追加 `depends-on` 拓扑排序规则——执行前读 `tasks/_index.yml` 的 `depends-on` 拓扑排序，前置 TASK 未 done 不得开始并注明被阻塞项与等待的前置项。
-- **FR-10（write-dev-plan 消费 coding-discipline）**：`skills/planning/write-dev-plan/SKILL.md` 引用 `coding-discipline` §2（步骤粒度约束）。
+- **FR-10（write-dev-plan 消费 coding-discipline）**：`skills/develop/write-dev-plan/SKILL.md` 引用 `coding-discipline` §2（步骤粒度约束）。（路径订正：技术评审 M-3 实测该 skill 在 develop 域，原 planning 域表述错误，以 SDD §0 C-4 为准）
 - **FR-11（review-code 第五维度，§4.4）**：`review-code/SKILL.md` Step 3 评审维度表追加第五维度「前端质量（仅前端 diff 触发）」：a11y 对比度达 WCAG AA（破 AA 升 blocker）、组件 loading/empty/error 状态完整覆盖、构建体积在预算内（其余 minor）；触发条件为 diff 命中 `*.tsx`/`*.vue`/`*.css`/`*.html`。`dimensions` 为自由映射（crctl 仅校验非空），加键零结构成本。
 - **FR-12（review-code 无条件重验，§4.7）**：`review-code/SKILL.md` Step 1 改为**无条件重新执行**验证命令（lint/test/build），不再是"缺失才补跑"；implement-code 自报结果仅作参考对照，不一致时以本轮重新执行结果为准并在 blockers 注明差异。评审判据细化：「测试通过」必须是本轮重新执行的完整命令输出（0 failures），"看起来通过"或"之前跑过"不构成证据。甲路线措辞：无条件重验是 `review-code` 自身最低要求，不因是否装外部技能而增减，不弱化为"可选加速"；已装 `verification-before-completion` 时可用其 Gate Function/Common Failures 表作补充参考。
 - **FR-13（suggestion_policy 触发参数，§4.9-③/v2.6）**：`code-implementation.pipeline.json` `inputs` 新增 `{ key: suggestion_policy, label: 改进建议处置策略, type: select, options: [strict, lenient], required: false, default: "strict", description: strict=不升格（默认，保守交付）；lenient=按三条判据把本 CR 内该修的升格进 blockers（清技术债场景） }`——形态严格对齐包内三个既有 `select` input（required:false + default），UI 预选中 strict。
@@ -129,17 +129,17 @@ updated: "2026-08-08T17:20:00+08:00"
 
 ## 5. 验收标准
 
-- **AC-1**（FR-1）：`agent-skill-matrix.yml` 中 grep 不到 `using-superpowers|writing-plans|systematic-debugging|verification-before-completion` 四个死声明；`executing-plans`、`subagent-driven-development`、`brainstorming` 保留；`check-skill-matrix.mjs` 通过。
+- **AC-1**（FR-1）：`agent-skill-matrix.yml` actor 级 external 中 grep 不到 `using-superpowers|writing-plans|systematic-debugging|verification-before-completion|test-driven-development` 任一名称（订正：actor 级前三项位于 system-orchestrator.external，test-driven-development 位于 dev-agent.external，随本 CR 删其唯一真实引用而同批清除，见 SDD §0 C-2/C-5）；`executing-plans`、`subagent-driven-development`、`brainstorming` 保留；`check-skill-matrix.mjs` 通过。
 - **AC-2**（FR-2/FR-3）：`implement-code/SKILL.md` grep 不到 `test-driven-development` 引用；含 executing-plans/subagent-driven-development 降级路径文本；`code-implementation.pipeline.json` 节点 6 prompt 同步；JSON 可解析。
 - **AC-3**（FR-4）：`agents/_index.yml` 中三项能力位于对应 agent 的 `pending` 而非 `supported`；`agent-skill-matrix.yml` `known-gaps` 恰剩 `writeback-agent-entry` 一条（或与 capabilities 无关的保留项）；`check-agents-contract.mjs` 通过。
 - **AC-4**（FR-5）：`AGENT-SKILL-MATRIX.md` 与 `openwiki/architecture/agent-skill-matrix.md` 均含"声明性边界"与"不存在调用级拦截"表述；grep 无"调用级拦截"的错误承诺。
 - **AC-5**（FR-6）：`write-dev-tasks/SKILL.md` grep 不到 `assignee` 字段（模板与正文均无）。
 - **AC-6**（FR-7/FR-8）：`skills/develop/coding-discipline/SKILL.md` 存在且含 §1 极简阶梯/§2 步骤粒度/§3 根因排查三节与甲路线措辞；`skills/_index.yml` 登记 active；`agent-skill-matrix.yml` `dev-agent` owns、`quality-reviewer-agent` can-call；`AGENT-SKILL-MATRIX.md` 与 tools `dir-graph.yaml`、`ARCHITECTURE.md` §8 同步；三件套通过。
 - **AC-7**（FR-9/FR-10）：`implement-code/SKILL.md` Step 3 含 coding-discipline §1+§2 引用、自修复分支 §3 引用、depends-on 拓扑排序规则；`write-dev-plan/SKILL.md` 含 §2 引用。
-- **AC-8**（FR-11）：`review-code/SKILL.md` Step 3 维度表含第五维度且触发条件为 `*.tsx|*.vue|*.css|*.html`；破坏 WCAG AA 判 blocker、其余 minor；不含字体/配色/拨盘等审美主张。
+- **AC-8**（FR-11）：`review-code/SKILL.md` Step 3 维度表含名为「前端质量」的新维度行（订正：按维度名验收，不用序号——实测现有 6 行，新增为第 7 行，见 SDD §0 B-4）且触发条件为 `*.tsx|*.vue|*.css|*.html`；破坏 WCAG AA 判 blocker、其余 minor；`code-implementation.pipeline.json` nodes[9].prompt 同步追加维度 ⑤；不含字体/配色/拨盘等审美主张。
 - **AC-9**（FR-12）：`review-code/SKILL.md` Step 1 为无条件重新执行（无"缺失才补跑"表述）；含"0 failures"与"之前跑过不构成证据"判据；甲路线措辞不弱化为"可选加速"。
 - **AC-10**（FR-13）：`code-implementation.pipeline.json` `inputs` 含 `suggestion_policy`（type=select，options=[strict,lenient]，required=false，default="strict"）；形态与既有三个 select input 一致；JSON 可解析。
-- **AC-11**（FR-14）：`review-code/SKILL.md` Step 3 含 suggestion_policy 读取与三条升格判据（lenient 才生效）；含成批升格要求；Step 6 输出模板含 `Suggestions : {N} 条` 与本轮 policy；strict 模式不升格的语义明确。
+- **AC-11**（FR-14）：验收对象以 pipeline JSON 为主（订正：`{{inputs.*}}` 插值只发生在 pipeline JSON，见 SDD §0 B-1）——`code-implementation.pipeline.json` nodes[9].prompt 含 `{{inputs.suggestion_policy}}` 插值读取与三条升格判据（lenient 才生效）、轮次闸（仅 attempt=1 允许升格）与成批升格要求；`review-code/SKILL.md` Step 3 为模式无关表述且正文不含 `{{inputs.` 插值语法；`review-annotations/code.yml` dimensions 含 `suggestion-policy` 留痕键（M-1）；Step 6 输出模板含 `Suggestions : {N} 条` 与本轮 policy；strict 模式不升格的语义明确。
 - **AC-12**（FR-15/FR-16）：`approve-code/SKILL.md` 含 suggestions 经 record-idea 转 docs/ideas/ 的条款（不设默认、不阻塞）；`agent-skill-matrix.yml` `dev-agent` can-call 含 `record-idea`；check-skill-matrix 通过。
 - **AC-13**（FR-17）：`write-dev-tasks/SKILL.md` 含接口契约小节（消费/产出）、Step 4 签名一致性核对（WARN 不静默覆盖）、占位符判据清单（TBD/待定/适当错误处理/同 TASK-XX/未定义引用 四类禁止）。
 - **AC-14**（FR-18）：`write-requirement-prd/SKILL.md` 含"优先采纳 summary 已确认边界/排除项"条款。
