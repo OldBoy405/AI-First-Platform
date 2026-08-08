@@ -1,21 +1,19 @@
 cr-id: CR-2026-024
 review-type: code
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-08T23:11:16+08:00"
-verdict: block
-blockers:
-  - "C-1（review-code/SKILL.md:75 新增维度行破坏 Markdown 表格结构）：新增的「前端质量」行为 `| **前端质量** | 仅 diff 触及 `*.tsx|*.vue|*.css|*.html` 时触发：… |`，行内含 6 个管道符，而同一张表其余每行均为 3 个。GFM 表格按管道符切分单元格，且**行内代码反引号不保护管道符**（规范要求在表格单元格内写字面管道符必须转义为 \| ，包括在 code span 内）——该行会被解析成 5 个单元格对上 2 列表头，渲染为结构错乱的一行。影响不是\"排版不好看\"：SKILL.md 正文即评审 agent 的 prompt，维度表是它读取判据的地方，错位行会让触发条件与判据文本被切散。改法：把触发条件里的管道符转义为 `\|`，或改用顿号列举（`*.tsx`、`*.vue`、`*.css`、`*.html`）；AC-8 的验收断言同步按转义后形态写。可机械验收：该行管道符数应与同表其它行一致（3 个）。"
-  - "C-2（前端质量维度内容与 FR-11/US-3 不符，且 blocker 判据被放宽）：PRD FR-11 定义该维度含三项检查——① a11y 对比度达 WCAG AA（破 AA 升 blocker）② 组件 loading/empty/error 状态完整覆盖 ③ 构建体积在预算内，**其余 minor**；US-3 同口径（a11y 对比度/组件状态完整性/构建体积）。实现（review-code/SKILL.md:75）写的是「WCAG AA 对比度、键盘可达、ARIA 语义；破坏即判 blocker」——②③ 两项被删除，而「键盘可达」「ARIA 语义」两项在 PRD/SDD 中均无出处（凭空新增）。更关键的是 **「其余 minor」丢失**：实现的「破坏即判 blocker」在语法上覆盖列举的全部三项，等于把 blocker 判据从「仅破 WCAG AA 才升 blocker」扩大到「任一项破坏即 blocker」——本 CR 花了三轮技术评审收敛 blockers 语义（strict/lenient、三条升格判据、轮次闸），却在自己新增的维度上把它放宽了，方向相反。这与 SDD 评审 attempt-2 判定的 B-5~B-8 是同一种病（FR↔实现脱节），只是从文档层移到了实现层。改法：按 FR-11 恢复三项检查与「破 WCAG AA 升 blocker、其余 minor」的分级；若认为键盘可达/ARIA 更值得纳入、②③ 应当去掉，则须回改 PRD FR-11 与 US-3 后再实现，不得由实现单方面改写需求。"
+reviewed-at: "2026-08-08T23:58:05+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  代码↔TASK↔SDD对齐: "SDD §4.1 批次一 6 步与 §4.2 批次二 a~l 逐项核对落地：批次一（18358df，7 文件）—— system-orchestrator.external 三项 + dev-agent.external 的 test-driven-development 已删（C-5 订正已执行）、known-gaps 前两条删且保留 writeback-agent-entry、capabilities 三项 supported→pending、implement-code L75 TDD 行替换为串行降级且不含 coding-discipline 引用（B-2 批次纪律成立）、write-dev-tasks 删 assignee、forbidden 声明性边界说明入 AGENT-SKILL-MATRIX.md 与 openwiki。批次二（21b8a1c，15 文件）—— a~l 全部落地且同批（coding-discipline 新建 + _index 登记 active + dev-agent owns/quality-reviewer can-call + dev-agent can-call record-idea + AGENT-SKILL-MATRIX.md/dir-graph/ARCHITECTURE §8 + 五个消费方 SKILL + pipeline inputs 与 nodes[1][5][9]），无悬空引用。两批分开提交，FR-22/NFR-2 成立。唯一偏差为 FR-11 的维度内容（C-2）。"
-  工程质量: "五条验证命令本轮全部**无条件重新执行**（不采信 implement-code 自报，遵循本 CR 新引入的 Step 1 规则）：check-skill-matrix exit=0（56 active skill / 8 actor，含新增 coding-discipline）、check-agents-contract exit=0（9 agent，不变式 1-3）、lint-prompts --mode enforce exit=0（0 findings）、node --test crctl.test.mjs 87/87 pass、node --test lint-prompts.test.mjs 19/19 pass。与 test-report 自报的 4 条命令 exit=0 一致，无差异需在 blockers 注明。pipeline JSON 结构化解析通过（inputs.suggestion_policy 形态 select/required:false/default:strict/options[strict,lenient] 与三个既有 select input 同构）。"
-  关键路径可读性: "coding-discipline SKILL.md（40 行）三节结构清晰、全文本包语汇，甲路线段明确外部技能仅作可选加速器且不含「必须遵循 external X」悬空句式，FR-7 契约满足。implement-code Step 3 经批次二重写后消除了批次一遗留的降级表述重复（批次一曾同时存在「不支持子 agent 时使用 executing-plans」与新增的串行降级句，批次二合并为单条分层降级，处理得当）。review-code 的「改进建议处置策略」段落为模式无关表述、正文零 `{{inputs.` 插值（全仓 skills/ 下命中数 0，B-1 判据成立），插值只落 nodes[9].prompt。"
-  安全性: "无新增受控写入面或绕过 crctl 的路径：全部改动为 SKILL.md 正文、pipeline JSON、YAML 台账与文档，不触 crctl.mjs、gates.json、rules.json（NFR-3/NFR-5 成立，SDD §8 条件性小节判定持续有效）。基线隔离成立——两 commit 仅含本 CR 文件清单（7 + 15），tools 仓工作区大量与本 CR 无关的删除态文件（.qoder/repowiki 等）未混入。两 commit diff 无本机绝对路径（AC-19）。"
-  测试覆盖: "本 CR 无运行时代码，不新增测试文件属合理（规则文本/配置数据修改）；既有 106 条测试向量（crctl 87 + lint-prompts 19）作为行为回归基线本轮实跑全绿，覆盖状态机/门禁/CAS 路径，确认批次一的「零行为变更」承诺（NFR-1）成立。"
-  测试证据可信度: "test-report.md 的 status/commands 段由 crctl test 依真实退出码生成（非模型改写），四条命令与 test-evidence/ 日志一一对应；本轮独立重跑五条命令结果与之一致，证据可信。未覆盖风险列 4 条且逐条给出不适用理由，其中「lenient 升格路径未实运行演练」的延后判断成立——升格判据/轮次闸/dimensions 留痕均为评审期 prompt 行为，需真实 pipeline 运行时才能端到端演练，本 CR 内已以静态验收（插值落点、判据文本、dimensions 键位）覆盖。扣分项见 suggestions s-3：TASK-01 的 done 未经 crctl task done 落盘。"
-  前端质量: "不适用（Step 1 要求写明原因）：本 CR diff 共 22 个文件，全部为 .md / .yml / .yaml / .json，零命中 `*.tsx` / `*.vue` / `*.css` / `*.html`，该维度的触发条件不成立，故不作前端质量判定。注意该维度自身的定义存在缺陷，已作为 C-1/C-2 记入 blockers。"
+  reviewer-model: "Codex current session (GPT-5)"
+  代码↔TASK↔SDD对齐: "完整 diff 范围 b35c7b2...ff889cc 共 16 个文件、3 个 CR 提交；批次一/二与自修复提交边界清晰。首轮 C-1/C-2 已在 ff889cc 定点修复：GFM 表格管道符恢复为 3，前端质量维度恢复 PRD FR-11 的三项检查与分级；pipeline nodes[9] 同步。TASK-01~03 均有对应实现或验证证据。"
+  工程质量: "本轮无条件重跑 4 组验证：check-skill-matrix 通过（56 active skill / 8 actor）、check-agents-contract 通过（9 agent）、lint-prompts enforce 0 findings、crctl + lint-prompts 测试 106/106 通过。与 test-report.md 的 exit=0 结论一致。"
+  关键路径可读性: "coding-discipline 三节边界明确；implement-code 的拓扑排序、降级路径与自修复纪律可直接执行；suggestion_policy 的 strict/lenient 判据、仅首轮升格规则及 canonical 留痕在 Skill 与 pipeline 中一致。"
+  安全性: "未修改 crctl.mjs、gates.json、rules.json 或新增受控写入旁路；变更文件不含本机绝对路径。tools 仓现有 .qoder/repowiki 删除态为用户既有未提交改动，不在 CR 三个提交范围内。"
+  测试覆盖: "本 CR 为规则文本与配置变更，无新增运行时代码；106 条既有测试全部通过。专项机械验收通过：前端质量维度行管道符数=3、旧短语命中=0、suggestion_policy 形态与 nodes[9] 三项检查/分级/轮次闸均正确。"
+  测试证据可信度: "评审直接读取实际 diff、变更文件、3 条相关提交、test-report 与原始测试结论，并在本轮独立重跑全部 4 组命令；结果一致，无自报与复验差异。"
+  前端质量: "不适用：本 CR 16 个变更文件均为 .md/.yml/.json，未触发 *.tsx/*.vue/*.css/*.html 条件；但被修改的前端质量评审规则自身已按 FR-11 完整复验。"
   suggestion-policy: "strict"
 suggestions:
-  - "s-1（AC-9 机械验收不成立，措辞级）：AC-9 要求 review-code Step 1「无『缺失才补跑』表述」，而实现（SKILL.md:46）为「**无条件重新执行**（不是「缺失才补跑」）」——语义完全正确（是否定用法），但字面 grep「缺失才补跑」仍命中，按 AC-9 的机械判据会判否。建议把括号内的否定改写为不复用该字符串的表述（如「不以证据缺失为前提」），使 AC 可被 grep 机械验收；或回改 AC-9 的断言形态。语义无误，故不判 blocker。"
-  - "s-2（README 触发参数表未同步，范围外）：README.md:437-441 的 code-implementation「输入」表仅列 cr_id / target_version / auto_push_after_task 三项，未含本 CR 新增的 suggestion_policy。需说明两点：① 这是既有欠账而非本 CR 新造——CR-2026-023 新增的 review_llm 同样缺席该表（只加进了 455 行的节点表）；② FR-21/AC-17 声明的文档同步范围只有 openwiki，README 不在本 CR 声明范围内。故仅记录，建议在后续 README 口径统一时与 review_llm、auto_push_after_task 默认值（fbd808f 已改手动而 README 仍写「默认 true」）一并订正。"
-  - "s-3（CR 自身账本的写入者与时序，不影响交付物）：① TASK-01 的 status=done 未经 crctl task done 写入——tasks/_index.yml 中 TASK-01 无 done-at 字段（TASK-02/03 均有），且 .crctl/audit.log 的 task-done 记录只有 2 条（TASK-02、TASK-03），说明 TASK-01 由手工编辑索引落 done，绕过了 CAS 与审计。机制上不违规（tasks/_index.yml 不在 rules.json#protectedPaths.deny 面），但与「crctl 为账本唯一写者」的口径不符。② TASK-03（端到端验证）的 done-at 为 22:47:53，而其验收证据 test-report.md 生成于 22:50:24——完成标记早于证据产出约 2.5 分钟，属「先声明完成、后补证据」的时序，恰是本 CR 在代码层要修的「自报即采信」的同形状问题，只是发生在 TASK 账本层。两项均不影响 tools 仓两个 commit 的 diff 正确性，且已 done 的 TASK 无法回头补跑 crctl task done（会撞 TASK_ALREADY_DONE），故只留档不要求本 CR 处理；建议后续在 crctl task done 的守卫项（CR-2026-025 D-5 范围）一并考虑「done 前置证据存在性」这一维度。"
+  - "README 的 code-implementation 输入表仍未同步 review_llm 与 suggestion_policy；这是既有文档欠账且不在本 CR FR-21/AC-17 声明范围，建议后续统一订正。"
+  - "TASK-01 缺少 crctl task done 审计/done-at，TASK-03 的 done-at 早于测试报告；已完成账本无法安全回补，建议在后续 task done 证据守卫 CR 中处理。"
