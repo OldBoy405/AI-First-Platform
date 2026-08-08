@@ -886,3 +886,50 @@ history:
     archive-reason: "T1.5 里程碑 — 代码评审 LLM 选择暂停节点 + R9 护栏（R9 lint 规则 + 17 处存量清零 + 评审暂停节点 0013）"
     writeback-spec-id: ai-first-platform
     archived-at: "2026-08-07T07:52:04+08:00"
+    - id: CR-2026-024
+      title: Phase0 Tools 技能整合 — 端到端 Pipeline 最佳实践（coding-discipline 新建 + external 死声明删除 + review-code 无条件重验 + TASK 契约强化）
+      summary: "按《端到端Pipeline最佳实践技能整合方案》v2.3 实施两批变更：批次一收口（零新增行为）——删除 4 个零引用 external 死声明（using-superpowers/writing-plans/systematic-debugging/verification-before-completion）、implement-code 与 code-implementation pipeline 删 TDD 悬空引用并补 executing-plans/subagent-driven-development 降级路径；批次二内化（真实行为变更）——新建 coding-discipline skill（§1 极简阶梯/§2 步骤粒度/§3 根因排查与回归验证）、review-code 第五维度（仅可验证项）与 Step 1 无条件重新执行验证命令、write-dev-tasks 接口契约与类型一致性自查、write-requirement-prd 优先采纳 summary 已确认边界、AGENTS.md 第 56 条修订"
+      owner: Ray
+      owners:
+        requirement:
+          id: Ray
+          assigned-at: "2026-08-08T16:44:35+08:00"
+        development:
+          id: Ray
+          assigned-at: "2026-08-08T16:44:35+08:00"
+        test:
+          id: Ray
+          assigned-at: "2026-08-08T16:44:35+08:00"
+      target-version: tbd
+      source: "docs/analysis/端到端Pipeline最佳实践技能整合方案.md v2.3"
+      prd-path: "change-requests/CR-2026-024/prd.md"
+      created: "2026-08-08T16:44:35+08:00"
+      updated: "2026-08-08T16:44:35+08:00"
+      merge-commits:
+        - repo: ai-first-platform-docs
+          trunk: master
+          sha: d703fc88105129c4529fc55f2ebb3c03f02f58bc
+          branch: requirement/CR-2026-024  - id: CR-2026-025
+      title: crctl 守卫与回显收敛（check-skill-matrix external 引用校验 + depends-on 依赖守卫 + gate/advance blockers 回显截断）
+      summary: "合并三项独立漂移治理项，统一交付：① D-2（源自方案 v2.6 §7）check-skill-matrix.mjs 新增规则——agent-skill-matrix.yml 的 external 声明必须能在对应 SKILL.md/prompt 中找到真实引用点，零引用视为死声明报警，防止 CR-2026-024 修复的『声明蒸发』失效模式复发；② D-5（源自方案 v2.6 §4.8/§7）crctl task done 新增依赖守卫——写 TASK status=done 前校验其 depends-on 列出的前置 TASK 均已 done，把 implement-code 现有的 prompt 层拓扑排序建议升级为机械强制，未提供覆盖时报 DEPENDS_ON_NOT_DONE 拒绝写入；③ gate/advance blockers 回显截断（源自 CR-2026-024 SDD 评审过程实测发现）——evaluatePassCondition 对 isEmpty 失败条件的 actual/why 全量序列化 blockers 长文本，advance 失败路径经 FR-5 摘要再抬一次，同一 payload 三份落地；改为 actual 逐项截断（ITEM_MAX=120 字符，保留数组类型与 file 指针）、why/message 只给条数，全量原文以 file 字段指向的 review-annotations/{stage}.yml 为唯一来源。三项均为 crctl.mjs/check-skill-matrix.mjs 本体改动 + 各自测试向量，不改状态机、不改 owns/can-call 数据模型，符合 crctl 类改动的最小交付单元定义（对齐 CR-2026-021/022 交付粒度先例）。"
+      owner: Ray
+      owners:
+        requirement:
+          id: Ray
+          assigned-at: "2026-08-08T21:07:25+08:00"
+        development:
+          id: Ray
+          assigned-at: "2026-08-08T21:07:25+08:00"
+        test:
+          id: Ray
+          assigned-at: "2026-08-08T21:07:25+08:00"
+      target-version: tbd
+      source: "docs/analysis/端到端Pipeline最佳实践技能整合方案.md v2.6 §7（D-2/D-5）+ CR-2026-024 SDD 技术评审实测发现（gate 回显冗余）"
+      prd-path: ""
+      created: "2026-08-08T21:07:25+08:00"
+      updated: "2026-08-08T21:07:25+08:00"
+  
+    final-status: archived
+    archive-reason: "成功回写 specs/ai-first-platform v0.25（Phase0 Tools 技能整合）"
+    writeback-spec-id: ai-first-platform
+    archived-at: "2026-08-09T00:33:06+08:00"

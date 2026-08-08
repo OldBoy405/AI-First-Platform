@@ -15,7 +15,7 @@ owners:
     assigned-at: "2026-08-08T16:44:35+08:00"
 target-version: tbd
 source: "docs/analysis/端到端Pipeline最佳实践技能整合方案.md v2.6"
-status: writing-back
+status: archived
 created: "2026-08-08T16:44:35+08:00"
 updated: "2026-08-08T16:44:35+08:00"
 remote-ref: ""
