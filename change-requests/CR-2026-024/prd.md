@@ -8,7 +8,7 @@ owner: Ray
 owner-role: requirement
 status: draft
 created: "2026-08-08T17:20:00+08:00"
-updated: "2026-08-08T17:20:00+08:00"
+updated: "2026-08-08T21:30:00+08:00"
 ---
 
 # PRD — 端到端 Pipeline 最佳实践技能整合（方案 v2.6 落地）
@@ -28,9 +28,9 @@ updated: "2026-08-08T17:20:00+08:00"
 
 按方案 v2.6 分两批实施：
 
-**批次一 · 收口（纯删除与对齐，零新增行为）**：删 4 个零引用 external 死声明（`using-superpowers` / `writing-plans` / `systematic-debugging` / `verification-before-completion`）；`implement-code` 与 `code-implementation.pipeline.json` 节点 6 删 TDD 悬空引用并补 `executing-plans`/`subagent-driven-development` 降级路径；`agents/_index.yml` 三项 capabilities 从 `supported` 挪进 `pending` 且 `known-gaps` 前两条删除；`AGENT-SKILL-MATRIX.md` 与 openwiki 写明 `forbidden` 为声明性边界（无调用级拦截）；`write-dev-tasks` 删 `assignee` 死字段。
+**批次一 · 收口（纯删除与对齐，零新增行为）**：删 actor 级零引用 external 死声明（`system-orchestrator.external`：`using-superpowers` / `writing-plans` / `verification-before-completion`；`dev-agent.external`：`test-driven-development`——随本 CR 删其唯一真实引用即变零引用，须同批清除；`systematic-debugging` 仅存于顶层纯文档块不动，见 SDD §0 C-2/C-5）；`implement-code` 与 `code-implementation.pipeline.json` 节点 6 删 TDD 悬空引用并补 `executing-plans`/`subagent-driven-development` 降级路径；`agents/_index.yml` 三项 capabilities 从 `supported` 挪进 `pending` 且 `known-gaps` 前两条删除；`AGENT-SKILL-MATRIX.md` 与 openwiki 写明 `forbidden` 为声明性边界（无调用级拦截）；`write-dev-tasks` 删 `assignee` 死字段。
 
-**批次二 · 内化（真实行为变更）**：新建 `coding-discipline` skill（§1 极简阶梯 + §2 步骤粒度 + §3 根因排查与回归验证）并完成登记/矩阵/消费方引用闭环；`review-code` 追加第五维度（仅可验证项）与 Step 1 无条件重新执行验证命令；`write-dev-tasks` 追加接口契约小节、类型一致性自查与占位符判据；`implement-code` 追加 `depends-on` 拓扑排序与并发边界；`code-implementation.pipeline.json` 新增触发参数 `suggestion_policy`（select，strict/lenient，default strict）驱动评审期 suggestions 策略化分流，`approve-code` 追加 suggestions 经 `record-idea` 落 `docs/ideas/`；`write-requirement-prd` 优先采纳 summary 已确认边界；AGENTS.md 第 56 条修订为甲路线表述。
+**批次二 · 内化（真实行为变更）**：新建 `coding-discipline` skill（§1 极简阶梯 + §2 步骤粒度 + §3 根因排查与回归验证）并完成登记/矩阵/消费方引用闭环；`review-code` 新增「前端质量」维度（仅可验证项）与 Step 1 无条件重新执行验证命令；`write-dev-tasks` 追加接口契约小节、类型一致性自查与占位符判据；`implement-code` 追加 `depends-on` 拓扑排序与并发边界；`code-implementation.pipeline.json` 新增触发参数 `suggestion_policy`（select，strict/lenient，default strict）驱动评审期 suggestions 策略化分流，`approve-code` 追加 suggestions 经 `record-idea` 落 `docs/ideas/`；`write-requirement-prd` 优先采纳 summary 已确认边界；AGENTS.md 第 56 条修订为甲路线表述。
 
 **范围口径**：全部改动对象位于 tools 包（`../tools/`），经本 CR worktree 流程追踪，tools 仓提交带 CR 编号溯源、合入 `custom/main`（对齐 CR-2026-021/022/023 先例）。
 
@@ -68,7 +68,7 @@ updated: "2026-08-08T17:20:00+08:00"
 
 - **US-1** 作为 `dev-agent`（实现者），实现单个 TASK 时按 `coding-discipline` §1 极简阶梯选方案、§2 按 2-5 分钟粒度切分步骤、自修复分支先按 §3 定位根因再动手，不再逐条症状打补丁。
 - **US-2** 作为 `dev-agent`（实现者），开始某 TASK 前先读 `tasks/_index.yml` 的 `depends-on` 做拓扑排序，前置 TASK 未 done 时不启动并留痕，不再按索引顺序撞序实现导致上游断裂。
-- **US-3** 作为 `quality-reviewer-agent`（评审者），评审前端 diff 时有第五维度（a11y 对比度/组件状态完整性/构建体积），评审证据 Step 1 无条件重新执行验证命令而非采信 implement-code 自报。
+- **US-3** 作为 `quality-reviewer-agent`（评审者），评审前端 diff 时有「前端质量」维度（a11y 对比度/组件状态完整性/构建体积），评审证据 Step 1 无条件重新执行验证命令而非采信 implement-code 自报。
 - **US-4** 作为流水线启动者，触发 `/coding` 时通过 `suggestion_policy` 选择交付节奏——默认 strict 只判 CR 本身 pass/block，想清技术债时改选 lenient 把该修的升格进 blockers。
 - **US-5** 作为审批人，评审输出能看到本轮所用 policy 与 Suggestions 条数；剩余 suggestions 可经 `record-idea` 转入 `docs/ideas/`，不再"只写不读"静默丢失。
 - **US-6** 作为计划编写者（`write-dev-tasks`），TASK 正文含「接口契约」小节（消费/产出精确签名），Step 4 核对跨 TASK 签名一致性，命名对不上时输出 WARN 而非静默覆盖。
@@ -79,8 +79,8 @@ updated: "2026-08-08T17:20:00+08:00"
 
 ### 批次一 · 收口（纯删除与对齐，零新增行为）
 
-- **FR-1（删 4 个死声明 external）**：`agent-skill-matrix.yml` 删除 `using-superpowers`、`writing-plans`、`systematic-debugging`、`verification-before-completion` 四个零引用声明；保留 `executing-plans`、`subagent-driven-development`（`implement-code` 有真实引用）；`brainstorming` 不动（唯一四件套齐全的样板）。
-- **FR-2（implement-code 删 TDD 引用 + 补降级路径）**：`skills/develop/implement-code/SKILL.md` 删第 75 行「必须遵循目标运行时已安装的 external `test-driven-development`」；`executing-plans`/`subagent-driven-development` 按 `brainstorming` 写法补降级路径——「未提供 subagent-driven-development 时按 TASK 顺序串行实现（等价降级到 executing-plans 语义），节点输出注明降级；两者均未提供时按 `coding-discipline` §2 粒度自行拆解执行，无需额外声明」。
+- **FR-1（删死声明 external）**：`agent-skill-matrix.yml` actor 级 external 删除五项零引用声明——`system-orchestrator.external` 的 `using-superpowers`、`writing-plans`、`verification-before-completion`（actor 级仅此三项，`systematic-debugging` 仅存于顶层纯文档块，不动，见 SDD §0 C-2）；以及 `dev-agent.external` 的 `test-driven-development`（FR-2/FR-3 删其唯一真实引用后即变零引用，须同批清除，否则本 CR 自造新死声明，见 SDD §0 C-5）；保留 `executing-plans`、`subagent-driven-development`（`implement-code` 有真实引用）；`brainstorming` 不动（唯一四件套齐全的样板）。
+- **FR-2（implement-code 删 TDD 引用 + 补降级路径）**：`skills/develop/implement-code/SKILL.md` 删第 75 行「必须遵循目标运行时已安装的 external `test-driven-development`」；`executing-plans`/`subagent-driven-development` 按 `brainstorming` 写法补降级路径——批次一仅落「未提供 subagent-driven-development 时按 TASK 顺序串行实现（等价降级到 executing-plans 语义），节点输出注明降级」；后半句「两者均未提供时按 `coding-discipline` §2 粒度自行拆解执行」归批次二（与 coding-discipline 新建同批，避免批次一携带指向未来产物的悬空引用，批次拆分以 SDD §3.4/§4.1/§4.2 为准）。
 - **FR-3（pipeline 节点 6 prompt 同步）**：`pipeline-templates/code-implementation.pipeline.json` 节点 6（implement-code）prompt 同步删除 TDD 表述、补降级路径表述。
 - **FR-4（capabilities 订正，§4.9-①）**：`agents/_index.yml` 将 `knowledge-agent` 的 `tech-note-write`/`insight-write` 与 `customer-support-agent` 的 `unresolved-feedback-record` 从 `capabilities.supported` 挪进 `pending`；`agent-skill-matrix.yml` 的 `known-gaps` 前两条删除（`pending` 已表达同一事实），第三条 `writeback-agent-entry` 与 capabilities 无关保留。
 - **FR-5（forbidden 性质说明，§4.9-②）**：`AGENT-SKILL-MATRIX.md` 与 `openwiki/architecture/agent-skill-matrix.md` 写明 `forbidden` 的性质——声明性边界，执行靠 agent 自觉 + `protectedPaths` 文件守卫，**不存在调用级拦截**；不加运行时钩子（`protectedPaths` 已覆盖高危面）。
@@ -96,10 +96,10 @@ updated: "2026-08-08T17:20:00+08:00"
 - **FR-8（coding-discipline 登记与归属）**：`skills/_index.yml` 登记为 active；`agent-skill-matrix.yml` 下 `dev-agent` owns、`quality-reviewer-agent` can-call；`AGENT-SKILL-MATRIX.md` 主责矩阵表格同步；tools 仓 `dir-graph.yaml` 登记路径；`ARCHITECTURE.md` §8 代码地图登记。
 - **FR-9（implement-code 消费 coding-discipline，§4.3/§4.8）**：`implement-code/SKILL.md` Step 3 引用 §1+§2，自修复分支额外引用 §3；追加 `depends-on` 拓扑排序规则——执行前读 `tasks/_index.yml` 的 `depends-on` 拓扑排序，前置 TASK 未 done 不得开始并注明被阻塞项与等待的前置项。
 - **FR-10（write-dev-plan 消费 coding-discipline）**：`skills/develop/write-dev-plan/SKILL.md` 引用 `coding-discipline` §2（步骤粒度约束）。（路径订正：技术评审 M-3 实测该 skill 在 develop 域，原 planning 域表述错误，以 SDD §0 C-4 为准）
-- **FR-11（review-code 第五维度，§4.4）**：`review-code/SKILL.md` Step 3 评审维度表追加第五维度「前端质量（仅前端 diff 触发）」：a11y 对比度达 WCAG AA（破 AA 升 blocker）、组件 loading/empty/error 状态完整覆盖、构建体积在预算内（其余 minor）；触发条件为 diff 命中 `*.tsx`/`*.vue`/`*.css`/`*.html`。`dimensions` 为自由映射（crctl 仅校验非空），加键零结构成本。
+- **FR-11（review-code 前端质量维度，§4.4）**：`review-code/SKILL.md` Step 3 评审维度表新增「前端质量」维度（仅前端 diff 触发；按维度名验收不用序数——实测现有 6 行，新增为第 7 行；`code-implementation.pipeline.json` nodes[9].prompt 的 ①②③④ 枚举同步追加 ⑤，见 SDD §0 B-4）：a11y 对比度达 WCAG AA（破 AA 升 blocker）、组件 loading/empty/error 状态完整覆盖、构建体积在预算内（其余 minor）；触发条件为 diff 命中 `*.tsx`/`*.vue`/`*.css`/`*.html`。`dimensions` 为自由映射（crctl 仅校验非空），加键零结构成本。
 - **FR-12（review-code 无条件重验，§4.7）**：`review-code/SKILL.md` Step 1 改为**无条件重新执行**验证命令（lint/test/build），不再是"缺失才补跑"；implement-code 自报结果仅作参考对照，不一致时以本轮重新执行结果为准并在 blockers 注明差异。评审判据细化：「测试通过」必须是本轮重新执行的完整命令输出（0 failures），"看起来通过"或"之前跑过"不构成证据。甲路线措辞：无条件重验是 `review-code` 自身最低要求，不因是否装外部技能而增减，不弱化为"可选加速"；已装 `verification-before-completion` 时可用其 Gate Function/Common Failures 表作补充参考。
 - **FR-13（suggestion_policy 触发参数，§4.9-③/v2.6）**：`code-implementation.pipeline.json` `inputs` 新增 `{ key: suggestion_policy, label: 改进建议处置策略, type: select, options: [strict, lenient], required: false, default: "strict", description: strict=不升格（默认，保守交付）；lenient=按三条判据把本 CR 内该修的升格进 blockers（清技术债场景） }`——形态严格对齐包内三个既有 `select` input（required:false + default），UI 预选中 strict。
-- **FR-14（review-code 策略化分流，§4.9-③）**：`review-code/SKILL.md` Step 3 读取 `{{inputs.suggestion_policy}}`；`lenient` 模式下非阻塞发现按三条升格判据判断——① 改动不超出本 CR 已触碰的文件（不扩大 diff）；② 有明确"改成什么"（能写进 `repair-instructions`）；③ 不需要产品/架构决策（纯实现层）——三条同时满足才升格进 blockers（走既有 reviewLoop 本 CR 内解决），否则进 suggestions；同一轮多条升格项写进同一批 blockers（成批升格，与 §4.3 §3 同纪律）。`strict` 模式（默认）所有非阻塞发现一律进 suggestions。Step 6 输出模板补 `Suggestions : {N} 条` 与本轮所用 policy；语义校准：blockers=本 CR 内要处理的，suggestions=本 CR 内不处理的。
+- **FR-14（review-code 策略化分流，§4.9-③）**：策略参数由 `code-implementation.pipeline.json` nodes[9].prompt 的 `{{inputs.suggestion_policy}}` 插值承载（插值只发生在 pipeline JSON；`review-code/SKILL.md` Step 3 只写模式无关表述「按本轮策略参数执行，缺省 strict」，正文不含插值语法，同源先例 review_llm，见 SDD §0 B-1）。`lenient` 模式下非阻塞发现同时满足三条升格判据且通过轮次闸才进 blockers——① 改动不超出本 CR 已触碰的文件（不扩大 diff）；② 有明确"改成什么"（能写进 `repair-instructions`）；③ 不需要产品/架构决策（纯实现层）；④ 轮次闸：仅首轮评审（attempt=1）允许升格，第 2 轮起一律 suggestions——防升格消耗 maxAttempts=3 耗尽轮次、停在 developing 无法进入审批。同一轮多条升格项写进同一批 blockers（成批升格）。留痕：dimensions 写 `suggestion-policy: {strict|lenient}`，canonical 化进 `review-annotations/code.yml`（跨 CR 可比性依赖 canonical，节点输出不是账本，见 SDD §2.5）；Step 6 输出模板补 `Suggestions : {N} 条` 与本轮 policy。`strict` 模式（默认）所有非阻塞发现一律进 suggestions。语义校准：blockers=本 CR 内要处理的，suggestions=本 CR 内不处理的。
 - **FR-15（approve-code 承接 suggestions，§4.9-③）**：`approve-code/SKILL.md` 追加——剩余 `suggestions` 可选经 `record-idea` 转入 `docs/ideas/`（CR worktree 内，随分支合并进 trunk；`feature-writeback` 硬边界只写 specs/delivery，故必须在 approve-code 期做），不设默认、不阻塞本 CR；不转则仅留档 `review-annotations`，无损失。
 - **FR-16（agent-skill-matrix 登记 record-idea，§4.9-③）**：`agent-skill-matrix.yml` `dev-agent` can-call 追加 `record-idea`（按 AGENTS.md:135 登记要求，因 FR-15 新增真实引用点）。
 - **FR-17（write-dev-tasks 接口契约，§4.6）**：`write-dev-tasks/SKILL.md` 三处修改——① TASK 正文追加「接口契约」小节：**消费**（本 TASK 使用哪些上游 TASK 产出的精确函数名/参数/返回类型）、**产出**（本 TASK 暴露给下游 TASK 的精确签名）；② Step 4（生成 TASK 索引后）追加核对步骤——核对所有 TASK 声明的接口签名是否一致，命名对不上时输出 WARN 并列出差异（比照"估算交叉校验"写法：不静默覆盖，由计划负责人决定）；③ 「注意事项」的"不得模糊描述"替换为具体判据清单（源自 writing-plans No Placeholders）：禁止 TBD/"待定"；禁止"加适当的错误处理"这类无实际内容的描述；禁止"同 TASK-03"这类引用而不给出实际代码/签名；禁止引用未在任何 TASK 中定义的类型或函数。甲路线措辞：以上为自有规则，已装 `writing-plans` 完整版时可引用其 Task Structure 模板作排版参考，两者不冲突不要求探测。
@@ -179,3 +179,4 @@ updated: "2026-08-08T17:20:00+08:00"
 | 日期 | 版本 | 作者 | 说明 |
 |------|------|------|------|
 | 2026-08-08 | v0.1.0 | Ray | 初始草稿（方案 v2.6 全量落地） |
+| 2026-08-08 | v0.1.1 | Ray | 技术评审回修同步：attempt 1 订正 FR-10 路径与 AC-1/AC-8/AC-11；attempt 2 订正 FR-1/FR-2/FR-11/FR-14 正文与 SDD §0 C-2/C-4/C-5、§3.3/§3.4 对齐（B-5~B-8） |
