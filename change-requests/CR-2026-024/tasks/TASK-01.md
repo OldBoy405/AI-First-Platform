@@ -6,7 +6,7 @@ plan-ref: "change-requests/CR-2026-024/plan.md"
 sdd-ref: "change-requests/CR-2026-024/sdd.md"
 title: 批次一存量缺口收口（零行为变更：死声明清理 + capabilities 订正 + forbidden 说明 + TDD 悬空删除 + assignee 删除）
 slug: batch1-legacy-gap-closure
-status: pending
+status: done
 estimate: 4h
 depends-on: []
 created: "2026-08-08T22:00:00+08:00"
