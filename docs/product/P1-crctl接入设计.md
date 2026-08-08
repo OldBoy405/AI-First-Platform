@@ -4,6 +4,7 @@
 > 代码锚点均已核对：Multica `server/internal/daemon/`、`cmd/server/router.go` 的 `/api/daemon/*` 端点族、
 > tools `skills/shared/crctl/scripts/crctl.mjs`（TTY 检查 :652，`via` 校验 :453/:783）、`gates.json#approvalStages`。
 > 日期：2026-07-28。修订：2026-07-29 —— 增补 §C.5 AI 行为审计与交付项 D6（理念对比改进 S5）。
+> 修订：2026-08-07 —— 对照已落地代码核实，追认三处落地形态：§A.5 embedded 补全用 `pending:` 占位符（非空 SHA 延迟处理）；§B 真人校验现状为局部守卫，将统一到 `RequireHumanActor` 中间件；§C.3/C.4 两处防御层降级声明（Layer 1 暂缓、callers 仅审计）。
 
 ---
 
@@ -78,7 +79,7 @@ POST /api/daemon/cr-events
 
 ### A.5 两个边界情况
 
-- **`--embedded` 模式无独立 commit**：`merge-feature-branch` / `cr-archive` 用 `commit_mode=embedded` 把状态与业务变更同 commit 发布。此时 crctl 写 outbox 事件的 `commit_sha` 留空，**由 `crctl git push` 成功后的第二个 outbox 事件补全**（push 时 `rev-parse HEAD` 已在手上）；worker 对空 SHA 事件延迟 60s 处理，等补全事件合并。
+- **`--embedded` 模式无独立 commit**：`merge-feature-branch` / `cr-archive` 用 `commit_mode=embedded` 把状态与业务变更同 commit 发布。落地形态（2026-08-07 核实，CR-2026-003 FR-1）：此时 outbox 事件的 `commit_sha` 写 **`pending:` 占位符**（而非空串，避免幂等键冲突），服务端将其降级为空指针不投影，由后续 `crctl git push` 的 checkpoint 事件（`rev-parse HEAD` 已在手上）追上补全；**非**设计初稿的「空 SHA + 延迟 60s」方案。
 - **reconcile 对账**：定时任务（复用 `sys_cron_executions` DB 调度器）对每个非终态 CR 比较 `cr.projected_commit` 与 origin HEAD。**前提是服务端有 knowledge-base origin 的只读凭据**（企业内网 GitLab/Gitea，合理假设）；若无法配置，降级为 daemon 侧全量快照上报（daemon 定时跑 `crctl status --json` 全量上传）——两种模式二选一，部署时定，`REMOTE_RECONCILE_MODE=server|daemon`。
 
 ---
@@ -97,6 +98,9 @@ POST /api/daemon/cr-events
             + evidence_digest == 该 CR 最新事件的 digest（证据未漂移）
             + 审批人 ∈ cr.owners 对应角色 或 具备审批角色（策略可配）
    → 写 approval_record + Ed25519 签名 → 生成 grant 文件
+   （2026-08-07 落地形态注：真人校验当前为 approval.go 内局部守卫，仅拒 mat_；
+   已定案统一到 handler.RequireHumanActor 中间件（兼拒 mcn_ cloud_pat），
+   局部守卫保留其独有的 X-User-ID 非空检查）
 ④ grant 下发
    pipeline runner 把 grant 作为任务上下文交给 daemon（或 daemon 轮询
    GET /api/daemon/approvals/pending?workspace=…）落盘到 CR worktree：
@@ -233,14 +237,14 @@ daemon 以用户身份跑在用户机器上——**机器主人本来就能做�
 | `execenv/git.go` | daemon 自身的 worktree 操作（`setupGitWorktree`/`removeGitWorktree` 等 10 个函数）改走 `gitguard.Run`——daemon 自己也守白名单，caller=`system-orchestrator`（与 matrix 中 21 个基础 Skill 收归 orchestrator 的设计对齐） |
 | `execenv/runtime_config_sections.go` | 生成 Agent 上下文时追加一节：「git 一律用 `git`（已是受控网关）或 `crctl git`；商店在 `protectedPaths` 的文件禁止直改」——把行为约束写进模型能看到的地方 |
 | `execenv/crguard_config.go`（新，仿 `openclaw_config.go` 模式） | 对 **Claude Code** 后端：向 per-task 的 `.claude/settings.json` 物化 tools 现成的 PreToolUse hooks（`pretooluse-guard.mjs` + `inject-cr-status.mjs`，路径指向 tools 包安装位置）——原来要人工装的适配器变成 execenv 自动铸造；对 **Codex/Cursor** 等无 hook 后端：仅靠 PATH shim + 上下文注入 |
-| `pkg/agent` 各后端 | `permission.bash: deny` 的 Agent（tools 九个全是）：Claude 后端追加 `--disallowedTools Bash` 类旗标（`ExecOptions.ExtraArgs` 通道已存在，claude/codex 后端已消费该字段）；不支持工具禁用的后端退化为 shim + hooks |
+| `pkg/agent` 各后端 | `permission.bash: deny` 的 Agent（tools 九个全是）：Claude 后端追加 `--disallowedTools Bash` 类旗标（`ExecOptions.ExtraArgs` 通道已存在，claude/codex 后端已消费该字段）；不支持工具禁用的后端退化为 shim + hooks。**（2026-08-07 落地形态：本行暂缓未接线）** 原因是执行时拿不到「该 Agent 是否 permission.bash: deny」的可信数据源。解铃路径已明确：`aifirst/agent-import.mjs` 导入时已解析 frontmatter 的 `permission.bash`，将该字段落进 agent 表（或 metadata）后 execenv 铸造时即有判定依据 |
 
 ### C.4 防御层次总结（改造后）
 
 | 层 | 机制 | 强度 |
 |---|---|---|
-| 1. 工具禁用 | `--disallowedTools Bash`（支持的后端） | 模型无法发起 shell 调用 |
-| 2. PATH shim | `{workdir}/.bin/git` → gitguard | 拦默认路径；绝对路径 `/usr/bin/git` 可绕过（诚实声明） |
+| 1. 工具禁用 | `--disallowedTools Bash`（支持的后端） | 模型无法发起 shell 调用。**落地形态（2026-08-07）：暂缓未接线**（无可信数据源，解铃路径见 §C.3）；本层缺席期间由 2–5 层兜底 |
+| 2. PATH shim | `{workdir}/.bin/git` → gitguard | 拦默认路径；绝对路径 `/usr/bin/git` 可绕过（诚实声明）。**落地形态（2026-08-07）：rules.json 的 callers 三元维度仅审计不校验**，实际为二元白名单（sub + shapes）；拦截收益低、误伤面高，除非治理板块显示跨 Agent 越权调用，否则不开 |
 | 3. IDE hooks | Claude Code PreToolUse（execenv 自动铸造） | 拦 Write/Edit 直改受控文件 + 裸 git |
 | 4. crctl CAS + gate | 权威文件唯一合法写入路径 | 绕过前三层也改不动权威状态（改了 CAS 冲突/gate 拒绝） |
 | 5. CI 远端复核 | cr-guard workflow（required check） | 本地怎么漂都进不了 trunk |
