@@ -1,11 +1,11 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 # 五段链路：需求 FR ↔ 技术设计 SDD ↔ 交付 TASK ↔ 代码 merge SHA ↔ CR-ID
 spec-id: ai-first-platform
-cr-ref: CR-2026-024
-cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024]
-target-version: "0.25"
+cr-ref: CR-2026-025
+cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025]
+target-version: "0.26"
 baseline-since: "0.10"
-generated-at: "2026-08-09T00:31:44+08:00"
+generated-at: "2026-08-09T04:35:04+08:00"
 
 # 已知缺口：CR-2026-003~CR-2026-006 未生成本文件的里程碑段（writeback-traceability 在那四个
 # CR 回写时被跳过，PRD.md/SDD.md/_index.yml 侧的累积记录不受影响、仍完整）。本次（CR-2026-008）
@@ -1703,3 +1703,157 @@ milestones:
         tasks: [CR-2026-024-TASK-03]
         code: tools@18358df/21b8a1c/ff889cc: 三 commit message 注明
         evidence: AC-24 git log 溯源核对通过
+  - cr: CR-2026-025
+    milestone: crctl 守卫与回显收敛
+    target-version: "0.26"
+    status: writing-back
+    merge-commits:
+      - repo: tools
+        trunk: custom/main
+        sha: 9a8abb56fa1267f45cfabbfb569a41ea39ef7e12
+        branch: requirement/CR-2026-025
+    frs:
+      - fr: FR-1
+        title: check-skill-matrix 新增检查 4：external 引用点校验
+        sdd: SDD §4.1 检查 4 扫描算法
+        tasks: [CR-2026-025-TASK-04]
+        code: tools@6168163: 检查 4 + 头注释清单
+        evidence: AC-1/AC-3 csm 测试向量②④
+      - fr: FR-2
+        title: 引用点扫描口径（skills/+pipeline-templates/，排除 openwiki/old）
+        sdd: SDD §4.1 扫描范围与子串匹配（I-3）
+        tasks: [CR-2026-025-TASK-04]
+        code: tools@6168163: walkFiles 排除规则
+        evidence: AC-2 csm 向量①②⑧
+      - fr: FR-3
+        title: 解析器记录声明 actor + CRLF 规范化 + 空结构硬失败
+        sdd: SDD §4.1 readNorm 与三段空结构守卫（TD-BL-2）
+        tasks: [CR-2026-025-TASK-04]
+        code: tools@6168163: externalByActor/readNorm/split(/\r?\n/)
+        evidence: AC-6 csm 向量③④⑤⑦
+      - fr: FR-4
+        title: 顶层 external-skills 标记纯文档 + 声明位置文档统一
+        sdd: SDD F-5/F-6/F-7 声明面修订（D-2）
+        tasks: [CR-2026-025-TASK-05]
+        code: tools@b5ee5e5: 三处声明面收敛
+        evidence: AC-4 两 checker 实跑全绿
+      - fr: FR-5
+        title: 新建 check-skill-matrix 测试
+        sdd: SDD F-3 首测（D-8，B-13 缺口闭合）
+        tasks: [CR-2026-025-TASK-04]
+        code: tools@6168163: check-skill-matrix.test.mjs
+        evidence: AC-6 node --test 8 例全绿
+      - fr: FR-6
+        title: task done 一跳依赖守卫（DEPENDS_ON_NOT_DONE）
+        sdd: SDD §4.2 guardDependsOn
+        tasks: [CR-2026-025-TASK-01]
+        code: tools@9c8f6db: 守卫 + TASK_INDEX_SHAPE 形状硬失败（9a8abb5 回修）
+        evidence: AC-7/AC-8 crctl 守卫向量①②⑦
+      - fr: FR-7
+        title: 缺失/空数组放行与 DEPENDS_ON_UNKNOWN
+        sdd: SDD §4.2 D-5 语义
+        tasks: [CR-2026-025-TASK-01]
+        code: tools@9c8f6db
+        evidence: AC-9 守卫向量③④
+      - fr: FR-8
+        title: 复用既有 parseYaml，零新增解析
+        sdd: SDD §4.2 FR-8/NFR-8
+        tasks: [CR-2026-025-TASK-01]
+        code: tools@9c8f6db
+        evidence: AC-10 守卫向量⑤⑥
+      - fr: FR-9
+        title: 用途表与文档同步
+        sdd: SDD F-8/F-9/F-10
+        tasks: [CR-2026-025-TASK-06]
+        code: tools@9a107bb: crctl 用途表 + implement-code 表述
+        evidence: AC-11 lint-prompts enforce 0 findings
+      - fr: FR-10
+        title: crctl 测试向量（五类）
+        sdd: SDD §4.2 测试锚点
+        tasks: [CR-2026-025-TASK-01]
+        code: tools@9c8f6db
+        evidence: AC-15 crctl.test.mjs 守卫向量全绿
+      - fr: FR-11
+        title: ITEM_MAX/briefArray 逐项截断
+        sdd: SDD §4.3 回显收敛
+        tasks: [CR-2026-025-TASK-02]
+        code: tools@0ccea41
+        evidence: AC-12 回显向量①②
+      - fr: FR-12
+        title: isEmpty why 收敛为条数指针
+        sdd: SDD §4.3
+        tasks: [CR-2026-025-TASK-02]
+        code: tools@0ccea41
+        evidence: AC-12/AC-13 回显向量②④
+      - fr: FR-13
+        title: actual 数组类型契约不变
+        sdd: SDD §4.3（NFR-3）
+        tasks: [CR-2026-025-TASK-02]
+        code: tools@0ccea41
+        evidence: AC-12 断言②
+      - fr: FR-14
+        title: 取舍注释（只封单条长度）
+        sdd: SDD §4.3 注释要求
+        tasks: [CR-2026-025-TASK-02]
+        code: tools@0ccea41
+        evidence: AC-14 源码注释核对
+      - fr: FR-15
+        title: crctl 测试向量（五类）
+        sdd: SDD §4.3 测试锚点
+        tasks: [CR-2026-025-TASK-02]
+        code: tools@0ccea41
+        evidence: AC-15 回显向量全绿
+      - fr: FR-16
+        title: 三 stage traceability 投影（同一函数）
+        sdd: SDD §4.4c upsertReviewsStage
+        tasks: [CR-2026-025-TASK-03]
+        code: tools@4659fbf: 投影 + 唯一性/形状硬失败（9a8abb5 回修）
+        evidence: AC-19 投影向量①（含 TD-BL-4 首写）
+      - fr: FR-17
+        title: 三账本一致写入（casWriteMulti + attempts 历史合并）
+        sdd: SDD §4.4a 步骤 2b
+        tasks: [CR-2026-025-TASK-03]
+        code: tools@4659fbf: nextLoopText 拆分 + 单 recordedAt
+        evidence: AC-20 投影向量②
+      - fr: FR-18
+        title: traceability 创建与定点更新
+        sdd: SDD §4.4c 行级定点编辑
+        tasks: [CR-2026-025-TASK-03]
+        code: tools@4659fbf: 骨架创建/定点替换/TRACE_SHAPE
+        evidence: AC-21 投影向量③④ + 回修 BL-2/BL-3
+      - fr: FR-19
+        title: requirement 被评审内容摘要
+        sdd: SDD §4.4b subject-sha256
+        tasks: [CR-2026-025-TASK-03]
+        code: tools@4659fbf
+        evidence: AC-22 路由向量⑤
+      - fr: FR-20
+        title: cmdNext drafting 回修/重审路由
+        sdd: SDD §4.4d 决策表
+        tasks: [CR-2026-025-TASK-03]
+        code: tools@4659fbf
+        evidence: AC-22 路由向量⑤⑥⑦⑧
+      - fr: FR-21
+        title: 项④测试向量（八类）
+        sdd: SDD §4.4 测试锚点
+        tasks: [CR-2026-025-TASK-03]
+        code: tools@4659fbf
+        evidence: AC-23 crctl.test.mjs 全绿
+      - fr: FR-22
+        title: 验证关卡（三件套 + 三测试文件）
+        sdd: SDD §6 FR 映射
+        tasks: [CR-2026-025-TASK-07]
+        code: tools@9a8abb5: 全量验证后 138 用例全绿
+        evidence: AC-16 crctl test 六命令 exit 0
+      - fr: FR-23
+        title: 溯源标注与无本机绝对路径
+        sdd: SDD §6 FR 映射
+        tasks: [CR-2026-025-TASK-07]
+        code: tools@4659fbf/a7c1a42: 提交溯源（rebase 改写 BL-4）
+        evidence: AC-17 git log 核对 + grep 零命中
+      - fr: FR-24
+        title: ARCHITECTURE.md 登记
+        sdd: SDD §6 FR 映射
+        tasks: [CR-2026-025-TASK-07]
+        code: tools@a7c1a42: §8 登记
+        evidence: AC-17 文档核对
