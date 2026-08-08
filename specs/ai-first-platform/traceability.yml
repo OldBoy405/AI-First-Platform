@@ -1,11 +1,11 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 # 五段链路：需求 FR ↔ 技术设计 SDD ↔ 交付 TASK ↔ 代码 merge SHA ↔ CR-ID
 spec-id: ai-first-platform
-cr-ref: CR-2026-023
-cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023]
-target-version: "0.24"
+cr-ref: CR-2026-024
+cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024]
+target-version: "0.25"
 baseline-since: "0.10"
-generated-at: "2026-08-07T07:50:54+08:00"
+generated-at: "2026-08-09T00:31:44+08:00"
 
 # 已知缺口：CR-2026-003~CR-2026-006 未生成本文件的里程碑段（writeback-traceability 在那四个
 # CR 回写时被跳过，PRD.md/SDD.md/_index.yml 侧的累积记录不受影响、仍完整）。本次（CR-2026-008）
@@ -1549,3 +1549,157 @@ milestones:
         tasks: [CR-2026-023-TASK-06]
         code: tools@b0dd616/b35c7b2: commit message 延续漂移治理风格并注明 CR 溯源
         evidence: AC-10：commit message 核对
+  - cr: CR-2026-024
+    milestone: Phase0 Tools 技能整合
+    target-version: "0.25"
+    status: writing-back
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: d703fc88105129c4529fc55f2ebb3c03f02f58bc
+        branch: requirement/CR-2026-024  - id: CR-2026-025
+    frs:
+      - fr: FR-1
+        title: 删 external 死声明（system-orchestrator 三项 + dev-agent 的 test-driven-development）
+        sdd: SDD §0 C-2/C-5、§4.1 步骤 1
+        tasks: [CR-2026-024-TASK-01]
+        code: tools@18358df: agent-skill-matrix.yml 死声明删除
+        evidence: AC-1 grep 四项名称 actor 级零残留
+      - fr: FR-2
+        title: implement-code 删 TDD 悬空引用 + 补降级路径
+        sdd: SDD §3.4、§4.1 步骤 3
+        tasks: [CR-2026-024-TASK-01, CR-2026-024-TASK-02]
+        code: tools@18358df/21b8a1c: L75 TDD 行替换为分层降级（批次二合并单条）
+        evidence: AC-2 grep test-driven-development 零命中
+      - fr: FR-3
+        title: pipeline nodes[5] prompt 同步删 TDD 补降级
+        sdd: SDD §4.1 步骤 4（C-1 下标订正）
+        tasks: [CR-2026-024-TASK-01]
+        code: tools@18358df: code-implementation.pipeline.json
+        evidence: AC-3 JSON 解析 + grep 零残留
+      - fr: FR-4
+        title: capabilities 订正 + known-gaps 删前两条
+        sdd: SDD §2.3、§2.2
+        tasks: [CR-2026-024-TASK-01]
+        code: tools@18358df: agents/_index.yml + agent-skill-matrix.yml
+        evidence: AC-4 check-agents-contract 通过
+      - fr: FR-5
+        title: forbidden 声明性边界说明
+        sdd: SDD §4.1 步骤 6
+        tasks: [CR-2026-024-TASK-01]
+        code: tools@18358df: AGENT-SKILL-MATRIX.md + openwiki
+        evidence: AC-5 grep forbidden 性质说明命中
+      - fr: FR-6
+        title: write-dev-tasks 删 assignee 死字段
+        sdd: SDD §2.4、§4.1 步骤 5
+        tasks: [CR-2026-024-TASK-01]
+        code: tools@18358df: SKILL.md 模板删 assignee
+        evidence: AC-6 grep assignee 模板零命中
+      - fr: FR-7
+        title: 新建 coding-discipline skill（极简阶梯/粒度/根因+红绿）
+        sdd: SDD §3.1 定稿骨架
+        tasks: [CR-2026-024-TASK-02]
+        code: tools@21b8a1c: skills/develop/coding-discipline/SKILL.md
+        evidence: AC-7 文件存在 + 全文本包语汇
+      - fr: FR-8
+        title: coding-discipline 登记 active + owns/can-call + 台账
+        sdd: SDD §2.2、§4.2 b~d
+        tasks: [CR-2026-024-TASK-02]
+        code: tools@21b8a1c: skills/_index.yml + agent-skill-matrix.yml + 三台账
+        evidence: AC-8 check-skill-matrix 56 skill/8 actor 一致
+      - fr: FR-9
+        title: implement-code 引用 §1§2§3 + depends-on 拓扑排序
+        sdd: SDD §3.4、§4.3
+        tasks: [CR-2026-024-TASK-02]
+        code: tools@21b8a1c: implement-code/SKILL.md Step 3 重写
+        evidence: AC-9 grep 拓扑排序表述命中
+      - fr: FR-10
+        title: write-dev-plan 引用 coding-discipline §2
+        sdd: SDD §3.1（C-4 订正 develop 域）
+        tasks: [CR-2026-024-TASK-02]
+        code: tools@21b8a1c: write-dev-plan/SKILL.md 用途段
+        evidence: AC-10 grep §2 引用命中
+      - fr: FR-11
+        title: review-code 前端质量维度（三项检查 + 破 AA 升 blocker 其余 minor）
+        sdd: SDD §6 FR-11（B-4 维度名验收）
+        tasks: [CR-2026-024-TASK-02]
+        code: tools@21b8a1c+ff889cc: review-code/SKILL.md 维度表 + nodes[9] ⑤
+        evidence: AC-8 行内管道符=3 + 三项检查判据 grep 命中
+      - fr: FR-12
+        title: review-code Step 1 无条件重验
+        sdd: SDD §3.2 定稿句式
+        tasks: [CR-2026-024-TASK-02]
+        code: tools@21b8a1c+ff889cc: Step 1 无条件重执 + s-1 措辞
+        evidence: AC-9 grep「缺失才补跑」=0
+      - fr: FR-13
+        title: pipeline inputs.suggestion_policy 触发参数
+        sdd: SDD §2.1（select 形态对齐既有三例）
+        tasks: [CR-2026-024-TASK-02]
+        code: tools@21b8a1c: code-implementation.pipeline.json inputs
+        evidence: AC-13 JSON 断言 select/required:false/default:strict
+      - fr: FR-14
+        title: review-code Step 3 策略化分流 + 轮次闸 + dimensions 留痕
+        sdd: SDD §3.3、§2.5（B-1/M-1/M-2 订正）
+        tasks: [CR-2026-024-TASK-02]
+        code: tools@21b8a1c: review-code/SKILL.md 策略段 + nodes[9] 插值
+        evidence: AC-11 插值仅落 nodes[9].prompt + SKILL.md 零插值语法
+      - fr: FR-15
+        title: approve-code suggestions 经 record-idea 承接
+        sdd: SDD §3.6
+        tasks: [CR-2026-024-TASK-02]
+        code: tools@21b8a1c: approve-code/SKILL.md 步骤 4
+        evidence: AC-15 grep 承接条款命中
+      - fr: FR-16
+        title: dev-agent.can-call 登记 record-idea
+        sdd: SDD §2.2（C-3 订正：skill 本体已存在）
+        tasks: [CR-2026-024-TASK-02]
+        code: tools@21b8a1c: agent-skill-matrix.yml
+        evidence: AC-16 check-skill-matrix 通过
+      - fr: FR-17
+        title: write-dev-tasks 接口契约 + 签名核对 + 占位符判据
+        sdd: SDD §3.5
+        tasks: [CR-2026-024-TASK-02]
+        code: tools@21b8a1c: write-dev-tasks/SKILL.md 三处
+        evidence: AC-17 grep 接口契约/签名核对/判据清单命中
+      - fr: FR-18
+        title: write-requirement-prd 优先采纳 summary 已确认边界
+        sdd: SDD §4.2 k
+        tasks: [CR-2026-024-TASK-02]
+        code: tools@21b8a1c: write-requirement-prd/SKILL.md Step 2
+        evidence: AC-18 grep summary 边界采纳行命中
+      - fr: FR-19
+        title: pipeline nodes[1][5][9] prompt 同步（C-1 下标）
+        sdd: SDD §6 FR-19、§0 C-1
+        tasks: [CR-2026-024-TASK-02]
+        code: tools@21b8a1c: code-implementation.pipeline.json nodes[1][5][9]
+        evidence: AC-19 JSON 解析 + 插值落点断言
+      - fr: FR-20
+        title: AGENTS.md(tools) 第 56 条甲路线修订
+        sdd: SDD §3.7（第 160 条不动）
+        tasks: [CR-2026-024-TASK-02]
+        code: tools@21b8a1c: AGENTS.md
+        evidence: AC-20 grep 第 56 条新句式命中
+      - fr: FR-21
+        title: openwiki forbidden 性质 + 主责矩阵同步
+        sdd: SDD §4.1 步骤 6、§4.2 l
+        tasks: [CR-2026-024-TASK-01, CR-2026-024-TASK-02]
+        code: tools@18358df/21b8a1c: openwiki/architecture/agent-skill-matrix.md
+        evidence: AC-21 页面 grep 命中 + 缺口表同步删两行
+      - fr: FR-22
+        title: 批次一/二分开、批次二内部同批原子
+        sdd: SDD §4.1/§4.2 编排（B-2 订正）
+        tasks: [CR-2026-024-TASK-01, CR-2026-024-TASK-02]
+        code: tools@18358df+21b8a1c: 两独立 commit 边界清晰
+        evidence: AC-22 git log 两 commit 分界
+      - fr: FR-23
+        title: 每批三件套 + 真实 CR 回归
+        sdd: SDD §4.4
+        tasks: [CR-2026-024-TASK-03]
+        code: 无代码改动：验证关卡
+        evidence: AC-23 test-report 四命令 exit=0（106/106 回归）
+      - fr: FR-24
+        title: commit 溯源（方案 v2.6 + CR-2026-024）
+        sdd: SDD §6 FR-24
+        tasks: [CR-2026-024-TASK-03]
+        code: tools@18358df/21b8a1c/ff889cc: 三 commit message 注明
+        evidence: AC-24 git log 溯源核对通过
