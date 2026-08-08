@@ -1,16 +1,16 @@
 cr-id: CR-2026-025
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-09T01:40:07+08:00"
-verdict: block
-blockers:
-  - "TD-BL-4（首个新 stage 的 trace attempts 默认值错误）：§4.4a 步骤 2b 把 oldAttempts 定义为 `trace 存在 ? parseYaml(traceText)?.reviews?.[stage]?.['review-loop']?.attempts : []`，当 traceability.yml 已有 requirement 投影、而本次首次写入 tech-design 或 code（FR-16/AC-19 的正常三阶段路径）时，该表达式返回 undefined；下一步的“列表且每项含字段”shape 校验必然报 TRACE_SHAPE，导致无法按 §4.4c 的未命中分支新增目标 stage，违背 FR-18 的“定点新增或替换”。须区分“目标 stage 缺失”（合法，oldAttempts=[]）与“目标 stage 存在但 review-loop/attempts 形状错误”（TRACE_SHAPE）；不可用宽泛空值兜底掩盖后者。"
+reviewed-at: "2026-08-09T01:48:34+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  PRD-SDD对齐: "block — 上轮 TD-BL-1/2/3 已分别补齐历史合并、CRLF/空结构硬失败和 SCHEMA_INVALID 复用；但 FR-16/FR-18 要求的已有其他 stage 时新增目标 stage，在 §4.4a 的 oldAttempts 分支上会必然失败。"
-  架构合理性: "block — 总体仍遵循 crctl 单写者、casWriteMulti、零依赖和行级定点编辑；但新投影路径把合法的缺失 stage 误判为账本结构损坏，破坏共享三阶段映射的正常工作流。"
-  数据模型完整性: "block — attempts 历史字段和合并规则已明确；仍缺失“stage 不存在时空历史”的合法模型分支，致使新增 stage 无法构造首条 attempt。"
-  接口契约: "block — review-record 的三 stage 共用契约应支持 requirement、tech-design、code 依次投影；当前算法仅在 trace 缺失时有 [] 初值，不能支持 trace 已存在而当前 stage 缺失的接口情形。"
-  性能与安全性: "pass — 单次解析、CAS 多写、无新增外部输入或审批旁路；修复只需补最小分支判定，不改变复杂度。"
-  可测试性: "block — F-4 虽列三 stage 投影向量，但设计尚未规定“已有 requirement/tests/未知段，首次写入 tech-design/code”应成功的算法，测试无法据此锁定正确行为。"
-  Prompt采纳影响: "pass — §8 已将 requirement、tech-design、code 三个 review Skill 的 trace 手写步骤统一改为由 review-record 落盘后核对，且 P-4 已改为已核实事实。"
-suggestions: []
+  PRD-SDD对齐: "pass — 24/24 FR 有映射与测试锚点；TD-BL-1/2/3/4 四项修复均已落实：attempts 历史合并契约、checker 空结构硬失败 + split(/\r?\n/)、错误码收敛为 PRD 批准的两码 + SCHEMA_INVALID 复用、stage 缺失合法分支与形状损坏区分明确"
+  架构合理性: "pass — 合 ARCHITECTURE.md §4 依赖方向与 §5 不变量 1/2/3/4/7；bumpAttempt 拆读-算-写后 crctl attempt 行为不变，行级定点编辑与 casWriteMulti 复用均合 §6 否决面"
+  数据模型完整性: "pass — 投影字段集与 review-requirement Step 4 模板对齐；TD-BL-4 后 trace 已有其他 stage 时首次写入目标 stage 的合法分支（oldAttempts=[]）与形状损坏（TRACE_SHAPE）已区分"
+  接口契约: "pass — §3.1 错误码表与 §4 算法一致，无 PRD 未批准的新增码；actual 数组类型与 equals/cmdAdvance/fail() 零变化承诺明确"
+  性能与安全: "pass — 扫描复杂度、单次 parse 复用、CAS 崩溃窗口继承 B-18、无新增外部输入面与审批旁路，边界条件清单齐全"
+  可测试性: "pass — 每条 FR 有 AC/F-3/F-4 锚点；边界清单含环/引号 ID/空结构/首写新 stage/attempts 重号/CRLF 等全部夹具"
+  Prompt采纳影响: "pass — §8 必填节存在，P-1~P-5 清单齐全且 P-2~P-4 均指向已核实的 SKILL 手写投影步骤，lint-prompts enforce 兜底声明在案"
+suggestions:
+  - "TD-SUG-3（非阻塞）：§4.4a 非 bump 分支未定义 review-loop.yml 缺失时 current-attempt 的取值；SKILL 契约恒带 --bump-attempt，实施期按 attempt=1 处理并补一条向量即可"
