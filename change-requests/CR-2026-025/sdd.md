@@ -5,7 +5,7 @@ cr-ref: CR-2026-025
 title: crctl 守卫与回显收敛（check-skill-matrix external 引用校验 + depends-on 依赖守卫 + gate/advance blockers 回显截断 + review-record 投影一致性）技术设计
 status: draft
 created: "2026-08-09T01:20:00+08:00"
-updated: "2026-08-09T01:20:00+08:00"
+updated: "2026-08-09T01:45:00+08:00"
 ---
 
 # SDD — crctl 守卫与回显收敛
@@ -113,7 +113,7 @@ reviews:
 
 | 命令 | 新增/变更行为 | 错误码 |
 |---|---|---|
-| `crctl task done <cr> --task <id>` | CAS 写入前校验目标 TASK 直接 `depends-on`（一跳） | `DEPENDS_ON_NOT_DONE`（detail 列出每个未完成前置的 `{id, status}`；message 末尾追加"若前置互相等待，检查 depends-on 是否成环"）；`DEPENDS_ON_UNKNOWN`（引用不存在于 `_index.yml` 的 TASK-ID） |
+| `crctl task done <cr> --task <id>` | CAS 写入前校验目标 TASK 直接 `depends-on`（一跳） | `DEPENDS_ON_NOT_DONE`（detail 列出每个未完成前置的 `{id, status}`；message 末尾追加"若前置互相等待，检查 depends-on 是否成环"）；`DEPENDS_ON_UNKNOWN`（引用不存在于 `_index.yml` 的 TASK-ID）；非数组形态复用既有 `SCHEMA_INVALID`（不新增错误码，TD-BL-3） |
 | `crctl gate / advance`（失败路径） | `isEmpty` 数组失败 detail：`actual` 保持数组、逐项 ≤120 字符截断；`why` 只给条数与证据文件指针 | 错误码不变（`GATE_BLOCKED` 等） |
 | `crctl review-record <cr> --stage <s> [--bump-attempt]` | 一次写入 annotation + review-loop.yml（仅 bump 时）+ traceability 投影；`--stage requirement` 额外写 `subject-file`/`subject-sha256` | 新增结构化失败：`TRACE_SHAPE`（traceability CR-ID 不匹配/无法唯一定位），失败时三文件均不落盘、临时 payload 保留 |
 | `crctl next <cr>`（仅 `drafting`） | 按 §4.4 决策表路由 | 只读命令，无错误码变化 |
@@ -144,8 +144,14 @@ for name in union(externalByActor.values()):
 
 要点：
 - 粒度为**全局名级**（D-1）：任一文件命中即通过，不要求命中位于声明 actor 的 owns 面。
-- 文件读入统一经一个 `readNorm(path)` 辅助（readFileSync → `replaceAll('\r\n','\n')`），现有三个解析段的读入点同步改经该函数（FR-3 行尾纪律）。
-- 检查 1/2/3 逻辑零改动；文件头注释"检查项"清单补第 4 条（FR-1/AC-3）。
+- 文件读入统一经一个 `readNorm(path)` 辅助（readFileSync → `replaceAll('\r\n','\n')`），现有三个解析段的读入点同步改经该函数（FR-3 行尾纪律）；三个逐行解析入口的 `split('\n')` 同步改为 `split(/\r?\n/)`（双保险，FR-3 明文要求）。
+- **解析 shape 硬失败（TD-BL-2，纪律 #1/不变量 4）**：三段解析各补一条空结构守卫，匹配不到预期结构即 `console.error + process.exit(1)`，不得静默降级为空集合继续跑：
+  - `_index.yml` 段：`activeSkills.size === 0` → 硬失败（仓库不可能无 active skill，必是解析失效）
+  - `agent-skill-matrix.yml` 段：`Object.keys(ownsByActor).length === 0` → 硬失败（同上）
+  - `AGENT-SKILL-MATRIX.md` 段：`## 主责矩阵` 切分结果缺失或表格行零命中 → 硬失败
+  守卫只判"解析产物是否为空"，不新增对单个条目缺失的报错（那是检查 1/2 的既有职责，不重复）。
+- 检查 1/2/3 判定逻辑零改动（新增的是解析层守卫，不是检查规则）；文件头注释"检查项"清单补第 4 条。
+- 对应夹具进 F-3：CRLF/LF 同内容结果一致 + 三份输入各自空结构时退出码非 0（TD-BL-2 后半）。
 - 复杂度：O(文件数 × 平均文本长 × external 名数)，tools 仓当前量级（<500 文件）毫秒级，无缓存需求。
 
 ### 4.2 项② — `task done` 一跳依赖守卫
@@ -171,7 +177,7 @@ guardDependsOn(normText, taskId):          # normText = 已 CRLF 规范化的 _i
 要点：
 - 一跳口径（D-6）：不做传递闭包、不检测环；A→B→A 与 A→A 夹具下环上成员直接前置互不 done，天然全部拒写，无遍历死循环（AC-10）。
 - 带引号形态 `["ID"]` 由 `parseYaml` 的标量 unquote 路径消化（B-7 实测），测试向量⑤钉住（FR-10）。
-- `depends-on` 解析出非数组形态（如标量）时按 `TRACE_SHAPE` 同类硬失败原则报 `DEPENDS_ON_SHAPE`——宁硬失败不猜语义（纪律 #1）。
+- `depends-on` 解析出非数组形态（如标量）时复用既有 `SCHEMA_INVALID`（detail 指向该字段），**不新增 `DEPENDS_ON_SHAPE` 错误码**（TD-BL-3：PRD FR-7/FR-9 只批准 `DEPENDS_ON_NOT_DONE`/`DEPENDS_ON_UNKNOWN` 两个新增码，SDD 不单方面扩面）；F-4 补一条非数组形态向量。
 
 ### 4.3 项③ — `isEmpty` 失败回显收敛
 
@@ -203,6 +209,16 @@ why: Array.isArray(val)
    → --bump-attempt 时 readAttempts 未 exhausted → traceability 若存在则结构校验（§4.4c）
    → CR-ID 一致性（traceability 头 cr-id == cr）
 2. const recordedAt = nowIso()                # 一次生成，三账本共用
+2b. attempts 历史合并（TD-BL-1：上一轮 result/blocker-count 的唯一来源是 trace 现有投影，
+    review-loop.yml 只有 attempt/at/by，canonical annotation 会被覆盖，均不得作为历史数据源）：
+    oldAttempts = trace 存在 ? parseYaml(traceText)?.reviews?.[stage]?.['review-loop']?.attempts : []
+    shape 校验：列表，且每项含 attempt/result/blocker-count/repair-target；不合 → fail('TRACE_SHAPE')
+    bump 时：新条目 { attempt: current+1, reviewed-at: recordedAt, result: verdict,
+              blocker-count, repair-target } 追加于尾部；若 oldAttempts 已含同 attempt 号
+              → fail('TRACE_SHAPE')（不静默覆盖历史）
+    非 bump 时：按 review-loop.yml 的 current-attempt 定位——命中则整条替换，未命中则追加
+    （语义 = 刷新当前轮证据，不新增轮次）
+    合并后的 attempts 列表进入投影块文本，再交 §4.4c 行级 upsert 渲染
 3. 构造三份新文本：
    annotationText  ← 现有 lines 拼装 + requirement 时追加 subject-file/subject-sha256
    traceText       ← upsertReviewsStage(traceText 或最小骨架, stage, 投影块)
@@ -233,7 +249,8 @@ sha256(readFileSync(prdPath, 'utf8').replaceAll('\r\n', '\n'))  // 全量 hex
 - 在 reviews 块内定位 `  {stage}:` 子块（2 缩进，到下一个 ≤2 缩进键为止）：
     命中 → 整块替换为新投影
     未命中 → 在 reviews 块末尾追加
-- 其余行逐字节保留（tests/未知扩展段不受影响，AC-19/AC-21）
+- 其余行逐字节保留：经 LF 规范化后的**非目标文本片段**不变（tests/未知扩展段不受影响；AC-19 "字节不变"口径限定为规范化后文本，TD-SUG-2）
+- 投影块文本本身由 §4.4a 步骤 2b 的 attempts 合并结果生成，本函数不关心轮次语义（TD-BL-1 分工：合并规则在 2b，行级渲染在本函数）
 - 同一段内出现两个同名 stage 键 → fail('TRACE_SHAPE')（不静默择一）
 ```
 
@@ -273,7 +290,7 @@ PRD D-1~D-12 已全部拍板，此处不复述理由，只补两个实施级选�
 |---|---|---|
 | FR-1 | F-1 检查 4 + 头注释 | AC-1/AC-3，F-3 向量②④ |
 | FR-2 | F-1 §4.1 扫描口径 | AC-2，F-3 向量①② |
-| FR-3 | F-1 `externalByActor` + `readNorm` | F-3 向量③④⑤ |
+| FR-3 | F-1 `externalByActor` + `readNorm` + 三段空结构硬失败守卫（§4.1，TD-BL-2） | F-3 向量③④⑤ + 空结构/CRLF 夹具 |
 | FR-4 | F-5/F-6/F-7 三处声明面修订 | AC-4 |
 | FR-5 | F-3 新建测试文件 | AC-6 |
 | FR-6 | F-2 `guardDependsOn`（§4.2） | AC-7/AC-8，F-4 向量①② |
@@ -287,7 +304,7 @@ PRD D-1~D-12 已全部拍板，此处不复述理由，只补两个实施级选�
 | FR-14 | F-2 改动处注释 | AC-14 |
 | FR-15 | F-4 五类向量 | AC-15 |
 | FR-16 | F-2 `upsertReviewsStage` 三 stage 同一函数（§4.4c） | AC-19，F-4 项④向量① |
-| FR-17 | F-2 全校验→单时间戳→`casWriteMulti`（§4.4a） | AC-20，F-4 向量②④ |
+| FR-17 | F-2 全校验→单时间戳→attempts 历史合并（§4.4a 步骤 2b）→`casWriteMulti` | AC-20，F-4 向量②④ |
 | FR-18 | F-2 骨架创建 + 定点替换 + 硬失败（§4.4c） | AC-21，F-4 向量③④ |
 | FR-19 | F-2 `subject-file`/`subject-sha256`（§4.4b） | AC-22 |
 | FR-20 | F-2 `cmdNext` drafting 决策表（§4.4d） | AC-22，F-4 向量⑤⑥⑦⑧ |
@@ -310,7 +327,7 @@ PRD D-1~D-12 已全部拍板，此处不复述理由，只补两个实施级选�
 - `task done` 守卫复用 `cmdTaskDone` 已读入文本，只增一次 `parseYaml`（同文件），无新增 I/O。
 - `cmdNext` 新增一次 annotation 读取与一次 PRD 摘要计算，仅 drafting 态触发，可忽略。
 
-**边界条件清单**（全部进测试向量）：环（A→B→A / A→A）、带引号 TASK-ID、`depends-on` 缺失/空/悬空/非数组、CRLF↔LF 等价、traceability 缺失/含未知段/CR-ID 不匹配/重复 stage、无摘要旧 annotation、CAS 注入失败三文件不动。
+**边界条件清单**（全部进测试向量）：环（A→B→A / A→A）、带引号 TASK-ID、`depends-on` 缺失/空/悬空/非数组（`SCHEMA_INVALID`）、CRLF↔LF 等价、checker 三份输入各自空结构硬失败、traceability 缺失/含未知段/CR-ID 不匹配/重复 stage/attempts 形状非法或重号、无摘要旧 annotation、CAS 注入失败三文件不动。
 
 **已知文档同步缺口（非 blocker）**：`openwiki/architecture/agent-skill-matrix.md` 描述 checker 为"3 项检查"，项①上线后过时；openwiki 为文档镜像、非门禁面，实施期顺手同步一句，不单独成任务。
 
@@ -323,7 +340,7 @@ PRD D-1~D-12 已全部拍板，此处不复述理由，只补两个实施级选�
 | P-1 | `skills/develop/implement-code/SKILL.md` | prompt 层拓扑排序建议（CR-2026-024 落） | 补一句「依赖顺序由 `crctl task done` 机械强制」（FR-9，PRD 已列） |
 | P-2 | `skills/requirement/review-requirement/SKILL.md` Step 4 | 指导模型手写 `traceability.yml#reviews.requirement` 投影（本 worktree 现存陈旧投影即该手工路径的实证漂移） | 改为「投影由 `crctl review-record` 同步写入，本步骤只做落盘后核对」 |
 | P-3 | `skills/develop/review-tech-design/SKILL.md` Step 4（"更新 traceability.yml 并处理 status"） | 同上手写投影语义 | 同 P-2 改法 |
-| P-4 | `skills/develop/review-code/SKILL.md`（若有对应投影步骤，实施期核实；B-17 三 stage 同契约） | 同上 | 同 P-2 改法 |
+| P-4 | `skills/develop/review-code/SKILL.md` Step 5 | 明文要求向 `traceability.yml` 写入 `reviews.code` 引用（已实测 L103-105，TD-SUG-1） | 同 P-2 改法 |
 | P-5 | `skills/shared/crctl/SKILL.md` 用途表 | `task done` 无守卫描述、`review-record` 无投影描述 | 补守卫与两错误码（FR-9）+ review-record 投影语义一句 |
 
 P-2~P-4 的提示词修订随本 CR 代码同批提交（纯 prompt 修改不另开 CR，符合本仓 prompt 免 CR 规范），由 `lint-prompts --mode enforce` 兜底校验无 CONTRADICTS/STALE 残留。`crctl next` 消费方（最小 pipeline-runner 等）按输出字段消费，drafting 路由变化无需 prompt 适配。
@@ -333,3 +350,4 @@ P-2~P-4 的提示词修订随本 CR 代码同批提交（纯 prompt 修改不另
 | 日期 | 版本 | 作者 | 说明 |
 |------|------|------|------|
 | 2026-08-09 | v0.1.0 | Ray | 初始草稿：四项目标落点映射、`guardDependsOn`/`briefArray`/`upsertReviewsStage`/`cmdNext` 决策表设计、I-1~I-3 实施级选型、P-1~P-5 采纳清单；FR 覆盖 24/24 |
+| 2026-08-09 | v0.2.0 | Ray | 技术评审 attempt-1 回修（3 blocker）：TD-BL-1 补 §4.4a 步骤 2b attempts 历史合并契约（唯一数据源 = trace 现有投影，shape 校验 + bump 追加/非 bump 按轮替换，禁从 review-loop.yml 臆造）；TD-BL-2 补 §4.1 三段解析空结构硬失败守卫与 `split(/\r?\n/)` 替换，夹具进 F-3；TD-BL-3 删除未授权的 `DEPENDS_ON_SHAPE`，非数组形态复用 `SCHEMA_INVALID` 并补向量。采纳 TD-SUG-1（P-4 确定为事实）、TD-SUG-2（AC-19 口径限定 LF 规范化后非目标片段）。 |
