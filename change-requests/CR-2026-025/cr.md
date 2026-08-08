@@ -15,7 +15,7 @@ owners:
     assigned-at: "2026-08-08T21:07:25+08:00"
 target-version: tbd
 source: "docs/analysis/端到端Pipeline最佳实践技能整合方案.md v2.6 §7（D-2/D-5）+ CR-2026-024 SDD 技术评审实测发现（gate 回显冗余）"
-status: drafting
+status: merging
 created: "2026-08-08T21:07:25+08:00"
 updated: "2026-08-08T21:07:25+08:00"
 remote-ref: ""
