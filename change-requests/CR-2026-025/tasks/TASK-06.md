@@ -8,7 +8,7 @@ title: 文档同步与 Prompt 采纳（用途表 + P-1~P-5）
 slug: docs-prompt-adoption
 status: pending
 estimate: 2h
-depends-on: [CR-2026-025-TASK-05]
+depends-on: [CR-2026-025-TASK-01, CR-2026-025-TASK-05]
 created: "2026-08-09T02:30:00+08:00"
 ---
 

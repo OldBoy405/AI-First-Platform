@@ -6,7 +6,7 @@ sdd-ref: "change-requests/CR-2026-025/sdd.md"
 target-version: tbd
 status: draft
 created: "2026-08-09T02:10:00+08:00"
-updated: "2026-08-09T02:10:00+08:00"
+updated: "2026-08-09T02:23:17+08:00"
 ---
 
 # 开发计划 — crctl 守卫与回显收敛
@@ -45,6 +45,7 @@ M4: TASK(文档/Prompt 采纳) → TASK(全量验证 FR-22 + 溯源提交 FR-23/
 
 ## 3. 资源与分工
 
+- 任务级依赖：TASK-06 直接消费 TASK-01 的依赖守卫错误码和 TASK-05 的最终声明面，故显式依赖 TASK-01、TASK-05；TASK-05 已传递覆盖 TASK-02~05 链路。
 - 单一实施者（dev-agent / Ray），无并行分工；工时分配即上表 M1~M4。
 - 测试全部随码同批（每个里程碑的完成定义含对应向量全绿），不另设独立测试阶段。
 
@@ -69,10 +70,11 @@ M4: TASK(文档/Prompt 采纳) → TASK(全量验证 FR-22 + 溯源提交 FR-23/
   4. FR-23：commit message 溯源（方案 v2.6 §7 + CR-2026-024 SDD 评审实测 + CR-2026-025）；`grep "C:\\Users"` 零命中
   5. FR-24：`ARCHITECTURE.md` §8 登记本 CR
   6. NFR-9：只 add 本 CR 文件清单，禁 `git add -A`
-- **TD-SUG-3 遗留**：M2 实施时非 bump 分支在 review-loop.yml 缺失时按 attempt=1 处理并补一条向量（技术评审留痕，非阻塞）。
+- **非 bump 兼容语义**：不写 `review-loop.yml`，只投影既有 `current-attempt`；当该值为 0 时投影 `current-attempt: 0` 与空 `attempts`，不得伪造 attempt=1。只有调用 `--bump-attempt` 才创建首条轮次账本。
 
 ## 6. 变更记录
 
 | 日期 | 版本 | 作者 | 说明 |
 |------|------|------|------|
 | 2026-08-09 | v0.1.0 | Ray | 初始计划：M1~M4 四里程碑，2.5 人天；实施前提（024 批次一合入）已核实满足，无跨 CR 批次依赖 |
+| 2026-08-09 | v0.1.1 | Codex | plan/TASK 评审回修：删除非 bump 伪造 attempt=1 的扩面，明确 TASK-06 对 TASK-01 与 TASK-05 的真实依赖。 |
