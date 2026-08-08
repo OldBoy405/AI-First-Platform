@@ -41,3 +41,17 @@ reviews:
           result: pass
           blocker-count: 0
           repair-target: write-tech-design
+tests:
+  report: change-requests/CR-2026-025/test-report.md
+  status: pass
+  owner: "OldBoy405"
+  owner-assigned-at: "2026-08-08T21:07:25+08:00"
+  generated-at: "2026-08-09T03:10:10+08:00"
+  repair-target: implement-code
+  commands:
+    - { name: node-test-crctl, result: pass }
+    - { name: node-test-lint-prompts, result: pass }
+    - { name: node-test-check-skill-matrix, result: pass }
+    - { name: check-skill-matrix, result: pass }
+    - { name: check-agents-contract, result: pass }
+    - { name: lint-prompts-enforce, result: pass }
