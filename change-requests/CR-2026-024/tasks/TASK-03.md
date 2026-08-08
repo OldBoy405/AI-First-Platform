@@ -6,7 +6,7 @@ plan-ref: "change-requests/CR-2026-024/plan.md"
 sdd-ref: "change-requests/CR-2026-024/sdd.md"
 title: 端到端验证与回写准备（跨批次全量回归 + lenient 演练整合 + feature-writeback 前置核对）
 slug: e2e-verification-writeback
-status: pending
+status: done
 estimate: 4h
 depends-on: [CR-2026-024-TASK-02]
 created: "2026-08-08T22:00:00+08:00"

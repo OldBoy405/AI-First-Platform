@@ -6,7 +6,7 @@ plan-ref: "change-requests/CR-2026-024/plan.md"
 sdd-ref: "change-requests/CR-2026-024/sdd.md"
 title: 批次二最佳实践内化（coding-discipline 新建 + 六处内化 + suggestion_policy 策略化分流，同批原子）
 slug: batch2-practice-internalization
-status: pending
+status: done
 estimate: 8h
 depends-on: [CR-2026-024-TASK-01]
 created: "2026-08-08T22:00:00+08:00"
