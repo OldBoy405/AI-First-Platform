@@ -4,42 +4,50 @@ tasks:
   - id: CR-2026-025-TASK-01
     slug: depends-on-guard
     title: 项② task done 一跳依赖守卫
-    status: pending
+    status: done
+    done-at: "2026-08-09T02:37:40+08:00"
     estimate: 2h
     depends-on: []
   - id: CR-2026-025-TASK-02
     slug: blockers-brief-echo
     title: 项③ isEmpty 失败回显收敛
-    status: pending
+    status: done
+    done-at: "2026-08-09T02:41:49+08:00"
     estimate: 2h
     depends-on: []
   - id: CR-2026-025-TASK-03
     slug: review-record-trace-projection
     title: 项④ review-record 三账本一致写与 cmdNext drafting 路由
-    status: pending
+    status: done
+    done-at: "2026-08-09T02:55:06+08:00"
     estimate: 8h
     depends-on: [CR-2026-025-TASK-02]
   - id: CR-2026-025-TASK-04
     slug: external-ref-check
     title: 项① checker 检查 4（external 引用点校验）+ 解析守卫与首测
-    status: pending
+    status: done
+    done-at: "2026-08-09T03:02:33+08:00"
     estimate: 2h
     depends-on: [CR-2026-025-TASK-03]
   - id: CR-2026-025-TASK-05
     slug: external-decl-surface
     title: 项① 声明面三处修订（顶层块注释 + 声明位置收敛 + 枚举去点名）
-    status: pending
+    status: done
+    done-at: "2026-08-09T03:03:59+08:00"
     estimate: 2h
     depends-on: [CR-2026-025-TASK-04]
   - id: CR-2026-025-TASK-06
     slug: docs-prompt-adoption
     title: 文档同步与 Prompt 采纳（用途表 + P-1~P-5）
-    status: pending
+    status: done
+    done-at: "2026-08-09T03:05:48+08:00"
     estimate: 2h
     depends-on: [CR-2026-025-TASK-01, CR-2026-025-TASK-05]
   - id: CR-2026-025-TASK-07
     slug: verify-register-ship
     title: 全量验证关卡 + ARCHITECTURE.md 登记 + 溯源提交
-    status: pending
+    status: done
+    done-at: "2026-08-09T03:09:10+08:00"
     estimate: 2h
     depends-on: [CR-2026-025-TASK-06]
+
