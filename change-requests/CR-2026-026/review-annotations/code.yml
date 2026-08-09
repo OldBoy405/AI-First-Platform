@@ -1,0 +1,17 @@
+cr-id: CR-2026-026
+review-type: code
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-09T14:07:52+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  代码↔TASK↔SDD对齐: "pass — crctl.mjs（四映射/resolveDevPlanRoute/bump 前判定/UPSTREAM 跳过 bump/repair-target 枚举校验/annotation 顶层落盘）与 SDD §3.1/§3.2/§2.3 逐条吻合；gates.json 三处（dev-start evidence+passCondition、developing 五条件 stage=dev-start、reviewLoops）与 §3.3 v0.3.0 一致；dir-graph 两条转换与 §3.4 一致；pipeline 14 节点/SKILL/双登记/文档同步覆盖 TASK-01~07（7/7）。"
+  工程质量: "pass — 本轮重跑：crctl.test 116/116 exit 0（含 ①-⑤ 新向量）、check-skill-matrix/check-agents-contract/lint-prompts --mode enforce 全 exit 0，与 test-report.md 一致。"
+  关键路径可读性: "pass — resolveDevPlanRoute 三行纯函数 + 注释标注 CR/FR/TD-BL 溯源；bump 前判定与 UPSTREAM 跳过分支注释完整；行尾纪律（补丁脚本 CRLF 归一）遵守。"
+  安全性: "pass — repair-target 枚举校验 SCHEMA_INVALID fail-fast（非法值不落盘）；UPSTREAM 跳过 bump 防轮次计费绕过；无敏感数据处理；guard deny 面未扩大。"
+  测试覆盖: "pass — ①三账本落盘+缺省 ②非法值拒写 ③UPSTREAM 跳过 bump（traceability+review-loop 双文件断言，f338e38 加强）④NORMAL 递增 ⑤并存优先；⑥-⑩ TTY/审批 fixture 依赖项按 plan §5 标注人工验收。"
+  测试证据可信度: "pass — test-report 覆盖 6 命令真实退出码 + TASK-01~07 验收映射 + 未覆盖风险（⑥-⑩）显式声明；本轮重跑结果与报告一致。"
+  suggestion-policy: "strict"
+suggestions:
+  - "minor：verdict=pass 且误带 repair-target: write-tech-design 时，route='pass' 但 annotation 仍无条件落 repair-target: write-dev-plan（crctl.mjs L1600 展开式）。语义无害（pass 无回修消费方），如需严格可在 pass 轨省略该字段或 schema 校验 pass+repair-target 组合；不阻塞本 CR。"
+  - "minor：⑥-⑩ 门禁向量（dev-start/developing/LOOP_EXHAUSTED）依赖 TTY 与完整审批 fixture 未自动化，当前靠 plan §5 人工验收；后续若 gates 判据再演进，建议补 spawnSync 可驱动的非 TTY 等价向量。"
