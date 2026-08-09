@@ -42,8 +42,13 @@ trunk 提交）属新采集，显式延后到 P3+，不属于 bypass-commit 的�
 
 ### CR 状态机口径（16 态 vs 15 态）
 
-文档口径与代码口径的换算于 2026-08-07 重申（沿 AGENTS.md 工程纪律 2 已敲定口径）：状态机 = **15 个具名状态
-+ 注册前 `(new)`**（口语「16 态」含 (new)）；转移 = 25 条声明，wildcard 展开后 47 条。
+文档口径与代码口径的换算于 2026-08-09 更新：状态机 = **15 个具名状态
++ 注册前 `(new)`**（口语「16 态」含 (new)）；转移 = **27 条声明，wildcard 展开后 49 条**。
+CR-2026-026 在既有 25/47 基线上新增两条开发计划评审转换：
+`review-dev-plan:block -> write-dev-plan` 与
+`review-dev-plan:upstream-design-blocker`。正式断言必须以
+`../tools/dir-graph.yaml#change-request-track.state_machine` 的当前内容为准，不得把历史
+25/47 口径继续描述成现状。
 multica 代码（`cr-status-badge.tsx`）按 15 态渲染是正确的；PRD §5.2.3 与 P0 文档中
 「16 态」的表述指含 (new) 的口语口径，写正式断言时必须写明用的是哪个口径。
 
@@ -51,6 +56,50 @@ multica 代码（`cr-status-badge.tsx`）按 15 态渲染是正确的；PRD §5.
 
 开发计划与 TASK 评审发现的、只能通过修订已审批 SDD 才能解决的阻断问题。它不属于 plan/TASK 自动回修范围，必须回到既有技术设计修订、评审与审批流程处理。
 _Avoid_: 普通回修 blocker、TASK blocker
+
+### CR 阶段文档（CR-local artifact）
+
+服务单个 CR 审批与交付过程的 PRD、SDD、Plan、TASK、测试报告和评审记录。其生命周期
+随 CR 结束，不等同于跨 CR 累积维护的产品基线文档。
+
+CR 阶段 PRD 与产品区活文档是两个不同概念；不得仅因二者都叫“PRD”就默认使用同一
+标识或内容契约。
+
+### specs 基线文档（baseline artifact）
+
+多个已完成 CR 的有效变更逐里程碑累积形成的发布基线，不是任一 CR 阶段文档的副本。
+不得用单个 CR 文档覆盖整份基线。
+
+### CR 目录索引（change-requests/_index.yml）
+
+CR 的全生命周期轻量目录，用于登记身份和基本生命周期摘要。它不是当前状态或历史详情
+的权威来源，不复制完整历史记录，也不在归档时删除 CR。
+
+### CR 参与仓（participating repository）
+
+被工作区明确声明为参与 CR 生命周期的仓库。当前模型中，每个参与仓都参与每个 CR，
+不存在只写在流程说明里的隐藏仓库，也不存在每 CR 单独选择仓库的第二套参与模型。
+
+### 归档事件（archive event）
+
+CR 进入最终态时产生的生命周期事件，携带 final status、归档原因和可选 writeback
+spec。它与 backlog→history/index 的归档移动是同一个业务事实：不得出现“事件已发但
+未归档”或“已归档但事件丢失”。
+
+### CR 终态查询（terminal CR lookup）
+
+对已结束 CR 的状态和下一步进行只读查询。终态没有合法后继；终态查询不会恢复 CR 的
+可写性。若活动视图与历史视图同时声称拥有同一 CR，必须视为数据冲突。
+
+### 正常归档与提前终止
+
+- **正常归档（archived）**：完整走过开发、代码审批、合并和回写链路的完成态。按现有
+  流程必然产生非空 TASK 集合；缺少任务或存在未完成任务都表示流程不完整。
+- **提前终止（rejected / withdrawn）**：可在生命周期任意 active 状态终止，可能尚未
+  产生 TASK 或回写产物，不适用正常归档的任务与回写门禁。
+
+未来若需要“无 TASK 但正常完成”的业务流程，必须显式定义，不得以缺失产物作为领域
+信号。
 
 ### CR 关联 Issue（原「壳 Issue」，已废止）
 
