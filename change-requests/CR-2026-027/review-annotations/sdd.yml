@@ -1,17 +1,17 @@
 cr-id: CR-2026-027
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-09T23:20:40+08:00"
+reviewed-at: "2026-08-10T00:07:59+08:00"
 verdict: pass
 blockers: []
 dimensions:
-  PRD↔SDD对齐: "pass — 15/15 FR 均有技术实现映射；PRD v0.4.0 已将 AC-14 字面同步为运行 `crctl migrate-backlog`，FR-10/D-11/AC-14 与 SDD 落点一致。"
-  架构合理性: "pass — 单写者/CAS/audit/outbox、无新增子命令、终态只读边界、archive-move 专用幂等检测及 tools worktree bootstrap 均符合 ARCHITECTURE.md 约束。"
-  数据模型完整性: "pass — index 终态字段、archive event、terminal status、review-record 输出及 candidate evidence override 数据形态完整。"
-  接口契约: "pass — route/repairTarget 按 stage 真值表定义；approval 候选通过 evidence override 校验，候选 cr.md 通过独立 `assertCandidateStatus` 在 CAS 前校验，错误码与调用顺序明确。"
-  性能与安全: "pass — 全部使用 node 内置模块；候选证据仅驻留内存；CAS/commit/outbox 时序与终态写入拒绝边界清晰。"
-  可测试性: "pass — §7.3 覆盖 approve 原子性、candidate status、TASK 门禁、archive 三账本与幂等、终态查询、review-record、inbox-emit 和 migrate-backlog 边界。"
-  Prompt采纳影响: "pass — §8 已列出实际四个 review Skill 与 archive/merge Skill，review-tech-design 路径已修正为 skills/develop 域。"
+  PRD↔SDD对齐: "pass — PRD v0.6.0 的 D-14/FR-16/AC-23 已由 SDD §2.4、§3.4a、§3.5、§6、§7.3 全量映射，16/16 FR 有实现落点。"
+  架构合理性: "pass — 复用既有 review-loop/review-record/cmdNext，不新增子命令或账本类型；cycle 字段为向后兼容扩展，旧 attempts 保留审计。"
+  数据模型完整性: "pass — current-cycle/current-attempt/attempts[].cycle、legacy cycle=1 兼容与 traceability 同步规则已定义。"
+  接口契约: "pass — task-breakdown route 从 canonical annotation 重算；tech-design-review-pending 同时检查 subject digest 与较新 upstream blocker；新 cycle 自动检测条件及 LOOP_EXHAUSTED 行为明确。"
+  性能与安全: "pass — freshness 仅增加少量本地文件读取与 SHA-256；LF 规范化、CAS、crctl 独占 review-loop 写入和无手工重置边界保持。"
+  可测试性: "pass — AC-23/§7.3 覆盖 missing/malformed/PASS/repair/upstream/exhausted、fresh/stale SDD、legacy annotation 与 cycle=2/attempt=1 审计保留。"
+  Prompt采纳影响: "pass — review-tech-design 继续调用既有 `review-record --bump-attempt`，新 cycle 由 crctl 确定性识别，无需新增 prompt 参数或 pipeline 节点。"
 suggestions:
-  - "approve 回归测试中的“缺签名”应明确仅针对 `via=server-approve`；TTY 的 `via=crctl-approve` 按现有契约不要求 signature，避免测试文字被误实现为两轨统一强制签名。"
-  - "`assertCandidateStatus` 建议复用现有 frontmatter 定点解析函数，并增加 status 缺失、重复 status 字段和 CRLF 三个测试向量。"
+  - "实现 reviewed-at 新旧比较时应解析为时间戳后比较，不直接依赖字符串排序；非法时间戳按 schema 错误硬失败。"
+  - "cycle schema 测试补充：current-cycle/attempt/cycle 必须为正整数，同 cycle attempt 严格递增，legacy 无 cycle 统一投影为 cycle=1。"

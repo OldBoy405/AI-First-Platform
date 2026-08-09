@@ -18,6 +18,12 @@ supplemental-reviews:
     stage: "dev-plan"
     status-at-record: tech-design-review-pending
     notes: "review-dev-plan 上游回退后的复验结论：CR 已转到 tech-design-review-pending，但 review-annotations/sdd.yml 仍是 SDD v0.4.0 的旧 PASS，crctl next 因未做 SDD freshness/upstream blocker 检查而错误建议 `crctl approve --stage tech-design`；同时 review-tech-design current-attempt=3/max=3，按现有 --bump-attempt 会 LOOP_EXHAUSTED，无法对 v0.5.0 正常重审。FR-16/设计修订必须补上游重入契约：存在 dev-plan upstream blocker 或 SDD 已在最后一次 PASS 后修订时，next 必须返回 review-tech-design 而非审批；并定义 post-pass 设计 revision 的轮次重置/新审查周期机制，确保能重新 review-tech-design。此缺口闭环前禁止直接 approve-tech-design。"
+  - reviewer: "OldBoy405"
+    recorded-at: "2026-08-10T00:07:13+08:00"
+    decision: note
+    stage: "tech-design"
+    status-at-record: tech-design-review-pending
+    notes: "用户于 2026-08-09 指示继续保留 FR-16 于 CR-2026-027。由于本 CR 正在设计并实现 post-PASS 新 review cycle，而当前已安装 crctl 尚无 D-14 自动开 cycle 能力，批准一次性 bootstrap 例外：本轮对 PRD/SDD v0.6.0 的 review-tech-design 使用 `crctl review-record --stage tech-design`（不传 --bump-attempt）刷新 canonical 评审证据，不手改 review-loop；若评审 PASS，再由人工重新 approve-tech-design。该例外仅用于当前自举，不替代 FR-16/AC-23 对未来 cycle=2/attempt=1 的实现与测试。"
 tech-design:
   approver: "OldBoy405"
   approved-at: "2026-08-09T23:24:14+08:00"
