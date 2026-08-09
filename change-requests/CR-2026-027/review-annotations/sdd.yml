@@ -1,19 +1,17 @@
 cr-id: CR-2026-027
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-09T23:15:10+08:00"
-verdict: block
-blockers:
-  - "TD2-BL-1（PRD 验收文字未完全同步）：PRD v0.3.0 已将 D-11/FR-10/范围改为扩展 `crctl migrate-backlog`，但 AC-14 仍写“运行迁移脚本后”。当前范围明确不新增独立脚本，因此按字面无法满足该 AC。须将 AC-14 改为“运行 `crctl migrate-backlog` 后”，并保留幽灵条目消失、CR-2026-017 字段恢复、`already-clean` 与哈希不变等验收语义。"
-  - "TD2-BL-2（候选 cr.md 校验仍不可执行）：SDD v0.3.0 为 approval.yml 增加 evidence override seam 已解决候选 approval 门禁读取，但同时把候选 cr.md 放入 override，并声明“cr.md 缺目标 status 时 GATE_BLOCKED”。实测现有 tech-design-reviewed 等目标 gate 没有任何 checker 读取 cr.md；`runGateChecks` 只以 targetStatus 参数选择门禁，因此 cr.md override 不会被消费，该回归用例无法成立。须明确由 `approveAndAdvance` 在 CAS 前直接解析/断言 `crMdText` 的 status 等于 stageCfg.to（给出 helper/错误码/测试），或新增明确的 candidate-status checker；不得假设现有 gate 会验证候选 cr.md。"
+reviewed-at: "2026-08-09T23:20:40+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  PRD↔SDD对齐: "block — FR-10/D-11 已对齐 migrate-backlog，但 AC-14 仍残留“迁移脚本”字面要求。"
-  架构合理性: "pass — route 按 stage 真值表、archive-move 专用只读 history 检测、单写者/CAS 边界均已闭环。"
-  数据模型完整性: "pass — archive event、index 终态字段、terminal 输出与 evidence override 数据形态完整。"
-  接口契约: "block — approval 候选 override 可实现，但候选 cr.md 没有实际消费方或独立 invariant 校验。"
-  性能与安全: "pass — override 仅为内存证据源，不落盘；archive 重复调用零写入、不发 outbox；无新增依赖。"
-  可测试性: "block — “cr.md 缺目标 status → GATE_BLOCKED”在当前 gate checker 集合下无法触发。"
-  Prompt采纳影响: "pass — review-tech-design 路径已修正为 skills/develop/review-tech-design/SKILL.md，其余采纳清单完整。"
+  PRD↔SDD对齐: "pass — 15/15 FR 均有技术实现映射；PRD v0.4.0 已将 AC-14 字面同步为运行 `crctl migrate-backlog`，FR-10/D-11/AC-14 与 SDD 落点一致。"
+  架构合理性: "pass — 单写者/CAS/audit/outbox、无新增子命令、终态只读边界、archive-move 专用幂等检测及 tools worktree bootstrap 均符合 ARCHITECTURE.md 约束。"
+  数据模型完整性: "pass — index 终态字段、archive event、terminal status、review-record 输出及 candidate evidence override 数据形态完整。"
+  接口契约: "pass — route/repairTarget 按 stage 真值表定义；approval 候选通过 evidence override 校验，候选 cr.md 通过独立 `assertCandidateStatus` 在 CAS 前校验，错误码与调用顺序明确。"
+  性能与安全: "pass — 全部使用 node 内置模块；候选证据仅驻留内存；CAS/commit/outbox 时序与终态写入拒绝边界清晰。"
+  可测试性: "pass — §7.3 覆盖 approve 原子性、candidate status、TASK 门禁、archive 三账本与幂等、终态查询、review-record、inbox-emit 和 migrate-backlog 边界。"
+  Prompt采纳影响: "pass — §8 已列出实际四个 review Skill 与 archive/merge Skill，review-tech-design 路径已修正为 skills/develop 域。"
 suggestions:
-  - "readEvidenceDoc overrides 的 key 匹配时点建议明确为占位符替换前，或统一使用展开后的规范相对路径，避免调用方与读取方一个使用 `{cr}`、一个使用实际 CR-ID 导致 miss。"
-  - "archive-move 的 `already-archived` 返回建议同时包含 `finalStatus`，方便调用方审计幂等命中的是哪个终态。"
+  - "approve 回归测试中的“缺签名”应明确仅针对 `via=server-approve`；TTY 的 `via=crctl-approve` 按现有契约不要求 signature，避免测试文字被误实现为两轨统一强制签名。"
+  - "`assertCandidateStatus` 建议复用现有 frontmatter 定点解析函数，并增加 status 缺失、重复 status 字段和 CRLF 三个测试向量。"
