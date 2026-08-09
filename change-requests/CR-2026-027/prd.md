@@ -143,7 +143,7 @@ CR-2026-026 对 tools 全生命周期实际演练后，操作记录暴露的共�
 - **AC-11**（FR-9）：构造「task index 存在但全部 pending」的 CR 执行 `advance --to archived`，返回 `TASK_STATUS_INCOMPLETE` 且不归档；构造「task index 缺失」同样被拦截，不得解释为 no-task。
 - **AC-12**（FR-9）：TASK 全 done 但 `delivery/task/_index.yaml` 缺失时被拦截；全部就绪后正常归档；rejected/withdrawn 无 TASK 时可进入 history。
 - **AC-13**（FR-9）：`archive-move --final-status` 与 cr.md 当前 status 不一致时硬失败。
-- **AC-14**（FR-10）：运行迁移脚本后 `_backlog.yml` 幽灵条目消失、CR-2026-017 条目完整（title/summary/owners/created/updated 恢复）；再次运行返回 `already-clean` 且文件哈希不变。
+- **AC-14**（FR-10）：运行 `crctl migrate-backlog` 后 `_backlog.yml` 幽灵条目消失、CR-2026-017 条目完整（title/summary/owners/created/updated 恢复）；再次运行返回 `already-clean` 且文件哈希不变。
 - **AC-15**（FR-11）：归档时 inbox 事件与三账本同批写入；CAS 冲突或事件结构错误时事件与三账本均不写；中文 archive reason 不因 Shell 转义丢失；三角色收件人去重、legacy 顶层 owner 回退、空收件人 `ARCHIVE_RECIPIENTS_MISSING`、可选 spec-id、重复归档均按契约处理。
 - **AC-16**（FR-11）：普通 `inbox-emit` 在 `--to` 缺失、非列表、去重后为空时返回 `BAD_ARGS`，不写无收件人 notify-log。
 - **AC-17**（FR-12）：archived/rejected/withdrawn 三种终态 `crctl status` 返回终态与 `source: history`，`crctl next` 返回 `next:null` 不报错；backlog/history 同存同 CR 报 `CR_LOCATION_CONFLICT`；history 重复或缺 final-status 硬失败；cr.md 漂移输出 warning 且以 history 为准；active CR 查询行为不回归。
@@ -180,3 +180,4 @@ CR-2026-026 对 tools 全生命周期实际演练后，操作记录暴露的共�
 | 2026-08-09 | v0.1.0 | Ray | 初始草稿（基于 v2 方案 §5-§6 与质询记录 Q1~Q10 转写；14 条 FR、8 条 NFR、21 条 AC；幽灵条目清理入范围 D-11/FR-10/AC-14） |
 | 2026-08-09 | v0.2.0 | Ray | 修订（需求评审 BLOCK 回修，blocker=FR-5/AC-5 tools 仓引导缺失）：新增 D-12/FR-15/AC-22（tools worktree bootstrap——声明入 repositories 后从 custom/main 补建 requirement/CR-2026-027 分支，禁止直写 custom/main，merge/cleanup 走正常流程）；新增 D-13（target-version 维持 tbd 的批准口径说明）；按 suggestions 固定 AC-1/AC-19 的 grep 搜索范围与判定方式（历史注脚引用不违规）；§1.2/§7 同步 |
 | 2026-08-09 | v0.3.0 | Ray | 拍板同步（用户决策 2026-08-09）：FR-10/D-11 落点从 skills/shared/scripts/ 迁移脚本改为 crctl migrate-backlog 扩展（SDD v0.2.0 方案），消除 PRD/SDD 冲突；AC-14 验收语义不变 |
+| 2026-08-09 | v0.4.0 | Ray | 修订（review-tech-design 二轮 BLOCK 回修，TD2-BL-1）：AC-14 字面同步为“运行 `crctl migrate-backlog` 后”，清除“迁移脚本”残留（验收语义不变） |

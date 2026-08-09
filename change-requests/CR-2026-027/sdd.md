@@ -125,19 +125,20 @@ approveAndAdvance(ws, cr, gates, stage, stageCfg, { grant, signature, ... })
   7. commit 成功后 emitOutboxEvent(status) → auditLog
 ```
 
-**候选证据 override seam（TD-BL-4 修订，实现零写入的前提）**：`readEvidenceDoc(ws, cr, rel, overrides)` 增加可选第 4 参 `overrides`（`{ [relPath]: { text } }`，relPath 含 `{cr}` 占位符），命中时用内存文本走同一解析路径（frontmatter/YAML 解析复用现有逻辑），不落盘、不改磁盘读的默认行为；`runGateChecks(ws, cr, targetStatus, gates, opts)` 的 `opts` 增加 `evidence` 字段，内部把 `opts.evidence` 透传给所有 `readEvidenceDoc` 调用点（approval 文档 checker、passCondition checker 等）。`approveAndAdvance` 第 3 步调用形态：
+**候选证据 override seam（TD-BL-4 修订，实现零写入的前提）**：`readEvidenceDoc(ws, cr, rel, overrides)` 增加可选第 4 参 `overrides`（`{ [relPath]: { text } }`），命中时用内存文本走同一解析路径（frontmatter/YAML 解析复用现有逻辑），不落盘、不改磁盘读的默认行为。**key 匹配时点（TD2-S1 采纳）**：overrides 的 key 一律使用含 `{cr}` 占位符的规范相对路径（如 `change-requests/{cr}/approval.yml`），匹配发生在路径展开前——调用方与读取方都用占位符形式，避免一处展开一处不展开导致 miss。`runGateChecks(ws, cr, targetStatus, gates, opts)` 的 `opts` 增加 `evidence` 字段，内部把 `opts.evidence` 透传给所有 `readEvidenceDoc` 调用点（approval 文档 checker、passCondition checker 等）。`approveAndAdvance` 第 3 步调用形态：
 
 ```
 runGateChecks(ws, cr, 目标态, gates, {
   specId,  // 按 stage 需要
   evidence: {
     'change-requests/{cr}/approval.yml': { text: approvalText },
-    'change-requests/{cr}/cr.md': { text: crMdText },
   },
 })
 ```
 
-调用顺序：内存生成 → override 复核目标 gate → 通过才 casWriteMulti。回归测试：候选 approval 缺 `via`/签名或 cr.md 缺目标 status 时 `GATE_BLOCKED` 且零文件写入（AC-9 用例扩展）。
+**候选 cr.md 独立 invariant 校验（TD2-BL-2 修订）**：现有目标态 gate（如 tech-design-reviewed）没有任何 checker 读取 cr.md，`runGateChecks` 只以 targetStatus 选择门禁，因此不得假设 gate 会验证候选 cr.md。新增内部 helper `assertCandidateStatus(crMdText, expectStatus)`：解析 `crMdText` 的 frontmatter `status`，不等于 `stageCfg.to`（目标态）→ `CANDIDATE_STATUS_MISMATCH` 硬失败（零写入），等于则通过。调用顺序固定为：内存生成候选两文件 → `runGateChecks`（evidence 仅 approval.yml）复核目标 gate → `assertCandidateStatus` 校验候选 cr.md → 全部通过才 `casWriteMulti`。
+
+回归测试（§7.3 同步）：候选 approval 缺 `via`/签名 → `GATE_BLOCKED` 且零文件写入；候选 cr.md status ≠ 目标态 → `CANDIDATE_STATUS_MISMATCH` 且零文件写入（AC-9 用例扩展）。
 
 边界：gate/签名预检失败零写入；CAS 冲突两文件均不写；commit 失败两文件共同留在工作区，返回结构化恢复信息（含 `next` 建议），不发 status outbox；拒绝路径不写批准段，继续走既有 reject 转换（REJECT_ROLLBACK 映射不动）。
 
@@ -149,7 +150,7 @@ crctl archive-move CR --final-status <archived|rejected|withdrawn> [--archive-re
 
 - 前置态放宽：`resolveCrState` 当前 status ∈ {archived, rejected, withdrawn}，且 `--final-status` 必须与当前 status 完全一致，否则 `FINAL_STATUS_MISMATCH` 硬失败（D-8）。
 - 重复调用语义（TD-BL-3 拍板，替换「重复归档幂等」的模糊表述）：CR 已移出 backlog 后再次调用时，archive-move 走**受控只读 history 检测**（专用逻辑，不扩大为通用终态可写）：
-  - history 存在同 CR 且 `final-status` === `--final-status` → 幂等返回 `{ op: 'archive-move', cr, result: 'already-archived' }`，零写入、不发 outbox；
+  - history 存在同 CR 且 `final-status` === `--final-status` → 幂等返回 `{ op: 'archive-move', cr, result: 'already-archived', finalStatus: 'archived' }`（TD2-S2 采纳：携带 finalStatus 便于调用方审计命中哪个终态），零写入、不发 outbox；
   - history 存在同 CR 但 `final-status` ≠ `--final-status` → `FINAL_STATUS_MISMATCH` 硬失败；
   - history 无该 CR → `CR_STATUS_NOT_FOUND`。
   status/next 的终态 fallback（§3.4）与写命令的 active-only 约束不变：archive-move 的 history 检测是其账本移动职责的一部分，不新增其他写命令的终态可写性。
@@ -296,7 +297,7 @@ cmdStatus/cmdNext:
 
 ### 7.3 测试设计（crctl.test.mjs 新增用例）
 
-- approve：四 stage 一次提交断言；gate 失败零写入；CAS 冲突两文件均不写；commit 失败两文件共存且无 status outbox（以受控环境模拟）；TTY/grant 同 helper 断言；reject 路径保持。
+- approve：四 stage 一次提交断言；gate 失败零写入；**候选 approval 缺 via/签名 → GATE_BLOCKED 零写入；候选 cr.md status ≠ 目标态 → CANDIDATE_STATUS_MISMATCH 零写入**（TD2-BL-2）；CAS 冲突两文件均不写；commit 失败两文件共存且无 status outbox（以受控环境模拟）；TTY/grant 同 helper 断言；reject 路径保持。
 - archived 门禁：index 缺失 / 空列表 / 全 pending / 部分 done / delivery 缺失五类失败；全 done 放行；rejected/withdrawn 不适用。
 - archive-move：三种终态 + final-status 不一致硬失败；中文 reason；收件人去重/legacy 回退/空收件人；可选 spec-id；**重复归档：CR 已移出 backlog 后再次调用 → `already-archived` 幂等返回（零写入）；history 存在但 final-status 不一致 → `FINAL_STATUS_MISMATCH`；history 无 → `CR_STATUS_NOT_FOUND`**（TD-BL-3 拍板）；outbox 时序；CRLF 规范化。
 - 终态查询：三种终态 next:null；CR_LOCATION_CONFLICT；history 重复/缺 final-status 硬失败；cr.md 漂移 warning；active 回归。
@@ -326,3 +327,4 @@ cmdStatus/cmdNext:
 | 2026-08-09 | v0.1.0 | Ray | 初始草稿（基于 PRD v0.2.0 与 v2 方案 §5/§6；FR 全覆盖 15/15；含 FR-10 落点修订说明——幽灵清理从 skills/shared/scripts/ 改为 crctl migrate-backlog 扩展，依据 ARCHITECTURE §6 否决，结论不受影响） |
 | 2026-08-09 | v0.2.0 | Ray | 拍板（用户决策）：FR-10 采用本 SDD 方案（crctl migrate-backlog 扩展），§3.6 修订说明升级为拍板，§5 选型表同步；PRD FR-10/D-11 已同步修订，冲突消除 |
 | 2026-08-09 | v0.3.0 | Ray | 修订（review-tech-design BLOCK 回修，TD-BL-2~5）：§3.5 真值表按 stage 判定（upstream 仅限 dev-plan 显式上游疑点，pass 时 repairTarget=null）；§3.2 重复归档语义拍板（already-archived 幂等 / FINAL_STATUS_MISMATCH / CR_STATUS_NOT_FOUND，§7.3 同步）；§3.1 新增候选证据 override seam（readEvidenceDoc 第 4 参 + runGateChecks opts.evidence，含调用形态与回归测试）；§8 修正 review-tech-design 路径为 skills/develop/；§1.3 采纳 suggestion（worktree-path 以主工作区解析 + bootstrap-base-sha 固定）；TD-BL-1 已由 PRD v0.3.0 闭环 |
+| 2026-08-09 | v0.4.0 | Ray | 修订（review-tech-design 二轮 BLOCK 回修，TD2-BL-2）：候选 cr.md 校验改为独立 invariant helper `assertCandidateStatus`（错误码 CANDIDATE_STATUS_MISMATCH，CAS 前执行），不依赖 gate checker 消费 cr.md；evidence override 仅含 approval.yml；采纳 TD2-S1（override key 占位符匹配时点）、TD2-S2（already-archived 携带 finalStatus）；§7.3 测试同步；PRD AC-14 已由 PRD v0.4.0 闭环（TD2-BL-1） |
