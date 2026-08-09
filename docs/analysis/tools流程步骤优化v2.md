@@ -96,13 +96,7 @@ wildcard 展开后 49 条转换
 crctl.mjs 刻意保持单文件，不因体量拆分。
 ```
 
-旧版方案又提出：
-
-```text
-crctl/scripts/commands/*.mjs
-```
-
-**决策：**
+**决策（CR-2026-027 Phase 0 落地）：**
 
 - v2 默认保持 crctl 单文件；
 - 本轮优化不创建 `commands/` 模块目录；
