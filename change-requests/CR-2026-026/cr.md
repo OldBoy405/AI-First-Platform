@@ -15,7 +15,7 @@ owners:
     assigned-at: "2026-08-09T04:57:35+08:00"
 target-version: tbd
 source: "docs/analysis/开发计划与TASK合并评审门禁方案.md"
-status: code-approved
+status: merging
 created: "2026-08-09T04:57:35+08:00"
 updated: "2026-08-09T04:57:35+08:00"
 remote-ref: ""
