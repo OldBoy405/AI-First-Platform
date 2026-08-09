@@ -276,6 +276,7 @@ cmdStatus/cmdNext:
 | FR-13 | review-record 输出 files/attempt/route/repairTarget；review Skill 删二次读取 | crctl.mjs cmdReviewRecord；四个 review SKILL.md |
 | FR-14 | 五项最小验证清单 | 实施收尾（见 §7.2） |
 | FR-15 | tools worktree bootstrap | workspace dir-graph.yaml 先行 + ../tools 仓 worktree add |
+| FR-16 | next task-breakdown 路由缺口修复（CR-2026-026 遗留）：cmdNext 的 task-breakdown 分支补 dev-plan.yml 存在性与 passCondition 检查（无评审记录 → review-dev-plan；PASS → approve dev-start；BLOCK → 按 route 回修节点） | crctl.mjs cmdNext + crctl.test.mjs |
 
 ## 7. 安全与性能考量
 
@@ -301,6 +302,7 @@ cmdStatus/cmdNext:
 - archived 门禁：index 缺失 / 空列表 / 全 pending / 部分 done / delivery 缺失五类失败；全 done 放行；rejected/withdrawn 不适用。
 - archive-move：三种终态 + final-status 不一致硬失败；中文 reason；收件人去重/legacy 回退/空收件人；可选 spec-id；**重复归档：CR 已移出 backlog 后再次调用 → `already-archived` 幂等返回（零写入）；history 存在但 final-status 不一致 → `FINAL_STATUS_MISMATCH`；history 无 → `CR_STATUS_NOT_FOUND`**（TD-BL-3 拍板）；outbox 时序；CRLF 规范化。
 - 终态查询：三种终态 next:null；CR_LOCATION_CONFLICT；history 重复/缺 final-status 硬失败；cr.md 漂移 warning；active 回归。
+- next 路由（FR-16/AC-23）：task-breakdown 下无 dev-plan.yml → 建议 review-dev-plan（不报 approve dev-start）；PASS → approve dev-start；BLOCK（repair 轨）→ write-dev-plan。
 - review-record：files 只列实际写入（未 bump 无 review-loop.yml）；attempt/route/repairTarget 正确性。
 - inbox-emit：--to 缺失/非列表/空 → BAD_ARGS。
 - migrate-backlog：幽灵块删除 + CR-2026-017 恢复 + already-clean 幂等 + history 无归档时 GHOST_ENTRY_ORPHANED。
@@ -328,3 +330,4 @@ cmdStatus/cmdNext:
 | 2026-08-09 | v0.2.0 | Ray | 拍板（用户决策）：FR-10 采用本 SDD 方案（crctl migrate-backlog 扩展），§3.6 修订说明升级为拍板，§5 选型表同步；PRD FR-10/D-11 已同步修订，冲突消除 |
 | 2026-08-09 | v0.3.0 | Ray | 修订（review-tech-design BLOCK 回修，TD-BL-2~5）：§3.5 真值表按 stage 判定（upstream 仅限 dev-plan 显式上游疑点，pass 时 repairTarget=null）；§3.2 重复归档语义拍板（already-archived 幂等 / FINAL_STATUS_MISMATCH / CR_STATUS_NOT_FOUND，§7.3 同步）；§3.1 新增候选证据 override seam（readEvidenceDoc 第 4 参 + runGateChecks opts.evidence，含调用形态与回归测试）；§8 修正 review-tech-design 路径为 skills/develop/；§1.3 采纳 suggestion（worktree-path 以主工作区解析 + bootstrap-base-sha 固定）；TD-BL-1 已由 PRD v0.3.0 闭环 |
 | 2026-08-09 | v0.4.0 | Ray | 修订（review-tech-design 二轮 BLOCK 回修，TD2-BL-2）：候选 cr.md 校验改为独立 invariant helper `assertCandidateStatus`（错误码 CANDIDATE_STATUS_MISMATCH，CAS 前执行），不依赖 gate checker 消费 cr.md；evidence override 仅含 approval.yml；采纳 TD2-S1（override key 占位符匹配时点）、TD2-S2（already-archived 携带 finalStatus）；§7.3 测试同步；PRD AC-14 已由 PRD v0.4.0 闭环（TD2-BL-1） |
+| 2026-08-09 | v0.5.0 | Ray | 范围确认（用户决策）：FR-16 纳入——cmdNext task-breakdown 分支补 dev-plan.yml 检查（CR-2026-026 遗留路由缺口，实测无评审记录时误报 approve dev-start）；FR 映射表与 §7.3 测试设计同步；归属 TASK-07 |

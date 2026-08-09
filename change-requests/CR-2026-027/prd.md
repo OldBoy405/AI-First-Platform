@@ -111,6 +111,7 @@ CR-2026-026 对 tools 全生命周期实际演练后，操作记录暴露的共�
 - **FR-12（archived status 终态只读查询）**：新增仅供 `status`/`next` 使用的终态只读 resolver：active CR 继续从 cr.md/backlog 读取；archived/rejected/withdrawn 从 `_history.yml` 的 `final-status` 读取；输出最小契约含 `cr`/`status`/`terminal:true`/`source`/`legalNext:[]`/`reviewLoops:{}`/`gateBlockers:{}`/`next:null`；`crctl next` 对终态返回 `next:null` 不报错；写命令继续使用现有 active resolver，不允许终态写入；backlog/history 同时存在同一 CR 时 `CR_LOCATION_CONFLICT`；history 重复条目或缺 final-status 硬失败；cr.md 与 history 不一致时以 history 为准并输出 warning；不新增 archive reason/spec-id 等非必要返回字段，不新增 `archive-status` 命令。
 - **FR-13（review-record 输出深化）**：`review-record` 保持现有 `file`、`trace` 字段兼容，并增加：`files[]`（只列本次实际写入文件，未 bump 时不得虚列 review-loop.yml）、`attempt.{current,max,bumped}`、`route`（`pass|repair|upstream`）、`repairTarget`（`write-requirement-prd|write-tech-design|write-dev-plan|implement-code|null`）；不返回 `verified`、subject digest、`next`（`next` 仍由 `crctl next` 唯一计算）。删除四个 review Skill 的「重新读取 traceability 核对刚写入结果」步骤，命令成功即表示三账本同批写入完成，调用方按 `files` 组织提交、按 `route` 分流、最后调用 `crctl next`。
 - **FR-14（配置文件最小验证清单）**：Phase 0/1 实施完成的验证清单固定为五项：① `git diff --check`；② `JSON.parse(feature-writeback.pipeline.json)`；③ `node --test skills/shared/crctl/scripts/test/crctl.test.mjs`；④ `node skills/shared/crctl/scripts/lint-prompts.mjs --mode enforce`；⑤ grep 核对 tools 隐藏特例与 25/47 旧表述已清零。不修改、不运行 agent-skill matrix 检查族、agents contract 检查族、writeback scripts 测试、engineering-docs 测试及新的 validate-config/schema/Runner；实施实际触及上述权威文件或代码时，按「改了什么测什么」追加对应检查。
+- **FR-16（next task-breakdown 路由缺口修复，CR-2026-026 遗留）**：`crctl next` 对 `task-breakdown` 状态的建议必须检查 `review-annotations/dev-plan.yml` 是否存在且 passCondition 通过：无评审记录 → `next = review-dev-plan`（不得仅因 plan.md + tasks/ 存在就直接建议 approve dev-start）；评审 PASS（verdict=pass 且 blockers=[]）→ `next = crctl approve --stage dev-start`；评审 BLOCK → 按 route 建议回修节点。
 
 ## 4. 非功能需求
 
@@ -150,6 +151,7 @@ CR-2026-026 对 tools 全生命周期实际演练后，操作记录暴露的共�
 - **AC-18**（FR-13）：`review-record` 输出含 `files[]`/`attempt`/`route`/`repairTarget` 且与本次实际写入一致（未 bump 不虚列 review-loop.yml）；四个 review Skill 不再重新读取 traceability 核对刚写入结果；`next` 仍由 `crctl next` 唯一计算。
 - **AC-19**（FR-14）：五项最小验证全部通过：① `git diff --check` 无告警；② `JSON.parse(feature-writeback.pipeline.json)` 通过；③ `node --test skills/shared/crctl/scripts/test/crctl.test.mjs` 全绿；④ `lint-prompts.mjs --mode enforce` 零发现；⑤ 按 AC-1 的搜索范围与判定方式 grep 确认 tools 隐藏特例与 25/47「现状」表述已清零。
 - **AC-22**（FR-15）：实施首步完成后：`../tools` 仓存在 `requirement/CR-2026-027` 分支与对应 worktree（基线 = custom/main HEAD）；`git log` 确认 custom/main 无本 CR 直接提交的实施改动；CR-2026-027 在 tools 的 merge-commits 记录与 docs/multica 同批生成（merge 阶段验收）；归档清理覆盖 tools worktree。
+- **AC-23**（FR-16）：`task-breakdown` 状态下：plan.md + tasks/ 就绪但无 `dev-plan.yml` → `crctl next` 返回 `review-dev-plan`（不返回 approve dev-start）；`dev-plan.yml` 存在且 passCondition 通过 → 返回 `crctl approve --stage dev-start`；评审 BLOCK（repair 轨）→ 返回回修节点（如 `write-dev-plan`）。
 - **AC-20**（NFR-1/NFR-4/NFR-5）：不新增第三方依赖与公共 Runner 库；无通用 patch/workflow 实现；crctl.mjs 保持单文件；writeback scripts 未被复制。
 - **AC-21**（NFR-6）：历史 CR 查询/归档行为兼容（旧 approval/archive 形态不要求迁移）；`_index.yml` 查询链路不变。
 
@@ -181,3 +183,4 @@ CR-2026-026 对 tools 全生命周期实际演练后，操作记录暴露的共�
 | 2026-08-09 | v0.2.0 | Ray | 修订（需求评审 BLOCK 回修，blocker=FR-5/AC-5 tools 仓引导缺失）：新增 D-12/FR-15/AC-22（tools worktree bootstrap——声明入 repositories 后从 custom/main 补建 requirement/CR-2026-027 分支，禁止直写 custom/main，merge/cleanup 走正常流程）；新增 D-13（target-version 维持 tbd 的批准口径说明）；按 suggestions 固定 AC-1/AC-19 的 grep 搜索范围与判定方式（历史注脚引用不违规）；§1.2/§7 同步 |
 | 2026-08-09 | v0.3.0 | Ray | 拍板同步（用户决策 2026-08-09）：FR-10/D-11 落点从 skills/shared/scripts/ 迁移脚本改为 crctl migrate-backlog 扩展（SDD v0.2.0 方案），消除 PRD/SDD 冲突；AC-14 验收语义不变 |
 | 2026-08-09 | v0.4.0 | Ray | 修订（review-tech-design 二轮 BLOCK 回修，TD2-BL-1）：AC-14 字面同步为“运行 `crctl migrate-backlog` 后”，清除“迁移脚本”残留（验收语义不变） |
+| 2026-08-09 | v0.5.0 | Ray | 范围确认（用户决策 2026-08-09）：纳入 CR-2026-026 遗留缺陷——next task-breakdown 路由缺 dev-plan.yml 检查（实测导致无评审记录时误报 approve dev-start）；新增 FR-16/AC-23，归属 TASK-07 |
