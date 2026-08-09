@@ -64,7 +64,7 @@ review-dev-plan 评审完成
 
 ```yaml
 verdict: pass | block
-repair-target: write-dev-plan | write-tech-design   # 顶层可选字段，缺省 write-dev-plan（TD-BL-1 闭合）
+repair-target: write-dev-plan | write-tech-design   # 顶层可选字段，缺省 write-dev-plan（TD-BL-1 闭合）；pass 轨不写（v0.4.0）
 blockers: []                    # 纯字符串列表，不解析结构化路由（D-13 修订）
 dimensions:                     # 八类维度 + 元信息（对齐方案 §5.2 临时 payload）
   sdd-to-plan: pass | block
@@ -80,7 +80,7 @@ dimensions:                     # 八类维度 + 元信息（对齐方案 §5.2 
 suggestions: []
 ```
 
-**关键设计（TD-BL-1 修订）**：`repair-target` 是 dev-plan payload/annotation 的**顶层可选字段**：缺省 `write-dev-plan`；`verdict=block` 且显式 `repair-target: write-tech-design` 时走上游疑点轨。blockers 保持纯字符串列表，**不在字符串中解析结构化路由**。crctl 对 `--stage dev-plan` 校验该字段枚举（缺省或 ∈ {`write-dev-plan`, `write-tech-design`}），并将解析后的值写入 canonical annotation 顶层与 traceability 投影（替代既有 `REVIEW_REPAIR_TARGETS` 默认值注入：dev-plan stage 下 payload 显式提供时用之，否则用映射默认值）。不新增 blocker-type 字段。
+**关键设计（TD-BL-1 修订，v0.4.0 补充）**：`repair-target` 是 dev-plan payload/annotation 的**顶层可选字段**：缺省 `write-dev-plan`；`verdict=block` 且显式 `repair-target: write-tech-design` 时走上游疑点轨。**pass 轨不落 repair-target**（annotation 与 traceability 投影顶层省略，v0.4.0 code review suggestion-1 落地；attempts 轮次历史条目保留缺省值，schema 稳定）。blockers 保持纯字符串列表，**不在字符串中解析结构化路由**。crctl 对 `--stage dev-plan` 校验该字段枚举（缺省或 ∈ {`write-dev-plan`, `write-tech-design`}），并将解析后的值写入 canonical annotation 顶层与 traceability 投影（替代既有 `REVIEW_REPAIR_TARGETS` 默认值注入：dev-plan stage 下 payload 显式提供时用之，否则用映射默认值）。不新增 blocker-type 字段。
 
 ### 2.2 临时 payload
 
@@ -346,7 +346,7 @@ review-dev-plan BLOCK（普通轨）
 
 | 测试文件 | 覆盖 |
 |---|---|
-| `crctl.test.mjs`（追加向量） | ① REVIEW_STAGE 映射含 dev-plan 且 `review-record --stage dev-plan` 在 task-breakdown 落盘三账本；② repair-target schema 校验（缺省→write-dev-plan、显式 write-tech-design→upstream、非法值→SCHEMA_INVALID 且三账本不变）；③ UPSTREAM 路由判定：payload 顶层 repair-target=write-tech-design → upstream 且 bump 跳过（review-loop.yml 字节不变——current-attempt 不递增、attempts 不追加；traceability 投影同语义，AC-8b）；④ NORMAL/PASS 走既有 bump（attempt+1）；⑤ 同轮并存时 UPSTREAM 优先（普通项进 suggestions 摘要）；⑥ dev-start approval 无 dev-plan.yml / passCondition 不过 → GATE_BLOCKED 且不写 approval 段（AC-10）；⑦ developing 目标态删 TASK-*.md 或篡改 approval → 门禁拦截（AC-11a）；⑧ evidence digest 覆盖三键，改 plan/index 后 EVIDENCE_DRIFT（AC-12）；⑨ 三轮 BLOCK → LOOP_EXHAUSTED（AC-13）；⑩ requirement/tech-design/write-test-report/code 四 stage 回归（AC-14） |
+| `crctl.test.mjs`（追加向量） | ① REVIEW_STAGE 映射含 dev-plan 且 `review-record --stage dev-plan` 在 task-breakdown 落盘三账本（pass 轨省略 repair-target，suggestion-1）；② repair-target schema 校验（缺省→write-dev-plan、显式 write-tech-design→upstream、非法值→SCHEMA_INVALID 且三账本不变）；③ UPSTREAM 路由判定：payload 顶层 repair-target=write-tech-design → upstream 且 bump 跳过（review-loop.yml 字节不变——current-attempt 不递增、attempts 不追加；traceability 投影同语义，AC-8b）；④ NORMAL/PASS 走既有 bump（attempt+1，普通 block 轨缺省 repair-target 落盘）；⑤ 同轮并存时 UPSTREAM 优先（普通项进 suggestions 摘要）；⑥ dev-start approval 门禁升级生效——grant 非 TTY 通过路径（evidence+passCondition）放行到 developing / passCondition 不过 → GATE_BLOCKED 且不写 approval 段（AC-10，v0.4.0 自动化）；⑦ developing 目标态删 TASK-*.md 或篡改 approval → 门禁拦截，补齐后放行（AC-11a，v0.4.0 自动化）；⑧ evidence digest 覆盖三键，改 dev-plan.yml 后 EVIDENCE_DRIFT（AC-12，v0.4.0 自动化）；⑨ 三轮 BLOCK → LOOP_EXHAUSTED（AC-13，v0.4.0 自动化）；⑩ requirement/tech-design/write-test-report/code 四 stage 回归（AC-14，既有用例全量覆盖） |
 | `lint-prompts.test.mjs` / `check-skill-matrix.mjs` / `check-agents-contract.mjs` | 新 Skill 登记、dev-agent owns + quality-reviewer-agent can-call、prompt 无漂移（AC-15/AC-15a） |
 | 状态机断言（crctl.test.mjs 内） | 新增两条转换可 advance；口径 27 声明 / 49 展开断言（PRD B-7） |
 
@@ -369,3 +369,4 @@ review-dev-plan BLOCK（普通轨）
 | 2026-08-09 | v0.1.0 | Ray | 初始草稿（基于 PRD v0.2.x + 实测代码基线；双轨路由/attempt 计费/gates 三处变更详设） |
 | 2026-08-09 | v0.2.0 | Ray | 技术评审 attempt-1 回修（3 blocker，TD-BL-1/2/3）：repair-target 定为 dev-plan payload/annotation 顶层可选字段（枚举校验，blockers 不解析字符串）；路由判定移到 cmdReviewRecord 内部 bump 之前，UPSTREAM 跳过 bump；pipeline onBlock 分流契约（NORMAL replay / UPSTREAM abort code-implementation） |
 | 2026-08-09 | v0.3.0 | Ray | 实现期偏差修订（TASK-01~07 落地后回写）：① §3.3 developing 门禁 passCondition 引用改为 `stage=dev-start`——`evaluatePassCondition` 仅从 `approvalStages[stage]` 取 stageCfg，dev-plan 不在 approvalStages（自动评审 stage），dev-start 配置含同一 evidence/passCondition 完全复用；② §2.3/§4.3 明确 UPSTREAM 时 review-loop.yml 写入块整体跳过（字节不变），不只 traceability 不递增；③ §9 测试③补 review-loop.yml 字节不变断言（测试实际落地为 5 向量 + 加强断言，116 例全绿） |
+| 2026-08-09 | v0.4.0 | Ray | code review suggestion-1/2 落地（实现期修订，d395d04）：① §2.1 pass 轨不落 repair-target（annotation 与投影顶层省略，attempts 轮次历史保留缺省，schema 稳定）；② §9 ⑥-⑩ 门禁向量自动化——⑥/⑥b grant 非 TTY 通过/拦截、⑦ developing 目标态删 TASK 拦截+补齐放行、⑧ 篡改 dev-plan.yml → EVIDENCE_DRIFT、⑨ 三轮 BLOCK → LOOP_EXHAUSTED，⑩ 由既有用例全量覆盖（crctl.test 121 例全绿 + lint 19 + checker 8）；结论：不影响既有判据（pass 轨无回修消费方；门禁判据与证据来源不变） |
