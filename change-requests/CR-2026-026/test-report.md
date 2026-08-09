@@ -35,7 +35,7 @@ commands:
 
 ## 测试摘要
 
-- 6 条验证命令全部 exit 0，`status: pass`（FR-19 验证关卡）；测试执行目录：tools 仓 `custom/main`（commit 6134b11）。
+- 6 条验证命令全部 exit 0，`status: pass`（FR-19 验证关卡）；测试执行目录：tools 仓 `custom/main`（实现 6134b11 + 测试加强 f338e38）。
 - 测试文件三件：`crctl.test.mjs` 116 例（含本 CR 新增 dev-plan 向量 5 例）、`lint-prompts.test.mjs` 19 例、`check-skill-matrix.test.mjs` 8 例，共 143 例全绿。
 
 ## TASK 验收覆盖矩阵
@@ -52,7 +52,7 @@ commands:
 
 ## 新增/修改测试文件
 
-- 追加：`crctl.test.mjs`（CR-2026-026 ①~⑤ 五例：dev-plan 三账本落盘、repair-target schema、UPSTREAM bump 跳过、NORMAL 递增、并存优先）。
+- 追加：`crctl.test.mjs`（CR-2026-026 ①~⑤ 五例：dev-plan 三账本落盘、repair-target schema、UPSTREAM bump 跳过且 review-loop.yml 同步不递增不追加、NORMAL 递增、并存优先）。
 - 说明：dev-start/developing 门禁负向向量（⑥⑦⑧）与 LOOP_EXHAUSTED（⑨）依赖 TTY 人工审批与完整 approval fixture，按 plan.md §5 checklist 由开发启动审批前的人工验收承担（本次开发启动审批在旧门禁下已通过，新门禁随本 CR 生效）。
 
 ## 未覆盖风险与不适用说明
