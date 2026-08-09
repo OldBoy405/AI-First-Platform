@@ -1,0 +1,21 @@
+cr-id: CR-2026-026
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-09T12:19:03+08:00"
+verdict: block
+blockers:
+  - "TD-BL-1（FR-6a/FR-6b/FR-14/AC-8b）：SDD 要求 dev-plan annotation 显式 repair-target=write-tech-design 覆盖默认值，但 §2.1 payload 示例没有顶层 repair-target 字段，§3.2 又写 blockers 字符串内携带 repair-target 标记；现有 cmdReviewRecord 只用 REVIEW_REPAIR_TARGETS[stage] 写 repairTarget，既不校验也不落盘 payload repair-target。实现者无法据此稳定触发 upstream-design 路由。需明确 dev-plan payload/annotation 的 repair-target 字段位置、枚举、schema 校验、落盘和 traceability 投影规则。"
+  - "TD-BL-2（FR-6b/FR-7/AC-8b）：UPSTREAM 不递增普通 dev-plan attempt 的语义与 §3.5 prompt 的 review-record --stage dev-plan --bump-attempt、§3.2 的 cmdReviewRecord 成功落盘后再路由矛盾。现有 crctl 在 review-record 内先按 --bump-attempt 读取/校验/递增 review-loop，再写 annotation/traceability/review-loop；若先落盘再判路由，UPSTREAM 已经消耗 attempt。需明确路由判定发生在 bump 前，或定义 upstream 调用不带 --bump-attempt，并说明三账本/audit 如何保持一致。"
+  - "TD-BL-3（FR-1/FR-6a/FR-6b）：pipeline reviewLoop 片段仍是单一 repairRef=write-dev-plan 与 onBlock=route-to-repair-node，未说明 runtime 如何在同一个 reviewLoop 节点中绕过普通 replayNodes、执行 review-dev-plan:upstream-design-blocker 转换并进入 tech-design-review-pending。需补清 pipeline 层的分流契约，否则 SDD 的双轨状态机无法由 pipeline 自动执行。"
+dimensions:
+  PRD↔SDD对齐: "block — 20 条 FR 均有章节映射与测试锚点，但 FR-6a/FR-6b/FR-14 的 repair-target 表达、attempt 计费和 pipeline 分流契约存在实现级矛盾，影响双轨核心能力。"
+  架构合理性: "block — 不新增状态/账本/子命令的方向合理，但当前方案把路由信息放在 blockers 字符串与未定义 annotation 字段之间摇摆，且与既有 review-record 原子写入顺序冲突。"
+  数据模型完整性: "block — dev-plan payload/annotation 缺少明确的 repair-target 字段 schema、枚举和落盘规则；traceability 投影虽复用 CR-2026-025，但输入字段来源未闭合。"
+  接口契约: "block — cmdReviewRecord、resolveDevPlanRoute、pipeline reviewLoop 三者的调用顺序和责任边界未定义到可实现程度。"
+  性能与安全: "pass — 未引入新依赖或高复杂度 IO；受控写入继续走 crctl/CAS/audit 的方向正确。"
+  可测试性: "block — AC-8b/测试设计指出了并存 blocker 与 attempt 不递增向量，但 SDD 未给出可让测试通过的接口行为。"
+  Prompt采纳影响: "pass — §8 已列出 write-dev-plan、write-dev-tasks、approve-dev-start、crctl SKILL、README/ARCHITECTURE 等需同步文档/Skill。"
+suggestions:
+  - "建议把 dev-plan 的 repair-target 设计为顶层可选字段：缺省 write-dev-plan；verdict=block 且 repair-target=write-tech-design 时走 upstream；blockers 继续保持字符串列表，不在字符串中解析结构化路由。"
+  - "建议将 upstream-design 作为 review-dev-plan 节点的特殊 block 结果：先解析 payload 决定 route，再决定是否 bump attempt 与写 review-loop，避免写后补救。"
+  - "建议在 pipeline 模板中显式描述 onBlock 分支：normal 使用 replayNodes，upstream 执行状态转换后 abort 当前 code-implementation pipeline，等待技术设计链路。"

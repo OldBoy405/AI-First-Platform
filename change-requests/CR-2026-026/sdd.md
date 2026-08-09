@@ -64,7 +64,8 @@ review-dev-plan 评审完成
 
 ```yaml
 verdict: pass | block
-blockers: []                    # repair-target 语义：全部 write-dev-plan=普通轨；含 write-tech-design=上游疑点轨
+repair-target: write-dev-plan | write-tech-design   # 顶层可选字段，缺省 write-dev-plan（TD-BL-1 闭合）
+blockers: []                    # 纯字符串列表，不解析结构化路由（D-13 修订）
 dimensions:                     # 八类维度 + 元信息（对齐方案 §5.2 临时 payload）
   sdd-to-plan: pass | block
   plan-to-tasks: pass | block
@@ -79,7 +80,7 @@ dimensions:                     # 八类维度 + 元信息（对齐方案 §5.2 
 suggestions: []
 ```
 
-**关键设计**：不新增 `blocker-type` 或 `upstream-design` 专用字段——路由判定完全由 `blockers` 内容 + `repair-target` 推导（D-13），crctl 的 `REVIEW_REPAIR_TARGETS.dev-plan = write-dev-plan` 作为默认值，annotation 中显式出现的 `repair-target: write-tech-design` 覆盖默认。
+**关键设计（TD-BL-1 修订）**：`repair-target` 是 dev-plan payload/annotation 的**顶层可选字段**：缺省 `write-dev-plan`；`verdict=block` 且显式 `repair-target: write-tech-design` 时走上游疑点轨。blockers 保持纯字符串列表，**不在字符串中解析结构化路由**。crctl 对 `--stage dev-plan` 校验该字段枚举（缺省或 ∈ {`write-dev-plan`, `write-tech-design`}），并将解析后的值写入 canonical annotation 顶层与 traceability 投影（替代既有 `REVIEW_REPAIR_TARGETS` 默认值注入：dev-plan stage 下 payload 显式提供时用之，否则用映射默认值）。不新增 blocker-type 字段。
 
 ### 2.2 临时 payload
 
@@ -89,7 +90,7 @@ suggestions: []
 
 - `review-loop.yml`：`review-record --bump-attempt` 级联写 `loops.review-dev-plan`（复用 025 的 review-loop 记账）。
 - `traceability.yml#reviews.dev-plan`：由 crctl 通用投影路径渲染（复用 025 交付的 `renderReviewsStageBlock` + 定点编辑），字段集与 requirement/tech-design/code 一致（reviewer/verdict/reviewed-at/blocker-count/annotation/repair-target/review-loop）。
-- **attempt 计费规则**（PRD FR-6b/FR-7）：只有「普通轨 blocker」计入 `review-loop.attempts` 的消耗轮次；`upstream-design blocker` 记录 audit 但路由到人工，不递增后续普通回修的 attempt 计数。实现：`--bump-attempt` 记账在路由判定后按轨执行。
+- **attempt 计费规则**（PRD FR-6b/FR-7，TD-BL-2 修订）：路由判定**发生在 bump 之前**——`cmdReviewRecord` 在读取 payload 后、执行 review-loop 读取/校验/递增之前，先解析顶层 `repair-target` 得出 route（pass/normal/upstream）。NORMAL/PASS 走既有 `--bump-attempt` 记账（current-attempt+1、attempts 追加该轮）；UPSTREAM **跳过 bump**（current-attempt 不变、attempts 不追加），仅写 annotation 与 traceability 投影（attempt=当前值），三账本与 audit 保持同批一致（NFR-2）。
 
 ## 3. 接口契约
 
@@ -107,22 +108,35 @@ REVIEW_REPAIR_TARGETS['dev-plan'] = 'write-dev-plan';
 - `review-record --stage dev-plan`：走既有 `cmdReviewRecord` 通用路径（schema 校验 → traceability 读/合并 → casWriteMulti 三账本），零分支特化。
 - `--stage dev-plan` 的 expect 前置态为 `task-breakdown`（与 write-dev-tasks 推进到的状态一致；评审 PASS 不推进、BLOCK 由 advance 级联，因此 expect 校验在 review-record 入口检查当前 status=task-breakdown）。
 
-### 3.2 路由判定（crctl.mjs，PRD FR-6/FR-6a/FR-6b）
+### 3.2 路由判定（crctl.mjs，PRD FR-6/FR-6a/FR-6b，TD-BL-1/2 修订）
 
-在 `cmdReviewRecord` 成功落盘后新增纯函数 `resolveDevPlanRoute(payload)`：
+**判定发生在 `cmdReviewRecord` 内部、bump 之前**。新增纯函数 `resolveDevPlanRoute(payload)`：
 
 ```text
-输入：canonical dev-plan annotation（verdict/blockers/repair-target）
+输入：临时 payload（verdict + 顶层 repair-target）
 判定：
-  1. verdict=pass → PASS（无路由）
-  2. blockers 中存在 repair-target=write-tech-design（上游设计疑点）→ UPSTREAM
+  1. verdict=pass → PASS
+  2. verdict=block 且 payload.repair-target === 'write-tech-design' → UPSTREAM
   3. 其余 → NORMAL
 输出：{ route: 'pass' | 'upstream' | 'normal' }
 ```
 
-- 路由不改变 review-record 的写入行为（三账本照写），只影响**调用方**（pipeline/Skill）的下一步：PASS → 人工审批；UPSTREAM → `advance --to tech-design-review-pending --trigger review-dev-plan:upstream-design-blocker`；NORMAL → `advance --to tech-design-reviewed --trigger review-dev-plan:block`。
-- 同轮并存时 UPSTREAM 优先（FR-6b），普通 blocker 只进 suggestions 摘要，不递增普通 attempt——实现于 review-loop attempt 记账的分支（见 2.3）。
-- `repair-target` 读取顺序：annotation 显式字段 > `REVIEW_REPAIR_TARGETS` 默认。LLM 在 payload 中表达上游疑点的方式：blockers 中任意一条携带 `repair-target: write-tech-design` 标记（Skill 文档定义该写法，crctl 只解析）。
+`cmdReviewRecord` 对 `--stage dev-plan` 的执行顺序（既有通用流程内分支）：
+
+```text
+1. 读取临时 payload（.crctl/tmp/review-dev-plan.yml）并做 schema 校验
+   （verdict 枚举 / blockers 列表 / dimensions 非空映射 / repair-target 枚举校验：缺省或 ∈ {write-dev-plan, write-tech-design}）
+2. resolveDevPlanRoute(payload) → route
+3. route === 'upstream'：跳过 bumpAttempt 级联（review-loop current-attempt 不递增、attempts 不追加），
+   仅写 canonical annotation（repair-target=write-tech-design）与 traceability 投影（attempt=当前值）
+   route === 'normal' 或 'pass'：走既有 --bump-attempt 记账（attempt+1、attempts 追加该轮）
+4. casWriteMulti 统一写三账本（NFR-2 同批语义）
+```
+
+- 路由结果（route + repair-target）写入 canonical annotation 顶层，随三账本投影。
+- 调用方（pipeline/Skill）按 route 推进：PASS → 人工审批；UPSTREAM → `advance --to tech-design-review-pending --trigger review-dev-plan:upstream-design-blocker`；NORMAL → `advance --to tech-design-reviewed --trigger review-dev-plan:block`。
+- 同轮并存时 UPSTREAM 优先（FR-6b）：payload 顶层 repair-target=write-tech-design 时，普通 blocker 并入 suggestions 摘要展示，路由仍为 UPSTREAM；不消耗普通 attempt（步骤 3）。
+- **不解析 blockers 字符串**：LLM 在 payload 顶层写 `repair-target: write-tech-design` 表达上游疑点（Skill 文档定义该写法），crctl 只校验枚举、不解析字符串（D-13）。
 
 ### 3.3 gates.json 变更（PRD FR-10/FR-11/FR-12）
 
@@ -215,6 +229,10 @@ REVIEW_REPAIR_TARGETS['dev-plan'] = 'write-dev-plan';
 
 后续节点（push-progress / human_approval / approve-dev-start / …）顺序后移；UUID 按仓库规则分配（此处为示意值）。
 
+**onBlock 分流契约（TD-BL-3 修订）**：`onBlock: route-to-repair-node` 对 dev-plan 节点按 route 二分：
+- NORMAL：按 `replayNodes`（write-dev-plan → write-dev-tasks → review-dev-plan）重放；节点 prompt 先 `advance --to tech-design-reviewed --trigger review-dev-plan:block`（embedded）；
+- UPSTREAM：**不进入 replayNodes**——节点 prompt 执行 `advance --to tech-design-review-pending --trigger review-dev-plan:upstream-design-blocker`（embedded）后，输出 `upstream-design-blocker` 并 **abort 当前 code-implementation pipeline**（onFail: abort），等待人工走 architecture-design 技术设计修订链路；不在本 pipeline 内消耗 attempt（§2.3/§3.2 步骤 3）。
+
 ## 4. 关键算法与流程
 
 ### 4.1 普通轨重放闭环（FR-6/FR-8/FR-9）
@@ -230,22 +248,25 @@ review-dev-plan BLOCK（普通轨）
 
 空转防线（FR-9）：首版不做 blocker→产物 diff 对账器；下一轮 review-dev-plan 重新读取实际产物，未修复的问题继续 BLOCK（AC-13 兜底）。
 
-### 4.2 上游疑点轨（FR-6a/AC-8a）
+### 4.2 上游疑点轨（FR-6a/AC-8a，TD-BL-1 修订）
 
 ```text
 发现 SDD 自相矛盾/不可实施/需改已审批设计
-  → annotation 记录 blockers 含 repair-target: write-tech-design
-  → advance --to tech-design-review-pending --trigger review-dev-plan:upstream-design-blocker
+  → payload 顶层写 repair-target: write-tech-design（blockers 保持纯字符串）
+  → review-record 内 route=upstream：不 bump，annotation 落 repair-target=write-tech-design
+  → 节点 prompt advance --to tech-design-review-pending --trigger review-dev-plan:upstream-design-blocker
+  → abort code-implementation pipeline
   → 人工走既有技术设计修订（write-tech-design 回修）→ review-tech-design → approve-tech-design
   → 审批通过后重新进入 plan → TASK → review（既有 tech-design-reviewed → task-breakdown 转换）
 ```
 
 本节点不修改/不覆盖 `review-annotations/sdd.yml`（US-5）；`tech-design-review-pending` 是既有具名状态（dir-graph L219-222 已有转换），复用其语义。
 
-### 4.3 attempt 计费（FR-6b/FR-7/AC-8b）
+### 4.3 attempt 计费（FR-6b/FR-7/AC-8b，TD-BL-2 修订）
 
-- `review-record --bump-attempt` 的轮次记账按路由分支：NORMAL 递增；UPSTREAM 不递增（只记录 audit）。
-- PASS 不 bump（或 bump 后由 reviewLoop 消费，二选一，实现期以既有 `review-record` 行为为准——既有 requirement stage 在 pass 时也 bump 记账，dev-plan 保持一致：pass 也 bump 一次，attempts[] 保留 pass 记录，AC-9 断言第 2 轮通过时同时保留第 1 轮 block 与第 2 轮 pass）。
+- 路由判定在 bump 之前（§3.2 步骤 2-3）：NORMAL/PASS 走既有 `--bump-attempt`（current-attempt+1，attempts 追加该轮）；UPSTREAM **跳过 bump**（current-attempt 不变，attempts 不追加），仅写 annotation + traceability 投影（attempt=当前值）。
+- PASS 与既有 stage 一致：bump 一次，attempts 保留 pass 记录（AC-9：第 2 轮通过时同时保留第 1 轮 block 与第 2 轮 pass）。
+- UPSTREAM 后的普通回修 attempt 从当前值继续计费（AC-8b：不递增后续普通 dev-plan 回修 attempt）。
 
 ### 4.4 evidence digest（FR-11）
 
@@ -272,8 +293,8 @@ review-dev-plan BLOCK（普通轨）
 | FR-4 | §3.1 映射扩展 + review-record 通用路径（三账本同批，025 FR-16/17 复用） |
 | FR-5 | §3.3 passCondition + pipeline 节点 prompt（PASS 保持 task-breakdown） |
 | FR-6 | §3.2 NORMAL 路由 + §3.4 转换 1 + §4.1 重放闭环 |
-| FR-6a | §3.2 UPSTREAM 路由 + §3.4 转换 2 + §4.2 人工链路 |
-| FR-6b | §3.2 优先级判定 + §4.3 attempt 计费分支 |
+| FR-6a | §3.2 UPSTREAM 路由（repair-target 顶层字段）+ §3.4 转换 2 + §4.2 人工链路 |
+| FR-6b | §3.2 步骤 2-3 优先级判定（bump 前路由）+ §4.3 attempt 计费分支 |
 | FR-7 | §3.5 maxAttempts=3 + §4.3 计费 + LOOP_EXHAUSTED 语义 |
 | FR-8 | write-dev-plan/write-dev-tasks SKILL 修订：review_feedback/self_repair_attempt 输入 + fixed-blockers 输出 |
 | FR-9 | §4.1 空转防线（下一轮重读产物兜底）+ SKILL 固定措辞 |
@@ -281,7 +302,7 @@ review-dev-plan BLOCK（普通轨）
 | FR-11 | §3.3 evidence 三键 + §4.4 canonicalEvidenceDigest |
 | FR-12 | §3.3 statusGates.developing 五条件（全部既有门禁类型） |
 | FR-13 | §3.4 两条转换（口径 25→27 声明 / 47→49 展开，测试固化） |
-| FR-14 | §3.1 四映射 + §3.2 路由判定 + gates.json reviewLoops 追加 |
+| FR-14 | §3.1 四映射 + §3.2 路由判定（含 repair-target 枚举校验）+ gates.json reviewLoops 追加 |
 | FR-15 | 新建 `skills/develop/review-dev-plan/SKILL.md`（§3.5 prompt 为骨架） |
 | FR-16 | `skills/_index.yml` 登记 + agent-skill-matrix.yml：dev-agent owns、quality-reviewer-agent can-call |
 | FR-17 | README/ARCHITECTURE §8 登记（crctl 命令面语义扩展 + pipeline 结构变化 + 状态机口径变化） |
@@ -325,7 +346,7 @@ review-dev-plan BLOCK（普通轨）
 
 | 测试文件 | 覆盖 |
 |---|---|
-| `crctl.test.mjs`（追加向量） | ① REVIEW_STAGE 映射含 dev-plan 且 `review-record --stage dev-plan` 在 task-breakdown 落盘三账本；② UPSTREAM 路由判定（annotation 含 repair-target=write-tech-design → upstream，普通 → normal，pass → pass）；③ 同轮并存时 UPSTREAM 优先且普通 attempt 不递增（AC-8b）；④ dev-start approval 无 dev-plan.yml / passCondition 不过 → GATE_BLOCKED 且不写 approval 段（AC-10）；⑤ developing 目标态删 TASK-*.md 或篡改 approval → 门禁拦截（AC-11a）；⑥ evidence digest 覆盖三键，改 plan/index 后 EVIDENCE_DRIFT（AC-12）；⑦ 三轮 BLOCK → LOOP_EXHAUSTED（AC-13）；⑧ requirement/tech-design/write-test-report/code 四 stage 回归（AC-14） |
+| `crctl.test.mjs`（追加向量） | ① REVIEW_STAGE 映射含 dev-plan 且 `review-record --stage dev-plan` 在 task-breakdown 落盘三账本；② repair-target schema 校验（缺省→write-dev-plan、显式 write-tech-design→upstream、非法值→SCHEMA_INVALID 且三账本不变）；③ UPSTREAM 路由判定：payload 顶层 repair-target=write-tech-design → upstream 且 bump 跳过（review-loop current-attempt 不变、attempts 不追加，AC-8b）；④ NORMAL/PASS 走既有 bump（attempt+1）；⑤ 同轮并存时 UPSTREAM 优先（普通项进 suggestions 摘要）；⑥ dev-start approval 无 dev-plan.yml / passCondition 不过 → GATE_BLOCKED 且不写 approval 段（AC-10）；⑦ developing 目标态删 TASK-*.md 或篡改 approval → 门禁拦截（AC-11a）；⑧ evidence digest 覆盖三键，改 plan/index 后 EVIDENCE_DRIFT（AC-12）；⑨ 三轮 BLOCK → LOOP_EXHAUSTED（AC-13）；⑩ requirement/tech-design/write-test-report/code 四 stage 回归（AC-14） |
 | `lint-prompts.test.mjs` / `check-skill-matrix.mjs` / `check-agents-contract.mjs` | 新 Skill 登记、dev-agent owns + quality-reviewer-agent can-call、prompt 无漂移（AC-15/AC-15a） |
 | 状态机断言（crctl.test.mjs 内） | 新增两条转换可 advance；口径 27 声明 / 49 展开断言（PRD B-7） |
 
@@ -346,3 +367,4 @@ review-dev-plan BLOCK（普通轨）
 | 日期 | 版本 | 作者 | 说明 |
 |------|------|------|------|
 | 2026-08-09 | v0.1.0 | Ray | 初始草稿（基于 PRD v0.2.x + 实测代码基线；双轨路由/attempt 计费/gates 三处变更详设） |
+| 2026-08-09 | v0.2.0 | Ray | 技术评审 attempt-1 回修（3 blocker，TD-BL-1/2/3）：repair-target 定为 dev-plan payload/annotation 顶层可选字段（枚举校验，blockers 不解析字符串）；路由判定移到 cmdReviewRecord 内部 bump 之前，UPSTREAM 跳过 bump；pipeline onBlock 分流契约（NORMAL replay / UPSTREAM abort code-implementation） |
