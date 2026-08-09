@@ -1,22 +1,19 @@
 cr-id: CR-2026-027
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-09T22:50:56+08:00"
+reviewed-at: "2026-08-09T23:15:10+08:00"
 verdict: block
 blockers:
-  - "TD-BL-1（PRD↔SDD 对齐）：PRD FR-10/AC-14 明确要求新增位于 ../tools/skills/shared/scripts/ 的一次性版本化迁移脚本，SDD §3.6/§5/§6 却改为扩展既有 crctl migrate-backlog 且不新增脚本。ARCHITECTURE.md §6 的事实核实支持 SDD 的架构判断，但这仍是对已审批功能需求的实质变更，不能仅靠 SDD 注脚覆盖。须先将 PRD FR-10/AC-14 修订为 crctl migrate-backlog 扩展并记录需求变更影响，或给出满足 PRD 且不违反账本单写者约束的方案。"
-  - "TD-BL-2（接口路由语义）：SDD §3.5 将“block 且 repairTarget=write-tech-design”统一映射为 route=upstream，会把 review-tech-design 自身的正常 blocker 错分为上游轨；architecture-design.pipeline 的技术评审 block 应正常回放 write-tech-design。upstream 只应适用于 dev-plan 顶层 repair-target=write-tech-design 的显式上游设计疑点；其余 stage 的 block 均应 route=repair。须给出按 stage 判定的真值表，并明确 pass 时 repairTarget=null。"
-  - "TD-BL-3（终态写入契约矛盾）：SDD §7.3 要求 archive-move“重复归档幂等”，但 §3.4 与 PRD FR-12/D-6 又规定写命令继续使用 active resolver、不得对 history 终态 fallback。首次 archive-move 后 CR 已移出 backlog，第二次调用必然 CR_STATUS_NOT_FOUND，无法满足幂等。须拍板重复调用是受控硬失败，还是为 archive-move 单独设计只读 history 检测；后者不得扩大为终态可写，并需补接口与测试期望。"
-  - "TD-BL-4（approve 候选门禁缺少实现接口）：SDD §3.1 要求 approval.yml 与 cr.md 尚在内存时“按候选 approval 复核目标 gate”，但现有 runGateChecks/readEvidenceDoc 只从磁盘读取 approval.yml。设计未说明如何让 gate 消费候选文本，实施者只能先写文件、临时落盘或绕过 approval checker，都会破坏零写入/原子性目标。须明确纯函数 seam（例如 approval 文档 override/候选 evidence provider）及其签名、调用顺序和回归测试。"
-  - "TD-BL-5（Prompt 采纳路径错误）：SDD §8 写 `skills/architecture/review-tech-design/SKILL.md`，实测真实路径为 `skills/develop/review-tech-design/SKILL.md`。错误路径会导致实际 Skill 保留过时的 traceability 二次读取步骤，AC-18 无法闭环。"
+  - "TD2-BL-1（PRD 验收文字未完全同步）：PRD v0.3.0 已将 D-11/FR-10/范围改为扩展 `crctl migrate-backlog`，但 AC-14 仍写“运行迁移脚本后”。当前范围明确不新增独立脚本，因此按字面无法满足该 AC。须将 AC-14 改为“运行 `crctl migrate-backlog` 后”，并保留幽灵条目消失、CR-2026-017 字段恢复、`already-clean` 与哈希不变等验收语义。"
+  - "TD2-BL-2（候选 cr.md 校验仍不可执行）：SDD v0.3.0 为 approval.yml 增加 evidence override seam 已解决候选 approval 门禁读取，但同时把候选 cr.md 放入 override，并声明“cr.md 缺目标 status 时 GATE_BLOCKED”。实测现有 tech-design-reviewed 等目标 gate 没有任何 checker 读取 cr.md；`runGateChecks` 只以 targetStatus 参数选择门禁，因此 cr.md override 不会被消费，该回归用例无法成立。须明确由 `approveAndAdvance` 在 CAS 前直接解析/断言 `crMdText` 的 status 等于 stageCfg.to（给出 helper/错误码/测试），或新增明确的 candidate-status checker；不得假设现有 gate 会验证候选 cr.md。"
 dimensions:
-  PRD↔SDD对齐: "block — 15/15 FR 均有映射，但 FR-10 的交付形态从独立版本化脚本改为既有 crctl 子命令扩展，属于未回写 PRD 的实质变更。"
-  架构合理性: "block — 单写者/CAS/无新子命令方向总体符合 ARCHITECTURE.md，但 archive 重复调用与终态 resolver 边界自相矛盾。"
-  数据模型完整性: "pass — index 终态字段、archive event、terminal status 输出字段及 owners 回退规则已给出。"
-  接口契约: "block — review route 真值表错误，approve 候选 gate 缺少可实现的内存输入 seam。"
-  性能与安全: "pass — 保持 node 内置模块、controlledGit、CAS/audit/outbox 边界，未引入明显性能或权限旁路。"
-  可测试性: "block — 重复归档幂等在当前 resolver 约束下不可构造为通过用例；候选 approval gate 也缺少可断言接口。"
-  Prompt采纳影响: "block — 已提供清单，但 review-tech-design 的路径指向不存在的 skills/architecture 目录。"
+  PRD↔SDD对齐: "block — FR-10/D-11 已对齐 migrate-backlog，但 AC-14 仍残留“迁移脚本”字面要求。"
+  架构合理性: "pass — route 按 stage 真值表、archive-move 专用只读 history 检测、单写者/CAS 边界均已闭环。"
+  数据模型完整性: "pass — archive event、index 终态字段、terminal 输出与 evidence override 数据形态完整。"
+  接口契约: "block — approval 候选 override 可实现，但候选 cr.md 没有实际消费方或独立 invariant 校验。"
+  性能与安全: "pass — override 仅为内存证据源，不落盘；archive 重复调用零写入、不发 outbox；无新增依赖。"
+  可测试性: "block — “cr.md 缺目标 status → GATE_BLOCKED”在当前 gate checker 集合下无法触发。"
+  Prompt采纳影响: "pass — review-tech-design 路径已修正为 skills/develop/review-tech-design/SKILL.md，其余采纳清单完整。"
 suggestions:
-  - "FR-15 bootstrap 的 worktree-path 应从 AI First Platform 主工作区解析；若从 knowledge-base CR worktree 以 --workspace . 调用会得到嵌套 .rayai-worktrees 路径，建议在 SDD §1.3 固定调用根与最终落点。"
-  - "AC-22 的“基线 = custom/main HEAD”建议记录具体 bootstrap-base-sha，避免创建 worktree 与后续 fetch 之间基线含义漂移。"
+  - "readEvidenceDoc overrides 的 key 匹配时点建议明确为占位符替换前，或统一使用展开后的规范相对路径，避免调用方与读取方一个使用 `{cr}`、一个使用实际 CR-ID 导致 miss。"
+  - "archive-move 的 `already-archived` 返回建议同时包含 `finalStatus`，方便调用方审计幂等命中的是哪个终态。"
