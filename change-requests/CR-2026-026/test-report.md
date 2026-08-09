@@ -61,6 +61,7 @@ commands:
 - ~~dev-start/developing 新门禁的黑盒负向向量（不适用，人工验收）~~：已由 ⑥/⑥b/⑦/⑧ 自动化覆盖（d395d04）：grant 非 TTY 通过路径、passCondition 拦截、developing 目标态删 TASK 拦截、篡改 dev-plan.yml → EVIDENCE_DRIFT。
 - ~~LOOP_EXHAUSTED 三轮上限（部分覆盖）~~：已由 ⑨ 自动化覆盖（三轮 BLOCK 后第 4 轮 LOOP_EXHAUSTED，d395d04）。
 - **AC-17 绝对路径检查**：代码/测试文件 grep `C:\\Users` 零命中。
+- **自举例外（本 CR 独有）**：`review-annotations/dev-plan.yml` 为回顾性补落盘（评审发生于 review-dev-plan 工具落地前），经用户拍板手工写入；review-loop/traceability 不随该文件同步（无轮次可计）。例外已登记 SDD v0.4.1，工具侧不做豁免。
 
 ## 下一步建议
 
