@@ -78,6 +78,7 @@ CR-2026-026 对 tools 全生命周期实际演练后，操作记录暴露的共�
 | D-11 | 幽灵条目清理 | 本 CR 内以**一次性版本化迁移命令**清理 `_backlog.yml` 尾部缺 `- id:` 条目（CR-2026-024 已归档于 `_history.yml`）：扩展既有 `crctl migrate-backlog` 增加幽灵块检测/删除（幂等，`already-clean`），不新增独立脚本目录（ARCHITECTURE §6 否决账本操作脚本库）；修复未来归档行为仍由 D-5 的 archive-move CAS 保证 | B-12 实测 + v2 §6.2 历史数据修复口径；落点拍板 2026-08-09（SDD v0.2.0 方案） |
 | D-12 | tools 仓 bootstrap | **注册后一次性补偿**：tools 加入 repositories 声明后，从 custom/main 为本 CR 创建 `requirement/CR-2026-027` worktree，此后全部 `../tools` 改动落在该分支，禁止直写 custom/main；该补偿不等同于每 CR 仓库选择模型，不新增注册字段 | 需求评审 Blocker：本 CR 注册时 tools 未声明，但必须修改 `../tools` 文件（ARCHITECTURE、crctl、merge/archive/review Skill、迁移脚本与测试） |
 | D-13 | target-version 口径 | **维持 `tbd` 并声明批准口径**：本 CR 属 tools 正确性修复，不绑定产品发布版本号序列；target-version 在需求审批时确认，不进入产品版本号递增链路 | 需求评审 Suggestion：避免 tbd 无解释 |
+| D-14 | post-PASS 设计修订与 next freshness | reviewLoop 的 `maxAttempts=3` 约束单个审查周期内的 block→repair；已 PASS 后因 dev-plan upstream blocker 修订 SDD 时自动开启新 cycle（不新增命令）：保留旧 attempts 审计、`current-cycle+1`、新 cycle 从 attempt=1 开始。`crctl next` 必须检查 SDD subject digest 与较新的 upstream blocker，旧 PASS 不得直接建议审批 | review-dev-plan 上游回退实测：SDD v0.5.0 晚于旧 PASS/审批，next 仍误报 approve-tech-design，且旧 cycle 已 3/3 |
 
 ## 2. 用户故事
 
@@ -111,7 +112,10 @@ CR-2026-026 对 tools 全生命周期实际演练后，操作记录暴露的共�
 - **FR-12（archived status 终态只读查询）**：新增仅供 `status`/`next` 使用的终态只读 resolver：active CR 继续从 cr.md/backlog 读取；archived/rejected/withdrawn 从 `_history.yml` 的 `final-status` 读取；输出最小契约含 `cr`/`status`/`terminal:true`/`source`/`legalNext:[]`/`reviewLoops:{}`/`gateBlockers:{}`/`next:null`；`crctl next` 对终态返回 `next:null` 不报错；写命令继续使用现有 active resolver，不允许终态写入；backlog/history 同时存在同一 CR 时 `CR_LOCATION_CONFLICT`；history 重复条目或缺 final-status 硬失败；cr.md 与 history 不一致时以 history 为准并输出 warning；不新增 archive reason/spec-id 等非必要返回字段，不新增 `archive-status` 命令。
 - **FR-13（review-record 输出深化）**：`review-record` 保持现有 `file`、`trace` 字段兼容，并增加：`files[]`（只列本次实际写入文件，未 bump 时不得虚列 review-loop.yml）、`attempt.{current,max,bumped}`、`route`（`pass|repair|upstream`）、`repairTarget`（`write-requirement-prd|write-tech-design|write-dev-plan|implement-code|null`）；不返回 `verified`、subject digest、`next`（`next` 仍由 `crctl next` 唯一计算）。删除四个 review Skill 的「重新读取 traceability 核对刚写入结果」步骤，命令成功即表示三账本同批写入完成，调用方按 `files` 组织提交、按 `route` 分流、最后调用 `crctl next`。
 - **FR-14（配置文件最小验证清单）**：Phase 0/1 实施完成的验证清单固定为五项：① `git diff --check`；② `JSON.parse(feature-writeback.pipeline.json)`；③ `node --test skills/shared/crctl/scripts/test/crctl.test.mjs`；④ `node skills/shared/crctl/scripts/lint-prompts.mjs --mode enforce`；⑤ grep 核对 tools 隐藏特例与 25/47 旧表述已清零。不修改、不运行 agent-skill matrix 检查族、agents contract 检查族、writeback scripts 测试、engineering-docs 测试及新的 validate-config/schema/Runner；实施实际触及上述权威文件或代码时，按「改了什么测什么」追加对应检查。
-- **FR-16（next task-breakdown 路由缺口修复，CR-2026-026 遗留）**：`crctl next` 对 `task-breakdown` 状态的建议必须检查 `review-annotations/dev-plan.yml` 是否存在且 passCondition 通过：无评审记录 → `next = review-dev-plan`（不得仅因 plan.md + tasks/ 存在就直接建议 approve dev-start）；评审 PASS（verdict=pass 且 blockers=[]）→ `next = crctl approve --stage dev-start`；评审 BLOCK → 按 route 建议回修节点。
+- **FR-16（next 路由 freshness 与上游重入修复，CR-2026-026 遗留）**：
+  1. `task-breakdown`：读取 canonical `review-annotations/dev-plan.yml`；缺失或 schema 不完整 → `next=review-dev-plan`；PASS（`verdict=pass && blockers=[]`）→ `next=crctl approve --stage dev-start`；BLOCK 时从 annotation 的 `verdict`/`blockers`/顶层 `repair-target` 调用共享 `resolveDevPlanRoute` 确定性重算，repair→`write-dev-plan`、upstream→`write-tech-design`，不得依赖上一条 `review-record` 命令的瞬时返回值；block 且本 cycle 已 `LOOP_EXHAUSTED` → `next=null`、`humanApproval=true` 并输出人工处理原因。
+  2. `tech-design-review-pending`：`review-record --stage tech-design` 必须记录 `subject-file=sdd.md` 与 LF 规范化 `subject-sha256`；若当前 SDD digest 与 annotation 不一致，或存在 `reviewed-at` 晚于技术评审记录的 dev-plan upstream blocker，则 `next=review-tech-design`，不得按旧 PASS 建议 approve-tech-design。
+  3. post-PASS 设计 revision：`review-record --stage tech-design --bump-attempt` 在“上一技术评审 PASS + 较新 dev-plan upstream blocker + SDD 已修订”时自动开启新 review cycle；`review-loop.yml`/traceability 在原 attempts 上增加 `cycle`，保留历史审计，新 cycle 从 attempt=1 计数。legacy attempt 无 `cycle` 视为 cycle=1；不新增子命令、不手改 review-loop。
 
 ## 4. 非功能需求
 
@@ -151,7 +155,10 @@ CR-2026-026 对 tools 全生命周期实际演练后，操作记录暴露的共�
 - **AC-18**（FR-13）：`review-record` 输出含 `files[]`/`attempt`/`route`/`repairTarget` 且与本次实际写入一致（未 bump 不虚列 review-loop.yml）；四个 review Skill 不再重新读取 traceability 核对刚写入结果；`next` 仍由 `crctl next` 唯一计算。
 - **AC-19**（FR-14）：五项最小验证全部通过：① `git diff --check` 无告警；② `JSON.parse(feature-writeback.pipeline.json)` 通过；③ `node --test skills/shared/crctl/scripts/test/crctl.test.mjs` 全绿；④ `lint-prompts.mjs --mode enforce` 零发现；⑤ 按 AC-1 的搜索范围与判定方式 grep 确认 tools 隐藏特例与 25/47「现状」表述已清零。
 - **AC-22**（FR-15）：实施首步完成后：`../tools` 仓存在 `requirement/CR-2026-027` 分支与对应 worktree（基线 = custom/main HEAD）；`git log` 确认 custom/main 无本 CR 直接提交的实施改动；CR-2026-027 在 tools 的 merge-commits 记录与 docs/multica 同批生成（merge 阶段验收）；归档清理覆盖 tools worktree。
-- **AC-23**（FR-16）：`task-breakdown` 状态下：plan.md + tasks/ 就绪但无 `dev-plan.yml` → `crctl next` 返回 `review-dev-plan`（不返回 approve dev-start）；`dev-plan.yml` 存在且 passCondition 通过 → 返回 `crctl approve --stage dev-start`；评审 BLOCK（repair 轨）→ 返回回修节点（如 `write-dev-plan`）。
+- **AC-23**（FR-16）：
+  - `task-breakdown`：无/畸形 `dev-plan.yml` → `review-dev-plan`；PASS → `crctl approve --stage dev-start`；repair BLOCK → `write-dev-plan`；顶层 `repair-target=write-tech-design` → `write-tech-design`；block 且 cycle exhausted → `next:null` + 人工处理，不返回审批。
+  - `tech-design-review-pending`：SDD digest 与旧 annotation 不一致，或较新的 dev-plan upstream blocker 存在 → `review-tech-design`；fresh PASS 才返回 `crctl approve --stage tech-design`。
+  - 技术评审旧 cycle 已 3/3 且上一轮 PASS 时，post-PASS SDD revision 的首次 `--bump-attempt` 自动生成 cycle=2/attempt=1；旧 cycle attempts 完整保留，后续 cycle 内仍最多 3 次。
 - **AC-20**（NFR-1/NFR-4/NFR-5）：不新增第三方依赖与公共 Runner 库；无通用 patch/workflow 实现；crctl.mjs 保持单文件；writeback scripts 未被复制。
 - **AC-21**（NFR-6）：历史 CR 查询/归档行为兼容（旧 approval/archive 形态不要求迁移）；`_index.yml` 查询链路不变。
 
@@ -184,3 +191,4 @@ CR-2026-026 对 tools 全生命周期实际演练后，操作记录暴露的共�
 | 2026-08-09 | v0.3.0 | Ray | 拍板同步（用户决策 2026-08-09）：FR-10/D-11 落点从 skills/shared/scripts/ 迁移脚本改为 crctl migrate-backlog 扩展（SDD v0.2.0 方案），消除 PRD/SDD 冲突；AC-14 验收语义不变 |
 | 2026-08-09 | v0.4.0 | Ray | 修订（review-tech-design 二轮 BLOCK 回修，TD2-BL-1）：AC-14 字面同步为“运行 `crctl migrate-backlog` 后”，清除“迁移脚本”残留（验收语义不变） |
 | 2026-08-09 | v0.5.0 | Ray | 范围确认（用户决策 2026-08-09）：纳入 CR-2026-026 遗留缺陷——next task-breakdown 路由缺 dev-plan.yml 检查（实测导致无评审记录时误报 approve dev-start）；新增 FR-16/AC-23，归属 TASK-07 |
+| 2026-08-09 | v0.6.0 | Ray | 上游回修（review-dev-plan UPSTREAM BLOCK）：扩展 D-14/FR-16/AC-23，补 task-breakdown route 的 canonical 来源、tech-design SDD freshness、upstream 重入与 post-PASS 新 review cycle；旧 cycle attempts 保留审计，不新增子命令 |

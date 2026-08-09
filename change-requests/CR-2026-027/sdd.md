@@ -106,6 +106,27 @@ writeback-spec-id: "<spec-id>"   # 有则写，无则不写
 
 `_history.yml` 条目以 `final-status` 为终态权威；history 重复条目或缺 `final-status` 硬失败（`HISTORY_DUPLICATE_ENTRY` / `HISTORY_FINAL_STATUS_MISSING`）；backlog/history 同存同 CR → `CR_LOCATION_CONFLICT`；cr.md 与 history 不一致时以 history 为准并输出 warning。不新增 archive reason/spec-id 等非必要字段，不新增 `archive-status` 命令。
 
+### 2.4 review cycle 兼容扩展（FR-16/D-14）
+
+`maxAttempts=3` 按审查 cycle 计数。已 PASS 后发生 upstream 设计修订时开启新 cycle，旧 attempts 不删除：
+
+```yaml
+loops:
+  review-tech-design:
+    current-cycle: 2
+    current-attempt: 1
+    attempts:
+      - { cycle: 1, attempt: 1, at: "...", by: "..." }
+      - { cycle: 1, attempt: 2, at: "...", by: "..." }
+      - { cycle: 1, attempt: 3, at: "...", by: "..." }
+      - { cycle: 2, attempt: 1, at: "...", by: "..." }
+```
+
+- legacy `current-cycle` 缺失、attempt 缺 `cycle` 时均按 cycle=1 解释；
+- traceability 的技术评审 attempts 同步增加 `cycle`，保留所有历史；
+- `current-attempt` 只表示当前 cycle 的轮次，`attemptsWithinLimit` 只检查当前 cycle；
+- 不新增账本类型或 crctl 子命令，不允许手工重置 review-loop。
+
 ## 3. 接口契约
 
 ### 3.1 内部 helper：approve-and-advance（FR-8，不新增子命令）
@@ -166,6 +187,31 @@ crctl archive-move CR --final-status <archived|rejected|withdrawn> [--archive-re
 
 新增 `resolveTerminalCrState(ws, cr)`：仅从 `_history.yml` 读取；`cmdStatus`/`cmdNext` 在 active resolver 报 `CR_STATUS_NOT_FOUND` 时 fallback 调用；写命令（advance/approve/checkpoint-add/owner-set/backlog-set/inbox-emit/merge-metadata/review-record 等）**不** fallback，终态写入维持拒绝。
 
+### 3.4a `cmdNext` active 路由与 freshness（FR-16）
+
+`task-breakdown` 分支不再只检查 plan/tasks：
+
+```text
+读取 dev-plan.yml
+  缺失/解析失败/缺 verdict 或 blockers → review-dev-plan
+  PASS + blockers=[]                 → crctl approve --stage dev-start
+  BLOCK                              → resolveDevPlanRoute(annotation)
+    repair                           → write-dev-plan
+    upstream                         → write-tech-design
+  BLOCK 且当前 cycle exhausted       → next=null, humanApproval=true, why=LOOP_EXHAUSTED
+```
+
+route 必须从 canonical annotation 的顶层 `repair-target` 重算，不读取 `review-record` 的瞬时返回对象。
+
+`tech-design-review-pending` 分支新增 freshness：
+
+1. 读取 `sdd.yml#subject-sha256`，与当前 `sdd.md` LF 规范化 SHA-256 比较；
+2. 读取 dev-plan annotation；若 `verdict=block`、`repair-target=write-tech-design` 且其 `reviewed-at` 晚于 sdd 技术评审 `reviewed-at`，视为 upstream stale；
+3. digest 不一致或 upstream stale → `review-tech-design`；
+4. 仅 fresh 且 PASS/无 blocker → `crctl approve --stage tech-design`。
+
+legacy sdd annotation 无 subject digest 时：存在较新 upstream blocker 必须重审；否则保持旧兼容行为，不批量迁移历史 CR。
+
 ### 3.5 `review-record` 输出（FR-13）
 
 保持 `file`、`trace` 兼容，返回对象新增：
@@ -181,6 +227,7 @@ crctl archive-move CR --final-status <archived|rejected|withdrawn> [--archive-re
 
 - `files`：只列本次实际写入（annotation + traceability；bumped 时才含 review-loop.yml）。
 - `attempt`：从 review-loop 当前轮次读取（复用既有 attempt 记账，bumped 表示本轮是否递增）。
+- `tech-design` annotation 新增 `subject-file: change-requests/{cr}/sdd.md` 与 LF 规范化 `subject-sha256`，供 `cmdNext` freshness 判断。
 - `route`/`repairTarget` 按**按 stage 判定的真值表**（TD-BL-2 修订，替换原「block 且 repairTarget=write-tech-design → upstream」的统一映射）：
 
 | stage | verdict | 顶层 repairTarget | route | repairTarget 返回 |
@@ -191,6 +238,7 @@ crctl archive-move CR --final-status <archived|rejected|withdrawn> [--archive-re
 | dev-plan | block | `write-tech-design`（显式上游设计疑点，resolveDevPlanRoute 既有判定） | `upstream` | `write-tech-design` |
 
   `upstream` 只适用于 dev-plan 顶层 `repair-target=write-tech-design` 的显式上游设计疑点；review-tech-design 自身的正常 blocker 属 `repair`（回放 `write-tech-design`），不得错分为上游轨。
+- `--bump-attempt` 在写入 tech-design 评审前调用 `detectNewTechDesignCycle`：上一 annotation 为 PASS、存在较新的 dev-plan upstream blocker，且当前 SDD digest 与上一 `subject-sha256` 不同（legacy 无 digest 时以上游时间关系兜底）→ `current-cycle+1`、本 cycle attempt=1；旧 attempts 仅补 legacy `cycle=1` 后保留。普通 block→repair 仍在当前 cycle 内计数，达到 3 次继续 `LOOP_EXHAUSTED`。
 - 不返回 `verified`（与退出码/CAS 成功重复）、subject digest（内部 freshness 用）、`next`（唯一由 `crctl next` 计算）。
 
 ### 3.6 `migrate-backlog` 扩展（FR-10）
@@ -276,7 +324,7 @@ cmdStatus/cmdNext:
 | FR-13 | review-record 输出 files/attempt/route/repairTarget；review Skill 删二次读取 | crctl.mjs cmdReviewRecord；四个 review SKILL.md |
 | FR-14 | 五项最小验证清单 | 实施收尾（见 §7.2） |
 | FR-15 | tools worktree bootstrap | workspace dir-graph.yaml 先行 + ../tools 仓 worktree add |
-| FR-16 | next task-breakdown 路由缺口修复（CR-2026-026 遗留）：cmdNext 的 task-breakdown 分支补 dev-plan.yml 存在性与 passCondition 检查（无评审记录 → review-dev-plan；PASS → approve dev-start；BLOCK → 按 route 回修节点） | crctl.mjs cmdNext + crctl.test.mjs |
+| FR-16 | next freshness/上游重入：task-breakdown 从 dev-plan annotation 重算 route；tech-design-review-pending 校验 SDD subject digest/upstream blocker；review-record 自动开启 post-PASS 新 tech-design cycle | crctl.mjs cmdNext/cmdReviewRecord/readAttempts + crctl.test.mjs |
 
 ## 7. 安全与性能考量
 
@@ -302,7 +350,8 @@ cmdStatus/cmdNext:
 - archived 门禁：index 缺失 / 空列表 / 全 pending / 部分 done / delivery 缺失五类失败；全 done 放行；rejected/withdrawn 不适用。
 - archive-move：三种终态 + final-status 不一致硬失败；中文 reason；收件人去重/legacy 回退/空收件人；可选 spec-id；**重复归档：CR 已移出 backlog 后再次调用 → `already-archived` 幂等返回（零写入）；history 存在但 final-status 不一致 → `FINAL_STATUS_MISMATCH`；history 无 → `CR_STATUS_NOT_FOUND`**（TD-BL-3 拍板）；outbox 时序；CRLF 规范化。
 - 终态查询：三种终态 next:null；CR_LOCATION_CONFLICT；history 重复/缺 final-status 硬失败；cr.md 漂移 warning；active 回归。
-- next 路由（FR-16/AC-23）：task-breakdown 下无 dev-plan.yml → 建议 review-dev-plan（不报 approve dev-start）；PASS → approve dev-start；BLOCK（repair 轨）→ write-dev-plan。
+- next 路由（FR-16/AC-23）：task-breakdown 无/畸形 dev-plan → review-dev-plan；PASS → approve dev-start；repair BLOCK → write-dev-plan；upstream BLOCK → write-tech-design；exhausted BLOCK → next:null + 人工处理。tech-design-review-pending 的 SDD digest 不一致/较新 upstream blocker → review-tech-design，fresh PASS 才允许审批。
+- review cycle：legacy cycle=1 兼容；旧 cycle 3/3 PASS 后 SDD upstream revision → cycle=2/attempt=1；旧 attempts 保留；cycle=2 内第 4 次 block 仍 LOOP_EXHAUSTED。
 - review-record：files 只列实际写入（未 bump 无 review-loop.yml）；attempt/route/repairTarget 正确性。
 - inbox-emit：--to 缺失/非列表/空 → BAD_ARGS。
 - migrate-backlog：幽灵块删除 + CR-2026-017 恢复 + already-clean 幂等 + history 无归档时 GHOST_ENTRY_ORPHANED。
@@ -331,3 +380,4 @@ cmdStatus/cmdNext:
 | 2026-08-09 | v0.3.0 | Ray | 修订（review-tech-design BLOCK 回修，TD-BL-2~5）：§3.5 真值表按 stage 判定（upstream 仅限 dev-plan 显式上游疑点，pass 时 repairTarget=null）；§3.2 重复归档语义拍板（already-archived 幂等 / FINAL_STATUS_MISMATCH / CR_STATUS_NOT_FOUND，§7.3 同步）；§3.1 新增候选证据 override seam（readEvidenceDoc 第 4 参 + runGateChecks opts.evidence，含调用形态与回归测试）；§8 修正 review-tech-design 路径为 skills/develop/；§1.3 采纳 suggestion（worktree-path 以主工作区解析 + bootstrap-base-sha 固定）；TD-BL-1 已由 PRD v0.3.0 闭环 |
 | 2026-08-09 | v0.4.0 | Ray | 修订（review-tech-design 二轮 BLOCK 回修，TD2-BL-2）：候选 cr.md 校验改为独立 invariant helper `assertCandidateStatus`（错误码 CANDIDATE_STATUS_MISMATCH，CAS 前执行），不依赖 gate checker 消费 cr.md；evidence override 仅含 approval.yml；采纳 TD2-S1（override key 占位符匹配时点）、TD2-S2（already-archived 携带 finalStatus）；§7.3 测试同步；PRD AC-14 已由 PRD v0.4.0 闭环（TD2-BL-1） |
 | 2026-08-09 | v0.5.0 | Ray | 范围确认（用户决策）：FR-16 纳入——cmdNext task-breakdown 分支补 dev-plan.yml 检查（CR-2026-026 遗留路由缺口，实测无评审记录时误报 approve dev-start）；FR 映射表与 §7.3 测试设计同步；归属 TASK-07 |
+| 2026-08-09 | v0.6.0 | Ray | 上游回修（review-dev-plan DP-UP-1/2 + 回退后复验）：§2.4 增加兼容 review cycle；§3.4a 补 task-breakdown canonical route、SDD digest/upstream freshness；§3.5 tech-design subject hash + 自动新 cycle；§6/§7.3 同步 FR-16/AC-23 测试 |
