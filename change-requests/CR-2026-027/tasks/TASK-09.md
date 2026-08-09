@@ -8,7 +8,15 @@ title: Skill 同步（merge-feature-branch 特例删除 + cr-archive 契约）+ 
 slug: skill-sync-merge-archive
 status: pending
 estimate: 4h
-depends-on: ["CR-2026-027-TASK-01", "CR-2026-027-TASK-06", "CR-2026-027-TASK-08"]
+depends-on:
+  - "CR-2026-027-TASK-01"
+  - "CR-2026-027-TASK-02"
+  - "CR-2026-027-TASK-03"
+  - "CR-2026-027-TASK-04"
+  - "CR-2026-027-TASK-05"
+  - "CR-2026-027-TASK-06"
+  - "CR-2026-027-TASK-07"
+  - "CR-2026-027-TASK-08"
 created: "2026-08-09T23:35:00+08:00"
 ---
 
@@ -42,5 +50,5 @@ created: "2026-08-09T23:35:00+08:00"
 
 ## 接口契约
 
-- 消费：TASK-01 的 tools worktree；TASK-06 的 archive-move 契约（cr-archive 对齐）；TASK-08 的 review Skill 修订（不涉及）
+- 消费：TASK-01 的 tools worktree；TASK-02 的 ARCHITECTURE 基线修订；TASK-03~08 的完整 Phase 1 最终行为（含 archive/review/next freshness），确保 §8 在全部代码落地后登记
 - 产出：修订后的两个 SKILL.md + ARCHITECTURE §8 登记；TASK-10 的 grep/lint 复核基于本产出

@@ -24,7 +24,7 @@ created: "2026-08-09T23:35:00+08:00"
 
 ## 任务描述
 
-按 v2 方案 §6.6 的五项最小验证清单收尾，逐条核对 PRD AC-1~AC-22 的可执行项（含 bootstrap-base-sha 断言），确认无回归、无旁路、无新依赖。
+按 v2 方案 §6.6 的五项最小验证清单收尾，逐条核对 PRD AC-1~AC-23 的可执行项（含 bootstrap-base-sha 断言），确认无回归、无旁路、无新依赖。
 
 ## 涉及文件 / 模块
 
@@ -53,10 +53,11 @@ created: "2026-08-09T23:35:00+08:00"
 9. AC-20：无新增第三方依赖/公共 Runner 库/新子命令（import 语句只含 `node:*`；crctl.mjs 仍单文件）
 10. AC-21：历史 CR 查询/归档行为兼容（026 归档实景回放或等价用例）
 11. AC-22：tools worktree 存在；`bootstrap-base-sha` = 记录值；custom/main 无本 CR 直接提交；tools merge-commits 与 docs/multica 同批（merge 阶段复核）
+12. AC-23：复核 TASK-07/08 的 task-breakdown normal/upstream/exhausted、tech-design freshness 与 post-PASS cycle=2/attempt=1，旧 attempts 保留
 
 ## 完成标志
 
-五项验证全绿；AC-1~AC-22 核对表完成并随本 TASK 记录；无遗留 blocker。
+五项验证全绿；AC-1~AC-23 核对表完成并随本 TASK 记录；无遗留 blocker。
 
 ## 接口契约
 
