@@ -36,7 +36,7 @@ created: "2026-08-09T23:35:00+08:00"
 
 1. `merge-feature-branch/SKILL.md`：删除「tools 不在声明但以 `custom/main` 特例参与」的 prose 与实现分支；合并/同步/清理只遍历 `dir-graph.yaml#repositories`（FR-5/AC-5）
 2. `cr-archive/SKILL.md`：归档事件与三账本同批 CAS 的契约描述（不再描述独立 inbox-emit 发归档事件）；`--final-status` 必须等于 cr.md 当前终态；收件人复用 owners（FR-11/AC-15）；`_index.yml` 生命周期语义描述与实现一致（FR-4/AC-4）
-3. `ARCHITECTURE.md` §8：登记本 CR（Phase 0 口径统一 + Phase 1 六项执行层改造 + migrate-backlog 扩展 + 终态 resolver；合 §4/§5 全部不变量）
+3. `ARCHITECTURE.md` §8：登记本 CR（Phase 0 口径统一 + Phase 1 approve/TASK/archive/migrate/终态 resolver/review-record/next freshness 与 review cycle 改造；合 §4/§5 全部不变量）
 
 ## 验收条件
 

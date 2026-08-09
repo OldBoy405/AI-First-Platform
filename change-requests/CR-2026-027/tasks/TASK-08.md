@@ -12,11 +12,11 @@ depends-on: ["CR-2026-027-TASK-01"]
 created: "2026-08-09T23:35:00+08:00"
 ---
 
-# TASK-08 — review-record 输出深化（FR-13）
+# TASK-08 — review-record 输出、subject freshness 与 review cycle（FR-13/FR-16）
 
 ## 任务描述
 
-`review-record` 返回对象增加真实消费者字段（files/attempt/route/repairTarget），并删除四个 review Skill 的「重新读取 traceability 核对刚写入结果」步骤。
+`review-record` 返回对象增加真实消费者字段（files/attempt/route/repairTarget），写入 tech-design subject digest 与兼容 review cycle，并删除四个 review Skill 的「重新读取 traceability 核对刚写入结果」步骤。
 
 ## 涉及文件 / 模块
 

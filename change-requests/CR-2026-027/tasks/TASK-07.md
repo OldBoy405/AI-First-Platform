@@ -12,7 +12,7 @@ depends-on: ["CR-2026-027-TASK-01", "CR-2026-027-TASK-08"]
 created: "2026-08-09T23:35:00+08:00"
 ---
 
-# TASK-07 — 终态只读查询 + inbox-emit 校验（FR-12/FR-11 收件人面）
+# TASK-07 — status/next 路由与 freshness + inbox-emit 校验（FR-12/FR-16/FR-11）
 
 ## 任务描述
 
