@@ -8,7 +8,7 @@ owner: Ray
 owner-role: requirement
 status: draft
 created: "2026-08-09T05:10:00+08:00"
-updated: "2026-08-09T10:56:40+08:00"
+updated: "2026-08-09T11:56:49+08:00"
 ---
 
 # PRD — 开发计划与 TASK 合并评审门禁
@@ -55,7 +55,7 @@ write-dev-plan → write-dev-tasks（status → task-breakdown）
 | B-3 | `approve-dev-start` 只校验 `plan.md`、`tasks/_index.yml` 等前置产物存在，由人类确认后推进到 `developing` | 方案 §1.1 |
 | B-4 | `review-code` 在代码与测试完成后检查「代码 ↔ TASK ↔ SDD」一致性，回修目标是 `implement-code` | 方案 §1.1 |
 | B-5 | 现有 reviewLoop 机制（requirement/tech-design/code）已支持 replayNodes、maxAttempts、passCondition、repair target 路由 | 方案 §3.3 |
-| B-6 | `review-record` 已有共用 stage 映射（REVIEW_STAGE_FILES / REVIEW_STAGE_LOOPS / REVIEW_STAGE_EXPECT / REVIEW_REPAIR_TARGETS），新增 stage 只需加映射项 | 方案 §5.3 |
+| B-6 | `review-record` 已有共用 stage 映射（REVIEW_STAGE_FILES / REVIEW_STAGE_LOOPS / REVIEW_STAGE_EXPECT / REVIEW_REPAIR_TARGETS），新增 stage 只需加映射项；traceability 投影能力依赖 CR-2026-025 已落地能力 | 方案 §5.3；CR-2026-025 |
 | B-7 | 状态机现有 15 个具名状态 + 注册前 `(new)`；转移 25 条声明（wildcard 展开 47 条）；本 CR 不新增具名状态，新增声明转移数以 SDD/实现期测试固化 | AGENTS.md 纪律 #2 |
 
 ### 1.4 决策点（本 PRD 拍板）
@@ -94,7 +94,7 @@ write-dev-plan → write-dev-tasks（status → task-breakdown）
 - **FR-1（节点位置）**：`code-implementation.pipeline.json` 在 `write-dev-tasks` 后、`push-progress` 前插入 `review-dev-plan` reviewLoop 节点。后续节点顺序后移。
 - **FR-2（强制输入）**：`review-dev-plan` 必须读取：`sdd.md`（已审批技术设计）、`plan.md`（交付里程碑）、`tasks/_index.yml`（TASK 集合与拓扑）、全部 `TASK-*.md`（目标/接口/验收）、`review-annotations/sdd.yml`（技术评审已知风险）。默认以 SDD 为准；仅当 SDD 引用 PRD FR/AC 或追溯疑点需要解释时，才可定位抽查对应 `prd.md` 小节，不得全量复审 PRD。
 - **FR-3（评审维度）**：评审必须覆盖八类维度：SDD→plan 覆盖、plan→TASK 覆盖、TASK 可执行性、依赖拓扑、接口契约一致性、验收可验证性、范围与极简性、风险与回滚。另含估算一致性检查；估算仅在揭示任务拆分、依赖或验收结构性问题时作为 blocker，普通工时口径差异进入 suggestions。
-- **FR-4（评审判定落盘）**：评审判断经 `.crctl/tmp/review-dev-plan.yml` 输入 `crctl review-record --stage dev-plan --bump-attempt`，生成 `review-annotations/dev-plan.yml`，同步更新 `review-loop.yml` 与 `traceability.yml#reviews.dev-plan`。
+- **FR-4（评审判定落盘）**：评审判断经 `.crctl/tmp/review-dev-plan.yml` 输入 `crctl review-record --stage dev-plan --bump-attempt`，生成 `review-annotations/dev-plan.yml`，同步更新 `review-loop.yml` 与 `traceability.yml#reviews.dev-plan`；该投影复用 CR-2026-025 的通用 review-record → traceability 能力，不在本 CR 重新实现账本模型。
 - **FR-5（PASS 条件与行为）**：PASS 条件为 `verdict=pass && blockers=[]`；通过时保持 `task-breakdown`，允许进入现有开发启动人工审批。
 - **FR-6（普通产物 blocker 的回修路由）**：plan/TASK 的 BLOCK 经新状态转换 `task-breakdown → tech-design-reviewed`（trigger: `review-dev-plan:block`），pipeline 按 `write-dev-plan → write-dev-tasks → review-dev-plan` 顺序重放。`review-annotations/dev-plan.yml#repair-target` 记录为 `write-dev-plan`。
 - **FR-6a（上游设计疑点）**：发现 SDD 自相矛盾、不可实施或需要改变已审批设计时，评审记录 `upstream-design blocker`，`repair-target: write-tech-design`，并经专用转换 `task-breakdown → tech-design-review-pending`（trigger: `review-dev-plan:upstream-design-blocker`）停止 plan/TASK 自动重放；不得在本节点修改或覆盖 `review-annotations/sdd.yml`。由人工通过既有技术设计修订、重新评审与审批流程处理后，才可重新进入 plan → TASK → review。
@@ -121,7 +121,7 @@ write-dev-plan → write-dev-tasks（status → task-breakdown）
 
 - **FR-15（新 Skill）**：新建 `skills/develop/review-dev-plan/SKILL.md`，定义输入、八类维度、payload 格式、回修和落盘规则。
 - **FR-16（Skill 登记与矩阵）**：`skills/_index.yml` 登记新 Skill；`agent-skill-matrix.yml` 为既有 `dev-agent` 登记 `review-dev-plan` owns，为 `quality-reviewer-agent` 登记 can-call（不新增 actor）。
-- **FR-17（文档同步）**：`README.md` / `ARCHITECTURE.md` 更新节点流程、受控评审 stage 与状态转换说明。
+- **FR-17（文档同步）**：`README.md` / `ARCHITECTURE.md` 更新节点流程、受控评审 stage、状态转换说明与 CR-2026-025 traceability 投影依赖。
 
 ### 收尾
 
@@ -145,19 +145,22 @@ write-dev-plan → write-dev-tasks（status → task-breakdown）
 - **AC-2**（FR-3）：plan 中存在交付项但没有任何 TASK 承接时，评审 BLOCK。
 - **AC-3**（FR-3）：TASK 的 `depends-on` 指向不存在任务、形成互锁环或顺序与接口产出相反时，评审 BLOCK。
 - **AC-4**（FR-3）：上游 TASK 产出与下游 TASK 消费的函数名、参数或返回类型不一致时，评审 BLOCK。
-- **AC-5**（FR-3）：关键 TASK 没有至少两条可执行验收步骤或仍含 TBD/空泛实现说明时，评审 BLOCK。
+- **AC-5**（FR-3）：关键 TASK 没有至少两条可执行验收步骤或仍含 TBD/空泛实现说明时，评审 BLOCK；关键 TASK 指 `tasks/_index.yml` 中无下游替代、被其他 TASK 依赖、承接 SDD 核心接口/数据迁移/门禁变更，或失败会阻断本 CR 交付闭环的 TASK。
 - **AC-6**（FR-3/D-10）：plan/TASK 擅自加入 SDD 未批准能力时，评审 BLOCK；纯命名和非本 CR 优化进入 suggestions。
 - **AC-7**（FR-4/FR-5）：全部维度通过时生成 `dev-plan.yml`，`review-loop.yml#loops.review-dev-plan.current-attempt=1`，`traceability.yml#reviews.dev-plan` 与 annotation 一致。
 - **AC-8**（FR-6）：普通 plan/TASK BLOCK 后 status 从 `task-breakdown` 回到 `tech-design-reviewed`，pipeline 依次重跑 plan、TASK、评审；不得直接进入 implement-code。
 - **AC-8a**（FR-6a）：SDD 自相矛盾或不可实施时，记录 `upstream-design blocker` 与 `repair-target: write-tech-design`，status 从 `task-breakdown` 回到 `tech-design-review-pending`；未经过人工技术设计修订、重新评审和审批，不得再次进入 plan → TASK → review。
+- **AC-8b**（FR-6b/FR-7）：构造同轮同时包含普通 plan/TASK blocker 与 `repair-target: write-tech-design` 的 dev-plan payload 时，路由必须选择 `review-dev-plan:upstream-design-blocker`，status 回 `tech-design-review-pending`，不得触发普通 plan/TASK 自动回修，也不得递增后续普通 dev-plan 回修 attempt。
 - **AC-9**（FR-4/NFR-2）：第 2 轮通过时 traceability attempts 同时保留第 1 轮 block 与第 2 轮 pass；三账本时间、轮次、结论一致。
 - **AC-10**（FR-10）：评审未通过、证据缺失或 blockers 非空时执行 `crctl approve --stage dev-start`，必须返回 GATE_BLOCKED，且不写合法审批段、不推进 developing。
 - **AC-11**（FR-10）：评审通过且 plan/index/TASK 存在时，人工审批行为与现状一致，仍只能由 TTY 或合法签名 grant 完成。
+- **AC-11a**（FR-12）：评审通过并存在合法 dev-start 审批后，删除全部 `TASK-*.md` 或篡改 `approval.yml#development-start` 再执行 `advance --to developing`，必须被 developing 目标态门禁拦截，不得推进到 `developing`。
 - **AC-12**（FR-11）：审批后修改 dev-plan annotation、plan 或 task index，后续门禁识别 EVIDENCE_DRIFT。
 - **AC-12a**（FR-11/D-9）：审批后仅修改 `TASK-*.md` 正文而不修改 annotation、plan 或 task index 时，首版不要求由 dev-start evidence digest 识别漂移。
 - **AC-13**（FR-7）：三轮均 BLOCK 时返回 LOOP_EXHAUSTED 并停止，不进入 human approval。
 - **AC-14**（FR-18）：requirement、tech-design、write-test-report、code 的既有 review-record、attempt、gate、approve 与 traceability 投影测试全部通过。
 - **AC-15**（FR-19）：`check-skill-matrix.mjs`、`check-agents-contract.mjs`、`lint-prompts.mjs --mode enforce` 和相关 Node 测试全绿。
+- **AC-15a**（FR-1/FR-13/FR-14/FR-15/FR-16/FR-17/FR-20）：pipeline 模板、状态机转换、crctl stage 映射、Skill 登记、agent-skill-matrix、README/ARCHITECTURE 文档与提交溯源标注全部落地；任一登记缺失或文档引用旧单轨路由时，验收失败。
 
 ## 6. 成功指标
 

@@ -1,20 +1,17 @@
 cr-id: CR-2026-026
 review-type: requirement
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-09T11:53:05+08:00"
-verdict: block
-blockers:
-  - "FR-6b（分流优先级）缺可验证 AC：双轨路由的核心判定『同一轮同时存在 write-tech-design 与普通 plan/TASK blocker 时，上游设计疑点优先、进入 FR-6a 路由且不消耗普通 dev-plan 自动回修轮次』没有任何 AC 锚定，实施期无法验证优先级与轮次计费行为。需补一条 AC：构造两类 blocker 并存的评审 payload，断言走 upstream-design 路由、status 回 tech-design-review-pending、且 review-loop 普通 attempt 不递增。"
-  - "FR-12（developing 目标态门禁）缺可验证 AC：FR-12 声明的 developing 目标态门禁（plan.md 存在、tasks/_index.yml 存在、tasks/TASK-*.md 非空、dev-start passCondition 通过、approval.yml#development-start 合法）与 FR-10 的 dev-start approval stage 是两道不同门禁，但 AC-10/AC-11 只覆盖后者。需补一条 AC：在 task-breakdown 且评审通过后删除全部 TASK-*.md（或篡改 approval 段），断言 advance --to developing 被 developing 目标态门禁拦截（globNonEmpty/approval 校验生效）。"
+reviewed-at: "2026-08-09T12:00:31+08:00"
+verdict: pass
+blockers: []
 dimensions:
   structure-completeness: "pass"
-  fr-testability: "block"
+  fr-testability: "pass"
   scope-reasonableness: "pass"
   planning-alignment: "pass"
   dependency-identification: "pass"
 suggestions:
-  - "依赖识别：建议在 NFR 或 §1.3 显式声明对 CR-2026-025 已合入的 traceability reviews.<stage> 投影能力（FR-16/FR-18）的依赖，FR-4/FR-14 的『新增 stage 只需加映射项』正建立在该能力之上。"
-  - "结构/登记类 FR（FR-1 节点位置、FR-13 状态转换、FR-14 crctl 映射、FR-15 新 Skill、FR-16 矩阵登记、FR-17 文档同步、FR-20 溯源）无专属 AC，建议由 AC-15 验证关卡统一兜底，或补一条『结构与登记完整性』AC 覆盖 check-skill-matrix/check-agents-contract 对新增 Skill 与 owns 的校验。"
-  - "AC-5『关键 TASK 没有至少两条可执行验收步骤』中『关键 TASK』的判定口径未定义，建议明确（如：承载 SDD 核心模块或处于关键路径上的 TASK），避免评审期主观裁量。"
+  - "attempt-1 两条 blocker 已修复：FR-6b 由 AC-8b 锚定（两类 blocker 并存时 upstream-design 路由优先、不递增普通 attempt）；FR-12 由 AC-11a 锚定（删 TASK 或篡改 approval 后 advance --to developing 被 developing 目标态门禁拦截）。"
+  - "三条 suggestion 已采纳：B-6/FR-4/FR-17 显式声明对 CR-2026-025 traceability 投影能力的依赖；AC-15a 为结构/登记类 FR（FR-1/13/14/15/16/17/20）提供兜底验收；AC-5 明确了关键 TASK 判定口径。"
 subject-file: change-requests/CR-2026-026/prd.md
-subject-sha256: ab8216e4e234d118b6fdcdf6730bd690a46b96ce35a15a09ff05478c10277e9f
+subject-sha256: 8dc3dfbaf9b034f8978b8d300a3287512fd0ce2b6f7690dcf09ddfe69ce5f490
