@@ -1,11 +1,11 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 # 五段链路：需求 FR ↔ 技术设计 SDD ↔ 交付 TASK ↔ 代码 merge SHA ↔ CR-ID
 spec-id: ai-first-platform
-cr-ref: CR-2026-025
-cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025]
-target-version: "0.26"
+cr-ref: CR-2026-026
+cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026]
+target-version: "0.27"
 baseline-since: "0.10"
-generated-at: "2026-08-09T04:35:04+08:00"
+generated-at: "2026-08-09T15:30:05+08:00"
 
 # 已知缺口：CR-2026-003~CR-2026-006 未生成本文件的里程碑段（writeback-traceability 在那四个
 # CR 回写时被跳过，PRD.md/SDD.md/_index.yml 侧的累积记录不受影响、仍完整）。本次（CR-2026-008）
@@ -1857,3 +1857,149 @@ milestones:
         tasks: [CR-2026-025-TASK-07]
         code: tools@a7c1a42: §8 登记
         evidence: AC-17 文档核对
+  - cr: CR-2026-026
+    milestone: 编码前质量门禁
+    target-version: "0.27"
+    status: writing-back
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 279232aabe66334a88e0b99df81dd0f346190329
+        branch: requirement/CR-2026-026
+      - repo: tools
+        trunk: custom/main
+        sha: d395d04
+        branch: requirement/CR-2026-026
+    frs:
+      - fr: FR-1
+        title: review-dev-plan 节点插入位置
+        sdd: SDD §3.5 pipeline 节点插入（write-dev-tasks 后、push-progress 前）
+        tasks: [CR-2026-026-TASK-05]
+        code: tools@6134b11: code-implementation.pipeline.json 14 节点
+        evidence: AC-15a pipeline JSON 合法校验
+      - fr: FR-2
+        title: 评审强制输入（sdd/plan/tasks 等）
+        sdd: SDD §3.5 review-dev-plan/SKILL.md 前置校验
+        tasks: [CR-2026-026-TASK-03]
+        code: tools@6134b11: review-dev-plan/SKILL.md
+        evidence: AC-15a lint-prompts 0 findings
+      - fr: FR-3
+        title: 八类评审维度
+        sdd: SDD §2.1 dimensions schema
+        tasks: [CR-2026-026-TASK-03]
+        code: tools@6134b11: review-dev-plan/SKILL.md 维度定义
+        evidence: AC-1~AC-6（测试向量①-⑤ 与 SKILL 提示词）
+      - fr: FR-4
+        title: 评审判定落盘三账本
+        sdd: SDD §3.1/§3.2 review-record 通用路径
+        tasks: [CR-2026-026-TASK-01]
+        code: tools@6134b11: REVIEW_STAGE 四映射 + casWriteMulti
+        evidence: AC-7/AC-9（crctl.test ①③④ 三账本一致）
+      - fr: FR-5
+        title: PASS 条件与保持 task-breakdown
+        sdd: SDD §3.2/§3.5 passCondition allOf
+        tasks: [CR-2026-026-TASK-01]
+        code: tools@6134b11: gates.json reviewLoops + pipeline passCondition
+        evidence: AC-7（crctl.test ① verdict=pass）
+      - fr: FR-6
+        title: 普通 blocker 回修路由（回 tech-design-reviewed）
+        sdd: SDD §3.2/§3.4 转换 review-dev-plan:block
+        tasks: [CR-2026-026-TASK-02]
+        code: tools@6134b11: dir-graph.yaml 两条转换
+        evidence: AC-8（crctl.test ④ NORMAL 递增）
+      - fr: FR-6a
+        title: 上游设计疑点（回 tech-design-review-pending）
+        sdd: SDD §3.2/§4.2 repair-target=write-tech-design
+        tasks: [CR-2026-026-TASK-01]
+        code: tools@6134b11: resolveDevPlanRoute + 转换 2
+        evidence: AC-8a（crctl.test ③ upstream 路由）
+      - fr: FR-6b
+        title: 并存优先且不消耗普通轮次
+        sdd: SDD §3.2 步骤 2-3 bump 前路由判定
+        tasks: [CR-2026-026-TASK-07]
+        code: tools@f338e38: 测试③加强 review-loop.yml 字节不变断言
+        evidence: AC-8b（crctl.test ③⑤ 双文件断言）
+      - fr: FR-7
+        title: 三轮上限 LOOP_EXHAUSTED
+        sdd: SDD §3.5 maxAttempts=3 + §4.3 计费
+        tasks: [CR-2026-026-TASK-07]
+        code: tools@d395d04: 测试⑨ 自动化
+        evidence: AC-13（crctl.test ⑨）
+      - fr: FR-8
+        title: write-dev-plan 回修支持
+        sdd: SDD §8 采纳清单
+        tasks: [CR-2026-026-TASK-04]
+        code: tools@6134b11: write-dev-plan/SKILL.md review_feedback 契约
+        evidence: AC-15a lint-prompts 0 findings
+      - fr: FR-9
+        title: 空转防线（下一轮重读产物）
+        sdd: SDD §4.1
+        tasks: [CR-2026-026-TASK-04]
+        code: tools@6134b11: write-dev-tasks/SKILL.md fixed-blockers
+        evidence: AC-15a
+      - fr: FR-10
+        title: dev-start 审批门禁升级（evidence+passCondition）
+        sdd: SDD §3.3 approvalStages.dev-start
+        tasks: [CR-2026-026-TASK-02]
+        code: tools@d395d04: 测试⑥⑥b grant 通过/拦截
+        evidence: AC-10/AC-11（crctl.test ⑥⑥b）
+      - fr: FR-11
+        title: 证据防漂移（EVIDENCE_DRIFT）
+        sdd: SDD §3.3/§4.4 canonicalEvidenceDigest 三键
+        tasks: [CR-2026-026-TASK-02]
+        code: tools@d395d04: 测试⑧ 篡改 dev-plan.yml
+        evidence: AC-12（crctl.test ⑧）
+      - fr: FR-12
+        title: developing 目标态五条件门禁
+        sdd: SDD §3.3 statusGates.developing（stage=dev-start 修订）
+        tasks: [CR-2026-026-TASK-02]
+        code: tools@d395d04: 测试⑦ 删 TASK 拦截+补齐放行
+        evidence: AC-11a（crctl.test ⑦）
+      - fr: FR-13
+        title: 状态机两条新转换
+        sdd: SDD §3.4 口径 25→27 声明 / 47→49 展开
+        tasks: [CR-2026-026-TASK-02]
+        code: tools@6134b11: dir-graph.yaml
+        evidence: AC-8/AC-8a 状态机断言
+      - fr: FR-14
+        title: review-record 扩展 dev-plan stage
+        sdd: SDD §3.1 四映射
+        tasks: [CR-2026-026-TASK-01]
+        code: tools@6134b11: REVIEW_STAGE_* + repair-target 枚举校验
+        evidence: AC-7/AC-9（crctl.test ①②）
+      - fr: FR-15
+        title: 新建 review-dev-plan Skill
+        sdd: SDD §3.5 prompt 骨架
+        tasks: [CR-2026-026-TASK-03]
+        code: tools@6134b11: skills/develop/review-dev-plan/SKILL.md
+        evidence: AC-15a
+      - fr: FR-16
+        title: Skill 登记与权限矩阵
+        sdd: SDD §8
+        tasks: [CR-2026-026-TASK-05]
+        code: tools@6134b11: skills/_index.yml + agent-skill-matrix.yml（dev-agent owns / quality-reviewer-agent can-call）
+        evidence: AC-15a check-skill-matrix/check-agents-contract 通过
+      - fr: FR-17
+        title: 文档同步（README/ARCHITECTURE/crctl SKILL）
+        sdd: SDD §8 采纳清单
+        tasks: [CR-2026-026-TASK-06]
+        code: tools@6134b11: README/ARCHITECTURE §8/AGENT-SKILL-MATRIX.md
+        evidence: AC-15a
+      - fr: FR-18
+        title: 既有四 stage 不回归
+        sdd: SDD §9
+        tasks: [CR-2026-026-TASK-07]
+        code: tools@6134b11: 既有 111 例回归
+        evidence: AC-14
+      - fr: FR-19
+        title: 验证关卡（三件套 + 测试全绿）
+        sdd: SDD §9
+        tasks: [CR-2026-026-TASK-07]
+        code: tools@d395d04: 148 例全绿（121+19+8）
+        evidence: AC-15（test-report.md）
+      - fr: FR-20
+        title: 提交溯源标注
+        sdd: SDD §8
+        tasks: [CR-2026-026-TASK-06]
+        code: tools@6134b11: commit message 含方案文档与 CR-2026-026
+        evidence: AC-15a
