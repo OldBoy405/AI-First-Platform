@@ -36,7 +36,7 @@ CR-2026-026 对 tools 全生命周期实际演练后，操作记录暴露的共�
 
 按 v2 方案分两阶段实施：
 
-- **Phase 0 基线统一**：状态机口径全量统一为 27 声明/49 wildcard 展开；确认 crctl 保持单文件；修订 crctl 与 Pipeline 依赖描述；拍板并落地 archive `_index.yml` 全生命周期轻量目录语义；将 tools 声明为 workspace active repository 并删除 merge Skill 隐藏特例；删除旧方案中的 command module 与通用上下文命令描述；建立优化指标基线。
+- **Phase 0 基线统一**：状态机口径全量统一为 27 声明/49 wildcard 展开；确认 crctl 保持单文件；修订 crctl 与 Pipeline 依赖描述；拍板并落地 archive `_index.yml` 全生命周期轻量目录语义；将 tools 声明为 workspace active repository 并删除 merge Skill 隐藏特例；删除旧方案中的 command module 与通用上下文命令描述；建立优化指标基线。**实施首步为 tools 仓一次性 bootstrap（D-12/FR-15）**：tools 声明入 repositories 后从 custom/main 补建 `requirement/CR-2026-027` worktree，全部 `../tools` 改动落在该分支，禁止直写 custom/main。
 - **Phase 1 正确性修复**：`crctl approve` 两文件 CAS + 单次提交原子化；archived TASK 完成门禁（禁止隐式 no-task）；archive 事件与 backlog/history/index 同一 CAS 原子移动（收件人复用 owners，普通 `inbox-emit` 空 `--to` 硬失败）；归档残留幽灵条目的版本化迁移清理；终态只读 status/next 查询；review-record 输出 files/attempt/route/repairTarget 并删除 review Skill 的 traceability 二次读取。
 - **验证**：按 v2 方案 §6.6 五项最小清单执行，不预跑无关测试族。
 
@@ -76,6 +76,8 @@ CR-2026-026 对 tools 全生命周期实际演练后，操作记录暴露的共�
 | D-9 | Phase 0/1 最小修改与验证集合 | 修改核心 = workspace dir-graph/AGENTS、tools ARCHITECTURE、crctl.mjs 与 crctl.test.mjs；只修改确有过时指令的 merge/archive/review Skill 与 feature-writeback pipeline；不改 gates、matrix/index、approve Skill、engineering-docs、writeback scripts 或检查器本身；只运行 diff-check、pipeline JSON parse、crctl tests、lint-prompts enforce 与两项 grep | Q9：改什么测什么，不预跑无关测试族 |
 | D-10 | 归档事件收件人 | 取 requirement/development/test owner ID 去重；legacy 缺 owners 回退顶层 owner；最终为空 → CAS 前 `ARCHIVE_RECIPIENTS_MISSING`；普通 `inbox-emit` 缺失/非列表/空 `--to` 一律 `BAD_ARGS`；不新增身份字段 | Q10：复用 owners 模型 |
 | D-11 | 幽灵条目清理 | 本 CR 内以**入库的一次性版本化迁移脚本**清理 `_backlog.yml` 尾部缺 `- id:` 条目（CR-2026-024 已归档于 `_history.yml`）；脚本幂等；修复未来归档行为仍由 D-5 的 archive-move CAS 保证 | B-12 实测 + v2 §6.2 历史数据修复口径 |
+| D-12 | tools 仓 bootstrap | **注册后一次性补偿**：tools 加入 repositories 声明后，从 custom/main 为本 CR 创建 `requirement/CR-2026-027` worktree，此后全部 `../tools` 改动落在该分支，禁止直写 custom/main；该补偿不等同于每 CR 仓库选择模型，不新增注册字段 | 需求评审 Blocker：本 CR 注册时 tools 未声明，但必须修改 `../tools` 文件（ARCHITECTURE、crctl、merge/archive/review Skill、迁移脚本与测试） |
+| D-13 | target-version 口径 | **维持 `tbd` 并声明批准口径**：本 CR 属 tools 正确性修复，不绑定产品发布版本号序列；target-version 在需求审批时确认，不进入产品版本号递增链路 | 需求评审 Suggestion：避免 tbd 无解释 |
 
 ## 2. 用户故事
 
@@ -98,6 +100,7 @@ CR-2026-026 对 tools 全生命周期实际演练后，操作记录暴露的共�
 - **FR-5（tools 声明为参与仓）**：workspace `dir-graph.yaml#repositories` 新增 `{id: tools, path: "../tools", trunk: custom/main, role: code, active: true}`；删除 `merge-feature-branch` Skill 中「tools 不在声明但特殊参与」的 prose 与实现分支；注册、同步、合并、清理只遍历 repositories。
 - **FR-6（删除旧方案遗留描述）**：`docs/analysis/tools流程步骤优化v2.md` 中删除旧方案的 command module 目录描述与通用上下文 crctl 命令（`patch`/`run-workflow`/`stage-context`/`registration-check`/`register-preflight`）的描述，确保方案文档与拍板边界一致。
 - **FR-7（优化指标基线）**：将 v2 方案 §16.2 的外部调用量目标表（注册 24→8-12、PRD 编写 9→3、implement-code 63→25-35 等）与 §16.1 正确性指标固化为 `ARCHITECTURE.md` 或文档中的基线记录，供 Phase 2+ 候选路线实施前对照；指标是观测值，不得通过删除 gate、测试、补偿或人工审批达成。
+- **FR-15（tools worktree bootstrap）**：本 CR 实施的第一项动作：将 tools 加入 workspace `dir-graph.yaml#repositories`（D-3/FR-5）后，从 `../tools` 仓 custom/main 为本 CR 创建同名分支 worktree `requirement/CR-2026-027`（复用 `crctl worktree-path` 路径规则，bucket = `tools`）；fetch 失败按注册期 `STALE_BASE` 降级规则处理并在实施记录标注基线滞后；此后本 CR 对 `../tools` 的全部改动（ARCHITECTURE.md、crctl.mjs、crctl.test.mjs、merge/archive/review Skill、迁移脚本）一律落在该 worktree 分支，禁止直接在 custom/main 提交实施改动；merge/cleanup 阶段 tools 作为 active repo 走正常 merge-feature-branch 与 cr-archive 流程（含 tools 的 merge-commits 记录与 worktree 清理）。该 bootstrap 是注册时序（tools 当时未声明）的一次性补偿，不等同于新增每 CR 仓库选择模型。
 
 ### Phase 1 — 正确性修复
 
@@ -124,7 +127,7 @@ CR-2026-026 对 tools 全生命周期实际演练后，操作记录暴露的共�
 
 ### Phase 0
 
-- **AC-1**（FR-1）：grep 全库（workspace AGENTS.md、tools ARCHITECTURE.md、docs/analysis）不再存在把 25/47 描述为现状的表述；所有状态机数量断言注明 declared/wildcard 口径。
+- **AC-1**（FR-1）：按固定范围与判定执行 grep 清零核对：范围 = workspace 根（AGENTS.md、CONTEXT.md、dir-graph.yaml）+ `../tools` 包（ARCHITECTURE.md、AGENTS.md、README.md、skills/、pipeline-templates/），排除 `docs/analysis/` 下明确标注「历史口径/CR-2026-022 后、CR-2026-026 前」的复盘类文档引用；判定 = 模式 `25\s*条声明|25/47|47\s*条` 的命中若上下文为「当前/现状」表述则计未清零，仅作历史注脚的命中不违规；全部状态机数量断言注明 declared/wildcard 口径。
 - **AC-2**（FR-2）：`ARCHITECTURE.md` 与 v2 方案文档中不存在 `crctl/scripts/commands/` 或等价模块目录描述；crctl.mjs 仍为单文件。
 - **AC-3**（FR-3）：`ARCHITECTURE.md` 的 crctl-Pipeline 依赖描述与实现一致（三句准确描述到位，无「不依赖 Pipeline」旧表述残留）。
 - **AC-4**（FR-4/FR-11）：`ARCHITECTURE.md` 与 cr-archive 相关文档的 `_index.yml` 语义描述与实现一致（全生命周期轻量目录、三字段更新、不复制 history、不删除条目）。
@@ -145,7 +148,8 @@ CR-2026-026 对 tools 全生命周期实际演练后，操作记录暴露的共�
 - **AC-16**（FR-11）：普通 `inbox-emit` 在 `--to` 缺失、非列表、去重后为空时返回 `BAD_ARGS`，不写无收件人 notify-log。
 - **AC-17**（FR-12）：archived/rejected/withdrawn 三种终态 `crctl status` 返回终态与 `source: history`，`crctl next` 返回 `next:null` 不报错；backlog/history 同存同 CR 报 `CR_LOCATION_CONFLICT`；history 重复或缺 final-status 硬失败；cr.md 漂移输出 warning 且以 history 为准；active CR 查询行为不回归。
 - **AC-18**（FR-13）：`review-record` 输出含 `files[]`/`attempt`/`route`/`repairTarget` 且与本次实际写入一致（未 bump 不虚列 review-loop.yml）；四个 review Skill 不再重新读取 traceability 核对刚写入结果；`next` 仍由 `crctl next` 唯一计算。
-- **AC-19**（FR-14）：五项最小验证全部通过（diff-check 无告警、pipeline JSON 可解析、crctl 测试全绿、lint-prompts enforce 零发现、两项 grep 清零）。
+- **AC-19**（FR-14）：五项最小验证全部通过：① `git diff --check` 无告警；② `JSON.parse(feature-writeback.pipeline.json)` 通过；③ `node --test skills/shared/crctl/scripts/test/crctl.test.mjs` 全绿；④ `lint-prompts.mjs --mode enforce` 零发现；⑤ 按 AC-1 的搜索范围与判定方式 grep 确认 tools 隐藏特例与 25/47「现状」表述已清零。
+- **AC-22**（FR-15）：实施首步完成后：`../tools` 仓存在 `requirement/CR-2026-027` 分支与对应 worktree（基线 = custom/main HEAD）；`git log` 确认 custom/main 无本 CR 直接提交的实施改动；CR-2026-027 在 tools 的 merge-commits 记录与 docs/multica 同批生成（merge 阶段验收）；归档清理覆盖 tools worktree。
 - **AC-20**（NFR-1/NFR-4/NFR-5）：不新增第三方依赖与公共 Runner 库；无通用 patch/workflow 实现；crctl.mjs 保持单文件；writeback scripts 未被复制。
 - **AC-21**（NFR-6）：历史 CR 查询/归档行为兼容（旧 approval/archive 形态不要求迁移）；`_index.yml` 查询链路不变。
 
@@ -158,7 +162,7 @@ CR-2026-026 对 tools 全生命周期实际演练后，操作记录暴露的共�
 
 ## 7. 范围排除
 
-**本 CR 包含**：Phase 0 文档/声明修改（workspace AGENTS.md、dir-graph.yaml、CONTEXT.md 复核、v2 方案文档、tools ARCHITECTURE.md、merge-feature-branch SKILL.md 特例删除）；Phase 1 crctl.mjs 与 crctl.test.mjs 修改（approve 原子化、TASK 门禁、archive-move 原子化、终态 resolver、review-record 输出）；一次性迁移脚本入库与幽灵条目清理；四个 review Skill 的 traceability 二次读取删除；按 §6.6 的五项最小验证。
+**本 CR 包含**：Phase 0 文档/声明修改（workspace AGENTS.md、dir-graph.yaml、CONTEXT.md 复核、v2 方案文档、tools ARCHITECTURE.md、merge-feature-branch SKILL.md 特例删除）；**tools 仓 bootstrap worktree 派生与实施落地（D-12/FR-15/AC-22）**；Phase 1 crctl.mjs 与 crctl.test.mjs 修改（approve 原子化、TASK 门禁、archive-move 原子化、终态 resolver、review-record 输出）；一次性迁移脚本入库与幽灵条目清理；四个 review Skill 的 traceability 二次读取删除；按 §6.6 的五项最小验证。
 
 **本 CR 不包含**（Phase 2+ 全部候选路线，须分别重新确认并另写 Spec）：
 - PRD Runner 垂直试点（prepare/finalize、create/repair 双模式、CR PRD 最小确定性校验、typed outputs）。
@@ -174,3 +178,4 @@ CR-2026-026 对 tools 全生命周期实际演练后，操作记录暴露的共�
 | 日期 | 版本 | 作者 | 说明 |
 |------|------|------|------|
 | 2026-08-09 | v0.1.0 | Ray | 初始草稿（基于 v2 方案 §5-§6 与质询记录 Q1~Q10 转写；14 条 FR、8 条 NFR、21 条 AC；幽灵条目清理入范围 D-11/FR-10/AC-14） |
+| 2026-08-09 | v0.2.0 | Ray | 修订（需求评审 BLOCK 回修，blocker=FR-5/AC-5 tools 仓引导缺失）：新增 D-12/FR-15/AC-22（tools worktree bootstrap——声明入 repositories 后从 custom/main 补建 requirement/CR-2026-027 分支，禁止直写 custom/main，merge/cleanup 走正常流程）；新增 D-13（target-version 维持 tbd 的批准口径说明）；按 suggestions 固定 AC-1/AC-19 的 grep 搜索范围与判定方式（历史注脚引用不违规）；§1.2/§7 同步 |
