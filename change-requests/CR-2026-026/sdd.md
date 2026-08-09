@@ -90,7 +90,7 @@ suggestions: []
 
 - `review-loop.yml`：`review-record --bump-attempt` 级联写 `loops.review-dev-plan`（复用 025 的 review-loop 记账）。
 - `traceability.yml#reviews.dev-plan`：由 crctl 通用投影路径渲染（复用 025 交付的 `renderReviewsStageBlock` + 定点编辑），字段集与 requirement/tech-design/code 一致（reviewer/verdict/reviewed-at/blocker-count/annotation/repair-target/review-loop）。
-- **attempt 计费规则**（PRD FR-6b/FR-7，TD-BL-2 修订）：路由判定**发生在 bump 之前**——`cmdReviewRecord` 在读取 payload 后、执行 review-loop 读取/校验/递增之前，先解析顶层 `repair-target` 得出 route（pass/normal/upstream）。NORMAL/PASS 走既有 `--bump-attempt` 记账（current-attempt+1、attempts 追加该轮）；UPSTREAM **跳过 bump**（current-attempt 不变、attempts 不追加），仅写 annotation 与 traceability 投影（attempt=当前值），三账本与 audit 保持同批一致（NFR-2）。
+- **attempt 计费规则**（PRD FR-6b/FR-7，TD-BL-2 修订）：路由判定**发生在 bump 之前**——`cmdReviewRecord` 在读取 payload 后、执行 review-loop 读取/校验/递增之前，先解析顶层 `repair-target` 得出 route（pass/normal/upstream）。NORMAL/PASS 走既有 `--bump-attempt` 记账（current-attempt+1、attempts 追加该轮）；UPSTREAM **跳过 bump**——review-loop.yml 写入块整体不执行（`if (bump)` 分支跳过，文件字节不变），仅写 annotation 与 traceability 投影（attempt=当前值、attempts 保持既有历史），三账本与 audit 保持同批一致（NFR-2）。
 
 ## 3. 接口契约
 
@@ -164,14 +164,14 @@ REVIEW_REPAIR_TARGETS['dev-plan'] = 'write-dev-plan';
 - `passCondition` 复用既有解释器（运行时读 pipeline JSON 的 reviewLoop.passCondition：verdict=pass && blockers=[]）。
 - `evidence` 三键 → canonical evidence digest 覆盖 annotation/plan/task-index（FR-11）；审批后修改三者触发既有 EVIDENCE_DRIFT。TASK-*.md 正文不在 digest（D-9/FR-11 首版边界，AC-12a）。
 
-**statusGates.developing**（现状：仅 approval 一项）→ 按 FR-12 补全：
+**statusGates.developing**（现状：仅 approval 一项）→ 按 FR-12 补全（实现期修订：passCondition 引用 `stage=dev-start` 而非 `dev-plan`——`evaluatePassCondition` 从 `approvalStages[stage]` 取 stageCfg（pipeline+evidence），dev-plan 不在 approvalStages（自动评审 stage 非人工审批）；dev-start 的 approvalStages 配置含 evidence 三键 + passCondition，完全复用同一判据与证据）：
 
 ```json
 "developing": [
   { "type": "fileExists", "path": "change-requests/{cr}/plan.md" },
   { "type": "fileExists", "path": "change-requests/{cr}/tasks/_index.yml" },
   { "type": "globNonEmpty", "dir": "change-requests/{cr}/tasks", "pattern": "^TASK-\\d+.*\\.md$" },
-  { "type": "passCondition", "stage": "dev-plan" },
+  { "type": "passCondition", "stage": "dev-start" },
   { "type": "approval", "section": "development-start" }
 ]
 ```
@@ -264,7 +264,7 @@ review-dev-plan BLOCK（普通轨）
 
 ### 4.3 attempt 计费（FR-6b/FR-7/AC-8b，TD-BL-2 修订）
 
-- 路由判定在 bump 之前（§3.2 步骤 2-3）：NORMAL/PASS 走既有 `--bump-attempt`（current-attempt+1，attempts 追加该轮）；UPSTREAM **跳过 bump**（current-attempt 不变，attempts 不追加），仅写 annotation + traceability 投影（attempt=当前值）。
+- 路由判定在 bump 之前（§3.2 步骤 2-3）：NORMAL/PASS 走既有 `--bump-attempt`（current-attempt+1，attempts 追加该轮）；UPSTREAM **跳过 bump**——review-loop.yml 不写（字节不变，见 §2.3），仅写 annotation + traceability 投影（attempt=当前值、attempts 保持既有历史）。
 - PASS 与既有 stage 一致：bump 一次，attempts 保留 pass 记录（AC-9：第 2 轮通过时同时保留第 1 轮 block 与第 2 轮 pass）。
 - UPSTREAM 后的普通回修 attempt 从当前值继续计费（AC-8b：不递增后续普通 dev-plan 回修 attempt）。
 
@@ -346,7 +346,7 @@ review-dev-plan BLOCK（普通轨）
 
 | 测试文件 | 覆盖 |
 |---|---|
-| `crctl.test.mjs`（追加向量） | ① REVIEW_STAGE 映射含 dev-plan 且 `review-record --stage dev-plan` 在 task-breakdown 落盘三账本；② repair-target schema 校验（缺省→write-dev-plan、显式 write-tech-design→upstream、非法值→SCHEMA_INVALID 且三账本不变）；③ UPSTREAM 路由判定：payload 顶层 repair-target=write-tech-design → upstream 且 bump 跳过（review-loop current-attempt 不变、attempts 不追加，AC-8b）；④ NORMAL/PASS 走既有 bump（attempt+1）；⑤ 同轮并存时 UPSTREAM 优先（普通项进 suggestions 摘要）；⑥ dev-start approval 无 dev-plan.yml / passCondition 不过 → GATE_BLOCKED 且不写 approval 段（AC-10）；⑦ developing 目标态删 TASK-*.md 或篡改 approval → 门禁拦截（AC-11a）；⑧ evidence digest 覆盖三键，改 plan/index 后 EVIDENCE_DRIFT（AC-12）；⑨ 三轮 BLOCK → LOOP_EXHAUSTED（AC-13）；⑩ requirement/tech-design/write-test-report/code 四 stage 回归（AC-14） |
+| `crctl.test.mjs`（追加向量） | ① REVIEW_STAGE 映射含 dev-plan 且 `review-record --stage dev-plan` 在 task-breakdown 落盘三账本；② repair-target schema 校验（缺省→write-dev-plan、显式 write-tech-design→upstream、非法值→SCHEMA_INVALID 且三账本不变）；③ UPSTREAM 路由判定：payload 顶层 repair-target=write-tech-design → upstream 且 bump 跳过（review-loop.yml 字节不变——current-attempt 不递增、attempts 不追加；traceability 投影同语义，AC-8b）；④ NORMAL/PASS 走既有 bump（attempt+1）；⑤ 同轮并存时 UPSTREAM 优先（普通项进 suggestions 摘要）；⑥ dev-start approval 无 dev-plan.yml / passCondition 不过 → GATE_BLOCKED 且不写 approval 段（AC-10）；⑦ developing 目标态删 TASK-*.md 或篡改 approval → 门禁拦截（AC-11a）；⑧ evidence digest 覆盖三键，改 plan/index 后 EVIDENCE_DRIFT（AC-12）；⑨ 三轮 BLOCK → LOOP_EXHAUSTED（AC-13）；⑩ requirement/tech-design/write-test-report/code 四 stage 回归（AC-14） |
 | `lint-prompts.test.mjs` / `check-skill-matrix.mjs` / `check-agents-contract.mjs` | 新 Skill 登记、dev-agent owns + quality-reviewer-agent can-call、prompt 无漂移（AC-15/AC-15a） |
 | 状态机断言（crctl.test.mjs 内） | 新增两条转换可 advance；口径 27 声明 / 49 展开断言（PRD B-7） |
 
@@ -368,3 +368,4 @@ review-dev-plan BLOCK（普通轨）
 |------|------|------|------|
 | 2026-08-09 | v0.1.0 | Ray | 初始草稿（基于 PRD v0.2.x + 实测代码基线；双轨路由/attempt 计费/gates 三处变更详设） |
 | 2026-08-09 | v0.2.0 | Ray | 技术评审 attempt-1 回修（3 blocker，TD-BL-1/2/3）：repair-target 定为 dev-plan payload/annotation 顶层可选字段（枚举校验，blockers 不解析字符串）；路由判定移到 cmdReviewRecord 内部 bump 之前，UPSTREAM 跳过 bump；pipeline onBlock 分流契约（NORMAL replay / UPSTREAM abort code-implementation） |
+| 2026-08-09 | v0.3.0 | Ray | 实现期偏差修订（TASK-01~07 落地后回写）：① §3.3 developing 门禁 passCondition 引用改为 `stage=dev-start`——`evaluatePassCondition` 仅从 `approvalStages[stage]` 取 stageCfg，dev-plan 不在 approvalStages（自动评审 stage），dev-start 配置含同一 evidence/passCondition 完全复用；② §2.3/§4.3 明确 UPSTREAM 时 review-loop.yml 写入块整体跳过（字节不变），不只 traceability 不递增；③ §9 测试③补 review-loop.yml 字节不变断言（测试实际落地为 5 向量 + 加强断言，116 例全绿） |
