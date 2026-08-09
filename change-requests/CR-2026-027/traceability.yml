@@ -62,3 +62,21 @@ reviews:
           result: pass
           blocker-count: 0
           repair-target: write-dev-plan
+tests:
+  report: change-requests/CR-2026-027/test-report.md
+  status: pass
+  owner: OldBoy405
+  owner-assigned-at: "2026-08-09T22:06:44+08:00"
+  generated-at: "2026-08-10T05:57:06+08:00"
+  repair-target: implement-code
+  commands:
+    - name: crctl-test-suite
+      result: pass
+    - name: lint-prompts-enforce
+      result: pass
+    - name: pipeline-json-parse
+      result: pass
+    - name: diff-check
+      result: pass
+    - name: migrate-backlog-idempotent
+      result: pass
