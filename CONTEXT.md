@@ -47,6 +47,11 @@ trunk 提交）属新采集，显式延后到 P3+，不属于 bypass-commit 的�
 multica 代码（`cr-status-badge.tsx`）按 15 态渲染是正确的；PRD §5.2.3 与 P0 文档中
 「16 态」的表述指含 (new) 的口语口径，写正式断言时必须写明用的是哪个口径。
 
+### 上游设计疑点（upstream-design blocker）
+
+开发计划与 TASK 评审发现的、只能通过修订已审批 SDD 才能解决的阻断问题。它不属于 plan/TASK 自动回修范围，必须回到既有技术设计修订、评审与审批流程处理。
+_Avoid_: 普通回修 blocker、TASK blocker
+
 ### CR 关联 Issue（原「壳 Issue」，已废止）
 
 `cr.shell_issue_id` 指向的 Issue（2026-08-07 敲定，见 ADR-0001）：CR 与项目的

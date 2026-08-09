@@ -1,0 +1,37 @@
+cr-id: CR-2026-026
+tasks:
+  - id: CR-2026-026-TASK-01
+    title: crctl dev-plan stage 映射与双轨路由判定
+    status: pending
+    estimate: 12h
+    depends-on: []
+  - id: CR-2026-026-TASK-02
+    title: gates.json 门禁升级与状态机两条转换
+    status: pending
+    estimate: 8h
+    depends-on: [CR-2026-026-TASK-01]
+  - id: CR-2026-026-TASK-03
+    title: 新建 review-dev-plan Skill
+    status: pending
+    estimate: 4h
+    depends-on: [CR-2026-026-TASK-02]
+  - id: CR-2026-026-TASK-04
+    title: write-dev-plan / write-dev-tasks 回修支持与 approve-dev-start 表述
+    status: pending
+    estimate: 4h
+    depends-on: [CR-2026-026-TASK-02]
+  - id: CR-2026-026-TASK-05
+    title: pipeline 插入 review-dev-plan 节点与 Skill 登记
+    status: pending
+    estimate: 8h
+    depends-on: [CR-2026-026-TASK-03, CR-2026-026-TASK-04]
+  - id: CR-2026-026-TASK-06
+    title: 文档同步（README / ARCHITECTURE / crctl SKILL 用途表）
+    status: pending
+    estimate: 4h
+    depends-on: [CR-2026-026-TASK-05]
+  - id: CR-2026-026-TASK-07
+    title: crctl 测试向量与全量回归
+    status: pending
+    estimate: 4h
+    depends-on: [CR-2026-026-TASK-06]

@@ -1,0 +1,71 @@
+cr-id: CR-2026-026
+reviews:
+  requirement:
+    reviewer: "OldBoy405"
+    verdict: pass
+    reviewed-at: "2026-08-09T12:00:31+08:00"
+    blocker-count: 0
+    annotation: "change-requests/CR-2026-026/review-annotations/requirement.yml"
+    repair-target: write-requirement-prd
+    review-loop:
+      current-attempt: 2
+      max-attempts: 3
+      attempts:
+        - attempt: 1
+          reviewed-at: "2026-08-09T11:53:05+08:00"
+          result: block
+          blocker-count: 2
+          repair-target: write-requirement-prd
+        - attempt: 2
+          reviewed-at: "2026-08-09T12:00:31+08:00"
+          result: pass
+          blocker-count: 0
+          repair-target: write-requirement-prd
+  tech-design:
+    reviewer: "OldBoy405"
+    verdict: pass
+    reviewed-at: "2026-08-09T12:27:11+08:00"
+    blocker-count: 0
+    annotation: "change-requests/CR-2026-026/review-annotations/sdd.yml"
+    repair-target: write-tech-design
+    review-loop:
+      current-attempt: 2
+      max-attempts: 3
+      attempts:
+        - attempt: 1
+          reviewed-at: "2026-08-09T12:19:03+08:00"
+          result: block
+          blocker-count: 3
+          repair-target: write-tech-design
+        - attempt: 2
+          reviewed-at: "2026-08-09T12:27:11+08:00"
+          result: pass
+          blocker-count: 0
+          repair-target: write-tech-design
+  code:
+    reviewer: "OldBoy405"
+    verdict: pass
+    reviewed-at: "2026-08-09T14:35:51+08:00"
+    blocker-count: 0
+    annotation: "change-requests/CR-2026-026/review-annotations/code.yml"
+    repair-target: implement-code
+    review-loop:
+      current-attempt: 2
+      max-attempts: 3
+      attempts:
+        - attempt: 1
+          reviewed-at: "2026-08-09T14:07:52+08:00"
+          result: pass
+          blocker-count: 0
+          repair-target: implement-code
+        - attempt: 2
+          reviewed-at: "2026-08-09T14:35:51+08:00"
+          result: pass
+          blocker-count: 0
+          repair-target: implement-code
+tests:
+  - at: "2026-08-09T13:55:00+08:00"
+    by: "OldBoy405"
+    status: pass
+    report: "change-requests/CR-2026-026/test-report.md"
+    commands: 6
