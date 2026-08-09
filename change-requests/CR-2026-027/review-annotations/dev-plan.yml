@@ -1,0 +1,27 @@
+cr-id: CR-2026-027
+review-type: dev-plan
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-09T23:47:20+08:00"
+verdict: block
+repair-target: write-tech-design
+blockers:
+  - "DP-UP-1（上游设计证据已过时）：FR-16/AC-23 与 SDD v0.5.0 在 tech-design 已于 2026-08-09 23:24:14+08:00 审批、review-annotations/sdd.yml 于 23:20:40+08:00 PASS 之后新增，且改动 `cmdNext` 的接口与测试契约。当前开发计划不能把 v0.5.0 SDD 视为“已审批技术设计”。须回到技术设计链路，对包含 FR-16 的 SDD 重新执行 review-tech-design 与 approve-tech-design，再重放 plan/TASK 评审。"
+  - "DP-UP-2（next BLOCK 路由来源未闭环）：FR-16/SDD/TASK-07 写“评审 BLOCK → 按 route 建议回修节点”，但 `route` 是 review-record 的返回字段，并未声明持久化到 dev-plan.yml；`cmdNext` 是后续独立调用，不能读取上一命令的瞬时返回值。须在 SDD 明确 `cmdNext` 从 canonical dev-plan annotation 的 `verdict`/`blockers`/顶层 `repair-target` 调用共享 `resolveDevPlanRoute` 重新派生：normal→write-dev-plan、upstream→write-tech-design，并定义 malformed annotation/LOOP_EXHAUSTED 的建议行为。"
+  - "DP-BL-1（SDD→plan 覆盖缺失）：plan.md 的 M4、风险表和发布 checklist 仍只描述终态 status/next resolver，没有纳入 FR-16 的 task-breakdown dev-plan 路由修复或 AC-23；新增范围仅落到 SDD/TASK-07，计划层断链。须更新里程碑、验证清单及必要风险说明。"
+  - "DP-BL-2（最终验收 TASK 漏项）：TASK-10 仍声明核对 AC-1~AC-22，验收列表止于 AC-22，未纳入 AC-23；即使 TASK-07 局部测试通过，最终全量核对也会遗漏新增需求。须更新 TASK-10 的任务描述、验收列表与完成标志为 AC-1~AC-23，并显式消费 TASK-07 的 AC-23 三轨测试。"
+  - "DP-BL-3（AC-23 测试未覆盖 upstream 轨）：PRD FR-16 要求 BLOCK 按 route 回修，但 AC-23、SDD §7.3 与 TASK-07 验收只明确 repair→write-dev-plan，未断言 upstream→write-tech-design。须增加 dev-plan annotation 顶层 `repair-target=write-tech-design` 时 `crctl next` 返回 write-tech-design 的可执行用例，并覆盖普通 repair 与 malformed/缺失记录。"
+  - "DP-BL-4（依赖拓扑与计划顺序不一致）：plan 明确 M6/ARCHITECTURE §8 登记在全部代码落地后收尾，但 TASK-09 仅依赖 TASK-01/06/08，未依赖同样修改 ARCHITECTURE.md 的 TASK-02，也未等待 TASK-03/04/05/07 完成。至少应增加 TASK-02 依赖以避免同文件并发；若 §8 要登记完整 Phase 1 结果，则应等待 TASK-03~08 后再执行。"
+dimensions:
+  sdd-to-plan: "block — 新增 FR-16 已进入 SDD，但 plan 的里程碑、风险和发布 checklist 未同步。"
+  plan-to-tasks: "block — TASK-07 承接实现，但 TASK-10 未承接 AC-23，TASK-09 依赖与 M6 收尾顺序不一致。"
+  task-executability: "block — TASK-07 未说明独立 cmdNext 如何获得瞬时 route，需改为从 annotation 字段确定性派生。"
+  dependency-topology: "block — 无环和悬空引用，但 TASK-09 缺 TASK-02/其余 Phase 1 收尾依赖。"
+  interface-contracts: "block — FR-16 的 BLOCK 分流缺持久化输入来源及 upstream/malformed 契约。"
+  acceptance-verifiability: "block — AC-23 缺 upstream 用例，TASK-10 最终核对漏 AC-23。"
+  scope-and-simplicity: "block — 范围由用户明确新增且实现归入现有 TASK-07，未过度设计；但它实质修改已审批 SDD，必须重新技术评审/审批。"
+  risk-and-rollback: "block — plan 尚未记录 task-breakdown next 路由变更的兼容性风险与回归/回滚安排。"
+  suggestion-policy: "strict"
+  reviewer-model: "gpt-5.6-sol"
+suggestions:
+  - "plan 9 人天与 TASK 合计 64h 相差 8h；新增 FR-16 后建议重新拍板估算口径，但若依赖与验收修复后不影响执行，可保留为 warning。"
+  - "当前 approval.yml#tech-design 尚未提交且对应的是 SDD v0.4.0 证据；本次上游回退提交应保留该历史审批记录，重新审批时由 crctl approve 覆盖 tech-design 段。"

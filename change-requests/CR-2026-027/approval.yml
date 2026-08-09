@@ -12,3 +12,9 @@ supplemental-reviews:
     stage: "tech-design"
     status-at-record: tech-designing
     notes: "TD-BL-1 处置建议：保留 SDD 的 crctl migrate-backlog 扩展方案，并修订已审批 PRD，而不是新增 ../tools/skills/shared/scripts/ 独立账本脚本。理由：_backlog.yml 属受控账本，ARCHITECTURE.md §5/§6 要求唯一写入口为 crctl（CAS + audit），且现有 migrate-backlog 与 crctl.test.mjs 可直接复用。PRD 应将 D-11/FR-10/AC-14/范围与变更记录同步修订：增加幽灵块识别、_history.yml 归档证据校验、GHOST_ENTRY_ORPHANED 硬失败、CAS 冲突零写入、already-clean 幂等及 audit 记录；明确这是实现落点纠错，业务目标与结论不受影响，并由人工确认该已审批需求 revision。"
+tech-design:
+  approver: "OldBoy405"
+  approved-at: "2026-08-09T23:24:14+08:00"
+  via: crctl-approve
+  evidence-digest: "8c079794c95d40240480cca2ce3b4b1b578fced599fa911b96861b993bb509fa"
+  target-status: tech-design-reviewed
