@@ -2,16 +2,16 @@
 id: CR-2026-030-prd
 type: PRD
 cr-ref: CR-2026-030
-title: tools TCA-001～004 最小优化 - 注册、移交、审批驳回与开发计划评审契约收敛
+title: tools TCA-001～004 最小优化 — cr-init 三 Owner 注册契约 + owner-set 正式移交 + grant reject 验证回退 + review-dev-plan 精确 trigger / R7 字面量校验
 target-version: tbd
 owner: Ray
 owner-role: requirement
 status: draft
 created: "2026-08-11T01:29:00+08:00"
-updated: "2026-08-11T01:29:00+08:00"
+updated: "2026-08-11T01:42:44+08:00"
 ---
 
-# PRD - tools TCA-001～004 最小优化
+# PRD — tools TCA-001～004 最小优化 — cr-init 三 Owner 注册契约 + owner-set 正式移交 + grant reject 验证回退 + review-dev-plan 精确 trigger / R7 字面量校验
 
 ## 1. 概述
 
@@ -47,13 +47,15 @@ updated: "2026-08-11T01:29:00+08:00"
 | B-5 | 状态机权威 NORMAL trigger 为 `review-dev-plan:block -> write-dev-plan`，`findTransition()` 精确匹配 | tools `dir-graph.yaml` 与 crctl 当前实现 |
 | B-6 | 当前 R7 只检查 `advance` 是否带 `--to/--trigger`，不校验字面量是否存在于状态机 | `lint-prompts.mjs` 当前实现 |
 | B-7 | 当前没有 Pipeline Runner 保证平台签名 approve/reject 分派到对应 `approve-*` Skill | 优化方案 §6.1 |
-| B-8 | Multica 尚未消费 owners/inbox 注册投影，本 CR 不修改 Multica 源码 | `CUSTOM-TODO-003/004/005` 边界 |
+| B-8 | Multica 尚未消费 owners/inbox 注册投影；本 CR 不修改 Multica production code，仅允许扩展既有 Go→crctl 跨接缝测试并同步 `CUSTOM.md` | `CUSTOM-TODO-003/004/005` 边界、`server/internal/governance/approval_crosscheck_test.go` |
 
 ### 1.4 契约优先级与版本口径
 
 本 PRD 以 `docs/analysis/tools-tca-001-004-optimization-plan.md` 的已确认实施边界为需求输入；状态机、门禁、权限和 grant v1 结构仍以 tools 仓权威文件为准。PRD、后续 SDD 或实现不得复制一份状态机、grant 协议或 Git 路径算法作为第二事实源。
 
 `target-version: tbd` 表示该变更尚未绑定产品发布版本，不表示允许省略验收或回写版本。后续人工审批可保持 `tbd`，不得为通过门禁虚构产品版本。
+
+本 PRD 对 source 中“本轮不修改 Multica 源码”的口径作唯一消歧：**Multica production code 零修改，但允许 `server/internal/governance/approval_crosscheck_test.go` 的 test-only diff，并必须同步 `CUSTOM.md` 台账**。除此之外的 Multica 文件均不在修改范围；该口径不代表 owners/inbox 消费、registration reconcile 或 Pipeline Runner 已交付。
 
 ## 2. 用户故事
 
@@ -158,7 +160,17 @@ Pipeline prompt 必须删除上述两个具体 `crctl advance` 命令，只保�
 - `review-dev-plan` 持有两个精确 advance；`code-implementation.pipeline.json` 只保留路由与 replay。
 - `README.md`、`AGENTS.md`、`ARCHITECTURE.md` 仅修正失真的当前契约，不新增第二事实源或未交付自动化描述。
 
-Pipeline 节点数量保持不变，不修改 Pipeline `_index.yml#nodes`。本 CR 不修改 CI workflow。
+#### FR-10.1 精确修改白名单
+
+| 类别 | 本 CR 允许修改的文件 |
+|---|---|
+| crctl 与测试 | `skills/shared/crctl/scripts/crctl.mjs`；`skills/shared/crctl/SKILL.md`；`skills/shared/crctl/scripts/test/crctl.test.mjs`；`skills/shared/crctl/scripts/lint-prompts.mjs`；`skills/shared/crctl/scripts/test/lint-prompts.test.mjs` |
+| Skill | `skills/requirement/requirement-register/SKILL.md`；`skills/sync/handover-cr/SKILL.md`；`skills/sync/resume-from-remote/SKILL.md`；`skills/requirement/approve-requirement/SKILL.md`；`skills/develop/approve-tech-design/SKILL.md`；`skills/develop/approve-dev-start/SKILL.md`；`skills/develop/approve-code/SKILL.md`；`skills/develop/review-dev-plan/SKILL.md` |
+| Pipeline | `pipeline-templates/requirement-authoring.pipeline.json`；`pipeline-templates/architecture-design.pipeline.json`；`pipeline-templates/code-implementation.pipeline.json`；`pipeline-templates/resume-cr.pipeline.json` |
+| tools 人读契约 | `README.md`；`AGENTS.md`；`ARCHITECTURE.md` |
+| Multica test-only | `server/internal/governance/approval_crosscheck_test.go`；`CUSTOM.md` |
+
+Pipeline 节点数量保持不变，不修改 `pipeline-templates/_index.yml#nodes`。本 CR 不修改 CI workflow。Multica 除上述 test-only 文件与台账外零 diff；修改 `approval_crosscheck_test.go` 时必须按 Multica `CLAUDE.md` 使用英文注释，并按当时 `CUSTOM.md` 实际结构登记 CR/TASK 追溯。
 
 ## 4. 非功能需求
 
@@ -185,12 +197,12 @@ Pipeline 节点数量保持不变，不修改 Pipeline `_index.yml#nodes`。本 
 
 - **AC-7（FR-3）**：双投影一致时才允许变更或同值幂等；任一角色或顶层兼容 owner 漂移时零写入并返回结构化错误。
 - **AC-8（FR-3）**：真实变化只追加一条 `owner-history`，不追加 `handover-history`；requirement 移交同步两处兼容 `owner`，note 只进入 owner-history 与 inbox 事实。
-- **AC-9（FR-3）**：Owner、history、notify-log、notify-pending 使用同一时间戳，`cr.md` 与 backlog 由一次 `casWriteMulti()` 提交候选内容。
+- **AC-9（FR-3）**：Owner 双投影、owner-history、notify-log、notify-pending、成功 audit 的 `handover-at` 与 owners/inbox outbox payload 的 `handover_at` 均等于 `owner-set` 本次唯一时间戳；事件 envelope 自身投递时间不作相等要求。`cr.md` 与 backlog 由一次 `casWriteMulti()` 提交候选内容。
 - **AC-10（FR-3/FR-4）**：同值重放不产生时间、历史、通知、audit、commit 或 outbox，但 `handover-cr` 仍进入 `push-progress` 以发布可能已存在的 commit。
 - **AC-11（FR-4）**：`handover-cr` 无 `skip_push`，固定执行 `owner-set -> push-progress`；push 失败保留本地 commit 并明确返回未完成，不能输出移交完成。
 - **AC-12（FR-4）**：`resume-from-remote` 的输入、正文和执行路径均无 `new_owner/new_owner_role` 或 Owner 写入；恢复后只读取状态并调用 `crctl next`。
-- **AC-13（FR-5）**：commit 成功后以同一真实 SHA 尝试 owners + inbox 两类 outbox；payload 无 `subject/body`，owners payload 含完整三角色投影且仅一个 formal-handover change。
-- **AC-14（FR-5）**：outbox 失败不回滚 commit、不阻止发布；Git add/commit 失败时成功恢复原快照与 staged 状态并返回 `OWNER_COMMIT_FAILED`。
+- **AC-13（FR-5）**：commit 成功后以同一真实 SHA 尝试 owners + inbox 两类 outbox；payload 无 `subject/body`，owners payload 含完整三角色投影且仅一个 formal-handover change；两类 payload 的 `handover_at` 与 AC-9 的唯一时间戳一致。
+- **AC-14（FR-5）**：outbox 失败不回滚 commit、不阻止发布，并记录 `EMIT_FAILED`；Git add/commit 失败时不得写成功 audit 或任何 outbox，成功恢复原快照与 staged 状态并返回 `OWNER_COMMIT_FAILED`。
 - **AC-15（FR-5）**：注入恢复 CAS 冲突或重新暂存失败时返回 `OWNER_COMMIT_ROLLBACK_FAILED` 和受影响文件，且不调用 `push-progress`。
 
 ### 5.3 签名审批
@@ -214,8 +226,9 @@ Pipeline 节点数量保持不变，不修改 Pipeline `_index.yml#nodes`。本 
 
 ### 5.5 全量回归
 
-- **AC-29（FR-10）**：相关 Skill、四个 Pipeline 模板和人读契约与本 PRD 一致，不描述 CUSTOM-TODO-001～006 为已交付；Multica 代码 diff 为空，CI workflow 无修改。
-- **AC-30（全局）**：以下命令全部通过：
+- **AC-29（FR-10）**：FR-10.1 白名单内的 Skill 与人读契约均与本 PRD 一致，不描述 CUSTOM-TODO-001～006 为已交付；Multica production code 零 diff，Multica 只允许 `server/internal/governance/approval_crosscheck_test.go` 与 `CUSTOM.md` 发生 diff，CI workflow 无修改。
+- **AC-30（FR-10）**：四个 Pipeline 分别满足：① `requirement-authoring.pipeline.json` 删除 `cr_id` 输入/透传，显式传三 Owner、只消费完整 execution context，审批节点不复制命令或手写 reject；② `architecture-design.pipeline.json` 的审批节点只表达决定传递和技术失败中止；③ `code-implementation.pipeline.json` 的 dev-plan 评审只保留 PASS/NORMAL/UPSTREAM route 与 replay，审批节点不复制 CLI 算法；④ `resume-cr.pipeline.json` 无 `new_owner/new_owner_role` 和 Owner 写入。四个 JSON 节点数量保持，`pipeline-templates/_index.yml#nodes` 不变。
+- **AC-31（全局）**：以下命令全部通过：
 
 ```bash
 node skills/shared/crctl/scripts/lint-prompts.mjs --mode enforce
@@ -226,7 +239,7 @@ node --test skills/writeback/scripts/test/*.test.mjs
 node -e "const fs=require('fs'); for (const f of fs.readdirSync('pipeline-templates').filter(f=>f.endsWith('.json'))) JSON.parse(fs.readFileSync('pipeline-templates/'+f,'utf8'));"
 ```
 
-审批跨接缝测试复用 Multica 现有 Go -> crctl 测试设施增加 reject 向量，不新建集成框架。
+审批跨接缝测试只允许扩展 Multica 既有 `server/internal/governance/approval_crosscheck_test.go`，增加 Go 签名 reject grant 被真实 crctl 验签、回退及紧邻状态幂等消费的向量；同步更新 `CUSTOM.md` 台账，不新建集成框架、不修改 Multica production code。
 
 ## 6. 成功指标
 
@@ -242,7 +255,7 @@ node -e "const fs=require('fs'); for (const f of fs.readdirSync('pipeline-templa
 - 不新增 Pipeline Runner、数据库、WAL、通用 YAML 框架、grant v2 或 rejection 文件。
 - 不实现跨进程自动续跑 incomplete registration；保留 `CUSTOM-TODO-006`。
 - 不实现可信 `reject_reason` 传输与 Runner 注入；保留 `CUSTOM-TODO-001/002`。
-- 不修改 Multica 源码，不实现 owners/inbox 消费或 registration reconcile；保留 `CUSTOM-TODO-003/004/005`。
+- 不修改 Multica production code，不实现 owners/inbox 消费或 registration reconcile；仅允许修改 `server/internal/governance/approval_crosscheck_test.go` 增加 reject 跨接缝向量并同步 `CUSTOM.md`，保留 `CUSTOM-TODO-003/004/005`。
 - 不宣称 outbox 写出等于平台 Owner 投影已应用或通知已触达。
 - 不删除仍被其他流程使用的 `inbox-emit`。
 - 不修改 CI workflow，不拆分 `crctl.mjs`。
@@ -263,3 +276,4 @@ node -e "const fs=require('fs'); for (const f of fs.readdirSync('pipeline-templa
 | 日期 | 版本 | 作者 | 说明 |
 |---|---|---|---|
 | 2026-08-11 | v0.1.0 | Ray | 初始草稿：承接 TCA-001～004 优化方案，形成 10 条 FR、7 条 NFR、30 条 AC |
+| 2026-08-11 | v0.2.0 | Ray | 第 1 轮需求评审 BLOCK 回修：继承 CR title；纳入 source；明确 Multica test-only diff + CUSTOM 台账；固定修改白名单与四 Pipeline 验收；补齐 audit/outbox 时间戳及失败验收，AC 增至 31 条 |
