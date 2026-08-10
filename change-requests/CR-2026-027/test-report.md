@@ -3,7 +3,7 @@ cr: CR-2026-027
 status: pass
 tester: "OldBoy405"
 generated-by: crctl-test
-generated-at: "2026-08-10T10:16:13+08:00"
+generated-at: "2026-08-10T11:42:31+08:00"
 commands:
   - { command: "node --test skills/shared/crctl/scripts/test/crctl.test.mjs", exit: 0, log: "change-requests/CR-2026-027/test-evidence/cmd-01.log" }
   - { command: "node skills/shared/crctl/scripts/lint-prompts.mjs --mode enforce", exit: 0, log: "change-requests/CR-2026-027/test-evidence/cmd-02.log" }
@@ -25,18 +25,11 @@ commands:
 
 <!-- crctl:analysis-below 此标记以下允许人工/模型补充 TASK 覆盖、未覆盖风险等分析内容 -->
 
-## 代码评审回修后重测（commit 8413248）
+## 代码评审二轮回修后重测（b10，146/146）
 
-- **143/143 全绿**（136 既有回归 + 7 个新增代码评审回修向量），`lint-prompts enforce` 0 findings，gates.json 合法。
-- 针对代码评审 9 个 P1 blocker 逐项回修（详见提交 8413248）：
-  - **b1 FR-12** findHistoryEntry 在同级下一条目停止（`ind <= indent` break）+ history 重复 CR → `HISTORY_DUPLICATE_ENTRY` 硬失败
-  - **b2 FR-11** archive-move 命中 history 先确认已移出 backlog，双存 → `CR_LOCATION_CONFLICT`（不再静默幂等）
-  - **b3 FR-16** traceability review-loop 投影补 `current-cycle` 与 `attempts[].cycle`（含正整数校验）
-  - **b4 FR-16** reviewed-at 改 epoch 比较（`reviewedAtEpoch`，跨时区偏移不误判）+ 非法时间戳 `BAD_TIMESTAMP` 硬失败
-  - **b5 FR-10** migrate 幽灵 orphan 校验前置于写入，失败时 backlog 文件不变；通过则迁移+清理单次原子 casWrite
-  - **b6 FR-11** inbox-emit 拒绝 JSON 标量、过滤空元素、去重，去重后为空 → `BAD_ARGS`
-  - **b7 FR-5** merge-feature-branch 删 tools 硬编码 trunk/role，改为遍历 repositories 声明式
-  - **b8 FR-13** cmdNext developing 且 code.yml=block → `implement-code`（回修而非再评审）
-  - **b9 门禁** dev-start evidence 剔除 `task-index`（开发期可变的 tasks/_index.yml），避免 EVIDENCE_DRIFT 阻塞 review-code:block 回流；证据迭代统一跳过 `$comment`
-- 新增向量覆盖 test-coverage 维度点名的缺口：相邻 history 条目、history/backlog 双存、v1 迁移+orphan ghost 失败不变、JSON 标量/空元素收件人、时区偏移时间戳、trace cycle 投影、developing code BLOCK 路由、TASK done 后无 development-start drift。
-- **下一步：重新进入 review-code**（回修后需重新代码评审，不再跳过）。
+- **146/146 全绿**（143 既有 + 3 个代码评审二轮 b10 新增向量），`lint-prompts enforce` 0 findings。
+- 针对代码评审二轮 2 个 P1 blocker 逐项回修：
+  - **b10a FR-10/一致性**：幽灵清理审计事件从 `migrateGhostCleanup` 内预写移出——先 `casWrite` 成功、后由调用方 `auditGhostCleanup` 补记；CAS_CONFLICT 时 `_backlog.yml` 不变且 audit.log 零成功记录。回归用例：成功路径恰一条成功审计、幂等不重复、migrateGhostCleanup 源码不含 auditLog、三处调用点均为 casWrite 后补审计。
+  - **b10b 开发启动门禁**：新增受控历史审批迁移 `crctl approve <cr> --stage <stage> --resign <reason>`（TTY 人类在环、无旁路）：gates.json evidence 定义变更（dev-start 剔除 task-index）导致既有 approval digest 漂移时，按当前定义重算并只改写该段（保留 approver/approved-at/via/target-status），追加 resign 审计子块与 audit 事件，幂等。回归用例：迁移前 gate 报 EVIDENCE_DRIFT、迁移后 gate 复绿、幂等迁移不破坏、非 TTY 一律 APPROVAL_REQUIRES_HUMAN。
+- **developing gate 复验**：b10 迁移机制落库后，CR-2026-027 开发启动审批的 digest 漂移（记录 28db7b7c… vs 复算 fd513fe9…）可由人工执行 `crctl approve CR-2026-027 --stage dev-start --resign "evidence-definition-change（gates.json dev-start evidence 剔除 task-index）"` 闭环（仅限交互式终端）；迁移后 gate 复算即与记录一致，review-code:block 回流不再被 EVIDENCE_DRIFT 拦截。
+- **下一步**：人工执行上述 --resign 迁移后重新进入 review-code（回修后需重新代码评审，不再跳过）。
