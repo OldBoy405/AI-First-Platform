@@ -80,23 +80,7 @@ reviews:
           reviewed-at: "2026-08-10T18:24:18+08:00"
           result: pass
           blocker-count: 0
-          repair-target: write-dev-plantests:
-  report: change-requests/CR-2026-028/test-report.md
-  status: pass
-  owner: Ray
-  owner-assigned-at: "2026-08-10T15:06:42+08:00"
-  generated-at: "2026-08-10T18:51:21+08:00"
-  repair-target: implement-code
-  commands:
-    - name: crctl-test-suite
-      result: pass
-    - name: writeback-test-suite
-      result: pass
-    - name: syntax-check
-      result: pass
-    - name: lint-triple
-      result: pass
-
+          repair-target: write-dev-plan
   code:
     reviewer: "OldBoy405"
     verdict: block
@@ -115,3 +99,20 @@ reviews:
           result: block
           blocker-count: 4
           repair-target: implement-code
+
+tests:
+  report: change-requests/CR-2026-028/test-report.md
+  status: pass
+  owner: Ray
+  owner-assigned-at: "2026-08-10T15:06:42+08:00"
+  generated-at: "2026-08-10T19:40:28+08:00"
+  repair-target: implement-code
+  commands:
+    - name: crctl-test-suite
+      result: pass
+    - name: writeback-test-suite
+      result: pass
+    - name: syntax-check
+      result: pass
+    - name: lint-triple
+      result: pass
