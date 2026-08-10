@@ -1,28 +1,19 @@
 cr-id: CR-2026-027
 review-type: code
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-10T09:27:40+08:00"
+reviewed-at: "2026-08-10T10:38:12+08:00"
 verdict: block
 blockers:
-  - "[P1][FR-12] findHistoryEntry 未在下一同级条目停止且未检测 history 重复 CR，后续条目的 final-status 可覆盖目标 CR，终态 status/next 会返回错误结果。"
-  - "[P1][FR-11] archive-move 命中 history 即返回 already-archived，未确认 CR 已移出 backlog；backlog/history 双存会被静默判为幂等成功。"
-  - "[P1][FR-16] traceability review-loop 投影未写 current-cycle 与 attempts[].cycle，review-loop.yml 的新周期信息丢失，无法满足跨账本历史审计。"
-  - "[P1][FR-16] detectNewTechDesignCycle 与 cmdNext 以 ISO 字符串比较 reviewed-at，时区偏移会导致错误 freshness 判定，非法时间戳也不会硬失败。"
-  - "[P1][FR-10] v1 backlog 迁移在 orphan ghost 校验前已写入迁移结果，随后 GHOST_ENTRY_ORPHANED 会留下文件变更，违反失败时文件不变。"
-  - "[P1][FR-11] inbox-emit 将 JSON 标量强制包装为数组，且未过滤空收件人并去重；非数组或去重后为空未按契约返回 BAD_ARGS。"
-  - "[P1][FR-5] merge-feature-branch Skill 将 tools 仓硬编码为 trunk=custom/main、role=code，与权威 dir-graph.yaml 的 phase0-tools/main/platform-tools-package 不一致。"
-  - "[P1][FR-13/路由] developing 已存在 verdict=block 的 code.yml 时，cmdNext 仍返回 review-code 而非 implement-code，代码回修轮会被错误导向再次评审。"
-  - "[P1][开发启动门禁] development-start 审批 digest 纳入会在开发期正常变动的 tasks/_index.yml；TASK 标记 done 后即 EVIDENCE_DRIFT，review-code:block 无法回流 developing。"
+  - "[P1][FR-10/一致性] migrateGhostCleanup 在 casWrite 成功前写入 migrate-backlog-ghost removed:true 审计事件；并发 CAS_CONFLICT 时 _backlog.yml 保持不变而 audit.log 误记已清理，违反状态机 + CAS + 审计的统一写入路径。应将该审计事件移到成功 CAS 之后，并增加 CAS 冲突时零成功审计记录的回归用例。"
+  - "[P1][开发启动门禁] b9 从 development-start evidence 移除 task-index 后，既有 approval.yml 的 evidence-digest 仍按旧证据集签发；当前 developing gate 复算为 fd513fe9549529ef，与记录的 28db7b7c34e76dbb 不一致，仍报 EVIDENCE_DRIFT。需提供受控的历史审批迁移或重新人工审批路径，确保回修与 review-code:block 回流可通过门禁。"
 dimensions:
-  code-task-sdd-alignment: "block - FR-5/10/11/12/13/16 及开发启动门禁存在上述部分实现或错误实现。"
-  engineering-quality: "block - 终态解析与迁移的失败原子性不成立，BLOCK 后路由和开发回流门禁也不可用。"
-  key-path-readability: "block - history 条目边界、archive 幂等前置条件、review-code 回修路由和可变审批证据边界未被表达为可验证不变量。"
-  security: "pass - 本次 diff 未发现凭证、命令注入或权限绕过新增风险。"
-  test-coverage: "block - 136 个通过用例未覆盖相邻 history 条目、history/backlog 双存、v1 迁移加 orphan ghost、JSON 标量和空元素收件人、时区偏移时间戳、trace cycle 投影、developing code BLOCK 的 next 路由、TASK done 后 development-start evidence drift。"
-  test-evidence-credibility: "block - 测试命令本轮重跑为 136/136，但 test-report 的下一步仍称跳过 review-code，且实际 workflow 已报 development-start EVIDENCE_DRIFT。"
+  code-task-sdd-alignment: "block - 上轮 b1-b8 的功能回修与 FR/TASK/SDD 对齐；但 FR-10 的成功审计时序仍不满足 CAS 失败零副作用的一致性边界，开发启动门禁也未完成闭环。"
+  engineering-quality: "block - 迁移的 CAS 失败路径会产生与账本事实相反的审计记录，无法满足 ARCHITECTURE 的统一 CAS + audit 写入纪律。"
+  key-path-readability: "pass - 回修后的 history 边界、双存冲突、epoch 时间比较、cycle 投影和 developing 回修路由均有明确分支与注释。"
+  security: "pass - 本轮未发现新增凭证泄露、命令注入或权限绕过风险。"
+  test-coverage: "block - 143/143 通过，但缺少 migrate-backlog 在 CAS_CONFLICT 时不写成功 ghost 审计事件的回归用例；也未覆盖既有 development-start 批准在 evidence 集调整后的迁移/重新审批闭环。"
+  test-evidence-credibility: "block - 测试报告 143/143、prompt lint、语法与 diff 检查均通过，但实际 developing gate 新鲜执行仍为 EVIDENCE_DRIFT，不能据绿灯宣称流程可推进。"
   frontend-quality: "N/A - 本次 diff 未触及 tsx/vue/css/html。"
   suggestion-policy: "strict"
   reviewer-model: "gpt-5.6-sol"
-suggestions:
-  - "为 current-cycle、current-attempt 和 attempts[].cycle 补充正整数、递增性及 legacy cycle=1 投影校验。"
-  - "修正 test-report 中已过期的跳过 review-code 下一步说明。"
+suggestions: []
