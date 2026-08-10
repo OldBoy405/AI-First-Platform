@@ -36,7 +36,7 @@ commands:
 
 ### TASK 验收覆盖
 
-TASK-01～TASK-09 的实现与回归证据完整；第 1 轮代码评审的 CODE-BLOCK-001～004 均已通过提交 `a835c42` 修复。TASK-10 的 merge/发布联调仍按生命周期在代码人工审批后执行。
+TASK-01～TASK-09 的实现与回归证据完整；第 1 轮代码评审的 CODE-BLOCK-001～004 均已通过提交 `a835c42` 修复。原 TASK-10（发布与联调）已移交 merge pipeline（CR-2026-029）：其实质工作由 merge-feature-branch 发布联调走查步骤与 merge-verification.md 完成证据承担，不再作为本 CR 交付物。
 
 ### 新增/修改测试文件
 
@@ -45,4 +45,4 @@ TASK-01～TASK-09 的实现与回归证据完整；第 1 轮代码评审的 CODE
 ### 未覆盖风险
 
 - 真实 GitHub Actions 与各 IDE 安装物化仍需发布期联调；本 CR 不新增 installer 或 IDE E2E，符合范围排除。
-- 双仓 merge 后主 checkout 走查留待 TASK-10。
+- 双仓 merge 后主 checkout 走查由 merge pipeline 发布联调走查承担（CR-2026-029，merge-verification.md 落盘）。

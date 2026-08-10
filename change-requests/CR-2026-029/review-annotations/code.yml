@@ -1,0 +1,17 @@
+cr-id: CR-2026-029
+review-type: code
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-10T20:22:13+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  code-task-sdd-alignment: "pass - Step 6 联调走查与 merge-verification.md 契约按 SDD §1.2/§2.1 落地；pipeline prompt 同步；迁移 CR-2026-028 TASK-10 按 §3.3 定点编辑且 id 集合校验通过；FR-1~FR-5 全覆盖。"
+  engineering-quality: "pass - 3 文件 50 行改动，无新依赖、无 crctl 命令面变更；SKILL 步骤顺延与引用更新一致（Step 5 失败分支引用明确指向联调走查）。"
+  key-path-readability: "pass - 联调走查步骤以既有只读命令组成，异常处理（STATUS_DIVERGED 预期/非预期、台账核账、证据落盘）边界清楚。"
+  security: "pass - 走查只读、证据文件提交前无敏感路径；迁移未触碰审批/评审证据与已 merge 代码。"
+  test-coverage: "pass - 新增 3 个静态断言覆盖 SKILL/pipeline/无发布类拆分；161/161 + writeback 9/9 全绿。"
+  test-evidence-credibility: "pass - 本轮无条件重跑全量测试、三件套、语法、pipeline JSON、diff-check，结果一致；test-report 由 crctl 生成。"
+  frontend-quality: "N/A - diff 未触及前端文件。"
+  suggestion-policy: "strict"
+  reviewer-model: "gpt-5.6-sol"
+suggestions: []

@@ -261,3 +261,4 @@ function resolveToolsRoot(opWs):
 | 2026-08-10 | v0.1.0 | Ray | 初始草稿：Tools Root 唯一解析、双根语义、loader 收敛、Registration 复用、删除 target_install_path、黑盒测试设计；FR 9/9 映射 |
 | 2026-08-10 | v0.2.0 | Ray | 第 1 轮技术评审 TD-B1 回修：四个 loader 显式接收 ws（`loadGates(ws)`/`loadShellRules(ws)`），`main()` eager `loadGates(ws)`、`controlledGit` 内 `loadShellRules(ws)`；删除固定 `GATES_PATH`/默认 `RULES_PATH` 常量；禁止 module-scope workspace 全局 |
 | 2026-08-10 | v0.3.0 | Ray | 第 2 轮技术评审 TD-B2 回修：流程图统一为 loader→`resolveToolsRoot(opWs)`→内部唯一派生 InstWS；Tools Root 改为仅成功值缓存（失败即进程退出）；`_shellRules` 明确为独立 rules 缓存；伪签名改用 JavaScript 语义 |
+| 2026-08-10 | v0.3.1 | Ray | 发布联调移交 merge pipeline（CR-2026-029）：TASK-10 不再是本 CR 交付物，其实质工作（双仓 merge、真实 worktree 走查、台账核账）由 merge-feature-branch 的发布联调走查步骤与 merge-verification.md 完成证据承担；本 CR 交付物为 TASK-01..09 |

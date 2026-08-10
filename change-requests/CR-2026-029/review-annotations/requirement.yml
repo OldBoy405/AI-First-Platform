@@ -1,0 +1,18 @@
+cr-id: CR-2026-029
+review-type: requirement
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-10T20:04:48+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  problem-clarity: "pass - 问题陈述精确：TASK-10 是发布类任务却按开发 TASK 拆分，与 task done 前置态（developing）和归档门禁冲突，无法登记 done。"
+  solution-fit: "pass - 发布联调移交 merge-feature-branch 完成证据（merge-verification.md），从源头消除发布类开发 TASK；不改 task done 语义与归档门禁判定。"
+  scope-control: "pass - 范围收敛在 merge-feature-branch skill + pipeline prompt + 约定 + CR-2026-028 TASK-10 迁移；不新增 crctl 子命令。"
+  migration-safety: "pass - 迁移明确：移除 TASK-10 条目与文件、变更记录注明移交；CR-2026-028 已 merge，代码不受影响，仅受控任务索引与证据文档调整。"
+  acceptance-testability: "pass - AC-1~AC-5 可验证：merge-verification.md 落盘、pipeline JSON 可解析、索引无 TASK-10、测试全绿。"
+  suggestion-policy: "strict"
+  reviewer-model: "gpt-5.6-sol"
+suggestions:
+  - "归档门禁的 delivery 校验针对 tasks status=done 回写产物；TASK-10 移除后 CR-2026-028 的 writeback-tasks 只回写 TASK-01..09，需在 AC-4 补充确认 delivery 不因此缺项（TASK-10 无回写产物属预期，非缺失）。"
+subject-file: change-requests/CR-2026-029/prd.md
+subject-sha256: 44025a3b19cd4278327d340ea52b51610add5e3e5a86c75e27cc5c5f15d939bb

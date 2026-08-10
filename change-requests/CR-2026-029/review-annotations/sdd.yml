@@ -1,0 +1,18 @@
+cr-id: CR-2026-029
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-10T20:10:47+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  architecture-alignment: "pass - 改动贴合既有 merge-feature-branch 六步流，仅插入联调走查步骤与证据契约，无新模块。"
+  interface-consistency: "pass - 全部复用既有只读 crctl 命令（status/worktree-path/next）与 merge-metadata；不新增命令面；merge-verification.md 契约明确。"
+  migration-safety: "pass - TASK-10 迁移限定定点删除 + 文件移除 + 变更记录，明确不触碰审批/评审证据与已 merge 代码；CRLF 容错与硬失败纪律落实。"
+  testability: "pass - FR-5 覆盖既有 158+9 回归 + skill/pipeline 文本静态断言；无门禁判定改动。"
+  security: "pass - 走查只读、证据文件不含敏感路径；迁移编辑后校验 id 集合不变。"
+  suggestion-policy: "strict"
+  reviewer-model: "gpt-5.6-sol"
+suggestions:
+  - "merge-verification.md 的 repos 字段可复用 merge-metadata 的 merge-commits 结果生成，避免与 _backlog 漂移；当前以走查时核对为准即可，不强制同源。"
+subject-file: change-requests/CR-2026-029/sdd.md
+subject-sha256: 8c0111ff80c61465cddd46f0301189ed62194c2137a80051c497eba709703f03
