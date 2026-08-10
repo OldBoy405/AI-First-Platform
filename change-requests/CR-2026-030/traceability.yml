@@ -31,14 +31,13 @@ reviews:
           repair-target: write-requirement-prd
   tech-design:
     reviewer: "OldBoy405"
-    verdict: block
-    reviewed-at: "2026-08-11T02:27:29+08:00"
-    blocker-count: 2
+    verdict: pass
+    reviewed-at: "2026-08-11T02:30:59+08:00"
+    blocker-count: 0
     annotation: "change-requests/CR-2026-030/review-annotations/sdd.yml"
-    repair-target: write-tech-design
     review-loop:
       current-cycle: 1
-      current-attempt: 1
+      current-attempt: 2
       max-attempts: 3
       attempts:
         - attempt: 1
@@ -46,4 +45,10 @@ reviews:
           reviewed-at: "2026-08-11T02:27:29+08:00"
           result: block
           blocker-count: 2
+          repair-target: write-tech-design
+        - attempt: 2
+          cycle: 1
+          reviewed-at: "2026-08-11T02:30:59+08:00"
+          result: pass
+          blocker-count: 0
           repair-target: write-tech-design

@@ -1,21 +1,19 @@
 cr-id: CR-2026-030
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-11T02:27:29+08:00"
-verdict: block
-blockers:
-  - "TD-BL-1：SDD §2.2/§2.5 复用带可选 note 的 OwnerChange 作为 OwnersPayload.changes，§4.6 又直接 emit owners(change)，因此实现可把 note 写入 owners outbox；这与 PRD FR-3/AC-8 的 note 仅进入 owner-history 与 inbox 通知事实冲突。请拆分历史/inbox change 与 owners 投影 change，或明确 owners/audit 输出必须剥离 note，并增加 absent 断言。"
-  - "TD-BL-2：SDD §4.9 声明 performAdvance 保留现有 commit/outbox 语义，§4.10 却在 fresh reject 后无条件返回 APPROVAL_DECLINED_ROLLED_BACK，并让 adjacent approve/reject 仅凭工作区 ledger 状态返回 changed=false。当前 advance/approve commit 失败会留下目标态文件；重放可能在没有权威 Git commit 时被误判为幂等成功，fresh reject 还可能沿用 commit 失败后发 status outbox 的现状，违反 PRD FR-6 的技术失败/业务回退区分及 ARCHITECTURE.md 的 Git 权威不变量。请规定：仅 commit 成功后返回业务回退成功并发 outbox；commit 失败传播技术错误；邻接幂等必须证明相关 ledger 已 clean 且存在于 HEAD，再补 commit-failure→replay 黑盒向量。"
+reviewed-at: "2026-08-11T02:30:59+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  prd-sdd-alignment: "block：10/10 FR 均有映射，但 TD-BL-1 与 FR-3/AC-8 冲突，TD-BL-2 未闭合 FR-6/FR-7 的失败边界。"
-  architecture-reasonableness: "block：模块边界、单文件 crctl、零依赖与状态机边界合理；但 reject 的未提交状态/outbox 语义违反 Git 是权威的不变量。"
-  data-model-completeness: "block：Owner、grant、outbox 模型总体完整；OwnersPayload 复用含 note 的类型造成字段边界不严。"
-  interface-contracts: "block：公开命令与错误矩阵清楚；grant rollback commit 失败及邻接幂等的 committed-state 前置契约缺失。"
-  performance-and-security: "block：复杂度与验签顺序合理；未提交工作区状态被幂等接受会降低审批事实完整性。"
-  testability: "block：AC-1～AC-32 有显式矩阵，但缺 approve/reject commit-failure 后同 grant 重放不得成功的向量，owners outbox 也缺 note absent 断言。"
-  prompt-adoption-impact: "pass：第 8 节存在，完整列出 8 个 Skill、crctl Skill、4 个 Pipeline 与 3 份人读契约的采纳影响。"
+  prd-sdd-alignment: "pass：10/10 FR 与 AC-1～AC-32 均有明确实现和验证映射；第 1 轮两项冲突已关闭。"
+  architecture-reasonableness: "pass：保持 crctl 单文件、状态/账本唯一写者、零新增依赖和既有 27/49 状态机口径；standalone 状态投影收敛到 commit 成功之后，符合 Git 权威不变量。"
+  data-model-completeness: "pass：Owner 当前投影、history、notify、outbox 与 grant v1 模型完整；OwnerChangeFact 与 OwnerHistoryEntry 已隔离 note 边界。"
+  interface-contracts: "pass：cr-init、register commit、worktree-path、owner-set、approve --grant、review-dev-plan 与 R7 的输入、输出、错误和失败边界清晰；邻接幂等要求 result ledger 已在 HEAD。"
+  performance-and-security: "pass：仅增加常数次本地 Git 查询；grant 在写入前完成归属/evidence/key/signature 校验，commit 失败不会伪装成业务回退成功或发权威状态投影。"
+  testability: "pass：包含真实 Git clean/rollback fixture、四 stage grant、commit-failure→replay、R7 malformed/CRLF 与 Multica 真实跨接缝向量。"
+  prompt-adoption-impact: "pass：第 8 节完整列出 8 个 Skill、crctl Skill、4 个 Pipeline 和 3 份人读契约，且诚实保留 Runner/consumer CUSTOM-TODO。"
 suggestions:
-  - "TD-SUG-1：在 §3.4 明确 register commit 已成功但 HEAD/Owner 后置读取失败时 REGISTRATION_INCOMPLETE.failed_step 的枚举取值，避免把已成功 commit 误标成普通 commit failure。"
-  - "TD-SUG-2：为三个 Owner ID 与可选 note 明确 trim、空值、CR/LF 和 YAML scalar 转义规则，避免账本或 commit message 被控制字符污染。"
+  - "TD-SUG-1：实施时可把 register commit 已成功但 HEAD/Owner 后置读取失败的 completed_steps/warning 字段做成单独测试，避免运维误判 CR-ID 是否已占用。"
+  - "TD-SUG-2：实现 Owner 标量 editor 时应复用统一 YAML quoting，并拒绝 Owner ID 中的 CR/LF/NUL；该项不影响当前架构通过。"
 subject-file: change-requests/CR-2026-030/sdd.md
-subject-sha256: cb8c2b6a7a8e5a7c866afd4214185ad2d2a062d3906462dfa9416b96b6d772b2
+subject-sha256: beaab435a62ac90a6ecd0607379c5577187c536976e75920dcffced3aa346a82
