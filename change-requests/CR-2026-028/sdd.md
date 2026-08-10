@@ -5,7 +5,7 @@ cr-ref: CR-2026-028
 title: tools 流程步骤优化 v2 — 前移优化项独立 CR（tools-root 唯一解析 + Skill 路径统一 + crctl 配置加载修正 + cr-init 注册入口复用）技术设计
 status: draft
 created: "2026-08-10T17:42:38+08:00"
-updated: "2026-08-10T17:54:20+08:00"
+updated: "2026-08-10T17:58:58+08:00"
 ---
 
 # SDD — tools 流程步骤优化 v2：前移优化项
@@ -36,12 +36,12 @@ updated: "2026-08-10T17:54:20+08:00"
 crctl <cmd> [--workspace <op-ws>]
   → help 提前返回（不解析 workspace）
   → detectWorkspace()            # OpWS（cwd 向上或显式）
-  → installRoot = deriveInstallRoot(OpWS)   # git common-dir → 主 checkout；非 git 回退 OpWS
-  → resolveToolsRoot(installRoot)           # 读 dir-graph.yaml#workspace.tools_package_path
-                                            # 相对 installRoot → realpath → 四标志验证
-                                            # 单进程只解析一次（单值缓存）
-  → loadStateMachine(ws) / loadPipeline(ws,id) / loadGates(ws) / loadShellRules(ws) 全部读 {toolsRoot}/...
-  → 分发子命令（worktree-path 以 installRoot 拼接 .rayai-worktrees/...）
+  → loadGates(OpWS)                         # eager；内部调用 resolveToolsRoot(OpWS)
+      → deriveInstallRoot(OpWS)              # git common-dir → 主 checkout；非 git 回退 OpWS
+      → 读 InstWS/dir-graph.yaml#workspace.tools_package_path
+      → 相对 InstWS → realpath → 四标志验证 → 仅缓存成功 toolsRoot
+  → loadStateMachine(ws) / loadPipeline(ws,id) / loadGates(ws) / loadShellRules(ws) 全部调用 resolveToolsRoot(ws)
+  → 分发子命令（仅 worktree-path 另调用 deriveInstallRoot(OpWS)，以 InstWS 拼接 .rayai-worktrees/...）
 ```
 
 ### 1.4 依赖方向
@@ -84,17 +84,17 @@ crctl <cmd> [--workspace <op-ws>]
 
 ### 3.1 crctl 内部函数签名（不导出为公共 API）
 
-```ts
-// module-scope，单值惰性缓存（先例：loadShellRules 的 _shellRules 三态）
-let _toolsRoot: string | null | undefined; // undefined=未解析, null=解析失败, string=成功
+```js
+// module-scope，仅缓存成功值；失败由 fail() 直接结束进程
+let toolsRootCache; // undefined=未解析，string=成功
 
-function deriveInstallRoot(opWs: string): string
+function deriveInstallRoot(opWs)
   // git rev-parse --git-common-dir（spawnSync，cwd=opWs）
   // 成功 → resolve(opWs, stdout 首行) 的 dirname 即主 checkout 根
   // 失败/非 git → 返回 opWs（普通 checkout 等价）
 
-function resolveToolsRoot(opWs: string): string
-  // 1) 缓存命中直接返回（含失败缓存：进程内不重复解析）
+function resolveToolsRoot(opWs)
+  // 1) 成功缓存命中直接返回；失败不缓存（fail() 直接 process.exit(1)）
   // 2) installRoot = deriveInstallRoot(opWs)
   // 3) 读 installRoot/dir-graph.yaml → workspace.tools_package_path
   //    缺失/非字符串/空 → fail('TOOLS_PACKAGE_NOT_FOUND', {instRoot, field, reason})
@@ -115,7 +115,7 @@ loadShellRules(ws): rules                   // 默认 {toolsRoot}/skills/shared/
                                             // （相对执行脚本的定位改为 Tools Root 派生）
 ```
 
-`main()` 保持：`help` 在 workspace 解析前返回；其余命令先 `detectWorkspace` 再 eager `loadGates(ws)`（行为不变，仅来源变化）。`controlledGit` 内 `loadShellRules(ws)` 与 resolver 共用同一进程单值缓存。禁止为补参数引入 module-scope workspace 全局——ws 一律显式入参。状态机/Pipeline 目标文件仍由消费者按需校验，沿用 `PIPELINE_NOT_FOUND`、`GATES_NOT_FOUND` 等既有错误码（FR-3 边界）。
+`main()` 保持：`help` 在 workspace 解析前返回；其余命令先 `detectWorkspace` 再 eager `loadGates(ws)`（行为不变，仅来源变化）。`controlledGit` 内 `loadShellRules(ws)` 先按既有 `_shellRules` 独立缓存判断；需读取默认 rules 时调用 `resolveToolsRoot(ws)`，复用其成功值缓存。禁止为补参数引入 module-scope workspace 全局——ws 一律显式入参。状态机/Pipeline 目标文件仍由消费者按需校验，沿用 `PIPELINE_NOT_FOUND`、`GATES_NOT_FOUND` 等既有错误码（FR-3 边界）。
 
 ### 3.3 worktree-path 契约
 
@@ -157,7 +157,7 @@ function deriveInstallRoot(opWs):
 
 ```text
 function resolveToolsRoot(opWs):
-  if cache 命中: return cache                              # 成功或失败均缓存，进程内只解析一次
+  if toolsRootCache 命中: return toolsRootCache           # 仅成功值缓存，同一成功命令内只解析一次
   inst = deriveInstallRoot(opWs)
   doc = parseYaml(read(inst/dir-graph.yaml))            # CRLF→LF 归一（纪律 #1）
   v = getPath(doc, 'workspace.tools_package_path')
@@ -167,14 +167,14 @@ function resolveToolsRoot(opWs):
   real = try realpath(raw) else fail(..., {instRoot: inst, reason: 'path-not-exists', resolved: raw})
   missing = 四标志中不存在的列表
   if missing.length > 0: fail(..., {instRoot: inst, reason: 'identity-marker-missing', missing})
-  cache = real; return real
+  toolsRootCache = real; return real
 ```
 
 失败路径绝不回退：不尝试 `opWs/tools`、cwd、`PACKAGE_ROOT`（D-3）。
 
 ### 4.3 单值惰性缓存
 
-`resolveToolsRoot` 与 `loadShellRules` 共用同一进程级单值缓存语义：`undefined=未解析 / null=失败 / string=成功`；两者都由各自 loader 首次调用触发，同一命令内第二次起零解析。成功与失败都缓存（进程内不重复解析），失败缓存不携带错误对象（后续调用重新 fail 同因）。无 Map、无文件缓存、无 telemetry，不引入 module-scope workspace 全局。
+`resolveToolsRoot` 仅维护 `toolsRootCache`（`undefined=未解析 / string=成功`）：任一 loader 首次成功解析后，同一命令内其余 loader 直接复用；失败调用 `fail()` 后进程立即退出，不设置失败缓存。`loadShellRules` 保留既有独立 `_shellRules`（`undefined=未加载 / null=加载失败 / object=成功`），它缓存的是 rules 解析结果，不与 Tools Root 共享同一槽。两者均无 Map、文件缓存、telemetry 或 module-scope workspace 全局。
 
 ### 4.4 测试设计（FR-9）
 
@@ -185,7 +185,7 @@ function resolveToolsRoot(opWs):
 5. **四类 sentinel 行为断言**（AC-6）：状态机用仅 fixture 存在的合法转换（advance 成功）、Pipeline 用仅 fixture 存在的 nodeRef、gates 用仅 fixture 要求的 evidence、rules 用仅 fixture 允许的 git shape；执行脚本换 checkout 结果不变。
 6. **CRCTL_RULES_PATH** 覆盖断言（AC-7）。
 7. **cr-init metadata**：复用现有用例，断言 summary/source/target-version 一次写齐（AC-11/AC-12）。
-8. **代码审查断言**（AC-8）：四个 loader 均显式接收 ws 并调用同一 `resolveToolsRoot`；`main()`/`controlledGit` 各自调用 `loadGates(ws)`/`loadShellRules(ws)`；单值槽无 Map/文件/telemetry；无 module-scope workspace 全局。
+8. **代码审查断言**（AC-8）：四个 loader 均显式接收 ws 并调用同一 `resolveToolsRoot(ws)`；`main()`/`controlledGit` 各自调用 `loadGates(ws)`/`loadShellRules(ws)`；`toolsRootCache` 仅缓存成功 string，`_shellRules` 为独立缓存；无 Map/文件/telemetry/module-scope workspace 全局。
 
 ## 5. 技术选型与替代方案
 
@@ -259,4 +259,5 @@ function resolveToolsRoot(opWs):
 | 日期 | 版本 | 作者 | 说明 |
 |---|---|---|---|
 | 2026-08-10 | v0.1.0 | Ray | 初始草稿：Tools Root 唯一解析、双根语义、loader 收敛、Registration 复用、删除 target_install_path、黑盒测试设计；FR 9/9 映射 |
-| 2026-08-10 | v0.2.0 | Ray | 第 1 轮技术评审 TD-B1 回修：四个 loader 显式接收 ws（`loadGates(ws)`/`loadShellRules(ws)`），`main()` eager `loadGates(ws)`、`controlledGit` 内 `loadShellRules(ws)`；删除固定 `GATES_PATH`/默认 `RULES_PATH` 常量；失败缓存语义与禁止 module-scope workspace 全局 |
+| 2026-08-10 | v0.2.0 | Ray | 第 1 轮技术评审 TD-B1 回修：四个 loader 显式接收 ws（`loadGates(ws)`/`loadShellRules(ws)`），`main()` eager `loadGates(ws)`、`controlledGit` 内 `loadShellRules(ws)`；删除固定 `GATES_PATH`/默认 `RULES_PATH` 常量；禁止 module-scope workspace 全局 |
+| 2026-08-10 | v0.3.0 | Ray | 第 2 轮技术评审 TD-B2 回修：流程图统一为 loader→`resolveToolsRoot(opWs)`→内部唯一派生 InstWS；Tools Root 改为仅成功值缓存（失败即进程退出）；`_shellRules` 明确为独立 rules 缓存；伪签名改用 JavaScript 语义 |
