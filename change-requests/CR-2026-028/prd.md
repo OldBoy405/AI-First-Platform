@@ -8,7 +8,7 @@ owner: Ray
 owner-role: requirement
 status: draft
 created: "2026-08-10T16:39:11+08:00"
-updated: "2026-08-10T17:01:08+08:00"
+updated: "2026-08-10T17:27:11+08:00"
 ---
 
 # PRD — tools 流程步骤优化 v2：前移优化项
@@ -98,7 +98,7 @@ Registration 侧也存在文档漂移：`crctl cr-init` 已支持一次传入 ti
 - **FR-3（四标志身份验证）**：resolver 固定验证 `{toolsRoot}/AGENTS.md`、`dir-graph.yaml`、`skills/_index.yml`、`skills/shared/crctl/scripts/crctl.mjs`；这四项只证明 tools 包身份，不验证 Git branch、commit SHA、版本或全部资源完整性。Pipeline、gates 等目标文件继续由消费者按需校验并沿用现有专用错误码。
 - **FR-4（crctl 配置来源收敛）**：在现有 `crctl.mjs` 内实现单值惰性 Tools Root resolver，同一进程只解析一次，不拆公共模块。`loadStateMachine` 只读 `{toolsRoot}/dir-graph.yaml`；`loadPipeline` 只读 `{toolsRoot}/pipeline-templates/`；`loadGates` 只读 `{toolsRoot}/skills/shared/crctl/gates.json`；默认 controlled-shell rules 只读 `{toolsRoot}/skills/shared/controlled-shell/rules.json`。保留显式 `CRCTL_RULES_PATH` 覆盖，不新增其他覆盖入口。`help` 保持无需 workspace；其余子命令沿用现有 eager gates 行为。
 - **FR-5（active 执行入口统一）**：只修改 §3.1 的 active surface 白名单；其中实际命令改用 `{TOOLS_ROOT}/skills/...` 逻辑路径并明确来源。动态调用方运行时解析；静态模板安装时物化；所有 Adapter 模板统一字面占位符 `{TOOLS_ROOT}`，删除 `{TOOLS}`/`{WORKSPACE}` 同义占位符。仓库不得提交含本机绝对路径的物化 settings；白名单外历史分析、审查报告、生成 HTML、OpenWiki、inactive/old 内容不做全仓替换。
-- **FR-6（Registration 复用 cr-init）**：`requirement-register` 调用现有 `crctl cr-init` 时一次传入 title、owner-requirement、summary、source、target-version；删除建档后直接编辑 `cr.md` frontmatter 的步骤；合并 requirement-authoring Pipeline 中重复的 cr-init 建档描述。三文件原子建档、worktree-path 与 repositories 派生语义保持；不修改 cr-init 实现，不新增 wrapper、register-preflight、registration-check、stage-context 或 Registration Runner。
+- **FR-6（Registration 复用 cr-init）**：`requirement-register` 调用现有 `crctl cr-init` 时一次传入 title、owner-requirement、summary、source、target-version；删除建档后直接编辑 `cr.md` frontmatter 的步骤；合并 requirement-authoring Pipeline 中重复的 cr-init 建档描述。三文件原子建档与 bucket/repositories 派生语义保持；worktree 根基准按 FR-2 修正（统一以 Installation Workspace 为根）。不修改 cr-init 实现，不新增 wrapper、register-preflight、registration-check、stage-context 或 Registration Runner。
 - **FR-7（删除第二安装位置声明）**：删除 tools `dir-graph.yaml#workspace.target_install_path`，并把同文件“固定挂载到 tools/”的当前描述改为由目标 workspace `tools_package_path` 绑定；不新增替代字段。
 - **FR-8（multica 延后项登记）**：本 CR 不修改 multica 代码；`CUSTOM.md#未做` 必须列出现存 sibling tools 猜测点及后续修复方式。生成器后续要求显式 tools root，跨工具测试后续要求显式 `CRCTL_PATH`/rules path；生产 `MULTICA_CONTROLLED_SHELL_RULES` 继续作为安装时物化绝对路径，不新增 multica resolver。
 - **FR-9（最小回归验证）**：扩展现有 `crctl.test.mjs`：公共 workspace fixture 显式绑定隔离的最小 tools fixture；表驱动覆盖相对/绝对路径、空壳目录、缺配置、无效路径、四标志缺失；增加一个 Git linked-worktree 黑盒场景并同时验证 Tools Root 与 `worktree-path` 的 Installation Workspace 基准；使用四类 sentinel 配置分别通过 CLI 行为证明 state machine、Pipeline、gates、默认 rules 均来自声明的 Tools Root，并验证 `CRCTL_RULES_PATH` 覆盖。单值惰性缓存以“所有 loader 调用同一 module-scope resolver 且只有一个成功值槽”的代码审查断言验收，不新增 telemetry。复用现有 cr-init metadata 测试；active 文档/模板按 §3.1 精确范围与禁止模式定向检索；不新增 resolver 测试包、mock filesystem、IDE E2E 或跨平台 Adapter matrix。
@@ -108,12 +108,13 @@ Registration 侧也存在文档漂移：`crctl cr-init` 已支持一次传入 ti
 | 类别 | 本 CR 可修改文件 |
 |---|---|
 | 核心实现与测试 | `dir-graph.yaml`；`skills/shared/crctl/scripts/crctl.mjs`；`skills/shared/crctl/scripts/test/crctl.test.mjs` |
+| workspace 当前入口 | knowledge-base 根 `AGENTS.md`（与 tools 包内同名文件区分，属目标 workspace 入口文档） |
 | crctl / Registration | `skills/shared/crctl/SKILL.md`；`skills/requirement/requirement-register/SKILL.md`；`pipeline-templates/requirement-authoring.pipeline.json` |
 | 生命周期同步 | `skills/sync/push-progress/SKILL.md`；`skills/sync/pull-progress/SKILL.md`；`skills/sync/resume-from-remote/SKILL.md` |
 | writeback | `skills/writeback/writeback-prd-sdd/SKILL.md`；`writeback-tasks/SKILL.md`；`writeback-traceability/SKILL.md`；`skills/writeback/scripts/test/writeback.test.mjs`；`pipeline-templates/feature-writeback.pipeline.json` |
 | Adapter / CI | `skills/shared/crctl/adapters/**` 的现有文件 |
 
-定向检索在上表范围内要求以下当前命令模式零命中：`node tools/skills/`、`$WORKSPACE/tools/`、`<workspace>/tools/`、`$CLAUDE_PROJECT_DIR/tools/`、`{TOOLS}/tools/`、`{WORKSPACE}/tools/`。包内源码使用 `import.meta.url` 定位兄弟文件允许保留；`ARCHITECTURE.md` 历史否决示例、`skills/reviewer-panel.yaml` 自路径注释、`skills/shared/engineering-docs/SKILL.md` 概念引用及历史/生成/inactive 内容明确排除。CI 可以把实际 checkout 目录赋给 `TOOLS_ROOT`，但执行命令不得直接硬编码 `node tools/skills/...`。
+定向检索在上表范围内要求以下当前命令模式零命中：`node tools/skills/`、`node ../tools/skills/`、`$WORKSPACE/tools/`、`<workspace>/tools/`、`$CLAUDE_PROJECT_DIR/tools/`、`{TOOLS}/tools/`、`{WORKSPACE}/tools/`。其中 `node ../tools/skills/` 主要命中 knowledge-base 根 `AGENTS.md` 的 crctl 调用示例，应改为不绑定安装位置的表达。包内源码使用 `import.meta.url` 定位兄弟文件允许保留；`ARCHITECTURE.md` 历史否决示例、`skills/reviewer-panel.yaml` 自路径注释、`skills/shared/engineering-docs/SKILL.md` 概念引用及历史/生成/inactive 内容明确排除。CI 可以把实际 checkout 目录赋给 `TOOLS_ROOT`，但执行命令不得直接硬编码 `node tools/skills/...`。
 
 ## 4. 非功能需求
 
@@ -135,7 +136,7 @@ Registration 侧也存在文档漂移：`crctl cr-init` 已支持一次传入 ti
 - **AC-6（FR-4/FR-9）**：隔离 fixture 为四类资源设置可辨识 sentinel：状态机使用仅 fixture 存在的合法转换、Pipeline 使用仅 fixture 存在的 nodeRef/passCondition、gates 使用仅 fixture 要求的证据文件、rules 使用仅 fixture 允许/拒绝的 git shape；分别调用公开 CLI 并断言对应行为，以证明四类资源来自声明的同一 Tools Root。测试不要求新增 source 输出字段；执行脚本来自另一 checkout 时 sentinel 结果不变。
 - **AC-7（FR-4）**：设置有效 `CRCTL_RULES_PATH` 时仍使用显式 rules；未设置时使用 Tools Root rules；无新增 gates/rules 覆盖环境变量。
 - **AC-8（FR-4）**：代码评审确认 state machine、Pipeline、gates、默认 rules 四个 loader 均调用同一 module-scope resolver，resolver 仅维护一个成功值槽且无 Map/文件缓存/telemetry；一个需要多个 loader 的黑盒命令使用同一 fixture 行为成功。`crctl help` 在无 workspace 时仍成功。
-- **AC-9（FR-5）**：§3.1 白名单中的六个禁止模式定向检索零命中；所有 Adapter 模板只使用 `{TOOLS_ROOT}`，安装说明明确其来自 `workspace.tools_package_path`。列明的白名单外允许例外不计失败。
+- **AC-9（FR-5）**：§3.1 白名单中的七个禁止模式定向检索零命中（含 `node ../tools/skills/` 与 workspace 根 `AGENTS.md`）；所有 Adapter 模板只使用 `{TOOLS_ROOT}`，安装说明明确其来自 `workspace.tools_package_path`。列明的白名单外允许例外不计失败。
 - **AC-10（FR-5/NFR-3）**：版本库 diff 中无新增本机绝对路径；local settings/CI 的物化边界说明清楚，未新增自动安装或修复代码。
 - **AC-11（FR-6）**：requirement-register 的一次 cr-init 调用传齐 summary/source/target-version；成功后无模型二次编辑 frontmatter 指令；Pipeline 中 cr-init 三文件建档动作只描述一次。
 - **AC-12（FR-6）**：现有 cr-init metadata 黑盒测试通过，`cr.md`、`_backlog.yml`、`_index.yml` 一次建档结果不回归；cr-init 实现无为本 CR 新增的子命令或 wrapper。
@@ -143,7 +144,7 @@ Registration 侧也存在文档漂移：`crctl cr-init` 已支持一次传入 ti
 - **AC-14（FR-8）**：multica 代码 diff 为空；`CUSTOM.md#未做` 准确列出四类现存消费点、显式参数升级路径及 `MULTICA_CONTROLLED_SHELL_RULES` 保留语义。
 - **AC-15（FR-9）**：`node --test skills/shared/crctl/scripts/test/crctl.test.mjs` 全绿，包含路径表驱动、四类 sentinel、`CRCTL_RULES_PATH` 覆盖与 linked-worktree/worktree-path 场景；fixture 不修改真实 tools checkout，且没有新增独立 resolver/Adapter 测试框架。
 - **AC-16（NFR-4）**：现有状态机、gate、approve、账本、cr-init、worktree-path 相关回归测试全绿；状态机声明数与转换语义无变化。
-- **AC-17（全局）**：执行并通过：① `git diff --check`；② `JSON.parse` 校验 `requirement-authoring.pipeline.json` 与 `feature-writeback.pipeline.json`；③ `node --test skills/shared/crctl/scripts/test/crctl.test.mjs`；④ `node skills/shared/crctl/scripts/lint-prompts.mjs --mode enforce`；⑤ 仅按 §3.1 白名单执行六个禁止模式的 `rg`，零命中。不得以全仓替换历史内容来达成⑤。
+- **AC-17（全局）**：执行并通过：① `git diff --check`；② `JSON.parse` 校验 `requirement-authoring.pipeline.json` 与 `feature-writeback.pipeline.json`；③ `node --test skills/shared/crctl/scripts/test/crctl.test.mjs`；④ `node skills/shared/crctl/scripts/lint-prompts.mjs --mode enforce`；⑤ 仅按 §3.1 白名单执行七个禁止模式的 `rg`，零命中。不得以全仓替换历史内容来达成⑤。
 
 ## 6. 成功指标
 
@@ -172,3 +173,4 @@ Registration 侧也存在文档漂移：`crctl cr-init` 已支持一次传入 ti
 |---|---|---|---|
 | 2026-08-10 | v0.1.0 | Ray | 初始草稿：承接 `tools流程步骤优化v2-前移优化项.md` 与 grill-with-docs 质询 17 项拍板；9 条 FR、7 条 NFR、17 条 AC |
 | 2026-08-10 | v0.2.0 | Ray | 第 1 轮需求评审 BLOCK 回修：声明注册快照优先级与 tbd 口径；将 worktree-path/push-progress 纳入双 workspace 契约；固定 active surface 白名单与六个禁止模式；以四类 sentinel + 代码审查断言替换不可观察的配置来源/缓存验收 |
+| 2026-08-10 | v0.3.0 | Ray | 第 2 轮需求评审 BLOCK 回修：workspace 根 `AGENTS.md` 纳入白名单并新增 `node ../tools/skills/` 禁止模式；FR-6 收窄为 bucket/repositories 派生语义保持、worktree 根按 FR-2 修正 |

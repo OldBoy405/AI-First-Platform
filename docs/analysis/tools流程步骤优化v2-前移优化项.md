@@ -102,6 +102,7 @@ skills/shared/crctl/scripts/crctl.mjs
 | 类别 | active surface |
 |---|---|
 | 核心实现与测试 | `dir-graph.yaml`、`skills/shared/crctl/scripts/crctl.mjs`、`skills/shared/crctl/scripts/test/crctl.test.mjs` |
+| workspace 当前入口 | knowledge-base 根 `AGENTS.md`（与 tools 包内同名文件区分，属目标 workspace 入口文档） |
 | crctl / Registration | `skills/shared/crctl/SKILL.md`、`skills/requirement/requirement-register/SKILL.md`、`pipeline-templates/requirement-authoring.pipeline.json` |
 | 生命周期同步 | `skills/sync/push-progress/SKILL.md`、`pull-progress/SKILL.md`、`resume-from-remote/SKILL.md` |
 | writeback | `skills/writeback/writeback-prd-sdd/SKILL.md`、`writeback-tasks/SKILL.md`、`writeback-traceability/SKILL.md`、`skills/writeback/scripts/test/writeback.test.mjs`、`pipeline-templates/feature-writeback.pipeline.json` |
@@ -118,12 +119,15 @@ skills/shared/crctl/scripts/crctl.mjs
 
 ```text
 node tools/skills/
+node ../tools/skills/
 $WORKSPACE/tools/
 <workspace>/tools/
 $CLAUDE_PROJECT_DIR/tools/
 {TOOLS}/tools/
 {WORKSPACE}/tools/
 ```
+
+`node ../tools/skills/` 主要命中 knowledge-base 根 `AGENTS.md` 的 crctl 调用示例，应改为不绑定安装位置的表达。
 
 包内源码用 `import.meta.url` 从自身定位兄弟文件不属于 workspace 安装位置猜测，允许保留。
 
@@ -199,7 +203,7 @@ $CLAUDE_PROJECT_DIR/tools/
 - 使用 sentinel fixture 分别改变状态机转换、Pipeline 节点、gate 必需文件与 controlled-shell rules，调用对应公开 CLI，以行为结果证明四类资源均来自声明的 Tools Root；`CRCTL_RULES_PATH` 另测显式覆盖；
 - 单值惰性缓存不增加运行时 telemetry：代码评审断言所有四个 loader 只调用同一个 module-scope resolver，resolver 仅有一个成功值槽；黑盒只验证一次命令中需要多个 loader 的行为一致；
 - 复用已有 cr-init metadata 测试；
-- active 文档/模板按 §3.2 的精确白名单与六个禁止模式执行定向 `rg` 自检；
+- active 文档/模板按 §3.2 的精确白名单与七个禁止模式执行定向 `rg` 自检；
 - 不新增 resolver 测试包、mock filesystem、IDE E2E 或跨平台 Adapter matrix。
 
 ## 5. 范围排除
