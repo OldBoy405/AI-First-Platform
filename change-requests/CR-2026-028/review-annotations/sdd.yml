@@ -1,0 +1,19 @@
+cr-id: CR-2026-028
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-10T17:48:15+08:00"
+verdict: block
+blockers:
+  - "TD-B1 loader 接口的数据流不闭合：SDD §3.2 将 loadGates()/loadShellRules() 定义为无参，却要求二者调用 resolveToolsRoot(opWs)；§1.3/AC-8 又要求四个 loader 共用同一 resolver。当前 main 已有 ws、controlledGit 也已有 ws，修订应明确 loadGates(ws)、loadShellRules(ws)，main 调 loadGates(ws)，controlledGit 调 loadShellRules(ws)，并删除固定 GATES_PATH/RULES_PATH 默认常量（CRCTL_RULES_PATH 覆盖保留），禁止为补参数引入隐藏 module-scope workspace context。"
+dimensions:
+  PRD与SDD对齐: "通过：FR-1 至 FR-9 均有技术实现映射，active surface、worktree-path、Registration 与 multica 边界无遗漏。"
+  架构合理性: "基本通过：保持 crctl 单文件、零依赖、依赖方向与账本单写者；但 loader workspace 参数链未闭合，需定点修正。"
+  数据模型完整性: "通过：无新持久化实体；tools_package_path、target_install_path 删除、四标志与 TOOLS_PACKAGE_NOT_FOUND detail 契约完整。"
+  接口契约: "阻塞：loadGates/loadShellRules 无法按当前签名取得 resolveToolsRoot 所需 OpWS，接口与调用图冲突。"
+  性能与安全: "通过：单进程惰性缓存、失败即拒绝、无新命令面/依赖/后台任务，受控 shell deny 语义保持。"
+  可测试性: "通过：隔离 fixture、路径表驱动、linked worktree、四 sentinel、CRCTL_RULES_PATH 与代码审查断言可执行；接口修正后按显式 ws 注入测试。"
+  Prompt采纳影响: "通过：虽不新增 dispatch/rules deny，SDD §8 仍完整列出路径表达采纳白名单，覆盖 lint-prompts 无法发现的漂移。"
+suggestions:
+  - "实现时 deriveInstallRoot 的 git common-dir 输出先 trim 并 path.resolve(opWs, value)，失败回退 OpWS；TOOLS_PACKAGE_NOT_FOUND detail 保留最终 InstWS 便于诊断。"
+subject-file: change-requests/CR-2026-028/sdd.md
+subject-sha256: cdf636b1b996a28413ba61865a106c1d26ea0eb7421a1481cd594d893099ea92
