@@ -168,16 +168,16 @@ runGateChecks(ws, cr, 目标态, gates, {
 ```
 approveResign(ws, cr, gates, stage, stageCfg, { reason })
   1. TTY 人类在环硬检查（同 approve，无旁路）；非 TTY 一律 APPROVAL_REQUIRES_HUMAN
-  2. 审批段必须已存在且曾由 crctl approve 写入（approver/approved-at/via 齐备）→ 否则 RESIGN_NO_PRIOR_APPROVAL
+  2. 审批段必须已存在且曾由 crctl approve 写入（approver/approved-at/via 齐备）→ 否则 RESIGN_NO_PRIOR_APPROVAL；仅 `via=crctl-approve` 可迁移，`via=server-approve` → RESIGN_SERVER_APPROVAL_UNSUPPORTED（原签名绑定旧 digest，须服务端重签 grant）
   3. 按当前 gates.json evidence 定义重算 canonicalEvidenceDigest；缺失证据文件 → RESIGN_DIGEST_UNAVAILABLE
   4. 新 digest == 旧 digest → ok({ changed: false, reason: 'digest-already-current' }) 幂等返回
   5. 不一致 → 展示旧/新 digest 与原因，人工确认（只有 yes 才写）
   6. 确认后：resignApprovalSectionText 只替换该段 evidence-digest 行（保留 approver/approved-at/via/target-status），
-     追加 resign 审计子块（at/by/from-digest/reason）；幂等：先清旧 resign 子块再重建
+     追加 resign 审计子块（at/by/from-digest/reason）；全部动态字符串经统一 YAML 标量序列化（覆盖双引号、反斜杠、换行）；幂等：先清旧 resign 子块再重建
   7. casWrite（单文件 CAS）→ auditLog(kind: approve-resign) → 单次 commit（不动 cr.md status，不新增子命令）
 ```
 
-设计约束：① 仅限 TTY，人类在环，无旁路（治理⑤）；② 不改审批本体字段（approver/approved-at 保持历史事实），只重签 digest 绑定；③ 每次迁移落 resign 审计子块与 audit 事件，可追溯；④ 重复 resign 幂等（digest 已一致则 no-op；文本变换先清旧 resign 块）。
+设计约束：① 仅限 TTY，人类在环，无旁路（治理⑤）；② 只迁移本地 `crctl-approve`，服务端签名审批必须重新签发 grant；③ 不改审批本体字段（approver/approved-at 保持历史事实），只迁移 digest 绑定；④ 每次迁移落 resign 审计子块与 audit 事件，可追溯；⑤ 重复 resign 幂等（digest 已一致则 no-op；文本变换先清旧 resign 块）。
 
 ### 3.2 `archive-move`（FR-11/FR-12 账本面）
 
@@ -374,7 +374,7 @@ cmdStatus/cmdNext:
 - review-record：files 只列实际写入（未 bump 无 review-loop.yml）；attempt/route/repairTarget 正确性。
 - inbox-emit：--to 缺失/非列表/空 → BAD_ARGS。
 - migrate-backlog：幽灵块删除 + CR-2026-017 恢复 + already-clean 幂等 + history 无归档时 GHOST_ENTRY_ORPHANED。
-- 代码评审二轮 b10 回归：幽灵审计只在 casWrite 成功后才记录（成功恰一条、幂等不重复、migrateGhostCleanup 源码不含 auditLog、三调用点均为 casWrite 后补审计）；dev-start 证据定义变更后 approval digest 漂移 → 受控迁移闭环（迁移前 gate EVIDENCE_DRIFT，迁移后 gate 复绿，幂等迁移不破坏）；approve --resign 非 TTY 一律 APPROVAL_REQUIRES_HUMAN（无旁路）。
+- 代码评审 b10/三轮回归：黑盒注入读后并发改写，真实触发幽灵清理 `CAS_CONFLICT`，断言 backlog 除竞争写入外不变且零成功审计；dev-start 本地审批 digest 漂移通过真实 `approve --resign` TTY 路径完成 CAS、审计、受控提交并使 gate 复绿；reason/approver 含双引号、反斜杠、换行时仍为单一 YAML 标量；`server-approve` 明确拒绝本地 resign；非 TTY 一律 APPROVAL_REQUIRES_HUMAN。
 
 ## 8. Prompt 采纳影响（必填：本 CR 触及 crctl.mjs dispatch 与命令面）
 
@@ -402,3 +402,4 @@ cmdStatus/cmdNext:
 | 2026-08-09 | v0.5.0 | Ray | 范围确认（用户决策）：FR-16 纳入——cmdNext task-breakdown 分支补 dev-plan.yml 检查（CR-2026-026 遗留路由缺口，实测无评审记录时误报 approve dev-start）；FR 映射表与 §7.3 测试设计同步；归属 TASK-07 |
 | 2026-08-09 | v0.6.0 | Ray | 上游回修（review-dev-plan DP-UP-1/2 + 回退后复验）：§2.4 增加兼容 review cycle；§3.4a 补 task-breakdown canonical route、SDD digest/upstream freshness；§3.5 tech-design subject hash + 自动新 cycle；§6/§7.3 同步 FR-16/AC-23 测试 |
 | 2026-08-10 | v0.6.1 | Ray | 代码评审二轮 BLOCK 回修（b10）：§3.1 新增受控历史审批迁移 `approve --resign <reason>`（TTY 人类在环、只重签 digest、保留审批本体、resign 审计子块、幂等）；§3.6/§4.2 幽灵审计时序修正（审计必须在 casWrite 成功后，CAS_CONFLICT 零成功记录）；§7.3 补 b10 回归用例 |
+| 2026-08-10 | v0.6.2 | Ray | 代码评审三轮 BLOCK 回修：`server-approve` 禁止本地 resign，改由服务端重签；resign 动态字段统一 YAML 标量序列化；测试改为真实 TTY 成功路径与真实 CAS_CONFLICT 运行时注入，覆盖 CAS/审计/提交/字段保留。 |
