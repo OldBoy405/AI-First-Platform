@@ -1,0 +1,42 @@
+cr-id: CR-2026-030
+tasks:
+  - id: CR-2026-030-TASK-01
+    title: 建立 TCA-001～004 失败优先测试基线
+    status: pending
+    estimate: 8h
+    depends-on: []
+  - id: CR-2026-030-TASK-02
+    title: 实现三 Owner Registration 与真实提交事件
+    status: pending
+    estimate: 8h
+    depends-on: [CR-2026-030-TASK-01]
+  - id: CR-2026-030-TASK-03
+    title: 实现 Owner 正式移交原语
+    status: pending
+    estimate: 12h
+    depends-on: [CR-2026-030-TASK-02]
+  - id: CR-2026-030-TASK-04
+    title: 实现签名 reject 权威回退与幂等
+    status: pending
+    estimate: 12h
+    depends-on: [CR-2026-030-TASK-03]
+  - id: CR-2026-030-TASK-05
+    title: 实现 R7 权威字面量校验与开发计划三路契约
+    status: pending
+    estimate: 8h
+    depends-on: [CR-2026-030-TASK-04]
+  - id: CR-2026-030-TASK-06
+    title: 同步 Skill Pipeline 与人读契约
+    status: pending
+    estimate: 8h
+    depends-on: [CR-2026-030-TASK-05]
+  - id: CR-2026-030-TASK-07
+    title: 扩展 Multica grant test-only 跨接缝
+    status: pending
+    estimate: 6h
+    depends-on: [CR-2026-030-TASK-04]
+  - id: CR-2026-030-TASK-08
+    title: 执行全量验证与修改白名单审计
+    status: pending
+    estimate: 4h
+    depends-on: [CR-2026-030-TASK-06, CR-2026-030-TASK-07]
