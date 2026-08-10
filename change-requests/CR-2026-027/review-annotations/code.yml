@@ -1,19 +1,21 @@
 cr-id: CR-2026-027
 review-type: code
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-10T10:38:12+08:00"
+reviewed-at: "2026-08-10T12:04:13+08:00"
 verdict: block
 blockers:
-  - "[P1][FR-10/一致性] migrateGhostCleanup 在 casWrite 成功前写入 migrate-backlog-ghost removed:true 审计事件；并发 CAS_CONFLICT 时 _backlog.yml 保持不变而 audit.log 误记已清理，违反状态机 + CAS + 审计的统一写入路径。应将该审计事件移到成功 CAS 之后，并增加 CAS 冲突时零成功审计记录的回归用例。"
-  - "[P1][开发启动门禁] b9 从 development-start evidence 移除 task-index 后，既有 approval.yml 的 evidence-digest 仍按旧证据集签发；当前 developing gate 复算为 fd513fe9549529ef，与记录的 28db7b7c34e76dbb 不一致，仍报 EVIDENCE_DRIFT。需提供受控的历史审批迁移或重新人工审批路径，确保回修与 review-code:block 回流可通过门禁。"
+  - "[P1][FR-8] approve --resign 允许迁移 server-approve 审批段，但只替换 evidence-digest、保留原 signature；迁移后 gate 会按新 digest 重建 canonical string，原签名必然验签失败。应拒绝 server-approve 的 resign，或提供服务端重新签名流程，不能产生不可用审批记录。"
+  - "[P1][FR-8/账本完整性] resignApprovalSectionText 将用户输入的 reason 和 approver 直接拼入双引号 YAML，未转义双引号、反斜杠或换行；恶意/合法特殊原因可破坏 approval.yml 解析或改变字段语义。应使用统一 YAML 标量序列化，或严格限制并校验输入。"
+  - "[P2][FR-10/AC-9b] b10 测试没有实际制造 CAS_CONFLICT，只用源码正则断言 casWrite 位于 audit 之前，未运行时证明冲突时 backlog 不变且不产生成功 ghost 审计。"
+  - "[P2][FR-8] b10 测试没有调用 approve --resign 的真实 TTY 成功路径；当前只覆盖非 TTY 拒绝，并通过手工替换 approval.yml 验证迁移结果，未证明实际 CAS、审计、受控提交和字段保留。"
 dimensions:
-  code-task-sdd-alignment: "block - 上轮 b1-b8 的功能回修与 FR/TASK/SDD 对齐；但 FR-10 的成功审计时序仍不满足 CAS 失败零副作用的一致性边界，开发启动门禁也未完成闭环。"
-  engineering-quality: "block - 迁移的 CAS 失败路径会产生与账本事实相反的审计记录，无法满足 ARCHITECTURE 的统一 CAS + audit 写入纪律。"
-  key-path-readability: "pass - 回修后的 history 边界、双存冲突、epoch 时间比较、cycle 投影和 developing 回修路由均有明确分支与注释。"
-  security: "pass - 本轮未发现新增凭证泄露、命令注入或权限绕过风险。"
-  test-coverage: "block - 143/143 通过，但缺少 migrate-backlog 在 CAS_CONFLICT 时不写成功 ghost 审计事件的回归用例；也未覆盖既有 development-start 批准在 evidence 集调整后的迁移/重新审批闭环。"
-  test-evidence-credibility: "block - 测试报告 143/143、prompt lint、语法与 diff 检查均通过，但实际 developing gate 新鲜执行仍为 EVIDENCE_DRIFT，不能据绿灯宣称流程可推进。"
-  frontend-quality: "N/A - 本次 diff 未触及 tsx/vue/css/html。"
+  code-task-sdd-alignment: "block - b10a 时序与设计对齐，但 server-approve 重签后的签名契约不成立，且审批迁移的真实执行路径未被验证。"
+  engineering-quality: "block - 受控审批账本写入缺乏 YAML 标量安全序列化，且允许生成无法通过后续签名门禁的 server-approve 记录。"
+  key-path-readability: "pass - CAS 后审计、审批迁移和人工确认分支结构清晰。"
+  security: "block - reason/approver 直接插入 YAML，特殊字符可破坏审批账本结构。"
+  test-coverage: "block - 146/146 未覆盖真实 CAS_CONFLICT、resign TTY 成功路径及 server-approve 签名迁移。"
+  test-evidence-credibility: "block - 测试报告通过，但两个 b10 关键结论主要依赖源码正则或手工改账本，证据不足以支撑流程闭环。"
+  frontend-quality: "N/A - 本次 diff 未触及前端文件。"
   suggestion-policy: "strict"
   reviewer-model: "gpt-5.6-sol"
 suggestions: []
