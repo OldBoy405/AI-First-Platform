@@ -55,7 +55,9 @@ skills/shared/crctl/scripts/crctl.mjs
 1. CR 文件继续从 Operational Workspace 读写；
 2. 通过 Git common-dir 关系找到 Installation Workspace；
 3. `tools_package_path` 始终相对于 Installation Workspace 解析；
-4. 不改写 worktree 内 `dir-graph.yaml`，不创建 symlink/junction，不新增 `--tools-root`。
+4. workspace-owned `.rayai-worktrees/` 同样以 Installation Workspace 为根；`crctl worktree-path` 从 knowledge-base linked worktree 调用时不得把 worktree 自身再次作为安装根；
+5. `push-progress`、`pull-progress`、`resume-from-remote` 继续只消费 `worktree-path` 返回值，不自行拼路径；
+6. 不改写 worktree 内 `dir-graph.yaml`，不创建 symlink/junction，不新增 `--tools-root`。
 
 非 knowledge-base 的 tools/multica worktree 不自动猜对应 CR；调用方复用 `requirement-register.execution_context.knowledge_base_worktree`，显式传入 `--workspace <knowledge_base_worktree>`。
 
@@ -95,19 +97,35 @@ skills/shared/crctl/scripts/crctl.mjs
 
 ### 3.2 active Skill、Pipeline 与 Adapter 路径统一
 
-修改范围采用 active surface 白名单：
+修改范围采用以下确定白名单：
 
-- active Skill 中实际执行的 crctl/writeback 命令；
-- active Pipeline prompt 中实际执行的 writeback 命令；
-- Claude Code、Qoder、Cursor、Codex、CI 的 active 模板与安装说明；
-- tools 根入口文档中作为当前用法展示的命令。
+| 类别 | active surface |
+|---|---|
+| 核心实现与测试 | `dir-graph.yaml`、`skills/shared/crctl/scripts/crctl.mjs`、`skills/shared/crctl/scripts/test/crctl.test.mjs` |
+| crctl / Registration | `skills/shared/crctl/SKILL.md`、`skills/requirement/requirement-register/SKILL.md`、`pipeline-templates/requirement-authoring.pipeline.json` |
+| 生命周期同步 | `skills/sync/push-progress/SKILL.md`、`pull-progress/SKILL.md`、`resume-from-remote/SKILL.md` |
+| writeback | `skills/writeback/writeback-prd-sdd/SKILL.md`、`writeback-tasks/SKILL.md`、`writeback-traceability/SKILL.md`、`skills/writeback/scripts/test/writeback.test.mjs`、`pipeline-templates/feature-writeback.pipeline.json` |
+| Adapter / CI | `skills/shared/crctl/adapters/**`（现有 Claude Code、Qoder、Cursor、Codex、CI 文件） |
 
 统一规则：
 
 - 不再假设目标 workspace 内存在 `tools/` 子目录；
-- 逻辑示例使用 `{TOOLS_ROOT}/skills/...` 并明确 `{TOOLS_ROOT}` 来源；
-- 静态模板安装时物化，不在运行时重复解析；
-- 不批量替换历史分析、审查报告、生成 HTML、OpenWiki、inactive/old 内容。
+- 逻辑示例与仓库模板统一使用字面占位符 `{TOOLS_ROOT}/skills/...`，不得保留 `{TOOLS}`、`{WORKSPACE}` 两套同义占位符；
+- 静态模板安装时物化，不在运行时重复解析；CI 可把 checkout 目录赋给 `TOOLS_ROOT`，但命令不直接硬编码 `node tools/skills/...`；
+- 白名单之外不批量替换。明确允许的非执行引用包括：`ARCHITECTURE.md` 的历史否决示例、`skills/reviewer-panel.yaml` 的包内自路径注释、`skills/shared/engineering-docs/SKILL.md` 的概念性路径、历史分析/审查/生成 HTML/OpenWiki/inactive/old 内容。
+
+定向检索只在上述白名单执行，以下当前命令模式必须清零：
+
+```text
+node tools/skills/
+$WORKSPACE/tools/
+<workspace>/tools/
+$CLAUDE_PROJECT_DIR/tools/
+{TOOLS}/tools/
+{WORKSPACE}/tools/
+```
+
+包内源码用 `import.meta.url` 从自身定位兄弟文件不属于 workspace 安装位置猜测，允许保留。
 
 ### 3.3 Registration 直接复用现有 `crctl cr-init`
 
@@ -175,11 +193,13 @@ skills/shared/crctl/scripts/crctl.mjs
 
 复用现有 `skills/shared/crctl/scripts/test/crctl.test.mjs` 黑盒套件：
 
-- `makeWorkspace()` 默认显式绑定测试 tools 包；
+- `makeWorkspace()` 默认显式绑定隔离的测试 tools fixture；fixture 为四标志与目标配置文件提供最小内容，不修改真实 tools checkout；
 - 表驱动覆盖相对/绝对路径、空壳目录、缺配置、缺路径、四标志缺失；
-- 增加一个 Git linked-worktree 黑盒场景；
+- 增加一个 Git linked-worktree 黑盒场景，同时断言 Tools Root 与 `worktree-path` 都以 Installation Workspace 为根，返回的三仓 worktree 路径不含重复 `.rayai-worktrees/.../.rayai-worktrees`；
+- 使用 sentinel fixture 分别改变状态机转换、Pipeline 节点、gate 必需文件与 controlled-shell rules，调用对应公开 CLI，以行为结果证明四类资源均来自声明的 Tools Root；`CRCTL_RULES_PATH` 另测显式覆盖；
+- 单值惰性缓存不增加运行时 telemetry：代码评审断言所有四个 loader 只调用同一个 module-scope resolver，resolver 仅有一个成功值槽；黑盒只验证一次命令中需要多个 loader 的行为一致；
 - 复用已有 cr-init metadata 测试；
-- active 文档/模板用定向 `rg` 自检；
+- active 文档/模板按 §3.2 的精确白名单与六个禁止模式执行定向 `rg` 自检；
 - 不新增 resolver 测试包、mock filesystem、IDE E2E 或跨平台 Adapter matrix。
 
 ## 5. 范围排除

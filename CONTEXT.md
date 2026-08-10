@@ -18,7 +18,7 @@ _Avoid_: Installation Workspace、tools checkout
 
 ### Installation Workspace
 
-声明并锚定 Tools Root 的 knowledge-base 主 checkout。linked worktree 仍共享该安装基准，不复制或改写自己的 tools 包绑定。
+声明并锚定 Tools Root 与 workspace-owned `.rayai-worktrees/` 根的 knowledge-base 主 checkout。linked worktree 仍共享该安装基准，不复制或改写自己的 tools 包绑定，也不在自身目录下再派生第二层 `.rayai-worktrees/`。
 _Avoid_: Operational Workspace、当前工作目录
 
 ### 成熟度 Scope（Maturity Scope）
