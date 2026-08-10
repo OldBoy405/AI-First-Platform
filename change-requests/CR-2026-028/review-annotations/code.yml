@@ -1,23 +1,17 @@
 cr-id: CR-2026-028
 review-type: code
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-10T19:33:57+08:00"
-verdict: block
-blockers:
-  - "[CODE-BLOCK-001][AC-9] skills/shared/crctl/adapters/qoder/README.md 仍有 2 处 <workspace>/tools/skills/...，属于 PRD §3.1 七个禁止模式的 active Adapter surface，定向检索并非零命中。改为 {TOOLS_ROOT}/skills/... 并同步说明其安装时物化来源。"
-  - "[CODE-BLOCK-002][AC-13] tools/dir-graph.yaml 删除字段后，新增注释仍字面包含 target_install_path；AC-13 明确要求该文件不再含该字段名或固定 tools/ 安装描述。删除该字段名字面残留，仅说明安装位置由目标 workspace 的 tools_package_path 声明。"
-  - "[CODE-BLOCK-003][FR-9/AC-1/AC-3/AC-4/AC-15] crctl.test.mjs 新增 resolver 表驱动未覆盖相对 tools_package_path 与 workspace 空壳 tools/ 零回退；linked-worktree 用例写入的是绝对 PACKAGE_ROOT，未同时证明相对路径以 Installation Workspace 为基准解析 Tools Root。补最小黑盒断言：相对/绝对同 realpath、空壳不被读取、linked worktree 使用主 checkout 中相对声明。"
-  - "[CODE-BLOCK-004][AC-7/AC-15] 现有 CRCTL_RULES_PATH 用例只覆盖缺失和损坏覆盖文件；没有有效覆盖文件优先于 Tools Root 默认 rules 的正向断言。补一个有效 override sentinel shape 用例，证明显式覆盖仍生效。"
+reviewed-at: "2026-08-10T19:43:15+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  code-task-sdd-alignment: "block - 核心 resolver/四 loader/worktree-path 实现与 SDD 主体一致，但 AC-7/AC-9/AC-13/FR-9 的 active surface 与测试验收尚未完整落地。"
-  engineering-quality: "pass with suggestions - 零新增依赖、失败硬拒与显式 ws 接线清晰；存在未使用的 PACKAGE_ROOT 常量和 requirement-authoring prompt 步骤号 3→5→6。"
-  key-path-readability: "pass - deriveInstallRoot → resolveToolsRoot → 四 loader 的调用链集中且注释充分。"
-  security: "pass - 配置错误 fail-closed；未新增覆盖入口、动态加载或隐式候选。"
-  test-coverage: "block - 本轮 156/156 与 writeback 9/9 全绿，但缺少规格明确要求的相对路径、空壳零回退、linked-worktree 相对 Tools Root、有效 CRCTL_RULES_PATH 覆盖场景。"
-  test-evidence-credibility: "block - test-report 声称七禁止模式零命中和 FR-9 全覆盖，与本轮定向检索/测试源码审阅不一致；qoder README 有 2 处命中。"
+  code-task-sdd-alignment: "pass - 第 1 轮 4 个 blocker 均关闭：qoder active surface 与字段字面残留清零；FR-9 的相对/绝对、空壳零回退、linked-worktree 相对 Tools Root、有效 rules override 已有黑盒覆盖。FR-1～FR-9 与 TASK-01～09 对齐。"
+  engineering-quality: "pass - 实现集中于既有 crctl 深模块、零新增依赖；删除未使用 PACKAGE_ROOT，修正 pipeline 步骤编号；配置失败硬拒且无回退。"
+  key-path-readability: "pass - deriveInstallRoot → resolveToolsRoot → 四 loader 调用链集中，ws 显式传递，成功缓存与 _shellRules 边界清楚。"
+  security: "pass - Tools Root 缺失/无效/身份标志不全统一 fail-closed；除 CRCTL_RULES_PATH 外无新增覆盖入口；无动态加载、隐式候选或本机路径入库。"
+  test-coverage: "pass - 本轮修复后由 crctl test 无条件重跑 158/158，writeback 9/9；覆盖 AC-1/3/4/6/7/8/15/16 关键路径。"
+  test-evidence-credibility: "pass - test-report 已由 crctl 依据真实退出码重生成；三件套、diff-check、pipeline JSON、七禁止模式与目标字段检索均复核通过；traceability 测试段结构已 validate。"
   frontend-quality: "N/A - diff 未触及前端文件。"
   suggestion-policy: "strict"
   reviewer-model: "gpt-5.6-sol"
-suggestions:
-  - "删除 skills/shared/crctl/scripts/crctl.mjs 中已无引用的 PACKAGE_ROOT 常量，避免形成仍有 package-root fallback 的误导。"
-  - "requirement-authoring.pipeline.json 合并重复 cr-init 步骤后，将动作编号 5/6 顺延修正为 4/5。"
+suggestions: []
