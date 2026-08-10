@@ -996,3 +996,41 @@ history:
     archive-reason: "开发计划与 TASK 合并评审门禁落地（writeback 0.27）"
     writeback-spec-id: ai-first-platform
     archived-at: "2026-08-09T15:31:12+08:00"
+  - id: CR-2026-027
+    title: tools 流程优化 Phase 0+1 — 基线事实统一与正确性修复（状态机口径 27/49、approve 原子提交、TASK 归档门禁、archive 原子化、终态查询、review-record 深化）
+    summary: ""
+    owner: Ray
+    owners:
+      requirement:
+        id: Ray
+        assigned-at: "2026-08-09T22:06:44+08:00"
+      development:
+        id: Ray
+        assigned-at: "2026-08-09T22:06:44+08:00"
+      test:
+        id: Ray
+        assigned-at: "2026-08-09T22:06:44+08:00"
+    target-version: tbd
+    source: manual
+    prd-path: "change-requests/CR-2026-027/prd.md"
+    created: "2026-08-09T22:06:44+08:00"
+    updated: "2026-08-09T22:06:44+08:00"
+  
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 04fef5db499e2dab5a79eb070f77b986435a3504
+        branch: requirement/CR-2026-027
+      - repo: tools
+        trunk: custom/main
+        sha: 1ecd4ec4a695e17ccc31f0eb20d2ad6938bbc97e
+        branch: requirement/CR-2026-027
+    final-status: archived
+    archive-reason: "成功回写归档：Phase0+1 tools 流程优化 v0.28（merge KB@04fef5d + tools@1ecd4ec，specs/ai-first-platform）"
+    writeback-spec-id: ai-first-platform
+    archived-at: "2026-08-10T14:47:34+08:00"
+    notify-log:
+      - at: "2026-08-10T14:47:34+08:00"
+        event: archived
+        to: ["Ray"]
+        payload: {"final-status":"archived","archive-reason":"成功回写归档：Phase0+1 tools 流程优化 v0.28（merge KB@04fef5d + tools@1ecd4ec，specs/ai-first-platform）","writeback-spec-id":"ai-first-platform","archived-at":"2026-08-10T14:47:34+08:00"}
