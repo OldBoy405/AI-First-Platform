@@ -28,7 +28,7 @@ owners:
     assigned-at: "2026-08-09T22:06:44+08:00"
 target-version: tbd
 source: "docs/analysis/tools流程步骤优化v2.md（质询：docs/analysis/tools流程步骤优化v2-质询记录.md）"
-status: merging
+status: writing-back
 created: "2026-08-09T22:06:44+08:00"
 updated: "2026-08-09T22:06:44+08:00"
 remote-ref: ""
