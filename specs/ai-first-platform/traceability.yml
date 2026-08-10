@@ -1,11 +1,11 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 # 五段链路：需求 FR ↔ 技术设计 SDD ↔ 交付 TASK ↔ 代码 merge SHA ↔ CR-ID
 spec-id: ai-first-platform
-cr-ref: CR-2026-027
-cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027]
-target-version: "0.28"
+cr-ref: CR-2026-029
+cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029]
+target-version: "0.2"
 baseline-since: "0.10"
-generated-at: "2026-08-10T14:47:11+08:00"
+generated-at: "2026-08-10T20:35:41+08:00"
 
 # 已知缺口：CR-2026-003~CR-2026-006 未生成本文件的里程碑段（writeback-traceability 在那四个
 # CR 回写时被跳过，PRD.md/SDD.md/_index.yml 侧的累积记录不受影响、仍完整）。本次（CR-2026-008）
@@ -2077,3 +2077,41 @@ milestones:
         tasks: [CR-2026-027-TASK-07, CR-2026-027-TASK-08]
         code: tools@1ecd4ec: cmdNext task-breakdown dev-plan 路由 + detectNewTechDesignCycle
         evidence: AC-23 决策表测试 + tech-design cycle=2 自动开启
+  - cr: CR-2026-029
+    milestone: 发布联调移交 merge pipeline
+    target-version: "0.2"
+    merge-commits:
+      - repo: tools
+        trunk: custom/main
+        sha: cab3663e224c7198d954b4d25bee5f4a8803a452
+        branch: requirement/CR-2026-029
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 9b90d834f0b59e5525ecdc7d92126271ca4da64d
+        branch: requirement/CR-2026-029
+    frs:
+      - fr: "FR-1 merge pipeline 联调走查"
+        title: merge-feature-branch Step 6 + merge-verification.md
+        sdd: SDD §1.2/§2.1
+        code: SKILL.md/pipeline prompt/测试
+        evidence: merge-verification.md CR-2026-029
+      - fr: "FR-2 pipeline prompt 同步"
+        title: feature-writeback merge 节点 prompt
+        sdd: SDD §3.2
+        code: pipeline JSON
+        evidence: test-report CR-2026-029
+      - fr: "FR-3 发布类任务约定"
+        title: 发布类工作归 merge pipeline
+        sdd: SDD §2.2
+        code: SKILL.md 约定段 + 静态断言
+        evidence: crctl.test.mjs CR-2026-029
+      - fr: "FR-4 迁移 CR-2026-028 TASK-10"
+        title: 移除 TASK-10 并注明移交
+        sdd: SDD §3.3
+        code: tasks/_index.yml + TASK-10.md 删除
+        evidence: CR-2026-028 变更记录
+      - fr: "FR-5 验证"
+        title: 161+9 全绿 + 三件套
+        sdd: SDD §6
+        code: crctl.test.mjs 静态断言
+        evidence: test-report CR-2026-029
