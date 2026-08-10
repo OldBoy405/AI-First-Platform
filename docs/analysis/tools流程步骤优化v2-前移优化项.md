@@ -1,92 +1,190 @@
 # tools 流程步骤优化 v2：前移优化项
 
-> 文档定位：从 `tools流程步骤优化v2.md` 的 Phase 2～7 候选路线中，单独抽出的基础路径与入口契约优化。
+> 文档定位：从 `tools流程步骤优化v2.md` 的 Phase 2～7 候选路线中单独抽出的基础路径与入口契约优化。
 >
-> 当前状态：候选补充，**不并入已在实施中的 Phase 0 / Phase 1 CR**。如需实施，应另立独立 Spec/CR，并与现有 Phase 0 / Phase 1 的改动边界核对。
+> 当前状态：**已于 CR-2026-028 质询拍板**。本文件是该 CR 的需求来源；不追溯并入已归档的 CR-2026-027（Phase 0/1），不包含 Runner 或加载框架。
 
 ## 1. 前移原则
 
 这些事项满足以下条件：
 
-- 不需要 Pipeline Runner 或 Skill Runner；
-- 直接影响 CR、PRD、SDD、回写等现有 Skill 找到并读取 `tools` 包；
-- 可以复用现有 `dir-graph.yaml`、`crctl` 和已有脚本；
-- 不新增通用 Runner、动态加载框架或第二套事实源。
+- 不需要 Pipeline Runner、Skill Runner、installer 或动态加载框架；
+- 直接影响 CR、PRD、SDD、回写及 Adapter 找到并使用 tools 包；
+- 优先复用现有 `dir-graph.yaml`、`crctl`、`cr-init`、Adapter 模板和 writeback 脚本；
+- 不新增第二路径事实源、版本 pin、自动修复器或通用上下文对象；
+- 只修改 active executable surfaces，不批量改写历史分析、生成 HTML、OpenWiki 或 inactive 内容。
 
-## 2. 前移清单
+## 2. 已拍板的路径领域模型
 
-### 2.1 唯一 tools-root 解析契约
+### 2.1 Tools Root
 
-来源：主方案 §8.3 Tools root。
+目标 workspace 使用的 tools 包根目录。唯一声明来源为 Installation Workspace 的：
 
-以目标 workspace 的 `dir-graph.yaml#workspace.tools_package_path` 为唯一配置来源：
-
-1. 相对路径始终相对于 workspace root 解析；
-2. 解析结果必须是实际的 tools 包根目录；
-3. 至少验证 `AGENTS.md`、`skills/_index.yml`、`skills/shared/crctl/scripts/crctl.mjs` 等标志文件；
-4. 验证失败返回明确的 `TOOLS_PACKAGE_NOT_FOUND`，不得静默继续；
-5. 不回退到 workspace 内同名空壳 `tools/`、当前工作目录或调用方 package root；
-6. 同一调用链只解析一次并复用结果。
-
-这解决的是包定位问题，不是 Runner 编排问题。
-
-### 2.2 Skill 和脚本入口路径统一
-
-来源：Phase 6 回写脚本、shared crctl 示例及现有 Skill 中的路径写法。
-
-现有部分文档使用：
-
-```text
-node tools/skills/...
+```yaml
+workspace:
+  tools_package_path: "../tools"
 ```
 
-在当前 workspace 中，真实 tools 包位于 sibling `../tools/`。后续应统一为以下规则：
+规则：
 
-- Skill 文档不得假设 workspace 内存在 `tools/` 子目录；
-- 所有需要执行 tools 内脚本的调用，都从统一的 `toolsRoot` 派生绝对路径；
-- 文档示例可使用逻辑路径，但必须明确其相对于 tools 包根目录还是 workspace 根目录；
-- 回写、crctl、适配器和测试文档不得各自发明路径推导方式。
+1. 相对路径以 Installation Workspace 为基准；绝对路径直接使用；
+2. 解析结果经 `realpath` 归一，消除 `..`、symlink、junction 与路径表示差异；
+3. 配置缺失、类型错误、路径不存在或身份标志不完整，统一返回 `TOOLS_PACKAGE_NOT_FOUND`，错误详情列出原因；
+4. 不回退到 workspace 内同名空壳 `tools/`、当前目录、调用方 package root 或正在执行的 crctl 所在包；
+5. 不校验 tools Git branch、commit SHA 或版本兼容矩阵；
+6. 同一 crctl 进程只解析一次，使用单值惰性缓存，不创建 execution context、Map、缓存文件或共享 resolver library。
 
-本项只统一路径契约，不创建新的命令或加载框架。
-
-### 2.3 crctl 的配置加载顺序修正
-
-来源：现有 `crctl.mjs` 的 workspace/config loader；主方案 §8.3 未覆盖这一层实现。
-
-当前 `crctl` 的部分加载逻辑仍直接尝试：
+Tools Root 固定验证以下四个身份标志：
 
 ```text
-<workspace>/tools/...
-<crctl 自身 package root>/...
+AGENTS.md
+dir-graph.yaml
+skills/_index.yml
+skills/shared/crctl/scripts/crctl.mjs
 ```
 
-应改为：
+其余资源由实际消费者按需校验，沿用现有 `PIPELINE_NOT_FOUND`、`GATES_NOT_FOUND` 等错误语义。
 
-1. 读取目标 workspace 的 `workspace.tools_package_path`；
-2. 解析并验证 tools root；
-3. 从该 root 加载 `dir-graph.yaml`、Pipeline 模板及相关只读配置；
-4. 仅在“独立运行且没有 workspace 配置”的明确兼容场景下，才允许使用 crctl 自身 package root；
-5. workspace 内同名空壳目录不得作为隐式候选。
+### 2.2 Operational Workspace 与 Installation Workspace
 
-状态机、gate 和账本仍由现有 `crctl` 负责，不新增平行 loader 或第二套配置副本。
+- **Operational Workspace**：当前实际读写 CR 阶段产物的 knowledge-base checkout，可为主 checkout 或 knowledge-base CR linked worktree。
+- **Installation Workspace**：声明并锚定 Tools Root 的 knowledge-base 主 checkout。
 
-### 2.4 Registration 复用 `crctl cr-init` 的注册元数据入口
+普通 checkout 中两者相同。knowledge-base linked worktree 中：
 
-来源：主方案 §8.2 Requirement Register Runner；现有 `cr-init` 已具备相关参数。
+1. CR 文件继续从 Operational Workspace 读写；
+2. 通过 Git common-dir 关系找到 Installation Workspace；
+3. `tools_package_path` 始终相对于 Installation Workspace 解析；
+4. 不改写 worktree 内 `dir-graph.yaml`，不创建 symlink/junction，不新增 `--tools-root`。
 
-`crctl cr-init` 已支持一次写入注册所需的 title、summary、source、target-version 等元信息。现有 `requirement-register` 仍描述注册后直接补写 `cr.md` frontmatter，这会造成入口职责重复。
+非 knowledge-base 的 tools/multica worktree 不自动猜对应 CR；调用方复用 `requirement-register.execution_context.knowledge_base_worktree`，显式传入 `--workspace <knowledge_base_worktree>`。
 
-独立补充 Spec 应明确：
+该决定见 `docs/adr/0003-worktree与tools安装基准分离.md`。
 
-- 注册元数据优先通过现有 `crctl cr-init` 参数传入；
-- 不在 Skill 中另行手写受控 frontmatter；
-- `cr.md`、`_backlog.yml`、`_index.yml` 的原子建档继续由 `crctl cr-init` 负责；
-- 不因为修正入口而新增 `register-preflight`、`registration-check` 或 `stage-context` 命令；
-- worktree 创建仍复用现有 `worktree-path` 与 `dir-graph.yaml#repositories`。
+### 2.3 动态解析与静态物化
 
-## 3. 不在本文件中的事项
+所有调用方共享同一契约，但不强制共享一套运行时代码：
 
-以下内容仍保留在后续候选路线中：
+- Agent、Skill、crctl 等动态调用方在执行流程时解析 Tools Root；
+- IDE hooks、CI 等静态集成在安装时从同一配置物化 `{TOOLS_ROOT}`；
+- tools 移动或配置变更后重新执行现有安装替换，不新增 installer、watcher、repairer 或启动 wrapper；
+- 仓库只提交含 `{TOOLS_ROOT}` 的模板；含本机绝对路径的物化结果只进入 local settings，不提交到仓库；
+- CI 由流水线维护者独立物化，不复用开发者本机配置。
+
+## 3. 前移实施清单
+
+### 3.1 crctl 的最小 Tools Root resolver
+
+只在现有 `crctl.mjs` 内新增最小 resolver，并由现有 loader 复用；不拆出公共模块。Tools Root 默认统管全部 package-owned 运行配置：
+
+```text
+{toolsRoot}/dir-graph.yaml
+{toolsRoot}/pipeline-templates/*.pipeline.json
+{toolsRoot}/skills/shared/crctl/gates.json
+{toolsRoot}/skills/shared/controlled-shell/rules.json
+```
+
+具体要求：
+
+1. `loadStateMachine` 不再搜索 Operational Workspace 自身状态机、`<workspace>/tools/` 或 `PACKAGE_ROOT`；状态机来自 Tools Root 的 `dir-graph.yaml`；
+2. `loadPipeline` 只从 Tools Root 加载；
+3. `loadGates` 从 Tools Root 加载，避免与状态机/Pipeline 分裂到不同 tools checkout；
+4. controlled-shell rules 默认从 Tools Root 加载；保留已有显式 `CRCTL_RULES_PATH` 作为部署/测试覆盖；
+5. 不新增 gates/rules 的其他环境变量；
+6. `help` 保持无需 workspace；其他实际 crctl 子命令沿用现有 eager gates 行为，要求有效 Tools Root，本 CR 不重构全部 command signature。
+
+### 3.2 active Skill、Pipeline 与 Adapter 路径统一
+
+修改范围采用 active surface 白名单：
+
+- active Skill 中实际执行的 crctl/writeback 命令；
+- active Pipeline prompt 中实际执行的 writeback 命令；
+- Claude Code、Qoder、Cursor、Codex、CI 的 active 模板与安装说明；
+- tools 根入口文档中作为当前用法展示的命令。
+
+统一规则：
+
+- 不再假设目标 workspace 内存在 `tools/` 子目录；
+- 逻辑示例使用 `{TOOLS_ROOT}/skills/...` 并明确 `{TOOLS_ROOT}` 来源；
+- 静态模板安装时物化，不在运行时重复解析；
+- 不批量替换历史分析、审查报告、生成 HTML、OpenWiki、inactive/old 内容。
+
+### 3.3 Registration 直接复用现有 `crctl cr-init`
+
+`crctl cr-init` 已支持：
+
+```text
+--title
+--owner-requirement
+--summary
+--source
+--target-version
+```
+
+本项不修改 cr-init 代码，只修正调用文档与 Pipeline 漂移：
+
+1. `requirement-register` 一次传入全部已有注册参数；
+2. 删除建档后由模型直接补写受控 frontmatter 的步骤；
+3. 合并 `requirement-authoring.pipeline.json` 中重复的 cr-init 建档描述；
+4. `cr.md`、`_backlog.yml`、`_index.yml` 的原子建档继续由 cr-init 负责；
+5. worktree 创建继续复用 `worktree-path` 与 `dir-graph.yaml#repositories`；
+6. 不新增 `register-preflight`、`registration-check`、`stage-context`、wrapper 或 Registration Runner。
+
+### 3.4 删除第二安装位置声明
+
+删除 tools 包自身 `dir-graph.yaml#workspace.target_install_path: "tools/"`，并修订同文件中“固定挂载到 tools/”的当前描述。目标 workspace 的 `workspace.tools_package_path` 是唯一安装位置事实源。
+
+### 3.5 multica 边界
+
+本 CR 不修改 multica 代码，只更新 `CUSTOM.md` 的“未做”台账。已核实现存跨仓消费点：
+
+- `server/internal/governance/gen/generate-transitions.mjs`；
+- `server/internal/governance/gen/generate-gate-nodes.mjs`；
+- `server/internal/governance/approval_crosscheck_test.go`；
+- `server/pkg/gitguard/gitguard_test.go`。
+
+这些文件当前仍猜测 sibling tools 路径，后续首次修改对应文件时删除猜测：生成器要求显式 tools root，跨工具测试要求显式 `CRCTL_PATH` / rules path。生产环境已有 `MULTICA_CONTROLLED_SHELL_RULES=<绝对路径>` 属安装时物化，继续复用，不在 multica 新增 resolver。
+
+## 4. 验收矩阵
+
+### 4.1 workspace 与路径
+
+| 调用位置 | workspace 确定方式 | 预期 |
+|---|---|---|
+| Installation Workspace 根目录 | cwd 向上探测 | 成功 |
+| Installation Workspace 任意子目录 | cwd 向上探测 | 成功 |
+| knowledge-base CR worktree 根目录 | cwd 向上探测 + Git common-dir | 成功 |
+| knowledge-base CR worktree任意子目录 | 同上 | 成功 |
+| tools CR worktree | 显式 `--workspace <knowledge_base_worktree>` | 成功 |
+| multica CR worktree | 显式 `--workspace <knowledge_base_worktree>` | 成功 |
+| 不属于 workspace 的目录 | 无显式参数 | `WORKSPACE_NOT_FOUND` |
+| workspace 内有空壳 `tools/` | 不作为候选 | 使用声明的 Tools Root |
+| 配置缺失、路径无效、标志不完整 | 无回退 | `TOOLS_PACKAGE_NOT_FOUND` |
+
+不承诺从参与仓分支名、CR-ID 或 `.rayai-worktrees/` 扫描结果自动猜 knowledge-base worktree。
+
+### 4.2 配置来源与注册
+
+1. state machine、Pipeline、gates、默认 rules 均来自同一 Tools Root；
+2. `CRCTL_RULES_PATH` 显式覆盖仍可用；
+3. active Skill/Pipeline/Adapter 不再把 `<workspace>/tools/` 当固定事实；
+4. `cr-init` 一次完成注册元数据建档，不产生第二次 frontmatter 旁路写入；
+5. 现有状态机、gate、审批、CAS、账本与 worktree 语义不变。
+
+### 4.3 最小验证
+
+复用现有 `skills/shared/crctl/scripts/test/crctl.test.mjs` 黑盒套件：
+
+- `makeWorkspace()` 默认显式绑定测试 tools 包；
+- 表驱动覆盖相对/绝对路径、空壳目录、缺配置、缺路径、四标志缺失；
+- 增加一个 Git linked-worktree 黑盒场景；
+- 复用已有 cr-init metadata 测试；
+- active 文档/模板用定向 `rg` 自检；
+- 不新增 resolver 测试包、mock filesystem、IDE E2E 或跨平台 Adapter matrix。
+
+## 5. 范围排除
+
+以下内容继续保留在后续候选路线中：
 
 - PRD `prepare/finalize` Runner；
 - shared Runner library；
@@ -94,16 +192,8 @@ node tools/skills/...
 - repo/worktree/base context 的完整持久化输出；
 - Authoring、Review、Implement、Test、Merge、Writeback、Archive Runner；
 - Pipeline typed outputs；
-- retry mode、control-plane SHA pin、scope-change ledger、task reconcile 等高级机制。
-
-## 4. 验收边界
-
-独立补充 Spec 至少应验证：
-
-1. 从 workspace 根目录、CR worktree 和其他子目录调用时，均解析到同一 tools root；
-2. workspace 内存在空壳 `tools/` 时不会误读；
-3. tools root 缺失或标志文件不完整时硬失败；
-4. CR、PRD、SDD、回写脚本使用同一条路径规则；
-5. `cr-init` 一次完成注册元数据建档，不产生第二次 frontmatter 旁路写入；
-6. 现有状态机、gate、审批和账本语义不变。
-
+- retry mode、control-plane SHA pin、scope-change ledger、task reconcile；
+- tools 版本 manifest、branch/SHA pin 与兼容矩阵；
+- 自动 Adapter installer、配置合并器、路径 watcher/repairer；
+- multica 现存跨仓消费者的本轮代码修复；
+- 从任意参与仓 worktree 自动反推 knowledge-base worktree。
