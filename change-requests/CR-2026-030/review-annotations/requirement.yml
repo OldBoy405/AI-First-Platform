@@ -1,17 +1,16 @@
 cr-id: CR-2026-030
 review-type: requirement
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-11T01:55:46+08:00"
-verdict: block
-blockers:
-  - "BL-1 正式移交提交隔离未闭合：FR-4/AC-11 固定 owner-set -> push-progress，FR-5/AC-14～15 只定义 add/commit 失败后的快照回滚，FR-3/AC-10 也只约束同值重放；真实 Owner 变化的成功路径没有规定当 cr.md 或 _backlog.yml 已存在 staged/unstaged 变更时如何处理。现有 handover-cr 会先 push-progress，而新顺序下 owner-set 若直接暂存并提交这两个文件，可能把尚未发布的状态推进、checkpoint 或其他账本变化并入正式移交 commit，随后 owners/inbox 事件又把同一 SHA 表述为移交事实；失败回滚若不保存 index 与 working tree 的分层快照，也无法兑现 AC-14 的 staged 状态恢复。修复时必须选定并写明唯一策略：要么 owner-set 前要求这两个受控路径的 index/worktree 均 clean，要么只提交 Owner delta 并完整保留原 staged/unstaged 状态；同时增加成功隔离与失败恢复的可执行 AC（至少覆盖预先 staged、预先 unstaged、二者并存），不得静默吸收或重分层既有变更。"
+reviewed-at: "2026-08-11T02:05:03+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  结构完整性: "PASS：概述、8 个 US、10 条 FR、7 条 NFR、31 条 AC、成功指标、范围排除、风险与变更记录齐全；上一轮标题、source、白名单和 Multica 范围问题均已修复。"
-  FR可测试性: "BLOCK：Registration、grant、dev-plan 路由与 R7 验收充分，上一轮时间戳/audit 缺口也已补齐；但 Owner 真实变化成功路径缺少预存 staged/unstaged 变更隔离 AC，AC-14 的失败恢复也没有锁定 index/working-tree 分层语义。"
-  范围合理性: "BLOCK：总体最小边界和精确文件白名单合理；但 handover-cr 从既有 pre-push 改为 owner-set -> push-progress 后，正式提交可能吸收两个受控账本上的既有变更，数据完整性边界尚未闭合。"
-  与规划对齐: "PASS：PRD 与已入分支的 tools-tca-001-004-optimization-plan.md 一致，并已将 Multica 边界唯一化为 production code 零修改、仅允许既有跨接缝测试与 CUSTOM.md 台账 diff。"
-  依赖识别: "BLOCK：已识别状态机、grant v1、outbox、CUSTOM-TODO 与多仓边界，但漏掉 Git index/working-tree 既有状态这一 owner-set 正式提交的直接输入依赖。"
+  结构完整性: "PASS：概述、8 个用户故事、10 条 FR、7 条 NFR、32 条连续编号 AC、成功指标、范围排除、风险与三轮变更记录齐全；title、source、事实基线和精确修改白名单一致。"
+  FR可测试性: "PASS：每条 FR 均有可执行 AC；第 2 轮 Owner 提交隔离缺口已由 tracked clean 前置条件、仅两账本 staged-set 校验、clean-baseline 回滚及 staged/unstaged/并存/untracked fixture 闭合。Registration、grant reject、dev-plan 三路路由与 R7 均有成功、失败、幂等或行尾向量。"
+  范围合理性: "PASS：范围维持现有 crctl/Skill/Pipeline 原语的最小修复，不新增状态、Runner、WAL、数据库、grant v2 或依赖；Multica 明确限定为既有跨接缝测试与 CUSTOM.md，production code 零修改。"
+  与规划对齐: "PASS：完整覆盖 tools-tca-001-004-optimization-plan.md 的 TCA-001～004 核心诉求，并对注册事件真实 SHA、正式移交唯一入口、reject 完整验签回退、精确 trigger/R7 权威校验给出一致需求边界。"
+  依赖识别: "PASS：已识别状态机、gates、grant v1、controlled-shell/Git index 与 working tree、outbox 非阻断投影、Multica 跨接缝及 CUSTOM-TODO-001～006 边界；未把未交付消费者或 Pipeline Runner 描述为现状。"
 suggestions:
-  - "SUG-1 修复 BL-1 时优先把隔离规则放在 owner-set 原语及其黑盒测试中；handover-cr 只消费结构化结果，避免在 Skill 再复制一套 Git 状态判断。"
+  - "SUG-1 SDD 实现 owner-set clean 检查时复用 controlled-shell 已允许的 Git 查询形态，并为 staged/unstaged 同路径及并发外部变更保留独立黑盒向量，避免 Skill 层复制判断。"
 subject-file: change-requests/CR-2026-030/prd.md
-subject-sha256: 0acf78874b655ced35a27fac8a9fac03ab5252c894554cb44f58db76dbe16a0e
+subject-sha256: 5218975bf14577c9255bb5575f64a4c8f42a98abf4dd75f44d2235827dc6d80d
