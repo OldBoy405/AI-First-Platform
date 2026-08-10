@@ -5,7 +5,7 @@ cr-ref: CR-2026-028
 title: tools 流程步骤优化 v2 — 前移优化项独立 CR（tools-root 唯一解析 + Skill 路径统一 + crctl 配置加载修正 + cr-init 注册入口复用）技术设计
 status: draft
 created: "2026-08-10T17:42:38+08:00"
-updated: "2026-08-10T17:42:38+08:00"
+updated: "2026-08-10T17:54:20+08:00"
 ---
 
 # SDD — tools 流程步骤优化 v2：前移优化项
@@ -40,7 +40,7 @@ crctl <cmd> [--workspace <op-ws>]
   → resolveToolsRoot(installRoot)           # 读 dir-graph.yaml#workspace.tools_package_path
                                             # 相对 installRoot → realpath → 四标志验证
                                             # 单进程只解析一次（单值缓存）
-  → loadStateMachine / loadPipeline / loadGates / loadShellRules 全部读 {toolsRoot}/...
+  → loadStateMachine(ws) / loadPipeline(ws,id) / loadGates(ws) / loadShellRules(ws) 全部读 {toolsRoot}/...
   → 分发子命令（worktree-path 以 installRoot 拼接 .rayai-worktrees/...）
 ```
 
@@ -94,12 +94,12 @@ function deriveInstallRoot(opWs: string): string
   // 失败/非 git → 返回 opWs（普通 checkout 等价）
 
 function resolveToolsRoot(opWs: string): string
-  // 1) 缓存命中直接返回
+  // 1) 缓存命中直接返回（含失败缓存：进程内不重复解析）
   // 2) installRoot = deriveInstallRoot(opWs)
   // 3) 读 installRoot/dir-graph.yaml → workspace.tools_package_path
-  //    缺失/非字符串/空 → fail('TOOLS_PACKAGE_NOT_FOUND', ...)
+  //    缺失/非字符串/空 → fail('TOOLS_PACKAGE_NOT_FOUND', {instRoot, field, reason})
   // 4) 相对值 → path.resolve(installRoot, v)；绝对值直接用；fs.realpathSync 归一
-  // 5) 四标志逐一存在性校验，任一缺失 → fail(..., {missing: [...]})
+  // 5) 四标志逐一存在性校验，任一缺失 → fail(..., {instRoot, missing: [...]})
   // 6) 成功后写缓存返回
 ```
 
@@ -108,12 +108,14 @@ function resolveToolsRoot(opWs: string): string
 ```ts
 loadStateMachine(ws): { sm, source }        // source 恒为 {toolsRoot}/dir-graph.yaml
 loadPipeline(ws, id): { doc, source }       // 恒为 {toolsRoot}/pipeline-templates/{id}.pipeline.json
-loadGates(): gates                          // 恒为 {toolsRoot}/skills/shared/crctl/gates.json
-loadShellRules(): rules                     // 默认 {toolsRoot}/skills/shared/controlled-shell/rules.json；
-                                            // CRCTL_RULES_PATH 存在时优先（唯一覆盖入口）
+loadGates(ws): gates                        // 恒为 {toolsRoot}/skills/shared/crctl/gates.json；ws 供 resolveToolsRoot
+loadShellRules(ws): rules                   // 默认 {toolsRoot}/skills/shared/controlled-shell/rules.json；
+                                            // CRCTL_RULES_PATH 存在时优先（唯一覆盖入口）；ws 供 resolveToolsRoot
+                                            // 删除固定 GATES_PATH 与默认 RULES_PATH 常量
+                                            // （相对执行脚本的定位改为 Tools Root 派生）
 ```
 
-`main()` 保持：`help` 在 workspace 解析前返回；其余命令先 `detectWorkspace` 再 eager `loadGates()`（行为不变，仅来源变化）。状态机/Pipeline 目标文件仍由消费者按需校验，沿用 `PIPELINE_NOT_FOUND`、`GATES_NOT_FOUND` 等既有错误码（FR-3 边界）。
+`main()` 保持：`help` 在 workspace 解析前返回；其余命令先 `detectWorkspace` 再 eager `loadGates(ws)`（行为不变，仅来源变化）。`controlledGit` 内 `loadShellRules(ws)` 与 resolver 共用同一进程单值缓存。禁止为补参数引入 module-scope workspace 全局——ws 一律显式入参。状态机/Pipeline 目标文件仍由消费者按需校验，沿用 `PIPELINE_NOT_FOUND`、`GATES_NOT_FOUND` 等既有错误码（FR-3 边界）。
 
 ### 3.3 worktree-path 契约
 
@@ -155,16 +157,16 @@ function deriveInstallRoot(opWs):
 
 ```text
 function resolveToolsRoot(opWs):
-  if cache 命中: return cache
+  if cache 命中: return cache                              # 成功或失败均缓存，进程内只解析一次
   inst = deriveInstallRoot(opWs)
   doc = parseYaml(read(inst/dir-graph.yaml))            # CRLF→LF 归一（纪律 #1）
   v = getPath(doc, 'workspace.tools_package_path')
   if typeof v != 'string' || v.trim() == '':
-    fail('TOOLS_PACKAGE_NOT_FOUND', {field, reason: 'missing-or-invalid'})
+    fail('TOOLS_PACKAGE_NOT_FOUND', {instRoot: inst, field, reason: 'missing-or-invalid'})
   raw = path.isAbsolute(v) ? v : path.resolve(inst, v)
-  real = try realpath(raw) else fail(..., {reason: 'path-not-exists', resolved: raw})
+  real = try realpath(raw) else fail(..., {instRoot: inst, reason: 'path-not-exists', resolved: raw})
   missing = 四标志中不存在的列表
-  if missing.length > 0: fail(..., {reason: 'identity-marker-missing', missing})
+  if missing.length > 0: fail(..., {instRoot: inst, reason: 'identity-marker-missing', missing})
   cache = real; return real
 ```
 
@@ -172,7 +174,7 @@ function resolveToolsRoot(opWs):
 
 ### 4.3 单值惰性缓存
 
-沿用 `loadShellRules` 既有三态模式（`undefined=未解析 / null=失败 / object=成功`）；`resolveToolsRoot` 同构：`undefined / null / string`。无 Map、无文件缓存、无 telemetry。失败同样缓存（进程内不重复解析），与 `_shellRules` 语义一致。
+`resolveToolsRoot` 与 `loadShellRules` 共用同一进程级单值缓存语义：`undefined=未解析 / null=失败 / string=成功`；两者都由各自 loader 首次调用触发，同一命令内第二次起零解析。成功与失败都缓存（进程内不重复解析），失败缓存不携带错误对象（后续调用重新 fail 同因）。无 Map、无文件缓存、无 telemetry，不引入 module-scope workspace 全局。
 
 ### 4.4 测试设计（FR-9）
 
@@ -183,7 +185,7 @@ function resolveToolsRoot(opWs):
 5. **四类 sentinel 行为断言**（AC-6）：状态机用仅 fixture 存在的合法转换（advance 成功）、Pipeline 用仅 fixture 存在的 nodeRef、gates 用仅 fixture 要求的 evidence、rules 用仅 fixture 允许的 git shape；执行脚本换 checkout 结果不变。
 6. **CRCTL_RULES_PATH** 覆盖断言（AC-7）。
 7. **cr-init metadata**：复用现有用例，断言 summary/source/target-version 一次写齐（AC-11/AC-12）。
-8. **代码审查断言**（AC-8）：四个 loader 调用同一 `resolveToolsRoot`，单值槽无 Map/文件/telemetry。
+8. **代码审查断言**（AC-8）：四个 loader 均显式接收 ws 并调用同一 `resolveToolsRoot`；`main()`/`controlledGit` 各自调用 `loadGates(ws)`/`loadShellRules(ws)`；单值槽无 Map/文件/telemetry；无 module-scope workspace 全局。
 
 ## 5. 技术选型与替代方案
 
@@ -204,7 +206,7 @@ function resolveToolsRoot(opWs):
 | FR-1 Tools Root 唯一契约 | `crctl.mjs` 新增 `resolveToolsRoot` + `deriveInstallRoot`；重构 `loadStateMachine`/`loadPipeline`/`loadGates` | 无隐式回退；detail 区分字段缺失/路径不存在/标志缺失 |
 | FR-2 双根语义与 worktree 定位 | `deriveInstallRoot` + `cmdWorktreePath` 改根 | git common-dir 派生 InstWS；worktree-path 以 InstWS 拼接；push/pull/resume 消费不变 |
 | FR-3 四标志身份验证 | `resolveToolsRoot` 校验段 | 只证明包身份；目标文件继续按需校验（既有错误码） |
-| FR-4 crctl 配置来源收敛 | 四个 loader 改读 `{toolsRoot}/...` | `CRCTL_RULES_PATH` 唯一覆盖；help 不解析 workspace；eager gates 不变 |
+| FR-4 crctl 配置来源收敛 | 四个 loader 改读 `{toolsRoot}/...`，全部显式接收 ws：`loadStateMachine(ws)`/`loadPipeline(ws,id)`/`loadGates(ws)`/`loadShellRules(ws)`；删除固定 `GATES_PATH` 与默认 `RULES_PATH` 常量 | `CRCTL_RULES_PATH` 唯一覆盖；help 不解析 workspace；eager `loadGates(ws)` 不变；`controlledGit` 内 `loadShellRules(ws)` |
 | FR-5 active 执行入口统一 | PRD §3.1 白名单文件：`crctl/SKILL.md`、3 个 writeback Skill、feature-writeback pipeline、3 个 sync Skill、requirement-register、requirement-authoring pipeline、Adapter 模板、knowledge-base 根 `AGENTS.md` | `{TOOLS_ROOT}` 占位符；七个禁止模式零命中；CI 可设 TOOLS_ROOT 但命令不硬编码 |
 | FR-6 Registration 复用 cr-init | `requirement-register/SKILL.md` Step 2 + `requirement-authoring.pipeline.json` node-1 prompt | 一次传齐元数据；删二次补 frontmatter；合并重复建档描述；cr-init 零改动 |
 | FR-7 删除第二安装位置声明 | tools `dir-graph.yaml` | 删 `target_install_path`；修订“固定挂载到 tools/”描述 |
@@ -251,3 +253,10 @@ function resolveToolsRoot(opWs):
 | knowledge-base 根 `AGENTS.md` | `node ../tools/skills/shared/crctl/scripts/crctl.mjs` | 不绑定安装位置的口径表达（如“经 Tools Root 解析的 crctl”） |
 
 `ARCHITECTURE.md` 不进白名单：本 CR 无架构级变更（不新增写入子命令、不改状态机口径、不否决方案），按 §8 维护规则无需修订；其历史否决示例中的 `tools/skills/...` 属允许例外。
+
+## 9. 变更记录
+
+| 日期 | 版本 | 作者 | 说明 |
+|---|---|---|---|
+| 2026-08-10 | v0.1.0 | Ray | 初始草稿：Tools Root 唯一解析、双根语义、loader 收敛、Registration 复用、删除 target_install_path、黑盒测试设计；FR 9/9 映射 |
+| 2026-08-10 | v0.2.0 | Ray | 第 1 轮技术评审 TD-B1 回修：四个 loader 显式接收 ws（`loadGates(ws)`/`loadShellRules(ws)`），`main()` eager `loadGates(ws)`、`controlledGit` 内 `loadShellRules(ws)`；删除固定 `GATES_PATH`/默认 `RULES_PATH` 常量；失败缓存语义与禁止 module-scope workspace 全局 |
