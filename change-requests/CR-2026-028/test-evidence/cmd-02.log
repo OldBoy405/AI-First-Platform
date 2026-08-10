@@ -1,0 +1,22 @@
+$ node --test skills/writeback/scripts/test/writeback.test.mjs
+(exit=0)
+--- stdout ---
+✔ lib: CRLF 归一 + frontmatter 读改（纪律 #1） (1.2461ms)
+✔ lib: 锚点唯一性断言（0 次插入 / 1 次替换 / ≥2 次硬失败） (52.6945ms)
+✔ lib: extractBlock 缩进敏感提取 (0.3665ms)
+✔ lib: 账本路径隔离（AC-4 静态判据） (0.3283ms)
+✔ prd-sdd: 首次回写 + frontmatter 补全 + v 前缀入参归一（CODE-BLOCK-002） (72.0388ms)
+✔ prd-sdd: 增量追加（既有内容保留 + H 级 +1）+ 重跑 noop + dry-run 不落盘 (271.8536ms)
+✔ tasks: slug 命名 + 注入 + SDD-BLOCK-001 幂等 + 索引顺序 + noop (121.2725ms)
+✔ traceability: 追加保留 + 幂等 + 校验硬失败 + MERGE_COMMITS_MISSING (310.0873ms)
+✔ AC-4: 三脚本源码不包含账本文件写路径（静态扫描） (1.0103ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 932.0036
+
+--- stderr ---

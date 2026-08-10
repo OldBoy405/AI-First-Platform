@@ -1,0 +1,19 @@
+cr-id: CR-2026-028
+review-type: dev-plan
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-10T18:24:18+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  sdd-to-plan: "pass：SDD 的 resolver、双根、loader、路径统一、Registration、配置清理、测试与发布面均映射到 M1-M8。"
+  plan-to-tasks: "pass：M1→T01、M2→T02/T03、M3→T04、M4→T05/T06、M5→T07、M6→T08、M7→T09、M8→T10，无遗漏。"
+  task-executability: "pass：10/10 TASK 均有目标、文件、实现要点、验收、完成标志和接口契约；无 TBD、待定或空泛错误处理。"
+  dependency-topology: "pass：10 个 TASK 引用均存在，无环；T01→T02→T03→T04→T05/T06→T07/T08→T09→T10 顺序符合产出消费。"
+  interface-contracts: "pass：deriveInstallRoot/resolveToolsRoot/四 loader/cmdWorktreePath/TOOLS_PACKAGE_NOT_FOUND/cr-init 调用形态的上下游命名、参数和返回类型一致。"
+  acceptance-verifiability: "pass：10/10 TASK 均至少两条可执行验收；T09 覆盖 fixture、表驱动、linked-worktree、四 sentinel、rules override 与 metadata。"
+  scope-and-simplicity: "pass：无新增命令、模块、依赖或未批准能力；单 TASK 2-8h，在 1-3 天约束内。"
+  risk-and-rollback: "pass：plan 六项风险均有验证和回滚；tools 先于 knowledge-base 的发布顺序覆盖过渡风险。"
+  suggestion-policy: "strict"
+  reviewer-model: "gpt-5.6-sol"
+suggestions:
+  - "T01/T02 对 deriveInstallRoot 的两阶段演进实施时保持同一签名，不为临时版本新增缓存语义。"

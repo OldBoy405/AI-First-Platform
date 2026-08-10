@@ -5,6 +5,22 @@
 
 ## 术语表
 
+### Tools Root
+
+目标 workspace 所使用的 tools 包根目录。其唯一声明来源是 Installation Workspace 目录图中的 `workspace.tools_package_path`；相对值以 Installation Workspace 为基准，绝对值直接使用，两者最终归一到真实目录。该声明是使用 tools 流程的前置条件：缺失或无效即表示 workspace 未绑定 tools 包，不从同名目录、当前目录或调用方自身位置推断。
+
+所有调用方共享同一 Tools Root 契约，但绑定时机分为两类：动态调用方在执行流程时解析；IDE hooks、CI 等静态集成在安装配置时物化。统一的是路径事实源与有效性语义，不要求所有调用方共享一个运行时解析模块。
+
+### Operational Workspace
+
+本次 CR 操作实际读写阶段产物的 knowledge-base checkout；可以是主 checkout，也可以是该 CR 的 linked worktree。
+_Avoid_: Installation Workspace、tools checkout
+
+### Installation Workspace
+
+声明并锚定 Tools Root 与 workspace-owned `.rayai-worktrees/` 根的 knowledge-base 主 checkout。linked worktree 仍共享该安装基准，不复制或改写自己的 tools 包绑定，也不在自身目录下再派生第二层 `.rayai-worktrees/`。
+_Avoid_: Operational Workspace、当前工作目录
+
 ### 成熟度 Scope（Maturity Scope）
 
 成熟度快照（`maturity_snapshot`）的聚合层级。**有且仅有三个层级：org / user / project**。
