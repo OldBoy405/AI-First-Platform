@@ -15,7 +15,7 @@ owners:
     assigned-at: "2026-08-11T01:24:47+08:00"
 target-version: tbd
 source: docs/analysis/tools-tca-001-004-optimization-plan.md
-status: drafting
+status: requirement-reviewing
 created: "2026-08-11T01:24:47+08:00"
 updated: "2026-08-11T01:24:47+08:00"
 remote-ref: ""
