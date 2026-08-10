@@ -8,7 +8,7 @@ owner: Ray
 owner-role: requirement
 status: draft
 created: "2026-08-11T01:29:00+08:00"
-updated: "2026-08-11T01:42:44+08:00"
+updated: "2026-08-11T02:00:53+08:00"
 ---
 
 # PRD — tools TCA-001～004 最小优化 — cr-init 三 Owner 注册契约 + owner-set 正式移交 + grant reject 验证回退 + review-dev-plan 精确 trigger / R7 字面量校验
@@ -93,11 +93,13 @@ commit 失败不得产生注册事件；outbox 失败不得回滚已成功 commi
 
 ### FR-3 Owner 双投影与唯一责任历史
 
-`owner-set <cr_id> --role <requirement|development|test> --id <new-owner> [--note <text>]` 保留命令名，作为本地可信环境中的受控账本原语。写入前必须校验 `cr.md` 与 `_backlog.yml` 的三个当前 Owner 以及顶层兼容 `owner` 一致；任一漂移均返回结构化错误并零写入，不自动修复。
+`owner-set <cr_id> --role <requirement|development|test> --id <new-owner> [--note <text>]` 保留命令名，作为本地可信环境中的受控账本原语。执行任何 YAML 写入前，必须通过受控 Git 原语确认整个仓库的 tracked index 与 tracked working tree 均 clean；untracked 文件不阻塞。存在任一预先 staged、预先 unstaged 或二者并存的 tracked 变更时，返回 `OWNER_WORKTREE_DIRTY/changed=false`，分别列出 staged 与 unstaged 路径，并保证 YAML、audit、commit、outbox 零新增；不得自动暂存、提交、丢弃或重分层既有变更。
+
+clean precondition 通过后，必须校验 `cr.md` 与 `_backlog.yml` 的三个当前 Owner 以及顶层兼容 `owner` 一致；任一漂移均返回结构化错误并零写入，不自动修复。
 
 真实变化必须只生成一次时间戳，并复用于两处 `owners.{role}`、requirement 角色的两处顶层 `owner`、`cr.md#owner-history`、backlog 通知事实、audit 和 outbox。`cr.md#owner-history` 是唯一责任历史，只追加一条 `reason=formal-handover` 的 `role/from/to/at` 记录，可选 `note` 仅进入该历史和 inbox 通知事实。`handover-history` 停止新增，仅兼容读取；backlog 不复制责任历史。
 
-候选 `cr.md` 和 `_backlog.yml` 必须由一次 `casWriteMulti()` 写入；backlog 同批追加 `owner-handover` notify-log 与 notify-pending。同值重放在双投影一致且无未提交移交残留时返回 `changed=false`，不得更新时间、历史、通知、audit、commit 或 outbox。
+候选 `cr.md` 和 `_backlog.yml` 必须由一次 `casWriteMulti()` 写入；backlog 同批追加 `owner-handover` notify-log 与 notify-pending。同值重放仅在双投影一致且整个仓库的 tracked index/working tree clean 时返回 `changed=false`，不得更新时间、历史、通知、audit、commit 或 outbox。
 
 ### FR-4 正式移交唯一入口与恢复只读
 
@@ -109,14 +111,14 @@ commit 失败不得产生注册事件；outbox 失败不得回滚已成功 commi
 
 ### FR-5 Owner 提交、回滚与事件投影
 
-`owner-set` 对 `cr.md` 与 `_backlog.yml` 的真实变化形成一次正式 commit。只有 commit 成功才记录成功 audit，并以同一真实 SHA 分别尝试：
+`owner-set` 对 `cr.md` 与 `_backlog.yml` 的真实变化形成一次隔离的正式 commit。CAS 写入后只能暂存这两个受控路径；commit 前必须再次确认 staged 路径集合恰好等于这两个文件且不存在其他 tracked working-tree 变化，否则按本节失败回滚恢复 clean baseline，返回结构化技术错误，不得生成成功 commit。只有 commit 成功才记录成功 audit，并以同一真实 SHA 分别尝试：
 
 1. `event_kind=owners`：完整三角色当前投影与本次一个 `reason=formal-handover` 的 change；
 2. `event_kind=inbox`：`event=owner-handover`、收件人与结构化移交事实。
 
 `crctl` 不生成 `subject/body` 等展示文案。outbox 失败只返回 warning 并记录 `EMIT_FAILED`，不回滚 commit、也不阻止后续发布；本地写出 outbox 不等于 Multica 已应用 Owner 或完成通知触达。
 
-若 Git add/commit 可观测失败，必须以新内容 hash 为 CAS 前提恢复两个原始快照，并重新暂存恢复后的文件、清除本次 staged 差异。成功恢复返回 `OWNER_COMMIT_FAILED/changed=false/rolled_back=true`；恢复 CAS 或重新暂存失败返回 `OWNER_COMMIT_ROLLBACK_FAILED` 并列出受影响文件。两种结果都必须中止，禁止进入 `push-progress`。
+若 Git add/commit 或 commit 前隔离校验可观测失败，必须以新内容 hash 为 CAS 前提恢复两个原始快照，撤销本次对这两个路径的暂存，并验证 tracked index 与 tracked working tree 恢复为命令开始时的 clean baseline。成功恢复返回 `OWNER_COMMIT_FAILED/changed=false/rolled_back=true`；恢复 CAS、撤销暂存或 clean-baseline 校验失败返回 `OWNER_COMMIT_ROLLBACK_FAILED` 并列出受影响文件。两种结果都必须中止，禁止进入 `push-progress`；不得通过 reset、checkout 或提交来吞掉并发出现的外部变更。
 
 ### FR-6 签名 grant 双模式与 reject 完整验证
 
@@ -176,7 +178,7 @@ Pipeline 节点数量保持不变，不修改 `pipeline-templates/_index.yml#nod
 
 - **NFR-1（最小设计）**：不新增 `owner-handover`、注册聚合巨型命令、恢复子命令、Pipeline Runner、数据库、WAL、通用 YAML 框架、grant v2、rejection 文件或 crctl 模块拆分。
 - **NFR-2（权威来源）**：状态机、门禁、权限、grant v1 和 Git branch/path 算法继续使用现有权威文件或原语；Skill/Pipeline/README 不复制可执行规则。
-- **NFR-3（原子与失败安全）**：受控账本继续使用 CAS；跨行解析失败硬失败；可观测 Git 失败按 FR-5 恢复，禁止静默部分成功。
+- **NFR-3（原子与失败安全）**：受控账本继续使用 CAS；正式移交要求 tracked index/worktree clean 并形成只含两份 Owner 账本的隔离 commit；跨行解析失败硬失败；可观测 Git 失败按 FR-5 恢复 clean baseline，禁止静默部分成功或吸收既有变更。
 - **NFR-4（安全边界诚实）**：不把本地 `identity(ws)` 或 Owner 字段描述为强认证身份，不宣称 outbox 写出等于平台投影应用或通知触达。
 - **NFR-5（兼容性）**：现有 approve 成功路径、本地 TTY 模式、状态机转移、`inbox-emit` 其他调用方、Pipeline 节点数量和既有 CI 入口不得回归。
 - **NFR-6（零新增依赖）**：实现复用 Node 标准库、现有 YAML 解析、Ed25519 grant、`casWriteMulti()`、controlled-shell 与 node:test，不新增第三方依赖或测试框架。
@@ -202,33 +204,34 @@ Pipeline 节点数量保持不变，不修改 `pipeline-templates/_index.yml#nod
 - **AC-11（FR-4）**：`handover-cr` 无 `skip_push`，固定执行 `owner-set -> push-progress`；push 失败保留本地 commit 并明确返回未完成，不能输出移交完成。
 - **AC-12（FR-4）**：`resume-from-remote` 的输入、正文和执行路径均无 `new_owner/new_owner_role` 或 Owner 写入；恢复后只读取状态并调用 `crctl next`。
 - **AC-13（FR-5）**：commit 成功后以同一真实 SHA 尝试 owners + inbox 两类 outbox；payload 无 `subject/body`，owners payload 含完整三角色投影且仅一个 formal-handover change；两类 payload 的 `handover_at` 与 AC-9 的唯一时间戳一致。
-- **AC-14（FR-5）**：outbox 失败不回滚 commit、不阻止发布，并记录 `EMIT_FAILED`；Git add/commit 失败时不得写成功 audit 或任何 outbox，成功恢复原快照与 staged 状态并返回 `OWNER_COMMIT_FAILED`。
-- **AC-15（FR-5）**：注入恢复 CAS 冲突或重新暂存失败时返回 `OWNER_COMMIT_ROLLBACK_FAILED` 和受影响文件，且不调用 `push-progress`。
+- **AC-14（FR-5）**：outbox 失败不回滚 commit、不阻止发布，并记录 `EMIT_FAILED`；Git add/commit 或 commit 前隔离校验失败时不得写成功 audit 或任何 outbox，成功恢复两个原始快照并撤销本次暂存，验证 tracked index/working tree 回到命令开始时的 clean baseline，返回 `OWNER_COMMIT_FAILED`。
+- **AC-15（FR-5）**：注入恢复 CAS 冲突、撤销暂存失败或 clean-baseline 校验失败时返回 `OWNER_COMMIT_ROLLBACK_FAILED` 和受影响文件，且不调用 `push-progress`；并发出现的外部变更不得被 reset、checkout、提交或静默重分层。
+- **AC-16（FR-3/FR-5）**：分别构造①仅预先 staged、②仅预先 unstaged、③同一路径或不同路径 staged+unstaged 并存的 tracked 变更，`owner-set` 均返回 `OWNER_WORKTREE_DIRTY/changed=false`，准确分列 staged/unstaged 路径且 YAML、既有 index/worktree 分层、audit、commit、outbox 完全不变；untracked-only fixture 不阻塞。clean fixture 的成功 commit staged diff 只包含 `cr.md` 与 `_backlog.yml`，不得吸收其他路径。
 
 ### 5.3 签名审批
 
-- **AC-16（FR-6）**：四个 stage 的 approve grant 均可正常推进；本地无 grant 调用仍要求 TTY，Pipeline 中无 grant 默认路径或 CLI 拼接。
-- **AC-17（FR-6）**：四个 stage 的 reject 仅在 schema、decision、归属、状态、evidence digest、key 和签名全部有效后执行权威回退。
-- **AC-18（FR-6）**：伪造签名、跨 CR/stage 挪用、证据漂移、错误状态均零写入且返回对应技术错误；不执行回退。
-- **AC-19（FR-6）**：合法 reject 返回 `APPROVAL_DECLINED_ROLLED_BACK`，包含目标状态与权威 trigger，无 `rerunHint`、下一 Skill、未签名 reason 或手写 review annotation。
-- **AC-20（FR-7）**：approve 在紧邻目标态且持久化字段完全一致时 `changed=false`；reject 在紧邻回退态且 grant/evidence/signature 仍有效时返回 `APPROVAL_DECLINED_ROLLED_BACK/changed=false`。
-- **AC-21（FR-7）**：approve/reject 进入其他状态或 approve 持久化字段不一致时返回 `GRANT_STATE_MISMATCH`；幂等分支不重复 audit、commit 或 outbox。
+- **AC-17（FR-6）**：四个 stage 的 approve grant 均可正常推进；本地无 grant 调用仍要求 TTY，Pipeline 中无 grant 默认路径或 CLI 拼接。
+- **AC-18（FR-6）**：四个 stage 的 reject 仅在 schema、decision、归属、状态、evidence digest、key 和签名全部有效后执行权威回退。
+- **AC-19（FR-6）**：伪造签名、跨 CR/stage 挪用、证据漂移、错误状态均零写入且返回对应技术错误；不执行回退。
+- **AC-20（FR-6）**：合法 reject 返回 `APPROVAL_DECLINED_ROLLED_BACK`，包含目标状态与权威 trigger，无 `rerunHint`、下一 Skill、未签名 reason 或手写 review annotation。
+- **AC-21（FR-7）**：approve 在紧邻目标态且持久化字段完全一致时 `changed=false`；reject 在紧邻回退态且 grant/evidence/signature 仍有效时返回 `APPROVAL_DECLINED_ROLLED_BACK/changed=false`。
+- **AC-22（FR-7）**：approve/reject 进入其他状态或 approve 持久化字段不一致时返回 `GRANT_STATE_MISMATCH`；幂等分支不重复 audit、commit 或 outbox。
 
 ### 5.4 开发计划路由与静态检查
 
-- **AC-22（FR-8）**：PASS 仅在 `verdict=pass && blockers=[]` 成立，保持 `task-breakdown` 并继续后续节点。
-- **AC-23（FR-8）**：NORMAL 使用完整 trigger 从 `task-breakdown` 回到 `tech-design-reviewed`，只进入现有三节点 replay，最多三轮；短 trigger 在运行时仍被拒绝。
-- **AC-24（FR-8）**：UPSTREAM 使用权威 trigger 回到 `tech-design-review-pending`，返回 `UPSTREAM_DESIGN_BLOCKER` 并中止 coding Pipeline，不进入 NORMAL replay 或增加 NORMAL attempt。
-- **AC-25（FR-8/FR-10）**：`review-dev-plan` Skill 中存在两个具体 advance；Pipeline 中不存在这两个命令，只存在 route、replayNodes 与 abort 语义；Pipeline 节点数量不变。
-- **AC-26（FR-9）**：R7 对完整 NORMAL trigger 通过，对短 trigger 输出 `CONTRADICTS`；校验从当前 `dir-graph.yaml` transitions 读取，不含复制常量或兼容别名。
-- **AC-27（FR-9/NFR-7）**：同一 fixture 的 CRLF/LF 输入结果等价；transitions 跨行或结构解析失败时 lint 硬失败，不允许空数组继续。
-- **AC-28（FR-9）**：含模板变量的 `--to/--trigger` 被明确跳过；静态 literal 仅校验 `(to, trigger)` 至少命中一条声明，不从自然语言推断 from。
+- **AC-23（FR-8）**：PASS 仅在 `verdict=pass && blockers=[]` 成立，保持 `task-breakdown` 并继续后续节点。
+- **AC-24（FR-8）**：NORMAL 使用完整 trigger 从 `task-breakdown` 回到 `tech-design-reviewed`，只进入现有三节点 replay，最多三轮；短 trigger 在运行时仍被拒绝。
+- **AC-25（FR-8）**：UPSTREAM 使用权威 trigger 回到 `tech-design-review-pending`，返回 `UPSTREAM_DESIGN_BLOCKER` 并中止 coding Pipeline，不进入 NORMAL replay 或增加 NORMAL attempt。
+- **AC-26（FR-8/FR-10）**：`review-dev-plan` Skill 中存在两个具体 advance；Pipeline 中不存在这两个命令，只存在 route、replayNodes 与 abort 语义；Pipeline 节点数量不变。
+- **AC-27（FR-9）**：R7 对完整 NORMAL trigger 通过，对短 trigger 输出 `CONTRADICTS`；校验从当前 `dir-graph.yaml` transitions 读取，不含复制常量或兼容别名。
+- **AC-28（FR-9/NFR-7）**：同一 fixture 的 CRLF/LF 输入结果等价；transitions 跨行或结构解析失败时 lint 硬失败，不允许空数组继续。
+- **AC-29（FR-9）**：含模板变量的 `--to/--trigger` 被明确跳过；静态 literal 仅校验 `(to, trigger)` 至少命中一条声明，不从自然语言推断 from。
 
 ### 5.5 全量回归
 
-- **AC-29（FR-10）**：FR-10.1 白名单内的 Skill 与人读契约均与本 PRD 一致，不描述 CUSTOM-TODO-001～006 为已交付；Multica production code 零 diff，Multica 只允许 `server/internal/governance/approval_crosscheck_test.go` 与 `CUSTOM.md` 发生 diff，CI workflow 无修改。
-- **AC-30（FR-10）**：四个 Pipeline 分别满足：① `requirement-authoring.pipeline.json` 删除 `cr_id` 输入/透传，显式传三 Owner、只消费完整 execution context，审批节点不复制命令或手写 reject；② `architecture-design.pipeline.json` 的审批节点只表达决定传递和技术失败中止；③ `code-implementation.pipeline.json` 的 dev-plan 评审只保留 PASS/NORMAL/UPSTREAM route 与 replay，审批节点不复制 CLI 算法；④ `resume-cr.pipeline.json` 无 `new_owner/new_owner_role` 和 Owner 写入。四个 JSON 节点数量保持，`pipeline-templates/_index.yml#nodes` 不变。
-- **AC-31（全局）**：以下命令全部通过：
+- **AC-30（FR-10）**：FR-10.1 白名单内的 Skill 与人读契约均与本 PRD 一致，不描述 CUSTOM-TODO-001～006 为已交付；Multica production code 零 diff，Multica 只允许 `server/internal/governance/approval_crosscheck_test.go` 与 `CUSTOM.md` 发生 diff，CI workflow 无修改。
+- **AC-31（FR-10）**：四个 Pipeline 分别满足：① `requirement-authoring.pipeline.json` 删除 `cr_id` 输入/透传，显式传三 Owner、只消费完整 execution context，审批节点不复制命令或手写 reject；② `architecture-design.pipeline.json` 的审批节点只表达决定传递和技术失败中止；③ `code-implementation.pipeline.json` 的 dev-plan 评审只保留 PASS/NORMAL/UPSTREAM route 与 replay，审批节点不复制 CLI 算法；④ `resume-cr.pipeline.json` 无 `new_owner/new_owner_role` 和 Owner 写入。四个 JSON 节点数量保持，`pipeline-templates/_index.yml#nodes` 不变。
+- **AC-32（全局）**：以下命令全部通过：
 
 ```bash
 node skills/shared/crctl/scripts/lint-prompts.mjs --mode enforce
@@ -244,7 +247,7 @@ node -e "const fs=require('fs'); for (const f of fs.readdirSync('pipeline-templa
 ## 6. 成功指标
 
 - **注册契约一致性**：三个不同 Owner 在注册双投影、初始历史、audit、结构化返回和注册事件中无差异；注册事件使用真实提交 SHA。
-- **正式移交一致性**：任一成功移交只有一条责任历史、一个权威 commit 和同 SHA 的 owners/inbox 投影尝试；不存在恢复流程附带 Owner 写入。
+- **正式移交一致性**：任一成功移交只有一条责任历史、一个只含两份 Owner 账本的隔离 commit 和同 SHA 的 owners/inbox 投影尝试；预存 tracked staged/unstaged 变更一律零副作用拒绝，不存在恢复流程附带 Owner 写入。
 - **审批决定可消费**：四阶段合法签名 reject 均能完成权威回退，伪造/挪用/漂移向量全部零写入；重放不重复副作用。
 - **开发计划路由可执行**：PASS、NORMAL、UPSTREAM 三路均有黑盒覆盖，NORMAL 完整 trigger 可执行，短 trigger 在 lint 与运行时均被拦截。
 - **治理无新增分叉**：无新状态、无第二 grant 协议、无第二 Owner 历史、无 Runner/WAL/数据库/新依赖；Pipeline 节点数与 CI 入口保持不变。
@@ -270,6 +273,7 @@ node -e "const fs=require('fs'); for (const f of fs.readdirSync('pipeline-templa
 3. R7 是静态字面量守卫，只能校验可确定的 `(to, trigger)`；模板变量与完整 from 合法性仍由运行时裁决。
 4. outbox 是非阻断投影通道；消费者故障时 Git 仍是权威事实，平台需要后续 reconcile 能力。
 5. 当前没有 Pipeline Runner，Skill/Pipeline 文档只能收敛契约，不能宣称平台端自动分派已交付。
+6. `owner-set` 为保证正式 commit 隔离，要求整个仓库的 tracked index 与 tracked working tree clean；调用者必须先提交、暂存外移或丢弃自己的 tracked 变更，本 CR 不提供自动 stash。
 
 ## 9. 变更记录
 
@@ -277,3 +281,4 @@ node -e "const fs=require('fs'); for (const f of fs.readdirSync('pipeline-templa
 |---|---|---|---|
 | 2026-08-11 | v0.1.0 | Ray | 初始草稿：承接 TCA-001～004 优化方案，形成 10 条 FR、7 条 NFR、30 条 AC |
 | 2026-08-11 | v0.2.0 | Ray | 第 1 轮需求评审 BLOCK 回修：继承 CR title；纳入 source；明确 Multica test-only diff + CUSTOM 台账；固定修改白名单与四 Pipeline 验收；补齐 audit/outbox 时间戳及失败验收，AC 增至 31 条 |
+| 2026-08-11 | v0.3.0 | Ray | 第 2 轮需求评审 BLOCK 回修：owner-set 增加 tracked clean precondition、隔离 commit staged-set 校验及 clean-baseline 失败恢复；覆盖 staged/unstaged/并存 fixture，AC 增至 32 条 |
