@@ -15,12 +15,12 @@
 
 `../tools/` 是 sibling 目录，**不是**挂载在本仓库 `tools/` 子目录下——本仓库确实存在一个同名空壳 `tools/`，那是早前 Windows 文件锁导致删不掉的残留（已 `.gitignore`），与 sibling 的 `../tools/` 无关，不要混淆。
 
-`crctl` 调用方式：
+`crctl` 调用方式（Tools Root = `workspace.tools_package_path` 指向的 tools 包，Agent 运行时解析；本工作区当前为 `../tools/`）：
 
 ```bash
-node ../tools/skills/shared/crctl/scripts/crctl.mjs status --workspace .
-node ../tools/skills/shared/crctl/scripts/crctl.mjs advance <CR-ID> --to <status> --trigger <skill>
-node ../tools/skills/shared/crctl/scripts/crctl.mjs approve <CR-ID> --stage <stage>   # 仅人类在终端运行
+node {TOOLS_ROOT}/skills/shared/crctl/scripts/crctl.mjs status --workspace .
+node {TOOLS_ROOT}/skills/shared/crctl/scripts/crctl.mjs advance <CR-ID> --to <status> --trigger <skill>
+node {TOOLS_ROOT}/skills/shared/crctl/scripts/crctl.mjs approve <CR-ID> --stage <stage>   # 仅人类在终端运行
 ```
 
 ## 单一事实源
@@ -28,7 +28,7 @@ node ../tools/skills/shared/crctl/scripts/crctl.mjs approve <CR-ID> --stage <sta
 | 事项 | 权威文件 |
 |---|---|
 | 本仓库目录图与 repositories | `dir-graph.yaml` |
-| CR 状态机与门禁 | `../tools/dir-graph.yaml#change-request-track.state_machine`、`../tools/skills/shared/crctl/gates.json`（本仓库不复刻副本，crctl 未在本地找到声明时自动回退到这两处） |
+| CR 状态机与门禁 | `{TOOLS_ROOT}/dir-graph.yaml#change-request-track.state_machine`、`{TOOLS_ROOT}/skills/shared/crctl/gates.json`（本仓库不复刻副本；Tools Root 由 `dir-graph.yaml#workspace.tools_package_path` 唯一解析，无回退，CR-2026-028） |
 | 完整使用流程 | `../tools/README.md` |
 | Agent/Skill 权限矩阵 | `../tools/agent-skill-matrix.yml` |
 
