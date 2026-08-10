@@ -1,0 +1,18 @@
+cr-id: CR-2026-027
+review-type: dev-plan
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-10T00:18:11+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  sdd-to-plan: "pass — SDD v0.6.0 的 next canonical route、tech-design freshness、post-PASS review cycle、验证与回滚均已进入 plan M5、风险表和发布 checklist。"
+  plan-to-tasks: "pass — TASK-08 产出 subject/cycle/resolveDevPlanRoute，TASK-07 消费实现 cmdNext freshness；TASK-09 收尾依赖 TASK-02~08；TASK-10 覆盖 AC-1~AC-23。"
+  task-executability: "pass — 10 个 TASK 均具备目标、文件、实现要点、至少 2 条验收、完成标志和上下游契约，无 TBD/空泛指令。"
+  dependency-topology: "pass — 无悬空引用或环；TASK-08→TASK-07→TASK-09→TASK-10 的产出消费顺序明确，其余 crctl 分区任务由 TASK-10 汇合。"
+  interface-contracts: "pass — cmdNext 从 canonical annotation 调用共享 resolveDevPlanRoute；subject-sha256/current-cycle/attempts[].cycle 的生产与消费在 TASK-08/07 对齐。"
+  acceptance-verifiability: "pass — AC-23 覆盖 missing/malformed/PASS/repair/upstream/exhausted、SDD stale/fresh 与 cycle=2/attempt=1；TASK-10 显式进行最终核对。"
+  scope-and-simplicity: "pass — FR-16 复用既有 cmdNext/review-record/review-loop，不新增子命令、账本类型或通用框架；任务粒度均在 1~3 天内。"
+  risk-and-rollback: "pass — plan 已增加旧 PASS/旧 cycle 错误放行风险，M5 可独立回退；既有 archive/approve/迁移风险与回滚保持。"
+  suggestion-policy: "strict"
+  reviewer-model: "gpt-5.6-sol"
+suggestions: []

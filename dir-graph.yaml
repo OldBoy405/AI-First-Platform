@@ -22,6 +22,12 @@ repositories:
     trunk: main
     role: code
     description: "Multica fork（平台底座代码仓）；CR-2026-001 起参与 CR worktree 派生与合入。local main 含 CONTRIBUTING.AIFIRST.md 隔离约定，尚未配置 fork remote"
+  - id: tools
+    path: "../tools"
+    trunk: custom/main
+    role: code
+    active: true
+    description: "AI First 方法论包（9 Agent / 59 Skill / 8 Pipeline + crctl）；CR-2026-027 起声明为参与仓，消除 merge Skill 隐藏特例（原 prose 硬编码，见 CR-2026-027 PRD FR-5）"
 
 target_workspace_contract:
   required_roots:
