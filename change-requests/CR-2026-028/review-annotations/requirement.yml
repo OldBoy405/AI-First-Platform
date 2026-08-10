@@ -1,0 +1,21 @@
+cr-id: CR-2026-028
+review-type: requirement
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-10T16:53:54+08:00"
+verdict: block
+blockers:
+  - "B1 注册元数据与已拍板契约冲突：cr.md summary 仍规定相对 workspace root、只验证三个标志、独立运行时回退 package root；PRD/源方案已改为 Installation Workspace、四标志、无回退。PRD 必须明确列出并声明质询后契约取代注册快照，避免审批时存在两个范围口径。"
+  - "B2 双 workspace 契约未覆盖生命周期 worktree 定位：实测从 knowledge-base linked worktree 调用 crctl worktree-path 会返回 <worktree>/.rayai-worktrees/... 的不存在嵌套路径，导致评审前 push-progress 无法按权威路径执行。FR/AC/测试必须明确 workspace-owned .rayai-worktrees 以 Installation Workspace 为根，并覆盖 worktree-path/push-progress 场景。"
+  - "B3 active executable surfaces 仅按类别描述，未给出确定文件白名单、排除范围和检索模式；AC-9/AC-17 无法判断改动是否完整。需枚举本 CR 要修改的 active Skill、Pipeline、Adapter/CI 模板与当前入口文档，并给出定向 rg 的搜索范围、禁止模式和允许例外。"
+  - "B4 配置来源与惰性缓存验收不可按当前最小测试方案执行：AC-6 假设命令会报告 Pipeline/gates/rules 来源，但现有输出只暴露部分 source；AC-8 的单次解析也无法由既定黑盒套件直接观察。需改为可执行的 sentinel fixture/行为断言及代码审查断言，明确每项资源如何证明来自同一 Tools Root。"
+dimensions:
+  结构完整性: "通过：概述、6 US、9 FR、7 NFR、17 AC、成功指标与范围排除齐全。"
+  FR可测试性: "阻塞：FR-5 的 active surface 范围未枚举；AC-6/AC-8/AC-17 缺少可执行判据。"
+  范围合理性: "基本合理且坚持最小实现；但 worktree-path/push-progress 依赖遗漏会使同一 CR 生命周期无法运行。"
+  与规划对齐: "源分析文档与 PRD 已对齐 17 项质询决策；注册时 cr.md summary 仍保留质询前的三处旧契约，需在 PRD 明确优先级。"
+  依赖识别: "阻塞：已识别 crctl、cr-init、Adapter、multica 延后项，但未纳入 push-progress 对 worktree-path 的直接依赖。"
+suggestions:
+  - "说明 target-version=tbd 的批准口径：本 CR 属 tools 内部契约优化，不进入产品版本号递增链路。"
+  - "active Adapter 模板统一使用字面占位符 {TOOLS_ROOT}，避免继续保留 {TOOLS}/{WORKSPACE} 两套命名。"
+subject-file: change-requests/CR-2026-028/prd.md
+subject-sha256: 8c6892e02dbb6d2f0b2295d3bdffbbee9f252775c936d76dd5e41c686de7b3a8
