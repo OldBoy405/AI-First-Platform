@@ -1,0 +1,26 @@
+cr-id: CR-2026-027
+review-type: code
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-10T09:20:58+08:00"
+verdict: block
+blockers:
+  - "[P1][FR-12] findHistoryEntry 未在下一同级条目停止且未检测 history 重复 CR，后续条目的 final-status 可覆盖目标 CR，终态 status/next 会返回错误结果。"
+  - "[P1][FR-11] archive-move 命中 history 即返回 already-archived，未确认 CR 已移出 backlog；backlog/history 双存会被静默判为幂等成功。"
+  - "[P1][FR-16] traceability review-loop 投影未写 current-cycle 与 attempts[].cycle，review-loop.yml 的新周期信息丢失，无法满足跨账本历史审计。"
+  - "[P1][FR-16] detectNewTechDesignCycle 与 cmdNext 以 ISO 字符串比较 reviewed-at，时区偏移会导致错误 freshness 判定，非法时间戳也不会硬失败。"
+  - "[P1][FR-10] v1 backlog 迁移在 orphan ghost 校验前已写入迁移结果，随后 GHOST_ENTRY_ORPHANED 会留下文件变更，违反失败时文件不变。"
+  - "[P1][FR-11] inbox-emit 将 JSON 标量强制包装为数组，且未过滤空收件人并去重；非数组或去重后为空未按契约返回 BAD_ARGS。"
+  - "[P1][FR-5] merge-feature-branch Skill 将 tools 仓硬编码为 trunk=custom/main、role=code，与权威 dir-graph.yaml 的 phase0-tools/main/platform-tools-package 不一致。"
+dimensions:
+  code-task-sdd-alignment: "block - FR-5/10/11/12/16 存在上述部分实现或错误实现。"
+  engineering-quality: "block - 终态解析与迁移的失败原子性不成立。"
+  key-path-readability: "block - history 条目边界和 archive 幂等前置条件未被表达为可验证不变量。"
+  security: "pass - 本次 diff 未发现凭证、命令注入或权限绕过新增风险。"
+  test-coverage: "block - 136 个通过用例未覆盖相邻 history 条目、history/backlog 双存、v1 迁移加 orphan ghost、JSON 标量和空元素收件人、时区偏移时间戳、trace cycle 投影。"
+  test-evidence-credibility: "block - 测试命令本轮重跑为 136/136，但 test-report 的下一步仍称跳过 review-code，且当前 development-start approval 已报 EVIDENCE_DRIFT。"
+  frontend-quality: "N/A - 本次 diff 未触及 tsx/vue/css/html。"
+  suggestion-policy: "strict"
+  reviewer-model: "gpt-5.6-sol"
+suggestions:
+  - "为 current-cycle、current-attempt 和 attempts[].cycle 补充正整数、递增性及 legacy cycle=1 投影校验。"
+  - "修正 test-report 中已过期的跳过 review-code 下一步说明。"
