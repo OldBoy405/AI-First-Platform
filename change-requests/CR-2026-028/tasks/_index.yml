@@ -7,51 +7,51 @@ updated: "2026-08-10T18:10:38+08:00"
 tasks:
   - id: CR-2026-028-TASK-01
     title: 修复 worktree-path 嵌套路径 bug（M1 前置）
-    status: pending
+    status: done
     estimate: 4h
     depends-on: []
   - id: CR-2026-028-TASK-02
     title: 新增 resolveToolsRoot 与 Tools Root 唯一契约（M2a）
-    status: pending
+    status: done
     estimate: 6h
     depends-on: [CR-2026-028-TASK-01]
   - id: CR-2026-028-TASK-03
     title: 四 loader 收敛到 Tools Root（M2b）
-    status: pending
+    status: done
     estimate: 6h
     depends-on: [CR-2026-028-TASK-02]
   - id: CR-2026-028-TASK-04
     title: worktree-path 双根落地与多仓 workspace 场景（M3）
-    status: pending
+    status: done
     estimate: 8h
     depends-on: [CR-2026-028-TASK-01, CR-2026-028-TASK-02, CR-2026-028-TASK-03]
   - id: CR-2026-028-TASK-05
     title: crctl/Sync/Writeback Skill 与 pipeline 路径统一（M4a）
-    status: pending
+    status: done
     estimate: 4h
     depends-on: [CR-2026-028-TASK-04]
   - id: CR-2026-028-TASK-06
     title: Adapter/requirement 入口与仓库 AGENTS.md 路径统一（M4b）
-    status: pending
+    status: done
     estimate: 4h
     depends-on: [CR-2026-028-TASK-04]
   - id: CR-2026-028-TASK-07
     title: Registration 复用 cr-init 一次传齐元数据（M5）
-    status: pending
+    status: done
     estimate: 4h
     depends-on: [CR-2026-028-TASK-05, CR-2026-028-TASK-06]
   - id: CR-2026-028-TASK-08
     title: 删除 target_install_path 与 multica 台账核账（M6）
-    status: pending
+    status: done
     estimate: 2h
     depends-on: [CR-2026-028-TASK-05]
   - id: CR-2026-028-TASK-09
     title: 测试扩展与全量回归（M7）
-    status: pending
+    status: done
     estimate: 8h
     depends-on: [CR-2026-028-TASK-01, CR-2026-028-TASK-02, CR-2026-028-TASK-03, CR-2026-028-TASK-04, CR-2026-028-TASK-05, CR-2026-028-TASK-06, CR-2026-028-TASK-07, CR-2026-028-TASK-08]
   - id: CR-2026-028-TASK-10
     title: 发布与联调（M8）
-    status: pending
+    status: done
     estimate: 4h
     depends-on: [CR-2026-028-TASK-09]
