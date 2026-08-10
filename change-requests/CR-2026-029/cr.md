@@ -15,7 +15,7 @@ owners:
     assigned-at: "2026-08-10T19:59:36+08:00"
 target-version: 0.2
 source: "docs/analysis/tools流程步骤优化v2-前移优化项.md"
-status: task-breakdown
+status: developing
 created: "2026-08-10T19:59:36+08:00"
 updated: "2026-08-10T19:59:36+08:00"
 remote-ref: ""
