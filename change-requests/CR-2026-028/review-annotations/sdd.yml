@@ -1,19 +1,18 @@
 cr-id: CR-2026-028
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-10T17:56:39+08:00"
-verdict: block
-blockers:
-  - "TD-B2 resolver 调用与缓存契约内部矛盾：SDD §1.3 调用 resolveToolsRoot(installRoot)，§3.1/§4.2 又定义 resolveToolsRoot(opWs) 并内部 deriveInstallRoot(opWs)，形成双重派生口径；应统一为所有 loader 调 resolveToolsRoot(ws/opWs)，由 resolver 内部唯一派生 InstWS。另，现有 fail() 直接 process.exit(1)，不存在失败后的第二次调用，SDD 的 null 失败缓存/‘后续重新 fail 同因’既不可观察又未保存原因；应收敛为 undefined|string 的成功值单缓存。_shellRules 保持自己独立的 undefined|null|object 缓存，不得描述为与 Tools Root 共用同一缓存。"
+reviewed-at: "2026-08-10T18:03:34+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  PRD与SDD对齐: "通过：9/9 FR 映射完整，TD-B1 回修未改变需求范围。"
-  架构合理性: "基本通过：显式 ws 参数链、单文件、零依赖、无隐藏 workspace 全局均正确；resolver 调用/缓存口径需最终收敛。"
-  数据模型完整性: "通过：配置、四标志、错误 detail 与零持久化边界完整。"
-  接口契约: "阻塞：resolveToolsRoot 的实际入参在流程图与签名不一致；失败缓存与 fail() 退出语义冲突。"
-  性能与安全: "通过：改为成功值单缓存仍满足每进程只解析一次成功路径；失败硬退出，无安全回退。"
-  可测试性: "通过：fixture/sentinel/linked-worktree 设计可执行；缓存验收应只断言同一成功命令内复用。"
-  Prompt采纳影响: "通过：§8 白名单完整，无新增 dispatch 或 rules deny。"
+  PRD与SDD对齐: "通过：FR-1 至 FR-9 全部有技术实现映射，需求白名单、双根、loader、Registration、multica 与测试边界一致。"
+  架构合理性: "通过：符合 tools ARCHITECTURE 单文件、零依赖、依赖向下、账本单写者与人工审批无旁路不变量；无新模块/命令/状态。"
+  数据模型完整性: "通过：tools_package_path 唯一配置、target_install_path 删除、四标志、错误 detail 与零新增持久化契约完整。"
+  接口契约: "通过：四 loader 显式 ws 参数链闭合；resolver 统一接收 OpWS 并内部派生 InstWS；Tools Root 成功缓存与独立 _shellRules 缓存无矛盾。"
+  性能与安全: "通过：成功路径单值缓存、失败即退出、无回退/后台任务/新依赖；rules deny 与 CRCTL_RULES_PATH 语义保持。"
+  可测试性: "通过：隔离 fixture、路径表驱动、linked worktree/worktree-path、四 sentinel、显式 rules 覆盖、cr-init metadata 与代码审查断言齐全。"
+  Prompt采纳影响: "通过：§8 列出 active Skill/Pipeline/Adapter/CI/workspace AGENTS 采纳清单与现状→目标；无 dispatch/rules deny 变更。"
 suggestions:
-  - "代码伪签名使用 JavaScript 语义时可写 let toolsRootCache;，避免在 .mjs 实现中照抄 TypeScript 类型标注。"
+  - "实施或下次文档修订时将 §7.2 ‘每个 crctl 进程至多一次 git rev-parse’收窄为‘Tools Root 成功解析一次；worktree-path 可为 InstWS 定位额外执行一次’，不要仅为满足措辞新增第二个缓存。"
 subject-file: change-requests/CR-2026-028/sdd.md
-subject-sha256: ce67916e43c3e12366bf00c9470ced2277e3fb591e3d3bfa77a0ffa0039837c2
+subject-sha256: 026b9a3f4b59dba14fe89683dcc79b3f596148f00994c2be2c6c977ae21640c4
