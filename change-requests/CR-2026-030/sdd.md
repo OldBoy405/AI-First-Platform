@@ -7,8 +7,8 @@ status: draft
 owner: Ray
 owner-role: development
 created: "2026-08-11T02:10:31+08:00"
-updated: "2026-08-11T02:10:31+08:00"
-version: v0.1.0
+updated: "2026-08-11T02:31:00+08:00"
+version: v0.1.1
 refs:
   upstream:
     - CR-2026-030-prd
@@ -173,13 +173,16 @@ type OwnerProjection = {
   test: OwnerSlot;
 };
 
-type OwnerChange = {
+type OwnerChangeFact = {
   role: OwnerRole;
   from: string;
   to: string;
   at: string;
   reason: "initial-assignment" | "formal-handover";
-  note?: string;
+};
+
+type OwnerHistoryEntry = OwnerChangeFact & {
+  note?: string; // 仅允许进入 cr.md owner-history 和 inbox 通知事实
 };
 ```
 
@@ -191,6 +194,7 @@ type OwnerChange = {
 4. Registration 的三个 `assigned-at` 与三条 initial history 的 `at` 使用同一个 `registrationAt`。
 5. Formal handover 的两处 slot、history、notify、audit payload 和 outbox payload 使用同一个 `handoverAt`。
 6. `owner-history` 是唯一责任历史；`handover-history` 只读兼容，不再追加。
+7. `note` 只存在于 `OwnerHistoryEntry` 和 inbox 通知事实；owners outbox、Owner 成功 audit 和当前 Owner 投影均不得包含 `note`。
 
 ### 2.3 Git clean snapshot
 
@@ -256,7 +260,7 @@ type OutboxEvent = {
 ```ts
 type OwnersPayload = {
   owners: OwnerProjection;
-  changes: OwnerChange[];
+  changes: OwnerChangeFact[]; // 明确不含 note
   handover_at?: string;
 };
 
@@ -271,7 +275,7 @@ type InboxPayload = {
 };
 ```
 
-Registration 的 `owners.changes` 固定三项 `initial-assignment`；handover 固定一项 `formal-handover`。同一业务操作的事件共享真实 commit SHA，envelope `occurred_at` 可不同。
+Registration 的 `owners.changes` 固定三项 `initial-assignment`；handover 固定一项不含 `note` 的 `formal-handover`。`note` 只进入 `cr.md#owner-history` 和 inbox payload/backlog notify-log；不得进入 owners payload 或成功 audit。同一业务操作的事件共享真实 commit SHA，envelope `occurred_at` 可不同。
 
 ### 2.6 Grant v1 和审批幂等键
 
@@ -497,9 +501,10 @@ crctl approve <CR-ID> --stage <stage> --grant [<path>]
 | 决定/状态 | 结果 | exit |
 |---|---|---:|
 | approve，审批前置态 | 原子写 approval+status，`changed=true` | 0 |
-| approve，紧邻目标态且审批字段一致 | `changed=false` | 0 |
-| reject，审批前置态 | 状态回退，`APPROVAL_DECLINED_ROLLED_BACK/changed=true` | 非 0 业务结果 |
-| reject，紧邻回退态 | `APPROVAL_DECLINED_ROLLED_BACK/changed=false` | 非 0 业务结果 |
+| approve，紧邻目标态、审批字段一致且相关账本已提交到 HEAD | `changed=false` | 0 |
+| reject，审批前置态且回退 commit 成功 | 状态回退，`APPROVAL_DECLINED_ROLLED_BACK/changed=true` | 非 0 业务结果 |
+| reject，紧邻回退态且 `cr.md` 已提交到 HEAD | `APPROVAL_DECLINED_ROLLED_BACK/changed=false` | 非 0 业务结果 |
+| 紧邻结果态但相关账本 staged/unstaged/untracked | `GRANT_STATE_UNCOMMITTED` | 非 0 技术错误 |
 | 其他状态 | `GRANT_STATE_MISMATCH` | 非 0 技术错误 |
 
 `APPROVAL_DECLINED_ROLLED_BACK` 输出至少包含：
@@ -620,7 +625,9 @@ assertOwnerProjectionConsistent(state): void
 buildOwnerCandidates(state, role, newId, note, handoverAt): {
   crMdText: string,
   backlogText: string,
-  change: OwnerChange,
+  ownerChange: OwnerChangeFact,       // owners/audit 使用，不含 note
+  historyEntry: OwnerHistoryEntry,    // cr.md history 使用，可含 note
+  inboxPayload: InboxPayload,         // inbox/notify 使用，可含 note
   owners: OwnerProjection
 }
 ```
@@ -667,9 +674,9 @@ commit "[cr] owner handover <CR> <role> <from> -> <to>"
 if commit failed:
   rollback OWNER_COMMIT_FAILED
 sha = rev-parse HEAD
-success audit(handover_at)
-emit owners(sha)
-emit inbox(sha)
+success audit(handover_at, ownerChange without note)
+emit owners(sha, ownerChange without note)
+emit inbox(sha, inboxPayload may contain note)
 return changed=true
 ```
 
@@ -733,11 +740,13 @@ performAdvance(ws, cr, gates, flags): AdvanceResult
 cmdAdvance(...): ok(performAdvance(...))
 ```
 
-`performAdvance()` 保留现有转换查找、门禁、CAS/状态写入、提交、audit 和 status outbox 语义，但不直接打印 JSON。调用方：
+`performAdvance()` 保留现有转换查找、门禁、CAS/状态写入和 commit 语义，但不直接打印 JSON。为落实“Git 是权威”，standalone commit 失败时不得发 status outbox；只有 commit 成功才返回 `committed=true` 并发真实 SHA outbox。`--embedded/--no-commit` 仍按既有 pending SHA 语义由后续 metadata commit/checkpoint 补全。调用方：
 
-- `cmdAdvance()`：正常成功输出，commit 失败后设置退出码。
-- TTY reject：执行回退后返回统一业务 decline 结果。
-- grant reject：执行回退后返回统一业务 decline 结果。
+- `cmdAdvance()`：正常成功输出；commit 失败输出原结构化技术结果并设置非零退出码，不发 status outbox。
+- TTY reject：仅在 `committed=true` 后返回统一业务 decline 结果；否则传播技术失败。
+- grant reject：仅在 `committed=true` 后返回统一业务 decline 结果；否则返回 `ADVANCE_COMMIT_FAILED`（含底层 commit detail），不得改写成 `APPROVAL_DECLINED_ROLLED_BACK`。
+
+另增加内部只读 `assertResultLedgersCommitted()`：通过 `controlledGit(status --short, {audit:false})` 检查指定 ledger 路径在 porcelain 输出中不存在。目标文件若 staged、unstaged 或 untracked 均返回 `GRANT_STATE_UNCOMMITTED`；无输出意味着文件受 Git 跟踪且内容等于 HEAD。approve 检查 `approval.yml + cr.md`，reject 检查 `cr.md`。该查询仍走白名单和 fail-closed，且幂等路径不新增 audit。
 
 不新增 public command，不改变 `findTransition()` 或 gates 来源。
 
@@ -746,20 +755,23 @@ cmdAdvance(...): ok(performAdvance(...))
 ```text
 if decision=approve:
   if state=fresh:
-    approveAndAdvance(existing atomic path)
+    approveAndAdvance(existing atomic path) // commit failure remains technical failure
   if state=adjacent-approve:
     validate persisted approval exact match
+    assertResultLedgersCommitted([approval.yml, cr.md])
     return changed=false, no audit/commit/outbox
 
 if decision=reject:
   if state=fresh:
     result = performAdvance(authoritative rollback)
+    if !result.committed: fail ADVANCE_COMMIT_FAILED, no status outbox
     return APPROVAL_DECLINED_ROLLED_BACK changed=true
   if state=adjacent-reject:
+    assertResultLedgersCommitted([cr.md])
     return APPROVAL_DECLINED_ROLLED_BACK changed=false
 ```
 
-幂等路径仍执行 digest 和签名验证，但不写任何持久化副作用。reject 不创建 `approval.yml` section，也不接受/传播未签名 `reject_reason`。
+幂等路径仍执行 digest 和签名验证，并在最后执行无 audit 的 committed-state 检查，但不写任何持久化副作用。该检查专门防止前一次 `approveAndAdvance()`/`performAdvance()` commit 失败留下的工作区目标态被误认成已完成事实。reject 不创建 `approval.yml` section，也不接受/传播未签名 `reject_reason`。
 
 ### 4.11 Dev-plan 三路路由
 
@@ -937,12 +949,12 @@ node -e <parse all pipeline JSON>
 | AC-5 | worktree-path 返回 branch/bucket/path；静态扫描 Skill/Pipeline 不含 branch/path/SHA/event 手工拼接 |
 | AC-6 | commit/push/第 N 个 worktree 失败分别返回完整 incomplete envelope，不产生第二 CR-ID 或成功 execution_context |
 | AC-7 | 两投影任一角色或兼容 owner 漂移，owner-set 零副作用；一致时允许变化/幂等 |
-| AC-8 | 三角色 handover 分别验证 owner-history 只加一条、不加 handover-history；note 只出现于 history/inbox |
+| AC-8 | 三角色 handover 分别验证 owner-history 只加一条、不加 handover-history；note 只出现于 history/inbox，并显式断言 owners outbox/audit 无 note |
 | AC-9 | 两投影、history、notify、business audit 和两个 outbox payload 的 handover timestamp 全相等；两账本同 CAS |
 | AC-10 | clean 同值重放断言时间、history、notify、audit、commit、outbox 不变；handover Skill 仍进入 push-progress |
 | AC-11 | 静态断言 handover 无 skip_push 且顺序唯一；模拟 push 失败保留 owner commit 并返回未完成 |
 | AC-12 | resume Skill/Pipeline 输入与正文均不含 new_owner/new_owner_role/owner-set，恢复后调用 crctl next |
-| AC-13 | commit 后 owners/inbox 两事件 SHA 相同；payload 无 subject/body，owners change 一项且时间戳与 AC-9 相同 |
+| AC-13 | commit 后 owners/inbox 两事件 SHA 相同；payload 无 subject/body，owners change 一项且无 note，时间戳与 AC-9 相同 |
 | AC-14 | outbox failure 不回滚；add/commit/isolation failure 成功恢复原文和 clean baseline，返回 OWNER_COMMIT_FAILED |
 | AC-15 | 分别注入恢复 CAS、撤销暂存、clean 复核失败，返回 OWNER_COMMIT_ROLLBACK_FAILED；外部变化保持原样 |
 | AC-16 | staged-only、unstaged-only、同/异路径 mixed、untracked-only、clean success 五组 Git fixture；成功 commit 只含两账本 |
@@ -950,8 +962,8 @@ node -e <parse all pipeline JSON>
 | AC-18 | 四个 stage 的 reject 在 schema、decision、归属、状态、digest、key、signature 全部通过后执行各自权威回退 |
 | AC-19 | 伪造、跨 CR、跨 stage、证据漂移、错误状态逐项断言 cr.md/approval/audit/outbox 零业务写入 |
 | AC-20 | 合法 reject 返回统一 business code、target、trigger、changed；JSON 不含 rerunHint/下一 Skill/reason/annotation 文案 |
-| AC-21 | approve 目标态 exact replay 和 reject 回退态 replay 均 changed=false，且仍复核 digest/signature |
-| AC-22 | 非邻接状态、approve 持久字段任一不一致均 GRANT_STATE_MISMATCH；幂等前后 audit/HEAD/outbox 不变 |
+| AC-21 | 成功 commit 后 approve 目标态 exact replay 和 reject 回退态 replay 均 changed=false，且仍复核 digest/signature 与 result-ledger committed-state |
+| AC-22 | 非邻接状态/approve 字段不一致为 GRANT_STATE_MISMATCH；分别注入 approve/reject commit failure 后重放同 grant，必须 GRANT_STATE_UNCOMMITTED 而非幂等成功，HEAD/audit/outbox 不增加 |
 | AC-23 | PASS 仅在 pass+空 blockers，状态保持 task-breakdown 并输出 route=pass |
 | AC-24 | NORMAL 完整 trigger 可执行并只进入三节点 replay；短 trigger lint/runtime 双拒；第 4 次 bump LOOP_EXHAUSTED |
 | AC-25 | UPSTREAM 回到 tech-design-review-pending，返回业务结果并中止；NORMAL attempt 不增 |
@@ -1051,7 +1063,7 @@ node -e <parse all pipeline JSON>
 - 参数/结构：`BAD_ARGS`、`LEDGER_PARSE_FAILED`、`OWNER_PROJECTION_DRIFT`。
 - 并发/一致性：`CAS_CONFLICT`、`OWNER_WORKTREE_DIRTY`、`OWNER_COMMIT_ROLLBACK_FAILED`。
 - Git 技术错误：`SHELL_UNAVAILABLE`、`OWNER_GIT_CHECK_FAILED`、`OWNER_COMMIT_FAILED`。
-- grant 技术错误：`GRANT_*`、`EVIDENCE_DRIFT`、`SIGNATURE_INVALID`、`GRANT_STATE_MISMATCH`。
+- grant 技术错误：`GRANT_*`、`EVIDENCE_DRIFT`、`SIGNATURE_INVALID`、`GRANT_STATE_MISMATCH`、`GRANT_STATE_UNCOMMITTED`、`ADVANCE_COMMIT_FAILED`。
 - 人工业务结果：`APPROVAL_DECLINED_ROLLED_BACK`、`UPSTREAM_DESIGN_BLOCKER`。
 - 静态治理错误：`LINT_DRIFT`、`STATE_MACHINE_PARSE_FAILED`。
 
@@ -1072,7 +1084,7 @@ Pipeline 只对业务结果做 route/abort；技术错误一律 abort，不伪�
 | owner-set 在 CAS 后崩溃 | 下一次 tracked clean precheck 暴露脏文件；不误判同值成功 | 人工核对 Git diff 后按权威账本修复，不自动 reset |
 | Git 查询 audit 抑制被滥用 | 选项仅内部、缺省 true；只在两条 read-only diff 调用使用，并加静态测试 | 删除该调用点的 `audit:false` 即恢复全审计 |
 | register commit 成功但事件失败 | commit 返回 warning + EMIT_FAILED；Git 保持权威 | daemon/reconcile 后续补偿，本 CR 不反转 commit |
-| grant reject 状态竞态 | 状态分类后由 advance 的 expect/CAS 再校验 | 返回 mismatch/CAS，零错误回退 |
+| grant reject 状态竞态或 commit 失败 | 状态分类后由 advance 的 expect/CAS 再校验；仅 committed=true 发 outbox/返回业务成功；邻接重放检查 result ledger 已在 HEAD | 返回 mismatch/CAS/ADVANCE_COMMIT_FAILED/GRANT_STATE_UNCOMMITTED，不把工作区目标态当权威事实 |
 | R7 parser 对格式变化敏感 | 严格 hard fail 和 malformed fixture | 同次更新 parser；不得空集合降级 |
 | Multica test 静默 skip | 实施验证显式设置 CRCTL_PATH，检查 verbose 输出 | 未实际执行则测试报告不得标 pass |
 | 文档描述未交付 Runner/consumer | AC-30 静态扫描和 review-tech-design 人工核对 | 删除越界描述，保留 CUSTOM-TODO |
@@ -1095,3 +1107,4 @@ Pipeline 只对业务结果做 route/abort；技术错误一律 abort，不伪�
 | 日期 | 版本 | 作者 | 说明 |
 |---|---|---|---|
 | 2026-08-11 | v0.1.0 | Ray | 初始技术设计：闭合 Registration、Owner 正式移交、grant reject、dev-plan trigger/R7；定义 clean baseline、失败回滚、接口和测试映射 |
+| 2026-08-11 | v0.1.1 | Ray | 第 1 轮技术评审 BLOCK 回修：拆分无 note 的 Owner 投影事实与 history/inbox；grant reject 仅在 commit 成功后返回业务结果，邻接幂等增加 HEAD/clean 证明与失败重放向量 |
