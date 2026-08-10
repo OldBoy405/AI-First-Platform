@@ -63,42 +63,18 @@ reviews:
           blocker-count: 0
           repair-target: write-dev-plan
   code:
-    reviewer: "OldBoy405"
-    verdict: block
-    reviewed-at: "2026-08-10T12:04:13+08:00"
-    blocker-count: 4
-    annotation: "change-requests/CR-2026-027/review-annotations/code.yml"
-    repair-target: implement-code
     review-loop:
       current-cycle: 1
-      current-attempt: 3
+      current-attempt: 0
       max-attempts: 3
-      attempts:
-        - attempt: 1
-          cycle: 1
-          reviewed-at: "2026-08-10T09:27:40+08:00"
-          result: block
-          blocker-count: 9
-          repair-target: implement-code
-        - attempt: 2
-          cycle: 1
-          reviewed-at: "2026-08-10T10:38:12+08:00"
-          result: block
-          blocker-count: 2
-          repair-target: implement-code
-        - attempt: 3
-          cycle: 1
-          reviewed-at: "2026-08-10T12:04:13+08:00"
-          result: block
-          blocker-count: 4
-          repair-target: implement-code
+      attempts: []
 tests:
   report: change-requests/CR-2026-027/test-report.md
   status: pass
   owner: OldBoy405
   owner-assigned-at: "2026-08-09T22:06:44+08:00"
-  generated-at: "2026-08-10T11:30:00+08:00"
-  note: "代码评审二轮回修 b10 后重测 146/146（commit 3d4be47）：幽灵审计时序 + approve --resign 受控迁移闭环"
+  generated-at: "2026-08-10T14:02:08+08:00"
+  note: "新 blocker 回修后重测 148/148：resign CRLF 规范化 + 审批段/digest 唯一定位硬失败 + server-approve/YAML/TTY/CAS 回归"
   repair-target: implement-code
   commands:
     - name: crctl-test-suite
