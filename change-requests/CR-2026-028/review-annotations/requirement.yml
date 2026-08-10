@@ -1,17 +1,15 @@
 cr-id: CR-2026-028
 review-type: requirement
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-10T17:25:06+08:00"
-verdict: block
-blockers:
-  - "B1 active surface 白名单遗漏 knowledge-base 根 AGENTS.md：该权威当前入口仍执行 node ../tools/skills/shared/crctl/scripts/crctl.mjs，从 knowledge-base linked worktree 使用时路径失效，且 PRD §1.2 已承诺修改‘当前入口文档’。须把 workspace AGENTS.md 纳入白名单，并将 node ../tools/skills/ 纳入定向禁止模式与 AC-9/AC-17。"
-  - "B2 FR-6 内部表述与 FR-2 冲突：FR-6 声称‘worktree-path 与 repositories 派生语义保持’，而 FR-2 明确要求 worktree-path 从 Operational Workspace 改为 Installation Workspace 根。须收窄为‘bucket/repositories 派生语义保持，worktree 根按 FR-2 修正’，避免实施与验收双解。"
+reviewed-at: "2026-08-10T17:30:51+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  结构完整性: "通过：必需章节齐全，上一轮新增契约优先级、active whitelist 与测试口径均已落盘。"
-  FR可测试性: "基本通过：四类 sentinel、缓存代码审查断言、worktree-path 场景均可执行；但入口文档遗漏导致 AC-9/AC-17 范围不完整。"
-  范围合理性: "阻塞：PRD 承诺修改当前入口文档但白名单漏掉 workspace AGENTS.md；补入单文件即可，不需扩大到历史内容。"
-  与规划对齐: "上一轮四项 blocker 已与 source/CONTEXT/ADR 同步；workspace AGENTS.md 遗漏与已拍板‘当前入口文档’范围不一致。"
-  依赖识别: "worktree-path 对 push/pull/resume 的依赖已补齐；FR-6 仍需消除与 FR-2 的语义冲突。"
+  结构完整性: "通过：概述、6 US、9 FR、7 NFR、17 AC、成功指标、范围排除、变更记录与契约优先级齐全。"
+  FR可测试性: "通过：每条 FR 均有 AC；路径错误、四标志、linked worktree/worktree-path、四类配置 sentinel、缓存代码审查、cr-init 与 active surface 七模式均有可执行判据。"
+  范围合理性: "通过：精确白名单覆盖 workspace 当前入口、tools active Skill/Pipeline/Adapter/CI 与核心实现；历史/生成/inactive 内容明确排除，未引入 Runner、installer、版本 pin 或新依赖。"
+  与规划对齐: "通过：PRD v0.3.0 与 source、CONTEXT、ADR-0003 及 17 项 grilling 决策一致；注册快照的三处旧口径已明确由质询后契约取代。"
+  依赖识别: "通过：已覆盖 crctl 四类 loader、worktree-path 对 push/pull/resume 的依赖、cr-init 复用、Adapter 静态物化、multica 延后台账及 target-version=tbd 口径。"
 suggestions: []
 subject-file: change-requests/CR-2026-028/prd.md
-subject-sha256: 2ef6eed05fe3db952370ac044f831c66ff0d94c11d2e41acb54d12a2c09731de
+subject-sha256: e1bccf76741ea26fa7054f1fe69ea43b1c59c91036cd8d5b36ccad0ebf456dbd
