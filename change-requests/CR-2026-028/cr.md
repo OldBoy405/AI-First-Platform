@@ -15,7 +15,7 @@ owners:
     assigned-at: "2026-08-10T15:06:42+08:00"
 target-version: tbd
 source: "docs/analysis/tools流程步骤优化v2-前移优化项.md"
-status: merging
+status: writing-back
 created: "2026-08-10T15:06:42+08:00"
 updated: "2026-08-10T15:06:42+08:00"
 remote-ref: ""
