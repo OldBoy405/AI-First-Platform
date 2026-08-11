@@ -6,7 +6,7 @@ plan-ref: "change-requests/CR-2026-031/plan.md"
 sdd-ref: "change-requests/CR-2026-031/sdd.md"
 title: 建立事务故障注入与红测基线
 slug: transaction-fault-harness
-status: pending
+status: done
 estimate: 8h
 depends-on: []
 created: 2026-08-11T17:36:00+08:00
