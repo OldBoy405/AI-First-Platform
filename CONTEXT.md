@@ -5,6 +5,32 @@
 
 ## 术语表
 
+### CR 角色 Owner（CR role owner）
+
+CR 在 requirement、development、test 三类职责上的当前责任人标识。Owner 表达任务归属与正式移交关系，不是经过认证的平台身份或本地操作者身份；现阶段不得据此宣称具备对抗恶意调用者的强授权能力。CR 注册时三个角色 Owner 必须分别显式提供；即使由同一人承担，也不得通过 requirement Owner 隐式继承。`cr-init` 负责三文件受控写入、初始历史、audit 与结构化返回，不在尚无提交 SHA 时提前发事件；其 audit 包含完整 Owner 投影和三项 `reason=initial-assignment` 的 `changes[]`，不包含尚未发生的 Git/worktree 事实。只有成功的 `crctl git commit --template register --cr <CR-ID>` 才使用同一真实 HEAD SHA 产生 `(new) → drafting` 的 `status` outbox 和完整初始 Owner 投影的 `owners` outbox；commit 失败不发，outbox 失败只返回 warning 并记录 `EMIT_FAILED`，不反转已成功的 commit。所有 `owners` outbox 统一携带完整 `owners` 当前投影与 `changes[]`：注册包含三个 `reason=initial-assignment` 的角色变化，正式移交包含一个 `reason=formal-handover` 的角色变化；移交 `note` 不进入 Owner 投影事件。
+
+### CR 注册（CR registration）
+
+建立唯一 CR 业务身份并进入 `drafting` 生命周期的事实。CR 已注册不等于参与仓工作位置已经全部就绪；工作位置未就绪时不得开始下游阶段产物。
+_Avoid_: workspace provisioning、注册执行上下文
+
+### 注册执行上下文（registration execution context）
+
+CR 注册且参与仓工作位置全部就绪后传给后续 Pipeline 节点的权威结果快照，用于标识同一 CR、责任归属及参与仓工作位置。`drafting` 本身不足以证明该上下文可用；注册事务未完成时不得产出成功上下文。
+_Avoid_: 注册步骤清单、部分成功 execution context、后续节点自行拼装的上下文
+
+### 正式移交（formal handover）
+
+将某一 CR 角色的责任归属从当前 Owner 明确变更为新 Owner 的业务操作。`handover-cr` 是正式移交的唯一业务入口；它先调用 `owner-set` 形成受控账本提交，再复用 `push-progress` 发布远端，只有远端已包含 Owner 变更才算完成。`owner-set` 在可观测的 Git add/commit 失败路径中，以新内容 hash 为 CAS 前提恢复 `cr.md` 与 `_backlog.yml` 原始快照并重新暂存恢复内容；恢复成功返回 `OWNER_COMMIT_FAILED/changed=false/rolled_back=true`，恢复或重新暂存失败返回 `OWNER_COMMIT_ROLLBACK_FAILED`，两者都必须中止且不得进入 `push-progress`。进程在账本写入与 commit 之间直接崩溃的极端窗口不在本轮引入 WAL，后续一致性检查必须将其暴露，不能将脏文件当作普通同值重放。真实 Owner 变更同时产生面向新 Owner 的 `owner-handover` 通知记录，并仅在 commit 成功后以同一真实 SHA 分别尝试产生 `event_kind=owners` 与 `event_kind=inbox` 的 outbox：前者携带完整当前 Owner 投影和本次变更角色，后者携带收件人与结构化移交事实；`crctl` 不生成 `subject/body` 等展示文案。通知记录与两类 outbox 都不构成责任历史。outbox 是非阻断投影通道，写入失败必须返回明确 warning 并记 audit，但不回滚或阻止权威提交发布。同值幂等重放不更新时间、历史、通知、审计、提交或 outbox。底层 `owner-set` 仅作为本地可信环境中的受控账本原语，负责一致写入、审计和原子提交，不判断调用者是否等于当前 Owner；`push-progress` 失败时移交未完成，由 Skill 传播结构化失败，所在 Pipeline 负责中止。恢复远端工作等其他流程不得附带变更 Owner。
+
+### Owner 变更历史（owner history）
+
+`cr.md#owner-history` 是 CR 角色责任变更的唯一历史事实，覆盖初始指派与正式移交。正式移交记录 `role/from/to/at/reason`，并可携带移交说明 `note`；backlog 中的通知记录只用于协作可见性，`owners`/`inbox` outbox 只用于平台同步与通知投递，均不构成第二份责任历史。`handover-history` 停止新增写入，既有数据仅作兼容读取，不要求迁移。
+
+### 审批驳回（approval rejection）
+
+审批人对当前证据版本作出的不通过决定。驳回是已成功捕获的人工决策，不是 `human_approval` 节点的技术失败；签名决定交付后仍须进入对应 `approve-*` Skill，由 `crctl` 完整验证 grant schema、`cr_id/stage`、当前状态、当前 evidence digest 和签名，再按既有状态机回退并返回结构化非零结果，Pipeline 据此中止正向链；reject 不因 blocker 存在而执行 approve 路径的 pass condition。grant 重放只在紧邻结果状态内幂等：approve 仅当当前状态等于该阶段目标态且 `approval.yml` 的 `approver/key-id/signature/grant-approved-at/evidence-digest` 与输入完全一致时返回成功 `changed=false`；reject 仅当当前状态等于该阶段 reject 回退目标态且 grant 归属、当前证据摘要和签名仍有效时再次返回 `APPROVAL_DECLINED_ROLLED_BACK/changed=false`。两者均不得重复 audit、commit 或 outbox；进入其他状态或持久化审批字段不一致时返回 `GRANT_STATE_MISMATCH`。`crctl` 不选择下一回修 Skill。当前尚无实现该分派语义的 Pipeline Runner；Multica 保存的 `reject_reason` 也尚不能由 tools 自动注入回修节点。这两项均为待实现能力，不得描述为现有 Pipeline 能力。
+
 ### Tools Root
 
 目标 workspace 所使用的 tools 包根目录。其唯一声明来源是 Installation Workspace 目录图中的 `workspace.tools_package_path`；相对值以 Installation Workspace 为基准，绝对值直接使用，两者最终归一到真实目录。该声明是使用 tools 流程的前置条件：缺失或无效即表示 workspace 未绑定 tools 包，不从同名目录、当前目录或调用方自身位置推断。
@@ -13,8 +39,13 @@
 
 ### Operational Workspace
 
-本次 CR 操作实际读写阶段产物的 knowledge-base checkout；可以是主 checkout，也可以是该 CR 的 linked worktree。
-_Avoid_: Installation Workspace、tools checkout
+本次 CR 当前阶段唯一允许读写阶段产物的 knowledge-base checkout。merge finalize 前通常是该 CR worktree，finalize 后必须切换为 crctl 管理的 Transaction Workspace；不得根据当前目录或主 checkout 是否干净自行选择。
+_Avoid_: Installation Workspace、当前目录、tools checkout
+
+### Transaction Workspace
+
+crctl 为单个已 finalize merge 事务管理的临时 knowledge-base checkout，承接 writeback 到 archive 的唯一写 authority，并与用户主 checkout、CR worktree 隔离。事务失败时保留供续跑，成功归档后受控清理。
+_Avoid_: 用户主 checkout、CR worktree、临时目录
 
 ### Installation Workspace
 
@@ -70,8 +101,13 @@ multica 代码（`cr-status-badge.tsx`）按 15 态渲染是正确的；PRD §5.
 
 ### 上游设计疑点（upstream-design blocker）
 
-开发计划与 TASK 评审发现的、只能通过修订已审批 SDD 才能解决的阻断问题。它不属于 plan/TASK 自动回修范围，必须回到既有技术设计修订、评审与审批流程处理。
+开发计划与 TASK 评审发现的、只能通过修订已审批 SDD 才能解决的阻断问题。它不属于 plan/TASK 自动回修范围；`review-dev-plan` 先通过权威 trigger 回退到 `tech-design-review-pending`，再返回结构化非零业务结果 `UPSTREAM_DESIGN_BLOCKER`，当前 coding Pipeline 据此中止。该结果与 CAS、执行或平台故障等技术失败使用不同错误码；后续必须回到既有技术设计修订、评审与审批流程处理。
 _Avoid_: 普通回修 blocker、TASK blocker
+
+### 状态转换字面量校验 (transition literal validation)
+
+`lint-prompts` 对 Skill 中字面量 `crctl advance --to <to> --trigger <trigger>` 执行的静态一致性检查：直接读取 tools `dir-graph.yaml#change-request-track.state_machine.transitions`，只验证 `(to, trigger)` 是否存在；含模板变量时跳过，不从自然语言推断 `from`。状态机解析失败必须硬失败，运行时合法性仍由 `crctl advance` 裁决。
+_Avoid_: linter 状态机副本、Pipeline trigger 校验
 
 ### CR 阶段文档（CR-local artifact）
 
