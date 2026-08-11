@@ -1,11 +1,11 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 # 五段链路：需求 FR ↔ 技术设计 SDD ↔ 交付 TASK ↔ 代码 merge SHA ↔ CR-ID
 spec-id: ai-first-platform
-cr-ref: CR-2026-028
-cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029, CR-2026-028]
-target-version: "0.29"
+cr-ref: CR-2026-030
+cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029, CR-2026-028, CR-2026-030]
+target-version: "0.3"
 baseline-since: "0.10"
-generated-at: "2026-08-10T20:39:50+08:00"
+generated-at: "2026-08-11T13:04:24+08:00"
 
 # 已知缺口：CR-2026-003~CR-2026-006 未生成本文件的里程碑段（writeback-traceability 在那四个
 # CR 回写时被跳过，PRD.md/SDD.md/_index.yml 侧的累积记录不受影响、仍完整）。本次（CR-2026-008）
@@ -2177,3 +2177,80 @@ milestones:
         sdd: SDD §4.4
         code: crctl.test.mjs 扩展
         evidence: test-report CR-2026-028
+  - cr: CR-2026-030
+    milestone: TCA-001~004 契约收敛
+    target-version: "0.3"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 2ac515ab9e5e1e4c80ed5ddfa4476d7defa5426c
+        branch: requirement/CR-2026-030
+      - repo: tools
+        trunk: custom/main
+        sha: ee230e44f79019abcc39532ec13ab6c8b5a5ed7f
+        branch: requirement/CR-2026-030
+      - repo: multica
+        trunk: main
+        sha: d27e8b9c3068b51c18137ec5510f50e1e9aed321
+        branch: requirement/CR-2026-030
+    frs:
+      - fr: FR-1
+        title: cr-init 三 Owner 注册
+        sdd: SDD §2.3/§4.2
+        tasks: [CR-2026-030-TASK-01, CR-2026-030-TASK-02]
+        code: tools@ee230e4: crctl.mjs cmdCrInit/yamlScalar
+        evidence: test-report cmd-01 AC-1/AC-2 向量
+      - fr: FR-2
+        title: 注册事件真实 SHA 与 canonical branch
+        sdd: SDD §2.4/§3.2
+        tasks: [CR-2026-030-TASK-02]
+        code: tools@ee230e4: crctl.mjs register 模板/worktree-path
+        evidence: test-report AC-3~AC-6 向量
+      - fr: FR-3
+        title: owner-set 双投影正式移交
+        sdd: SDD §2.2~§2.5/§3.5/§4.4~§4.7
+        tasks: [CR-2026-030-TASK-03]
+        code: tools@ee230e4: crctl.mjs owner-set 原语
+        evidence: test-report AC-7~AC-10/AC-16 向量
+      - fr: FR-4
+        title: handover-cr 唯一入口 / resume 只读
+        sdd: SDD §8
+        tasks: [CR-2026-030-TASK-06]
+        code: tools@ee230e4: handover-cr/resume-from-remote SKILL
+        evidence: lint-prompts enforce 零漂移
+      - fr: FR-5
+        title: 隔离 commit / 失败回滚 / 事件投影
+        sdd: SDD §3.6/§4.7/§4.8
+        tasks: [CR-2026-030-TASK-03, CR-2026-030-TASK-04]
+        code: tools@ee230e4: crctl.mjs rollbackOwnerWrite/emitOutboxEvent
+        evidence: test-report AC-14/AC-15 向量
+      - fr: FR-6
+        title: 签名 grant 双模式与 reject 权威回退
+        sdd: SDD §2.6/§3.7/§4.8~§4.10
+        tasks: [CR-2026-030-TASK-04]
+        code: tools@ee230e4: crctl.mjs approveWithGrant + multica@d27e8b9c approval_crosscheck_test.go
+        evidence: test-report cmd-08 四 stage seam 8 subtest 无 skip
+      - fr: FR-7
+        title: approve/reject 紧邻结果态幂等
+        sdd: SDD §4.10
+        tasks: [CR-2026-030-TASK-04]
+        code: tools@ee230e4: crctl.mjs classifyGrantState/assertAdjacentApprove/assertResultLedgersCommitted
+        evidence: test-report AC-21/AC-22 向量
+      - fr: FR-8
+        title: review-dev-plan 三路路由与精确 trigger
+        sdd: SDD §2.7/§4.11
+        tasks: [CR-2026-030-TASK-05]
+        code: tools@ee230e4: review-dev-plan SKILL + code-implementation.pipeline.json
+        evidence: test-report AC-24~AC-26 向量
+      - fr: FR-9
+        title: R7 权威 trigger 字面量校验
+        sdd: SDD §4.3
+        tasks: [CR-2026-030-TASK-05]
+        code: tools@ee230e4: lint-prompts.mjs loadAuthorityTransitions
+        evidence: test-report AC-27~AC-29 + 错层/重复/截断反例
+      - fr: FR-10
+        title: Skill/Pipeline/人读契约同步与精确白名单
+        sdd: SDD §8
+        tasks: [CR-2026-030-TASK-06, CR-2026-030-TASK-08]
+        code: tools@ee230e4: 8 Skill/4 Pipeline/3 人读契约 + multica@d27e8b9c CUSTOM.md#26
+        evidence: test-report cmd-02~cmd-06 + 白名单审计
