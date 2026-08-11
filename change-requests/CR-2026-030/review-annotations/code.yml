@@ -1,0 +1,26 @@
+cr-id: CR-2026-030
+review-type: code
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-11T10:26:08+08:00"
+verdict: block
+blockers:
+  - "[MAJOR][owner-set] skills/shared/crctl/scripts/crctl.mjs:2384-2393 对 owner-history: [] 计算 lastItem=-1 后 splice(0)，把 formal-handover 条目插到 frontmatter 首行；实测 owner-set exit=0 并提交无效 YAML。应展开空 flow 为 owner-history 块后再追加，并增加空历史回归测试。"
+  - "[MAJOR][R7] skills/shared/crctl/scripts/lint-prompts.mjs:44-57 的 findKey 只按出现顺序搜索，不约束缩进父子关系；实测 change-request-track 下无 state_machine、但 unrelated.state_machine.transitions 存在时 lint exit=0。应按层级边界定位唯一 change-request-track.state_machine.transitions，并增加错层 fixture，满足 FR-9/AC-28 hard-fail。"
+  - "[MAJOR][scope] Multica 相对 c8c96e5 变更包含 server/internal/governance/crsync_test.go，超出 PRD FR-10.1/AC-30 只允许 approval_crosscheck_test.go + CUSTOM.md 的精确白名单；当前 test-report 也未披露该第 3 个文件。应恢复精确白名单，并在可用 DB 环境取无 skip 证据，或先走需求修订改变白名单。"
+  - "[MAJOR][cross-seam] server/internal/governance/approval_crosscheck_test.go:103-106 将 stage 硬编码为 requirement，当前 Go→crctl seam 仅覆盖 requirement；TASK-07 验收条件要求四 stage approve/reject grant。应表驱动四 stage（含各自最小 evidence/gate fixture）或修订 TASK 契约。"
+  - "[MAJOR][cross-seam compatibility] approval_crosscheck_test.go:53 从 os.Getenv(\"CRCTL_PATH\") 推导 Tools Root，而测试随后又支持 sibling candidate 回退；环境变量为空但 sibling crctl 被找到时，fixture 仍写入错误 tools_package_path。应把已解析的 crctl 路径显式传入 fixture helper，并增加无环境变量、sibling 命中的回归测试。"
+  - "[MAJOR][observability] skills/shared/crctl/scripts/crctl.mjs:467 的 EMIT_FAILED audit 未记录 cr/event_kind，与 SDD §3.2/§10.1 不符；status/owners 两次失败不可区分。应从 ev 写入 cr 与 event_kind，并强化 AC-4 测试断言。"
+  - "[MAJOR][Multica standard] approval_crosscheck_test.go:94 使用 raw, _ := json.Marshal(grant)，违反 Multica CLAUDE.md 的 checked errors 硬规则。应检查并报告 marshal error。"
+dimensions:
+  reviewer-model: "openai/gpt-5.6-sol (reasoning=high)"
+  suggestion-policy: "strict"
+  standards: "block：1 项 Multica checked-errors 硬违规；另有接缝 fallback 回归。"
+  spec-alignment: "block：FR-10.1 精确白名单越界；FR-9/AC-28 层级 hard-fail 漏检；TASK-07 四 stage seam 未覆盖；SDD EMIT_FAILED audit 字段缺失。"
+  engineering-quality: "block：owner-history: [] 可复现为 exit=0 且提交无效 frontmatter，属于账本完整性缺陷。"
+  security: "未发现私钥/证据泄露或 grant 验签顺序回归；Owner ID 标量边界仍建议收紧。"
+  test-coverage: "本轮重跑 tools 223/223、writeback 9/9、lint/matrix/contract/JSON 全绿，Multica seam 3 subtests 真跑全绿；但新增反例证明现有测试未覆盖上述缺陷。"
+  test-evidence: "block：test-report.status=pass，但 post-repair Multica changed-files 为 3 个且报告未记录精确白名单审计，证据结论与当前 HEAD 不一致。"
+  frontend-quality: "不适用：diff 未触及 tsx/vue/css/html。"
+suggestions:
+  - "Owner ID 当前以裸 YAML scalar 写入；按 sdd.yml TD-SUG-2 复用 yamlScalar，并拒绝 CR/LF/NUL，避免 #/:/换行破坏账本。"
+  - "补充 owner-history 缺失、空 flow、已有 block 三种形态的表驱动测试，避免 append helper 再次出现位置漂移。"
