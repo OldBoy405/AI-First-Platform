@@ -15,7 +15,7 @@ owners:
     assigned-at: "2026-08-11T17:17:53+08:00"
 target-version: tbd
 source: docs/analysis/tools-tca-005-009-015-016-merge-workspace-optimization-plan.md
-status: tech-design-reviewed
+status: task-breakdown
 created: "2026-08-11T17:17:53+08:00"
 updated: "2026-08-11T17:17:53+08:00"
 remote-ref: ""
