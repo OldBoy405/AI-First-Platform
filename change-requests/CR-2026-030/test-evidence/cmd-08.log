@@ -1,15 +1,11 @@
-$ cd /d "C:/Users/GOBAO/Downloads/AI/AI First Platform/.rayai-worktrees/multica/requirement/CR-2026-030/server" && set CRCTL_PATH=C:/Users/GOBAO/Downloads/AI/AI First Platform/.rayai-worktrees/tools/requirement/CR-2026-030/skills/shared/crctl/scripts/crctl.mjs&& go test ./internal/governance/ -run TestGrantCrossVerifiesWithCrctl -v
-(exit=0)
+$ cd /d "C:/Users/GOBAO/Downloads/AI/AI First Platform/.rayai-worktrees/multica/requirement/CR-2026-030/server" && set "CRCTL_PATH=C:/Users/GOBAO/Downloads/AI/AI First Platform/.rayai-worktrees/tools/requirement/CR-2026-030/skills/shared/crctl/scripts/crctl.mjs" && go test ./internal/governance/ -run TestGrantCrossVerifiesWithCrctl -count=1 -json | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{process.stdout.write(s);const ok=s.split(/\r?\n/).some(l=>{try{const x=JSON.parse(l);return x.Action==='pass'&&x.Test==='TestGrantCrossVerifiesWithCrctl'}catch{return false}});process.exit(ok?0:1)})"
+(exit=1)
 --- stdout ---
-=== RUN   TestGrantCrossVerifiesWithCrctl
-=== RUN   TestGrantCrossVerifiesWithCrctl/approve_fresh_consumption
-=== RUN   TestGrantCrossVerifiesWithCrctl/signed_reject_rolls_back_via_authoritative_transition
-=== RUN   TestGrantCrossVerifiesWithCrctl/approve_adjacent-state_replay_is_idempotent
---- PASS: TestGrantCrossVerifiesWithCrctl (2.20s)
-    --- PASS: TestGrantCrossVerifiesWithCrctl/approve_fresh_consumption (0.67s)
-    --- PASS: TestGrantCrossVerifiesWithCrctl/signed_reject_rolls_back_via_authoritative_transition (0.77s)
-    --- PASS: TestGrantCrossVerifiesWithCrctl/approve_adjacent-state_replay_is_idempotent (0.75s)
-PASS
-ok  	github.com/multica-ai/multica/server/internal/governance	(cached)
+{"Time":"2026-08-11T11:01:08.7282247+08:00","Action":"start","Package":"github.com/multica-ai/multica/server/internal/governance"}
+{"Time":"2026-08-11T11:01:08.8388627+08:00","Action":"output","Package":"github.com/multica-ai/multica/server/internal/governance","Output":"Skipping governance integration tests: database not reachable: failed to connect to `user=multica database=multica`:\n"}
+{"Time":"2026-08-11T11:01:08.8399414+08:00","Action":"output","Package":"github.com/multica-ai/multica/server/internal/governance","Output":"\t[::1]:5432 (localhost): dial error: dial tcp [::1]:5432: connectex: No connection could be made because the target machine actively refused it.\n"}
+{"Time":"2026-08-11T11:01:08.8399414+08:00","Action":"output","Package":"github.com/multica-ai/multica/server/internal/governance","Output":"\t127.0.0.1:5432 (localhost): dial error: dial tcp 127.0.0.1:5432: connectex: No connection could be made because the target machine actively refused it.\n"}
+{"Time":"2026-08-11T11:01:08.8416111+08:00","Action":"output","Package":"github.com/multica-ai/multica/server/internal/governance","Output":"ok  \tgithub.com/multica-ai/multica/server/internal/governance\t0.113s\n"}
+{"Time":"2026-08-11T11:01:08.8416111+08:00","Action":"pass","Package":"github.com/multica-ai/multica/server/internal/governance","Elapsed":0.113}
 
 --- stderr ---
