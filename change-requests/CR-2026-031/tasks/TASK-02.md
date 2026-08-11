@@ -6,7 +6,7 @@ plan-ref: "change-requests/CR-2026-031/plan.md"
 sdd-ref: "change-requests/CR-2026-031/sdd.md"
 title: 删除 crctl 死代码与永久兼容分支
 slug: remove-crctl-redundancy
-status: pending
+status: done
 estimate: 6h
 depends-on: [CR-2026-031-TASK-01]
 created: 2026-08-11T17:36:00+08:00
