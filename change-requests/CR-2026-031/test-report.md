@@ -3,7 +3,7 @@ cr: CR-2026-031
 status: pass
 tester: "Ray"
 generated-by: crctl-test
-generated-at: "2026-08-12T15:50:46+08:00"
+generated-at: "2026-08-12T15:56:26+08:00"
 commands:
   - { command: "node --test skills/shared/crctl/scripts/test/*.test.mjs", exit: 0, log: "change-requests/CR-2026-031/test-evidence/cmd-01.log" }
   - { command: "node --test skills/writeback/scripts/test/*.test.mjs", exit: 0, log: "change-requests/CR-2026-031/test-evidence/cmd-02.log" }
@@ -42,12 +42,12 @@ commands:
 - crctl 全量：250/250 通过；新增跨事务恢复隔离、authority、register 用户改动保护、writeback manifest 绑定/containment、archive ancestry 回归。
 - writeback generator：10/10 通过。
 - prompt lint：0 findings；skill matrix（57 active skill / 8 actor）、agent contract（9 agent）、pipeline JSON 均通过。
-- multica：transition generator `--check` 通过（source tools@a35ad04，展开口径 50）；governance Transition/ActionConstants 定向 Go 测试通过。
+- multica：transition generator `--check` 通过（source tools@2f26e0b，展开口径 50）；governance Transition/ActionConstants 定向 Go 测试通过。
 
 ### 已验证的评审修复
 
 1. write-set 恢复收敛为显式 `txId`，manifest 绑定绝对 `targetRoot`，不再把其他事务写集重放到调用者 checkout。
-2. release artifacts/status/approval 从 knowledge-base CR worktree 读取；post-review 仅允许受控 review/approval/status 元数据提交。
+2. release artifacts/status/approval 从 knowledge-base CR worktree 读取；post-review 仅允许受控 review/approval/status/trace 元数据提交。
 3. register remote-stale 路径在 reset 前重新检查 checkout，事务期间出现用户改动即硬阻断且保留文件。
 4. writeback journal 绑定 manifest bytes，并验证 candidate 位于 txws、版本化 generator SHA 与 signed release-subjects。
 5. archive 仅在 requirement source 已证明为 origin trunk 祖先时删除 ref；否则返回 cleanup-pending 并保留现场。

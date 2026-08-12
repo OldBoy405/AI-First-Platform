@@ -1,16 +1,16 @@
 $ node --test skills/writeback/scripts/test/*.test.mjs
 (exit=0)
 --- stdout ---
-✔ lib: CRLF 归一 + frontmatter 读改（纪律 #1） (0.8924ms)
-✔ lib: extractBlock 缩进敏感提取 (0.2429ms)
-✔ lib: 账本路径隔离（AC-4 静态判据） (0.2465ms)
-✔ lib: computeInputDigest 与 crctl apply 侧公式一致（跨模块防漂移） (0.4908ms)
-✔ prd-sdd: candidate-only 首次回写（零写 ws）+ manifest v1 + inputDigest 自洽 (58.1751ms)
-✔ prd-sdd: 增量追加（既有内容保留 + H 级 +1）+ 重跑 noop (155.1362ms)
-✔ tasks: candidate-only + slug 命名 + SDD-BLOCK-001 幂等 + 索引顺序 + noop (96.6529ms)
-✔ traceability: candidate-only + 追加保留 + 幂等 + 校验硬失败 + MERGE_COMMITS_MISSING (184.6803ms)
-✔ AC-4: 三脚本源码不包含账本文件写路径（静态扫描） (0.6923ms)
-✔ AC-4: candidate-only 硬边界——脚本不得写 ws 内容文件（writeFileSync 仅限 candidate/blobs 写入） (0.8568ms)
+✔ lib: CRLF 归一 + frontmatter 读改（纪律 #1） (1.5686ms)
+✔ lib: extractBlock 缩进敏感提取 (0.3868ms)
+✔ lib: 账本路径隔离（AC-4 静态判据） (0.4293ms)
+✔ lib: computeInputDigest 与 crctl apply 侧公式一致（跨模块防漂移） (1.0902ms)
+✔ prd-sdd: candidate-only 首次回写（零写 ws）+ manifest v1 + inputDigest 自洽 (57.5169ms)
+✔ prd-sdd: 增量追加（既有内容保留 + H 级 +1）+ 重跑 noop (159.802ms)
+✔ tasks: candidate-only + slug 命名 + SDD-BLOCK-001 幂等 + 索引顺序 + noop (102.9625ms)
+✔ traceability: candidate-only + 追加保留 + 幂等 + 校验硬失败 + MERGE_COMMITS_MISSING (189.7494ms)
+✔ AC-4: 三脚本源码不包含账本文件写路径（静态扫描） (0.647ms)
+✔ AC-4: candidate-only 硬边界——脚本不得写 ws 内容文件（writeFileSync 仅限 candidate/blobs 写入） (0.5667ms)
 ℹ tests 10
 ℹ suites 0
 ℹ pass 10
@@ -18,6 +18,6 @@ $ node --test skills/writeback/scripts/test/*.test.mjs
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 568.5266
+ℹ duration_ms 582.3873
 
 --- stderr ---

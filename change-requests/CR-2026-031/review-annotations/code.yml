@@ -1,0 +1,52 @@
+cr-id: CR-2026-031
+review-type: code
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-12T15:51:49+08:00"
+verdict: block
+blockers:
+  - "P1 TASK-10 durable-write migration remains incomplete: crctl.mjs still uses casWriteMulti/tryCasWriteMulti for approve, review-record, and owner-set; fault-harness.test.mjs intentionally proves ledger-cas-multi-between-rename leaves a half-written projection. Migrate these command-level operations into recoverable transaction envelopes, then delete casWriteMulti, tryCasWriteMulti, the retired fault point, and the red-baseline test."
+dimensions:
+  code-task-sdd-alignment: "block: TASK-10 explicitly requires removal of casWriteMulti, but live callers and the half-state baseline remain"
+  engineering-quality: "block: one known multi-file crash window remains outside durable-tx"
+  critical-path-readability: "pass: workspace authority and txId/targetRoot recovery are now explicit"
+  security: "pass: checkout reset race, candidate trust binding, and ref ancestry blockers are repaired"
+  test-coverage: "pass: 250 crctl + 10 writeback tests, including new cross-transaction/authority/ancestry regressions"
+  test-evidence-credibility: "pass: multica generator check and targeted Go governance tests are recorded against tools@a35ad04"
+  frontend-quality: "not-applicable: no frontend diff"
+  suggestion-policy: "strict"
+  reviewer-model: "gpt-5.6-sol"
+suggestions:
+  - "Keep the new command-level durable transaction tests focused on one kill/restart vector per approval, review-record, and owner-set path; do not add a second WAL implementation."
+release-subjects:
+  version: 1
+  repositories:
+    - repo: ai-first-platform-docs
+      remote-ref: refs/heads/requirement/CR-2026-031
+      reviewed-source-sha: 5a21834526439be84fce83021d2fdc70af476a31
+    - repo: multica
+      remote-ref: refs/heads/requirement/CR-2026-031
+      reviewed-source-sha: d44c959e58adf70a7fea66bd8dc4892bfa27be13
+    - repo: tools
+      remote-ref: refs/heads/requirement/CR-2026-031
+      reviewed-source-sha: a35ad04f4722c0514c685b8b833bc627fcb6be99
+  artifacts:
+    algorithm: sha256
+    canonicalization: crlf-to-lf+path-sort
+    files:
+      - { path: change-requests/CR-2026-031/plan.md, sha256: 189a7f900e90baaae2820b6367bda90cd65b7aacde90aa5ce99ddabf478b9f05 }
+      - { path: change-requests/CR-2026-031/prd.md, sha256: 0a1fe5337ef5daad1616a7343a5e11de98c0c59df60bf4d40a720d3d57daf469 }
+      - { path: change-requests/CR-2026-031/sdd.md, sha256: 5989833d0741958d5d29fd0a8fe731e561d215b8873805e4d5a3dba762fa4f00 }
+      - { path: change-requests/CR-2026-031/tasks/TASK-01.md, sha256: b6ae95fc406bc424d29c7afaf13f248ad93de311ca14e63dbe054cef342d4888 }
+      - { path: change-requests/CR-2026-031/tasks/TASK-02.md, sha256: fc30c5d79cb7ecf6172a4c99456652183d8c4ce6890be9713db559a795bf884c }
+      - { path: change-requests/CR-2026-031/tasks/TASK-03.md, sha256: 05599dfc20c6d6dfb777ab2ed2be19cc2ddd9933c28548a5328f7b16f3b70353 }
+      - { path: change-requests/CR-2026-031/tasks/TASK-04.md, sha256: 564830208e4a8fbc749882f8a41573901bfd1557aae6697f1b20c2f944236f7c }
+      - { path: change-requests/CR-2026-031/tasks/TASK-05.md, sha256: 1a10b77eb07a15235e4783fc11765dc5d74f148f249fa8c9253337829f088125 }
+      - { path: change-requests/CR-2026-031/tasks/TASK-06.md, sha256: 8835cf3abe20399c4fd86e3fed7ee9ec2e03cbc52ae617a6d8f3226c66690b87 }
+      - { path: change-requests/CR-2026-031/tasks/TASK-07.md, sha256: 8f509418b8120fdf2be3d477b3d6553061320eac9a9637d722dcf6041ed4071d }
+      - { path: change-requests/CR-2026-031/tasks/TASK-08.md, sha256: 4b287e985813ecba5fb013a48292f05b02bdbcb593612ae2633a0e9247ce3334 }
+      - { path: change-requests/CR-2026-031/tasks/TASK-09.md, sha256: 8ff2a4b99b1ddae1aacab07f99527a286622c4d168bc6954d1d7be93bde42862 }
+      - { path: change-requests/CR-2026-031/tasks/TASK-10.md, sha256: 5b946c3d8f5eff71465f61350bf7be58ce2d134f8906df2f6fa992d9596fa138 }
+      - { path: change-requests/CR-2026-031/tasks/TASK-11.md, sha256: 1c5d84976b29db8fc489a26c065a9d8b716112991f494dc33841b6d86c07490b }
+      - { path: change-requests/CR-2026-031/tasks/TASK-12.md, sha256: 8166d0bf6b4452f702d13905ffbd6c0d1d842f0d21e94538acb79cf7f23715a2 }
+      - { path: change-requests/CR-2026-031/tasks/_index.yml, sha256: 9f6bcf4726a883b65aef1490d9715d7371bc9e0fa3b9f69ab815c5dd9d6e75b7 }
+    digest: 36ef463b5a9a276aa8584a734aabdb6008cbfbb4b889bd3e626e67204e124d09
