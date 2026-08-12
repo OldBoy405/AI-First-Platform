@@ -111,6 +111,31 @@ _Avoid_: 普通回修 blocker、TASK blocker
 `lint-prompts` 对 Skill 中字面量 `crctl advance --to <to> --trigger <trigger>` 执行的静态一致性检查：直接读取 tools `dir-graph.yaml#change-request-track.state_machine.transitions`，只验证 `(to, trigger)` 是否存在；含模板变量时跳过，不从自然语言推断 `from`。状态机解析失败必须硬失败，运行时合法性仍由 `crctl advance` 裁决。
 _Avoid_: linter 状态机副本、Pipeline trigger 校验
 
+### 评审输入绑定（review input binding）
+
+`crctl review-record` 在评审结论落盘时，对该 stage固定输入文件计算 LF规范化 SHA-256并机器注入 annotation的事实快照，用于证明评审消费的是哪一版上游文档。模型 payload不得提供或覆盖该快照；新 annotation使用 `input-subjects`，code阶段继续使用覆盖代码仓与受控文档的 `release-subjects`。旧 `subject-file/subject-sha256` 只作历史读取兼容，缺少足够绑定时对齐结果为 unknown，不用 mtime或时间顺序猜测。
+_Avoid_: 测试工作现场摘要、模型自报摘要、评审时间新旧比较
+
+### 评审对齐当前投影（review alignment projection）
+
+由评审输入绑定与当前同路径内容摘要机械比较得到的当前 `aligned / drift / unknown` 事实。检查身份是 `(CR-ID, review-stage)`，稳定 key固定为 `alignment:<CR-ID>:<stage>`，每个 CR/stage最多一个当前 finding。传入 stage时只检查并原子更新该 key；未传 stage时固定检查四个评审阶段，全部机器结果生成后以一次 durable write-set原子更新，任一技术失败四阶段零写，drift/unknown作为可信业务结果照常共同提交。canonical traceability只持久化未解决的 `drift[]`：drift和unknown写当前 finding，aligned不写成功记录并删除该 CR/stage拥有的旧 finding；其他所有者条目不得被删除。finding只包含 crctl生成的 `state`、`changed-subjects`和`missing-subjects`；文档主体为 `kind=artifact`，仓库主体为 `kind=repository`。模型不得提供任何 finding字段。`suggested-skill`、`reason`/message只根据 `(stage, state)`在命令响应中临时生成，不进入 canonical YAML、digest或幂等比较。数组清空时删除整个 `drift`字段。数量只在命令响应中从当前数组计算，不持久化 summary、counter、检查时间或成功历史，也不更新 baseline的 `generated-at`；修复时间线由 Git历史保存。
+_Avoid_: alignment业务 payload、impact/stale模型、alignment事件日志、summary.stale、checked-at、last-aligned-at
+
+### 完整 Checkpoint（complete checkpoint）
+
+同一 CR 的全部参与仓在某一时点已经发布并可共同恢复的最新进度事实。只有整组参与仓均被确认且该组事实已对协作者可见时才成立；单仓已推送或事务中间态都不是完整 Checkpoint，历史版本由 Git 保留，不在 CR 账本重复维护。
+_Avoid_: 单仓 checkpoint、checkpoint 历史数组、部分成功 checkpoint
+
+### 测试运行（test run）
+
+在 CR 开发期实际启动项目测试、lint、build 或其他验证程序并捕获退出事实的受信代码执行能力。argv、工作目录 containment 与 timeout 只用于防止接口误用，不构成安全沙箱；隔离边界属于 runtime、container 或 OS 身份。测试运行只产生临时执行证据，不直接改变 canonical CR 账本。
+_Avoid_: 安全测试沙箱、只读质量检查、测试记录
+
+### 测试记录（test record）
+
+把既有测试运行事实与测试负责人的业务分析原子固化为测试报告、版本化 evidence、traceability tests 和 review-loop 的受控账本操作。测试记录不重新执行测试，也不接受调用方选择 generator、candidate 或 canonical 目标路径。新协议不把缺少 run-id与完整 subject digest的旧报告包装成新 attempt：已有正式 `write-test-report` loop时从其当前轮次继续，不存在时从 attempt 1开始，既有 maxAttempts预算不重置；旧报告和固定日志仅由原路径与 Git历史保留。
+_Avoid_: 测试运行、模型直接编辑 test-report、外部 candidate apply、legacy-attempt、伪 run-id
+
 ### CR 阶段文档（CR-local artifact）
 
 服务单个 CR 审批与交付过程的 PRD、SDD、Plan、TASK、测试报告和评审记录。其生命周期
@@ -121,8 +146,13 @@ CR 阶段 PRD 与产品区活文档是两个不同概念；不得仅因二者都
 
 ### specs 基线文档（baseline artifact）
 
-多个已完成 CR 的有效变更逐里程碑累积形成的发布基线，不是任一 CR 阶段文档的副本。
-不得用单个 CR 文档覆盖整份基线。
+多个已完成 CR 的有效变更逐里程碑累积形成的发布基线，不是任一 CR 阶段文档的副本。不得用单个 CR 文档覆盖整份基线。traceability baseline不因新 milestone结构增强而新增顶层或 milestone级 schema版本字段：既有 milestones作为 opaque历史段逐字节保留，新 generator和 archive gate只严格校验当前 CR新增段，reader不得因旧段缺少新字段而拒绝整份文件。
+_Avoid_: 全量重写历史 milestone、用顶层 schema-version宣称历史段同构
+
+### 终态反馈事实（terminal feedback fact）
+
+终态 CR 对单个 spec 记录的一次性实施结论，以 `(CR-ID, spec-id)` 唯一标识。记录前 CR 必须已完成现有 archive 账本移动并在 `_history.yml` 具有唯一 `final-status`；不得从 backlog 或 cr.md 猜测 outcome。业务正文只在目标 baseline traceability 顶层 `feedback[]` 保存 `cr/outcome/deviation/lessons`；`_history.yml` 同一 CR 条目只复用 `final-status`、`writeback-spec-id` 并保存 canonical deviation/lessons 的 `feedback-input-sha256`，用于绑定输入和幂等校验，不重复正文、outcome、时间、摘要或 commit SHA。outcome 只能由 final status 机械派生；相同输入重放不产生新提交，不同输入不得覆盖，修正须另开 CR。该事实不发送 outbox，也不承诺 Multica 实时通知或展示。
+_Avoid_: feedback event、终态 inbox 通知、history 中的第二份 feedback 正文、可覆盖 feedback
 
 ### CR 目录索引（change-requests/_index.yml）
 
@@ -136,9 +166,8 @@ CR 的全生命周期轻量目录，用于登记身份和基本生命周期摘�
 
 ### 归档事件（archive event）
 
-CR 进入最终态时产生的生命周期事件，携带 final status、归档原因和可选 writeback
-spec。它与 backlog→history/index 的归档移动是同一个业务事实：不得出现“事件已发但
-未归档”或“已归档但事件丢失”。
+正常归档 commit 已由 origin 确认后产生的生命周期投影事件，固定表达 `writing-back → archived`、`trigger=cr-archive` 和真实 archive commit SHA。权威事实仍是同一 Git commit 内的 `_history.yml`；outbox 只负责让 Multica及时投影，发送失败返回 warning并由snapshot reconcile兜底，不反转Git authority。rejected/withdrawn在进入终态时已由status事件表达，后续archive账本移动不重复发送archive/status事件。
+_Avoid_: terminal v2、feedback event、把outbox当作归档authority
 
 ### CR 终态查询（terminal CR lookup）
 
