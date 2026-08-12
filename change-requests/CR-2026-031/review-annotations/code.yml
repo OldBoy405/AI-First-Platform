@@ -1,7 +1,7 @@
 cr-id: CR-2026-031
 review-type: code
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-12T15:51:49+08:00"
+reviewed-at: "2026-08-12T15:57:20+08:00"
 verdict: block
 blockers:
   - "P1 TASK-10 durable-write migration remains incomplete: crctl.mjs still uses casWriteMulti/tryCasWriteMulti for approve, review-record, and owner-set; fault-harness.test.mjs intentionally proves ledger-cas-multi-between-rename leaves a half-written projection. Migrate these command-level operations into recoverable transaction envelopes, then delete casWriteMulti, tryCasWriteMulti, the retired fault point, and the red-baseline test."
@@ -11,7 +11,7 @@ dimensions:
   critical-path-readability: "pass: workspace authority and txId/targetRoot recovery are now explicit"
   security: "pass: checkout reset race, candidate trust binding, and ref ancestry blockers are repaired"
   test-coverage: "pass: 250 crctl + 10 writeback tests, including new cross-transaction/authority/ancestry regressions"
-  test-evidence-credibility: "pass: multica generator check and targeted Go governance tests are recorded against tools@a35ad04"
+  test-evidence-credibility: "pass: multica generator check and targeted Go governance tests are recorded against tools@2f26e0b"
   frontend-quality: "not-applicable: no frontend diff"
   suggestion-policy: "strict"
   reviewer-model: "gpt-5.6-sol"
@@ -22,13 +22,13 @@ release-subjects:
   repositories:
     - repo: ai-first-platform-docs
       remote-ref: refs/heads/requirement/CR-2026-031
-      reviewed-source-sha: 5a21834526439be84fce83021d2fdc70af476a31
+      reviewed-source-sha: eaf8f1fe392a752537fb0f0ad526d630ad1c32b1
     - repo: multica
       remote-ref: refs/heads/requirement/CR-2026-031
-      reviewed-source-sha: d44c959e58adf70a7fea66bd8dc4892bfa27be13
+      reviewed-source-sha: 59583498598a9caa35758eeb3fca0609e2a9897e
     - repo: tools
       remote-ref: refs/heads/requirement/CR-2026-031
-      reviewed-source-sha: a35ad04f4722c0514c685b8b833bc627fcb6be99
+      reviewed-source-sha: 2f26e0b5fd37cf4eed8584bfbffc1092dda97bd4
   artifacts:
     algorithm: sha256
     canonicalization: crlf-to-lf+path-sort
