@@ -89,13 +89,15 @@ trunk 提交）属新采集，显式延后到 P3+，不属于 bypass-commit 的�
 
 ### CR 状态机口径（16 态 vs 15 态）
 
-文档口径与代码口径的换算于 2026-08-09 更新：状态机 = **15 个具名状态
-+ 注册前 `(new)`**（口语「16 态」含 (new)）；转移 = **27 条声明，wildcard 展开后 49 条**。
+文档口径与代码口径的换算于 2026-08-11 更新：状态机 = **15 个具名状态
++ 注册前 `(new)`**（口语「16 态」含 (new)）；转移 = **28 条声明，wildcard 展开后 50 条**。
 CR-2026-026 在既有 25/47 基线上新增两条开发计划评审转换：
 `review-dev-plan:block -> write-dev-plan` 与
-`review-dev-plan:upstream-design-blocker`。正式断言必须以
+`review-dev-plan:upstream-design-blocker`；CR-2026-031 在 27/49 基线上新增一条
+发布漂移回退转换：`code-approved -> developing`（trigger=
+`merge-feature-branch:release-drift -> implement-code`）。正式断言必须以
 `../tools/dir-graph.yaml#change-request-track.state_machine` 的当前内容为准，不得把历史
-25/47 口径继续描述成现状。
+25/47、27/49 口径继续描述成现状。
 multica 代码（`cr-status-badge.tsx`）按 15 态渲染是正确的；PRD §5.2.3 与 P0 文档中
 「16 态」的表述指含 (new) 的口语口径，写正式断言时必须写明用的是哪个口径。
 
