@@ -52,3 +52,21 @@ reviews:
           result: pass
           blocker-count: 0
           repair-target: write-dev-plan
+tests:
+  report: change-requests/CR-2026-031/test-report.md
+  status: pass
+  owner: "Ray"
+  owner-assigned-at: "2026-08-11T17:17:53+08:00"
+  generated-at: "2026-08-12T14:39:29+08:00"
+  repair-target: implement-code
+  commands:
+    - name: crctl-test-suite
+      result: pass
+    - name: writeback-unit
+      result: pass
+    - name: lint-prompts
+      result: pass
+    - name: skill-matrix
+      result: pass
+    - name: agent-contract
+      result: pass
