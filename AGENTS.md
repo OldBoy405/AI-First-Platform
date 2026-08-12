@@ -64,7 +64,7 @@ AI First Platform/
 ## 工程纪律（实战教训固化，违反必返工）
 
 1. **行尾纪律（已三次咬人：M0 证据哈希误报 → T03 canonical digest → T04 生成器静默丢 wildcard 转移）**：任何对仓库文件做哈希、跨行正则、逐行解析的代码，读入后必须先 `\r\n → \n` 规范化（Windows autocrlf 会改写检出内容）；解析器用 `split(/\r?\n/)`；**跨行正则解析失败必须硬失败报错，禁止静默降级**——T04 的 bug 正是"匹配不到 → 空数组 → 静默丢数据"。
-2. **状态数口径**：状态机 = **15 个具名状态 + 注册前 `(new)`**（口语“16 态”含 (new)）；转移 = **27 条声明，wildcard 展开后 49 条**（CR-2026-022 新增两条 reject 转换：`approve-requirement:reject -> write-requirement-prd`、`approve-dev-start:reject -> write-dev-plan`；CR-2026-026 再新增两条开发计划评审转换：`review-dev-plan:block -> write-dev-plan`、`review-dev-plan:upstream-design-blocker`）。写文档/断言/DDL 注释时必须写明用的是哪个口径，正式断言以 `../tools/dir-graph.yaml#change-request-track.state_machine` 当前内容为准（CR-2026-027 Phase 0 统一）。
+2. **状态数口径**：状态机 = **15 个具名状态 + 注册前 `(new)`**（口语“16 态”含 (new)）；转移 = **28 条声明，wildcard 展开后 50 条**（CR-2026-022 新增两条 reject 转换：`approve-requirement:reject -> write-requirement-prd`、`approve-dev-start:reject -> write-dev-plan`；CR-2026-026 再新增两条开发计划评审转换：`review-dev-plan:block -> write-dev-plan`、`review-dev-plan:upstream-design-blocker`；CR-2026-031 再新增一条发布漂移回退转换：`code-approved -> developing`，trigger=`merge-feature-branch:release-drift -> implement-code`）。写文档/断言/DDL 注释时必须写明用的是哪个口径，正式断言以 `../tools/dir-graph.yaml#change-request-track.state_machine` 当前内容为准（CR-2026-027 Phase 0 统一）。
 3. **multica 仓代码注释一律英文**（其 CLAUDE.md 硬规则）；本仓库与 tools 仓的文档、CR 产物用中文。进 multica 写代码前先读其 CLAUDE.md。
 4. **事实断言先核实**：写进 PRD/SDD 的"某仓库有/没有某包、某行为"类断言，落笔前用命令核实（ls/grep），实施期发现不符须以 revision 修订并注明"结论是否受影响"（先例：SDD 0.1.2 更正 internal/service 论据）。
 
