@@ -1,34 +1,33 @@
 cr-id: CR-2026-031
 review-type: code
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-12T15:57:20+08:00"
-verdict: block
-blockers:
-  - "P1 TASK-10 durable-write migration remains incomplete: crctl.mjs still uses casWriteMulti/tryCasWriteMulti for approve, review-record, and owner-set; fault-harness.test.mjs intentionally proves ledger-cas-multi-between-rename leaves a half-written projection. Migrate these command-level operations into recoverable transaction envelopes, then delete casWriteMulti, tryCasWriteMulti, the retired fault point, and the red-baseline test."
+reviewed-at: "2026-08-12T16:34:47+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  code-task-sdd-alignment: "block: TASK-10 explicitly requires removal of casWriteMulti, but live callers and the half-state baseline remain"
-  engineering-quality: "block: one known multi-file crash window remains outside durable-tx"
-  critical-path-readability: "pass: workspace authority and txId/targetRoot recovery are now explicit"
-  security: "pass: checkout reset race, candidate trust binding, and ref ancestry blockers are repaired"
-  test-coverage: "pass: 250 crctl + 10 writeback tests, including new cross-transaction/authority/ancestry regressions"
-  test-evidence-credibility: "pass: multica generator check and targeted Go governance tests are recorded against tools@2f26e0b"
+  code-task-sdd-alignment: "pass: TASK-10 command-level durable-write migration is complete; retired multi-write functions and fault baseline are removed"
+  engineering-quality: "pass: approve/review-record/owner-set share durable-tx journal, lock, write-set, rollback, and commit-trailer recovery primitives"
+  critical-path-readability: "pass: recovery branches are explicit for pre-commit rollback and post-commit authority confirmation"
+  security: "pass: rollback validates before/after hashes, refuses third values, restores scoped Git index paths, and never resets the checkout"
+  test-coverage: "pass: 253 crctl and 10 writeback tests include all three CLI rename-crash seams plus commit-after-crash and rollback failures"
+  test-evidence-credibility: "pass: generator check, governance tests, and multica gitguard test run against tools@c264157"
   frontend-quality: "not-applicable: no frontend diff"
   suggestion-policy: "strict"
   reviewer-model: "gpt-5.6-sol"
 suggestions:
-  - "Keep the new command-level durable transaction tests focused on one kill/restart vector per approval, review-record, and owner-set path; do not add a second WAL implementation."
+  - "Confirm the already-configured Ubuntu and Windows GitHub Actions matrix after the pushed branch run completes."
 release-subjects:
   version: 1
   repositories:
     - repo: ai-first-platform-docs
       remote-ref: refs/heads/requirement/CR-2026-031
-      reviewed-source-sha: eaf8f1fe392a752537fb0f0ad526d630ad1c32b1
+      reviewed-source-sha: 3c20e40ea16c6b3a931ac01446d35628e77eb1f2
     - repo: multica
       remote-ref: refs/heads/requirement/CR-2026-031
-      reviewed-source-sha: 59583498598a9caa35758eeb3fca0609e2a9897e
+      reviewed-source-sha: dbde738a19f9db0ea299f793a171da6ec07bf653
     - repo: tools
       remote-ref: refs/heads/requirement/CR-2026-031
-      reviewed-source-sha: 2f26e0b5fd37cf4eed8584bfbffc1092dda97bd4
+      reviewed-source-sha: c264157cd7e56c9bf384d4a322d01be54b8ddc3a
   artifacts:
     algorithm: sha256
     canonicalization: crlf-to-lf+path-sort
