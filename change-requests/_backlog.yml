@@ -358,7 +358,18 @@ change-requests:
     sdd-path: "change-requests/CR-2026-033/sdd.md"
     created: "2026-08-13T08:35:10+08:00"
     updated: "2026-08-13T08:35:10+08:00"
-  - id: CR-2026-034
+    latest-checkpoint:
+      batch-id: cccf41ee5b6af7a6
+      repositories:
+        - repo: ai-first-platform-docs
+          source-sha: da142c8f40dae26c05a74060d956bab8d8b955d0
+          remote-ref: refs/heads/requirement/CR-2026-033
+        - repo: multica
+          source-sha: 082a7536cdd26f807452610de8f113152dcb8bde
+          remote-ref: refs/heads/requirement/CR-2026-033
+        - repo: tools
+          source-sha: 02d13606f057788f2645d709d76036524118c51e
+          remote-ref: refs/heads/requirement/CR-2026-033  - id: CR-2026-034
     title: tools Test 原子记录：受信 run + 固定 generator + record 原子记账（TCA-012）
     summary: "按《tools-archive-checkpoint-test-traceability-optimization-plan.md》§12 交付分组 C（T06-T09）：TST-01~07 收敛——crctl test run/record 两个深原语；run 是受信代码执行（argv/shell:false/cwd containment/固定 timeout/50MiB 总日志上限），subject 绑定 HEAD+全部未忽略工作树内容；analysis 无 status、最终状态机械推导；run-id+analysis digest 一对一幂等；record 原子写 report/evidence/trace/review-loop 并删旧 cmdTest；quality reviewer 移除 test 执行权。"
     owner: Ray
