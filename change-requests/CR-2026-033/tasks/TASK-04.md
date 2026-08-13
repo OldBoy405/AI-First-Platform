@@ -25,7 +25,7 @@ created: 2026-08-13T19:06:07+08:00
 
 ## 实现要点（引用 SDD §3.1/§3.4/§4/§9.2）
 
-1. journal 业务 payload（workspace-transactions 所有）：计算 `inputDigest = sha256(JSON.stringify({cr, graphDigest}))`；创建/恢复时校验 checkpoint object、repositories 非空且 repo 唯一、`repo/remoteRef/baseSha/sourceSha/remoteBefore/phase`、`batchId/kbSourceSha/metadataCommit` 的类型/格式与 phase 枚举；畸形 journal 用既有 `TX_JOURNAL_INVALID` 硬失败。不得把这些规则下沉 durable-tx。
+1. journal 业务 payload（workspace-transactions 所有）：计算 `inputDigest = sha256(JSON.stringify({cr, graphDigest}))`；创建/恢复时校验 checkpoint object、repositories 非空且 repo 唯一、`repo/remoteRef/baseSha/sourceSha/remoteBefore/phase`、`batchId/kbSourceSha/metadataCommit` 的类型/格式与 phase 枚举；加载后的业务 payload 与恢复事实不一致时用 SDD §3.5 已冻结的 `TX_RECOVERY_CONFLICT` 硬失败。不得把这些规则下沉 durable-tx。
 2. preflight（§4.1）：`--workspace=<installation-workspace>` 只经 `resolveRepositories` 派生安装根；显式 cr 定位每仓 worktree、registered/branch 校验；KB `cr.md` status 非终态守卫；fetch 记录 remoteBefore；NUL-safe diff/ls-files 收集变化 path；固定敏感路径 + 私钥头命中全仓零 add/commit/push。
 3. no-op（§4.2）：全仓未变 + 重算 batch-id 相等 → `changed=false`、`txId=null`、无 journal/push。
 4. source commit（§4.3）：`git add -A` → cached diff → commit；先 durable save sourceSha/sideEffect，再复核 clean。
@@ -36,10 +36,10 @@ created: 2026-08-13T19:06:07+08:00
 
 ## 验收条件
 
-1. 集成矩阵 15 项全覆盖（SDD §9.2 1～15），并在 `checkpoint-tx.test.mjs` 增加业务 payload 合法/畸形恢复 fixture（重复 repo、非法 SHA/ref/phase、字段缺失 → `TX_JOURNAL_INVALID`）；确认 durable-tx.test 不含这些业务 fixture。
+1. 集成矩阵 15 项全覆盖（SDD §9.2 1～15），并在 `checkpoint-tx.test.mjs` 增加业务 payload 合法/恢复冲突 fixture（重复 repo、非法 SHA/ref/phase、字段缺失 → `TX_RECOVERY_CONFLICT`）；确认 durable-tx.test 不含这些业务 fixture。
 2. 安装根调用、敏感零副作用、source/hook 后变化重扫、部分 push 后新增变化、响应丢失、advanced/diverged/history-rewritten、metadata 故障注入均通过。
 3. 成功输出含 `op/cr/txId/batchId/phase=complete/repositories[].confirmed/metadataCommit/changed/recoverCommand`；no-op `txId=null`。
-4. 错误 JSON 按 SDD §3.5 表返回 code/phase/sideEffects/recoverCommand；畸形本机 journal 沿用 `TX_JOURNAL_INVALID`。
+4. 错误 JSON 按 SDD §3.5 表返回 code/phase/sideEffects/recoverCommand；加载后的 checkpoint 业务 payload 与恢复事实不一致沿用 `TX_RECOVERY_CONFLICT`。
 
 ## 完成标志
 
