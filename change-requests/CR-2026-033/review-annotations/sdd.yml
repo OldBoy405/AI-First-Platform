@@ -1,23 +1,18 @@
 cr-id: CR-2026-033
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-13T18:30:54+08:00"
-verdict: block
-blockers:
-  - "公共 CLI 与 preflight 的 workspace 契约冲突：§3.1/PRD/source 规定 --workspace=<installation-workspace>，但 §4.1 第 1 步又要求 resolveRepositories(workspace) 后 workspace 对应当前 CR；现有 resolver 在 Installation Workspace 根调用时 ctx.cr=null，这是正常设计。请删除该要求，改为由 ctx + cr 定位每个 {repo.worktreePath}/{cr}、逐仓验证 registered worktree/requirement/{cr} 分支，并从 KB CR worktree 读取 cr.md status；补从 Installation Workspace 根调用的黑盒测试。"
-  - "在途事务期间的新工作树变化没有恢复语义：journal inputDigest 仅绑定 cr+graph，§4.6 对 committed-local/confirmed 直接跳过，若 source commit 后（含 commit hook 或第二仓 push 后）又出现 tracked/untracked 变化，旧 source 仍可能继续生成 metadata 并返回 complete，违反‘保存全部未忽略变化’。请规定：每次恢复及 metadata 前重扫所有 worktree；发现 dirty 时不得完成旧 snapshot，需在重跑中重新形成该 repo sourceSha、把 phase 回到 committed-local 并再次 exact-head publish；metadata 前最终复核全仓 HEAD=journal sourceSha 且 worktree/index clean。补 source commit 后与部分 push 后新增变化测试。"
-  - "Phase 0/T01 要求冻结 schema、错误码和 fault points，但 SDD 只冻结 schema/fault points，缺少完整错误码契约。请增加最小错误表，至少明确 worktree 缺失/未注册、branch mismatch、snapshot shape、敏感命中、事务期间工作树变化、remote advanced/diverged/history-rewritten 以及复用的 GRAPH_CHANGED_DURING_TRANSACTION/TX_*；每项写清零副作用或 sideEffects/recoverCommand 语义，供红测和 Skill/Pipeline 分流使用。"
+reviewed-at: "2026-08-13T19:01:06+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  prd-sdd-alignment: "block：FR-01 的 Installation Workspace 调用与全量变化保存语义在关键流程中存在冲突/恢复缺口；其余 FR-02~FR-09 有明确设计映射。"
-  architecture: "block：复用 durable-tx/workspace-transactions、单 checkpointCr 与 KB metadata 可见点合理，但 resolver 入口前提错误，且缺少事务期间工作树再变化的收敛规则。"
-  data-model: "block：latest-checkpoint、batch-id、journal payload 基本完整；journal inputDigest 不绑定 source 是可接受的，但必须配套 resume 重扫/重新形成 source 的不变量，目前缺失。"
-  interface-contract: "block：CLI 成功输出、exact-head、outbox 已定义，但 T01 所需错误码表缺失。"
-  performance-security: "pass：固定敏感路径/私钥头、精确 lease、线性串行处理与零依赖边界清晰。"
-  testability: "block：253+10 基线与 bare-remote 矩阵充分，但缺 Installation Workspace 入口、在途新增变化和错误码契约测试。"
-  prompt-adoption: "pass：第 8 节存在，覆盖 4 个 Pipeline 文件 6 个节点及 push/list/resume/pull/README/index/ARCHITECTURE。"
+  prd-sdd-alignment: "pass：PRD FR-01~FR-09 均有技术映射；Installation Workspace 调用、全部未忽略变化的恢复重扫和 metadata 冻结点已补齐。"
+  architecture: "pass：保持单一 checkpointCr、既有 durable-tx/workspace-transactions、KB metadata 可见点与依赖单向；未新增事务框架、依赖或第二账本入口。"
+  data-model: "pass：latest-checkpoint、canonical batch-id、journal repo source/phase 与 metadata direct-parent 约束完整；source facts 可在 metadata commit 前恢复前进，commit 后冻结。"
+  interface-contract: "pass：CLI 成功/no-op/失败输出、exact-head、outbox 与错误码/副作用/recoverCommand 契约已冻结。"
+  performance-security: "pass：全仓 preflight、NUL-safe path 枚举、固定敏感规则、精确 lease 与线性串行处理符合安全和复杂度边界。"
+  testability: "pass：9/9 FR 有验证映射；bare-remote 矩阵新增安装根入口、source/hook 后变化、部分 push 后变化、错误码与 deterministic outbox 用例。"
+  prompt-adoption: "pass：第 8 节存在，覆盖 push/list/resume/pull、4 个 Pipeline 文件中的 6 个节点、README/index/ARCHITECTURE。"
 suggestions:
-  - "为 checkpoint outbox 使用由 cr+metadataCommit 派生的确定性 dedup_name，明确崩溃重放允许重复调用但本地/服务端只消费同一事实一次。"
-  - "§4.2 将 graphDigest 校验写成‘以当前 graphDigest + snapshot repositories 重算 batch-id并与存量 batch-id比较’，避免读者误以为 snapshot 另存 graphDigest。"
-  - "敏感文件路径枚举建议用 NUL 安全的 diff/ls-files 组合或明确 porcelain rename 双路径解析，避免含空格/rename 路径漏扫。"
+  - "outbox 是 best-effort 投影：当前 metadata confirmed 后清理 complete journal、no-op 又不新增事件，进程若恰在 authority 成立后、emit 前退出，‘恢复可重复调用 emitter’并不自动成立。实施时二选一明确：接受该投影丢失窗口并删去保证性措辞；或 no-op 仅在 deterministic dedup_name 文件缺失时补发。不要引入消息队列或把 outbox 纳入 Git 事务。"
 subject-file: change-requests/CR-2026-033/sdd.md
-subject-sha256: fd64da39ccaf33fa52b4b0a00b20ff4db29e84d0fbf76ad0b4ffa55134aa8dfa
+subject-sha256: 5ac758ff4c6389801a6a59480d7229e95b825851ff18c71183374df2db9a4f82
