@@ -337,25 +337,6 @@ change-requests:
     prd-path: ""
     created: "2026-08-04T06:55:00+08:00"
     updated: "2026-08-04T06:55:00+08:00"
-  - id: CR-2026-033
-    title: tools Checkpoint 收敛：单一深原语 + latest-checkpoint + 多仓恢复（TCA-011）
-    summary: "按《tools-archive-checkpoint-test-traceability-optimization-plan.md》§12 交付分组 B（T03-T05）：CKP-01~07 收敛——crctl checkpoint 单一幂等入口（无 checkpoint status）、latest-checkpoint 单个当前快照（batch-id 内容寻址、排除 message/actor/time）、git add -A 全部未忽略变化、固定敏感路径与私钥头预检、多仓 exact-head freshness 与可恢复 saga、KB metadata commit 直接父提交约束、journal 真正 no-op；迁移 push-progress/Pipeline/list/resume 并删除 checkpoint-add。"
-    owner: Ray
-    owners:
-      requirement:
-        id: Ray
-        assigned-at: "2026-08-13T08:35:10+08:00"
-      development:
-        id: Ray
-        assigned-at: "2026-08-13T08:35:10+08:00"
-      test:
-        id: Ray
-        assigned-at: "2026-08-13T08:35:10+08:00"
-    target-version: tbd
-    source: docs/analysis/tools-archive-checkpoint-test-traceability-optimization-plan.md
-    prd-path: ""
-    created: "2026-08-13T08:35:10+08:00"
-    updated: "2026-08-13T08:35:10+08:00"
   - id: CR-2026-034
     title: tools Test 原子记录：受信 run + 固定 generator + record 原子记账（TCA-012）
     summary: "按《tools-archive-checkpoint-test-traceability-optimization-plan.md》§12 交付分组 C（T06-T09）：TST-01~07 收敛——crctl test run/record 两个深原语；run 是受信代码执行（argv/shell:false/cwd containment/固定 timeout/50MiB 总日志上限），subject 绑定 HEAD+全部未忽略工作树内容；analysis 无 status、最终状态机械推导；run-id+analysis digest 一对一幂等；record 原子写 report/evidence/trace/review-loop 并删旧 cmdTest；quality reviewer 移除 test 执行权。"
