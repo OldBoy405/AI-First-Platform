@@ -3,7 +3,7 @@ cr: CR-2026-033
 status: pass
 tester: "Ray"
 generated-by: crctl-test
-generated-at: "2026-08-13T20:30:47+08:00"
+generated-at: "2026-08-13T21:48:24+08:00"
 commands:
   - { command: "node --test skills/shared/crctl/scripts/test/*.test.mjs", exit: 0, log: "change-requests/CR-2026-033/test-evidence/cmd-01.log" }
   - { command: "node --test skills/writeback/scripts/test/*.test.mjs", exit: 0, log: "change-requests/CR-2026-033/test-evidence/cmd-02.log" }
@@ -27,32 +27,30 @@ commands:
 
 <!-- crctl:analysis-below 此标记以下允许人工/模型补充 TASK 覆盖、未覆盖风险等分析内容 -->
 
-### 测试摘要
+### 结果摘要
 
-- `skills/shared/crctl/scripts/test/*.test.mjs`：258/258 pass（含新增 checkpoint-tx 5 项、durable-tx checkpoint envelope 1 项、fault-harness checkpoint points 1 项；删除旧 checkpoint-add 2 项）。
-- `skills/writeback/scripts/test/*.test.mjs`：10/10 pass（基线无回归）。
-- `node --check skills/shared/crctl/scripts/crctl.mjs`：语法通过。
+- crctl tests：274/274 pass；writeback tests：10/10 pass；CLI 语法检查通过。
+- checkpoint 专项：21/21 pass（初版 5 项扩充至 21 项，不再用全仓测试总数代替专项覆盖）。
+- 额外静态验证：`lint-prompts --mode enforce` 0 findings；4 个 Pipeline JSON 全部可解析；`git diff --check` 通过。
 
-### TASK 验收覆盖
+### 代码评审 blocker 回归覆盖
 
-- TASK-01（契约冻结）：18-code expected set、5 个 checkpoint fault point 登记、generic envelope 断言均已落测试。
-- TASK-02（durable envelope + matchEntryBlock 下沉）：durable-tx.test 覆盖 checkpoint generic op/payload slot；matchEntryBlock 保持 `{start,end,text,indent}|null` 既有行为。
-- TASK-03（编辑器 + 三纯函数）：checkpoint-tx happy path 覆盖 batch-id 内容寻址、latest-checkpoint 整块替换与旧字段删除。
-- TASK-04（checkpointCr + CLI）：checkpoint-tx 覆盖 happy path 三仓 source + KB metadata、no-op、敏感路径零副作用、tracked+untracked+ignored 语义、source commit 后 fault + 新增变化重扫、业务 payload 恢复冲突（TX_RECOVERY_CONFLICT）。
-- TASK-05（迁移 + 删除）：`rg checkpoint-add` 在 skills/pipeline/README 零残留（除说明性注释与否定性约束）。
+- 首次发布：三个 bare remote 均不存在 requirement ref 时以 exact-head 创建成功，锁定 `rev-parse --verify -q` 语义。
+- 恢复：source commit、confirm、push 响应丢失、metadata commit/save 窗口、metadata push 后故障、residual complete journal 均可重放收敛且不重复提交。
+- 远端关系：advanced、diverged、published 后 history rewrite 使用真实 bare remote 集成场景验证；classifier 另有纯函数边界断言。
+- 安全与零副作用：畸形 snapshot、损坏 index 导致 Git 查询失败、敏感路径/私钥头、worktree missing/wrong-branch 均使用冻结错误码并验证零错误推送。
+- 平台边界：CRLF backlog、文件名含空格、`.env.example`、普通 `.pem`、tracked/untracked/ignored 组合均覆盖。
+- T05：Pipeline prompt 只编排 `push-progress`/`list-remote-checkpoints`，active `review-alignment` reader 只读 `latest-checkpoint`，静态契约防止旧 `checkpoints[]` 回归。
+- journal 错误输出：journal 创建后的错误固定含 `txId`、`phase`、`sideEffects`、`recoverCommand`；损坏业务 payload 返回 `TX_RECOVERY_CONFLICT`。
 
-### 新增/修改测试文件
+### TASK 对应
 
-- 新增 `skills/shared/crctl/scripts/test/checkpoint-tx.test.mjs`（5 项集成测试）。
-- 修改 `skills/shared/crctl/scripts/test/durable-tx.test.mjs`（+1 checkpoint envelope）。
-- 修改 `skills/shared/crctl/scripts/test/fault-harness.test.mjs`（+1 checkpoint points 登记）。
-- 修改 `skills/shared/crctl/scripts/test/crctl.test.mjs`（删 2 旧 checkpoint-add 契约）。
+- TASK-01/02：checkpoint generic envelope、5 个 fault point、业务 payload 与 durable envelope 职责边界保持原设计。
+- TASK-03：batch-id、单一 latest-checkpoint 整块替换、排序与 snapshot 结构校验由 happy/malformed/CRLF 场景覆盖。
+- TASK-04：三仓 source/publish/metadata、no-op、exact-head 分类、故障恢复、敏感预检及固定错误 JSON 由 21 项专项覆盖。
+- TASK-05：6 个 Pipeline 节点与 active reader 迁移有静态测试；旧 CLI 不恢复。
 
-### 未覆盖风险
+### 范围外风险
 
-- 真实跨设备换机恢复（resume-from-remote 端到端）与 daemon 采集 outbox 的联调未在单机 bare-remote fixture 覆盖；由 merge 发布联调与真实协作场景承担，符合本 CR 范围。
-- `checkpoint-after-metadata-push` / `checkpoint-after-confirm` 两个 fault point 已登记但未在集成矩阵逐一注入（覆盖了 after-source-commit 与 after-metadata-commit 两条代表路径）；其余点沿用 durable-tx 既有 fault 语义，不新增机制。
-
-### 下一步建议
-
-- 执行 push-progress（`crctl checkpoint`）保存本报告与实现到远端，随后进入代码评审（本 CR 按指示暂不执行）。
+- 未模拟真实托管平台权限策略、网络代理和跨设备文件系统；本地三 bare-remote 覆盖 Git graph/lease/replay 语义，真实环境由本 CR 的统一 checkpoint dogfood 再验证。
+- 未新增通用事务框架、schema engine、消息队列或第三方依赖；修复继续复用 `durable-tx.mjs`、Git 与现有 YAML 子集解析。
