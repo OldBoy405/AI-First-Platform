@@ -6,7 +6,7 @@ sdd-ref: "change-requests/CR-2026-033/sdd.md"
 target-version: tbd
 status: draft
 created: 2026-08-13T19:06:07+08:00
-updated: 2026-08-13T19:06:07+08:00
+updated: 2026-08-13T19:17:50+08:00
 ---
 
 # 开发计划 — CR-2026-033 tools Checkpoint 收敛
@@ -59,7 +59,7 @@ TASK-05 Skill/Pipeline/README/ARCHITECTURE 迁移与 checkpoint-add 删除（T05
 |---|---|---|
 | remote 在 preflight 与 push 间前进 | 精确 lease + push 后再次 fetch 确认（SDD §4.4） | 不自动 revert；重跑继续完成 |
 | metadata commit 自引用或空转 | snapshot KB source 固定为 metadata 直接父（SDD §4.5） | T03/T04 单独 revert 不影响旧 caller |
-| 旧 complete journal 阻塞下一批 | authority 确认后清理；残留时先验证再清理（SDD §2.3） | 删除残留 journal 目录 |
+| 旧 complete journal 阻塞下一批 | authority 确认后清理；残留时先验证再清理（SDD §2.3） | 重跑同一 `crctl checkpoint`，由 handler 验证 metadata authority 后清理；禁止人工删除事务目录 |
 | 迁移时 writer/reader 协议错位 | T05 同一提交切换 caller/reader 并删除旧入口（SDD §10.2） | T05 整提交 revert，不单侧恢复 |
 | checkpoint outbox 丢失/重复 | metadata-confirmed 后按 cr+metadataCommit 确定性去重（SDD §3.4） | 事件丢失不影响 Git authority，接受 best-effort 投影 |
 | `pull-progress` 读取已删除字段 | T05 仅改摘要为 metadata Git 事实，不改 ff-only 行为（SDD §8） | T05 revert 覆盖 |

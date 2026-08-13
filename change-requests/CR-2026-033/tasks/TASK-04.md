@@ -21,7 +21,7 @@ created: 2026-08-13T19:06:07+08:00
 
 - 修改 `tools/skills/shared/crctl/scripts/lib/workspace-transactions.mjs`（`checkpointCr`）
 - 修改 `tools/skills/shared/crctl/scripts/crctl.mjs`（`cmdCheckpoint`、dispatch、help、audit、outbox）
-- 新增 `tools/skills/shared/crctl/scripts/test/checkpoint-tx.test.mjs`（三 bare remote 矩阵）
+- 修改/扩展 `tools/skills/shared/crctl/scripts/test/checkpoint-tx.test.mjs`（TASK-01 红测扩展为三 bare remote 矩阵）
 
 ## 实现要点（引用 SDD §3.1/§3.4/§4/§9.2）
 
@@ -45,5 +45,5 @@ created: 2026-08-13T19:06:07+08:00
 
 ## 接口契约
 
-- 消费：TASK-03 三个纯函数；TASK-02 的 envelope 与 `matchEntryBlock`；TASK-01 的错误码/fault points。
+- 消费：TASK-03 三个纯函数；TASK-02 的 envelope、唯一 FAULT_POINTS 登记与 `matchEntryBlock`；TASK-01 的 18-code/fault point 测试 expected set。
 - 产出：`checkpointCr(ctx, {cr, message, workspace}) -> {cr, txId, phase, batchId, repositories, metadataCommit, changed, sideEffects, recoverCommand}`；CLI `crctl checkpoint <cr_id> [--message <text>] --workspace <installation-workspace>`（TASK-05 消费）。

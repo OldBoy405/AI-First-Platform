@@ -38,7 +38,7 @@ created: 2026-08-13T19:06:07+08:00
 
 ## 验收条件
 
-1. `rg -n 'checkpoint-add' tools/skills tools/pipeline-templates tools/README.md` 零残留（历史文档/CUSTOM 除外）。
+1. 在 tools CR worktree 根执行 `rg -n 'checkpoint-add' skills pipeline-templates README.md` 零残留（历史文档/CUSTOM 除外）；不得写成 `tools/skills` 等二次嵌套路径。
 2. Pipeline 静态 contract：6 个节点 prompt 无 `git add/commit/push/checkpoint-add` 与 `checkpoints[]`/`last-push-*` 描述。
 3. 全量回归：253+10 基线（含 T04 新增）全绿；Ubuntu/Windows CI 全绿。
 

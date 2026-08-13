@@ -26,16 +26,16 @@ created: 2026-08-13T19:06:07+08:00
 
 ## 实现要点（引用 SDD §2.3/§3.2）
 
-1. journal payload 校验：`checkpoint.repositories[]` 允许 `repo/remoteRef/baseSha/sourceSha/remoteBefore/phase`；顶层 `batchId/kbSourceSha/metadataCommit` 为 null 或 hex。
-2. `inputDigest = sha256(JSON.stringify({cr, graphDigest}))`，只绑定 CR 与 graph；source facts 由各 repo 字段绑定。
-3. `matchEntryBlock(text, id)` 导出：返回条目块边界或 null；读入先 CRLF→LF，跨行正则匹配失败硬失败不静默降级（纪律 #1/#4）。
-4. crctl 现有调用点改为 import，行为不变（旧测试必须全绿）。
+1. `OPS` 与 `PAYLOAD_KEYS` 私有数组各加入字符串 `checkpoint`；journal envelope 加入 `checkpoint: null`，并校验 `checkpoint.repositories[]` 的 `repo/remoteRef/baseSha/sourceSha/remoteBefore/phase` 与顶层 `batchId/kbSourceSha/metadataCommit`。
+2. `FAULT_POINTS` 唯一数组加入 TASK-01 冻结的 5 个 checkpoint point；`crctl.mjs` 继续使用既有 import，不新建第二份列表。
+3. `inputDigest = sha256(JSON.stringify({cr, graphDigest}))`，只绑定 CR 与 graph；source facts 由各 repo 字段绑定。
+4. 将现有 `matchEntryBlock(text, id)` 原样下沉并导出，保持返回 `{start,end,text,indent}|null`、首个精确 id 命中与缺失返回 null 的行为；输入由调用方先 CRLF→LF。crctl 现有调用点改 import，旧测试必须全绿。
 
 ## 验收条件
 
-1. durable-tx 单测覆盖 checkpoint envelope 合法/非法 payload 拒绝路径。
-2. `matchEntryBlock` 对 CRLF 输入、EOF 条目、缺失条目返回正确；对重复/畸形条目硬失败。
-3. crctl 旧 editor 相关测试全绿（import 下沉无行为变化）。
+1. durable-tx 单测覆盖 checkpoint envelope 合法/非法 payload；TASK-01 的 envelope/fault point 红测转绿。
+2. `matchEntryBlock` 对 LF 输入、EOF 条目、缺失条目保持现有返回；输出精确为 `{start,end,text,indent}|null`，现有 editor 行为不变。
+3. crctl 旧 editor 相关测试全绿；源码仅存在 durable-tx 一份 `FAULT_POINTS` 数组。
 
 ## 完成标志
 
@@ -43,5 +43,5 @@ created: 2026-08-13T19:06:07+08:00
 
 ## 接口契约
 
-- 消费：TASK-01 的 `OPS.checkpoint`/`PAYLOAD_KEYS.checkpoint`/fault points。
-- 产出：`matchEntryBlock(text: string, id: string) -> { start: number, end: number, lines: string[] } | null`（yaml-subset 导出，TASK-03 editor 消费）；durable checkpoint envelope 校验（TASK-04 消费）。
+- 消费：TASK-01 冻结的 checkpoint envelope/fault point expected set。
+- 产出：`matchEntryBlock(text: string, id: string) -> { start: number, end: number, text: string, indent: number } | null`（yaml-subset 导出，TASK-03 editor 消费）；durable checkpoint envelope 与唯一 `FAULT_POINTS` 登记（TASK-04 消费）。
