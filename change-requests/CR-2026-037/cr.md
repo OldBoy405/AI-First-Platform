@@ -15,7 +15,7 @@ owners:
     assigned-at: "2026-08-13T10:15:26+08:00"
 target-version: tbd
 source: "CR-2026-032 task-breakdown blocker"
-status: merging
+status: writing-back
 created: "2026-08-13T10:15:26+08:00"
 updated: "2026-08-13T10:15:26+08:00"
 remote-ref: ""
