@@ -1,0 +1,17 @@
+cr-id: CR-2026-037
+tasks:
+  - id: CR-2026-037-TASK-01
+    title: "失败优先实现 task init 深原语"
+    status: pending
+    estimate: 8h
+    depends-on: []
+  - id: CR-2026-037-TASK-02
+    title: "接入索引门禁与 Skill Pipeline 契约"
+    status: pending
+    estimate: 5h
+    depends-on: [CR-2026-037-TASK-01]
+  - id: CR-2026-037-TASK-03
+    title: "执行回归范围审计与发布恢复准备"
+    status: pending
+    estimate: 3h
+    depends-on: [CR-2026-037-TASK-02]
