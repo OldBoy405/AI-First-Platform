@@ -1,0 +1,22 @@
+cr-id: CR-2026-032
+tasks:
+  - id: CR-2026-032-TASK-01
+    title: "建立 Archive 固定返回与 Outbox 失败优先测试"
+    status: pending
+    estimate: 6h
+    depends-on: []
+  - id: CR-2026-032-TASK-02
+    title: "实现 Archive 固定返回与幂等 Outbox"
+    status: pending
+    estimate: 8h
+    depends-on: [CR-2026-032-TASK-01]
+  - id: CR-2026-032-TASK-03
+    title: "同步 Archive Skill 与 README 业务语义"
+    status: pending
+    estimate: 4h
+    depends-on: [CR-2026-032-TASK-02]
+  - id: CR-2026-032-TASK-04
+    title: "验证 Multica Archive 投影并执行跨仓验收"
+    status: pending
+    estimate: 6h
+    depends-on: [CR-2026-032-TASK-03]
