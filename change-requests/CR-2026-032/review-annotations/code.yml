@@ -1,33 +1,32 @@
 cr-id: CR-2026-032
 review-type: code
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-13T13:50:24+08:00"
-verdict: block
-blockers:
-  - "CR-CODE-BL-1：TASK-01 RED-8 未完成 TASK-01 §4 AC-5 / SDD §4.6 的 rejected/withdrawn 事件负向锁：当前只检查 archive-* 文件与 result.outbox，未读取 outbox JSON 并断言两种终止状态均无 event_kind=status 的第二终态事件。请在已触碰的 archive-tx.test.mjs 中增加按 cr_id/event_kind 过滤的断言，并重跑 archive、crctl 回归及 test-report。"
+reviewed-at: "2026-08-13T14:10:45+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  代码对齐TASK与SDD: "BLOCK：ARC-03/04/05 核心实现与固定返回、必需 emitter、origin-confirmed 后 outbox、warning/重放、文档和 Multica 投影均对齐；但 TASK-01 AC-5 / SDD §4.6 明确要求 rejected/withdrawn 无 archive/第二 status 事件，RED-8 只锁了 archive 半边。"
-  工程质量: "PASS：改动集中在既有 archive 深模块与唯一 CLI adapter，无新依赖/事务框架；tools diff 6 个白名单文件，Multica 仅 test-only + CUSTOM，production/migration/query/generated 零 diff。"
-  关键路径可读性: "PASS：result 与 emitArchiveIfNeeded 为 archiveCr 内局部 helper，发送时序、失败非阻断、journal 标记与 rebuild 恢复均有清晰注释；未泄漏到第二模块。"
-  安全性: "PASS：CR-ID 先校验，emitter 在 lock/journal 前 fail-fast；事件只含既有 schema 字段与最终 SHA；cleanup/authority/lease 算法未放宽，outbox 失败不反转 Git authority。"
-  测试覆盖: "BLOCK：archive 15/15、crctl 161/161、Multica 真库契约及 gate/crsync 定向测试均本轮重跑通过；唯一缺口是 rejected/withdrawn 的第二 status 事件负向断言。"
-  测试证据可信度: "BLOCK：命令与真实 RUN/PASS 证据可信，Go 无 skip；但 test-report 将 TASK-01 AC-5 记为完整覆盖，和实际 RED-8 断言范围不一致，修复后需重生成报告。"
+  代码对齐TASK与SDD: "PASS：ARC-03/04/05 实现与固定返回、必需 emitter、origin-confirmed 后 outbox、warning/重放、文档语义、Multica 投影均对齐 PRD/SDD/TASK；attempt-1 唯一缺口 CR-CODE-BL-1（RED-8 缺第二终态 status 事件负向锁）已按 TASK-01 §4 AC-5 / SDD §4.6 修复为 outbox JSON 内容级断言。"
+  工程质量: "PASS：修复仅新增 outboxEventsForCr 测试 helper 与 RED-8 断言（+17/-1 行），未触碰 production；tools 变更仍在 6 个白名单文件内；无新依赖、无事务框架、无重复实现。"
+  关键路径可读性: "PASS：outboxEventsForCr 为测试局部 helper，解析失败硬失败不静默降级；RED-8 断言行注释指明 AC-5/SDD §4.6 出处，阅读路径清晰。"
+  安全性: "PASS：本轮零 production 改动；原有安全属性（emitter fail-fast、outbox 失败不反转 authority、lease/cleanup 算法未放宽）保持不变。"
+  测试覆盖: "PASS：RED-8 已对 rejected 与 withdrawn 各断言 archive/status 事件零条且 preservedRefs 保留未合并 ref；变异验证（plant 伪造 status 事件文件）证明断言精确失败；archive 15/15、crctl 161/161 本轮重跑全绿。"
+  测试证据可信度: "PASS：crctl test 依据真实退出码重生成 7 条证据（含 Multica 真库 RUN/PASS 无 skip），test-report 修复轮已记录，过时‘替代证据’措辞已删除。"
   suggestion-policy: "strict"
 suggestions:
-  - "Multica TestArchiveEventCompletesWritebackRun 对关键 seed INSERT/DELETE 使用忽略错误的 Exec；后续可改为检查 err 并 t.Fatalf，避免 seed 失败只在远端断言处间接暴露。本 CR 不因该诊断质量问题阻断。"
-  - "test-report 分析段仍写‘approve-code 的替代证据’，现已进入正式 code review 且审批不可替代；重生成报告时删除该过时措辞。"
+  - "Multica TestArchiveEventCompletesWritebackRun 对关键 seed INSERT/DELETE 使用忽略错误的 Exec；后续可改为检查 err 并 t.Fatalf，避免 seed 失败只在远端断言处间接暴露。不阻断。"
+  - "tools `_index.yml` 由 crctl task 维护；KB `tasks/_index.yml` 尾部存在一个空行（git diff --check 提示 new blank line at EOF），属既有生成器行为，建议在统一 PLAN/TASK 口径治理 CR 中一并收敛。不阻断。"
 release-subjects:
   version: 1
   repositories:
     - repo: ai-first-platform-docs
       remote-ref: refs/heads/requirement/CR-2026-032
-      reviewed-source-sha: 191f935b59dac9e8657320097b3a57d33588e6aa
+      reviewed-source-sha: a70eac4a3a486afbcdfc7fa723e58cfb20858ac7
     - repo: multica
       remote-ref: refs/heads/requirement/CR-2026-032
       reviewed-source-sha: 40ad1213a2fbc823b0790a989ae0bd8dcc3bdab8
     - repo: tools
       remote-ref: refs/heads/requirement/CR-2026-032
-      reviewed-source-sha: d0a4997ea76ec110161ce8bf31107d955df8ed96
+      reviewed-source-sha: 54aa433de39e0cddf1282ee6419d44b6dbc13378
   artifacts:
     algorithm: sha256
     canonicalization: crlf-to-lf+path-sort
