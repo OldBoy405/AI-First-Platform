@@ -1,24 +1,20 @@
 cr-id: CR-2026-033
 review-type: dev-plan
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-13T19:13:24+08:00"
+reviewed-at: "2026-08-13T19:26:15+08:00"
 verdict: block
 repair-target: write-dev-plan
 blockers:
-  - "plan.md §4 将‘旧 complete journal 阻塞下一批’的回滚写成‘删除残留 journal 目录’，与 SDD §2.3/§4.6 的‘先验证 metadata authority，再由 checkpoint handler 清理’冲突。人工删 journal 会丢失恢复证据。请改为重跑同一 `crctl checkpoint`，由 handler 验证 authority 后清理；不得指导手工删除事务目录。"
-  - "TASK-01 的冻结契约与源码/SDD 不一致：SDD §3.5 唯一错误码共 18 个（9 CHECKPOINT + GRAPH + TX_LOCK + 4 个 TX conflict/write-set/blob + TX_GIT + UNKNOWN_FAULT_POINT + FAULT_INJECTED），不是 19；现有 `OPS`/`PAYLOAD_KEYS` 是 durable-tx 私有字符串数组，只能表述为‘包含 checkpoint’，不存在 `OPS.checkpoint`/`PAYLOAD_KEYS.checkpoint` 属性；`FAULT_POINTS` 已由 durable-tx 导出并被 crctl import，不能在 crctl 再建登记点。请修正文案、接口契约和验收计数，并把 5 个 point 只加入 durable-tx 的单一 FAULT_POINTS。"
-  - "TASK-02 的接口契约与现有实现冲突：当前 `matchEntryBlock(text,id)` 返回 `{start,end,text,indent}|null`，TASK 却声明 `{start,end,lines}|null`；同时一处要求旧 editor 行为不变，另一处要求该 locator 对重复条目硬失败，而现有函数只定位首个。请保持既有返回形状与 locator 行为，把 latest-checkpoint 的重复/畸形条目硬失败放在 TASK-03 editor 校验中，并相应修正 TASK-02/03 的消费产出签名与验收。"
+  - "TASK-02 把 `checkpoint.repositories[]` 的 repo/remoteRef/baseSha/sourceSha/phase 与 batchId/kbSourceSha/metadataCommit 业务字段校验放进 durable-tx，违反源码文件头‘模块不理解业务 phase/Git/状态机；业务处理器在 workspace-transactions.mjs’以及 SDD §1.2 分层。SDD §2.3 对 durable-tx 的要求仅是 OPS/PAYLOAD_KEYS 增加 checkpoint、envelope 增加 checkpoint:null。请让 TASK-02 只实现 generic op/payload slot、FAULT_POINTS 与 matchEntryBlock 下沉；把 checkpoint payload 的 repo 唯一性、字段/SHA/ref/phase 与恢复加载校验移到 TASK-04 的 checkpointCr/workspace-transactions，并把嵌套业务 schema 测试从 durable-tx.test 归入 checkpoint-tx.test。不得为 checkpoint 在 durable-tx 新增业务特判。"
 dimensions:
-  sdd-to-plan: "block"
+  sdd-to-plan: "pass"
   plan-to-tasks: "pass"
   task-executability: "block"
   dependency-topology: "pass"
   interface-contracts: "block"
   acceptance-verifiability: "block"
   scope-and-simplicity: "block"
-  risk-and-rollback: "block"
+  risk-and-rollback: "pass"
   suggestion-policy: "strict"
   reviewer-model: "openai/gpt-5.6-sol (pi, high)"
-suggestions:
-  - "T01 红测优先落到 SDD 已列的 checkpoint-tx.test.mjs / durable-tx.test.mjs / fault-harness.test.mjs；除非确有独立测试边界，不必新增 checkpoint-contract.test.mjs。"
-  - "TASK-05 的 rg 命令明确 cwd：若从 tools worktree 根执行，路径写 skills/、pipeline-templates/、README.md，避免 tools/tools 路径歧义。"
+suggestions: []
