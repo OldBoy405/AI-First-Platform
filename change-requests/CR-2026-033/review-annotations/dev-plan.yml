@@ -1,20 +1,18 @@
 cr-id: CR-2026-033
 review-type: dev-plan
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-13T19:26:15+08:00"
-verdict: block
-repair-target: write-dev-plan
-blockers:
-  - "TASK-02 把 `checkpoint.repositories[]` 的 repo/remoteRef/baseSha/sourceSha/phase 与 batchId/kbSourceSha/metadataCommit 业务字段校验放进 durable-tx，违反源码文件头‘模块不理解业务 phase/Git/状态机；业务处理器在 workspace-transactions.mjs’以及 SDD §1.2 分层。SDD §2.3 对 durable-tx 的要求仅是 OPS/PAYLOAD_KEYS 增加 checkpoint、envelope 增加 checkpoint:null。请让 TASK-02 只实现 generic op/payload slot、FAULT_POINTS 与 matchEntryBlock 下沉；把 checkpoint payload 的 repo 唯一性、字段/SHA/ref/phase 与恢复加载校验移到 TASK-04 的 checkpointCr/workspace-transactions，并把嵌套业务 schema 测试从 durable-tx.test 归入 checkpoint-tx.test。不得为 checkpoint 在 durable-tx 新增业务特判。"
+reviewed-at: "2026-08-13T19:38:25+08:00"
+verdict: pass
+blockers: []
 dimensions:
   sdd-to-plan: "pass"
   plan-to-tasks: "pass"
-  task-executability: "block"
+  task-executability: "pass"
   dependency-topology: "pass"
-  interface-contracts: "block"
-  acceptance-verifiability: "block"
-  scope-and-simplicity: "block"
+  interface-contracts: "pass"
+  acceptance-verifiability: "pass"
+  scope-and-simplicity: "pass"
   risk-and-rollback: "pass"
   suggestion-policy: "strict"
-  reviewer-model: "openai/gpt-5.6-sol (pi, high)"
+  reviewer-model: "RayOpenAI/gpt-5.6-sol (pi, medium)"
 suggestions: []
