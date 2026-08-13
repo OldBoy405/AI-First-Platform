@@ -3,7 +3,7 @@ cr: CR-2026-033
 status: pass
 tester: "Ray"
 generated-by: crctl-test
-generated-at: "2026-08-13T21:48:24+08:00"
+generated-at: "2026-08-13T22:02:13+08:00"
 commands:
   - { command: "node --test skills/shared/crctl/scripts/test/*.test.mjs", exit: 0, log: "change-requests/CR-2026-033/test-evidence/cmd-01.log" }
   - { command: "node --test skills/writeback/scripts/test/*.test.mjs", exit: 0, log: "change-requests/CR-2026-033/test-evidence/cmd-02.log" }
@@ -29,14 +29,14 @@ commands:
 
 ### 结果摘要
 
-- crctl tests：274/274 pass；writeback tests：10/10 pass；CLI 语法检查通过。
-- checkpoint 专项：21/21 pass（初版 5 项扩充至 21 项，不再用全仓测试总数代替专项覆盖）。
+- crctl tests：275/275 pass；writeback tests：10/10 pass；CLI 语法检查通过。
+- checkpoint 专项：22/22 pass（初版 5 项扩充至 22 项，不再用全仓测试总数代替专项覆盖）。
 - 额外静态验证：`lint-prompts --mode enforce` 0 findings；4 个 Pipeline JSON 全部可解析；`git diff --check` 通过。
 
 ### 代码评审 blocker 回归覆盖
 
 - 首次发布：三个 bare remote 均不存在 requirement ref 时以 exact-head 创建成功，锁定 `rev-parse --verify -q` 语义。
-- 恢复：source commit、confirm、push 响应丢失、metadata commit/save 窗口、metadata push 后故障、residual complete journal 均可重放收敛且不重复提交。
+- 恢复：source commit、confirm、push 响应丢失、metadata write-set/commit、metadata commit/save、metadata push 后故障、residual complete journal 均可重放收敛且不重复提交；账本候选不会被吞入 KB source。
 - 远端关系：advanced、diverged、published 后 history rewrite 使用真实 bare remote 集成场景验证；classifier 另有纯函数边界断言。
 - 安全与零副作用：畸形 snapshot、损坏 index 导致 Git 查询失败、敏感路径/私钥头、worktree missing/wrong-branch 均使用冻结错误码并验证零错误推送。
 - 平台边界：CRLF backlog、文件名含空格、`.env.example`、普通 `.pem`、tracked/untracked/ignored 组合均覆盖。
@@ -47,7 +47,7 @@ commands:
 
 - TASK-01/02：checkpoint generic envelope、5 个 fault point、业务 payload 与 durable envelope 职责边界保持原设计。
 - TASK-03：batch-id、单一 latest-checkpoint 整块替换、排序与 snapshot 结构校验由 happy/malformed/CRLF 场景覆盖。
-- TASK-04：三仓 source/publish/metadata、no-op、exact-head 分类、故障恢复、敏感预检及固定错误 JSON 由 21 项专项覆盖。
+- TASK-04：三仓 source/publish/metadata、no-op、exact-head 分类、故障恢复、敏感预检及固定错误 JSON 由 22 项专项覆盖。
 - TASK-05：6 个 Pipeline 节点与 active reader 迁移有静态测试；旧 CLI 不恢复。
 
 ### 范围外风险
