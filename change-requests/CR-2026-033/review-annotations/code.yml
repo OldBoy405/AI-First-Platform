@@ -1,16 +1,16 @@
 cr-id: CR-2026-033
 review-type: code
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-13T22:12:21+08:00"
+reviewed-at: "2026-08-13T22:54:34+08:00"
 verdict: pass
 blockers: []
 dimensions:
-  code-task-sdd-alignment: "pass: 7 个首轮 blocker 全部闭环；metadata write-set/commit 候选恢复、exact-head 发布、latest-checkpoint reader 与 6 个 Pipeline 节点符合 PRD/SDD/TASK"
-  engineering-quality: "pass: 复用 durable-tx/workspace-transactions/Node/Git，无新增依赖或第二套事务框架；275 crctl + 10 writeback 全绿"
-  critical-path-readability: "pass: checkpoint phase、remote 分类、snapshot/payload validator 与 metadata 恢复边界集中在现有模块并有局部注释和黑盒测试"
-  security: "pass: 敏感预检 Git 查询 fail-closed；私钥/路径例外/损坏 index/零错误推送均有回归"
-  test-coverage: "pass: checkpoint 专项由 5 项扩至 22 项，覆盖首推、部分发布、响应丢失、remote 三关系、metadata 窗口、CRLF/Windows 与 residual journal"
-  test-evidence-credibility: "pass: test-report 由 crctl test 按当前 reviewed head 重建，275/275 + 10/10，专项覆盖与未覆盖风险分开陈述"
+  code-task-sdd-alignment: "pass: merge dogfood 发现的 editLatestCheckpoint 粘行 bug 已修复（条目末尾补换行，覆盖 inserted/追加两路径与末尾空行边界），回归测试锁定；此前评审 7 个 blocker 保持闭环"
+  engineering-quality: "pass: 修复最小（生产 6 行）；复用现有 matchEntryBlock/out.join 结构，无新依赖/新抽象；276 crctl + 10 writeback 全绿"
+  critical-path-readability: "pass: 补丁内联注释说明 block.end 与换行丢失的因果关系；粘行根因（测试 fixture 目标 CR 总是最后一条）已在 test-report 记录"
+  security: "pass: 私钥头 fixture 动态拼接避免敏感预检误拦；敏感预检本身逻辑未改，CHECKPOINT_SENSITIVE_PATH 语义不变"
+  test-coverage: "pass: checkpoint 专项 23/23，新增中间条目/末尾条目两种形状的粘行回归；276 全仓测试含该回归"
+  test-evidence-credibility: "pass: test-report 由 crctl test 按当前 head 重建；merge dogfood 发现→修复→回归→重评闭环记录"
   frontend-quality: "not-applicable: diff 未触及前端文件"
   suggestion-policy: "strict"
   reviewer-model: "gpt-5.6-sol"
@@ -20,13 +20,13 @@ release-subjects:
   repositories:
     - repo: ai-first-platform-docs
       remote-ref: refs/heads/requirement/CR-2026-033
-      reviewed-source-sha: 83cd49d4784266203bd942be132896741c446cdf
+      reviewed-source-sha: c2f04f8ea787343bccea991a24f355488fc30c6a
     - repo: multica
       remote-ref: refs/heads/requirement/CR-2026-033
       reviewed-source-sha: 082a7536cdd26f807452610de8f113152dcb8bde
     - repo: tools
       remote-ref: refs/heads/requirement/CR-2026-033
-      reviewed-source-sha: 02d13606f057788f2645d709d76036524118c51e
+      reviewed-source-sha: a0ae66d251daabcc884de65d20e93a006ac6e8ca
   artifacts:
     algorithm: sha256
     canonicalization: crlf-to-lf+path-sort
