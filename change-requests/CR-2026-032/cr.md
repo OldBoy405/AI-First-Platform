@@ -15,7 +15,7 @@ owners:
     assigned-at: "2026-08-13T08:34:48+08:00"
 target-version: tbd
 source: docs/analysis/tools-archive-checkpoint-test-traceability-optimization-plan.md
-status: requirement-reviewing
+status: requirement-approved
 created: "2026-08-13T08:34:48+08:00"
 updated: "2026-08-13T08:34:48+08:00"
 remote-ref: ""
