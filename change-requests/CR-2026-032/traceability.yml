@@ -58,3 +58,18 @@ reviews:
           result: pass
           blocker-count: 0
           repair-target: write-dev-plan
+tests:
+  report: change-requests/CR-2026-032/test-report.md
+  status: pass
+  owner: Ray
+  owner-assigned-at: "2026-08-13T08:34:48+08:00"
+  generated-at: "2026-08-13T13:37:32+08:00"
+  repair-target: implement-code
+  commands:
+    - name: lint
+      result: pass
+    - name: test
+      result: pass
+    - name: build
+      result: not-applicable
+      why: "tools 无构建步骤（纯 Node 脚本 + Markdown）；Multica 侧仅 test-only Go 测试（go vet/go test 编译均通过，无新 production 二进制）"
