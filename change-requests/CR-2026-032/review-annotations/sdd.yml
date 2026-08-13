@@ -1,19 +1,18 @@
 cr-id: CR-2026-032
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-13T09:42:29+08:00"
-verdict: block
-blockers:
-  - "TD-BL-1：SDD §3.1/§4.2 将 emitArchiveEvent 设计为可选，并在缺失时静默返回成功；这使正常 writing-back 归档可绕过 PRD FR-03 的强制 archive outbox，且形成无需求依据的兼容分支。修复：将 adapter 设为 archiveCr 的必需输入并在任何 authority 写入前校验为函数，缺失/非法硬失败；rejected/withdrawn 仍传同一 adapter但由原始状态条件保证不调用；删除缺失时静默跳过逻辑，补 adapter 缺失零副作用测试锚点。"
+reviewed-at: "2026-08-13T09:44:40+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  PRD到SDD对齐: "BLOCK：FR-01/02/04/05/06/07/08 完整映射；FR-03 的正常路径时序与字段正确，但 optional adapter 允许绕过强制发送，接口不变量未封闭。"
-  架构合理性: "BLOCK：沿用 archiveCr 深模块、durable journal 和 CLI outbox adapter 的分层合理；但深模块接口暴露无 outbox 的正常归档合法路径，削弱 locality 与单一入口保证。"
-  数据模型完整性: "PASS：journal outboxEmitted 的语义、旧 journal 缺省、commit/cleanup 字段来源和 Multica 既有唯一键均明确，无第二账本或迁移。"
-  接口契约: "BLOCK：固定返回、schema v1、warning 和重放契约完整；emitArchiveEvent 必须从可选改为必需并 fail-fast。"
-  性能与安全: "PASS：O(1) 文件/journal 写、Git authority 不回滚、cleanup 删除条件不放宽、事件不携带敏感正文。"
-  可测试性: "PASS（待补一项）：happy/fault/dirty/outbox failure/replay/terminal/rebuild/ARC-02 排除及 Multica RUN/PASS 均可执行；回修需增加 adapter 缺失在任何 commit/push 前失败的测试锚点。"
-  Prompt采纳影响: "PASS：不新增/删除 dispatch 且不改 protectedPaths.deny，强制章节条件不触发；cr-archive Skill 与 README 的直接消费者同步已单列。"
+  PRD到SDD对齐: "PASS：FR-01 至 FR-08 均有唯一技术落点与测试锚点；固定返回、cleanup 区分、正常 archive outbox、warning 非回滚、终态不重复、Multica 契约、README 语义与 ARC-02 排除全部覆盖。"
+  架构合理性: "PASS：复用 archiveCr 深模块、durable archive journal、CLI emitOutboxEvent adapter 和 Multica 既有投影；adapter 改为必需并在副作用前 fail-fast，封闭正常归档不可绕过 outbox 的接口不变量；未新增事务层、事件框架或反向依赖。"
+  数据模型完整性: "PASS：journal 仅新增向后兼容 outboxEmitted；commit、lastCleanupError、remaining、preservedRefs 均取既有 journal；Multica 继续使用现有 cr_sync_event 唯一键，无迁移和第二事实源。"
+  接口契约: "PASS：ArchiveResult 固定字段、schema v1 精确字段、ARCHIVE_EMITTER_REQUIRED 零副作用失败、EMIT_FAILED warning、rejected/withdrawn 不调用和 complete/pending 重放语义均明确；回调返回类型与 emitOutboxEvent 实际 string|null 对齐。"
+  性能与安全: "PASS：每次归档只增 O(1) JSON/journal 写；Git authority 不因 cleanup/outbox 失败回滚，最终 confirmed SHA 才发事件，cleanup 删除条件与审批/gate/controlled-shell 均不放宽。"
+  可测试性: "PASS：覆盖 adapter 缺失零副作用、happy、预存 dedup 文件崩溃窗、cleanup fault、dirty、outbox failure+补发、complete replay、rejected/withdrawn、remote rebuild、ARC-02 排除及 Multica 投影/run completion/数据库幂等；Go 目标测试要求显式 RUN/PASS 防整包 skip 假绿。"
+  Prompt采纳影响: "PASS：不新增/删除 dispatch 且不改 protectedPaths.deny，强制章节条件不触发；既有 cr-archive Skill 与 README 的接口语义同步已明确，feature-writeback pipeline 无调用变化。"
 suggestions:
-  - "TD-SUG-1：为‘文件已存在但 journal 标记仍 false’增加窄测试，锁定 emitOutboxEvent 的确定性 dedup_name 命中后可安全补记 outboxEmitted，覆盖写文件后、saveJournal 前的崩溃窗。"
+  - "实现时将 adapter fail-fast 测试放在最窄的 workspace-transactions 测试面，并断言 archive journal 目录也未创建，以锁定‘任何副作用前失败’而不只检查 Git commit 数。"
 subject-file: change-requests/CR-2026-032/sdd.md
-subject-sha256: 3b9df3001dcccd38d07a7dfe65bb141c3a1b4002d353185c9965d53921282bbc
+subject-sha256: cb924c5fbad86baf58f42193bb219e5c4735f8acb6df7a7f2f5c3179d4a47e05
