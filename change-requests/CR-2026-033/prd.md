@@ -8,7 +8,7 @@ owner: Ray
 owner-role: requirement
 status: draft
 created: 2026-08-13T06:52:05+08:00
-updated: 2026-08-13T06:52:05+08:00
+updated: 2026-08-13T07:38:15+08:00
 ---
 
 # 1. 概述
@@ -23,7 +23,7 @@ updated: 2026-08-13T06:52:05+08:00
 - **多仓可恢复 saga 与 exact-head freshness**：durable journal 增加 `op=checkpoint` 逐仓记录；生成 metadata 前按 remote 与 source SHA 的精确关系分类；KB 用"本轮恢复 HEAD + metadata commit"解决晚一轮，`source-sha` 固定为 metadata commit 的直接父提交。
 - **迁移与删除**：push-progress 收缩为一次调用；四条 Pipeline 的 checkpoint 节点只保留输入/跳过/输出/onFail；list-remote-checkpoints 与 resume reader 改读 `latest-checkpoint` 与 exact-head drift；删除 `checkpoint-add`。
 
-**依赖与顺序**：复用 CR-2026-031 交付的 durable-tx/workspace-transactions 基础设施；按总路线图 A→B 顺序，需 CR-2026-032（Archive 小修）先行完成；本 CR 内部按 T03 → T04 → T05 顺序实施，T01（schema/错误码/fault point 红测）先行，每个 TASK 一个可回滚提交。本 CR 实施期自身在 T04 完成前仍使用旧 checkpoint 流程保存进度（与 CR-2026-031 自用旧流程同理），T04 起切换新入口。
+**依赖与顺序**：复用 CR-2026-031 交付的 durable-tx/workspace-transactions 基础设施；按总路线图 A→B 顺序，需 CR-2026-032（Archive 小修）先行完成；本 CR 内部按 T03 → T04 → T05 顺序实施，T01（schema/错误码/fault point 红测）先行，每个 TASK 一个可回滚提交。本 CR 实施期自身在 T05 迁移完成前仍使用旧 checkpoint 流程保存进度（与 CR-2026-031 自用旧流程同理）；T05 完成 caller/reader 迁移并删除 checkpoint-add 即完成切换，不安排独立切换步骤。
 
 # 2. 用户故事
 
@@ -112,7 +112,7 @@ durable journal 增加 `op=checkpoint`，逐仓记录 `prepared → committed-lo
 
 - **AC-01（FR-01）**：`crctl checkpoint` 成功输出包含 `op/cr/txId/batchId/phase=complete/repositories[].confirmed=true/metadataCommit/changed/recoverCommand` 全部固定字段；help 无 `checkpoint status` 入口。
 - **AC-02（FR-02）**：预置 `.env` / `id_rsa` / 含 `-----BEGIN ... PRIVATE KEY-----` 头的文件后运行 checkpoint，返回 `CHECKPOINT_SENSITIVE_PATH`，三仓 index/commit/push 全部为零；`.env.example` 正常放行。
-- **AC-03（FR-03）**：首次新 checkpoint 成功后，`_backlog.yml` 条目不含 `checkpoints[]`/`remote-ref`/`last-push-*`，`latest-checkpoint.batch-id` 等于规定内容寻址值；相同 facts 重跑 batch-id 不变，仅 message 不同也不变。
+- **AC-03（FR-03）**：首次新 checkpoint 成功后，`_backlog.yml` 条目不含 `checkpoints[]`/`remote-ref`/`last-push-*`，`latest-checkpoint.batch-id` 等于规定内容寻址值；相同 facts 重跑 batch-id 不变，仅 message 不同也不变；任一 repo source SHA 或 repository graph digest 变化时生成新 batch-id。
 - **AC-04（FR-04）**：全仓未变的重跑在创建 journal 前返回 `changed=false`，journal 无新条目；有真实变化时 KB `source-sha` 等于 metadata commit 的直接父提交。
 - **AC-05（FR-05）**：fault matrix 覆盖第二仓 push 后 kill/restart（重跑补齐且同批零新 commit）、push 响应丢失、`CHECKPOINT_REMOTE_ADVANCED`（零 metadata 写入）、`CHECKPOINT_REMOTE_DIVERGED`（不 merge/force）、`CHECKPOINT_REMOTE_HISTORY_REWRITTEN`（硬阻断）。
 - **AC-06（FR-05）**：lease fast-forward 场景 push 后 remote HEAD 精确等于 source SHA；KB 场景 remote HEAD 等于 metadata commit 且 source SHA 为其直接父提交。
@@ -120,6 +120,7 @@ durable journal 增加 `op=checkpoint`，逐仓记录 `prepared → committed-lo
 - **AC-08（FR-07）**：`list-remote-checkpoints` 对超前/分叉仓输出 drift；`cr.md` 缺 status 时不再回退 backlog；resume 只消费 `latest-checkpoint`。
 - **AC-09（FR-08）**：T05 完成后 crctl/Skill/Pipeline/README 无 `checkpoint-add` 残留。
 - **AC-10（FR-09）**：新增红测在旧实现下按预期红、现有 253+10 绿基线仍绿；Ubuntu/Windows CI 全绿；T03/T04/T05 各为可回滚提交。
+- **AC-11（FR-01）**：对每个 active repo 预置 tracked 修改、untracked 未忽略文件与 ignored 文件后执行 checkpoint，成功后的 source commit 包含前两类全部变化且不含 ignored 文件；clean 仓沿用当前 HEAD。
 
 # 6. 成功指标
 
