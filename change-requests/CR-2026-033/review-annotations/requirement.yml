@@ -1,0 +1,15 @@
+cr-id: CR-2026-033
+review-type: requirement
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-13T16:19:55+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  structure: "pass：概述、用户故事、FR、NFR、AC、成功指标、范围排除齐全；9 条 FR 与 11 条 AC 编号唯一。"
+  testability: "pass：FR-01 由 AC-01/AC-11 覆盖输出契约及全部未忽略变化语义；FR-02~FR-09 均有直接可执行 AC，上一轮测试性 blocker 已关闭。"
+  scope: "pass：范围保持 T03~T05/CKP-01~07；T06~T16、通用框架、自动 merge/force 等排除项明确。"
+  planning-alignment: "pass：T05 完成 caller/reader 迁移并删除 checkpoint-add 后才切换，与 source §12 一致；CKP-01~07、§5.1、§6.2、迁移边界均覆盖。"
+  dependencies: "pass：识别 CR-2026-031 基础设施、CR-2026-032 先行依赖及 T01/T03→T04→T05 顺序。"
+suggestions: []
+subject-file: change-requests/CR-2026-033/prd.md
+subject-sha256: 632e7120db3fafbb1a04d5e96c06125a787b704b735f10635985d6dfa669d409
