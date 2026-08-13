@@ -5,7 +5,7 @@ cr-ref: CR-2026-032
 title: tools Archive 独立小修：cleanup 回显、正常归档 outbox、README 语义（TCA-010 收尾）技术设计
 status: draft
 created: "2026-08-13T09:38:00+08:00"
-updated: "2026-08-13T09:38:00+08:00"
+updated: "2026-08-13T09:44:00+08:00"
 ---
 
 # SDD - tools Archive 独立小修
@@ -218,7 +218,7 @@ archived -> completeRun(feature-writeback)
 type EmitArchiveEvent = (input: {
   cr: string;
   commit: string;
-}) => { file: string | null };
+}) => string | null;
 
 archiveCr(
   ctx,
@@ -226,22 +226,25 @@ archiveCr(
     cr,
     specId?,
     workspace,
-    emitArchiveEvent? // 仅 CLI 注入；缺失时不发送，便于 lib 级调用保持兼容
+    emitArchiveEvent // 必需；cmdArchive 注入既有 emitOutboxEvent adapter
   }
 ): Promise<ArchiveResult>
 ```
 
 实现可直接让回调返回 `string | null`，无需为单一 adapter 新建类、interface 文件或 factory。上面的类型仅用于冻结语义。
 
+`archiveCr()` 在合法 CR-ID 校验之后、获取 archive lock/创建 journal 之前校验 `typeof emitArchiveEvent === 'function'`；缺失或非法以 `ARCHIVE_EMITTER_REQUIRED` 硬失败。该失败必须发生在 commit/push/账本/outbox 等任何 authority 或投影副作用之前。当前生产调用点仅 `cmdArchive()`，因此不保留“无 adapter 仍完成正常归档”的兼容分支。
+
 调用顺序约束：
 
-1. `payload.pushed === true` 且 origin classify confirmed；
-2. `payload.status === 'writing-back'`；
-3. `payload.outboxEmitted !== true`；
-4. 回调参数中的 `commit` 必须等于当前 journal 最终 commit；
-5. 回调成功返回非空文件名后，先写 `payload.outboxEmitted=true` 并 `save()`，再进入 cleanup；
-6. 回调失败/抛错转换为 `warnings[{code:'EMIT_FAILED', event_kind:'archive'}]`，不抛出 archive 事务失败；
-7. rejected/withdrawn 不调用回调。
+1. 入口 adapter 已通过 fail-fast 校验；
+2. `payload.pushed === true` 且 origin classify confirmed；
+3. `payload.status === 'writing-back'`；
+4. `payload.outboxEmitted !== true`；
+5. 回调参数中的 `commit` 必须等于当前 journal 最终 commit；
+6. 回调成功返回非空文件名后，先写 `payload.outboxEmitted=true` 并 `save()`，再进入 cleanup；
+7. 回调失败/抛错转换为 `warnings[{code:'EMIT_FAILED', event_kind:'archive'}]`，不抛出 archive 事务失败；
+8. rejected/withdrawn 虽接收同一必需 adapter，但由原始状态条件保证不调用。
 
 回调抛错也按发送失败处理，防止测试 adapter 或未来实现绕过 outbox 非阻断不变量。
 
@@ -341,8 +344,6 @@ emitArchiveIfNeeded():
       return {warnings, outbox}
   if !payload.pushed or !payload.commit:
       hard fail TX_JOURNAL_INVALID
-  if emitArchiveEvent is absent:
-      return {warnings, outbox} // lib 兼容；CLI 总是注入
 
   try:
       outbox = emitArchiveEvent({cr, commit: payload.commit})
@@ -425,7 +426,9 @@ assert event count still 1 and projection/run unchanged
 
 | 向量 | 关键断言 | 覆盖 |
 |---|---|---|
+| tools adapter contract | 缺失/非函数 adapter 在 lock/journal/commit/push/outbox 前以 `ARCHIVE_EMITTER_REQUIRED` 零副作用失败 | FR-03, TD-BL-1 |
 | tools happy path | 固定五字段；commit=origin trailer SHA；一个 archive outbox 字段精确 | AC-01/04 |
+| tools preexisting dedup file | journal 标记 false 但确定性文件已存在时命中同名文件、补记 true，文件数量不增加 | AC-04, TD-SUG-1 |
 | tools cleanup fault | pending、非空 lastCleanupError、真实 commit；重跑不增 commit/event | AC-02 |
 | tools dirty worktree | remaining 有资源、lastCleanupError=null、现场保留；处理后 complete | AC-03 |
 | tools outbox failure | exit 0；authority 已发布；warning 精确；重跑补发且零新 commit | AC-05 |
@@ -442,7 +445,7 @@ assert event count still 1 and projection/run unchanged
 | 决策 | 采纳方案 | 否决方案 | 理由 |
 |---|---|---|---|
 | outbox 调用位置 | origin confirmed 后、cleanup 前 | cleanup 后在 `cmdArchive()` 发 | cleanup 可能已删 CR/transaction worktree；发送应依赖事务结果和 installation workspace |
-| 发送依赖注入 | `archiveCr()` 接受一个窄回调 | lib 导入 CLI `emitOutboxEvent()` | 保持 lib 不反向依赖 CLI，测试/调用接口仍小 |
+| 发送依赖注入 | `archiveCr()` 接受一个必需的窄回调，入口 fail-fast | 可选回调或 lib 导入 CLI `emitOutboxEvent()` | 必需回调封闭 FR-03 不变量；同时保持 lib 不反向依赖 CLI，接口仍小 |
 | 首次发送事实 | journal `outboxEmitted` + 确定性文件名 | 仅看 `result.changed` | cleanup 续跑也可能 changed；不能证明事件是否已发 |
 | 端到端幂等 | 本地 journal/文件名 + Multica 既有唯一键 | 新建 outbox ACK ledger / exactly-once 协议 | 既有投影通道已接受 at-least-once，新增协议超范围 |
 | 发送失败恢复 | warning + 重跑同一 archive | 回滚 archive commit或补偿 commit | 违反 Git authority 不变量，并可能制造更严重漂移 |
@@ -492,6 +495,7 @@ assert event count still 1 and projection/run unchanged
 ### 7.4 兼容性
 
 - CLI 命令和 flags 不变；返回只新增/固定字段，现有消费者可忽略；
+- `archiveCr()` 是内部接口且当前只有 `cmdArchive()` 一个生产调用者；本 CR 要求该调用者同步传入必需 adapter，不提供无 adapter 兼容模式；
 - 旧 archive journal 缺 `outboxEmitted` 时按 false，若为 writing-back complete journal，首次重放会补事件；
 - rejected/withdrawn 结果也获得固定 `commit/lastCleanupError/warnings`，但事件行为不变；
 - Multica schema v1、known kind、状态机、数据库结构不变；
@@ -552,3 +556,4 @@ go test -count=1 -v ./internal/governance/ -run '<CR-2026-032 archive contract t
 | 日期 | 版本 | 作者 | 说明 |
 |---|---|---|---|
 | 2026-08-13 | v0.1.0 | Ray | 初始设计：冻结 archive 固定返回、journal `outboxEmitted`、origin-confirmed 后 cleanup 前显式 archive outbox、失败 warning/恢复、README/Skill 语义和 Multica test-only 契约；FR 覆盖 8/8，排除 ARC-02 |
+| 2026-08-13 | v0.2.0 | Ray | 技术评审 attempt-1 回修 TD-BL-1：`emitArchiveEvent` 从可选改为必需，修正返回类型为 `string|null`，入口在任何副作用前以 `ARCHIVE_EMITTER_REQUIRED` fail-fast，删除静默跳过分支并补 adapter 零副作用测试；采纳 TD-SUG-1，增加确定性文件已存在但 journal 未标记的崩溃窗测试 |
