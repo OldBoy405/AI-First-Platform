@@ -3,7 +3,7 @@ cr: CR-2026-033
 status: pass
 tester: "Ray"
 generated-by: crctl-test
-generated-at: "2026-08-13T22:02:13+08:00"
+generated-at: "2026-08-13T22:10:59+08:00"
 commands:
   - { command: "node --test skills/shared/crctl/scripts/test/*.test.mjs", exit: 0, log: "change-requests/CR-2026-033/test-evidence/cmd-01.log" }
   - { command: "node --test skills/writeback/scripts/test/*.test.mjs", exit: 0, log: "change-requests/CR-2026-033/test-evidence/cmd-02.log" }
@@ -41,7 +41,7 @@ commands:
 - 安全与零副作用：畸形 snapshot、损坏 index 导致 Git 查询失败、敏感路径/私钥头、worktree missing/wrong-branch 均使用冻结错误码并验证零错误推送。
 - 平台边界：CRLF backlog、文件名含空格、`.env.example`、普通 `.pem`、tracked/untracked/ignored 组合均覆盖。
 - T05：Pipeline prompt 只编排 `push-progress`/`list-remote-checkpoints`，active `review-alignment` reader 只读 `latest-checkpoint`，静态契约防止旧 `checkpoints[]` 回归。
-- journal 错误输出：journal 创建后的错误固定含 `txId`、`phase`、`sideEffects`、`recoverCommand`；损坏业务 payload 返回 `TX_RECOVERY_CONFLICT`。
+- journal 错误输出：journal 创建后的错误固定含 `txId`、`phase`、`sideEffects`、`recoverCommand`；`sideEffects` 仅列真实 commit/push，不把 clean confirmed repo 伪报为副作用；损坏业务 payload 返回 `TX_RECOVERY_CONFLICT`。
 
 ### TASK 对应
 
@@ -52,5 +52,5 @@ commands:
 
 ### 范围外风险
 
-- 未模拟真实托管平台权限策略、网络代理和跨设备文件系统；本地三 bare-remote 覆盖 Git graph/lease/replay 语义，真实环境由本 CR 的统一 checkpoint dogfood 再验证。
+- 未模拟真实托管平台权限策略、网络代理和跨设备文件系统；本地三 bare-remote 覆盖 Git graph/lease/replay 语义，真实 installation workspace 已完成两轮统一 checkpoint dogfood。
 - 未新增通用事务框架、schema engine、消息队列或第三方依赖；修复继续复用 `durable-tx.mjs`、Git 与现有 YAML 子集解析。
