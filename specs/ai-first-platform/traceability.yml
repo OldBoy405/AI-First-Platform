@@ -1,11 +1,11 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 # 五段链路：需求 FR ↔ 技术设计 SDD ↔ 交付 TASK ↔ 代码 merge SHA ↔ CR-ID
 spec-id: ai-first-platform
-cr-ref: CR-2026-031
-cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029, CR-2026-028, CR-2026-030, CR-2026-031]
-target-version: "0.4"
+cr-ref: CR-2026-037
+cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029, CR-2026-028, CR-2026-030, CR-2026-031, CR-2026-037]
+target-version: "tbd"
 baseline-since: "0.10"
-generated-at: "2026-08-12T16:59:06+08:00"
+generated-at: "2026-08-13T11:48:39+08:00"
 
 # 已知缺口：CR-2026-003~CR-2026-006 未生成本文件的里程碑段（writeback-traceability 在那四个
 # CR 回写时被跳过，PRD.md/SDD.md/_index.yml 侧的累积记录不受影响、仍完整）。本次（CR-2026-008）
@@ -2332,3 +2332,75 @@ milestones:
         tasks: [CR-2026-031-TASK-11]
         code: tools@8a2e6a1: upgrade-check 只读分类 safe/requiresReapproval/blocksUpgrade
         evidence: legacy fixture 分类矩阵通过；协议切换后删除计划已落盘
+  - cr: CR-2026-037
+    milestone: TASK 索引初始化
+    target-version: "tbd"
+    status: writing-back
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 167b4f50f2233132effb4d02cbb17bb6fdd0ed78
+        branch: requirement/CR-2026-037
+      - repo: multica
+        trunk: main
+        sha: c125d66a1cb42c884125443b5a502bce8f272a7c
+        branch: requirement/CR-2026-037
+      - repo: tools
+        trunk: custom/main
+        sha: 4e78af425fb4a8f54cb346d59b42217a26633d1b
+        branch: requirement/CR-2026-037
+    frs:
+      - fr: FR-01
+        title: crctl task init 单一入口
+        sdd: SDD §3.1 CLI 契约
+        tasks: [CR-2026-037-TASK-01]
+        code: tools@4e78af4: cmdTaskInit dispatch/help
+        evidence: AC-01 create 成功路径
+      - fr: FR-02
+        title: TASK 集合与 frontmatter 硬校验
+        sdd: SDD §2.1/§4.1 输入投影与 DAG
+        tasks: [CR-2026-037-TASK-01]
+        code: tools@4e78af4: loadTaskCards/DFS
+        evidence: AC-03/AC-04 坏卡与环测试
+      - fr: FR-03
+        title: 确定性索引投影
+        sdd: SDD §2.2/§4.3 renderTaskIndex
+        tasks: [CR-2026-037-TASK-01]
+        code: tools@4e78af4: renderTaskIndex
+        evidence: AC-01/AC-02 字节稳定
+      - fr: FR-04
+        title: 状态与进度保护
+        sdd: SDD §3.2/§4.4 progress guard
+        tasks: [CR-2026-037-TASK-01]
+        code: tools@4e78af4: guardTaskIndexHasNoProgress
+        evidence: AC-05/AC-06 fail-closed
+      - fr: FR-05
+        title: CAS 审计与幂等
+        sdd: SDD §3.4/§4.4 create/CAS/no-op
+        tasks: [CR-2026-037-TASK-01]
+        code: tools@4e78af4: createFileExclusive/casWrite
+        evidence: AC-07 并发与 CRLF
+      - fr: FR-06
+        title: task-breakdown 门禁补齐
+        sdd: SDD §4.5 gates.json
+        tasks: [CR-2026-037-TASK-02]
+        code: tools@4e78af4: task-breakdown fileExists
+        evidence: AC-08 缺索引阻断
+      - fr: FR-07
+        title: Skill 与 Pipeline 采用
+        sdd: SDD §4.6/§8 Prompt 采纳
+        tasks: [CR-2026-037-TASK-02]
+        code: tools@4e78af4: write-dev-tasks/Pipeline
+        evidence: AC-09 静态断言
+      - fr: FR-08
+        title: Bootstrap 与 CR-2026-032 恢复
+        sdd: SDD §4.7 一次性 bootstrap 边界
+        tasks: [CR-2026-037-TASK-03]
+        code: kb@02c5d55: 人工 bootstrap 索引
+        evidence: AC-12 发布后恢复
+      - fr: FR-09
+        title: 范围锁定
+        sdd: SDD §1.2/§5/§7.4
+        tasks: [CR-2026-037-TASK-03]
+        code: tools@4e78af4: 六文件白名单
+        evidence: AC-11 changed-files
