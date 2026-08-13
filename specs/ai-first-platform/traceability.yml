@@ -1,11 +1,11 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 # 五段链路：需求 FR ↔ 技术设计 SDD ↔ 交付 TASK ↔ 代码 merge SHA ↔ CR-ID
 spec-id: ai-first-platform
-cr-ref: CR-2026-032
-cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029, CR-2026-028, CR-2026-030, CR-2026-031, CR-2026-037, CR-2026-032]
+cr-ref: CR-2026-033
+cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029, CR-2026-028, CR-2026-030, CR-2026-031, CR-2026-037, CR-2026-032, CR-2026-033]
 target-version: "tbd"
 baseline-since: "0.10"
-generated-at: "2026-08-13T14:35:32+08:00"
+generated-at: "2026-08-13T23:37:58+08:00"
 
 # 已知缺口：CR-2026-003~CR-2026-006 未生成本文件的里程碑段（writeback-traceability 在那四个
 # CR 回写时被跳过，PRD.md/SDD.md/_index.yml 侧的累积记录不受影响、仍完整）。本次（CR-2026-008）
@@ -2470,3 +2470,75 @@ milestones:
         tasks: [CR-2026-032-TASK-01]
         code: tools@c790b7e: gates/generator 零 diff
         evidence: AC-08 既有归档 fixture 通过
+  - cr: CR-2026-033
+    milestone: TCA-011-B
+    target-version: "tbd"
+    status: writing-back
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: f9176330302f21de8145fd7fb0854d723181d649
+        branch: requirement/CR-2026-033
+      - repo: multica
+        trunk: main
+        sha: ff09b8648b9b396b7e33e334b2370682579d712a
+        branch: requirement/CR-2026-033
+      - repo: tools
+        trunk: custom/main
+        sha: 7b73204464e136b83d4377ba1447a11c2291e6c6
+        branch: requirement/CR-2026-033
+    frs:
+      - fr: FR-01
+        title: 单一 checkpoint 深原语与输出契约
+        sdd: SDD §4.1~4.6：crctl checkpoint 独占 source/publish/metadata；固定输出与恢复字段
+        tasks: [CR-2026-033-TASK-02, CR-2026-033-TASK-04]
+        code: tools@7b732044: workspace-transactions.checkpointCr + crctl cmdCheckpoint
+        evidence: AC 22 项 checkpoint 专项测试全绿（含首推/恢复/远端三关系）
+      - fr: FR-02
+        title: 敏感文件与私钥预检（零副作用）
+        sdd: SDD §4.2：固定路径规则 + 私钥头，命中全仓零 add/commit/push
+        tasks: [CR-2026-033-TASK-04]
+        code: tools@7b732044: checkpointPreflightSensitive/checkpointChangedPaths fail-closed
+        evidence: AC 敏感矩阵与损坏 index 测试（CHECKPOINT_SENSITIVE_PATH / TX_GIT_FAILED 零推送）
+      - fr: FR-03
+        title: latest-checkpoint 单一当前快照与内容寻址 batch-id
+        sdd: SDD §2.1~2.3：batch-id 内容寻址、repositories 排序、整块替换
+        tasks: [CR-2026-033-TASK-03]
+        code: tools@7b732044: editLatestCheckpoint/checkpointBatchId
+        evidence: AC happy/malformed/CRLF/粘行回归测试
+      - fr: FR-04
+        title: 幂等 no-op 快速确认与 KB metadata commit
+        sdd: SDD §4.4~4.5：journal 前 no-op；metadata commit 直接父提交约束
+        tasks: [CR-2026-033-TASK-04]
+        code: tools@7b732044: checkpointCr no-op 与 metadata 阶段
+        evidence: AC no-op changed=false 与 metadata 窗口恢复测试
+      - fr: FR-05
+        title: exact-head freshness 与可恢复 saga
+        sdd: SDD §4.3/§4.6：classifyCheckpointRemote 三分类 + journal 断点续跑
+        tasks: [CR-2026-033-TASK-04]
+        code: tools@7b732044: checkpointRemoteHead/classifyCheckpointRemote/恢复状态机
+        evidence: AC 首推/响应丢失/advanced/diverged/history-rewritten 集成测试
+      - fr: FR-06
+        title: Pipeline checkpoint 节点收敛
+        sdd: SDD §5：节点只编排 push-progress、消费 batchId/repositories/phase
+        tasks: [CR-2026-033-TASK-05]
+        code: tools@7b732044: 6 个 pipeline 节点 prompt 收缩
+        evidence: AC T05 静态契约测试（prompt 无内部算法词）
+      - fr: FR-07
+        title: push-progress 收缩与 list/resume reader 迁移
+        sdd: SDD §5/§7：Sync Skill 收敛为深原语调用；reader 读 latest-checkpoint
+        tasks: [CR-2026-033-TASK-05]
+        code: tools@7b732044: skills/sync/* 与 review-alignment 迁移
+        evidence: AC reader 契约测试（不读旧 checkpoints[]）
+      - fr: FR-08
+        title: 旧入口删除与一次性切换
+        sdd: SDD §6：删除 checkpoint-add 与旧字段，不建兼容投影
+        tasks: [CR-2026-033-TASK-05]
+        code: tools@7b732044: cmdCheckpoint 取代 cmdCheckpointAdd
+        evidence: AC 静态扫描零残留 + 旧命令测试删除
+      - fr: FR-09
+        title: 测试先行与交付结构
+        sdd: SDD §9.2：三 bare-remote 冻结矩阵 + fault point 登记
+        tasks: [CR-2026-033-TASK-01]
+        code: tools@7b732044: checkpoint-tx.test/fault-harness 登记
+        evidence: AC 23 项 checkpoint 专项 + 294 全仓测试全绿
