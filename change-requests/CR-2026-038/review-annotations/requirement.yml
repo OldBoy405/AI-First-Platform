@@ -1,0 +1,15 @@
+cr-id: CR-2026-038
+review-type: requirement
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-14T20:25:20+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  structure: "pass：概述、用户故事、功能需求、非功能需求、验收标准、成功指标、依赖风险、范围排除和追溯矩阵齐全；6 条 US、4 条 FR、9 条 NFR、12 条 AC 编号唯一。"
+  testability: "pass：FR-01 由 AC-01~AC-04 覆盖同批提交、planned-existing、故障恢复和旧入口删除；FR-02 由 AC-05~AC-07 覆盖预检零副作用与合法重试；FR-03 由 AC-08~AC-10 覆盖首中末条、缺失重复和字段保真；FR-04 由 AC-07/AC-11 覆盖内部路径、固定 generator、containment 与清理；AC-12 明确双平台回归门。"
+  scope: "pass：范围严格限定来源规格 FR-01、FR-02、FR-03、FR-10；FR-04~09、FR-11~16、Phase E、通用事务/registry/schema/YAML patch/workflow engine 和历史迁移均明确排除。"
+  planning-alignment: "pass：来源规格实施 CR 1 的七项步骤均由 FR-01~FR-04、AC-01~AC-12 覆盖；完成标准中的预检、受控写集、状态发布、远端提交和非目标 backlog 条目保真均有直接验收。"
+  dependencies: "pass：识别并限定复用 CR-2026-031 durable transaction、Transaction Workspace、manifest、状态门禁、YAML block matcher、resolver、Git adapter 与 fault fixture；未虚构 CR 依赖图，并记录 origin 基线与本地 worktree 差异不影响结论。"
+suggestions: []
+subject-file: change-requests/CR-2026-038/prd.md
+subject-sha256: c43f1eed48f9798fe805f9e0e0e345d65fcdef7a4c08cbff14ce8c12a5148a1a
