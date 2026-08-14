@@ -1,11 +1,11 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 # 五段链路：需求 FR ↔ 技术设计 SDD ↔ 交付 TASK ↔ 代码 merge SHA ↔ CR-ID
 spec-id: ai-first-platform
-cr-ref: CR-2026-033
-cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029, CR-2026-028, CR-2026-030, CR-2026-031, CR-2026-037, CR-2026-032, CR-2026-033]
+cr-ref: CR-2026-038
+cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029, CR-2026-028, CR-2026-030, CR-2026-031, CR-2026-037, CR-2026-032, CR-2026-033, CR-2026-038]
 target-version: "tbd"
 baseline-since: "0.10"
-generated-at: "2026-08-13T23:37:58+08:00"
+generated-at: "2026-08-15T00:09:34+08:00"
 
 # 已知缺口：CR-2026-003~CR-2026-006 未生成本文件的里程碑段（writeback-traceability 在那四个
 # CR 回写时被跳过，PRD.md/SDD.md/_index.yml 侧的累积记录不受影响、仍完整）。本次（CR-2026-008）
@@ -2542,3 +2542,41 @@ milestones:
         tasks: [CR-2026-033-TASK-01]
         code: tools@7b732044: checkpoint-tx.test/fault-harness 登记
         evidence: AC 23 项 checkpoint 专项 + 294 全仓测试全绿
+  - cr: CR-2026-038
+    milestone: tools Writeback 原子化
+    target-version: "tbd"
+    status: writing-back
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: d330ce401fce735028a5396be3eef228d6f8c070
+        branch: requirement/CR-2026-038
+      - repo: multica
+        trunk: main
+        sha: da54fbb06194c7c0d840b8b4ed588053a7982709
+        branch: requirement/CR-2026-038
+      - repo: tools
+        trunk: custom/main
+        sha: 162fdf0fa3f604c725ca702e0f70637055836985
+        branch: requirement/CR-2026-038
+    frs:
+      - fr: FR-01
+        sdd: SDD §2.4 baseline 状态候选、§2.5 journal marker、§4.2 同一 write-set/commit、§4.3 origin confirmed、§4.4 投影补发
+        tasks: [CR-2026-038-TASK-02]
+        code: tools@162fdf0: workspace-transactions.mjs applyWritebackAtomic（baseline 复合 write-set + writing-back 同批发布）+ crctl.mjs cmdWritebackApply（无独立 advance）
+        evidence: writeback-tx.test.mjs：TASK-02 原子 baseline 同一 commit 发布、journal 恢复冻结、投影失败不反转 Git
+      - fr: FR-02
+        sdd: SDD §2.3 manifest 一次读入、§3.4 固定 generator、§4.1 lock/journal 前完整 preflight、§4.5 recovery
+        tasks: [CR-2026-038-TASK-01]
+        code: tools@162fdf0: workspace-transactions.mjs writeback preflight（manifest/path/hash/before/snapshot/gate）journal 前完成
+        evidence: writeback-tx.test.mjs：TASK-01 固定 generator 单次 snapshot；AC-05~07 失败矩阵零 journal
+      - fr: FR-03
+        sdd: SDD §2.6 条目模型、§4.6 纯函数、§4.7 原生 Git semantic tree、initial/rebuild 共用 helper
+        tasks: [CR-2026-038-TASK-03]
+        code: tools@162fdf0: workspace-transactions.mjs replaceBacklogEntry/locateBacklogEntry（merge prepare 目标 CR 条目语义替换）
+        evidence: merge-tx.test.mjs：AC-08~10 backlog 语义替换、raw blob、非目标字节保留
+      - fr: FR-04
+        sdd: SDD §2.1 公共输入收缩、§2.2 固定 candidate、§3.1 无路径 CLI、§4.8 Caller 收缩
+        tasks: [CR-2026-038-TASK-04]
+        code: tools@162fdf0: crctl.mjs writeback-apply 拒绝 --candidate/--candidate-out/--generator/--manifest；candidate 固定 txws/.crctl/candidates；Pipeline/Skill 迁移
+        evidence: writeback-tx.test.mjs：TASK-04 公共 CLI 只收业务输入、旧/错 stage 参数拒绝；AC-07 静态扫描无路径参数
