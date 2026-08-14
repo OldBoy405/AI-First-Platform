@@ -1,24 +1,5 @@
 schema: cr-backlog/v2
 change-requests:
-  - id: CR-2026-038
-    title: tools CR 生命周期最小优化 1/5 — Writeback 原子化
-    summary: "落实规格 FR-01、FR-02、FR-03、FR-10：使 baseline writeback 与 writing-back 状态同批发布，前置只读校验零副作用，_backlog.yml 按目标 CR 条目语义合并，并统一内部 candidate 路径。其余生命周期证据、测试、归档和文本职责收敛切片不在本 CR 范围。"
-    owner: Ray
-    owners:
-      requirement:
-        id: Ray
-        assigned-at: "2026-08-14T19:44:06+08:00"
-      development:
-        id: Ray
-        assigned-at: "2026-08-14T19:44:06+08:00"
-      test:
-        id: Ray
-        assigned-at: "2026-08-14T19:44:06+08:00"
-    target-version: tbd
-    source: docs/analysis/tools-cr-lifecycle-minimal-optimization-spec.md
-    prd-path: ""
-    created: "2026-08-14T19:44:06+08:00"
-    updated: "2026-08-14T19:44:06+08:00"
   - id: CR-2026-039
     title: tools CR 生命周期最小优化 2/5 — 生命周期证据规范化
     summary: "落实规格 FR-04、FR-05、FR-06、FR-09：在代码评审通过后、人工审批前强制 checkpoint，为 dev-plan 绑定 plan 与 TASK 复合摘要，统一 CR updated 字段，并收敛 review canonical 合同。Writeback、结构化测试、归档证据及整体文本职责清理不在本 CR 范围。"
