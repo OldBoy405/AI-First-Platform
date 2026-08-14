@@ -8,7 +8,7 @@ title: review canonical 文本契约收敛（三个 CR Pipeline + 相关 Skill�
 slug: review-canonical-text-convergence
 status: pending
 estimate: 4h
-depends-on: []
+depends-on: [CR-2026-039-TASK-04]
 created: 2026-08-15T01:31:31+08:00
 ---
 

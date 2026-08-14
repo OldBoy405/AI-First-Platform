@@ -8,7 +8,7 @@ title: cr.md 时间字段统一为 updated（三个 writer 收敛）
 slug: cr-md-updated-unification
 status: pending
 estimate: 3h
-depends-on: []
+depends-on: [CR-2026-039-TASK-02]
 created: 2026-08-15T01:31:31+08:00
 ---
 

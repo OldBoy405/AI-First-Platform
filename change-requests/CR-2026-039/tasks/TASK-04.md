@@ -8,7 +8,7 @@ title: code Pipeline PASS 后审批前 checkpoint 节点与 suggestion_policy �
 slug: post-review-checkpoint-node
 status: pending
 estimate: 2h
-depends-on: []
+depends-on: [CR-2026-039-TASK-03]
 created: 2026-08-15T01:31:31+08:00
 ---
 
@@ -20,6 +20,7 @@ created: 2026-08-15T01:31:31+08:00
 
 - `pipeline-templates/code-implementation.pipeline.json`
 - `skills/shared/crctl/scripts/test/pipeline-structure.test.mjs`（新建，`node --test`）
+- `skills/shared/crctl/scripts/test/crctl.test.mjs`（若现有 release-subjects 覆盖不足，补充 KB 白名单后继回归）
 
 # 实现要点（SDD §3.2、§3.3）
 
@@ -46,6 +47,7 @@ created: 2026-08-15T01:31:31+08:00
 2. 新节点 `onFail === 'abort'`、`ref === 'push-progress'`；节点 id 全局唯一（含 …0015 与既有 14 节点）。
 3. review-code 节点 `reviewLoop.replayNodes` 与现状逐字一致（implement-code→write-test-report→push-progress→review-code）。
 4. `inputs` 中无 `suggestion_policy`。
+5. 执行并保持现有 release-subjects 回归：KB 仅发生 `review-annotations/`、`cr.md`、`traceability.yml`、`review-loop.yml`、`approval.yml`、`_backlog.yml` 等白名单后继变化时 approve-code 仍可通过；KB 非白名单路径、非 KB 仓 HEAD 前移、artifact digest 漂移均拒绝且零写入。若现有测试未覆盖 KB 白名单后继，补入 `skills/shared/crctl/scripts/test/crctl.test.mjs`。
 
 # 完成标志
 

@@ -6,7 +6,7 @@ sdd-ref: "change-requests/CR-2026-039/sdd.md"
 target-version: tbd
 status: draft
 created: 2026-08-15T01:31:31+08:00
-updated: 2026-08-15T01:31:31+08:00
+updated: 2026-08-15T01:47:07+08:00
 ---
 
 # 1. 交付里程碑
@@ -15,29 +15,32 @@ updated: 2026-08-15T01:31:31+08:00
 |---|---|---|---|
 | M0 集成准备（非 TASK，前置步骤） | tools CR worktree 以 fast-forward/普通 merge 合入最新 `origin/custom/main`（当前 `162fdf0`，含已合入的 CR-2026-038）；禁止 rebase 已发布分支/force push/cherry-pick（SDD §1.3） | — | 含在 TASK-01 内 |
 | M1 dev-plan 证据写入与消费 | composite digest 唯一 helper + review-record 写入 + next/gate 双消费点 | TASK-01 → TASK-02 | 7h |
-| M2 cr.md 时间字段统一 | `refreshCrMdUpdated` 共享纯函数 + 三个 writer 接入 | TASK-03 | 3h |
-| M3 PASS 后审批前 checkpoint | code Pipeline 结构性插入 checkpoint 节点 + suggestion_policy 删除 | TASK-04 | 2h |
-| M4 canonical 文本契约收敛 | 三个 CR Pipeline + 相关 Skill 删除废弃字段引用 | TASK-05 | 4h |
+| M2 cr.md 时间字段统一 | `refreshCrMdUpdated` 共享纯函数 + 三个 writer 接入 | TASK-02 → TASK-03 | 3h |
+| M3 PASS 后审批前 checkpoint | code Pipeline 结构性插入 checkpoint 节点 + suggestion_policy 删除 | TASK-03 → TASK-04 | 2h |
+| M4 canonical 文本契约收敛 | 三个 CR Pipeline + 相关 Skill 删除废弃字段引用 | TASK-04 → TASK-05 | 4h |
 | M5 采纳与发布回归 | crctl/review-dev-plan SKILL 采纳修订 + Ubuntu/Windows 全量回归 | TASK-06 | 2h |
 
 **估算总工时：18h（≈2.25 人天）**。
 
-顺序说明：M1 是关键路径（digest 定义先于消费点）；M2/M3/M4 与 M1 之间无代码交叠，可并行但同一 worktree 内涉及同文件的 TASK 串行（TASK-01/02 都改 `crctl.mjs` 与 `crctl.test.mjs`，必须串行）；M5 在全部实现 TASK 完成后执行。
+顺序说明：TASK-01～TASK-05 形成串行实现链，主要原因是多个 TASK 共享 `crctl.mjs`、`crctl.test.mjs` 或 `code-implementation.pipeline.json`；这是同一 worktree 的文件所有权约束，不是额外业务依赖。TASK-06 在全部实现与文本契约改动完成后执行全量回归。
 
 # 2. 任务依赖图
 
 ```text
-M0 集成准备（162fdf0 合入）
-  ├─ TASK-01 digest 写入 ──→ TASK-02 双消费点
-  ├─ TASK-03 updated 统一（独立）
-  ├─ TASK-04 checkpoint 节点（独立）
-  └─ TASK-05 canonical 文本（独立）
-              └── 全部 ──→ TASK-06 采纳与回归
+  TASK-01 digest 写入
+      ↓
+  TASK-02 双消费点
+      ↓
+  TASK-03 updated 统一
+      ↓
+  TASK-04 checkpoint 节点 + release-subjects 回归
+      ↓
+  TASK-05 canonical 文本
+      ↓
+  TASK-06 采纳与回归
 ```
 
-- TASK-02 depends-on TASK-01（消费 `devPlanCompositeDigest` 精确签名）。
-- TASK-06 depends-on TASK-01～TASK-05（全量回归必须覆盖全部改动）。
-- TASK-03/04/05 无前置依赖；TASK-04 与 TASK-05 各自拥有独立测试文件，无文件交叠。
+- TASK-02 depends-on TASK-01；TASK-03 depends-on TASK-02；TASK-04 depends-on TASK-03；TASK-05 depends-on TASK-04；TASK-06 depends-on TASK-01～TASK-05。
 
 # 3. 资源与分工
 

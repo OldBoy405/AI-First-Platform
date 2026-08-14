@@ -14,17 +14,17 @@ tasks:
     title: "cr.md 时间字段统一为 updated（三个 writer 收敛）"
     status: pending
     estimate: 3h
-    depends-on: []
+    depends-on: [CR-2026-039-TASK-02]
   - id: CR-2026-039-TASK-04
     title: "code Pipeline PASS 后审批前 checkpoint 节点与 suggestion_policy 删除"
     status: pending
     estimate: 2h
-    depends-on: []
+    depends-on: [CR-2026-039-TASK-03]
   - id: CR-2026-039-TASK-05
     title: "review canonical 文本契约收敛（三个 CR Pipeline + 相关 Skill）"
     status: pending
     estimate: 4h
-    depends-on: []
+    depends-on: [CR-2026-039-TASK-04]
   - id: CR-2026-039-TASK-06
     title: "Skill 采纳修订与双平台全量回归"
     status: pending
