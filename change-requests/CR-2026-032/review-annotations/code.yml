@@ -1,0 +1,42 @@
+cr-id: CR-2026-032
+review-type: code
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-13T14:10:45+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  代码对齐TASK与SDD: "PASS：ARC-03/04/05 实现与固定返回、必需 emitter、origin-confirmed 后 outbox、warning/重放、文档语义、Multica 投影均对齐 PRD/SDD/TASK；attempt-1 唯一缺口 CR-CODE-BL-1（RED-8 缺第二终态 status 事件负向锁）已按 TASK-01 §4 AC-5 / SDD §4.6 修复为 outbox JSON 内容级断言。"
+  工程质量: "PASS：修复仅新增 outboxEventsForCr 测试 helper 与 RED-8 断言（+17/-1 行），未触碰 production；tools 变更仍在 6 个白名单文件内；无新依赖、无事务框架、无重复实现。"
+  关键路径可读性: "PASS：outboxEventsForCr 为测试局部 helper，解析失败硬失败不静默降级；RED-8 断言行注释指明 AC-5/SDD §4.6 出处，阅读路径清晰。"
+  安全性: "PASS：本轮零 production 改动；原有安全属性（emitter fail-fast、outbox 失败不反转 authority、lease/cleanup 算法未放宽）保持不变。"
+  测试覆盖: "PASS：RED-8 已对 rejected 与 withdrawn 各断言 archive/status 事件零条且 preservedRefs 保留未合并 ref；变异验证（plant 伪造 status 事件文件）证明断言精确失败；archive 15/15、crctl 161/161 本轮重跑全绿。"
+  测试证据可信度: "PASS：crctl test 依据真实退出码重生成 7 条证据（含 Multica 真库 RUN/PASS 无 skip），test-report 修复轮已记录，过时‘替代证据’措辞已删除。"
+  suggestion-policy: "strict"
+suggestions:
+  - "Multica TestArchiveEventCompletesWritebackRun 对关键 seed INSERT/DELETE 使用忽略错误的 Exec；后续可改为检查 err 并 t.Fatalf，避免 seed 失败只在远端断言处间接暴露。不阻断。"
+  - "tools `_index.yml` 由 crctl task 维护；KB `tasks/_index.yml` 尾部存在一个空行（git diff --check 提示 new blank line at EOF），属既有生成器行为，建议在统一 PLAN/TASK 口径治理 CR 中一并收敛。不阻断。"
+release-subjects:
+  version: 1
+  repositories:
+    - repo: ai-first-platform-docs
+      remote-ref: refs/heads/requirement/CR-2026-032
+      reviewed-source-sha: a70eac4a3a486afbcdfc7fa723e58cfb20858ac7
+    - repo: multica
+      remote-ref: refs/heads/requirement/CR-2026-032
+      reviewed-source-sha: 40ad1213a2fbc823b0790a989ae0bd8dcc3bdab8
+    - repo: tools
+      remote-ref: refs/heads/requirement/CR-2026-032
+      reviewed-source-sha: 54aa433de39e0cddf1282ee6419d44b6dbc13378
+  artifacts:
+    algorithm: sha256
+    canonicalization: crlf-to-lf+path-sort
+    files:
+      - { path: change-requests/CR-2026-032/plan.md, sha256: 37235480ce98ee12abf9ec6b943625e1a4fe55b090580a5a4a1269da9d486b77 }
+      - { path: change-requests/CR-2026-032/prd.md, sha256: b359448bb43f9491adf8549f658716f1dd2802f976747895687e63078642f68c }
+      - { path: change-requests/CR-2026-032/sdd.md, sha256: cb924c5fbad86baf58f42193bb219e5c4735f8acb6df7a7f2f5c3179d4a47e05 }
+      - { path: change-requests/CR-2026-032/tasks/TASK-01.md, sha256: 7dcc42d9f60346102e25306062a7b749555a113e54b0313552fabc05f345cb79 }
+      - { path: change-requests/CR-2026-032/tasks/TASK-02.md, sha256: 05665001f30fd74f71d6b2d7a1c1e6740c0e805a424c098512a7f6cff48ee820 }
+      - { path: change-requests/CR-2026-032/tasks/TASK-03.md, sha256: 6047f4c4f51f96df61b4247c513cf02bdf2192716f935db30e0c2c66ad60d6fc }
+      - { path: change-requests/CR-2026-032/tasks/TASK-04.md, sha256: 272a501428c2e9640b3464571a58dec66942338169a6b2a64e90bcec8eeba59c }
+      - { path: change-requests/CR-2026-032/tasks/_index.yml, sha256: 5ed0282c1aaea1056726a8c39f56344a85f1ea6b67b30e51adaf97a217e86d70 }
+    digest: 744bde645f4313fbf39693b544ddd7c43421dcd54cb356e2fcb4423d73645401

@@ -1,0 +1,35 @@
+cr-id: CR-2026-023
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-07T00:03:59+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  PRD_SDD对齐: "pass — §6 FR→技术实现映射表逐条覆盖 FR-1~FR-14，落点+文件齐全无遗漏；且 §4.2 step5
+主动补了 PRD FR-6 未提的 README mermaid「D8-->D9」流程图改动(已核实 tools/README.md
+L426 `D8 --> D9[\"代码评审\"]` 精确存在)——属超出 PRD 的正确增强。"
+  架构合理性: "pass — §1.1 三条硬不变量核对(crctl 单一状态写者 / Skill 不描述账本手工编辑 /
+lint-prompts 与 crctl 平行、判据源只读消费 _index.yml)均合规，贴合 ARCHITECTURE.md
+§4·§5，不新增模块不改依赖方向。承重接线已实测：lint-prompts.mjs L238
+`const ctx = { ...loadJudgements() }` 确实存在 → R9 追加 skillIds 到 loadJudgements
+返回值即可经 ctx.skillIds 访问，SDD §4.1 承重假设成立；SKILLS_INDEX_PATH 的
+`__dirname` 上溯 3 级解析路径正确(对齐 CRCTL_PATH/INBOX_SKILL_PATH 先例)。"
+  数据模型完整性: "pass — §2 四个结构增补(review_llm input / 0013 human_approval node / reviewer-model
+dimensions 自报留痕 / R9 finding 复用既有结构)齐全，均在既有 schema 内，无 DB 变更；
+§2.2 明确插入后 nodes[9..12] 后移一位、UUID 不变仅数组序变化。"
+  接口契约: "pass — §3 三个定稿契约(0013 approvalPrompt 三分支文案 / review-code prompt 头部段 /
+R9 统一改写形态)文本级定稿；§3.1 额外加纵深防御(approvalPrompt 不含「下一步」与字面
+skill id，防文案被抄进 SKILL.md 后误触 R9)，细致。"
+  性能与安全: "pass — §7 覆盖 lint 性能(同 R7/R8 量级、skillIds 一次载入)、误报边界(4 条)、漏报
+边界、两 commit 独立可回滚、边界条件(review_llm 留空为主路径/超时 4320 对齐节点4·10/
+驳回 abort 无状态残留)。§7 漏报边界主动承认 R9 skill-id 子串匹配风险并给缓解(逐行人工
+核对+域外反向用例+pipeline 词尾共现收窄)，回应了需求期 S4。"
+  可测试性: "pass(带承接 suggestion) — FR-12 三类向量(正向命中/域外不报/pipeline 名捕获)+ §5
+决策说明 fixture 用真实 skill id 无需自带索引。保留 T1/T2 见 suggestions。"
+  Prompt采纳影响: "n/a(条件性跳过) — 已核实本 CR diff 不触及 crctl.mjs dispatch 与
+rules.json#protectedPaths.deny(块 B 改 lint-prompts.mjs 非 crctl.mjs；块 A 改
+pipeline JSON)，§8 已按 SDD 模板显式说明跳过并备查，判断正确。"
+suggestions:
+  - "T1(承接需求期 S4)：建议 AC-5/FR-12 测试向量补一条「CR 上下文域内记述性提及 skill 名但非『下一步』映射行不误报」的正向豁免用例，把 §7 漏报边界的人工核对下沉为回归测试。当前 3 个豁免记述行(write-tech-design:50 / write-test-report:58 / merge-feature-branch:154)经实测不含 skill-id 子串故不误触发，但仅靠逐行人工核对锁边界，偏脆。(不阻断)"
+  - "T2(承接需求期 S2)：AC-11 端到端场景A/B 的验证层级(手工/集成 vs 自动 pre-commit)SDD 未显式归位；建议 tasks 阶段明确 AC-11 属手工/集成验收、不入 CI 门禁，避免实施期误当可自动化而无法在仓内闭合(D4 运行时不在 tools 包管辖)。(不阻断)"
+  - "T3(基线协调，SDD §4.3/§9 已识别)：commit 2 前须先与用户确认 tools 仓 3 处未提交 pipeline JSON 修改(含 code-implementation.pipeline.json 同文件不同 hunk)的归属，这是实施期首个 gating 动作；建议 tasks 首条显式列为前置(add 仅本 CR 的 hunk、不混提)。(不阻断)"

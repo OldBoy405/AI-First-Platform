@@ -1,0 +1,23 @@
+---
+cr: CR-2026-030
+cleaned-at: "2026-08-11T13:20:00+08:00"
+status: done
+repos:
+  - repo: ai-first-platform-docs
+    remote-branch: deleted
+    worktree: removed
+  - repo: tools
+    remote-branch: deleted
+    worktree: removed
+  - repo: multica
+    remote-branch: deleted
+    worktree: removed
+---
+
+# cleanup-report · CR-2026-030
+
+- 远端 `requirement/CR-2026-030` 分支三仓已删除（push origin --delete，exit 0）。
+- 本地 CR worktree 三仓已移除（git worktree remove --force；KB/tools/multica 均不再注册）。
+- `change-requests/CR-2026-030/` 目录按惯例保留为历史痕迹。
+- 归档账本 commit：`e6abd82`（cr.md archived + backlog→history + index 终态）。
+- 无 cleanup-pending；清理无失败项。

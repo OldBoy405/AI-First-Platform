@@ -1,0 +1,19 @@
+cr-id: CR-2026-030
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-11T02:30:59+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  prd-sdd-alignment: "pass：10/10 FR 与 AC-1～AC-32 均有明确实现和验证映射；第 1 轮两项冲突已关闭。"
+  architecture-reasonableness: "pass：保持 crctl 单文件、状态/账本唯一写者、零新增依赖和既有 27/49 状态机口径；standalone 状态投影收敛到 commit 成功之后，符合 Git 权威不变量。"
+  data-model-completeness: "pass：Owner 当前投影、history、notify、outbox 与 grant v1 模型完整；OwnerChangeFact 与 OwnerHistoryEntry 已隔离 note 边界。"
+  interface-contracts: "pass：cr-init、register commit、worktree-path、owner-set、approve --grant、review-dev-plan 与 R7 的输入、输出、错误和失败边界清晰；邻接幂等要求 result ledger 已在 HEAD。"
+  performance-and-security: "pass：仅增加常数次本地 Git 查询；grant 在写入前完成归属/evidence/key/signature 校验，commit 失败不会伪装成业务回退成功或发权威状态投影。"
+  testability: "pass：包含真实 Git clean/rollback fixture、四 stage grant、commit-failure→replay、R7 malformed/CRLF 与 Multica 真实跨接缝向量。"
+  prompt-adoption-impact: "pass：第 8 节完整列出 8 个 Skill、crctl Skill、4 个 Pipeline 和 3 份人读契约，且诚实保留 Runner/consumer CUSTOM-TODO。"
+suggestions:
+  - "TD-SUG-1：实施时可把 register commit 已成功但 HEAD/Owner 后置读取失败的 completed_steps/warning 字段做成单独测试，避免运维误判 CR-ID 是否已占用。"
+  - "TD-SUG-2：实现 Owner 标量 editor 时应复用统一 YAML quoting，并拒绝 Owner ID 中的 CR/LF/NUL；该项不影响当前架构通过。"
+subject-file: change-requests/CR-2026-030/sdd.md
+subject-sha256: beaab435a62ac90a6ecd0607379c5577187c536976e75920dcffced3aa346a82

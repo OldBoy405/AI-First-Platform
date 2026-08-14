@@ -1,0 +1,6 @@
+$ node -e "const fs=require('fs'),cp=require('child_process');const expected=['pipeline-templates/code-implementation.pipeline.json','skills/develop/write-dev-tasks/SKILL.md','skills/shared/crctl/SKILL.md','skills/shared/crctl/gates.json','skills/shared/crctl/scripts/crctl.mjs','skills/shared/crctl/scripts/test/crctl.test.mjs'];const changed=cp.execFileSync('git',['diff','--name-only','8a2e6a1...HEAD'],{encoding:'utf8'}).trim().split(/\r?\n/).filter(Boolean);if(JSON.stringify(changed)!==JSON.stringify(expected))throw Error(JSON.stringify(changed));const p=JSON.parse(fs.readFileSync('pipeline-templates/code-implementation.pipeline.json'));if(p.nodes.length!==14)throw Error('pipeline node drift');console.log(JSON.stringify({changedFiles:changed.length,pipelineNodes:p.nodes.length}))"
+(exit=0)
+--- stdout ---
+{"changedFiles":6,"pipelineNodes":14}
+
+--- stderr ---

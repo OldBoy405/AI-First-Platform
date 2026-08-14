@@ -1,0 +1,32 @@
+# cleanup-report.yml — cr-archive 清理报告（CR-2026-020）
+cr-id: CR-2026-020
+cleanup-status: done
+cleaned-at: "2026-08-05T01:50:00+08:00"
+worktree:
+  - repo: ai-first-platform-docs
+    path: .rayai-worktrees/knowledge-base/requirement/CR-2026-020
+    result: removed
+  - repo: multica
+    path: .rayai-worktrees/multica/requirement/CR-2026-020
+    result: removed
+remote-branches:
+  - repo: ai-first-platform-docs
+    branch: requirement/CR-2026-020
+    result: deleted
+  - repo: multica
+    branch: requirement/CR-2026-020
+    result: pending   # SSL 证书错误（环境因素）无法访问 AI-First-multica.git；该分支为空分支（无提交），无内容影响，留待环境恢复后清理
+local-branches:
+  - repo: ai-first-platform-docs
+    branch: requirement/CR-2026-020
+    result: deleted
+  - repo: multica
+    branch: requirement/CR-2026-020
+    result: deleted
+  - repo: tools
+    branch: requirement/CR-2026-020
+    result: deleted
+notes:
+  - "multica 仓无 CR 代码改动（分支无提交），按 merge-feature-branch 空分支规则跳过合并与 merge-commits 记录"
+  - "tools 仓参与合并（custom/main @ 518a45c + 回写期修复 ee177a5），无 worktree（不在 dir-graph.yaml 声明范围，按 CR-2026-018/019 先例直接提交）"
+  - "回写期自举发现并修复：writeback-traceability merge-commits 必填字段收敛为 {repo,trunk,sha}（019 merge-metadata 实际输出形态，ee177a5）"

@@ -1,0 +1,33 @@
+cr-id: CR-2026-033
+tasks:
+  - id: CR-2026-033-TASK-01
+    title: "契约冻结与红测（T01）"
+    status: done
+    done-at: "2026-08-13T20:34:08+08:00"
+    estimate: 8h
+    depends-on: []
+  - id: CR-2026-033-TASK-02
+    title: "durable checkpoint envelope 与 matchEntryBlock 下沉（T03a）"
+    status: done
+    done-at: "2026-08-13T20:34:08+08:00"
+    estimate: 10h
+    depends-on: [CR-2026-033-TASK-01]
+  - id: CR-2026-033-TASK-03
+    title: "latest-checkpoint 编辑器与三个纯函数（T03b）"
+    status: done
+    done-at: "2026-08-13T20:34:08+08:00"
+    estimate: 12h
+    depends-on: [CR-2026-033-TASK-02]
+  - id: CR-2026-033-TASK-04
+    title: "checkpointCr 事务与 cmdCheckpoint CLI（T04）"
+    status: done
+    done-at: "2026-08-13T20:34:08+08:00"
+    estimate: 24h
+    depends-on: [CR-2026-033-TASK-03]
+  - id: CR-2026-033-TASK-05
+    title: "Skill/Pipeline 迁移与 checkpoint-add 删除（T05）"
+    status: done
+    done-at: "2026-08-13T20:34:08+08:00"
+    estimate: 16h
+    depends-on: [CR-2026-033-TASK-04]
+

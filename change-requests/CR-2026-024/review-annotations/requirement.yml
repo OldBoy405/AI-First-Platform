@@ -1,0 +1,15 @@
+cr-id: CR-2026-024
+review-type: requirement
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-08T19:43:10+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  结构完整性: "概述/用户故事/FR/NFR/AC/成功指标/范围排除/变更记录章节齐全，frontmatter 合规（id/type/cr-ref/title/owner/status/created/updated）"
+  FR可测试性: "24 条 FR 全部有对应 AC（AC-1~AC-19 逐条映射 + AC-20 端到端），AC 均可量化验证（grep / 三件套守卫 / JSON 解析 / 真实 CR 回归 crctl next·status·gate）"
+  范围合理性: "批次一（零行为变更）/批次二（真实行为变更）切分清晰，范围排除明确列出 9 类不做项，D-1~D-7 决策点全部拍板不留悬置"
+  与规划对齐: "FR 完整覆盖 source（方案 v2.6）§4.3–§4.9 全部落地项——六条内化项 + 四条存量缺口收口 + external 死声明清理，与 §6 配置修改清单逐项对应"
+  依赖识别: "识别对 CR-2026-023 评审模型留痕机制的依赖（suggestion_policy 与 review_llm 同构、replayNodes 显式 nodeId 引用）；tools 仓改动经 CR 编号溯源合入 custom/main 的交付路径已声明"
+suggestions:
+  - "FR-21 openwiki 同步较笼统，SDD 期可细化具体页面清单与改动点（当前仅指明 architecture/agent-skill-matrix.md 与主责矩阵）"
+  - "AC-20 端到端 lenient 场景依赖真实 reviewLoop 触发，实施期建议用历史 CR 回放或构造 fixture 验证三条升格判据"

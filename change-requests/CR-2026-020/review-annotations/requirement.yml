@@ -1,0 +1,34 @@
+cr-id: CR-2026-020
+review-type: requirement
+reviewer: ai-reviewer
+reviewed-at: "2026-08-04T21:55:36+08:00"
+verdict: pass
+blockers: []
+repair-target: write-requirement-prd
+repair-instructions: []
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 0
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-08-04T21:55:36+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: write-requirement-prd
+review-dimensions:
+  structure: pass          # 概述/US-1~6/FR-1~9/NFR-1~6/AC-1~8/成功指标/范围边界齐备
+  fr-testability: pass     # FR/NFR 与 AC 全映射，AC 均可 grep 或可运行判定
+  scope: pass              # 显式"不包含"清单：状态机/账本/crctl 子命令/CAS/merge 逻辑
+  plan-alignment: pass     # source 方案 §4.1/4.2/4.3/4.4/4.6/§7 逐项落为 FR，并修正其"三类全量重建"不精确处
+  dependencies: pass       # 前置 CR-2026-019 已归档；与其"否决脚本入库"决策的边界在 §1.2 显式界定
+suggestions:
+  - "FR-1 的 brief 入参放置行为无专属 AC，建议在 SDD/测试用例阶段补一条 brief 传入与落位断言（非阻塞）"
+  - "FR-1 表述'通过 engineering-docs 约定补齐/更新 frontmatter'建议在 SDD 明确为'按 engineering-docs 约定的字段规则实现'，脚本不调用 skill（非阻塞）"
+  - "AC-5 的 grep 关键词'备份'可能误伤无关措辞，建议实作时以 'writeback-backups' 与 'metadata.yml' 为准确匹配词（非阻塞）"

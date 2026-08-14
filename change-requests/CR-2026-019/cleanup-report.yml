@@ -1,0 +1,18 @@
+# cleanup-report.yml — cr-archive Step 7 清理报告（CR-2026-019）
+cr-id: CR-2026-019
+cleanup-status: done
+cleaned-at: "2026-08-04T20:25:00+08:00"
+worktree:
+  - repo: ai-first-platform-docs
+    path: .rayai-worktrees/knowledge-base/requirement/CR-2026-019
+    result: removed
+remote-branches:
+  - repo: ai-first-platform-docs
+    branch: requirement/CR-2026-019
+    result: deleted
+  - repo: tools
+    branch: requirement/CR-2026-019
+    result: deleted
+notes:
+  - "multica 仓无 CR 代码改动（分支无提交），未参与合并与清理，维持现状"
+  - "tools 仓工作区两个未跟踪文件（ARCHITECTURE.md / ARCHITECTURE-template.md）非本 CR 产物，保持 untracked"

@@ -1,0 +1,15 @@
+cr-id: CR-2026-021
+review-type: code
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-05T16:46:00+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  代码-TASK-SDD对齐: "TASK-01~22 全部 done；FR-25/AC-10/D8 经 Spec 轴修复补完整（66496f6），cr-status-set 全仓仅剩自身 SKILL 引用，D8 状态映射统一改调 crctl next"
+  工程质量: "node --test 82/82（crctl.test.mjs）+ 10/10（lint-prompts.test.mjs）全绿；Standards 轴修复（dd3bb72）落实硬失败 LEDGER_PARSE_FAILED、--period 实装窗口过滤、五处 YAML 块序列扫描提取共用 helper、删除死代码"
+  关键路径可读性: "crctl.mjs 子命令模式统一（fail/ok/nowIso/casWrite/casWriteMulti），共用 helper 消除重复扫描逻辑"
+  安全性: "review-record 判断/写入分离 + CAS 写入 + 前置态守卫 + schema 校验（SCHEMA_INVALID 不落盘）+ 白名单拒绝路径（FIELD_NOT_ALLOWED）均有测试覆盖"
+  测试覆盖: "82 个 crctl 用例（含 --period 窗口过滤回归、CAS 冲突、白名单拒绝）+ 10 个 lint-prompts 用例（R1~R6 + ignore 豁免 + 双模式）"
+  测试证据可信度: "test-report.md status=pass（crctl test 真实退出码生成），TASK 覆盖 22/22，未覆盖风险（CI 远端触发无法本地验证）已显式注明"
+suggestions:
+  - "sdd.yml 三条实现期核实项已落实：CI cr-guard 接线（TASK-12）、D13 不复活结论（TASK-01 investigations 落盘）、R1 段落边界实现已明确（行级匹配 + ignore 豁免）"
