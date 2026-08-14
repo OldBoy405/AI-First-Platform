@@ -1,0 +1,8 @@
+# approval.yml — 人工审批记录（各段仅接受 crctl approve 写入；supplemental-reviews 仅接受 crctl review-note 写入）
+supplemental-reviews:
+  - reviewer: "OldBoy405"
+    recorded-at: "2026-08-14T18:19:20+08:00"
+    decision: note
+    stage: "lifecycle"
+    status-at-record: drafting
+    notes: "撤回：已注册但未开工，当前不再继续该 CR。"
