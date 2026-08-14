@@ -5,7 +5,7 @@ cr-ref: CR-2026-038
 title: tools CR 生命周期最小优化 1/5 — Writeback 原子化技术设计
 status: draft
 created: 2026-08-14T20:54:20+08:00
-updated: 2026-08-14T20:54:20+08:00
+updated: 2026-08-14T21:15:25+08:00
 ---
 
 # 1. 架构概览
@@ -83,7 +83,7 @@ workspace-transactions.mjs
 | 阶段 | Authority | 允许副作用 |
 |---|---|---|
 | 新事务 preflight | txws 当前 HEAD、origin refs、CR canonical 文件 | fetch；`.crctl/candidates/` 可丢弃输出；无 lock/journal/target write/audit/outbox |
-| journal created | 预检通过的 manifest digest + 固定业务输入 | writeback journal 与 lock |
+| journal created | 预检通过的 manifest digest + canonical business-input digest；journal `createdAt` 同时冻结为 transitionAt | writeback journal 与 lock |
 | write-set applied | txws 工作树/index | recoverable baseline + status after image |
 | committed | txws commit | 本地 commit；尚未发送 success 投影 |
 | origin confirmed | origin trunk 包含 commit | Git 权威事实成立 |
@@ -100,7 +100,7 @@ workspace-transactions.mjs
 |---|---|
 | `skills/shared/crctl/scripts/crctl.mjs` | 收缩 `writeback-apply` 公共参数；提炼无写入的 advance preflight；`runGateChecks` 增加仅供 `fileExists` 使用的 planned-existing；注入 status outbox / advance audit adapter；更新 help |
 | `skills/shared/crctl/scripts/lib/workspace-transactions.mjs` | 固定 generator map/candidate path、完整 preflight、baseline 复合 write-set、projection marker；增加 backlog 条目替换纯函数和 semantic merge tree 构造；初次与 rebuild 共用同一 prepare helper |
-| `skills/shared/crctl/scripts/lib/durable-tx.mjs` | 仅登记 writeback projection 故障点；不改事务模型 |
+| `skills/shared/crctl/scripts/lib/durable-tx.mjs` | 仅登记 journal-created 与 projection writeback 故障点；不改事务模型 |
 | `skills/writeback/writeback-prd-sdd/SKILL.md` | 收缩为业务输入 + 一次 `writeback-apply` + 结果分类；删除 generator、candidate 和独立 advance |
 | `skills/writeback/writeback-tasks/SKILL.md` | 删除 generator/candidate 路径；一次深原语调用 |
 | `skills/writeback/writeback-traceability/SKILL.md` | 保留 milestone 业务草稿；删除 generator/candidate 路径；一次深原语调用 |
@@ -213,7 +213,7 @@ advance preflight 返回无副作用候选描述：
 }
 ```
 
-目标文本使用共享的 `crMdStatusText()` 状态 writer 生成；本事务把首次生成的完整 after image/after hash 持久化并在恢复时复用，避免重跑时间变化产生第三值。受控时间字段的名称、兼容读取和渐进迁移继续由同一共享 writer 决定：本 CR 不复制 `updated`/`updated-at` 分支，也不抢占 CR-2026-039 的时间字段统一范围；若该切片先合入，本设计自动消费其统一后的 writer。`performAdvance()` 与 baseline writeback 共用同一无写入 advance preflight；前者随后走现有 CAS/commit，后者把候选转成 write-set entry。不得复制状态转换表或在 `applyWriteback()` 内硬编码门禁。
+目标文本使用共享的 `crMdStatusText(text, newStatus, { at })` 状态 writer 生成。baseline 固定传入 `at=journal.createdAt`：journal envelope 已先原子持久化，因此即使进程死在 journal 创建后、状态 after image 保存前，恢复也能以同一个 `transitionAt` 确定性重建完全相同的 after text/after hash。首次生成后把完整 after image交给 recoverable write-set，并把 transitionAt/beforeSha256/afterSha256 写入 payload；后续恢复优先复用已持久化事实。受控时间字段的名称、兼容读取和渐进迁移继续由同一共享 writer 决定：本 CR 只增加可选 `at` 注入，不复制 `updated`/`updated-at` 分支，也不抢占 CR-2026-039 的时间字段统一范围；若该切片先合入，本设计自动消费其统一后的 writer。`performAdvance()` 与 baseline writeback 共用同一无写入 advance preflight；前者不传 `at` 时保持现有当前时间语义，后者把候选转成 write-set entry。不得复制状态转换表或在 `applyWriteback()` 内硬编码门禁。
 
 baseline staged set 固定为：
 
@@ -234,6 +234,9 @@ staged set 必须精确相等，多一项或少一项均 `WRITEBACK_STAGED_MISMA
   "stage": "baseline",
   "phase": "start|committed|pushed|complete",
   "specId": "tools-cr-lifecycle",
+  "targetVersion": "0.1.0",
+  "businessInputDigest": "<64-hex>",
+  "manifestDigest": "<64-hex>",
   "committed": false,
   "commit": null,
   "baseSha": null,
@@ -244,6 +247,7 @@ staged set 必须精确相等，多一项或少一项均 `WRITEBACK_STAGED_MISMA
     "to": "writing-back",
     "trigger": "writeback-prd-sdd",
     "path": "change-requests/CR-2026-038/cr.md",
+    "transitionAt": "<journal.createdAt>",
     "beforeSha256": "<64-hex>",
     "afterSha256": "<64-hex>"
   },
@@ -252,8 +256,12 @@ staged set 必须精确相等，多一项或少一项均 `WRITEBACK_STAGED_MISMA
 }
 ```
 
+- `businessInputDigest` 使用固定键序无空白 JSON：`{cr,stage,specId,targetVersion,milestoneName,brief,milestoneFile}`；不适用字段显式为 null，targetVersion 先去可选 `v` 前缀，milestoneFile 规范化为 operational-workspace-relative POSIX path；
+- journal envelope 的 `inputDigest = sha256(JSON.stringify({businessInputDigest,manifestDigest}))`，新事务创建与恢复都按同一公式计算；任一公共业务参数漂移返回既有 `TX_INPUT_CONFLICT`，不得误续旧 candidate；
+- manifest 的 `targetVersion` 必须等于规范化后的公共 `targetVersion`，不是只检查非空；
+- milestone 文件内容不单独进入 business input：新事务的内容已经进入 generator 输出和 manifestDigest；既有事务恢复以已冻结 candidate roll-forward，源文件后续变化留给下一事务；
 - tasks/traceability 的 `statusTransition` 为 null，不发送 status outbox 或 advance audit；
-- 旧 journal 缺新布尔字段按 false 读取；
+- 旧 journal 缺新布尔字段按 false 读取；旧 journal 缺 businessInputDigest/manifestDigest 时，只有现有 envelope inputDigest 与固定 candidate 可按旧公式证明一致才允许完成既有事务，不静默嫁接新参数；
 - `outboxEmitted` 和 `auditEmitted` 只在 adapter 成功后 durable save；
 - outbox 文件名与 audit dedup key 均由 `{cr, from, to, commit}` 确定，关闭“发送成功、marker 保存前崩溃”的重复窗口；
 - journal 不保存第二份状态机、gate 或 candidate registry。
@@ -410,6 +418,7 @@ advance audit 固定记录 `kind=advance`、from/to/trigger/by/commit/result=suc
 | `WRITEBACK_MANIFEST_*` | JSON/schema/stage/CR/spec/path/hash/digest/矩阵失败 | 零 lock/journal/authority；修正源后同命令重跑 |
 | `WRITEBACK_GENERATOR_MISMATCH` | manifest 脚本 hash 与固定脚本不符 | 同上 |
 | `GATE_BLOCKED` | baseline advance gate 未通过 | 同上；planned-existing 不扩展其他 gate |
+| `TX_INPUT_CONFLICT` | 既有 CR/stage journal 的 composite inputDigest 与当前 businessInputDigest + manifestDigest 不一致 | 不覆盖旧事务；以原业务输入和固定 candidate 续跑，禁止手改 journal |
 | `WRITEBACK_REMOTE_STALE` | preflight 后或 commit 前 origin 前进 | 未发布 txws 回到新 origin；删除未发布 journal；同业务命令重生成 candidate |
 | `WRITEBACK_REMOTE_HISTORY_REWRITTEN` | 已发布 commit 从 origin 历史消失 | 硬阻断，禁止 force/rebuild |
 | `FAULT_INJECTED` | write-set/commit/push/projection 测试点 | 同命令按 journal 续跑 |
@@ -424,8 +433,10 @@ advance audit 固定记录 `kind=advance`、from/to/trigger/by/commit/result=suc
 ```text
 resolve repositories + operational workspace
 validate business args and current stage
+canonicalize businessInput with fixed keys/nulls/POSIX milestone path
+businessInputDigest = sha256(JSON.stringify(businessInput))
 read-only detect existing writeback journal
-  existing -> enter §4.5 recovery branch
+  existing -> enter §4.5 recovery branch and compare businessInputDigest
   none     -> continue new transaction
 
 candidateDir = txws/.crctl/candidates/{cr}/{stage}
@@ -435,7 +446,8 @@ spawn fixed generator with shell=false
 if generator noop:
   validate legal no-op state and return changed=false
 read manifest exactly once, normalize CRLF -> LF, JSON.parse
-validate manifest schema/stage/cr/spec-id/generator id/hash
+validate manifest schema/stage/cr/spec-id/normalized target-version/generator id/hash
+manifestDigest = sha256(the single normalized manifest read)
 validate candidate containment/path safety/allowlist/sorted/unique
 read each blob once, validate ref/hash, retain blobText
 validate inputDigest
@@ -448,14 +460,20 @@ if baseline:
   validate fixed merging -> writing-back transition
   run writing-back gate with plannedExisting
 
+journalInputDigest = sha256(JSON.stringify({businessInputDigest,manifestDigest}))
 only now acquire writeback lock and create journal
+fault: writeback-after-journal-create
+if baseline:
+  transitionAt = journal.createdAt
+  build deterministic status after image through shared writer
+  persist transition metadata before applyWriteSet
 ```
 
 候选目录、fetch 和 stale reset 不是 authority 发布；非法 manifest 不创建 journal、lock 残留、target file、commit、push、outbox 或 success audit。
 
 ## 4.2 Baseline 复合 write-set
 
-journal 创建后，使用共享状态 writer 生成一次 `cr.md` after image并随事务持久化；恢复只复用该 after image，不重新生成时间字段：
+journal 创建后，使用共享状态 writer 和 `transitionAt=journal.createdAt` 生成 `cr.md` after image并随事务持久化；若崩溃发生在 after image 首次保存前，恢复用同一 journal.createdAt 确定性重建；一旦持久化则只复用该 after image，不重新生成时间字段：
 
 ```text
 entries = manifest files with cached blobText
@@ -518,13 +536,14 @@ return success + warnings
 
 ## 4.5 恢复与幂等
 
-1. 命令先只读固定 key 的现有 journal；存在时不清空 candidate、不运行 generator。
-2. 获取同一 writeback lock，`recoverWriteSet({txId})` 只恢复该事务。
-3. `committed=false`：使用原固定 candidate 和 journal digest重新验证；write-set 已部分应用时由 before/after 三值恢复，不生成新时间戳。
-4. `committed=true,pushed=false`：不重新应用/commit，按 journal commit 续推。
-5. `pushed=true/phase=complete`：fetch 确认 commit 仍在 origin；不重新生成 candidate，不新增 commit/push。
-6. baseline 依次补 `outboxEmitted` / `auditEmitted`；全部完成返回 `changed=false`。
-7. candidate 在需要恢复 apply 且固定目录缺失时返回 `WRITEBACK_CANDIDATE_RECOVERY_MISSING`，禁止从已部分写入的 txws 反向猜 manifest；正常 archive 清理只发生事务完成后，不触发此路径。
+1. 命令先 canonicalize 当前公共业务输入并只读固定 key 的现有 journal；存在时不清空 candidate、不运行 generator，先比较 businessInputDigest，漂移立即 `TX_INPUT_CONFLICT`。
+2. 读取原固定 candidate 一次并重算 manifestDigest；与 journal 共同重算 envelope inputDigest，任何第三值硬失败。
+3. 获取同一 writeback lock，`recoverWriteSet({txId})` 只恢复该事务。
+4. `committed=false`：使用原固定 candidate 和 journal digest重新验证；若仅有 journal envelope 而 statusTransition 尚未保存，以 `journal.createdAt` 确定性生成 after image；write-set 已部分应用时由 before/after 三值恢复，不生成新时间戳。
+5. `committed=true,pushed=false`：不重新应用/commit，按 journal commit 续推。
+6. `pushed=true/phase=complete`：fetch 确认 commit 仍在 origin；不重新生成 candidate，不新增 commit/push。
+7. baseline 依次补 `outboxEmitted` / `auditEmitted`；全部完成返回 `changed=false`。
+8. candidate 在需要恢复 apply 且固定目录缺失时返回 `WRITEBACK_CANDIDATE_RECOVERY_MISSING`，禁止从已部分写入的 txws 反向猜 manifest；正常 archive 清理只发生事务完成后，不触发此路径。
 
 ## 4.6 `_backlog.yml` 语义合并纯函数
 
@@ -737,14 +756,16 @@ advance success audit count unchanged
 
 1. happy path：origin 单个 commit 同时含 specs 三目标和 `cr.md status=writing-back`；
 2. planned-existing：两个 specs 路径通过 `fileExists`，额外/未验证路径拒绝；非 fileExists gate 不受 Set 影响；
-3. `writeback-after-apply`、`writeback-after-commit`、`writeback-after-push` 各中断一次后重跑；
-4. origin confirmed 后 outbox 写失败、audit 写失败，命令 exit 0 + warning；修复后重放只补缺项；
-5. `writeback-after-status-outbox` / `writeback-after-advance-audit` 崩溃窗重放，确定性去重；
-6. complete replay：changed=false，commit/status/event/audit 各自唯一；
-7. baseline 后立即执行 tasks，状态保持 writing-back，不 reset 到 merging；
-8. origin preflight 前进、commit 后前进、push response lost、history rewrite；
-9. candidate 目录 `git check-ignore` 为真，commit tree 不含 `.crctl/candidates`；
-10. archive/workspace 清理后 txws candidate 随资源删除，无独立 cleanup 任务。
+3. `writeback-after-journal-create` 中断后重跑，`transitionAt` 恒等于原 journal.createdAt，`cr.md` after text/hash 完全一致；
+4. 同一既有 journal 分别改变 target_version、milestone_name、brief、milestone_file path，均 `TX_INPUT_CONFLICT` 且旧事务不变；恢复使用同一业务输入成功；
+5. `writeback-after-apply`、`writeback-after-commit`、`writeback-after-push` 各中断一次后重跑；
+6. origin confirmed 后 outbox 写失败、audit 写失败，命令 exit 0 + warning；修复后重放只补缺项；
+7. `writeback-after-status-outbox` / `writeback-after-advance-audit` 崩溃窗重放，确定性去重；
+8. complete replay：changed=false，commit/status/event/audit 各自唯一；
+9. baseline 后立即执行 tasks，状态保持 writing-back，不 reset 到 merging；
+10. origin preflight 前进、commit 后前进、push response lost、history rewrite；
+11. candidate 目录 `git check-ignore` 为真，commit tree 不含 `.crctl/candidates`；
+12. archive/workspace 清理后 txws candidate 随资源删除，无独立 cleanup 任务。
 
 ## 9.3 Backlog 纯函数参数化矩阵
 
@@ -828,3 +849,4 @@ T02～T04 期间新路径尚无生产调用方，便于独立验证；T05 必须
 | 日期 | 版本 | 作者 | 说明 |
 |---|---|---|---|
 | 2026-08-14 | v0.1.0 | Ray | 初始设计：固定 generator/candidate 内部化、lock/journal 前完整 preflight、baseline 状态同 write-set/commit/push、origin-confirmed status outbox与 advance audit、目标 CR backlog 条目语义合并及 Git synthetic tree；FR 覆盖 4/4，AC 覆盖 12/12 |
+| 2026-08-14 | v0.2.0 | Ray | 技术评审 attempt 1 回修 TD-BL-1/2：以 journal.createdAt 冻结 transitionAt 并由共享 writer 确定性重建状态 after image；新增 canonical businessInputDigest，与 manifestDigest 共同绑定 journal inputDigest；补 journal-create 崩溃窗和参数漂移 TX_INPUT_CONFLICT 测试 |
