@@ -1,19 +1,18 @@
 cr-id: CR-2026-038
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-14T21:14:37+08:00"
-verdict: block
-blockers:
-  - "TD-BL-1：baseline 状态 after image 在 journal 创建后才生成，但 SDD 未定义 journal 创建与 after image 持久化之间崩溃后的确定性重建。当前 crMdStatusText 内部生成时间，重放可能得到不同 afterSha256，破坏同一 write-set 的可恢复性。必须冻结 transitionAt（建议复用 journal.createdAt）并让共享 writer 接收该时间，或在 journal 可见前持久化完整 after image；不得复制 updated/updated-at 字段分支。"
-  - "TD-BL-2：既有 writeback journal 恢复分支跳过 generator并复用固定 candidate，但 SDD 未把公共业务输入与 journal/manifest 绑定。调用方改变 target_version、milestone_name、brief 或 milestone_file 后可能误续旧事务。必须定义 canonical businessInputDigest，并与 manifestDigest共同绑定 journal；恢复时先比较，漂移返回 TX_INPUT_CONFLICT。"
+reviewed-at: "2026-08-14T21:20:48+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  PRD到SDD对齐: "BLOCK：FR-01/NFR-02/NFR-03 要求所有崩溃点可恢复且同一输入幂等；当前状态 after image 崩溃窗和恢复业务输入未绑定尚未闭合。其余 FR-01～FR-04 与 AC-01～AC-12 均有明确设计落点。"
-  架构合理性: "PASS：模块依赖保持 Agent→Pipeline→Skill→crctl→workspace-transactions/durable-tx 单向；复用现有深原语、窄 callback、标准库与原生 Git，未新增事务框架、registry 或依赖。"
-  数据模型完整性: "BLOCK：journal 已定义 statusTransition/outboxEmitted/auditEmitted，但缺稳定 transitionAt/after image 重建规则及 canonical businessInputDigest。"
-  接口契约: "BLOCK：公共 CLI 已收缩为业务输入，但恢复时这些输入与既有 journal 的比较契约未冻结。"
-  性能与安全: "PASS：manifest 一次读入、path containment、symlink parent、allowlist、planned-existing 限权、raw Git blob、精确 lease 和线性 backlog 替换完整。"
-  可测试性: "BLOCK：故障矩阵未覆盖 journal-created-before-state-image，以及同 stage 变更业务输入后恢复应 TX_INPUT_CONFLICT 两个向量。"
-  Prompt采纳影响: "PASS：第 8 节覆盖三个 writeback Skill、feature-writeback 三节点、crctl Skill/index 及旧生产测试迁移；未触及 rules deny 面。"
-suggestions: []
+  PRD到SDD对齐: "PASS：PRD FR-01～FR-04 均有技术落点，AC-01～AC-12 已逐项映射；attempt 1 的状态 after image 崩溃窗与恢复业务输入绑定均已闭合，满足 NFR-01～NFR-09。"
+  架构合理性: "PASS：严格保持 Agent→Pipeline→Skill→crctl→workspace-transactions/durable-tx 单向依赖；状态/门禁经无写入 preflight callback 复用，版本化脚本只做确定性转换，README/Agent 不承载执行算法；未新增事务框架、registry、manager 或依赖。"
+  数据模型完整性: "PASS：manifest 内存快照、固定 candidate、baseline statusTransition、transitionAt、businessInputDigest、manifestDigest、projection markers 和 backlog 完整条目模型字段及不变量齐全。"
+  接口契约: "PASS：公共 CLI 只接受业务输入；stage 固定映射 generator；planned-existing 仅限 fileExists；恢复以 composite inputDigest 防参数漂移；成功/noop/stale/history-rewritten/warning 契约明确。"
+  性能与安全: "PASS：manifest/blob 一次读入、containment/symlink/allowlist/hash、shell=false、raw Git blob、临时 index、精确 lease 和 O(candidate bytes + backlog bytes) 复杂度符合 ARCHITECTURE 与 ponytail 边界。"
+  可测试性: "PASS：preflight 零副作用、journal-created 崩溃、参数漂移 TX_INPUT_CONFLICT、apply/commit/push/projection fault、backlog 首中末、remote rebuild、双平台和静态调用方迁移均有确定性测试向量。"
+  Prompt采纳影响: "PASS：第 8 节覆盖三个 writeback Skill、feature-writeback 三个节点、crctl Skill/index 及 archive/writeback 测试；现有 dispatch 命令面变化虽未新增 case，仍主动完成所有直接调用方采纳清单。"
+suggestions:
+  - "实现 canonical businessInputDigest 时保持一个无 I/O 纯函数并锁定 fixed-key/null/v-prefix/POSIX-path 测试向量；无需新增 schema 或 registry。"
 subject-file: change-requests/CR-2026-038/sdd.md
-subject-sha256: f01c53f4effe243a320b3436fd1f3b95391f17a364b22befaf15b2d602e79e24
+subject-sha256: 7a2e94396a3ecbd084b35dde4ee42d5989c430eef393964caf254521a8f8b015
