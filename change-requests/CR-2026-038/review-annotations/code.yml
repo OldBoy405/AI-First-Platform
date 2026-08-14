@@ -1,0 +1,42 @@
+cr-id: CR-2026-038
+review-type: code
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-15T00:00:09+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  代码↔TASK↔SDD 对齐: "pass: 合并 trunk 后重新执行全部 crctl 测试 299 例通过；writeback 原子化（FR-01/02/03/10）实现完整"
+  工程质量: "pass: node --check 通过；299 tests pass（writeback-tx 22/merge-tx 8/archive-tx/checkpoint-tx/crctl 194 等）"
+  关键路径可读性: "pass"
+  安全性: "pass: candidate 路径固定内部、manifest 全矩阵校验、敏感路径预检由 trunk checkpoint 一并合入"
+  测试覆盖: "pass: 全量回归 + 合并场景（merge with trunk）"
+  测试证据可信度: "pass: 本轮在合并后代码上重新执行 node --test 全量 299 例 0 failures"
+  suggestion-policy: "strict"
+suggestions:
+  - "Ubuntu 仍需 CI 实跑；当前 Windows 全量测试通过，残余风险已在 test-report.md 披露。"
+release-subjects:
+  version: 1
+  repositories:
+    - repo: ai-first-platform-docs
+      remote-ref: refs/heads/requirement/CR-2026-038
+      reviewed-source-sha: 0ce2a0c245ff0d35a36c52598903946a18402dd2
+    - repo: multica
+      remote-ref: refs/heads/requirement/CR-2026-038
+      reviewed-source-sha: 082a7536cdd26f807452610de8f113152dcb8bde
+    - repo: tools
+      remote-ref: refs/heads/requirement/CR-2026-038
+      reviewed-source-sha: 9746dbb52a85df4e3ad8f78e18f7dbaaf19b3292
+  artifacts:
+    algorithm: sha256
+    canonicalization: crlf-to-lf+path-sort
+    files:
+      - { path: change-requests/CR-2026-038/plan.md, sha256: 064a6dbab27d5dafbd41f5be0b51c7f72492838221274919a252e21368849047 }
+      - { path: change-requests/CR-2026-038/prd.md, sha256: c43f1eed48f9798fe805f9e0e0e345d65fcdef7a4c08cbff14ce8c12a5148a1a }
+      - { path: change-requests/CR-2026-038/sdd.md, sha256: dbe1b8944bd20a699488936672f0d61f1ebeb8d1c788116ec739942028367614 }
+      - { path: change-requests/CR-2026-038/tasks/TASK-01.md, sha256: 8d09d1148bd3ccd9dc2b56822fabaaf6976e6f331ddc9210e2fa5b3b26417428 }
+      - { path: change-requests/CR-2026-038/tasks/TASK-02.md, sha256: e5b251df5a9fa1cef0e1448b583e2e9d7cccf2e28dbf43d1fd918b8d7daa99e4 }
+      - { path: change-requests/CR-2026-038/tasks/TASK-03.md, sha256: c5784fd8b396c1017c13289c4ffacf5c072b356dcc78c8f83c9f4b898a545be4 }
+      - { path: change-requests/CR-2026-038/tasks/TASK-04.md, sha256: 75261e31ff014d23c5c5f776366f0ba14d07ce37cb39f20d62dc76725b2aefd7 }
+      - { path: change-requests/CR-2026-038/tasks/TASK-05.md, sha256: 8d5afe23fe84639dafb3ef1b624a82c8a5dac420eb16b81ce59b531dc06ba8c6 }
+      - { path: change-requests/CR-2026-038/tasks/_index.yml, sha256: b721abbed781babdbd8953e26366544af38c317fece5dbdfec1e4a64f698399d }
+    digest: e5ad80524a65c3135941e083f359d5bf9462eabbf5878d28e86eabe8f5552a0b

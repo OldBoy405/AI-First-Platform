@@ -1,0 +1,18 @@
+cr-id: CR-2026-038
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-14T21:20:48+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  PRD到SDD对齐: "PASS：PRD FR-01～FR-04 均有技术落点，AC-01～AC-12 已逐项映射；attempt 1 的状态 after image 崩溃窗与恢复业务输入绑定均已闭合，满足 NFR-01～NFR-09。"
+  架构合理性: "PASS：严格保持 Agent→Pipeline→Skill→crctl→workspace-transactions/durable-tx 单向依赖；状态/门禁经无写入 preflight callback 复用，版本化脚本只做确定性转换，README/Agent 不承载执行算法；未新增事务框架、registry、manager 或依赖。"
+  数据模型完整性: "PASS：manifest 内存快照、固定 candidate、baseline statusTransition、transitionAt、businessInputDigest、manifestDigest、projection markers 和 backlog 完整条目模型字段及不变量齐全。"
+  接口契约: "PASS：公共 CLI 只接受业务输入；stage 固定映射 generator；planned-existing 仅限 fileExists；恢复以 composite inputDigest 防参数漂移；成功/noop/stale/history-rewritten/warning 契约明确。"
+  性能与安全: "PASS：manifest/blob 一次读入、containment/symlink/allowlist/hash、shell=false、raw Git blob、临时 index、精确 lease 和 O(candidate bytes + backlog bytes) 复杂度符合 ARCHITECTURE 与 ponytail 边界。"
+  可测试性: "PASS：preflight 零副作用、journal-created 崩溃、参数漂移 TX_INPUT_CONFLICT、apply/commit/push/projection fault、backlog 首中末、remote rebuild、双平台和静态调用方迁移均有确定性测试向量。"
+  Prompt采纳影响: "PASS：第 8 节覆盖三个 writeback Skill、feature-writeback 三个节点、crctl Skill/index 及 archive/writeback 测试；现有 dispatch 命令面变化虽未新增 case，仍主动完成所有直接调用方采纳清单。"
+suggestions:
+  - "实现 canonical businessInputDigest 时保持一个无 I/O 纯函数并锁定 fixed-key/null/v-prefix/POSIX-path 测试向量；无需新增 schema 或 registry。"
+subject-file: change-requests/CR-2026-038/sdd.md
+subject-sha256: 7a2e94396a3ecbd084b35dde4ee42d5989c430eef393964caf254521a8f8b015
