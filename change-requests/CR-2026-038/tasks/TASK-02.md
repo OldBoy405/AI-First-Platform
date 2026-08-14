@@ -11,7 +11,7 @@ estimate: 14h
 depends-on: [CR-2026-038-TASK-01]
 owner: Ray
 created: "2026-08-14T21:22:00+08:00"
-updated: "2026-08-14T21:22:00+08:00"
+updated: "2026-08-14T21:41:17+08:00"
 ---
 
 # TASK-02：实现 baseline 状态同批发布与恢复投影
@@ -20,7 +20,7 @@ updated: "2026-08-14T21:22:00+08:00"
 
 深化现有 `applyWriteback()`：把 baseline manifest 文件与 `cr.md` 的 `merging -> writing-back` after image 放入同一 recoverable write-set、staged set、commit 和 lease push；origin 确认后再发送 status outbox 与 advance audit，并通过 journal marker 幂等补发。
 
-输入为 TASK-01 的 snapshot、business input digest 和 advance candidate。输出为 TASK-03/TASK-04 可依赖的完整 `applyWriteback(ctx, options)` 生产语义。
+输入为 TASK-01 的 snapshot、business input digest 和 advance candidate。输出为 TASK-03/TASK-04 可依赖的完整新 `applyWriteback(ctx, options)` 路径；该路径在本 TASK 仅由内部测试 seam 调用，公共 dispatch 与旧生产调用保持不变，直至 TASK-04 同批切换并删除旧路径。
 
 ## 2. 涉及文件 / 模块
 
@@ -41,6 +41,7 @@ updated: "2026-08-14T21:22:00+08:00"
 6. origin-confirmed 后调用 `emitStatusEvent` 与 `emitAdvanceAudit`；outbox 名和 audit dedup key 绑定真实 commit，各 marker 成功后 durable save，失败仅 warning。
 7. 登记并覆盖 `writeback-after-journal-create`、apply、commit、push、status-outbox、advance-audit fault point；complete replay 返回同 commit、`changed=false`。
 8. tasks/traceability 保持现有 commit/status 语义，不调用 baseline callback 或发送状态投影。
+9. 新业务输入路径只经内部 seam 验证；不得在本 TASK 提交公共双入口，也不得提前删除现有 candidate dispatch。
 
 ## 4. 验收条件
 
@@ -54,7 +55,7 @@ updated: "2026-08-14T21:22:00+08:00"
 
 ## 5. 完成标志
 
-baseline 原子发布和所有恢复 fault matrix 全绿；`applyWriteback()` 返回 phase/commit/status/files/warnings/recoverCommand，且 complete replay 稳定 `changed=false`。
+内部新路径的 baseline 原子发布和所有恢复 fault matrix 全绿；`applyWriteback()` 返回 phase/commit/status/files/warnings/recoverCommand，且 complete replay 稳定 `changed=false`。现有公共 CLI 回归仍通过，新路径等待 TASK-04 接入。
 
 ## 6. 接口契约
 

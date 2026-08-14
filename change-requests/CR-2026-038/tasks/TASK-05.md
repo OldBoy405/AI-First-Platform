@@ -11,7 +11,7 @@ estimate: 6h
 depends-on: [CR-2026-038-TASK-04]
 owner: Ray
 created: "2026-08-14T21:22:00+08:00"
-updated: "2026-08-14T21:22:00+08:00"
+updated: "2026-08-14T21:41:17+08:00"
 ---
 
 # TASK-05：执行全量回归与交付范围审计
@@ -46,7 +46,7 @@ updated: "2026-08-14T21:22:00+08:00"
 - [ ] `pipeline-templates/*.json` 全部可 JSON.parse，`git diff --check` 通过。
 - [ ] AC-01～AC-12 每项至少有一个实际测试或静态验证证据，无删除测试、放宽 gate/assertion。
 - [ ] changed-files 位于 SDD §1.5；README、Agent、状态机、gates、Multica、package dependency 无范围外变更。
-- [ ] 所有已完成 TASK 在各自完成时经 `crctl task done` 登记，`tasks/_index.yml` 与卡片状态投影一致。
+- [ ] 所有已完成 TASK 在各自完成时经 `crctl task done` 登记，`tasks/_index.yml` 逐项含 `status: done` 与 `done-at`；TASK 卡保持不可变的 `status: pending` 描述源，不手改卡片状态。
 
 ## 5. 完成标志
 

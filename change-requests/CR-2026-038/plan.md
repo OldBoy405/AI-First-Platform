@@ -8,7 +8,7 @@ target-version: tbd
 status: draft
 owner: Ray
 created: "2026-08-14T21:22:00+08:00"
-updated: "2026-08-14T21:22:00+08:00"
+updated: "2026-08-14T21:41:17+08:00"
 total-estimate: 46h
 ---
 
@@ -54,7 +54,7 @@ TASK-01 -> TASK-02 -> TASK-03 -> TASK-04 -> TASK-05
 
 ### 5.1 失败优先
 
-先在现有 `writeback-tx.test.mjs`、`merge-tx.test.mjs` 与 `crctl.test.mjs` 固定新契约和失败矩阵，确认关键新断言在实现前失败，再写最小实现。恶意 manifest 通过内部测试 seam 或 validator 单测注入，不恢复公共 `--candidate` 参数。
+TASK-01 先通过内部 test seam/validator 单测固定 preflight、candidate snapshot 与 gate 契约，确认关键新断言在实现前失败，再写最小基础能力；此时不切换公共 dispatch。TASK-02～TASK-03 的新 writeback/merge 路径保持未接入生产，现有公共调用在中间提交继续可用。公共新 CLI、BAD_ARGS 契约和端到端黑盒测试只在 TASK-04 与全部调用方同批切换；恶意 manifest 始终通过内部 seam 覆盖，不恢复新公共 `--candidate` 参数。
 
 ### 5.2 最小代码路径
 
@@ -66,7 +66,7 @@ TASK-01 -> TASK-02 -> TASK-03 -> TASK-04 -> TASK-05
 
 ### 5.3 迁移策略
 
-公共 CLI、三个 Skill、Pipeline、help/index 和旧生产测试在 TASK-04 同一提交切换，不保留双入口。generator 的内部 `--candidate-out` ABI 与内容转换算法保持不变。
+公共 CLI、三个 Skill、Pipeline、help/index 和旧生产测试在 TASK-04 同一提交切换：同一提交启用新业务输入 dispatch、删除旧 candidate dispatch 并迁移所有 active 调用方，不产生任何已提交的公共双入口或失效中间态。generator 的内部 `--candidate-out` ABI 与内容转换算法保持不变。
 
 ## 6. 资源与分工
 
@@ -145,3 +145,4 @@ node skills/shared/crctl/scripts/lint-prompts.mjs --mode enforce
 | 日期 | 版本 | 作者 | 说明 |
 |---|---|---|---|
 | 2026-08-14 | v0.1.0 | Ray | 5 个串行 TASK、46h；覆盖 preflight、baseline 原子事务、semantic merge、调用方迁移与全量回归 |
+| 2026-08-14 | v0.2.0 | Ray | dev-plan attempt 1 回修 DP-BL-1/2：TASK-01～03 限定为未接入生产的内部路径，TASK-04 同批切换 CLI/调用方；TASK done 以受控索引为唯一进度事实 |

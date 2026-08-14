@@ -11,7 +11,7 @@ estimate: 6h
 depends-on: [CR-2026-038-TASK-03]
 owner: Ray
 created: "2026-08-14T21:22:00+08:00"
-updated: "2026-08-14T21:22:00+08:00"
+updated: "2026-08-14T21:41:17+08:00"
 ---
 
 # TASK-04：一次性迁移 Writeback 调用方契约
@@ -37,12 +37,13 @@ updated: "2026-08-14T21:22:00+08:00"
 
 ## 3. 实现要点
 
-1. baseline Skill 只校验业务输入、调用一次 `crctl writeback-apply --stage baseline`、分类 complete/noop/stale/history-rewritten/source error；删除 generator、candidate 与独立 advance。
-2. tasks Skill 同样只调用一次 `--stage tasks`；traceability Skill 可起草 milestone 业务文件，但只把 workspace-relative milestone-file 作为业务输入。
-3. feature-writeback 三节点只编排 Skill 和传递业务参数；删除 generator 命令、candidate dir/manifestPath、journal/CAS/commit/push 算法与 baseline 独立 advance。
-4. crctl Skill、CLI help 与 `_index.yml` 只描述业务参数、固定内部 generator 和 baseline 原子语义。
-5. 旧 archive/writeback 生产测试改为只传业务输入，直接断言 baseline 返回 writing-back 且同一 commit；恶意 manifest 用内部 seam 覆盖。
-6. generator 脚本内部 `--candidate-out` ABI 和内容转换算法保持不变；README/Agent 全面文本留给 CR-2026-042。
+1. 在同一提交切换 `crctl writeback-apply` dispatch：启用 TASK-01/02 的业务输入路径，删除旧公共 candidate 路径，并加入废弃 `--candidate`/`--candidate-out`/`--generator`/manifest 参数的 BAD_ARGS 黑盒测试；不得留下双入口或失效提交。
+2. baseline Skill 只校验业务输入、调用一次 `crctl writeback-apply --stage baseline`、分类 complete/noop/stale/history-rewritten/source error；删除 generator、candidate 与独立 advance。
+3. tasks Skill 同样只调用一次 `--stage tasks`；traceability Skill 可起草 milestone 业务文件，但只把 workspace-relative milestone-file 作为业务输入。
+4. feature-writeback 三节点只编排 Skill 和传递业务参数；删除 generator 命令、candidate dir/manifestPath、journal/CAS/commit/push 算法与 baseline 独立 advance。
+5. crctl Skill、CLI help 与 `_index.yml` 只描述业务参数、固定内部 generator 和 baseline 原子语义。
+6. 旧 archive/writeback 生产测试改为只传业务输入，直接断言 baseline 返回 writing-back 且同一 commit；恶意 manifest 用内部 seam 覆盖。
+7. generator 脚本内部 `--candidate-out` ABI 和内容转换算法保持不变；README/Agent 全面文本留给 CR-2026-042。
 
 ## 4. 验收条件
 
