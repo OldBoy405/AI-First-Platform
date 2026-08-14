@@ -1,0 +1,19 @@
+cr-id: CR-2026-038
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-14T21:14:37+08:00"
+verdict: block
+blockers:
+  - "TD-BL-1：baseline 状态 after image 在 journal 创建后才生成，但 SDD 未定义 journal 创建与 after image 持久化之间崩溃后的确定性重建。当前 crMdStatusText 内部生成时间，重放可能得到不同 afterSha256，破坏同一 write-set 的可恢复性。必须冻结 transitionAt（建议复用 journal.createdAt）并让共享 writer 接收该时间，或在 journal 可见前持久化完整 after image；不得复制 updated/updated-at 字段分支。"
+  - "TD-BL-2：既有 writeback journal 恢复分支跳过 generator并复用固定 candidate，但 SDD 未把公共业务输入与 journal/manifest 绑定。调用方改变 target_version、milestone_name、brief 或 milestone_file 后可能误续旧事务。必须定义 canonical businessInputDigest，并与 manifestDigest共同绑定 journal；恢复时先比较，漂移返回 TX_INPUT_CONFLICT。"
+dimensions:
+  PRD到SDD对齐: "BLOCK：FR-01/NFR-02/NFR-03 要求所有崩溃点可恢复且同一输入幂等；当前状态 after image 崩溃窗和恢复业务输入未绑定尚未闭合。其余 FR-01～FR-04 与 AC-01～AC-12 均有明确设计落点。"
+  架构合理性: "PASS：模块依赖保持 Agent→Pipeline→Skill→crctl→workspace-transactions/durable-tx 单向；复用现有深原语、窄 callback、标准库与原生 Git，未新增事务框架、registry 或依赖。"
+  数据模型完整性: "BLOCK：journal 已定义 statusTransition/outboxEmitted/auditEmitted，但缺稳定 transitionAt/after image 重建规则及 canonical businessInputDigest。"
+  接口契约: "BLOCK：公共 CLI 已收缩为业务输入，但恢复时这些输入与既有 journal 的比较契约未冻结。"
+  性能与安全: "PASS：manifest 一次读入、path containment、symlink parent、allowlist、planned-existing 限权、raw Git blob、精确 lease 和线性 backlog 替换完整。"
+  可测试性: "BLOCK：故障矩阵未覆盖 journal-created-before-state-image，以及同 stage 变更业务输入后恢复应 TX_INPUT_CONFLICT 两个向量。"
+  Prompt采纳影响: "PASS：第 8 节覆盖三个 writeback Skill、feature-writeback 三节点、crctl Skill/index 及旧生产测试迁移；未触及 rules deny 面。"
+suggestions: []
+subject-file: change-requests/CR-2026-038/sdd.md
+subject-sha256: f01c53f4effe243a320b3436fd1f3b95391f17a364b22befaf15b2d602e79e24
