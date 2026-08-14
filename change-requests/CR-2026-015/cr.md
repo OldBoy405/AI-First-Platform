@@ -34,7 +34,7 @@ owners:
     assigned-at: "2026-08-04T06:54:00+08:00"
 target-version: "0.22"
 source: "docs/product/P3-组织智能设计.md §2（E4+E5+E9）"
-status: drafting
+status: withdrawn
 created: "2026-08-04T06:54:00+08:00"
 updated: "2026-08-04T06:54:00+08:00"
 remote-ref: ""
