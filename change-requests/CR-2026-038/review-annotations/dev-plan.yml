@@ -1,0 +1,21 @@
+cr-id: CR-2026-038
+review-type: dev-plan
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-14T21:40:51+08:00"
+verdict: block
+repair-target: write-dev-plan
+blockers:
+  - "DP-BL-1：TASK-01 的验收与完成标志要求公共 CLI 已拒绝旧 candidate 参数，但 plan §5.3/TASK-04 才要求同批迁移全部调用方。按当前拓扑完成 TASK-01 会在 TASK-04 前破坏现有生产调用，违反 SDD §10.1 的 T02～T04 新路径尚无生产调用方、T05 同提交切换接口。修复：TASK-01 仅冻结内部 preflight/test seam；TASK-02 新原子路径保持未接入生产；把公共 CLI 参数切换、BAD_ARGS 测试和旧路径删除全部收敛到 TASK-04。"
+  - "DP-BL-2：TASK-05 验收要求所有 TASK done 后 tasks/_index.yml 与 TASK 卡 status 投影一致，但现有 crctl task done 只更新受控 _index.yml，TASK 卡 frontmatter 保持 pending（既有 CR-2026-037 即为该语义）。该验收不可执行且会诱导手改卡片。修复：改为 _index.yml 逐项 done/done-at，TASK 卡保持不可变 pending 描述源，不要求同步 status。"
+dimensions:
+  sdd-to-plan: "block：总体覆盖完整，但实施切换时序未准确落实 SDD §10.1 的未接入生产边界。"
+  plan-to-tasks: "pass：五个里程碑均有 TASK，46h 与索引汇总一致。"
+  task-executability: "block：TASK-01 中间态会破坏生产调用，TASK-05 含不可成立的状态同步要求。"
+  dependency-topology: "pass：5 张卡串行无悬空、无环，文件所有权顺序合理。"
+  interface-contracts: "block：新内部接口与公共 CLI 切换的生效节点未隔离清楚。"
+  acceptance-verifiability: "block：TASK-05 的卡片 status 一致性无法通过权威 task done 实现。"
+  scope-and-simplicity: "pass：无新增依赖、registry、manager、框架或范围外仓库。"
+  risk-and-rollback: "block：当前 TASK-01 完成态与整体回滚/迁移策略冲突。"
+  suggestion-policy: "strict"
+  reviewer-model: "RayOpenAI_2X/gpt-5.6-sol"
+suggestions: []
