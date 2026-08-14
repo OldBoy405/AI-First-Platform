@@ -5,7 +5,7 @@ cr-ref: CR-2026-038
 title: tools CR 生命周期最小优化 1/5 — Writeback 原子化技术设计
 status: draft
 created: 2026-08-14T20:54:20+08:00
-updated: 2026-08-14T21:15:25+08:00
+updated: 2026-08-14T22:12:00+08:00
 ---
 
 # 1. 架构概览
@@ -589,18 +589,26 @@ trunkBacklog  = gitReadBlobRaw(<baseSha>, "change-requests/_backlog.yml")
 sourceBacklog = gitReadBlobRaw(<sourceSha>, "change-requests/_backlog.yml")
 mergedBacklog = replaceBacklogEntry(trunkBacklog, sourceBacklog, cr)
 
-blobSha = git hash-object -w --stdin <<< mergedBacklog
+trunkBlob = git hash-object -w --stdin <<< trunkBacklog
+mergedBlob = git hash-object -w --stdin <<< mergedBacklog
 create temporary GIT_INDEX_FILE under installation .crctl/tmp
+# 第一步：中和 source 的 backlog 变更，让 Git 只合并其他文件
 GIT_INDEX_FILE=... git read-tree <sourceSha>
-GIT_INDEX_FILE=... git update-index --cacheinfo <source-mode>,<blobSha>,change-requests/_backlog.yml
-syntheticTree = GIT_INDEX_FILE=... git write-tree
-syntheticCommit = git commit-tree <syntheticTree> -p <sourceSha>
+GIT_INDEX_FILE=... git update-index --cacheinfo <source-mode>,<trunkBlob>,change-requests/_backlog.yml
+neutralTree = GIT_INDEX_FILE=... git write-tree
+syntheticCommit = git commit-tree <neutralTree> -p <sourceSha>
 mergeTree = git merge-tree --write-tree <baseSha> <syntheticCommit>
-finalMergeCommit = git commit-tree <mergeTree> -p <baseSha> -p <sourceSha>
+# 第二步：在已成功合并的 tree 上写入语义合并 backlog blob
+GIT_INDEX_FILE=... git read-tree <mergeTree>
+GIT_INDEX_FILE=... git update-index --cacheinfo <source-mode>,<mergedBlob>,change-requests/_backlog.yml
+finalTree = GIT_INDEX_FILE=... git write-tree
+finalMergeCommit = git commit-tree <finalTree> -p <baseSha> -p <sourceSha>
 remove temporary index in finally
 ```
 
 `gitRun/gitMust` 仅增加内部 `opts.env` 透传以设置固定 `GIT_INDEX_FILE`；不开放给 CLI/Skill。backlog 内容不得通过现有会对 stdout 执行 `trim()` 的 `gitMust()` 读取；增加一个仅封装固定 `git cat-file blob` argv 的 `gitReadBlobRaw()`，保留首尾空行、CRLF 与末尾换行，并以 Buffer/未裁剪 UTF-8 stdout 返回。source 文件 mode 由 `git ls-tree` 读取并要求为普通 blob，`update-index --cacheinfo` 沿用该 mode。临时 index 位于 `.crctl/tmp`，不入 Git。`hash-object`、synthetic `commit-tree` 只产生不可达对象，不移动 ref、不 checkout、不发布；最终 merge commit 的第二 parent 仍是原始 source SHA，release-subjects 和 ancestry 契约不变。
+
+**实施期 revision（v0.3.0）**：原 v0.2.0 直接把 `mergedBacklog` 放进 parent=source 的 synthetic commit，Git 实测仍会把 backlog 判为双方修改并产生冲突。修订为上述“两段式中和再回填”：synthetic tree 先使用 trunk backlog，使 `merge-tree` 只处理其他文件；成功后再对 merge tree 写入 semantic merged blob。该修订只改变不可达 synthetic tree 的内部计算顺序，最终 tree、最终双亲、lease publish、错误边界和 FR/AC 结论均不受影响。
 
 source backlog path 缺失、不是普通 blob、目标条目缺失/重复或 `merge-tree` 仍冲突时，在任何 repo publish 前硬失败。不得回退到整份 trunk、整份 source、行号拼接或 `-X ours/theirs`。
 
@@ -850,3 +858,4 @@ T02～T04 期间新路径尚无生产调用方，便于独立验证；T05 必须
 |---|---|---|---|
 | 2026-08-14 | v0.1.0 | Ray | 初始设计：固定 generator/candidate 内部化、lock/journal 前完整 preflight、baseline 状态同 write-set/commit/push、origin-confirmed status outbox与 advance audit、目标 CR backlog 条目语义合并及 Git synthetic tree；FR 覆盖 4/4，AC 覆盖 12/12 |
 | 2026-08-14 | v0.2.0 | Ray | 技术评审 attempt 1 回修 TD-BL-1/2：以 journal.createdAt 冻结 transitionAt 并由共享 writer 确定性重建状态 after image；新增 canonical businessInputDigest，与 manifestDigest 共同绑定 journal inputDigest；补 journal-create 崩溃窗和参数漂移 TX_INPUT_CONFLICT 测试 |
+| 2026-08-14 | v0.3.0 | Ray | 实施期事实修订：Git 实测直接 merged-backlog synthetic commit 仍冲突，改为 trunk backlog 中和 source → merge 其他文件 → 回填 semantic merged blob；最终 tree/parents/发布与 FR/AC 结论不变 |
