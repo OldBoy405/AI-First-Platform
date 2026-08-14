@@ -1,0 +1,16 @@
+cr-id: CR-2026-037
+review-type: requirement
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-13T10:18:33+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  结构完整性: "PASS：概述、5 个用户故事、9 条 FR、非功能需求、12 条 AC、成功指标、依赖风险、范围排除和变更记录齐全；问题事实与当前 crctl/gate/Skill/Pipeline 实现一致。"
+  FR可测试性: "PASS：task init 的输入、状态、确定性输出、CAS/审计、幂等、进度保护、依赖 DAG、CRLF、gate 阻断和 Skill/Pipeline 采用均有可执行 AC；错误码和零副作用边界明确。"
+  范围合理性: "PASS：只新增一个 crctl 深原语、一个既有 gate 条目和直接消费者采纳；复用 parser/CAS/audit，不新增事务、manifest、脚本、依赖、状态或 Agent 权限。"
+  与规划对齐: "PASS：直接解决 CR-2026-032 暴露的 task-breakdown blocker，并符合 Agent/Pipeline/Skill/crctl/版本化脚本/README 的职责分层；已解决基础设施与本次最小改造分开。"
+  依赖识别: "PASS：识别现有 frontmatter/YAML 子集/CAS/audit/task done/review-dev-plan 依赖，明确 generic validate 受 schema ID 漂移阻塞；一次性 bootstrap 限定为人类、CR-2026-037 单文件且上线即失效。"
+suggestions:
+  - "SDD 应冻结 task init 刷新已有 pending 索引时的 CAS 预期哈希与 changed=false 审计策略，并明确 title 的 YAML 安全渲染复用现有 JSON 字符串方式。"
+subject-file: change-requests/CR-2026-037/prd.md
+subject-sha256: 5aba3c18d939ebed2328a9e9de36472d241b8ea162a9d3a6821a40be6373abaa

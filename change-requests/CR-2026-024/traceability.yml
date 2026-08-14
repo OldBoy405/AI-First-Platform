@@ -1,0 +1,81 @@
+cr-id: CR-2026-024
+reviews:
+  requirement:
+    reviewer: ai-reviewer
+    verdict: pass
+    reviewed-at: "2026-08-08T17:35:00+08:00"
+    blocker-count: 0
+    review-loop:
+      current-attempt: 1
+      max-attempts: 3
+      attempts:
+        - attempt: 1
+          reviewed-at: "2026-08-08T17:35:00+08:00"
+          result: pass
+          blocker-count: 0
+          repair-target: write-requirement-prd
+  tech-design:
+    reviewer: "OldBoy405"
+    verdict: pass
+    reviewed-at: "2026-08-08T21:36:43+08:00"
+    blocker-count: 0
+    annotation: "change-requests/CR-2026-024/review-annotations/sdd.yml"
+    review-loop:
+      current-attempt: 3
+      max-attempts: 3
+      attempts:
+        - attempt: 1
+          reviewed-at: "2026-08-08T20:45:24+08:00"
+          result: block
+          blocker-count: 7
+          repair-target: write-tech-design
+        - attempt: 2
+          reviewed-at: "2026-08-08T21:22:26+08:00"
+          result: block
+          blocker-count: 4
+          repair-target: write-tech-design
+          note: "attempt-1 的 B-1~B-4/M-1~M-3 七条经核实已在 SDD 修复；新发现 B-5~B-8：PRD FR-1/FR-2/FR-11/FR-14 正文未随 SDD 修复同步（仅 AC 被订正），FR↔AC↔SDD 三方脱节"
+        - attempt: 3
+          reviewed-at: "2026-08-08T21:36:43+08:00"
+          result: pass
+          blocker-count: 0
+          note: "B-5~B-8 修复核实，blockers=0；FR↔AC↔SDD 三方对齐恢复（FR-1/FR-2/FR-11/FR-14 正文同步），进入人工审批"
+  code:
+    reviewer: "OldBoy405"
+    verdict: pass
+    reviewed-at: "2026-08-08T23:58:05+08:00"
+    blocker-count: 0
+    suggestion-count: 2
+    task-coverage: "3/3"
+    test-report-status: pass
+    annotation: "change-requests/CR-2026-024/review-annotations/code.yml"
+    review-loop:
+      current-attempt: 2
+      max-attempts: 3
+      attempts:
+        - attempt: 1
+          reviewed-at: "2026-08-08T23:11:16+08:00"
+          result: block
+          blocker-count: 2
+          repair-target: implement-code
+        - attempt: 2
+          reviewed-at: "2026-08-08T23:58:05+08:00"
+          result: pass
+          blocker-count: 0
+          note: "首轮 C-1/C-2 修复复验通过；四组验证全绿（56 skills / 9 agents / lint 0 / tests 106），进入人工代码审批"
+tests:
+  report: change-requests/CR-2026-024/test-report.md
+  status: pass
+  owner: OldBoy405
+  owner-assigned-at: "2026-08-08T16:44:35+08:00"
+  generated-at: "2026-08-08T23:34:23+08:00"
+  repair-target: implement-code
+  commands:
+    - name: check-skill-matrix
+      result: pass
+    - name: check-agents-contract
+      result: pass
+    - name: lint-prompts-enforce
+      result: pass
+    - name: node-test-regression
+      result: pass

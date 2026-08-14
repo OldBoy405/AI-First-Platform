@@ -1,0 +1,39 @@
+cr-id: CR-2026-023
+tasks:
+  - id: CR-2026-023-TASK-01
+    title: 块 B — lint-prompts.mjs 新增 R9 规则（FR-7）
+    status: done
+    done-at: "2026-08-07T01:16:48+08:00"
+    estimate: 4h
+    depends-on: []
+  - id: CR-2026-023-TASK-02
+    title: 块 B — R9 测试向量（FR-12）
+    status: done
+    done-at: "2026-08-07T01:16:48+08:00"
+    estimate: 3h
+    depends-on: [CR-2026-023-TASK-01]
+  - id: CR-2026-023-TASK-03
+    title: 块 B — 17 处存量清零 + push-progress 闭环 + requirement-writer 注记 + AGENTS.md 条目（FR-8/9/10/11）
+    status: done
+    done-at: "2026-08-07T01:16:48+08:00"
+    estimate: 6h
+    depends-on: [CR-2026-023-TASK-01]
+  - id: CR-2026-023-TASK-04
+    title: 块 A — code-implementation pipeline 插入「选择代码评审 LLM」节点（FR-1/2/3/4）
+    status: done
+    done-at: "2026-08-07T01:41:25+08:00"
+    estimate: 5h
+    depends-on: [CR-2026-023-TASK-03]
+  - id: CR-2026-023-TASK-05
+    title: 块 A — _index.yml nodes 12→13 + README 节点表/mermaid 同步（FR-5/6）
+    status: done
+    done-at: "2026-08-07T01:41:25+08:00"
+    estimate: 3h
+    depends-on: [CR-2026-023-TASK-04]
+  - id: CR-2026-023-TASK-06
+    title: 收尾 — 五步自检 + pre-commit 三件套 + 溯源标注 + 端到端验收（FR-13/14 + AC-11）
+    status: done
+    done-at: "2026-08-07T01:41:26+08:00"
+    estimate: 4h
+    depends-on: [CR-2026-023-TASK-01, CR-2026-023-TASK-02, CR-2026-023-TASK-03, CR-2026-023-TASK-04, CR-2026-023-TASK-05]
+

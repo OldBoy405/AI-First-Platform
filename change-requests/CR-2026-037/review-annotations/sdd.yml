@@ -1,0 +1,18 @@
+cr-id: CR-2026-037
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-13T10:27:19+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  PRD到SDD对齐: "PASS：FR-01～FR-09 全部映射到命令、数据模型、状态保护、CAS/审计、门禁、Skill/Pipeline 采纳、bootstrap 和范围守卫；测试计划覆盖 AC-01～AC-12。"
+  架构合理性: "PASS：Agent/Pipeline/Skill/crctl/脚本/README 职责清晰；复用现有 parser、frontmatter、状态读取、CAS、audit 与 fileExists gate，只新增一个深原语，不新增模块、事务框架或依赖。"
+  数据模型完整性: "PASS：TASK 输入投影与 canonical index 五字段明确；title 安全转义、编号排序、LF 稳定、已有进度 fail-closed 和老索引兼容边界完整。"
+  接口契约: "PASS：task init 无数据/force 参数，允许态、结构化响应、错误码、changed=false/no-audit、TASK freshness 与状态推进分离均明确；task done 保持不变。"
+  性能与安全: "PASS：固定 CR 目录与严格文件名，无任意路径；O(n+e+bytes) 两遍读取；create-only/replace CAS、并发 freshness 与进度保护满足零覆盖要求。"
+  可测试性: "PASS：14 类定向向量覆盖 create/no-op/refresh/坏卡/依赖/环/状态/进度/CRLF/race/gate/next/回归/静态契约，全部可在现有 crctl.test.mjs fixture 内完成。"
+  Prompt采纳影响: "PASS：新增 dispatch 的消费方完整列出；write-dev-tasks 与 code-implementation Pipeline 只采纳调用，不复制 DAG/CAS/YAML；Agent、README 与其他 Pipeline 无需变化。"
+suggestions:
+  - "实现 create-only 时若 open('wx') 后 write/close 抛错，只清理由本进程已成功创建的目标文件并保留原错误；补一条窄测试即可，不引入 durable transaction。"
+subject-file: change-requests/CR-2026-037/sdd.md
+subject-sha256: 98189375f3aa1d52fd35df8ba577a9440bb19cf82caa24acd8ba68a5cdd76941

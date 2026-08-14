@@ -1,0 +1,44 @@
+cr-id: CR-2026-018
+review-type: requirement
+reviewer: ai-reviewer
+reviewed-at: "2026-08-04T13:10:00+08:00"
+verdict: pass
+blockers: []
+repair-target: write-requirement-prd
+repair-instructions: []
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 0
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-08-04T13:10:00+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: write-requirement-prd
+review-notes:
+  - dimension: 结构完整性
+    result: pass
+    detail: 概述/用户故事/FR/NFR/AC/成功指标/范围排除七章齐全，含已核实的事实基线表（纪律 #4）
+  - dimension: FR 可测试性
+    result: pass
+    detail: FR-1~9 与 AC-1~9 一一对应，AC 均给出可操作的验证方式（git diff、构造新旧布局、grep、fixture 对比、端到端 dry-run）
+  - dimension: 范围合理性
+    result: pass
+    detail: 范围排除 6 条明确（P2、状态机语义、_history 结构、非知识库仓、兼容读移除、master 侧可见性均划出）
+  - dimension: 与规划对齐
+    result: pass
+    detail: 覆盖复盘 §3.1 T1-full 全部要点——单写 cr.md（FR-1）、兼容读（FR-2）、注册索引（FR-3）、31 个 skill 修订（FR-6）、双适配器同版本（FR-8）、迁移路径（FR-5）；并修正了 cr.md summary 中"8 处写入逻辑"的误记（实为 1 个写入函数 crctl.mjs:674）
+  - dimension: 依赖识别
+    result: pass
+    detail: P2 前置关系、适配器同版本发布约束、兼容窗口（NFR-4）均已声明
+suggestions:
+  - "target-version 当前为 tbd，需在进入回写期（--to writing-back --spec-id）前落定"
+  - "建议 SDD 阶段明确兼容读（FR-2 回退路径）的移除版本号，避免 deprecated 无限期存活"
+  - "AC-6 的 grep 断言在 SDD 阶段可细化为逐 skill 清单，31 个文档中实际消费 status 的子集需先盘点"

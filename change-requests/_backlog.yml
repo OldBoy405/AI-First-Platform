@@ -1,3 +1,4 @@
+schema: cr-backlog/v2
 change-requests:
   - id: CR-2026-006
     title: P2 三模式聊天 CR-A — 三 tab 窗口骨架 + Team Agent 消息流核心（D2+D3 核心）
@@ -26,8 +27,6 @@ change-requests:
     target-version: "0.13"
     source: "docs/product/P2-三模式聊天窗口主体-交付切分.md v2（d7e4ece）CR-A"
     prd-path: ""
-    status: archived
-    updated-at: "2026-08-02T09:42:17+08:00"
     created: "2026-08-01T23:36:00+08:00"
     updated: "2026-08-01T23:36:00+08:00"
   - id: CR-2026-007
@@ -52,8 +51,6 @@ change-requests:
     target-version: "0.14"
     source: "docs/product/P2-三模式聊天窗口主体-交付切分.md v2（d7e4ece）CR-B"
     prd-path: ""
-    status: archived
-    updated-at: "2026-08-02T21:55:00+08:00"
     created: "2026-08-02T10:00:39+08:00"
     updated: "2026-08-02T10:00:39+08:00"
     merge-commits:
@@ -92,8 +89,6 @@ change-requests:
     target-version: "0.15"
     source: "docs/product/P2-三模式聊天窗口主体-交付切分.md v2（d7e4ece）CR-C"
     prd-path: ""
-    status: archived
-    updated-at: "2026-08-02T17:51:04+08:00"
     created: "2026-08-02T10:00:39+08:00"
     updated: "2026-08-02T10:00:39+08:00"
     merge-commits:
@@ -132,8 +127,6 @@ change-requests:
     target-version: "0.17"
     source: "docs/product/P2-三模式聊天窗口主体-交付切分.md v2（d7e4ece）CR-E"
     prd-path: ""
-    status: archived
-    updated-at: "2026-08-03T01:11:44+08:00"
     merge-commits:
       - repo: ai-first-platform-docs
         trunk: master
@@ -172,11 +165,8 @@ change-requests:
     target-version: "0.18"
     source: "docs/product/P2-三模式聊天窗口主体-交付切分.md v2（d7e4ece）CR-F"
     prd-path: ""
-    status: archived
-    updated-at: "2026-08-03T14:39:53+08:00"
     created: "2026-08-02T10:00:39+08:00"
     updated: "2026-08-02T10:00:39+08:00"
-        merged-at: "2026-08-04T01:24:30+08:00"
   - id: CR-2026-013
     title: P3 组织智能 CR-A — AI 成熟度看板数据地基与前端（E1+E2）
     summary: >-
@@ -204,7 +194,6 @@ change-requests:
     target-version: "0.20"
     source: "docs/product/P3-组织智能设计.md §1（E1+E2）"
     prd-path: ""
-    status: drafting
     created: "2026-08-04T06:52:00+08:00"
     updated: "2026-08-04T06:52:00+08:00"
   - id: CR-2026-014
@@ -236,7 +225,6 @@ change-requests:
     target-version: "0.21"
     source: "docs/product/P3-组织智能设计.md §1.4 + §1.2（E3+E7）"
     prd-path: ""
-    status: drafting
     created: "2026-08-04T06:53:00+08:00"
     updated: "2026-08-04T06:53:00+08:00"
   - id: CR-2026-015
@@ -275,7 +263,6 @@ change-requests:
     target-version: "0.22"
     source: "docs/product/P3-组织智能设计.md §2（E4+E5+E9）"
     prd-path: ""
-    status: drafting
     created: "2026-08-04T06:54:00+08:00"
     updated: "2026-08-04T06:54:00+08:00"
   - id: CR-2026-016
@@ -306,7 +293,6 @@ change-requests:
     target-version: "0.23"
     source: "docs/product/P3-组织智能设计.md §4（E8）"
     prd-path: ""
-    status: drafting
     created: "2026-08-04T06:54:00+08:00"
     updated: "2026-08-04T06:54:00+08:00"
   - id: CR-2026-017
@@ -349,6 +335,62 @@ change-requests:
     target-version: "0.24"
     source: "docs/product/P3-组织智能设计.md §3（E6）"
     prd-path: ""
-    status: drafting
     created: "2026-08-04T06:55:00+08:00"
     updated: "2026-08-04T06:55:00+08:00"
+  - id: CR-2026-034
+    title: tools Test 原子记录：受信 run + 固定 generator + record 原子记账（TCA-012）
+    summary: "按《tools-archive-checkpoint-test-traceability-optimization-plan.md》§12 交付分组 C（T06-T09）：TST-01~07 收敛——crctl test run/record 两个深原语；run 是受信代码执行（argv/shell:false/cwd containment/固定 timeout/50MiB 总日志上限），subject 绑定 HEAD+全部未忽略工作树内容；analysis 无 status、最终状态机械推导；run-id+analysis digest 一对一幂等；record 原子写 report/evidence/trace/review-loop 并删旧 cmdTest；quality reviewer 移除 test 执行权。"
+    owner: Ray
+    owners:
+      requirement:
+        id: Ray
+        assigned-at: "2026-08-13T08:35:35+08:00"
+      development:
+        id: Ray
+        assigned-at: "2026-08-13T08:35:35+08:00"
+      test:
+        id: Ray
+        assigned-at: "2026-08-13T08:35:35+08:00"
+    target-version: tbd
+    source: docs/analysis/tools-archive-checkpoint-test-traceability-optimization-plan.md
+    prd-path: ""
+    created: "2026-08-13T08:35:35+08:00"
+    updated: "2026-08-13T08:35:35+08:00"
+  - id: CR-2026-035
+    title: tools Traceability/feedback 收敛：baseline 证据、alignment、impact 退休、feedback（TCA-013/014）
+    summary: "按《tools-archive-checkpoint-test-traceability-optimization-plan.md》§12 交付分组 D（T10-T14 含 T10A）：TRA-01~12 收敛——writeback-traceability 机器注入 tests/reviews/approval/merge 并删除 master fallback；ARC-02 严格 archive gate 只校验当前 CR 段；review-record 机器注入固定 input-subjects；alignment 无 payload 机器投影（key=alignment:<CR-ID>:<stage>，稳定 finding 只含 state/changed/missing subjects）；impact 退休 change-impact-analysis；feedback 单 spec 终态事实（baseline feedback[]+history digest 同 commit、无 outbox）；protectedPaths deny 与 generator 真值校验；Agent/Pipeline/README 收敛。"
+    owner: Ray
+    owners:
+      requirement:
+        id: Ray
+        assigned-at: "2026-08-13T08:35:59+08:00"
+      development:
+        id: Ray
+        assigned-at: "2026-08-13T08:35:59+08:00"
+      test:
+        id: Ray
+        assigned-at: "2026-08-13T08:35:59+08:00"
+    target-version: tbd
+    source: docs/analysis/tools-archive-checkpoint-test-traceability-optimization-plan.md
+    prd-path: ""
+    created: "2026-08-13T08:35:59+08:00"
+    updated: "2026-08-13T08:35:59+08:00"
+  - id: CR-2026-036
+    title: tools 静态治理收尾：lint 定向规则、pipeline checker、唯一双平台 CI（防回归）
+    summary: "按《tools-archive-checkpoint-test-traceability-optimization-plan.md》§12 交付分组 E（T15-T16）：定向 lint-prompts 规则（R10/R14/R17/R18/R22/R23）、check-pipeline-contract 四检查、删除重复 check-skill-matrix workflow、crctl-ci.yml 唯一双平台 CI（补 AGENT-SKILL-MATRIX.md 触发路径并更新 OpenWiki 旧入口引用）。"
+    owner: Ray
+    owners:
+      requirement:
+        id: Ray
+        assigned-at: "2026-08-13T08:36:23+08:00"
+      development:
+        id: Ray
+        assigned-at: "2026-08-13T08:36:23+08:00"
+      test:
+        id: Ray
+        assigned-at: "2026-08-13T08:36:23+08:00"
+    target-version: tbd
+    source: docs/analysis/tools-archive-checkpoint-test-traceability-optimization-plan.md
+    prd-path: ""
+    created: "2026-08-13T08:36:23+08:00"
+    updated: "2026-08-13T08:36:23+08:00"

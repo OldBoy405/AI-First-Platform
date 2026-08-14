@@ -1,0 +1,116 @@
+cr-id: CR-2026-022
+tasks:
+  - id: CR-2026-022-TASK-01
+    title: 批 1 — crctl advance 命令串 12 处修正 + 豁免注释外移 + 死引用/措辞订正（FR-1~3）
+    status: done
+    done-at: "2026-08-06T08:50:00+08:00"
+    estimate: 6h
+    depends-on: []
+  - id: CR-2026-022-TASK-02
+    title: 批 2 — 死内容清理（cr-status-set 下线 + validate-doc/focus-briefing/record-adr 等）（FR-4~8）
+    status: done
+    done-at: "2026-08-06T09:10:00+08:00"
+    estimate: 6h
+    depends-on: [CR-2026-022-TASK-01]
+  - id: CR-2026-022-TASK-03
+    title: 批 2.5 — cr-init 补 --summary/--source/--target-version 旗标 + 删 cr_id 死参数（FR-9）
+    status: done
+    done-at: "2026-08-06T09:30:00+08:00"
+    estimate: 5h
+    depends-on: []
+  - id: CR-2026-022-TASK-04
+    title: 批 2.5 — git commit --template 补显式 --cr 旗标（FR-10）
+    status: done
+    done-at: "2026-08-06T09:35:00+08:00"
+    estimate: 3h
+    depends-on: []
+  - id: CR-2026-022-TASK-05
+    title: 批 2.5 — checkpoint-add LEGAL 白名单派生 + push-progress Step 3 重写 + 节点 12 补齐（FR-11）
+    status: done
+    done-at: "2026-08-06T10:00:00+08:00"
+    estimate: 6h
+    depends-on: []
+  - id: CR-2026-022-TASK-06
+    title: 批 2.5 — dir-graph 两条 reject 转换 + cmdApprove decline 回退 + approve-* 错误表订正（FR-12）
+    status: done
+    done-at: "2026-08-06T10:30:00+08:00"
+    estimate: 8h
+    depends-on: []
+  - id: CR-2026-022-TASK-07
+    title: 批 2.5 — gates.json review-planning-report 死配置删除 + pipeline node-6 承诺订正（FR-13）
+    status: done
+    done-at: "2026-08-06T10:45:00+08:00"
+    estimate: 3h
+    depends-on: []
+  - id: CR-2026-022-TASK-08
+    title: 批 2.5 — requirement-register Step 5 fetch 失败 STALE_BASE 降级（FR-14）
+    status: done
+    done-at: "2026-08-06T10:45:00+08:00"
+    estimate: 2h
+    depends-on: []
+  - id: CR-2026-022-TASK-09
+    title: 批 3 — inbox-emit 接口对齐（owner-handover 三处同步 + feedback-writeback/handover-cr 迁 CLI）（FR-15）
+    status: done
+    done-at: "2026-08-06T11:00:00+08:00"
+    estimate: 5h
+    depends-on: []
+  - id: CR-2026-022-TASK-10
+    title: 批 3 — merge-feature-branch HEAD 一致性校验 + write-competitive-report 写入目标/两阶段确认（FR-16/17）
+    status: done
+    done-at: "2026-08-06T11:00:00+08:00"
+    estimate: 5h
+    depends-on: []
+  - id: CR-2026-022-TASK-11
+    title: 批 3 — architecture-design pipeline UUID 0016 迁移含 repairNodeId + seed 幂等（FR-18）
+    status: done
+    done-at: "2026-08-06T11:00:00+08:00"
+    estimate: 4h
+    depends-on: []
+  - id: CR-2026-022-TASK-12
+    title: 批 3 — market-insights 索引统一 schema + 迁移脚本 + 节点 5 终态订正（FR-19）
+    status: done
+    done-at: "2026-08-06T11:00:00+08:00"
+    estimate: 5h
+    depends-on: []
+  - id: CR-2026-022-TASK-13
+    title: 批 3 — sync owner-set 改调 + cmdNext writing-back 修正 + cr-show 收敛（FR-20~22）
+    status: done
+    done-at: "2026-08-06T11:05:00+08:00"
+    estimate: 6h
+    depends-on: []
+  - id: CR-2026-022-TASK-14
+    title: 批 3 — planning 域八项歧义订正（SKIPPED 文案/onFail 统一/intent-context/6 章节格式/cr_id 过滤/worktree prune/估算交叉校验）（FR-23）
+    status: done
+    done-at: "2026-08-06T11:05:00+08:00"
+    estimate: 6h
+    depends-on: []
+  - id: CR-2026-022-TASK-15
+    title: 批 3.5 — lint-prompts R6/R7 + 豁免范围修复 + 测试向量（FR-24~26）
+    status: done
+    done-at: "2026-08-06T11:40:00+08:00"
+    estimate: 8h
+    depends-on: [CR-2026-022-TASK-01, CR-2026-022-TASK-02]
+  - id: CR-2026-022-TASK-16
+    title: 批 4 — approve-* 四兄弟对齐 + writeback 三兄弟抽 shared（FR-27/28）
+    status: done
+    done-at: "2026-08-06T12:00:00+08:00"
+    estimate: 6h
+    depends-on: [CR-2026-022-TASK-06, CR-2026-022-TASK-15]
+  - id: CR-2026-022-TASK-17
+    title: 批 4 — sync 免责收敛 + bucket 改调 worktree-path + agents constraints 删除 + push-progress 样板抽取（FR-29~31）
+    status: done
+    done-at: "2026-08-06T12:00:00+08:00"
+    estimate: 8h
+    depends-on: [CR-2026-022-TASK-05, CR-2026-022-TASK-15]
+  - id: CR-2026-022-TASK-18
+    title: 批 4 — write-insight-brief/run-competitive-analysis 合并下线 + list-remote 去重 + 跳过检查单份化（FR-32）
+    status: done
+    done-at: "2026-08-06T12:00:00+08:00"
+    estimate: 6h
+    depends-on: [CR-2026-022-TASK-15]
+  - id: CR-2026-022-TASK-19
+    title: 收尾 — 三台账同步 + 自检回归 + 口径 25/47 核查 + 文档更新（FR-33/34）
+    status: done
+    done-at: "2026-08-06T12:30:00+08:00"
+    estimate: 10h
+    depends-on: [CR-2026-022-TASK-01, CR-2026-022-TASK-02, CR-2026-022-TASK-03, CR-2026-022-TASK-04, CR-2026-022-TASK-05, CR-2026-022-TASK-06, CR-2026-022-TASK-07, CR-2026-022-TASK-08, CR-2026-022-TASK-09, CR-2026-022-TASK-10, CR-2026-022-TASK-11, CR-2026-022-TASK-12, CR-2026-022-TASK-13, CR-2026-022-TASK-14, CR-2026-022-TASK-15, CR-2026-022-TASK-16, CR-2026-022-TASK-17, CR-2026-022-TASK-18]
