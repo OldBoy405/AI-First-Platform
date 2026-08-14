@@ -1,0 +1,42 @@
+cr-id: CR-2026-021
+review-type: requirement
+reviewer: ai-reviewer
+reviewed-at: "2026-08-05T10:52:00+08:00"
+verdict: pass
+blockers: []
+resolved-blockers:
+  - id: REQ-BLOCK-001
+    location: "FR-24 / AC-14"
+    resolved-at: "2026-08-05T10:52:00+08:00"
+    resolution: >-
+      prd 0.1.1 修订 FR-24：lint-prompts 分阶段启用——Phase 0~2 以 report-only/warn
+      非阻断模式运行（不拦本 CR 自身开发期 commit），Phase 3 漂移清零后转 pre-commit 硬阻断；
+      feature-writeback 归档 gate 不受影响（归档必在 Phase 3 后）。AC-14 增补「Phase 0~2 commit
+      不被既有漂移阻断」验收点，并把「带漂移 commit 被拦截」限定为硬阻断模式后的行为。PRD 内部
+      验收标准恢复自洽。
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 1
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-08-05T10:45:00+08:00"
+      result: block
+      blocker-count: 1
+      repair-target: write-requirement-prd
+    - attempt: 1
+      reviewed-at: "2026-08-05T10:52:00+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: null
+suggestions:
+  - "target-version 仍为 tbd：建议在里程碑 T1.3 定项时明确目标版本号（属编辑性字段，不阻断）。"
+  - "FR-24 引用的 feature-writeback「cr-guard」挂点名未确证，SDD 阶段需确认该挂点确实存在（方案已给「或归档前 passCondition」备选）。"
+  - "NFR-7 / AC-4 / AC-5 的并发撞号验收在单进程测试中难以真实复现，建议 SDD 说明 CAS 冲突的测试构造方式（注入并发写 / 模拟 stale read）。"
+  - "FR-19（Phase 3）单条覆盖 13 处 prompt 改动，PRD 层可接受，但建议 SDD/tasks 阶段拆到任务级以便逐条追踪与验收。"

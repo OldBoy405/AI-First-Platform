@@ -1,5 +1,12 @@
 # P2 ChatInput 组件与全局 store 解耦 — 技术债务
 
+> **状态（2026-08-07 核实更新）**：§1–§6 描述的解耦债务**已由 CR-2026-012（DD-9/DD-10）按
+> §4.1 方案 A 落地偿还**：`ChatInputCore` + `ChatInputDraftAdapter` 接口已就位，
+> Team Agent 面与 Private Ask 面已接 adapter 补齐附件/@提及/富文本，锁定测试
+> （`chat-input.test.tsx` 「ChatInputCore must never reach this store」）在位。
+> 正文保持原样作历史记录（当时为什么绕、耦合点在哪里）。
+> **§7 技能选择器仍为开放缺口**（前后端都未实现），是本文唯一仍然有效的待办部分。
+
 > 来源：CR-2026-008（P2 三模式聊天 CR-C：D5 Private Ask）实施 TASK-04 时的核实发现。
 > SDD §5.1 原计划"直接组合纯 props 的 `ChatMessageList` + `ChatInput` + `TaskStatusPill`"，
 > 实测 `ChatMessageList`/`TaskStatusPill` 属实，但 `ChatInput`（`packages/views/chat/components/chat-input.tsx`）

@@ -1,0 +1,22 @@
+$ node --test c:/Users/GOBAO/Downloads/AI/tools/skills/writeback/scripts/test/writeback.test.mjs
+(exit=0)
+--- stdout ---
+✔ lib: CRLF 归一 + frontmatter 读改（纪律 #1） (0.7269ms)
+✔ lib: 锚点唯一性断言（0 次插入 / 1 次替换 / ≥2 次硬失败） (42.4789ms)
+✔ lib: extractBlock 缩进敏感提取 (0.3108ms)
+✔ lib: 账本路径隔离（AC-4 静态判据） (0.2221ms)
+✔ prd-sdd: 首次回写 + frontmatter 补全 + v 前缀入参归一（CODE-BLOCK-002） (58.0239ms)
+✔ prd-sdd: 增量追加（既有内容保留 + H 级 +1）+ 重跑 noop + dry-run 不落盘 (196.5806ms)
+✔ tasks: slug 命名 + 注入 + SDD-BLOCK-001 幂等 + 索引顺序 + noop (93.8736ms)
+✔ traceability: 追加保留 + 幂等 + 校验硬失败 + MERGE_COMMITS_MISSING (186.5064ms)
+✔ AC-4: 三脚本源码不包含账本文件写路径（静态扫描） (0.7389ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 642.7538
+
+--- stderr ---

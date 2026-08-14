@@ -470,3 +470,1025 @@ tasks:
     cr-ref: CR-2026-012
     target-version: "0.19"
     estimate: 6h
+  - id: CR-2026-018-TASK-01
+    file: TASK-0.20-CR-2026-018-01-*.md
+    title: 新增 resolveCrState，收敛 5 处状态读取点（FR-2）
+    status: done
+    cr-ref: CR-2026-018
+    target-version: "0.20"
+    estimate: 12h
+  - id: CR-2026-018-TASK-02
+    file: TASK-0.20-CR-2026-018-02-*.md
+    title: advance 改为只写 cr.md，删除 updateBacklogStatus 调用（FR-1）
+    status: done
+    cr-ref: CR-2026-018
+    target-version: "0.20"
+    estimate: 10h
+  - id: CR-2026-018-TASK-03
+    file: TASK-0.20-CR-2026-018-03-*.md
+    title: _backlog.yml 升级 schema v2 + validate 规则调整（FR-3）
+    status: done
+    cr-ref: CR-2026-018
+    target-version: "0.20"
+    estimate: 8h
+  - id: CR-2026-018-TASK-04
+    file: TASK-0.20-CR-2026-018-04-*.md
+    title: 新增 crctl migrate-backlog 子命令（FR-5）
+    status: done
+    cr-ref: CR-2026-018
+    target-version: "0.20"
+    estimate: 10h
+  - id: CR-2026-018-TASK-05
+    file: TASK-0.20-CR-2026-018-05-*.md
+    title: crctl 测试套件扩展（AC-1/2/3/5/9/10/11 汇总回归）
+    status: done
+    cr-ref: CR-2026-018
+    target-version: "0.20"
+    estimate: 8h
+  - id: CR-2026-018-TASK-06
+    file: TASK-0.20-CR-2026-018-06-*.md
+    title: inject-cr-status.mjs 改为读 cr.md（FR-8，PRD 假设修正落地）
+    status: done
+    cr-ref: CR-2026-018
+    target-version: "0.20"
+    estimate: 6h
+  - id: CR-2026-018-TASK-07
+    file: TASK-0.20-CR-2026-018-07-*.md
+    title: dir-graph.yaml 状态机 scope 字段更新（FR-7）
+    status: done
+    cr-ref: CR-2026-018
+    target-version: "0.20"
+    estimate: 2h
+  - id: CR-2026-018-TASK-08
+    file: TASK-0.20-CR-2026-018-08-*.md
+    title: 17 个 skill 文档修订 — status 消费点改指向 cr.md（FR-6+FR-9）
+    status: done
+    cr-ref: CR-2026-018
+    target-version: "0.20"
+    estimate: 17h
+  - id: CR-2026-018-TASK-09
+    file: TASK-0.20-CR-2026-018-09-*.md
+    title: 双适配器回归验证（claude-code + CI，含混版 fixture）
+    status: done
+    cr-ref: CR-2026-018
+    target-version: "0.20"
+    estimate: 6h
+  - id: CR-2026-018-TASK-10
+    file: TASK-0.20-CR-2026-018-10-*.md
+    title: 端到端 merge-tree 零冲突演练（AC-9，核心目标验收）
+    status: done
+    cr-ref: CR-2026-018
+    target-version: "0.20"
+    estimate: 6h
+  - id: CR-2026-019-TASK-01
+    file: TASK-0.20.1-CR-2026-019-01-cas-write-multi.md
+    title: 新增 casWriteMulti 双文件原子写原语
+    status: done
+    cr-ref: CR-2026-019
+    target-version: "0.20.1"
+    estimate: 4h
+  - id: CR-2026-019-TASK-02
+    file: TASK-0.20.1-CR-2026-019-02-cmd-task-done.md
+    title: 实现 crctl task done 子命令
+    status: done
+    cr-ref: CR-2026-019
+    target-version: "0.20.1"
+    estimate: 5h
+  - id: CR-2026-019-TASK-03
+    file: TASK-0.20.1-CR-2026-019-03-cmd-merge-metadata.md
+    title: 实现 crctl merge-metadata 子命令
+    status: done
+    cr-ref: CR-2026-019
+    target-version: "0.20.1"
+    estimate: 5h
+  - id: CR-2026-019-TASK-04
+    file: TASK-0.20.1-CR-2026-019-04-cmd-archive-move.md
+    title: 实现 crctl archive-move 子命令
+    status: done
+    cr-ref: CR-2026-019
+    target-version: "0.20.1"
+    estimate: 6h
+  - id: CR-2026-019-TASK-05
+    file: TASK-0.20.1-CR-2026-019-05-tests-and-ac9-rehearsal.md
+    title: 测试固化含 AC-9 merge-tree 演练入库
+    status: done
+    cr-ref: CR-2026-019
+    target-version: "0.20.1"
+    estimate: 8h
+  - id: CR-2026-019-TASK-06
+    file: TASK-0.20.1-CR-2026-019-06-sync-skill-docs.md
+    title: 同步三份 SKILL.md 改调子命令并禁手写 YAML
+    status: done
+    cr-ref: CR-2026-019
+    target-version: "0.20.1"
+    estimate: 4h
+  - id: CR-2026-019-TASK-07
+    file: TASK-0.20.1-CR-2026-019-07-regression-and-acceptance.md
+    title: 回归与 AC 逐条验收收口
+    status: done
+    cr-ref: CR-2026-019
+    target-version: "0.20.1"
+    estimate: 4h
+  - id: CR-2026-020-TASK-01
+    file: TASK-0.21-CR-2026-020-01-writeback-scripts-lib.md
+    title: lib.mjs 公共库（CRLF 归一 / frontmatter 读改 / 锚点断言 / dry-run diff / fail）
+    status: done
+    cr-ref: CR-2026-020
+    target-version: "0.21"
+    estimate: 4h
+  - id: CR-2026-020-TASK-02
+    file: TASK-0.21-CR-2026-020-02-writeback-prd-sdd-script.md
+    title: writeback-prd-sdd.mjs 入库脚本
+    status: done
+    cr-ref: CR-2026-020
+    target-version: "0.21"
+    estimate: 6h
+  - id: CR-2026-020-TASK-03
+    file: TASK-0.21-CR-2026-020-03-writeback-tasks-script.md
+    title: writeback-tasks.mjs 入库脚本
+    status: done
+    cr-ref: CR-2026-020
+    target-version: "0.21"
+    estimate: 5h
+  - id: CR-2026-020-TASK-04
+    file: TASK-0.21-CR-2026-020-04-writeback-traceability-script.md
+    title: writeback-traceability.mjs 入库脚本
+    status: done
+    cr-ref: CR-2026-020
+    target-version: "0.21"
+    estimate: 6h
+  - id: CR-2026-020-TASK-05
+    file: TASK-0.21-CR-2026-020-05-writeback-scripts-test.md
+    title: test/writeback.test.mjs 回归自检套件
+    status: done
+    cr-ref: CR-2026-020
+    target-version: "0.21"
+    estimate: 4h
+  - id: CR-2026-020-TASK-06
+    file: TASK-0.21-CR-2026-020-06-writeback-skills-rewrite.md
+    title: 三份 writeback SKILL.md 改调 + 事实基线段
+    status: done
+    cr-ref: CR-2026-020
+    target-version: "0.21"
+    estimate: 4h
+  - id: CR-2026-020-TASK-07
+    file: TASK-0.21-CR-2026-020-07-merge-branch-facts-and-arch-doc.md
+    title: merge-feature-branch 事实基线 + pipeline prompt 修订 + ARCHITECTURE.md §3/§6 修订
+    status: done
+    cr-ref: CR-2026-020
+    target-version: "0.21"
+    estimate: 3h
+  - id: CR-2026-020-TASK-08
+    file: TASK-0.21-CR-2026-020-08-writeback-plan-doc-fix.md
+    title: knowledge-base：优化方案文档 §4.2 traceability 表述修正
+    status: done
+    cr-ref: CR-2026-020
+    target-version: "0.21"
+    estimate: 1h
+  - id: CR-2026-021-TASK-01
+    file: TASK-0.22-CR-2026-021-01-d13-schema-validator-investigation.md
+    title: D13 溯源调查 — engineering-docs schema validator v0.4.0 下线原因
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 3h
+  - id: CR-2026-021-TASK-02
+    file: TASK-0.22-CR-2026-021-02-crctl-review-record.md
+    title: crctl review-record（S1，判断/写入分离）
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 5h
+  - id: CR-2026-021-TASK-03
+    file: TASK-0.22-CR-2026-021-03-crctl-review-note.md
+    title: crctl review-note（S2，supplemental-reviews 追加）
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 3h
+  - id: CR-2026-021-TASK-04
+    file: TASK-0.22-CR-2026-021-04-crctl-checkpoint-owner-backlog-set.md
+    title: crctl checkpoint-add / owner-set / backlog-set（S3/S4/S5，白名单字段写子命令）
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 6h
+  - id: CR-2026-021-TASK-05
+    file: TASK-0.22-CR-2026-021-05-crctl-inbox-emit.md
+    title: crctl inbox-emit（_backlog notify-log 事件追加）
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 3h
+  - id: CR-2026-021-TASK-06
+    file: TASK-0.22-CR-2026-021-06-crctl-next-cr-id-cr-init.md
+    title: crctl next-cr-id（只读预览）+ cr-init（原子权威分配，合并实现）
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 6h
+  - id: CR-2026-021-TASK-07
+    file: TASK-0.22-CR-2026-021-07-crctl-task-allocate.md
+    title: crctl task allocate（S7，TASK-ID CAS 分配）
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 4h
+  - id: CR-2026-021-TASK-08
+    file: TASK-0.22-CR-2026-021-08-crctl-worktree-path-report-metrics.md
+    title: crctl worktree-path + report/cr-metrics（S9/S11，只读聚合）
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 4h
+  - id: CR-2026-021-TASK-09
+    file: TASK-0.22-CR-2026-021-09-crctl-git-commit-template.md
+    title: crctl git commit --template（S10，既有命令扩展）
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 3h
+  - id: CR-2026-021-TASK-10
+    file: TASK-0.22-CR-2026-021-10-crctl-docs-whitelist-closeout.md
+    title: 文档更新 + rules.json#git 白名单补齐（FR-13，收尾核对）
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 4h
+  - id: CR-2026-021-TASK-11
+    file: TASK-0.22-CR-2026-021-11-lint-prompts-linter.md
+    title: lint-prompts.mjs — R1~R6 漂移检测 + ignore 豁免 + report/enforce 双模式
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 6h
+  - id: CR-2026-021-TASK-12
+    file: TASK-0.22-CR-2026-021-12-lint-prompts-two-layer-gate.md
+    title: 两层机械防线接入 — pre-commit（分阶段 report→enforce）+ CI cr-guard
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 4h
+  - id: CR-2026-021-TASK-13
+    file: TASK-0.22-CR-2026-021-13-phase1-merge-commits-approve-fold.md
+    title: Phase 1 — D7 merge-commits 3 字段 + approve-* 折叠为 crctl approve
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 5h
+  - id: CR-2026-021-TASK-14
+    file: TASK-0.22-CR-2026-021-14-phase1c-bare-git-migration.md
+    title: Phase 1-C — 裸 git 迁移为 crctl git
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 4h
+  - id: CR-2026-021-TASK-15
+    file: TASK-0.22-CR-2026-021-15-phase1-test-report-frontmatter.md
+    title: Phase 1 — D3 test-report frontmatter 交 crctl test 生成
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 2h
+  - id: CR-2026-021-TASK-16
+    file: TASK-0.22-CR-2026-021-16-phase2-cr-status-set-deprecate.md
+    title: Phase 2 — cr-status-set 系统性清理
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 5h
+  - id: CR-2026-021-TASK-17
+    file: TASK-0.22-CR-2026-021-17-phase3-review-skills-migrate.md
+    title: Phase 3 — review-* 三个评审 SKILL + write-test-report 改调 S1/attempt
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 4h
+  - id: CR-2026-021-TASK-18
+    file: TASK-0.22-CR-2026-021-18-phase3-sync-skills-migrate.md
+    title: Phase 3 — cr-review-record/handover-cr/push-progress/write-requirement-prd/inbox-emit 改调 S2/S4/S3/S5/inbox-emit
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 5h
+  - id: CR-2026-021-TASK-19
+    file: TASK-0.22-CR-2026-021-19-phase3-requirement-register-migrate.md
+    title: Phase 3 — requirement-register 全量改造（S6 预览 + S8 cr-init + S9 worktree-path + S10 commit template）
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 5h
+  - id: CR-2026-021-TASK-20
+    file: TASK-0.22-CR-2026-021-20-phase3-write-dev-tasks-worktree-dedup.md
+    title: Phase 3/4 — write-dev-tasks 改造（S7+S10+D15）+ worktree-path 剩余去重（S9）
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 5h
+  - id: CR-2026-021-TASK-21
+    file: TASK-0.22-CR-2026-021-21-phase3-dashboard-validate-doc.md
+    title: Phase 3 — cr-dashboard/spec-dashboard 改调 S11；validate-doc 视 D13 结论处理
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 4h
+  - id: CR-2026-021-TASK-22
+    file: TASK-0.22-CR-2026-021-22-phase4-closeout-gate-enforce.md
+    title: Phase 4 收尾 — D8 状态映射去重 + 冗余精简 + 回写清单新增项 + gate 切换 enforce
+    status: done
+    cr-ref: CR-2026-021
+    target-version: "0.22"
+    estimate: 5h
+  - id: CR-2026-022-TASK-01
+    file: TASK-0.23-CR-2026-022-01-batch1-command-fixes.md
+    title: 批 1 — crctl advance 命令串 12 处修正 + 豁免注释外移 + 死引用/措辞订正（FR-1~3）
+    status: done
+    cr-ref: CR-2026-022
+    target-version: "0.23"
+    estimate: 6h
+  - id: CR-2026-022-TASK-02
+    file: TASK-0.23-CR-2026-022-02-batch2-dead-content.md
+    title: 批 2 — 死内容清理（cr-status-set 下线 + validate-doc/focus-briefing/record-adr 等）（FR-4~8）
+    status: done
+    cr-ref: CR-2026-022
+    target-version: "0.23"
+    estimate: 6h
+  - id: CR-2026-022-TASK-03
+    file: TASK-0.23-CR-2026-022-03-cr-init-field-flags.md
+    title: 批 2.5 — cr-init 补 --summary/--source/--target-version 旗标 + 删 cr_id 死参数（FR-9）
+    status: done
+    cr-ref: CR-2026-022
+    target-version: "0.23"
+    estimate: 5h
+  - id: CR-2026-022-TASK-04
+    file: TASK-0.23-CR-2026-022-04-template-explicit-cr.md
+    title: 批 2.5 — git commit --template 补显式 --cr 旗标（FR-10）
+    status: done
+    cr-ref: CR-2026-022
+    target-version: "0.23"
+    estimate: 3h
+  - id: CR-2026-022-TASK-05
+    file: TASK-0.23-CR-2026-022-05-checkpoint-add-legal.md
+    title: 批 2.5 — checkpoint-add LEGAL 白名单派生 + push-progress Step 3 重写 + 节点 12 补齐（FR-11）
+    status: done
+    cr-ref: CR-2026-022
+    target-version: "0.23"
+    estimate: 6h
+  - id: CR-2026-022-TASK-06
+    file: TASK-0.23-CR-2026-022-06-approve-decline-rollback.md
+    title: 批 2.5 — dir-graph 两条 reject 转换 + cmdApprove decline 回退 + approve-* 错误表订正（FR-12）
+    status: done
+    cr-ref: CR-2026-022
+    target-version: "0.23"
+    estimate: 8h
+  - id: CR-2026-022-TASK-07
+    file: TASK-0.23-CR-2026-022-07-review-loop-dead-config.md
+    title: 批 2.5 — gates.json review-planning-report 死配置删除 + pipeline node-6 承诺订正（FR-13）
+    status: done
+    cr-ref: CR-2026-022
+    target-version: "0.23"
+    estimate: 3h
+  - id: CR-2026-022-TASK-08
+    file: TASK-0.23-CR-2026-022-08-stale-base-fallback.md
+    title: 批 2.5 — requirement-register Step 5 fetch 失败 STALE_BASE 降级（FR-14）
+    status: done
+    cr-ref: CR-2026-022
+    target-version: "0.23"
+    estimate: 2h
+  - id: CR-2026-022-TASK-09
+    file: TASK-0.23-CR-2026-022-09-inbox-emit-align.md
+    title: 批 3 — inbox-emit 接口对齐（owner-handover 三处同步 + feedback-writeback/handover-cr 迁 CLI）（FR-15）
+    status: done
+    cr-ref: CR-2026-022
+    target-version: "0.23"
+    estimate: 5h
+  - id: CR-2026-022-TASK-10
+    file: TASK-0.23-CR-2026-022-10-merge-head-check.md
+    title: 批 3 — merge-feature-branch HEAD 一致性校验 + write-competitive-report 写入目标/两阶段确认（FR-16/17）
+    status: done
+    cr-ref: CR-2026-022
+    target-version: "0.23"
+    estimate: 5h
+  - id: CR-2026-022-TASK-11
+    file: TASK-0.23-CR-2026-022-11-uuid-0016-migrate.md
+    title: 批 3 — architecture-design pipeline UUID 0016 迁移含 repairNodeId + seed 幂等（FR-18）
+    status: done
+    cr-ref: CR-2026-022
+    target-version: "0.23"
+    estimate: 4h
+  - id: CR-2026-022-TASK-12
+    file: TASK-0.23-CR-2026-022-12-market-insights-schema.md
+    title: 批 3 — market-insights 索引统一 schema + 迁移脚本 + 节点 5 终态订正（FR-19）
+    status: done
+    cr-ref: CR-2026-022
+    target-version: "0.23"
+    estimate: 5h
+  - id: CR-2026-022-TASK-13
+    file: TASK-0.23-CR-2026-022-13-sync-and-cmdnext.md
+    title: 批 3 — sync owner-set 改调 + cmdNext writing-back 修正 + cr-show 收敛（FR-20~22）
+    status: done
+    cr-ref: CR-2026-022
+    target-version: "0.23"
+    estimate: 6h
+  - id: CR-2026-022-TASK-14
+    file: TASK-0.23-CR-2026-022-14-planning-ambiguities.md
+    title: 批 3 — planning 域八项歧义订正（SKIPPED 文案/onFail 统一/intent-context/6 章节格式/cr_id 过滤/worktree prune/估算交叉校验）（FR-23）
+    status: done
+    cr-ref: CR-2026-022
+    target-version: "0.23"
+    estimate: 6h
+  - id: CR-2026-022-TASK-15
+    file: TASK-0.23-CR-2026-022-15-lint-r6r7.md
+    title: 批 3.5 — lint-prompts R6/R7 + 豁免范围修复 + 测试向量（FR-24~26）
+    status: done
+    cr-ref: CR-2026-022
+    target-version: "0.23"
+    estimate: 8h
+  - id: CR-2026-022-TASK-16
+    file: TASK-0.23-CR-2026-022-16-approve-writeback-align.md
+    title: 批 4 — approve-* 四兄弟对齐 + writeback 三兄弟抽 shared（FR-27/28）
+    status: done
+    cr-ref: CR-2026-022
+    target-version: "0.23"
+    estimate: 6h
+  - id: CR-2026-022-TASK-17
+    file: TASK-0.23-CR-2026-022-17-sync-converge.md
+    title: 批 4 — sync 免责收敛 + bucket 改调 worktree-path + agents constraints 删除 + push-progress 样板抽取（FR-29~31）
+    status: done
+    cr-ref: CR-2026-022
+    target-version: "0.23"
+    estimate: 8h
+  - id: CR-2026-022-TASK-18
+    file: TASK-0.23-CR-2026-022-18-skill-retire.md
+    title: 批 4 — write-insight-brief/run-competitive-analysis 合并下线 + list-remote 去重 + 跳过检查单份化（FR-32）
+    status: done
+    cr-ref: CR-2026-022
+    target-version: "0.23"
+    estimate: 6h
+  - id: CR-2026-022-TASK-19
+    file: TASK-0.23-CR-2026-022-19-closing-audit.md
+    title: 收尾 — 三台账同步 + 自检回归 + 口径 25/47 核查 + 文档更新（FR-33/34）
+    status: done
+    cr-ref: CR-2026-022
+    target-version: "0.23"
+    estimate: 10h
+  - id: CR-2026-023-TASK-01
+    file: TASK-0.24-CR-2026-023-01-r9-rule-impl.md
+    title: 块 B — lint-prompts.mjs 新增 R9 规则（FR-7）
+    status: done
+    cr-ref: CR-2026-023
+    target-version: "0.24"
+    estimate: 4h
+  - id: CR-2026-023-TASK-02
+    file: TASK-0.24-CR-2026-023-02-r9-test-vectors.md
+    title: 块 B — R9 测试向量（FR-12）
+    status: done
+    cr-ref: CR-2026-023
+    target-version: "0.24"
+    estimate: 3h
+  - id: CR-2026-023-TASK-03
+    file: TASK-0.24-CR-2026-023-03-r9-backlog-zeroing.md
+    title: 块 B — 17 处存量清零 + push-progress 闭环 + requirement-writer 注记 + AGENTS.md 条目（FR-8/9/10/11）
+    status: done
+    cr-ref: CR-2026-023
+    target-version: "0.24"
+    estimate: 6h
+  - id: CR-2026-023-TASK-04
+    file: TASK-0.24-CR-2026-023-04-pipeline-review-llm-node.md
+    title: 块 A — code-implementation pipeline 插入「选择代码评审 LLM」节点（FR-1/2/3/4）
+    status: done
+    cr-ref: CR-2026-023
+    target-version: "0.24"
+    estimate: 5h
+  - id: CR-2026-023-TASK-05
+    file: TASK-0.24-CR-2026-023-05-pipeline-index-readme-sync.md
+    title: 块 A — _index.yml nodes 12→13 + README 节点表/mermaid 同步（FR-5/6）
+    status: done
+    cr-ref: CR-2026-023
+    target-version: "0.24"
+    estimate: 3h
+  - id: CR-2026-023-TASK-06
+    file: TASK-0.24-CR-2026-023-06-final-selfcheck-e2e.md
+    title: 收尾 — 五步自检 + pre-commit 三件套 + 溯源标注 + 端到端验收（FR-13/14 + AC-11）
+    status: done
+    cr-ref: CR-2026-023
+    target-version: "0.24"
+    estimate: 4h
+  - id: CR-2026-024-TASK-01
+    file: TASK-0.25-CR-2026-024-01-batch1-legacy-gap-closure.md
+    title: 批次一存量缺口收口（零行为变更：死声明清理 + capabilities 订正 + forbidden 说明 + TDD 悬空删除 + assignee 删除）
+    status: done
+    cr-ref: CR-2026-024
+    target-version: "0.25"
+    estimate: 4h
+  - id: CR-2026-024-TASK-02
+    file: TASK-0.25-CR-2026-024-02-batch2-practice-internalization.md
+    title: 批次二最佳实践内化（coding-discipline 新建 + 六处内化 + suggestion_policy 策略化分流，同批原子）
+    status: done
+    cr-ref: CR-2026-024
+    target-version: "0.25"
+    estimate: 8h
+  - id: CR-2026-024-TASK-03
+    file: TASK-0.25-CR-2026-024-03-e2e-verification-writeback.md
+    title: 端到端验证与回写准备（跨批次全量回归 + lenient 演练整合 + feature-writeback 前置核对）
+    status: done
+    cr-ref: CR-2026-024
+    target-version: "0.25"
+    estimate: 4h
+  - id: CR-2026-025-TASK-01
+    file: TASK-0.26-CR-2026-025-01-depends-on-guard.md
+    title: 项② task done 一跳依赖守卫
+    status: done
+    cr-ref: CR-2026-025
+    target-version: "0.26"
+    estimate: 2h
+  - id: CR-2026-025-TASK-02
+    file: TASK-0.26-CR-2026-025-02-blockers-brief-echo.md
+    title: 项③ isEmpty 失败回显收敛
+    status: done
+    cr-ref: CR-2026-025
+    target-version: "0.26"
+    estimate: 2h
+  - id: CR-2026-025-TASK-03
+    file: TASK-0.26-CR-2026-025-03-review-record-trace-projection.md
+    title: 项④ review-record 三账本一致写与 cmdNext drafting 路由
+    status: done
+    cr-ref: CR-2026-025
+    target-version: "0.26"
+    estimate: 8h
+  - id: CR-2026-025-TASK-04
+    file: TASK-0.26-CR-2026-025-04-external-ref-check.md
+    title: 项① checker 检查 4（external 引用点校验）+ 解析守卫与首测
+    status: done
+    cr-ref: CR-2026-025
+    target-version: "0.26"
+    estimate: 2h
+  - id: CR-2026-025-TASK-05
+    file: TASK-0.26-CR-2026-025-05-external-decl-surface.md
+    title: 项① 声明面三处修订（顶层块注释 + 声明位置收敛 + 枚举去点名）
+    status: done
+    cr-ref: CR-2026-025
+    target-version: "0.26"
+    estimate: 2h
+  - id: CR-2026-025-TASK-06
+    file: TASK-0.26-CR-2026-025-06-docs-prompt-adoption.md
+    title: 文档同步与 Prompt 采纳（用途表 + P-1~P-5）
+    status: done
+    cr-ref: CR-2026-025
+    target-version: "0.26"
+    estimate: 2h
+  - id: CR-2026-025-TASK-07
+    file: TASK-0.26-CR-2026-025-07-verify-register-ship.md
+    title: 全量验证关卡 + ARCHITECTURE.md 登记 + 溯源提交
+    status: done
+    cr-ref: CR-2026-025
+    target-version: "0.26"
+    estimate: 2h
+  - id: CR-2026-026-TASK-01
+    file: TASK-0.27-CR-2026-026-01-crctl-dev-plan-stage-routing.md
+    title: crctl dev-plan stage 映射与双轨路由判定
+    status: done
+    cr-ref: CR-2026-026
+    target-version: "0.27"
+    estimate: 12h
+  - id: CR-2026-026-TASK-02
+    file: TASK-0.27-CR-2026-026-02-gates-and-state-machine.md
+    title: gates.json 门禁升级与状态机两条转换
+    status: done
+    cr-ref: CR-2026-026
+    target-version: "0.27"
+    estimate: 8h
+  - id: CR-2026-026-TASK-03
+    file: TASK-0.27-CR-2026-026-03-review-dev-plan-skill.md
+    title: 新建 review-dev-plan Skill
+    status: done
+    cr-ref: CR-2026-026
+    target-version: "0.27"
+    estimate: 4h
+  - id: CR-2026-026-TASK-04
+    file: TASK-0.27-CR-2026-026-04-repair-support-prompts.md
+    title: write-dev-plan / write-dev-tasks 回修支持与 approve-dev-start 表述
+    status: done
+    cr-ref: CR-2026-026
+    target-version: "0.27"
+    estimate: 4h
+  - id: CR-2026-026-TASK-05
+    file: TASK-0.27-CR-2026-026-05-pipeline-node-and-registry.md
+    title: pipeline 插入 review-dev-plan 节点与 Skill 登记
+    status: done
+    cr-ref: CR-2026-026
+    target-version: "0.27"
+    estimate: 8h
+  - id: CR-2026-026-TASK-06
+    file: TASK-0.27-CR-2026-026-06-docs-sync.md
+    title: 文档同步（README / ARCHITECTURE / crctl SKILL 用途表）
+    status: done
+    cr-ref: CR-2026-026
+    target-version: "0.27"
+    estimate: 4h
+  - id: CR-2026-026-TASK-07
+    file: TASK-0.27-CR-2026-026-07-test-vectors-and-regression.md
+    title: crctl 测试向量与全量回归
+    status: done
+    cr-ref: CR-2026-026
+    target-version: "0.27"
+    estimate: 4h
+  - id: CR-2026-027-TASK-01
+    file: TASK-0.28-CR-2026-027-01-bootstrap-tools-worktree-phase0-docs.md
+    title: bootstrap：tools 入 repositories + tools worktree 派生 + workspace Phase 0 文档统一
+    status: done
+    cr-ref: CR-2026-027
+    target-version: "0.28"
+    estimate: 6h
+  - id: CR-2026-027-TASK-02
+    file: TASK-0.28-CR-2026-027-02-architecture-md-phase0-revision.md
+    title: tools ARCHITECTURE.md 修订（口径 27/49、单文件边界、crctl-Pipeline 依赖、指标基线）
+    status: done
+    cr-ref: CR-2026-027
+    target-version: "0.28"
+    estimate: 4h
+  - id: CR-2026-027-TASK-03
+    file: TASK-0.28-CR-2026-027-03-approve-atomic-commit.md
+    title: approve 原子提交（approveAndAdvance + evidence override seam + assertCandidateStatus）
+    status: done
+    cr-ref: CR-2026-027
+    target-version: "0.28"
+    estimate: 12h
+  - id: CR-2026-027-TASK-04
+    file: TASK-0.28-CR-2026-027-04-archived-task-gate-five-steps.md
+    title: archived TASK 完成门禁五步判定（deliveryIndexComplete 修复）
+    status: done
+    cr-ref: CR-2026-027
+    target-version: "0.28"
+    estimate: 6h
+  - id: CR-2026-027-TASK-05
+    file: TASK-0.28-CR-2026-027-05-migrate-backlog-ghost-entry-cleanup.md
+    title: migrate-backlog 幽灵条目清理阶段 + 主工作区执行一次
+    status: done
+    cr-ref: CR-2026-027
+    target-version: "0.28"
+    estimate: 4h
+  - id: CR-2026-027-TASK-06
+    file: TASK-0.28-CR-2026-027-06-archive-move-atomic-cas-event.md
+    title: archive-move 三账本 CAS 原子化 + archive event + 收件人
+    status: done
+    cr-ref: CR-2026-027
+    target-version: "0.28"
+    estimate: 10h
+  - id: CR-2026-027-TASK-07
+    file: TASK-0.28-CR-2026-027-07-terminal-resolver-next-route-inbox-emit-guard.md
+    title: status/next 路由修复（终态 resolver + task-breakdown dev-plan 检查）+ inbox-emit 空 to 校验
+    status: done
+    cr-ref: CR-2026-027
+    target-version: "0.28"
+    estimate: 10h
+  - id: CR-2026-027-TASK-08
+    file: TASK-0.28-CR-2026-027-08-review-record-output-deepen.md
+    title: review-record 输出深化 + 四个 review Skill 删除 traceability 二次读取
+    status: done
+    cr-ref: CR-2026-027
+    target-version: "0.28"
+    estimate: 12h
+  - id: CR-2026-027-TASK-09
+    file: TASK-0.28-CR-2026-027-09-skill-sync-merge-archive.md
+    title: Skill 同步（merge-feature-branch 特例删除 + cr-archive 契约）+ ARCHITECTURE §8 登记
+    status: done
+    cr-ref: CR-2026-027
+    target-version: "0.28"
+    estimate: 4h
+  - id: CR-2026-027-TASK-10
+    file: TASK-0.28-CR-2026-027-10-final-five-minimal-checks.md
+    title: 五项最小验证全绿 + AC 全量核对（含 bootstrap-base-sha 断言）
+    status: done
+    cr-ref: CR-2026-027
+    target-version: "0.28"
+    estimate: 4h
+  - id: CR-2026-029-TASK-01
+    file: TASK-0.2-CR-2026-029-01-merge-verification-skill.md
+    title: merge-feature-branch 新增发布联调走查步骤
+    status: done
+    cr-ref: CR-2026-029
+    target-version: "0.2"
+    estimate: 2h
+  - id: CR-2026-029-TASK-02
+    file: TASK-0.2-CR-2026-029-02-pipeline-prompt-sync.md
+    title: feature-writeback pipeline prompt 同步联调走查
+    status: done
+    cr-ref: CR-2026-029
+    target-version: "0.2"
+    estimate: 1h
+  - id: CR-2026-029-TASK-03
+    file: TASK-0.2-CR-2026-029-03-static-assert-tests.md
+    title: 文本静态断言与既有回归
+    status: done
+    cr-ref: CR-2026-029
+    target-version: "0.2"
+    estimate: 1h
+  - id: CR-2026-029-TASK-04
+    file: TASK-0.2-CR-2026-029-04-migrate-task10.md
+    title: 迁移移除 CR-2026-028 TASK-10
+    status: done
+    cr-ref: CR-2026-029
+    target-version: "0.2"
+    estimate: 2h
+  - id: CR-2026-029-TASK-05
+    file: TASK-0.2-CR-2026-029-05-docs-sync.md
+    title: CR-2026-028 文档同步（变更记录与测试报告）
+    status: done
+    cr-ref: CR-2026-029
+    target-version: "0.2"
+    estimate: 1h
+  - id: CR-2026-029-TASK-06
+    file: TASK-0.2-CR-2026-029-06-release-verify.md
+    title: 全量验证与发布
+    status: done
+    cr-ref: CR-2026-029
+    target-version: "0.2"
+    estimate: 1h
+  - id: CR-2026-028-TASK-01
+    file: TASK-0.29-CR-2026-028-01-fix-worktree-path-nested-bug.md
+    title: 修复 worktree-path 嵌套路径 bug（M1 前置）
+    status: done
+    cr-ref: CR-2026-028
+    target-version: "0.29"
+    estimate: 4h
+  - id: CR-2026-028-TASK-02
+    file: TASK-0.29-CR-2026-028-02-add-resolve-tools-root.md
+    title: 新增 resolveToolsRoot 与 Tools Root 唯一契约（M2a）
+    status: done
+    cr-ref: CR-2026-028
+    target-version: "0.29"
+    estimate: 6h
+  - id: CR-2026-028-TASK-03
+    file: TASK-0.29-CR-2026-028-03-converge-loaders-to-tools-root.md
+    title: 四 loader 收敛到 Tools Root（M2b）
+    status: done
+    cr-ref: CR-2026-028
+    target-version: "0.29"
+    estimate: 6h
+  - id: CR-2026-028-TASK-04
+    file: TASK-0.29-CR-2026-028-04-worktree-path-dual-root.md
+    title: worktree-path 双根落地与多仓 workspace 场景（M3）
+    status: done
+    cr-ref: CR-2026-028
+    target-version: "0.29"
+    estimate: 8h
+  - id: CR-2026-028-TASK-05
+    file: TASK-0.29-CR-2026-028-05-unify-skill-pipeline-paths.md
+    title: crctl/Sync/Writeback Skill 与 pipeline 路径统一（M4a）
+    status: done
+    cr-ref: CR-2026-028
+    target-version: "0.29"
+    estimate: 4h
+  - id: CR-2026-028-TASK-06
+    file: TASK-0.29-CR-2026-028-06-unify-adapter-agents-paths.md
+    title: Adapter/requirement 入口与仓库 AGENTS.md 路径统一（M4b）
+    status: done
+    cr-ref: CR-2026-028
+    target-version: "0.29"
+    estimate: 4h
+  - id: CR-2026-028-TASK-07
+    file: TASK-0.29-CR-2026-028-07-registration-reuse-cr-init.md
+    title: Registration 复用 cr-init 一次传齐元数据（M5）
+    status: done
+    cr-ref: CR-2026-028
+    target-version: "0.29"
+    estimate: 4h
+  - id: CR-2026-028-TASK-08
+    file: TASK-0.29-CR-2026-028-08-remove-target-install-path.md
+    title: 删除 target_install_path 与 multica 台账核账（M6）
+    status: done
+    cr-ref: CR-2026-028
+    target-version: "0.29"
+    estimate: 2h
+  - id: CR-2026-028-TASK-09
+    file: TASK-0.29-CR-2026-028-09-extend-test-suite.md
+    title: 测试扩展与全量回归（M7）
+    status: done
+    cr-ref: CR-2026-028
+    target-version: "0.29"
+    estimate: 8h
+  - id: CR-2026-030-TASK-01
+    file: TASK-0.3-CR-2026-030-01-tca-contract-red-tests.md
+    title: 建立 TCA-001～004 失败优先测试基线
+    status: done
+    cr-ref: CR-2026-030
+    target-version: "0.3"
+    estimate: 8h
+  - id: CR-2026-030-TASK-02
+    file: TASK-0.3-CR-2026-030-02-registration-three-owners.md
+    title: 实现三 Owner Registration 与真实提交事件
+    status: done
+    cr-ref: CR-2026-030
+    target-version: "0.3"
+    estimate: 8h
+  - id: CR-2026-030-TASK-03
+    file: TASK-0.3-CR-2026-030-03-owner-formal-handover.md
+    title: 实现 Owner 正式移交原语
+    status: done
+    cr-ref: CR-2026-030
+    target-version: "0.3"
+    estimate: 12h
+  - id: CR-2026-030-TASK-04
+    file: TASK-0.3-CR-2026-030-04-signed-reject-rollback.md
+    title: 实现签名 reject 权威回退与幂等
+    status: done
+    cr-ref: CR-2026-030
+    target-version: "0.3"
+    estimate: 12h
+  - id: CR-2026-030-TASK-05
+    file: TASK-0.3-CR-2026-030-05-r7-dev-plan-routing.md
+    title: 实现 R7 权威字面量校验与开发计划三路契约
+    status: done
+    cr-ref: CR-2026-030
+    target-version: "0.3"
+    estimate: 8h
+  - id: CR-2026-030-TASK-06
+    file: TASK-0.3-CR-2026-030-06-prompt-contract-adoption.md
+    title: 同步 Skill Pipeline 与人读契约
+    status: done
+    cr-ref: CR-2026-030
+    target-version: "0.3"
+    estimate: 8h
+  - id: CR-2026-030-TASK-07
+    file: TASK-0.3-CR-2026-030-07-multica-grant-crosscheck.md
+    title: 扩展 Multica grant test-only 跨接缝
+    status: done
+    cr-ref: CR-2026-030
+    target-version: "0.3"
+    estimate: 6h
+  - id: CR-2026-030-TASK-08
+    file: TASK-0.3-CR-2026-030-08-full-verification-audit.md
+    title: 执行全量验证与修改白名单审计
+    status: done
+    cr-ref: CR-2026-030
+    target-version: "0.3"
+    estimate: 4h
+  - id: CR-2026-031-TASK-01
+    file: TASK-0.4-CR-2026-031-01-transaction-fault-harness.md
+    title: 建立事务故障注入与红测基线
+    status: done
+    cr-ref: CR-2026-031
+    target-version: "0.4"
+    estimate: 8h
+  - id: CR-2026-031-TASK-02
+    file: TASK-0.4-CR-2026-031-02-remove-crctl-redundancy.md
+    title: 删除 crctl 死代码与永久兼容分支
+    status: done
+    cr-ref: CR-2026-031
+    target-version: "0.4"
+    estimate: 6h
+  - id: CR-2026-031-TASK-03
+    file: TASK-0.4-CR-2026-031-03-repository-authority-resolver.md
+    title: 实现 repository resolver 与 authority containment
+    status: done
+    cr-ref: CR-2026-031
+    target-version: "0.4"
+    estimate: 10h
+  - id: CR-2026-031-TASK-04
+    file: TASK-0.4-CR-2026-031-04-durable-transaction-core.md
+    title: 实现 durable journal 锁与 recoverable write-set
+    status: done
+    cr-ref: CR-2026-031
+    target-version: "0.4"
+    estimate: 16h
+  - id: CR-2026-031-TASK-05
+    file: TASK-0.4-CR-2026-031-05-register-workspace-transactions.md
+    title: 实现幂等 register 与 workspace 生命周期
+    status: done
+    cr-ref: CR-2026-031
+    target-version: "0.4"
+    estimate: 16h
+  - id: CR-2026-031-TASK-06
+    file: TASK-0.4-CR-2026-031-06-signed-release-snapshot.md
+    title: 实现 signed release snapshot 与漂移回退
+    status: done
+    cr-ref: CR-2026-031
+    target-version: "0.4"
+    estimate: 14h
+  - id: CR-2026-031-TASK-07
+    file: TASK-0.4-CR-2026-031-07-recoverable-cross-repo-merge.md
+    title: 实现可恢复跨仓 merge 与 finalize
+    status: done
+    cr-ref: CR-2026-031
+    target-version: "0.4"
+    estimate: 20h
+  - id: CR-2026-031-TASK-08
+    file: TASK-0.4-CR-2026-031-08-transaction-workspace-writeback.md
+    title: 实现 Transaction Workspace 与 candidate writeback
+    status: done
+    cr-ref: CR-2026-031
+    target-version: "0.4"
+    estimate: 18h
+  - id: CR-2026-031-TASK-09
+    file: TASK-0.4-CR-2026-031-09-archive-cleanup-transaction.md
+    title: 实现单一 archive 与 cleanup-pending
+    status: done
+    cr-ref: CR-2026-031
+    target-version: "0.4"
+    estimate: 12h
+  - id: CR-2026-031-TASK-10
+    file: TASK-0.4-CR-2026-031-10-prompt-contract-convergence.md
+    title: 收敛 Skill Pipeline Agent 与 controlled-shell 契约
+    status: done
+    cr-ref: CR-2026-031
+    target-version: "0.4"
+    estimate: 12h
+  - id: CR-2026-031-TASK-11
+    file: TASK-0.4-CR-2026-031-11-upgrade-preflight.md
+    title: 实现临时 upgrade-check 与激活门禁
+    status: done
+    cr-ref: CR-2026-031
+    target-version: "0.4"
+    estimate: 8h
+  - id: CR-2026-031-TASK-12
+    file: TASK-0.4-CR-2026-031-12-protocol-activation.md
+    title: 完成架构文档 contracts 双平台 CI 与协议切换
+    status: done
+    cr-ref: CR-2026-031
+    target-version: "0.4"
+    estimate: 16h
+  - id: CR-2026-037-TASK-01
+    file: TASK-tbd-CR-2026-037-01-task-01.md
+    title: 失败优先实现 task init 深原语
+    status: done
+    cr-ref: CR-2026-037
+    target-version: "tbd"
+    estimate: 8h
+  - id: CR-2026-037-TASK-02
+    file: TASK-tbd-CR-2026-037-02-task-02.md
+    title: 接入索引门禁与 Skill Pipeline 契约
+    status: done
+    cr-ref: CR-2026-037
+    target-version: "tbd"
+    estimate: 5h
+  - id: CR-2026-037-TASK-03
+    file: TASK-tbd-CR-2026-037-03-task-03.md
+    title: 执行回归范围审计与发布恢复准备
+    status: done
+    cr-ref: CR-2026-037
+    target-version: "tbd"
+    estimate: 3h
+  - id: CR-2026-032-TASK-01
+    file: TASK-tbd-CR-2026-032-01-archive-contract-red-tests.md
+    title: 建立 Archive 固定返回与 Outbox 失败优先测试
+    status: done
+    cr-ref: CR-2026-032
+    target-version: "tbd"
+    estimate: 6h
+  - id: CR-2026-032-TASK-02
+    file: TASK-tbd-CR-2026-032-02-archive-result-outbox.md
+    title: 实现 Archive 固定返回与幂等 Outbox
+    status: done
+    cr-ref: CR-2026-032
+    target-version: "tbd"
+    estimate: 8h
+  - id: CR-2026-032-TASK-03
+    file: TASK-tbd-CR-2026-032-03-archive-doc-contract.md
+    title: 同步 Archive Skill 与 README 业务语义
+    status: done
+    cr-ref: CR-2026-032
+    target-version: "tbd"
+    estimate: 4h
+  - id: CR-2026-032-TASK-04
+    file: TASK-tbd-CR-2026-032-04-multica-archive-contract.md
+    title: 验证 Multica Archive 投影并执行跨仓验收
+    status: done
+    cr-ref: CR-2026-032
+    target-version: "tbd"
+    estimate: 6h
+  - id: CR-2026-033-TASK-01
+    file: TASK-tbd-CR-2026-033-01-checkpoint-contract-red-tests.md
+    title: 契约冻结与红测（T01）
+    status: done
+    cr-ref: CR-2026-033
+    target-version: "tbd"
+    estimate: 8h
+  - id: CR-2026-033-TASK-02
+    file: TASK-tbd-CR-2026-033-02-durable-checkpoint-envelope-entry-block.md
+    title: durable checkpoint envelope 与 matchEntryBlock 下沉（T03a）
+    status: done
+    cr-ref: CR-2026-033
+    target-version: "tbd"
+    estimate: 10h
+  - id: CR-2026-033-TASK-03
+    file: TASK-tbd-CR-2026-033-03-checkpoint-editor-pure-functions.md
+    title: latest-checkpoint 编辑器与三个纯函数（T03b）
+    status: done
+    cr-ref: CR-2026-033
+    target-version: "tbd"
+    estimate: 12h
+  - id: CR-2026-033-TASK-04
+    file: TASK-tbd-CR-2026-033-04-checkpoint-tx-and-cli.md
+    title: checkpointCr 事务与 cmdCheckpoint CLI（T04）
+    status: done
+    cr-ref: CR-2026-033
+    target-version: "tbd"
+    estimate: 24h
+  - id: CR-2026-033-TASK-05
+    file: TASK-tbd-CR-2026-033-05-checkpoint-migration-and-deletion.md
+    title: Skill/Pipeline 迁移与 checkpoint-add 删除（T05）
+    status: done
+    cr-ref: CR-2026-033
+    target-version: "tbd"
+    estimate: 16h

@@ -1,0 +1,32 @@
+cr-id: CR-2026-029
+tasks:
+  - id: CR-2026-029-TASK-01
+    title: merge-feature-branch 新增发布联调走查步骤
+    status: done
+    estimate: 2h
+    depends-on: []
+  - id: CR-2026-029-TASK-02
+    title: feature-writeback pipeline prompt 同步联调走查
+    status: done
+    estimate: 1h
+    depends-on: [CR-2026-029-TASK-01]
+  - id: CR-2026-029-TASK-03
+    title: 文本静态断言与既有回归
+    status: done
+    estimate: 1h
+    depends-on: [CR-2026-029-TASK-02]
+  - id: CR-2026-029-TASK-04
+    title: 迁移移除 CR-2026-028 TASK-10
+    status: done
+    estimate: 2h
+    depends-on: []
+  - id: CR-2026-029-TASK-05
+    title: CR-2026-028 文档同步（变更记录与测试报告）
+    status: done
+    estimate: 1h
+    depends-on: [CR-2026-029-TASK-04]
+  - id: CR-2026-029-TASK-06
+    title: 全量验证与发布
+    status: done
+    estimate: 1h
+    depends-on: [CR-2026-029-TASK-03, CR-2026-029-TASK-05]

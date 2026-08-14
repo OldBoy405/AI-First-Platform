@@ -1,0 +1,18 @@
+cr-id: CR-2026-033
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-13T19:01:06+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  prd-sdd-alignment: "pass：PRD FR-01~FR-09 均有技术映射；Installation Workspace 调用、全部未忽略变化的恢复重扫和 metadata 冻结点已补齐。"
+  architecture: "pass：保持单一 checkpointCr、既有 durable-tx/workspace-transactions、KB metadata 可见点与依赖单向；未新增事务框架、依赖或第二账本入口。"
+  data-model: "pass：latest-checkpoint、canonical batch-id、journal repo source/phase 与 metadata direct-parent 约束完整；source facts 可在 metadata commit 前恢复前进，commit 后冻结。"
+  interface-contract: "pass：CLI 成功/no-op/失败输出、exact-head、outbox 与错误码/副作用/recoverCommand 契约已冻结。"
+  performance-security: "pass：全仓 preflight、NUL-safe path 枚举、固定敏感规则、精确 lease 与线性串行处理符合安全和复杂度边界。"
+  testability: "pass：9/9 FR 有验证映射；bare-remote 矩阵新增安装根入口、source/hook 后变化、部分 push 后变化、错误码与 deterministic outbox 用例。"
+  prompt-adoption: "pass：第 8 节存在，覆盖 push/list/resume/pull、4 个 Pipeline 文件中的 6 个节点、README/index/ARCHITECTURE。"
+suggestions:
+  - "outbox 是 best-effort 投影：当前 metadata confirmed 后清理 complete journal、no-op 又不新增事件，进程若恰在 authority 成立后、emit 前退出，‘恢复可重复调用 emitter’并不自动成立。实施时二选一明确：接受该投影丢失窗口并删去保证性措辞；或 no-op 仅在 deterministic dedup_name 文件缺失时补发。不要引入消息队列或把 outbox 纳入 Git 事务。"
+subject-file: change-requests/CR-2026-033/sdd.md
+subject-sha256: 5ac758ff4c6389801a6a59480d7229e95b825851ff18c71183374df2db9a4f82

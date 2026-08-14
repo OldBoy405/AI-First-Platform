@@ -1,0 +1,21 @@
+# 回顾性评审证据（例外落盘）：CR-2026-026 为 review-dev-plan 工具的落地 CR，
+# 其 plan/TASK 八维度评审发生于工具落地前（实现前分析型评审，verdict=pass，见 PlanTask撰写评审过程操作记录.md）。
+# 因工具落地后 CR 已越过 task-breakdown 态（前置态不可达），经用户拍板手工补落盘本证据以解除 developing 门禁死锁；
+# 轮次账本（review-loop.yml）与 traceability 投影不随本文件同步（无轮次可计）。例外已登记 SDD v0.4.0 / test-report。
+cr-id: CR-2026-026
+review-type: dev-plan
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-09T13:10:00+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  sdd-to-plan: pass
+  plan-to-tasks: pass
+  task-executability: pass
+  dependency-topology: pass
+  interface-contracts: pass
+  acceptance-verifiability: pass
+  scope-and-simplicity: pass
+  risk-and-rollback: pass
+  estimate-consistency: pass
+suggestions: []

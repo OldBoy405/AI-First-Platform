@@ -1,0 +1,47 @@
+cr-id: CR-2026-021
+review-type: tech-design
+reviewer: ai-reviewer
+reviewed-at: "2026-08-05T11:33:00+08:00"
+verdict: pass
+blockers: []
+resolved-blockers:
+  - id: SDD-BLOCK-001
+    location: "§3.1 / §2.3 / §4.2 / §3.4 / §6"
+    resolved-at: "2026-08-05T11:33:00+08:00"
+    resolution: >-
+      sdd 0.1.1 采用推荐方案统一 cr-init 分配语义：cr-init 去掉显式 <cr-id> 入参,改为内部
+      读 max → 计算 CR-{year}-{max+1} → casWriteMulti 原子建档 → 输出返回分配到的 cr-id;
+      next-cr-id 明确为纯只读预览、不参与分配。§4.2 补并发安全论证（先到者成功、后到者
+      CAS_CONFLICT 全不落盘、重跑自动拿新号,无 TOCTOU 故正常路径不出 CR_ALREADY_EXISTS）。
+      §3.4 错误码标注 CAS_CONFLICT 为唯一并发冲突码、CR_ALREADY_EXISTS 仅边缘误用。§6 的
+      FR-7/AC-4 映射行同步更新为组件级 mismatch-hash 构造。签名/语义/错误码三处口径已一致,
+      AC-4 可判定。
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 1
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-08-05T11:25:00+08:00"
+      result: block
+      blocker-count: 1
+      repair-target: write-tech-design
+    - attempt: 1
+      reviewed-at: "2026-08-05T11:33:00+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: null
+suggestions:
+  - "§4.4/§8-D1 归档硬门禁挂在 CI cr-guard 适配器,但 SDD 未确证 CI enforcement 是否真为 tools 仓接线生效；建议开发期确认,否则「CI 远端兜底」是理论的,pre-commit 本地钩子才是实际主防线（不阻断评审,属实现期核实项）。"
+  - "FR-12（D13）SDD 明示「调查后若复活再补设计小节」——SDD 对该 FR 是条件不完整。建议评审接受「D13 设计随 Phase 0 门槛调查结论补充」为已知例外（PRD 已定为门槛调查,非遗漏）。"
+  - "lint-prompts R1 的「段落」边界对 pipeline JSON（无 Markdown 标题结构）如何切分可更明确：单个 node 的 prompt 是长字符串,段内再切分粒度未定,建议实现期明确以免邻近判定误报/漏报。"
+fr-coverage:
+  total: 25
+  covered: 25
+  missing: []
