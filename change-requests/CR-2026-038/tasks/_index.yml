@@ -1,0 +1,27 @@
+cr-id: CR-2026-038
+tasks:
+  - id: CR-2026-038-TASK-01
+    title: "构建失败优先的 Writeback preflight 基础"
+    status: pending
+    estimate: 10h
+    depends-on: []
+  - id: CR-2026-038-TASK-02
+    title: "实现 baseline 状态同批发布与恢复投影"
+    status: pending
+    estimate: 14h
+    depends-on: [CR-2026-038-TASK-01]
+  - id: CR-2026-038-TASK-03
+    title: "实现 backlog 条目语义 merge tree"
+    status: pending
+    estimate: 10h
+    depends-on: [CR-2026-038-TASK-02]
+  - id: CR-2026-038-TASK-04
+    title: "一次性迁移 Writeback 调用方契约"
+    status: pending
+    estimate: 6h
+    depends-on: [CR-2026-038-TASK-03]
+  - id: CR-2026-038-TASK-05
+    title: "执行全量回归与交付范围审计"
+    status: pending
+    estimate: 6h
+    depends-on: [CR-2026-038-TASK-04]
