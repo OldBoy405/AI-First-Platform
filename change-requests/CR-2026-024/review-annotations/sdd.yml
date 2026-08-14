@@ -1,0 +1,17 @@
+cr-id: CR-2026-024
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-08T21:36:43+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  PRD↔SDD对齐: "attempt-2 的 4 条 blocker 逐条核实修复到位：B-5——FR-1 正文已改为 actor 级五项删除（system-orchestrator.external 三项 + dev-agent.external 的 test-driven-development，位置区分与同批清除依据注明），与 AC-1、SDD §0 C-2/C-5、§4.1 步骤 1 三方一致，§1.2 批次一摘要同形状残留一并订正；B-6——FR-2 已拆分批次归属，coding-discipline §2 半句明示归批次二、以 SDD §3.4/§4.1/§4.2 为准；B-7——FR-11 标签与正文去序数词改「前端质量」维度（注明按维度名验收、实测 6 行新增第 7 行、nodes[9].prompt ⑤ 区分语境），与 AC-8 不再矛盾，§1.2/US-3 同口径残留同步订正；B-8——FR-14 整体重写，插值落 nodes[9].prompt（B-1）、轮次闸 ④（M-2）、dimensions.suggestion-policy canonical 留痕（M-1）三要素齐全，与 AC-11 一一对应，结构性脱节消除。全文残留扫描（四个零引用/读取 {{inputs/planning 域路径/SKILL.md 语境第五维度）零命中；FR-19/AC-15 的⑤为 nodes[9].prompt 枚举语境，合法保留。s-1 留痕已承接（updated 刷新 + 变更记录 v0.1.1）。"
+  架构合理性: "attempt-1/2 结论持续成立：不触 crctl.mjs 任何子命令、coding-discipline 唯一 owns=dev-agent 既有 actor、不改依赖方向、pipeline nodes 数不变。批次编排经 B-2 订正后批次一自身不再携带指向未来产物的引用，FR-2 正文同步后 PRD 与 SDD 的批次口径一致。"
+  数据模型完整性: "§2.1~§2.5 无回归：suggestion_policy 形态与三个既有 select input 同构；capabilities 订正行号实测一致；assignee 删除与 depends-on 保留定位准确；dimensions.suggestion-policy 经 crctl.mjs:1394 只校验『是映射』确认加键零成本。"
+  接口契约: "§3.1~§3.7 无回归；§3.3 四要素（模式无关表述/插值落点说明/轮次闸/canonical 留痕）与 PRD FR-14 新正文、AC-11 验收项逐一对应，三方自洽。"
+  性能与安全: "无变化：全部改动为文本/配置，无性能面影响；§4.4 基线隔离与 §7 回滚设计持续成立；§9 风险表含 lenient 轮次耗尽项及轮次闸缓解。"
+  可测试性: "AC-1/AC-8/AC-11 与各自 FR 正文一一对应（B-5/B-7/B-8 修复后需求可追溯性恢复），判据机械可验（grep/JSON 解析/三件套/真实 CR 回归）；AC-20 端到端三场景覆盖 strict/lenient/审批路径。lenient 轮次闸判据已入 AC-11。"
+  Prompt采纳影响: "条件性维度，本 CR diff 仍不触及 crctl.mjs dispatch 分支与 rules.json#protectedPaths.deny，SDD §8 显式说明无应采纳清单——合规。"
+suggestions:
+  - "s-3（非阻塞，收尾清理）：PRD FR-3/FR-19/AC-2/AC-15 的节点编号仍为 12 节点时代口径（节点 2/6 vs 实测 nodes[1]/[5]）——带 ref 名括号且 SDD §0 C-1 已订正下标，实施者不会改错，故不判 blocker；建议回写期或下次 PRD 编辑时统一为 nodes[] 下标口径，消除最后一类口径漂移。"
+  - "s-2 延续（观察）：已批准 PRD 在 tech-design 回修期被编辑、需求期评审证据未重生成——rules.json 未覆盖 change-requests/{cr}/prd.md，机制不拦截；本 CR 不处理，留漂移治理参考。"

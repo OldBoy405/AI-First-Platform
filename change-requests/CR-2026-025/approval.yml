@@ -1,0 +1,38 @@
+# approval.yml — 人工审批记录（各段仅接受 crctl approve 写入）
+requirement:
+  approver: "OldBoy405"
+  approved-at: "2026-08-09T01:09:44+08:00"
+  via: crctl-approve
+  evidence-digest: "133159087d4a4a56ea8ed5165b98af8f5698c4c558b9cc821567b3b22a006e0a"
+  target-status: requirement-approved
+tech-design:
+  approver: "OldBoy405"
+  approved-at: "2026-08-09T01:51:10+08:00"
+  via: crctl-approve
+  evidence-digest: "93fe0e63f73fd226c85b877d5a75edebf8a549af4e6eaa84566b37925e281eed"
+  target-status: tech-design-reviewed
+supplemental-reviews:
+  - reviewer: "OldBoy405"
+    recorded-at: "2026-08-09T02:18:49+08:00"
+    decision: note
+    stage: "task-breakdown"
+    status-at-record: task-breakdown
+    notes: "plan/task review BLOCK: TASK-03 将非 bump 且 review-loop.yml 缺失时定为 attempt=1，并把既存 stage 缺 review-loop/attempts 视为 []；前者违反 PRD FR-17 的非 bump 不写 loop 且投影当前轮次，后者削弱 FR-18 对损坏目标 stage 的 TRACE_SHAPE 硬失败。应仅允许目标 stage 整体缺失时 oldAttempts=[]，其余结构损坏硬失败；无首轮账本时要求调用方使用 --bump-attempt。TASK-06 正文消费 TASK-01 的错误码/语义，但 _index.yml 只依赖 TASK-05，缺少对 TASK-01 的直接 depends-on，导致 docs 可在守卫未实现前完成。"
+
+  - reviewer: "OldBoy405"
+    recorded-at: "2026-08-09T02:24:45+08:00"
+    decision: note
+    stage: "task-breakdown"
+    status-at-record: task-breakdown
+    notes: "plan/task review follow-up PASS: 已删除非 bump 伪造 attempt=1 语义；TASK-03 现仅允许目标 stage 整体缺失时使用空历史，既存 stage 缺 review-loop 或 attempts 必须 TRACE_SHAPE，并补对应验收子场景。TASK-06 的 TASK frontmatter 与 tasks/_index.yml 均已显式依赖 TASK-01、TASK-05。"
+development-start:
+  approver: "OldBoy405"
+  approved-at: "2026-08-09T02:27:04+08:00"
+  via: crctl-approve
+  target-status: developing
+code:
+  approver: "OldBoy405"
+  approved-at: "2026-08-09T04:21:57+08:00"
+  via: crctl-approve
+  evidence-digest: "7fba79c0998935a125e4327ddaa797f5c831d2e292bb36798bb663bb1c2400b8"
+  target-status: code-approved

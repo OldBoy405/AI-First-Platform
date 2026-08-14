@@ -1,0 +1,17 @@
+cr-id: CR-2026-027
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-10T00:07:59+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  PRD↔SDD对齐: "pass — PRD v0.6.0 的 D-14/FR-16/AC-23 已由 SDD §2.4、§3.4a、§3.5、§6、§7.3 全量映射，16/16 FR 有实现落点。"
+  架构合理性: "pass — 复用既有 review-loop/review-record/cmdNext，不新增子命令或账本类型；cycle 字段为向后兼容扩展，旧 attempts 保留审计。"
+  数据模型完整性: "pass — current-cycle/current-attempt/attempts[].cycle、legacy cycle=1 兼容与 traceability 同步规则已定义。"
+  接口契约: "pass — task-breakdown route 从 canonical annotation 重算；tech-design-review-pending 同时检查 subject digest 与较新 upstream blocker；新 cycle 自动检测条件及 LOOP_EXHAUSTED 行为明确。"
+  性能与安全: "pass — freshness 仅增加少量本地文件读取与 SHA-256；LF 规范化、CAS、crctl 独占 review-loop 写入和无手工重置边界保持。"
+  可测试性: "pass — AC-23/§7.3 覆盖 missing/malformed/PASS/repair/upstream/exhausted、fresh/stale SDD、legacy annotation 与 cycle=2/attempt=1 审计保留。"
+  Prompt采纳影响: "pass — review-tech-design 继续调用既有 `review-record --bump-attempt`，新 cycle 由 crctl 确定性识别，无需新增 prompt 参数或 pipeline 节点。"
+suggestions:
+  - "实现 reviewed-at 新旧比较时应解析为时间戳后比较，不直接依赖字符串排序；非法时间戳按 schema 错误硬失败。"
+  - "cycle schema 测试补充：current-cycle/attempt/cycle 必须为正整数，同 cycle attempt 严格递增，legacy 无 cycle 统一投影为 cycle=1。"

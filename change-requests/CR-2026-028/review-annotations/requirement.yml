@@ -1,0 +1,15 @@
+cr-id: CR-2026-028
+review-type: requirement
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-10T17:30:51+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  结构完整性: "通过：概述、6 US、9 FR、7 NFR、17 AC、成功指标、范围排除、变更记录与契约优先级齐全。"
+  FR可测试性: "通过：每条 FR 均有 AC；路径错误、四标志、linked worktree/worktree-path、四类配置 sentinel、缓存代码审查、cr-init 与 active surface 七模式均有可执行判据。"
+  范围合理性: "通过：精确白名单覆盖 workspace 当前入口、tools active Skill/Pipeline/Adapter/CI 与核心实现；历史/生成/inactive 内容明确排除，未引入 Runner、installer、版本 pin 或新依赖。"
+  与规划对齐: "通过：PRD v0.3.0 与 source、CONTEXT、ADR-0003 及 17 项 grilling 决策一致；注册快照的三处旧口径已明确由质询后契约取代。"
+  依赖识别: "通过：已覆盖 crctl 四类 loader、worktree-path 对 push/pull/resume 的依赖、cr-init 复用、Adapter 静态物化、multica 延后台账及 target-version=tbd 口径。"
+suggestions: []
+subject-file: change-requests/CR-2026-028/prd.md
+subject-sha256: e1bccf76741ea26fa7054f1fe69ea43b1c59c91036cd8d5b36ccad0ebf456dbd

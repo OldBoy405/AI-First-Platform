@@ -1,0 +1,23 @@
+$ node --test test/lint-prompts.test.mjs
+(exit=0)
+--- stdout ---
+✔ R1：手写 guard-deny 文件且同段无 crctl → CONTRADICTS (49.6536ms)
+✔ R1 豁免：同段含 crctl 调用（正确示范）不误报 (48.4268ms)
+✔ R1 豁免：<!-- lint-prompts:ignore --> 跳过该段 (49.4217ms)
+✔ R2：裸 git 命令 → CONTRADICTS；crctl git 形态不报 (49.7872ms)
+✔ R3/R4：cr-status-set / 六字段口径 → STALE-REF / CONTRADICTS (56.3413ms)
+✔ R5：手写 review-loop 记账（配合写动词）→ OUTDATED (55.3987ms)
+✔ R5 不误报：passCondition 读取声明（无写动词） (52.1334ms)
+✔ R6：test-report.md 手写 frontmatter → CONTRADICTS (48.0503ms)
+✔ enforce 模式：有 CONTRADICTS/STALE-REF → exit 1 + LINT_DRIFT (51.4583ms)
+✔ enforce 模式：零漂移 → exit 0 (47.9082ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 574.0035
+
+--- stderr ---

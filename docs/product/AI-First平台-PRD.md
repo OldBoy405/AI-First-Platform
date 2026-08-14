@@ -3,7 +3,7 @@
 | 项目 | 内容 |
 |---|---|
 | **文档名称** | AI First 平台 产品需求文档（PRD） |
-| **版本** | v1.2（2026-07-29 修订：吸收《AI-First 研发协同平台》理念对比的 S1–S6 改进——知识消费层、超级个体协同层补全、交付效能度量、场景工坊、AI 行为审计、发布材料位置；2026-07-30 修订：Wiki 子系统落地设计——wiki-maintain 维护、wiki-first 问答、双信号知识晋升，详见《Wiki 子系统设计》） |
+| **版本** | v1.2（2026-07-29 修订：吸收《AI-First 研发协同平台》理念对比的 S1–S6 改进——知识消费层、超级个体协同层补全、交付效能度量、场景工坊、AI 行为审计、发布材料位置；2026-07-30 修订：Wiki 子系统落地设计——wiki-maintain 维护、wiki-first 问答、双信号知识晋升，详见《Wiki 子系统设计》；2026-08-07 修订：对照已落地代码核实追认——壳 Issue 设计废止（ADR-0001）、cr 投影表以事件账本为历史权威（ADR-0002）、状态数口径标注） |
 | **编制日期** | 2026-07-28 |
 | **产品定位** | 企业内部自托管的 AI 原生研发协同平台 |
 | **底座** | Multica（fork，长期跟随上游） |
@@ -90,7 +90,7 @@
 - A2A 跨项目 Agent 协作；Discussion Coordinator（DC）路由协调。
 
 #### 2.1.3 工程治理与可追溯（差异化核心）
-- CR（变更请求）16 态门禁状态机，5 道质量门（需求/技术设计/测试证据/代码/规划评审）。
+- CR（变更请求）16 态门禁状态机（口径：15 个具名状态 + 注册前 (new)，见 CONTEXT.md），5 道质量门（需求/技术设计/测试证据/代码/规划评审）。
 - traceability 五段链路：需求 FR ↔ 技术设计 SDD ↔ 交付 TASK ↔ 代码 merge SHA ↔ CR-ID。
 - 漂移检测：基线对齐扫描 + 变更影响分析 + 绕过流程的直接提交（bypass-commit）探测。
 
@@ -272,20 +272,22 @@ daemon 采集 → POST /api/daemon/cr-events
 | 类别 | 数量 | 内容 |
 |---|---|---|
 | **原样复用** | ≈30 张 | workspace(=组织)、issue 全家桶、agent_task_queue、chat_session、comment、daemon/runtime、channel/lark、autopilot/sys_cron、inbox_item、skill、squad |
-| **改动** | 2 张 | `issue` 加 `cr_id TEXT`（部分唯一索引）；`agent_task_queue` 加 `cr_id` + `pipeline_node_run_id` |
-| **新增** | 7 张 | cr、cr_sync_event、approval_record、pipeline_run、pipeline_node_run、spec_trace、department + maturity_snapshot |
+| **改动** | 2 张 | `issue` 加 `cr_id TEXT`（部分唯一索引）；`agent_task_queue` 加 `cr_id` + `pipeline_node_run_id`（2026-08-07 核实修正：`issue.cr_id` 未落地且已废止，改由 `cr.shell_issue_id` 反向引用承担关联，见 ADR-0001；`agent_task_queue` 两列已由迁移 162 落地） |
+| **新增** | 7 张 | cr、cr_sync_event、approval_record、pipeline_run、pipeline_node_run、spec_trace、department + maturity_snapshot（2026-08-07 核实：前 5 张已落地；cr 表落地列少于设计稿，checkpoint/merge 历史由 cr_sync_event 事件账本承载，见 ADR-0002；spec_trace/department/maturity_snapshot 属 P3，未落地） |
 
 ### 4.2 权威归属
 
 | 数据 | git 权威 | PG 投影 |
 |---|---|---|
 | CR 生命周期 | `_backlog.yml` + `cr.md`（CAS 双写） | `cr` 表 |
-| CR ≈ Issue | `cr.md#origin={type:issue,ref}` | `issue.cr_id`（唯一索引）+ 壳 Issue |
-| TASK 子任务 | `tasks/TASK-NN.md` | 子 Issue（`parent_issue_id` = CR 壳 Issue） |
-| 16 态 → 7 态看板 | 状态机权威 | `issue.metadata.cr_status_bucket`（禁拖拽 CR 壳） |
+| CR ≈ Issue | `cr.md#origin={type:issue,ref}` | ~~`issue.cr_id`（唯一索引）+ 壳 Issue~~ **已废止**（ADR-0001）：改为 `cr.shell_issue_id`（CR 关联 Issue，crsync 从 origin 回填） |
+| TASK 子任务 | `tasks/TASK-NN.md` | 子 Issue（`parent_issue_id` = CR 壳 Issue）（锚点随壳 Issue 废止悬置，未实施，见 P0 §3.5） |
+| 16 态 → 7 态看板 | 状态机权威 | ~~`issue.metadata.cr_status_bucket`（禁拖拽 CR 壳）~~ **已废止**（ADR-0001）：CR 状态呈现走聊天窗口门禁徽标 |
 | 可追溯 | `specs/{id}/traceability.yml` | `spec_trace` |
 
 ### 4.3 CR 16 态 → Issue 7 态映射
+
+> 2026-08-07：本节属已废止的壳 Issue 三件套（ADR-0001），从未实施，保留作历史设计记录；详见《P0 数据模型映射表》§4.1。
 
 | CR 状态 | Issue status |
 |---|---|
@@ -355,7 +357,7 @@ daemon 采集 → POST /api/daemon/cr-events
 
 #### 5.2.3 CR 状态机（权威定义）
 
-16 态主链 + 3 终态，23 条转移：
+16 态主链 + 3 终态，23 条转移（2026-08-07 口径修正：按 AGENTS.md 工程纪律 2 与 tools 仓当前声明，状态机 = 15 个具名状态 + 注册前 (new)（口语「16 态」含 (new)），转移 = 25 条声明、wildcard 展开后 47 条；以 `../tools/dir-graph.yaml#change-request-track.state_machine` 为唯一事实源）：
 ```
 drafting → requirement-reviewing → requirement-approved
   → tech-designing → tech-design-review-pending → tech-design-reviewed
@@ -704,9 +706,9 @@ Multica `pkg/agent/claude.go` 已接：daemon 拉起 `claude --output-format str
 
 | 术语 | 含义 |
 |---|---|
-| **CR（Change Request）** | 变更请求，工程治理的"信封"，含 16 态门禁状态机 |
-| **Issue** | 统一工作入口，万物先是 Issue（反馈/杂事/咨询/CR 壳） |
-| **TASK** | CR 壳 Issue 的子 Issue，投影自 tasks/TASK-NN.md |
+| **CR（Change Request）** | 变更请求，工程治理的"信封"，含 16 态门禁状态机（口径：15 个具名状态 + 注册前 (new)，见 CONTEXT.md） |
+| **Issue** | 统一工作入口，万物先是 Issue（反馈/杂事/咨询）；「CR 壳 Issue」概念已废止（ADR-0001），CR 经 `cr.shell_issue_id` 关联既有 Issue |
+| **TASK** | CR 的 git 侧子任务（tasks/TASK-NN.md）；子 Issue 投影锚点随壳 Issue 废止悬置，未实施 |
 | **crctl** | tools 的门禁引擎（1006 行零依赖 Node CLI），状态权威执行器 |
 | **traceability** | 五段可追溯链路：FR ↔ SDD ↔ TASK ↔ merge SHA ↔ CR-ID |
 | **daemon** | 用户本机的 Agent 运行守护进程 |

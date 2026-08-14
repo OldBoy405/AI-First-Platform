@@ -1,0 +1,33 @@
+cr-id: CR-2026-019
+review-type: requirement
+reviewer: ai-reviewer
+reviewed-at: "2026-08-04T17:02:19+08:00"
+verdict: pass
+blockers: []
+repair-target: write-requirement-prd
+repair-instructions: []
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 0
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-08-04T17:02:19+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: write-requirement-prd
+review-notes:
+  - "结构完整性：7 章节齐全（概述/用户故事/FR/NFR/AC/成功指标/范围排除）"
+  - "FR 可测试性：FR-1..7 与 AC-1..7 一一对应，AC-8 为回归线；AC 均含可执行断言（非零退出且不写文件、grep 命中约束、merge-tree 冲突数=0）"
+  - "范围合理性：排除项 6 条，明确否决独立脚本库、不动状态机与 v2 schema、不重跑迁移"
+  - "与规划对齐：覆盖复盘 §3.2 P2 三类账本操作（task done / merge-commits / 归档移动）与 CR-2026-018 测试报告 §6 建议①（AC-9 入库）②（P2 立项）"
+  - "依赖识别：前置 CR-2026-018（T1-full）已定型；事实基线 §1.3 按纪律 #4 逐条给出核实位置（crctl.mjs:1419-1431 / :560-562 / :690）"
+suggestions:
+  - "SDD 阶段需明确 archive-move 双文件 CAS 的实现方式（两文件快照顺序与回退语义），PRD NFR-2 已给出行为约束"
+  - "SDD 阶段确认 task done 合法状态集合的具体清单（PRD FR-5 仅约束'开发相关态'）"

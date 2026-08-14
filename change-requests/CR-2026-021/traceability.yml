@@ -1,0 +1,68 @@
+cr-id: CR-2026-021
+reviews:
+  requirement:
+    reviewer: ai-reviewer
+    verdict: pass
+    reviewed-at: "2026-08-05T10:52:00+08:00"
+    blocker-count: 0
+    review-loop:
+      current-attempt: 1
+      max-attempts: 3
+      attempts:
+        - attempt: 0
+          reviewed-at: "2026-08-05T10:45:00+08:00"
+          result: block
+          blocker-count: 1
+          repair-target: write-requirement-prd
+        - attempt: 1
+          reviewed-at: "2026-08-05T10:52:00+08:00"
+          result: pass
+          blocker-count: 0
+          repair-target: null
+  tech-design:
+    reviewer: ai-reviewer
+    verdict: pass
+    reviewed-at: "2026-08-05T11:33:00+08:00"
+    blocker-count: 0
+    review-loop:
+      current-attempt: 1
+      max-attempts: 3
+      attempts:
+        - attempt: 0
+          reviewed-at: "2026-08-05T11:25:00+08:00"
+          result: block
+          blocker-count: 1
+          repair-target: write-tech-design
+        - attempt: 1
+          reviewed-at: "2026-08-05T11:33:00+08:00"
+          result: pass
+          blocker-count: 0
+          repair-target: null
+  code:
+    reviewer: "OldBoy405"
+    verdict: pass
+    reviewed-at: "2026-08-05T16:46:00+08:00"
+    blocker-count: 0
+    review-loop:
+      current-attempt: 1
+      max-attempts: 3
+      attempts:
+        - attempt: 1
+          reviewed-at: "2026-08-05T16:46:00+08:00"
+          result: pass
+          blocker-count: 0
+          repair-target: null
+tests:
+  report: change-requests/CR-2026-021/test-report.md
+  status: pass
+  owner: OldBoy405
+  owner-assigned-at: "2026-08-05T09:37:00+08:00"
+  generated-at: "2026-08-05T16:23:52+08:00"
+  repair-target: implement-code
+  commands:
+    - name: crctl.test
+      result: pass
+    - name: lint-prompts.test
+      result: pass
+    - name: lint-prompts-enforce
+      result: pass

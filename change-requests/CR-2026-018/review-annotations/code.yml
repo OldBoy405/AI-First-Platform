@@ -1,0 +1,81 @@
+cr-id: CR-2026-018
+review-type: code
+reviewer: ai-reviewer
+reviewed-at: "2026-08-04T14:52:40+08:00"
+verdict: pass
+blockers: []
+repair-target: implement-code
+repair-instructions: []
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+      - path: test-report.status
+        equals: pass
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 0
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-08-04T14:52:40+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: implement-code
+suggestions:
+  - id: CODE-SUG-001
+    note: "AC-9 merge-tree 演练与 TASK-09 fixture 回归均为一次性脚本未入库（test-report §5 已披露）；建议后续 CR 将 merge-tree 演练固化进 crctl.test.mjs"
+  - id: CODE-SUG-002
+    note: "评审中发现并已就地修复两处小事实错误：① cr-status-set/SKILL.md 错误码表 CR_STATUS_NOT_FOUND 语义写反（条目定位仍在 _backlog.yml 注册索引），并补 CR_MD_STATUS_MISSING/CR_MD_WRITE_FAILED 两个新错误码行（tools 仓 commit 8c07d7d）；② test-report.md 统计行为过期快照（21 文件 +490/-112 → 实测 22 文件 +494/-115），已修正并注明"
+task-coverage:
+  total: 10
+  verified: 10
+  unverified: []
+verification:
+  lint: not-applicable  # 无 lint 配置；node --check 语法检查 + tools 仓 pre-commit 钩子（skill matrix / agents.contract）每次 commit 自动执行
+  test: pass            # 评审人亲自复跑 node --test crctl.test.mjs：32/32 全绿
+  build: not-applicable # 纯 Node 脚本 + Markdown 文档，无构建步骤
+test-report:
+  file: "change-requests/CR-2026-018/test-report.md"
+  status: pass
+  uncovered-risks:
+    - "AC-9 演练为一次性脚本未入库（后续 CR 固化）"
+    - "主工作区 _backlog.yml 仍为 v1，正式迁移在本 CR 合并后按发布说明执行"
+    - "迁移窗口期新旧 crctl 混用会重引入双写（MIXED_LAYOUT_WARN 已覆盖，发布说明需明示统一版本）"
+evidence:
+  diff-range: "68d2326..HEAD (tools 仓 requirement/CR-2026-018，11 commits，22 files，+494/-115)"
+  changed-files:
+    - skills/shared/crctl/scripts/crctl.mjs
+    - skills/shared/crctl/scripts/test/crctl.test.mjs
+    - skills/shared/crctl/adapters/claude-code/hooks/inject-cr-status.mjs
+    - dir-graph.yaml
+    - skills/shared/crctl/SKILL.md
+    - skills/cr/cr-status-set/SKILL.md
+    - skills/cr/cr-archive/SKILL.md
+    - skills/cr/cr-dashboard/SKILL.md
+    - skills/cr/cr-inbox/SKILL.md
+    - skills/cr/cr-review-record/SKILL.md
+    - skills/cr/inbox-emit/SKILL.md
+    - skills/develop/approve-code/SKILL.md
+    - skills/develop/approve-dev-start/SKILL.md
+    - skills/develop/approve-tech-design/SKILL.md
+    - skills/planning/analyze-current-product/SKILL.md
+    - skills/planning/focus-briefing/SKILL.md
+    - skills/requirement/approve-requirement/SKILL.md
+    - skills/requirement/requirement-register/SKILL.md
+    - skills/review/review-alignment/SKILL.md
+    - skills/spec/spec-dashboard/SKILL.md
+    - skills/sync/list-remote-checkpoints/SKILL.md
+    - skills/writeback/merge-feature-branch/SKILL.md
+  key-checks:
+    - "FR-1 单写：advance 删除 updateBacklogStatus 调用，git add 收窄到 change-requests/{cr}/cr.md，写失败 CR_MD_WRITE_FAILED 硬失败（SDD §4.2 对齐）"
+    - "FR-2 读收敛：resolveCrState 替换 5 处 entry.status 读点（cmdStatus/cmdAdvance/cmdApprove/approveWithGrant/cmdNext），cr.md 权威 + legacy 回退 + MIXED_LAYOUT_WARN（SDD §4.1 对齐）"
+    - "FR-3 schema v2：validate 区分 v1/v2，v2 含 status → LEGACY_STATUS_FIELD 告警，v1 漂移告警且以 cr.md 为准"
+    - "FR-5 migrate-backlog：预检不一致 MIGRATE_STATUS_MISMATCH 硬失败不写文件；行级尾到头删除防行号偏移；幂等 already-migrated；报告落 .crctl/ 自动 gitignore；commit 消息含条目数（SDD §2.3 决策对齐）"
+    - "FR-6+FR-9 AC-6 grep 复核：tools/skills/ 下 _backlog+status 剩余命中仅为注册索引操作（cr-archive 账本移动）与兼容回退说明（list-remote-checkpoints），无活体权威读取"
+    - "FR-7 dir-graph.yaml scope → change-requests/{CR-ID}/cr.md，transitions 零改动"
+    - "FR-8 适配器：inject-cr-status.mjs backlog 取 id 清单 + 逐 id 读 cr.md frontmatter 覆盖，读不到静默回退（注入是增强非门禁，降级合理）"
+    - "AC-4 探测不变：findBacklog/workspace 探测逻辑零改动，仍以 _backlog.yml 为锚"
+    - "评审人独立复跑测试套件 32/32 pass（非仅采信报告）"

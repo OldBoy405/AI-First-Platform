@@ -1,0 +1,85 @@
+schema: cr-tasks/v1
+cr: CR-2026-027
+plan-ref: "change-requests/CR-2026-027/plan.md"
+tasks:
+  - id: CR-2026-027-TASK-01
+    title: bootstrap：tools 入 repositories + tools worktree 派生 + workspace Phase 0 文档统一
+    status: done
+    done-at: "2026-08-10T00:27:16+08:00"
+    estimate: 6h
+    depends-on: []
+  - id: CR-2026-027-TASK-02
+    title: tools ARCHITECTURE.md 修订（口径 27/49、单文件边界、crctl-Pipeline 依赖、指标基线）
+    status: done
+    done-at: "2026-08-10T00:29:02+08:00"
+    estimate: 4h
+    depends-on: ["CR-2026-027-TASK-01"]
+  - id: CR-2026-027-TASK-03
+    title: approve 原子提交（approveAndAdvance + evidence override seam + assertCandidateStatus）
+    status: done
+    done-at: "2026-08-10T00:42:36+08:00"
+    estimate: 12h
+    depends-on: ["CR-2026-027-TASK-01"]
+  - id: CR-2026-027-TASK-04
+    title: archived TASK 完成门禁五步判定（deliveryIndexComplete 修复）
+    status: done
+    done-at: "2026-08-10T00:46:35+08:00"
+    estimate: 6h
+    depends-on: ["CR-2026-027-TASK-01"]
+  - id: CR-2026-027-TASK-05
+    title: migrate-backlog 幽灵条目清理阶段 + 主工作区执行一次
+    status: done
+    done-at: "2026-08-10T01:06:21+08:00"
+    estimate: 4h
+    depends-on: ["CR-2026-027-TASK-01"]
+  - id: CR-2026-027-TASK-06
+    title: archive-move 三账本 CAS 原子化 + archive event + 收件人
+    status: done
+    done-at: "2026-08-10T02:46:07+08:00"
+    estimate: 10h
+    depends-on: ["CR-2026-027-TASK-01"]
+  - id: CR-2026-027-TASK-07
+    title: status/next 路由修复（终态 resolver + task-breakdown dev-plan 检查）+ inbox-emit 空 to 校验
+    status: done
+    done-at: "2026-08-10T03:42:58+08:00"
+    estimate: 10h
+    depends-on: ["CR-2026-027-TASK-01", "CR-2026-027-TASK-08"]
+  - id: CR-2026-027-TASK-08
+    title: review-record 输出深化 + 四个 review Skill 删除 traceability 二次读取
+    status: done
+    done-at: "2026-08-10T03:13:53+08:00"
+    estimate: 12h
+    depends-on: ["CR-2026-027-TASK-01"]
+  - id: CR-2026-027-TASK-09
+    title: Skill 同步（merge-feature-branch 特例删除 + cr-archive 契约）+ ARCHITECTURE §8 登记
+    status: done
+    done-at: "2026-08-10T03:46:24+08:00"
+    estimate: 4h
+    depends-on:
+      - "CR-2026-027-TASK-01"
+      - "CR-2026-027-TASK-02"
+      - "CR-2026-027-TASK-03"
+      - "CR-2026-027-TASK-04"
+      - "CR-2026-027-TASK-05"
+      - "CR-2026-027-TASK-06"
+      - "CR-2026-027-TASK-07"
+      - "CR-2026-027-TASK-08"
+  - id: CR-2026-027-TASK-10
+    title: 五项最小验证全绿 + AC 全量核对（含 bootstrap-base-sha 断言）
+    status: done
+    done-at: "2026-08-10T03:50:04+08:00"
+    estimate: 4h
+    depends-on:
+      - "CR-2026-027-TASK-02"
+      - "CR-2026-027-TASK-03"
+      - "CR-2026-027-TASK-04"
+      - "CR-2026-027-TASK-05"
+      - "CR-2026-027-TASK-06"
+      - "CR-2026-027-TASK-07"
+      - "CR-2026-027-TASK-08"
+      - "CR-2026-027-TASK-09"
+summary:
+  total-estimate: 72h
+  plan-estimate: 72h
+  estimate-warn: ""
+

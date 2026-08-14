@@ -1,0 +1,16 @@
+cr-id: CR-2026-030
+review-type: requirement
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-11T02:05:03+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  结构完整性: "PASS：概述、8 个用户故事、10 条 FR、7 条 NFR、32 条连续编号 AC、成功指标、范围排除、风险与三轮变更记录齐全；title、source、事实基线和精确修改白名单一致。"
+  FR可测试性: "PASS：每条 FR 均有可执行 AC；第 2 轮 Owner 提交隔离缺口已由 tracked clean 前置条件、仅两账本 staged-set 校验、clean-baseline 回滚及 staged/unstaged/并存/untracked fixture 闭合。Registration、grant reject、dev-plan 三路路由与 R7 均有成功、失败、幂等或行尾向量。"
+  范围合理性: "PASS：范围维持现有 crctl/Skill/Pipeline 原语的最小修复，不新增状态、Runner、WAL、数据库、grant v2 或依赖；Multica 明确限定为既有跨接缝测试与 CUSTOM.md，production code 零修改。"
+  与规划对齐: "PASS：完整覆盖 tools-tca-001-004-optimization-plan.md 的 TCA-001～004 核心诉求，并对注册事件真实 SHA、正式移交唯一入口、reject 完整验签回退、精确 trigger/R7 权威校验给出一致需求边界。"
+  依赖识别: "PASS：已识别状态机、gates、grant v1、controlled-shell/Git index 与 working tree、outbox 非阻断投影、Multica 跨接缝及 CUSTOM-TODO-001～006 边界；未把未交付消费者或 Pipeline Runner 描述为现状。"
+suggestions:
+  - "SUG-1 SDD 实现 owner-set clean 检查时复用 controlled-shell 已允许的 Git 查询形态，并为 staged/unstaged 同路径及并发外部变更保留独立黑盒向量，避免 Skill 层复制判断。"
+subject-file: change-requests/CR-2026-030/prd.md
+subject-sha256: 5218975bf14577c9255bb5575f64a4c8f42a98abf4dd75f44d2235827dc6d80d

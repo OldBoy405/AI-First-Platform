@@ -1,0 +1,491 @@
+# Tools TCA-001～004 核对与最小优化实施方案
+
+> 核对基线：`../tools@cab3663e224c7198d954b4d25bee5f4a8803a452`（`custom/main`）
+> 平台审批链核对基线：`../multica@c8c96e56a4bae1a2fb84c5700cffec174631ef74`（`main`）
+> 核对日期：2026-08-10
+> 来源：`docs/analysis/tools-text-contract-audit.md#TCA-001~004`
+> 文档性质：经 grilling 与 domain-modeling 确认的实施方案，不是运行时事实源；状态机、门禁、权限仍以 tools 仓权威文件为准。
+
+## 1. 结论
+
+TCA-001～004 在核对基线中都成立。最小修复不是增加一层编排或新协议，而是让现有入口兑现已有契约：
+
+1. 扩展 `cr-init`，真实接收并一次写入三角色 Owner；registration commit 成功后才以真实 SHA 产生注册事件。
+2. 把 `owner-set` 收敛为正式移交的受控账本原语；`handover-cr` 是唯一业务入口，`resume-from-remote` 不再修改 Owner。
+3. 复用现有 v1 签名 grant；reject 先完整验证，再执行状态机已有回退，不引入第二套审批协议。
+4. 修正 `review-dev-plan` 的精确 trigger，并让 Skill 独占状态命令、Pipeline 只拥有路由和重放。
+5. 扩展现有 R7，让其直接消费 `dir-graph.yaml` 的权威转移声明，静态拦截错误字面量。
+
+明确不做：
+
+- 不新增 `owner-handover`、注册聚合巨型命令或恢复子命令。
+- 不新增 Pipeline Runner、数据库、WAL、通用 YAML 框架、grant v2 或 rejection 文件。
+- 不修改 Multica 源码，不宣称 Owner 投影、通知触达或 reject reason 注入已闭环。
+- 不删除仍被其他流程使用的 `inbox-emit`。
+- 不修改 CI workflow；沿用现有检查入口。
+- 不借本轮治理 TCA-005 以后问题，也不拆分 `crctl.mjs`。
+
+## 2. 职责边界
+
+| 层 | 本轮职责 | 禁止承担 |
+|---|---|---|
+| Agent | 判断职责并选择 Pipeline/Skill | 状态机、Git 算法、Owner 写入、grant 路径 |
+| Pipeline | 节点顺序、输入传递、`reviewLoop`、失败中止 | Skill 算法、账本逻辑、trigger 字面量、Git 命令、branch/path 拼接 |
+| Skill | 业务前置、步骤编排、调用原语、输入输出和失败语义 | 手写 CAS、受控账本、路径算法、重复实现 `crctl` |
+| `crctl` | 状态、门禁、CAS、受控账本、审计、确定性 Git 原语和结构化结果 | 业务设计、LLM 评审、下一 Skill 路由、通知展示文案 |
+| 版本化脚本 | 确定性文档转换 | 状态推进、Owner 变更、人工审批 |
+| README/架构文档 | 人读流程和事实源链接 | 第二份可执行状态机、grant 协议或 Git 算法 |
+
+Git 职责进一步限定为：Skill 决定何时提交、推送以及创建哪些 worktree；`crctl git`/controlled-shell 执行 Git 副作用；`crctl worktree-path` 独占 branch、bucket、path 算法。
+
+## 3. 基线事实
+
+核对基线的检查均为绿色：
+
+```text
+lint-prompts report: 0 findings
+skill matrix: 57 active skill，通过
+agents.contract: 9 agent，通过
+pipeline JSON parse: 通过
+node --test skills/shared/crctl/scripts/test/*.test.mjs: 189/189 通过
+```
+
+这些结果不推翻 TCA-001～004：
+
+- `cr-init` 测试只传一个 Owner，未以三个不同值验证端到端结果。
+- `owner-set` 测试只断言 `_backlog.yml`，未验证 `cr.md`、历史、通知和提交。
+- grant 测试覆盖 approve 验签，但 reject 在完整验证前被拒绝。
+- R7 只检查 `advance` 是否带 `--to/--trigger`，不验证字面量是否存在于状态机。
+
+### 3.1 TCA-001
+
+Pipeline 和 `requirement-register` 声明三角色 Owner，实际只向 `cr-init` 传 `--owner-requirement`；`cmdCrInit()` 再把同一值复制到 requirement、development、test。Pipeline 还暴露已被底层忽略的 `cr_id` 输入。
+
+### 3.2 TCA-002
+
+`handover-cr` 与 `resume-from-remote` 描述了双投影和历史更新，但 `cmdOwnerSet()` 实际只写 `_backlog.yml`。`identity(ws)` 来自本地配置或 Git 用户名，无法可信绑定 Owner 或平台身份，不能作为强授权依据。
+
+### 3.3 TCA-003
+
+平台已有 Ed25519 v1 grant、daemon 默认落点和 `crctl approve --grant`。缺口是 reject 在 `cr_id/stage/evidence/signature` 验证前即返回 `GRANT_DECISION_REJECT`，没有执行四阶段已有的 reject 回退。当前也没有 Pipeline Runner 能可靠分派 approve/reject 决定。
+
+### 3.4 TCA-004
+
+权威转移为：
+
+```text
+from=task-breakdown
+to=tech-design-reviewed
+trigger="review-dev-plan:block -> write-dev-plan"
+```
+
+Skill 和 Pipeline 使用短值 `review-dev-plan:block`。`findTransition()` 精确匹配 trigger，因此短值必然返回 `CR_STATUS_TRANSITION_NOT_ALLOWED`。
+
+## 4. TCA-001：注册契约
+
+### 4.1 `cr-init` 接口
+
+```text
+crctl cr-init \
+  --title <title> \
+  --owner-requirement <id> \
+  --owner-development <id> \
+  --owner-test <id> \
+  [--summary <text>] [--source <source>] [--target-version <version>]
+```
+
+三个 Owner 显式必填；即使同一人承担三角色也必须传三次。缺任一项时零写入，不保留复制 requirement Owner 的兼容逻辑。
+
+`cr-init` 一次生成时间戳并复用于三个当前 Owner 和三条 `initial-assignment` 历史；顶层 `owner` 恒等于 `owners.requirement.id`。继续用一次 `casWriteMulti()` 写：
+
+- `change-requests/{CR-ID}/cr.md`
+- `change-requests/_backlog.yml`
+- `change-requests/_index.yml`
+
+最小成功返回为：
+
+```json
+{
+  "op": "cr-init",
+  "cr": "CR-YYYY-NNN",
+  "status": "drafting",
+  "owners": {
+    "requirement": { "id": "...", "assigned-at": "..." },
+    "development": { "id": "...", "assigned-at": "..." },
+    "test": { "id": "...", "assigned-at": "..." }
+  },
+  "files": [".../cr.md", ".../_backlog.yml", ".../_index.yml"]
+}
+```
+
+`cr-init` 只记录 `op=cr-init` audit，内容可包含 Owner 投影和三项 `reason=initial-assignment` 的 `changes[]`；不得包含尚不存在的 branch、worktree、commit SHA 或 outbox 成功声明，也不发 outbox。
+
+### 4.2 registration commit
+
+`requirement-register` 随后调用受控原语：
+
+```text
+crctl git commit --template register --cr <CR-ID>
+```
+
+只有 commit 成功后，`crctl git` 才读取真实 HEAD SHA 和 `cr.md` 权威 Owner，并以同一 SHA 尝试写出：
+
+1. `event_kind=status`：`(new) -> drafting`
+2. `event_kind=owners`：完整三角色投影和三项 `reason=initial-assignment` 的 `changes[]`
+
+commit 失败不发事件。outbox 失败不反转 commit：返回 `warnings[]`，并记录 `EMIT_FAILED` audit。`requirement-register` 不读取 HEAD、不生成 SHA、不构造事件。
+
+`crctl worktree-path` 增加 canonical `branch` 返回值；Skill 必须消费 `branch/bucket/path`，不得拼 `requirement/${crId}`。
+
+### 4.3 registration execution context
+
+只有 registration commit、发布和全部必要 worktree 步骤成功后，`requirement-register` 才输出机器可读成功上下文：
+
+```yaml
+execution_context:
+  cr_id: CR-YYYY-NNN
+  status: drafting
+  owners: { requirement: {}, development: {}, test: {} }
+  branch: requirement/CR-YYYY-NNN
+  registration_commit:
+    sha: <real-head-sha>
+    outbox: {}
+    warnings: []
+  knowledge_base_worktree: <canonical-path>
+  repo_worktrees:
+    - repo: <repo-id>
+      role: <repo-role>
+      bucket: <canonical-bucket>
+      branch: <canonical-branch>
+      path: <canonical-path>
+```
+
+Owner 来自 `cr-init`；branch/bucket/path 来自 `worktree-path`；SHA、outbox 和 warning 来自 register template commit。Skill 只汇总原语返回，Pipeline 只传递该上下文。
+
+`cr-init` 三文件 CAS 成功即永久占用 CR-ID。之后 commit、push 或 worktree 创建失败时，不回收或重新分配，且不得输出成功上下文；返回：
+
+```json
+{
+  "code": "REGISTRATION_INCOMPLETE",
+  "cr_id": "CR-YYYY-NNN",
+  "failed_step": "commit|push|worktree",
+  "completed_steps": [],
+  "commit_sha": null,
+  "created_worktrees": [],
+  "warnings": []
+}
+```
+
+同一次执行只能继续原 CR-ID，不得再次调用 `cr-init`。单仓 fetch 仍可按现有契约降级为 `STALE_BASE` warning；真正的 worktree 创建失败属于 incomplete。跨进程自动续跑未实现，登记在 tools `CUSTOM-TODO-006`，不得在 Skill、Pipeline 或 README 中宣称已交付。
+
+## 5. TCA-002：正式移交契约
+
+### 5.1 唯一入口和底层原语
+
+`handover-cr` 是唯一正式移交业务入口，顺序固定为：
+
+```text
+owner-set -> push-progress
+```
+
+远端包含 Owner 变更才算移交完成。`skip_push` 删除；push 失败保留本地正式移交 commit，传播现有结构化错误并由 Pipeline `onFail: abort`。
+
+`resume-from-remote` 删除 `new_owner/new_owner_role` 及所有 Owner 写入，只恢复 worktree 和展示权威状态。`inbox-emit` 仍服务其他通知场景，不删除。
+
+`owner-set` 保留命令名：
+
+```text
+crctl owner-set <cr_id> \
+  --role <requirement|development|test> \
+  --id <new-owner> \
+  [--note <handover-note>]
+```
+
+它是本地可信环境中的受控账本原语，不判断调用者是否等于当前 Owner，不提供伪造的 admin/force 授权。业务流程只能经 `handover-cr` 调用它。
+
+### 5.2 一致性和写入
+
+开始时先验证 `cr.md` 与 `_backlog.yml` 的三个当前 Owner 及顶层兼容 `owner` 一致。任何漂移都返回结构化错误并零写入，不自动修复。
+
+真实变化只生成一次时间戳，并复用于：
+
+- 两处 `owners.{role}.id/assigned-at`
+- role=requirement 时的两处顶层 `owner`
+- `cr.md#owner-history`
+- backlog `owner-handover` 通知记录
+- audit 和 outbox 结构化事实
+
+`cr.md#owner-history` 是唯一责任历史。正式移交只追加一条：
+
+```yaml
+- role: development
+  from: old-owner
+  to: new-owner
+  at: <same-timestamp>
+  reason: formal-handover
+  note: <optional-note>
+```
+
+`handover-history` 停止新增，仅兼容读取；backlog 不复制责任历史。`note` 只进入 `owner-history` 和 `inbox` 通知事实，不进入 `owners` 投影事件。
+
+候选 `cr.md` 和 `_backlog.yml` 由一次 `casWriteMulti()` 写入。backlog 同批追加 `owner-handover` notify-log 和 `notify-pending`。同值重放在双投影一致且工作区无未提交移交残留时返回 `changed=false`，不更新时间、历史、通知、audit、commit 或 outbox；`handover-cr` 仍继续 `push-progress`，用于重试发布既有 commit。
+
+### 5.3 commit 和失败边界
+
+`owner-set` 对两个受控文件形成一次正式 commit。只有 commit 成功才记录成功 audit，并以真实 SHA 分别尝试：
+
+- `event_kind=owners`：完整当前 Owner 投影和一个 `reason=formal-handover` 的 `changes[]`
+- `event_kind=inbox`：`event=owner-handover`、收件人和结构化移交事实
+
+`crctl` 不生成 `subject/body`。outbox 是非阻断投影通道：失败返回 warning 并记 `EMIT_FAILED` audit，不回滚 commit，也不阻止发布。消费者必须能从 Git 权威数据 reconcile；本地写出 outbox 不等于 Multica 已更新 Owner 或完成通知触达。
+
+若 Git add/commit 可观测失败：
+
+1. 以新内容 hash 为 CAS 前提恢复两个原始快照。
+2. 重新暂存恢复后的文件，清除本次暂存差异。
+3. 成功恢复时返回 `OWNER_COMMIT_FAILED/changed=false/rolled_back=true`。
+4. 恢复 CAS 或重新暂存失败时返回 `OWNER_COMMIT_ROLLBACK_FAILED` 和受影响文件。
+5. 两种结果都必须中止，禁止进入 `push-progress`。
+
+进程在账本写入与 commit 之间直接崩溃的极端窗口本轮不引入 WAL；后续一致性检查必须暴露脏文件，不能把它当作普通同值成功。
+
+Multica 对 `owners` 和 `inbox` 的实际消费分别登记在 `CUSTOM-TODO-003/004`；registration commit reconcile 登记在 `CUSTOM-TODO-005`。
+
+## 6. TCA-003：签名审批契约
+
+### 6.1 双模式
+
+| 场景 | approve Skill 使用 | 人在环位置 |
+|---|---|---|
+| 平台非 TTY | 默认 grant 落点，调用 `crctl approve <cr> --stage <stage> --grant` | Multica 审批卡 |
+| 本地独立 CLI | 调用 `crctl approve <cr> --stage <stage>` | 当前 TTY |
+
+Pipeline 不拼 grant 路径，也不复制 CLI 命令算法。grant 缺失、签名错误、归属不符、证据漂移和技术投递失败都属于技术失败，必须 abort，不能退回模型代签或直接 advance。
+
+当前没有 Pipeline Runner 能保证签名 approve/reject 都进入对应 `approve-*` Skill；该能力登记为 `CUSTOM-TODO-002`，文档不得描述为已交付。
+
+### 6.2 reject 验证和回退
+
+`approveWithGrant()` 对 approve/reject 共用以下前置验证：
+
+1. schema v1 和 decision 枚举
+2. `cr_id/stage` 归属
+3. 当前状态属于该审批阶段前置态，或满足下节的紧邻结果态重放条件
+4. 当前 evidence digest 与 grant 一致
+5. key 和 Ed25519 signature 有效
+
+reject 不执行 approve 路径的 pass condition，因为 blocker 正是合法驳回原因。验证完成后复用现有四阶段 `REJECT_ROLLBACK` 和权威状态机 trigger，成功回退后返回结构化非零业务结果：
+
+```json
+{
+  "code": "APPROVAL_DECLINED_ROLLED_BACK",
+  "decision": "reject",
+  "stage": "<stage>",
+  "rolledBackTo": "<status>",
+  "trigger": "<authoritative-trigger>",
+  "changed": true
+}
+```
+
+该结果表示人工决定已捕获且状态回退成功，用于中止当前正向 Pipeline；不得伪装为 `EXEC_FAILED`、`CAS_CONFLICT` 等技术失败。删除 `rerunHint`、下一 Skill 指令和手写 review annotation 文案；`crctl` 不负责选择回修节点。
+
+v1 grant 已签名 decision，但没有可信 `reject_reason`。本轮不把未签名 reason 写入 Git、Skill 输入或事件；可信 reason 传输和 Runner 注入分别登记为 `CUSTOM-TODO-001/002`。
+
+### 6.3 紧邻结果状态幂等
+
+approve 重放：
+
+- 当前仍在审批前置态时正常验证并推进。
+- 当前正好等于该阶段 approve 目标态，且 `approval.yml` 的 `approver/key-id/signature/grant-approved-at/evidence-digest` 与输入完全一致时，返回成功 `changed=false`。
+- 进入其他状态或持久化字段不一致时返回 `GRANT_STATE_MISMATCH`。
+
+reject 重放：
+
+- 当前仍在审批前置态时正常验证并回退。
+- 当前正好等于该阶段 reject 回退目标态，且 grant 归属、当前 evidence digest 和签名仍有效时，再次返回 `APPROVAL_DECLINED_ROLLED_BACK/changed=false`。
+- 进入其他状态时返回 `GRANT_STATE_MISMATCH`。
+
+幂等分支不重复 audit、commit 或 outbox。reject 不新增第二份持久化审批账本。
+
+## 7. TCA-004：开发计划评审路由
+
+`review-dev-plan` Skill 是两个状态命令的唯一拥有者。三路结果为：
+
+### PASS
+
+- 条件：`verdict=pass && blockers=[]`
+- 不推进状态，保持 `task-breakdown`
+- 成功返回 `route=pass`
+- Pipeline 继续后续节点
+
+### NORMAL
+
+Skill 使用权威字面量：
+
+```text
+crctl advance \
+  --to tech-design-reviewed \
+  --trigger "review-dev-plan:block -> write-dev-plan" \
+  --expect task-breakdown \
+  --embedded
+```
+
+推进成功后返回 `route=normal`、`verdict=block` 和 `review_feedback`。Pipeline 的 `reviewLoop` 只负责按既有 `maxAttempts=3` 重放：
+
+```text
+write-dev-plan -> write-dev-tasks -> review-dev-plan
+```
+
+耗尽时沿用 `LOOP_EXHAUSTED`，不进入 human approval。
+
+### UPSTREAM
+
+Skill 使用：
+
+```text
+crctl advance \
+  --to tech-design-review-pending \
+  --trigger review-dev-plan:upstream-design-blocker \
+  --expect task-breakdown \
+  --embedded
+```
+
+合法回退后返回结构化非零业务结果 `UPSTREAM_DESIGN_BLOCKER`，包含 route、verdict、review feedback 和已回退状态。当前 coding Pipeline 立即中止，不进入 NORMAL `reviewLoop`；上游轨沿用现有 `review-record` 语义，不增加 NORMAL attempt。
+
+Pipeline prompt 删除两个具体 `crctl advance` 命令，只保留 PASS/NORMAL/UPSTREAM 路由、`replayNodes` 和失败中止。
+
+### R7 字面量校验
+
+在现有 `lint-prompts.mjs` R7 内增加最小检查：
+
+1. 读取 tools `dir-graph.yaml#change-request-track.state_machine.transitions`。
+2. 输入先规范化 `\r\n -> \n`；解析失败硬失败，不允许空数组降级。
+3. 对 Skill 中可静态确定的 `crctl advance --to <literal> --trigger <literal>`，验证 `(to, trigger)` 至少匹配一条权威转移。
+4. 含模板变量的值跳过，避免伪静态分析。
+5. 不从自然语言或文件位置推断 `from`；运行时完整合法性仍由 `crctl advance` 裁决。
+6. 不复制一份状态机常量，不给旧短 trigger 增加兼容别名。
+
+## 8. 修改清单
+
+### 8.1 crctl 和测试
+
+| 文件 | 最小改动 |
+|---|---|
+| `skills/shared/crctl/scripts/crctl.mjs` | 三 Owner `cr-init`；register commit 的 SHA/outbox；`worktree-path.branch`；`owner-set` 双投影、唯一历史、commit 回滚和双 outbox；reject 验证/回退/幂等；更新 help/结构化输出 |
+| `skills/shared/crctl/SKILL.md` | 同步命令能力和失败语义，不复制实现算法 |
+| `skills/shared/crctl/scripts/test/crctl.test.mjs` | 增加 TCA-001～004 黑盒回归和失败注入 |
+| `skills/shared/crctl/scripts/lint-prompts.mjs` | R7 消费权威 transitions 并校验字面量 |
+| `skills/shared/crctl/scripts/test/lint-prompts.test.mjs` | 完整/短 trigger、CRLF、解析失败用例 |
+
+### 8.2 Skill
+
+| 文件 | 最小改动 |
+|---|---|
+| `skills/requirement/requirement-register/SKILL.md` | 三 Owner 传参；汇总权威返回；定义 incomplete；禁止拼 branch/path/SHA/event |
+| `skills/sync/handover-cr/SKILL.md` | 收敛为 `owner-set -> push-progress`；删除手写文件、独立 inbox、`skip_push` 和虚假授权 |
+| `skills/sync/resume-from-remote/SKILL.md` | 删除 Owner 写入，只恢复 worktree、读取状态和调用 `crctl next` |
+| 四个 `approve-*` Skill | 说明平台 grant/本地 TTY；区分业务 reject 与技术失败；删除下一 Skill 和手写 annotation 指令 |
+| `skills/develop/review-dev-plan/SKILL.md` | 持有两个精确 advance；输出三路结构化结果 |
+
+### 8.3 Pipeline
+
+| 文件 | 最小改动 |
+|---|---|
+| `pipeline-templates/requirement-authoring.pipeline.json` | 删除无效 `cr_id`；只传三 Owner；消费完整 execution context；删除审批命令和 reject 手写指令 |
+| `pipeline-templates/architecture-design.pipeline.json` | 审批节点只表达决定传递和失败中止 |
+| `pipeline-templates/code-implementation.pipeline.json` | dev-plan 只保留 route/replay；审批节点删除 CLI 算法 |
+| `pipeline-templates/resume-cr.pipeline.json` | 删除 `new_owner/new_owner_role` 和 Owner 写入算法 |
+
+节点数量不变，不调整 Pipeline `_index.yml#nodes`。
+
+### 8.4 人读契约
+
+| 文件 | 最小改动 |
+|---|---|
+| `README.md` | 删除 registration `cr_id`、resume Owner 写入和未交付自动化；正式移交只指向 `handover-cr`；说明双模式审批边界 |
+| `AGENTS.md` | Owner 变更入口收敛为 `handover-cr`；保持受控账本约束 |
+| `ARCHITECTURE.md` | 仅在现有命令能力描述失真处同步；不新增模块或第二事实源 |
+
+## 9. 测试与验收
+
+### 9.1 TCA-001
+
+- 三个不同 Owner 在 `cr.md`、backlog、audit 和返回 JSON 中一致。
+- 顶层 `owner` 只等于 requirement Owner，三条 initial history 使用同一时间戳。
+- 缺任一 Owner 零写入。
+- `cr-init` 不发 outbox；register commit 使用真实 SHA 发 `status + owners`。
+- commit 失败无事件；outbox 失败 commit 仍成功且有 warning/`EMIT_FAILED`。
+- `worktree-path` 返回 branch；Skill 不拼 branch/path。
+- 后续步骤失败返回 `REGISTRATION_INCOMPLETE`，不产生 execution context、不分配第二个 CR-ID。
+
+### 9.2 TCA-002
+
+- 双投影一致才允许变更或同值幂等；漂移时零写入。
+- 真实变化只追加一条 `owner-history`，不再追加 `handover-history`。
+- requirement 移交同步兼容 `owner`；note 只进入 history/inbox。
+- Owner 与通知使用同一时间戳并由一次 `casWriteMulti()` 写入。
+- 正式 commit 成功后以同 SHA 发 `owners + inbox`；payload 无 `subject/body`。
+- outbox 失败不回滚 commit；add/commit 失败按已确认契约恢复原快照。
+- 同值重放零副作用，但 `handover-cr` 仍尝试发布。
+- push 失败保留本地 commit，且不宣称移交完成。
+- `resume-from-remote` 无 Owner 写权限。
+
+### 9.3 TCA-003
+
+- 四个 stage 的 approve grant 均可推进；本地无 grant 时仍要求 TTY。
+- reject 在归属、状态、evidence 和签名完整验证后才回退。
+- 伪造、挪用、证据漂移和错误状态均零写入。
+- approve/reject 紧邻结果态重放符合第 6.3 节，其他状态返回 `GRANT_STATE_MISMATCH`。
+- reject 返回 `APPROVAL_DECLINED_ROLLED_BACK`，不返回 `rerunHint` 或下一 Skill。
+- Skill/Pipeline 不注入未签名 reason，不手写 review annotation 或 approval 文件。
+
+### 9.4 TCA-004
+
+- 完整 NORMAL trigger 从 `task-breakdown` 回到 `tech-design-reviewed`。
+- 短 trigger 在 linter 中为 `CONTRADICTS`，运行时仍被拒绝。
+- NORMAL 只进入既有三节点重放；PASS 继续；UPSTREAM 合法回退后以业务结果中止。
+- CRLF 输入与 LF 等价；状态机解析失败硬失败。
+- Pipeline 不含两个 `crctl advance` 命令。
+
+### 9.5 全量验证
+
+```bash
+node skills/shared/crctl/scripts/lint-prompts.mjs --mode enforce
+node skills/shared/crctl/scripts/check-skill-matrix.mjs
+node skills/shared/crctl/scripts/check-agents-contract.mjs
+node --test skills/shared/crctl/scripts/test/*.test.mjs
+node --test skills/writeback/scripts/test/*.test.mjs
+node -e "const fs=require('fs'); for (const f of fs.readdirSync('pipeline-templates').filter(f=>f.endsWith('.json'))) JSON.parse(fs.readFileSync('pipeline-templates/'+f,'utf8'));"
+```
+
+审批跨接缝复用 Multica 现有 Go→crctl 测试设施增加 reject 向量；不新建集成框架，也不在本轮实现 Multica 待办。
+
+## 10. 实施顺序
+
+1. 先加 TCA-001～004 失败测试和 R7 fixture。
+2. 实现 `cr-init`、register commit 事件和 `worktree-path.branch`。
+3. 实现 `owner-set` 一致写、正式 commit、失败回滚和双 outbox。
+4. 实现 grant reject 完整验证、回退及紧邻状态幂等。
+5. 修正 `review-dev-plan` trigger 和 R7。
+6. 收缩相关 Skill、Pipeline 和人读文档。
+7. 执行全量验证，核对无 pending 能力被描述为已交付。
+
+建议提交拆分：
+
+1. `test(crctl): add red regressions for TCA-001 through TCA-004`
+2. `fix(crctl): preserve registration owners and commit facts`
+3. `fix(crctl): make formal owner handover consistent`
+4. `fix(crctl): consume verified rejection grants`
+5. `fix(skill): align dev-plan routes with the state machine`
+6. `refactor(pipeline): keep orchestration and remove command copies`
+7. `docs: align registration handover and approval contracts`
+
+## 11. 风险与待实现边界
+
+1. `identity(ws)` 不是强身份边界，`owner-set` 不承担授权认证。
+2. `casWriteMulti()` 仍有逐个 rename 的进程崩溃窗口；本轮不引入 WAL。
+3. registration 跨进程续跑未实现，见 `CUSTOM-TODO-006`。
+4. reject reason 的可信传输和 Runner 注入未实现，见 `CUSTOM-TODO-001/002`。
+5. Multica Owner 投影、通知消费和 registration reconcile 未实现，见 `CUSTOM-TODO-003/004/005`。
+6. outbox 写出是非阻断投影事实，不等于平台已应用或通知已触达。
+7. 当前决策均可在既有模块边界内演进，未同时满足“难逆、反直觉、真实取舍”，不新增 ADR。

@@ -1,0 +1,19 @@
+cr-id: CR-2026-031
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-11T17:34:49+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  prd-sdd-alignment: "pass"
+  architecture: "pass"
+  data-model: "pass"
+  interface-contracts: "pass"
+  performance-security: "pass"
+  testability: "pass"
+  prompt-adoption-impact: "pass"
+suggestions:
+  - "最终协议切换提交必须同步修订 tools/ARCHITECTURE.md 中的单文件与 WAL negative-space 条款，不能只改代码。"
+  - "TASK 拆分保持 SDD 第 10 节 12 个切片顺序，并即时登记 done。"
+subject-file: change-requests/CR-2026-031/sdd.md
+subject-sha256: 5989833d0741958d5d29fd0a8fe731e561d215b8873805e4d5a3dba762fa4f00

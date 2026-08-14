@@ -1,0 +1,17 @@
+cr-id: CR-2026-022
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-06T07:37:43+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  PRD↔SDD对齐: "通过——§6 映射表 FR-1~FR-34 全覆盖（34/34），D-1/D-2/D-3 有对应设计；B3 修复后 dev-start 驳回路径与 PRD FR-12 ③ 的 approve-dev-start 错误表订正闭环"
+  架构合理性: "通过——B3/B5 已修：状态机两转移均 grep 核实后声明（requirement-reviewing→drafting、task-breakdown→tech-design-reviewed），无凭空发明；迁移脚本落点更正为 skills/writeback/scripts/（§6 内容文件脚本先例），不新建 planning/scripts 目录"
+  数据模型完整性: "通过——B1/B4 已修：§2.2 只声明两条真实新增转换并如实说明 review-requirement:block 语义（保持 drafting 自环）；§4.6 spec_id 取值已核实（_backlog 无 spec-id 字段、specId 是 --spec-id 旗标参数不落账本），改为 specs/ 目录文件系统推断（唯一子目录取名/多目录显式报错）"
+  接口契约: "通过——B2 已修：§3.1/§4.3/§5 D-6 三处统一为非零退出 + fail() extra 携带 {rolledBackTo, rerunHint}，删除 stdout JSON 矛盾表述；§3.2 R6/R7 判据源与豁免 radius 契约明确"
+  性能与安全: "通过——§7 覆盖完整；口径同步更新为 25/47（两条新转移），FR-33 核查清单同步"
+  可测试性: "通过——§9 测试断言与 §3.1 退出码契约对齐（decline 四 stage 含 dev-start 新转换）；cmdNext 三分支（无目录/唯一/多目录）可测"
+  Prompt采纳影响: "通过——§8 小节 6 项对照完整，全部采纳动作在 FR 清单内无欠账"
+suggestions:
+  - "B6 修复后 D-4 为确定方案（工具层告警），实施期注意 push-progress Step 3 重写时把 CHECKPOINT_ALERT 段写入 skill 的错误处理路径而非依赖 pipeline onFail"
+  - "FR-18 UUID 迁移后同步更新报告 2.1-C 已占用前缀表（0016 标记占用）"

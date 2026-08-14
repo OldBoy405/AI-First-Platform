@@ -1,0 +1,17 @@
+cr-id: CR-2026-026
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-09T12:27:11+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  PRD↔SDD对齐: "pass — 24 条 FR（FR-1~20 + 6a/6b）均有 §6 映射与 §9 测试锚点；attempt-1 的 FR-6a/6b/FR-14 实现级矛盾已闭合（repair-target 顶层字段 + bump 前路由 + pipeline 分流契约）。"
+  架构合理性: "pass — 不新增状态/账本/子命令；复用 review-record 通用路径与既有 reviewLoop；符合 ARCHITECTURE.md §4 依赖方向与 §5 不变量（状态单一写者、账本单一通道、零第三方依赖、行尾纪律）。"
+  数据模型完整性: "pass — dev-plan payload/annotation 的 repair-target 顶层可选字段 schema/枚举/落盘规则已明确（§2.1/§3.2 步骤 1）；traceability 投影复用 CR-2026-025 通用路径，输入字段来源闭合。"
+  接口契约: "pass — cmdReviewRecord 步骤 1-4（schema 校验 → resolveDevPlanRoute → 按轨 bump/跳过 → casWriteMulti）责任边界清晰；pipeline onBlock 二分契约（NORMAL replay / UPSTREAM abort）可实现。"
+  性能与安全: "pass — 未引入新依赖或高复杂度 IO；受控写入继续走 crctl/CAS/audit；人工审批无旁路不变量保持。"
+  可测试性: "pass — §9 测试向量覆盖 repair-target schema 校验、UPSTREAM bump 跳过（AC-8b）、同轮并存优先级、dev-start/developing 门禁、EVIDENCE_DRIFT、LOOP_EXHAUSTED 与四 stage 回归，均可由 node --test 黑盒断言。"
+  Prompt采纳影响: "pass — §8 列出 write-dev-plan、write-dev-tasks、approve-dev-start、crctl SKILL、README/ARCHITECTURE 的采纳清单；本 CR 触及 crctl REVIEW_STAGE 映射与 gates.json，本节为必填且已满足。"
+suggestions:
+  - "attempt-1 三条 blocker 已全部修复：TD-BL-1（repair-target 顶层字段 + 枚举校验，blockers 不解析字符串）、TD-BL-2（路由判定移到 bump 之前，UPSTREAM 跳过 bump）、TD-BL-3（pipeline onBlock 分流契约：NORMAL replay / UPSTREAM abort code-implementation）。"
+  - "建议实现期将 resolveDevPlanRoute 的 route 结果同时写入 canonical annotation 顶层（route + repair-target），便于 traceability 投影与审计直读（§3.2 已声明，此处仅提示实现期勿遗漏）。"

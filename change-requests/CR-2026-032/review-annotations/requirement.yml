@@ -1,0 +1,16 @@
+cr-id: CR-2026-032
+review-type: requirement
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-13T09:03:24+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  结构完整性: "PASS：概述、5 个用户故事、8 条 FR、8 类 NFR、11 条 AC、成功指标、依赖与风险、范围排除和变更记录齐全；frontmatter 与 CR title/source/owner/target-version 一致。"
+  FR可测试性: "PASS：FR-01 至 FR-08 均有对应的可执行验收条件；覆盖 complete、cleanup fault、dirty pending、正常 archive outbox、outbox 失败、rejected/withdrawn 不重复发送、Multica 投影幂等和 ARC-02 不提前启用。"
+  范围合理性: "PASS：范围严格限定为 ARC-03、ARC-04、ARC-05/T02，复用既有 archive 事务、outbox schema 与 Multica 消费链；明确不新增事件协议、事务层、数据库迁移或 traceability 严格门禁。"
+  与规划对齐: "PASS：与 tools-archive-checkpoint-test-traceability-optimization-plan.md 的 Phase 1 和交付分组 A/T02 一致；固定返回字段、writing-back 到 archived 的真实 SHA outbox、warning 非回滚语义、README 澄清及 Multica 契约测试均完整覆盖。"
+  依赖识别: "PASS：已识别 archiveCr durable transaction、emitOutboxEvent、Multica archive 投影、状态机转换、CUSTOM.md 登记和数据库测试可能 skip 的验证风险；并明确 TRA-03/T10A 是 ARC-02 的后续依赖。"
+suggestions:
+  - "SDD 应把 archive outbox 的首次发送判定和持久化幂等依据落到同一 archive journal/确定性 dedup 设计，并用 cleanup-pending 续跑与 complete 重放测试锁定，避免仅依赖 changed 布尔值。"
+subject-file: change-requests/CR-2026-032/prd.md
+subject-sha256: b359448bb43f9491adf8549f658716f1dd2802f976747895687e63078642f68c

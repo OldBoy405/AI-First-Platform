@@ -1,0 +1,101 @@
+cr-id: CR-2026-031
+reviews:
+  requirement:
+    reviewer: "OldBoy405"
+    verdict: pass
+    reviewed-at: "2026-08-11T17:23:40+08:00"
+    blocker-count: 0
+    annotation: "change-requests/CR-2026-031/review-annotations/requirement.yml"
+    review-loop:
+      current-cycle: 1
+      current-attempt: 1
+      max-attempts: 3
+      attempts:
+        - attempt: 1
+          cycle: 1
+          reviewed-at: "2026-08-11T17:23:40+08:00"
+          result: pass
+          blocker-count: 0
+          repair-target: write-requirement-prd
+
+  tech-design:
+    reviewer: "OldBoy405"
+    verdict: pass
+    reviewed-at: "2026-08-11T17:34:49+08:00"
+    blocker-count: 0
+    annotation: "change-requests/CR-2026-031/review-annotations/sdd.yml"
+    review-loop:
+      current-cycle: 1
+      current-attempt: 1
+      max-attempts: 3
+      attempts:
+        - attempt: 1
+          cycle: 1
+          reviewed-at: "2026-08-11T17:34:49+08:00"
+          result: pass
+          blocker-count: 0
+          repair-target: write-tech-design
+  dev-plan:
+    reviewer: "OldBoy405"
+    verdict: pass
+    reviewed-at: "2026-08-11T17:42:00+08:00"
+    blocker-count: 0
+    annotation: "change-requests/CR-2026-031/review-annotations/dev-plan.yml"
+    review-loop:
+      current-cycle: 1
+      current-attempt: 1
+      max-attempts: 3
+      attempts:
+        - attempt: 1
+          cycle: 1
+          reviewed-at: "2026-08-11T17:42:00+08:00"
+          result: pass
+          blocker-count: 0
+          repair-target: write-dev-plan
+  code:
+    reviewer: "OldBoy405"
+    verdict: pass
+    reviewed-at: "2026-08-12T16:34:47+08:00"
+    blocker-count: 0
+    annotation: "change-requests/CR-2026-031/review-annotations/code.yml"
+    review-loop:
+      current-cycle: 1
+      current-attempt: 3
+      max-attempts: 3
+      attempts:
+        - attempt: 1
+          cycle: 1
+          reviewed-at: "2026-08-12T15:51:49+08:00"
+          result: block
+          blocker-count: 1
+          repair-target: implement-code
+        - attempt: 2
+          cycle: 1
+          reviewed-at: "2026-08-12T15:57:20+08:00"
+          result: block
+          blocker-count: 1
+          repair-target: implement-code
+        - attempt: 3
+          cycle: 1
+          reviewed-at: "2026-08-12T16:34:47+08:00"
+          result: pass
+          blocker-count: 0
+          repair-target: implement-code
+tests:
+  report: change-requests/CR-2026-031/test-report.md
+  status: pass
+  owner: "Ray"
+  owner-assigned-at: "2026-08-11T17:17:53+08:00"
+  generated-at: "2026-08-12T14:39:29+08:00"
+  repair-target: implement-code
+  commands:
+    - name: crctl-test-suite
+      result: pass
+    - name: writeback-unit
+      result: pass
+    - name: lint-prompts
+      result: pass
+    - name: skill-matrix
+      result: pass
+    - name: agent-contract
+      result: pass
