@@ -1,0 +1,80 @@
+# cr-guard — 远端侧强制校验模板（漂移治理 v2 组件 D）
+#
+# 放到 knowledge-base 仓库的 .github/workflows/cr-guard.yml。
+# 作用：对 requirement/* 分支的每次推送，在 agent 够不到的执行点复核
+#   1) 受控产物 schema（crctl validate）
+#   2) HEAD 状态推进 commit 的转换合法性与门禁（crctl gate）
+# 本地 IDE 无论怎么漂，漂移产物到不了 trunk：merge-feature-branch 前置要求本 workflow 绿灯
+#（在仓库设置里把 cr-guard 设为 required status check）。
+#
+# 假设：workspace 根即仓库根，tools 包安装在 tools/。路径不同请调整 CRCTL 变量。
+
+name: cr-guard
+on:
+  push:
+    branches:
+      - 'requirement/**'
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    env:
+      CRCTL: node tools/skills/shared/crctl/scripts/crctl.mjs
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # tools 包是 sibling 仓（不在本仓库树内），CI 单独检出（CR-2026-021 TASK-12 接线）
+      - uses: actions/checkout@v4
+        with:
+          repository: OldBoy405/AI-First-tools
+          ref: custom/main
+          path: tools
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Validate backlog schema
+        run: $CRCTL validate change-requests/_backlog.yml --workspace .
+
+      - name: Validate changed controlled artifacts
+        run: |
+          before="${{ github.event.before }}"
+          # 新分支首推时 before 为全零，退化为与 origin 默认分支比对
+          if [ "$before" = "0000000000000000000000000000000000000000" ]; then
+            before=$(git rev-parse origin/${{ github.event.repository.default_branch }})
+          fi
+          changed=$(git diff --name-only "$before" "${{ github.sha }}" -- 'change-requests/**' || true)
+          rc=0
+          for f in $changed; do
+            case "$f" in
+              */cr.md|*/approval.yml|*/test-report.md|*review-annotations/*.yml|*review-annotations/*.yaml)
+                if [ -f "$f" ]; then
+                  echo "::group::crctl validate $f"
+                  $CRCTL validate "$f" --workspace . || rc=1
+                  echo "::endgroup::"
+                fi
+                ;;
+            esac
+          done
+          exit $rc
+
+      - name: Verify HEAD state-transition commit against gates
+        run: |
+          msg=$(git log -1 --pretty=%s)
+          # crctl advance 的 commit message 形如：[cr] status CR-2026-001 developing -> code-reviewing
+          if [[ "$msg" =~ ^\[cr\]\ status\ ([^\ ]+)\ ([^\ ]+)\ -\>\ ([^\ ]+)$ ]]; then
+            cr="${BASH_REMATCH[1]}"; to="${BASH_REMATCH[3]}"
+            echo "检测到状态推进 commit：$cr -> $to，复核门禁"
+            $CRCTL gate "$cr" --for "$to" --workspace .
+          else
+            echo "HEAD 非状态推进 commit，跳过 gate 复核"
+          fi
+
+      - name: Lint prompts against crctl (enforce)
+        run: |
+          echo "::group::lint-prompts enforce"
+          node tools/skills/shared/crctl/scripts/lint-prompts.mjs --mode enforce --root tools || exit 1
+          echo "::endgroup::"

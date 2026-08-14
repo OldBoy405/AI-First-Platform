@@ -1,0 +1,9 @@
+$ cd C:/Users/GOBAO/Downloads/AI/AI First Platform/.rayai-worktrees/multica/requirement/CR-2026-032/server && set DATABASE_URL=postgres://multica:multica@127.0.0.1:5432/multica?sslmode=disable&& go test -count=1 -v ./internal/governance/ -run TestArchiveEventCompletesWritebackRun
+(exit=0)
+--- stdout ---
+=== RUN   TestArchiveEventCompletesWritebackRun
+--- PASS: TestArchiveEventCompletesWritebackRun (0.06s)
+PASS
+ok  	github.com/multica-ai/multica/server/internal/governance	0.146s
+
+--- stderr ---

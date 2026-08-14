@@ -1,0 +1,51 @@
+cr-id: CR-2026-018
+review-type: tech-design
+reviewer: ai-reviewer
+reviewed-at: "2026-08-04T14:40:00+08:00"
+verdict: pass
+blockers: []
+repair-target: write-tech-design
+repair-instructions: []
+review-loop:
+  pass-condition:
+    allOf:
+      - path: verdict
+        equals: pass
+      - path: blockers
+        isEmpty: true
+  on-block: route-to-repair-node
+  max-attempts: 3
+  current-attempt: 0
+  attempts:
+    - attempt: 0
+      reviewed-at: "2026-08-04T14:40:00+08:00"
+      result: pass
+      blocker-count: 0
+      repair-target: write-tech-design
+review-notes:
+  - dimension: PRD↔SDD 对齐
+    result: pass
+    detail: FR-1~9 全部在 §6 映射到具体代码/文档位点，含行号；PRD 事实基线的一处失实（适配器均经 crctl）在 SDD §0 按纪律 #4 显式修正并评估影响
+  - dimension: 架构合理性
+    result: pass
+    detail: 本 workspace 无 ARCHITECTURE.md，按 AGENTS.md 单一事实源约定核对——5 个读取点收敛到 resolveCrState 单一入口、写入仍只经 advance，与"权威状态唯一合法写入路径"约束一致；workspace 探测锚点（crctl.mjs:289）保留
+  - dimension: 数据模型完整性
+    result: pass
+    detail: schema v2 保留/移除字段清单完整（含 updated-at 与 updated 的区分）；schema 版本字段提供布局代际判别；迁移报告结构定义
+  - dimension: 接口契约
+    result: pass
+    detail: 7 个子命令行为变化表 + 4 个新错误码 + 兼容读弃用时间线（v0.2.0 deprecated → v0.3.0 移除）；migrate-backlog 幂等语义明确
+  - dimension: 性能与安全
+    result: pass
+    detail: 原子性只增不减（双文件写→单文件写+CAS）；旧版 crctl 写路径对 v2 布局硬失败已核实（updateBacklogStatus statusLine<0 → BACKLOG_SHAPE），双写回潮风险自限；顺带修复 advance standalone `git add change-requests` 过宽的既有隐患
+  - dimension: 可测试性
+    result: pass
+    detail: 现有 21 用例为回归线 + 新增 ≥6 用例逐条对应 AC；AC-9 端到端 merge-tree 零冲突断言给出 fixture 流程
+suggestions:
+  - "旧版 crctl 对 v2 布局的读路径（entry.status=undefined）是静默退化而非硬失败——发布说明需明示'迁移后统一 crctl 版本'，且建议实现时给 cmdStatus 加 status 缺失告警"
+  - "迁移报告落 .crctl/（gitignored）——审计证据不入库；建议评估是否随迁移 commit 一并入库或在 commit message 中携带条目数摘要"
+  - "FR-6 的 16 个 skill 文档修订建议在 write-dev-tasks 拆为独立任务并附逐文件 checklist，避免实现期漏改"
+fr-coverage:
+  total: 9
+  covered: 9
+  missing: []

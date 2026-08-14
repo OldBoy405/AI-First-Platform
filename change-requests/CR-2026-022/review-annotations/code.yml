@@ -1,0 +1,15 @@
+cr-id: CR-2026-022
+review-type: code
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-06T12:37:17+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  代码TASKSDD对齐: "19 TASK 全覆盖 FR-1~34；复审 blocker（product-planning node-3 ref 悬空）已修复（tools@8e7da95），FR-32 引用清退补全"
+  工程质量: "lint-prompts 0 findings（enforce 模式）/ crctl.test.mjs 87/87 / lint-prompts.test.mjs 15/15 / check-skill-matrix 55 active 一致 / check-agents-contract 9 agent 通过 / 8 条 pipeline JSON 全部可解析"
+  关键路径可读性: "REJECT_ROLLBACK 映射、checkpoint-add LEGAL 派生、cmdNext specs 推断等核心逻辑注释清晰，标注 FR 来源"
+  安全性: "approve TTY 硬校验无旁路；grant 路径 v1 schema + cr_id/stage 绑定校验；CAS 写入防并发覆盖"
+  测试覆盖: "crctl 87 用例含本 CR 新增 11 例覆盖 REJECT_ROLLBACK/cr-init/--cr/checkpoint-add；lint-prompts 15 用例覆盖 R7/R8/豁免收窄"
+  测试证据可信度: "test-report.md 命令与实测输出一致；本次复审独立重跑全部命令复核未发现证据造假"
+suggestions:
+  - "dir-graph.yaml#repositories[] 未声明 tools 包为 checkpoint 追踪对象，本 CR 15+ 个 tools 提交此前从未 checkpoint-add 落账，建议后续 CR 补齐该口径缺口"

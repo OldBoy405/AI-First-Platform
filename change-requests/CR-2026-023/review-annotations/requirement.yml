@@ -1,0 +1,32 @@
+cr-id: CR-2026-023
+review-type: requirement
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-06T23:46:32+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  结构完整性: "pass — 概述/用户故事(US-1~8)/FR(FR-1~14)/AC(AC-1~11)/NFR(NFR-1~7)/成功指标/范围排除
+章节齐备；额外含 §1.3 决策点拍板表(D-1~D-4)与 §1.4 事实基线表，可追溯性强。"
+  FR可测试性: "pass — FR-1~FR-14 逐条有对应 AC 且量化明确(节点数=13、恰17处清零、三分支
+approvalPrompt、replayNodes 恰4项不含0013)。保留 suggestion：AC-11 端到端场景依赖
+目标运行时(范围排除/D4 明确不在 tools 包管辖)，验证层级应在 SDD 定为手工/集成验收；
+成功指标 reviewer-model「可追溯率100%」属 prompt 引导非门禁强制，措辞宜校准。"
+  范围合理性: "pass — §7 范围排除列 6 项(crctl/gates/rules 本体、matrix/index 增删、其他 pipeline、
+机器可读评审审计、D4 运行时、未提交基线)清晰；两块(A LLM暂停节点 / B R9护栏)合并为
+一 CR 已在 §1.1 给理由，属可辩点，见 suggestion。"
+  与规划对齐: "pass — 逐条核对两份分析文档(附件1 §二 / 附件2 §四·六)，FR-1~14 全覆盖；4 个开放
+决策(D-1~D-4)在 PRD 拍板不再悬置；唯一背离(附件原「不开CR直提 tools 仓」→改走 CR)已
+作为用户决策在 §1.2/NFR-7 显式留痕。事实基线经 tools 仓源码复核全部一致(55 skill id /
+pipeline 12节点 / inputs=cr_id,target_version,auto_push_after_task / review-code
+replayNodes=[implement-code,write-test-report,push-progress,review-code] / R1-R8在R9空 /
+生grep20-记述3=17处存量)。"
+  依赖识别: "pass — 已识别 crctl 契约不变、未提交 pipeline 基线协调(NFR-6)、平台运行时 D4 缺口等
+依赖。保留 suggestion：CR 落 knowledge-base worktree 而实体改动落 tools(custom/main)，
+跨仓回写/traceability 关联机制未在 PRD 说明。"
+suggestions:
+  - "S1 成功指标：reviewer-model 留痕为 review-code prompt 引导的自报字段，无 lint/门禁强制，故「可追溯率100%」为理想值而非可强制保证；建议校准措辞为「新评审证据应含 reviewer-model 留痕(prompt 引导)」，或若确需 100% 则在 SDD 增设轻量 check。(不阻断)"
+  - "S2 AC-11 端到端场景A/B 需目标平台 pipeline 运行时执行(pause→选择→dimensions 写入→repair 重放不重问)，而 §范围排除+D4 明确该运行时不在 tools 包管辖；建议 SDD 明确 AC-11 属手工/集成验收，与自动化 pre-commit 套件(AC-1~AC-10)分层，避免读作可自动化而无法在仓内闭合。(不阻断)"
+  - "S3 两块正交改动(A 评审LLM暂停 / B R9漂移护栏)合并单 CR，虽 §1.1 有「统一评审/回写基线」理由，但会使一份 SDD/tasks/traceability 承载两个无关特性；建议 SDD/tasks 将两块拆为独立可追溯、可独立回退的任务组。(不阻断)"
+  - "S4 R9 skill-id 判据为子串匹配(l.includes(s))，与 pipeline 名词模式(writeback/architecture 等)存在重叠面；已核对当前 3 个豁免记述行(write-tech-design:50 / write-test-report:58 / merge-feature-branch:154)因不含 skill-id 子串而不误触发、「恰17」成立，但边界脆弱。建议 SDD 明确子串 vs 词边界策略，并在 AC-5/FR-12 测试向量补一条「域内记述性提及 skill 名(非映射)不误报」的 fixture 锁定边界。(不阻断)"
+  - "S5 跨仓关联：本 CR 台账在 knowledge-base worktree，实体改动合入 tools(custom/main)；建议 SDD 说明 tools 仓 commit 如何回关到本 CR 的 traceability/回写(附件2 §五 论据①曾指 tools 仓自身跑不动 CR 状态机)。(不阻断)"
+  - "S6 target-version 仍为 tbd(prd 与 cr.md 均是)：建议里程碑定项时明确目标版本号(编辑性字段，不阻断)。"
