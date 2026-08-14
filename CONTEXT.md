@@ -5,6 +5,11 @@
 
 ## 术语表
 
+### CR 生命周期治理基线（CR lifecycle governance baseline）
+
+跨多条实施 CR 约束共同目标、职责边界、事实源、实施优先级与最终验收顺序的设计基线。它不是单条实施 CR 的 PRD、SDD 或交付合同，不授权把全部治理条目打包进同一 CR。
+_Avoid_: 单 CR 实施合同、总包 CR
+
 ### CR 角色 Owner（CR role owner）
 
 CR 在 requirement、development、test 三类职责上的当前责任人标识。Owner 表达任务归属与正式移交关系，不是经过认证的平台身份或本地操作者身份；现阶段不得据此宣称具备对抗恶意调用者的强授权能力。CR 注册时三个角色 Owner 必须分别显式提供；即使由同一人承担，也不得通过 requirement Owner 隐式继承。`cr-init` 负责三文件受控写入、初始历史、audit 与结构化返回，不在尚无提交 SHA 时提前发事件；其 audit 包含完整 Owner 投影和三项 `reason=initial-assignment` 的 `changes[]`，不包含尚未发生的 Git/worktree 事实。只有成功的 `crctl git commit --template register --cr <CR-ID>` 才使用同一真实 HEAD SHA 产生 `(new) → drafting` 的 `status` outbox 和完整初始 Owner 投影的 `owners` outbox；commit 失败不发，outbox 失败只返回 warning 并记录 `EMIT_FAILED`，不反转已成功的 commit。所有 `owners` outbox 统一携带完整 `owners` 当前投影与 `changes[]`：注册包含三个 `reason=initial-assignment` 的角色变化，正式移交包含一个 `reason=formal-handover` 的角色变化；移交 `note` 不进入 Owner 投影事件。
@@ -46,6 +51,11 @@ _Avoid_: Installation Workspace、当前目录、tools checkout
 
 crctl 为单个已 finalize merge 事务管理的临时 knowledge-base checkout，承接 writeback 到 archive 的唯一写 authority，并与用户主 checkout、CR worktree 隔离。事务失败时保留供续跑，成功归档后受控清理。
 _Avoid_: 用户主 checkout、CR worktree、临时目录
+
+### Baseline Writeback
+
+`writeback-apply --stage baseline` 将 baseline 文件与 `cr.md` 的 `merging → writing-back` 变更放入同一可恢复 write-set、commit 和 push。只有 origin 确认真实 commit 后才产生 success audit 与 status outbox；两者写入失败不回滚 Git authority，journal 通过 `auditEmitted`/`outboxEmitted` 支持只补发缺失投影的幂等重放。Pipeline 不再另行调用 `advance --embedded`。
+_Avoid_: `pending:` status SHA、先发事件后推送、Pipeline 自行推进状态、将 candidate 当作 authority
 
 ### Installation Workspace
 
@@ -113,7 +123,7 @@ _Avoid_: linter 状态机副本、Pipeline trigger 校验
 
 ### 评审输入绑定（review input binding）
 
-`crctl review-record` 在评审结论落盘时，对该 stage固定输入文件计算 LF规范化 SHA-256并机器注入 annotation的事实快照，用于证明评审消费的是哪一版上游文档。模型 payload不得提供或覆盖该快照；新 annotation使用 `input-subjects`，code阶段继续使用覆盖代码仓与受控文档的 `release-subjects`。旧 `subject-file/subject-sha256` 只作历史读取兼容，缺少足够绑定时对齐结果为 unknown，不用 mtime或时间顺序猜测。
+`crctl review-record` 在评审结论落盘时，对该 stage 固定输入计算 LF 规范化 SHA-256 并机器注入 annotation 的事实快照，用于证明评审消费的是哪一版上游内容。当前 requirement 与 tech-design 使用 `subject-file/subject-sha256`，dev-plan 使用包含 `plan.md` 路径/内容及排序后 `TASK-*.md` 路径/内容的 composite `subject-sha256`，code 使用覆盖代码仓与受控文档的 `release-subjects`；模型 payload 不得提供或覆盖这些快照。`input-subjects` 尚未实现，也不属于当前治理基线；缺少足够绑定时对齐结果为 unknown，不用 mtime 或时间顺序猜测。
 _Avoid_: 测试工作现场摘要、模型自报摘要、评审时间新旧比较
 
 ### 评审对齐当前投影（review alignment projection）
@@ -128,12 +138,12 @@ _Avoid_: 单仓 checkpoint、checkpoint 历史数组、部分成功 checkpoint
 
 ### 测试运行（test run）
 
-在 CR 开发期实际启动项目测试、lint、build 或其他验证程序并捕获退出事实的受信代码执行能力。argv、工作目录 containment 与 timeout 只用于防止接口误用，不构成安全沙箱；隔离边界属于 runtime、container 或 OS 身份。测试运行只产生临时执行证据，不直接改变 canonical CR 账本。
+在 CR 开发期实际启动项目测试、lint、build 或其他验证程序并捕获退出事实的受信代码执行能力。正式测试计划由 `write-test-report` Skill 根据 TASK 验收条件、仓库原生测试配置和实现输出选择；`crctl` 只校验、执行和记录，不发现测试或判断验证范围。`implement-code` 可运行开发期临时检查，但不形成 canonical 测试证据。argv、工作目录 containment 与 timeout 只用于防止接口误用，不构成安全沙箱；隔离边界属于 runtime、container 或 OS 身份。plan/repository/cwd/executable 启动等技术失败立即中止且不产生 canonical 记录；已启动命令的非零退出或 timeout 是可记录的业务 block，剩余命令继续执行。测试运行只产生临时执行证据，不直接改变 canonical CR 账本；中断的运行不构成可记录事实，重试时重新执行完整测试计划，不续用部分输出。
 _Avoid_: 安全测试沙箱、只读质量检查、测试记录
 
 ### 测试记录（test record）
 
-把既有测试运行事实与测试负责人的业务分析原子固化为测试报告、版本化 evidence、traceability tests 和 review-loop 的受控账本操作。测试记录不重新执行测试，也不接受调用方选择 generator、candidate 或 canonical 目标路径。新协议不把缺少 run-id与完整 subject digest的旧报告包装成新 attempt：已有正式 `write-test-report` loop时从其当前轮次继续，不存在时从 attempt 1开始，既有 maxAttempts预算不重置；旧报告和固定日志仅由原路径与 Git历史保留。
+把一次完整结束的测试运行事实原子固化为测试报告机器区、版本化 evidence、traceability tests 和 review-loop 的受控账本操作。机器区保存规范化后的结构化命令及其整体 digest，原始输出保存在现有 test evidence 中，不再复制一份独立 plan 文件。测试负责人的业务分析属于报告 marker 后的独立分析区，由 `write-test-report` Skill 或人工在机器记录完成后维护，不与测试执行事务耦合；后续代码评审和审批绑定当时的完整报告。代码评审只消费该记录及原始日志，证据不足时要求重建测试记录，不自行形成第二次测试运行。测试记录不重新执行测试，不接受未完成运行的部分输出，也不接受调用方选择 generator、candidate 或 canonical 目标路径。新协议不把缺少 run-id与完整 subject digest的旧报告包装成新 attempt：已有正式 `write-test-report` loop时从其当前轮次继续，不存在时从 attempt 1开始，既有 maxAttempts预算不重置；旧报告和固定日志仅由原路径与 Git历史保留。
 _Avoid_: 测试运行、模型直接编辑 test-report、外部 candidate apply、legacy-attempt、伪 run-id
 
 ### CR 阶段文档（CR-local artifact）
@@ -146,7 +156,7 @@ CR 阶段 PRD 与产品区活文档是两个不同概念；不得仅因二者都
 
 ### specs 基线文档（baseline artifact）
 
-多个已完成 CR 的有效变更逐里程碑累积形成的发布基线，不是任一 CR 阶段文档的副本。不得用单个 CR 文档覆盖整份基线。traceability baseline不因新 milestone结构增强而新增顶层或 milestone级 schema版本字段：既有 milestones作为 opaque历史段逐字节保留，新 generator和 archive gate只严格校验当前 CR新增段，reader不得因旧段缺少新字段而拒绝整份文件。
+多个已完成 CR 的有效变更逐里程碑累积形成的发布基线，不是任一 CR 阶段文档的副本。不得用单个 CR 文档覆盖整份基线。traceability baseline 不因新 milestone 结构增强而新增顶层或 milestone 级 schema 版本字段：既有 milestones 作为 opaque 历史段逐字节保留，新 generator 和 archive gate 只严格校验当前 CR 新增段，reader 不得因旧段缺少新字段而拒绝整份文件。新 milestone 不复制 CR lifecycle status；发布事实由 merge 与 canonical evidence 表达，CR 终态仍以 `cr.md` / `_history.yml` 为准。
 _Avoid_: 全量重写历史 milestone、用顶层 schema-version宣称历史段同构
 
 ### 终态反馈事实（terminal feedback fact）
