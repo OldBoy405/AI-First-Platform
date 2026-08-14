@@ -1,21 +1,19 @@
 cr-id: CR-2026-038
 review-type: dev-plan
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-14T21:40:51+08:00"
-verdict: block
-repair-target: write-dev-plan
-blockers:
-  - "DP-BL-1：TASK-01 的验收与完成标志要求公共 CLI 已拒绝旧 candidate 参数，但 plan §5.3/TASK-04 才要求同批迁移全部调用方。按当前拓扑完成 TASK-01 会在 TASK-04 前破坏现有生产调用，违反 SDD §10.1 的 T02～T04 新路径尚无生产调用方、T05 同提交切换接口。修复：TASK-01 仅冻结内部 preflight/test seam；TASK-02 新原子路径保持未接入生产；把公共 CLI 参数切换、BAD_ARGS 测试和旧路径删除全部收敛到 TASK-04。"
-  - "DP-BL-2：TASK-05 验收要求所有 TASK done 后 tasks/_index.yml 与 TASK 卡 status 投影一致，但现有 crctl task done 只更新受控 _index.yml，TASK 卡 frontmatter 保持 pending（既有 CR-2026-037 即为该语义）。该验收不可执行且会诱导手改卡片。修复：改为 _index.yml 逐项 done/done-at，TASK 卡保持不可变 pending 描述源，不要求同步 status。"
+reviewed-at: "2026-08-14T21:44:26+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  sdd-to-plan: "block：总体覆盖完整，但实施切换时序未准确落实 SDD §10.1 的未接入生产边界。"
-  plan-to-tasks: "pass：五个里程碑均有 TASK，46h 与索引汇总一致。"
-  task-executability: "block：TASK-01 中间态会破坏生产调用，TASK-05 含不可成立的状态同步要求。"
-  dependency-topology: "pass：5 张卡串行无悬空、无环，文件所有权顺序合理。"
-  interface-contracts: "block：新内部接口与公共 CLI 切换的生效节点未隔离清楚。"
-  acceptance-verifiability: "block：TASK-05 的卡片 status 一致性无法通过权威 task done 实现。"
-  scope-and-simplicity: "pass：无新增依赖、registry、manager、框架或范围外仓库。"
-  risk-and-rollback: "block：当前 TASK-01 完成态与整体回滚/迁移策略冲突。"
+  sdd-to-plan: "pass：SDD 的 preflight、baseline 原子事务、semantic merge、调用方迁移、测试、回滚和范围边界均进入五个里程碑；attempt 1 的未接入生产时序已按 SDD §10.1 修正。"
+  plan-to-tasks: "pass：五个计划里程碑逐一落到 TASK-01～05，文件、产出、验收和 AC 追溯完整；总估算 46h 与 crctl task init 返回一致。"
+  task-executability: "pass：每卡目标、输入、输出、精确文件、实现步骤和完成标志明确，无 TBD 或空泛错误处理；target-version=tbd 是 PRD 明示未知版本，不作为实现占位。"
+  dependency-topology: "pass：TASK-01→02→03→04→05 串行 DAG 无悬空、无环，符合共享 crctl/workspace-transactions 文件所有权。"
+  interface-contracts: "pass：TASK-01 snapshot/advance candidate、TASK-02 applyWriteback callbacks/result、TASK-03 merge helpers、TASK-04 CLI 消费签名跨卡一致；公共切换只在 TASK-04 同批发生。"
+  acceptance-verifiability: "pass：每卡至少 6 条可执行验收；fault point、origin tree/parents、静态调用方扫描和全量命令覆盖 AC-01～AC-12；TASK done 仅核验 _index.yml done/done-at。"
+  scope-and-simplicity: "pass：五卡均在 SDD 白名单内，复用现有深原语、标准库和 Git；无依赖、registry、manager、事务框架、README/Agent/Multica 扩张。"
+  risk-and-rollback: "pass：journal timestamp/input drift、planned-existing、candidate TOCTOU、backlog 保真、ancestry、CRLF 和调用方迁移均有控制；TASK-04 整体 revert 边界明确。"
   suggestion-policy: "strict"
   reviewer-model: "RayOpenAI_2X/gpt-5.6-sol"
-suggestions: []
+suggestions:
+  - "TASK-05 在 Windows 本机无法证明 Ubuntu 时已要求记录 CI residual risk；代码评审应以实际 CI 结果补证，不接受口头跨平台结论。"
