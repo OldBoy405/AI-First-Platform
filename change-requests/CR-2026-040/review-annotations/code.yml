@@ -1,0 +1,53 @@
+cr-id: CR-2026-040
+review-type: code
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-15T12:08:04+08:00"
+verdict: block
+blockers:
+  - "P1 testCr 记录阶段没有获取 test scope 目录锁：workspace-transactions.mjs:2106-2179 直接读取 attempt/journal 并 applyWriteSet；两个并发调用可同时计算相同 nextAttempt、删除/创建 journal 或竞争同一 authority。按 SDD 4.4/4.6，在命令执行完成后、读取/恢复 journal 前调用 acquireLock({root: workspace, scope: `test-${cr}`, op: 'test', cr})，并在 finally 释放；运行阶段仍不得持锁。"
+  - "P1 新 attempt 会先删除上一份 complete journal：workspace-transactions.mjs:2109-2115 在 marker/traceability 校验和新 journal 创建之前 rmSync(existing.txDir)。若后续技术失败或进程中断，已完成事务的幂等事实丢失，重试可能重复 attempt。保留 complete journal，或给 durable-tx 增加受控 force-new/按 inputDigest 创建能力，并仅在新事务 complete 后清理旧事实。"
+  - "P1 inputDigest 无法识别代码已变化但退出元数据相同：workspace-transactions.mjs:2099-2112 只绑定 commandDigest、exit/signal/timedOut/started 和 owner；代码修改后测试仍 exit 0 时会返回 changed=false，继续引用旧日志并不新增 attempt，违反 PRD AC-13。将参与 repo HEAD/source subject 与每条日志内容 hash 纳入 test inputDigest，同时保持 commandDigest 只绑定命令语义。"
+  - "P1 planPath 未限制在 workspace 非 authority 临时目录：workspace-transactions.mjs:2077-2080 接受任意绝对路径或 workspace 下任意相对路径，违反 SDD 4.1。对 planAbs 做 realpath containment，只允许 workspace/.crctl/tmp（或明确白名单的 non-authority temp root），并增加 escape/symlink/authority 文件黑盒测试。"
+  - "P1 cwd 未拒绝 .. 段且报告/digest 未使用 canonical cwd：workspace-transactions.mjs:1896-1917 仅在 realpath 后检查最终 containment，foo/.. 会被接受并原样进入 digest/report，违反 PRD FR-02.4。解析前拒绝任何 .. 段，或用 realpath 相对 worktree 重新生成唯一 POSIX cwd；加入 lexical traversal 与 symlink escape 测试。"
+  - "P1 traceability/review-loop/journal 形状校验会静默降级：workspace-transactions.mjs:1805-1825 在 Tools Root/pipeline 解析失败时退回 3；1837-1843 将非法 loops 形状当空映射；1847-1856 静默跳过坏 journal；2037-2055 只识别字面 tests:，对 tests: scalar/旧 report 路径不硬失败。按工程纪律和 SDD 2.5/4.4，现有文件或事实源存在但不可解析/形状冲突必须结构化硬失败，禁止覆盖历史或默认降级。"
+  - "P1 测试证据不满足并误报 AC：test-report.md:90-96 明确承认 Ubuntu 与 timeout 路径未测试，却声称 FR-01~FR-08 AC 全覆盖；test-cr.test.mjs:69-76 名称写 CRLF 无关但未输入 CRLF，且没有 timeout、marker 重跑逐字保留、planPath containment、并发锁测试。补齐 PRD AC-03/04/08/13/16 的真实用例与 Ubuntu CI 证据后重新生成 test-report。"
+dimensions:
+  code-task-sdd-alignment: "BLOCK：核心深接口已落地，但缺 test scope lock、planPath containment、canonical cwd 和新 attempt 输入绑定。"
+  engineering-quality: "BLOCK：durable journal/loop/pipeline 解析存在静默 fallback，complete journal 被提前删除。"
+  critical-path-readability: "PASS：cmdTest 为薄接线，执行/渲染/事务职责集中在 workspace-transactions。"
+  security: "BLOCK：planPath 信任边界和 cwd lexical traversal 未按 SDD 收紧。"
+  test-coverage: "BLOCK：缺 timeout、CRLF、Ubuntu、marker preservation、并发与路径边界测试。"
+  test-evidence-trust: "BLOCK：canonical report 自报未覆盖风险后仍宣称全部 AC 覆盖。"
+  prompt-adoption: "PASS：write-test-report、review-code、crctl Skill 与 Pipeline 已收敛到 --plan/只读取证。"
+  reviewer-model: "pi"
+  suggestion-policy: "strict"
+suggestions:
+  - "Standards judgement call：test-cr.test.mjs 与 fault-harness.test.mjs 重复 makeTestCrFixture；回修时可复用既有 fixture helper，但不要为单一复用新增通用框架。"
+  - "git diff --check 仅报告受控 tasks/_index.yml EOF 空行；该文件由 crctl task 写入，不作为本轮代码 blocker。"
+release-subjects:
+  version: 1
+  repositories:
+    - repo: ai-first-platform-docs
+      remote-ref: refs/heads/requirement/CR-2026-040
+      reviewed-source-sha: 8bf9bc6a94465c8c7e9ba25b19d4eb6d2a00805f
+    - repo: multica
+      remote-ref: refs/heads/requirement/CR-2026-040
+      reviewed-source-sha: 082a7536cdd26f807452610de8f113152dcb8bde
+    - repo: tools
+      remote-ref: refs/heads/requirement/CR-2026-040
+      reviewed-source-sha: ccbe80c1ce0a87a9223e8723325474ce4ceb52ab
+  artifacts:
+    algorithm: sha256
+    canonicalization: crlf-to-lf+path-sort
+    files:
+      - { path: change-requests/CR-2026-040/plan.md, sha256: 9eef96397535a05018b19f9897a6813e1f7bf2be7bd36dfcafb63c5ec7179ce8 }
+      - { path: change-requests/CR-2026-040/prd.md, sha256: 35084a45764782b667305e8c3865847ead6695b8e69cc217a992d67493af99d3 }
+      - { path: change-requests/CR-2026-040/sdd.md, sha256: d968d7d68d94beba37a19c70644eb48e8a2ba04229aac6dedb61ea36011a04cf }
+      - { path: change-requests/CR-2026-040/tasks/TASK-01.md, sha256: 2765a6a6b2b7c6138d75aa1ca3cc5ceffbc80519043df2f7e909ae64af9479d3 }
+      - { path: change-requests/CR-2026-040/tasks/TASK-02.md, sha256: bb8c0358f58f30d0025fa26ee1533d1d83fb5323cda895579c3257de26f3021d }
+      - { path: change-requests/CR-2026-040/tasks/TASK-03.md, sha256: d5c6861562a4701108194698e86363d03ea29749053b6b3d3db7ec73923a53bf }
+      - { path: change-requests/CR-2026-040/tasks/TASK-04.md, sha256: 22fd16d7054bb543a39ad94f25f0b81b232dc1e1ee77eaed17d936c3a238312d }
+      - { path: change-requests/CR-2026-040/tasks/TASK-05.md, sha256: 16d8f16cd6adfe62fc2456141d3cb1fbdf1b65b152c4bd9d0c57ef84872b6615 }
+      - { path: change-requests/CR-2026-040/tasks/TASK-06.md, sha256: 1ea7f1f0bcb7729219bc571fed80ab8b03f84aedefa398656768905ec8de5eae }
+      - { path: change-requests/CR-2026-040/tasks/_index.yml, sha256: dc33725e15e2974c735db6faabce12e1923a5097ae6521f01a6044c313ff5ea3 }
+    digest: b349307b118d3a6ad44e1144d487e482840039ae9b8e7699169c85d581e9bcd9
