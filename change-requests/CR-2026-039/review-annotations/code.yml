@@ -1,27 +1,27 @@
 cr-id: CR-2026-039
 review-type: code
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-15T09:16:25+08:00"
+reviewed-at: "2026-08-15T09:24:32+08:00"
 verdict: block
 blockers:
-  - "P1 [架构边界] skills/shared/crctl/scripts/crctl.mjs:1813-1841 将 plan/TASK canonical digest、freshness 判定和 write-dev-plan/write-dev-tasks/review-dev-plan 修复路由直接实现于 crctl。按本 CR 约定，crctl 应只负责状态、门禁、CAS、审计和受控写入；确定性文档转换应由版本化共享模块负责，业务修复路由应由 Agent/Pipeline/Skill 编排。请提取 subject/freshness 纯确定性模块，并让 crctl 只消费其结果执行门禁。"
   - "P2 [时间字段收敛] skills/shared/crctl/scripts/lib/workspace-transactions.mjs:211-215 使用非全局正则删除 updated-at，输入含多个 legacy updated-at 时会残留旧字段并与 updated 共存；同时空行清理不覆盖所有删除场景。请全量删除 legacy 字段、保证输出只保留单一 updated，并补充重复字段、首尾字段和空行规范化回归测试。"
   - "P1 [测试证据] 本轮按 review-code 要求重新执行 node --test skills/shared/crctl/scripts/test/*.test.mjs 未完成：默认并发执行在约 45 秒后有 6 个事务测试文件失败，退出码 124；--test-concurrency=1 在 600 秒内仍未完成。虽然单独 crctl.test.mjs 为 179/179 通过，当前无法提供评审要求的全量命令成功证据。请定位测试并发/耗时问题，重新生成完整零失败 test-report。"
 dimensions:
-  code-task-sdd-alignment: "block"
+  code-task-sdd-alignment: "pass"
   engineering-quality: "block"
   key-path-readability: "pass"
   security: "pass"
-  test-coverage: "block"
+  test-coverage: "pass"
   test-evidence-credibility: "block"
   reviewer-model: "Codex GPT-5"
-suggestions: []
+suggestions:
+  - "devPlanCompositeDigest/devPlanFreshness 保留在 crctl 作为受控完整性校验和门禁判定；仅在出现跨运行时复用需求时再提取独立共享模块。"
 release-subjects:
   version: 1
   repositories:
     - repo: ai-first-platform-docs
       remote-ref: refs/heads/requirement/CR-2026-039
-      reviewed-source-sha: 50444da5c89ba27503d0fa7801e620986aa361c2
+      reviewed-source-sha: 3757057496012056fa64b1e2b3c9e1c38e9f8d26
     - repo: multica
       remote-ref: refs/heads/requirement/CR-2026-039
       reviewed-source-sha: 082a7536cdd26f807452610de8f113152dcb8bde
