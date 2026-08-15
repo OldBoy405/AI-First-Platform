@@ -91,11 +91,19 @@ commands:
 - 保留并通过 `skills/shared/crctl/scripts/test/fault-harness.test.mjs` 7 例。
 - 新增真实 timeout、CRLF、marker CRLF 字节保留、source HEAD 变化、plan/cwd symlink escape、test scope lock、非法 journal/review-loop/pipeline/traceability 形状，以及 PASS 后新 cycle / BLOCK 到上限停止测试。
 
+## 双平台 CI
+
+GitHub Actions run [`31867350196`](https://github.com/OldBoy405/AI-First-tools/actions/runs/31867350196) 绑定 Tools `d657501`，两个 matrix job 均成功：
+
+- [`contracts (ubuntu-latest)`](https://github.com/OldBoy405/AI-First-tools/actions/runs/31867350196/job/94970416873)：success。
+- [`contracts (windows-latest)`](https://github.com/OldBoy405/AI-First-tools/actions/runs/31867350196/job/94970416793)：success。
+
+两个平台均执行 prompt lint、Skill matrix、Agent contract、全部 Pipeline JSON、crctl 全量测试和 writeback 单测。AC-16 的 Ubuntu/Windows 独立执行证据已闭合。
+
 ## 未覆盖风险
 
-- **跨平台结果待 checkpoint CI**：仓库已有 `crctl-ci` 的 `ubuntu-latest` / `windows-latest` 矩阵；本轮新提交需在 checkpoint 推送后等待两个 job 实际通过，再作为 AC-16 最终证据。当前仅有 Windows 本地全量结果。
 - **多仓组合规模**：resolver、逐仓 branch/cwd containment 和 source revision 已覆盖；尚未为所有仓库排列组合建立笛卡尔积用例。该风险不改变单命令逐仓执行语义，保留为非阻塞扩展项。
 
 ## 下一步
 
-- 执行统一 checkpoint，等待双平台 `crctl-ci` 完成；两个平台均通过后补记 CI 证据并进入只读代码重审。
+- 双平台 CI 与统一 checkpoint 已完成，进入只读代码重审。
