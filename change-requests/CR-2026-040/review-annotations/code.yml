@@ -1,41 +1,34 @@
 cr-id: CR-2026-040
 review-type: code
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-15T12:08:04+08:00"
-verdict: block
-blockers:
-  - "P1 testCr 记录阶段没有获取 test scope 目录锁：workspace-transactions.mjs:2106-2179 直接读取 attempt/journal 并 applyWriteSet；两个并发调用可同时计算相同 nextAttempt、删除/创建 journal 或竞争同一 authority。按 SDD 4.4/4.6，在命令执行完成后、读取/恢复 journal 前调用 acquireLock({root: workspace, scope: `test-${cr}`, op: 'test', cr})，并在 finally 释放；运行阶段仍不得持锁。"
-  - "P1 新 attempt 会先删除上一份 complete journal：workspace-transactions.mjs:2109-2115 在 marker/traceability 校验和新 journal 创建之前 rmSync(existing.txDir)。若后续技术失败或进程中断，已完成事务的幂等事实丢失，重试可能重复 attempt。保留 complete journal，或给 durable-tx 增加受控 force-new/按 inputDigest 创建能力，并仅在新事务 complete 后清理旧事实。"
-  - "P1 inputDigest 无法识别代码已变化但退出元数据相同：workspace-transactions.mjs:2099-2112 只绑定 commandDigest、exit/signal/timedOut/started 和 owner；代码修改后测试仍 exit 0 时会返回 changed=false，继续引用旧日志并不新增 attempt，违反 PRD AC-13。将参与 repo HEAD/source subject 与每条日志内容 hash 纳入 test inputDigest，同时保持 commandDigest 只绑定命令语义。"
-  - "P1 planPath 未限制在 workspace 非 authority 临时目录：workspace-transactions.mjs:2077-2080 接受任意绝对路径或 workspace 下任意相对路径，违反 SDD 4.1。对 planAbs 做 realpath containment，只允许 workspace/.crctl/tmp（或明确白名单的 non-authority temp root），并增加 escape/symlink/authority 文件黑盒测试。"
-  - "P1 cwd 未拒绝 .. 段且报告/digest 未使用 canonical cwd：workspace-transactions.mjs:1896-1917 仅在 realpath 后检查最终 containment，foo/.. 会被接受并原样进入 digest/report，违反 PRD FR-02.4。解析前拒绝任何 .. 段，或用 realpath 相对 worktree 重新生成唯一 POSIX cwd；加入 lexical traversal 与 symlink escape 测试。"
-  - "P1 traceability/review-loop/journal 形状校验会静默降级：workspace-transactions.mjs:1805-1825 在 Tools Root/pipeline 解析失败时退回 3；1837-1843 将非法 loops 形状当空映射；1847-1856 静默跳过坏 journal；2037-2055 只识别字面 tests:，对 tests: scalar/旧 report 路径不硬失败。按工程纪律和 SDD 2.5/4.4，现有文件或事实源存在但不可解析/形状冲突必须结构化硬失败，禁止覆盖历史或默认降级。"
-  - "P1 测试证据不满足并误报 AC：test-report.md:90-96 明确承认 Ubuntu 与 timeout 路径未测试，却声称 FR-01~FR-08 AC 全覆盖；test-cr.test.mjs:69-76 名称写 CRLF 无关但未输入 CRLF，且没有 timeout、marker 重跑逐字保留、planPath containment、并发锁测试。补齐 PRD AC-03/04/08/13/16 的真实用例与 Ubuntu CI 证据后重新生成 test-report。"
+reviewed-at: "2026-08-15T13:45:15+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  code-task-sdd-alignment: "BLOCK：核心深接口已落地，但缺 test scope lock、planPath containment、canonical cwd 和新 attempt 输入绑定。"
-  engineering-quality: "BLOCK：durable journal/loop/pipeline 解析存在静默 fallback，complete journal 被提前删除。"
-  critical-path-readability: "PASS：cmdTest 为薄接线，执行/渲染/事务职责集中在 workspace-transactions。"
-  security: "BLOCK：planPath 信任边界和 cwd lexical traversal 未按 SDD 收紧。"
-  test-coverage: "BLOCK：缺 timeout、CRLF、Ubuntu、marker preservation、并发与路径边界测试。"
-  test-evidence-trust: "BLOCK：canonical report 自报未覆盖风险后仍宣称全部 AC 覆盖。"
-  prompt-adoption: "PASS：write-test-report、review-code、crctl Skill 与 Pipeline 已收敛到 --plan/只读取证。"
+  code-task-sdd-alignment: "PASS：结构化 plan、shell:false、test scope lock、source/log input digest、canonical cwd、硬失败边界、journal 保留和 review-loop cycle 均有实现与测试证据。"
+  engineering-quality: "PASS：复用 durable-tx lock/write-set/recovery；跨平台路径使用文件身份；既有 crctl/workspace/writeback 回归保持通过。"
+  critical-path-readability: "PASS：cmdTest 仍为薄接线，testCr 集中校验、执行、渲染和原子发布职责。"
+  security: "PASS：拒绝 shell 字符串、plan authority/escape、cwd absolute/../symlink escape，参数保持 argv 传递。"
+  test-coverage: "PASS：结构化测试 24/24、fault 7/7、prompt 29/29、crctl 169/169；Ubuntu/Windows CI 全量 job 均成功。"
+  test-evidence-trust: "PASS：test-report generated-by=crctl-test，status/digest 与 traceability 一致，5 个引用日志存在，分析区记录双平台 CI。"
+  prompt-adoption: "PASS：write-test-report/review-code/crctl Skill 与 Pipeline 仍通过 lint-prompts enforce，review-code 只读取 canonical 证据。"
   reviewer-model: "pi"
   suggestion-policy: "strict"
 suggestions:
-  - "Standards judgement call：test-cr.test.mjs 与 fault-harness.test.mjs 重复 makeTestCrFixture；回修时可复用既有 fixture helper，但不要为单一复用新增通用框架。"
-  - "git diff --check 仅报告受控 tasks/_index.yml EOF 空行；该文件由 crctl task 写入，不作为本轮代码 blocker。"
+  - "SDD 4.1 的伪代码仍写作 current attempt 必须小于 maxAttempts；实现已按既有 review-loop cycle 语义支持 PASS 后 source 输入变化开启新 cycle。建议下次架构文档修订时补充该条件，避免维护者误读。"
+  - "latestTestJournal 当前在 testCr 内做 test journal envelope 校验；若未来出现更多业务 no-create journal reader，可考虑下沉一个共享只读校验 helper，当前不影响本 CR。"
 release-subjects:
   version: 1
   repositories:
     - repo: ai-first-platform-docs
       remote-ref: refs/heads/requirement/CR-2026-040
-      reviewed-source-sha: 8bf9bc6a94465c8c7e9ba25b19d4eb6d2a00805f
+      reviewed-source-sha: c9d47c5d107f4174d43eb25665fba5dfc055e89d
     - repo: multica
       remote-ref: refs/heads/requirement/CR-2026-040
       reviewed-source-sha: 082a7536cdd26f807452610de8f113152dcb8bde
     - repo: tools
       remote-ref: refs/heads/requirement/CR-2026-040
-      reviewed-source-sha: ccbe80c1ce0a87a9223e8723325474ce4ceb52ab
+      reviewed-source-sha: d657501a49fa298a6fba17e67546445c67f66115
   artifacts:
     algorithm: sha256
     canonicalization: crlf-to-lf+path-sort
