@@ -1,23 +1,23 @@
 $ node --test skills/shared/crctl/scripts/test/archive-tx.test.mjs
 (exit=0)
 --- stdout ---
-✔ TASK-09 AC-1：happy path — 四账本同批 + trailer + cleanup 全清 + 幂等重放 (21221.6918ms)
-✔ TASK-09 AC-1：cleanup fault → CR_ARCHIVE_CLEANUP_PENDING（status 恒 archived），重跑只续清理不重复 commit (21537.6434ms)
-✔ TASK-09 AC-2：dirty CR worktree 零删除 → cleanup-pending 保留现场；清理后重跑 complete (21552.2473ms)
-✔ review repair：archive 删除 requirement ref 前必须证明 source 已合入 origin trunk (21111.9976ms)
-✔ TASK-09 AC-2：rejected CR — authority 来自 CR worktree，归档在 detached trunk 提交并保留未合并 ref (11646.6244ms)
-✔ TASK-01 RED-1：happy path 固定返回 commit/lastCleanupError/recoverCommand/warnings (21013.8644ms)
-✔ TASK-01 RED-2：必需 emitter — 缺失/非法在 lock/journal/commit/push/outbox 前 ARCHIVE_EMITTER_REQUIRED (16458.8674ms)
-✔ TASK-01 RED-3：正常归档产生唯一 schema v1 archive 事件（六业务字段 + 真实 SHA） (21025.9648ms)
-✔ TASK-01 RED-4：cleanup fault → pending + 非空 lastCleanupError + 真实 commit；重跑零新 commit (21543.5567ms)
-✔ TASK-01 RED-5：dirty worktree — remaining 非空而 lastCleanupError=null（资源保留≠执行异常） (21653.5188ms)
-✔ TASK-01 RED-6：outbox 失败 → exit 0 + EMIT_FAILED warning + authority 不回滚；重跑补发零新 commit (21265.4676ms)
-✔ TASK-01 RED-7：预存确定性 dedup 文件 → 命中同名补记，数量不增、内容不覆盖 (21326.6854ms)
-✔ TASK-01 RED-8：rejected/withdrawn — 固定返回、零事件（archive/status）、preservedRefs 保留 (23215.4441ms)
-✔ TASK-01 RED-9：complete 幂等重放 — changed=false、固定字段、outbox 数量不增 (21181.8552ms)
-✔ TASK-01 RED-10：remote rebuild — 返回 commit 与事件 commit_sha 均为最终 origin SHA (22170.6847ms)
-✔ CR-2026-041 证据门：evidence digest 漂移 → ARCHIVE_EVIDENCE_DRIFT 硬失败且零 journal/authority (16557.1383ms)
-✔ CR-2026-041 证据门：证据缺失 → ARCHIVE_EVIDENCE 硬失败且零 journal (16606.2167ms)
+✔ TASK-09 AC-1：happy path — 四账本同批 + trailer + cleanup 全清 + 幂等重放 (21222.9611ms)
+✔ TASK-09 AC-1：cleanup fault → CR_ARCHIVE_CLEANUP_PENDING（status 恒 archived），重跑只续清理不重复 commit (21505.5158ms)
+✔ TASK-09 AC-2：dirty CR worktree 零删除 → cleanup-pending 保留现场；清理后重跑 complete (21483.6933ms)
+✔ review repair：archive 删除 requirement ref 前必须证明 source 已合入 origin trunk (21063.2954ms)
+✔ TASK-09 AC-2：rejected CR — authority 来自 CR worktree，归档在 detached trunk 提交并保留未合并 ref (11598.0433ms)
+✔ TASK-01 RED-1：happy path 固定返回 commit/lastCleanupError/recoverCommand/warnings (20917.8803ms)
+✔ TASK-01 RED-2：必需 emitter — 缺失/非法在 lock/journal/commit/push/outbox 前 ARCHIVE_EMITTER_REQUIRED (16278.112ms)
+✔ TASK-01 RED-3：正常归档产生唯一 schema v1 archive 事件（六业务字段 + 真实 SHA） (20681.8943ms)
+✔ TASK-01 RED-4：cleanup fault → pending + 非空 lastCleanupError + 真实 commit；重跑零新 commit (21520.7168ms)
+✔ TASK-01 RED-5：dirty worktree — remaining 非空而 lastCleanupError=null（资源保留≠执行异常） (21221.2849ms)
+✔ TASK-01 RED-6：outbox 失败 → exit 0 + EMIT_FAILED warning + authority 不回滚；重跑补发零新 commit (21025.2854ms)
+✔ TASK-01 RED-7：预存确定性 dedup 文件 → 命中同名补记，数量不增、内容不覆盖 (21018.8631ms)
+✔ TASK-01 RED-8：rejected/withdrawn — 固定返回、零事件（archive/status）、preservedRefs 保留 (22980.3938ms)
+✔ TASK-01 RED-9：complete 幂等重放 — changed=false、固定字段、outbox 数量不增 (21022.461ms)
+✔ TASK-01 RED-10：remote rebuild — 返回 commit 与事件 commit_sha 均为最终 origin SHA (21796.2288ms)
+✔ CR-2026-041 证据门：evidence digest 漂移 → ARCHIVE_EVIDENCE_DRIFT 硬失败且零 journal/authority (16432.2425ms)
+✔ CR-2026-041 证据门：证据缺失 → ARCHIVE_EVIDENCE 硬失败且零 journal (16419.0782ms)
 ℹ tests 17
 ℹ suites 0
 ℹ pass 17
@@ -25,6 +25,6 @@ $ node --test skills/shared/crctl/scripts/test/archive-tx.test.mjs
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 341163.3097
+ℹ duration_ms 338261.0118
 
 --- stderr ---
