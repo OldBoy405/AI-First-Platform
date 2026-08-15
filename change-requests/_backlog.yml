@@ -1,36 +1,5 @@
 schema: cr-backlog/v2
 change-requests:
-  - id: CR-2026-039
-    title: tools CR 生命周期最小优化 2/5 — 生命周期证据规范化
-    summary: "落实规格 FR-04、FR-05、FR-06、FR-09：在代码评审通过后、人工审批前强制 checkpoint，为 dev-plan 绑定 plan 与 TASK 复合摘要，统一 CR updated 字段，并收敛 review canonical 合同。Writeback、结构化测试、归档证据及整体文本职责清理不在本 CR 范围。"
-    owner: Ray
-    owners:
-      requirement:
-        id: Ray
-        assigned-at: "2026-08-14T19:44:52+08:00"
-      development:
-        id: Ray
-        assigned-at: "2026-08-14T19:44:52+08:00"
-      test:
-        id: Ray
-        assigned-at: "2026-08-14T19:44:52+08:00"
-    target-version: tbd
-    source: docs/analysis/tools-cr-lifecycle-minimal-optimization-spec.md
-    prd-path: "change-requests/CR-2026-039/prd.md"
-    created: "2026-08-14T19:44:52+08:00"
-    updated: "2026-08-14T19:44:52+08:00"
-    latest-checkpoint:
-      batch-id: 1a0bf40a9fb5c409
-      repositories:
-        - repo: ai-first-platform-docs
-          source-sha: c3020dc929cc30d52df72c768417ca38cae174f0
-          remote-ref: refs/heads/requirement/CR-2026-039
-        - repo: multica
-          source-sha: 082a7536cdd26f807452610de8f113152dcb8bde
-          remote-ref: refs/heads/requirement/CR-2026-039
-        - repo: tools
-          source-sha: 7209ff530a4a6c716aa1ce0e74ea13aa074fcfea
-          remote-ref: refs/heads/requirement/CR-2026-039
   - id: CR-2026-040
     title: tools CR 生命周期最小优化 3/5 — 结构化测试闭环
     summary: "落实规格 FR-07、FR-08：以单一结构化 test plan 和 shell:false 执行正式验证，原子发布机器证据、traceability tests 与 review-loop，并通过 marker 保留和更新人工分析区。测试平台、日志服务、通用 run/record 协议及其他生命周期切片不在本 CR 范围。"
