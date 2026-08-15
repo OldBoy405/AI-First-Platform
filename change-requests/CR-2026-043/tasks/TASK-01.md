@@ -36,7 +36,7 @@ created: 2026-08-16T01:00:22+08:00
 ## 4. 验收条件
 
 1. 四类 freshness 与六类基础分类透传用例全部通过；ahead-only 稳定为 fresh，不误报 behind/diverged。
-2. `crctl workspace freshness` 对 allFresh 输出 JSON 且 audit 无新增条目；对 behind-clean 输出 syncable=true 且写一条 `workspace-freshness` audit；对 diverged 以对应 TxError 退出且失败 audit 已先写入。
+2. `crctl workspace freshness` 对 allFresh 输出 JSON 且 audit 无新增条目；对 behind-clean 输出 `syncable=true` 且写一条 `workspace-freshness` audit；对 diverged 返回成功的结构化 JSON（`freshness=diverged`、`allFresh=false`、`syncable=false`）并写业务阻断 audit，由上层 Skill 路由 `manual`，不得把正常读取结果转成 TxError。
 3. 既有 `workspace-resolver.test.mjs` 与 cmdWorkspace inspect/ensure/cleanup 用例保持通过。
 
 ## 5. 完成标志

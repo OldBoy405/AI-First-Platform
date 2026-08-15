@@ -29,7 +29,8 @@ created: 2026-08-16T01:00:22+08:00
 - 集成用例（真实 Git fixture，复用现有测试基建）：
   - implement gate：behind-clean worktree → freshness 报 syncable → sync → 重核 allFresh → 允许进入 implement-code 等价路径；
   - implement gate：diverged → abort 且不写任何仓；
-  - review gate：实施期间 trunk 前进 → review-start freshness 拦截 → sync 后按 replayNodes 重放实现/测试/checkpoint/freshness/评审（以节点序列断言，不真实跑 LLM 评审）；
+  - review gate（可同步轨）：构造 `behind-clean` → review-start 显式 sync → route=`replay`，按 replayNodes 重放实现/测试/checkpoint/freshness/评审（以节点序列断言，不真实跑 LLM 评审）；
+  - review gate（人工轨）：实施后 CR 分支已有独有提交且 trunk 前进 → `diverged` → route=`manual`/abort、零自动写入；人工处理使事实恢复为可评审状态后重新进入 freshness gate，再按既有 replayNodes 继续；测试断言不存在自动 merge/rebase 或盲目重试；
   - 回归：`ensureRepoWorkspace`、`pull-progress` 语义、checkpoint、release-subjects 重核用例不受影响。
 - 跨平台：Windows 本机 + Ubuntu（CI 或远端）各跑 `node --test skills/shared/crctl/scripts/test/` 全量；记录 CRLF/路径身份结果一致。
 
