@@ -5,7 +5,7 @@ cr-ref: CR-2026-041
 title: tools CR 生命周期最小优化 4/5 — 归档可信化技术设计
 status: draft
 created: 2026-08-15T16:54:04+08:00
-updated: 2026-08-15T16:54:04+08:00
+updated: 2026-08-15T21:45:00+08:00
 ---
 
 # 1. 架构概览
@@ -27,7 +27,7 @@ writeback-traceability.mjs（版本化脚本，确定性转换）
   -> 读 milestone-file（业务正文）
   -> 读 merge-commits.yml（merge 事实，trunk 硬失败无 master 回退）
   -> 读 7 份 canonical 证据文件（test/reviews/approval/merge）
-  -> validateEvidenceInputs 自检通过
+  -> 唯一 validateMilestoneEvidence 自检通过
   -> buildSegment 注入 evidence 块、不写 status
   -> candidate-only 输出（复用既有 writeCandidate / manifest / SELF_CHECK）
 
@@ -35,11 +35,11 @@ archiveCr（crctl 深模块）
   -> acquireLock（既有 archive lock）
   -> loadExistingJournal 只读分流：
        已 commit/push 或 cleanup/complete -> 既有恢复，跳过证据门
-       无 journal / pre-authority journal -> validateMilestoneEvidence 硬门
+       无 journal / pre-authority journal -> 调用固定 generator 的 --validate-evidence 模式
   -> 通过后 loadOrCreateJournal + 四账本 write-set + commit + lease push + cleanup
 ```
 
-generator 与 archive gate 共享同一份**确定性证据契约**（key 名、digest 规范化、status/verdict 派生规则），但按仓库既有 `computeInputDigest`/`writebackInputDigest` 先例采用"两侧独立内联 + 测试交叉验证防漂移"，不新建共享模块（PRD FR-08 / ponytail）。
+generator 与 archive gate 复用同一份**确定性证据校验函数**：函数保留在已有版本化 generator `writeback-traceability.mjs` 内，正常生成时校验自身输出，archive 通过该 generator 的内部 `--validate-evidence` 模式调用同一函数。`crctl` 只负责固定脚本调用、门禁时序、错误映射与事务，不新增共享模块，不破坏 writeback/crctl 平行依赖方向。
 
 ## 1.3 模块职责与深模块边界
 
@@ -48,9 +48,9 @@ generator 与 archive gate 共享同一份**确定性证据契约**（key 名、
 | Agent | 路由、职责判断、选择 Pipeline/Skill | 状态机、Git 算法、受控文件写入 |
 | Pipeline | 节点顺序、输入传递、reviewLoop、失败中止 | Skill 完整算法、账本拼接、Git 恢复 |
 | `writeback-traceability` Skill | 起草 milestone 业务正文，调用一次 `crctl writeback-apply` | 证据算法、digest、账本/CAS/事务 |
-| `writeback-traceability.mjs`（版本化脚本） | milestone 段确定性构造 + evidence 注入 + 事实源修正 | 状态推进、审批、Git 发布 |
+| `writeback-traceability.mjs`（版本化脚本） | milestone 段确定性构造、evidence 注入、唯一证据校验函数与内部校验模式 | 状态推进、审批、Git 发布 |
 | `crctl.mjs` | 参数解析、`archive` 子命令接线、结构化输出 | 证据业务判断、事务内部算法 |
-| `workspace-transactions.mjs` | `archiveCr` 证据门 + `validateMilestoneEvidence` | LLM 评审结论、里程碑业务内容 |
+| `workspace-transactions.mjs` | `archiveCr` 证据门时序、固定 generator 调用、错误映射 | 复制证据校验算法、LLM 评审结论、里程碑业务内容 |
 | `durable-tx.mjs` | 既有 journal/锁/write-set/恢复 | 证据语义、Git、状态机 |
 | README | 人读流程总览 | 另一份可执行细节事实源 |
 
@@ -75,7 +75,7 @@ generator 与 archive gate 共享同一份**确定性证据契约**（key 名、
 |---|---|---|
 | 注入 `evidence` 块 + 不写 status | `skills/writeback/scripts/writeback-traceability.mjs` | 版本化脚本确定性转换 |
 | trunk 去 `master` 回退 + backlog 文案清理 | 同上 | 事实源修正（删一行 fallback + 改文案） |
-| 证据门 + `validateMilestoneEvidence` | `skills/shared/crctl/scripts/lib/workspace-transactions.mjs` | `crctl` 深模块扩展 |
+| 证据门 | `skills/shared/crctl/scripts/lib/workspace-transactions.mjs` | 复用既有固定 generator 执行路径调用唯一 validator；crctl 只做时序/错误映射 |
 | milestone-file 契约去掉 `status: writing-back` | `skills/writeback/writeback-traceability/SKILL.md` | 文本契约同步 |
 | 删除两个退役 Skill + 清理 active 引用 | 见 §6 | 删除 |
 
@@ -107,7 +107,21 @@ evidence:
 | `approval` | 派生 `approved`（四段齐全） | `requirement/tech-design/development-start/code` 四段均存在且 `via ∈ {crctl-approve, server-approve}` |
 | `merge` | 派生 `merged`（合并事实存在） | `schema=merge-commits/v1` 且 `repositories[]` 非空、每项含 `repo`+`merge-sha` |
 
-## 2.2 digest 规范化（与 CAS 锚点区分）
+## 2.2 固定 path map 与 digest 规范化（与 CAS 锚点区分）
+
+固定 path map（generator 与 archive gate 必须逐项使用，evidence 中的 `path` 不得只做目录 containment）：
+
+| evidence key | 唯一允许的 path |
+|---|---|
+| `test` | `change-requests/{cr}/test-report.md` |
+| `reviews.requirement` | `change-requests/{cr}/review-annotations/requirement.yml` |
+| `reviews.tech-design` | `change-requests/{cr}/review-annotations/sdd.yml` |
+| `reviews.dev-plan` | `change-requests/{cr}/review-annotations/dev-plan.yml` |
+| `reviews.code` | `change-requests/{cr}/review-annotations/code.yml` |
+| `approval` | `change-requests/{cr}/approval.yml` |
+| `merge` | `change-requests/{cr}/merge-commits.yml` |
+
+path 校验先要求与 map 精确相等，再读取对应文件并重算 LF digest；containment 只是额外防护，不是 key 绑定。
 
 - **证据 `sha256`**：`sha256(normalize(fileBytesUtf8))`，`normalize` 只做 `\r\n -> \n`。跨平台（Windows/Ubuntu）对同一语义内容得到相同值。
 - **before/after CAS 锚点**：沿用既有 `readHashRaw`（磁盘字节哈希，不 CRLF 归一）。二者语义不同，不得混用：证据 digest 是跨平台可比的内容摘要，CAS 锚点是本地磁盘字节锚点。
@@ -122,29 +136,27 @@ evidence:
 
 ## 3.1 generator 侧（`writeback-traceability.mjs`）
 
-- 新增内部纯函数 `readEvidenceInputs(crDir)` -> `{ test, reviews, approval, merge }`（含 digest）。
-- 新增内部纯函数 `validateEvidenceInputs(crDir)`：任一输入缺失/状态不通过/结构非法 → `fail('EVIDENCE_INVALID', ...)`，零 candidate 输出。
-- `buildSegment()` 在 `frs` 后追加 `evidence:` 块；不再输出 `status` 行。
+- `readEvidenceInputs(crDir)`：读取 7 份 canonical 文件，按 §2.2 固定 path map 生成 evidence 对象与 LF digest；输入缺失/状态不通过/结构非法时 `fail('EVIDENCE_INVALID', ...)`。
+- `validateMilestoneEvidence({ traceText, cr, specId, editRoot })`：唯一证据校验函数。按固定 path map 定位当前 milestone，重读 canonical 文件、重算 digest，校验 status/verdict/grant/merge 事实。
+- `buildSegment()` 在 `frs` 后追加 `evidence:` 块；不再输出 `status` 行；生成 candidate 后调用上述 validator 自检。
+- 支持仅供 `crctl archive` 内部调用的 `--validate-evidence --workspace <ws> --cr <cr> --spec <spec>` 模式：读取既有 `specs/{spec}/traceability.yml`，调用同一 validator，只输出 JSON 结果，不生成 candidate、不推进状态、不写文件。
 - trunk 提取：`trunkOf(repo)` 返回 `null` 时 `fail('TRUNK_UNKNOWN', ...)`，删除 `|| 'master'`。
 - 文案清理：头注释、`fromBacklog` 变量、`MERGE_COMMITS_MISSING` 相关错误文案中的 `_backlog.yml` 全部改为 `merge-commits.yml`。
-- SELF_CHECK 增加断言：candidate 内 `evidence:` 块恰好出现一次、`test/reviews(4)/approval/merge` 七项齐全、无 `\r`、既有段字节不变。
+- SELF_CHECK 增加断言：candidate 内 `evidence:` 块恰好出现一次、`test/reviews(4)/approval/merge` 七项齐全、path map 精确、无 `\r`、既有段字节不变。
 
 ## 3.2 archive gate 侧（`workspace-transactions.mjs`）
 
-新增导出纯函数：
+`workspace-transactions.mjs` 不复制证据校验算法，只新增一个很薄的固定脚本调用适配：
 
 ```text
-validateMilestoneEvidence({ traceText, cr, specId, editRoot }) -> { ok: true } | throw TxError
+runFixedEvidenceValidator({ editRoot, cr, specId }) -> { ok: true } | throw TxError
 ```
 
 行为：
 
-1. 定位 `traceText` 中当前 CR 的 milestone 段（按 `- cr: {cr}`，不依赖 `status`）。
-2. 解析 `evidence` 块；缺失/重复/milestone 重复/evidence key 重复 → `ARCHIVE_EVIDENCE_MISSING`/`ARCHIVE_EVIDENCE_DUPLICATE`。
-3. 每条证据路径必须位于 `change-requests/{cr}/` 下（防跨 CR 指向），否则 `ARCHIVE_EVIDENCE_PATH_INVALID`。
-4. 从 `editRoot` 重读 canonical 文件，LF 归一后重算 digest，与 evidence `sha256` 比对；不一致 → `ARCHIVE_EVIDENCE_DRIFT`。
-5. 校验 status/verdict/四 grant/merge 事实，不通过 → `ARCHIVE_EVIDENCE_STATE`（带缺失项明细）。
-6. 全部通过 → `{ ok: true }`。
+1. 复用现有 `WRITEBACK_GENERATORS.traceability` 固定映射与脚本路径解析，调用 `writeback-traceability.mjs --validate-evidence`，执行器使用既有 Node `spawnSync(..., { shell: false })` 路径。
+2. 将 generator 的 JSON 成功结果转为 `{ ok: true }`；非零退出或 JSON error 映射为 `ARCHIVE_EVIDENCE_MISSING`、`ARCHIVE_EVIDENCE_DUPLICATE`、`ARCHIVE_EVIDENCE_PATH_INVALID`、`ARCHIVE_EVIDENCE_DRIFT` 或 `ARCHIVE_EVIDENCE_STATE`。
+3. 不传 candidate/manifest/generator 外部路径，不创建 journal，不写 authority，不新增 crctl 子命令；`crctl` 仍拥有 archive gate 的调用时序和失败中止。
 
 ## 3.3 `archiveCr` 插入点（pre-authority 分流）
 
@@ -159,7 +171,7 @@ if needsEvidence:
     opWs = resolveOperationalWorkspace(ctx, cr)   # 只读
     if opWs.phase === 'writing-back':
         if !specId -> TxError ARCHIVE_SPEC_REQUIRED
-        validateMilestoneEvidence({ traceText: read(specs/{specId}/traceability.yml), cr, specId, editRoot: opWs.path })
+        runFixedEvidenceValidator({ editRoot: opWs.path, cr, specId })
     # rejected/withdrawn：无 writing-back milestone，跳过
 # 之后沿用既有 loadOrCreateJournal + 四账本流程（其内部 status 判定不变，重复 resolve 只读幂等）
 ```
@@ -193,13 +205,14 @@ approval= parseYaml(crDir/approval.yml)                            # 四段齐�
 merge   = parseYaml(crDir/merge-commits.yml)                       # repositories[] 有 merge-sha => 'merged'
 evidence = { test: {status, path, sha256(归一内容)}, reviews: {...}, approval: {...}, merge: {...} }
 buildSegment 追加 evidence 块
+validateMilestoneEvidence({ traceText: generatedTraceText, cr, specId, editRoot: workspace })  # 同一函数自检
 ```
 
 digest 用 `sha256(normalize(readFile(p)))`；路径为 workspace 相对 POSIX 路径 `change-requests/{cr}/...`。
 
 ## 4.2 证据校验（archive gate）
 
-与 §4.1 同规则，但方向相反：从 `traceText` 读 evidence 块 → 重读 canonical 文件 → 重算 → 逐项比对。generator 与 gate 两侧实现同一契约，测试交叉验证防漂移（同 `inputDigest` 先例，见 §5）。
+与 §4.1 同一个 `validateMilestoneEvidence` 函数：archive adapter 只通过固定 generator 的内部 `--validate-evidence` 模式调用它。函数从既有 `traceability.yml` 读 evidence 块 → 按固定 path map 重读 canonical 文件 → 重算 → 逐项比对；generator 与 archive 不各自复制规则。
 
 ## 4.3 archive pre-authority 分流
 
@@ -207,7 +220,7 @@ digest 用 `sha256(normalize(readFile(p)))`；路径为 workspace 相对 POSIX �
 lock(archive-{cr})
 existing = loadExistingJournal(...)
 if 无 journal 或 pre-authority journal:
-    if writing-back: validateMilestoneEvidence(...)   # 失败 -> 释放 lock, 零写入
+    if writing-back: runFixedEvidenceValidator(...)   # 失败 -> 释放 lock, 零写入
     # rejected/withdrawn: 跳过
 loadOrCreateJournal(...)     # 通过后才创建/修改 journal
 recoverWriteSet / 四账本编辑 / commit / lease push / cleanup   # 既有流程不变
@@ -217,7 +230,7 @@ recoverWriteSet / 四账本编辑 / commit / lease push / cleanup   # 既有流�
 
 | 决策 | 选择 | 理由 / 弃用 |
 |---|---|---|
-| 共享证据契约的实现方式 | 两侧独立内联 + 交叉验证测试（沿用 `computeInputDigest`/`writebackInputDigest` 先例） | 弃用新建共享模块/registry：跨"版本化脚本"与"crctl 深模块"两个可执行体，无低耦合共享点；先例已证明内联+测试可行且 ponytail 最小 |
+| 共享证据校验的实现方式 | 已有 generator 内唯一 validator + crctl 固定脚本调用适配 | 满足 PRD 的同一函数要求，同时保持 writeback/crctl 平行依赖；不新增共享模块、registry 或第二事务层 |
 | 证据门位置 | archive lock 内、`loadOrCreateJournal` 前 | 弃用锁外预检：锁外无法串行化 journal 竞态；弃用新建"事务前置层"：只需把只读 `resolveOperationalWorkspace` 提前一次 |
 | digest 语义 | LF 归一内容哈希 | 弃用 raw-bytes 哈希：证据要跨平台可比；raw 保留给 CAS 锚点 |
 | 历史 milestone | opaque 逐字节保留，不迁移 | 弃用批量回填/伪 digest |
@@ -230,7 +243,7 @@ recoverWriteSet / 四账本编辑 / commit / lease push / cleanup   # 既有流�
 | FR-01 最小证据摘要 | `readEvidenceInputs` + `buildSegment` 注入 `evidence` 块 | `writeback-traceability.mjs` |
 | FR-02 事实源修正 | `trunkOf` 硬失败删 `master` 回退；`fromBacklog`→`fromMergeCommits`；注释/错误文案改 `merge-commits.yml` | `writeback-traceability.mjs` |
 | FR-03 generator 身份既有回归 | 不改生产；补回归测试断言 `WRITEBACK_GENERATORS` 与 `actualGeneratorSha` | `test/` |
-| FR-04 archive 证据门 | `validateMilestoneEvidence` + `archiveCr` pre-authority 分流 | `workspace-transactions.mjs` |
+| FR-04 archive 证据门 | `runFixedEvidenceValidator` + `archiveCr` pre-authority 分流；唯一校验函数在固定 generator 内 | `workspace-transactions.mjs` + `writeback-traceability.mjs` |
 | FR-05 历史 opaque / 无 status | `buildSegment` 删 `status` 行；历史段字节保留断言不变；SKILL.md 去 `status: writing-back` | `writeback-traceability.mjs` + 其 SKILL.md |
 | FR-06 change-impact 退役 | 删 `skills/review/change-impact-analysis/SKILL.md`；清 `skills/_index.yml`、`agent-skill-matrix.yml`（quality-reviewer owns）、`AGENT-SKILL-MATRIX.md`、`agents/quality-reviewer-agent.md`、`agents/_index.yml`、`dir-graph.yaml#skill_context.change-impact-analysis`、`README.md`、`docs/QODER-使用指南.md`、`openwiki/architecture/agent-skill-matrix.md`；`review-alignment/SKILL.md` 删 AL-07 与"与其他 Skill 关系"中的 change-impact 行 | 删除+编辑 |
 | FR-07 feedback 退役 | 删 `skills/cr/feedback-writeback/SKILL.md`；清 `skills/_index.yml`、矩阵/Agent/README/docs/openwiki；`inbox-emit/SKILL.md` 删 `feedback-writeback-done` allowlist 项；保留 `CUSTOM.md#CUSTOM-TODO-010` 与 CONTEXT.md | 删除+编辑 |
@@ -241,7 +254,7 @@ recoverWriteSet / 四账本编辑 / commit / lease push / cleanup   # 既有流�
 # 7. 安全与性能考量
 
 - **零副作用失败**：证据门在 journal 创建/修改前执行，失败释放 lock，无 journal/authority/审计残留。
-- **路径 containment**：证据路径必须是 `change-requests/{cr}/` 前缀的相对 POSIX 路径，拒绝绝对路径、`..`、反斜杠与跨 CR 前缀。
+- **路径绑定与 containment**：先按 §2.2 固定 map 要求 evidence key/path 精确相等，再拒绝绝对路径、`..`、反斜杠与跨 CR 前缀；目录 containment 只是第二层防护。
 - **digest 不可伪造**：digest 由代码重算，不信任 milestone-file/manifest 自报；generator hash 由 `writeback-apply` 对固定脚本计算。
 - **CRLF 纪律**：所有解析与 digest 输入先 LF 归一；跨行正则/解析失败硬失败（对齐工程纪律第 1 条）。
 - **性能**：证据门为 7 个小文件的常数次读+hash，不引入额外持久化模型或后台任务；不缓存、不并行。
@@ -249,8 +262,8 @@ recoverWriteSet / 四账本编辑 / commit / lease push / cleanup   # 既有流�
 
 # 8. 测试设计（与 §12 测试矩阵对齐）
 
-- generator：证据七项齐全、digest 可复算、CRLF/LF 同 digest、trunk 缺条目硬失败、merge 缺字段硬失败、新 milestone 无 status、历史段字节不变、SELF_CHECK。
-- archive gate：证据齐全归档成功；milestone/evidence 重复、跨 CR 路径、digest 漂移、verdict/status 非 pass、approval 缺 grant、merge 缺事实均硬失败且零 journal/authority 写入。
+- generator/validator：正常生成与内部 `--validate-evidence` 模式调用同一 `validateMilestoneEvidence`；证据七项齐全、固定 path map 精确、digest 可复算、CRLF/LF 同 digest、trunk 缺条目硬失败、merge 缺字段硬失败、新 milestone 无 status、历史段字节不变、SELF_CHECK。
+- archive gate：固定 path map 精确绑定；证据齐全归档成功；milestone/evidence 重复、同 CR 内错误 path、跨 CR 路径、digest 漂移、verdict/status 非 pass、approval 缺 grant、merge 缺事实均由唯一 validator 硬失败且零 journal/authority 写入。
 - pre-authority 分流：无 journal 校验；pre-authority journal 校验且失败不改 journal；已 commit/push 与 cleanup/complete 恢复跳过；rejected/withdrawn 跳过。
 - FR-03 回归：`WRITEBACK_GENERATORS` 与 `actualGeneratorSha` 既有测试保持通过。
 - 退役：静态扫描证明 active 路径零 `change-impact-analysis`/`feedback-writeback`/`feedback-writeback-done` 引用，且 `CUSTOM-TODO-010` 保留。
@@ -261,3 +274,4 @@ recoverWriteSet / 四账本编辑 / commit / lease push / cleanup   # 既有流�
 | 日期 | 版本 | 作者 | 说明 |
 |---|---|---|---|
 | 2026-08-15 | v0.1.0 | Ray | 初始草稿：evidence 注入、archive 证据门、事实源修正、双 Skill 退役、职责边界 |
+| 2026-08-15 | v0.1.1 | Ray | 按技术评审回修：固定 evidence path map；唯一 validator 保留在既有 generator，archive 通过内部校验模式调用，不新增共享模块 |
