@@ -1,0 +1,20 @@
+cr-id: CR-2026-043
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-16T00:45:38+08:00"
+verdict: block
+blockers:
+  - "B1 journal 生命周期与幂等意图未闭合：SDD §2.2 将 inputDigest 固定为 {op,cr}，§4.2 又在全仓 preflight 前调用 loadOrCreateJournal，却同时承诺 all-fresh no-op 不创建空 journal；该顺序必然先落空 journal，且同一 CR 后续 trunk 再前进时可能命中旧 complete journal。修复：在锁内先 loadExistingJournal 分流在途恢复；无在途事务时先做全仓 preflight，allFresh 直接返回；仅 syncable 时以 graphDigest + 按 repo id 排序的 beforeSha/targetTrunkSha 生成 intentDigest，再 loadOrCreateJournal（明确 complete journal 与 createAfterComplete 处理），并写清部分完成重跑如何使用 journal 记录的原始 intent 而不是重新生成漂移 digest。"
+  - "B2 失败审计路径不可达：SDD §3.1 定义 runTxAsync(sync) 成功后才 auditLog，但 runTxAsync 遇 TxError 会直接 fail，导致 PRD 要求持久化的 sync 阻断/竞态/技术失败无法写 audit；freshness 技术失败同样缺失。修复：为 cmdWorkspace freshness/sync 定义局部 try/catch，成功只读 freshness 不审计、非 fresh 业务阻断及技术异常在 fail 前 audit，sync 成功/no-op/失败均审计；不得为了该点修改全局 runTxAsync 语义。"
+  - "B3 ancestry 错误会被误判为 diverged：SDD §4.1 的 isAncestor 仅用 status===0，Git status=1（非祖先）与 status>1（仓库/对象/命令错误）都变成 false，可能把不完整事实降级为 diverged，违反 PRD FR-02.4 的硬失败/unknown 要求。修复：定义 isAncestorOrThrow，status=0 返回 true、status=1 返回 false、其余状态抛结构化 TxError 并携带 repo/args/stderr；补对应单元测试。"
+dimensions:
+  prd-sdd-alignment: "block: FR-02/FR-04 的 no-empty-journal、失败审计与 Git 事实硬失败在当前算法中不能兑现"
+  architecture-rationality: "block: 模块边界正确且复用 durable-tx，但 journal 创建时序与既有 loadExistingJournal/loadOrCreateJournal 语义冲突"
+  data-model-completeness: "block: workspace journal intentDigest 未绑定 before/target facts，无法区分同 CR 的后续同步意图"
+  interface-contract: "block: cmdWorkspace 错误路径先 fail 后 audit，失败审计接口不可达"
+  performance-security: "block: merge-base 非 0 状态未区分，Git 错误可能被错误分类而非保守阻断"
+  testability: "block: 缺 ancestry status>1、all-fresh 零 journal、旧 complete journal 后 trunk 再前进、失败审计四类断言"
+  prompt-adoption-impact: "pass: 第 8 节存在，采纳与明确不采纳清单完整，rules.json 零改动理由成立"
+suggestions: []
+subject-file: change-requests/CR-2026-043/sdd.md
+subject-sha256: 875021c225b0ae22a01d3d0816fcffd5e34568b1263a0dbbfbc3da484439cb08
