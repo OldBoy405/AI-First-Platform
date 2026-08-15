@@ -1,35 +1,35 @@
 $ node --test skills/shared/crctl/scripts/test/lint-prompts.test.mjs
 (exit=0)
 --- stdout ---
-✔ R1：手写 guard-deny 文件且同段无 crctl → CONTRADICTS (50.6322ms)
-✔ R1 豁免：同段含 crctl 调用（正确示范）不误报 (45.7358ms)
-✔ R1 豁免：<!-- lint-prompts:ignore --> 跳过该段 (48.3064ms)
-✔ R2：裸 git 命令 → CONTRADICTS；crctl git 形态不报 (64.8059ms)
-✔ R3/R4：cr-status-set / 六字段口径 → STALE-REF / CONTRADICTS (58.8995ms)
-✔ R5：手写 review-loop 记账（配合写动词）→ OUTDATED (57.441ms)
-✔ R5 不误报：passCondition 读取声明（无写动词） (47.8638ms)
-✔ R6：test-report.md 手写 frontmatter → CONTRADICTS (46.7742ms)
-✔ enforce 模式：有 CONTRADICTS/STALE-REF → exit 1 + LINT_DRIFT (45.5887ms)
-✔ enforce 模式：零漂移 → exit 0 (46.8061ms)
-✔ R7：crctl advance 全角分隔符/伪旗标 → CONTRADICTS (54.7749ms)
-✔ R7：advance 缺 --trigger → CONTRADICTS；完整形态不报 (45.4704ms)
-✔ R7：backlog-set 字段越白名单 + --template subject 缺 CR 编号 → CONTRADICTS (52.528ms)
-✔ R8：函数式 inbox-emit + 枚举外 event → CONTRADICTS；合法 event 不报 (51.9211ms)
-✔ 豁免收窄：注释与违规行隔 3+ 行 → 仍命中；±1 行内 → 豁免（FR-25 契约） (48.9449ms)
-✔ R9：CR 上下文「下一步」手写 skill 副本 → CONTRADICTS；crctl next 形态不报 (45.8768ms)
-✔ R9：域外 SKILL.md 的「下一步」不受约束（含真实 skill id 也不报） (47.4676ms)
-✔ R9：pipeline 名副本（下一步指向 pipeline 而非 skill）→ CONTRADICTS (46.0942ms)
-✔ R9 记述性豁免：CR 上下文域内无 skill id 的「下一步」行（标题/描述性）→ 不报 (48.9697ms)
-✔ R7 权威字面量：完整 NORMAL pair 通过；短 trigger → CONTRADICTS（AC-27） (51.859ms)
-✔ R7：trigger 存在但 to 不匹配 → CONTRADICTS（AC-27） (49.9119ms)
-✔ R7：to/trigger 含模板变量 → 跳过 literal 校验（AC-29） (51.6691ms)
-✔ R7：LF/CRLF 输入等价（AC-28） (104.1906ms)
-✔ R7 transitions 错层 → STATE_MACHINE_PARSE_FAILED 非零退出（AC-28） (49.6185ms)
-✔ R7 transitions duplicate → STATE_MACHINE_PARSE_FAILED 非零退出（AC-28） (48.7895ms)
-✔ R7 transitions missing → STATE_MACHINE_PARSE_FAILED 非零退出（AC-28） (50.2094ms)
-✔ R7 transitions empty → STATE_MACHINE_PARSE_FAILED 非零退出（AC-28） (44.1321ms)
-✔ R7 transitions malformed → STATE_MACHINE_PARSE_FAILED 非零退出（AC-28） (45.3216ms)
-✔ R7 transitions truncated → STATE_MACHINE_PARSE_FAILED 非零退出（AC-28） (43.6801ms)
+✔ R1：手写 guard-deny 文件且同段无 crctl → CONTRADICTS (47.1826ms)
+✔ R1 豁免：同段含 crctl 调用（正确示范）不误报 (49.3186ms)
+✔ R1 豁免：<!-- lint-prompts:ignore --> 跳过该段 (46.229ms)
+✔ R2：裸 git 命令 → CONTRADICTS；crctl git 形态不报 (47.306ms)
+✔ R3/R4：cr-status-set / 六字段口径 → STALE-REF / CONTRADICTS (52.3874ms)
+✔ R5：手写 review-loop 记账（配合写动词）→ OUTDATED (50.9301ms)
+✔ R5 不误报：passCondition 读取声明（无写动词） (45.7143ms)
+✔ R6：test-report.md 手写 frontmatter → CONTRADICTS (47.3299ms)
+✔ enforce 模式：有 CONTRADICTS/STALE-REF → exit 1 + LINT_DRIFT (53.4935ms)
+✔ enforce 模式：零漂移 → exit 0 (52.0503ms)
+✔ R7：crctl advance 全角分隔符/伪旗标 → CONTRADICTS (53.4805ms)
+✔ R7：advance 缺 --trigger → CONTRADICTS；完整形态不报 (46.9339ms)
+✔ R7：backlog-set 字段越白名单 + --template subject 缺 CR 编号 → CONTRADICTS (50.9798ms)
+✔ R8：函数式 inbox-emit + 枚举外 event → CONTRADICTS；合法 event 不报 (50.7225ms)
+✔ 豁免收窄：注释与违规行隔 3+ 行 → 仍命中；±1 行内 → 豁免（FR-25 契约） (46.9431ms)
+✔ R9：CR 上下文「下一步」手写 skill 副本 → CONTRADICTS；crctl next 形态不报 (45.0917ms)
+✔ R9：域外 SKILL.md 的「下一步」不受约束（含真实 skill id 也不报） (45.2169ms)
+✔ R9：pipeline 名副本（下一步指向 pipeline 而非 skill）→ CONTRADICTS (46.3475ms)
+✔ R9 记述性豁免：CR 上下文域内无 skill id 的「下一步」行（标题/描述性）→ 不报 (48.9678ms)
+✔ R7 权威字面量：完整 NORMAL pair 通过；短 trigger → CONTRADICTS（AC-27） (47.3144ms)
+✔ R7：trigger 存在但 to 不匹配 → CONTRADICTS（AC-27） (45.5967ms)
+✔ R7：to/trigger 含模板变量 → 跳过 literal 校验（AC-29） (49.7593ms)
+✔ R7：LF/CRLF 输入等价（AC-28） (94.249ms)
+✔ R7 transitions 错层 → STATE_MACHINE_PARSE_FAILED 非零退出（AC-28） (47.3014ms)
+✔ R7 transitions duplicate → STATE_MACHINE_PARSE_FAILED 非零退出（AC-28） (49.0607ms)
+✔ R7 transitions missing → STATE_MACHINE_PARSE_FAILED 非零退出（AC-28） (43.5933ms)
+✔ R7 transitions empty → STATE_MACHINE_PARSE_FAILED 非零退出（AC-28） (42.9334ms)
+✔ R7 transitions malformed → STATE_MACHINE_PARSE_FAILED 非零退出（AC-28） (44.4485ms)
+✔ R7 transitions truncated → STATE_MACHINE_PARSE_FAILED 非零退出（AC-28） (48.1758ms)
 ℹ tests 29
 ℹ suites 0
 ℹ pass 29
@@ -37,6 +37,6 @@ $ node --test skills/shared/crctl/scripts/test/lint-prompts.test.mjs
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 1556.9751
+ℹ duration_ms 1502.5655
 
 --- stderr ---
