@@ -1,11 +1,11 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 # 五段链路：需求 FR ↔ 技术设计 SDD ↔ 交付 TASK ↔ 代码 merge SHA ↔ CR-ID
 spec-id: ai-first-platform
-cr-ref: CR-2026-040
-cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029, CR-2026-028, CR-2026-030, CR-2026-031, CR-2026-037, CR-2026-032, CR-2026-033, CR-2026-038, CR-2026-039, CR-2026-040]
-target-version: "0.20.2"
+cr-ref: CR-2026-041
+cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029, CR-2026-028, CR-2026-030, CR-2026-031, CR-2026-037, CR-2026-032, CR-2026-033, CR-2026-038, CR-2026-039, CR-2026-040, CR-2026-041]
+target-version: "0.20.3"
 baseline-since: "0.10"
-generated-at: "2026-08-15T15:41:05+08:00"
+generated-at: "2026-08-15T23:52:56+08:00"
 
 # 已知缺口：CR-2026-003~CR-2026-006 未生成本文件的里程碑段（writeback-traceability 在那四个
 # CR 回写时被跳过，PRD.md/SDD.md/_index.yml 侧的累积记录不受影响、仍完整）。本次（CR-2026-008）
@@ -2684,3 +2684,77 @@ milestones:
         tasks: [CR-2026-040-TASK-05]
         code: tools@cb34001: fault-harness 恢复矩阵、source/log input digest
         evidence: test-report cmd-02（7 例）+ 双平台 CI run 31871639855
+  - cr: CR-2026-041
+    milestone: M0
+    target-version: "0.20.3"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 03e8378e1d0d10ce37f42d38ab55355e0c3e90e4
+        branch: requirement/CR-2026-041
+      - repo: multica
+        trunk: main
+        sha: 33720218ca5b3d3ff7fa5412753f0843dc3571e4
+        branch: requirement/CR-2026-041
+      - repo: tools
+        trunk: custom/main
+        sha: a7e2b1e4fa28955013c8e0293eb9cb704a19ef79
+        branch: requirement/CR-2026-041
+    frs:
+      - fr: FR-01
+        title: 最小证据摘要
+        sdd: SDD §2.1/§2.2/§4.1（evidence 块、固定 path map、readEvidenceInputs）
+        tasks: [CR-2026-041-TASK-01, CR-2026-041-TASK-02]
+        code: tools@a7e2b1e: writeback-traceability.mjs readEvidenceInputs/buildSegment evidence 注入
+        evidence: test-report cmd-02（evidence 注入、无 status、EVIDENCE_INVALID）
+      - fr: FR-02
+        title: 证据与 merge 事实源修正
+        sdd: SDD §3.1/§3.4（trunk 硬失败 TRUNK_UNKNOWN、merge-commits.yml 事实源）
+        tasks: [CR-2026-041-TASK-03]
+        code: tools@a7e2b1e: trunkOf 删 master 回退、fromMergeCommits 文案收敛
+        evidence: test-report cmd-02（TRUNK_UNKNOWN 硬失败）
+      - fr: FR-03
+        title: generator 身份既有约束回归
+        sdd: SDD §1.4/§6（WRITEBACK_GENERATORS 与 actualGeneratorSha 复用）
+        tasks: [CR-2026-041-TASK-08]
+        code: 不改生产（复用 CR-2026-038 交付）
+        evidence: test-report cmd-04（writeback-tx FR-03 回归）
+      - fr: FR-04
+        title: archive 前严格证据门
+        sdd: SDD §3.2/§3.3/§4.3（runFixedEvidenceValidator、pre-authority 分流）
+        tasks: [CR-2026-041-TASK-04]
+        code: tools@a7e2b1e: workspace-transactions.mjs archiveCr 证据门 + 唯一 validator 复用
+        evidence: test-report cmd-05（ARCHIVE_EVIDENCE_* 零 journal/authority）
+      - fr: FR-05
+        title: 历史 milestone opaque 与新 milestone 无 status
+        sdd: SDD §2.3/§3.1（buildSegment 删 status、历史段字节保留）
+        tasks: [CR-2026-041-TASK-01, CR-2026-041-TASK-05]
+        code: tools@a7e2b1e: buildSegment 无 status + SKILL.md 契约去 status
+        evidence: test-report cmd-02/cmd-03（无 status fixture、lint-prompts 0 findings）
+      - fr: FR-06
+        title: change-impact-analysis 退役
+        sdd: SDD §6（FR-06 退役清单）
+        tasks: [CR-2026-041-TASK-06]
+        code: tools@a7e2b1e: 删 change-impact-analysis + 清 active 引用
+        evidence: test-report cmd-03（退役静态扫描零命中）
+      - fr: FR-07
+        title: feedback-writeback 退役与 CUSTOM-TODO-010 登记
+        sdd: SDD §6（FR-07 退役清单）
+        tasks: [CR-2026-041-TASK-07]
+        code: tools@a7e2b1e: 删 feedback-writeback + inbox allowlist 收敛；保留 CONTEXT.md/CUSTOM-TODO-010
+        evidence: test-report cmd-03（退役静态扫描零命中）
+      - fr: FR-08
+        title: 职责边界与全量回归
+        sdd: SDD §1.3/§6（不新增模块，改动只落版本化脚本与 crctl 深模块）
+        tasks: [CR-2026-041-TASK-08]
+        code: 全仓约束（无新增共享模块）
+        evidence: test-report cmd-04（crctl 回归 196 例）
+    evidence:
+      test: { status: pass, path: change-requests/CR-2026-041/test-report.md, sha256: 8880c9c4acf42f05918cf540362dc03814adb37731596dd42f80d490656ef873 }
+      reviews:
+        requirement: { verdict: pass, path: change-requests/CR-2026-041/review-annotations/requirement.yml, sha256: 5bad8c9a43af58e4680363ac6343e20c7a3c696ced6540e282203d3c4813b81d }
+        tech-design: { verdict: pass, path: change-requests/CR-2026-041/review-annotations/sdd.yml, sha256: 9b64fd76cc408026fe776ece89632ad9eb5aa245267d5d33241af59d0b97183a }
+        dev-plan: { verdict: pass, path: change-requests/CR-2026-041/review-annotations/dev-plan.yml, sha256: 16bab3e2a09820194cd19640d3c3b1240ba3b5c6ba3a35925d0a147400190255 }
+        code: { verdict: pass, path: change-requests/CR-2026-041/review-annotations/code.yml, sha256: 862aece962cc107fd0c2148965e8d7ad37a9c5cf7e9636d2bf2eee9b36ba2f1a }
+      approval: { status: approved, path: change-requests/CR-2026-041/approval.yml, sha256: 34ea501b9a5d3d0473268deca72147242333c3247d4ede669cbe87cbc0176077 }
+      merge: { status: merged, path: change-requests/CR-2026-041/merge-commits.yml, sha256: 1f5dafc2cd6dcaaddef56a296151fc05a6c2c0885d35c06757748510d3929bde }
