@@ -17,7 +17,7 @@ target-version: tbd
 source: docs/analysis/workspace-baseline-freshness-governance.md
 status: developing
 created: "2026-08-15T23:59:36+08:00"
-updated: "2026-08-16T01:25:11+08:00"
+updated: "2026-08-16T07:56:03+08:00"
 remote-ref: ""
 last-push-at: ""
 last-push-by: ""
