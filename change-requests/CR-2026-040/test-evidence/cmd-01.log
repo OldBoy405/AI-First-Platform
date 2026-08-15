@@ -1,0 +1,27 @@
+$ node --test skills/shared/crctl/scripts/test/test-cr.test.mjs
+(exit=0)
+--- stdout ---
+✔ parseTestPlan：schema 非 cr-test-plan/v1 → TEST_PLAN_SCHEMA_INVALID (25.2214ms)
+✔ parseTestPlan：空 commands / 字段类型错误 / 禁止字段 → TEST_PLAN_SCHEMA_INVALID (22.1831ms)
+✔ parseTestPlan：未知 repo → TEST_REPO_NOT_FOUND；absolute cwd → TEST_CWD_ESCAPE (22.1901ms)
+✔ canonicalCommandSubject：digest 稳定、修改命令后变化、CRLF 无关 (0.3848ms)
+✔ parseAnalysisMarker：缺失 / 重复 / 合法唯一 literal (0.2126ms)
+✔ renderTestMachineReport：frontmatter 字段与 kebab-case 结果字段 (0.2623ms)
+✔ renderTestsTraceability：新增 / 替换 / cr-id 不匹配 (0.3292ms)
+✔ renderLoopText：schema 稳定渲染 (0.1753ms)
+✔ 端到端：合法 plan → status pass，原子发布四类 authority (839.754ms)
+✔ 端到端：--cmd 拒绝（BAD_ARGS），不执行命令、零 authority (659.8465ms)
+✔ 端到端：argv 安全——args 含 shell 元字符不触发 shell 解释 (797.3356ms)
+✔ 端到端：业务失败分流——non-zero 继续执行并发布 block，进程 exit 0 (870.0288ms)
+✔ 端到端：幂等重放——相同 plan 重放 changed=false 且不重复 attempt (1016.3969ms)
+✔ 端到端：executable 启动失败 → TEST_EXECUTABLE_INVALID 零 authority (730.3662ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5049.7287
+
+--- stderr ---
