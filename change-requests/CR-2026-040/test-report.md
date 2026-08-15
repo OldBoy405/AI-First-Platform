@@ -3,7 +3,7 @@ cr: CR-2026-040
 status: pass
 tester: Ray
 generated-by: crctl-test
-generated-at: "2026-08-15T12:48:54+08:00"
+generated-at: "2026-08-15T13:05:45+08:00"
 command-digest: c983c8e55a38df46748051072783a06e9e897de18d920de8c4b9c66787099ff1
 commands:
   - repo: tools
@@ -65,13 +65,13 @@ commands:
 
 | 命令 | 套件 | 用例 | 失败 | 结果 |
 |------|------|------|------|------|
-| `node --test test-cr.test.mjs` | 结构化测试闭环 | 23 | 0 | pass |
+| `node --test test-cr.test.mjs` | 结构化测试闭环 | 24 | 0 | pass |
 | `node --test fault-harness.test.mjs` | 故障注入 harness | 7 | 0 | pass |
 | `node --test lint-prompts.test.mjs` | prompt 契约 | 29 | 0 | pass |
 | `node --test crctl.test.mjs` | crctl 回归 | 169 | 0 | pass |
 | `node lint-prompts.mjs --mode enforce` | prompt 漂移 | 0 findings | - | pass |
 
-正式计划共执行 228 个测试，全部通过。测试输入绑定 Tools 提交 `6634892`；同命令、同日志但参与仓 HEAD 改变时会生成新 attempt。
+正式计划共执行 229 个测试，全部通过。测试输入绑定 Tools 提交 `2d40404`；同命令、同日志但参与仓 HEAD 改变时会生成新 attempt。本次由 cycle 1 的 PASS 3/3 自动开启 cycle 2 / attempt 1。
 
 ## TASK 与回修覆盖
 
@@ -80,16 +80,16 @@ commands:
 | TASK-01 durable-tx | `test` payload 复用现有 lock/journal/write-set；新 complete transaction 不删除旧事实 | cmd-01、cmd-02、cmd-04 |
 | TASK-02 `testCr` | 记录阶段 test scope lock、input digest 绑定 HEAD/日志 hash、幂等新 attempt | cmd-01（锁竞争、source revision、complete journal） |
 | TASK-03 CLI / plan 边界 | `--plan` 只接受 `.crctl/tmp`；authority、traversal 和 symlink escape 硬失败 | cmd-01 |
-| TASK-04 结构化矩阵 | LF/CRLF digest、timeout、marker 字节保留、cwd `..`/symlink、账本形状硬失败 | cmd-01（23 例） |
+| TASK-04 结构化矩阵 | LF/CRLF digest、timeout、marker 字节保留、cwd `..`/symlink、账本形状硬失败、PASS 后新 cycle | cmd-01（24 例） |
 | TASK-05 故障恢复 | rename 间隙和 complete 前中断恢复，attempt 不重复 | cmd-02（7 例） |
 | TASK-06 Skill/Pipeline | prompt 契约 29/29；enforce 0 findings | cmd-03、cmd-05 |
 | 既有 crctl 回归 | 状态、门禁、review-loop、checkpoint、approval 等保持通过 | cmd-04（169 例） |
 
 ## 新增 / 修改测试
 
-- 扩展 `skills/shared/crctl/scripts/test/test-cr.test.mjs` 至 23 例。
+- 扩展 `skills/shared/crctl/scripts/test/test-cr.test.mjs` 至 24 例。
 - 保留并通过 `skills/shared/crctl/scripts/test/fault-harness.test.mjs` 7 例。
-- 新增真实 timeout、CRLF、marker CRLF 字节保留、source HEAD 变化、plan/cwd symlink escape、test scope lock、非法 journal/review-loop/pipeline/traceability 形状测试。
+- 新增真实 timeout、CRLF、marker CRLF 字节保留、source HEAD 变化、plan/cwd symlink escape、test scope lock、非法 journal/review-loop/pipeline/traceability 形状，以及 PASS 后新 cycle / BLOCK 到上限停止测试。
 
 ## 未覆盖风险
 
