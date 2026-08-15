@@ -1,0 +1,32 @@
+cr-id: CR-2026-040
+tasks:
+  - id: CR-2026-040-TASK-01
+    title: "durable-tx 增加 test op 与 payload 槽位"
+    status: pending
+    estimate: 2h
+    depends-on: []
+  - id: CR-2026-040-TASK-02
+    title: "workspace-transactions 新增 testCr 深接口"
+    status: pending
+    estimate: 8h
+    depends-on: [CR-2026-040-TASK-01]
+  - id: CR-2026-040-TASK-03
+    title: "crctl.mjs test 子命令迁移到 --plan"
+    status: pending
+    estimate: 4h
+    depends-on: [CR-2026-040-TASK-02]
+  - id: CR-2026-040-TASK-04
+    title: "crctl.test.mjs 结构化测试矩阵"
+    status: pending
+    estimate: 6h
+    depends-on: [CR-2026-040-TASK-03]
+  - id: CR-2026-040-TASK-05
+    title: "fault-harness test 记录阶段故障矩阵"
+    status: pending
+    estimate: 4h
+    depends-on: [CR-2026-040-TASK-03]
+  - id: CR-2026-040-TASK-06
+    title: "Skill/Pipeline 文案与静态契约收敛"
+    status: pending
+    estimate: 4h
+    depends-on: [CR-2026-040-TASK-03]
