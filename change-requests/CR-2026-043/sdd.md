@@ -5,7 +5,7 @@ cr-ref: CR-2026-043
 title: Workspace 基线新鲜度与 CR Worktree 同步治理 技术设计
 status: draft
 created: 2026-08-16T00:30:49+08:00
-updated: 2026-08-16T00:30:49+08:00
+updated: 2026-08-16T00:46:26+08:00
 ---
 
 # 1. 架构概览
@@ -60,7 +60,7 @@ crctl.mjs cmdWorkspace（dispatch：inspect|ensure|cleanup|freshness|sync）
 | Workspace 基础分类 | `classifyRepoWorkspace`：`missing/healthy/branch-only/remote-only/dirty/wrong-branch/path-unregistered`；`WORKSPACE_CLASSIFICATIONS` | freshness 为第二层关系；基础分类与 `ensureRepoWorkspace` 零改动 |
 | 受控 Git | `gitRun/gitMust`（`spawnSync('git', args, {shell:false})`），事务处理器独占 Git 副作用 | 复用 fetch、`merge-base --is-ancestor`、`rev-parse`、`merge --ff-only` |
 | Durable transaction | `durable-tx.mjs`：`OPS`/`PAYLOAD_KEYS` 已含 `workspace`；`acquireLock({scope,op})`（scope 正则 `[A-Za-z0-9:_-]+`）；journal envelope；`loadOrCreateJournal`（inputDigest 漂移→TX_INPUT_CONFLICT）；`durableWriteFile`；`FAULT_POINTS` 全仓唯一登记表 | 同步事务沿用 op=`workspace`；新增 2 个故障点登记进 FAULT_POINTS |
-| Audit 与结构化错误 | `auditLog`（`.crctl/audit.log` JSONL）；`TxError`+`runTxAsync`→`fail(code)` | 复用；新增两个 kind：`workspace-freshness`（仅阻断/失败）、`workspace-sync` |
+| Audit 与结构化错误 | `auditLog`（`.crctl/audit.log` JSONL）；`TxError`；`fail(code)` | 复用；freshness/sync 在局部 catch 中先 audit 再 fail，不修改全局 runTxAsync |
 | Source 发布与重核 | checkpoint、review-record release-subjects、approve-code/merge 重核 | 零改动；sync 不发布远端分支 |
 | Pipeline 自修复 | code-implementation reviewLoop（maxAttempts=3、replayNodes、passCondition） | 扩展 review-code 节点 replayNodes 插入 freshness 重放 |
 | 契约台账 | `skills/_index.yml`、`agent-skill-matrix.yml`、`pipeline-templates/_index.yml` | 新增 Skill 登记与节点数同步（13→15） |
@@ -141,7 +141,14 @@ journal（op=`workspace`，key=`{CR-ID}`）的 `workspace` payload：
 }
 ```
 
-`inputDigest = sha256(JSON.stringify({ op: 'workspace-sync', cr }))`：同一命令重跑 inputDigest 不变可续跑；输入漂移触发既有 `TX_INPUT_CONFLICT`。
+journal 创建与 intent 绑定遵循以下唯一顺序：
+
+1. 获取 lock 后先用 `loadExistingJournal({ op:'workspace', cr })` 只读分流；存在非 complete journal 时，只按该 journal 已记录的 `repos[].beforeSha/targetTrunkSha` 恢复，禁止基于部分完成后的新 HEAD 重新生成 intent。
+2. 无在途 journal（含 latest 为 complete）时先执行全仓 preflight；`allFresh` 直接返回 `txId:null`，阻断结果直接抛错，两者均不创建 journal。
+3. 仅 syncable 时生成 `intentDigest = sha256(canonicalJson({ graphDigest, cr, repos:[{repo,beforeSha,targetTrunkSha}] }))`（repos 按 id 排序），再调用 `loadOrCreateJournal({ op:'workspace', cr, graphDigest, inputDigest:intentDigest, createAfterComplete:true })`。
+4. latest complete 后 trunk 再前进会产生不同 intentDigest，从而创建新事务；若外部操作把 HEAD 回退到旧 complete journal 的 beforeSha，不复用旧 complete 结果，按 `WORKSPACE_FRESHNESS_CHANGED` 保守阻断。
+
+这样同一在途 intent 重跑可续接，不同 trunk 目标不会误命中旧 complete journal，并兑现“全 fresh 不创建空 journal”。
 
 ## 2.3 audit 记录
 
@@ -162,8 +169,8 @@ crctl workspace sync      <CR-ID> [--workspace <path>]
 ```
 
 - cmdWorkspace dispatch 白名单由 `inspect|ensure|cleanup` 扩展为 `inspect|ensure|cleanup|freshness|sync`；freshness/sync 不接受任何其他 flag（多余 flag → `BAD_ARGS`），CR-ID 复用既有 `/^CR-\d{4}-\d{3,}$/` 校验。
-- freshness：`runTxAsync(classifyWorkspaceFreshness(ctx, cr))` → `ok({ op:'workspace-freshness', ...result })`；不写 audit（成功）、不写 journal。
-- sync：`runTxAsync(syncWorkspaceToTrunk(ctx, { cr }))` → `auditLog(kind:'workspace-sync')` → `ok({ op:'workspace-sync', ...result })`。
+- freshness：局部 `try/catch` 调用 `classifyWorkspaceFreshness(ctx, cr)`；成功且 `allFresh=true` 不写 audit，成功但存在 non-fresh 业务阻断时先写 `workspace-freshness` audit 再 `ok(...)`；TxError 在 `fail(...)` 前写失败 audit。
+- sync：局部 `try/catch` 调用 `syncWorkspaceToTrunk(ctx, { cr })`；成功/no-op 均先写 `workspace-sync` audit 再 `ok(...)`；TxError 在 `fail(...)` 前写失败 audit（携带 `e.extra` 中的 repo/SHA/txId）。不得把这两个分支交给现有 `runTxAsync` 后再审计，因为其错误路径会直接 `fail`；其他 workspace 子命令继续复用 `runTxAsync`，不修改全局语义。
 - HELP 文本追加两行用法说明（不写算法细节）。
 
 ## 3.2 深模块函数（workspace-transactions.mjs）
@@ -176,7 +183,7 @@ export function classifyWorkspaceFreshness(ctx, cr): FreshnessResult
 export async function syncWorkspaceToTrunk(ctx, { cr }): Promise<SyncResult>
 ```
 
-错误码（TxError，经 runTxAsync 映射为 fail）：
+错误码（TxError，经 cmdWorkspace freshness/sync 的局部 catch 先 audit、再映射为 fail）：
 
 | code | 语义 |
 |---|---|
@@ -244,33 +251,49 @@ for repo of ctx.repositories（已按 id 排序）:
     emit freshness='unknown', reason=classification     # 不猜测
     continue
   headSha = gitMust(wt, ['rev-parse','HEAD'])
+  status = gitMust(wt, ['status','--porcelain'])
+  if status 非空: emit freshness='unknown', reason='dirty-during-check'; continue
   gitMust(repo.rootPath, ['fetch','origin'])            # 仅更新 remote-tracking 元数据
   trunkSha = gitMust(repo.rootPath, ['rev-parse', `refs/remotes/origin/${repo.trunk}`])
       # 失败 → WORKSPACE_TRUNK_UNAVAILABLE（该仓 unknown，整体不可 fresh）
-  if headSha == trunkSha                      → fresh
-  elif isAncestor(trunkSha, headSha)          → fresh        # ahead-only 是正常开发态
-  elif isAncestor(headSha, trunkSha)          → behind-clean, canFastForward=true
-  else                                        → diverged
-# isAncestor(a,b) = gitRun(wt, ['merge-base','--is-ancestor', a, b]).status === 0
+  if headSha == trunkSha                              → fresh
+  elif isAncestorOrThrow(repo, trunkSha, headSha)     → fresh        # ahead-only 是正常开发态
+  elif isAncestorOrThrow(repo, headSha, trunkSha)     → behind-clean, canFastForward=true
+  else                                                → diverged
+
+isAncestorOrThrow(repo, a, b):
+  r = gitRun(wt, ['merge-base','--is-ancestor', a, b])
+  if r.status == 0: return true
+  if r.status == 1: return false                       # Git 对“非祖先”的唯一正常否定
+  throw TxError('TX_GIT_FAILED', ..., {repo,args,status,stderr})
+
 allFresh = 全部 fresh；syncable = allFresh ? false : 无阻断项 && 存在 behind-clean
 ```
 
-禁止用时间戳、commit message、`log` 计数等启发式替代 ancestry（PRD FR-01.5）。
+禁止用时间戳、commit message、`log` 计数等启发式替代 ancestry；尤其不得把 `merge-base` 的 status>1 降级为 diverged/unknown 空结果（PRD FR-01.5、FR-02.4）。
 
 ## 4.2 syncWorkspaceToTrunk（事务）
 
 ```text
 lock = acquireLock({ root, scope: `workspace-sync-${cr}`, op: 'workspace' })
-journal = loadOrCreateJournal({ op:'workspace', cr, graphDigest, inputDigest })
-payload = journal.workspace ?? { phase:'preflight', repos: [] }
+existing = loadExistingJournal({ op:'workspace', cr })
 
-# 1) 全仓 preflight（锁内、任何写入前）：classifyWorkspaceFreshness
-#    任一仓非 fresh 且非 behind-clean（dirty/diverged/unknown/基础阻断/trunk 不可确认）
-#      → 零仓写入，抛对应 TxError；不创建空 journal（全 fresh 直接 changed=false 返回）
+# 1) existing 非 complete：恢复已记录 intent
+#    校验 graphDigest 未漂移；直接使用 payload.repos 的 beforeSha/targetTrunkSha；
+#    已在 targetSha 的仓 confirmed，仍在 beforeSha 的仓 pending，其余事实 WORKSPACE_FRESHNESS_CHANGED。
+
+# 2) 无在途 journal：锁内全仓 preflight（任何 worktree 写入前）
+#    allFresh → changed=false, txId=null 直接返回（不创建 journal）
+#    任一仓非 fresh 且非 behind-clean → 零仓写入，抛对应 TxError（不创建 journal）
+#    syncable → 以 graphDigest + 排序后的 repo/beforeSha/targetTrunkSha 生成 intentDigest；
+#               若 latest complete.inputDigest == intentDigest 但当前又回到 syncable，说明已完成结果被外部回退，
+#                 → WORKSPACE_FRESHNESS_CHANGED（禁止复用旧 complete）；
+#               否则 loadOrCreateJournal({op:'workspace',cr,inputDigest:intentDigest,createAfterComplete:true})，
+#               写入 workspace payload 并 save('preflight')
 #    faultPoint('ws-sync-after-preflight')
 
-# 2) 逐仓（repo id 顺序，跳过 payload 中已 fast-forwarded/confirmed 的仓）：
-for repo of behind-clean 仓:
+# 3) 逐仓（repo id 顺序，跳过已 confirmed/fast-forwarded 的仓）：
+for repo of pending behind-clean 仓:
   重核：branch、status --porcelain 为空、HEAD==beforeSha、重新 fetch 并比对 origin/{trunk} SHA
   任一漂移 → WORKSPACE_FRESHNESS_CHANGED（停止后续仓）
   gitMust(wt, ['merge','--ff-only', targetSha])        # 唯一允许的 worktree 写操作
@@ -279,11 +302,11 @@ for repo of behind-clean 仓:
   payload.repos[i].action='fast-forwarded'; save('syncing')
   faultPoint('ws-sync-after-repo')
 
-# 3) save('complete') → 返回 SyncResult（recoverCommand = 同一 sync 命令）
+# 4) save('complete') → 返回 SyncResult（recoverCommand = 同一 sync 命令）
 finally lock.release()
 ```
 
-恢复语义（重跑同一命令）：journal phase=complete → 幂等成功；phase=syncing → 已 `afterSha==targetSha` 的仓标 `unchanged/confirmed`，仍在 `beforeSha` 的仓继续，其余漂移硬失败；不 reset/revert/删除 journal（PRD FR-04）。多仓只向前，不承诺跨仓 ACID 回滚。
+恢复语义：非 complete journal 只恢复原始 intent，不根据部分完成后的新 HEAD 重算 digest；已到 targetSha 的仓标 `confirmed`，仍在 beforeSha 的仓继续，其余漂移硬失败。latest complete 不阻止后续新 trunk intent：新 preflight 产生不同 intentDigest，经 `createAfterComplete:true` 创建新事务。不 reset/revert/删除 journal（PRD FR-04）；多仓只向前，不承诺跨仓 ACID 回滚。
 
 ## 4.3 Skill 编排（review-start 同步后重放）
 
@@ -316,7 +339,7 @@ sync 改变了 source HEAD，既有测试/评审/checkpoint 证据全部失效�
 | PRD | 实现落点 |
 |---|---|
 | FR-01 分层分类 | §4.1 classifyWorkspaceFreshness；freshness 与 WORKSPACE_CLASSIFICATIONS 分层输出 |
-| FR-02 只读检查 | §3.1 freshness 子命令；§4.1（fetch 边界、unknown 不降级、成功不写 audit） |
+| FR-02 只读检查 | §3.1 freshness 子命令；§4.1（fetch 边界、unknown 不降级、allFresh 成功不写 audit、阻断/失败先 audit） |
 | FR-03 显式同步 | §4.2 syncWorkspaceToTrunk（全仓 preflight、唯一 ff-only、白名单外参数 BAD_ARGS） |
 | FR-04 幂等/竞态/恢复 | §4.2（inputDigest、逐仓重核、fault points、只向前恢复、多仓顺序语义） |
 | FR-05 生命周期 gate | §3.4 两个节点 + replayNodes 扩展；gate 是 Pipeline 编排而非状态机门禁（gates.json 零改动） |
@@ -341,8 +364,8 @@ sync 改变了 source HEAD，既有测试/评审/checkpoint 证据全部失效�
 
 | 层 | 用例 |
 |---|---|
-| 分类单元 | fresh（HEAD==trunk）、fresh（ahead-only）、behind-clean、diverged、五类基础分类→unknown、trunk 缺失/fetch 失败→WORKSPACE_TRUNK_UNAVAILABLE、多仓稳定排序、Windows 路径身份与 CRLF |
-| 事务（`test/workspace-freshness.test.mjs`，复用现有 fixture） | ff-only 成功且 afterSha==target；全 fresh no-op 不建 journal；dirty/diverged/unknown 零写入；preflight 阻断全仓零写入；`ws-sync-after-repo` 故障注入后续跑只向前；trunk 变化→WORKSPACE_FRESHNESS_CHANGED；HEAD/branch/dirty 变化→硬失败；并发锁→TX_LOCK_HELD；重跑幂等不重复提交 |
+| 分类单元 | fresh（HEAD==trunk）、fresh（ahead-only）、behind-clean、diverged、六类非 healthy 基础分类→unknown、trunk 缺失/fetch 失败→WORKSPACE_TRUNK_UNAVAILABLE、`merge-base` status>1→TX_GIT_FAILED（不得变 diverged）、多仓稳定排序、Windows 路径身份与 CRLF |
+| 事务（`test/workspace-freshness.test.mjs`，复用现有 fixture） | ff-only 成功且 afterSha==target；全 fresh no-op 不建 journal；dirty/diverged/unknown 零写入；preflight 阻断全仓零写入；`ws-sync-after-repo` 故障注入后续跑只使用 journal 原始 intent；latest complete 后 trunk 再前进创建新事务；trunk 变化→WORKSPACE_FRESHNESS_CHANGED；HEAD/branch/dirty 变化→硬失败；并发锁→TX_LOCK_HELD；重跑幂等不重复提交；freshness/sync 技术失败与业务阻断均在 fail 前写 audit |
 | 契约 | workspace-freshness active 且 system-orchestrator 唯一 owns、dev-agent can-call；两节点位于 implement-code 前与 review-code 前；replayNodes 含 ...017；`_index.yml nodes=15`；Pipeline prompt 无 git/journal 字样；SKILL.md 无 Git 算法/账本编辑步骤 |
 | 集成 | implement gate：behind-clean→sync→继续；diverged→abort；review gate：trunk 前进→拦截→按 replayNodes 重建证据；Windows 与 Ubuntu 各一遍 active repository 矩阵 |
 
@@ -364,3 +387,4 @@ sync 改变了 source HEAD，既有测试/评审/checkpoint 证据全部失效�
 | 日期 | 版本 | 作者 | 说明 |
 |---|---|---|---|
 | 2026-08-16 | v0.1.0 | Ray | 初始设计：两层分类、显式 ff-only 同步事务、双 gate 与 reviewLoop 重放、职责边界与采纳清单 |
+| 2026-08-16 | v0.1.1 | Ray | 按技术评审 attempt 1 回修：preflight 前不建 journal、intentDigest 绑定 before/target、在途只按原 intent 恢复、失败 audit 前置、ancestry 退出码硬区分 |
