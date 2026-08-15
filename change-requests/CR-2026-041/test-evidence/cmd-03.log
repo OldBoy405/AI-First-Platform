@@ -1,0 +1,58 @@
+$ node --test skills/shared/crctl/scripts/test/contract-scan.test.mjs skills/shared/crctl/scripts/test/check-skill-matrix.test.mjs skills/shared/crctl/scripts/test/check-agents-contract.test.mjs skills/shared/crctl/scripts/test/lint-prompts.test.mjs
+(exit=0)
+--- stdout ---
+✔ 所有逐行解析先统一 CRLF，再按可选 CR 拆行 (0.5067ms)
+✔ 检查4①：external 有引用点（pipeline-templates/*.json 内）→ 通过（AC-2 判绿侧） (52.9161ms)
+✔ 检查4②：external 零引用点 → 退出非 0 且错误含技能名（AC-1） (50.8516ms)
+✔ 检查4③：同一 external 被多 actor 声明且有引用点 → 通过（brainstorming 形态，B-4） (49.9923ms)
+✔ 检查4④：多 actor 声明且零引用 → 错误同时列出全部声明 actor（FR-1 文案） (50.4746ms)
+✔ 检查4⑤：CRLF 与 LF 同内容夹具结果一致（FR-3 行尾纪律） (101.2601ms)
+✔ 检查4⑥：既有三项检查回归——缺归属 / 目标缺失 / md 漂移各至少一条 (145.8198ms)
+✔ 检查4⑦：三段输入各自空结构 → 硬失败退出非 0（TD-BL-2，不静默降级） (141.6074ms)
+✔ 检查4⑧：只在 openwiki/ 下出现的技能名不计为引用点（AC-2 判红侧） (61.259ms)
+✔ AC-1: 三个 CR Pipeline 与 11 个 SKILL.md 对废弃 canonical 字段零命中 (3.1491ms)
+✔ AC-2a: requirement-authoring reviewLoop 结构快照不变 (0.7373ms)
+✔ AC-2b: architecture-design reviewLoop 结构快照不变 (0.292ms)
+✔ AC-2c: code-implementation review-code reviewLoop 结构快照不变 (0.3693ms)
+✔ AC-1 补充：三个 Pipeline JSON 可解析（prompt 修订未破坏 JSON 结构） (0.515ms)
+✔ CR-2026-041 FR-06/07：active 路径零退役 Skill 引用 (1.8191ms)
+✔ CR-2026-041 FR-06/07：退役 Skill 目录已删除（历史快照除外） (0.2548ms)
+✔ R1：手写 guard-deny 文件且同段无 crctl → CONTRADICTS (51.1236ms)
+✔ R1 豁免：同段含 crctl 调用（正确示范）不误报 (50.463ms)
+✔ R1 豁免：<!-- lint-prompts:ignore --> 跳过该段 (53.9733ms)
+✔ R2：裸 git 命令 → CONTRADICTS；crctl git 形态不报 (50.0225ms)
+✔ R3/R4：cr-status-set / 六字段口径 → STALE-REF / CONTRADICTS (56.9041ms)
+✔ R5：手写 review-loop 记账（配合写动词）→ OUTDATED (59.2837ms)
+✔ R5 不误报：passCondition 读取声明（无写动词） (52.4684ms)
+✔ R6：test-report.md 手写 frontmatter → CONTRADICTS (52.5929ms)
+✔ enforce 模式：有 CONTRADICTS/STALE-REF → exit 1 + LINT_DRIFT (50.8919ms)
+✔ enforce 模式：零漂移 → exit 0 (51.6611ms)
+✔ R7：crctl advance 全角分隔符/伪旗标 → CONTRADICTS (57.6256ms)
+✔ R7：advance 缺 --trigger → CONTRADICTS；完整形态不报 (62.9411ms)
+✔ R7：backlog-set 字段越白名单 + --template subject 缺 CR 编号 → CONTRADICTS (57.2209ms)
+✔ R8：函数式 inbox-emit + 枚举外 event → CONTRADICTS；合法 event 不报 (55.054ms)
+✔ 豁免收窄：注释与违规行隔 3+ 行 → 仍命中；±1 行内 → 豁免（FR-25 契约） (49.2533ms)
+✔ R9：CR 上下文「下一步」手写 skill 副本 → CONTRADICTS；crctl next 形态不报 (45.7701ms)
+✔ R9：域外 SKILL.md 的「下一步」不受约束（含真实 skill id 也不报） (51.2045ms)
+✔ R9：pipeline 名副本（下一步指向 pipeline 而非 skill）→ CONTRADICTS (47.0331ms)
+✔ R9 记述性豁免：CR 上下文域内无 skill id 的「下一步」行（标题/描述性）→ 不报 (46.9861ms)
+✔ R7 权威字面量：完整 NORMAL pair 通过；短 trigger → CONTRADICTS（AC-27） (47.5889ms)
+✔ R7：trigger 存在但 to 不匹配 → CONTRADICTS（AC-27） (46.0256ms)
+✔ R7：to/trigger 含模板变量 → 跳过 literal 校验（AC-29） (47.5521ms)
+✔ R7：LF/CRLF 输入等价（AC-28） (91.516ms)
+✔ R7 transitions 错层 → STATE_MACHINE_PARSE_FAILED 非零退出（AC-28） (48.7984ms)
+✔ R7 transitions duplicate → STATE_MACHINE_PARSE_FAILED 非零退出（AC-28） (47.5236ms)
+✔ R7 transitions missing → STATE_MACHINE_PARSE_FAILED 非零退出（AC-28） (44.4224ms)
+✔ R7 transitions empty → STATE_MACHINE_PARSE_FAILED 非零退出（AC-28） (44.9208ms)
+✔ R7 transitions malformed → STATE_MACHINE_PARSE_FAILED 非零退出（AC-28） (46.8906ms)
+✔ R7 transitions truncated → STATE_MACHINE_PARSE_FAILED 非零退出（AC-28） (44.5521ms)
+ℹ tests 45
+ℹ suites 0
+ℹ pass 45
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1597.0124
+
+--- stderr ---
