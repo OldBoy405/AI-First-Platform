@@ -1,0 +1,21 @@
+cr-id: CR-2026-041
+review-type: dev-plan
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-15T22:15:36+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  sdd-to-plan: "pass"
+  plan-to-tasks: "pass"
+  task-executability: "pass"
+  dependency-topology: "pass"
+  interface-contracts: "pass"
+  acceptance-verifiability: "pass"
+  scope-and-simplicity: "pass"
+  risk-and-rollback: "pass"
+  reviewer-model: "Codex"
+suggestions:
+  - "TASK-08 实施时保持退役静态扫描的 active 路径范围明确，历史 HTML 快照和 CUSTOM-TODO-010 不纳入删除判定。"
+  - "TASK-04 实施时保留 loadExistingJournal 的只读 preflight，确保证据失败不创建 archive journal。"
+  - "开发启动前按 crctl next 要求完成人工 dev-start approval；本轮不执行审批。"
+subject-sha256: b3a4ff5ff22c2cc47469e4de81c1aaf6fa879cd5eedba5d0b23743d87ab2749f

@@ -1,0 +1,51 @@
+cr-id: CR-2026-041
+tasks:
+  - id: CR-2026-041-TASK-01
+    title: "generator 注入 evidence 块并删 status"
+    status: done
+    done-at: "2026-08-15T22:59:59+08:00"
+    estimate: 6h
+    depends-on: []
+  - id: CR-2026-041-TASK-02
+    title: "唯一证据校验函数与内部校验模式"
+    status: done
+    done-at: "2026-08-15T22:59:59+08:00"
+    estimate: 6h
+    depends-on: [CR-2026-041-TASK-01]
+  - id: CR-2026-041-TASK-03
+    title: "generator 事实源修正"
+    status: done
+    done-at: "2026-08-15T22:59:59+08:00"
+    estimate: 2h
+    depends-on: [CR-2026-041-TASK-01]
+  - id: CR-2026-041-TASK-04
+    title: "archive 证据门适配与 pre-authority 分流"
+    status: done
+    done-at: "2026-08-15T23:00:00+08:00"
+    estimate: 6h
+    depends-on: [CR-2026-041-TASK-02]
+  - id: CR-2026-041-TASK-05
+    title: "milestone-file 契约去掉 status"
+    status: done
+    done-at: "2026-08-15T22:59:59+08:00"
+    estimate: 1h
+    depends-on: []
+  - id: CR-2026-041-TASK-06
+    title: "退役 change-impact-analysis"
+    status: done
+    done-at: "2026-08-15T22:59:59+08:00"
+    estimate: 3h
+    depends-on: []
+  - id: CR-2026-041-TASK-07
+    title: "退役 feedback-writeback"
+    status: done
+    done-at: "2026-08-15T22:59:59+08:00"
+    estimate: 3h
+    depends-on: []
+  - id: CR-2026-041-TASK-08
+    title: "测试与回归"
+    status: done
+    done-at: "2026-08-15T23:00:00+08:00"
+    estimate: 5h
+    depends-on: [CR-2026-041-TASK-01, CR-2026-041-TASK-02, CR-2026-041-TASK-03, CR-2026-041-TASK-04, CR-2026-041-TASK-05, CR-2026-041-TASK-06, CR-2026-041-TASK-07]
+

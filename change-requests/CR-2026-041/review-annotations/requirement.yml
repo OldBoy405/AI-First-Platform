@@ -1,0 +1,17 @@
+cr-id: CR-2026-041
+review-type: requirement
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-15T16:43:04+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  structure-completeness: "PASS：概述、目标逻辑架构、已解决基础设施/最小改造、用户故事、8 条 FR、NFR、12 条 AC、成功指标、依赖风险、范围排除和变更记录齐全。"
+  fr-testability: "PASS：FR-01~FR-08 均有对应 AC；覆盖证据结构/摘要/漂移、trunk 缺失、merge schema、既有 generator 回归、archive 首次与恢复分流、重复/跨 CR 路径、历史段 opaque 和双 Skill active 引用退役。"
+  scope-reasonableness: "PASS：生产改造只剩 traceability evidence、archive gate、master fallback/旧文案删除和退役清理；CR-2026-038 已交付的固定 generator 映射/hash 明确只复用与回归，不再重复实现。"
+  source-alignment: "PASS：完整覆盖源规格 FR-11~FR-13；新 milestone 无 status、历史 milestone opaque、四类最小证据、archive 严格门、事实源修正和不支持能力退役均与实施 CR 4 一致。"
+  dependencies: "PASS：复用现有 archive lock、loadExistingJournal、durable transaction、writeback manifest、review annotations、approval、merge、test report、CONTEXT 与 CUSTOM-TODO-010；模块职责符合 Agent/Pipeline/Skill/crctl/版本化脚本/README 边界。"
+suggestions:
+  - "SDD 将证据校验放入现有 helper，并用 archive payload 的 committed/pushed/phase 明确 pre-authority 与恢复分流，不新增 registry、handler 或事务层。"
+  - "退役引用检查使用 active 路径清单或历史 allowlist，保留 CUSTOM-TODO-010 与历史报告/快照。"
+subject-file: change-requests/CR-2026-041/prd.md
+subject-sha256: af85fb36d5b337fe66b0f79a6a2bb3ab2a9732b2323b20c2f0f697fc881b90c2

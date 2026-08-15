@@ -1,0 +1,19 @@
+cr-id: CR-2026-041
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-15T21:54:36+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  prd-sdd-alignment: "PASS：FR-01~FR-08 均有技术落点；固定 evidence path map 已补齐，唯一 validator 位于既有 writeback-traceability.mjs，archive 通过内部 --validate-evidence 调用，符合 PRD 的同一函数要求。"
+  architecture-reasonableness: "PASS：Agent/Pipeline/Skill 不承载账本算法；版本化脚本拥有确定性 evidence 转换与校验；crctl/workspace-transactions 只负责 archive gate 时序、固定脚本调用、错误映射和 durable transaction 复用；未新增跨层共享模块。"
+  data-model-completeness: "PASS：evidence 七项、状态/审批/merge 派生规则、LF digest 与 raw CAS 区分、固定 key→path map、历史 milestone opaque 和新 milestone 无 status 均定义完整。"
+  interface-contract: "PASS：定义了 generator 内部 validateMilestoneEvidence、--validate-evidence 模式和 crctl runFixedEvidenceValidator 适配；禁止 candidate/manifest 外部路径，不新增 crctl 子命令，失败码和副作用边界明确。"
+  performance-security: "PASS：固定脚本使用既有 spawnSync shell:false 路径，archive 继续复用 lock/journal/write-set；七个小文件常数次读取和 LF hash，无第三方依赖；精确 path map 防证据互换。"
+  testability: "PASS：覆盖 generator 自检、内部 validator、固定 path map、同 CR 错误 path、跨 CR、digest/CRLF、pre-authority journal、恢复跳过、rejected/withdrawn、历史字节保留和退役引用。"
+  prompt-adoption-impact: "PASS：本 CR 不改 crctl.mjs dispatch 或 controlled-shell rules.json#protectedPaths.deny，条件性 Prompt 采纳章节可省略。"
+suggestions:
+  - "实现时把 --validate-evidence 保持为固定 generator 的内部模式，不在 README/Skill 中扩展为新的业务命令；Windows/Ubuntu 各跑一次 shell:false 调用回归。"
+  - "错误映射只在 workspace-transactions 适配层做一次，保留 generator 原始结构化 error code，避免新增错误码 registry。"
+subject-file: change-requests/CR-2026-041/sdd.md
+subject-sha256: e2fc9460973f4020c8896624d986067a999604bf206543b5aef2ab619d6fc8ef
