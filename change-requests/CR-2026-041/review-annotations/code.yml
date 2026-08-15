@@ -1,16 +1,16 @@
 cr-id: CR-2026-041
 review-type: code
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-15T23:42:17+08:00"
+reviewed-at: "2026-08-15T23:48:37+08:00"
 verdict: pass
 blockers: []
 dimensions:
-  code-task-sdd-alignment: "PASS：实际 diff 覆盖 TASK-01~08 与 SDD FR-01~08；评审中发现的 evidence 重复结构覆盖问题已修复并增加 EVIDENCE_DUPLICATE 回归。"
+  code-task-sdd-alignment: "PASS：实际 diff 覆盖 TASK-01~08 与 SDD FR-01~08；evidence 重复结构已在首轮评审修复并回归。"
   engineering-quality: "PASS：改动复用既有 generator、WRITEBACK_GENERATORS、spawnSync shell:false、durable transaction 与 crctl 账本原语；无新增生产依赖或平行事务框架。"
   critical-path-readability: "PASS：证据读取、唯一 validator、固定 path 校验、archive pre-authority 分流边界清晰；错误映射集中在薄适配层。"
   security: "PASS：固定 key-to-path 精确绑定、LF digest 重算、重复 milestone/evidence/key 拒绝、archive journal 前 fail-fast，未信任外部 candidate 或路径。"
   test-coverage: "PASS：generator 13 项、契约 45 项、综合回归 196 项、archive 17 项全部通过；覆盖缺失、重复、路径互换、漂移、状态失败及零 journal/authority。"
-  test-evidence-credibility: "PASS：本轮按 review-code 要求重新执行全部五组命令，crctl test 依据真实退出码刷新 test-report.md，status=pass。"
+  test-evidence-credibility: "PASS：crctl test 依据真实退出码生成 test-report.md status=pass；本轮重新执行核心验证 58 项通过，代码 HEAD 未变。"
   frontend-quality: "N/A：diff 未触及 TSX/Vue/CSS/HTML 前端文件。"
 suggestions:
   - "合并前在 Ubuntu CI 或等价 Linux 环境补跑同一组 Node 测试，以闭合 SDD 双平台验收；当前 Windows 验证无失败。"
@@ -19,7 +19,7 @@ release-subjects:
   repositories:
     - repo: ai-first-platform-docs
       remote-ref: refs/heads/requirement/CR-2026-041
-      reviewed-source-sha: 81373c1ab5298700fbd2b972a2b69c4d7a2da7ef
+      reviewed-source-sha: b4008dc5a80e17a6dd9c198ef942b4fe34a8af68
     - repo: multica
       remote-ref: refs/heads/requirement/CR-2026-041
       reviewed-source-sha: 0bb8dacf50f34947549e5135057fb168db8b3ff4
