@@ -1,0 +1,48 @@
+cr-id: CR-2026-043
+review-type: code
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-16T07:55:46+08:00"
+verdict: block
+blockers:
+  - "B1 [recovery correctness] skills/shared/crctl/scripts/lib/workspace-transactions.mjs:856-875 在途恢复直接跳过 action=fast-forwarded/confirmed/unchanged，未按 SDD §2.2/§4.2 重核当前 HEAD 与 targetTrunkSha；先前 ff 后若被外部改写，重跑仍会 save complete。修复：恢复时逐仓健康/clean/HEAD/trunk 重核；fast-forwarded/confirmed 必须 HEAD==target，unchanged 必须 HEAD==before==target 且 trunk 未漂移，第三值一律 WORKSPACE_FRESHNESS_CHANGED；增加单 pending 仓 ws-sync-after-repo 后外部改写的回归。"
+  - "B2 [intent binding] skills/shared/crctl/scripts/lib/workspace-transactions.mjs:895 intentDigest 仅绑定 pending 仓，与 SDD §2.2 的排序后全仓 repo/beforeSha/targetTrunkSha 不一致；完整 preflight 中 unchanged 仓漂移未进入 intent。修复：digest 绑定 payload 全部 repos（稳定 repo id 顺序），并增加 unchanged 仓改变时旧 complete 不误复用/在途恢复阻断测试。"
+  - "B3 [error contract] skills/shared/crctl/scripts/lib/workspace-transactions.mjs:831 ff-only 失败由 gitMust 直接抛 TX_GIT_FAILED，未兑现 SDD §3.2 的 WORKSPACE_SYNC_CONFLICT。修复：仅包裹 merge --ff-only 调用并将 TxError 映射为 WORKSPACE_SYNC_CONFLICT（保留 repo/target/cause），其他 Git 技术失败不误映射；增加确定性失败测试。"
+  - "B4 [conservative Git status handling] skills/shared/crctl/scripts/lib/workspace-transactions.mjs:772 与 :819 使用 gitRun(status --porcelain) 只看 stdout，非零退出且空 stdout 会被误当 clean。修复：检查 status；非零退出抛 TX_GIT_FAILED（freshness）或 WORKSPACE_FRESHNESS_CHANGED/TX_GIT_FAILED（重核，按 SDD 失败语义），增加 git status 技术失败不得进入 fresh/ff-only 的回归。"
+dimensions:
+  spec-conformance: "block: 4 项与 SDD §2.2/§3.2/§4.1/§4.2 契约不一致"
+  engineering-quality: "block: 恢复状态验证与错误码映射存在可观测错误"
+  key-path-readability: "pass: 模块边界与主流程清楚，问题集中且可定点修复"
+  security: "pass: shell=false、固定 argv、ff-only 唯一写操作与输入校验边界保持"
+  test-coverage: "block: 缺单仓 crash-after-ff 外部漂移、ff-only 失败映射、status 非零退出用例"
+  test-evidence-credibility: "pass: crctl-test 机器区/traceability digest/log 一致，382/382；Ubuntu 环境缺口已诚实记录"
+  frontend-quality: "not-applicable: diff 未触及前端文件"
+  reviewer-model: "gpt-5.6-sol"
+suggestions:
+  - "S1 非阻断：pipeline-templates/_index.yml 的既有 13→实际15 漂移已按事实修成新增后17并有契约测试；writeback 时同步修订 baseline SDD 的数值注脚。"
+  - "S2 流程：统一 checkpoint 因 GitHub 443 不可达且 sideEffects=[] 尚未完成；最终 PASS 前必须按 recoverCommand 补推并通过 review-start freshness gate。"
+release-subjects:
+  version: 1
+  repositories:
+    - repo: ai-first-platform-docs
+      remote-ref: refs/heads/requirement/CR-2026-043
+      reviewed-source-sha: 810b6510e028e8b0e39aaa7907fa282347986559
+    - repo: multica
+      remote-ref: refs/heads/requirement/CR-2026-043
+      reviewed-source-sha: 33720218ca5b3d3ff7fa5412753f0843dc3571e4
+    - repo: tools
+      remote-ref: refs/heads/requirement/CR-2026-043
+      reviewed-source-sha: e38946d9ce69fc3e3bcf04a607f6c3bb4f0d885c
+  artifacts:
+    algorithm: sha256
+    canonicalization: crlf-to-lf+path-sort
+    files:
+      - { path: change-requests/CR-2026-043/plan.md, sha256: 798f9db37f094afe588a4aecc29234cd3adab017798d8e9e3feab1cd62b217ff }
+      - { path: change-requests/CR-2026-043/prd.md, sha256: f015ed18c37de13e3e46308a0008bf1862d9e16376abf18b832b7605ae45e8ef }
+      - { path: change-requests/CR-2026-043/sdd.md, sha256: aad9e8e20a047a6619902d7c7529ea9b832981e348ee73c9559c62a6ed0b50e4 }
+      - { path: change-requests/CR-2026-043/tasks/TASK-01.md, sha256: 6ced58b51240cd70906bb7c51ee3768747f51a430a911244760754129afacf55 }
+      - { path: change-requests/CR-2026-043/tasks/TASK-02.md, sha256: 4d338ba57433420553023e2077388f9e4fcfb8d5b8adb31b537a1934b24b5a21 }
+      - { path: change-requests/CR-2026-043/tasks/TASK-03.md, sha256: 63dca8e2ab3fbb71d79f989fd56f4088e553dc91758d6e53eb0dade79566052c }
+      - { path: change-requests/CR-2026-043/tasks/TASK-04.md, sha256: a3a370fdf18056abbe840e53846349763d2105983bb6405538f06628c7294157 }
+      - { path: change-requests/CR-2026-043/tasks/TASK-05.md, sha256: 8f8041669c13e7fcb1737f28e270c99a5b9c2294ac41c1a3af49e3a32394f22f }
+      - { path: change-requests/CR-2026-043/tasks/_index.yml, sha256: e6faef99ba94dc9497eeb8cae4b5c3b7dd5accc3669f49a437cc3eba7a82eabe }
+    digest: 5a9d18b8b1216b3f328fbefb11fa9468edbf337466f710f4a21aca7eabd2d886
