@@ -54,7 +54,7 @@ created: 2026-08-15T12:00:00+08:00
 - 产出：
   - `export function parseTestPlan(raw, ctx, cr) -> NormalizedPlan`
   - `export function canonicalCommandSubject(plan) -> { subject: object, digest: string }`
-  - `export function runTestPlan(plan, ctx, cr) -> { results: CrTestResult[], tempRoot: string }`
+  - `export function runTestPlan(plan, ctx, cr) -> { results: CrTestResult[], tempLogs: string }`
   - `export function parseAnalysisMarker(existingReport: string|null) -> { machinePrefix: string, analysisSuffix: string }`
   - `export function renderTestMachineReport(input) -> string`
   - `export function renderTestsTraceability(existing: string|null, input) -> string`

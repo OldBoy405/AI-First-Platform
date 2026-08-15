@@ -23,7 +23,7 @@ created: 2026-08-15T12:00:00+08:00
 
 ## 实现要点
 
-- 复用既有 `runCrctl`、`makeWorkspace`、`dirFingerprint` 与 `CRCTL_FAULT_POINT` 环境注入。
+- 复用代码仓当前已有的 `runCrctl`、`makeWorkspace`、`dirFingerprint` 与 `CRCTL_FAULT_POINT` 环境注入；不消费 TASK-04 新增的 helper。
 - 覆盖：
   - 运行阶段外部中断（无 journal）→ canonical 报告/traceability/review-loop 不变，重试完整 plan；
   - `tx-apply-between-rename` → 恢复后四处文件无半状态、attempt 不重复；

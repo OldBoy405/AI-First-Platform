@@ -34,7 +34,7 @@ TASK-01 durable-tx test op/payload
 ```
 
 - TASK-04/05/06 均依赖 TASK-03，且彼此无依赖，可在 M3 后按需并行推进。
-- TASK-05 复用 TASK-04 已建立的 test 黑盒 runner 与 fixture helper，但不要求串行。
+- TASK-04 与 TASK-05 各自复用代码仓现有的黑盒 runner 与 fixture，不消费对方 TASK 的产物。
 
 # 3. 资源与分工
 

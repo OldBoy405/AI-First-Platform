@@ -1,0 +1,23 @@
+cr-id: CR-2026-040
+review-type: dev-plan
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-15T11:21:27+08:00"
+verdict: block
+repair-target: write-dev-plan
+blockers:
+  - "修正 TASK-05 的依赖与正文矛盾：当前 depends-on 只有 CR-2026-040-TASK-03，但正文写明复用 TASK-04 才建立的 helper；请改为只复用已有 helper，或将 TASK-04 声明为依赖，并同步修正 plan 依赖图/并行说明。"
+  - "统一 TASK-02 与 SDD 的接口签名：TASK-02 当前声明 runTestPlan(plan, ctx, cr) -> { results: CrTestResult[], tempRoot: string }，SDD 规定 -> { results, tempLogs }；请选择一个名称并同步所有消费方描述。"
+dimensions:
+  sdd-to-plan: "pass"
+  plan-to-tasks: "block"
+  task-executability: "block"
+  dependency-topology: "block"
+  interface-contracts: "block"
+  acceptance-verifiability: "pass"
+  scope-and-simplicity: "pass"
+  risk-and-rollback: "pass"
+  reviewer-model: "pi"
+suggestions:
+  - "TASK-05 若保持与 TASK-04 并行，应将其 helper 描述改为复用现有 black-box runner/fixture；测试共用抽象应另拆独立 TASK 或显式增加依赖。"
+  - "修订后重新运行 task init，并由 review-dev-plan 刷新 composite digest。"
+subject-sha256: b2e11eba187aa66a20814117ac9c277ab1d295e4a0dde98e39193bb17f915468
