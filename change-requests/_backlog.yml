@@ -19,6 +19,18 @@ change-requests:
     prd-path: ""
     created: "2026-08-14T19:46:31+08:00"
     updated: "2026-08-14T19:46:31+08:00"
+    latest-checkpoint:
+      batch-id: f63b1ef621c7fbde
+      repositories:
+        - repo: ai-first-platform-docs
+          source-sha: 1ded84183c79b0ab3c7b2858fa552542a575346c
+          remote-ref: refs/heads/requirement/CR-2026-041
+        - repo: multica
+          source-sha: 0bb8dacf50f34947549e5135057fb168db8b3ff4
+          remote-ref: refs/heads/requirement/CR-2026-041
+        - repo: tools
+          source-sha: a9012e5c16bf760c6d107718914c52033634da30
+          remote-ref: refs/heads/requirement/CR-2026-041
   - id: CR-2026-042
     title: tools CR 生命周期最小优化 5/5 — 职责边界清理
     summary: "落实规格 FR-14、FR-15、FR-16：收敛 Agent、Pipeline 与 Skill 的职责和 canonical 字段，重写 README 为人读入口，合并治理 CI 并扩展确定性 lint；删除 reviewer 选择暂停及重复深原语算法文本。前四条 CR 的生产行为改造、通用解释器和新工作流引擎不在本 CR 范围。"
