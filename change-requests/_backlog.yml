@@ -1,36 +1,5 @@
 schema: cr-backlog/v2
 change-requests:
-  - id: CR-2026-041
-    title: tools CR 生命周期最小优化 4/5 — 归档可信化
-    summary: "落实规格 FR-11、FR-12、FR-13：为当前 CR milestone 机械生成最小测试、评审、审批与 merge 证据摘要，修正 traceability generator 事实源，并在 archive 前严格校验证据；同时退役 change-impact-analysis 与当前 feedback-writeback 活跃能力。历史 milestone、终态反馈领域语义及其他切片不在本 CR 范围。"
-    owner: Ray
-    owners:
-      requirement:
-        id: Ray
-        assigned-at: "2026-08-14T19:46:31+08:00"
-      development:
-        id: Ray
-        assigned-at: "2026-08-14T19:46:31+08:00"
-      test:
-        id: Ray
-        assigned-at: "2026-08-14T19:46:31+08:00"
-    target-version: tbd
-    source: docs/analysis/tools-cr-lifecycle-minimal-optimization-spec.md
-    prd-path: ""
-    created: "2026-08-14T19:46:31+08:00"
-    updated: "2026-08-14T19:46:31+08:00"
-    latest-checkpoint:
-      batch-id: dedcc6dd56e59b22
-      repositories:
-        - repo: ai-first-platform-docs
-          source-sha: 408789d41d2c7cbc97326fad03121ac8989cab70
-          remote-ref: refs/heads/requirement/CR-2026-041
-        - repo: multica
-          source-sha: 0bb8dacf50f34947549e5135057fb168db8b3ff4
-          remote-ref: refs/heads/requirement/CR-2026-041
-        - repo: tools
-          source-sha: 16c38e1498e4479286a60b776916b9e54b0daf0b
-          remote-ref: refs/heads/requirement/CR-2026-041
   - id: CR-2026-042
     title: tools CR 生命周期最小优化 5/5 — 职责边界清理
     summary: "落实规格 FR-14、FR-15、FR-16：收敛 Agent、Pipeline 与 Skill 的职责和 canonical 字段，重写 README 为人读入口，合并治理 CI 并扩展确定性 lint；删除 reviewer 选择暂停及重复深原语算法文本。前四条 CR 的生产行为改造、通用解释器和新工作流引擎不在本 CR 范围。"
