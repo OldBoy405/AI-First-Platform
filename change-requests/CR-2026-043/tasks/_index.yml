@@ -1,0 +1,27 @@
+cr-id: CR-2026-043
+tasks:
+  - id: CR-2026-043-TASK-01
+    title: "freshness 只读分类深原语与 freshness CLI"
+    status: pending
+    estimate: 8h
+    depends-on: []
+  - id: CR-2026-043-TASK-02
+    title: "sync 显式 ff-only 同步事务与 sync CLI"
+    status: pending
+    estimate: 10h
+    depends-on: [CR-2026-043-TASK-01]
+  - id: CR-2026-043-TASK-03
+    title: "workspace-freshness Skill 与台账登记"
+    status: pending
+    estimate: 4h
+    depends-on: [CR-2026-043-TASK-01, CR-2026-043-TASK-02]
+  - id: CR-2026-043-TASK-04
+    title: "code-implementation 双 gate 与 reviewLoop 重放及契约测试"
+    status: pending
+    estimate: 6h
+    depends-on: [CR-2026-043-TASK-03]
+  - id: CR-2026-043-TASK-05
+    title: "README 人读段与跨平台集成回归"
+    status: pending
+    estimate: 6h
+    depends-on: [CR-2026-043-TASK-04]
