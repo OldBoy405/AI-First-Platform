@@ -1,11 +1,11 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 # 五段链路：需求 FR ↔ 技术设计 SDD ↔ 交付 TASK ↔ 代码 merge SHA ↔ CR-ID
 spec-id: ai-first-platform
-cr-ref: CR-2026-038
-cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029, CR-2026-028, CR-2026-030, CR-2026-031, CR-2026-037, CR-2026-032, CR-2026-033, CR-2026-038]
+cr-ref: CR-2026-039
+cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029, CR-2026-028, CR-2026-030, CR-2026-031, CR-2026-037, CR-2026-032, CR-2026-033, CR-2026-038, CR-2026-039]
 target-version: "tbd"
 baseline-since: "0.10"
-generated-at: "2026-08-15T00:09:34+08:00"
+generated-at: "2026-08-15T10:30:59+08:00"
 
 # 已知缺口：CR-2026-003~CR-2026-006 未生成本文件的里程碑段（writeback-traceability 在那四个
 # CR 回写时被跳过，PRD.md/SDD.md/_index.yml 侧的累积记录不受影响、仍完整）。本次（CR-2026-008）
@@ -2580,3 +2580,41 @@ milestones:
         tasks: [CR-2026-038-TASK-04]
         code: tools@162fdf0: crctl.mjs writeback-apply 拒绝 --candidate/--candidate-out/--generator/--manifest；candidate 固定 txws/.crctl/candidates；Pipeline/Skill 迁移
         evidence: writeback-tx.test.mjs：TASK-04 公共 CLI 只收业务输入、旧/错 stage 参数拒绝；AC-07 静态扫描无路径参数
+  - cr: CR-2026-039
+    milestone: 生命周期证据规范化
+    target-version: "tbd"
+    status: writing-back
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 3c536e5f5145074feff1d804ac2abbbf3cf70edb
+        branch: requirement/CR-2026-039
+      - repo: multica
+        trunk: main
+        sha: 82d4ed14b94baba275ef9dd8e496eba3f69d6d26
+        branch: requirement/CR-2026-039
+      - repo: tools
+        trunk: custom/main
+        sha: 6196121c7aa04126c3d4efee0992fc2577cc7cf4
+        branch: requirement/CR-2026-039
+    frs:
+      - fr: FR-01
+        sdd: SDD §3.2 Pipeline 节点契约、§3.3 release-subjects 兼容边界（PASS 后 checkpoint 节点 …0015）
+        tasks: [CR-2026-039-TASK-04]
+        code: tools@6196121c: pipeline-templates/code-implementation.pipeline.json 新增 review-code PASS 后审批前 push-progress 节点（onFail=abort）+ 删除 inputs.suggestion_policy
+        evidence: pipeline-structure.test.mjs AC-1~AC-4（节点序 review-code<checkpoint<human_approval、onFail=abort、reviewLoop 结构不变）；crctl.test.mjs TASK-04 AC-5（KB 白名单后继放行/非白名单 post-review-path-drift 零写入）
+      - fr: FR-02
+        sdd: SDD §2.2 composite digest（plan.md + 全部 TASK-*.md canonical JSON entries）、§4.1 写入、§4.3 next/gate 双消费点
+        tasks: [CR-2026-039-TASK-01, CR-2026-039-TASK-02]
+        code: tools@6196121c: crctl.mjs devPlanCompositeDigest/devPlanFreshness（review-record dev-plan 写 subject-sha256；cmdNext task-breakdown 与 developing 门禁 passCondition 漂移/legacy/subject 不完整保守路由或阻断）
+        evidence: crctl.test.mjs TASK-01 AC-1~AC-4（两轨 digest/内容变化/SUBJECT_NOT_FOUND 零写入/拼接边界）+ TASK-02 AC-1~AC-4（fresh 放行、drift/legacy 路由重审、TASK 删空路由 write-dev-tasks、approve 硬失败零写入）
+      - fr: FR-03
+        sdd: SDD §2.3 cr.md frontmatter 时间字段、§4.4 crMdStatusText 修订（单一 updated）
+        tasks: [CR-2026-039-TASK-03]
+        code: tools@6196121c: workspace-transactions.mjs refreshCrMdUpdated（全量删除 updated-at、updated 原位刷新/追加、空行规范化）+ crMdStatusText/editCrOwnerProjection 统一接入
+        evidence: crctl.test.mjs TASK-03 AC-1~AC-3（纯函数四态+CRLF、owner-set updated 同源、advance 产物单一 updated 无双字段）；writeback-tx.test.mjs journal-created 恢复冻结 transitionAt
+      - fr: FR-04
+        sdd: SDD §3.4 review_feedback 合同（FR-04 收敛后）、§4.5 文本契约修订清单
+        tasks: [CR-2026-039-TASK-05, CR-2026-039-TASK-06]
+        code: tools@6196121c: 三个 CR Pipeline + 11 个 SKILL.md 删除 repair-instructions/fixed-blockers/suggestion_policy 引用（blocker 内含可执行修复说明）；skills/shared/crctl/SKILL.md 与 review-dev-plan SKILL.md 采纳 digest/freshness 语义
+        evidence: contract-scan.test.mjs AC-1（零命中）+ AC-2a/b/c（reviewLoop 结构快照）；全量回归 321/321（Windows，--test-concurrency=2）；Ubuntu 由合入前 CI workflow 验证
