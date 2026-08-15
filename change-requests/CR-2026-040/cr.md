@@ -17,7 +17,7 @@ target-version: tbd
 source: docs/analysis/tools-cr-lifecycle-minimal-optimization-spec.md
 status: developing
 created: "2026-08-14T19:45:43+08:00"
-updated: "2026-08-15T11:23:58+08:00"
+updated: "2026-08-15T12:08:22+08:00"
 remote-ref: ""
 last-push-at: ""
 last-push-by: ""
