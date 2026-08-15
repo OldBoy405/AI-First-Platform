@@ -1,21 +1,19 @@
 cr-id: CR-2026-041
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-15T21:30:44+08:00"
-verdict: block
-blockers:
-  - "SDD §3.2 第 3-5 步只要求 evidence.path 位于 change-requests/{cr}/ 前缀，却没有要求按 evidence key 精确匹配固定 canonical 路径（test→test-report.md、四类 review→各自 annotation、approval→approval.yml、merge→merge-commits.yml）。若 gate 只按 containment 加 digest 校验，证据 path 可被替换为同 CR 下的其他文件；若按 evidence.path 读取，则可把错误文件当作正式证据。请定义固定 path map，并要求 path 必须与 key 精确相等后再重算对应文件 digest。"
-  - "SDD §1.2/§5 将‘同一确定性证据校验函数’改成 generator 与 archive gate 两份独立内联实现；测试交叉验证只能降低漂移，不能满足 PRD FR-04/AC-07 的同一函数要求。当前 ARCHITECTURE.md 又规定 writeback scripts 与 crctl 平行、互不依赖，因此不能悄悄新增跨层 import。请在 PRD/SDD 中先闭合该矛盾：要么明确批准‘同一契约、两侧实现’并同步修订 PRD，要么指定一个既有 helper 的合法共享归属；不得在实现阶段自行选择。"
+reviewed-at: "2026-08-15T21:54:36+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  prd-sdd-alignment: "BLOCK：FR-01~FR-08 均有映射，但固定 evidence path 未落实 PRD 的 canonical 文件绑定；‘同一确定性校验函数’被实现为两份函数，未满足 PRD literal contract。"
-  architecture-reasonableness: "BLOCK：archiveCr 复用 durable transaction、writeback 与退役边界合理；但跨平行 writeback/crctl 层的校验复用方案与 PRD 的单函数要求未形成可执行且一致的依赖方向。"
-  data-model-completeness: "BLOCK：evidence 字段齐全，但 path 只有目录 containment，没有 key→canonical path 的不可变映射，数据模型允许证据文件互换。"
-  interface-contract: "BLOCK：validateMilestoneEvidence 接口定义了 traceText/cr/specId/editRoot，却没有定义固定 path map 的输入/校验结果；同一函数的实现归属也未确定。"
-  performance-security: "PASS：复用既有 lock/journal/write-set，LF digest、containment、无第三方依赖和常数次文件读取符合 ponytail；路径绑定缺口已在 blocker 中列出。"
-  testability: "BLOCK：测试覆盖 digest 漂移与跨 CR 路径，但未覆盖同 CR 内错误 path 互换，也无法证明两份独立规则长期等价。"
+  prd-sdd-alignment: "PASS：FR-01~FR-08 均有技术落点；固定 evidence path map 已补齐，唯一 validator 位于既有 writeback-traceability.mjs，archive 通过内部 --validate-evidence 调用，符合 PRD 的同一函数要求。"
+  architecture-reasonableness: "PASS：Agent/Pipeline/Skill 不承载账本算法；版本化脚本拥有确定性 evidence 转换与校验；crctl/workspace-transactions 只负责 archive gate 时序、固定脚本调用、错误映射和 durable transaction 复用；未新增跨层共享模块。"
+  data-model-completeness: "PASS：evidence 七项、状态/审批/merge 派生规则、LF digest 与 raw CAS 区分、固定 key→path map、历史 milestone opaque 和新 milestone 无 status 均定义完整。"
+  interface-contract: "PASS：定义了 generator 内部 validateMilestoneEvidence、--validate-evidence 模式和 crctl runFixedEvidenceValidator 适配；禁止 candidate/manifest 外部路径，不新增 crctl 子命令，失败码和副作用边界明确。"
+  performance-security: "PASS：固定脚本使用既有 spawnSync shell:false 路径，archive 继续复用 lock/journal/write-set；七个小文件常数次读取和 LF hash，无第三方依赖；精确 path map 防证据互换。"
+  testability: "PASS：覆盖 generator 自检、内部 validator、固定 path map、同 CR 错误 path、跨 CR、digest/CRLF、pre-authority journal、恢复跳过、rejected/withdrawn、历史字节保留和退役引用。"
   prompt-adoption-impact: "PASS：本 CR 不改 crctl.mjs dispatch 或 controlled-shell rules.json#protectedPaths.deny，条件性 Prompt 采纳章节可省略。"
 suggestions:
-  - "将 readEvidenceInputs/validateMilestoneEvidence 称为确定性读校验 helper，而不是纯函数；它们会读取文件。"
-  - "补充回归测试：generator 产物的 evidence path map 与 archive gate 的固定 map 逐项一致；新 milestone 不含 status，旧 milestone 字节保持不变。"
+  - "实现时把 --validate-evidence 保持为固定 generator 的内部模式，不在 README/Skill 中扩展为新的业务命令；Windows/Ubuntu 各跑一次 shell:false 调用回归。"
+  - "错误映射只在 workspace-transactions 适配层做一次，保留 generator 原始结构化 error code，避免新增错误码 registry。"
 subject-file: change-requests/CR-2026-041/sdd.md
-subject-sha256: 99f80233bfa7f41af8b6d2d844843d2d5b2e4442890bd7673170ca3d7b61d237
+subject-sha256: e2fc9460973f4020c8896624d986067a999604bf206543b5aef2ab619d6fc8ef
