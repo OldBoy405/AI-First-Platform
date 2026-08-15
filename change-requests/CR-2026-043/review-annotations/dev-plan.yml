@@ -1,0 +1,22 @@
+cr-id: CR-2026-043
+review-type: dev-plan
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-16T01:16:45+08:00"
+verdict: block
+repair-target: write-dev-plan
+blockers:
+  - "B1 TASK-01 验收条件与 SDD/PRD 接口冲突：TASK-01 当前写“对 diverged 以对应 TxError 退出”，但 SDD §2.1/§3.1/§3.3 将 diverged 定义为可比较的正常 freshness fact，CLI 应返回结构化结果并由 Skill 路由 manual；只有 sync 对不可自动处理事实才可阻断。请将验收改为 freshness CLI 返回 freshness=diverged、写业务阻断 audit、退出成功，Skill 再路由 manual；同时明确 WORKSPACE_FRESHNESS_DIVERGED 不作为 freshness 读取的正常返回错误。"
+  - "B2 TASK-05 集成验收与 SDD §4.3 冲突：实施后 trunk 前进时 CR 分支通常已有 CR 独有提交，结果是 diverged，不能自动 sync 或直接进入 reviewLoop replay；当前任务却要求“trunk 前进→拦截→按 replayNodes 重建”。请改为可执行的两条测试：① review-start 处于 behind-clean 时显式 sync 后返回 replay；② 实施后 trunk 前进导致 diverged 时 manual/abort、零自动写入，人工处理使事实恢复后再重入既有 replay；不得自动 merge/rebase/盲目重试。"
+dimensions:
+  sdd-to-plan: "pass"
+  plan-to-tasks: "block"
+  task-executability: "block"
+  dependency-topology: "pass"
+  interface-contracts: "block"
+  acceptance-verifiability: "block"
+  scope-and-simplicity: "pass"
+  risk-and-rollback: "pass"
+  reviewer-model: "gpt-5.6-sol"
+suggestions:
+  - "TASK-03/TASK-04 为 4h/6h 的 sub-day 任务，虽低于 SKILL 建议的 1-3 天，但与仓库既有 TASK 拆分惯例一致，本轮不作为 blocker。"
+subject-sha256: 132a3d13542a9c31d793472c814a8326f9dcd181617eb8b0359eb92f7935d400
