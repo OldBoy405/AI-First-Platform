@@ -3,7 +3,7 @@ cr: CR-2026-043
 status: pass
 tester: Ray
 generated-by: crctl-test
-generated-at: "2026-08-16T02:42:52+08:00"
+generated-at: "2026-08-16T07:54:41+08:00"
 command-digest: 2d4c7552c079ac01d08ea5c7aefa6e66a0c6bee4b86d694b1da68ea20956be70
 commands:
   - repo: tools
@@ -24,7 +24,7 @@ commands:
 
 ## 测试摘要
 
-机器区由 `crctl test` 生成（attempt 1/3，status=pass）：单条命令在 tools 仓 CR worktree 内运行全部 17 个 crctl 测试文件，**382 个用例全部通过，0 失败 / 0 超时**（耗时 ≈469s，证据见 `test-evidence/cmd-01.log`）。自修复轮次：0（首轮即过）。
+机器区由 `crctl test` 生成（attempt 2/3，status=pass）：review-start gate 同步 multica 基线后重放同一计划，单条命令在 tools 仓 CR worktree 内运行全部 17 个 crctl 测试文件，**382 个用例全部通过，0 失败 / 0 超时**（耗时 ≈469s，证据见 `test-evidence/cmd-01.log`）。本轮是基线同步后的证据重建，不是失败自修复。
 
 ## TASK 验收覆盖矩阵
 
