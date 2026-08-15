@@ -1,0 +1,19 @@
+cr-id: CR-2026-040
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-15T11:12:59+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  prd-sdd-alignment: "PASS：SDD 对 PRD FR-01 至 FR-08 逐项给出数据模型、接口、算法、调用方和验证映射，范围仍限制为结构化测试闭环。"
+  architecture-reasonableness: "PASS：新增能力落在现有 workspace-transactions 深模块，durable-tx 仅增加 test payload 槽位；Agent/Pipeline/Skill/crctl/脚本职责符合 ARCHITECTURE.md 和本 CR 约束。"
+  data-model-completeness: "PASS：覆盖 cr-test-plan/v1、canonical command digest、command result、test-report machine zone、traceability tests、review-loop 和 test journal/write-set。"
+  interface-contract: "PASS：定义 crctl test --plan、testCr 内部接口、结构化成功/错误结果、Skill 输入输出和 Pipeline replayNodes；禁止旧 --cmd 旁路。"
+  performance-security: "PASS：argv + shell:false、repository/cwd containment、CRLF 规范化、临时日志和固定 write-set；复杂度按计划/输出规模线性，无新依赖。"
+  testability: "PASS：覆盖 plan/schema、argv 安全、失败分流、marker、digest、原子写集、fault recovery、幂等和 Windows/Ubuntu；复用现有 node:test/fault harness。"
+  prompt-adoption-impact: "PASS：因触及 crctl.mjs test dispatch，SDD 第 8 节明确列出 write-test-report、code Pipeline、review-code、crctl Skill 和 pipeline contract 测试的采纳改动。"
+suggestions:
+  - "实现时优先冻结 cr-test-plan/v1 的命令结果字段、digest canonicalization 和 TEST_* 错误码，再切入调用方迁移，避免半迁移状态。"
+  - "Windows 实现验证需明确直接可 spawn 的 executable 形式（例如 node.exe 或对应 .cmd 入口），并把该约束纳入 plan 校验/测试，而不是恢复 shell:true。"
+subject-file: change-requests/CR-2026-040/sdd.md
+subject-sha256: d968d7d68d94beba37a19c70644eb48e8a2ba04229aac6dedb61ea36011a04cf
