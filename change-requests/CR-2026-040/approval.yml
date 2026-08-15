@@ -17,3 +17,36 @@ development-start:
   via: crctl-approve
   evidence-digest: "ec5a42c429821cc0038e6be2e52720bd864ec700ccae8a55d320b3d0eaba58cc"
   target-status: developing
+code:
+  approver: "OldBoy405"
+  approved-at: "2026-08-15T14:51:46+08:00"
+  via: crctl-approve
+  evidence-digest: "4b0ebb21cfbb96e3c1f5c75f683dc06c79539c4e5bf97a4d876cecfa4d865803"
+  target-status: code-approved
+  release-subjects:
+    version: 1
+    repositories:
+      - repo: ai-first-platform-docs
+        remote-ref: refs/heads/requirement/CR-2026-040
+        reviewed-source-sha: c9d47c5d107f4174d43eb25665fba5dfc055e89d
+      - repo: multica
+        remote-ref: refs/heads/requirement/CR-2026-040
+        reviewed-source-sha: 082a7536cdd26f807452610de8f113152dcb8bde
+      - repo: tools
+        remote-ref: refs/heads/requirement/CR-2026-040
+        reviewed-source-sha: d657501a49fa298a6fba17e67546445c67f66115
+    artifacts:
+      algorithm: sha256
+      canonicalization: crlf-to-lf+path-sort
+      files:
+        - { path: change-requests/CR-2026-040/plan.md, sha256: 9eef96397535a05018b19f9897a6813e1f7bf2be7bd36dfcafb63c5ec7179ce8 }
+        - { path: change-requests/CR-2026-040/prd.md, sha256: 35084a45764782b667305e8c3865847ead6695b8e69cc217a992d67493af99d3 }
+        - { path: change-requests/CR-2026-040/sdd.md, sha256: d968d7d68d94beba37a19c70644eb48e8a2ba04229aac6dedb61ea36011a04cf }
+        - { path: change-requests/CR-2026-040/tasks/TASK-01.md, sha256: 2765a6a6b2b7c6138d75aa1ca3cc5ceffbc80519043df2f7e909ae64af9479d3 }
+        - { path: change-requests/CR-2026-040/tasks/TASK-02.md, sha256: bb8c0358f58f30d0025fa26ee1533d1d83fb5323cda895579c3257de26f3021d }
+        - { path: change-requests/CR-2026-040/tasks/TASK-03.md, sha256: d5c6861562a4701108194698e86363d03ea29749053b6b3d3db7ec73923a53bf }
+        - { path: change-requests/CR-2026-040/tasks/TASK-04.md, sha256: 22fd16d7054bb543a39ad94f25f0b81b232dc1e1ee77eaed17d936c3a238312d }
+        - { path: change-requests/CR-2026-040/tasks/TASK-05.md, sha256: 16d8f16cd6adfe62fc2456141d3cb1fbdf1b65b152c4bd9d0c57ef84872b6615 }
+        - { path: change-requests/CR-2026-040/tasks/TASK-06.md, sha256: 1ea7f1f0bcb7729219bc571fed80ab8b03f84aedefa398656768905ec8de5eae }
+        - { path: change-requests/CR-2026-040/tasks/_index.yml, sha256: dc33725e15e2974c735db6faabce12e1923a5097ae6521f01a6044c313ff5ea3 }
+      digest: b349307b118d3a6ad44e1144d487e482840039ae9b8e7699169c85d581e9bcd9
