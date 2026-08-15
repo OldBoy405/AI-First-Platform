@@ -3,7 +3,7 @@ cr: CR-2026-040
 status: pass
 tester: Ray
 generated-by: crctl-test
-generated-at: "2026-08-15T12:38:03+08:00"
+generated-at: "2026-08-15T12:48:54+08:00"
 command-digest: c983c8e55a38df46748051072783a06e9e897de18d920de8c4b9c66787099ff1
 commands:
   - repo: tools
@@ -71,7 +71,7 @@ commands:
 | `node --test crctl.test.mjs` | crctl 回归 | 169 | 0 | pass |
 | `node lint-prompts.mjs --mode enforce` | prompt 漂移 | 0 findings | - | pass |
 
-正式计划共执行 228 个测试，全部通过。测试输入绑定 Tools 提交 `89ee67d`；同命令、同日志但参与仓 HEAD 改变时会生成新 attempt。
+正式计划共执行 228 个测试，全部通过。测试输入绑定 Tools 提交 `6634892`；同命令、同日志但参与仓 HEAD 改变时会生成新 attempt。
 
 ## TASK 与回修覆盖
 
