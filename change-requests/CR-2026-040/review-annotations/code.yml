@@ -1,7 +1,7 @@
 cr-id: CR-2026-040
 review-type: code
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-15T14:55:54+08:00"
+reviewed-at: "2026-08-15T15:32:14+08:00"
 verdict: pass
 blockers: []
 dimensions:
@@ -9,26 +9,26 @@ dimensions:
   engineering-quality: "PASS：复用 durable-tx lock/write-set/recovery；跨平台路径使用文件身份；既有 crctl/workspace/writeback 回归保持通过。"
   critical-path-readability: "PASS：cmdTest 仍为薄接线，testCr 集中校验、执行、渲染和原子发布职责。"
   security: "PASS：拒绝 shell 字符串、plan authority/escape、cwd absolute/../symlink escape，参数保持 argv 传递。"
-  test-coverage: "PASS：结构化测试 24/24、fault 7/7、prompt 29/29、crctl 169/169；Ubuntu/Windows CI 全量 job 均成功。"
-  test-evidence-trust: "PASS：test-report generated-by=crctl-test，status/digest 与 traceability 一致，5 个引用日志存在，分析区记录双平台 CI。"
-  prompt-adoption: "PASS：write-test-report/review-code/crctl Skill 与 Pipeline 仍通过 lint-prompts enforce，review-code 只读取 canonical 证据。"
+  test-coverage: "PASS：结构化测试 24/24、fault 7/7、prompt 29/29、crctl 169/169；合并 trunk 后全量 347/347 + writeback 10/10 + contract-scan 零命中；Ubuntu/Windows CI 全量 job 均成功。"
+  test-evidence-trust: "PASS：test-report generated-by=crctl-test，status/digest 与 traceability 一致，5 个引用日志存在，分析区记录合并验证与双平台 CI。"
+  prompt-adoption: "PASS：write-test-report/review-code/crctl Skill 与 Pipeline 仍通过 lint-prompts enforce；039 契约词（suggestion_policy/repair-instructions/fixed-blockers）零命中。"
   reviewer-model: "pi"
   suggestion-policy: "strict"
 suggestions:
-  - "SDD 4.1 的伪代码仍写作 current attempt 必须小于 maxAttempts；实现已按既有 review-loop cycle 语义支持 PASS 后 source 输入变化开启新 cycle。建议下次架构文档修订时补充该条件，避免维护者误读。"
+  - "合并 trunk 时已按 039 契约收敛删除 suggestion_policy/repair-instructions/fixed-blockers 引用；该收敛是 039/040 并发开发（040 基于 merge-base c790b7e）的必然修正，已在 test-report 合并验证段记录。后续 CR 开发应基于最新 trunk，避免同类并发冲突。"
   - "latestTestJournal 当前在 testCr 内做 test journal envelope 校验；若未来出现更多业务 no-create journal reader，可考虑下沉一个共享只读校验 helper，当前不影响本 CR。"
 release-subjects:
   version: 1
   repositories:
     - repo: ai-first-platform-docs
       remote-ref: refs/heads/requirement/CR-2026-040
-      reviewed-source-sha: a41acf7b0dcaffb2176195a56a4977f02820981b
+      reviewed-source-sha: 491ad45d5bd0d8adb73bec4deb34f707ead423f9
     - repo: multica
       remote-ref: refs/heads/requirement/CR-2026-040
       reviewed-source-sha: 082a7536cdd26f807452610de8f113152dcb8bde
     - repo: tools
       remote-ref: refs/heads/requirement/CR-2026-040
-      reviewed-source-sha: d657501a49fa298a6fba17e67546445c67f66115
+      reviewed-source-sha: cb34001853ec418fba14382b965ffccd83769339
   artifacts:
     algorithm: sha256
     canonicalization: crlf-to-lf+path-sort
