@@ -3,7 +3,7 @@ cr: CR-2026-044
 status: pass
 tester: Ray
 generated-by: crctl-test
-generated-at: "2026-08-17T02:21:34+08:00"
+generated-at: "2026-08-17T07:24:15+08:00"
 command-digest: 8a2c056ff17a232856a773b26ffc7c7c218ea7305a2ad584f00c8997b702d320
 commands:
   - repo: tools
@@ -220,11 +220,11 @@ commands:
 - **TASK-03 release-subjects 本地化**：cmd-01 覆盖 origin 缺失时 healthy committed worktree 构造成功、dirty/wrong-branch/missing 零 snapshot 硬失败、KB 精确白名单六成员逐项放行与白名单外逐项失败（kind 精确 prd/task/code）、remote requirement stale 不阻断 approve-code；artifact kind 优先级保证 PRD/SDD 漂移无条件硬阻断。
 - **TASK-04 merge publication preflight**：cmd-03 覆盖 source 缺失/滞后在首次 prepare 前阻断（零 candidate、状态保持 code-approved、recoverCommand 指向 checkpoint）、checkpoint 补齐后重跑进入 prepare/publish/finalize、已有 journal 恢复使用冻结 sourceSha 不采纳移动 ref、本地 code/TASK drift 零 publish 仍唯一 release-drift 回退、PRD/SDD drift 硬阻断。
 - **TASK-05 Pipeline/Skill 采用**：cmd-08 覆盖 requirement 7 节点与审批后强制 checkpoint、architecture 删除 `auto_push_after_sdd`、code 审批后 checkpoint abort、architecture/code 入口经 `workspace inspect` 取 authority path；cmd-06 覆盖 inspect 返回 `operationalWorkspace` 且 missing 时结构化错误不猜路径；cmd-07 覆盖 upgrade-check 新兼容分类（code-reviewing→requiresReapproval、零 publish code-approved→safe）与零写入。
-- **TASK-06 文档与回归**：ADR-0004（knowledge-base）与 ARCHITECTURE/README（tools）修订提交；cmd-16~21 证明契约/lint 全绿、Pipeline 无算法文本、状态机/gates 零耦合。
+- **TASK-06 文档与回归**：ADR-0004（knowledge-base）与 ARCHITECTURE/README（tools）修订提交；cmd-15~20 证明契约/lint 全绿、Pipeline 无算法文本、状态机/gates 零耦合。
 
 ### 验证命令与结果解读
 
-- 20 条命令全部 exit 0（attempt 2）。attempt 1 的 cmd-12 引用了基线不存在的 `yaml-subset.test.mjs`（计划编制错误，非产品缺陷），已从计划移除并重跑；21→20 命令，commandDigest 由 `897d454c…` 变为 `8a2c056f…`。
+- 20 条命令全部 exit 0（attempt 3/3）。attempt 1 的 cmd-12 引用了基线不存在的 `yaml-subset.test.mjs`（计划编制错误，非产品缺陷），已从计划移除并重跑；21→20 命令，commandDigest 由 `897d454c…` 变为 `8a2c056f…`。attempt 2 后的代码评审 BLOCK 修复未改变测试计划，attempt 3 已用同一 digest 全量复测。
 - 覆盖 crctl/checkpoint/merge/writeback/archive/register/upgrade-check/pipeline-structure/workspace-freshness/workspace-resolver/durable-tx/fault-harness/test-cr/contract-scan/check-agents-contract/check-skill-matrix/lint-prompts 全部 17 个既有测试文件 + 3 个契约脚本。
 - multica worktree 全程 clean（本 CR 零 multica 改动）。
 
@@ -237,7 +237,7 @@ commands:
 | TASK-03 | cmd-01：`TASK-06 ④` 更新 + `CR-2026-044 TASK-01 ①` + 白名单/非 healthy 两组 |
 | TASK-04 | cmd-03：`CR-2026-044 TASK-01 ③`、`TASK-04 AC-2`、`TASK-04 AC-5` 及既有 saga 回归 |
 | TASK-05 | cmd-06/07/08 + cmd-16~18 契约测试 |
-| TASK-06 | 两仓文档提交 + cmd-01~21 全量回归 |
+| TASK-06 | 两仓文档提交 + cmd-01~20 全量回归 |
 
 ### 新增/修改测试文件
 
@@ -253,6 +253,13 @@ commands:
 - **TTY 交互真机验证**：TTY 判断经 `isTTY` defineProperty 模拟；真实终端 `y|yes` 体验建议人工审批时顺带确认（不适用自动化）。
 - **在途 CR 跨版本升级实测**：upgrade-check 分类经 fixture 验证；真实升级演练按 PRD FR-11 在合入后执行一次只读 `upgrade-check` 确认。
 
+### 代码评审回修（attempt 1 后）
+
+- **B-01 已修复**：`buildReleaseSubjects` 现先逐仓调用 `classifyRepoWorkspace` 并确认 healthy，再收集 artifact；missing/path-unregistered 现在稳定返回 `RELEASE_WORKSPACE_INVALID` 与分类事实，不再被 `RELEASE_SUBJECT_EMPTY` 遮蔽。
+- **B-02 已修复**：architecture/code 首节点在 `node-1.md` 输出 `execution_context.operational_workspace`；后续 Skill 节点显式从该上下文消费路径。`implement-code` 只从 `execution_context.resources[].worktreePath` 取得多仓路径，不再按 `.rayai-worktrees/{repo.id}` 拼接。
+- **B-03 已修复**：TTY affirmative 回归扩展为 requirement/tech-design/dev-start/code 四 stage 与 `y/Y/yes/YES/YeS`、前后空白的参数化组合；negative、非 TTY、grant/resign 既有回归保留。
+- 本轮重跑后的直接证据：`crctl.test.mjs` 184/184、`pipeline-structure.test.mjs` 12/12；上述结果包含在本 attempt 3 的 20 条命令全绿证据中。
+
 ### 下一步建议
 
-按用户指令本 CR 不执行 review-code；测试证据 status=pass 已满足 `approve-code` 的 test-report 门禁前置。后续由人工决定代码评审与审批时机。
+测试证据 status=pass，等待本轮代码评审复审结论；PASS 后由 `crctl next` 指向审批前 checkpoint 与人工代码审批。
