@@ -1,11 +1,11 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 # 五段链路：需求 FR ↔ 技术设计 SDD ↔ 交付 TASK ↔ 代码 merge SHA ↔ CR-ID
 spec-id: ai-first-platform
-cr-ref: CR-2026-043
-cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029, CR-2026-028, CR-2026-030, CR-2026-031, CR-2026-037, CR-2026-032, CR-2026-033, CR-2026-038, CR-2026-039, CR-2026-040, CR-2026-041, CR-2026-043]
-target-version: "0.20.4"
+cr-ref: CR-2026-042
+cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029, CR-2026-028, CR-2026-030, CR-2026-031, CR-2026-037, CR-2026-032, CR-2026-033, CR-2026-038, CR-2026-039, CR-2026-040, CR-2026-041, CR-2026-043, CR-2026-042]
+target-version: "tbd"
 baseline-since: "0.10"
-generated-at: "2026-08-16T09:22:52+08:00"
+generated-at: "2026-08-16T21:19:46+08:00"
 
 # 已知缺口：CR-2026-003~CR-2026-006 未生成本文件的里程碑段（writeback-traceability 在那四个
 # CR 回写时被跳过，PRD.md/SDD.md/_index.yml 侧的累积记录不受影响、仍完整）。本次（CR-2026-008）
@@ -2820,3 +2820,44 @@ milestones:
         code: { verdict: pass, path: change-requests/CR-2026-043/review-annotations/code.yml, sha256: f7a973bf45e92161481ea18860191650e77f1e757fd2d348f08bb11bef5084b0 }
       approval: { status: approved, path: change-requests/CR-2026-043/approval.yml, sha256: 62ff7a1295f166592b57b00ae6a68f9cfa44b310452b878f83e5f5eeccc75eac }
       merge: { status: merged, path: change-requests/CR-2026-043/merge-commits.yml, sha256: 44dc8b16a3a0029b010a924bbccee0ff23b41f7ce74239c2b9c6d46d6fb49af8 }
+  - cr: CR-2026-042
+    milestone: v0.1.0 tools CR 生命周期最小优化 5/5 — 职责边界清理
+    target-version: "tbd"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: ef420ad8e75784973d3b35c70f39b2392540f5a0
+        branch: requirement/CR-2026-042
+      - repo: multica
+        trunk: main
+        sha: 6362c56739eef9421ba43327f687521304dcad49
+        branch: requirement/CR-2026-042
+      - repo: tools
+        trunk: custom/main
+        sha: ba2ca209d79563fa80756f44069f9a826f4f5f1e
+        branch: requirement/CR-2026-042
+    frs:
+      - fr: FR-14
+        sdd: SDD §2.1-2.3 职责边界（Agent/Pipeline/Skill 收敛、reviewer 暂停删除）
+        tasks: [CR-2026-042-TASK-01, CR-2026-042-TASK-02]
+        code: tools@92c4932: agents/*.md、pipeline-templates/*.pipeline.json、skills/**、README.md
+        evidence: test-report §TASK 验收覆盖矩阵 + §评审回修验证
+      - fr: FR-15
+        sdd: SDD §2.4 README 人读化与 ARCHITECTURE 定点更新
+        tasks: [CR-2026-042-TASK-02]
+        code: tools@92c4932: README.md、ARCHITECTURE.md
+        evidence: test-report 静态合同（README 8 节 + 权威链接 + 禁止内容零命中）
+      - fr: FR-16
+        sdd: SDD §2.5 静态治理与 CI 收敛（R10-R13、workflow 合并、固定结构断言）
+        tasks: [CR-2026-042-TASK-03]
+        code: tools@92c4932: lint-prompts.mjs、lint-prompts.test.mjs、crctl-ci.yml、check-skill-matrix.yml 删除
+        evidence: test-report lint-prompts.test.mjs 37 + crctl.test.mjs 184 + pipeline-structure 8 + CI 结构断言
+    evidence:
+      test: { status: pass, path: change-requests/CR-2026-042/test-report.md, sha256: 2537664112a161b891d4841b48d5c98b3c0a0a56009ebf7d34cd200ba16573a0 }
+      reviews:
+        requirement: { verdict: pass, path: change-requests/CR-2026-042/review-annotations/requirement.yml, sha256: 7fc828310118f296303fcc213fb02db13c4068028ec0cb4ae7a5f61bface4863 }
+        tech-design: { verdict: pass, path: change-requests/CR-2026-042/review-annotations/sdd.yml, sha256: 07bfaac6bfae8f11beeb6ff6ceb93e67a0ad63098ee181459bd451ae112bbd58 }
+        dev-plan: { verdict: pass, path: change-requests/CR-2026-042/review-annotations/dev-plan.yml, sha256: 1ccafe47d56d0575839a9bafe0a2165b77f66b09e56a87d504b0328818c674b6 }
+        code: { verdict: pass, path: change-requests/CR-2026-042/review-annotations/code.yml, sha256: cd9edb416de0966b12a35f8b5effc409abfc3aca4760773ceabcbab042f43f33 }
+      approval: { status: approved, path: change-requests/CR-2026-042/approval.yml, sha256: 4aa52ebdcd3ae8512c6b17270443f74ec94b28f2f57326f9d6b549aa2b903692 }
+      merge: { status: merged, path: change-requests/CR-2026-042/merge-commits.yml, sha256: b34e734acb10c86d7dc7cd472e730eb8f545b85ee1cd7957a27696d93e4c0d90 }
