@@ -15,9 +15,9 @@ owners:
     assigned-at: "2026-08-16T23:32:37+08:00"
 target-version: tbd
 source: docs/analysis/tools-local-worktree-gates-remote-publication-boundary.md
-status: tech-design-review-pending
+status: tech-designing
 created: "2026-08-16T23:32:37+08:00"
-updated: "2026-08-16T23:47:40+08:00"
+updated: "2026-08-16T23:48:58+08:00"
 remote-ref: ""
 last-push-at: ""
 last-push-by: ""
