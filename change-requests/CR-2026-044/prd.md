@@ -8,7 +8,7 @@ owner: Ray
 owner-role: requirement
 status: draft
 created: 2026-08-16T23:35:01+08:00
-updated: 2026-08-16T23:35:01+08:00
+updated: 2026-08-16T23:42:00+08:00
 ---
 
 # 1. 概述
@@ -117,7 +117,7 @@ updated: 2026-08-16T23:35:01+08:00
 
 1. `verifyReleaseSubjects` 必须校验 snapshot 形状、active repo 集合、本地 workspace healthy、source SHA 与受控 artifact digest。
 2. non-KB repo 当前 HEAD 必须精确等于 reviewed SHA。
-3. knowledge-base repo 的 reviewed SHA 必须是当前 HEAD 祖先；reviewed SHA 后只允许既有 metadata 白名单路径，白名单内容保持原位，不抽成配置或 registry。
+3. knowledge-base repo 的 reviewed SHA 必须是当前 HEAD 祖先；reviewed SHA 后只允许以下既有 metadata 白名单：`change-requests/{CR-ID}/approval.yml`、`cr.md`、`traceability.yml`、`review-loop.yml`、`change-requests/_backlog.yml` 以及 `change-requests/{CR-ID}/review-annotations/` 前缀。该精确集合保持在现有 verifier 原位，不抽成配置或 registry，不增加新路径。
 4. PRD、SDD、plan、TASK 和 `_index.yml` 的集合与 digest 必须保持一致；PRD/SDD 漂移继续使用既有 `APPROVED_ARTIFACT_DRIFT` 分流。
 5. verifier 不 fetch、不读取 remote-tracking ref、不返回 `remote-ref-drift`；`ok=false` 只表示本地 workspace、source 或 artifact 失效。
 
@@ -179,6 +179,14 @@ updated: 2026-08-16T23:35:01+08:00
 4. README、ARCHITECTURE 和 ADR 只同步事实源边界、交接条件与恢复入口，不复制可执行算法。
 5. 不新增 Agent、公共 CLI、状态、账本、snapshot schema、事务层、版本化脚本或第三方依赖。
 
+## FR-11 兼容启用与在途 CR
+
+1. `developing` 及更早状态的 CR 在新版本启用后直接采用新的本地 snapshot 构造与重核规则，不迁移历史账本或 schema。
+2. `code-reviewing` 状态的 CR 必须重跑 `review-code`，以当前 healthy committed 本地 source 重新生成 review snapshot 后再审批。
+3. `code-approved` 状态的 CR 若既有 signed snapshot 与当前本地 worktree 一致，只需先完成 checkpoint，再进入 merge，不得仅因远端 publication lag 强制重新评审或审批。
+4. 已进入 merge 且已有 candidate 或任一 trunk publish 的事务，必须使用启动该事务的 Tools 版本按原 journal 合同完成；不得跨版本重建、清空或改变事务语义。
+5. 不批量改写历史 release-subjects v1、approval、review annotation、checkpoint ledger 或 merge journal；启用前只复用现有 `upgrade-check` 做只读兼容检查，不新增 CLI。
+
 # 7. 非功能需求
 
 - **NFR-01 离线确定性**：已有 clean committed source 时，status、gate、review-record 与 approve 的本地业务判定不访问网络。包含 checkpoint/freshness 的完整 Pipeline 不承诺端到端离线。
@@ -196,7 +204,7 @@ updated: 2026-08-16T23:35:01+08:00
 - **AC-02（FR-02）**：任一 active repo 为 dirty、wrong-branch、missing 或 path-unregistered 时，snapshot 零写入失败并返回对应本地 workspace 事实。
 - **AC-03（FR-03/04）**：远端 requirement ref 落后本地 HEAD、但本地 snapshot 未漂移时，`approve-code` 能通过本地重核并进入既有批准事务。
 - **AC-04（FR-03/04）**：non-KB 本地 HEAD 在 review 后改变时，approve 返回 local source drift，`approval.yml` 与 `cr.md` 零写入。
-- **AC-05（FR-03）**：KB reviewed SHA 后只有既有 metadata 白名单提交时重核通过；出现任一非白名单路径时返回本地 code drift。
+- **AC-05（FR-03）**：KB reviewed SHA 后，仅修改 `approval.yml`、`cr.md`、`traceability.yml`、`review-loop.yml`、`change-requests/_backlog.yml` 或 `review-annotations/` 前缀时重核通过；逐一增加任一白名单外路径时均返回本地 code drift，且白名单未新增配置或 registry。
 - **AC-06（FR-03）**：plan、TASK 或 `_index.yml` 增删/摘要漂移时返回 task drift；LF/CRLF 等价；PRD/SDD 漂移继续返回既有 artifact drift 分类。
 - **AC-07（FR-05）**：新 merge 事务中任一 repo 的 remote source 缺失时返回 `MERGE_SOURCE_MISSING`，首次 prepare 前失败，状态保持 `code-approved`，无 candidate。
 - **AC-08（FR-05）**：任一 repo 的 remote source 不等于 local HEAD 时返回 `RELEASE_REMOTE_NOT_PUSHED` 和 checkpoint recoverCommand，状态保持 `code-approved`，无 candidate。
@@ -212,6 +220,9 @@ updated: 2026-08-16T23:35:01+08:00
 - **AC-18（FR-10）**：静态契约检查证明 Agent、Pipeline、Skill、crctl、版本化脚本和 README 遵守第 2.2 节职责边界，且 Pipeline/Skill/README 未复制 Git、CAS、journal 或状态机算法。
 - **AC-19（FR-10/NFR）**：状态机、gates、release-subjects v1、approval/checkpoint schema、durable transaction 与生产依赖清单无新增类型。
 - **AC-20（全范围）**：现有 crctl、checkpoint、merge、writeback、archive、workspace resolver、freshness 与四阶段审批回归全部通过。
+- **AC-21（FR-11）**：`developing` 及更早状态无需 schema 迁移即可采用新本地 verifier；`code-reviewing` 必须重跑 code review 生成当前 snapshot。
+- **AC-22（FR-11）**：`code-approved` 且本地 snapshot 一致、远端 source 滞后时，checkpoint 后可继续 merge，期间不回退状态、不要求重新 review/approve。
+- **AC-23（FR-11）**：已有 candidate 或 trunk publish 的 merge journal 由启动版本按原合同续跑；新版本不重建、清空或迁移该 journal，且启用前 `upgrade-check` 只读。
 
 # 9. 成功指标
 
@@ -258,4 +269,5 @@ updated: 2026-08-16T23:35:01+08:00
 
 | 日期 | 版本 | 作者 | 说明 |
 |---|---|---|---|
+| 2026-08-16 | v0.2.0 | Ray | 回修 B-01/B-02：冻结 KB metadata 精确白名单；补充 developing/code-reviewing/code-approved/已启动 merge 的兼容启用合同与 AC |
 | 2026-08-16 | v0.1.0 | Ray | 初始草稿：本地业务权威、远端 publication preflight、Operational Workspace 连续性、阶段终点 checkpoint 与 TTY `y|yes` |
