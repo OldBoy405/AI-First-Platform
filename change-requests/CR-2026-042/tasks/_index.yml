@@ -1,0 +1,37 @@
+cr-id: CR-2026-042
+tasks:
+  - id: CR-2026-042-TASK-01
+    title: "Agent 文档收敛"
+    status: pending
+    estimate: 4h
+    depends-on: []
+  - id: CR-2026-042-TASK-02
+    title: "Pipeline prompt 收敛与 code Pipeline reviewer 暂停删除"
+    status: pending
+    estimate: 4h
+    depends-on: []
+  - id: CR-2026-042-TASK-03
+    title: "Skill 职责收敛"
+    status: pending
+    estimate: 8h
+    depends-on: []
+  - id: CR-2026-042-TASK-04
+    title: "README 重写与 ARCHITECTURE 定点更新"
+    status: pending
+    estimate: 4h
+    depends-on: [CR-2026-042-TASK-01, CR-2026-042-TASK-02, CR-2026-042-TASK-03]
+  - id: CR-2026-042-TASK-05
+    title: "lint-prompts 扩展 R10-R13"
+    status: pending
+    estimate: 6h
+    depends-on: []
+  - id: CR-2026-042-TASK-06
+    title: "CI workflow 合并与 Pipeline 固定结构断言"
+    status: pending
+    estimate: 8h
+    depends-on: [CR-2026-042-TASK-02, CR-2026-042-TASK-05]
+  - id: CR-2026-042-TASK-07
+    title: "全量验证"
+    status: pending
+    estimate: 3h
+    depends-on: [CR-2026-042-TASK-01, CR-2026-042-TASK-02, CR-2026-042-TASK-03, CR-2026-042-TASK-04, CR-2026-042-TASK-05, CR-2026-042-TASK-06]
