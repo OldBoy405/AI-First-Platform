@@ -3,7 +3,7 @@ cr: CR-2026-042
 status: pass
 tester: Ray
 generated-by: crctl-test
-generated-at: "2026-08-16T17:48:57+08:00"
+generated-at: "2026-08-16T17:53:56+08:00"
 command-digest: 181f18b130edc3b6da8e55c3b2a361db567b217520836aeb5ed68f3d7ac4ba92
 commands:
   - repo: tools
@@ -122,7 +122,7 @@ commands:
 
 ## 评审回修验证
 
-首轮代码评审的 4 个 findings 已修复：CI 对缺失 Skill `ref` fail-closed；active Pipeline prompt 移除注册/合并/回写/归档/worktree 内部算法；`write-requirement-prd` 删除手工 commit 指令并改用 `crctl validate`。针对性组合回归 `crctl.test.mjs + lint-prompts.test.mjs + pipeline-structure.test.mjs` 为 **229 pass / 0 fail**；本轮正式 `crctl test --plan` 的 7 条命令全部 exit 0。
+首轮代码评审的 4 个 findings 已修复：CI 对缺失 Skill `ref` fail-closed；active Pipeline prompt 移除注册/合并/回写/归档/worktree 内部算法；`write-requirement-prd` 删除手工 commit 指令并按自身明确合同校验 frontmatter、七个章节和占位符。正式评审前又发现并修复了“不受支持的 `crctl validate prd.md`”问题，新增回归断言防止恢复。针对性组合回归 `crctl.test.mjs + lint-prompts.test.mjs + pipeline-structure.test.mjs` 为 **229 pass / 0 fail**；本轮正式 `crctl test --plan` 的 7 条命令全部 exit 0。
 
 ## 下一步
 

@@ -1,19 +1,19 @@
 $ node --test skills/writeback/scripts/test/writeback.test.mjs
 (exit=0)
 --- stdout ---
-✔ lib: CRLF 归一 + frontmatter 读改（纪律 #1） (0.864ms)
-✔ lib: extractBlock 缩进敏感提取 (0.2033ms)
-✔ lib: 账本路径隔离（AC-4 静态判据） (0.2166ms)
-✔ lib: computeInputDigest 与 crctl apply 侧公式一致（跨模块防漂移） (0.4452ms)
-✔ prd-sdd: candidate-only 首次回写（零写 ws）+ manifest v1 + inputDigest 自洽 (58.4072ms)
-✔ prd-sdd: 增量追加（既有内容保留 + H 级 +1）+ 重跑 noop (150.6641ms)
-✔ tasks: candidate-only + slug 命名 + SDD-BLOCK-001 幂等 + 索引顺序 + noop (100.8368ms)
-✔ traceability: candidate-only + 追加保留 + 幂等 + evidence 注入 + 无 status + 校验硬失败 (213.8816ms)
-✔ traceability: 证据缺失/状态不通过 → EVIDENCE_INVALID 硬失败，零 candidate (164.7457ms)
-✔ traceability: trunk 缺条目 → TRUNK_UNKNOWN 硬失败（无 master 回退） (60.2513ms)
-✔ traceability: --validate-evidence 复用唯一 validator（ok + path 互换/digest 漂移/verdict 非 pass） (333.5874ms)
-✔ AC-4: 三脚本源码不包含账本文件写路径（静态扫描） (0.7182ms)
-✔ AC-4: candidate-only 硬边界——脚本不得写 ws 内容文件（writeFileSync 仅限 candidate/blobs 写入） (1.1408ms)
+✔ lib: CRLF 归一 + frontmatter 读改（纪律 #1） (0.7724ms)
+✔ lib: extractBlock 缩进敏感提取 (0.2105ms)
+✔ lib: 账本路径隔离（AC-4 静态判据） (0.286ms)
+✔ lib: computeInputDigest 与 crctl apply 侧公式一致（跨模块防漂移） (0.5056ms)
+✔ prd-sdd: candidate-only 首次回写（零写 ws）+ manifest v1 + inputDigest 自洽 (55.6071ms)
+✔ prd-sdd: 增量追加（既有内容保留 + H 级 +1）+ 重跑 noop (175.3966ms)
+✔ tasks: candidate-only + slug 命名 + SDD-BLOCK-001 幂等 + 索引顺序 + noop (103.3983ms)
+✔ traceability: candidate-only + 追加保留 + 幂等 + evidence 注入 + 无 status + 校验硬失败 (207.7704ms)
+✔ traceability: 证据缺失/状态不通过 → EVIDENCE_INVALID 硬失败，零 candidate (153.4599ms)
+✔ traceability: trunk 缺条目 → TRUNK_UNKNOWN 硬失败（无 master 回退） (48.8745ms)
+✔ traceability: --validate-evidence 复用唯一 validator（ok + path 互换/digest 漂移/verdict 非 pass） (325.4758ms)
+✔ AC-4: 三脚本源码不包含账本文件写路径（静态扫描） (0.7036ms)
+✔ AC-4: candidate-only 硬边界——脚本不得写 ws 内容文件（writeFileSync 仅限 candidate/blobs 写入） (0.7661ms)
 ℹ tests 13
 ℹ suites 0
 ℹ pass 13
@@ -21,6 +21,6 @@ $ node --test skills/writeback/scripts/test/writeback.test.mjs
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 1155.2502
+ℹ duration_ms 1140.5722
 
 --- stderr ---
