@@ -1,0 +1,23 @@
+$ node --test skills/shared/crctl/scripts/test/writeback-tx.test.mjs
+(exit=0)
+--- stdout ---
+✔ TASK-01：writeback 业务输入使用固定键序 canonical digest (0.8701ms)
+✔ TASK-01：固定 generator 只在 ignored candidate 目录生成单次 snapshot (14390.2555ms)
+✔ TASK-02：内部 baseline 路径同一 commit 发布状态并在 origin-confirmed 后投影 (16393.7228ms)
+✔ TASK-02：journal-created 恢复冻结 transitionAt，业务参数漂移硬阻断 (16329.3838ms)
+✔ TASK-02：投影失败不反转 Git，重放只补缺项 (16530.9066ms)
+✔ TASK-04：公共 CLI 只收业务输入，baseline 同 commit 且幂等；旧/错 stage 参数拒绝 (17151.5654ms)
+✔ TASK-04：writeback-after-commit fault 经同一业务命令续跑不重复 commit (16727.5044ms)
+✔ review repair：commit 后 origin 前进先清除未发布事务，再以同一业务命令重建 (19333.6743ms)
+✔ review repair：commit 后 graphDigest 漂移硬阻断旧事务 (15507.2432ms)
+✔ TASK-04：traceability 公共业务参数全链路 (18634.7366ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 151073.399
+
+--- stderr ---

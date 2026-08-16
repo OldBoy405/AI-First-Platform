@@ -1,0 +1,25 @@
+$ node --test skills/shared/crctl/scripts/test/register-tx.test.mjs
+(exit=0)
+--- stdout ---
+✔ TASK-05 AC-1：happy path 三账本+trailer commit+lease push+三仓 worktree (5977.6101ms)
+✔ TASK-05 AC-1：同 key 同输入重跑复用 CR-ID/txId，零重复副作用 (5998.8796ms)
+✔ TASK-05 AC-1：同 key 不同输入返回 REGISTRATION_INPUT_MISMATCH 且零写入 (5923.885ms)
+✔ TASK-05 AC-1：dirty trunk 返回 REGISTRATION_TRUNK_DIRTY 且仓库零写入 (2907.4783ms)
+✔ TASK-05 AC-1：register-after-commit fault 重跑同 CR-ID/txId 续完 push (6023.8121ms)
+✔ TASK-05 AC-2：第一仓 worktree 成功后 fault，重跑只补后续仓 (5896.0592ms)
+✔ TASK-05 AC-1/5.1：push 竞争（remote 被他人推进）时 rebuild 到新 origin base (7819.7187ms)
+✔ review repair：register remote stale 后用户改动出现时拒绝 reset --hard (4850.3666ms)
+✔ TASK-05 AC-1：副作用出现后 graph 变化返回 GRAPH_CHANGED_DURING_TRANSACTION (3442.0935ms)
+✔ TASK-05 AC-2：inspect 七分类 + ensure resume 只补缺 + cleanup 零风险删除 (8144.363ms)
+✔ TASK-10：register 成功 → outbox 发 status+owners 事件（同真实 commit SHA、owners changes 恰 3 项）；幂等重跑零事件 (5990.1732ms)
+✔ CR-2026-044 TASK-05: workspace inspect 输出 authority operationalWorkspace；missing 时结构化错误不猜路径 (6428.2157ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 69466.7045
+
+--- stderr ---

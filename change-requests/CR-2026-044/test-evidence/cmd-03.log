@@ -1,0 +1,27 @@
+$ node --test skills/shared/crctl/scripts/test/merge-tx.test.mjs
+(exit=0)
+--- stdout ---
+✔ CR-2026-038 TASK-03：backlog 只替换目标完整条目并逐字保留 trunk 其余内容 (1.1125ms)
+✔ CR-2026-038 TASK-03：semantic tree 保留 trunk 并发条目且最终 parents 仍为 base + 原 source (4262.54ms)
+✔ TASK-07 AC-1/3：happy path 三仓 lease publish + detached txws 单 finalize commit，authority 切换 (14665.1537ms)
+✔ TASK-07 AC-1：prepare conflict 返回 MERGE_PREPARE_CONFLICT 且零远端副作用 (11258.2416ms)
+✔ TASK-07 AC-1/2：第二仓 push 后 fault，重跑不重复已 confirmed push，部分发布保持 code-approved (15446.7186ms)
+✔ TASK-07 AC-1：push 成功响应丢失（observation 前 fault）→ 重放 classify confirmed 跳过 (14855.6891ms)
+✔ TASK-07 AC-1：remote stale → rebuild 到新 origin base 续跑 (16898.8779ms)
+✔ TASK-07 AC-1：finalize stale → detached txws 从新 base 重建 finalize commit (16990.3427ms)
+✔ TASK-07 AC-1：history rewrite 硬阻断 MERGE_REMOTE_HISTORY_REWRITTEN (13148.5876ms)
+✔ TASK-07 AC-2：零 publish 的 code drift → release-drift 回退 code-approved -> developing (8806.5123ms)
+✔ TASK-07 AC-1：PRD 漂移零 publish → APPROVED_ARTIFACT_DRIFT 硬阻断 (8483.9398ms)
+✔ CR-2026-044 TASK-01 ③: merge publication preflight — 远端 source 缺失/滞后在首次 prepare 前阻断且 recoverCommand 指向 checkpoint（红测试） (19233.9276ms)
+✔ CR-2026-044 TASK-04 AC-2: publication lag 阻断后先 checkpoint（模拟 push）再重跑 merge 成功进入 prepare/publish/finalize (16114.9314ms)
+✔ CR-2026-044 TASK-04 AC-5: 已有 prepare journal 的 trunk rebuild 使用冻结 sourceSha，不采纳移动的 requirement ref (17030.3725ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 177267.41
+
+--- stderr ---

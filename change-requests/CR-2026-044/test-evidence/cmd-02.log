@@ -1,0 +1,36 @@
+$ node --test skills/shared/crctl/scripts/test/checkpoint-tx.test.mjs
+(exit=0)
+--- stdout ---
+✔ checkpoint happy path：三仓 source commit + KB metadata commit + latest-checkpoint + no-op (12988.8123ms)
+✔ checkpoint 敏感路径：.env 命中全仓零 add/commit/push (7151.3271ms)
+✔ checkpoint tracked+untracked+ignored：source commit 含前两类、排除 ignored (10534.194ms)
+✔ checkpoint source commit 后 fault + 新增变化：重跑更新 sourceSha 并完成 (10773.9241ms)
+✔ checkpoint 首次推送：remote requirement ref 不存在时创建三仓分支 (9056.2499ms)
+✔ checkpoint classifier：已发布 source 仍是 remote 祖先时为 advanced，不误报 history rewrite (0.1785ms)
+✔ checkpoint malformed latest-checkpoint：零 commit/push并返回 CHECKPOINT_SNAPSHOT_INVALID (10096.249ms)
+✔ checkpoint 敏感预检查询失败：损坏 index 后 TX_GIT_FAILED 且零 push (7098.0553ms)
+✔ checkpoint journal 后错误：固定返回 txId/phase/sideEffects/recoverCommand (7955.4691ms)
+✔ checkpoint residual complete journal：authority 确认后清理并允许下一批 (14057.0641ms)
+✔ checkpoint metadata commit/save 窗口：由 trailer 恢复而非 TX_RECOVERY_CONFLICT (10593.3228ms)
+✔ checkpoint metadata write-set/commit 窗口：撤回账本候选后重扫，不把 snapshot 吞入 KB source (11885.6064ms)
+✔ checkpoint confirmed 仓新增变化：source save 前先降 phase，重跑必须重新 publish (12815.1859ms)
+✔ checkpoint push 响应丢失：after-push 重跑观察 exact head，不重复 source commit (11673.2222ms)
+✔ checkpoint metadata push 后故障：重跑确认既有 metadata，不造第二提交 (10800.0761ms)
+✔ checkpoint 仅非 KB 变化：KB source 沿用上一 metadata HEAD，只新增 metadata commit (13600.8615ms)
+✔ checkpoint 敏感矩阵：例外/普通 pem/空格路径放行，私钥头硬阻断 (11189.2857ms)
+✔ checkpoint CRLF backlog 正常规范化并完成 (9695.8549ms)
+✔ checkpoint worktree 前置：missing 与 wrong-branch 使用冻结错误码 (14216.9659ms)
+✔ checkpoint remote 关系矩阵：advanced/diverged/history-rewritten 精确分类 (28926.9376ms)
+✔ checkpoint editLatestCheckpoint：条目后仍有其他条目时不粘行（CR-2026-033 merge 实测 bug） (0.6979ms)
+✔ checkpoint T05 contract：Pipeline 只编排 Skill，active alignment reader 不读旧 checkpoints[] (0.9931ms)
+✔ checkpoint 业务 payload 恢复冲突：损坏 journal（重复 repo）→ TX_RECOVERY_CONFLICT (9404.2577ms)
+ℹ tests 23
+ℹ suites 0
+ℹ pass 23
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 234592.5612
+
+--- stderr ---

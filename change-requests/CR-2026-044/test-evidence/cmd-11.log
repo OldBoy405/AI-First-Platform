@@ -1,0 +1,22 @@
+$ node --test skills/shared/crctl/scripts/test/durable-tx.test.mjs
+(exit=0)
+--- stdout ---
+✔ TASK-04：acquireLock 基本获取/竞争/释放/重获取；token 不匹配拒绝释放（AC-2） (14.8111ms)
+✔ TASK-04：锁竞争矩阵 live PID / EPERM / ESRCH 接管 / foreign host / owner 不完整（AC-2） (11.9609ms)
+✔ TASK-04：journal 创建/幂等加载/envelope 不变量（AC-3 基础） (11.7542ms)
+✔ TASK-04：applyWriteSet 全 redo / 幂等 skip / 第三值冲突零写入（AC-1/AC-3） (31.5574ms)
+✔ TASK-04：真实 kill/restart——rename 间隙崩溃后 recover 得 redo/skip，绝不覆盖第三值（AC-1） (69.9157ms)
+✔ TASK-04：complete 标记前崩溃 → 恢复全 skip 且收敛到 complete（AC-1） (69.9112ms)
+✔ review repair：recoverWriteSet 只恢复指定 txId，并使用 manifest 绑定的 targetRoot (30.0293ms)
+✔ TASK-04：cleanupTxBlobs 幂等；blob 与 afterSha256 不符 → TX_BLOB_MISMATCH（AC-3） (7.6374ms)
+✔ CR-2026-033 T02：checkpoint op/payload slot generic 校验（不涉及业务字段） (8.531ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 319.1085
+
+--- stderr ---
