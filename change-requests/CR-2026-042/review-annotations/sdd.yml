@@ -1,0 +1,17 @@
+cr-id: CR-2026-042
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-16T14:06:39+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  PRD-SDD-alignment: "PRD FR-01 至 FR-06 均在 SDD 第 7 节映射；Agent、Pipeline、Skill、README、CI/lint 与既有能力保护均有具体落点。"
+  architecture: "符合 tools/ARCHITECTURE.md 的单向依赖与状态/账本单一写者不变量；crctl interface 不变，未新增浅 module、事务层或第二写入口。"
+  data-model: "明确声明无账本/schema 变化；唯一 JSON 结构变化是 code Pipeline 删除 review_llm 和 node ...0013，节点数 17→16。"
+  interface-contract: "Agent/Pipeline/Skill/crctl/lint 的输入、输出与失败语义清晰；reviewer runner 由 runtime 选择并通过 dimensions.reviewer-model 留痕。"
+  performance-security: "lint 为线性文本扫描；不扩大 shell/Git 权限，不修改 protectedPaths.deny，Windows/Ubuntu 和 CRLF/LF 约束齐全。"
+  testability: "包含 lint 正反例、Pipeline node/ref/replayNodes、workflow 合并、README/Skill 零残留和全量既有回归命令。"
+  prompt-adoption: "不触及 crctl dispatch 或 rules.json deny 面，无新增命令采纳清单；第 12 节已明确不适用原因。"
+suggestions: []
+subject-file: change-requests/CR-2026-042/sdd.md
+subject-sha256: 815e8a2d6202ed4be0dd314a56703785692334fa4915f8e0e5742250e133bc92
