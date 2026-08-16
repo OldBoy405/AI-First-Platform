@@ -264,7 +264,7 @@ return ok({
 });
 ```
 
-resolver 抛出的 missing/inconsistent 错误原样结构化返回；不 fallback 到 `resources[]`、主 checkout 或目录猜测。
+resolver 抛出的 missing/inconsistent 错误转为 `operationalWorkspace: null` + `operationalWorkspaceError: {code, message}` 结构化字段（inspect 本身保持只读诊断，不命令级失败）；调用方（Pipeline 入口）见 null/非 healthy 必须中止并指向 resume，不 fallback 到 `resources[]`、主 checkout 或目录猜测。
 
 ## 6.5 `cmdApprove`
 

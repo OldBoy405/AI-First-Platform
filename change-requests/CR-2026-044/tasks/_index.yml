@@ -2,31 +2,38 @@ cr-id: CR-2026-044
 tasks:
   - id: CR-2026-044-TASK-01
     title: "冻结失败向量红测试"
-    status: pending
+    status: done
+    done-at: "2026-08-17T00:25:57+08:00"
     estimate: 4h
     depends-on: []
   - id: CR-2026-044-TASK-02
     title: "TTY affirmative 扩展与 prompt 更新"
-    status: pending
+    status: done
+    done-at: "2026-08-17T00:32:45+08:00"
     estimate: 2h
     depends-on: [CR-2026-044-TASK-01]
   - id: CR-2026-044-TASK-03
     title: "release-subjects 本地化与精确 KB 白名单"
-    status: pending
+    status: done
+    done-at: "2026-08-17T00:48:14+08:00"
     estimate: 6h
     depends-on: [CR-2026-044-TASK-01]
   - id: CR-2026-044-TASK-04
     title: "merge 全仓 publication preflight 与双 recoverCommand"
-    status: pending
+    status: done
+    done-at: "2026-08-17T01:08:09+08:00"
     estimate: 8h
     depends-on: [CR-2026-044-TASK-01, CR-2026-044-TASK-03]
   - id: CR-2026-044-TASK-05
     title: "Pipeline/Skill 采用与阶段终点 checkpoint 合同"
-    status: pending
+    status: done
+    done-at: "2026-08-17T01:19:48+08:00"
     estimate: 6h
     depends-on: [CR-2026-044-TASK-02, CR-2026-044-TASK-03, CR-2026-044-TASK-04]
   - id: CR-2026-044-TASK-06
     title: "架构文档同步与全量回归"
-    status: pending
+    status: done
+    done-at: "2026-08-17T01:34:53+08:00"
     estimate: 4h
     depends-on: [CR-2026-044-TASK-02, CR-2026-044-TASK-03, CR-2026-044-TASK-04, CR-2026-044-TASK-05]
+
