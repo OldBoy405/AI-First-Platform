@@ -15,9 +15,9 @@ owners:
     assigned-at: "2026-08-14T19:47:18+08:00"
 target-version: tbd
 source: docs/analysis/tools-cr-lifecycle-minimal-optimization-spec.md
-status: tech-design-reviewed
+status: task-breakdown
 created: "2026-08-14T19:47:18+08:00"
-updated: "2026-08-16T15:31:28+08:00"
+updated: "2026-08-16T15:36:10+08:00"
 remote-ref: ""
 last-push-at: ""
 last-push-by: ""
