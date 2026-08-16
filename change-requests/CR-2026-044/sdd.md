@@ -8,7 +8,7 @@ owner: Ray
 owner-role: development
 status: draft
 created: 2026-08-16T23:45:33+08:00
-updated: 2026-08-16T23:45:33+08:00
+updated: 2026-08-16T23:49:30+08:00
 ---
 
 # 1. 背景与约束
@@ -199,21 +199,39 @@ publicationFacts = [{
 
 公开输入输出不变。
 
+### 所有 merge 调用的共同前置
+
+无论 `payload.repos` 是否为空，每次调用都必须先：
+
+1. 读取 `approval.yml#code.release-subjects` 并执行纯本地 `verifyReleaseSubjects`。
+2. PRD/SDD drift 始终返回 `APPROVED_ARTIFACT_DRIFT`。
+3. code/TASK drift 且 `payload.repos` 中尚无 pushed 仓时返回既有 `release-drift`；已有任一 pushed 仓时返回 `RELEASE_SUBJECT_DRIFT` 并保持 blocked。
+4. 只有本地 verifier 通过后，才进入下述 publication preflight 或 journal 续跑分支。
+
+此共同前置保证已有 prepared/published journal 的续跑同样受本地 signed snapshot 约束；publication preflight 的有无不改变本地证据门禁。
+
 ### 新事务 / 零 prepare journal
 
-当 `payload.repos.length === 0` 时：
+当 `payload.repos.length === 0` 时才执行 publication preflight。函数内构造两个不同的恢复命令：
 
-1. 读取并本地重核 `approval.yml#code.release-subjects`。
-2. PRD/SDD/code/TASK drift 沿用现有分流。
-3. 对全部 active repo fetch origin，读取本地 CR worktree HEAD、remote requirement source 和 trunk SHA。
-4. source ref 缺失：抛 `MERGE_SOURCE_MISSING`，附 `repo/ref/recoverCommand`。
-5. `remoteSourceSha !== localHead`：抛 `RELEASE_REMOTE_NOT_PUSHED`，附 `repo/head/remote/recoverCommand`。
-6. 任一失败时 `payload.repos` 保持空，不调用 `prepareMergeTree` 或 `commit-tree`。
-7. 全仓通过后，用同一批 facts 逐仓首次 prepare；`sourceSha=remoteSourceSha`，`baseSha=trunkSha`。
+```js
+const mergeRecoverCommand = `crctl merge ${cr} --workspace ${JSON.stringify(input.workspace || ctx.installRoot)}`;
+const checkpointRecoverCommand = `crctl checkpoint ${cr} --workspace ${JSON.stringify(ctx.installRoot)}`;
+```
+
+随后：
+
+1. 对全部 active repo fetch origin，读取本地 CR worktree HEAD、remote requirement source 和 trunk SHA。
+2. source ref 缺失：抛 `MERGE_SOURCE_MISSING`，payload 附 `repo/ref/recoverCommand: checkpointRecoverCommand`。
+3. `remoteSourceSha !== localHead`：抛 `RELEASE_REMOTE_NOT_PUSHED`，payload 附 `repo/head/remote/recoverCommand: checkpointRecoverCommand`。
+4. 任一失败时 `payload.repos` 保持空，不调用 `prepareMergeTree` 或 `commit-tree`。
+5. 全仓通过后，用同一批 facts 逐仓首次 prepare；`sourceSha=remoteSourceSha`，`baseSha=trunkSha`。
+
+`mergeRecoverCommand` 继续只用于 prepare/publish/finalize、journal 或 lease 等 merge saga 技术失败；publication lag 不得返回它。
 
 ### 已有 prepare/publish journal
 
-当 `payload.repos.length > 0` 时按既有 journal 恢复合同继续：
+当 `payload.repos.length > 0` 且共同本地 verifier 已通过时，按既有 journal 恢复合同继续：
 
 - 不清空或重建既有事务事实；
 - 已 pushed/confirmed 仓不重做 prepare；
@@ -274,14 +292,14 @@ rl.question(`以 approver=${approver} 批准该阶段？只有输入 y 或 yes �
 
 ## 7.2 architecture-design
 
-- 首节点先调用 `workspace inspect`，消费 `operationalWorkspace` 并传给后续节点。
+- 首节点先调用 `workspace inspect`，要求所有 `resources[].classification=healthy`，再消费 `operationalWorkspace` 并传给后续节点；任一资源非 healthy 时中止并指向 resume，不自动 ensure。
 - 删除 `auto_push_after_sdd` 输入和 skip 分支。
 - 保留现有审批后 `push-progress` 节点，改为无条件执行且 `onFail=abort`。
 - 节点总数仍为 5。
 
 ## 7.3 code-implementation
 
-- 首节点先调用 `workspace inspect`，消费并传递 `operationalWorkspace`；后续文档节点不从目录命名猜路径。
+- 首节点先调用 `workspace inspect`，要求所有 `resources[].classification=healthy`，再消费并传递 `operationalWorkspace`；任一资源非 healthy 时中止并指向 resume，后续文档节点不从目录命名猜路径。
 - TASK checkpoint 保持可选。
 - 代码/测试统一 checkpoint、评审 PASS 后审批前 checkpoint 保持强制。
 - 审批后 checkpoint 的 `onFail` 从 `skip` 改为 `abort`。
@@ -359,11 +377,12 @@ FR 覆盖率：11/11。
 ## 10.2 `merge-tx.test.mjs`
 
 1. 任一 repo remote source missing：全仓 `payload.repos=[]`、无 candidate、状态 `code-approved`。
-2. 任一 repo remote source stale：同上，错误为 `RELEASE_REMOTE_NOT_PUSHED` 且含 checkpoint recoverCommand。
+2. 任一 repo remote source stale：同上，错误为 `RELEASE_REMOTE_NOT_PUSHED`；两类 publication lag 的 `recoverCommand` 均精确等于 checkpoint 命令，不得等于 merge 命令。
 3. checkpoint 后重跑进入 prepare/publish/finalize。
 4. 本地 code/TASK drift 零 publish 仍 release-drift；PRD/SDD 漂移硬阻断。
-5. 已有 prepare/publish journal 按原合同恢复；trunk rebuild 使用冻结 `sourceSha`。
-6. 任一 publish 后 source drift 保持 blocked。
+5. 已有 prepared journal 续跑前仍执行本地 verifier；零 publish drift 回退，已有 publish drift 保持 blocked。
+6. 已有 prepare/publish journal 按原合同恢复；trunk rebuild 使用冻结 `sourceSha`。
+7. merge saga 自身的 prepare/publish/finalize/lease 故障继续返回 merge recoverCommand。
 
 ## 10.3 `checkpoint-tx.test.mjs`
 
@@ -374,7 +393,7 @@ FR 覆盖率：11/11。
 1. requirement 审批后强制 checkpoint，节点数 7；草稿 checkpoint 仍可选。
 2. architecture 无 `auto_push_after_sdd`，审批后 checkpoint `onFail=abort`，节点数 5。
 3. code 审批后 checkpoint `onFail=abort`，TASK checkpoint 仍可选，节点数 17。
-4. architecture/code 首节点取得并后续传递 `operationalWorkspace`。
+4. architecture/code 首节点要求全部 `resources[].classification=healthy`，取得并后续传递 `operationalWorkspace`；非 healthy 时 abort 并指向 resume。
 5. Pipeline 不含 fetch、SHA、Git、CAS、journal 算法文本。
 
 ## 10.5 回归命令
@@ -430,4 +449,5 @@ node skills/shared/crctl/scripts/lint-prompts.mjs
 
 | 日期 | 版本 | 作者 | 说明 |
 |---|---|---|---|
+| 2026-08-16 | v0.2.0 | Ray | 回修 B-01/B-02：本地 verifier 提升为所有 merge 调用共同前置；区分 checkpoint 与 merge recoverCommand；补充非 healthy workspace 入口阻断 |
 | 2026-08-16 | v0.1.0 | Ray | 初始设计：本地 release verifier、merge publication preflight、Operational Workspace 连续性、阶段终点 checkpoint 与共享 TTY `y|yes` |
