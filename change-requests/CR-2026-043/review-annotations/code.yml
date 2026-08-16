@@ -1,37 +1,34 @@
 cr-id: CR-2026-043
 review-type: code
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-16T07:55:46+08:00"
-verdict: block
-blockers:
-  - "B1 [recovery correctness] skills/shared/crctl/scripts/lib/workspace-transactions.mjs:856-875 在途恢复直接跳过 action=fast-forwarded/confirmed/unchanged，未按 SDD §2.2/§4.2 重核当前 HEAD 与 targetTrunkSha；先前 ff 后若被外部改写，重跑仍会 save complete。修复：恢复时逐仓健康/clean/HEAD/trunk 重核；fast-forwarded/confirmed 必须 HEAD==target，unchanged 必须 HEAD==before==target 且 trunk 未漂移，第三值一律 WORKSPACE_FRESHNESS_CHANGED；增加单 pending 仓 ws-sync-after-repo 后外部改写的回归。"
-  - "B2 [intent binding] skills/shared/crctl/scripts/lib/workspace-transactions.mjs:895 intentDigest 仅绑定 pending 仓，与 SDD §2.2 的排序后全仓 repo/beforeSha/targetTrunkSha 不一致；完整 preflight 中 unchanged 仓漂移未进入 intent。修复：digest 绑定 payload 全部 repos（稳定 repo id 顺序），并增加 unchanged 仓改变时旧 complete 不误复用/在途恢复阻断测试。"
-  - "B3 [error contract] skills/shared/crctl/scripts/lib/workspace-transactions.mjs:831 ff-only 失败由 gitMust 直接抛 TX_GIT_FAILED，未兑现 SDD §3.2 的 WORKSPACE_SYNC_CONFLICT。修复：仅包裹 merge --ff-only 调用并将 TxError 映射为 WORKSPACE_SYNC_CONFLICT（保留 repo/target/cause），其他 Git 技术失败不误映射；增加确定性失败测试。"
-  - "B4 [conservative Git status handling] skills/shared/crctl/scripts/lib/workspace-transactions.mjs:772 与 :819 使用 gitRun(status --porcelain) 只看 stdout，非零退出且空 stdout 会被误当 clean。修复：检查 status；非零退出抛 TX_GIT_FAILED（freshness）或 WORKSPACE_FRESHNESS_CHANGED/TX_GIT_FAILED（重核，按 SDD 失败语义），增加 git status 技术失败不得进入 fresh/ff-only 的回归。"
+reviewed-at: "2026-08-16T08:22:11+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  spec-conformance: "block: 4 项与 SDD §2.2/§3.2/§4.1/§4.2 契约不一致"
-  engineering-quality: "block: 恢复状态验证与错误码映射存在可观测错误"
-  key-path-readability: "pass: 模块边界与主流程清楚，问题集中且可定点修复"
-  security: "pass: shell=false、固定 argv、ff-only 唯一写操作与输入校验边界保持"
-  test-coverage: "block: 缺单仓 crash-after-ff 外部漂移、ff-only 失败映射、status 非零退出用例"
-  test-evidence-credibility: "pass: crctl-test 机器区/traceability digest/log 一致，382/382；Ubuntu 环境缺口已诚实记录"
-  frontend-quality: "not-applicable: diff 未触及前端文件"
+  spec-conformance: "pass: recovery rechecks every recorded repo, intentDigest binds all repos, ff-only failure maps to WORKSPACE_SYNC_CONFLICT, status failures fail closed"
+  engineering-quality: "pass: shared recheck helper removes duplicated drift logic; action normalization preserves SyncResult contract; 386/386 machine evidence pass"
+  key-path-readability: "pass: preflight/recheck/recovery/write path remains explicit and bounded"
+  security: "pass: shell=false, fixed Git argv, ff-only sole worktree write, no reset/rebase/merge automation"
+  test-coverage: "pass: added single-repo crash-after-ff drift, all-repo digest/unchanged drift, ff-only conflict, status technical failure; full suite green"
+  test-evidence-credibility: "pass: test-report generated-by crctl-test, attempt 3/3 status=pass, traceability digest matches, evidence log present"
+  frontend-quality: "not-applicable: diff does not touch frontend files"
   reviewer-model: "gpt-5.6-sol"
 suggestions:
-  - "S1 非阻断：pipeline-templates/_index.yml 的既有 13→实际15 漂移已按事实修成新增后17并有契约测试；writeback 时同步修订 baseline SDD 的数值注脚。"
-  - "S2 流程：统一 checkpoint 因 GitHub 443 不可达且 sideEffects=[] 尚未完成；最终 PASS 前必须按 recoverCommand 补推并通过 review-start freshness gate。"
+  - "Ubuntu full regression remains pending because the local WSL Ubuntu ext4.vhdx is missing; run the same crctl test plan in Linux CI before merge."
+  - "The pipeline index correction from existing 13/actual 15 to 17 is covered by the new contract test; update the historical numeric note in the SDD during writeback if the document remains user-facing."
+  - "Checkpoint and review-start freshness completed after intermittent GitHub connectivity; retain the successful checkpoint batch as the review evidence boundary."
 release-subjects:
   version: 1
   repositories:
     - repo: ai-first-platform-docs
       remote-ref: refs/heads/requirement/CR-2026-043
-      reviewed-source-sha: 810b6510e028e8b0e39aaa7907fa282347986559
+      reviewed-source-sha: d9a084289aa8c2c6e7fbba940846c45875125182
     - repo: multica
       remote-ref: refs/heads/requirement/CR-2026-043
       reviewed-source-sha: 33720218ca5b3d3ff7fa5412753f0843dc3571e4
     - repo: tools
       remote-ref: refs/heads/requirement/CR-2026-043
-      reviewed-source-sha: e38946d9ce69fc3e3bcf04a607f6c3bb4f0d885c
+      reviewed-source-sha: 67b4a1342bfeba50ae2ca500c603df7412db29b2
   artifacts:
     algorithm: sha256
     canonicalization: crlf-to-lf+path-sort
