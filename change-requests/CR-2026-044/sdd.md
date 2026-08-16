@@ -179,20 +179,19 @@ publicationFacts = [{
 
 返回合同继续为 `{ok:true}` 或 `{ok:false, kind:'code'|'task'|'prd'|'sdd', details}`。
 
-校验顺序：
+校验顺序（失败 kind 优先级服从 PRD §7：受控 artifact 漂移先给精确 kind，不被 kind=code 覆盖）：
 
 1. snapshot v1 形状与 active repo 集合。
-2. 每仓 `classifyRepoWorkspace(...).classification === 'healthy'`。
-3. non-KB：当前 HEAD 精确等于 reviewed SHA。
-4. KB：reviewed SHA 是当前 HEAD 祖先；区间变更只允许：
+2. 受控 artifact 逐文件哈希、集合与 digest（prd/sdd/task 精确 kind，含未提交篡改；PRD/SDD 漂移无条件硬阻断）。
+3. 每仓 `classifyRepoWorkspace(...).classification === 'healthy'`；非 healthy 返回 kind=code（workspace-invalid）。
+4. non-KB：当前 HEAD 精确等于 reviewed SHA。
+5. KB：reviewed SHA 是当前 HEAD 祖先；区间变更只允许：
    - `change-requests/{CR-ID}/approval.yml`
    - `change-requests/{CR-ID}/cr.md`
    - `change-requests/{CR-ID}/traceability.yml`
    - `change-requests/{CR-ID}/review-loop.yml`
    - `change-requests/_backlog.yml`
    - `change-requests/{CR-ID}/review-annotations/` 前缀
-5. 受控 artifact 集合、逐文件摘要与总 digest。
-
 删除 remote get-url、remote ref 读取与 `remote-ref-drift` 返回分支。白名单保留为现有函数内局部 `Set` + prefix，不抽配置或 helper。
 
 ## 6.3 `mergeCr(ctx, input)`
