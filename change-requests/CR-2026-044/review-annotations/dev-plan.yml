@@ -1,0 +1,23 @@
+cr-id: CR-2026-044
+review-type: dev-plan
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-17T00:09:04+08:00"
+verdict: block
+repair-target: write-dev-plan
+blockers:
+  - "B-01：PRD FR-11/AC-21~23 要求 code-reviewing 重跑 review、code-approved 本地 snapshot 一致时无需重审批且 checkpoint 后 merge；现有 checkUpgrade 却把 code-reviewing 归 safe、code-approved 归 requiresReapproval，而 PLAN/TASK 没有生产代码或 upgrade-check.test.mjs 落点。回修要求：TASK-05 增加 checkUpgrade 最小分类修订与 upgrade-check.test.mjs，code-reviewing→requiresReapproval（重评）、code-approved 零 publish→safe（提示先 checkpoint）、partial publish 仍 blocksUpgrade；不扩 CLI/返回 schema。"
+  - "B-02：TASK-05 会更新四个 approve Skill 的 y|yes 合同，却未 depends-on TASK-02；PLAN 还声称 TASK-05 消费 TASK-03 的 inspect 契约，但 inspect 是 TASK-05 自己新增，跨 TASK 产出/消费不成立。回修要求：TASK-05 depends-on 增加 TASK-02，修正 PLAN 依赖图与接口说明为消费 TASK-02 的 TTY、TASK-03 的本地 verifier、TASK-04 的 publication lag。"
+  - "B-03：TASK-06 把 docs/adr/0004、ARCHITECTURE.md、README.md 写成同一仓相对路径，但实际 ADR 位于 knowledge-base worktree，后两者位于 tools worktree，实施者会在 tools 仓找不到 ADR。回修要求：在 PLAN/TASK-06 明确 repo+worktree+路径，验收分别核对两仓 diff，并保留 multica 零修改。"
+dimensions:
+  sdd-to-plan: "BLOCK：核心实现与测试里程碑大体覆盖，但 SDD §11/PRD FR-11 的 upgrade-check 兼容分类没有实现 TASK。"
+  plan-to-tasks: "BLOCK：M5 的消费关系与 TASK-05 实际产出不一致，跨仓文档里程碑未映射到可定位路径。"
+  task-executability: "BLOCK：TASK-06 的 ADR 路径在 tools worktree 不存在；TASK-05 缺 upgrade-check 文件与测试清单。"
+  dependency-topology: "BLOCK：无环且无悬空，但 TASK-05 消费 TASK-02 行为却未声明依赖。"
+  interface-contracts: "BLOCK：TASK-03 不产出 inspect 契约；upgrade-check 的 safe/requiresReapproval/blocksUpgrade 分类未定义新消费合同。"
+  acceptance-verifiability: "BLOCK：缺 code-reviewing/code-approved/partial-publish 三类 upgrade-check 参数化断言，跨仓文档验收也未区分 repo。"
+  scope-and-simplicity: "PASS：6 TASK 均保持最小现有模块改造，无新状态、账本、CLI、schema、事务层或依赖。"
+  risk-and-rollback: "PASS：verifier、preflight、Pipeline 与 TTY 均有局部回滚；需补充 upgrade-check 分类回滚纳入 TASK-05。"
+  reviewer-model: "gpt-5-codex"
+suggestions:
+  - "TASK-01 的红测试可作为实现期中间态；标记 done 前记录预期失败名称，最终 test-report 必须全绿。"
+subject-sha256: 1bd6ba123bdff9f1028fa3be468ec6a48af1b81cd8bc44265494691bc7992e86
