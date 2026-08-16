@@ -1,0 +1,21 @@
+$ node --test skills/shared/crctl/scripts/test/pipeline-structure.test.mjs
+(exit=0)
+--- stdout ---
+✔ AC-1: 节点序 review-code(…0009) < checkpoint(…0015) < human_approval(…0010) < approve-code(…0011) (0.5652ms)
+✔ AC-2: checkpoint 节点 onFail=abort、ref=push-progress；节点 id 全局唯一（CR-2026-042 后 16 节点） (0.2095ms)
+✔ AC-3: review-code reviewLoop.replayNodes 为 5 项，含 workspace-freshness(…0017) 重核（CR-2026-043） (0.4896ms)
+✔ CR-2026-043: 两个 workspace-freshness gate 位置/ref/onFail 正确 (0.1517ms)
+✔ CR-2026-043: pipeline prompt 无 git/journal 字样；write-test-report replayNodes 未被改动 (0.2569ms)
+✔ CR-2026-043: _index.yml 节点数与 JSON 一致；全部 node.ref 在 skills/_index.yml active；状态机/gates 零耦合 (0.9757ms)
+✔ AC-4: inputs 中无 suggestion_policy (0.1088ms)
+✔ human_approval(…0010) approvalPrompt 含评审后 checkpoint phase=complete 前提 (0.0695ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 64.0907
+
+--- stderr ---
