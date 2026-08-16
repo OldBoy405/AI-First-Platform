@@ -17,7 +17,7 @@ target-version: tbd
 source: docs/analysis/tools-local-worktree-gates-remote-publication-boundary.md
 status: developing
 created: "2026-08-16T23:32:37+08:00"
-updated: "2026-08-17T00:12:12+08:00"
+updated: "2026-08-17T06:54:39+08:00"
 remote-ref: ""
 last-push-at: ""
 last-push-by: ""
