@@ -3,7 +3,7 @@ cr: CR-2026-042
 status: pass
 tester: Ray
 generated-by: crctl-test
-generated-at: "2026-08-16T17:23:05+08:00"
+generated-at: "2026-08-16T17:48:57+08:00"
 command-digest: 181f18b130edc3b6da8e55c3b2a361db567b217520836aeb5ed68f3d7ac4ba92
 commands:
   - repo: tools
@@ -110,7 +110,7 @@ commands:
 
 - `skills/shared/crctl/scripts/lint-prompts.mjs`：walkFiles 扩扫 agents/README，新增 R10-R13，状态集合复用 loadAuthorityTransitions。
 - `skills/shared/crctl/scripts/test/lint-prompts.test.mjs`：+8 条 R10-R13 向量（正反例、LF/CRLF、ignore 半径）。
-- `skills/shared/crctl/scripts/test/crctl.test.mjs`：+5 条静态合同；既有 17 节点断言改为 16。
+- `skills/shared/crctl/scripts/test/crctl.test.mjs`：+5 条静态合同；既有 17 节点断言改为 16；回修补充 Skill node 缺 `ref` 阻断与 `milestone_file` 业务输入保留断言。
 - `skills/shared/crctl/scripts/test/pipeline-structure.test.mjs`：17→16 节点断言与 …0013 前置关系修正。
 - `.github/workflows/crctl-ci.yml`：paths 补齐 + Pipeline 固定结构断言步骤。
 
@@ -120,6 +120,10 @@ commands:
 - **Windows/Ubuntu CI 双平台**：本机为 Windows，Ubuntu 侧由 `crctl-ci.yml` matrix 在 CI 执行；所有文本读取均先 CRLF→LF，已由 lint-prompts CRLF 测试覆盖等价性。
 - **Pipeline 固定结构断言**：已在 CI 内联步骤落地，本机以等价脚本跑通 8 模板；本 CR 不引入可执行 Pipeline 解释器。
 
+## 评审回修验证
+
+首轮代码评审的 4 个 findings 已修复：CI 对缺失 Skill `ref` fail-closed；active Pipeline prompt 移除注册/合并/回写/归档/worktree 内部算法；`write-requirement-prd` 删除手工 commit 指令并改用 `crctl validate`。针对性组合回归 `crctl.test.mjs + lint-prompts.test.mjs + pipeline-structure.test.mjs` 为 **229 pass / 0 fail**；本轮正式 `crctl test --plan` 的 7 条命令全部 exit 0。
+
 ## 下一步
 
-`crctl next CR-2026-042`：test-report.status=pass，进入代码评审（用户明确要求跳过代码评审，则停在此处等待后续指令）。
+`crctl next CR-2026-042`：test-report.status=pass，推送 checkpoint 后执行正式代码评审。
