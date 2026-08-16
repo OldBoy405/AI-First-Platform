@@ -1,11 +1,11 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 # 五段链路：需求 FR ↔ 技术设计 SDD ↔ 交付 TASK ↔ 代码 merge SHA ↔ CR-ID
 spec-id: ai-first-platform
-cr-ref: CR-2026-041
-cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029, CR-2026-028, CR-2026-030, CR-2026-031, CR-2026-037, CR-2026-032, CR-2026-033, CR-2026-038, CR-2026-039, CR-2026-040, CR-2026-041]
-target-version: "0.20.3"
+cr-ref: CR-2026-043
+cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029, CR-2026-028, CR-2026-030, CR-2026-031, CR-2026-037, CR-2026-032, CR-2026-033, CR-2026-038, CR-2026-039, CR-2026-040, CR-2026-041, CR-2026-043]
+target-version: "0.20.4"
 baseline-since: "0.10"
-generated-at: "2026-08-15T23:52:56+08:00"
+generated-at: "2026-08-16T09:22:52+08:00"
 
 # 已知缺口：CR-2026-003~CR-2026-006 未生成本文件的里程碑段（writeback-traceability 在那四个
 # CR 回写时被跳过，PRD.md/SDD.md/_index.yml 侧的累积记录不受影响、仍完整）。本次（CR-2026-008）
@@ -2758,3 +2758,65 @@ milestones:
         code: { verdict: pass, path: change-requests/CR-2026-041/review-annotations/code.yml, sha256: 862aece962cc107fd0c2148965e8d7ad37a9c5cf7e9636d2bf2eee9b36ba2f1a }
       approval: { status: approved, path: change-requests/CR-2026-041/approval.yml, sha256: 34ea501b9a5d3d0473268deca72147242333c3247d4ede669cbe87cbc0176077 }
       merge: { status: merged, path: change-requests/CR-2026-041/merge-commits.yml, sha256: 1f5dafc2cd6dcaaddef56a296151fc05a6c2c0885d35c06757748510d3929bde }
+  - cr: CR-2026-043
+    milestone: M0
+    target-version: "0.20.4"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 963842c0bbcef63064e703e1734fcb15a7129527
+        branch: requirement/CR-2026-043
+      - repo: multica
+        trunk: main
+        sha: 4a6a39c19156f053d0a6e6babdef2809cca80709
+        branch: requirement/CR-2026-043
+      - repo: tools
+        trunk: custom/main
+        sha: 8f530589a0ae395f44760f4965a225ea9ac698d6
+        branch: requirement/CR-2026-043
+    frs:
+      - fr: FR-01
+        title: 分层 freshness 分类
+        sdd: SDD §2.1/§4.1（RepoFreshnessFact/FreshnessResult、classifyWorkspaceFreshness、isAncestorOrThrow 退出码硬区分）
+        tasks: [CR-2026-043-TASK-01]
+        code: tools@8f53058: workspace-transactions.mjs classifyWorkspaceFreshness/isAncestorOrThrow + workspace freshness CLI
+        evidence: test-report cmd-01（workspace-freshness.test.mjs 分类矩阵 13 例）
+      - fr: FR-02
+        title: 只读业务检查
+        sdd: SDD §3.1/§4.1（fetch 边界、unknown 不降级、allFresh 成功零 audit、阻断/失败先 audit）
+        tasks: [CR-2026-043-TASK-01]
+        code: tools@8f53058: crctl.mjs cmdWorkspace freshness 分支局部 try/catch
+        evidence: test-report cmd-01（CLI audit 语义 5 例）
+      - fr: FR-03
+        title: 显式安全同步
+        sdd: SDD §2.2/§3.2/§4.2（syncWorkspaceToTrunk、全仓 preflight、唯一 ff-only、WORKSPACE_SYNC_CONFLICT 映射）
+        tasks: [CR-2026-043-TASK-02]
+        code: tools@8f53058: workspace-transactions.mjs syncWorkspaceToTrunk + workspace sync CLI + FAULT_POINTS 2 条
+        evidence: test-report cmd-01（事务用例含 ff-only 冲突映射）
+      - fr: FR-04
+        title: 幂等、竞态和只向前恢复
+        sdd: SDD §2.2/§4.2（intentDigest 全仓绑定、逐仓重核、恢复只按原 intent、外部回退阻断）
+        tasks: [CR-2026-043-TASK-02]
+        code: tools@8f53058: 恢复逐仓重核 + 故障注入续跑 + createAfterComplete 新事务
+        evidence: test-report cmd-01（故障注入/外部回退/unchanged 漂移回归）
+      - fr: FR-05
+        title: 生命周期 gate 与 reviewLoop
+        sdd: SDD §3.4（…016/…017 双 gate、review-code replayNodes 5 项、_index nodes 17）
+        tasks: [CR-2026-043-TASK-04]
+        code: tools@8f53058: code-implementation.pipeline.json 双 gate + pipeline-structure/contract-scan 契约
+        evidence: test-report cmd-01（pipeline 结构/契约 8+ 例）
+      - fr: FR-06
+        title: Skill、Agent、crctl 与文档采用
+        sdd: SDD §3.3/§8（workspace-freshness Skill 路由、台账登记、README 人读段）
+        tasks: [CR-2026-043-TASK-03, CR-2026-043-TASK-05]
+        code: tools@8f53058: workspace-freshness/SKILL.md + skills/_index/agent-skill-matrix/AGENT-SKILL-MATRIX + README §3a
+        evidence: test-report cmd-01（check-skill-matrix/lint-prompts/集成 4 例）
+    evidence:
+      test: { status: pass, path: change-requests/CR-2026-043/test-report.md, sha256: d58397108c96d733f7bfe42e1bf42fa6c2fe3f7759d6821d567b59c27ed24043 }
+      reviews:
+        requirement: { verdict: pass, path: change-requests/CR-2026-043/review-annotations/requirement.yml, sha256: d856397f02d58f67d20550511803e83d1baa974b7b916f6dac48960e1c5e4ca9 }
+        tech-design: { verdict: pass, path: change-requests/CR-2026-043/review-annotations/sdd.yml, sha256: bcf456e11531e5f1622c1979d1cb86c1c25a412c87816bdc497bfc6c4ba529da }
+        dev-plan: { verdict: pass, path: change-requests/CR-2026-043/review-annotations/dev-plan.yml, sha256: 6c1c9d02f39eaf0716dc69962d83e935a39885ea1755841f3ea2a4538623f644 }
+        code: { verdict: pass, path: change-requests/CR-2026-043/review-annotations/code.yml, sha256: f7a973bf45e92161481ea18860191650e77f1e757fd2d348f08bb11bef5084b0 }
+      approval: { status: approved, path: change-requests/CR-2026-043/approval.yml, sha256: 62ff7a1295f166592b57b00ae6a68f9cfa44b310452b878f83e5f5eeccc75eac }
+      merge: { status: merged, path: change-requests/CR-2026-043/merge-commits.yml, sha256: 44dc8b16a3a0029b010a924bbccee0ff23b41f7ce74239c2b9c6d46d6fb49af8 }
