@@ -1,0 +1,15 @@
+cr-id: CR-2026-042
+review-type: requirement
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-16T12:04:45+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  structure: "PRD 包含背景目标、目标逻辑架构、用户故事、FR、NFR、验收标准、成功指标、依赖风险、范围排除和变更记录。"
+  testability: "FR-01 至 FR-06 均有对应 AC；AC 覆盖文本扫描、JSON 固定断言、节点顺序、CI paths、跨平台行尾和既有行为保护。"
+  scope: "明确区分 CR-2026-038 至 CR-2026-041 已解决基础设施与本 CR 最小改造，并排除状态机、事务、writeback、测试和 archive 重做。"
+  alignment: "与 CR-2026-042 注册摘要及来源规格 FR-14、FR-15、FR-16 对齐；canonical review 字段明确复用 CR-2026-039 的既有实现。"
+  dependencies: "列出既有 crctl、Pipeline、Skill、lint、CI 和 OpenWiki workflow 依赖，并定义 reviewer 节点删除后的节点数同步要求。"
+suggestions: []
+subject-file: change-requests/CR-2026-042/prd.md
+subject-sha256: 35ff14a27400d6cfbf35a4537432aa7b7948494d70b3ec11647c944d9edb5eba
