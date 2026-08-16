@@ -1,0 +1,20 @@
+cr-id: CR-2026-044
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-16T23:48:58+08:00"
+verdict: block
+blockers:
+  - "B-01：SDD §6.3 把本地 signed snapshot 重核写在‘新事务/零 prepare journal’分支内，未明确已有 prepare/publish journal 的每次续跑仍先执行本地 verifier。这会削弱 PRD FR-05 对 partial publish 后 source drift 的硬阻断。回修要求：把本地 verifier 提升为所有 merge 调用的共同前置；随后仅 publication preflight 按 payload.repos.length===0 分支，保留零 publish 回退与已有 publish 硬阻断。"
+  - "B-02：MERGE_SOURCE_MISSING/RELEASE_REMOTE_NOT_PUSHED 的 recoverCommand 未冻结为 checkpoint 命令，容易沿用 mergeCr 顶层现有 `crctl merge` recoverCommand，导致 publication lag 原地重试。回修要求：定义独立 checkpointRecoverCommand=`crctl checkpoint {cr} --workspace {installRoot}`，两类错误 payload 均返回该命令；merge saga 自身的技术恢复仍使用原 merge recoverCommand。"
+dimensions:
+  prd-sdd-alignment: "BLOCK：11/11 FR 有映射，但 FR-05 的已有 journal 本地重核和 publication lag 恢复入口尚未形成无歧义接口。"
+  architecture-rationality: "PASS：复用 classifier、resolver、release-subjects v1、checkpoint、merge saga 与 durable transaction；无第二事务框架或新持久化模型。"
+  data-model-completeness: "PASS：publicationFacts 明确为内存结构，首次 prepare 后复用既有 payload.repos.sourceSha；无 schema/journal 字段新增。"
+  interface-contract: "BLOCK：merge 的共同 verifier 顺序与 checkpoint/merge 两种 recoverCommand 边界不够精确。"
+  performance-security: "PASS：本地业务路径移除网络；全仓 preflight 前零 candidate；TTY 非交互、grant、reject 安全边界不变。"
+  testability: "BLOCK：现有测试矩阵缺少已有 prepared/published journal 续跑时本地 drift 的明确断言，以及错误 payload checkpoint recoverCommand 精确断言。"
+  prompt-adoption-impact: "PASS：已列出 review-code、四个 approve、crctl、push-progress、workspace-freshness、merge-feature-branch 的最小采纳面。"
+suggestions:
+  - "在 Pipeline 结构测试中同时断言 architecture/code 入口遇 resources 非 healthy 时中止并指向 resume，避免只消费 authority path 后忽略资源分类。"
+subject-file: change-requests/CR-2026-044/sdd.md
+subject-sha256: 4c38c033c6b25957e4e9cf4f577d96c4dd7cc6063337f91ca9629c5c2f40d2a0
