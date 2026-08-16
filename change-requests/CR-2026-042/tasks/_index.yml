@@ -1,0 +1,21 @@
+cr-id: CR-2026-042
+tasks:
+  - id: CR-2026-042-TASK-01
+    title: "收敛 Agent 与 Pipeline 调用合同"
+    status: done
+    done-at: "2026-08-16T16:41:50+08:00"
+    estimate: 8h
+    depends-on: []
+  - id: CR-2026-042-TASK-02
+    title: "收敛 Skill 与人读文档"
+    status: done
+    done-at: "2026-08-16T16:46:24+08:00"
+    estimate: 12h
+    depends-on: [CR-2026-042-TASK-01]
+  - id: CR-2026-042-TASK-03
+    title: "落地确定性治理并完成全量验收"
+    status: done
+    done-at: "2026-08-16T17:18:35+08:00"
+    estimate: 17h
+    depends-on: [CR-2026-042-TASK-01, CR-2026-042-TASK-02]
+

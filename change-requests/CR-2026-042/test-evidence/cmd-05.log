@@ -1,0 +1,50 @@
+$ node --test skills/shared/crctl/scripts/test/lint-prompts.test.mjs
+(exit=0)
+--- stdout ---
+✔ R1：手写 guard-deny 文件且同段无 crctl → CONTRADICTS (48.288ms)
+✔ R1 豁免：同段含 crctl 调用（正确示范）不误报 (46.3954ms)
+✔ R1 豁免：<!-- lint-prompts:ignore --> 跳过该段 (46.7525ms)
+✔ R2：裸 git 命令 → CONTRADICTS；crctl git 形态不报 (47.9293ms)
+✔ R3/R4：cr-status-set / 六字段口径 → STALE-REF / CONTRADICTS (55.3889ms)
+✔ R5：手写 review-loop 记账（配合写动词）→ OUTDATED (71.3126ms)
+✔ R5 不误报：passCondition 读取声明（无写动词） (64.7719ms)
+✔ R6：test-report.md 手写 frontmatter → CONTRADICTS (52.9358ms)
+✔ enforce 模式：有 CONTRADICTS/STALE-REF → exit 1 + LINT_DRIFT (50.0279ms)
+✔ enforce 模式：零漂移 → exit 0 (47.4383ms)
+✔ R7：crctl advance 全角分隔符/伪旗标 → CONTRADICTS (52.2467ms)
+✔ R7：advance 缺 --trigger → CONTRADICTS；完整形态不报 (50.4224ms)
+✔ R7：backlog-set 字段越白名单 + --template subject 缺 CR 编号 → CONTRADICTS (55.6591ms)
+✔ R8：函数式 inbox-emit + 枚举外 event → CONTRADICTS；合法 event 不报 (52.3955ms)
+✔ 豁免收窄：注释与违规行隔 3+ 行 → 仍命中；±1 行内 → 豁免（FR-25 契约） (47.63ms)
+✔ R9：CR 上下文「下一步」手写 skill 副本 → CONTRADICTS；crctl next 形态不报 (47.8875ms)
+✔ R9：域外 SKILL.md 的「下一步」不受约束（含真实 skill id 也不报） (48.0267ms)
+✔ R9：pipeline 名副本（下一步指向 pipeline 而非 skill）→ CONTRADICTS (47.8107ms)
+✔ R9 记述性豁免：CR 上下文域内无 skill id 的「下一步」行（标题/描述性）→ 不报 (45.6959ms)
+✔ R7 权威字面量：完整 NORMAL pair 通过；短 trigger → CONTRADICTS（AC-27） (49.0764ms)
+✔ R7：trigger 存在但 to 不匹配 → CONTRADICTS（AC-27） (44.8369ms)
+✔ R7：to/trigger 含模板变量 → 跳过 literal 校验（AC-29） (45.7744ms)
+✔ R7：LF/CRLF 输入等价（AC-28） (95.2577ms)
+✔ R7 transitions 错层 → STATE_MACHINE_PARSE_FAILED 非零退出（AC-28） (46.9079ms)
+✔ R7 transitions duplicate → STATE_MACHINE_PARSE_FAILED 非零退出（AC-28） (47.6618ms)
+✔ R7 transitions missing → STATE_MACHINE_PARSE_FAILED 非零退出（AC-28） (46.3509ms)
+✔ R7 transitions empty → STATE_MACHINE_PARSE_FAILED 非零退出（AC-28） (50.1206ms)
+✔ R7 transitions malformed → STATE_MACHINE_PARSE_FAILED 非零退出（AC-28） (46.8537ms)
+✔ R7 transitions truncated → STATE_MACHINE_PARSE_FAILED 非零退出（AC-28） (44.7635ms)
+✔ R10：cr-init / crctl test 旧旗标 / review_llm → CONTRADICTS (54.7746ms)
+✔ R10 不误报：crctl test --plan 与 crctl register 不报 (48.0684ms)
+✔ R11：已退役 Skill active 引用 → STALE-REF (53.0697ms)
+✔ R12：Agent/README 同段 3+ 具名状态 → CONTRADICTS；2 个状态不误报 (54.2298ms)
+✔ R12 不适用：Skill 同段 3+ 状态不报（只约束 Agent/README） (45.1436ms)
+✔ R13：Agent 从 _backlog.yml 推断 status/状态 → CONTRADICTS；只读上下文不误报 (52.313ms)
+✔ R12/R13：LF 与 CRLF 输入结果一致 (105.471ms)
+✔ R13 豁免：<!-- lint-prompts:ignore --> ±1 行内豁免 (45.2471ms)
+ℹ tests 37
+ℹ suites 0
+ℹ pass 37
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2020.9265
+
+--- stderr ---
