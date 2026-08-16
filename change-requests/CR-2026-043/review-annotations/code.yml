@@ -1,0 +1,45 @@
+cr-id: CR-2026-043
+review-type: code
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-16T08:22:11+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  spec-conformance: "pass: recovery rechecks every recorded repo, intentDigest binds all repos, ff-only failure maps to WORKSPACE_SYNC_CONFLICT, status failures fail closed"
+  engineering-quality: "pass: shared recheck helper removes duplicated drift logic; action normalization preserves SyncResult contract; 386/386 machine evidence pass"
+  key-path-readability: "pass: preflight/recheck/recovery/write path remains explicit and bounded"
+  security: "pass: shell=false, fixed Git argv, ff-only sole worktree write, no reset/rebase/merge automation"
+  test-coverage: "pass: added single-repo crash-after-ff drift, all-repo digest/unchanged drift, ff-only conflict, status technical failure; full suite green"
+  test-evidence-credibility: "pass: test-report generated-by crctl-test, attempt 3/3 status=pass, traceability digest matches, evidence log present"
+  frontend-quality: "not-applicable: diff does not touch frontend files"
+  reviewer-model: "gpt-5.6-sol"
+suggestions:
+  - "Ubuntu full regression remains pending because the local WSL Ubuntu ext4.vhdx is missing; run the same crctl test plan in Linux CI before merge."
+  - "The pipeline index correction from existing 13/actual 15 to 17 is covered by the new contract test; update the historical numeric note in the SDD during writeback if the document remains user-facing."
+  - "Checkpoint and review-start freshness completed after intermittent GitHub connectivity; retain the successful checkpoint batch as the review evidence boundary."
+release-subjects:
+  version: 1
+  repositories:
+    - repo: ai-first-platform-docs
+      remote-ref: refs/heads/requirement/CR-2026-043
+      reviewed-source-sha: d9a084289aa8c2c6e7fbba940846c45875125182
+    - repo: multica
+      remote-ref: refs/heads/requirement/CR-2026-043
+      reviewed-source-sha: 33720218ca5b3d3ff7fa5412753f0843dc3571e4
+    - repo: tools
+      remote-ref: refs/heads/requirement/CR-2026-043
+      reviewed-source-sha: 67b4a1342bfeba50ae2ca500c603df7412db29b2
+  artifacts:
+    algorithm: sha256
+    canonicalization: crlf-to-lf+path-sort
+    files:
+      - { path: change-requests/CR-2026-043/plan.md, sha256: 798f9db37f094afe588a4aecc29234cd3adab017798d8e9e3feab1cd62b217ff }
+      - { path: change-requests/CR-2026-043/prd.md, sha256: f015ed18c37de13e3e46308a0008bf1862d9e16376abf18b832b7605ae45e8ef }
+      - { path: change-requests/CR-2026-043/sdd.md, sha256: aad9e8e20a047a6619902d7c7529ea9b832981e348ee73c9559c62a6ed0b50e4 }
+      - { path: change-requests/CR-2026-043/tasks/TASK-01.md, sha256: 6ced58b51240cd70906bb7c51ee3768747f51a430a911244760754129afacf55 }
+      - { path: change-requests/CR-2026-043/tasks/TASK-02.md, sha256: 4d338ba57433420553023e2077388f9e4fcfb8d5b8adb31b537a1934b24b5a21 }
+      - { path: change-requests/CR-2026-043/tasks/TASK-03.md, sha256: 63dca8e2ab3fbb71d79f989fd56f4088e553dc91758d6e53eb0dade79566052c }
+      - { path: change-requests/CR-2026-043/tasks/TASK-04.md, sha256: a3a370fdf18056abbe840e53846349763d2105983bb6405538f06628c7294157 }
+      - { path: change-requests/CR-2026-043/tasks/TASK-05.md, sha256: 8f8041669c13e7fcb1737f28e270c99a5b9c2294ac41c1a3af49e3a32394f22f }
+      - { path: change-requests/CR-2026-043/tasks/_index.yml, sha256: e6faef99ba94dc9497eeb8cae4b5c3b7dd5accc3669f49a437cc3eba7a82eabe }
+    digest: 5a9d18b8b1216b3f328fbefb11fa9468edbf337466f710f4a21aca7eabd2d886

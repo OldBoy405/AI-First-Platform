@@ -1,0 +1,17 @@
+cr-id: CR-2026-043
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-16T00:50:52+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  prd-sdd-alignment: "pass: FR-01 至 FR-06 均有明确落点；all-fresh 零 journal、阻断/失败审计、只向前恢复和双 gate 行为已可兑现"
+  architecture-rationality: "pass: 复用 resolver、基础分类、gitRun/gitMust 与 durable-tx workspace op；Agent/Pipeline/Skill/crctl 边界清晰，无第二事务框架"
+  data-model-completeness: "pass: freshness fact、sync record、workspace journal payload、intentDigest 与 audit 字段完整；intent 绑定 graphDigest/beforeSha/targetTrunkSha"
+  interface-contract: "pass: 两个窄 CLI、深模块函数、Skill route、Pipeline 节点和错误语义完整；局部 try/catch 保证 audit 在 fail 前可达"
+  performance-security: "pass: 仅 behind-clean 允许 ff-only；dirty/diverged/unknown 零写入；ancestry status 0/1/>1 硬区分；无新增依赖或破坏性 Git"
+  testability: "pass: 覆盖 all-fresh 零 journal、旧 complete 后新 trunk、部分恢复原 intent、失败 audit、merge-base status>1、竞态/锁/跨平台"
+  prompt-adoption-impact: "pass: 第 8 节列出 workspace-freshness、crctl Skill、Pipeline、README 采纳面，并明确其余 Skill 与 rules.json 不扩散"
+suggestions: []
+subject-file: change-requests/CR-2026-043/sdd.md
+subject-sha256: aad9e8e20a047a6619902d7c7529ea9b832981e348ee73c9559c62a6ed0b50e4
