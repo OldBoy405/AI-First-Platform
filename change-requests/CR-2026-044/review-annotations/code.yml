@@ -1,0 +1,46 @@
+cr-id: CR-2026-044
+review-type: code
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-17T06:54:36+08:00"
+verdict: block
+blockers:
+  - "B-01 [Spec][Major] skills/shared/crctl/scripts/lib/workspace-transactions.mjs#buildReleaseSubjects 在 classifyRepoWorkspace 前调用 collectControlledArtifacts；knowledge-base worktree missing 时错误返回 RELEASE_SUBJECT_EMPTY，未返回 FR-02/AC-02/TASK-03 要求的 RELEASE_WORKSPACE_INVALID + classification。修复：先逐仓分类并缓存 healthy info，再收集 artifact；补 missing/path-unregistered 构造测试。"
+  - "B-02 [Spec][Major] pipeline-templates/architecture-design.pipeline.json 与 code-implementation.pipeline.json 仅首节点文字声明传递 operationalWorkspace，后续节点仍消费泛化 CR worktree/knowledge_base_worktree，且结构测试只检查首节点。违反 FR-06.3/AC-12 的连续节点原样传递合同。修复：首节点输出机器可读 execution_context.operational_workspace，后续节点从 node-1.md 读取并只使用该路径；结构测试逐节点验证。"
+  - "B-03 [Spec][Major] PRD AC-16/SDD 10.1/TASK-02 要求 requirement/tech-design/dev-start/code 四 stage 参数化验证 y|yes；新增测试只覆盖 code stage。修复：补齐四 stage 的共享 TTY affirmative 回归，保留 negative/non-TTY/grant/resign 既有回归。"
+dimensions:
+  spec-conformance: "block: B-01 违反 FR-02/AC-02；B-02 违反 FR-06/AC-12；B-03 未满足 AC-16"
+  engineering-quality: "pass: 改动集中复用现有 classifier/resolver/checkpoint/merge saga，无新增依赖、schema、状态或事务层；diff --check 仅发现 KB 过程索引 EOF 空行"
+  key-path-readability: "pass: local verifier 与 publication preflight 分层清晰，merge journal sourceSha 恢复路径可读"
+  security: "pass: Git 仍走 shell=false 固定 argv，审批非 TTY/grant/resign 边界未削弱，远端失败不触发 force"
+  test-coverage: "block: missing/path-unregistered 分类及四 stage affirmative 缺少符合验收合同的覆盖；Pipeline 测试未验证后续节点消费 authority path"
+  test-evidence-credibility: "pass: test-report generated-by=crctl-test/status=pass，traceability command-digest 一致，报告引用日志存在；分析区 cmd-21 表述在回修重跑时一并刷新"
+  frontend-quality: "not-applicable: diff 不触及前端文件"
+  reviewer-model: "GPT-5"
+suggestions: []
+release-subjects:
+  version: 1
+  repositories:
+    - repo: ai-first-platform-docs
+      remote-ref: refs/heads/requirement/CR-2026-044
+      reviewed-source-sha: 05cd754e1885326a5f3f8fa78540b4fa2da1aeda
+    - repo: multica
+      remote-ref: refs/heads/requirement/CR-2026-044
+      reviewed-source-sha: 082a7536cdd26f807452610de8f113152dcb8bde
+    - repo: tools
+      remote-ref: refs/heads/requirement/CR-2026-044
+      reviewed-source-sha: c69229e32ffb5a5dc133400ac0f3f599c9ecfd90
+  artifacts:
+    algorithm: sha256
+    canonicalization: crlf-to-lf+path-sort
+    files:
+      - { path: change-requests/CR-2026-044/plan.md, sha256: 2a7752b09e53f0747e50a9681ad933ba419a3e060615234abb4b7af020f23340 }
+      - { path: change-requests/CR-2026-044/prd.md, sha256: cec168d843392c24a2113eb865384b07a95aa546320f17a046ca3551cbdb0997 }
+      - { path: change-requests/CR-2026-044/sdd.md, sha256: e838d050da959c23a11386a3eabb3a306387c37d965e1c02f6d2483c4de52467 }
+      - { path: change-requests/CR-2026-044/tasks/TASK-01.md, sha256: ce4faa261d121d1cf2ef22162c567652d18f9f616c215684255a35d1f842c04e }
+      - { path: change-requests/CR-2026-044/tasks/TASK-02.md, sha256: 75d826e8e4d23bbd1e325f6e72c0df65586a3c34b8ecf3070f6b381a75866bee }
+      - { path: change-requests/CR-2026-044/tasks/TASK-03.md, sha256: 5711a7aa87a9ffcb91a4183fc55331bcc0f6efc030e7064f011c70149a6ede16 }
+      - { path: change-requests/CR-2026-044/tasks/TASK-04.md, sha256: c308ff9541ea58a5b96fc1ad761292b0f692c42773b0104d1846db328a8614b7 }
+      - { path: change-requests/CR-2026-044/tasks/TASK-05.md, sha256: 900db8d048a6c9f74c896d31c2b71b1ff0c55c0c46c85e245dcf8a1eed2a27f8 }
+      - { path: change-requests/CR-2026-044/tasks/TASK-06.md, sha256: 43292361c2202b3612287a96ac0840355895ce7faeec9e8cc5eec11aff993240 }
+      - { path: change-requests/CR-2026-044/tasks/_index.yml, sha256: 291c47030f4aa5a6cfb588a1a6958ba2e8d88e2a796c7064968d037031b9aac9 }
+    digest: afccea5fc348015a14e4a7cba07f3d60e3e65117b1d04eb889cd435128df0b25
