@@ -1793,3 +1793,46 @@ history:
         event: archived
         to: ["Ray"]
         payload: {"final-status":"archived","archive-reason":"cr-archive","archived-at":"2026-08-15T23:54:00+08:00","writeback-spec-id":"ai-first-platform"}
+  - id: CR-2026-043
+    title: Workspace 基线新鲜度与 CR Worktree 同步治理
+    summary: "落实独立 workspace freshness 治理：对每个 active repository 比较 CR worktree HEAD 与 fetch 后的 origin/{trunk}，新增 fresh/behind-clean/diverged/unknown 分层分类；behind-clean 提供显式可审计 --ff-only 同步；implement-code 前与 review-code 前接入 freshness gate，评审 gate 失败复用既有 reviewLoop 重放；复用现有 workspace resolver、durable-tx workspace operation、lock/journal/audit 与原生 Git ancestry/merge --ff-only，不新增第二套事务框架。"
+    owner: Ray
+    owners:
+      requirement:
+        id: Ray
+        assigned-at: "2026-08-15T23:59:36+08:00"
+      development:
+        id: Ray
+        assigned-at: "2026-08-15T23:59:36+08:00"
+      test:
+        id: Ray
+        assigned-at: "2026-08-15T23:59:36+08:00"
+    target-version: tbd
+    source: docs/analysis/workspace-baseline-freshness-governance.md
+    prd-path: "change-requests/CR-2026-043/prd.md"
+    created: "2026-08-15T23:59:36+08:00"
+    updated: "2026-08-15T23:59:36+08:00"
+  
+    sdd-path: "change-requests/CR-2026-043/sdd.md"
+    latest-checkpoint:
+      batch-id: 936b3e46ecefd9aa
+      repositories:
+        - repo: ai-first-platform-docs
+          source-sha: 3d755a3bae0810b3f444f4968b654c5bd092ee18
+          remote-ref: refs/heads/requirement/CR-2026-043
+        - repo: multica
+          source-sha: 33720218ca5b3d3ff7fa5412753f0843dc3571e4
+          remote-ref: refs/heads/requirement/CR-2026-043
+        - repo: tools
+          source-sha: 67b4a1342bfeba50ae2ca500c603df7412db29b2
+          remote-ref: refs/heads/requirement/CR-2026-043
+  
+    final-status: archived
+    archive-reason: "cr-archive"
+    writeback-spec-id: ai-first-platform
+    archived-at: "2026-08-16T09:23:05+08:00"
+    notify-log:
+      - at: "2026-08-16T09:23:05+08:00"
+        event: archived
+        to: ["Ray"]
+        payload: {"final-status":"archived","archive-reason":"cr-archive","archived-at":"2026-08-16T09:23:05+08:00","writeback-spec-id":"ai-first-platform"}
