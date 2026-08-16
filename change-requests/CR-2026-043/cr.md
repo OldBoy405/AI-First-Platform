@@ -15,9 +15,9 @@ owners:
     assigned-at: "2026-08-15T23:59:36+08:00"
 target-version: tbd
 source: docs/analysis/workspace-baseline-freshness-governance.md
-status: code-approved
+status: merging
 created: "2026-08-15T23:59:36+08:00"
-updated: "2026-08-16T09:19:29+08:00"
+updated: "2026-08-16T09:20:58+08:00"
 remote-ref: ""
 last-push-at: ""
 last-push-by: ""
