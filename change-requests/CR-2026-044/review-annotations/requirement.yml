@@ -1,0 +1,19 @@
+cr-id: CR-2026-044
+review-type: requirement
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-16T23:39:27+08:00"
+verdict: block
+blockers:
+  - "B-01：FR-03/AC-05 只写‘既有 metadata 白名单’，未冻结具体路径，实施者无法判断保持哪些路径且测试无法证明没有扩权。回修要求：在 FR-03 明确列出 approval.yml、cr.md、traceability.yml、review-loop.yml、change-requests/_backlog.yml 与 review-annotations/ 前缀，并在 AC-05 对该精确集合做允许/拒绝测试。"
+  - "B-02：PRD 仅在风险中提及已启动 merge 事务，没有定义新 verifier 启用时 developing/code-reviewing/code-approved/已有 trunk publish 四类在途 CR 的兼容处理，可能导致历史 snapshot 被误判或跨版本恢复。回修要求：新增兼容与启用 FR/AC，明确各状态采用、重评、checkpoint 后 merge及使用原事务版本完成的规则，且禁止批量迁移历史 schema。"
+dimensions:
+  结构完整性: "BLOCK：主体章节齐全，但缺少版本启用与在途 CR 兼容合同。"
+  FR 可测试性: "BLOCK：FR-03 的‘既有 metadata 白名单’未枚举，AC-05 无法对精确允许集合形成确定性断言；在途 CR 兼容也缺少 AC。"
+  范围合理性: "PASS：范围坚持复用现有 classifier、release-subjects v1、checkpoint、merge saga 与 durable transaction，未新增状态、账本、schema、CLI、脚本、事务层或依赖。"
+  与规划对齐: "BLOCK：source 第 6.3 节给出精确白名单，第 9.4 节给出兼容与迁移规则，当前 PRD 未完整纳入。"
+  依赖识别: "PASS：已识别 resolver、classifier、release verifier、checkpoint、merge journal、Pipeline、Skill 与测试 fixture，但需把 merge journal 依赖转成明确启用规则。"
+suggestions:
+  - "保持当前 10 个 FR 的主体结构；用一个窄 FR-11 承接兼容启用，不引入迁移框架。"
+  - "回修只补精确路径与四类状态行为，避免展开成通用版本治理设计。"
+subject-file: change-requests/CR-2026-044/prd.md
+subject-sha256: 2cb23196725c1e53a9937fdce35d9c2bc5c242d8892834b1f83786c306c9eb33
