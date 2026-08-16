@@ -1,19 +1,16 @@
 cr-id: CR-2026-044
 review-type: requirement
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-16T23:39:27+08:00"
-verdict: block
-blockers:
-  - "B-01：FR-03/AC-05 只写‘既有 metadata 白名单’，未冻结具体路径，实施者无法判断保持哪些路径且测试无法证明没有扩权。回修要求：在 FR-03 明确列出 approval.yml、cr.md、traceability.yml、review-loop.yml、change-requests/_backlog.yml 与 review-annotations/ 前缀，并在 AC-05 对该精确集合做允许/拒绝测试。"
-  - "B-02：PRD 仅在风险中提及已启动 merge 事务，没有定义新 verifier 启用时 developing/code-reviewing/code-approved/已有 trunk publish 四类在途 CR 的兼容处理，可能导致历史 snapshot 被误判或跨版本恢复。回修要求：新增兼容与启用 FR/AC，明确各状态采用、重评、checkpoint 后 merge及使用原事务版本完成的规则，且禁止批量迁移历史 schema。"
+reviewed-at: "2026-08-16T23:40:49+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  结构完整性: "BLOCK：主体章节齐全，但缺少版本启用与在途 CR 兼容合同。"
-  FR 可测试性: "BLOCK：FR-03 的‘既有 metadata 白名单’未枚举，AC-05 无法对精确允许集合形成确定性断言；在途 CR 兼容也缺少 AC。"
-  范围合理性: "PASS：范围坚持复用现有 classifier、release-subjects v1、checkpoint、merge saga 与 durable transaction，未新增状态、账本、schema、CLI、脚本、事务层或依赖。"
-  与规划对齐: "BLOCK：source 第 6.3 节给出精确白名单，第 9.4 节给出兼容与迁移规则，当前 PRD 未完整纳入。"
-  依赖识别: "PASS：已识别 resolver、classifier、release verifier、checkpoint、merge journal、Pipeline、Skill 与测试 fixture，但需把 merge journal 依赖转成明确启用规则。"
+  结构完整性: "PASS：概述、Ponytail 优先级、模块职责、已解决基础设施、最小改造、6 个用户故事、11 条 FR、8 条 NFR、23 条 AC、成功指标、依赖风险、范围排除和变更记录齐全。"
+  FR 可测试性: "PASS：FR-01~11 均有 AC 映射；B-01 已将 KB metadata 白名单冻结为五个文件加 review-annotations 前缀并提供逐项允许/拒绝断言；B-02 已为四类在途状态提供 AC-21~23。"
+  范围合理性: "PASS：方案只收窄现有 verifier、增加 merge 首次 prepare 前 preflight、调整现有 Pipeline/Skill/文档及共享 TTY 判断；明确新增 CLI、状态、账本、schema、事务层、脚本和依赖均为 0。"
+  与规划对齐: "PASS：完整覆盖 source 的本地业务权威、publication lag 不回退、全仓 preflight、Operational Workspace 连续性、阶段终点 checkpoint、freshness 收敛、TTY y|yes、精确白名单及兼容启用要求。"
+  依赖识别: "PASS：已识别 resolver、classifyRepoWorkspace、release-subjects v1、checkpoint、merge saga/journal、durable transaction、受控 Git、Pipeline/Skill 与既有 bare remote fixture；恢复责任未复制到新模块。"
 suggestions:
-  - "保持当前 10 个 FR 的主体结构；用一个窄 FR-11 承接兼容启用，不引入迁移框架。"
-  - "回修只补精确路径与四类状态行为，避免展开成通用版本治理设计。"
+  - "SDD 按 PRD 第 3/4 节逐项映射现有函数和文件，保持同样的复用边界。"
 subject-file: change-requests/CR-2026-044/prd.md
-subject-sha256: 2cb23196725c1e53a9937fdce35d9c2bc5c242d8892834b1f83786c306c9eb33
+subject-sha256: cec168d843392c24a2113eb865384b07a95aa546320f17a046ca3551cbdb0997
