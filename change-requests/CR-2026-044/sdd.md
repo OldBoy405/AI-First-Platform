@@ -303,7 +303,7 @@ rl.question(`以 approver=${approver} 批准该阶段？只有输入 y 或 yes �
 - 代码/测试统一 checkpoint、评审 PASS 后审批前 checkpoint 保持强制。
 - 审批后 checkpoint 的 `onFail` 从 `skip` 改为 `abort`。
 - freshness 两个节点的位置和算法不变。
-- 节点总数仍为 17。
+- 节点总数维持 trunk 基线 16（CR-2026-042 已删除评审 LLM 选择节点 17→16；本 CR 只改审批后 checkpoint `onFail`，不增删节点）。
 
 ## 7.4 Skill 文本
 
@@ -391,7 +391,7 @@ FR 覆盖率：11/11。
 
 1. requirement 审批后强制 checkpoint，节点数 7；草稿 checkpoint 仍可选。
 2. architecture 无 `auto_push_after_sdd`，审批后 checkpoint `onFail=abort`，节点数 5。
-3. code 审批后 checkpoint `onFail=abort`，TASK checkpoint 仍可选，节点数 17。
+3. code 审批后 checkpoint `onFail=abort`，TASK checkpoint 仍可选，节点数维持 trunk 基线 16（CR-2026-042 已删评审 LLM 选择节点）。
 4. architecture/code 首节点要求全部 `resources[].classification=healthy`，取得并后续传递 `operationalWorkspace`；非 healthy 时 abort 并指向 resume。
 5. Pipeline 不含 fetch、SHA、Git、CAS、journal 算法文本。
 
