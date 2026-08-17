@@ -1878,3 +1878,45 @@ history:
         event: archived
         to: ["Ray"]
         payload: {"final-status":"archived","archive-reason":"cr-archive","archived-at":"2026-08-16T21:20:05+08:00","writeback-spec-id":"ai-first-platform"}
+  - id: CR-2026-044
+    title: Tools 本地业务门禁、远端发布与人工审批确认方案
+    summary: "分离本地业务事实与远端发布事实：status/gate/review/approve 只读当前 Operational Workspace 与本地 CR worktree；checkpoint/merge/writeback/archive 才读取远端。merge 增加全仓 publication preflight，远端 requirement ref 缺失或滞后时保持 code-approved 并指向 checkpoint 恢复，真实本地漂移才回退 developing；四个 TTY 人工审批统一接受 trim 后大小写不敏感的 y|yes。不新增状态、账本、schema、公共命令、事务层或依赖。"
+    owner: Ray
+    owners:
+      requirement:
+        id: Ray
+        assigned-at: "2026-08-16T23:32:37+08:00"
+      development:
+        id: Ray
+        assigned-at: "2026-08-16T23:32:37+08:00"
+      test:
+        id: Ray
+        assigned-at: "2026-08-16T23:32:37+08:00"
+    target-version: tbd
+    source: docs/analysis/tools-local-worktree-gates-remote-publication-boundary.md
+    prd-path: "change-requests/CR-2026-044/prd.md"
+    created: "2026-08-16T23:32:37+08:00"
+    updated: "2026-08-16T23:32:37+08:00"
+    latest-checkpoint:
+      batch-id: b8d51a1ac888826c
+      repositories:
+        - repo: ai-first-platform-docs
+          source-sha: 4cbe7082c135ed34f54e0fa1ce834d9642db70f7
+          remote-ref: refs/heads/requirement/CR-2026-044
+        - repo: multica
+          source-sha: 082a7536cdd26f807452610de8f113152dcb8bde
+          remote-ref: refs/heads/requirement/CR-2026-044
+        - repo: tools
+          source-sha: 4222e150760e0c6e55c99b7c4a3009b70f0df5b3
+          remote-ref: refs/heads/requirement/CR-2026-044
+    sdd-path: "change-requests/CR-2026-044/sdd.md"
+  
+    final-status: archived
+    archive-reason: "cr-archive"
+    writeback-spec-id: ai-first-platform
+    archived-at: "2026-08-17T11:00:51+08:00"
+    notify-log:
+      - at: "2026-08-17T11:00:51+08:00"
+        event: archived
+        to: ["Ray"]
+        payload: {"final-status":"archived","archive-reason":"cr-archive","archived-at":"2026-08-17T11:00:51+08:00","writeback-spec-id":"ai-first-platform"}
