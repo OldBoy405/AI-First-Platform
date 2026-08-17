@@ -15,9 +15,9 @@ owners:
     assigned-at: "2026-08-17T18:28:16+08:00"
 target-version: tbd
 source: "docs/product/缺口清单-最终版.md"
-status: tech-design-reviewed
+status: task-breakdown
 created: "2026-08-17T18:28:16+08:00"
-updated: "2026-08-17T19:47:31+08:00"
+updated: "2026-08-17T20:43:30+08:00"
 remote-ref: ""
 last-push-at: ""
 last-push-by: ""
