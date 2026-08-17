@@ -1,14 +1,14 @@
 $ node --test skills/shared/crctl/scripts/test/fault-harness.test.mjs
 (exit=0)
 --- stdout ---
-✔ fault harness：CRCTL_FAULT_POINT 未设置 → 零行为，正常命令不受影响 (81.4315ms)
-✔ fault harness：未登记 point → UNKNOWN_FAULT_POINT 硬失败且零写入 (53.409ms)
-✔ fault harness：命中挂接点 → FAULT_INJECTED 结构化退出并回显 point (180.0721ms)
-✔ fault harness：point 已设置但执行路径未挂接 → 命令正常完成 (77.2481ms)
-✔ checkpoint fault points 已登记（CR-2026-033 T01） (397.0312ms)
-✔ review repair：ledger rename 间隙中断后，下次同命令先整组回滚再成功重试 (427.1532ms)
-✔ fault harness：test 记录阶段 tx-apply-between-rename 中断后恢复，attempt 不重复 (1015.6547ms)
-✔ fault harness：test 记录阶段 tx-apply-before-complete 中断后恢复并标 complete (1180.8621ms)
+✔ fault harness：CRCTL_FAULT_POINT 未设置 → 零行为，正常命令不受影响 (79.8763ms)
+✔ fault harness：未登记 point → UNKNOWN_FAULT_POINT 硬失败且零写入 (52.2137ms)
+✔ fault harness：命中挂接点 → FAULT_INJECTED 结构化退出并回显 point (177.8824ms)
+✔ fault harness：point 已设置但执行路径未挂接 → 命令正常完成 (79.6089ms)
+✔ checkpoint fault points 已登记（CR-2026-033 T01） (378.2688ms)
+✔ review repair：ledger rename 间隙中断后，下次同命令先整组回滚再成功重试 (418.7815ms)
+✔ fault harness：test 记录阶段 tx-apply-between-rename 中断后恢复，attempt 不重复 (1026.4682ms)
+✔ fault harness：test 记录阶段 tx-apply-before-complete 中断后恢复并标 complete (1174.7943ms)
 ℹ tests 8
 ℹ suites 0
 ℹ pass 8
@@ -16,6 +16,6 @@ $ node --test skills/shared/crctl/scripts/test/fault-harness.test.mjs
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 3473.9762
+ℹ duration_ms 3459.6636
 
 --- stderr ---

@@ -3,7 +3,7 @@ cr: CR-2026-044
 status: pass
 tester: Ray
 generated-by: crctl-test
-generated-at: "2026-08-17T07:24:15+08:00"
+generated-at: "2026-08-17T08:26:09+08:00"
 command-digest: 8a2c056ff17a232856a773b26ffc7c7c218ea7305a2ad584f00c8997b702d320
 commands:
   - repo: tools
@@ -260,6 +260,13 @@ commands:
 - **B-03 已修复**：TTY affirmative 回归扩展为 requirement/tech-design/dev-start/code 四 stage 与 `y/Y/yes/YES/YeS`、前后空白的参数化组合；negative、非 TTY、grant/resign 既有回归保留。
 - 本轮重跑后的直接证据：`crctl.test.mjs` 184/184、`pipeline-structure.test.mjs` 12/12；上述结果包含在本 attempt 3 的 20 条命令全绿证据中。
 
+### Merge 冲突解决与 16 节点对齐（write-test-report cycle 2 attempt 1）
+
+- tools trunk 在 CR 分支基点之后合入 CR-2026-042：README 重构为 8 节 90 行（不再复刻节点表）、code pipeline 从 17 节点减为 16（删除评审 LLM 选择节点）。首次 `crctl merge` 在 tools 仓 `MERGE_PREPARE_CONFLICT`（README.md、`_index.yml`、code-implementation.pipeline.json、crctl/SKILL.md、crctl.test.mjs）。
+- 冲突解决：在 tools CR 分支合入 `origin/custom/main`，按 trunk 新结构保留 CR-2026-044 语义——README 采用 8 节版并在 §6 checkpoint 行补充阶段终点强制语义；`_index.yml`/code pipeline 保留 16 节点现实与审批后 checkpoint `onFail=abort`、workspace inspect authority path；crctl/SKILL.md 保留 publication preflight 描述；crctl.test.mjs 同时保留 CR-2026-044 失败向量测试与 CR-2026-042 静态合同测试（修复一处冲突标记吞掉的测试闭包）。
+- 合并后 tools source 变化（HEAD 815a4f4 → 4222e15），release-subjects 快照失效，`crctl merge` 按设计返回 release-drift 并权威回退 `code-approved -> developing`；SDD §7.3/§10.4 节点数同步为 16（标注 CR-2026-042 基线）。
+- 本轮 20/20 命令通过：crctl 189、pipeline-structure 14（含 16 节点断言）、merge-tx 14、其余套件 195 合计通过；lint/矩阵/契约 0 findings。
+
 ### 下一步建议
 
-测试证据 status=pass，等待本轮代码评审复审结论；PASS 后由 `crctl next` 指向审批前 checkpoint 与人工代码审批。
+测试证据 status=pass（cycle 2 attempt 1），待重跑 review-code 刷新评审证据（旧评审记录绑定旧 source，须按 FR-11/AC-21 重审）后，由 `crctl next` 指向审批前 checkpoint 与人工代码审批。
