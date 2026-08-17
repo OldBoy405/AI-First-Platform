@@ -5,7 +5,7 @@ cr-ref: CR-2026-045
 title: Runner Core：architecture-design 自动调度纵切 技术设计
 status: draft
 created: 2026-08-17T19:00:11+08:00
-updated: 2026-08-17T19:00:11+08:00
+updated: 2026-08-17T19:16:00+08:00
 ---
 
 # 1. 架构概览
@@ -126,7 +126,7 @@ write-tech-design
 }
 ```
 
-该脚本只做确定性转换与硬校验：CRLF→LF、Pipeline active、Skill active、每个 Skill 恰有一个 owner、pipeline owner 对每个 Skill 有 `owns` 或 `can-call`。失败非零退出，不输出空 registry。
+该脚本只做确定性转换与硬校验：CRLF→LF、Pipeline active、Skill active、每个 Skill 恰有一个 owner、pipeline owner 对每个 Skill 有 `owns` 或 `can-call`。prompt 渲染只允许 `{{inputs.cr_id}}` 与 `{{inputs.tech_context}}` 两个字面 token，使用 `String.replaceAll`，`tech_context` 作为有长度上限的数据块附加；生成后仍有 `{{`/`}}` 即硬失败，不实现表达式解释器。失败非零退出，不输出空 registry。
 
 ## 3.2 单一生成 registry
 
@@ -236,14 +236,23 @@ Runner 不解析 Agent final text、blocker 文本或 `crctl` stderr 来决定�
 }
 ```
 
-入队时直接写现有 `cr_id` 与 `pipeline_node_run_id`。source task 的人类归因、executor Agent 和 runtime 由现有 TaskService 校验/继承；不新增 attribution 模型。
+入队时直接写现有 `cr_id` 与 `pipeline_node_run_id`。新增唯一 sqlc 查询 `CreatePipelineTask`，不是通用 enqueue builder：
+
+1. 以 task-token 盖写的 `source_task_id` 为唯一 attribution 来源；source task 必须属于同一 workspace，且 `source_task.agent_id=executor_agent_id`。
+2. 从 source task 原样复制 `originator_user_id`、`accountable_user_id`、`originator_source`、`delegated_from_task_id`、`rule_version_id`、`trigger_evidence_kind`、`trigger_evidence_ref_id`。Pipeline 后继节点是同一用户意图的系统延续，不重新分类 attribution，也不把 logical owner 当用户。
+3. executor Agent/runtime 从同 workspace active Agent 行重读；`cr_id` 必须存在于同 workspace `cr` 投影；任一 JOIN/guard 不满足则 INSERT 0 行并返回 `RUNNER_ATTRIBUTION_INVALID`。
+4. context、`cr_id`、`pipeline_node_run_id` 与完整 attribution snapshot 在同一 INSERT 中写入。当前 strict `originator→accountable` CHECK 继续机械兜底。
+5. 既有 `CreateRetryTask` 已原样继承 attribution、`cr_id` 和 `pipeline_node_run_id`，不新增 retry 分支；只增加合同测试锁定其列清单仍完整。
 
 handler claim path识别 `context.type=pipeline_node` 后填充 task wire 的 `Pipeline*` 字段。daemon 增加 `kindPipeline`：
 
 - `BuildPrompt` 对 pipeline task 直接返回固定 `PipelinePrompt`，不进入 issue/chat/quick-create prompt。
 - slim runtime brief 只保留 workspace context、Agent instructions、已绑定 Skills、受控 shell和通用安全规则；不渲染 Issue Metadata、comment workflow 或 quick-create 命令。
 - 在 `CRWorkspaceRoots` 中按 `cr_id` 查找唯一 CR root；0 或多于 1 个均 fail closed。
-- pipeline task 的 `CRCTL_WORKSPACE` 指向该唯一 root；Agent 在 scratch workdir 运行，但通过 `crctl workspace inspect` 得到 operational workspace。
+- 复用 `MULTICA_CONTROLLED_SHELL_RULES`：按现有 `prepareCRGuard` 的同一相对关系从 `rules.json` 派生 `crctl.mjs`，不新增第二个路径配置；未配置/文件不存在时仅 pipeline task 返回 `PIPELINE_CRCTL_UNAVAILABLE`，普通任务不变。
+- daemon 以 `spawnSync` 等价的 Go `exec.CommandContext(node, crctl, workspace, inspect, ...)` 形态（argv、`shell=false` 语义）对唯一 root 执行一次 `crctl workspace inspect`，要求全部 resources healthy 且 `operationalWorkspace` 非空、realpath 位于该 CR root 内。
+- 将 `operationalWorkspace` 作为现有 `PrepareParams.LocalWorkDir`；给 pipeline task 合成 `localDirectoryAssignment` 后复用 `normalizeLocalPath`、realpath、`localPathLocks.Acquire`、local-directory sidecar/runtime-config cleanup，不开第二套路径锁。
+- `CRCTL_WORKSPACE` 仍指向唯一 CR root；Agent cwd 为 operational workspace，现有 Pipeline prompt 再执行 inspect 取得同一权威路径。
 - GC 继续使用 task-id 查询现有 task terminal 状态，不增加 GC 账本。
 
 ## 3.6 唤醒接线
@@ -254,6 +263,8 @@ handler claim path识别 `context.type=pipeline_node` 后填充 task wire 的 `P
 - `task:completed` / `task:failed` → 仅当 task 有 `pipeline_node_run_id` 时查 run 并 `Reconcile`。
 - `HandleGrantsAck` 更新 `delivered_at` 后，按 ACK IDs 查询受影响 CR，直接调用 `Reconcile`；不新增会被 WS `SubscribeAll` 外发的内部事件。
 - server 启动后一次性扫描 `runner=architecture-core/v1` 的非终态 run 并 `Reconcile`。
+
+现有 review outbox 契约需要一个确定性扩充：`crctl review-record` 已经计算 canonical annotation、attempt、blockers、reviewed-at 和 LF-normalized subject digest，因此由它在同一 `event_kind=review` payload 写入 `attempt`、`blockers`、`reviewed_at`、`subject_sha256`。这不新增命令、状态、账本或判断；只是让现有唯一写者把已持久化事实投影完整。旧 payload 缺任一 Core 字段时 projector 仍可维持旧 UI，但 Runner 必须以 `RUNNER_REVIEW_EVIDENCE_INCOMPLETE` fail closed。
 
 事件只是唤醒，不是权威事实；丢失唤醒由后续事件或启动扫描恢复。
 
@@ -269,25 +280,48 @@ handler claim path识别 `context.type=pipeline_node` 后填充 task wire 的 `P
 | `pipeline_run.execution_context` | runner schema、digest、pipeline owner、executor Agent、source task |
 | `pipeline_run.status` | running / waiting_approval / completed / failed / cancelled |
 | `pipeline_node_run.attempt` | 只投影 `crctl` review attempt；初始 write/approval/checkpoint 为 1 |
-| `pipeline_node_run.detail` | logical owner、task id、wait_reason、结构化失败；review payload 继续由 projector 写 |
+| `pipeline_node_run.detail` | review 顶层投影 + `runner` 命名空间；见下方多写规则 |
 | `pipeline_node_run.output_note` | Core 不使用；不创建 node-N 文件协议 |
 
-projector 与 Runner 共用同一 row：projector 写 CR/review/approval 投影；Runner 写调度状态。所有 UPDATE 必须只改本方拥有字段，terminal 状态不回开。
+projector 与 Runner 共用同一 row，采用字段级 merge 而不是整段替换：
+
+```json
+{
+  "verdict": "pass|block",
+  "blockers": [],
+  "attempt": 1,
+  "reviewed_at": "...",
+  "subject_sha256": "...",
+  "runner": {
+    "logical_owner": "dev-agent",
+    "task_id": "uuid",
+    "wait_reason": "authority_postcondition",
+    "error": { "code": "...", "message": "..." }
+  }
+}
+```
+
+- Runner 只用 `jsonb_set(COALESCE(detail,'{}'), '{runner}', ...)` 更新 `detail.runner`。
+- `applyReview` 用 `COALESCE(pipeline_node_run.detail,'{}') || $reviewPayload` 合并 review 顶层字段；payload schema 禁止 `runner` 键，因此保留 Runner 数据。
+- review payload 右侧覆盖旧 verdict/blockers/attempt；Runner 从不覆盖这些键。
+- terminal node/run 的 SQL predicate 禁止迟到 projector 或 Runner wake 重开。
+
+两种写入顺序（Runner→review、review→Runner）与 projector replay 都必须得到同一 JSON。
 
 ## 4.2 attempt
 
 - 初始 `write-tech-design` 与第一次 review 使用 attempt 1。
 - review block 事件 attempt=N 后，`replayNodes` 的 repair/review 使用 attempt=N+1。
 - Runner 不自增 canonical attempt；创建 repair node 前必须已观察 `crctl` 投影的 attempt=N。
-- `LOOP_EXHAUSTED` 以权威事件/任务结构化失败停止，不用 server 自己比较自然语言。
+- 当 projected canonical review 同时满足 `verdict=block`、`attempt=registry.maxAttempts` 时，Runner 标记 `RUNNER_LOOP_EXHAUSTED` 并停止，不创建 attempt+1。Runner只比较 crctl 已持久化的 attempt 与 Pipeline max，不递增账本、不解析 task stderr；tools 集成测试另行证明真实 `crctl attempt` 的 attempt+1 返回 `LOOP_EXHAUSTED`。
 
 # 5. 节点后置条件
 
 | 节点 | task/人类结果 | CR 权威事实 | 后继 |
 |---|---|---|---|
 | write | task completed | status=`tech-design-review-pending` | review |
-| review pass | task completed | sdd review pass、blockers=[]、attempt 当前 | human approval |
-| review block | task completed | sdd review block、status=`tech-designing`、attempt=N | replay write/review attempt N+1 |
+| review pass | task completed | sdd review payload 字段齐全、pass、blockers=[]、attempt 当前，且 `subject_sha256` 等于当前 SDD LF digest 对应的 canonical 事件证据 | human approval |
+| review block | task completed | sdd review payload 字段齐全、block、status=`tech-designing`、attempt=N；N=max 时 exhausted | N<max 才 replay write/review attempt N+1 |
 | human approval | grant delivered | pass review 当前、status=`tech-design-review-pending` | approve Skill |
 | approve | task completed | approval.yml 投影存在、status=`tech-design-reviewed` | push-progress |
 | reject | task failed/business reject | approval decision=reject、status=`tech-designing` | run failed，不 checkpoint |
@@ -306,7 +340,10 @@ projector 与 Runner 共用同一 row：projector 写 CR/review/approval 投影�
 | `RUNNER_SKILL_MISSING` | 任一节点 Skill 未启用 | 零任务 |
 | `RUNNER_CONTRACT_INVALID` | registry/node/matrix 不一致 | server 启动失败或 start 零写入 |
 | `TEMPLATE_DIGEST_MISMATCH` | 恢复 digest 不同 | run failed，无新任务 |
-| `RUNNER_AUTHORITY_MISMATCH` | task 与 CR 后置条件冲突 | 当前 node 停止，detail 留证 |
+| `RUNNER_AUTHORITY_MISMATCH` | task 与 CR 后置条件冲突 | 当前 node 停止，detail.runner 留证 |
+| `RUNNER_ATTRIBUTION_INVALID` | source task / Agent / CR workspace guard 或 strict attribution 失败 | 零任务，node failed |
+| `RUNNER_REVIEW_EVIDENCE_INCOMPLETE` | review payload 缺 attempt/blockers/subject | 不进入 repair/approval |
+| `PIPELINE_CRCTL_UNAVAILABLE` | daemon 无法从现有 rules 路径派生 crctl | task failed，不降级 scratch 写入 |
 | `RUNNER_TASK_FAILED` | 无有效 retry 的 task failed/cancelled | node/run failed |
 | `RUNNER_LOOP_EXHAUSTED` | `crctl` 权威耗尽 | run failed，保留 blocker |
 
@@ -316,7 +353,8 @@ HTTP 重放同 start 返回同一 run 和 `changed=false`。
 
 - Runner start 只信 Auth middleware 盖写的 task-token headers，不信 body Agent/user/workspace ID。
 - Runner 不读取私钥、不生成/验签 grant；只检查 `approval_record.delivered_at`，最终证据由 `crctl approve --grant` 验证。
-- fixed registry prompt 只替换声明输入；`tech_context` 做长度上限并作为数据块附加，不参与模板/节点选择。
+- fixed registry prompt 只替换 `cr_id`/`tech_context` 两个声明 token；`tech_context` 做长度上限并作为数据块附加，不参与模板/节点选择。
+- pipeline task 只在 `workspace inspect` 返回的 operational workspace 中运行，沿用现有 realpath/path lock/sidecar cleanup；绝不降级到 scratch 跨目录写。
 - `Reconcile` 以 indexed run/CR/node/task 查询为主，每次最多入队一个 task，无后台全表轮询。
 - startup scan 只取 Core 非终态 run；数量与在途 architecture CR 同阶。
 - DB unique violation是正常竞态输家路径：重读，不循环重试。
@@ -359,9 +397,10 @@ HTTP 重放同 start 返回同一 run 和 `changed=false`。
 
 - `pipeline-templates/architecture-design.pipeline.json`
 - `pipeline-templates/emit-registry.mjs` + 窄测试
+- `skills/shared/crctl/scripts/crctl.mjs`：只扩现有 review outbox 的确定性 payload + 回归测试
 - 现有 Pipeline/contract tests
 
-不改 Agent、Skill、`crctl` dispatch、gates、状态机、README 算法说明。
+不改 Agent、Skill、crctl 子命令/状态/gates、状态机、README 算法说明。
 
 ## Multica
 
@@ -382,13 +421,15 @@ HTTP 重放同 start 返回同一 run 和 `changed=false`。
 1. tools registry snapshot：replay schema、node UUID、owner/can-call、CRLF canonical digest。
 2. generator `--check`：当前 tools 生成 `0016`，registry/digest 不漂移。
 3. DB integration：双 start；start 与 projector 并发；同 node 双 enqueue；retry 父终态后可创建。
-4. Runner table tests：happy path、block→repair→pass、loop exhausted、reject、checkpoint。
-5. 双重后置条件：task terminal 与 CR/review/checkpoint 事件两种顺序；只到一半不前进。
-6. grant：记录未 delivered 不入队；ACK 后一次入队；坏 grant 由 Skill/`crctl` 拒绝后 run failed。
-7. daemon：pipeline context hydration、prompt 不含 issue/quick-create workflow、CR root 0/1/2 匹配。
-8. restart：四个 PRD AC 指定窗口启动扫描，只有一个有效 task。
-9. 回归：governance projector、TaskService claim/retry、approval、daemon、CR gate API。
-10. tools 手动 architecture Pipeline 回归，Runner 未启动时行为不变。
+4. Runner table tests：happy path、block→repair→pass、canonical attempt=max exhausted、reject、checkpoint。
+5. 双重后置条件：task terminal 与 CR/review/checkpoint 事件两种顺序；只到一半不前进；subject digest 缺失/陈旧阻断。
+6. attribution：source snapshot 全字段复制、strict CHECK 通过、source/Agent/CR 任一跨 workspace 时 INSERT 0 行；retry 列清单保持。
+7. detail merge：Runner→review、review→Runner、projector replay 三种顺序结果相同，`runner` 与 verdict/blockers 均不丢。
+8. grant：记录未 delivered 不入队；ACK 后一次入队；坏 grant 由 Skill/`crctl` 拒绝后 run failed。
+9. daemon：pipeline context hydration、prompt 不含 issue/quick-create workflow、CR root 0/1/2 匹配、inspect 非 healthy、rules/crctl 缺失；LocalWorkDir 与现有 path lock/cleanup 生效。
+10. restart：四个 PRD AC 指定窗口启动扫描，只有一个有效 task。
+11. 回归：governance projector、TaskService claim/retry、approval、daemon、CR gate API。
+12. tools 手动 architecture Pipeline 回归，Runner 未启动时行为不变。
 
 数据库测试必须在真实 PostgreSQL 下看到 `=== RUN` / `--- PASS`，不能把 TestMain skip 当通过。
 
@@ -398,8 +439,12 @@ HTTP 重放同 start 返回同一 run 和 `changed=false`。
 |---|---|
 | projector 覆盖 run waiting/running | Runner 不以单一 run.status 决定业务后继；每次重算节点/CR事实，UPDATE 不回开 terminal |
 | Agent task 完成早于 CR event | 双重后置条件等待第二个唤醒 |
+| attribution 新写路径漂移 | 单一 INSERT 从 source task 复制完整 snapshot，strict DB CHECK + 列清单测试 |
+| detail 多写覆盖 | review 顶层 merge + `detail.runner` 命名空间，双顺序/replay 测试 |
 | matrix logical owner 无 runtime Agent | registry 保留 logical owner；route Agent UUID 作为 executor，并校验 Skill bindings |
 | 多个 CR roots 命中同 ID | daemon fail closed，不取第一个 |
+| provider sandbox 拒绝跨目录写 | inspect 后 operational workspace 作为现有 LocalWorkDir，并复用 realpath lock/cleanup |
+| review outbox 信息不足 | crctl 唯一写者投影 canonical attempt/blockers/subject；legacy payload 对 Runner fail closed |
 | 老 checkpoint 被误认 | occurred_at 必须不早于 push node started_at |
 | tools 部署漂移 | compiled digest 不同即 run failed，不猜旧模板 |
 | generated registry 过大 | Core 只嵌 architecture 五节点；不生成其他 Pipeline |
@@ -407,10 +452,11 @@ HTTP 重放同 start 返回同一 run 和 `changed=false`。
 
 # 13. Prompt 采纳影响
 
-本 CR 不修改 `crctl.mjs` dispatch 或 `controlled-shell/rules.json#protectedPaths.deny`，因此无需新增“应改为调用新 crctl 子命令”的 Skill。Pipeline prompt 只改为每节点独立调用既有 `workspace inspect`，不新增状态/Git命令。
+本 CR 不修改 `crctl.mjs` 的命令 dispatch、CLI 参数或 `controlled-shell/rules.json#protectedPaths.deny`，因此无需新增“应改为调用新 crctl 子命令”的 Skill。B04 回修只在现有 `review-record` 成功后 outbox payload 中投影它刚刚原子持久化的 canonical attempt/blockers/reviewed-at/subject digest，不新增业务判断或 prompt 调用面。Pipeline prompt 只改为每节点独立调用既有 `workspace inspect`，不新增状态/Git命令。
 
 # 14. 变更记录
 
 | 日期 | 版本 | 作者 | 说明 |
 |---|---|---|---|
+| 2026-08-17 | v0.2.0 | Ray | 回修 SDD-B01～B04：source attribution snapshot、detail.runner merge、operational LocalWorkDir、canonical review outbox |
 | 2026-08-17 | v0.1.0 | Ray | 初稿：固定 architecture registry、单一 reconcile、现有 TaskService task carrier、DB 原生唯一约束、grant/checkpoint 接合 |
