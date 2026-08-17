@@ -1,39 +1,37 @@
 cr-id: CR-2026-045
 review-type: code
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-17T21:51:51+08:00"
+reviewed-at: "2026-08-17T23:04:43+08:00"
 verdict: block
 blockers:
-  - "CODE-B01 [server/internal/governance/runner.go: Reconcile/currentNode/authorityPostcondition] 五节点调度未实现批准的双重后置条件：review-tech-design 无条件返回 true，human_approval 会落入 enqueueNode 创建 Agent task，checkpointProjected 永远 false，且 review block 未按 replayNodes 回放 write→review。修复：以 canonical review detail、delivered approval_record、checkpoint event（晚于 push started_at）作为权威事实；human_approval 只 waiting，不入队；实现 block→write/review attempt+1 与 maxAttempts exhaustion。"
-  - "CODE-B02 [server/internal/governance/runner.go: StartArchitecture/upsertRun/promptFor] Start 合同与幂等不完整：重放始终 changed=true，projector 预建 run 不补 execution_context，未校验 registry node kind/Skill binding，prompt 未替换 cr_id/tech_context 且无长度/残留 token 校验，UUID 解析错误被吞。修复：返回真实 created 标志、原子补齐/校验匹配 run、启动期验证 registry、校验 executor Skill refs、严格 UUID/CR ID/tech_context，并只渲染声明 token。"
-  - "CODE-B03 [server/internal/governance/gate_projection.go + runner/task enqueue] 并发与多写者契约未闭合：projector findOrCreateRun 在 unique conflict 后不重读；CreatePipelineTask unique loser不重读；applyReview 整段覆盖 detail 会删除 detail.runner。修复：两个竞态 loser 均重读既有记录，review 投影使用 JSONB 顶层 merge 且禁止 payload.runner，终态节点不得被重开。"
-  - "CODE-B04 [server/internal/daemon/* + handler/daemon.go] TASK-08 只透传 prompt，未实现 CR root 唯一解析、从 controlled-shell rules 派生 crctl、shell=false workspace inspect、healthy/realpath 校验、operationalWorkspace→LocalWorkDir、CRCTL_WORKSPACE、path lock/cleanup；PipelineLocalWorkDir 永远为空。按 SDD §3.5 补齐 daemon prepare 路径及 0/1/2 root、inspect/rules/path 测试，普通任务路径保持不变。"
-  - "CODE-B05 [server/internal/governance/approval.go + router.go] TASK-09 未接 grant ACK→Reconcile，Runner 也未查询 delivered_at；同时无 feature-off 开关，server 总是实例化/扫描/接管，违反 AC-07/08/15。修复：ApprovalService ACK 返回受影响 CR 并直接唤醒同一 Runner；只有 matching tech-design delivered grant 才越过 human_approval；增加默认可控启停且关闭时不挂 Start/不订阅/不扫描。"
-  - "CODE-B06 [daemon review fallback + gate_projection.go] commit-scan parity 不成立：canonical annotation 当前不含 review-loop.current-attempt，buildReviewPayload 因而把 attempt 读成 0；applyReview 又强制成 1，复审 attempt 会投错。修复 crctl canonical annotation 或 fallback 的权威 attempt 来源，并增加 attempt=2、subject digest、outbox/commit-scan 字段逐项 parity 测试。"
-  - "CODE-B07 [tests/test-report] TASK-04/06/07/08/09/11 验收测试与 E2E 缺失却已标 done；test-report 明示真实 PG 并发、Runner table tests、grant/checkpoint、daemon workdir、feature-off、五节点 E2E 均未执行。修复生产缺口后补最小可运行单元/集成测试，重新通过 crctl test 生成 canonical 报告；无法取得真库/真机证据时不得把这些 TASK 标为完整覆盖或让代码评审 PASS。"
+  - "CODE-B08 [server/internal/governance/runner.go: checkDigest] AC-13 要求 registry digest 漂移时明确阻断但保持同一 active run，部署回相同 digest 后可继续；当前 checkDigest 调 failRun，把 run 永久置 failed，恢复原 digest 后 findActiveRun 已找不到该 run。修复为非终态 fail-closed wait/error，并加 drift→阻断→restore→同 run 继续测试。"
+  - "CODE-B09 [server/internal/governance/runner.go: reconcileSkillTask/checkpoint] AC-10 要求 checkpoint 故障保持 tech-design-reviewed，并只重跑同一 checkpoint；当前 push-progress task failed/cancelled 与普通 Skill 一样调用 failRun，run 终态失败且无法重试。为 checkpoint 实现同 node 幂等 retry，禁止重跑设计/review/approval，并补故障→retry→canonical checkpoint complete 测试。"
+  - "CODE-B10 [TASK-11 / PRD AC-04~10, AC-12, AC-15, AC-18 / test-report.md §5] canonical 测试报告明确未执行真实 daemon + Agent CLI + signed grant 五节点 E2E、feature-off 手动路线；TASK-11 明确要求 runner_e2e_test.go 真实 crctl 深原语和手动回归，但仓库不存在该产物，且 daemon 全包回归在本机失败。当前不能把 TASK-11/AC-15/AC-18 判为通过。补可复现 E2E/手动路线证据，或将无法在本环境执行的发布门禁保持为 blocker，不得仅凭表级模拟让代码评审 PASS。"
 dimensions:
   reviewer-model: "openai/gpt-5.6-sol reasoning=high"
-  代码↔TASK↔SDD对齐: "BLOCK：TASK-07/08/09/11 与 SDD §3.4~§5 多个核心分支缺失。"
-  工程质量: "BLOCK：存在显式 placeholder、吞 UUID 解析错误和竞态 loser 未收敛。"
-  关键路径可读性: "BLOCK：runner.go 表面覆盖五节点，但 authority/replay/approval/checkpoint 语义未完成，注释与行为不一致。"
-  安全性: "BLOCK：审批 ACK/投递门禁未参与调度，输入 UUID 与 prompt token 未严格校验。"
-  测试覆盖: "BLOCK：关键生产路径无 runner/daemon/PG/E2E 测试。"
-  测试证据可信度: "机器区与 traceability digest 一致且日志存在，但报告本身列出阻塞级未覆盖范围。"
+  代码↔TASK↔SDD对齐: "BLOCK：首轮 7 项实现缺口大部分已修复，但 AC-10/AC-13 失败语义与 TASK-11 E2E 仍不满足。"
+  工程质量: "BLOCK：digest 漂移和 checkpoint 故障把可恢复等待错误升级为不可恢复终态。"
+  关键路径可读性: "PASS：固定五节点、authority evidence 与 replay 分支已显式化，未引入通用引擎。"
+  安全性: "PASS：task-token/path/input/registry/approval/controlled-shell 边界已 fail closed；未发现敏感信息写入。"
+  测试覆盖: "BLOCK：真实 PG 表测试已补齐，但批准的真实 crctl/signed grant E2E 与手动路线仍缺。"
+  测试证据可信度: "PASS（有限范围）：机器区/traceability/log 完整且 10 命令 exit 0；报告如实声明未执行项，因此不能外推为 AC-15/18 已通过。"
   前端质量: "N/A：diff 未触及前端文件。"
 suggestions:
-  - "Standards 轴：712 行 runner.go 有 possible Divergent Change/Data Clumps；先完成正确性，再仅按真实 seam 拆为 start/reconcile/evidence 小文件，避免引入通用引擎。"
+  - "Go race detector 因本机 CGO/C compiler 不可用未执行；建议 Linux CI 补跑相关包 -race，但本条不替代 CODE-B10 的功能 E2E。"
+review-loop:
+  current-attempt: 2
 release-subjects:
   version: 1
   repositories:
     - repo: ai-first-platform-docs
       remote-ref: refs/heads/requirement/CR-2026-045
-      reviewed-source-sha: 7183522ff36be83a1a36e38404e46d7cc353edd2
+      reviewed-source-sha: c9840894c448751632453bce775132ffbb735068
     - repo: multica
       remote-ref: refs/heads/requirement/CR-2026-045
-      reviewed-source-sha: d30ed36df5f88ed52f7b1df310e0ac0cbe1d0225
+      reviewed-source-sha: 843f627f0b1adce0d904a5a789b472e4395ed37d
     - repo: tools
       remote-ref: refs/heads/requirement/CR-2026-045
-      reviewed-source-sha: 78d058f1e681fc768bceab251a9dd556593c9319
+      reviewed-source-sha: 6eb2befd2eb79d702e9ed9d19a39ec608a300d42
   artifacts:
     algorithm: sha256
     canonicalization: crlf-to-lf+path-sort
