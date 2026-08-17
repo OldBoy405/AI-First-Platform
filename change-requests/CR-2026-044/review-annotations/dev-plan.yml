@@ -1,0 +1,19 @@
+cr-id: CR-2026-044
+review-type: dev-plan
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-17T00:11:23+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  sdd-to-plan: "PASS：SDD 的 local verifier、publication preflight、双 recoverCommand、Pipeline checkpoint、upgrade 启用、测试与两仓文档均进入里程碑和 TASK。"
+  plan-to-tasks: "PASS：M1~M6 分别映射 TASK-01~06；TASK 均回指 plan/sdd；TASK-05 承接 upgrade-check，TASK-06 明确 knowledge-base/tools 两仓落点。"
+  task-executability: "PASS：6 张卡均含目标、输入输出、精确文件、实现要点、≥2 条验收、完成标志与接口契约，无 TBD 或空泛指令。"
+  dependency-topology: "PASS：task init 证明无悬空/环；TASK-05 depends-on TASK-02/03/04，TASK-06 depends-on TASK-02~05，产出消费顺序一致。"
+  interface-contracts: "PASS：TASK-02 产出 TTY 合同；TASK-03 产出不改签名的本地 build/verify；TASK-04 消费 verifier 并产出 merge 错误语义；TASK-05 消费前三者并产出 inspect/checkUpgrade/Pipeline 合同；TASK-06 只消费最终行为。"
+  acceptance-verifiability: "PASS：每张 TASK ≥2 条可执行验收；upgrade-check 三类状态、merge 空 candidate/recoverCommand、精确白名单、Pipeline 结构、两仓 diff 与全量回归均有确定性断言。"
+  scope-and-simplicity: "PASS：保持 6 TASK/30h，全部复用现有函数、测试 fixture、Pipeline、Skill 与文档；零新增状态、账本、CLI、schema、事务层或依赖。"
+  risk-and-rollback: "PASS：verifier、preflight、Pipeline、TTY、upgrade-check 均有局部回滚；已启动 merge 使用启动版本完成；跨仓写入边界明确。"
+  reviewer-model: "gpt-5-codex"
+suggestions:
+  - "TASK-01 红测试完成时记录预期失败测试名；最终 test-report 前必须由 TASK-02~04 全部转绿。"
+subject-sha256: 250124d976e4258c46974954491ab322d8409226d685a8c6631dfa570a2d94d1

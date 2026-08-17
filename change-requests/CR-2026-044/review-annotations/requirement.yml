@@ -1,0 +1,16 @@
+cr-id: CR-2026-044
+review-type: requirement
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-16T23:40:49+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  结构完整性: "PASS：概述、Ponytail 优先级、模块职责、已解决基础设施、最小改造、6 个用户故事、11 条 FR、8 条 NFR、23 条 AC、成功指标、依赖风险、范围排除和变更记录齐全。"
+  FR 可测试性: "PASS：FR-01~11 均有 AC 映射；B-01 已将 KB metadata 白名单冻结为五个文件加 review-annotations 前缀并提供逐项允许/拒绝断言；B-02 已为四类在途状态提供 AC-21~23。"
+  范围合理性: "PASS：方案只收窄现有 verifier、增加 merge 首次 prepare 前 preflight、调整现有 Pipeline/Skill/文档及共享 TTY 判断；明确新增 CLI、状态、账本、schema、事务层、脚本和依赖均为 0。"
+  与规划对齐: "PASS：完整覆盖 source 的本地业务权威、publication lag 不回退、全仓 preflight、Operational Workspace 连续性、阶段终点 checkpoint、freshness 收敛、TTY y|yes、精确白名单及兼容启用要求。"
+  依赖识别: "PASS：已识别 resolver、classifyRepoWorkspace、release-subjects v1、checkpoint、merge saga/journal、durable transaction、受控 Git、Pipeline/Skill 与既有 bare remote fixture；恢复责任未复制到新模块。"
+suggestions:
+  - "SDD 按 PRD 第 3/4 节逐项映射现有函数和文件，保持同样的复用边界。"
+subject-file: change-requests/CR-2026-044/prd.md
+subject-sha256: cec168d843392c24a2113eb865384b07a95aa546320f17a046ca3551cbdb0997

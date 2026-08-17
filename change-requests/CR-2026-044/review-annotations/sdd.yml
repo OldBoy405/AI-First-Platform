@@ -1,0 +1,18 @@
+cr-id: CR-2026-044
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-16T23:50:42+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  prd-sdd-alignment: "PASS：PRD FR-01~11 均映射到现有函数、Pipeline、Skill、测试或启用合同；publication lag、local drift、checkpoint 与在途 journal 四类边界一致。"
+  architecture-rationality: "PASS：复用 resolveRepositories、classifyRepoWorkspace、resolveOperationalWorkspace、release-subjects v1、checkpointCr、mergeCr 与 durable transaction；没有新增状态、账本、CLI、schema、事务层或依赖。"
+  data-model-completeness: "PASS：publicationFacts 仅驻留内存；首次 prepare 后写入既有 payload.repos 的 baseSha/sourceSha/mergeSha；白名单、snapshot 与 journal schema 保持原状。"
+  interface-contract: "PASS：build/verify、merge 共同 verifier、零 prepare publication preflight、已有 journal 续跑、workspace inspect 与 cmdApprove 合同完整；checkpointRecoverCommand 和 mergeRecoverCommand 精确分离。"
+  performance-security: "PASS：本地业务路径删除 fetch；全仓 preflight 通过前零 candidate；恢复使用冻结 sourceSha；TTY 非交互、grant、resign、reject 回退及受控 Git 边界不变。"
+  testability: "PASS：测试覆盖本地/远端分离、精确白名单、已有 prepared/published journal drift、recoverCommand、三条 Pipeline checkpoint、authority path、四 stage TTY 与全量回归。"
+  prompt-adoption-impact: "PASS：第 12 节列出六类直接消费 Skill；未新增 dispatch 或 deny 能力，不扩大 Prompt 采纳面。"
+suggestions:
+  - "实施时保持 publication facts 为 mergeCr 局部变量；只有真实重复出现再考虑 helper。"
+subject-file: change-requests/CR-2026-044/sdd.md
+subject-sha256: ea9ee7ef735f2c872217e3a551a8cf86fe8225cea46e224bfbde477a12fc9d51
