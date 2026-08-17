@@ -8,7 +8,7 @@ owner: Ray
 owner-role: requirement
 status: draft
 created: 2026-08-17T18:30:25+08:00
-updated: 2026-08-17T18:30:25+08:00
+updated: 2026-08-17T18:38:06+08:00
 ---
 
 # 1. 概述
@@ -114,18 +114,23 @@ Runner Core 只拥有运行生命周期、节点调度、任务关联、等待�
 ## FR-02 Pipeline 合同与 digest
 
 1. 节点顺序、`ref`、prompt、`onFail`、reviewLoop 和 passCondition 只来自当前 tools Pipeline JSON。
-2. `architecture-design.reviewLoop` 必须增加显式 `replayNodes`，顺序为 `write-tech-design` 后重新执行 `review-tech-design`；不得修改 requirement Pipeline。
-3. Multica 使用的节点 ID/metadata 必须从本 CR 基线 tools 重新生成，旧 `0014` architecture UUID 不得继续作为当前合同。
-4. run 启动时保存 Pipeline 合同 digest；恢复时当前 registry digest 不一致则阻断并转人工处理。
-5. Core 不保存、加载或猜测旧模板版本。
+2. `architecture-design.reviewLoop` 必须复用现有 code Pipeline 的机器合同：`replayPolicy=rerun-listed-nodes-in-order`，`replayNodes` 每项都包含 `nodeId`、`ref`、`purpose`，不得引入 refs 字符串数组等第二种 schema。
+3. architecture 回放顺序固定为：
+   - `{nodeId: 00000000-0000-0000-0016-000000000001, ref: write-tech-design, purpose: repair-sdd}`；
+   - `{nodeId: 00000000-0000-0000-0016-000000000002, ref: review-tech-design, purpose: rerun-current-review}`。
+4. 不得修改 requirement Pipeline；本 CR 不为其他 Pipeline 补 replayNodes。
+5. Multica 使用的节点 ID/metadata 必须从本 CR 基线 tools 重新生成，旧 `0014` architecture UUID 不得继续作为当前合同。
+6. run 启动时保存 Pipeline 合同 digest；恢复时当前 registry digest 不一致则阻断并转人工处理。
+7. Core 不保存、加载或猜测旧模板版本。
 
 ## FR-03 单一逻辑 run
 
 1. 同一 workspace、CR、pipeline 在任一时刻只允许一个非终态逻辑 run。
 2. Core 启动时必须复用 projector 已创建的匹配 run；不存在时创建的 run 必须能被后续 projector 事件复用。
-3. Runner 和 projector 可更新同一 run 的各自字段，但不得互相覆盖已完成节点、attempt 历史或终态。
-4. run 只保存调度所需 inputs、execution context、digest 和生命周期状态；CR 业务状态仍以 Git 为权威。
-5. terminal run 不因迟到或重复事件重新打开。
+3. 两个并发 start，或 start 与 projector 首个 `tech-designing` 事件并发到达时，竞争方必须取得或重新读取同一个非终态 run；失败竞争不得留下第二个 run、首节点 attempt 或有效任务。具体使用 PostgreSQL 约束、事务锁或既有串行化原语由 SDD 决定。
+4. Runner 和 projector 可更新同一 run 的各自字段，但不得互相覆盖已完成节点、attempt 历史或终态。
+5. run 只保存调度所需 inputs、execution context、digest 和生命周期状态；CR 业务状态仍以 Git 为权威。
+6. terminal run 不因迟到或重复事件重新打开。
 
 ## FR-04 Skill 节点调度
 
@@ -134,6 +139,20 @@ Runner Core 只拥有运行生命周期、节点调度、任务关联、等待�
 3. 节点 prompt 必须来自固定 registry 合同，只注入声明输入和结构化前序输出；不得拼接未受控自然语言指令。
 4. 同一 run/node/attempt 只能有一个有效任务；重复唤醒必须复用或忽略已有任务。
 5. task failed、cancelled、超出既有重试策略或 Skill 返回技术失败时，node/run 进入失败终态，不自动跳过。
+6. Skill 节点只有在“Agent task 得到该节点定义的成功终态”且“CR 权威后置条件已由现有结构化事件或确定性重读确认”两个条件同时满足时才算成功；task completed 本身不得触发后继节点。
+7. 五节点后置条件如下，Runner 只核对结果，不自行补写证据：
+
+| 节点 | task/人类结果 | 必须同时满足的 CR 权威后置条件 |
+|---|---|---|
+| `write-tech-design` | Agent task 成功 | `sdd.md` 已形成，CR 为 `tech-design-review-pending` |
+| `review-tech-design` pass | Agent task 成功 | `review-annotations/sdd.yml` 为 pass、blockers 为空且 subject digest 当前，CR 保持 `tech-design-review-pending` |
+| `review-tech-design` block | Agent task 返回结构化 repair 结果 | annotation 为 block、blockers 非空、CR 为 `tech-designing`，再按 replayNodes 回修 |
+| `human_approval` | 无 Agent task；等待 grant delivered | pass review 仍当前且 CR 为 `tech-design-review-pending`；不得把网页记录本身当状态推进 |
+| `approve-tech-design` approve | Agent task 成功 | `approval.yml#tech-design` 与当前证据一致，CR 为 `tech-design-reviewed` |
+| `approve-tech-design` reject | `APPROVAL_DECLINED_ROLLED_BACK` 业务结果 | CR 已权威回退到 `tech-designing`，当前正向 run 中止 |
+| `push-progress` | Agent task 成功 | 现有 checkpoint 结果为 `phase=complete` |
+
+8. task 结果与权威后置条件不一致时，Runner 必须停在当前 node 并记录结构化错误；不得重试后继节点、伪造缺失证据或自行推进状态。
 
 ## FR-05 reviewLoop
 
@@ -197,7 +216,7 @@ Runner Core 只拥有运行生命周期、节点调度、任务关联、等待�
 # 8. 验收标准
 
 - **AC-01（FR-01/02）**：仅 `architecture-design` 可启动；unsupported pipeline、未知节点种类、未知 Skill 或 matrix owner 不唯一时返回结构化错误，且 run/node/task 零新增。
-- **AC-02（FR-02）**：tools architecture reviewLoop 含顺序明确的 `replayNodes=[write-tech-design, review-tech-design]`；requirement Pipeline 节点和 reviewLoop 不变。
+- **AC-02（FR-02）**：tools architecture reviewLoop 复用现有 `replayPolicy=rerun-listed-nodes-in-order` 与 `replayNodes[{nodeId,ref,purpose}]` schema；两项依次为 `…001/write-tech-design/repair-sdd`、`…002/review-tech-design/rerun-current-review`，静态合同测试逐字段通过；requirement Pipeline 节点和 reviewLoop 不变。
 - **AC-03（FR-02）**：generated registry 使用当前 `0016` architecture UUID，生成源可追溯到本 CR tools commit；旧 `0014` 不再作为当前节点。
 - **AC-04（FR-01/03/04）**：真实 `requirement-approved` CR 启动后，`write-tech-design` 和 `review-tech-design` 各只产生一个有效任务及关联 node run。
 - **AC-05（FR-05）**：首次 review 返回 block 时，Runner 只按 `replayNodes` 调度一次 `write-tech-design` 回修和一次 `review-tech-design` 复审，并把 blocker 作为结构化 feedback 传入。
@@ -214,6 +233,8 @@ Runner Core 只拥有运行生命周期、节点调度、任务关联、等待�
 - **AC-16（FR-10/NFR）**：静态检查证明 Agent、Pipeline、Skill、`crctl`、版本化脚本和 README 遵守第 2.2 节职责边界。
 - **AC-17（FR-10/NFR）**：生产依赖、运行表、模板表、消息总线、通用 DSL/表达式解释器和事务框架新增数量均为 0。
 - **AC-18（全范围）**：现有 crctl、TaskService、governance projector、approval grant、daemon delivery、CR gate UI 和手动 architecture Pipeline 相关回归全部通过。
+- **AC-19（FR-04）**：对 `write-tech-design`、review pass/block、approve pass/reject 和 `push-progress` 分别注入“task/业务结果已到但对应权威后置条件缺失或陈旧”的场景；Runner 均停在当前 node、无后继任务且不补写任何 CR 证据。补齐真实权威后置条件后，同一 run 只继续一次。
+- **AC-20（FR-03）**：分别并发发送两个相同 start，以及并发发送 start 与首个 `tech-designing` projector 事件；每种场景最终只有一个非终态 architecture run、一个首节点 attempt 和一个有效 `write-tech-design` 任务，迟到事件不重开终态 run。
 
 # 9. 成功指标
 
@@ -260,4 +281,5 @@ Runner Core 只拥有运行生命周期、节点调度、任务关联、等待�
 
 | 日期 | 版本 | 作者 | 说明 |
 |---|---|---|---|
+| 2026-08-17 | v0.2.0 | Ray | 回修 B-01～B-03：补五节点双重成功后置条件、并发 run 竞态验收、复用现有 replayNodes 机器 schema |
 | 2026-08-17 | v0.1.0 | Ray | 初始草稿：architecture 五节点纵切、现有基础设施复用、最小调度接合与结果级验收 |
