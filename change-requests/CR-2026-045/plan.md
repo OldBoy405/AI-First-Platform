@@ -17,7 +17,7 @@ updated: 2026-08-17T20:39:31+08:00
 |---|---|---|---|
 | M1 合同红测试 | TASK-01：tools 侧三组红测试冻结（replayLoop schema / registry 合同 / review outbox payload） | 无 | 4h |
 | M2 tools 生成面 | TASK-02 architecture reviewLoop + emit-registry；TASK-03 crctl review outbox 确定性 payload | TASK-01 | 10h |
-| M3 Multica 存储与生成 | TASK-04 双 partial unique index；TASK-05 生成 ArchitectureCoreRegistryJSON；TASK-06 CreatePipelineTask sqlc | TASK-02 | 12h |
+| M3 Multica 存储与生成 | TASK-04 双 partial unique index；TASK-05 生成 ArchitectureCoreRegistryJSON；TASK-06 CreatePipelineTask sqlc | TASK-04/06 独立；TASK-05 依赖 TASK-02 | 12h |
 | M4 Runner 核心 | TASK-07 Start + Reconcile 幂等调度（双后置条件、attempt/replayNodes、loop exhausted、digest mismatch） | TASK-04、TASK-05、TASK-06 | 12h |
 | M5 执行与唤醒 | TASK-08 daemon pipeline carrier；TASK-09 唤醒/ACK/router；TASK-10 commit-scan parity | TASK-07、TASK-03 | 19h |
 | M6 纵切验收 | TASK-11 五节点 E2E + 手动路线回归 + CUSTOM.md 台账 | 全部 | 8h |
@@ -39,14 +39,14 @@ TASK-07 (Runner Start + Reconcile)          depends: TASK-04, TASK-05, TASK-06
 TASK-08 (daemon pipeline carrier)           depends: TASK-07
 TASK-09 (唤醒 + ACK + router wiring)        depends: TASK-07
 TASK-10 (commit-scan review parity)         depends: TASK-03
-TASK-11 (E2E + 回归 + CUSTOM 台账)          depends: TASK-02~TASK-10
+TASK-11 (E2E + 回归 + CUSTOM 台账)          depends: TASK-02,03,04,05,06,07,08,09,10
 ```
 
 - TASK-01/04/06 相互独立，可并行；同仓测试文件冲突时串行。
 - TASK-05 消费 TASK-02 的 `emit-registry.mjs` 输出，把 registry JSON + canonical SHA 嵌入 `gate_nodes_gen.go`。
 - TASK-07 是核心，依赖 registry（TASK-05）、索引（TASK-04）与入队查询（TASK-06）。
 - TASK-08/09 是 TASK-07 的执行载体与唤醒面；TASK-10 补齐 review 证据 parity，供 TASK-07 的 review 后置条件消费。
-- TASK-11 只做纵切 E2E、手动路线回归与 CUSTOM.md 台账，不改行为。
+- TASK-11 只做纵切 E2E、手动路线回归与根目录 `CUSTOM.md` 最终对账，不改行为。
 
 # 3. 资源与分工
 

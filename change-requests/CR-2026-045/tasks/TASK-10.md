@@ -39,7 +39,7 @@ created: 2026-08-17T20:39:31+08:00
 
 ## 5. 完成标志
 
-commit-scan 与 outbox payload parity 落地 + 三组断言通过 + 既有投影零回归。
+commit-scan 与 outbox payload parity 落地 + 三组断言通过 + 既有投影零回归；在 Multica 根目录 `CUSTOM.md` 登记 CR-2026-045/TASK-10 的 daemon/governance 挂点、生成物和上游贴回策略。
 
 ## 6. 接口契约
 

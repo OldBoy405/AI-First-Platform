@@ -40,7 +40,7 @@ created: 2026-08-17T20:39:31+08:00
 
 ## 5. 完成标志
 
-CreatePipelineTask 查询 + EnqueuePipelineTask 入口落地 + 归因/retry 测试通过 + sqlc 生成物提交。
+CreatePipelineTask 查询 + EnqueuePipelineTask 入口落地 + 归因/retry 测试通过 + sqlc 生成物提交；在 Multica 根目录 `CUSTOM.md` 登记 CR-2026-045/TASK-06 的查询、生成物和上游贴回策略。
 
 ## 6. 接口契约
 

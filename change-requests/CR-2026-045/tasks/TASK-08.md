@@ -45,7 +45,7 @@ created: 2026-08-17T20:39:31+08:00
 
 ## 5. 完成标志
 
-daemon pipeline kind 落地 + 五类断言通过 + 普通任务路径零回归。
+daemon pipeline kind 落地 + 五类断言通过 + 普通任务路径零回归；在 Multica 根目录 `CUSTOM.md` 登记 CR-2026-045/TASK-08 的 daemon 挂点、生成物和上游贴回策略。
 
 ## 6. 接口契约
 

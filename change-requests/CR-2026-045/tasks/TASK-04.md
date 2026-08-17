@@ -20,19 +20,20 @@ created: 2026-08-17T20:39:31+08:00
 
 ## 2. 涉及文件 / 模块
 
-- `server/migrations/{NNN}_runner_pipeline_run_unique.up.sql` / `.down.sql`（新增，编号按 Multica 现有迁移顺延）
-- `server/migrations/{NNN+1}_runner_pipeline_task_unique.up.sql` / `.down.sql`（新增）
+- `server/migrations/265_pipeline_run_architecture_active_unique.up.sql` / `.down.sql`（当前 CR 基线最新迁移为 264，使用 265）
+- `server/migrations/266_agent_task_pipeline_node_active_unique.up.sql` / `.down.sql`（使用 266）
 - `server/internal/governance/runner_index_test.go` 或既有 governance DB 集成测试（新增双 start / start-vs-projector / 双 enqueue / retry 后创建断言）
 
 ## 3. 实现要点
 
-- 两条均 `CREATE UNIQUE INDEX CONCURRENTLY ... WHERE`，WHERE 分别限定 run 非终态与 task 有效态集合（SDD §3.3 精确状态枚举）。
+- 两条均为单语句 `CREATE UNIQUE INDEX CONCURRENTLY`，WHERE 分别限定 run 非终态与 task 有效态集合（SDD §3.3 精确状态枚举）；索引名固定为 `idx_pipeline_run_architecture_active_cr` 与 `idx_agent_task_queue_pipeline_node_active`，down 文件对应 `DROP INDEX CONCURRENTLY`。
+- 若实施前 freshness gate 发现上游基线已新增迁移，先按 Multica 迁移纪律重新确认唯一编号，再保持两个文件相邻、单语句和 CUSTOM 登记；不得保留 `{NNN}` 占位。
 - `pipeline_node_run` 已有 `UNIQUE(run_id,node_id,attempt)`，直接复用，不重复建。
 - 集成测试覆盖：双 start 只产生一个非终态 run；start 与 projector find/create 并发只一个；同 node 双 enqueue 只一个有效 task；retry 在父任务终态后可创建子任务。
 
 ## 4. 验收条件
 
-1. 两条 migration `up`/`down` 均可在真实 PostgreSQL 执行，`down` 用 `DROP INDEX CONCURRENTLY`。
+1. `265`/`266` 两条 migration 的 `up`/`down` 均可在真实 PostgreSQL 执行，down 用 `DROP INDEX CONCURRENTLY`；文件均保持单语句，不包事务。
 2. 四类并发断言在真实库 `=== RUN`/`--- PASS`，无 TestMain skip 假绿。
 3. 无新增表/列/外键；`CUSTOM.md` 登记迁移编号与撞号处置。
 

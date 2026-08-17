@@ -21,13 +21,13 @@ created: 2026-08-17T20:39:31+08:00
 ## 2. 涉及文件 / 模块
 
 - `pipeline-templates/architecture-design.pipeline.json`（只读，作为被测合同）
-- `pipeline-templates/emit-registry.test.mjs`（新增，若 tools 侧测试目录约定为 `pipeline-templates/test/` 则落该处）
-- `skills/shared/crctl/scripts/test/crctl.test.mjs`（新增 review outbox 断言组）
+- `skills/shared/crctl/scripts/test/pipeline-structure.test.mjs`（追加 architecture reviewLoop 与 registry 合同红测试）
+- `skills/shared/crctl/scripts/test/crctl.test.mjs`（追加 review outbox 断言组）
 
 ## 3. 实现要点
 
-- 红测试 1（reviewLoop）：读取 `architecture-design.pipeline.json`，断言 `review-tech-design.reviewLoop.replayNodes` 恰为 `[{nodeId:"...0016...001",ref:"write-tech-design",purpose:"repair-sdd"},{nodeId:"...0016...002",ref:"review-tech-design",purpose:"rerun-current-review"}]` 且 `replayPolicy` 为 `rerun-listed-nodes-in-order`；requirement Pipeline 的节点与 reviewLoop 逐字段不变。当前 architecture Pipeline 无该 reviewLoop，故失败。
-- 红测试 2（registry）：执行 `node emit-registry.mjs --pipeline architecture-design`，断言输出含 `schema=ai-first.pipeline-registry/architecture-core-v1`、`pipelineOwner=dev-agent`、每个节点 `owner` 唯一且 pipelineOwner 有 `owns|can-call`、`digest` 为 canonical SHA-256；`--check` 模式比较节点/prompt/permissions/replayLoop/digest。当前脚本不存在，故失败。
+- 红测试 1（reviewLoop）：在既有 `pipeline-structure.test.mjs` 读取 `architecture-design.pipeline.json`，断言 `review-tech-design.reviewLoop.replayNodes` 恰为 `[{nodeId:"...0016...001",ref:"write-tech-design",purpose:"repair-sdd"},{nodeId:"...0016...002",ref:"review-tech-design",purpose:"rerun-current-review"}]` 且 `replayPolicy` 为 `rerun-listed-nodes-in-order`；requirement Pipeline 的节点与 reviewLoop 逐字段不变。当前 architecture Pipeline 无该 reviewLoop，故失败。
+- 红测试 2（registry）：在同一 `pipeline-structure.test.mjs` 调用待新增的 `pipeline-templates/emit-registry.mjs --pipeline architecture-design`，断言输出含 `schema=ai-first.pipeline-registry/architecture-core-v1`、`pipelineOwner=dev-agent`、每个节点 `owner` 唯一且 pipelineOwner 有 `owns|can-call`、`digest` 为 canonical SHA-256；`--check` 模式比较节点/prompt/permissions/replayLoop/digest。当前脚本不存在，故失败。
 - 红测试 3（outbox）：在 bare fixture 上执行真实 `review-record --stage tech-design --bump-attempt`，断言生成的事件 payload 含 `attempt`、`blockers`、`reviewed_at`、`subject_sha256` 且 `subject_sha256` 等于 SDD LF 规范化 digest。当前 payload 缺这些字段，故失败。
 - 测试命名带 `CR-2026-045` 前缀，便于后续 TASK 定位转绿集合。
 

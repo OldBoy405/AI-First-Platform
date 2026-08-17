@@ -13,6 +13,7 @@ depends-on:
   - CR-2026-045-TASK-03
   - CR-2026-045-TASK-04
   - CR-2026-045-TASK-05
+  - CR-2026-045-TASK-06
   - CR-2026-045-TASK-07
   - CR-2026-045-TASK-08
   - CR-2026-045-TASK-09
@@ -30,7 +31,7 @@ created: 2026-08-17T20:39:31+08:00
 
 - `server/internal/governance/runner_e2e_test.go`（新增，真实 PostgreSQL + 真实 crctl 深原语 fixture）
 - tools 侧手动 architecture Pipeline 回归证据（Runner 未启动时行为不变）
-- `server/CUSTOM.md`（对照实际结构登记本 CR 全部 Multica 落点，编号顺延，原因含 CR-2026-045 与 TASK）
+- `CUSTOM.md`（Multica 仓库根目录；对照实际结构做本 CR 最终对账，编号顺延，原因含 CR-2026-045 与 TASK）
 
 ## 3. 实现要点
 
@@ -44,7 +45,7 @@ created: 2026-08-17T20:39:31+08:00
 
 1. E2E 五节点全链在真实 PostgreSQL 下 `=== RUN`/`--- PASS`，无 TestMain skip 假绿；block/repair/pass、reject、checkpoint 均覆盖。
 2. 手动路线回归通过（AC-15）；模块职责边界与零新增框架静态检查通过（AC-16/AC-17）。
-3. CUSTOM.md 台账登记完整（新文件、迁移撞号、生成物、上游核对策略），且 `CUSTOM.md` 现状为唯一事实源。
+3. Multica 各代码 TASK 已在完成时登记根目录 `CUSTOM.md`，本 TASK 对所有条目做最终对账（新文件、迁移撞号、生成物、上游核对策略），且 `CUSTOM.md` 现状为唯一事实源。
 
 ## 5. 完成标志
 

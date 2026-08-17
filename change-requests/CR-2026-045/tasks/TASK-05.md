@@ -40,7 +40,7 @@ created: 2026-08-17T20:39:31+08:00
 
 ## 5. 完成标志
 
-registry JSON + digest 生成物入库 + `--check` 通过 + 0014→0016 修正。
+registry JSON + digest 生成物入库 + `--check` 通过 + 0014→0016 修正；在 Multica 根目录 `CUSTOM.md` 登记 CR-2026-045/TASK-05 的生成器、生成物和上游贴回策略。
 
 ## 6. 接口契约
 
