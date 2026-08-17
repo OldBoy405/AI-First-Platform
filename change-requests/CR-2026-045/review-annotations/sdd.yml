@@ -1,23 +1,19 @@
 cr-id: CR-2026-045
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-17T19:10:32+08:00"
+reviewed-at: "2026-08-17T19:20:25+08:00"
 verdict: block
 blockers:
-  - "SDD-B01 Pipeline task attribution 方案不存在：§3.5 声称 source task 的人类归因由现有 TaskService 校验/继承，但当前只有 issue/chat/quick-create 专用 enqueue 与 retry 克隆，且 agent_task_queue 已受 strict attribution 约束；直接新增 INSERT 可能违反 accountable_user/originator/evidence 一致性。修复：定义唯一 CreatePipelineTask 查询从受信 source_task 同批复制完整 attribution snapshot，并明确 source task、executor agent、workspace 校验及 retry 继续复用现有继承列清单；增加约束与跨 workspace 负向测试。"
-  - "SDD-B02 pipeline_node_run.detail 多写者会丢数据：§4.1 仅口头要求各写各字段，但现有 applyReview ON CONFLICT 直接 SET detail=$7，Runner 写 logical owner/task/wait_reason 后会被迟到 review 投影整段覆盖，反向顺序也会丢 verdict/blockers。修复：Runner 数据统一放 detail.runner 子对象并用 jsonb_set 更新；projector 改为 JSONB merge 保留 runner 子对象，同时由 review payload 覆盖 review 顶层键；增加两种写入顺序和 replay 测试。"
-  - "SDD-B03 pipeline task 工作目录不满足写入边界：§3.5 让 Agent 在 scratch workdir 运行、通过绝对路径写 operational workspace；Codex Windows sandbox 或其他 workspace-write provider 可拒绝跨 cwd 写入，无法保证 write-tech-design 的真实 E2E。修复：daemon 唯一解析 CR root 后调用 crctl workspace inspect 取得 operationalWorkspace，把它作为现有 PrepareParams.LocalWorkDir，并复用 localPathLocks、路径规范化/realpath、sidecar 清理；0/多 root 或 inspect 非 healthy 均 fail closed。"
-  - "SDD-B04 review 权威数据在当前事件契约中不可获得：Runner §4.2/§5 需要 attempt、blockers 和 subject 当前性，但 crctl review outbox 目前只发 stage/verdict/blockerCount，daemon merge 又让 outbox 覆盖 commit-scan，server projector 无法判断 replay attempt 或 subject freshness。修复：由 canonical review 唯一写者 crctl 在同一 review outbox payload 增加 attempt、blockers、reviewed_at、subject_sha256；applyReview 结构化投影并测试 CRLF digest、outbox 优先和旧 payload fail closed，不让 Runner读取文件或解析 Agent 文本。"
+  - "SDD-B05 旧 commit-scan fallback 仍未闭合：SDD 只规定 crctl review outbox 扩充字段，但 daemon buildReviewPayload 当前按 stage+'.yml' 取文件（tech-design 实际 canonical 文件是 sdd.yml），且 reviewBlocker 结构不能可靠解析 canonical blockers 字符串；outbox 缺失/延迟时同一 review 不会产生与 outbox 相同的 attempt、blockers、reviewed_at、subject_sha256，Runner 的 fail-closed 证据链仍断裂。修复：daemon 使用显式 stage→annotation 文件映射，复用现有行尾规范化/安全 YAML 解析，兼容 canonical scalar blocker 与结构化 blocker，输出与 crctl outbox 完全相同的 review payload 字段；增加 commit-scan-only、outbox-vs-scan parity 和 tech-design sdd.yml 取证测试。"
 dimensions:
-  PRD↔SDD 对齐: "BLOCK：10/10 FR 有章节映射，但 FR-04/05 的 attribution、双重后置条件与 current review evidence 在现有接缝上尚不可实现。"
-  架构合理性: "BLOCK：整体单一 Reconcile、现有表/TaskService/event bus 复用和无第二事务框架方向正确；detail 多写覆盖和 scratch 跨目录写违反已核实的状态/沙箱边界。"
-  数据模型完整性: "BLOCK：两个 partial unique index合理，但 task strict attribution 与 detail.runner 命名空间/merge 规则缺失。"
-  接口契约: "BLOCK：Start、task context、grant ACK 已定义；review outbox 缺 Runner 必需字段，现契约无法闭环。"
-  性能与安全: "BLOCK：无轮询、每次最多一任务满足性能边界；scratch 跨 cwd 写在启用 provider sandbox 时不可靠，且 attribution 必须防跨 workspace 复制。"
-  可测试性: "BLOCK：已有并发/重启/E2E测试方向，但缺 attribution constraint、detail 双顺序和 sandbox local-workdir 的可执行断言。"
-  Prompt 采纳影响: "PASS：当前方案未新增 crctl 子命令或 guard deny；若按 B04 修改 review-record 事件 payload，须在 SDD 中明确只扩既有确定性 outbox，不新增 prompt 调用面。"
+  PRD↔SDD 对齐: "BLOCK：B-01～B-04 已有具体落点；FR-05/FR-08 要求事件乱序和 fallback 可恢复，当前 commit-scan 分支尚未覆盖。"
+  架构合理性: "PASS：source attribution snapshot、detail.runner merge、LocalWorkDir 和 canonical outbox 扩展均复用现有边界；本 blocker 是同一 daemon 扫描器的兼容修复，不新增通道。"
+  数据模型完整性: "PASS：run/node/task schema 与两条 partial unique index 已覆盖并发和归因；缺口在事件 payload 生成。"
+  接口契约: "BLOCK：outbox payload 已定义，但 commit-scan 生成的 review payload 尚未与其字节/字段契约一致。"
+  性能与安全: "PASS：仍是现有 heartbeat 扫描和 outbox 合并路径；解析失败硬失败/跳过，不降级成空 review 或 pass。"
+  可测试性: "BLOCK：缺 commit-scan-only 与 outbox/scan parity 测试，无法证明 fallback 不改变 Runner 路由。"
+  Prompt 采纳影响: "PASS：仍不新增 crctl 子命令、guard deny 或 Skill prompt 调用面。"
 suggestions:
-  - "loop exhaustion 由 projected canonical attempt=maxAttempts 且 verdict=block 判定；Runner 不发起 attempt+1，也不解析 task stderr。"
-  - "registry placeholder 渲染只允许 cr_id/tech_context 两个字面 token，渲染后残留双花括号即生成失败。"
+  - "修复后把 review payload 的字段集合固定为 stage/verdict/attempt/blockers/reviewer/reviewed_at/subject_sha256，旧缺字段事件仅供旧 UI 投影，不供 Core 调度。"
 subject-file: change-requests/CR-2026-045/sdd.md
-subject-sha256: 83948237baa79d41b0511ceca0feae9bb559552f859db73078ad08f35d9eb136
+subject-sha256: 1b11aa881fd10163b5b1fad1897d99fdc6e36a9aa8eacfdf0bbac171ab5e4d93
