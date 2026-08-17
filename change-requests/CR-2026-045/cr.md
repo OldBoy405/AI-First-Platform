@@ -15,9 +15,9 @@ owners:
     assigned-at: "2026-08-17T18:28:16+08:00"
 target-version: tbd
 source: "docs/product/缺口清单-最终版.md"
-status: requirement-reviewing
+status: requirement-approved
 created: "2026-08-17T18:28:16+08:00"
-updated: "2026-08-17T18:40:32+08:00"
+updated: "2026-08-17T18:44:54+08:00"
 remote-ref: ""
 last-push-at: ""
 last-push-by: ""
