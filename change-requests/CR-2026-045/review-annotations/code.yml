@@ -1,0 +1,56 @@
+cr-id: CR-2026-045
+review-type: code
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-17T21:51:51+08:00"
+verdict: block
+blockers:
+  - "CODE-B01 [server/internal/governance/runner.go: Reconcile/currentNode/authorityPostcondition] 五节点调度未实现批准的双重后置条件：review-tech-design 无条件返回 true，human_approval 会落入 enqueueNode 创建 Agent task，checkpointProjected 永远 false，且 review block 未按 replayNodes 回放 write→review。修复：以 canonical review detail、delivered approval_record、checkpoint event（晚于 push started_at）作为权威事实；human_approval 只 waiting，不入队；实现 block→write/review attempt+1 与 maxAttempts exhaustion。"
+  - "CODE-B02 [server/internal/governance/runner.go: StartArchitecture/upsertRun/promptFor] Start 合同与幂等不完整：重放始终 changed=true，projector 预建 run 不补 execution_context，未校验 registry node kind/Skill binding，prompt 未替换 cr_id/tech_context 且无长度/残留 token 校验，UUID 解析错误被吞。修复：返回真实 created 标志、原子补齐/校验匹配 run、启动期验证 registry、校验 executor Skill refs、严格 UUID/CR ID/tech_context，并只渲染声明 token。"
+  - "CODE-B03 [server/internal/governance/gate_projection.go + runner/task enqueue] 并发与多写者契约未闭合：projector findOrCreateRun 在 unique conflict 后不重读；CreatePipelineTask unique loser不重读；applyReview 整段覆盖 detail 会删除 detail.runner。修复：两个竞态 loser 均重读既有记录，review 投影使用 JSONB 顶层 merge 且禁止 payload.runner，终态节点不得被重开。"
+  - "CODE-B04 [server/internal/daemon/* + handler/daemon.go] TASK-08 只透传 prompt，未实现 CR root 唯一解析、从 controlled-shell rules 派生 crctl、shell=false workspace inspect、healthy/realpath 校验、operationalWorkspace→LocalWorkDir、CRCTL_WORKSPACE、path lock/cleanup；PipelineLocalWorkDir 永远为空。按 SDD §3.5 补齐 daemon prepare 路径及 0/1/2 root、inspect/rules/path 测试，普通任务路径保持不变。"
+  - "CODE-B05 [server/internal/governance/approval.go + router.go] TASK-09 未接 grant ACK→Reconcile，Runner 也未查询 delivered_at；同时无 feature-off 开关，server 总是实例化/扫描/接管，违反 AC-07/08/15。修复：ApprovalService ACK 返回受影响 CR 并直接唤醒同一 Runner；只有 matching tech-design delivered grant 才越过 human_approval；增加默认可控启停且关闭时不挂 Start/不订阅/不扫描。"
+  - "CODE-B06 [daemon review fallback + gate_projection.go] commit-scan parity 不成立：canonical annotation 当前不含 review-loop.current-attempt，buildReviewPayload 因而把 attempt 读成 0；applyReview 又强制成 1，复审 attempt 会投错。修复 crctl canonical annotation 或 fallback 的权威 attempt 来源，并增加 attempt=2、subject digest、outbox/commit-scan 字段逐项 parity 测试。"
+  - "CODE-B07 [tests/test-report] TASK-04/06/07/08/09/11 验收测试与 E2E 缺失却已标 done；test-report 明示真实 PG 并发、Runner table tests、grant/checkpoint、daemon workdir、feature-off、五节点 E2E 均未执行。修复生产缺口后补最小可运行单元/集成测试，重新通过 crctl test 生成 canonical 报告；无法取得真库/真机证据时不得把这些 TASK 标为完整覆盖或让代码评审 PASS。"
+dimensions:
+  reviewer-model: "openai/gpt-5.6-sol reasoning=high"
+  代码↔TASK↔SDD对齐: "BLOCK：TASK-07/08/09/11 与 SDD §3.4~§5 多个核心分支缺失。"
+  工程质量: "BLOCK：存在显式 placeholder、吞 UUID 解析错误和竞态 loser 未收敛。"
+  关键路径可读性: "BLOCK：runner.go 表面覆盖五节点，但 authority/replay/approval/checkpoint 语义未完成，注释与行为不一致。"
+  安全性: "BLOCK：审批 ACK/投递门禁未参与调度，输入 UUID 与 prompt token 未严格校验。"
+  测试覆盖: "BLOCK：关键生产路径无 runner/daemon/PG/E2E 测试。"
+  测试证据可信度: "机器区与 traceability digest 一致且日志存在，但报告本身列出阻塞级未覆盖范围。"
+  前端质量: "N/A：diff 未触及前端文件。"
+suggestions:
+  - "Standards 轴：712 行 runner.go 有 possible Divergent Change/Data Clumps；先完成正确性，再仅按真实 seam 拆为 start/reconcile/evidence 小文件，避免引入通用引擎。"
+release-subjects:
+  version: 1
+  repositories:
+    - repo: ai-first-platform-docs
+      remote-ref: refs/heads/requirement/CR-2026-045
+      reviewed-source-sha: 7183522ff36be83a1a36e38404e46d7cc353edd2
+    - repo: multica
+      remote-ref: refs/heads/requirement/CR-2026-045
+      reviewed-source-sha: d30ed36df5f88ed52f7b1df310e0ac0cbe1d0225
+    - repo: tools
+      remote-ref: refs/heads/requirement/CR-2026-045
+      reviewed-source-sha: 78d058f1e681fc768bceab251a9dd556593c9319
+  artifacts:
+    algorithm: sha256
+    canonicalization: crlf-to-lf+path-sort
+    files:
+      - { path: change-requests/CR-2026-045/plan.md, sha256: f7373bcac4921097442d6d287e9e329609984a0dd10a43c453c31524df15ea13 }
+      - { path: change-requests/CR-2026-045/prd.md, sha256: 18a8e037f6ad5860807f38b61de78fb201ab2a9a4e6c184c907bdc52f982480f }
+      - { path: change-requests/CR-2026-045/sdd.md, sha256: 0f7a8805f2a670a7c4ff312d65dc2c784d857ae27202cdbde5d165aa9bd14eae }
+      - { path: change-requests/CR-2026-045/tasks/TASK-01.md, sha256: 3589f61c910d9a0c7988b9da91986040658ac33619d58936e2ba4a6ec1539f12 }
+      - { path: change-requests/CR-2026-045/tasks/TASK-02.md, sha256: bc8ab17bdaf35f89c16e4ca53cc78ba910ecc4ed5170027f4586b4b9f965a1e4 }
+      - { path: change-requests/CR-2026-045/tasks/TASK-03.md, sha256: 0cb6cb8aefece0c72686ee0e9161e3752277230ce1ad01ea34f12bab3ed12bb8 }
+      - { path: change-requests/CR-2026-045/tasks/TASK-04.md, sha256: 6bf8bd88ae710eff8c4c13d3ffab8b14e6dea9312eb6726b9df96547e8e1c5a0 }
+      - { path: change-requests/CR-2026-045/tasks/TASK-05.md, sha256: 86a16a116ba5b74a5e74a2b1afa8bdec72145e839244f1242eb9556a4ec7e5e1 }
+      - { path: change-requests/CR-2026-045/tasks/TASK-06.md, sha256: 53c2f13e51fcf88be2e8ec07ba55144040873b7c02f8906a434cf34e61c27dc0 }
+      - { path: change-requests/CR-2026-045/tasks/TASK-07.md, sha256: 61f6bc6fa376f1d9034ace2224e31bb8bfb314fea78cc043e7948f8e4da81134 }
+      - { path: change-requests/CR-2026-045/tasks/TASK-08.md, sha256: 090c5e90b4815f3768813919ca1e8bd04d2c46d82796177cc40ab93d58267188 }
+      - { path: change-requests/CR-2026-045/tasks/TASK-09.md, sha256: 9151ed7def084d1db361fb0adcb03e146f9dd885320f0535ebfa4ebb8a910448 }
+      - { path: change-requests/CR-2026-045/tasks/TASK-10.md, sha256: e624e68090a9e5204955535813d6eae1a6e7d9a634b5fe0a4d70e22a4e12c792 }
+      - { path: change-requests/CR-2026-045/tasks/TASK-11.md, sha256: 23ecdea10c0ac019f2778631df18cd7c73458b79aad984b9b93fb954de7cebe6 }
+      - { path: change-requests/CR-2026-045/tasks/_index.yml, sha256: f25284441205419b6a8ae7e4930b7781146088ef6d2c57cac3b4e39b0384338b }
+    digest: 16f1a0dfe463b45b2451e5cf8246a55f596c91ea08d62db21263b6acc062dfc5
