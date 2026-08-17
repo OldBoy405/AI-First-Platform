@@ -17,7 +17,7 @@ target-version: tbd
 source: "docs/product/缺口清单-最终版.md"
 status: developing
 created: "2026-08-17T18:28:16+08:00"
-updated: "2026-08-17T20:58:22+08:00"
+updated: "2026-08-17T21:52:02+08:00"
 remote-ref: ""
 last-push-at: ""
 last-push-by: ""
