@@ -1,20 +1,17 @@
 cr-id: CR-2026-045
 review-type: requirement
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-17T18:36:03+08:00"
-verdict: block
-blockers:
-  - "B-01 节点成功判定不完整：FR-04 只定义 task 终态，FR-05/07 只零散描述 review/approve/checkpoint，未要求每个 Skill 节点同时满足 task 成功与预期 CR 权威后置条件，存在 Agent task 已 completed 但 sdd/status/review/approval/checkpoint 证据缺失时错误推进的空间。修复：在 FR 中定义统一双重判定及五节点后置条件矩阵，并增加 task completed 但权威后置条件缺失时不得调度后继节点的 AC。"
-  - "B-02 单一逻辑 run 缺少竞态验收：FR-03 声明唯一，但 AC-14 未覆盖两个并发启动请求以及 Runner 创建 run 与 projector 首个 tech-designing 事件并发到达，无法验证不会产生两个非终态 run。修复：增加行为级 AC，分别并发触发两次 start 和 start/首状态事件，断言只保留一个非终态 run、一个首节点 attempt 和一个有效任务；实现机制留给 SDD。"
-  - "B-03 replayNodes 未复用现有机器合同：FR-02/AC-02 用 refs 简写数组描述回放，但现有 code Pipeline 的权威形状为 replayPolicy + replayNodes[{nodeId,ref,purpose}]。修复：要求 architecture reviewLoop 复用该既有形状，明确两个现有节点 UUID、ref、purpose 和顺序，并以静态合同测试验收；不得引入第二种 replayNodes schema。"
+reviewed-at: "2026-08-17T18:39:38+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  结构完整性: "BLOCK：概述、逻辑架构、已有基础设施、最小改造、US/FR/NFR/AC、指标、依赖风险和排除项齐全，但五节点权威后置条件矩阵缺失。"
-  FR 可测试性: "BLOCK：多数 FR 有 AC 映射；单 run 竞态和 task-success/authority-success 分离缺少可运行断言，replayNodes 也未按现有 schema 精确验收。"
-  范围合理性: "PASS：只覆盖 architecture 五节点，明确排除其他 Pipeline、通用 DSL、第二套表/事务/消息总线和专用控制台。"
-  与规划对齐: "BLOCK：总体符合缺口清单的最小纵切、同一 run、grant 链和 digest fail-closed 决策，但现有 replayNodes 合同复用不完整。"
-  依赖识别: "PASS：已识别 tools Pipeline/matrix/crctl 与 Multica run 表、projector、TaskService、ApprovalService、daemon 和 UI，并区分已有能力与最小改造。"
+  结构完整性: "PASS：概述、Ponytail 优先级、六层模块职责、已解决基础设施、最小改造、6 个用户故事、10 条 FR、8 条 NFR、20 条 AC、成功指标、依赖风险、范围排除和变更记录齐全；B-01 已补五节点权威后置条件矩阵。"
+  FR 可测试性: "PASS：FR-01～10 均有 AC 映射；AC-19 覆盖 task terminal 与 CR 权威结果分离，AC-20 覆盖双 start 及 start/projector 竞态，block 回修、attempt 耗尽、grant、checkpoint、digest 和重启窗口均可注入验证。"
+  范围合理性: "PASS：只建设 architecture-design 五节点纵切；复用现有 run 表、TaskService、projector、Skill、crctl、grant 和 checkpoint，明确排除其他 Pipeline、通用 DSL/DAG、第二套任务/事务/模板存储和专用控制台。"
+  与规划对齐: "PASS：符合已确认的当前战略候选、同一逻辑 run、网页审批→grant→Skill→crctl、digest 漂移 fail closed、Main Track 条件触发和 requirement replayNodes 不前置建设等决定。"
+  依赖识别: "PASS：已核实当前 tools Pipeline/matrix/crctl 及 Multica origin/main 的运行表、projector、任务队列归因列、ApprovalService 和 daemon ACK；R-07 明确本地 Multica 旧基线须在 SDD/实现前走既有 freshness。"
 suggestions:
-  - "SDD 再决定 PostgreSQL 唯一约束、事务锁或既有串行化原语；PRD 只固定并发结果。"
-  - "模板 digest 可优先存入现有 execution_context JSONB，除非 SDD 证明结构化列是正确性门槛。"
+  - "SDD 优先评估现有 execution_context JSONB 保存 digest，并用 PostgreSQL 原生唯一约束或现有事务边界满足 AC-20，不预建通用 lease。"
+  - "实现任务按 tools contract、run adoption、task dispatch、authority postcondition、approval/checkpoint 接合和 E2E 六个最小切面拆分。"
 subject-file: change-requests/CR-2026-045/prd.md
-subject-sha256: 4071108ee618409de169ce4c4264813f87e87a86dbad11f591492596f33fde2a
+subject-sha256: 18a8e037f6ad5860807f38b61de78fb201ab2a9a4e6c184c907bdc52f982480f
