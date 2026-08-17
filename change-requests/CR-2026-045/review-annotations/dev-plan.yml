@@ -1,25 +1,21 @@
 cr-id: CR-2026-045
 review-type: dev-plan
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-17T20:49:45+08:00"
-verdict: block
-repair-target: write-dev-plan
-blockers:
-  - "DEVPLAN-B01 任务不可直接执行：TASK-01 的测试文件路径写成“pipeline-templates/emit-registry.test.mjs（若 tools 侧测试目录约定为 pipeline-templates/test/ 则落该处）”，条件路径违反 TASK 必须给出确定文件落点的要求。已核实 tools 现有合同测试在 skills/shared/crctl/scripts/test/pipeline-structure.test.mjs 等目录；必须选定实际路径并更新 plan/TASK。"
-  - "DEVPLAN-B02 计划与任务索引的依赖语义不一致：plan.md M3 的依赖列写 TASK-02，覆盖 TASK-04/05/06；但 TASK-04 与 TASK-06 的 depends-on=[]，TASK-05 才依赖 TASK-02。需要把里程碑依赖改为按任务实际依赖表达（TASK-04/06 独立，TASK-05 依赖 TASK-02），并让依赖图、TASK-11 聚合依赖和 tasks/_index.yml 语义一致。"
-  - "DEVPLAN-B03 TASK-04 使用 {NNN}/{NNN+1} 迁移编号占位，无法直接实施；已核实当前 Multica CR worktree 最新迁移为 264_issue_origin_dingtalk_chat_validate.up.sql，应明确 265/266 的文件名与两个索引名，或给出可执行的唯一编号决策。"
-  - "DEVPLAN-B04 TASK-11 将 CUSTOM 台账路径写为 server/CUSTOM.md，实际权威文件是 Multica 仓库根目录 CUSTOM.md；同时 Multica 代码 TASK 的完成条件没有明确登记对应 CUSTOM 条目，不能把所有登记责任泛化留给最后一个 TASK。应修正路径，并在每个落 Multica 代码/迁移/生成物的 TASK 完成标志中要求登记 CR-2026-045 + TASK 编号，TASK-11 只做最终对账。"
+reviewed-at: "2026-08-17T20:54:33+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  sdd-to-plan: "block"
-  plan-to-tasks: "block"
-  task-executability: "block"
-  dependency-topology: "block"
+  sdd-to-plan: "pass"
+  plan-to-tasks: "pass"
+  task-executability: "pass"
+  dependency-topology: "pass"
   interface-contracts: "pass"
-  acceptance-verifiability: "block"
+  acceptance-verifiability: "pass"
   scope-and-simplicity: "pass"
-  risk-and-rollback: "block"
+  risk-and-rollback: "pass"
   reviewer-model: "gpt-5.6-sol/high"
 suggestions:
-  - "TASK-07 的 12h 核心任务可保留，但实现时应按 SDD §3.4/§5/§6 的 table tests 分组，不再继续拆成新的抽象层。"
-  - "TASK-11 的 E2E 只消费前置 TASK 产物，避免把生产实现塞入验收任务。"
-subject-sha256: f1a8bd3ccd17e209017a4eac09de5e19a4182a94404c8b830be806859e6d63b9
+  - "TASK-07 定义 Runner handler 契约，TASK-09 负责 router 挂载；实现时保持 router.go 的单一修改归属，避免两个 TASK 交叉提交同一 wiring。"
+  - "TASK-04 的 265/266 已按当前基线固定；实施前仍必须通过 workspace-freshness gate，若 trunk 前移只按仓库迁移纪律顺延编号，不保留占位符。"
+  - "PASS 证据已绑定 plan.md 与全部 TASK composite digest；任何正文修订都必须重新执行 review-dev-plan，不得直接进入 dev-start 审批。"
+subject-sha256: c39ebfabbd763ccd028bcbfad955816db596f16f373e2b469048cc79be68979b
