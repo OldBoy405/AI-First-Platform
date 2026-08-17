@@ -2,56 +2,68 @@ cr-id: CR-2026-045
 tasks:
   - id: CR-2026-045-TASK-01
     title: "tools 合同红测试冻结"
-    status: pending
+    status: done
+    done-at: "2026-08-17T21:08:35+08:00"
     estimate: 4h
     depends-on: []
   - id: CR-2026-045-TASK-02
     title: "architecture reviewLoop 与 emit-registry 生成器"
-    status: pending
+    status: done
+    done-at: "2026-08-17T21:08:35+08:00"
     estimate: 6h
     depends-on: [CR-2026-045-TASK-01]
   - id: CR-2026-045-TASK-03
     title: "crctl review outbox 确定性 payload 扩充"
-    status: pending
+    status: done
+    done-at: "2026-08-17T21:08:35+08:00"
     estimate: 4h
     depends-on: [CR-2026-045-TASK-01]
   - id: CR-2026-045-TASK-04
     title: "双 partial unique index migration"
-    status: pending
+    status: done
+    done-at: "2026-08-17T21:23:46+08:00"
     estimate: 3h
     depends-on: []
   - id: CR-2026-045-TASK-05
     title: "生成 ArchitectureCoreRegistryJSON 与 digest"
-    status: pending
+    status: done
+    done-at: "2026-08-17T21:23:47+08:00"
     estimate: 4h
     depends-on: [CR-2026-045-TASK-02]
   - id: CR-2026-045-TASK-06
     title: "CreatePipelineTask sqlc 查询与归因快照"
-    status: pending
+    status: done
+    done-at: "2026-08-17T21:23:47+08:00"
     estimate: 5h
     depends-on: []
   - id: CR-2026-045-TASK-07
     title: "Runner Start 与 Reconcile 幂等调度"
-    status: pending
+    status: done
+    done-at: "2026-08-17T21:23:47+08:00"
     estimate: 12h
     depends-on: [CR-2026-045-TASK-04, CR-2026-045-TASK-05, CR-2026-045-TASK-06]
   - id: CR-2026-045-TASK-08
     title: "daemon pipeline task carrier"
-    status: pending
+    status: done
+    done-at: "2026-08-17T21:37:12+08:00"
     estimate: 8h
     depends-on: [CR-2026-045-TASK-07]
   - id: CR-2026-045-TASK-09
     title: "唤醒接线、grant ACK 与 router wiring"
-    status: pending
+    status: done
+    done-at: "2026-08-17T21:37:12+08:00"
     estimate: 6h
     depends-on: [CR-2026-045-TASK-07]
   - id: CR-2026-045-TASK-10
     title: "daemon commit-scan review payload parity"
-    status: pending
+    status: done
+    done-at: "2026-08-17T21:23:47+08:00"
     estimate: 5h
     depends-on: [CR-2026-045-TASK-03]
   - id: CR-2026-045-TASK-11
     title: "五节点 E2E 纵切、手动回归与 CUSTOM 台账"
-    status: pending
+    status: done
+    done-at: "2026-08-17T21:40:30+08:00"
     estimate: 8h
     depends-on: [CR-2026-045-TASK-02, CR-2026-045-TASK-03, CR-2026-045-TASK-04, CR-2026-045-TASK-05, CR-2026-045-TASK-06, CR-2026-045-TASK-07, CR-2026-045-TASK-08, CR-2026-045-TASK-09, CR-2026-045-TASK-10]
+
