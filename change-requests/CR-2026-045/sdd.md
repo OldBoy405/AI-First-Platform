@@ -5,7 +5,7 @@ cr-ref: CR-2026-045
 title: Runner Core：architecture-design 自动调度纵切 技术设计
 status: draft
 created: 2026-08-17T19:00:11+08:00
-updated: 2026-08-17T19:16:00+08:00
+updated: 2026-08-17T19:24:02+08:00
 ---
 
 # 1. 架构概览
@@ -264,7 +264,14 @@ handler claim path识别 `context.type=pipeline_node` 后填充 task wire 的 `P
 - `HandleGrantsAck` 更新 `delivered_at` 后，按 ACK IDs 查询受影响 CR，直接调用 `Reconcile`；不新增会被 WS `SubscribeAll` 外发的内部事件。
 - server 启动后一次性扫描 `runner=architecture-core/v1` 的非终态 run 并 `Reconcile`。
 
-现有 review outbox 契约需要一个确定性扩充：`crctl review-record` 已经计算 canonical annotation、attempt、blockers、reviewed-at 和 LF-normalized subject digest，因此由它在同一 `event_kind=review` payload 写入 `attempt`、`blockers`、`reviewed_at`、`subject_sha256`。这不新增命令、状态、账本或判断；只是让现有唯一写者把已持久化事实投影完整。旧 payload 缺任一 Core 字段时 projector 仍可维持旧 UI，但 Runner 必须以 `RUNNER_REVIEW_EVIDENCE_INCOMPLETE` fail closed。
+现有 review event 契约需要一个确定性扩充，且 outbox/commit-scan 两条既有来源必须 parity：
+
+- `crctl review-record` 已经计算 canonical annotation、attempt、blockers、reviewed-at 和 LF-normalized subject digest，因此由它在同一 `event_kind=review` payload 写入 `attempt`、`blockers`、`reviewed_at`、`subject_sha256`。
+- daemon `buildReviewPayload` 使用显式 stage→文件映射：`requirement→requirement.yml`、`tech-design→sdd.yml`、`code→code.yml`；读取先 CRLF→LF，再用现有安全 YAML 解析。
+- blocker 读取兼容 canonical scalar 字符串和历史结构化对象，归一化为字符串列表；commit-scan 产生的 payload 字段集合与 crctl outbox 完全一致。
+- outbox 优先仍保留；两来源同一 commit 的 payload parity 由测试锁定。旧 payload 缺任一 Core 字段时 projector 可维持旧 UI，但 Runner 必须以 `RUNNER_REVIEW_EVIDENCE_INCOMPLETE` fail closed。
+
+这不新增事件通道、命令、状态、账本或判断；只是让同一既有 review 事件的两个采集来源投影相同的已持久化事实。
 
 事件只是唤醒，不是权威事实；丢失唤醒由后续事件或启动扫描恢复。
 
@@ -398,6 +405,7 @@ HTTP 重放同 start 返回同一 run 和 `changed=false`。
 - `pipeline-templates/architecture-design.pipeline.json`
 - `pipeline-templates/emit-registry.mjs` + 窄测试
 - `skills/shared/crctl/scripts/crctl.mjs`：只扩现有 review outbox 的确定性 payload + 回归测试
+- `server/internal/daemon/crevents.go`：stage 映射、scalar blocker 和 payload parity 修复 + 回归测试
 - 现有 Pipeline/contract tests
 
 不改 Agent、Skill、crctl 子命令/状态/gates、状态机、README 算法说明。
@@ -426,8 +434,9 @@ HTTP 重放同 start 返回同一 run 和 `changed=false`。
 6. attribution：source snapshot 全字段复制、strict CHECK 通过、source/Agent/CR 任一跨 workspace 时 INSERT 0 行；retry 列清单保持。
 7. detail merge：Runner→review、review→Runner、projector replay 三种顺序结果相同，`runner` 与 verdict/blockers 均不丢。
 8. grant：记录未 delivered 不入队；ACK 后一次入队；坏 grant 由 Skill/`crctl` 拒绝后 run failed。
-9. daemon：pipeline context hydration、prompt 不含 issue/quick-create workflow、CR root 0/1/2 匹配、inspect 非 healthy、rules/crctl 缺失；LocalWorkDir 与现有 path lock/cleanup 生效。
-10. restart：四个 PRD AC 指定窗口启动扫描，只有一个有效 task。
+9. review event：commit-scan-only、outbox-only、同一 commit 双来源 parity；tech-design 必须读取 `sdd.yml`，scalar/structured blockers 归一化，digest/attempt 缺失硬失败。
+10. daemon：pipeline context hydration、prompt 不含 issue/quick-create workflow、CR root 0/1/2 匹配、inspect 非 healthy、rules/crctl 缺失；LocalWorkDir 与现有 path lock/cleanup 生效。
+11. restart：四个 PRD AC 指定窗口启动扫描，只有一个有效 task。
 11. 回归：governance projector、TaskService claim/retry、approval、daemon、CR gate API。
 12. tools 手动 architecture Pipeline 回归，Runner 未启动时行为不变。
 
@@ -458,5 +467,6 @@ HTTP 重放同 start 返回同一 run 和 `changed=false`。
 
 | 日期 | 版本 | 作者 | 说明 |
 |---|---|---|---|
+| 2026-08-17 | v0.3.0 | Ray | 回修 SDD-B05：commit-scan 与 outbox review payload parity、显式 stage 文件映射和 blocker 归一化 |
 | 2026-08-17 | v0.2.0 | Ray | 回修 SDD-B01～B04：source attribution snapshot、detail.runner merge、operational LocalWorkDir、canonical review outbox |
 | 2026-08-17 | v0.1.0 | Ray | 初稿：固定 architecture registry、单一 reconcile、现有 TaskService task carrier、DB 原生唯一约束、grant/checkpoint 接合 |
