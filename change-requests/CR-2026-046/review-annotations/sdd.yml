@@ -1,0 +1,19 @@
+cr-id: CR-2026-046
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-18T20:47:11+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  prd-sdd-alignment: "pass: FR-1 至 FR-11 均有技术实现与测试映射，失败/不恢复语义与 PRD 一致"
+  architecture: "pass: 只改 workspace-transactions 与两个既有测试文件；Git 副作用经 gitMust；无第二事务、账本或上层算法"
+  data-model: "pass: localTrunkSync 四态、reason 枚举及 before/remote/after SHA/null 规则完整，无新增持久化"
+  interface-contract: "pass: missing 二次分类含 remote-only/branch-only/missing；merge 输出增量且 status/inspect/journal 不扩散"
+  performance-security: "pass: fetch --prune 清理 stale remote refs，ff-only 使用捕获 SHA，失败不破坏现场；调用量已给出上界"
+  testability: "pass: 两个既有测试文件覆盖 stale trunk、remote-only、三类 failed、skipped/unchanged/synced，并复用 faultPoint"
+  prompt-adoption: "skip: 不触及 crctl.mjs dispatch 或 controlled-shell deny 面"
+suggestions: []
+review-loop:
+  current-attempt: 3
+subject-file: change-requests/CR-2026-046/sdd.md
+subject-sha256: 2f348130e09ea053dedf8642f64a591c74d1efe000b6ee1d32e5cdfd7b46f7cc

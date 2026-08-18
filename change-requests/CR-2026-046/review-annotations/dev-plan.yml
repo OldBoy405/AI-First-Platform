@@ -1,0 +1,20 @@
+cr-id: CR-2026-046
+review-type: dev-plan
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-18T20:59:59+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  sdd-to-plan: "pass: 注册与 merge 两条修改线、验证、风险、回滚和发布策略均进入计划"
+  plan-to-tasks: "pass: M1/M2 各由一个纵切 TASK 承接，TASK-02 明确负责最终全量回归，零无主交付项"
+  task-executability: "pass: 两卡均含目标、文件、实现要点、精确验收、完成标志和接口契约，无 TBD"
+  dependency-topology: "pass: TASK-02 单向依赖 TASK-01，仅保证最终回归顺序，无悬空或环"
+  interface-contracts: "pass: ensureRepoWorkspace/WORKSPACE_TRUNK_UNAVAILABLE 与 reconcileLocalTrunks/LocalTrunkSyncRow 签名完整一致"
+  acceptance-verifiability: "pass: 每卡至少五条可执行验收，覆盖 PRD AC-1 至 AC-8 和既有全量回归"
+  scope-and-simplicity: "pass: 两个约 1 工作日纵切取代四个微任务，无协调 TASK、无 SDD 外能力"
+  risk-and-rollback: "pass: fetch --prune、注册中断、部分本地同步、故障注入和 git revert 回滚均明确"
+  reviewer-model: "openai/gpt-5.6-sol"
+suggestions: []
+review-loop:
+  current-attempt: 2
+subject-sha256: 223998655056f4aa32de0ce7353fab2fef479e0105d1dfa3b5ace05a8af6f6cf
