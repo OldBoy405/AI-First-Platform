@@ -1,5 +1,7 @@
 # Wiki 子系统设计 — 代码 Wiki 维护 · 知识问答 · 知识晋升
 
+> 决策状态：**conditional（条件触发）**。本文件是候选设计输入，不是当前实施授权；只有具备明确 owner、维护频率和稳定检索需求后，才按 `docs/product/缺口清单-最终版.md` 的准入规则注册 CR。正文中的阶段、工期和交付切分均为历史设计假设，注册时必须依据当前代码与权威合同重新核实。
+> 权威边界：当前能力处置以 `docs/product/缺口清单-最终版.md` 为准；状态机、Pipeline、Skill 和 `crctl` 行为继续以 tools 权威文件为准。
 > 承接：v1.1 知识层设计（PRD §2.1.7 三分工：事实生产 / 知识消费 / 知识晋升）、P0 §6.1 目录契约扩展、P2.5 runner 轻量档、P3 §2.3 知识晋升巡检。
 > 借鉴来源：OpenWiki（langchain-ai/openwiki）的文档维护方法论与"确定性护栏包住生成式内核"的工程模式——**借模式与纪律，不引其依赖**（我们的执行体是 Claude Code CLI + Agent SDK，不是 LangChain/DeepAgents）。源码级调研结论见《对比分析》会话记录：prompt 方法论、docs-only-backend 写边界、okf-middleware 三段式校验、gitHead 增量机制均已逐一核对。
 > 日期：2026-07-30。
