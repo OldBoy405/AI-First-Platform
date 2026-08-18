@@ -1,13 +1,13 @@
 $ node --test skills/shared/crctl/scripts/test/contract-scan.test.mjs
 (exit=0)
 --- stdout ---
-✔ AC-1: 三个 CR Pipeline 与 11 个 SKILL.md 对废弃 canonical 字段零命中 (3.0334ms)
-✔ AC-2a: requirement-authoring reviewLoop 结构快照不变 (0.6968ms)
-✔ AC-2b: architecture-design reviewLoop 结构快照不变 (0.2901ms)
-✔ AC-2c: code-implementation review-code reviewLoop 结构快照（CR-2026-043：replayNodes 插入 workspace-freshness 基线重核） (0.3567ms)
-✔ AC-1 补充：三个 Pipeline JSON 可解析（prompt 修订未破坏 JSON 结构） (0.5384ms)
-✔ CR-2026-041 FR-06/07：active 路径零退役 Skill 引用 (1.2086ms)
-✔ CR-2026-041 FR-06/07：退役 Skill 目录已删除（历史快照除外） (0.4152ms)
+✔ AC-1: 三个 CR Pipeline 与 11 个 SKILL.md 对废弃 canonical 字段零命中 (2.8724ms)
+✔ AC-2a: requirement-authoring reviewLoop 结构快照不变 (0.6945ms)
+✔ AC-2b: architecture-design reviewLoop 结构快照不变 (0.2939ms)
+✔ AC-2c: code-implementation review-code reviewLoop 结构快照（CR-2026-043：replayNodes 插入 workspace-freshness 基线重核） (0.3618ms)
+✔ AC-1 补充：三个 Pipeline JSON 可解析（prompt 修订未破坏 JSON 结构） (0.5349ms)
+✔ CR-2026-041 FR-06/07：active 路径零退役 Skill 引用 (1.1823ms)
+✔ CR-2026-041 FR-06/07：退役 Skill 目录已删除（历史快照除外） (0.4296ms)
 ℹ tests 7
 ℹ suites 0
 ℹ pass 7
@@ -15,6 +15,6 @@ $ node --test skills/shared/crctl/scripts/test/contract-scan.test.mjs
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 66.4061
+ℹ duration_ms 64.2523
 
 --- stderr ---

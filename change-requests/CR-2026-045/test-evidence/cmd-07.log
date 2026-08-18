@@ -1,6 +1,6 @@
-$ go test ./internal/service -run Test(ResolveTaskWorkspaceIDPipelineCarrier|NotifyTaskAvailableAllowsDisabledEmptyClaimCache) -count=1
+$ go test ./internal/handler -run TestHydratePipelineContext -count=1
 (exit=0)
 --- stdout ---
-ok  	github.com/multica-ai/multica/server/internal/service	0.089s
+ok  	github.com/multica-ai/multica/server/internal/handler	0.127s
 
 --- stderr ---

@@ -1,6 +1,6 @@
-$ go test ./internal/handler -run TestHydratePipelineContext -count=1
+$ go test ./internal/daemon/execenv -run TestPrepareLocalPipelineSkipsWorkspaceSidecars -count=1
 (exit=0)
 --- stdout ---
-ok  	github.com/multica-ai/multica/server/internal/handler	0.170s
+ok  	github.com/multica-ai/multica/server/internal/daemon/execenv	0.210s
 
 --- stderr ---
