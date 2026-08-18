@@ -1,44 +1,42 @@
 cr-id: CR-2026-045
 review-type: code
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-17T23:04:43+08:00"
-verdict: block
-blockers:
-  - "CODE-B08 [server/internal/governance/runner.go: checkDigest] AC-13 要求 registry digest 漂移时明确阻断但保持同一 active run，部署回相同 digest 后可继续；当前 checkDigest 调 failRun，把 run 永久置 failed，恢复原 digest 后 findActiveRun 已找不到该 run。修复为非终态 fail-closed wait/error，并加 drift→阻断→restore→同 run 继续测试。"
-  - "CODE-B09 [server/internal/governance/runner.go: reconcileSkillTask/checkpoint] AC-10 要求 checkpoint 故障保持 tech-design-reviewed，并只重跑同一 checkpoint；当前 push-progress task failed/cancelled 与普通 Skill 一样调用 failRun，run 终态失败且无法重试。为 checkpoint 实现同 node 幂等 retry，禁止重跑设计/review/approval，并补故障→retry→canonical checkpoint complete 测试。"
-  - "CODE-B10 [TASK-11 / PRD AC-04~10, AC-12, AC-15, AC-18 / test-report.md §5] canonical 测试报告明确未执行真实 daemon + Agent CLI + signed grant 五节点 E2E、feature-off 手动路线；TASK-11 明确要求 runner_e2e_test.go 真实 crctl 深原语和手动回归，但仓库不存在该产物，且 daemon 全包回归在本机失败。当前不能把 TASK-11/AC-15/AC-18 判为通过。补可复现 E2E/手动路线证据，或将无法在本环境执行的发布门禁保持为 blocker，不得仅凭表级模拟让代码评审 PASS。"
+reviewed-at: "2026-08-18T19:48:20+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  reviewer-model: "openai/gpt-5.6-sol reasoning=high"
-  代码↔TASK↔SDD对齐: "BLOCK：首轮 7 项实现缺口大部分已修复，但 AC-10/AC-13 失败语义与 TASK-11 E2E 仍不满足。"
-  工程质量: "BLOCK：digest 漂移和 checkpoint 故障把可恢复等待错误升级为不可恢复终态。"
-  关键路径可读性: "PASS：固定五节点、authority evidence 与 replay 分支已显式化，未引入通用引擎。"
-  安全性: "PASS：task-token/path/input/registry/approval/controlled-shell 边界已 fail closed；未发现敏感信息写入。"
-  测试覆盖: "BLOCK：真实 PG 表测试已补齐，但批准的真实 crctl/signed grant E2E 与手动路线仍缺。"
-  测试证据可信度: "PASS（有限范围）：机器区/traceability/log 完整且 10 命令 exit 0；报告如实声明未执行项，因此不能外推为 AC-15/18 已通过。"
+  代码↔TASK↔SDD对齐: "PASS：B08 checkDigest 改为返回 TEMPLATE_DIGEST_MISMATCH 而非 failRun，保持 active run、恢复 digest 后可续跑（TestRunnerDigestMismatchIsRecoverableOnSameRun 真 PG PASS）；B09 新增 reconcileCheckpointTask，checkpoint failed/cancelled 只重试同一 push-progress 节点、不重跑 design/review/approval（TestRunnerCheckpointFailureRetriesOnlyCheckpoint PASS）；B10 真实 server/daemon/Codex/signed-grant 五节点 E2E + feature-off 手动路线 + code release-subjects crosscheck 已闭合；TASK-12~15 全部落地并有定向证据。"
+  工程质量: "PASS：go build ./...、go vet（governance/service/daemon/handler/gitguard）、pipeline-structure 16/16、contract-scan 7/7、crctl 195/195 全绿。"
+  关键路径可读性: "PASS：checkDigest/reconcileCheckpointTask/ApplySnapshot active guard 均带明确注释，失败语义与重试边界显式。"
+  安全性: "PASS：全部 fail-closed；digest mismatch 拒绝、active run 跳过 stale snapshot、migration 267 NOT VALID→268 VALIDATE、snapshot 仅投影 KnownStatuses 枚举。"
+  测试覆盖: "PASS：B08/B09 真 PG 集成测试、TASK-12~15 定向测试、Linux/amd64 race 证据齐备。"
+  测试证据可信度: "PASS：test-report.status=pass、13 条命令 exit 0、command-digest 与 traceability.yml#tests 一致、cmd-NN.log 真实输出可追溯。"
   前端质量: "N/A：diff 未触及前端文件。"
+  reviewer-model: "openai/gpt-5.6-sol reasoning=high"
 suggestions:
-  - "Go race detector 因本机 CGO/C compiler 不可用未执行；建议 Linux CI 补跑相关包 -race，但本条不替代 CODE-B10 的功能 E2E。"
+  - "dev-start 漂移（scope amendment 修改 plan.md 导致 dev-plan digest + development-start approval EVIDENCE_DRIFT）属治理状态问题，将在 approve-code 的 release-subjects 重新绑定最新 plan/TASK 时闭合；不在 review-code 评审范围。"
+  - "multica internal/daemon 全包在本 Windows 主机存在既有环境失败（与本 CR 无关），已由 Linux race + 定向测试覆盖；建议 CI 在 Linux 环境补跑 daemon 全包。"
 review-loop:
-  current-attempt: 2
+  current-attempt: 3
 release-subjects:
   version: 1
   repositories:
     - repo: ai-first-platform-docs
       remote-ref: refs/heads/requirement/CR-2026-045
-      reviewed-source-sha: c9840894c448751632453bce775132ffbb735068
+      reviewed-source-sha: 5d63b16f3bf80ccaaec9ad394ee8fa589e40ef6e
     - repo: multica
       remote-ref: refs/heads/requirement/CR-2026-045
-      reviewed-source-sha: 843f627f0b1adce0d904a5a789b472e4395ed37d
+      reviewed-source-sha: c92af06bfb5f78d90a56d335582977874e0a3d26
     - repo: tools
       remote-ref: refs/heads/requirement/CR-2026-045
-      reviewed-source-sha: 6eb2befd2eb79d702e9ed9d19a39ec608a300d42
+      reviewed-source-sha: be440b85158e3a5daf80ca7428da421866b13c50
   artifacts:
     algorithm: sha256
     canonicalization: crlf-to-lf+path-sort
     files:
-      - { path: change-requests/CR-2026-045/plan.md, sha256: f7373bcac4921097442d6d287e9e329609984a0dd10a43c453c31524df15ea13 }
-      - { path: change-requests/CR-2026-045/prd.md, sha256: 18a8e037f6ad5860807f38b61de78fb201ab2a9a4e6c184c907bdc52f982480f }
-      - { path: change-requests/CR-2026-045/sdd.md, sha256: 0f7a8805f2a670a7c4ff312d65dc2c784d857ae27202cdbde5d165aa9bd14eae }
+      - { path: change-requests/CR-2026-045/plan.md, sha256: edb4e82b91a0d6c0504853479cb534887b31a033bd5a2dcf7e0fc4c7b0db7501 }
+      - { path: change-requests/CR-2026-045/prd.md, sha256: cd1cd18a7f51d6a45b86de1c09dadd47a8b2426d9f7415dd9ffe6ea68e669ac3 }
+      - { path: change-requests/CR-2026-045/sdd.md, sha256: 36d597d5e5b11252a076783b4a704c148abc1e5a251a606114a5e5c0afc1e93d }
       - { path: change-requests/CR-2026-045/tasks/TASK-01.md, sha256: 3589f61c910d9a0c7988b9da91986040658ac33619d58936e2ba4a6ec1539f12 }
       - { path: change-requests/CR-2026-045/tasks/TASK-02.md, sha256: bc8ab17bdaf35f89c16e4ca53cc78ba910ecc4ed5170027f4586b4b9f965a1e4 }
       - { path: change-requests/CR-2026-045/tasks/TASK-03.md, sha256: 0cb6cb8aefece0c72686ee0e9161e3752277230ce1ad01ea34f12bab3ed12bb8 }
@@ -50,5 +48,9 @@ release-subjects:
       - { path: change-requests/CR-2026-045/tasks/TASK-09.md, sha256: 9151ed7def084d1db361fb0adcb03e146f9dd885320f0535ebfa4ebb8a910448 }
       - { path: change-requests/CR-2026-045/tasks/TASK-10.md, sha256: e624e68090a9e5204955535813d6eae1a6e7d9a634b5fe0a4d70e22a4e12c792 }
       - { path: change-requests/CR-2026-045/tasks/TASK-11.md, sha256: 23ecdea10c0ac019f2778631df18cd7c73458b79aad984b9b93fb954de7cebe6 }
-      - { path: change-requests/CR-2026-045/tasks/_index.yml, sha256: f25284441205419b6a8ae7e4930b7781146088ef6d2c57cac3b4e39b0384338b }
-    digest: 16f1a0dfe463b45b2451e5cf8246a55f596c91ea08d62db21263b6acc062dfc5
+      - { path: change-requests/CR-2026-045/tasks/TASK-12.md, sha256: 0db5f4bfc847d4b7c5bce6d64e7e500208f3dd88d5fc446a96155c2774ec2896 }
+      - { path: change-requests/CR-2026-045/tasks/TASK-13.md, sha256: 341b8a01b63231e54c5ff265b5cbfdac3e47139d7934c611018e753e1262024c }
+      - { path: change-requests/CR-2026-045/tasks/TASK-14.md, sha256: 88b776baf1fc093e22dc1a214262d3c15fc661685d1f16a5bffd4c6d5297afec }
+      - { path: change-requests/CR-2026-045/tasks/TASK-15.md, sha256: db78851d8ee1aa19322dbc088d0d627009ced3b7aa2b176543797a7851660127 }
+      - { path: change-requests/CR-2026-045/tasks/_index.yml, sha256: bda47658ade3248569b7cd36e9ffbc85704dc7c6597e72fd3340b783b6b692fe }
+    digest: 68f895001419e6d6f03355db657d39d08e6d5537b8d7c92a3f9ebff15c066457
