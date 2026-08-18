@@ -17,3 +17,32 @@ development-start:
   via: crctl-approve
   evidence-digest: "33902df5db5eadae96ad037fc629a17e53b9ecd83834811f1c7aa5f21783e6ec"
   target-status: developing
+code:
+  approver: "OldBoy405"
+  approved-at: "2026-08-18T22:19:27+08:00"
+  via: crctl-approve
+  evidence-digest: "c4297c690b5bef1bef17d85d891246a7d71b4926b28dfe2312e1cebf72f5cfaa"
+  target-status: code-approved
+  release-subjects:
+    version: 1
+    repositories:
+      - repo: ai-first-platform-docs
+        remote-ref: refs/heads/requirement/CR-2026-046
+        reviewed-source-sha: cb4005fa0a955707aff10f9720ea6e3949443ac0
+      - repo: multica
+        remote-ref: refs/heads/requirement/CR-2026-046
+        reviewed-source-sha: 0c1963398f5db881a427c79f60777e2defc5d719
+      - repo: tools
+        remote-ref: refs/heads/requirement/CR-2026-046
+        reviewed-source-sha: e44cb5acadb419a1d632f5fe48f656de51f34913
+    artifacts:
+      algorithm: sha256
+      canonicalization: crlf-to-lf+path-sort
+      files:
+        - { path: change-requests/CR-2026-046/plan.md, sha256: a19969196f1f06cb516d0d579a465d7a6ff20ce3d02a04de330788d1ce813d57 }
+        - { path: change-requests/CR-2026-046/prd.md, sha256: 03695f26dcc0cb277e2da09a6293c0ed15ed71cf12bcb332527e23a37c1cf463 }
+        - { path: change-requests/CR-2026-046/sdd.md, sha256: 2f348130e09ea053dedf8642f64a591c74d1efe000b6ee1d32e5cdfd7b46f7cc }
+        - { path: change-requests/CR-2026-046/tasks/TASK-01.md, sha256: 18367c16d1f2a145fb6cfb8775d2c3cd2a30a154a064e507e2acfd13032bb4fd }
+        - { path: change-requests/CR-2026-046/tasks/TASK-02.md, sha256: 0b27270bd8b596e7b349170114ed420d058c17fb4d777005a2982caa6f9339ec }
+        - { path: change-requests/CR-2026-046/tasks/_index.yml, sha256: c3128d0f7a4c9f94b8223b2ae416684938450e5c0f8847189fb3eb4c22b7249f }
+      digest: 00152b9846333d99a0f91cf34cb8631243660093306c0e0cafed292b515e6ce6
