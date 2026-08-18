@@ -1,11 +1,11 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 # 五段链路：需求 FR ↔ 技术设计 SDD ↔ 交付 TASK ↔ 代码 merge SHA ↔ CR-ID
 spec-id: ai-first-platform
-cr-ref: CR-2026-044
-cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029, CR-2026-028, CR-2026-030, CR-2026-031, CR-2026-037, CR-2026-032, CR-2026-033, CR-2026-038, CR-2026-039, CR-2026-040, CR-2026-041, CR-2026-043, CR-2026-042, CR-2026-044]
-target-version: "0.20.5"
+cr-ref: CR-2026-045
+cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029, CR-2026-028, CR-2026-030, CR-2026-031, CR-2026-037, CR-2026-032, CR-2026-033, CR-2026-038, CR-2026-039, CR-2026-040, CR-2026-041, CR-2026-043, CR-2026-042, CR-2026-044, CR-2026-045]
+target-version: "0.20.6"
 baseline-since: "0.10"
-generated-at: "2026-08-17T11:00:37+08:00"
+generated-at: "2026-08-18T20:01:20+08:00"
 
 # 已知缺口：CR-2026-003~CR-2026-006 未生成本文件的里程碑段（writeback-traceability 在那四个
 # CR 回写时被跳过，PRD.md/SDD.md/_index.yml 侧的累积记录不受影响、仍完整）。本次（CR-2026-008）
@@ -2953,3 +2953,40 @@ milestones:
         code: { verdict: pass, path: change-requests/CR-2026-044/review-annotations/code.yml, sha256: eb323596da9cf316a78d400d70ef013d619595c8823b83a05a2386ec6a74aab3 }
       approval: { status: approved, path: change-requests/CR-2026-044/approval.yml, sha256: 0414a46a88fbed2475594d8f54a7f8ab62049761c30568c0f21560547f8eb94f }
       merge: { status: merged, path: change-requests/CR-2026-044/merge-commits.yml, sha256: ebb113c94f097ce909ab889d58c338c724b94934ce026ae8e95c5ee728d16101 }
+  - cr: CR-2026-045
+    milestone: Runner Core：architecture-design 自动调度纵切
+    target-version: "0.20.6"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: b997b18d1f035780e70ae5f7cd6f8eab7eb1f86a
+        branch: requirement/CR-2026-045
+      - repo: multica
+        trunk: main
+        sha: b013e803bfdc8ca1bd9f0a780cefb6910bf14768
+        branch: requirement/CR-2026-045
+      - repo: tools
+        trunk: custom/main
+        sha: 8680b594aad837f0e9742c5f74637a0c67cde572
+        branch: requirement/CR-2026-045
+    frs:
+      - fr: FR-01
+      - fr: FR-02
+      - fr: FR-03
+      - fr: FR-04
+      - fr: FR-05
+      - fr: FR-06
+      - fr: FR-07
+      - fr: FR-08
+      - fr: FR-09
+      - fr: FR-10
+      - fr: FR-11
+    evidence:
+      test: { status: pass, path: change-requests/CR-2026-045/test-report.md, sha256: 711f5bcad535d74119e967975250bebd631ff3d0afdb09a4c3f80df7c6daf96e }
+      reviews:
+        requirement: { verdict: pass, path: change-requests/CR-2026-045/review-annotations/requirement.yml, sha256: a2712a7916648a7ccdd3cddb56e3fc096d62bf45764abe889957ebd23d882264 }
+        tech-design: { verdict: pass, path: change-requests/CR-2026-045/review-annotations/sdd.yml, sha256: c6c7dff0375eb3580431b14dfce67a8e897f4f7154bd73357a28397135a56f43 }
+        dev-plan: { verdict: pass, path: change-requests/CR-2026-045/review-annotations/dev-plan.yml, sha256: 1c667e9df023c0f3bb555652b831b8af71d485e77085de7b8c1db30189c50318 }
+        code: { verdict: pass, path: change-requests/CR-2026-045/review-annotations/code.yml, sha256: 6024f0e90521ab0998a0fdbce78dd388ae71b70a1837724a4eb3cf2c58903660 }
+      approval: { status: approved, path: change-requests/CR-2026-045/approval.yml, sha256: bf7a05d8c73a9e4160abd648f61266e4304ca7a9139e1b7044cdcbefc84aea9d }
+      merge: { status: merged, path: change-requests/CR-2026-045/merge-commits.yml, sha256: 0b2813124c5fadd51c870c706c2a2598cb3f85c9add374155fba6475b9779783 }
