@@ -1,24 +1,19 @@
 cr-id: CR-2026-046
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-18T20:42:32+08:00"
-verdict: block
-blockers:
-  - "SDD §3.3/§7.3 声称 merge journal 已 complete 后可重跑 merge 再执行 local trunk helper，但现有 authority resolver 会在 finalize 后返回 transaction-workspace，且 crctl.mjs#cmdMerge 在入口要求 status=code-approved；因此该重入路径不可达。请按 PRD FR-10 修订为：save('complete') 后进程中断不做自动恢复、不承诺重跑 merge，用户仅可原生 git pull --ff-only；删除 wasComplete 重跑 helper 的接口承诺，并在测试设计中不要把它当可恢复场景。"
-  - "SDD §4.1 对 fetch 后 branch-only 的处理自相矛盾：说明称 branch-only/remote-only 复用既有恢复，伪代码却只处理 remote-only，branch-only 会进入 WORKSPACE_ENSURE_BLOCKED。请显式加入 branch-only → create('from-local-branch')，并同步 FR-5 映射，保持首次分类 branch-only 的既有安全语义。"
-  - "SDD 用普通 git fetch origin 作为“远端事实刷新”，但默认 fetch 不会清理远端已删除分支留下的 stale refs/remotes/origin/{trunk}，会使 trunk-unavailable 检测误判。请用最小原生修复 git fetch --prune origin（注册 missing 与 merge helper 两处），并把测试改为：远端 trunk 已删除、local stale tracking ref 仍存在，fetch 后必须清理并得到 WORKSPACE_TRUNK_UNAVAILABLE/trunk-unavailable。另请在 §4.2 明确 faultPoint('local-sync-ff-only-failed') 位于 ff-only try/catch 内，否则 §8.2 的失败注入测试没有设计落点。"
+reviewed-at: "2026-08-18T20:45:30+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  prd-sdd-alignment: "block: complete 后恢复语义与 PRD 明确的不恢复合同冲突"
-  architecture: "pass: 改动仍局限 workspace-transactions，未复制事务、状态机或上层算法"
-  data-model: "pass: localTrunkSync 四态与 SHA/null 字段完整，无新增持久化"
-  interface-contract: "block: branch-only 路由及 complete 后重入契约不一致"
-  performance-security: "block: 普通 fetch 不能排除 stale remote-tracking trunk ref"
-  testability: "block: ff-only faultPoint 无伪代码落点，trunk-unavailable fixture 不能验证 stale ref"
+  prd-sdd-alignment: "pass: FR-1 至 FR-11 均有技术实现与测试映射，失败/不恢复语义与 PRD 一致"
+  architecture: "pass: 只改 workspace-transactions 与两个既有测试文件；Git 副作用经 gitMust；无第二事务、账本或上层算法"
+  data-model: "pass: localTrunkSync 四态、reason 枚举及 before/remote/after SHA/null 规则完整，无新增持久化"
+  interface-contract: "pass: missing 二次分类含 remote-only/branch-only/missing；merge 输出增量且 status/inspect/journal 不扩散"
+  performance-security: "pass: fetch --prune 清理 stale remote refs，ff-only 使用捕获 SHA，失败不破坏现场；调用量已给出上界"
+  testability: "pass: 两个既有测试文件覆盖 stale trunk、remote-only、三类 failed、skipped/unchanged/synced，并复用 faultPoint"
   prompt-adoption: "skip: 不触及 crctl.mjs dispatch 或 controlled-shell deny 面"
-suggestions:
-  - "§7.2 的 helper 最坏 git 调用数不是 ≤6：包含 before、branch、status、fetch、remote、ancestor、merge、after，成功路径最多 8 次；修正计数即可，不需优化。"
-  - "§7.1 关于新增错误必然写 audit.log 的断言应删除或改为仅沿既有 TxError/fail 输出路径；cmdRegister 的失败审计并非本 CR 要新增的能力。"
+suggestions: []
 review-loop:
-  current-attempt: 1
+  current-attempt: 2
 subject-file: change-requests/CR-2026-046/sdd.md
-subject-sha256: af3a52dccbf489d7f77c97ca354dda353dfdeaf1e081592fe332c3879b7b54a6
+subject-sha256: 6fa6f47ab8ade6c2babb23a2cddbb04ae997269ffb7f0a26fa59639cfb01abdd
