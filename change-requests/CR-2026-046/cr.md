@@ -15,9 +15,9 @@ owners:
     assigned-at: "2026-08-18T20:16:39+08:00"
 target-version: tbd
 source: "docs/analysis/CR合并与新注册Worktree同步治理优化方案.md"
-status: code-approved
+status: merging
 created: "2026-08-18T20:16:39+08:00"
-updated: "2026-08-18T22:19:27+08:00"
+updated: "2026-08-18T22:22:06+08:00"
 remote-ref: ""
 last-push-at: ""
 last-push-by: ""
