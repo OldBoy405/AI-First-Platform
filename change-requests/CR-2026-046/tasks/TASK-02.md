@@ -4,56 +4,67 @@ type: TASK
 cr-ref: CR-2026-046
 plan-ref: "change-requests/CR-2026-046/plan.md"
 sdd-ref: "change-requests/CR-2026-046/sdd.md"
-title: register 路径单元测试（stale trunk / 远端恢复 / 不可用）
-slug: register-workspace-remote-tests
+title: merge 路径纵切（本地 trunk 同步 + 测试 + 全量回归）
+slug: merge-local-sync-vertical
 status: pending
-estimate: 3h
+estimate: 7h
 depends-on: ["CR-2026-046-TASK-01"]
 created: "2026-08-18T20:51:24+08:00"
 ---
 
-# TASK-02 register 路径单元测试
+# TASK-02 merge 路径纵切与发布验证
 
 ## 1. 任务描述
 
-按 SDD §8.1 在 `tools/skills/shared/crctl/scripts/test/register-tx.test.mjs` 追加单元测试，直接 import lib 函数（先例：`merge-tx.test.mjs` 已 import `prepareMergeTree`/`replaceBacklogEntry`）：
+按 SDD §3.2/§4.2/§4.3/§8.2 完成 merge 路径实现、测试和最终全量回归，形成一个约 1 工作日纵切：
 
-1. stale local trunk：origin master 推进后本地落后，`ensureRepoWorkspace`（missing）建 CR branch，HEAD == 新 origin master SHA（PRD AC-1）。
-2. 远端 CR 分支恢复：仅远端有 `requirement/{CR}`、本地无任何 ref → action `created:from-remote`，tracking 正确（PRD AC-2）。
-3. fetch 失败：`git remote set-url origin <bogus>` → 抛 `WORKSPACE_TRUNK_UNAVAILABLE`，无本地 branch/worktree（PRD AC-3）。
-4. trunk 缺失且本地存在 stale tracking ref：保留本地 `refs/remotes/origin/master`，仅在 bare origin `update-ref -d refs/heads/master` → `fetch --prune` 清理 stale ref 后抛 `WORKSPACE_TRUNK_UNAVAILABLE`（PRD AC-3）。
-5. healthy/branch-only 不 fetch：bogus url 下 `healthy` 返回 `none`、`branch-only` 返回 `from-local-branch` 不抛错（PRD AC-4）。
+1. 在 `workspace-transactions.mjs` 新增模块内导出 `reconcileLocalTrunks(ctx)`，按 8 判据逐仓生成 `LocalTrunkSyncRow`；有副作用的 fetch/merge 均经 `gitMust` 并局部捕获，helper 不抛错。
+2. 在 `mergeCr` 的 `save('complete')` 后、return 前调用 helper，新增返回字段 `localTrunkSync`；不改 `crctl.mjs`、journal、merge status 或业务状态。
+3. 在 `merge-tx.test.mjs` 追加 happy path 三仓断言、6 场景表驱动测试、`local-sync-ff-only-failed` faultPoint 集成测试。
+4. 在 TASK-01 完成后执行全部 crctl 测试与发布 checklist，承接 Plan M2 的最终发布验证。
 
 ## 2. 涉及文件 / 模块
 
-- `tools/skills/shared/crctl/scripts/test/register-tx.test.mjs`（仅追加用例与必要 import）
+- `tools/skills/shared/crctl/scripts/lib/workspace-transactions.mjs`：新增 `reconcileLocalTrunks`，`mergeCr` 返回处最小接线。
+- `tools/skills/shared/crctl/scripts/test/merge-tx.test.mjs`：追加用例与必要 import。
+- 复用 `tools/skills/shared/crctl/scripts/test/merge-fixture.mjs` 已导出的 `makeFixture`/`git`/`runCrctl`，零改动。
 
 ## 3. 实现要点
 
-- 复用文件内既有 `makeFixture()`（三 bare origin）+ `git()` helper，不新建 fixture 文件。
-- 单元测试需要 `ctx`：`import { resolveRepositories, ensureRepoWorkspace } from '../lib/workspace-transactions.mjs';`，`const ctx = resolveRepositories(kb)`（fixture 已有 dir-graph.yaml）。
-- stale trunk 场景：clone origin 到临时目录 → commit → push 推进 origin master → 本地 kb fetch 前仍是旧 ref → 调用 ensure 后比对 `git(kb, ['rev-parse', `requirement/${cr}`])` 与 bare 的 master SHA。
-- 远端 CR 分支场景：先在 origin 用 clone 推 `requirement/{cr}` 分支，本地删掉任何同分支 ref/worktree 后调用 ensure。
-- trunk 缺失场景：先 `git(bare, ['update-ref', '-d', 'refs/heads/master'])`，保留本地 `refs/remotes/origin/master` 后调用 ensure，断言抛错码。
-- 断言 TxError：用 `assert.throws(fn, (e) => e.code === 'WORKSPACE_TRUNK_UNAVAILABLE')`（先例：既有 `assert.throws(..., (e) => e.code === ...)` 模式）。
+- `LocalTrunkSyncRow` 精确字段：`{ repo, trunk, before, remote, after, status, reason }`；status/reason/SHA-null 规则按 SDD §2.2 表。
+- 判据顺序固定：wrong-branch → dirty → fetch-failed → trunk-unavailable → unchanged → diverged → synced / ff-only-failed。
+- 只读判定用 `gitRun`；`git fetch --prune origin`、`git merge --ff-only <captured SHA>` 用 `gitMust` + 局部 try/catch；禁止重新解析已捕获 remote SHA。
+- ff-only try/catch 内调用 `faultPoint('local-sync-ff-only-failed', { repo: repo.id })`，仅测试环境变量匹配时生效。
+- helper 位于 merge 锁内但不写 journal/audit；失败条目不影响其他仓、远端结果、`phase=complete` 或 exit 0。
+- 测试：
+  - happy path 在既有三仓用例追加 `localTrunkSync` 逐行断言；
+  - 表驱动场景：wrong-branch、dirty、diverged、fetch-failed、trunk-unavailable（远端删 trunk、本地留 stale tracking ref）、unchanged；
+  - faultPoint 完整 merge：三仓可均 `failed/ff-only-failed`，至少断言 kb 行及远端 merge 成功。
 
 ## 4. 验收条件
 
-1. 新增 5 组用例全绿：`node --test skills/shared/crctl/scripts/test/register-tx.test.mjs`。
-2. 每组用例的失败分支断言本地 `git branch --list requirement/{cr}` 为空且 `worktree list` 不含该 CR worktree。
-3. 既有全部 register 用例零回归（七分类/幂等/fault/cleanup 等）。
+1. clean+behind 三仓均 `synced`，主 checkout HEAD == 捕获 remote SHA；already-current 为 `unchanged`（PRD AC-6）。
+2. wrong-branch / dirty / diverged 为 `skipped` 且现场不变；fetch-failed / trunk-unavailable / ff-only-failed 为 `failed`，before/remote/after 符合 SDD §2.2（PRD AC-6）。
+3. faultPoint 场景 `runCrctl` exit 0、`phase='complete'`，远端 trunk 已包含 merge commit，本地失败不回滚远端（PRD AC-7）。
+4. `node --test skills/shared/crctl/scripts/test/merge-tx.test.mjs` 全绿，既有 journal/lease/finalize/rebuild/history-rewrite 用例零回归（PRD AC-8）。
+5. TASK-01 已 done 后执行 `node --test skills/shared/crctl/scripts/test/*.test.mjs` 全绿；`git diff --check` 通过；`crctl.mjs`/Pipeline/Skill/README/状态机/gates 零 diff。
 
 ## 5. 完成标志
 
-- 5 组用例落盘且全绿；既有用例零回归；
-- `git diff --check` 干净；
-- 新增用例覆盖 PRD AC-1/2/3/4。
+- helper、mergeCr 接线与全部新增测试同一 TASK 完成；
+- merge-tx 与全量 crctl 测试通过，发布 checklist 五项全部核对；
+- 无新增文件、依赖、事务、账本字段或恢复流程；
+- 完成后立即执行 `crctl task done CR-2026-046 --task CR-2026-046-TASK-02` 登记进度。
 
 ## 6. 接口契约
 
-**消费**（来自 TASK-01）：
-- `ensureRepoWorkspace(ctx, repo, cr)`：成功返回含 `action`；失败抛 `TxError`，code ∈ { `WORKSPACE_TRUNK_UNAVAILABLE`, `WORKSPACE_ENSURE_BLOCKED` }。
-- `resolveRepositories(workspacePath)`：返回 `{ repositories: [{ id, trunk, rootPath, worktreePath }], ... }`。
-- `classifyRepoWorkspace(ctx, repo, cr)`：返回 `{ classification: 'healthy'|'branch-only'|'remote-only'|'missing'|'dirty'|'wrong-branch'|'path-unregistered', ... }`。
+**消费**：
+- 既有 `ctx.repositories[]: { id, trunk, rootPath }[]`、`gitRun`/`gitMust`/`faultPoint`。
+- TASK-01 完成状态与 register-tx 绿色证据（仅作为最终全量回归前置，无代码接口依赖）。
 
-**产出**：无代码接口（纯测试）；产出测试证据供 M3 回归与 review-code 引用。
+**产出**：
+- `export function reconcileLocalTrunks(ctx): LocalTrunkSyncRow[]`。
+- `LocalTrunkSyncRow = { repo:string, trunk:string, before:string|null, remote:string|null, after:string|null, status:'synced'|'unchanged'|'skipped'|'failed', reason:'dirty'|'wrong-branch'|'diverged'|'fetch-failed'|'trunk-unavailable'|'ff-only-failed'|null }`。
+- `mergeCr(ctx, input)` complete 返回对象新增 `localTrunkSync: LocalTrunkSyncRow[]`；其余字段与 `mergeStatus` 契约不变。
+- 故障注入点名：`local-sync-ff-only-failed`。
+- 测试证据：`merge-tx.test.mjs` 覆盖 PRD AC-6~8，完整 test glob 覆盖全量回归。

@@ -1,22 +1,12 @@
 cr-id: CR-2026-046
 tasks:
   - id: CR-2026-046-TASK-01
-    title: "ensureRepoWorkspace missing 分支改造（远端基点 + 新错误码）"
+    title: "注册路径纵切（远端基点改造 + register 测试）"
     status: pending
-    estimate: 2h
+    estimate: 5h
     depends-on: []
   - id: CR-2026-046-TASK-02
-    title: "register 路径单元测试（stale trunk / 远端恢复 / 不可用）"
+    title: "merge 路径纵切（本地 trunk 同步 + 测试 + 全量回归）"
     status: pending
-    estimate: 3h
+    estimate: 7h
     depends-on: [CR-2026-046-TASK-01]
-  - id: CR-2026-046-TASK-03
-    title: "reconcileLocalTrunks helper 实现与 mergeCr 接线"
-    status: pending
-    estimate: 3h
-    depends-on: []
-  - id: CR-2026-046-TASK-04
-    title: "merge 路径测试（happy path 断言 + 表驱动 + faultPoint 注入）"
-    status: pending
-    estimate: 4h
-    depends-on: [CR-2026-046-TASK-03]

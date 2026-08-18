@@ -1,0 +1,23 @@
+cr-id: CR-2026-046
+review-type: dev-plan
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-18T20:56:39+08:00"
+verdict: block
+repair-target: write-dev-plan
+blockers:
+  - "当前 TASK-01/02 与 TASK-03/04 分别把同一纵切拆成“实现”和“测试”两个 2–4h 微任务，既低于 write-dev-tasks 的 1–3 天粒度，也让实现完成与回归证据分离。请按 ponytail 合并为两个最小纵切 TASK：注册路径（ensureRepoWorkspace + register-tx 测试）和 merge 路径（reconcileLocalTrunks + merge-tx 测试），每个 TASK 自带实现、验收与完成标志；不要新增第三个协调 TASK。"
+  - "plan 的 M3 全量回归标注“无新 TASK”，因此 plan→TASK 覆盖缺失；同时 plan 总计 13h 而 tasks/_index.yml 合计 12h，差额正是无人负责的 M3。请把全量 crctl 回归与发布 checklist 明确归入第二个纵切 TASK，并让其 depends-on 第一个 TASK，plan 与 task init 总工时统一为 12h。"
+dimensions:
+  sdd-to-plan: "pass: SDD 两条修改线、风险、回滚和验证面均进入计划"
+  plan-to-tasks: "block: M3 无 TASK 承接，计划总工时与索引不一致"
+  task-executability: "pass: 单卡内容具体，但拆分边界需合并"
+  dependency-topology: "block: 当前双线并行无法保证无人承接的 M3 在两线完成后执行"
+  interface-contracts: "pass: 上游函数、错误码、LocalTrunkSyncRow 与下游测试引用一致"
+  acceptance-verifiability: "pass: 各卡均有至少两条可执行验收，但全量回归未归属"
+  scope-and-simplicity: "block: 2–4h 实现/测试微任务过度拆分，不符合 1–3 天纵切"
+  risk-and-rollback: "pass: fetch --prune、注册中断、本地同步与回滚均有安排"
+  reviewer-model: "openai/gpt-5.6-sol"
+suggestions: []
+review-loop:
+  current-attempt: 1
+subject-sha256: 57a2a7cd3b6c18e72beffc09770b5253d2feeb30955e3ade8a5de33a77ccab3c
