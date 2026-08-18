@@ -5,7 +5,7 @@ cr-ref: CR-2026-046
 title: CR 合并与新注册 Worktree 同步治理优化方案 技术设计
 status: draft
 created: "2026-08-18T20:40:00+08:00"
-updated: "2026-08-18T21:02:00+08:00"
+updated: "2026-08-18T20:46:20+08:00"
 ---
 
 # SDD — CR 合并与新注册 Worktree 同步治理优化方案
