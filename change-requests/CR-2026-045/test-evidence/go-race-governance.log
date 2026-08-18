@@ -1,0 +1,138 @@
+=== RUN   TestGrantCrossVerifiesWithCrctl
+    approval_crosscheck_test.go:220: crctl.mjs or node not available; cross-tool seam covered in the e2e task instead
+--- SKIP: TestGrantCrossVerifiesWithCrctl (0.00s)
+=== RUN   TestCanonicalDigestParityWithSharedVectors
+--- PASS: TestCanonicalDigestParityWithSharedVectors (0.00s)
+=== RUN   TestSigningKeyLoading
+--- PASS: TestSigningKeyLoading (0.00s)
+=== RUN   TestApproveRejectsTaskTokens
+--- PASS: TestApproveRejectsTaskTokens (0.00s)
+=== RUN   TestApproveRejectsNonOwnerAdmin
+--- PASS: TestApproveRejectsNonOwnerAdmin (0.01s)
+=== RUN   TestApproveEvidenceDrift409
+--- PASS: TestApproveEvidenceDrift409 (0.00s)
+=== RUN   TestApproveIssuesVerifiableGrantAndPersistsRecord
+--- PASS: TestApproveIssuesVerifiableGrantAndPersistsRecord (0.01s)
+=== RUN   TestGrantDeliveryQueue
+--- PASS: TestGrantDeliveryQueue (0.01s)
+=== RUN   TestApprovalCardDoesNotLeakEvidenceAcrossWorkspaces
+--- PASS: TestApprovalCardDoesNotLeakEvidenceAcrossWorkspaces (0.01s)
+=== RUN   TestAuditGitguardDenied
+--- PASS: TestAuditGitguardDenied (0.00s)
+=== RUN   TestAuditEvidenceDrift
+--- PASS: TestAuditEvidenceDrift (0.00s)
+=== RUN   TestAuditUnknownActionRejected
+--- PASS: TestAuditUnknownActionRejected (0.00s)
+=== RUN   TestAuditCRIDRelaxationScoped
+--- PASS: TestAuditCRIDRelaxationScoped (0.00s)
+=== RUN   TestAuditActionConstantsAligned
+--- PASS: TestAuditActionConstantsAligned (0.00s)
+=== RUN   TestLegalFlowProjectsAndBroadcasts
+--- PASS: TestLegalFlowProjectsAndBroadcasts (0.01s)
+=== RUN   TestDualChannelSameEventLandsOnce
+--- PASS: TestDualChannelSameEventLandsOnce (0.00s)
+=== RUN   TestOutOfOrderFlagsReconcileWithoutCorruptingProjection
+--- PASS: TestOutOfOrderFlagsReconcileWithoutCorruptingProjection (0.01s)
+=== RUN   TestIllegalTransitionFlagsReconcile
+--- PASS: TestIllegalTransitionFlagsReconcile (0.00s)
+=== RUN   TestCheckpointFillsProjectedCommitForEmbedded
+--- PASS: TestCheckpointFillsProjectedCommitForEmbedded (0.01s)
+=== RUN   TestRejectionPaths
+--- PASS: TestRejectionPaths (0.01s)
+=== RUN   TestArchiveEventCompletesWritebackRun
+--- PASS: TestArchiveEventCompletesWritebackRun (0.01s)
+=== RUN   TestPATFallbackBindsSingleMembership
+--- PASS: TestPATFallbackBindsSingleMembership (0.02s)
+=== RUN   TestPATFallbackRejectsOutsiders
+--- PASS: TestPATFallbackRejectsOutsiders (0.00s)
+=== RUN   TestGateProjectionRequirementApprovalFlow
+--- PASS: TestGateProjectionRequirementApprovalFlow (0.02s)
+=== RUN   TestGateProjectionPipelineHandoff
+--- PASS: TestGateProjectionPipelineHandoff (0.03s)
+=== RUN   TestGateProjectionRejectedCancelsActiveRun
+--- PASS: TestGateProjectionRejectedCancelsActiveRun (0.01s)
+=== RUN   TestGateProjectionSkipsUntrustedFirstSighting
+--- PASS: TestGateProjectionSkipsUntrustedFirstSighting (0.00s)
+=== RUN   TestApplyReviewBlockedThenPassedKeepsBothAttempts
+--- PASS: TestApplyReviewBlockedThenPassedKeepsBothAttempts (0.01s)
+=== RUN   TestApplyReviewUnknownStageIsNoOp
+--- PASS: TestApplyReviewUnknownStageIsNoOp (0.00s)
+=== RUN   TestProjectGatesPendingApprovalAndCanApprove
+--- PASS: TestProjectGatesPendingApprovalAndCanApprove (0.03s)
+=== RUN   TestProjectGatesPendingAdvance
+--- PASS: TestProjectGatesPendingAdvance (0.01s)
+=== RUN   TestProjectGatesCrossWorkspace404
+--- PASS: TestProjectGatesCrossWorkspace404 (0.01s)
+=== RUN   TestProjectGatesDetailIsEmbeddedJSONNotBase64
+--- PASS: TestProjectGatesDetailIsEmbeddedJSONNotBase64 (0.01s)
+=== RUN   TestProjectGatesNodeStageIsIndependentOfPendingStage
+--- PASS: TestProjectGatesNodeStageIsIndependentOfPendingStage (0.02s)
+=== RUN   TestReconcileLiveGitHub
+    reconcile_live_test.go:21: KNOWLEDGE_BASE_REMOTE_URL / KNOWLEDGE_BASE_TOKEN not set
+--- SKIP: TestReconcileLiveGitHub (0.00s)
+=== RUN   TestParseBacklog
+--- PASS: TestParseBacklog (0.00s)
+=== RUN   TestApplySnapshotHeals
+--- PASS: TestApplySnapshotHeals (0.01s)
+=== RUN   TestApplySnapshotLeavesAbsentRows
+--- PASS: TestApplySnapshotLeavesAbsentRows (0.00s)
+=== RUN   TestSnapshotEventHeals
+--- PASS: TestSnapshotEventHeals (0.00s)
+=== RUN   TestEmbeddedPlaceholderEventsDoNotCollide
+--- PASS: TestEmbeddedPlaceholderEventsDoNotCollide (0.04s)
+=== RUN   TestParseHistory
+--- PASS: TestParseHistory (0.00s)
+=== RUN   TestMergeAuthorityBacklogWins
+--- PASS: TestMergeAuthorityBacklogWins (0.00s)
+=== RUN   TestArchivedCRHealsFromHistorySnapshot
+--- PASS: TestArchivedCRHealsFromHistorySnapshot (0.01s)
+=== RUN   TestArchitectureRunnerFeatureFlag
+=== RUN   TestArchitectureRunnerFeatureFlag/1
+=== RUN   TestArchitectureRunnerFeatureFlag/true
+=== RUN   TestArchitectureRunnerFeatureFlag/yes
+=== RUN   TestArchitectureRunnerFeatureFlag/on
+--- PASS: TestArchitectureRunnerFeatureFlag (0.00s)
+    --- PASS: TestArchitectureRunnerFeatureFlag/1 (0.00s)
+    --- PASS: TestArchitectureRunnerFeatureFlag/true (0.00s)
+    --- PASS: TestArchitectureRunnerFeatureFlag/yes (0.00s)
+    --- PASS: TestArchitectureRunnerFeatureFlag/on (0.00s)
+=== RUN   TestParseCoreRegistryFixedContract
+--- PASS: TestParseCoreRegistryFixedContract (0.00s)
+=== RUN   TestRenderCorePromptOnlyDeclaredTokens
+--- PASS: TestRenderCorePromptOnlyDeclaredTokens (0.00s)
+=== RUN   TestHandleStartArchitectureRejectsPathAuthorityMismatch
+--- PASS: TestHandleStartArchitectureRejectsPathAuthorityMismatch (0.00s)
+=== RUN   TestHandleStartArchitectureRejectsTrailingJSON
+--- PASS: TestHandleStartArchitectureRejectsTrailingJSON (0.00s)
+=== RUN   TestRunnerDigestMismatchIsRecoverableOnSameRun
+--- PASS: TestRunnerDigestMismatchIsRecoverableOnSameRun (0.04s)
+=== RUN   TestRunnerArchitectureHappyPathWaitsForAuthority
+--- PASS: TestRunnerArchitectureHappyPathWaitsForAuthority (0.07s)
+=== RUN   TestRunnerCheckpointFailureRetriesOnlyCheckpoint
+--- PASS: TestRunnerCheckpointFailureRetriesOnlyCheckpoint (0.07s)
+=== RUN   TestRunnerStartupAndEventWakeSourcesConvergeOnReconcile
+--- PASS: TestRunnerStartupAndEventWakeSourcesConvergeOnReconcile (0.05s)
+=== RUN   TestStartArchitectureAdoptsProjectorRunAndDeduplicatesConcurrentStart
+--- PASS: TestStartArchitectureAdoptsProjectorRunAndDeduplicatesConcurrentStart (0.05s)
+=== RUN   TestEnqueuePipelineTaskCopiesAttributionAndDeduplicates
+--- PASS: TestEnqueuePipelineTaskCopiesAttributionAndDeduplicates (0.02s)
+=== RUN   TestRunnerLoopExhaustionFailsAfterThirdCanonicalBlock
+--- PASS: TestRunnerLoopExhaustionFailsAfterThirdCanonicalBlock (0.07s)
+=== RUN   TestRunnerSignedRejectTerminatesAfterCanonicalRollback
+--- PASS: TestRunnerSignedRejectTerminatesAfterCanonicalRollback (0.04s)
+=== RUN   TestRunnerReviewBlockReplaysWriteAtNextAttempt
+--- PASS: TestRunnerReviewBlockReplaysWriteAtNextAttempt (0.03s)
+=== RUN   TestSummarizeToolCalls
+--- PASS: TestSummarizeToolCalls (0.00s)
+=== RUN   TestSummarizeToolCallsCap
+--- PASS: TestSummarizeToolCallsCap (0.00s)
+=== RUN   TestSummarizeToolCallsEmpty
+--- PASS: TestSummarizeToolCallsEmpty (0.00s)
+=== RUN   TestTransitionTableShape
+--- PASS: TestTransitionTableShape (0.00s)
+=== RUN   TestIsLegalTransition
+--- PASS: TestIsLegalTransition (0.00s)
+=== RUN   TestActionConstants
+--- PASS: TestActionConstants (0.00s)
+PASS
+ok  	github.com/multica-ai/multica/server/internal/governance	1.880s

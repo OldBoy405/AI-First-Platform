@@ -1,0 +1,19 @@
+cr-id: CR-2026-045
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-17T19:29:32+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  PRD↔SDD 对齐: "PASS：PRD FR-01～10 全部映射到固定 registry、单 run、TaskService carrier、reviewLoop、grant、checkpoint、恢复和兼容条目；五节点双重后置条件逐项落地。"
+  架构合理性: "PASS：核心只有一个幂等 Reconcile；直接复用现有 run/node 表、projector、TaskService、event bus、approval、daemon 和 crctl，没有第二状态机、任务队列、模板库、消息总线或事务框架。Multica 根 ARCHITECTURE.md 的依赖方向与不变量满足。"
+  数据模型完整性: "PASS：不新增表/列/FK；两个 CONCURRENTLY partial unique index关闭 active run/task 竞态；source task 完整 attribution snapshot、detail.runner JSONB merge、attempt 与 checkpoint correlation 均有明确字段和约束。"
+  接口契约: "PASS：Agent task-token Start、generated registry、pipeline task context、claim/daemon PipelinePrompt、grant ACK、review outbox/commit-scan parity 和错误码均明确；legacy 缺字段 fail closed。"
+  性能与安全: "PASS：每次 reconcile 最多一个 task，无后台轮询；Auth 盖写 actor、strict attribution、realpath/localPathLocks、operational LocalWorkDir、signed grant 和 subject digest freshness 均有防线。"
+  可测试性: "PASS：并发 start/projector、active task、双顺序后置条件、attribution cross-workspace、detail 双写顺序、outbox/scan parity、sandbox workdir、grant、重启与手动回归均有可运行断言。"
+  Prompt 采纳影响: "PASS：不新增 crctl 子命令或 guard deny；只扩 review-record 已持久化事实的 outbox payload。Pipeline 每节点调用既有 workspace inspect，registry 只做两个字面 token 替换且残留 token 硬失败。"
+suggestions:
+  - "开发计划按 tools registry、DB constraints、Runner reconcile、pipeline task carrier、daemon local workdir、approval/checkpoint 与 E2E 七个可独立验证切面拆分。"
+  - "实现时先写并发/多写顺序/commit-scan parity 失败测试，再做最小代码。"
+subject-file: change-requests/CR-2026-045/sdd.md
+subject-sha256: 0f7a8805f2a670a7c4ff312d65dc2c784d857ae27202cdbde5d165aa9bd14eae

@@ -1,0 +1,10 @@
+$ node --test skills/shared/crctl/scripts/test/pipeline-structure.test.mjs
+(tools HEAD=be440b85158e3a5daf80ca7428da421866b13c50)
+(exit=0)
+tests=16 pass=16 fail=0
+CR-2026-044 AC-14 includes the hardening assertion that architecture checkpoint prompt and push-progress Skill contain no <installation-workspace> token.
+
+$ node server/internal/governance/gen/generate-gate-nodes.mjs --tools <CR-2026-045-tools-worktree> --check
+(multica HEAD=c92af06bfb5f78d90a56d335582977874e0a3d26)
+(exit=0)
+gate node consistency OK (tools@be440b8)

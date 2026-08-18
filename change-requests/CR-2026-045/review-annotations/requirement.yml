@@ -1,0 +1,17 @@
+cr-id: CR-2026-045
+review-type: requirement
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-17T18:39:38+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  结构完整性: "PASS：概述、Ponytail 优先级、六层模块职责、已解决基础设施、最小改造、6 个用户故事、10 条 FR、8 条 NFR、20 条 AC、成功指标、依赖风险、范围排除和变更记录齐全；B-01 已补五节点权威后置条件矩阵。"
+  FR 可测试性: "PASS：FR-01～10 均有 AC 映射；AC-19 覆盖 task terminal 与 CR 权威结果分离，AC-20 覆盖双 start 及 start/projector 竞态，block 回修、attempt 耗尽、grant、checkpoint、digest 和重启窗口均可注入验证。"
+  范围合理性: "PASS：只建设 architecture-design 五节点纵切；复用现有 run 表、TaskService、projector、Skill、crctl、grant 和 checkpoint，明确排除其他 Pipeline、通用 DSL/DAG、第二套任务/事务/模板存储和专用控制台。"
+  与规划对齐: "PASS：符合已确认的当前战略候选、同一逻辑 run、网页审批→grant→Skill→crctl、digest 漂移 fail closed、Main Track 条件触发和 requirement replayNodes 不前置建设等决定。"
+  依赖识别: "PASS：已核实当前 tools Pipeline/matrix/crctl 及 Multica origin/main 的运行表、projector、任务队列归因列、ApprovalService 和 daemon ACK；R-07 明确本地 Multica 旧基线须在 SDD/实现前走既有 freshness。"
+suggestions:
+  - "SDD 优先评估现有 execution_context JSONB 保存 digest，并用 PostgreSQL 原生唯一约束或现有事务边界满足 AC-20，不预建通用 lease。"
+  - "实现任务按 tools contract、run adoption、task dispatch、authority postcondition、approval/checkpoint 接合和 E2E 六个最小切面拆分。"
+subject-file: change-requests/CR-2026-045/prd.md
+subject-sha256: 18a8e037f6ad5860807f38b61de78fb201ab2a9a4e6c184c907bdc52f982480f

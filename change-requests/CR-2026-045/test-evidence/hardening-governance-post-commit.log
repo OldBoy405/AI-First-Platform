@@ -1,0 +1,9 @@
+$ go test ./internal/governance -run 'Test(ReviewEventPersistsEvidence|ApplySnapshotSkipsActiveArchitecturePipeline)' -count=1 -v
+(multica HEAD=36ed7b74bd50d68d968927800e287505f4d1d3f1)
+(exit=0)
+=== RUN   TestReviewEventPersistsEvidence
+--- PASS: TestReviewEventPersistsEvidence (0.03s)
+=== RUN   TestApplySnapshotSkipsActiveArchitecturePipeline
+--- PASS: TestApplySnapshotSkipsActiveArchitecturePipeline (0.02s)
+PASS
+ok  github.com/multica-ai/multica/server/internal/governance  0.142s
