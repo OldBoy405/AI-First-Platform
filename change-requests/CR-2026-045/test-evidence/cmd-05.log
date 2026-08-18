@@ -1,6 +1,9 @@
-$ go test ./internal/daemon -run Test(ConfigurePipelineGitEnvironment|InstallPipelineCrctlLauncher|FindPipelineCRRootCardinality|PreparePipelineTaskHydratesMachineLocalPaths|PipelinePromptDoesNotEnterIssueWorkflow) -count=1
+$ go test ./internal/governance -run TestApplySnapshotSkipsActiveArchitecturePipeline -count=1 -v
 (exit=0)
 --- stdout ---
-ok  	github.com/multica-ai/multica/server/internal/daemon	0.129s
+=== RUN   TestApplySnapshotSkipsActiveArchitecturePipeline
+--- PASS: TestApplySnapshotSkipsActiveArchitecturePipeline (0.02s)
+PASS
+ok  	github.com/multica-ai/multica/server/internal/governance	0.111s
 
 --- stderr ---

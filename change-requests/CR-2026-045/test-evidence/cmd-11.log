@@ -1,5 +1,6 @@
-$ go vet ./internal/governance ./internal/service ./internal/daemon ./internal/handler ./pkg/gitguard
+$ go test ./pkg/gitguard -count=1
 (exit=0)
 --- stdout ---
+ok  	github.com/multica-ai/multica/server/pkg/gitguard	0.046s
 
 --- stderr ---

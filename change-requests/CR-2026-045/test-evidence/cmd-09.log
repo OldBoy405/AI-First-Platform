@@ -1,6 +1,15 @@
-$ go test ./pkg/gitguard -count=1
+$ go test ./internal/service -run Test(ResolveTaskWorkspaceIDPipelineCarrier|NotifyTaskAvailableAllowsDisabledEmptyClaimCache|EnsureProjectChatAndDiscussionIssue_ShareTheSamePlumbing|ProjectContainerOriginConstraintRejectsUnknownOrigin) -count=1 -v
 (exit=0)
 --- stdout ---
-ok  	github.com/multica-ai/multica/server/pkg/gitguard	0.039s
+=== RUN   TestEnsureProjectChatAndDiscussionIssue_ShareTheSamePlumbing
+--- PASS: TestEnsureProjectChatAndDiscussionIssue_ShareTheSamePlumbing (0.05s)
+=== RUN   TestProjectContainerOriginConstraintRejectsUnknownOrigin
+--- PASS: TestProjectContainerOriginConstraintRejectsUnknownOrigin (0.08s)
+=== RUN   TestResolveTaskWorkspaceIDPipelineCarrier
+--- PASS: TestResolveTaskWorkspaceIDPipelineCarrier (0.00s)
+=== RUN   TestNotifyTaskAvailableAllowsDisabledEmptyClaimCache
+--- PASS: TestNotifyTaskAvailableAllowsDisabledEmptyClaimCache (0.00s)
+PASS
+ok  	github.com/multica-ai/multica/server/internal/service	0.217s
 
 --- stderr ---

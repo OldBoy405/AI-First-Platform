@@ -3,8 +3,8 @@ cr: CR-2026-045
 status: pass
 tester: Ray
 generated-by: crctl-test
-generated-at: "2026-08-18T02:59:10+08:00"
-command-digest: 61856524520506c71779e5c80dea7ec982d1ab1ae35c045925f5f5e335a4daf7
+generated-at: "2026-08-18T19:15:50+08:00"
+command-digest: dc9d612ac7d9adb359239c9b88297db21e97814174c29ecc01aa1ed06a55e612
 commands:
   - repo: tools
     cwd: .
@@ -49,7 +49,7 @@ commands:
   - repo: multica
     cwd: server
     executable: go
-    args: [test, ./internal/daemon, -run, "Test(ConfigurePipelineGitEnvironment|InstallPipelineCrctlLauncher|FindPipelineCRRootCardinality|PreparePipelineTaskHydratesMachineLocalPaths|PipelinePromptDoesNotEnterIssueWorkflow)", "-count=1"]
+    args: [test, ./internal/governance, -run, TestApplySnapshotSkipsActiveArchitecturePipeline, "-count=1", -v]
     timeout-seconds: 300
     exit-code: 0
     signal: null
@@ -59,7 +59,7 @@ commands:
   - repo: multica
     cwd: server
     executable: go
-    args: [test, ./internal/daemon/execenv, -run, TestPrepareLocalPipelineSkipsWorkspaceSidecars, "-count=1"]
+    args: [test, ./internal/daemon, -run, "Test(ConfigurePipelineGitEnvironment|InstallPipelineCrctlLauncher|FindPipelineCRRootCardinality|PreparePipelineTaskHydratesMachineLocalPaths|PipelinePromptDoesNotEnterIssueWorkflow)", "-count=1"]
     timeout-seconds: 300
     exit-code: 0
     signal: null
@@ -69,7 +69,7 @@ commands:
   - repo: multica
     cwd: server
     executable: go
-    args: [test, ./internal/handler, -run, TestHydratePipelineContext, "-count=1"]
+    args: [test, ./internal/daemon/execenv, -run, TestPrepareLocalPipelineSkipsWorkspaceSidecars, "-count=1"]
     timeout-seconds: 300
     exit-code: 0
     signal: null
@@ -79,7 +79,7 @@ commands:
   - repo: multica
     cwd: server
     executable: go
-    args: [test, ./internal/service, -run, "Test(ResolveTaskWorkspaceIDPipelineCarrier|NotifyTaskAvailableAllowsDisabledEmptyClaimCache)", "-count=1"]
+    args: [test, ./internal/handler, -run, TestHydratePipelineContext, "-count=1"]
     timeout-seconds: 300
     exit-code: 0
     signal: null
@@ -89,7 +89,7 @@ commands:
   - repo: multica
     cwd: server
     executable: go
-    args: [test, ./pkg/gitguard, "-count=1"]
+    args: [test, ./internal/service, -run, "Test(ResolveTaskWorkspaceIDPipelineCarrier|NotifyTaskAvailableAllowsDisabledEmptyClaimCache|EnsureProjectChatAndDiscussionIssue_ShareTheSamePlumbing|ProjectContainerOriginConstraintRejectsUnknownOrigin)", "-count=1", -v]
     timeout-seconds: 300
     exit-code: 0
     signal: null
@@ -99,7 +99,7 @@ commands:
   - repo: multica
     cwd: server
     executable: go
-    args: [build, ./...]
+    args: [run, ./cmd/migrate, up]
     timeout-seconds: 300
     exit-code: 0
     signal: null
@@ -109,13 +109,33 @@ commands:
   - repo: multica
     cwd: server
     executable: go
-    args: [vet, ./internal/governance, ./internal/service, ./internal/daemon, ./internal/handler, ./pkg/gitguard]
+    args: [test, ./pkg/gitguard, "-count=1"]
     timeout-seconds: 300
     exit-code: 0
     signal: null
     timed-out: false
     started: true
     log: change-requests/CR-2026-045/test-evidence/cmd-11.log
+  - repo: multica
+    cwd: server
+    executable: go
+    args: [build, ./...]
+    timeout-seconds: 300
+    exit-code: 0
+    signal: null
+    timed-out: false
+    started: true
+    log: change-requests/CR-2026-045/test-evidence/cmd-12.log
+  - repo: multica
+    cwd: server
+    executable: go
+    args: [vet, ./internal/governance, ./internal/service, ./internal/daemon, ./internal/handler, ./pkg/gitguard]
+    timeout-seconds: 300
+    exit-code: 0
+    signal: null
+    timed-out: false
+    started: true
+    log: change-requests/CR-2026-045/test-evidence/cmd-13.log
 ---
 
 # 测试报告 · CR-2026-045
@@ -124,10 +144,10 @@ commands:
 
 ## 1. 测试摘要
 
-本报告为代码评审 attempt 2 Block 回修后的第 4 次结构化测试执行。11 条机器命令全部 exit 0，command digest 为 `61856524520506c71779e5c80dea7ec982d1ab1ae35c045925f5f5e335a4daf7`；`crctl test` canonical status 为 `pass`、测试轮次为 `2`。
+本报告为 E2E hardening TASK-12~15 完成后的结构化测试执行。13 条机器命令全部 exit 0，command digest 为 `dc9d612ac7d9adb359239c9b88297db21e97814174c29ecc01aa1ed06a55e612`；`crctl test` canonical status 为 `pass`、测试轮次为 `3`。
 
-- tools：`pipeline-structure` 16/16、`contract-scan` 7/7、`crctl` 全量 193/193。
-- multica：真实 PostgreSQL（Podman `multica-postgres`，migration 265/266）上的 `internal/governance` 全包通过；B08 覆盖 digest drift→同一 active run 恢复，B09 覆盖 checkpoint failure→单节点 successor retry；并发 start/enqueue、review replay、三轮耗尽、signed reject、StartupScan、grant ACK 仍通过。
+- tools：`pipeline-structure` 16/16、`contract-scan` 7/7、`crctl` 全量 195/195；新增 `task append` 保留历史 done/CAS 追加、review-record evidence、architecture checkpoint 无 workspace placeholder 回归。
+- multica：真实 PostgreSQL（Podman `multica-postgres`，migration 265~268）上的 `internal/governance` 全包通过；新增 active architecture pipeline stale snapshot guard 定向真库测试。migration 267/268 已由真实 migrate runner 应用，最终 `issue_origin_type_check` 含九种合法 origin，project Chat/Discussion 容器与非法 origin 拒绝测试通过。
 - Linux race：VMware Ubuntu 22.04 guest 使用 `golang:1.26.4-bookworm`（GCC 12.2、`CGO_ENABLED=1`）和隔离 PostgreSQL 16，`internal/governance` race 全包 PASS，daemon 5 项定向 race PASS；证据为 `go-race-governance.log`（SHA-256 `20fcde1c05b47182459ca4eb2dc033eb437350870f46b7b8459ee2c59409c011`）与 `go-race-daemon.log`（SHA-256 `e0c15139acb289b21423591f2b80e3efc63e6ccd339a816c771bf15a64f47bda`）。
 - daemon：pipeline crctl launcher、Git trust config、operational workspace authority、pipeline sidecar opt-out 定向测试通过；handler/service/gitguard、build、vet 全部通过。
 - cross-tool approval test：默认结构化计划不依赖外部 CRCTL_PATH，因此未将可选跨工具子测试冒充机器区命令；显式 CRCTL_PATH 运行时 requirement/tech-design/dev-start/code 四 stage 全部通过，code stage 的 machine-injected `release-subjects` fixture（真实 KB worktree + 受控 artifact 重核）已补齐。
@@ -137,13 +157,17 @@ commands:
 | 证据 | 结果 | 说明 |
 |---|---|---|
 | `cmd-01`/`cmd-02` | PASS | pipeline structure 16/16、contract scan 7/7；五节点/replay/registry/digest 与退役字段扫描通过 |
-| `cmd-03` | 193/193 | crctl 黑盒全量；包含 operational-workspace authority、Git inspection hard failure、outbox parity |
-| `cmd-04` | PASS | governance 真 PG；B08/B09 与既有 Runner 并发/归因/replay/grant/StartupScan 覆盖 |
-| `cmd-05`/`cmd-06` | PASS | daemon pipeline launcher/Git trust/path 与 execenv sidecar opt-out |
-| `cmd-07`/`cmd-08` | PASS | handler pipeline context、service carrier/workspace resolution |
-| `cmd-09` | PASS | controlled-shell/gitguard |
-| `cmd-10` | PASS | `go build ./...` |
-| `cmd-11` | PASS | governance/service/daemon/handler/gitguard `go vet` |
+| `cmd-03` | 195/195 | crctl 黑盒全量；包含 task append、review evidence、operational-workspace authority、Git inspection hard failure |
+| `cmd-04` | PASS | governance 真 PG；B08/B09、Runner 并发/归因/replay/grant/StartupScan 与 snapshot guard 覆盖 |
+| `cmd-05` | PASS | `TestApplySnapshotSkipsActiveArchitecturePipeline` 真 PG 定向：active 时拒绝 stale snapshot，completed 后恢复 healing |
+| `cmd-06`/`cmd-07` | PASS | daemon pipeline launcher/Git trust/path 与 execenv sidecar opt-out |
+| `cmd-08`/`cmd-09` | PASS | handler pipeline context；service carrier + project Chat/Discussion origin constraint |
+| `cmd-10` | PASS | 真实 migrate runner：267/268 已应用/重放 no-op |
+| `cmd-11` | PASS | controlled-shell/gitguard |
+| `cmd-12` | PASS | `go build ./...` |
+| `cmd-13` | PASS | governance/service/daemon/handler/gitguard `go vet` |
+| `hardening-governance-post-commit.log` | PASS | multica `36ed7b74b` 上 review evidence server persistence + active snapshot guard 真 PG 定向 |
+| `hardening-workspace-contract-post-commit.log` | PASS | tools `be440b8` 16/16 + multica `c92af06bf` registry consistency，Skill/Prompt 无残留 token |
 | `go-race-governance.log` | PASS | Linux/amd64、Go 1.26.4、GCC 12.2、真实 PostgreSQL；Runner/B08/B09 并发路径无 race |
 | `go-race-daemon.log` | PASS | Linux/amd64；pipeline launcher/Git environment/CR root/hydration/prompt 5 项无 race |
 
@@ -160,6 +184,10 @@ commands:
 | TASK-09 唤醒/恢复/feature off | StartupScan、task terminal、CR projection、grant ACK callback、default-off flag | covered（进程内 + 真 PG） |
 | TASK-10 review parity | exact-commit attempt 1/2、blocker/subject/reviewed_at parity | covered |
 | TASK-11 集成与台账 | governance/daemon 纵切测试 + CUSTOM #35～#36；真实 server+daemon+Codex 已执行并闭环完整人工 signed-grant 五节点 E2E（disposable CR-2026-956，见 §7）；cross-tool 四 stage approve/reject/release-subjects 深原语全绿 | covered |
+| TASK-12 review evidence outbox | cmd-03 195/195；tech-design review event 含 canonical sdd.yml evidence；显式 CRCTL_PATH 的四 stage signed-grant crosscheck 全绿 | covered |
+| TASK-13 active snapshot guard | cmd-04 全包 + cmd-05 真 PG 定向；active run 跳过 stale root snapshot，completed 后 healing 恢复 | covered（真 PG） |
+| TASK-14 workspace contract | cmd-01 structure test + generated registry `--check`；Pipeline/registry 无 `<installation-workspace>` executable token，daemon env 定向测试通过 | covered |
+| TASK-15 origin migration repair | cmd-09 project container/非法 origin tests + cmd-10 migrate up；DB constraint 九值查询已核实；CUSTOM #37 | covered（真 PG） |
 
 ## 4. Blocker 修复对应关系
 
@@ -169,7 +197,8 @@ commands:
 4. daemon 在 claim 后执行 machine-local CR root + `crctl workspace inspect`，校验 healthy/realpath，并复用 LocalWorkDir/path mutex/`CRCTL_WORKSPACE`。
 5. grant ACK 唤醒 Runner；`AIFIRST_ARCHITECTURE_RUNNER` 默认关闭时不挂路由、不订阅、不扫描。
 6. commit-scan 不再读最新工作树：使用受 controlled-shell 约束的 `git show {sha}:path`，历史轮次与 outbox 同源字段 parity。
-7. 新增 PostgreSQL Runner 集成测试、carrier/hydration/handler/service 测试，并重跑结构化报告。
+7. 新增 E2E hardening：review-record 事件复用 stage evidence；ApplySnapshot 在 active architecture run 期间拒绝 stale root snapshot；push-progress 删除未解析 workspace token；migration 267/268 恢复完整九值 origin constraint。
+8. developing 期新增 TASK 通过 `crctl task append` CAS 追加并保留 TASK-01~11 done 进度，TASK-12~15 完成后即时 `task done`。
 
 ## 5. 仍未执行或环境限制
 
@@ -180,7 +209,7 @@ commands:
 
 ## 6. 结论
 
-自动化、真实 PostgreSQL 与 Linux race 证据已闭合 B08/B09 及 daemon authority 修复；真实 server/daemon/Codex/signed-grant 五节点 E2E（含 reject/stale-grant/workspace-dirty 负向路径）与 feature-off 手动路线、四 stage cross-tool 深原语（含 code release-subjects）现已全部闭合，B10 证据链完整。结构化测试报告 `status: pass` 仍只代表机器区 11 条 canonical 命令，真实 E2E 与 cross-tool seam 证据在 §7 单独列证。
+自动化、真实 PostgreSQL 与 Linux race 证据已闭合 B08/B09、daemon authority 和 TASK-12~15 hardening；真实 server/daemon/Codex/signed-grant 五节点 E2E（含 reject/stale-grant/workspace-dirty 负向路径）与 feature-off 手动路线、四 stage cross-tool 深原语（含 code release-subjects）均保留。结构化测试报告 `status: pass` 代表机器区 13 条 canonical 命令，历史真实 E2E 与 cross-tool seam 证据在 §7 单独列证。
 
 ## 7. 真实五节点 E2E 与 cross-tool seam 证据（B10）
 
@@ -198,17 +227,17 @@ commands:
 
 - `TestArchitectureRunnerFeatureFlag`：`AIFIRST_ARCHITECTURE_RUNNER` 默认 off；`1/true/yes/on` 才启用。
 - router.go：feature off 时不 `NewRunner`/不 `WireEvents`/不 `SetGrantAckHandler`/不挂 `POST /api/workspaces/{workspaceID}/pipeline-runs` 路由，手动 Skill + crctl 路线原样保留。
-- 手动路线深原语（`crctl approve`/`reject`/`checkpoint`）由 cross-tool seam 与 tools 机器区 193/193 覆盖。
+- 手动路线深原语（`crctl approve`/`reject`/`checkpoint`）由 cross-tool seam 与 tools 机器区 195/195 覆盖。
 
 ### 7.3 cross-tool seam（真实 crctl 深原语 + 签名 grant）
 
 - `TestGrantCrossVerifiesWithCrctl`：requirement/tech-design/dev-start 三 stage 的 approve/reject 与紧邻重放（真实 `crctl.mjs` 子进程 + Go 签名 grant）全绿。
 - `TestGrantCrossVerifiesWithCrctlCodeStage`（新增）：code stage 在真实 KB repo + linked worktree + machine-injected `review-annotations/code.yml#release-subjects` 上重核受控 artifact（PRD/SDD/plan/tasks CRLF→LF sha256 + 集合 digest + 逐仓 source 事实 + KB reviewed-source-sha 祖先约束），approve/reject 及紧邻重放全绿。
 
-### 7.4 E2E 期间发现并已记录的非 Runner Core 问题（供 follow-up）
+### 7.4 E2E 发现问题的 hardening 闭合（TASK-12~15）
 
-1. multica 迁移回归：migration 259/263 重建 `issue_origin_type_check` 时丢失 `project_chat`/`project_discussion`，导致项目聊天容器 issue 创建 500；已在 E2E 数据库恢复完整约束。
-2. `crctl review-record` 的 outbox 事件不带 evidence 字段，导致 tech-design 评审证据（sdd.yml）未同步到服务端 `cr_sync_event`，审批 grant 以陈旧 requirement 证据签发（本次 E2E 触发 stale grant 的根因）。
-3. daemon crevents 快照扫描主工作区（master 快照）覆盖了 worktree 的 `tech-design-reviewed` 投影（投影漂移）。
-4. push-progress prompt 的 `<installation-workspace>` 占位符未解析，Agent 退化为全盘 `find /` 挂起。
+1. **migration 回归已解决**：新增 migration 267/268，不修改历史 259/263；真实 migrate runner 已应用，最终 `issue_origin_type_check` 同时包含 `project_chat`、`project_discussion`、`dingtalk_chat`、`wecom_chat` 等九种合法值。`TestEnsureProjectChatAndDiscussionIssue_ShareTheSamePlumbing` 与 `TestProjectContainerOriginConstraintRejectsUnknownOrigin` 真 PG PASS。
+2. **review-record evidence 已解决**：review outbox 复用 `collectOutboxEvidence` 和 `gates.approvalStages`，tech-design 事件携带 sdd.yml canonical evidence；tools 195/195、`hardening-governance-post-commit.log#TestReviewEventPersistsEvidence` 与显式 CRCTL_PATH 的四 stage signed-grant crosscheck PASS。历史 stale grant 仍保留为修复前负向证据。
+3. **projection drift 已解决**：`ApplySnapshot` 在同 workspace/CR 存在 active architecture run 时跳过 root snapshot status 覆盖；pipeline completed 后恢复原 snapshot healing。`TestApplySnapshotSkipsActiveArchitecturePipeline` 真 PG PASS。
+4. **workspace placeholder 已解决**：architecture pipeline、push-progress Skill 和 generated registry 的 checkpoint 契约不再包含 `<installation-workspace>`，只传 `cr_id`/message 并复用 daemon `CRCTL_WORKSPACE` + crctl resolver；`hardening-workspace-contract-post-commit.log` 记录 tools `be440b8` 16/16 与 multica `c92af06bf` registry consistency PASS。
 

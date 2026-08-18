@@ -202,6 +202,14 @@ Runner Core 只拥有运行生命周期、节点调度、任务关联、等待�
 4. server 只增加纵切所需的固定调度逻辑和现有表/TaskService 接合，不实现通用 DAG/插件/表达式引擎。
 5. README 只更新人读入口和停用/恢复说明，不复制 registry、状态机或数据库算法。
 
+## FR-11 E2E hardening scope amendment
+
+1. `crctl review-record` 写入 canonical review annotation 后，review outbox 必须携带同一 stage 的完整 `evidence` snapshot；不得由 Agent、Pipeline、daemon 或 server 重算另一套 digest。
+2. daemon/server snapshot reconcile 不得在 active pipeline 期间以 installation-root stale snapshot 覆盖 Runner/live CR projection；active pipeline 结束后仍保留现有 snapshot healing。
+3. architecture-design 的 `push-progress` prompt/Skill 不得包含未解析的 workspace 路径占位符；Pipeline 只传递 `cr_id`/message，workspace 复用 daemon 注入和 crctl 既有 resolver。
+4. multica 的 issue origin constraint 必须在 migration 完成后保留完整合法集合：`autopilot`、`quick_create`、`lark_chat`、`slack_chat`、`agent_create`、`project_chat`、`project_discussion`、`dingtalk_chat`、`wecom_chat`。
+5. 四项 hardening 按 TASK-12 → TASK-13 → TASK-14 → TASK-15 顺序实施；状态、门禁、CAS、审计和受控账本写入仍由既有 `crctl` 负责。
+
 # 7. 非功能需求
 
 - **NFR-01 Fail closed**：合同、owner、workspace、状态、证据、digest 或关联事实缺失/冲突时，零新增后继任务并给出结构化失败。
@@ -236,6 +244,11 @@ Runner Core 只拥有运行生命周期、节点调度、任务关联、等待�
 - **AC-19（FR-04）**：对 `write-tech-design`、review pass/block、approve pass/reject 和 `push-progress` 分别注入“task/业务结果已到但对应权威后置条件缺失或陈旧”的场景；Runner 均停在当前 node、无后继任务且不补写任何 CR 证据。补齐真实权威后置条件后，同一 run 只继续一次。
 - **AC-20（FR-03）**：分别并发发送两个相同 start，以及并发发送 start 与首个 `tech-designing` projector 事件；每种场景最终只有一个非终态 architecture run、一个首节点 attempt 和一个有效 `write-tech-design` 任务，迟到事件不重开终态 run。
 
+- **AC-21（TASK-12）**：tech-design `review-record` 事件携带 `sdd.yml` evidence，服务端 `cr_sync_event.evidence` 保留该快照；真实 signed-grant crosscheck 不再因 review event 缺 evidence 选用陈旧 requirement evidence。
+- **AC-22（TASK-13）**：active architecture pipeline 存在时，stale installation-root snapshot 不得覆盖 operational worktree 已确认的 CR projection；active pipeline 结束后 snapshot healing 与幂等行为保持。
+- **AC-23（TASK-14）**：architecture pipeline、generated registry 和 push-progress Skill 不含 `<installation-workspace>` 等未解析路径占位符；daemon pipeline smoke 不执行全盘路径扫描。
+- **AC-24（TASK-15）**：完整 migration upgrade 后 issue origin constraint 同时接受九种合法 origin；project Chat/Discussion 容器创建和非法 origin 拒绝均有真实数据库证据。
+
 # 9. 成功指标
 
 - 一条真实 CR 可从 `requirement-approved` 自动运行到 architecture checkpoint complete，期间只在人工审批节点等待人。
@@ -264,6 +277,10 @@ Runner Core 只拥有运行生命周期、节点调度、任务关联、等待�
 - **R-06 自动重试扩大副作用**：Runner 不新增独立重试策略；只复用 TaskService 既有行为和 Pipeline/`crctl` 的 attempt 上限。
 - **R-07 旧 Multica 本地基线**：本 CR 注册时本地 `main` 落后审计用 `origin/main`；SDD/实现前必须通过既有 freshness/同步流程核实真实基线，不能按旧 worktree 推断现状。
 - **R-08 Core 被扩成通用引擎**：未知节点、其他 Pipeline 和未来语义直接拒绝，不在本 CR 增加抽象。
+- **R-09 review evidence 漂移**：review outbox 缺 evidence 会让 server 选不到最新 annotation；TASK-12 由 crctl 复用同一 stage evidence，server 不重算。
+- **R-10 active pipeline snapshot 竞态**：installation-root snapshot 可能旧于 operational worktree；TASK-13 在已有 ApplySnapshot 入口复用 active pipeline_run guard。
+- **R-11 workspace placeholder 误执行**：未解析路径可能诱发 Agent 全盘扫描；TASK-14 删除 pipeline executable prompt 的路径 placeholder，依赖既有 daemon env/crctl resolver。
+- **R-12 migration constraint 回归**：259/263 重建约束丢失 project container 值；TASK-15 用向前 repair migration 恢复完整九值集合。
 
 # 11. 范围排除
 
@@ -282,4 +299,4 @@ Runner Core 只拥有运行生命周期、节点调度、任务关联、等待�
 | 日期 | 版本 | 作者 | 说明 |
 |---|---|---|---|
 | 2026-08-17 | v0.2.0 | Ray | 回修 B-01～B-03：补五节点双重成功后置条件、并发 run 竞态验收、复用现有 replayNodes 机器 schema |
-| 2026-08-17 | v0.1.0 | Ray | 初始草稿：architecture 五节点纵切、现有基础设施复用、最小调度接合与结果级验收 |
+| 2026-08-18 | v0.3.0 | Ray | E2E hardening scope amendment：新增 TASK-12~15，修复 review evidence、active snapshot projection、workspace placeholder 与 origin constraint migration |

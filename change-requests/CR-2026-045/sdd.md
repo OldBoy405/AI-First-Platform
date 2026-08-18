@@ -275,6 +275,24 @@ handler claim path识别 `context.type=pipeline_node` 后填充 task wire 的 `P
 
 事件只是唤醒，不是权威事实；丢失唤醒由后续事件或启动扫描恢复。
 
+## 3.7 E2E hardening
+
+### 3.7.1 Review evidence outbox
+
+`crctl review-record` 在 canonical annotation、review-loop、traceability 同批写成功后，复用现有 `collectOutboxEvidence` 读取 `gates.approvalStages[stage].evidence`，把同一份 `{path: sha256:<hex>}` 放入 `event_kind=review` 的 `evidence` 字段。Agent、Pipeline、daemon 和 server 不实现第二套 digest。server 继续原样落入既有 `cr_sync_event.evidence`，grant crosscheck 只消费最新非空 evidence。
+
+### 3.7.2 Active pipeline snapshot guard
+
+daemon 仍只从 installation root 收集 snapshot；不扫描全部 worktree、不解析状态机。server `ApplySnapshot` 在已有 projection 入口读取 `pipeline_run` active 事实：CR 存在 active architecture run 时，root snapshot 不覆盖该 CR 的 live status；无 active run 的 CR 保持现有 snapshot healing 和幂等行为。Runner/live cr events 仍是 active pipeline 的投影来源，checkpoint 完成后 pipeline 才结束。
+
+### 3.7.3 Workspace contract
+
+architecture-design 的 push-progress 节点只传递 `cr_id` 与 message，调用 `crctl checkpoint` 时不嵌入 `<installation-workspace>` 等未解析 token。daemon 已通过 `CRCTL_WORKSPACE`/`CRCTL_OPERATIONAL_WORKSPACE` 提供受控运行环境，crctl 复用现有 repository/worktree resolver；Skill 的 standalone 示例与 pipeline 场景分开说明。生成 registry 必须与 tools source 同步，结构测试拒绝未解析 workspace placeholder。
+
+### 3.7.4 Origin constraint repair
+
+不修改历史 259/263 migration；新增 267/268 向前修复 migration，使用 `NOT VALID` + 独立 `VALIDATE` 恢复完整九值 `issue_origin_type_check`。服务层不增加 fallback，project_chat/project_discussion 继续复用既有 container issue 创建路径。
+
 # 4. 数据模型
 
 ## 4.1 run/node
@@ -395,8 +413,9 @@ HTTP 重放同 start 返回同一 run 和 `changed=false`。
 | FR-08 | §3.4 reconcile + §3.6 startup scan |
 | FR-09 | 现有 projector/UI；Runner feature off 时无接管 |
 | FR-10 | §1.2、§8 negative decisions |
+| FR-11 | §3.7 hardening：review evidence、active snapshot guard、workspace contract、origin migration repair |
 
-覆盖率：10/10。
+覆盖率：11/11。
 
 # 10. 变更面
 
@@ -404,11 +423,12 @@ HTTP 重放同 start 返回同一 run 和 `changed=false`。
 
 - `pipeline-templates/architecture-design.pipeline.json`
 - `pipeline-templates/emit-registry.mjs` + 窄测试
-- `skills/shared/crctl/scripts/crctl.mjs`：只扩现有 review outbox 的确定性 payload + 回归测试
-- `server/internal/daemon/crevents.go`：stage 映射、scalar blocker 和 payload parity 修复 + 回归测试
+- `skills/shared/crctl/scripts/crctl.mjs`：review outbox evidence 与 developing 期 `task append` 确定性账本入口 + 回归测试
+- `skills/develop/write-dev-tasks/SKILL.md`、`skills/shared/crctl/SKILL.md`：追加 hardening TASK 的受控账本入口说明
+- `pipeline-templates/architecture-design.pipeline.json`、`skills/sync/push-progress/SKILL.md`：去除未解析 workspace placeholder
 - 现有 Pipeline/contract tests
 
-不改 Agent、Skill、crctl 子命令/状态/gates、状态机、README 算法说明。
+不改 Agent、公共状态机、gates、审批签名协议或 README 可执行事实；`crctl` 只新增 developing 期 TASK 追加原语，不改变既有状态推进/审批语义。
 
 ## Multica
 
@@ -418,9 +438,9 @@ HTTP 重放同 start 返回同一 run 和 `changed=false`。
 - `server/internal/service/task.go`、`server/pkg/db/queries/agent.sql` + sqlc 生成物
 - `server/internal/handler/daemon.go` claim context hydration
 - `server/internal/daemon/{types.go,prompt.go,daemon.go}` 与 `execenv` pipeline kind
-- `server/internal/governance/approval.go` ACK 唤醒
-- `server/cmd/server/router.go` start/runner wiring
-- `CUSTOM.md`
+- `server/internal/governance/reconcile.go` + tests：active pipeline snapshot guard
+- `server/migrations/267_issue_origin_type_restore.*.sql`、`268_issue_origin_type_restore_validate.*.sql` + project container migration/integration tests
+- `CUSTOM.md`：新增 hardening migration/行为台账
 
 不改前端、移动端、CR gate UI、公共状态机和审批签名协议。
 
@@ -434,11 +454,10 @@ HTTP 重放同 start 返回同一 run 和 `changed=false`。
 6. attribution：source snapshot 全字段复制、strict CHECK 通过、source/Agent/CR 任一跨 workspace 时 INSERT 0 行；retry 列清单保持。
 7. detail merge：Runner→review、review→Runner、projector replay 三种顺序结果相同，`runner` 与 verdict/blockers 均不丢。
 8. grant：记录未 delivered 不入队；ACK 后一次入队；坏 grant 由 Skill/`crctl` 拒绝后 run failed。
-9. review event：commit-scan-only、outbox-only、同一 commit 双来源 parity；tech-design 必须读取 `sdd.yml`，scalar/structured blockers 归一化，digest/attempt 缺失硬失败。
-10. daemon：pipeline context hydration、prompt 不含 issue/quick-create workflow、CR root 0/1/2 匹配、inspect 非 healthy、rules/crctl 缺失；LocalWorkDir 与现有 path lock/cleanup 生效。
+9. review event：commit-scan-only、outbox-only、同一 commit 双来源 parity；tech-design 必须读取 `sdd.yml`，scalar/structured blockers 归一化，digest/attempt 缺失硬失败；review outbox 必须携带同一 stage evidence。
+10. daemon：pipeline context hydration、prompt 不含 issue/quick-create workflow、CR root 0/1/2 匹配、inspect 非 healthy、rules/crctl 缺失；LocalWorkDir 与现有 path lock/cleanup 生效；active pipeline 期间 stale snapshot 不覆盖 projection。
 11. restart：四个 PRD AC 指定窗口启动扫描，只有一个有效 task。
-11. 回归：governance projector、TaskService claim/retry、approval、daemon、CR gate API。
-12. tools 手动 architecture Pipeline 回归，Runner 未启动时行为不变。
+12. migration：clean upgrade 与 affected upgrade 均验证九种 origin constraint，project_chat/project_discussion 容器创建通过。
 
 数据库测试必须在真实 PostgreSQL 下看到 `=== RUN` / `--- PASS`，不能把 TestMain skip 当通过。
 
@@ -453,15 +472,14 @@ HTTP 重放同 start 返回同一 run 和 `changed=false`。
 | matrix logical owner 无 runtime Agent | registry 保留 logical owner；route Agent UUID 作为 executor，并校验 Skill bindings |
 | 多个 CR roots 命中同 ID | daemon fail closed，不取第一个 |
 | provider sandbox 拒绝跨目录写 | inspect 后 operational workspace 作为现有 LocalWorkDir，并复用 realpath lock/cleanup |
-| review outbox 信息不足 | crctl 唯一写者投影 canonical attempt/blockers/subject；legacy payload 对 Runner fail closed |
-| 老 checkpoint 被误认 | occurred_at 必须不早于 push node started_at |
-| tools 部署漂移 | compiled digest 不同即 run failed，不猜旧模板 |
-| generated registry 过大 | Core 只嵌 architecture 五节点；不生成其他 Pipeline |
-| 新 task context 侵入 daemon | 单一 `pipeline_node` 分支，不修改现有 issue/chat/quick-create/autopilot 分支 |
+| review outbox 信息不足 | crctl review-record 复用同一 stage evidence；server 只存储/投影，不重算 | 旧 payload 继续由现有 fail-closed/legacy 规则处理 |
+| active pipeline 被 root snapshot 覆盖 | ApplySnapshot 复用 active pipeline_run guard；checkpoint 完成后再接受 root snapshot | 删除 guard 恢复旧 snapshot 行为 |
+| workspace placeholder 被 Agent 当路径 | pipeline 只传业务输入，daemon 环境和 crctl resolver 提供 workspace | 回滚模板/生成物，standalone 显式路径不变 |
+| origin constraint 在 rebase/migration 中丢值 | 新增向前 repair migration，完整集合 + NOT VALID/VALIDATE | down migration fail closed，不静默保留非法历史数据 |
 
 # 13. Prompt 采纳影响
 
-本 CR 不修改 `crctl.mjs` 的命令 dispatch、CLI 参数或 `controlled-shell/rules.json#protectedPaths.deny`，因此无需新增“应改为调用新 crctl 子命令”的 Skill。B04 回修只在现有 `review-record` 成功后 outbox payload 中投影它刚刚原子持久化的 canonical attempt/blockers/reviewed-at/subject digest，不新增业务判断或 prompt 调用面。Pipeline prompt 只改为每节点独立调用既有 `workspace inspect`，不新增状态/Git命令。
+本次 hardening 不新增业务判断或新状态机：`review-record` 只投影它刚刚原子持久化的 canonical evidence；ApplySnapshot 只复用已有 active pipeline_run 事实做冲突保护；Pipeline prompt 只传递 `cr_id`/message，workspace 由 daemon 环境和 crctl resolver 提供；migration 只修复数据库约束。`task append` 是 developing 期新增 TASK 的确定性账本入口，不允许手写 `_index.yml`。
 
 # 14. 变更记录
 
@@ -469,4 +487,4 @@ HTTP 重放同 start 返回同一 run 和 `changed=false`。
 |---|---|---|---|
 | 2026-08-17 | v0.3.0 | Ray | 回修 SDD-B05：commit-scan 与 outbox review payload parity、显式 stage 文件映射和 blocker 归一化 |
 | 2026-08-17 | v0.2.0 | Ray | 回修 SDD-B01～B04：source attribution snapshot、detail.runner merge、operational LocalWorkDir、canonical review outbox |
-| 2026-08-17 | v0.1.0 | Ray | 初稿：固定 architecture registry、单一 reconcile、现有 TaskService task carrier、DB 原生唯一约束、grant/checkpoint 接合 |
+| 2026-08-18 | v0.4.0 | Ray | E2E hardening scope amendment：review evidence、active snapshot guard、workspace contract、origin migration repair、developing task append |
