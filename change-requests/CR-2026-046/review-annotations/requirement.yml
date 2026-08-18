@@ -1,0 +1,17 @@
+cr-id: CR-2026-046
+review-type: requirement
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-18T20:28:23+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  completeness: "pass: 已覆盖注册和 merge 两条路径、异常分支、模块边界与范围排除"
+  testability: "pass: 每条核心 FR 有对应 AC，且已补齐三类 failed reason 与 SHA/null 输出规则"
+  scope: "pass: 改动仍收敛于现有 crctl 和两个测试文件，没有新增事务框架、账本或 Pipeline 节点"
+  alignment: "pass: 与源方案一致，明确区分已解决基础设施和本次最小改造"
+  dependencies: "pass: 已识别 dir-graph、workspace-transactions、既有 register/merge 测试及 CR-2026-043 ff-only 能力"
+suggestions: []
+review-loop:
+  current-attempt: 2
+subject-file: change-requests/CR-2026-046/prd.md
+subject-sha256: 03695f26dcc0cb277e2da09a6293c0ed15ed71cf12bcb332527e23a37c1cf463
