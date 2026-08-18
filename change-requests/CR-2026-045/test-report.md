@@ -186,7 +186,7 @@ commands:
 
 ### 7.1 真实 server/daemon/Codex/signed-grant 五节点 E2E
 
-- disposable CR：`CR-2026-956`（run `b0c9fd5a-d072-4765-b1fd-42df470055db`），与正式 `CR-2026-045` 严格隔离。
+- disposable CR：`CR-2026-956`（run `b0c9fd5a-d072-4765-b1fd-42df470055db`），与正式 `CR-2026-045` 严格隔离；完整证据见 `test-evidence/B10-e2e-evidence-CR-2026-956.md`（本仓库持久副本）。
 - 后端：`http://localhost:18080`（真实 server）；前端：`http://localhost:3000`（Next rewrite 代理，避免 CORS）。
 - 五节点最终态：write-tech-design `passed`（attempt 1/2）；review-tech-design `blocked`(1) → `passed`(2)；human_approval `passed`（真实网页人工点击 Approve）；approve-tech-design `passed`；push-progress `passed`。
 - 有效 grant：stage=tech-design、decision=approve、evidence_digest=`482e59249c8b3e0ccaea2574bb4beee0e6ebbe8b7b7e373df63bee34a1c4400b`（sdd.yml）、key_id=`cr045-e2e`、Ed25519 signature 验签通过；daemon `delivered_at` 已写。
