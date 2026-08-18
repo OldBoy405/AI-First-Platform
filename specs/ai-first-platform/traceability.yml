@@ -1,11 +1,11 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 # 五段链路：需求 FR ↔ 技术设计 SDD ↔ 交付 TASK ↔ 代码 merge SHA ↔ CR-ID
 spec-id: ai-first-platform
-cr-ref: CR-2026-045
-cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029, CR-2026-028, CR-2026-030, CR-2026-031, CR-2026-037, CR-2026-032, CR-2026-033, CR-2026-038, CR-2026-039, CR-2026-040, CR-2026-041, CR-2026-043, CR-2026-042, CR-2026-044, CR-2026-045]
-target-version: "0.20.6"
+cr-ref: CR-2026-046
+cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029, CR-2026-028, CR-2026-030, CR-2026-031, CR-2026-037, CR-2026-032, CR-2026-033, CR-2026-038, CR-2026-039, CR-2026-040, CR-2026-041, CR-2026-043, CR-2026-042, CR-2026-044, CR-2026-045, CR-2026-046]
+target-version: "0.20.7"
 baseline-since: "0.10"
-generated-at: "2026-08-18T20:01:20+08:00"
+generated-at: "2026-08-18T22:25:08+08:00"
 
 # 已知缺口：CR-2026-003~CR-2026-006 未生成本文件的里程碑段（writeback-traceability 在那四个
 # CR 回写时被跳过，PRD.md/SDD.md/_index.yml 侧的累积记录不受影响、仍完整）。本次（CR-2026-008）
@@ -2990,3 +2990,84 @@ milestones:
         code: { verdict: pass, path: change-requests/CR-2026-045/review-annotations/code.yml, sha256: 6024f0e90521ab0998a0fdbce78dd388ae71b70a1837724a4eb3cf2c58903660 }
       approval: { status: approved, path: change-requests/CR-2026-045/approval.yml, sha256: bf7a05d8c73a9e4160abd648f61266e4304ca7a9139e1b7044cdcbefc84aea9d }
       merge: { status: merged, path: change-requests/CR-2026-045/merge-commits.yml, sha256: 0b2813124c5fadd51c870c706c2a2598cb3f85c9add374155fba6475b9779783 }
+  - cr: CR-2026-046
+    milestone: CR 合并与新注册 Worktree 同步治理优化方案
+    target-version: "0.20.7"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: c2128087881b472defbaa338c81ae9fc90b6d149
+        branch: requirement/CR-2026-046
+      - repo: multica
+        trunk: main
+        sha: a7775aae2a957fc8aec988aff83f35ed0212ce35
+        branch: requirement/CR-2026-046
+      - repo: tools
+        trunk: custom/main
+        sha: 1edfc071540a434759780c0e93a7df93404716f8
+        branch: requirement/CR-2026-046
+    frs:
+      - fr: FR-1
+        sdd: SDD §4.1 ensureRepoWorkspace missing 分支：fetch --prune → classifyRepoWorkspace 二次分类 → 远端恢复/远端 trunk 建分支
+        tasks: [CR-2026-046-TASK-01]
+        code: tools@1edfc071: skills/shared/crctl/scripts/lib/workspace-transactions.mjs ensureRepoWorkspace case 'missing'
+        evidence: test-report §3 TASK-01 AC-1/2/3/4/5
+      - fr: FR-2
+        sdd: SDD §4.1 remote-only 分支：git branch --track + worktree 挂接（复用既有逻辑）
+        tasks: [CR-2026-046-TASK-01]
+        code: tools@1edfc071: workspace-transactions.mjs ensureRepoWorkspace case 'remote-only'
+        evidence: test-report §3 TASK-01 AC-2
+      - fr: FR-3
+        sdd: SDD §4.1 missing 分支 trunk 解析：git branch {cr} refs/remotes/origin/{trunk} 建分支
+        tasks: [CR-2026-046-TASK-01]
+        code: tools@1edfc071: workspace-transactions.mjs ensureRepoWorkspace（trunkRef rev-parse + branch）
+        evidence: test-report §3 TASK-01 AC-1
+      - fr: FR-4
+        sdd: SDD §4.1 fetch 失败/trunk 不可解析 → TxError WORKSPACE_TRUNK_UNAVAILABLE（不回退本地 trunk）
+        tasks: [CR-2026-046-TASK-01]
+        code: tools@1edfc071: workspace-transactions.mjs（fetch try/catch + trunkRef 解析失败）
+        evidence: test-report §3 TASK-01 AC-3a/3b
+      - fr: FR-5
+        sdd: SDD §4.1 二次分类非 missing/remote-only/branch-only → WORKSPACE_ENSURE_BLOCKED 硬阻断（复用既有）
+        tasks: [CR-2026-046-TASK-01]
+        code: tools@1edfc071: workspace-transactions.mjs ensureRepoWorkspace 阻断分支
+        evidence: test-report §3 TASK-01 既有保护测试零回归
+      - fr: FR-6
+        sdd: SDD §2.1 register journal 结构不变（无新字段）
+        tasks: [CR-2026-046-TASK-01]
+        code: tools@1edfc071: 无（journal 结构未改动，回归证明）
+        evidence: test-report §3 register 既有用例零回归
+      - fr: FR-7
+        sdd: SDD §4.2 reconcileLocalTrunks 私有 helper，只处理 dir-graph 声明 repo.rootPath 主 checkout
+        tasks: [CR-2026-046-TASK-02]
+        code: tools@1edfc071: workspace-transactions.mjs reconcileLocalTrunks
+        evidence: test-report §3 TASK-02 AC-6/7
+      - fr: FR-8
+        sdd: SDD §4.2 八判据短路（wrong-branch/dirty/fetch-failed/trunk-unavailable/unchanged/diverged/ff-only）
+        tasks: [CR-2026-046-TASK-02]
+        code: tools@1edfc071: workspace-transactions.mjs reconcileLocalTrunks 判据序列
+        evidence: test-report §3 TASK-02 表驱动六场景
+      - fr: FR-9
+        sdd: SDD §2.2 localTrunkSync 四态契约（status/reason/before/remote/after SHA-null 规则）
+        tasks: [CR-2026-046-TASK-02]
+        code: tools@1edfc071: workspace-transactions.mjs mergeCr return localTrunkSync
+        evidence: test-report §3 TASK-02 契约断言
+      - fr: FR-10
+        sdd: SDD §4.2 本地同步结果不影响远端 merge 结果（exit 0 / phase=complete / 不写 journal/账本）
+        tasks: [CR-2026-046-TASK-02]
+        code: tools@1edfc071: workspace-transactions.mjs mergeCr save('complete') 后调用
+        evidence: test-report §3 TASK-02 AC-7 faultPoint 场景
+      - fr: FR-11
+        sdd: SDD §5 writeback 仍用 detached Transaction Workspace，不依赖本地主 checkout 同步
+        tasks: [CR-2026-046-TASK-02]
+        code: tools@1edfc071: 无（行为不变，回归证明）
+        evidence: test-report §3 AC-8 既有回归
+    evidence:
+      test: { status: pass, path: change-requests/CR-2026-046/test-report.md, sha256: d73d79e4e72f0b9d1cd2bc54c42b725c761a5e1707bbf8c8a7324c68518f3698 }
+      reviews:
+        requirement: { verdict: pass, path: change-requests/CR-2026-046/review-annotations/requirement.yml, sha256: dac31bdc18c05edbb71f50a855f4c0be9b07745ab9d89df92cef0f9bf7e0bfe1 }
+        tech-design: { verdict: pass, path: change-requests/CR-2026-046/review-annotations/sdd.yml, sha256: ad4c070704668249e168b4151000e8b34bab045a75e43e5af5be2b988aedb245 }
+        dev-plan: { verdict: pass, path: change-requests/CR-2026-046/review-annotations/dev-plan.yml, sha256: 9daef6100de00aba2db4c56abd3dd5d673786bb14e13c1f81958e91ff54c1160 }
+        code: { verdict: pass, path: change-requests/CR-2026-046/review-annotations/code.yml, sha256: 6fe36e48bb5d210545874928890147b6989c6e537f70633cbadf4e489de60c58 }
+      approval: { status: approved, path: change-requests/CR-2026-046/approval.yml, sha256: 791477404a9884bb76f3a39cf41017f689a6872077295056fa48809c0224f574 }
+      merge: { status: merged, path: change-requests/CR-2026-046/merge-commits.yml, sha256: ee83501036ea790c6edf543fef0c831902500c12357d210c18b727f1285b097f }
