@@ -25,7 +25,8 @@ created: 2026-08-20T01:26:30+08:00
 - `server/migrations/377_maturity_snapshot_primary_key.up.sql` / `.down.sql`
 - `server/migrations/378_maturity_snapshot_scope_date.up.sql` / `.down.sql`
 - `server/migrations/379_maturity_report_history.up.sql` / `.down.sql`
-- 迁移注册清单（若 repo 有 migrations 索引/README，同步登记；以实施时现状为准）
+- `server/cmd/migrate/main.go`：为 376/378/379 各自在 `concurrentIndexCleanups` 登记 migration version → index name
+- `server/cmd/migrate/migrate_mul5999_index_retry_test.go`：现有 `TestEveryConcurrentUpBuildHasCleanup` 自动覆盖新增映射
 
 ## 实现要点
 
@@ -35,10 +36,11 @@ created: 2026-08-20T01:26:30+08:00
 - 378 `CREATE INDEX CONCURRENTLY maturity_snapshot_scope_date_idx ON maturity_snapshot (workspace_id, scope, scope_id, bucket_date DESC);`
 - 379 `CREATE INDEX CONCURRENTLY idx_atq_maturity_report_history ON agent_task_queue (project_id, completed_at DESC, id DESC) WHERE status='completed' AND project_id IS NOT NULL AND result->>'schema'='ai-first.maturity-report/v1';`（369 仅覆盖 active task，不得误用）
 - down 顺序 379→378→377→376→375（377 用 `DROP CONSTRAINT`，其 index 随 constraint 移除；376 用 `DROP INDEX CONCURRENTLY IF EXISTS`）。
+- `server/cmd/migrate/main.go#concurrentIndexCleanups` 必须新增：`376_maturity_snapshot_identity → maturity_snapshot_identity_uidx`、`378_maturity_snapshot_scope_date → maturity_snapshot_scope_date_idx`、`379_maturity_report_history → idx_atq_maturity_report_history`。这些 up migration 若被中断会留下 INVALID index；不得只加 SQL 而漏 cleanup registry。down 都是 `DROP INDEX CONCURRENTLY`，不新增 `concurrentDownIndexCleanups` 项。
 
 ## 验收条件
 
-1. 真实 PostgreSQL up/down/up 三遍全通过；migration lint 零错。
+1. 真实 PostgreSQL up/down/up 三遍全通过；`go test ./cmd/migrate -run 'TestEveryConcurrentUpBuildHasCleanup|TestEveryConcurrentDownBuildHasCleanup'` 与 migration lint 零错。
 2. 插入重复 `(workspace_id,bucket_date,scope,scope_id)` 报唯一冲突；org 行 `scope_id='·'` 合法、user 行 `scope_id='·'` 被 CHECK 拒绝。
 3. `EXPLAIN` 证明 `agent_task_queue` 上 `status='completed' AND project_id=… AND result->>'schema'='ai-first.maturity-report/v1'` 的查询命中 `idx_atq_maturity_report_history` 而非 369 的 active partial index。
 

@@ -6,7 +6,7 @@ sdd-ref: "change-requests/CR-2026-047/sdd.md"
 target-version: 0.21
 status: draft
 created: 2026-08-20T01:25:00+08:00
-updated: 2026-08-20T01:41:00+08:00
+updated: 2026-08-20T01:56:58+08:00
 ---
 
 # 开发计划 — CR-2026-047 P3 组织智能 CR-A
@@ -19,27 +19,26 @@ updated: 2026-08-20T01:41:00+08:00
 |---|---|---|---|
 | M1 配置与计分地基 | 配置声明 schema + 零依赖生成器 + 迁移 375–379 + 计分纯函数 | TASK-01/02/03 | 26h（≈3 人天） |
 | M2 快照数据流水线 | 8 项指标 SQL、治理护栏 SQL、rollup 事务编排、scheduler job | TASK-04/05/06/07 | 56h（≈7 人天） |
-| M3 读 API 与看板 | 6 个 maturity API + core schema/client + 三件式看板 + 建议最新/历史/追问入口 | TASK-08/09 | 36h（≈4.5 人天） |
+| M3 成熟度读 API | 6 个 maturity GET API + core schema/client | TASK-08 | 16h（≈2 人天） |
 | M4 Org Admin 与周报闭环 | system key 幂等初始化 + 内置周报 skill + 既有 Autopilot schedule + envelope 回传 | TASK-10 | 20h（≈2.5 人天） |
-| M5 测试矩阵与治理登记 | 全量测试矩阵落地、CUSTOM.md 登记、发布前 checklist | TASK-11 | 12h（≈1.5 人天） |
+| M5 看板与质量收口 | 三件式看板 + 建议最新/历史/追问入口 + 全量测试矩阵 + CUSTOM.md | TASK-09/11 | 32h（≈4 人天） |
 
-**估算总工时：150h（≈19 人天）**。M1/M2 为发布阻塞路径；M3 依赖 M2 的 snapshot 有数据；M4 依赖 M3 API 供周报引用；M5 与 M2–M4 交叉收口。
+**估算总工时：150h（≈19 人天）**。M1/M2 为数据发布阻塞路径；M3 依赖 M2 的 snapshot 写语义；M4 依赖 M3 API；M5 的前端依赖 M3/M4，测试矩阵对 M1–M4 交叉收口。
 
 ## 2. 任务依赖图
 
 ```text
-TASK-01 配置声明+生成器 ─┬─> TASK-03 计分纯函数 ─────┐
-TASK-02 迁移 375–379   ─┴─┬──────────────────────> TASK-06 rollup 编排 ─> TASK-07 scheduler job
-TASK-04 Token/Agent 指标 SQL ──────────────────────┘                            │
-TASK-05 CR/Pipeline 指标 + 治理 SQL ──> TASK-06 ───────────────────────────────┘
-TASK-08 读 API + core schema（依赖 01/02/06）─┬─> TASK-09 前端看板 + 建议历史/追问
-                                              └─> TASK-10 Org Admin + 周报生成
-TASK-11 测试矩阵 + CUSTOM.md（依赖 01–10 全部）
+TASK-01 ─┬─> TASK-03 ─────────────────────────────┐
+         └─> TASK-04 ─> TASK-05 ──────────────────┤
+TASK-02 ──────────────────────────────────────────┼─> TASK-06 rollup ─> TASK-07 scheduler
+TASK-01/02/06 ─> TASK-08 读 API ─> TASK-10 周报 ─┐
+TASK-08 ─────────────────────────────────────────┼─> TASK-09 看板 + 建议历史/追问
+TASK-01..10 ─────────────────────────────────────┴─> TASK-11 测试 + CUSTOM.md
 ```
 
-- 04/05 与 01/02/03 可并行（只读既有表，不依赖新表；只有插入侧 06 依赖 02 与 03）。
-- 07 依赖 06 的 `service.RollupMaturitySnapshot` 签名；08 依赖 06 的 snapshot 写语义与 02 的表结构。
-- 关键路径：02 → 06 → 07 →（scheduler 上线后）04/05 数据可达 → 08 → 09/10。
+- 01/02 可并行；03 与 04 在 01 完成后并行；05 必须等 01+04（与 TASK-04 顺序追加同一 `maturity.sql`）；06 等 01–05 全部完成。
+- 07 依赖 06 的 `service.RollupMaturitySnapshot`；08 依赖 01/02/06；10 依赖 02/05/08；09 同时依赖 08 的读 API 与 10 的 Org Admin 初始化 client；11 等 01–10。
+- 关键路径：01 → 04 → 05 → 06 → 08 → 10 → 09；07 在 06 后与 08 分支并行。
 - 每条边同时是接口契约依赖：消费方引用产出方在 TASK 卡中声明的精确签名。
 
 ## 3. 资源与分工

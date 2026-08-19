@@ -21,7 +21,7 @@ created: 2026-08-20T01:31:00+08:00
 ## 涉及文件 / 模块
 
 - `server/internal/service/maturity_test.go`（补齐：8 项 + 治理 DB fixtures、租户隔离、空分母）
-- `server/internal/migrations` 真实 PG up/down/up + EXPLAIN 集成用例（若 repo 有既有 harness 则复用）
+- `server/cmd/migrate/`：复用 `migrate_concurrent_test.go` 与 `migrate_mul5999_index_retry_test.go`，新增 `maturity_migrations_test.go` 覆盖 375–379 真实 PG up/down/up + EXPLAIN
 - `packages/core` zod malformed fixtures（`packages/core/api/*.test.ts`）
 - `packages/views` UI 断言测试（观察期无雷达、无个人入口、四态、断点）
 - E3 integration（daemon fixture：文件落盘、envelope、inbox、同周去重）
@@ -30,7 +30,7 @@ created: 2026-08-20T01:31:00+08:00
 ## 实现要点
 
 - 逐行对照 SDD §7.2 矩阵核对哪些已由 TASK-01/03/07/08/09 内置测试覆盖，本 TASK 只补缺失行：迁移（含 EXPLAIN 命中 378/379）、8 项 SQL fixtures（AC-12）、治理三态（AC-13）、rollup 并发/故障（AC-5，若 TASK-06 已含则核对即可）、E3 全链路（AC-18~22）、zod malformed（AC-15 前端侧）、UI（AC-10/11/14）。
-- 全量跑一次 `go test ./...`、`pnpm test`（views/core 相关 scope）、migration lint，形成 AC-1~AC-22 → 测试名/用例映射清单（可放本 CR 目录 `test-mapping.md` 或 TASK 完成说明）。
+- 全量跑一次 `go test ./...`、`pnpm test`（views/core 相关 scope）、migration lint，形成 AC-1~AC-22 → 测试名/用例映射清单，固定落 `change-requests/CR-2026-047/test-mapping.md`（不允许只留在提交说明）。
 - `CUSTOM.md` 登记条目至少包含：迁移 375–379、`server/internal/maturity/*`、`server/internal/scheduler/jobs_maturity.go`、`server/internal/service/maturity*.go`、`server/internal/handler/maturity.go`、内置 skill `multica-maturity-weekly-report`、`packages/views/dashboard/maturity/*`、`packages/core` 追加、所有 `// AIFIRST:` 挂钩点。逐条核对“当时实际结构”，不臆造表头。
 
 ## 验收条件

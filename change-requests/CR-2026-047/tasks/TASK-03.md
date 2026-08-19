@@ -44,10 +44,10 @@ created: 2026-08-20T01:27:00+08:00
 
 ## 接口契约
 
-- 消费（TASK-01）：`maturity.ConfigV1`、`MetricConfig`、`MetricKey`、`DimensionKey`、`MetricValue`、`SnapshotScoresV1`。
-- 产出（供 TASK-06）：
-  - `func MetricScore(x float64, c maturity.MetricConfig) float64`
-  - `func DimensionScores(m map[maturity.MetricKey]maturity.MetricValue, cfg maturity.ConfigV1) (map[maturity.DimensionKey]float64, error)`
-  - `func TotalScore(m map[maturity.MetricKey]maturity.MetricValue, cfg maturity.ConfigV1) (float64, error)`
-  - `func BuildScores(m map[maturity.MetricKey]maturity.MetricValue, cfg maturity.ConfigV1) (maturity.SnapshotScoresV1, error)`
-  - `func ObservationActive(firstBucket time.Time, now time.Time, cfg maturity.ConfigV1) bool`
+- 消费（TASK-01）：同一 `package maturity` 内的 `ConfigV1`、`MetricConfig`、`MetricKey`、`DimensionKey`、`MetricValue`、`SnapshotScoresV1`；本文件不得导入/自限定 `maturity.*`。
+- 产出（`server/internal/maturity/score.go` 的 package-local 精确声明；TASK-06 从包外以 `maturity.BuildScores` 等调用）：
+  - `func MetricScore(x float64, c MetricConfig) float64`
+  - `func DimensionScores(m map[MetricKey]MetricValue, cfg ConfigV1) (map[DimensionKey]float64, error)`
+  - `func TotalScore(m map[MetricKey]MetricValue, cfg ConfigV1) (float64, error)`
+  - `func BuildScores(m map[MetricKey]MetricValue, cfg ConfigV1) (SnapshotScoresV1, error)`
+  - `func ObservationActive(firstBucket time.Time, now time.Time, cfg ConfigV1) bool`

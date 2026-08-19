@@ -23,19 +23,18 @@ created: 2026-08-20T01:29:00+08:00
 - `server/internal/scheduler/jobs_maturity.go`（新建）
 - `server/internal/scheduler/jobs_maturity_test.go`（新建，fixed clock）
 - `server/pkg/db/queries/maturity.sql`（追加：`MaturityRetryablePlans`）
-- scheduler 注册点（与 `jobs_autopilot.go`/`jobs_task_usage.go` 同 registry，实施时按现状接线）
+- `server/cmd/server/main.go`：在 `TaskUsageHourlyJob(pool)` 与 `AutopilotScheduleDispatchJob(...)` 注册区新增 `schedulerMgr.Register(scheduler.MaturitySnapshotJob(pool))`
 
 ## 实现要点
 
 - sqlc：`MaturityRetryablePlans :many` — `SELECT plan_time FROM sys_cron_executions WHERE job_name='maturity_snapshot' AND scope_kind='global' AND scope_id='global' AND status='FAILED' AND attempt<max_attempts AND next_retry_at<=$1 AND plan_time>$2 ORDER BY plan_time ASC LIMIT 7`。
-- 构造：`func MaturitySnapshotJobSpec(rollup service.MaturityRollupFunc) JobSpec`。`Name='maturity_snapshot'`、`Cadence:0`、`PlansForScope=maturityPlansForScope(queries)`、`MaxPlansPerTick:7`、`CatchUpMode:CatchUpEveryPlan`、`CatchUpWindow:7*24h`（仅声明意图，注释写明不参与规划）、`StaticScopes(ScopeGlobal)`；`RunTimeout/StaleTimeout/HeartbeatInterval/MaxAttempts/RetryBackoff/AllowStaleReentry` 照抄 `AutopilotScheduleDispatchJob`。
+- 构造：`func MaturitySnapshotJob(pool *pgxpool.Pool) JobSpec`，函数内 `queries:=db.New(pool)`。`Name='maturity_snapshot'`、`Cadence:0`、`PlansForScope=maturityPlansForScope(queries)`、`MaxPlansPerTick:7`、`CatchUpMode:CatchUpEveryPlan`、`CatchUpWindow:7*24h`（仅声明意图，注释写明不参与规划）、`Scopes:StaticScopes(ScopeGlobal)`；`RunTimeout/StaleTimeout/HeartbeatInterval/MaxAttempts/RetryBackoff/AllowStaleReentry` 照抄 `AutopilotScheduleDispatchJob`。
 - hook 算法：① 查 `MaturityRetryablePlans(now, now-7d)` 得 retrySet（oldest-first，≤7），断言 `latest.RetryEligible(now)` 时 `latest.PlanTime∈retrySet`（测试钉死）；② `after := latest.PlanTime`；无执行记录时 `after := now-24h`（首启只产生最近一个已到期 plan）；有记录时 `after = max(after, now-7d)`；③ `occ := NextOccurrencesUTC('30 0 * * *','Asia/Shanghai',after,now)`；④ retrySet ∪ occ 去重、oldest-first、截 7 返回。不做 latest-only collapse。
-- handler：`target=planTime.In(Asia/Shanghai).AddDate(0,0,-1)` 日期；调 `rollup(ctx, planTime)`；`RowsAffected` 写回；`Result` 写 `{"bucket_date":"...","workspaces":N}`（小 payload）。
-- `type MaturityRollupFunc func(ctx context.Context, planTime time.Time) (int64, error)`（service 侧以同名别名复导出，避免 handler 反向依赖 service 实现以外的类型）。
+- handler：`target=planTime.In(Asia/Shanghai).AddDate(0,0,-1)` 日期；直接调 `service.RollupMaturitySnapshot(ctx,pool,in.PlanTime)`；`RowsAffected` 写回；`Result` 写 `{"bucket_date":"...","workspaces":N}`（小 payload）。不定义 `MaturityRollupFunc` 别名。
 
 ## 验收条件
 
-1. fixed clock：首次启动（无任何行）只返回最近一个已到期 plan（00:30 已过才产生，未过返回空）。
+1. fixed clock：首次启动（无任何行）始终返回 `(now-24h,now]` 内最近一个已到期 plan；Asia/Shanghai 00:15 返回前一日 00:30，00:31 返回当日 00:30，均恰好一条。
 2. 停机 3 天：返回 3 个 plan，oldest-first；停机 8 天：只返回窗口内最近 7 日 plan，且 `MaxPlansPerTick=7` 截断生效。
 3. FAILED 重试：最新 plan FAILED 且 retry-eligible → 原 PlanTime 在返回集中；较老 FAILED + 较新 SUCCESS 并存 → 较老 FAILED 仍在返回集（不被 latest 逻辑搁浅）。
 4. handler：plan_time=2026-08-20T00:30+08 → target bucket_date=2026-08-19；同 plan 重跑 rollup no-op 不新增行。
@@ -47,8 +46,9 @@ created: 2026-08-20T01:29:00+08:00
 
 ## 接口契约
 
-- 消费（TASK-06）：`service.RollupMaturitySnapshot(ctx, db, planTime) (int64, error)`；scheduler 既有 `JobSpec/LatestPlanInfo/StaticScopes/ScopeGlobal/NextOccurrencesUTC`。
+- 消费（TASK-06）：`service.RollupMaturitySnapshot(ctx context.Context, pool *pgxpool.Pool, planTime time.Time) (int64, error)`；scheduler 既有 `JobSpec/LatestPlanInfo/StaticScopes/ScopeGlobal` 与 `service.NextOccurrencesUTC(cronExpr,timezone string,after,until time.Time) ([]time.Time,error)`。
 - 产出（供 TASK-11 集成验证）：
-  - `func MaturitySnapshotJobSpec(rollup service.MaturityRollupFunc) JobSpec`
+  - `func MaturitySnapshotJob(pool *pgxpool.Pool) JobSpec`
   - `func maturityPlansForScope(queries *db.Queries) func(ctx context.Context, scope Scope, now time.Time, latest LatestPlanInfo) ([]time.Time, error)`
-  - `db.Queries.MaturityRetryablePlans(ctx, params MaturityRetryablePlansParams) ([]pgtype.Timestamptz, error)`
+  - `func (q *db.Queries) MaturityRetryablePlans(ctx context.Context, arg db.MaturityRetryablePlansParams) ([]pgtype.Timestamptz, error)`；Params=`Now/WindowStart pgtype.Timestamptz`。
+  - 注册调用：`schedulerMgr.Register(scheduler.MaturitySnapshotJob(pool))`（`server/cmd/server/main.go`）。

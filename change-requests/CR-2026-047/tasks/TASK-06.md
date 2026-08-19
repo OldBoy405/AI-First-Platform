@@ -20,14 +20,14 @@ created: 2026-08-20T01:28:30+08:00
 
 ## 涉及文件 / 模块
 
-- `server/internal/service/maturity_rollup.go`（新建）
+- `server/internal/service/maturity_rollup.go`（新建；直接复用 `*pgxpool.Pool` 启动每-workspace事务）
 - `server/pkg/db/queries/maturity.sql`（追加：`MaturityWorkspaces`、`MaturitySnapshotMaxBucket`、`MaturitySnapshotInsert`）
 - `server/internal/service/maturity_test.go`（rollup 并发/故障用例）
 
 ## 实现要点
 
-- sqlc 追加：`MaturityWorkspaces :many`（活跃 workspace 稳定 ID 序，口径以 repo 既有 workspace 激活判断为准，实施时核实并写明）；`MaturitySnapshotMaxBucket :one`（`MAX(bucket_date)`，workspace 限定）；`MaturitySnapshotInsert :exec`（`INSERT ... ON CONFLICT (workspace_id,bucket_date,scope,scope_id) DO NOTHING`）。
-- 编排签名：`RollupMaturitySnapshot(ctx, db, planTime time.Time) (int64, error)` → 列 workspace 后逐个调 `RollupMaturityWorkspace`；`RollupMaturityWorkspace(ctx, db, wsID string, planTime time.Time) (int64, error)`。
+- sqlc 追加：`MaturityWorkspaces :many`=`SELECT id FROM workspace ORDER BY id`（现有 workspace 表无 active/deleted 状态，故所有存在行都纳入，稳定 UUID 序）；`MaturitySnapshotMaxBucket :one`（`MAX(bucket_date)`，workspace 限定）；`MaturitySnapshotInsert :exec`（`INSERT ... ON CONFLICT (workspace_id,bucket_date,scope,scope_id) DO NOTHING`）。
+- 编排签名钉死：`func RollupMaturitySnapshot(ctx context.Context, pool *pgxpool.Pool, planTime time.Time) (int64, error)` → 列 workspace 后逐个调 `RollupMaturityWorkspace`；`func RollupMaturityWorkspace(ctx context.Context, pool *pgxpool.Pool, workspaceID pgtype.UUID, planTime time.Time) (int64, error)`。不新建单实现 DB 抽象；`*pgxpool.Pool` 用于 `Begin(ctx)`，事务内 `qtx:=db.New(tx)`。
 - `target = previousLocalDate(planTime, Asia/Shanghai)`（`planTime.In(loc).AddDate(0,0,-1)` 的日期）；时间窗 `[from_utc,to_utc)` 左闭右开。
 - 事务内先 `pg_try_advisory_xact_lock(hashtextextended('maturity_snapshot:'||wsID,0))`，拿不到返回 retryable 错误；`MAX(bucket_date)>=target` 则 no-op COMMIT。
 - 指标计算：org/project 计算 SDD §4.2 全 8 项与治理 6 字段；user scope 只写 Token/任务趋势类（`token_intensity` 系与 `team_agent_depth` 系），非适用键写 `not_applicable`、`scores={}`。覆盖不足 95% 时 user breakdown/渗透/协作用人数标 `unavailable`（org Token 总量仍 ready）。
@@ -51,7 +51,7 @@ rollup 并发/故障/观察期 fixture 全绿；`go vet` 零告警。
 
 - 消费：TASK-01 `maturity.ConfigV1/GeneratedConfig()/MetricKey...`；TASK-03 四个计分函数；TASK-04/05 全部 `db.Queries.Maturity*`；TASK-02 表结构。
 - 产出（供 TASK-07 调度、TASK-08 读侧语义）：
-  - `func RollupMaturitySnapshot(ctx context.Context, db DBTX, planTime time.Time) (int64, error)`
-  - `func RollupMaturityWorkspace(ctx context.Context, db DBTX, wsID string, planTime time.Time) (int64, error)`
+  - `func RollupMaturitySnapshot(ctx context.Context, pool *pgxpool.Pool, planTime time.Time) (int64, error)`
+  - `func RollupMaturityWorkspace(ctx context.Context, pool *pgxpool.Pool, workspaceID pgtype.UUID, planTime time.Time) (int64, error)`
   - `func ValidateSnapshotMetrics(m maturity.SnapshotMetricsV1) error`
-  - `type DBTX`（若 repo 无统一 DBTX 别名，以既有 service 层事务接口为准，签名等价即可）
+- 本 TASK 不定义 `DBTX` 或 `MaturityRollupFunc`；scheduler 直接消费上述函数，避免一实现接口/别名漂移。
