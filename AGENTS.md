@@ -1,6 +1,6 @@
 # AGENTS.md — AI First Platform 工作区行为约束
 
-本仓库是 AI First 研发协同平台的设计文档与知识库工作区，通过 sibling 目录 `../tools/`（`multica-ai` 生态之外的独立方法论包：9 Agent / 59 Skill / 8 Pipeline + `crctl` 状态机 CLI）驱动 CR（Change Request）全流程。
+本仓库是 AI First 研发协同平台的设计文档与知识库工作区，通过 sibling 目录 `../tools/`（`multica-ai` 生态之外的独立方法论包：9 Agent / 56 Skill / 8 Pipeline + `crctl` 状态机 CLI；计数口径与旁证见 `docs/references/tools.md`）驱动 CR（Change Request）全流程。
 
 **读取顺序（所有 AI Agent 必须遵守）：**
 

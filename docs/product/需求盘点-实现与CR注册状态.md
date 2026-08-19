@@ -21,7 +21,7 @@
 | `.crctl/.scan-cursor` | 有游标值 `d8185ed…` | daemon commit 扫描兜底通道（P1 D2）运行过 |
 | `.crctl/audit.log` | 至 `2026-08-17T11:01:57` CR-2026-044 archive complete | crctl 全流程行为审计持续记录 |
 | `.github/workflows/cr-guard.yml` | 存在 | 远端复核门禁（P1 C.4 第 5 层） |
-| `specs/_index.yml` | `ai-first-platform` v0.20.5，cr-ref CR-2026-044，cr-history 36 个 CR | 回写基线累积（CR-001~012 产品 CR 全在列） |
+| `specs/_index.yml` | ~~v0.20.5，cr-ref CR-2026-044，cr-history 36~~ → **实为 v0.20.7，cr-ref CR-2026-046，cr-history 38**（2026-08-19 重核） | 回写基线累积（CR-001~012 产品 CR 全在列）。盘点后 CR-045/046 又归档两个，原数字已陈旧 |
 | `delivery/task/` | 254 个交付任务索引文件 | writeback 交付产物 |
 | `change-requests/` | `_history.yml`：CR-001～044（36 archived / 8 withdrawn）；`_backlog.yml` 为空 | CR 台账：产品需求全部有终态 |
 | `wiki/` | **不存在** | Wiki 子系统零落地 |
@@ -48,7 +48,7 @@
 | 文档名称 | 实现状态 | 缺失项/待办事项详情 |
 |---|---|---|
 | `AI-First平台-PRD.md`（总 PRD v1.2） | **部分实现** | M0/P1-F1·F3·F4·F5·F6/P2-F1·F2·F3 + DC 已落地；**P1-F2 Pipeline Runner、P2-F4 A2A、P2-F5 IM 7 平台（仅 4 平台）、P2-F6/F7/F8（排除项）、P2.5 runner 轻量档、P3 全部（A8/A9）、Wiki 子系统均未实现**；验收 A2/M1 因 Runner 缺失未达成（详见 §3.1） |
-| `P0-数据模型映射表.md` | **已实现** | 5 张新表 + 2 列迁移全部落地（158/162 迁移）；同步 worker（governance/crsync.go）在位；TASK 子 Issue 投影按 ADR-0001 悬置（文档已追认，非缺口）；spec_trace/department/maturity_snapshot 属 P3 未落地（文档已注明） |
+| `P0-数据模型映射表.md` | **已实现** | 5 张新表 + 2 列迁移全部落地（158/162 迁移）；同步 worker（governance/crsync.go）在位；TASK 子 Issue 投影按 ADR-0001 悬置（文档已追认，非缺口）；**maturity_snapshot 属 P3 未落地；spec_trace 与 department 已于 2026-08-19 从 P3 设计中砍除（前者见 §7 R-10，后者见 2026-08-07 决策①）——两者不再是待建项** |
 | `P1-crctl接入设计.md` | **已实现** | D1–D7 全部交付：crctl outbox（51 处）· `internal/daemon/crevents.go` · `POST /api/daemon/cr-events`（router.go:998）· `governance/crsync.go` · reconcile（governance/reconcile.go + reconcile_github.go）· 签名审批（`governance/approval.go` + `approval_record` 表 + crctl `--grant` 63 处）· `pkg/gitguard`（+spool 审计）· `rules.json` · EVIDENCE_DRIFT 留证（`governance/audit.go`） |
 | `P2-三模式聊天交互设计.md` | **部分实现** | 主体已落地：三 tab / 队列（D1）/ presenter（project_presenter.go + presenter-control-sheet）/ toolExecutionCard / Private Ask / Discussion / DC+合并转发（comment.go `EnqueueTaskForMention`）/ 门禁接合（cr-gate-card.tsx + cr-status-badge.tsx）。**缺失**：技能选择器（前后端均无）、斜杠命令面板（`enableSlashCommands` 为 Tiptap 上游能力，非 `/需求` 等平台命令）、导出 Skill 草稿、恢复检查点、回复线程、语音、成员管理增强、上下文用量指示器——均按切分 §0.4 排除或未立项 |
 | `P2-三模式聊天窗口主体-交付切分.md` | **已实现** | CR-A→006 ~ CR-G→012 全部交付（代码实证：project-chat-panel / project-team-agent-chat / project-private-ask / discussion-pane / project-queue-bar/status / cr-gate-card / cr-status-badge / merge_forward 全链路） |
@@ -91,7 +91,7 @@
 | **P2-F5 IM 渠道 7 平台** | ⚠️ **部分实现** | 实际 4 平台：lark / slack（上游既有）+ dingtalk / wecom（定制新增，`internal/integrations/` 实测）。Telegram / Discord / QQ 缺失（OpenClaw 补齐未立项） |
 | P2-F6 恢复检查点 / F7 斜杠命令 / F8 导出 Skill 草稿 | ❌ 未实现 | 切分 §0.4 写死排除或按需触发；斜杠命令仅有 Tiptap 上游 `enableSlashCommands`（格式化菜单），非 `/需求` `/评审摘要` `/进度` `/工作流` 平台命令 |
 | P2.5 runner 轻量档（含 LLM Wiki 问答） | ❌ 未实现 | 依赖 Pipeline Runner + Agent SDK 服务端直连；无 `wiki_query_log` 表；Org API Key 路径未接线 |
-| P3 全部（A8/A9） | ❌ 未实现 | 见 §4.1 |
+| P3 全部（A8/A9） | ❌ 未实现 | 见 §4.1。**但无技术阻塞**：不依赖 Pipeline Runner（读侧投影已交）、不依赖 Wiki（E9 已移出），可立即重新注册开工 |
 | Wiki 子系统 | ❌ 未实现 | 见 §4.2 |
 
 ### 3.2 P2 交互设计（超出切分范围的能力）
@@ -124,14 +124,18 @@
 | E1 成熟度快照（maturity_snapshot + maturity-config.yaml） | 无迁移、无配置、无 rollup 任务 |
 | E2 看板前端（趋势/雷达/排名/治理板块） | `packages/views` 无 maturity/workshop 目录（analytics 为上游用量页，非成熟度看板）；无 `/api/maturity/*` |
 | E3 周报 Autopilot（Org Admin Workspace） | 无内置项目、无周报任务 |
-| E4 spec_trace 追溯投影 | 无迁移、无 trace 事件 kind |
-| E5 drift 巡检 + bypass-commit 探测 | tools 有 review-alignment skill 但无平台侧 sys_cron 派发；无 drift_finding 表；无 bypass-commit 探测落地 |
+| E4 追溯投影 | 无 trace 事件 kind。~~无 spec_trace 迁移~~ → **该表已于 2026-08-19 从设计中砍除**（P3 §7 R-10），不再是缺口；改走 `cr_sync_event.payload`（`event_kind` 无 CHECK 约束，零迁移） |
+| E5 漂移检测 | 无 drift_finding 表；无 bypass-commit 探测落地。~~tools 有 review-alignment skill 但无平台侧 sys_cron 派发~~ → **两个 LLM 巡检已于 2026-08-19 推迟**（P3 §7 R-11：七跳链路 + daemon 在线依赖，静默无结果与无漂移不可区分），P3 只交服务端纯前缀扫描 |
 | E6 Skill Market（visibility/version/owner_actor + skill_usage_event + 发布门禁 + 元数据卡 + 敏感扫描） | skill 表无自研列（migrations 无对应迁移）；无 usage_event 表；无 Market 前端 |
 | E7 交付效能板块 + AI 净价值叙事条 | 无（随 E1/E2） |
-| E8 场景工坊三视图 | 无路由（`apps/web` 无 workshop 页面） |
-| E9 知识晋升巡检（wiki_query_log 聚类 + open-questions） | 无 wiki_query_log 表；随 Wiki 未落地 |
+| E8 效能驾驶舱 + 待我审批端点 | 无路由（`apps/web` 无 workshop 页面）；现有 `/api/daemon/approvals/pending` 在 daemon 组、服务 grant 取件，**无用户侧待审批端点**。~~工坊三视图~~ → **已砍到一个**（P3 §7 R-18） |
+| ~~E9 知识晋升巡检~~ | **已于 2026-08-19 整节移出 P3**，归《Wiki 子系统设计》 W5（P3 §7 R-12）——不再计作 P3 的缺口 |
 
-注册状态：CR-2026-013～017 曾注册（目标 0.20→0.24），**2026-08-14 全部以 withdrawn 归档**（从未写 PRD/SDD、从未回写 specs），需求回到未注册。P3 依赖 Wiki（E9），Wiki 未立项，E9 不能单独先做。
+注册状态：CR-2026-013～017 曾注册（目标 0.20→0.24），**2026-08-14 全部以 withdrawn 归档**（从未写 PRD/SDD、从未回写 specs），需求回到未注册。
+
+> **2026-08-19 更正两条陈旧断言（开工前对代码重核）**：
+> ① 原文“P3 依赖 Wiki（E9），Wiki 未立项，E9 不能单独先做”——**该依赖已断开**：E9 整节移入 Wiki 文档（其两个信号源、执行体、产出全在 Wiki 侧），P3 现在**与 Wiki 零依赖**，可独立开工。
+> ② 原文隐含“P3 卡在 Pipeline Runner”（§6 将 CR-H 排在 P3 之前）——**只有写侧 Runner 未实现，读侧投影已交付**：`server/internal/governance/gate_projection.go`（CR-2026-011 TASK-02）的 `applyReview` 已向 `pipeline_node_run` 写入 `attempt`/`status`，`pipelineForStatus` 已覆盖全 4 条 pipeline，该文件头明写其目的就是“不必等完整 Pipeline Runner 存在”。故 **P3 的 EPC 原型直出率、ACM 流程完整率、Review 负担、blocker 列表均有现成数据源**，P3 不以 CR-H 为前置（§6 的排序依据仅为业务优先级，不是技术阻塞）。
 
 ### 4.2 Wiki 子系统（`Wiki子系统设计.md`）— 代码零落地
 
@@ -160,7 +164,7 @@
 | 当时结论 | 本次（代码实证） |
 |---|---|
 | P0/P1/P2 主体已实现 | **一致**：代码可定位到全部对应实现（迁移/端点/组件），工作区运行态（outbox 244 事件、audit.log、specs v0.20.5、cr-guard CI）交叉佐证 |
-| P3 未落地（编号 013～017 已撤回） | **一致**：代码零落地，且无任何 P3 相关迁移/API/路由；`wiki/` 目录不存在 |
+| P3 未落地（编号 013～017 已撤回） | **一致**：代码零落地，且无任何 P3 相关迁移/API/路由；`wiki/` 目录不存在。2026-08-19 重切为四个 CR（A 0.21 / B 0.22 / C 0.23 / D 0.24），待注册 |
 | Wiki 未立项 | **一致**：代码零落地 |
 | Pipeline Runner（CR-H）未注册 | **一致**：表已建、编排器代码不存在——实证了"最大缺口"论断 |
 
@@ -174,5 +178,5 @@
 
 1. **Pipeline Runner（CR-H / P1-F2）** — 卡住总 PRD M1/A2；两表已在库、UI 消费面已备齐，只缺编排器（约 6–8 人日），建议下一件产品 CR。
 2. **P3 组织智能** — 代码零落地，编号 013～017 已作废，需重新注册。
-3. **Wiki 子系统 + P2.5 runner 轻量档** — 从未立项；P3 知识晋升依赖 Wiki。
+3. **Wiki 子系统 + P2.5 runner 轻量档** — 从未立项（按《缺口清单-最终版》`:202` 仍为条件触发候选）。~~P3 知识晋升依赖 Wiki~~ → **反向了**：知识晋升自 2026-08-19 整节归 Wiki（W5），P3 不再依赖 Wiki；且 W5 与两个 LLM 巡检同等待遇（均需 daemon 在线率的真实数据）。
 4. **审批周边 / A2A / IM 补齐（TG/Discord/QQ）/ 技能选择器** — 量级不等的周边缺口，均未注册。
