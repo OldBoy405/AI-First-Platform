@@ -5,7 +5,7 @@ cr-ref: CR-2026-047
 title: P3 组织智能 CR-A：AI 成熟度看板（E1 快照 + E2 看板 + E3 周报）技术设计
 status: draft
 created: 2026-08-20T00:38:27+08:00
-updated: 2026-08-20T01:10:25+08:00
+updated: 2026-08-20T01:13:46+08:00
 ---
 
 # SDD — P3 组织智能 CR-A：AI 成熟度看板
@@ -22,7 +22,7 @@ updated: 2026-08-20T01:10:25+08:00
 
 | 交付物 | 内容 | 落点仓 | 关键模块 |
 |---|---|---|---|
-| E1 | 口径配置 + 生成器 + 日快照 rollup | 声明落 **knowledge-base 本仓**；生成器与任务落 **multica** | `maturity-config.yaml`、可选 `model-prices.yaml`、`server/internal/maturity/gen/generate-config.mjs`、`server/internal/maturity/config_gen.go`、`server/internal/scheduler/jobs_maturity.go`、迁移 375–378 |
+| E1 | 口径配置 + 生成器 + 日快照 rollup | 声明落 **knowledge-base 本仓**；生成器与任务落 **multica** | `maturity-config.yaml`、可选 `model-prices.yaml`、`server/internal/maturity/gen/generate-config.mjs`、`server/internal/maturity/config_gen.go`、`server/internal/scheduler/jobs_maturity.go`、迁移 375–379 |
 | E2 | 看板读 API + 共享视图 + Web/Desktop 接线 | **multica** | `server/internal/handler/maturity.go`、`server/internal/service/maturity*.go`、`server/pkg/db/queries/maturity.sql`、`packages/core` schema/client、`packages/views/dashboard/maturity/` |
 | E3 | Org Admin Workspace + 周报 Autopilot | **multica**；报告原文落 daemon 绑定目录、不经 git | `server/internal/service/org_admin_*.go`、内置 skill `multica-maturity-weekly-report`、`agent_task_queue.result` 报告回执、`docs/org-admin/maturity-review-{YYYY-Www}.md` |
 
@@ -67,7 +67,7 @@ server/internal/maturity/gen/generate-config.mjs
 
 ## 2. 数据模型
 
-### 2.1 `maturity_snapshot`：唯一新表，迁移 375–378
+### 2.1 `maturity_snapshot`：唯一新表，迁移 375–379
 
 PRD 的业务键 `(bucket_date, scope, scope_id)` 在多 workspace 架构下会让所有 org 行以 `scope_id='·'` 冲突；SDD 增补必需租户键 `workspace_id`，物理主键为 `(workspace_id, bucket_date, scope, scope_id)`。这是对 FR-4 的租户隔离细化，不新增业务实体、无 FK。
 
@@ -104,9 +104,16 @@ PRIMARY KEY USING INDEX maturity_snapshot_identity_uidx;
 -- 378_maturity_snapshot_scope_date.up.sql
 CREATE INDEX CONCURRENTLY maturity_snapshot_scope_date_idx
 ON maturity_snapshot (workspace_id, scope, scope_id, bucket_date DESC);
+
+-- 379_maturity_report_history.up.sql：既有 369 仅覆盖 active project task，不能服务 completed report history
+CREATE INDEX CONCURRENTLY idx_atq_maturity_report_history
+ON agent_task_queue (project_id, completed_at DESC, id DESC)
+WHERE status = 'completed'
+  AND project_id IS NOT NULL
+  AND result->>'schema' = 'ai-first.maturity-report/v1';
 ```
 
-Down 顺序：378 `DROP INDEX CONCURRENTLY` → 377 `DROP CONSTRAINT`（同步移除其 index）→ 376 `DROP INDEX CONCURRENTLY IF EXISTS` → 375 `DROP TABLE`。所有文件先过现有 migration lint，再在真实 PostgreSQL 执行 up/down/up。
+Down 顺序：379 `DROP INDEX CONCURRENTLY` → 378 `DROP INDEX CONCURRENTLY` → 377 `DROP CONSTRAINT`（同步移除其 index）→ 376 `DROP INDEX CONCURRENTLY IF EXISTS` → 375 `DROP TABLE`。每个 migration 仍只有一条 statement；所有文件先过现有 migration lint，再在真实 PostgreSQL 执行 up/down/up。
 
 ### 2.2 JSON 契约
 
@@ -351,7 +358,7 @@ type MaturityConfigResponse = {
 - **Hook 算法**：先用新增 sqlc 只读查询从既有 `sys_cron_executions` 取窗口内所有 retry-eligible 行：`job_name='maturity_snapshot' AND scope_kind='global' AND scope_id='global' AND status='FAILED' AND attempt<max_attempts AND next_retry_at<=now AND plan_time>now-7d`，oldest-first、limit 7；`latest.RetryEligible(now)` 必须包含在该集合（单测钉死）。再令 `after=latest.PlanTime`；若从无执行记录，则 `after=now-24h`，使首次部署只生成最近一个已到期 plan、不伪造上线前观察期；已有记录时令 `after=max(after,now-7d)`。调用 `NextOccurrencesUTC('30 0 * * *','Asia/Shanghai',after,now)` 得到新 occurrence；把 retry plan 与新 plan 去重合并、oldest-first，截到 7 个返回。这样同 tick 的较新 plan 成功后，较老 FAILED 也不会因不再是 latest 而永久搁浅。hook 直接返回 canonical UTC，不做 latest-only collapse。
 - **PlanTime 语义**：每个 plan 只负责 `plan_time.In(Asia/Shanghai)` 所在本地日的**前一日** bucket；handler 不再从水位循环到“当前日”，避免 hook 与 handler 双重补偿。`MAX(bucket_date WHERE workspace_id=:workspace)` 仅作 target 已存在 no-op 判断；缺口由 hook 自己的 7 日枚举补齐。
 - **周报 schedule**：Org Admin 项目每周一 09:00 Asia/Shanghai 触发（运营可在既有 Autopilot UI 改 cron）；复用 `sys_cron_executions(job_name,scope_kind,scope_id,plan_time)` 幂等。
-- **Report result**：任务结束返回 `agent_task_queue.result={schema,report_key,week,generated_at,relative_path,markdown,content_sha256,chat_session_id,config_revs}`。daemon 先原子写临时文件并 rename，再完成任务；server 验证 SHA 后持久化 result/chat。重试使用同一 `report_key`，API 去重。
+- **Report result**：schedule enqueue 必须把 `agent_task_queue.project_id` 设为 Org Admin 项目 ID，并绑定该项目的 `chat_session_id`；任务结束返回 `result={schema,report_key,week,generated_at,relative_path,markdown,content_sha256,chat_session_id,config_revs}`。daemon 先原子写临时文件并 rename，再完成任务；server 验证 SHA 后持久化 result/chat。重试使用同一 `report_key`，API 以 `project_id + schema + completed_at/id` 查询并去重。
 
 ---
 
@@ -455,7 +462,7 @@ RollupWorkspace(planTime, workspace):
 | FR-1 | §2.4 `maturity-config.yaml` schema + generated Go；权重/阈值/观察期集中 |
 | FR-2 | `server/internal/maturity/gen/generate-config.mjs`：CRLF→LF、结构 hard fail、dirty guard、`--check` |
 | FR-3 | source repo clean HEAD SHA 写 `config_rev`；每行固化 |
-| FR-4 | §2.1 迁移 375–378；技术补充 `workspace_id` 租户键；无 FK |
+| FR-4 | §2.1 迁移 375–379；技术补充 `workspace_id` 租户键；无 FK；379 为E3 completed report history索引 |
 | FR-5 | §3.7 JobSpec + hook 精确算法：retry-eligible、7日 oldest-first、MaxPlansPerTick=7、Asia/Shanghai、global scope；不依赖被忽略的 CatchUpMode/Window |
 | FR-6 | §4.5 workspace advisory lock、单日 bounded plan、单事务、`MAX(bucket_date)` no-op 水位 |
 | FR-7 | §1.3/§4.4 历史不可变、观察期 `{}`、config 断点 |
@@ -488,7 +495,7 @@ FR 覆盖率：**24/24**。
 - **租户隔离**：snapshot 物理键含 `workspace_id`；全部原始表 query 先限定 workspace；`cr_sync_event` 必须经已限定的 `cr` join；query key 含 workspaceId。
 - **隐私/反 Goodhart**：无 user ranking SQL/API/UI/开关；Token 为行为数据非绩效；user snapshot 不暴露个人 score。
 - **数据库安全**：无新 FK；每索引 CONCURRENTLY 单文件；advisory lock 按 workspace，避免不同 workspace 相互阻塞。
-- **查询成本**：overall/ranking/report 只读日快照；原始表大范围聚合只在每日 rollup 和 model 明细发生。API 日期最多 366 天、ranking limit≤100、history limit≤52。
+- **查询成本**：overall/ranking 只读日快照；report history 用 migration 379 的 `(project_id,completed_at DESC,id DESC)` partial index，不能误用仅覆盖 active task 的 migration 369 索引；原始表大范围聚合只在每日 rollup 和 model 明细发生。API 日期最多 366 天、ranking limit≤100、history limit≤52。
 - **成本完整性**：`cost_status=authoritative` 表示全部 usage 有 provider ticks；`mixed` 表示一部分 authoritative、其余全部被价目覆盖；`estimated` 表示无 authoritative 但全部可估；只要仍有未知模型的 uncosted Token，`cost_status=unavailable` 且 `cost_usd=null`，不展示不完整小计。
 - **兼容性**：新增响应 additive；zod enum 有 fallback；desktop 对未知字段容忍；空/不可用是显式状态。
 - **代码治理**：所有注释英文；实现涉及 migration、scheduler、handler/service、builtin skill、前端 route/组件、生成器，逐项登记 multica `CUSTOM.md`，编号/表格格式以实施时文件现状为准。
@@ -498,7 +505,7 @@ FR 覆盖率：**24/24**。
 | 范围 | 测试落点/方式 | 必须证明 |
 |---|---|---|
 | 配置生成器 | Node 单测 + `--check` CLI fixture | LF/CRLF 同输出；缺块/未知key/weight和≠1/target≤floor hard fail；dirty source 拒绝；漂移非零；clean source SHA 入头 |
-| 迁移 | `server/internal/migrations` lint + 真实 PostgreSQL up/down/up | 375 无隐式 index；376 unique concurrent；377 PK using index；378 query index；无 FK；org sentinel CHECK；重复逻辑键失败 |
+| 迁移 | `server/internal/migrations` lint + 真实 PostgreSQL up/down/up + EXPLAIN | 375 无隐式 index；376 unique concurrent；377 PK using index；378 snapshot query index；379 completed report partial index；无 FK；org sentinel CHECK；重复逻辑键失败；history query命中379而非369 active index |
 | 计分纯函数 | `server/internal/maturity/score_test.go` table-driven | floor/target/夹断/浮点边界；8→5→total；observing 返回空 scores；缺 key 拒绝 |
 | 8 项 SQL | `server/internal/service/maturity_test.go` PostgreSQL fixtures | 四类 Token 含 cache_write；workspace 隔离；member=0 空态；CR→project join；EPC 三 review gate attempt=1；Team Agent 用 cr_id/issue_id；4 pipeline 完整率 |
 | 治理 | DB fixtures | 两个 activity action 精确计数；审批 P50/P90；CR-C 前 trace unavailable≠0；治理不改变 total |
@@ -516,7 +523,7 @@ FR 覆盖率：**24/24**。
 |---|---|
 | AC-1 | 配置类型/8 key/weight/floor/target/观察期校验；`config_rev` 等于 clean source HEAD SHA |
 | AC-2 | 生成器 `--check` 一致为 0、漂移非 0；生成文件头含源 SHA |
-| AC-3 | 迁移 375–378 真实 PG up/down/up；仅新增 snapshot 表、无 FK、所有索引 concurrent 单文件；租户前缀后的业务键满足 FR-4 |
+| AC-3 | 迁移 375–379 真实 PG up/down/up；仅新增 snapshot 表、无 FK、所有索引 concurrent 单文件；租户前缀后的业务键满足 FR-4；EXPLAIN证明report history命中379 |
 | AC-4 | fixed clock 跨 00:30 仅产生前一日 global plan；事务内写三 scope，cron scope 不按用户/项目增长 |
 | AC-5 | 同桶重跑/双并发/故障注入，验证唯一行、advisory lock 与全事务回滚 |
 | AC-6 | 连续 3 天 metrics 完整/scores 空；改 config 后只新行 rev 变化；历史摘要不变且 API 返回 revision 断点 |
