@@ -5,7 +5,7 @@ cr-ref: CR-2026-047
 title: P3 组织智能 CR-A：AI 成熟度看板（E1 快照 + E2 看板 + E3 周报）技术设计
 status: draft
 created: 2026-08-20T00:38:27+08:00
-updated: 2026-08-20T01:06:02+08:00
+updated: 2026-08-20T01:10:25+08:00
 ---
 
 # SDD — P3 组织智能 CR-A：AI 成熟度看板
@@ -370,7 +370,7 @@ type MaturityConfigResponse = {
 
 1. **Token 强度**：本地日内 `SUM(input_tokens+output_tokens+cache_read_tokens+cache_write_tokens) / member_count / 1天`；`task_usage.task_id=agent_task_queue.id`，并经 `agent_task_queue.agent_id=agent.id AND agent.workspace_id=:workspace` 限租户；按 `initiator_user_id` 归人、按 `COALESCE(agent_task_queue.project_id,issue.project_id)` 归项目；不读无 user 维的 `task_usage_hourly`。
 2. **AI 渗透率**：同样先经 `agent.workspace_id=:workspace` 限租户；本地日内 `COUNT(DISTINCT initiator_user_id) / member_count`；“发起过”按 task `created_at`，不以最终成功状态过滤。
-3. **人均 CR 吞吐**：本地日内首次进入 `archived` 的 distinct CR 数 / member_count；从 `cr_sync_event.event_kind='status'` 且 payload.to/status=`archived` 取时间，先 join workspace-scoped `cr` 去重。
+3. **人均 CR 吞吐**：本地日内首次进入 `archived` 的 distinct CR 数 / member_count；从 `cr_sync_event.event_kind='status' AND payload->>'to_status'='archived'` 取 `occurred_at`，先 join workspace-scoped `cr` 去重。
 4. **项目协作规模**：对窗口内归档 CR 分别取 canonical user 集合并求人数，再平均：`cr.owners` 中 user id ∪ `comment.author_id`（member only）∪ `agent_task_queue.initiator_user_id`（`q.cr_id=cr.cr_id OR q.issue_id=cr.shell_issue_id`）。project scope 再按 `issue.project_id` 过滤；人数 `<2` 的 raw 仍存，计分由配置 floor/target 使其不加分。
 5. **项目活跃率**：近 14 个本地自然日内存在 task `created_at` 或 CR status `occurred_at` 的 distinct 业务 project / 全部业务 project；任务项目优先 `q.project_id`，缺失时 `q.issue_id→issue.project_id`；CR 项目走 shell issue。
 6. **原型直出率**：当期归档 CR 中，**全部已投影 review gate**（`requirement`、`tech-design`、`code`，对应 `governance.ReviewGateNodes`）均在 `attempt=1,status='passed'` 的 CR 数 / 当期归档 CR 数。不是 passed node/全部 node；缺任一必需 review gate 即不计一次通过。
