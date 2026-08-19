@@ -1,24 +1,23 @@
 cr-id: CR-2026-047
 review-type: dev-plan
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-20T01:59:05+08:00"
-verdict: block
-repair-target: write-tech-design
-blockers:
-  - "UPSTREAM-1 cr.owners 身份口径不可实现：sdd.md §4.2 把 cr.owners 中 user id 纳入项目协作规模，但实际 governance/project_gates.go 明确 owners.*.id 是 crctl --caller 自报 free-text、当前没有 Multica user 映射且禁止名称匹配；本 CR 的 owner 即字符串 Ray。TASK 层既不能安全强转 UUID/按名字认人，也不能静默删掉 owners 而改公式。请在 SDD 明确批准一种方案及可观察语义：A) 定义真实、workspace-scoped、可回填的 crctl owner→member.user_id 身份桥与数据源；或 B，推荐最小方案) 保留公式但任何 unresolved owner 使 project_collab_scale 的该 scope/date data_status='unavailable', reason='cr_owner_identity_unresolved'，评论者/任务发起者仍可诊断但不得伪装完整结果，baseline 跳过该样本。修订后同步 TASK-05/06 的 SQL、状态传播与 fixture；严禁名称匹配。"
+reviewed-at: "2026-08-20T02:34:58+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  sdd-to-plan: "block"
+  sdd-to-plan: "pass"
   plan-to-tasks: "pass"
-  task-executability: "block"
+  task-executability: "pass"
   dependency-topology: "pass"
   interface-contracts: "pass"
-  acceptance-verifiability: "block"
-  scope-and-simplicity: "block"
+  acceptance-verifiability: "pass"
+  scope-and-simplicity: "pass"
   risk-and-rollback: "pass"
-  reviewer-model: "OldBoy405"
+  reviewer-model: "gpt-5.6-sol / RayOpenAI_2X"
 suggestions:
-  - "正常轨四类 blocker 已修：deterministic observing seed、精确 sqlc/service/scheduler 合同、建议 latest/history/追问责任、真实路径与 migration cleanup registry；11 TASK/150h/DAG 均已重建。"
-  - "建议选择 unavailable 降级而不是在 CR-A 新增身份基础设施；后者会扩大到 crctl 事件协议、历史回填与跨仓身份治理，应另立 CR。"
+  - "方案 B 已完整贯通 SDD→plan→TASK：owner unresolved 只影响对应 org/project scope 的 project_collab_scale，scores 为空且 baseline 排除；TASK-03/06 禁止部分权重重归一化。"
+  - "11 TASK、150h、依赖无悬空且无环；TASK-04/05 共用 maturity.sql 的追加顺序、TASK-06/07/08/10 的函数与 sqlc 合同已对齐。"
+  - "实施时保留 migration 376/378/379 的 concurrent cleanup registry、scheduler 的旧 FAILED retry 场景，以及 owner free-text 不匹配名称/不强转 UUID 的 fixture。"
 review-loop:
-  current-attempt: 1
-subject-sha256: cbbbafabaaac0aa4aa7d911e50918f49b63306fb2f65be6b0b5eb46744ade6d0
+  current-attempt: 2
+subject-sha256: e686e92430c507969232d0f8842d8760d6374cb80d51c6fbd3ece58e92619003
