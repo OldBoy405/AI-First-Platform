@@ -1,0 +1,27 @@
+cr-id: CR-2026-047
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-20T00:51:16+08:00"
+verdict: block
+blockers:
+  - "B1 迁移方案违反 multica 硬规则：sdd.md §2.1 在 CREATE TABLE 内声明 PRIMARY KEY，会隐式创建非 CONCURRENTLY 索引；必须拆成 375 建表无主键、376 CREATE UNIQUE INDEX CONCURRENTLY、377 ADD CONSTRAINT PRIMARY KEY USING INDEX，额外查询索引再独立迁移。"
+  - "B2 历史快照语义自相矛盾：sdd.md §1.2/§4.2/§5 同时描述 API 从原始事件重算分数和 maturity_snapshot 保存当时口径；这会破坏历史不可变。必须明确 rollup 落 8 项 metrics、8 项 scores、5 维分、total_score 与治理历史值，overall/rankings/周报只读快照，只有明细下钻按需读原始表。"
+  - "B3 指标公式与 PRD/设计源不一致且项目归属不可执行：Token 强度漏 cache_write_tokens；EPC 错算为 passed node/全部 node；Team Agent 深度错用 pipeline_node_run_id 而非 issue_id；流程完整率未列 4 条 pipeline；活跃成员、空分母、项目映射未定义。必须逐项给出窗口、分子分母、零分母、workspace/project join 与准确字段。"
+  - "B4 治理板块数据契约不完整：EVIDENCE_DRIFT 与 gitguard denied 应读 activity_log 的 aifirst.evidence_drift/aifirst.gitguard_denied；审批时延与追溯完整率缺可执行口径，而且追溯通道属于 CR-C、当前尚未交付。必须定义 ready/unavailable/empty 三态，CR-C 前明确未测量而非 0，且不把治理值计入总分。"
+  - "B5 API 仅写示意响应并含省略号，range、日期、nullable 观察期、错误码、分页/空态、workspace query key 均未定义，不满足接口类型完整。必须补齐可生成 zod 的精确请求/响应类型和 200/400/401/403 语义，scope=user 明确 400。"
+  - "B6 E3 文件访问链路与测试设计缺失：Autopilot 在 daemon local_directory 写 docs/org-admin 后，server API 不能直接读取 daemon 文件系统；必须选定现有任务结果/消息流回传边界和周次幂等键，并补齐生成器、迁移、调度补偿、并发回滚、8 公式、API 隔离、UI 观察期及周报闭环的可执行测试矩阵。"
+dimensions:
+  PRD-SDD对齐: "block: FR-14 三项公式与数据字段不一致，FR-7 历史不可变边界被读时重算破坏，FR-20~FR-22 的报告读取链路不可实现"
+  架构合理性: "block: daemon 本地文件与 server API 缺跨进程边界；前端组件归属误写为 packages/ui；CUSTOM.md 登记未纳入实现边界"
+  数据模型完整性: "block: PRIMARY KEY 隐式索引违反迁移硬规则；快照 JSON 未完整承载治理历史、5 维分与总分；org scope_id 不变量未约束"
+  接口契约: "block: 响应仅示意且含省略号，请求参数、nullable、错误与空态不完整"
+  性能与安全: "block: workspace/project 过滤与项目 join 未精确定义，可能跨 workspace 聚合；历史重算会造成高成本和口径漂移"
+  可测试性: "block: 缺少确定时钟、真实 PostgreSQL、并发/回滚、公式 fixture、API/UI/E3 的测试落点和通过条件"
+  Prompt采纳影响: "pass: 本 CR 不触及 crctl.mjs dispatch 或 controlled-shell rules.json#protectedPaths.deny，本项按条件跳过"
+suggestions:
+  - "删除 maturity-config.yaml 中虚构的阈值示例，仅保留 schema 约束：8 key 齐全、sum(weights)=1、target>floor、observation_weeks=4；生成器对 dirty source 或内容与 HEAD 不一致硬失败。"
+  - "明确 model-prices.yaml 落点、加载/校验方式与未知模型 cost=null；所有 multica 自研文件在 CUSTOM.md 登记。"
+review-loop:
+  current-attempt: 1
+subject-file: change-requests/CR-2026-047/sdd.md
+subject-sha256: 9237d6c662784989c3bea872bebf169be9b1d94565f65c977dc2d86108d9ac1b
