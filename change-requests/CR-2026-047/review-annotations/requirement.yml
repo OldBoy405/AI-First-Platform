@@ -1,0 +1,17 @@
+cr-id: CR-2026-047
+review-type: requirement
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-20T00:30:45+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  completeness: "pass: 概述、6 个用户故事、24 条 FR、6 条 NFR、22 条 AC、成功指标与范围排除完整，E1/E2/E3 均覆盖"
+  testability: "pass: FR-1~FR-24 全部出现在 AC 覆盖列；AC 给出输入/动作/可观察结果，覆盖配置生成、DDL、调度补偿、8 项公式、API、UI 与周报闭环"
+  scope: "pass: CR-A 仅含 E1/E2/E3；个人榜及 user ranking API/Owner 开关、资产复用率、交付效能、基线写入等均明确排除并指向 CR-D"
+  alignment: "pass: 与 docs/product/P3-组织智能设计.md §5.1/§5.2 的 0.21 重切范围一致，并显式消解 §1.5/§1.6 目标态个人榜与 CR-A 无个人榜的口径张力"
+  dependencies: "pass: 已识别 E1→E2→E3、既有数据/调度/投影/Team Agent/组件依赖，以及 CR-B/CR-C 独立、CR-D 反向依赖 A 上线满 4 周+B"
+suggestions: []
+review-loop:
+  current-attempt: 2
+subject-file: change-requests/CR-2026-047/prd.md
+subject-sha256: 287b41bcd7e99d0c80647cca6f63cfa7f81bd9be72be90239b6d6f5ef68a4d61
