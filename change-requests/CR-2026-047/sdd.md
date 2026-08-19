@@ -5,272 +5,515 @@ cr-ref: CR-2026-047
 title: P3 组织智能 CR-A：AI 成熟度看板（E1 快照 + E2 看板 + E3 周报）技术设计
 status: draft
 created: 2026-08-20T00:38:27+08:00
-updated: 2026-08-20T00:38:27+08:00
+updated: 2026-08-20T00:53:36+08:00
 ---
 
 # SDD — P3 组织智能 CR-A：AI 成熟度看板
 
-> 本文档以 `prd.md` 为输入，描述 CR-A 的模块边界、数据模型、接口契约、关键算法与技术选型。权威架构约束见 multica 仓根目录 `ARCHITECTURE.md`（硬不变量 1–9）与 `CLAUDE.md`（迁移/代码规则）。本 CR 全部新增/修改的代码注释一律英文。
+> 本文档以 `prd.md` 为输入，描述 CR-A 的模块边界、数据模型、接口契约、关键算法、测试方案与技术选型。权威约束见 multica 根目录 `ARCHITECTURE.md`（硬不变量 1–9）与 `CLAUDE.md`（迁移/代码规则）。本 CR 修改 multica 自研代码时同步登记 `CUSTOM.md`；代码注释一律英文。
+>
+> **首轮评审回修**：本文已消费 `review-annotations/sdd.yml` attempt 1 的 B1–B6：迁移并发索引、历史快照边界、8 项公式、治理三态、完整 API 类型、daemon→server 周报回传与测试矩阵。
 
 ---
 
 ## 1. 架构概览
 
-### 1.1 交付物与代码仓归属
+### 1.1 交付物、仓与模块边界
 
 | 交付物 | 内容 | 落点仓 | 关键模块 |
 |---|---|---|---|
-| E1 | 口径配置 + 生成器 + 快照 rollup | 配置声明落 **knowledge-base 本仓**；生成器与快照任务落 **multica** | `maturity-config.yaml`、`server/internal/governance/gen/generate-maturity-config.mjs`、`server/internal/scheduler/jobs_maturity.go`、迁移 375 |
-| E2 | 看板前端 + 读侧 API | **multica** | `server/internal/handler/maturity.go`、`server/internal/service/maturity/`、`server/pkg/db/queries/maturity.sql`、`packages/views/dashboard/maturity/` |
-| E3 | Org Admin Workspace + 周报 Autopilot | **multica**（报告落盘不经 git） | 内置 Agent/项目、内置 skill `maturity-weekly-report`、`docs/org-admin/maturity-review-{YYYY-Www}.md` |
+| E1 | 口径配置 + 生成器 + 日快照 rollup | 声明落 **knowledge-base 本仓**；生成器与任务落 **multica** | `maturity-config.yaml`、可选 `model-prices.yaml`、`server/internal/maturity/gen/generate-config.mjs`、`server/internal/maturity/config_gen.go`、`server/internal/scheduler/jobs_maturity.go`、迁移 375–378 |
+| E2 | 看板读 API + 共享视图 + Web/Desktop 接线 | **multica** | `server/internal/handler/maturity.go`、`server/internal/service/maturity*.go`、`server/pkg/db/queries/maturity.sql`、`packages/core` schema/client、`packages/views/dashboard/maturity/` |
+| E3 | Org Admin Workspace + 周报 Autopilot | **multica**；报告原文落 daemon 绑定目录、不经 git | `server/internal/service/org_admin_*.go`、内置 skill `multica-maturity-weekly-report`、`agent_task_queue.result` 报告回执、`docs/org-admin/maturity-review-{YYYY-Www}.md` |
 
-依赖方向（严格遵守 `ARCHITECTURE.md` §4，不引入反向依赖）：
+依赖方向（不引入反向依赖）：
 
 ```text
-packages/views/dashboard/maturity/          (共享业务 UI)
-  -> packages/core  (maturity API client + zod schema)
-  -> packages/ui    (dim-segmented / usage-trend-card / leaderboard 原语)
+packages/views/dashboard/maturity/
+  -> packages/views/dashboard/components/  # 复用 sibling 组件 dim-segmented / usage-trend-card / leaderboard
+  -> packages/core                         # API client、query keys、zod schema
+  -> packages/ui                           # 上述 views 组件内部使用的 UI 原语
 
-server/cmd/server/router.go                  (composition root)
-  -> server/internal/handler/maturity.go     (HTTP boundary：鉴权/校验/编码)
-  -> server/internal/service/maturity/       (聚合 + 计分业务逻辑)
-  -> server/pkg/db/queries/maturity.sql      (sqlc，只读查询)
+server/cmd/server/router.go                # composition root
+  -> server/internal/handler/maturity.go   # auth / request validation / response encoding
+  -> server/internal/service/maturity*.go  # workspace-scoped business logic
+  -> server/internal/maturity/             # 纯类型、生成配置、计分函数；不访问 DB
+  -> server/pkg/db/queries/maturity.sql    # sqlc
   -> PostgreSQL
 
-server/internal/scheduler/jobs_maturity.go   (JobSpec，复用 sys_cron_executions 租约)
-  -> service.NextOccurrencesUTC               (cron 求解，既有)
-  -> maturity_snapshot rollup SQL             (advisory lock + 单事务)
+server/internal/scheduler/jobs_maturity.go
+  -> scheduler/service.NextOccurrencesUTC  # 既有 cron 求解
+  -> service.RollupMaturitySnapshot         # advisory lock + 单事务
 
-server/internal/governance/gen/generate-maturity-config.mjs  (生成器)
-  -> 读 knowledge-base 本仓 maturity-config.yaml
-  -> 吐只读 Go 副本 maturity_config_gen.go（committed，构建零跨仓依赖）
+server/internal/maturity/gen/generate-config.mjs
+  -> knowledge-base maturity-config.yaml (+ optional model-prices.yaml)
+  -> server/internal/maturity/config_gen.go # committed generated source；构建不读 sibling repo
 ```
 
-### 1.2 关键流程
+### 1.2 三条运行链路
 
-1. **快照流程（E1）**：scheduler 每 tick 调 `PlansForScope` hook 枚举 `(lastPlan, dbNow]` 内的 Asia/Shanghai 00:30 桶 → 对每个 plan 执行 `maturity_snapshot` rollup SQL（`pg_try_advisory_xact_lock` + 单事务内 upsert 与 `MAX(bucket_date)` 水位同提交）→ 一个任务内写 org/user/project 三类行。
-2. **读流程（E2）**：`GET /api/maturity/*` → handler 鉴权/解析 → service 读 `maturity_snapshot`（分数）+ 读时 join 既有事件表（原始值）→ 计分 → 返回 schema 化 JSON。
-3. **周报流程（E3）**：每周 schedule Autopilot → 读最近 `maturity_snapshot` 序列 + 治理板块异常 → 生成诊断 markdown 落盘 `docs/org-admin/maturity-review-{YYYY-Www}.md`（不经 git）→ 经 inbox 通知 Owner → 看板「建议」区渲染目录最新文件。
+1. **E1 快照**：scheduler 用 `PlansForScope` 枚举 Asia/Shanghai 每日 00:30 plan → handler 以 `PlanTime` 唯一推导前一自然日 `bucket_date` → 一次事务内按 org/user/project 写 `maturity_snapshot`。8 项原始值、治理护栏、8 项分/5 维分/总分都在 rollup 时固化；观察期或基线未批准时只写 `metrics`，`scores={}`。
+2. **E2 读取**：`GET /api/maturity/*` → workspace 鉴权 → 读已存 snapshot 返回 overall/项目排名/项目与用户趋势。**不得从原始事件重算历史分数**；只有不参与成熟度分数的 model Token 明细可按范围读 `task_usage`。
+3. **E3 周报**：既有 schedule Autopilot 在绑定 Org Admin 项目的 daemon `local_directory` 内写 markdown；同一任务完成时把结构化 report envelope 放进既有 `agent_task_queue.result` 并产生既有 assistant chat message。server API 只读数据库里的 envelope，**不跨进程直读 daemon 文件系统**；目录文件是原文历史，result/chat 是可查询投影与追问入口。
+
+### 1.3 权威与投影边界
+
+- `maturity-config.yaml` 是口径声明权威；`config_gen.go` 是 committed 只读副本。
+- `maturity_snapshot` 是可重建的操作态投影，但每行代表**该日、该 `config_rev` 下已固化的历史事实**；常规查询不得重算覆盖。
+- CR 状态权威仍是 knowledge-base 的 `_backlog.yml`/`cr.md`/审批证据；CR-A 只读 multica 中的 `cr`/pipeline 投影，绝不反写 CR 状态。
+- 周报原文权威是 Org Admin 项目目录文件；`agent_task_queue.result`/chat message 是 server 可见投影，按 `report_key` 去重展示。
 
 ---
 
 ## 2. 数据模型
 
-### 2.1 新增表：`maturity_snapshot`（迁移 375，唯一新表）
+### 2.1 `maturity_snapshot`：唯一新表，迁移 375–378
+
+PRD 的业务键 `(bucket_date, scope, scope_id)` 在多 workspace 架构下会让所有 org 行以 `scope_id='·'` 冲突；SDD 增补必需租户键 `workspace_id`，物理主键为 `(workspace_id, bucket_date, scope, scope_id)`。这是对 FR-4 的租户隔离细化，不新增业务实体、无 FK。
 
 ```sql
--- 375_maturity_snapshot.up.sql
+-- 375_maturity_snapshot_table.up.sql：仅建表，不在 CREATE TABLE 内隐式建任何索引
 CREATE TABLE maturity_snapshot (
-    bucket_date DATE        NOT NULL,
-    scope       TEXT        NOT NULL CHECK (scope IN ('org','user','project')),
-    scope_id    TEXT        NOT NULL,           -- org 固定 '·'；user/project 为对应 UUID 文本
-    metrics     JSONB       NOT NULL DEFAULT '{}',   -- 8 项子指标原始值（分子/分母/值）
-    scores      JSONB       NOT NULL DEFAULT '{}',   -- 8 项子指标 0-100 分；观察期内 '{}'
-    config_rev  TEXT        NOT NULL,           -- maturity-config.yaml 所在 commit SHA
-    created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
-    PRIMARY KEY (bucket_date, scope, scope_id)
+    workspace_id UUID        NOT NULL,
+    bucket_date  DATE        NOT NULL,
+    scope        TEXT        NOT NULL CHECK (scope IN ('org','user','project')),
+    scope_id     TEXT        NOT NULL,
+    metrics      JSONB       NOT NULL DEFAULT '{}',
+    scores       JSONB       NOT NULL DEFAULT '{}',
+    config_rev   TEXT        NOT NULL CHECK (config_rev ~ '^[0-9a-f]{40}$'),
+    created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CHECK (
+      (scope = 'org' AND scope_id = '·') OR
+      (scope IN ('user','project') AND scope_id <> '·')
+    )
 );
 ```
 
-- **`metrics` 结构**（每子指标一 key，含可解释的分子/分母）：
-  ```json
-  {
-    "token_intensity":          {"numerator": 123456, "denominator": 8, "value": 15432.0},
-    "ai_penetration":           {"numerator": 6,     "denominator": 8, "value": 0.75},
-    "cr_throughput_per_capita": {"value": 1.5},
-    "project_collab_scale":     {"value": 3},
-    "project_active_rate":      {"value": 0.66},
-    "prototype_direct_rate":    {"value": 0.80},
-    "team_agent_depth":         {"value": 0.40},
-    "process_completion_rate":  {"value": 0.90}
-  }
-  ```
-- **`scores` 结构**：`{"token_intensity": 82, "ai_penetration": 60, ...}`，8 项各 0–100；观察期内固定 `{}`。
-- **索引**（NFR-1：单独迁移文件、`CREATE INDEX CONCURRENTLY`、禁 FK）：
-  - 主键 `(bucket_date, scope, scope_id)` 已覆盖 `bucket_date` 前缀查询（org 趋势、`MAX(bucket_date)` 水位）。
-  - 迁移 376：`CREATE INDEX CONCURRENTLY idx_maturity_snapshot_scope_date ON maturity_snapshot (scope, scope_id, bucket_date DESC);` —— 服务项目排名（按 `scope='project'` 取最新桶）与建议区历史序列。
+迁移严格遵守“每个索引 CONCURRENTLY、单文件一语句，包括新表”：
 
-### 2.2 读时聚合依赖的既有表（只读，不新增采集）
+```sql
+-- 376_maturity_snapshot_identity.up.sql
+CREATE UNIQUE INDEX CONCURRENTLY maturity_snapshot_identity_uidx
+ON maturity_snapshot (workspace_id, bucket_date, scope, scope_id);
 
-| 表 | 迁移 | CR-A 用途 |
-|---|---|---|
-| `task_usage` | 032 | Token 强度/趋势：`input_tokens`+`output_tokens`+`cache_read_tokens`+`cache_write_tokens`，`created_at` |
-| `agent_task_queue` | 001(127) + 117 + 368 + 366 | `initiator_user_id`（按人归因，**不用无 user 维的 `task_usage_hourly`**）、`project_id`（项目聚合）、`cr_id`/`pipeline_node_run_id`（ACM 共享队列归属） |
-| `cr` | 362 | SII 归档 CR 数（`status='archived'`）；OFI 协作规模读 `owners`(JSONB) |
-| `cr_sync_event` | 362 | 状态推进事件（OFI 项目活跃率）、追溯完整率（治理板块） |
-| `approval_record` | 362 | 审批时延 P50/P90（`created_at` 相对对应 CR 到达审批门） |
-| `pipeline_run` / `pipeline_node_run` | 366 | EPC 原型直出率（`attempt=1 AND status='passed'`，已由 `governance/gate_projection.go` 写入） |
-| `activity_log` | 001(156) | 越权尝试次数（`actor_type/action/details`，P1 D7 事件，gitguard FORBIDDEN 拒绝） |
-| `feedback` | 057 | 保留（CR-A 不直接消费，供 CR-D 资产复用率） |
+-- 377_maturity_snapshot_primary_key.up.sql
+ALTER TABLE maturity_snapshot
+ADD CONSTRAINT maturity_snapshot_pkey
+PRIMARY KEY USING INDEX maturity_snapshot_identity_uidx;
 
-### 2.3 口径声明：`maturity-config.yaml`（knowledge-base 本仓）
-
-承载 5 维 8 项子指标的**权重、`floor`、`target`、观察期**，集中于此不硬编码。生成器吐只读 Go 副本 `maturity_config_gen.go`（`server/internal/governance/`），文件头记源 commit SHA（= `config_rev`）。声明结构（示意，具体字段以实现为准）：
-
-```yaml
-version: 1
-observation_weeks: 4
-dimensions:
-  - key: AIF   # AI 采用强度
-    metrics: [token_intensity, ai_penetration]
-  - key: SII   # 超级个体指数（CR-A 仅人均 CR 吞吐）
-    metrics: [cr_throughput_per_capita]
-  - key: OFI   # 组织流程智能
-    metrics: [project_collab_scale, project_active_rate]
-  - key: EPC   # 工程原型直出
-    metrics: [prototype_direct_rate]
-  - key: ACM   # 智能体协作成熟度
-    metrics: [team_agent_depth, process_completion_rate]
-metrics:
-  token_intensity:          { weight: 0.20, floor: 1000, target: 20000 }
-  ai_penetration:           { weight: 0.10, floor: 0.2,  target: 0.8 }
-  cr_throughput_per_capita: { weight: 0.10, floor: 0.2,  target: 1.5 }
-  project_collab_scale:     { weight: 0.10, floor: 2,    target: 8 }
-  project_active_rate:      { weight: 0.10, floor: 0.3,  target: 0.8 }
-  prototype_direct_rate:    { weight: 0.15, floor: 0.3,  target: 0.9 }
-  team_agent_depth:         { weight: 0.15, floor: 0.1,  target: 0.6 }
-  process_completion_rate:  { weight: 0.10, floor: 0.3,  target: 0.95 }
+-- 378_maturity_snapshot_scope_date.up.sql
+CREATE INDEX CONCURRENTLY maturity_snapshot_scope_date_idx
+ON maturity_snapshot (workspace_id, scope, scope_id, bucket_date DESC);
 ```
 
-> 权重/阈值初值仅作占位示意，最终以 `maturity-config.yaml` 落盘值为准；生成器 `--check` 保证声明与 Go 副本零漂移。
+Down 顺序：378 `DROP INDEX CONCURRENTLY` → 377 `DROP CONSTRAINT`（同步移除其 index）→ 376 `DROP INDEX CONCURRENTLY IF EXISTS` → 375 `DROP TABLE`。所有文件先过现有 migration lint，再在真实 PostgreSQL 执行 up/down/up。
+
+### 2.2 JSON 契约
+
+`metrics` 固化 8 项原始值和治理护栏；`scores` 固化 8 项分、5 维分与总分。键集合由生成配置与 Go 类型共同约束，写入前 service 校验，不接收外部任意 JSON。
+
+```ts
+type DataStatus = 'ready' | 'empty' | 'unavailable' | 'not_applicable'
+type MetricValue = {
+  value: number | null
+  numerator: number | null
+  denominator: number | null
+  unit: 'tokens_per_member_day' | 'ratio' | 'cr_per_member' | 'members_per_cr'
+      | 'count' | 'milliseconds'
+  data_status: DataStatus
+  reason: string | null
+}
+
+type SnapshotMetricsV1 = {
+  schema: 'ai-first.maturity-metrics/v1'
+  metric_values: Record<MetricKey, MetricValue> // 8 个固定 MetricKey，完整不缺键
+  governance: Record<GovernanceMetricKey, MetricValue> // 6 个固定 key
+}
+
+type SnapshotScoresV1 = {
+  schema: 'ai-first.maturity-scores/v1'
+  metric_scores: Record<MetricKey, number>       // 8 项，0..100
+  dimension_scores: Record<DimensionKey, number> // AIF/SII/OFI/EPC/ACM，0..100
+  total_score: number                            // 0..100
+}
+```
+
+- **观察期/未校准**：`metrics` 正常写全；`scores` 必须为 JSON 对象 `{}`，不是带 `null` 的伪分数。
+- **治理未测量**：`metrics.governance.<key>` 仍有完整键，但 `value=null,data_status='unavailable',reason=<machine-readable reason>`；“未测量”绝不伪装成 0。
+- **scope 适用性**：org/project 固化可计算指标；user 仅用于 Token/任务趋势，CR-A 不暴露 user ranking 或 user score，非适用指标写 `not_applicable`，`scores={}`。CR-D 若启用个人榜必须另行设计/审批，不复用 CR-A API 偷开能力。
+
+### 2.3 既有数据源与 join 键
+
+| 数据源 | CR-A 使用方式 |
+|---|---|
+| `member(workspace_id,user_id)` | v1 “活跃成员”定义为 rollup 时仍存在的 member 行；表无 active/status 历史，离组即删除。该限制写入指标定义页；快照固化后不追溯重算 |
+| `task_usage` + `agent_task_queue` + `agent` | `task_usage.task_id=agent_task_queue.id`；队列表本身无 `workspace_id`，必须 `agent_task_queue.agent_id=agent.id AND agent.workspace_id=:workspace` 限租户；四列 Token 全计；`initiator_user_id` 归人；`project_id` 或 `issue_id→issue.project_id` 归项目 |
+| `project` / `issue` / `comment` | CR 项目归属：`cr.shell_issue_id→issue.project_id`；评论者：`comment.issue_id=cr.shell_issue_id` 且 `author_type='member'`；Org Admin 系统项目通过 `project.settings.system_key` 排除业务项目分母 |
+| `cr` + `cr_sync_event` | 先 `cr.workspace_id=:workspace`，再以 `cr.cr_id=cr_sync_event.cr_id` 读归档/状态时间；不可只按无 workspace_id 的 `cr_sync_event.cr_id` 裸查 |
+| `pipeline_run` / `pipeline_node_run` | 以 `pipeline_run.workspace_id=:workspace AND pipeline_run.cr_id=cr.cr_id` 限租户；Review gate 与 4 pipeline 完成情况 |
+| `approval_record` | 以 `workspace_id+cr_id+stage` join 审批；只计 `decision='approve'` |
+| `activity_log` | `workspace_id` 限租户；`action='aifirst.evidence_drift'` 和 `action='aifirst.gitguard_denied'` |
+| `agent_task_queue.result` + chat | E3 report envelope/server 查询投影与追问入口；不新增报告表 |
+
+### 2.4 配置声明与生成器
+
+`maturity-config.yaml` 的精确类型如下；SDD 不发明实现阈值，具体数值只能由该声明文件提供：
+
+```ts
+type MetricConfig = { weight: number; floor: number; target: number }
+type MaturityConfigV1 = {
+  schema: 'ai-first.maturity-config/v1'
+  observation_weeks: 4
+  calibration_status: 'observing' | 'calibrated' // CR-D 人审后才能改 calibrated
+  dimensions: {
+    AIF: ['token_intensity', 'ai_penetration']
+    SII: ['cr_throughput_per_capita']
+    OFI: ['project_collab_scale', 'project_active_rate']
+    EPC: ['prototype_direct_rate']
+    ACM: ['team_agent_depth', 'process_completion_rate']
+  }
+  metrics: Record<MetricKey, MetricConfig> // 恰好覆盖 8 个固定 MetricKey
+}
+```
+
+生成器硬校验：8 key 齐全且无未知 key；每项 `0<weight<=1`；`sum(weights)=1`（允许 `1e-9` 浮点误差）；`target>floor`；`observation_weeks=4`；`calibration_status∈{observing,calibrated}`。读取文本先 `\r\n→\n`；解析不到必填块直接 hard fail，不得降级为空；`--check` 重生成后字节 diff 非零退出。`config_rev` 由 `git -C <source-repo> rev-parse HEAD` 取得，若源文件相对 HEAD dirty/untracked 则生成器拒绝，避免 SHA 与内容不匹配。
+
+可选 `model-prices.yaml` 与 config 同仓、同生成器生成只读 price map；未知模型或文件缺失时 `estimated_cost_usd=null,data_status='unavailable'`，UI 显示“估算不可用”，不得猜价格。改价目表同样走 CR + 生成副本。
 
 ---
 
 ## 3. 接口契约
 
-### 3.1 HTTP API（全员可读，workspace 鉴权，`X-Workspace-ID`）
+### 3.1 通用类型
 
-注册于 `server/cmd/server/router.go`（chi.Router，沿 `r.Get("/api/config", ...)` 同区段），handler 落 `server/internal/handler/maturity.go`，业务聚合落 `server/internal/service/maturity/`。所有响应经 `packages/core/api/schema.ts` 的 zod `parseWithFallback` 解析。
+所有端点要求登录用户属于 `X-Workspace-ID` 指定 workspace；query key 必含 `workspaceId`。日期为 Asia/Shanghai 自然日的 ISO `YYYY-MM-DD`；日期范围两端含、默认最近 28 天、最大 366 天。响应由 `packages/core/api/schema.ts` zod schema 解析，`parseWithFallback` 覆盖 malformed payload。
 
-| 端点 | 方法 | 契约（示意响应字段） | 说明 |
-|---|---|---|---|
-| `/api/maturity/overall` | GET | `{ config_rev, observation_active, total_score, dimensions: { AIF:{score, metrics:{...}}, ... } }` | 总分 + 8 项子指标 + 观察期状态 |
-| `/api/maturity/token-trend` | GET | `{ dimension: 'project'\|'user'\|'model', series: [{ date, value }] }` | 按日趋势，`?dimension=&range=` 下钻 |
-| `/api/maturity/rankings` | GET | `{ scope: 'project', items: [{ scope_id, name, score, ... }] }` | 仅 `scope=project`；`scope=user` 返回 400 `{error:'unsupported_scope'}`，不泄露个人榜 |
-| `/api/maturity/suggestions` | GET | `{ latest: { week, path, markdown }, has_history }` | 渲染 `docs/org-admin/` 最新文件；空目录返回空态非错误 |
-| `/api/maturity/suggestions/history` | GET | `{ items: [{ week, path }] }` | 按周次返回历史文件序列 |
-| `/api/maturity/config` | GET | `{ config_rev, observation_weeks, dimensions, metrics }` | 当前口径，全员可读，无需 Owner 权限 |
+```ts
+type MetricKey =
+  | 'token_intensity' | 'ai_penetration' | 'cr_throughput_per_capita'
+  | 'project_collab_scale' | 'project_active_rate' | 'prototype_direct_rate'
+  | 'team_agent_depth' | 'process_completion_rate'
+type DimensionKey = 'AIF' | 'SII' | 'OFI' | 'EPC' | 'ACM'
+type GovernanceMetricKey =
+  | 'gate_first_pass_rate' | 'evidence_drift_count' | 'traceability_complete_rate'
+  | 'approval_latency_p50_ms' | 'approval_latency_p90_ms' | 'forbidden_attempt_count'
+type Observation = {
+  active: boolean
+  calibration_status: 'observing' | 'calibrated'
+  observation_weeks: 4
+  first_bucket_date: string
+  elapsed_days: number
+}
+type ApiError = { error: string; message: string; request_id: string }
+```
 
-- **治理板块数据**：并入 `overall` 响应单独 `governance` 字段（不进 `total_score`）：`{ gate_first_pass_rate, evidence_drift_count, traceability_complete_rate, approval_latency_p50_ms, approval_latency_p90_ms, forbidden_attempts }`。
-- **API 兼容**（CLAUDE.md）：新增字段 additive；UI 全部 `optional-chain + default`，zod schema 含 malformed-response 测试。
+通用错误：`401 unauthenticated`、`403 workspace_forbidden`、`500 internal_error`。空数据是 200 + 结构化 empty，不用 404。
 
-### 3.2 事件/调度契约
+### 3.2 `GET /api/maturity/overall`
 
-- **快照 JobSpec**（`jobs_maturity.go`，`JobName = "maturity_snapshot"`）：`Cadence: 0`（hook-driven）+ `PlansForScope` 枚举 `(lastPlan, dbNow]` 内 `cron '30 0 * * *'` 经 `service.NextOccurrencesUTC(expr, "Asia/Shanghai", after, now)` 求解 + `CatchUpMode: CatchUpEveryPlan` + `MaxPlansPerTick: 7` + `CatchUpWindow: 7×24h` + `Scopes: StaticScopes(global)`。余项照抄 `jobs_autopilot.go` 的 `AutopilotScheduleDispatchJob`（`RunTimeout/StaleTimeout/HeartbeatInterval/AllowStaleReentry:true/MaxAttempts:3/RetryBackoff`）。
-- **周报 schedule**：新增 `kind='schedule'` autopilot trigger（cron 每周一 09:00 Asia/Shanghai），复用 `AutopilotScheduleDispatchJob` 既有调度与幂等（`sys_cron_executions` 唯一键 + `autopilot_trigger` 部分唯一索引），挂内置 skill `maturity-weekly-report`。
-- **无新事件种类**：CR-A 不新增采集管道、不新增 outbox/队列抽象（NFR-2）。
+Query：`date?: YYYY-MM-DD`（缺省取该 workspace 最新 org bucket）。
+
+```ts
+type MaturityOverallResponse = {
+  bucket_date: string | null
+  config_rev: string | null
+  observation: Observation | null
+  total_score: number | null
+  dimensions: Array<{
+    key: DimensionKey
+    score: number | null
+    data_status: DataStatus
+    metrics: Array<{ key: MetricKey; raw: MetricValue; score: number | null }>
+  }>
+  governance: Array<{ key: GovernanceMetricKey; datum: MetricValue }>
+  data_status: 'ready' | 'empty'
+}
+```
+
+观察期或 `calibration_status!='calibrated'` 时 `total_score=null`、所有 score=null、raw 正常；不得临时重算。
+
+### 3.3 `GET /api/maturity/token-trend`
+
+Query：`dimension=project|user|model`，`dimension_id?: UUID|string`，`from?`，`to?`，`include_cost?: boolean`。project/user 指定 id 时返回单系列，未指定时返回 workspace 内可见系列；model 系列可选具体 model。project/user 读 snapshot raw；model 明细按范围读 `task_usage`，只算 Token/估算成本，不生成成熟度分。
+
+```ts
+type TokenTrendResponse = {
+  dimension: 'project' | 'user' | 'model'
+  from: string
+  to: string
+  series: Array<{
+    id: string
+    label: string
+    points: Array<{
+      date: string
+      tokens: number
+      estimated_cost_usd: number | null
+      cost_status: 'estimated' | 'unavailable'
+    }>
+  }>
+  data_status: 'ready' | 'empty'
+}
+```
+
+无效日期/范围/维度返回 400 `invalid_query`。
+
+### 3.4 `GET /api/maturity/rankings`
+
+Query：`scope=project`（唯一合法值）、`date?`、`metric?: MetricKey|'total'`、`limit?:1..100`（默认20）、`cursor?: opaque`。观察期 UI 默认按选中 raw metric 排名；`metric=total` 且 scores 为空时 200 返回 item `value=null,data_status='unavailable'`，不伪造总分。
+
+```ts
+type ProjectRankingsResponse = {
+  scope: 'project'
+  bucket_date: string | null
+  metric: MetricKey | 'total'
+  items: Array<{
+    rank: number
+    project_id: string
+    project_name: string
+    value: number | null
+    data_status: DataStatus
+  }>
+  next_cursor: string | null
+  data_status: 'ready' | 'empty'
+}
+```
+
+`scope=user` 或任意其他值返回 400 `ApiError{error:'unsupported_scope',message:'only project rankings are available'}`，`request_id` 填当前请求 ID；服务层没有 user rankings query，不能只靠 UI 隐藏。
+
+### 3.5 `GET /api/maturity/suggestions` 与 `/history`
+
+server 查询完成态 `agent_task_queue.result` 中 `schema='ai-first.maturity-report/v1'` 的 envelope，不读取 daemon path。
+
+```ts
+type MaturityReport = {
+  report_key: string                 // `${workspace_id}:${YYYY-Www}`
+  week: string                       // ISO YYYY-Www
+  generated_at: string               // RFC3339
+  relative_path: string              // docs/org-admin/maturity-review-{YYYY-Www}.md
+  markdown: string                   // 与落盘内容同 SHA-256
+  content_sha256: string
+  source_task_id: string
+  chat_session_id: string            // “追问”跳转既有 Team Agent 对话
+  config_revs: string[]
+}
+type SuggestionResponse = { latest: MaturityReport | null; data_status: 'ready'|'empty' }
+type SuggestionHistoryResponse = {
+  items: MaturityReport[]
+  next_cursor: string | null
+  data_status: 'ready'|'empty'
+}
+```
+
+history query：`limit?:1..52`（默认12）、`cursor?:opaque`。重复 `report_key` 取 `completed_at` 最新且 SHA 有效的一条；目录文件仍保留，数据库不新增唯一约束。
+
+### 3.6 `GET /api/maturity/config`
+
+```ts
+type MaturityConfigResponse = {
+  config_rev: string
+  observation_weeks: 4
+  calibration_status: 'observing' | 'calibrated'
+  dimensions: Array<{ key: DimensionKey; metrics: MetricKey[] }>
+  metrics: Array<{
+    key: MetricKey
+    weight: number
+    floor: number
+    target: number
+    unit: MetricValue['unit']
+    known_gameability: string
+  }>
+  price_config_rev: string | null
+}
+```
+
+全员可读，无 Owner-only 分支；无 user ranking 开关字段。
+
+### 3.7 调度与报告 envelope 契约
+
+- **快照 JobSpec**：`Name='maturity_snapshot'`、`Cadence:0`、`PlansForScope` 用 `service.NextOccurrencesUTC('30 0 * * *','Asia/Shanghai',after,now)`、`CatchUpEveryPlan`、`MaxPlansPerTick:7`、`CatchUpWindow:7*24h`、`StaticScopes(global)`；其余 timeout/retry/heartbeat 照抄 `AutopilotScheduleDispatchJob`。
+- **PlanTime 语义**：每个 plan 只负责 `plan_time` 所在本地日的**前一日** bucket；handler 不再从水位循环到“当前日”，避免 `PlansForScope` 与 handler 双重补偿。`MAX(bucket_date)` 仅作 `< target`/已完成 no-op 水位判断；缺口由 CatchUpEveryPlan 枚举。
+- **周报 schedule**：Org Admin 项目每周一 09:00 Asia/Shanghai 触发（运营可在既有 Autopilot UI 改 cron）；复用 `sys_cron_executions(job_name,scope_kind,scope_id,plan_time)` 幂等。
+- **Report result**：任务结束返回 `agent_task_queue.result={schema,report_key,week,generated_at,relative_path,markdown,content_sha256,chat_session_id,config_revs}`。daemon 先原子写临时文件并 rename，再完成任务；server 验证 SHA 后持久化 result/chat。重试使用同一 `report_key`，API 去重。
 
 ---
 
 ## 4. 关键算法与流程
 
-### 4.1 计分（`service/maturity/score.go`）
+### 4.1 时间窗、租户与空分母统一规则
+
+- `bucket_date=d`：Asia/Shanghai `[d 00:00, d+1 00:00)`，SQL 参数预先转换成 UTC `[from_utc,to_utc)`，所有 timestamp 过滤左闭右开。
+- 每个 SQL 必须先建立租户边界：有 `workspace_id` 的表直接谓词过滤；无该列的 `agent_task_queue` 必须先 join `agent.workspace_id=:workspace`，无该列的 `cr_sync_event` 必须先 join 已限定 workspace 的 `cr`。
+- “活跃成员数”v1 = rollup 时 `member` 当前行数（表无历史 active 字段）；“全体成员数”同义。`0` 分母返回 `value=null,data_status='empty'`，不做除零、不把 null 当 0。
+- 项目集合 = 该 workspace `project.status!='cancelled'` 且 `settings->>'system_key' IS NULL` 的业务项目；Org Admin 系统项目不进入成熟度分母。
+- CR 项目归属 = `cr.shell_issue_id→issue.project_id`；无法归属的 CR 只计 org，不计 project。
+
+### 4.2 八项子指标（rollup 时计算并固化）
+
+1. **Token 强度**：本地日内 `SUM(input_tokens+output_tokens+cache_read_tokens+cache_write_tokens) / member_count / 1天`；`task_usage.task_id=agent_task_queue.id`，并经 `agent_task_queue.agent_id=agent.id AND agent.workspace_id=:workspace` 限租户；按 `initiator_user_id` 归人、按 `COALESCE(agent_task_queue.project_id,issue.project_id)` 归项目；不读无 user 维的 `task_usage_hourly`。
+2. **AI 渗透率**：同样先经 `agent.workspace_id=:workspace` 限租户；本地日内 `COUNT(DISTINCT initiator_user_id) / member_count`；“发起过”按 task `created_at`，不以最终成功状态过滤。
+3. **人均 CR 吞吐**：本地日内首次进入 `archived` 的 distinct CR 数 / member_count；从 `cr_sync_event.event_kind='status'` 且 payload.to/status=`archived` 取时间，先 join workspace-scoped `cr` 去重。
+4. **项目协作规模**：对窗口内归档 CR 分别取 canonical user 集合并求人数，再平均：`cr.owners` 中 user id ∪ `comment.author_id`（member only）∪ `agent_task_queue.initiator_user_id`（`q.cr_id=cr.cr_id OR q.issue_id=cr.shell_issue_id`）。project scope 再按 `issue.project_id` 过滤；人数 `<2` 的 raw 仍存，计分由配置 floor/target 使其不加分。
+5. **项目活跃率**：近 14 个本地自然日内存在 task `created_at` 或 CR status `occurred_at` 的 distinct 业务 project / 全部业务 project；任务项目优先 `q.project_id`，缺失时 `q.issue_id→issue.project_id`；CR 项目走 shell issue。
+6. **原型直出率**：当期归档 CR 中，**全部已投影 review gate**（`requirement`、`tech-design`、`code`，对应 `governance.ReviewGateNodes`）均在 `attempt=1,status='passed'` 的 CR 数 / 当期归档 CR 数。不是 passed node/全部 node；缺任一必需 review gate 即不计一次通过。
+7. **Team Agent 使用深度**：先以 `agent.workspace_id=:workspace` 限租户；当期 `agent_task_queue` 中 `(cr_id IS NOT NULL OR issue_id IS NOT NULL)` 的任务数 / 全部任务数；按共享队列来源键，**不用 `pipeline_node_run_id` 替代 `issue_id`**。
+8. **流程完整率**：当期归档 CR 中同时存在 status=`completed` 的 4 个 `pipeline_run.pipeline_id`：`requirement-authoring`、`architecture-design`、`code-implementation`、`feature-writeback` 的 CR 数 / 当期归档 CR 数。
+
+### 4.3 治理护栏（存入 org snapshot，不进总分）
+
+| key | 口径 | 可用性 |
+|---|---|---|
+| `gate_first_pass_rate` | 当期 completed review gate 中 attempt=1 且 passed / 当期 completed review gate 数 | 当前 ready |
+| `evidence_drift_count` | `activity_log.workspace_id=:ws AND action='aifirst.evidence_drift' AND created_at∈window` | 当前 ready |
+| `traceability_complete_rate` | `traceability.yml` 五段齐全的归档 CR / 归档 CR | **CR-C trace event 通道未交付前 unavailable**，reason=`trace_channel_pending_cr_c`；CR-A 不扫描 daemon/git、不实现 CR-C |
+| `approval_latency_p50_ms` / `p90` | 对当期 approval：对应 stage review node `completed_at` → `approval_record.created_at` 的正时长分位数 | 当前 ready；无样本 empty |
+| `forbidden_attempt_count` | `activity_log.workspace_id=:ws AND action='aifirst.gitguard_denied' AND created_at∈window` | 当前 ready |
+
+UI 始终渲染 6 个字段（审批时延 P50/P90 可合并一张卡）；unavailable 显示“未测量/数据通道待 CR-C”，不显示 0，不影响 `total_score`。
+
+### 4.4 计分与观察期
 
 ```text
-score(x) = clamp(100 * (x - floor) / (target - floor), 0, 100)
-total_score = Σ_i weight_i * score_i          // 8 项，权重来自 maturity_config_gen.go
+metric_score_i = clamp(100 * (x_i - floor_i) / (target_i - floor_i), 0, 100)
+dimension_score_d = Σ(metric_score_i * metric_weight_i) / Σ(metric_weight_i in dimension d)
+total_score = Σ(metric_score_i * metric_weight_i)  # 全局 weight 和=1
 ```
 
-### 4.2 八项子指标（读时聚合 SQL 伪码，`service/maturity/`）
+`observation_active = elapsed_days < 28 OR calibration_status != 'calibrated'`。只要为 true，rollup 写 `scores={}`；第 4 周周报只提出 P10/P75 建议，不写 config。CR-D 人审配置改为 calibrated 后，**仅新 bucket** 写分数；旧行保持 `{}`，趋势跨 `config_rev` 标断点。
 
-- **Token 强度**：`SUM(t.input_tokens+t.output_tokens+t.cache_read_tokens) / 活跃成员数`，`task_usage t JOIN agent_task_queue q ON t.task_id=q.id`，按 `q.initiator_user_id` 归人（**不走无 user 维的 `task_usage_hourly`**，R-1）。
-- **AI 渗透率**：`COUNT(DISTINCT q.initiator_user_id WHERE 当期发起≥1 Agent 任务) / 全体成员数`。
-- **人均 CR 吞吐**：`COUNT(cr WHERE status='archived') / 活跃成员数`。
-- **项目协作规模**：`cr.owners ∪ comment ∪ agent_task_queue` 参与者数（目标区间计分，<2 不加分）。
-- **项目活跃率**：`COUNT(DISTINCT project WHERE 近14天有 cr_sync_event 状态推进或 agent_task_queue 任务) / 全部项目`。
-- **原型直出率**：`COUNT(pipeline_node_run WHERE attempt=1 AND status='passed') / COUNT(全部 pipeline_node_run)`（读 `governance/gate_projection.go` 已写入的投影，R-6）。
-- **Team Agent 使用深度**：`COUNT(agent_task_queue WHERE cr_id IS NOT NULL OR pipeline_node_run_id IS NOT NULL) / 全部任务`（共享队列归属）。
-- **流程完整率**：`COUNT(cr WHERE 走完 4 条必跑 pipeline 归档) / COUNT(cr WHERE status='archived')`。
-
-### 4.3 快照 rollup（`service/maturity/rollup.go`）
+### 4.5 Rollup 事务与幂等
 
 ```text
-handler(ctx):
-  SELECT pg_try_advisory_xact_lock(<maturity lock key>)   -- 幂等 + 并发互斥
-  in ONE transaction:
-    watermark = SELECT MAX(bucket_date) FROM maturity_snapshot  -- 水位自带，不复用 task_usage_hourly_rollup_state
-    for each day in (watermark, target_date]:                    -- 有界窗口，target=前一日 Asia/Shanghai
-        for scope in [org, user, project]:
-            metrics = compute_metrics(day, scope)                -- 读时聚合
-            scores  = observation_active ? '{}' : score(metrics)
-            INSERT ... ON CONFLICT (bucket_date, scope, scope_id) DO NOTHING  -- 或按水位语义
-            config_rev = maturity_config_gen.go 记录的原 SHA
+Rollup(planTime, workspace):
+  target = previousLocalDate(planTime, Asia/Shanghai)
+  BEGIN
+  pg_try_advisory_xact_lock(hash('maturity_snapshot', workspace)) or return retryable-busy
+  if MAX(bucket_date WHERE workspace_id=workspace) >= target: COMMIT no-op
+  compute all org/user/project SnapshotMetricsV1 for target
+  validate metric keys/status/config_rev
+  scores = observation_active ? {} : Score(metrics, generatedConfig)
+  INSERT rows with ON CONFLICT (workspace_id,bucket_date,scope,scope_id) DO NOTHING
+  assert org row inserted-or-existed and all planned scope rows are valid
   COMMIT
 ```
 
-- 失败回滚时快照行与 `MAX(bucket_date)` 同事务回滚，**水位不前移**（AC-5）。
-- 观察期内 `scores='{}'`、`metrics` 照常（AC-6）。
-- `CatchUpEveryPlan` 保证停机 3 天恢复后一个 tick 补 3 桶，最多 7 桶（AC-7）。
+- 同一 target 的所有 scope 行在一个事务；任一 SQL/JSON 校验失败则全部回滚，`MAX(bucket_date)` 不前移。
+- handler 每 plan 只写一个 target；停机 3 天由 scheduler 枚举 3 个 plan，最多 7 个，不在 handler 二次扩窗。
+- 历史不可变：常规路径禁止 `DO UPDATE`；配置变化只影响后续行。
 
-### 4.4 周报生成（内置 skill `maturity-weekly-report`）
+### 4.6 Org Admin 初始化与周报闭环
 
-```text
-1. 读最近 N 周 maturity_snapshot(scope='org') 序列 + governance 字段
-2. 检测治理异常（evidence_drift>0 / 时延 P90 超阈值 / 越权尝试>0）
-3. 按「四收益一成本」模板渲染：个人效率/团队交付/知识复利/风险收益 + 成本 五节
-4. 第 4 周追加：基于四周实测分布算 floor≈P10、target≈P75 建议（不写 config，仅提请人审）
-5. 落盘 docs/org-admin/maturity-review-{YYYY-Www}.md（Org Admin Workspace 项目工作区，不经 git）
-6. 经 inbox 通知 Owner
-```
+- `project.settings.system_key='org-admin-workspace'` 作为逻辑幂等键；初始化事务按 workspace 取 advisory lock，SELECT 后 INSERT，避免标题重名误认。项目无新增列/索引。
+- Agent `system_key='org-admin'`，复用 `CreateMikaAgent` 的 `(workspace,owner,runtime,system_key)` 幂等语义；项目 lead 指向该 Agent。
+- 部署/首次使用通过既有 project-resource API 为项目绑定 `type='local_directory'`（daemon_id + local_path）。未绑定时周报状态为 unavailable 并在 UI 给出现有绑定入口，不假装已生成。
+- schedule task 写 `docs/org-admin/maturity-review-{YYYY-Www}.md`，模板固定为个人效率/团队交付/知识复利/风险收益/成本五节；第 4 周附 8 项 P10/P75 建议。
+- 完成 envelope 进入 `agent_task_queue.result` 与 assistant chat；建议 API 从 result 读，追问按钮用 `chat_session_id` 进入既有 Team Agent 消息流。
 
 ---
 
 ## 5. 技术选型与替代方案
 
-| 决策 | 选择 | 替代方案及否决理由 |
+| 决策 | 选择 | 否决方案与原因 |
 |---|---|---|
-| 配置生成器 | 照抄 `governance/gen/generate-transitions.mjs`：读 yaml → 吐只读 Go 副本（文件头记源 SHA）→ committed → `--check` 重生成 diff 漂移非零退出 | 运行时读 yaml / 跨仓文件依赖：破坏 NFR-4「构建 multica 不 checkout 本仓」；硬编码散落：无法治理版本化口径 |
-| 快照调度 | `JobSpec{Cadence:0, PlansForScope}` hook（照抄 autopilot）| 固定 `Cadence:24h`：无法表达固定本地 00:30 时区语义；`CatchUpLatestOnly`：停机后永久缺桶（NFR-3） |
-| 水位 | `MAX(bucket_date)` 自带 | 复用 `task_usage_hourly_rollup_state`：跨任务耦合、观察期语义不同 |
-| 存储 | **1 张** `maturity_snapshot`（scope 泛化 + JSONB）| 每 scope 一张表 / 强类型列：8 项指标列会随口径演进漂移 DDL，JSONB + 生成器契约更稳；读时纯聚合：无法保证「当时口径下的分数」历史不可变（唯一建表理由） |
-| 读侧原始值 | 读时 join 既有事件表 | 快照表冗余原始值：违反「唯一新表」原则，且 raw 值可按当日口径重算 |
-| 越权尝试 | 读 `activity_log`（P1 D7 已落）| 新采集管道：违反「P3 不新增采集」主线 |
-| 成本列 | 可编辑 `model-prices.yaml`（不精确，UI 标「估算」）| 精确计价：P3 范围外；硬编码价目：不可维护 |
+| 配置消费 | knowledge-base yaml → 零依赖生成器 → committed Go（CRLF 规范化、hard fail、dirty guard、`--check`） | runtime 读 sibling repo：破坏独立构建；手维版本号：易漂移 |
+| 快照主键 | 375 表、376 unique concurrent、377 PK using index、378 query index | inline PRIMARY KEY：隐式非 concurrent index，违反 CLAUDE.md |
+| 调度 | `Cadence:0 + PlansForScope + CatchUpEveryPlan`，每 plan 一日 | 固定 24h：本地时区漂移；LatestOnly：永久缺桶；handler 再循环：双重补偿 |
+| 历史读取 | rollup 固化 metrics/scores；overall/ranking/report 读 snapshot | 读时重算分数：口径变更会改写历史，是建快照表要解决的问题 |
+| 报告跨进程 | daemon 写文件 + 既有 task result/chat 回传；API 读 DB envelope | server 直读 daemon `local_directory`：跨进程/跨机器不可达；新增报告表：违反唯一新表 |
+| 治理追溯 | CR-C 前显式 unavailable | CR-A 扫 git/新增 trace event：侵入 CR-C 边界且重复建设 |
+| 成本 | 可选 knowledge-base `model-prices.yaml` 生成 price map，未知=null | 硬编码/猜价：不可治理且误导 |
 
 ---
 
 ## 6. FR 到技术实现映射
 
-| FR | 技术实现条目 |
+| FR | 技术实现 |
 |---|---|
-| FR-1 | `maturity-config.yaml`（本仓）+ `maturity_config_gen.go`（只读副本），权重/阈值/观察期集中 |
-| FR-2 | `generate-maturity-config.mjs`（照抄 generate-transitions.mjs 模式：`--check` + 源 SHA 头 + `\r\n→\n` 规范化） |
-| FR-3 | `config_rev = maturity-config.yaml` 所在 commit SHA（生成器用 `git rev-parse HEAD` 取，同 transitions 先例） |
-| FR-4 | 迁移 375 `maturity_snapshot`（DDL 见 §2.1）；迁移 376 索引（CONCURRENTLY） |
-| FR-5 | `jobs_maturity.go` JobSpec（Cadence:0 + PlansForScope + CatchUpEveryPlan + MaxPlansPerTick:7 + StaticScopes(global)） |
-| FR-6 | rollup SQL：`pg_try_advisory_xact_lock` + 有界窗口 + 单事务 upsert/水位同提交，水位 `MAX(bucket_date)` |
-| FR-7 | 观察期 `scores='{}'`；历史行不可变，口径变更只影响新行，趋势图标注 `config_rev` 断点 |
-| FR-8 | 单任务内遍历 org/user/project 写多行，`Scopes: StaticScopes(global)` 不按 scope 展开调度 |
-| FR-9 | `packages/views/dashboard/maturity/` 顶部：日期区间 + Owner mode 标记 + 「每日 00:30 更新前一天」 |
-| FR-10 | 统计条（活跃成员/Token 总消耗/可选成本列）；成本读 `model-prices.yaml` 标「估算」 |
-| FR-11 | `/api/maturity/token-trend` + 按日趋势图（project/user/model 下钻） |
-| FR-12 | `/api/maturity/rankings` 仅 `scope=project`；无个人榜/开关/全员通知 |
-| FR-13 | 观察期复用 `dim-segmented` + `usage-trend-card` + `leaderboard` 三组件（`packages/views/dashboard/components/`），无雷达图 |
-| FR-14 | `service/maturity/score.go` + 8 项聚合查询（§4.2），`score=clamp(100(x−floor)/(target−floor))` |
-| FR-15 | governance 字段（§3.1），不进 total_score |
-| FR-16 | UI 层数量/质量成对并排渲染 + 指标定义页 + 页脚立场；指标定义写「已知可刷性」 |
-| FR-17 | §3.1 六端点；`rankings?scope=user` 返回 400 不支持 |
-| FR-18 | 主应用 route（`packages/views` + `apps/web/app` 与 desktop router 各加 platform wiring），无独立 iframe |
-| FR-19 | 内置项目 Org Admin Workspace + 内置 Agent（`system_key='org-admin'`，照抄 `mika_agent.go` `CreateMikaAgent` 幂等模式），初始化幂等 |
-| FR-20 | 周 schedule Autopilot（cron 每周一）+ 内置 skill `maturity-weekly-report` 落盘 + inbox 通知 |
-| FR-21 | 周报模板「四收益一成本」五节，每节引用对应板块指标 |
-| FR-22 | 建议区渲染 `docs/org-admin/` 最新文件；`suggestions/history` 按周次序列 |
-| FR-23 | 报告追问走 Team Agent 消息流（既有 chat/inbox），保留报告上下文 |
-| FR-24 | 第 4 周报告算 floor≈P10/target≈P75 建议，不写 config |
+| FR-1 | §2.4 `maturity-config.yaml` schema + generated Go；权重/阈值/观察期集中 |
+| FR-2 | `server/internal/maturity/gen/generate-config.mjs`：CRLF→LF、结构 hard fail、dirty guard、`--check` |
+| FR-3 | source repo clean HEAD SHA 写 `config_rev`；每行固化 |
+| FR-4 | §2.1 迁移 375–378；技术补充 `workspace_id` 租户键；无 FK |
+| FR-5 | §3.7 JobSpec 精确参数、Asia/Shanghai cron、global scheduler scope |
+| FR-6 | §4.5 workspace advisory lock、单日 bounded plan、单事务、`MAX(bucket_date)` no-op 水位 |
+| FR-7 | §1.3/§4.4 历史不可变、观察期 `{}`、config 断点 |
+| FR-8 | 一 plan 一事务，内部遍历 org/user/project，调度器不展开用户 scope |
+| FR-9 | 看板头部显示范围、Owner mode、`每日00:30更新前一日`、data_status |
+| FR-10 | 统计条读 snapshot；可选 prices 生成 map，未知 cost=null/“估算不可用” |
+| FR-11 | §3.3 project/user snapshot 趋势 + model raw Token 明细；不重算分数 |
+| FR-12 | §3.4 仅 project query，user scope 服务端 400 |
+| FR-13 | maturity view 复用 `packages/views/dashboard/components/` 三件式；观察期无雷达 |
+| FR-14 | §4.2 精确 8 公式、字段、窗口、空分母、项目映射；§4.4 计分 |
+| FR-15 | §4.3 6 字段三态治理护栏，trace CR-C 前 unavailable，全部不进总分 |
+| FR-16 | 数量/质量成对布局、定义页公开 v1 member 口径与可刷性、页脚反 Goodhart |
+| FR-17 | §3.2–§3.6 精确 request/response/error/empty 合同 |
+| FR-18 | `packages/views` 共享 route + Web/Desktop platform wiring；无 iframe/新写通路 |
+| FR-19 | §4.6 project.settings system key + Agent system_key 幂等初始化、local_directory 绑定 |
+| FR-20 | §3.7/§4.6 周 schedule、文件落盘、result/chat 回传、inbox 通知 |
+| FR-21 | §4.6 五节模板，每节引用 snapshot/governance 指标 |
+| FR-22 | §3.5 从 result envelope 渲染最新/历史，目录文件为原文 |
+| FR-23 | report envelope 返回 chat_session_id，追问进入既有 Team Agent 对话 |
+| FR-24 | 第4周按8项四周分布算 P10/P75，仅报告建议、不写 config |
+
+FR 覆盖率：**24/24**。
 
 ---
 
-## 7. 安全与性能考量
+## 7. 安全、性能与测试设计
 
-- **Workspace 隔离**：全部查询经 `workspace_id` 过滤，`X-Workspace-ID` 选工作区，请求体不覆盖鉴权上下文（ARCHITECTURE 不变量 1）。
-- **无 FK**：`maturity_snapshot` 不建任何 FOREIGN KEY；跨表关系由应用层校验（CLAUDE.md 迁移硬规则）。
-- **索引安全**：新索引一律 `CREATE INDEX CONCURRENTLY`、一个迁移文件一条（不变量 6）；迁移从 375 起，保持 rebase 编号序。
-- **性能**：日粒度量级，`maturity_snapshot` 行数 ≈ 天数 × scope 数，7 天 catch-up 上限内；读侧聚合命中既有索引（`task_usage(task_id)`、`agent_task_queue(initiator_user_id/project_id/cr_id)`、`pipeline_node_run(run_id,status)` 等），无全表扫新热点。
-- **API 兼容**：响应 schema 化解析（`parseWithFallback`），枚举含 default，desktop 容忍 additive 漂移（不变量 8）。
-- **隐私/反 Goodhart**：不提供个人排名 UI/user 排名 API/开启开关（NFR-5）；Token 消耗标注为行为数据、页脚明示不作个人考核。
-- **权威边界**：CR-A 只读既有事件表、只写 `maturity_snapshot`（操作态投影，可重建），**绝不写** CR 权威文件/状态机（不变量 4）。
-- **代码注释英文**：全部新增/修改注释英文（不变量 9）。
+### 7.1 安全与性能
+
+- **租户隔离**：snapshot 物理键含 `workspace_id`；全部原始表 query 先限定 workspace；`cr_sync_event` 必须经已限定的 `cr` join；query key 含 workspaceId。
+- **隐私/反 Goodhart**：无 user ranking SQL/API/UI/开关；Token 为行为数据非绩效；user snapshot 不暴露个人 score。
+- **数据库安全**：无新 FK；每索引 CONCURRENTLY 单文件；advisory lock 按 workspace，避免不同 workspace 相互阻塞。
+- **查询成本**：overall/ranking/report 只读日快照；原始表大范围聚合只在每日 rollup 和 model 明细发生。API 日期最多 366 天、ranking limit≤100、history limit≤52。
+- **兼容性**：新增响应 additive；zod enum 有 fallback；desktop 对未知字段容忍；空/不可用是显式状态。
+- **代码治理**：所有注释英文；实现涉及 migration、scheduler、handler/service、builtin skill、前端 route/组件、生成器，逐项登记 multica `CUSTOM.md`，编号/表格格式以实施时文件现状为准。
+
+### 7.2 可执行测试矩阵
+
+| 范围 | 测试落点/方式 | 必须证明 |
+|---|---|---|
+| 配置生成器 | Node 单测 + `--check` CLI fixture | LF/CRLF 同输出；缺块/未知key/weight和≠1/target≤floor hard fail；dirty source 拒绝；漂移非零；clean source SHA 入头 |
+| 迁移 | `server/internal/migrations` lint + 真实 PostgreSQL up/down/up | 375 无隐式 index；376 unique concurrent；377 PK using index；378 query index；无 FK；org sentinel CHECK；重复逻辑键失败 |
+| 计分纯函数 | `server/internal/maturity/score_test.go` table-driven | floor/target/夹断/浮点边界；8→5→total；observing 返回空 scores；缺 key 拒绝 |
+| 8 项 SQL | `server/internal/service/maturity_test.go` PostgreSQL fixtures | 四类 Token 含 cache_write；workspace 隔离；member=0 空态；CR→project join；EPC 三 review gate attempt=1；Team Agent 用 cr_id/issue_id；4 pipeline 完整率 |
+| 治理 | DB fixtures | 两个 activity action 精确计数；审批 P50/P90；CR-C 前 trace unavailable≠0；治理不改变 total |
+| Scheduler | fixed DB clock/Asia-Shanghai table tests | 00:30→前一日；停3天枚举3 plan；max7；同 plan no-op；handler不二次扩窗 |
+| Rollup | 真实 PG 并发/故障注入 | 同 workspace 双执行只一组行；不同 workspace 并行；中途失败全回滚；重跑不改历史；配置变更仅新行 rev 变化 |
+| API | handler/service tests | 完整 schema；401/403；invalid range 400；user rankings 400；观察期 total null；empty 200；cursor/limit；任何 query 不跨 workspace |
+| Core schema | Vitest zod malformed fixtures | 每个端点正常/缺字段/错误枚举/新增字段；`parseWithFallback` 不崩溃 |
+| UI | views component tests | loading/empty/error/unavailable；观察期无雷达；项目排名无个人入口；数量与治理同屏；跨 config_rev 断点 |
+| E3 | service + daemon integration | 未绑 local_directory 显式 unavailable；同 ISO week 重试 API 仅一报告；落盘 SHA= result markdown SHA；周报4/4；第4周8项建议且 config 零写入；chat_session_id 可追问 |
+| CUSTOM | repo test/人工 diff gate | 所有 `// AIFIRST:` 挂钩点、新 migration/生成器/自研模块在 `CUSTOM.md` 可追溯 CR-2026-047/TASK |
+
+### 7.3 AC 到验证项映射
+
+| AC | 验证项 |
+|---|---|
+| AC-1 | 配置类型/8 key/weight/floor/target/观察期校验；`config_rev` 等于 clean source HEAD SHA |
+| AC-2 | 生成器 `--check` 一致为 0、漂移非 0；生成文件头含源 SHA |
+| AC-3 | 迁移 375–378 真实 PG up/down/up；仅新增 snapshot 表、无 FK、所有索引 concurrent 单文件；租户前缀后的业务键满足 FR-4 |
+| AC-4 | fixed clock 跨 00:30 仅产生前一日 global plan；事务内写三 scope，cron scope 不按用户/项目增长 |
+| AC-5 | 同桶重跑/双并发/故障注入，验证唯一行、advisory lock 与全事务回滚 |
+| AC-6 | 连续 3 天 metrics 完整/scores 空；改 config 后只新行 rev 变化；历史摘要不变且 API 返回 revision 断点 |
+| AC-7 | 停机 3 天 fixed-clock 测试补 3 plan；停机 8 天单 tick 最多 7 plan |
+| AC-8 | 首屏断言日期/Owner mode/更新说明/成员/Token；价格存在时成本标“估算”，未知价空态 |
+| AC-9 | project/user snapshot 与 model raw 三组 fixture，日期总量守恒 |
+| AC-10 | route、DOM、API/service 均无 user ranking/开关/通知；user scope 400 |
+| AC-11 | observing fixture 断言无雷达，仅三件式组件 |
+| AC-12 | 8 公式逐项 DB fixture + score 0/100/线性边界 + total 只含 8 项 |
+| AC-13 | 5 类治理卡（6 字段）ready/empty/unavailable；修改治理值不改变 total |
+| AC-14 | Token 与质量护栏同屏；定义页含 8 项可刷性；页脚含非绩效声明 |
+| AC-15 | 6 个 HTTP 合约的 schema/status/auth/empty 测试；config 全员可读；user rankings 不泄露 |
+| AC-16 | Web/Desktop route smoke test；复用 views；无 iframe/独立域名 |
+| AC-17 | 初始化两次后 project.settings system key 与 Agent system_key 各唯一一行 |
+| AC-18 | 周任务生成同周唯一 report_key/文件/result/inbox；文件未进入 git |
+| AC-19 | 报告五节均存在并各引用对应指标 key |
+| AC-20 | suggestions 最新/历史按 ISO week 排序；无报告 200 empty |
+| AC-21 | report chat_session_id 连续两轮追问仍带报告上下文 |
+| AC-22 | 第4周 8 项 P10/P75 建议；生成前后 config 文件字节与 HEAD SHA 不变 |
+
+无未映射 AC。
 
 ## 8. Prompt 采纳影响
 
-本节按 `write-tech-design` 条件性小节评估：本 CR 的 diff **不触及** `skills/shared/crctl/scripts/crctl.mjs` 的 dispatch 分支，也**不触及** `skills/shared/controlled-shell/rules.json` 的 `protectedPaths.deny`（CR-A 只新增 multica 读侧/调度代码与本仓配置，无 crctl 命令面或 guard deny 面变更）。故本节省略。
+本 CR 不触及 `skills/shared/crctl/scripts/crctl.mjs` dispatch 或 `skills/shared/controlled-shell/rules.json#protectedPaths.deny`，无需列 skill prompt 采纳清单；本维度按条件跳过。
