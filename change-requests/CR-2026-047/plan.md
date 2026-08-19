@@ -6,7 +6,7 @@ sdd-ref: "change-requests/CR-2026-047/sdd.md"
 target-version: 0.21
 status: draft
 created: 2026-08-20T01:25:00+08:00
-updated: 2026-08-20T01:56:58+08:00
+updated: 2026-08-20T02:18:49+08:00
 ---
 
 # 开发计划 — CR-2026-047 P3 组织智能 CR-A
@@ -62,6 +62,7 @@ TASK-01..10 ──────────────────────�
 | daemon local_directory 未绑定 | 周报无法生成 | UI 显式 unavailable + 绑定入口；schedule enqueue 校验绑定，缺失即 skip 并在 `sys_cron_executions.result` 记原因 |
 | 用户隐私越界（个人榜泄漏） | 合规风险 | user 趋势 self-only、rankings 仅 project 且服务端 400；契约测试断言响应不含他人 ID；无任何 user ranking 开关 |
 | 治理指标通道未交付（CR-C） | trace 卡无数据 | 显式 `unavailable` 文案“数据通道待 CR-C”，绝不显示 0；不影响总分 |
+| CR owner 身份不可验证 | 项目协作规模可能失真 | 不做名称匹配/UUID 强转；受影响 org/project scope 的指标写 `unavailable`，scores 为空，样本跳过基线；身份桥另立 CR |
 | 成本双算/错标 | 看板成本误导 | `cost_usd_ticks` 权威优先，价目只估算 NULL 行；cost_status 四态契约测试 |
 
 回滚总原则：任何单里程碑失败，按 TASK 粒度 revert 对应 commit；snapshot 是纯投影可重建，错误口径行不允许 UPDATE 修改，一律以新 `config_rev` 新行或整表重建兜底。

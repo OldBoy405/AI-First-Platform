@@ -29,14 +29,14 @@ created: 2026-08-20T01:31:00+08:00
 
 ## 实现要点
 
-- 逐行对照 SDD §7.2 矩阵核对哪些已由 TASK-01/03/07/08/09 内置测试覆盖，本 TASK 只补缺失行：迁移（含 EXPLAIN 命中 378/379）、8 项 SQL fixtures（AC-12）、治理三态（AC-13）、rollup 并发/故障（AC-5，若 TASK-06 已含则核对即可）、E3 全链路（AC-18~22）、zod malformed（AC-15 前端侧）、UI（AC-10/11/14）。
+- 逐行对照 SDD §7.2 矩阵核对哪些已由 TASK-01/03/07/08/09 内置测试覆盖，本 TASK 只补缺失行：迁移（含 EXPLAIN 命中 378/379）、8 项 SQL fixtures（AC-12，含 free-text owner unresolved 的 org/project 传播与 baseline 排除）、治理三态（AC-13）、rollup 并发/故障（AC-5，若 TASK-06 已含则核对即可）、E3 全链路（AC-18~22）、zod malformed（AC-15 前端侧）、UI（AC-10/11/14）。
 - 全量跑一次 `go test ./...`、`pnpm test`（views/core 相关 scope）、migration lint，形成 AC-1~AC-22 → 测试名/用例映射清单，固定落 `change-requests/CR-2026-047/test-mapping.md`（不允许只留在提交说明）。
 - `CUSTOM.md` 登记条目至少包含：迁移 375–379、`server/internal/maturity/*`、`server/internal/scheduler/jobs_maturity.go`、`server/internal/service/maturity*.go`、`server/internal/handler/maturity.go`、内置 skill `multica-maturity-weekly-report`、`packages/views/dashboard/maturity/*`、`packages/core` 追加、所有 `// AIFIRST:` 挂钩点。逐条核对“当时实际结构”，不臆造表头。
 
 ## 验收条件
 
 1. `go test ./...`、views/core 测试、migration lint 全绿；AC-1~AC-22 每条至少对应一个可执行用例。
-2. 跨层回归：改一个治理 fixture 值 → 总分不变（AC-13）；user scope 请求 400 且响应不含他人 ID（AC-10）。
+2. 跨层回归：改一个治理 fixture 值 → 总分不变（AC-13）；插入 unresolved free-text owner → 对应 org/project `project_collab_scale` unavailable、scores 为空且 baseline 排除；user scope 请求 400 且响应不含他人 ID（AC-10）。
 3. `CUSTOM.md` diff 中每条登记能反查 CR-2026-047 与对应 TASK 编号，无遗漏新文件（用 `git diff --name-only` 与登记清单对拍）。
 
 ## 完成标志

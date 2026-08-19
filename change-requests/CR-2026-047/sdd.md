@@ -5,7 +5,7 @@ cr-ref: CR-2026-047
 title: P3 组织智能 CR-A：AI 成熟度看板（E1 快照 + E2 看板 + E3 周报）技术设计
 status: draft
 created: 2026-08-20T00:38:27+08:00
-updated: 2026-08-20T01:13:46+08:00
+updated: 2026-08-20T02:25:29+08:00
 ---
 
 # SDD — P3 组织智能 CR-A：AI 成熟度看板
@@ -167,7 +167,7 @@ type SnapshotScoresV1 = {
 | `member(workspace_id,user_id)` | v1 “活跃成员”定义为 rollup 时仍存在的 member 行；表无 active/status 历史，离组即删除。该限制写入指标定义页；快照固化后不追溯重算 |
 | `task_usage` + `agent_task_queue` + `agent` | `task_usage.task_id=agent_task_queue.id`；队列表本身无 `workspace_id`，必须 `agent_task_queue.agent_id=agent.id AND agent.workspace_id=:workspace` 限租户；四列 Token 全计；`initiator_user_id` 归人；`project_id` 或 `issue_id→issue.project_id` 归项目 |
 | `project` / `issue` / `comment` | CR 项目归属：`cr.shell_issue_id→issue.project_id`；评论者：`comment.issue_id=cr.shell_issue_id` 且 `author_type='member'`；Org Admin 系统项目通过 `project.settings.system_key` 排除业务项目分母 |
-| `cr` + `cr_sync_event` | 先 `cr.workspace_id=:workspace`，再以 `cr.cr_id=cr_sync_event.cr_id` 读归档/状态时间；不可只按无 workspace_id 的 `cr_sync_event.cr_id` 裸查 |
+| `cr` + `cr_sync_event` | 先 `cr.workspace_id=:workspace`，再以 `cr.cr_id=cr_sync_event.cr_id` 读归档/状态时间；不可只按无 workspace_id 的 `cr_sync_event.cr_id` 裸查。`cr.owners` 当前是 crctl 自报的 free-text JSON；CR-A 不做名称匹配、不强转 UUID、不引入身份桥，只检测 unresolved owner 并按 §4.2.4 传播 unavailable |
 | `pipeline_run` / `pipeline_node_run` | 以 `pipeline_run.workspace_id=:workspace AND pipeline_run.cr_id=cr.cr_id` 限租户；Review gate 与 4 pipeline 完成情况 |
 | `approval_record` | 以 `workspace_id+cr_id+stage` join 审批；只计 `decision='approve'` |
 | `activity_log` | `workspace_id` 限租户；`action='aifirst.evidence_drift'` 和 `action='aifirst.gitguard_denied'` |
@@ -254,7 +254,7 @@ type MaturityOverallResponse = {
 }
 ```
 
-观察期或 `calibration_status!='calibrated'` 时 `total_score=null`、所有 score=null、raw 正常；不得临时重算。
+观察期、`calibration_status!='calibrated'`，或任一计分 raw 非 ready/null（包括 unresolved owner）时 `total_score=null`、所有 score=null、raw 正常；不得临时重算或部分权重重归一化。
 
 ### 3.3 `GET /api/maturity/token-trend`
 
@@ -370,6 +370,7 @@ type MaturityConfigResponse = {
 - 每个 SQL 必须先建立租户边界：有 `workspace_id` 的表直接谓词过滤；无该列的 `agent_task_queue` 必须先 join `agent.workspace_id=:workspace`，无该列的 `cr_sync_event` 必须先 join 已限定 workspace 的 `cr`。
 - “活跃成员数”v1 = rollup 时 `member` 当前行数（表无历史 active 字段）；“全体成员数”同义。`0` 分母返回 `value=null,data_status='empty'`，不做除零、不把 null 当 0。
 - `agent_task_queue.initiator_user_id` 是 nullable/best-effort：NULL 行仍计入组织总 Token 和全部任务分母，但不归给任何 user，也不进入 distinct initiator 分子；每个相关 `MetricValue.attribution` 记录 attributed/unattributed/coverage。覆盖率低于 95% 时，所有依赖发起人归因的 user breakdown、AI 渗透率和协作参与人数均标 `data_status='unavailable'`；org Token 总量仍可 ready，不得用低覆盖数据输出看似精确的个人值。历史 terminal task 的 `project_id` 可能未回填，项目归属先 `q.project_id`、再 `q.issue_id→issue.project_id`；两者皆空则只计 org、不计 project。
+- `cr.owners` 的 `owners.*.id` 在当前投影中来自 crctl `--caller`，是 free-text 而非可验证的 `member.user_id`。CR-A 不按名称匹配、不尝试 UUID 强转，也不新建跨仓身份桥。对窗口内归档 CR：存在非空 owner id 即记为 unresolved；`project_collab_scale` 的对应 scope/date 写 `value=null,data_status='unavailable',reason='cr_owner_identity_unresolved'`，评论者和任务发起者集合仍可作为诊断数据返回但不得填补该指标；org scope 受任一 unresolved owner 影响，project scope 只受该 project 的 unresolved CR 影响。该样本不进入基线分位数。
 - 项目集合 = 该 workspace `project.status!='cancelled'` 且 `settings->>'system_key' IS NULL` 的业务项目；Org Admin 系统项目不进入成熟度分母。
 - CR 项目归属 = `cr.shell_issue_id→issue.project_id`；无法归属的 CR 只计 org，不计 project。
 
@@ -378,7 +379,7 @@ type MaturityConfigResponse = {
 1. **Token 强度**：本地日内 `SUM(input_tokens+output_tokens+cache_read_tokens+cache_write_tokens) / member_count / 1天`；`task_usage.task_id=agent_task_queue.id`，并经 `agent_task_queue.agent_id=agent.id AND agent.workspace_id=:workspace` 限租户；按 `initiator_user_id` 归人、按 `COALESCE(agent_task_queue.project_id,issue.project_id)` 归项目；不读无 user 维的 `task_usage_hourly`。
 2. **AI 渗透率**：同样先经 `agent.workspace_id=:workspace` 限租户；本地日内 `COUNT(DISTINCT initiator_user_id) / member_count`；“发起过”按 task `created_at`，不以最终成功状态过滤。
 3. **人均 CR 吞吐**：本地日内首次进入 `archived` 的 distinct CR 数 / member_count；从 `cr_sync_event.event_kind='status' AND payload->>'to_status'='archived'` 取 `occurred_at`，先 join workspace-scoped `cr` 去重。
-4. **项目协作规模**：对窗口内归档 CR 分别取 canonical user 集合并求人数，再平均：`cr.owners` 中 user id ∪ `comment.author_id`（member only）∪ `agent_task_queue.initiator_user_id`（`q.cr_id=cr.cr_id OR q.issue_id=cr.shell_issue_id`）。project scope 再按 `issue.project_id` 过滤；人数 `<2` 的 raw 仍存，计分由配置 floor/target 使其不加分。
+4. **项目协作规模**：对窗口内归档 CR 分别取 canonical user 集合并求人数，再平均：可验证的 owner user id（当前 CR-A 不存在该身份桥，故不填入）∪ `comment.author_id`（member only）∪ `agent_task_queue.initiator_user_id`（`q.cr_id=cr.cr_id OR q.issue_id=cr.shell_issue_id`）。project scope 再按 canonical `cr→issue.project_id` 过滤；人数 `<2` 的 raw 仍存，计分由配置 floor/target 使其不加分。若该 scope/date 的归档 CR 存在非空 `cr.owners.*.id`，因 owner 身份 unresolved，整个该 scope/date 的 `MetricValue` 固化为 `value=null,data_status='unavailable',reason='cr_owner_identity_unresolved'`，不得以评论者/任务发起者子集伪造完整值；org scope 任一归档 CR 命中即 unavailable，project scope 按所属 project 独立传播。
 5. **项目活跃率**：近 14 个本地自然日内存在 task `created_at` 或 CR status `occurred_at` 的 distinct 业务 project / 全部业务 project；任务项目优先 `q.project_id`，缺失时 `q.issue_id→issue.project_id`；CR 项目走 shell issue。
 6. **原型直出率**：当期归档 CR 中，**全部已投影 review gate**（`requirement`、`tech-design`、`code`，对应 `governance.ReviewGateNodes`）均在 `attempt=1,status='passed'` 的 CR 数 / 当期归档 CR 数。不是 passed node/全部 node；缺任一必需 review gate 即不计一次通过。
 7. **Team Agent 使用深度**：先以 `agent.workspace_id=:workspace` 限租户；当期 `agent_task_queue` 中 `(cr_id IS NOT NULL OR issue_id IS NOT NULL)` 的任务数 / 全部任务数；按共享队列来源键，**不用 `pipeline_node_run_id` 替代 `issue_id`**。
@@ -404,7 +405,7 @@ dimension_score_d = Σ(metric_score_i * metric_weight_i) / Σ(metric_weight_i in
 total_score = Σ(metric_score_i * metric_weight_i)  # 全局 weight 和=1
 ```
 
-`observation_active = elapsed_days < 28 OR calibration_status != 'calibrated'`。只要为 true，rollup 写 `scores={}`。第 4 周基线对每个 MetricKey 只取**首个连续 28 个 org snapshot 的 ready raw value**，忽略 null/empty/unavailable；样本少于 21 个时该指标建议为 unavailable。样本充足时用 PostgreSQL `percentile_cont(0.10)` 与 `percentile_cont(0.75)`（线性插值）分别得到 floor/target 建议；若 `P75<=P10` 则标记 degenerate_distribution、不得给可写值。建议只进报告，不写 config。CR-D 人审配置改为 calibrated 后，**仅新 bucket** 写分数；旧行保持 `{}`，趋势跨 `config_rev` 标断点。
+`observation_active = elapsed_days < 28 OR calibration_status != 'calibrated'`。只要为 true，rollup 写 `scores={}`。校准后若某 scope/date 的任一计分指标不是 `ready` 或其 value 为 null（包括 `project_collab_scale` 的 unresolved owner），该 scope/date 仍保留完整 raw metrics，但整体写 `scores={}`，不做部分权重重归一化。第 4 周基线对每个 MetricKey 只取**首个连续 28 个 org snapshot 的 ready raw value**，忽略 null/empty/unavailable；样本少于 21 个时该指标建议为 unavailable。样本充足时用 PostgreSQL `percentile_cont(0.10)` 与 `percentile_cont(0.75)`（线性插值）分别得到 floor/target 建议；若 `P75<=P10` 则标记 degenerate_distribution、不得给可写值。建议只进报告，不写 config。CR-D 人审配置改为 calibrated 后，**仅新 bucket** 写分数；旧行保持 `{}`，趋势跨 `config_rev` 标断点。
 
 ### 4.5 Rollup 事务与幂等
 
@@ -421,7 +422,7 @@ RollupWorkspace(planTime, workspace):
   if MAX(bucket_date WHERE workspace_id=workspace) >= target: COMMIT no-op
   compute all org/user/project SnapshotMetricsV1 for target
   validate metric keys/status/config_rev
-  scores = observation_active ? {} : Score(metrics, generatedConfig)
+  scores = observation_active || anyScoringMetricUnavailable(metrics) ? {} : Score(metrics, generatedConfig)
   INSERT rows with ON CONFLICT (workspace_id,bucket_date,scope,scope_id) DO NOTHING
   assert org row inserted-or-existed and all planned scope rows are valid
   COMMIT
@@ -452,6 +453,7 @@ RollupWorkspace(planTime, workspace):
 | 报告跨进程 | daemon 写文件 + 既有 task result/chat 回传；API 读 DB envelope | server 直读 daemon `local_directory`：跨进程/跨机器不可达；新增报告表：违反唯一新表 |
 | 治理追溯 | CR-C 前显式 unavailable | CR-A 扫 git/新增 trace event：侵入 CR-C 边界且重复建设 |
 | 成本 | provider `task_usage.cost_usd_ticks` 优先；仅 NULL 行用 knowledge-base `model-prices.yaml` 生成价目估算，未知=null | 对全部Token统一估算：会覆盖/重复计算权威成本；硬编码/猜价：不可治理且误导 |
+| CR owner 归因 | 不匹配名称、不强转 UUID；检测 free-text owner 并将受影响 `project_collab_scale` scope/date 标 `unavailable`，样本跳过基线 | 在 CR-A 新建 owner→member 身份桥：扩大 crctl 事件协议、历史回填和跨仓治理边界，应另立 CR |
 
 ---
 
@@ -472,7 +474,7 @@ RollupWorkspace(planTime, workspace):
 | FR-11 | §3.3 project/user snapshot 趋势 + model raw Token 明细；不重算分数 |
 | FR-12 | §3.4 仅 project query，user scope 服务端 400 |
 | FR-13 | maturity view 复用 `packages/views/dashboard/components/` 三件式；观察期无雷达 |
-| FR-14 | §4.2 精确 8 公式、字段、窗口、空分母、项目映射；§4.4 计分 |
+| FR-14 | §4.2 精确 8 公式、字段、窗口、空分母、项目映射；`cr.owners` unresolved 时 project_collab_scale 按 scope/date 固化 unavailable；§4.4 计分 |
 | FR-15 | §4.3 6 字段三态治理护栏，trace CR-C 前 unavailable，全部不进总分 |
 | FR-16 | 数量/质量成对布局、定义页公开 v1 member 口径与可刷性、页脚反 Goodhart |
 | FR-17 | §3.2–§3.6 精确 request/response/error/empty 合同 |
@@ -506,8 +508,8 @@ FR 覆盖率：**24/24**。
 |---|---|---|
 | 配置生成器 | Node 单测 + `--check` CLI fixture | LF/CRLF 同输出；缺块/未知key/weight和≠1/target≤floor hard fail；dirty source 拒绝；漂移非零；clean source SHA 入头 |
 | 迁移 | `server/internal/migrations` lint + 真实 PostgreSQL up/down/up + EXPLAIN | 375 无隐式 index；376 unique concurrent；377 PK using index；378 snapshot query index；379 completed report partial index；无 FK；org sentinel CHECK；重复逻辑键失败；history query命中379而非369 active index |
-| 计分纯函数 | `server/internal/maturity/score_test.go` table-driven | floor/target/夹断/浮点边界；8→5→total；observing 返回空 scores；缺 key 拒绝 |
-| 8 项 SQL | `server/internal/service/maturity_test.go` PostgreSQL fixtures | 四类 Token 含 cache_write；workspace 隔离；member=0 空态；CR→project join；EPC 三 review gate attempt=1；Team Agent 用 cr_id/issue_id；4 pipeline 完整率 |
+| 计分纯函数 | `server/internal/maturity/score_test.go` table-driven | floor/target/夹断/浮点边界；8→5→total；observing 返回空 scores；缺 key 或任一计分 raw 非 ready/null 时拒绝，rollup 固化空 scores |
+| 8 项 SQL | `server/internal/service/maturity_test.go` PostgreSQL fixtures | 四类 Token 含 cache_write；workspace 隔离；member=0 空态；CR→project join；EPC 三 review gate attempt=1；Team Agent 用 cr_id/issue_id；4 pipeline 完整率；free-text owner 不做名称匹配/UUID 强转，命中时 project_collab_scale 按 org/project scope 写 unavailable |
 | 治理 | DB fixtures | 两个 activity action 精确计数；审批 P50/P90；CR-C 前 trace unavailable≠0；治理不改变 total |
 | Scheduler | fixed DB clock/Asia-Shanghai + sys_cron fixtures | latest失败返回同plan；较老FAILED+较新SUCCESS仍重试老plan；首次仅最近一个已到期plan；停3天合并返回3plan；超7天仅窗口内最多7个；00:30→前一日；同plan no-op；断言CatchUpMode/Window不参与hook规划 |
 | Rollup | 真实 PG 并发/故障注入 | 同 workspace 双执行只一组行；不同 workspace 并行；中途失败全回滚；重跑不改历史；配置变更仅新行 rev 变化 |
@@ -532,7 +534,7 @@ FR 覆盖率：**24/24**。
 | AC-9 | project/self-user snapshot 与 model raw 三组 fixture，日期总量守恒；user非self/全量枚举均400且响应不含他人ID |
 | AC-10 | route、DOM、API/service 均无 user ranking/开关/通知；user scope 400 |
 | AC-11 | observing fixture 断言无雷达，仅三件式组件 |
-| AC-12 | 8 公式逐项 DB fixture + score 0/100/线性边界 + total 只含 8 项 |
+| AC-12 | 8 公式逐项 DB fixture + score 0/100/线性边界 + total 只含 8 项；owner unresolved fixture 断言 org/project 协作规模不可用且不进入 baseline |
 | AC-13 | 5 类治理卡（6 字段）ready/empty/unavailable；修改治理值不改变 total |
 | AC-14 | Token 与质量护栏同屏；定义页含 8 项可刷性；页脚含非绩效声明 |
 | AC-15 | 6 个 HTTP 合约的 schema/status/auth/empty 测试；config 全员可读；user rankings 不泄露 |

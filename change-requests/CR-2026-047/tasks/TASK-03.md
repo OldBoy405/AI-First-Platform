@@ -26,15 +26,15 @@ created: 2026-08-20T01:27:00+08:00
 ## 实现要点
 
 - `MetricScore(x float64, c MetricConfig) float64`：`clamp(100*(x-c.Floor)/(c.Target-c.Floor), 0, 100)`；`x` 为 NaN 时返回 0。
-- `DimensionScores(m map[MetricKey]MetricValue, cfg ConfigV1) (map[DimensionKey]float64, error)`：每维 `Σ(score*weight)/Σ(weight)`（只计该维 metric 中 `data_status` 为 ready 且 Value 非 nil 的项；该维全部非 ready 时该维分数为 0，不报错）。
-- `TotalScore(m map[MetricKey]MetricValue, cfg ConfigV1) (float64, error)`：全局 `Σ(score*weight)`，权重和=1 已由 `ValidateConfig` 保证；缺 metric key 返回错误。
-- `BuildScores(m map[MetricKey]MetricValue, cfg ConfigV1) (SnapshotScoresV1, error)`：产出 `{Schema:"ai-first.maturity-scores/v1", MetricScores, DimensionScores, TotalScore}`；所有 key 齐全（8+5+1），任一 0..100。
-- `ObservationActive(firstBucket time.Time, now time.Time, cfg ConfigV1) bool`：`now.Sub(firstBucket) < 28*24h || cfg.CalibrationStatus != "calibrated"`；调用方在 true 时写 `scores={}`、不调用 BuildScores。
+- `DimensionScores(m map[MetricKey]MetricValue, cfg ConfigV1) (map[DimensionKey]float64, error)`：每维 `Σ(score*weight)/Σ(weight)`；输入中任一计分 metric 的 `data_status` 非 `ready` 或 `Value` 为 nil 时返回错误，不做部分权重重归一化。
+- `TotalScore(m map[MetricKey]MetricValue, cfg ConfigV1) (float64, error)`：全局 `Σ(score*weight)`，权重和=1 已由 `ValidateConfig` 保证；缺 metric key 或任一计分 metric 不 ready/null 返回错误。
+- `BuildScores(m map[MetricKey]MetricValue, cfg ConfigV1) (SnapshotScoresV1, error)`：产出 `{Schema:"ai-first.maturity-scores/v1", MetricScores, DimensionScores, TotalScore}`；所有 key 齐全（8+5+1），任一 0..100；输入含 unavailable/empty/not_applicable 或 null 时返回错误，由 TASK-06 将该 scope/date 的 scores 固化为 `{}`。
+- `ObservationActive(firstBucket time.Time, now time.Time, cfg ConfigV1) bool`：`now.Sub(firstBucket) < 28*24h || cfg.CalibrationStatus != "calibrated"`；调用方在 true 时写 `scores={}`；校准期若任一计分 metric 非 ready/null，也写 `scores={}`，不得部分重归一化。
 
 ## 验收条件
 
 1. table 测试：floor=0/target=10/x=5→50；x<floor→0；x>target→100；x 恰在 floor/target 边界；浮点 1e-9 边界不越界。
-2. 维度加权：两 metric 权重 0.5/0.5 分数 20/80→50；权重 0.8/0.2→32；一项 `data_status='unavailable'` 时仅以 ready 项归一。
+2. 维度加权：两 metric 权重 0.5/0.5 分数 20/80→50；权重 0.8/0.2→32；一项 `data_status='unavailable'` 或 value=null 时返回可断言错误，不做部分权重归一。
 3. `BuildScores` 缺任一 MetricKey 返回错误；正常输入 8+5+1 键齐全且区间 0..100。
 4. `ObservationActive`：第 27 天+observing=true；第 28 天+calibrated=false；第 28 天+observing=true。
 
