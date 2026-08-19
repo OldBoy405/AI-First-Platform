@@ -1,27 +1,24 @@
 cr-id: CR-2026-047
 review-type: dev-plan
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-20T01:39:13+08:00"
+reviewed-at: "2026-08-20T01:59:05+08:00"
 verdict: block
-repair-target: write-dev-plan
+repair-target: write-tech-design
 blockers:
-  - "B1 配置输入不确定：change-requests/CR-2026-047/tasks/TASK-01.md 写‘文档未给值时采用保守初始值’，但权威设计只规定观察期后由 P10/P75 提议并人审，没有数值；TASK 是编码唯一依据，不能让实现者自行发明。修复：钉死 observing 初始声明的 8 项 weight=0.125、floor=0、target=1，并明确这些是 calibration_status=observing 下不参与计分的 deterministic seed，CR-D 人审后一次性替换；同步生成器 fixture。"
-  - "B2 SQL 合同不足以实现 SDD：TASK-04 把 Token 按 q.created_at 分桶且 MaturityTaskTokenRows 不返回 provider/model，无法对 NULL cost_usd_ticks 做模型价目估算；MaturityModelCostRows 也缺四类 uncosted token。TASK-05 仅说实施时核实 gate 投影，并让 TASK-10 从 JSON 样本自行算 percentile_cont。修复：Token/cost 按 task_usage.created_at、AI渗透/TeamAgent按 q.created_at；row 增 provider/model/cost_usd_ticks 与四类 uncosted token；gate 查询精确使用 pipeline_node_run + governance.ReviewGateNodes node_id；新增 PostgreSQL MaturityBaselinePercentiles query，对最早连续28个org bucket按metric执行 percentile_cont(.10/.75)、ready样本>=21。"
-  - "B3 跨 TASK 接口不一致且含待定：TASK-06 声明未限定的 DBTX，TASK-07 消费未由 TASK-06 产出的 service.MaturityRollupFunc；TASK-04/05 的 params 无类型或写‘以sqlc实际为准’；TASK-08 Go方法 ctx 无 context.Context 且 workspace ID 与仓库 pgtype.UUID 约定不符；TASK-10 BuildReportEnvelope 未接收 wsID 却要求生成 wsID:week report_key，并写 job_name ‘之类/实施时对齐’。修复：统一精确签名与所有权——rollup 接收 *pgxpool.Pool/pgtype.UUID，scheduler 采用 MaturitySnapshotJob(pool *pgxpool.Pool) JobSpec 并在 server/cmd/server/main.go 注册；service/API 使用 context.Context+pgtype.UUID；BuildReportEnvelope 显式接收 workspaceID；job name 固定 maturity_weekly_report；把 scheduler/builtin-skill/migration-test 落点替换为已核实真实路径，删除所有‘若有/按现状/等价即可/实际为准’。"
-  - "B4 FR-22/FR-23 与 AC-20/AC-21 无前端责任人：TASK-08 仅提供 suggestions/history API、TASK-10 仅生成 envelope，TASK-09 未实现建议最新/历史列表、empty/error、按 ISO week 排序与 chat_session_id ‘追问’入口。修复：扩展 TASK-09 文件/实现/验收/接口契约，明确消费 getMaturitySuggestions/getMaturitySuggestionHistory，渲染最新和历史，追问跳现有 Team Agent chat_session_id；加入同 report_key 去重后的 UI fixture 与连续两轮追问 smoke test。"
+  - "UPSTREAM-1 cr.owners 身份口径不可实现：sdd.md §4.2 把 cr.owners 中 user id 纳入项目协作规模，但实际 governance/project_gates.go 明确 owners.*.id 是 crctl --caller 自报 free-text、当前没有 Multica user 映射且禁止名称匹配；本 CR 的 owner 即字符串 Ray。TASK 层既不能安全强转 UUID/按名字认人，也不能静默删掉 owners 而改公式。请在 SDD 明确批准一种方案及可观察语义：A) 定义真实、workspace-scoped、可回填的 crctl owner→member.user_id 身份桥与数据源；或 B，推荐最小方案) 保留公式但任何 unresolved owner 使 project_collab_scale 的该 scope/date data_status='unavailable', reason='cr_owner_identity_unresolved'，评论者/任务发起者仍可诊断但不得伪装完整结果，baseline 跳过该样本。修订后同步 TASK-05/06 的 SQL、状态传播与 fixture；严禁名称匹配。"
 dimensions:
-  sdd-to-plan: "pass"
-  plan-to-tasks: "block"
+  sdd-to-plan: "block"
+  plan-to-tasks: "pass"
   task-executability: "block"
   dependency-topology: "pass"
-  interface-contracts: "block"
+  interface-contracts: "pass"
   acceptance-verifiability: "block"
   scope-and-simplicity: "block"
   risk-and-rollback: "pass"
   reviewer-model: "OldBoy405"
 suggestions:
-  - "保持 11 TASK 与 150h 总估算不变；本轮只消除歧义和补齐已批准范围，不新增表、依赖或接口。"
-  - "sqlc 查询合同用具名参数/字段与确定的 pgtype 类型写清，消费 TASK 不复制模糊签名。"
+  - "正常轨四类 blocker 已修：deterministic observing seed、精确 sqlc/service/scheduler 合同、建议 latest/history/追问责任、真实路径与 migration cleanup registry；11 TASK/150h/DAG 均已重建。"
+  - "建议选择 unavailable 降级而不是在 CR-A 新增身份基础设施；后者会扩大到 crctl 事件协议、历史回填与跨仓身份治理，应另立 CR。"
 review-loop:
   current-attempt: 1
-subject-sha256: 5c832afa6af92df6f99a2ffd6fbecef741851564a493e399f400d79d88b9f7c6
+subject-sha256: cbbbafabaaac0aa4aa7d911e50918f49b63306fb2f65be6b0b5eb46744ade6d0
