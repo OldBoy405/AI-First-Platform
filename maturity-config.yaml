@@ -1,0 +1,23 @@
+# ai-first.maturity-config/v1 — CR-A maturity dashboard metric config (CR-2026-047 TASK-01).
+# Authority: this file. Committed read-only copy: multica server/internal/maturity/config_gen.go.
+# Inactive until calibration_status=calibrated — the deterministic observing seed below never
+# participates in scoring. CR-D replaces weight/floor/target once after human review of the
+# week-4 P10/P75 baseline suggestions.
+schema: ai-first.maturity-config/v1
+observation_weeks: 4
+calibration_status: observing
+dimensions:
+  AIF: [token_intensity, ai_penetration]
+  SII: [cr_throughput_per_capita]
+  OFI: [project_collab_scale, project_active_rate]
+  EPC: [prototype_direct_rate]
+  ACM: [team_agent_depth, process_completion_rate]
+metrics:
+  token_intensity: {weight: 0.125, floor: 0, target: 1}
+  ai_penetration: {weight: 0.125, floor: 0, target: 1}
+  cr_throughput_per_capita: {weight: 0.125, floor: 0, target: 1}
+  project_collab_scale: {weight: 0.125, floor: 0, target: 1}
+  project_active_rate: {weight: 0.125, floor: 0, target: 1}
+  prototype_direct_rate: {weight: 0.125, floor: 0, target: 1}
+  team_agent_depth: {weight: 0.125, floor: 0, target: 1}
+  process_completion_rate: {weight: 0.125, floor: 0, target: 1}
