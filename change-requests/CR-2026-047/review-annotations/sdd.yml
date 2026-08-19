@@ -1,22 +1,21 @@
 cr-id: CR-2026-047
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-20T01:14:35+08:00"
+reviewed-at: "2026-08-20T02:26:25+08:00"
 verdict: pass
 blockers: []
 dimensions:
-  PRD-SDD对齐: "pass: 24/24 FR 与 22/22 AC 均有设计与可执行验证映射；E1/E2/E3 边界完整，个人榜、Owner 开关和 CR-C 追溯通道实现均明确排除或降级为 unavailable；workspace_id 是为满足 ARCHITECTURE 租户隔离而增加的物理键细化"
-  架构合理性: "pass: handler→service→db 与 views→core+ui 依赖方向明确；快照写时固化、读时不重算；daemon 文件经 agent_task_queue.result/chat 回传，server 不跨进程读本地目录；Org Admin 项目/Agent 使用 system_key+advisory lock 幂等并纳入 CUSTOM.md"
-  数据模型完整性: "pass: migration 375 建表无隐式索引、376 UNIQUE CONCURRENTLY、377 PRIMARY KEY USING INDEX、378 snapshot 查询索引、379 completed report history partial index；无新 FK，workspace_id 前缀隔离多租户，org sentinel 与 JSON 契约完整"
-  接口契约: "pass: 六个 maturity API 定义了精确 query/response、日期/分页/空态及 400/401/403；scope=user rankings 与非 self user trend 均服务端 400；zod+parseWithFallback、workspace query key 与 Auth+RequireWorkspaceMember 路由位置明确"
-  性能与安全: "pass: 全部查询先限 workspace；常规看板读 snapshot，model 明细才读 task_usage；provider cost 优先且不双算；PlansForScope 自己实现 7 日补偿及非 latest FAILED 重试；历史查询有 378/379 索引和 limit 上限"
-  可测试性: "pass: 配置生成器、真实 PG migration、8 项 SQL、治理三态、fixed-clock scheduler、并发/回滚、API/zod/UI、E3 文件/result/chat 与 CUSTOM 均有具体落点和可观察断言；AC-1~AC-22 全覆盖"
-  Prompt采纳影响: "pass: 本 CR 不修改 crctl.mjs dispatch 或 controlled-shell rules.json#protectedPaths.deny；条件性检查已执行并确认无影响"
+  PRD-SDD对齐: "pass: 24/24 FR 与 22/22 AC 仍有技术方案与验证映射；FR-14 的 cr.owners 并未被静默删除，SDD 明确记录当前 free-text 数据源的限制，并以不可用状态传播。"
+  架构合理性: "pass: 方案 B 不新增跨仓身份桥；cr owner 检测留在 maturity SQL/rollup，comments 与 task initiator 仍是诊断数据，workspace/project 边界和既有 handler→service→db 方向不变。"
+  数据模型完整性: "pass: MetricValue 的 value/reason/data_status 可表达 owner unresolved；MaturityCROwnerResolution 精确输出 CR、project 与 unresolved count；snapshot 保留 raw metrics，受影响 scope/date 的 scores 固化为空对象，baseline 只消费 ready 样本。"
+  接口契约: "pass: TASK-05 新增 MaturityCROwnerResolution sqlc 合同；TASK-03/06 统一规定非-ready/null 不得部分重归一化；overall 返回 total_score=null 与显式 raw 状态，前端不需要猜测。"
+  性能与安全: "pass: owner 检测使用 workspace-scoped SQL JSON 展开，不按名称匹配、不强转 UUID；不引入身份表、事件协议或跨租户查询；基线查询继续过滤 ready。"
+  可测试性: "pass: SDD 与 TASK-03/05/06/11 均有 owner fixture：空 owners、非空 free-text、org/project 传播、scores 为空、baseline 排除、跨 workspace 隔离和诊断集合保留。"
+  Prompt采纳影响: "pass: 本次只修改 CR 文档与任务契约，不触及 crctl.mjs dispatch 或 controlled-shell rules.json#protectedPaths.deny，条件性检查无影响。"
 suggestions:
-  - "实施时保持 CR-C 交付前 traceability_complete_rate 为 unavailable 而非 0；不得为通过看板验收在 CR-A 内新增 trace outbox/consumer。"
-  - "migration 379 实施后用真实 PostgreSQL EXPLAIN 证明 completed report history 命中 idx_atq_maturity_report_history，而不是 migration 369 的 active-task partial index。"
-  - "scheduler 单测必须包含较老 FAILED 与较新 SUCCESS 并存场景，防止 custom PlansForScope 只观察 latest 而搁浅旧 retry。"
+  - "实现时保持 MaturityCROwnerResolution 只识别 owners.*.id 的非空存在性；不得加入名称匹配、UUID 猜测或隐式 member lookup。"
+  - "实现时将 owner-unresolved 的 org/project scores 序列化为 {}，并让 API 通过 data_status/reason 展示 unavailable；不要用部分权重重归一化生成总分。"
 review-loop:
-  current-attempt: 2
+  current-attempt: 1
 subject-file: change-requests/CR-2026-047/sdd.md
-subject-sha256: 5367a4481f1cb0805820d2dbc866916095a66dee9a8aceee47b7cbda340f9896
+subject-sha256: 95fbd50695f07191758ef789f067069268faa1dd10c1c0a84c2b2bdd8ee9d06f
