@@ -6,7 +6,7 @@ sdd-ref: "change-requests/CR-2026-047/sdd.md"
 target-version: 0.21
 status: draft
 created: 2026-08-20T01:25:00+08:00
-updated: 2026-08-20T01:25:00+08:00
+updated: 2026-08-20T01:41:00+08:00
 ---
 
 # 开发计划 — CR-2026-047 P3 组织智能 CR-A
@@ -19,8 +19,8 @@ updated: 2026-08-20T01:25:00+08:00
 |---|---|---|---|
 | M1 配置与计分地基 | 配置声明 schema + 零依赖生成器 + 迁移 375–379 + 计分纯函数 | TASK-01/02/03 | 26h（≈3 人天） |
 | M2 快照数据流水线 | 8 项指标 SQL、治理护栏 SQL、rollup 事务编排、scheduler job | TASK-04/05/06/07 | 56h（≈7 人天） |
-| M3 读 API 与看板 | 6 个 maturity API + core schema/client + 前端三件式看板 | TASK-08/09 | 36h（≈4.5 人天） |
-| M4 Org Admin 与周报闭环 | system key 幂等初始化 + 内置周报 skill + schedule + envelope 回传 | TASK-10 | 20h（≈2.5 人天） |
+| M3 读 API 与看板 | 6 个 maturity API + core schema/client + 三件式看板 + 建议最新/历史/追问入口 | TASK-08/09 | 36h（≈4.5 人天） |
+| M4 Org Admin 与周报闭环 | system key 幂等初始化 + 内置周报 skill + 既有 Autopilot schedule + envelope 回传 | TASK-10 | 20h（≈2.5 人天） |
 | M5 测试矩阵与治理登记 | 全量测试矩阵落地、CUSTOM.md 登记、发布前 checklist | TASK-11 | 12h（≈1.5 人天） |
 
 **估算总工时：150h（≈19 人天）**。M1/M2 为发布阻塞路径；M3 依赖 M2 的 snapshot 有数据；M4 依赖 M3 API 供周报引用；M5 与 M2–M4 交叉收口。
@@ -32,8 +32,8 @@ TASK-01 配置声明+生成器 ─┬─> TASK-03 计分纯函数 ────�
 TASK-02 迁移 375–379   ─┴─┬──────────────────────> TASK-06 rollup 编排 ─> TASK-07 scheduler job
 TASK-04 Token/Agent 指标 SQL ──────────────────────┘                            │
 TASK-05 CR/Pipeline 指标 + 治理 SQL ──> TASK-06 ───────────────────────────────┘
-TASK-08 读 API + core schema（依赖 01/02/06）─┬─> TASK-09 前端看板
-                                              └─> TASK-10 Org Admin + 周报
+TASK-08 读 API + core schema（依赖 01/02/06）─┬─> TASK-09 前端看板 + 建议历史/追问
+                                              └─> TASK-10 Org Admin + 周报生成
 TASK-11 测试矩阵 + CUSTOM.md（依赖 01–10 全部）
 ```
 
@@ -77,7 +77,7 @@ TASK-11 测试矩阵 + CUSTOM.md（依赖 01–10 全部）
 4. 8 项 + 治理 DB fixtures 全绿；AC-1~AC-22 无未映射。
 5. API：401/403/400（user scope、非 self 趋势、invalid range）、空态 200、观察期 total=null。
 6. UI：观察期无雷达图、数量与治理同屏、无个人入口、cost_status 四态渲染。
-7. E3：周报 4/4、同周 report_key 幂等、文件不进 git、chat_session_id 可追问。
+7. E3：周报 4/4、同周 report_key 幂等、文件不进 git；建议最新/历史按 ISO week 渲染，chat_session_id 可进入既有 Team Agent 连续追问。
 8. multica `CUSTOM.md` 逐项登记（新 migration/生成器/scheduler/handler/service/内置 skill/前端组件），双周 rebase 前可对照。
 
 feature-flag 计划：不引入运行时 flag——CR-A 全部为新增只读看板与新增内部 job，回滚粒度=TASK 级 revert；`maturity-config.yaml` 初始 `calibration_status='observing'` 天然使计分关闭（scores={}），观察期即灰度期。周报 Autopilot 以“未绑定 local_directory 不产生任务”为事实开关。
