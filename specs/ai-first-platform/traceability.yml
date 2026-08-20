@@ -1,11 +1,11 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 # 五段链路：需求 FR ↔ 技术设计 SDD ↔ 交付 TASK ↔ 代码 merge SHA ↔ CR-ID
 spec-id: ai-first-platform
-cr-ref: CR-2026-046
-cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029, CR-2026-028, CR-2026-030, CR-2026-031, CR-2026-037, CR-2026-032, CR-2026-033, CR-2026-038, CR-2026-039, CR-2026-040, CR-2026-041, CR-2026-043, CR-2026-042, CR-2026-044, CR-2026-045, CR-2026-046]
-target-version: "0.20.7"
+cr-ref: CR-2026-047
+cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029, CR-2026-028, CR-2026-030, CR-2026-031, CR-2026-037, CR-2026-032, CR-2026-033, CR-2026-038, CR-2026-039, CR-2026-040, CR-2026-041, CR-2026-043, CR-2026-042, CR-2026-044, CR-2026-045, CR-2026-046, CR-2026-047]
+target-version: "0.21"
 baseline-since: "0.10"
-generated-at: "2026-08-18T22:25:08+08:00"
+generated-at: "2026-08-20T11:26:39+08:00"
 
 # 已知缺口：CR-2026-003~CR-2026-006 未生成本文件的里程碑段（writeback-traceability 在那四个
 # CR 回写时被跳过，PRD.md/SDD.md/_index.yml 侧的累积记录不受影响、仍完整）。本次（CR-2026-008）
@@ -3071,3 +3071,125 @@ milestones:
         code: { verdict: pass, path: change-requests/CR-2026-046/review-annotations/code.yml, sha256: 6fe36e48bb5d210545874928890147b6989c6e537f70633cbadf4e489de60c58 }
       approval: { status: approved, path: change-requests/CR-2026-046/approval.yml, sha256: 791477404a9884bb76f3a39cf41017f689a6872077295056fa48809c0224f574 }
       merge: { status: merged, path: change-requests/CR-2026-046/merge-commits.yml, sha256: ee83501036ea790c6edf543fef0c831902500c12357d210c18b727f1285b097f }
+  - cr: CR-2026-047
+    milestone: P3 组织智能 CR-A：AI 成熟度看板（E1 快照 / E2 看板 / E3 周报）
+    target-version: "0.21"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: a8cf6d1dad53876dc765d1bf3d3e86685aa35e62
+        branch: requirement/CR-2026-047
+      - repo: multica
+        trunk: main
+        sha: 4991826b31f37254b6a9417f65258ed5da591391
+        branch: requirement/CR-2026-047
+      - repo: tools
+        trunk: custom/main
+        sha: e6facbe58f738ccd255b49fc1a2748951fc2b89b
+        branch: requirement/CR-2026-047
+    frs:
+      - fr: FR-1
+        title: maturity-config.yaml 落 knowledge-base，权重/阈值/观察期集中声明
+        tasks: [CR-2026-047-TASK-01]
+        evidence: test-report §3 TASK-01 AC-1/2
+      - fr: FR-2
+        title: 零依赖配置生成器（读 yaml → Go 副本 + --check 漂移检测）
+        tasks: [CR-2026-047-TASK-01]
+        evidence: test-report §3 TASK-01 AC-2
+      - fr: FR-3
+        title: config_rev = 配置源 commit SHA
+        tasks: [CR-2026-047-TASK-01, CR-2026-047-TASK-06]
+        evidence: test-report §3 TASK-06 AC-5/6
+      - fr: FR-4
+        title: maturity_snapshot 表（迁移 375–379，tenant key 含 workspace_id）
+        tasks: [CR-2026-047-TASK-02]
+        evidence: test-report §3 TASK-02 AC-3
+      - fr: FR-5
+        title: 每日 00:30 Asia/Shanghai 快照 job（sys_cron_executions + CatchUp 补偿）
+        tasks: [CR-2026-047-TASK-07]
+        evidence: test-report §3 TASK-07 AC-4/7
+      - fr: FR-6
+        title: 水位线照抄 rollup_task_usage_hourly 范本（advisory lock + 精确目标桶幂等）
+        tasks: [CR-2026-047-TASK-06]
+        evidence: test-report §3 TASK-06 AC-5
+      - fr: FR-7
+        title: 观察期 scores={}，metrics 照常落库，历史快照不可变
+        tasks: [CR-2026-047-TASK-06]
+        evidence: test-report §3 TASK-06 AC-6
+      - fr: FR-8
+        title: 单任务内遍历 org/user/project 三 scope 写多行
+        tasks: [CR-2026-047-TASK-06]
+        evidence: test-report §3 TASK-06 AC-4
+      - fr: FR-9
+        title: 看板顶部日期区间 + Owner mode + 每日 00:30 更新说明
+        tasks: [CR-2026-047-TASK-09]
+        evidence: test-report §3 TASK-09 AC-14
+      - fr: FR-10
+        title: 统计条活跃成员/Token/估算成本（可关，UI 标注估算）
+        tasks: [CR-2026-047-TASK-09]
+        evidence: test-report §3 TASK-09 AC-14
+      - fr: FR-11
+        title: Token 趋势按日，下钻项目/self/模型
+        tasks: [CR-2026-047-TASK-08, CR-2026-047-TASK-09]
+        evidence: test-report §3 TASK-09 AC-9
+      - fr: FR-12
+        title: 只提供项目排名，无个人榜/Owner 开关/全员通知（随 CR-D）
+        tasks: [CR-2026-047-TASK-08, CR-2026-047-TASK-09]
+        evidence: test-report §3 TASK-09 AC-10
+      - fr: FR-13
+        title: 观察期无雷达，直接复用 dim-segmented/usage-trend-card/leaderboard 三件式
+        tasks: [CR-2026-047-TASK-09]
+        evidence: test-report §3 TASK-09 AC-11/14
+      - fr: FR-14
+        title: 5 维 8 项指标计分 clamp 0–100，不可用指标拒绝部分重归一化
+        tasks: [CR-2026-047-TASK-03, CR-2026-047-TASK-06]
+        evidence: test-report §3 TASK-03 AC-12
+      - fr: FR-15
+        title: 治理板块（门禁一次通过率/EVIDENCE_DRIFT/追溯完整率/审批时延/越权计数）
+        tasks: [CR-2026-047-TASK-05, CR-2026-047-TASK-09]
+        evidence: test-report §3 TASK-05 AC-13
+      - fr: FR-16
+        title: 数量指标与质量护栏成对呈现，定义页明写可刷性，页脚反 Goodhart
+        tasks: [CR-2026-047-TASK-09]
+        evidence: test-report §3 TASK-09 AC-14
+      - fr: FR-17
+        title: 六端点读 API，rankings scope=user 拒绝
+        tasks: [CR-2026-047-TASK-08]
+        evidence: test-report §3 TASK-08 AC-15
+      - fr: FR-18
+        title: 看板为主应用 route，复用 packages/views，无 iframe
+        tasks: [CR-2026-047-TASK-09]
+        evidence: test-report §3 TASK-09 AC-16
+      - fr: FR-19
+        title: Org Admin Workspace 内置项目 + org-admin Agent（幂等初始化）
+        tasks: [CR-2026-047-TASK-10]
+        evidence: test-report §3 TASK-10 AC-17
+      - fr: FR-20
+        title: 每周 Autopilot 生成诊断报告落盘 + inbox 通知 Owner
+        tasks: [CR-2026-047-TASK-10]
+        evidence: test-report §3 TASK-10 AC-18
+      - fr: FR-21
+        title: 诊断模板「四收益一成本」五节框架
+        tasks: [CR-2026-047-TASK-10]
+        evidence: test-report §3 TASK-10 AC-19
+      - fr: FR-22
+        title: 建议区渲染最新报告，历史序列可翻页
+        tasks: [CR-2026-047-TASK-09]
+        evidence: test-report §3 TASK-09 AC-20
+      - fr: FR-23
+        title: 建议走 Team Agent 消息流，可追问（?session= 深链）
+        tasks: [CR-2026-047-TASK-09, CR-2026-047-TASK-10]
+        evidence: test-report §3 TASK-10 AC-21
+      - fr: FR-24
+        title: 第 4 周基线建议（floor≈P10、target≈P75，不自动写 config）
+        tasks: [CR-2026-047-TASK-03, CR-2026-047-TASK-06]
+        evidence: test-report §3 TASK-06 AC-22
+    evidence:
+      test: { status: pass, path: change-requests/CR-2026-047/test-report.md, sha256: 17a95961669ce1059361a046c5e145d2bb356d3302e566f3582796f6013a3e49 }
+      reviews:
+        requirement: { verdict: pass, path: change-requests/CR-2026-047/review-annotations/requirement.yml, sha256: e0dc6b5d61427d716da7a94904bfbe0d3f7df8b00b939b4d05da2aeb0d1bd2ae }
+        tech-design: { verdict: pass, path: change-requests/CR-2026-047/review-annotations/sdd.yml, sha256: bd6dcea2db11120278f56f4a14fa184ca6c4e16000470dc8992a36d955227e06 }
+        dev-plan: { verdict: pass, path: change-requests/CR-2026-047/review-annotations/dev-plan.yml, sha256: 94e7e4ccf4973fc816da08f0b03655025cf8e68127069769801a6bf686183e1b }
+        code: { verdict: pass, path: change-requests/CR-2026-047/review-annotations/code.yml, sha256: 9420e2917508ab7d31e91885179c5fc0136bcc79f36f82a170dfdb7536eb3c57 }
+      approval: { status: approved, path: change-requests/CR-2026-047/approval.yml, sha256: 5f89badc5958813c6af7289055863cd0e1767ccca84e0540875ef60385e2cba7 }
+      merge: { status: merged, path: change-requests/CR-2026-047/merge-commits.yml, sha256: bd3dab5c7dbe7c373b087f9bbd880414aa6a26e6f0adb23db3f52075b91c5116 }
