@@ -16,9 +16,9 @@ owners:
 target-version: 0.21
 source: "docs/product/P3-组织智能设计.md"
 origin: ""
-status: writing-back
+status: archived
 created: "2026-08-20T00:10:30+08:00"
-updated: "2026-08-20T11:23:43+08:00"
+updated: "2026-08-20T11:27:04+08:00"
 remote-ref: ""
 last-push-at: ""
 last-push-by: ""
