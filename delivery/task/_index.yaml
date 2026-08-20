@@ -1961,3 +1961,73 @@ tasks:
     cr-ref: CR-2026-047
     target-version: "0.21"
     estimate: 12h
+  - id: CR-2026-048-TASK-01
+    file: TASK-0.22-CR-2026-048-01-skill-market-migrations.md
+    title: 迁移 380–384：三列 + skill_usage_event + 三索引
+    status: done
+    cr-ref: CR-2026-048
+    target-version: "0.22"
+    estimate: 8h
+  - id: CR-2026-048-TASK-02
+    file: TASK-0.22-CR-2026-048-02-redact-findings.md
+    title: redact 扩展：Findings 定位入口 + 第 17 条个人路径模式
+    status: done
+    cr-ref: CR-2026-048
+    target-version: "0.22"
+    estimate: 6h
+  - id: CR-2026-048-TASK-03
+    file: TASK-0.22-CR-2026-048-03-skill-metadata-parse.md
+    title: frontmatter 扩展：ParseSkillMetadata 提取元数据卡字段
+    status: done
+    cr-ref: CR-2026-048
+    target-version: "0.22"
+    estimate: 4h
+  - id: CR-2026-048-TASK-04
+    file: TASK-0.22-CR-2026-048-04-publish-gate.md
+    title: 发布门禁纯函数 PublishGate + AppealID 哈希
+    status: done
+    cr-ref: CR-2026-048
+    target-version: "0.22"
+    estimate: 8h
+  - id: CR-2026-048-TASK-05
+    file: TASK-0.22-CR-2026-048-05-sqlc-skill-market-queries.md
+    title: sqlc 查询：UpdateSkill 三列 + 遥测 INSERT + market 聚合 + 申诉记账
+    status: done
+    cr-ref: CR-2026-048
+    target-version: "0.22"
+    estimate: 6h
+  - id: CR-2026-048-TASK-06
+    file: TASK-0.22-CR-2026-048-06-claim-telemetry.md
+    title: 认领路径遥测接线 + builtin 合成 id 断言锁
+    status: done
+    cr-ref: CR-2026-048
+    target-version: "0.22"
+    estimate: 6h
+  - id: CR-2026-048-TASK-07
+    file: TASK-0.22-CR-2026-048-07-publish-appeal-endpoints.md
+    title: 发布门禁接线 + 申诉两端点 + runtime-local 覆盖重扫
+    status: done
+    cr-ref: CR-2026-048
+    target-version: "0.22"
+    estimate: 10h
+  - id: CR-2026-048-TASK-08
+    file: TASK-0.22-CR-2026-048-08-market-read-endpoint.md
+    title: Market 读端点 GET /api/skills/market
+    status: done
+    cr-ref: CR-2026-048
+    target-version: "0.22"
+    estimate: 6h
+  - id: CR-2026-048-TASK-09
+    file: TASK-0.22-CR-2026-048-09-market-frontend.md
+    title: Market 前端：排行/元数据卡/发布确认/申诉流
+    status: done
+    cr-ref: CR-2026-048
+    target-version: "0.22"
+    estimate: 14h
+  - id: CR-2026-048-TASK-10
+    file: TASK-0.22-CR-2026-048-10-custom-ledger-regression.md
+    title: 收口：CUSTOM.md 台账 + 全量回归矩阵
+    status: done
+    cr-ref: CR-2026-048
+    target-version: "0.22"
+    estimate: 4h
