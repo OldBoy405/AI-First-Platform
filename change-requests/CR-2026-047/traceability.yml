@@ -78,13 +78,13 @@ reviews:
   code:
     reviewer: "OldBoy405"
     verdict: block
-    reviewed-at: "2026-08-20T09:10:24+08:00"
-    blocker-count: 3
+    reviewed-at: "2026-08-20T09:28:36+08:00"
+    blocker-count: 9
     annotation: "change-requests/CR-2026-047/review-annotations/code.yml"
     repair-target: implement-code
     review-loop:
       current-cycle: 1
-      current-attempt: 2
+      current-attempt: 3
       max-attempts: 3
       attempts:
         - attempt: 1
@@ -98,6 +98,12 @@ reviews:
           reviewed-at: "2026-08-20T09:10:24+08:00"
           result: block
           blocker-count: 3
+          repair-target: implement-code
+        - attempt: 3
+          cycle: 1
+          reviewed-at: "2026-08-20T09:28:36+08:00"
+          result: block
+          blocker-count: 9
           repair-target: implement-code
 tests:
   report: change-requests/CR-2026-047/test-report.md

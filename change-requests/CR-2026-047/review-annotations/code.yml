@@ -1,32 +1,38 @@
 cr-id: CR-2026-047
 review-type: code
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-20T09:10:24+08:00"
+reviewed-at: "2026-08-20T09:28:36+08:00"
 verdict: block
 blockers:
-  - "周报 completion 仅凭 org-admin Agent + project + autopilot_run_id 判定，未校验该 run 属于 canonical AI Maturity Weekly Report Autopilot；同项目其他 Autopilot 会被误拦截。"
-  - "MaturityService.Overall 忽略 scores JSON 反序列化错误，损坏投影会静默返回成功，违反 checked-error 纪律。"
-  - "内置 multica-maturity-weekly-report Skill 仅允许 Bash(multica *)，却要求 temp-file + atomic rename；声明工具权限无法完成 FR-20/AC-18 的报告文件落盘。"
+  - "TypeScript maturity/org-admin wire types retain snake_case beyond the API boundary instead of repository camelCase domain models."
+  - "Maturity views use forbidden default Tailwind typography utilities and raw internal anchors instead of role tokens/AppLink."
+  - "User snapshot scope enumeration omits users with current-day task_usage on older tasks."
+  - "Rankings and Suggestions swallow JSON/database errors; corrupt projections can return partial/empty success."
+  - "Rankings metric query accepts unknown metric strings instead of 400 invalid_query."
+  - "Report latest/history order by completion time rather than ISO week, and cursor pagination repeats earlier rows."
+  - "Maturity page does not satisfy the explicit shared dim-segmented/usage-trend-card/leaderboard reuse boundary."
+  - "Suggestion empty state lacks Owner/Admin runtime selection and Org Admin initialization action."
+  - "Weekly report dispatch does not preflight a bound local_directory or emit unavailable Owner guidance."
 dimensions:
-  代码↔TASK↔SDD 对齐: "BLOCK：E3 production skill 无可执行文件写入能力，且 completion 识别未绑定 canonical 周报 Autopilot。"
-  工程质量: "BLOCK：Overall 吞掉持久化 scores JSON 解码错误。"
-  关键路径可读性: "PASS：rollup 已拆分，主文件低于 800 行；sqlc 已由 pinned 生成器重生。"
-  安全性: "BLOCK：报告完成类型识别过宽，可能拒绝同项目其他 Autopilot 的合法完成。"
-  测试覆盖: "BLOCK：现有 E3 测试未覆盖同 Agent/项目下非周报 Autopilot，也未证明 Skill 权限可实际写文件。"
-  测试证据可信度: "PASS：canonical crctl test attempt 3 的 8 条命令均启动且 exit-code=0，真实 PostgreSQL E1/E2/E3 server 侧证据有效。"
-  前端质量: "PASS：attempt 1 的日期范围、Owner mode、日趋势、config 断点和 8 项可刷性 blocker 已修复，targeted views 134/134。"
+  代码↔TASK↔SDD 对齐: "BLOCK：user 趋势、report history、组件复用、Org Admin 初始化与 local_directory 前置条件仍偏离 SDD/TASK。"
+  工程质量: "BLOCK：rankings/suggestions 吞错，TypeScript 边界命名不符仓库约定。"
+  关键路径可读性: "PASS：attempt 2 的 canonical Autopilot identity、scores fail-closed 与 Skill 原子写权限已修复。"
+  安全性: "PASS：未发现新增跨 workspace 或个人榜泄露；owner free-text 禁令保持。"
+  测试覆盖: "BLOCK：缺 older-task/current-usage user scope、unknown metric、history cursor/week order、unbound local_directory 与初始化 action 回归测试。"
+  测试证据可信度: "PASS：canonical crctl test cycle 2 attempt 1 的 8 条命令均 exit-code=0，但未覆盖上述缺口。"
+  前端质量: "BLOCK：默认 typography utility、raw anchor、共享组件未复用、空态缺初始化交互。"
 suggestions: []
 review-loop:
-  current-attempt: 2
+  current-attempt: 3
 release-subjects:
   version: 1
   repositories:
     - repo: ai-first-platform-docs
       remote-ref: refs/heads/requirement/CR-2026-047
-      reviewed-source-sha: 19a04f5e30934e0dcdfdc27b64c1147f6facd09a
+      reviewed-source-sha: 60b2b7ccb604777673a2b1144fc8356c49bec3ff
     - repo: multica
       remote-ref: refs/heads/requirement/CR-2026-047
-      reviewed-source-sha: 1b420c0bda0f042a68e47c12739ccef2e7195061
+      reviewed-source-sha: de05f6182ac0c4031772bb1808693b391c18c8b2
     - repo: tools
       remote-ref: refs/heads/requirement/CR-2026-047
       reviewed-source-sha: 75d72a3583d08795d9a0f4b39ece20d7e9eddd38
