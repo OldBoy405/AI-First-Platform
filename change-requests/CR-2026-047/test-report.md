@@ -3,7 +3,7 @@ cr: CR-2026-047
 status: pass
 tester: Ray
 generated-by: crctl-test
-generated-at: "2026-08-20T09:20:36+08:00"
+generated-at: "2026-08-20T10:13:05+08:00"
 command-digest: 2ba50d7e2b16d433412a8846fbd99214ab3c87d59320bee29e3f4a8510ade5f7
 commands:
   - repo: multica
