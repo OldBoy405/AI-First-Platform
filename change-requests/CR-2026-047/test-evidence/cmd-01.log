@@ -10,7 +10,7 @@ maturity-config.yaml: metric weights must sum to 1 (got 1.375)
 warning: in the working copy of 'maturity-config.yaml', LF will be replaced by CRLF the next time Git touches it
 maturity-config.yaml:20: unrecognized line: banana: yes
 warning: in the working copy of 'maturity-config.yaml', LF will be replaced by CRLF the next time Git touches it
-source files are dirty/untracked relative to HEAD in C:\Users\GOBAO\AppData\Local\Temp\gencfg-5XWwCI; commit first
+source files are dirty/untracked relative to HEAD in C:\Users\GOBAO\AppData\Local\Temp\gencfg-LHz69y; commit first
 warning: in the working copy of 'maturity-config.yaml', LF will be replaced by CRLF the next time Git touches it
 config_gen.go differs from a fresh regeneration off maturity-config.yaml — regenerate and commit.
 warning: in the working copy of 'maturity-config.yaml', LF will be replaced by CRLF the next time Git touches it
@@ -18,15 +18,15 @@ warning: in the working copy of 'model-prices.yaml', LF will be replaced by CRLF
 warning: in the working copy of 'maturity-config.yaml', LF will be replaced by CRLF the next time Git touches it
 warning: in the working copy of 'model-prices.yaml', LF will be replaced by CRLF the next time Git touches it
 model-prices.yaml: missing/incorrect "schema" block
-✔ generates gofmt-clean output and --check agrees (343.107ms)
-✔ LF and CRLF sources produce byte-identical output (505.3485ms)
-✔ missing metrics entry hard-fails naming the block (243.958ms)
-✔ weight sum != 1 hard-fails (261.762ms)
-✔ unrecognized line hard-fails with line number (256.3607ms)
-✔ dirty source refuses generation (218.552ms)
-✔ --check fails on drifted committed file (404.9459ms)
-✔ optional model-prices.yaml emits price map literal (286.4545ms)
-✔ model-prices.yaml missing schema hard-fails (260.3176ms)
+✔ generates gofmt-clean output and --check agrees (348.9907ms)
+✔ LF and CRLF sources produce byte-identical output (551.2901ms)
+✔ missing metrics entry hard-fails naming the block (285.9503ms)
+✔ weight sum != 1 hard-fails (265.8099ms)
+✔ unrecognized line hard-fails with line number (243.5799ms)
+✔ dirty source refuses generation (208.5194ms)
+✔ --check fails on drifted committed file (414.8722ms)
+✔ optional model-prices.yaml emits price map literal (254.9016ms)
+✔ model-prices.yaml missing schema hard-fails (236.8632ms)
 ℹ tests 9
 ℹ suites 0
 ℹ pass 9
@@ -34,6 +34,6 @@ model-prices.yaml: missing/incorrect "schema" block
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 2843.5929
+ℹ duration_ms 2872.2099
 
 --- stderr ---

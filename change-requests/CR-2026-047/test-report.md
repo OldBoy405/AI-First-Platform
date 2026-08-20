@@ -3,7 +3,7 @@ cr: CR-2026-047
 status: pass
 tester: Ray
 generated-by: crctl-test
-generated-at: "2026-08-20T04:39:35+08:00"
+generated-at: "2026-08-20T09:04:11+08:00"
 command-digest: 2ba50d7e2b16d433412a8846fbd99214ab3c87d59320bee29e3f4a8510ade5f7
 commands:
   - repo: multica
@@ -94,42 +94,47 @@ commands:
 
 ## 测试摘要
 
-ponytail 模式实现（2026-08-20）。8 条机器命令全绿（exit-code 全 0），`status=pass`：
+代码评审 attempt 1 BLOCK 修复后重新生成 canonical 证据（attempt 3）。8 条机器命令均已启动且 exit-code=0，`status=pass`：
 
 | # | 套件 | 结果 |
 |---|---|---|
-| 1 | 配置生成器（node --test，9 用例） | ✅ 9/9 |
-| 2 | Go maturity/migrations/migrate（真实 PG） | ✅ ok |
-| 3 | Go service（rollup 集成 + 读路径 + envelope + Org Admin 幂等 + 纯函数，真实 PG） | ✅ ok |
-| 4 | Go scheduler（hook 补偿 fixed-clock，真实 PG） | ✅ 5/5 |
-| 5 | Go handler（六端点 400 守卫） | ✅ 6/6 |
-| 6 | core zod malformed + paths 一致性（vitest） | ✅ 82/82 |
-| 7 | views maturity/layout/search（vitest） | ✅ 133/133 |
+| 1 | 配置生成器（含 LF/CRLF、dirty guard、漂移与失败硬退出） | ✅ 9/9 |
+| 2 | Go maturity/migrations/migrate | ✅ PASS |
+| 3 | Go service（真实 PostgreSQL：rollup、latest/daily trend、28 日 baseline、Org Admin dispatch→completion→chat/inbox） | ✅ PASS |
+| 4 | Go scheduler（补洞、FAILED retry、fixed-clock） | ✅ PASS |
+| 5 | Go handler（六端点边界与隐私守卫） | ✅ PASS |
+| 6 | core schema + paths（vitest） | ✅ 82/82 |
+| 7 | views maturity/layout/search（vitest） | ✅ 134/134 |
 | 8 | go vet 五个包 | ✅ 零告警 |
 
-另：真实 PostgreSQL 迁移 375–379 up/down/up 已执行（379→375 逆序回滚成功；`down` 全程在 373 因上游存量 CHECK 冲突中止，与本 CR 无关，见 test-mapping.md R-1）；EXPLAIN 命中 378/379 由 `TestMaturityIndexesServeTheirQueries` 钉死。
+补充验证：`go build ./...`、core 全量 vitest 132 files / 1550 tests、core/views typecheck、core diagnostics route parity 97 tests均通过。真实 PostgreSQL 的 migration 375–379 逆序回滚及 EXPLAIN 378/379 命中证据继续有效。
+
+## BLOCK 修复验证
+
+- E1：目标 bucket 精确幂等，较新 bucket 成功后旧 FAILED bucket 仍可补洞；AI penetration 按 task initiator 统计且 user scope 组织指标全部 `not_applicable`、`scores={}`。
+- E2：latest 使用 `ORDER BY bucket_date DESC LIMIT 1`；model 趋势按 Asia/Shanghai 自然日分桶；provider/model 价格优先于 bare-model fallback；UI 增加日期范围、Owner mode、每日趋势、config revision 断点、Token/质量配对与 8 项可刷性说明。
+- E3：真实 PostgreSQL 测试覆盖 Autopilot rule version、项目/复用 chat 绑定、无效 envelope fail-closed、direct envelope 持久化、assistant chat、Owner inbox，以及同 ISO week 第二个 retry task 的 inbox 去重；普通 Org Admin 追问不被误判为报告完成。
+- 工程：sqlc 使用 pinned `make sqlc` 重生；rollup 主文件已拆分至 800 行以内；集成挂点与 `CUSTOM.md` 已登记。
 
 ## TASK 验收覆盖矩阵
 
-11/11 TASK 已 `crctl task done`；AC-1~AC-22 → 测试用例逐条映射见 `test-mapping.md`（本文件同目录）。
+11/11 TASK 已 `crctl task done`；AC-1～AC-22 的逐项可执行映射见同目录 `test-mapping.md`。
 
 ## 新增/修改测试文件
 
-- `server/internal/maturity/schema_test.go`、`score_test.go`
-- `server/internal/maturity/gen/generate-config.test.mjs`
-- `server/internal/service/maturity_rollup_test.go`、`maturity_rollup_db_test.go`、`maturity_rollup_crosscheck_test.go`、`maturity_test.go`、`maturity_index_explain_test.go`、`org_admin_test.go`
+- `server/internal/maturity/{schema_test.go,score_test.go}`、`gen/generate-config.test.mjs`
+- `server/internal/service/{maturity_rollup_test.go,maturity_rollup_db_test.go,maturity_rollup_crosscheck_test.go,maturity_test.go,maturity_index_explain_test.go,maturity_baseline_db_test.go,org_admin_test.go}`
 - `server/internal/scheduler/jobs_maturity_test.go`
 - `server/internal/handler/maturity_test.go`
-- `packages/core/api/maturity-schemas.test.ts`
+- `packages/core/api/maturity-schemas.test.ts` 与既有 paths/diagnostics parity tests
 - `packages/views/dashboard/maturity/maturity-page.test.tsx`
 
 ## 未覆盖风险
 
-1. **daemon 全链路（AC-18 后半）**：文件落盘 + inbox 通知 + 同周去重需真实 daemon + local_directory 绑定环境，本会话未跑；写侧（envelope/SHA/report_key 幂等）已全覆盖。
-2. **基线端到端（AC-22 后半）**：28 个连续 org bucket 的端到端建议 fixture 未实现（需 28 天数据）；SQL 分位数语义已钉死，观察期结束后由首份真实周报验证。
-3. **前端三件式复用偏差**：sibling 组件与 usage 领域类型耦合，maturity 页改为同构自实现（CUSTOM.md #46 记录）；若后续 CR 把三组件重构为通用原语，可回切复用。
-4. **实现期新增 2 个未列名的 sqlc 查询**：`MaturityTaskDepthRows`、`MaturitySnapshotFirstBucket`（TASK-06 卡文字本身要求的能力依赖）。
+1. **真实 daemon 文件系统**：server 侧 production dispatch/completion/chat/inbox 已用真实 PostgreSQL贯通；内置 skill 的 temp-file + atomic rename 仍未在实际 daemon + `local_directory` 环境执行，部署验收需补一轮。
+2. **全量 views 基线**：补充全量 views 运行有 3 个失败，均位于本 CR merge-base 至 HEAD 未改动的 `project-detail.test.tsx` 与 Windows 路径相关 `rich-content-boundary.test.ts`；CR 范围 targeted suite 18 files / 134 tests 与 typecheck 均通过。
+3. **浏览器视觉验收**：date range、Owner mode、趋势与断点已有组件测试，但未进行真实 Web/Desktop 手工视觉与键盘可达性走查。
 
 ## 下一步建议
 
-按用户指令跳过代码评审（review-code）；下一步为人工 `approve-code`（需先将状态推进到 `code-reviewing`，请用户按 `crctl next` 权威建议操作）。
+进入 code-review attempt 2；仅在 Standards 与 Spec 双轴均 PASS 且 canonical `review-record` 推进到 `code-reviewing` 后，才交付人工 `approve-code` 指令。
