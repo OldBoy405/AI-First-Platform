@@ -1,0 +1,62 @@
+cr-id: CR-2026-048
+review-type: code
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-20T17:52:38+08:00"
+verdict: block
+blockers:
+  - "AC-12/FR-20/FR-21 未实现：TASK-09 验收 2 要求详情页渲染四字段元数据卡与运行时要求标签，实际只新增 skill-market-card.tsx（可见性徽章 + version + 发布对话框），全仓 grep 不到 applicable-scenarios/failure-handling 的任何前端消费点。"
+  - "AC-13/FR-23 假实现：market-page.tsx 的 session-export 开关（sessionOnly）不参与任何过滤，只在开时多渲染一句 hint；GET /api/skills/market 也不返回 source 字段。UI 呈现了一个不生效的筛选器，比不做更糟。"
+  - "AC-14 后半（EXPLAIN 断言）无证据且未声明未覆盖：TASK-01 验收 4 要求固定 fixture 的 EXPLAIN (FORMAT JSON) 证明 382/383/384 三条索引各自被命中；7 条命令中无任何 EXPLAIN，test-report 却把 AC-14 记为已覆盖（TASK-01/TASK-05 行），也未进「未覆盖与已知基线」。要么补断言，要么在 test-report 显式降级声明。"
+  - "申诉放行不可撤销（AC-11 语义漏洞）：queries/skill_market.sql#GetAppealDecision 只查 action='skill_appeal_approved'，approve 之后再 reject 永远不生效，被放行的密钥命中项无法收回。改为取该 appeal_id 最新一条决定行（approved/rejected 一起查，ORDER BY created_at DESC LIMIT 1）再判 action。"
+  - "门禁触发条件 2 下申诉死锁：skill.go UpdateSkill 用 effContent（请求覆盖内容）算 contentHash 生成 appeal_id，而 skill_appeal.go#appealContentHash 用库内旧 content 算 hash；改 org Skill 内容被误报拦截时，提交的申诉 id 与门禁 id 永不相等 → 该误报既不能存也不能放行。skill_create.go 覆盖导入路径同理（hash 用 input.Files，申诉用库内 files）。personal_path 这类高误报模式下此路径很容易被走到。"
+  - "lint 证据缺失：test-report 7 条命令只有 go build + 两条 tsc，无 gofmt/go vet/eslint 结论，也无「不适用」说明；同仓 CR-2026-047 的 test-report 机器区带 `go vet ./...` 先例，本 CR 无理由省略（review-code Step 1/Step 3 工程质量维度要求）。"
+  - "前端 vitest「环境不兼容」的免测理由与先例矛盾：CR-2026-047 机器区两条 `node node_modules/vitest/vitest.mjs run ...` 均 exit 0，本 CR 以 Node 24 + vitest 4 启动失败为由整体跳过 TASK-09 验收 5，并用「等价脚本核验 locale 键」代替。请用 047 同款调用重跑；确实不可用时把失败命令与报错原样落进 test-evidence 再声明降级。"
+  - "迁移 381 缺 COMMENT ON（TASK-01 实现要点 + AC-5 尾句「表注释含派发时物化语义」）：现在只有 SQL 行注释，库里查不到表注释。一行 `COMMENT ON TABLE skill_usage_event IS ...` 即可。"
+dimensions:
+  code_task_sdd_alignment: "不通过：TASK-01 验收 4（EXPLAIN）、TASK-09 验收 1/2（session-export 筛选、四字段卡+运行时标签）未落地；另有未记录偏离——SDD §1/§5 与 TASK-09 明写「不新增页面/路由」，实现新增了 /skills/market 页面 + 桌面端路由 + web page.tsx，且 skills-page.tsx 零改动。后端 TASK-01/02/03/04/05/06/08/10 与 SDD 契约一致。"
+  engineering_quality: "不通过：无 lint/vet 证据也无不适用说明；死变量 handler/skill_appeal.go:21 skillAppealActions（全仓无引用）；skill.go 与 skill_create.go 的门禁块几乎逐行重复且都做两遍全量扫描。"
+  key_path_readability: "通过：publish_gate.go 保持纯函数、注释交代了 appeal_id 绑定内容哈希的失效语义；daemon.go 遥测挂点注释说明 best-effort 与去重口径清楚。"
+  security: "有条件通过：422 findings 全部经 Text() 脱敏（测试断言不含明文）、发布失败不部分更新、decide 仅 owner/admin 403 已验；但放行不可撤销（blocker 4）属于例外面语义缺口。另注意 personal_path 进的是共享 patterns 表，Text() 全局生效，agent 输出里的普通路径也会变 [REDACTED PATH]，SDD 已批准但无回归证据。"
+  test_coverage: "部分：后端新增用例扎实（门禁纯函数 6 例、真库发布/重扫/申诉/403/幂等、market 去重与工作区隔离、claim 遥测）；前端零测试（vitest 未跑），EXPLAIN 断言缺失。"
+  test_evidence_credibility: "不通过：7 条命令 exit 0、command-digest 与 traceability.yml 一致、cmd-01..07 日志齐全，机器区可信；但覆盖矩阵把 AC-12/AC-13/AC-14 记为已覆盖，实际证据只到 typecheck 与 concurrent-cleanup 测试，属于高估。"
+  frontend_quality: "不通过（触发：market-page.tsx / skill-market-card.tsx / skill-detail-page.tsx）：① loading 有 Skeleton、empty 有文案，但 error 态缺失（useQuery 的 isError 未处理，取数失败页面显示空列表）；② session-export 控件为无效控件（blocker 2），排序按钮标签把当前状态当动作名（sortByUsage=true 时显示「按使用量」），语义反了；③ 体积无预算证据（新增两个组件，无 bundle 影响说明）。a11y 未见对比度破 AA 的写法。"
+suggestions:
+  - "publish_gate_test.go#TestProtectedPathPatternsPin 是把常量与常量的字面副本对拍，检测不到 tools rules.json 的任何漂移——纯仪式，建议删（服务端无 tools checkout，注释里的权威源声明已足够）。"
+  - "skill_market_test.go#TestUpdateSkillBlocksOrgPublishOnSecrets 名不副实：内容里没有密钥，422 实际来自 owner_actor 缺失，末尾还留了 `_ = secret` 死变量；已被 TestUpdateSkillRejectsBlockedPublishAndKeepsVisibility 完全覆盖，建议删。"
+  - "门禁调用改成扫一次：EvaluatePublish(..., nil) 后按 approved 过滤 findings，替掉现在的「有 findings 就整包重扫一遍」；同时把 skill.go / skill_create.go 两段近乎相同的门禁块与三处 BuildManifest 组装（含 skill_appeal.go#appealContentHash）收成一个 helper，约可省 40+ 行。"
+  - "redact.Findings 用 strings.Split(s, \"\n\") 未做 \r\n 规范化（本仓行尾纪律第 1 条），Windows 检出内容的 excerpt 会带尾随 \r；建议 split(/\r?\n/) 等价写法。"
+  - "SkillMetadata 同时存 Name/Description 和 Fields 里的同名键，两份真相；只留 Fields + 两个取值方法即可（低优先，不影响行为）。"
+  - "新增 /skills/market 页面本身合理，但与已审批 SDD §1「前端不新增页面/路由」冲突，请以 SDD revision 记录该偏离与理由（工程纪律第 4 条）。"
+review-loop:
+  current-attempt: 1
+release-subjects:
+  version: 1
+  repositories:
+    - repo: ai-first-platform-docs
+      remote-ref: refs/heads/requirement/CR-2026-048
+      reviewed-source-sha: daa0abb78157eeeb55139aa5ee842dd3a8408c7a
+    - repo: multica
+      remote-ref: refs/heads/requirement/CR-2026-048
+      reviewed-source-sha: d2f0fc6b5c860c95545f719fb57819e0a027f5a1
+    - repo: tools
+      remote-ref: refs/heads/requirement/CR-2026-048
+      reviewed-source-sha: e6facbe58f738ccd255b49fc1a2748951fc2b89b
+  artifacts:
+    algorithm: sha256
+    canonicalization: crlf-to-lf+path-sort
+    files:
+      - { path: change-requests/CR-2026-048/plan.md, sha256: 42fe6019fd159ed78b08fbb659c954c14c86c33a2235024f6f12d43e553cd4c3 }
+      - { path: change-requests/CR-2026-048/prd.md, sha256: 07b23e58f0da43941336df812abca7c387e032bc95f26a44d144755f44dd1570 }
+      - { path: change-requests/CR-2026-048/sdd.md, sha256: 6bc3e11bc20a2782098f278499efdd07bac12a2b1751bc5e386f2e4e581f170a }
+      - { path: change-requests/CR-2026-048/tasks/TASK-01.md, sha256: 95008e4bfbbaf598bd160688dd177db5f107f30e44d26def1a2130b9250e5d68 }
+      - { path: change-requests/CR-2026-048/tasks/TASK-02.md, sha256: f4d5bd4fcab276e28a6953f1fc000b9a14856f2e85600508a1a6ffab43ba73c8 }
+      - { path: change-requests/CR-2026-048/tasks/TASK-03.md, sha256: 858bf43b67e66d286540e1d234851f680dac329ebedb0f3e18ef79d35509ade8 }
+      - { path: change-requests/CR-2026-048/tasks/TASK-04.md, sha256: d8646ced0e8b5416366bf22547d309b8c6d05e7aedf6940b15517826a8cc2c1f }
+      - { path: change-requests/CR-2026-048/tasks/TASK-05.md, sha256: 71e4d09a351dfb1ba01b03c517fe80694b4e772cff032d8d808c6925ca477525 }
+      - { path: change-requests/CR-2026-048/tasks/TASK-06.md, sha256: c34a5b2ea5bd37a809307cf82cb36513b075b355b05c06462943e8cd604df468 }
+      - { path: change-requests/CR-2026-048/tasks/TASK-07.md, sha256: 5beca21f63a85514fdbefb756061fcee2e8dd52f2888dfb6c72795c51847c3d7 }
+      - { path: change-requests/CR-2026-048/tasks/TASK-08.md, sha256: ba7e41a1fcf06d2764bc3c5977dcc4b83e4b755b5f6e587c87fb88871c7404d6 }
+      - { path: change-requests/CR-2026-048/tasks/TASK-09.md, sha256: 6770b2d78e5e73a91a3d00c8e2ef95395b3eaade98626b745f433fbc136158da }
+      - { path: change-requests/CR-2026-048/tasks/TASK-10.md, sha256: 8b3f87ba9e0075aab942e93497e293593818a0373cb9678de2ee0c786b6e5d76 }
+      - { path: change-requests/CR-2026-048/tasks/_index.yml, sha256: 10997536e1460279d726932a82c67250704432c001f482ad2c55326ddbb6b3c4 }
+    digest: 48a144504a37436c4b28c90c75ee0475563822275c9a752ecb20c1ca0e7db1b1
