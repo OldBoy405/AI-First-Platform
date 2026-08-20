@@ -1,0 +1,57 @@
+cr-id: CR-2026-047
+review-type: code
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-20T08:06:00+08:00"
+verdict: block
+blockers:
+  - "E3 周报链路未接通：BuildReportEnvelope 与 MaturityBaselinePercentiles 无生产调用；Autopilot 未明确绑定内置 Skill，完成路径未校验 envelope/通知 Owner，AC-18/19/21/22 不可达。"
+  - "快照补偿错误使用 MAX(bucket_date)>=target 作为 no-op，较旧失败桶会在较新桶成功后永久跳过；必须改为精确目标桶存在检查。"
+  - "指标/用户 scope 语义错误：AI penetration 从 task_usage 而非任务发起行统计；user 非适用指标未覆盖为 not_applicable，校准后可能生成 user scores。"
+  - "读取合同错误：overall 默认返回升序 LIMIT 1 的最老桶；model token trend 按范围聚合成 from 日期单点而非日序列。"
+  - "E2 看板不完整：缺日期区间、Owner mode、趋势/断点；观察期排名默认 total；8 项 known_gameability 未提供。"
+  - "工程规范阻断：models.go 生成文件手工补丁、cost fallback provider 参数未使用、BuildScores/JSON 错误被吞、rollup.go 超 800 行无拆分理由、migrate 上游挂钩缺 AIFIRST 标记。"
+  - "测试证据不足：真实 PostgreSQL 套件日志无 -v，无法排除 TestMain 整包 skip；daemon 周报与 28 天基线端到端被报告为残余风险而非验收证据。"
+dimensions:
+  代码↔TASK↔SDD 对齐: "BLOCK：E2/E3、补偿、指标与读取合同存在实质偏差。"
+  工程质量: "BLOCK：生成文件手补、吞错、未使用参数、超长文件、挂钩标记违反仓库规范。"
+  关键路径可读性: "BLOCK：rollup 单文件 887 行超过 fork 800 行门槛，需拆分指标 helper。"
+  安全性: "PASS：已核对 workspace tenant join 与 user self-only；未发现跨租户或个人榜泄露。"
+  测试覆盖: "BLOCK：AC-18/22 生产链路与端到端验收缺失，model 日趋势/旧桶 retry 无回归测试。"
+  测试证据可信度: "BLOCK：canonical Go DB 日志不显示 RUN/PASS，TestMain skip 无法排除。"
+  前端质量: "BLOCK：必需 header/trend/config-revision/8 项可刷性缺失；既有组件测试不能证明这些状态。"
+suggestions:
+  - "Shanghai timezone fallback 在 service/scheduler/handler 重复；后续触及这些路径时再集中。"
+review-loop:
+  current-attempt: 1
+release-subjects:
+  version: 1
+  repositories:
+    - repo: ai-first-platform-docs
+      remote-ref: refs/heads/requirement/CR-2026-047
+      reviewed-source-sha: 65084819d7eada74ef7b9d2a543b9a463539f225
+    - repo: multica
+      remote-ref: refs/heads/requirement/CR-2026-047
+      reviewed-source-sha: ba938225f12187351958bf15081d6a95c09822fd
+    - repo: tools
+      remote-ref: refs/heads/requirement/CR-2026-047
+      reviewed-source-sha: 75d72a3583d08795d9a0f4b39ece20d7e9eddd38
+  artifacts:
+    algorithm: sha256
+    canonicalization: crlf-to-lf+path-sort
+    files:
+      - { path: change-requests/CR-2026-047/plan.md, sha256: dcebeb9f76a8eff6011ff9e5cf80de63320e39df892865866d1576a2ec4eb99a }
+      - { path: change-requests/CR-2026-047/prd.md, sha256: 287b41bcd7e99d0c80647cca6f63cfa7f81bd9be72be90239b6d6f5ef68a4d61 }
+      - { path: change-requests/CR-2026-047/sdd.md, sha256: 95fbd50695f07191758ef789f067069268faa1dd10c1c0a84c2b2bdd8ee9d06f }
+      - { path: change-requests/CR-2026-047/tasks/TASK-01.md, sha256: 04e14a436f68f01ea054dd7ee3408b9ed5965b30da52c44f65359e59568e9689 }
+      - { path: change-requests/CR-2026-047/tasks/TASK-02.md, sha256: af0873075a0ea29b3fe2a60551e9ceb2381887ef8b1c84e6d8555c2ab88caac7 }
+      - { path: change-requests/CR-2026-047/tasks/TASK-03.md, sha256: b44da3b7a3ba74f251bbee96e10f91e8434c74da74ac1abeac2430c7843b8c5a }
+      - { path: change-requests/CR-2026-047/tasks/TASK-04.md, sha256: 718961005bc5a5c24085764bf2f0b5d79cac3eebbed23c1348a87dbfe71f9c72 }
+      - { path: change-requests/CR-2026-047/tasks/TASK-05.md, sha256: ff00762c2c3b788f890818b47b5a2927f210534ebddc7ac6645c4ee927acea7d }
+      - { path: change-requests/CR-2026-047/tasks/TASK-06.md, sha256: b502ce08d67ee064284c6369815af56cf8bc1d1603c62a6f72b0102e38fb899d }
+      - { path: change-requests/CR-2026-047/tasks/TASK-07.md, sha256: ac493f9eb5708238bfe209fb1055336a7aef2fffcb52b075695e7b876fb1da4d }
+      - { path: change-requests/CR-2026-047/tasks/TASK-08.md, sha256: 4e9650180f96503abc2cd5e0608ec007d5de3b644d13eeaad4ee2da6d816879f }
+      - { path: change-requests/CR-2026-047/tasks/TASK-09.md, sha256: 3413d47a5765630c3f974e7464573e549c86449775a3b8e02cdf40d007be8f62 }
+      - { path: change-requests/CR-2026-047/tasks/TASK-10.md, sha256: 7450c6976eef1bfe06accdb9799d75b3292d244aa3964ca1d2de4df597759f96 }
+      - { path: change-requests/CR-2026-047/tasks/TASK-11.md, sha256: 05c1c9066ac2081b7bf34342b754665a7cf7568ad78a03f6b3e89fad74de4bdb }
+      - { path: change-requests/CR-2026-047/tasks/_index.yml, sha256: f355d7992ee2d8aa2e321b3df00180822faaeefa17867159a0b78de616e5f579 }
+    digest: 38497f4aa3eddf0b9dbaaedcf4b0ee64e5a2cd88133b0d4b942cdecb3cde0634
