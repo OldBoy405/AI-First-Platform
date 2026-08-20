@@ -1,0 +1,27 @@
+cr-id: CR-2026-049
+review-type: dev-plan
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-20T21:10:05+08:00"
+verdict: block
+repair-target: write-dev-plan
+blockers:
+  - "DP-B1 计划估算不一致：plan.md 里程碑估算为 2+3+1.5+2+4+1=13.5 人天，但 tasks/_index.yml/crctl task init 的 TASK 总工时为 144h=18 人天，无法作为可执行排期。回修必须按 TASK 工时重算每个里程碑并让总和等于 144h/18 人天，或同步调整任务估算；plan 与 index 不得保留两个口径。"
+  - "DP-B2 TASK-10 接口契约不可执行：验收要求每个 GitHub page 调用 heartbeat，但 ScanRepo(ctx,bound,prevCursor) 没有 heartbeat 输入；CommitPrefixScanJob(pool, bindings, gh) 也没有表达 per-workspace scope 内解析绑定的 resolver。回修必须固定签名，例如 ScanRepo(ctx context.Context, in ScanRepoInput{Bound BoundRepo, PrevCursor *string, Heartbeat func(context.Context) error}) (*ScanResult,error)，JobSpec handler 按 in.Scope.ID 调用 ResolveBindings，不能使用全局静态 bindings。"
+  - "DP-B3 依赖拓扑与计划文字矛盾：plan.md 写明 TASK-04/TASK-05 都完成后才能 TASK-06，但 TASK-06 仅依赖 TASK-05；TASK-13 消费全部 TASK 产物/做全量集成，却仅依赖 TASK-03、TASK-12，task init 会在其余 TASK 未完成时允许 done。回修必须让 TASK-06 显式依赖 TASK-04/TASK-05，并让 TASK-13 依赖所有 TASK-01..TASK-12（或建立等价的完整收敛链），同时更新 plan 依赖图。"
+  - "DP-B4 TASK-10 的扫描输入/输出契约不足以锁定 SDD 的不漏扫算法：BoundRepo 未明确承载 Prefixes []string，ScanResult 未明确区分固定 HEAD=B 与推进 Cursor，ListCommits/扫描接口也没有把精确 cursor-stop 语义写进 TASK。回修必须在 TASK-09/TASK-10 接口契约中补齐 BoundRepo{Prefixes []string}、ScanRepoInput{PrevCursor, Heartbeat}、ScanResult{HeadSHA, Cursor, Findings}，并明确分页从 HeadSHA=B 到精确 PrevCursor=A，未命中/截断/限流不得推进 cursor。"
+dimensions:
+  sdd-to-plan: "block：SDD 的精确扫描/heartbeat/按 workspace resolver 契约未完整落入可调用的 TASK 接口；回滚风险已覆盖但排期口径错误。"
+  plan-to-tasks: "block：里程碑工时与 task index 不一致，计划声明的 TASK-04/05→06 与实际 index 不一致，TASK-13 未收敛全部交付。"
+  task-executability: "block：TASK-10 的 heartbeat、scope binding、prefixes、HeadSHA/Cursor 没有完整函数输入输出。"
+  dependency-topology: "block：TASK-06 与 TASK-13 的 depends-on 不满足计划文字及实际消费关系。"
+  interface-contracts: "block：TASK-09/10 的 BoundRepo、ScanRepo、JobSpec handler 契约不一致，无法保证 per-workspace 和固定 B→A。"
+  acceptance-verifiability: "通过：每张 TASK 至少 2 条验收，AC-1~AC-15 有分层测试覆盖；修正接口后可执行。"
+  scope-and-simplicity: "通过：13 TASK 均落在已审批 SDD 范围内，没有新增 Agent/LLM/第二队列。"
+  risk-and-rollback: "通过：计划包含迁移维护窗口、旧版本保留、fail-safe cursor 与 pending gate；需先修正排期/接口。"
+  reviewer-model: "local-reviewer"
+suggestions:
+  - "将里程碑估算同时写小时与人天，减少后续 review/approve 的口径歧义。"
+  - "TASK-13 的收尾测试可继续保持单卡，但必须显式等待所有前置 TASK。"
+review-loop:
+  current-attempt: 1
+subject-sha256: 5153b50ecc6a9b6fd92eb9aea8e825cb58eea2f6b3bc56d8935904e089db04c0
