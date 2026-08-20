@@ -1,9 +1,9 @@
 ---
 cr: CR-2026-049
-status: block
+status: pass
 tester: Ray
 generated-by: crctl-test
-generated-at: "2026-08-21T02:20:48+08:00"
+generated-at: "2026-08-21T03:48:09+08:00"
 command-digest: fff42d63f0ebd5ce8a03fb019d785c6c35193e545518a163cc564fe554202d37
 commands:
   - repo: multica
@@ -71,7 +71,7 @@ commands:
     executable: node
     args: [node_modules/typescript/bin/tsc, --noEmit, -p, packages/core/tsconfig.json]
     timeout-seconds: 600
-    exit-code: 2
+    exit-code: 0
     signal: null
     timed-out: false
     started: true
