@@ -29,6 +29,7 @@ created: 2026-08-20T20:59:46+08:00
 - `ResolveRepositoryAccess(ctx, installationIDs []int64, owner, repo string) (installationID int64, err error)`：对每个 installation mint token 后检查 Contents:Read；零个 → `repository_access_missing`，多个 → `repository_access_ambiguous`。
 - `ListCommits(ctx, token, owner, repo, branch string, opts ListCommitsOptions) ([]CommitMeta, error)`：`GET /repos/{owner}/{repo}/commits?sha=<url.Values 编码>&per_page=&page=`；`CommitMeta{SHA, Subject}`；subject 取 message LF 规范化首行；403/429/5xx、timeout、malformed JSON 均结构化错误（不含 token/header）。
 - `drift.ResolveBindings(ctx, workspaceID, decls, wsRepos []RepoData, installations []GitHubInstallation) ([]BoundRepo, error)`：URL 规范化（SSH→HTTPS owner/repo）后精确相等；三仓全部成功才返回；`BoundRepo{RepoID, Owner, Repo, Trunk string, Prefixes []string, Token string}`。`Prefixes` 必须从对应 `RepoPrefixDecl` 原样绑定，禁止扫描任务重新读取静态配置。
+- 在 resolver 包导出 `RepositoryBindingResolver`：`ResolveBindings(ctx, workspaceID, decls, wsRepos, installations) ([]BoundRepo, error)`；在 GitHub client 包导出无 drift import 的 `CommitSource`：`Head(ctx, token, owner, repo, branch string) (string,error)`、`Page(ctx, token, owner, repo, branch, headSHA string, page, perPage int) ([]CommitMeta,error)`。具体 resolver/client 实现满足这两个接口，供 TASK-10 注入 fake，避免 `ghsnapshot↔drift` import cycle。
 - token 纪律：内存缓存，不落日志/result/错误。
 
 ## 4. 验收条件
@@ -47,3 +48,4 @@ created: 2026-08-20T20:59:46+08:00
 - 产出：
   - `ghsnapshot.ResolveRepositoryAccess(...) (int64, error)`、`ghsnapshot.ListCommits(...) ([]CommitMeta, error)`、`CommitMeta{SHA, Subject}`。
   - `drift.ResolveBindings(...) ([]BoundRepo, error)`、`BoundRepo{RepoID, Owner, Repo, Trunk string, Prefixes []string, Token string}`（供 TASK-10 扫描消费）。
+  - `RepositoryBindingResolver` 与 `CommitSource` 接口（签名见实现要点），供 TASK-10 注入 workspace resolver 与 fake GitHub page source。

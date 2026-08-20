@@ -22,6 +22,7 @@ created: 2026-08-20T20:59:46+08:00
 
 - `skills/shared/crctl/scripts/lib/workspace-transactions.mjs`（applyWritebackAtomic）
 - `skills/shared/crctl/scripts/crctl.mjs`（cmdWritebackApply 注入 callback；validateWritebackManifest 接受 v2）
+- `skills/writeback/writeback-traceability/SKILL.md`（将 `EMIT_FAILED(event_kind=trace)` 作为 pending 结果输出，不宣称已交付）
 - 测试：fault injection（outbox 写失败）、complete replay、txws 已删场景
 
 ## 3. 实现要点

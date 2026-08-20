@@ -37,7 +37,7 @@ TASK-08 → TASK-09 → TASK-10 → TASK-11 ───────┼──→ TA
 ```
 
 - TASK-04/TASK-05 互不依赖，可并行；TASK-06 显式等待二者完成，保证 schema/ledger 契约在 trace 入账前同时可用。
-- TASK-08 的 knowledge-base 声明与 TASK-01/02 无代码依赖，但 M4 必须在 M1 之后开始（避免 tools 深原语与声明同时变动时的交叉验证噪声）。
+- TASK-08 的 knowledge-base 声明与 TASK-01/02 无代码依赖，可与 M1 并行；M4 的 E5 联调在 M1 的 tools contract 稳定后执行，避免两个跨仓契约同时变动造成验证噪声。
 - TASK-13 的 `depends-on` 显式列出 TASK-01..12，只有全部代码面、API 与前端完成后才能执行跨仓联调与台账收口。
 
 ## 3. 资源与分工
