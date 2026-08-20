@@ -28,9 +28,9 @@ created: 2026-08-20T20:59:46+08:00
 
 ## 3. 实现要点
 
-- `CommitPrefixScanJob(pool, bindings, gh) JobSpec`：Name=`commit_prefix_scan`、Cadence 1h、CatchUpLatestOnly、Scopes=动态 workspace 枚举、RunTimeout 10m、StaleTimeout 15m、HeartbeatInterval 30s、AllowStaleReentry true、MaxAttempts 3、RetryBackoff 1m/5m/15m。
-- `ScanRepo(ctx, bound, prevCursor *string) (*ScanResult, error)`：`per_page=1&sha=trunk` 固定 B；无 prevCursor → 只返回 `Cursor=B`；否则从 `sha=B&per_page=100&page=1` 分页，精确命中 A 止，分类 `[B..A)`；每页 `in.Heartbeat`；空页未命中/100 页未命中/429/403/5xx/timeout/malformed → error。
-- `classify(subject, prefixes)`：`wip:` 优先 `wip-on-trunk/info`；任一白名单前缀命中为合法；否则 `bypass-commit/warn`。
+- `CommitPrefixScanJob(pool, resolver, gh) JobSpec`：Name=`commit_prefix_scan`、Cadence 1h、CatchUpLatestOnly、Scopes=动态 workspace 枚举、RunTimeout 10m、StaleTimeout 15m、HeartbeatInterval 30s、AllowStaleReentry true、MaxAttempts 3、RetryBackoff 1m/5m/15m。handler 必须以 `in.Scope.ID` 调用 `ResolveBindings(ctx, workspaceID, decls, workspace.repos, installations)`，禁止注入跨 workspace 共享的静态 `bindings`。
+- `ScanRepo(ctx, in ScanRepoInput) (*ScanResult, error)`：`ScanRepoInput{Bound BoundRepo, PrevCursor *string, Heartbeat func(context.Context) error}`；先 `per_page=1&sha=trunk` 固定 `HeadSHA=B`；无 prevCursor → 只返回 baseline `Cursor=B`；否则从 `sha=B&per_page=100&page=1` 分页，精确命中 `PrevCursor=A` 止，分类 `[B..A)`；每页调用 `Heartbeat(ctx)`；空页未命中/100 页未命中/429/403/5xx/timeout/malformed → error，不推进 cursor。
+- `classify(subject, prefixes)`：`wip:` 优先 `wip-on-trunk/info`；任一白名单前缀命中为合法；否则 `bypass-commit/warn`。prefixes 只来自 `in.Bound.Prefixes`。
 - finding `evidence={repository_id,trunk,commit_sha,commit_subject,scanned_at}`，`spec_id/cr_id=NULL`；`UpsertFindings` 使用 `INSERT ... ON CONFLICT DO NOTHING`。
 - handler 成功返回 result v1（config_rev/repository_ids/scan_cursors/finding_count）；任一仓失败 → 返回 error，scheduler 记 FAILED 且不写新 cursor。
 
@@ -48,6 +48,6 @@ created: 2026-08-20T20:59:46+08:00
 
 - 消费：TASK-04 的 `drift_finding` dedup 索引；TASK-09 的 `BoundRepo`/`ListCommits`。
 - 产出：
-  - `CommitPrefixScanJob(pool, bindings, gh) JobSpec`；`JobNameCommitPrefixScan`。
-  - `service.ScanRepo(...) (*ScanResult, error)`、`ScanResult{Cursor string, Findings []drift.FindingInput}`。
+  - `CommitPrefixScanJob(pool, resolver, gh) JobSpec`；`JobNameCommitPrefixScan`。
+  - `ScanRepo(ctx, in ScanRepoInput) (*ScanResult, error)`；`ScanRepoInput{Bound BoundRepo, PrevCursor *string, Heartbeat func(context.Context) error}`；`ScanResult{HeadSHA string, Cursor string, Findings []drift.FindingInput}`。语义固定为从 `HeadSHA=B` 分页到精确 `PrevCursor=A`；未命中/截断/限流不推进 cursor。
   - `drift.UpsertFindings(...) (int64, error)`；result v1 结构（供 TASK-11 health 消费）。

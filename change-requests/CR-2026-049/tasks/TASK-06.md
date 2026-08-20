@@ -8,7 +8,7 @@ title: multica — trace 事件入账（schema/事务/processed）
 slug: multica-trace-ingest-transaction
 status: pending
 estimate: 10h
-depends-on: [CR-2026-049-TASK-05]
+depends-on: [CR-2026-049-TASK-04, CR-2026-049-TASK-05]
 created: 2026-08-20T20:59:46+08:00
 ---
 

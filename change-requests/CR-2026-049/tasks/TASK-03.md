@@ -22,7 +22,7 @@ created: 2026-08-20T20:59:46+08:00
 
 - `skills/shared/crctl/scripts/lib/workspace-transactions.mjs`（archiveCr 前置段）
 - `skills/shared/crctl/scripts/crctl.mjs`（cmdArchive 注入 replayTraceEvent）
-- `skills/cr/archive/SKILL.md`（行为契约文案，非 prompt 面变更）
+- `skills/cr/cr-archive/SKILL.md`（行为契约文案，非 prompt 面变更）
 
 ## 3. 实现要点
 

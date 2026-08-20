@@ -17,28 +17,28 @@ updated: 2026-08-20T20:59:46+08:00
 
 | 里程碑 | 内容 | 对应 TASK | 估算 |
 |---|---|---|---|
-| M1 tools E4 深原语 | trace 语义对象/候选 manifest、journal intent、archive pending 门 | TASK-01~03 | 2 人天 |
-| M2 multica schema/ledger | drift_finding 与 workspace 迁移、trace 入账事务 | TASK-04~06 | 3 人天 |
-| M3 trace 读侧 | spec 时间线 / spec-search API | TASK-07 | 1.5 人天 |
-| M4 E5 声明与仓库访问 | dir-graph 声明 + 生成器、repo binding resolver | TASK-08~09 | 2 人天 |
-| M5 扫描与 drift 面 | 扫描 job、drift API、前端 | TASK-10~12 | 4 人天 |
-| M6 收尾与集成 | CUSTOM.md 台账、AC 集成测试、静态契约 | TASK-13 | 1 人天 |
+| M1 tools E4 深原语 | trace 语义对象/候选 manifest、journal intent、archive pending 门 | TASK-01~03 | 30h / 3.75 人天 |
+| M2 multica schema/ledger | drift_finding 与 workspace 迁移、trace 入账事务 | TASK-04~06 | 34h / 4.25 人天 |
+| M3 trace 读侧 | spec 时间线 / spec-search API | TASK-07 | 12h / 1.5 人天 |
+| M4 E5 声明与仓库访问 | dir-graph 声明 + 生成器、repo binding resolver | TASK-08~09 | 18h / 2.25 人天 |
+| M5 扫描与 drift 面 | 扫描 job、drift API、前端 | TASK-10~12 | 42h / 5.25 人天 |
+| M6 收尾与集成 | CUSTOM.md 台账、AC 集成测试、静态契约 | TASK-13 | 8h / 1 人天 |
 
-估算总工时：**144h（18 人天）**，单人（Ray）串行执行。E4 与 E5 的代码面在 M2/M4 可部分并行，但 M6 集成前不宣告任一交付物完成。
+估算总工时：**144h（18 人天）**，单人（Ray）串行执行。上表里程碑小时合计 144h、天数合计 18 人天；E4 与 E5 的代码面在 M2/M4 可部分并行，但 M6 集成前不宣告任一交付物完成。
 
 ## 2. 任务依赖图
 
 ```text
-TASK-01 → TASK-02 → TASK-03                        （tools：语义→journal→archive 门）
-TASK-04 ─────────────────────────────────┐         （multica：drift_finding 迁移）
-TASK-05 → TASK-06 → TASK-07 ─────────────┼──→ TASK-13
-TASK-08 → TASK-09 → TASK-10 → TASK-11 ───┤         （E5：声明→访问→扫描→API）
-                       TASK-07/11 ──────→ TASK-12 ──→ TASK-13
+TASK-01 → TASK-02 → TASK-03                              （tools：语义→journal→archive 门）
+TASK-04 ─┐
+TASK-05 ─┴→ TASK-06 → TASK-07 ───────────────┐
+TASK-08 → TASK-09 → TASK-10 → TASK-11 ───────┼──→ TASK-12
+                                             └──→ TASK-13（等待 TASK-01..12 全部完成）
 ```
 
-- TASK-04/TASK-05 互不依赖，可并行；两者都完成后才可开始 TASK-06（后者需要 TASK-05 的 workspace 唯一键与 TASK-04 的 finding 表不冲突）。
+- TASK-04/TASK-05 互不依赖，可并行；TASK-06 显式等待二者完成，保证 schema/ledger 契约在 trace 入账前同时可用。
 - TASK-08 的 knowledge-base 声明与 TASK-01/02 无代码依赖，但 M4 必须在 M1 之后开始（避免 tools 深原语与声明同时变动时的交叉验证噪声）。
-- TASK-13 依赖全部前置 TASK，负责跨仓联调与台账收口。
+- TASK-13 的 `depends-on` 显式列出 TASK-01..12，只有全部代码面、API 与前端完成后才能执行跨仓联调与台账收口。
 
 ## 3. 资源与分工
 
