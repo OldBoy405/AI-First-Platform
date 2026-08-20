@@ -5,7 +5,7 @@ cr-ref: CR-2026-048
 title: P3 组织智能 · 内部 Skill Market 技术设计
 status: draft
 created: 2026-08-20T13:43:02+08:00
-updated: 2026-08-20T13:43:02+08:00
+updated: 2026-08-20T14:23:05+08:00
 ---
 
 # SDD — CR-2026-048 内部 Skill Market 技术设计
@@ -47,22 +47,27 @@ updated: 2026-08-20T13:43:02+08:00
 | 迁移 | 内容 | down |
 |---|---|---|
 | `380_skill_visibility` | `ALTER TABLE skill ADD COLUMN visibility TEXT NOT NULL DEFAULT 'private' CHECK (visibility IN ('private','org')), ADD COLUMN version TEXT NOT NULL DEFAULT '0.1.0', ADD COLUMN owner_actor TEXT` | 三列 DROP |
-| `381_skill_usage_event` | 建表（见下） | DROP TABLE |
+| `381_skill_usage_event` | 建表（见下，含 `workspace_id` 租户键） | DROP TABLE |
 | `382_skill_usage_event_task_id` | `CREATE INDEX CONCURRENTLY skill_usage_event_task_id_idx ON skill_usage_event(task_id)` | DROP INDEX CONCURRENTLY |
-| `383_skill_usage_event_skill_ref_used_at` | `CREATE INDEX CONCURRENTLY skill_usage_event_skill_ref_used_at_idx ON skill_usage_event(skill_ref, used_at)` | DROP INDEX CONCURRENTLY |
+| `383_skill_usage_event_scope` | `CREATE INDEX CONCURRENTLY skill_usage_event_scope_idx ON skill_usage_event(workspace_id, skill_ref, used_at)` | DROP INDEX CONCURRENTLY |
+| `384_skill_appeal_activity_index` | `CREATE INDEX CONCURRENTLY skill_appeal_activity_idx ON activity_log ((details->>'appeal_id')) WHERE action IN ('skill_appeal_submitted','skill_appeal_approved','skill_appeal_rejected')` | DROP INDEX CONCURRENTLY |
 
-- 382/383 各自独立文件、各一条索引语句（仓规约）；并**同步注册** `cmd/migrate/main.go` 的 `concurrentIndexCleanups` 与 `concurrentDownIndexCleanups` 两个 map（CR-2026-047 对 376/378/379 的同款处理，`TestEveryConcurrentUpBuildHasCleanup` 会强制校验）。
-- **无外键**：`skill_usage_event.task_id`/`skill_ref` 均无 FK（PRD FR-2，仓硬规则）。
+- 382/383/384 各自独立文件、各一条索引语句（仓规约）；并**同步注册** `cmd/migrate/main.go` 的 `concurrentIndexCleanups` 与 `concurrentDownIndexCleanups` 两个 map（CR-2026-047 对 376/378/379 的同款处理，`TestEveryConcurrentUpBuildHasCleanup` 会强制校验）。
+- **无外键**：`skill_usage_event.task_id`/`skill_ref` 均无 FK（PRD FR-2，仓硬规则）；`workspace_id` 同样不加 FK。
+- **384 的先例**：迁移 089 已在 `activity_log` 上建过 `((details->>'task_id'))` 表达式部分索引，本条照抄同一形制，不发明新存储。
 
 ```sql
 CREATE TABLE skill_usage_event (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    workspace_id UUID NOT NULL,     -- 租户键（硬不变式 1）；agent_task_queue 无此列，因此必须自带
     skill_ref TEXT NOT NULL,        -- workspace skill 的 uuid 文本，或 'builtin:<name>'
     task_id UUID,                   -- 无 FK：append-only 审计行，指向已删 Skill 的历史行应保留
     project_id UUID,
     used_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 ```
+
+`workspace_id` 的数据来源是现成的：`buildClaimedTaskResponse` 签名已带 `runtimeWorkspaceID string` 形参，直接落列，**零额外查询**。不靠 `agent_task_queue` 反查——该表只有 `agent_id`/`issue_id`/`project_id`（`project_id` 由迁移 368 加入），没有 workspace 列。
 
 ### 2.2 申诉账本 = activity_log（不建新表）
 
@@ -74,6 +79,8 @@ CREATE TABLE skill_usage_event (
 `appeal_id = sha256(skill_ref | content_hash | file | line | pattern_id)`（十六进制）。内容哈希复用 `skillbundle.BuildManifest(skill).Hash`（`server/pkg/skillbundle/hash.go:43`，标准库 sha256，上游已用于包变更判定）——不新写哈希。**内容变更自动使旧放行失效**：发布门禁每次对当前内容重算 hash，旧 appeal_id 必然不再命中，无需任何失效代码。
 
 幂等 = 提交前 `SELECT` 已有同 `appeal_id` 行则 no-op；极端并发下的重复行由 activity_log 的 append-only 审计语义容忍（与 `governance.ingestAudit` 注释明示的 crash-window 重复同款先例）。
+
+**查找路径必须走索引**：activity_log 现有索引全部以 `issue_id` 打头（068 的 `idx_activity_log_issue_keyset`、089 的 `idx_activity_log_squad_no_action_task`），而申诉行 `issue_id` 为 NULL——不建专用索引则退化为热表全表扫描。因此迁移 384（§2.1）是本方案的必需项，不是优化项；验收同样用 `EXPLAIN (FORMAT JSON)` 固定 fixture 断言命中。
 
 ## 3. 接口契约
 
@@ -88,7 +95,12 @@ type UpdateSkillRequest struct {
 }
 ```
 
-`UpdateSkill` sqlc 查询对应加三列 `COALESCE(sqlc.narg(...))`。**visible 语义**：`skill.Visibility` 当前为 `private` 且请求置 `org` 时触发门禁；其余情况（org→org、org→private、不改）零额外行为。私有 Skill 创建/编辑路径完全不动——门禁只挡发布这一扇门。
+`UpdateSkill` sqlc 查询对应加三列 `COALESCE(sqlc.narg(...))`。**门禁触发条件（两条，缺一则有绕过口）**：
+
+1. `skill.Visibility='private'` 且请求置 `org`——发布时首次把关；
+2. `skill.Visibility='org'` 且本次请求改变 `content` 或 `files`——**发布后的内容更新重扫**，否则密钥可以在发布之后夹带进组织可见资产（US-2/NFR-4 隐私红线）。
+
+其余情况（org→private、仅改 version/描述、私有 Skill 编辑）零额外行为——私有创建/编辑路径完全不动。**同一条规则适用于 runtime-local 覆盖导入路径**（`canOverwriteSkillByLocalImport`）：该路径也会改写 org Skill 的 content/files，必须调同一个 `PublishGate`（复用同一函数，不新增机制）。
 
 ### 3.2 发布门禁失败响应（422）
 
@@ -110,7 +122,7 @@ type UpdateSkillRequest struct {
 |---|---|---|
 | `POST /api/skills/{id}/appeals` | canManageSkill（作者或 admin） | body `{file, line, pattern_id}`；计算 appeal_id，幂等写 `skill_appeal_submitted` |
 | `POST /api/skills/{id}/appeals/decide` | workspace owner/admin | body `{appeal_id, approve: bool}`；写 `skill_appeal_approved/rejected`；非 owner 403 |
-| `GET /api/skills/market` | 工作区成员 | 见下 |
+| `GET /api/skills/market` | 工作区成员 | 见下（**只返回调用方当前 workspace 内 `visibility='org'` 的 skill + builtin**） |
 
 Market 响应（一次请求给全排行）：
 
@@ -121,7 +133,7 @@ type SkillMarketResponse = {
 }
 ```
 
-workspace 部分由新 sqlc 聚合查询产生；builtin 部分用 `loadBuiltinSkills()`（既有）列出名称/描述，usage 由同一张 `skill_usage_event` 按 `skill_ref='builtin:<name>'` 计数。
+workspace 部分由新 sqlc 聚合查询产生（按认证上下文的 workspace 过滤 + `visibility='org'`）；builtin 部分用 `loadBuiltinSkills()`（既有）列出名称/描述，usage 同样只统计该 workspace 内 `skill_ref='builtin:<name>'` 的行。请求体里的任何 workspace 标识一律不取信（硬不变式 1）。
 
 ### 3.4 frontmatter 解析扩展
 
@@ -144,10 +156,13 @@ func ParseSkillMetadata(content string) SkillMetadata
 ```text
 useSkillRefs 分支内，resp.Agent.SkillRefs = skillRefs 之后：
 for _, ref := range skillRefs:
-    INSERT skill_usage_event(skill_ref, task_id, project_id)
+    INSERT skill_usage_event(workspace_id, skill_ref, task_id, project_id)
+    ← workspace_id = runtimeWorkspaceID（函数形参，现成）
     ← skill_ref = ref.ID（workspace 为 uuid 文本；builtin 为 "builtin:<name>"，BuildAgentSkillBundles 已合成，零转换）
 任何写入错误：slog.Error，不触碰 claim 结果（遥测是观测面，不是门禁）
 ```
+
+两个调用方都是认领端点（`ClaimTasksByRuntime` 批量 / `ClaimTaskByRuntime` 单条），不存在非认领路径误写。插入点位于 `claimResponseAgentIdentityMatches` 校验**之前**，因此构建后被跳过/取消的任务也会留下遥测行——这类任务永远到不了 `completed`，§4.3 的过滤自然把它们排除，**不要为此加补偿逻辑**。
 
 每 claim 一轮写一次（重试=再 claim=再加行），`used_at` 语义"派发时物化"。查询侧去重（§4.3）保证计数正确。循环单行 INSERT，任务典型 <10 个 Skill，不加批处理框架。
 
@@ -155,6 +170,7 @@ for _, ref := range skillRefs:
 
 ```text
 PublishGate(skill 行, 请求增量, 全部 skill_file 内容) → (findings, reasons, warnings)
+触发：private→org（首次发布），或 visibility 已是 org 且本次改 content/files（发布后重扫）
 1. 有效 content = req.Content ?? skill.Content
 2. meta = ParseSkillMetadata(content)
    ├─ meta.Name / meta.Description 空 → reason frontmatter_name_missing / frontmatter_description_missing
@@ -176,11 +192,11 @@ PublishGate(skill 行, 请求增量, 全部 skill_file 内容) → (findings, re
 SELECT e.skill_ref, COUNT(DISTINCT e.task_id) AS usage_count
 FROM skill_usage_event e
 JOIN agent_task_queue t ON t.id = e.task_id
-WHERE t.status = 'completed'
+WHERE e.workspace_id = $1 AND t.status = 'completed'
 GROUP BY e.skill_ref;
 ```
 
-重复 claim 行按 `task_id` 去重；最终失败任务整体不进计数（join + status 过滤）。走 `skill_ref, used_at` 索引；`EXPLAIN (FORMAT JSON)` 固定 fixture 断言（AC-15）。
+重复 claim 行按 `task_id` 去重；最终失败任务整体不进计数（join + status 过滤）；跨工作区不混算（`workspace_id` 过滤，硬不变式 1）。走 `(workspace_id, skill_ref, used_at)` 索引；`EXPLAIN (FORMAT JSON)` 固定 fixture 断言（AC-15）。
 
 ### 4.4 redact.Findings（server/pkg/redact，扩展而非平行）
 
@@ -196,7 +212,9 @@ GROUP BY e.skill_ref;
 | 遥测表 | 1 张 append-only 表 + 2 索引 | 物化视图/分区表 | YAGNI，数据量按任务×Skill 同阶 |
 | 内容哈希 | 复用 `BuildManifest().Hash` | 新写哈希函数 | 复用现有能力 |
 | 敏感扫描 | 扩展 `redact` 同份 patterns | 新正则表/引入检测库 | 复用现有能力（新依赖=阶梯最底） |
-| 申诉账本 | `activity_log` + 封闭 action | 新 appeal 表 | 复用现有能力 |
+| 申诉账本 | `activity_log` + 封闭 action + 迁移 384 部分表达式索引（照抄 089） | 新 appeal 表 | 复用现有能力 |
+| 遥测租户键 | 表内 `workspace_id` 列（claim 形参现成） | join agent→workspace 反查 | 一列换一次 join，且 agent_task_queue 无 workspace 列 |
+| 发布后重扫 | 同一 `PublishGate` 多一个触发条件 | 定时全量扫描/独立扫描服务 | 一个条件判断，零新机制 |
 | 发布入口 | 扩展 `UpdateSkill` | 新 /publish 端点 | 复用现有能力 |
 | 内容变化使放行失效 | 哈希绑定自然失效 | 失效扫描任务 | 零代码（不做） |
 | frontmatter | 扩展既有解析器（泛型 map 已就位） | 新解析库 | 复用现有能力 |
@@ -211,7 +229,7 @@ GROUP BY e.skill_ref;
 | FR | 实现条目 |
 |---|---|
 | FR-1 | 迁移 380（三列 + 两值 CHECK，无 builtin 枚举） |
-| FR-2 | 迁移 381（skill_usage_event，无 FK） |
+| FR-2 | 迁移 381（skill_usage_event，含 workspace_id 租户键，无 FK） |
 | FR-3 | claim 写入 ref.ID 原样落库（builtin 合成 id 已有，零转换） |
 | FR-4 | version 仅 UpdateSkill 读写；无任何比较逻辑（diff 评审锚点） |
 | FR-5 | §4.1 buildClaimedTaskResponse 循环 INSERT，失败仅日志 |
@@ -226,9 +244,9 @@ GROUP BY e.skill_ref;
 | FR-14 | 无 is_builtin 特判（builtin 无 skill 行，天然不可达） |
 | FR-15 | §4.4 Findings + name 字段 + 单一定义测试 |
 | FR-16 | 第 17 条 personal_path 模式 |
-| FR-17 | 门禁扫描 content + 全部 skill_file，返回 file/line/pattern_id |
+| FR-17 | 门禁扫描 content + 全部 skill_file，返回 file/line/pattern_id；**org Skill 的后续内容更新（含 runtime-local 覆盖导入）同样重扫**（§3.1 触发条件 2） |
 | FR-18 | §2.2 申诉端点 + appeal_id 哈希 + activity_log 三 action |
-| FR-19 | §3.3 market 端点：workspace（含 version）+ builtin 排行 |
+| FR-19 | §3.3 market 端点：workspace（当前工作区 + org 可见，含 version）+ builtin 排行 |
 | FR-20 | SkillDetailPage 渲染四字段（org workspace Skill） |
 | FR-21 | Fields 中 requirements 类字段确定性提取，缺失则无标签不报错 |
 | FR-22 | 发布确认框文案（前端） |
@@ -237,12 +255,14 @@ GROUP BY e.skill_ref;
 ## 7. 安全与性能考量
 
 - **迁移合规**：380 起、无 FK、每文件一条 CONCURRENTLY 索引、cleanup map 双注册（NFR-1/2，AC-1）。
-- **隐私红线**：findings 响应一律经 `Text()` 脱敏（NFR-4）；扫描是默认拦截，放行是逐条留痕例外（AC-11）。
+- **工作区隔离**：遥测表自带 `workspace_id`，market 读路径按认证上下文过滤，请求体 workspace 标识不取信（硬不变式 1，与 CR-2026-047 的 `maturity_snapshot` 租户键同口径）。
+- **隐私红线**：findings 响应一律经 `Text()` 脱敏（NFR-4）；扫描是默认拦截，放行是逐条留痕例外（AC-11）；**发布不是一锤子买断**——org Skill 的内容每次变更都重跑同一道门禁。
 - **权限**：申诉决定仅 owner/admin（403 测试）；发布沿用 canManageSkill；工作区隔离沿用 requireWorkspaceRole（ARCHITECTURE.md 硬不变式 1）。
-- **性能**：claim 路径每 Skill 一行 INSERT（同阶 <10 行/任务，NFR-3）；排行聚合走 `(skill_ref, used_at)` 索引、完成过滤走 `task_id` 索引（AC-15 EXPLAIN 断言）。
+- **性能**：claim 路径每 Skill 一行 INSERT（同阶 <10 行/任务，NFR-3）；排行聚合走 `(workspace_id, skill_ref, used_at)` 索引、完成过滤走 `task_id` 索引、申诉查找走 384 部分索引（三条均有 EXPLAIN 断言，AC-15）。
 - **任务单路径**：遥测挂在既有 claim 装配点，不新增任何任务执行通道（硬不变式 3）。
-- **回滚**：380–383 逆序 down 可全回滚；`skill_usage_event` 是纯观测数据，回滚丢弃无业务影响。
-- **残余风险**（实施时留意）：① claim 循环 INSERT 与 claim 事务的关系——若 claim 本体有事务，遥测写入放事务内随它提交，不回滚单独补偿；② sqlc 重生成会带出新列相关 generated diff，按 CUSTOM.md 规则提交生成器真实输出；③ builtin 计数依赖 `buildClaimedTaskResponse` 的 builtin ref 合成规则，需在 skill_bundle 测试中加一条断言锁住（与 `TestBuildAgentSkillBundlesAssignsBuiltinID` 同款）。
+- **回滚**：380–384 逆序 down 可全回滚；`skill_usage_event` 是纯观测数据，回滚丢弃无业务影响。
+- **台账**：全部改动按 NFR-6/AC-17 登记 `../multica/CUSTOM.md`（新增一行：迁移 380–384 + 门禁/遥测/申诉挂钩点 + 验证命令），`make sqlc` 生成物提交生成器真实输出，不手补。
+- **残余风险**（实施时留意）：① claim 循环 INSERT 与 claim 事务的关系——若 claim 本体有事务，遥测写入放事务内随它提交，不回滚单独补偿；② sqlc 重生成会带出新列相关 generated diff，按 CUSTOM.md 规则提交生成器真实输出；③ builtin 计数依赖 `buildClaimedTaskResponse` 的 builtin ref 合成规则，需在 skill_bundle 测试中加一条断言锁住（与 `TestBuildAgentSkillBundlesAssignsBuiltinID` 同款）；④ 迁移 384 建在热表 activity_log 上，必须 CONCURRENTLY 且单语句单文件，与 089 同款。
 
 ## 8. Prompt 采纳影响
 
