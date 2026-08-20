@@ -1,0 +1,26 @@
+$ node node_modules/vitest/vitest.mjs run skills   # CR-2026-047 同款调用
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Startup Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯⎯[39m
+TypeError [ERR_PACKAGE_IMPORT_NOT_DEFINED]: Package import specifier "#module-evaluator" is not defined imported from C:\Users\GOBAO\Downloads\AI\AI First Platform\.rayai-worktrees\multica\requirement\CR-2026-048\node_modules\.pnpm\vitest@4.1.0_@opentelemetry+api@1.9.1_@types+node@25.5.0_jsdom@29.0.1_@noble+hashes@1.8.0__ms_xy3uobktbqr2cluzsavvdi5fbu\node_modules\vitest\dist\chunks\cli-api.DuT9iuvY.js
+    at importNotDefined (node:internal/modules/esm/resolve:297:10)
+    at packageImportsResolve (node:internal/modules/esm/resolve:747:9)
+    at moduleResolve (node:internal/modules/esm/resolve:844:16)
+    at defaultResolve (node:internal/modules/esm/resolve:988:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:697:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:714:38)
+    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:746:52)
+    at #resolve (node:internal/modules/esm/loader:679:17)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:599:35)
+    at ModuleJob.syncLink (node:internal/modules/esm/module_job:162:33) {
+  code: 'ERR_PACKAGE_IMPORT_NOT_DEFINED'
+}
+
+
+
+exit=1
+
+# 隔离探针（证明是解析环境问题，与本 CR 代码无关）：
+$ node -e "createRequire(<vitest pkg dir>).resolve(\"#module-evaluator\")"
+ERR ERR_PACKAGE_IMPORT_NOT_DEFINED — vitest 自身 package.json#imports 已声明该 specifier，且 dist/module-evaluator.js 存在（node -e 已核实），故为 Node 24 + pnpm 路径解析问题
+
+node: v24.15.0 / vitest: 4.1.0

@@ -1,0 +1,63 @@
+cr-id: CR-2026-048
+tasks:
+  - id: CR-2026-048-TASK-01
+    title: "迁移 380–384：三列 + skill_usage_event + 三索引"
+    status: done
+    done-at: "2026-08-20T15:07:14+08:00"
+    estimate: 8h
+    depends-on: []
+  - id: CR-2026-048-TASK-02
+    title: "redact 扩展：Findings 定位入口 + 第 17 条个人路径模式"
+    status: done
+    done-at: "2026-08-20T15:12:48+08:00"
+    estimate: 6h
+    depends-on: []
+  - id: CR-2026-048-TASK-03
+    title: "frontmatter 扩展：ParseSkillMetadata 提取元数据卡字段"
+    status: done
+    done-at: "2026-08-20T15:15:55+08:00"
+    estimate: 4h
+    depends-on: []
+  - id: CR-2026-048-TASK-04
+    title: "发布门禁纯函数 PublishGate + AppealID 哈希"
+    status: done
+    done-at: "2026-08-20T15:15:55+08:00"
+    estimate: 8h
+    depends-on: [CR-2026-048-TASK-02, CR-2026-048-TASK-03]
+  - id: CR-2026-048-TASK-05
+    title: "sqlc 查询：UpdateSkill 三列 + 遥测 INSERT + market 聚合 + 申诉记账"
+    status: done
+    done-at: "2026-08-20T15:15:55+08:00"
+    estimate: 6h
+    depends-on: [CR-2026-048-TASK-01]
+  - id: CR-2026-048-TASK-06
+    title: "认领路径遥测接线 + builtin 合成 id 断言锁"
+    status: done
+    done-at: "2026-08-20T15:21:01+08:00"
+    estimate: 6h
+    depends-on: [CR-2026-048-TASK-05]
+  - id: CR-2026-048-TASK-07
+    title: "发布门禁接线 + 申诉两端点 + runtime-local 覆盖重扫"
+    status: done
+    done-at: "2026-08-20T15:41:49+08:00"
+    estimate: 10h
+    depends-on: [CR-2026-048-TASK-04, CR-2026-048-TASK-05]
+  - id: CR-2026-048-TASK-08
+    title: "Market 读端点 GET /api/skills/market"
+    status: done
+    done-at: "2026-08-20T15:41:50+08:00"
+    estimate: 6h
+    depends-on: [CR-2026-048-TASK-05]
+  - id: CR-2026-048-TASK-09
+    title: "Market 前端：排行/元数据卡/发布确认/申诉流"
+    status: done
+    done-at: "2026-08-20T16:36:15+08:00"
+    estimate: 14h
+    depends-on: [CR-2026-048-TASK-07, CR-2026-048-TASK-08]
+  - id: CR-2026-048-TASK-10
+    title: "收口：CUSTOM.md 台账 + 全量回归矩阵"
+    status: done
+    done-at: "2026-08-20T17:11:50+08:00"
+    estimate: 4h
+    depends-on: [CR-2026-048-TASK-01, CR-2026-048-TASK-02, CR-2026-048-TASK-03, CR-2026-048-TASK-04, CR-2026-048-TASK-05, CR-2026-048-TASK-06, CR-2026-048-TASK-07, CR-2026-048-TASK-08, CR-2026-048-TASK-09]
+

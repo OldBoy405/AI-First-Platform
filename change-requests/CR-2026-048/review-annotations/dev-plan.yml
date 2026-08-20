@@ -1,0 +1,21 @@
+cr-id: CR-2026-048
+review-type: dev-plan
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-20T14:49:49+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  sdd_to_plan: "通过：SDD 六个接缝、五个迁移、回滚与风险全部进入 plan 里程碑与风险表；PRD/SDD 索引形制取代关系在 plan §5 与 TASK-01 双处留痕"
+  plan_to_task: "通过：5 个里程碑交付项各有 TASK 承接；PRD AC-1～AC-16 逐条落到具体 TASK 验收条件，可机械回指"
+  task_executability: "通过：10 张卡目标/文件/要点/完成标志明确；TASK-06 的占位式测试名已回填为确定的 -run 表达式，全卡无 TBD"
+  dependency_topology: "通过：TASK-04 假依赖已移除（纯函数只依赖 02/03），_index.yml 经 crctl task init 刷新；十节点无环、无悬空引用、顺序符合产出/消费"
+  interface_contract: "通过：EvaluatePublish/AppealID/InsertSkillUsageEvent/MarketSkillUsage/GetAppealDecision 等上下游签名成对且一致"
+  acceptance_verifiability: "通过：每卡≥2 条可执行验收；AC-2/AC-9/AC-15/AC-16 已分别落到 TASK-07/07/01/10，悬空的 AC-17 引用已订正为 AC-16"
+  scope_minimality: "通过：无 SDD 未批准能力；plan 题头分列复用基线与最小改造；无新事务/队列/outbox 框架；粒度 4h–14h 均在 1-3 天内"
+  risk_rollback: "通过：迁移编号 freshness 已落为 TASK-01 开工前置动作；热表索引、遥测写放大、sqlc 噪声、门禁误拦均有缓解与回滚路径"
+suggestions:
+  - "实施 TASK-01 时先跑一次 ls server/migrations/38*.sql 确认编号未被占用，再动手写文件，避免中途改名波及两个 cleanup map。"
+  - "TASK-09 的前端验收依赖 TASK-07/08 的响应契约冻结，建议 07/08 合并后再开工前端，减少 API 形状返工。"
+review-loop:
+  current-attempt: 2
+subject-sha256: 9462b84b9b497bc1670d028e64971af4b65ad9bbd96d0082eacf052bbe868185

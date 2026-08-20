@@ -1,0 +1,21 @@
+cr-id: CR-2026-048
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-20T14:27:40+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  prd_sdd_alignment: "通过：23/23 FR 有实现锚点；回修后 FR-2/FR-17/FR-19 映射同步更新"
+  architecture: "通过：skill_usage_event 自带 workspace_id 租户键，market 读路径按认证上下文过滤，请求体 workspace 标识不取信；依赖方向符合 ARCHITECTURE.md 第 4 节"
+  data_model: "通过：三列 + 一表 + 三索引（382/383/384），无 FK，租户键与申诉查找路径均已定义"
+  interface_contract: "通过：UpdateSkill 两条门禁触发条件明确，market 端点范围与可见性定义清晰，422 findings 结构完整"
+  performance_security: "通过：三条查询路径均有索引与 EXPLAIN 断言；org Skill 内容变更（含 runtime-local 覆盖导入）重跑同一门禁，堵住发布后夹带"
+  testability: "通过：门禁为纯函数；EXPLAIN/diff/403/幂等均可执行验收"
+  prompt_adoption: "跳过：不触及 crctl.mjs dispatch 与 rules.json#protectedPaths.deny，§8 已说明"
+suggestions:
+  - "实施期确认 claim 本体是否处于事务中，据此决定遥测 INSERT 的位置；SDD §7 残余风险①已标注，不要另加补偿逻辑。"
+  - "迁移 384 建在热表 activity_log 上，实施时按 089 同款先在真实 PG 验证 CONCURRENTLY 构建耗时。"
+review-loop:
+  current-attempt: 2
+subject-file: change-requests/CR-2026-048/sdd.md
+subject-sha256: 6bc3e11bc20a2782098f278499efdd07bac12a2b1751bc5e386f2e4e581f170a
