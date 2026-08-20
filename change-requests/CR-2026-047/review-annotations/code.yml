@@ -1,27 +1,20 @@
 cr-id: CR-2026-047
 review-type: code
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-20T09:28:36+08:00"
-verdict: block
-blockers:
-  - "TypeScript maturity/org-admin wire types retain snake_case beyond the API boundary instead of repository camelCase domain models."
-  - "Maturity views use forbidden default Tailwind typography utilities and raw internal anchors instead of role tokens/AppLink."
-  - "User snapshot scope enumeration omits users with current-day task_usage on older tasks."
-  - "Rankings and Suggestions swallow JSON/database errors; corrupt projections can return partial/empty success."
-  - "Rankings metric query accepts unknown metric strings instead of 400 invalid_query."
-  - "Report latest/history order by completion time rather than ISO week, and cursor pagination repeats earlier rows."
-  - "Maturity page does not satisfy the explicit shared dim-segmented/usage-trend-card/leaderboard reuse boundary."
-  - "Suggestion empty state lacks Owner/Admin runtime selection and Org Admin initialization action."
-  - "Weekly report dispatch does not preflight a bound local_directory or emit unavailable Owner guidance."
+reviewed-at: "2026-08-20T10:18:44+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  代码↔TASK↔SDD 对齐: "BLOCK：user 趋势、report history、组件复用、Org Admin 初始化与 local_directory 前置条件仍偏离 SDD/TASK。"
-  工程质量: "BLOCK：rankings/suggestions 吞错，TypeScript 边界命名不符仓库约定。"
-  关键路径可读性: "PASS：attempt 2 的 canonical Autopilot identity、scores fail-closed 与 Skill 原子写权限已修复。"
-  安全性: "PASS：未发现新增跨 workspace 或个人榜泄露；owner free-text 禁令保持。"
-  测试覆盖: "BLOCK：缺 older-task/current-usage user scope、unknown metric、history cursor/week order、unbound local_directory 与初始化 action 回归测试。"
-  测试证据可信度: "PASS：canonical crctl test cycle 2 attempt 1 的 8 条命令均 exit-code=0，但未覆盖上述缺口。"
-  前端质量: "BLOCK：默认 typography utility、raw anchor、共享组件未复用、空态缺初始化交互。"
-suggestions: []
+  代码↔TASK↔SDD 对齐: "PASS：PRD/SDD/TASK-01～11 与 merge-base 全量 diff 对齐；attempt 3 九项 blocker 均已实现并有对应证据。"
+  工程质量: "PASS：wire→domain camelCase 边界、持久化投影 fail-closed、report_key keyset 分页、canonical Autopilot 与 local_directory 前置校验均符合仓库约定。"
+  关键路径可读性: "PASS：rollup、读服务、周报 dispatch/completion 与共享前端组件边界清晰，关键身份和不可用语义有英文注释。"
+  安全性: "PASS：workspace/member 权限、user=self、禁止个人榜、owner free-text 不猜测、canonical Autopilot identity 与路径前置条件保持 fail-closed。"
+  测试覆盖: "PASS：canonical crctl test 八条命令全部 exit 0；新增 older-task usage、坏 projection/metric/cursor、周报 week/keyset、unbound local_directory、runtime bootstrap 与 camelCase 回归。"
+  测试证据可信度: "PASS：test-report 与 traceability digest 一致，cmd-01～08 日志齐全；双轴 reviewer 均读取真实 merge-base diff 与 canonical 证据后 PASS。"
+  前端质量: "PASS：loading/empty/error 主路径齐全，semantic typography 与 AppLink 合规，直接复用 UsageTrendCard/DimSegmented/Leaderboard，无 iframe 或 CR-D 个人榜。"
+suggestions:
+  - "NONBLOCK：将 rankings cursor 纳入 TanStack Query key；当前 UI 尚未消费翻页 cursor，后续启用分页前补 key-distinctness 测试。"
+  - "NONBLOCK：suggestions latest 查询失败可增加独立 retry 状态，避免与报告 unavailable 文案共用；当前不会误显示已有报告或写入数据。"
 review-loop:
   current-attempt: 3
 release-subjects:
@@ -29,10 +22,10 @@ release-subjects:
   repositories:
     - repo: ai-first-platform-docs
       remote-ref: refs/heads/requirement/CR-2026-047
-      reviewed-source-sha: 60b2b7ccb604777673a2b1144fc8356c49bec3ff
+      reviewed-source-sha: d34c2783efefcad87a13d9618b90348799d0b175
     - repo: multica
       remote-ref: refs/heads/requirement/CR-2026-047
-      reviewed-source-sha: de05f6182ac0c4031772bb1808693b391c18c8b2
+      reviewed-source-sha: 2c21e95723636840fb7534fa744e28600c9eb77b
     - repo: tools
       remote-ref: refs/heads/requirement/CR-2026-047
       reviewed-source-sha: 75d72a3583d08795d9a0f4b39ece20d7e9eddd38
