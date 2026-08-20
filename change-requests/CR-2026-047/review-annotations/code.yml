@@ -1,37 +1,32 @@
 cr-id: CR-2026-047
 review-type: code
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-20T08:06:00+08:00"
+reviewed-at: "2026-08-20T09:10:24+08:00"
 verdict: block
 blockers:
-  - "E3 周报链路未接通：BuildReportEnvelope 与 MaturityBaselinePercentiles 无生产调用；Autopilot 未明确绑定内置 Skill，完成路径未校验 envelope/通知 Owner，AC-18/19/21/22 不可达。"
-  - "快照补偿错误使用 MAX(bucket_date)>=target 作为 no-op，较旧失败桶会在较新桶成功后永久跳过；必须改为精确目标桶存在检查。"
-  - "指标/用户 scope 语义错误：AI penetration 从 task_usage 而非任务发起行统计；user 非适用指标未覆盖为 not_applicable，校准后可能生成 user scores。"
-  - "读取合同错误：overall 默认返回升序 LIMIT 1 的最老桶；model token trend 按范围聚合成 from 日期单点而非日序列。"
-  - "E2 看板不完整：缺日期区间、Owner mode、趋势/断点；观察期排名默认 total；8 项 known_gameability 未提供。"
-  - "工程规范阻断：models.go 生成文件手工补丁、cost fallback provider 参数未使用、BuildScores/JSON 错误被吞、rollup.go 超 800 行无拆分理由、migrate 上游挂钩缺 AIFIRST 标记。"
-  - "测试证据不足：真实 PostgreSQL 套件日志无 -v，无法排除 TestMain 整包 skip；daemon 周报与 28 天基线端到端被报告为残余风险而非验收证据。"
+  - "周报 completion 仅凭 org-admin Agent + project + autopilot_run_id 判定，未校验该 run 属于 canonical AI Maturity Weekly Report Autopilot；同项目其他 Autopilot 会被误拦截。"
+  - "MaturityService.Overall 忽略 scores JSON 反序列化错误，损坏投影会静默返回成功，违反 checked-error 纪律。"
+  - "内置 multica-maturity-weekly-report Skill 仅允许 Bash(multica *)，却要求 temp-file + atomic rename；声明工具权限无法完成 FR-20/AC-18 的报告文件落盘。"
 dimensions:
-  代码↔TASK↔SDD 对齐: "BLOCK：E2/E3、补偿、指标与读取合同存在实质偏差。"
-  工程质量: "BLOCK：生成文件手补、吞错、未使用参数、超长文件、挂钩标记违反仓库规范。"
-  关键路径可读性: "BLOCK：rollup 单文件 887 行超过 fork 800 行门槛，需拆分指标 helper。"
-  安全性: "PASS：已核对 workspace tenant join 与 user self-only；未发现跨租户或个人榜泄露。"
-  测试覆盖: "BLOCK：AC-18/22 生产链路与端到端验收缺失，model 日趋势/旧桶 retry 无回归测试。"
-  测试证据可信度: "BLOCK：canonical Go DB 日志不显示 RUN/PASS，TestMain skip 无法排除。"
-  前端质量: "BLOCK：必需 header/trend/config-revision/8 项可刷性缺失；既有组件测试不能证明这些状态。"
-suggestions:
-  - "Shanghai timezone fallback 在 service/scheduler/handler 重复；后续触及这些路径时再集中。"
+  代码↔TASK↔SDD 对齐: "BLOCK：E3 production skill 无可执行文件写入能力，且 completion 识别未绑定 canonical 周报 Autopilot。"
+  工程质量: "BLOCK：Overall 吞掉持久化 scores JSON 解码错误。"
+  关键路径可读性: "PASS：rollup 已拆分，主文件低于 800 行；sqlc 已由 pinned 生成器重生。"
+  安全性: "BLOCK：报告完成类型识别过宽，可能拒绝同项目其他 Autopilot 的合法完成。"
+  测试覆盖: "BLOCK：现有 E3 测试未覆盖同 Agent/项目下非周报 Autopilot，也未证明 Skill 权限可实际写文件。"
+  测试证据可信度: "PASS：canonical crctl test attempt 3 的 8 条命令均启动且 exit-code=0，真实 PostgreSQL E1/E2/E3 server 侧证据有效。"
+  前端质量: "PASS：attempt 1 的日期范围、Owner mode、日趋势、config 断点和 8 项可刷性 blocker 已修复，targeted views 134/134。"
+suggestions: []
 review-loop:
-  current-attempt: 1
+  current-attempt: 2
 release-subjects:
   version: 1
   repositories:
     - repo: ai-first-platform-docs
       remote-ref: refs/heads/requirement/CR-2026-047
-      reviewed-source-sha: 65084819d7eada74ef7b9d2a543b9a463539f225
+      reviewed-source-sha: 19a04f5e30934e0dcdfdc27b64c1147f6facd09a
     - repo: multica
       remote-ref: refs/heads/requirement/CR-2026-047
-      reviewed-source-sha: ba938225f12187351958bf15081d6a95c09822fd
+      reviewed-source-sha: 1b420c0bda0f042a68e47c12739ccef2e7195061
     - repo: tools
       remote-ref: refs/heads/requirement/CR-2026-047
       reviewed-source-sha: 75d72a3583d08795d9a0f4b39ece20d7e9eddd38
