@@ -1,0 +1,9 @@
+$ go test ./internal/drift/ ./internal/scheduler/ ./internal/integrations/ghsnapshot/ ./internal/commitprefix/ -run TestResolveBindings|TestCommitPrefixScan|TestListCommits|TestResolveRepositoryAccess|TestHeadAndPage|TestGeneratedPrefixes|TestGeneratedConfigRev|TestHealthState|TestDecodeResult|TestOverviewLivePG|TestListFindings|TestPatchStatus|TestFindingUpsert -count=1
+(exit=0)
+--- stdout ---
+ok  	github.com/multica-ai/multica/server/internal/drift	0.219s
+ok  	github.com/multica-ai/multica/server/internal/scheduler	0.148s
+ok  	github.com/multica-ai/multica/server/internal/integrations/ghsnapshot	0.256s
+ok  	github.com/multica-ai/multica/server/internal/commitprefix	0.049s
+
+--- stderr ---

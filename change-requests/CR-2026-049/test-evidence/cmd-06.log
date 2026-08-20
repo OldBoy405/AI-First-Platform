@@ -1,0 +1,40 @@
+$ node --test writeback-tx.test.mjs archive-tx.test.mjs
+(exit=0)
+--- stdout ---
+✔ TASK-09 AC-1：happy path — 四账本同批 + trailer + cleanup 全清 + 幂等重放 (29485.7848ms)
+✔ TASK-09 AC-1：cleanup fault → CR_ARCHIVE_CLEANUP_PENDING（status 恒 archived），重跑只续清理不重复 commit (28155.5762ms)
+✔ TASK-09 AC-2：dirty CR worktree 零删除 → cleanup-pending 保留现场；清理后重跑 complete (27731.5665ms)
+✔ review repair：archive 删除 requirement ref 前必须证明 source 已合入 origin trunk (27675.7017ms)
+✔ TASK-09 AC-2：rejected CR — authority 来自 CR worktree，归档在 detached trunk 提交并保留未合并 ref (12879.7844ms)
+✔ TASK-01 RED-1：happy path 固定返回 commit/lastCleanupError/recoverCommand/warnings (27239.3054ms)
+✔ TASK-01 RED-2：必需 emitter — 缺失/非法在 lock/journal/commit/push/outbox 前 ARCHIVE_EMITTER_REQUIRED (22565.3232ms)
+✔ TASK-01 RED-3：正常归档产生唯一 schema v1 archive 事件（六业务字段 + 真实 SHA） (24911.0819ms)
+✔ TASK-01 RED-4：cleanup fault → pending + 非空 lastCleanupError + 真实 commit；重跑零新 commit (25212.8462ms)
+✔ TASK-01 RED-5：dirty worktree — remaining 非空而 lastCleanupError=null（资源保留≠执行异常） (24684.5743ms)
+✔ TASK-01 RED-6：outbox 失败 → exit 0 + EMIT_FAILED warning + authority 不回滚；重跑补发零新 commit (24513.0432ms)
+✔ TASK-01 RED-7：预存确定性 dedup 文件 → 命中同名补记，数量不增、内容不覆盖 (24654.0523ms)
+✔ TASK-01 RED-8：rejected/withdrawn — 固定返回、零事件（archive/status）、preservedRefs 保留 (23018.0632ms)
+✔ TASK-01 RED-9：complete 幂等重放 — changed=false、固定字段、outbox 数量不增 (24279.9679ms)
+✔ TASK-01 RED-10：remote rebuild — 返回 commit 与事件 commit_sha 均为最终 origin SHA (25323.4101ms)
+✔ CR-2026-041 证据门：evidence digest 漂移 → ARCHIVE_EVIDENCE_DRIFT 硬失败且零 journal/authority (20069.9809ms)
+✔ CR-2026-041 证据门：证据缺失 → ARCHIVE_EVIDENCE 硬失败且零 journal (19955.2501ms)
+✔ TASK-01：writeback 业务输入使用固定键序 canonical digest (0.8954ms)
+✔ TASK-01：固定 generator 只在 ignored candidate 目录生成单次 snapshot (18975.6868ms)
+✔ TASK-02：内部 baseline 路径同一 commit 发布状态并在 origin-confirmed 后投影 (19535.6059ms)
+✔ TASK-02：journal-created 恢复冻结 transitionAt，业务参数漂移硬阻断 (19261.226ms)
+✔ TASK-02：投影失败不反转 Git，重放只补缺项 (19513.462ms)
+✔ TASK-04：公共 CLI 只收业务输入，baseline 同 commit 且幂等；旧/错 stage 参数拒绝 (20183.7139ms)
+✔ TASK-04：writeback-after-commit fault 经同一业务命令续跑不重复 commit (20094.5586ms)
+✔ review repair：commit 后 origin 前进先清除未发布事务，再以同一业务命令重建 (22643.0965ms)
+✔ review repair：commit 后 graphDigest 漂移硬阻断旧事务 (18359.9966ms)
+✔ TASK-04：traceability 公共业务参数全链路 (22234.9489ms)
+ℹ tests 27
+ℹ suites 0
+ℹ pass 27
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 412425.1593
+
+--- stderr ---
