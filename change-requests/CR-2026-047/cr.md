@@ -18,7 +18,7 @@ source: "docs/product/P3-组织智能设计.md"
 origin: ""
 status: developing
 created: "2026-08-20T00:10:30+08:00"
-updated: "2026-08-20T09:10:25+08:00"
+updated: "2026-08-20T09:28:36+08:00"
 remote-ref: ""
 last-push-at: ""
 last-push-by: ""
