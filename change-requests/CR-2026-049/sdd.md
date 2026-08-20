@@ -250,7 +250,7 @@ ALTER TABLE cr_sync_event ALTER COLUMN workspace_id SET NOT NULL;
 - trace transaction：
   1. `BEGIN`；`INSERT ... ON CONFLICT (workspace_id,cr_id,commit_sha,event_kind) DO NOTHING`；
   2. `SELECT id,processed_at,payload FROM cr_sync_event WHERE workspace_id=$1 ... FOR UPDATE`；
-  3. 已 processed 且 payload digest 相同 → commit 幂等成功；payload 不同 → `EVENT_IDEMPOTENCY_CONFLICT`、rollback/reject；
+  3. 已 processed 且数据库 JSONB `payload = incoming::jsonb` 语义相等 → commit 幂等成功；payload 不同 → `EVENT_IDEMPOTENCY_CONFLICT`、rollback/reject（不依赖 JSON 对象键顺序）；
   4. 未 processed → schema validate + `UPDATE ... SET processed_at=now()`；commit；
   5. `HandleCREvents` 仅在 commit 后加入 Accepted。
 
@@ -311,7 +311,7 @@ commit_prefixes: ["[cr] ", "Merge ", "merge ", "feat(", "feat:", "fix(", "fix:",
 
 `wip:` 是优先分类保留字，不进入合法白名单；classifier 在白名单判断前产生 `wip-on-trunk`。generator 以各仓 trunk 最近 200 条 subject 运行 coverage fixture；任何当前 subject 未匹配必须在提交声明前被人工分类（新增白名单或作为预期 finding），AC-10 不靠猜测。普通 Multica build 只编译已提交的 Go 副本、不 checkout knowledge-base；独立 generator-sync CI job 显式 checkout knowledge-base 源 SHA 后运行 `--check`，pre-commit 则由开发工作区传 `--source`。
 
-绑定算法：generated canonical URL 与 `workspace.repos[].url` 规范化后精确相等；`workspace.repos[].ref` 为空或等于声明 trunk，否则 `repository_ref_mismatch`。加载当前 workspace 的 `github_installation`，用 `ghsnapshot.Client` 对 owner/repo 检查 Contents:Read；零个可用 installation → `repository_access_missing`，多于一个 → `repository_access_ambiguous`。token 只在 client 内存缓存且从不落日志/result。
+绑定算法：generated canonical URL 与 `workspace.repos[].url` 规范化后精确相等；现有持久化契约只有 URL/description，因此 trunk 只取 generated declaration，不虚构 `workspace.repos.ref`。加载当前 workspace 的 `github_installation`，用 `ghsnapshot.Client` 对 owner/repo 检查 Contents:Read；零个可用 installation → `repository_access_missing`，多于一个 → `repository_access_ambiguous`。token 只在 client 内存缓存且从不落日志/result。
 
 ### 3.4 精确增量算法
 
@@ -354,7 +354,7 @@ commit_prefixes: ["[cr] ", "Merge ", "merge ", "feat(", "feat:", "fix(", "fix:",
 }
 ```
 
-查询按 `(occurred_at,id)` 升序。每个完整累计 snapshot 只取 `milestones[].cr == event.cr_id` 的唯一当前段，避免历史 milestone 重复；新事件 ingestion 要求恰一段。历史坏行不泄漏 raw payload，返回该 event `state='malformed', error_code='trace_payload_invalid'`，其余时间线仍可读。evidence 缐失返回显式 `null/missing`，不回退 trunk HEAD。
+查询按 `(occurred_at,id)` 升序加载事件，并用**最新有效完整 snapshot** 的全部 milestones 作为展示集合，不能只取当前事件 CR（首个 trace 必须把 CR-C 之前的累积历史带入）。投影规则：以 `(milestone.cr,milestone.milestone)` 去重；将所有有效 trace event 的 `cr_id→(occurred_at,id)` 映射回对应 milestone；有事件的条目按 `(occurred_at,id)` 排序，首个 snapshot 导入但没有独立 trace event 的历史条目标记 `source='baseline-imported'` 并保持文档顺序、排在事件条目前。`frs` 与历史 `fr-chain` 统一规范为响应字段 `frs`；同 key 在两个 snapshot 的语义 hash 不同则该条标记 `trace_snapshot_conflict`，不静默覆盖。新事件 ingestion 仍要求 `event.cr_id` 在 payload 中恰一段。历史坏行不泄漏 raw payload，返回该 event `state='malformed', error_code='trace_payload_invalid'`，其余时间线仍可读。evidence 缺失返回显式 `null/missing`，不回退 trunk HEAD。
 
 commit 跳转 DTO 包含 `{repo,trunk,sha,repository_url}`；证据跳转包含 `{path,sha256,commit_sha}`。前端仅用这些字段构造 GitHub commit/blob 或内部 evidence 链接。
 
@@ -431,7 +431,7 @@ DB CHECK 保证 E5 commit_sha 非空，使 expression unique index 不会被 NUL
 
 ### 4.3 owner/spec 与 timeline 去重
 
-trace event 是完整累计 snapshot，但事件时间线只投影该 event CR 的 milestone；unique key 防同 commit 重复。owner/spec 查询通过同 workspace 的 `cr` 连接，不从 milestone 文本猜 owner。表达式索引先定位 spec，再按 event id/occurred_at 排序。
+trace event 是完整累计 snapshot；读侧取最新有效 snapshot 的全部 milestones，再用事件元数据赋时并按 `(cr,milestone)` 去重，历史 baseline 不因缺独立 trace event 而丢失。unique key 防同 commit 重复。owner/spec 查询通过同 workspace 的 `cr` 连接，不从 milestone 文本猜 owner。表达式索引先定位 spec，再按 event id/occurred_at 排序。
 
 ## 5. 技术选型与替代方案
 
@@ -485,11 +485,11 @@ FR 覆盖率：**16/16**。
 
 | AC | 测试层与关键断言 |
 |---|---|
-| AC-1 | tools generator fixture：191KB full semantic JSON；multica governance DB：trace accepted/processed、status 不变 |
+| AC-1 | tools generator fixture：191KB full semantic JSON；跨语言 golden 由 Go `yaml.v3` 解析同一 YAML 后与 Node event payload 深比较；multica governance DB：trace accepted/processed、status 不变 |
 | AC-2 | tools fault injection：outbox mkdir/write fail、journal pending、complete replay、archive gate fail/recover、重复文件/ledger 一行 |
 | AC-3 | migration PG test：唯一回填成功、孤儿/多 workspace 同名回填非零；两 workspace 同名 CR ledger 隔离 |
 | AC-4 | schema grep/migration test：无 spec_trace；EXPLAIN trace expression index |
-| AC-5 | handler/service：两个同 spec trace，只投影各自 current milestone，稳定时序、跨 workspace 不泄漏 |
+| AC-5 | handler/service：首个完整 snapshot 导入历史 milestones，后续两个同 spec trace 以 `(cr,milestone)` 去重并按事件赋时；稳定时序、跨 workspace 不泄漏 |
 | AC-6 | view：merge/test/review/approval link；缺 evidence 显式 missing、不取 latest trunk |
 | AC-7 | spec-search handler + search-command：owner exact、spec query、跨 workspace；owner free-text 不误当 user UUID |
 | AC-8 | scheduler fake DB/GitHub：per-workspace hourly、missing repo FAILED、首次三仓 baseline 零 finding |
