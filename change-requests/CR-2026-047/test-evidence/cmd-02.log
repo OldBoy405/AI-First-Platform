@@ -1,0 +1,8 @@
+$ go -C server test ./internal/maturity/ ./internal/migrations/ ./cmd/migrate/ -count=1
+(exit=0)
+--- stdout ---
+ok  	github.com/multica-ai/multica/server/internal/maturity	0.036s
+ok  	github.com/multica-ai/multica/server/internal/migrations	0.052s
+ok  	github.com/multica-ai/multica/server/cmd/migrate	8.262s
+
+--- stderr ---

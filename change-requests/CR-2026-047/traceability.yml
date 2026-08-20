@@ -1,0 +1,114 @@
+cr-id: CR-2026-047
+reviews:
+  requirement:
+    reviewer: "OldBoy405"
+    verdict: pass
+    reviewed-at: "2026-08-20T00:30:45+08:00"
+    blocker-count: 0
+    annotation: "change-requests/CR-2026-047/review-annotations/requirement.yml"
+    review-loop:
+      current-cycle: 1
+      current-attempt: 2
+      max-attempts: 3
+      attempts:
+        - attempt: 1
+          cycle: 1
+          reviewed-at: "2026-08-20T00:28:57+08:00"
+          result: block
+          blocker-count: 2
+          repair-target: write-requirement-prd
+        - attempt: 2
+          cycle: 1
+          reviewed-at: "2026-08-20T00:30:45+08:00"
+          result: pass
+          blocker-count: 0
+          repair-target: write-requirement-prd
+  tech-design:
+    reviewer: "OldBoy405"
+    verdict: pass
+    reviewed-at: "2026-08-20T02:26:25+08:00"
+    blocker-count: 0
+    annotation: "change-requests/CR-2026-047/review-annotations/sdd.yml"
+    review-loop:
+      current-cycle: 2
+      current-attempt: 1
+      max-attempts: 3
+      attempts:
+        - attempt: 1
+          cycle: 1
+          reviewed-at: "2026-08-20T00:51:16+08:00"
+          result: block
+          blocker-count: 6
+          repair-target: write-tech-design
+        - attempt: 2
+          cycle: 1
+          reviewed-at: "2026-08-20T01:14:35+08:00"
+          result: pass
+          blocker-count: 0
+          repair-target: write-tech-design
+        - attempt: 1
+          cycle: 2
+          reviewed-at: "2026-08-20T02:26:25+08:00"
+          result: pass
+          blocker-count: 0
+          repair-target: write-tech-design
+  dev-plan:
+    reviewer: "OldBoy405"
+    verdict: pass
+    reviewed-at: "2026-08-20T02:34:58+08:00"
+    blocker-count: 0
+    annotation: "change-requests/CR-2026-047/review-annotations/dev-plan.yml"
+    review-loop:
+      current-cycle: 1
+      current-attempt: 2
+      max-attempts: 3
+      attempts:
+        - attempt: 1
+          cycle: 1
+          reviewed-at: "2026-08-20T01:39:13+08:00"
+          result: block
+          blocker-count: 4
+          repair-target: write-dev-plan
+        - attempt: 2
+          cycle: 1
+          reviewed-at: "2026-08-20T02:34:58+08:00"
+          result: pass
+          blocker-count: 0
+          repair-target: write-dev-plan
+  code:
+    reviewer: "OldBoy405"
+    verdict: pass
+    reviewed-at: "2026-08-20T10:18:44+08:00"
+    blocker-count: 0
+    annotation: "change-requests/CR-2026-047/review-annotations/code.yml"
+    review-loop:
+      current-cycle: 1
+      current-attempt: 3
+      max-attempts: 3
+      attempts:
+        - attempt: 1
+          cycle: 1
+          reviewed-at: "2026-08-20T08:06:00+08:00"
+          result: block
+          blocker-count: 7
+          repair-target: implement-code
+        - attempt: 2
+          cycle: 1
+          reviewed-at: "2026-08-20T09:10:24+08:00"
+          result: block
+          blocker-count: 3
+          repair-target: implement-code
+        - attempt: 3
+          cycle: 1
+          reviewed-at: "2026-08-20T10:18:44+08:00"
+          result: pass
+          blocker-count: 0
+          repair-target: implement-code
+tests:
+  report: change-requests/CR-2026-047/test-report.md
+  status: pass
+  tester: Ray
+  owner-assigned-at: "2026-08-20T00:10:30+08:00"
+  generated-at: "2026-08-20T10:13:05+08:00"
+  command-digest: 2ba50d7e2b16d433412a8846fbd99214ab3c87d59320bee29e3f4a8510ade5f7
+  review-loop: write-test-report

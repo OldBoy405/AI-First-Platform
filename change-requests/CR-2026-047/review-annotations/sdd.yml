@@ -1,0 +1,21 @@
+cr-id: CR-2026-047
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-20T02:26:25+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  PRD-SDD对齐: "pass: 24/24 FR 与 22/22 AC 仍有技术方案与验证映射；FR-14 的 cr.owners 并未被静默删除，SDD 明确记录当前 free-text 数据源的限制，并以不可用状态传播。"
+  架构合理性: "pass: 方案 B 不新增跨仓身份桥；cr owner 检测留在 maturity SQL/rollup，comments 与 task initiator 仍是诊断数据，workspace/project 边界和既有 handler→service→db 方向不变。"
+  数据模型完整性: "pass: MetricValue 的 value/reason/data_status 可表达 owner unresolved；MaturityCROwnerResolution 精确输出 CR、project 与 unresolved count；snapshot 保留 raw metrics，受影响 scope/date 的 scores 固化为空对象，baseline 只消费 ready 样本。"
+  接口契约: "pass: TASK-05 新增 MaturityCROwnerResolution sqlc 合同；TASK-03/06 统一规定非-ready/null 不得部分重归一化；overall 返回 total_score=null 与显式 raw 状态，前端不需要猜测。"
+  性能与安全: "pass: owner 检测使用 workspace-scoped SQL JSON 展开，不按名称匹配、不强转 UUID；不引入身份表、事件协议或跨租户查询；基线查询继续过滤 ready。"
+  可测试性: "pass: SDD 与 TASK-03/05/06/11 均有 owner fixture：空 owners、非空 free-text、org/project 传播、scores 为空、baseline 排除、跨 workspace 隔离和诊断集合保留。"
+  Prompt采纳影响: "pass: 本次只修改 CR 文档与任务契约，不触及 crctl.mjs dispatch 或 controlled-shell rules.json#protectedPaths.deny，条件性检查无影响。"
+suggestions:
+  - "实现时保持 MaturityCROwnerResolution 只识别 owners.*.id 的非空存在性；不得加入名称匹配、UUID 猜测或隐式 member lookup。"
+  - "实现时将 owner-unresolved 的 org/project scores 序列化为 {}，并让 API 通过 data_status/reason 展示 unavailable；不要用部分权重重归一化生成总分。"
+review-loop:
+  current-attempt: 1
+subject-file: change-requests/CR-2026-047/sdd.md
+subject-sha256: 95fbd50695f07191758ef789f067069268faa1dd10c1c0a84c2b2bdd8ee9d06f

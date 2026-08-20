@@ -1,0 +1,69 @@
+cr-id: CR-2026-047
+tasks:
+  - id: CR-2026-047-TASK-01
+    title: "E1 配置声明 schema + 零依赖生成器"
+    status: done
+    done-at: "2026-08-20T02:47:46+08:00"
+    estimate: 12h
+    depends-on: []
+  - id: CR-2026-047-TASK-02
+    title: "迁移 375–379 maturity_snapshot 表与周报历史索引"
+    status: done
+    done-at: "2026-08-20T02:50:57+08:00"
+    estimate: 6h
+    depends-on: []
+  - id: CR-2026-047-TASK-03
+    title: "计分纯函数与观察期判定"
+    status: done
+    done-at: "2026-08-20T02:52:38+08:00"
+    estimate: 8h
+    depends-on: [CR-2026-047-TASK-01]
+  - id: CR-2026-047-TASK-04
+    title: "Token/Agent 类指标 SQL（token_intensity、ai_penetration、team_agent_depth、headline、model 明细）"
+    status: done
+    done-at: "2026-08-20T02:56:03+08:00"
+    estimate: 16h
+    depends-on: [CR-2026-047-TASK-01]
+  - id: CR-2026-047-TASK-05
+    title: "CR/Pipeline 指标与治理护栏 SQL"
+    status: done
+    done-at: "2026-08-20T03:01:23+08:00"
+    estimate: 16h
+    depends-on: [CR-2026-047-TASK-01, CR-2026-047-TASK-04]
+  - id: CR-2026-047-TASK-06
+    title: "快照 rollup 编排（事务、advisory lock、观察期、JSON 校验）"
+    status: done
+    done-at: "2026-08-20T03:19:54+08:00"
+    estimate: 12h
+    depends-on: [CR-2026-047-TASK-01, CR-2026-047-TASK-02, CR-2026-047-TASK-03, CR-2026-047-TASK-04, CR-2026-047-TASK-05]
+  - id: CR-2026-047-TASK-07
+    title: "scheduler job maturity_snapshot（hook 补偿 + retry 合并）"
+    status: done
+    done-at: "2026-08-20T03:26:05+08:00"
+    estimate: 12h
+    depends-on: [CR-2026-047-TASK-06]
+  - id: CR-2026-047-TASK-08
+    title: "读 API 六个端点 + 受保护路由 + core schema/client"
+    status: done
+    done-at: "2026-08-20T03:50:40+08:00"
+    estimate: 16h
+    depends-on: [CR-2026-047-TASK-01, CR-2026-047-TASK-02, CR-2026-047-TASK-06]
+  - id: CR-2026-047-TASK-09
+    title: "前端看板（三件式复用、观察期无雷达、定义页、Web/Desktop 接线）"
+    status: done
+    done-at: "2026-08-20T04:28:17+08:00"
+    estimate: 20h
+    depends-on: [CR-2026-047-TASK-08, CR-2026-047-TASK-10]
+  - id: CR-2026-047-TASK-10
+    title: "Org Admin 幂等初始化 + 周报 Autopilot + envelope 回传"
+    status: done
+    done-at: "2026-08-20T04:28:17+08:00"
+    estimate: 20h
+    depends-on: [CR-2026-047-TASK-02, CR-2026-047-TASK-05, CR-2026-047-TASK-08]
+  - id: CR-2026-047-TASK-11
+    title: "测试矩阵收口与 CUSTOM.md 治理登记"
+    status: done
+    done-at: "2026-08-20T04:33:52+08:00"
+    estimate: 12h
+    depends-on: [CR-2026-047-TASK-01, CR-2026-047-TASK-02, CR-2026-047-TASK-03, CR-2026-047-TASK-04, CR-2026-047-TASK-05, CR-2026-047-TASK-06, CR-2026-047-TASK-07, CR-2026-047-TASK-08, CR-2026-047-TASK-09, CR-2026-047-TASK-10]
+
