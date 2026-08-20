@@ -1,0 +1,28 @@
+cr-id: CR-2026-049
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-20T20:46:07+08:00"
+verdict: block
+blockers:
+  - "TD-B1 canonical trace payload 违背已批准 PRD：SDD §1.2/§2.4/§4.1 把 FR-1/AC-1 的 payload.traceability 完整语义对象改为 traceability_yaml 字符串，导致 ledger 契约与 AC 不可满足。回修必须恢复 {spec_id, traceability}，由版本化 writeback generator 产出 canonical JSON（可写入受校验 candidate manifest/sidecar），crctl 只读已冻结对象并经 callback 发 outbox；不得把 YAML 解析推迟到读 API，也不得新增第三方依赖。"
+  - "TD-B2 trace pending 生命周期不能保证最终交付：SDD 仅靠 writeback journal + 人工重跑，但 archive cleanup 后 operational workspace/candidate 可能已删除，collector 又看不到尚未写成文件的 pending。回修必须定义确定性门禁：archive 在任何 cleanup 前补发 trace pending，仍失败则保持可恢复现场并拒绝完成归档；complete journal 的 replay 必须在 operational workspace 解析前可执行，并明确 writeback/feature-writeback Skill 对 EMIT_FAILED 的处理。"
+  - "TD-B3 ledger 重投会误 ack 未处理行：现有 crsync ingest 是 INSERT 后 apply/processed，ON CONFLICT RowsAffected=0 直接成功；若 INSERT 后故障，重投会被 Accepted 但 processed_at 永久为空。回修必须设计 insert-or-load + 未处理续跑，trace 至少在同一 DB transaction 中完成入账与 processed 标记，只有 processed 后才 ack，并给出注入故障集成测试。"
+  - "TD-B4 workspace 迁移与受影响 seam 未闭环：SDD §2.2 的 UPDATE ... FROM 在同名 CR 映射多个 workspace 时会非确定选一行，不会留下 NULL；迁移 392 先删旧唯一键再建新键还有无约束窗口，表达式/列表索引也未编号。回修必须先对 count(DISTINCT workspace_id) != 1 显式 RAISE，再确定性回填；按 expand→backfill→new unique index→code cutover→drop old 约束编排，并覆盖 ingest/processed/lock key/runner/maturity/review/approval 查询与 approval_record workspace 幂等键，列出全部迁移编号和 concurrent-index cleanup hook。"
+  - "TD-B5 每 workspace 仓库访问模型不可实施：SDD 保留 remote 示例/placeholder，并把一份全局 generated Go 配置用于所有 workspace；现有 reconcile env 仅支持单一 KNOWLEDGE_BASE_REMOTE_URL/TOKEN，不能证明每 workspace 扫自己的声明仓。回修必须以已核实三仓 remote 为声明，定义 generated repo-id→canonical URL/trunk/prefixes 与 workspace.repos/GitHub installation 或 VCS connection 的确定性绑定、凭证选择、eligible workspace、私有/非 GitHub/slash branch/缺权限失败语义；不得把待核实值留到实施期。"
+  - "TD-B6 GitHub 增量算法不能证明不漏提交：githubCommits(... until=SHA) 不是 GitHub API 契约，未定义固定 HEAD、分页、精确命中 cursor、限流/超时/heartbeat/页上限；无法满足 FR-14/AC-12。回修必须固定 B=本轮 HEAD，从 sha=B 逐页遍历至精确 A，任何截断/限流/未命中均 FAILED 且不推进游标，明确稳定顺序与 100+ commits、多页、HEAD 前进、cursor missing、中断重试测试。"
+  - "TD-B7 API 与可测试性不完整：SDD §3.4/§3.5 无版本化 JSON DTO、错误码、权限矩阵、keyset cursor/tiebreaker、PATCH 状态矩阵/并发语义、trace 快照去重与 malformed payload 处理；也没有 AC-1~AC-15 的分层测试矩阵，违反 multica API compatibility。回修必须补齐 handler/core zod+parseWithFallback/view 契约、owner free-text 语义和测试落点（tools、migration/governance DB、fake GitHub scheduler、handler 隔离、core/views fallback）。"
+dimensions:
+  prd_sdd_alignment: "阻断：FR-1/AC-1 的 canonical payload 被改为 traceability_yaml；FR-3 最终交付和 FR-9 每 workspace 扫描也未闭环。"
+  architecture: "阻断：全局 generated repo 配置与 per-workspace scope 矛盾；pending cleanup 生命周期及 ledger 重投事务边界不完整。"
+  data_model: "阻断：workspace 回填 SQL 非确定；新旧唯一键切换、approval_record workspace 幂等键及索引迁移编号不完整。"
+  interface_contract: "阻断：trace/drift API 缺 DTO、错误、分页、权限与状态机契约；GitHub commit walker 不是可执行协议。"
+  performance_security: "阻断：分页/限流/固定 HEAD 未定义会漏扫；workspace 仓库凭证与租户绑定未定义。"
+  testability: "阻断：未提供 AC-1~AC-15 分层测试矩阵，缺 insert 后故障、多页增量、跨 workspace、状态并发与前端 fallback 测试。"
+  prompt_adoption: "跳过：不触及 crctl dispatch 或 rules.json deny 面；但 TD-B2 回修后需在普通 Skill/Pipeline 契约中明确 warning/pending 门禁。"
+suggestions:
+  - "为 E5 finding 增加应用层 evidence 必填校验，并为 workspace/status keyset 列表查询分配独立 CONCURRENTLY 索引。"
+  - "固定 resolve_latency 为 resolved_at-found_at 的 resolved 样本 P50/P90，并定义空样本返回 null。"
+review-loop:
+  current-attempt: 1
+subject-file: change-requests/CR-2026-049/sdd.md
+subject-sha256: e23a7a0fa51eb1ab6037a449cdb42fbf2717a3b943ca183ce895d2d62e320426
