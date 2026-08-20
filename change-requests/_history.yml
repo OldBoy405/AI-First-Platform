@@ -2046,3 +2046,45 @@ history:
         event: archived
         to: ["Ray"]
         payload: {"final-status":"archived","archive-reason":"cr-archive","archived-at":"2026-08-20T11:27:04+08:00","writeback-spec-id":"ai-first-platform"}
+  - id: CR-2026-048
+    title: P3 组织智能 · 内部 Skill Market
+    summary: "Skill Market：skill 表加 visibility(org/private)/version(展示)/owner_actor 三列；skill_usage_event（skill_ref TEXT 记 builtin:<name>，无 FK）；服务端任务认领路径直写遥测；发布门禁（owner/元数据卡/validate-doc）；发布=授权 + 敏感扫描（复用 pkg/redact patterns，新增 Findings 入口 + 个人路径模式）；Market 前端。范围与验收见 P3 §5.1 CR-B / §5.2 E6，23 项决议见 P3 §7。"
+    owner: Ray
+    owners:
+      requirement:
+        id: Ray
+        assigned-at: "2026-08-20T11:42:32+08:00"
+      development:
+        id: Ray
+        assigned-at: "2026-08-20T11:42:32+08:00"
+      test:
+        id: Ray
+        assigned-at: "2026-08-20T11:42:32+08:00"
+    target-version: 0.22
+    source: "docs/product/P3-组织智能设计.md §3+§5.1+§7; docs/analysis/P3组织智能-开工前代码核对评审.md"
+    origin: ""
+    prd-path: "change-requests/CR-2026-048/prd.md"
+    created: "2026-08-20T11:42:32+08:00"
+    updated: "2026-08-20T11:42:32+08:00"
+    latest-checkpoint:
+      batch-id: 9132c5e481df64f6
+      repositories:
+        - repo: ai-first-platform-docs
+          source-sha: e8ebccbd2ed0fb293677d2d21366e062f8e19c54
+          remote-ref: refs/heads/requirement/CR-2026-048
+        - repo: multica
+          source-sha: 989f7c27af8215f8e2f3519e986af5f995ea2dc0
+          remote-ref: refs/heads/requirement/CR-2026-048
+        - repo: tools
+          source-sha: e6facbe58f738ccd255b49fc1a2748951fc2b89b
+          remote-ref: refs/heads/requirement/CR-2026-048
+  
+    final-status: archived
+    archive-reason: "cr-archive"
+    writeback-spec-id: ai-first-platform
+    archived-at: "2026-08-20T19:21:41+08:00"
+    notify-log:
+      - at: "2026-08-20T19:21:41+08:00"
+        event: archived
+        to: ["Ray"]
+        payload: {"final-status":"archived","archive-reason":"cr-archive","archived-at":"2026-08-20T19:21:41+08:00","writeback-spec-id":"ai-first-platform"}
