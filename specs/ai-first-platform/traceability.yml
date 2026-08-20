@@ -1,11 +1,11 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 # 五段链路：需求 FR ↔ 技术设计 SDD ↔ 交付 TASK ↔ 代码 merge SHA ↔ CR-ID
 spec-id: ai-first-platform
-cr-ref: CR-2026-047
-cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029, CR-2026-028, CR-2026-030, CR-2026-031, CR-2026-037, CR-2026-032, CR-2026-033, CR-2026-038, CR-2026-039, CR-2026-040, CR-2026-041, CR-2026-043, CR-2026-042, CR-2026-044, CR-2026-045, CR-2026-046, CR-2026-047]
-target-version: "0.21"
+cr-ref: CR-2026-048
+cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029, CR-2026-028, CR-2026-030, CR-2026-031, CR-2026-037, CR-2026-032, CR-2026-033, CR-2026-038, CR-2026-039, CR-2026-040, CR-2026-041, CR-2026-043, CR-2026-042, CR-2026-044, CR-2026-045, CR-2026-046, CR-2026-047, CR-2026-048]
+target-version: "0.22"
 baseline-since: "0.10"
-generated-at: "2026-08-20T11:26:39+08:00"
+generated-at: "2026-08-20T19:21:19+08:00"
 
 # 已知缺口：CR-2026-003~CR-2026-006 未生成本文件的里程碑段（writeback-traceability 在那四个
 # CR 回写时被跳过，PRD.md/SDD.md/_index.yml 侧的累积记录不受影响、仍完整）。本次（CR-2026-008）
@@ -3193,3 +3193,121 @@ milestones:
         code: { verdict: pass, path: change-requests/CR-2026-047/review-annotations/code.yml, sha256: 9420e2917508ab7d31e91885179c5fc0136bcc79f36f82a170dfdb7536eb3c57 }
       approval: { status: approved, path: change-requests/CR-2026-047/approval.yml, sha256: 5f89badc5958813c6af7289055863cd0e1767ccca84e0540875ef60385e2cba7 }
       merge: { status: merged, path: change-requests/CR-2026-047/merge-commits.yml, sha256: bd3dab5c7dbe7c373b087f9bbd880414aa6a26e6f0adb23db3f52075b91c5116 }
+  - cr: CR-2026-048
+    milestone: P3 组织智能 CR-B：内部 Skill Market（E6）
+    target-version: "0.22"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: ceea239fa99163cbdf401eb1d6a2862a21b487d4
+        branch: requirement/CR-2026-048
+      - repo: multica
+        trunk: main
+        sha: 368265d42aae2829e3698c35812297928f585d2f
+        branch: requirement/CR-2026-048
+      - repo: tools
+        trunk: custom/main
+        sha: 5c5ef79550e5403ae2cba0058882c2a8c5adc0e4
+        branch: requirement/CR-2026-048
+    frs:
+      - fr: FR-1
+        title: 迁移 380：skill 表加 visibility(仅 private/org CHECK)/version(纯展示)/owner_actor 三列
+        tasks: [CR-2026-048-TASK-01]
+        evidence: test-report §3 TASK-01 AC-1
+      - fr: FR-2
+        title: 迁移 381：skill_usage_event append-only 遥测表（workspace_id 租户键、无 FK、表注释含派发时物化语义）
+        tasks: [CR-2026-048-TASK-01]
+        evidence: test-report §3 TASK-01 AC-1/AC-5
+      - fr: FR-3
+        title: claim 路径把 ref.ID 原样落库（builtin 合成 id 零转换）
+        tasks: [CR-2026-048-TASK-06]
+        evidence: test-report §3 TASK-06 AC-3
+      - fr: FR-4
+        title: version 仅 UpdateSkill 读写与展示，不参与任何内容判定
+        tasks: [CR-2026-048-TASK-01, CR-2026-048-TASK-07]
+        evidence: test-report §3 TASK-07 AC-2
+      - fr: FR-5
+        title: buildClaimedTaskResponse 循环 INSERT，失败仅日志不阻断认领
+        tasks: [CR-2026-048-TASK-06]
+        evidence: test-report §3 TASK-06 AC-3/AC-4
+      - fr: FR-6
+        title: TaskCompleteRequest / sanitizeTaskCompleteRequest 零改动
+        tasks: [CR-2026-048-TASK-06]
+        evidence: test-report §3 TASK-06 AC-4（diff 为证）
+      - fr: FR-7
+        title: 表注释（COMMENT ON）与查询语义声明"派发时物化"
+        tasks: [CR-2026-048-TASK-01, CR-2026-048-TASK-05]
+        evidence: test-report §3 TASK-01/05
+      - fr: FR-8
+        title: 发布门禁整体 fail-closed，可见性翻转与写入同一事务
+        tasks: [CR-2026-048-TASK-07]
+        evidence: test-report §3 TASK-07 AC-6（422 不部分更新）
+      - fr: FR-9
+        title: meta.Name / meta.Description 非空校验（结构化 reason）
+        tasks: [CR-2026-048-TASK-04, CR-2026-048-TASK-07]
+        evidence: test-report §3 TASK-04/07 AC-6
+      - fr: FR-10
+        title: owner_actor 空即拒（单值即可，不要求全局唯一）
+        tasks: [CR-2026-048-TASK-04, CR-2026-048-TASK-07]
+        evidence: test-report §3 TASK-04/07 AC-7
+      - fr: FR-11
+        title: 元数据卡四字段逐一校验，错误带字段名
+        tasks: [CR-2026-048-TASK-03, CR-2026-048-TASK-04, CR-2026-048-TASK-07]
+        evidence: test-report §3 TASK-03/04/07 AC-7
+      - fr: FR-12
+        title: 结构校验 = ParseSkillMetadata 成功 + 必填字段（不做跨包 validate-doc 调用）
+        tasks: [CR-2026-048-TASK-03, CR-2026-048-TASK-04]
+        evidence: test-report §3 TASK-03/04 AC-8
+      - fr: FR-13
+        title: protectedPaths 命中 → warnings（不阻断、不改写声明）
+        tasks: [CR-2026-048-TASK-04]
+        evidence: test-report §3 TASK-04 AC-8
+      - fr: FR-14
+        title: 无 is_builtin 特判分支（builtin 无 skill 行天然不可达）
+        tasks: [CR-2026-048-TASK-04]
+        evidence: test-report §3 TASK-04 AC-9
+      - fr: FR-15
+        title: redact.Findings + patterns 单一定义（name 字段唯一非空断言）
+        tasks: [CR-2026-048-TASK-02]
+        evidence: test-report §3 TASK-02 AC-10
+      - fr: FR-16
+        title: 第 17 条 personal_path 模式（/Users/、C:\Users\、/home/）
+        tasks: [CR-2026-048-TASK-02]
+        evidence: test-report §3 TASK-02 AC-10
+      - fr: FR-17
+        title: 门禁扫描 content + 全部 skill_file；org 内容更新（含 runtime-local 覆盖导入）同样重扫
+        tasks: [CR-2026-048-TASK-04, CR-2026-048-TASK-07]
+        evidence: test-report §3 TASK-04/07 AC-10
+      - fr: FR-18
+        title: 申诉端点 + appeal_id=内容哈希绑定 + activity_log 三 action（放行可撤销）
+        tasks: [CR-2026-048-TASK-07]
+        evidence: test-report §3 TASK-07 AC-11
+      - fr: FR-19
+        title: GET /api/skills/market：workspace（org 可见，含 version/source）+ builtin 排行
+        tasks: [CR-2026-048-TASK-08]
+        evidence: test-report §3 TASK-08 AC-3/AC-5
+      - fr: FR-20
+        title: 详情页渲染四字段使用说明卡（SkillResponse.metadata 服务端解析）
+        tasks: [CR-2026-048-TASK-09]
+        evidence: test-report §3 TASK-09 AC-12
+      - fr: FR-21
+        title: requirements 类字段确定性提取，缺失/不可解析无标签不报错
+        tasks: [CR-2026-048-TASK-09]
+        evidence: test-report §3 TASK-09 AC-12
+      - fr: FR-22
+        title: 发布确认框文案含"发布 = 授权"语义
+        tasks: [CR-2026-048-TASK-09]
+        evidence: test-report §3 TASK-09 AC-12
+      - fr: FR-23
+        title: source 经 ParseSkillMetadata 读取 → 列表筛选（session-export），零新列
+        tasks: [CR-2026-048-TASK-08, CR-2026-048-TASK-09]
+        evidence: test-report §3 TASK-09 AC-13
+    evidence:
+      test: { status: pass, path: change-requests/CR-2026-048/test-report.md, sha256: e16a63898fe5c236de4f13e5a80366dfb22cd3a8884a038c6cc91e6a98b4fd42 }
+      reviews:
+        requirement: { verdict: pass, path: change-requests/CR-2026-048/review-annotations/requirement.yml, sha256: 841b87a8e540bc30ee344c87d1fb09987853cd06a01a52a4abc428b768bc07dc }
+        tech-design: { verdict: pass, path: change-requests/CR-2026-048/review-annotations/sdd.yml, sha256: a6c6f1cc3d0af6a257170202e72ef9738cf442c0ca266b741f66428cee47945e }
+        dev-plan: { verdict: pass, path: change-requests/CR-2026-048/review-annotations/dev-plan.yml, sha256: deff0a50551f1f59d5eb390bfd91474c7c264fe59bd468c0f89da25ae3100166 }
+        code: { verdict: pass, path: change-requests/CR-2026-048/review-annotations/code.yml, sha256: c90469993df0bb51f4493a6a60baff552e03caa3c414918f442bd0189f0fc21f }
+      approval: { status: approved, path: change-requests/CR-2026-048/approval.yml, sha256: 336396ba75ca67fe692547ee3331c4e21b43c08ad240dd1a4623fcf24c9b91d4 }
+      merge: { status: merged, path: change-requests/CR-2026-048/merge-commits.yml, sha256: b16c9ec7f7336e5e696bd0bfe9341d67b2f0bfcb8fe9f709532431ac306c240e }
