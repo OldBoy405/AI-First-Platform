@@ -16,9 +16,9 @@ owners:
 target-version: 0.23
 source: "docs/product/P3-组织智能设计.md §2+§5.1+§7; docs/analysis/P3组织智能-开工前代码核对评审.md"
 origin: ""
-status: developing
+status: code-reviewing
 created: "2026-08-20T19:26:58+08:00"
-updated: "2026-08-20T21:36:13+08:00"
+updated: "2026-08-21T05:00:47+08:00"
 remote-ref: ""
 last-push-at: ""
 last-push-by: ""
