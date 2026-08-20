@@ -3,7 +3,7 @@ cr: CR-2026-047
 status: pass
 tester: Ray
 generated-by: crctl-test
-generated-at: "2026-08-20T09:04:11+08:00"
+generated-at: "2026-08-20T09:20:36+08:00"
 command-digest: 2ba50d7e2b16d433412a8846fbd99214ab3c87d59320bee29e3f4a8510ade5f7
 commands:
   - repo: multica
@@ -94,7 +94,7 @@ commands:
 
 ## 测试摘要
 
-代码评审 attempt 1 BLOCK 修复后重新生成 canonical 证据（attempt 3）。8 条机器命令均已启动且 exit-code=0，`status=pass`：
+代码评审 attempt 2 BLOCK 修复后重新生成 canonical 证据（write-test-report cycle 2 attempt 1）。8 条机器命令均已启动且 exit-code=0，`status=pass`：
 
 | # | 套件 | 结果 |
 |---|---|---|
@@ -113,8 +113,8 @@ commands:
 
 - E1：目标 bucket 精确幂等，较新 bucket 成功后旧 FAILED bucket 仍可补洞；AI penetration 按 task initiator 统计且 user scope 组织指标全部 `not_applicable`、`scores={}`。
 - E2：latest 使用 `ORDER BY bucket_date DESC LIMIT 1`；model 趋势按 Asia/Shanghai 自然日分桶；provider/model 价格优先于 bare-model fallback；UI 增加日期范围、Owner mode、每日趋势、config revision 断点、Token/质量配对与 8 项可刷性说明。
-- E3：真实 PostgreSQL 测试覆盖 Autopilot rule version、项目/复用 chat 绑定、无效 envelope fail-closed、direct envelope 持久化、assistant chat、Owner inbox，以及同 ISO week 第二个 retry task 的 inbox 去重；普通 Org Admin 追问不被误判为报告完成。
-- 工程：sqlc 使用 pinned `make sqlc` 重生；rollup 主文件已拆分至 800 行以内；集成挂点与 `CUSTOM.md` 已登记。
+- E3：真实 PostgreSQL 测试覆盖 Autopilot rule version、项目/复用 chat 绑定、无效 envelope fail-closed、direct envelope 持久化、assistant chat、Owner inbox，以及同 ISO week 第二个 retry task 的 inbox 去重；completion 现沿 task→autopilot_run→canonical Org Admin Autopilot 验证身份，同 Agent/项目的其他 run-only Autopilot 输出保持原样，普通追问也不被误判。
+- 工程：`Overall` 对 metrics/scores/first-bucket 错误全部显式返回；内置周报 Skill 明示 `Write + mkdir + sha256sum + mv` 权限与同目录原子发布步骤；sqlc 使用 pinned `make sqlc` 重生；rollup 主文件低于 800 行；集成挂点与 `CUSTOM.md` 已登记。
 
 ## TASK 验收覆盖矩阵
 
@@ -137,4 +137,4 @@ commands:
 
 ## 下一步建议
 
-进入 code-review attempt 2；仅在 Standards 与 Spec 双轴均 PASS 且 canonical `review-record` 推进到 `code-reviewing` 后，才交付人工 `approve-code` 指令。
+进入 code-review attempt 3；仅在 Standards 与 Spec 双轴均 PASS 且 canonical `review-record` 推进到 `code-reviewing` 后，才交付人工 `approve-code` 指令。
