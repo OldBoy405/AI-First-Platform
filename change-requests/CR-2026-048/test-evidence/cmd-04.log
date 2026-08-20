@@ -1,6 +1,6 @@
-$ go test ./internal/handler/ -count=1 -run TestUpdateSkill|TestAppealFlow|TestGetSkillMarket|TestClaimTaskByRuntimeWritesSkillUsageTelemetry
+$ go test ./internal/handler/ -count=1 -run TestUpdateSkill|TestAppeal|TestDecideSkillAppeal|TestGetSkillMarket|TestSkillMarketQueriesUseNewIndexes|TestClaimTaskByRuntimeWritesSkillUsageTelemetry
 (exit=0)
 --- stdout ---
-ok  	github.com/multica-ai/multica/server/internal/handler	0.368s
+ok  	github.com/multica-ai/multica/server/internal/handler	0.411s
 
 --- stderr ---

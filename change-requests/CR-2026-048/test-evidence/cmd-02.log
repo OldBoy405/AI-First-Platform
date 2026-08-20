@@ -1,6 +1,6 @@
-$ go test ./pkg/redact/ -count=1 -run TestFindings|TestPatternsSingleNamedTable
+$ go test ./pkg/redact/ -count=1 -run TestFindings|TestPatternsSingleNamedTable|TestTextKeepsMaskedHomeDirAndFindingsHandleCRLF
 (exit=0)
 --- stdout ---
-ok  	github.com/multica-ai/multica/server/pkg/redact	0.040s
+ok  	github.com/multica-ai/multica/server/pkg/redact	0.052s
 
 --- stderr ---

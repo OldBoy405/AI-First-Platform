@@ -1,0 +1,6 @@
+$ node --input-type=module -e import assert from 'node:assert/strict'; import fs from 'node:fs'; const locales=['en','ja','ko','zh-Hans']; const keys=locales.map(l=>Object.keys(JSON.parse(fs.readFileSync(`packages/views/locales/${l}/skills.json`,'utf8')).market).sort().join(',')); assert.equal(new Set(keys).size,1,'market locale key sets diverge'); assert.ok(keys[0].includes('applicable_scenarios')&&keys[0].includes('load_failed')&&!keys[0].includes('session_export_hint'),'market keys stale'); const {parseRequirements}=await import('./packages/views/skills/lib/skill-metadata.ts'); assert.deepEqual(parseRequirements('["git","node"]'),['git','node']); assert.deepEqual(parseRequirements('git, node'),['git','node']); assert.deepEqual(parseRequirements(undefined),[]); assert.deepEqual(parseRequirements('[broken'),['[broken']); console.log('locale parity + parseRequirements ok');
+(exit=0)
+--- stdout ---
+locale parity + parseRequirements ok
+
+--- stderr ---
