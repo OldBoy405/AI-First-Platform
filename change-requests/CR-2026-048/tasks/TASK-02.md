@@ -32,8 +32,8 @@ created: 2026-08-20T14:32:57+08:00
 
 ## 验收条件
 
-1. `Findings` 对含 `ghp_xxx` 与 `C:\Users\alice\` 的两行输入，返回两条 Finding，`Line` 分别指向正确行、`PatternID` 为 `github_token`/`personal_path`、`Excerpt` 含 `[REDACTED ...]` 且不含明文密钥。
-2. 新增测试断言 `len(patterns)==17` 且所有 `name` 唯一非空。
+1. （AC-10）`Findings` 对含 `ghp_xxx` 与 `C:\Users\alice\` 的两行输入，返回两条 Finding，`Line` 分别指向正确行、`PatternID` 为 `github_token`/`personal_path`、`Excerpt` 含 `[REDACTED ...]` 且不含明文密钥。
+2. （AC-10）新增测试断言 `len(patterns)==17` 且所有 `name` 唯一非空（防平行正则表）。
 3. `go test ./pkg/redact/ -v` 全绿；既有 `Text()` 行为不回归。
 
 ## 完成标志

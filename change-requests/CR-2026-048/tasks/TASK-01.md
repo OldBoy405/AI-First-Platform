@@ -36,17 +36,20 @@ created: 2026-08-20T14:32:57+08:00
 - 384：照抄迁移 089 形制——`CREATE INDEX CONCURRENTLY skill_appeal_activity_idx ON activity_log ((details->>'appeal_id')) WHERE action IN ('skill_appeal_submitted','skill_appeal_approved','skill_appeal_rejected')`。
 - down 文件：382/383/384 均 `DROP INDEX CONCURRENTLY`，381 `DROP TABLE`。
 - 每个 CONCURRENTLY 迁移版本在 `concurrentIndexCleanups` / `concurrentDownIndexCleanups` 各注册一条（`"382_skill_usage_event_task_id" -> "skill_usage_event_task_id_idx"` 等），否则 `TestEveryConcurrentUpBuildHasCleanup` 红。
+- **开工前置动作（本仓历史高频事故点）**：先确认 380–384 未被上游新迁移占用（`ls server/migrations/38*.sql`）；撞号则按 CUSTOM.md《迁移编号冲突》整体顺延，并同步修改两个 cleanup map 的键名（本仓 159/160/161/162/163 均撞过号）。
+- **索引形制以 SDD §2.1 为准**：PRD AC-14 写的是 `(task_id)` 与 `(skill_ref, used_at)` 两索引，技术评审回修后为 `(task_id)`、`(workspace_id, skill_ref, used_at)`、384 申诉部分索引共三条（工作区隔离是硬不变式）。PRD 已审批不回改，**按本卡实施，不按 AC-14 字面**。
 
 ## 验收条件
 
-1. 真实 PostgreSQL 下 `up → down → up` 全回滚成功（380→384 逆序）。
-2. `go test ./cmd/migrate/ -run Concurrent -v` 通过（cleanup 注册齐全）。
-3. `information_schema` 查不到本 CR 新增的任何 FK 约束；`skill` 的 visibility CHECK 只有 private/org 两值。
-4. 382/383/384 三个索引在各自迁移文件中为单语句 CONCURRENTLY；384 的 `EXPLAIN` 在 fixture 上命中（不退化 seq scan）。
+1. （AC-1）真实 PostgreSQL 下 `up → down → up` 全回滚成功（380→384 逆序）。
+2. （AC-1）`go test ./cmd/migrate/ -run Concurrent -v` 通过（cleanup 注册齐全）。
+3. （AC-1）`information_schema` 查不到本 CR 新增的任何 FK 约束；`skill` 的 visibility CHECK 只有 private/org 两值。
+4. （AC-14）382/383/384 三个索引各在独立迁移文件、up/down 均 CONCURRENTLY；固定 fixture 的 `EXPLAIN (FORMAT JSON)` 证明完成任务过滤走 `(task_id)`、排行走 `(workspace_id, skill_ref, used_at)`、申诉查找走 384。
+5. （AC-15）在**含存量 skill 行**的库上应用迁移：所有既有 Skill 的 `visibility='private'`、`version='0.1.0'`、`owner_actor IS NULL`；随后跑一次 daemon claim 回归（`go test ./internal/handler/ -run Claim -v`）确认任务物化行为无变化。
 
 ## 完成标志
 
-真实 PG 上 up/down/up 全绿 + migrate Concurrent 测试通过 + 无 FK 断言通过。
+真实 PG 上 up/down/up 全绿 + migrate Concurrent 测试通过 + 无 FK 断言通过 + 存量行默认值断言通过（AC-1/AC-14/AC-15）。
 
 ## 接口契约
 

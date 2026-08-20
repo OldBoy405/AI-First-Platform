@@ -8,7 +8,7 @@ title: 发布门禁纯函数 PublishGate + AppealID 哈希
 slug: publish-gate
 status: pending
 estimate: 8h
-depends-on: [CR-2026-048-TASK-02, CR-2026-048-TASK-03, CR-2026-048-TASK-05]
+depends-on: [CR-2026-048-TASK-02, CR-2026-048-TASK-03]
 created: 2026-08-20T14:32:57+08:00
 ---
 

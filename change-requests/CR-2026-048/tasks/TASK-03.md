@@ -31,7 +31,7 @@ created: 2026-08-20T14:32:57+08:00
 
 ## 验收条件
 
-1. 带 `applicable-scenarios`/`context-dependencies`/`permission-declaration`/`failure-handling`/`source: session-export` 的 frontmatter，`ParseSkillMetadata` 五个字段全部按原值落进 `Fields`。
+1. （AC-7/AC-13）带 `applicable-scenarios`/`context-dependencies`/`permission-declaration`/`failure-handling`/`source: session-export` 的 frontmatter，`ParseSkillMetadata` 五个字段全部按原值落进 `Fields`。
 2. 缺 frontmatter / malformed YAML 返回空 `Fields` 不 panic；块标量 `description: |` 的尾换行被 Trim。
 3. `ParseSkillFrontmatter` 既有测试全绿（行为不变）。
 

@@ -37,8 +37,8 @@ created: 2026-08-20T14:32:57+08:00
 ## 验收条件
 
 1. `make sqlc` 后 `git diff --stat server/pkg/db/generated/` 只含 skill 相关预期文件。
-2. 真实 PG 下：`InsertSkillUsageEvent` 落行；`MarketSkillUsage` 对同一 task 两次 claim 只计 1、失败任务不计、跨 workspace 不混算。
-3. `InsertSkillAppealEvent` 写行、`GetAppealDecision`/`HasAppealSubmitted` 按 appeal_id 命中（命中 384 部分索引，EXPLAIN 断言）。
+2. （AC-5）真实 PG 下：`InsertSkillUsageEvent` 落行；`MarketSkillUsage` 对同一 task 两次 claim 只计 1、失败任务不计、跨 workspace 不混算。
+3. （AC-11/AC-14）`InsertSkillAppealEvent` 写行、`GetAppealDecision`/`HasAppealSubmitted` 按 appeal_id 命中，且 `EXPLAIN (FORMAT JSON)` 证明命中 384 部分索引（不退化 activity_log 全表扫描）。
 4. `go build ./...` 通过。
 
 ## 完成标志

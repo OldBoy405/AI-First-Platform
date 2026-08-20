@@ -33,8 +33,8 @@ created: 2026-08-20T14:32:57+08:00
 
 ## 验收条件
 
-1. 同一 workspace 内 1 个 org Skill 被 2 次 claim（同一任务）后最终 completed → usage_count=1；1 个 private Skill 不出现在结果。
-2. builtin 列表含 `builtin:<name>` 的使用量；另一个 workspace 的 usage 不混入（fixture 造两 workspace 数据断言隔离）。
+1. （AC-3/AC-5）同一 workspace 内 1 个 org Skill 被 2 次 claim（同一任务）后最终 completed → usage_count=1；1 个 private Skill 不出现在结果。
+2. （AC-3）builtin 列表含 `builtin:<name>` 的使用量；另一个 workspace 的 usage 不混入（fixture 造两 workspace 数据断言隔离）。
 3. 非成员 → 403。
 
 ## 完成标志

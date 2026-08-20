@@ -33,13 +33,13 @@ created: 2026-08-20T14:32:57+08:00
 
 ## 验收条件
 
-1. 单条 claim（ClaimTaskByRuntime）与批量 claim（ClaimTasksByRuntime）各派发一个用 1 个 workspace Skill + 1 个 builtin 的任务，`skill_usage_event` 各新增 2 行，`workspace_id` = 运行时 workspace，`skill_ref` 分别为 uuid 文本与 `builtin:<name>`。
-2. 人为使 InsertSkillUsageEvent 失败（fixture 注入），claim 仍成功返回且任务可正常执行。
-3. diff 中 `TaskCompleteRequest`/`sanitizeTaskCompleteRequest` 零改动。
+1. （AC-3）单条 claim（ClaimTaskByRuntime）与批量 claim（ClaimTasksByRuntime）各派发一个用 1 个 workspace Skill + 1 个 builtin 的任务，`skill_usage_event` 各新增 2 行，`workspace_id` = 运行时 workspace，`skill_ref` 分别为 uuid 文本与 `builtin:<name>`。
+2. （AC-3）人为使 InsertSkillUsageEvent 失败（fixture 注入），claim 仍成功返回且任务可正常执行。
+3. （AC-4）diff 中 `TaskCompleteRequest`/`sanitizeTaskCompleteRequest` 零改动。
 
 ## 完成标志
 
-`go test ./internal/handler/ -run 'Claim.*SkillUsage|...' -v`（按实际测试名）通过 + `go test ./internal/service/ -run SkillBundle -v` 通过。
+`go test ./internal/handler/ -run 'ClaimTaskWritesSkillUsage|ClaimTasksWriteSkillUsage|ClaimSurvivesSkillUsageInsertFailure' -v` 与 `go test ./internal/service/ -run 'BuildAgentSkillBundles' -v` 均通过（测试名以此为准新建，不用占位表述）。
 
 ## 接口契约
 

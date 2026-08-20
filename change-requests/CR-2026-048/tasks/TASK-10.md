@@ -16,7 +16,7 @@ created: 2026-08-20T14:32:57+08:00
 
 ## 任务描述
 
-按 CUSTOM.md 现状登记本 CR 全部改动，跑全量回归，产出证据供 code review。SDD §7、PRD NFR-6/AC-17。
+按 CUSTOM.md 现状登记本 CR 全部改动，跑全量回归，产出证据供 code review。SDD §7、PRD NFR-6/AC-16。
 
 ## 涉及文件 / 模块
 
@@ -31,9 +31,10 @@ created: 2026-08-20T14:32:57+08:00
 
 ## 验收条件
 
-1. CUSTOM.md 已登记本 CR 全部改动，含验证命令与上游冲突面说明。
-2. `go test ./... -count=1` 失败名单与既有基线一致（无新增回归）。
-3. diff 中 `TaskCompleteRequest`/`sanitizeTaskCompleteRequest` 零改动（AC-4 最终确认）。
+1. （AC-16）CUSTOM.md 已登记本 CR 全部改动，含验证命令与上游冲突面说明。
+2. （AC-16）本 CR 新增的全部 Go/SQL 文件注释为英文且带 `AIFIRST:`（`.sql` 用 `-- AIFIRST:`）标记；以 `git diff --stat` + 逐文件 grep 为证。
+3. `go test ./... -count=1` 失败名单与既有基线一致（无新增回归）。
+4. （AC-4）diff 中 `TaskCompleteRequest`/`sanitizeTaskCompleteRequest` 零改动（最终确认）。
 
 ## 完成标志
 

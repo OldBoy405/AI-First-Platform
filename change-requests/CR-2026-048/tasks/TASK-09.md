@@ -34,10 +34,11 @@ created: 2026-08-20T14:32:57+08:00
 
 ## 验收条件
 
-1. Market 列表：org Skill 显示 version 与 usage_count；builtin 可上榜；private 不出现；session-export 筛选只留带标记的。
-2. 详情页：四字段使用说明卡、version、运行时标签渲染；发布确认框含"发布 = 授权"语义。
-3. 含密钥发布 → 弹 findings（含行号、脱敏 excerpt、申诉入口）；Owner 放行后重发成功。
-4. `pnpm -C packages/core typecheck` + `pnpm -C packages/views typecheck` + 相关 `vitest` 全绿。
+1. （AC-12/AC-13）Market 列表：org Skill 显示 version 与 usage_count；builtin 可上榜；private 不出现；session-export 筛选只留带标记的。
+2. （AC-12）详情页：四字段使用说明卡、version、运行时标签渲染（无法识别的要求不报错）；发布确认框含“发布 = 授权”语义。
+3. （AC-2）作者更新 `version` 后，列表与详情页均展示新版本号（纯展示，不影响任何内容判定）。
+4. （AC-10/AC-11）含密钥发布 → 弹 findings（含行号、脱敏 excerpt、申诉入口）；Owner 放行后重发成功；非 Owner 无 decide 按钮。
+5. `pnpm -C packages/core typecheck` + `pnpm -C packages/views typecheck` + 相关 `vitest` 全绿。
 
 ## 完成标志
 

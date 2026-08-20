@@ -37,14 +37,18 @@ created: 2026-08-20T14:32:57+08:00
 
 ## 验收条件
 
-1. name 缺失 / 无 owner / 缺四字段任一 / content 含密钥，org 发布各返回对应 422 reason，`visibility` 不变。
-2. org Skill 更新 content 含密钥 → 422（发布后重扫）；仅改 version/描述 → 正常放行。
-3. 非 owner/admin 调 decide → 403；author 提交 appeal 幂等（同 appeal_id 第二次 no-op）；owner 放行后同内容重新发布通过。
-4. runtime-local 覆盖导入含密钥 → 被拦。
+1. （AC-6）name 缺失 / description 缺失，org 发布各返回对应 422 reason，`visibility` 保持 private（失败不部分更新）。
+2. （AC-7）无 owner / 缺四字段任一 → 422 且错误指出字段名；齐备后发布成功。
+3. （AC-8）frontmatter 结构校验失败 → 422 且 visibility 不变；`permission-declaration` 含 `change-requests/` → 发布**成功**但响应含 protectedPaths 警告（不阻断、不改写声明）。
+4. （AC-10）org Skill 更新 content 含密钥 → 422 带 file/line/pattern_id（发布后重扫）；仅改 version/描述 → 正常放行。
+5. （AC-11）非 owner/admin 调 decide → 403；author 提交 appeal 幂等（同 appeal_id 第二次 no-op，行数不增）；owner 放行后同内容重新发布通过；**改变 content 后旧 appeal 失效、仍被拦**。
+6. （AC-2）改内容不改 `version`：服务端以 `BuildManifest().Hash` 变化判定内容已变（重扫触发）；改 `version` 不改内容：hash 不变、不触发重扫；代码中不存在任何以 `version` 值比较作为内容变更依据的分支（diff 为证）。
+7. （AC-9）代码中不存在针对 builtin 的可编辑性特判分支（无 `is_builtin` 类字段/分支，diff 为证）；尝试编辑内置 Skill 因其在 `skill` 表无行而自然 404/失败。
+8. （AC-10）runtime-local 覆盖导入含密钥的 org Skill → 被拦。
 
 ## 完成标志
 
-`go test ./internal/handler/ -run 'SkillPublish|SkillAppeal|LocalSkill.*Overwrite' -v`（按实际命名）全绿。
+`go test ./internal/handler/ -run 'SkillPublish|SkillAppeal|LocalSkill.*Overwrite' -v`（按实际命名）全绿，且 AC-2/AC-6/AC-7/AC-8/AC-9/AC-10/AC-11 逐条有对应用例。
 
 ## 接口契约
 
