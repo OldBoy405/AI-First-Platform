@@ -1,0 +1,19 @@
+cr-id: CR-2026-048
+review-type: requirement
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-20T12:44:03+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  structure: "通过：frontmatter、概述、用户故事、功能需求、非功能需求、验收标准、成功指标、范围排除齐全"
+  testability: "通过：23 条 FR 均有 AC 覆盖；遥测重试、发布拒绝/成功、申诉幂等、索引计划与前端筛选均可核查"
+  scope: "通过：范围收敛于 E6 Skill Market；builtin 元数据基线、P2 session export、CR-D 复用率指标和事务/队列/outbox 均有边界"
+  planning_alignment: "通过：覆盖 P3 §3、CR-B、E6 与评审决议；private/org、skill_ref、BuildManifest、redact 单一 patterns、认领侧采集均保持一致"
+  dependencies: "通过：已明确 skill/skill_file、activity_log、redact、tools index、protectedPaths、agent_task_queue 与迁移 380 起等依赖和证据"
+suggestions:
+  - "实施前按当前 Multica trunk freshness 再确认迁移号；若上游新增迁移，按仓规约整体顺延并同步 down/cleanup 注册。"
+  - "实施时将 builtin tools package metadata baseline 的实际 commit/版本写入实现记录。"
+review-loop:
+  current-attempt: 2
+subject-file: change-requests/CR-2026-048/prd.md
+subject-sha256: 07b23e58f0da43941336df812abca7c387e032bc95f26a44d144755f44dd1570
