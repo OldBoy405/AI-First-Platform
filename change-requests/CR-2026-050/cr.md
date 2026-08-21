@@ -16,9 +16,9 @@ owners:
 target-version: tbd
 source: "docs/analysis/pipeline流程优化.md"
 origin: ""
-status: tech-designing
+status: tech-design-review-pending
 created: "2026-08-21T09:31:35+08:00"
-updated: "2026-08-21T11:25:52+08:00"
+updated: "2026-08-21T11:45:13+08:00"
 remote-ref: ""
 last-push-at: ""
 last-push-by: ""
