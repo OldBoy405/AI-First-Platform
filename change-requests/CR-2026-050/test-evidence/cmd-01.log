@@ -1,36 +1,43 @@
 $ node --test skills/shared/crctl/scripts/test/pipeline-structure.test.mjs
 (exit=0)
 --- stdout ---
-✔ AC-1: 节点序 review-code(…0009) < checkpoint(…0015) < human_approval(…0010) < approve-code(…0011) (0.7503ms)
-✔ AC-2: checkpoint 节点 onFail=abort、ref=push-progress；节点 id 全局唯一（CR-2026-042 后 16 节点） (0.2132ms)
-✔ AC-3: review-code reviewLoop.replayNodes 为 5 项，含 workspace-freshness(…0017) 重核（CR-2026-043） (0.5653ms)
-✔ CR-2026-043: 两个 workspace-freshness gate 位置/ref/onFail 正确 (0.1862ms)
-✔ CR-2026-043: pipeline prompt 无 git/journal 字样；write-test-report replayNodes 未被改动 (0.7941ms)
-✔ CR-2026-043: _index.yml 节点数与 JSON 一致；全部 node.ref 在 skills/_index.yml active；状态机/gates 零耦合 (1.1162ms)
-✔ AC-4: inputs 中无 suggestion_policy (0.104ms)
-✔ human_approval(…0010) approvalPrompt 含评审后 checkpoint phase=complete 前提 (0.0723ms)
-✔ FR-01: 三条 CR Pipeline human approval prompt 删除 review-annotations 编辑指引 (0.7405ms)
-✔ FR-05: 四个 approve 节点只传 cr_id，无 crctl approve 命令细节/TTY/grant/CAS/owners 拼接 (1.0222ms)
-✔ CR-2026-044 AC-13/14: requirement-authoring 审批后强制 checkpoint（7 节点），草稿 checkpoint 仍可选 (0.5534ms)
-✔ CR-2026-044 AC-14: architecture-design 删除 auto_push_after_sdd，审批后 checkpoint abort，5 节点不变 (0.5157ms)
-✔ CR-2026-044 AC-13: code-implementation 审批后 checkpoint abort、TASK checkpoint 仍可选、16 节点不变（CR-2026-042 删除评审 LLM 节点后） (0.3545ms)
-✔ CR-2026-044 AC-12: architecture/code 入口取得 authority path，并由 execution_context 原样传给后续节点 (0.6946ms)
-✔ CR-2026-045 AC-02: architecture reviewLoop 复用 rerun-listed-nodes-in-order + replayNodes schema (0.3066ms)
-✔ CR-2026-045 AC-03: emit-registry 输出 canonical registry 且 digest 稳定 (54.2481ms)
-✔ CR-2026-045: commit-scan git show 仅放行 canonical review annotation object (0.5693ms)
-✔ CR-2026-045: emit-registry 残留双花括号 token 硬失败且不输出空 registry (44.7576ms)
-✔ FR-12.2: requirement-authoring 7 节点顺序、execution_context/owners 输出与 auto_push_after_prd 分支保留 (0.4727ms)
-✔ FR-06.1/07.4/07.5: requirement-authoring review/register/PRD 节点收敛负向断言 (0.3831ms)
-✔ FR-12.3: code-implementation 16 节点关键顺序与 reviewLoop replayNodes 不变 (0.4298ms)
-✔ FR-12.3b: code-implementation 保留字面量（gate 名/checkpoint label/auto_push/task done）与收敛负向断言 (0.4918ms)
-✔ DD-7: 全部 SKILL.md Commit 指引前缀命中 controlled-shell commit 白名单（wip:/[cr]/merge(） (9.1218ms)
-ℹ tests 23
+✔ AC-1: 节点序 review-code(…0009) < checkpoint(…0015) < human_approval(…0010) < approve-code(…0011) (0.6898ms)
+✔ AC-2: checkpoint 节点 onFail=abort、ref=push-progress；节点 id 全局唯一（CR-2026-042 后 16 节点） (0.1873ms)
+✔ AC-3: review-code reviewLoop.replayNodes 为 5 项，含 workspace-freshness(…0017) 重核（CR-2026-043） (0.9991ms)
+✔ CR-2026-043: 两个 workspace-freshness gate 位置/ref/onFail 正确 (0.1882ms)
+✔ CR-2026-043: pipeline prompt 无 git/journal 字样；write-test-report replayNodes 未被改动 (0.2541ms)
+✔ CR-2026-043: _index.yml 节点数与 JSON 一致；全部 node.ref 在 skills/_index.yml active；状态机/gates 零耦合 (0.9286ms)
+✔ AC-4: inputs 中无 suggestion_policy (0.0892ms)
+✔ human_approval(…0010) approvalPrompt 含评审后 checkpoint phase=complete 前提 (0.0765ms)
+✔ FR-01: 三条 CR Pipeline human approval prompt 删除 review-annotations 编辑指引 (0.7213ms)
+✔ FR-05: 四个 approve 节点只传 cr_id，无 crctl approve 命令细节/TTY/grant/CAS/owners 拼接 (0.8395ms)
+✔ CR-2026-044 AC-13/14: requirement-authoring 审批后强制 checkpoint（7 节点），草稿 checkpoint 仍可选 (0.4059ms)
+✔ CR-2026-044 AC-14: architecture-design 删除 auto_push_after_sdd，审批后 checkpoint abort，5 节点不变 (0.4514ms)
+✔ CR-2026-044 AC-13: code-implementation 审批后 checkpoint abort、TASK checkpoint 仍可选、16 节点不变（CR-2026-042 删除评审 LLM 节点后） (0.2709ms)
+✔ CR-2026-044 AC-12: architecture/code 入口取得 authority path，并由 execution_context 原样传给后续节点 (0.6095ms)
+✔ CR-2026-045 AC-02: architecture reviewLoop 复用 rerun-listed-nodes-in-order + replayNodes schema (0.2654ms)
+✔ CR-2026-045 AC-03: emit-registry 输出 canonical registry 且 digest 稳定 (48.0996ms)
+✔ CR-2026-045: commit-scan git show 仅放行 canonical review annotation object (0.4505ms)
+✔ CR-2026-045: emit-registry 残留双花括号 token 硬失败且不输出空 registry (42.7547ms)
+✔ FR-12.2: requirement-authoring 7 节点顺序、execution_context/owners 输出与 auto_push_after_prd 分支保留 (0.397ms)
+✔ FR-06.1/07.4/07.5: requirement-authoring review/register/PRD 节点收敛负向断言 (0.3076ms)
+✔ FR-12.3: code-implementation 16 节点关键顺序与 reviewLoop replayNodes 不变 (0.3687ms)
+✔ FR-12.3b: code-implementation 保留字面量（gate 名/checkpoint label/auto_push/task done）与收敛负向断言 (0.4501ms)
+✔ DD-7: 全部 SKILL.md Commit 指引前缀命中 controlled-shell commit 白名单（wip:/[cr]/merge(） (7.8417ms)
+✔ CR-2026-050 AC-02: product-planning 必填输入与草稿链可执行 (0.3969ms)
+✔ CR-2026-050 AC-03: market-to-plan 简报与 context/intent 契约闭合 (0.3867ms)
+✔ CR-2026-050 AC-04: competitive-radar slug 解析与 reportDraft→正式落盘顺序闭合 (0.7366ms)
+✔ CR-2026-050 AC-06/07/11/12: Pipeline 禁止算法文本已彻底下沉 (1.4646ms)
+✔ CR-2026-050 AC-05: 四个 approve Skill 的 grant/TTY 双路径均显式传角色 owner --approver (0.4646ms)
+✔ CR-2026-050 AC-10: cr-show 最近三次 checkpoint 使用持久化 metadata commit，不引用不存在账本 (0.1995ms)
+✔ CR-2026-050 AC-12: 8 条 Pipeline 节点数与 UUID 全局唯一保持不变 (0.8658ms)
+ℹ tests 30
 ℹ suites 0
-ℹ pass 23
+ℹ pass 30
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 189.3058
+ℹ duration_ms 179.3579
 
 --- stderr ---
