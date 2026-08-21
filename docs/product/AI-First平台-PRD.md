@@ -3,7 +3,7 @@
 | 项目 | 内容 |
 |---|---|
 | **文档名称** | AI First 平台 产品需求文档（PRD） |
-| **版本** | v1.2（2026-07-29 修订：吸收《AI-First 研发协同平台》理念对比的 S1–S6 改进——知识消费层、超级个体协同层补全、交付效能度量、场景工坊、AI 行为审计、发布材料位置；2026-07-30 修订：Wiki 子系统落地设计——wiki-maintain 维护、wiki-first 问答、双信号知识晋升，详见《Wiki 子系统设计》；2026-08-07 修订：对照已落地代码核实追认——壳 Issue 设计废止（ADR-0001）、cr 投影表以事件账本为历史权威（ADR-0002）、状态数口径标注） |
+| **版本** | v1.2（2026-07-29 修订：吸收《AI-First 研发协同平台》理念对比的 S1–S6 改进——知识消费层、超级个体协同层补全、交付效能度量、场景工坊、AI 行为审计、发布材料位置；2026-07-30 修订：Wiki 子系统落地设计——wiki-maintain 维护、wiki-first 问答、双信号知识晋升，详见《Wiki 子系统设计》；2026-08-07 修订：对照已落地代码核实追认——壳 Issue 设计废止（ADR-0001）、cr 投影表以事件账本为历史权威（ADR-0002）、状态数口径标注；2026-08-21 修订：tools Skill 计数订正 59→56（以 skills/_index.yml 实计为准）） |
 | **编制日期** | 2026-07-28 |
 | **产品定位** | 企业内部自托管的 AI 原生研发协同平台 |
 | **底座** | Multica（fork，长期跟随上游） |
@@ -12,7 +12,7 @@
 | **交付节奏** | 内部可用 ≈10–12 周 · 完整形态 ≈5–6 月 |
 | **配套文档** | 《CodeBanana 产品解析报告》《Multica 架构解析》《P0 数据模型映射表》《P1 crctl 接入设计》《P2 三模式聊天交互设计》《P3 组织智能设计》《Wiki 子系统设计》《完整技术方案》《对比分析-AI-First研发协同理念与当前方案》 |
 
-> **文档说明**：本 PRD 整合了从产品调研、竞品解析、五方组装论证、P0–P3 分阶段设计、Claude 接入到 runner 轻量档的全部讨论产出。所有技术事实均基于对 Multica 真实源码（396 个迁移文件）、tools 方法论包（9 个 Agent / 59 个 Skill / 8 条 Pipeline / crctl 1006 行）与 CodeBanana 产品快照（86 个 i18n 命名空间）的核对。
+> **文档说明**：本 PRD 整合了从产品调研、竞品解析、五方组装论证、P0–P3 分阶段设计、Claude 接入到 runner 轻量档的全部讨论产出。所有技术事实均基于对 Multica 真实源码（396 个迁移文件）、tools 方法论包（9 个 Agent / 56 个 Skill / 8 条 Pipeline / crctl 1006 行）与 CodeBanana 产品快照（86 个 i18n 命名空间）的核对。
 
 ---
 
@@ -157,7 +157,7 @@
 | 证据链与可追溯 | 无 | traceability 五段链路 + evidence digest + EVIDENCE_DRIFT 检测 |
 | 漂移与影子工程检测 | 无 | review-alignment 周巡检 + bypass-commit 探测 |
 | 看板 / Issue 协作 | 无看板 | 完整 Issue 体系（看板/子 Issue/依赖/订阅/收件箱/Squad） |
-| 方法论资产 | Skill Market 空市场 | 开箱 9 Agent + 59 Skill + 8 Pipeline |
+| 方法论资产 | Skill Market 空市场 | 开箱 9 Agent + 56 Skill + 8 Pipeline |
 | 移动端 | 无 | Expo/RN 移动端 |
 | CLI 与自托管 | 无 | multica CLI + Compose/Helm |
 
@@ -185,7 +185,7 @@
 | 来源 | 承担 | 集成方式 |
 |---|---|---|
 | **Multica（fork）** | Go 后端骨架、Issue/看板体系、任务队列与租约、pkg/agent 后端抽象、execenv、渠道引擎、令牌权限、WS 实时层、三端共享包、部署 | fork + 长期跟随上游 |
-| **tools（本地包）** | 方法论层：9 Agent、59 Skill、8 Pipeline、CR 状态机、5 质量门、crctl、controlled-shell、traceability | 装入目标 workspace 的 `tools/` |
+| **tools（本地包）** | 方法论层：9 Agent、56 Skill、8 Pipeline、CR 状态机、5 质量门、crctl、controlled-shell、traceability | 装入目标 workspace 的 `tools/` |
 | **OpenClaw** | 补齐 IM 渠道插件、心跳守护范式、Markdown 记忆约定、A2A 协议 | Multica 上游同源，低摩擦 |
 | **Claude** | Agent 智能内核：本机 CLI + Agent SDK + Anthropic API SDK | pkg/agent/claude.go 已接 |
 | **自研** | 三模式聊天 UI、Presenter 状态机、Pipeline Runner、签名审批、组织治理、成熟度看板、Skill Market、runner 池、cr 投影同步 worker | 基于上述底座开发 |
@@ -203,7 +203,7 @@
 
 ### 3.3 tools 方法论包
 
-**结构**：9 个 Agent（`agents/*.md`）+ 59 个 Skill（`skills/{domain}/{skill-id}/SKILL.md`）+ 8 条 Pipeline（`pipeline-templates/*.pipeline.json`）+ 权限矩阵（`agent-skill-matrix.yml`）+ 目录契约（`dir-graph.yaml`）。
+**结构**：9 个 Agent（`agents/*.md`）+ 56 个 Skill（`skills/{domain}/{skill-id}/SKILL.md`）+ 8 条 Pipeline（`pipeline-templates/*.pipeline.json`）+ 权限矩阵（`agent-skill-matrix.yml`）+ 目录契约（`dir-graph.yaml`）。
 
 **9 个 Agent**：product-planning-agent、requirement-writer、dev-agent、spec-agent、delivery-agent、quality-reviewer-agent、knowledge-agent、competitive-analyst-agent、customer-support-agent，加上系统编排器 system-orchestrator（承接 git/shell/状态写入等 21 个基础 Skill）。
 
@@ -316,7 +316,7 @@ daemon 采集 → POST /api/daemon/cr-events
 
 #### 5.1.2 实现路径
 1. **fork 与剥离**：`make selfhost` 内网跑通；摘除 Stripe 路由；`mcn_` 配置为空天然 401。
-2. **Agent 注册表替换**：frontmatter 适配器（`mode:primary/subagent` + `permission` → 目标格式；`{domain}/{skill-id}` 两级目录发现）；导入 9 Agent + 59 Skill + project_resource。
+2. **Agent 注册表替换**：frontmatter 适配器（`mode:primary/subagent` + `permission` → 目标格式；`{domain}/{skill-id}` 两级目录发现）；导入 9 Agent + 56 Skill + project_resource。
 3. **tools 一致性修复**：修 8 项内部不一致（2 Agent 缺 name、CLAUDE.MD 读取顺序漏 matrix、knowledge-agent 陈旧路径、2 Agent owns 为空等）；把 `dir-graph.yaml#agents.contract` 4 条不变式写成 CI 校验。
 4. **数据模型 P0 迁移**：2 条 ALTER + 5 张新表 CREATE，过 Multica 迁移运行器（advisory lock）。
 5. **Claude CLI 接入验证**：确认 `pkg/agent/claude.go` 拉起 `claude --output-format stream-json`；`ExecOptions` 映射通。

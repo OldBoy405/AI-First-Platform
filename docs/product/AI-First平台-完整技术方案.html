@@ -251,7 +251,7 @@
   <table>
     <tr><th>来源</th><th>承担</th><th>集成方式</th></tr>
     <tr><td><span class="badge b-blue">Multica（fork）</span></td><td>Go 后端骨架、Issue/看板体系、任务队列与租约、pkg/agent 后端抽象（14 CLI）、execenv 上下文注入、渠道引擎、五类令牌权限、WS/Redis 实时层、三端共享包、Helm/Compose 部署</td><td>fork + 长期跟随上游，按 <code>CUSTOM.md</code> 台账管理二开</td></tr>
-    <tr><td><span class="badge b-vio">tools（本地包）</span></td><td>方法论层：9 Agent、59 Skill、8 Pipeline、CR 16 态状态机、5 道质量门、crctl 门禁引擎、controlled-shell 白名单、traceability 五段链路</td><td>装入目标 workspace 的 <code>tools/</code>；写 frontmatter 适配器（OpenCode 风格→目标格式）</td></tr>
+    <tr><td><span class="badge b-vio">tools（本地包）</span></td><td>方法论层：9 Agent、56 Skill、8 Pipeline、CR 16 态状态机、5 道质量门、crctl 门禁引擎、controlled-shell 白名单、traceability 五段链路</td><td>装入目标 workspace 的 <code>tools/</code>；写 frontmatter 适配器（OpenCode 风格→目标格式）</td></tr>
     <tr><td><span class="badge b-grn">OpenClaw</span></td><td>补齐 IM 渠道插件（Telegram/Discord/企微/QQ/钉钉）、心跳守护范式、Markdown 记忆约定、A2A 协议</td><td>Multica 上游已内建 OpenClaw 后端，同源低摩擦</td></tr>
     <tr><td><span class="badge b-amber">Claude</span></td><td>Agent 智能内核：本机 Claude Code CLI（主）+ Claude Agent SDK（runner 池）+ Anthropic API SDK（平台内部轻量 LLM 功能）</td><td>Multica <code>pkg/agent/claude.go</code> 已接好；<code>ExecOptions</code> 已映射 effort/会话恢复/MCP</td></tr>
     <tr><td><span class="badge b-rose">自研</span></td><td>三模式聊天 UI、Presenter 状态机、Pipeline Runner、服务端签名审批、组织/部门治理、AI 成熟度看板、Skill Market、runner 轻量档编排、cr 投影同步 worker</td><td>基于上述底座开发</td></tr>
@@ -476,7 +476,7 @@ gantt
   <div class="card">
   <ol>
     <li><strong>fork 与剥离</strong>：fork Multica → <code>custom/main</code>；建立 upstream 镜像与双周同步流程；剥离计费路由/云节点/多 workspace 注册（环境变量 <code>DISABLE_WORKSPACE_CREATION</code> + <code>ALLOWED_EMAIL_DOMAINS</code>）；<code>make selfhost</code> 内网跑通。</li>
-    <li><strong>Agent 注册表替换</strong>：写 frontmatter 适配器（<code>mode:primary/subagent</code> + <code>permission</code> → 目标格式；<code>{domain}/{skill-id}</code> 两级目录发现）；导入 tools 9 Agent + 59 Skill + project_resource。</li>
+    <li><strong>Agent 注册表替换</strong>：写 frontmatter 适配器（<code>mode:primary/subagent</code> + <code>permission</code> → 目标格式；<code>{domain}/{skill-id}</code> 两级目录发现）；导入 tools 9 Agent + 56 Skill + project_resource。</li>
     <li><strong>tools 一致性修复</strong>：修 8 项内部不一致（2 Agent 缺 name、CLAUDE.MD 读取顺序漏 matrix、knowledge-agent 陈旧路径、2 Agent owns 为空等）；把 <code>dir-graph.yaml#agents.contract</code> 4 条不变式写成 CI 校验。</li>
     <li><strong>数据模型 P0 迁移</strong>：<code>issue</code>+<code>agent_task_queue</code> 两条 ALTER；5 张新表 CREATE（cr/cr_sync_event/approval_record/pipeline_run/pipeline_node_run）；过 Multica 迁移运行器（advisory lock）。</li>
     <li><strong>Claude CLI 接入验证</strong>：确认 <code>pkg/agent/claude.go</code> 在本机拉起 <code>claude --output-format stream-json</code>；<code>ExecOptions</code> effort/会话恢复/MCP 映射通。</li>
@@ -550,7 +550,7 @@ gantt
 <footer>
   AI First 平台 · 完整技术方案 v1.1 · 编制 2026-07-28 · 修订 2026-07-29（吸收《AI-First 研发协同平台》理念对比的 S1–S6 改进）· 修订 2026-07-30（新增 §5.6 Wiki 子系统，借鉴 OpenWiki 方法论）<br/>
   配套文档：《CodeBanana产品解析报告》《P0-数据模型映射表》《P1-crctl接入设计》《P2-三模式聊天交互设计》《P3-组织智能设计》《Wiki子系统设计》《Multica架构解析》《对比分析-AI-First研发协同理念与当前方案》。
-  本方案基于对 Multica 真实源码（396 迁移）、tools 包（9 Agent/59 Skill/8 Pipeline/crctl 1006 行）与 CodeBanana 产品快照（86 命名空间 i18n）的核对整合生成。
+  本方案基于对 Multica 真实源码（396 迁移）、tools 包（9 Agent/56 Skill/8 Pipeline/crctl 1006 行）与 CodeBanana 产品快照（86 命名空间 i18n）的核对整合生成。
   图表使用 Mermaid v11 + 手绘 SVG（Mermaid 需联网加载 CDN；离线打开则显示源码，SVG 架构图不受影响）。
 </footer>
 </main>

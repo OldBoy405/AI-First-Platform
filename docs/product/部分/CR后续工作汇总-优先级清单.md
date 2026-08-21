@@ -108,7 +108,7 @@
 |---|---|---|---|
 | 1 | **上游回馈 PR 整理** | CR-001 test-report §6-①；CR-002 cr.md 备注 / review-annotations | 候选：claude.go 环境过滤名单（CR-001）；D1 outbox、rules.json 抽取、EVIDENCE_DRIFT/server-approve 扩展（tools 通用增强）；mdt_ 分支 X-User-ID 头统一处理（CODE-SUG-002）。CR-002 已注明"归档后单独整理 PR"——至今未做 |
 | 2 | **上游 mdt_ 接线后 PAT 回退路径退役（单轨化）** | CR-002 CODE-SUG-003 / test-report §6-③ | rebase 时检查 `GenerateDaemonToken` 是否有调用方；有则开 CR 收敛到 mdt_ 单轨，避免长期双轨 |
-| 3 | **59 个 Skill 导入 Multica 安装器化** | CR-001 test-report §5-4、review-annotations code.yml | `agent-import.mjs` 安装器化（--provider claude 自动解析首个在线 runtime），把 59 skill 导入 skill 表并绑定 |
+| 3 | **56 个 Skill 导入 Multica 安装器化** | CR-001 test-report §5-4、review-annotations code.yml | `agent-import.mjs` 安装器化（--provider claude 自动解析首个在线 runtime），把 56 skill 导入 skill 表并绑定 |
 | 4 | **Traecli/Qoder 测试失败根因诊断**（上游 3 个） | CR-001 test-report §6-② | 疑对本机环境有隐含假设，根因未诊断，仅建基线台账 |
 | 5 | **TaskExecutionCard 迷你门禁指示条** | CR-011 test-report §3-4 | 需 Go 端 `AgentTask` 响应体新增 `cr_id` 字段（当前 T04 只写库不序列化），独立小任务 |
 | 6 | **工具摘要聚合专用查询**（ListTaskMessages 无 LIMIT 全量读） | CR-002 CODE-SUG-001 | 超长任务完成时一次性载入内存；后续加只取 tool_use/tool_result 且限行的查询。当前规模不构成风险 |
