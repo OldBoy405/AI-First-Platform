@@ -1,0 +1,21 @@
+cr-id: CR-2026-049
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-20T20:55:52+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  prd_sdd_alignment: "通过：FR-1~FR-16 全部有实现锚点；canonical payload 恢复为 {spec_id,traceability}；trace pending 最终交付、每 workspace 三仓扫描、历史累计 timeline 与 drift 健康均满足 AC-1~AC-15。"
+  architecture: "通过：tools 采用 generator→manifest v2→crctl callback 单向依赖，零第三方依赖；Multica 复用 governance ledger、ghsnapshot、scheduler 和 workspace.repos/GitHub installation，不建 spec_trace、不新增 Agent/daemon 扫描或第二队列。"
+  data_model: "通过：drift_finding 字段/CHECK/NULL 语义完整；385–397 迁移编号、CONCURRENTLY/USING INDEX、workspace event/approval 唯一键、确定性回填 preflight 与 new-index-before-old-drop 均明确，无新 FK。"
+  interface_contract: "通过：trace event transaction、candidate/journal intent、GitHub repo binding/分页协议、trace/spec-search/drift v1 DTO、错误 envelope、keyset cursor、PATCH CAS 状态矩阵和 malformed fallback 完整。"
+  performance_security: "通过：auth workspace 是所有写读/CAS/唯一键首维度；固定 HEAD+B→A 分页不漏扫，限流/截断 fail-safe；trace/finding 索引、payload 上限、heartbeat/timeout、GitHub token 内存纪律明确。"
+  testability: "通过：AC-1~AC-15 已映射到 tools fault/golden、PG migration/governance、fake GitHub scheduler、handler isolation/CAS、core Zod fallback 与 shared views；覆盖 INSERT 后故障、多页、HEAD 前进、cursor missing 和跨 workspace。"
+  prompt_adoption: "通过：不触及 crctl dispatch 或 rules.json deny 面；§8 仍明确同步 writeback-traceability/cr-archive Skill 对 trace pending/ARCHIVE_TRACE_PENDING 的既有命令结果采纳。"
+suggestions:
+  - "实施 TASK 拆分时把 385–397 的 concurrent-index cleanup registry 与跨语言 YAML golden 放进首批测试任务，先锁住高风险契约。"
+  - "上线 runbook 必须保留 §2.5 的短维护窗口顺序；若未来要求零停机，应另立 expand/contract 发布 CR，不在本 CR 临时发明双写。"
+review-loop:
+  current-attempt: 2
+subject-file: change-requests/CR-2026-049/sdd.md
+subject-sha256: 28a958d7b4a2ef65d0fd3c266f2faaf8aef0c832d6c2f4d3af0380be308f5efc

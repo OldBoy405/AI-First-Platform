@@ -16,17 +16,23 @@ repositories:
     path: "."
     trunk: master
     role: knowledge-base
+    remote: "https://github.com/OldBoy405/AI-First-Platform.git"
+    commit_prefixes: ["[cr] ", "register ", "archive ", "writeback ", "merge ", "Merge ", "feat(", "fix(", "docs(", "chore(", "test(", "refactor(", "perf("]
     description: "AI First 平台设计文档与知识库仓库；承载 docs/（平台级设计文档、分析、外部仓库引用）与 CR 回写后的 specs/、delivery/"
   - id: multica
     path: "../multica"
     trunk: main
     role: code
+    remote: "https://github.com/OldBoy405/AI-First-multica.git"
+    commit_prefixes: ["MUL-", "Merge ", "merge ", "feat(", "fix(", "docs(", "chore(", "test(", "refactor(", "perf(", "build(", "ci(", "style(", "revert:", "[cr] "]
     description: "Multica fork（平台底座代码仓）；CR-2026-001 起参与 CR worktree 派生与合入。已配置双 remote：origin=OldBoy405/AI-First-multica（fork，CR 合入/push 目标）、upstream=multica-ai/multica（上游，双周 rebase 同步源）。local main 含 CONTRIBUTING.AIFIRST.md 隔离约定与 CUSTOM.md 定制台账"
   - id: tools
     path: "../tools"
     trunk: custom/main
     role: code
     active: true
+    remote: "https://github.com/OldBoy405/AI-First-tools.git"
+    commit_prefixes: ["[cr] ", "Merge ", "merge ", "feat(", "feat:", "fix(", "fix:", "docs(", "docs:", "chore(", "chore:", "test(", "test:", "refactor(", "perf("]
     description: "AI First 方法论包（9 Agent / 56 Skill / 8 Pipeline + crctl；计数口径见 docs/references/tools.md，2026-08-19 由 59 订正）；CR-2026-027 起声明为参与仓，消除 merge Skill 隐藏特例（原 prose 硬编码，见 CR-2026-027 PRD FR-5）"
 
 target_workspace_contract:

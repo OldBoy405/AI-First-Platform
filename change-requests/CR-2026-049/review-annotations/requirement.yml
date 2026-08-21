@@ -1,0 +1,19 @@
+cr-id: CR-2026-049
+review-type: requirement
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-20T20:23:11+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  structure: "通过：frontmatter、概述、用户故事、FR、NFR、验收标准、成功指标和范围排除齐全。"
+  testability: "通过：16 条 FR 均有 AC 覆盖；trace payload/重试、workspace 隔离、finding 幂等、增量游标、首次 baseline、扫描健康状态和迁移索引布局均可确定性验收。"
+  scope: "通过：范围收敛于 E4 追溯与 E5 服务端前缀漂移；明确排除 LLM 巡检、通路层对账、spec_trace、E9 与 CR-D。workspace ledger key 修正是保证本 CR 数据隔离的必要边界。"
+  planning_alignment: "通过：覆盖 P3 §2、§5.1 CR-C、§5.2 E4/E5 与 §7 R-10/R-11/R-13/R-22；保留 trace event_kind 零 CHECK 迁移，同时补齐代码现状要求的 server allowlist、tenant key 和扫描状态契约。"
+  dependencies: "通过：明确依赖 crctl writeback journal/outbox、daemon/server collector、cr_sync_event、sys_cron_executions、workspace repository access、CR-A 治理板块和生成器先例。"
+suggestions:
+  - "SDD 实施前按当前 multica trunk freshness 再确认 385 起的迁移序列，并把 cr_sync_event 历史 workspace_id 回填/旧唯一键替换作为单独可恢复步骤。"
+  - "实施时将三个仓的初始 commit_prefixes 具体数组与当前 trunk 基线 SHA 写入测试夹具，避免后续新增合法格式时静默改变历史扫描口径。"
+review-loop:
+  current-attempt: 2
+subject-file: change-requests/CR-2026-049/prd.md
+subject-sha256: 9967b87a2219e26fd5965c053a8439bd20070cd4ff874fef5a98f2fb47b0ba20

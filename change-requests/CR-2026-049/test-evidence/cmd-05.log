@@ -1,0 +1,24 @@
+$ node --test trace-semantic.test.mjs trace-outbox.test.mjs
+(exit=0)
+--- stdout ---
+✔ TASK-02 AC-1：outbox 写失败 → writeback 完成、warning、journal pending 且含完整 payload (19610.98ms)
+✔ TASK-02 AC-2：恢复后重跑 → 补发成功、state=emitted、确定性文件名 (19617.257ms)
+✔ TASK-02 AC-3：删除 txws/candidate 后重放仍成功（不触碰 operational workspace 解析） (19494.8955ms)
+✔ TASK-03 AC-1：pending + outbox 不可写 → ARCHIVE_TRACE_PENDING，零 commit/push/cleanup，现场保留 (19796.373ms)
+✔ TASK-03 AC-2：pending + outbox 恢复 → 重跑 archive 成功，journal emitted，无重复事件文件 (24638.8132ms)
+✔ TASK-03 AC-3：emitted 直接通过不重复发射；journal 缺失 → ARCHIVE_TRACE_FACT_MISSING (43999.7035ms)
+✔ TASK-01 AC-1a：191KB 累积 traceability 完整解析，36 段、末段 CR-2026-048 (53.4648ms)
+✔ TASK-01 AC-1b：CRLF 输入与 LF 归一后结果一致 (106.7698ms)
+✔ TASK-01 AC-2：语义校验失败用例非零退出且错误码可断言 (201.2196ms)
+✔ TASK-01 AC-3：manifest v2 篡改 payload 后 inputDigest 变化；v1 文件仍被接受 (7.7374ms)
+✔ TASK-01：parseGeneratedTraceability 对合法 191KB 文档通过（cr/spec 对齐） (56.2762ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 147225.0397
+
+--- stderr ---
