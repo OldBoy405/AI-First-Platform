@@ -1,28 +1,28 @@
 cr-id: CR-2026-050
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-21T11:10:02+08:00"
+reviewed-at: "2026-08-21T11:25:37+08:00"
 verdict: block
 blockers:
-  - "BLK-1 §3.2/§6（FR-02.2/FR-03.1/FR-04.2）：product-snapshot / updates-block / context 的产出方未定义。已核实 write-competitive-report 必填 updates-block+product-snapshot+confirmed、planning-draft 必填 context（gather-product-context 输出），但 product-planning 无 fetch/gather 节点、competitive-radar 与 market-to-plan 无 gather 节点，且 FR-12.4 要求节点数不变。修复：按 DD-2 的单节点顺序调用模式逐节点写明来源链（product-planning node-3：fetch-competitor-updates→gather-product-context→write-competitive-report 并定 confirmed 取值；competitive-radar node-2：gather-product-context→write-competitive-report(confirmed=false)；market-to-plan node-3：gather-product-context→planning-draft），或改由 Skill 自调上下文能力并列入 §1.1 变更对象。"
-  - "BLK-2 §5 DD-4/§6 FR-12：与既有 pipeline-structure.test.mjs 断言正面冲突且未声明处置，AC-13 不可达。冲突已核实：:149 断言 architecture push 节点 prompt 必须含 `crctl checkpoint {{inputs.cr_id}} --message`（与 FR-07.3 删除命令互斥）；:178-179 断言 architecture 后续每节点必须含 crctl workspace inspect 且不得含 node-1.md；:116 断言 code 审批节点 approvalPrompt 含评审后 checkpoint phase=complete；:176-183 断言 code 后续节点含 execution_context.operational_workspace。修复：在 DD-4 增设既有断言处置清单，逐条标注需修订（:149）与必须逐字保留（:116、:176-183、:178-179），并在 §3.2 声明 architecture 各节点保留 workspace inspect 入口属五要素之外的机器契约保留项。"
-  - "BLK-3 §1.1/§6（FR-07.1/FR-07.2）：漂移位置指错文件。已核实 architecture-design.pipeline.json node-1 已用 workspace inspect、不含自拼接路径与 ARCHITECTURE.md 表述；真正漂移在 skills/develop/write-tech-design/SKILL.md Step 1（.rayai-worktrees/{repo.id}/requirement/{cr_id} 路径约定）与「与 sdd.md 同一 commit 提交」。修复：把 FR-07.1/FR-07.2 的改动对象从 pipeline 改为该 SKILL.md，并在 §1.1 写明删除路径约定改消费 operational_workspace/resources[].worktreePath、同一 commit 改为各仓分别提交并纳入同批 checkpoint。"
-  - "BLK-4 §6 FR-02 行节点编号错误且自相矛盾：product-planning 实际 human_approval=node-7、write-roadmap=node-8，SDD 两处都写 node-7。修复：更正编号，并按建议点名 code-implementation 的代码审批节点为 …0010（区别于 …0004 开工确认）。"
+  - "BLK-5 §3.2「approve-* 节点的 approver 取值（统一规则）」与 §6 FR-05 行：与已审批 PRD 的 FR-05.2/AC-05 正面冲突，且所引 crctl 行为不实。①冲突：PRD FR-05.2/AC-05 要求节点传入 cr_id 与 approver，SDD 明文『Pipeline 不传也不拼 approver』，实施后 AC-05 必然判负。②事实错误：SDD 称 crctl approve 的 approver 缺省即 cr.md owners.{角色}.id，实际 crctl.mjs:1177 为 `flags.approver || identity(ws)`（identity 取 .crctl/config.json#identity 或 git user.name），owners 回退只存在于 approve-* SKILL.md（approve-requirement:26、approve-tech-design:20、approve-code:20、approve-dev-start:24）；按错误表述实施会把审批证据记成本机 git 用户，造成审批身份漂移。③配套事实：architecture-design 与 code-implementation 的 execution_context 只含 cr_id/operational_workspace[/resources]，不含 owners，PRD 字面路径仅 requirement-authoring 可满足。修复：(a) §3.2 改写为『Pipeline 传 cr_id；approver 由 approve-* Skill 按其 SKILL.md 既有契约从 cr.md owners.{角色}.id 解析后显式传给 crctl；crctl 自身缺省为 identity(ws)，故 Skill 侧 owners 解析为必需项不得删除』；(b) 新增显式偏离记录（偏离 FR-05.2/AC-05 的 approver 项 + 理由 + AC-05 改判口径：四节点含完整 cr_id 且 prompt 不出现 owners 解析/approver 拼接，approver 由 Skill 承担）；(c) 按工程纪律 4 在回写期以 revision 修订 PRD FR-05.2/AC-05 措辞或在本评审记录中确认该偏离。"
 dimensions:
-  prd_sdd_alignment: "阻断：FR-01～FR-13 均有条目且两阶段与 AC-14 一致，但 FR-02.2/FR-03.1/FR-04.2 只有结论无机制（BLK-1）、FR-07.1/FR-07.2 指错文件（BLK-3）、FR-02 节点编号错误（BLK-4）。"
-  architecture_soundness: "通过：符合 tools ARCHITECTURE.md 分层与硬不变量 1/2/3/4/7，未触碰 Negative Space；multica registry 再生链断言经核实属实（gate_nodes_gen.go 内嵌全部 prompt + digest fail-closed，runner.go 仅 StartArchitecture，competitive-radar 无 server runner）。"
-  data_model: "阻断：reportDraft 五字段与优先级完整；mode/raw_insight_path 方向正确但缺默认值与 mode=brief 缺参失败码；product-snapshot/updates-block 结构与产出方未定义（BLK-1）。"
-  interface_contract: "阻断：五要素模板与反模式清单可实施，逐 pipeline 表与实际节点序基本对应；但 approve-* 的 approver 取值路径未定（architecture 现状 cr.md owners.development.id 且不得依赖 node-1.md）、competitive-radar slug→competitor-id 解析归属未定、report-to-planning-suggestion 的前置条件/错误处理/读写清单未列入改动面。"
-  performance_security: "通过：deny 面与白名单零改动判断准确，FR-01 为真实安全修复；digest fail-closed 与 CRLF 纪律属实；建议补两条运行面风险（在跑 run 命中 TEMPLATE_DIGEST_MISMATCH；emit-registry token 白名单仅 cr_id/tech_context）。"
-  testability: "阻断：DD-4 扩展既有测试可行、lint 链成立，但既有断言冲突未处置（BLK-2）；AC-08/AC-14 的证据形态与 DD-7 的承载断言缺失。"
-  prompt_adoption: "通过：本 CR 不触及 crctl.mjs dispatch 与 rules.json#protectedPaths.deny，§8 条件性判断正确且保留了判断依据与 registry 再生依赖说明；DD-6/DD-7 的前缀事实断言经核实属实（rules.json commit 仅 wip:/[cr] /merge(）。"
+  prd_sdd_alignment: "阻断（1 处）：第 1 轮 BLK-1/2/3/4 均已闭合且事实可核；FR-01～FR-13 条目齐全，两阶段 gate 与 AC-14 证据形态自洽。唯 approve-* 的 approver 取值与 FR-05.2/AC-05 冲突且未记录偏离（BLK-5）。另 FR-03.3 删除 published 写入后 market-insights 生命周期缺终态写者，属 PRD 已决策的保守删除，建议 SDD 记录后果。"
+  architecture_soundness: "通过：符合 tools ARCHITECTURE.md §4 依赖方向与 §5 不变量 1/2/3/4/7，未触碰 Negative Space；§4.3 复用 DD-2 单节点顺序调用，节点数/UUID/_index.yml 零改动与 FR-12.4 一致；§4.2『仅 architecture 需再生』经核实成立（requirement/code 只贡献 UUID/Seq/Kind，仅 ArchitectureCoreRegistryJSON 含 prompt 全文与 digest）。"
+  data_model: "通过：§2.3 三行产出方与 write-competitive-report/SKILL.md:21-24、planning-draft/SKILL.md:28-29 逐字相符；§2.2 mode/raw_insight_path 已补默认值与硬失败语义；§2.1 reportDraft 五字段与优先级完整。仅 §2.4 称 execution_context 含 owners 需限定为 requirement-authoring。"
+  interface_contract: "阻断：五要素模板与 §3.0 保留项可实施，逐 pipeline 表与实际节点序全部对应（product-planning node-3/7/8、competitive-radar node-1~5、market-to-plan node-2/3/5、code …0010/…0004 均核对无误）；slug 解析归属与 report-to-planning-suggestion 改动面已补齐。唯 approver 取值规则与 PRD/crctl 实际行为不符（BLK-5）。"
+  performance_security: "通过：deny 面与 commit 白名单零改动判断准确；FR-01 为真实安全修复（architecture node-3 approvalPrompt 现确有 reject_reason 指引）；digest fail-closed + CI --check + emit-registry token 白名单三重防线属实；DD-7 扫描确认越界前缀恰为 3 处。"
+  testability: "通过（带精度问题）：DD-4 既有断言处置清单成立，:149 修订与 :77-107/:114-119/:141-153/:165-187 保留判断正确；AC-08/AC-14/DD-7 证据形态已补。遗留：.rayai-worktrees 断言实际在 :188（清单写 :185-187）；:114-119 实际 114-117、:77-90 实际 77-89；清单未覆盖 :27-75 段保留型 prompt 字面量（implement-start/review-start、auto_push_after_prd/task、审批结果 label、cr_id 引用）；AC-12『五要素内』缺显式证据形态。"
+  prompt_adoption: "通过：本 CR 不触及 crctl.mjs dispatch 与 rules.json#protectedPaths.deny，§8 条件性判断成立并保留判断依据；registry 再生依赖单列 §4.2 并纳入 §9 与实施顺序约束；cr-show 已内部调用 crctl next，FR-10.1 改动面准确。"
 suggestions:
-  - "补 approve-* 的 approver 取值：Pipeline 只传 cr_id，owners 由 Skill 经 crctl 读取，消解与 architecture 不依赖 node-1.md 的矛盾。"
-  - "§1.1 增补 report-to-planning-suggestion SKILL.md 的完整改动面（前置条件/错误处理表/读写清单），并保留前端按 reportPath 触发的入口契约。"
-  - "§4.2 增列 emit-registry prompt token 白名单硬约束；§9 增列部署新 digest 时在跑 run 的 TEMPLATE_DIGEST_MISMATCH 处置。"
-  - "DD-7 同类漂移还有 write-dev-plan（feat(）与 write-roadmap（[planning]），建议一并纳入或写明排除理由，并补扫描断言。"
-  - "competitive-radar slug→competitor-id 解析建议落到 fetch-competitor-updates，Pipeline 不读竞品索引。"
+  - "DD-4 补『:27-75 保留型 prompt 字面量』行：workspace-freshness 的 implement-start/review-start、requirement-authoring 的 auto_push_after_prd、code 的 auto_push_after_task 与「审批结果」label、checkpoint 节点的 cr_id 引用——FR-07/FR-09 收敛时最易误删。"
+  - "修正 DD-4 行号：.rayai-worktrees 断言在 :188；:114-119 → :114-117；:77-90 → :77-89。"
+  - "§2.4 限定 execution_context 字段范围（requirement-authoring 含 owners；architecture/code 为 cr_id/operational_workspace/resources）。"
+  - "§7 为 AC-12『五要素内』补证据形态（负向断言清单 + review-tech-design 判定）。"
+  - "说明 product-planning node-3 跨域调用 fetch-competitor-updates/write-competitive-report 在 agent-skill-matrix.yml 中无 owns/can-call（既有偏差），二选一：补 can-call（则 §3.3 matrix 零改动需改写）或写明本 CR 不改。"
+  - "§5 补一句：FR-03.3 删除 published 写入后 market-insights 生命周期暂无终态写者（PRD 保守删除的已知后果）。"
+  - "修订 :149 时在用例内保留 CR-2026-044 FR-07 溯源注释，防止后续误读为回退前序 CR 验收。"
+  - "§3.2 product-planning node-3 写明草稿模式输出形态（confirmed=false 无落盘路径，node-5 需消费草稿正文而非路径）。"
 review-loop:
-  current-attempt: 1
+  current-attempt: 2
 subject-file: change-requests/CR-2026-050/sdd.md
-subject-sha256: a979a1410dbd06c20454b8acb07e5dfe3c6b98868c8309023db88b2fe24666f6
+subject-sha256: a0de064b3870ae18dec46399af1e09289c695ffcb1b2f5c892b0075f4854de04
