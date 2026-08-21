@@ -1,0 +1,22 @@
+cr-id: CR-2026-050
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-21T11:45:29+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  prd_sdd_alignment: "通过：BLK-5 四项全闭合且事实可核（crctl.mjs:1177 为 flags.approver || identity(ws)、identity() :253-261、grant :1301）；§6 FR-01～FR-13 共 13 行完整无缺项；两阶段 gate（§4.4）与 AC-14 证据形态（§1.4）自洽；对 PRD 的唯一偏离（approver）已显式记录并给出 AC-05 改判口径与回写期 revision 路径。"
+  architecture_soundness: "通过：符合 tools/ARCHITECTURE.md §4 依赖方向与 §5 不变量 1/2/3/4/6/7，未触碰 §6 Negative Space；『ARCHITECTURE.md 不修订』与其 §8 触发条件逐条比对成立；§4.3 沿用 DD-2 单节点顺序调用，节点数/UUID/_index.yml 零改动与 FR-12.4 一致；registry 再生链经 multica 侧核实（runner.go:189 唯一 Core、checkDigest :575-582 保持 run 存活、emit-registry.mjs:86 ALLOWED + :92 硬失败）。"
+  data_model: "通过：§2.1 reportDraft 五字段与优先级完整；§2.2 mode/raw_insight_path 默认值与硬失败语义明确；§2.3 三行产出方与 write-competitive-report/SKILL.md:21-24、planning-draft/SKILL.md:28-29 逐字相符；§2.4 execution_context 字段限定与三条 pipeline node-1 实际输出一致，与 §3.4 无矛盾。"
+  interface_contract: "通过：节点编号与 UUID 全部复核无误（requirement …0011-…0005、architecture …0016-…0003、code 审批 …0015-…0010、开工确认 …0004 明示不动）；product-planning node-3/7/8、market-to-plan node-2/3/5、competitive-radar node-1~5、resume-cr node-3、feature-writeback node-1 与实际节点序一一对应；architecture human_approval 无 prompt 字段故不撞 :178/:179 断言；node-1 收敛后状态推进由 write-tech-design SKILL.md:47/:92 承载不落空；§3.4 已补 approve-* SKILL.md 命令补 --approver 的配套落点。"
+  performance_security: "通过：deny 面与 commit 白名单零改动判断准确（rules.json commit shapes 实为 wip:/[cr] /merge(）；DD-7 越界前缀全仓恰为 3 处，新增扫描断言可实施不误伤；FR-01 为真实安全修复；digest fail-closed + CI --check + token 白名单三重防线属实；§3.1 已补 lint R1 风险（收敛后禁残留 deny 路径字面量），闭合 AC-13 的 lint 门风险。"
+  testability: "通过：DD-4 既有断言处置清单行号本轮已全部校准并复核（:141-153、:149、:165-183、:185-188、:114-117、:77-89、:73-74、:133、:157、:160、:38/:65、:91-107）；§3.0 与 DD-4 行号已一致；:149 修订保留 CR-2026-044 FR-07 溯源注释的要求已写入；AC-08/AC-12/AC-14/AC-05/DD-7 的证据形态均已在 §7 明确。"
+  prompt_adoption: "通过：本 CR 确不触及 crctl dispatch 与 rules.json#protectedPaths.deny，§8 条件性判断与判断依据保留成立；非 crctl 面的 registry 再生依赖单列 §4.2 并纳入 §9 风险与实施顺序约束；cr-show 已内部调用 crctl next，FR-10.1 改动面准确。"
+suggestions:
+  - "§5 决策项顺序：DD-8 排在 DD-7 之前与编号相反，实施期可顺手调序（纯排版，不影响语义）。"
+  - "实施期先跑 emit-registry.mjs 本地验证 architecture prompt token，再跑 multica generate-gate-nodes.mjs --check，避免再生与 CI 两次往返。"
+  - "阶段二第 1 项（architecture-design）建议把 pipeline 修改、gate_nodes_gen.go 再生、CUSTOM.md 登记放入同一 TASK，保证 digest 与台账同批。"
+review-loop:
+  current-attempt: 3
+subject-file: change-requests/CR-2026-050/sdd.md
+subject-sha256: bef9573cc7dc265b23c4f7d227ec7ca4c0b0df3cb4c3cacd55d79482c4bdc0d8

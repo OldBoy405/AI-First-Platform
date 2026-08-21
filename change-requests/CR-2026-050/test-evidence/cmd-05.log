@@ -1,0 +1,6 @@
+$ node -e const fs=require('fs');const t=fs.readFileSync('server/internal/governance/gate_nodes_gen.go','utf8').replace(/\r\n/g,'\n');const sha='14b4458fdd444916e634cbf21ea1312274d3ba57';if(!t.includes('// Source: tools@'+sha+' '))throw new Error('Source SHA mismatch');console.log('source sha ok:',sha)
+(exit=0)
+--- stdout ---
+source sha ok: 14b4458fdd444916e634cbf21ea1312274d3ba57
+
+--- stderr ---

@@ -1,0 +1,18 @@
+cr-id: CR-2026-050
+review-type: requirement
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-21T10:36:06+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  structure: "通过：frontmatter、概述、职责边界、用户故事、13 条 FR、NFR、14 条 AC、成功指标、依赖风险、范围排除和变更记录齐全；新增 source→FR→AC 追踪表。"
+  testability: "通过：FR-01～FR-13 均有 AC 覆盖；competitive-radar 草稿字段与 confirmed 输入、风险术语边界场景、跨仓 checkpoint、plan/TASK 节点、两阶段门槛、关键流程顺序及三条自检命令均可确定性验证。"
+  scope: "通过：覆盖 source §5～§20 的 architecture/requirement/code/三条规划/feature-writeback/resume 改造，明确四个 CR 审批与规划审批边界，并完整排除状态机、gates、crctl 深原语与新增治理框架。"
+  planning_alignment: "通过：阶段一明确包含 FR-01～FR-05，阶段二按 architecture-design→requirement-authoring→code-implementation→resume-cr→feature-writeback→规划类顺序执行，与 source §18 一致。"
+  dependencies: "通过：明确依赖 source 审计、8 条 active Pipeline、对应 Skill/crctl、skills/index/matrix、pipeline index 与既有自检；无未声明上游 CR 或新增基础设施依赖。"
+suggestions:
+  - "技术设计与任务拆分时沿用 PRD 的 source→FR→AC 追踪表，避免阶段二多 Pipeline 修改遗漏。"
+review-loop:
+  current-attempt: 2
+subject-file: change-requests/CR-2026-050/prd.md
+subject-sha256: 3c3765f0d9ce4a4fa66cae0d871d224ecab320bee9b425c4bc204a0a60b0d3d0

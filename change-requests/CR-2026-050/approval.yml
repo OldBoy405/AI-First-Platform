@@ -1,0 +1,60 @@
+# approval.yml — 人工审批记录（各段仅接受 crctl approve 写入）
+requirement:
+  approver: "Ray"
+  approved-at: "2026-08-21T10:39:39+08:00"
+  via: crctl-approve
+  evidence-digest: "93a7f1066a79fe779e6701f74039ac28ac51fbe0c3d035f48d821ef9eed3399c"
+  target-status: requirement-approved
+tech-design:
+  approver: "Ray"
+  approved-at: "2026-08-21T11:50:50+08:00"
+  via: crctl-approve
+  evidence-digest: "0e06e3472044d939211a31f1a361e5a94ff56502ac508e01350f211e63bdf9a4"
+  target-status: tech-design-reviewed
+development-start:
+  approver: "Ray"
+  approved-at: "2026-08-21T12:41:12+08:00"
+  via: crctl-approve
+  evidence-digest: "1bc2b40d5aa96239993c6eeabe1ae779c6ae4d3ae3b7ac62aad74b4b3031151a"
+  target-status: developing
+code:
+  approver: "Ray"
+  approved-at: "2026-08-21T13:57:11+08:00"
+  via: crctl-approve
+  evidence-digest: "3a459791f3f2ccc3888a89519e80b0d1c6ac13719bc9b0aac2cc64f8bf506fa0"
+  target-status: code-approved
+  release-subjects:
+    version: 1
+    repositories:
+      - repo: ai-first-platform-docs
+        remote-ref: refs/heads/requirement/CR-2026-050
+        reviewed-source-sha: e8f777898af2ebd0a7adeff7be91b889f62a14e7
+      - repo: multica
+        remote-ref: refs/heads/requirement/CR-2026-050
+        reviewed-source-sha: 89a277dbf9f8a25704766f9bf97a5b120b11f1e0
+      - repo: tools
+        remote-ref: refs/heads/requirement/CR-2026-050
+        reviewed-source-sha: 14b4458fdd444916e634cbf21ea1312274d3ba57
+    artifacts:
+      algorithm: sha256
+      canonicalization: crlf-to-lf+path-sort
+      files:
+        - { path: change-requests/CR-2026-050/plan.md, sha256: b59e3952a274b36622f14c7dc38b51c81875cefb67fc692479442ece69eb3d6a }
+        - { path: change-requests/CR-2026-050/prd.md, sha256: 3c3765f0d9ce4a4fa66cae0d871d224ecab320bee9b425c4bc204a0a60b0d3d0 }
+        - { path: change-requests/CR-2026-050/sdd.md, sha256: bef9573cc7dc265b23c4f7d227ec7ca4c0b0df3cb4c3cacd55d79482c4bdc0d8 }
+        - { path: change-requests/CR-2026-050/tasks/TASK-01.md, sha256: 2273550102ea94d48e34b0fc7d4f3350b1d940505e54b587bc3ef0afc236f343 }
+        - { path: change-requests/CR-2026-050/tasks/TASK-02.md, sha256: 16d544b4f2ed644060e38481077aedfecca8eb5fa808a4daa08ea54570c2e6b8 }
+        - { path: change-requests/CR-2026-050/tasks/TASK-03.md, sha256: a1ea6bcb5d29910368f98dc1d902defe0736b82d2b3af983d733449eca2eaaf1 }
+        - { path: change-requests/CR-2026-050/tasks/TASK-04.md, sha256: 226d5078740439099e3aaaeb6b39b7b268847ea36693d57dbef2990cdfaeba87 }
+        - { path: change-requests/CR-2026-050/tasks/TASK-05.md, sha256: 68425911b5f9a465421bd1dfee27351bed2f2589f3bf1ccee5d780d4b767b8f8 }
+        - { path: change-requests/CR-2026-050/tasks/TASK-06.md, sha256: de435c2f71dd91d92220d4cb08a057e90bb60bb9bb7e1caecbaac6ed10600e19 }
+        - { path: change-requests/CR-2026-050/tasks/TASK-07.md, sha256: f184e99c9213ce0d138013438deba3e2db430fff6a86a4b8ee738295a1da591b }
+        - { path: change-requests/CR-2026-050/tasks/TASK-08.md, sha256: 85a5f4d11ba9579f214339b9df0cd4e5f956460212fa49b4f200311cf3460019 }
+        - { path: change-requests/CR-2026-050/tasks/TASK-09.md, sha256: ca9ad2a8b84ae2201d1716b59a334b79c4a0ec218aa3423ea5a1e22bb46dcfa4 }
+        - { path: change-requests/CR-2026-050/tasks/TASK-10.md, sha256: 34c0a4135590b226533e63aeb89b10c9a016547d8fa17d790f9f29bf23308d4d }
+        - { path: change-requests/CR-2026-050/tasks/TASK-11.md, sha256: 7a132f8d50bcfcb1411f71d5a4c6b3e48dc16dd7b6cf1945d1cf20b1900327d3 }
+        - { path: change-requests/CR-2026-050/tasks/TASK-12.md, sha256: f3833da987921a6507cefcb4b6554d2beb310a0a08cb50adf9e4079177de5f1e }
+        - { path: change-requests/CR-2026-050/tasks/TASK-13.md, sha256: 5f2dada253ef366b3111e6c769f749c21724f4f8106ab44443d31660cfffbe7a }
+        - { path: change-requests/CR-2026-050/tasks/TASK-14.md, sha256: 554b1bf1836c45efe1e240bda04a88d4b954ad78eaf13c657173affe5e051675 }
+        - { path: change-requests/CR-2026-050/tasks/_index.yml, sha256: a25c0fe4e6dc0460848ee321cc72adb59b028cc30f89f98ccb5287619486c552 }
+      digest: 1c46cec04e79236d0bc2bb4698634a83f665fd7a0f45755558a2da837417c333
