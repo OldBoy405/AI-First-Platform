@@ -16,9 +16,9 @@ owners:
 target-version: tbd
 source: "docs/analysis/pipeline流程优化.md"
 origin: ""
-status: requirement-reviewing
+status: requirement-approved
 created: "2026-08-21T09:31:35+08:00"
-updated: "2026-08-21T10:36:30+08:00"
+updated: "2026-08-21T10:39:39+08:00"
 remote-ref: ""
 last-push-at: ""
 last-push-by: ""
