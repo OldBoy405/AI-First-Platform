@@ -1,39 +1,35 @@
 cr-id: CR-2026-050
 review-type: code
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-21T13:40:32+08:00"
-verdict: block
-blockers:
-  - "BLK-C1 [tools/pipeline-templates/{architecture-design,requirement-authoring,code-implementation}.pipeline.json] FR-06/FR-07/AC-06/AC-07/AC-12 职责收敛不完整：write-tech-design 仍含 crctl advance/status/具体路径/逐条回修且未显式传 resources；write-requirement-prd 仍含具体落盘路径与逐条回修；write-dev-plan 仍含 status/input-file；write-dev-tasks 仍含 crctl task init；implement-code 仍含 TASK 顺序/回修/fallback；write-test-report 仍含 crctl test/机器区 marker/status-block 回修算法；review-code 仍含 runner/维度/blocker-suggestion/replay 重建算法。修复：各节点只保留 Skill、业务输入、前序结构化输出、消费结果与最小 route，并为每类禁项补负向断言。"
-  - "BLK-C2 [tools/pipeline-templates/{product-planning,competitive-radar}.pipeline.json + skills/competitive/fetch-competitor-updates/SKILL.md] FR-02/FR-04 输入闭环不稳定：product node-3 未声明 fetch 的竞品范围/lookback，node-6 未传 reviewer；competitive node-1 把 slug 当 ID 但 Skill 无 slug 契约，node-2 未结构化传出 node-5 依赖的 product-snapshot。修复：产品规划显式使用全量竞品+默认窗口并传 reviewer；为 fetch Skill 增 competitor-slug 解析或等价真实契约；node-2 输出 reportDraft+product-snapshot，增加确定性断言。"
-  - "BLK-C3 [tools/skills/cr/cr-show/SKILL.md + pipeline-templates/feature-writeback.pipeline.json] FR-10/FR-11 事实源错误：cr-show Step 3.5 引用仓内不存在的 checkpoints.yml/_backlog.yml#checkpoints（实际只有 latest-checkpoint，历史在 checkpoint metadata commit/audit）；feature node-1 仍保留 code-approved 前提文本。修复：cr-show 改用可持久复现的 checkpoint metadata git 历史并以 latest-checkpoint 补详情；feature node-1 仅调用 Skill、消费事务结果、失败中止。"
-  - "BLK-C4 [tools/skills/shared/crctl/scripts/test/pipeline-structure.test.mjs] 现有 23 项测试对上述原文仍全绿，属于假阴性；AC-02/03/04、四个 approve Skill grant+TTY --approver/角色 owner、职责收敛禁项与 cr-show 事实源缺少确定性断言。修复：补结构化正负断言，故意原文必须失败。"
-  - "BLK-C5 [change-requests/CR-2026-050/test-report.md/test-evidence] 报告声称 generator --check/Source SHA 与 AC-02~04 grep 核对，但机器区四命令无对应日志。修复：回修后通过 crctl test 重建计划，纳入 generator --check 与 Source SHA 校验，并让报告只陈述机器日志可证明的结果。"
+reviewed-at: "2026-08-21T13:52:04+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  代码↔TASK↔SDD 对齐: "BLOCK：14 TASK 均 done 且阶段顺序正确，但 FR-06/07 多节点仍保留明确要求删除的算法；规划输入、cr-show 数据源和 feature 预检未闭环。已审批 SDD §3.4 的 approver 偏离本轮接受并记录为回写 revision 项，不重复阻断。"
-  工程质量: "BLOCK：节点数/UUID/reviewLoop 机器字段保持稳定，但 prompt 仍混合 Pipeline/Skill/crctl 三层职责；测试未能捕获。"
-  关键路径可读性: "BLOCK：主顺序清楚；competitive-radar product-snapshot 跨节点传递及 slug→ID 契约不可可靠执行。"
-  安全性: "PARTIAL PASS：三条 human approval 已删除受保护 annotation 直接编辑；四个 approve Skill 双路径含显式 --approver，但尚无确定性测试守护。"
-  测试覆盖: "BLOCK：23 项覆盖节点数/UUID/reviewLoop，但 AC-02~04、职责禁项、approver 双路径、registry check 缺失。"
-  测试证据可信度: "BLOCK：test-report 与 traceability digest 及四份日志一致，但报告中的 generator check/Source SHA/grep 结论没有对应机器日志。"
-  前端质量: "N/A：本 CR 未触及前端文件。"
+  代码↔TASK↔SDD 对齐: "PASS：14/14 TASK done；attempt 1 的 BLK-C1～C5 全部关闭。architecture/requirement/code prompt 收敛到 Skill 输入、结构化结果与最小 route；product/market/competitive P0 输入闭环；feature/cr-show 事实源修复；8 条 Pipeline 节点数与 UUID 不变。已审批 SDD §3.4 approver 偏离按其改判口径验收，PRD revision 留待 writeback。"
+  工程质量: "PASS：tools 修复提交 14b4458 只改 7 条 pipeline、fetch/cr-show Skill 与既有零依赖测试；multica 89a277dbf 仅再生 registry + CUSTOM.md。reviewLoop/replayNodes/passCondition/onFail/timeout 与 crctl/状态机零改动。"
+  关键路径可读性: "PASS：competitive-radar 明确 slug→id 的 Skill 解析、reportDraft+product-snapshot 跨节点输出及 confirmed=false→true→planning-entry 顺序；workspace freshness 的 continue/replay/manual 路由保持最小且明确。"
+  安全性: "PASS：human approval 无受保护 annotation 直接编辑；prompt 禁项扫描 0；四个 approve Skill 的 grant/TTY 双路径均显式传角色 owner --approver；路径只消费 operationalWorkspace/resources[].worktreePath。"
+  测试覆盖: "PASS：crctl test attempt 2 共 6 条命令 exit 0；pipeline-structure 30/30，新增 AC-02～04、职责禁项、approve 双路径、cr-show 事实源、全 Pipeline 节点/UUID 与 DD-7 反例；lint 0 findings；governance 定向 Go 测试通过。"
+  测试证据可信度: "PASS：test-report status=pass、generated-by=crctl-test；traceability status/digest 与报告一致（362dfd0aefdb081481254ab98d97999a03c896459a73e7bd63aa1f6d9eba7fee）；cmd-01～06 日志齐全。cmd-04 证明 registry consistency OK tools@14b4458，cmd-05 精确证明 Source SHA，回修 checkpoint 27fbbd269234c8e6 三仓 confirmed=true。"
+  前端质量: "N/A：merge-base diff 未触及 tsx/vue/css/html。"
 suggestions:
-  - "回写期按 SDD §3.4 对 PRD FR-05.2/AC-05 做 revision：Pipeline 只传 cr_id，Skill 从角色 owner 解析并显式传 --approver；或以本轮最终评审记录作为已审批偏离确认。"
-  - "product-planning node-3 的跨域 can-call 偏差按 SDD §3.3 另开 CR，不在本轮扩 scope。"
+  - "NONBLOCK：writeback 时按 SDD §3.4 revision PRD FR-05.2/AC-05，明确 Pipeline 只传 cr_id、Skill 从角色 owner 解析并显式传 --approver；或把本评审作为偏离确认依据。"
+  - "NONBLOCK：product-planning node-3 的既有跨域 can-call 偏差按 SDD §3.3 另开 CR，不在本轮扩 agent-skill-matrix。"
+  - "NONBLOCK：下一次真实 /resume 时观察 cr-show 最近三次 checkpoint 的 UI 展示；当前契约已改用远端持久化 metadata commit。"
 review-loop:
-  current-attempt: 1
+  current-attempt: 2
 release-subjects:
   version: 1
   repositories:
     - repo: ai-first-platform-docs
       remote-ref: refs/heads/requirement/CR-2026-050
-      reviewed-source-sha: d5d6433c090a28f8e054120504f7011e5395d123
+      reviewed-source-sha: e8f777898af2ebd0a7adeff7be91b889f62a14e7
     - repo: multica
       remote-ref: refs/heads/requirement/CR-2026-050
-      reviewed-source-sha: d57a7193f747e4ff7a8b27a2f93a88b46f01fb34
+      reviewed-source-sha: 89a277dbf9f8a25704766f9bf97a5b120b11f1e0
     - repo: tools
       remote-ref: refs/heads/requirement/CR-2026-050
-      reviewed-source-sha: 16589e86e00fee7e1eec85d99f20110e8cd243fb
+      reviewed-source-sha: 14b4458fdd444916e634cbf21ea1312274d3ba57
   artifacts:
     algorithm: sha256
     canonicalization: crlf-to-lf+path-sort
