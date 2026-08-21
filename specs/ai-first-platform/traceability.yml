@@ -1,11 +1,11 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 # 五段链路：需求 FR ↔ 技术设计 SDD ↔ 交付 TASK ↔ 代码 merge SHA ↔ CR-ID
 spec-id: ai-first-platform
-cr-ref: CR-2026-048
-cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029, CR-2026-028, CR-2026-030, CR-2026-031, CR-2026-037, CR-2026-032, CR-2026-033, CR-2026-038, CR-2026-039, CR-2026-040, CR-2026-041, CR-2026-043, CR-2026-042, CR-2026-044, CR-2026-045, CR-2026-046, CR-2026-047, CR-2026-048]
-target-version: "0.22"
+cr-ref: CR-2026-049
+cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029, CR-2026-028, CR-2026-030, CR-2026-031, CR-2026-037, CR-2026-032, CR-2026-033, CR-2026-038, CR-2026-039, CR-2026-040, CR-2026-041, CR-2026-043, CR-2026-042, CR-2026-044, CR-2026-045, CR-2026-046, CR-2026-047, CR-2026-048, CR-2026-049]
+target-version: "0.23"
 baseline-since: "0.10"
-generated-at: "2026-08-20T19:21:19+08:00"
+generated-at: "2026-08-21T09:15:38+08:00"
 
 # 已知缺口：CR-2026-003~CR-2026-006 未生成本文件的里程碑段（writeback-traceability 在那四个
 # CR 回写时被跳过，PRD.md/SDD.md/_index.yml 侧的累积记录不受影响、仍完整）。本次（CR-2026-008）
@@ -3311,3 +3311,93 @@ milestones:
         code: { verdict: pass, path: change-requests/CR-2026-048/review-annotations/code.yml, sha256: c90469993df0bb51f4493a6a60baff552e03caa3c414918f442bd0189f0fc21f }
       approval: { status: approved, path: change-requests/CR-2026-048/approval.yml, sha256: 336396ba75ca67fe692547ee3331c4e21b43c08ad240dd1a4623fcf24c9b91d4 }
       merge: { status: merged, path: change-requests/CR-2026-048/merge-commits.yml, sha256: b16c9ec7f7336e5e696bd0bfe9341d67b2f0bfcb8fe9f709532431ac306c240e }
+  - cr: CR-2026-049
+    milestone: P3 组织智能 CR-C：跨 CR 追溯与漂移检测（E4 追溯 + E5 漂移）
+    target-version: "0.23"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 3bafefc5610185a08fda05ce01e93c7604e24011
+        branch: requirement/CR-2026-049
+      - repo: multica
+        trunk: main
+        sha: e368af4d8e6a2c282ba5d85f94791c5ad6711a1d
+        branch: requirement/CR-2026-049
+      - repo: tools
+        trunk: custom/main
+        sha: d023c149f84e735cfd95289745f42d6854390ff3
+        branch: requirement/CR-2026-049
+    frs:
+      - fr: FR-1
+        title: tools trace 语义对象与 candidate manifest v2
+        tasks: [CR-2026-049-TASK-01]
+        evidence: test-report §3 TASK-01 AC-1~AC-3 + trace-semantic.test.mjs 11 项
+      - fr: FR-2
+        title: multica trace 事件入账（schema/事务/processed）
+        tasks: [CR-2026-049-TASK-06]
+        evidence: test-report §3 TASK-06 + trace_ingest_test.go（幂等/冲突/ledger-only）
+      - fr: FR-3
+        title: writeback trace intent journal 与 complete replay
+        tasks: [CR-2026-049-TASK-02]
+        evidence: test-report §3 TASK-02 AC-1~AC-3 + trace-outbox.test.mjs
+      - fr: FR-4
+        title: cr_sync_event workspace 迁移 390-397 与全 seam 切换
+        tasks: [CR-2026-049-TASK-05]
+        evidence: test-report §3 TASK-05 + migrate_workspace_seam_test.go
+      - fr: FR-5
+        title: trace 查询直打 cr_sync_event，不建 spec_trace 投影
+        tasks: [CR-2026-049-TASK-07]
+        evidence: test-report §3 TASK-07 AC-4 + schema grep 断言
+      - fr: FR-6
+        title: spec 详情页 FR 时间线投影（最新有效 snapshot + 事件赋时）
+        tasks: [CR-2026-049-TASK-07, CR-2026-049-TASK-12]
+        evidence: test-report §3 TASK-07/12 + spec-trace.test.tsx 4 项
+      - fr: FR-7
+        title: evidence/merge 一跳链接，缺失显式显示不回退 trunk
+        tasks: [CR-2026-049-TASK-07, CR-2026-049-TASK-12]
+        evidence: test-report §3 TASK-12 + commitHref/evidenceLinks 单测
+      - fr: FR-8
+        title: 全局搜索 Specs 分组与 owner 反查
+        tasks: [CR-2026-049-TASK-07, CR-2026-049-TASK-12]
+        evidence: test-report §3 TASK-07/12 + SpecSearch 历史 owner 覆盖
+      - fr: FR-9
+        title: commit_prefix_scan 调度任务与 workspace scope/binding
+        tasks: [CR-2026-049-TASK-09, CR-2026-049-TASK-10]
+        evidence: test-report §3 TASK-09/10 + jobs_commit_prefix_test.go
+      - fr: FR-10
+        title: 大小写敏感前缀分类与完整 evidence（wip 优先）
+        tasks: [CR-2026-049-TASK-10]
+        evidence: test-report §3 TASK-10 + commit_prefix_scan_test.go
+      - fr: FR-11
+        title: dir-graph commit_prefixes 声明与生成器 config_gen.go
+        tasks: [CR-2026-049-TASK-08]
+        evidence: test-report §3 TASK-08 + generate-prefixes.test.mjs
+      - fr: FR-12
+        title: drift_finding 表与迁移 385-389（无 FK、CONCURRENTLY）
+        tasks: [CR-2026-049-TASK-04]
+        evidence: test-report §3 TASK-04 + migrate_drift_finding_test.go
+      - fr: FR-13
+        title: finding 幂等（dedup 唯一索引 + ON CONFLICT DO NOTHING）
+        tasks: [CR-2026-049-TASK-04, CR-2026-049-TASK-11]
+        evidence: test-report §3 TASK-04/11 + finding_repo_test.go
+      - fr: FR-14
+        title: 精确增量扫描（固定 B、分页至 A、cursor 失败不推进）
+        tasks: [CR-2026-049-TASK-10]
+        evidence: test-report §3 TASK-10 + commits_test.go（多页/限流/历史重写）
+      - fr: FR-15
+        title: drift overview 健康状态与 maturity 治理卡
+        tasks: [CR-2026-049-TASK-11, CR-2026-049-TASK-12]
+        evidence: test-report §3 TASK-11/12 + overview_test.go
+      - fr: FR-16
+        title: findings keyset 列表与 PATCH CAS 状态流转
+        tasks: [CR-2026-049-TASK-11, CR-2026-049-TASK-12]
+        evidence: test-report §3 TASK-11/12 + drift-page.test.tsx
+    evidence:
+      test: { status: pass, path: change-requests/CR-2026-049/test-report.md, sha256: 63275c8eb0092644794804a67dafa853d2bd1b9a553e164aac3dc96124bbc090 }
+      reviews:
+        requirement: { verdict: pass, path: change-requests/CR-2026-049/review-annotations/requirement.yml, sha256: 4be4b8c52e8cdc2a0280a613fe1a566c79dd09159d9c2dea7ea0bfffb921c454 }
+        tech-design: { verdict: pass, path: change-requests/CR-2026-049/review-annotations/sdd.yml, sha256: 36c5b1b4c7c3c36b735277bca51a33ee697e79d2da86fb7e1f1ee8515a5429ea }
+        dev-plan: { verdict: pass, path: change-requests/CR-2026-049/review-annotations/dev-plan.yml, sha256: a95390f1e032a289a56a4644073bcec369ad7001b27e00a4e5dc082283539ea8 }
+        code: { verdict: pass, path: change-requests/CR-2026-049/review-annotations/code.yml, sha256: 0619ffacb86fcfa20a80f5f019fd7727f4ed3ef496eb3d54ba2602b6fe51bf97 }
+      approval: { status: approved, path: change-requests/CR-2026-049/approval.yml, sha256: 1caaa2ff62396d0be35c4fa33ccd578198387b12a30f0988c5be59e66a7d916c }
+      merge: { status: merged, path: change-requests/CR-2026-049/merge-commits.yml, sha256: 0207f273e737ccc71f61f0d3d58e37e0215cb08a94745f4176915c0f286c8e44 }
