@@ -1,28 +1,22 @@
 cr-id: CR-2026-050
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-21T11:25:37+08:00"
-verdict: block
-blockers:
-  - "BLK-5 §3.2「approve-* 节点的 approver 取值（统一规则）」与 §6 FR-05 行：与已审批 PRD 的 FR-05.2/AC-05 正面冲突，且所引 crctl 行为不实。①冲突：PRD FR-05.2/AC-05 要求节点传入 cr_id 与 approver，SDD 明文『Pipeline 不传也不拼 approver』，实施后 AC-05 必然判负。②事实错误：SDD 称 crctl approve 的 approver 缺省即 cr.md owners.{角色}.id，实际 crctl.mjs:1177 为 `flags.approver || identity(ws)`（identity 取 .crctl/config.json#identity 或 git user.name），owners 回退只存在于 approve-* SKILL.md（approve-requirement:26、approve-tech-design:20、approve-code:20、approve-dev-start:24）；按错误表述实施会把审批证据记成本机 git 用户，造成审批身份漂移。③配套事实：architecture-design 与 code-implementation 的 execution_context 只含 cr_id/operational_workspace[/resources]，不含 owners，PRD 字面路径仅 requirement-authoring 可满足。修复：(a) §3.2 改写为『Pipeline 传 cr_id；approver 由 approve-* Skill 按其 SKILL.md 既有契约从 cr.md owners.{角色}.id 解析后显式传给 crctl；crctl 自身缺省为 identity(ws)，故 Skill 侧 owners 解析为必需项不得删除』；(b) 新增显式偏离记录（偏离 FR-05.2/AC-05 的 approver 项 + 理由 + AC-05 改判口径：四节点含完整 cr_id 且 prompt 不出现 owners 解析/approver 拼接，approver 由 Skill 承担）；(c) 按工程纪律 4 在回写期以 revision 修订 PRD FR-05.2/AC-05 措辞或在本评审记录中确认该偏离。"
+reviewed-at: "2026-08-21T11:45:29+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  prd_sdd_alignment: "阻断（1 处）：第 1 轮 BLK-1/2/3/4 均已闭合且事实可核；FR-01～FR-13 条目齐全，两阶段 gate 与 AC-14 证据形态自洽。唯 approve-* 的 approver 取值与 FR-05.2/AC-05 冲突且未记录偏离（BLK-5）。另 FR-03.3 删除 published 写入后 market-insights 生命周期缺终态写者，属 PRD 已决策的保守删除，建议 SDD 记录后果。"
-  architecture_soundness: "通过：符合 tools ARCHITECTURE.md §4 依赖方向与 §5 不变量 1/2/3/4/7，未触碰 Negative Space；§4.3 复用 DD-2 单节点顺序调用，节点数/UUID/_index.yml 零改动与 FR-12.4 一致；§4.2『仅 architecture 需再生』经核实成立（requirement/code 只贡献 UUID/Seq/Kind，仅 ArchitectureCoreRegistryJSON 含 prompt 全文与 digest）。"
-  data_model: "通过：§2.3 三行产出方与 write-competitive-report/SKILL.md:21-24、planning-draft/SKILL.md:28-29 逐字相符；§2.2 mode/raw_insight_path 已补默认值与硬失败语义；§2.1 reportDraft 五字段与优先级完整。仅 §2.4 称 execution_context 含 owners 需限定为 requirement-authoring。"
-  interface_contract: "阻断：五要素模板与 §3.0 保留项可实施，逐 pipeline 表与实际节点序全部对应（product-planning node-3/7/8、competitive-radar node-1~5、market-to-plan node-2/3/5、code …0010/…0004 均核对无误）；slug 解析归属与 report-to-planning-suggestion 改动面已补齐。唯 approver 取值规则与 PRD/crctl 实际行为不符（BLK-5）。"
-  performance_security: "通过：deny 面与 commit 白名单零改动判断准确；FR-01 为真实安全修复（architecture node-3 approvalPrompt 现确有 reject_reason 指引）；digest fail-closed + CI --check + emit-registry token 白名单三重防线属实；DD-7 扫描确认越界前缀恰为 3 处。"
-  testability: "通过（带精度问题）：DD-4 既有断言处置清单成立，:149 修订与 :77-107/:114-119/:141-153/:165-187 保留判断正确；AC-08/AC-14/DD-7 证据形态已补。遗留：.rayai-worktrees 断言实际在 :188（清单写 :185-187）；:114-119 实际 114-117、:77-90 实际 77-89；清单未覆盖 :27-75 段保留型 prompt 字面量（implement-start/review-start、auto_push_after_prd/task、审批结果 label、cr_id 引用）；AC-12『五要素内』缺显式证据形态。"
-  prompt_adoption: "通过：本 CR 不触及 crctl.mjs dispatch 与 rules.json#protectedPaths.deny，§8 条件性判断成立并保留判断依据；registry 再生依赖单列 §4.2 并纳入 §9 与实施顺序约束；cr-show 已内部调用 crctl next，FR-10.1 改动面准确。"
+  prd_sdd_alignment: "通过：BLK-5 四项全闭合且事实可核（crctl.mjs:1177 为 flags.approver || identity(ws)、identity() :253-261、grant :1301）；§6 FR-01～FR-13 共 13 行完整无缺项；两阶段 gate（§4.4）与 AC-14 证据形态（§1.4）自洽；对 PRD 的唯一偏离（approver）已显式记录并给出 AC-05 改判口径与回写期 revision 路径。"
+  architecture_soundness: "通过：符合 tools/ARCHITECTURE.md §4 依赖方向与 §5 不变量 1/2/3/4/6/7，未触碰 §6 Negative Space；『ARCHITECTURE.md 不修订』与其 §8 触发条件逐条比对成立；§4.3 沿用 DD-2 单节点顺序调用，节点数/UUID/_index.yml 零改动与 FR-12.4 一致；registry 再生链经 multica 侧核实（runner.go:189 唯一 Core、checkDigest :575-582 保持 run 存活、emit-registry.mjs:86 ALLOWED + :92 硬失败）。"
+  data_model: "通过：§2.1 reportDraft 五字段与优先级完整；§2.2 mode/raw_insight_path 默认值与硬失败语义明确；§2.3 三行产出方与 write-competitive-report/SKILL.md:21-24、planning-draft/SKILL.md:28-29 逐字相符；§2.4 execution_context 字段限定与三条 pipeline node-1 实际输出一致，与 §3.4 无矛盾。"
+  interface_contract: "通过：节点编号与 UUID 全部复核无误（requirement …0011-…0005、architecture …0016-…0003、code 审批 …0015-…0010、开工确认 …0004 明示不动）；product-planning node-3/7/8、market-to-plan node-2/3/5、competitive-radar node-1~5、resume-cr node-3、feature-writeback node-1 与实际节点序一一对应；architecture human_approval 无 prompt 字段故不撞 :178/:179 断言；node-1 收敛后状态推进由 write-tech-design SKILL.md:47/:92 承载不落空；§3.4 已补 approve-* SKILL.md 命令补 --approver 的配套落点。"
+  performance_security: "通过：deny 面与 commit 白名单零改动判断准确（rules.json commit shapes 实为 wip:/[cr] /merge(）；DD-7 越界前缀全仓恰为 3 处，新增扫描断言可实施不误伤；FR-01 为真实安全修复；digest fail-closed + CI --check + token 白名单三重防线属实；§3.1 已补 lint R1 风险（收敛后禁残留 deny 路径字面量），闭合 AC-13 的 lint 门风险。"
+  testability: "通过：DD-4 既有断言处置清单行号本轮已全部校准并复核（:141-153、:149、:165-183、:185-188、:114-117、:77-89、:73-74、:133、:157、:160、:38/:65、:91-107）；§3.0 与 DD-4 行号已一致；:149 修订保留 CR-2026-044 FR-07 溯源注释的要求已写入；AC-08/AC-12/AC-14/AC-05/DD-7 的证据形态均已在 §7 明确。"
+  prompt_adoption: "通过：本 CR 确不触及 crctl dispatch 与 rules.json#protectedPaths.deny，§8 条件性判断与判断依据保留成立；非 crctl 面的 registry 再生依赖单列 §4.2 并纳入 §9 风险与实施顺序约束；cr-show 已内部调用 crctl next，FR-10.1 改动面准确。"
 suggestions:
-  - "DD-4 补『:27-75 保留型 prompt 字面量』行：workspace-freshness 的 implement-start/review-start、requirement-authoring 的 auto_push_after_prd、code 的 auto_push_after_task 与「审批结果」label、checkpoint 节点的 cr_id 引用——FR-07/FR-09 收敛时最易误删。"
-  - "修正 DD-4 行号：.rayai-worktrees 断言在 :188；:114-119 → :114-117；:77-90 → :77-89。"
-  - "§2.4 限定 execution_context 字段范围（requirement-authoring 含 owners；architecture/code 为 cr_id/operational_workspace/resources）。"
-  - "§7 为 AC-12『五要素内』补证据形态（负向断言清单 + review-tech-design 判定）。"
-  - "说明 product-planning node-3 跨域调用 fetch-competitor-updates/write-competitive-report 在 agent-skill-matrix.yml 中无 owns/can-call（既有偏差），二选一：补 can-call（则 §3.3 matrix 零改动需改写）或写明本 CR 不改。"
-  - "§5 补一句：FR-03.3 删除 published 写入后 market-insights 生命周期暂无终态写者（PRD 保守删除的已知后果）。"
-  - "修订 :149 时在用例内保留 CR-2026-044 FR-07 溯源注释，防止后续误读为回退前序 CR 验收。"
-  - "§3.2 product-planning node-3 写明草稿模式输出形态（confirmed=false 无落盘路径，node-5 需消费草稿正文而非路径）。"
+  - "§5 决策项顺序：DD-8 排在 DD-7 之前与编号相反，实施期可顺手调序（纯排版，不影响语义）。"
+  - "实施期先跑 emit-registry.mjs 本地验证 architecture prompt token，再跑 multica generate-gate-nodes.mjs --check，避免再生与 CI 两次往返。"
+  - "阶段二第 1 项（architecture-design）建议把 pipeline 修改、gate_nodes_gen.go 再生、CUSTOM.md 登记放入同一 TASK，保证 digest 与台账同批。"
 review-loop:
-  current-attempt: 2
+  current-attempt: 3
 subject-file: change-requests/CR-2026-050/sdd.md
-subject-sha256: a0de064b3870ae18dec46399af1e09289c695ffcb1b2f5c892b0075f4854de04
+subject-sha256: bef9573cc7dc265b23c4f7d227ec7ca4c0b0df3cb4c3cacd55d79482c4bdc0d8
