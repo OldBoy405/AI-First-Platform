@@ -18,8 +18,10 @@ created: 2026-08-21T11:57:27+08:00
 
 ## 涉及文件 / 模块
 
-- `tools/pipeline-templates/market-to-plan.pipeline.json`（5 节点）
-- `tools/skills/planning/extract-market-insight/SKILL.md`（参数表 + Step 3.5 触发条件 + 失败码）
+仓根只允许取 `execution_context.resources[]` 中 `repo=tools` 的 `worktreePath`；以下均为该仓根相对路径：
+
+- `repo=tools: pipeline-templates/market-to-plan.pipeline.json`（5 节点）
+- `repo=tools: skills/planning/extract-market-insight/SKILL.md`（参数表 + Step 3.5 触发条件 + 失败码）
 
 ## 实现要点
 

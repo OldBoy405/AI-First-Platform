@@ -18,10 +18,12 @@ created: 2026-08-21T11:57:27+08:00
 
 ## 涉及文件 / 模块
 
-- `tools/pipeline-templates/requirement-authoring.pipeline.json`（human_approval 节点 `…0011-…0005`，字段 `approvalPrompt`）
-- `tools/pipeline-templates/architecture-design.pipeline.json`（human_approval 节点 `…0016-…0003`，字段 `approvalPrompt`；**无 `prompt` 字段，不撞 :178/:179 断言**）
-- `tools/pipeline-templates/code-implementation.pipeline.json`（代码审批节点 `…0015-…0010`；**不动** `…0004` 开工确认）
-- `tools/skills/shared/crctl/scripts/test/pipeline-structure.test.mjs`（新增负向断言）
+仓根只允许取 `execution_context.resources[]` 中 `repo=tools` 的 `worktreePath`；以下均为该仓根相对路径，禁止从 knowledge-base 拼接 `tools/`：
+
+- `repo=tools: pipeline-templates/requirement-authoring.pipeline.json`（human_approval 节点 `…0011-…0005`，字段 `approvalPrompt`）
+- `repo=tools: pipeline-templates/architecture-design.pipeline.json`（human_approval 节点 `…0016-…0003`，字段 `approvalPrompt`；**无 `prompt` 字段，不撞 :178/:179 断言**）
+- `repo=tools: pipeline-templates/code-implementation.pipeline.json`（代码审批节点 `…0015-…0010`；**不动** `…0004` 开工确认）
+- `repo=tools: skills/shared/crctl/scripts/test/pipeline-structure.test.mjs`（新增负向断言）
 
 ## 实现要点
 

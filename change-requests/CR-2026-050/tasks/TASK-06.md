@@ -27,17 +27,19 @@ created: 2026-08-21T11:57:27+08:00
    - `node skills/shared/crctl/scripts/lint-prompts.mjs`
    - `node --test skills/shared/crctl/scripts/test/pipeline-structure.test.mjs`
 2. 逐条核对：AC-01（受保护账本指引为 0）、AC-02（topic/三必填/回修输入/跨文档写入删除）、AC-03（context/intent/mode/无 source 伪造）、AC-04（参数映射/reportDraft/node-5 顺序）、AC-05（改判口径：cr_id 完整、无命令细节、无 owners 拼接、Skill 含 --approver）。
-3. 记录每条命令输出与核对结论到本 TASK 完成证据（commit message 或 task note）。
+3. 记录每条命令输出与核对结论；随后执行 `crctl task done CR-2026-050 --task CR-2026-050-TASK-06 --workspace {execution_context.operational_workspace}`。
+4. 执行 `crctl checkpoint CR-2026-050 --message "阶段一正确性 gate 完成" --workspace {execution_context.operational_workspace}`；要求 `phase=complete`、`changed=true`、`batchId` 非空、全部 `repositories[].confirmed=true`，并记录各仓 sourceSha。
 
 ## 验收条件
 
 1. 三条命令全部退出 0。
 2. AC-01～AC-05 核对结论全部为「通过」，且与 TASK-01～05 各自的完成标志一致。
 3. 无因阶段一改动引入的 `_index.yml`/`agent-skill-matrix.yml` 漂移。
+4. checkpoint 返回 `phase=complete`、非空 `batchId`、全部参与仓 `confirmed=true`；该 batch 时间/提交早于 TASK-07 首个实现提交。
 
 ## 完成标志
 
-验收 3 条全部通过，并在 knowledge-base worktree 提交本 TASK 的完成证据（`crctl task done CR-2026-050 --task TASK-06` 后随批次提交）。
+验收 4 条全部通过；完整 TASK ID 已经 `crctl task done` 登记，且真实 checkpoint batch 已形成 AC-14 时序证据。
 
 ## 接口契约
 

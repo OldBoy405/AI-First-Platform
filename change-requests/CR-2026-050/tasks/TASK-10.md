@@ -8,7 +8,7 @@ title: code-implementation 收敛 + write-dev-plan 前缀 + 顺序/replayNodes �
 slug: converge-code-implementation
 status: pending
 estimate: 6h
-depends-on: [CR-2026-050-TASK-06, CR-2026-050-TASK-02]
+depends-on: [CR-2026-050-TASK-09]
 created: 2026-08-21T11:57:27+08:00
 ---
 
@@ -18,9 +18,11 @@ created: 2026-08-21T11:57:27+08:00
 
 ## 涉及文件 / 模块
 
-- `tools/pipeline-templates/code-implementation.pipeline.json`（16 节点；approval 与 approve 节点已在 TASK-01/02 收敛，不得回改）
-- `tools/skills/develop/write-dev-plan/SKILL.md`（DD-7 提交前缀 `[cr] `）
-- `tools/skills/shared/crctl/scripts/test/pipeline-structure.test.mjs`（FR-12.3 断言扩展 + 保留字面量核对）
+仓根只允许取 `execution_context.resources[]` 中 `repo=tools` 的 `worktreePath`；以下均为该仓根相对路径：
+
+- `repo=tools: pipeline-templates/code-implementation.pipeline.json`（16 节点；approval 与 approve 节点已在 TASK-01/02 收敛，不得回改）
+- `repo=tools: skills/develop/write-dev-plan/SKILL.md`（DD-7 提交前缀 `[cr] `）
+- `repo=tools: skills/shared/crctl/scripts/test/pipeline-structure.test.mjs`（FR-12.3 断言扩展 + 保留字面量核对）
 
 ## 实现要点
 

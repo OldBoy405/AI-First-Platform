@@ -8,7 +8,7 @@ title: resume-cr 展示节点收敛 + cr-show 输出契约补最近三次 checkp
 slug: converge-resume-cr-cr-show
 status: pending
 estimate: 2h
-depends-on: [CR-2026-050-TASK-06]
+depends-on: [CR-2026-050-TASK-10]
 created: 2026-08-21T11:57:27+08:00
 ---
 
@@ -18,8 +18,10 @@ created: 2026-08-21T11:57:27+08:00
 
 ## 涉及文件 / 模块
 
-- `tools/pipeline-templates/resume-cr.pipeline.json`（node-3）
-- `tools/skills/cr/cr-show/SKILL.md`（输出契约）
+仓根只允许取 `execution_context.resources[]` 中 `repo=tools` 的 `worktreePath`；以下均为该仓根相对路径：
+
+- `repo=tools: pipeline-templates/resume-cr.pipeline.json`（node-3）
+- `repo=tools: skills/cr/cr-show/SKILL.md`（输出契约）
 
 ## 实现要点
 

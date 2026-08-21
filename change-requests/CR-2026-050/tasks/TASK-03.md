@@ -18,8 +18,11 @@ created: 2026-08-21T11:57:27+08:00
 
 ## 涉及文件 / 模块
 
-- `tools/pipeline-templates/product-planning.pipeline.json`（8 节点）
-- `tools/skills/shared/crctl/scripts/test/pipeline-structure.test.mjs`（负向断言，本 TASK 内先行用脚本验证，正式断言归 TASK-13/14）
+仓根只允许取 `execution_context.resources[]` 中 `repo=tools` 的 `worktreePath`；以下为该仓根相对路径：
+
+- `repo=tools: pipeline-templates/product-planning.pipeline.json`（8 节点）
+
+本 TASK 只运行现有 `skills/shared/crctl/scripts/test/pipeline-structure.test.mjs`，不修改该测试文件；正式新增断言归 TASK-13/14。
 
 ## 实现要点
 

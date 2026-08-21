@@ -18,8 +18,10 @@ created: 2026-08-21T11:57:27+08:00
 
 ## 涉及文件 / 模块
 
-- `tools/skills/develop/write-tech-design/SKILL.md`
-- `tools/skills/develop/review-tech-design/SKILL.md`
+仓根只允许取 `execution_context.resources[]` 中 `repo=tools` 的 `worktreePath`；以下均为该仓根相对路径：
+
+- `repo=tools: skills/develop/write-tech-design/SKILL.md`
+- `repo=tools: skills/develop/review-tech-design/SKILL.md`
 
 ## 实现要点
 

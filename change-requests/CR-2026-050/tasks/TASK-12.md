@@ -8,7 +8,7 @@ title: feature-writeback node-1 一行级预检删除
 slug: feature-writeback-precheck-removal
 status: pending
 estimate: 1h
-depends-on: [CR-2026-050-TASK-06]
+depends-on: [CR-2026-050-TASK-11]
 created: 2026-08-21T11:57:27+08:00
 ---
 
@@ -18,7 +18,9 @@ created: 2026-08-21T11:57:27+08:00
 
 ## 涉及文件 / 模块
 
-- `tools/pipeline-templates/feature-writeback.pipeline.json`
+仓根只允许取 `execution_context.resources[]` 中 `repo=tools` 的 `worktreePath`；以下为该仓根相对路径：
+
+- `repo=tools: pipeline-templates/feature-writeback.pipeline.json`
 
 ## 实现要点
 

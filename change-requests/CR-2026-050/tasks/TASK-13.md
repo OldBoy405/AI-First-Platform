@@ -8,7 +8,7 @@ title: 规划类 Pipeline FR-09 下沉 + write-roadmap 提交前缀对齐
 slug: planning-pipelines-responsibility-sink
 status: pending
 estimate: 3h
-depends-on: [CR-2026-050-TASK-03, CR-2026-050-TASK-04, CR-2026-050-TASK-05, CR-2026-050-TASK-06]
+depends-on: [CR-2026-050-TASK-12]
 created: 2026-08-21T11:57:27+08:00
 ---
 
@@ -18,10 +18,12 @@ created: 2026-08-21T11:57:27+08:00
 
 ## 涉及文件 / 模块
 
-- `tools/pipeline-templates/product-planning.pipeline.json`
-- `tools/pipeline-templates/market-to-plan.pipeline.json`
-- `tools/pipeline-templates/competitive-radar.pipeline.json`
-- `tools/skills/planning/write-roadmap/SKILL.md`（DD-7：`[planning] ` → `[cr] `）
+仓根只允许取 `execution_context.resources[]` 中 `repo=tools` 的 `worktreePath`；以下均为该仓根相对路径：
+
+- `repo=tools: pipeline-templates/product-planning.pipeline.json`
+- `repo=tools: pipeline-templates/market-to-plan.pipeline.json`
+- `repo=tools: pipeline-templates/competitive-radar.pipeline.json`
+- `repo=tools: skills/planning/write-roadmap/SKILL.md`（DD-7：`[planning] ` → `[cr] `）
 
 ## 实现要点
 

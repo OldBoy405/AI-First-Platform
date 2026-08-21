@@ -18,8 +18,10 @@ created: 2026-08-21T11:57:27+08:00
 
 ## 涉及文件 / 模块
 
-- `tools/pipeline-templates/competitive-radar.pipeline.json`（5 节点）
-- `tools/skills/competitive/report-to-planning-suggestion/SKILL.md`（输入契约 + 前置条件 + 错误处理表 + 读写清单）
+仓根只允许取 `execution_context.resources[]` 中 `repo=tools` 的 `worktreePath`；以下均为该仓根相对路径：
+
+- `repo=tools: pipeline-templates/competitive-radar.pipeline.json`（5 节点）
+- `repo=tools: skills/competitive/report-to-planning-suggestion/SKILL.md`（输入契约 + 前置条件 + 错误处理表 + 读写清单）
 
 ## 实现要点
 

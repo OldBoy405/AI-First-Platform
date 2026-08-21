@@ -8,7 +8,7 @@ title: architecture-design 收敛 + multica gate_nodes_gen.go 再生 + CUSTOM.md
 slug: converge-architecture-pipeline-registry
 status: pending
 estimate: 6h
-depends-on: [CR-2026-050-TASK-06, CR-2026-050-TASK-02]
+depends-on: [CR-2026-050-TASK-06]
 created: 2026-08-21T11:57:27+08:00
 ---
 
@@ -18,10 +18,12 @@ created: 2026-08-21T11:57:27+08:00
 
 ## 涉及文件 / 模块
 
-- `tools/pipeline-templates/architecture-design.pipeline.json`
-- `tools/skills/shared/crctl/scripts/test/pipeline-structure.test.mjs`（`:149` 修订 + 溯源注释）
-- `multica/server/internal/governance/gate_nodes_gen.go`（**再生，生成产物禁止手改**）
-- `multica/CUSTOM.md`（台账登记）
+仓根只允许按 `execution_context.resources[].repo` 匹配后取对应 `worktreePath`；以下均为仓根相对路径，禁止从 knowledge-base 拼接 `tools/` 或 `multica/`：
+
+- `repo=tools: pipeline-templates/architecture-design.pipeline.json`
+- `repo=tools: skills/shared/crctl/scripts/test/pipeline-structure.test.mjs`（`:149` 修订 + 溯源注释）
+- `repo=multica: server/internal/governance/gate_nodes_gen.go`（**再生，生成产物禁止手改**）
+- `repo=multica: CUSTOM.md`（台账登记）
 
 ## 实现要点
 
@@ -30,19 +32,19 @@ created: 2026-08-21T11:57:27+08:00
 3. node-4 `approve-tech-design`：删除 grant/TTY/reject/状态级联细节（TASK-02 已完成主收敛，此处核对不回归）。
 4. node-5 `push-progress`：删除 `crctl checkpoint` 命令字面量，只传 cr_id/message、消费 phase；保留「阶段终点 / phase=complete / 失败只重跑 checkpoint、不重新审批」语义。
 5. 修订 `:149` 断言为「不含 crctl checkpoint 命令字面量 + 含 phase 消费与阶段终点语义」，并在用例内保留 CR-2026-044 FR-07 溯源注释。
-6. 再生链：`node pipeline-templates/emit-registry.mjs --pipeline architecture-design` 验证 → multica 内 `node server/internal/governance/gen/generate-gate-nodes.mjs` → `--check` 通过 → 提交 gate_nodes_gen.go。
-7. CUSTOM.md 按当前结构登记本变更（生成产物再生 + 溯源）。
+6. 再生链：先在 tools worktree 运行 `node pipeline-templates/emit-registry.mjs --pipeline architecture-design`，验证通过后以 controlled-shell/crctl git 形成包含本 TASK tools 改动的受控提交，记录 `TOOLS_SHA=$(git rev-parse HEAD)`；再到 multica worktree 执行 `node server/internal/governance/gen/generate-gate-nodes.mjs --tools <tools-worktree>`，核对生成文件 `Source: tools@${TOOLS_SHA}`，然后以同一 `--tools <tools-worktree> --check` 验证。
+7. CUSTOM.md 按当前结构登记本变更（生成产物再生 + 溯源）；随后由 checkpoint 发布，要求 tools 的 `TOOLS_SHA` 与 multica 生成提交进入同一 batch。
 
 ## 验收条件
 
 1. tools 侧：JSON 可解析、`pipeline-structure.test.mjs` 全绿（`:149` 修订后）、`lint-prompts.mjs` 无新增触发。
-2. `emit-registry.mjs --pipeline architecture-design` 退出 0 且无 REGISTRY_PROMPT_TOKEN_INVALID。
-3. multica 侧：`generate-gate-nodes.mjs --check` 退出 0；`go test ./server/internal/governance/` 通过；digest 已变化且与 registry 内容一致。
-4. CUSTOM.md 已登记；node-1 提示不含 `crctl advance`/`git commit` 字面量。
+2. `emit-registry.mjs --pipeline architecture-design` 退出 0 且无 REGISTRY_PROMPT_TOKEN_INVALID；tools 改动已形成受控 `TOOLS_SHA`。
+3. multica worktree：`node server/internal/governance/gen/generate-gate-nodes.mjs --tools <tools-worktree> --check` 退出 0；`gate_nodes_gen.go` 的 Source SHA 等于 `TOOLS_SHA`；随后 `cd server && go test ./internal/governance/` 通过；digest 已变化且与 registry 内容一致。
+4. CUSTOM.md 已登记；node-1 提示不含 `crctl advance`/`git commit` 字面量；checkpoint 输出 `phase=complete` 且同一 `batchId` 的 repositories[] 同时确认 tools `TOOLS_SHA` 与 multica 生成提交。
 
 ## 完成标志
 
-上述 4 条验收全部通过，且 tools 与 multica 两仓改动在同批提交（SDD §4.2 实施顺序约束）。
+上述 4 条验收全部通过，且 tools 与 multica 两仓提交在同一个 `crctl checkpoint` batch 中 `confirmed=true`（SDD §4.2 实施顺序约束）。
 
 ## 接口契约
 

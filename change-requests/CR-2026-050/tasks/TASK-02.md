@@ -18,11 +18,13 @@ created: 2026-08-21T11:57:27+08:00
 
 ## 涉及文件 / 模块
 
-- `tools/pipeline-templates/requirement-authoring.pipeline.json`（approve-requirement 节点）
-- `tools/pipeline-templates/architecture-design.pipeline.json`（approve-tech-design 节点；**保留 workspace inspect 入口**，SDD §3.0）
-- `tools/pipeline-templates/code-implementation.pipeline.json`（approve-dev-start、approve-code 两节点；**保留 inspect / execution_context 契约**）
-- `tools/skills/requirement/approve-requirement/SKILL.md`、`tools/skills/develop/approve-tech-design/SKILL.md`、`tools/skills/develop/approve-dev-start/SKILL.md`、`tools/skills/develop/approve-code/SKILL.md`（Step 命令补 `--approver {cr.md owners.{角色}.id}`）
-- `tools/skills/shared/crctl/scripts/test/pipeline-structure.test.mjs`（AC-05 改判口径负向断言）
+仓根只允许取 `execution_context.resources[]` 中 `repo=tools` 的 `worktreePath`；以下均为该仓根相对路径：
+
+- `repo=tools: pipeline-templates/requirement-authoring.pipeline.json`（approve-requirement 节点）
+- `repo=tools: pipeline-templates/architecture-design.pipeline.json`（approve-tech-design 节点；**保留 workspace inspect 入口**，SDD §3.0）
+- `repo=tools: pipeline-templates/code-implementation.pipeline.json`（approve-dev-start、approve-code 两节点；**保留 inspect / execution_context 契约**）
+- `repo=tools: skills/requirement/approve-requirement/SKILL.md`、`skills/develop/approve-tech-design/SKILL.md`、`skills/develop/approve-dev-start/SKILL.md`、`skills/develop/approve-code/SKILL.md`（Step 命令补 `--approver {cr.md owners.{角色}.id}`）
+- `repo=tools: skills/shared/crctl/scripts/test/pipeline-structure.test.mjs`（AC-05 改判口径负向断言）
 
 ## 实现要点
 

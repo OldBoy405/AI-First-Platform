@@ -8,7 +8,7 @@ title: requirement-authoring 收敛（register/PRD/review 节点）+ 关键顺�
 slug: converge-requirement-authoring
 status: pending
 estimate: 4h
-depends-on: [CR-2026-050-TASK-06, CR-2026-050-TASK-02]
+depends-on: [CR-2026-050-TASK-08]
 created: 2026-08-21T11:57:27+08:00
 ---
 
@@ -18,8 +18,10 @@ created: 2026-08-21T11:57:27+08:00
 
 ## 涉及文件 / 模块
 
-- `tools/pipeline-templates/requirement-authoring.pipeline.json`（7 节点；approval 与 approve 节点已在 TASK-01/02 收敛，本 TASK 不得回改）
-- `tools/skills/shared/crctl/scripts/test/pipeline-structure.test.mjs`（FR-12.2 断言扩展）
+仓根只允许取 `execution_context.resources[]` 中 `repo=tools` 的 `worktreePath`；以下均为该仓根相对路径：
+
+- `repo=tools: pipeline-templates/requirement-authoring.pipeline.json`（7 节点；approval 与 approve 节点已在 TASK-01/02 收敛，本 TASK 不得回改）
+- `repo=tools: skills/shared/crctl/scripts/test/pipeline-structure.test.mjs`（FR-12.2 断言扩展）
 
 ## 实现要点
 
@@ -42,4 +44,4 @@ created: 2026-08-21T11:57:27+08:00
 ## 接口契约
 
 - 消费：SDD §3.0 保留项、SDD §2.4 execution_context 字段集、`pipeline-structure.test.mjs` 现有 requirement 断言（:133 auto_push_after_prd 保留）。
-- 产出：requirement-authoring 7 节点收敛版 + FR-12.2 断言；execution_context（含 owners）是 TASK-02 approve 节点的上游事实，两者不得冲突。
+- 产出：requirement-authoring 7 节点收敛版 + FR-12.2 断言；execution_context 继续输出 owners 是 requirement-register 自身的既有契约，但 approve 节点不消费 owners，角色解析由 approve-* SKILL 从 cr.md 完成。
