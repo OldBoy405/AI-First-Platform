@@ -1,0 +1,6 @@
+$ node -e const fs=require('fs');const files=fs.readdirSync('pipeline-templates').filter(f=>f.endsWith('.json'));for(const f of files)JSON.parse(fs.readFileSync('pipeline-templates/'+f,'utf8').replace(/\r\n/g,'\n'));console.log('json ok:',files.length)
+(exit=0)
+--- stdout ---
+json ok: 8
+
+--- stderr ---
