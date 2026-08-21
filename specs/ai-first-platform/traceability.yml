@@ -1,11 +1,11 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 # 五段链路：需求 FR ↔ 技术设计 SDD ↔ 交付 TASK ↔ 代码 merge SHA ↔ CR-ID
 spec-id: ai-first-platform
-cr-ref: CR-2026-049
-cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029, CR-2026-028, CR-2026-030, CR-2026-031, CR-2026-037, CR-2026-032, CR-2026-033, CR-2026-038, CR-2026-039, CR-2026-040, CR-2026-041, CR-2026-043, CR-2026-042, CR-2026-044, CR-2026-045, CR-2026-046, CR-2026-047, CR-2026-048, CR-2026-049]
-target-version: "0.23"
+cr-ref: CR-2026-050
+cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029, CR-2026-028, CR-2026-030, CR-2026-031, CR-2026-037, CR-2026-032, CR-2026-033, CR-2026-038, CR-2026-039, CR-2026-040, CR-2026-041, CR-2026-043, CR-2026-042, CR-2026-044, CR-2026-045, CR-2026-046, CR-2026-047, CR-2026-048, CR-2026-049, CR-2026-050]
+target-version: "0.24"
 baseline-since: "0.10"
-generated-at: "2026-08-21T09:15:38+08:00"
+generated-at: "2026-08-21T14:18:51+08:00"
 
 # 已知缺口：CR-2026-003~CR-2026-006 未生成本文件的里程碑段（writeback-traceability 在那四个
 # CR 回写时被跳过，PRD.md/SDD.md/_index.yml 侧的累积记录不受影响、仍完整）。本次（CR-2026-008）
@@ -3401,3 +3401,81 @@ milestones:
         code: { verdict: pass, path: change-requests/CR-2026-049/review-annotations/code.yml, sha256: 0619ffacb86fcfa20a80f5f019fd7727f4ed3ef496eb3d54ba2602b6fe51bf97 }
       approval: { status: approved, path: change-requests/CR-2026-049/approval.yml, sha256: 1caaa2ff62396d0be35c4fa33ccd578198387b12a30f0988c5be59e66a7d916c }
       merge: { status: merged, path: change-requests/CR-2026-049/merge-commits.yml, sha256: 0207f273e737ccc71f61f0d3d58e37e0215cb08a94745f4176915c0f286c8e44 }
+  - cr: CR-2026-050
+    milestone: Pipeline 流程优化 — 职责边界与契约漂移修复（P0/P1/P2）
+    target-version: "0.24"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 978f072424ca33ac334c1843aa673ac954a6c276
+        branch: requirement/CR-2026-050
+      - repo: multica
+        trunk: main
+        sha: 93aa7c5bdd1920625fae16918cb3d4f60dfa9f4f
+        branch: requirement/CR-2026-050
+      - repo: tools
+        trunk: custom/main
+        sha: c4b10d505d737c423c81ee9a4f3dd6980647f46a
+        branch: requirement/CR-2026-050
+    frs:
+      - fr: FR-01
+        title: 三条 CR Pipeline 人工审批不再直接修改受保护评审账本
+        tasks: [CR-2026-050-TASK-01]
+        evidence: test-report cmd-01 FR-01 断言（无 review-annotations/reject_reason 指引；…0010 保留 checkpoint phase=complete 前提）
+      - fr: FR-02
+        title: product-planning 输入契约修复（topic/skip/竞品草稿链/reviewer）
+        tasks: [CR-2026-050-TASK-03]
+        evidence: test-report cmd-01 AC-02 断言（topic/skip 分支/全量竞品+30d 窗口/reportDraft/reviewer: ai-reviewer）
+      - fr: FR-03
+        title: market-to-plan 必填参数与跨文档写入修复
+        tasks: [CR-2026-050-TASK-04]
+        evidence: test-report cmd-01 AC-03 断言（mode=brief/raw_insight_path/context+intent/无 market-insights _index.yml 跨写）
+      - fr: FR-04
+        title: competitive-radar 草稿/落盘顺序闭环
+        tasks: [CR-2026-050-TASK-05]
+        evidence: test-report cmd-01 AC-04 断言（competitor-slug 唯一解析/reportDraft+product-snapshot 传递/confirmed false→true→planning-entry 顺序）
+      - fr: FR-05
+        title: 审批节点收敛（传 cr_id；approver 由 Skill 角色 owner 显式传 --approver）
+        tasks: [CR-2026-050-TASK-02]
+        evidence: test-report cmd-01 FR-05 + AC-05 断言（4 Pipeline 节点只传 cr_id；4 Skill grant/TTY 双路径含角色 owner --approver）
+      - fr: FR-06
+        title: 评审与测试节点收敛（review-*/write-test-report/review-code）
+        tasks: [CR-2026-050-TASK-07, CR-2026-050-TASK-09, CR-2026-050-TASK-10]
+        evidence: test-report cmd-01 AC-06 禁项断言 + lint-prompts enforce 0 findings
+      - fr: FR-07
+        title: 输入、工作区与开发产物节点收敛（worktreePath authority）
+        tasks: [CR-2026-050-TASK-07, CR-2026-050-TASK-08, CR-2026-050-TASK-09, CR-2026-050-TASK-10]
+        evidence: test-report cmd-01 AC-07/AC-12 断言（prompt 无 crctl advance/task init/test 等禁项；resources[].worktreePath 保留）+ cmd-04 registry --check
+      - fr: FR-08
+        title: write-tech-design 三项能力收窄 + review-tech-design 四维度
+        tasks: [CR-2026-050-TASK-08]
+        evidence: test-report TASK-08 覆盖（SKILL diff：术语硬化/REST 条件基线/三判据决策；review-tech-design 数据模型/接口/架构/多仓维度）
+      - fr: FR-09
+        title: 文档章节与落盘路径下沉
+        tasks: [CR-2026-050-TASK-13]
+        evidence: test-report cmd-01 AC-06 禁项断言（规划类节点无章节/slug/索引/幂等文本）
+      - fr: FR-10
+        title: 展示节点收敛（resume-cr → cr-show；最近三次 checkpoint 入输出契约）
+        tasks: [CR-2026-050-TASK-11]
+        evidence: test-report cmd-01 AC-10 断言（cr-show 消费持久化 checkpoint metadata commit，不引用不存在账本）
+      - fr: FR-11
+        title: feature-writeback 一行级收敛（删除 code-approved 预检）
+        tasks: [CR-2026-050-TASK-12]
+        evidence: test-report cmd-01 AC-11 断言（node-1 无 status=code-approved 文本）
+      - fr: FR-12
+        title: 保留契约与机器事实源边界（节点数/UUID/reviewLoop 零改动；确定性断言）
+        tasks: [CR-2026-050-TASK-09, CR-2026-050-TASK-10, CR-2026-050-TASK-14]
+        evidence: test-report cmd-01 FR-12.2/FR-12.3/FR-12.3b/AC-12（16 节点序/replayNodes 5 项/保留字面量/8 pipeline 节点数+UUID 全局唯一）
+      - fr: FR-13
+        title: 范围边界与自检（DD-7 提交前缀扫描；发布前 checklist）
+        tasks: [CR-2026-050-TASK-14]
+        evidence: test-report cmd-01 DD-7 断言（全 SKILL Commit 前缀命中白名单 + feat(/[planning] 反例失败）+ cmd-02/03/04/05/06 全 exit 0
+    evidence:
+      test: { status: pass, path: change-requests/CR-2026-050/test-report.md, sha256: d2b591ac4fd04905312edf06f03fe9d1c99ede9a8c6b23f94b1be47f81470e86 }
+      reviews:
+        requirement: { verdict: pass, path: change-requests/CR-2026-050/review-annotations/requirement.yml, sha256: eac08c9913780a4d0c6a60d85cbca92b5b14cd41414aa9d3d0a1c7c00c674230 }
+        tech-design: { verdict: pass, path: change-requests/CR-2026-050/review-annotations/sdd.yml, sha256: 8852480ad6465badf43ef500a3fa4acafa8e92f97810ae399d885b6c672b37e0 }
+        dev-plan: { verdict: pass, path: change-requests/CR-2026-050/review-annotations/dev-plan.yml, sha256: d4f991e0586ba05eabf8dd41ef75c68d764348b9a60939478d227ca6d2edde51 }
+        code: { verdict: pass, path: change-requests/CR-2026-050/review-annotations/code.yml, sha256: ba2daa81c2510f93d5bd46f27faa6b846f8f2d9b9ba80224bc8c4460e1e73a14 }
+      approval: { status: approved, path: change-requests/CR-2026-050/approval.yml, sha256: a01c7390f1436ea23fdb5b4b98a5eb4bf463a0682a5720e013d03cb04e19b0aa }
+      merge: { status: merged, path: change-requests/CR-2026-050/merge-commits.yml, sha256: 474026e530636599b3ef6c1cccbf4a4d39482c38d62dea600f596c2d1189de90 }
