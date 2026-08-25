@@ -1,28 +1,24 @@
 cr-id: CR-2026-051
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-25T21:06:38+08:00"
-verdict: block
-blockers:
-  - "BL-1 数据查询无法完成发送：sdd.md §4.4 第二条 SQL 只返回 binding id/open_id/installation_id 与 installation id/workspace/channel_type/status，没有 config 中的 app_id/app_secret_encrypted/tenant_key/region；但 §4.2 随后要求用 InstallationService.DecryptAppSecret 构造 InstallationCredentials。设计没有提供完整 Installation 的解码或后续 workspace-scoped lookup，当前方案无法实际发送。必须明确选中的安装如何取得完整凭据，并定义查询/解密失败的结构化 failed 日志。"
-  - "BL-2 open_id 去重语义错误：sdd.md §4.2 只在发送成功后加入 sentOpenIDs；同一事件中第一个相同 open_id 的尝试失败时，后续用户仍会再次尝试该 open_id，违反 FR-5/AC-3 的‘同一 open_id 只发一次’和 FR-8.2 的单次尝试语义。应在调用发送前登记 attemptedOpenIDs，并增加首个尝试失败加重复 open_id 的回归测试。"
-  - "BL-3 已审批 FR-1 的事件载荷被未授权收窄：sdd.md §3.2.1/§6 的 Payload 只有 cr_id/status/event_id（workspace 放在 envelope），明确不带 CR/issue 关联标识，而 PRD FR-1 明确列出该标识。不能由 SDD 自行裁决为‘有意收窄’；应携带可空 shell_issue_id，或先由需求负责人修订 PRD/追溯口径并在设计中引用该裁决。"
-  - "BL-4 事件接口没有可编译的跨包契约：EventCRApprovalGateEntered 与 ApprovalGateEnteredPayload 被定义在 governance/crsync.go，但设计同时要求 lark 不依赖 governance；events.Event.Payload 是 any，Register/parsePayload 没有说明共享常量、共享类型或 canonical JSON 形状。按当前文字 lark 既不能类型断言该 payload，也没有稳定的事件名来源。应把事件名和载荷类型移到共享 protocol/events 包，或明确 map/JSON envelope 的生产与解析契约及回归测试。"
+reviewed-at: "2026-08-25T22:57:59+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  prd-sdd-alignment: "block: FR-1 association identifier is omitted without an approved requirement revision; the remaining FR-to-section mapping is substantially complete."
-  architecture-reasonableness: "block: the governance-to-lark event boundary has no shared, compilable contract; DD-2 raw pgx is acceptable in principle within FR-10 if its credential lookup and workspace fencing are made explicit."
-  data-model-completeness: "block: the binding candidate query does not return or otherwise obtain the installation config fields required to decrypt credentials and send."
-  interface-contract: "block: APIClient addition is typed, but the event constant/payload crossing governance and lark is not; the delivery path also lacks a precise Installation lookup contract."
-  multi-repo-constraints: "pass: the review used the CR operational knowledge-base worktree and the declared multica ARCHITECTURE.md; tools is read-only and the design keeps tools at zero diff."
-  performance-security: "block: failed first sends can cause a second attempt to the same open_id; workspace fail-closed intent and asynchronous boundary are otherwise well specified."
-  testability: "block: the matrix must add credential hydration, shared event decoding, and failed-attempt open_id dedup regressions before the design is implementable."
-  prompt-impact: "skip: this CR does not touch crctl.mjs dispatch or rules.json protectedPaths.deny, so the conditional §8 section is correctly omitted."
+  prd-sdd-alignment: "pass: FR-1 through FR-11 are mapped to concrete sections and implementation seams; the former payload omission is corrected with nullable shell_issue_id, and the FR-10 protocol-file delta is explicitly disclosed rather than silently changing the approved PRD."
+  architecture-reasonableness: "pass: the trusted crsync branch publishes a dedicated event into the synchronous bus, while the subscriber performs zero-I/O parsing and bounded asynchronous delivery; the design preserves the architecture event-authority split and dependency direction. DD-2 raw pgx and DD-4 shared protocol choices include real alternatives and tradeoffs."
+  data-model-completeness: "pass: the design covers the workspace-closed CR-to-project read chain, owner/admin membership, binding/install classification, workspace-scoped full installation hydration, credential decryption, and post-hydration workspace/status checks without adding DDL."
+  interface-contract: "pass: governance and lark share a typed protocol event constant and payload, the APIClient addition and approval-card parameters are specified, the private transport helper boundary is clear, and no HTTP API is added."
+  multi-repo-constraints: "pass: the operational knowledge-base worktree and declared multica worktree are the sources of review evidence; tools remains read-only/zero-diff, resource worktree authority is stated, and the required CUSTOM.md registration is planned for implementation."
+  performance-security: "pass: the bus callback has zero database/HTTP I/O; delivery uses a background context, 60s event and 10s recipient bounds, bounded in-flight concurrency, panic recovery, and single-attempt semantics. All read paths are workspace-anchored and fail closed, and sensitive credentials/evidence are excluded from logs and cards."
+  testability: "pass: the matrix covers each former blocker, typed event/JSON compatibility, credential hydration states, attempted-open_id dedup after failure, cross-workspace negatives, structured failed logs, disabled/stub behavior, helper regressions, non-blocking delivery, panic, and overload; database tests are required to run against PostgreSQL without skip-based false green."
+  prompt-impact: "skip: this CR does not modify crctl dispatch or controlled-shell protectedPaths.deny, and the tools package remains unchanged."
 suggestions:
-  - "DD-2 decision: accept the raw pgx seam rather than expanding FR-10 into channel.sql/sqlc, because the existing LIMIT 1 INNER JOIN cannot preserve missing/revoked/orphan reasons. Keep the LEFT JOIN classifier, add an explicit workspace-scoped full-installation read (or return/decode all required config in the query), and record the lark raw-SQL column dependency in CUSTOM.md; the current CUSTOM #5 precedent is governance-specific."
-  - "DD-3 / §4.5 decision: accept the private sendCardToOpenID extraction. Keep all existing SendBindingPromptCard tests unchanged and add approval-card validation, happy path, token-error invalidation, JSON escaping, and stub tests so helper reuse is proven rather than inferred."
-  - "Make event_id globally correlation-safe by including workspace_id or document that the lookup key is the pair (workspace_id,event_id); the current three-part projection can collide for same-named CRs across workspaces."
-  - "Make NewApprovalReminder(nil Pool) safe at the router call site (or return a no-op object); the stated constructor contract returns nil but the unconditional .Register(bus) example would panic. Also map DB read errors to structured failed logs, not skip reasons."
+  - "Human architecture approval should explicitly accept the disclosed FR-10 delta adding server/pkg/protocol/events.go (shared event constant and payload). If it is rejected, use the documented DD-4 map/JSON-envelope fallback and its two-sided contract tests before implementation."
+  - "During implementation, preserve the exact nullable pgtype.UUID-to-shell_issue_id conversion and pass the DaemonAuth workspace UUID unchanged into GetInWorkspace; keep shell_issue_id correlation-only and never use it as a query input."
+  - "Record the event-level failed-log recipient-field exception explicitly at approval or implementation review; it is a scoped observability refinement because those failures occur before a recipient exists, while recipient-level failures retain the required recipient fields."
+  - "Keep the new lark raw-SQL column list, shared protocol contract, APIClient method, and four test doubles together in the new CUSTOM.md entry, then validate the implementation against the declared FR-10 file set."
 review-loop:
-  current-attempt: 1
+  current-attempt: 2
 subject-file: change-requests/CR-2026-051/sdd.md
-subject-sha256: f56d38e90ee712086b87d5892cbcdabc76865df0b50bccdb49ff036b1827eace
+subject-sha256: 7bbcf822c9d572482bc25520cf5d34bfd553c18a6b5d5fa517b7e7962af085f2
