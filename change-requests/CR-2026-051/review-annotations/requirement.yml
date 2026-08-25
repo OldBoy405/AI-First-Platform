@@ -1,0 +1,23 @@
+cr-id: CR-2026-051
+review-type: requirement
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-25T18:49:51+08:00"
+verdict: block
+blockers:
+  - "`prd.md:37,85,204` 将“有效飞书绑定”定义为 channel_user_binding 行存在且用户仍是 workspace member，但实际 channel_installation 仍有 active/revoked 状态，且撤销安装会保留安装行（multica server/internal/handler/lark.go:109-112）。FR-5 必须把 binding 关联的 installation_id 限定为同 workspace、channel_type=feishu 且 status=active，并明确 revoked/orphan 安装的跳过原因；补充对应 AC 与测试，否则撤销后的绑定仍可能被当作收件人。"
+  - "FR-3/FR-5 与 AC-3/AC-7 没有把事件中的可信 workspace、cr.workspace_id、issue.workspace_id、project.workspace_id、binding/installation.workspace_id 的一致性写成硬约束。现有 cr.shell_issue_id 只提供 issue 外键，不能替代跨 workspace 校验；异常关联可能把 CR 标题发送到另一 workspace。必须要求解析查询在所有关联层校验同一 workspace，解析失败按跳过记录，并增加跨 workspace 负向验收测试。"
+  - "PRD 只在 FR-8/4.1 声明通知不能阻塞 CR 消费，却没有规定实现边界或可验证的时限；现有 multica server/internal/events/bus.go:66-91 的 Bus.Publish 会同步调用订阅者，crsync.go:469-488 在状态消费路径发布事件。必须明确订阅者不得同步执行数据库/飞书 I/O，而要在状态投影和事件发布后交给脱离请求上下文的有界超时异步处理，并定义投递处理 panic/队列过载的日志行为；AC-7/AC-9 需增加 Lark 超时下状态消费不被延迟的测试。"
+  - "FR-8/4.3/4.4 要求飞书 integration 未启用时也产生结构化跳过日志，但现有 router.go:468-639 仅在 MULTICA_LARK_SECRET_KEY 存在时构造并注册 Lark 组件，PRD 未定义未启用时仍由谁订阅专用事件并记录该结果。必须要求 notifier 在 disabled/stub 形态下仍可观测地消费事件（或明确等价的统一日志入口），并在 AC-7/AC-9 增加无配置场景验证，且不得发起真实请求。"
+dimensions:
+  structure: "通过：frontmatter、概述、5 个用户故事、11 条 FR、NFR、9 条 AC、指标和范围排除均存在。"
+  testability: "阻塞：非阻塞投递、安装有效性、跨 workspace 隔离和 disabled 日志缺少可执行契约/负向验收。"
+  scope: "通过：与设计稿 §2.1/§2.2 对齐，未发现把卡片内审批、多渠道、outbox 或 tools 改造带入本期。"
+  source_alignment: "阻塞：绑定有效性遗漏 channel_installation.status；现有同步 Bus 与条件式 Lark wiring 也未在需求中闭合。"
+  dependencies: "阻塞：需要明确 crsync 专用事件、同步 Bus、router 条件装配、channel_installation 凭据/状态和跨表 workspace 一致性依赖。"
+suggestions:
+  - "为 AC-7 增加成功、失败、跳过三类日志的必需字段枚举，并明确 recipient 使用 Multica user id 还是 open_id。"
+  - "为 appURLFromEnv 返回非空但非法 URL、CR 在异步处理前已离开审批态、以及多个绑定 open_id 去重的行为补充边界说明。"
+review-loop:
+  current-attempt: 1
+subject-file: change-requests/CR-2026-051/prd.md
+subject-sha256: 7bd3dc83b8f410d82d327e81eff2fdbc517430a470362a2359cd05d51179d194
