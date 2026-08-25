@@ -16,6 +16,8 @@ created: 2026-08-25T23:20:00+08:00
 
 在 composition root 把提醒器接上事件总线：构造 + `Register(bus)` 必须落在 `MULTICA_LARK_SECRET_KEY` 条件装配块**之外**（FR-8.3 —— 未启用时也要消费事件并记 `feishu-disabled`，否则该可观测性无从实现），并显式判空以避开 typed-nil 接口陷阱（飞书未启用时 `h.LarkAPIClient` / `h.LarkInstallations` 是 **nil 指针而非 stub**，`router.go:502` 是前者唯一赋值点且在密钥成功分支内）。同时补该形态的端到端断言（AC-11 端到端、AC-12）。
 
+**本 TASK 是 typed-nil 防护的唯一验证点**（dev-plan 评审 BL-3 回修：原本放在 TASK-05，但提醒器内不反射、`r.credentials == nil` 对 typed-nil 为假，那里根本验不了；见 SDD §3.2.3 与 §7.4 `cmd/server` 行）。
+
 ## 涉及文件 / 模块
 
 仓根取 `execution_context.resources[]` 中 `repo=multica` 的 `worktreePath`；以下为该仓根相对路径：
@@ -56,7 +58,12 @@ created: 2026-08-25T23:20:00+08:00
 
 1. **位置断言（静态）**：`grep -n "NewApprovalReminder" server/cmd/server/router.go` 命中 1 处，且其行号 **大于** `grep -n 'lark integration disabled (MULTICA_LARK_SECRET_KEY not set)' router.go` 的行号（证明在条件块之外、之后）。测试内以读源码文件方式做该断言，或用等价的行号比较断言，防止后续重构把它挪回条件块内。
 2. **未启用形态（AC-12）**：不设 `MULTICA_LARK_SECRET_KEY` 构造 router（或直接按 wiring 形态构造 `ApprovalReminderConfig{Pool: <零调用 pool 替身或 nil>, AppURL: "https://multica.test"}` 后 `Register(bus)`）→ 发布一条真事件后：进程存活、恰一条 `result=skipped reason=feishu-disabled` 事件级日志、零真实飞书请求、**零收件人查询**（pool 替身调用计数为 0）。
-3. **typed-nil 防护**：断言 `reminderCfg.Client` / `reminderCfg.Credentials` 在依赖为 nil 时**保持 nil 接口**（`== nil` 为真），而非持有 typed-nil；把 wiring 片段改成无条件赋值可复现 panic —— 该负向路径以注释形式在测试中说明，不作为断言执行。
+3. **typed-nil 防护（本 CR typed-nil 的**唯一**验证点；dev-plan 评审 BL-3 回修——原在 TASK-05，已上提到本 TASK）**，三条均为**执行断言**，不得降为注释：
+   - ① **承重性**：`var s *lark.InstallationService; cfg := lark.ApprovalReminderConfig{}; cfg.Credentials = s` 后断言 `cfg.Credentials == nil` 为 **false** —— 这条证明 typed-nil 陷阱真存在、实现要点 1 里 `if h.LarkInstallations != nil` 是**承重而非冗余**；它也是日后重构时防人把该判空当多余代码删掉的唯一机制。
+     **只对 `Credentials` 验这一条（已核实的类型事实）**：`h.LarkInstallations` 是具体指针 `*lark.InstallationService`（`internal/handler/handler.go:223`），故有 typed-nil 陷阱；而 `h.LarkAPIClient` 本身就是**接口**类型 `lark.APIClient`（`handler.go:239`），它为 nil 时赋值得到的仍是 nil 接口——`if h.LarkAPIClient != nil` 对 typed-nil **不承重**，保留它只为与 `Credentials` 形态统一、以及上游日后把该字段改成具体类型时不会静默退化。本条不得写成对 `Client` 的同型断言（会失败）。
+   - ② **正向**：按实现要点 1 的 wiring 形态处理同一个 nil 依赖（`if h.LarkAPIClient != nil` / `if h.LarkInstallations != nil` 才赋值）后，断言 `cfg.Client == nil && cfg.Credentials == nil` 为 **true**（保持真 nil 接口，而非持有 typed-nil）。
+   - ③ **端到端**：② 那份 config 造出的提醒器 `Register(bus)` + 发一条真事件 → 恰一条事件级 `result=skipped reason=feishu-disabled`、零真实飞书请求、pool 替身零调用、进程存活（与验收条件 2 可合并为同一个子测试）。
+   - 不得以"把 wiring 改成无条件赋值可复现 panic"的**注释**代替上述 ①：这个判空的必要性必须有一条跑得起来的断言守着。
 4. **AC-11 端到端**：客户端替身在 `SendApprovalReminderCard` 上阻塞至超时的前提下，`SyncService.HandleCREvents` 的响应时延与"未注册提醒器"基线同量级（同一测试内两次测量，差值 < 50ms），CR 投影结果不变、`needs_reconcile` 未被置位、无回滚。该用例可放在 `cmd/server` 包（用 `events.Bus` 直连 governance 与提醒器两侧），无需起完整 HTTP server。
 5. `cd server && go build ./... && go vet ./cmd/server/` 零报告；`go test ./cmd/server/ -run 'ApprovalReminder' -v -count=1` 全部 `--- PASS`；`go test ./cmd/server/ -count=1` 整包通过（对照 CUSTOM.md 基线排除既有失败）。
 6. `git diff --name-only` 在本 TASK 范围内只有 `cmd/server/router.go` + 新增测试文件；`git diff cmd/server/listeners.go` 为空。

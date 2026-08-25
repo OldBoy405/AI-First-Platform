@@ -39,7 +39,7 @@ created: 2026-08-25T23:20:00+08:00
    }
    ```
 
-3. **不加 `omitempty`**：canonical 形状要求 `shell_issue_id` 键恒在、无值时为 `null`（SDD §3.2.1 不变量 6 + §7.4 golden 用例；plan.md §5.3 已记 SDD §2 括注为笔误）。
+3. **不加 `omitempty`**：canonical 形状要求 `shell_issue_id` 键恒在、无值时为 `null`（SDD §3.2.1 不变量 6 + §7.4 golden 用例）。该口径已经 dev-plan 评审**定案采纳**，SDD §2 术语表原来的 `omitempty` 括注已在上游回修中纠正为「键恒在、无值为 `null`」（sdd.md §2 / §9；plan.md §5.3）——四处现已一致，本 TASK 无需再做取舍判断。
 4. 结构体注释（英文）须写明三件事：载荷只带定位标识（证据/标题/收件人由消费侧回读 PG，ARCHITECTURE.md §7 handler 可重放）；本结构同时是 WS 帧形状，**只允许加字段**；`ShellIssueID` 为指针因 `cr.shell_issue_id` 可空（迁移 362），且**仅作相关/诊断，不得作为查询输入**（FR-3）。
 5. multica 仓内注释一律英文（其 CLAUDE.md 硬规则）；不新增 import、不引入任何 `internal/` 依赖（`pkg/protocol` 必须保持叶子包）。
 

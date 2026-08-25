@@ -44,6 +44,7 @@ created: 2026-08-25T23:20:00+08:00
 2. **零行的原因判定**（只为选日志原因，仍带 workspace 谓词，不产出任何收件人）：`SELECT shell_issue_id IS NULL FROM cr WHERE workspace_id = $1 AND cr_id = $2` —— 为真或无行 ⇒ `project-unresolved`；否则 ⇒ `workspace-mismatch`。`slug == ""` 同样归 `workspace-mismatch`。
 3. **DB 报错不当零行**：项目链查询、原因判定、成员查询、绑定候选查询的 `err != nil`（且非 `pgx.ErrNoRows`）一律走 `logFailEvent`/`logFail` + 对应 `step` + `errorClassOf(err)`，**不复用任何 `reason`**（否则"库挂了"会伪装成"用户未绑定"）。
 4. **成员查询**：`SELECT user_id::text FROM member WHERE workspace_id = $1 AND role IN ('owner','admin')`；报错 → `logFailEvent(stepApproverQuery, …)`；空集 → `logSkipEvent(reasonNoApprover)`。
+   **这条空集分支就是 AC-4 情形①（非 owner/admin）的原因载体**（SDD §4.6 第 7 条）：收件人集合的**唯一**来源是本查询的结果集，非 owner/admin 的用户从不进入循环，因此不存在挂在其身上的收件人级记录。**两条硬约束**：① 不得为每个非 owner/admin 成员记一条收件人级 `no-approver`（会把它从 PRD §4.4 的事件级 partition 搬到收件人级，且需额外查全量 `member`、日志量随 workspace 规模膨胀）；② 不得新增 `role-ineligible` 一类第 10 个 reason（TASK-05 已把 9 项枚举声明为闭集常量）。**不得**把 `role` 过滤放宽成全量 `member` 查询再在 Go 侧筛——FR-4 声明的读面就是 `role IN ('owner','admin')`。
 5. **CTA**：`approveURL := r.appURL + "/" + slug + "/projects/" + projectID + "?tab=chat"`（FR-7；`appURL` 已由 TASK-05 前置判定非空，且 `appURLFromEnv` 已 `TrimRight(…,"/")`；slug 与 projectID 均取自实现要点 1 那条锚定查询的返回值）。**不新增 URL 合法性校验器**。
 6. **绑定候选查询**（每收件人一次，`LEFT JOIN` 让悬空 `installation_id` 可观测为 `installation-missing` 而不是塌成 `binding-missing`）：
 
@@ -71,7 +72,13 @@ created: 2026-08-25T23:20:00+08:00
 1. **AC-3 happy path 多收件人**：3 个 owner/admin，其中 2 人有有效飞书绑定 → 恰 2 张卡；某用户有 2 条绑定（`bound_at` 不同）→ 只发 1 张且用最新那条的 `open_id`；两个不同 user 指向同一 `open_id` → 只发 1 张。
 2. **BL-2 回归（首个尝试失败 + 重复 open_id）**：两个不同 user 同一 `open_id`，第一次发送返错 → 断言客户端**只被调用一次**、第二个用户既无发送也无重复"尝试"日志；同型用例覆盖"首次解密失败"与"首次发送超时"（`context.DeadlineExceeded`）。
 3. **BL-1 凭据水化四态**：① happy —— 发送时 `InstallationCredentials` 的 `AppID`/`AppSecret`/`TenantKey`/`Region` 与库中一致（真库 + 真 `secretbox` 加解密）；② `ErrInstallationNotFound` → `installation-missing`；③ 分类时 `active`、水化前改成 `revoked` → `installation-revoked`；④ 水化返回的 `inst.WorkspaceID` 与锚点不符 → `workspace-mismatch`。另断言安装属另一 workspace 时 `GetInWorkspace` 本身即查不到（上游谓词生效）。
-4. **AC-4 四类不发送各留可区分原因**：`member` 角色（不在收件人集合内）、无 feishu 绑定行 → `binding-missing`、安装 `revoked` → `installation-revoked`、`installation_id` 悬空 orphan → `installation-missing`；四条日志的 `reason` 互不相同且均带 `recipient_user_id`。
+4. **AC-4 四情形不发送各留可区分原因（按 SDD §4.6 第 7 条的一一对应表；情形① 与 ②③④ 作用域不同）**：
+   - **情形①非 owner/admin = 两条互补断言**（不是一条）：
+     - (a) *可区分原因*：造一个 workspace，其全部成员 `role='member'`（`member` 表无「必须存在 owner」约束，`migrations/001_init.up.sql:26-33` 只有 `CHECK (role IN ('owner','admin','member'))` + `UNIQUE(workspace_id,user_id)`，真库可直接 INSERT），该成员**有效飞书绑定齐备** → 断言恰一条**事件级** `result=skipped reason=no-approver`、**无任何 `recipient_*` 字段**、客户端零调用；
+     - (b) *零发送*：混合 workspace（1 名 `admin` + 1 名 `member`，**两人都有有效飞书绑定、open_id 不同**） → 断言客户端恰被调用 **1 次**、`receive_id` = admin 的 `open_id`，且全部日志行中 **不出现** `member` 的 `recipient_user_id`（证明它从未进入收件人集合，而不是“进了又被跳过”）。
+   - **情形②③④ = 收件人级**：无 feishu 绑定行 → `binding-missing`；安装 `revoked` → `installation-revoked`；`installation_id` 悬空 orphan → `installation-missing`；三条均带 `recipient_user_id`。
+   - **反向断言（防漂移）**：上述全部用例的日志中不得出现**收件人级** `reason=no-approver`，也不得出现 9 项枚举之外的任何 `reason`（逐行 `json.Unmarshal` 后比对常量集，不用 `strings.Contains`）。
+   - 四条可区分原因互不相同：`no-approver`（事件级）/ `binding-missing` / `installation-revoked` / `installation-missing`（收件人级）。
 5. **AC-10 跨 workspace 负向 + 载荷伪造**：`issue`/`project`/绑定/安装任一层 `workspace_id` 与锚点不一致 → 零发送 + `workspace-mismatch`；载荷 `shell_issue_id` 被伪造成另一 workspace 的 issue → 仍以 `cr` 行为准解析（零发送）；CR 自身 `shell_issue_id IS NULL` → `project-unresolved`。附静态核对：`grep` 断言提醒器内无"仅按主键/仅按外键"的查询（每条 SQL 都含 `workspace_id`）。
 6. **AC-5 CTA 与基地址**：断言发送参数的 `ApproveURL == appURL + "/" + slug + "/projects/" + projectID + "?tab=chat"`，且 slug 取自锚定 workspace（跨 workspace slug 回归：另一 workspace 的同名 project 不影响生成结果）。
 7. **AC-7 事件级/收件人级 failed**：注入报错的 pool 替身（或临时改名的表/权限）使项目链查询失败 → 恰一条 `result=failed`、`step=project-chain`、**无 recipient 字段、无 `reason` 字段**；使绑定候选查询失败 → 收件人级 `result=failed`、`step=binding-query`（而非 `binding-missing`）。

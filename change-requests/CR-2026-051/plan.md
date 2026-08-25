@@ -6,7 +6,7 @@ sdd-ref: "change-requests/CR-2026-051/sdd.md"
 target-version: tbd
 status: draft
 created: 2026-08-25T23:20:00+08:00
-updated: 2026-08-25T23:20:00+08:00
+updated: 2026-08-26T00:30:00+08:00
 ---
 
 # 0. 输入与前置事实（落笔前当场核实）
@@ -83,7 +83,7 @@ TASK-04 (APIClient 新方法 + sendCardToOpenID 提取 + 卡片 + 4 替身)     
 | **私有 helper 提取改动上游函数正文**（`SendBindingPromptCard`，SDD §4.5 唯一一处） | 回归锁是既有断言**原样不改即通过**：`http_client_test.go:1077`（happy path）、`:1270`、`:1276`（错误路径）。任一处需要改测试才能过 ⇒ 判定行为不等价，**回滚 helper 提取**，退化为在 `approval_reminder_card.go` 内自持传输段（代价：~30 行重复 + 两处 token 失效处理会漂移，须在 CUSTOM.md 记明） |
 | **真库测试假绿**（CUSTOM.md C6；`lark` 包 DB helper 走 `t.Skipf`、`governance` 包 `TestMain` 在 DB 不可达时整包 skip，`go test` 仍 exit 0） | 每条 DB 测试必须 `-v` 看到 `--- PASS`；出现 `--- SKIP` 一律视为**未测**，不得据此标记 TASK done。`DATABASE_URL` 按 C6 取真密码 + 5433 转发。**禁止为跑通而改 `TestMain` 或 skip 逻辑** |
 | **裸 SQL 列名只在运行时暴露**（DD-2 的既定代价） | 两条裸 SQL 全部被 TASK-06 的真库测试覆盖；TASK-08 在 CUSTOM.md「合并注意」列登记列清单（含"`config` JSONB 不在裸 SQL 依赖面"）。上游改列名时该行是唯一核对清单 |
-| **typed-nil 接口 panic**（`h.LarkInstallations` 为 nil 指针时赋给接口字段） | 双保险：TASK-07 wiring 显式判空后才赋值；TASK-05 的"依赖缺失不 panic"测试直接把 typed-nil `*InstallationService` 灌进 config 断言不 panic。任一侧失败即阻塞该 TASK，不允许"先上线再观察" |
+| **typed-nil 接口 panic**（`h.LarkInstallations` 为 nil 指针时赋给接口字段） | 防护在 TASK-07 wiring 显式判空（`if h.LarkInstallations != nil` 才赋值）；**验证也只能在 TASK-07**：提醒器内不反射、`r.credentials == nil` 对 typed-nil 为假（SDD §3.2.3），所以 TASK-05 不再承担该断言（原计划的“双保险”是错的，dev-plan 评审 BL-3 已纠）。TASK-07 验收 3 把「无条件赋值 → `iface == nil` 为假」升为**执行断言**，以防日后重构把判空当冗余删掉。已核实的不对称：`h.LarkAPIClient` 本身是接口类型，其判空对 typed-nil 不承重（仅形态统一） |
 | **事件误触发**（发布点放错分支，把 reconcile/重放/自环也当审批入口） | TASK-03 的隔离矩阵逐分支断言零发布（首见分支、`else` needs_reconcile、checkpoint/review/trace、`reconcile.go`、`gate_projection.go`、自环）。发布点是 append-only 挂钩，回滚 = revert `crsync.go` 单文件改动，既有投影语义不受影响 |
 | **`APIClient` 接口新方法漏补测试替身** → `lark` 包整包 build 失败（连带上游既有测试全红） | TASK-04 一次补齐 4 个替身（`outbound_test.go`、`outcome_replier_test.go`、`typing_indicator_test.go`、`inbound_enricher_test.go`），`go build ./... && go vet ./internal/integrations/lark/` 是其完成标志的硬条件 |
 | **WS 扇出成为客户端可见契约**（`listeners.go#SubscribeAll` 会广播本事件） | 载荷只有四个标识、无标题/证据/收件人；本 CR 不改 `listeners.go`、不改 `packages/`（前端对未知 type 为 no-op，SDD §1.3 已核）。今后只允许**加字段**，改/删键名视为破坏性变更 |
@@ -148,7 +148,9 @@ TASK-04 (APIClient 新方法 + sendCardToOpenID 提取 + 卡片 + 4 替身)     
 | `util.UUIDToString` / `util.ParseUUID`（lark 包已 import `internal/util`） | `internal/util/pgx.go:41`、`:19`；`lark/ids.go` |
 | lark 包 DB 测试 helper 走 `t.Skipf`（假绿风险来源） | `internal/integrations/lark/channel_store_scope_test.go:21-31` |
 
-**一处 SDD 内部不一致，本计划已定口径（请评审确认）**：SDD §2 术语表把载荷字段写作"`shell_issue_id *string`（JSON `omitempty`）"，而 §3.2.1 结构体、§3.2.1 不变量 6 的 canonical 形状、§7.4 golden JSON 用例三处一致要求 `shell_issue_id` **键恒在、可为 `null`**（即无 `omitempty`）。TASK-01 按"三处一致"的口径实现（无 `omitempty`），§2 那句括注按笔误处理；理由：canonical JSON 同时是 WS 帧契约，键恒在才对客户端稳定。若评审判定应反向（加 `omitempty`），则 TASK-01 与 TASK-03 的 golden 断言同步改，改动面不变。
+**一处 SDD 内部不一致，已由 dev-plan 评审定案（采纳本计划口径）**：SDD §2 术语表曾把载荷字段写作“`shell_issue_id *string`（JSON `omitempty`）”，与 §3.2.1 结构体、§3.2.1 不变量 6 的 canonical 形状、§7.4 golden JSON 用例三处一致要求的「键恒在、可为 `null`」相矛。评审结论：**采纳不加 `omitempty`**（canonical JSON 同时是 WS 帧契约，键恒在才对客户端稳定），§2 那句括注按笔误处理——上游回修已将 SDD §2 同步纠正（见 sdd.md §9 上游设计回修行）。TASK-01 / TASK-03 的 golden 断言不需变动（本就按三处一致写的）。
+
+同时采纳的口径②：`lark` 包内 `approvalGateStageLabels + stageLabel()` 收敛（过滤与展示语义等价，未命中仍回退 status），已写进 SDD §4.3 并同步 §4.1 伪代码与 §7.1；**边界**：只在 lark 包内，`governance` 侧的 `approvalGateStatuses` 保持独立声明。
 
 ## 5.4 发布形态
 
@@ -159,3 +161,4 @@ TASK-04 (APIClient 新方法 + sendCardToOpenID 提取 + 卡片 + 4 替身)     
 | 日期 | 版本 | 作者 | 说明 |
 |---|---|---|---|
 | 2026-08-25 | v0.1.0 | Ray | 初始计划：M1 契约与发布侧 / M2 传输与提醒器 / M3 装配与收口，8 TASK，55h；固化审批期两项确认与回写期 PRD revision 登记；记录一处 SDD 内部不一致的处置口径（`shell_issue_id` 无 `omitempty`） |
+| 2026-08-26 | v0.1.1 | Ray | 随 **上游设计回修**（dev-plan 评审 verdict=block、route=upstream、repair-target=`write-tech-design`）同步：① 风险表 typed-nil 行改正——原“双保险（TASK-05 + TASK-07）”不成立，验证点唯一归 TASK-07 wiring 层（并记录已核实的不对称：`LarkInstallations` 是具体指针、`LarkAPIClient` 是接口）；② §5.3 那处“请证审确认”改为已定案（两项口径均采纳，`omitempty` 括注已在 SDD §2 纠正；阶段名映射收敛已写进 SDD §4.3 并附边界）；③ TASK-03 AC-2 零发布矩阵改为**按路径选 liveness probe**（`trace` 走 `ingestTrace`、不进 `publish`，不得断言 `cr:updated > 0`）；④ TASK-05 依赖缺失用例改为**逐依赖隔离四子例**、删除 typed-nil 断言；⑤ TASK-06 AC-4 情形①改为**事件级 `no-approver` + 混合 workspace 零发送**两条互补断言（不改 PRD、不加第 10 个 reason）；⑥ TASK-07 验收 3 升为执行断言。**估算 delta = 0（55h 不变）**：均为验收条件与取证形态改写，无新增文件、无新增实现面；TASK-06 新增的两个 workspace 造数场景复用同一 fixture helper（该 TASK 已为 AC-4 其余三情形预算真库造数），故 `tasks/_index.yml` 与 `totalEstimateHours: 55` 未动 |

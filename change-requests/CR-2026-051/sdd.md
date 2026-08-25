@@ -155,7 +155,7 @@ daemon POST /api/daemon/cr-events
 | **stage（审批阶段）** | ① `approval_record.stage` = `gates.json#approvalStages` 四键（`requirement`/`tech-design`/`dev-start`/`code`）；② PRD §4.4 的日志 `stage` = **事件的新状态**（`requirement-reviewing` 等） | 两者一一对应但**字面不同**，混用会让日志检索与审批账本对不上 | 日志字段 `stage` **一律取 CR status 字面值**（`requirement-reviewing`/`tech-design-review-pending`/`task-breakdown`/`code-reviewing`）；卡片上的中文阶段名是**展示层映射**（§4.3 表），不落日志、不与 `approval_record.stage` 混用；本 CR 不读写 `approval_record` |
 | 有效（飞书）绑定 | 代码无此概念；最近似的 `FindChannelBindingForMember` 只校验 `b.workspace_id` + `b.channel_type` + `ci.status='active'` | 安装被撤销后绑定行保留（`status='revoked'`）；`installation_id` 可悬空（无外键）；`ci.workspace_id` 未被校验 | SDD 定义 `effectiveFeishuBinding` = PRD FR-5 三条件，**不**把 `FindChannelBindingForMember` 当唯一判据（§5 DD-2） |
 | event_id | `events.Event` 无此字段；`cr_sync_event` 有 PK `id BIGSERIAL` 与幂等键 `(workspace_id, cr_id, commit_sha, event_kind)` | `--embedded` 模式 `commit_sha` 为 `pending:{ms}:{pid}:{seq}` 占位符——仍逐事件唯一，幂等键不退化；不同 workspace 可存在同名 CR（`cr` 的唯一键是 `(workspace_id, cr_id)`），故三段投影**全局不唯一** | `event_id = "{cr_id}:{event_kind}:{commit_sha}"`；**检索与对账的完整相关键是二元组 `(workspace_id, event_id)`**（`workspace_id` 既在事件 envelope 也是必填日志字段）——日志检索/文档/测试一律写二元组口径，不得单拿 `event_id` 当全局唯一键（§5 DD-1） |
-| shell_issue_id（新增，BL-3） | `cr.shell_issue_id`（迁移 362，可 NULL）；载荷字段 `shell_issue_id *string`（JSON `omitempty`） | 历史 CR 为 NULL；跨 workspace 异常关联时该 issue 可能不属于锚点 workspace（PRD 澄清 4） | 载荷携带它以满足 FR-1 的「CR/issue 关联标识」，但它**只作相关/诊断字段，不得作为查询输入**；目标项目仍按 FR-3 从 PG 事实（`cr` 行）重新解析（ARCHITECTURE §7：bus 是通知不是持久权威，handler 必须可重放） |
+| shell_issue_id（新增，BL-3） | `cr.shell_issue_id`（迁移 362，可 NULL）；载荷字段 `shell_issue_id *string`（JSON **键恒在、无值为 `null`**，即**不加** `omitempty`——dev-plan 评审已定案，初稿此处的 `omitempty` 括注是笔误，见 §9） | 历史 CR 为 NULL；跨 workspace 异常关联时该 issue 可能不属于锚点 workspace（PRD 澄清 4） | 载荷携带它以满足 FR-1 的「CR/issue 关联标识」，但它**只作相关/诊断字段，不得作为查询输入**；目标项目仍按 FR-3 从 PG 事实（`cr` 行）重新解析（ARCHITECTURE §7：bus 是通知不是持久权威，handler 必须可重放） |
 | recipient | Multica `user.id`（权威）vs 飞书 `open_id`（= `channel_user_binding.channel_user_id`） | PRD §4.4 已定口径 | 日志 `recipient_user_id` 必填、`recipient_open_id` 仅发送成功/失败时出现；去重第一键是 user id |
 | workspace 锚点 | `HandleCREvents` 中 `resolveDaemonWorkspace(r, s.pool)` 的返回值 | 请求体 `workspace_root_hash` 仅日志用，不可作信任输入（既有 SDD-SUG-002） | 锚点只能来自 DaemonAuth；`events.Event.WorkspaceID` 承载它，消费侧不得用读到的任何 `workspace_id` 覆盖锚点 |
 
@@ -365,7 +365,10 @@ func (r *ApprovalReminder) Register(bus *events.Bus)  // Subscribe(EventCRApprov
 **依赖缺失的处理（评审非阻塞建议②：不得 panic）**：
 
 - `Pool == nil` / `Credentials == nil` / `Client == nil`：构造函数记一条 `Error` 并返回一个 **标记为 unusable 的真实对象**（不返回 nil）；`Register` 照常订阅（FR-8.3 要求无条件注册），`deliver` 在步骤 1 即以事件级 `feishu-disabled` 返回（处于任何 DB 查询之前）。**不新增第 10 个跳过原因**：FR-8.2 的 9 项枚举是已审批口径，而“依赖未装配”语义与 `feishu-disabled`（飞书 integration 不可用）一致。
-- **typed-nil 接口陷阱（必须在 wiring 层防）**：`h.LarkInstallations` 是 `*lark.InstallationService`，飞书未启用时为 nil 指针。直接赋给接口字段会得到一个 `!= nil` 但调用即 panic 的接口值，所以 `router.go` 必须显式判空后才赋值（下方 wiring 片段），提醒器内部不依赖反射。
+- **typed-nil 接口陷阱（只能在 wiring 层防，提醒器内检不出）**：`h.LarkInstallations` 是 `*lark.InstallationService`，飞书未启用时为 nil 指针。直接赋给接口字段会得到一个 `!= nil` 但调用即 panic 的接口值，所以 `router.go` 必须显式判空后才赋值（下方 wiring 片段），提醒器内部不依赖反射。
+  - **口径硬化（dev-plan 评审 BL-3）**：§4.2 步骤 1 的 `r.credentials == nil` 对 typed-nil **为假**，这是**已知且有意**的设计选择（不反射 = 规则五「不为边缘情形引入运行时类型窥探」）。因此**提醒器侧不承诺、也不得被要求**「灌 typed-nil 仍得到 `feishu-disabled`」——那个断言在本设计下不可满足（依赖健康时会穿到方法调用后由 goroutine 的 `recover` 变成 panic 日志；靠另一个 nil 依赖短路则根本没验到 typed-nil）。
+  - **typed-nil 的回归锁唯一落在 wiring 层**（§7.4 `cmd/server` 行）：正向断言「条件赋值后接口字段 `== nil` 为真」+ 承重性断言「无条件赋值时接口字段 `== nil` 为假」。后者是**执行断言**而非注释，否则「判空是必要的」这条前提永远无人证明，重构时会被当成冗余代码删掉。
+  - **两个依赖的 typed-nil 风险不对称（回修期新核实）**：`h.LarkInstallations` 是**具体指针** `*lark.InstallationService`（`internal/handler/handler.go:223`）——typed-nil 陷阱真存在，判空承重；而 `h.LarkAPIClient` 本身就是**接口** `lark.APIClient`（`handler.go:239`）——它为 nil 时赋值得到的仍是 nil 接口，判空对 typed-nil **不承重**，保留只为两个字段形态统一 + 上游日后改成具体类型时不静默退化。因此 §7.4 的承重性断言**只能对 `Credentials` 写**（对 `Client` 写同型断言会失败）。
 
 `Register` 的调用点在 `router.go` 中**飞书密钥条件块之外**（FR-8.3）：
 
@@ -401,7 +404,7 @@ handleEvent(e events.Event):
     # 只做解析与校验，禁止 DB / HTTP —— AC-11 用零调用替身断言
     p, ok := parsePayload(e.Payload)            # protocol.ApprovalGateEnteredPayload 类型断言 + 字段非空
     if !ok:            log(warn, "malformed payload"); return
-    if !approvalGateStatuses[p.Status]:         return       # 防御性二次过滤
+    if _, ok := approvalGateStageLabels[p.Status]; !ok:  return   # 防御性二次过滤（lark 侧闭集 = §4.3 展示映射同一份声明）
     if e.WorkspaceID == "":                     log(warn); return
 
     select:
@@ -442,7 +445,7 @@ deliver(p, anchorWorkspaceID):
     if err != nil:
         logFailEvent(step="approver-query", errClass(err)); return                         # 不当 skip
     if len(approvers) == 0:
-        logSkip(event, "no-approver"); return
+        logSkip(event, "no-approver"); return                                             # AC-4 情形①的原因载体（事件级，见下）
 
     approveURL := r.appURL + "/" + slug + "/projects/" + projectID + "?tab=chat"
 
@@ -527,7 +530,11 @@ chooseEffective(rows):                 # rows 已按 bound_at DESC, id ASC 排�
 | `task-breakdown` | 开发启动审批 |
 | `code-reviewing` | 代码审批 |
 
-映射是**封闭 switch + default 回退到 status 原文**：新增门禁状态时不会渲染空白（enum switch 必须有 default，`ARCHITECTURE.md` §5 不变量 8 的同款纪律）。
+映射的语义是**闭集查表 + 未命中回退 status 原文**：新增门禁状态时不会渲染空白（枚举分支必须有 default，`ARCHITECTURE.md` §5 不变量 8 的同款纪律）。
+
+**声明形态已定案为「一份 map + 查表函数」（dev-plan 评审采纳，见 §9）**：`lark` 包内本表与 §4.1 回调里的过滤闭集是**同一个四元集合**，故合并为一份声明 `approvalGateStageLabels map[string]string` + `stageLabel(status string) string`（命中返回中文名，未命中返回 `status` 原文 = 上述 default 语义）；§4.1 的防御性二次过滤改用 `_, ok := approvalGateStageLabels[p.Status]`。这样四个门禁状态字面量在 `lark` 包内**只出现一次**，语义与「switch + 另一个 map」完全等价。
+
+**边界（不得扩大化）**：该收敛**只在 `lark` 包内**；`governance` 侧的 `approvalGateStatuses`（§3.2.1，发布侧过滤）保持**独立声明**——两包不共享该集合是 DD-4 刻意留下的边界（共享包 `pkg/protocol` 只放事件名与载荷类型，不放业务过滤集）。展示映射**只供卡片**，不落日志（日志 `stage` 恒为 `p.Status`，§2 术语硬化）。
 
 ## 4.4 SQL：workspace 闭合的两条只读查询
 
@@ -610,6 +617,21 @@ PRD §4.4 已定义必需字段枚举；本节只把它落成三个单一入口�
 4. `step` 是本 SDD 新增的**可选定位字段**（`project-chain` / `approver-query` / `binding-query` / `credential-hydrate` / `credential-decrypt` / `send`），取值是闭集常量、不含任何响应体或凭据文本——目的是让“库挂了”与“飞书报错”在日志里可区分；
 5. **事件级 `failed` 无 recipient 字段**：与 PRD §4.4 “事件级跳过无 `recipient_open_id`” 同一条例外模式（字段按作用域条件出现）；这是对 PRD 可观测表的**加法细化**，不删不改已有必需字段，已列入 §8 供审批可见；
 6. 日志里永不出现审批证据、签名材料、token、diff、飞书响应体原文（PRD §4.2/§4.4）。
+7. **AC-4 四情形 → 枚举取值与作用域的一一对应（dev-plan 评审 BL-1 回修，本节为唯一口径）**：PRD AC-4 要求四种情形「均不收到卡片且各留下可区分跳过原因」。四者在本设计下的落点如下，**全部在 FR-8.2 已有 9 项枚举与 PRD §4.4 的事件级/收件人级 partition 内，无需第 10 个 reason、无需改 PRD**：
+
+   | AC-4 情形 | reason 取值 | 作用域 | 触发点 |
+   |---|---|---|---|
+   | ① 非 owner/admin | `no-approver` | **事件级**（PRD §4.4 已将 `no-approver` 列入事件级） | §4.2 步骤 3 成员查询零行 |
+   | ② 无 `feishu` 绑定行 | `binding-missing` | 收件人级 | §4.2 步骤 4 候选查询零行 |
+   | ③ 安装 `revoked` | `installation-revoked` | 收件人级 | `chooseEffective` / 水化后复核 |
+   | ④ `installation_id` 悬空 orphan | `installation-missing` | 收件人级 | `chooseEffective` / `ErrInstallationNotFound` |
+
+   情形①与其余三项的**作用域不同，这是设计结论而非缺口**：收件人集合的唯一来源是 `role IN ('owner','admin')` 这条查询（FR-4），非 owner/admin 的用户**从未进入循环**，因此不存在一个能挂在其身上的收件人级记录。该情形的可观测形态因而是**两条互补断言**（§7.4 对应行逐条列出）：
+
+   - **可区分原因**：目标 workspace 无任何 owner/admin（成员均为 `member`）时，成员查询零行 → 一条**事件级** `result=skipped reason=no-approver`；
+   - **零发送**：混合 workspace（1 名 admin + 1 名 `member`，**两人都有有效飞书绑定**）时，客户端只被调用一次、`receive_id` = admin 的 `open_id`，且全部日志中不出现 `member` 的 `recipient_user_id`。
+
+   **硬约束（防实施期漂移）**：① **不得**为每个非 owner/admin 成员记一条收件人级 `no-approver`——那会把 `no-approver` 从事件级搬到收件人级（违反 PRD §4.4 partition），且要求额外查询全量 `member` 集合（超出 FR-4 声明的读面，日志量随 workspace 规模膨胀）；② **不得**新增 `role-ineligible` 一类第 10 个 reason（第 2 条已硬约束）。
 
 ---
 
@@ -665,7 +687,7 @@ PRD §4.4 已定义必需字段枚举；本节只把它落成三个单一入口�
 | FR-1 门禁进入语义事件 | `protocol.EventCRApprovalGateEntered` + `protocol.ApprovalGateEnteredPayload`（共享包声明）+ governance 侧常量别名 + `approvalGateStatuses` + `publishApprovalGateEntered`，仅在 `applyStatus` 可信分支、`from != to`、目标 ∈ 四门禁时发布；载荷四字段含可空 `shell_issue_id`（= FR-1 的「CR/issue 关联标识」） | §3.2.1 / `pkg/protocol/events.go` + `governance/crsync.go` |
 | FR-2 触发面隔离 | 不订阅 `EventCRUpdated`；不在 `found==false` 首见分支、`else`（needs_reconcile）分支、`checkpoint`/`review`/`trace`/default 分支、`reconcile.go`、`gate_projection.go` 发布；自环由 `from != to` 过滤 | §3.2.1 五条契约不变量 |
 | FR-3 项目/workspace 解析 + 跨 workspace fail-closed | 单条 INNER JOIN SQL，`cr`/`issue`/`project`/`workspace` 四跳全带 `workspace_id = $1`；零行→跳过；原因判定的第二次查询仍带 workspace 谓词，且不产出收件人 | §4.4 第一条 SQL / §4.2 步骤 3 |
-| FR-4 收件人角色筛选 | `SELECT user_id FROM member WHERE workspace_id = $1 AND role IN ('owner','admin')`，与 Web 侧 `roleAllowed(role,"owner","admin")` 同口径；空集 → `no-approver` | §4.2 步骤 3 |
+| FR-4 收件人角色筛选 | `SELECT user_id FROM member WHERE workspace_id = $1 AND role IN ('owner','admin')`，与 Web 侧 `roleAllowed(role,"owner","admin")` 同口径；空集 → 事件级 `no-approver`（= AC-4 情形①的可区分原因，§4.6 第 7 条）；**非 owner/admin 成员从不进入收件人集合，故不产生收件人级记录**——收件人集合的唯一来源就是这条查询的结果集 | §4.2 步骤 3 / §4.6 第 7 条 |
 | FR-5 有效绑定、去重、可区分跳过 | LEFT JOIN 候选查询 + `chooseEffective`（三条件判定，产出 4 种原因）+ 水化后租户/状态复核；`bound_at DESC, id ASC` 取最新 ⇒ 每用户一张卡；**`attemptedOpenIDs` 在发送前登记**做 open_id 级二次去重（BL-2） | §4.2 / §4.3 / §4.4 第二条 SQL |
 | FR-6 卡片最小内容 | `approvalReminderTemplate`：header `待人工审批` + CR ID/标题 + 阶段名 + 固定说明 + 单一 button `前往审批`；模板内无 approve/reject action、无正文/证据/diff | §3.2.2 / `approval_reminder_card.go` |
 | FR-7 CTA 与基地址 | `appURL + "/" + slug + "/projects/" + projectID + "?tab=chat"`；`appURL == ""` → `app-url-missing` 且零发送；**不新增** URL 合法性校验器 | §4.2 步骤 2/3 |
@@ -701,7 +723,7 @@ PRD §4.4 已定义必需字段枚举；本节只把它落成三个单一入口�
 | 卡片成为绕过签名审批的入口 | 卡片只有一个 `url` 类型 button，无 action/callback、无 token；审批权威仍在 Web 签名链路与 `crctl` 门禁，点 CTA 后由既有链路重新校验（`governance/approval.go` 零改动） |
 | 凭据泄漏 | `InstallationCredentials.AppSecret` 只在单次调用在飞期间存在，不落日志、不落库；日志只出 `recipient_open_id`，不出凭据、token、签名材料、diff、飞书响应体原文（`error_class` 只记类别） |
 | 撤销安装后仍可发送 | 有效绑定强制 `installation.status = 'active'` + 同 workspace + `channel_type='feishu'`；revoked / orphan / mismatch 三类各自跳过并留可区分原因 |
-| 恶意/异常 payload | `handleEvent` 只做类型断言与非空校验，字段异常直接丢弃记 warn；防御性二次过滤 `approvalGateStatuses` |
+| 恶意/异常 payload | `handleEvent` 只做类型断言与非空校验，字段异常直接丢弃记 warn；防御性二次过滤 `approvalGateStageLabels`（lark 侧闭集，§4.3） |
 
 ## 7.2 性能目标与边界
 
@@ -727,15 +749,17 @@ PRD §4.4 已定义必需字段枚举；本节只把它落成三个单一入口�
 | 测试 | 覆盖 AC | 要点 |
 |---|---|---|
 | `governance`：四门禁 × 合法转换各发布一次 | AC-1 | 真库；断言事件类型、`workspace_id`、payload 三字段与 `event_id` 形状 |
-| `governance`：误触发隔离 | AC-2 | 通用 `cr:updated` 不触发；重放（`curStatus != FromStatus`）、自环（`from == to`）、checkpoint/review/trace、首见分支、reconcile/gate_projection 均零发布；断言订阅集合不含 `EventCRUpdated` |
+| `governance`：误触发隔离 | AC-2 | 通用 `cr:updated` 不触发；重放（`curStatus != FromStatus`）、自环（`from == to`）、checkpoint/review/trace、首见分支、reconcile/gate_projection 均零发布；断言订阅集合不含 `EventCRUpdated`。<br>**每条零发布用例必须附一条「链路确实跑了」的 liveness probe，但 probe 形态按路径选（dev-plan 评审 BL-2 回修）**：见下表 |
+| `governance`：零发布用例的 **liveness probe 口径**（BL-2 回修，与代码事实逐条对齐） | AC-2 | ① **进 `apply()` → `publish()` 的路径**（非门禁 status 目标 / 两种自环 / 两种首见分支 / 乱序非法的 `else` 分支 / `checkpoint` / `review`且 `payload.stage ∈ ReviewGateNodes`）→ probe = `cr:updated` 收集器 **> 0**；② **ledger-only 路径**：`trace` 在 `HandleCREvents` 就被分流到 `ingestTrace`（`crsync.go:162`），**根本不进 `apply()/publish()`** → probe = `resp.Accepted` 含该 `file` + `cr_sync_event` 存在 `(workspace_id, cr_id, commit_sha, event_kind='trace')` 行且 `processed_at IS NOT NULL`，**不得断言 `cr:updated > 0`**；③ **reconcile**（`ApplySnapshot`）→ probe = 返回的 `healed >= 1`（该路径自己会逐 CR `publish`，故 `cr:updated > 0` 也成立）；最强形态：快照把某 CR 的状态治成**门禁状态**时仍零发布；④ **gate_projection**（`projectGateTransition`）→ probe = `pipeline_run` / `pipeline_node_run` 行变化。<br>**两个已核实的例外，写用例时不得误用 probe ①**：`review` 事件当 `payload.stage ∉ ReviewGateNodes`（如 `dev-start`）时 `applyReview` 提前 `return nil`、**不** publish（`gate_projection.go:285`）；`ToStatus ∉ KnownStatuses` 走 `flagUnknownCR` 同样**不** publish（`crsync.go:415`）。这两种形态如果进矩阵，只能用 `cr_sync_event` 行 + `processed_at` 作 probe |
 | `lark`：happy path 多收件人 | AC-3 | 每个有效绑定 owner/admin 一张卡；同用户多绑定只发一张（取 `bound_at` 最新）；同 open_id 只发一次 |
 | `lark`：**首个尝试失败 + 重复 open_id**（BL-2 回归） | AC-3、FR-8.2 | 两个不同 user 指向同一 `open_id`，第一个发送返错：断言客户端**只被调用一次**、第二个用户无发送且无日志重复尝试；同型用例覆盖“首次凭据解密失败”与“首次超时” |
 | `lark`：**凭据水化四态**（BL-1 回归） | AC-3、AC-4、AC-10 | ① happy：`GetInWorkspace` 返回完整安装 → 发送时 `InstallationCredentials` 的 `AppID`/`AppSecret`/`TenantKey`/`Region` 均与库里一致（真库 + 真 secretbox）；② `ErrInstallationNotFound` → `installation-missing` 跳过；③ 水化后 `status='revoked'` → `installation-revoked`（分类后被撤销的 TOCTOU 窗）；④ 水化后 `workspace_id` 不符 → `workspace-mismatch`。另断言安装属另一 workspace 时 `GetInWorkspace` 本身就查不到 |
 | `governance`+`lark`：**共享契约**（BL-4 回归） | AC-1、AC-9 | 生产侧发布的 `Payload` 可被消费侧 `v.(protocol.ApprovalGateEnteredPayload)` 直接断言成功（同一包类型）；golden JSON：`json.Marshal(payload)` 等于 `{"cr_id":…,"status":…,"event_id":…,"shell_issue_id":…}`（`null` 形态单独一例）；递交 `map[string]any` 或异类型时 `parsePayload` 返回 false 且零 DB/HTTP |
 | `lark`：**载荷 shell_issue_id 不参与解析**（BL-3 回归） | AC-10 | 载荷带上另一 workspace 的 issue id（伪造）时，仍以 `cr` 行为准解析；当 CR 本身的 `shell_issue_id IS NULL` 时 → 零发送 + `project-unresolved`（证明载荷未进查询路径） |
 | `lark`：**事件级/收件人级 failed 日志** | AC-7、FR-8.2 | 注入 pool 报错替身：链路查询失败 → 一条 `result=failed`、`step=project-chain`、无 recipient 字段、**不出现任何 `reason`**；绑定查询失败 → 收件人级 `failed`（`step=binding-query`）而非 `binding-missing` |
-| `lark`：**依赖缺失不 panic** | AC-12、AC-13 | `NewApprovalReminder` 在 `Pool`/`Client`/`Credentials` 任一为 nil 时返回非 nil 对象；`Register(bus)` + 发布一条真事件后进程存活、一条 `feishu-disabled`、零 DB；另一例把 typed-nil `*InstallationService` 给进去也不 panic |
-| `lark`：四类不发送 | AC-4 | `member` 角色 / `binding-missing` / `installation-revoked` / `installation-missing` 各留可区分 reason |
+| `lark`：**依赖缺失不 panic（逐依赖隔离，真 nil 接口）** | AC-12、AC-13 | `NewApprovalReminder` 在 `Pool`/`Client`/`Credentials` 任一为 nil 时返回非 nil 对象；`Register(bus)` + 发布一条真事件后进程存活、一条 `feishu-disabled`、零 DB。<br>**四个子用例必须逐依赖隔离（dev-plan 评审 BL-3 回修）**：分别只置 nil `Credentials` / 只置 nil `Client` / `Client` 非 nil 但 `IsConfigured()==false` / 只置 nil `Pool`，**其余依赖均健康**。否则一次性把三个依赖都置 nil 时，`feishu-disabled` 只能证明「四条条件里至少一条命中」，单条分支全部未被证明。<br>**本行不得包含 typed-nil 用例**：typed-nil 在提醒器内本就检不出（§3.2.3 口径硬化），回归锁在下一行的 wiring 层 |
+| `cmd/server`：**typed-nil 防护的唯一验证点**（BL-3 回修新增） | AC-12 | ① **承重性断言（必须执行，不得降为注释）**：`var s *lark.InstallationService; cfg.Credentials = s` 后 `cfg.Credentials == nil` 为 **false**——证明 typed-nil 陷阱真存在、wiring 层判空是承重而非冗余；**只对 `Credentials` 写**（`h.LarkInstallations` 是具体指针；`h.LarkAPIClient` 是接口，写同型断言会失败，见 §3.2.3）；② **正向断言**：按 §3.2.3 wiring 形态（`if h.LarkAPIClient != nil` / `if h.LarkInstallations != nil` 才赋值）处理 nil 依赖后，`cfg.Client == nil && cfg.Credentials == nil` 为 **true**；③ **端到端**：该 config 造出的提醒器 `Register(bus)` + 发一条真事件 → 恰一条事件级 `feishu-disabled`、零真实飞书请求、pool 替身零调用、进程存活 |
+| `lark`：AC-4 四情形不发送（**情形① 与 ②③④ 作用域不同**，BL-1 回修） | AC-4 | 按 §4.6 第 7 条的一一对应表取证，四条 `reason` 互不相同：<br>**情形①（非 owner/admin）= 两条互补断言**：(a) *可区分原因* —— workspace 内成员均为 `role='member'`（`member` 表无「必须存在 owner」约束，`001_init.up.sql:26-33` 只有 `CHECK (role IN ('owner','admin','member'))` + `UNIQUE(workspace_id,user_id)`，真库可直接造数）→ 成员查询零行 → 恰一条**事件级** `result=skipped reason=no-approver`，且无任何 `recipient_*` 字段；(b) *零发送* —— 混合 workspace（1 admin + 1 `member`，**两人都有有效飞书绑定**）→ 客户端恰被调用 1 次、`receive_id` = admin 的 `open_id`，且全部日志不出现 `member` 的 `recipient_user_id`（证明它从未进入收件人集合）。<br>**情形②③④ = 收件人级**：`binding-missing` / `installation-revoked` / `installation-missing` 各留一条带 `recipient_user_id` 的记录。<br>**反向断言（防漂移）**：全部用例的日志中不得出现收件人级 `reason=no-approver`，也不得出现 9 项枚举之外的任何 `reason` |
 | `lark`：卡片与 CTA | AC-5 | 模板断言五项最小内容 + 无 approve/reject action；CTA 等于 `{appURL}/{slug}/projects/{projectID}?tab=chat`；`appURL==""` 零发送 |
 | `governance`：Web 审批链路回归 | AC-6 | 既有 `approval*_test.go` / `project_gates_test.go` 原样通过，不修改 |
 | `lark`：三类日志字段 + 无回滚 | AC-7 | 断言 §4.4 必需字段齐全、`reason` 落在 9 项枚举内；失败/跳过下投影仍成功 |
@@ -774,3 +798,4 @@ DB 相关测试须在可用 PostgreSQL 环境取到无 skip 的 `=== RUN` / `---
 |---|---|---|
 | 初稿 | 2026-08-25T20:34:02+08:00 | 首版。基于 PRD `b64a92cf…`（11 FR / 5 US / 13 AC）与 multica worktree 实地核实的 15 条既有事实；含 6 项术语硬化、3 条决策记录（DD-1 event_id / DD-2 pgx 读 seam / DD-3 接口方法）、FR-1～FR-11 全映射、13 项 AC 测试设计。已收 quality-reviewer 两条实现期建议：① `event_id` 绑定账本幂等键投影并贯穿三类日志（DD-1、§4.4 字段）；② CTA 按锚定 `workspace_id` 读 `workspace.slug`（§4.4 第一条 SQL 的 `JOIN workspace w ON w.id = $1`）并补跨 workspace slug 回归断言（AC-10 测试项）。 |
 | 技术评审 attempt 1 回修 | 2026-08-25T21:33:00+08:00 | 按 `review-annotations/sdd.yml`（verdict `block`，BL-1～BL-4 均 P1）定点修复，方案骨架（专用事件 → 非阻塞回调 → 异步 fail-closed 读链 → 单次投递）未变。<br>① **BL-1 凭据路径**：裸 SQL 职责收窄为“可区分分类”，凭据改走既有 `InstallationService.GetInWorkspace`（id+workspace_id+channel_type 三谓词，`installationFromRow` 解 `config` JSONB）+ `installationCredentialsFor`；新增窄接口 `installationCredentialSource`、水化后租户/状态复核、查询与解密失败的结构化 `failed` 日志（§1.1、§1.3、§3.2.3、§4.2、§4.3、§4.4、§4.6）。<br>② **BL-2 去重语义**：`sentOpenIDs` → `attemptedOpenIDs`，登记提到任何可失败动作之前；补“首个尝试失败 + 重复 open_id”回归（§4.2、§6 FR-5 行、§7.4）。<br>③ **BL-3 载荷**：撤销初稿的“有意收窄”，载荷新增可空 `shell_issue_id`（取自 `applyStatus` 既有 SELECT 扩为两列，零额外往返），并硬约束“只作相关、不作查询输入” + 伪造载荷的负向断言（§2、§3.2.1、§6、§7.4）。<br>④ **BL-4 跨包契约**：事件名与载荷类型上提到共享叶子包 `pkg/protocol`（先例：同文件的 `EventCRUpdated`、CUSTOM #22/#23），两侧真类型断言 + canonical JSON 契约 + 两侧契约测试（新增 DD-4）；同时把“FR-10 改动面 +1 文件”显式列入 §0/§6/§8 供审批裁定，**未自行改 PRD 字面**。<br>三项评审定案已内化：DD-2 采纳（附凭据读取、租户闭合、CUSTOM.md 新增条目三条强制条件）、§4.5 提取采纳（附参数校验/成功/token 失效/JSON 转义/stub 五类测试）、§8 Prompt 跳过确认成立。<br>三条非阻塞建议已处理：相关键口径 `(workspace_id, event_id)`（DD-1）、依赖缺失不返 nil + typed-nil 接口防护（§3.2.3）、DB 读错统一进结构化 `failed`（§4.6）。<br>另修正/新增两条核实事实：飞书未启用时 `h.LarkAPIClient` 是 **nil 而非 stub**（初稿措辞错）；本事件会经 `listeners.go#SubscribeAll` 进 WS workspace 扇出（已评估：无新增外泄面、前端 no-op、前端零 diff）。 |
+| 上游设计回修（dev-plan 评审 upstream route） | 2026-08-26T00:30:00+08:00 | 按 `review-annotations/dev-plan.yml`（verdict `block`、route `upstream`、repair-target `write-tech-design`）的三条 blocker 定点修订，**方案骨架与改动面未变**（无新增文件、无新增 reason/step/error_class、无 DDL）。<br>① **BL-1 AC-4 情形①可实现口径**：评审指出「非 owner/admin」被 `role IN ('owner','admin')` 提前排除后无可区分原因。本次**不改 PRD、不加第 10 个 reason**，而是把该情形的可观测形态硬化为事件级 `no-approver`（FR-8.2 枚举已有、PRD §4.4 已列入事件级 partition）+ 混合 workspace 的零发送负向断言，并新增 §4.6 第 7 条「AC-4 四情形 → reason 与作用域一一对应表」与两条硬约束（不得改成收件人级 `no-approver`、不得新增 `role-ineligible`）（§4.2 步骤 3、§4.6、§6 FR-4 行、§7.4）。<br>② **BL-2 零发布用例的 liveness probe 按路径选**：原 §7.4 把 `checkpoint/review/trace` 并列而未交代存活证据形态，导致计划层统一用 `cr:updated > 0`；已核实 `trace` 在 `HandleCREvents` 就分流到 `ingestTrace`（`crsync.go:162`）、**不进 `apply()/publish()`**。新增四类 probe 口径（publish 路径 / ledger-only / reconcile `healed` / gate_projection 行变化）及两个已核实的不-publish 例外（`applyReview` 在 `stage ∉ ReviewGateNodes` 时提前返回；`flagUnknownCR`）（§7.4）。<br>③ **BL-3 typed-nil 验证归 wiring 层**：原 §7.4 把「灌 typed-nil 也不 panic」放在提醒器自身的用例行，与 §3.2.3「不反射、wiring 层判空」相矛。现将提醒器侧改为**逐依赖隔离的四个真 nil 子用例**（防“其他 nil 依赖短路”假证），typed-nil 回归锁单独落到 `cmd/server` wiring 行，且「无条件赋值 → `iface == nil` 为假」升为**执行断言**（原为注释，无人证明判空承重）；§3.2.3 同步硬化「`r.credentials == nil` 对 typed-nil 为假是已知且有意」（§3.2.3、§7.4）。<br>**两项评审采纳口径已落地**：① §2 术语表 `shell_issue_id` 的 `omitempty` 括注按笔误纠正为「键恒在、无值为 `null`」，与 §3.2.1 结构体 / 不变量 6 / §7.4 golden 三处一致；② `lark` 包内 `approvalGateStageLabels + stageLabel()` 收敛写进 §4.3（并同步 §4.1 伪代码与 §7.1），**边界明写**：只在 lark 包内，`governance` 侧 `approvalGateStatuses` 保持独立声明。<br>**本次未动**：FR 映射、两条 SQL、`chooseEffective`、凭据水化链、DD-1~DD-4、§8 残余风险、改动文件集（含已审批的 `pkg/protocol/events.go` +1）均原样。 |

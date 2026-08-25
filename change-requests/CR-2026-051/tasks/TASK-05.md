@@ -43,6 +43,7 @@ created: 2026-08-25T23:20:00+08:00
 4. **同步回调零 I/O**：`handleEvent(e events.Event)` 只做：`parsePayload(e.Payload)` 真类型断言 + 字段非空校验（失败记 Warn 返回）→ `approvalGateStageLabels` 闭集二次过滤（非四门禁直接返回，防御性）→ `e.WorkspaceID == ""` 记 Warn 返回 → `select { case r.sem <- struct{}{}: go r.deliver(p, e.WorkspaceID); default: r.logSkipEvent(p, e.WorkspaceID, reasonOverloaded) }`。禁止任何 DB/HTTP 调用（AC-11 用零调用替身断言）。
 5. **异步外壳**：`deliver(p protocol.ApprovalGateEnteredPayload, anchorWorkspaceID string)` 首两行 `defer` 自持 `recover()`（记 Error，进程存活；`events.Bus` 的 recover 覆盖不到派生 goroutine）与 `defer func(){ <-r.sem }()`；随后 `ctx, cancel := context.WithTimeout(context.Background(), r.eventTimeout)` + `defer cancel()`（脱离请求 ctx）。
 6. **两道零 DB 前置判定**（顺序不可换，必须在任何 DB 访问之前）：① `r.pool == nil || r.client == nil || !r.client.IsConfigured() || r.credentials == nil` → `logSkipEvent(reasonFeishuDisabled)` 返回（覆盖"飞书未启用"与"依赖未装配"两种形态，**不新增第 10 个 reason**）；② `r.appURL == ""` → `logSkipEvent(reasonAppURLMissing)` 返回。
+   **typed-nil 不属于本 TASK 的责任面（SDD §3.2.3 口径硬化，dev-plan 评审 BL-3）**：`r.credentials == nil` 对 typed-nil 接口（`var s *InstallationService; cfg.Credentials = s`）**为假**，这是已知且有意的设计选择（提醒器内不反射）。因此本 TASK **不得**写"灌 typed-nil 仍得 `feishu-disabled`"这类断言（不可满足）；typed-nil 的回归锁在 TASK-07 的 wiring 层。
 7. **读链 seam**：前置判定通过后调用 `r.deliverToRecipients(ctx, p, anchorWorkspaceID)`（本 TASK 声明并给出**临时实现**：记一条 `logFailEvent(stepProjectChain, errorClassOther)` 并返回，附 `// TODO(CR-2026-051 TASK-06)` 英文注释指明由 TASK-06 替换）。这样本 TASK 的用例只断言前置判定与外壳行为，不产生"半个读链"的假语义；TASK-06 用真实现替换该函数体，其上层调用点与签名不变。
 8. **常量闭集**（集中声明，禁止散拼字符串）：9 个跳过原因常量严格取 PRD FR-8.2 枚举 —— `project-unresolved`、`workspace-mismatch`、`no-approver`、`binding-missing`、`installation-revoked`、`installation-missing`、`app-url-missing`、`feishu-disabled`、`overloaded`；4 个 `error_class` —— `timeout`、`rate-limited`、`not-configured`、`other`；6 个 `step` —— `project-chain`、`approver-query`、`binding-query`、`credential-hydrate`、`credential-decrypt`、`send`。
 9. **日志入口（SDD §4.6 的四类结果；`skipped` 按作用域拆成两个函数，字段口径不变）**（字段口径按 SDD §4.6，字段名与 PRD §4.4 表一致）：
@@ -56,7 +57,9 @@ created: 2026-08-25T23:20:00+08:00
 
 ## 验收条件
 
-1. **构造不 panic（AC-12/AC-13 部分）**：`Pool`/`Client`/`Credentials` 任一为 nil 时 `NewApprovalReminder` 返回非 nil；再把 typed-nil `*InstallationService`（`var s *InstallationService; cfg.Credentials = s`）灌进去，`Register(bus)` + `bus.Publish(真事件)` 后进程存活、恰一条 `result=skipped reason=feishu-disabled`、pool 替身零调用。
+1. **依赖缺失不 panic，且逐依赖隔离取证（AC-12 部分；dev-plan 评审 BL-3 回修）**：`Pool`/`Client`/`Credentials` 任一为 nil 时 `NewApprovalReminder` 返回非 nil。行为断言必须拆成**四个子用例，每个只置一项为 nil、其余依赖均健康**：(a) 只 `Credentials = nil`；(b) 只 `Client = nil`；(c) `Client` 非 nil 但 `IsConfigured() == false`；(d) 只 `Pool = nil`。每个子用例：`Register(bus)` + `bus.Publish(真事件)` 后进程存活、恰一条 `result=skipped reason=feishu-disabled`、pool 替身零调用。
+   逐依赖隔离是**硬要求**：一次性把三个依赖都置 nil 时，`feishu-disabled` 只能证明"四条条件里至少一条命中"，单条分支全部未被证明（其他 nil 依赖会把断言短路成假证）。
+   **本 TASK 不含 typed-nil 用例**：typed-nil `*InstallationService` 在提醒器内本就检不出（`r.credentials == nil` 为假，SDD §3.2.3），强行断言只会得到 panic/recover 日志或靠另一个 nil 依赖短路的假证。typed-nil 防护的唯一验证点是 **TASK-07 验收条件 3**（wiring 层条件赋值）。
 2. **回调零 I/O（AC-11）**：客户端替身的 `IsConfigured()` 阻塞 500ms，断言 `bus.Publish` 的返回耗时 < 50ms（回调只做断言 + channel send）；同时断言回调期间 DB 替身零调用。
 3. **过载丢弃（AC-13）**：`MaxInFlight = 1`，第一条事件在 `IsConfigured()` 上阻塞占满额度，紧接第二条事件断言恰一条 `result=skipped reason=overloaded`，且未派生第二个 goroutine（客户端替身调用计数仍为 1）、无排队无重试。
 4. **panic 自恢复（AC-13）**：客户端替身的 `IsConfigured()` 直接 `panic("boom")`，断言进程存活、有一条 Error 级日志、信号量已释放（后续事件仍能被处理）。
