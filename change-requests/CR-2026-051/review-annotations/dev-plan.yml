@@ -1,0 +1,28 @@
+cr-id: CR-2026-051
+review-type: dev-plan
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-25T23:59:15+08:00"
+verdict: block
+repair-target: write-tech-design
+blockers:
+  - "[UPSTREAM][AC-4] PRD AC-4 要求‘非 owner/admin’也留下可区分跳过原因，但 SDD §4.2/§6 先用 role IN ('owner','admin') 排除该类用户，§4.6/FR-8.2 的 9 项 reason 又没有 non-approver 类取值；TASK-06 只能证明 member 未发送，无法产出 AC-4 要求的该类原因。需先在技术设计链路明确可实现口径（修订查询/日志方案，或经需求侧修订 AC），不能由开发计划自行猜测。"
+  - "[PLAN][TASK-03] TASK-03 把 AC-2 零发布矩阵的每一项都附加为 cr:updated 收集器 > 0，但 trace 事件在 crsync.go 的专用 ingestTrace 路径处理，不进入 apply()/publish()，现有代码不会发布 cr:updated；该验收条件按当前代码事实不可满足。"
+  - "[PLAN][TASK-05] TASK-05 要求把 typed-nil *InstallationService 放进 Credentials 接口后仍得到 feishu-disabled，但同一 TASK 的实现只用 r.credentials == nil 判定，typed-nil 接口对此为非 nil；SDD §3.2.3 又明确 typed-nil 由 wiring 层判空且提醒器内部不使用反射。若其余依赖可用，该验收会进入方法调用并由 goroutine recover 变成 panic 日志，而不是 feishu-disabled；若靠另一 nil 依赖短路，则没有验证 typed-nil。需把该验收移到 TASK-07 wiring 防护，或先修改设计明确提醒器内检测策略。"
+dimensions:
+  sdd-to-plan: "block"
+  plan-to-tasks: "pass"
+  task-executability: "block"
+  dependency-topology: "pass"
+  interface-contracts: "pass"
+  acceptance-verifiability: "block"
+  scope-and-simplicity: "pass"
+  risk-and-rollback: "pass"
+  reviewer-model: "openai/gpt-5.6-sol"
+suggestions:
+  - "采纳口径①：shell_issue_id 不加 omitempty。SDD §3.2.1 结构体、不变量 6 与 §7.4 golden 三处均要求键恒在且空值为 null，且 tech-design 审批 digest 已绑定该 SDD；§2 的 omitempty 括注应在本次上游回修时同步纠正，避免继续歧义。"
+  - "采纳口径②：lark 包内把过滤闭集与展示映射收敛为 approvalGateStageLabels + stageLabel()，命中时过滤、未命中时展示回退 status，语义等价于 SDD §4.1 + §4.3；governance 侧的 approvalGateStatuses 仍独立保留。"
+  - "定案落点已覆盖：pkg/protocol/events.go 在 TASK-01/TASK-08 合法集合；事件级 failed 无 recipient 在 TASK-05/TASK-06；DD-2 裸 SQL 与 CUSTOM.md 在 TASK-06/TASK-08；§4.5 五类测试在 TASK-04；attemptedOpenIDs 前置登记在 TASK-06。"
+  - "代码事实抽查成立：pgx v5.9.2 pointerPointerScanPlan 对 SQL NULL 将 **string 目标置 nil，shell_issue_id::text 可直接扫入 *string 且无需新增 import；lark DB helper 确有 t.Skipf，governance TestMain 在 DB 不可达时 exit 0，因此计划要求 -v 看到 --- PASS、拒绝 --- SKIP 是必要门禁。"
+review-loop:
+  current-attempt: 0
+subject-sha256: fe506de32a3f96b7b8beda064e2af11f38a753dd7604888aec4a238a868898dd
