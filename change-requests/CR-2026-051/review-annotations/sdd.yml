@@ -1,24 +1,23 @@
 cr-id: CR-2026-051
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-25T22:57:59+08:00"
+reviewed-at: "2026-08-26T00:55:12+08:00"
 verdict: pass
 blockers: []
 dimensions:
-  prd-sdd-alignment: "pass: FR-1 through FR-11 are mapped to concrete sections and implementation seams; the former payload omission is corrected with nullable shell_issue_id, and the FR-10 protocol-file delta is explicitly disclosed rather than silently changing the approved PRD."
-  architecture-reasonableness: "pass: the trusted crsync branch publishes a dedicated event into the synchronous bus, while the subscriber performs zero-I/O parsing and bounded asynchronous delivery; the design preserves the architecture event-authority split and dependency direction. DD-2 raw pgx and DD-4 shared protocol choices include real alternatives and tradeoffs."
-  data-model-completeness: "pass: the design covers the workspace-closed CR-to-project read chain, owner/admin membership, binding/install classification, workspace-scoped full installation hydration, credential decryption, and post-hydration workspace/status checks without adding DDL."
-  interface-contract: "pass: governance and lark share a typed protocol event constant and payload, the APIClient addition and approval-card parameters are specified, the private transport helper boundary is clear, and no HTTP API is added."
-  multi-repo-constraints: "pass: the operational knowledge-base worktree and declared multica worktree are the sources of review evidence; tools remains read-only/zero-diff, resource worktree authority is stated, and the required CUSTOM.md registration is planned for implementation."
-  performance-security: "pass: the bus callback has zero database/HTTP I/O; delivery uses a background context, 60s event and 10s recipient bounds, bounded in-flight concurrency, panic recovery, and single-attempt semantics. All read paths are workspace-anchored and fail closed, and sensitive credentials/evidence are excluded from logs and cards."
-  testability: "pass: the matrix covers each former blocker, typed event/JSON compatibility, credential hydration states, attempted-open_id dedup after failure, cross-workspace negatives, structured failed logs, disabled/stub behavior, helper regressions, non-blocking delivery, panic, and overload; database tests are required to run against PostgreSQL without skip-based false green."
-  prompt-impact: "skip: this CR does not modify crctl dispatch or controlled-shell protectedPaths.deny, and the tools package remains unchanged."
+  prd-sdd-alignment: "pass: FR-1～FR-11 仍有完整技术映射；本轮把 AC-4 情形①明确收敛为事件级 no-approver + 混合 workspace 的 member 零发送负向断言，未新增 reason、未改 PRD，且与 FR-4 及 PRD §4.4 的事件级 partition 一致。"
+  architecture-reasonableness: "pass: 专用门禁事件、同步回调零 I/O、异步 fail-closed 读链与 composition-root 判空的方案骨架未变；本轮只修正可观测语义与验证位置，没有引入第二状态机、通知队列或新抽象。"
+  data-model-completeness: "pass: AC-4 全 member / admin+member 两类造数均可由既有 member role CHECK 与 workspace-scoped 绑定模型表达；无 DDL，既有两条 SQL、凭据水化与租户闭合保持完整。"
+  interface-contract: "pass: shell_issue_id 已统一为键恒在、空值 null；typed-nil 的责任边界按实际类型区分，Credentials 的具体指针转接口陷阱由 router 条件赋值防护，Client 的 nil 接口不误作同型承重断言。"
+  multi-repo-constraints: "pass: 代码改动仍限 multica；knowledge-base 只承载 CR 产物，tools 零改动；资源路径继续以 workspace inspect 的 resources[].worktreePath 为 authority。"
+  performance-security: "pass: AC-4 回修不扩大全成员查询、不生成按 member 线性增长的跳过日志；非 owner/admin 仍不进入收件人集合，workspace 锚点、安装水化与日志敏感信息边界未退化。"
+  testability: "pass: BL-2 已按真实执行路径拆分 liveness probe（publish / trace ledger-only / reconcile / gate projection，并覆盖两个不 publish 例外）；BL-3 的四个真 nil 分支逐依赖隔离，typed-nil 承重断言迁至 cmd/server wiring，均可执行且不会靠其他 nil 短路假绿。"
+  prompt-impact: "skip: 本 CR 不修改 crctl dispatch 或 controlled-shell protectedPaths.deny，tools 包仍为零改动。"
 suggestions:
-  - "Human architecture approval should explicitly accept the disclosed FR-10 delta adding server/pkg/protocol/events.go (shared event constant and payload). If it is rejected, use the documented DD-4 map/JSON-envelope fallback and its two-sided contract tests before implementation."
-  - "During implementation, preserve the exact nullable pgtype.UUID-to-shell_issue_id conversion and pass the DaemonAuth workspace UUID unchanged into GetInWorkspace; keep shell_issue_id correlation-only and never use it as a query input."
-  - "Record the event-level failed-log recipient-field exception explicitly at approval or implementation review; it is a scoped observability refinement because those failures occur before a recipient exists, while recipient-level failures retain the required recipient fields."
-  - "Keep the new lark raw-SQL column list, shared protocol contract, APIClient method, and four test doubles together in the new CUSTOM.md entry, then validate the implementation against the declared FR-10 file set."
+  - "人工重新审批时请显式确认 AC-4 情形①采用场景级口径：无 owner/admin 的事件记 no-approver；混合 workspace 中普通 member 以不进入收件人集合证明零发送，不产生逐 member skip 日志。实施测试不得把后者描述成收件人级 reason。"
+  - "TASK-05/TASK-07 的零 DB 断言面对具体类型 *pgxpool.Pool 时不要声称存在接口替身；可用 nil 前置分支，或以真实测试池的 pgxpool.Stat().AcquireCount 前后不变作为可执行证据，保持逐依赖隔离。"
+  - "approvalGateStageLabels 若实现为包级 map，应保持不导出且不在运行期写入；若要严格兑现‘无包级可变全局状态’，可用单个 switch helper 同时返回 label 与 ok，仍只维护一份四门禁闭集。"
 review-loop:
-  current-attempt: 2
+  current-attempt: 1
 subject-file: change-requests/CR-2026-051/sdd.md
-subject-sha256: 7bbcf822c9d572482bc25520cf5d34bfd553c18a6b5d5fa517b7e7962af085f2
+subject-sha256: 39999101f3f3df03b1ee3bebe90840699451f15e1fa6dd589acbd890d661a7cf
