@@ -1,0 +1,19 @@
+cr-id: CR-2026-051
+review-type: requirement
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-25T19:31:21+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  structure: "通过：PRD 包含概述、用户故事、11 条功能需求、非功能需求、13 条验收标准、指标与范围排除，章节结构完整。"
+  testability: "通过：四个上一轮 blocker 均已转化为明确实现约束和负向验收，覆盖 active/revoked/orphan、跨 workspace fail-closed、同步 Bus 下的异步隔离、panic/过载，以及 disabled/stub 零查询零请求。"
+  scope: "通过：仍与设计稿 v0.2 的通知型 MVP 范围一致，未引入卡片内审批、多渠道、outbox、重试、schema 或 tools 改造。"
+  source_alignment: "通过：PRD 已对齐已核实的 channel_installation 状态、绑定关系、crsync 可信转换点、同步事件 Bus、条件式 Lark 装配和 stub client 行为。"
+  dependencies: "通过：已明确 crsync 专用事件、workspace 锚点、CR/issue/project/member/binding/installation 链路、router 无条件订阅和既有 Lark/CTA 能力依赖。"
+suggestions:
+  - "实现时将 event_id 绑定到稳定的状态事件标识（例如来源事件的 commit_sha/等价 id），并让所有成功、失败、跳过日志复用同一值。"
+  - "实现时按已校验的 workspace_id 读取 workspace.slug 生成 CTA，避免从非锚定上下文获取 slug；补一个跨 workspace slug 的回归断言。"
+review-loop:
+  current-attempt: 2
+subject-file: change-requests/CR-2026-051/prd.md
+subject-sha256: b64a92cfe18257882a499a0177777f55487788cc49089965c023f4be56433afb

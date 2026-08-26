@@ -16,9 +16,9 @@ owners:
 target-version: tbd
 source: "docs/product/IM渠道审批接入.md"
 origin: ""
-status: drafting
+status: code-approved
 created: "2026-08-25T18:04:05+08:00"
-updated: "2026-08-25T18:04:05+08:00"
+updated: "2026-08-26T16:39:30+08:00"
 remote-ref: ""
 last-push-at: ""
 last-push-by: ""

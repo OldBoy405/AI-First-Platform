@@ -1,0 +1,51 @@
+cr-id: CR-2026-051
+tasks:
+  - id: CR-2026-051-TASK-01
+    title: "共享事件契约与 canonical JSON 形状（pkg/protocol）"
+    status: done
+    done-at: "2026-08-26T14:11:10+08:00"
+    estimate: 3h
+    depends-on: []
+  - id: CR-2026-051-TASK-02
+    title: "governance 门禁进入事件发布点（含 shell_issue_id 扩列）"
+    status: done
+    done-at: "2026-08-26T14:18:21+08:00"
+    estimate: 5h
+    depends-on: [CR-2026-051-TASK-01]
+  - id: CR-2026-051-TASK-03
+    title: "governance 触发条件与误触发隔离真库测试（AC-1 / AC-2）"
+    status: done
+    done-at: "2026-08-26T14:18:21+08:00"
+    estimate: 8h
+    depends-on: [CR-2026-051-TASK-02]
+  - id: CR-2026-051-TASK-04
+    title: "lark 传输层：APIClient 新方法 + sendCardToOpenID 提取 + 审批卡模板 + 4 个测试替身"
+    status: done
+    done-at: "2026-08-26T14:22:14+08:00"
+    estimate: 8h
+    depends-on: []
+  - id: CR-2026-051-TASK-05
+    title: "审批提醒器骨架：构造/无条件订阅/零 I-O 回调/日志四入口/过载与 panic 兜底"
+    status: done
+    done-at: "2026-08-26T14:28:40+08:00"
+    estimate: 8h
+    depends-on: [CR-2026-051-TASK-01, CR-2026-051-TASK-04]
+  - id: CR-2026-051-TASK-06
+    title: "异步读链与投递：workspace 闭合两条 SQL + 绑定分类 + 凭据水化 + 单次发送"
+    status: done
+    done-at: "2026-08-26T15:06:32+08:00"
+    estimate: 12h
+    depends-on: [CR-2026-051-TASK-05]
+  - id: CR-2026-051-TASK-07
+    title: "router 无条件订阅 wiring（typed-nil 防护）与飞书未启用形态验收"
+    status: done
+    done-at: "2026-08-26T15:16:01+08:00"
+    estimate: 5h
+    depends-on: [CR-2026-051-TASK-06]
+  - id: CR-2026-051-TASK-08
+    title: "改动面静态核对、全量回归与 CUSTOM.md 台账收尾"
+    status: done
+    done-at: "2026-08-26T15:20:28+08:00"
+    estimate: 6h
+    depends-on: [CR-2026-051-TASK-03, CR-2026-051-TASK-07]
+

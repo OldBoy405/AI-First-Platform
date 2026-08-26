@@ -1,0 +1,20 @@
+cr-id: CR-2026-051
+review-type: dev-plan
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-26T12:32:21+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  sdd-to-plan: "pass: 已审批 SDD 的模块、接口、只读 SQL、装配、验证、回滚与风险继续完整映射到 plan；本轮仅修正计划层诊断日志与测试 schema 取证，不改上游设计。"
+  plan-to-tasks: "pass: plan §5.7 的两条回修均明确落到 TASK-05/06/07；TASK-01~08 与 AC-1~AC-13 的归属完整，无交付项悬空。"
+  task-executability: "pass: TASK-05 已把 construct/register/panic-recovered 收敛为可判定三值 phase 闭集，并逐 phase 给出可执行计数；TASK-06 已给出可直接实现的有界 schema 构造、标识符复用、错误分流与清理步骤。"
+  dependency-topology: "pass: 8 个 TASK 无悬空依赖、无环；TASK-05→06 同文件顺序、TASK-03/07→08 汇合与 55h 总估算保持一致。"
+  interface-contracts: "pass: phase 仅为不带 result 的诊断字段，不进入 FR-8.2 九项 reason 或 SDD §4.6 结果契约；schema/search_path 方案只影响测试专用连接，不改变生产接口。"
+  acceptance-verifiability: "pass: TASK-05 的 (a)~(e)、panic 与 TASK-07 均按 phase 值分别计数，可验证 Register(nil) 不订阅且不扰动原断言；TASK-06 以最长 49B、len/字符集断言、pg_namespace 精确回读及 42703 自检共同证明标识符与失败注入。"
+  scope-and-simplicity: "pass: 回修复用既有 phase 体系与仓内私有 schema 命名先例，未新增生产能力、依赖、文件、DDL 或抽象；8 TASK/55h 不变合理。"
+  risk-and-rollback: "pass: 私有 schema 不改 public，CREATE/search_path/DROP 复用同一名称，遗留 schema 对其它会话不可见；42501 仅 Skip 且 SKIP 不得标 done，其余错误 hard fail，风险与回滚门禁可执行。"
+  reviewer-model: "openai/gpt-5.6-sol"
+suggestions: []
+review-loop:
+  current-attempt: 3
+subject-sha256: 46fd71bf8aa296072d24c2137f672e72454e2ed95a70fae98a1b239985eddabe

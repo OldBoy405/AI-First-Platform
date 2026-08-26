@@ -1,0 +1,9 @@
+$ go test ./pkg/protocol/ ./internal/governance/ ./internal/integrations/lark/ ./cmd/server/ -count=1
+(exit=0)
+--- stdout ---
+ok  	github.com/multica-ai/multica/server/pkg/protocol	0.043s
+ok  	github.com/multica-ai/multica/server/internal/governance	3.806s
+ok  	github.com/multica-ai/multica/server/internal/integrations/lark	3.124s
+ok  	github.com/multica-ai/multica/server/cmd/server	5.771s
+
+--- stderr ---

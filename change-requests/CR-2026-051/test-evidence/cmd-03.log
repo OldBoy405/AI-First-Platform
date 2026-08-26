@@ -1,0 +1,13 @@
+$ go test ./pkg/protocol/ -run ApprovalGate -v -count=1
+(exit=0)
+--- stdout ---
+=== RUN   TestApprovalGateEnteredPayloadGoldenJSON
+--- PASS: TestApprovalGateEnteredPayloadGoldenJSON (0.00s)
+=== RUN   TestApprovalGateEnteredPayloadNullShellIssueID
+--- PASS: TestApprovalGateEnteredPayloadNullShellIssueID (0.00s)
+=== RUN   TestApprovalGateEnteredEventConstant
+--- PASS: TestApprovalGateEnteredEventConstant (0.00s)
+PASS
+ok  	github.com/multica-ai/multica/server/pkg/protocol	0.039s
+
+--- stderr ---
