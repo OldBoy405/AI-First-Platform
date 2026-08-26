@@ -1,22 +1,24 @@
 cr-id: CR-2026-052
 review-type: tech-design
 reviewer: "quality-reviewer-agent"
-reviewed-at: "2026-08-27T02:54:25+08:00"
+reviewed-at: "2026-08-27T07:40:26+08:00"
 verdict: block
 blockers:
-  - "TD-BL-8 — SDD §3.3/§4.2/DD-10 对 PostgreSQL 行锁矩阵的关键断言错误：FOR KEY SHARE 不与 FOR NO KEY UPDATE 冲突，只与 FOR UPDATE 冲突；而既有 UpdateIssue 对 assignee_id/assignee_type 的普通非键列更新（issue.sql:164-257）及 cr.shell_issue_id 的非键列更新通常取得 FOR NO KEY UPDATE。LockIssueForChannelMediaBind 的既有用途也仅是和删除方 FOR UPDATE 互斥（issue.sql:89-95,128-135），不能旁证重指派互斥。因此新增 cr/issue FOR KEY SHARE 仍不能稳定 shell_issue_id/assignee_id 到提交，AC-6b/6c 所声称的阻塞不会成立。需改用与普通 UPDATE 互斥的锁级（如 FOR SHARE/更强，参照 squad.sql:12-20）或给出等价串行化方案，并以真实并发测试验证两种提交顺序。"
-  - "TD-BL-9 — SDD §4.3 的阶梯 2 仍有 SELECT→UPDATE 状态竞态：GetApprovalContinuationTaskByCr 只读选出 queued/deferred/dispatched/waiting_local_directory 后继但不锁行；在 AppendApprovalContinuationEvidence 前，ClaimAgentTask 可把该行推进到 running。随后 UPDATE 因四态谓词返回 0，方案却把所有 0 行都解释为‘该 record 已合并’并返回 200，未复核 approvals[]。若运行任务已在新 grant 落盘前读过 grants，此路径再次形成 delivered_at 已提交但无新后继/无 prompt 可达证据。需在选择与追加间锁定后继或收敛为单条原子 UPDATE，并区分‘已含 record’与‘状态离开谓词’；补 queued/dispatched→running 与合并并发竞态测试。"
+  - "TD-BL-10 — SDD §2.3/§3.3/§4.3 的 migration 470 与 GetApprovalContinuationTaskByCrForUpdate 只按 cr_id 建唯一键/查后继，没有 workspace 判别。cr 的权威唯一键是 (workspace_id, cr_id)（migration 433），approval_record 的 approve 唯一键也已在 migration 467 改为包含 workspace_id；不同 workspace 合法拥有同名 CR。当前设计下 workspace B 的同名 CR INSERT 会与 workspace A 的 continuation 行发生 470 冲突，随后阶梯 2 甚至会锁住并把 B 的 approval_record 四字段追加到 A 的任务，形成跨租户证据泄漏与错误唤醒；guarded INSERT 的 workspace JOIN 无法保护冲突后的 fallback。必须把 470 的键和所有按 CR 重读/合并路径改为稳定的 workspace-qualified authority（agent_task_queue 目前无 workspace_id，需明确可机械强制的承载/索引方案），并补同名 CR 跨 workspace 并发用例，证明互不冲突、互不可读写。"
+  - "TD-BL-11 — SDD §4.3 与 AC-5g(b) 对 dispatched/waiting_local_directory 后继的可达断言不成立。ClaimAgentTask 已在 claim 响应构造前把行置为 dispatched，taskToResponse 当时就快照 handoff_note 并交给 daemon；之后 ACK 的 FOR UPDATE 只能阻塞 StartAgentTask，无法改写 daemon 内存里的 Task，因此‘锁读先取锁 → 合并后 opening prompt 含两条记录四字段’仅对尚未 claim 的 queued/deferred 行成立，对 dispatched/waiting_local_directory 不成立。SDD §2.4 又承认 dispatched prompt 已生成，前后矛盾。需按状态拆分设计与验收：要么只对 prompt 尚未快照的状态合并、其余状态补插后继；要么以 grant 先落盘 + StartTask 锁序证明 dispatched/waiting 路径，并把测试改为验证 agent 启动时能读到新 grant，而不是断言不可能更新的 opening prompt。"
+  - "TD-BL-12 — SDD §3.2/DD-5 改写了已审批 PRD FR-10 的显式回调错误契约：FR-10 要求扩展后的 onGrantAck 回调返回 error 并影响 ACK HTTP 状态码；当前设计却让 SetGrantAckHandler/WakeGrant 的 error 仅记日志并返回 2xx，只有新增的 SetGrantAckPreflight error 才返回 5xx。把真实副作用移到 COMMIT 后是正确的事务约束，但不能据此宣称 FR-10 已 12/12 覆盖。需让命名和契约机械对应已审批要求（例如原 handler 承担纯 preflight、另设明确 post-commit wake），或先走 PRD revision；同时在 FR 映射/AC-9 中明确哪一个回调 error 影响 HTTP。"
 dimensions:
-  PRD↔SDD对齐: "BLOCK，FR-1/FR-6/FR-7/FR-9 的并发串行化仍存在静默丢失与陈旧 authority 窗口。"
-  架构合理性: "BLOCK，DD-10 使用了错误的 PostgreSQL 锁冲突假设；DD-11 的重读后追加不是原子选择。"
-  数据模型完整性: "PASS，双 partial index、approvals[] 与 deferred 载体足以表达目标状态；缺口在并发算法。"
-  接口契约: "PASS，双钩将预提交纯校验与提交后副作用分离，HTTP 失败/成功边界已明确。"
-  多仓架构约束: "PASS，三仓 authority、依赖方向、生成物与 checkpoint 口径清晰。"
-  性能与安全: "BLOCK，FOR KEY SHARE 不拦截普通非键 UPDATE，仍可能向陈旧 issue/leader 派发。"
-  可测试性: "BLOCK，现有 AC-6b/6c 建立在错误锁矩阵上，且缺少 successor claim-vs-append 竞态用例。"
-  Prompt采纳影响: "PASS，tools 变更不触及 crctl dispatch 或 protectedPaths.deny。"
-suggestions: []
+  PRD↔SDD对齐: "BLOCK：FR-7/NFR-12 的 workspace 隔离被全局 cr_id 唯一键与 fallback 破坏；FR-10 的 onGrantAck error→HTTP 契约被拆钩后改变。"
+  架构合理性: "BLOCK：核心幂等阶梯缺少 workspace-qualified CR authority，且 dispatched 状态的 DB 行更新与已交付 daemon 快照混为一谈。"
+  数据模型完整性: "BLOCK：migration 470 以全局 cr_id 作键，但 CR 身份实际为 (workspace_id, cr_id)；任务行/索引未承载租户判别。"
+  接口契约: "BLOCK：post-commit SetGrantAckHandler error 固定 2xx，与 PRD FR-10 的显式契约不一致；双钩需要重新命名/映射。"
+  多仓架构约束: "PASS：knowledge-base、multica、tools 的路径 authority、依赖方向、sqlc 生成物与 checkpoint 口径清晰。"
+  性能与安全: "BLOCK：同名 CR 跨 workspace 可冲突并把审批证据合并进另一租户任务，是 hard workspace-isolation blocker；FOR SHARE 锁级修正本身成立。"
+  可测试性: "BLOCK：AC-5g(b) 对 dispatched/waiting_local_directory 的 opening prompt 断言与真实 claim→daemon 快照时序矛盾，无法按设计实现；另需跨 workspace 同名 CR 并发用例。"
+  Prompt采纳影响: "PASS：tools 范围不触及 crctl dispatch 或 protectedPaths.deny，条件不满足。"
+suggestions:
+  - "TD-SUG-5 — §7.4 的 `go test ./server/internal/...` 从仓库根执行无效（仓库只有 server/go.mod、无 go.work）；改为 `(cd server && go test ./internal/governance/... ./internal/daemon/...)`，sqlc 也明确从 server/ 或使用根 Make target。"
 review-loop:
-  current-attempt: 3
+  current-attempt: 1
 subject-file: change-requests/CR-2026-052/sdd.md
-subject-sha256: 83ba3b0d8f49b2a22b92f69f2f6f1081da6dd41b2841ac54617146a6616afaa5
+subject-sha256: 6dd72e9e35dc71eab66eb90a73b8ae714414110b7554694a55ba15d71e911dea
