@@ -1,25 +1,26 @@
 cr-id: CR-2026-051
 review-type: dev-plan
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-26T11:22:16+08:00"
+reviewed-at: "2026-08-26T11:57:33+08:00"
 verdict: block
 repair-target: write-dev-plan
 blockers:
-  - "[PLAN][TASK-05] 验收条件 1(d) 要求 Pool=nil 时以‘无 Error 日志’证明零查询，但实现要点 2 又明确 Pool/Client/Credentials 任一为 nil 时构造函数必须先记一条 Error；该验收按计划自身即不可满足。请把断言收敛为可区分的结构化信号（例如允许构造期 dependency-missing Error，但禁止 panic-recovered / result=failed），或改用不会与构造日志冲突的零查询证据。"
-  - "[PLAN][TASK-06] AC-7 为制造 binding-query 失败而在 public schema 执行 ALTER TABLE channel_user_binding RENAME，并仅以 lark 包内四个触库测试无 t.Parallel() 论证安全；仓库 scripts/test-go.sh 会把全部 regular packages 交给同一个 go test、按默认包级并行运行且共享 DATABASE_URL，因此其他包可在重命名窗口访问该表，t.Cleanup 也无法覆盖测试进程被强杀/崩溃的场景。该取证会污染共享测试 schema，须改为隔离 schema/search_path、专用受限连接或其他不改 public schema 的确定性失败注入。"
+  - "[PLAN][TASK-05] Error 日志契约仍然自相矛盾：实现要点 3 明确 Register(bus=nil) 时记 Error，但要点 9 又声明 phase=construct / phase=panic-recovered 是‘本 TASK 唯一的 Error 级输出’。实现者无法同时满足两条。请明确 Register(nil) 的级别与结构化字段，或把‘唯一’限定到构造/异步投递路径，并给 Register(nil) 保留一个不与四类 result / FR-8.2 reason 混淆的确定口径。"
+  - "[TASK-06] 私有 schema 名 ac7_<sanitize(t.Name())>_<pid>_<unixnano> 未处理 PostgreSQL 标识符 63 字节上限；常见长测试名会把尾部 pid/unixnano 静默截断，使所谓唯一后缀丢失，强杀遗留后重跑可能 CREATE 冲突，正好破坏本回修声称的确定性与清理非必需性。请规定长度有界且保留唯一性的命名算法（例如短前缀 + 固定长度 hash/随机串，并断言字节长度 <=63），并让 CREATE / search_path / DROP 复用同一个安全标识符。"
 dimensions:
-  sdd-to-plan: "pass: SDD 的事件契约、governance 发布点、Lark 传输/提醒器、workspace 闭合读链、wiring、验证、回滚与 CUSTOM.md 风险均进入 plan。"
-  plan-to-tasks: "pass: 三个里程碑完整落到 TASK-01~08；AC-1~AC-13、两项回写 revision 与台账收口均有明确主责 TASK。"
-  task-executability: "block: TASK-05 存在构造期 Error 与‘无 Error 日志’互相冲突的不可满足验收。"
-  dependency-topology: "pass: 8 个 TASK 引用无悬空、无环；TASK-01/TASK-04 可并行，approval_reminder.go 的 TASK-05→06 顺序明确，总估算 55h 与索引一致。"
-  interface-contracts: "pass: protocol payload、governance 发布方法、APIClient 新方法、ApprovalReminderConfig/Register、deliverToRecipients 与上下游参数/返回类型一致。"
-  acceptance-verifiability: "block: TASK-05 零查询证据自相矛盾；TASK-06 通过重命名共享 public 表造错会受跨包并行影响，无法作为隔离、可重复的验收手段。"
-  scope-and-simplicity: "block: 为单个错误分支测试改名共享数据库表超出最小、隔离测试面，可用隔离 schema/search_path 等局部手段替代。"
-  risk-and-rollback: "block: t.Cleanup 只覆盖正常测试进程内退出，无法保证进程被强杀/崩溃后恢复 public 表名；且未覆盖 go test 的跨包并行风险。"
+  sdd-to-plan: "pass: SDD 的模块、事件/传输契约、读链、wiring、验证、回滚与风险仍完整进入 plan；本轮两处原 blocker 的主体修法均未越出已审批设计。"
+  plan-to-tasks: "pass: plan §5.6 的两处回修均落到 TASK-05/06/07，TASK-01~08 与 13 项 AC 归属保持完整。"
+  task-executability: "block: TASK-05 对 Register(nil) Error 与‘仅两类 Error’给出互斥指令；TASK-06 的 schema 唯一命名在 PostgreSQL 63 字节限制下不成立。"
+  dependency-topology: "pass: 8 个 TASK 无悬空依赖、无环；同文件 TASK-05→06 顺序与 TASK-08 汇合关系未变，索引总估算仍为 55h。"
+  interface-contracts: "pass: phase 被明确限定为诊断字段、不进入 FR-8.2 reason；私有 schema/search_path 方案不改变生产接口，既有函数参数与返回类型仍一致。"
+  acceptance-verifiability: "block: TASK-05 日志断言无法覆盖未定口径的 Register(nil) Error；TASK-06 在长测试名/强杀遗留场景下可能因 schema 截断冲突而无法稳定复跑。"
+  scope-and-simplicity: "pass: phase 区分与私有 schema 遮蔽均是局部最小手段，未引入生产依赖、DDL 或新增实现面。"
+  risk-and-rollback: "block: 私有 schema 的安全性不依赖 cleanup 这一结论以名称真正唯一为前提；当前命名未守 PostgreSQL 标识符上限，遗留物会影响后续同名测试。"
   reviewer-model: "openai/gpt-5.6-sol"
 suggestions:
-  - "SDD §3.2.2 的概述把 sendCardToOpenID 写成四参简写，而 §4.5 与 TASK-04 固定为含 op 的五参签名；实施以 §4.5/TASK-04 为准，后续回写时可顺手消除该文档简写歧义。"
-  - "本轮已核实 pgxpool.New 默认 MinConns/MinIdleConns 均为 0、关闭后的池由 Acquire 返回 puddle.ErrClosedPool、Stat().AcquireCount() 可用；这些事实本身成立，block 仅针对验收断言冲突与共享 schema 破坏性造错。"
+  - "上轮 BL-1 的核心冲突已修复：TASK-05 依赖缺失四子例按 phase 做正反向断言，TASK-07 同型措辞也已同步，且 phase 未扩张 FR-8.2 九项 reason。"
+  - "上轮 BL-2 的核心方向已修复：TASK-06 已废弃 public 表 RENAME，改为专用 search_path 下的私有 schema 遮蔽，并补 42703 与 public 表存在性自检；本轮 blocker 只针对 schema 标识符的唯一性细节。"
+  - "把测试角色 CREATE 权限前置写进 TASK-06：权限不足时可 t.Skipf，但必须保留现有‘--- SKIP 视为未测、不得据此 task done’门禁，避免包级 exit 0 被当成通过。"
 review-loop:
-  current-attempt: 1
-subject-sha256: 6efbaaa9a809906ee2ef1a4c70676335b5c1aaddbb12bcadd604430df4e0691b
+  current-attempt: 2
+subject-sha256: 6ae1fffb82e081aa6e49b5b28023f4e8f962ffed7b378b624fd9eb44c761057e
