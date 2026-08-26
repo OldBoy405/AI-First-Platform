@@ -1,0 +1,100 @@
+$ go test ./internal/integrations/lark/ -run ApprovalReminder -v -count=1
+(exit=0)
+--- stdout ---
+=== RUN   TestApprovalReminderCardValidation
+--- PASS: TestApprovalReminderCardValidation (0.00s)
+=== RUN   TestApprovalReminderCardHappyPath
+--- PASS: TestApprovalReminderCardHappyPath (0.00s)
+=== RUN   TestApprovalReminderCardTokenInvalidation
+--- PASS: TestApprovalReminderCardTokenInvalidation (0.00s)
+=== RUN   TestApprovalReminderCardJSONEscaping
+--- PASS: TestApprovalReminderCardJSONEscaping (0.00s)
+=== RUN   TestApprovalReminderCardStubShape
+2026/08/26 15:40:08 WARN lark stub client: SendApprovalReminderCard called open_id=ou_approver
+--- PASS: TestApprovalReminderCardStubShape (0.02s)
+=== RUN   TestApprovalReminderDependencyIsolation
+=== RUN   TestApprovalReminderDependencyIsolation/credentials_nil
+=== RUN   TestApprovalReminderDependencyIsolation/client_nil
+=== RUN   TestApprovalReminderDependencyIsolation/client_not_configured
+=== RUN   TestApprovalReminderDependencyIsolation/pool_nil
+=== RUN   TestApprovalReminderDependencyIsolation/nil_bus
+--- PASS: TestApprovalReminderDependencyIsolation (0.07s)
+    --- PASS: TestApprovalReminderDependencyIsolation/credentials_nil (0.01s)
+    --- PASS: TestApprovalReminderDependencyIsolation/client_nil (0.01s)
+    --- PASS: TestApprovalReminderDependencyIsolation/client_not_configured (0.01s)
+    --- PASS: TestApprovalReminderDependencyIsolation/pool_nil (0.01s)
+    --- PASS: TestApprovalReminderDependencyIsolation/nil_bus (0.05s)
+=== RUN   TestApprovalReminderZeroIOCallback
+--- PASS: TestApprovalReminderZeroIOCallback (0.00s)
+=== RUN   TestApprovalReminderOverloadDiscard
+--- PASS: TestApprovalReminderOverloadDiscard (0.01s)
+=== RUN   TestApprovalReminderPanicRecovery
+--- PASS: TestApprovalReminderPanicRecovery (0.01s)
+=== RUN   TestApprovalReminderPreflightOrder
+=== RUN   TestApprovalReminderPreflightOrder/disabled_wins_over_missing_appURL
+=== RUN   TestApprovalReminderPreflightOrder/app_url_missing
+--- PASS: TestApprovalReminderPreflightOrder (0.01s)
+    --- PASS: TestApprovalReminderPreflightOrder/disabled_wins_over_missing_appURL (0.01s)
+    --- PASS: TestApprovalReminderPreflightOrder/app_url_missing (0.01s)
+=== RUN   TestApprovalReminderParsePayload
+--- PASS: TestApprovalReminderParsePayload (0.00s)
+=== RUN   TestApprovalReminderZeroValueDefaults
+2026/08/26 15:40:08 ERROR approval reminder: dependency missing phase=construct missing=pool
+2026/08/26 15:40:08 ERROR approval reminder: dependency missing phase=construct missing=pool
+--- PASS: TestApprovalReminderZeroValueDefaults (0.00s)
+=== RUN   TestApprovalReminderStageLabelsReadOnly
+--- PASS: TestApprovalReminderStageLabelsReadOnly (0.00s)
+=== RUN   TestApprovalReminderAC3HappyPath
+--- PASS: TestApprovalReminderAC3HappyPath (0.15s)
+=== RUN   TestApprovalReminderBL2FirstAttemptFails
+--- PASS: TestApprovalReminderBL2FirstAttemptFails (0.14s)
+=== RUN   TestApprovalReminderBL2DecryptAndTimeout
+=== RUN   TestApprovalReminderBL2DecryptAndTimeout/first_decrypt_fails
+=== RUN   TestApprovalReminderBL2DecryptAndTimeout/first_send_times_out
+--- PASS: TestApprovalReminderBL2DecryptAndTimeout (0.28s)
+    --- PASS: TestApprovalReminderBL2DecryptAndTimeout/first_decrypt_fails (0.14s)
+    --- PASS: TestApprovalReminderBL2DecryptAndTimeout/first_send_times_out (0.14s)
+=== RUN   TestApprovalReminderBL1HydrationFourStates
+=== RUN   TestApprovalReminderBL1HydrationFourStates/happy_credentials_match_db
+=== RUN   TestApprovalReminderBL1HydrationFourStates/installation_missing
+=== RUN   TestApprovalReminderBL1HydrationFourStates/revoked_after_classification
+=== RUN   TestApprovalReminderBL1HydrationFourStates/cross-workspace_installation
+--- PASS: TestApprovalReminderBL1HydrationFourStates (0.21s)
+    --- PASS: TestApprovalReminderBL1HydrationFourStates/happy_credentials_match_db (0.06s)
+    --- PASS: TestApprovalReminderBL1HydrationFourStates/installation_missing (0.05s)
+    --- PASS: TestApprovalReminderBL1HydrationFourStates/revoked_after_classification (0.05s)
+    --- PASS: TestApprovalReminderBL1HydrationFourStates/cross-workspace_installation (0.05s)
+=== RUN   TestApprovalReminderAC4FourCases
+=== RUN   TestApprovalReminderAC4FourCases/all-member_workspace
+=== RUN   TestApprovalReminderAC4FourCases/mixed_workspace_sends_to_admin_only
+=== RUN   TestApprovalReminderAC4FourCases/recipient-level_reasons
+--- PASS: TestApprovalReminderAC4FourCases (0.42s)
+    --- PASS: TestApprovalReminderAC4FourCases/all-member_workspace (0.13s)
+    --- PASS: TestApprovalReminderAC4FourCases/mixed_workspace_sends_to_admin_only (0.14s)
+    --- PASS: TestApprovalReminderAC4FourCases/recipient-level_reasons (0.15s)
+=== RUN   TestApprovalReminderAC10CrossWorkspace
+=== RUN   TestApprovalReminderAC10CrossWorkspace/issue_in_other_workspace
+=== RUN   TestApprovalReminderAC10CrossWorkspace/forged_payload_shell_issue_id
+=== RUN   TestApprovalReminderAC10CrossWorkspace/cr_without_shell_issue
+=== RUN   TestApprovalReminderAC10CrossWorkspace/static_workspace_anchor_in_every_query
+--- PASS: TestApprovalReminderAC10CrossWorkspace (0.14s)
+    --- PASS: TestApprovalReminderAC10CrossWorkspace/issue_in_other_workspace (0.07s)
+    --- PASS: TestApprovalReminderAC10CrossWorkspace/forged_payload_shell_issue_id (0.04s)
+    --- PASS: TestApprovalReminderAC10CrossWorkspace/cr_without_shell_issue (0.03s)
+    --- PASS: TestApprovalReminderAC10CrossWorkspace/static_workspace_anchor_in_every_query (0.00s)
+=== RUN   TestApprovalReminderAC7ForcedDBFailures
+=== RUN   TestApprovalReminderAC7ForcedDBFailures/project_chain_failure_via_closed_pool
+=== RUN   TestApprovalReminderAC7ForcedDBFailures/binding_query_failure_via_private_schema_shadow
+--- PASS: TestApprovalReminderAC7ForcedDBFailures (0.28s)
+    --- PASS: TestApprovalReminderAC7ForcedDBFailures/project_chain_failure_via_closed_pool (0.13s)
+    --- PASS: TestApprovalReminderAC7ForcedDBFailures/binding_query_failure_via_private_schema_shadow (0.15s)
+=== RUN   TestApprovalReminderChooseEffective
+=== RUN   TestApprovalReminderChooseEffective/hit_first_valid_in_order
+=== RUN   TestApprovalReminderChooseEffective/reason_priority_mismatch_over_revoked_over_missing
+--- PASS: TestApprovalReminderChooseEffective (0.00s)
+    --- PASS: TestApprovalReminderChooseEffective/hit_first_valid_in_order (0.00s)
+    --- PASS: TestApprovalReminderChooseEffective/reason_priority_mismatch_over_revoked_over_missing (0.00s)
+PASS
+ok  	github.com/multica-ai/multica/server/internal/integrations/lark	1.822s
+
+--- stderr ---

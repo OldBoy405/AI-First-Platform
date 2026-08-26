@@ -1,0 +1,53 @@
+$ go test ./internal/governance/ -run ApprovalGate -v -count=1
+(exit=0)
+--- stdout ---
+=== RUN   TestApprovalGateAC1FourGatesPlusReEntry
+=== RUN   TestApprovalGateAC1FourGatesPlusReEntry/requirement_gate
+=== RUN   TestApprovalGateAC1FourGatesPlusReEntry/tech-design_gate
+=== RUN   TestApprovalGateAC1FourGatesPlusReEntry/dev-start_gate
+=== RUN   TestApprovalGateAC1FourGatesPlusReEntry/code_gate
+=== RUN   TestApprovalGateAC1FourGatesPlusReEntry/gate_re-entry
+--- PASS: TestApprovalGateAC1FourGatesPlusReEntry (0.08s)
+    --- PASS: TestApprovalGateAC1FourGatesPlusReEntry/requirement_gate (0.03s)
+    --- PASS: TestApprovalGateAC1FourGatesPlusReEntry/tech-design_gate (0.01s)
+    --- PASS: TestApprovalGateAC1FourGatesPlusReEntry/dev-start_gate (0.01s)
+    --- PASS: TestApprovalGateAC1FourGatesPlusReEntry/code_gate (0.01s)
+    --- PASS: TestApprovalGateAC1FourGatesPlusReEntry/gate_re-entry (0.01s)
+=== RUN   TestApprovalGateAC2ZeroPublishMatrix
+=== RUN   TestApprovalGateAC2ZeroPublishMatrix/non-gate_target
+=== RUN   TestApprovalGateAC2ZeroPublishMatrix/self-loop_task-breakdown
+=== RUN   TestApprovalGateAC2ZeroPublishMatrix/self-loop_requirement-reviewing
+=== RUN   TestApprovalGateAC2ZeroPublishMatrix/first-sight_fresh_registration
+=== RUN   TestApprovalGateAC2ZeroPublishMatrix/first-sight_mid-flight_best-effort
+=== RUN   TestApprovalGateAC2ZeroPublishMatrix/out-of-order_illegal_towards_gate
+=== RUN   TestApprovalGateAC2ZeroPublishMatrix/checkpoint_event
+=== RUN   TestApprovalGateAC2ZeroPublishMatrix/review_event_with_gate_stage
+=== RUN   TestApprovalGateAC2ZeroPublishMatrix/review_event_non-gate_stage
+=== RUN   TestApprovalGateAC2ZeroPublishMatrix/trace_event_ledger-only
+=== RUN   TestApprovalGateAC2ZeroPublishMatrix/reconcile_heals_to_gate_status
+=== RUN   TestApprovalGateAC2ZeroPublishMatrix/gate_projection
+--- PASS: TestApprovalGateAC2ZeroPublishMatrix (0.14s)
+    --- PASS: TestApprovalGateAC2ZeroPublishMatrix/non-gate_target (0.02s)
+    --- PASS: TestApprovalGateAC2ZeroPublishMatrix/self-loop_task-breakdown (0.02s)
+    --- PASS: TestApprovalGateAC2ZeroPublishMatrix/self-loop_requirement-reviewing (0.02s)
+    --- PASS: TestApprovalGateAC2ZeroPublishMatrix/first-sight_fresh_registration (0.01s)
+    --- PASS: TestApprovalGateAC2ZeroPublishMatrix/first-sight_mid-flight_best-effort (0.01s)
+    --- PASS: TestApprovalGateAC2ZeroPublishMatrix/out-of-order_illegal_towards_gate (0.01s)
+    --- PASS: TestApprovalGateAC2ZeroPublishMatrix/checkpoint_event (0.01s)
+    --- PASS: TestApprovalGateAC2ZeroPublishMatrix/review_event_with_gate_stage (0.01s)
+    --- PASS: TestApprovalGateAC2ZeroPublishMatrix/review_event_non-gate_stage (0.01s)
+    --- PASS: TestApprovalGateAC2ZeroPublishMatrix/trace_event_ledger-only (0.01s)
+    --- PASS: TestApprovalGateAC2ZeroPublishMatrix/reconcile_heals_to_gate_status (0.01s)
+    --- PASS: TestApprovalGateAC2ZeroPublishMatrix/gate_projection (0.02s)
+=== RUN   TestApprovalGateSubscriptionSurface
+--- PASS: TestApprovalGateSubscriptionSurface (0.01s)
+=== RUN   TestApprovalGateShellIssueIDTwoStates
+=== RUN   TestApprovalGateShellIssueIDTwoStates/with_shell_issue_id
+=== RUN   TestApprovalGateShellIssueIDTwoStates/null_shell_issue_id
+--- PASS: TestApprovalGateShellIssueIDTwoStates (0.03s)
+    --- PASS: TestApprovalGateShellIssueIDTwoStates/with_shell_issue_id (0.02s)
+    --- PASS: TestApprovalGateShellIssueIDTwoStates/null_shell_issue_id (0.01s)
+PASS
+ok  	github.com/multica-ai/multica/server/internal/governance	0.365s
+
+--- stderr ---

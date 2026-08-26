@@ -1,0 +1,30 @@
+$ go test ./cmd/server/ -run ApprovalReminder -v -count=1
+(exit=0)
+--- stdout ---
+EmailService: DEV mode — codes printed to stdout (set MULTICA_DEV_VERIFICATION_CODE in .env for a fixed local code)
+2026/08/26 15:40:11 INFO S3_BUCKET not set, cloud upload disabled
+2026/08/26 15:40:11 INFO local storage initialized dir=./data/uploads baseURL=""
+2026/08/26 15:40:11 INFO CLOUDFRONT_KEY_PAIR_ID not set, signed cookies disabled
+2026/08/26 15:40:11 INFO llm retry policy max_retries=2 source=default request_timeout=1m0s enabled=false
+2026/08/26 15:40:11 INFO channel engine: lease backend configured backend=postgres ttl=3m0s renew_interval=1m0s poll_interval=30s
+2026/08/26 15:40:11 INFO lark integration disabled (MULTICA_LARK_SECRET_KEY not set)
+2026/08/26 15:40:11 ERROR approval reminder: dependency missing phase=construct missing=client,credentials
+2026/08/26 15:40:11 INFO slack integration disabled (MULTICA_SLACK_SECRET_KEY not set)
+2026/08/26 15:40:11 INFO dingtalk integration disabled (MULTICA_DINGTALK_SECRET_KEY not set)
+2026/08/26 15:40:11 INFO wecom integration disabled (MULTICA_WECOM_SECRET_KEY not set)
+2026/08/26 15:40:11 INFO composio integration disabled (COMPOSIO_API_KEY not set)
+2026/08/26 15:40:11 INFO vcs integration disabled (MULTICA_VCS_SECRET_KEY not set)
+2026/08/26 15:40:11 INFO Plugin secrets disabled (MULTICA_PLUGIN_SECRET_KEY not set)
+2026/08/26 15:40:11 WARN auth rate limiting disabled: REDIS_URL not configured
+=== RUN   TestApprovalReminderWiringPosition
+--- PASS: TestApprovalReminderWiringPosition (0.00s)
+=== RUN   TestApprovalReminderDisabledForm
+--- PASS: TestApprovalReminderDisabledForm (0.01s)
+=== RUN   TestApprovalReminderTypedNilGuard
+--- PASS: TestApprovalReminderTypedNilGuard (0.01s)
+=== RUN   TestApprovalReminderEndToEndLatency
+--- PASS: TestApprovalReminderEndToEndLatency (0.08s)
+PASS
+ok  	github.com/multica-ai/multica/server/cmd/server	0.251s
+
+--- stderr ---

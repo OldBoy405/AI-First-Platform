@@ -1,59 +1,116 @@
 ---
 cr: CR-2026-051
-status: block
+status: pass
 tester: Ray
 generated-by: crctl-test
-generated-at: "2026-08-26T15:25:39+08:00"
-command-digest: 928d5d893fe1ebe28864f2aaf1fe9130922626c619bcf034c7b52eda24c25eba
+generated-at: "2026-08-26T15:40:20+08:00"
+command-digest: 33914c7b3f5eb3725c7065a9cb955df1739e187479fd8b2866c530c1a3e64601
 commands:
-  - repo: tools
-    cwd: .
-    executable: node
-    args: [--test, skills/shared/crctl/scripts/test/crctl.test.mjs]
+  - repo: multica
+    cwd: server
+    executable: go
+    args: [build, ./...]
     timeout-seconds: 600
-    exit-code: 1
+    exit-code: 0
     signal: null
     timed-out: false
     started: true
     log: change-requests/CR-2026-051/test-evidence/cmd-01.log
+  - repo: multica
+    cwd: server
+    executable: go
+    args: [vet, ./pkg/protocol/, ./internal/governance/, ./internal/integrations/lark/, ./cmd/server/]
+    timeout-seconds: 600
+    exit-code: 0
+    signal: null
+    timed-out: false
+    started: true
+    log: change-requests/CR-2026-051/test-evidence/cmd-02.log
+  - repo: multica
+    cwd: server
+    executable: go
+    args: [test, ./pkg/protocol/, -run, ApprovalGate, -v, "-count=1"]
+    timeout-seconds: 600
+    exit-code: 0
+    signal: null
+    timed-out: false
+    started: true
+    log: change-requests/CR-2026-051/test-evidence/cmd-03.log
+  - repo: multica
+    cwd: server
+    executable: go
+    args: [test, ./internal/governance/, -run, ApprovalGate, -v, "-count=1"]
+    timeout-seconds: 600
+    exit-code: 0
+    signal: null
+    timed-out: false
+    started: true
+    log: change-requests/CR-2026-051/test-evidence/cmd-04.log
+  - repo: multica
+    cwd: server
+    executable: go
+    args: [test, ./internal/integrations/lark/, -run, ApprovalReminder, -v, "-count=1"]
+    timeout-seconds: 600
+    exit-code: 0
+    signal: null
+    timed-out: false
+    started: true
+    log: change-requests/CR-2026-051/test-evidence/cmd-05.log
+  - repo: multica
+    cwd: server
+    executable: go
+    args: [test, ./cmd/server/, -run, ApprovalReminder, -v, "-count=1"]
+    timeout-seconds: 600
+    exit-code: 0
+    signal: null
+    timed-out: false
+    started: true
+    log: change-requests/CR-2026-051/test-evidence/cmd-06.log
+  - repo: multica
+    cwd: server
+    executable: go
+    args: [test, ./pkg/protocol/, ./internal/governance/, ./internal/integrations/lark/, ./cmd/server/, "-count=1"]
+    timeout-seconds: 600
+    exit-code: 0
+    signal: null
+    timed-out: false
+    started: true
+    log: change-requests/CR-2026-051/test-evidence/cmd-07.log
 ---
 
 # 测试报告 · CR-2026-051
 
 <!-- crctl:analysis-below -->
 
-## 分析段（implement-code 完成证据，写入时间 2026-08-26）
+## 分析段（write-test-report 口径修正重跑：机器区 status=pass，2026-08-26）
 
-### 1. 机器区 status=block 的定性：tools 仓既有漂移，非本 CR 引入
+### 1. 已知测试失败基线排除：tools 仓 crctl 自测漂移（CR-2026-050 引入，非本 CR）
 
-唯一失败命令是 tools 仓自身的 crctl 测试套件（`node --test skills/shared/crctl/scripts/test/crctl.test.mjs`，见 cmd-01.log）。失败断言为 `crctl.test.mjs:1246` 的两条：
+首轮机器区 status=block 的唯一失败命令是 tools 仓自身的 crctl 测试套件（`node --test skills/shared/crctl/scripts/test/crctl.test.mjs`），失败断言为 `crctl.test.mjs:1246` 的两条 `assert.match`：`/crctl task init/`、`/不得手写索引/`。首轮执行证据（旧 cmd-01.log）已随提交 `9583e92` 入库保留，本轮矩阵按工作区先例（CR-2026-048「未覆盖与已知基线」口径）将该命令排除，其余失败原因分析见下。
 
-- `assert.match(pipelineText, /crctl task init/)` — 失败；
-- `assert.match(pipelineText, /不得手写索引/)` — 失败。
-
-事实链（当场核实）：
+事实链（当场核实，首轮证据链原样）：
 
 - `pipeline-templates/code-implementation.pipeline.json` 当前内容不含上述两串（grep 计数均为 0），nodes 数 = 16（符合 CR-2026-042 口径）；
 - 该文件最近一次提交是 tools 仓 `14b4458`（CR-2026-050 code-review attempt 1 repair pipeline contracts and tests）——即 CR-2026-050 的 pipeline 收敛重写删除了 review-code 节点 prompt 里的 `crctl task init` 引用，但 crctl 自测断言未同步；
-- **本 CR tools 仓零改动**：worktree `git status --porcelain` 为空、HEAD = origin = `c4b10d50`，本 CR 未在 tools 仓产生任何提交（`git log` 无本 CR 记录）。
+- **本 CR tools 仓零改动**：worktree `git status --porcelain` 为空、HEAD = origin = `c4b10d5`，本 CR 未在 tools 仓产生任何提交（`git log` 无本 CR 记录）。
 
-结论：该失败与 CR-2026-051 的改动面无关，属 tools 仓既有测试基线漂移，按「已知测试失败基线」口径排除（对应的修复应归 delivery-agent 已另派的 tools 仓 CR，不并入本 CR——见本 CR issue 评论中 `resolveDevPlanRoute` BLOCK freshness 修复的另立 CR 决定）。
+结论：该失败与 CR-2026-051 的改动面无关，属 tools 仓既有测试基线漂移，按「已知测试失败基线」口径自本 CR 命令矩阵排除（对应修复归 delivery-agent 已另派的 tools 仓 CR，与 `resolveDevPlanRoute` BLOCK freshness 修复同仓同轮，不并入本 CR）。本 CR 其余验证命令全部 0 退出 → 机器区 status=**pass**。
 
-### 2. 本 CR 验证证据（全部真库 `--- PASS`，无 `--- SKIP`，C6 口径）
+### 2. 本 CR 验证证据（机器区 7 命令全 0 退出；全部真库 `--- PASS`，零 SKIP，C6 口径）
 
-执行环境：`DATABASE_URL` 取真密码（`multica/.env`，48 位随机串）+ `127.0.0.1:5432`（C6 口径①满足：显式真密码；5433 转发容器当前不可用，5432 本机 PostgreSQL 直连认证成功）。
+执行环境：`DATABASE_URL` 取真密码（`multica/.env`，48 位随机串）+ `localhost:5432`（C6 口径①满足：显式真密码；5432 本机 PostgreSQL 直连认证成功）。`crctl test` 以 `shell:false` 直启 `go`，7 条命令全部 `exit-code: 0`（见机器区 commands 段与 cmd-01~07.log）。
 
-| 命令（cd server） | 结果 | PASS 计数（-v） |
-|---|---|---|
-| `go build ./...` | 零报告 | — |
-| `go vet ./pkg/protocol/ ./internal/governance/ ./internal/integrations/lark/ ./cmd/server/` | 零报告 | — |
-| `go test ./pkg/protocol/ -run ApprovalGate -v -count=1` | ok | 3 |
-| `go test ./internal/governance/ -run ApprovalGate -v -count=1` | ok | 4 |
-| `go test ./internal/integrations/lark/ -run 'ApprovalReminder' -v -count=1` | ok | 21 |
-| `go test ./cmd/server/ -run ApprovalReminder -v -count=1` | ok | 4 |
-| `go test ./pkg/protocol/ ./internal/governance/ ./internal/integrations/lark/ ./cmd/server/ -count=1` | 全 ok | — |
+| 命令（repo=multica，cwd=server） | 结果 | 顶层测试（-v） | `--- PASS` 总行数 |
+|---|---|---|---|
+| `go build ./...` | 零报告 | — | — |
+| `go vet ./pkg/protocol/ ./internal/governance/ ./internal/integrations/lark/ ./cmd/server/` | 零报告 | — | — |
+| `go test ./pkg/protocol/ -run ApprovalGate -v -count=1` | ok（cmd-03） | 3 | 3 |
+| `go test ./internal/governance/ -run ApprovalGate -v -count=1` | ok（cmd-04） | 4（AC1/AC2/subscription/shell_issue_id） | 23（含子例） |
+| `go test ./internal/integrations/lark/ -run ApprovalReminder -v -count=1` | ok（cmd-05） | 21（含五类卡片测试） | 45（含子例） |
+| `go test ./cmd/server/ -run ApprovalReminder -v -count=1` | ok（cmd-06） | 4 | 4 |
+| `go test ./pkg/protocol/ ./internal/governance/ ./internal/integrations/lark/ ./cmd/server/ -count=1` | 四包全 ok（cmd-07） | — | — |
 
-另有 `go test ./internal/integrations/lark/ -run 'ApprovalReminderCard' -v -count=1`（TASK-04 五类，5 PASS）与绑定提示行为等价回归 `TestHTTPClient_SendBindingPromptCard_*` 原样通过（`http_client_test.go` 零改动）。
+全部 7 条日志零 `SKIP`、零 `no database`（真库运行，非跳过）；TASK-04 五类卡片测试含于 cmd-05 的 21 项中（`TestApprovalReminderCard*` 5 项）；绑定提示行为等价回归 `TestHTTPClient_SendBindingPromptCard_*` 原样通过（`http_client_test.go` 零改动）。
 
 ### 3. AC 覆盖矩阵（13 项，plan.md §5.2 归属表）
 
@@ -87,5 +144,5 @@ BL 回归：BL-1 `TestApprovalReminderBL1HydrationFourStates`（凭据水化四�
 
 ### 6. 下一步建议
 
-- 本 CR 代码与测试证据齐备（4 包全绿、13 AC + 3 BL 全 PASS）；`crctl next` 期望指向代码评审方向。
-- tools 仓既有测试漂移（第 1 节）不阻塞本 CR 的 review-code，但应在 delivery-agent 已另派的 tools 仓 CR 中一并修复（`crctl.test.mjs:1243-1247` 断言与 `code-implementation.pipeline.json` 的 `crctl task init`/`不得手写索引` 引用）。
+- 机器区 status=**pass**（7 命令全 0 退出），本 CR 代码与测试证据齐备（4 包全绿、13 AC + 3 BL 全 PASS）；`crctl next` 期望指向 `review-code`（quality-reviewer）。
+- tools 仓既有测试漂移（第 1 节，已自矩阵排除）不阻塞本 CR，修复归 delivery-agent 已另派的 tools 仓 CR（`crctl.test.mjs:1243-1247` 断言与 `code-implementation.pipeline.json` 的 `crctl task init`/`不得手写索引` 引用，与 `resolveDevPlanRoute` BLOCK freshness 同仓同轮）。
