@@ -1,34 +1,31 @@
 cr-id: CR-2026-051
 review-type: code
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-26T15:52:59+08:00"
-verdict: block
-blockers:
-  - "BL-C1 [P1][server/internal/integrations/lark/http_client.go:515, approval_reminder.go:456-462]：sendCardToOpenID 对飞书非零业务码返回普通 fmt.Errorf，但 errorClassOf 只会从 *APIError 读取 230020/99991400；当 msg 不含英文 rate limit/rate_limit 时，真实限流会被记为 error_class=other，违反 SDD §4.6 的 rate-limited 闭集语义。请保留结构化业务码（优先复用现有 APIError）并补真实 SendApprovalReminderCard 非零限流响应→rate-limited 的回归测试。"
-  - "BL-C2 [P2][server/internal/integrations/lark/approval_reminder.go:247-257]：项目链零行后的原因查询若自身返回 pgx.ErrNoRows（锚点 workspace 下 CR 已不存在），shellNull 保持 false，当前代码误记 workspace-mismatch；SDD §4.4 与 TASK-06 要点 2 明确‘为真或无行→project-unresolved’。请显式处理 ErrNoRows 并补 CR 行缺失用例。"
-  - "BL-C3 [P1][server/cmd/server/approval_reminder_wiring_test.go:59-67,351-373]：AC-11 端到端测试的 fake 忽略 ctx、靠测试主动 close(sendCh) 解锁，最终断言 result=sent；它没有验证‘阻塞至 recipient timeout’或 timeout→result=failed/error_class=timeout。当前 test-report 将 AC-11 标 PASS 证据不足。请让 fake 等待 ctx.Done()（用短 RecipientTimeout），同时保留 HandleCREvents 时延/投影断言，并最终断言超时失败日志。"
+reviewed-at: "2026-08-26T16:23:32+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  代码↔TASK↔SDD 对齐: "BLOCK：TASK-01~08 已全部 done，事件触发、workspace 闭合、绑定分类、凭据水化、typed-nil wiring 与 CUSTOM.md #53 主链均对齐；但 BL-C2 与 TASK-06/SDD 的零行原因契约不一致。"
-  工程质量: "BLOCK：生产改动范围合规、三仓 worktree clean，498 行 approval_reminder.go 虽超 SDD §7.3 的 <400 预估，但仍是单一提醒器职责且低于 800 提醒线；仅为行数拆文件会扩大改动面，本评审接受该终局偏差，不作为 blocker。BL-C1 的结构化错误类型丢失仍需修复。"
-  关键路径可读性: "PASS：专用事件→零 I/O 回调→有界异步读链→单次发送的路径清楚；reason/error_class/step/phase 闭集集中，SQL 上方边界注释充分。"
-  安全性: "PASS：每跳 workspace 锚定、owner/admin 筛选、安装 workspace/status 二次复核、载荷 shell_issue_id 不作查询输入；无 DDL/outbox/retry/多渠道抽象，卡片无审批 action。"
-  测试覆盖: "BLOCK：13 项 AC 的定向与四包回归日志均为真实 PASS、无 SKIP；但 BL-C1 无真实限流分类测试，BL-C2 无 CR 行缺失测试，且 BL-C3 未兑现 AC-11 的真实超时失败断言。"
-  测试证据可信度: "PASS：test-report generated-by=crctl-test、status=pass、command-digest=33914c7b3f5eb3725c7065a9cb955df1739e187479fd8b2866c530c1a3e64601 与 traceability.yml#tests 一致；cmd-01~07 齐全且 7 命令 exit-code=0。已按职责只读证据，未重跑 lint/test/build。"
-  前端质量: "N/A：merge-base diff 未触及 tsx/vue/css/html；新 WS 事件载荷为加法契约，现有前端未知事件路径 no-op。"
+  代码↔TASK↔SDD 对齐: "PASS：attempt 1 的 BL-C1～BL-C3 均按原规格闭合。BL-C1 由 sendCardToOpenID 返回结构化 *APIError，真实 code=230020 且 msg 不含 rate 子串仍归类 rate-limited；BL-C2 的原因查询 pgx.ErrNoRows 显式归 project-unresolved；BL-C3 的 wiring fake 等待 recipient ctx.Done()，终态为 failed/timeout/send 且 sent=0。TASK-01～08 均 done，其余已审实现与 SDD 契约无新增偏离。"
+  工程质量: "PASS：回修只触及 5 个预期文件，复用既有 APIError、保持错误文本与 token invalidation 行为；三仓 worktree healthy/clean，multica HEAD=origin=0df7e44d6。approval_reminder.go 现 501 行为 attempt 1 已接受的同职责终局偏差，新增 3 行仅用于 BL-C2 显式分支，不构成 blocker。"
+  关键路径可读性: "PASS：BL-C1 的结构化业务错误、BL-C2 的 no-row 原因分支及 BL-C3 的超时替身均有英文注释解释契约；回修未引入 fallback、重试或并行路径。"
+  安全性: "PASS：回修不改变 workspace 锚定、角色/绑定/安装租户闭合、凭据与日志边界；CR 行缺失继续 fail-closed 为事件级 skip，限流仅做闭集错误分类。"
+  测试覆盖: "PASS：新增 TestApprovalReminderCardRateLimitStructured 与 cr_row_missing_in_anchor_workspace 子例，并把 TestApprovalReminderEndToEndLatency 改为真实 recipient timeout 终态断言；定向日志显示 lark 22 个顶层测试/47 条 PASS、cmd/server 4 条 PASS，四包回归全绿且无 SKIP。"
+  测试证据可信度: "PASS：test-report 机器区由 crctl-test 生成、status=pass、generated-at=2026-08-26T16:09:12+08:00；command-digest=33914c7b3f5eb3725c7065a9cb955df1739e187479fd8b2866c530c1a3e64601 与 traceability.yml#tests 一致，cmd-01～07 均存在且 exit-code=0。评审仅只读既有日志，未重跑 lint/test/build。"
+  前端质量: "N/A：本轮 5 文件回修与 CR 全量 diff 均未触及 tsx/vue/css/html；既有新 WS 事件仍为加法契约且前端未知事件路径 no-op。"
 suggestions:
-  - "NONBLOCK：接受 approval_reminder.go=498 行相对 SDD §7.3 <400 预估的终局偏差；职责仍内聚且低于 800 提醒线，回写时保留偏差说明，无需仅为行数拆分。"
-  - "NONBLOCK：回写期按既有清单 revision PRD FR-10（加入 pkg/protocol/events.go）与 §4.4（事件级 failed 可无 recipient），注明结论不受影响。"
+  - "NONBLOCK：维持 attempt 1 对 approval_reminder.go=501 行相对 SDD §7.3 <400 预估的终局偏差接受；职责仍内聚且低于 800 行提醒线，回写时保留偏差说明，无需仅为行数拆分。"
+  - "NONBLOCK：回写期按既有清单 revision PRD FR-10（加入 server/pkg/protocol/events.go）与 §4.4（事件级 failed 可无 recipient），注明结论是否受影响：不受影响。"
 review-loop:
-  current-attempt: 1
+  current-attempt: 2
 release-subjects:
   version: 1
   repositories:
     - repo: ai-first-platform-docs
       remote-ref: refs/heads/requirement/CR-2026-051
-      reviewed-source-sha: 3e3e07ad2b0375082354281e8f98638d546455a7
+      reviewed-source-sha: 9fa6c9f2cce1c17abb59a2fd9262415a50c20e77
     - repo: multica
       remote-ref: refs/heads/requirement/CR-2026-051
-      reviewed-source-sha: 80bbaf4a6caacd77b189b80074936f641e92d225
+      reviewed-source-sha: 0df7e44d6bc052152d4b3f1851cb6717b203ce9b
     - repo: tools
       remote-ref: refs/heads/requirement/CR-2026-051
       reviewed-source-sha: c4b10d505d737c423c81ee9a4f3dd6980647f46a
