@@ -52,21 +52,26 @@ created: 2026-08-25T23:20:00+08:00
    - `logFailEvent(p, workspaceID, step, errClass)`：`cr_id`、`stage`、`workspace_id`、`event_id`、`result=failed`、`error_class`、`step`，**无 recipient 字段**（审批已确认的可观测性细化，plan.md §0）；
    - `logSkipEvent(p, workspaceID, reason)` / `logSkipRecipient(p, workspaceID, userID, reason)`：四个必填 + `result=skipped` + `reason`（+ 收件人级的 `recipient_user_id`）。
    `stage` 一律取 CR status 字面值（`p.Status`），**不取卡片中文阶段名、不取 `approval_record.stage`**。`error_class` 由私有 `errorClassOf(err) string` 归类（`context.DeadlineExceeded`/`context.Canceled` → `timeout`；`ErrAPIClientNotConfigured` → `not-configured`；含限流语义的飞书错误码 → `rate-limited`；其余含 DB 与解密错误 → `other`），**不得**把响应体原文、token、凭据、diff 写进日志。
-10. **展示层映射与闭集合并（对 SDD 的一处显式收敛，非静默偏离）**：SDD §4.1 的过滤集 `approvalGateStatuses` 与 §4.3 的展示映射本是同一个四元闭集，故合并为**一份**声明 `var approvalGateStageLabels = map[string]string{"requirement-reviewing": "需求审批", "tech-design-review-pending": "架构审批", "task-breakdown": "开发启动审批", "code-reviewing": "代码审批"}`；`func stageLabel(status string) string` 查表命中返回中文名、未命中回退 `status` 原文（= SDD §4.3 要求的 `default` 语义，新增门禁状态不会渲染空白），实现要点 4 的二次过滤用 `_, ok := approvalGateStageLabels[p.Status]`。这样同包内四个状态字面量只出现一次；语义与 SDD 完全一致，仅声明形态从「switch + 另一个 map」收敛为「一个 map + 查表函数」。展示映射仅供卡片，不落日志（日志 `stage` 恒为 `p.Status`）。
-11. multica 仓注释英文；新文件预算 < 400 行；不新增包级可变全局状态（依赖与参数全走构造注入）。
+10. **展示层映射与闭集合并（对 SDD 的一处显式收敛，非静默偏离）**：SDD §4.1 的过滤集 `approvalGateStatuses` 与 §4.3 的展示映射本是同一个四元闭集，故合并为**一份**声明 `var approvalGateStageLabels = map[string]string{"requirement-reviewing": "需求审批", "tech-design-review-pending": "架构审批", "task-breakdown": "开发启动审批", "code-reviewing": "代码审批"}`；`func stageLabel(status string) string` 查表命中返回中文名、未命中回退 `status` 原文（= SDD §4.3 要求的 `default` 语义，新增门禁状态不会渲染空白），实现要点 4 的二次过滤用 `_, ok := approvalGateStageLabels[p.Status]`。这样同包内四个状态字面量只出现一次；语义与 SDD 完全一致，仅声明形态从「switch + 另一个 map」收敛为「一个 map + 查表函数」。展示映射仅供卡片，不落日志（日志 `stage` 恒为 `p.Status`）。**该 map 必须不导出、初始化后只读**（运行期零写入，`stageLabel` 只查表）——这是架构评审 cycle 2 建议 3 的采纳形态（取其前半句）；SDD §4.3 已定下“map + 查表函数”，因此**不**改写为单个 switch helper（不制造计划层对已审批 SDD 的新偏离）；只读约束由验收 8 的静态断言守住。
+11. multica 仓注释英文；新文件预算 < 400 行；**不新增包级可变全局状态**——包级变量仅要点 10 的 `approvalGateStageLabels` 一个，不导出、初始化后只读、运行期零写入（由验收 8 的静态断言守住）；其余依赖与参数全走构造注入。
 
 ## 验收条件
 
-1. **依赖缺失不 panic，且逐依赖隔离取证（AC-12 部分；dev-plan 评审 BL-3 回修）**：`Pool`/`Client`/`Credentials` 任一为 nil 时 `NewApprovalReminder` 返回非 nil。行为断言必须拆成**四个子用例，每个只置一项为 nil、其余依赖均健康**：(a) 只 `Credentials = nil`；(b) 只 `Client = nil`；(c) `Client` 非 nil 但 `IsConfigured() == false`；(d) 只 `Pool = nil`。每个子用例：`Register(bus)` + `bus.Publish(真事件)` 后进程存活、恰一条 `result=skipped reason=feishu-disabled`、pool 替身零调用。
+1. **依赖缺失不 panic，且逐依赖隔离取证（AC-12 部分；dev-plan 评审 BL-3 回修）**：`Pool`/`Client`/`Credentials` 任一为 nil 时 `NewApprovalReminder` 返回非 nil。行为断言必须拆成**四个子用例，每个只置一项为 nil、其余依赖均健康**：(a) 只 `Credentials = nil`；(b) 只 `Client = nil`；(c) `Client` 非 nil 但 `IsConfigured() == false`；(d) 只 `Pool = nil`。每个子用例：`Register(bus)` + `bus.Publish(真事件)` 后进程存活、恰一条 `result=skipped reason=feishu-disabled`、**零 DB 访问**。
    逐依赖隔离是**硬要求**：一次性把三个依赖都置 nil 时，`feishu-disabled` 只能证明"四条条件里至少一条命中"，单条分支全部未被证明（其他 nil 依赖会把断言短路成假证）。
+   **零 DB 的取证形态（架构评审 cycle 2 建议 2；plan.md §5.5）**：`Pool` 字段是具体类型 `*pgxpool.Pool`，**不存在接口替身、也不存在“pool 替身调用计数”这种东西**，禁止写成“pool 替身零调用”。按子用例分两种可执行取证：
+   - (a)(b)(c)（`Pool` 必须健康）：传一个**非 nil 但连不通**的真池——`pool, _ := pgxpool.New(ctx, "postgres://x:x@127.0.0.1:1/x")`（`defaultMinConns`/`defaultMinIdleConns` 均为 0，构造期零连接尝试且不报错，已核实，见 plan.md §5.3），`defer pool.Close()`。零 DB 的**正向**断言是：日志中**不存在任何 `result=failed` 行**——若前置判定失灵、真走到查询，连接被拒会确定性地留下一条 `step=project-chain` 的 `failed`；
+   - (d)：`Pool: nil`，查询在结构上不可能发生（如真发生则是 nil 受体 panic → recover 留一条 Error 日志，因此“无 Error 日志”同样是可执行证据）。
+   有真库环境时可**附加**（非必须）：用真测试池并断言 `pool.Stat().AcquireCount()` 前后不变。
    **本 TASK 不含 typed-nil 用例**：typed-nil `*InstallationService` 在提醒器内本就检不出（`r.credentials == nil` 为假，SDD §3.2.3），强行断言只会得到 panic/recover 日志或靠另一个 nil 依赖短路的假证。typed-nil 防护的唯一验证点是 **TASK-07 验收条件 3**（wiring 层条件赋值）。
-2. **回调零 I/O（AC-11）**：客户端替身的 `IsConfigured()` 阻塞 500ms，断言 `bus.Publish` 的返回耗时 < 50ms（回调只做断言 + channel send）；同时断言回调期间 DB 替身零调用。
+2. **回调零 I/O（AC-11）**：客户端替身的 `IsConfigured()` 阻塞 500ms，断言 `bus.Publish` 的返回耗时 < 50ms（回调只做断言 + channel send）；同时断言回调期无任何 DB 访问（取证形态同验收 1）。
 3. **过载丢弃（AC-13）**：`MaxInFlight = 1`，第一条事件在 `IsConfigured()` 上阻塞占满额度，紧接第二条事件断言恰一条 `result=skipped reason=overloaded`，且未派生第二个 goroutine（客户端替身调用计数仍为 1）、无排队无重试。
 4. **panic 自恢复（AC-13）**：客户端替身的 `IsConfigured()` 直接 `panic("boom")`，断言进程存活、有一条 Error 级日志、信号量已释放（后续事件仍能被处理）。
-5. **前置判定顺序**：`appURL == ""` 且飞书可用时恰一条 `reason=app-url-missing`；飞书不可用且 `appURL` 也为空时只记 `feishu-disabled`（证明顺序为先可用性后基地址），两种情形下 pool 替身均零调用。
+5. **前置判定顺序**：`appURL == ""` 且飞书可用时恰一条 `reason=app-url-missing`；飞书不可用且 `appURL` 也为空时只记 `feishu-disabled`（证明顺序为先可用性后基地址），两种情形下均无 DB 访问（取证形态同验收 1）。
 6. **载荷校验**：`parsePayload` 对 `map[string]any`、异类型、字段空串（`CRID`/`Status`/`EventID` 任一为空）一律返回 `ok == false` 且零 DB/HTTP；非四门禁 `Status` 被二次过滤丢弃。
 7. **零值退化与显式值**：`MaxInFlight/EventTimeout/RecipientTimeout` 为 0 时取 8/60s/10s；显式传 `MaxInFlight = 3`、`EventTimeout = 5s`、`RecipientTimeout = 1s` 时以显式值生效（断言可观测：并发上限 3 时第 4 条才 `overloaded`）。
-8. `cd server && go build ./... && go vet ./internal/integrations/lark/` 零报告；`go test ./internal/integrations/lark/ -run 'ApprovalReminder' -v -count=1` 全部 `--- PASS`（本 TASK 用例不依赖真库，pool 用替身/nil）。
+8. `cd server && go build ./... && go vet ./internal/integrations/lark/` 零报告；`go test ./internal/integrations/lark/ -run 'ApprovalReminder' -v -count=1` 全部 `--- PASS`（本 TASK 用例**不依赖真库**：`Pool` 取 nil 或“非 nil 但连不通的真池”，见验收 1）。
+   另加一条**静态断言**（读 `approval_reminder.go` 源文本，兼现要点 11 的“包级只读”承诺；架构评审 cycle 2 建议 3）：`approvalGateStageLabels` 不导出（首字母小写），且除声明处外全文不存在对它的写入（无 `approvalGateStageLabels[…] =`、无 `delete(approvalGateStageLabels…`、无重赋值）。
 
 ## 完成标志
 

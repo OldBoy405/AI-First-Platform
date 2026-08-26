@@ -6,27 +6,29 @@ sdd-ref: "change-requests/CR-2026-051/sdd.md"
 target-version: tbd
 status: draft
 created: 2026-08-25T23:20:00+08:00
-updated: 2026-08-26T00:30:00+08:00
+updated: 2026-08-26T11:05:00+08:00
 ---
 
 # 0. 输入与前置事实（落笔前当场核实）
 
 | 项 | 值 |
 |---|---|
-| PRD | `change-requests/CR-2026-051/prd.md`，sha256 `b64a92cfe182…`，33911 B（LF 口径，磁盘即 LF） |
-| SDD | `change-requests/CR-2026-051/sdd.md`，sha256 `7bbcf822c9d5…`，81407 B（LF 口径，磁盘即 LF） |
-| 架构审批 | `approval.yml#tech-design`：approver `Ray`、`2026-08-25T23:05:49+08:00`、`via: crctl-approve`、evidence-digest `a44a0416…`、target-status `tech-design-reviewed`；`traceability.yml#reviews.tech-design` verdict `pass`、attempt 2、blocker 0 |
-| CR 状态 | 进入本 Skill 前 `crctl status` = `tech-design-reviewed`，`crctl next` = `write-dev-plan` |
+| PRD | `change-requests/CR-2026-051/prd.md`，sha256 `b64a92cfe182…`，33911 B（LF 口径，磁盘即 LF；本 CR 全程未改） |
+| SDD | `change-requests/CR-2026-051/sdd.md`，sha256 `39999101f3f3…`，93545 B（LF 口径，磁盘即 LF）—— **上游回修后版本**，非 cycle 1 的 `7bbcf822c9d5…`/81407 B |
+| 架构评审 | `review-annotations/sdd.yml`：verdict `pass`、blocker 0、subject-sha256 `39999101…`（= 上表 SDD）；`review-loop.yml#review-tech-design` = **cycle 2 / attempt 1**（cycle 1 的两次 attempt 针对旧 SDD，`detectNewTechDesignCycle` 已开新周期） |
+| 架构审批 | `approval.yml#tech-design`：approver `OldBoy405`、`2026-08-26T10:35:47+08:00`、`via: crctl-approve`、evidence-digest `9cfdd8e4…`、target-status `tech-design-reviewed`。cycle 1 的旧审批（`Ray`/`2026-08-25T23:05:49`/`a44a0416…`）已因新评审证据触发 `EVIDENCE_DRIFT` 失效，由本次人工重签取代 |
+| CR 状态 | 进入本 Skill 前 `crctl status` = `tech-design-reviewed`、`gateBlockers` 空、`legalNext` 含 `write-dev-tasks → task-breakdown`；`crctl next` = `write-dev-plan` |
 | operational workspace | `…\.rayai-worktrees\knowledge-base\requirement\CR-2026-051`（`crctl workspace inspect` 原样值，三仓 resources 全 `healthy`、`dirty=false`） |
 | 落码仓 | `multica` → `…\.rayai-worktrees\multica\requirement\CR-2026-051`（HEAD `93aa7c5bd`）。`tools` 仓本 CR 零改动、只读 |
 | 计划内引用的代码事实 | 全部在上述 multica worktree（分支 `requirement/CR-2026-051`）当场核实，不照抄 SDD 措辞（清单见 §5.3） |
 
-**审批期两项确认（delivery-agent 转达，审批时无异议，按 SDD 主题采纳）**：
+**审批期三项确认（delivery-agent 转达，两次审批均无异议，按 SDD 主题采纳）**：
 
 1. **FR-10 改动面 +1 文件**：`server/pkg/protocol/events.go`（+1 常量 +1 载荷类型）纳入合法改动集（SDD §5 DD-4 主方案生效，备选 1 map/JSON envelope 作废）。
 2. **事件级 `failed` 日志无 recipient 字段**：SDD §4.6 第 5 条的可观测性加法细化采纳。
+3. **AC-4 情形① 的场景级口径**（cycle 2 重签时新增确认，对应 `sdd.yml#suggestions[0]`）：无 owner/admin 的事件记**事件级** `no-approver`；混合 workspace 中普通 `member` 以「不进入收件人集合」证明零发送，**不产生逐 member 的收件人级 skip 日志**（SDD §4.6 第 7 条）。**这一条不是 PRD 偏离**——`no-approver` 本就在 PRD FR-8.2 的 9 值枚举内，且本就归 PRD §4.4 的事件级 partition，因此**不进**下面的回写期 revision 清单，只作为实施期口径固化（落点：TASK-06 验收 4 情形① 的两条互补断言，含「不得描述成收件人级 reason」的反向断言）。
 
-两项都是对**已审批 PRD 字面**的加法（FR-10 改动清单 / §4.4 可观测性表），因此列为回写期偏离项：`writeback-prd-sdd` 时须以 revision 修订 PRD FR-10 与 §4.4，并注明"结论是否受影响"（先例：CR-2026-050 TASK-02 的 AC-05 改判口径）。本计划把该登记动作固化为 TASK-08 完成标志的一条，不留在人的记忆里。
+**第 1、2 项**是对**已审批 PRD 字面**的加法（FR-10 改动清单 / §4.4 可观测性表），因此列为回写期偏离项：`writeback-prd-sdd` 时须以 revision 修订 PRD FR-10 与 §4.4，并注明"结论是否受影响"（先例：CR-2026-050 TASK-02 的 AC-05 改判口径）。本计划把该登记动作固化为 TASK-08 完成标志的一条，不留在人的记忆里。
 
 # 1. 交付里程碑
 
@@ -147,6 +149,10 @@ TASK-04 (APIClient 新方法 + sendCardToOpenID 提取 + 卡片 + 4 替身)     
 | pgx v5.9.2 `pointerPointerScanPlan`（`*string` 目标可承接 NULL → nil，扩列无需新 import） | `go.mod:18` + `pgx@v5.9.2/pgtype/pgtype.go:491-515` |
 | `util.UUIDToString` / `util.ParseUUID`（lark 包已 import `internal/util`） | `internal/util/pgx.go:41`、`:19`；`lark/ids.go` |
 | lark 包 DB 测试 helper 走 `t.Skipf`（假绿风险来源） | `internal/integrations/lark/channel_store_scope_test.go:21-31` |
+| `pgxpool.New` **不预建连接**（`defaultMinConns` / `defaultMinIdleConns` 均为 0，idle 资源创建在后台 goroutine）⇒ 「非 nil 但连不通的真池」可确定性构造，构造期零连接尝试、零 error | `pgx@v5.9.2/pgxpool/pool.go:19-21`、`:212`、`:335-338` |
+| `Pool.Close()` 之后取连接返回 `puddle.ErrClosedPool`（`"closed pool"`）—— 查询**报错而非 panic**，可用于确定性强制 DB 失败分支 | `pgx@v5.9.2/pgxpool/pool.go:599`（`p.p.Acquire` 直传 err）、`puddle/v2@v2.2.2/pool.go:23`、`:371` |
+| `(*pgxpool.Pool).Stat().AcquireCount()` 存在（有真库时的「零查询」可执行证据） | `pgx@v5.9.2/pgxpool/stat.go:18` |
+| lark 包中**触库的四个测试文件 `t.Parallel()` 计数均为 0**（`binding_token_test.go`、`channel_cleanup_test.go`、`channel_store_rebind_test.go`、`channel_store_scope_test.go`）；包内 117 处 `t.Parallel()` 全在不触库的用例里 ⇒ 触库用例串行，测试内 DDL 不会与其它触库用例并发 | `grep -c 't.Parallel()' internal/integrations/lark/*_test.go` |
 
 **一处 SDD 内部不一致，已由 dev-plan 评审定案（采纳本计划口径）**：SDD §2 术语表曾把载荷字段写作“`shell_issue_id *string`（JSON `omitempty`）”，与 §3.2.1 结构体、§3.2.1 不变量 6 的 canonical 形状、§7.4 golden JSON 用例三处一致要求的「键恒在、可为 `null`」相矛。评审结论：**采纳不加 `omitempty`**（canonical JSON 同时是 WS 帧契约，键恒在才对客户端稳定），§2 那句括注按笔误处理——上游回修已将 SDD §2 同步纠正（见 sdd.md §9 上游设计回修行）。TASK-01 / TASK-03 的 golden 断言不需变动（本就按三处一致写的）。
 
@@ -156,9 +162,22 @@ TASK-04 (APIClient 新方法 + sendCardToOpenID 提取 + 卡片 + 4 替身)     
 
 无 feature flag、无新环境变量、无新配置项（FR-11）：启用条件全部由既有事实判定（`MULTICA_LARK_SECRET_KEY` / owner-admin 角色 / 有效飞书绑定 / 项目链 workspace 一致 / `appURL`）。发布 = multica 单仓 merge；`tools` 与 knowledge-base 侧只有 CR 产物与台账，无运行时改动。
 
+## 5.5 架构评审（cycle 2）三条非阻塞建议的处置
+
+`review-annotations/sdd.yml#suggestions` 三条建议不构成 blocker，但均落在**计划层（TASK 验收条件）**，本轮一并消化，逐条给落点；**三条均未改 sdd.md**（已审批且 digest 绑定，改动会再次触发新审查周期）。
+
+| # | 建议 | 处置 | 落点 |
+|---|---|---|---|
+| 1 | 人工审批时显式确认 AC-4 场景级口径；实施测试不得把混合 workspace 的零发送描述成收件人级 reason | 已在 cycle 2 重签时确认（§0 第 3 项，非 PRD 偏离）；TASK-06 已有反向断言禁止收件级 `no-approver` | plan §0；TASK-06 验收 4 情形①(a)(b) + 反向断言 |
+| 2 | 零 DB 断言面对具体类型 `*pgxpool.Pool` 时**不得声称存在接口替身**；可用 nil 前置分支或 `Stat().AcquireCount()` 前后不变 | 删除全部「pool 替身零调用」措辞，改为三种**可执行**取证：① `Pool: nil`（结构上不可能发生查询）；② 非 nil 但连不通的真池 + 断言「日志中不存在任何 `result=failed` 行」（若真尝试过查询，连接失败必留下一条 `failed`，因此“无 failed”是零 DB 的**正向**证据）；③ 有真库时附加 `pool.Stat().AcquireCount()` 前后不变。强制 DB 报错改用已 `Close()` 的**独立**真池（`ErrClosedPool` 是报错而非 panic） | TASK-05 验收 1/2/5/8、TASK-06 验收 7、TASK-07 验收 2/3③ |
+| 3 | `approvalGateStageLabels` 若实现为包级 map，应不导出且运行期零写入；若要严格兑现“无包级可变全局状态”可改单个 switch helper | **保留 SDD §4.3 已定的 map + `stageLabel()` 形态**（不改已审批 SDD，也不制造计划层对 SDD 的新偏离），取建议的**前半句**：把 TASK-05 的“不新增包级可变全局状态”精确化为“不导出 + 初始化后只读、运行期零写入”，并加一条**静态断言**守住 | TASK-05 要点 10/11、验收 8 |
+
+建议 2 涉及的三条 pgx 事实（不预连、`ErrClosedPool` 报错、`Stat().AcquireCount()`）已当场核实并进 §5.3 表；“触库用例集体不 `t.Parallel()`”也已核实（为 TASK-06 验收 7② 的测试内 DDL 的安全前提）。
+
 # 6. 变更记录
 
 | 日期 | 版本 | 作者 | 说明 |
 |---|---|---|---|
 | 2026-08-25 | v0.1.0 | Ray | 初始计划：M1 契约与发布侧 / M2 传输与提醒器 / M3 装配与收口，8 TASK，55h；固化审批期两项确认与回写期 PRD revision 登记；记录一处 SDD 内部不一致的处置口径（`shell_issue_id` 无 `omitempty`） |
 | 2026-08-26 | v0.1.1 | Ray | 随 **上游设计回修**（dev-plan 评审 verdict=block、route=upstream、repair-target=`write-tech-design`）同步：① 风险表 typed-nil 行改正——原“双保险（TASK-05 + TASK-07）”不成立，验证点唯一归 TASK-07 wiring 层（并记录已核实的不对称：`LarkInstallations` 是具体指针、`LarkAPIClient` 是接口）；② §5.3 那处“请证审确认”改为已定案（两项口径均采纳，`omitempty` 括注已在 SDD §2 纠正；阶段名映射收敛已写进 SDD §4.3 并附边界）；③ TASK-03 AC-2 零发布矩阵改为**按路径选 liveness probe**（`trace` 走 `ingestTrace`、不进 `publish`，不得断言 `cr:updated > 0`）；④ TASK-05 依赖缺失用例改为**逐依赖隔离四子例**、删除 typed-nil 断言；⑤ TASK-06 AC-4 情形①改为**事件级 `no-approver` + 混合 workspace 零发送**两条互补断言（不改 PRD、不加第 10 个 reason）；⑥ TASK-07 验收 3 升为执行断言。**估算 delta = 0（55h 不变）**：均为验收条件与取证形态改写，无新增文件、无新增实现面；TASK-06 新增的两个 workspace 造数场景复用同一 fixture helper（该 TASK 已为 AC-4 其余三情形预算真库造数），故 `tasks/_index.yml` 与 `totalEstimateHours: 55` 未动 |
+| 2026-08-26 | v0.1.2 | Ray | **本轮（cycle 2 审批后重跑 `write-dev-plan` / `write-dev-tasks`）**：① §0 前置事实刷新——SDD 换为上游回修后的 `39999101…`/93545 B，新增「架构评审」行（sdd.yml pass / cycle 2 attempt 1），审批行换为重签后的 `OldBoy405`/`10:35:47`/`9cfdd8e4…`（并记旧审批因 `EVIDENCE_DRIFT` 失效）；② 审批期确认由两项扩为三项（新增 AC-4 场景级口径，**不计入回写期 PRD revision 清单**，因 `no-approver` 本在 FR-8.2 枚举与 §4.4 事件级 partition 内）；③ 新增 §5.5：架构评审 cycle 2 三条非阻塞建议的逐条处置与落点（建议 2 删除 TASK-05/06/07 中全部“pool 替身零调用”措辞——`*pgxpool.Pool` 是具体类型、无接口替身可言；建议 3 把包级 map 的“不导出 + 运行期零写入”写成静态断言）；④ §5.3 新增 4 条当场核实的代码事实（`pgxpool.New` 不预连、`ErrClosedPool` 为报错非 panic、`Stat().AcquireCount()` 存在、触库用例集体不 `t.Parallel()`）。**估算 delta = 0（55h、8 TASK、3 里程碑均不变）**：本轮全部改动为取证形态与前置事实刷新，无新增文件、无新增实现面、无依赖方向变更，`tasks/_index.yml` 无需重生 |
