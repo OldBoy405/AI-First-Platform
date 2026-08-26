@@ -25,7 +25,7 @@ created: 2026-08-25T23:20:00+08:00
 - `server/internal/integrations/lark/approval_reminder.go`（改：追加读链、`chooseEffective`、水化与发送；替换 `deliverToRecipients` 实现体并删除其 TODO）
 - `server/internal/integrations/lark/approval_reminder_test.go`（改：追加真库用例）
 
-零改动：`pkg/db/queries/**`、`pkg/db/generated/**`（DD-2：不加 sqlc 查询、不重跑 `make sqlc`）、任何迁移、`channel_store.go`、`installation.go`、`feishu_channel.go`。
+零改动：`pkg/db/queries/**`、`pkg/db/generated/**`（DD-2：不加 sqlc 查询、不重跑 `make sqlc`）、任何迁移、`channel_store.go`、`installation.go`、`feishu_channel.go`。验收 7② 的失败注入只得建/删**测试专用的私有 schema**，**不得改动 `public` schema 的任何对象**。
 
 ## 实现要点
 
@@ -83,7 +83,13 @@ created: 2026-08-25T23:20:00+08:00
 6. **AC-5 CTA 与基地址**：断言发送参数的 `ApproveURL == appURL + "/" + slug + "/projects/" + projectID + "?tab=chat"`，且 slug 取自锚定 workspace（跨 workspace slug 回归：另一 workspace 的同名 project 不影响生成结果）。
 7. **AC-7 事件级/收件人级 failed**。**强制 DB 报错的手段（架构评审 cycle 2 建议 2）**：`Pool` 是具体类型 `*pgxpool.Pool`，**无接口替身可注入**，因此禁止写成“注入报错的 pool 替身”，两条断言各自用可执行手段：
    - ① **项目链查询失败（事件级）**：另建一份**独立**真池（`pgxpool.New(ctx, 同一 DSN)`）并立即 `Close()` 后传入——已核实 `Close()` 后取连接返回 `puddle.ErrClosedPool`（`"closed pool"`），是**报错而非 panic**（plan.md §5.3）；**不得关掉共享的测试池**。断言：恰一条 `result=failed`、`step=project-chain`、`error_class=other`、**无 recipient 字段、无 `reason` 字段**。
-   - ② **绑定候选查询失败（收件人级）**：前两跳（项目链、成员）必须**成功**、只让第三跳失败，故用真库 + 测试内 DDL：`ALTER TABLE channel_user_binding RENAME TO channel_user_binding_ac7_tmp`，并在 `t.Cleanup` 里改回（`t.Cleanup` 在失败/panic 下也会执行）。**安全前提已核实**：lark 包四个触库测试文件的 `t.Parallel()` 计数均为 0（包内 117 处 `t.Parallel()` 全在不触库的用例，plan.md §5.3），故该 DDL 不会与其它触库用例并发；本用例自身也不得调 `t.Parallel()`。断言：收件人级 `result=failed`、`step=binding-query`（而非 `binding-missing`）、带 `recipient_user_id`。
+   - ② **绑定候选查询失败（收件人级）**：前两跳（项目链、成员）必须**成功**、只让第三跳失败。**严禁改动 `public` schema**——原 `ALTER TABLE channel_user_binding RENAME` + `t.Cleanup` 方案**已废弃**（dev-plan 评审 attempt 1 BL-2：`scripts/test-go.sh` 把全部 regular packages 交给**同一次** `go test`、按默认包级并行运行且共享同一个 `DATABASE_URL`（已核实，见 plan.md §5.3），重命名窗口内其它包可访问该表；且测试进程被强杀/崩溃时 `t.Cleanup` 无法恢复表名，“包内触库用例均不 `t.Parallel()`”不足以做安全前提）。改用**私有 schema 遮蔽 + 专用池 `search_path`**（零 `public` 改动）：
+     1. 用共享测试池建一个**唯一命名的私有 schema**：`CREATE SCHEMA ac7_<sanitize(t.Name())>_<pid>_<unixnano>`（全小写字母数字下划线，无需引号），其中只建一个**列不兼容的同名遮蔽表**：`CREATE TABLE <shadow>.channel_user_binding (id uuid PRIMARY KEY)`（故意不含 `workspace_id` / `multica_user_id` / `channel_user_id` / `installation_id` / `channel_type` / `bound_at`）。
+     2. 造数与前两跳仍全部落在 `public`；传给提醒器的是一个**专用池**：`cfg, _ := pgxpool.ParseConfig(dsn)` → `cfg.ConnConfig.RuntimeParams["search_path"] = "<shadow>, public"` → `pgxpool.NewWithConfig(ctx, cfg)`，`defer pool.Close()`（`RuntimeParams` 在连接启动时下发为会话默认值，已核实，见 plan.md §5.3）。于是 `cr`/`issue`/`project`/`workspace`/`member`/`channel_installation` 仍解析到 `public`（前两跳确定成功），**只有 `channel_user_binding` 命中遮蔽表**。不得修改共享测试池的 `search_path`。
+     3. 该失败发生在**语句准备期**（`42703 undefined_column`，如 `column b.workspace_id does not exist`），**与表中有无数据无关**，故确定性、可重复；它不是 `pgx.ErrNoRows`，必然进实现要点 3 的 `logFail` 分支。
+     4. 清理：`t.Cleanup` 里 `DROP SCHEMA <shadow> CASCADE`。但**正确性与隔离性均不依赖清理被执行**——遗留物是一个唯一命名的私有 schema，`search_path` 不含它的任何会话（= 其它包、其它用例、生产代码）完全看不见它；对照被重命名的 `public` 表：遗留即全局破坏。本用例仍不得调 `t.Parallel()`（守住触库用例串行的包内成规），但该约束不再是安全性的必要条件。
+     断言：恰一条**收件人级** `result=failed`、`step=binding-query`（而非 `binding-missing`）、带 `recipient_user_id`、`error_class=other`；另断言同一事件下 `step=project-chain` 与 `step=approver-query` 零 `failed`（证明只有第三跳失败）。
+     **取证前提自检（与提醒器行为断言分开写）**：同一用例内直接用该专用池执行一次同形 SQL，断言返回的 err 可 `errors.As` 成 `*pgconn.PgError` 且 `Code == "42703"`（证明注入确实生效、且是服务端真实查询失败，而非 Go 侧守卫短路）；并用共享测试池断言 `to_regclass('public.channel_user_binding') IS NOT NULL`（证明 `public` 未被动过）。
 8. **`chooseEffective` 纯函数单测**（无 DB）：覆盖 4 种原因 + 命中最新绑定 + rows 非空但全失效时的原因优先级（mismatch > revoked > missing）。
 9. `cd server && go build ./... && go vet ./internal/integrations/lark/` 零报告；`go test ./internal/integrations/lark/ -run 'ApprovalReminder' -v -count=1` 全部 `--- PASS`；`go test ./internal/integrations/lark/ -count=1` 整包通过（对照 CUSTOM.md 基线排除既有失败）。
 10. `git diff --name-only` 在本 TASK 范围内只有 `approval_reminder.go` + `approval_reminder_test.go`；`git diff` 确认 `pkg/db/queries`/`pkg/db/generated` 零改动。

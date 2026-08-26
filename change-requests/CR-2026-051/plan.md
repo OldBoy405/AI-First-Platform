@@ -6,7 +6,7 @@ sdd-ref: "change-requests/CR-2026-051/sdd.md"
 target-version: tbd
 status: draft
 created: 2026-08-25T23:20:00+08:00
-updated: 2026-08-26T11:05:00+08:00
+updated: 2026-08-26T11:40:00+08:00
 ---
 
 # 0. 输入与前置事实（落笔前当场核实）
@@ -17,7 +17,8 @@ updated: 2026-08-26T11:05:00+08:00
 | SDD | `change-requests/CR-2026-051/sdd.md`，sha256 `39999101f3f3…`，93545 B（LF 口径，磁盘即 LF）—— **上游回修后版本**，非 cycle 1 的 `7bbcf822c9d5…`/81407 B |
 | 架构评审 | `review-annotations/sdd.yml`：verdict `pass`、blocker 0、subject-sha256 `39999101…`（= 上表 SDD）；`review-loop.yml#review-tech-design` = **cycle 2 / attempt 1**（cycle 1 的两次 attempt 针对旧 SDD，`detectNewTechDesignCycle` 已开新周期） |
 | 架构审批 | `approval.yml#tech-design`：approver `OldBoy405`、`2026-08-26T10:35:47+08:00`、`via: crctl-approve`、evidence-digest `9cfdd8e4…`、target-status `tech-design-reviewed`。cycle 1 的旧审批（`Ray`/`2026-08-25T23:05:49`/`a44a0416…`）已因新评审证据触发 `EVIDENCE_DRIFT` 失效，由本次人工重签取代 |
-| CR 状态 | 进入本 Skill 前 `crctl status` = `tech-design-reviewed`、`gateBlockers` 空、`legalNext` 含 `write-dev-tasks → task-breakdown`；`crctl next` = `write-dev-plan` |
+| CR 状态 | 进入本 Skill 前 `crctl status` = `tech-design-reviewed`（由 `task-breakdown` 经 `review-dev-plan:block -> write-dev-plan` 回退）、`crctl next` = `write-dev-plan`；`gateBlockers` 仅预期的 `developing: dev-start` |
+| 开发计划评审 | `review-annotations/dev-plan.yml`：verdict `block`、`repair-target=write-dev-plan`、blocker 2、subject-sha256 `6efbaaa9…`（= 上一版 plan.md + TASK-01~08 的复合 digest）；`review-loop.yml#review-dev-plan` = cycle 1 / attempt **1/3**。**本轮 = 该 block 的定点回修**，逐条处置见 §5.6 |
 | operational workspace | `…\.rayai-worktrees\knowledge-base\requirement\CR-2026-051`（`crctl workspace inspect` 原样值，三仓 resources 全 `healthy`、`dirty=false`） |
 | 落码仓 | `multica` → `…\.rayai-worktrees\multica\requirement\CR-2026-051`（HEAD `93aa7c5bd`）。`tools` 仓本 CR 零改动、只读 |
 | 计划内引用的代码事实 | 全部在上述 multica worktree（分支 `requirement/CR-2026-051`）当场核实，不照抄 SDD 措辞（清单见 §5.3） |
@@ -152,7 +153,9 @@ TASK-04 (APIClient 新方法 + sendCardToOpenID 提取 + 卡片 + 4 替身)     
 | `pgxpool.New` **不预建连接**（`defaultMinConns` / `defaultMinIdleConns` 均为 0，idle 资源创建在后台 goroutine）⇒ 「非 nil 但连不通的真池」可确定性构造，构造期零连接尝试、零 error | `pgx@v5.9.2/pgxpool/pool.go:19-21`、`:212`、`:335-338` |
 | `Pool.Close()` 之后取连接返回 `puddle.ErrClosedPool`（`"closed pool"`）—— 查询**报错而非 panic**，可用于确定性强制 DB 失败分支 | `pgx@v5.9.2/pgxpool/pool.go:599`（`p.p.Acquire` 直传 err）、`puddle/v2@v2.2.2/pool.go:23`、`:371` |
 | `(*pgxpool.Pool).Stat().AcquireCount()` 存在（有真库时的「零查询」可执行证据） | `pgx@v5.9.2/pgxpool/stat.go:18` |
-| lark 包中**触库的四个测试文件 `t.Parallel()` 计数均为 0**（`binding_token_test.go`、`channel_cleanup_test.go`、`channel_store_rebind_test.go`、`channel_store_scope_test.go`）；包内 117 处 `t.Parallel()` 全在不触库的用例里 ⇒ 触库用例串行，测试内 DDL 不会与其它触库用例并发 | `grep -c 't.Parallel()' internal/integrations/lark/*_test.go` |
+| lark 包中**触库的四个测试文件 `t.Parallel()` 计数均为 0**（`binding_token_test.go`、`channel_cleanup_test.go`、`channel_store_rebind_test.go`、`channel_store_scope_test.go`）；包内 117 处 `t.Parallel()` 全在不触库的用例里 ⇒ 触库用例**包内**串行。**但这不足以做“测试内改 `public` schema”的安全前提**（下一行给出反例；dev-plan 评审 attempt 1 BL-2，见 §5.6） | `grep -c 't.Parallel()' internal/integrations/lark/*_test.go` |
+| `scripts/test-go.sh` 把**全部 regular packages 交给同一次 `go test`**（`go list ./...` 除 `pkg/agent`）且**不传 `-p`/`-parallel`** ⇒ 包级并行度 = 默认 GOMAXPROCS、所有包共享同一个 `DATABASE_URL` ⇒ 任何测试内对 `public` schema 的改动（如 `ALTER TABLE … RENAME`）都有**跳包并发**风险，且进程被强杀时 `t.Cleanup` 无法恢复 | `scripts/test-go.sh:28-38`（`-p 2 -parallel 2` 仅附在 `./pkg/agent/...` 那一行） |
+| `pgconn.Config.RuntimeParams` 可以**会话默认值**下发 `search_path`（字段注释直接以 `search_path` 为例）；`pgxpool.ParseConfig` → `cfg.ConnConfig.RuntimeParams["search_path"] = …` → `pgxpool.NewWithConfig` 可得一个**只影响自己连接**的专用池（`pgx.ConnConfig` 嵌入 `pgconn.Config`；DSN 中非连接参数的键也一律进 RuntimeParams） ⇒ TASK-06 验收 7② 的隔离失败注入可实现 | `pgx@v5.9.2/pgconn/config.go:51`、`:340-377`；`pgx/v5/conn.go:22-23`；`pgxpool/pool.go:122-123`、`:361` |
 
 **一处 SDD 内部不一致，已由 dev-plan 评审定案（采纳本计划口径）**：SDD §2 术语表曾把载荷字段写作“`shell_issue_id *string`（JSON `omitempty`）”，与 §3.2.1 结构体、§3.2.1 不变量 6 的 canonical 形状、§7.4 golden JSON 用例三处一致要求的「键恒在、可为 `null`」相矛。评审结论：**采纳不加 `omitempty`**（canonical JSON 同时是 WS 帧契约，键恒在才对客户端稳定），§2 那句括注按笔误处理——上游回修已将 SDD §2 同步纠正（见 sdd.md §9 上游设计回修行）。TASK-01 / TASK-03 的 golden 断言不需变动（本就按三处一致写的）。
 
@@ -169,10 +172,30 @@ TASK-04 (APIClient 新方法 + sendCardToOpenID 提取 + 卡片 + 4 替身)     
 | # | 建议 | 处置 | 落点 |
 |---|---|---|---|
 | 1 | 人工审批时显式确认 AC-4 场景级口径；实施测试不得把混合 workspace 的零发送描述成收件人级 reason | 已在 cycle 2 重签时确认（§0 第 3 项，非 PRD 偏离）；TASK-06 已有反向断言禁止收件级 `no-approver` | plan §0；TASK-06 验收 4 情形①(a)(b) + 反向断言 |
-| 2 | 零 DB 断言面对具体类型 `*pgxpool.Pool` 时**不得声称存在接口替身**；可用 nil 前置分支或 `Stat().AcquireCount()` 前后不变 | 删除全部「pool 替身零调用」措辞，改为三种**可执行**取证：① `Pool: nil`（结构上不可能发生查询）；② 非 nil 但连不通的真池 + 断言「日志中不存在任何 `result=failed` 行」（若真尝试过查询，连接失败必留下一条 `failed`，因此“无 failed”是零 DB 的**正向**证据）；③ 有真库时附加 `pool.Stat().AcquireCount()` 前后不变。强制 DB 报错改用已 `Close()` 的**独立**真池（`ErrClosedPool` 是报错而非 panic） | TASK-05 验收 1/2/5/8、TASK-06 验收 7、TASK-07 验收 2/3③ |
+| 2 | 零 DB 断言面对具体类型 `*pgxpool.Pool` 时**不得声称存在接口替身**；可用 nil 前置分支或 `Stat().AcquireCount()` 前后不变 | 删除全部「pool 替身零调用」措辞，改为三种**可执行**取证：① `Pool: nil`（结构上不可能发生查询）；② 非 nil 但连不通的真池 + 断言「日志中不存在任何 `result=failed` 行」（若真尝试过查询，连接失败必留下一条 `failed`，因此“无 failed”是零 DB 的**正向**证据）；③ 有真库时附加 `pool.Stat().AcquireCount()` 前后不变。强制 DB 报错分两种：事件级（项目链）用已 `Close()` 的**独立**真池（`ErrClosedPool` 是报错而非 panic）；收件人级（绑定候选查询）用**私有 schema 遮蔽 + 专用池 `search_path`**（原 RENAME 方案已废，见 §5.6 BL-2） | TASK-05 验收 1/2/5/8、TASK-06 验收 7、TASK-07 验收 2/3③ |
 | 3 | `approvalGateStageLabels` 若实现为包级 map，应不导出且运行期零写入；若要严格兑现“无包级可变全局状态”可改单个 switch helper | **保留 SDD §4.3 已定的 map + `stageLabel()` 形态**（不改已审批 SDD，也不制造计划层对 SDD 的新偏离），取建议的**前半句**：把 TASK-05 的“不新增包级可变全局状态”精确化为“不导出 + 初始化后只读、运行期零写入”，并加一条**静态断言**守住 | TASK-05 要点 10/11、验收 8 |
 
-建议 2 涉及的三条 pgx 事实（不预连、`ErrClosedPool` 报错、`Stat().AcquireCount()`）已当场核实并进 §5.3 表；“触库用例集体不 `t.Parallel()`”也已核实（为 TASK-06 验收 7② 的测试内 DDL 的安全前提）。
+建议 2 涉及的三条 pgx 事实（不预连、`ErrClosedPool` 报错、`Stat().AcquireCount()`）已当场核实并进 §5.3 表。“触库用例集体不 `t.Parallel()`”也已核实，**但已不再充当安全前提**——dev-plan 评审 attempt 1 指出包内串行推不出跳包串行，TASK-06 验收 7② 已改为不改 `public` schema 的私有 schema 遮蔽方案（见 §5.6 BL-2）。
+
+## 5.6 开发计划评审（cycle 1 / attempt 1 = BLOCK）两条 blocker 的定点回修
+
+`review-annotations/dev-plan.yml`：verdict `block`、`repair-target=write-dev-plan`、subject `6efbaaa9…`。两条均落在**验收取证形态**：**sdd.md / prd.md 零改动**，实现面与依赖方向不变。
+
+### BL-1 — TASK-05 验收自相矛盾（不可满足）
+
+- **根因**：要点 2 规定“`Pool`/`Client`/`Credentials` 任一为 nil 时构造期必记一条 Error”，验收 1(d) 又把“无 Error 日志”当作零查询证据——两条 `Error` 级日志（构造期 dependency-missing / 异步体 panic 兜底）**无可区分字段**，只能粗粒度写“有/无 Error”，于是两条要求直接冲突。
+- **回修**：给这两条日志加一个**诊断字段 `phase`**——`phase=construct`（附 `missing`）与 `phase=panic-recovered`，均**不带 `result` 字段**；验收 1 改为“**允许并正向断言**构造期 Error（`missing` 恰等于该子用例置 nil 的那一项，(c) 子用例为 0 条），**只禁** `result=failed` 与 `phase=panic-recovered`”。
+- **不越红线**：`phase` 是诊断字段而非结果分类——**不进** PRD FR-8.2 的 9 项 `reason` 闭集、不新增第 10 个 reason、不改 SDD §4.6 的四类结果口径。
+- **落点**：TASK-05 要点 2 / 5 / 9（末段新增两条非 result 类 Error 的口径）、验收 1 / 4；同家族**预防性**修正 TASK-07 验收 2（原“无 Error 级 recover 日志”同样模糊，且那里三依赖均为 nil、构造期 Error 必现）。
+
+### BL-2 — TASK-06 验收 7② 改 `public` 表名造错不安全
+
+- **根因**：原安全前提（lark 包内触库用例均不 `t.Parallel()`）只覆盖**包内**并行；`scripts/test-go.sh` 把全部 regular packages 交给同一次 `go test`、默认包级并行且共享同一个 `DATABASE_URL`（§5.3 新增行），重命名窗口内其它包可访问 `channel_user_binding`；且测试进程被强杀/崩溃时 `t.Cleanup` 无法恢复表名。
+- **回修**：废弃 `ALTER TABLE … RENAME`，改为**私有 schema 遮蔽 + 专用池 `search_path`**：唯一命名的私有 schema 内只建一个**列不兼容的同名遮蔽表**，提醒器拿一个 `RuntimeParams["search_path"] = "<shadow>, public"` 的**专用池**——`cr`/`issue`/`project`/`workspace`/`member`/`channel_installation` 仍解析到 `public`（前两跳确定成功），只有第三跳命中遮蔽表并在**语句准备期**报 `42703`。
+- **为何更安全**：① `public` 零改动，其它包的会话看不见该 schema；② 失败与表中有无数据无关，确定性可重复；③ **正确性与隔离性不依赖 `t.Cleanup` 被执行**——强杀后的遗留物只是一个惰性的私有 schema（对照被重命名的 `public` 表：遗留即全局破坏）。
+- **落点**：TASK-06 验收 7②（四步取证 + 断言 + 取证前提自检）、“零改动”段新增“禁改 `public` schema 任何对象”硬约束；§5.3 新增两条事实并修正 `t.Parallel()` 那行的结论。
+
+**评审认可、本轮未动的部分**：pgx 三条事实（不预连 / `ErrClosedPool` / `Stat().AcquireCount()`）、依赖拓扑无悬空无环、8 TASK / 55h / 3 里程碑、接口契约与 AC 覆盖。**估算 delta = 0**：BL-1 多两个结构化日志字段，BL-2 把一条 DDL 换成两条 DDL + 一个专用池（均在 TASK-06 已预算的真库造数面内）。
 
 # 6. 变更记录
 
@@ -181,3 +204,4 @@ TASK-04 (APIClient 新方法 + sendCardToOpenID 提取 + 卡片 + 4 替身)     
 | 2026-08-25 | v0.1.0 | Ray | 初始计划：M1 契约与发布侧 / M2 传输与提醒器 / M3 装配与收口，8 TASK，55h；固化审批期两项确认与回写期 PRD revision 登记；记录一处 SDD 内部不一致的处置口径（`shell_issue_id` 无 `omitempty`） |
 | 2026-08-26 | v0.1.1 | Ray | 随 **上游设计回修**（dev-plan 评审 verdict=block、route=upstream、repair-target=`write-tech-design`）同步：① 风险表 typed-nil 行改正——原“双保险（TASK-05 + TASK-07）”不成立，验证点唯一归 TASK-07 wiring 层（并记录已核实的不对称：`LarkInstallations` 是具体指针、`LarkAPIClient` 是接口）；② §5.3 那处“请证审确认”改为已定案（两项口径均采纳，`omitempty` 括注已在 SDD §2 纠正；阶段名映射收敛已写进 SDD §4.3 并附边界）；③ TASK-03 AC-2 零发布矩阵改为**按路径选 liveness probe**（`trace` 走 `ingestTrace`、不进 `publish`，不得断言 `cr:updated > 0`）；④ TASK-05 依赖缺失用例改为**逐依赖隔离四子例**、删除 typed-nil 断言；⑤ TASK-06 AC-4 情形①改为**事件级 `no-approver` + 混合 workspace 零发送**两条互补断言（不改 PRD、不加第 10 个 reason）；⑥ TASK-07 验收 3 升为执行断言。**估算 delta = 0（55h 不变）**：均为验收条件与取证形态改写，无新增文件、无新增实现面；TASK-06 新增的两个 workspace 造数场景复用同一 fixture helper（该 TASK 已为 AC-4 其余三情形预算真库造数），故 `tasks/_index.yml` 与 `totalEstimateHours: 55` 未动 |
 | 2026-08-26 | v0.1.2 | Ray | **本轮（cycle 2 审批后重跑 `write-dev-plan` / `write-dev-tasks`）**：① §0 前置事实刷新——SDD 换为上游回修后的 `39999101…`/93545 B，新增「架构评审」行（sdd.yml pass / cycle 2 attempt 1），审批行换为重签后的 `OldBoy405`/`10:35:47`/`9cfdd8e4…`（并记旧审批因 `EVIDENCE_DRIFT` 失效）；② 审批期确认由两项扩为三项（新增 AC-4 场景级口径，**不计入回写期 PRD revision 清单**，因 `no-approver` 本在 FR-8.2 枚举与 §4.4 事件级 partition 内）；③ 新增 §5.5：架构评审 cycle 2 三条非阻塞建议的逐条处置与落点（建议 2 删除 TASK-05/06/07 中全部“pool 替身零调用”措辞——`*pgxpool.Pool` 是具体类型、无接口替身可言；建议 3 把包级 map 的“不导出 + 运行期零写入”写成静态断言）；④ §5.3 新增 4 条当场核实的代码事实（`pgxpool.New` 不预连、`ErrClosedPool` 为报错非 panic、`Stat().AcquireCount()` 存在、触库用例集体不 `t.Parallel()`）。**估算 delta = 0（55h、8 TASK、3 里程碑均不变）**：本轮全部改动为取证形态与前置事实刷新，无新增文件、无新增实现面、无依赖方向变更，`tasks/_index.yml` 无需重生 |
+| 2026-08-26 | v0.1.3 | Ray | **开发计划评审 cycle 1 / attempt 1 = BLOCK（repair-target=`write-dev-plan`）的两处定点回修**，新增 §5.6 逐条记根因/回修/落点：① **BL-1**（TASK-05 验收 1(d) 与要点 2 自相矛盾、不可满足）——为构造期 dependency-missing Error 与 panic 兜底 Error 加可区分诊断字段 `phase=construct`（+`missing`）/ `phase=panic-recovered`，验收 1 改为“允许并正向断言构造期 Error、只禁 `result=failed` 与 `phase=panic-recovered`”，验收 4 同步精确化（`phase` 不进 FR-8.2 的 9 项 reason 闭集、不改 SDD §4.6）；预防性修正 TASK-07 验收 2 的同型模糊措词；② **BL-2**（TASK-06 改 `public` 表名不安全）——废弃 `ALTER TABLE … RENAME` + `t.Cleanup`，改为**私有 schema 遮蔽 + 专用池 `search_path`** 的确定性失败注入（`public` 零改动、失败在语句准备期与数据无关、正确性不依赖清理执行），并在“零改动”段硬写禁改 `public`；③ §5.3 新增 2 条当场核实的事实（`scripts/test-go.sh` 包级并行与共享 `DATABASE_URL`、`pgconn.Config.RuntimeParams` 支持 `search_path`）并修正 `t.Parallel()` 那行的结论（不再充当安全前提）。**估算 delta = 0（55h、8 TASK、3 里程碑均不变）**：两处均为验收取证形态改写，无新增文件、无新增实现面、无依赖方向变更，sdd.md / prd.md 零改动，`tasks/_index.yml` 无需重生 |
