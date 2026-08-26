@@ -1,0 +1,20 @@
+cr-id: CR-2026-052
+review-type: requirement
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-27T00:36:27+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  structure: "通过：七个必需章节齐全（概述/用户故事/功能需求/非功能需求/验收标准/成功指标/范围排除），另附附录 A 事实核实记录与修订记录；frontmatter 必填字段完整，12 条 FR、6 条 US、12 条 AC 无占位符残留。"
+  testability: "通过：每条 FR 均有对应 AC（AC-1~AC-10 覆盖 FR-1~FR-11，AC-11/12 覆盖 FR-12），AC 均含可量化断言（任务数恰好 1、delivered_at 状态、active 后继 ≤1、EMIT_FAILED 归零、确定性回归测试）。"
+  scope: "通过：第 7 节范围排除明确（不新建队列/outbox/事务框架、不复制状态机、不回填历史、不启用 Runner、tools 仓仅限 FR-12）；注册摘要边界（1.4）原样采纳未扩大。"
+  source_alignment: "通过：source 文档 §7.1 的八条最小可靠性约束逐条映射到 FR-3~FR-9/FR-11（原子事务/窄唯一/ACK 失败重试/单后继/无 leader 不回退/不回填/不复制状态机/复用展示面），触发点（grant ACK 而非飞书回调）与四类审批通过驳回均续跑（FR-1/FR-2）一致；§3.3 audit-drift 缺陷根因与 FR-12 修复语义一致。"
+  dependencies: "通过：附录 A 逐项核实对既有基础设施的依赖（approval.go ACK 路径、daemon crevents 15s 循环、agent_task_queue 列与索引先例、cr.shell_issue_id、squad.leader_id、gates.json approvalStages）；FR-10 明确 Architecture Runner 既有调用点的编译契约依赖。"
+suggestions:
+  - "SDD 阶段请明确：leader 解析的权威路径（shell_issue_id → issue → squad.leader_id 链）与活跃状态口径的具体枚举，并给出 FAIL_ACK 时 ACK 响应错误码约定。"
+  - "FR-6 的『最多一个后继』建议 SDD 以（cr_id, active-status）计数查询 + FR-4 唯一索引双保险落地，并明确跨 stage 续跑任务的先后顺序语义。"
+  - "tools 侧 FR-12 实现时按 AC-11/AC-12 的测试向量固化回归测试，防止 dedup 比较键调整误伤不同漂移的区分度。"
+review-loop:
+  current-attempt: 1
+subject-file: change-requests/CR-2026-052/prd.md
+subject-sha256: d96b3dd6eb8d4ee89c7e398f1a77156cf421ab8af4377bccd2193597be469500
