@@ -1,25 +1,22 @@
 cr-id: CR-2026-052
 review-type: tech-design
 reviewer: "quality-reviewer-agent"
-reviewed-at: "2026-08-27T02:25:53+08:00"
+reviewed-at: "2026-08-27T02:54:25+08:00"
 verdict: block
 blockers:
-  - "TD-BL-5 — SDD §4.2 只锁 squad 与 agent，未锁 cr/issue 权威行；§3.3 的 guarded INSERT 只是单语句快照复核，不能阻止其 SELECT 后、事务提交前并发修改 cr.shell_issue_id 或 issue.assignee_id。现有 issue 更新会取得行锁，而本方案的 GetIssueInWorkspace 是普通 SELECT，因此仍可能向旧 shell issue/旧 squad leader 落任务，TD-BL-2 的‘完整权威链稳定到提交’尚未闭合。需在同一事务按一致锁序锁定 cr→issue→squad→agent（或提供等价的并发串行化证明），并加入并发 reassignment/projection-race 集成测试。"
-  - "TD-BL-6 — SDD §3.2/§4.1 为兑现 callback error→5xx，在 COMMIT 前直接调用同一个副作用型 Runner.WakeGrant/Reconcile。真实 Reconcile 在读取 delivered_at 前会锁 run、核 digest、标记节点，且可入队 pipeline task（runner.go:238-374）；若随后回调报错或 ACK 事务失败，这些外部提交不会随 delivered_at/continuation task 回滚，违反 multica ARCHITECTURE §7‘side effects only after commit’与 FR-3 原子边界。需把预提交路径收窄为无副作用 validation/preflight（或修订 FR-10 契约），实际 wake/事件只能提交后执行，并测试预提交失败零外部副作用。"
-  - "TD-BL-7 — SDD §4.3 阶梯 2/3 遇已有排队后继或 idx_one_pending_task_per_issue_agent_v2 冲突时仅判 already-queued，不把本次 approval 的四字段合并进现有任务。尤其阶梯 3 可命中普通 comment/mention task：buildCommentPrompt 不渲染 handoff_note，且该任务没有读取 .crctl/grants/ 的保证；grant 文件 schema 也不含 approval_record_id。此时仍提交 delivered_at 会形成‘已 ACK、无可证明续跑载体’的静默丢失，违背 FR-1/FR-6/FR-9 与 100% 命中目标。需定义原子合并/可达 prompt 契约（覆盖普通 pending task 与已存在 continuation successor），并以冲突路径测试逐字段证明上下文可达。"
+  - "TD-BL-8 — SDD §3.3/§4.2/DD-10 对 PostgreSQL 行锁矩阵的关键断言错误：FOR KEY SHARE 不与 FOR NO KEY UPDATE 冲突，只与 FOR UPDATE 冲突；而既有 UpdateIssue 对 assignee_id/assignee_type 的普通非键列更新（issue.sql:164-257）及 cr.shell_issue_id 的非键列更新通常取得 FOR NO KEY UPDATE。LockIssueForChannelMediaBind 的既有用途也仅是和删除方 FOR UPDATE 互斥（issue.sql:89-95,128-135），不能旁证重指派互斥。因此新增 cr/issue FOR KEY SHARE 仍不能稳定 shell_issue_id/assignee_id 到提交，AC-6b/6c 所声称的阻塞不会成立。需改用与普通 UPDATE 互斥的锁级（如 FOR SHARE/更强，参照 squad.sql:12-20）或给出等价串行化方案，并以真实并发测试验证两种提交顺序。"
+  - "TD-BL-9 — SDD §4.3 的阶梯 2 仍有 SELECT→UPDATE 状态竞态：GetApprovalContinuationTaskByCr 只读选出 queued/deferred/dispatched/waiting_local_directory 后继但不锁行；在 AppendApprovalContinuationEvidence 前，ClaimAgentTask 可把该行推进到 running。随后 UPDATE 因四态谓词返回 0，方案却把所有 0 行都解释为‘该 record 已合并’并返回 200，未复核 approvals[]。若运行任务已在新 grant 落盘前读过 grants，此路径再次形成 delivered_at 已提交但无新后继/无 prompt 可达证据。需在选择与追加间锁定后继或收敛为单条原子 UPDATE，并区分‘已含 record’与‘状态离开谓词’；补 queued/dispatched→running 与合并并发竞态测试。"
 dimensions:
-  PRD↔SDD对齐: "BLOCK，FR-1/FR-3/FR-6/FR-7/FR-9/FR-10 的并发与冲突路径仍未闭合。"
-  架构合理性: "BLOCK，权威链未稳定到提交，且预提交调用副作用型 Runner 违反提交后发布约束。"
-  数据模型完整性: "BLOCK，pending/queued 冲突仅跳过而不合并 approval evidence，无法表达可靠后继。"
-  接口契约: "BLOCK，两阶段复用同一副作用回调使预提交 error 契约越出 ACK 原子事务。"
-  多仓架构约束: "PASS，三仓 authority、依赖方向与 tools/multica 版本边界清晰。"
-  性能与安全: "BLOCK，issue/CR 并发变更仍可导致陈旧 authority 派发。"
-  可测试性: "BLOCK，缺少 issue reassignment/projection race、预提交零副作用、普通 pending 冲突上下文可达测试。"
+  PRD↔SDD对齐: "BLOCK，FR-1/FR-6/FR-7/FR-9 的并发串行化仍存在静默丢失与陈旧 authority 窗口。"
+  架构合理性: "BLOCK，DD-10 使用了错误的 PostgreSQL 锁冲突假设；DD-11 的重读后追加不是原子选择。"
+  数据模型完整性: "PASS，双 partial index、approvals[] 与 deferred 载体足以表达目标状态；缺口在并发算法。"
+  接口契约: "PASS，双钩将预提交纯校验与提交后副作用分离，HTTP 失败/成功边界已明确。"
+  多仓架构约束: "PASS，三仓 authority、依赖方向、生成物与 checkpoint 口径清晰。"
+  性能与安全: "BLOCK，FOR KEY SHARE 不拦截普通非键 UPDATE，仍可能向陈旧 issue/leader 派发。"
+  可测试性: "BLOCK，现有 AC-6b/6c 建立在错误锁矩阵上，且缺少 successor claim-vs-append 竞态用例。"
   Prompt采纳影响: "PASS，tools 变更不触及 crctl dispatch 或 protectedPaths.deny。"
-suggestions:
-  - "TD-SUG-3 — handoff_note 模板直接使用 {cr_id}，避免 cr_id 已含 CR- 前缀时生成 CR-CR-2026-052。"
-  - "TD-SUG-4 — 若保留 queued successor 合并语义，context 建议改为 approvals[] 或等价追加结构，并保证 handoff 在 comment/assignment 等所有 prompt 分支可见。"
+suggestions: []
 review-loop:
-  current-attempt: 2
+  current-attempt: 3
 subject-file: change-requests/CR-2026-052/sdd.md
-subject-sha256: 57ab2fe87eda5cac7e12bb6680aa571c85ea35427d1a8606de259fff35b0a606
+subject-sha256: 83ba3b0d8f49b2a22b92f69f2f6f1081da6dd41b2841ac54617146a6616afaa5
