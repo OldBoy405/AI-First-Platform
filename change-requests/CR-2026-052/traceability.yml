@@ -26,13 +26,13 @@ reviews:
   tech-design:
     reviewer: "quality-reviewer-agent"
     verdict: block
-    reviewed-at: "2026-08-27T01:53:50+08:00"
-    blocker-count: 4
+    reviewed-at: "2026-08-27T02:25:53+08:00"
+    blocker-count: 3
     annotation: "change-requests/CR-2026-052/review-annotations/sdd.yml"
     repair-target: write-tech-design
     review-loop:
       current-cycle: 1
-      current-attempt: 1
+      current-attempt: 2
       max-attempts: 3
       attempts:
         - attempt: 1
@@ -40,4 +40,10 @@ reviews:
           reviewed-at: "2026-08-27T01:53:50+08:00"
           result: block
           blocker-count: 4
+          repair-target: write-tech-design
+        - attempt: 2
+          cycle: 1
+          reviewed-at: "2026-08-27T02:25:53+08:00"
+          result: block
+          blocker-count: 3
           repair-target: write-tech-design
