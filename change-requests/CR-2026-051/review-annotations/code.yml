@@ -1,0 +1,51 @@
+cr-id: CR-2026-051
+review-type: code
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-26T15:52:59+08:00"
+verdict: block
+blockers:
+  - "BL-C1 [P1][server/internal/integrations/lark/http_client.go:515, approval_reminder.go:456-462]：sendCardToOpenID 对飞书非零业务码返回普通 fmt.Errorf，但 errorClassOf 只会从 *APIError 读取 230020/99991400；当 msg 不含英文 rate limit/rate_limit 时，真实限流会被记为 error_class=other，违反 SDD §4.6 的 rate-limited 闭集语义。请保留结构化业务码（优先复用现有 APIError）并补真实 SendApprovalReminderCard 非零限流响应→rate-limited 的回归测试。"
+  - "BL-C2 [P2][server/internal/integrations/lark/approval_reminder.go:247-257]：项目链零行后的原因查询若自身返回 pgx.ErrNoRows（锚点 workspace 下 CR 已不存在），shellNull 保持 false，当前代码误记 workspace-mismatch；SDD §4.4 与 TASK-06 要点 2 明确‘为真或无行→project-unresolved’。请显式处理 ErrNoRows 并补 CR 行缺失用例。"
+  - "BL-C3 [P1][server/cmd/server/approval_reminder_wiring_test.go:59-67,351-373]：AC-11 端到端测试的 fake 忽略 ctx、靠测试主动 close(sendCh) 解锁，最终断言 result=sent；它没有验证‘阻塞至 recipient timeout’或 timeout→result=failed/error_class=timeout。当前 test-report 将 AC-11 标 PASS 证据不足。请让 fake 等待 ctx.Done()（用短 RecipientTimeout），同时保留 HandleCREvents 时延/投影断言，并最终断言超时失败日志。"
+dimensions:
+  代码↔TASK↔SDD 对齐: "BLOCK：TASK-01~08 已全部 done，事件触发、workspace 闭合、绑定分类、凭据水化、typed-nil wiring 与 CUSTOM.md #53 主链均对齐；但 BL-C2 与 TASK-06/SDD 的零行原因契约不一致。"
+  工程质量: "BLOCK：生产改动范围合规、三仓 worktree clean，498 行 approval_reminder.go 虽超 SDD §7.3 的 <400 预估，但仍是单一提醒器职责且低于 800 提醒线；仅为行数拆文件会扩大改动面，本评审接受该终局偏差，不作为 blocker。BL-C1 的结构化错误类型丢失仍需修复。"
+  关键路径可读性: "PASS：专用事件→零 I/O 回调→有界异步读链→单次发送的路径清楚；reason/error_class/step/phase 闭集集中，SQL 上方边界注释充分。"
+  安全性: "PASS：每跳 workspace 锚定、owner/admin 筛选、安装 workspace/status 二次复核、载荷 shell_issue_id 不作查询输入；无 DDL/outbox/retry/多渠道抽象，卡片无审批 action。"
+  测试覆盖: "BLOCK：13 项 AC 的定向与四包回归日志均为真实 PASS、无 SKIP；但 BL-C1 无真实限流分类测试，BL-C2 无 CR 行缺失测试，且 BL-C3 未兑现 AC-11 的真实超时失败断言。"
+  测试证据可信度: "PASS：test-report generated-by=crctl-test、status=pass、command-digest=33914c7b3f5eb3725c7065a9cb955df1739e187479fd8b2866c530c1a3e64601 与 traceability.yml#tests 一致；cmd-01~07 齐全且 7 命令 exit-code=0。已按职责只读证据，未重跑 lint/test/build。"
+  前端质量: "N/A：merge-base diff 未触及 tsx/vue/css/html；新 WS 事件载荷为加法契约，现有前端未知事件路径 no-op。"
+suggestions:
+  - "NONBLOCK：接受 approval_reminder.go=498 行相对 SDD §7.3 <400 预估的终局偏差；职责仍内聚且低于 800 提醒线，回写时保留偏差说明，无需仅为行数拆分。"
+  - "NONBLOCK：回写期按既有清单 revision PRD FR-10（加入 pkg/protocol/events.go）与 §4.4（事件级 failed 可无 recipient），注明结论不受影响。"
+review-loop:
+  current-attempt: 1
+release-subjects:
+  version: 1
+  repositories:
+    - repo: ai-first-platform-docs
+      remote-ref: refs/heads/requirement/CR-2026-051
+      reviewed-source-sha: 3e3e07ad2b0375082354281e8f98638d546455a7
+    - repo: multica
+      remote-ref: refs/heads/requirement/CR-2026-051
+      reviewed-source-sha: 80bbaf4a6caacd77b189b80074936f641e92d225
+    - repo: tools
+      remote-ref: refs/heads/requirement/CR-2026-051
+      reviewed-source-sha: c4b10d505d737c423c81ee9a4f3dd6980647f46a
+  artifacts:
+    algorithm: sha256
+    canonicalization: crlf-to-lf+path-sort
+    files:
+      - { path: change-requests/CR-2026-051/plan.md, sha256: b6ea4e2a52f80fe00df81d132f95834e38eaa0ae8d735df1bf07a525a965b21b }
+      - { path: change-requests/CR-2026-051/prd.md, sha256: b64a92cfe18257882a499a0177777f55487788cc49089965c023f4be56433afb }
+      - { path: change-requests/CR-2026-051/sdd.md, sha256: 39999101f3f3df03b1ee3bebe90840699451f15e1fa6dd589acbd890d661a7cf }
+      - { path: change-requests/CR-2026-051/tasks/TASK-01.md, sha256: fe68b5ddb3dd30432716d2b61b5d100090ffab6cfd71af608d6d5504673444eb }
+      - { path: change-requests/CR-2026-051/tasks/TASK-02.md, sha256: 624d0ebe2acedcefb6fa0cc556e7f3de565f05858cf211f0eeb5582a86ddeff4 }
+      - { path: change-requests/CR-2026-051/tasks/TASK-03.md, sha256: 214ce7f2ddb68c512c10c2f6b036610277fff91c5482ddac0915f9b45ba2b318 }
+      - { path: change-requests/CR-2026-051/tasks/TASK-04.md, sha256: 27e7fac3758a5a9e1259bb1cb545d283d61f4b02b6ff8ee67a95c51b06120c1f }
+      - { path: change-requests/CR-2026-051/tasks/TASK-05.md, sha256: 896393ec50cfc0bfeb2eb7bc68a231158759b5477287ca90ba4b7cc5bd83461e }
+      - { path: change-requests/CR-2026-051/tasks/TASK-06.md, sha256: 2c51c2760d291f04f67872d108974cecd4f1f05525db35b3a67fd39cdb8f2143 }
+      - { path: change-requests/CR-2026-051/tasks/TASK-07.md, sha256: caa7eb6535a998cee29ac52a2a4c58ad115426b6af57cd9e3b9aa53e68ed5ff9 }
+      - { path: change-requests/CR-2026-051/tasks/TASK-08.md, sha256: 5c31c62168768d3a89734661f6e599a16f95ee564ac236cd2d8f97b273619d0e }
+      - { path: change-requests/CR-2026-051/tasks/_index.yml, sha256: d62eda660e121d78dc55fd65cfdf2fe8ed07f599714b4ef55d738ae16ec2ca09 }
+    digest: 7953ea562c787b63d8baf781150d1247f55324082c55d96b4118770ff97161c3
