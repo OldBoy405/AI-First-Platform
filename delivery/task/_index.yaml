@@ -2220,3 +2220,59 @@ tasks:
     cr-ref: CR-2026-050
     target-version: "0.24"
     estimate: 2h
+  - id: CR-2026-051-TASK-01
+    file: TASK-0.25-CR-2026-051-01-shared-approval-gate-event-contract.md
+    title: 共享事件契约与 canonical JSON 形状（pkg/protocol）
+    status: done
+    cr-ref: CR-2026-051
+    target-version: "0.25"
+    estimate: 3h
+  - id: CR-2026-051-TASK-02
+    file: TASK-0.25-CR-2026-051-02-governance-approval-gate-publish.md
+    title: governance 门禁进入事件发布点（含 shell_issue_id 扩列）
+    status: done
+    cr-ref: CR-2026-051
+    target-version: "0.25"
+    estimate: 5h
+  - id: CR-2026-051-TASK-03
+    file: TASK-0.25-CR-2026-051-03-governance-gate-trigger-isolation-tests.md
+    title: governance 触发条件与误触发隔离真库测试（AC-1 / AC-2）
+    status: done
+    cr-ref: CR-2026-051
+    target-version: "0.25"
+    estimate: 8h
+  - id: CR-2026-051-TASK-04
+    file: TASK-0.25-CR-2026-051-04-lark-approval-card-transport.md
+    title: lark 传输层：APIClient 新方法 + sendCardToOpenID 提取 + 审批卡模板 + 4 个测试替身
+    status: done
+    cr-ref: CR-2026-051
+    target-version: "0.25"
+    estimate: 8h
+  - id: CR-2026-051-TASK-05
+    file: TASK-0.25-CR-2026-051-05-approval-reminder-skeleton.md
+    title: 审批提醒器骨架：构造/无条件订阅/零 I-O 回调/日志四入口/过载与 panic 兜底
+    status: done
+    cr-ref: CR-2026-051
+    target-version: "0.25"
+    estimate: 8h
+  - id: CR-2026-051-TASK-06
+    file: TASK-0.25-CR-2026-051-06-approval-reminder-delivery-chain.md
+    title: 异步读链与投递：workspace 闭合两条 SQL + 绑定分类 + 凭据水化 + 单次发送
+    status: done
+    cr-ref: CR-2026-051
+    target-version: "0.25"
+    estimate: 12h
+  - id: CR-2026-051-TASK-07
+    file: TASK-0.25-CR-2026-051-07-router-unconditional-subscribe-wiring.md
+    title: router 无条件订阅 wiring（typed-nil 防护）与飞书未启用形态验收
+    status: done
+    cr-ref: CR-2026-051
+    target-version: "0.25"
+    estimate: 5h
+  - id: CR-2026-051-TASK-08
+    file: TASK-0.25-CR-2026-051-08-change-surface-audit-and-custom-ledger.md
+    title: 改动面静态核对、全量回归与 CUSTOM.md 台账收尾
+    status: done
+    cr-ref: CR-2026-051
+    target-version: "0.25"
+    estimate: 6h
