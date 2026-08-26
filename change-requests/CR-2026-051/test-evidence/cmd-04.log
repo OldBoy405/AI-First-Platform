@@ -26,10 +26,10 @@ $ go test ./internal/governance/ -run ApprovalGate -v -count=1
 === RUN   TestApprovalGateAC2ZeroPublishMatrix/trace_event_ledger-only
 === RUN   TestApprovalGateAC2ZeroPublishMatrix/reconcile_heals_to_gate_status
 === RUN   TestApprovalGateAC2ZeroPublishMatrix/gate_projection
---- PASS: TestApprovalGateAC2ZeroPublishMatrix (0.14s)
-    --- PASS: TestApprovalGateAC2ZeroPublishMatrix/non-gate_target (0.02s)
-    --- PASS: TestApprovalGateAC2ZeroPublishMatrix/self-loop_task-breakdown (0.02s)
-    --- PASS: TestApprovalGateAC2ZeroPublishMatrix/self-loop_requirement-reviewing (0.02s)
+--- PASS: TestApprovalGateAC2ZeroPublishMatrix (0.12s)
+    --- PASS: TestApprovalGateAC2ZeroPublishMatrix/non-gate_target (0.01s)
+    --- PASS: TestApprovalGateAC2ZeroPublishMatrix/self-loop_task-breakdown (0.01s)
+    --- PASS: TestApprovalGateAC2ZeroPublishMatrix/self-loop_requirement-reviewing (0.01s)
     --- PASS: TestApprovalGateAC2ZeroPublishMatrix/first-sight_fresh_registration (0.01s)
     --- PASS: TestApprovalGateAC2ZeroPublishMatrix/first-sight_mid-flight_best-effort (0.01s)
     --- PASS: TestApprovalGateAC2ZeroPublishMatrix/out-of-order_illegal_towards_gate (0.01s)
@@ -48,6 +48,6 @@ $ go test ./internal/governance/ -run ApprovalGate -v -count=1
     --- PASS: TestApprovalGateShellIssueIDTwoStates/with_shell_issue_id (0.02s)
     --- PASS: TestApprovalGateShellIssueIDTwoStates/null_shell_issue_id (0.01s)
 PASS
-ok  	github.com/multica-ai/multica/server/internal/governance	0.365s
+ok  	github.com/multica-ai/multica/server/internal/governance	0.341s
 
 --- stderr ---

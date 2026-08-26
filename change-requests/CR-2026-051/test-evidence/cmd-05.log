@@ -5,13 +5,15 @@ $ go test ./internal/integrations/lark/ -run ApprovalReminder -v -count=1
 --- PASS: TestApprovalReminderCardValidation (0.00s)
 === RUN   TestApprovalReminderCardHappyPath
 --- PASS: TestApprovalReminderCardHappyPath (0.00s)
+=== RUN   TestApprovalReminderCardRateLimitStructured
+--- PASS: TestApprovalReminderCardRateLimitStructured (0.00s)
 === RUN   TestApprovalReminderCardTokenInvalidation
 --- PASS: TestApprovalReminderCardTokenInvalidation (0.00s)
 === RUN   TestApprovalReminderCardJSONEscaping
 --- PASS: TestApprovalReminderCardJSONEscaping (0.00s)
 === RUN   TestApprovalReminderCardStubShape
-2026/08/26 15:40:08 WARN lark stub client: SendApprovalReminderCard called open_id=ou_approver
---- PASS: TestApprovalReminderCardStubShape (0.02s)
+2026/08/26 16:09:00 WARN lark stub client: SendApprovalReminderCard called open_id=ou_approver
+--- PASS: TestApprovalReminderCardStubShape (0.01s)
 === RUN   TestApprovalReminderDependencyIsolation
 === RUN   TestApprovalReminderDependencyIsolation/credentials_nil
 === RUN   TestApprovalReminderDependencyIsolation/client_nil
@@ -39,19 +41,19 @@ $ go test ./internal/integrations/lark/ -run ApprovalReminder -v -count=1
 === RUN   TestApprovalReminderParsePayload
 --- PASS: TestApprovalReminderParsePayload (0.00s)
 === RUN   TestApprovalReminderZeroValueDefaults
-2026/08/26 15:40:08 ERROR approval reminder: dependency missing phase=construct missing=pool
-2026/08/26 15:40:08 ERROR approval reminder: dependency missing phase=construct missing=pool
+2026/08/26 16:09:00 ERROR approval reminder: dependency missing phase=construct missing=pool
+2026/08/26 16:09:00 ERROR approval reminder: dependency missing phase=construct missing=pool
 --- PASS: TestApprovalReminderZeroValueDefaults (0.00s)
 === RUN   TestApprovalReminderStageLabelsReadOnly
 --- PASS: TestApprovalReminderStageLabelsReadOnly (0.00s)
 === RUN   TestApprovalReminderAC3HappyPath
 --- PASS: TestApprovalReminderAC3HappyPath (0.15s)
 === RUN   TestApprovalReminderBL2FirstAttemptFails
---- PASS: TestApprovalReminderBL2FirstAttemptFails (0.14s)
+--- PASS: TestApprovalReminderBL2FirstAttemptFails (0.13s)
 === RUN   TestApprovalReminderBL2DecryptAndTimeout
 === RUN   TestApprovalReminderBL2DecryptAndTimeout/first_decrypt_fails
 === RUN   TestApprovalReminderBL2DecryptAndTimeout/first_send_times_out
---- PASS: TestApprovalReminderBL2DecryptAndTimeout (0.28s)
+--- PASS: TestApprovalReminderBL2DecryptAndTimeout (0.27s)
     --- PASS: TestApprovalReminderBL2DecryptAndTimeout/first_decrypt_fails (0.14s)
     --- PASS: TestApprovalReminderBL2DecryptAndTimeout/first_send_times_out (0.14s)
 === RUN   TestApprovalReminderBL1HydrationFourStates
@@ -59,35 +61,37 @@ $ go test ./internal/integrations/lark/ -run ApprovalReminder -v -count=1
 === RUN   TestApprovalReminderBL1HydrationFourStates/installation_missing
 === RUN   TestApprovalReminderBL1HydrationFourStates/revoked_after_classification
 === RUN   TestApprovalReminderBL1HydrationFourStates/cross-workspace_installation
---- PASS: TestApprovalReminderBL1HydrationFourStates (0.21s)
-    --- PASS: TestApprovalReminderBL1HydrationFourStates/happy_credentials_match_db (0.06s)
-    --- PASS: TestApprovalReminderBL1HydrationFourStates/installation_missing (0.05s)
+--- PASS: TestApprovalReminderBL1HydrationFourStates (0.18s)
+    --- PASS: TestApprovalReminderBL1HydrationFourStates/happy_credentials_match_db (0.05s)
+    --- PASS: TestApprovalReminderBL1HydrationFourStates/installation_missing (0.04s)
     --- PASS: TestApprovalReminderBL1HydrationFourStates/revoked_after_classification (0.05s)
-    --- PASS: TestApprovalReminderBL1HydrationFourStates/cross-workspace_installation (0.05s)
+    --- PASS: TestApprovalReminderBL1HydrationFourStates/cross-workspace_installation (0.04s)
 === RUN   TestApprovalReminderAC4FourCases
 === RUN   TestApprovalReminderAC4FourCases/all-member_workspace
 === RUN   TestApprovalReminderAC4FourCases/mixed_workspace_sends_to_admin_only
 === RUN   TestApprovalReminderAC4FourCases/recipient-level_reasons
---- PASS: TestApprovalReminderAC4FourCases (0.42s)
+--- PASS: TestApprovalReminderAC4FourCases (0.40s)
     --- PASS: TestApprovalReminderAC4FourCases/all-member_workspace (0.13s)
     --- PASS: TestApprovalReminderAC4FourCases/mixed_workspace_sends_to_admin_only (0.14s)
-    --- PASS: TestApprovalReminderAC4FourCases/recipient-level_reasons (0.15s)
+    --- PASS: TestApprovalReminderAC4FourCases/recipient-level_reasons (0.14s)
 === RUN   TestApprovalReminderAC10CrossWorkspace
 === RUN   TestApprovalReminderAC10CrossWorkspace/issue_in_other_workspace
 === RUN   TestApprovalReminderAC10CrossWorkspace/forged_payload_shell_issue_id
 === RUN   TestApprovalReminderAC10CrossWorkspace/cr_without_shell_issue
+=== RUN   TestApprovalReminderAC10CrossWorkspace/cr_row_missing_in_anchor_workspace
 === RUN   TestApprovalReminderAC10CrossWorkspace/static_workspace_anchor_in_every_query
 --- PASS: TestApprovalReminderAC10CrossWorkspace (0.14s)
-    --- PASS: TestApprovalReminderAC10CrossWorkspace/issue_in_other_workspace (0.07s)
-    --- PASS: TestApprovalReminderAC10CrossWorkspace/forged_payload_shell_issue_id (0.04s)
+    --- PASS: TestApprovalReminderAC10CrossWorkspace/issue_in_other_workspace (0.04s)
+    --- PASS: TestApprovalReminderAC10CrossWorkspace/forged_payload_shell_issue_id (0.03s)
     --- PASS: TestApprovalReminderAC10CrossWorkspace/cr_without_shell_issue (0.03s)
+    --- PASS: TestApprovalReminderAC10CrossWorkspace/cr_row_missing_in_anchor_workspace (0.03s)
     --- PASS: TestApprovalReminderAC10CrossWorkspace/static_workspace_anchor_in_every_query (0.00s)
 === RUN   TestApprovalReminderAC7ForcedDBFailures
 === RUN   TestApprovalReminderAC7ForcedDBFailures/project_chain_failure_via_closed_pool
 === RUN   TestApprovalReminderAC7ForcedDBFailures/binding_query_failure_via_private_schema_shadow
---- PASS: TestApprovalReminderAC7ForcedDBFailures (0.28s)
-    --- PASS: TestApprovalReminderAC7ForcedDBFailures/project_chain_failure_via_closed_pool (0.13s)
-    --- PASS: TestApprovalReminderAC7ForcedDBFailures/binding_query_failure_via_private_schema_shadow (0.15s)
+--- PASS: TestApprovalReminderAC7ForcedDBFailures (0.27s)
+    --- PASS: TestApprovalReminderAC7ForcedDBFailures/project_chain_failure_via_closed_pool (0.12s)
+    --- PASS: TestApprovalReminderAC7ForcedDBFailures/binding_query_failure_via_private_schema_shadow (0.14s)
 === RUN   TestApprovalReminderChooseEffective
 === RUN   TestApprovalReminderChooseEffective/hit_first_valid_in_order
 === RUN   TestApprovalReminderChooseEffective/reason_priority_mismatch_over_revoked_over_missing
@@ -95,6 +99,6 @@ $ go test ./internal/integrations/lark/ -run ApprovalReminder -v -count=1
     --- PASS: TestApprovalReminderChooseEffective/hit_first_valid_in_order (0.00s)
     --- PASS: TestApprovalReminderChooseEffective/reason_priority_mismatch_over_revoked_over_missing (0.00s)
 PASS
-ok  	github.com/multica-ai/multica/server/internal/integrations/lark	1.822s
+ok  	github.com/multica-ai/multica/server/internal/integrations/lark	1.733s
 
 --- stderr ---
