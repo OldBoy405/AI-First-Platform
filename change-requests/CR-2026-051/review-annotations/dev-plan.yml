@@ -1,26 +1,20 @@
 cr-id: CR-2026-051
 review-type: dev-plan
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-26T11:57:33+08:00"
-verdict: block
-repair-target: write-dev-plan
-blockers:
-  - "[PLAN][TASK-05] Error 日志契约仍然自相矛盾：实现要点 3 明确 Register(bus=nil) 时记 Error，但要点 9 又声明 phase=construct / phase=panic-recovered 是‘本 TASK 唯一的 Error 级输出’。实现者无法同时满足两条。请明确 Register(nil) 的级别与结构化字段，或把‘唯一’限定到构造/异步投递路径，并给 Register(nil) 保留一个不与四类 result / FR-8.2 reason 混淆的确定口径。"
-  - "[TASK-06] 私有 schema 名 ac7_<sanitize(t.Name())>_<pid>_<unixnano> 未处理 PostgreSQL 标识符 63 字节上限；常见长测试名会把尾部 pid/unixnano 静默截断，使所谓唯一后缀丢失，强杀遗留后重跑可能 CREATE 冲突，正好破坏本回修声称的确定性与清理非必需性。请规定长度有界且保留唯一性的命名算法（例如短前缀 + 固定长度 hash/随机串，并断言字节长度 <=63），并让 CREATE / search_path / DROP 复用同一个安全标识符。"
+reviewed-at: "2026-08-26T12:32:21+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  sdd-to-plan: "pass: SDD 的模块、事件/传输契约、读链、wiring、验证、回滚与风险仍完整进入 plan；本轮两处原 blocker 的主体修法均未越出已审批设计。"
-  plan-to-tasks: "pass: plan §5.6 的两处回修均落到 TASK-05/06/07，TASK-01~08 与 13 项 AC 归属保持完整。"
-  task-executability: "block: TASK-05 对 Register(nil) Error 与‘仅两类 Error’给出互斥指令；TASK-06 的 schema 唯一命名在 PostgreSQL 63 字节限制下不成立。"
-  dependency-topology: "pass: 8 个 TASK 无悬空依赖、无环；同文件 TASK-05→06 顺序与 TASK-08 汇合关系未变，索引总估算仍为 55h。"
-  interface-contracts: "pass: phase 被明确限定为诊断字段、不进入 FR-8.2 reason；私有 schema/search_path 方案不改变生产接口，既有函数参数与返回类型仍一致。"
-  acceptance-verifiability: "block: TASK-05 日志断言无法覆盖未定口径的 Register(nil) Error；TASK-06 在长测试名/强杀遗留场景下可能因 schema 截断冲突而无法稳定复跑。"
-  scope-and-simplicity: "pass: phase 区分与私有 schema 遮蔽均是局部最小手段，未引入生产依赖、DDL 或新增实现面。"
-  risk-and-rollback: "block: 私有 schema 的安全性不依赖 cleanup 这一结论以名称真正唯一为前提；当前命名未守 PostgreSQL 标识符上限，遗留物会影响后续同名测试。"
+  sdd-to-plan: "pass: 已审批 SDD 的模块、接口、只读 SQL、装配、验证、回滚与风险继续完整映射到 plan；本轮仅修正计划层诊断日志与测试 schema 取证，不改上游设计。"
+  plan-to-tasks: "pass: plan §5.7 的两条回修均明确落到 TASK-05/06/07；TASK-01~08 与 AC-1~AC-13 的归属完整，无交付项悬空。"
+  task-executability: "pass: TASK-05 已把 construct/register/panic-recovered 收敛为可判定三值 phase 闭集，并逐 phase 给出可执行计数；TASK-06 已给出可直接实现的有界 schema 构造、标识符复用、错误分流与清理步骤。"
+  dependency-topology: "pass: 8 个 TASK 无悬空依赖、无环；TASK-05→06 同文件顺序、TASK-03/07→08 汇合与 55h 总估算保持一致。"
+  interface-contracts: "pass: phase 仅为不带 result 的诊断字段，不进入 FR-8.2 九项 reason 或 SDD §4.6 结果契约；schema/search_path 方案只影响测试专用连接，不改变生产接口。"
+  acceptance-verifiability: "pass: TASK-05 的 (a)~(e)、panic 与 TASK-07 均按 phase 值分别计数，可验证 Register(nil) 不订阅且不扰动原断言；TASK-06 以最长 49B、len/字符集断言、pg_namespace 精确回读及 42703 自检共同证明标识符与失败注入。"
+  scope-and-simplicity: "pass: 回修复用既有 phase 体系与仓内私有 schema 命名先例，未新增生产能力、依赖、文件、DDL 或抽象；8 TASK/55h 不变合理。"
+  risk-and-rollback: "pass: 私有 schema 不改 public，CREATE/search_path/DROP 复用同一名称，遗留 schema 对其它会话不可见；42501 仅 Skip 且 SKIP 不得标 done，其余错误 hard fail，风险与回滚门禁可执行。"
   reviewer-model: "openai/gpt-5.6-sol"
-suggestions:
-  - "上轮 BL-1 的核心冲突已修复：TASK-05 依赖缺失四子例按 phase 做正反向断言，TASK-07 同型措辞也已同步，且 phase 未扩张 FR-8.2 九项 reason。"
-  - "上轮 BL-2 的核心方向已修复：TASK-06 已废弃 public 表 RENAME，改为专用 search_path 下的私有 schema 遮蔽，并补 42703 与 public 表存在性自检；本轮 blocker 只针对 schema 标识符的唯一性细节。"
-  - "把测试角色 CREATE 权限前置写进 TASK-06：权限不足时可 t.Skipf，但必须保留现有‘--- SKIP 视为未测、不得据此 task done’门禁，避免包级 exit 0 被当成通过。"
+suggestions: []
 review-loop:
-  current-attempt: 2
-subject-sha256: 6ae1fffb82e081aa6e49b5b28023f4e8f962ffed7b378b624fd9eb44c761057e
+  current-attempt: 3
+subject-sha256: 46fd71bf8aa296072d24c2137f672e72454e2ed95a70fae98a1b239985eddabe
