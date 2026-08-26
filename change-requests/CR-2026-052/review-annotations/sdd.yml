@@ -1,0 +1,26 @@
+cr-id: CR-2026-052
+review-type: tech-design
+reviewer: "quality-reviewer-agent"
+reviewed-at: "2026-08-27T01:53:50+08:00"
+verdict: block
+blockers:
+  - "TD-BL-1 — SDD §2.4/§3.3 只把 {cr_id,stage,decision,approval_record_id} 写进 agent_task_queue.context，但当前 claim/prompt 仅对 context.type=pipeline_node 做专门 hydration；普通 issue task 的 buildPromptBody 不读取原始 context，只生成泛化 assignment prompt。因此被唤醒 Agent 实际收不到 FR-9/US-2/AC-8 要求的最小审批上下文。需改用既有可达 prompt 载体（如 handoff_note）或补齐 claim→daemon→prompt 契约及对应测试。"
+  - "TD-BL-2 — SDD §4.2 指定 GetIssue/GetSquad/GetAgent 三个未按 workspace 限定的查询，且 squad.leader_id 的读取到 INSERT 之间没有锁或最终 guarded join 复核；仓内已有 GetIssueInWorkspace/GetSquadInWorkspace/GetAgentInWorkspace。当前方案在 shell_issue_id 跨 workspace 漂移或并发换 leader/runtime 时可能向错误 workspace/旧 leader 入队，违反 multica ARCHITECTURE §5.1、FR-7、NFR-3/NFR-12。需让解析与 INSERT 在同一事务内按认证 workspace 作用域并稳定/复核完整权威链。"
+  - "TD-BL-3 — SDD §3.2/§4.1 在 COMMIT 后调用 onGrantAck，回调 error 返回 5xx，却断言 daemon 会重放 ACK；真实 daemon 下一周期先重新 FetchPendingGrants，而 delivered_at 已提交的记录不会再返回，因此该 ID 不会重放。需重定回调失败语义，不得在不可回滚提交后制造虚假的可重试 ACK，或提供真实持久化重试/原子边界，并补 FR-10 失败路径测试。"
+  - "TD-BL-4 — 迁移 470 把 running 纳入同 CR 唯一谓词，§4.3/§7.5 又把运行中续跑任务视作 already-queued 并直接 ACK；若该任务已读取 grants 后下一审批才落盘，就没有排队后继，SDD 明确认可需要人工再 @。这直接违背 US-1、FR-1/FR-6 与自动续跑命中率 100% 目标。需设计运行中窗口的一个持久化排队后继（不向沙箱注入），并以该竞态的集成测试锁定。"
+dimensions:
+  PRD↔SDD对齐: "BLOCK，FR-1/FR-6/FR-9/FR-10 的关键运行时语义未闭合。"
+  架构合理性: "BLOCK，workspace authority 与 leader 并发稳定性违反 multica 硬不变量。"
+  数据模型完整性: "BLOCK，同 CR active unique 的谓词无法表达 running 后唯一排队后继。"
+  接口契约: "BLOCK，post-commit callback error 的 5xx/重试契约与真实 daemon 行为矛盾。"
+  多仓架构约束: "PASS，三仓归属、分支与 tools/multica 依赖方向清晰；blocker 位于 multica 内部契约。"
+  性能与安全: "BLOCK，未 workspace-scoped 的解析与陈旧 leader 竞态存在越界派发风险。"
+  可测试性: "BLOCK，测试清单未覆盖 continuation context 实际进入 prompt、post-commit 回调不重放、running 窄窗丢唤醒。"
+  Prompt采纳影响: "PASS，tools diff 不触及 crctl dispatch 或 protectedPaths.deny，条件性第 8 节可省略。"
+suggestions:
+  - "TD-SUG-1 — 提交后通知应复用 TaskService 既有 broadcastTaskEvent + NotifyTaskEnqueued 顺序，避免只广播不唤醒 daemon。"
+  - "TD-SUG-2 — 续跑 leader task 应明确 is_leader_task=true，并说明 runtime overlay/connected-app 取值是否需沿用既有 leader enqueue 契约。"
+review-loop:
+  current-attempt: 1
+subject-file: change-requests/CR-2026-052/sdd.md
+subject-sha256: 7e55be8394e34a17760feea3589ff7fbff4959913806e9de66116b42e674f8ee
