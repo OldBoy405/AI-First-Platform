@@ -4,7 +4,7 @@ type: TASK
 cr-ref: CR-2026-052
 plan-ref: "change-requests/CR-2026-052/plan.md"
 sdd-ref: "change-requests/CR-2026-052/sdd.md"
-title: "sqlc 查询：approval.sql 6 条 + issue.sql 2 条 FOR SHARE 锁读 + 重生成"
+title: "sqlc 查询：approval.sql 6 条 + issue.sql 1 条 FOR SHARE 锁读 + 重生成"
 slug: sqlc-approval-queries-regen
 status: pending
 estimate: 6h
@@ -21,7 +21,7 @@ created: 2026-08-27T10:44:32+08:00
 ## 2. 涉及文件 / 模块
 
 - 新建 `server/pkg/db/queries/approval.sql`
-- 修改 `server/pkg/db/queries/issue.sql`（追加 2 条锁读）
+- 修改 `server/pkg/db/queries/issue.sql`（追加 1 条 FOR SHARE 锁读：`LockIssueInWorkspaceForShare`；cr 表的 `GetCrShellIssueInWorkspaceForShare` 归属 approval.sql）
 - 生成 `server/pkg/db/generated/*.go`（`make sqlc`，预期只含新增查询绑定）
 
 ## 3. 实现要点（SDD §3.3/§4.2/§4.3）

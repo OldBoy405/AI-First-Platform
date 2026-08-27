@@ -68,7 +68,7 @@ type ApprovalContinuationSpec struct {
 
 签名：`func (s *TaskService) NotifyContinuationTaskEnqueued(ctx context.Context, task db.AgentTaskQueue) error`
 
-逻辑（TD-SUG-1，与 EnqueuePipelineTask 尾部一致 task.go:415-416）：`broadcastTaskEvent(ctx, EventTaskQueued, task)` + `NotifyTaskEnqueued(ctx, task)`。仅对阶梯 1/3 新建行调用（幂等命中/合并不重复广播，由调用方 TASK-04 决定调用与否）。
+逻辑（TD-SUG-1，与 EnqueuePipelineTask 尾部一致 task.go:415-416）：`broadcastTaskEvent(ctx, EventTaskQueued, task)` + `NotifyTaskEnqueued(ctx, task)`。仅对新建行（outcome ∈ successor-enqueued / slot-deferred）调用 `NotifyContinuationTaskEnqueued`（幂等命中 already-queued / 合并 merged 不重复广播，由调用方 TASK-04 按 outcome 决定调用与否）。
 
 ## 4. 验收条件
 

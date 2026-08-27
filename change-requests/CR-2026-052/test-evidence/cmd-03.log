@@ -1,0 +1,7 @@
+$ go test ./internal/governance/... ./internal/daemon -run TestAC|TestGrantDeliveryQueue|TestBuildPrompt_ApprovalContinuation_MergedHandoff|TestBuildPrompt_HandoffNote
+(exit=0)
+--- stdout ---
+ok  	github.com/multica-ai/multica/server/internal/governance	0.089s
+ok  	github.com/multica-ai/multica/server/internal/daemon	0.078s
+
+--- stderr ---
