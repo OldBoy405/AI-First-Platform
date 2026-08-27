@@ -5,7 +5,7 @@ cr-ref: CR-2026-052
 title: Multica 审批后自动续跑 + audit-drift 去重修复 技术设计
 status: draft
 created: 2026-08-27T01:47:00+08:00
-updated: 2026-08-27T03:07:00+08:00
+updated: 2026-08-27T07:55:00+08:00
 ---
 
 # 1. 架构概览
@@ -35,22 +35,24 @@ server/internal/governance/approval.go
        ├─ sqlc 新查询（server/pkg/db/queries/approval.sql，新文件）
        │    AckApprovalGrants / GetCrShellIssueInWorkspaceForShare / CreateApprovalContinuationTask（
        │    status/fire_at 参数化）/ AppendApprovalContinuationEvidence /
-       │    GetApprovalContinuationTaskByRecord / GetApprovalContinuationTaskByCrForUpdate
+       │    GetApprovalContinuationTaskByRecord / GetMergeableApprovalContinuationTaskByWorkspaceAndCrForUpdate
        ├─ 复用既有 workspace-scoped 查询 GetSquadInWorkspace / GetAgentInWorkspace 与既有锁查询
        │    LockSquadForAutopilotAssignment / GetAgentForUpdate；新增 2 条锁读查询（approval.sql 的
        │    cr 锁读 + issue.sql 的 issue 锁读）：LockIssueInWorkspaceForShare（FOR SHARE，权威链稳定，§4.2/DD-10）
-       ├─ 回调拆双钩（§3.2/DD-5）：SetGrantAckPreflight（预提交纯校验）/ SetGrantAckHandler（提交后唤醒）
+       ├─ 回调拆双钩（§3.2/DD-5）：SetGrantAckHandler（预提交纯校验，保留 FR-10 onGrantAck 契约）/
+       │    SetGrantAckCommittedHandler（提交后唤醒）
        └─ service.TaskService（新方法，FR-11 事件广播唯一通道）
             EnqueueApprovalContinuation(ctx, qtx, spec)   // 纯 DB 写入（事务内）
             NotifyContinuationTaskEnqueued(ctx, task)     // 提交后 = broadcastTaskEvent(EventTaskQueued)
                                                           // + NotifyTaskEnqueued（与 EnqueuePipelineTask 尾部一致，task.go:415-416）
 server/migrations/
-  ├─ 469_approval_continuation_record_active_unique.up/down.sql   // FR-4
-  └─ 470_approval_continuation_cr_queued_unique.up/down.sql        // FR-6
+  ├─ 469_approval_continuation_record_active_unique.up/down.sql    // FR-4
+  ├─ 470_approval_continuation_workspace_scope.up/down.sql         // TD-BL-10：任务行承载 authenticated workspace
+  └─ 471_approval_continuation_workspace_cr_pending_unique.up/down.sql // FR-6：workspace-qualified 排队后继
 server/cmd/server/router.go
   └─ NewApprovalServiceFromEnv(pool, queries, taskSvc) 依赖注入（两处调用点同步）
 server/internal/governance/runner.go
-  └─ WakeGrantPreflight（纯校验）+ WakeGrant（Reconcile 唤醒）适配新回调签名 GrantAckEvent（DD-5，唯一消费方同批调整）
+  └─ ValidateGrantAck（纯校验，接 FR-10 onGrantAck）+ WakeGrant（接 committed hook，Reconcile 唤醒）适配 GrantAckEvent
 skills/shared/crctl/scripts/crctl.mjs（tools）
   └─ emitOutboxEvent 内 comparable()：payload 比较剥离 detected_at（DD-6）
 ```
@@ -71,12 +73,12 @@ skills/shared/crctl/scripts/crctl.mjs（tools）
            for each 返回行：
              resolveContinuationTarget（FR-7 fail-closed：锁链 cr→issue→squad→agent，§4.2）
              CreateApprovalContinuationTask（guarded INSERT；ON CONFLICT 输家幂等重读/合并，§4.3）
-         （预提交）onGrantAckPreflight 每记录一次：纯校验、零副作用；error → 整批回滚 → 5xx（§3.2）
+         （预提交）onGrantAck 每记录一次：纯校验、零副作用；error → 整批回滚 → 5xx（§3.2，FR-10 原名原契约）
          COMMIT
          （提交后）TaskService.NotifyContinuationTaskEnqueued 广播 EventTaskQueued（TD-SUG-1）
-         （提交后）onGrantAck 每记录一次：真实唤醒（Reconcile），error → Error 日志不置 5xx（§3.2）
+         （提交后）onGrantAckCommitted 每记录一次：真实唤醒（Reconcile），error → Error 日志不置 5xx（§3.2）
        → 2xx：全部记录的 delivered_at 与续跑任务已成对落地（或幂等命中/原子合并）
-       → 5xx：仅预提交失败（tx 错误或预提交 preflight error）→ 整批回滚，delivered_at 保持 NULL，
+       → 5xx：仅预提交失败（tx 错误或 FR-10 onGrantAck handler error）→ 整批回滚，delivered_at 保持 NULL，
               daemon 15s 后重投递（FR-5）；提交后无 5xx 路径
   → 续跑任务 = agent_task_queue 一条普通任务（trigger_evidence_kind='approval_continuation'，
       is_leader_task=true——migration 127 的 squad 简报注入契约）
@@ -97,7 +99,7 @@ skills/shared/crctl/scripts/crctl.mjs（tools）
 | 表 | 变更 | 依据 |
 |---|---|---|
 | `approval_record` | **零结构变更**（AC-10）；`HandleGrantsAck` 的 UPDATE `RETURNING` 扩展为 `id, cr_id, stage, decision, approver_user_id`（现仅 `cr_id`，approval.go:392-395） | 迁移 433 已有全部所需列（stage/decision/delivered_at/approver_user_id） |
-| `agent_task_queue` | **零列变更**；新增两条 partial unique index（迁移 469/470）；复用既有 `trigger_evidence_kind`/`trigger_evidence_ref_id`（迁移 184）、`cr_id`（迁移 437）、`handoff_note`（迁移 122，prompt 载体）、`is_leader_task`（迁移 090）+ `squad_id`（迁移 127）列 | FR-4/FR-6/FR-9/FR-11；PRD A4/A5 |
+| `agent_task_queue` | 新增 nullable `approval_workspace_id UUID`（无 FK，仅 `approval_continuation` 行必填；迁移 470 CHECK 强制）；新增两条 partial unique index（迁移 469/471）；复用既有 `trigger_evidence_kind`/`trigger_evidence_ref_id`（迁移 184）、`cr_id`（迁移 437）、`handoff_note`（迁移 122，prompt 载体）、`is_leader_task`（迁移 090）+ `squad_id`（迁移 127）列 | FR-4/FR-6/FR-7/FR-9/FR-11；TD-BL-10；PRD A4/A5 |
 
 ## 2.2 迁移 469 — 单审批记录幂等（FR-4）
 
@@ -113,37 +115,44 @@ DROP INDEX CONCURRENTLY IF EXISTS idx_approval_continuation_record_active;
 
 同一 `approval_record.id` 在活跃状态下至多一条续跑任务；同一审批 ACK 重放/并发入队竞争时，输家按已存在处理（幂等重读），不产生第二条、不报 5xx（FR-1/FR-4/AC-1）。
 
-## 2.3 迁移 470 — 同 CR 至多一个未开始运行的排队后继（FR-6）
+## 2.3 迁移 470/471 — workspace-qualified 排队后继（FR-6/FR-7，TD-BL-10/11）
+
+`agent_task_queue` 现无 workspace 列，不能用全局 `cr_id` 表达 CR 权威键 `(workspace_id, cr_id)`。不把 workspace 塞进 prompt/context（FR-9 最小上下文不扩张），而在任务行增加仅供续跑约束使用的 nullable carrier；不加 FK（仓库硬规则），由 CHECK + guarded INSERT 强制：
 
 ```sql
--- 470_approval_continuation_cr_queued_unique.up.sql（单语句）
-CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_approval_continuation_cr_queued
-    ON agent_task_queue (cr_id)
-    WHERE trigger_evidence_kind = 'approval_continuation'
-      AND status IN ('queued', 'deferred', 'dispatched', 'waiting_local_directory');
--- 470_…down.sql
-DROP INDEX CONCURRENTLY IF EXISTS idx_approval_continuation_cr_queued;
+-- 470_approval_continuation_workspace_scope.up.sql（单条 ALTER TABLE）
+ALTER TABLE agent_task_queue
+  ADD COLUMN approval_workspace_id UUID,
+  ADD CONSTRAINT agent_task_queue_approval_workspace_ck
+  CHECK (trigger_evidence_kind IS DISTINCT FROM 'approval_continuation'
+         OR approval_workspace_id IS NOT NULL);
+-- down：同一 ALTER TABLE 先 DROP CONSTRAINT，再 DROP COLUMN
 ```
 
-谓词口径 = 迁移 443 `idx_agent_task_queue_pipeline_node_active` 的五状态 active 集合**减去 `running`**。这是评审 TD-BL-4 的修正点：SDD 0.1 把 `running` 纳入同 CR 唯一谓词，导致运行中任务期间到达的下一次审批直接被判 already-queued 吞掉——SDD 0.1 §7.5 自认的"窄窗需人工再 @"即源于此，违背 US-1 / FR-1 / FR-6 与自动续跑命中率 100% 目标。
+```sql
+-- 471_approval_continuation_workspace_cr_pending_unique.up.sql（单语句，CONCURRENTLY）
+CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_approval_continuation_workspace_cr_pending
+    ON agent_task_queue (approval_workspace_id, cr_id)
+    WHERE trigger_evidence_kind = 'approval_continuation'
+      AND status IN ('queued', 'deferred');
+-- 471_…down.sql
+DROP INDEX CONCURRENTLY IF EXISTS idx_approval_continuation_workspace_cr_pending;
+```
 
-语义（FR-6 新口径）：
+- `CreateApprovalContinuationTask` 必须把认证 daemon workspace 写入 `approval_workspace_id`；guarded INSERT 同句校验 `agent/issue/squad/cr` 均属于该 workspace。普通任务该列保持 NULL，不改变既有 enqueue/claim 路径。
+- 471 的唯一键 = `(approval_workspace_id, cr_id)`，与 migration 433/467 已确认的 CR/approval workspace authority 同构；workspace A/B 的同名 CR 键不同，既不冲突也不能被对方重读/合并。
+- 谓词只含 **prompt 尚未快照**的 `queued/deferred`。这两个状态才允许阶梯 2 合并 handoff；`dispatched/waiting_local_directory/running` 已经 claim 或启动，禁止改写为“当前任务可见”，而是补插一条新的 queued/deferred 后继（TD-BL-11）。
+- 同一 workspace+CR 至多 1 条未 claim 后继；一条 in-flight（dispatched/waiting_local_directory/running）之后允许 1 条持久化后继。`ClaimAgentTask` 对同一 (issue, agent) 检查 active `dispatched/running/waiting_local_directory`（agent.sql:841-906），后继在前驱结束前不可 claim，不向运行中沙箱注入事件。
+- 迁移 469（§2.2）的 record-id 谓词保持五状态含 running；同一审批 ACK 重放仍只能关联一条任务。`GetApprovalContinuationTaskByRecord` 同时带 `approval_workspace_id=$ws`，防御性禁止跨 workspace 读回。
 
-- 同 CR 至多 1 条**排队后继**（queued/deferred/dispatched/waiting_local_directory 中任意状态）；
-- `running` 不在谓词内：运行中任务**之后允许再入队 1 条排队后继**——持久化排队，不向运行中沙箱注入事件；
-- 后继被 claim 后（dispatched→running）谓词释放，下一审批可再入队一条——链式衔接，上限恒为"1 running + 1 queued"；
-- 排队后继在运行中任务完成前不会被 claim：`ClaimAgentTask` 对同一 (issue, agent) 串行化（agent.sql:841-862，存在 dispatched/running 任务时不可 claim）——两条续跑任务绝不同时执行；
-- 排队后继运行时读 `.crctl/grants/` 目录：grant 文件在 ACK **之前**已写入（crevents.go deliverGrants 顺序），故后继覆盖运行期间到达并 ACK 的全部审批（§7.5 风险 2 的窄窗由此关闭）。
+另需注意既有 `idx_one_pending_task_per_issue_agent_v2`（迁移 257）：谓词为 `status IN ('queued','dispatched') OR (status='deferred' AND context->>'channel_issue_media_pending'='true')`。若 leader 的槽被普通任务或刚 claim 的 continuation 占用，queued INSERT 会冲突；阶梯 3 改插 `deferred + fire_at=now()`（不含 channel 标志，位于 257 谓词外）。既有 `PromoteDueDeferredTasksForRuntime` 在槽释放后翻 queued，`ClaimAgentTask` 只认 queued，因此续跑串行且不丢失。
 
-迁移 469（§2.2）的谓词**保持五状态含 running**：同一条 `approval_record.id` 的幂等性不依赖任务是否在运行——重复 ACK 任何时候都只能产生一条任务（FR-4），与 470 的排队后继语义互补不冲突。
-
-另需注意既有 `idx_one_pending_task_per_issue_agent_v2`（迁移 257）：谓词为 `status IN ('queued','dispatched') OR (status='deferred' AND context->>'channel_issue_media_pending'='true')`（257_agent_task_queue_channel_media_pending_unique_v2.up.sql）。若 leader 在该 issue 上已有 pending 普通任务（mention/comment 等），续跑 INSERT 会命中该索引。**不与普通任务合并、不依赖普通任务的 prompt**（其 `buildCommentPrompt` 不渲染 handoff_note，且无读取 `.crctl/grants/` 的约定——评审 TD-BL-7 指出的不可达路径）：改为以 `status='deferred' + fire_at=now()` 让位插入（不含 channel 标志 → 谓词外，索引不冲突；§4.3 阶梯 3）。该 deferred 行由既有 `PromoteDueDeferredTasksForRuntime` 扫塔在 (issue,agent) 槽释放后自动翻为 queued（agent.sql:2255-2323 注释明确：deferred 行不在 257 谓词内、可与 queued 行合法共存、被占槽时跳过且“promoted by a later tick once the slot frees, so nothing is lost”）；`ClaimAgentTask` 仅认 queued（agent.sql:841-862）且 per-(issue,agent) 串行化，故续跑任务恒在普通任务之后串行执行，不并发唤醒多份（FR-6）。
-
-## 2.4 续跑任务行形状（复用既有列，无新列）
+## 2.4 续跑任务行形状（仅新增 tenant carrier，其余复用既有列）
 
 | 列 | 值 | 说明 |
 |---|---|---|
 | `agent_id` / `runtime_id` | CR leader agent 及其 runtime | FR-7 解析结果 |
+| `approval_workspace_id` | 认证 daemon workspace UUID | 迁移 470 新 carrier；仅 continuation 必填，不进入 prompt/context；与 `cr_id` 组成 workspace-qualified authority（TD-BL-10） |
 | `issue_id` | `cr.shell_issue_id` | 既有投影关联（迁移 433） |
 | `status` | `queued`；阶梯 3 让位时 `deferred`（+`fire_at=now()`，§4.3） | 走既有 claim/sweeper 路径 |
 | `priority` | `priorityToInt(issue.Priority)` | 与 mention 任务一致（task.go:1472） |
@@ -158,7 +167,7 @@ DROP INDEX CONCURRENTLY IF EXISTS idx_approval_continuation_cr_queued;
 
 > **prompt 透传事实（评审 TD-BL-1，已核实）**：claim/prompt 链路只对 `context.type=pipeline_node` 做专门 hydration（handler/agent.go:482 注释），普通 issue 任务的 `buildPromptBody`（daemon/prompt.go:171-201）不读取原始 context JSON。因此审批上下文经 `handoff_note` 送达：claim 响应携带 handoff_note 字段（handler/agent.go:789-790, 820）→ daemon 装入 `Task.HandoffNote`（daemon.go:6767）→ opening prompt 与 issue_context.md 渲染（prompt.go:193-196；types.go:165）。context JSON 保留为机器可读证据（审计、幂等键、未来水合扩展点）；SDD 0.1 的"context 即上下文送达"断言作废。`runtime_mcp_overlay`/`runtime_connected_apps` 留空（NULL）：续跑任务只跑 crctl/grants 读取，无 composio/MCP 权限面需求；先例 = CreatePipelineTask 不写 overlay 列（agent.sql:651-668）。
 >
-> **prompt 分支保证（评审 TD-BL-7，已核实）**：`BuildPrompt` 的分支选择按 PipelinePrompt → ChatSessionID → TriggerCommentID → AutopilotRunID → QuickCreatePrompt 依次判定（prompt.go:171-186），续跑任务**不写全部五个触发字段** → 恒定走 assignment 默认分支（buildPromptBody，prompt.go:171-201）→ handoff_note 逐字进入 opening prompt。合并后的多行 handoff（§4.3 阶梯 2）在任务尚未 dispatch 时同样逐字可达；已 dispatch/running 的后继 prompt 已生成、handoff 追加无法回改其 prompt，此时的可达路径 = 该后继自身的运行约定（读 `.crctl/grants/`：grant 文件在 ACK 前已写入，crevents.go deliverGrants 先写后 ACK）覆盖新审批的 stage/decision，record-id 级证明落在后继行的 context.approvals[]。grant 文件 schema 不含 approval_record_id（approval.go Grant struct：v/cr_id/stage/decision/approver/approved_at/evidence_digest/key_id/signature），且 NFR-8 禁止改 grant schema v1——record-id 证据只落在后继行，不依赖 grant 文件；运行时路由只需 stage/decision（grant 文件已具备）。**绝不向普通 comment/mention 任务合并证据**（其 prompt 分支不渲染 handoff_note，§2.3）。
+> **prompt 分支保证（TD-BL-7/11，已核实）**：`BuildPrompt` 的分支选择按 PipelinePrompt → ChatSessionID → TriggerCommentID → AutopilotRunID → QuickCreatePrompt（prompt.go:171-186）；续跑任务不写这五类触发字段，恒定走 assignment 默认分支并渲染 handoff_note。**仅 queued/deferred 尚未 claim，允许合并**；claim 把 queued 更新为 dispatched 后，handler 构造 response 时已快照 handoff_note，随后 waiting_local_directory/running 都沿用该 daemon Task，因此三种 in-flight 状态绝不追加新证据。新审批改由独立后继承载，后继未来 claim 时再把四字段送入自己的 opening prompt。grant 文件仍可供 Agent 读取，但不作为“旧 prompt 能看到新 ACK”的验收替代。普通 comment/mention 任务仍不合并。
 
 # 3. 接口契约
 
@@ -187,16 +196,16 @@ type GrantAckEvent struct {
     Stage       string // requirement | tech-design | dev-start | code
     Decision    string // approve | reject
 }
-// SetGrantAckPreflight(fn func(context.Context, GrantAckEvent) error)   // 预提交：纯校验
-// SetGrantAckHandler(fn func(context.Context, GrantAckEvent) error)     // 提交后：真实唤醒
+// SetGrantAckHandler(fn func(context.Context, GrantAckEvent) error)          // 预提交：FR-10 的 onGrantAck，纯校验；error -> 5xx
+// SetGrantAckCommittedHandler(fn func(context.Context, GrantAckEvent) error) // 提交后：真实唤醒；error -> 日志
 ```
 
-- 由 `func(context.Context, string, string)` 变更而来；**唯一消费方 Runner** 同批调整为两个方法：`WakeGrantPreflight(ctx, ev) error`（纯校验，见下）与 `WakeGrant(ctx, ev) error`（内部只用 `ev.WorkspaceID/ev.CrID` 触发 Reconcile，重读 approval_record 为权威），满足 NFR-8 编译兼容或同批调整。
-- **双钩分阶段契约（评审 TD-BL-6 修正，取代 SDD 0.2 的“同一回调两次调用”），每次 ACK 每记录至多各一次**：
-  1. **预提交 preflight**（UPDATE+入队完成后、COMMIT 前，事务内）：**纯校验钩，零副作用**——不得写任何表、不得发事件/入队任务、不得修改自身状态、不得取与本 ACK 事务行锁相交的锁（只允许只读查询与本地校验，且不得依赖本事务未提交的写入）。返回 error → 整批回滚 → HTTP 5xx。此时 `delivered_at` 未提交，pending 端点（approval.go:351，`delivered_at IS NULL`）下轮仍返回该记录，daemon 15s 重投递重 ACK，preflight 被**真正重放**——FR-10 的“回调 error 影响 ACK HTTP 状态码”由此兑现，且失败不产生任何外部副作用（FR-3 / NFR-1）。
-  2. **提交后 wake**（真实唤醒语义）：Runner 的审批判定读 `delivered_at IS NOT NULL`（runner.go ~683，`deliveredTechApproval`），真实 Reconcile 在读取前即会取 advisory lock、写 pipeline_run/pipeline_node_run、可入队 pipeline task（runner.go:238-374）——这些外部提交无法随 ACK 回滚撤销，**违反 multica ARCHITECTURE.md 事务约束“Side effects publish only after committed state”（ARCHITECTURE.md 事务节）与 FR-3 原子边界**，故真实 wake 只能在提交后执行。提交后调用的 error **只记结构化 Error 日志（NFR-10，含 cr_id/stage/decision）**，HTTP 保持 2xx——此时 delivered_at 已落库，pending 端点不再返回该记录，daemon 下轮 fetch（crevents.go:117-122，`len==0` 直接 return）根本不会再发此 ACK，**提交后 5xx 是伪可重试失败**。SDD 0.1 的“重放 ACK 收敛 200”与 0.2 的“同一 Reconcile 预提交调用”均作废。
-- 消费方契约：**同一事件在两个钩子里语义不同**——preflight 只回答“这个事件当前能否被消费”（校验型，如参数可解析、stage/decision 合法、消费者处于可接收状态），wake 才执行真实副作用。Runner 的 `WakeGrantPreflight` 实现 = 参数校验（parseUUID + stage ∈ 四键 + decision ∈ {approve, reject}）+ 只读确认存在可唤醒目标，**不调用 Reconcile**；`WakeGrant` = Reconcile（幂等：advisory lock + digest 校验 + 重读 approval_record）。
-- Runner 关闭（`AIFIRST_ARCHITECTURE_RUNNER` 未设置，router.go:1399）时回调无人接线，两个钩均零调用，续跑能力完全不依赖 Runner（AC-8）。
+- 由 `func(context.Context, string, string)` 变更而来。为与已审批 PRD FR-10 **机械对应**，原字段/注册面 `onGrantAck` / `SetGrantAckHandler` 保留名称，签名扩展为 `func(context.Context, GrantAckEvent) error`，仍在 COMMIT 前调用，其 error 直接导致回滚与 HTTP 5xx；不再把这个名字挪给提交后 wake（TD-BL-12）。
+- **双钩分阶段契约（每次 ACK 每记录至多各一次）**：
+  1. **`onGrantAck` / `SetGrantAckHandler`（预提交，FR-10 canonical callback）**：UPDATE+入队完成后、COMMIT 前调用；契约为纯校验、零副作用——不得写表、发事件/入队、修改自身状态或取与 ACK 行锁相交的锁，也不得依赖本事务未提交写。返回 error → 整批回滚 → HTTP 5xx；`delivered_at` 仍 NULL，daemon 15s 后真实重试。这一钩明确满足 FR-10“扩展后的 onGrantAck 返回 error 并影响 ACK HTTP 状态码”。
+  2. **`onGrantAckCommitted` / `SetGrantAckCommittedHandler`（提交后）**：只承载真实 wake。Runner 的 Reconcile 会取 advisory lock、写 pipeline_run/pipeline_node_run、可能入队 task，这些副作用只能在 committed state 后发布；其 error 仅记结构化 Error 日志，HTTP 保持 2xx，因为 `delivered_at` 已提交且 daemon 不会重发该 ACK。名称显式含 `Committed`，不与 FR-10 的 error→HTTP callback 混淆。
+- 唯一消费方 Runner 同批调整：`ValidateGrantAck(ctx, ev) error` 注册到 `SetGrantAckHandler`（只做 UUID/stage/decision 与只读目标校验，不调用 Reconcile）；`WakeGrant(ctx, ev) error` 注册到 `SetGrantAckCommittedHandler`（Reconcile，重读 approval_record 为权威）。router.go 原 `SetGrantAckHandler(architectureRunner.WakeGrant)` 一处接线替换为上述两处，编译契约同批收敛（NFR-8）。
+- Runner 关闭（`AIFIRST_ARCHITECTURE_RUNNER` 未设置，router.go:1399）时两个钩均无人接线，通用 continuation 入队仍生效（AC-8）。
 
 ## 3.3 sqlc 新查询（内部接口，`server/pkg/db/queries/approval.sql`）
 
@@ -205,11 +214,11 @@ type GrantAckEvent struct {
 | `AckApprovalGrants` | `:many`，UPDATE … RETURNING `id::text, cr_id, stage, decision, approver_user_id::text` | FR-3 事务内第一步（现内联 SQL 迁入） |
 | `GetCrShellIssueInWorkspaceForShare` | `:one`，`SELECT * FROM cr WHERE workspace_id=$1 AND cr_id=$2 FOR SHARE` | 解析第一步并锁定 cr 权威行（评审 TD-BL-5/TD-BL-8：并发 `cr.shell_issue_id`/status 投影写等到本事务提交，DD-10） |
 | `CreateApprovalContinuationTask` | `:one`，guarded INSERT + `ON CONFLICT DO NOTHING RETURNING *`；`status`（`queued`/`deferred`）与 `fire_at` 参数化 | 事务内第二步（仿 `CreatePipelineTask`，agent.sql:651）；deferred 变体用于 257 让位（§4.3 阶梯 3） |
-| `AppendApprovalContinuationEvidence` | `:one`，按 id UPDATE 后继行追加 approvals[]/handoff_note（行锁已由阶梯 2 锁读持有，无 status 谓词；NOT EXISTS 幂等防同记录重复追加） | 阶梯 2 原子合并（评审 TD-BL-7/TD-BL-9，§4.3） |
-| `GetApprovalContinuationTaskByRecord` | `:one`，按 (kind, ref_id, 五状态含 running) 读回 | 幂等重读阶梯 1（469 键） |
-| `GetApprovalContinuationTaskByCrForUpdate` | `:one`，按 (kind, cr_id, 四状态排队态) `SELECT … FOR UPDATE` 锁读 | 幂等重读阶梯 2（470 键，排队后继判定 + 锁行；评审 TD-BL-9，§4.3） |
+| `AppendApprovalContinuationEvidence` | `:one`，按 `(id, approval_workspace_id)` UPDATE 后继行追加 approvals[]/handoff_note（行锁已由阶梯 2 锁读持有，无 status 谓词；NOT EXISTS 幂等防同记录重复追加） | 阶梯 2 原子合并（TD-BL-7/9/10，§4.3） |
+| `GetApprovalContinuationTaskByRecord` | `:one`，按 `(approval_workspace_id, kind, ref_id)` + 五状态含 running 读回 | 幂等重读阶梯 1（469 键；workspace 防御性限定） |
+| `GetMergeableApprovalContinuationTaskByWorkspaceAndCrForUpdate` | `:one`，按 `(approval_workspace_id, kind, cr_id)` + `status IN ('queued','deferred')` 执行 `SELECT … FOR UPDATE` | 阶梯 2：仅 prompt 未快照的后继可合并（471 键；TD-BL-9/10/11，§4.3） |
 
-`CreateApprovalContinuationTask` 的守卫 = 单条 INSERT 内联复核**完整权威链**（评审 TD-BL-2/TD-BL-5）：`JOIN agent a ON a.id=$agent AND a.workspace_id=$ws AND a.archived_at IS NULL AND a.runtime_id IS NOT NULL AND a.kind='user'` ∧ `JOIN issue i ON i.id=$issue AND i.workspace_id=$ws` ∧ `JOIN squad s ON s.id=i.assignee_id AND s.workspace_id=$ws AND s.leader_id=a.id AND s.archived_at IS NULL` ∧ `JOIN cr c ON c.workspace_id=$ws AND c.cr_id=$cr AND c.shell_issue_id=i.id`——任一守卫失败插 0 行（不静默，走 §4.3 阶梯 4 回滚）。resolveContinuationTarget 的读在守卫前**已按固定锁序持有锁**（§4.2/DD-10）：守卫是锁之外的复核兜底，不再承担“防陈旧”的唯一职责（SDD 0.2 只靠语句级快照，评审 TD-BL-5 指出其挡不住 INSERT 后、提交前的并发改）。issue 侧锁读新增 `LockIssueInWorkspaceForShare`（issue.sql，FOR SHARE，返回整行；锁级理由见 §4.2/DD-10——不再仿既有 `LockIssueForChannelMediaBind` 的 FOR KEY SHARE：其只与删除方 FOR UPDATE 互斥、与普通非键 UPDATE 不互斥，评审 TD-BL-8）；squad/agent 复用既有 `LockSquadForAutopilotAssignment`/`GetAgentForUpdate`。
+`CreateApprovalContinuationTask` 显式写 `approval_workspace_id=$ws`，并在单条 INSERT 内联复核**完整权威链**（评审 TD-BL-2/5/10）：`JOIN agent a ON a.id=$agent AND a.workspace_id=$ws AND a.archived_at IS NULL AND a.runtime_id IS NOT NULL AND a.kind='user'` ∧ `JOIN issue i ON i.id=$issue AND i.workspace_id=$ws` ∧ `JOIN squad s ON s.id=i.assignee_id AND s.workspace_id=$ws AND s.leader_id=a.id AND s.archived_at IS NULL` ∧ `JOIN cr c ON c.workspace_id=$ws AND c.cr_id=$cr AND c.shell_issue_id=i.id`——任一守卫失败插 0 行（不静默，走 §4.3 阶梯 4 回滚）。后续按 CR 重读、锁读和合并均同时限定同一个 `$ws`，不能从冲突 fallback 越过 tenant fence。resolveContinuationTarget 的读在守卫前**已按固定锁序持有锁**（§4.2/DD-10）：守卫是锁之外的复核兜底，不再承担“防陈旧”的唯一职责（SDD 0.2 只靠语句级快照，评审 TD-BL-5 指出其挡不住 INSERT 后、提交前的并发改）。issue 侧锁读新增 `LockIssueInWorkspaceForShare`（issue.sql，FOR SHARE，返回整行；锁级理由见 §4.2/DD-10——不再仿既有 `LockIssueForChannelMediaBind` 的 FOR KEY SHARE：其只与删除方 FOR UPDATE 互斥、与普通非键 UPDATE 不互斥，评审 TD-BL-8）；squad/agent 复用既有 `LockSquadForAutopilotAssignment`/`GetAgentForUpdate`。
 
 ## 3.4 tools 侧：无外部接口变化（NFR-9）
 
@@ -232,15 +241,15 @@ HandleGrantsAck(req {ids}):
       log.Warn("approval continuation skipped", cr, stage, decision, reason)
       rollback; return 500 {error, reasons:[…]}       # delivered_at 保持 NULL（FR-5）
     task, outcome := taskSvc.EnqueueApprovalContinuation(ctx, qtx, spec(row, target))
-    if outcome ∈ {already-queued, merged, slot-deferred}: log.Info(…, reason=outcome)   # 幂等命中/合并/让位，不报错
+    if outcome ∈ {already-queued, merged, successor-enqueued, slot-deferred}: log.Info(…, reason=outcome) # 幂等/合并/新后继/让位
     if task 为新建行: tasks += task                       # 仅新建行提交后广播（幂等命中/合并不重复广播）
     ackEvents += GrantAckEvent{ws, row.cr_id, row.id, row.stage, row.decision}
-  for ev in ackEvents:                                # 预提交 preflight：纯校验、零副作用（TD-BL-6）
-    if onGrantAckPreflight != nil: if err := onGrantAckPreflight(ctx, ev); err: rollback; return 500
+  for ev in ackEvents:                                # FR-10 onGrantAck：预提交纯校验、零副作用
+    if onGrantAck != nil: if err := onGrantAck(ctx, ev); err: rollback; return 500
   commit                                              # 全部成对落地或回滚（DD-3）
   for task in tasks: taskSvc.NotifyContinuationTaskEnqueued(ctx, task)  # 提交后广播（FR-11；TD-SUG-1）
-  for ev in ackEvents:                                # 提交后真实唤醒（TD-BL-6，best-effort）
-    if onGrantAck != nil: if err := onGrantAck(ctx, ev); err: log.Error(…, reason=ack-wake-failed)  # 不置 5xx
+  for ev in ackEvents:                                # 明确的 post-commit wake（best-effort）
+    if onGrantAckCommitted != nil: if err := onGrantAckCommitted(ctx, ev); err: log.Error(…, reason=ack-wake-failed)  # 不置 5xx
   return 200 {status: ok}
 ```
 
@@ -267,25 +276,26 @@ resolveContinuationTarget(qtx, ws, row):              # 全部读与最终 INSER
 ## 4.3 CreateApprovalContinuationTask 幂等语义（FR-1/FR-4/FR-6；评审 TD-BL-7 修正）
 
 ```text
-insert: INSERT INTO agent_task_queue(agent_id, runtime_id, issue_id, status, priority, fire_at,
+insert: INSERT INTO agent_task_queue(agent_id, runtime_id, approval_workspace_id, issue_id, status, priority, fire_at,
           trigger_summary, squad_id, is_leader_task, handoff_note, context,
           originator_user_id, accountable_user_id, originator_source,
           trigger_evidence_kind, trigger_evidence_ref_id, cr_id, project_id)
-        VALUES(…,'queued',NULL,…,true, handoff, approvals[本记录],…,'approval_continuation', record_id, cr_id …)
+        SELECT …,$ws,…,'queued',NULL,…,true, handoff, approvals[本记录],…,'approval_continuation', record_id, cr_id …
+        FROM workspace-qualified authority joins（§3.3）
         ON CONFLICT DO NOTHING RETURNING *;
-conflict(0 行) → 幂等重读阶梯（同一事务，阶梯 1 只读，阶梯 2 锁读+合并，阶梯 3 补一条 INSERT）：
-  1) GetApprovalContinuationTaskByRecord(record_id)   → 命中：already-queued（同审批重放/并发输家；469 键）
-  2) GetApprovalContinuationTaskByCrForUpdate(cr_id)  → 命中：锁行后**原子合并**（470 键：已存在排队后继
-     → SELECT … FOR UPDATE 锁读选中即锁行，本次审批四字段并入后继，见下）
-     0 行 → **状态离开谓词**（后继已被 claim 推进 running，470 键已释放）→ 不判已合并，落入阶梯 3 补插新后继
-  3) 阶梯 1/2 均未命中（残余冲突源 = 257 的 (issue,agent) 占槽，如普通 comment/mention 任务；或阶梯 2 后继已被 claim 推出谓词）
-     → **让位插入**：同形态 INSERT 但 status='deferred' + fire_at=now()（context 无 channel_issue_media_pending 键
-       → 257 谓词外，索引不冲突；469 已在阶梯 1 排除），ON CONFLICT DO NOTHING RETURNING *；
-      0 行（并发竞态输家）→ tx-failure 回滚（daemon 重试，下轮阶梯命中 already-queued，诚实重试）
-  4) 全未命中且让位插入失败 → tx-failure 回滚（不静默降级，纪律 1）
+conflict(0 行) → 幂等重读阶梯（所有查询都带 authenticated `$ws`）：
+  1) GetApprovalContinuationTaskByRecord(ws, record_id)
+     → 命中：already-queued（同审批重放/并发输家；469 键；跨 workspace 0 行）
+  2) GetMergeableApprovalContinuationTaskByWorkspaceAndCrForUpdate(ws, cr_id)
+     → 仅 queued/deferred 命中并 FOR UPDATE 锁行；本次审批四字段原子合并（471 键）
+     → 0 行表示没有“prompt 尚未快照”的后继；不得去读/改另一 workspace，也不得向 dispatched/waiting/running 行追加
+  3) 阶梯 1/2 均未命中：原 queued INSERT 已因 in-flight/普通任务占槽或竞态失败，直接改插
+     status='deferred' + fire_at=now()（context 无 channel_issue_media_pending，位于 257 谓词外），建立独立后继。
+     471 保证同一 workspace+cr 的并发 ACK 只有一个 queued/deferred 后继；输家重跑阶梯 2 合并。
+  4) 全未命中且 deferred 插入仍 0 行 → tx-failure 回滚（不静默降级，纪律 1）
 ```
 
-**阶梯 2 原子合并（评审 TD-BL-9 收敛为“锁读选中即锁行”）**：先由 `GetApprovalContinuationTaskByCrForUpdate`（`SELECT … FOR UPDATE`，470 键四态）**锁行选中后继**，再由 `AppendApprovalContinuationEvidence`（同事务 UPDATE）在锁下追加：
+**阶梯 2 原子合并（TD-BL-9/10/11）**：仅由 `GetMergeableApprovalContinuationTaskByWorkspaceAndCrForUpdate($ws,$cr)`（`SELECT … FOR UPDATE`，471 键，状态仅 queued/deferred）锁住 prompt 尚未快照的后继，再由 `AppendApprovalContinuationEvidence($ws, successor_id, …)` 在同事务追加：
 
 ```sql
 UPDATE agent_task_queue
@@ -294,19 +304,20 @@ SET context = jsonb_set(COALESCE(context,'{}'::jsonb), '{approvals}',
     handoff_note = COALESCE(handoff_note,'') || E'\n' || $new_line,
     updated_at = now()
 WHERE id = $successor_id
+  AND approval_workspace_id = $workspace_id
   AND trigger_evidence_kind = 'approval_continuation'
   AND NOT EXISTS (SELECT 1 FROM jsonb_array_elements(COALESCE(context->'approvals','[]'::jsonb)) e
                   WHERE e->>'approval_record_id' = $record_id)                -- 幂等：同记录不重复追加
 RETURNING *;
 ```
 
-**0 行歧义消除（TD-BL-9 核心修正）**：SDD 0.3 的合并 UPDATE 自带四态 status 谓词，且把所有 0 行统一解释为“该 record 已合并”→200——但 claim（`ClaimAgentTask` dispatched→…→`StartAgentTask` running，agent.sql:1075-1088）可在选择与合并之间把后继推出四态，此时 0 行 = 状态离开谓词，而非 record 已含——形成 delivered_at 已提交、却无新后继、无 prompt 可达证据的丢失路径。修正后两个 0 行场景被**行锁**分开、判定无歧义：
-- **合并 UPDATE 0 行**：锁读已 FOR UPDATE 持锁（claim 的 status 更新阻塞到本事务提交），行不可能在谓词间漂移——0 行 ⟺ NOT EXISTS 命中 ⟺ 该 record 已在 approvals[] → `already-queued`，幂等 200（同记录重放/同批重复，AC-5f/5h）；
-- **锁读 0 行**：四态无后继 ⟺ 状态离开谓词（后继已被 claim 推进 running，或本无后继）→ **不判已合并**，落入阶梯 3 补插 deferred 后继——claim 后的 running 后继 prompt 已生成、合并证据不可达其运行时，新后继是唯一“已 ACK 且可证明”的载体（AC-5g）。deferred 新后继在 (issue,agent) 槽释放后由 `PromoteDueDeferredTasksForRuntime` 翻 queued（§2.3），链式衔接不断。
-多记录并发合并由行锁串行化：锁读 FOR UPDATE 在行锁下重读行当前值，两个并发合并先后提交、各自追加、互不丢失（`NOT EXISTS` 防同记录重复）。同批两审批同 CR（如 requirement+tech-design 同次 crctl approve）：第一记录 INSERT、第二记录 470 冲突 → 阶梯 2 锁读+合并，同事务可见自己的未提交 INSERT → 后继 context.approvals[]=2 项、handoff 两行。
-- **可达契约（TD-BL-7 逐字段）**：后继本身就是 continuation 任务（无 trigger_comment_id 等五触发字段 → prompt 恒定 assignment 分支，§2.4）。未 dispatch（queued/deferred）的后继：claim 时合并后的 handoff_note 全文逐字进入 opening prompt → 四字段可达；已 dispatch/running 的后继：prompt 已生成、handoff 追加不回改，可达路径 = 该任务运行约定读 `.crctl/grants/`（grant 在 ACK 前落盘，crevents.go deliverGrants 先写后 ACK）→ 新审批 stage/decision 运行时可达；`approval_record_id` 级证明落在后继行 context.approvals[]（grant schema 无该字段、NFR-8 禁改，§2.4 注）。**合并绝不落到普通 comment/mention 任务**：其 prompt 分支不渲染 handoff_note（prompt.go:335-365 `buildCommentPrompt` 只渲染评论内容）且无 grants 读取约定——这正是 SDD 0.2 阶梯 3 的“已 ACK、无可证明续跑载体”缺口（评审 TD-BL-7），已由让位插入（阶梯 3）替代。
+**状态与 0 行判定**：
+- 查询命中 queued/deferred 后已持 FOR UPDATE；claim 的 queued→dispatched 被阻塞到 ACK 提交。合并 UPDATE 0 行只能表示该 record 已在 approvals[]，返回 `already-queued`；不存在“状态在选择与 UPDATE 间漂移”的歧义（TD-BL-9）。
+- 查询 0 行只表示当前 workspace+CR 没有可合并后继：可能本无后继，也可能已有 dispatched/waiting_local_directory/running 前驱。三种 in-flight 状态的 prompt/daemon Task 都已在 claim 响应阶段快照，数据库追加 handoff 无法回改，因此一律由阶梯 3 建立**新后继**，不宣称当前 in-flight task 可见本次审批（TD-BL-11）。
+- 同批/并发多审批：第一条建立 `(ws,cr)` 后继；后续记录由 471 冲突后按同一 `(ws,cr)` 锁读并合并。不同 workspace 的同名 CR 键不同，各自在本 tenant 建行，fallback 查询也只能读本 tenant（TD-BL-10）。
+- **可达契约**：只有 queued/deferred 行允许追加 handoff；它们尚未 claim，后续 `taskToResponse` 快照必含合并后的全部行。dispatched/waiting_local_directory/running 不合并；新审批由独立 queued/deferred 后继承载完整四字段，待前驱结束后 claim，其 opening prompt 再逐字获得。grant 目录仅作为运行时事实输入，不再用来证明已快照 prompt 能看到后续 ACK。普通 comment/mention 任务仍不合并。
 - **阶梯 3 让位插入语义**：deferred 行不进 257 谓词（迁移 257 谓词 = queued/dispatched 或带 channel 标志的 deferred），与既有普通任务合法共存；`PromoteDueDeferredTasksForRuntime`（agent.sql:2255-2323）在 (issue,agent) 槽释放后的下一 tick 翻为 queued（被占槽时跳过、不丢：注释明确 “promoted by a later tick once the slot frees, so nothing is lost”）；`ClaimAgentTask` 仅认 queued 且 per-(issue,agent) 串行化（agent.sql:841-862）→ 续跑恒在普通任务之后串行执行，FR-6“不并发唤醒多份”保持。runtime 离线时 deferred 等待（同任何任务，NFR 不新增机制）。
-- 阶梯 1/2 对应迁移 469/470 的两条唯一索引（469 键五状态含 running、470 键四状态排队态）；全部命中路径都是“已有 continuation 任务（排队或运行中）携带本次审批的完整证据”这一 FR-1/FR-6 前提下的安全结果，日志 Info 级（NFR-10）。
+- 阶梯 1 对应迁移 469（record-id 五状态幂等）；阶梯 2/3 对应 migration 470 carrier + 471 `(workspace,cr)` queued/deferred 唯一键。所有读写都带 `$ws`，且只有 prompt 未快照的后继可合并。
 
 ## 4.4 tools 侧 FR-12 修复（comparable 剥离观测时点字段）
 
@@ -340,22 +351,22 @@ const comparable = (value) => JSON.stringify({
 ### DD-2 专用 guarded INSERT（CreateApprovalContinuationTask）而非复用 mention 路径（CreateAgentTask）
 - **Context**：FR-3 要求与 `delivered_at` 同事务；FR-4/FR-6 需要 ON CONFLICT 语义；FR-7 需要逐级结构化原因。
 - **Alternatives**：复用 `CreateAgentTask`/`EnqueueTaskForSquadLeader`（task.go:1406）——其归因瀑布、GetAgent 预载、无事务注入点、无 ON CONFLICT 处理，改造成本与侵入面更大，且会把审批归因引入 trigger-comment 语义，不合 FR-9 最小上下文。
-- **Consequences**：新增 5 条 sqlc 查询 + 重跑 sqlc generate；形态与仓库既有 `CreatePipelineTask` 先例（agent.sql:651）同构，评审可对照。
+- **Consequences**：新增 6 条 approval.sql 查询 + 1 条 issue 锁查询并重跑 sqlc generate；形态与仓库既有 `CreatePipelineTask` 先例（agent.sql:651）同构，评审可对照。
 
 ### DD-3 批量 ACK 单事务 all-or-nothing（而非逐记录部分成功）
 - **Context**：FR-3"要么都生效要么都不生效"、FR-5"入队失败 ACK 返回 HTTP 错误"。
 - **Alternatives**：逐 id 独立事务 + 响应携带 per-id 结果——daemon 侧需解析部分成功语义，超出"daemon 零改动"边界。
 - **Consequences**：任一记录失败整批回滚、整批重投递（幂等写文件无害）；坏记录（如 leader 未配置）会连带阻塞同批健康 grant，直至配置修复——该 trade-off 由 FR-7"保持未 ACK 等待配置修复"显式背书，5xx 响应体 reasons 列表即为运维修复指引（NFR-10）。评审需确认此残余风险可接受。
 
-### DD-4 双 partial unique index（ref_id 五态 + cr_id 排队四态）而不是应用层检查兜底
-- **Context**：FR-4 键 = approval_record.id（幂等，含 running：同记录任何时刻只一条任务）；FR-6 键 = CR 的**排队后继**上限（queued/deferred/dispatched/waiting_local_directory，**不含 running**——running 被纳入会使运行期到达的下一次审批被判 already-queued 吞掉，SDD 0.1 自认的窄窗即源于此，评审 TD-BL-4）；应用层检查存在并发竞态窗口。
-- **Alternatives**：仅应用层 COUNT 检查——两个并发 ACK（不同 stage 同 CR）都会通过检查，产生两条续跑任务，违反 AC-5；把 running 纳入 470——运行中任务之后无排队后继，窄窗审批丢唤醒，违反 FR-6 与 100% 命中目标；向运行中沙箱注入事件——PRD 明令禁止（FR-6）。
-- **Consequences**：两条单语句 CONCURRENTLY 迁移（仓库惯例，ARCHITECTURE §5.6）；INSERT 的 ON CONFLICT DO NOTHING + 重读阶梯（469 幂等重读 / 470 原子合并 / 257 让位 deferred 插入，§4.3）；排队后继与运行中任务不并发执行由 ClaimAgentTask 的 per-(issue,agent) 串行化保证（agent.sql:841-862）。
+### DD-4 workspace-qualified 双唯一键（record 五态 + `(workspace,cr)` queued/deferred）而不是全局 cr_id
+- **Context**：FR-4 的 record id 幂等索引（469）保持五态；FR-6 的后继上限必须按 CR 权威键 `(workspace_id, cr_id)`，不能按全局 cr_id。只有 queued/deferred 尚未快照 prompt，可安全合并；dispatched/waiting/running 必须视为 in-flight 前驱并另建后继（TD-BL-10/11）。
+- **Alternatives**：`(agent_id,cr_id)` 或 `(issue_id,cr_id)` 会在 leader/shell issue 重指派后失去同 CR 约束；把 workspace 放 `context` 会扩张 FR-9 prompt-adjacent schema 且 JSON 可变；全局 cr_id 会跨租户冲突与泄漏；把 in-flight 纳入 471 又无法保留下一后继。
+- **Consequences**：迁移 470 增加 nullable `approval_workspace_id` + continuation 必填 CHECK（无 FK），迁移 471 用 `(approval_workspace_id,cr_id)` 对 queued/deferred 建 CONCURRENTLY partial unique index；普通任务零改动。469/471 + 257 共同收敛并发，ClaimAgentTask 保证同 target 串行。
 
-### DD-5 onGrantAck 拆为双钩：预提交 preflight（纯校验）+ 提交后 wake（而非同一回调两次调用）
+### DD-5 保留 FR-10 `onGrantAck` 为预提交 error→HTTP 钩，另设显式 committed wake
 - **Context**：FR-10 要求回调携带 id/stage/decision 且可返回 error；error 契约必须落在可回滚的原子边界内——提交后 5xx 是伪可重试失败（pending 端点按 `delivered_at IS NULL` 过滤，approval.go:351；daemon 对已交付记录不再重发 ACK，crevents.go:117-122）。SDD 0.2 为兼顾“error→5xx”与“唤醒需提交后”，把同一个 `Runner.WakeGrant/Reconcile` 在 COMMIT 前调一次——但真实 Reconcile 在读取 `delivered_at` 前就会取 advisory lock、写 pipeline_run/pipeline_node_run、可入队 pipeline task（runner.go:238-374），这些外部提交不随 ACK 回滚撤销，违反 multica ARCHITECTURE.md“Side effects publish only after committed state”与 FR-3 原子边界（评审 TD-BL-6）。
 - **Alternatives**：保留旧回调 + 新增第二个回调——双通道并存，Runner 未来开启时语义分叉；单次提交后调用 + error→5xx——SDD 0.1 方案，制造虚假重试，作废；把 Reconcile 重构成“先校验后副作用”两段式——侵入 Runner 状态机，且校验段与 ACK 事务视图无法对齐；真实持久化重试（notified_at 列 + 服务端扫描）——NFR-4 禁止新重试框架，且唯一消费方 Runner 默认关闭，成本不成比例。
-- **Consequences**：钩拆为 `SetGrantAckPreflight`（预提交、契约上零副作用：不写表/不发事件/不取交叉锁；error → 回滚 → 5xx → daemon 真实重试，FR-10 兑现）与 `SetGrantAckHandler`（提交后真实唤醒，error → Error 日志、HTTP 2xx）。唯一消费方 Runner 提供 `WakeGrantPreflight`（参数校验 + 只读目标确认，不调 Reconcile）与 `WakeGrant`（Reconcile，幂等）；每 ACK 每记录至多各一次调用。Runner 关闭时两钩均零调用。新增测试：preflight 失败零外部副作用（§7.4 AC-9b/9d）。
+- **Consequences**：原 `SetGrantAckHandler`/`onGrantAck` 仅扩展签名并返回 error，预提交纯校验，error → 回滚/5xx；新增 `SetGrantAckCommittedHandler`/`onGrantAckCommitted` 专门在 COMMIT 后调用 `WakeGrant`，error → 日志/2xx。Runner 以 `ValidateGrantAck` + `WakeGrant` 分别接线。命名、FR 映射与 AC-9 均能机械指出“哪个 callback error 影响 HTTP”（TD-BL-12）。
 
 ### DD-9 257 占槽时以 deferred 让位插入（而非向普通任务合并证据）
 - **Context**：`idx_one_pending_task_per_issue_agent_v2`（迁移 257）谓词 = queued/dispatched 或带 `channel_issue_media_pending` 标志的 deferred。leader 的 (issue, agent) 槽被普通 comment/mention 任务占用时，`status='queued'` 的续跑 INSERT 冲突。SDD 0.2 将其判为 already-queued 跳过——但普通任务的 `buildCommentPrompt` 不渲染 handoff_note、无 grants 读取约定，跳过即“已 ACK、无可证明续跑载体”（评审 TD-BL-7）。
@@ -369,8 +380,8 @@ const comparable = (value) => JSON.stringify({
 
 ### DD-11 排队后继的幂等原子合并（approvals[] 追加 + handoff 追加行）
 - **Context**：SDD 0.2 阶梯 2 对已存在的排队后继仅判 already-queued，本次审批四字段不并入，与 TD-BL-7 的“无可证明续跑载体”同源：排队后继后续 ACK 的证据应落在它身上，否则后继运行时只能靠 grants 目录推断、拿不到 approval_record_id。
-- **Alternatives**：每个审批必插一条任务（放宽 470 到不含任何活跃态）——违反 FR-6 单后继上限；给 grant 文件加 approval_record_id——违反 NFR-8（grant schema v1 不变）；单独建 evidence 表——新表 + 新读路径，超出 FR-11 复用展示面。
-- **Consequences**：阶梯 2 = `GetApprovalContinuationTaskByCrForUpdate`（`SELECT … FOR UPDATE` 锁读，470 键）选中即锁行 + `AppendApprovalContinuationEvidence` 同事务 UPDATE（`context.approvals[] || new_entry` + `handoff_note` 追加行 + `NOT EXISTS` 防同记录重复，**无 status 谓词**——行锁保证状态不漂移）；锁读 0 行判“状态离开谓词”→ 阶梯 3 补插 deferred 新后继（不误判已合并，评审 TD-BL-9）；未 dispatch 后继经 opening prompt 逐字可达、已 dispatch/running 后继经 grants 目录运行时可达（record-id 级证明在后继行，§4.3/§2.4 注）。同批多审批同 CR 自然折叠成一条后继多份证据。
+- **Alternatives**：每个审批必插一条任务会违反 FR-6 单后继上限；给 grant 文件加 approval_record_id 违反 NFR-8；向 dispatched/waiting/running 行追加 handoff 无法更新 daemon 已持有的 Task 快照（TD-BL-11）。
+- **Consequences**：阶梯 2 只锁 `(approval_workspace_id,cr_id,status∈queued/deferred)` 并追加 approvals[]/handoff；claim 若先把 queued 推为 dispatched，锁读即 0 行并由阶梯 3 创建新后继。锁读若先持锁，claim 阻塞到合并提交后才构造 response，opening prompt 可执行地包含新增行。所有查询/UPDATE 带 workspace，跨租户不可读写（TD-BL-10）。
 
 ### DD-6 FR-12 在 comparable() 内剥离 payload.detected_at（而非为 drift 事件单独传比较副本）
 - **Context**：`comparable()` 是 dedup 名冲突时的内容一致性守卫；`detected_at` 是唯一的观测时点易变字段（顶层 `occurred_at` 本就不参与比较）。
@@ -393,14 +404,14 @@ const comparable = (value) => JSON.stringify({
 |---|---|
 | FR-1 ACK 时点幂等唤醒 | §1.4 流程、§4.1（UPDATE RETURNING 驱动入队）、§4.3（ON CONFLICT + 重读阶梯：同记录幂等重读 / 后继合并 / 让位插入）；迁移 469 |
 | FR-2 四类审批覆盖，通过/驳回均续跑 | §4.1：stage/decision 直接来自 `approval_record` 行（DD 无 stage 分支），approve/reject 均入队；驳回后的修订路由由被唤醒 Agent 依 crctl next 执行（不在 Multica 内） |
-| FR-3 原生原子事务 | §4.1：pgx `pool.Begin` + `queries.WithTx`，delivered_at 与入队同一 commit；失败回滚不标记 delivered_at；预提交钩只有零副作用 preflight（§3.2），提交后才有事件/唤醒 |
+| FR-3 原生原子事务 | §4.1：pgx `pool.Begin` + `queries.WithTx`，delivered_at 与入队同一 commit；失败回滚不标记 delivered_at；预提交 `onGrantAck` 仅做零副作用校验，提交后才有事件/唤醒 |
 | FR-4 窄唯一约束防重复唤醒 | 迁移 469 + §4.3 阶梯 1 |
-| FR-5 ACK 失败语义与 daemon 重试 | §4.1（5xx 仅来自预提交失败：tx 错误或 preflight error → 回滚保持 pending）+ §1.2（crevents.go 既有 15s 重投递，零改动）+ §3.1 错误体；提交后 wake error 不置 5xx（§3.2） |
-| FR-6 同 CR 最多一个后继，不注入事件 | 迁移 470（排队四态，不含 running）+ §4.3 阶梯 2/3：排队后继存在→锁行原子合并（被 claim 推出谓词→补插 deferred 新后继）；普通任务占槽→deferred 让位插入（不并发唤醒、不注入沙箱）；运行中任务后允许 1 条持久化排队后继，ClaimAgentTask per-(issue,agent) 串行化保证不并发执行 |
-| FR-7 leader 解析 fail-closed | §4.2 逐级解析（workspace-scoped + 权威锁链 cr→issue→squad→agent）+ 四类原因码；§3.1 reasons 响应体 |
+| FR-5 ACK 失败语义与 daemon 重试 | §4.1（5xx 仅来自预提交 tx/`onGrantAck` error → 回滚保持 pending）+ §1.2（既有 15s 重投递）+ §3.1 错误体；committed wake error 不置 5xx（§3.2） |
+| FR-6 同 CR 最多一个后继，不注入事件 | 迁移 470/471：每 `(workspace,cr)` 至多 1 条 queued/deferred 后继；§4.3 仅合并未 claim 后继，dispatched/waiting/running 另建持久化后继；ClaimAgentTask 串行化保证不向前驱沙箱注入、不并发执行 |
+| FR-7 leader 解析 fail-closed | §2.3/§3.3/§4.2：`approval_workspace_id` + `(workspace,cr)` 索引/查询、逐级 workspace-scoped 锁链与四类原因码；§3.1 reasons 响应体 |
 | FR-8 只处理新 ACK | UPDATE 谓词 `delivered_at IS NULL`（既有行为原样保留），无回填路径 |
 | FR-9 不复制状态机语义 | §2.4：context JSON（approvals[] 数组，机器可读）+ handoff_note（prompt 实际载体，仅 CR/stage/decision/record 引用，无下一步映射）+ §3.2 回调；Multica 侧无任何“状态→下一步”映射 |
-| FR-10 ACK 回调数据补齐 | §3.2 GrantAckEvent + 双钩契约（预提交 preflight error→5xx 真实重试且零副作用；提交后 wake error→日志）+ Runner.WakeGrantPreflight/WakeGrant 同批调整（DD-5） |
+| FR-10 ACK 回调数据补齐 | §3.2：原 `onGrantAck`/`SetGrantAckHandler` 扩展为 GrantAckEvent + error，预提交 error→回滚/5xx；新增明确命名的 committed wake 钩仅负责提交后 Reconcile、error→日志；Runner.ValidateGrantAck/WakeGrant 同批调整（DD-5，TD-BL-12） |
 | FR-11 复用既有展示面 | §2.4（复用 agent_task_queue 全部既有列）+ NotifyContinuationTaskEnqueued 广播（broadcastTaskEvent+NotifyTaskEnqueued，§1.3/§4.1）；无新状态列/新投影 |
 | FR-12 audit-drift 去重修复 | §4.4 comparable() 剥离 detected_at（DD-6）；不改事件内容与文件名规则 |
 
@@ -410,11 +421,11 @@ const comparable = (value) => JSON.stringify({
 
 ## 7.1 边界条件与安全
 
-- **workspace 隔离**：续跑目标解析全部以 ACK 的 daemon workspace 为根且逐级 workspace-scoped（`GetCrShellIssueInWorkspaceForShare`/`LockIssueInWorkspaceForShare`/`GetSquadInWorkspace` + agent workspace 显式校验 + guarded INSERT 全链 workspace join），shell_issue_id 跨 workspace 漂移一律 0 行 fail-closed；跨 workspace 同名 CR 不可能被唤醒（对照既有 `TestApprovalCardDoesNotLeakEvidenceAcrossWorkspaces` 的防护口径）。
+- **workspace 隔离（TD-BL-10）**：续跑目标以认证 daemon workspace 为根；任务行以 `approval_workspace_id` 承载 tenant authority，migration 470 CHECK 强制 continuation 非 NULL，migration 471 唯一键 `(approval_workspace_id,cr_id)`。Create/record-read/CR-lock-read/append 全部显式带同一 `$ws`，guarded INSERT 再复核 agent/issue/squad/cr 全链 workspace join。两个 workspace 的同名 CR 可并发各建一条后继，互不冲突、互不可读写；shell_issue_id 跨 workspace 漂移仍 0 行 fail-closed。
 - **越权与陈旧 leader（评审 TD-BL-5/TD-BL-8 闭合）**：leader 解析走 issue→squad 关联，读-写全程同事务 + **权威锁链 cr→issue→squad→agent 固定顺序先锁后读**（`GetCrShellIssueInWorkspaceForShare`/`LockIssueInWorkspaceForShare` FOR SHARE——与普通非键 UPDATE（FOR NO KEY UPDATE）互斥，§4.2/DD-10；既有 `LockSquadForAutopilotAssignment` FOR SHARE / `GetAgentForUpdate` FOR UPDATE）：并发重指派 `issue.assignee_id`、投影改 `cr.shell_issue_id`、leader 变更与 runtime 解绑要么在本事务取锁前提交（读到新值），要么阻塞到本事务提交后——陈旧权威窗口消除，不再只靠 guarded INSERT 语句级快照；guarded INSERT 全链 join（`squad.leader_id = agent.id` 等）保留为复核兜底；无 leader 一律失败，不回退任意 Agent（FR-7）；不新增开放端点，ACK 鉴权不变（NFR-12）。
-- **并发**：两条 partial unique index 是并发竞态的硬兜底；`ON CONFLICT DO NOTHING` 输家走幂等重读，绝不 5xx；排队后继与运行中任务不并发执行（ClaimAgentTask 串行化）。
+- **并发**：469 record-id 五态索引 + 471 `(workspace,cr)` queued/deferred 索引是硬兜底；`ON CONFLICT DO NOTHING` 输家只在本 workspace 重读。仅 queued/deferred 可合并；in-flight 状态另建后继，ClaimAgentTask 串行执行。
 - **历史数据**：无回填迁移；旧 `delivered_at` 非空行天然不进 UPDATE 结果集（FR-8/AC-7）。
-- **回调失败**：预提交 preflight error → 回滚 → delivered_at 保持 NULL → daemon 真实重试，且 preflight 契约上零外部副作用（§3.2 阶段 1/DD-5）；提交后 wake error → Error 日志、HTTP 2xx、无重复任务、不伪重试（§3.2 阶段 2）。
+- **回调失败（TD-BL-12）**：FR-10 `onGrantAck` handler 在预提交返回 error → 回滚、delivered_at NULL、HTTP 5xx、daemon 真实重试；该 handler 契约上零外部副作用。`onGrantAckCommitted` wake error → Error 日志、HTTP 2xx，不伪造可重试结果。
 
 ## 7.2 性能
 
@@ -430,10 +441,11 @@ const comparable = (value) => JSON.stringify({
 | `issue-missing` | shell_issue_id 为空 | Error |
 | `leader-missing` | 非 squad 指派 / 无 squad / leader 缺失或未绑定 runtime | Error |
 | `already-queued` | 幂等重读阶梯命中（同记录重放 / 已合并记录重放） | Info |
-| `merged` | 阶梯 2 原子合并完成（本次审批四字段已并入排队后继） | Info |
-| `slot-deferred` | 阶梯 3 让位插入（(issue,agent) 槽被普通任务占用，或阶梯 2 后继已被 claim 推出谓词——续跑任务以 deferred 排队等待槽释放/前驱完成） | Info |
+| `merged` | 阶梯 2 在同 workspace 的 queued/deferred 后继上原子合并完成 | Info |
+| `successor-enqueued` | 无可合并后继（含 dispatched/waiting/running 前驱）时新建 queued 后继 | Info |
+| `slot-deferred` | queued INSERT 被普通任务或 dispatched 前驱占槽时，以 deferred 排队等待槽释放 | Info |
 | `tx-failure` | 重读阶梯全未命中且让位插入失败或事务错误 | Error |
-| `ack-preflight-failed` | 预提交 preflight 返回 error（整批回滚，daemon 重试） | Error |
+| `ack-handler-failed` | FR-10 `onGrantAck`/`SetGrantAckHandler` 预提交返回 error（整批回滚，daemon 重试） | Error |
 | `ack-wake-failed` | 提交后 wake（真实唤醒）返回 error | Error（HTTP 仍 2xx，§3.2 阶段 2） |
 
 所有日志携带 cr_id、stage、decision、reason；5xx 响应体 reasons 列表同源（§3.1）。
@@ -441,20 +453,25 @@ const comparable = (value) => JSON.stringify({
 ## 7.4 测试设计（AC 映射）
 
 **multica（Go，DB 集成测试贴包）**：
-- `server/internal/governance/approval_continuation_test.go`（新）：AC-1（同记录双 ACK/并发 → 恰 1 条）；AC-2（四 stage × approve/reject 各 1 条，reject 任务 handoff_note 与 context.approvals[] 含 decision=reject）；AC-3（注入事务失败 → delivered_at 仍 NULL + 5xx + 重放成功）；AC-5a（CR 已有 running 续跑任务 → ACK 另一 stage → 新增恰 1 条 queued 后继，运行中任务事件流无注入）；AC-5b（已有排队后继 → ACK 第三 stage → 后继仍为 1、context.approvals[] 恰增 1 项且四字段与 approval_record 行一致、幂等 200）；AC-5c（窄窗集成：running 任务已读 grants 后下一审批才落盘 → 排队后继在 running 完成后被 claim 且读到新 grant）；**AC-5d（TD-BL-7 阶梯 3）**：leader 的 (issue, agent) 槽被普通 comment/mention 任务占用 → ACK → 新增 continuation 任务 status='deferred'（fire_at 已到期）、普通任务行零改动；槽释放后 `PromoteDueDeferredTasksForRuntime` 翻 queued → claim → opening prompt 四字段逐字可达；**AC-5e（TD-BL-7 同批多审批）**：同批两审批同 CR → 恰 1 条后继、approvals[]=2 项、handoff 两行、ref_id=第一记录；**AC-5f（TD-BL-7 合并幂等）**：对已合并记录再次 ACK → 0 新任务、approvals[] 不重复追加、200；**AC-5g（TD-BL-9 claim-vs-append race）**：排队后继（queued/dispatched）与 ACK 阶梯 2 并发交错，两种顺序各断言一次——(a) `ClaimAgentTask`+`StartAgentTask` 先提交（后继已 running）→ 锁读 0 行不判已合并 → 阶梯 3 补插恰 1 条 deferred 新后继，其 approvals[] 含本次 record、delivered_at 已提交，新后继在 running 前驱完成后被 `PromoteDueDeferredTasksForRuntime` 翻 queued 并 claim；(b) 阶梯 2 锁读先取锁 → claim 阻塞到 ACK 提交，合并照常追加，后继 claim 后 opening prompt 含两条记录四字段——两种顺序均无证据丢失、无静默 200；**AC-5h（TD-BL-9 合并 0 行歧义）**：record 已在 approvals[] 的后继被锁读命中 → 合并 UPDATE 0 行 → 判定 already-queued（200、approvals[] 不重复追加）；对照：后继被 claim 推出谓词 → 锁读 0 行 → 判定状态离开谓词（非 already-queued、非静默 200），新后继成立——两种 0 行不可混淆；AC-6（三种 leader 缺失形态 → 未 ACK + 原因码，配置恢复后重试成功；另加跨 workspace shell_issue_id → fail-closed 用例）；**AC-6b（TD-BL-5/TD-BL-8 reassignment race）**：ACK 事务持锁期间并发非键列 `UPDATE issue SET assignee_id`（普通 UPDATE 取 FOR NO KEY UPDATE；断言其被 FOR SHARE 阻塞到 ACK 提交或反之——该阻塞断言在 FOR KEY SHARE 下不成立，为锁级回归守卫）→ 两种串行化顺序下续跑任务的 issue/squad/leader 均与“ACK 提交时点的权威链”一致，无旧 leader 派发；**AC-6c（TD-BL-5/TD-BL-8 projection race）**：并发 `UPDATE cr SET shell_issue_id`/status 投影写（非键列 UPDATE，取 FOR NO KEY UPDATE）被 FOR SHARE 串行化（同前断言与锁级回归守卫；cr 写路径当前生产未启用 shell_issue_id 写，测试直接构造 UPDATE 以固化契约）；AC-7（已交付记录 0 任务）；AC-8（context/handoff_note 无映射字段 + Runner 未接线时 ACK 仍成功）；AC-9a（GrantAckEvent 字段与 approval_record 行一致）；**AC-9b（TD-BL-6）**：preflight 返回 error → 5xx + delivered_at 全 NULL + **零外部副作用**（断言 pipeline_run/pipeline_node_run 零新行、agent_task_queue 除回滚的 continuation 外零新行、无事件广播）+ 重放成功且 preflight 再次被调；**AC-9c**：wake（提交后）返回 error → 2xx + Error 日志 + 无重复任务 + 重放 ACK 不再触发任何回调；**AC-9d（TD-BL-6 契约边界）**：注册一个“写表/发事件的 preflight”在测试断言层被拒绝或文档契约检查覆盖（静态约定 + 单测锁定 preflight 实现不触碰写路径）；AC-10（审批表无新列断言可并入迁移评审）。
-- `server/internal/daemon/prompt_test.go`（扩展现有 handoff 用例，锁定 TD-BL-1/TD-BL-7 端到端送达）：续跑任务的 handoff_note 内容逐字出现在 opening prompt（assignment 分支）；**合并后多行 handoff 在未 dispatch 后继上逐字出现**；claim 集成断言 `Task.HandoffNote` 含 cr_id/stage/decision/approval_record_id 四字段（含合并追加行）。
-- `server/internal/daemon/`（既有 deliverGrants 假 fetcher 测试扩展）：AC-4（ACK 返回 5xx → grants 保持 pending → 下一周期重投递成功）。
+- `server/internal/governance/approval_continuation_test.go`（新）：保留 AC-1/2/3/5a~f/6~8/10，并新增/修正以下关键断言。
+  - **AC-5g（claim-vs-append，可执行时序）**：queued 后继与 ACK 并发。claim 先提交 → 行已 dispatched，ACK 不更新它，创建恰 1 条 deferred 新后继，旧 claim response/handoff 不含新 record；ACK 锁读先持锁 → claim 阻塞，合并提交后 claim response/opening prompt 含两条记录四字段。
+  - **AC-5i（dispatched/waiting_local_directory）**：先取得 claim response（并分别停在 dispatched、waiting_local_directory），再 ACK 新审批；断言旧 response/daemon Task 快照不变、旧 DB handoff 不追加，且新 queued/deferred 后继独立承载新 record；前驱完成后新后继 claim 的 opening prompt 才含该四字段。不得以“旧任务读 grants”替代此 prompt 断言。
+  - **AC-6d（TD-BL-10 同名 CR 跨 workspace 并发隔离）**：workspace A/B 都创建 `CR-2026-052`，并发 ACK；各自产生 1 条 `approval_workspace_id` 与本 tenant 相等的后继，471 不跨 tenant 冲突。随后在 A 发第二审批，只能合并 A 行；B 行的 approvals[]/handoff/updated_at 均不变。用 A 的 workspace 调 record/CR fallback 查询 B 的 id/cr 均 0 行。
+  - **AC-9a（TD-BL-12）**：`SetGrantAckHandler` 收到与 approval_record 一致的 GrantAckEvent；其 error 明确使 HTTP 5xx、事务回滚、delivered_at NULL。**AC-9b**：该 handler 实现零外部副作用并可被 daemon 重放。**AC-9c**：`SetGrantAckCommittedHandler`/WakeGrant error 发生在 COMMIT 后，仅日志且 HTTP 2xx。**AC-9d**：router 在 Runner 开启时按 `ValidateGrantAck→SetGrantAckHandler`、`WakeGrant→SetGrantAckCommittedHandler` 接线；关闭时两钩为空但 continuation 入队仍成功。
+  - AC-6b/6c 继续覆盖 FOR SHARE 的 reassignment/projection race；AC-5h 继续区分“合并 0 行=record 已含”与“无 mergeable 后继=另建 successor”。
+- `server/internal/daemon/prompt_test.go`：仅对尚未 claim 的 queued/deferred 后继断言合并 handoff 逐字进入 opening prompt；dispatched/waiting 用 AC-5i 的双任务时序断言，不再断言已快照 prompt 会变化。
+- `server/internal/daemon/` 既有 deliverGrants fake fetcher：AC-4（ACK 5xx → grants 保持 pending → 下一周期重投递成功）。
 
 **tools（node --test）**：扩展 `skills/shared/crctl/scripts/test/crctl.test.mjs` 既有 drift 用例（:776）：AC-11（连续两次观测 → audit-drift 文件恰 1、无 EMIT_FAILED 审计行、第二次幂等返回）；AC-12（删除文件后再观测 → 新文件按窗口计数；不同 CR/不同摘要不误合并；同名内容真实变化仍冲突）。
 
-**验证顺序**：sqlc generate → `go test ./server/internal/governance/... ./server/internal/daemon/...`；tools 侧 `node --test skills/shared/crctl/scripts/test/crctl.test.mjs`。
+**验证顺序**：multica 根执行 `make sqlc`，再执行 `(cd server && go test ./internal/governance/... ./internal/daemon/...)`；tools worktree 执行 `node --test skills/shared/crctl/scripts/test/crctl.test.mjs`。仓库根无 `go.work`、Go module 位于 `server/go.mod`，禁止再写不可执行的 `go test ./server/internal/...`（TD-SUG-5）。
 
 ## 7.5 残余风险（随评审确认）
 
 1. **DD-3 批次联动阻塞**：坏 grant（leader 未配置）会阻塞同批其余 grant 的 ACK，直至配置修复。FR-7 显式背书该 fail-closed 语义；若评审认为不可接受，可后续追加 daemon 逐 grant ACK 的独立 CR（不在本 CR 范围）。
-2. **排队后继的合并语义（TD-BL-7/TD-BL-9 闭合后）**：运行中任务期间到达的审批并入排队后继（阶梯 2 锁读+合并，AC-5b/5e/5f/5h）；后继运行时读 `.crctl/grants/` 覆盖全部已 ACK grant（grant 先于 ACK 落盘）。残余窄窗仅剩“后继被 claim 瞬间与下一 grant 落盘竞态”——若新 grant 的 ACK 早于后继读取 grants 目录，后继会一并读到；若晚于，该 ACK 会产生新的排队后继（470 谓词释放；若 ACK 事务恰与 claim 交错，锁读 0 行 → 阶梯 3 补插 deferred 新后继，AC-5g）——链式衔接，不再需要人工 @（SDD 0.1 自认的窄窗已关闭，评审 TD-BL-4）。已 dispatch 后继的 handoff 追加不回改其 prompt（prompt 已生成），record-id 级证据落在后继行 context.approvals[]、运行时路由依赖 grants 目录的 stage/decision——这是 NFR-8（grant schema v1 不变）下的既有事实，非新增缺口。
+2. **排队后继的状态边界（TD-BL-11 闭合后）**：queued/deferred 尚未 claim，允许锁行合并并由后续 claim 快照完整 handoff；dispatched/waiting_local_directory/running 已快照或启动，永不追加新审批证据，而是建立独立 queued/deferred 后继。claim 与 ACK 的唯一竞态由 471 + FOR UPDATE 收敛为“合并后再 claim”或“先 claim、再建 successor”两种可测试顺序（AC-5g/5i），不依赖修改 daemon 内存 Task，也不再把 grants 目录当作 opening prompt 可达证明。
 3. **257 占槽的让位延迟（TD-BL-7 闭合后）**：普通 pending 任务占用 (issue, agent) 槽时，续跑以 deferred 排队，等槽释放后由 sweeper 翻 queued——续跑发生在普通任务之后，符合 FR-6 串行化语义；runtime 离线时 deferred 等待（与任何 deferred 任务一致，不新增机制）。极端情形（普通任务长期 running）下续跑被推迟到其完成——这是“不并发唤醒、不注入沙箱”的直接结果，非缺陷。
-4. **双钩回调的消费方约束（TD-BL-6 闭合后）**：preflight 契约上零副作用（不写表/不发事件/不取交叉锁），wake 才是真实副作用执行者；同一事件每 ACK 至多被两钩各调一次。若未来新增非幂等消费方或需要在 preflight 做读写，须先扩展该契约（当前唯一消费方 Runner 满足，§3.2）。
+4. **双钩回调的消费方约束（TD-BL-6/12 闭合后）**：FR-10 原名 `onGrantAck` 保持预提交 error→HTTP 契约且必须零副作用；`onGrantAckCommitted` 才执行真实 wake。若未来需要在 canonical handler 中写入副作用，必须先修订 PRD/事务边界，不能偷换两个名字的错误语义。
 5. **权威锁链的竞争面（TD-BL-5/TD-BL-8 闭合后）**：FOR SHARE 锁在短事务内持有，阻塞面 = 并发 cr 投影写/issue 重指派/leader 变更（FOR NO KEY UPDATE/FOR UPDATE 持有方）——低频路径，等待毫秒级；FOR SHARE 与 FOR KEY SHARE 互相兼容，与既有 `LockIssueForChannelMediaBind`/迁移 284 owner fence 的 KEY SHARE 持有方不新增冲突面；残余理论死锁由 Postgres 死锁检测中止本事务 → 5xx → daemon 诚实重试（无部分效果）。
 
 # 8. Prompt 采纳影响
@@ -469,3 +486,4 @@ const comparable = (value) => JSON.stringify({
 | 0.2 | 2026-08-27 | reviewLoop attempt 1 回修（quality-reviewer-agent 4 blocker，canonical `review-annotations/sdd.yml`，subject SHA `7e55be83…`）：TD-BL-1 上下文改经 handoff_note 送达 prompt（§2.4、DD-8）；TD-BL-2 解析全链 workspace-scoped + 锁对 + guarded JOIN 复核（§3.3/§4.2/§7.1）；TD-BL-3 回调两阶段契约（§3.2/§4.1、DD-5）；TD-BL-4 迁移 470 排除 running、持久化排队后继（§2.3/§4.3、DD-4、§7.4-7.5）；另采纳 TD-SUG-1（复用 broadcastTaskEvent+NotifyTaskEnqueued 顺序，§1.3/§4.1）与 TD-SUG-2（is_leader_task=true + overlay 留空说明，§2.4） |
 | 0.3 | 2026-08-27 | reviewLoop attempt 2 回修（quality-reviewer-agent 3 blocker + 2 suggestions，canonical `review-annotations/sdd.yml`，subject SHA `57ab2fe8…`）：TD-BL-5 权威锁链 cr→issue→squad→agent 固定锁序先锁后读（新查询 `GetCrShellIssueInWorkspaceForKeyShare`/`LockIssueInWorkspaceForKeyShare` FOR KEY SHARE，§3.3/§4.2/§7.1，DD-10）+ reassignment/projection race 测试（AC-6b/6c）；TD-BL-6 回调拆双钩（`SetGrantAckPreflight` 预提交零副作用校验 + `SetGrantAckHandler` 提交后真实唤醒，§3.2/§4.1，DD-5）+ 零副作用与契约边界测试（AC-9b/9d）；TD-BL-7 阶梯 2 改为幂等原子合并（`AppendApprovalContinuationEvidence`：approvals[] 追加 + handoff 追加行 + NOT EXISTS 幂等，§4.3/§2.4，DD-11）、阶梯 3 改为 deferred 让位插入（257 谓词外 + `PromoteDueDeferredTasksForRuntime` 槽释放后翻 queued，§2.3/§4.3，DD-9）+ 冲突路径逐字段可达测试（AC-5d/5e/5f、prompt 层合并 handoff）；另采纳 TD-SUG-3（handoff 模板直接用 `{cr_id}` 原值，免 `CR-CR-` 双前缀）与 TD-SUG-4（context 升级为 approvals[] 可追加结构并固化 prompt 分支保证，§2.4/DD-8） |
 | 0.4 | 2026-08-27 | reviewLoop attempt 3 回修（quality-reviewer-agent 2 blocker，canonical `review-annotations/sdd.yml`，subject SHA `83ba3b0d…`；评审循环经 squad leader 扩展一轮，attempt 4 复评）：TD-BL-8 锁级修正——cr/issue 锁读从 FOR KEY SHARE 改 FOR SHARE（`GetCrShellIssueInWorkspaceForShare`/`LockIssueInWorkspaceForShare`：与普通非键 UPDATE 的 FOR NO KEY UPDATE 互斥，锁矩阵误读更正；先例 `LockSquadForAutopilotAssignment`，§1.3/§3.3/§4.2/§7.1/§7.2/§7.5，DD-10）+ AC-6b/6c 重做为非键 UPDATE 阻塞断言（含 FOR KEY SHARE 下不成立的锁级回归守卫）；TD-BL-9 阶梯 2 收敛为锁读选中即锁行（`GetApprovalContinuationTaskByCrForUpdate` FOR UPDATE + 合并 UPDATE 去掉 status 谓词），0 行歧义消除：合并 0 行 ⟺ record 已含 → already-queued；锁读 0 行 ⟺ 状态离开谓词（claim 已推进 running）→ 阶梯 3 补插 deferred 新后继（§1.3/§3.3/§4.3/§6/§7.3，DD-11）+ claim-vs-append 并发测试（AC-5g/5h） |
+| 0.5 | 2026-08-27 | cycle 2 / attempt 1 回修（canonical subject SHA `6dd72e9e…`）：TD-BL-10 新增 migration 470 `approval_workspace_id` carrier + CHECK、migration 471 `(workspace,cr)` queued/deferred 唯一索引，所有 fallback/merge 查询按 workspace 限定，并新增同名 CR 跨 workspace 并发隔离 AC-6d；TD-BL-11 仅合并 queued/deferred，dispatched/waiting/running 一律补插独立后继，AC-5g/5i 改为真实 claim-response 快照时序；TD-BL-12 保留 `onGrantAck`/`SetGrantAckHandler` 为预提交 error→5xx canonical callback，新增显式 committed wake 钩；采纳 TD-SUG-5，Go 验证改为 server module 目录执行。 |
