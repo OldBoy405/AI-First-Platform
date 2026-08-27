@@ -1,0 +1,51 @@
+cr-id: CR-2026-052
+review-type: code
+reviewer: "quality-reviewer-agent"
+reviewed-at: "2026-08-27T13:56:41+08:00"
+verdict: block
+blockers:
+  - "CreateApprovalContinuationTask（server/pkg/db/queries/approval.sql）存在前向表引用：JOIN squad s 的 ON 子句含 s.leader_id = a.id，而 agent a 在其后才 JOIN，PostgreSQL parse_analysis 阶段报 `missing FROM-clause entry for table \"a\"`（SQLSTATE 42P01，已用 PREPARE 对照实证：同条件正确排序 agent 先 JOIN 则通过）。该查询是幂等阶梯 rung 0 的 guarded INSERT，运行期必然失败 → EnqueueApprovalContinuation 返回错误 → HandleGrantsAck 回滚并 5xx，任何审批 ACK 均失败，FR-1~FR-11 续跑功能整体不可用。修复：重排 JOIN 使 agent a 先于 squad s（对齐既有 CreatePipelineTask 的 agent.sql:651 正确写法），改 .sql 后重跑 make sqlc。"
+  - "multica 集成测试证据不可信（cmd-03 实为静默跳过）：governance TestMain 默认连 postgres://multica:multica@localhost:5432/multica，而实库密码为哈希（multica/.env），默认口令 SASL 认证失败（已实证），TestMain 打印 Skipping 后 os.Exit(0)，go test 无 -v 时丢弃该输出、仍报 ok；且实库尚未应用迁移 470（approval_workspace_id 列不存在，已用 PREPARE 实证）。故 test-report status=pass 的 exit-0 不构成 AC-1~AC-9 路径的机器证据——正是因此前向引用 bug 未被测试捕获。需在已迁移的真库上真实执行集成测试并落盘证据。"
+dimensions:
+  代码与TASK与SDD对齐: "Go 侧（HandleGrantsAck 事务编排、resolveContinuationTarget FOR SHARE 锁链、EnqueueApprovalContinuation 四阶梯幂等、双钩 ValidateGrantAck/WakeGrant）与 SDD §4.1/4.2/4.3/§3.2 一致；但 approval.sql 的 CreateApprovalContinuationTask 存在前向引用导致 rung 0 不可达，对齐被 SQL 层阻断 → BLOCK"
+  工程质量: "go build / go vet 通过（编译期不发现运行期 SQL 语义错误）；但 SQL 前向引用为运行期硬错误，工程不可交付 → BLOCK"
+  关键路径可读性: "注释充分、锁链与阶梯语义清晰；HandleGrantsAck 的 reasons>0 分支缩进错位（rollbackTx 多缩进一 tab、writeJSON 对齐错位），纯格式问题不影响编译（gofmt 可修）"
+  安全性: "租户隔离（全程 $ws 限定 + guarded INSERT 权威链复核）与 fail-closed 设计正确，无越权/回退任意 agent 路径"
+  测试覆盖: "tools 侧 AC-11/12 node 测试真实运行（13 pass）；multica 侧 AC-1~AC-9 集成测试因真库不可达被静默跳过，实际未覆盖 SQL 路径"
+  测试证据可信度: "test-report status=pass 但 cmd-03 集成测试为 no-op（跳过），证据不足以支撑评审（skill Step 1：证据不可信就 blocker）"
+  前端质量: "N/A（未触及 *.tsx/*.vue/*.css/*.html）"
+suggestions:
+  - "dev-plan 门禁 freshness 漂移（gateBlockers.developing）：TASK-02/03 在 dev-plan 评审后按该评审建议做了措辞修正，导致 subject-sha256 由 d9f9be15… 漂移到 cecf861e…，需重新执行 review-dev-plan 刷新证据（本 blocker 的修复路径 repair-target=implement-code 之外，另需 review-dev-plan 重审；这是 review-code 之外的门禁问题，单独列出）。"
+  - "HandleGrantsAck reasons>0 分支缩进错位（纯格式），建议 gofmt 规范化后随修复一起提交。"
+review-loop:
+  current-attempt: 1
+release-subjects:
+  version: 1
+  repositories:
+    - repo: ai-first-platform-docs
+      remote-ref: refs/heads/requirement/CR-2026-052
+      reviewed-source-sha: 2c2d0e95e3a0c6cd7e07f2911f2f597f28b77ff0
+    - repo: multica
+      remote-ref: refs/heads/requirement/CR-2026-052
+      reviewed-source-sha: 1676fc37caae97d96241cc74d821dcfae97db93e
+    - repo: tools
+      remote-ref: refs/heads/requirement/CR-2026-052
+      reviewed-source-sha: bec433390ef1c9e8f22f333cab22a49742a43dd9
+  artifacts:
+    algorithm: sha256
+    canonicalization: crlf-to-lf+path-sort
+    files:
+      - { path: change-requests/CR-2026-052/plan.md, sha256: 94fab998f1b0b82f89eabbe3e212ded6a56ca5452860760f0661e998f0354a88 }
+      - { path: change-requests/CR-2026-052/prd.md, sha256: d96b3dd6eb8d4ee89c7e398f1a77156cf421ab8af4377bccd2193597be469500 }
+      - { path: change-requests/CR-2026-052/sdd.md, sha256: 4d30142303db3e63aa6375dbbb0a61f5c76f86a7cabee1d8ab0f8fa8e2dc5dd7 }
+      - { path: change-requests/CR-2026-052/tasks/TASK-01.md, sha256: c47d9aa76873bbf0a4c1efe9b82c0087da9df516ef218d4d3d9e167b50ee8f03 }
+      - { path: change-requests/CR-2026-052/tasks/TASK-02.md, sha256: 56169fb2788972a355f9b9a05ba2af0782c6f819fd8e3a9da7bd62b9061450f6 }
+      - { path: change-requests/CR-2026-052/tasks/TASK-03.md, sha256: b853c253582315e2f7e8b2db4586723673ecef6ee137ce3462de5d75530a8c28 }
+      - { path: change-requests/CR-2026-052/tasks/TASK-04.md, sha256: 2be326541a8a3200fe7077302eeac0e61934e94c89308895ac877854c532b543 }
+      - { path: change-requests/CR-2026-052/tasks/TASK-05.md, sha256: 4624a705562ccc7f67f2e001bfa645c72c3e1d951206ab2953f18ac2c00e93f9 }
+      - { path: change-requests/CR-2026-052/tasks/TASK-06.md, sha256: 403d56c02be5d9e208623c4fffe4b250f47222b22ae2a313b6079d82d47d9c31 }
+      - { path: change-requests/CR-2026-052/tasks/TASK-07.md, sha256: ae84771d97567c5efa3242869b0c27fadb08edef01cba085f08352a37d23607a }
+      - { path: change-requests/CR-2026-052/tasks/TASK-08.md, sha256: 127a3a6092f1c94c096189f6bb37403a502ec58ccd17b9146869123a99896f38 }
+      - { path: change-requests/CR-2026-052/tasks/TASK-09.md, sha256: 1d4e36b6b62e95cdbbf60d6cd69d11f02ac9b0c4a6cd076092aa8c3152244690 }
+      - { path: change-requests/CR-2026-052/tasks/_index.yml, sha256: 2e8e47d3e5005e0514c902bb0c114ba107dee686917b2004268ac6701daedcde }
+    digest: cc809f2eb22a86ce825ee7fe6b43d4138cea2234ad4318b4827e425932514f74
