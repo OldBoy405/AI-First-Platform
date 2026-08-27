@@ -1,24 +1,22 @@
 cr-id: CR-2026-052
 review-type: tech-design
 reviewer: "quality-reviewer-agent"
-reviewed-at: "2026-08-27T07:40:26+08:00"
-verdict: block
-blockers:
-  - "TD-BL-10 — SDD §2.3/§3.3/§4.3 的 migration 470 与 GetApprovalContinuationTaskByCrForUpdate 只按 cr_id 建唯一键/查后继，没有 workspace 判别。cr 的权威唯一键是 (workspace_id, cr_id)（migration 433），approval_record 的 approve 唯一键也已在 migration 467 改为包含 workspace_id；不同 workspace 合法拥有同名 CR。当前设计下 workspace B 的同名 CR INSERT 会与 workspace A 的 continuation 行发生 470 冲突，随后阶梯 2 甚至会锁住并把 B 的 approval_record 四字段追加到 A 的任务，形成跨租户证据泄漏与错误唤醒；guarded INSERT 的 workspace JOIN 无法保护冲突后的 fallback。必须把 470 的键和所有按 CR 重读/合并路径改为稳定的 workspace-qualified authority（agent_task_queue 目前无 workspace_id，需明确可机械强制的承载/索引方案），并补同名 CR 跨 workspace 并发用例，证明互不冲突、互不可读写。"
-  - "TD-BL-11 — SDD §4.3 与 AC-5g(b) 对 dispatched/waiting_local_directory 后继的可达断言不成立。ClaimAgentTask 已在 claim 响应构造前把行置为 dispatched，taskToResponse 当时就快照 handoff_note 并交给 daemon；之后 ACK 的 FOR UPDATE 只能阻塞 StartAgentTask，无法改写 daemon 内存里的 Task，因此‘锁读先取锁 → 合并后 opening prompt 含两条记录四字段’仅对尚未 claim 的 queued/deferred 行成立，对 dispatched/waiting_local_directory 不成立。SDD §2.4 又承认 dispatched prompt 已生成，前后矛盾。需按状态拆分设计与验收：要么只对 prompt 尚未快照的状态合并、其余状态补插后继；要么以 grant 先落盘 + StartTask 锁序证明 dispatched/waiting 路径，并把测试改为验证 agent 启动时能读到新 grant，而不是断言不可能更新的 opening prompt。"
-  - "TD-BL-12 — SDD §3.2/DD-5 改写了已审批 PRD FR-10 的显式回调错误契约：FR-10 要求扩展后的 onGrantAck 回调返回 error 并影响 ACK HTTP 状态码；当前设计却让 SetGrantAckHandler/WakeGrant 的 error 仅记日志并返回 2xx，只有新增的 SetGrantAckPreflight error 才返回 5xx。把真实副作用移到 COMMIT 后是正确的事务约束，但不能据此宣称 FR-10 已 12/12 覆盖。需让命名和契约机械对应已审批要求（例如原 handler 承担纯 preflight、另设明确 post-commit wake），或先走 PRD revision；同时在 FR 映射/AC-9 中明确哪一个回调 error 影响 HTTP。"
+reviewed-at: "2026-08-27T09:19:02+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  PRD↔SDD对齐: "BLOCK：FR-7/NFR-12 的 workspace 隔离被全局 cr_id 唯一键与 fallback 破坏；FR-10 的 onGrantAck error→HTTP 契约被拆钩后改变。"
-  架构合理性: "BLOCK：核心幂等阶梯缺少 workspace-qualified CR authority，且 dispatched 状态的 DB 行更新与已交付 daemon 快照混为一谈。"
-  数据模型完整性: "BLOCK：migration 470 以全局 cr_id 作键，但 CR 身份实际为 (workspace_id, cr_id)；任务行/索引未承载租户判别。"
-  接口契约: "BLOCK：post-commit SetGrantAckHandler error 固定 2xx，与 PRD FR-10 的显式契约不一致；双钩需要重新命名/映射。"
-  多仓架构约束: "PASS：knowledge-base、multica、tools 的路径 authority、依赖方向、sqlc 生成物与 checkpoint 口径清晰。"
-  性能与安全: "BLOCK：同名 CR 跨 workspace 可冲突并把审批证据合并进另一租户任务，是 hard workspace-isolation blocker；FOR SHARE 锁级修正本身成立。"
-  可测试性: "BLOCK：AC-5g(b) 对 dispatched/waiting_local_directory 的 opening prompt 断言与真实 claim→daemon 快照时序矛盾，无法按设计实现；另需跨 workspace 同名 CR 并发用例。"
-  Prompt采纳影响: "PASS：tools 范围不触及 crctl dispatch 或 protectedPaths.deny，条件不满足。"
+  PRD↔SDD对齐: "PASS：12/12 FR 全覆盖。FR-7/NFR-12 的 workspace 隔离经 migration 470 carrier + 471 (approval_workspace_id,cr_id) 唯一键与全链 $ws 限定恢复，跨租户冲突/泄漏路径闭合（TD-BL-10）；FR-10 的 onGrantAck error→HTTP 契约由预提交钩保留（TD-BL-12）。"
+  架构合理性: "PASS：workspace-qualified CR authority 与 migration 433 同构；仅 queued/deferred（prompt 未快照）可合并、dispatched/waiting_local_directory/running 一律补插独立后继，锁读 FOR UPDATE 收敛 claim-vs-append 竞态（TD-BL-11）；锁链 cr→issue→squad→agent FOR SHARE 先锁后读，DD 记录满足三判据。"
+  数据模型完整性: "PASS：agent_task_queue 无 workspace 列（001 init 实证），migration 470 nullable carrier + CHECK 强制 continuation 非 NULL、普通任务 NULL 不变；469 record-id 五态幂等 + 471 (workspace,cr) queued/deferred 唯一互补；全部 fallback/merge/append 查询带 $ws，跨租户 0 行。"
+  接口契约: "PASS：HTTP ACK 语义不变 + 新增结构化错误体；Go 回调拆双钩——onGrantAck/SetGrantAckHandler 预提交纯校验 error→回滚/5xx（FR-10 canonical），onGrantAckCommitted/SetGrantAckCommittedHandler 提交后 wake error→日志/2xx；§3.2/§6/AC-9a~d 机械指明哪个 error 影响 HTTP（TD-BL-12）。"
+  多仓架构约束: "PASS：knowledge-base/multica/tools 路径 authority、依赖方向（governance 消费 service/db，无环）、sqlc 生成物禁手改、checkpoint 口径一致，无 .rayai-worktrees/ 拼接。"
+  性能与安全: "PASS：同名 CR 跨 workspace 隔离为 hard blocker 已闭合（AC-6d）；ACK 低频短事务，锁链无热路径影响；ACK 鉴权 resolveDaemonWorkspace 不变（NFR-12），daemon 侧零新增往返。"
+  可测试性: "PASS：AC-5g/5i 改为真实 claim-response 快照时序（dispatched/waiting 双任务断言，不再断言已快照 prompt 会变）；AC-6d 跨 workspace 同名 CR 并发隔离；AC-9a~d 双钩契约；TD-SUG-5 go test 改 server module 目录，`make sqlc` 实证存在。"
+  Prompt采纳影响: "PASS：tools 侧仅改 emitOutboxEvent comparable()，不触及 crctl dispatch 与 protectedPaths.deny，条件不满足，本节省略合规。"
 suggestions:
-  - "TD-SUG-5 — §7.4 的 `go test ./server/internal/...` 从仓库根执行无效（仓库只有 server/go.mod、无 go.work）；改为 `(cd server && go test ./internal/governance/... ./internal/daemon/...)`，sqlc 也明确从 server/ 或使用根 Make target。"
+  - "非阻塞残留风险：§4.3 阶梯 2 合并保留首条后继的 agent_id（首 ACK 时解析的 leader）；若两次审批之间 squad leader 重指派，合并后继仍指向旧 leader。这是 FR-6「同 CR 最多一个后继」上限 + DD-11 合并语义的直接结果，运行时由被唤醒 Agent 依 crctl status/next 路由兜底，不构成 blocker；建议在 §7.5 残余风险补一句说明（或 AC-5 增一条跨 ACK leader 重指派用例）以固化该边界。"
+  - "非阻塞可观测性补强：提交后 NotifyContinuationTaskEnqueued 广播失败未列入 §7.3 原因码全集——任务行已随事务持久化、由既有队列 claim 兜底，与 EnqueuePipelineTask 同模式（task.go:415-416），非新风险；如实施期方便，可补一行日志说明提交后广播失败的兜底路径。"
 review-loop:
-  current-attempt: 1
+  current-attempt: 2
 subject-file: change-requests/CR-2026-052/sdd.md
-subject-sha256: 6dd72e9e35dc71eab66eb90a73b8ae714414110b7554694a55ba15d71e911dea
+subject-sha256: 4d30142303db3e63aa6375dbbb0a61f5c76f86a7cabee1d8ab0f8fa8e2dc5dd7
