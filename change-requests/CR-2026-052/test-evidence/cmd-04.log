@@ -1,19 +1,19 @@
 $ node --test --test-name-pattern=CR-2026-052|EVIDENCE_DRIFT skills/shared/crctl/scripts/test/crctl.test.mjs
 (exit=0)
 --- stdout ---
-✔ gate：approval 段哈希与证据文件当前内容一致 -> 通过，不报 EVIDENCE_DRIFT (80.5834ms)
-✔ gate：审批后证据文件被改动 -> approval 段报 EVIDENCE_DRIFT（此前该场景完全检测不到，是本次修的缺口） (109.5865ms)
-✔ gate：证据文件仅行尾从 LF 变为 CRLF（autocrlf 检出）-> 不误报 EVIDENCE_DRIFT（CR-2026-001 回写期实测回归） (85.158ms)
-✔ gate：approval 段缺失字段（未经 crctl approve 写入）-> 拒绝，且不会误判为 EVIDENCE_DRIFT (87.7879ms)
-✔ gate：evidence-digest（统一字段，多文件 canonical）一致 -> 通过；篡改任一文件 -> EVIDENCE_DRIFT (188.5471ms)
-✔ approve --grant：签名伪造 -> SIGNATURE_INVALID；digest 不符 -> EVIDENCE_DRIFT；挪用他 CR -> GRANT_MISMATCH (352.7323ms)
-✔ gate：检出 EVIDENCE_DRIFT -> outbox 出现 audit 事件（payload 只有摘要，无证据内容）；重复 gate 不重复堆积 (182.1398ms)
-✔ CR-2026-052 AC-11：同一漂移二次观测 → 文件 1、无 EMIT_FAILED（comparable 剥离 detected_at） (185.0424ms)
-✔ CR-2026-052 AC-12①：删除后重观测 → 新文件按窗口计数（修复不削弱既有语义） (197.1759ms)
-✔ CR-2026-052 AC-12②：不同 CR / 不同摘要不误合并；内容真变化仍冲突报错 (275.08ms)
-✔ CR-2026-026 ⑧: 审批后篡改 dev-plan 证据 → gate 检出 EVIDENCE_DRIFT 且 advance 被拦截（AC-12） (260.8277ms)
-✔ CR-2026-027 回修 b9：tasks/_index.yml 开发期变动不触发 development-start EVIDENCE_DRIFT (152.3176ms)
-✔ CR-2026-030 TASK-01：reject grant 跨 CR → GRANT_MISMATCH；证据漂移 → EVIDENCE_DRIFT；错误状态 → GRANT_STATE_MISMATCH（AC-19/AC-22） (611.9ms)
+✔ gate：approval 段哈希与证据文件当前内容一致 -> 通过，不报 EVIDENCE_DRIFT (88.1185ms)
+✔ gate：审批后证据文件被改动 -> approval 段报 EVIDENCE_DRIFT（此前该场景完全检测不到，是本次修的缺口） (105.8337ms)
+✔ gate：证据文件仅行尾从 LF 变为 CRLF（autocrlf 检出）-> 不误报 EVIDENCE_DRIFT（CR-2026-001 回写期实测回归） (76.3277ms)
+✔ gate：approval 段缺失字段（未经 crctl approve 写入）-> 拒绝，且不会误判为 EVIDENCE_DRIFT (75.6313ms)
+✔ gate：evidence-digest（统一字段，多文件 canonical）一致 -> 通过；篡改任一文件 -> EVIDENCE_DRIFT (203.149ms)
+✔ approve --grant：签名伪造 -> SIGNATURE_INVALID；digest 不符 -> EVIDENCE_DRIFT；挪用他 CR -> GRANT_MISMATCH (429.3875ms)
+✔ gate：检出 EVIDENCE_DRIFT -> outbox 出现 audit 事件（payload 只有摘要，无证据内容）；重复 gate 不重复堆积 (195.2261ms)
+✔ CR-2026-052 AC-11：同一漂移二次观测 → 文件 1、无 EMIT_FAILED（comparable 剥离 detected_at） (191.0034ms)
+✔ CR-2026-052 AC-12①：删除后重观测 → 新文件按窗口计数（修复不削弱既有语义） (202.4631ms)
+✔ CR-2026-052 AC-12②：不同 CR / 不同摘要不误合并；内容真变化仍冲突报错 (281.6848ms)
+✔ CR-2026-026 ⑧: 审批后篡改 dev-plan 证据 → gate 检出 EVIDENCE_DRIFT 且 advance 被拦截（AC-12） (265.7041ms)
+✔ CR-2026-027 回修 b9：tasks/_index.yml 开发期变动不触发 development-start EVIDENCE_DRIFT (151.5593ms)
+✔ CR-2026-030 TASK-01：reject grant 跨 CR → GRANT_MISMATCH；证据漂移 → EVIDENCE_DRIFT；错误状态 → GRANT_STATE_MISMATCH（AC-19/AC-22） (624.3282ms)
 ℹ tests 13
 ℹ suites 0
 ℹ pass 13
@@ -21,6 +21,6 @@ $ node --test --test-name-pattern=CR-2026-052|EVIDENCE_DRIFT skills/shared/crctl
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 2844.1349
+ℹ duration_ms 2973.3236
 
 --- stderr ---
