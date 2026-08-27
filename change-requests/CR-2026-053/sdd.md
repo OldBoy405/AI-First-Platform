@@ -82,6 +82,8 @@ PostgreSQL（agent_task_queue / cr / issue / project / activity_log，无新表�
 | | `cr_id` | text nullable | CR 归属；绑定接口 CAS 写 `NULL → cr_id` 或同值 |
 | | `pipeline_node_run_id` | uuid nullable | Runner pipeline 任务幂等键 |
 | | `originator_user_id` / `accountable_user_id` / `originator_source` / `delegated_from_task_id` 等 | — | 既有归因快照，`CreatePipelineTask` 已从来源 task 逐字拷贝，本 CR 不改变归因语义 |
+| | —（无 `workspace_id` 列） | — | **本表没有 workspace 列**；task 的 workspace 隔离只能经 `agent_task_queue.agent_id → agent.workspace_id` 取得（已核实 `GetAgentTaskInWorkspace`、`SetTaskCRAttributionIfValid` 均以此方式做租户隔离） |
+| `agent` | `id` / `workspace_id` / `archived_at` / `runtime_id` | uuid / uuid / timestamptz / uuid | Agent 及其所属 workspace（`workspace_id` NOT NULL）；task 的 workspace 权威来源，绑定事务据此校验 `agent.workspace_id = actor.workspace_id` |
 | `cr` | `cr_id` | text | CR 标识（workspace 内） |
 | | `shell_issue_id` | uuid nullable | CR→Issue 投影链接；绑定接口 CAS 写 `NULL → issue_id` 或同值（列来自 `server/migrations/433_aifirst_cr_projection.up.sql`） |
 | | `title` / `status` / `needs_reconcile` / `updated_at` | — | 既有投影字段，gates 查询已消费 |
@@ -94,26 +96,18 @@ PostgreSQL（agent_task_queue / cr / issue / project / activity_log，无新表�
 
 - 无新表/新列/新索引/新外键（遵守 multica CLAUDE.md：不加 FK、新索引必须 `CONCURRENTLY`——本 CR 不新增索引）。
 - 绑定三写入（`agent_task_queue.cr_id` + `cr.shell_issue_id` + `activity_log`）在同一数据库事务内完成，任一部分失败整体回滚（NFR-1）。
-- CAS 约束（NFR-2）在 SQL `UPDATE ... WHERE <字段> IS NULL OR <字段> = <目标值>` 中表达，由 `rows affected` 区分"成功/同值重放/异值冲突"，不引入应用层读改写竞争。
+- CAS 约束（NFR-2）**不**在 `rows affected` 上区分——`UPDATE ... WHERE <字段> IS NULL OR <字段> = <目标值>` 对"NULL→值"与"同值重放"都会命中并更新 1 行，无法靠影响行数区分两者。绑定事务用 `FOR UPDATE` 锁住 task 行与 cr 行后，直接读锁内旧值（`task.cr_id` / `cr.shell_issue_id`）判定 `changed`（§4.1）：同值重放 `changed=false`，不重复写成功审计、不重复发刷新事件（AC-B3）。
 
 ### 2.3 涉及 sqlc 的变更面
 
 - `server/pkg/db/queries/agent.sql`：
-  - `CreatePipelineTask` INSERT 列清单增加 `issue_id`、`project_id`，值从来源 task 行 `s.issue_id`/`s.project_id` 拷贝（FR-B12）。
-  - 新增绑定读写查询：读 task（含 issue_id/project_id/cr_id）、按 `(workspace_id, cr_id)` 读 CR、CAS 更新 `task.cr_id`、CAS 更新 `cr.shell_issue_id`、写 `activity_log`。具体 query 命名在实施期确定，遵循既有命名惯例。
+  - `CreatePipelineTask`（现 INSERT 列不含 `issue_id`/`project_id`）追加这两列，值在 SQL 内从来源 task 行 `s.issue_id`/`s.project_id` 直接拷贝，并追加 `s.issue_id IS NOT NULL` 守卫（FR-B12，§4.4 路径 1）。
+  - 新增绑定读写查询：按 `(task_id, agent_id)` 读 task 并 JOIN `agent` 校验 `agent.workspace_id`（复用 `GetAgentTaskInWorkspace` 模式）、按 `issue_id` 读 issue（`GetIssue`）、按 `(project_id, workspace_id)` 读并锁 project（`GetProjectInWorkspace`/`LockProjectForDelete` 模式）、按 `(workspace_id, cr_id)` 读并锁 CR（`GetCrShellIssueInWorkspaceForShare` 模式）、锁内旧值判定后更新 `task.cr_id` / `cr.shell_issue_id`、写 `activity_log`。具体新 query 命名在实施期确定，遵循既有命名惯例。
 - sqlc 生成物 `server/pkg/db/generated/` 由 `make sqlc` 再生成，禁手改（ARCHITECTURE.md 不变量 5）。
 
-### 2.4 PipelineTaskSpec 结构变更（FR-B12）
+### 2.4 PipelineTaskSpec 不改（FR-B12）
 
-`server/internal/service/task.go` 的 `PipelineTaskSpec` 增加两个字段（由 Runner 从来源 task 行解析，调用方不直接指定）：
-
-```go
-type PipelineTaskSpec struct {
-    // ... 既有字段不变 ...
-    SourceIssueID   pgtype.UUID // 来源 task 的 issue_id，插入时原子继承
-    SourceProjectID pgtype.UUID // 来源 task 的 project_id，插入时原子继承
-}
-```
+`PipelineTaskSpec` **不新增** `SourceIssueID`/`SourceProjectID` 字段——`issue_id`/`project_id` 的继承在 `CreatePipelineTask` SQL 内完成：`FROM agent_task_queue s ... SELECT s.issue_id, s.project_id` 直接从来源 task 行读值（§4.4 路径 1）。调用方（Runner）既不提供、也不能覆盖这两个字段，从协议层杜绝"调用方直接指定"（FR-B12 第 1 条）。
 
 ## 3. 接口契约
 
@@ -153,7 +147,7 @@ Content-Type: application/json
 | 错误码 | HTTP 状态 | 含义 |
 |---|---|---|
 | `TASK_CONTEXT_REQUIRED` | 401 | 不是 task token 调用 |
-| `TASK_ISSUE_REQUIRED` | 422 | 当前 task 没有 Issue（创建路径错误，FR-B12） |
+| `TASK_ISSUE_REQUIRED` | 422 | 当前 task 没有 Issue，或 Issue 不存在/与 task workspace 不一致（根因均为创建路径错误，FR-B12） |
 | `CR_NOT_FOUND` | 404 | 同 workspace 中不存在该 CR |
 | `TASK_PROJECT_MISMATCH` | 422 | task/Issue/Project 关系不闭合 |
 | `TASK_CR_CONFLICT` | 409 | task 已绑定另一 CR |
@@ -180,31 +174,47 @@ Multica CLI 新增薄包装命令（名由实施期按 CLI 命名惯例定，形
 
 ```text
 func BindCurrentTaskToCR(ctx, crID):
-    actor = task_token_actor_from_context(ctx)            // X-Task-ID/X-Agent-ID/X-Workspace-ID
+    actor = task_token_actor_from_context(ctx)            // X-Task-ID/X-Agent-ID/X-Workspace-ID（auth.go:103-106）
     if actor == nil: return TASK_CONTEXT_REQUIRED
     begin tx
-    task = SELECT ... FROM agent_task_queue WHERE id = actor.task_id
-               AND agent_id = actor.agent_id AND workspace_id = actor.workspace_id FOR UPDATE
-    if task == nil: return TASK_CONTEXT_REQUIRED            // 未撤销 task token 校验在前，行缺失=无效
-    if task.issue_id == NULL: return TASK_ISSUE_REQUIRED    // 硬技术失败，非业务分支
+    // 1) 锁 task 行（经 task→agent 校验 workspace；agent_task_queue 无 workspace_id 列）
+    task = SELECT t.*, a.workspace_id AS agent_ws
+           FROM agent_task_queue t JOIN agent a ON a.id = t.agent_id
+           WHERE t.id = actor.task_id AND t.agent_id = actor.agent_id
+           FOR UPDATE OF t, a
+    if task == nil: return TASK_CONTEXT_REQUIRED          // 行缺失/未撤销 token 校验在前=无效
+    if task.agent_ws != actor.workspace_id: return TASK_CONTEXT_REQUIRED  // token↔agent workspace 不一致
+    if task.issue_id == NULL: return TASK_ISSUE_REQUIRED  // 硬技术失败=创建路径未按 FR-B12
+    // 2) 锁 issue，校验 workspace
     issue = SELECT ... FROM issue WHERE id = task.issue_id FOR UPDATE
-    if issue == nil or issue.workspace_id != task.workspace_id: return TASK_ISSUE_REQUIRED
+    if issue == nil or issue.workspace_id != task.agent_ws: return TASK_ISSUE_REQUIRED
     if issue.project_id == NULL: return TASK_PROJECT_MISMATCH
+    // 3) 锁 project，校验 workspace + 归属闭合（FR-B2 第 4/5 条）
+    project = SELECT ... FROM project WHERE id = issue.project_id FOR UPDATE
+    if project == nil or project.workspace_id != task.agent_ws: return TASK_PROJECT_MISMATCH
     if task.project_id != NULL and task.project_id != issue.project_id: return TASK_PROJECT_MISMATCH
-    cr   = SELECT ... FROM cr WHERE cr_id = crID AND workspace_id = task.workspace_id FOR UPDATE
+    // 4) 锁 cr，校验 workspace
+    cr = SELECT ... FROM cr WHERE cr_id = crID AND workspace_id = task.agent_ws FOR UPDATE
     if cr == nil: return CR_NOT_FOUND
+    // 5) CAS 冲突检查（非空异值拒绝）
     if task.cr_id != NULL and task.cr_id != crID: return TASK_CR_CONFLICT
     if cr.shell_issue_id != NULL and cr.shell_issue_id != issue.id: return CR_ISSUE_CONFLICT
-    # CAS 写（只允许 NULL→值 或同值）
-    UPDATE agent_task_queue SET cr_id = crID WHERE id = task.id AND (cr_id IS NULL OR cr_id = crID)
-    UPDATE cr SET shell_issue_id = issue.id WHERE cr_id = crID AND (shell_issue_id IS NULL OR shell_issue_id = issue.id)
-    INSERT activity_log(action='cr_issue_bound', workspace, issue, project, task, agent, cr)
-    commit tx                                                  // 任一步失败 → rollback，两字段零部分更新
-    publish cr:updated / project refresh events               // 提交后发布；失败记错误、不 rollback
-    return {cr_id, task_id, issue_id, project_id, changed}
+    // 6) changed 由锁内旧值判定（不依赖 rows affected——WHERE IS NULL OR 同值 对
+    //    NULL→值 与同值重放都返回 1 行，无法区分）
+    taskChanged = (task.cr_id IS NULL)
+    crChanged   = (cr.shell_issue_id IS NULL)
+    changed     = taskChanged OR crChanged
+    if taskChanged: UPDATE agent_task_queue SET cr_id = crID WHERE id = task.id
+    if crChanged:  UPDATE cr SET shell_issue_id = issue.id WHERE id = cr.id
+    if changed:    INSERT activity_log(action='cr_issue_bound', details={workspace,issue,project,task,agent,cr})
+    commit tx                                              // 任一步失败 → rollback，两字段零部分更新
+    if changed: publish cr:updated / project refresh events // 提交后发布；失败记错误、不 rollback
+    return {cr_id, task_id, issue_id, project_id, changed}  // 同值重放 changed=false、无新审计、无事件
 ```
 
-冲突路径（`TASK_CR_CONFLICT`/`CR_ISSUE_CONFLICT` 等前置条件拒绝）不写绑定字段，改为写 `activity_log(action='cr_issue_bind_rejected', ...)` 后提交/返回，零覆盖（FR-B4）。
+锁顺序固定为 agent → task → issue → project → cr（全部按主键等值查找，同一全局顺序避免死锁）。CAS 语义由第 5 步的旧值校验 + `FOR UPDATE` 排他锁共同保证：第 6 步的 UPDATE 因已持锁且已校验"NULL 或同值"，必命中且只写一行。`changed` 直接取自锁内旧值而非 `rows affected`，因此能区分"NULL→值（changed=true）"与"同值重放（changed=false）"，并覆盖部分已绑定组合（task 已绑 CR 但 CR 未绑 Issue、或反之——只要任一字段从 NULL 落值即 `changed=true`）；同值重放不重复写成功审计、不重复发刷新事件（AC-B3）。
+
+冲突路径（`TASK_CR_CONFLICT`/`CR_ISSUE_CONFLICT` 等前置条件拒绝）不写绑定字段，改为写 `activity_log(action='cr_issue_bind_rejected', details={workspace, issue, project, task, agent, cr, 当前值, 拒绝原因})` 后提交/返回，零覆盖（FR-B4）。`activity_log` 只有 `workspace_id`/`issue_id`/`actor_type`/`actor_id`/`action`/`details` 列（已核实无 Project/task/CR 专用列），Project/task/CR/当前值/原因均进 `details` JSONB（不新增列，FR-B9）。
 
 ### 4.2 review Skill 绑定前置步骤（FR-B7，四个 Skill 同一实现）
 
@@ -238,13 +248,24 @@ for each cr in crs:
 
 `CrGateCard` 保留既有"`human_approval`+`running` → ApprovalCard"分支供"恰好存在该 node"的场景（历史/兼容），但主渲染路径改为以 `pending_stage` 为准。两条路径同时成立时只会渲染一张 ApprovalCard（要么 `pending_stage` 分支、要么 `CrGateCard` 内分支，二者按上述循环逻辑互斥：跳过 `running` node 后由 `pending_stage` 分支唯一渲染当前卡）。
 
-### 4.4 reviewer task 创建契约（FR-B12）
+### 4.4 reviewer task 创建契约（FR-B12，三条路径的可执行契约）
 
-受支持的三条创建路径统一收敛"插入时原子继承 `issue_id`/`project_id`"：
+三条受支持路径在"插入时原子继承 `issue_id`/`project_id`"上收敛，各自落点到具体 service/query，调用方一律不能指定这两个字段：
 
-1. **Pipeline review 节点 Runner 调度**：`EnqueuePipelineTask`/`CreatePipelineTask`——`PipelineTaskSpec` 增加 `SourceIssueID`/`SourceProjectID`（Runner 从来源 task 行解析），`CreatePipelineTask` SQL 从来源 task 行 `s.issue_id`/`s.project_id` 逐字拷贝进 INSERT；来源无 `issue_id` 则拒绝创建（`0 rows` → `RUNNER_ATTRIBUTION_INVALID` 或等价技术失败）。
-2. **作者 Agent/coordinator 委派路由**：创建 quality-reviewer task 的路径必须携带来源 Issue 或父 task；平台在插入点从该可信来源继承，调用方不直接指定。
-3. **issue 评论 mention 入队路径**：从该 Issue 与 `issue.project_id` 派生。
+1. **Pipeline review 节点 Runner 调度**（`task.go:374 EnqueuePipelineTask` → `agent.sql:651 CreatePipelineTask`）：
+   - 现 INSERT 列不含 `issue_id`/`project_id`——本轮在列清单追加二者，值在 SQL 内从来源 task 行 `s.issue_id`/`s.project_id` 直接拷贝（`FROM agent_task_queue s ... SELECT s.issue_id, s.project_id`），并追加守卫 `s.issue_id IS NOT NULL`。
+   - 原子拒绝：来源 task 无 `issue_id` 时 INSERT 写 0 行 → `pgx.ErrNoRows` → `EnqueuePipelineTask` 先按既有幂等逻辑 `GetActivePipelineTask` 复查，仍未命中即返回 `ErrRunnerAttributionInvalid`（技术失败，不落 NULL task）。
+   - 调用方屏蔽：`PipelineTaskSpec` 不新增任何 Issue/Project 字段（§2.4），Runner 传不了也覆盖不了这两个值。
+2. **作者 Agent/coordinator 委派路由**（issue 评论 mention `@quality-reviewer-agent`，`task.go:1385 EnqueueTaskForMention` → `enqueueMentionTaskWithCommentPlanAndOriginator` → `agent.sql:312 CreateAgentTask`）：
+   - 插入点已把 `issue_id`/`project_id` 从入参 `issue` 继承：`CreateAgentTask` 参数 `IssueID = issue.ID`、`ProjectID = issue.ProjectID`（CR-2026-010 起已 stamp `project_id`）。
+   - 原子拒绝：该路径以 `issue db.Issue` 整行为输入，`issue.ID` 恒非空（mention 只发生在某个 Issue 上），故不存在"来源缺 issue_id"的失败态；`project_id` 继承 `issue.project_id`（可为 NULL，FR-B2 只强制 `issue_id` 非空，`project_id` NULL 由绑定事务第 3 步校验闭合）。
+   - 调用方屏蔽：`issue`/`agent_id` 由评论处理器从评论的 `issue_id` 与 mention 目标解析，评论作者不能指定 task 的 `issue_id`/`project_id`。
+3. **issue 评论 mention 入队路径**（成员/人工在 Issue 评论中 `@quality-reviewer-agent`）：与路径 2 共用同一插入点 `enqueueMentionTaskWithCommentPlanAndOriginator` → `CreateAgentTask`，`issue_id`/`project_id` 同从该 Issue 派生（`attribution.SourceDelegation` vs `direct_human` 只影响归因快照，不影响 Issue/Project 继承）。
+
+**负向测试锚点（覆盖 AC-B10/AC-B11，三条路径都要有）**：
+- Runner 路径：来源 task `issue_id IS NULL` 时 `CreatePipelineTask` 返回 `ErrNoRows` 且 `agent_task_queue` 无新增行；来源 task 有值时新行 `issue_id`/`project_id` 与来源行逐位相等。
+- mention/委派路径：`issue.project_id IS NULL` 时新 task 行 `project_id` 为 NULL 但 `issue_id` 非空；`issue.ID` 为有效 UUID 时新行 `issue_id = issue.ID`；构造性反例测试断言"不存在 issue_id 为 NULL 的 reviewer task 能经 mention 路径创建"。
+- 违规兜底（AC-B11）：若某实现绕过上述路径硬造出 `issue_id IS NULL` 的 reviewer task，`bind-current-task-to-cr` 在绑定前置步骤返回 `TASK_ISSUE_REQUIRED` 且零绑定写入、不写 canonical review、不静默降级。
 
 `bind-current-task-to-cr` 不信任调用方字段、仍只从 task 行与数据库关系派生 Issue/Project（FR-B1/B2 不变）；本契约只继承 `issue_id`/`project_id`，不权威写 `cr_id`（`cr_id` 仍由 review Skill 提交并受 workspace+CAS 校验），FR-B11 升级条件不变。
 
@@ -258,7 +279,7 @@ for each cr in crs:
 | 绑定接口是否接受调用方 `issue_id`/`project_id` | **不接受**，全服务端从 task token + 数据库派生 | 接受调用方字段：省一次查询但把"谁绑谁"的权威交给客户端 | 身份不可伪造（NFR-4）；代价是接口必须 task-scoped、非 task 调用一律拒绝 |
 | `cr_id` 是否由调度层权威写 | **否**（本 CR 不升级） | 调度层创建 reviewer task 时权威写 `cr_id`：彻底消除同 workspace 错绑，但需改 enqueue 协议/引入签名来源 | 保留残余风险（FR-B11 明示），错绑实际发生才升级；代价是信任上限降低但改动面最小 |
 | 审批卡渲染依据 | **`pending_stage` 非空即渲染**（FR-B6） | 继续以 `gate_nodes` 为准：需先修 node 投影，且违背"当前状态足以决定当前审批卡"原则 | 前端只加一个分支 + 提取组件；代价是需保证 `pending_stage` 服务端语义稳定（已由既有 `pendingApprovalStage(status)` 提供） |
-| 是否新增 reviewer task 的 Issue 继承为独立协议 | **否**，只补 `PipelineTaskSpec` 两字段 + `CreatePipelineTask` 两列 | 新增 enqueue 协议身份模型：超出本 CR 最小边界，且 PRD 明示不引入签名来源 | 改动面最小；代价是调用方仍可能漏配来源 Issue（由"来源无 issue_id 拒绝创建"兜底） |
+| 是否新增 reviewer task 的 Issue 继承为独立协议 | **否**，只补 `CreatePipelineTask` 两列（从来源 task 行拷贝）+ 复用 mention 路径既有 `CreateAgentTask` 的 Issue 继承 | 新增 enqueue 协议身份模型：超出本 CR 最小边界，且 PRD 明示不引入签名来源 | 改动面最小；代价是调用方仍可能漏配来源 Issue（由"来源无 issue_id 拒绝创建"兜底） |
 
 复用清单（不重新设计，PRD §1.3 已核实）：
 
@@ -300,21 +321,21 @@ for each cr in crs:
 | FR-B9 | 复用 `agent_task_queue.cr_id`、`cr.shell_issue_id`、`activity_log`；改 `agent.sql` + `make sqlc` 再生成；不新增表/列/索引/外键。 |
 | FR-B10 | 全部 multica 落代码在 `CUSTOM.md` 对照其当时实际结构登记（编号顺延、原因含 CR-2026-053 + TASK）。 |
 | FR-B11 | 在 SDD §7 与代码注释固化信任上限声明：task token 权威证明 task/agent/workspace；CR-ID 由 Skill 提交；同 workspace 内错绑风险存在，CAS/审计/独立路由降概率不构成密码学来源证明。 |
-| FR-B12 | `PipelineTaskSpec` 增 `SourceIssueID`/`SourceProjectID` + `CreatePipelineTask` INSERT 从来源 task 行拷贝 `issue_id`/`project_id`；来源无 `issue_id` 拒绝创建（§4.4）。 |
+| FR-B12 | `CreatePipelineTask` INSERT 从来源 task 行 `s.issue_id`/`s.project_id` 直接拷贝并加 `s.issue_id IS NOT NULL` 守卫；mention/委派路径 `CreateAgentTask` 已从 Issue 继承 `issue_id`/`project_id`（`PipelineTaskSpec` 不改，§4.4）。 |
 
 ## 7. 安全与性能考量
 
 ### 7.1 安全控制点
 
-- **身份不可伪造（NFR-4）**：task/agent/workspace 由 `mat_` task token 中间件权威写入、覆盖客户端头（`auth.go:104-106`）；Issue/Project 由 task 行与数据库关系派生，调用方不能指定。handler 层按 multica CLAUDE.md"Backend UUID Rules"经 `parseUUIDOrBadRequest` 解析路径 `cr_id` 外的 UUID，任务/工作区身份一律来自 actor context。
+- **身份不可伪造（NFR-4）**：task/agent/workspace 由 `mat_` task token 中间件权威写入、覆盖客户端头（`auth.go:103-106`）；Issue/Project 由 task 行与数据库关系派生，调用方不能指定。绑定事务内再以 `agent.workspace_id` 与 `project.workspace_id` 交叉校验（§4.1），token 携带的 workspace 与 DB 行不一致即拒绝。handler 层按 multica CLAUDE.md"Backend UUID Rules"经 `parseUUIDOrBadRequest` 解析路径 `cr_id` 外的 UUID，任务/工作区身份一律来自 actor context。
 - **CAS 零覆盖（NFR-2）**：两个绑定字段只允许 `NULL → 值` 或同值；异值拒绝，防止恶意/错误 task 抢先错绑（FR-B11 残余风险受控）。
 - **人类审批边界**：Agent 不得代批准；review PASS 与人工批准仍是两个节点；本 CR 不改 `crctl approve` 授权模型（NFR-4，ARCHITECTURE.md 不变量 7）。
 - **失败关闭**：认证/workspace/authority 边界 fail closed；绑定失败硬失败、不静默降级写 canonical review（NFR-6）。
 
 ### 7.2 性能
 
-- 绑定事务是单行级 `FOR UPDATE` + 两行 CAS 更新 + 一次审计插入，处于 review 时点（低频、非热路径），无吞吐风险。
-- `CreatePipelineTask` 增加两列拷贝来自已锁定来源行 `s.*`，无额外 JOIN/索引开销。
+- 绑定事务是 `FOR UPDATE` 锁定 task（JOIN agent）、issue、project、cr 四行 + 至多两行绑定更新 + 一次审计插入，处于 review 时点（低频、非热路径），无吞吐风险。
+- `CreatePipelineTask` 增加两列拷贝来自来源行 `s.issue_id`/`s.project_id`（这两个列在 task 插入后不变，读无需加锁），无额外 JOIN/索引开销。
 - 前端渲染改为每 CR 至多一张 ApprovalCard + 历史节点，复杂度与现有遍历同级，无新增网络请求（复用既有 gates 查询结果）。
 
 ### 7.3 边界条件
