@@ -8,7 +8,7 @@ owner: Ray
 owner-role: requirement
 status: draft
 created: 2026-08-27T17:35:57+08:00
-updated: 2026-08-27T17:35:57+08:00
+updated: 2026-08-27T18:55:00+08:00
 ---
 
 # 1. 概述
@@ -27,12 +27,13 @@ updated: 2026-08-27T17:35:57+08:00
 一个 CR、两条独立工作轨，共享的只有 CR-ID 与现有执行环境，不建设共同的新框架：
 
 1. **Track A（tools 仓）——独立评审最小改造**：四个 CR 评审 Skill（`review-requirement`/`review-tech-design`/`review-dev-plan`/`review-code`）的唯一 `owns` 收敛为 `quality-reviewer-agent`；作者型 Agent（`requirement-writer`/`dev-agent`）移除 `owns`、保留 Pipeline registry 所需的 `can-call`，其评审意图改为委派路由合同（创建新的 quality reviewer 任务 → 只传 CR-ID、权威 workspace 与 Skill 已声明输入 → 等待结构化评审结果 → 只消费 blocker 回修）；三条 CR Pipeline 的 review 节点 prompt 明确要求新建独立 quality reviewer task/run，每轮 reviewLoop 重新委派。Pipeline schema、节点顺序、`reviewLoop`、`onFail`、状态机、gates、`review-record`/`approve` 协议全部保持不变。
-2. **Track B（Multica 仓）——CR→Issue 绑定与审批卡可见性**：新增一个 task-scoped 窄接口 `POST /api/crs/{cr_id}/bind-current-task`，在四个 review Skill 写临时评审 payload 之前执行同一平台前置步骤，把当前 task 原子绑定到 CR/Issue（同事务写 `agent_task_queue.cr_id` + `cr.shell_issue_id` + `activity_log`，CAS 只允许 `NULL → 值` 或同值）；前端 gates 改为 `pending_stage` 非空即渲染唯一 `ApprovalCard`（从 `CrGateCard` 提取组件，保留 blocked 卡与历史节点）；存量 CR-2026-051/052 经受控 task 走同一接口修复，禁止直接 SQL。
+2. **Track B（Multica 仓）——CR→Issue 绑定与审批卡可见性**：新增一个 task-scoped 窄接口 `POST /api/crs/{cr_id}/bind-current-task`，在四个 review Skill 写临时评审 payload 之前执行同一平台前置步骤，把当前 task 原子绑定到 CR/Issue（同事务写 `agent_task_queue.cr_id` + `cr.shell_issue_id` + `activity_log`，CAS 只允许 `NULL → 值` 或同值）；同时新增调度层 reviewer task 创建契约（FR-B12）——创建 quality-reviewer task 时在任务插入点从可信来源 task/Issue 原子继承 `issue_id`/`project_id`（来源无 Issue 上下文则不创建），使绑定前置步骤的 `TASK_ISSUE_REQUIRED` 只表示创建路径配置错误、而非正常评审路径的稳定失败；前端 gates 改为 `pending_stage` 非空即渲染唯一 `ApprovalCard`（从 `CrGateCard` 提取组件，保留 blocked 卡与历史节点）；存量 CR-2026-051/052 经受控 task 走同一接口修复，禁止直接 SQL。
 
 目标闭环（source §1 原样）：
 
 ```text
 作者 Agent 产出阶段内容 → Pipeline 到达 review-* 节点 → 新建 quality-reviewer-agent 独立任务
+（任务插入时从可信来源 task/Issue 原子继承 issue_id/project_id，FR-B12）
 → review Skill 先将当前 Multica task 绑定到 CR/Issue → review Skill 作业务判断
 → crctl review-record 原子记录评审证据 → Pipeline 按现有 reviewLoop 回修或进入 human_approval
 → crctl/Multica 状态投影得到 pending_stage → 项目会话显示唯一 ApprovalCard → 人类批准或驳回
@@ -62,15 +63,16 @@ updated: 2026-08-27T17:35:57+08:00
 - 保留 `can-call` 是兼容要求（registry 与 Agent contract 校验现状），不代表允许作者同运行自评；实际独立性由「唯一 owner + Agent 路由 + Pipeline 委派合同 + 结构测试」共同约束；
 - 本设计提供组织性强制，不提供密码学运行身份证明（不新增 run attestation；旧 PASS 不自动作废、不回填历史身份）；
 - 存量 CR-2026-051/052 修复走受控 task + 同一绑定接口，禁用会话内直接 SQL；
+- reviewer task 创建契约（FR-B12）只要求任务插入时从可信来源继承 `issue_id`/`project_id` 两个既有列；不改动 enqueue 协议的身份模型、不引入签名来源——FR-B11 的升级条件（错绑实际发生或风险评估升级后才由调度层权威写 `cr_id`）保持不变；
 - 文档性质：source 文档是平台级最小改造设计，本轮实现仍须通过本 CR 完成 PRD、SDD、TASK、开发、评审与人工审批全流程。
 
 # 2. 用户故事
 
 - **US-1（CR 流程 owner / 平台维护者）**：作为流程 owner，我希望四类评审证据的 reviewer 与作者是两个独立运行，这样"写 + 评"的逃逸不再可能，评审结论才值得进入人工审批。
-- **US-2（作者型 Agent / requirement-writer、dev-agent）**：作为产出阶段内容的作者，我希望到达 review 节点时创建新的独立 quality reviewer 任务、只传最小输入并等待结构化评审结果，然后只消费 blocker 执行回修，而不是在同一运行中自己评审自己。
-- **US-3（quality-reviewer-agent）**：作为唯一评审 owner，我希望在写评审 payload 前先把当前 Multica task 绑定到 CR/Issue（成功才继续 `review-record`，失败按技术失败中止），这样评审证据与 CR 的项目上下文同步建立，且绑定失败不会污染 canonical 评审。
+- **US-2（作者型 Agent / requirement-writer、dev-agent）**：作为产出阶段内容的作者，我希望到达 review 节点时创建新的独立 quality reviewer 任务（创建路径携带来源 Issue/父 task 上下文，`issue_id`/`project_id` 由平台在插入时原子继承）、只传 CR-ID 与 workspace 等最小输入并等待结构化评审结果，然后只消费 blocker 执行回修，而不是在同一运行中自己评审自己。
+- **US-3（quality-reviewer-agent）**：作为唯一评审 owner，我希望我的 task 在创建时就携带来源 Issue/Project 上下文（由调度层从可信来源原子继承），并在写评审 payload 前先把当前 Multica task 绑定到 CR/Issue（成功才继续 `review-record`，失败按技术失败中止），这样评审证据与 CR 的项目上下文同步建立，且绑定失败不会污染 canonical 评审。
 - **US-4（审批人 / 项目成员）**：作为项目会话里的审批人，我希望 CR 进入任一审批状态时都能看到唯一一张审批卡（即使当前没有 `human_approval/running` gate node），批准或驳回的操作方式与今天完全一致。
-- **US-5（存量 CR 维护者）**：作为 CR-2026-051/052 的维护者，我希望从已核实的来源 Issue 启动一次受控 task 就能修复 CR→Issue 关联，并且该操作有审计、不需要直接碰共享数据库。
+- **US-5（存量 CR 维护者）**：作为 CR-2026-051/052 的维护者，我希望从已核实并登记在 PRD 中的来源 Issue（AIFI-3 / AIFI-6，见 FR-B8）启动一次受控 task 就能修复 CR→Issue 关联，并且该操作有审计、不需要直接碰共享数据库。
 - **US-6（本地 IDE 用户）**：作为不支持 subagent 的运行时用户，我希望流程停在 review 节点并提示我另开独立会话以 reviewer 身份完成评审，而不是静默退化为作者自评。
 
 # 3. 功能需求
@@ -94,10 +96,14 @@ updated: 2026-08-27T17:35:57+08:00
 ```text
 读取 crctl next / 当前 Pipeline review 节点
 → 创建新的 quality-reviewer-agent 任务
+   （创建路径必须携带可信来源上下文：来源 Issue 或父 task；
+     issue_id/project_id 由平台在任务插入时原子继承，见 FR-B12）
 → 只传 CR-ID、权威 workspace 和该 review Skill 已声明的输入
 → 等待结构化评审结果
 → 作者 Agent 只消费 blocker 并执行回修，不代替 reviewer 判断
 ```
+
+禁止创建无 Issue 上下文的 reviewer task（该 task 在绑定前置步骤会稳定失败于 `TASK_ISSUE_REQUIRED`，见 FR-B7/FR-B12）；若委派路径所在的运行环境不提供可信来源上下文，走 FR-A6 的独立会话路径。
 
 独立入口"独立评审 `<CR-ID>`"遵守相同合同：路由 Agent 先调用 `crctl next` 确认当前合法 review Skill，再委派给 `quality-reviewer-agent`。不新增 `crctl review` 包装命令。`agents/_index.yml` 只同步实际 capability/reference 变化。
 
@@ -152,7 +158,7 @@ updated: 2026-08-27T17:35:57+08:00
 
 1. 请求必须由有效、未撤销的 task token 发起；
 2. token 中的 task 必须存在且属于 token workspace/agent；
-3. task 必须有 `issue_id`；
+3. task 必须有 `issue_id`（来源见 FR-B12 创建契约：任务插入时从可信来源 task/Issue 原子继承，调用方不指定）；
 4. Issue 必须属于同一 workspace 且属于一个有效 Project；
 5. task 已有 `project_id` 时，必须与 `issue.project_id` 相同；
 6. CR 必须存在于同一 workspace；
@@ -213,10 +219,21 @@ updated: 2026-08-27T17:35:57+08:00
 
 绑定放在 review Skill（不是 Agent 或 Pipeline）：Skill 拥有业务编排步骤和 I/O；Agent 只负责路由，Pipeline 只负责节点与循环。选择评审时点是因为此时 CR 已完成注册（CR-ID 与 `cr` 投影存在）且审批卡只需在评审通过、进入人工审批前可见；本轮评审为 block 也不会显示错误审批卡（非审批状态 `pending_stage` 为空）。
 
+`TASK_ISSUE_REQUIRED` 是硬技术失败、不是业务分支：其根因只能是 reviewer task 创建路径未按 FR-B12 携带 Issue 上下文（配置/调度错误）。出现该错误时修复创建路径后重试，禁止静默跳过绑定继续写 canonical review。
+
 ## FR-B8 存量 CR 修复路径（CR-2026-051/052）
 
-1. 人类确认各自来源 Issue；
-2. 从该 Issue 启动一次受控 Multica task；
+已核实来源 Issue（2026-08-27 经 Multica 平台记录权威确定，核实方法与证据见附录 A.10；仓库侧 `origin` 字段为空，平台记录为权威）：
+
+| CR | 来源 Issue | Issue UUID | 项目 project_id | workspace |
+|---|---|---|---|---|
+| CR-2026-051 | AIFI-3「IM 渠道审批接入（飞书审批提醒卡片）— 按附件设计稿推进 CR 流程」 | `6a8cd56a-12b3-49d9-80bb-4657da15c3b0` | `e3480ca6-29ba-42cc-87b9-6118921d3cfb` | `30641781-762e-401b-b541-f33387fe2294` |
+| CR-2026-052 | AIFI-6「Multica 审批后自动续跑 + audit-drift 去重修复」 | `1766573d-f7bd-465b-bbc4-bcb65a84c880` | `e3480ca6-29ba-42cc-87b9-6118921d3cfb` | `30641781-762e-401b-b541-f33387fe2294` |
+
+修复步骤（输入契约：以本表为唯一可重复的权威查找输入，不接受运行时猜测）：
+
+1. 人类按本表确认各自来源 Issue（确认内容含 Issue UUID 与项目/workspace 预期，确认结果在 issue 评论或 CR 记录中留痕）；
+2. 从该 Issue 启动一次受控 Multica task（task 由此携带 `issue_id`/`project_id`）；
 3. task 调用同一个 `bind-current-task-to-cr(CR-ID)`；
 4. 服务端执行相同校验、CAS 和审计；
 5. 项目 gates 重新查询后验证卡片可见。
@@ -233,7 +250,16 @@ updated: 2026-08-27T17:35:57+08:00
 
 ## FR-B11 信任上限与残余风险声明
 
-本最小方案明确接受（source §6.8）：task token 可以权威证明 task、Agent 和 workspace；Issue/Project 由 task 行和数据库关系派生，不能由调用方伪造；CR-ID 仍由 review Skill 提交，服务端只能校验该 CR 属于同一 workspace——因此同 workspace 内恶意或错误的 task 理论上可能抢先把尚未绑定的 CR 绑定到错误 Issue。CAS、独立 reviewer 路由、结构测试和 `activity_log` 降低概率并提供追责，但不构成 CR→Issue 的密码学来源证明。本 CR 不为该风险改造 enqueue 协议或引入签名来源；只有在实际发生错绑或风险评估升级时，才把合同升级为"调度层创建 reviewer task 时权威写入 `cr_id`"。
+本最小方案明确接受（source §6.8）：task token 可以权威证明 task、Agent 和 workspace；Issue/Project 由 task 行和数据库关系派生，不能由调用方伪造；CR-ID 仍由 review Skill 提交，服务端只能校验该 CR 属于同一 workspace——因此同 workspace 内恶意或错误的 task 理论上可能抢先把尚未绑定的 CR 绑定到错误 Issue。CAS、独立 reviewer 路由、结构测试和 `activity_log` 降低概率并提供追责，但不构成 CR→Issue 的密码学来源证明。本 CR 不为该风险改造 enqueue 协议或引入签名来源；只有在实际发生错绑或风险评估升级时，才把合同升级为"调度层创建 reviewer task 时权威写入 `cr_id`"。（FR-B12 的 `issue_id`/`project_id` 插入时继承不构成该升级：绑定接口仍接受 Skill 提交的 CR-ID，仍受 workspace 与 CAS 校验。）
+
+## FR-B12 调度层 reviewer task 创建契约（issue_id/project_id 原子继承）
+
+创建 quality-reviewer task 的任一受支持路径（Pipeline review 节点的 Runner 调度、作者 Agent/coordinator 的委派路由、独立评审入口）必须满足：
+
+1. 新 task 行的 `issue_id`/`project_id` 由平台在任务插入时从**可信来源上下文**原子继承：`EnqueuePipelineTask`/`CreatePipelineTask` 从来源 task 行拷贝 `issue_id`/`project_id`（来源 task 为作者运行、本身已携带 Issue 上下文）；issue 评论 mention 入队路径从该 Issue 与 `issue.project_id` 派生。调用方不直接指定这两个字段；
+2. 来源上下文没有 `issue_id` 时，该路径**不得创建** reviewer task（宁可技术失败，不产生一个注定在绑定前置步骤稳定失败的任务）；
+3. `bind-current-task-to-cr` 不信任调用方字段、仍只从 task 行与数据库关系派生 Issue/Project（FR-B1/FR-B2 不变）；
+4. 本契约只继承 `issue_id`/`project_id` 两个既有列，不权威写 `cr_id`：`cr_id` 仍由 review Skill 在绑定时提交并受 workspace 与 CAS 校验（FR-B2 第 6-9 条），FR-B11 的升级条件保持不变。
 
 # 4. 非功能需求
 
@@ -251,7 +277,7 @@ updated: 2026-08-27T17:35:57+08:00
 - [ ] **AC-A1**（FR-A1/A2）：四个 CR review Skill 各自只有一个 owner，且均为 `quality-reviewer-agent`；`requirement-writer`、`dev-agent` 不再 owns 四个 review Skill，但保留 Pipeline registry 所需的 `can-call`。
 - [ ] **AC-A2**（FR-A2）：`review-planning-report` 与 `review-alignment` 的 owner/流程未被本 CR 改动。
 - [ ] **AC-A3**（FR-A7）：`emit-registry.mjs`、`check-skill-matrix.mjs`、`check-agents-contract.mjs` 继续通过。
-- [ ] **AC-A4**（FR-A3/A4）：`requirement-writer.md`、`dev-agent.md` 的评审意图为委派路由合同；三条 CR Pipeline 的 review 节点 prompt 明确要求新建独立 quality reviewer task/run。
+- [ ] **AC-A4**（FR-A3/A4）：`requirement-writer.md`、`dev-agent.md` 的评审意图为委派路由合同，且合同明确 reviewer task 创建路径必须携带来源 Issue/父 task 上下文（FR-B12）；三条 CR Pipeline 的 review 节点 prompt 明确要求新建独立 quality reviewer task/run。
 - [ ] **AC-A5**（FR-A4）：每轮 `reviewLoop` 都重新委派 reviewer，不复用作者会话；原 Pipeline 节点顺序、`reviewLoop`、`onFail` 和状态转换保持不变。
 - [ ] **AC-A6**（FR-A5/A6）：一次独立评审入口只执行一轮 review，回修循环仍由 Pipeline 持有；运行时不支持 subagent 时停在 review 节点并提示独立会话，不直接自评。
 - [ ] **AC-A7**（FR-A7）：普通本地 pi/Claude/IDE 路径仍可按原方式调用 `crctl review-record`。
@@ -268,6 +294,8 @@ updated: 2026-08-27T17:35:57+08:00
 - [ ] **AC-B7**（FR-B2/B4）：绑定成功后发布现有刷新事件，项目 gates 可重新查询到 CR；冲突被拒时落 `cr_issue_bind_rejected` 审计。
 - [ ] **AC-B8**（FR-B7）：review Skill 在绑定失败时不调用 `review-record`，也不把失败写成业务 blocker；无 task context 时跳过绑定、现有行为不变。
 - [ ] **AC-B9**（FR-B9/B10）：不新增数据库表/列；multica 落代码在 `CUSTOM.md` 登记。
+- [ ] **AC-B10**（FR-B12）：调度层创建 reviewer task 时，`agent_task_queue.issue_id`/`project_id` 在插入时从可信来源 task/Issue 原子继承（来源 task 有值时从来源 task 拷贝；mention 入队路径从 Issue 派生）；调用方不能指定这两个字段。
+- [ ] **AC-B11**（FR-B12/FR-B7）：来源上下文无 `issue_id` 时调度层拒绝创建 reviewer task；若违规创建，绑定前置步骤返回 `TASK_ISSUE_REQUIRED` 且不写 canonical review（零绑定写入、不静默降级），修复创建路径后重试。
 
 ## Track B 审批卡（对应 FR-B6，源自 source §11.3）
 
@@ -280,17 +308,18 @@ updated: 2026-08-27T17:35:57+08:00
 
 ## 存量验证（对应 FR-B8，源自 source §11.4）
 
-- [ ] **AC-D1**：从 CR-2026-051 的已核实来源 Issue 启动受控 task，并通过同一接口建立关联。
-- [ ] **AC-D2**：从 CR-2026-052 的已核实来源 Issue 启动受控 task，并通过同一接口建立关联。
+- [ ] **AC-D1**：从 CR-2026-051 的已核实来源 Issue（AIFI-3，UUID `6a8cd56a-12b3-49d9-80bb-4657da15c3b0`，project `e3480ca6-29ba-42cc-87b9-6118921d3cfb`，workspace `30641781-762e-401b-b541-f33387fe2294`）启动受控 task，并通过同一接口建立关联；绑定成功后 `cr.shell_issue_id = 6a8cd56a-12b3-49d9-80bb-4657da15c3b0`，且该 Issue 的 project 与 task 的 `project_id` 一致。
+- [ ] **AC-D2**：从 CR-2026-052 的已核实来源 Issue（AIFI-6，UUID `1766573d-f7bd-465b-bbc4-bcb65a84c880`，project `e3480ca6-29ba-42cc-87b9-6118921d3cfb`，workspace `30641781-762e-401b-b541-f33387fe2294`）启动受控 task，并通过同一接口建立关联；绑定成功后 `cr.shell_issue_id = 1766573d-f7bd-465b-bbc4-bcb65a84c880`，且该 Issue 的 project 与 task 的 `project_id` 一致。
 - [ ] **AC-D3**：两次操作均有 activity audit，且未直接执行共享数据库 SQL。
 - [ ] **AC-D4**：绑定后对应项目 gates 能查询到 CR。
 - [ ] **AC-D5**：CR 位于审批状态时，即使当前 approval node 缺失也能显示唯一卡片。
+- [ ] **AC-D6**：执行前存在人工确认留痕（issue 评论或 CR 记录，内容含来源 Issue UUID 与 FR-B8 表的核对结果）；未确认不得执行绑定，实际来源与表不符时停止并人工核对，不猜测。
 
 # 6. 成功指标
 
 - **评审独立性**：本 CR 合入后新产生的四类评审证据，其 reviewer 运行与作者运行为两个独立 task/run（作者只消费 blocker 回修）；已知作者自评逃逸次数 = 0，再次发生即触发附录 B 升级条件。
 - **审批卡可见性**：处于四个审批门禁状态的 CR 在对应项目会话中 100% 显示唯一当前审批卡（含 `gate_nodes=[]` 场景）。
-- **存量修复**：CR-2026-051/052 通过受控 task 绑定后，各自项目 gates 查询可见。
+- **存量修复**：CR-2026-051/052 通过受控 task 绑定（来源 Issue 按 FR-B8 表：AIFI-3 / AIFI-6）后，各自项目 gates 查询可见。
 - **零回归**：三条 CR Pipeline 结构测试与三个契约校验脚本全部通过；gates API schema 兼容性测试通过。
 - **审计闭环**：每次绑定成功/拒绝均有 `activity_log` 记录，可追溯 workspace/Issue/Project/task/Agent/CR。
 
@@ -322,6 +351,8 @@ updated: 2026-08-27T17:35:57+08:00
 7. **前端现状**：`packages/views/projects/components/project-team-agent-chat.tsx:247` 起只遍历 `cr.gate_nodes` 渲染 `CrGateCard`（缺口 B 第二断点）；`cr-gate-card.tsx` 内含 `ApprovalCard` 实现（可提取复用）。
 8. **队列字段**：`server/pkg/db/queries/agent.sql` 的 `agent_task_queue` 写路径含 `issue_id`、`project_id`、`cr_id` 字段（CR-2026-010 起 stamp `project_id`）。
 9. **台账**：`multica/CUSTOM.md` 存在，为双周 rebase 前核对 fork 定制的唯一清单。
+10. **存量来源 Issue（平台记录核实，2026-08-27）**：CR-2026-051 的来源 Issue 为 Multica AIFI-3「IM 渠道审批接入（飞书审批提醒卡片）— 按附件设计稿推进 CR 流程」（UUID `6a8cd56a-12b3-49d9-80bb-4657da15c3b0`）；CR-2026-052 的来源 Issue 为 AIFI-6「Multica 审批后自动续跑 + audit-drift 去重修复」（UUID `1766573d-f7bd-465b-bbc4-bcb65a84c880`）。两者均在 project `e3480ca6-29ba-42cc-87b9-6118921d3cfb`、workspace `30641781-762e-401b-b541-f33387fe2294`。核实证据：AIFI-3 评论历史含 10 处 `CR-2026-051` 引用，AIFI-6 评论历史含 124 处 `CR-2026-052` 引用；仓库侧 `_backlog.yml`/`_history.yml` 中两 CR 的 `origin` 字段为空，故来源以 Multica 平台记录为权威。
+11. **reviewer task 创建路径现状（评审 blocker 1 根因，实测）**：`CreatePipelineTask`（`server/pkg/db/queries/agent.sql`，INSERT 列含 `cr_id`/`pipeline_node_run_id` 与 attribution 快照）不写 `issue_id`/`project_id`；`EnqueuePipelineTask`（`server/internal/service/task.go:374`）的 `PipelineTaskSpec` 亦无 Issue/Project 字段。因此按现状经 Runner 创建的 pipeline reviewer task 其 `issue_id` 为 NULL，绑定前置步骤会稳定返回 `TASK_ISSUE_REQUIRED`——FR-B12 补上的正是这条继承链。
 
 # 附录 B：已知风险与升级条件（source §12）
 
