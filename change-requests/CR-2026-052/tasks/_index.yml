@@ -1,0 +1,57 @@
+cr-id: CR-2026-052
+tasks:
+  - id: CR-2026-052-TASK-01
+    title: "迁移 469/470/471：approval_continuation 唯一约束与 workspace carrier"
+    status: done
+    done-at: "2026-08-27T12:47:41+08:00"
+    estimate: 4h
+    depends-on: []
+  - id: CR-2026-052-TASK-02
+    title: "sqlc 查询：approval.sql 6 条 + issue.sql 2 条 FOR SHARE 锁读 + 重生成"
+    status: done
+    done-at: "2026-08-27T12:47:41+08:00"
+    estimate: 6h
+    depends-on: [CR-2026-052-TASK-01]
+  - id: CR-2026-052-TASK-03
+    title: "TaskService：EnqueueApprovalContinuation + NotifyContinuationTaskEnqueued"
+    status: done
+    done-at: "2026-08-27T12:47:41+08:00"
+    estimate: 5h
+    depends-on: [CR-2026-052-TASK-02]
+  - id: CR-2026-052-TASK-04
+    title: "HandleGrantsAck 事务核心 + GrantAckEvent + 双钩（TD-BL-12）"
+    status: done
+    done-at: "2026-08-27T12:47:41+08:00"
+    estimate: 8h
+    depends-on: [CR-2026-052-TASK-02, CR-2026-052-TASK-03]
+  - id: CR-2026-052-TASK-05
+    title: "Runner ValidateGrantAck/WakeGrant 适配 + router 双钩接线"
+    status: done
+    done-at: "2026-08-27T12:47:41+08:00"
+    estimate: 4h
+    depends-on: [CR-2026-052-TASK-04]
+  - id: CR-2026-052-TASK-06
+    title: "multica 集成测试：approval_continuation_test + prompt_test + deliverGrants fake"
+    status: done
+    done-at: "2026-08-27T12:47:41+08:00"
+    estimate: 10h
+    depends-on: [CR-2026-052-TASK-05]
+  - id: CR-2026-052-TASK-07
+    title: "multica CUSTOM.md 台账登记（CR-2026-052 里程碑）"
+    status: done
+    done-at: "2026-08-27T12:47:41+08:00"
+    estimate: 2h
+    depends-on: [CR-2026-052-TASK-06]
+  - id: CR-2026-052-TASK-08
+    title: "tools crctl.mjs：comparable() 剥离 payload.detected_at（FR-12）"
+    status: done
+    done-at: "2026-08-27T12:47:42+08:00"
+    estimate: 2h
+    depends-on: []
+  - id: CR-2026-052-TASK-09
+    title: "tools crctl.test.mjs：AC-11/AC-12 drift 去重测试"
+    status: done
+    done-at: "2026-08-27T12:47:42+08:00"
+    estimate: 4h
+    depends-on: [CR-2026-052-TASK-08]
+

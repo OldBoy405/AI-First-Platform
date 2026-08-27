@@ -1,0 +1,20 @@
+cr-id: CR-2026-052
+review-type: requirement
+reviewer: "quality-reviewer-agent"
+reviewed-at: "2026-08-27T00:47:31+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  structure: "通过：独立从 PRD 正文核对，概述、用户故事、FR/NFR、验收标准、成功指标、范围排除及事实核实记录齐全；12 条 FR、6 条用户故事与 12 条 AC 均有明确编号，无占位符。"
+  testability: "通过：核心行为均有可观察断言；AC-1~AC-10 覆盖 Multica ACK 原子性、幂等、四阶段、失败重试、单后继、fail-closed、历史不回填及展示复用，AC-11~AC-12 覆盖 audit-drift 的同窗口去重与采集后再观测。性能收益指标仍可在 SDD 量化，列为非阻塞建议。"
+  scope: "通过：Multica 侧限定为 grant ACK 后复用现有任务队列续跑，tools 侧限定为 audit-drift comparable 去重修复；明确排除新队列/outbox/状态机、历史回填、Runner 扩建及飞书链路改造，符合注册时单 CR 边界。"
+  source_alignment: "通过：独立对照 source v0.3 §7.1，ACK 触发点、原生事务、窄唯一约束、15 秒既有重试、单后继、leader fail-closed、不回填、不复制状态机及既有展示面均已映射到 FR；audit-drift 根因与 source §3.3 一致。"
+  dependencies: "通过：独立核验当前 CR worktree：approval.go 仍为先更新 delivered_at 再调用无 error 回调；回调仅在默认关闭的 Architecture Runner 接线；daemon crevents 以默认 15 秒周期重投；agent_task_queue 的 trigger_evidence_kind/ref_id、CR shell_issue_id、squad leader_id、四类 approvalStages 与 outbox detected_at 冲突事实均存在。"
+suggestions:
+  - "将成功指标中的『人工审批等待墙钟占比显著下降』替换或补充为可归因指标，例如 ACK→续跑任务 queued 的 p95 延迟、审批后人工再次 @ 次数=0；当前续跑改动本身不能控制人类审批前等待时长。"
+  - "SDD 明确批量 ACK 中部分记录入队失败时的事务/HTTP 语义（整批回滚还是逐记录），并增加混合成功/失败批次测试，避免实现对 FR-3/FR-5 的解释分叉。"
+  - "SDD 使用真实列名 trigger_evidence_kind/trigger_evidence_ref_id，并明确 shell_issue_id→issue.assignee_type=squad/assignee_id→squad.leader_id 的权威解析与 active-status 枚举。"
+review-loop:
+  current-attempt: 2
+subject-file: change-requests/CR-2026-052/prd.md
+subject-sha256: d96b3dd6eb8d4ee89c7e398f1a77156cf421ab8af4377bccd2193597be469500

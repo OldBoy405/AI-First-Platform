@@ -1,0 +1,22 @@
+cr-id: CR-2026-052
+review-type: tech-design
+reviewer: "quality-reviewer-agent"
+reviewed-at: "2026-08-27T09:19:02+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  PRD↔SDD对齐: "PASS：12/12 FR 全覆盖。FR-7/NFR-12 的 workspace 隔离经 migration 470 carrier + 471 (approval_workspace_id,cr_id) 唯一键与全链 $ws 限定恢复，跨租户冲突/泄漏路径闭合（TD-BL-10）；FR-10 的 onGrantAck error→HTTP 契约由预提交钩保留（TD-BL-12）。"
+  架构合理性: "PASS：workspace-qualified CR authority 与 migration 433 同构；仅 queued/deferred（prompt 未快照）可合并、dispatched/waiting_local_directory/running 一律补插独立后继，锁读 FOR UPDATE 收敛 claim-vs-append 竞态（TD-BL-11）；锁链 cr→issue→squad→agent FOR SHARE 先锁后读，DD 记录满足三判据。"
+  数据模型完整性: "PASS：agent_task_queue 无 workspace 列（001 init 实证），migration 470 nullable carrier + CHECK 强制 continuation 非 NULL、普通任务 NULL 不变；469 record-id 五态幂等 + 471 (workspace,cr) queued/deferred 唯一互补；全部 fallback/merge/append 查询带 $ws，跨租户 0 行。"
+  接口契约: "PASS：HTTP ACK 语义不变 + 新增结构化错误体；Go 回调拆双钩——onGrantAck/SetGrantAckHandler 预提交纯校验 error→回滚/5xx（FR-10 canonical），onGrantAckCommitted/SetGrantAckCommittedHandler 提交后 wake error→日志/2xx；§3.2/§6/AC-9a~d 机械指明哪个 error 影响 HTTP（TD-BL-12）。"
+  多仓架构约束: "PASS：knowledge-base/multica/tools 路径 authority、依赖方向（governance 消费 service/db，无环）、sqlc 生成物禁手改、checkpoint 口径一致，无 .rayai-worktrees/ 拼接。"
+  性能与安全: "PASS：同名 CR 跨 workspace 隔离为 hard blocker 已闭合（AC-6d）；ACK 低频短事务，锁链无热路径影响；ACK 鉴权 resolveDaemonWorkspace 不变（NFR-12），daemon 侧零新增往返。"
+  可测试性: "PASS：AC-5g/5i 改为真实 claim-response 快照时序（dispatched/waiting 双任务断言，不再断言已快照 prompt 会变）；AC-6d 跨 workspace 同名 CR 并发隔离；AC-9a~d 双钩契约；TD-SUG-5 go test 改 server module 目录，`make sqlc` 实证存在。"
+  Prompt采纳影响: "PASS：tools 侧仅改 emitOutboxEvent comparable()，不触及 crctl dispatch 与 protectedPaths.deny，条件不满足，本节省略合规。"
+suggestions:
+  - "非阻塞残留风险：§4.3 阶梯 2 合并保留首条后继的 agent_id（首 ACK 时解析的 leader）；若两次审批之间 squad leader 重指派，合并后继仍指向旧 leader。这是 FR-6「同 CR 最多一个后继」上限 + DD-11 合并语义的直接结果，运行时由被唤醒 Agent 依 crctl status/next 路由兜底，不构成 blocker；建议在 §7.5 残余风险补一句说明（或 AC-5 增一条跨 ACK leader 重指派用例）以固化该边界。"
+  - "非阻塞可观测性补强：提交后 NotifyContinuationTaskEnqueued 广播失败未列入 §7.3 原因码全集——任务行已随事务持久化、由既有队列 claim 兜底，与 EnqueuePipelineTask 同模式（task.go:415-416），非新风险；如实施期方便，可补一行日志说明提交后广播失败的兜底路径。"
+review-loop:
+  current-attempt: 2
+subject-file: change-requests/CR-2026-052/sdd.md
+subject-sha256: 4d30142303db3e63aa6375dbbb0a61f5c76f86a7cabee1d8ab0f8fa8e2dc5dd7

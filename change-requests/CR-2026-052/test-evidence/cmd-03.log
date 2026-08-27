@@ -1,0 +1,45 @@
+$ go test ./internal/governance/... ./internal/daemon -run TestAC|TestGrantDeliveryQueue|TestBuildPrompt_ApprovalContinuation_MergedHandoff|TestBuildPrompt_HandoffNote -v -count=1
+(exit=0)
+--- stdout ---
+=== RUN   TestAC1_SameRecordTwiceIdempotent
+--- PASS: TestAC1_SameRecordTwiceIdempotent (0.04s)
+=== RUN   TestAC2_FourStagesApproveAndReject
+--- PASS: TestAC2_FourStagesApproveAndReject (0.20s)
+=== RUN   TestAC6_FailClosedReasons
+=== RUN   TestAC6_FailClosedReasons/no_shell_issue
+2026/08/27 15:46:20 WARN approval continuation fail-closed reasons="[{CrID:CR-9006-6a Stage:code Reason:issue-missing}]"
+=== RUN   TestAC6_FailClosedReasons/no_leader
+2026/08/27 15:46:20 WARN approval continuation fail-closed reasons="[{CrID:CR-9006-6b Stage:code Reason:leader-missing}]"
+--- PASS: TestAC6_FailClosedReasons (0.03s)
+    --- PASS: TestAC6_FailClosedReasons/no_shell_issue (0.02s)
+    --- PASS: TestAC6_FailClosedReasons/no_leader (0.01s)
+=== RUN   TestAC6d_CrossWorkspaceIsolation
+--- PASS: TestAC6d_CrossWorkspaceIsolation (0.07s)
+=== RUN   TestAC7_HistoricalDeliveredNoTask
+--- PASS: TestAC7_HistoricalDeliveredNoTask (0.02s)
+=== RUN   TestAC8_RunnerOffContinuationStillEnqueues
+--- PASS: TestAC8_RunnerOffContinuationStillEnqueues (0.02s)
+=== RUN   TestAC9_DoubleHookContract
+=== RUN   TestAC9_DoubleHookContract/9a_precommit_error_rolls_back
+2026/08/27 15:46:20 WARN approval continuation onGrantAck rejected cr_id=CR-9006-9a stage=code error="sentinel handler failure"
+=== RUN   TestAC9_DoubleHookContract/9b_precommit_replayable
+=== RUN   TestAC9_DoubleHookContract/9c_committed_error_keeps_2xx
+2026/08/27 15:46:20 ERROR approval continuation ack-wake failed cr_id=CR-9006-9c stage=code reason=ack-wake-failed error="sentinel handler failure"
+--- PASS: TestAC9_DoubleHookContract (0.05s)
+    --- PASS: TestAC9_DoubleHookContract/9a_precommit_error_rolls_back (0.02s)
+    --- PASS: TestAC9_DoubleHookContract/9b_precommit_replayable (0.01s)
+    --- PASS: TestAC9_DoubleHookContract/9c_committed_error_keeps_2xx (0.01s)
+=== RUN   TestAC5_MergeAndSlotDeferred
+--- PASS: TestAC5_MergeAndSlotDeferred (0.04s)
+=== RUN   TestGrantDeliveryQueue
+--- PASS: TestGrantDeliveryQueue (0.02s)
+PASS
+ok  	github.com/multica-ai/multica/server/internal/governance	0.602s
+=== RUN   TestBuildPrompt_HandoffNote_AssignmentBranch
+--- PASS: TestBuildPrompt_HandoffNote_AssignmentBranch (0.00s)
+=== RUN   TestBuildPrompt_ApprovalContinuation_MergedHandoff
+--- PASS: TestBuildPrompt_ApprovalContinuation_MergedHandoff (0.00s)
+PASS
+ok  	github.com/multica-ai/multica/server/internal/daemon	0.089s
+
+--- stderr ---

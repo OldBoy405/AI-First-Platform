@@ -1,0 +1,49 @@
+cr-id: CR-2026-052
+review-type: code
+reviewer: "quality-reviewer-agent"
+reviewed-at: "2026-08-27T16:03:56+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  代码与TASK与SDD对齐: "PASS。Blocker 1 已清：CreateApprovalContinuationTask 的 JOIN 重排为 agent a 先于 squad s（s.leader_id = a.id 引用合法，对齐 agent.sql CreatePipelineTask 写法），make sqlc 重生成 approval.sql.go 一致；rung 0 guarded INSERT 可达。Go 侧 HandleGrantsAck 事务编排、resolveContinuationTarget FOR SHARE 锁链、四阶梯幂等、双钩 ValidateGrantAck/WakeGrant 与 SDD §3.3/§4.1/§4.2/§4.3 对齐"
+  工程质量: "PASS。go build ./... 与 go vet 均 exit=0（cmd-01/02）；SQL 语义错误经真库实跑暴露并修复（AppendApprovalContinuationEvidence 移除不存在的 agent_task_queue.updated_at 列），go build/vet 不发现运行期 SQL 语义问题的固有盲区已由真库集成测试补位"
+  关键路径可读性: "PASS。注释充分、锁链与阶梯语义清晰；上轮 suggestions 的 HandleGrantsAck reasons>0 分支缩进错位已 gofmt 修正（dc2179510 仅格式改动，无逻辑变更）"
+  安全性: "PASS。租户隔离（全程 workspace 限定 + guarded INSERT 权威链复核）与 fail-closed 设计正确，无越权/跨租户路径；AppendApprovalContinuationEvidence 双 workspace_id + trigger_evidence_kind 复核保留"
+  测试覆盖: "PASS。multica 侧集成测试真库实跑 11 条 --- PASS、0 skip（cmd-03.log 含逐条明细，-v -count=1）；tools 侧 AC-11/12 node 测试 13 pass 0 fail（cmd-04.log）"
+  测试证据可信度: "PASS。cmd-03.log 为真实执行（=== RUN / --- PASS 逐条、无 Skipping、exit=0），非上轮静默跳过；test-report.md generated-by=crctl-test、status=pass、command-digest 与 traceability.yml#tests 一致（无 TEST_EVIDENCE_DRIFT），4 条 cmd-*.log 均存在"
+  前端质量: "N/A（未触及 *.tsx/*.vue/*.css/*.html）"
+suggestions:
+  - "developing 门禁的 dev-plan digest 漂移（annotation d9f9be15… vs 当前 cecf861e…）仍在，属 review-dev-plan 证据 freshness 范畴、非 code 评审 blocker；不阻塞 developing→code-reviewing 前向路径，但会在重新进入 developing 或 approve-dev-start 时被查，需单独重跑 review-dev-plan 刷新（前置态要求 task-breakdown，当前 developing 无回退转换，建议 coordinator 裁决刷新方式）"
+  - "共享 multica 库存在迁移漂移（schema_migrations 445 vs 磁盘 504），本轮已用专用库 multica_cr052 全量迁移规避；属环境问题非本 CR 代码缺陷，建议另立环境修复任务 db-reset/补迁移，避免后续 CR 集成测试重复踩坑"
+review-loop:
+  current-attempt: 2
+release-subjects:
+  version: 1
+  repositories:
+    - repo: ai-first-platform-docs
+      remote-ref: refs/heads/requirement/CR-2026-052
+      reviewed-source-sha: 5ef504e8636a162a7f935c34d47f8abf418040ae
+    - repo: multica
+      remote-ref: refs/heads/requirement/CR-2026-052
+      reviewed-source-sha: 09e47acd29dd2fc74fbab681572b5dd70d4c38e3
+    - repo: tools
+      remote-ref: refs/heads/requirement/CR-2026-052
+      reviewed-source-sha: bec433390ef1c9e8f22f333cab22a49742a43dd9
+  artifacts:
+    algorithm: sha256
+    canonicalization: crlf-to-lf+path-sort
+    files:
+      - { path: change-requests/CR-2026-052/plan.md, sha256: 94fab998f1b0b82f89eabbe3e212ded6a56ca5452860760f0661e998f0354a88 }
+      - { path: change-requests/CR-2026-052/prd.md, sha256: d96b3dd6eb8d4ee89c7e398f1a77156cf421ab8af4377bccd2193597be469500 }
+      - { path: change-requests/CR-2026-052/sdd.md, sha256: 4d30142303db3e63aa6375dbbb0a61f5c76f86a7cabee1d8ab0f8fa8e2dc5dd7 }
+      - { path: change-requests/CR-2026-052/tasks/TASK-01.md, sha256: c47d9aa76873bbf0a4c1efe9b82c0087da9df516ef218d4d3d9e167b50ee8f03 }
+      - { path: change-requests/CR-2026-052/tasks/TASK-02.md, sha256: 56169fb2788972a355f9b9a05ba2af0782c6f819fd8e3a9da7bd62b9061450f6 }
+      - { path: change-requests/CR-2026-052/tasks/TASK-03.md, sha256: b853c253582315e2f7e8b2db4586723673ecef6ee137ce3462de5d75530a8c28 }
+      - { path: change-requests/CR-2026-052/tasks/TASK-04.md, sha256: 2be326541a8a3200fe7077302eeac0e61934e94c89308895ac877854c532b543 }
+      - { path: change-requests/CR-2026-052/tasks/TASK-05.md, sha256: 4624a705562ccc7f67f2e001bfa645c72c3e1d951206ab2953f18ac2c00e93f9 }
+      - { path: change-requests/CR-2026-052/tasks/TASK-06.md, sha256: 403d56c02be5d9e208623c4fffe4b250f47222b22ae2a313b6079d82d47d9c31 }
+      - { path: change-requests/CR-2026-052/tasks/TASK-07.md, sha256: ae84771d97567c5efa3242869b0c27fadb08edef01cba085f08352a37d23607a }
+      - { path: change-requests/CR-2026-052/tasks/TASK-08.md, sha256: 127a3a6092f1c94c096189f6bb37403a502ec58ccd17b9146869123a99896f38 }
+      - { path: change-requests/CR-2026-052/tasks/TASK-09.md, sha256: 1d4e36b6b62e95cdbbf60d6cd69d11f02ac9b0c4a6cd076092aa8c3152244690 }
+      - { path: change-requests/CR-2026-052/tasks/_index.yml, sha256: 2e8e47d3e5005e0514c902bb0c114ba107dee686917b2004268ac6701daedcde }
+    digest: cc809f2eb22a86ce825ee7fe6b43d4138cea2234ad4318b4827e425932514f74
