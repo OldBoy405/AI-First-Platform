@@ -1,0 +1,26 @@
+cr-id: CR-2026-053
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-27T19:49:33+08:00"
+verdict: block
+blockers:
+  - "SDD §4.1 的绑定查询把 agent_task_queue 当作含 workspace_id 的表（WHERE ... workspace_id = actor.workspace_id），但 §2.1/Multica 实际模型中该表没有 workspace_id；当前实现必须通过 task→agent（并校验 agent.workspace_id）完成 workspace 隔离。请补齐可执行的 JOIN/查询与 task-token actor 失效的错误语义，否则事务算法不可实现。"
+  - "SDD §4.1 没有真正锁定或校验 Project：只检查 issue.project_id 非空及 task.project_id 是否相等，没有 SELECT/锁定 project，也没有验证 project.workspace_id 与 token/task workspace 相同。这样不能满足 PRD FR-B2 第 4、5 条的有效 Project/关系闭合要求，且跨 workspace 或陈旧 project_id 的错误映射未定义。请补齐 Project 查询、锁顺序、校验及 TASK_PROJECT_MISMATCH 语义。"
+  - "SDD §2.2 声称 rows affected 可区分 NULL→值与同值重放，但 SQL 的 WHERE (字段 IS NULL OR 字段 = 目标值) 对两者都会返回/更新一行；§4.1 也没有保存旧值或计算 changed，无法满足 FR-B1/AC-B3 的 changed=false，且会重复写成功绑定审计。请定义锁内旧值判定或带明确 changed 返回的 SQL，并规定部分既有同值/空值组合的结果。"
+  - "SDD §4.4 只把 Pipeline Runner 路径具体化为 SourceTaskID→CreatePipelineTask；作者 Agent/coordinator 委派路径与 issue 评论 mention 入队路径仅写‘必须携带/从 Issue 派生’，没有实际 handler/service/query 插入点、来源缺 issue_id 的原子拒绝方式、调用方字段屏蔽方式或对应负向测试。FR-B12/AC-B10/B11 覆盖‘任一受支持路径’，请逐路径给出可执行的继承契约和测试锚点，避免实现只修 Runner 而正常 reviewer task 仍落 NULL。"
+dimensions:
+  PRD↔SDD 对齐: "block — FR 标签到实现映射齐全，但上述 FR-B2/FR-B12 的关键实现合同仍不可执行。"
+  架构合理性: "block — 总体依赖方向符合 tools 与 multica ARCHITECTURE.md，但绑定事务违反实际 agent_task_queue 模型，Project 隔离边界未闭合。"
+  数据模型完整性: "block — task workspace 来源与 Project 实体校验/锁定缺失。"
+  接口契约: "block — changed 幂等语义无法由 §4.1 算法实现；绑定路由的 task-only middleware/来源路径契约还需落到可执行定义。"
+  多仓架构约束: "block — 未能以现有 queue/TaskService 的真实字段和三条创建路径闭合跨仓依赖。"
+  性能与安全: "block — workspace/Project 校验缺口可能导致错误归因或跨 workspace 绑定；性能方案本身低频可接受。"
+  可测试性: "block — 关键错误/幂等/三路径继承缺少可执行的查询与测试锚点。"
+  Prompt 采纳影响: "不适用 — 本 CR 不触及 crctl dispatch 或 protectedPaths.deny。"
+suggestions:
+  - "实现期补齐 mat_ token、API base URL 与绑定 CLI/Skill 的发现方式，以及事件发布失败的具体可观测落点。"
+  - "PRD 第 3 节范围归属与 Track B 验收标题仍可补入 FR-B12，保持文档编号一致。"
+review-loop:
+  current-attempt: 1
+subject-file: change-requests/CR-2026-053/sdd.md
+subject-sha256: d4bfca2974d6dbf810ec66586de09f23e553b0f0bef734193d6d5b85ee6c69ea
