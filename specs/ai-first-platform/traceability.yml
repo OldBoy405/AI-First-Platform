@@ -1,11 +1,11 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 # 五段链路：需求 FR ↔ 技术设计 SDD ↔ 交付 TASK ↔ 代码 merge SHA ↔ CR-ID
 spec-id: ai-first-platform
-cr-ref: CR-2026-051
-cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029, CR-2026-028, CR-2026-030, CR-2026-031, CR-2026-037, CR-2026-032, CR-2026-033, CR-2026-038, CR-2026-039, CR-2026-040, CR-2026-041, CR-2026-043, CR-2026-042, CR-2026-044, CR-2026-045, CR-2026-046, CR-2026-047, CR-2026-048, CR-2026-049, CR-2026-050, CR-2026-051]
-target-version: "0.25"
+cr-ref: CR-2026-052
+cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029, CR-2026-028, CR-2026-030, CR-2026-031, CR-2026-037, CR-2026-032, CR-2026-033, CR-2026-038, CR-2026-039, CR-2026-040, CR-2026-041, CR-2026-043, CR-2026-042, CR-2026-044, CR-2026-045, CR-2026-046, CR-2026-047, CR-2026-048, CR-2026-049, CR-2026-050, CR-2026-051, CR-2026-052]
+target-version: "0.26"
 baseline-since: "0.10"
-generated-at: "2026-08-26T17:05:06+08:00"
+generated-at: "2026-08-27T16:30:32+08:00"
 
 # 已知缺口：CR-2026-003~CR-2026-006 未生成本文件的里程碑段（writeback-traceability 在那四个
 # CR 回写时被跳过，PRD.md/SDD.md/_index.yml 侧的累积记录不受影响、仍完整）。本次（CR-2026-008）
@@ -3560,3 +3560,89 @@ milestones:
         code: { verdict: pass, path: change-requests/CR-2026-051/review-annotations/code.yml, sha256: d5722695a1905233a3c5c5c3512e0035dae425dace534e644410332d8743c655 }
       approval: { status: approved, path: change-requests/CR-2026-051/approval.yml, sha256: 46bc5e28da43308cfd38a82c4a2fbb2adff5e69c765be09b17bf8daafd1eb40d }
       merge: { status: merged, path: change-requests/CR-2026-051/merge-commits.yml, sha256: 59ea5a35d9df3d66a38a3cd678044e848af260ed3728c2b83a3cfcc1c4a9cbef }
+  - cr: CR-2026-052
+    milestone: Multica 审批后自动续跑 + audit-drift 去重修复
+    target-version: "0.26"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 35e7f6b7b5dd8f9c36beeb13dcb3287b728ee275
+        branch: requirement/CR-2026-052
+      - repo: multica
+        trunk: main
+        sha: 860570c51c0371ad0a2dbcbbf66e2712e734887b
+        branch: requirement/CR-2026-052
+      - repo: tools
+        trunk: custom/main
+        sha: 246be55c745cfab69778efebdd383fca107603fc
+        branch: requirement/CR-2026-052
+    frs:
+      - fr: FR-1
+        title: ACK 时点幂等唤醒
+        sdd: SDD §1.4 流程 + §4.1（UPDATE RETURNING 驱动入队）+ §4.3（ON CONFLICT + 重读阶梯）+ 迁移 469
+        tasks: [CR-2026-052-TASK-01, CR-2026-052-TASK-04]
+        evidence: test-report AC-1 断言（TestAC1_SameRecordTwiceIdempotent，同 record 两次 ACK 恰 1 条任务）
+      - fr: FR-2
+        title: 四类审批统一覆盖，通过/驳回均续跑
+        sdd: SDD §4.1（stage/decision 直接来自 approval_record 行，无 stage 分支，approve/reject 均入队）
+        tasks: [CR-2026-052-TASK-04, CR-2026-052-TASK-06]
+        evidence: test-report AC-2 断言（TestAC2_FourStagesApproveAndReject）
+      - fr: FR-3
+        title: 原生原子事务（入队 + delivered_at 同 commit）
+        sdd: SDD §4.1（pgx pool.Begin + queries.WithTx，失败回滚不标记 delivered_at；预提交 onGrantAck 零副作用校验）
+        tasks: [CR-2026-052-TASK-04, CR-2026-052-TASK-06]
+        evidence: test-report AC-3 断言（AC-9a 预提交 error 路径 + AC-6 fail-closed 路径共同覆盖）
+      - fr: FR-4
+        title: 窄范围唯一约束防重复唤醒
+        sdd: 迁移 469（partial unique index，trigger_evidence_kind/ref_id 窄键）+ SDD §4.3 阶梯 1
+        tasks: [CR-2026-052-TASK-01, CR-2026-052-TASK-04]
+        evidence: test-report AC-1 断言（TestAC1_SameRecordTwiceIdempotent，第二次幂等返回）
+      - fr: FR-5
+        title: ACK 失败语义与 daemon 重试
+        sdd: SDD §4.1（5xx 仅来自预提交 tx/onGrantAck error → 回滚保持 pending）+ §1.2（15s 重投递）+ §3.1 错误体
+        tasks: [CR-2026-052-TASK-04, CR-2026-052-TASK-06]
+        evidence: test-report AC-3/AC-4 断言（AC-9a 预提交 error + TestGrantDeliveryQueue pending/ack 时序）
+      - fr: FR-6
+        title: 同 CR 最多一个后继任务，不向运行中沙箱注入事件
+        sdd: 迁移 470/471（每 (workspace,cr) 至多 1 条 queued/deferred 后继）+ SDD §4.3 仅合并未 claim 后继
+        tasks: [CR-2026-052-TASK-01, CR-2026-052-TASK-03, CR-2026-052-TASK-04]
+        evidence: test-report AC-5 断言（TestAC5_MergeAndSlotDeferred）
+      - fr: FR-7
+        title: leader 解析 fail-closed
+        sdd: SDD §2.3/§3.3/§4.2（approval_workspace_id + workspace-scoped 锁链与四类原因码，无 leader 不回退）
+        tasks: [CR-2026-052-TASK-01, CR-2026-052-TASK-02, CR-2026-052-TASK-04]
+        evidence: test-report AC-6 断言（TestAC6_FailClosedReasons 含 no_shell_issue/no_leader + TestAC6d_CrossWorkspaceIsolation）
+      - fr: FR-8
+        title: 只处理新 ACK，不回填历史
+        sdd: SDD §4.1（UPDATE 谓词 delivered_at IS NULL 原样保留，无回填迁移）
+        tasks: [CR-2026-052-TASK-04, CR-2026-052-TASK-06]
+        evidence: test-report AC-7 断言（TestAC7_HistoricalDeliveredNoTask）
+      - fr: FR-9
+        title: 不复制状态机/门禁/Pipeline 语义
+        sdd: SDD §2.4（context JSON approvals[] + handoff_note，无下一步映射）+ §3.2 回调；Runner 保持关闭
+        tasks: [CR-2026-052-TASK-03, CR-2026-052-TASK-04]
+        evidence: test-report AC-8 断言（TestAC8_RunnerOffContinuationStillEnqueues）
+      - fr: FR-10
+        title: ACK 回调数据补齐
+        sdd: SDD §3.2（GrantAckEvent + 双钩契约：onGrantAck 零副作用 error→回滚/5xx，onGrantAckCommitted 提交后 Reconcile error→日志/2xx）
+        tasks: [CR-2026-052-TASK-02, CR-2026-052-TASK-04, CR-2026-052-TASK-05]
+        evidence: test-report AC-9 断言（TestAC9_DoubleHookContract 3 子测试 + TestGrantDeliveryQueue 双钩）
+      - fr: FR-11
+        title: 续跑状态复用现有展示面
+        sdd: SDD §2.4（复用 agent_task_queue 全部既有列）+ NotifyContinuationTaskEnqueued 广播，无新状态列/新投影
+        tasks: [CR-2026-052-TASK-03, CR-2026-052-TASK-06]
+        evidence: test-report AC-10 断言（TestGrantDeliveryQueue deliverGrants + ACK 双钩）
+      - fr: FR-12
+        title: audit-drift 去重修复（tools 仓）
+        sdd: SDD §4.4 comparable() 剥离观测时点字段 detected_at（DD-6）；不改事件内容与文件名规则
+        tasks: [CR-2026-052-TASK-08, CR-2026-052-TASK-09]
+        evidence: test-report AC-11/AC-12 断言（tools crctl.test.mjs CR-2026-052 AC-11/AC-12 13 pass）
+    evidence:
+      test: { status: pass, path: change-requests/CR-2026-052/test-report.md, sha256: d6f90bd9e903758e3ac7fbb54feb1daa48966c8b52a22707ada531fafbd4ebab }
+      reviews:
+        requirement: { verdict: pass, path: change-requests/CR-2026-052/review-annotations/requirement.yml, sha256: a982ad2fb4ccbb5089e2df2348a291eaf87ed26d70d2a12f6f1c49e06ce28175 }
+        tech-design: { verdict: pass, path: change-requests/CR-2026-052/review-annotations/sdd.yml, sha256: a4f9f9066deb8c91d4b6e069348fb4cd11b2fe8c8fdaa1bc2ff0efcc1af70dbd }
+        dev-plan: { verdict: pass, path: change-requests/CR-2026-052/review-annotations/dev-plan.yml, sha256: 5802a8d9897a19e7d869ac0d95565e38102808e74e476e8fcc93c362ff1d13cd }
+        code: { verdict: pass, path: change-requests/CR-2026-052/review-annotations/code.yml, sha256: e824839b8a9b3418a10403ac7a60dd2cab17c60a882e85a2231672da2e1eb349 }
+      approval: { status: approved, path: change-requests/CR-2026-052/approval.yml, sha256: dfa3bdc492fe77f38b2c096844ffe0f0619962a7b1aa18620fe97f97462426c7 }
+      merge: { status: merged, path: change-requests/CR-2026-052/merge-commits.yml, sha256: a43e3c50d1feda1ac177b844b20017017f484bbb373a89707a81eb8b010367cb }
