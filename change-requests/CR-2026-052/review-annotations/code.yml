@@ -1,33 +1,31 @@
 cr-id: CR-2026-052
 review-type: code
 reviewer: "quality-reviewer-agent"
-reviewed-at: "2026-08-27T13:56:41+08:00"
-verdict: block
-blockers:
-  - "CreateApprovalContinuationTask（server/pkg/db/queries/approval.sql）存在前向表引用：JOIN squad s 的 ON 子句含 s.leader_id = a.id，而 agent a 在其后才 JOIN，PostgreSQL parse_analysis 阶段报 `missing FROM-clause entry for table \"a\"`（SQLSTATE 42P01，已用 PREPARE 对照实证：同条件正确排序 agent 先 JOIN 则通过）。该查询是幂等阶梯 rung 0 的 guarded INSERT，运行期必然失败 → EnqueueApprovalContinuation 返回错误 → HandleGrantsAck 回滚并 5xx，任何审批 ACK 均失败，FR-1~FR-11 续跑功能整体不可用。修复：重排 JOIN 使 agent a 先于 squad s（对齐既有 CreatePipelineTask 的 agent.sql:651 正确写法），改 .sql 后重跑 make sqlc。"
-  - "multica 集成测试证据不可信（cmd-03 实为静默跳过）：governance TestMain 默认连 postgres://multica:multica@localhost:5432/multica，而实库密码为哈希（multica/.env），默认口令 SASL 认证失败（已实证），TestMain 打印 Skipping 后 os.Exit(0)，go test 无 -v 时丢弃该输出、仍报 ok；且实库尚未应用迁移 470（approval_workspace_id 列不存在，已用 PREPARE 实证）。故 test-report status=pass 的 exit-0 不构成 AC-1~AC-9 路径的机器证据——正是因此前向引用 bug 未被测试捕获。需在已迁移的真库上真实执行集成测试并落盘证据。"
+reviewed-at: "2026-08-27T16:03:56+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  代码与TASK与SDD对齐: "Go 侧（HandleGrantsAck 事务编排、resolveContinuationTarget FOR SHARE 锁链、EnqueueApprovalContinuation 四阶梯幂等、双钩 ValidateGrantAck/WakeGrant）与 SDD §4.1/4.2/4.3/§3.2 一致；但 approval.sql 的 CreateApprovalContinuationTask 存在前向引用导致 rung 0 不可达，对齐被 SQL 层阻断 → BLOCK"
-  工程质量: "go build / go vet 通过（编译期不发现运行期 SQL 语义错误）；但 SQL 前向引用为运行期硬错误，工程不可交付 → BLOCK"
-  关键路径可读性: "注释充分、锁链与阶梯语义清晰；HandleGrantsAck 的 reasons>0 分支缩进错位（rollbackTx 多缩进一 tab、writeJSON 对齐错位），纯格式问题不影响编译（gofmt 可修）"
-  安全性: "租户隔离（全程 $ws 限定 + guarded INSERT 权威链复核）与 fail-closed 设计正确，无越权/回退任意 agent 路径"
-  测试覆盖: "tools 侧 AC-11/12 node 测试真实运行（13 pass）；multica 侧 AC-1~AC-9 集成测试因真库不可达被静默跳过，实际未覆盖 SQL 路径"
-  测试证据可信度: "test-report status=pass 但 cmd-03 集成测试为 no-op（跳过），证据不足以支撑评审（skill Step 1：证据不可信就 blocker）"
+  代码与TASK与SDD对齐: "PASS。Blocker 1 已清：CreateApprovalContinuationTask 的 JOIN 重排为 agent a 先于 squad s（s.leader_id = a.id 引用合法，对齐 agent.sql CreatePipelineTask 写法），make sqlc 重生成 approval.sql.go 一致；rung 0 guarded INSERT 可达。Go 侧 HandleGrantsAck 事务编排、resolveContinuationTarget FOR SHARE 锁链、四阶梯幂等、双钩 ValidateGrantAck/WakeGrant 与 SDD §3.3/§4.1/§4.2/§4.3 对齐"
+  工程质量: "PASS。go build ./... 与 go vet 均 exit=0（cmd-01/02）；SQL 语义错误经真库实跑暴露并修复（AppendApprovalContinuationEvidence 移除不存在的 agent_task_queue.updated_at 列），go build/vet 不发现运行期 SQL 语义问题的固有盲区已由真库集成测试补位"
+  关键路径可读性: "PASS。注释充分、锁链与阶梯语义清晰；上轮 suggestions 的 HandleGrantsAck reasons>0 分支缩进错位已 gofmt 修正（dc2179510 仅格式改动，无逻辑变更）"
+  安全性: "PASS。租户隔离（全程 workspace 限定 + guarded INSERT 权威链复核）与 fail-closed 设计正确，无越权/跨租户路径；AppendApprovalContinuationEvidence 双 workspace_id + trigger_evidence_kind 复核保留"
+  测试覆盖: "PASS。multica 侧集成测试真库实跑 11 条 --- PASS、0 skip（cmd-03.log 含逐条明细，-v -count=1）；tools 侧 AC-11/12 node 测试 13 pass 0 fail（cmd-04.log）"
+  测试证据可信度: "PASS。cmd-03.log 为真实执行（=== RUN / --- PASS 逐条、无 Skipping、exit=0），非上轮静默跳过；test-report.md generated-by=crctl-test、status=pass、command-digest 与 traceability.yml#tests 一致（无 TEST_EVIDENCE_DRIFT），4 条 cmd-*.log 均存在"
   前端质量: "N/A（未触及 *.tsx/*.vue/*.css/*.html）"
 suggestions:
-  - "dev-plan 门禁 freshness 漂移（gateBlockers.developing）：TASK-02/03 在 dev-plan 评审后按该评审建议做了措辞修正，导致 subject-sha256 由 d9f9be15… 漂移到 cecf861e…，需重新执行 review-dev-plan 刷新证据（本 blocker 的修复路径 repair-target=implement-code 之外，另需 review-dev-plan 重审；这是 review-code 之外的门禁问题，单独列出）。"
-  - "HandleGrantsAck reasons>0 分支缩进错位（纯格式），建议 gofmt 规范化后随修复一起提交。"
+  - "developing 门禁的 dev-plan digest 漂移（annotation d9f9be15… vs 当前 cecf861e…）仍在，属 review-dev-plan 证据 freshness 范畴、非 code 评审 blocker；不阻塞 developing→code-reviewing 前向路径，但会在重新进入 developing 或 approve-dev-start 时被查，需单独重跑 review-dev-plan 刷新（前置态要求 task-breakdown，当前 developing 无回退转换，建议 coordinator 裁决刷新方式）"
+  - "共享 multica 库存在迁移漂移（schema_migrations 445 vs 磁盘 504），本轮已用专用库 multica_cr052 全量迁移规避；属环境问题非本 CR 代码缺陷，建议另立环境修复任务 db-reset/补迁移，避免后续 CR 集成测试重复踩坑"
 review-loop:
-  current-attempt: 1
+  current-attempt: 2
 release-subjects:
   version: 1
   repositories:
     - repo: ai-first-platform-docs
       remote-ref: refs/heads/requirement/CR-2026-052
-      reviewed-source-sha: 2c2d0e95e3a0c6cd7e07f2911f2f597f28b77ff0
+      reviewed-source-sha: 5ef504e8636a162a7f935c34d47f8abf418040ae
     - repo: multica
       remote-ref: refs/heads/requirement/CR-2026-052
-      reviewed-source-sha: 1676fc37caae97d96241cc74d821dcfae97db93e
+      reviewed-source-sha: 09e47acd29dd2fc74fbab681572b5dd70d4c38e3
     - repo: tools
       remote-ref: refs/heads/requirement/CR-2026-052
       reviewed-source-sha: bec433390ef1c9e8f22f333cab22a49742a43dd9
