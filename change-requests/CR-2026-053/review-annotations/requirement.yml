@@ -1,22 +1,19 @@
 cr-id: CR-2026-053
 review-type: requirement
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-27T18:36:24+08:00"
-verdict: block
-blockers:
-  - "FR-A3/FR-A4 与 FR-B2/FR-B7 没有规定新建 quality-reviewer task 如何携带或继承来源 Issue/Project 上下文。当前 Multica 的 EnqueuePipelineTask/CreatePipelineTask 写入 cr_id 与 pipeline 归属，但不写 issue_id/project_id；而 FR-B2 又要求当前 task 必须有 issue_id。因此按现有流水线实现，review Skill 的绑定前置步骤会稳定返回 TASK_ISSUE_REQUIRED，无法进入 review-record，目标闭环不可执行。必须明确并验收由调度层从来源 task 原子继承 issue_id/project_id（同时保持绑定接口不信任调用方字段），或定义等价的权威 task 创建路径。"
-  - "AC-D1/AC-D2 只写‘已核实的来源 Issue’，没有给出 CR-2026-051/052 各自的 Issue 标识或可重复的权威查找输入；实现与验收无法确定要绑定的 Issue/Project，也无法验证存量修复结果。应补充明确的来源标识/人工输入契约及其 workspace/project 校验方式。"
+reviewed-at: "2026-08-27T19:04:46+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  structure-completeness: "PASS：PRD 具备概述、用户故事、FR、NFR、AC、成功指标、范围排除、事实附录和风险说明。"
-  fr-testability: "BLOCK：独立 reviewer task 的 Issue/Project 继承链未定义，导致 FR-B7/AC-B8 的成功路径无法在当前任务创建契约下执行；AC-D1/D2 也缺少可确定的来源输入。"
-  scope-reasonableness: "PASS：两条工作轨和非目标边界清晰，未要求重写 crctl 状态机或审批协议。"
-  source-alignment: "PASS：PRD 基本覆盖 source v0.4 的两处缺口、边界、风险与验收意图。"
-  dependencies: "BLOCK：PRD 依赖 Multica task→Issue/Project 上下文，但未声明 reviewer task 的权威上下文传递依赖；现有 CreatePipelineTask 不满足 FR-B2 前置条件。"
+  structure-completeness: "PASS：PRD 具备概述、用户故事、FR、NFR、AC、成功指标、范围排除、事实附录和风险说明；新增 FR-B12 及 AC-B10/AC-B11 已纳入主体结构。"
+  fr-testability: "PASS：原两项阻断均已转化为可验收合同；AC-B10/B11 验证 reviewer task 的 Issue/Project 原子继承与无 Issue 拒绝，AC-D1/D2/D6 验证存量来源 UUID、project/workspace 一致性及人工确认留痕。"
+  scope-reasonableness: "PASS：两条工作轨、非目标和 FR-B11 信任边界清晰；FR-B12 只补齐既有 issue_id/project_id 继承，不扩展为新的身份或状态协议。"
+  source-alignment: "PASS：PRD 覆盖 source v0.4 的独立评审路由、CR→Issue 绑定、审批卡可见性、存量修复和风险边界，未改变既有 crctl/审批协议。"
+  dependencies: "PASS：已识别并固化 reviewer task 创建路径、task token、Issue/Project 闭合校验、CAS/事务审计、gates 刷新及存量来源 Issue 的依赖。"
 suggestions:
-  - "补充 reviewer task 创建契约：从可信父 task/当前 Pipeline context 派生 issue_id、project_id，并在任务插入时与 cr_id 一并校验/继承；绑定 endpoint 仍只接受路径 CR-ID。"
-  - "为 AC-D1/AC-D2 增加来源 Issue UUID（或明确的人工作业输入字段）及验证后的 workspace/project 预期。"
-  - "实现阶段补充绑定接口的 HTTP 状态码、响应错误体、Multica base URL/token 发现方式和事件发布失败的可观测落点。"
+  - "将第 3 节范围归属行和 Track B 验收标题中的 `FR-B1 ~ FR-B11` 更新为包含 `FR-B12`，避免新增需求在章节标题中看起来未归属。"
+  - "实施阶段补充绑定接口的 HTTP 状态码、错误响应体、Multica base URL/token 发现方式，以及事件发布失败的可观测落点。"
 review-loop:
-  current-attempt: 1
+  current-attempt: 2
 subject-file: change-requests/CR-2026-053/prd.md
-subject-sha256: b1a85781e17dc16283eec9e2728ea898188d067e7301cd8b6b35a4b4bcaa24ab
+subject-sha256: 231a90df61827de542c256113e18aef91193421069e0d6e5c88d34b9b4f63fd1
