@@ -16,9 +16,9 @@ owners:
 target-version: tbd
 source: "docs/product/Multica执行性能分析与模块职责边界.md"
 origin: ""
-status: merging
+status: writing-back
 created: "2026-08-27T00:17:26+08:00"
-updated: "2026-08-27T16:20:02+08:00"
+updated: "2026-08-27T16:25:11+08:00"
 remote-ref: ""
 last-push-at: ""
 last-push-by: ""
