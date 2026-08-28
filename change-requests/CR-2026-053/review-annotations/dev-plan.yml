@@ -1,0 +1,28 @@
+cr-id: CR-2026-053
+review-type: dev-plan
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-28T12:09:21+08:00"
+verdict: block
+repair-target: write-dev-plan
+blockers:
+  - "SDD 交付覆盖不完整：TASK-05/TASK-06 未明确承接 SDD §2.3 的绑定事务新增 sqlc 读写 query 及生成物；没有 TASK 承接 FR-B11 的代码信任上限注释；TASK-03 未覆盖 FR-A6 的无 subagent 停止/独立会话路径；各 TASK 的验证清单也遗漏 FR-A7/AC-A3 要求的 emit-registry.mjs。"
+  - "文件范围与 SDD 不闭合：SDD §9 明列 agents/quality-reviewer-agent.md，但 TASK-02 的任务描述和文件清单仅含 requirement-writer.md、dev-agent.md、agents/_index.yml；必须明确该文件由哪个 TASK 修改，或在 plan 中给出无需修改并修正 SDD 范围的依据。"
+  - "依赖拓扑与 plan 关键路径冲突：plan 声明 M1→M2→M3→M4，但 _index.yml 允许 TASK-05/06 在 M1 前启动；TASK-04 消费 TASK-05 的绑定接口却不依赖 TASK-05；TASK-10 声称验证完整闭环及 AC-D1~D6，却不依赖 TASK-08/11；TASK-11 只依赖 TASK-05，可在 M3 前执行。请统一里程碑与 depends-on。"
+  - "TASK 验收不可机械执行：11 个 TASK 多数仅列结果性断言，未给出至少 2 条可运行命令/测试用例锚点；尤其 TASK-08 连具体 CLI 文件与测试命令都未定位，TASK-09/11 也没有可复核命令或证据落点，不满足编码前可执行性与每 TASK ≥2 条可执行验收步骤。"
+  - "plan §4 的“回滚策略”实际是预防/验证动作（检查锁顺序、硬失败、执行清单、检查渲染），没有 tools/multica 分仓回滚步骤、跨仓部分发布处置或存量绑定失败后的停止/恢复方案；在无 feature flag 且直接全量发布的前提下，高风险事务与 UI 变更缺少可执行回滚安排。"
+dimensions:
+  sdd-to-plan: "block"
+  plan-to-tasks: "block"
+  task-executability: "block"
+  dependency-topology: "block"
+  interface-contracts: "pass"
+  acceptance-verifiability: "block"
+  scope-and-simplicity: "pass"
+  risk-and-rollback: "block"
+  reviewer-model: "openai/gpt-5.6-sol via Multica quality-reviewer-agent"
+suggestions:
+  - "plan 总估算 6.5 人天，而 _index.yml 合计 24h；若按 4h/人天计，应在 plan 明示容量口径，否则统一估算单位。"
+  - "将 AC-A、AC-B、AC-C、AC-D 分配到唯一 TASK，避免 TASK-05/06/10/11 对 AC-B/AC-D 的重叠责任。"
+review-loop:
+  current-attempt: 1
+subject-sha256: 51ffbb3ae55a64118b5b75f10623f4b56ef60f15188da8a161be4e2be06be97f
