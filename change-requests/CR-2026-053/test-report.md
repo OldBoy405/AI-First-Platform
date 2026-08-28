@@ -143,10 +143,10 @@ commands:
 | AC 组 | 覆盖证据 | 结果 |
 |-------|---------|------|
 | AC-A1~A8（tools 改造） | cmd-01~05 | PASS |
-| AC-B1~B11（绑定接口 7 错误码 + 继承） | ⚠️ 无机器证据（见未覆盖风险 1） | 环境基线阻塞，未执行 |
+| AC-B1~B11（绑定接口 7 错误码 + 继承） | **cmd-12（真库，`cr_bind_test.go` 9 用例 + `cr_pipeline_task_test.go` 2 用例，11/11 PASS）** | **PASS（review-code 修复轮补跑，fix commit `f0cff7c84`）** |
 | AC-C1~C6（审批卡可见性） | cmd-10（48/48）+ cmd-11 | PASS |
-| AC-D1/D2（存量 CR 绑定 E2E） | ⚠️ 依赖人工前置（FR-B8 表确认 + 来源 Issue 受控 task） | 外部阻塞，未执行 |
-| AC-D3（audit 留痕） | ⚠️ 同 AC-B 组（handler 测试内断言 `cr_issue_bound`/`cr_issue_bind_rejected`） | 环境基线阻塞，未执行 |
+| AC-D1/D2（存量 CR 绑定 E2E） | ⚠️ 依赖人工前置（FR-B8 表确认 + 来源 Issue 受控 task） | 外部阻塞，未执行（CLI 已部署，见下方「部署」） |
+| AC-D3（audit 留痕） | cmd-12 内断言 `cr_issue_bound`（成功 + 重放去重）与 `cr_issue_bind_rejected`（409 冲突） | **PASS（真库）** |
 | AC-D4（gates 投影查询） | cmd-08（`shell_issue_id` 两状态） | PASS |
 | AC-D5/D6（存量验证/人工核对） | ⚠️ 依赖人工确认 | 外部阻塞，未执行 |
 
@@ -160,12 +160,27 @@ commands:
 
 ## 未覆盖风险（写明原因，不空白通过）
 
-1. **AC-B1~B11 handler DB 集成测试无法在本机真库执行（环境基线问题，非本 CR 引入）**：共享 `multica` 库含迁移 251 的 `agent_task_queue_active_requires_runtime` CHECK 约束（`runtime_id IS NOT NULL OR completed_at IS NOT NULL`），而上游 `internal/testutil` 的 `dbfx.Task` 夹具以 `status='queued'` 且不写 runtime_id/completed_at 插入 → 全部 fixture setup 直接 `SQLSTATE 23514`。已实测同库上**既有基线 handler 测试**（`TestSendChatMessage_InvokeRevokedAfterSessionCreate`）同样失败，证明与 CR-2026-053 代码无关。上一轮汇报的"go test ./internal/handler/ … 通过（真库）"在当前环境无法复现（无 DATABASE_URL 时 TestMain 走默认凭据失败 → 整体 skip 仍显示 `ok`，疑为当时误读）。**处置建议**：另立环境任务修复 `testutil.Task` 夹具（如补 runtime/completed_at）或建专用测试库后补跑，本 CR 代码本身未触碰该夹具。cr_bind_test.go 的 10 个用例与继承 2 用例已提交在 CR 分支，代码评审仍可静态审阅。
+1. ~~AC-B1~B11 无真库证据~~ **已闭环（review-code 修复轮）**：根因是本 CR 新增 fixture 未显式提供 `runtime_id`（迁移 251 `agent_task_queue_active_requires_runtime` CHECK：queued 行必须带 runtime_id 或终态 completed_at），与共享 `dbfx.Task` 无关——修复按评审建议在 `cr_bind_test.go`/`cr_pipeline_task_test.go` 的 fixture 内显式 stamp `handlerTestRuntimeID(t)`（不动共享夹具），并补 `pipeline_run`/`pipeline_node_run` 种子行（`agent_task_queue.pipeline_node_run_id` FK，迁移 437）。`DATABASE_URL=<multica .env>` 真库执行 **11/11 PASS**（cmd-12；正向继承用例即跨 Agent 独立 reviewer 路径，同时验证 FR-B12 修复）。
 2. **AC-D1/D2/D3/D5/D6 存量绑定验收**：需人工按 FR-B8 表确认来源 Issue（AIFI-3 `6a8cd56a-…` / AIFI-6 `1766573d-…`）后，从对应 Issue 启动受控 task 执行 `multica cr bind-current-task CR-2026-051/052`；本 task 无 issue_id 上下文且缺人工确认留痕，按 AC-D6 不得代行。协调人已安排人工确认，确认后由受控 task 执行并回填证据。
 3. **views 全量套件基线失败**：`vitest run` 全量 4942 条中 3 条失败（2 个文件，含 `project-detail.test.tsx` 的 project deletion 用例），与本 CR 无关（本 CR 两文件 48/48 全过）。
 4. **已知基线失败（与 CR-2026-052 报告同源，未触碰）**：`internal/service` builtin-skills 测试（embedded `multica-*` SKILL.md frontmatter 与模板不符）；`cmd/multica` 全量包超时（本 CR 的 `TestRunCrBind*` 单独跑全过，见 cmd-09）。
 
+## review-code 修复轮（BLOCK-②③④ 处置，multica fix commit `f0cff7c84`）
+
+| 评审项 | 处置 | 证据 |
+|--------|------|------|
+| BLOCK-② `CreatePipelineTask` `s.agent_id=$2` 约束 | `agent.sql` WHERE 仅按 `s.id=$7` 匹配来源行，执行 Agent 由 `$2` 独立决定（FR-B12 独立 reviewer 跨 Agent 正向路径）；sqlc v1.31.1 重新生成 `agent.sql.go` | cmd-12 `TestCreatePipelineTaskIssueInheritPositive`（来源 agent ≠ executor agent）PASS |
+| BLOCK-③ 冲突审计失败静默提交 | `logCrBindRejected` 返回 error；审计写入失败 → `CR_BIND_FAILED` + 回滚（deferred `tx.Rollback`），不再提交无审计 409 | `task.go` 冲突分支（code review）；cmd-12 409 用例断言 `cr_issue_bind_rejected` 落盘 |
+| BLOCK-④ fixture `runtime_id` | `cr_bind_test.go`（3 处）/`cr_pipeline_task_test.go`（1 处）显式 `handlerTestRuntimeID(t)`；补 `pipeline_run`/`pipeline_node_run` FK 种子 | cmd-12 11/11 PASS（真库，非 skip） |
+
+## 部署（BLOCK-①：CLI 可调用，2026-08-28 本机运行时）
+
+- **CLI**：`server/cmd/multica` 从 CR 分支构建，安装到运行环境 `…@multicadesktop/resources/app.asar.unpacked/resources/bin/multica.exe`（原文件备份为 `multica.exe.bak-20260828`/`.old-20260828`）。`multica cr bind-current-task --help` 可用。
+- **Server**：`server/cmd/server` 从 CR 分支构建并重启 `:8080`（`.env` 环境逐项一致；旧进程为 2026-08-24 预三次同步构建，已备份/替换）。`POST /api/crs/{cr_id}/bind-current-task` 已在运行环境实测：无 task token → `TASK_CONTEXT_REQUIRED`；本 task（mat_ 上下文）执行成功 `changed=true`，重放 `changed=false`（幂等），`cr.shell_issue_id` 已写入 AIFI-8。
+- **DB 维护（部署前置，CUSTOM.md《迁移编号冲突》第 3 条已部署库修复）**：`schema_migrations` fork 行 362–397 → 433–468 重命名（备份表 `schema_migrations_backup_20260828`），`go run ./cmd/migrate up` 应用上游 390–432（含 `issue_source_context` 系列与 channel/seat_capacity/plugin 表）及此前未记录的 70/71/99/146–148/280；现 repo 全部迁移文件均已记录（files not recorded = 0），`multica issue get`/gates 等端点恢复 200。此为本机运行时此前未完成的既有维护（post-同步代码依赖），非本 CR 引入。
+- 存量绑定（AC-D1~D6）：CLI/Server 已就绪，待协调人从 AIFI-3/AIFI-6 委派受控 task 执行 `multica cr bind-current-task CR-2026-051/052`。
+
 ## 下一步建议
 
-- 以 `crctl next CR-2026-053` 为准：测试证据 pass → 推送 checkpoint → `review-code`（委派 quality-reviewer-agent）。
-- 建议 quality-reviewer 评审时重点核对：AC-B1~B11 的静态覆盖（cr_bind_test.go 断言内容）与未覆盖风险 1 的环境定性；TASK-10/11 的 `done` 标记待 AC-D 系列人工闭环后补。
+- 以 `crctl next CR-2026-053` 为准：测试证据 pass → `review-code` 新一轮（委派 quality-reviewer-agent）。评审重点核对 BLOCK-②③④ 处置与 cmd-12 真库证据。
+- TASK-10/11 的 `done` 标记待 AC-D 系列（存量绑定）人工闭环后补。

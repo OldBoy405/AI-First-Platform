@@ -1,0 +1,51 @@
+$ go test ./cmd/multica/ -run 'TestRunCrBind' -count=1 -v   # DATABASE_URL=<local multica .env DSN>
+(exit=0)
+--- stdout ---
+=== RUN   TestRunCrBindCurrentTaskSuccess
+--- PASS: TestRunCrBindCurrentTaskSuccess (0.00s)
+=== RUN   TestRunCrBindCurrentTaskReplayChangedFalse
+--- PASS: TestRunCrBindCurrentTaskReplayChangedFalse (0.00s)
+=== RUN   TestRunCrBindCurrentTaskConflictError
+--- PASS: TestRunCrBindCurrentTaskConflictError (0.00s)
+=== RUN   TestRunCrBindCurrentTaskRequiresArg
+Error: accepts 1 arg, received 0
+
+Bind the current task to a CR and its source issue (task-scoped).
+
+Requires a mat_ task token: the task/agent/workspace/issue/project identity is
+derived server-side from the token — the request body carries nothing but the
+CR-ID. Prints the structured result {cr_id, task_id, issue_id, project_id,
+changed}; a failed bind exits non-zero with the server error code
+(TASK_CONTEXT_REQUIRED / TASK_ISSUE_REQUIRED / CR_NOT_FOUND /
+TASK_PROJECT_MISMATCH / TASK_CR_CONFLICT / CR_ISSUE_CONFLICT / CR_BIND_FAILED).
+
+USAGE
+  multica cr bind-current-task <cr-id> [flags]
+INHERITED FLAGS
+  --help   Show help for command
+
+LEARN MORE
+  Use `multica <command> <subcommand> --help` for more information about a command.
+Error: accepts 1 arg, received 2
+
+Bind the current task to a CR and its source issue (task-scoped).
+
+Requires a mat_ task token: the task/agent/workspace/issue/project identity is
+derived server-side from the token — the request body carries nothing but the
+CR-ID. Prints the structured result {cr_id, task_id, issue_id, project_id,
+changed}; a failed bind exits non-zero with the server error code
+(TASK_CONTEXT_REQUIRED / TASK_ISSUE_REQUIRED / CR_NOT_FOUND /
+TASK_PROJECT_MISMATCH / TASK_CR_CONFLICT / CR_ISSUE_CONFLICT / CR_BIND_FAILED).
+
+USAGE
+  multica cr bind-current-task <cr-id> [flags]
+INHERITED FLAGS
+  --help   Show help for command
+
+LEARN MORE
+  Use `multica <command> <subcommand> --help` for more information about a command.
+--- PASS: TestRunCrBindCurrentTaskRequiresArg (0.00s)
+PASS
+ok  	github.com/multica-ai/multica/server/cmd/multica	0.078s
+
+--- stderr ---
