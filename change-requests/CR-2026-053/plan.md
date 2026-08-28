@@ -111,7 +111,7 @@ Track B (Multica 仓):
 - [ ] Multica 仓：`pnpm exec turbo test --filter='@multica/views'` 覆盖 AC-C1~C6
 - [ ] Multica 仓：E2E 验证 `cr.shell_issue_id = 6a8cd56a-12b3-49d9-80bb-4657da15c3b0`（CR-2026-051，AIFI-3）
 - [ ] Multica 仓：E2E 验证 `cr.shell_issue_id = 1766573d-f7bd-465b-bbc4-bcb65a84c880`（CR-2026-052，AIFI-6）
-- [ ] `crctl approve CR-2026-053 --stage approve-dev-start` 人工审批流程闭环验证
+- [ ] `crctl approve CR-2026-053 --stage dev-start` 人工审批流程闭环验证
 - [ ] 四类 review Skill 各跑一轮独立 reviewer，验证 reviewer 与作者为两个独立 task/run
 
 ### Feature Flag 策略

@@ -35,7 +35,7 @@ created: 2026-08-28T11:20:00+08:00
 ## 验收条件
 
 1. `grep -n "CR-2026-053" CUSTOM.md` 命中且覆盖上述全部变更文件
-2. `grep -oE "^[0-9]+\." CUSTOM.md | sort | uniq -d` 为空（编号无重复）
+2. `grep -oE '^\| [0-9]+ \|' CUSTOM.md | grep -oE '[0-9]+' | sort | uniq -d` 为空（编号无重复）
 
 ## 完成标志
 
