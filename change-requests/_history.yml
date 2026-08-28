@@ -657,341 +657,323 @@ history:
         source-sha: 2062969ce5ae8ab169063cb07f0017c63457e548
         merged-at: "2026-08-04T15:25:00+08:00"
     status: archived
+    final-status: archived
     writeback-spec-id: ai-first-platform
     archived-at: "2026-08-04T15:50:00+08:00"
     updated-at: "2026-08-04T15:50:00+08:00"
     updated-at: "2026-08-04T10:13:56+08:00"
     created: "2026-08-04T12:00:00+08:00"
     updated: "2026-08-04T12:00:00+08:00"
-    - id: CR-2026-019
-      title: 治理工具链 — YAML 账本操作收敛为 crctl 子命令（P2：任务标 done / merge-commits 写入 / 归档移动）+ AC-9 演练入库
-      summary: >-
-        CR-2026-012 收尾复盘 §3.2 的 P2 项（依附 T1-full 定型后立项）：任务 _index.yml 标 done、
-        merge-commits[] 写入、backlog→history 归档移动收敛为 crctl 子命令（task done /
-        merge-metadata / archive-move），保持 CAS + 审计日志 + 门禁的单一写入路径；
-        AC-9 merge-tree 零冲突演练沉淀为入库测试。
-      owner: Ray
-      owners:
-        requirement:
-          id: Ray
-          assigned-at: "2026-08-04T16:00:00+08:00"
-        development:
-          id: Ray
-          assigned-at: "2026-08-04T16:00:00+08:00"
-        test:
-          id: Ray
-          assigned-at: "2026-08-04T16:00:00+08:00"
-      target-version: tbd
-      source: "docs/analysis/CR-2026-012-合并回写归档复盘.md §3.2 P2 + CR-2026-018 测试报告 §6"
-      prd-path: "change-requests/CR-2026-019/prd.md"
-      created: "2026-08-04T16:00:00+08:00"
-      updated: "2026-08-04T16:00:00+08:00"
-  
-      merge-commits:
-        - repo: ai-first-platform-docs
-          trunk: master
-          sha: 89ccd9f59b4fe38dd414349f4c43f86ccea96d6c
-        - repo: tools
-          trunk: custom/main
-          sha: 790908b86fc4488fd9eaae4603d24cd868b66f94
+  - id: CR-2026-019
+    title: 治理工具链 — YAML 账本操作收敛为 crctl 子命令（P2：任务标 done / merge-commits 写入 / 归档移动）+ AC-9 演练入库
+    summary: >-
+      CR-2026-012 收尾复盘 §3.2 的 P2 项（依附 T1-full 定型后立项）：任务 _index.yml 标 done、
+      merge-commits[] 写入、backlog→history 归档移动收敛为 crctl 子命令（task done /
+      merge-metadata / archive-move），保持 CAS + 审计日志 + 门禁的单一写入路径；
+      AC-9 merge-tree 零冲突演练沉淀为入库测试。
+    owner: Ray
+    owners:
+      requirement:
+        id: Ray
+        assigned-at: "2026-08-04T16:00:00+08:00"
+      development:
+        id: Ray
+        assigned-at: "2026-08-04T16:00:00+08:00"
+      test:
+        id: Ray
+        assigned-at: "2026-08-04T16:00:00+08:00"
+    target-version: tbd
+    source: "docs/analysis/CR-2026-012-合并回写归档复盘.md §3.2 P2 + CR-2026-018 测试报告 §6"
+    prd-path: "change-requests/CR-2026-019/prd.md"
+    created: "2026-08-04T16:00:00+08:00"
+    updated: "2026-08-04T16:00:00+08:00"
+
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 89ccd9f59b4fe38dd414349f4c43f86ccea96d6c
+      - repo: tools
+        trunk: custom/main
+        sha: 790908b86fc4488fd9eaae4603d24cd868b66f94
     final-status: archived
     archive-reason: "治理工具链 P2 落地：YAML 账本操作收敛为 crctl 子命令（task done / merge-metadata / archive-move）+ AC-9 merge-tree 演练入库；specs/ai-first-platform v0.10.0 累积回写 + delivery/task 7 项"
     writeback-spec-id: ai-first-platform
     archived-at: "2026-08-04T20:19:33+08:00"
-    - id: CR-2026-020
-      title: 治理工具链 — writeback 机械步骤固化为入库脚本（三脚本 + SKILL 改调 + 删 writeback-backups + traceability 单一权威）
-      summary: >-
-        CR-2026-019 实测 writeback 流水线约 30 min，其中"造工具/调试"约 20 min（占三分之二）：
-        writeback-prd-sdd / writeback-tasks / writeback-traceability 三个节点的机械步骤仍靠
-        会话内现写一次性脚本与试错（docs/product/writeback-流水线耗时分析与优化方案.md，平台级
-        治理文档，本 CR 按其 §7 落地建议立项）。范围：三节点机械步骤固化为 tools/skills/shared/
-        scripts/ 下版本化独立脚本（specs/_index.yml、delivery/task/_index.yaml、traceability.yml
-        类全量重建天然幂等；PRD/SDD 里程碑节保留锚点追加、锚点唯一性断言硬失败；带 dry-run +
-        末尾自检），三份 SKILL.md 改为"调用脚本 + 核对 dry-run diff"并补充已核实事实基线
-        （里程碑命名/索引格式/参与仓规则）；删除 writeback-backups 备份步骤（git commit 即备份）、
-        收敛双份 traceability.yml 为 specs 侧单一权威文件。不做成 crctl 子命令、不接入 CAS 审计
-        基础设施（git 即其 CAS），不含状态机与账本结构改动。验收指标：下一个走完整 writeback 的
-        CR 流水线耗时 ≤15 min、回写环节零脚本调试循环（基线 CR-2026-019：30 min / 三次调试循环）。
-      owner: Ray
-      owners:
-        requirement:
-          id: Ray
-          assigned-at: "2026-08-04T21:38:00+08:00"
-        development:
-          id: Ray
-          assigned-at: "2026-08-04T21:38:00+08:00"
-        test:
-          id: Ray
-          assigned-at: "2026-08-04T21:38:00+08:00"
-      target-version: tbd
-      source: "docs/product/writeback-流水线耗时分析与优化方案.md"
-      prd-path: "change-requests/CR-2026-020/prd.md"
-      created: "2026-08-04T21:38:00+08:00"
-      updated: "2026-08-04T21:38:00+08:00"
-  
-      merge-commits:
-        - repo: ai-first-platform-docs
-          trunk: master
-          sha: ae7581f9c32cb6bca4d91dfa09d47a6c537b1702
-        - repo: tools
-          trunk: custom/main
-          sha: 518a45cb176103992e4d80e5b21ffe2215bb387f
+  - id: CR-2026-020
+    title: 治理工具链 — writeback 机械步骤固化为入库脚本（三脚本 + SKILL 改调 + 删 writeback-backups + traceability 单一权威）
+    summary: >-
+      CR-2026-019 实测 writeback 流水线约 30 min，其中"造工具/调试"约 20 min（占三分之二）：
+      writeback-prd-sdd / writeback-tasks / writeback-traceability 三个节点的机械步骤仍靠
+      会话内现写一次性脚本与试错（docs/product/writeback-流水线耗时分析与优化方案.md，平台级
+      治理文档，本 CR 按其 §7 落地建议立项）。范围：三节点机械步骤固化为 tools/skills/shared/
+      scripts/ 下版本化独立脚本（specs/_index.yml、delivery/task/_index.yaml、traceability.yml
+      类全量重建天然幂等；PRD/SDD 里程碑节保留锚点追加、锚点唯一性断言硬失败；带 dry-run +
+      末尾自检），三份 SKILL.md 改为"调用脚本 + 核对 dry-run diff"并补充已核实事实基线
+      （里程碑命名/索引格式/参与仓规则）；删除 writeback-backups 备份步骤（git commit 即备份）、
+      收敛双份 traceability.yml 为 specs 侧单一权威文件。不做成 crctl 子命令、不接入 CAS 审计
+      基础设施（git 即其 CAS），不含状态机与账本结构改动。验收指标：下一个走完整 writeback 的
+      CR 流水线耗时 ≤15 min、回写环节零脚本调试循环（基线 CR-2026-019：30 min / 三次调试循环）。
+    owner: Ray
+    owners:
+      requirement:
+        id: Ray
+        assigned-at: "2026-08-04T21:38:00+08:00"
+      development:
+        id: Ray
+        assigned-at: "2026-08-04T21:38:00+08:00"
+      test:
+        id: Ray
+        assigned-at: "2026-08-04T21:38:00+08:00"
+    target-version: tbd
+    source: "docs/product/writeback-流水线耗时分析与优化方案.md"
+    prd-path: "change-requests/CR-2026-020/prd.md"
+    created: "2026-08-04T21:38:00+08:00"
+    updated: "2026-08-04T21:38:00+08:00"
+
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: ae7581f9c32cb6bca4d91dfa09d47a6c537b1702
+      - repo: tools
+        trunk: custom/main
+        sha: 518a45cb176103992e4d80e5b21ffe2215bb387f
     final-status: archived
     archive-reason: ""
     archived-at: "2026-08-05T01:36:53+08:00"
-    - id: CR-2026-021
-      title: 治理工具链 — prompt 对齐 crctl（写入面补齐 S1~S11+inbox-emit + prompt 分阶段收敛 + lint-prompts 漂移防线 + D13 溯源）
-      summary: >-
-        crctl（CR-2026-019 账本子命令 / CR-2026-020 回写脚本 / FR-2/4/5/8）与 PreToolUse guard
-        的能力跑在了 prompt 前面：guard deny 锁死 _backlog.yml/review-annotations/approval.yml
-        等受控文件但 crctl 无对应写口 → "guard 锁死但无工具出口"的孤儿写入；20+ SKILL/pipeline
-        prompt 仍手把手教手动操作。按 docs/analysis/tools包-prompt对齐crctl-修改方案.md 落地
-        （范围更新：D9~D16 并入本轮单轮做完）：Phase 0 crctl 新增 12 项子命令面（S1~S11 +
-        inbox-emit：9 写 review-record / review-note / checkpoint-add / owner-set / backlog-set /
-        next-cr-id / task allocate / cr-init / inbox-emit + 2 只读 worktree-path / report+cr-metrics
-        + 1 处既有 git commit --template 扩展，前置态守卫 + CAS + 审计，不做通用 patch，S6/S8
-        合并实现；D13 PRD/SDD schema validator 先溯源调查再定复活，为 Phase 0 门槛任务）；
-        Phase 1~4 分阶段把 prompt 收敛为调用 crctl（D7 merge-commits 3 字段、approve-* 折叠为
-        crctl approve、裸 git→crctl git、cr-status-set 清退、注册链路 requirement-register→
-        S6/S8/S9/S10、write-dev-tasks→S7/S10、cr-dashboard→S11）；根治机制 lint-prompts 漂移
-        linter（规则直读 rules.json/crctl.mjs 源码）+ pre-commit 与 feature-writeback gate 两层
-        机械防线。落点 tools 仓 crctl.mjs + skills/ + pipeline-templates/ + scripts/
-        lint-prompts.mjs，里程碑 T1.3。
-      owner: Ray
-      owners:
-        requirement:
-          id: Ray
-          assigned-at: "2026-08-05T09:37:00+08:00"
-        development:
-          id: Ray
-          assigned-at: "2026-08-05T09:37:00+08:00"
-        test:
-          id: Ray
-          assigned-at: "2026-08-05T09:37:00+08:00"
-      target-version: tbd
-      source: "docs/analysis/tools包-prompt对齐crctl-修改方案.md"
-      prd-path: "change-requests/CR-2026-021/prd.md"
-      created: "2026-08-05T09:37:00+08:00"
-      updated: "2026-08-05T10:30:00+08:00"
-  
-      merge-commits:
-        - repo: tools
-          trunk: custom/main
-          sha: de48aa822e55010dcbe828ac12daebeefb074e58
-          branch: requirement/CR-2026-021
-        - repo: ai-first-platform-docs
-          trunk: master
-          sha: 1a363362eab1da86e8064d2d3db3abd1c80d2913
-          branch: requirement/CR-2026-021
+  - id: CR-2026-021
+    title: 治理工具链 — prompt 对齐 crctl（写入面补齐 S1~S11+inbox-emit + prompt 分阶段收敛 + lint-prompts 漂移防线 + D13 溯源）
+    summary: >-
+      crctl（CR-2026-019 账本子命令 / CR-2026-020 回写脚本 / FR-2/4/5/8）与 PreToolUse guard
+      的能力跑在了 prompt 前面：guard deny 锁死 _backlog.yml/review-annotations/approval.yml
+      等受控文件但 crctl 无对应写口 → "guard 锁死但无工具出口"的孤儿写入；20+ SKILL/pipeline
+      prompt 仍手把手教手动操作。按 docs/analysis/tools包-prompt对齐crctl-修改方案.md 落地
+      （范围更新：D9~D16 并入本轮单轮做完）：Phase 0 crctl 新增 12 项子命令面（S1~S11 +
+      inbox-emit：9 写 review-record / review-note / checkpoint-add / owner-set / backlog-set /
+      next-cr-id / task allocate / cr-init / inbox-emit + 2 只读 worktree-path / report+cr-metrics
+      + 1 处既有 git commit --template 扩展，前置态守卫 + CAS + 审计，不做通用 patch，S6/S8
+      合并实现；D13 PRD/SDD schema validator 先溯源调查再定复活，为 Phase 0 门槛任务）；
+      Phase 1~4 分阶段把 prompt 收敛为调用 crctl（D7 merge-commits 3 字段、approve-* 折叠为
+      crctl approve、裸 git→crctl git、cr-status-set 清退、注册链路 requirement-register→
+      S6/S8/S9/S10、write-dev-tasks→S7/S10、cr-dashboard→S11）；根治机制 lint-prompts 漂移
+      linter（规则直读 rules.json/crctl.mjs 源码）+ pre-commit 与 feature-writeback gate 两层
+      机械防线。落点 tools 仓 crctl.mjs + skills/ + pipeline-templates/ + scripts/
+      lint-prompts.mjs，里程碑 T1.3。
+    owner: Ray
+    owners:
+      requirement:
+        id: Ray
+        assigned-at: "2026-08-05T09:37:00+08:00"
+      development:
+        id: Ray
+        assigned-at: "2026-08-05T09:37:00+08:00"
+      test:
+        id: Ray
+        assigned-at: "2026-08-05T09:37:00+08:00"
+    target-version: tbd
+    source: "docs/analysis/tools包-prompt对齐crctl-修改方案.md"
+    prd-path: "change-requests/CR-2026-021/prd.md"
+    created: "2026-08-05T09:37:00+08:00"
+    updated: "2026-08-05T10:30:00+08:00"
+
+    merge-commits:
+      - repo: tools
+        trunk: custom/main
+        sha: de48aa822e55010dcbe828ac12daebeefb074e58
+        branch: requirement/CR-2026-021
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 1a363362eab1da86e8064d2d3db3abd1c80d2913
+        branch: requirement/CR-2026-021
     final-status: archived
     archive-reason: "T1.3 里程碑：prompt 对齐 crctl + lint-prompts 漂移防线交付完成"
     writeback-spec-id: ai-first-platform
     archived-at: "2026-08-05T17:07:28+08:00"
-    - id: CR-2026-022
-      title: 治理工具链 — tools 包 prompt 审查修复（97 条发现：批 2.5 crctl 核心缺陷修复 + checkpoint-add 承诺兑现 + approve 驳回回退 + lint R6/R7 与豁免修复 + 冗余收敛）
-      summary: >-
-        报告扩至 97 条（原稿 75 + 注册实录补 4 + 7 条流水线执行走查补 18）。新增批 2.5
-        crctl 核心能力补齐（一次设计评审过 §8：cr-init 字段旗标 + --cr 显式旗标、
-        checkpoint-add LEGAL 白名单扩展 + push-progress 逐仓调用、approve 驳回回退转换、
-        review-loop 死配置处置、fetch 失败 STALE_BASE 降级）；批 3 补入 HEAD 一致性校验、
-        write-competitive-report 订正、cmdNext/cr-show 等歧义修复；批 3.5 增加豁免注释
-        整段生效 bug 修复；批 4 补入 write-insight-brief/run-competitive-analysis 等评估项。
-        详见 cr.md 与 docs/analysis/prompt-audit-report-2026-08-05.md。
-      owner: Ray
-      owners:
-        requirement:
-          id: Ray
-          assigned-at: "2026-08-05T23:32:54+08:00"
-        development:
-          id: Ray
-          assigned-at: "2026-08-05T23:32:54+08:00"
-        test:
-          id: Ray
-          assigned-at: "2026-08-05T23:32:54+08:00"
-      target-version: tbd
-      source: "docs/analysis/prompt-audit-report-2026-08-05.md"
-      prd-path: "change-requests/CR-2026-022/prd.md"
-      created: "2026-08-05T23:32:54+08:00"
-      updated: "2026-08-06T06:56:50+08:00"
-  
-      checkpoints:
-        - repo: knowledge-base
-          sha: 7ab6c9e544a00116805bab8a1a389cdb54f36109
-          pushed-at: "2026-08-06T09:33:38+08:00"
-          by: "OldBoy405"
-        - repo: tools
-          sha: 8e7da95f34603ee0283c785ca71f021f0126cfbd
-          pushed-at: "2026-08-06T12:37:02+08:00"
-          by: "OldBoy405"
-      last-push-at: "2026-08-06T12:37:02+08:00"
-      last-push-by: "OldBoy405"
-      merge-commits:
-        - repo: ai-first-platform-docs
-          trunk: master
-          sha: 2d1676a15eb39011bcc359791505061615a6d286
-          branch: requirement/CR-2026-022
-        - repo: multica
-          trunk: main
-          sha: d71403e0731563c9e66be221382f85dcca5a334d
-          branch: requirement/CR-2026-022
-        - repo: tools
-          trunk: custom/main
-          sha: none
-          branch: requirement/CR-2026-022
+  - id: CR-2026-022
+    title: 治理工具链 — tools 包 prompt 审查修复（97 条发现：批 2.5 crctl 核心缺陷修复 + checkpoint-add 承诺兑现 + approve 驳回回退 + lint R6/R7 与豁免修复 + 冗余收敛）
+    summary: >-
+      报告扩至 97 条（原稿 75 + 注册实录补 4 + 7 条流水线执行走查补 18）。新增批 2.5
+      crctl 核心能力补齐（一次设计评审过 §8：cr-init 字段旗标 + --cr 显式旗标、
+      checkpoint-add LEGAL 白名单扩展 + push-progress 逐仓调用、approve 驳回回退转换、
+      review-loop 死配置处置、fetch 失败 STALE_BASE 降级）；批 3 补入 HEAD 一致性校验、
+      write-competitive-report 订正、cmdNext/cr-show 等歧义修复；批 3.5 增加豁免注释
+      整段生效 bug 修复；批 4 补入 write-insight-brief/run-competitive-analysis 等评估项。
+      详见 cr.md 与 docs/analysis/prompt-audit-report-2026-08-05.md。
+    owner: Ray
+    owners:
+      requirement:
+        id: Ray
+        assigned-at: "2026-08-05T23:32:54+08:00"
+      development:
+        id: Ray
+        assigned-at: "2026-08-05T23:32:54+08:00"
+      test:
+        id: Ray
+        assigned-at: "2026-08-05T23:32:54+08:00"
+    target-version: tbd
+    source: "docs/analysis/prompt-audit-report-2026-08-05.md"
+    prd-path: "change-requests/CR-2026-022/prd.md"
+    created: "2026-08-05T23:32:54+08:00"
+    updated: "2026-08-06T06:56:50+08:00"
+
+    checkpoints:
+      - repo: knowledge-base
+        sha: 7ab6c9e544a00116805bab8a1a389cdb54f36109
+        pushed-at: "2026-08-06T09:33:38+08:00"
+        by: "OldBoy405"
+      - repo: tools
+        sha: 8e7da95f34603ee0283c785ca71f021f0126cfbd
+        pushed-at: "2026-08-06T12:37:02+08:00"
+        by: "OldBoy405"
+    last-push-at: "2026-08-06T12:37:02+08:00"
+    last-push-by: "OldBoy405"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 2d1676a15eb39011bcc359791505061615a6d286
+        branch: requirement/CR-2026-022
+      - repo: multica
+        trunk: main
+        sha: d71403e0731563c9e66be221382f85dcca5a334d
+        branch: requirement/CR-2026-022
+      - repo: tools
+        trunk: custom/main
+        sha: none
+        branch: requirement/CR-2026-022
     final-status: archived
     archive-reason: "T1.4 里程碑 — tools 包 prompt 审查修复（97 条发现全量落地，批 1/2/2.5/3/3.5/4/收尾）"
     writeback-spec-id: ai-first-platform
     archived-at: "2026-08-06T13:02:48+08:00"
-    - id: CR-2026-023
-      title: 治理工具链 — 代码评审 LLM 选择暂停节点 + R9 护栏（CR 上下文下一步收敛 crctl next）
-      summary: "两个分析文档合一的治理工具链 CR：① code-implementation pipeline 在节点 8 push-progress 与节点 9 review-code 之间插入 human_approval「选择代码评审 LLM」暂停节点（0013），新增触发输入 review_llm 可选预选，review-code prompt 头部追加 reviewer-model 留痕（dimensions 内不改 crctl 契约），replayNodes 不加入选择节点（一次选择全程复用），同步 _index.yml nodes 12→13 与 README 代码编写期节点表；② lint-prompts 新增 R9 规则——CR 上下文域（requirement/develop/writeback/sync/cr）skill 的「下一步」提示必须收敛到 crctl next，禁止手写 skill/pipeline 名映射副本，判据源直读 skills/_index.yml，17 处存量手写副本清零 + push-progress 摘要补下一步 + requirement-writer 映射表前置注记。"
-      owner: Ray
-      owners:
-        requirement:
-          id: Ray
-          assigned-at: "2026-08-06T23:16:15+08:00"
-        development:
-          id: Ray
-          assigned-at: "2026-08-06T23:16:15+08:00"
-        test:
-          id: Ray
-          assigned-at: "2026-08-06T23:16:15+08:00"
-      target-version: tbd
-      source: "docs/analysis/code-review-llm-selection-plan-2026-08-06.md; docs/analysis/review-skip-drift-and-r9-guard-2026-08-06.md"
-      prd-path: "change-requests/CR-2026-023/prd.md"
-      created: "2026-08-06T23:16:15+08:00"
-      updated: "2026-08-06T23:16:15+08:00"
-  
-      checkpoints:
-        - repo: ai-first-platform-docs
-          sha: c9cf6d60eee898adce0419d023de85206dad0397
-          pushed-at: "2026-08-07T07:34:42+08:00"
-          by: "OldBoy405"
-        - repo: multica
-          sha: d71403e0731563c9e66be221382f85dcca5a334d
-          pushed-at: "2026-08-07T07:34:42+08:00"
-          by: "OldBoy405"
-      last-push-at: "2026-08-07T07:34:42+08:00"
-      last-push-by: "OldBoy405"
-      merge-commits:
-        - repo: ai-first-platform-docs
-          trunk: master
-          sha: dca18b4f87b754562524043de230b949797faacc
-          branch: requirement/CR-2026-023
-        - repo: tools
-          trunk: custom/main
-          sha: none
-          branch: requirement/CR-2026-023
+  - id: CR-2026-023
+    title: 治理工具链 — 代码评审 LLM 选择暂停节点 + R9 护栏（CR 上下文下一步收敛 crctl next）
+    summary: "两个分析文档合一的治理工具链 CR：① code-implementation pipeline 在节点 8 push-progress 与节点 9 review-code 之间插入 human_approval「选择代码评审 LLM」暂停节点（0013），新增触发输入 review_llm 可选预选，review-code prompt 头部追加 reviewer-model 留痕（dimensions 内不改 crctl 契约），replayNodes 不加入选择节点（一次选择全程复用），同步 _index.yml nodes 12→13 与 README 代码编写期节点表；② lint-prompts 新增 R9 规则——CR 上下文域（requirement/develop/writeback/sync/cr）skill 的「下一步」提示必须收敛到 crctl next，禁止手写 skill/pipeline 名映射副本，判据源直读 skills/_index.yml，17 处存量手写副本清零 + push-progress 摘要补下一步 + requirement-writer 映射表前置注记。"
+    owner: Ray
+    owners:
+      requirement:
+        id: Ray
+        assigned-at: "2026-08-06T23:16:15+08:00"
+      development:
+        id: Ray
+        assigned-at: "2026-08-06T23:16:15+08:00"
+      test:
+        id: Ray
+        assigned-at: "2026-08-06T23:16:15+08:00"
+    target-version: tbd
+    source: "docs/analysis/code-review-llm-selection-plan-2026-08-06.md; docs/analysis/review-skip-drift-and-r9-guard-2026-08-06.md"
+    prd-path: "change-requests/CR-2026-023/prd.md"
+    created: "2026-08-06T23:16:15+08:00"
+    updated: "2026-08-06T23:16:15+08:00"
+
+    checkpoints:
+      - repo: ai-first-platform-docs
+        sha: c9cf6d60eee898adce0419d023de85206dad0397
+        pushed-at: "2026-08-07T07:34:42+08:00"
+        by: "OldBoy405"
+      - repo: multica
+        sha: d71403e0731563c9e66be221382f85dcca5a334d
+        pushed-at: "2026-08-07T07:34:42+08:00"
+        by: "OldBoy405"
+    last-push-at: "2026-08-07T07:34:42+08:00"
+    last-push-by: "OldBoy405"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: dca18b4f87b754562524043de230b949797faacc
+        branch: requirement/CR-2026-023
+      - repo: tools
+        trunk: custom/main
+        sha: none
+        branch: requirement/CR-2026-023
     final-status: archived
     archive-reason: "T1.5 里程碑 — 代码评审 LLM 选择暂停节点 + R9 护栏（R9 lint 规则 + 17 处存量清零 + 评审暂停节点 0013）"
     writeback-spec-id: ai-first-platform
     archived-at: "2026-08-07T07:52:04+08:00"
-    - id: CR-2026-024
-      title: Phase0 Tools 技能整合 — 端到端 Pipeline 最佳实践（coding-discipline 新建 + external 死声明删除 + review-code 无条件重验 + TASK 契约强化）
-      summary: "按《端到端Pipeline最佳实践技能整合方案》v2.3 实施两批变更：批次一收口（零新增行为）——删除 4 个零引用 external 死声明（using-superpowers/writing-plans/systematic-debugging/verification-before-completion）、implement-code 与 code-implementation pipeline 删 TDD 悬空引用并补 executing-plans/subagent-driven-development 降级路径；批次二内化（真实行为变更）——新建 coding-discipline skill（§1 极简阶梯/§2 步骤粒度/§3 根因排查与回归验证）、review-code 第五维度（仅可验证项）与 Step 1 无条件重新执行验证命令、write-dev-tasks 接口契约与类型一致性自查、write-requirement-prd 优先采纳 summary 已确认边界、AGENTS.md 第 56 条修订"
-      owner: Ray
-      owners:
-        requirement:
-          id: Ray
-          assigned-at: "2026-08-08T16:44:35+08:00"
-        development:
-          id: Ray
-          assigned-at: "2026-08-08T16:44:35+08:00"
-        test:
-          id: Ray
-          assigned-at: "2026-08-08T16:44:35+08:00"
-      target-version: tbd
-      source: "docs/analysis/端到端Pipeline最佳实践技能整合方案.md v2.3"
-      prd-path: "change-requests/CR-2026-024/prd.md"
-      created: "2026-08-08T16:44:35+08:00"
-      updated: "2026-08-08T16:44:35+08:00"
-      merge-commits:
-        - repo: ai-first-platform-docs
-          trunk: master
-          sha: d703fc88105129c4529fc55f2ebb3c03f02f58bc
-          branch: requirement/CR-2026-024  - id: CR-2026-025
-      title: crctl 守卫与回显收敛（check-skill-matrix external 引用校验 + depends-on 依赖守卫 + gate/advance blockers 回显截断）
-      summary: "合并三项独立漂移治理项，统一交付：① D-2（源自方案 v2.6 §7）check-skill-matrix.mjs 新增规则——agent-skill-matrix.yml 的 external 声明必须能在对应 SKILL.md/prompt 中找到真实引用点，零引用视为死声明报警，防止 CR-2026-024 修复的『声明蒸发』失效模式复发；② D-5（源自方案 v2.6 §4.8/§7）crctl task done 新增依赖守卫——写 TASK status=done 前校验其 depends-on 列出的前置 TASK 均已 done，把 implement-code 现有的 prompt 层拓扑排序建议升级为机械强制，未提供覆盖时报 DEPENDS_ON_NOT_DONE 拒绝写入；③ gate/advance blockers 回显截断（源自 CR-2026-024 SDD 评审过程实测发现）——evaluatePassCondition 对 isEmpty 失败条件的 actual/why 全量序列化 blockers 长文本，advance 失败路径经 FR-5 摘要再抬一次，同一 payload 三份落地；改为 actual 逐项截断（ITEM_MAX=120 字符，保留数组类型与 file 指针）、why/message 只给条数，全量原文以 file 字段指向的 review-annotations/{stage}.yml 为唯一来源。三项均为 crctl.mjs/check-skill-matrix.mjs 本体改动 + 各自测试向量，不改状态机、不改 owns/can-call 数据模型，符合 crctl 类改动的最小交付单元定义（对齐 CR-2026-021/022 交付粒度先例）。"
-      owner: Ray
-      owners:
-        requirement:
-          id: Ray
-          assigned-at: "2026-08-08T21:07:25+08:00"
-        development:
-          id: Ray
-          assigned-at: "2026-08-08T21:07:25+08:00"
-        test:
-          id: Ray
-          assigned-at: "2026-08-08T21:07:25+08:00"
-      target-version: tbd
-      source: "docs/analysis/端到端Pipeline最佳实践技能整合方案.md v2.6 §7（D-2/D-5）+ CR-2026-024 SDD 技术评审实测发现（gate 回显冗余）"
-      prd-path: ""
-      created: "2026-08-08T21:07:25+08:00"
-      updated: "2026-08-08T21:07:25+08:00"
-  
+  - id: CR-2026-024
+    title: Phase0 Tools 技能整合 — 端到端 Pipeline 最佳实践（coding-discipline 新建 + external 死声明删除 + review-code 无条件重验 + TASK 契约强化）
+    summary: "按《端到端Pipeline最佳实践技能整合方案》v2.3 实施两批变更：批次一收口（零新增行为）——删除 4 个零引用 external 死声明（using-superpowers/writing-plans/systematic-debugging/verification-before-completion）、implement-code 与 code-implementation pipeline 删 TDD 悬空引用并补 executing-plans/subagent-driven-development 降级路径；批次二内化（真实行为变更）——新建 coding-discipline skill（§1 极简阶梯/§2 步骤粒度/§3 根因排查与回归验证）、review-code 第五维度（仅可验证项）与 Step 1 无条件重新执行验证命令、write-dev-tasks 接口契约与类型一致性自查、write-requirement-prd 优先采纳 summary 已确认边界、AGENTS.md 第 56 条修订"
+    owner: Ray
+    owners:
+      requirement:
+        id: Ray
+        assigned-at: "2026-08-08T16:44:35+08:00"
+      development:
+        id: Ray
+        assigned-at: "2026-08-08T16:44:35+08:00"
+      test:
+        id: Ray
+        assigned-at: "2026-08-08T16:44:35+08:00"
+    target-version: tbd
+    source: "docs/analysis/端到端Pipeline最佳实践技能整合方案.md v2.3"
+    prd-path: "change-requests/CR-2026-024/prd.md"
+    created: "2026-08-08T16:44:35+08:00"
+    updated: "2026-08-08T16:44:35+08:00"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: d703fc88105129c4529fc55f2ebb3c03f02f58bc
+        branch: requirement/CR-2026-024
     final-status: archived
     archive-reason: "成功回写 specs/ai-first-platform v0.25（Phase0 Tools 技能整合）"
     writeback-spec-id: ai-first-platform
     archived-at: "2026-08-09T00:33:06+08:00"
-    - id: CR-2026-025
-      title: crctl 守卫与回显收敛（check-skill-matrix external 引用校验 + depends-on 依赖守卫 + gate/advance blockers 回显截断）
-      summary: "合并三项独立漂移治理项，统一交付：① D-2（源自方案 v2.6 §7）check-skill-matrix.mjs 新增规则——agent-skill-matrix.yml 的 external 声明必须能在对应 SKILL.md/prompt 中找到真实引用点，零引用视为死声明报警，防止 CR-2026-024 修复的『声明蒸发』失效模式复发；② D-5（源自方案 v2.6 §4.8/§7）crctl task done 新增依赖守卫——写 TASK status=done 前校验其 depends-on 列出的前置 TASK 均已 done，把 implement-code 现有的 prompt 层拓扑排序建议升级为机械强制，未提供覆盖时报 DEPENDS_ON_NOT_DONE 拒绝写入；③ gate/advance blockers 回显截断（源自 CR-2026-024 SDD 评审过程实测发现）——evaluatePassCondition 对 isEmpty 失败条件的 actual/why 全量序列化 blockers 长文本，advance 失败路径经 FR-5 摘要再抬一次，同一 payload 三份落地；改为 actual 逐项截断（ITEM_MAX=120 字符，保留数组类型与 file 指针）、why/message 只给条数，全量原文以 file 字段指向的 review-annotations/{stage}.yml 为唯一来源。三项均为 crctl.mjs/check-skill-matrix.mjs 本体改动 + 各自测试向量，不改状态机、不改 owns/can-call 数据模型，符合 crctl 类改动的最小交付单元定义（对齐 CR-2026-021/022 交付粒度先例）。"
-      owner: Ray
-      owners:
-        requirement:
-          id: Ray
-          assigned-at: "2026-08-08T21:07:25+08:00"
-        development:
-          id: Ray
-          assigned-at: "2026-08-08T21:07:25+08:00"
-        test:
-          id: Ray
-          assigned-at: "2026-08-08T21:07:25+08:00"
-      target-version: tbd
-      source: "docs/analysis/端到端Pipeline最佳实践技能整合方案.md v2.6 §7（D-2/D-5）+ CR-2026-024 SDD 技术评审实测发现（gate 回显冗余）"
-      prd-path: "change-requests/CR-2026-025/prd.md"
-      created: "2026-08-08T21:07:25+08:00"
-      updated: "2026-08-08T21:07:25+08:00"
-  
-      merge-commits:
-        - repo: tools
-          trunk: custom/main
-          sha: 9a8abb56fa1267f45cfabbfb569a41ea39ef7e12
-          branch: requirement/CR-2026-025
-  
+  - id: CR-2026-025
+    title: crctl 守卫与回显收敛（check-skill-matrix external 引用校验 + depends-on 依赖守卫 + gate/advance blockers 回显截断）
+    summary: "合并三项独立漂移治理项，统一交付：① D-2（源自方案 v2.6 §7）check-skill-matrix.mjs 新增规则——agent-skill-matrix.yml 的 external 声明必须能在对应 SKILL.md/prompt 中找到真实引用点，零引用视为死声明报警，防止 CR-2026-024 修复的『声明蒸发』失效模式复发；② D-5（源自方案 v2.6 §4.8/§7）crctl task done 新增依赖守卫——写 TASK status=done 前校验其 depends-on 列出的前置 TASK 均已 done，把 implement-code 现有的 prompt 层拓扑排序建议升级为机械强制，未提供覆盖时报 DEPENDS_ON_NOT_DONE 拒绝写入；③ gate/advance blockers 回显截断（源自 CR-2026-024 SDD 评审过程实测发现）——evaluatePassCondition 对 isEmpty 失败条件的 actual/why 全量序列化 blockers 长文本，advance 失败路径经 FR-5 摘要再抬一次，同一 payload 三份落地；改为 actual 逐项截断（ITEM_MAX=120 字符，保留数组类型与 file 指针）、why/message 只给条数，全量原文以 file 字段指向的 review-annotations/{stage}.yml 为唯一来源。三项均为 crctl.mjs/check-skill-matrix.mjs 本体改动 + 各自测试向量，不改状态机、不改 owns/can-call 数据模型，符合 crctl 类改动的最小交付单元定义（对齐 CR-2026-021/022 交付粒度先例）。"
+    owner: Ray
+    owners:
+      requirement:
+        id: Ray
+        assigned-at: "2026-08-08T21:07:25+08:00"
+      development:
+        id: Ray
+        assigned-at: "2026-08-08T21:07:25+08:00"
+      test:
+        id: Ray
+        assigned-at: "2026-08-08T21:07:25+08:00"
+    target-version: tbd
+    source: "docs/analysis/端到端Pipeline最佳实践技能整合方案.md v2.6 §7（D-2/D-5）+ CR-2026-024 SDD 技术评审实测发现（gate 回显冗余）"
+    prd-path: "change-requests/CR-2026-025/prd.md"
+    created: "2026-08-08T21:07:25+08:00"
+    updated: "2026-08-08T21:07:25+08:00"
+
+    merge-commits:
+      - repo: tools
+        trunk: custom/main
+        sha: 9a8abb56fa1267f45cfabbfb569a41ea39ef7e12
+        branch: requirement/CR-2026-025
+
     final-status: archived
     archive-reason: ""
     writeback-spec-id: ai-first-platform
     archived-at: "2026-08-09T04:36:42+08:00"
-    - id: CR-2026-026
-      title: 开发计划与 TASK 合并评审门禁 — 新增 review-dev-plan 编码前质量门禁
-      summary: "按《开发计划与TASK合并评审门禁方案》在 code-implementation 的 write-dev-tasks 与开发启动人工审批之间新增 review-dev-plan LLM 合并评审节点：一次评审 SDD→plan→TASK 八类维度（覆盖/可执行性/依赖拓扑/接口契约/验收/范围/风险回滚/估算），PASS 保持 task-breakdown 进入现有开发启动人工审批，BLOCK 经新状态转换回 tech-design-reviewed 并依 write-dev-plan→write-dev-tasks→review-dev-plan 顺序重放（最多 3 轮）；复用既有 review-record 与三账本，仅新增 dev-plan.yml 阶段证据，不新增状态/审批节点/账本类型；approve-dev-start 门禁升级为校验自动评审 passCondition 与 evidence digest。改动面：tools 包（新 Skill、code-implementation pipeline 模板、crctl REVIEW_STAGE 映射、gates.json）+ 本仓 dir-graph.yaml 状态转换。"
-      owner: Ray
-      owners:
-        requirement:
-          id: Ray
-          assigned-at: "2026-08-09T04:57:35+08:00"
-        development:
-          id: Ray
-          assigned-at: "2026-08-09T04:57:35+08:00"
-        test:
-          id: Ray
-          assigned-at: "2026-08-09T04:57:35+08:00"
-      target-version: tbd
-      source: "docs/analysis/开发计划与TASK合并评审门禁方案.md"
-      prd-path: "change-requests/CR-2026-026/prd.md"
-      created: "2026-08-09T04:57:35+08:00"
-      updated: "2026-08-09T04:57:35+08:00"
-  
-      merge-commits:
-        - repo: ai-first-platform-docs
-          trunk: master
-          sha: 279232aabe66334a88e0b99df81dd0f346190329
-          branch: requirement/CR-2026-026
-        - repo: tools
-          trunk: custom/main
-          sha: d395d04
-          branch: requirement/CR-2026-026
+  - id: CR-2026-026
+    title: 开发计划与 TASK 合并评审门禁 — 新增 review-dev-plan 编码前质量门禁
+    summary: "按《开发计划与TASK合并评审门禁方案》在 code-implementation 的 write-dev-tasks 与开发启动人工审批之间新增 review-dev-plan LLM 合并评审节点：一次评审 SDD→plan→TASK 八类维度（覆盖/可执行性/依赖拓扑/接口契约/验收/范围/风险回滚/估算），PASS 保持 task-breakdown 进入现有开发启动人工审批，BLOCK 经新状态转换回 tech-design-reviewed 并依 write-dev-plan→write-dev-tasks→review-dev-plan 顺序重放（最多 3 轮）；复用既有 review-record 与三账本，仅新增 dev-plan.yml 阶段证据，不新增状态/审批节点/账本类型；approve-dev-start 门禁升级为校验自动评审 passCondition 与 evidence digest。改动面：tools 包（新 Skill、code-implementation pipeline 模板、crctl REVIEW_STAGE 映射、gates.json）+ 本仓 dir-graph.yaml 状态转换。"
+    owner: Ray
+    owners:
+      requirement:
+        id: Ray
+        assigned-at: "2026-08-09T04:57:35+08:00"
+      development:
+        id: Ray
+        assigned-at: "2026-08-09T04:57:35+08:00"
+      test:
+        id: Ray
+        assigned-at: "2026-08-09T04:57:35+08:00"
+    target-version: tbd
+    source: "docs/analysis/开发计划与TASK合并评审门禁方案.md"
+    prd-path: "change-requests/CR-2026-026/prd.md"
+    created: "2026-08-09T04:57:35+08:00"
+    updated: "2026-08-09T04:57:35+08:00"
+
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 279232aabe66334a88e0b99df81dd0f346190329
+        branch: requirement/CR-2026-026
+      - repo: tools
+        trunk: custom/main
+        sha: d395d04
+        branch: requirement/CR-2026-026
     final-status: archived
     archive-reason: "开发计划与 TASK 合并评审门禁落地（writeback 0.27）"
     writeback-spec-id: ai-first-platform
@@ -1057,7 +1039,7 @@ history:
     checkpoints:
       - repo: tools
         sha: 964aafac41fbcfa763c7d79a3573b0acd60c9663
-    remote-ref: "refs/heads/requirement/CR-2026-029"
+        remote-ref: "refs/heads/requirement/CR-2026-029"
         pushed-at: "2026-08-10T20:21:46+08:00"
         by: "OldBoy405"
       - repo: ai-first-platform-docs
@@ -1109,22 +1091,22 @@ history:
     checkpoints:
       - repo: ai-first-platform-docs
         sha: 070affff54af5fb472610ce2116084a00ab7f7d5
-    remote-ref: "refs/heads/requirement/CR-2026-028"
+        remote-ref: "refs/heads/requirement/CR-2026-028"
         pushed-at: "2026-08-10T18:55:32+08:00"
         by: "OldBoy405"
       - repo: tools
         sha: a9e31477b0f13bb569800cd32412da6f5fc008e7
-    remote-ref: "refs/heads/requirement/CR-2026-028"
+        remote-ref: "refs/heads/requirement/CR-2026-028"
         pushed-at: "2026-08-10T18:55:32+08:00"
         by: "OldBoy405"
       - repo: multica
         sha: cb957b73138cee380f66cc81ed1a002ea0507ed9
-    remote-ref: "refs/heads/requirement/CR-2026-028"
+        remote-ref: "refs/heads/requirement/CR-2026-028"
         pushed-at: "2026-08-10T18:55:33+08:00"
         by: "OldBoy405"
       - repo: tools
         sha: a835c4215e8affb64592261bcedb8c65b6ec042c
-    remote-ref: "refs/heads/requirement/CR-2026-028"
+        remote-ref: "refs/heads/requirement/CR-2026-028"
         pushed-at: "2026-08-10T19:42:43+08:00"
         by: "OldBoy405"
       - repo: ai-first-platform-docs
@@ -1181,12 +1163,12 @@ history:
     checkpoints:
       - repo: ai-first-platform-docs
         sha: 7d26c45e412f173c0944dcd68c2793e536b30708
-    remote-ref: "requirement/CR-2026-030"
+        remote-ref: "requirement/CR-2026-030"
         pushed-at: "2026-08-11T11:02:53+08:00"
         by: "OldBoy405"
       - repo: tools
         sha: 157236cfdf36ab4f819ba7f399e12135bf7ac407
-    remote-ref: "requirement/CR-2026-030"
+        remote-ref: "requirement/CR-2026-030"
         pushed-at: "2026-08-11T11:02:53+08:00"
         by: "OldBoy405"
       - repo: multica
@@ -1273,12 +1255,12 @@ history:
     checkpoints:
       - repo: ai-first-platform-docs
         sha: ee7b73ad52090c3df072d2a84f4f2ee8d48df2cd
-    remote-ref: "origin/requirement/CR-2026-037"
+        remote-ref: "origin/requirement/CR-2026-037"
         pushed-at: "2026-08-13T11:18:49+08:00"
         by: "OldBoy405"
       - repo: multica
         sha: 082a7536cdd26f807452610de8f113152dcb8bde
-    remote-ref: "origin/requirement/CR-2026-037"
+        remote-ref: "origin/requirement/CR-2026-037"
         pushed-at: "2026-08-13T11:18:49+08:00"
         by: "OldBoy405"
       - repo: tools
