@@ -1,32 +1,9 @@
-$ go test ./internal/handler/ -run 'TestBindCurrentTask|TestCreatePipelineTaskIssueInherit' -count=1 -v   # DATABASE_URL=<local multica .env DSN>
+$ go test ./internal/handler/ -run TestBindCurrentTask|TestCreatePipelineTaskIssueInherit -count=1 -v
 (exit=0)
 --- stdout ---
-EmailService: DEV mode — codes printed to stdout (set MULTICA_DEV_VERIFICATION_CODE in .env for a fixed local code)
-2026/08/28 18:38:31 INFO llm retry policy max_retries=2 source=default request_timeout=1m0s enabled=false
-=== RUN   TestBindCurrentTaskSuccess
---- PASS: TestBindCurrentTaskSuccess (0.04s)
-=== RUN   TestBindCurrentTaskReplayChangedFalse
---- PASS: TestBindCurrentTaskReplayChangedFalse (0.02s)
-=== RUN   TestBindCurrentTaskRequiresTaskToken
---- PASS: TestBindCurrentTaskRequiresTaskToken (0.01s)
-=== RUN   TestBindCurrentTaskTaskWithoutIssue
---- PASS: TestBindCurrentTaskTaskWithoutIssue (0.01s)
-=== RUN   TestBindCurrentTaskTaskCRConflict
---- PASS: TestBindCurrentTaskTaskCRConflict (0.02s)
-=== RUN   TestBindCurrentTaskCRIssueConflict
---- PASS: TestBindCurrentTaskCRIssueConflict (0.02s)
-=== RUN   TestBindCurrentTaskCRNotFound
---- PASS: TestBindCurrentTaskCRNotFound (0.01s)
-=== RUN   TestBindCurrentTaskCrossWorkspaceToken
-2026/08/28 18:38:31 WARN cr bind: token workspace != agent workspace task_id=b1449561-a3f8-44c4-9fce-57a79f99458f token_ws=98541ad3-0123-42c6-8cb5-316702a8818d db_ws=57119af0-4f3b-4742-9bfb-c93ff715d428
---- PASS: TestBindCurrentTaskCrossWorkspaceToken (0.02s)
-=== RUN   TestBindCurrentTaskPartialBoundChangedTrue
---- PASS: TestBindCurrentTaskPartialBoundChangedTrue (0.02s)
-=== RUN   TestCreatePipelineTaskIssueInheritPositive
---- PASS: TestCreatePipelineTaskIssueInheritPositive (0.02s)
-=== RUN   TestCreatePipelineTaskIssueInheritNegative
---- PASS: TestCreatePipelineTaskIssueInheritNegative (0.02s)
-PASS
-ok  	github.com/multica-ai/multica/server/internal/handler	0.418s
+Skipping tests: database not reachable: failed to connect to `user=multica database=multica`:
+	[::1]:5432 (localhost): dial error: dial tcp [::1]:5432: connectex: No connection could be made because the target machine actively refused it.
+	127.0.0.1:5432 (localhost): failed SASL auth: FATAL: password authentication failed for user "multica" (SQLSTATE 28P01)
+ok  	github.com/multica-ai/multica/server/internal/handler	0.142s
 
 --- stderr ---

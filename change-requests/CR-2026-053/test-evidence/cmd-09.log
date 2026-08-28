@@ -21,6 +21,10 @@ TASK_PROJECT_MISMATCH / TASK_CR_CONFLICT / CR_ISSUE_CONFLICT / CR_BIND_FAILED).
 
 USAGE
   multica cr bind-current-task <cr-id> [flags]
+
+FLAGS
+      --output string   Output format: table or json (default "json")
+
 INHERITED FLAGS
   --help   Show help for command
 
@@ -39,6 +43,10 @@ TASK_PROJECT_MISMATCH / TASK_CR_CONFLICT / CR_ISSUE_CONFLICT / CR_BIND_FAILED).
 
 USAGE
   multica cr bind-current-task <cr-id> [flags]
+
+FLAGS
+      --output string   Output format: table or json (default "json")
+
 INHERITED FLAGS
   --help   Show help for command
 
@@ -46,6 +54,6 @@ LEARN MORE
   Use `multica <command> <subcommand> --help` for more information about a command.
 --- PASS: TestRunCrBindCurrentTaskRequiresArg (0.00s)
 PASS
-ok  	github.com/multica-ai/multica/server/cmd/multica	0.077s
+ok  	github.com/multica-ai/multica/server/cmd/multica	0.074s
 
 --- stderr ---

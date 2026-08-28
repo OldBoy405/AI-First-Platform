@@ -1,13 +1,9 @@
 $ go test ./internal/governance/ -run TestApprovalGateShellIssueIDTwoStates -count=1 -v
 (exit=0)
 --- stdout ---
-=== RUN   TestApprovalGateShellIssueIDTwoStates
-=== RUN   TestApprovalGateShellIssueIDTwoStates/with_shell_issue_id
-=== RUN   TestApprovalGateShellIssueIDTwoStates/null_shell_issue_id
---- PASS: TestApprovalGateShellIssueIDTwoStates (0.05s)
-    --- PASS: TestApprovalGateShellIssueIDTwoStates/with_shell_issue_id (0.04s)
-    --- PASS: TestApprovalGateShellIssueIDTwoStates/null_shell_issue_id (0.01s)
-PASS
-ok  	github.com/multica-ai/multica/server/internal/governance	0.163s
+Skipping governance integration tests: database not reachable: failed to connect to `user=multica database=multica`:
+	[::1]:5432 (localhost): dial error: dial tcp [::1]:5432: connectex: No connection could be made because the target machine actively refused it.
+	127.0.0.1:5432 (localhost): failed SASL auth: FATAL: password authentication failed for user "multica" (SQLSTATE 28P01)
+ok  	github.com/multica-ai/multica/server/internal/governance	0.097s
 
 --- stderr ---
