@@ -1,0 +1,110 @@
+$ node pipeline-templates/emit-registry.mjs --verify
+(exit=0)
+--- stdout ---
+{
+  "schema": "ai-first.pipeline-registry/architecture-core-v1",
+  "pipeline": {
+    "id": "architecture-design",
+    "name": "架构设计",
+    "nodes": [
+      {
+        "id": "00000000-0000-0000-0016-000000000001",
+        "kind": "skill",
+        "label": "编写架构设计",
+        "ref": "write-tech-design",
+        "prompt": "先执行一次 `crctl workspace inspect {{inputs.cr_id}}`（CR-2026-044 FR-06）：要求全部 resources[].classification=healthy，消费 operationalWorkspace 与 resources；任一资源非 healthy 或 operationalWorkspace 为空时中止并指向 /resume，不自动补齐、不猜路径。\n\n调用 write-tech-design：\n- cr_id: {{inputs.cr_id}}\n- tech_context: {{inputs.tech_context}}\n- operational_workspace: {workspace inspect.operationalWorkspace 原样值}\n- resources: {workspace inspect.resources 原样值}\n- review_feedback: {reviewLoop.review_feedback，可为空}\n- self_repair_attempt: {reviewLoop.self_repair_attempt，可为空}\n\n消费 SDD 路径、FR 覆盖率与结构化 execution_context；失败按 Skill 语义中止。在 node-1.md 输出摘要，并在末尾原样传递：\n```yaml\nexecution_context:\n  cr_id: {{inputs.cr_id}}\n  operational_workspace: {workspace inspect.operationalWorkspace 原样值}\n  resources: {workspace inspect.resources 原样值}\n```",
+        "onFail": "abort"
+      },
+      {
+        "id": "00000000-0000-0000-0016-000000000002",
+        "kind": "skill",
+        "label": "架构设计评审",
+        "ref": "review-tech-design",
+        "prompt": "评审必须委派给新建的 quality-reviewer-agent task/run，不得在作者会话中直接执行评审；每轮 reviewLoop 都是一次新的 reviewer 执行，不复用作者会话。若当前运行环境不支持创建独立 reviewer task：停在当前 review 节点，提示用户另开独立会话以 quality-reviewer-agent 身份运行同一 review Skill，不得退化为作者自评。\n\n先执行一次 `crctl workspace inspect {{inputs.cr_id}}`：要求全部 resources[].classification=healthy，消费 operationalWorkspace；任一资源非 healthy 或 operationalWorkspace 为空时中止并指向 /resume。\n\n调用 review-tech-design：\n- cr_id: {{inputs.cr_id}}\n- workspace: {operationalWorkspace}\n- review_feedback: {reviewLoop.review_feedback，可为空}\n- self_repair_attempt: {reviewLoop.self_repair_attempt，可为空}\n\n消费 verdict、blockers、repair-target、current-attempt 与评审摘要；按本节点 reviewLoop 机器字段路由。在 node-2.md 输出结构化评审结果。",
+        "onFail": "abort",
+        "reviewLoop": {
+          "repairNodeId": "00000000-0000-0000-0016-000000000001",
+          "repairRef": "write-tech-design",
+          "feedbackInput": "review_feedback",
+          "attemptInput": "self_repair_attempt",
+          "replayPolicy": "rerun-listed-nodes-in-order",
+          "replayNodes": [
+            {
+              "nodeId": "00000000-0000-0000-0016-000000000001",
+              "ref": "write-tech-design",
+              "purpose": "repair-sdd"
+            },
+            {
+              "nodeId": "00000000-0000-0000-0016-000000000002",
+              "ref": "review-tech-design",
+              "purpose": "rerun-current-review"
+            }
+          ],
+          "maxAttempts": 3,
+          "passCondition": {
+            "allOf": [
+              {
+                "path": "verdict",
+                "equals": "pass"
+              },
+              {
+                "path": "blockers",
+                "isEmpty": true
+              }
+            ]
+          },
+          "onBlock": "route-to-repair-node"
+        }
+      },
+      {
+        "id": "00000000-0000-0000-0016-000000000003",
+        "kind": "human_approval",
+        "label": "架构设计审批",
+        "approvalPrompt": "架构设计自动评审已完成，且评审证据须满足 verdict=pass、blockers=[] 后才可进入本节点；当前仍应为 tech-design-review-pending。请审批人检阅 sdd.md 后决定：\n\n✅ 批准：勾选此 Todo，下一节点 approve-tech-design 会记录审批并推进到 tech-design-reviewed\n❌ 驳回：提交驳回决定及理由，由 approve-tech-design 走 reject 流程记录并回退；证据与回退由 crctl approve 完成",
+        "onFail": "abort"
+      },
+      {
+        "id": "00000000-0000-0000-0016-000000000004",
+        "kind": "skill",
+        "label": "记录架构审批并推进状态",
+        "ref": "approve-tech-design",
+        "prompt": "先执行一次 `crctl workspace inspect {{inputs.cr_id}}`：要求全部 resources[].classification=healthy，再消费返回的 operationalWorkspace 作为本节点业务权威路径；任一资源非 healthy 或 operationalWorkspace 为空时中止并指向 /resume。\n\n在 human_approval 通过后调用 approve-tech-design：\n- cr_id: {{inputs.cr_id}}\n\n只传完整 cr_id，消费结构化审批结果；下一步以 `crctl next {{inputs.cr_id}}` 为准。在 node-4.md 输出审批记录路径、当前 status、开发负责人。",
+        "onFail": "abort"
+      },
+      {
+        "id": "00000000-0000-0000-0016-000000000005",
+        "kind": "skill",
+        "label": "推送架构设计到远端",
+        "ref": "push-progress",
+        "prompt": "先执行一次 `crctl workspace inspect {{inputs.cr_id}}`：要求全部 resources[].classification=healthy，再消费返回的 operationalWorkspace 作为本节点业务权威路径；任一资源非 healthy 或 operationalWorkspace 为空时中止并指向 /resume。\n\n执行 push-progress：\n- cr_id: {{inputs.cr_id}}\n- message: 架构设计已审批\n\n本节点是架构阶段终点完成条件（CR-2026-044 FR-07），不可跳过；失败时保持 tech-design-reviewed，只重跑同一 checkpoint，不重新审批。在 node-5.md 输出 batchId、repositories、phase；phase 非 complete 时中止。",
+        "onFail": "abort"
+      }
+    ]
+  },
+  "pipelineOwner": "dev-agent",
+  "nodePermissions": [
+    {
+      "ref": "write-tech-design",
+      "owner": "dev-agent",
+      "pipelineOwnerCanCall": true
+    },
+    {
+      "ref": "review-tech-design",
+      "owner": "quality-reviewer-agent",
+      "pipelineOwnerCanCall": true
+    },
+    {
+      "ref": "approve-tech-design",
+      "owner": "dev-agent",
+      "pipelineOwnerCanCall": true
+    },
+    {
+      "ref": "push-progress",
+      "owner": "system-orchestrator",
+      "pipelineOwnerCanCall": true
+    }
+  ],
+  "digest": "sha256:cd86f897df0953519cd29a7c33e146ed4a7cbbe6119588648baec3168b8cfad4"
+}
+
+--- stderr ---

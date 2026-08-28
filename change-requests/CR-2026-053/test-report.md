@@ -1,0 +1,171 @@
+---
+cr: CR-2026-053
+status: pass
+tester: Ray
+generated-by: crctl-test
+generated-at: "2026-08-28T17:41:24+08:00"
+command-digest: 79a4e96713304a5939c98e3ee35c2d6a60c355a3a27a7df3e58ec2dcd9658c60
+commands:
+  - repo: tools
+    cwd: .
+    executable: node
+    args: [skills/shared/crctl/scripts/check-skill-matrix.mjs]
+    timeout-seconds: 300
+    exit-code: 0
+    signal: null
+    timed-out: false
+    started: true
+    log: change-requests/CR-2026-053/test-evidence/cmd-01.log
+  - repo: tools
+    cwd: .
+    executable: node
+    args: [skills/shared/crctl/scripts/check-agents-contract.mjs]
+    timeout-seconds: 300
+    exit-code: 0
+    signal: null
+    timed-out: false
+    started: true
+    log: change-requests/CR-2026-053/test-evidence/cmd-02.log
+  - repo: tools
+    cwd: .
+    executable: node
+    args: [skills/shared/crctl/scripts/lint-prompts.mjs]
+    timeout-seconds: 300
+    exit-code: 0
+    signal: null
+    timed-out: false
+    started: true
+    log: change-requests/CR-2026-053/test-evidence/cmd-03.log
+  - repo: tools
+    cwd: .
+    executable: node
+    args: [pipeline-templates/emit-registry.mjs, --verify]
+    timeout-seconds: 300
+    exit-code: 0
+    signal: null
+    timed-out: false
+    started: true
+    log: change-requests/CR-2026-053/test-evidence/cmd-04.log
+  - repo: tools
+    cwd: .
+    executable: node
+    args: [--test, skills/shared/crctl/scripts/test/pipeline-structure.test.mjs]
+    timeout-seconds: 600
+    exit-code: 0
+    signal: null
+    timed-out: false
+    started: true
+    log: change-requests/CR-2026-053/test-evidence/cmd-05.log
+  - repo: multica
+    cwd: server
+    executable: go
+    args: [build, ./...]
+    timeout-seconds: 600
+    exit-code: 0
+    signal: null
+    timed-out: false
+    started: true
+    log: change-requests/CR-2026-053/test-evidence/cmd-06.log
+  - repo: multica
+    cwd: server
+    executable: go
+    args: [vet, ./internal/handler/, ./internal/service/, ./internal/governance/, ./cmd/multica/, ./pkg/db/...]
+    timeout-seconds: 600
+    exit-code: 0
+    signal: null
+    timed-out: false
+    started: true
+    log: change-requests/CR-2026-053/test-evidence/cmd-07.log
+  - repo: multica
+    cwd: server
+    executable: go
+    args: [test, ./internal/governance/, -run, TestApprovalGateShellIssueIDTwoStates, "-count=1", -v]
+    timeout-seconds: 600
+    exit-code: 0
+    signal: null
+    timed-out: false
+    started: true
+    log: change-requests/CR-2026-053/test-evidence/cmd-08.log
+  - repo: multica
+    cwd: server
+    executable: go
+    args: [test, ./cmd/multica/, -run, TestRunCrBind, "-count=1", -v]
+    timeout-seconds: 300
+    exit-code: 0
+    signal: null
+    timed-out: false
+    started: true
+    log: change-requests/CR-2026-053/test-evidence/cmd-09.log
+  - repo: multica
+    cwd: packages/views
+    executable: node
+    args: [../../node_modules/vitest/vitest.mjs, run, projects/components/cr-gate-card.test.tsx, projects/components/project-team-agent-chat.test.tsx]
+    timeout-seconds: 600
+    exit-code: 0
+    signal: null
+    timed-out: false
+    started: true
+    log: change-requests/CR-2026-053/test-evidence/cmd-10.log
+  - repo: multica
+    cwd: packages/views
+    executable: node
+    args: [../../node_modules/typescript/bin/tsc, --noEmit]
+    timeout-seconds: 600
+    exit-code: 0
+    signal: null
+    timed-out: false
+    started: true
+    log: change-requests/CR-2026-053/test-evidence/cmd-11.log
+---
+
+# 测试报告 · CR-2026-053
+
+<!-- crctl:analysis-below -->## 测试摘要
+
+本轮 `write-test-report`（cycle 1 / attempt 1）在权威 worktree 执行 11 条结构化命令，**status=pass，全部 exit=0、无 skip、无 FAIL**（command-digest `79a4e967…`）。证据日志落盘 `change-requests/CR-2026-053/test-evidence/cmd-01~11.log`。
+
+| 命令 | 范围 | 结果 |
+|------|------|------|
+| cmd-01 `check-skill-matrix.mjs`（tools） | AC-A1：56 skill / 8 actor owns 一致性 | exit=0 |
+| cmd-02 `check-agents-contract.mjs`（tools） | AC-A2：9 agent 不变式 1-3 | exit=0 |
+| cmd-03 `lint-prompts.mjs`（tools） | AC-A3：prompt 与 crctl 无漂移 | exit=0（0 findings） |
+| cmd-04 `emit-registry.mjs --verify`（tools） | AC-A4：registry 一致性 | exit=0 |
+| cmd-05 `pipeline-structure.test.mjs`（tools） | AC-A3 结构测试 30/30 | exit=0（pass 30 / fail 0） |
+| cmd-06 `go build ./...`（multica/server） | 全仓编译 | exit=0 |
+| cmd-07 `go vet`（handler/service/governance/cmd/pkg-db） | 静态检查 | exit=0 |
+| cmd-08 `go test ./internal/governance/ -run TestApprovalGateShellIssueIDTwoStates` | AC-D4 gates 锚点（真库） | exit=0，2 子测试 PASS |
+| cmd-09 `go test ./cmd/multica/ -run TestRunCrBind` | TASK-08 CLI 薄包装 4 用例 | exit=0，4 PASS |
+| cmd-10 vitest `cr-gate-card.test.tsx` + `project-team-agent-chat.test.tsx`（views） | AC-C1~C6 | exit=0，**48/48 pass** |
+| cmd-11 `tsc --noEmit`（views） | 前端类型检查 | exit=0 |
+
+## 验收覆盖矩阵
+
+| AC 组 | 覆盖证据 | 结果 |
+|-------|---------|------|
+| AC-A1~A8（tools 改造） | cmd-01~05 | PASS |
+| AC-B1~B11（绑定接口 7 错误码 + 继承） | ⚠️ 无机器证据（见未覆盖风险 1） | 环境基线阻塞，未执行 |
+| AC-C1~C6（审批卡可见性） | cmd-10（48/48）+ cmd-11 | PASS |
+| AC-D1/D2（存量 CR 绑定 E2E） | ⚠️ 依赖人工前置（FR-B8 表确认 + 来源 Issue 受控 task） | 外部阻塞，未执行 |
+| AC-D3（audit 留痕） | ⚠️ 同 AC-B 组（handler 测试内断言 `cr_issue_bound`/`cr_issue_bind_rejected`） | 环境基线阻塞，未执行 |
+| AC-D4（gates 投影查询） | cmd-08（`shell_issue_id` 两状态） | PASS |
+| AC-D5/D6（存量验证/人工核对） | ⚠️ 依赖人工确认 | 外部阻塞，未执行 |
+
+## 新增/修改测试文件（本 CR）
+
+- multica `server/internal/handler/cr_bind_test.go`（新增，10 个 `TestBindCurrentTask*`，含 audit 断言）
+- multica `server/internal/handler/cr_pipeline_task_test.go`（新增，AC-B10 正/负向继承）
+- multica `server/cmd/multica/cmd_cr_test.go`（新增，CLI 4 用例，cmd-09 已执行 PASS）
+- multica `packages/views/projects/components/cr-gate-card.test.tsx`、`project-team-agent-chat.test.tsx`（新增/扩展 AC-C1~C4，cmd-10 48/48）
+- tools `skills/shared/crctl/scripts/test/pipeline-structure.test.mjs`（owner 断言随 FR-A1 更新，cmd-05 30/30）
+
+## 未覆盖风险（写明原因，不空白通过）
+
+1. **AC-B1~B11 handler DB 集成测试无法在本机真库执行（环境基线问题，非本 CR 引入）**：共享 `multica` 库含迁移 251 的 `agent_task_queue_active_requires_runtime` CHECK 约束（`runtime_id IS NOT NULL OR completed_at IS NOT NULL`），而上游 `internal/testutil` 的 `dbfx.Task` 夹具以 `status='queued'` 且不写 runtime_id/completed_at 插入 → 全部 fixture setup 直接 `SQLSTATE 23514`。已实测同库上**既有基线 handler 测试**（`TestSendChatMessage_InvokeRevokedAfterSessionCreate`）同样失败，证明与 CR-2026-053 代码无关。上一轮汇报的"go test ./internal/handler/ … 通过（真库）"在当前环境无法复现（无 DATABASE_URL 时 TestMain 走默认凭据失败 → 整体 skip 仍显示 `ok`，疑为当时误读）。**处置建议**：另立环境任务修复 `testutil.Task` 夹具（如补 runtime/completed_at）或建专用测试库后补跑，本 CR 代码本身未触碰该夹具。cr_bind_test.go 的 10 个用例与继承 2 用例已提交在 CR 分支，代码评审仍可静态审阅。
+2. **AC-D1/D2/D3/D5/D6 存量绑定验收**：需人工按 FR-B8 表确认来源 Issue（AIFI-3 `6a8cd56a-…` / AIFI-6 `1766573d-…`）后，从对应 Issue 启动受控 task 执行 `multica cr bind-current-task CR-2026-051/052`；本 task 无 issue_id 上下文且缺人工确认留痕，按 AC-D6 不得代行。协调人已安排人工确认，确认后由受控 task 执行并回填证据。
+3. **views 全量套件基线失败**：`vitest run` 全量 4942 条中 3 条失败（2 个文件，含 `project-detail.test.tsx` 的 project deletion 用例），与本 CR 无关（本 CR 两文件 48/48 全过）。
+4. **已知基线失败（与 CR-2026-052 报告同源，未触碰）**：`internal/service` builtin-skills 测试（embedded `multica-*` SKILL.md frontmatter 与模板不符）；`cmd/multica` 全量包超时（本 CR 的 `TestRunCrBind*` 单独跑全过，见 cmd-09）。
+
+## 下一步建议
+
+- 以 `crctl next CR-2026-053` 为准：测试证据 pass → 推送 checkpoint → `review-code`（委派 quality-reviewer-agent）。
+- 建议 quality-reviewer 评审时重点核对：AC-B1~B11 的静态覆盖（cr_bind_test.go 断言内容）与未覆盖风险 1 的环境定性；TASK-10/11 的 `done` 标记待 AC-D 系列人工闭环后补。
