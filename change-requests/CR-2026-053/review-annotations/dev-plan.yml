@@ -1,28 +1,25 @@
 cr-id: CR-2026-053
 review-type: dev-plan
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-28T12:09:21+08:00"
+reviewed-at: "2026-08-28T13:54:39+08:00"
 verdict: block
 repair-target: write-dev-plan
 blockers:
-  - "SDD 交付覆盖不完整：TASK-05/TASK-06 未明确承接 SDD §2.3 的绑定事务新增 sqlc 读写 query 及生成物；没有 TASK 承接 FR-B11 的代码信任上限注释；TASK-03 未覆盖 FR-A6 的无 subagent 停止/独立会话路径；各 TASK 的验证清单也遗漏 FR-A7/AC-A3 要求的 emit-registry.mjs。"
-  - "文件范围与 SDD 不闭合：SDD §9 明列 agents/quality-reviewer-agent.md，但 TASK-02 的任务描述和文件清单仅含 requirement-writer.md、dev-agent.md、agents/_index.yml；必须明确该文件由哪个 TASK 修改，或在 plan 中给出无需修改并修正 SDD 范围的依据。"
-  - "依赖拓扑与 plan 关键路径冲突：plan 声明 M1→M2→M3→M4，但 _index.yml 允许 TASK-05/06 在 M1 前启动；TASK-04 消费 TASK-05 的绑定接口却不依赖 TASK-05；TASK-10 声称验证完整闭环及 AC-D1~D6，却不依赖 TASK-08/11；TASK-11 只依赖 TASK-05，可在 M3 前执行。请统一里程碑与 depends-on。"
-  - "TASK 验收不可机械执行：11 个 TASK 多数仅列结果性断言，未给出至少 2 条可运行命令/测试用例锚点；尤其 TASK-08 连具体 CLI 文件与测试命令都未定位，TASK-09/11 也没有可复核命令或证据落点，不满足编码前可执行性与每 TASK ≥2 条可执行验收步骤。"
-  - "plan §4 的“回滚策略”实际是预防/验证动作（检查锁顺序、硬失败、执行清单、检查渲染），没有 tools/multica 分仓回滚步骤、跨仓部分发布处置或存量绑定失败后的停止/恢复方案；在无 feature flag 且直接全量发布的前提下，高风险事务与 UI 变更缺少可执行回滚安排。"
+  - "依赖拓扑仍未闭合：plan.md 一方面声明“M4 需 M3 全部完成”，另一方面 M4 的 TASK-09 未依赖 M3 的 TASK-04/TASK-11；同时 TASK-04 的 review Skill 需要调用本 CR 唯一落地的 CLI 薄包装命令，却只依赖 HTTP 接口 TASK-05、未依赖实现该命令的 TASK-08。请按真实产出/消费关系统一 plan.md、tasks/_index.yml 与 TASK frontmatter。"
+  - "验收命令仍不可按权威资源 worktree 直接执行：TASK-01~04 与 plan Checklist 使用 node ../tools/...，但实现期 cwd 是 resources[].worktreePath 的 tools CR worktree，该相对路径不会指向当前 tools 仓；应改为 tools 仓根相对命令（例如 node skills/...、node pipeline-templates/...）或显式以资源路径为 cwd。另 TASK-07 只有一个泛化 pnpm test 命令，TASK-11 未给出 gates/audit 的具体查询命令或测试锚点，仍未满足每个 TASK 至少 2 条可执行验收步骤。"
+  - "回滚策略包含不存在且语义错误的 crctl review-record --abort：绑定失败时正确的失败关闭方式是根本不调用 review-record，而不是调用一个无 --abort 参数的落盘命令。该高风险路径必须改成可执行的停止/恢复步骤，避免实施者误写 canonical review 或执行无效命令。"
 dimensions:
-  sdd-to-plan: "block"
-  plan-to-tasks: "block"
-  task-executability: "block"
-  dependency-topology: "block"
-  interface-contracts: "pass"
-  acceptance-verifiability: "block"
-  scope-and-simplicity: "pass"
-  risk-and-rollback: "block"
+  sdd-to-plan: "pass — 首轮遗漏的 sqlc 绑定查询/生成物、FR-B11 注释、FR-A6 独立会话与 emit-registry 验证已进入计划。"
+  plan-to-tasks: "block — TASK-04 对 CLI TASK-08 的消费关系未落入 depends-on，且 M4 阶段声明与 TASK-09 依赖不一致。"
+  task-executability: "block — tools 命令的相对 cwd 错误，TASK-07/TASK-11 仍缺足够具体的第二个可运行验收锚点。"
+  dependency-topology: "block — M4→M3 阶段规则与 TASK-09 边不一致，TASK-04→TASK-08 缺边。"
+  interface-contracts: "block — review Skill 调用 CLI 薄包装的产出/消费顺序未在 TASK-04/TASK-08 间表达。"
+  acceptance-verifiability: "block — 多条命令不能在实际 resources[].worktreePath 中直接运行，且前端/存量验收仍有泛化断言。"
+  scope-and-simplicity: "pass — 未发现超出已审批 SDD 的新增能力，任务粒度总体合理。"
+  risk-and-rollback: "block — 分仓/部分发布/存量恢复已补充，但仍包含不存在的 review-record --abort 停止动作。"
   reviewer-model: "openai/gpt-5.6-sol via Multica quality-reviewer-agent"
 suggestions:
-  - "plan 总估算 6.5 人天，而 _index.yml 合计 24h；若按 4h/人天计，应在 plan 明示容量口径，否则统一估算单位。"
-  - "将 AC-A、AC-B、AC-C、AC-D 分配到唯一 TASK，避免 TASK-05/06/10/11 对 AC-B/AC-D 的重叠责任。"
+  - "将 AC-A/AC-B/AC-C/AC-D 的主验证责任标到唯一 TASK，TASK-10 只做跨任务集成复核，可减少 TASK-05/06/10 与 TASK-10/11 的重复责任。"
 review-loop:
-  current-attempt: 1
-subject-sha256: 51ffbb3ae55a64118b5b75f10623f4b56ef60f15188da8a161be4e2be06be97f
+  current-attempt: 2
+subject-sha256: 3108687e1f1e01807821521780951cc30ee7dd7722ab495c8d902ff14a4aa1af
