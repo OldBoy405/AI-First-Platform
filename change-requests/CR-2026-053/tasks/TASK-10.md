@@ -35,10 +35,10 @@ created: 2026-08-28T11:20:00+08:00
 
 ## 验收条件
 
-1. `node ../tools/skills/shared/crctl/scripts/check-skill-matrix.mjs && node ../tools/skills/shared/crctl/scripts/check-agents-contract.mjs && node ../tools/skills/shared/crctl/scripts/lint-prompts.mjs` 零报错
-2. `node ../tools/pipeline-templates/emit-registry.mjs --verify` 通过
-3. `go test ./server/internal/service/... ./server/pkg/db/...` 通过（AC-B1~B11）
-4. `pnpm test packages/views/projects/components/` 通过（AC-C1~C6）
+1. （tools 仓 worktree 根）`node skills/shared/crctl/scripts/check-skill-matrix.mjs && node skills/shared/crctl/scripts/check-agents-contract.mjs && node skills/shared/crctl/scripts/lint-prompts.mjs` 零报错
+2. （tools 仓 worktree 根）`node pipeline-templates/emit-registry.mjs --verify` 通过
+3. （multica 仓根）`go test ./server/internal/service/... ./server/pkg/db/...` 通过（AC-B1~B11）
+4. （multica 仓根）`pnpm exec turbo test --filter='@multica/views'` 通过（AC-C1~C6）
 5. E2E：`cr.shell_issue_id` 分别等于 CR-2026-051/052 的 FR-B8 来源 Issue UUID（AC-D1/D2）
 
 ## 完成标志

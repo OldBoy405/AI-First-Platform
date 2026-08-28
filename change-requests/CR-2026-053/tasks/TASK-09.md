@@ -23,7 +23,7 @@ created: 2026-08-28T11:20:00+08:00
 
 ## 涉及文件 / 模块
 
-- `multica/CUSTOM.md`
+- `CUSTOM.md`（multica 仓根）
 
 ## 实现要点
 
@@ -34,8 +34,8 @@ created: 2026-08-28T11:20:00+08:00
 
 ## 验收条件
 
-1. `grep -n "CR-2026-053" ../multica/CUSTOM.md` 命中且覆盖上述全部变更文件
-2. `grep -oE "^[0-9]+\." ../multica/CUSTOM.md | sort | uniq -d` 为空（编号无重复）
+1. `grep -n "CR-2026-053" CUSTOM.md` 命中且覆盖上述全部变更文件
+2. `grep -oE "^[0-9]+\." CUSTOM.md | sort | uniq -d` 为空（编号无重复）
 
 ## 完成标志
 

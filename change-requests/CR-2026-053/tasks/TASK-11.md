@@ -8,7 +8,7 @@ title: 存量 CR-2026-051/052 修复（按 FR-B8 来源 Issue 表）
 slug: existing-cr-fix
 status: pending
 estimate: 2h
-depends-on: [CR-2026-053-TASK-05]
+depends-on: [CR-2026-053-TASK-05, CR-2026-053-TASK-08]
 created: 2026-08-28T11:20:00+08:00
 ---
 
@@ -37,7 +37,8 @@ created: 2026-08-28T11:20:00+08:00
 
 1. 从 AIFI-3 启动受控 task 执行 `multica cr bind-current-task CR-2026-051` → `changed=true`，`cr.shell_issue_id = 6a8cd56a-12b3-49d9-80bb-4657da15c3b0`（AC-D1）
 2. 从 AIFI-6 启动受控 task 执行 `multica cr bind-current-task CR-2026-052` → `cr.shell_issue_id = 1766573d-f7bd-465b-bbc4-bcb65a84c880`（AC-D2）
-3. 绑定后对应项目 gates 可查询到 CR（AC-D4）；有 activity audit 留痕、未直接 SQL（AC-D3）
+3. gates 查询锚点：`go test ./server/internal/governance/ -run TestApprovalGateShellIssueIDTwoStates` 通过（`shell_issue_id` 非空时进入项目 gates 投影，AC-D4 可查询）
+4. audit 留痕锚点：`go test ./server/internal/service/... -run TestBindCurrentTaskToCR` 通过（断言成功写 `activity_log(action='cr_issue_bound')`、冲突写 `cr_issue_bind_rejected`，AC-D3 未直接 SQL）
 
 ## 完成标志
 
@@ -46,4 +47,4 @@ created: 2026-08-28T11:20:00+08:00
 ## 接口契约
 
 **消费**:
-- `POST /api/crs/{cr_id}/bind-current-task` 接口（由 CR-2026-053-TASK-05 实现）
+- CLI 命令 `multica cr bind-current-task <CR-ID>`（由 CR-2026-053-TASK-08 实现；该命令消费 CR-2026-053-TASK-05 的 `POST /api/crs/{cr_id}/bind-current-task` 接口）

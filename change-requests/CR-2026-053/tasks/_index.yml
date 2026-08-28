@@ -36,9 +36,9 @@ tasks:
     status: pending
     estimate: 2h
     milestone: M3-cross-repo-close
-    depends-on: [CR-2026-053-TASK-01, CR-2026-053-TASK-03, CR-2026-053-TASK-05]
+    depends-on: [CR-2026-053-TASK-01, CR-2026-053-TASK-03, CR-2026-053-TASK-05, CR-2026-053-TASK-08]
     fr-coverage: [FR-B7]
-    notes: "消费 TASK-05 的绑定接口；位置：写 review-record 之前；无 mat_ context 时跳过（FR-A7 本地路径）"
+    notes: "绑定步骤经 TASK-08 CLI 命令 multica cr bind-current-task 执行，消费 TASK-05 绑定接口；位置：写 review-record 之前；无 mat_ context 时跳过（FR-A7 本地路径）"
   - id: CR-2026-053-TASK-05
     title: "新增绑定接口 POST /api/crs/{cr_id}/bind-current-task（含 sqlc 绑定读写 query 与生成物）"
     status: pending
@@ -89,6 +89,6 @@ tasks:
     status: pending
     estimate: 2h
     milestone: M3-cross-repo-close
-    depends-on: [CR-2026-053-TASK-05]
+    depends-on: [CR-2026-053-TASK-05, CR-2026-053-TASK-08]
     fr-coverage: [FR-B8, AC-D1~D6]
-    notes: "CR-2026-051 来自 AIFI-3 (UUID 6a8cd56a-12b3-49d9-80bb-4657da15c3b0)；CR-2026-052 来自 AIFI-6 (UUID 1766573d-f7bd-465b-bbc4-bcb65a84c880)"
+    notes: "验收直接执行 TASK-08 CLI 命令 multica cr bind-current-task；CR-2026-051 来自 AIFI-3 (UUID 6a8cd56a-12b3-49d9-80bb-4657da15c3b0)；CR-2026-052 来自 AIFI-6 (UUID 1766573d-f7bd-465b-bbc4-bcb65a84c880)"

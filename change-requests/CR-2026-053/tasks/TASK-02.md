@@ -22,10 +22,10 @@ created: 2026-08-28T11:20:00+08:00
 
 ## 涉及文件 / 模块
 
-- `../tools/agents/requirement-writer.md`
-- `../tools/agents/dev-agent.md`
-- `../tools/agents/quality-reviewer-agent.md`
-- `../tools/agents/_index.yml`
+- `agents/requirement-writer.md`（tools 仓根）
+- `agents/dev-agent.md`
+- `agents/quality-reviewer-agent.md`
+- `agents/_index.yml`
 
 ## 实现要点
 
@@ -36,9 +36,9 @@ created: 2026-08-28T11:20:00+08:00
 
 ## 验收条件
 
-1. `node ../tools/skills/shared/crctl/scripts/check-agents-contract.mjs` 零报错
-2. `grep -n "quality-reviewer-agent" ../tools/agents/requirement-writer.md ../tools/agents/dev-agent.md` 命中委派路由合同
-3. `grep -n "review-requirement\|review-tech-design\|review-dev-plan\|review-code" ../tools/agents/quality-reviewer-agent.md` 命中四类评审路由 + 唯一 owner 表述
+1. `node skills/shared/crctl/scripts/check-agents-contract.mjs` 零报错（tools 仓 worktree 根执行）
+2. `grep -n "quality-reviewer-agent" agents/requirement-writer.md agents/dev-agent.md` 命中委派路由合同
+3. `grep -n "review-requirement\|review-tech-design\|review-dev-plan\|review-code" agents/quality-reviewer-agent.md` 命中四类评审路由 + 唯一 owner 表述
 
 ## 完成标志
 

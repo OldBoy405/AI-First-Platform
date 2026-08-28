@@ -29,9 +29,9 @@ Prompt 变更内容：
 
 ## 涉及文件 / 模块
 
-- `../tools/pipeline-templates/requirement-authoring.pipeline.json`
-- `../tools/pipeline-templates/architecture-design.pipeline.json`
-- `../tools/pipeline-templates/code-implementation.pipeline.json`
+- `pipeline-templates/requirement-authoring.pipeline.json`（tools 仓根）
+- `pipeline-templates/architecture-design.pipeline.json`
+- `pipeline-templates/code-implementation.pipeline.json`
 
 ## 实现要点
 
@@ -42,8 +42,8 @@ Prompt 变更内容：
 
 ## 验收条件
 
-1. `node ../tools/skills/shared/crctl/scripts/lint-prompts.mjs` 零报错
-2. `grep -c '"reviewLoop"' ../tools/pipeline-templates/{requirement-authoring,architecture-design,code-implementation}.pipeline.json` 节点结构未变化
+1. `node skills/shared/crctl/scripts/lint-prompts.mjs` 零报错（tools 仓 worktree 根执行）
+2. `grep -c '"reviewLoop"' pipeline-templates/{requirement-authoring,architecture-design,code-implementation}.pipeline.json` 节点结构未变化
 3. 四个 review 节点 prompt 文本含"新建独立 reviewer task/run"与"无 subagent 时另开独立会话"
 
 ## 完成标志

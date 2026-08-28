@@ -35,9 +35,11 @@ created: 2026-08-28T11:20:00+08:00
 
 ## 验收条件
 
-1. `pnpm test packages/views/projects/components/` 覆盖 AC-C1~C6 且通过
-2. `pending_stage` 非空时审批卡可见，为空时不渲染当前审批卡
-3. 历史节点仍正常显示
+> 以下命令均在 multica 仓 worktree 根执行；`pnpm exec turbo test --filter='@multica/views' -- ...` 为 vitest 透传形式（`--` 后参数直达 vitest）。
+
+1. `pnpm exec turbo test --filter='@multica/views' -- projects/components/cr-gate-card.test.tsx -t "ApprovalCard"` 通过（审批卡可见性/审批/拒绝/409/403 场景，AC-C1~C6）
+2. `pnpm exec turbo test --filter='@multica/views' -- projects/components/project-team-agent-chat.test.tsx -t "gate-node cards"` 通过（审批卡与历史节点交错渲染，AC-C4）
+3. 人工/E2E 核对：`pending_stage` 非空时审批卡可见、为空时不渲染当前审批卡；历史节点仍正常显示
 
 ## 完成标志
 

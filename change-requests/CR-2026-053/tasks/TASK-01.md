@@ -24,8 +24,8 @@ created: 2026-08-28T11:20:00+08:00
 
 ## 涉及文件 / 模块
 
-- `../tools/agent-skill-matrix.yml`
-- `../tools/AGENT-SKILL-MATRIX.md`
+- `agent-skill-matrix.yml`（tools 仓根）
+- `AGENT-SKILL-MATRIX.md`（tools 仓根）
 
 ## 实现要点
 
@@ -36,8 +36,8 @@ created: 2026-08-28T11:20:00+08:00
 
 ## 验收条件
 
-1. `node ../tools/skills/shared/crctl/scripts/check-skill-matrix.mjs` 零报错
-2. `node ../tools/pipeline-templates/emit-registry.mjs --verify` 通过（registry 一致性）
+1. `node skills/shared/crctl/scripts/check-skill-matrix.mjs` 零报错（tools 仓 worktree 根执行）
+2. `node pipeline-templates/emit-registry.mjs --verify` 通过（registry 一致性）
 3. 四个 review Skill 唯一 owner 为 `quality-reviewer-agent`，`requirement-writer`/`dev-agent` 保留 `can-call`
 
 ## 完成标志
