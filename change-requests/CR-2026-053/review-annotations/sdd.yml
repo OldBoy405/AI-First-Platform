@@ -1,0 +1,22 @@
+cr-id: CR-2026-053
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-27T20:30:58+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  PRD↔SDD 对齐: "pass — 20 条 FR 均有对应技术实现与验收锚点；四项上一轮 blocker 已在 §2.2、§4.1、§4.4 闭合。"
+  架构合理性: "pass — tools→Skill→crctl 与 Multica handler→service→db 依赖方向符合两仓 ARCHITECTURE.md；绑定事务补齐 agent/task/issue/project/cr 的租户边界与锁顺序。"
+  数据模型完整性: "pass — 明确 agent_task_queue 无 workspace_id，并通过 agent.workspace_id 获取 task workspace；agent、Issue、Project、CR 及既有审计列均覆盖。"
+  接口契约: "pass — task-only 身份来源、服务端派生字段、错误码、同值幂等 changed=false 与提交后事件语义已定义；前端复用现有 gates schema。"
+  多仓架构约束: "pass — tools 评审路由/Skill 与 Multica 绑定、队列和前端边界清晰；三条 reviewer task 入队路径给出实际 service/query 落点和上下文继承规则。"
+  性能与安全: "pass — task/agent/issue/project/cr 均在事务内校验/锁定，跨 workspace、异值冲突和无 Issue 均 fail closed；低频评审路径的额外锁开销可接受。"
+  可测试性: "pass — 覆盖 workspace/Project 错误、部分绑定与同值重放、三路径 issue/project 继承及无 Issue 拒绝的测试锚点；前端唯一 ApprovalCard 规则有明确验收条件。"
+  Prompt 采纳影响: "不适用 — 本 CR 不触及 crctl dispatch 或 protectedPaths.deny。"
+suggestions:
+  - "§2.1 可将 issue.project_id 的类型明确标注为 nullable，与 §4.1 的 NULL 分支保持一致。"
+  - "实施期将 §2.3 所列绑定 query 固化为明确的 sqlc query 名称与参数类型，并在绑定事务测试中验证 agent→task→issue→project→cr 的锁顺序。"
+review-loop:
+  current-attempt: 2
+subject-file: change-requests/CR-2026-053/sdd.md
+subject-sha256: 77171fbf95e284fd9264710e651b3afee9af53dd3e8153068674a7116692745b

@@ -1,0 +1,13 @@
+$ go test ./internal/governance/ -run TestApprovalGateShellIssueIDTwoStates -count=1 -v
+(exit=0)
+--- stdout ---
+=== RUN   TestApprovalGateShellIssueIDTwoStates
+=== RUN   TestApprovalGateShellIssueIDTwoStates/with_shell_issue_id
+=== RUN   TestApprovalGateShellIssueIDTwoStates/null_shell_issue_id
+--- PASS: TestApprovalGateShellIssueIDTwoStates (0.06s)
+    --- PASS: TestApprovalGateShellIssueIDTwoStates/with_shell_issue_id (0.04s)
+    --- PASS: TestApprovalGateShellIssueIDTwoStates/null_shell_issue_id (0.01s)
+PASS
+ok  	github.com/multica-ai/multica/server/internal/governance	0.149s
+
+--- stderr ---
