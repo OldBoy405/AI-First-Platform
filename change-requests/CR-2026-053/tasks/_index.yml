@@ -1,0 +1,57 @@
+cr-id: CR-2026-053
+tasks:
+  - id: CR-2026-053-TASK-01
+    title: "修改 agent-skill-matrix.yml (owner 归属调整)"
+    status: pending
+    estimate: 1h
+    depends-on: []
+  - id: CR-2026-053-TASK-02
+    title: "修改 agents 文件 (评审意图改为委派合同)"
+    status: pending
+    estimate: 2h
+    depends-on: []
+  - id: CR-2026-053-TASK-03
+    title: "修改 pipeline 节点 prompt (review-* 节点)"
+    status: pending
+    estimate: 2h
+    depends-on: []
+  - id: CR-2026-053-TASK-04
+    title: "修改 review Skill 绑定前置步骤"
+    status: pending
+    estimate: 2h
+    depends-on: [CR-2026-053-TASK-01, CR-2026-053-TASK-03]
+  - id: CR-2026-053-TASK-05
+    title: "新增绑定接口 POST /api/crs/{cr_id}/bind-current-task"
+    status: pending
+    estimate: 4h
+    depends-on: []
+  - id: CR-2026-053-TASK-06
+    title: "修改 CreatePipelineTask SQL 继承 issue_id/project_id"
+    status: pending
+    estimate: 2h
+    depends-on: []
+  - id: CR-2026-053-TASK-07
+    title: "前端审批卡可见性修复"
+    status: pending
+    estimate: 3h
+    depends-on: [CR-2026-053-TASK-05]
+  - id: CR-2026-053-TASK-08
+    title: "CLI 薄包装命令"
+    status: pending
+    estimate: 1h
+    depends-on: [CR-2026-053-TASK-05]
+  - id: CR-2026-053-TASK-09
+    title: "CUSTOM.md 台账登记"
+    status: pending
+    estimate: 1h
+    depends-on: [CR-2026-053-TASK-05, CR-2026-053-TASK-06, CR-2026-053-TASK-07, CR-2026-053-TASK-08]
+  - id: CR-2026-053-TASK-10
+    title: "集成测试与验收"
+    status: pending
+    estimate: 4h
+    depends-on: [CR-2026-053-TASK-04, CR-2026-053-TASK-05, CR-2026-053-TASK-06, CR-2026-053-TASK-07]
+  - id: CR-2026-053-TASK-11
+    title: "存量 CR-2026-051/052 修复"
+    status: pending
+    estimate: 2h
+    depends-on: [CR-2026-053-TASK-05]
