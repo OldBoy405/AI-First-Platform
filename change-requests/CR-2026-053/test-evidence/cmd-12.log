@@ -1,9 +1,39 @@
-$ go test ./internal/handler/ -run TestBindCurrentTask|TestCreatePipelineTaskIssueInherit -count=1 -v
+$ go test ./internal/handler/ -run TestBindCurrentTask|TestCreatePipelineTask -count=1 -v
 (exit=0)
 --- stdout ---
-Skipping tests: database not reachable: failed to connect to `user=multica database=multica`:
-	[::1]:5432 (localhost): dial error: dial tcp [::1]:5432: connectex: No connection could be made because the target machine actively refused it.
-	127.0.0.1:5432 (localhost): failed SASL auth: FATAL: password authentication failed for user "multica" (SQLSTATE 28P01)
-ok  	github.com/multica-ai/multica/server/internal/handler	0.142s
+EmailService: DEV mode — codes printed to stdout (set MULTICA_DEV_VERIFICATION_CODE in .env for a fixed local code)
+2026/08/29 02:48:57 INFO llm retry policy max_retries=2 source=default request_timeout=1m0s enabled=false
+=== RUN   TestBindCurrentTaskSuccess
+--- PASS: TestBindCurrentTaskSuccess (0.09s)
+=== RUN   TestBindCurrentTaskReplayChangedFalse
+--- PASS: TestBindCurrentTaskReplayChangedFalse (0.04s)
+=== RUN   TestBindCurrentTaskRequiresTaskToken
+--- PASS: TestBindCurrentTaskRequiresTaskToken (0.03s)
+=== RUN   TestBindCurrentTaskTaskWithoutIssue
+--- PASS: TestBindCurrentTaskTaskWithoutIssue (0.04s)
+=== RUN   TestBindCurrentTaskProjectMismatch
+--- PASS: TestBindCurrentTaskProjectMismatch (0.03s)
+=== RUN   TestBindCurrentTaskAuditFailureRollsBack
+2026/08/29 02:48:57 ERROR cr bind: activity_log insert failed task_id=72944816-fedf-4918-9859-8275584f42f2 cr_id=CR-BIND-TEST-01 error="ERROR: injected cr bind audit failure (SQLSTATE P0001)"
+--- PASS: TestBindCurrentTaskAuditFailureRollsBack (0.03s)
+=== RUN   TestBindCurrentTaskTaskCRConflict
+--- PASS: TestBindCurrentTaskTaskCRConflict (0.02s)
+=== RUN   TestBindCurrentTaskCRIssueConflict
+--- PASS: TestBindCurrentTaskCRIssueConflict (0.03s)
+=== RUN   TestBindCurrentTaskCRNotFound
+--- PASS: TestBindCurrentTaskCRNotFound (0.01s)
+=== RUN   TestBindCurrentTaskCrossWorkspaceToken
+2026/08/29 02:48:57 WARN cr bind: token workspace != agent workspace task_id=dc20f3ed-075f-4fc1-9702-00abda3ec1db token_ws=49a367dd-0d7b-4505-956d-69cfab2a0d19 db_ws=e8be9748-2c7f-4e6a-9d5f-732356d72a7a
+--- PASS: TestBindCurrentTaskCrossWorkspaceToken (0.03s)
+=== RUN   TestBindCurrentTaskPartialBoundChangedTrue
+--- PASS: TestBindCurrentTaskPartialBoundChangedTrue (0.03s)
+=== RUN   TestCreatePipelineTaskIssueInheritPositive
+--- PASS: TestCreatePipelineTaskIssueInheritPositive (0.03s)
+=== RUN   TestCreatePipelineTaskIssueInheritNegative
+--- PASS: TestCreatePipelineTaskIssueInheritNegative (0.03s)
+=== RUN   TestCreatePipelineTaskRejectsCrossWorkspaceSource
+--- PASS: TestCreatePipelineTaskRejectsCrossWorkspaceSource (0.04s)
+PASS
+ok  	github.com/multica-ai/multica/server/internal/handler	0.671s
 
 --- stderr ---
