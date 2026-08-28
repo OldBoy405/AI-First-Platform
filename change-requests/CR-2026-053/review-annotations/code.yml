@@ -1,32 +1,31 @@
 cr-id: CR-2026-053
 review-type: code
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-29T00:43:42+08:00"
+reviewed-at: "2026-08-29T02:42:24+08:00"
 verdict: block
 blockers:
-  - "[major] server/internal/handler/cr_bind.go:82 — HandleBindCurrentTask unconditionally publishes cr:updated after every successful call, including same-value replay with changed=false. This violates SDD §4.1 / AC-B3 ('changed=false: no refresh event') and can generate duplicate refresh traffic. Gate the publish on result.Changed and add a replay regression assertion against the event bus."
-  - "[major] change-requests/CR-2026-053/test-report.md:6,146 — canonical machine evidence was generated at 17:41 and declares only cmd-01..11, but the reviewed HEAD includes later fix commits f0cff7c84/0007d6a95 and the narrative claims cmd-12/cmd-13 after the crctl marker. Those logs are not in the machine command list or command-digest, so the current fixes have no canonical crctl-test evidence. Regenerate test-report.md through crctl test so all post-fix commands are inside the machine section and digest."
-  - "[major] change-requests/CR-2026-053/tasks/_index.yml:87-101 — TASK-10 and TASK-11 remain pending; test-report.md:146-151,186 confirms AC-D1/D2/D5/D6 and the required legacy CR-2026-051/052 binding acceptance were not executed. The implementation therefore does not yet cover all TASK/SDD acceptance conditions and cannot enter code approval."
+  - "[critical] server/pkg/db/queries/agent.sql:684 — CreatePipelineTask now matches the source row only by s.id, while the executor agent and CR are scoped to $1 but the source task is not. A SourceTaskID from another workspace can therefore copy that tenant's issue_id/project_id and attribution into a reviewer task in the target workspace. This contradicts the existing source-task/executor/CR workspace guard and FR-B12's trusted-source contract. Join the source task's agent and require its workspace_id=$1 (without requiring source agent == executor agent), then add a cross-workspace negative test."
+  - "[major] change-requests/CR-2026-053/test-evidence/cmd-08.log:4 and cmd-12.log:4 — the canonical report says all 13 commands passed with no skip and specifically claims cmd-08 ran 2 DB subtests and cmd-12 ran 11/11 DB tests, but both logs say the database was unreachable and the package-level TestMain skipped all tests while go test returned exit 0. Moreover cr_bind_test.go has no TASK_PROJECT_MISMATCH or CR_BIND_FAILED/transaction-audit-failure case although test-report.md claims all seven error codes and AC-B1~B11. The post-fix canonical evidence is therefore false-positive and TASK-10 cannot be considered done. Regenerate it through crctl test against a reachable test database and include the missing fail-closed/tenant-isolation cases."
 dimensions:
-  代码↔TASK↔SDD 对齐: "block — Track A/B code is present, but TASK-10/TASK-11 and AC-D1/D2/D5/D6 remain incomplete."
-  工程质量: "block — the bind replay path emits cr:updated even when changed=false, contradicting the explicit idempotency contract."
-  关键路径可读性: "pass — handler/service/SQL/CLI/frontend responsibilities and trust boundary comments are clear."
-  安全性: "pass — task-token identity, workspace scoping, transactional CAS and fail-closed conflict audit behavior are implemented without client-controlled identity fields."
-  测试覆盖: "block — no regression assertion covers the changed=false event suppression contract; required legacy-CR acceptance remains pending."
-  测试证据可信度: "block — post-fix cmd-12/cmd-13 evidence is narrative-only and outside the canonical crctl-generated machine section/digest."
-  前端质量: "pass — ApprovalCard uses semantic tokens and explicit pending/read-only/reject/error states; targeted frontend evidence is present, with no blocking a11y issue found in the diff."
+  代码↔TASK↔SDD 对齐: "block — changed=false event suppression is implemented and TASK-11/AC-D1/D2/D5/D6 have platform-comment evidence, but CreatePipelineTask does not enforce same-workspace trusted source and TASK-10 is marked done despite skipped DB acceptance."
+  工程质量: "block — the cross-workspace source-task gap weakens the enqueue invariant; otherwise the handler/service/CLI/frontend changes are readable and localized."
+  关键路径可读性: "pass — binding transaction, event gating, reviewer routing, and approval-card rendering responsibilities are explicit and traceable."
+  安全性: "block — source task tenant ownership is not checked after removing s.agent_id=$2, allowing cross-workspace attribution/context copying through CreatePipelineTask."
+  测试覆盖: "block — DB suites were skipped; no test covers TASK_PROJECT_MISMATCH or CR_BIND_FAILED/rollback, and no cross-workspace SourceTaskID negative test exists."
+  测试证据可信度: "block — cmd-08/cmd-12 logs contradict test-report status/analysis and the claimed no-skip 2-subtest/11-test results."
+  前端质量: "pass — the small ApprovalCard reuse preserves loading/error/reject states, renders a single current card, and introduces no visible a11y or bundle-risk regression in the diff."
 suggestions: []
 review-loop:
-  current-attempt: 1
+  current-attempt: 2
 release-subjects:
   version: 1
   repositories:
     - repo: ai-first-platform-docs
       remote-ref: refs/heads/requirement/CR-2026-053
-      reviewed-source-sha: 0a28a0796ceab1b80ae10adeffa3e612c040a689
+      reviewed-source-sha: 2c8d2eacbf9dc1fdb7afeec51e5a6f66138b01c8
     - repo: multica
       remote-ref: refs/heads/requirement/CR-2026-053
-      reviewed-source-sha: 0007d6a955306bb53d52e99bf6c5d651a4b54d73
+      reviewed-source-sha: 6cbf4d850ce5e45bbdb918a857f1503bfefffbe5
     - repo: tools
       remote-ref: refs/heads/requirement/CR-2026-053
       reviewed-source-sha: 289070508915fff966d38281957cc34116ac9ba7
@@ -48,5 +47,5 @@ release-subjects:
       - { path: change-requests/CR-2026-053/tasks/TASK-09.md, sha256: 76cfeda1fb70a98f835a8dadd41845fbe0c37a86385fffb593d1abb95fbd031e }
       - { path: change-requests/CR-2026-053/tasks/TASK-10.md, sha256: fec545e05a5a7ebde61dc94da4026e8c7170182b4c0467d411087c71f93c1bfe }
       - { path: change-requests/CR-2026-053/tasks/TASK-11.md, sha256: b491c4210d89276d65b183a1a4b43882dad3a8f2a3d455d43ba131f01fc7c150 }
-      - { path: change-requests/CR-2026-053/tasks/_index.yml, sha256: a055a7df15f740c29767d4137266c7af4511f498010862103d1b3b2da0fb2e13 }
-    digest: 9f56f63789fd382ecf91c0a40544664dff24a1ddf86b648040dd74f55866b0a4
+      - { path: change-requests/CR-2026-053/tasks/_index.yml, sha256: c10e1986ecc7fd34d2c7b62131a775c37040fbfa6be98dc62df8d650912a27fa }
+    digest: af1001007eff37b31de3eeb245b0a12a9e82a5094a984d2687abf0b6124377f4
