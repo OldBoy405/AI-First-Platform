@@ -1,0 +1,52 @@
+cr-id: CR-2026-053
+review-type: code
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-29T00:43:42+08:00"
+verdict: block
+blockers:
+  - "[major] server/internal/handler/cr_bind.go:82 — HandleBindCurrentTask unconditionally publishes cr:updated after every successful call, including same-value replay with changed=false. This violates SDD §4.1 / AC-B3 ('changed=false: no refresh event') and can generate duplicate refresh traffic. Gate the publish on result.Changed and add a replay regression assertion against the event bus."
+  - "[major] change-requests/CR-2026-053/test-report.md:6,146 — canonical machine evidence was generated at 17:41 and declares only cmd-01..11, but the reviewed HEAD includes later fix commits f0cff7c84/0007d6a95 and the narrative claims cmd-12/cmd-13 after the crctl marker. Those logs are not in the machine command list or command-digest, so the current fixes have no canonical crctl-test evidence. Regenerate test-report.md through crctl test so all post-fix commands are inside the machine section and digest."
+  - "[major] change-requests/CR-2026-053/tasks/_index.yml:87-101 — TASK-10 and TASK-11 remain pending; test-report.md:146-151,186 confirms AC-D1/D2/D5/D6 and the required legacy CR-2026-051/052 binding acceptance were not executed. The implementation therefore does not yet cover all TASK/SDD acceptance conditions and cannot enter code approval."
+dimensions:
+  代码↔TASK↔SDD 对齐: "block — Track A/B code is present, but TASK-10/TASK-11 and AC-D1/D2/D5/D6 remain incomplete."
+  工程质量: "block — the bind replay path emits cr:updated even when changed=false, contradicting the explicit idempotency contract."
+  关键路径可读性: "pass — handler/service/SQL/CLI/frontend responsibilities and trust boundary comments are clear."
+  安全性: "pass — task-token identity, workspace scoping, transactional CAS and fail-closed conflict audit behavior are implemented without client-controlled identity fields."
+  测试覆盖: "block — no regression assertion covers the changed=false event suppression contract; required legacy-CR acceptance remains pending."
+  测试证据可信度: "block — post-fix cmd-12/cmd-13 evidence is narrative-only and outside the canonical crctl-generated machine section/digest."
+  前端质量: "pass — ApprovalCard uses semantic tokens and explicit pending/read-only/reject/error states; targeted frontend evidence is present, with no blocking a11y issue found in the diff."
+suggestions: []
+review-loop:
+  current-attempt: 1
+release-subjects:
+  version: 1
+  repositories:
+    - repo: ai-first-platform-docs
+      remote-ref: refs/heads/requirement/CR-2026-053
+      reviewed-source-sha: 0a28a0796ceab1b80ae10adeffa3e612c040a689
+    - repo: multica
+      remote-ref: refs/heads/requirement/CR-2026-053
+      reviewed-source-sha: 0007d6a955306bb53d52e99bf6c5d651a4b54d73
+    - repo: tools
+      remote-ref: refs/heads/requirement/CR-2026-053
+      reviewed-source-sha: 289070508915fff966d38281957cc34116ac9ba7
+  artifacts:
+    algorithm: sha256
+    canonicalization: crlf-to-lf+path-sort
+    files:
+      - { path: change-requests/CR-2026-053/plan.md, sha256: 2686507b3bdb1cfa2296ce21a07ecb4b5791f669a662de035b0c27164a3ea555 }
+      - { path: change-requests/CR-2026-053/prd.md, sha256: 231a90df61827de542c256113e18aef91193421069e0d6e5c88d34b9b4f63fd1 }
+      - { path: change-requests/CR-2026-053/sdd.md, sha256: 77171fbf95e284fd9264710e651b3afee9af53dd3e8153068674a7116692745b }
+      - { path: change-requests/CR-2026-053/tasks/TASK-01.md, sha256: 3775df9cd28e434b4e4b824b386df54997a2125263104f5063bdb1784f85be9a }
+      - { path: change-requests/CR-2026-053/tasks/TASK-02.md, sha256: 7bec878439dfc999675e8cad81ca9c20dda0419ba2fb2a0905dc95fae8f60f40 }
+      - { path: change-requests/CR-2026-053/tasks/TASK-03.md, sha256: 71ec8ecf0dd56c8554eeeaf4c75a0578076aabc30549982f815b766abc49be1f }
+      - { path: change-requests/CR-2026-053/tasks/TASK-04.md, sha256: 72ccf716a726e77ee27bdb578a047e3b8846fe9370dec9582415be05420307b9 }
+      - { path: change-requests/CR-2026-053/tasks/TASK-05.md, sha256: 116883626a138b338e9452b9ec46c2421dcefe51d2664b1d6cbecceab5d623a7 }
+      - { path: change-requests/CR-2026-053/tasks/TASK-06.md, sha256: 9589dcdfa31c349821d4796c936a42fbc91e94d51c1736327d169110c99ef3ce }
+      - { path: change-requests/CR-2026-053/tasks/TASK-07.md, sha256: 0178bf2a21045f92120d68349d2032a03af96aa098833f8bad8f0412b1ac49c1 }
+      - { path: change-requests/CR-2026-053/tasks/TASK-08.md, sha256: f5f41083777cb622695678c56484b314ab51525e1ea7ecfef4cbe6451fc2ceaf }
+      - { path: change-requests/CR-2026-053/tasks/TASK-09.md, sha256: 76cfeda1fb70a98f835a8dadd41845fbe0c37a86385fffb593d1abb95fbd031e }
+      - { path: change-requests/CR-2026-053/tasks/TASK-10.md, sha256: fec545e05a5a7ebde61dc94da4026e8c7170182b4c0467d411087c71f93c1bfe }
+      - { path: change-requests/CR-2026-053/tasks/TASK-11.md, sha256: b491c4210d89276d65b183a1a4b43882dad3a8f2a3d455d43ba131f01fc7c150 }
+      - { path: change-requests/CR-2026-053/tasks/_index.yml, sha256: a055a7df15f740c29767d4137266c7af4511f498010862103d1b3b2da0fb2e13 }
+    digest: 9f56f63789fd382ecf91c0a40544664dff24a1ddf86b648040dd74f55866b0a4
