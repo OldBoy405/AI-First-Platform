@@ -35,7 +35,8 @@ tasks:
     notes: "四个 review 节点 prompt：新建独立 reviewer task/run、每轮 reviewLoop 重新委派、无 subagent 时停节点提示独立会话(FR-A6)"
   - id: CR-2026-053-TASK-04
     title: "修改 review Skill 绑定前置步骤（四个 review Skill 同一实现）"
-    status: pending
+    status: done
+    done-at: "2026-08-28T17:16:12+08:00"
     estimate: 2h
     milestone: M3-cross-repo-close
     depends-on: [CR-2026-053-TASK-01, CR-2026-053-TASK-03, CR-2026-053-TASK-05, CR-2026-053-TASK-08]
@@ -43,7 +44,8 @@ tasks:
     notes: "绑定步骤经 TASK-08 CLI 命令 multica cr bind-current-task 执行，消费 TASK-05 绑定接口；位置：写 review-record 之前；无 mat_ context 时跳过（FR-A7 本地路径）"
   - id: CR-2026-053-TASK-05
     title: "新增绑定接口 POST /api/crs/{cr_id}/bind-current-task（含 sqlc 绑定读写 query 与生成物）"
-    status: pending
+    status: done
+    done-at: "2026-08-28T17:14:05+08:00"
     estimate: 4h
     milestone: M2-track-b-bind
     depends-on: []
@@ -51,7 +53,8 @@ tasks:
     notes: "承接 SDD §2.3 新增 sqlc 绑定读写 query + make sqlc 生成物；七种错误码；CAS NULL→值 或同值重放；FR-B11 信任上限代码注释"
   - id: CR-2026-053-TASK-06
     title: "修改 CreatePipelineTask SQL 继承 issue_id/project_id（含 sqlc 生成物）"
-    status: pending
+    status: done
+    done-at: "2026-08-28T17:14:05+08:00"
     estimate: 2h
     milestone: M2-track-b-bind
     depends-on: []
@@ -59,21 +62,24 @@ tasks:
     notes: "INSERT 追加 issue_id/project_id 列，值从来源 task 行 s.issue_id/s.project_id 直接拷贝；s.issue_id IS NOT NULL 守卫；PipelineTaskSpec 不新增字段"
   - id: CR-2026-053-TASK-07
     title: "前端审批卡可见性修复（提取 ApprovalCard 组件 + project-team-agent-chat.tsx 渲染规则）"
-    status: pending
+    status: done
+    done-at: "2026-08-28T17:14:05+08:00"
     estimate: 3h
     milestone: M3-cross-repo-close
     depends-on: [CR-2026-053-TASK-05]
     fr-coverage: [FR-B6]
   - id: CR-2026-053-TASK-08
     title: "CLI 薄包装命令 multica cr bind-current-task <cr-id>"
-    status: pending
+    status: done
+    done-at: "2026-08-28T17:14:05+08:00"
     estimate: 1h
     milestone: M3-cross-repo-close
     depends-on: [CR-2026-053-TASK-05]
     fr-coverage: [FR-B1]
   - id: CR-2026-053-TASK-09
     title: "CUSTOM.md 台账登记"
-    status: pending
+    status: done
+    done-at: "2026-08-28T17:17:29+08:00"
     estimate: 1h
     milestone: M4-integration-acceptance
     depends-on: [CR-2026-053-TASK-05, CR-2026-053-TASK-06, CR-2026-053-TASK-07, CR-2026-053-TASK-08]
