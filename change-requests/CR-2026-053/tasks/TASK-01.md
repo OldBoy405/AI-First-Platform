@@ -36,9 +36,9 @@ created: 2026-08-28T11:20:00+08:00
 
 ## 验收条件
 
-1. `check-skill-matrix.mjs` 零报错
-2. 四个 review Skill 唯一 owner 为 `quality-reviewer-agent`
-3. `requirement-writer` 和 `dev-agent` 仍可通过 `can-call` 调用评审 Skill
+1. `node ../tools/skills/shared/crctl/scripts/check-skill-matrix.mjs` 零报错
+2. `node ../tools/pipeline-templates/emit-registry.mjs --verify` 通过（registry 一致性）
+3. 四个 review Skill 唯一 owner 为 `quality-reviewer-agent`，`requirement-writer`/`dev-agent` 保留 `can-call`
 
 ## 完成标志
 

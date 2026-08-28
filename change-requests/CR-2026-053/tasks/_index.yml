@@ -1,57 +1,94 @@
+---
 cr-id: CR-2026-053
+capacity-unit: "1h/人·天（4h/人天）"
+total-estimate: "24h"
+milestones:
+  M1-track-a-tools: "TASK-01, TASK-02, TASK-03"
+  M2-track-b-bind: "TASK-05, TASK-06"
+  M3-cross-repo-close: "TASK-04, TASK-07, TASK-08, TASK-11"
+  M4-integration-acceptance: "TASK-09, TASK-10"
 tasks:
   - id: CR-2026-053-TASK-01
     title: "修改 agent-skill-matrix.yml (owner 归属调整)"
     status: pending
     estimate: 1h
+    milestone: M1-track-a-tools
     depends-on: []
+    fr-coverage: [FR-A1, FR-A2]
   - id: CR-2026-053-TASK-02
-    title: "修改 agents 文件 (评审意图改为委派合同)"
+    title: "修改 agents 文件 (评审意图改委派合同, 含 quality-reviewer-agent.md)"
     status: pending
     estimate: 2h
+    milestone: M1-track-a-tools
     depends-on: []
+    fr-coverage: [FR-A3]
+    notes: "SDD §9 实施文件：requirement-writer.md / dev-agent.md（委派路由合同）/ quality-reviewer-agent.md（唯一 owner 表述 + FR-A6 独立会话路径）/ agents/_index.yml"
   - id: CR-2026-053-TASK-03
-    title: "修改 pipeline 节点 prompt (review-* 节点)"
+    title: "修改 pipeline 节点 prompt (review-* 节点, 含 FR-A6 无 subagent 路径)"
     status: pending
     estimate: 2h
+    milestone: M1-track-a-tools
     depends-on: []
+    fr-coverage: [FR-A4, FR-A5, FR-A6]
+    notes: "四个 review 节点 prompt：新建独立 reviewer task/run、每轮 reviewLoop 重新委派、无 subagent 时停节点提示独立会话(FR-A6)"
   - id: CR-2026-053-TASK-04
-    title: "修改 review Skill 绑定前置步骤"
+    title: "修改 review Skill 绑定前置步骤（四个 review Skill 同一实现）"
     status: pending
     estimate: 2h
-    depends-on: [CR-2026-053-TASK-01, CR-2026-053-TASK-03]
+    milestone: M3-cross-repo-close
+    depends-on: [CR-2026-053-TASK-01, CR-2026-053-TASK-03, CR-2026-053-TASK-05]
+    fr-coverage: [FR-B7]
+    notes: "消费 TASK-05 的绑定接口；位置：写 review-record 之前；无 mat_ context 时跳过（FR-A7 本地路径）"
   - id: CR-2026-053-TASK-05
-    title: "新增绑定接口 POST /api/crs/{cr_id}/bind-current-task"
+    title: "新增绑定接口 POST /api/crs/{cr_id}/bind-current-task（含 sqlc 绑定读写 query 与生成物）"
     status: pending
     estimate: 4h
+    milestone: M2-track-b-bind
     depends-on: []
+    fr-coverage: [FR-B1, FR-B2, FR-B3, FR-B4, FR-B5, FR-B9, FR-B11]
+    notes: "承接 SDD §2.3 新增 sqlc 绑定读写 query + make sqlc 生成物；七种错误码；CAS NULL→值 或同值重放；FR-B11 信任上限代码注释"
   - id: CR-2026-053-TASK-06
-    title: "修改 CreatePipelineTask SQL 继承 issue_id/project_id"
+    title: "修改 CreatePipelineTask SQL 继承 issue_id/project_id（含 sqlc 生成物）"
     status: pending
     estimate: 2h
+    milestone: M2-track-b-bind
     depends-on: []
+    fr-coverage: [FR-B12, FR-B9]
+    notes: "INSERT 追加 issue_id/project_id 列，值从来源 task 行 s.issue_id/s.project_id 直接拷贝；s.issue_id IS NOT NULL 守卫；PipelineTaskSpec 不新增字段"
   - id: CR-2026-053-TASK-07
-    title: "前端审批卡可见性修复"
+    title: "前端审批卡可见性修复（提取 ApprovalCard 组件 + project-team-agent-chat.tsx 渲染规则）"
     status: pending
     estimate: 3h
+    milestone: M3-cross-repo-close
     depends-on: [CR-2026-053-TASK-05]
+    fr-coverage: [FR-B6]
   - id: CR-2026-053-TASK-08
-    title: "CLI 薄包装命令"
+    title: "CLI 薄包装命令 multica cr bind-current-task <cr-id>"
     status: pending
     estimate: 1h
+    milestone: M3-cross-repo-close
     depends-on: [CR-2026-053-TASK-05]
+    fr-coverage: [FR-B1]
   - id: CR-2026-053-TASK-09
     title: "CUSTOM.md 台账登记"
     status: pending
     estimate: 1h
+    milestone: M4-integration-acceptance
     depends-on: [CR-2026-053-TASK-05, CR-2026-053-TASK-06, CR-2026-053-TASK-07, CR-2026-053-TASK-08]
+    fr-coverage: [FR-B10]
   - id: CR-2026-053-TASK-10
-    title: "集成测试与验收"
+    title: "集成测试与验收（含 emit-registry.mjs 验证）"
     status: pending
     estimate: 4h
-    depends-on: [CR-2026-053-TASK-04, CR-2026-053-TASK-05, CR-2026-053-TASK-06, CR-2026-053-TASK-07]
+    milestone: M4-integration-acceptance
+    depends-on: [CR-2026-053-TASK-01, CR-2026-053-TASK-02, CR-2026-053-TASK-03, CR-2026-053-TASK-04, CR-2026-053-TASK-05, CR-2026-053-TASK-06, CR-2026-053-TASK-07, CR-2026-053-TASK-08, CR-2026-053-TASK-09, CR-2026-053-TASK-11]
+    fr-coverage: [FR-A7, FR-A8, AC-A1~A8, AC-B1~B11, AC-C1~C6, AC-D1~D6]
+    notes: "emit-registry.mjs --verify / check-skill-matrix.mjs / check-agents-contract.mjs / lint-prompts.mjs + go test + pnpm test 全部通过"
   - id: CR-2026-053-TASK-11
-    title: "存量 CR-2026-051/052 修复"
+    title: "存量 CR-2026-051/052 修复（按 FR-B8 来源 Issue 表）"
     status: pending
     estimate: 2h
+    milestone: M3-cross-repo-close
     depends-on: [CR-2026-053-TASK-05]
+    fr-coverage: [FR-B8, AC-D1~D6]
+    notes: "CR-2026-051 来自 AIFI-3 (UUID 6a8cd56a-12b3-49d9-80bb-4657da15c3b0)；CR-2026-052 来自 AIFI-6 (UUID 1766573d-f7bd-465b-bbc4-bcb65a84c880)"

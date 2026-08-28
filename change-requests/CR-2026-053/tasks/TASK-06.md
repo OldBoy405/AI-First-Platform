@@ -35,10 +35,9 @@ created: 2026-08-28T11:20:00+08:00
 
 ## 验收条件
 
-1. `make sqlc` 成功
-2. 负向测试：来源 task `issue_id IS NULL` 时 `CreatePipelineTask` 返回 `ErrNoRows`
-3. 正向测试：来源 task 有值时新行 `issue_id`/`project_id` 与来源行相等
-4. AC-B10 覆盖测试通过
+1. `make sqlc` 成功生成 CreatePipelineTask 生成物
+2. `go test ./server/pkg/db/... -run TestCreatePipelineTaskIssueInherit` 通过（负向：来源 task `issue_id IS NULL` 时返回 `ErrNoRows` 且无新增行；正向：新行 `issue_id`/`project_id` 与来源行相等）
+3. AC-B10 覆盖测试通过
 
 ## 完成标志
 

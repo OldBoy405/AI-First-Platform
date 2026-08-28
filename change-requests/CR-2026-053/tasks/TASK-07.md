@@ -35,10 +35,9 @@ created: 2026-08-28T11:20:00+08:00
 
 ## 验收条件
 
-1. `pending_stage` 非空时审批卡可见
-2. `pending_stage` 为空时不渲染当前审批卡
+1. `pnpm test packages/views/projects/components/` 覆盖 AC-C1~C6 且通过
+2. `pending_stage` 非空时审批卡可见，为空时不渲染当前审批卡
 3. 历史节点仍正常显示
-4. AC-C1~AC-C6 覆盖测试通过
 
 ## 完成标志
 
