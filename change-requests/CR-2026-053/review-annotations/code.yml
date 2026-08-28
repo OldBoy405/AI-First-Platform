@@ -1,31 +1,29 @@
 cr-id: CR-2026-053
 review-type: code
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-29T02:42:24+08:00"
-verdict: block
-blockers:
-  - "[critical] server/pkg/db/queries/agent.sql:684 — CreatePipelineTask now matches the source row only by s.id, while the executor agent and CR are scoped to $1 but the source task is not. A SourceTaskID from another workspace can therefore copy that tenant's issue_id/project_id and attribution into a reviewer task in the target workspace. This contradicts the existing source-task/executor/CR workspace guard and FR-B12's trusted-source contract. Join the source task's agent and require its workspace_id=$1 (without requiring source agent == executor agent), then add a cross-workspace negative test."
-  - "[major] change-requests/CR-2026-053/test-evidence/cmd-08.log:4 and cmd-12.log:4 — the canonical report says all 13 commands passed with no skip and specifically claims cmd-08 ran 2 DB subtests and cmd-12 ran 11/11 DB tests, but both logs say the database was unreachable and the package-level TestMain skipped all tests while go test returned exit 0. Moreover cr_bind_test.go has no TASK_PROJECT_MISMATCH or CR_BIND_FAILED/transaction-audit-failure case although test-report.md claims all seven error codes and AC-B1~B11. The post-fix canonical evidence is therefore false-positive and TASK-10 cannot be considered done. Regenerate it through crctl test against a reachable test database and include the missing fail-closed/tenant-isolation cases."
+reviewed-at: "2026-08-29T02:58:17+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  代码↔TASK↔SDD 对齐: "block — changed=false event suppression is implemented and TASK-11/AC-D1/D2/D5/D6 have platform-comment evidence, but CreatePipelineTask does not enforce same-workspace trusted source and TASK-10 is marked done despite skipped DB acceptance."
-  工程质量: "block — the cross-workspace source-task gap weakens the enqueue invariant; otherwise the handler/service/CLI/frontend changes are readable and localized."
-  关键路径可读性: "pass — binding transaction, event gating, reviewer routing, and approval-card rendering responsibilities are explicit and traceable."
-  安全性: "block — source task tenant ownership is not checked after removing s.agent_id=$2, allowing cross-workspace attribution/context copying through CreatePipelineTask."
-  测试覆盖: "block — DB suites were skipped; no test covers TASK_PROJECT_MISMATCH or CR_BIND_FAILED/rollback, and no cross-workspace SourceTaskID negative test exists."
-  测试证据可信度: "block — cmd-08/cmd-12 logs contradict test-report status/analysis and the claimed no-skip 2-subtest/11-test results."
-  前端质量: "pass — the small ApprovalCard reuse preserves loading/error/reject states, renders a single current card, and introduces no visible a11y or bundle-risk regression in the diff."
+  代码↔TASK↔SDD 对齐: "pass — 三仓权威 diff 与 SDD/TASK 一致，tasks/_index.yml 的 11 个 TASK 均为 done；attempt 2 的 CreatePipelineTask 与真库证据回修已纳入 checkpoint cd6be9cb754d3bda。"
+  工程质量: "pass — 改动保持在既有 handler→service→sqlc、views 与 tools Agent/Pipeline/Skill 边界内；canonical build/vet/typecheck/结构校验均 exit=0，未见超范围重构或新依赖。"
+  关键路径可读性: "pass — task 绑定事务、CAS/审计失败关闭、来源/执行 Agent 分离、唯一 ApprovalCard 与 reviewer 委派路径均有明确英文注释和局部职责。"
+  安全性: "pass — CreatePipelineTask 通过 source task→source agent join 强制 source_agent.workspace_id=$1，同时 executor 仍由独立 a.id=$2 校验；task token 身份、Issue/Project/CR workspace 闭合和冲突 CAS 均 fail closed。"
+  测试覆盖: "pass — cmd-12 在真实数据库执行 14/14 PASS，覆盖 TASK_PROJECT_MISMATCH、CR_BIND_FAILED 审计失败导致 task/cr/audit 全事务回滚、跨 workspace SourceTaskID 拒绝、独立 executor 正向继承及 changed=false 事件抑制；tools/CLI/views/gates 证据亦通过。"
+  测试证据可信度: "pass — test-report 由 crctl-test 生成且 status=pass；traceability tests 的 status 与 command-digest 0cc0e0585898e6388119d5d2e857836b4204033ed056f2be2f73c5480329d9f9 一致，13 个引用日志齐全；cmd-08/cmd-12 含真实 RUN/PASS 且无 SKIP/FAIL。"
+  前端质量: "pass — 仅导出既有 ApprovalCard 并以 pending_stage 驱动唯一当前卡，保留 loading/error/reject 与 blocked/history 状态；未改样式或引入可见 a11y/体积回归，定向 48/48 与 tsc 证据通过。"
 suggestions: []
 review-loop:
-  current-attempt: 2
+  current-attempt: 3
 release-subjects:
   version: 1
   repositories:
     - repo: ai-first-platform-docs
       remote-ref: refs/heads/requirement/CR-2026-053
-      reviewed-source-sha: 2c8d2eacbf9dc1fdb7afeec51e5a6f66138b01c8
+      reviewed-source-sha: 8faa9a5d16084c5e72aa2b701c000c616a57b895
     - repo: multica
       remote-ref: refs/heads/requirement/CR-2026-053
-      reviewed-source-sha: 6cbf4d850ce5e45bbdb918a857f1503bfefffbe5
+      reviewed-source-sha: 3bbaf8e71c25f7e39086c69040577cdd2bd3822d
     - repo: tools
       remote-ref: refs/heads/requirement/CR-2026-053
       reviewed-source-sha: 289070508915fff966d38281957cc34116ac9ba7
