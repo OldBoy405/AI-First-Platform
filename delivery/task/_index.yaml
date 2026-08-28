@@ -2339,3 +2339,80 @@ tasks:
     cr-ref: CR-2026-052
     target-version: "0.26"
     estimate: 4h
+  - id: CR-2026-053-TASK-01
+    file: TASK-0.27-CR-2026-053-01-matrix-owner-reassign.md
+    title: 修改 agent-skill-matrix.yml (owner 归属调整)
+    status: done
+    cr-ref: CR-2026-053
+    target-version: "0.27"
+    estimate: 1h
+  - id: CR-2026-053-TASK-02
+    file: TASK-0.27-CR-2026-053-02-agent-review-intent-delegation.md
+    title: 修改 agents 文件 (评审意图改为委派合同, 含 quality-reviewer-agent.md)
+    status: done
+    cr-ref: CR-2026-053
+    target-version: "0.27"
+    estimate: 2h
+  - id: CR-2026-053-TASK-03
+    file: TASK-0.27-CR-2026-053-03-pipeline-review-prompt-update.md
+    title: 修改 pipeline 节点 prompt (review-* 节点, 含 FR-A6 无 subagent 路径)
+    status: done
+    cr-ref: CR-2026-053
+    target-version: "0.27"
+    estimate: 2h
+  - id: CR-2026-053-TASK-04
+    file: TASK-0.27-CR-2026-053-04-review-skill-bind-step.md
+    title: 修改 review Skill 绑定前置步骤
+    status: done
+    cr-ref: CR-2026-053
+    target-version: "0.27"
+    estimate: 2h
+  - id: CR-2026-053-TASK-05
+    file: TASK-0.27-CR-2026-053-05-bind-current-task-api.md
+    title: 新增绑定接口 POST /api/crs/{cr_id}/bind-current-task（含 sqlc 绑定读写 query 与生成物）
+    status: done
+    cr-ref: CR-2026-053
+    target-version: "0.27"
+    estimate: 4h
+  - id: CR-2026-053-TASK-06
+    file: TASK-0.27-CR-2026-053-06-pipeline-task-issue-inherit.md
+    title: 修改 CreatePipelineTask SQL 继承 issue_id/project_id
+    status: done
+    cr-ref: CR-2026-053
+    target-version: "0.27"
+    estimate: 2h
+  - id: CR-2026-053-TASK-07
+    file: TASK-0.27-CR-2026-053-07-approval-card-visibility-fix.md
+    title: 前端审批卡可见性修复
+    status: done
+    cr-ref: CR-2026-053
+    target-version: "0.27"
+    estimate: 3h
+  - id: CR-2026-053-TASK-08
+    file: TASK-0.27-CR-2026-053-08-cli-bind-command.md
+    title: CLI 薄包装命令 multica cr bind-current-task <cr-id>
+    status: done
+    cr-ref: CR-2026-053
+    target-version: "0.27"
+    estimate: 1h
+  - id: CR-2026-053-TASK-09
+    file: TASK-0.27-CR-2026-053-09-custom-md-registration.md
+    title: CUSTOM.md 台账登记
+    status: done
+    cr-ref: CR-2026-053
+    target-version: "0.27"
+    estimate: 1h
+  - id: CR-2026-053-TASK-10
+    file: TASK-0.27-CR-2026-053-10-integration-test.md
+    title: 集成测试与验收（含 emit-registry.mjs 验证）
+    status: done
+    cr-ref: CR-2026-053
+    target-version: "0.27"
+    estimate: 4h
+  - id: CR-2026-053-TASK-11
+    file: TASK-0.27-CR-2026-053-11-existing-cr-fix.md
+    title: 存量 CR-2026-051/052 修复（按 FR-B8 来源 Issue 表）
+    status: done
+    cr-ref: CR-2026-053
+    target-version: "0.27"
+    estimate: 2h
