@@ -1,11 +1,11 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 # 五段链路：需求 FR ↔ 技术设计 SDD ↔ 交付 TASK ↔ 代码 merge SHA ↔ CR-ID
 spec-id: ai-first-platform
-cr-ref: CR-2026-052
-cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029, CR-2026-028, CR-2026-030, CR-2026-031, CR-2026-037, CR-2026-032, CR-2026-033, CR-2026-038, CR-2026-039, CR-2026-040, CR-2026-041, CR-2026-043, CR-2026-042, CR-2026-044, CR-2026-045, CR-2026-046, CR-2026-047, CR-2026-048, CR-2026-049, CR-2026-050, CR-2026-051, CR-2026-052]
-target-version: "0.26"
+cr-ref: CR-2026-053
+cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029, CR-2026-028, CR-2026-030, CR-2026-031, CR-2026-037, CR-2026-032, CR-2026-033, CR-2026-038, CR-2026-039, CR-2026-040, CR-2026-041, CR-2026-043, CR-2026-042, CR-2026-044, CR-2026-045, CR-2026-046, CR-2026-047, CR-2026-048, CR-2026-049, CR-2026-050, CR-2026-051, CR-2026-052, CR-2026-053]
+target-version: "0.27"
 baseline-since: "0.10"
-generated-at: "2026-08-27T16:30:32+08:00"
+generated-at: "2026-08-29T03:24:11+08:00"
 
 # 已知缺口：CR-2026-003~CR-2026-006 未生成本文件的里程碑段（writeback-traceability 在那四个
 # CR 回写时被跳过，PRD.md/SDD.md/_index.yml 侧的累积记录不受影响、仍完整）。本次（CR-2026-008）
@@ -3646,3 +3646,109 @@ milestones:
         code: { verdict: pass, path: change-requests/CR-2026-052/review-annotations/code.yml, sha256: e824839b8a9b3418a10403ac7a60dd2cab17c60a882e85a2231672da2e1eb349 }
       approval: { status: approved, path: change-requests/CR-2026-052/approval.yml, sha256: dfa3bdc492fe77f38b2c096844ffe0f0619962a7b1aa18620fe97f97462426c7 }
       merge: { status: merged, path: change-requests/CR-2026-052/merge-commits.yml, sha256: a43e3c50d1feda1ac177b844b20017017f484bbb373a89707a81eb8b010367cb }
+  - cr: CR-2026-053
+    milestone: P1 独立评审与人工审批闭环
+    target-version: "0.27"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: a9b727479001729b17855545eb687650a96efa72
+        branch: requirement/CR-2026-053
+      - repo: multica
+        trunk: main
+        sha: a3fcdd34574779ac0c888698e5999ee9595bdcae
+        branch: requirement/CR-2026-053
+      - repo: tools
+        trunk: custom/main
+        sha: 8884f599ea3b13ce0cdb53812bf7f20e40d75dd5
+        branch: requirement/CR-2026-053
+    frs:
+      - fr: FR-A1
+        title: 四个评审 Skill 唯一 owner 收敛
+        sdd: SDD §1.1 和 §9
+        tasks: [CR-2026-053-TASK-01]
+      - fr: FR-A2
+        title: 评审范围锁定
+        sdd: SDD §1.1 和 §9
+        tasks: [CR-2026-053-TASK-01]
+      - fr: FR-A3
+        title: 作者型 Agent 委派路由合同
+        sdd: SDD §1.1 和 §9
+        tasks: [CR-2026-053-TASK-02]
+      - fr: FR-A4
+        title: Pipeline 委派合同
+        sdd: SDD §1.1 和 §9
+        tasks: [CR-2026-053-TASK-03]
+      - fr: FR-A5
+        title: 一次独立评审一轮制
+        sdd: SDD §1.1 和 §9
+        tasks: [CR-2026-053-TASK-03]
+      - fr: FR-A6
+        title: 无 subagent 时不降级为作者自评
+        sdd: SDD §1.1 和 §9
+        tasks: [CR-2026-053-TASK-03]
+      - fr: FR-A7
+        title: 结构测试与本地路径兼容
+        sdd: SDD §4.2 和 §9
+        tasks: [CR-2026-053-TASK-10]
+      - fr: FR-A8
+        title: 诚实边界固化
+        sdd: SDD §1.1 和 §7
+        tasks: [CR-2026-053-TASK-10]
+      - fr: FR-B1
+        title: task scoped 窄绑定接口
+        sdd: SDD §3.1 和 §3.3
+        tasks: [CR-2026-053-TASK-05, CR-2026-053-TASK-08]
+      - fr: FR-B2
+        title: 校验与单一事务绑定
+        sdd: SDD §2.3 和 §4.1
+        tasks: [CR-2026-053-TASK-05]
+      - fr: FR-B3
+        title: 七种错误语义
+        sdd: SDD §3.1
+        tasks: [CR-2026-053-TASK-05]
+      - fr: FR-B4
+        title: 冲突审计
+        sdd: SDD §4.1
+        tasks: [CR-2026-053-TASK-05]
+      - fr: FR-B5
+        title: StartTask 归因处置
+        sdd: SDD §2.3
+        tasks: [CR-2026-053-TASK-05]
+      - fr: FR-B6
+        title: 审批卡渲染规则
+        sdd: SDD §3.2 和 §4.3
+        tasks: [CR-2026-053-TASK-07]
+      - fr: FR-B7
+        title: review Skill 绑定前置步骤
+        sdd: SDD §4.2
+        tasks: [CR-2026-053-TASK-04]
+      - fr: FR-B8
+        title: 存量 CR 修复路径
+        sdd: SDD §5
+        tasks: [CR-2026-053-TASK-11]
+      - fr: FR-B9
+        title: 不新增表与列
+        sdd: SDD §2.3 和 §7
+        tasks: [CR-2026-053-TASK-05, CR-2026-053-TASK-06]
+      - fr: FR-B10
+        title: CUSTOM 台账登记
+        sdd: SDD §9
+        tasks: [CR-2026-053-TASK-09]
+      - fr: FR-B11
+        title: 信任上限与残余风险声明
+        sdd: SDD §7
+        tasks: [CR-2026-053-TASK-05]
+      - fr: FR-B12
+        title: reviewer task 创建上下文继承
+        sdd: SDD §2.4 和 §4.4
+        tasks: [CR-2026-053-TASK-06]
+    evidence:
+      test: { status: pass, path: change-requests/CR-2026-053/test-report.md, sha256: c83489f92e75cd88c5ae0386e182aab01342755366d05ffa717d945a737173d2 }
+      reviews:
+        requirement: { verdict: pass, path: change-requests/CR-2026-053/review-annotations/requirement.yml, sha256: d05e4be37493757fc1cfc4c790c4b59b23d12a418b238d290b69b40714760f02 }
+        tech-design: { verdict: pass, path: change-requests/CR-2026-053/review-annotations/sdd.yml, sha256: 47f502238d3b5969d91d99dbd43c03aa26b3e5670c041d9703c72b1bb20876b0 }
+        dev-plan: { verdict: pass, path: change-requests/CR-2026-053/review-annotations/dev-plan.yml, sha256: 06c1adf8789b869d6c264d525eb543a77a73746281025f5c6e5cb70bfa7a7a4f }
+        code: { verdict: pass, path: change-requests/CR-2026-053/review-annotations/code.yml, sha256: b219f41b5d41bcfb29aaaee6691dae93119bf3d30454c644bd06c990293defd2 }
+      approval: { status: approved, path: change-requests/CR-2026-053/approval.yml, sha256: f034baf9cdeb9236db42948024c1a1e029e46b6c23758b6a24194fe521d355d5 }
+      merge: { status: merged, path: change-requests/CR-2026-053/merge-commits.yml, sha256: 73002a291ff598729df29c271fca588a20bb6d6263ed55da3dc088738b31e420 }
