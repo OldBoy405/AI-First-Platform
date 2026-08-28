@@ -16,9 +16,9 @@ owners:
 target-version: tbd
 source: "docs/product/独立评审与人工审批命令闭环设计.md"
 origin: ""
-status: tech-design-review-pending
+status: tech-design-reviewed
 created: "2026-08-27T17:30:20+08:00"
-updated: "2026-08-28T09:21:45+08:00"
+updated: "2026-08-28T09:21:57+08:00"
 remote-ref: ""
 last-push-at: ""
 last-push-by: ""
