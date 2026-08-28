@@ -86,7 +86,8 @@ tasks:
     fr-coverage: [FR-B10]
   - id: CR-2026-053-TASK-10
     title: "集成测试与验收（含 emit-registry.mjs 验证）"
-    status: pending
+    status: done
+    done-at: "2026-08-29T02:35:38+08:00"
     estimate: 4h
     milestone: M4-integration-acceptance
     depends-on: [CR-2026-053-TASK-01, CR-2026-053-TASK-02, CR-2026-053-TASK-03, CR-2026-053-TASK-04, CR-2026-053-TASK-05, CR-2026-053-TASK-06, CR-2026-053-TASK-07, CR-2026-053-TASK-08, CR-2026-053-TASK-09, CR-2026-053-TASK-11]
@@ -94,9 +95,11 @@ tasks:
     notes: "emit-registry.mjs --verify / check-skill-matrix.mjs / check-agents-contract.mjs / lint-prompts.mjs + go test + pnpm test 全部通过"
   - id: CR-2026-053-TASK-11
     title: "存量 CR-2026-051/052 修复（按 FR-B8 来源 Issue 表）"
-    status: pending
+    status: done
+    done-at: "2026-08-29T02:34:52+08:00"
     estimate: 2h
     milestone: M3-cross-repo-close
     depends-on: [CR-2026-053-TASK-05, CR-2026-053-TASK-08]
     fr-coverage: [FR-B8, AC-D1~D6]
     notes: "验收直接执行 TASK-08 CLI 命令 multica cr bind-current-task；CR-2026-051 来自 AIFI-3 (UUID 6a8cd56a-12b3-49d9-80bb-4657da15c3b0)；CR-2026-052 来自 AIFI-6 (UUID 1766573d-f7bd-465b-bbc4-bcb65a84c880)"
+

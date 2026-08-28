@@ -167,7 +167,7 @@ commands:
 | AC-A1~A8（tools 改造） | cmd-01~05 | PASS |
 | AC-B1~B11（绑定接口 7 错误码 + 继承） | cmd-12（真库，`cr_bind_test.go` 9 用例 + `cr_pipeline_task_test.go` 2 用例，11/11 PASS，含新增事件回归） | **PASS（post-fix canonical）** |
 | AC-C1~C6（审批卡可见性） | cmd-10（48/48）+ cmd-11 | PASS |
-| AC-D1（存量 CR-2026-051 绑定 E2E） | ⚠️ 受控 task 已重新委派至 AIFI-3（前次委派队列过期未执行）；绑定后 `cr.shell_issue_id` 应 = `6a8cd56a-…` | 在途（见「验收闭环」） |
+| AC-D1（存量 CR-2026-051 绑定 E2E） | AIFI-3 受控 task `01a04969-4d51-763d-b7fa-f72f8cd438d2` 已执行：首次 `changed=true`，任务行 `cr_id=CR-2026-051`；当前 workspace 的 `cr.shell_issue_id=6a8cd56a-…`；`cr_issue_bound` 审计 1 条；重放 `changed=false` 且审计仍为 1 条 | **PASS（已核验）** |
 | AC-D2（存量 CR-2026-052 绑定 E2E） | AIFI-6 受控 task 已执行并 DB 直查核验：`cr.shell_issue_id` = `1766573d-…`（AIFI-6），`agent_task_queue.cr_id`、`activity_log(cr_issue_bound)` 三写入落盘；重放 `changed=false` 幂等 | **PASS（已核验）** |
 | AC-D3（audit 留痕） | cmd-12 内断言 `cr_issue_bound`（成功 + 重放去重）与 `cr_issue_bind_rejected`（409 冲突） | **PASS（真库）** |
 | AC-D4（gates 投影查询） | cmd-08（`shell_issue_id` 两状态） | PASS |
@@ -176,8 +176,8 @@ commands:
 
 ## 验收闭环（review-code BLOCK-③ 处置）
 
-- **AC-D2/AC-D5/AC-D6 已闭环**：AC-D2 由 AIFI-6 受控 task 执行并以 DB 直查核验三写入（见上表）；AC-D5 由 cmd-10 AC-C1 前端用例覆盖；AC-D6 人工确认留痕在 AIFI-8 评论 `daa82014`。
-- **AC-D1 在途**：AIFI-3 受控 task 于 13:20 委派后在队列中过期未执行（与 review-code 复评委派同一批队列故障），已重新委派；绑定落盘后 `cr.shell_issue_id=6a8cd56a-…` 即闭环。`tasks/_index.yml` 的 TASK-10/TASK-11 `done` 标记待 AC-D1 证据落地后补标（不提前空白通过）。
+- **AC-D1/AC-D2/AC-D5/AC-D6 已闭环**：AC-D1 由 AIFI-3 受控 task `01a04969-4d51-763d-b7fa-f72f8cd438d2` 完成，AC-D2 由 AIFI-6 受控 task 完成；两者均核验 task/CR/audit 终态及重放幂等。AC-D5 由 cmd-10 AC-C1 前端用例覆盖；AC-D6 人工确认留痕在 AIFI-8 评论 `daa82014`。
+- **队列异常已隔离**：AC-D1 回帖后一度自动派生无关 reviewer task `01a049a6-ad8b-70ba-b777-8a03c990d763`，已在未开始前取消；不作为验收或评审证据。AIFI-8 旧 dev 僵尸与过早 review task 也已取消，不影响已提交代码与 canonical 测试证据。
 
 ## 新增/修改测试文件（本 CR）
 
@@ -190,7 +190,7 @@ commands:
 ## 未覆盖风险（写明原因，不空白通过）
 
 1. ~~AC-B1~B11 无真库证据~~ **已闭环（review-code 修复轮）**：根因是本 CR 新增 fixture 未显式提供 `runtime_id`（迁移 251 `agent_task_queue_active_requires_runtime` CHECK：queued 行必须带 runtime_id 或终态 completed_at），与共享 `dbfx.Task` 无关——修复按评审建议在 `cr_bind_test.go`/`cr_pipeline_task_test.go` 的 fixture 内显式 stamp `handlerTestRuntimeID(t)`（不动共享夹具），并补 `pipeline_run`/`pipeline_node_run` 种子行（`agent_task_queue.pipeline_node_run_id` FK，迁移 437）。`DATABASE_URL=<multica .env>` 真库执行 **11/11 PASS**（cmd-12；正向继承用例即跨 Agent 独立 reviewer 路径，同时验证 FR-B12 修复）。
-2. ~~AC-D1/D2 存量绑定验收~~ **AC-D2 已闭环；AC-D1 在途**（见「验收闭环」）：AC-D1 的 AIFI-3 受控 task 前次委派队列过期，已重新委派；按 AC-D6 不得由无来源上下文的任务代行，绑定落盘后回填证据并补标 TASK-10/11。
+2. ~~AC-D1/D2 存量绑定验收~~ **已闭环**（见「验收闭环」）：两个来源 Issue 均由各自受控 task 调用同一绑定接口，终态映射、审计唯一性与重放幂等均已核验；未使用直接 SQL 修复，SQL 仅用于只读验收查询。
 3. **views 全量套件基线失败**：`vitest run` 全量 4942 条中 3 条失败（2 个文件，含 `project-detail.test.tsx` 的 project deletion 用例），与本 CR 无关（本 CR 两文件 48/48 全过）。
 4. **已知基线失败（与 CR-2026-052 报告同源，未触碰）**：`internal/service` builtin-skills 测试（embedded `multica-*` SKILL.md frontmatter 与模板不符）；`cmd/multica` 全量包超时（本 CR 的 `TestRunCrBind*` 单独跑全过，见 cmd-09/cmd-13）。
 
@@ -211,4 +211,4 @@ commands:
 
 ## 下一步建议
 
-- 以 `crctl next CR-2026-053` 为准：post-fix canonical 证据 pass → 待 AC-D1（CR-2026-051 绑定）证据落地并补标 TASK-10/11 后，重新委派 `review-code`。评审重点核对 BLOCK-①~④ 处置、cmd-12 真库证据与 cmd-13 CLI 真实命令证据。
+- 以 `crctl next CR-2026-053` 为准：AC-D1/D2 已闭环，TASK-10/11 通过 `crctl task done` 登记后，重新委派一轮独立 `review-code`。评审重点核对 BLOCK-①~④ 处置、cmd-12 真库证据、cmd-13 CLI 证据及本节存量绑定验收。
