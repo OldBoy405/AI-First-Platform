@@ -14,22 +14,20 @@ updated: 2026-08-30T00:20:00+08:00
 | 里程碑 | 内容 | 预计工时 | 退出条件 |
 |---|---|---:|---|
 | M1 评审 Skill 合同 | 完成 `review-tech-design`、`review-dev-plan` 的输入、AC/事实核验、增量评审和 UPSTREAM 规则 | 16h | 两个 Skill 的职责边界、输入合同和失败语义与 SDD 一致 |
-| M2 输出与权限合同 | 完成 `write-tech-design` 的 AC 输出约束、`controlled-shell` 只读取证说明和 reviewer 权限矩阵 | 10h | 每个 AC 的落点/观察/可达性有生成约束，reviewer 只读权限最小化 |
+| M2 输出与权限合同 | 完成 `write-tech-design` 的 AC 输出约束、`controlled-shell` 只读取证说明和 reviewer 权限矩阵 | 16h | 每个 AC 的落点/观察/可达性有生成约束，reviewer 只读权限最小化 |
 | M3 Pipeline 传参 | 更新 architecture/code 两条 Pipeline 的 reviewer 资源传递，保持节点与 reviewLoop 不变 | 6h | `workspace`、`resources`、反馈、轮次来源明确且结构未漂移 |
-| M4 结构回归与验证 | 扩展 Pipeline 结构测试，执行 prompt lint、矩阵检查、JSON 解析及相关回归测试 | 16h | 所有检查通过，变更文件仅在批准范围内 |
+| M4 结构回归与验证 | 扩展 Pipeline 结构测试，执行 prompt lint、矩阵检查、JSON 解析及相关回归测试 | 10h | 所有检查通过，变更文件仅在批准范围内 |
 
-预计总工时：48h（约 6 人天）。M1 与 M2 可并行；M3 依赖 M1/M2 的合同；M4 依赖全部实现任务。
+预计总工时：48h（约 6 人天）。TASK-01 与 TASK-02 可并行；TASK-03 至 TASK-06 按接口和权限依赖推进；TASK-07 在全部实现任务完成后执行。
 
 # 2. 任务依赖图
 
 ```text
 TASK-01 review-tech-design ──┐
-                              ├──> TASK-03 Pipeline 传参 ──┐
+                              ├──> TASK-03 SDD 输出约束 ──┐
 TASK-02 review-dev-plan ──────┘                            │
-                                                           ├──> TASK-07 结构回归与验证
-TASK-04 write-tech-design ───────────────┐                │
-                                         ├──> TASK-05 权限矩阵 ┘
-TASK-06 controlled-shell ────────────────┘
+                              └──> TASK-04 只读取证 ──> TASK-05 权限矩阵 ──┤
+                                                                          ├──> TASK-06 Pipeline 传参 ──> TASK-07 结构回归与验证
 ```
 
 具体依赖：
@@ -39,7 +37,7 @@ TASK-06 controlled-shell ────────────────┘
 - TASK-03：补充 `write-tech-design` 的 AC 级输出合同。
 - TASK-04：补充 `controlled-shell` 的两个 reviewer 只读取证调用边界。
 - TASK-05：将 `controlled-shell` 加入 `quality-reviewer-agent.can-call`，依赖 TASK-04 的权限语义。
-- TASK-06：更新两条 Pipeline 的 reviewer 传参，依赖 TASK-01、TASK-02、TASK-03 的输入合同。
+- TASK-06：更新两条 Pipeline 的 reviewer 传参，依赖 TASK-02、TASK-03、TASK-05 的输入合同。
 - TASK-07：扩展结构测试并执行全部验证，依赖 TASK-01 至 TASK-06。
 
 # 3. 资源与分工
