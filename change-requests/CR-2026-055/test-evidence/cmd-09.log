@@ -1,0 +1,6 @@
+$ node -e const fs=require('fs'); for (const f of ['architecture-design.pipeline.json','code-implementation.pipeline.json']) JSON.parse(fs.readFileSync('pipeline-templates/'+f,'utf8')); console.log('json ok')
+(exit=0)
+--- stdout ---
+json ok
+
+--- stderr ---

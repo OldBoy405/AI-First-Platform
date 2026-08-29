@@ -1,0 +1,21 @@
+$ node --test skills/shared/crctl/scripts/test/check-skill-matrix.test.mjs
+(exit=0)
+--- stdout ---
+✔ 检查4①：external 有引用点（pipeline-templates/*.json 内）→ 通过（AC-2 判绿侧） (53.7145ms)
+✔ 检查4②：external 零引用点 → 退出非 0 且错误含技能名（AC-1） (56.159ms)
+✔ 检查4③：同一 external 被多 actor 声明且有引用点 → 通过（brainstorming 形态，B-4） (55.1262ms)
+✔ 检查4④：多 actor 声明且零引用 → 错误同时列出全部声明 actor（FR-1 文案） (60.3133ms)
+✔ 检查4⑤：CRLF 与 LF 同内容夹具结果一致（FR-3 行尾纪律） (110.0619ms)
+✔ 检查4⑥：既有三项检查回归——缺归属 / 目标缺失 / md 漂移各至少一条 (155.3798ms)
+✔ 检查4⑦：三段输入各自空结构 → 硬失败退出非 0（TD-BL-2，不静默降级） (175.9204ms)
+✔ 检查4⑧：只在 openwiki/ 下出现的技能名不计为引用点（AC-2 判红侧） (57.5005ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 788.7833
+
+--- stderr ---

@@ -1,0 +1,45 @@
+cr-id: CR-2026-055
+tasks:
+  - id: CR-2026-055-TASK-01
+    title: "强化技术设计评审合同"
+    status: done
+    done-at: "2026-08-30T00:39:51+08:00"
+    estimate: 8h
+    depends-on: []
+  - id: CR-2026-055-TASK-02
+    title: "明确开发计划增量评审职责"
+    status: done
+    done-at: "2026-08-30T00:39:59+08:00"
+    estimate: 8h
+    depends-on: []
+  - id: CR-2026-055-TASK-03
+    title: "增加 SDD 的 AC 级输出约束"
+    status: done
+    done-at: "2026-08-30T00:39:59+08:00"
+    estimate: 6h
+    depends-on: [CR-2026-055-TASK-01]
+  - id: CR-2026-055-TASK-04
+    title: "补齐 reviewer 只读取证合同"
+    status: done
+    done-at: "2026-08-30T00:39:59+08:00"
+    estimate: 5h
+    depends-on: [CR-2026-055-TASK-01, CR-2026-055-TASK-02]
+  - id: CR-2026-055-TASK-05
+    title: "绑定 reviewer 最小权限"
+    status: done
+    done-at: "2026-08-30T00:39:59+08:00"
+    estimate: 5h
+    depends-on: [CR-2026-055-TASK-04]
+  - id: CR-2026-055-TASK-06
+    title: "传递两条 Pipeline 的 reviewer 资源"
+    status: done
+    done-at: "2026-08-30T00:39:59+08:00"
+    estimate: 6h
+    depends-on: [CR-2026-055-TASK-02, CR-2026-055-TASK-03, CR-2026-055-TASK-05]
+  - id: CR-2026-055-TASK-07
+    title: "完成结构回归与发布前验证"
+    status: done
+    done-at: "2026-08-30T00:39:59+08:00"
+    estimate: 10h
+    depends-on: [CR-2026-055-TASK-01, CR-2026-055-TASK-02, CR-2026-055-TASK-03, CR-2026-055-TASK-04, CR-2026-055-TASK-05, CR-2026-055-TASK-06]
+

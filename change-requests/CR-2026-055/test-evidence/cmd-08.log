@@ -1,0 +1,20 @@
+$ node --test skills/shared/crctl/scripts/test/workspace-resolver.test.mjs
+(exit=0)
+--- stdout ---
+✔ TASK-03：三仓 fixture 返回稳定排序 repo map、graphDigest、canonical path（AC-2） (54.8208ms)
+✔ TASK-03：workspace 位于 CR worktree 内时以主 checkout 为 InstWS 并反解 cr/branch (555.0789ms)
+✔ TASK-03：未知 repo / inactive repo 精确错误（AC-1） (19.1925ms)
+✔ TASK-03：声明非法 → REPO_GRAPH_INVALID / REPO_GRAPH_NOT_FOUND（AC-1） (86.266ms)
+✔ TASK-03：path 不存在 → REPO_PATH_NOT_FOUND；末段 symlink escape → REPO_PATH_ESCAPE（AC-1） (34.1913ms)
+✔ TASK-03：pre-finalize authority = CR worktree（AC-3） (19.3779ms)
+✔ TASK-03：post-finalize authority = Transaction Workspace，绝不返回主 checkout / 旧 CR worktree（AC-3） (22.5471ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 870.6545
+
+--- stderr ---
