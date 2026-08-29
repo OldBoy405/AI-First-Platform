@@ -1,0 +1,49 @@
+cr-id: CR-2026-055
+review-type: code
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-30T06:49:02+08:00"
+verdict: block
+blockers:
+  - "[P1] 规格未完整落地：`skills/develop/write-tech-design/SKILL.md:96-109` 只要求每个既有实现断言附 repo/commit/path/symbol/conclusion，并说无法绑定时按待核实依赖列出；没有要求生成名为“既有实现依赖与事实”的显式、有序依赖清单。PRD FR-2/SDD §3.1 明确要求该清单作为 `sdd.explicit_existing_dependencies` 的来源，review-tech-design 又要求只核验该清单并检查正文漏列引用。请补齐可定位的输出结构和 reviewer 消费规则，否则依赖集合仍可能被模型自行猜测。"
+  - "[P2] 工程标准未满足：本提交修改 `agent-skill-matrix.yml:145` 的权限关系，但 tools `AGENTS.md` 的权限矩阵规则要求同步 `AGENT-SKILL-MATRIX.md`；该 Markdown 的主责矩阵仍未反映本次 reviewer 与 controlled-shell 的权限变更。请同步解释性权限文档，或明确补充其 can-call 展示规则。"
+  - "[P1] 测试证据不满足 AC-9：`change-requests/CR-2026-055/test-report.md:88` 明确未执行 `lint-prompts.test.mjs`、`check-skill-matrix.test.mjs` 及相关 crctl/workspace-resolver 回归测试，却以“不适用”通过；PRD AC-9/SDD §8.3 要求相关 crctl 测试和 Pipeline JSON 解析全部通过。请按实际相关测试补充 `crctl test` 计划并重新生成 pass 报告，或提供可审计的理由证明每个被省略测试确实与本次变更无关。"
+dimensions:
+  implementation-alignment: "BLOCK：Pipeline resources 传参、reviewer 权限调用关系和新增结构断言已实现；但 write-tech-design 没有形成 SDD 要求的显式既有实现依赖清单输出合同。"
+  engineering-quality: "PASS：tools worktree 仅修改批准的 8 个文件；JSON、prompt lint 和现有结构测试均通过，diff 无空白错误。"
+  key-path-readability: "PASS：新增提示词规则按输入合同、事实核验、回修和输出合同分段，未发现不可读的实现逻辑。"
+  security: "PASS：未修改 rules.json、crctl.mjs 或受控 Git 白名单；reviewer 仅增加 controlled-shell can-call 声明，未增加写权限。"
+  test-coverage: "BLOCK：新增测试覆盖 resources 输入、权限关系和 reviewer prompt 负向约束，但未覆盖 AC 级输出合同、显式依赖清单、首轮多 blocker/回修语义，也未执行报告中列出的相关 crctl 回归测试。"
+  test-evidence-credibility: "PASS：test-report.md 的 crctl 机器区、traceability.yml 和 4 个 test-evidence 日志彼此一致，4 条已执行命令均 exit=0；但其覆盖范围不足以证明 AC-9 全部要求。"
+  standards: "BLOCK：AGENTS.md 要求权限矩阵变更同步 agent-skill-matrix.yml 与 AGENT-SKILL-MATRIX.md；本提交只更新 YAML。"
+suggestions:
+  - "完成 blocker 后补充针对 write-tech-design/review-tech-design/review-dev-plan 关键合同词的结构断言，降低提示词回归风险。"
+review-loop:
+  current-attempt: 1
+release-subjects:
+  version: 1
+  repositories:
+    - repo: ai-first-platform-docs
+      remote-ref: refs/heads/requirement/CR-2026-055
+      reviewed-source-sha: 2fe9043ca40bac74eaab82fee9f042de3de4025a
+    - repo: multica
+      remote-ref: refs/heads/requirement/CR-2026-055
+      reviewed-source-sha: c567a5caf48608c248d4bddd2a2b450552867ea2
+    - repo: tools
+      remote-ref: refs/heads/requirement/CR-2026-055
+      reviewed-source-sha: c0df12757662fdb972423a69996e44a273ec6a25
+  artifacts:
+    algorithm: sha256
+    canonicalization: crlf-to-lf+path-sort
+    files:
+      - { path: change-requests/CR-2026-055/plan.md, sha256: bb3aa0accf69f45fa11b81fa03324510ddd537f5b1021607d7074add9c5cfce3 }
+      - { path: change-requests/CR-2026-055/prd.md, sha256: 8708d6b0adbba57d1759272425ee04815c40dab7d619d7378e70a84b898e1156 }
+      - { path: change-requests/CR-2026-055/sdd.md, sha256: 43ceaacbdcdcfacb7e4ac382098d4f21b9d44e7e597f6654136c064b44ba7d8a }
+      - { path: change-requests/CR-2026-055/tasks/TASK-01.md, sha256: a74025cc3cb5154b29d594c8c2a29171ab2ce87dd4a85c3f932c68d706260ade }
+      - { path: change-requests/CR-2026-055/tasks/TASK-02.md, sha256: 6e1a8cfd47d0dc8abf827cc23e08e8000e4a078a35a41942f1c460154f35f1ad }
+      - { path: change-requests/CR-2026-055/tasks/TASK-03.md, sha256: 0423f85d28efbe996a466b1c2696fac6ae9060452da0fae886697f80a13a3066 }
+      - { path: change-requests/CR-2026-055/tasks/TASK-04.md, sha256: 7aea805ef6ff885a443d6a8aaea127d944662d725493168765496eb305f7554b }
+      - { path: change-requests/CR-2026-055/tasks/TASK-05.md, sha256: 0e588577204d199b6b42f2956638793067d689c718ecb28ed00e9f0d35747576 }
+      - { path: change-requests/CR-2026-055/tasks/TASK-06.md, sha256: fbdcb1c329ecf873c55c6c59921ca406d36600649b3351d0444088d5c8d1a7d2 }
+      - { path: change-requests/CR-2026-055/tasks/TASK-07.md, sha256: 32e18d796d79214948ef45ba51cef73a13e9c06fec3c4a1ba1986980d900ba9b }
+      - { path: change-requests/CR-2026-055/tasks/_index.yml, sha256: eb57169789bb39ec1ff9815d6c804ca318da50e8363264aed3752757112ba369 }
+    digest: 9926b419a90c73f0e4b19451a4960ecd1a9d75572d2163fbf6e81a45a12e5b59
