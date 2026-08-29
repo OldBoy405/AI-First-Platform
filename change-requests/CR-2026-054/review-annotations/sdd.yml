@@ -1,0 +1,24 @@
+cr-id: CR-2026-054
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-29T13:10:54+08:00"
+verdict: block
+blockers:
+  - "P1 安全：daemon/internal/daemon/daemon.go 的初次终态回调失败路径仍会通过 taskLog.Error(..., error, err/failErr) 输出原始错误；PRD FR-17/NFR-3 禁止记录 error message 或完整终态 payload，而 SDD 当前又将既有终态路径日志排除在清理范围外，导致设计无法满足日志脱敏边界。请将技术设计收敛为初次投递和补投失败路径统一只记录 task_id、terminal_kind、稳定脱敏 error_class，不记录原始 error、errorMessage、output、session、workdir 或完整 report，并补充覆盖两类路径的日志测试。"
+dimensions:
+  prd-sdd-alignment: "FR-1~FR-20 均在 SDD §6 映射，三条实现轨、验收证据和非目标总体一致；但 FR-17 在现有终态日志排除范围下无法完整实现。"
+  architecture: "通过：严格解析仍位于 tools lib，archive 校验保持 workspace-transactions 私有，daemon 补投位于 server/internal/daemon；未新增第二状态机、账本、队列、API 或服务管理器。"
+  data-model: "通过但需补强：诊断元数据和 task ID 内存 map 一致；需要在修订中明确 terminalTaskReport 的完整不可变复制，以及不能由引用字段泄露可变 payload。"
+  interface-contract: "通过：parseYaml 严格模式、私有 archive validator、deliverTerminalTaskReport 和既有 CompleteTask/FailTask 契约清晰，补投不会递归进入入队包装器。"
+  cross-repo: "通过：tools 仍由 crctl/Git 负责权威写入，multica daemon 仍消费服务端任务契约；目标 worktree authority 与参与仓边界正确。"
+  security-performance: "阻断：archive 校验时序和补投单 worker/30 秒策略合理，但可达的初次终态回调原始错误日志与 FR-17/NFR-3 冲突。"
+  testability: "部分通过：已有设计覆盖补投日志脱敏，但未明确覆盖初次终态投递失败 caller 日志；需增加初次和重放两类日志断言。"
+  prompt-adoption: "跳过：本 CR 不触及 tools crctl.mjs dispatch 或 controlled-shell/rules.json protectedPaths.deny。"
+suggestions:
+  - "记录实现前 tools 与 multica 的精确 source commit 或 authority resolution，避免跨仓评审证据随 worktree 漂移。"
+  - "在接口章节明确 terminalTaskReport 所有字段的不可变值复制；若未来出现 slice/map 等引用字段，必须深复制或改为不可变值类型。"
+  - "使用捕获 logger 同时测试初次终态投递失败和补投失败，拒绝 output、errorMessage、session、workdir 及原始错误文本。"
+review-loop:
+  current-attempt: 1
+subject-file: change-requests/CR-2026-054/sdd.md
+subject-sha256: ffdc18195d471acb91a683e087c08a2b9c2094ee8cb7d3a50fb15be0d928748d
