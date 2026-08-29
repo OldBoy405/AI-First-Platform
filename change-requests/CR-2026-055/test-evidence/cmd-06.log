@@ -1,0 +1,37 @@
+$ node --test skills/shared/crctl/scripts/test/test-cr.test.mjs
+(exit=0)
+--- stdout ---
+✔ parseTestPlan：schema 非 cr-test-plan/v1 → TEST_PLAN_SCHEMA_INVALID (19.7997ms)
+✔ parseTestPlan：空 commands / 字段类型错误 / 禁止字段 → TEST_PLAN_SCHEMA_INVALID (18.0116ms)
+✔ parseTestPlan：未知 repo → TEST_REPO_NOT_FOUND；absolute cwd → TEST_CWD_ESCAPE (16.9164ms)
+✔ canonicalCommandSubject：digest 稳定、修改命令后变化 (0.3878ms)
+✔ parseAnalysisMarker：缺失 / 重复 / 合法唯一 literal (0.4702ms)
+✔ renderTestMachineReport：frontmatter 字段与 kebab-case 结果字段 (0.4723ms)
+✔ renderTestsTraceability：新增 / 替换 / 非法 tests 形状 / cr-id 不匹配 (0.4836ms)
+✔ renderLoopText：schema 稳定渲染 (0.1939ms)
+✔ 端到端：合法 plan → status pass，原子发布四类 authority (759.5705ms)
+✔ 端到端：--cmd 拒绝（BAD_ARGS），不执行命令、零 authority (582.3078ms)
+✔ 端到端：argv 安全——args 含 shell 元字符不触发 shell 解释 (754.2528ms)
+✔ 端到端：业务失败分流——non-zero 继续执行并发布 block，进程 exit 0 (836.0661ms)
+✔ 端到端：幂等重放——相同 plan 重放 changed=false 且不重复 attempt (949.467ms)
+✔ 端到端：executable 启动失败 → TEST_EXECUTABLE_INVALID 零 authority (683.6686ms)
+✔ 端到端：LF/CRLF plan 语义相同 → command digest 相同且不重复 attempt (968.137ms)
+✔ 端到端：timeout 是业务 block，剩余命令继续执行 (1826.5226ms)
+✔ 端到端：新 attempt 逐字保留 marker 后分析；失败前不删除 complete journal (1354.6798ms)
+✔ 端到端：参与仓 HEAD 改变后同一 plan 生成新 attempt (2033.6515ms)
+✔ 端到端：plan 只能位于 workspace/.crctl/tmp，拒绝 traversal/authority/symlink escape (954.7863ms)
+✔ 端到端：cwd 拒绝 .. 段并将等价路径 canonicalize (1014.617ms)
+✔ 端到端：test scope lock 被持有时保守阻断且零 authority (668.3359ms)
+✔ 端到端：BLOCK 到 maxAttempts 后硬停止且不执行新命令 (659.2526ms)
+✔ 端到端：非法 test journal 硬失败，不被 complete 幂等路径静默跳过 (946.2814ms)
+✔ 端到端：非法 review-loop 与 pipeline 配置硬失败且不执行命令 (1356.1804ms)
+ℹ tests 24
+ℹ suites 0
+ℹ pass 24
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 16493.7171
+
+--- stderr ---
