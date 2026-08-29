@@ -5,7 +5,7 @@ cr-ref: CR-2026-054
 title: "CR 归档安全、Agent 执行边界与任务终态闭环技术设计"
 status: draft
 created: 2026-08-29T13:01:19+08:00
-updated: 2026-08-29T14:00:59+08:00
+updated: 2026-08-29T15:44:54+08:00
 ---
 
 # 1. 架构概览
@@ -217,15 +217,27 @@ func (d *Daemon) deliverTerminalTaskReport(ctx context.Context, report terminalT
 
 - `deliverTerminalTaskReport` 按 `report.kind` 调既有 `Client.CompleteTask` 或 `Client.FailTask`，保持所有原始不可变参数和既有有限重试；它只发送一次指定种类的 report，不决定 complete→fail fallback，也不入队。
 - 常规 `reportTerminalTask` 仍以 `context.WithTimeout(context.WithoutCancel(parentCtx), terminalTaskReportTimeout)` 执行一次完整交付；成功返回 nil。发送失败时，它先按**本次尝试的** report kind 构造 `terminalReportFailure{cause, taskID, kind, class}`，其中 `class` 只能为 `transient` 或 `permanent`。
-- 该包装的 `Unwrap()` 使既有 `isTransientError()` 继续对原始 cause 分类；`Error()` 仅供已有 complete→fail fallback 生成发往服务端的 fail `errorMessage`，其原始错误文本绝不传给 logger；`slog.LogValue()` 只暴露安全字段。
-- 仅当发送的最终错误为瞬时错误时，`reportTerminalTask` 才调用 `enqueueTerminalReport(copyImmutable(report))`，并返回包含该原始 cause 的安全包装。永久错误不入队，亦返回安全包装；因此所有初次 caller 的结构化日志不再展开原始 cause。
+- `terminalReportFailure` 的 `Unwrap()` 使既有 `isTransientError()` 继续对原始 cause 分类；`Error()` 仅供已有 complete→fail fallback 生成发往服务端的 fail `errorMessage`，其原始错误文本绝不传给 logger；`slog.LogValue()` 只暴露安全字段。
+- 为解决既有 caller 已经携带 `task`、`status`、`failure_reason` 和事件文本的问题，新增 `terminalReportLogHandler`（独立于业务 caller 的 daemon 包私有 `slog.Handler` wrapper），由 `New()` 将传入 logger 包装一次后注入 Daemon。该 wrapper 在 `Handle` 阶段识别 `terminalReportFailure` 或显式 `terminalReportLogMarker`：
+
+```go
+type terminalReportLogMarker struct {
+    taskID string
+    kind terminalTaskReportKind
+    class terminalReportErrorClass
+}
+```
+
+识别到任一 marker 后，wrapper 重建固定事件名的全新 Record，只加入 `task_id`、`terminal_kind`、`error_class`，丢弃原 Record 的 message、所有 inherited/显式属性及原始 error；marker 只作为 handler 内部识别信号，不输出为日志字段。初次 caller 通过 `"error"` 属性中的 `terminalReportFailure` 被识别；重放与冲突使用 marker helper。普通日志记录原样转发；不修改全局 default logger，不影响非终态日志。
+- 该 handler 是日志白名单的强制边界，`LogValue()` 是未包装 logger 场景下的纵深防御，不能单独承担删除 sibling attrs 的职责。测试必须同时验证 `New()` 注入后现有 caller 的日志被重建为白名单记录，以及直接调用安全 helper 的重放/冲突记录同样满足白名单。
+- 仅当发送的最终错误为瞬时错误时，`reportTerminalTask` 才调用 `enqueueTerminalReport(copyImmutable(report))`，并返回包含该原始 cause 的安全包装。永久错误不入队，亦返回安全包装；所有初次 caller 的结构化日志由上述 handler 统一收敛，不再展开原始 cause。
 - **保留既有成功任务的 complete→fail fallback 作为唯一策略点。** 当该 caller 调用 `reportTerminalTask(completeReport)`：成功即结束；若 `isTransientError(err)` 为真，complete report 已入队、记录安全的 `terminal_kind=complete,error_class=transient` 后结束，绝不构造 fail report；若为永久错误，先记录安全的 `terminal_kind=complete,error_class=permanent`，再以该包装 `err.Error()` 仅构造服务端 fail `errorMessage`，并保留原 complete result 的 `taskID`、branch、session、workdir、durable workdir、session rollout 字段和既有 `failureReason` 分类，调用一次 `reportTerminalTask(failReport)`。
 - fallback `FailTask` 成功时返回 nil 且该 caller 结束；失败时第二次 `reportTerminalTask` 返回以 `terminal_kind=fail` 分类的安全包装：瞬时错误将原始 fail report 入队后记录安全 `error_class=transient`，永久错误不入队并记录安全 `error_class=permanent`。不聚合或覆盖初次 complete cause；每条日志反映其对应的单次发送尝试。
 - 重放循环直接调用 `deliverTerminalTaskReport`，绝不回调 `reportTerminalTask`，避免瞬时失败重放时递归入队或重复启动 worker；其日志通过同一安全值构造函数输出。
 
 首次成功加入集合时，`sync.Once` 用 daemon 根 context 启动单一 goroutine。生产运行使用 `d.rootCtx`；单元测试未经 `Run()` 初始化时沿用既有 `recoveryContext()` 的 `context.Background()` 回退，仅用于构造可测 fixture，不改变生产生命周期。
 
-**终态日志合同覆盖初次投递、complete→fail fallback 与重放三条路径，不再排除现有 caller。** 所有可达的终态回调失败日志只能包含固定事件名以及 `task_id`、`terminal_kind`、`error_class`；`error_class` 只能为稳定脱敏值 `transient`、`permanent` 或 `conflict`。日志顺序固定为：initial complete 失败先记录其安全分类；仅永久错误随后发送 fallback fail；fallback 失败再记录其自己的安全分类。禁止向 logger 传入或展开原始 cause、`errorMessage`、`output`、session、workdir、完整 report 或其他 payload 字段。初次 caller 通过 `terminalReportFailure.LogValue()` 自动满足该合同；重放和冲突日志显式复用同一安全属性生成逻辑。该收敛只改变日志表示，不改变既有 complete→fail 的服务端 payload、错误分类或重试/入队语义。
+**终态日志合同覆盖初次投递、complete→fail fallback 与重放三条路径，不再排除现有 caller。** 所有可达的终态回调失败日志只能生成固定事件名以及 `task_id`、`terminal_kind`、`error_class`；`error_class` 只能为稳定脱敏值 `transient`、`permanent` 或 `conflict`。日志顺序固定为：initial complete 失败先由 terminal-report handler 重建为安全记录；仅永久错误随后发送 fallback fail；fallback 失败再由同一 handler 重建为其自己的安全记录。`terminalReportFailure.LogValue()` 只能作为纵深防御，不能代替 handler 对 sibling attrs 的删除。禁止向最终 logger handler 传入或输出原始 cause、`errorMessage`、`output`、session、workdir、完整 report、caller event message、`task`、`status`、`failure_reason` 或其他 payload 字段。该收敛只改变日志表示，不改变既有 complete→fail 的服务端 payload、错误分类或重试/入队语义。
 
 # 4. 关键算法与流程
 
@@ -264,17 +276,18 @@ reportTerminalTask(parentCtx, report):
   failure = terminalReportFailure(cause, report.taskID, report.kind, class)
   if class == transient:
     enqueueTerminalReport(copyImmutable(report))
-  return failure  // LogValue 仅暴露 task_id/terminal_kind/error_class；Unwrap 保留分类
+  return failure  // New() 注入的 terminalReportLogHandler 重建白名单日志；LogValue 仅作纵深防御
 
 handleSuccessfulResult(ctx, completeReport):
   err = reportTerminalTask(ctx, completeReport)
   if err == nil: return
-  logSafe(completeReport.taskID, complete, errorClass(err))
+  // Existing caller may pass task/status/error attrs; the scoped handler drops them.
+  log existing caller error with err
   if isTransientError(err): return  // completeReport 已入队，绝不降级为 fail
   failReport = failReportFromComplete(completeReport, err.Error())
     // 保留 taskID、branch/session/workdir/durableWorkDir、rollout 字段；errorMessage 仅发至 FailTask
   fallbackErr = reportTerminalTask(ctx, failReport)
-  if fallbackErr != nil: logSafe(failReport.taskID, fail, errorClass(fallbackErr))
+  if fallbackErr != nil: log existing caller error with fallbackErr
 
 enqueueTerminalReport(report):
   lock pending
@@ -323,7 +336,7 @@ replayLoop(rootCtx):
 | 不变量范围 | history 全局唯一/合法终态，其他文件仅检查目标 CR | 通用 schema registry 与全账本业务字段校验超出已确认问题且扩大维护面。 |
 | Agent 环境处理 | `ENVIRONMENT_MISMATCH` + 已有 `onFail=abort` | 管理共享服务、增加服务管理 Skill/Pipeline 或创建新的 CR 状态都会越权并重复现有失败编排。 |
 | daemon 补投 | daemon 内存 map + 30 秒单 worker + 服务端既有幂等端点 | 持久化 outbox、MQ、DB 表、容量/背压框架会重建不需要的调度系统。 |
-| 日志诊断 | 稳定脱敏 `error_class` | 记录原始 Error 或 payload 会与“不泄露 error message/output/session”安全要求冲突。 |
+| 日志边界 | `terminalReportLogHandler` 在 `New()` 注入，识别 `terminalReportFailure` 后重建固定白名单 Record；`LogValue()` 仅作纵深防御 | 只改 error 的 `LogValue()` 无法移除 caller 的 task/status/failure_reason/message；逐个改 caller 超出最小挂钩约束 | |
 
 **Decision: 以 nullable 候选行号表达缺失不变量。**
 
@@ -344,7 +357,7 @@ replayLoop(rootCtx):
 | FR-13 | `reportTerminalTask` 的瞬时最终错误入队挂钩；保留成功任务 caller 的“complete 瞬时入队、complete 永久才 fallback fail”既有分支；复用 client retry/isTransientError | complete/fail 瞬时与永久错误、complete→fail fallback 测试 |
 | FR-14 | `terminal_report_retry.go` 的 task ID map、全 payload 比较、first-wins、`sync.Once` | 去重、冲突、单 worker 测试 |
 | FR-15 | 30 秒 ticker、单轮 snapshot helper、成功/瞬时/永久处理 | 直接调用单轮 helper，零真实 ticker 等待 |
-| FR-16~FR-17 | 复用 `deliverTerminalTaskReport` 和服务端幂等接口；root context 停止；`terminalReportFailure.LogValue()` 与 `logSafe` 统一覆盖初次/重放/冲突三类脱敏日志 | payload 保真、关闭、初次与重放日志均不泄露测试 |
+| FR-16~FR-17 | 复用 `deliverTerminalTaskReport` 和服务端幂等接口；root context 停止；`terminalReportLogHandler` 与 `terminalReportFailure.LogValue()` 统一覆盖初次/fallback/重放/冲突三类脱敏日志 | payload 保真、关闭、现有 caller 属性白名单、初次/fallback/重放日志均不泄露测试 |
 | FR-18 | 新 Go 文件/测试、`daemon.go` 两处最小挂钩、`CUSTOM.md` 登记 | diff 范围、台账与 Go 测试审查 |
 | FR-19~FR-20 | 本 SDD §4.3 证据矩阵及后续 TASK 映射 | review-code、现有审批和 archive 前置 gate |
 
@@ -353,8 +366,8 @@ replayLoop(rootCtx):
 ## 7.1 安全与数据泄露
 
 - archive 错误仅携带文件逻辑名、有限类别、行号和相关键/CR ID，不输出候选全文。
-- P2 日志决策覆盖所有可达终态回调失败：初次投递通过 `terminalReportFailure.LogValue()`，重放/冲突通过 `logSafe`，两者都只生成 `task_id`、`terminal_kind`、`error_class`。不得向 logger 传入或展开 fail payload 的 `errorMessage`、complete payload 的 `output`、session/workdir、完整 report 或原始 cause。
-- `terminalReportFailure.Error()` 仅在 complete 永久拒绝的已有 fallback 中构造**发往 FailTask 的**服务端 `errorMessage`；初次 complete 和 fallback fail 的结构化日志始终经 `slog.LogValuer` / `logSafe` 输出，且按“complete 失败日志 → 仅永久错误发送 fail → fallback 失败日志”的顺序执行。测试锁定当前所有终态 caller，防止未来改为字符串插值绕过脱敏。
+- P2 日志决策覆盖所有可达终态回调失败：`New()` 注入的 `terminalReportLogHandler` 在 Handle 阶段重建固定事件和 `task_id`、`terminal_kind`、`error_class` 三字段，覆盖初次投递、complete→fail fallback、重放和冲突；`terminalReportFailure.LogValue()` 仅是 handler 之外的纵深防御。handler 必须丢弃 caller 的 message、task、status、failure_reason、原始 cause、errorMessage、output、session/workdir、完整 report 和其他 payload。
+- `terminalReportFailure.Error()` 仅在 complete 永久拒绝的已有 fallback 中构造**发往 FailTask 的**服务端 `errorMessage`；初次 complete 和 fallback fail 的最终日志必须经过 scoped handler，且按“complete 失败安全日志 → 仅永久错误发送 fail → fallback 失败安全日志”的顺序执行。
 - Agent 不操作共享服务，不把不可信共享实例输出用作评审结论；环境不可控时中止而非推测。
 - daemon 使用既有服务端终态接口、daemon 认证和幂等语义，不新增 token、HTTP 路由或本地持久化敏感数据。
 
@@ -378,7 +391,7 @@ replayLoop(rootCtx):
 - 新增 `server/internal/daemon/terminal_report_retry_test.go`，以 `httptest` client 或同包 fixture 驱动单轮 helper，不等待真实 ticker。
 - 覆盖 complete/fail 瞬时耗尽后入队、初次永久错误不入队、成功删除、瞬时失败保留并停止本轮、永久失败删除、相同 payload 去重、冲突 first-wins、root context 取消，以及当前值字段的不可变复制。
 - 单独覆盖成功任务 caller 的 complete→fail：永久 CompleteTask 拒绝只发送一次保留完整 result payload 的 FailTask，`errorMessage` 含原 complete cause 但只出现在客户端请求断言中；成功 fallback 不入队；瞬时 CompleteTask 耗尽重试只把 complete report 入队且**不调用** FailTask；fallback FailTask 的瞬时错误入队 fail report、永久错误不入队。
-- 使用捕获 `slog.Handler` 驱动**初次投递失败 caller**（含 complete 永久→fail 与 fallback fail 失败）以及**重放/冲突**路径：断言每条日志只含 `task_id`、`terminal_kind`、`error_class`且顺序为 complete 后 fail；以唯一秘密标记填充 output、errorMessage、session、workdir 和原始 cause，断言日志全文及属性均不含任一秘密值。额外断言 `errors.Unwrap` / `isTransientError` 与 complete→fail fallback 仍获得原始 cause，证明日志脱敏未改变功能语义。
+- 使用捕获 `slog.Handler` 验证**现有 caller 原样日志**经 `terminalReportLogHandler` 重建后，精确白名单仅为 `task_id`、`terminal_kind`、`error_class`，固定事件名，不保留 inherited `task`、caller message、status、failure_reason 或 error 属性；覆盖 runtime offline、prepare failure、run failure、complete permanent→fallback fail、fallback fail failure 和普通 fail caller。再覆盖重放/冲突安全 helper；以唯一秘密标记填充 output、errorMessage、session、workdir 和原始 cause，断言日志全文及属性均不含任一秘密值。额外断言 `errors.Unwrap` / `isTransientError` 与 complete→fail fallback 仍获得原始 cause，证明日志脱敏未改变功能语义。
 - 不扩张现有大型 `daemon_test.go`；保持 Go 注释英文并按 `CUSTOM.md` 记录所有 fork 定制和验证命令。
 
 # 8. 风险与非目标
@@ -390,8 +403,8 @@ replayLoop(rootCtx):
 | 环境标签掩盖代码缺陷 | 仅在前提不可建立且修复越界时允许 `ENVIRONMENT_MISMATCH`；受控环境失败仍为代码失败 | 新 blocker/status 类型 |
 | daemon 重放放大故障 | 30 秒、单 worker、首个瞬时错误停止本轮 | 背压/容量/指数退避框架 |
 | daemon 崩溃丢失内存项 | 既有 orphan recovery 收敛失联任务 | 持久化 outbox 或跨重启可靠投递 |
-| 上游 rebase 冲突 | 新增逻辑放独立 daemon 文件；`daemon.go` 仅增加零值字段和统一 `reportTerminalTask` 包装挂钩，现有 caller 通过 `slog.LogValuer` 自动脱敏；`CUSTOM.md` 留痕 | 修改每个 complete/fail 调用点 |
+| 上游 rebase 冲突 | 新增逻辑放独立 daemon 文件；`daemon.go` 仅增加零值 retry 字段、`New()` 的 logger wrapper 注入和 `reportTerminalTask` 的错误包装两个小型 AIFIRST 挂钩；现有 caller 不逐个改造，统一由 scoped handler 重建日志；`CUSTOM.md` 留痕 | 修改每个 complete/fail 调用点或全局 logger |
 
 本轮设计与评审的 authority 基线由 `crctl workspace inspect CR-2026-054` 返回的 healthy resources 确认：tools `8884f599ea3b13ce0cdb53812bf7f20e40d75dd5`，multica `a3fcdd34574779ac0c888698e5999ee9595bdcae`；实现开始前必须再次执行 workspace inspect，若 HEAD 漂移则以新权威 worktree 复核接缝，不把本段 SHA 当作长期配置。
 
-本设计不触及 `crctl.mjs` dispatch 分支或 `controlled-shell/rules.json` deny 面，因此不触发 Prompt 采纳影响小节。后续 SDD 评审应重点核对：严格模式是否保持默认兼容、候选校验是否确在 write-set 前、complete 瞬时不 fallback 且永久 fallback 的发送/日志顺序是否明确、初次/fallback/重放终态日志是否统一脱敏、P2 nullable 行号约定是否落实、以及三域是否都在 §4.3 的既有证据闭环中具备实际产物。
+本设计不触及 `crctl.mjs` dispatch 分支或 `controlled-shell/rules.json` deny 面，因此不触发 Prompt 采纳影响小节。后续 SDD 评审应重点核对：严格模式是否保持默认兼容、候选校验是否确在 write-set 前、complete 瞬时不 fallback 且永久 fallback 的发送/日志顺序是否明确、scoped terminal-report handler 是否在现有 caller 记录上执行精确三字段白名单、初次/fallback/重放终态日志是否统一脱敏、P2 nullable 行号约定是否落实、以及三域是否都在 §4.3 的既有证据闭环中具备实际产物。
