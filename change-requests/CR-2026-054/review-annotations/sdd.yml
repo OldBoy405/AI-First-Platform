@@ -1,23 +1,23 @@
 cr-id: CR-2026-054
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-29T17:42:34+08:00"
-verdict: block
-blockers:
-  - "受影响 FR/AC：FR-17、NFR-3、AC-6。当前证据：SDD §3.4、§7.1、§7.3 要求初次投递、complete→fail fallback、重放和冲突日志只暴露 task_id、terminal_kind、error_class；同时规定 terminalReportFailure.LogValue() 负责脱敏，不修改 server/internal/logger，也不逐个改造现有 caller。上一轮指出的 daemon.go 现有路径仍附带 task、status、failure_reason、事件专用文本和 error。LogValue() 只能控制包装 error 的结构化表示，不能删除既有日志上下文属性、task 属性或事件文本，也不能保证既有日志包含 terminal_kind。当前方案无法同时满足严格日志白名单、FR-18 的最小挂钩限制以及不改共享 logger/不逐个改造 caller。必须在技术设计阶段解决契约冲突：要么明确放宽 FR-17/NFR-3 的适用日志范围并定义允许保留的既有属性；要么保留严格白名单，设计统一且安全的终态日志出口，明确所有相关 caller 的修改范围，并同步调整 FR-18；同时补充覆盖全部终态 caller 的精确属性白名单、日志顺序、原始 cause 不可见和 payload 不可见测试。"
+reviewed-at: "2026-08-29T18:03:15+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  prd-sdd-alignment: "BLOCK：FR-1 至 FR-16、FR-18 至 FR-20 均有对应设计映射；但 FR-17 的严格日志要求仍无法由当前方案实现和验证，AC-6 不成立。"
-  architecture: "PASS：archive 校验位于共用 buildEntries() 的 write-set/hash 前；daemon 复用既有终态接口、内存集合和单 worker；未新增状态机、账本、持久化 outbox、API、Pipeline 或共享服务管理能力。日志出口与 FR-18 的最小 daemon.go 修改边界存在未解决冲突。"
-  data-model: "PASS：terminalTaskReport 按值保存，pending 按 task ID 去重并采用 first-wins；快照删除时重新比较当前值；对未来引用字段提出深复制约束。"
-  interface-contract: "PASS：deliverTerminalTaskReport 只发送指定终态；complete 瞬时错误入队且不 fallback；complete 永久错误才构造保留完整 payload 的 fail 请求；fallback fail 的成功、瞬时失败和永久失败语义均已定义。"
-  cross-repo: "PASS：tools 继续由 crctl 和 Git 作为状态/账本权威；multica 继续使用既有服务端终态接口；SDD 明确 workspace authority、CUSTOM.md 登记及 multica 修改范围。"
-  security-performance: "BLOCK：30 秒单 worker、首个瞬时错误停止、永久错误删除及安全错误包装设计合理；但现有终态 caller 的 task/status/failure_reason/事件文本等日志属性未被收敛，违反严格脱敏白名单。"
-  testability: "BLOCK：SDD 规定了捕获 slog、验证 LogValue、Unwrap 和 fallback payload 的测试，但没有可执行方案证明既有 caller 日志属性被消除或符合白名单，也没有覆盖全部相关终态 caller 的精确日志断言。"
-  prompt-adoption: "PASS：本 CR 不修改 crctl.mjs dispatch 或 controlled-shell/rules.json#protectedPaths.deny，条件性 Prompt 采纳影响不触发。"
+  prd-sdd-alignment: "PASS：FR-1 至 FR-20 均有对应技术方案和验证路径。FR-17/NFR-3/AC-6 已明确将严格脱敏约束限定在本 CR 新增或修改的终态回调错误值；既有 caller 的 task、status、failure_reason、固定事件名等非敏感上下文及既有日志格式可以保留。"
+  architecture: "PASS：archive 校验位于共用 buildEntries() 的 write-set/hash 前，首次构建和 rebuild 共用同一入口；daemon 使用进程内 map、单 worker 和固定周期，不新增状态机、账本、持久化 outbox、API、Pipeline 或共享服务管理能力。"
+  data-model: "PASS：严格 YAML 诊断字段、archive 候选不变量以及按 task ID 去重的 terminalTaskReport 集合均已定义。终态报告按值保存，first-wins 和快照删除时的值比较边界明确。"
+  interface-contract: "PASS：deliverTerminalTaskReport 只负责指定终态的一次交付并复用既有有限重试；complete 瞬时失败入队且不 fallback，complete 永久失败后才以原始 cause 构造 FailTask 的 errorMessage，并保留完整终态 payload。fallback FailTask 的成功、瞬时失败和永久失败行为均已定义。"
+  cross-repo: "PASS：tools 继续由 crctl 和 Git 作为状态/账本权威，multica 继续复用既有终态接口和服务端幂等语义。SDD 保持 daemon.go 最小改动、独立重试文件/测试文件以及 CUSTOM.md 登记要求，未扩大跨仓职责。"
+  security-performance: "PASS：terminalReportFailure.LogValue() 只暴露 task_id、terminal_kind、error_class；原始 cause、errorMessage、output、session、workdir 和完整 report 不进入本 CR 新增终态错误值。设计未要求共享 logger、terminalReportLogHandler 或逐个改造 caller。30 秒单 worker、首个瞬时错误停止和 root context 关闭语义符合需求。"
+  testability: "PASS：tools 侧覆盖严格解析、archive 根结构、不变量、首次构建/rebuild 和 Git 副作用；multica 侧覆盖 complete/fail、fallback、去重、first-wins、重放、关闭、payload 保真和 slog 脱敏。测试方案包含实际成功任务 caller 的 complete→fail 行为及 Unwrap/瞬时错误分类回归。"
+  prompt-adoption: "PASS：按 SDD 声明，本 CR 不触及 crctl.mjs dispatch 或 controlled-shell/rules.json#protectedPaths.deny，条件性 Prompt 采纳检查不适用。"
 suggestions:
-  - "修复日志契约后，增加 FR-18 diff 范围检查，验证 daemon.go 仅包含约定的队列字段和两个 AIFIRST 挂钩。"
-  - "实现阶段继续使用既有三域证据矩阵，将 archive、Agent 环境失败语义和 daemon 补投分别绑定到 AC-1 至 AC-7。"
+  - "实现时应通过真实终态 caller 加捕获 slog.Handler 验证错误值确实以 LogValuer 形式记录，确保原始 cause 不会因改用 err.Error() 或格式化路径而泄露。"
+  - "为 history 条目缺失 id、缺失 final-status 以及冲突 payload 的结构化错误类别补充明确断言，避免实现阶段对缺失字段和 conflict 的诊断字段产生分歧。"
+  - "保留并明确断言 archive 校验发生在 write-set hash、stage、commit 和 push 之前，且首次构建与远端变化后的 rebuild 均经过同一验证函数。"
 review-loop:
-  current-attempt: 1
+  current-attempt: 2
 subject-file: change-requests/CR-2026-054/sdd.md
-subject-sha256: f1448f89b708dcb0d28bd2e1ba095c194521fd8b697bf0ab3277dbe35c3be9d2
+subject-sha256: d8613c6efcaf8a1670fbe5e67d6357a23597bb693aacd7b8dae75bc812c67151
