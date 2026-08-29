@@ -1,0 +1,37 @@
+cr-id: CR-2026-054
+tasks:
+  - id: CR-2026-054-TASK-01
+    title: "实现 YAML strict 可选解析模式"
+    status: pending
+    estimate: 8h
+    depends-on: []
+  - id: CR-2026-054-TASK-02
+    title: "接入 archive 候选校验"
+    status: pending
+    estimate: 10h
+    depends-on: [CR-2026-054-TASK-01]
+  - id: CR-2026-054-TASK-03
+    title: "覆盖 archive 校验和 Git 副作用测试"
+    status: pending
+    estimate: 6h
+    depends-on: [CR-2026-054-TASK-02]
+  - id: CR-2026-054-TASK-04
+    title: "收敛 Agent 执行边界文档"
+    status: pending
+    estimate: 6h
+    depends-on: []
+  - id: CR-2026-054-TASK-05
+    title: "实现 daemon 终态补投核心"
+    status: pending
+    estimate: 10h
+    depends-on: []
+  - id: CR-2026-054-TASK-06
+    title: "接入 daemon 终态出口和重放 worker"
+    status: pending
+    estimate: 6h
+    depends-on: [CR-2026-054-TASK-05]
+  - id: CR-2026-054-TASK-07
+    title: "完成终态补投测试和定制登记"
+    status: pending
+    estimate: 6h
+    depends-on: [CR-2026-054-TASK-06]
