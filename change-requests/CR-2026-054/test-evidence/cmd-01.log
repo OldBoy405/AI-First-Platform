@@ -1,23 +1,23 @@
 $ node --test skills/shared/crctl/scripts/test/yaml-subset.test.mjs
 (exit=0)
 --- stdout ---
-✔ strict: block map 重复键（含 line/firstLine/key 字段） (1.2221ms)
-✔ strict: 引号等价键冲突（id 与 'id'，unquote 后比较，大小写不折叠） (0.2619ms)
-✔ strict: flow map 重复键 (0.3175ms)
-✔ strict: tab 缩进 → invalid-indentation (0.1238ms)
-✔ strict: 根节点必须自第 0 列开始 (0.1126ms)
-✔ strict: 容器切换（映射中出现序列行） (0.1051ms)
-✔ strict: 容器切换（序列中出现映射行） (0.3208ms)
-✔ strict: 非法深度（序列内联映射的孤儿行） (0.1902ms)
-✔ strict: 未消费行 (0.1833ms)
-✔ strict: 孤立 - 无子节点 → invalid-shape (0.2224ms)
-✔ strict: 无法解释行 → invalid-shape (0.1062ms)
-✔ strict: trailing flow 内容 → invalid-shape (0.1261ms)
-✔ strict: CRLF 规范化后重复键仍被检出 (0.1021ms)
-✔ strict: 合法空值与 backlog 形状通过 (0.1014ms)
-✔ strict: 合法 block 标量与嵌套序列通过 (1.3718ms)
-✔ 默认模式兼容：重复键保留后值、宽松缩进与 CRLF 行为不变 (0.1452ms)
-✔ 默认模式兼容：选项缺失或 strict:false 与无参调用等价 (0.8213ms)
+✔ strict: block map 重复键（含 line/firstLine/key 字段） (1.2612ms)
+✔ strict: 引号等价键冲突（id 与 'id'，unquote 后比较，大小写不折叠） (0.278ms)
+✔ strict: flow map 重复键 (0.3202ms)
+✔ strict: tab 缩进 → invalid-indentation (0.1248ms)
+✔ strict: 根节点必须自第 0 列开始 (0.1096ms)
+✔ strict: 容器切换（映射中出现序列行） (0.0915ms)
+✔ strict: 容器切换（序列中出现映射行） (0.3237ms)
+✔ strict: 非法深度（序列内联映射的孤儿行） (0.1786ms)
+✔ strict: 未消费行 (0.181ms)
+✔ strict: 孤立 - 无子节点 → invalid-shape (0.2322ms)
+✔ strict: 无法解释行 → invalid-shape (0.1302ms)
+✔ strict: trailing flow 内容 → invalid-shape (0.1269ms)
+✔ strict: CRLF 规范化后重复键仍被检出 (0.0981ms)
+✔ strict: 合法空值与 backlog 形状通过 (0.0928ms)
+✔ strict: 合法 block 标量与嵌套序列通过 (0.6252ms)
+✔ 默认模式兼容：重复键保留后值、宽松缩进与 CRLF 行为不变 (0.1315ms)
+✔ 默认模式兼容：选项缺失或 strict:false 与无参调用等价 (0.7708ms)
 ℹ tests 17
 ℹ suites 0
 ℹ pass 17
@@ -25,6 +25,6 @@ $ node --test skills/shared/crctl/scripts/test/yaml-subset.test.mjs
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 74.4451
+ℹ duration_ms 73.6338
 
 --- stderr ---
