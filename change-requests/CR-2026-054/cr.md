@@ -16,9 +16,9 @@ owners:
 target-version: tbd
 source: "docs/product/CR归档安全与Agent执行边界及任务终态闭环方案.md"
 origin: ""
-status: merging
+status: writing-back
 created: "2026-08-29T12:13:07+08:00"
-updated: "2026-08-29T21:38:21+08:00"
+updated: "2026-08-29T21:44:30+08:00"
 remote-ref: ""
 last-push-at: ""
 last-push-by: ""
