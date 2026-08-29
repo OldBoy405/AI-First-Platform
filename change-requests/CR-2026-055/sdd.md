@@ -8,7 +8,7 @@ owner-role: development
 target-version: tbd
 status: draft
 created: 2026-08-29T22:45:00+08:00
-updated: 2026-08-29T22:45:00+08:00
+updated: 2026-08-29T23:53:10+08:00
 ---
 
 # 1. 架构概览
@@ -40,8 +40,8 @@ PRD
 
 | 模块 | 本 CR 变化 | 责任边界 |
 |---|---|---|
-| `skills/develop/review-tech-design/SKILL.md` | 增加输入合同、AC 闭环、SDD 自引用事实、首轮全量和回修规则 | 只做技术设计业务评审；不写 canonical annotation，不推进状态 |
-| `skills/develop/review-dev-plan/SKILL.md` | 增加输入合同和 SDD/AC→plan/TASK 增量检查 | 只做计划/TASK 业务评审；不重复无差别重审 SDD |
+| `skills/develop/review-tech-design/SKILL.md` | 增加输入合同、AC 闭环、SDD 自引用事实、首轮全量和回修规则 | 只做技术设计业务评审；不直接写 canonical annotation 或 CR 状态文件；评审 Skill 按既有合同调用 `crctl review-record`，并由其执行既有 route 对应的 `crctl advance`，不手工编辑受控文件 |
+| `skills/develop/review-dev-plan/SKILL.md` | 增加输入合同和 SDD/AC→plan/TASK 增量检查 | 只做计划/TASK 业务评审；不直接写 canonical annotation 或 CR 状态文件；评审 Skill 按既有合同调用 `crctl review-record`，并由其执行既有 route 对应的 `crctl advance`，不手工编辑受控文件 |
 | `skills/develop/write-tech-design/SKILL.md` | 约束 SDD 输出每个 AC 的设计落点、可观测结果、可达性说明 | 生成/回修 SDD；状态和账本仍经 `crctl` |
 | `skills/shared/controlled-shell/SKILL.md` | 把两个 reviewer 纳入既有只读 Git 取证合同说明 | 只声明既有受控能力的调用边界；不改白名单 |
 | `agent-skill-matrix.yml` | `quality-reviewer-agent.can-call` 增加 `controlled-shell` | 只补权限关系；不赋予审批、写入或状态权限 |
@@ -254,7 +254,17 @@ self_repair_attempt: {reviewLoop.self_repair_attempt，可为空}
 
 这里的 `resources` 必须是 node-1 由 `workspace inspect.resources` 原样传下来的值，而不是在 node-3 重新 inspect、重新发现或拼接路径。
 
-## 3.3 `controlled-shell` 只读取证合同
+`review-tech-design` 的“明确既有实现依赖”必须按以下规则识别，不使用未定义的隐式集合：
+
+- SDD 中出现现有仓库、文件路径、稳定符号、配置键、接口/协议、数据库结构、模块行为、调用顺序或责任边界，并且该事实是方案成立的前置条件时，视为既有实现依赖；
+- 仅作为背景、对比或未来候选而出现，且方案不依赖其当前行为的内容，不视为依赖；
+- `write-tech-design` 应在 SDD 的“既有实现依赖与事实”小节逐项列出依赖，至少包含 `repo`、`relative path`、`stable symbol/对象` 和“依赖结论”；无法绑定这些字段的引用必须作为待核实依赖，不得归入 N/A；
+- reviewer 只核验该小节列出的依赖，并检查正文中是否存在未列出的同类事实引用；发现未列出引用时形成业务 blocker，要求先补齐依赖清单；
+- 只有正文和依赖清单均不存在上述依赖时，才记录 `N/A（本 CR 无既有实现依赖）`。
+
+因此 §4.3 中的 `sdd.explicit_existing_dependencies` 指上述小节经正文交叉检查后得到的有序依赖清单，而不是运行时自行猜测的字段。
+
+### 3.3 `controlled-shell` 只读取证合同
 
 `controlled-shell/SKILL.md` 的调用者说明补充 `review-tech-design` 和 `review-dev-plan`。两个 reviewer 只可调用现有只读 Git 适配能力：
 
@@ -262,7 +272,7 @@ self_repair_attempt: {reviewLoop.self_repair_attempt，可为空}
 - `crctl git rev-parse HEAD` 获取证据 commit；
 - 必要时使用已有 `diff`、`log`、`merge-base` 只读能力。
 
-本 CR 不修改 `rules.json`，不增加 Git 子命令、参数形态、protected path 或写操作。reviewer 仍不能调用 commit、add、push、merge、approve、advance 或任何账本写入入口。
+本 CR 不修改 `rules.json`，不增加 Git 子命令、参数形态、protected path 或写操作。reviewer 仍不能调用 commit、add、push、merge、approve、advance 或任何账本写入入口。评审 Skill 的 `review-record` 和状态路由继续按既有 Skill 合同执行，不属于 reviewer 的事实取证授权。
 
 ## 3.4 错误契约
 
@@ -434,6 +444,8 @@ passCondition: verdict=pass and blockers=[]
 
 评审判断仍按现有路径：
 
+> 路由责任见 §4.8：`review-record` 返回 `route`，由 review Skill 按既有合同完成 route 分流；reviewer 模型本身不直接编辑受控状态文件。
+
 ```text
 临时 payload
   -> crctl review-record
@@ -441,6 +453,20 @@ passCondition: verdict=pass and blockers=[]
   -> pass: 保持待审批状态
   -> block: 既有回修/UPSTREAM 状态转换
 ```
+
+### 4.8 评审路由责任
+
+评审路由继续沿用现有 review Skill 合同：reviewer 完成业务判断并生成既有 schema 的临时 payload，review Skill 执行 `crctl review-record` 并消费其返回的 `route`。当 route 为 `repair` 或 `upstream` 时，按既有 Skill 合同调用对应的 `crctl advance`。本 CR 不新增 payload 交接机制、runner、adapter 或执行宿主。
+
+这里的 `advance` 是状态机受控入口，不是事实取证权限，也不允许 reviewer 直接编辑 `cr.md`。
+
+| route | review-record 结果 | 后续受控动作 |
+|---|---|---|
+| `pass` | `verdict=pass` 且 `blockers=[]` | 不调用回退 `advance`，由 `crctl next` 确认进入人工审批 |
+| `repair` | 技术设计或普通 plan blocker | 按既有 trigger 调用 `crctl advance` 回到对应修复状态，再交 Pipeline reviewLoop 重放 |
+| `upstream` | plan/TASK blocker 反证 SDD | 按既有 UPSTREAM trigger 调用 `crctl advance` 回到 `tech-design-review-pending`，停止当前 plan 自动重放 |
+
+任何 `crctl review-record` 成功但 route 未被消费的情况均为技术失败；不得进入人工审批。
 
 本 CR 不在 Skill 中实现原子写、CAS、attempt 或 traceability 投影，也不新增 payload 字段。状态转换仍以 `crctl next` 和状态机为准。
 
@@ -497,7 +523,7 @@ passCondition: verdict=pass and blockers=[]
 ## FR-2 技术设计评审必须覆盖 AC 闭环和 SDD 自引用事实
 
 - **设计落点**：`review-tech-design/SKILL.md` 的八维度表、AC 闭环算法、事实核验算法和证据文本模板；既有 payload dimensions。
-- **可观测结果**：每条 FR/AC 都能在评审 notes/blocker 中找到方案、落点、可观测结果、可达性和必要的 repo/SHA/path/symbol/conclusion；绿地依赖明确为 N/A。
+- **可观测结果**：每条 FR/AC 都能在既有 `dimensions` 或 `blockers` 中找到方案、落点、可观测结果、可达性和必要的 repo/SHA/path/symbol/conclusion；绿地依赖明确为 N/A。
 - **可达性说明**：评审先完成全部适用维度再统一 verdict；没有因为首个 blocker 或错误的前置过滤而跳过 AC 和事实检查。
 
 ## FR-3 技术设计评审必须统一汇总 blocker 并支持回修复核
@@ -535,6 +561,24 @@ passCondition: verdict=pass and blockers=[]
 - **设计落点**：`agent-skill-matrix.yml` 的 quality-reviewer-agent.can-call；`controlled-shell/SKILL.md` 调用者说明；结构测试的权限和负向断言。
 - **可观测结果**：矩阵中 reviewer 可调用 controlled-shell；文档只授权文件读取和已有只读 Git；测试确认没有任意 shell、写操作、审批或状态权限。
 - **可达性说明**：现有 rules.json 白名单继续提供 rev-parse/diff/log/merge-base 等能力，不需要新增命令或修改 protected paths。
+
+## 6.1 AC 逐项设计与验收映射
+
+本节将 PRD 的 AC-1 至 AC-11 显式映射到本 SDD 的设计落点。第 6 节前文的 FR 映射提供需求分组，本表提供逐 AC 的可核对索引；两者均不新增 payload 字段。
+
+| AC | 设计落点 | 可观测结果 | 可达性说明 | 验收位置 |
+|---|---|---|---|---|
+| AC-1 | §3.1 两个 reviewer Skill 输入合同；§3.2 Pipeline 传参；§3.3 资源边界 | Skill 合同列出 `cr_id`、`workspace`、`resources`、`review_feedback`、`self_repair_attempt`；代码事实路径只能来自 `resources[].worktreePath` | 缺少资源或路径非法时在评审前技术失败，不回退主工作区或会话记忆 | 两个 Skill 的参数合同断言；architecture/code reviewer prompt 结构测试 |
+| AC-2 | §4.1 首轮八维度；§4.2 AC 闭环；§4.3 事实核验；§7.4 验收位置 | 每条 FR/AC 在评审 dimensions 或 blocker 中有结论；事实证据含 repo、40 位 SHA、relative path、stable symbol、conclusion；无依赖明确记录 N/A | 首个 blocker 不提前终止，全部适用维度完成后才生成统一 verdict | 首轮双 blocker 固定场景；错误事实与 AC 不可达人工场景 |
+| AC-3 | §4.1 步骤 4-10；§4.4 回修评审；architecture reviewLoop | 同轮保留多个独立 blocker；回修逐条给出旧 blocker 状态并加入新 blocker；第 3 次后不 reset | `review_feedback` 和 `self_repair_attempt` 进入回修合同，现有 `maxAttempts=3` 与 replayNodes 提供重放入口 | architecture reviewLoop 结构测试；首次多 blocker、回修新增 blocker 和 maxAttempts 固定场景 |
+| AC-4 | §4.5 plan/TASK 增量算法；§3.1 review-dev-plan 合同；§4.5 UPSTREAM 规则 | 八维度中可区分 SDD 覆盖遗漏、TASK 新事实、责任边界、接口/nil 和假绿问题；事实不符为 blocker | SDD 缺陷由 `repair-target=write-tech-design` 进入 UPSTREAM；普通翻译问题走 `write-dev-plan` | review-dev-plan 文档/输入合同断言；TASK 新事实、假绿和 UPSTREAM 固定场景 |
+| AC-5 | §4.7 落盘路径；§4.8 route 责任表；§2.3 既有 payload | blocker 经 `review-record` 写入既有 annotation、review-loop、traceability；混合 blocker 不被拆丢，SDD annotation 不被覆盖 | `review-record` 成功后 route 必须被消费；route 未消费不得进入审批 | review-record 相关现有测试；混合 blocker route 与 replay 固定场景 |
+| AC-6 | §3.5 SDD 输出合同；§6 FR-1 至 FR-8 映射；本节 AC 映射 | 生成的 SDD 对每个 AC 都有设计落点、可观测结果、可达性说明；回修保留已确认方案 | 回修只按 blocker 和变化定点修订，未要求替换时不重写整体方案 | write-tech-design 输出检查；带 review_feedback 的定点回修固定场景 |
+| AC-7 | §3.2 Pipeline 传参契约；§4.6 reviewLoop 保持项 | 两个 reviewer 均收到原样 workspace/resources/feedback/attempt；节点数、顺序、replayNodes、UPSTREAM、maxAttempts 不变 | code reviewer 的 resources 只来自 node-1 execution_context；architecture reviewer 只消费同次 inspect 结果 | 两个 Pipeline JSON 解析和结构测试；5/16 节点及 reviewLoop 断言 |
+| AC-8 | §3.3 controlled-shell 合同；§1.2/§4.8 权限与路由边界 | matrix 增加 reviewer 的 controlled-shell 调用关系；事实取证仅为文件读和既有 Git 只读；状态路由仍走既有 review Skill 的受控 crctl 合同 | reviewer 模型不能直接写账本或改变状态；review-record/advance 继续由既有 review Skill 合同处理 | agent-skill-matrix、controlled-shell 文档和负向权限结构测试 |
+| AC-9 | §8.2 结构测试向量；§8.3 自动检查 | lint、权限矩阵、Pipeline 结构、JSON 解析及列明的相关 crctl 测试均有明确命令和 exit=0 结果 | 测试在实施后对 tools worktree 执行；评审阶段不把测试代替事实核验 | §8.3 固定命令清单及实施测试报告 |
+| AC-10 | §3.4 技术失败/业务 blocker；§4.7/§4.8 落盘和 route 边界 | resources、worktree、只读取证、reviewer task、临时 payload 或 review-record 不可用时返回结构化错误且无 canonical review；业务错误正常落盘 blocker | 技术失败在 payload/review-record 前中止；业务 blocker 完成全量评审后落盘 | 技术失败注入场景与业务错误固定场景；检查 canonical 文件未写入或 blocker 已写入 |
+| AC-11 | §1.2 8 文件职责；§1.5 不变量；§8.4 回滚 | diff 仅含批准 8 文件；无状态、节点、账本、缓存、索引、digest、事务框架、Agent 或依赖新增 | 回滚只涉及 tools 文本/JSON/YAML/测试文件，不触及状态机、crctl、rules 或业务仓 | 变更文件清单、禁止范围结构断言和 Git diff 审查 |
 
 # 7. 安全与性能考量
 
@@ -595,7 +639,9 @@ passCondition: verdict=pass and blockers=[]
 
 | 向量 | 预期 |
 |---|---|
-| 两个 reviewer Skill 输入参数 | `workspace/resources` 必填；反馈和轮次可选；只消费 resources worktree |
+| `review-tech-design` / `review-dev-plan` Skill 输入与权限 | 结构测试检查两个 Skill 的参数合同、只消费 `resources[].worktreePath` 的文字约束，以及既有 review-record/route 合同未被改写 |
+| review-record 与 route 分流 | 使用既有 review-record 成功、schema 失败、repair、upstream 和 route 未消费场景；验证既有 canonical 落盘、回退路径和人工审批前置条件不变 |
+| 既有实现依赖识别 | 使用正文含已列出依赖、正文含未列出依赖、纯绿地无依赖三类 SDD 样例；未列出或事实不符为 blocker，只有无依赖样例允许 N/A |
 | architecture reviewer prompt | 含 workspace、resources、feedback、attempt 原样传参 |
 | code reviewer prompt | 含 execution_context.workspace/resources、feedback、attempt；不重新发现资源 |
 | reviewer 权限 | matrix 含 controlled-shell；controlled-shell 文档含两个 reviewer |
@@ -610,13 +656,13 @@ passCondition: verdict=pass and blockers=[]
 在 `../tools` 仓执行：
 
 ```text
-node skills/shared/lint-prompts/scripts/lint-prompts.mjs --mode enforce
-node skills/shared/check-skill-matrix/scripts/check-skill-matrix.mjs
+node skills/shared/crctl/scripts/lint-prompts.mjs --mode enforce
+node skills/shared/crctl/scripts/check-skill-matrix.mjs
 node --test skills/shared/crctl/scripts/test/pipeline-structure.test.mjs
 node -e "const fs=require('fs'); for (const f of ['architecture-design.pipeline.json','code-implementation.pipeline.json']) JSON.parse(fs.readFileSync('pipeline-templates/'+f,'utf8')); console.log('json ok')"
 ```
 
-再运行与 review-record、workspace resolver、Pipeline 结构相关的现有 `node --test` 套件。评审阶段不把 lint/build/test 的执行结果当作事实核验结果；上述命令属于实施后的验证证据。
+相关回归测试明确限定为：`skills/shared/crctl/scripts/test/pipeline-structure.test.mjs`、`skills/shared/crctl/scripts/test/lint-prompts.test.mjs`、`skills/shared/crctl/scripts/test/check-skill-matrix.test.mjs`，以及与 `review-record` 和 workspace resolver 直接相关的现有测试文件；执行前必须以目标 worktree 的实际文件清单为准，不得使用不存在的 `skills/shared/lint-prompts/` 或 `skills/shared/check-skill-matrix/` 路径。
 
 ## 8.4 回滚
 

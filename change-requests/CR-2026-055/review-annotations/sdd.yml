@@ -1,0 +1,21 @@
+cr-id: CR-2026-055
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-30T00:15:09+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  prd-sdd-alignment: "PASS：每个 FR-* 均有对应技术方案，每个 AC 均给出设计落点、可观测结果与可达性说明；FR-1 至 FR-8 映射到 §6，AC-1 至 AC-11 在 §6.1 逐项给出设计/验收位置。"
+  architecture-soundness: "PASS：遵循现有 tools/ARCHITECTURE.md 依赖方向（Pipeline 只编排传参、Skill 负责业务判断、crctl 负责状态账本），未新增状态、Pipeline 节点、账本、payload 字段、digest、缓存、事务框架或 Agent；架构不变量核对通过。"
+  data-model-completeness: "PASS：不新增持久化实体；`resources` 为 workspace inspect 运行时返回，不落库；既有 review payload 保持不变，不增加 facts/evidence/ac-results 字段；事实证据复用 dimensions/blockers 文本。"
+  interface-contract: "PASS：两个 reviewer Skill 输入合同完整声明 `cr_id`/`workspace`/`resources`/`review_feedback`/`self_repair_attempt`；Pipeline 传参契约明确 architecture 直接传 workspace inspect.resources、code 从 node-1 execution_context.resources 原样传递；无 HTTP API 新增，不编写 OpenAPI。"
+  multi-repo-constraints: "PASS：reviewer 目标路径只由 `resources[].worktreePath` 产生，禁止拼接 `.rayai-worktrees`、回退主工作区、会话记忆替代；`workspace` 用于过程文档、`resources` 用于代码事实，两者不混用。"
+  performance-security: "PASS：权限最小化——reviewer 仅增加 `controlled-shell` 调用权，只读取证；不修改 rules.json、不扩展 Git 子命令、不含任意 shell/写操作/状态推进/账本写入；路径隔离、凭据保护、证据可信度均显式声明。"
+  testability: "PASS：每个 AC 可观测结果明确；可测试性维度核对可观测验收与设计层验收位置；结构测试向量覆盖 Skill 输入合同、资源原样传递、既有 review-record/route 分流、依赖识别、reviewLoop/节点数保持不变及禁止范围负向断言。"
+  prompt-adoption: "N/A：本 CR 不修改 crctl.mjs dispatch、不修改 rules.json#protectedPaths.deny，故该条件性维度不触发，不掩盖既有实现依赖。"
+suggestions:
+  - "SUG-001：进入人工架构审批或实施前确定 target-version；当前 sdd.md/cr.md 仍为 tbd。"
+review-loop:
+  current-attempt: 1
+subject-file: change-requests/CR-2026-055/sdd.md
+subject-sha256: 43ceaacbdcdcfacb7e4ac382098d4f21b9d44e7e597f6654136c064b44ba7d8a
