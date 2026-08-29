@@ -1,0 +1,17 @@
+$ node --test --test-name-pattern=CR-2026-054 skills/shared/crctl/scripts/test/archive-tx.test.mjs
+(exit=0)
+--- stdout ---
+✔ CR-2026-054 候选校验：首次构建损坏候选 → ARCHIVE_YAML_INVALID 且零 stage/commit/push (144475.0389ms)
+✔ CR-2026-054 候选校验：history 缺少必需根键 → ARCHIVE_YAML_INVALID 且零 stage/commit/push (18013.0043ms)
+✔ CR-2026-054 候选校验：index 缺少必需根键 → ARCHIVE_YAML_INVALID 且零 stage/commit/push (17897.0939ms)
+✔ CR-2026-054 候选校验：remote rebuild 损坏基线 → ARCHIVE_YAML_INVALID 且零新增 commit (19775.3062ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 200242.7946
+
+--- stderr ---
