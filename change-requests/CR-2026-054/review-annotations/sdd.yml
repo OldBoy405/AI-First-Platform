@@ -1,24 +1,21 @@
 cr-id: CR-2026-054
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-29T13:10:54+08:00"
+reviewed-at: "2026-08-29T13:53:35+08:00"
 verdict: block
 blockers:
-  - "P1 安全：daemon/internal/daemon/daemon.go 的初次终态回调失败路径仍会通过 taskLog.Error(..., error, err/failErr) 输出原始错误；PRD FR-17/NFR-3 禁止记录 error message 或完整终态 payload，而 SDD 当前又将既有终态路径日志排除在清理范围外，导致设计无法满足日志脱敏边界。请将技术设计收敛为初次投递和补投失败路径统一只记录 task_id、terminal_kind、稳定脱敏 error_class，不记录原始 error、errorMessage、output、session、workdir 或完整 report，并补充覆盖两类路径的日志测试。"
+  - "P1 接口契约：SDD §3.4 与 §4.2 的 reportTerminalTask 伪代码描述 CompleteTask 失败后直接包装并返回，只说明 deliverTerminalTaskReport 按终态调用 CompleteTask/FailTask，没有明确既有 complete→fail fallback。terminalReportFailure 的 Error/Unwrap/LogValue 只能包装、分类和安全展示错误，不能代替对独立 FailTask 端点的调用。请在 SDD 中明确永久性 CompleteTask 失败后的 FailTask 调用时机、fallback 使用的原始错误文本与完整 payload 保真、最终错误包装及日志顺序，并补充该路径的测试契约；同时保持瞬时 CompleteTask 失败入队且不降级为 FailTask 的既有语义。"
 dimensions:
-  prd-sdd-alignment: "FR-1~FR-20 均在 SDD §6 映射，三条实现轨、验收证据和非目标总体一致；但 FR-17 在现有终态日志排除范围下无法完整实现。"
-  architecture: "通过：严格解析仍位于 tools lib，archive 校验保持 workspace-transactions 私有，daemon 补投位于 server/internal/daemon；未新增第二状态机、账本、队列、API 或服务管理器。"
-  data-model: "通过但需补强：诊断元数据和 task ID 内存 map 一致；需要在修订中明确 terminalTaskReport 的完整不可变复制，以及不能由引用字段泄露可变 payload。"
-  interface-contract: "通过：parseYaml 严格模式、私有 archive validator、deliverTerminalTaskReport 和既有 CompleteTask/FailTask 契约清晰，补投不会递归进入入队包装器。"
-  cross-repo: "通过：tools 仍由 crctl/Git 负责权威写入，multica daemon 仍消费服务端任务契约；目标 worktree authority 与参与仓边界正确。"
-  security-performance: "阻断：archive 校验时序和补投单 worker/30 秒策略合理，但可达的初次终态回调原始错误日志与 FR-17/NFR-3 冲突。"
-  testability: "部分通过：已有设计覆盖补投日志脱敏，但未明确覆盖初次终态投递失败 caller 日志；需增加初次和重放两类日志断言。"
-  prompt-adoption: "跳过：本 CR 不触及 tools crctl.mjs dispatch 或 controlled-shell/rules.json protectedPaths.deny。"
-suggestions:
-  - "记录实现前 tools 与 multica 的精确 source commit 或 authority resolution，避免跨仓评审证据随 worktree 漂移。"
-  - "在接口章节明确 terminalTaskReport 所有字段的不可变值复制；若未来出现 slice/map 等引用字段，必须深复制或改为不可变值类型。"
-  - "使用捕获 logger 同时测试初次终态投递失败和补投失败，拒绝 output、errorMessage、session、workdir 及原始错误文本。"
+  prd-sdd-alignment: "部分通过但需修复：FR-1~FR-20 均有映射，archive、Agent 边界和 daemon 补投范围总体一致；但 SDD 尚未完整保证既有 complete→fail fallback。"
+  architecture: "通过：tools 仍位于现有 YAML 解析器和 archive buildEntries hash 前边界；multica 仍位于 server/internal/daemon，使用内存 map、单 worker 和既有终态接口；未新增状态机、账本、持久化 outbox、API 或服务管理能力。"
+  data-model: "通过：pending map 按 task ID 去重、first-wins、比较完整 report；当前字段为值类型，未来引用字段要求深复制或不可变值表示。"
+  interface-contract: "阻断：terminalReportFailure 的 error、Unwrap 和 LogValue 契约基本自洽，但 CompleteTask 永久失败后的 FailTask fallback 调用时机、输入错误、payload 保真和最终返回语义未定义完整。"
+  cross-repo: "通过：tools 与 multica 的职责边界、worktree authority、CUSTOM.md 登记和 daemon.go 最小挂钩范围一致，未发现跨仓反向依赖或第二权威。"
+  security-performance: "通过但依赖补全契约：初次 caller、重放和冲突日志已统一限制为 task_id、terminal_kind、error_class；30 秒单 worker和瞬时错误停止本轮策略合理。"
+  testability: "部分通过：已要求覆盖初次投递、重放、冲突日志和 Unwrap/isTransientError，但 fallback 的算法流程未定义，无法据此形成完整可执行断言。"
+  prompt-adoption: "跳过：本 CR 不触及 crctl.mjs dispatch 或 controlled-shell/rules.json protectedPaths.deny。"
+suggestions: []
 review-loop:
-  current-attempt: 1
+  current-attempt: 2
 subject-file: change-requests/CR-2026-054/sdd.md
-subject-sha256: ffdc18195d471acb91a683e087c08a2b9c2094ee8cb7d3a50fb15be0d928748d
+subject-sha256: 0522c66b70015ba4296bbb809cc8d86dcfe319a81bec93535fde60274b3feab3
