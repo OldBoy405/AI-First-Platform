@@ -31,6 +31,8 @@ created: 2026-08-29T18:15:00+08:00
 
 # 4. 验收条件
 
+对应 PRD 验收标准：AC-5、AC-6。
+
 1. complete 瞬时耗尽只入队 complete report 且不调用 FailTask；complete 永久失败才按既有顺序 fallback 到 FailTask，服务端 payload 保持完整。
 2. 重放 worker 单实例、固定 30 秒、网络调用在锁外；首个瞬时错误结束本轮，下一轮仍可重试。
 3. daemon root context 取消后 worker 停止，不执行额外 drain；`daemon.go` 不出现逐个 caller 改造或 logger 修改。

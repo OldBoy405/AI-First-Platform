@@ -6,7 +6,7 @@ sdd-ref: "change-requests/CR-2026-054/sdd.md"
 target-version: tbd
 status: draft
 created: 2026-08-29T18:08:00+08:00
-updated: 2026-08-29T18:08:00+08:00
+updated: 2026-08-29T18:23:53+08:00
 ---
 
 # 1. 交付里程碑
@@ -14,13 +14,13 @@ updated: 2026-08-29T18:08:00+08:00
 | 里程碑 | 交付内容 | 预计工时 | 退出条件 |
 |---|---|---:|---|
 | M0 基线与实现准备 | 再次确认三仓 workspace health、读取 SDD/PRD、核对目标文件现状和测试入口 | 0.5 人天 | 三个资源均为 healthy；实现分支和验证命令明确 |
-| M1 archive 安全轨 | 严格 YAML 可选模式、四候选校验、hash 前接入及 tools 测试 | 1.5 人天 | 正常 archive、首次失败、rebuild 失败和零 Git 副作用测试通过 |
+| M1 archive 安全轨 | 严格 YAML 可选模式、四候选校验、hash 前接入及 tools 测试 | 3.0 人天 | 正常 archive、首次失败、rebuild 失败和零 Git 副作用测试通过 |
 | M2 Agent 执行边界轨 | 更新 Agent、implement-code、review-code 和 README 的职责及失败语义 | 0.75 人天 | 文档 diff 仅覆盖 PRD/SDD 约定的文件；负向契约检查通过 |
-| M3 daemon 终态补投轨 | terminal report 内存集合、单 worker、统一错误包装、daemon 挂钩和 CUSTOM.md 登记 | 1.5 人天 | complete/fail、fallback、去重、重放、关闭及脱敏测试通过 |
+| M3 daemon 终态补投轨 | terminal report 内存集合、单 worker、统一错误包装、daemon 挂钩和 CUSTOM.md 登记 | 2.75 人天 | complete/fail、fallback、去重、重放、关闭及脱敏测试通过 |
 | M4 集成验证与证据 | 三域测试、真实 workspace 只读账本验证、test-report 和 traceability 映射 | 1.25 人天 | `write-test-report` 为 pass；AC-1 至 AC-7 均有可追溯证据 |
 | M5 评审与发布 | checkpoint、独立 code review、人工 code approval、合并、writeback 和 archive | 1.0 人天 | code review pass、人工审批通过、现有归档门禁通过 |
 
-预计总工时：6.5 人天。M1、M2 可并行；M3 依赖 M0 和 SDD 稳定；M4 依赖 M1~M3；M5 依赖 M4。
+预计总工时：9.25 人天。TASK 实现估算合计 62 小时（7.75 人天）；M0 基线检查和 M5 评审发布另计 1.5 人天。M1、M2 可并行；M3 依赖 M0 和 SDD 稳定；M4 依赖 M1~M3；M5 依赖 M4。
 
 # 2. 任务依赖图
 
@@ -55,8 +55,8 @@ M0 baseline inspect
 
 ## 3.2 tools / Agent 执行边界轨
 
-1. 按 SDD 更新 `agents/dev-agent.md`，明确路由、职责判断、Skill 委派和技术中止后的结束语义。
-2. 按 SDD 更新 `skills/develop/implement-code/SKILL.md`，明确一次环境检查、最多一次重跑、任务边界和 `ENVIRONMENT_MISMATCH`。
+1. 按 SDD 更新 `agents/dev-agent.md`，明确路由、职责判断、Skill 委派和技术中止后的结束语义；技术中止时必须报告所需平台/人工动作并结束，不等待或轮询下游任务。
+2. 按 SDD 更新 `skills/develop/implement-code/SKILL.md`，明确一次环境检查、最多一次重跑、任务边界、遵守测试计划 timeout、使用既有测试入口和禁止遗留后台进程；超出权限时返回 `ENVIRONMENT_MISMATCH`。
 3. 更新 `skills/develop/review-code/SKILL.md`，明确共享实例输出不可归因时不采信，环境不匹配不生成代码 blocker。
 4. 仅在人读范围内更新 README，并保留可执行细节的唯一事实源在对应 Skill、Pipeline 和 crctl。
 
@@ -75,23 +75,26 @@ M0 baseline inspect
 
 ## 3.4 集成验证
 
+M4 的实现与证据工作由 TASK-08 承接，包含以下交付：
+
 1. 在各目标 worktree 使用现有测试入口执行 tools、multica 和文档契约验证。
 2. 对真实 workspace 的 backlog、history、index 执行一次只读严格解析验证，不新增常驻脚本或 CLI。
 3. 检查三域 diff、`CUSTOM.md`、测试报告和 AC 映射，确保没有 Pipeline、状态机、账本、权限矩阵或共享服务管理越界。
 4. 通过既有 `write-test-report` 生成测试证据，失败按既有 reviewLoop 回修，不手工修改测试账本。
 
-依赖：M1、M2、M3；4 依赖 1~3。
+TASK-08 的前置检查还包含 M0：重新执行 `crctl workspace inspect`，确认 operational workspace 非空且全部 resources 为 healthy。M0 先于实现；TASK-08 在 TASK-03、TASK-04、TASK-07 完成后执行。
 
 # 4. 资源与分工
 
 | 角色 | 工作内容 | 预计工时 |
 |---|---|---:|
-| tools 实现负责人 | YAML strict、archive 候选验证、tools 测试 | 1.5 人天 |
+| workspace/CR 协调负责人 | M0 workspace inspect、基线确认和路径消费 | 0.5 人天 |
+| tools 实现负责人 | YAML strict、archive 候选验证、tools 测试 | 3.0 人天 |
 | 平台文档负责人 | Agent/Skill/README 职责边界和契约文档 | 0.75 人天 |
-| multica 实现负责人 | daemon 补投、错误值、Go 测试、CUSTOM.md | 1.5 人天 |
+| multica 实现负责人 | daemon 补投、错误值、Go 测试、CUSTOM.md | 2.75 人天 |
 | 测试与证据负责人 | 三域验证、真实账本只读检查、test-report | 1.25 人天 |
 | 独立 reviewer / CR owner | code review、审批、合并及归档 | 1.0 人天 |
-| 合计 |  | 6.5 人天 |
+| 合计 |  | 9.25 人天 |
 
 实际执行中以各资源 worktree 的 owner 和现有 Pipeline 上下文为准；本计划不新增服务账号、共享实例或基础设施管理职责。
 

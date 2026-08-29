@@ -1,0 +1,28 @@
+cr-id: CR-2026-054
+review-type: dev-plan
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-29T18:18:59+08:00"
+verdict: block
+repair-target: write-dev-plan
+blockers:
+  - "B1：M4 集成验证与证据整段无 TASK 承接，AC-1~AC-7 映射未落入任务清单；新增集成验证 TASK，补真实 workspace 三账本只读验证，并在 TASK 中显式标注 AC 映射。"
+  - "B2：FR-8/FR-9 的 timeout、既有测试入口、禁止后台进程和技术中止后报告外部动作在 plan/TASK-04 中丢失；补齐实现要点和可执行验收断言。"
+dimensions:
+  sdd-to-plan: "block"
+  plan-to-tasks: "block"
+  task-executability: "pass"
+  dependency-topology: "pass"
+  interface-contracts: "pass"
+  acceptance-verifiability: "block"
+  scope-and-simplicity: "pass"
+  risk-and-rollback: "pass"
+  reviewer-model: "独立 quality-reviewer-agent"
+suggestions:
+  - "统一里程碑、角色和 TASK 的工时口径，并为 M0 指定 owner。"
+  - "明确 target-version=tbd 的有意语义。"
+  - "在 TASK-07 中显式断言既有 caller 的 error 属性使用安全包装。"
+  - "将 TASK-05 的需要时复用改为确定性复用。"
+  - "将 M0 baseline inspect 并入集成验证 TASK 或启动检查单。"
+review-loop:
+  current-attempt: 1
+subject-sha256: 463e21b176fcff0e8907af1be3faf929036251b779f6c3d16ad4afe930fd6f15

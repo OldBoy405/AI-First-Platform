@@ -31,6 +31,8 @@ created: 2026-08-29T18:15:00+08:00
 
 # 4. 验收条件
 
+对应 PRD 验收标准：AC-2。
+
 1. 首次 archive 和远端 trunk 变化后的 rebuild 均经由同一 `buildEntries()` 校验，任何候选错误都发生在 write-set 计算及 Git 写入之前。
 2. 正常 archived/rejected/withdrawn 候选通过；根形状、目标 CR 计数、history 唯一性或非法终态失败时返回稳定 `ARCHIVE_YAML_INVALID` 详情。
 3. 既有 archive 生成错误码仍按原路径返回，未被统一包装吞没。

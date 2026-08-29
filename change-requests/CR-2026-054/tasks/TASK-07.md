@@ -26,11 +26,13 @@ created: 2026-08-29T18:15:00+08:00
 
 - 使用 httptest client 或同包 fixture 驱动单轮 helper，不等待真实 ticker。
 - 覆盖 complete/fail 瞬时耗尽、永久错误、complete→fail fallback、成功删除、瞬时保留、永久删除、重复/冲突 first-wins、关闭取消和报告值复制。
-- 使用捕获 `slog.Handler` 验证新增错误值只包含三个稳定字段，不含原始 cause、errorMessage、output、session、workdir 或完整 report。
+- 使用捕获 `slog.Handler` 验证新增错误值只包含三个稳定字段，不含原始 cause、errorMessage、output、session、workdir 或完整 report；实际成功任务 caller 的 error 属性必须通过 `terminalReportFailure` 或等价安全值记录。
 - 断言 `errors.Unwrap`/`isTransientError` 和实际成功任务 caller 的 fallback 语义未变。
 - 按 CUSTOM.md 当前表格结构登记新文件、AIFIRST 挂钩、CR/TASK 来源和验证命令；Go 注释使用英文。
 
 # 4. 验收条件
+
+对应 PRD 验收标准：AC-5、AC-6。
 
 1. `go test` 覆盖所有 SDD §7.3 multica 场景并通过，包含 complete 瞬时不 fallback 和永久才 fallback 的明确请求断言。
 2. 日志捕获测试验证每个新增终态错误值字段严格受限，原始 cause 和终态敏感字段不会被格式化或展开。

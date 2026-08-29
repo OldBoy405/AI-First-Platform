@@ -16,9 +16,9 @@ owners:
 target-version: tbd
 source: "docs/product/CR归档安全与Agent执行边界及任务终态闭环方案.md"
 origin: ""
-status: task-breakdown
+status: tech-design-reviewed
 created: "2026-08-29T12:13:07+08:00"
-updated: "2026-08-29T18:14:24+08:00"
+updated: "2026-08-29T18:19:43+08:00"
 remote-ref: ""
 last-push-at: ""
 last-push-by: ""

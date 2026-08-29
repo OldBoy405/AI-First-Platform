@@ -30,6 +30,8 @@ created: 2026-08-29T18:15:00+08:00
 
 # 4. 验收条件
 
+对应 PRD 验收标准：AC-1、AC-2。
+
 1. `yaml-subset.test.mjs` 和 `archive-tx.test.mjs` 全部通过，包含首次构建和 rebuild 的无效候选场景。
 2. 每类 `ARCHIVE_YAML_INVALID` 断言 file/category/line 及适用 cr/key；纯缺失不变量断言 `line: null`。
 3. 失败场景证明没有产生 stage、commit 或 push，且既有生成期错误码没有被改写。

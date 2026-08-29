@@ -31,6 +31,8 @@ created: 2026-08-29T18:15:00+08:00
 
 # 4. 验收条件
 
+对应 PRD 验收标准：AC-5、AC-6。
+
 1. 同一 task ID 的相同报告去重，冲突报告 first-wins；比较覆盖当前 report 全部值字段。
 2. `terminalReportFailure.LogValue()` 的字段集合严格为 `task_id`、`terminal_kind`、`error_class`，不含原始 cause、errorMessage、output、session、workdir 或完整 report。
 3. `Unwrap()` 保持原始瞬时/永久错误分类，`Error()` 仍可供既有 complete 永久 fallback 构造服务端 errorMessage。
@@ -41,5 +43,5 @@ created: 2026-08-29T18:15:00+08:00
 
 # 6. 接口契约
 
-- 消费：同包现有 `terminalTaskReport`、`terminalTaskReportKind`、错误分类函数和 client 错误契约。
+- 消费：同包现有 `terminalTaskReport`、`terminalTaskReportKind`、错误分类函数和 client 错误契约；这些结构必须复用。
 - 产出：私有 `terminalReportRetry`、`terminalReportFailure`、入队/snapshot/delete 比较能力，供 TASK-06 和 TASK-07 调用；不导出 daemon 包外 API。
