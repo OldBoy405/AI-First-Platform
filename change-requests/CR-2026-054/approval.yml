@@ -5,3 +5,10 @@ requirement:
   via: crctl-approve
   evidence-digest: "deab76c5942e315f0cfad9481db850e3d655b7b61c47941cad9fcd7c872f7643"
   target-status: requirement-approved
+supplemental-reviews:
+  - reviewer: "OldBoy405"
+    recorded-at: "2026-08-29T17:56:41+08:00"
+    decision: note
+    stage: "requirement"
+    status-at-record: tech-designing
+    notes: "需求范围修订确认：FR-17/NFR-3 仅对本 CR 新增或修改的终态回调错误值保持严格脱敏；既有 caller 的固定事件名、短 task ID、稳定 status/failure_reason 等非敏感上下文可保留；FR-18 的 multica 最小上游改动范围不变。"
