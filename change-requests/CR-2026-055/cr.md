@@ -16,9 +16,9 @@ owners:
 target-version: tbd
 source: "docs/product/评审分层最小改造方案.md"
 origin: ""
-status: requirement-approved
+status: tech-designing
 created: "2026-08-29T21:58:51+08:00"
-updated: "2026-08-29T22:39:47+08:00"
+updated: "2026-08-29T22:41:15+08:00"
 remote-ref: ""
 last-push-at: ""
 last-push-by: ""
