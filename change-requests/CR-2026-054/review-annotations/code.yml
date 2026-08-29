@@ -1,29 +1,29 @@
 cr-id: CR-2026-054
 review-type: code
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-29T20:32:53+08:00"
-verdict: pass
-blockers: []
+reviewed-at: "2026-08-29T21:07:28+08:00"
+verdict: block
+blockers:
+  - "P0 [multica/server/internal/daemon/terminal_report_retry.go:204-214,225-241] replay worker 在 replayTerminalReportsOnce 遇到首个瞬时错误时返回 false，而 terminalReplayLoop 将 false 直接 return；因此第一次 30 秒重放失败后 worker 永久退出，sync.Once 也不会再启动它，pending 条目不再获得后续重放，违反 FR-15/NFR-4。应区分 context cancellation 与 transient retry-later：瞬时错误结束当前轮但继续等待下一次 ticker。"
+  - "P0 [tools/skills/shared/crctl/scripts/lib/workspace-transactions.mjs:2741-2750] rootShapeCheck 对所有候选使用 v == null || Array.isArray(v)，把缺失或 null 的 history/change-requests 根键放行；FR-4 要求 _history.yml/history 和 _index.yml/change-requests 必须为数组，只有 backlog 才允许空值。后续 entryLinesOf 等原始文本扫描还可能在其他根键下找到目标条目，从而把错误根结构带入 archive write-set。"
 dimensions:
-  code-task-sdd-alignment: "pass：代码覆盖 SDD/TASK 约定，FR-18 保持 daemon.go 两处 AIFIRST 挂钩，CUSTOM.md #58 与 diff 一致。"
-  engineering-quality: "pass：补投集合零值可用，first-wins、值复制、单 worker 与删除条件实现清晰。"
-  key-path-readability: "pass：deliver/replay/fallback 职责分离明确，重放不递归进入 reportTerminalTask。"
-  security: "pass：terminalReportFailure.LogValue() 仅暴露 task_id、terminal_kind、error_class；原始 cause 与终态 payload 未进入新增日志值。"
-  test-coverage: "pass：覆盖严格 YAML、archive 首次/rebuild、终态 complete/fail、fallback、重放、去重、取消和脱敏场景。"
-  test-evidence-credibility: "pass：test-report 由 crctl-test 生成且 status=pass；traceability 状态与 command-digest 一致；cmd-01/02/03.log 均存在且内容匹配。"
-  scope-and-governance: "pass：未发现 Pipeline、状态机、账本或权限矩阵越界，未修改共享 logger 或逐个改造 caller。"
-  reviewer-model: "独立 quality-reviewer-agent（代码评审）"
-suggestions:
-  - "replay 日志当前使用 slog.Default()；后续可评估统一使用 daemon 注入 logger。"
-  - "后续可将 go build 命令纳入机器区证据清单。"
+  code-task-sdd-alignment: "block：daemon 重放 worker 不满足瞬时错误后的固定周期继续重放；archive 根结构校验放行 PRD 明确禁止的缺失/null 必需键。"
+  engineering-quality: "block：重放循环将 retry-later 与 stop 混用，导致队列首次故障后永久失活；archive 校验条件未按候选类型区分。"
+  key-path-readability: "block：replayTerminalReportsOnce 的 bool 返回值同时表示取消和瞬时失败，调用方无法保持 worker 生命周期。"
+  security: "pass：本轮未发现超出上述 blocker 的新增敏感日志暴露。"
+  test-coverage: "block：现有测试覆盖单轮 transient stop，但没有覆盖 terminalReplayLoop 在下一 ticker 继续运行；archive 测试没有覆盖 required root key 缺失或 null。"
+  test-evidence-credibility: "pass：test-report 由 crctl-test 生成，引用的 cmd-01/cmd-02/cmd-03 日志存在且报告状态为 pass；测试通过不能覆盖未测试的生命周期与根结构场景。"
+  scope-and-governance: "pass：未发现 Pipeline、状态机、权限矩阵或 CUSTOM.md 范围越界。"
+  reviewer-model: "独立代码评审"
+suggestions: []
 review-loop:
-  current-attempt: 1
+  current-attempt: 2
 release-subjects:
   version: 1
   repositories:
     - repo: ai-first-platform-docs
       remote-ref: refs/heads/requirement/CR-2026-054
-      reviewed-source-sha: d81fe32b05d83793b2df778424bde3215110f21c
+      reviewed-source-sha: 9f99051f9dc83ed55d5a0ed8c4a22dd636239468
     - repo: multica
       remote-ref: refs/heads/requirement/CR-2026-054
       reviewed-source-sha: 21dbb331537aa7ced0e250ed1dbf2c065327de01
