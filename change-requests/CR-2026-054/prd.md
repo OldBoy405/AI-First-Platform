@@ -8,7 +8,7 @@ owner: Ray
 owner-role: requirement
 status: draft
 created: 2026-08-29T12:14:42+08:00
-updated: 2026-08-29T12:14:42+08:00
+updated: 2026-08-29T17:48:00+08:00
 ---
 
 # 1. 概述
@@ -79,7 +79,7 @@ updated: 2026-08-29T12:14:42+08:00
 | FR-14 | 待重试集合必须以 task ID 去重，每个任务最多保存一个结果；相同 payload 重复入队静默去重，冲突 payload 采用 first-wins 并记录结构化错误。首次成功入队时懒启动与 daemon 根 context 绑定的单一重放循环。 | P0 | 去重、冲突保留和懒启动均有单元测试；无重复 worker。 |
 | FR-15 | 重放必须以固定 30 秒周期、单 worker 执行；每轮读取当前快照，成功回调后删除条目；遇到瞬时错误保留条目，并在本轮第一个瞬时错误后停止继续请求；永久错误删除条目并记录错误。 | P0 | 通过单轮 helper 测试上述三种路径，不等待真实 ticker。 |
 | FR-16 | 重放必须使用原始不可变终态 payload，并依赖现有服务端幂等接口收敛；等待期间服务端任务保持 `running`，成功回调后由现有服务端逻辑进入真实终态。不得新增 `pending-terminal` 状态或本地持久化账本。 | P0 | payload 保持一致；不新增状态/账本；成功后服务端终态行为回归通过。 |
-| FR-17 | daemon 关闭时不执行额外 drain，重放循环随根 context 停止；不承诺跨重启保存待重试结果。日志只记录 task ID、终态种类和错误，不记录 output、error message、session 内容或完整 payload。 | P0 | 关闭和重启边界测试通过；日志脱敏测试通过。 |
+| FR-17 | daemon 关闭时不执行额外 drain，重放循环随根 context 停止；不承诺跨重启保存待重试结果。对于本 CR 新增或修改的终态回调失败日志，错误属性只允许暴露 task ID、终态种类和稳定的 `error_class`；不得记录原始错误文本、`errorMessage`、`output`、session 内容、workdir 或完整终态 payload。现有 caller 的固定事件名、短 task ID、稳定 status 和稳定 failure_reason 等非敏感上下文可以保留，本 CR 不负责统一清理既有日志格式。 | P0 | 关闭和重启边界测试通过；新增终态错误值不泄露敏感字段，现有非敏感上下文保持兼容。 |
 | FR-18 | multica 定制必须新增独立终态重试文件及测试文件，`daemon.go` 的上游改动限于零值可用队列字段和统一 `reportTerminalTask` 的两个小型 `AIFIRST` 挂钩，并在 `CUSTOM.md` 登记文件、挂钩、CR/TASK 来源及验证命令；不得逐个改造 complete/fail 调用点。 | P1 | diff 审查确认修改面和定制台账完整。 |
 
 ## 3.4 CR 完整闭环
@@ -93,7 +93,7 @@ updated: 2026-08-29T12:14:42+08:00
 
 - **NFR-1 正确性与原子性**：候选校验发生在新 write-set 哈希和受控写入之前；无效候选不得进入 stage、commit 或 push。既有 recovery 的副作用边界保持不变。
 - **NFR-2 兼容性**：严格 YAML 解析为显式可选能力；非严格 `parseYaml()` 调用方继续保持原行为。合法 `key:` 空值和 `archived`/`rejected`/`withdrawn` 三种归档终态必须兼容。
-- **NFR-3 安全与隔离**：Agent 不得改变任务范围外共享服务生命周期；评审不得采信无法归因的共享实例输出；错误和日志不得泄露完整账本、终态 payload 或会话内容。
+- **NFR-3 安全与隔离**：Agent 不得改变任务范围外共享服务生命周期；评审不得采信无法归因的共享实例输出。对本 CR 新增或修改的终态补投错误值，不得泄露完整账本、终态 payload、会话内容、原始错误文本、`errorMessage`、`output` 或 session/workdir。现有 caller 的非敏感上下文属性可以保留，本 CR 不负责统一改造 daemon 既有非终态日志和既有日志格式。
 - **NFR-4 可恢复性**：daemon 存活期间，耗尽有限重试的瞬时终态回调至少获得一次后续重放机会；补投依赖服务端幂等，不承诺 exactly-once 或跨 daemon 重启持久化。
 - **NFR-5 调度约束**：补投使用单 worker、固定 30 秒周期；不引入新的队列容量策略、背压、claim gate、semaphore 联动或指数退避框架。
 - **NFR-6 可观测性**：错误类别、文件名、行号、相关键/CR ID、task ID 和终态种类可用于定位；不得为本 CR 增加新的 metrics、健康接口或通用诊断系统。
@@ -110,7 +110,7 @@ updated: 2026-08-29T12:14:42+08:00
 | AC-3 | FR-8~FR-12 | Agent/Skill/README 的职责边界、委派结束、一次有界验证、最多一次重跑、timeout 和证据边界可核查；Pipeline、权限矩阵、测试报告和 `crctl test` schema 无非需求变更。 |
 | AC-4 | FR-10~FR-11 | 无法建立且超出权限的验证前提返回 `ENVIRONMENT_MISMATCH`，Pipeline 中止且不写代码 blocker；受控环境中的可归因测试失败按代码失败处理；共享实例输出不影响 pass/block。 |
 | AC-5 | FR-13~FR-15 | complete/fail 瞬时错误耗尽有限重试后入队；永久错误不入队；相同 payload 去重、冲突 first-wins；成功删除、瞬时错误保留并结束本轮、永久错误删除。 |
-| AC-6 | FR-16~FR-18 | 重放使用原始 payload，服务端现有幂等终态接口收敛；不新增状态或持久化账本；关闭时停止；日志不泄露 payload；multica diff 和 `CUSTOM.md` 满足最小定制范围。 |
+| AC-6 | FR-16~FR-18 | 重放使用原始 payload，服务端现有幂等终态接口收敛；不新增状态或持久化账本；关闭时停止；本 CR 新增或修改的终态错误日志不泄露原始错误文本和 payload；现有 caller 的非敏感上下文属性保持兼容；multica diff 和 `CUSTOM.md` 满足最小定制范围。 |
 | AC-7 | FR-19~FR-20 | 三个业务域均完成测试和评审并通过同一 CR 的代码审批、合并及归档门禁；未完成任一域时不能宣称 CR 完成，且未出现第二套状态、账本、调度或服务管理系统。 |
 
 # 6. 成功指标
@@ -138,3 +138,7 @@ updated: 2026-08-29T12:14:42+08:00
 - README 中复制可执行细节，或与本 CR 无关的重构。
 
 本 PRD 是需求基线；具体接口、文件组织、并发实现和测试编排由后续 SDD 与 TASK 定义，但不得突破上述范围和共同验收边界。
+
+## 7.1 需求修订记录
+
+- 2026-08-29：需求负责人确认放宽 FR-17/NFR-3 的日志适用范围。放宽仅针对既有 caller 的非敏感上下文属性和既有日志格式，不放宽本 CR 新增终态错误值对原始 cause、errorMessage、output、session/workdir 和完整 payload 的脱敏要求；FR-18 的 multica 上游最小改动范围保持不变。
