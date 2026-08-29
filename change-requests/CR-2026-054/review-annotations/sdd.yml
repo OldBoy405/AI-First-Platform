@@ -1,21 +1,23 @@
 cr-id: CR-2026-054
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-29T14:15:33+08:00"
+reviewed-at: "2026-08-29T17:42:34+08:00"
 verdict: block
 blockers:
-  - "P1 安全/日志契约：SDD §3.4、§7.1 与 FR-17/NFR-3 要求初次、fallback、重放、冲突日志严格只暴露 task_id、terminal_kind、error_class；但方案依赖 terminalReportFailure.LogValue() 自动脱敏，未处理既有 caller 日志。multica/server/internal/daemon/daemon.go:5048-5049 的 taskLog 已附加 task，reportTaskResult 在 5528、5550-5569、5604-5621 等路径还记录 status、failure_reason、事件专用文本并以 error 字段输出错误。LogValue() 只能隐藏包装 error 的 cause，不能删除或重命名这些既有属性，也不能保证每条日志都有 terminal_kind。该设计同时要求 daemon.go 只保留两个小挂钩且不逐个改造 caller，形成无法同时满足的契约矛盾。必须在技术设计阶段明确统一安全日志出口及其允许修改面，或明确调整 FR-17/NFR-3 的日志范围，并补充覆盖所有现有终态 caller 的精确属性白名单测试。"
+  - "受影响 FR/AC：FR-17、NFR-3、AC-6。当前证据：SDD §3.4、§7.1、§7.3 要求初次投递、complete→fail fallback、重放和冲突日志只暴露 task_id、terminal_kind、error_class；同时规定 terminalReportFailure.LogValue() 负责脱敏，不修改 server/internal/logger，也不逐个改造现有 caller。上一轮指出的 daemon.go 现有路径仍附带 task、status、failure_reason、事件专用文本和 error。LogValue() 只能控制包装 error 的结构化表示，不能删除既有日志上下文属性、task 属性或事件文本，也不能保证既有日志包含 terminal_kind。当前方案无法同时满足严格日志白名单、FR-18 的最小挂钩限制以及不改共享 logger/不逐个改造 caller。必须在技术设计阶段解决契约冲突：要么明确放宽 FR-17/NFR-3 的适用日志范围并定义允许保留的既有属性；要么保留严格白名单，设计统一且安全的终态日志出口，明确所有相关 caller 的修改范围，并同步调整 FR-18；同时补充覆盖全部终态 caller 的精确属性白名单、日志顺序、原始 cause 不可见和 payload 不可见测试。"
 dimensions:
-  prd-sdd-alignment: "部分通过但需修复：上轮 complete/fail fallback blocker 已在 SDD §3.4 与 §4.2 明确；但日志白名单仍未落实到现有 caller，FR-17、NFR-3、AC-6 无法由当前设计完整保证。"
-  architecture: "通过：archive 校验位于 buildEntries 的 write-set/hash 前共用路径；daemon 仍复用既有终态接口、内存集合和单 worker；未新增状态机、账本、持久化 outbox、API 或共享服务管理能力。"
-  data-model: "通过：terminalTaskReport 按值保存，pending 按 task ID 去重并 first-wins；当前字段为值类型，未来引用字段需要深复制。"
-  interface-contract: "通过：deliverTerminalTaskReport 只发送指定 kind；CompleteTask 瞬时错误入队且不调用 FailTask；永久错误才执行 fallback，并保留完整结果 payload；fallback 的发送、入队和日志顺序已明确。"
-  cross-repo: "通过：tools 继续由 crctl/Git 作为 authority，multica daemon 只消费既有服务端契约；workspace authority、CUSTOM.md 登记和 daemon.go 挂钩边界总体一致。"
-  security-performance: "阻断：30 秒单 worker、瞬时错误遇首个即停止、永久错误删除和错误包装分类设计合理；但实际 caller 的 task/status/failure_reason 等日志属性违反严格脱敏白名单。"
-  testability: "部分通过但需修复：SDD 要求捕获 slog 并断言白名单、顺序、Unwrap 和 fallback payload，但未定义如何覆盖或消除现有 caller 日志，无法证明完整日志合同。"
-  prompt-adoption: "跳过：本 CR 不修改 crctl dispatch 或 controlled-shell/rules.json protectedPaths.deny。"
-suggestions: []
+  prd-sdd-alignment: "BLOCK：FR-1 至 FR-16、FR-18 至 FR-20 均有对应设计映射；但 FR-17 的严格日志要求仍无法由当前方案实现和验证，AC-6 不成立。"
+  architecture: "PASS：archive 校验位于共用 buildEntries() 的 write-set/hash 前；daemon 复用既有终态接口、内存集合和单 worker；未新增状态机、账本、持久化 outbox、API、Pipeline 或共享服务管理能力。日志出口与 FR-18 的最小 daemon.go 修改边界存在未解决冲突。"
+  data-model: "PASS：terminalTaskReport 按值保存，pending 按 task ID 去重并采用 first-wins；快照删除时重新比较当前值；对未来引用字段提出深复制约束。"
+  interface-contract: "PASS：deliverTerminalTaskReport 只发送指定终态；complete 瞬时错误入队且不 fallback；complete 永久错误才构造保留完整 payload 的 fail 请求；fallback fail 的成功、瞬时失败和永久失败语义均已定义。"
+  cross-repo: "PASS：tools 继续由 crctl 和 Git 作为状态/账本权威；multica 继续使用既有服务端终态接口；SDD 明确 workspace authority、CUSTOM.md 登记及 multica 修改范围。"
+  security-performance: "BLOCK：30 秒单 worker、首个瞬时错误停止、永久错误删除及安全错误包装设计合理；但现有终态 caller 的 task/status/failure_reason/事件文本等日志属性未被收敛，违反严格脱敏白名单。"
+  testability: "BLOCK：SDD 规定了捕获 slog、验证 LogValue、Unwrap 和 fallback payload 的测试，但没有可执行方案证明既有 caller 日志属性被消除或符合白名单，也没有覆盖全部相关终态 caller 的精确日志断言。"
+  prompt-adoption: "PASS：本 CR 不修改 crctl.mjs dispatch 或 controlled-shell/rules.json#protectedPaths.deny，条件性 Prompt 采纳影响不触发。"
+suggestions:
+  - "修复日志契约后，增加 FR-18 diff 范围检查，验证 daemon.go 仅包含约定的队列字段和两个 AIFIRST 挂钩。"
+  - "实现阶段继续使用既有三域证据矩阵，将 archive、Agent 环境失败语义和 daemon 补投分别绑定到 AC-1 至 AC-7。"
 review-loop:
-  current-attempt: 3
+  current-attempt: 1
 subject-file: change-requests/CR-2026-054/sdd.md
-subject-sha256: b140f01feb4a4b90665d62712f7cc8c5cd26ac73d9a31cd1332c89521ab7cb8a
+subject-sha256: f1448f89b708dcb0d28bd2e1ba095c194521fd8b697bf0ab3277dbe35c3be9d2
