@@ -1,0 +1,22 @@
+cr-id: CR-2026-056
+review-type: requirement
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-30T16:47:48+08:00"
+verdict: block
+blockers:
+  - "B-001 [FR-6/FR-8/FR-11/AC-19] 旧 Private Ask session 缺少 base_* 时允许回退到 Agent 当前默认值，但 Team Agent GET 响应的 source 枚举只声明 override|session_default|runtime_default；请明确兼容回退的可观测 source（或定义其归入某一枚举的语义）并补充对应验收，避免有效值与来源审计不一致。"
+  - "B-002 [FR-10/AC-13] 需求要求显式创建聊天容器与首次发送共用幂等路径，但 §7.1 只定义 GET、配置 PATCH、消息 POST，未定义显式创建操作的 endpoint、请求/响应、幂等键及与 session_id 的关系；请补齐可执行 API 契约，或明确引用现有已定义的创建接口，否则 AC-13 无法按统一入口验收。"
+dimensions:
+  structure-completeness: "PASS：PRD 包含概述、用户故事、FR、NFR、验收标准、成功指标和范围排除，章节结构完整。"
+  fr-testability: "BLOCK：多数 FR 有对应 AC，但旧 session 来源枚举与兼容回退不一致，显式创建操作缺少 API 契约，两个场景无法形成无歧义验收。"
+  scope-reasonableness: "PASS：CR-A 范围、CR-B/C/D 排除项、目标仓库和禁止修改项清晰，未混入 Discussion 或 composer 视觉重构。"
+  source-alignment: "PASS：PRD 覆盖来源 CR-A 的会话配置隔离、Team Agent 懒创建、任务快照、附件草稿、权限和兼容要求；发现的问题是 PRD 内部契约缺口，不是范围扩张。"
+  dependencies: "PASS：已识别现有 chat_session、任务 context、attachment、EnsureProjectChatIssue、runtime 能力、Agent 绑定和后续 CR 依赖；实现前需按 blocker 补足 API/兼容契约。"
+suggestions:
+  - "SUG-001：在人工需求审批前确定 target-version；当前 cr.md 与 prd.md 均为 tbd。"
+  - "SUG-002：AC-9 的“相关 crctl 测试及 Pipeline JSON 解析检查”口径偏宽，建议列出确切命令或测试文件。"
+  - "SUG-003：为 FR-4 的 runtime offline/允许入队、服务端权限校验、NFR-2 四语 locale parity、NFR-8 parseWithFallback/zod 及 FR-16 草稿 TTL 补充独立 AC 或明确引用的现有测试。"
+review-loop:
+  current-attempt: 1
+subject-file: change-requests/CR-2026-056/prd.md
+subject-sha256: a2e83392faaf2c78b35596dcef8c381d369deb740f9238cdee5901a2c468320d
