@@ -1,27 +1,22 @@
 cr-id: CR-2026-056
 review-type: dev-plan
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-30T21:41:00+08:00"
+reviewed-at: "2026-08-30T22:22:44+08:00"
 verdict: block
 repair-target: write-dev-plan
 blockers:
-  - "\"BLOCK-004 [SDD->plan/task coverage] New Private Ask sessions are required to persist base_model and base_thinking_level at INSERT, but no task owns the concrete CreateChatSession query/signature or an equivalent atomic insert path. TASK-03 only lists PatchChatSessionConfig and BackfillChatSessionBaseIfNull, while TASK-13 only says that GetProjectPrivateChat writes base_*; the baseline CreateChatSession currently inserts no base_* values. A post-create patch would not satisfy the insert-time snapshot contract and can race with concurrent readers. Assign the chat.sql/generated API change (or an explicitly atomic handler/service path) and add an acceptance assertion that a newly-created session has the exact base values and session_default sources on its first GET."
-  - "\"BLOCK-005 [interface-contracts/task executability] Private Ask SendDirectChatMessage must merge chat_config into the direct task context, but TASK-13 names no concrete qtx/query seam for the baseline CreateChatTask path. The baseline direct path uses qtx.CreateChatTask, whereas TASK-07's tx-aware enqueueMentionTaskWithCommentPlanTx is the Team Agent enqueue seam and does not cover CreateChatTask. Specify whether CreateChatTask gains a context parameter or a same-transaction merge query, require preservation of existing JSON keys, and bind the implementation and test to that exact seam; otherwise the required Private Ask snapshot has no executable write path."
-  - "\"BLOCK-006 [scope/interface-contracts] SendChatMessage and SendDirectChatMessage are shared by project Private Ask and ordinary chat_session rows with project_id IS NULL, but TASK-13 only rejects project_id IS NULL for the new PATCH handler. It does not state whether the new backfill/catalog validation/context snapshot applies only to project-bound Private Ask or also changes ordinary chat behavior. Define an explicit project_id-valid branch for this CR and a regression assertion for ordinary chat, or explicitly document the expanded scope and its compatibility/error semantics; the current wording permits an unintended global-chat behavior change."
-  - "\"BLOCK-007 [interface-contracts/acceptance-verifiability] The Private Ask GET/PATCH response contract does not explicitly carry session_id. TASK-13 says only ChatSession plus four fields, while the baseline ChatSessionResponse serializes id (not session_id), and the PRD/SDD contract makes session_id the PATCH/send credential and requires the independent hard/soft fallback behavior. TASK-10 also specifies the Private Ask PATCH client but no GET mapping or response schema assertion. Add an explicit session_id response field or a named, tested client mapping, including UUID preservation and hard fallback tests; otherwise the client cannot safely consume the new contract."
-  - "BLOCK-008 [risk-and-rollback/interface-contracts] SDD §4.7.1 requires Private Ask configuration operations to lock the session row even though they have no Team Agent rebind CAS, but TASK-13's PATCH sequence only loads GetChatSessionInWorkspace and then performs Backfill -> Resolve -> Patch inside a transaction. It does not require a FOR UPDATE lock/re-read before the three-state update, so concurrent PATCH/send operations can lose overrides or snapshot inconsistent base/default values. Specify the lock query and ordering, plus a concurrent PATCH/send acceptance fixture and rollback assertion."
+  - {"\"BLOCK-009":"TASK-13 preflights Private Ask Resolve/catalog before the transaction but defers the authoritative project-bound decision to the post-lock currentSession.ProjectID.Valid. If ClearChatSessionProjectByProject or PATCH commits between those points, a project_id=NULL ordinary chat can receive a new catalog 400, or the task can capture a pre-lock resolved override/base while the locked row has changed. The re-read does not undo an already returned validation error or refresh the stale snapshot. Specify a branch-and-snapshot algorithm tied to one locked row, with explicit catalog-I/O/lock or version-retry semantics, and fixtures for project-clear versus send and PATCH versus send consistency.\""}
 dimensions:
-  sdd-to-plan: "block"
-  plan-to-tasks: "block"
+  sdd-to-plan: "ok"
+  plan-to-tasks: "ok"
   task-executability: "block"
-  dependency-topology: "pass"
+  dependency-topology: "ok"
   interface-contracts: "block"
   acceptance-verifiability: "block"
-  scope-and-simplicity: "block"
+  scope-and-simplicity: "ok"
   risk-and-rollback: "block"
-  reviewer-model: "gpt-5.6-sol / quality-reviewer-agent; read-only review, no tests rerun"
 suggestions:
   - {"\"SUG-001":"target-version remains tbd; retain the existing requirement-owner action before human approval.\""}
 review-loop:
-  current-attempt: 2
-subject-sha256: aa9ded7c22328e3e6fcd5f64196f8929d6b385869892f318e8c0ecd740cebd46
+  current-attempt: 3
+subject-sha256: 0ee1ca7eb7a38ba1a68d09aa0bde4ca85b76ce936f9d1ff74a8096ad1ec24b83
