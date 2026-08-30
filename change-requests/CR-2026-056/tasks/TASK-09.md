@@ -35,7 +35,7 @@ created: 2026-08-30T20:45:00+08:00
 ## 验收条件
 
 1. AC-14：无容器时上传（无 `issue_id`）；其他成员 GET/download 该草稿 → 404；项目列表不出现。
-2. AC-28 年龄边界：167h59m 保留；168h00s 保留；168h01s 删对象 + 删行（`go test ./server/internal/service/ -count=1 -run ChatDraftAttachment`）。
+2. AC-28 年龄边界：167h59m 保留；168h00s 保留；168h01s 删对象 + 删行（`cd server && go test ./internal/service/ -count=1 -run ChatDraftAttachment`）。
 3. 对象删除失败（fake Storage）：行保留，下一 tick 重试；`Storage=nil` 不删行。
 4. 并发夹具：sweeper 选出候选后、删对象前，发送完成 Bind → sweeper 锁内重读 miss 或条件 DELETE 0 行，对象**不得**删除、已绑定行仍在（BLOCK-011）。
 5. 代码检索：sweeper 路径无 `DeleteAttachment` 调用。

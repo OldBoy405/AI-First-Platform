@@ -39,11 +39,11 @@ Team Agent 会话内核：GET 只 Ensure session（不建 Issue，含升级收�
 3. PATCH 三态：省略不改；`null`/空串清 override；非空设 override；空串永不落 override 列（AC-17）；无 Issue 亦可 PATCH（FR-9）。
 4. 非 owner/admin PATCH → `403 forbidden_chat_config`（AC-6）；closed / agent 漂移 session → `409 chat_session_closed_or_changed`。
 5. 并发两个 GET：部分唯一索引 + advisory 下最多一行 active。
-6. `go test ./server/internal/handler/ -count=1` 本 TASK 夹具绿。
+6. `cd server && go test ./internal/handler/ -count=1` 本 TASK 夹具绿（Go 模块在 `server/go.mod`）。
 
 ## 完成标志
 
-上述夹具绿 + `go build` 绿，提交至 multica CR worktree。
+上述夹具绿 + `cd server && go build ./...` 绿，提交至 multica CR worktree。
 
 ## 接口契约
 

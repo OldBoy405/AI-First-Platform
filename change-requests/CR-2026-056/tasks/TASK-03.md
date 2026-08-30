@@ -50,14 +50,14 @@ created: 2026-08-30T20:45:00+08:00
 
 ## 验收条件
 
-1. `make sqlc` 通过；`go build ./server/...` 绿；生成物无手改。
+1. `make sqlc` 通过；`cd server && go build ./...` 绿（Go 模块在 `server/go.mod`）；生成物无手改。
 2. 符号无碰撞：`GetProjectChatSessionForCreator` 仍只服务 `chat_session`，新表查询未占用该名。
 3. 编译级确认：`GetProjectChatSessionForCreator` 调用方全部传入 `workspace_id`（不传则编译失败）。
 4. 跨 workspace 负向用例（单测或并入 TASK-11）：同 `project_id`+`creator_id` 配错误 `workspace_id` 时 `GetProjectChatSessionForCreator` 返回 0 行。
 
 ## 完成标志
 
-`make sqlc` + `go build ./server/...` 绿，查询文件提交至 multica CR worktree。
+`make sqlc` + `cd server && go build ./...` 绿，查询文件提交至 multica CR worktree。
 
 ## 接口契约
 

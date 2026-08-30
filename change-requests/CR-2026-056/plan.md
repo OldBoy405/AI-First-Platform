@@ -6,7 +6,7 @@ sdd-ref: "change-requests/CR-2026-056/sdd.md"
 target-version: tbd
 status: draft
 created: 2026-08-30T20:19:35+08:00
-updated: 2026-08-30T20:19:35+08:00
+updated: 2026-08-30T21:11:00+08:00
 ---
 
 # 1. 交付里程碑
@@ -15,16 +15,16 @@ updated: 2026-08-30T20:19:35+08:00
 
 | 里程碑 | 交付内容 | 预计工时 | 退出条件 |
 |---|---|---:|---|
-| M0 基线与实现准备 | 确认两资源 worktree health、multica HEAD = `8746add879cbd1c78e573c2a4a1776e16158c00c`（SDD §9）、最大迁移号 471、测试入口与 `make sqlc` 可用 | 0.5 人天 | 资源均 healthy；基线 SHA 与 SDD §9 一致；验证命令明确 |
+| M0 基线与实现准备 | 确认两资源 worktree health、multica HEAD = `8746add879cbd1c78e573c2a4a1776e16158c00c`（SDD §9）、最大迁移号 471、测试入口与 `make sqlc` 可用 | 0.5 人天 | 资源均 healthy；基线 SHA 与 SDD §9 一致；验证命令明确（Go 模块在 `server/go.mod`，所有 `go build`/`go test` 一律 `cd server && ...`） |
 | M1 数据层 | 迁移 472–480（一文件一句、CONCURRENTLY、无 FK、down 配对）+ sqlc 新查询与改造查询（SDD §2.4 / §2.6） | 1.5 人天 | `make sqlc` 通过；编译绿；新查询与既有符号无命名冲突 |
 | M2 领域校验与目录适配 | `pkg/agent` 导出 `ModelIDForCapabilityLookup` / `StaticCatalog` / `ValidateChatConfig`；`chat_config.go`（Resolve + `ChatCatalogPort` + 薄包装）；handler 适配器（`CacheLoad`/`LiveLoad` 30s）与 `cmd/server` 接线 | 1.0 人天 | 四入口唯一校验入口成立；service 不 import handler；`pkg/agent` 单测含空模型哨兵与 codex fail-closed 矩阵 |
-| M3 会话/容器/发送内核 | GET Ensure（不建 Issue + 收养）、PATCH config、POST container、messages（Bind-in-tx + `chat_config` merge）、merge-forward、换绑 close、转投兼容钉（`lockKeyPrefix` + `GetProjectChatIssue` ORDER BY）、daemon claim、presenter 活动解析 | 2.5 人天 | §4.14 锁序全路径一致；AC-7/8/11/12/13/18/20/23 夹具通过；`comment.go` / `RouteDiscussionToTeamAgent` 零 diff |
+| M3 会话/容器/发送内核 | GET Ensure（不建 Issue + 收养）、PATCH config、POST container、messages（Bind-in-tx + `chat_config` merge）、merge-forward、换绑 close、转投兼容钉（`lockKeyPrefix` + `GetProjectChatIssue` ORDER BY）、daemon claim、presenter 活动解析、Private Ask 后端闭环（`GetProjectPrivateChat` 展示扩展 / `PATCH /api/chat/sessions/{sessionId}/config` / `SendChatMessage`→`SendDirectChatMessage` 回填+校验+快照） | 3.0 人天 | §4.14 锁序全路径一致；AC-7/8/11/12/13/18/20/23 夹具通过；AC-3/19/25（Private Ask）夹具通过；`comment.go` / `RouteDiscussionToTeamAgent` 零 diff |
 | M4 附件草稿安全与 sweeper | 上传者门、上传省略 `issue_id`、发送事务内 `BindUnboundDraftAttachments`、1h sweeper（行锁覆盖对象删除 + `DeleteUnboundDraftAttachment`） | 1.0 人天 | AC-14/15/28 夹具通过；`DeleteAttachment` 未被 sweeper 使用；sweeper∥Bind 竞态夹具通过 |
 | M5 前端接入 | 独立 zod schema + `UNSAFE_CHAT_CONFIG_FALLBACK`、client 方法、Team Agent `persistModel`→PATCH、Private Ask 可写 picker、四语文案 | 1.5 人天 | `schemas.test.ts`（AC-27）、`parity.test.ts`（AC-26）、组件测（AC-1/2/3/21）通过；无 `updateAgent` 调用 |
 | M6 集成验证与证据 | 三组 `go test`、§4.14 夹具 1–3、前端测试全绿、`CUSTOM.md` 登记核对、`write-test-report` | 1.25 人天 | test-report pass；AC-1~AC-28 证据可追溯；KG-1/KG-2 未被当缺陷记录 |
 | M7 评审与发布 | 独立 code review、人工 code approval、checkpoint、合并、writeback、archive | 1.0 人天 | code review blocker 清零；`crctl approve --stage code` 后合并归档 |
 
-预计总工时：10.25 人天。M1→M2→M3 为主链；M4 依赖 M1（附件查询）与 M3（发送事务挂钩点）；M5 依赖 M3 的响应形状，可与 M4 并行；M6 依赖 M1–M5；M7 依赖 M6。
+预计总工时：10.75 人天。M1→M2→M3 为主链；M4 依赖 M1（附件查询）与 M3（发送事务挂钩点）；M5 依赖 M3 的响应形状，可与 M4 并行；M6 依赖 M1–M5；M7 依赖 M6。
 
 # 2. 任务依赖图
 
@@ -47,6 +47,8 @@ M0 baseline inspect
 - knowledge-base：`.rayai-worktrees/knowledge-base/requirement/CR-2026-056`，承载 `plan.md`、`tasks/`、测试报告与 CR 账本。
 - multica：`.rayai-worktrees/multica/requirement/CR-2026-056`，承载全部代码、测试与 `CUSTOM.md`；基线 HEAD `8746add879cbd1c78e573c2a4a1776e16158c00c`。
 - tools：本 CR 无 diff（PRD 范围排除，SDD §1.2）。
+
+Go 验证命令统一约定（BLOCK-002）：multica 仓根目录**没有** `go.mod`，Go 模块在 `server/go.mod`（module `github.com/multica-ai/multica/server`）。所有 `go build` / `go test` 命令一律写为「`cd server && go ...`」，包路径以 `server/` 为根（如 `cd server && go build ./...`、`cd server && go test ./internal/handler/ ./pkg/agent/ ./internal/service/ -count=1`）。基线核验（TASK-01）与证据收集（TASK-11）消费同一组命令；`make sqlc` 在仓根执行。
 
 若 workspace freshness 报告 HEAD 漂移、diverged 或资源异常，先按既有流程暂停并重新确认权威 worktree，不自动合并。
 
@@ -80,8 +82,9 @@ M0 baseline inspect
 6. 换绑：`handler/project.go` 在**同一**项目 advisory 下提交 `team_agent_id` 更新 + `CloseActiveProjectChatSession`，不建新 Issue。
 7. 转投兼容钉（唯一允许的转投侧改动）：`EnsureProjectChatIssue` 传入 `lockKeyPrefix` `"project-chat"` → `"project-chat-session"`；`comment.go` / `RouteDiscussionToTeamAgent` 零改动。
 8. 任务与执行：`task.go` 入队 merge `context.chat_config`（保留 `head_sha` 等，禁整对象覆盖）；`daemon.go` claim 有快照用快照、缺则回退 agent 列，重试不重读；`project_presenter.go` 改读 active session `issue_id`（未绑定跳过）。
+9. Private Ask 后端闭环（BLOCK-001，SDD §2.2/§3.2/§4.6）：`GetProjectPrivateChat` 带 `workspace_id` 查询并写 `base_*`（新建时）+ 响应附加 `model`/`thinking_level`/`*_source`（只 Resolve 展示，不校验）；新 `PATCH /api/chat/sessions/{sessionId}/config`（creator-only、`GetChatSessionInWorkspace`、拒 `project_id IS NULL`、三态、首写回填 `base_*`、Resolve + §4.3）；`SendChatMessage`→`SendDirectChatMessage` 发送前回填 + 校验 + 任务 `context.chat_config` 快照。不经 `project_chat_session`。
 
-依赖：1 → 2/3 → 4/5 → 6；7 与 1 共用锁协议；8 依赖 4。锁序固定为 SDD §4.14 表，禁止颠倒。
+依赖：1 → 2/3 → 4/5 → 6；7 与 1 共用锁协议；8 依赖 4；9 依赖 M2（Resolve/校验/`ChatCatalogPort`）与 M1 的 Private Ask sqlc 符号，与 1–8 并行，须在 M6 证据前完成。锁序固定为 SDD §4.14 表，禁止颠倒。
 
 ## 3.4 M4 附件草稿安全与 sweeper
 
@@ -103,8 +106,8 @@ M0 baseline inspect
 
 ## 3.6 M6 集成验证与证据
 
-1. `go test ./server/internal/handler/ ./server/pkg/agent/ ./server/internal/service/ -count=1` 与 `-run ChatDraftAttachment`；前端 `schemas.test.ts`、locales parity、team-agent / private-ask 组件测。
-2. 必过夹具：§4.14 夹具 1–3（GET∥转投、转投后首次 Bind、同 `created_at` 双行 `:one` 固定较小 `id`）、升级收养与「升级后未发送即换绑」、换绑双容器、首次发送失败回滚、LiveLoad 超时、跨 workspace 0 行。
+1. `cd server && go test ./internal/handler/ ./pkg/agent/ ./internal/service/ -count=1` 与 `cd server && go test ./internal/service/ -count=1 -run ChatDraftAttachment`；前端 `schemas.test.ts`、locales parity、team-agent / private-ask 组件测。
+2. 必过夹具：§4.14 夹具 1–3（GET∥转投、转投后首次 Bind、同 `created_at` 双行 `:one` 固定较小 `id`）、升级收养与「升级后未发送即换绑」、换绑双容器、首次发送失败回滚（五类零残留）、LiveLoad 超时、跨 workspace 0 行、Private Ask 回填/三态/403/发送快照（AC-3/19/25）。
 3. 按当时实际结构登记 `CUSTOM.md`（编号顺延 #58 之后，`// AIFIRST:` 挂钩点全覆盖）。
 4. `write-test-report` 生成证据；失败按 reviewLoop 回 `implement-code` 自修复，不手改测试账本。
 
@@ -115,11 +118,11 @@ M0 baseline inspect
 | 角色 | 工作内容 | 预计工时 |
 |---|---|---:|
 | CR 协调（cr-coordinator-agent） | M0 基线确认、路径消费、状态推进与门禁 | 0.5 人天 |
-| 后端实现（dev-agent / owners.development=Ray） | M1–M4：迁移、sqlc、校验内核、会话/容器/发送、附件与 sweeper | 6.0 人天 |
+| 后端实现（dev-agent / owners.development=Ray） | M1–M4：迁移、sqlc、校验内核、会话/容器/发送、附件与 sweeper、Private Ask 后端闭环 | 6.5 人天 |
 | 前端实现（dev-agent） | M5：schema/client/组件/文案 | 1.5 人天 |
 | 测试与证据（owners.test=Ray） | M6：全量测试、夹具核对、CUSTOM.md 核对、test-report | 1.25 人天 |
 | 独立 reviewer + 人工审批（quality-reviewer-agent / Ray） | M7：code review、`crctl approve --stage code`、合并、writeback、archive | 1.0 人天 |
-| 合计 |  | 10.25 人天 |
+| 合计 |  | 10.75 人天 |
 
 执行以各资源 worktree owner 与既有 Pipeline 为准；本计划不新增服务账号或基础设施职责。multica 仓代码注释一律英文（其 CLAUDE.md 硬规则）；本仓文档用中文。
 
@@ -142,10 +145,11 @@ M0 baseline inspect
 
 ## 开发完成 checklist
 
-- [ ] M0：两资源 healthy，multica HEAD 与 SDD §9 一致，`make sqlc` 与三组 `go test` 入口可用。
+- [ ] M0：两资源 healthy，multica HEAD 与 SDD §9 一致，`make sqlc` 与三组 `go test` 入口可用（均在 `server/` 目录，命令形如 `cd server && go test ./internal/handler/ ./pkg/agent/ ./internal/service/ -count=1`）。
 - [ ] 迁移 472–480：一文件一句、`CONCURRENTLY`、无 FK、down 配对；`issue_project_chat_unique` 已 DROP（AC-22）。
 - [ ] 校验单一实现：四入口只经 `ValidateResolvedChatConfig` → `agent.ValidateChatConfig`；service 无 handler import、无第二套归一化。
 - [ ] GET 不建 Issue（AC-11）；PATCH/container/messages/merge-forward 失败路径均「不写/不建/不入队」（AC-23/24）。
+- [ ] Private Ask 后端闭环：GET 附加字段、PATCH creator-only 三态 + 首写回填、发送回填+校验+`chat_config` 快照；历史行 `agent_default` 不落库（AC-3/19/25，FR-11）。
 - [ ] 发送首次绑定与 comment/enqueue/附件绑定同一事务，失败全回滚（AC-15）。
 - [ ] 换绑后新 session 新容器、旧 timeline 隔离、收养窗口 COUNT==1 不回退（AC-18）。
 - [ ] `comment.go` / `RouteDiscussionToTeamAgent` 零 diff；`GetProjectChatIssue` 同时间戳双行固定较小 `id`。

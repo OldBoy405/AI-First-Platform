@@ -8,7 +8,7 @@ title: M5 前端接入：schema / client / 两面板 / 文案
 slug: m5-frontend-session-config
 status: pending
 estimate: 12h
-depends-on: [CR-2026-056-TASK-07]
+depends-on: [CR-2026-056-TASK-07, CR-2026-056-TASK-13]
 created: 2026-08-30T20:45:00+08:00
 ---
 
@@ -16,7 +16,7 @@ created: 2026-08-30T20:45:00+08:00
 
 前端接入会话级配置：独立 zod schema + 硬/软降级、client 方法、Team Agent 面板改 PATCH、Private Ask 可写 picker、四语文案。对应 plan.md M5、SDD §3.4/§4.11。
 
-输入条件：TASK-06/07 的后端 API 形状已定稿（GET / PATCH / container / messages / merge-forward 响应，SDD §3.1/§3.2）。
+输入条件：TASK-06/07/13 的后端 API 形状已定稿（GET / PATCH / container / messages / merge-forward 响应，SDD §3.1/§3.2；Private Ask `PATCH /api/chat/sessions/{sessionId}/config` 见 TASK-13）。
 
 ## 涉及文件 / 模块
 

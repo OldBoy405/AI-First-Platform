@@ -37,14 +37,14 @@ created: 2026-08-30T20:45:00+08:00
 
 ## 验收条件
 
-1. `go build ./server/...` 绿；包依赖检查确认 `internal/service` 未 import `internal/handler`。
+1. `cd server && go build ./...` 绿（Go 模块在 `server/go.mod`）；包依赖检查确认 `internal/service` 未 import `internal/handler`。
 2. `ResolveChatConfig` 单测：四层优先级 ×（override / base / agent_default / runtime_default）× model/thinking 分别解析（来源可不同）。
 3. LiveLoad 错误语义夹具（SDD §4.3 表）：30s 内 cacheable 继续校验；超时（pending 未完成）400 语义；daemon Fail / empty / fallback 400；Waitable 无 cache 400 且不调用 LiveLoad。
 4. 代码检索确认 `ValidateResolvedChatConfig` 为 service 内唯一校验包装（四入口唯一校验入口成立），无第二处调用 `ValidateThinkingLevelWith`。
 
 ## 完成标志
 
-`go build` + service/handler 相关单测绿并提交。
+`cd server && go build ./...` + service/handler 相关单测绿并提交。
 
 ## 接口契约
 

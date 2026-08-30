@@ -40,13 +40,13 @@ created: 2026-08-30T20:45:00+08:00
 
 ## 验收条件
 
-1. `go test ./server/pkg/agent/ -count=1` 绿，含校验矩阵：空 model + 空 thinking 各 provider 通过；空 model + 非空 thinking 在 codex 拒绝；同组合在 claude/opencode 按 `ValidateThinkingLevelWith`；非空未知 model 拒绝；Claude 上下文窗口变体（如带 `[1m]` 后缀）命中基础模型能力。
+1. `cd server && go test ./pkg/agent/ -count=1` 绿，含校验矩阵：空 model + 空 thinking 各 provider 通过；空 model + 非空 thinking 在 codex 拒绝；同组合在 claude/opencode 按 `ValidateThinkingLevelWith`；非空未知 model 拒绝；Claude 上下文窗口变体（如带 `[1m]` 后缀）命中基础模型能力。
 2. `claudeContextWindowTagRe` 仅在 `pkg/agent` 出现（grep 验证，无第二套归一化）。
-3. `go build ./server/...` 绿；既有 `ValidateThinkingLevelWith` 调用方行为不变（既有测试全绿）。
+3. `cd server && go build ./...` 绿；既有 `ValidateThinkingLevelWith` 调用方行为不变（既有测试全绿）。
 
 ## 完成标志
 
-`go test ./server/pkg/agent/ -count=1` 全绿并提交。
+`cd server && go test ./pkg/agent/ -count=1` 全绿并提交。
 
 ## 接口契约
 

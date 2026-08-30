@@ -1,0 +1,25 @@
+cr-id: CR-2026-056
+review-type: dev-plan
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-30T20:57:37+08:00"
+verdict: block
+repair-target: write-dev-plan
+blockers:
+  - "BLOCK-001 [SDD->plan/task coverage] Private Ask backend is not assigned an implementation task. PRD FR-3/FR-4/FR-5/FR-6/FR-11/FR-12/FR-13/FR-14/FR-17/FR-21 and AC-3/AC-19/AC-25 map to SDD §2.2, §3.2, §4.6 and §6, but TASK-03 only creates SQL symbols, TASK-06/07 describe Team Agent handlers and sends, TASK-08 only specifies mention enqueue/daemon claim, and TASK-10 only changes UI/client calls. No TASK owns the backend changes to server/internal/handler/project_chat.go:GetProjectPrivateChat, PATCH /api/chat/sessions/{sessionId}/config, server/internal/handler/chat.go:SendChatMessage, or service/task.go:SendDirectChatMessage for base snapshot backfill, catalog/readiness validation, override persistence, and chat_config snapshot. Add a dedicated task or expand the existing tasks with these files, dependencies, concrete implementation steps, and AC-3/19/25 evidence; otherwise the approved Private Ask requirements will ship without a server path."
+  - "BLOCK-002 [task executability/acceptance] The prescribed Go verification commands are not executable from the stated multica repository root. The target worktree has no root go.mod; the module is server/go.mod. SDD §10, plan M0/M6, and TASK-01/02/03/04/06/07/09/11 use commands such as `go test ./server/internal/handler/...` and `go build ./server/...`, which fail when run at the documented root and are not valid package patterns from `server` either. Rewrite every command with an explicit working directory and valid package paths (for example `cd server && go test ./internal/handler/ ./pkg/agent/ ./internal/service/ -count=1` and `cd server && go build ./...`), and make the baseline/evidence task consume those exact commands."
+  - "BLOCK-003 [interface-contracts/transactional executability] TASK-07 requires BindProjectChatContainer, CreateComment, enqueueMentionTaskWithCommentPlan, chat_config merge, and attachment binding to run in one PostgreSQL transaction, but the baseline enqueue function at server/internal/service/task.go:1431 (`enqueueMentionTaskWithCommentPlan`) writes through `s.Queries` and has no transaction/query parameter; the baseline send kernel at server/internal/service/project_chat.go:228 likewise creates the comment and task outside an outer transaction and compensates by deleting the comment. TASK-07 names the old function but does not define the tx-aware enqueue seam or how all writes and context merge use the same qtx. Specify the concrete in-tx API/refactor (for example a qtx-based internal variant plus a non-tx wrapper for existing callers), its rollback/error mapping, and tests proving no session.issue_id, Issue, comment, task, or attachment binding remains after enqueue/attachment failure."
+dimensions:
+  sdd-to-plan: "block"
+  plan-to-tasks: "block"
+  task-executability: "block"
+  dependency-topology: "pass"
+  interface-contracts: "block"
+  acceptance-verifiability: "block"
+  scope-and-simplicity: "pass"
+  risk-and-rollback: "block"
+  reviewer-model: "gpt-5.6-sol / quality-reviewer-agent; read-only review, no tests rerun"
+suggestions:
+  - {"\"SUG-001":"target-version remains tbd; retain the existing requirement-owner action before human approval.\""}
+review-loop:
+  current-attempt: 1
+subject-sha256: 480aeefc21a193e9d3eee0eb60ee19055165da90afb7b157d0b9402079b6c128

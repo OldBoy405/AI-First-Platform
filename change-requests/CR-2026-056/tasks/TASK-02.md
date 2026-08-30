@@ -50,7 +50,7 @@ created: 2026-08-30T20:45:00+08:00
 1. 9 组文件逐个人工核对：一文件一句、无 `REFERENCES`、索引带 `CONCURRENTLY`、down 配对（AC-22）。
 2. 迁移在本地数据库 up 全量应用成功；随后按 480→472 逆序执行 down 全部成功。
 3. up 后断言：`issue_project_chat_unique` 不存在；同 `(workspace_id, origin_id)` 且 `origin_type='project_chat'` 第二行插入被 480 拒绝；同项目两个 `active` session 被 475 拒绝；同 `issue_id` 挂两个 session 被 476 拒绝。
-4. `go build ./server/...` 绿（迁移不引用不存在符号）。
+4. `cd server && go build ./...` 绿（迁移不引用不存在符号；Go 模块在 `server/go.mod`，仓根无 `go.mod`）。
 
 ## 完成标志
 
