@@ -18,7 +18,7 @@ source: "docs/product/Multica聊天会话级配置与Discussion方案.md"
 origin: ""
 status: developing
 created: "2026-08-30T16:34:14+08:00"
-updated: "2026-08-31T00:01:12+08:00"
+updated: "2026-08-31T04:01:04+08:00"
 remote-ref: ""
 last-push-at: ""
 last-push-by: ""
