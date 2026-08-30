@@ -1,29 +1,24 @@
 cr-id: CR-2026-056
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-30T18:32:00+08:00"
+reviewed-at: "2026-08-30T18:56:26+08:00"
 verdict: block
 blockers:
-  - "BLOCK-007：共用 catalog 校验的模块边界与在线契约不可执行。SDD §1.2/§4.3 把 ResolveChatConfig 与 catalog 校验放在 server/internal/service/，但现有 ModelCatalogCache、ModelEntry、cachedModelCatalog 都属于 handler 包；ARCHITECTURE.md Hard Invariant 4 的依赖方向是 handler -> service，service 不能反向依赖 handler。现有 InitiateListModels 也只是异步 ModelListStore 协议，未提供 PATCH/messages/container/merge-forward 可同步使用的 live catalog 判定、超时和错误语义。因此无法保证四条入口实际共用同一校验。必须把 catalog 合同/领域类型下沉到 service 或 pkg，或明确由 handler 注入 service-owned validator，并定义在线发现的同步判定契约。"
-  - "BLOCK-008：空模型默认语义与校验规则矛盾。§4.2 的 runtime_default 可解析为 model=\"\"，而既有 agent.Model 允许空值以让 provider/CLI 选择自身默认；但 §4.3 又要求 model 必须命中 Models。现有 server/pkg/agent/ValidateThinkingLevelWith 只对 Codex 空模型特殊失败，并不会把空模型当作 catalog 条目。按当前文字，正常的空模型 Agent 在 PATCH/container/send 上会被拒绝，或实现者只能自行猜测未定义的 provider 语义。必须明确空模型是否为合法 runtime-default 哨兵、各 provider 的校验规则，以及该值如何进入 chat_config 和 daemon claim。"
-  - "BLOCK-009：升级期遗留容器的‘首次 Bind’判定没有持久化或确定性查询。§2.1/§4.4 允许把 origin_id IS NULL 的旧 project_chat Issue 收养，但只说本 session 是项目第一次 Bind；没有定义如何判定。若升级后先创建 active session A、在它首次 Bind 前换绑关闭 A，再创建 session B，旧 Issue 仍是 origin_id=NULL，当前谓词会让 B 收养旧 Issue，违反 §4.7/AC-18 的新旧 timeline 隔离。必须定义迁移/回填，或在锁内明确‘项目不存在任何 project_chat_session/已发生过绑定’的 guard，并覆盖升级后未发送即换绑的测试。"
-  - "BLOCK-010：GET/PATCH 的旧读没有被换绑事务栅栏住。§4.7 只规定 settings 更新与 close 共用项目 advisory lock；§4.5 的锁序只覆盖发送。§4.1 在拿 advisory lock 前读取项目绑定，PATCH 也只描述 active/agent_id 预检查，未规定在同一事务中重新读取并锁定 session。GET 可能在换绑提交后仍按旧快照插入旧 agent 的 session；PATCH 可能在 close 提交后把 override 写入已关闭 session。必须统一 GET/配置 PATCH/发送/换绑的重读与锁序，并用 active+agent_id 的事务内 CAS 防止 stale write。"
-  - "BLOCK-011：sweeper 与发送绑定存在会删除成功附件的竞态。§4.10 先选出五字段全空候选、删对象、再调用 DeleteAttachment；发送可在候选读取后把附件绑定到 issue/comment/task。现有 attachment.sql 的 DeleteAttachment 只排除 source_context_id，不重新要求五类字段全空，因此 sweeper 可在成功发送提交后删除对象和已绑定行。必须用行锁覆盖对象删除与条件删行，或引入可恢复的 claim 状态/等价协议，并定义与 BindUnboundDraftAttachments 的锁序及并发测试。"
-  - "BLOCK-012：Discussion→Team Agent 转投没有完整的快照/校验落点，且漏列既有实现依赖。SDD §1.6/§4.4 只笼统说 comment.go 改走 active session 与同一发送内核；既有 service/discussion_coordinator.go 的 RouteDiscussionToTeamAgent 会直接创建路由 comment 并调用 enqueueMentionTaskWithCommentPlanAndOriginator，该稳定符号没有出现在 §9 依赖清单，也没有算法明确该路径的 ResolveChatConfig、catalog/readiness、chat_config merge、Bind-in-tx 和失败回滚。若按现有调用继续实现，转投任务会写旧容器或缺少不可变快照。必须补齐依赖、调用签名/事务边界和 AC/测试。"
+  - "BLOCK-013：SDD §4.13/§9/§10 将既有 Discussion Coordinator→Team Agent 转投纳入本 CR 的实现范围：要求停止 comment.go 的 EnsureProjectChatIssue，改用 project_chat_session、catalog/readiness、Bind-in-tx 与 chat_config 快照，并把转投纳入 AC-24。该行为与已审批 PRD §1.3/§7 的明确排除（Coordinator、Discussion 共享会话/相关升级不在本 CR）以及 NFR-7 的“Discussion 发送路径不改变”冲突；SDD 不能自行扩展范围并宣称 FR 21/21 对齐。必须由需求修订/审批明确纳入该路径并补对应 FR/AC，或将其改为保持既有 Discussion Coordinator 路径的兼容性方案，同时说明新的 project_chat 容器模型如何避免旧 EnsureProjectChatIssue 回归。"
+  - "BLOCK-014：§4.2.1 的 service-owned ValidateResolvedChatConfig 伪代码不可按现有领域 API 实现：它直接调用 `modelIDForCapabilityLookup`，但该函数在 `pkg/agent` 是未导出符号，service 无法引用；同时 `ValidateThinkingLevelWith` 的真实签名要求 `func() (Catalog, error)` loader，文档却以已加载的 `Catalog` 作为 `load` 参数。若由 service 自行复制 provider/别名归一化逻辑，会产生与 pkg/agent 不一致的第二套规则。必须明确导出/下沉一个领域归一化与校验接口，或明确 service 的等价算法及 loader 适配边界，并将空模型、Claude 变体和 Thinking 能力矩阵绑定到该单一实现。"
 dimensions:
-  prd-sdd-alignment: "BLOCK：21/21 FR 有映射且上一轮六项已有回修，但空模型默认值、升级后未绑定即换绑、sweeper 绑定竞态和 Discussion 转投快照仍使 FR-4/7/13/15/16/AC-18/24/28 在实际路径不可达。"
-  architecture-soundness: "BLOCK：容器模型与主事务方向基本清晰，但 catalog 服务边界违反 handler -> service 方向，且 GET/PATCH/换绑的 stale-read 栅栏未定义。"
-  data-model-completeness: "BLOCK：session/Issue 关系已补 origin_id 与索引，但升级收养缺少首次 Bind 的可判定状态；附件 sweeper 也没有并发 claim/锁协议。"
-  interface-contract: "BLOCK：四入口共用 catalog 校验没有同步 live 判定契约；空 model 哨兵、转投路径的 session/context 响应与错误边界未完整定义。"
-  multi-repo-constraints: "PASS：目标实现仍限定 multica，knowledge-base 只承载 SDD，tools 零改动；资源 worktree 与提交口径一致。"
-  performance-security: "BLOCK：换绑竞态可能跨 session 泄露旧 timeline 或向 closed session 写配置；sweeper 竞态可删除已成功发送的附件对象和行。"
-  testability: "BLOCK：现有 AC 表未覆盖升级后首次 Bind 前换绑、GET/PATCH 与换绑并发、sweeper 与 Bind 并发、空 model provider 矩阵及 Discussion 转投快照；catalog live/cache 两层也缺统一测试夹具契约。"
+  prd-sdd-alignment: "BLOCK：上一轮 BLOCK-007～012 的修复方向已在 SDD 中出现，但新增的 Discussion 转投方案与已审批 PRD 的范围排除/NFR-7 冲突；且 validator API 仍不可执行。"
+  architecture-soundness: "BLOCK：handler/service 依赖方向已调整为 port 注入，但 service validator 对 pkg/agent 私有 helper 的依赖和重复规则风险未消除；Discussion 路径的范围边界也未解决。"
+  data-model-completeness: "PASS：project_chat_session、origin_id、升级收养窗口及附件锁/条件删除的字段与约束已覆盖上一轮缺口。"
+  interface-contract: "BLOCK：ChatCatalogPort 的高层同步契约已补，但 §4.2.1 对 ValidateThinkingLevelWith 的参数形状和 model ID 归一化 API 不完整，无法形成可编译的唯一校验合同。"
+  multi-repo-constraints: "PASS：目标仍限定 multica，knowledge-base 仅承载 SDD，tools 无实施改动；ARCHITECTURE.md 约束被引用。"
+  performance-security: "PASS：项目 advisory、session FOR UPDATE、CAS 及 sweeper 持行锁覆盖对象删除/条件删行的主要竞态控制已补齐。"
+  testability: "BLOCK：虽补列升级换绑、转投、sweeper 并发和空模型矩阵的测试入口，但转投是否属于本 CR 未有可验收的需求基线，且 validator 的领域 API 未定，测试无法锁定唯一行为。"
   prompt-adoption: "N/A：本 CR 不触及 crctl.mjs dispatch 或 controlled-shell/rules.json protectedPaths.deny。"
 suggestions:
-  - "SUG-001：补充 target-version 后再进入人工架构审批。"
-  - "SUG-002：为 catalog validator、空 model/Thinking 组合与 PATCH 三态定义 service-owned 纯函数矩阵，handler 只负责认证与错误映射。"
-  - "SUG-003：把项目 advisory、session FOR UPDATE、attachment row lock 的全局顺序写成一张并发协议表，并为每个跨边界竞态增加真库夹具。"
+  - "SUG-001：人工架构审批前指定 target-version；当前仍为 tbd。"
+  - "SUG-002：将 provider/model ID 归一化、Catalog loader 适配与 ValidateThinkingLevelWith 的单一实现写成 service/pkg 的明确接口，并为 cache/live 两路共用同一纯函数。"
 review-loop:
-  current-attempt: 2
+  current-attempt: 3
 subject-file: change-requests/CR-2026-056/sdd.md
-subject-sha256: 99fa0808cceea6cd3fac5d744be7cd11064780d97e54c3c722cb7aaaf9edac28
+subject-sha256: d20b5c4821d5bfe57c536c0f908d673888788dfc8817abae9f02bf268ba89ecc
