@@ -1,36 +1,33 @@
 cr-id: CR-2026-056
 review-type: code
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-31T04:00:39+08:00"
-verdict: block
-blockers:
-  - "BLOCK-001 [P1] Team Agent 配置 PATCH 永远缺少 session_id：前端 project-team-agent-chat.tsx:733-747 的 persistModel/persistThinking 调用 api.patchProjectChatConfig(projectId, {model|thinking_level})，而 server/internal/handler/project_chat.go:77-91 的 PatchProjectChatConfigRequest 将 session_id 作为必需字段解析并在 :119-123 以 session_id is required 拒绝；api/client.ts:3622-3638 的 patchProjectChatConfig 也没有补入该字段。因此 owner/admin 每次选择 model 或 thinking 都得到 400，CR 的核心可写配置流程不可用。修复方向：让 client/helper 接收并发送当前 sessionId，或由调用点直接构造包含 session_id 的请求，并补充真实 UUID 的请求断言。"
-  - "BLOCK-002 [P1] Team Agent 硬降级仍暴露可写设置入口：packages/core/api/schemas.ts:1315-1320 的 ProjectChatSchema 要求 session_id UUID，解析缺失/非法响应时 packages/core/api/schemas.ts:1328-1333 的 EMPTY_PROJECT_CHAT 将 team_agent_id 置空；但 project-chat-panel.tsx:278-295 只按 team_agent_id/session_id 为空进入未配置分支，canConfigure=true 时仍渲染 TeamAgentSetupPicker（:281-286），允许 PATCH project settings。这样 malformed/旧后端响应触发 NFR-8/AC-27 后不是只读+重试，而是可写的绑定操作。修复方向：保留并识别硬降级哨兵（或让 fallback 带显式 degraded 状态），管理员同样渲染 config_unavailable + retry，不渲染 setup picker。"
-  - "BLOCK-003 [P1] Private Ask PATCH 的错误边界顺序错误：server/internal/handler/chat.go:896-902 只按 workspace 读取 session，随后 :903-910 无条件读取 agent/runtime provider；因此普通 project_id IS NULL session 或非 creator session 在 agent 无 runtime/provider 时会先返回 400 invalid_model_or_thinking_level，违反 TASK-13/SDD §3.2 的普通 session 必须 404、creator-only 非创建者必须 403。service.PatchChatSessionConfig 本应在锁内先做 creator/project_id 判定（:538-545），但当前 handler 的 provider 预检把这些契约路径截断了。修复方向：将 creator/project_id 判定前置到不依赖 provider 的 workspace-scoped locked/service path；只有确认 project-bound 且 caller authorized 后才解析 provider。"
+reviewed-at: "2026-08-31T05:04:58+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  code-task-sdd-alignment: "BLOCK：发现 3 条可直接复现的 API/UI 契约偏差，阻断配置写入、硬降级安全边界和 Private Ask 负向状态码。"
-  engineering-quality: "BLOCK：客户端与后端对同一 PATCH body 的必填字段不一致；错误预检顺序让合法负向分支依赖 runtime 状态。"
-  critical-path-readability: "PASS：核心事务、迁移、锁序与任务快照实现可定位，阻断项集中在边界适配顺序。"
-  security: "BLOCK：硬降级响应仍可进入管理员设置写路径，无法满足只读降级安全要求。"
-  test-coverage: "BLOCK：现有前端测试断言了缺少 session_id 的 PATCH 调用，未钉住后端必填契约；ordinary/non-creator 无 runtime 的负向组合也未被证据覆盖。"
-  test-evidence-trust: "PASS：test-report.md 为 crctl-test 生成，status=pass，command-digest 与 traceability.yml 一致，引用的 cmd-01..07 日志均存在；前端测试未执行已在报告风险区披露。"
-  frontend-quality: "BLOCK：硬降级管理员态仍可写；Team Agent picker 的 PATCH 调用形状与服务端契约不匹配。"
+  code-task-sdd-alignment: "PASS: cef1ec33a satisfies the three reviewed repair contracts and the requested tests cover the changed boundaries."
+  engineering-quality: "PASS: the client/call-site contract, schema fallback distinction, and handler error ordering are internally consistent."
+  critical-path-readability: "PASS: the repaired paths are localized and the control-flow comments identify the relevant invariants."
+  security: "PASS: degraded chat data is read-only in the panel, and Private Ask negative boundaries are checked before provider resolution."
+  test-coverage: "PASS: client UUID/null wire assertions, component three-argument assertions, schema union/degraded cases, and no-runtime 403/404/400 cases are present."
+  test-evidence-trust: "PASS: test-report.md is crctl-test generated with status=pass; referenced command logs exist and traceability has the matching digest."
+  frontend-quality: "PASS: the repaired degraded state removes the setup write entry for administrators while preserving the explicit unconfigured CTA."
   suggestion-policy: "strict"
 suggestions:
-  - "target-version 仍为 tbd；按既有评审建议，在人工 code approval 前由 Ray 补齐。"
-  - "test-report 明示前端 schemas/parity/组件测试因无 node_modules 未执行；修复后应在安装依赖的环境补跑并更新证据。"
-  - "Team Agent send/container 的 provider/session 预读与后续 advisory 内重读之间仍有 stale-read 窗口；若后续扩展并发契约，考虑把 provider/catalog 输入也绑定到锁内重读结果。"
+  - "target-version remains tbd; Ray must fill it before code approval."
+  - "test-report.md still records frontend tests as not executed in its generated evidence; refresh the report after the claimed pnpm/tsc run so the evidence matches the current checkpoint."
+  - "The existing handler provider pre-read remains separate from the service lock; consider binding provider resolution to the locked agent/session in a later concurrency-focused change."
 review-loop:
-  current-attempt: 1
+  current-attempt: 2
 release-subjects:
   version: 1
   repositories:
     - repo: ai-first-platform-docs
       remote-ref: refs/heads/requirement/CR-2026-056
-      reviewed-source-sha: 4433092a33e79cc11a2a58ee1ea01432fa9293ce
+      reviewed-source-sha: 77cec5bd6f31512ace7c9ba84a11ca18bf039020
     - repo: multica
       remote-ref: refs/heads/requirement/CR-2026-056
-      reviewed-source-sha: 795828576052c23e10abd92914e3a50d73e93f25
+      reviewed-source-sha: cef1ec33ae79ff059013a2ca2b14b7f8dff02172
     - repo: tools
       remote-ref: refs/heads/requirement/CR-2026-056
       reviewed-source-sha: e09c3b33e7be40830b0aadfeada88ef0c569b143
