@@ -2363,3 +2363,45 @@ history:
         event: archived
         to: ["Ray"]
         payload: {"final-status":"archived","archive-reason":"cr-archive","archived-at":"2026-08-30T07:29:54+08:00","writeback-spec-id":"ai-first-platform"}
+  - id: CR-2026-056
+    title: 会话级配置与 Team Agent 闭环
+    summary: "让 Team Agent 和 Private Ask 的模型与 Thinking Mode 成为会话级配置，发送时冻结为不可变任务快照；Team Agent 打开面板只创建/读取 session，不创建隐藏 project_chat Issue，首次发送或显式创建才绑定容器。不含 Discussion 共享会话、Coordinator、Discussion 附件/升级，以及发送框整体视觉重构。"
+    owner: Ray
+    owners:
+      requirement:
+        id: Ray
+        assigned-at: "2026-08-30T16:34:14+08:00"
+      development:
+        id: Ray
+        assigned-at: "2026-08-30T16:34:14+08:00"
+      test:
+        id: Ray
+        assigned-at: "2026-08-30T16:34:14+08:00"
+    target-version: tbd
+    source: "docs/product/Multica聊天会话级配置与Discussion方案.md"
+    origin: ""
+    prd-path: "change-requests/CR-2026-056/prd.md"
+    created: "2026-08-30T16:34:14+08:00"
+    updated: "2026-08-30T16:34:14+08:00"
+    latest-checkpoint:
+      batch-id: 978c64659b63eec1
+      repositories:
+        - repo: ai-first-platform-docs
+          source-sha: 53584177ee43055525d7ee20169fca66016adfdc
+          remote-ref: refs/heads/requirement/CR-2026-056
+        - repo: multica
+          source-sha: cef1ec33ae79ff059013a2ca2b14b7f8dff02172
+          remote-ref: refs/heads/requirement/CR-2026-056
+        - repo: tools
+          source-sha: e09c3b33e7be40830b0aadfeada88ef0c569b143
+          remote-ref: refs/heads/requirement/CR-2026-056
+  
+    final-status: archived
+    archive-reason: "cr-archive"
+    writeback-spec-id: ai-first-platform
+    archived-at: "2026-08-31T07:43:33+08:00"
+    notify-log:
+      - at: "2026-08-31T07:43:33+08:00"
+        event: archived
+        to: ["Ray"]
+        payload: {"final-status":"archived","archive-reason":"cr-archive","archived-at":"2026-08-31T07:43:33+08:00","writeback-spec-id":"ai-first-platform"}
