@@ -1,0 +1,29 @@
+cr-id: CR-2026-056
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-30T18:00:09+08:00"
+verdict: block
+blockers:
+  - "BLOCK-001：换绑后的 session 无法获得独立 Team Agent 容器。SDD §4.7 要求旧 session/Issue 保留且新 session 不带入旧历史，但 §4.4 仍调用按 project 查询的 ensureContainerIssue/GetProjectChatIssue；目标仓库现有 issue_project_chat_unique 也按 project_id 唯一（multica migration 435）。因此新 session 会复用旧 Issue，AC-18 无法成立。必须在 SDD 中定义按 session 区分容器的持久化/唯一性/查询迁移方案（例如明确 origin_id 或其他关联），并同步 merge-forward 路径。"
+  - "BLOCK-002：首次发送的原子性不成立。SDD §4.5 先调用 §4.4 BindProjectChatContainer，再进入 tx 执行 comment、enqueue 和附件绑定；容器创建/回写已在此前提交。首次发送在入队或附件绑定失败时会留下 session.issue_id 与隐藏 Issue，但没有成功消息，违反 PRD FR-16 对失败不留下 Issue 绑定半成品的要求。必须把首次绑定与发送纳入同一事务，或明确仅在发送创建的情况下可回滚的补偿协议及并发锁序。"
+  - "BLOCK-003：显式 POST /chat/container 未落实 FR-10/FR-4 的校验合同。PRD 要求显式创建和首次发送均先解析有效配置并执行 AgentReadiness 与 online catalog / Waitable cache capability 校验；SDD §4.4 的 BindProjectChatContainer 仅校验 session 状态、agent_id 并创建 Issue，§4.5 只把 ResolveChatConfig 写在消息发送流程，未定义 container handler 的校验失败语义。按当前设计可在非法 model/Thinking 或 Blocked runtime 下创建容器，AC-23/AC-24 不能完整验收。"
+  - "BLOCK-004：merge-forward 发送链路没有快照设计。SDD §1.6 只规定 merge-forward 确保 session 并 Bind 容器；§4.5 的 chat_config merge 仅描述 POST /chat/messages，且现有 MergeForwardDiscussion 复用 sendProjectChatCore。该路径仍是 Team Agent 发送，FR-13/AC-7 要求入队前冻结配置；若照文档实现，merge-forward 任务会缺少 chat_config 或重读 Agent 配置，违反不可变任务语义。必须定义无 session_id 请求下的 active-session 解析、ResolveChatConfig、context merge、失败响应和测试。"
+  - "BLOCK-005：7 天草稿 sweeper 的存储回收契约缺失。SDD §4.10 只定义删除 attachment 行的 SQL 谓词，没有定义如何删除其 backing object、对象删除失败时的重试/保留策略；目标仓库现有 DeleteAttachment 明确同时删除 DB 行和存储对象。若只按 SDD 删除行，会遗留不可达文件并持续占用存储，FR-16 的草稿清理闭环不完整。必须补充 service 的对象存储依赖、删除顺序、失败可重试语义及测试。"
+  - "BLOCK-006：Private Ask 的既有 GetProjectChatSessionForCreator 查询不带 workspace_id。SDD §2.2 要求继续复用该查询，但目标仓库 chat.sql 的查询条件只有 project_id/creator_id；这与 ARCHITECTURE.md Hard Invariant 1 的每个查询都以权威 workspace 隔离不一致，也使 FR-3/FR-21 的租户边界依赖 UUID/project 上游过滤。必须在 SDD 中明确改造查询和所有 get-or-create/PATCH 调用为 workspace-scoped，并覆盖跨 workspace 负向测试。"
+dimensions:
+  prd-sdd-alignment: "BLOCK：FR/AC 表面映射完整，但 BLOCK-001 至 BLOCK-004 暴露出关键闭环在换绑容器、失败原子性、显式容器校验和 merge-forward 快照路径上不可达。"
+  architecture-soundness: "BLOCK：模块方向本身遵守 ARCHITECTURE.md，但容器唯一性与 session 生命周期的持久化边界未解决，且首次发送跨容器/消息事务的原子性不成立。"
+  data-model-completeness: "BLOCK：project_chat_session 与 chat_config 字段已列出，但未为旧 Issue 与新 session 的一对一关系提供可执行数据模型/唯一索引迁移；草稿对象存储生命周期也未建模。"
+  interface-contract: "BLOCK：POST /chat/container 的 readiness/catalog 校验合同、merge-forward 的 session/config 快照合同和失败响应未完整定义；Private Ask 现有查询契约也缺 workspace 参数。"
+  multi-repo-constraints: "PASS：目标实现仓、knowledge-base 与 tools 零改动边界及 resources/worktreePath 约束已声明，未发现跨仓方向违规。"
+  performance-security: "BLOCK：跨 workspace 的 Private Ask 查询缺少 SQL 级隔离；sweeper 可能删除元数据而遗留对象；换绑复用旧 Issue 还会泄露旧 session 历史。"
+  testability: "BLOCK：AC 表列出了验收点，但没有覆盖换绑后双容器唯一性、首次发送失败回滚、POST container 失败不建 Issue、merge-forward chat_config 及对象存储清理/重试这些必须用例。"
+  prompt-adoption: "N/A：本 CR 不触及 crctl.mjs dispatch 或 rules.json#protectedPaths.deny。"
+suggestions:
+  - "SUG-001：补充 target-version 后再进入人工架构审批。"
+  - "SUG-002：为 ResolveChatConfig 与 PATCH 三态分别给出 Go service 纯函数/handler 夹具，并明确在线 catalog 的同步调用接口。"
+  - "SUG-003：明确关闭旧 Team Agent session 时与 project.settings.team_agent_id 更新的事务/锁顺序，避免绑定变更与 GET 并发产生 stale active session。"
+review-loop:
+  current-attempt: 1
+subject-file: change-requests/CR-2026-056/sdd.md
+subject-sha256: a9b697ba21fdce7d8048160fe24d7791042cef50b4f50c3a6fd51c52affba4dd
