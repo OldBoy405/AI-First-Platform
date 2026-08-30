@@ -16,9 +16,9 @@ owners:
 target-version: tbd
 source: "docs/product/Multica聊天会话级配置与Discussion方案.md"
 origin: ""
-status: requirement-reviewing
+status: requirement-approved
 created: "2026-08-30T16:34:14+08:00"
-updated: "2026-08-30T17:27:43+08:00"
+updated: "2026-08-30T17:37:58+08:00"
 remote-ref: ""
 last-push-at: ""
 last-push-by: ""
