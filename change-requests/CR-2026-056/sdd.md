@@ -5,7 +5,7 @@ cr-ref: CR-2026-056
 title: 会话级配置与 Team Agent 闭环 技术设计
 status: draft
 created: 2026-08-30T18:00:00+08:00
-updated: 2026-08-30T19:25:00+08:00
+updated: 2026-08-30T19:55:00+08:00
 ---
 
 # SDD — 会话级配置与 Team Agent 闭环技术设计
@@ -61,7 +61,7 @@ issue (origin_type=project_chat)
 |---|---|---|
 | `server/migrations/` 472 起 | 新表 `project_chat_session`；`chat_session` 加四列；CONCURRENTLY 索引 | 无新 FK；一文件一条语句 |
 | `server/pkg/db/queries/` + sqlc | 新表 CRUD / 行锁；`chat_session` 配置列读写；未绑定附件绑定与 sweeper | 生成物 `make sqlc`，禁手改 |
-| `server/internal/service/project_chat.go` | GET 不再创建 Issue；抽出 session 作用域 `BindProjectChatContainer`（接受外层 tx）。Team Agent 路径禁止按 project 调 `EnsureProjectChatIssue`；该函数留给转投（§4.13） | 服务层事务与幂等；handler 不复制第二套创建 |
+| `server/internal/service/project_chat.go` | GET 不再创建 Issue；抽出 session 作用域 `BindProjectChatContainer`（接受外层 tx）。Team Agent 路径禁止按 project 调 `EnsureProjectChatIssue`；该函数留给转投（§4.13）。**仅改** `EnsureProjectChatIssue` 传入 `ensureContainerIssue` 的 `lockKeyPrefix`：`"project-chat"` → `"project-chat-session"`（BLOCK-016） | 服务层事务与幂等；handler 不复制第二套创建；`comment.go` 调用点零改动 |
 | `server/internal/service/chat_config.go` | `ResolveChatConfig` + 薄包装 `ValidateResolvedChatConfig` + 接口 `ChatCatalogPort` | 校验算法在 `pkg/agent.ValidateChatConfig`；**禁止** service import handler 或复制归一化 |
 | `server/pkg/agent/` | 导出 `ModelIDForCapabilityLookup`、`StaticCatalog`、`ValidateChatConfig` | 空模型哨兵、Claude 变体、Thinking 矩阵的**单一实现**；不得在 service 复制 |
 | `server/internal/handler/` catalog 适配 | `ModelCatalogCache` / `InitiateListModels` **留在 handler**；新增 `LiveLoad` 同步等待（30s），picker HTTP 仍异步 | composition root（`cmd/server`）把适配器注入 service；不改 picker/daemon 协议 |
@@ -75,7 +75,7 @@ issue (origin_type=project_chat)
 | `packages/views/projects/components/project-private-ask.tsx` | 只读模型徽章改为可写 Model/Thinking，走 session PATCH | 不写 Team Agent session |
 | `CUSTOM.md` | 编号顺延登记本 CR 文件与挂钩 | 双周 rebase 核对清单 |
 
-**明确不改**：`GetProjectDiscussion` / `EnsureProjectDiscussionIssue`、Discussion 发送、Discussion Coordinator→Team Agent 转投（`retargetDiscussionCoordinatorRoute` / `RouteDiscussionToTeamAgent` / 该路径上的 `EnsureProjectChatIssue`）、`UpdateAgent` 管理页路径、`agent_task_queue` 专用模型列、mobile。
+**明确不改**：`GetProjectDiscussion` / `EnsureProjectDiscussionIssue`、Discussion 发送、Discussion Coordinator→Team Agent 转投的 **调用点与签名**（`retargetDiscussionCoordinatorRoute` / `RouteDiscussionToTeamAgent` / `comment.go` 上的 `EnsureProjectChatIssue` 调用）、`UpdateAgent` 管理页路径、`agent_task_queue` 专用模型列、mobile。`EnsureProjectChatIssue` **内部**锁键见 §2.1（BLOCK-016），不是转投改造。
 
 ### 1.3 关键流程
 
@@ -143,7 +143,7 @@ packages/views  (Team Agent / Private Ask UI)
 - 废除 `issue_project_chat_unique`；新建部分唯一索引 `(workspace_id, origin_id) WHERE origin_type='project_chat' AND origin_id IS NOT NULL`；
 - **Team Agent GET / PATCH / container / messages / merge-forward / presenter 活动记录**：解析容器只走 `session.issue_id` 或 `GetIssueByOrigin(workspace, 'project_chat', session.id)`，**禁止**再按 project 调 `GetProjectChatIssue` / `EnsureProjectChatIssue`（否则换绑后会拿到旧 Issue，AC-18 失败）；
 - `EnsureProjectDiscussionIssue` / `issue_project_discussion_unique` 零改（NFR-7：Discussion 面板 GET/发消息）；
-- **Discussion Coordinator→Team Agent 转投不在本 CR**（PRD §1.3 / §7 / NFR-7）：继续走今日 `EnsureProjectChatIssue`，签名与创建逻辑不变。换绑只关闭/新建 `project_chat_session` 及其绑定容器，不改转投解析。兼容钉与已知缺口见 §4.13。
+- **Discussion Coordinator→Team Agent 转投不在本 CR**（PRD §1.3 / §7 / NFR-7）：继续走今日 `EnsureProjectChatIssue`。`comment.go` 调用、函数签名、新建行 `origin_id=NULL` 不变。**仅**内部 advisory 锁键并入项目级协议（§2.1 / §4.13，BLOCK-016）。换绑只关闭/新建 `project_chat_session` 及其绑定容器，不改转投解析。兼容钉与已知缺口见 §4.13。
 
 `POST /api/projects/{id}/chat/merge-forward` 仍复用 `sendProjectChatCore`，且 **仍是 Team Agent 发送**（FR-13/AC-7）。PRD 不要求请求带 `session_id`。服务端必须：
 
@@ -204,27 +204,40 @@ CREATE UNIQUE INDEX CONCURRENTLY issue_project_chat_session_origin_uidx
   WHERE origin_type = 'project_chat' AND origin_id IS NOT NULL;
 ```
 
-新容器创建时必须写 `origin_id = session.id`。`GetIssueByOrigin` 已按 `(workspace_id, origin_type, origin_id)` 查询，可复用。废除 `issue_project_chat_unique` 后同项目可有多行 `project_chat`：`GetProjectChatIssue` 必须改为 `ORDER BY created_at ASC LIMIT 1`（§4.13），否则 sqlc `:one` 在多行下失败，转投路径会回归。Team Agent 自身解析不得再走该查询。
+新容器创建时必须写 `origin_id = session.id`。`GetIssueByOrigin` 已按 `(workspace_id, origin_type, origin_id)` 查询，可复用。废除 `issue_project_chat_unique` 后同项目可有多行 `project_chat`：`GetProjectChatIssue` 必须改为 `ORDER BY created_at ASC, id ASC LIMIT 1`（§4.13，BLOCK-017），否则 sqlc `:one` 在多行下失败或同时间戳漂移，转投路径会回归。Team Agent 自身解析不得再走该查询。
 
-**升级期遗留行（BLOCK-009，确定性收养窗口）**：现网 `project_chat` Issue 的 `origin_id` 为 NULL，且每项目至多一行。收养 **只发生在 GET Ensure 插入该项目第一行 `project_chat_session` 的同一事务内**（不是 Bind、也不是「本 session 第一次发送」这种不可持久化口语）：
+**项目级 advisory 协议（BLOCK-016）**：GET Ensure、收养检查、Bind、以及 legacy `EnsureProjectChatIssue` 必须共享同一把项目级锁，禁止 session 路径用 `project-chat-session|{ws}|{project}`、转投仍用 `project-chat|{ws}|{project}`。权威键：
+
+```text
+project-chat-session|{workspace_id}|{project_id}
+```
+
+落点：`EnsureProjectChatIssue` 传给 `ensureContainerIssue` 的 `lockKeyPrefix` 从 `"project-chat"`（今日 `project_chat.go:41`）改为 `"project-chat-session"`。`ensureContainerIssue` 仍拼接 `lockKeyPrefix|ws|project`（`project_chat.go:109`）。`EnsureProjectDiscussionIssue` 继续 `"project-discussion"`。`comment.go:2745` 与 `RouteDiscussionToTeamAgent` **零改动**。Bind 内部另可持 `project-chat|{ws}|{session.id}`，只串行同一 session 的 container/messages，**不是**项目级协议、不得替代上面那把锁。
+
+**升级期遗留行（BLOCK-009 谓词 + BLOCK-016 执行点）**：现网 `project_chat` Issue 的 `origin_id` 为 NULL。收养窗口的**持久化判定**仍是（不是「本 session 第一次发送」口语）：
+
+1. `CountProjectChatSessions(workspace, project) == 1`（含 closed）
+2. 当前 session.`issue_id` IS NULL
+3. `GetLegacyUnboundProjectChatIssue` 恰好 0 或 1 行
+
+**执行点**：GET Ensure 插入该项目第一行 session 的同一事务，**以及**该第一行 session 的 Bind 在 `createContainerInOuterTx` 之前。后者堵住「GET 检查 legacy=0 并提交 → 转投插入 `origin_id=NULL` → Bind 再按 session.id 新建」的双容器分裂；谓词仍是 COUNT==1，换绑后 COUNT≥2 的 session B 不得收养（AC-18 不回退）。
 
 ```text
 # 已持有 project-chat-session|{ws}|{project} advisory
-InsertProjectChatSession(...)          # issue_id=NULL
+# —— GET Ensure 与 Bind 共用；EnsureProjectChatIssue 内部也拿这一把
+InsertProjectChatSession(...)          # GET：issue_id=NULL；Bind 则 session 已存在
 sessions = COUNT(*) WHERE workspace_id AND project_id
 legacy = GetLegacyUnboundProjectChatIssue  # 恰好 0 或 1 行
-if sessions == 1 AND legacy:
+if sessions == 1 AND session.issue_id IS NULL AND legacy:
     UPDATE issue SET origin_id = session.id
       WHERE id = legacy.id AND origin_id IS NULL AND origin_type='project_chat'
     CAS BindProjectChatSessionIssue
-# 不 INSERT 新 issue（GET 仍遵守「不得创建隐藏容器」）
+# GET 仍不 INSERT 新 issue；Bind 仅在未收养时才 create origin_id=session.id
 ```
 
-谓词 `sessions == 1` 是持久化判定：一旦存在任何 **closed** 行或第二个 session，收养窗口关闭。因此「升级后先 GET session A、未发送即换绑、再 GET session B」时 B **不得**收养（COUNT≥2），Bind 只能新建 `origin_id=B.id` 的 Issue；遗留行若已在 A 的 Ensure 被收养，则挂在 closed A 上（新旧 timeline 隔离）。
+谓词 `sessions == 1`：一旦存在任何 **closed** 行或第二个 session，收养窗口关闭。「升级后先 GET session A、未发送即换绑、再 GET session B」时 B **不得**收养（COUNT≥2），Bind 只能新建 `origin_id=B.id` 的 Issue；遗留行若已在 A 被收养，则挂在 closed A 上（新旧 timeline 隔离）。
 
-**Bind 路径禁止再走 `GetLegacyUnboundProjectChatIssue`**——只读已锁 session 的 `issue_id` 或按 `GetIssueByOrigin(..., session.id)` 创建。
-
-实施期夹具（映射 AC-18，不新增 AC 编号）：升级 fixture（`origin_id` NULL 的 `project_chat`）→ GET A（可带回旧 `issue_id`）→ 改 `team_agent_id` 且不发送 → GET B 的 `session_id`≠A 且不得返回 A 的 `issue_id` → B 首次发送得到 **新** Issue。
+实施期夹具（映射 AC-18，不新增 AC 编号）：升级 fixture（`origin_id` NULL 的 `project_chat`）→ GET A（可带回旧 `issue_id`）→ 改 `team_agent_id` 且不发送 → GET B 的 `session_id`≠A 且不得返回 A 的 `issue_id` → B 首次发送得到 **新** Issue。并发与同时间戳夹具见 §4.14。
 
 拒绝的替代（PRD 已排除）：只给 `issue` 加列、写入 `project.settings`、写入 `issue.metadata`、引入 `project_chat_thread`。
 
@@ -272,7 +285,7 @@ if sessions == 1 AND legacy:
 | `PatchProjectChatSessionConfig` | 写 override / updated_at |
 | `BindProjectChatSessionIssue` | `WHERE issue_id IS NULL` CAS 回写 |
 | `CloseActiveProjectChatSession` | 换绑 Agent：active → closed |
-| `GetLegacyUnboundProjectChatIssue` | 升级收养：`origin_type='project_chat' AND origin_id IS NULL AND project_id AND workspace_id`；**仅** GET Ensure 在 `COUNT(session)=1` 时调用 |
+| `GetLegacyUnboundProjectChatIssue` | 升级收养：`origin_type='project_chat' AND origin_id IS NULL AND project_id AND workspace_id`；GET Ensure **或** 第一行 session 的 Bind，且仅当 `COUNT(session)=1` 且 `issue_id` NULL |
 | `CountProjectChatSessions` | `(workspace_id, project_id)` 含 closed；收养窗口判定 |
 
 Private Ask：为 `chat_session` 增加 `PatchChatSessionConfig`、`BackfillChatSessionBaseIfNull`（仅 NULL 时写 base_*）。配置读路径只用 workspace-scoped 查询。
@@ -457,12 +470,13 @@ advisory lock project-chat-session|{ws}|{project}     # 先锁，再读绑定
   if miss:
     read Agent.model / thinking_level（当前绑定，允许 model=""）
     InsertProjectChatSession(agent_id, base_*=those values, issue_id=NULL, status=active)
-    # §2.1 升级收养：仅 COUNT(session)==1 时认领 origin_id NULL 遗留行
+    # §2.1 升级收养：COUNT(session)==1 且 issue_id NULL 时认领 origin_id NULL 遗留行
+    # 与 EnsureProjectChatIssue 共用 project-chat-session|{ws}|{project}（BLOCK-016）
   # 不调用 EnsureProjectChatIssue，不 INSERT 新 issue
 ResolveChatConfig(session, agent) → 响应   # GET 本身不做 §4.3（只读展示）；写路径才校验
 ```
 
-并发两个 GET：部分唯一索引 + advisory lock，最多一行 active。与换绑/PATCH 共用同一把 advisory，避免 GET 按旧 agent 插入 session（BLOCK-010）。
+并发两个 GET：部分唯一索引 + advisory lock，最多一行 active。与换绑/PATCH/Bind/`EnsureProjectChatIssue` 共用同一把项目级 advisory（BLOCK-010 / BLOCK-016），避免 GET 按旧 agent 插入 session，也避免转投与收养交错各建一容器。
 
 ### 4.2 ResolveChatConfig
 
@@ -623,18 +637,26 @@ LiveLoad 错误语义（测试夹具必须覆盖）：
 今日 `ensureContainerIssue` 自开事务并 `Commit`，且 getter 按 project 查 `GetProjectChatIssue`。本 CR：
 
 - getter 改为 `GetIssueByOrigin(workspace, 'project_chat', session.id)`（或读已锁 session 行的 `issue_id`）；
-- advisory lock 键改为 `project-chat|{ws}|{session.id}`（不再按 project，否则换绑后新 session 会和旧容器创建抢同一把锁且查到旧 Issue）；
+- **项目级** advisory 已由调用方持有：`project-chat-session|{ws}|{project}`（与 GET/换绑/PATCH/`EnsureProjectChatIssue` 同一把，BLOCK-016）。Bind **不得**改用另一把项目级锁；
+- Bind 内部可另加 `project-chat|{ws}|{session.id}`，只串行同一 session 的 container+messages，避免换绑后新 session 与旧容器创建在 session 粒度上交错；这把锁 **不是** 项目级协议，也不得改回 `project-chat|{ws}|{project}`（那是今日 Ensure 的旧键，改完后 Ensure 不再使用）；
 - **必须接受外层 tx**：发送路径把 Bind 放进发送事务；container 显式创建用自己的短事务。禁止在发送路径上先 Commit 容器再开第二个事务。
 
 ```text
-# 调用方已持有：project-chat-session|{ws}|{project} advisory（与 GET/换绑/PATCH 同一把）
+# 调用方已持有：project-chat-session|{ws}|{project} advisory（与 GET/换绑/PATCH/Ensure 同一把）
 # 然后：
 LockProjectChatSessionByID FOR UPDATE
 assert status=active
 assert session.agent_id == project.team_agent_id  else 409 chat_session_closed_or_changed
   # project.team_agent_id 必须在本事务、advisory 内重读，禁止用请求入口处的旧值
 if session.issue_id set: return that issue
-# 禁止在此 GetLegacyUnboundProjectChatIssue（收养只在 §2.1 / §4.1 Ensure）
+issue = GetIssueByOrigin(workspace, 'project_chat', session.id)
+if found: CAS Bind if needed; return
+# §2.1 收养（COUNT==1 且 issue_id NULL）：转投可能已插入 origin_id=NULL
+legacy = GetLegacyUnboundProjectChatIssue
+if sessions==1 AND legacy:
+    UPDATE issue SET origin_id = session.id WHERE id=legacy.id AND origin_id IS NULL
+    CAS BindProjectChatSessionIssue
+    return legacy
 issue = createContainerInOuterTx(...)   # origin_id=session.id；ON CONFLICT origin 回读
 BindProjectChatSessionIssue CAS
 return issue
@@ -691,7 +713,7 @@ GET timeline / 评论列表只读 **当前 session.issue_id**，不得 `GetProje
 
 #### 4.7.1 GET / PATCH 换绑栅栏与 CAS（BLOCK-010）
 
-GET、配置 PATCH、发送、container、merge-forward、换绑 **全部** 先拿同一把项目 advisory，再在事务内重读绑定与 session。禁止「锁外读项目绑定 / 锁外读 session 再写」。转投不加入本栅栏（仍走既有 `EnsureProjectChatIssue` 自己的 `project-chat|{ws}|{project}` 锁）。
+GET、配置 PATCH、发送、container、merge-forward、换绑、**以及** `EnsureProjectChatIssue`（转投创建/查询）**全部**先拿同一把项目 advisory `project-chat-session|{ws}|{project}`，再在事务内重读绑定与 session / 重检 `GetProjectChatIssue`。禁止「锁外读项目绑定 / 锁外读 session 再写」。转投 **加入**本栅栏的方式是改 Ensure **内部**锁键（§2.1），不是改 `comment.go` 或 `RouteDiscussionToTeamAgent`。
 
 PATCH config（Team Agent；Private Ask 无换绑但仍要 session 行锁）：
 
@@ -798,11 +820,12 @@ ResolveChatConfig(session, agent)
 
 **裁定**：对齐已审批 PRD §1.3 / §7 / NFR-7。本 CR **不**改造 Discussion Coordinator→Team Agent 转投。
 
-既有实现保持不变：
+`comment.go` / `RouteDiscussionToTeamAgent` 保持不变：
 
 - `handler/comment.go` `retargetDiscussionCoordinatorRoute` 继续调用 `EnsureProjectChatIssue`（按 project）；
 - `TaskService.RouteDiscussionToTeamAgent(ctx, chatIssue, ...)` 签名不变，继续 `CreateComment` + `enqueueMentionTaskWithCommentPlanAndOriginator`；
 - **不**走 §4.3 catalog/readiness、**不** Bind-in-tx、**不** merge `chat_config`。
+- 允许的唯一内部改动：`EnsureProjectChatIssue` 的 `lockKeyPrefix`（§2.1 / BLOCK-016）。
 
 **换绑作用域（新 session/容器模型 vs 转投旧容器）**：
 
@@ -812,18 +835,25 @@ ResolveChatConfig(session, agent)
   → Bind / messages / merge-forward 只写 session.issue_id 指向的新容器
   → 转投仍调 EnsureProjectChatIssue，不读 project_chat_session
 
-废除 issue_project_chat_unique 后，同项目可有多行 origin_type='project_chat'。
-GetProjectChatIssue 今日 :one 无 ORDER，多行会炸。
+废除 `issue_project_chat_unique` 后，同项目可有多行 `origin_type='project_chat'`。
+GetProjectChatIssue 今日 :one 无 ORDER，多行会炸；仅 `ORDER BY created_at ASC LIMIT 1` 在相同 `created_at`（同事务 `now()` 或微秒碰撞）下仍非稳定总序（BLOCK-017）。
 兼容钉（sqlc，不是转投改造）：
   GetProjectChatIssue = 同 project+workspace 的 project_chat
-                        ORDER BY created_at ASC LIMIT 1
-  即「该项目最早的 project_chat 容器」。
+                        ORDER BY created_at ASC, id ASC LIMIT 1
+  即「该项目最早的 project_chat 容器」；`id` 为稳定第二键。
 EnsureProjectChatIssue 函数签名、ensureContainerIssue 创建路径、新建行 origin_id=NULL
-均保持现状；仅依赖上述查询在多行下仍是确定性 :one。
+均保持现状；**仅**内部 lockKeyPrefix `"project-chat"` → `"project-chat-session"`（BLOCK-016），
+使转投创建/查询与 GET 收养、Bind 共享项目级 advisory。
 Team Agent GET/send/container/merge-forward/presenter **禁止**再调这两函数。
 ```
 
-绿场：若 Team Agent 先发送，转投解析到同一最早容器（与当时 session 重合）；换绑后再转投仍解析最早（旧）容器。若转投先发生：Ensure 创建 `origin_id` NULL 行；随后第一次 GET session 在收养窗口内认领该行（§2.1）。这些是兼容行为，不是新功能。
+绿场（均在同一把 `project-chat-session|{ws}|{project}` 下）：
+
+- **转投先**：Ensure 创建 `origin_id` NULL 行；随后第一次 GET 或该第一行 session 的首次 Bind 在 COUNT==1 窗口内认领（§2.1）。
+- **Team Agent 先发送**：Bind 创建 `origin_id=session.id`；随后转投 `GetProjectChatIssue` 解析到同一最早容器。
+- **GET 先于转投、尚未 Bind**：GET 检查 legacy=0 并提交后，转投与 Bind 仍串行在同一把锁上；Bind 走 §4.4 收养，不得再建第二容器。
+
+这些是兼容行为，不是新功能。换绑后 COUNT≥2：新 session 不收养，转投仍写最早容器（KG-2）。
 
 **已知缺口（本 CR 不修，归属 CR-B / CR-C；实施期/验收期不得当本 CR 缺陷打回）**：
 
@@ -834,19 +864,28 @@ Team Agent GET/send/container/merge-forward/presenter **禁止**再调这两函�
 
 AC-24 **不**覆盖转投。FR-13 / AC-7 的发送边界见 §1.6。
 
-### 4.14 并发协议表（GET / PATCH / 发送 / 换绑 / sweeper）
+### 4.14 并发协议表（GET / PATCH / 发送 / 换绑 / 转投 Ensure / sweeper）
 
-全局锁序，禁止颠倒（SUG-003）：
+全局锁序，禁止颠倒（SUG-003）。**项目级**权威键只有一把：`project-chat-session|{ws}|{project}`。
 
 | 路径 | ① | ② | ③ | ④ |
 |---|---|---|---|---|
 | GET Ensure | advisory `project-chat-session\|{ws}\|{project}` | 事务内重读 `team_agent_id`；insert session；可选收养 | — | — |
 | PATCH config | 同 advisory | session `FOR UPDATE` | active+agent_id CAS UPDATE | — |
-| 发送 / container / merge-forward | 同 advisory | session `FOR UPDATE` | Bind Issue | `LockUnboundDraftAttachments` `ORDER BY id` |
+| 发送 / container / merge-forward | 同 advisory | session `FOR UPDATE` | Bind（含 COUNT==1 收养） | `LockUnboundDraftAttachments` `ORDER BY id` |
 | 换绑 close | 同 advisory | `CloseActiveProjectChatSession` | 不建 Issue | — |
+| 转投 `EnsureProjectChatIssue` | **同** advisory（内部 lockKeyPrefix 改为 `project-chat-session`） | 锁内 `GetProjectChatIssue` 重检 | 未命中则创建 `origin_id=NULL` | — |
 | 草稿 sweeper | **不**拿 advisory | attachment `FOR UPDATE SKIP LOCKED` | 持锁 `DeleteObject` | `DeleteUnboundDraftAttachment` |
 
+Bind 可选的 session 键 `project-chat|{ws}|{session.id}` 只出现在 ① 之后，不与转投抢项目级锁。`EnsureProjectDiscussionIssue` 仍用 `project-discussion|{ws}|{project}`，与上表无关。
+
 sweeper 不参与项目 advisory，故与发送不成环：发送等待附件行锁即可。
+
+实施期竞态夹具（映射 AC-18 / NFR-7，不新增 AC 编号）：
+
+1. **GET 收养检查 ∥ 转投 Ensure**：无遗留 Issue 时并发打开面板与 `EnsureProjectChatIssue`；结束后至多一行 `project_chat`，第一行 session 若已存在则 `issue_id` 指向该行（收养或随后 Bind 收养），不得一转投旧容器 + 一 session 新容器。
+2. **转投创建后首次 Bind**：Ensure 先提交 `origin_id=NULL`，再对该项目第一行 session 调 Bind；必须 CAS 收养同一 Issue，禁止第二行。
+3. **同 `created_at` 双行 `GetProjectChatIssue`**（BLOCK-017）：插入两行相同 `created_at`、不同 `id` 的 `project_chat`；`:one` 固定返回 `id` 较小者；重复查询稳定。
 
 ---
 
@@ -926,7 +965,7 @@ sweeper 不参与项目 advisory，故与发送不成环：发送等待附件行
 | AC-15 | 同事务 Bind+comment；失败 rollback | 成功后成员可见；失败：无 `session.issue_id`、无空容器、五类空 | 首次发送失败夹具（enqueue/附件错误） |
 | AC-16 | Insert 写 base_* | 改 Agent 后 GET source=`session_default` 且值为旧快照 | 新建 session |
 | AC-17 | PATCH 三态 | null/"" 清 override；省略不改 | 有 override 的 session |
-| AC-18 | §4.7 + `origin_id=session.id` + §2.1 收养窗口 | 旧 session closed；新 GET 新 session id **且新 issue_id**；旧评论不在新 timeline；升级后未发送即换绑不得把遗留 Issue 交给 B | 改 `team_agent_id` 后 GET + 发一条；另见升级 fixture |
+| AC-18 | §4.7 + `origin_id=session.id` + §2.1 收养窗口（COUNT==1 的 GET 或 Bind） | 旧 session closed；新 GET 新 session id **且新 issue_id**；旧评论不在新 timeline；升级后未发送即换绑不得把遗留 Issue 交给 B | 改 `team_agent_id` 后 GET + 发一条；另见升级 fixture 与 §4.14 夹具 1–2 |
 | AC-19 | GET 不写 base；首次 PATCH/发送才写 | 中间改 Agent，GET 仍 `agent_default`；回填后跟 base | 历史 NULL 行夹具 |
 | AC-20 | closed / 未配置 | 409 对应 code | closed session 与无绑定项目 |
 | AC-21 | 两入口可写 picker | 无 UpdateAgent；draft/附件/发送/停止/重试不回归 | 现有 ChatInputCore 测 |
@@ -938,7 +977,7 @@ sweeper 不参与项目 advisory，故与发送不成环：发送等待附件行
 | AC-27 | schemas.test.ts | 硬降级 fallback；软默认 source=`session_default` | 无伪造 UUID |
 | AC-28 | sweeper 单测 + 与 Bind 并发 | 167h59m 留 / 168h00s 留 / 168h01s 删对象+行；对象失败保留行；Storage=nil 不删行；Bind 抢先则 sweeper 不得删已绑定行/对象 | `go test ... -run ChatDraftAttachment` |
 
-无「过滤条件使 AC 不可达」：Waitable 离线发送在 AC-24① 明确允许；AC-9 明确排除 daemon 降级路径。另需实施期夹具（映射到上表，不新增 AC 编号）：换绑双容器唯一性（AC-18）、升级后未发送即换绑（AC-18）、GET/PATCH 与换绑并发 CAS（AC-20/FR-21）、首次发送失败回滚（AC-15）、POST container 校验失败不建 Issue（AC-23/24）、merge-forward `chat_config`（AC-7/10）、sweeper 与 Bind 竞态（AC-28）、空 model provider 矩阵（AC-9/24）、catalog LiveLoad 超时（AC-24）、Private Ask 跨 workspace 0 行（FR-3/Hard Invariant 1）、`GetProjectChatIssue` 多行时仍 `:one` 确定性（§4.13 兼容钉）。转投无 `chat_config`、换绑后转投仍写旧 Issue **不是**本 CR 验收项（§4.13 KG-1/KG-2）。
+无「过滤条件使 AC 不可达」：Waitable 离线发送在 AC-24① 明确允许；AC-9 明确排除 daemon 降级路径。另需实施期夹具（映射到上表，不新增 AC 编号）：换绑双容器唯一性（AC-18）、升级后未发送即换绑（AC-18）、GET/PATCH 与换绑并发 CAS（AC-20/FR-21）、首次发送失败回滚（AC-15）、POST container 校验失败不建 Issue（AC-23/24）、merge-forward `chat_config`（AC-7/10）、sweeper 与 Bind 竞态（AC-28）、空 model provider 矩阵（AC-9/24）、catalog LiveLoad 超时（AC-24）、Private Ask 跨 workspace 0 行（FR-3/Hard Invariant 1）、`GetProjectChatIssue` 多行时仍 `:one` 且 **同 `created_at` 双行固定较小 `id`**（§4.13 / §4.14 夹具 3）、GET 收养 ∥ 转投 Ensure 与转投后首次 Bind 均收敛到单容器（§4.14 夹具 1–2）。转投无 `chat_config`、换绑后转投仍写旧 Issue **不是**本 CR 验收项（§4.13 KG-1/KG-2）。
 
 ---
 
@@ -959,7 +998,7 @@ sweeper 不参与项目 advisory，故与发送不成环：发送等待附件行
 - GET 打开面板：一次 get-or-create session，不再创建 Issue（减少 issue 计数/position 热路径）。
 - catalog：Waitable 只读 24h cache，不 LiveLoad。Available cache 命中不挡请求；cache miss 同步 LiveLoad 最多 30s。handler 适配器，service 不依赖 `ModelCatalogCache` 类型。
 - sweeper：1h 一次；持行锁删对象。谓词可用五类空 + `created_at`；若缺复合索引，一期全表扫描草稿量可接受；若实施期 EXPLAIN 显示过热，再加 **单独** CONCURRENTLY 部分索引（不在请求路径建）。
-- Bind 行锁范围：单 session 行 + 项目 advisory + 附件 id 升序。容器 lock 按 session.id，不与 Discussion 的 project-discussion lock 冲突。
+- Bind 行锁范围：单 session 行 + 项目 advisory `project-chat-session|{ws}|{project}`（与转投 Ensure 共享）+ 附件 id 升序。容器可选 session 锁 `project-chat|{ws}|{session.id}` 不与 Discussion 的 `project-discussion` lock 冲突。
 
 ### 7.3 边界条件
 
@@ -981,14 +1020,16 @@ sweeper 不参与项目 advisory，故与发送不成环：发送等待附件行
 
 ## 9. 既有实现依赖与事实
 
-目标仓 `multica` HEAD（本 CR worktree，落笔核实）：`8746add879cbd1c78e573c2a4a1776e16158c00c`（与 PRD §1.4 基线一致）。
+目标仓 `multica` HEAD（本 CR worktree，BLOCK-015 本轮复核）：`8746add879cbd1c78e573c2a4a1776e16158c00c`。
+
+证据：`crctl git rev-parse HEAD --cwd` → 资源 `C:\Users\GOBAO\Downloads\AI\AI First Platform\.rayai-worktrees\multica\requirement\CR-2026-056` 输出该 SHA，与 PRD §1.4 基线声明一致。上一轮评审读到的 `0b7687b554a8b2f51afa740ffb95c4a06e27e272` **不是**当前 authority HEAD；资源已定位到声明 commit，下列依赖均在该 SHA 重新核验（路径存在、符号可定位）。本 CR 新增符号（`ValidateChatConfig` / 导出 `ModelIDForCapabilityLookup` / `StaticCatalog`）仍为设计落点，基线仓尚未实现——这与 BLOCK-014 的「下沉到 pkg/agent、service 只转发」一致，不是基线漂移。
 
 按正文首次依赖顺序：
 
 | # | repo | relative path | stable symbol/对象 | 依赖结论 |
 |---|---|---|---|---|
 | 1 | multica | `server/internal/handler/project_chat.go` | `GetProjectChat` / `EnsureProjectChatIssue` | 今日 GET 懒创建隐藏 Issue；本 CR 改为只 Ensure session |
-| 2 | multica | `server/internal/service/project_chat.go` | `EnsureProjectChatIssue` / `ensureContainerIssue` / `sendProjectChatCore` | 今日按 project 查并自 Commit。**Team Agent 路径**改为 session 作用域 Bind，接受外层 tx；GET 禁止调用。`EnsureProjectChatIssue` 函数本身保留给转投（§4.13） |
+| 2 | multica | `server/internal/service/project_chat.go` | `EnsureProjectChatIssue` / `ensureContainerIssue` / `sendProjectChatCore` | 今日按 project 查并自 Commit；锁键 `project-chat\|ws\|project`（`:41` 传入 `"project-chat"`，`:109` 拼接）。**Team Agent 路径**改为 session 作用域 Bind，接受外层 tx；GET 禁止调用。`EnsureProjectChatIssue` 函数本身保留给转投（§4.13）；本 CR **只改** `lockKeyPrefix` 为 `"project-chat-session"`，使与 GET/Bind 共享项目级协议（BLOCK-016） |
 | 3 | multica | `packages/views/projects/components/project-team-agent-chat.tsx` | `persistModel` → `api.updateAgent`；`TeamAgentComposer` `uploadWithToast(file, { issueId })` | 模型写 Agent；上传绑定 issue。改为 session PATCH；无 Issue 时省略 issue_id |
 | 4 | multica | `packages/views/projects/components/project-private-ask.tsx` | 只读 `ModelPicker` / `agent.model` | 改为 session 可写配置 |
 | 5 | multica | `server/pkg/db/queries/chat.sql` | `GetProjectChatSessionForCreator` | **专指** Private Ask；WHERE **必须加 `workspace_id`**（今日只有 project/creator）；新表不得占用此名 |
@@ -1019,10 +1060,10 @@ sweeper 不参与项目 advisory，故与发送不成环：发送等待附件行
 | 28 | multica | `ARCHITECTURE.md` | Hard Invariant 1 Workspace isolation | 每个查询带权威 workspace；`GetProjectChatSessionForCreator` 今日违规，本 CR 改造。不变量 6：新索引 CONCURRENTLY 单语句 |
 | 29 | multica | `server/internal/service/project_chat.go` | `MergeForwardDiscussion` / `sendProjectChatCore` | §4.12：Ensure session + Resolve + Bind-in-tx + `chat_config`；不改 Discussion GET/发消息 |
 | 30 | multica | `server/migrations/435_issue_origin_project_chat.up.sql` | `issue_project_chat_unique` on `project_id`；`origin_id` NULL | **DROP** 该索引；容器改 `origin_id=session.id` |
-| 31 | multica | `server/pkg/db/queries/issue.sql` | `GetProjectChatIssue` / `GetIssueByOrigin` | Team Agent 解析改用 origin/session。`GetProjectChatIssue` 加 `ORDER BY created_at ASC LIMIT 1`（§4.13 兼容钉）；**仅**转投继续调用。升级收养用 `GetLegacyUnboundProjectChatIssue`（§2.4） |
+| 31 | multica | `server/pkg/db/queries/issue.sql` | `GetProjectChatIssue` / `GetIssueByOrigin` | 今日 `:588-592` 无 ORDER，依赖 `issue_project_chat_unique`。Team Agent 解析改用 origin/session。`GetProjectChatIssue` 加 `ORDER BY created_at ASC, id ASC LIMIT 1`（§4.13 / BLOCK-017）；**仅**转投继续调用。升级收养用 `GetLegacyUnboundProjectChatIssue`（§2.4） |
 | 32 | multica | `server/internal/handler/file.go` | `deleteS3Object` → `Storage.Delete` | sweeper 必须用 `DeleteObject`（返回 error）以便重试 |
 | 33 | multica | `server/internal/storage/storage.go` | `Storage.DeleteObject` | sweeper 的对象存储依赖；nil Storage 本 tick 跳过 |
-| 34 | multica | `server/internal/handler/comment.go` | `retargetDiscussionCoordinatorRoute` → `EnsureProjectChatIssue` | **本 CR 零改动**。继续 Ensure；不改调 Bind / 新签名（§4.13） |
+| 34 | multica | `server/internal/handler/comment.go` | `retargetDiscussionCoordinatorRoute` → `EnsureProjectChatIssue`（`:2713-2753` / 调用 `:2745`） | **本 CR 零改动**。继续 Ensure；不改调 Bind / 新签名（§4.13）。锁协议收敛在 `project_chat.go` 内部 |
 | 35 | multica | `server/internal/service/project_presenter.go` | `GetProjectChatIssue` | 改读 active session.`issue_id`；未绑定则跳过（Team Agent 活动记录，不是转投改造） |
 | 36 | multica | `server/internal/service/autopilot.go` | `GetProjectChatSessionForCreator` | 传入权威 `workspace_id` |
 | 37 | multica | `server/internal/service/discussion_coordinator.go` | `RouteDiscussionToTeamAgent` | **本 CR 零改动**。签名与无快照 enqueue 保持现状（§4.13 KG-1） |
@@ -1040,7 +1081,7 @@ sweeper 不参与项目 advisory，故与发送不成环：发送等待附件行
 
 ### multica（code-implementation 阶段）
 
-迁移 472–480、sqlc（含 `GetProjectChatIssue` 兼容钉）、`project_chat.go` handler/service（Bind 接受外层 tx）、`chat_config.go`（Resolve + `ChatCatalogPort` + 转发 `agent.ValidateChatConfig`）、`pkg/agent`（导出 `ModelIDForCapabilityLookup` / `StaticCatalog` / `ValidateChatConfig`）、task enqueue merge、daemon claim、file 上传者门、sweeper+Storage（条件删行）、router、project settings 换绑挂钩、presenter 活动 issue 查找、Private Ask workspace 查询、zod/client、Team Agent / Private Ask UI、locale、Go/React 测试、`CUSTOM.md`。
+迁移 472–480、sqlc（含 `GetProjectChatIssue` `ORDER BY created_at ASC, id ASC LIMIT 1`）、`project_chat.go` handler/service（Bind 接受外层 tx；**Ensure 仅改 lockKeyPrefix**）、`chat_config.go`（Resolve + `ChatCatalogPort` + 转发 `agent.ValidateChatConfig`）、`pkg/agent`（导出 `ModelIDForCapabilityLookup` / `StaticCatalog` / `ValidateChatConfig`）、task enqueue merge、daemon claim、file 上传者门、sweeper+Storage（条件删行）、router、project settings 换绑挂钩、presenter 活动 issue 查找、Private Ask workspace 查询、zod/client、Team Agent / Private Ask UI、locale、Go/React 测试（含 §4.14 三夹具）、`CUSTOM.md`。
 
 **不改**：`comment.go` 转投、`discussion_coordinator.go` 签名与事务。
 
@@ -1054,6 +1095,7 @@ ARCHITECTURE.md 已存在，本轮只读不改。
 go test ./server/internal/handler/ ./server/pkg/agent/ ./server/internal/service/ -count=1
 go test ./server/internal/service/ -count=1 -run ChatDraftAttachment
 # 前端：packages/core/api/schemas.test.ts 与 views locales parity、team-agent / private-ask 组件测
+# 实施期必须覆盖 §4.14 夹具 1–3（GET∥转投、转投后首次 Bind、同 created_at 双行 :one）
 ```
 
 ---
@@ -1069,7 +1111,9 @@ go test ./server/internal/service/ -count=1 -run ChatDraftAttachment
 | `LinkAttachmentsToComment` 误用于草稿 | 新 Bind 查询；测试覆盖无 issue_id 上传 |
 | daemon 仍读 agent.model | claim 单点改 `TaskAgentData`；AC-7/8 读 context 与 claim 夹具 |
 | 历史 Private Ask GET 跟随 Agent 直到首次写 | FR-11/AC-19 明确；新 session 禁止 `agent_default` |
-| 升级前遗留 `origin_id` NULL 容器 | GET Ensure 仅 `COUNT(session)==1` 时收养；Bind 禁止收养；换绑后新 session 新建 Issue |
+| 升级前遗留 `origin_id` NULL 容器 | GET Ensure **或** 第一行 session 的 Bind 在 `COUNT(session)==1` 且 `issue_id` NULL 时收养；换绑后 COUNT≥2 新建 Issue（BLOCK-009 谓词不回退） |
+| GET 与转投、转投与首次 Bind 竞态 | 共享 `project-chat-session|{ws}|{project}`；§4.14 夹具 1–2 |
+| `GetProjectChatIssue` 同时间戳多行 | `ORDER BY created_at ASC, id ASC LIMIT 1` + 夹具 3 |
 | GET/PATCH 相对换绑的 stale read | §4.7.1 同一 advisory + 事务内重读 + active/agent CAS |
 | sweeper 与 Bind 竞态 | §4.10 行锁覆盖 DeleteObject + 条件 DELETE；禁用 `DeleteAttachment` |
 | target-version 仍为 tbd | 人工架构审批前由需求负责人补（SUG-001，非本轮 blocker） |
