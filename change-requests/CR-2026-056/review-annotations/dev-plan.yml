@@ -1,23 +1,23 @@
 cr-id: CR-2026-056
 review-type: dev-plan
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-30T22:53:21+08:00"
+reviewed-at: "2026-08-30T23:22:16+08:00"
 verdict: block
 repair-target: write-dev-plan
 blockers:
-  - "BLOCK-010 [acceptance-verifiability/risk-and-rollback] TASK-13:61 的 project clear ∥ send 夹具虽覆盖 clear-first 与 send-first，并验证普通分支/快照不变，但没有像该验收契约要求的那样对两顺序逐项断言 base_model/base_thinking_level 的单一一致值、快照与事后 GET/DB 一致性，以及发送失败时整体 rollback（无部分回填、无孤儿任务）。请在两个顺序的可执行夹具中明确这些断言，并加入可控失败注入（catalog/enqueue 等）及事务后 DB 断言，覆盖 clear-first 的普通路径和 send-first 的 project-bound 路径；不能仅引用 BLOCK-008 的其他 PATCH 夹具代替。"
+  - "BLOCK-010-R2 [新增于 cycle 2 / attempt 2；acceptance-verifiability + interface-contracts] TASK-13.md:62-63 的任务创建失败注入不可按所述机制执行：基线 multica server/internal/service/task.go:2455-2456 在 CreateChatTask 前重新读取 carrier，并在 carrier.RuntimeID.Valid == false 时直接返回 ErrChatTaskAgentNoRuntime，因此不会到达 CreateChatTask，不能证明该接缝的 INSERT 0 行或覆盖 Private Ask 回填后的整体 rollback；同时基线 migration 004 仍声明 agent_runtime_id_fkey（ON DELETE RESTRICT），与 TASK-13 声称删 runtime 行不触碰 agent 行、无 FK 的注入前提冲突。请改为可在真实责任边界触发 CreateChatTask 失败的受控注入（或明确可执行的时序/数据库夹具），并保留 send-first 回填后事务零残留、锁释放后重发断言；不得继续把不可达的 runtime 删除描述为该 INSERT 失败机制。"
 dimensions:
   sdd-to-plan: "pass"
   plan-to-tasks: "pass"
   task-executability: "block"
   dependency-topology: "pass"
-  interface-contracts: "pass"
+  interface-contracts: "block"
   acceptance-verifiability: "block"
   scope-and-simplicity: "pass"
   risk-and-rollback: "block"
-  reviewer-model: "GPT-5.6-sol / review-dev-plan cycle 2 attempt 1; incremental review of 720ba8c against approved SDD and prior BLOCK-009"
+  reviewer-model: "GPT-5.6-sol / review-dev-plan cycle 2 attempt 2; incremental review of 20c3f56 against approved SDD, prior BLOCK-009, and baseline multica 8746add"
 suggestions:
   - "SUG-001 target-version 仍为 tbd；人工审批前由需求负责人补齐。"
 review-loop:
-  current-attempt: 1
-subject-sha256: 0932cde6322849c3dd810c8b568d1d839bdd336489a1cd809fc2410578eb9a35
+  current-attempt: 2
+subject-sha256: d2e48838ba5d7aa9c41493f92836d78022538ed577fa52903fef77f3e4ff7dad
