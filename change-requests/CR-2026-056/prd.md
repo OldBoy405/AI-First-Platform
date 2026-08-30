@@ -8,7 +8,7 @@ owner: Ray
 owner-role: requirement
 status: draft
 created: 2026-08-30T16:45:00+08:00
-updated: 2026-08-30T16:55:00+08:00
+updated: 2026-08-30T17:20:00+08:00
 ---
 
 # 1. 概述
@@ -99,7 +99,17 @@ Private Ask 配置属于当前用户自己的 Private Ask session。用户 A 的
 
 两次校验都至少包括：当前用户是否有配置/发送权限；model 是否属于当前 runtime 支持的模型目录；Thinking Mode 是否被当前 runtime/provider 支持；runtime 是否在线或允许进入队列；session 是否仍为 active。前端不得直接提交任意 task context。
 
-「允许进入队列」复用现有 `service.AgentReadiness`（`server/internal/service/agent_ready.go`）：`AgentWaitable`（runtime 离线、机器可自行回来）仍允许入队；仅 `AgentBlocked` 拒绝。来源 FR-28、§6.3。
+「允许进入队列」复用现有 `service.AgentReadiness`（`server/internal/service/agent_ready.go`）：`AgentWaitable`（runtime 离线、机器可自行回来）仍允许入队；仅 `AgentBlocked` 拒绝。`AgentReadiness` **只**回答 waitable/blocked，不回答「model 是否属于 catalog、Thinking 是否被该 model 支持」。
+
+离线时的 catalog / capability 规则（B-004；复用现有 picker 缓存，不另建目录）：
+
+1. **来源**：`server/internal/handler/runtime_model_catalog.go` 的 `ModelCatalogCache` 对该 runtime 的 last-known-good 快照（仅 `supported && !fallback && len(models)>0` 才会入库）。
+2. **可用窗口**：`snapshot.Age(now) < modelCatalogServeWindow`（当前 **24h**）。超过 24h、缓存缺失、Get 失败、或快照不可 cacheable，一律视为**无可用目录**。本 CR 不把 `modelCatalogRevalidateAfter`（60s，后台刷新阈值）当作拒绝门槛——离线时无法 live 刷新。
+3. **有可用目录**：按该快照校验 model ID ∈ `Models`；非空 `thinking_level` 必须落在该 model 的 `Thinking.SupportedLevels`（与 `ValidateThinkingLevelWith` 同一判定，catalog loader 换成缓存快照）。空 `thinking_level` 仍表示「不注入、跟随 CLI/runtime 默认」，即使该 model 的 `Thinking` 为 nil 也接受。通过后 PATCH/发送按 `AgentWaitable` 成功（发送入队，不要求 runtime 当时在线）。
+4. **无可用目录**：PATCH 与发送**都拒绝**，HTTP 400 `invalid_model_or_thinking_level`。不得在无目录时放行任意 model，也不得用静态内置 stand-in catalog 顶替（`fallback` 目录禁止进入缓存，也禁止本校验路径使用）。
+5. **在线**（`AgentAvailable`）：走现有 live 发现路径，本 CR 不改 picker/daemon 协议。
+
+来源 FR-28、§6.3。
 
 ## FR-5 新建会话必须保存基础快照
 
@@ -148,7 +158,7 @@ Team Agent session 在 `issue_id` 为空时必须能 PATCH 并持久化模型和
 
 显式创建聊天容器和首次发送消息都必须经过同一个幂等服务路径：校验项目、session、Agent 与权限 → 解析有效配置并做 runtime capability 校验 → 对 `project_chat_session` 行锁或项目级并发锁 → 无 `issue_id` 时幂等创建隐藏 `project_chat` Issue 并回写 `session.issue_id`。并发请求最多产生一个 active session 和一个容器 Issue。
 
-显式创建的 HTTP 入口为 `POST /api/projects/{projectId}/chat/container`（不是 GET，也不是空 body 的 messages POST）。幂等键为请求体中的 `session_id`：同一 `session_id` 的重复或并发调用返回同一个 `issue_id`，不另要求 `Idempotency-Key` 头。首次发送 `POST /api/projects/{projectId}/chat/messages` 在服务层调用同一函数，不复制第二套创建逻辑。权限与「发送 Team Agent 消息」相同（不是配置 PATCH 的 owner/admin）。契约详见「Team Agent HTTP 契约」。来源 FR-10、FR-12、§8.1。
+显式创建的 HTTP 入口为 `POST /api/projects/{projectId}/chat/container`（不是 GET，也不是空 body 的 messages POST）。幂等键为请求体中的 `session_id`：同一 `session_id` 的重复或并发调用返回同一个 `issue_id`，不另要求 `Idempotency-Key` 头。首次发送 `POST /api/projects/{projectId}/chat/messages` 在服务层调用同一函数，不复制第二套创建逻辑。成功 2xx 响应体必须带回本次使用的 `session_id` 与绑定后的 `issue_id`（另保留现有 `comment_id`/`task_id`），供 AC-13 与 container 交叉断言，不得只靠事后 GET。权限与「发送 Team Agent 消息」相同（不是配置 PATCH 的 owner/admin）。契约详见「Team Agent HTTP 契约」。来源 FR-10、FR-12、§8.1。
 
 ## FR-11 Private Ask 扩展现有 chat_session
 
@@ -188,7 +198,13 @@ Team Agent 与 Private Ask 发送入队前，服务端解析有效 model / think
 
 Team Agent 发送成功时，附件必须在同一发送事务中绑定到 Issue、comment 和 task。事务失败时 comment、task 和 Issue 绑定不得留下半成品；未绑定附件保留供重试。发送失败不得删除草稿附件。
 
-未绑定草稿 TTL：当前代码没有聊天草稿附件的专用回收（channel 的 media intent-ledger 不覆盖本路径）。本 CR 声明 **7 天（168h）**：仅删除 `issue_id`/`comment_id`/`chat_session_id`/`chat_message_id`/`task_id` 仍全部为空、且 `created_at` 超过 7 天的附件。未到期草稿即使多次发送失败也必须保留。来源 FR-20（Team Agent 分支）、FR-21、§8.1。
+未绑定草稿 TTL：当前代码没有聊天草稿附件的专用回收（channel 的 media intent-ledger 不覆盖本路径）。本 CR 声明 **7 天（168h）**：
+
+- **清理入口**：服务端后台 sweeper（挂到现有 `server/cmd/server/runtime_sweeper.go` 周期循环，或同进程新增 ticker；**禁止**在 GET/PATCH/发送请求路径上顺便扫全表）。触发周期 **1h**（与 sweeper 已有 30s 心跳解耦：本 job 每小时最多跑一次即可）。
+- **删除谓词**（须同时满足）：`issue_id`/`comment_id`/`chat_session_id`/`chat_message_id`/`task_id` 仍全部为空，且 `created_at < now() - interval '168 hours'`（年龄 **严格大于 168h**；恰好 168h00m00s 的行本轮不删）。
+- **保留**：未满 168h 的未绑定草稿，即使多次发送失败也必须保留；任一绑定字段非空的附件本 job 不得删除。
+
+来源 FR-20（Team Agent 分支）、FR-21、§8.1。
 
 ## FR-17 可区分错误与前端回滚
 
@@ -287,6 +303,8 @@ POST   /api/projects/{projectId}/chat/messages
 
 ### POST 发送消息
 
+请求体：
+
 ```json
 {
   "session_id": "<uuid>",
@@ -297,6 +315,29 @@ POST   /api/projects/{projectId}/chat/messages
 
 无 `issue_id` 时先走与「显式创建」同一幂等路径绑定容器，再入队。`session_id` 校验同 PATCH。
 
+成功响应（B-003）：HTTP **2xx**（现有实现为 **201 Created**，本 CR 允许保持 201；禁止用 204/空 body。AC 断言响应体字段，不把 200 vs 201 当作通过条件）。响应体**必须**包含：
+
+```json
+{
+  "session_id": "<uuid>",
+  "issue_id": "<uuid>",
+  "comment_id": "<uuid>",
+  "task_id": "<uuid>"
+}
+```
+
+语义：
+
+| 字段 | 含义 | 约束 |
+|---|---|---|
+| `session_id` | 本次发送归属的 `project_chat_session.id` | 等于请求体 `session_id`；禁止空字符串、禁止另造 UUID |
+| `issue_id` | 绑定后的隐藏 `project_chat` 容器 | 非空 UUID；等于该 session 行上已回写的 `issue_id`；与同一 `session_id` 的 `POST .../chat/container` 成功响应的 `issue_id` **相同** |
+| `comment_id` / `task_id` | 本条消息对应的 comment 与入队 task | 非空 UUID（现有字段，保留） |
+
+发送成功时 `issue_id` 不得为 JSON `null`（与 GET 空面板不同：能入队则容器必已绑定）。失败响应仍走 FR-17，不返回半成品 `issue_id`。
+
+可选：响应也可带回与 GET 相同的 `model` / `thinking_level` / `*_source`；AC-13 **不依赖**这些可选字段，只依赖 `issue_id` / `session_id`。
+
 ## Private Ask HTTP 契约（覆盖 FR-12）
 
 ```text
@@ -304,7 +345,27 @@ GET    /api/projects/{projectId}/private-chat
 PATCH  /api/chat/sessions/{sessionId}/config
 ```
 
-GET / PATCH 响应至少包含 `session_id`、有效 `model` / `thinking_level`、`model_source` / `thinking_level_source`。历史缺 `base_*` 的 session 允许 `agent_default`，规则见 FR-11。
+GET / PATCH 响应至少包含 `session_id`、有效 `model` / `thinking_level`、`model_source` / `thinking_level_source`。历史缺 `base_*` 的 session 允许 `agent_default`，规则见 FR-11。`session_id` 缺失时的客户端降级与 Team Agent 相同（见「legacy 响应安全降级」）。
+
+## legacy 响应安全降级（覆盖 NFR-8，B-005）
+
+新增 Team Agent / Private Ask 配置响应用独立 zod schema（不要把 `session_id` 做成 `z.string().default("")` 后当作已登录会话）。`parseWithFallback` 的 fallback 对象记为 `UNSAFE_CHAT_CONFIG_FALLBACK`，字段固定为：
+
+```text
+session_id: ""                  # 空，永不伪造 UUID
+issue_id: null
+model: ""
+thinking_level: ""              # 空哨兵 = 跟随默认；不填假 model id
+model_source: "runtime_default"
+thinking_level_source: "runtime_default"
+```
+
+两条路径，必须在 schema 夹具里断言：
+
+1. **硬降级（不可安全操作）**：响应缺失 `session_id`、值为空、或不是 UUID 字符串 → 整个 body 走 `parseWithFallback`，得到 `UNSAFE_CHAT_CONFIG_FALLBACK`（即使其它字段齐全）。UI：**只读**；禁用 Model Picker、Thinking Mode、配置 PATCH、发送；展示可恢复错误并自动或手动重试 GET。禁止拿 fallback 的空 `session_id` 去调 PATCH/发送。
+2. **软默认（可继续操作）**：`session_id` 为合法 UUID，但缺 `model` / `thinking_level` / `*_source` / `issue_id`。schema 内字段级默认：`model=""`, `thinking_level=""`, `model_source`/`thinking_level_source`=`session_default`（Team Agent 路径禁止默认成 `agent_default`；Private Ask 历史缺 `base_*` 的权威 source 仍以后续完整 GET 为准，软默认只用于渲染），`issue_id=null`。控件保持可写；下一次成功 GET/PATCH 覆盖为权威值。
+
+`POST .../chat/messages` 成功体同样：缺 `session_id` 或 `issue_id` 视为硬降级，不得把发送画成已绑定容器。
 
 # 4. 非功能需求
 
@@ -315,7 +376,7 @@ GET / PATCH 响应至少包含 `session_id`、有效 `model` / `thinking_level`�
 - **NFR-5 安全**：未绑定附件下载必须校验上传者；配置写权限不得只靠前端隐藏控件。
 - **NFR-6 兼容**：旧 session 缺快照、旧任务缺 `chat_config` 的兼容路径仅用于历史数据，禁止成为新写入的默认路径。
 - **NFR-7 零 Discussion 回归**：本 CR 不改变 `GetProjectDiscussion` / `EnsureProjectDiscussionIssue`、Discussion 发送路径、Private Ask 的 creator-only 访问规则（除按 FR-11/FR-12 增加配置字段和可写配置控件外）。
-- **NFR-8 API 兼容**：新增响应字段必须经 `parseWithFallback`（`packages/core/api/schema.ts`）+ zod schema；前端对缺失字段防御性默认。schema 夹具按 `packages/core/api/schemas.test.ts` 现有模式追加。
+- **NFR-8 API 兼容**：新增 GET/PATCH/container/messages 响应必须经 `parseWithFallback`（`packages/core/api/schema.ts`）+ zod schema，缺失字段不得白屏。`session_id` 是后续 PATCH/发送的归属凭据，**禁止**用空字符串、全 0 UUID 或任何伪造值当作可操作 session。具体 fallback 与控件行为见上文「legacy 响应安全降级」；夹具按 `packages/core/api/schemas.test.ts` 现有模式追加。
 
 # 5. 验收标准
 
@@ -333,7 +394,7 @@ GET / PATCH 响应至少包含 `session_id`、有效 `model` / `thinking_level`�
 | AC-10 | FR-13 | 入队后 `context` 保留已有字段（夹具含 `head_sha`），并写入统一的 `chat_config`。 |
 | AC-11 | FR-8 | 打开 Team Agent 面板不创建 `project_chat` Issue；`GET` 响应 `issue_id` 为 null 且数据库无新 `origin_type='project_chat'` 行。 |
 | AC-12 | FR-9 | 打开 Team Agent 后修改配置，刷新页面仍能从同一 `session_id` 恢复配置。 |
-| AC-13 | FR-10 | 对同一 `session_id` 并发或重复调用 `POST .../chat/container` 与 `POST .../chat/messages` 后，最多一个 active session 和一个容器 Issue；两次成功响应的 `issue_id` 相同。 |
+| AC-13 | FR-10 | 对同一 `session_id` 并发或重复调用 `POST .../chat/container` 与 `POST .../chat/messages` 后，最多一个 active session 和一个容器 Issue。container 成功体与 messages 成功体（2xx，含 `session_id`/`issue_id`/`comment_id`/`task_id`）的 `issue_id` 为同一非空 UUID，且等于随后 GET 的 `issue_id`；两条成功体的 `session_id` 均等于请求值。验收位置：`server/internal/handler/project_chat_test.go` 交叉并发夹具直接读两次响应 JSON，**不**改为事后只 GET。 |
 | AC-14 | FR-15 | 无 Issue 时上传的附件只有上传者可见；其他项目成员下载/列表均不可见。 |
 | AC-15 | FR-16 | 发送成功后附件与 comment/task 一起对项目成员可见；发送失败时附件仍未绑定且可重试。 |
 | AC-16 | FR-5、FR-6 | 新建 session 的 `base_*` 等于创建时 Agent 默认值；之后改 Agent 默认值，已有 session 的 `base_*` 不变，无 override 时有效值仍为旧快照，`*_source` 为 `session_default`。 |
@@ -344,13 +405,13 @@ GET / PATCH 响应至少包含 `session_id`、有效 `model` / `thinking_level`�
 | AC-21 | FR-18 | Team Agent 与 Private Ask 均可在不调用 `UpdateAgent` 的前提下改模型与 Thinking Mode；现有 draft / 附件 / 发送 / 停止 / 重试行为不回归。 |
 | AC-22 | FR-19、FR-20 | 从 472 起的迁移只新增约定表/列/索引；无新 FK；索引均为 `CONCURRENTLY` 且一文件一条；`CUSTOM.md` 已按当时结构登记本 CR 条目。 |
 | AC-23 | FR-10 | `POST /api/projects/{projectId}/chat/container` 在无 Issue 的 active session 上创建容器后，GET 的 `issue_id` 变为同一 UUID；缺少 `session_id` 或 session 不匹配时不创建 Issue。 |
-| AC-24 | FR-4 | runtime 仅离线（`AgentWaitable`）时配置 PATCH 与发送仍成功入队；`AgentBlocked`（如 runtime unusable）拒绝发送/PATCH。与 `server/internal/service/agent_ready.go` 及 issue 入队（`server/internal/handler/issue.go`「offline machine still queues」）同一判定。 |
+| AC-24 | FR-4 | 三条路径都必须覆盖 PATCH **和**发送：① `AgentWaitable` + 可用 `ModelCatalogCache` 快照（Age 小于 24h、cacheable）且 model/thinking 命中快照 → 两次都成功（发送入队）；② `AgentWaitable` + 无可用快照（缺失 / Age 大于等于 24h / 不可 cacheable）→ 两次都 400 `invalid_model_or_thinking_level`，不入队、不写 override；③ `AgentBlocked`（如 runtime unusable）→ 拒绝发送/PATCH。与 `agent_ready.go` 及 issue 入队「offline machine still queues」同一 waitable/blocked 判定；catalog 不得用 fallback stand-in。测试：`server/internal/handler/project_chat_test.go`（及 Private Ask 对应 handler 测试）新增 Waitable+cache / Waitable+no-cache / Blocked 夹具。命令：`go test ./server/internal/handler/ ./server/internal/service/ -count=1`。 |
 | AC-25 | FR-2、FR-4、FR-12 | Private Ask 非创建者调用配置 PATCH 被 403；Team Agent 非 owner/admin 的 403 仍由 AC-6 覆盖。 |
 | AC-26 | NFR-2 | 本 CR 新增 UI 文案的 en/ja/ko/zh-Hans key 对称；`packages/views/locales/parity.test.ts` 全绿。 |
-| AC-27 | NFR-8 | 新增 GET/PATCH/container 响应对缺失 `session_id` / source 字段不白屏：zod schema + `parseWithFallback` 给出防御默认。夹具加在 `packages/core/api/schemas.test.ts`。 |
-| AC-28 | FR-16 | 未绑定草稿超过 7 天被清理；`created_at` 未满 7 天、发送失败仍未绑定的附件不被清理。 |
+| AC-27 | NFR-8 | `packages/core/api/schemas.test.ts` 夹具断言：① 缺 `session_id` / 空 / 非 UUID → `parseWithFallback` 等于 `UNSAFE_CHAT_CONFIG_FALLBACK`（`session_id===""`, `issue_id===null`），不得解析出伪造 UUID；② 合法 `session_id` 但缺 source/model/`issue_id` → `session_id` 保持原值，`*_source` 默认为 `session_default`，`issue_id` 为 null，`model`/`thinking_level` 为 `""`。前端：硬降级时禁用 PATCH/发送（Team Agent / Private Ask 控件只读并重试 GET）；禁止用空 `session_id` 发出请求。messages 成功体缺 `issue_id` 同样硬降级。 |
+| AC-28 | FR-16 | 后台 sweeper（周期 **1h**，非请求路径）删除同时满足「五类绑定字段全空」且 `created_at < now()-168h` 的附件。边界：年龄 **168h 整** 的行本轮保留；年龄 **大于 168h** 删除。`created_at` 未满 168h、发送失败仍未绑定的附件不被清理；任一绑定字段非空不删。测试：`server/internal/service/chat_draft_attachment_cleanup_test.go`（或 handler 等价文件）覆盖 167h59m 保留 / 168h00s 保留 / 168h01s 删除。命令：`go test ./server/internal/service/ -count=1 -run ChatDraftAttachment`。 |
 
-来源文档完成标志要求 AC-1 至 AC-15 全部满足；AC-16 至 AC-28 覆盖同一闭环中必须可测、但来源完成标志未逐条编号的规则，以及第 1 轮评审 B-001/B-002 与建议项。
+来源文档完成标志要求 AC-1 至 AC-15 全部满足；AC-16 至 AC-28 覆盖同一闭环中必须可测、但来源完成标志未逐条编号的规则，以及第 1/2 轮评审 B-001～B-005 与建议项。
 
 # 6. 成功指标
 

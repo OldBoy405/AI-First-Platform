@@ -1,22 +1,23 @@
 cr-id: CR-2026-056
 review-type: requirement
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-30T16:47:48+08:00"
+reviewed-at: "2026-08-30T17:09:06+08:00"
 verdict: block
 blockers:
-  - "B-001 [FR-6/FR-8/FR-11/AC-19] 旧 Private Ask session 缺少 base_* 时允许回退到 Agent 当前默认值，但 Team Agent GET 响应的 source 枚举只声明 override|session_default|runtime_default；请明确兼容回退的可观测 source（或定义其归入某一枚举的语义）并补充对应验收，避免有效值与来源审计不一致。"
-  - "B-002 [FR-10/AC-13] 需求要求显式创建聊天容器与首次发送共用幂等路径，但 §7.1 只定义 GET、配置 PATCH、消息 POST，未定义显式创建操作的 endpoint、请求/响应、幂等键及与 session_id 的关系；请补齐可执行 API 契约，或明确引用现有已定义的创建接口，否则 AC-13 无法按统一入口验收。"
+  - "B-003 [FR-10/AC-13/Team Agent HTTP contract] B-002 已补齐 POST /api/projects/{projectId}/chat/container，但 POST /api/projects/{projectId}/chat/messages 仍只有请求体和‘先绑定再入队’描述，没有定义成功响应是否包含 issue_id（或明确 AC-13 应改为通过后续 GET 断言）。AC-13 直接要求两次成功响应的 issue_id 相同，因此当前无法唯一实现/验收 container 与 messages 的交叉并发场景。请补齐 messages 的 HTTP 200 响应 schema、issue_id/session_id 语义，或改写 AC-13 的可观测断言。"
+  - "B-004 [FR-4/AC-24] AC-24 同时要求 runtime 离线（AgentWaitable）时 PATCH/发送成功，并要求 FR-4 的 model runtime catalog 与 Thinking Mode capability 校验；但未规定 runtime 离线时校验所使用的 catalog/capability 来源、缓存有效期/失效处理及无缓存时的结果。现有 AgentReadiness 只能判定可等待/阻断，不能回答模型是否属于 catalog；请明确离线时采用的已缓存目录及无可用目录时的接受/拒绝规则，并补充对应验收。"
+  - "B-005 [NFR-8/AC-27] AC-27 要求缺失 session_id/source 字段时 parseWithFallback 给出‘防御默认’且不白屏，但没有定义这些默认值及控件/发送行为。尤其 session_id 是后续 PATCH/发送的路由和归属凭据，空字符串或伪造默认值都会让界面可渲染但不可安全操作。请明确 legacy 响应的安全降级状态（例如只读并重新获取 session，或禁用配置/发送）及 model/thinking/source 的具体 fallback，且在夹具中断言该行为。"
 dimensions:
-  structure-completeness: "PASS：PRD 包含概述、用户故事、FR、NFR、验收标准、成功指标和范围排除，章节结构完整。"
-  fr-testability: "BLOCK：多数 FR 有对应 AC，但旧 session 来源枚举与兼容回退不一致，显式创建操作缺少 API 契约，两个场景无法形成无歧义验收。"
-  scope-reasonableness: "PASS：CR-A 范围、CR-B/C/D 排除项、目标仓库和禁止修改项清晰，未混入 Discussion 或 composer 视觉重构。"
-  source-alignment: "PASS：PRD 覆盖来源 CR-A 的会话配置隔离、Team Agent 懒创建、任务快照、附件草稿、权限和兼容要求；发现的问题是 PRD 内部契约缺口，不是范围扩张。"
-  dependencies: "PASS：已识别现有 chat_session、任务 context、attachment、EnsureProjectChatIssue、runtime 能力、Agent 绑定和后续 CR 依赖；实现前需按 blocker 补足 API/兼容契约。"
+  structure-completeness: "PASS：PRD 已包含概述、用户故事、FR、NFR、HTTP 契约、验收标准、成功指标和范围排除；B-001/B-002 修复均有对应正文与 AC。"
+  fr-testability: "BLOCK：B-001 已闭合，B-002 的创建入口已补齐，但 AC-13 依赖未定义的 messages 成功响应；AC-24 的离线 capability 校验和 AC-27 的 session_id 安全 fallback 仍无法形成唯一、可执行的验收。"
+  scope-reasonableness: "PASS：仍限制在 CR-A；Discussion、Coordinator、升级和 composer 视觉重构明确排除，没有发现范围扩张。"
+  source-alignment: "PASS：会话配置隔离、Team Agent 懒创建、容器幂等、任务快照和附件草稿均与 CR-A 来源一致；本轮 blocker 是 PRD 内部契约/兼容语义缺口。"
+  dependencies: "PASS：已识别 AgentReadiness、runtime catalog/capability、parseWithFallback、现有 session/task/attachment 基础设施及后续 CR 依赖；需按 blocker 明确离线目录和 legacy API 行为。"
 suggestions:
-  - "SUG-001：在人工需求审批前确定 target-version；当前 cr.md 与 prd.md 均为 tbd。"
-  - "SUG-002：AC-9 的“相关 crctl 测试及 Pipeline JSON 解析检查”口径偏宽，建议列出确切命令或测试文件。"
-  - "SUG-003：为 FR-4 的 runtime offline/允许入队、服务端权限校验、NFR-2 四语 locale parity、NFR-8 parseWithFallback/zod 及 FR-16 草稿 TTL 补充独立 AC 或明确引用的现有测试。"
+  - "SUG-004：AC-24 可明确引用新增测试文件/命令，并覆盖 AgentWaitable 与 AgentBlocked 的 PATCH 和发送两条路径。"
+  - "SUG-005：AC-26 可在实现计划中登记本 CR 实际新增 locale keys；AC-28 建议明确清理 job/触发周期、7 天边界（>168h）和对应测试入口。"
+  - "SUG-001：target-version 仍为 tbd，人工需求审批前指定里程碑。"
 review-loop:
-  current-attempt: 1
+  current-attempt: 2
 subject-file: change-requests/CR-2026-056/prd.md
-subject-sha256: a2e83392faaf2c78b35596dcef8c381d369deb740f9238cdee5901a2c468320d
+subject-sha256: 50c33f9fc2865273ee5964928194319878b6e30b104e2314e4cff0e7b4f32261
