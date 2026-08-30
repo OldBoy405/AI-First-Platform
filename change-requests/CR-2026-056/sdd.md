@@ -5,7 +5,7 @@ cr-ref: CR-2026-056
 title: 会话级配置与 Team Agent 闭环 技术设计
 status: draft
 created: 2026-08-30T18:00:00+08:00
-updated: 2026-08-30T18:50:00+08:00
+updated: 2026-08-30T19:25:00+08:00
 ---
 
 # SDD — 会话级配置与 Team Agent 闭环技术设计
@@ -61,8 +61,9 @@ issue (origin_type=project_chat)
 |---|---|---|
 | `server/migrations/` 472 起 | 新表 `project_chat_session`；`chat_session` 加四列；CONCURRENTLY 索引 | 无新 FK；一文件一条语句 |
 | `server/pkg/db/queries/` + sqlc | 新表 CRUD / 行锁；`chat_session` 配置列读写；未绑定附件绑定与 sweeper | 生成物 `make sqlc`，禁手改 |
-| `server/internal/service/project_chat.go` | GET 不再创建 Issue；抽出 session 作用域 `BindProjectChatContainer`（接受外层 tx；禁止按 project 的 `EnsureProjectChatIssue`） | 服务层事务与幂等；handler 不复制第二套创建 |
-| `server/internal/service/chat_config.go` | `ResolveChatConfig` + 纯函数 `ValidateResolvedChatConfig` + 接口 `ChatCatalogPort` | 领域类型用 `pkg/agent.Catalog`；**禁止** service import handler。handler 注入 port 实现并做 `ModelEntry`→`Catalog` 适配 |
+| `server/internal/service/project_chat.go` | GET 不再创建 Issue；抽出 session 作用域 `BindProjectChatContainer`（接受外层 tx）。Team Agent 路径禁止按 project 调 `EnsureProjectChatIssue`；该函数留给转投（§4.13） | 服务层事务与幂等；handler 不复制第二套创建 |
+| `server/internal/service/chat_config.go` | `ResolveChatConfig` + 薄包装 `ValidateResolvedChatConfig` + 接口 `ChatCatalogPort` | 校验算法在 `pkg/agent.ValidateChatConfig`；**禁止** service import handler 或复制归一化 |
+| `server/pkg/agent/` | 导出 `ModelIDForCapabilityLookup`、`StaticCatalog`、`ValidateChatConfig` | 空模型哨兵、Claude 变体、Thinking 矩阵的**单一实现**；不得在 service 复制 |
 | `server/internal/handler/` catalog 适配 | `ModelCatalogCache` / `InitiateListModels` **留在 handler**；新增 `LiveLoad` 同步等待（30s），picker HTTP 仍异步 | composition root（`cmd/server`）把适配器注入 service；不改 picker/daemon 协议 |
 | `server/internal/service/task.go` | 入队前 merge `context.chat_config`；发送事务内绑定附件 | 禁止整对象覆盖 context |
 | `server/internal/handler/project_chat.go` | GET 响应扩展；新增 PATCH config、POST container；messages 带 `session_id`，成功体带回 `session_id`/`issue_id` | 错误走 `writeErrorCode` |
@@ -74,7 +75,7 @@ issue (origin_type=project_chat)
 | `packages/views/projects/components/project-private-ask.tsx` | 只读模型徽章改为可写 Model/Thinking，走 session PATCH | 不写 Team Agent session |
 | `CUSTOM.md` | 编号顺延登记本 CR 文件与挂钩 | 双周 rebase 核对清单 |
 
-**明确不改**：`GetProjectDiscussion` / `EnsureProjectDiscussionIssue`、Discussion 发送、`UpdateAgent` 管理页路径、`agent_task_queue` 专用模型列、mobile。
+**明确不改**：`GetProjectDiscussion` / `EnsureProjectDiscussionIssue`、Discussion 发送、Discussion Coordinator→Team Agent 转投（`retargetDiscussionCoordinatorRoute` / `RouteDiscussionToTeamAgent` / 该路径上的 `EnsureProjectChatIssue`）、`UpdateAgent` 管理页路径、`agent_task_queue` 专用模型列、mobile。
 
 ### 1.3 关键流程
 
@@ -140,8 +141,9 @@ packages/views  (Team Agent / Private Ask UI)
 
 - 新容器 `origin_type='project_chat'` 且 **`origin_id = session.id`**（应用层关联，无 FK）；
 - 废除 `issue_project_chat_unique`；新建部分唯一索引 `(workspace_id, origin_id) WHERE origin_type='project_chat' AND origin_id IS NOT NULL`；
-- 解析容器只走 `session.issue_id` 或 `GetIssueByOrigin(workspace, 'project_chat', session.id)`，**禁止**再按 project 调 `GetProjectChatIssue` / `EnsureProjectChatIssue`；
-- `EnsureProjectDiscussionIssue` / `issue_project_discussion_unique` 零改（NFR-7：Discussion 面板 GET/发消息）。
+- **Team Agent GET / PATCH / container / messages / merge-forward / presenter 活动记录**：解析容器只走 `session.issue_id` 或 `GetIssueByOrigin(workspace, 'project_chat', session.id)`，**禁止**再按 project 调 `GetProjectChatIssue` / `EnsureProjectChatIssue`（否则换绑后会拿到旧 Issue，AC-18 失败）；
+- `EnsureProjectDiscussionIssue` / `issue_project_discussion_unique` 零改（NFR-7：Discussion 面板 GET/发消息）；
+- **Discussion Coordinator→Team Agent 转投不在本 CR**（PRD §1.3 / §7 / NFR-7）：继续走今日 `EnsureProjectChatIssue`，签名与创建逻辑不变。换绑只关闭/新建 `project_chat_session` 及其绑定容器，不改转投解析。兼容钉与已知缺口见 §4.13。
 
 `POST /api/projects/{id}/chat/merge-forward` 仍复用 `sendProjectChatCore`，且 **仍是 Team Agent 发送**（FR-13/AC-7）。PRD 不要求请求带 `session_id`。服务端必须：
 
@@ -150,7 +152,7 @@ packages/views  (Team Agent / Private Ask UI)
 3. 与 messages 共用同一发送事务（含 Bind，见 §4.5）；
 4. enqueue 前 merge `context.chat_config`（保留已有键）。
 
-Discussion→Team Agent 转投必须走完整快照闭环（§4.13）：`comment.go` **停止**调用 `EnsureProjectChatIssue`；`TaskService.RouteDiscussionToTeamAgent`（`discussion_coordinator.go`，§9 #37）改为 Ensure active session → §4.3 → Bind-in-tx → enqueue 前 merge `chat_config`；失败回滚容器与路由 comment。Presenter 活动记录改为读 **active session 的 `issue_id`**（尚未绑容器则跳过，与今日「issue not found」一致）。
+FR-13 / AC-7 的「发送」适用边界：**仅** Team Agent `POST .../chat/messages`、Private Ask 发送、以及上列 merge-forward。**不含** Coordinator 转投（§4.13）。Presenter 活动记录改为读 **active session 的 `issue_id`**（尚未绑容器则跳过，与今日「issue not found」一致）。
 
 ---
 
@@ -202,7 +204,7 @@ CREATE UNIQUE INDEX CONCURRENTLY issue_project_chat_session_origin_uidx
   WHERE origin_type = 'project_chat' AND origin_id IS NOT NULL;
 ```
 
-新容器创建时必须写 `origin_id = session.id`。`GetIssueByOrigin` 已按 `(workspace_id, origin_type, origin_id)` 查询，可复用。
+新容器创建时必须写 `origin_id = session.id`。`GetIssueByOrigin` 已按 `(workspace_id, origin_type, origin_id)` 查询，可复用。废除 `issue_project_chat_unique` 后同项目可有多行 `project_chat`：`GetProjectChatIssue` 必须改为 `ORDER BY created_at ASC LIMIT 1`（§4.13），否则 sqlc `:one` 在多行下失败，转投路径会回归。Team Agent 自身解析不得再走该查询。
 
 **升级期遗留行（BLOCK-009，确定性收养窗口）**：现网 `project_chat` Issue 的 `origin_id` 为 NULL，且每项目至多一行。收养 **只发生在 GET Ensure 插入该项目第一行 `project_chat_session` 的同一事务内**（不是 Bind、也不是「本 session 第一次发送」这种不可持久化口语）：
 
@@ -492,33 +494,73 @@ PATCH 空值：用指针/三态（omitted / null-or-empty / non-empty），Go �
 | `model=""` | 无 override、无 `base_*`、无 Agent 默认 | `runtime_default` | 是 |
 | `model=""` 写入 `model_override` | PATCH `""` | — | **否**（FR-6：`""`=清除 override） |
 
-`ValidateResolvedChatConfig(model, thinking, provider, catalog)`（`service/chat_config.go` 纯函数）：
+`ValidateResolvedChatConfig` 是 service 薄包装；**算法唯一实现**在 `pkg/agent.ValidateChatConfig`（BLOCK-014）。service **不得**引用未导出符号，**不得**复制 Claude 变体正则 / provider 别名 / Thinking 矩阵。
+
+`pkg/agent` 本 CR 导出/下沉（既有未导出逻辑升格，不写第二套规则）：
+
+```go
+// ModelIDForCapabilityLookup is the catalog identity for a runtime-native
+// model string. It never changes the persisted or CLI-passed value.
+// Claude context-window variants (e.g. claude-opus-5[1m]) share the base
+// model's capabilities; every other provider keeps exact match.
+func ModelIDForCapabilityLookup(providerType, model string) string
+
+// StaticCatalog adapts an already-loaded Catalog to the loader shape
+// required by ValidateThinkingLevelWith. No I/O.
+func StaticCatalog(c Catalog) func() (Catalog, error)
+
+// ValidateChatConfig is the SINGLE domain check for session/task
+// chat-config. Empty model is a legal runtime-default sentinel (not a
+// catalog ID). Thinking uses ValidateThinkingLevelWith; model membership
+// uses ModelIDForCapabilityLookup against catalog.Models.
+func ValidateChatConfig(catalog Catalog, providerType, model, thinking string) (ok bool, err error)
+```
+
+未导出 `modelIDForCapabilityLookup` 改为调用导出符号（或等名升格）；`claudeContextWindowTagRe` **只**留在 `pkg/agent`。既有 `ValidateThinkingLevelWith` 签名不变：第一个参数是 `func() (Catalog, error)`，**不是** `Catalog`。已加载目录必须经 `StaticCatalog` 适配，禁止把 `Catalog` 当 loader 传入。
+
+`ValidateChatConfig` 伪代码（与 `ValidateThinkingLevelWith` 共用同一套规则）：
 
 ```text
-if thinking == "":
-    thinkingOK = true                         # 不注入；与 ValidateThinkingLevelWith 首行一致
-else:
-    thinkingOK, err = ValidateThinkingLevelWith(load=catalog, provider, model, thinking)
-    # 既有规则：codex + model=="" + 非空 thinking → false（fail-closed，用户须显式选模型）
-    # 其他 provider：空 model 解析到 catalog.Default（opencode 为「任一模型支持该 level」）
+thinkingOK, err = ValidateThinkingLevelWith(StaticCatalog(catalog), provider, model, thinking)
+# 既有规则（不得在 service 重写）：
+#   thinking=="" → true（不注入）
+#   codex + model=="" + 非空 thinking → false（fail-closed，用户须显式选模型）
+#   其他 provider：空 model 解析到 catalog.Default（opencode 为「任一模型支持该 level」）
+#   Claude 变体经 ModelIDForCapabilityLookup 命中能力矩阵
 
+if err != nil: 400 invalid_model_or_thinking_level
 if model == "":
-    modelOK = true                             # 跳过 ID ∈ Models
+    modelOK = true                             # 跳过 ID ∈ Models；哨兵不是 catalog 条目
 else:
-    modelOK = modelIDForCapabilityLookup(provider, model) 命中 catalog.Models
+    lookup = ModelIDForCapabilityLookup(provider, model)
+    modelOK = lookup 命中 catalog.Models[].ID   # 只比导出 lookup 后的 ID，不复制正则
 
 if !modelOK or !thinkingOK: 400 invalid_model_or_thinking_level
 ```
+
+service：
+
+```go
+func ValidateResolvedChatConfig(model, thinking, provider string, catalog agent.Catalog) error {
+    ok, err := agent.ValidateChatConfig(catalog, provider, model, thinking)
+    if err != nil || !ok {
+        return errInvalidModelOrThinking // handler maps to 400
+    }
+    return nil
+}
+```
+
+cache / live 两路都把已加载的 `agent.Catalog` 交给这一处；handler 只做 `ModelEntry`→`Catalog` 适配与 `writeErrorCode`。
 
 进入 `context.chat_config`：允许 `"model":""`。daemon claim（§4.8）原样写入 `TaskAgentData.Model`，与今日空 `agent.Model` 相同。
 
 夹具矩阵（handler+service，映射 AC-9/AC-24，不新增 AC 编号）：`model=""` + thinking `""`（各 provider 通过）；`model=""` + 非空 thinking × `codex` → 400；同组合 × `claude`/`opencode` 按 `ValidateThinkingLevelWith`；非空未知 model → 400。
 
-### 4.3 catalog + readiness（PATCH、container、messages、merge-forward、Discussion 转投共用）
+### 4.3 catalog + readiness（PATCH、container、messages、merge-forward 共用；不含转投）
 
-**模块边界（BLOCK-007）**：校验合同在 service；目录存储与 daemon 发现留在 handler。ARCHITECTURE.md §4：handler 调 service，service **不得** import `internal/handler`。因此：
+**模块边界（BLOCK-007 / BLOCK-014）**：领域校验算法在 `pkg/agent.ValidateChatConfig`；service 持有 `ChatCatalogPort` 与薄包装，**不**复制归一化。目录存储与 daemon 发现留在 handler。ARCHITECTURE.md §4：handler 调 service，service **不得** import `internal/handler`。因此：
 
-- 领域类型：`pkg/agent.Catalog` / `Model` / `ValidateThinkingLevelWith`（已存在）。`handler.ModelEntry` 只是 wire 镜像，由 handler 适配成 `agent.Catalog`。
+- 领域类型与校验：`pkg/agent.Catalog` / `Model` / `ValidateThinkingLevelWith` / **`ModelIDForCapabilityLookup` / `StaticCatalog` / `ValidateChatConfig`**（本 CR 导出/下沉，§4.2.1）。`handler.ModelEntry` 只是 wire 镜像，由 handler 适配成 `agent.Catalog`。
 - service 接口（handler 注入，`cmd/server` 接线）：
 
 ```go
@@ -536,7 +578,7 @@ type ChatCatalogPort interface {
 }
 ```
 
-- 纯函数 `ValidateResolvedChatConfig` 只吃 `agent.Catalog`，四入口 + §4.13 只调这一处。handler 只做鉴权与 `writeErrorCode` 映射。
+- service `ValidateResolvedChatConfig` 只转发 `agent.ValidateChatConfig`；**四入口**（PATCH / messages / container / merge-forward）只调这一处。handler 只做鉴权与 `writeErrorCode` 映射。转投不走本校验（§4.13）。
 
 **同步判定契约**（`loadCatalogForChatConfig`，同一函数）：
 
@@ -560,7 +602,7 @@ else: # Available
         # timeout / transport / empty / fallback / unsupported → 400
         # handler 侧成功后 Put cache（既有 cacheable 规则）
 
-ValidateResolvedChatConfig(resolved.model, thinking, provider, cat)  # §4.2.1
+ValidateResolvedChatConfig → agent.ValidateChatConfig(cat, provider, model, thinking)  # §4.2.1
 ```
 
 `cacheable` 复用既有 `cacheableModelCatalog` 语义（适配后在 handler 实现里调用，或把布尔判断下沉为 `pkg/agent` 小函数，避免 service 引用 handler 符号）。禁止 fallback stand-in。`modelCatalogRevalidateAfter` **不是**拒绝门槛。
@@ -576,7 +618,7 @@ LiveLoad 错误语义（测试夹具必须覆盖）：
 
 ### 4.4 BindProjectChatContainer（幂等，session 作用域）
 
-取代 Team Agent 路径上的 `EnsureProjectChatIssue`。**仅** container / messages / merge-forward / Discussion→Team Agent 转投调用；GET 禁止。Discussion 容器仍走 `EnsureProjectDiscussionIssue`。
+取代 Team Agent 路径上的 `EnsureProjectChatIssue`。**仅** container / messages / merge-forward 调用；GET 禁止。Discussion 容器仍走 `EnsureProjectDiscussionIssue`。Coordinator 转投仍走既有 `EnsureProjectChatIssue`（§4.13），**不**改调 Bind。
 
 今日 `ensureContainerIssue` 自开事务并 `Commit`，且 getter 按 project 查 `GetProjectChatIssue`。本 CR：
 
@@ -649,7 +691,7 @@ GET timeline / 评论列表只读 **当前 session.issue_id**，不得 `GetProje
 
 #### 4.7.1 GET / PATCH 换绑栅栏与 CAS（BLOCK-010）
 
-GET、配置 PATCH、发送、container、merge-forward、转投、换绑 **全部** 先拿同一把项目 advisory，再在事务内重读绑定与 session。禁止「锁外读项目绑定 / 锁外读 session 再写」。
+GET、配置 PATCH、发送、container、merge-forward、换绑 **全部** 先拿同一把项目 advisory，再在事务内重读绑定与 session。禁止「锁外读项目绑定 / 锁外读 session 再写」。转投不加入本栅栏（仍走既有 `EnsureProjectChatIssue` 自己的 `project-chat|{ws}|{project}` 锁）。
 
 PATCH config（Team Agent；Private Ask 无换绑但仍要 session 行锁）：
 
@@ -752,53 +794,45 @@ ResolveChatConfig(session, agent)
 - Waitable 无 cache / Blocked：不建 Issue、不入队；
 - 换绑后 merge-forward 写入**新** session 的 Issue，旧 timeline 不变。
 
-### 4.13 Discussion→Team Agent 转投快照闭环（BLOCK-012）
+### 4.13 Discussion 转投兼容边界与已知缺口（BLOCK-013）
 
-既有实现：`handler/comment.go` `retargetDiscussionCoordinatorRoute` 先 `EnsureProjectChatIssue`（按 project，`origin_id` NULL），再 `TaskService.RouteDiscussionToTeamAgent(ctx, chatIssue, ...)`（`discussion_coordinator.go`）直接 `CreateComment` + `enqueueMentionTaskWithCommentPlanAndOriginator`，**无** Resolve / catalog / `chat_config` / Bind-in-tx。换绑后会写入旧容器，且任务缺不可变快照。
+**裁定**：对齐已审批 PRD §1.3 / §7 / NFR-7。本 CR **不**改造 Discussion Coordinator→Team Agent 转投。
 
-**调用签名**（仓内破坏性，仅 service/handler 同步改测试）：
+既有实现保持不变：
 
-```go
-// 去掉 chatIssue 参数。容器由本函数在 active session 上 Bind。
-func (s *TaskService) RouteDiscussionToTeamAgent(
-    ctx context.Context,
-    discussionIssue db.Issue,
-    teamAgentID, coordinatorID, originatorID pgtype.UUID,
-    content string,
-) (db.Comment, db.AgentTaskQueue, error)
-```
+- `handler/comment.go` `retargetDiscussionCoordinatorRoute` 继续调用 `EnsureProjectChatIssue`（按 project）；
+- `TaskService.RouteDiscussionToTeamAgent(ctx, chatIssue, ...)` 签名不变，继续 `CreateComment` + `enqueueMentionTaskWithCommentPlanAndOriginator`；
+- **不**走 §4.3 catalog/readiness、**不** Bind-in-tx、**不** merge `chat_config`。
 
-`retargetDiscussionCoordinatorRoute` **停止**调用 `EnsureProjectChatIssue`。
-
-算法（与 merge-forward 同核，无用户 `session_id`）：
+**换绑作用域（新 session/容器模型 vs 转投旧容器）**：
 
 ```text
-advisory project-chat-session|{ws}|{discussionIssue.project}
-  Ensure active project_chat_session（§4.1，含 workspace；无则插入 base_*）
-  事务内重读 team_agent_id；session.agent_id 必须等于当前绑定
-  ResolveChatConfig(session, team agent)
-  §4.3 catalog + readiness
-    fail → typed err；handler 保持今日「log + skip」
-         （不写 Discussion 系统评论，除非 *ErrProjectQueueFull 仍走 DD-6）
-         断言：无新 project_chat Issue、无 enqueue、无路由 comment
-  tx（与 §4.5 同一发送事务边界）:
-    BindProjectChatContainer(outerTx)
-    CreateComment(author=coordinator, issue=绑定后的 Team Agent Issue)
-    enqueueMentionTaskWithCommentPlanAndOriginator(...)
-    merge context.chat_config（保留已有键）
-  commit
-  broadcast after commit
-# enqueue 失败：今日补偿删 comment；本 CR 改为整 tx rollback（含尚未提交的容器）
+换绑 Team Agent
+  → 只 close 当前 project_chat_session，下一次 GET 插入新 session
+  → Bind / messages / merge-forward 只写 session.issue_id 指向的新容器
+  → 转投仍调 EnsureProjectChatIssue，不读 project_chat_session
+
+废除 issue_project_chat_unique 后，同项目可有多行 origin_type='project_chat'。
+GetProjectChatIssue 今日 :one 无 ORDER，多行会炸。
+兼容钉（sqlc，不是转投改造）：
+  GetProjectChatIssue = 同 project+workspace 的 project_chat
+                        ORDER BY created_at ASC LIMIT 1
+  即「该项目最早的 project_chat 容器」。
+EnsureProjectChatIssue 函数签名、ensureContainerIssue 创建路径、新建行 origin_id=NULL
+均保持现状；仅依赖上述查询在多行下仍是确定性 :one。
+Team Agent GET/send/container/merge-forward/presenter **禁止**再调这两函数。
 ```
 
-事务边界：Bind / 路由 comment / 入队 / `chat_config` 同一 PostgreSQL 事务。失败不得留下 `session.issue_id` 半成品（显式 POST container 已提交的空容器除外——本路径不走 POST container）。
+绿场：若 Team Agent 先发送，转投解析到同一最早容器（与当时 session 重合）；换绑后再转投仍解析最早（旧）容器。若转投先发生：Ensure 创建 `origin_id` NULL 行；随后第一次 GET session 在收养窗口内认领该行（§2.1）。这些是兼容行为，不是新功能。
 
-测试（`discussion_coordinator` / `comment` 真库夹具，映射 FR-13/AC-7/AC-18）：
+**已知缺口（本 CR 不修，归属 CR-B / CR-C；实施期/验收期不得当本 CR 缺陷打回）**：
 
-- 转投任务 `context.chat_config` 等于当时 session 有效值；随后 PATCH 改模型不影响该任务；
-- 换绑后下一次转投写入**新** session 的 Issue，Discussion 容器本身不变；
-- Waitable 无 cache / Blocked：不建 Issue、不入队、Discussion 上无路由 comment；
-- Codex 空 model + 非空 thinking：400/typed err，不入队。
+| ID | 缺口 | 现状后果 | 归属 |
+|---|---|---|---|
+| KG-1 | 转投任务无 `chat_config` 不可变快照 | 转投入队后改 Team Agent session 配置，或 Agent 列变化，可能改变该转投任务执行语义 | CR-B / CR-C |
+| KG-2 | 换绑后转投仍写旧 Issue | 新 session 的 Team Agent timeline 看不到转投评论；转投继续写入 `GetProjectChatIssue` 解析到的最早容器 | CR-B / CR-C |
+
+AC-24 **不**覆盖转投。FR-13 / AC-7 的发送边界见 §1.6。
 
 ### 4.14 并发协议表（GET / PATCH / 发送 / 换绑 / sweeper）
 
@@ -808,7 +842,7 @@ advisory project-chat-session|{ws}|{discussionIssue.project}
 |---|---|---|---|---|
 | GET Ensure | advisory `project-chat-session\|{ws}\|{project}` | 事务内重读 `team_agent_id`；insert session；可选收养 | — | — |
 | PATCH config | 同 advisory | session `FOR UPDATE` | active+agent_id CAS UPDATE | — |
-| 发送 / container / merge-forward / 转投 | 同 advisory | session `FOR UPDATE` | Bind Issue | `LockUnboundDraftAttachments` `ORDER BY id` |
+| 发送 / container / merge-forward | 同 advisory | session `FOR UPDATE` | Bind Issue | `LockUnboundDraftAttachments` `ORDER BY id` |
 | 换绑 close | 同 advisory | `CloseActiveProjectChatSession` | 不建 Issue | — |
 | 草稿 sweeper | **不**拿 advisory | attachment `FOR UPDATE SKIP LOCKED` | 持锁 `DeleteObject` | `DeleteUnboundDraftAttachment` |
 
@@ -836,7 +870,7 @@ sweeper 不参与项目 advisory，故与发送不成环：发送等待附件行
 
 ### D-3 离线校验用 `ModelCatalogCache` 24h 窗口；在线走同步 LiveLoad
 
-- **Decision**：Waitable 只用 last-known-good cacheable 快照（24h）；Available 先 cache 快路径，miss 则 `ChatCatalogPort.LiveLoad` 同步等 30s。领域校验在 service 纯函数；cache/live 适配器留在 handler。
+- **Decision**：Waitable 只用 last-known-good cacheable 快照（24h）；Available 先 cache 快路径，miss 则 `ChatCatalogPort.LiveLoad` 同步等 30s。领域校验在 `pkg/agent.ValidateChatConfig`；cache/live 适配器留在 handler。
 - **Context**：PRD B-004 / FR-4；`InitiateListModels` 对 picker 仍异步；四入口不能 202。
 - **Alternatives**：service 直接依赖 `handler.ModelCatalogCache`（违反 handler→service）；无目录放行（不可验收）；静态 catalog（PRD 禁止）；Available 每次强制 live（PATCH 常等 30s）。
 - **Consequences**：长时间离线且无 cache 无法改配置或发送；Available cache miss 最坏阻塞 30s。
@@ -852,7 +886,7 @@ sweeper 不参与项目 advisory，故与发送不成环：发送等待附件行
 | FR-1 | UI 去掉 `updateAgent`；服务端配置写只碰 session 列；管理页仍走 `UpdateAgent` |
 | FR-2 | 一项目一 active `project_chat_session`；PATCH 服务端 owner/admin；presenter 只管发送 |
 | FR-3 | Private Ask 仍按 `(workspace_id, project_id, creator_id)`；override 不写 Team Agent 表 |
-| FR-4 | §4.3 `ChatCatalogPort` + `ValidateResolvedChatConfig`；PATCH + messages + container + merge-forward + **§4.13 转投**；Waitable+cache / Waitable+no-cache / Available+LiveLoad 超时 / Blocked |
+| FR-4 | §4.3 `ChatCatalogPort` + `agent.ValidateChatConfig`；PATCH + messages + container + merge-forward（**不含转投**）；Waitable+cache / Waitable+no-cache / Available+LiveLoad 超时 / Blocked |
 | FR-5 | Insert 时写 `base_*`（允许 `base_model=''`）；Private Ask 新建同样 |
 | FR-6 | §4.2 / §4.2.1 优先级、空模型哨兵与 PATCH 三态；source 与有效值一致 |
 | FR-7 | §4.7 close 旧 session；§4.7.1 GET/PATCH CAS；新 session 新 Issue |
@@ -861,7 +895,7 @@ sweeper 不参与项目 advisory，故与发送不成环：发送等待附件行
 | FR-10 | §4.4 共用 Bind；POST container 先 §4.3 再 Bind |
 | FR-11 | `chat_session` 四列 + GET 不回写 + 首次 PATCH/发送回填 |
 | FR-12 | `PATCH /api/chat/sessions/{id}/config` creator-only；`GetChatSessionInWorkspace` |
-| FR-13 | enqueue merge `chat_config`；含 merge-forward（§4.12）与 **Discussion 转投（§4.13）** |
+| FR-13 | enqueue merge `chat_config`；含 merge-forward（§4.12）。**不含** Coordinator 转投（§4.13 KG-1） |
 | FR-14 | §4.8 claim 读快照；旧任务不回填 |
 | FR-15 | 上传省略 issue_id；§4.9 上传者门 |
 | FR-16 | §4.5 首次绑定与发送同事务；失败 rollback；§4.10 行锁覆盖对象删除与条件删行 |
@@ -881,7 +915,7 @@ sweeper 不参与项目 advisory，故与发送不成环：发送等待附件行
 | AC-4 | session 按 project_id | 他项目 session/agent 不变 | 两项目 |
 | AC-5 | 管理页仍读 agent 列 | 管理页展示不变 | 改聊天配置后打开 Agent 页 |
 | AC-6 | handler 角色检查 | 403 `forbidden_chat_config` | 非 owner/admin 调 PATCH |
-| AC-7 | context merge 在入队时（messages **与** merge-forward） | 排队任务 JSON `chat_config.model` 仍为 A | 先发送/转发再 PATCH |
+| AC-7 | context merge 在入队时（messages **与** merge-forward；**不含转投**） | 排队任务 JSON `chat_config.model` 仍为 A | 先发送/转发再 PATCH |
 | AC-8 | claim 读 task 行 | 重试后 model/thinking 与入队时相同 | 有 `chat_config` 的任务 |
 | AC-9 | handler 测试 catalog miss | 400；已入队 context 不变 | **不以** daemon pass-through 为通过条件；命令见 PRD |
 | AC-10 | merge 保留既有键 | 夹具含 `head_sha` + `chat_config`（含 merge-forward） | 入队路径 |
@@ -898,13 +932,13 @@ sweeper 不参与项目 advisory，故与发送不成环：发送等待附件行
 | AC-21 | 两入口可写 picker | 无 UpdateAgent；draft/附件/发送/停止/重试不回归 | 现有 ChatInputCore 测 |
 | AC-22 | 472–480 迁移 + CUSTOM.md | 无 FK；CONCURRENTLY；一文件一句；已 DROP `issue_project_chat_unique` | 读迁移文件与台账 |
 | AC-23 | POST container | GET `issue_id` 变同一 UUID；缺 session_id 不建 Issue；§4.3 失败不建 Issue | 无 Issue session |
-| AC-24 | 三夹具覆盖 PATCH、messages、container、**merge-forward、转投** | Waitable+cache 成功；无 cache 全部 400 且不建 Issue；Available LiveLoad 超时 400；Blocked 拒绝；空 model 矩阵见 §4.2.1 | handler+service 测试，命令见 PRD |
+| AC-24 | 三夹具覆盖 PATCH、messages、container、**merge-forward**（**不含转投**） | Waitable+cache 成功；无 cache 全部 400 且不建 Issue；Available LiveLoad 超时 400；Blocked 拒绝；空 model 矩阵见 §4.2.1 | handler+service 测试，命令见 PRD |
 | AC-25 | Private Ask PATCH 鉴权 | 非创建者 403 | 与 AC-6 分工 |
 | AC-26 | locale keys | `parity.test.ts` 绿 | 新增文案 |
 | AC-27 | schemas.test.ts | 硬降级 fallback；软默认 source=`session_default` | 无伪造 UUID |
 | AC-28 | sweeper 单测 + 与 Bind 并发 | 167h59m 留 / 168h00s 留 / 168h01s 删对象+行；对象失败保留行；Storage=nil 不删行；Bind 抢先则 sweeper 不得删已绑定行/对象 | `go test ... -run ChatDraftAttachment` |
 
-无「过滤条件使 AC 不可达」：Waitable 离线发送在 AC-24① 明确允许；AC-9 明确排除 daemon 降级路径。另需实施期夹具（映射到上表，不新增 AC 编号）：换绑双容器唯一性（AC-18）、升级后未发送即换绑（AC-18）、GET/PATCH 与换绑并发 CAS（AC-20/FR-21）、首次发送失败回滚（AC-15）、POST container 校验失败不建 Issue（AC-23/24）、merge-forward 与 Discussion 转投 `chat_config`（AC-7/10）、sweeper 与 Bind 竞态（AC-28）、空 model provider 矩阵（AC-9/24）、catalog LiveLoad 超时（AC-24）、Private Ask 跨 workspace 0 行（FR-3/Hard Invariant 1）。
+无「过滤条件使 AC 不可达」：Waitable 离线发送在 AC-24① 明确允许；AC-9 明确排除 daemon 降级路径。另需实施期夹具（映射到上表，不新增 AC 编号）：换绑双容器唯一性（AC-18）、升级后未发送即换绑（AC-18）、GET/PATCH 与换绑并发 CAS（AC-20/FR-21）、首次发送失败回滚（AC-15）、POST container 校验失败不建 Issue（AC-23/24）、merge-forward `chat_config`（AC-7/10）、sweeper 与 Bind 竞态（AC-28）、空 model provider 矩阵（AC-9/24）、catalog LiveLoad 超时（AC-24）、Private Ask 跨 workspace 0 行（FR-3/Hard Invariant 1）、`GetProjectChatIssue` 多行时仍 `:one` 确定性（§4.13 兼容钉）。转投无 `chat_config`、换绑后转投仍写旧 Issue **不是**本 CR 验收项（§4.13 KG-1/KG-2）。
 
 ---
 
@@ -935,7 +969,7 @@ sweeper 不参与项目 advisory，故与发送不成环：发送等待附件行
 - 旧任务无 `chat_config`：claim 用 agent 列。
 - 发送失败：整个发送事务 rollback（含尚未提交的容器）；附件草稿保留；不返回半成品 `issue_id`。POST container 成功提交的空容器除外。
 - 硬降级：禁止用空 `session_id` 发 PATCH/发送。
-- merge-forward / Discussion 转投无 session_id：服务端 Ensure active session + 同一校验/Bind/`chat_config` 内核。
+- merge-forward 无 session_id：服务端 Ensure active session + 同一校验/Bind/`chat_config` 内核。Coordinator 转投无 session_id：**不**走该内核（§4.13）。
 
 ---
 
@@ -954,7 +988,7 @@ sweeper 不参与项目 advisory，故与发送不成环：发送等待附件行
 | # | repo | relative path | stable symbol/对象 | 依赖结论 |
 |---|---|---|---|---|
 | 1 | multica | `server/internal/handler/project_chat.go` | `GetProjectChat` / `EnsureProjectChatIssue` | 今日 GET 懒创建隐藏 Issue；本 CR 改为只 Ensure session |
-| 2 | multica | `server/internal/service/project_chat.go` | `EnsureProjectChatIssue` / `ensureContainerIssue` / `sendProjectChatCore` | 今日按 project 查并自 Commit。Team Agent 路径改为 session 作用域 Bind，**接受外层 tx**；GET 禁止调用 |
+| 2 | multica | `server/internal/service/project_chat.go` | `EnsureProjectChatIssue` / `ensureContainerIssue` / `sendProjectChatCore` | 今日按 project 查并自 Commit。**Team Agent 路径**改为 session 作用域 Bind，接受外层 tx；GET 禁止调用。`EnsureProjectChatIssue` 函数本身保留给转投（§4.13） |
 | 3 | multica | `packages/views/projects/components/project-team-agent-chat.tsx` | `persistModel` → `api.updateAgent`；`TeamAgentComposer` `uploadWithToast(file, { issueId })` | 模型写 Agent；上传绑定 issue。改为 session PATCH；无 Issue 时省略 issue_id |
 | 4 | multica | `packages/views/projects/components/project-private-ask.tsx` | 只读 `ModelPicker` / `agent.model` | 改为 session 可写配置 |
 | 5 | multica | `server/pkg/db/queries/chat.sql` | `GetProjectChatSessionForCreator` | **专指** Private Ask；WHERE **必须加 `workspace_id`**（今日只有 project/creator）；新表不得占用此名 |
@@ -962,10 +996,10 @@ sweeper 不参与项目 advisory，故与发送不成环：发送等待附件行
 | 7 | multica | `server/migrations/436_chat_session_project.up.sql` 及相关 unique | `(project_id, creator_id)` active 唯一 | 保留该索引；查询另加 workspace 谓词 |
 | 8 | multica | `server/migrations/471_approval_continuation_workspace_cr_pending_unique.up.sql` | 当前最大迁移号 471 | 本 CR 从 **472** 起到 **480** |
 | 9 | multica | `server/internal/service/agent_ready.go` | `AgentReadiness` / `AgentAvailable` / `AgentWaitable` / `AgentBlocked` | PATCH/发送 readiness；Waitable 仍可入队 |
-| 9a | multica | `server/internal/service/chat_config.go` | `ResolveChatConfig` / `ChatCatalogPort` / `ValidateResolvedChatConfig` | **本 CR 新增**；四入口+转投唯一校验点 |
+| 9a | multica | `server/internal/service/chat_config.go` | `ResolveChatConfig` / `ChatCatalogPort` / `ValidateResolvedChatConfig` | **本 CR 新增**；四入口唯一校验入口。`ValidateResolvedChatConfig` 只转发 `agent.ValidateChatConfig`，不复制归一化 |
 | 10 | multica | `server/internal/handler/runtime_model_catalog.go` | `ModelCatalogCache` / `modelCatalogServeWindow` / `cacheableModelCatalog` | **留在 handler**；经 `ChatCatalogPort.CacheLoad` 注入 service；24h；禁止 fallback |
-| 11 | multica | `server/pkg/agent/thinking.go` | `ValidateThinkingLevelWith` | 空 thinking 接受；codex 空 model + 非空 thinking fail-closed；由 `ValidateResolvedChatConfig` 调用 |
-| 11a | multica | `server/pkg/agent/models.go` | `Catalog` / `Model`（空 model 交给 CLI 默认） | 领域类型；handler `ModelEntry` 只做 wire 适配 |
+| 11 | multica | `server/pkg/agent/thinking.go` | `ValidateThinkingLevelWith` / **新增** `StaticCatalog` / **新增** `ValidateChatConfig` | 空 thinking 接受；codex 空 model + 非空 thinking fail-closed。`ValidateChatConfig` 经 `StaticCatalog` 调用前者；service 不得自己写 loader 或第二套规则 |
+| 11a | multica | `server/pkg/agent/models.go` | `Catalog` / `Model` / **导出** `ModelIDForCapabilityLookup` | 领域类型；空 model 交给 CLI 默认。未导出 `modelIDForCapabilityLookup` 升格为导出符号；`claudeContextWindowTagRe` 只留本包。handler `ModelEntry` 只做 wire 适配 |
 | 12 | multica | `server/internal/handler/daemon.go` | `TaskAgentData.Model` / `ThinkingLevel` ← `agent.Model` | claim 改为优先 `context.chat_config`（允许 model=""） |
 | 13 | multica | `server/internal/daemon/daemon.go` | `resolveTaskModelSelection` catalog miss pass-through | **不是** AC-9 验收路径 |
 | 14 | multica | `server/internal/service/task.go` | `enqueueMentionTaskWithCommentPlan`；`agent_task_queue.context` JSONB | merge `chat_config`，禁止整对象覆盖 |
@@ -985,13 +1019,13 @@ sweeper 不参与项目 advisory，故与发送不成环：发送等待附件行
 | 28 | multica | `ARCHITECTURE.md` | Hard Invariant 1 Workspace isolation | 每个查询带权威 workspace；`GetProjectChatSessionForCreator` 今日违规，本 CR 改造。不变量 6：新索引 CONCURRENTLY 单语句 |
 | 29 | multica | `server/internal/service/project_chat.go` | `MergeForwardDiscussion` / `sendProjectChatCore` | §4.12：Ensure session + Resolve + Bind-in-tx + `chat_config`；不改 Discussion GET/发消息 |
 | 30 | multica | `server/migrations/435_issue_origin_project_chat.up.sql` | `issue_project_chat_unique` on `project_id`；`origin_id` NULL | **DROP** 该索引；容器改 `origin_id=session.id` |
-| 31 | multica | `server/pkg/db/queries/issue.sql` | `GetProjectChatIssue` / `GetIssueByOrigin` | Team Agent 解析改用 origin/session；`GetProjectChatIssue` 仅升级收养遗留 NULL origin |
+| 31 | multica | `server/pkg/db/queries/issue.sql` | `GetProjectChatIssue` / `GetIssueByOrigin` | Team Agent 解析改用 origin/session。`GetProjectChatIssue` 加 `ORDER BY created_at ASC LIMIT 1`（§4.13 兼容钉）；**仅**转投继续调用。升级收养用 `GetLegacyUnboundProjectChatIssue`（§2.4） |
 | 32 | multica | `server/internal/handler/file.go` | `deleteS3Object` → `Storage.Delete` | sweeper 必须用 `DeleteObject`（返回 error）以便重试 |
 | 33 | multica | `server/internal/storage/storage.go` | `Storage.DeleteObject` | sweeper 的对象存储依赖；nil Storage 本 tick 跳过 |
-| 34 | multica | `server/internal/handler/comment.go` | `retargetDiscussionCoordinatorRoute` → `EnsureProjectChatIssue` | **删除** Ensure；改调签名更新后的 `RouteDiscussionToTeamAgent` |
-| 35 | multica | `server/internal/service/project_presenter.go` | `GetProjectChatIssue` | 改读 active session.`issue_id`；未绑定则跳过 |
+| 34 | multica | `server/internal/handler/comment.go` | `retargetDiscussionCoordinatorRoute` → `EnsureProjectChatIssue` | **本 CR 零改动**。继续 Ensure；不改调 Bind / 新签名（§4.13） |
+| 35 | multica | `server/internal/service/project_presenter.go` | `GetProjectChatIssue` | 改读 active session.`issue_id`；未绑定则跳过（Team Agent 活动记录，不是转投改造） |
 | 36 | multica | `server/internal/service/autopilot.go` | `GetProjectChatSessionForCreator` | 传入权威 `workspace_id` |
-| 37 | multica | `server/internal/service/discussion_coordinator.go` | `RouteDiscussionToTeamAgent` | 今日直接 enqueue、无快照。本 CR 改为 Ensure session + §4.3 + Bind-in-tx + merge `chat_config`（§4.13） |
+| 37 | multica | `server/internal/service/discussion_coordinator.go` | `RouteDiscussionToTeamAgent` | **本 CR 零改动**。签名与无快照 enqueue 保持现状（§4.13 KG-1） |
 | 38 | multica | `server/internal/handler/runtime_models.go` | `InitiateListModels` / `modelListPendingTimeout=30s` | picker 仍异步；`ChatCatalogPort.LiveLoad` 同步等待同一 pending-work，超时 30s |
 
 `tools` 仓：本 CR 无实施依赖（PRD 范围排除）。不得把 `tools/ARCHITECTURE.md` 的「零依赖 / crctl 单一写者」抄进本设计。
@@ -1006,7 +1040,9 @@ sweeper 不参与项目 advisory，故与发送不成环：发送等待附件行
 
 ### multica（code-implementation 阶段）
 
-迁移 472–480、sqlc、`project_chat.go` handler/service（Bind 接受外层 tx）、`chat_config.go`（Resolve + `ChatCatalogPort` + `ValidateResolvedChatConfig`）、task enqueue merge、daemon claim、file 上传者门、sweeper+Storage（条件删行）、router、project settings 换绑挂钩、`comment.go` 转投、`discussion_coordinator.go` 签名与事务、presenter 活动 issue 查找、Private Ask workspace 查询、zod/client、Team Agent / Private Ask UI、locale、Go/React 测试、`CUSTOM.md`。
+迁移 472–480、sqlc（含 `GetProjectChatIssue` 兼容钉）、`project_chat.go` handler/service（Bind 接受外层 tx）、`chat_config.go`（Resolve + `ChatCatalogPort` + 转发 `agent.ValidateChatConfig`）、`pkg/agent`（导出 `ModelIDForCapabilityLookup` / `StaticCatalog` / `ValidateChatConfig`）、task enqueue merge、daemon claim、file 上传者门、sweeper+Storage（条件删行）、router、project settings 换绑挂钩、presenter 活动 issue 查找、Private Ask workspace 查询、zod/client、Team Agent / Private Ask UI、locale、Go/React 测试、`CUSTOM.md`。
+
+**不改**：`comment.go` 转投、`discussion_coordinator.go` 签名与事务。
 
 ARCHITECTURE.md 已存在，本轮只读不改。
 
@@ -1027,7 +1063,9 @@ go test ./server/internal/service/ -count=1 -run ChatDraftAttachment
 | 风险 | 控制 |
 |---|---|
 | 已安装桌面客户端仍把 GET `issue_id` 当必填字符串 | 独立 schema 硬降级只读 + 重试 GET；不伪造 session |
-| merge-forward / 转投无 session_id | §4.12 / §4.13 Ensure session + Resolve + 同事务 Bind + `chat_config` |
+| merge-forward 无 session_id | §4.12 Ensure session + Resolve + 同事务 Bind + `chat_config` |
+| Coordinator 转投无 `chat_config`（KG-1） | **已知缺口**，归属 CR-B/CR-C；本 CR 不修、验收不打回 |
+| 换绑后转投仍写旧 Issue（KG-2） | **已知缺口**，归属 CR-B/CR-C；换绑只作用于 `project_chat_session` 新容器 |
 | `LinkAttachmentsToComment` 误用于草稿 | 新 Bind 查询；测试覆盖无 issue_id 上传 |
 | daemon 仍读 agent.model | claim 单点改 `TaskAgentData`；AC-7/8 读 context 与 claim 夹具 |
 | 历史 Private Ask GET 跟随 Agent 直到首次写 | FR-11/AC-19 明确；新 session 禁止 `agent_default` |
