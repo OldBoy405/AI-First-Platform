@@ -1,22 +1,23 @@
 cr-id: CR-2026-056
 review-type: dev-plan
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-30T22:22:44+08:00"
+reviewed-at: "2026-08-30T22:53:21+08:00"
 verdict: block
 repair-target: write-dev-plan
 blockers:
-  - {"\"BLOCK-009":"TASK-13 preflights Private Ask Resolve/catalog before the transaction but defers the authoritative project-bound decision to the post-lock currentSession.ProjectID.Valid. If ClearChatSessionProjectByProject or PATCH commits between those points, a project_id=NULL ordinary chat can receive a new catalog 400, or the task can capture a pre-lock resolved override/base while the locked row has changed. The re-read does not undo an already returned validation error or refresh the stale snapshot. Specify a branch-and-snapshot algorithm tied to one locked row, with explicit catalog-I/O/lock or version-retry semantics, and fixtures for project-clear versus send and PATCH versus send consistency.\""}
+  - "BLOCK-010 [acceptance-verifiability/risk-and-rollback] TASK-13:61 的 project clear ∥ send 夹具虽覆盖 clear-first 与 send-first，并验证普通分支/快照不变，但没有像该验收契约要求的那样对两顺序逐项断言 base_model/base_thinking_level 的单一一致值、快照与事后 GET/DB 一致性，以及发送失败时整体 rollback（无部分回填、无孤儿任务）。请在两个顺序的可执行夹具中明确这些断言，并加入可控失败注入（catalog/enqueue 等）及事务后 DB 断言，覆盖 clear-first 的普通路径和 send-first 的 project-bound 路径；不能仅引用 BLOCK-008 的其他 PATCH 夹具代替。"
 dimensions:
-  sdd-to-plan: "ok"
-  plan-to-tasks: "ok"
+  sdd-to-plan: "pass"
+  plan-to-tasks: "pass"
   task-executability: "block"
-  dependency-topology: "ok"
-  interface-contracts: "block"
+  dependency-topology: "pass"
+  interface-contracts: "pass"
   acceptance-verifiability: "block"
-  scope-and-simplicity: "ok"
+  scope-and-simplicity: "pass"
   risk-and-rollback: "block"
+  reviewer-model: "GPT-5.6-sol / review-dev-plan cycle 2 attempt 1; incremental review of 720ba8c against approved SDD and prior BLOCK-009"
 suggestions:
-  - {"\"SUG-001":"target-version remains tbd; retain the existing requirement-owner action before human approval.\""}
+  - "SUG-001 target-version 仍为 tbd；人工审批前由需求负责人补齐。"
 review-loop:
-  current-attempt: 3
-subject-sha256: 0ee1ca7eb7a38ba1a68d09aa0bde4ca85b76ce936f9d1ff74a8096ad1ec24b83
+  current-attempt: 1
+subject-sha256: 0932cde6322849c3dd810c8b568d1d839bdd336489a1cd809fc2410578eb9a35

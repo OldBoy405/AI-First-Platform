@@ -14,7 +14,7 @@ created: 2026-08-30T21:11:00+08:00
 
 ## 任务描述
 
-Private Ask（`chat_session`）后端闭环（BLOCK-001，attempt 2 追加 BLOCK-004~008，cycle 2 追加 BLOCK-009）：GET 展示扩展（新建即写快照、响应带 `session_id`）、新 `PATCH /api/chat/sessions/{sessionId}/config`（`FOR UPDATE` 行锁 + 锁内序列）、发送路径回填 `base_*` + §4.3 校验 + `chat_config` 快照（`CreateChatTask` 参数接缝，限 project-bound）。对应 plan.md M3 第 9 项、SDD §2.2/§3.2/§4.6/§4.7.1。不经 `project_chat_session`，不引入新表。
+Private Ask（`chat_session`）后端闭环（BLOCK-001，attempt 2 追加 BLOCK-004~008，cycle 2 追加 BLOCK-009/010）：GET 展示扩展（新建即写快照、响应带 `session_id`）、新 `PATCH /api/chat/sessions/{sessionId}/config`（`FOR UPDATE` 行锁 + 锁内序列）、发送路径回填 `base_*` + §4.3 校验 + `chat_config` 快照（`CreateChatTask` 参数接缝，限 project-bound）。对应 plan.md M3 第 9 项、SDD §2.2/§3.2/§4.6/§4.7.1。不经 `project_chat_session`，不引入新表。
 
 输入条件：TASK-03 的 `PatchChatSessionConfig` / `BackfillChatSessionBaseIfNull` / `LockChatSessionInWorkspace` / 带 `workspace_id` 的 `GetProjectChatSessionForCreator` / 改造后 `CreateChatSession`（`base_*` 参数）/ 改造后 `CreateChatTask`（`context` 参数）已生成；TASK-05 的 `ResolveChatConfig` / `ValidateResolvedChatConfig` / `ChatCatalogPort` 已就绪；TASK-08 的 `context.chat_config` merge 语义/共享 helper 可消费（若 TASK-08 未落盘，merge 语义按其接口契约实现，符号归属不变）。
 
@@ -57,8 +57,10 @@ Private Ask（`chat_session`）后端闭环（BLOCK-001，attempt 2 追加 BLOCK
 7. **普通聊天回归夹具（BLOCK-006）**：`project_id IS NULL` session 发送成功、语义与基线一致：`base_*` 仍 NULL、任务 `context` 无 `chat_config`（NULL）、注入 catalog 失败不影响该发送（不经过校验分支）；对该 session 的 PATCH → `404`。
 8. **`session_id` 夹具（BLOCK-007）**：GET/PATCH 响应 `session_id` 为合法 UUID 且精确等于 `session.ID`（UUID 逐字符保留，不重写不截断）；响应同时含四附加字段。
 9. **并发与回滚夹具（BLOCK-008）**：① PATCH∥发送同打一行历史行（`base_*` NULL）——行锁串行，两者先后提交后 `base_*` 为单一一致值、override 不丢、发送快照与事后 GET/DB 一致；② 并发两 PATCH 各设一字段——锁内重读后两 override 并存（无丢更新）；③ §4.3 校验失败 → `400` 且整体回滚（本次回填也不落库）、随后第二次 PATCH 立即可进（锁已释放）。
-10. **事务边界与并发夹具（BLOCK-009，分支判定与快照绑定锁内行）**：
-    - **project clear ∥ send**：Private Ask session（`project_id` 非空）上并发项目删除的 `ClearChatSessionProjectByProject`（chat.sql:18，普通 UPDATE）与发送（`LockChatSessionForRuntimeBind` FOR UPDATE）——同行走锁，天然串行。① clear 先提交：send 锁后重读 `project_id` 已 NULL → 按普通聊天路径成功——不回填、不 Resolve、不校验、任务 `context` NULL；**注入 catalog 故障（强制 cache miss + LiveLoad 失败）断言发送仍成功、无 `invalid_model_or_thinking_level` 400**——「普通聊天被新 catalog 提前 400」不可能出现。② send 先提交：锁内行 `project_id` 非空 → Private Ask 路径，任务 `context.chat_config` 快照 = 锁内行解析输出；clear 随后把 `project_id` 置 NULL，已落库快照**不可变不受影响**（断言快照/回填/override 值均不变）。两顺序均断言：无部分回填、无孤儿任务、发送结果与对应锁内行状态一致。
+10. **事务边界与并发夹具（BLOCK-009/010，分支判定与快照绑定锁内行）**：
+    - **project clear ∥ send（BLOCK-010，两顺序各自为可执行夹具，逐项断言，不得仅引用 BLOCK-008 的 PATCH 夹具代替）**：历史 Private Ask session（`base_*` NULL、无 override、`project_id` 非空）上并发项目删除的 `ClearChatSessionProjectByProject`（chat.sql:18，普通 UPDATE）与发送（`LockChatSessionForRuntimeBind` FOR UPDATE）——同行走锁，天然串行；顺序由测试控制（clear 以测试事务执行同款 UPDATE 并控制提交点；catalog 时序以 latch fake `ChatCatalogPort` 控制），每顺序按「成功 / 失败注入」两个子夹具断言：
+      - **① clear 先提交（普通路径）**：send 锁后重读 `project_id` 已 NULL → 按普通聊天路径处理。**成功子夹具**：发送成功；事务后 DB 断言 `base_model`/`base_thinking_level` 单一一致值 = 仍 NULL（普通路径不回填）、任务行 `context` 为 NULL（无快照，与锁内普通分支判定一致）、消息行与任务行存在且 `task_id` 关联正确（发送结果与锁内行状态一致）。**失败注入 a（catalog 不应触发）**：强制 `CacheLoad` miss + `LiveLoad` 失败——发送仍成功、无 `invalid_model_or_thinking_level` 400（普通路径完全不触 catalog I/O）。**失败注入 b（任务创建 = 该路径入队点）**：删除 carrier runtime 行使 `CreateChatTask` 的 `lock_task_owner_rows`（migration 284）栅栏谓词为假 → INSERT 0 行 → 事务内错误 → 发送失败；事务后 DB 断言零残留：`base_*` 仍 NULL（无部分回填）、无任务行（无孤儿任务）、无消息行、`updated_at` 未变（`TouchChatSession` 已回滚）；随后重发（恢复 runtime 后）立即可进（行锁随回滚释放）。
+      - **② send 先提交（project-bound 路径）**：锁内行 `project_id` 非空 → Private Ask 路径。**成功子夹具**：发送成功；`base_model`/`base_thinking_level` 单一一致值 = 回填恰一次的当时 Agent 默认（两列各一值，无第二处写入）；任务 `context.chat_config` 快照 = 锁内 Resolve 输出（无 override → 等于回填值，与校验共用同一份解析输出、禁止二次解析）；**快照与事后 GET/DB 一致**：事务后断言会话行 `base_*` == 任务快照 == clear 前 Private Ask GET 响应的 `model`/`thinking_level`（`*_source=session_default`）；随后 clear 提交把 `project_id` 置 NULL——再次 DB 断言已落库快照/回填/override 值均不可变。**失败注入 a（catalog，发生于回填之后）**：`CacheLoad` miss + `LiveLoad` 返回错误/超时 → `400 invalid_model_or_thinking_level` → 整体 rollback；事务后 DB 断言零残留：`base_*` 仍 NULL（无部分回填）、无任务行（无孤儿任务）、无消息行。**失败注入 b（任务创建，机制同 ①b）**：整体 rollback；零残留断言同上，且行锁随回滚释放、随后发送立即可进。
     - **PATCH ∥ send**：历史行（`base_*` NULL、无 override）上并发 PATCH（设 override，走 `LockChatSessionInWorkspace` FOR UPDATE）与发送（走 `LockChatSessionForRuntimeBind` FOR UPDATE，同行锁串行）。① PATCH 先提交：send 锁后重读行已含新 override → 快照 = override 优先解析输出——**断言不存在「锁前旧 override/base 解析值混入快照」**（Resolve 在锁内执行，无事务外预解析可陈旧）。② send 先提交：快照 = 当时 `agent_default` 解析值且回填先落库；PATCH 随后写的 override 不被覆盖（无丢更新）。两顺序均断言：`base_*` 单一一致值、override 完整、快照与事后 GET/DB 一致、任一失败整体回滚无残留。
 11. `cd server && go test ./internal/handler/ ./internal/service/ -count=1` 本 TASK 夹具绿；`cd server && go build ./...` 绿。
 
@@ -73,4 +75,4 @@ Private Ask（`chat_session`）后端闭环（BLOCK-001，attempt 2 追加 BLOCK
   - `PATCH /api/chat/sessions/{sessionId}/config` handler 与响应形状（`ChatSession` + `session_id` + 四附加字段）；
   - GET `/api/projects/{projectId}/private-chat` 新响应形状（同上，§3.2）；
   - 新建即写 `base_*` 的 get-or-create 路径（`CreateChatSession` 参数消费）；
-  - `CreateChatTask` 实参点的 `chat_config` 快照接缝（仅 project-bound 分支）与普通聊天零变化回归——供 TASK-10（前端 Private Ask 可写 picker，消费 `session_id`）与 TASK-11（AC-3/19/25 与 BLOCK-004~008 证据）消费。
+  - `CreateChatTask` 实参点的 `chat_config` 快照接缝（仅 project-bound 分支）与普通聊天零变化回归——供 TASK-10（前端 Private Ask 可写 picker，消费 `session_id`）与 TASK-11（AC-3/19/25 与 BLOCK-004~010 证据）消费。
