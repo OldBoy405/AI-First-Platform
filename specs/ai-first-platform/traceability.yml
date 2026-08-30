@@ -1,11 +1,11 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 # 五段链路：需求 FR ↔ 技术设计 SDD ↔ 交付 TASK ↔ 代码 merge SHA ↔ CR-ID
 spec-id: ai-first-platform
-cr-ref: CR-2026-055
-cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029, CR-2026-028, CR-2026-030, CR-2026-031, CR-2026-037, CR-2026-032, CR-2026-033, CR-2026-038, CR-2026-039, CR-2026-040, CR-2026-041, CR-2026-043, CR-2026-042, CR-2026-044, CR-2026-045, CR-2026-046, CR-2026-047, CR-2026-048, CR-2026-049, CR-2026-050, CR-2026-051, CR-2026-052, CR-2026-053, CR-2026-054, CR-2026-055]
-target-version: "0.28"
+cr-ref: CR-2026-056
+cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029, CR-2026-028, CR-2026-030, CR-2026-031, CR-2026-037, CR-2026-032, CR-2026-033, CR-2026-038, CR-2026-039, CR-2026-040, CR-2026-041, CR-2026-043, CR-2026-042, CR-2026-044, CR-2026-045, CR-2026-046, CR-2026-047, CR-2026-048, CR-2026-049, CR-2026-050, CR-2026-051, CR-2026-052, CR-2026-053, CR-2026-054, CR-2026-055, CR-2026-056]
+target-version: "0.29"
 baseline-since: "0.10"
-generated-at: "2026-08-30T07:29:30+08:00"
+generated-at: "2026-08-31T06:56:18+08:00"
 
 # 已知缺口：CR-2026-003~CR-2026-006 未生成本文件的里程碑段（writeback-traceability 在那四个
 # CR 回写时被跳过，PRD.md/SDD.md/_index.yml 侧的累积记录不受影响、仍完整）。本次（CR-2026-008）
@@ -3860,3 +3860,71 @@ milestones:
         code: { verdict: pass, path: change-requests/CR-2026-055/review-annotations/code.yml, sha256: d22ff54cd7cd3e7f191c3b47348f78c28899f7e30eea1fc8f588f64dd76792a5 }
       approval: { status: approved, path: change-requests/CR-2026-055/approval.yml, sha256: 15e413d618ccbff687ebd4fa7442ac498d5fe94dba1c475ff077ebd24a804b88 }
       merge: { status: merged, path: change-requests/CR-2026-055/merge-commits.yml, sha256: bc09deaef20c150ec1aa3afe4ec63967688b458734b48a8795dfbe51713b8dc4 }
+  - cr: CR-2026-056
+    milestone: M-CR-2026-056
+    target-version: "0.29"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 3148e4a572b3cd2c0f5eaf153b3d38435ac0a841
+        branch: requirement/CR-2026-056
+      - repo: multica
+        trunk: main
+        sha: ae955fa02cdcda9a4a9d3abc5dcbd54167eadae6
+        branch: requirement/CR-2026-056
+      - repo: tools
+        trunk: custom/main
+        sha: 7ddeeb7ae57ed097518e2fe176f2e6b31e084ac2
+        branch: requirement/CR-2026-056
+    frs:
+      - fr: FR-1
+        title: 聊天窗口不得改写 Agent 持久化配置
+      - fr: FR-2
+        title: Team Agent 配置属于项目共享 active session
+      - fr: FR-3
+        title: Private Ask 配置按创建者隔离
+      - fr: FR-4
+        title: 配置 PATCH 与发送入队都必须做服务端校验
+      - fr: FR-5
+        title: 新建会话必须保存基础快照
+      - fr: FR-6
+        title: 读取优先级与空值语义
+      - fr: FR-7
+        title: 项目绑定 Agent 变化时关闭旧 session
+      - fr: FR-8
+        title: 打开 Team Agent 不得创建隐藏 Issue
+      - fr: FR-9
+        title: 无 Issue 时也必须能保存配置
+      - fr: FR-10
+        title: 显式创建与首次发送共用幂等容器路径
+      - fr: FR-11
+        title: Private Ask 扩展现有 chat_session
+      - fr: FR-12
+        title: Private Ask 配置 API
+      - fr: FR-13
+        title: 发送时冻结 chat_config 快照
+      - fr: FR-14
+        title: 执行、重试、重新 claim 只读任务快照
+      - fr: FR-15
+        title: Team Agent 发送前附件是上传者草稿
+      - fr: FR-16
+        title: 发送成功原子绑定，失败保留草稿
+      - fr: FR-17
+        title: 可区分错误与前端回滚
+      - fr: FR-18
+        title: Model / Thinking 功能接入，不重做 composer
+      - fr: FR-19
+        title: project_chat_session 最小数据模型
+      - fr: FR-20
+        title: 迁移、sqlc 与定制台账
+      - fr: FR-21
+        title: PATCH/发送携带 session_id 并防漂移
+    evidence:
+      test: { status: pass, path: change-requests/CR-2026-056/test-report.md, sha256: 5cafcdb4090285f91b3c2d869f008a9bde957ceb19502cfaeca661eefa9b0121 }
+      reviews:
+        requirement: { verdict: pass, path: change-requests/CR-2026-056/review-annotations/requirement.yml, sha256: 6415c60b778accacd2ef382c7f26fa93154634b7d85aa0a0c9d6253dbe94db0a }
+        tech-design: { verdict: pass, path: change-requests/CR-2026-056/review-annotations/sdd.yml, sha256: f97c76f9fd074f8207e552ecb37f61f2ded70fad68a3bd95ca8fc5f73b1264b5 }
+        dev-plan: { verdict: pass, path: change-requests/CR-2026-056/review-annotations/dev-plan.yml, sha256: 29daf03bdab78f6db28446c14200f1797596bd6a80907ffd4e9543f8cc520291 }
+        code: { verdict: pass, path: change-requests/CR-2026-056/review-annotations/code.yml, sha256: 18bcbb424c22d7ca6ef2bee7843bd914f3d6b4eaba0c0bd86a89f2b672666e19 }
+      approval: { status: approved, path: change-requests/CR-2026-056/approval.yml, sha256: 34506d830c27cf3ce3963b420ba063f8b7717129a91627bdbb91f9382f8a10fb }
+      merge: { status: merged, path: change-requests/CR-2026-056/merge-commits.yml, sha256: 8e1d59433bf6f1e01e1e3f8128d33d6e022f0e0915e3ef99f567cd6f40690d90 }
