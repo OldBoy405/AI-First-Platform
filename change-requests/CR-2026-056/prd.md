@@ -1,0 +1,437 @@
+---
+id: CR-2026-056-prd
+type: PRD
+cr-ref: CR-2026-056
+title: 会话级配置与 Team Agent 闭环
+target-version: tbd
+owner: Ray
+owner-role: requirement
+status: draft
+created: 2026-08-30T16:45:00+08:00
+updated: 2026-08-30T17:20:00+08:00
+---
+
+# 1. 概述
+
+## 1.1 问题陈述
+
+当前项目聊天把「Agent 长期基础配置」和「这一次对话要用的模型 / Thinking Mode」绑在同一条写路径上：
+
+- Team Agent 发送框选择模型会调用 `UpdateAgent`，直接改写共享的 `agent.model`，影响该 Agent 的其他调用者。
+- Team Agent 发送框没有 Thinking Mode 控件；若沿用 Agent 配置页的 `thinking_level`，会产生同样的跨会话污染。
+- Private Ask 的模型展示只读跟随 Team Agent，用户无法在自己的会话里独立选择模型或 Thinking Mode。
+- `GET /api/projects/{id}/chat` 打开面板就会 `EnsureProjectChatIssue`，空面板也会留下隐藏 `project_chat` 容器。
+- 任务入队后若重新读取可变的 Agent 或会话配置，排队期间改配置会改变原消息语义。
+- 发送前附件如果提前进入项目可见范围，草稿会在发送成功前泄露给其他成员。
+
+以上事实已在来源文档 §14 记录，并在本 CR 落笔前按当前 `../multica` 工作区复核（见 §1.4）。本 CR 不处理 Discussion 共享会话。
+
+## 1.2 解决方案摘要
+
+把配置从 Agent 挪到会话，把执行值冻结到任务：
+
+```text
+Agent          = 长期共享的智能体基础配置（聊天窗口不得改写）
+Chat session   = 当前对话的配置和上下文边界
+Task           = 一次发送时冻结的不可变执行快照
+Issue          = Team Agent 首次发送或显式创建后才绑定的执行容器
+```
+
+本 CR（来源文档 CR-A，注册摘要已拍板）交付一个可独立验收的闭环：
+
+1. 新增 `project_chat_session`，支持无 `issue_id` 的 active session；打开 Team Agent 只创建或读取 session，不创建隐藏 Issue。
+2. 显式创建聊天容器与首次发送走同一幂等服务路径；首次发送时才绑定隐藏 `project_chat` Issue。
+3. Private Ask 现有 `chat_session` 增加基础快照与 override；配置按创建者隔离。
+4. Model Picker / Thinking Mode **功能接入**会话配置接口，不调用 `UpdateAgent`；不重做发送框视觉体系。
+5. 发送入队前解析有效配置，合并写入 `task.context.chat_config`；daemon / 重试 / 重新 claim 只读快照。
+6. Team Agent 发送前附件保持未绑定草稿，发送成功时与 Issue / comment / task 同事务绑定。
+
+## 1.3 已拍板范围（采纳 cr.md summary，不重新定义）
+
+让 Team Agent 和 Private Ask 的模型与 Thinking Mode 成为会话级配置，发送时冻结为不可变任务快照；Team Agent 打开面板只创建/读取 session，不创建隐藏 `project_chat` Issue，首次发送或显式创建才绑定容器。不含 Discussion 共享会话、Coordinator、Discussion 附件/升级，以及发送框整体视觉重构。
+
+目标仓库为 sibling `../multica/`。knowledge-base 承载本 PRD 与来源文档；`../tools/` 无实施改动。
+
+`target-version` 保持 `tbd`（与同期在途 CR-2026-050～055 一致）。里程碑由人工 `approve-requirement` 指定，本轮不臆造版本号。
+
+## 1.4 当前代码事实（落笔前核实）
+
+基线声明来自来源文档：CR-2026-055 合并后的 Multica，commit `8746add879cbd1c78e573c2a4a1776e16158c00c`。本工作区复核结论：
+
+| 结论 | 证据 |
+|---|---|
+| Team Agent GET 懒创建隐藏 Issue | `server/internal/handler/project_chat.go` `GetProjectChat` 调用 `EnsureProjectChatIssue` |
+| 容器创建集中在服务层 | `server/internal/service/project_chat.go` `EnsureProjectChatIssue` / `ensureContainerIssue` |
+| Team Agent 模型选择写 Agent | `packages/views/projects/components/project-team-agent-chat.tsx` `persistModel` → `api.updateAgent` |
+| Team Agent 无 Thinking Mode 控件 | 同文件无 `thinking` / `ThinkingPicker` 引用 |
+| Private Ask 模型只读跟随 Team Agent | `packages/views/projects/components/project-private-ask.tsx` |
+| 不存在 `project_chat_session` 表 | 全仓 SQL/Go 无该标识符 |
+| Private Ask 已有 `(project_id, creator_id)` active 唯一约束 | `server/migrations/436_chat_session_project.up.sql` |
+| `chat_session` 无模型/Thinking 快照字段、无 `kind` | `033_chat.up.sql` 及后续迁移未增加这些列 |
+| 任务 `context` 为 JSONB，可无 Issue 的 chat task | `033_chat.up.sql`；`server/pkg/db/queries/agent.sql` |
+| attachment 已支持未绑定及 session/message/task 关联 | `029_attachment.up.sql`、`083_attachment_chat_columns.up.sql`、`164_attachment_task_id.up.sql` |
+| 当前最大迁移编号 **471** | `server/migrations/471_approval_continuation_workspace_cr_pending_unique.up.sql` |
+
+# 2. 用户故事
+
+- **US-1 项目 owner/admin**：作为项目管理员，我希望在 Team Agent 窗口改模型和 Thinking Mode 只影响当前项目的这条对话，从而不会改掉 Agent 管理页里的基础配置，也不会影响其他项目或其他调用者。
+- **US-2 项目成员**：作为项目成员，我希望打开 Team Agent 面板时不会悄悄创建一个隐藏 Issue，只有我真正发第一条消息或显式创建聊天容器时才出现执行容器。
+- **US-3 Private Ask 用户**：作为项目内私聊用户，我希望自己的模型与 Thinking Mode 独立于其他用户和 Team Agent 会话，从而可以按自己的问题选择配置。
+- **US-4 发送者**：作为发送者，我希望发出去的消息在排队、重试、重新 claim 时仍使用发送当时的模型和 Thinking Mode，从而排队期间改配置不会改写原意。
+- **US-5 附件上传者**：作为附件上传者，我希望发送前的草稿只有我能看见、删除和重试绑定；发送失败时草稿还在，发送成功后才和消息一起对项目成员可见。
+- **US-6 平台维护者**：作为平台维护者，我希望复用现有 `chat_session`、`ChatInputCore`、任务 `context`、attachment 和 `EnsureProjectChatIssue`，不把配置写进 `agent`、`project.settings` 或 `issue.metadata`，从而后续 CR-B/C/D 能在同一套会话配置契约上扩展。
+
+# 3. 功能需求
+
+## FR-1 聊天窗口不得改写 Agent 持久化配置
+
+Team Agent 和 Private Ask 修改模型或 Thinking Mode 时，服务端与客户端都不得调用 `UpdateAgent`，也不得修改 `agent.model`、`agent.thinking_level` 或 Agent 的其他持久化字段。Agent 管理页展示的基础配置必须保持不变。来源 FR-1。
+
+## FR-2 Team Agent 配置属于项目共享 active session
+
+第一阶段每个项目最多一个 active Team Agent session。修改配置的权限为项目 owner/admin，必须在服务端强制；presenter 仍控制 Team Agent 消息的单一写者规则，但不自动改变会话配置权限。来源 FR-2、§9。
+
+## FR-3 Private Ask 配置按创建者隔离
+
+Private Ask 配置属于当前用户自己的 Private Ask session。用户 A 的 override 不得影响用户 B，也不得写回 Team Agent session。继续使用现有 `(project_id, creator_id)` active session 查询。来源 FR-3。
+
+## FR-4 配置 PATCH 与发送入队都必须做服务端校验
+
+两次校验都至少包括：当前用户是否有配置/发送权限；model 是否属于当前 runtime 支持的模型目录；Thinking Mode 是否被当前 runtime/provider 支持；runtime 是否在线或允许进入队列；session 是否仍为 active。前端不得直接提交任意 task context。
+
+「允许进入队列」复用现有 `service.AgentReadiness`（`server/internal/service/agent_ready.go`）：`AgentWaitable`（runtime 离线、机器可自行回来）仍允许入队；仅 `AgentBlocked` 拒绝。`AgentReadiness` **只**回答 waitable/blocked，不回答「model 是否属于 catalog、Thinking 是否被该 model 支持」。
+
+离线时的 catalog / capability 规则（B-004；复用现有 picker 缓存，不另建目录）：
+
+1. **来源**：`server/internal/handler/runtime_model_catalog.go` 的 `ModelCatalogCache` 对该 runtime 的 last-known-good 快照（仅 `supported && !fallback && len(models)>0` 才会入库）。
+2. **可用窗口**：`snapshot.Age(now) < modelCatalogServeWindow`（当前 **24h**）。超过 24h、缓存缺失、Get 失败、或快照不可 cacheable，一律视为**无可用目录**。本 CR 不把 `modelCatalogRevalidateAfter`（60s，后台刷新阈值）当作拒绝门槛——离线时无法 live 刷新。
+3. **有可用目录**：按该快照校验 model ID ∈ `Models`；非空 `thinking_level` 必须落在该 model 的 `Thinking.SupportedLevels`（与 `ValidateThinkingLevelWith` 同一判定，catalog loader 换成缓存快照）。空 `thinking_level` 仍表示「不注入、跟随 CLI/runtime 默认」，即使该 model 的 `Thinking` 为 nil 也接受。通过后 PATCH/发送按 `AgentWaitable` 成功（发送入队，不要求 runtime 当时在线）。
+4. **无可用目录**：PATCH 与发送**都拒绝**，HTTP 400 `invalid_model_or_thinking_level`。不得在无目录时放行任意 model，也不得用静态内置 stand-in catalog 顶替（`fallback` 目录禁止进入缓存，也禁止本校验路径使用）。
+5. **在线**（`AgentAvailable`）：走现有 live 发现路径，本 CR 不改 picker/daemon 协议。
+
+来源 FR-28、§6.3。
+
+## FR-5 新建会话必须保存基础快照
+
+新建 Team Agent `project_chat_session` 或 Private Ask `chat_session` 时，读取绑定 Agent 当时的默认 `model` 与 `thinking_level`，写入 `base_model` / `base_thinking_level`。Private Ask 创建时保存当前 Team Agent 的默认值，但不共享 Team Agent 之后的 override。来源 FR-5。
+
+## FR-6 读取优先级与空值语义
+
+有效值优先级：
+
+```text
+override → 会话基础快照 →（仅旧 session 兼容）Agent 当前默认 → runtime 默认
+```
+
+每次返回有效 `model` / `thinking_level` 的接口（Team Agent GET/PATCH、Private Ask GET/PATCH、显式创建容器）必须同时返回可观测来源，枚举为：
+
+```text
+override | session_default | agent_default | runtime_default
+```
+
+语义（有效值与来源必须一致，禁止「用了 Agent 默认却标成 session_default / runtime_default」）：
+
+| source | 有效值来自 | 何时出现 |
+|---|---|---|
+| `override` | 非空 `model_override` / `thinking_level_override` | 任意 session |
+| `session_default` | 已持久化的 `base_model` / `base_thinking_level` | 有基础快照且无 override |
+| `agent_default` | 绑定 Agent 的**当前**默认值 | **仅**历史 Private Ask session 且对应 `base_*` 仍为 null；新 session 禁止 |
+| `runtime_default` | runtime / provider 目录默认 | 无 override、无 `base_*`、也无可用 Agent 默认 |
+
+`agent_default` 只用于兼容读取，不得成为新写入路径。一次兼容回退的持久化时机见 FR-11：GET 只读不写 `base_*`；该 session 的首次 PATCH 或发送才把当时 Agent 默认值写入 `base_*`。回写后同一字段的 source 变为 `session_default`（若同时有 override 则为 `override`）。Agent 默认值事后变化不得改写已持久化的 `base_*`。
+
+PATCH 空值语义必须全接口一致：字段未提供 = 保持当前值；JSON `null` 或空字符串 = 清除 override，回退到基础快照（若 `base_*` 仍为 null，则按上表回退到 `agent_default` 或 `runtime_default`）；非空字符串 = 设置 override。来源 FR-6、FR-7、§6。
+
+## FR-7 项目绑定 Agent 变化时关闭旧 session
+
+项目 Team Agent 绑定变化时：旧 active `project_chat_session` 置 `closed`；为新 Agent 创建新 active session 并复制新默认值；旧 Issue/session 保持只读历史。不得静默把旧完整历史灌入新 session。来源 FR-8、§11.3。
+
+## FR-8 打开 Team Agent 不得创建隐藏 Issue
+
+`GET /api/projects/{projectId}/chat` 可以创建或读取 `project_chat_session`，但不得调用 `EnsureProjectChatIssue`，也不得以任何其他路径创建隐藏 `project_chat` Issue。响应必须包含 `session_id`、可空的 `issue_id`、`team_agent_id`、有效 `model` / `thinking_level` 及其来源（`override|session_default|agent_default|runtime_default`，字段名为 `model_source` / `thinking_level_source`）。新建 Team Agent session 必须在插入时写入 `base_*`，因此 Team Agent GET **不得**返回 `agent_default`。未配置 Team Agent 时保持现有未配置错误/引导语义。完整请求/响应见下方「Team Agent HTTP 契约」。来源 FR-9、§7.1。
+
+## FR-9 无 Issue 时也必须能保存配置
+
+Team Agent session 在 `issue_id` 为空时必须能 PATCH 并持久化模型和 Thinking Mode。刷新页面后配置可从同一 active session 恢复。来源 FR-11。
+
+## FR-10 显式创建与首次发送共用幂等容器路径
+
+显式创建聊天容器和首次发送消息都必须经过同一个幂等服务路径：校验项目、session、Agent 与权限 → 解析有效配置并做 runtime capability 校验 → 对 `project_chat_session` 行锁或项目级并发锁 → 无 `issue_id` 时幂等创建隐藏 `project_chat` Issue 并回写 `session.issue_id`。并发请求最多产生一个 active session 和一个容器 Issue。
+
+显式创建的 HTTP 入口为 `POST /api/projects/{projectId}/chat/container`（不是 GET，也不是空 body 的 messages POST）。幂等键为请求体中的 `session_id`：同一 `session_id` 的重复或并发调用返回同一个 `issue_id`，不另要求 `Idempotency-Key` 头。首次发送 `POST /api/projects/{projectId}/chat/messages` 在服务层调用同一函数，不复制第二套创建逻辑。成功 2xx 响应体必须带回本次使用的 `session_id` 与绑定后的 `issue_id`（另保留现有 `comment_id`/`task_id`），供 AC-13 与 container 交叉断言，不得只靠事后 GET。权限与「发送 Team Agent 消息」相同（不是配置 PATCH 的 owner/admin）。契约详见「Team Agent HTTP 契约」。来源 FR-10、FR-12、§8.1。
+
+## FR-11 Private Ask 扩展现有 chat_session
+
+在现有 `chat_session` 上增加 `base_model`、`base_thinking_level`、`model_override`、`thinking_level_override`。不新增 Private Ask 表。
+
+历史 session 缺失基础快照时的兼容规则（B-001）：
+
+1. **读取**：`GET /api/projects/{projectId}/private-chat`（及配置 PATCH 响应）在对应 `base_*` 为 null 且无 override 时，有效值 = 绑定 Agent 当前默认值，`*_source` = `agent_default`。GET **不得**顺便写 `base_*`。
+2. **一次持久化**：该 session 的首次配置 PATCH 或首次发送，在仍缺 `base_*` 时把当时 Agent 默认值写入 `base_*`，然后按 FR-6 解析有效值。此后 GET 不得再返回该字段的 `agent_default`。
+3. **禁止**：新建 Private Ask session 必须在插入时写入 `base_*`；新建后返回 `agent_default` 视为缺陷。已入队任务不得被回填或重算 `chat_config`。
+
+来源 §5.2、§11.2。
+
+## FR-12 Private Ask 配置 API
+
+Private Ask 通过现有 `GET /api/projects/{projectId}/private-chat` 读取 session，并通过 `PATCH /api/chat/sessions/{sessionId}/config` 更新配置。GET 与 PATCH 响应必须包含有效 `model` / `thinking_level` 以及 `model_source` / `thinking_level_source`（枚举见 FR-6）。该通用 PATCH 在本 CR 只对 Private Ask（creator-only）生效；不得用它改 Team Agent 或 Discussion。不要通过 `UpdateAgent` 保存聊天窗口配置。来源 §7.2。
+
+## FR-13 发送时冻结 chat_config 快照
+
+Team Agent 与 Private Ask 发送入队前，服务端解析有效 model / thinking_level，将值写入任务 `context.chat_config`：
+
+```json
+{ "chat_config": { "model": "<id>", "thinking_level": "<level-or-empty>" } }
+```
+
+写入时必须合并保留 `context` 中已有字段（例如 `head_sha`、附件相关字段），禁止整对象覆盖。`thinking_level` 为空表示「不注入、跟随 CLI/runtime 默认」，与现有 Agent ThinkingPicker 的空字符串哨兵一致。来源 FR-26、§5.5。
+
+## FR-14 执行、重试、重新 claim 只读任务快照
+
+任务执行、重试和重新 claim 只使用该任务入队时的 `chat_config` 快照，不得重新读取当前会话或 Agent 配置。旧任务没有 `chat_config` 时保持既有执行行为，不对历史任务补写或重算配置。新任务一律写入快照。来源 FR-27、§11.2。
+
+## FR-15 Team Agent 发送前附件是上传者草稿
+
+发送前附件复用现有 `attachment` 行，不新增草稿表。发送前 `issue_id`、`comment_id`、`chat_session_id`、`chat_message_id`、`task_id` 必须全部为空。只有上传者可以访问、下载、删除和重试绑定；不得因为调用者知道 attachment UUID 就开放读取。不得出现在项目公共附件列表、Team Agent timeline 或团队 WebSocket 事件中。来源 FR-18、FR-19。
+
+## FR-16 发送成功原子绑定，失败保留草稿
+
+Team Agent 发送成功时，附件必须在同一发送事务中绑定到 Issue、comment 和 task。事务失败时 comment、task 和 Issue 绑定不得留下半成品；未绑定附件保留供重试。发送失败不得删除草稿附件。
+
+未绑定草稿 TTL：当前代码没有聊天草稿附件的专用回收（channel 的 media intent-ledger 不覆盖本路径）。本 CR 声明 **7 天（168h）**：
+
+- **清理入口**：服务端后台 sweeper（挂到现有 `server/cmd/server/runtime_sweeper.go` 周期循环，或同进程新增 ticker；**禁止**在 GET/PATCH/发送请求路径上顺便扫全表）。触发周期 **1h**（与 sweeper 已有 30s 心跳解耦：本 job 每小时最多跑一次即可）。
+- **删除谓词**（须同时满足）：`issue_id`/`comment_id`/`chat_session_id`/`chat_message_id`/`task_id` 仍全部为空，且 `created_at < now() - interval '168 hours'`（年龄 **严格大于 168h**；恰好 168h00m00s 的行本轮不删）。
+- **保留**：未满 168h 的未绑定草稿，即使多次发送失败也必须保留；任一绑定字段非空的附件本 job 不得删除。
+
+来源 FR-20（Team Agent 分支）、FR-21、§8.1。
+
+## FR-17 可区分错误与前端回滚
+
+至少保持以下可区分错误，前端根据错误回滚配置控件或保留草稿，不静默丢失输入和附件：
+
+```text
+400 invalid_model_or_thinking_level
+403 forbidden_chat_config
+404 chat_session_not_found
+409 chat_session_closed_or_changed
+409 team_agent_not_configured
+409 attachment_already_bound
+```
+
+来源 §7.3。
+
+## FR-18 Model / Thinking 功能接入，不重做 composer
+
+Team Agent 和 Private Ask 必须提供可写的 Model Picker 与 Thinking Mode 控件，调用会话配置接口（Team Agent：`PATCH /api/projects/{projectId}/chat/config`；Private Ask：`PATCH /api/chat/sessions/{sessionId}/config`）。须保留现有 `ChatInputCore`、draft adapter、草稿附件、上传状态、发送中、停止和失败重试行为。本 CR 只接入功能控件，不把发送框整体视觉对齐普通非项目聊天（该工作属 CR-D）。来源 FR-29 至 FR-33 中与功能接入相关的部分，以及来源 CR-A「不包含发送框整体视觉重构」。
+
+## FR-19 project_chat_session 最小数据模型
+
+新增表（字段名可在 SDD 微调，语义不得减）：
+
+```text
+project_chat_session
+- id
+- workspace_id
+- project_id
+- agent_id            # session 生命周期内不可变
+- issue_id            # 可空；首次发送或显式创建前为空
+- base_model
+- base_thinking_level
+- model_override      # 可空
+- thinking_level_override  # 可空
+- status              # active | closed
+- created_by
+- created_at
+- updated_at
+```
+
+第一阶段一个项目最多一个 active session，由部分唯一索引 + 服务层并发锁共同保证。不采用：只给 `issue` 加字段、写入 `project.settings`、写入 `issue.metadata`、引入 `project_chat_thread`。来源 §5.1。
+
+## FR-20 迁移、sqlc 与定制台账
+
+新迁移从下一个可用编号 **472** 起。禁止新增 FOREIGN KEY / REFERENCES / 级联删除或更新；每个索引必须 `CREATE [UNIQUE] INDEX CONCURRENTLY` 且一个迁移文件一条语句；新建表的主键/唯一约束同样遵守该索引纪律。本 CR 在 multica 仓落地的新文件、挂钩点和迁移必须登记 `CUSTOM.md`。代码注释一律英文。
+
+## FR-21 PATCH/发送携带 session_id 并防漂移
+
+Team Agent 的 PATCH 与发送请求必须携带 `session_id`。服务端确认该 session 属于当前 workspace/project、处于 active，并且 `agent_id` 与项目当前 Team Agent 绑定一致；绑定漂移按 `409 chat_session_closed_or_changed` 或等价已列错误拒绝，不得静默切 Agent。来源 §7.1。
+
+## Team Agent HTTP 契约（可执行，覆盖 FR-8 / FR-10 / FR-21）
+
+一期保留项目路径。来源 §7.1 只列了 GET / 配置 PATCH / 消息 POST；本 CR 补齐显式创建入口，使 AC-13 可按统一服务路径验收。
+
+```text
+GET    /api/projects/{projectId}/chat
+PATCH  /api/projects/{projectId}/chat/config
+POST   /api/projects/{projectId}/chat/container
+POST   /api/projects/{projectId}/chat/messages
+```
+
+### GET 打开面板（不得创建 Issue）
+
+响应至少包含：
+
+```json
+{
+  "session_id": "<uuid>",
+  "issue_id": null,
+  "team_agent_id": "<uuid>",
+  "model": "<id>",
+  "thinking_level": "<level-or-empty>",
+  "model_source": "override|session_default|agent_default|runtime_default",
+  "thinking_level_source": "override|session_default|agent_default|runtime_default"
+}
+```
+
+打开空面板时 `issue_id` 为 JSON `null`。已绑定容器后为 UUID 字符串。Team Agent 路径不得出现 `agent_default`。
+
+### PATCH 配置
+
+请求必须带 `session_id`。字段语义见 FR-6。响应形状与 GET 相同（含 source 字段）。`issue_id` 可仍为 null。
+
+### POST 显式创建容器
+
+```json
+{ "session_id": "<uuid>" }
+```
+
+- `session_id` 是幂等键，也是与 GET 返回值的关联：必须等于当前项目 active `project_chat_session.id`。
+- 缺失、不属于本项目、已 closed、或 `agent_id` 与当前绑定不一致：按 FR-17 返回 404 / 409，不创建 Issue。
+- 成功：HTTP 200，响应形状与 GET 相同，且 `issue_id` 为非空 UUID；`project_chat_session.issue_id` 已回写为该值。
+- 重复调用（已有 `issue_id`）：仍 200，返回已有 `issue_id`，不创建第二行。
+- 与首次发送共用服务函数（现有 `EnsureProjectChatIssue` 的后继，必须在 session 行锁下调用）。GET 禁止走该函数。
+
+### POST 发送消息
+
+请求体：
+
+```json
+{
+  "session_id": "<uuid>",
+  "content": "请分析这个问题",
+  "attachment_ids": ["<uuid>"]
+}
+```
+
+无 `issue_id` 时先走与「显式创建」同一幂等路径绑定容器，再入队。`session_id` 校验同 PATCH。
+
+成功响应（B-003）：HTTP **2xx**（现有实现为 **201 Created**，本 CR 允许保持 201；禁止用 204/空 body。AC 断言响应体字段，不把 200 vs 201 当作通过条件）。响应体**必须**包含：
+
+```json
+{
+  "session_id": "<uuid>",
+  "issue_id": "<uuid>",
+  "comment_id": "<uuid>",
+  "task_id": "<uuid>"
+}
+```
+
+语义：
+
+| 字段 | 含义 | 约束 |
+|---|---|---|
+| `session_id` | 本次发送归属的 `project_chat_session.id` | 等于请求体 `session_id`；禁止空字符串、禁止另造 UUID |
+| `issue_id` | 绑定后的隐藏 `project_chat` 容器 | 非空 UUID；等于该 session 行上已回写的 `issue_id`；与同一 `session_id` 的 `POST .../chat/container` 成功响应的 `issue_id` **相同** |
+| `comment_id` / `task_id` | 本条消息对应的 comment 与入队 task | 非空 UUID（现有字段，保留） |
+
+发送成功时 `issue_id` 不得为 JSON `null`（与 GET 空面板不同：能入队则容器必已绑定）。失败响应仍走 FR-17，不返回半成品 `issue_id`。
+
+可选：响应也可带回与 GET 相同的 `model` / `thinking_level` / `*_source`；AC-13 **不依赖**这些可选字段，只依赖 `issue_id` / `session_id`。
+
+## Private Ask HTTP 契约（覆盖 FR-12）
+
+```text
+GET    /api/projects/{projectId}/private-chat
+PATCH  /api/chat/sessions/{sessionId}/config
+```
+
+GET / PATCH 响应至少包含 `session_id`、有效 `model` / `thinking_level`、`model_source` / `thinking_level_source`。历史缺 `base_*` 的 session 允许 `agent_default`，规则见 FR-11。`session_id` 缺失时的客户端降级与 Team Agent 相同（见「legacy 响应安全降级」）。
+
+## legacy 响应安全降级（覆盖 NFR-8，B-005）
+
+新增 Team Agent / Private Ask 配置响应用独立 zod schema（不要把 `session_id` 做成 `z.string().default("")` 后当作已登录会话）。`parseWithFallback` 的 fallback 对象记为 `UNSAFE_CHAT_CONFIG_FALLBACK`，字段固定为：
+
+```text
+session_id: ""                  # 空，永不伪造 UUID
+issue_id: null
+model: ""
+thinking_level: ""              # 空哨兵 = 跟随默认；不填假 model id
+model_source: "runtime_default"
+thinking_level_source: "runtime_default"
+```
+
+两条路径，必须在 schema 夹具里断言：
+
+1. **硬降级（不可安全操作）**：响应缺失 `session_id`、值为空、或不是 UUID 字符串 → 整个 body 走 `parseWithFallback`，得到 `UNSAFE_CHAT_CONFIG_FALLBACK`（即使其它字段齐全）。UI：**只读**；禁用 Model Picker、Thinking Mode、配置 PATCH、发送；展示可恢复错误并自动或手动重试 GET。禁止拿 fallback 的空 `session_id` 去调 PATCH/发送。
+2. **软默认（可继续操作）**：`session_id` 为合法 UUID，但缺 `model` / `thinking_level` / `*_source` / `issue_id`。schema 内字段级默认：`model=""`, `thinking_level=""`, `model_source`/`thinking_level_source`=`session_default`（Team Agent 路径禁止默认成 `agent_default`；Private Ask 历史缺 `base_*` 的权威 source 仍以后续完整 GET 为准，软默认只用于渲染），`issue_id=null`。控件保持可写；下一次成功 GET/PATCH 覆盖为权威值。
+
+`POST .../chat/messages` 成功体同样：缺 `session_id` 或 `issue_id` 视为硬降级，不得把发送画成已绑定容器。
+
+# 4. 非功能需求
+
+- **NFR-1 双端一致**：web 与 desktop 共享 `packages/views` 行为一致；mobile 不在本 CR 范围。
+- **NFR-2 四语文案**：新增 UI 文案提供 en/ja/ko/zh-Hans；`packages/views/locales/parity.test.ts` 对新增 key 全绿。
+- **NFR-3 复用优先**：复用 `chat_session`、`ChatInputCore`、任务 `context` JSONB、attachment 未绑定状态、`EnsureProjectChatIssue`。不给 `agent_task_queue` 增加模型/Thinking 专用列，不复制一套消息表。
+- **NFR-4 并发与事务**：首次发送的容器创建必须在行锁/项目锁下幂等；配置修改只影响尚未入队的消息。
+- **NFR-5 安全**：未绑定附件下载必须校验上传者；配置写权限不得只靠前端隐藏控件。
+- **NFR-6 兼容**：旧 session 缺快照、旧任务缺 `chat_config` 的兼容路径仅用于历史数据，禁止成为新写入的默认路径。
+- **NFR-7 零 Discussion 回归**：本 CR 不改变 `GetProjectDiscussion` / `EnsureProjectDiscussionIssue`、Discussion 发送路径、Private Ask 的 creator-only 访问规则（除按 FR-11/FR-12 增加配置字段和可写配置控件外）。
+- **NFR-8 API 兼容**：新增 GET/PATCH/container/messages 响应必须经 `parseWithFallback`（`packages/core/api/schema.ts`）+ zod schema，缺失字段不得白屏。`session_id` 是后续 PATCH/发送的归属凭据，**禁止**用空字符串、全 0 UUID 或任何伪造值当作可操作 session。具体 fallback 与控件行为见上文「legacy 响应安全降级」；夹具按 `packages/core/api/schemas.test.ts` 现有模式追加。
+
+# 5. 验收标准
+
+| ID | 覆盖 FR | 可执行验收 |
+|---|---|---|
+| AC-1 | FR-1 | Team Agent 修改模型后，同一 Agent 的 `agent.model` 不变；`UpdateAgent` 不被该操作调用。 |
+| AC-2 | FR-1 | Team Agent 修改 Thinking Mode 后，`agent.thinking_level` 不变。 |
+| AC-3 | FR-3、FR-12 | Private Ask 用户 A 的配置不影响用户 B 的 session 与发送快照。 |
+| AC-4 | FR-2、FR-21 | Team Agent session 的配置不影响其他项目或其他 Agent 调用。 |
+| AC-5 | FR-1 | Agent 管理页显示的基础配置不被聊天操作改变。 |
+| AC-6 | FR-2、FR-4 | 非 owner/admin 调用 Team Agent 配置 PATCH 被服务端拒绝（403 `forbidden_chat_config`），仅隐藏前端控件不足够。 |
+| AC-7 | FR-13、FR-14 | 发送时选择模型 A，之后切换为模型 B，已排队消息的 `context.chat_config.model` 仍为 A。 |
+| AC-8 | FR-14 | 重试和重新 claim 不改变该任务的模型和 Thinking Mode。 |
+| AC-9 | FR-4、FR-17 | PATCH 与发送入队对不在当前 runtime 模型目录的 model、或不被 `ValidateThinkingLevelWith`（`server/pkg/agent/thinking.go`）接受的 Thinking Mode，返回 400 `invalid_model_or_thinking_level`，已入队任务的 `chat_config` 不变。验收位置：新增 `server/internal/handler/project_chat_test.go`（及 Private Ask 对应 handler 测试）覆盖该 400；可复用 `server/pkg/agent/thinking_test.go` / `server/internal/handler/agent_thinking_test.go` 的目录夹具。**不以** daemon 执行期 catalog miss 的 pass-through（`server/internal/daemon/daemon.go` 现有告警降级）作为本条通过条件。命令：`go test ./server/internal/handler/ ./server/pkg/agent/ -count=1`。 |
+| AC-10 | FR-13 | 入队后 `context` 保留已有字段（夹具含 `head_sha`），并写入统一的 `chat_config`。 |
+| AC-11 | FR-8 | 打开 Team Agent 面板不创建 `project_chat` Issue；`GET` 响应 `issue_id` 为 null 且数据库无新 `origin_type='project_chat'` 行。 |
+| AC-12 | FR-9 | 打开 Team Agent 后修改配置，刷新页面仍能从同一 `session_id` 恢复配置。 |
+| AC-13 | FR-10 | 对同一 `session_id` 并发或重复调用 `POST .../chat/container` 与 `POST .../chat/messages` 后，最多一个 active session 和一个容器 Issue。container 成功体与 messages 成功体（2xx，含 `session_id`/`issue_id`/`comment_id`/`task_id`）的 `issue_id` 为同一非空 UUID，且等于随后 GET 的 `issue_id`；两条成功体的 `session_id` 均等于请求值。验收位置：`server/internal/handler/project_chat_test.go` 交叉并发夹具直接读两次响应 JSON，**不**改为事后只 GET。 |
+| AC-14 | FR-15 | 无 Issue 时上传的附件只有上传者可见；其他项目成员下载/列表均不可见。 |
+| AC-15 | FR-16 | 发送成功后附件与 comment/task 一起对项目成员可见；发送失败时附件仍未绑定且可重试。 |
+| AC-16 | FR-5、FR-6 | 新建 session 的 `base_*` 等于创建时 Agent 默认值；之后改 Agent 默认值，已有 session 的 `base_*` 不变，无 override 时有效值仍为旧快照，`*_source` 为 `session_default`。 |
+| AC-17 | FR-6 | PATCH `null` 与空字符串都清除 override；省略字段不改当前值。 |
+| AC-18 | FR-7 | 更换项目 Team Agent 后旧 session 为 `closed` 且只读，新 session 绑定新 Agent；旧消息不自动进入新 session。 |
+| AC-19 | FR-11、FR-6 | 旧 Private Ask session 缺 `base_*` 且无 override：GET 有效值 = 当时 Agent 默认，`*_source=agent_default`，且 **不**写 `base_*`。随后改 Agent 默认，再次 GET 仍跟当前 Agent（仍为 `agent_default`）。该 session 首次 PATCH 或发送后 `base_*` 被写入；再改 Agent 默认，GET 有效值保持已写入的 `base_*`，`*_source=session_default`。新建 session 首次 GET 不得返回 `agent_default`。旧任务不被回填 `chat_config`。 |
+| AC-20 | FR-17、FR-21 | 对已关闭 session 的 PATCH/发送返回 409；未配置 Team Agent 返回 409 `team_agent_not_configured`。 |
+| AC-21 | FR-18 | Team Agent 与 Private Ask 均可在不调用 `UpdateAgent` 的前提下改模型与 Thinking Mode；现有 draft / 附件 / 发送 / 停止 / 重试行为不回归。 |
+| AC-22 | FR-19、FR-20 | 从 472 起的迁移只新增约定表/列/索引；无新 FK；索引均为 `CONCURRENTLY` 且一文件一条；`CUSTOM.md` 已按当时结构登记本 CR 条目。 |
+| AC-23 | FR-10 | `POST /api/projects/{projectId}/chat/container` 在无 Issue 的 active session 上创建容器后，GET 的 `issue_id` 变为同一 UUID；缺少 `session_id` 或 session 不匹配时不创建 Issue。 |
+| AC-24 | FR-4 | 三条路径都必须覆盖 PATCH **和**发送：① `AgentWaitable` + 可用 `ModelCatalogCache` 快照（Age 小于 24h、cacheable）且 model/thinking 命中快照 → 两次都成功（发送入队）；② `AgentWaitable` + 无可用快照（缺失 / Age 大于等于 24h / 不可 cacheable）→ 两次都 400 `invalid_model_or_thinking_level`，不入队、不写 override；③ `AgentBlocked`（如 runtime unusable）→ 拒绝发送/PATCH。与 `agent_ready.go` 及 issue 入队「offline machine still queues」同一 waitable/blocked 判定；catalog 不得用 fallback stand-in。测试：`server/internal/handler/project_chat_test.go`（及 Private Ask 对应 handler 测试）新增 Waitable+cache / Waitable+no-cache / Blocked 夹具。命令：`go test ./server/internal/handler/ ./server/internal/service/ -count=1`。 |
+| AC-25 | FR-2、FR-4、FR-12 | Private Ask 非创建者调用配置 PATCH 被 403；Team Agent 非 owner/admin 的 403 仍由 AC-6 覆盖。 |
+| AC-26 | NFR-2 | 本 CR 新增 UI 文案的 en/ja/ko/zh-Hans key 对称；`packages/views/locales/parity.test.ts` 全绿。 |
+| AC-27 | NFR-8 | `packages/core/api/schemas.test.ts` 夹具断言：① 缺 `session_id` / 空 / 非 UUID → `parseWithFallback` 等于 `UNSAFE_CHAT_CONFIG_FALLBACK`（`session_id===""`, `issue_id===null`），不得解析出伪造 UUID；② 合法 `session_id` 但缺 source/model/`issue_id` → `session_id` 保持原值，`*_source` 默认为 `session_default`，`issue_id` 为 null，`model`/`thinking_level` 为 `""`。前端：硬降级时禁用 PATCH/发送（Team Agent / Private Ask 控件只读并重试 GET）；禁止用空 `session_id` 发出请求。messages 成功体缺 `issue_id` 同样硬降级。 |
+| AC-28 | FR-16 | 后台 sweeper（周期 **1h**，非请求路径）删除同时满足「五类绑定字段全空」且 `created_at < now()-168h` 的附件。边界：年龄 **168h 整** 的行本轮保留；年龄 **大于 168h** 删除。`created_at` 未满 168h、发送失败仍未绑定的附件不被清理；任一绑定字段非空不删。测试：`server/internal/service/chat_draft_attachment_cleanup_test.go`（或 handler 等价文件）覆盖 167h59m 保留 / 168h00s 保留 / 168h01s 删除。命令：`go test ./server/internal/service/ -count=1 -run ChatDraftAttachment`。 |
+
+来源文档完成标志要求 AC-1 至 AC-15 全部满足；AC-16 至 AC-28 覆盖同一闭环中必须可测、但来源完成标志未逐条编号的规则，以及第 1/2 轮评审 B-001～B-005 与建议项。
+
+# 6. 成功指标
+
+- 聊天窗口内任意模型和 Thinking Mode 变更导致 `agent.model` / `agent.thinking_level` 变化的次数为 **0**。
+- 打开 Team Agent 面板（不发送、不显式创建）产生新 `project_chat` Issue 的次数为 **0**。
+- 新发送任务 **100%** 带有 `context.chat_config`；抽检重试/重新 claim 后快照与入队时一致率为 **100%**。
+- 发送前未绑定附件被非上传者读取的次数为 **0**。
+- 同一项目并发首次发送后 active `project_chat_session` 数 = **1**，绑定容器 Issue 数 = **1**。
+
+# 7. 范围排除
+
+以下内容明确不做，归属后续 CR 或明确非目标：
+
+- Discussion `project_shared` 会话、Coordinator、Discussion 附件、Discussion 到工作 Issue/CR 的升级（来源 CR-B/CR-C；对应来源 AC-16 至 AC-27）。
+- 多个 active Team Agent 主题或完整 thread 列表（来源 AC-29）。
+- 发送框整体视觉重构、对齐普通非项目聊天 composer 布局（来源 CR-D；AC-30 至 AC-35）。本 CR 只接入功能控件。
+- 给 `agent_task_queue` 增加模型和 Thinking Mode 专用列。
+- 把 `/compact` 作为普通用户消息发送；runtime 未提供真实压缩协议时不发送伪 `/compact`（来源 AC-28）。
+- 在 Multica 服务端复制 CR 状态机或直接写 knowledge-base 的 `_backlog.yml`。
+- 自定义 promotion 表、`discussion_participant` 表、复制一套独立 Discussion 消息表。
+- 历史 Discussion 全量迁移；本 CR 也不迁移历史 Team Agent 容器 Issue。
+- mobile 端。
+- `../tools/` 仓改动。

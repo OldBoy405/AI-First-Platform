@@ -1,0 +1,80 @@
+cr-id: CR-2026-056
+tasks:
+  - id: CR-2026-056-TASK-01
+    title: "M0 基线核对与实现准备"
+    status: done
+    done-at: "2026-08-31T00:12:22+08:00"
+    estimate: 4h
+    depends-on: []
+  - id: CR-2026-056-TASK-02
+    title: "M1 迁移 472–480（新表 / 索引 / 废唯一索引）"
+    status: done
+    done-at: "2026-08-31T00:17:03+08:00"
+    estimate: 8h
+    depends-on: [CR-2026-056-TASK-01]
+  - id: CR-2026-056-TASK-03
+    title: "M1 sqlc 新查询 / 改造查询与生成"
+    status: done
+    done-at: "2026-08-31T00:21:53+08:00"
+    estimate: 6h
+    depends-on: [CR-2026-056-TASK-02]
+  - id: CR-2026-056-TASK-04
+    title: "M2 pkg/agent 校验导出（单一实现）"
+    status: done
+    done-at: "2026-08-31T00:24:55+08:00"
+    estimate: 4h
+    depends-on: [CR-2026-056-TASK-03]
+  - id: CR-2026-056-TASK-05
+    title: "M2 service chat_config 与 handler catalog 适配"
+    status: done
+    done-at: "2026-08-31T00:37:23+08:00"
+    estimate: 4h
+    depends-on: [CR-2026-056-TASK-04]
+  - id: CR-2026-056-TASK-06
+    title: "M3 会话内核：GET Ensure / PATCH config / Bind"
+    status: done
+    done-at: "2026-08-31T00:56:28+08:00"
+    estimate: 8h
+    depends-on: [CR-2026-056-TASK-05]
+  - id: CR-2026-056-TASK-07
+    title: "M3 发送内核：container / messages / merge-forward / 换绑"
+    status: done
+    done-at: "2026-08-31T01:50:19+08:00"
+    estimate: 8h
+    depends-on: [CR-2026-056-TASK-06]
+  - id: CR-2026-056-TASK-08
+    title: "M3 转投兼容钉 + 任务快照 / daemon claim / presenter"
+    status: done
+    done-at: "2026-08-31T01:58:39+08:00"
+    estimate: 4h
+    depends-on: [CR-2026-056-TASK-07]
+  - id: CR-2026-056-TASK-09
+    title: "M4 附件草稿安全与 1h sweeper"
+    status: done
+    done-at: "2026-08-31T02:26:51+08:00"
+    estimate: 8h
+    depends-on: [CR-2026-056-TASK-07]
+  - id: CR-2026-056-TASK-10
+    title: "M5 前端接入：schema / client / 两面板 / 文案"
+    status: done
+    done-at: "2026-08-31T03:20:01+08:00"
+    estimate: 14h
+    depends-on: [CR-2026-056-TASK-07, CR-2026-056-TASK-13]
+  - id: CR-2026-056-TASK-11
+    title: "M6 集成验证、CUSTOM.md 登记与测试证据"
+    status: done
+    done-at: "2026-08-31T03:35:04+08:00"
+    estimate: 10h
+    depends-on: [CR-2026-056-TASK-08, CR-2026-056-TASK-09, CR-2026-056-TASK-10, CR-2026-056-TASK-13]
+  - id: CR-2026-056-TASK-12
+    title: "M7 评审与发布（code review / 审批 / 合并 / writeback）"
+    status: pending
+    estimate: 8h
+    depends-on: [CR-2026-056-TASK-11]
+  - id: CR-2026-056-TASK-13
+    title: "M3 Private Ask 后端闭环：GET 扩展 / PATCH config / 发送回填+校验+快照"
+    status: done
+    done-at: "2026-08-31T02:53:55+08:00"
+    estimate: 6h
+    depends-on: [CR-2026-056-TASK-05]
+
