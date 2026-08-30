@@ -1,24 +1,21 @@
 cr-id: CR-2026-056
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-30T18:56:26+08:00"
-verdict: block
-blockers:
-  - "BLOCK-013：SDD §4.13/§9/§10 将既有 Discussion Coordinator→Team Agent 转投纳入本 CR 的实现范围：要求停止 comment.go 的 EnsureProjectChatIssue，改用 project_chat_session、catalog/readiness、Bind-in-tx 与 chat_config 快照，并把转投纳入 AC-24。该行为与已审批 PRD §1.3/§7 的明确排除（Coordinator、Discussion 共享会话/相关升级不在本 CR）以及 NFR-7 的“Discussion 发送路径不改变”冲突；SDD 不能自行扩展范围并宣称 FR 21/21 对齐。必须由需求修订/审批明确纳入该路径并补对应 FR/AC，或将其改为保持既有 Discussion Coordinator 路径的兼容性方案，同时说明新的 project_chat 容器模型如何避免旧 EnsureProjectChatIssue 回归。"
-  - "BLOCK-014：§4.2.1 的 service-owned ValidateResolvedChatConfig 伪代码不可按现有领域 API 实现：它直接调用 `modelIDForCapabilityLookup`，但该函数在 `pkg/agent` 是未导出符号，service 无法引用；同时 `ValidateThinkingLevelWith` 的真实签名要求 `func() (Catalog, error)` loader，文档却以已加载的 `Catalog` 作为 `load` 参数。若由 service 自行复制 provider/别名归一化逻辑，会产生与 pkg/agent 不一致的第二套规则。必须明确导出/下沉一个领域归一化与校验接口，或明确 service 的等价算法及 loader 适配边界，并将空模型、Claude 变体和 Thinking 能力矩阵绑定到该单一实现。"
+reviewed-at: "2026-08-30T20:09:11+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  prd-sdd-alignment: "BLOCK：上一轮 BLOCK-007～012 的修复方向已在 SDD 中出现，但新增的 Discussion 转投方案与已审批 PRD 的范围排除/NFR-7 冲突；且 validator API 仍不可执行。"
-  architecture-soundness: "BLOCK：handler/service 依赖方向已调整为 port 注入，但 service validator 对 pkg/agent 私有 helper 的依赖和重复规则风险未消除；Discussion 路径的范围边界也未解决。"
-  data-model-completeness: "PASS：project_chat_session、origin_id、升级收养窗口及附件锁/条件删除的字段与约束已覆盖上一轮缺口。"
-  interface-contract: "BLOCK：ChatCatalogPort 的高层同步契约已补，但 §4.2.1 对 ValidateThinkingLevelWith 的参数形状和 model ID 归一化 API 不完整，无法形成可编译的唯一校验合同。"
-  multi-repo-constraints: "PASS：目标仍限定 multica，knowledge-base 仅承载 SDD，tools 无实施改动；ARCHITECTURE.md 约束被引用。"
-  performance-security: "PASS：项目 advisory、session FOR UPDATE、CAS 及 sweeper 持行锁覆盖对象删除/条件删行的主要竞态控制已补齐。"
-  testability: "BLOCK：虽补列升级换绑、转投、sweeper 并发和空模型矩阵的测试入口，但转投是否属于本 CR 未有可验收的需求基线，且 validator 的领域 API 未定，测试无法锁定唯一行为。"
+  prd-sdd-alignment: "PASS：逐条核对 PRD 的 21 FR / 28 AC；本轮 BLOCK-015/016/017 均有可实施落点与可观察夹具，BLOCK-014 保持已解决，未发现新增遗漏或与已审批 PRD 冲突。"
+  architecture-soundness: "PASS：SDD 保持 handler→service→db 方向，复用既有 task queue/daemon 路径；Team Agent session 容器与 Discussion 转投边界明确，项目级 advisory、换绑 CAS、收养窗口和锁序一致。"
+  data-model-completeness: "PASS：project_chat_session、Private Ask 四列、session-origin 容器及迁移/索引方案覆盖核心字段；废除 project 级唯一键后 GetProjectChatIssue 使用 created_at、id 稳定总序，满足多行场景。"
+  interface-contract: "PASS：GET/PATCH/container/messages/merge-forward 及 Private Ask 配置接口、错误码、session_id/issue_id 响应和硬软降级均有契约；校验入口仍由 pkg/agent 单一实现，BLOCK-014 未回退。"
+  multi-repo-constraints: "PASS：代码事实取 multica CR worktree 的受控 HEAD 8746add879cbd1c78e573c2a4a1776e16158c00c，与 PRD/SDD 一致；knowledge-base 仅承载 SDD，tools 无实施改动，路径 authority 与提交口径明确。"
+  performance-security: "PASS：workspace/project/session 权限和附件上传者门有服务端约束；项目 advisory、行锁和附件升序锁序覆盖并发关键路径，catalog cache/live 和 sweeper 周期有边界。"
+  testability: "PASS：AC-1 至 AC-28 均有设计落点和可观察结果；本轮新增/修订的 GET 收养并发、转投后首次 Bind、同 created_at 双行排序夹具均已明确，且评审按契约未重跑测试。"
   prompt-adoption: "N/A：本 CR 不触及 crctl.mjs dispatch 或 controlled-shell/rules.json protectedPaths.deny。"
 suggestions:
-  - "SUG-001：人工架构审批前指定 target-version；当前仍为 tbd。"
-  - "SUG-002：将 provider/model ID 归一化、Catalog loader 适配与 ValidateThinkingLevelWith 的单一实现写成 service/pkg 的明确接口，并为 cache/live 两路共用同一纯函数。"
+  - "SUG-001：人工架构审批前仍需由需求负责人指定 target-version；当前 PRD/SDD 保持 tbd。"
 review-loop:
-  current-attempt: 3
+  current-attempt: 2
 subject-file: change-requests/CR-2026-056/sdd.md
-subject-sha256: d20b5c4821d5bfe57c536c0f908d673888788dfc8817abae9f02bf268ba89ecc
+subject-sha256: 46d6a87551bd7f4a3acb3304c4029a4adca708b02bd90ffd07e1686c94588c8f
