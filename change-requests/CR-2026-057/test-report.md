@@ -92,7 +92,7 @@ commands:
 
 ### 2. 基线红例外核对（plan §5.3 规则 1/2/5）
 
-实施 HEAD（tools CR worktree，`crctl git rev-parse HEAD` = 9e1b6c1 段，见 TASK 提交序列）以 spec reporter、**不带** skip-pattern 完整重跑 BR-1/BR-2 所在两个测试文件，失败集合与例外表逐条全等，红计数 = 2 不因本 CR 增加：
+实施 HEAD（tools CR worktree，`crctl git rev-parse HEAD` = `45006b7`，TASK-01～07 提交序列：`e8b8dc0`→`1c2aa5a`→`e27c9a8`→`cac84b5`→`24f8cca`→`bfb3a3f`→`45006b7`）以 spec reporter、**不带** skip-pattern 完整重跑 BR-1/BR-2 所在两个测试文件，失败集合与例外表逐条全等，红计数 = 2 不因本 CR 增加：
 
 | BR-ID | 证据日志 | 完整重跑结果 | 与例外表核对 |
 |---|---|---|---|
