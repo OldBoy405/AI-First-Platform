@@ -1,0 +1,23 @@
+cr-id: CR-2026-057
+review-type: dev-plan
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-31T23:06:49+08:00"
+verdict: block
+repair-target: write-dev-plan
+blockers:
+  - "本轮新增：AC-18/TASK-11 的退出口径不可执行：plan.md §1 M5 与 §5.2 要求 cmd-01～cmd-06 全部 exit 0，但 §5.3/R7 已确认 cmd-01 与 cmd-06 携带两条既有非零基线红；请统一为明确允许且必须逐条登记的基线红例外，并定义机器区 status/完成标志如何判定。归属节点：write-dev-plan。"
+dimensions:
+  sdd-to-plan: "pass"
+  plan-to-tasks: "pass"
+  task-executability: "block"
+  dependency-topology: "pass"
+  interface-contracts: "pass"
+  acceptance-verifiability: "block"
+  scope-and-simplicity: "pass"
+  risk-and-rollback: "pass"
+  reviewer-model: "quality-reviewer-agent / local review-dev-plan"
+suggestions:
+  - "范围外：两条已知基线红的根因修复不纳入本 CR；按 SDD §9 follow_up 由 TASK-11 在 test-report.md 保留根因、证据与后续建议，实施期只要求红计数不增加。归属节点：TASK-11。"
+review-loop:
+  current-attempt: 1
+subject-sha256: c188aeeeecbfeeb4d7482cf9bcac152324d4bfedb4473f9fddc5978a7058b293
