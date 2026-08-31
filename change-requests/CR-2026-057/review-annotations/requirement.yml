@@ -1,26 +1,26 @@
 cr-id: CR-2026-057
 review-type: requirement
 reviewer: "OldBoy405"
-reviewed-at: "2026-08-31T17:32:09+08:00"
-verdict: block
-blockers:
-  - "B-001 [P0-2/批准范围回退] prd.md:149-151 要求 review-code 发现 scope_out/follow_up/zero_diff 冲突时沿‘现有双轨’把 repair-target 指向 write-tech-design 或 write-dev-plan，但当前双轨只存在于 review-dev-plan；review-code 的 schema、状态转换与 code-implementation reviewLoop 均固定为 developing -> implement-code，且本 CR 又排除新增状态/转换。该要求无法按现有状态机实现。修复：明确 code 阶段各类范围冲突的可执行路由；若仅实际 diff 越界则回 implement-code，若允许上游设计回修则补齐与既有状态机兼容的状态转换、review-record repair-target 枚举、Pipeline replay/重新审批路径及对应 AC。"
-  - "B-002 [P1-1/版本更正闭环] prd.md:49、208-228 同时要求 PRD/SDD/PLAN/TASK 永远继承 cr.md 的同一版本，又允许在 writeback 前仅通过 crctl 同步改 cr.md 与 backlog；当 unassigned 在已有 PRD（本 CR 即如此）或更晚阶段被更正时，既有产物仍为 unassigned，立即违反 FR-13，并可能让 writeback 用真实版本发布仍含旧版本的正文。修复：规定更正允许的状态/时机、对既有派生产物的原子同步或重生成策略、失败/重试语义，并让 AC-15 验证 cr.md、backlog、PRD/SDD/PLAN/TASK 全链一致，而非只验证 cr.md。"
-  - "B-003 [P1-1/crctl CLI 契约闭包] prd.md:198-228 尚未形成 FR-1 自己要求的 CLI 完整契约：‘真实版本号=非空且不是 tbd’会放行 n/a/pending 等文本，却又声明不得发明这些同义值；REGISTER/WRITEBACK 错误码仅为建议；人工更正的 command/flag 未确定；三条命令的 trim/大小写规则、允许状态与调用者约束、JSON/stdout 输出、幂等/重复调用及零写入观察点未闭合。AC-12/14/15 也未覆盖上述边界。修复：统一定义 version 值域与规范化规则，固定 register/writeback/correction 的命令、错误码、输出、状态副作用、幂等和负向验收向量。"
-  - "B-004 [P0-4/流程 TASK 可完成性] prd.md:170-182 允许保留完成边界直到 merge 的‘发布准备’交付 TASK，但当前 crctl task done 只允许 developing；merge 发生在 code-approved 之后，因此此类 TASK 仍无法合法标 done，archive 的 deliveryIndexComplete 会再次形成循环。AC-10 只排除依赖 writeback/archive，漏掉该反例。修复：要么明确此类审计记录不得进入 tasks/TASK-*.md 与 _index.yml，要么把完成边界收敛到 developing 内可登记的事件；若选择扩展 task done 状态则必须纳入范围、守卫和回归 AC。"
-  - "B-005 [P0-1/四类 review 验收覆盖] FR-1～FR-4 明确作用于 review-requirement、review-tech-design、review-dev-plan、review-code，但 AC-1 只验证 requirement，AC-3/AC-4 未明确四个节点均需验证旧 blocker 逐条状态、新 blocker 与范围外 suggestion。现状允许只改一个 Skill 仍满足文面 AC，不能证明附件 §9.5/§9.6 的跨 review 改造完成。修复：给四个 review 节点列出参数化验收矩阵，至少覆盖首次全量闭合、blocker/suggestion 分级、回修逐条状态和禁止 canonical 字段零命中。"
-  - "B-006 [P1-1/writeback 零副作用观察点] FR-14 要求版本阻断时 canonical 零写入且 candidate/journal 不留下可被误用的半成品，但 AC-14 只比较 specs/delivery/traceability 目标文件哈希；残留 candidate、未完成 journal/transaction、错误 recoverCommand 仍可通过 AC。修复：为 baseline/tasks/traceability 三 stage 明确失败后允许与禁止的事务痕迹，并在 AC-14 同时断言 authority、candidate/journal/transaction phase 与后续同参重试行为。"
+reviewed-at: "2026-08-31T17:53:00+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  结构完整性: "pass - 概述、用户故事、FR、AC、范围排除与成功指标齐全"
-  FR可测试性: "block - B-003、B-005、B-006 的 CLI 边界与验收观察点未闭合"
-  范围合理性: "block - B-001 的 code-stage 上游回修需要超出现有转换/loop，尚未与不新增状态转换的范围约束一致"
-  与规划对齐: "block - 主体覆盖附件 §7/§9，但 B-004 仍保留附件复盘中的 TASK 状态循环，B-005 未完整证明 §9.5/§9.6"
-  依赖识别: "block - B-001 未识别 review-code 对状态机/review-record/Pipeline 的路由依赖；B-002 未识别版本更正对派生产物的依赖"
-  契约域闭合: "block - crctl register/writeback/correction 同一 CLI 契约域的输入、输出、错误、幂等、状态副作用和验收观察点未一次闭合"
+  结构完整性: "pass - PRD 包含概述、用户故事、FR、AC、成功指标和范围排除"
+  FR可测试性: "pass - FR-12/14/15 CLI 边界、错误码、幂等、状态副作用和 AC-12/14/15 观察点已闭合；AC-1~AC-4 覆盖四个 review 节点"
+  范围合理性: "pass - FR-7 明确既有路由；review-code 越界只回 implement-code，未新增状态或转换"
+  与规划对齐: "pass - 需求覆盖附件 §7 P0-1~P1-3 与 §9 验收要求，且保留明确范围排除"
+  依赖识别: "pass - 明确状态机、review-record、Pipeline reviewLoop、派生产物、authority 与 crctl 依赖"
+  契约域闭合: "pass - register、writeback-apply、version-set 的输入规范化、错误码、调用者、输出、幂等、状态副作用和失败观察点已统一定义"
 suggestions:
-  - "S-001 [归属节点: write-test-report + review-code] 建议明确关键 AC 唯一证据命令与 cmd-NN 的稳定关联方式，以及识别 skip 的证据来源；当前机器区只按 exit code 给 status，明确关联可减少不同测试框架输出导致的 reviewer 裁量差异。"
-  - "S-002 [归属节点: review-requirement/review-tech-design/review-dev-plan/review-code] 建议在 FR-3 直接给出禁止字段替代句式的固定前缀示例（已解决/部分解决/未解决/本轮新增/范围外），避免四个 Skill 各自发明不可机械比较的文本。"
+  - "已解决：B-001 [P0-2/批准范围回退] FR-7 明确 review-dev-plan 沿既有双轨分流，review-code 的范围越界统一 repair-target=implement-code；AC-7 覆盖该路由，且明确不得新增状态/转换。"
+  - "已解决：B-002 [P1-1/版本更正闭环] FR-15 将 version-set 定为唯一更正入口，限定允许状态，原子同步 cr.md、backlog 与已存在派生产物；失败零写、可重试，AC-15 验证全链一致。"
+  - "已解决：B-003 [P1-1/crctl CLI 契约闭合] FR-12/14/15 统一版本值域与规范化，固定三条命令的 flag、错误码、调用者、JSON/stderr、幂等、状态副作用和负向验收向量。"
+  - "已解决：B-004 [P0-4/流程 TASK 可完成性] FR-10 取消完成于 merge 的发布准备 TASK 例外，禁止流程控制 TASK 进入交付 ledger，保持 task done 仅允许 developing；AC-10 覆盖。"
+  - "已解决：B-005 [P0-1/四类 review 验收覆盖] AC-1~AC-4 以参数化矩阵覆盖 review-requirement、review-tech-design、review-dev-plan、review-code 的首轮闭合、分级、逐条回修和禁止字段扫描。"
+  - "已解决：B-006 [P1-1/writeback 零副作用观察点] FR-14 规定三 stage 在 candidate/journal/authority 之前做版本守卫，并在 AC-14 验证零痕迹、事务状态、authority 与同参重试。"
+  - "已解决：S-001 [归属节点：write-test-report + review-code] FR-16/AC-16 固定 cmd-NN 与机器区 commands、evidence 文件的关联，并以 skipped 字段作为唯一 skip 证据来源。"
+  - "已解决：S-002 [归属节点：四个 review-*] FR-3 固定已解决：/部分解决：/未解决：/本轮新增：/范围外：前缀，并要求四个 review Skill 使用。"
 review-loop:
-  current-attempt: 1
+  current-attempt: 2
 subject-file: change-requests/CR-2026-057/prd.md
-subject-sha256: 39f492e4615cca78c10207388150d436b76645cb0edf3eab36564b73f6904447
+subject-sha256: 9ae7ec873509fca0bec4cb9adb7e5c3528d999fac25e4c4ec74345c59ac3178b
