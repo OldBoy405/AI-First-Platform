@@ -1,0 +1,26 @@
+cr-id: CR-2026-057
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-31T18:48:31+08:00"
+verdict: block
+blockers:
+  - "本轮新增：B-SDD-001 [FR-14/AC-14] §4.3 的 guardWritebackVersion 在读取 target-version 前调用 resolveOperationalWorkspace；这违反“版本守卫先于 resolveOperationalWorkspace”的明确时序，并使 authority/merge journal/Transaction Workspace 异常可能先于 WRITEBACK_VERSION_* 返回。traceability complete-replay 还可能因 txws 不可用而无法完成版本校验。设计必须改为不调用该 resolver 即可读取权威 cr.md 版本，或明确一个不改变现有 authority 判定且覆盖 replay 的等价读取路径。"
+  - "本轮新增：B-SDD-002 [FR-12/FR-14/AC-14] §4.3 只返回规范化结果，却没有把 guard 的规范值回灌给 canonicalWritebackBusinessInput/固定 generator。既有基线符号 canonicalWritebackBusinessInput 仅剥离小写 v；因此合法输入 V0.30 或带 Unicode/普通空白的 0.30 会通过比较，却以原始值进入 manifest/generator，不能保证存储与消费值为规范串。必须明确后续 business input 使用 guard.value，并覆盖大小写前缀与 trim 向量。"
+  - "本轮新增：B-SDD-003 [FR-14/AC-14.3] §3.2 声称空 target-version 映射为 WRITEBACK_VERSION_INVALID，但 §3.2/§6 没有要求修改 cmdWritebackApply 的必填检查；基线 cmdWritebackApply 对 !targetVersion 直接返回 BAD_ARGS。显式传入空字符串因此无法到达共用规范化守卫，偏离 FR-14 的“任一侧规范化失败（含空）→ WRITEBACK_VERSION_INVALID”契约。设计必须区分缺 flag 与空字符串，并固定负向错误码。"
+  - "本轮新增：B-SDD-004 [FR-16/AC-16] §4.5 对完整 logContent 直接执行冻结模式匹配，没有先限定到 --- stdout --- 与 --- stderr --- 两段；§2.4/PRD 明确要求只检查这两段。命令行参数、exit 行或其他日志元数据中的“no tests to run”等文本会造成 false skipped，进而错误阻断或放行关键 AC。设计必须定义两段的精确提取和缺段硬失败/结果处理。"
+  - "本轮新增：B-SDD-005 [FR-15/AC-15] §4.4 在 VERSION_SET_STATE_INVALID 检查前调用 recoverLedgerCommand；该恢复原语在存在未完成 ledger 时会回滚写集或删除 journal。于是禁止状态（如 merging）上的 version-set 可能先产生持久化变化，再返回状态错误，违反 FR-15 失败零写与无半成品要求。必须先完成状态/输入/漂移前置校验，或给恢复路径定义不触碰任何受禁止观察点的严格条件。"
+  - "本轮新增：B-SDD-006 [NFR-4/FR-15] §7/§4.5 宣称版本入口新增守卫为常数时间且无目录扫描，但 §4.4 步骤 6 要枚举并读取全部已存在的 PRD/SDD/PLAN/TASK 文件以完成原子同步与漂移检查。这是 O(派生产物数量) 的目录扫描，与 NFR-4 直接矛盾；必须修订性能契约或给出可证明的固定边界/索引方案。"
+dimensions:
+  PRD↔SDD 对齐: "block - FR-14/FR-15/FR-16 的关键时序、规范化和失败语义存在上述设计缺口"
+  架构合理性: "block - authority resolver 与 writeback replay 的边界未闭合；version-set 复用恢复原语的状态前置顺序不安全"
+  数据模型完整性: "pass - 版本值域、批准范围四字段、机器区 skipped 与 version-set 原子写集均有建模，但 B-SDD-002/004 的消费语义需修订"
+  接口契约: "block - writeback 空值错误码与规范化值传递未闭合"
+  多仓架构约束: "pass - 目标仓与资源 worktree 方向正确；仅 tools 实施，已核实依赖基线 SHA"
+  性能与安全: "block - NFR-4 与 version-set 全量派生产物扫描矛盾，且禁止状态可能先恢复 ledger"
+  可测试性: "block - AC-14/AC-16 的关键负向向量无法按当前算法稳定得到规定结果"
+  Prompt 采纳影响: "pass - §8 已列出 crctl dispatch 变化所需同步的 Skill 清单"
+suggestions: []
+review-loop:
+  current-attempt: 1
+subject-file: change-requests/CR-2026-057/sdd.md
+subject-sha256: 5cc27ba58a0890897f10266eaab4c64e11fb44a373f6fe7c08af33e8774cf8f9
