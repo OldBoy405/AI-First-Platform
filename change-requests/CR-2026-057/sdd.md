@@ -6,7 +6,7 @@ title: CR 全生命周期最小改造 — 评审闭合、范围冻结、覆盖�
 target-version: unassigned
 status: draft
 created: 2026-08-31T18:30:00+08:00
-updated: 2026-08-31T18:30:00+08:00
+updated: 2026-08-31T19:20:00+08:00
 ---
 
 # 1. 架构概览
@@ -49,7 +49,7 @@ register --target-version <v>（必填，规范化落 cr.md/backlog）
 
 ## 1.4 模块边界
 
-- `workspace-transactions.mjs`：新增导出 `normalizeTargetVersion`（纯函数）；`registerCr` 顶部校验；`applyWritebackAtomic` 顶部版本守卫；`runTestPlan`/`renderTestMachineReport` 计算并渲染 `skipped`。复用既有 `resolveOperationalWorkspace`（只读）、`canonicalWritebackBusinessInput`、`loadOrCreateJournal`、`prepareWritebackCandidate`。
+- `workspace-transactions.mjs`：新增导出 `normalizeTargetVersion`（纯函数）与 lib 内 `readCrMdTargetVersion`（cr.md frontmatter 行级读取）；`registerCr` 顶部校验；`applyWritebackAtomic` 顶部版本守卫；`runTestPlan`/`renderTestMachineReport` 计算并渲染 `skipped`。复用既有 `crWorktreePath`（守卫读取路径）、`resolveOperationalWorkspace`（只读，主流程 authority 判定）、`canonicalWritebackBusinessInput`、`loadOrCreateJournal`、`prepareWritebackCandidate`。
 - `crctl.mjs`：dispatch 新增 `case 'version-set'`；`cmdRegister` 参数面调整；HELP 文本补行。`version-set` 复用 `cmdOwnerSet` 的 durable ledger 事务骨架（`recoverLedgerCommand`/`beginLedgerCommand`/tracked-clean 前置/受控 git add-commit/回滚）。
 - Skill 文档层：只改业务判断与输出约束（FR-1：不改状态机、不改 `review-record` schema 必填字段集、不改 attempt 账本）。
 
@@ -91,7 +91,11 @@ guardWritebackVersion(crMdTargetRaw, inputTargetRaw):
   否则                     → { ok: true, value: a }（放行，进入既有 writeback 逻辑）
 ```
 
-错误优先级：版本错误 > `WRITEBACK_STATE_MISMATCH`（authority 非 Transaction Workspace）> 其它后续错误（AC-14.6 以 `status=drafting` 夹具证明）。守卫通过后，`applyWritebackAtomic` 的既有 `resolveOperationalWorkspace` → source 断言 → candidate/journal 事务原样执行；`canonicalWritebackBusinessInput` 的 `v` 前缀剥离保留（对已规范化输入无副作用，防御性兼容）。
+错误优先级：版本错误 > `WRITEBACK_STATE_MISMATCH`（authority 非 Transaction Workspace）> 其它后续错误（AC-14.6 以 `status=drafting` 夹具证明）。
+
+**守卫 cr.md 侧读取路径（不调用 `resolveOperationalWorkspace`）**：经既有 `crWorktreePath(ctx, cr)`（repositories graph 只读反解，无 merge journal、无 txws 依赖）定位 CR requirement worktree 的 `change-requests/{cr}/cr.md`，由新 lib 内 `readCrMdTargetVersion(ws, cr)` 行级读取 frontmatter `target-version`（先 `\r\n→\n` 规范化，`^target-version:` 行匹配；文件不可读/缺 frontmatter/缺字段 → `{ok:false, reason:'missing'}`）。该路径对版本事实是权威的：`version-set` 在 `merging`/`writing-back` 禁止（§2.3），CR 进入 merge 前 requirement worktree 的 cr.md 版本事实已被冻结、与 authority 全等；writeback 期间无任何合法入口改写它。authority/merge journal/txws 的异常因此**不可能**抢先于 `WRITEBACK_VERSION_*` 返回（B-SDD-001 结论）。
+
+**规范化值回灌（B-SDD-002 结论）**：守卫通过后返回 `{ ok: true, value: a }`，`applyWritebackAtomic` 以 `input.targetVersion = guard.value` 替换后再调用 `canonicalWritebackBusinessInput(input)`——business input 的 `targetVersion`、`businessInputDigest`、manifest 校验与 generator 收到的 `--version` 均为规范化串（`V0.30`/带空白的 `0.30` 归一为 `0.30` 后进入存储与消费，不再以原始值穿透）。既有 `canonicalWritebackBusinessInput` 的 `startsWith('v')` 剥离保留为防御性 no-op（guard.value 不可能以 `v` 开头）。随后 `applyWritebackAtomic` 的既有 `resolveOperationalWorkspace` → source 断言 → candidate/journal 事务原样执行。
 
 ## 2.3 version-set 事务数据（FR-15）
 
@@ -114,9 +118,20 @@ guardWritebackVersion(crMdTargetRaw, inputTargetRaw):
 `crctl test` 机器区每条 command 增加布尔字段 `skipped`（additive，不删现有字段 `repo/cwd/executable/args/timeout-seconds/exit-code/signal/timed-out/started/log`）：
 
 ```text
-skipped = (exit-code == 0) && (对应 cmd-NN.log 在 --- stdout --- 与 --- stderr --- 两段、先 \r\n→\n 规范化后，
-          命中冻结模式表任一模式（大小写不敏感）)
+skipped = (exit-code == 0) && (两段匹配域内命中冻结模式表任一模式（大小写不敏感））
+```
+
+**匹配域限定（B-SDD-004 结论）**：只对 `cmd-NN.log` 的 `--- stdout ---` 与 `--- stderr ---` 两个标记段的内容做模式匹配，**不**对完整 `logContent` 匹配。两段提取规则（先 `\r\n→\n` 规范化，`split(/\r?\n/)`）：
+
+1. 定位 `--- stdout ---` 与 `--- stderr ---` 标记行（各必须恰好出现 1 次；缺失/重复 → 硬失败 `TEST_LOG_MARKER_INVALID`，禁止静默降级——NFR-3 硬失败纪律的适用面）；
+2. stdout 域 = 两标记行之间的行；stderr 域 = `--- stderr ---` 标记行之后到文件末尾的行；
+3. 匹配仅在 stdout 域 ∪ stderr 域的行文本上执行。
+
+`$ <command> <args>` 行与 `(exit=0)` 元数据行不属于两域，即使含 `# skip`/`no tests to run` 等文本也不命中（避免 false skipped 错误阻断或放行关键 AC）。既有 `runTestPlan` 生成的 log 恒含两个标记（§10 证据 6），正常路径无硬失败风险。
+
 模式表（冻结，实施期不得增删）：
+
+```text
   1. (^|\n)# skip\b
   2. (^|\n)ok \d+ # skip\b
   3. \bskipped:\s*[1-9]\d*
@@ -124,7 +139,7 @@ skipped = (exit-code == 0) && (对应 cmd-NN.log 在 --- stdout --- 与 --- stde
   5. \bno tests to run\b
 ```
 
-non-zero / timeout 一律 `skipped: false`（那是失败，不是 skip）。模式是字面量正则（无用户输入），匹配即命中、不匹配即 false，不存在"解析失败需静默降级"的分支——符合 NFR-3 硬失败纪律的适用面（该纪律约束新增哈希/跨行解析代码；此处无解析失败态）。`cmd-NN` 定义不变：NN = 两位十进制，等于机器区 `commands` 列表 1-based 下标，与 `test-evidence/cmd-NN.log` 文件名全等。
+non-zero / timeout 一律 `skipped: false`（那是失败，不是 skip）。模式是字面量正则（无用户输入），匹配即命中、不匹配即 false；标记缺失/重复走 `TEST_LOG_MARKER_INVALID` 硬失败，不存在任何静默降级分支——符合 NFR-3 硬失败纪律（新增跨行解析先 `\r\n→\n`、异常硬失败）。`cmd-NN` 定义不变：NN = 两位十进制，等于机器区 `commands` 列表 1-based 下标，与 `test-evidence/cmd-NN.log` 文件名全等。
 
 ## 2.5 SDD「批准范围」四字段（FR-5）
 
@@ -173,11 +188,14 @@ follow_up: 发现但留给后续 CR 的缺口
 
 ## 3.2 `crctl writeback-apply`（FR-14）
 
-命令与既有成功路径不变（`--stage baseline|tasks|traceability --spec-id --target-version`，traceability 另需 `--milestone-file`；调用者与现有相同，非 TTY 限制）。只约束版本失败路径：
+命令与既有成功路径不变（`--stage baseline|tasks|traceability --spec-id --target-version`，traceability 另需 `--milestone-file`；调用者与现有相同，非 TTY 限制）。只约束版本失败路径。
+
+**缺 flag 与空串区分（B-SDD-003 结论）**：`cmdWritebackApply` 既有 `if (!targetVersion) fail('BAD_ARGS', ...)` 改为按 flag 存在性判定——`!('target-version' in flags)` → `BAD_ARGS`（缺 flag，与既有命令口径一致）；显式传入 `--target-version ""`（空字符串）**放行**进入 `applyWritebackAtomic` 的共用规范化守卫，由 §2.1 步骤 2 归一为 `{ok:false, reason:'empty'}` → `WRITEBACK_VERSION_INVALID`，与 FR-14「任一侧规范化失败（含空）」契约一致。缺失与空不再同码。
 
 | 条件 | 错误码 | 退出 |
 |---|---|---|
-| 任一侧规范化失败（含空、禁止同义值、畸形、cr.md 侧缺字段/不可读） | `WRITEBACK_VERSION_INVALID` | 非零 |
+| 缺 `--target-version` flag（未提供该 flag） | `BAD_ARGS`（`cmdWritebackApply` 入口，不进守卫） | 非零 |
+| 任一侧规范化失败（含显式空串、禁止同义值、畸形、cr.md 侧缺字段/不可读） | `WRITEBACK_VERSION_INVALID` | 非零 |
 | 规范化后任一侧为 `unassigned` | `WRITEBACK_VERSION_UNASSIGNED` | 非零 |
 | 两侧均为真实版本但字符串不全等 | `WRITEBACK_VERSION_MISMATCH` | 非零 |
 | 一致且为真实版本 | 进入现有 writeback 逻辑 | 现有 |
@@ -249,18 +267,25 @@ cmdRegister(ws, flags)
 ```text
 applyWritebackAtomic(ctx, input)
   1. NEW: guard = guardWritebackVersion(ctx, cr, input)
-       内部顺序：
+       内部顺序（不调用 resolveOperationalWorkspace）：
        a. b = normalizeTargetVersion(input.targetVersion)
-       b. opWs = resolveOperationalWorkspace(ctx, cr)      # 只读解析（无副作用）
-       c. a = normalizeTargetVersion(readCrMdTargetVersion(opWs.path, cr))  # cr.md frontmatter target-version
+       b. raw = readCrMdTargetVersion(crWorktreePath(ctx, cr), cr)
+          # 经 repositories graph 只读反解定位 CR requirement worktree 的 cr.md，
+          # 行级读 frontmatter target-version（缺文件/缺 frontmatter/缺字段 → null）
+       c. a = normalizeTargetVersion(raw)
        d. 按 §2.2 状态模型映射 WRITEBACK_VERSION_INVALID / _UNASSIGNED / _MISMATCH
      guard 失败 → throw TxError（此时 traceability replay 分支、source 断言、prepare、journal 均未执行）
+  1.5 NEW: 守卫通过后 input.targetVersion = guard.value（规范化值回灌，§2.2），后续
+     canonicalWritebackBusinessInput(input) 的 targetVersion/businessInputDigest、manifest 校验
+     与 generator --version 全部消费规范化串
   2. 既有 traceability complete-replay 分支（phase=complete && traceOutbox.state=pending 补发）——版本守卫失败不会到达
   3. 既有 resolveOperationalWorkspace → source !== 'transaction-workspace' → WRITEBACK_STATE_MISMATCH
   4. 既有 candidate/journal 事务原样（canonicalWritebackBusinessInput → loadExistingJournal → prepareWritebackCandidate）
 ```
 
-守卫位于第 1 步（代码顺序先于步骤 3 的 `resolveOperationalWorkspace` 主流程调用，也先于 `prepareWritebackCandidate` 与 `loadOrCreateJournal`），因此版本错误优先于 `WRITEBACK_STATE_MISMATCH`（AC-14.6：`status=drafting` 夹具下错误码是 `WRITEBACK_VERSION_*`）；candidate 目录的 `rmSync`/`mkdir` 只在守卫通过后才可能执行（AC-14.4 观察点 2）。`resolveOperationalWorkspace` 本身只读（读 cr.md status、分类返回），在守卫内部调用不产生任何观察点 1–6 的痕迹。
+守卫位于第 1 步（代码顺序先于步骤 2 的 traceability replay 分支与步骤 3 的 `resolveOperationalWorkspace` 主流程调用，也先于 `prepareWritebackCandidate` 与 `loadOrCreateJournal`），因此版本错误优先于 `WRITEBACK_STATE_MISMATCH`（AC-14.6：`status=drafting` 夹具下错误码是 `WRITEBACK_VERSION_*`）；candidate 目录的 `rmSync`/`mkdir` 只在守卫通过后才可能执行（AC-14.4 观察点 2）。
+
+**B-SDD-001 结论（守卫不依赖 authority resolver）**：守卫内部不再调用 `resolveOperationalWorkspace`。cr.md 侧读取走 `crWorktreePath(ctx, cr)` + `readCrMdTargetVersion`：前者是 repositories graph 的纯路径反解（`dir-graph.yaml` 已解析进 `ctx`，无 merge journal、无 txws 文件系统依赖），后者是单文件行级读取。authority 异常、merge journal 异常、txws 不存在或不可读都不可能发生在守卫路径上——它们只会出现在步骤 3 及以后，即在版本判定之后。traceability complete-replay（步骤 2）不再需要 txws/candidate 即可完成版本校验的前提也由该读取路径保证（B-SDD-001 的 replay 缺口闭合）。该路径对版本事实的权威性论证见 §2.2。
 
 cr.md 侧读取缺失/无 frontmatter/缺 `target-version` 字段 → 归一化为规范化失败（`WRITEBACK_VERSION_INVALID`），符合 PRD FR-14「任一侧规范化失败」口径。
 
@@ -271,15 +296,15 @@ cmdVersionSet(ws, cr, gates, flags)
   1. 缺 --to → BAD_ARGS
   2. to = normalizeTargetVersion(flags.to, { allowUnassigned: false })
      !to.ok → VERSION_SET_INVALID（零写入）
-  3. await recoverLedgerCommand(ws, ledgerTxKey('version', cr))     # 断点恢复
-  4. resolveCrState(ws, cr)：status 不在允许集 → VERSION_SET_STATE_INVALID
-  5. tracked clean 前置（queryTrackedChanges）→ VERSION_SET_WORKTREE_DIRTY
-  6. 双投影 + 派生产物漂移检查：
+  3. resolveCrState(ws, cr)：status 不在允许集 → VERSION_SET_STATE_INVALID
+  4. tracked clean 前置（queryTrackedChanges）→ VERSION_SET_WORKTREE_DIRTY
+  5. 双投影 + 派生产物漂移检查：
      - crMd.value = normalizeTargetVersion(cr.md target-version)（必须 ok）
      - backlog 条目 target-version 缺失或规范化后 ≠ crMd.value → VERSION_SET_DERIVED_DRIFT
      - 每个已存在的 prd/sdd/plan/TASK-*：frontmatter 缺 target-version 或规范化后 ≠ crMd.value → VERSION_SET_DERIVED_DRIFT
      - crMd.value ≠ 'unassigned' 且 ≠ to.value → VERSION_SET_NOT_UNASSIGNED
      - crMd.value === to.value 且全部已存在产物 === to.value → 幂等短路 ok({changed:false})（零 commit）
+  6. await recoverLedgerCommand(ws, ledgerTxKey('version', cr))     # 断点恢复（全部只读前置校验通过后才执行，见下注）
   7. 行级编辑纯函数 editTargetVersionLine(text, to.value)：
      - cr.md / prd / sdd / plan / TASK-*：frontmatter 内 ^target-version: 行替换（cr.md 先 \r\n→\n 规范化）
      - _backlog.yml：matchEntryBlock 条目块内 target-version 行替换（同 editBacklogSet 的行级模式）
@@ -293,15 +318,20 @@ cmdVersionSet(ws, cr, gates, flags)
 
 不调 `updateCrMdStatus`（status 不变）、不发 status outbox 事件、不写 approval.yml。`owner-history`/`handover-history` 不动。
 
+**时序修订（B-SDD-005 结论）**：`recoverLedgerCommand` 从原第 3 步移至全部只读前置校验（步骤 2 的 `--to` 规范化、步骤 3 状态允许集、步骤 4 tracked clean、步骤 5 双投影/派生产物漂移）通过之后、行级编辑与 `beginLedgerCommand` 之前。恢复原语会回滚未完成写集或删除 journal——若在禁止状态（如 `merging`）或漂移/脏工作区检查之前执行，`VERSION_SET_STATE_INVALID`/`VERSION_SET_DERIVED_DRIFT` 等负向码可能在返回前已产生持久化变化，违反 FR-15「失败零写、无半成品」。修订后：AC-15 全部负向向量在到达 recover 前即短路（零写零恢复）；recover 只作用于已通过全部校验的输入上残留的 version-set 断点（键 `version/{cr}`，与其它 op 的 journal 隔离，且自身是幂等恢复）。与 owner-set 的差异（owner-set 先 recover 后校验）是有意的：owner-set 无禁止状态面/零写观察点约束，version-set 有 FR-15 硬契约，故不复刻其顺序。
+
 ## 4.5 skipped 计算（FR-16）
 
 ```text
 runTestPlan 每条 command 生成 logContent 后：
   norm = logContent.replaceAll('\r\n', '\n')            # NFR-3：先规范化
-  skipped = (r.status === 0) && FROZEN_SKIP_PATTERNS.some((re) => re.test(norm))   # 均带 'i'
+  secs = extractStdioSections(norm)                     # 提取 stdout/stderr 两段（§2.4 提取规则）
+  skipped = (r.status === 0) && FROZEN_SKIP_PATTERNS.some((re) => re.test(secs.stdout + '\n' + secs.stderr))   # 均带 'i'
   results.push({ ...既有字段, skipped })
 renderTestMachineReport：每 command 块末追加 "    skipped: {c.skipped}"
 ```
+
+`extractStdioSections`（lib 内新纯函数）：定位 `--- stdout ---`/`--- stderr ---` 标记行（各恰好 1 次，缺失/重复 → `TEST_LOG_MARKER_INVALID` 硬失败）；返回 `{ stdout, stderr }` 两域文本。模式匹配**只**在 `stdout + '\n' + stderr` 上执行——`$ <command> <args>` 行、`(exit=0)` 元数据行不参与匹配（B-SDD-004：防止命令行参数或 exit 元数据中的模式文本造成 false `skipped`）。
 
 模式表见 §2.4。`FROZEN_SKIP_PATTERNS` 为模块级常量数组（字面量 RegExp + `i` flag），实施期不得增删。
 
@@ -325,7 +355,7 @@ renderTestMachineReport：每 command 块末追加 "    skipped: {c.skipped}"
 | D-3 skipped 在 `runTestPlan` 计算 | `crctl test` 机器区单一计算点 | ① review-code 自行解析框架输出：FR-16 明令禁止（框架输出多样，reviewer 裁量差异正是 AIFI-14 教训）；② 新 coverage ledger：PRD 排除 | 否 |
 | D-4 前缀强制在 Skill 文本层 | 四个 review SKILL.md 契约 + FR-3 机械核对规则 | crctl `review-record` 加内容校验：违反 FR-1「不改 review-record schema」与 FR-17「静态检查仅重复失败且规则确定时下沉」——前缀规则是本 CR 首建，尚无"重复失败"事实 | 否 |
 | D-5 批准范围承载 | SDD 文档固定章节（模板 + write-tech-design 契约） | ① 新 ledger 文件：FR-5 明令禁止；② crctl schema 字段：会把纯文档事实引入受控账本，扩大 CR-2026-039 收紧的 schema 面 | 否 |
-| D-6 守卫读取 cr.md 的路径解析 | 复用只读 `resolveOperationalWorkspace` | 复制一套 authority 解析：会制造第二个 authority 判据源，漂移风险高于复用；该函数只读无副作用，不违反观察点 1–6 | 否 |
+| D-6 守卫读取 cr.md 的路径解析 | 直接经 `crWorktreePath` + `readCrMdTargetVersion`（CR requirement worktree 单文件行级读取），不调用 `resolveOperationalWorkspace` | 复用 `resolveOperationalWorkspace`：authority/merge journal/txws 异常会抢先于 `WRITEBACK_VERSION_*` 返回，违反 FR-14 版本错误优先（复评 B-SDD-001 修正）；且会引入第二个 authority 判据源，漂移风险高于只读单文件路径 | 否 |
 
 三判据（难以逆转 + 无上下文会疑惑 + 有真实权衡替代）无一同时满足 → 不新增 ADR 文件、不新增审批节点。决策记录落本表。
 
@@ -348,14 +378,14 @@ renderTestMachineReport：每 command 块末追加 "    skipped: {c.skipped}"
 | FR-11 评审核验与归档门禁不变 | `review-dev-plan` 加核验 FR-10 规则；`gates.json`/`deliveryIndexComplete`/`task done` 合法状态零改动（AC-10/AC-11 回归断言） | `skills/develop/review-dev-plan/SKILL.md`（gates 不动） |
 | FR-12 register 硬校验 | §4.2：`normalizeTargetVersion` 落 lib；`registerCr` 顶部校验 + inputDigest/文本/返回用规范化值；`cmdRegister` 参数面调整；`crctl.mjs` HELP 行更新 | `skills/shared/crctl/scripts/lib/workspace-transactions.mjs`、`skills/shared/crctl/scripts/crctl.mjs` |
 | FR-13 后续产物继承同一版本 | 五个 SKILL 修订：`requirement-register`（target_version 必填 + 值域 + unassigned 确认先例 + version-set 入口）、`write-requirement-prd`（补禁止 tbd/禁止改写措辞）、`write-tech-design`/`write-dev-plan`/`write-dev-tasks`（frontmatter 增加/改为 `target-version: {cr.md 值}`，删除 `或 tbd`） | 五个对应 SKILL.md |
-| FR-14 writeback-apply 一致性守卫 | §4.3：`guardWritebackVersion` + `applyWritebackAtomic` 顶部插入；错误码三枚；零观察点由测试断言 | `skills/shared/crctl/scripts/lib/workspace-transactions.mjs` |
+| FR-14 writeback-apply 一致性守卫 | §4.3：`guardWritebackVersion` + `applyWritebackAtomic` 顶部插入；错误码三枚；零观察点由测试断言；`cmdWritebackApply` 必填检查改为 flag 存在性判定（缺 flag `BAD_ARGS` / 显式空串进守卫 → `WRITEBACK_VERSION_INVALID`，B-SDD-003） | `skills/shared/crctl/scripts/lib/workspace-transactions.mjs`、`skills/shared/crctl/scripts/crctl.mjs` |
 | FR-15 version-set 唯一入口 | §4.4：dispatch 新 case + `cmdVersionSet` + `editTargetVersionLine` 行级编辑纯函数；`ARCHITECTURE.md` §3 一句增量（维护规则触发：crctl 新增写入子命令） | `skills/shared/crctl/scripts/crctl.mjs`、`skills/shared/crctl/scripts/lib/workspace-transactions.mjs`（如需复用 matchEntryBlock 则在 crctl.mjs 内实现，不跨层）、`ARCHITECTURE.md` |
 | FR-16 关键测试 SKIP ≠ 完整通过 | §4.5：`runTestPlan`/`renderTestMachineReport` 增 `skipped`；`review-code` SKILL 加只读机器区规则与 blocker/中止语义（关键 AC 唯一证据 skipped:true → blocker `repair-target=implement-code`、摘要含「未执行」；`ENVIRONMENT_MISMATCH` 技术中止保持现有约定）；`write-test-report` SKILL 补机器区 `skipped` 字段与 `cmd-NN` 绑定说明（S-001 落点） | `skills/shared/crctl/scripts/lib/workspace-transactions.mjs`、`skills/develop/review-code/SKILL.md`、`skills/develop/write-test-report/SKILL.md` |
 | FR-17 下沉触发规则 | 本 CR 只落 FR-12/14/15/16 确定性检查；不落 P1-3 举例其余项（AC-17 由 diff 审阅验证） | —（无新增代码） |
 | NFR-1 回归 | `crctl.test.mjs`（或按主题新测试文件，入口仍 `node --test`）补 FR-12/14/15/16 用例；既有夹具适配（见 §6.2） | `skills/shared/crctl/scripts/test/` |
 | NFR-2 兼容边界 | 无新 Agent/Pipeline/状态/转换/ledger/事务框架；`dir-graph.yaml`、`gates.json`、`pipeline-templates/` 三文件零改动 | —（不改即证明） |
 | NFR-3 行尾纪律 | 新增文本编辑/模式匹配先 `\r\n→\n`；`editTargetVersionLine` 匹配不到硬失败 | 见各落点 |
-| NFR-4 性能 | 守卫为常数时间字段比较；无网络调用 | 见各落点 |
+| NFR-4 性能 | 三个版本守卫（register 规范化、writeback 守卫、version-set `--to` 规范化）为常数时间字符串比较，无网络调用；version-set 的「全链原子同步 + 漂移检查」按其原子写入集契约（§3.3/PRD FR-15 固定文件面）为 O(该面已存在文件数)，不属于守卫口径（§7 性能契约） | 见各落点 |
 | NFR-5 安全 | 审批 TTY/`--grant` 约束不动；version-set 经 durable ledger transaction + 受控 git，无旁路写路径 | 见各落点 |
 | NFR-6 文档同步 | `requirement-register` SKILL、`README.md`（注册阶段确定版本 + version-set 唯一更正 + writeback 守卫的人读小节）、`ARCHITECTURE.md` 一句；不在 knowledge-base `dir-graph.yaml` 复刻状态机 | `README.md`、对应 SKILL、`ARCHITECTURE.md` |
 
@@ -371,9 +401,9 @@ renderTestMachineReport：每 command 块末追加 "    skipped: {c.skipped}"
 
 - `normalizeTargetVersion` 单测：全值域表（合法：`unassigned`/`0.30`/`v0.30`→`0.30`/`V0.30`/`0.1.0`；非法：缺省/空/`tbd`/`TBD`/`n/a`/`pending`/`0.29-rc`/`1`/`0.30.0.1`/`latest`/内嵌空白/非 string）。
 - register 负向：`REGISTER_VERSION_INVALID` × 6 类输入，断言 cr.md/backlog 新条目/journal 均不存在（零写入）；正向：`unassigned`/`0.30`/`v0.30` 成功且 cr.md 与 JSON `targetVersion` 为规范化值；幂等：同 key `v0.30`→`0.30` 续跑同 CR。
-- writeback 守卫：三 stage × {MISMATCH、UNASSIGNED、INVALID}，每次调用后断言 §3.2 六项禁止观察点；同参重试同码无增量；`status=drafting` 夹具证明版本错误优先于 `WRITEBACK_STATE_MISMATCH`（AC-14.6）。
+- writeback 守卫：三 stage × {MISMATCH、UNASSIGNED、INVALID}，每次调用后断言 §3.2 六项禁止观察点；同参重试同码无增量；`status=drafting` 夹具证明版本错误优先于 `WRITEBACK_STATE_MISMATCH`（AC-14.6）；INVALID 向量含显式空串 `--target-version ""`（与缺 flag 的 `BAD_ARGS` 区分断言，B-SDD-003）与规范化值回灌断言（`v0.2`/`V0.2` 输入下 businessInputDigest/manifest `targetVersion` 为 `0.2`，B-SDD-002）。
 - version-set：正向 unassigned→`0.30` 全链同步（files 六类全列）；幂等 changed=false 零 commit；`--to unassigned`/畸形 → INVALID；`merging` → STATE_INVALID；cr.md 手改真实版本而 PRD 仍 unassigned → DRIFT；允许状态抽样 + 终态拒绝；重试无半成品。
-- skipped：命中模式表夹具（`# skip`、`ok 3 # skip`、`skipped: 2`、`SKIPPED`、`no tests to run`、CRLF 变体）→ `skipped:true`；无模式 exit 0 → false；non-zero → false（非 skip）。
+- skipped：命中模式表夹具（`# skip`、`ok 3 # skip`、`skipped: 2`、`SKIPPED`、`no tests to run`、CRLF 变体）→ `skipped:true`；无模式 exit 0 → false；non-zero → false（非 skip）；模式文本只出现在 `$ <cmd> <args>` 行或 `(exit=0)` 行 → false（两域外不命中，B-SDD-004 回归）；标记缺失/重复 → `TEST_LOG_MARKER_INVALID` 硬失败（NFR-3）。
 - AC-1～AC-4（评审行为夹具）不自动化：评审判断是模型行为，证据载体是 `review-annotations/*.yml` 内容，由评审执行时按 AC-1～AC-4 夹具验证；AC-4 由既有 `contract-scan.test.mjs` 零命中断言。
 - AC-17：diff 审阅（不引入未再次失败的新 validator）；AC-18：`node --test skills/shared/crctl/scripts/test/crctl.test.mjs` 及既有 writeback/archive/register/test-cr 全绿。
 
@@ -404,10 +434,10 @@ renderTestMachineReport：每 command 块末追加 "    skipped: {c.skipped}"
 
 # 7. 安全与性能考量
 
-- **零写入失败面（FR-12/14/15）**：三个版本入口的失败路径全部发生在任何持久化副作用之前（register 顶部校验、writeback 守卫先于 candidate/journal、version-set 校验先于 beginLedgerCommand）。version-set 的写入经 durable ledger transaction（before snapshots + recoverable write-set），commit 前中断整组回滚，无半成品。
+- **零写入失败面（FR-12/14/15）**：三个版本入口的失败路径全部发生在任何持久化副作用之前（register 顶部校验、writeback 守卫先于 candidate/journal、version-set 校验先于 `recoverLedgerCommand`/`beginLedgerCommand`）。version-set 的写入经 durable ledger transaction（before snapshots + recoverable write-set），commit 前中断整组回滚，无半成品。
 - **并发与 CAS**：register 复用既有 lock + journal envelope + inputDigest（含规范化 targetVersion）；version-set 复用 ledger tx key + expectedHash CAS + tracked-clean 前置；writeback 守卫纯读不取锁。同参重试语义（幂等或同错误码）由 §3 契约覆盖。
-- **行尾与硬失败（NFR-3）**：新增 `editTargetVersionLine`、skipped 模式匹配均先 `\r\n→\n`；`LEDGER_PARSE_FAILED` 硬失败不静默。
-- **性能（NFR-4）**：三个守卫均为常数时间字符串比较/正则，无网络调用、无目录扫描。`skipped` 只对已生成的 log 文本做 5 个正则测试，每个命令一次。
+- **行尾与硬失败（NFR-3）**：新增 `editTargetVersionLine`、skipped 两段提取均先 `\r\n→\n`；`LEDGER_PARSE_FAILED` / `TEST_LOG_MARKER_INVALID` 硬失败不静默。
+- **性能（NFR-4，复评 R1 修订口径）**：三个版本守卫（register 顶部规范化、writeback 守卫、version-set `--to` 规范化）均为常数时间字符串比较/正则，无网络调用、无目录扫描——这是 NFR-4「入口守卫常数时间」的完整覆盖。version-set **命令整体**不是常数时间：FR-15 契约要求全链原子同步与漂移检查，必须枚举并读取原子写入集的已存在文件（cr.md、`_backlog.yml`、prd/sdd/plan/TASK-*，§3.3 固定文件面），复杂度 O(该面已存在文件数)，不随仓库规模无界增长；这是满足 AC-15 全链同步的固有成本，且全部读取发生在任何写入之前（§4.4 步骤 3–5 先于步骤 6–8）。writeback 守卫每次读取单个 cr.md（frontmatter 行级），无网络调用。`skipped` 只对已生成的 log 文本做两段提取 + 5 个正则测试，每个命令一次。
 - **安全（NFR-5）**：不改变 `approve` 的 TTY/`--grant` 约束；version-set 调用者约束与 `owner-set` 相同（非 TTY 限制，identity 由 crctl 生成）；不新增绕过 crctl 的账本写路径；审计日志（`.crctl/audit.log`）覆盖 version-set 与 register 校验失败路径按既有 `fail` 语义输出 stderr JSON。
 - **边界条件**：`v` 前缀剥离仅恰好一个（`vv0.30` → 畸形）；版本号禁止前导零（`0` 本身除外）；`0.1.0` 合法（MAJOR.MINOR.PATCH）；backlog 条目缺 `target-version` 视为漂移拒绝（不静默补写）；TASK-* 缺 frontmatter 字段同上。
 
@@ -468,79 +498,84 @@ renderTestMachineReport：每 command 块末追加 "    skipped: {c.skipped}"
    commit SHA: 7ddeeb7ae57ed097518e2fe176f2e6b31e084ac2
    依赖结论: FR-12 写入规范化值并让成功对象含 `targetVersion` 字段，依赖这两个模板/返回形态。
 3. repo: tools
+   relative path: `skills/shared/crctl/scripts/lib/workspace-transactions.mjs`（`crWorktreePath` 第 45 行、`readCrMdStatus` 第 140 行）；`skills/shared/crctl/scripts/crctl.mjs`（`readCrMdFrontmatter` 第 776 行）
+   stable symbol/对象: `crWorktreePath`（repositories graph 只读反解 → `{knowledge-base.worktreePath}/{cr}`）；`readCrMdStatus`（单文件 frontmatter 行级读取模板）；`readCrMdFrontmatter`（crctl.mjs 行级 frontmatter 读取先例）
+   commit SHA: 7ddeeb7ae57ed097518e2fe176f2e6b31e084ac2
+   依赖结论: 版本守卫新增 lib 内 `readCrMdTargetVersion` 沿用该行级读取模式，路径经 `crWorktreePath` 直读 CR requirement worktree 的 cr.md，不依赖 `resolveOperationalWorkspace`（B-SDD-001 结论）。
+4. repo: tools
    relative path: `skills/shared/crctl/scripts/lib/workspace-transactions.mjs`
    stable symbol/对象: `canonicalWritebackBusinessInput`（第 2072 行，`startsWith('v')` 剥离）；`prepareWritebackCandidate`（第 2281 行，第 2301-2302 行 `rmSync`+`mkdir` candidate 目录；第 2287 行仅空值 `WRITEBACK_VERSION_INVALID`）
    commit SHA: 7ddeeb7ae57ed097518e2fe176f2e6b31e084ac2
-   依赖结论: FR-14 守卫必须在 `prepareWritebackCandidate` 之前拦截，保证版本失败零 candidate 痕迹；`v` 剥离与 FR-12 规范化对齐。
-4. repo: tools
+   依赖结论: FR-14 守卫必须在 `prepareWritebackCandidate` 之前拦截，保证版本失败零 candidate 痕迹；守卫通过后以 `guard.value`（规范化串）作为其 `targetVersion` 输入，既有的 `startsWith('v')` 剥离对规范化值成为防御性 no-op（B-SDD-002 结论）。
+5. repo: tools
    relative path: `skills/shared/crctl/scripts/lib/workspace-transactions.mjs`
    stable symbol/对象: `applyWritebackAtomic`（第 2386 行；traceability replay 分支在最前，第 2425 行 `resolveOperationalWorkspace`，第 2426-2428 行 `WRITEBACK_STATE_MISMATCH` 断言，第 2453 行 `prepareWritebackCandidate`，第 2470 行起 `loadOrCreateJournal`）
    commit SHA: 7ddeeb7ae57ed097518e2fe176f2e6b31e084ac2
    依赖结论: FR-14 守卫插入点（顶部、replay 分支之前）与该既有顺序相关；`WRITEBACK_STATE_MISMATCH` 优先级必须让位于版本错误（AC-14.6）。
-5. repo: tools
+6. repo: tools
    relative path: `skills/shared/crctl/scripts/lib/workspace-transactions.mjs`
    stable symbol/对象: `resolveOperationalWorkspace`（第 160 行，只读 authority 解析，返回 `{phase, path, source}`）
    commit SHA: 7ddeeb7ae57ed097518e2fe176f2e6b31e084ac2
-   依赖结论: 守卫读取 cr.md `target-version` 的路径解析复用它，不复制 authority 判据（决策 D-6）。
-6. repo: tools
+   依赖结论: 主流程 authority 判定复用它（§4.3 步骤 3 不变）；版本守卫不复用它——守卫改经 `crWorktreePath` 直读 CR requirement worktree 的 cr.md（B-SDD-001 修正，决策 D-6 已更新）。
+7. repo: tools
    relative path: `skills/shared/crctl/scripts/lib/workspace-transactions.mjs`
    stable symbol/对象: `runTestPlan`（第 3521 行；第 3541-3542 行 `cmd-${String(i+1).padStart(2,'0')}.log`；log 含 `--- stdout ---`/`--- stderr ---` 两段）；`renderTestMachineReport`（第 3592 行，机器区 commands 字段表）
    commit SHA: 7ddeeb7ae57ed097518e2fe176f2e6b31e084ac2
    依赖结论: FR-16 `skipped` 在 `runTestPlan` 计算、`renderTestMachineReport` 追加行——依赖既有 `cmd-NN` 命名与 log 分段格式。
-7. repo: tools
+8. repo: tools
    relative path: `skills/shared/crctl/scripts/crctl.mjs`
    stable symbol/对象: `cmdOwnerSet`（第 2461 行起）及其骨架：`ledgerTxKey`（第 676 行）、`recoverLedgerCommand`（第 689 行）、`beginLedgerCommand`（第 703 行）、`queryTrackedChanges` tracked-clean 前置、`rollbackOwnerWrite`（第 2455 行附近）
    commit SHA: 7ddeeb7ae57ed097518e2fe176f2e6b31e084ac2
    依赖结论: `version-set` 同构复用该事务骨架（决策 D-2）；错误码族镜像 `OWNER_*`。
-8. repo: tools
+9. repo: tools
    relative path: `skills/shared/crctl/scripts/crctl.mjs`
    stable symbol/对象: `editCrOwnerProjection`（第 2400 行）/`editBacklogOwnerProjection`（第 2418 行）/`editBacklogSet`（BACKLOG_SET_FIELDS，第 2449 行起）的行级正则改写模式与 `matchEntryBlock`/`findBlockEnd`；`readOwnerState`（第 2325 行）双投影一致性思路
    commit SHA: 7ddeeb7ae57ed097518e2fe176f2e6b31e084ac2
    依赖结论: `editTargetVersionLine` 沿用该模式（frontmatter 行替换 + backlog 条目块行替换；匹配不到硬失败）。
-9. repo: tools
-   relative path: `skills/shared/crctl/scripts/crctl.mjs`
-   stable symbol/对象: dispatch `switch (cmd)`（第 3110 行起）；`cmdRegister`（第 2888 行，必填循环不含 `target-version`）；`REVIEW_REPAIR_TARGETS`（第 1841 行，`code: 'implement-code'`）；dev-plan `repair-target` 枚举校验（第 1992 行 `['write-dev-plan', 'write-tech-design']`）；`cmdTest`（第 2719 行）；`task done` 合法状态（第 1761 行 `ILLEGAL_LEDGER_STATE`，仅 `developing`）
+10. repo: tools
+    relative path: `skills/shared/crctl/scripts/crctl.mjs`
+    stable symbol/对象: dispatch `switch (cmd)`（第 3110 行起）；`cmdRegister`（第 2888 行，必填循环不含 `target-version`）；`REVIEW_REPAIR_TARGETS`（第 1841 行，`code: 'implement-code'`）；dev-plan `repair-target` 枚举校验（第 1992 行 `['write-dev-plan', 'write-tech-design']`）；`cmdTest`（第 2719 行）；`task done` 合法状态（第 1761 行 `ILLEGAL_LEDGER_STATE`，仅 `developing`）
    commit SHA: 7ddeeb7ae57ed097518e2fe176f2e6b31e084ac2
    依赖结论: 新 `case 'version-set'` 接入该 switch；FR-7 路由复用既有 repair-target 机制不新增枚举；FR-16/AC-10 依赖 `task done` 行为不放宽。
-10. repo: tools
+11. repo: tools
     relative path: `skills/shared/engineering-docs/templates/SDD-template.md`
     stable symbol/对象: 既有 9 节结构（无「批准范围」）
     commit SHA: 7ddeeb7ae57ed097518e2fe176f2e6b31e084ac2
     依赖结论: FR-5 在其上新增固定章节，其余节不动。
-11. repo: tools
+12. repo: tools
     relative path: `skills/develop/write-dev-plan/SKILL.md`
     stable symbol/对象: Step 2 frontmatter `target-version: {target_version 或 tbd}`；无覆盖矩阵节
     commit SHA: 7ddeeb7ae57ed097518e2fe176f2e6b31e084ac2
     依赖结论: FR-13 删除 `或 tbd` 改为继承 cr.md；FR-8 新增矩阵节。
-12. repo: tools
+13. repo: tools
     relative path: `skills/develop/write-dev-tasks/SKILL.md`（TASK frontmatter 无 `target-version`、无流程控制 TASK 禁止条款）；`skills/requirement/requirement-register/SKILL.md`（`target_version` 可选）；`skills/requirement/review-requirement/SKILL.md`（Step 2 五维度、无首轮闭包/前缀规则）；`skills/develop/review-tech-design/SKILL.md`（Step 2.2 已有首轮全量，可推广）；`skills/develop/review-dev-plan/SKILL.md`（八类维度、双轨已有）；`skills/develop/review-code/SKILL.md`（Step 1/5 以 `test-report.status=pass` 为前提）；`skills/develop/write-test-report/SKILL.md`（机器区字段说明未含 `skipped`）；`skills/develop/implement-code/SKILL.md`
     commit SHA: 7ddeeb7ae57ed097518e2fe176f2e6b31e084ac2
     依赖结论: 全部修订均是对这些既有文本的定点增改（§6 映射表），不重写结构。
-13. repo: tools
+14. repo: tools
     relative path: `skills/shared/crctl/scripts/test/contract-scan.test.mjs`
     stable symbol/对象: `FORBIDDEN = ['repair-instructions', 'fixed-blockers', 'suggestion_policy', 'suggestion-policy']`（第 21 行）；PIPELINES 3 条 + SKILLS 11 个（第 23-40 行）
     commit SHA: 7ddeeb7ae57ed097518e2fe176f2e6b31e084ac2
     依赖结论: FR-4/AC-4——新修订文本不得包含这四个串；本 CR 不修改该扫描器。
-14. repo: tools
+15. repo: tools
     relative path: `skills/shared/crctl/scripts/test/merge-fixture.mjs`（`makeCodeApprovedFixture` 第 100-101 行 cr.md 模板无 `target-version`）；`test/writeback-tx.test.mjs`（第 103 行附近 `TX_INPUT_CONFLICT` 断言）；`test/register-tx.test.mjs`（`regArgs` 第 87 行无 `--target-version`）；`test/test-cr.test.mjs`（fixture cr.md 第 152 行无 `target-version`）
     commit SHA: 7ddeeb7ae57ed097518e2fe176f2e6b31e084ac2
     依赖结论: §6.1 夹具适配清单的全部依据；不先行适配则 AC-18 必红。
-15. repo: tools
+16. repo: tools
     relative path: `skills/shared/crctl/gates.json`（第 102 行 `{ "type": "deliveryIndexComplete" }`）
     stable symbol/对象: `deliveryIndexComplete` 归档门禁
     commit SHA: 7ddeeb7ae57ed097518e2fe176f2e6b31e084ac2
     依赖结论: FR-11/AC-11——本 CR 零改动，行为保持一致。
-16. repo: tools
+17. repo: tools
     relative path: `ARCHITECTURE.md`（§3 代码地图 crctl 段；§8 维护规则「crctl 新增写入子命令」触发修订）
     stable symbol/对象: 维护规则触发条件清单
     commit SHA: 7ddeeb7ae57ed097518e2fe176f2e6b31e084ac2
     依赖结论: version-set 属新增写入子命令 → 实施期做一句增量（登记子命令与同构 owner-set 性质），不抄写状态机条款。
-17. repo: tools
+18. repo: tools
     relative path: `README.md`（§4 流程总览、§5 自动评审与人工审批、§7 恢复与 status/next）
     stable symbol/对象: 人读流程章节结构
     commit SHA: 7ddeeb7ae57ed097518e2fe176f2e6b31e084ac2
     依赖结论: NFR-6 版本规则人读同步的插入位置。
-18. repo: tools
+19. repo: tools
     relative path: `pipeline-templates/requirement-authoring.pipeline.json`（inputs 已含必填 `target_version`）；`architecture-design.pipeline.json`、`code-implementation.pipeline.json`（reviewLoop 结构）
     stable symbol/对象: 三条 CR Pipeline 编排
     commit SHA: 7ddeeb7ae57ed097518e2fe176f2e6b31e084ac2
