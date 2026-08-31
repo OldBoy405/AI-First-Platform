@@ -16,9 +16,9 @@ owners:
 target-version: unassigned
 source: AIFI-15
 origin: ""
-status: tech-designing
+status: tech-design-review-pending
 created: "2026-08-31T17:13:10+08:00"
-updated: "2026-08-31T19:21:41+08:00"
+updated: "2026-08-31T19:33:07+08:00"
 remote-ref: ""
 last-push-at: ""
 last-push-by: ""
