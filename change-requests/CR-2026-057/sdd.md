@@ -6,7 +6,7 @@ title: CR 全生命周期最小改造 — 评审闭合、范围冻结、覆盖�
 target-version: unassigned
 status: draft
 created: 2026-08-31T18:30:00+08:00
-updated: 2026-08-31T19:20:00+08:00
+updated: 2026-08-31T19:30:20+08:00
 ---
 
 # 1. 架构概览
@@ -50,7 +50,7 @@ register --target-version <v>（必填，规范化落 cr.md/backlog）
 ## 1.4 模块边界
 
 - `workspace-transactions.mjs`：新增导出 `normalizeTargetVersion`（纯函数）与 lib 内 `readCrMdTargetVersion`（cr.md frontmatter 行级读取）；`registerCr` 顶部校验；`applyWritebackAtomic` 顶部版本守卫；`runTestPlan`/`renderTestMachineReport` 计算并渲染 `skipped`。复用既有 `crWorktreePath`（守卫读取路径）、`resolveOperationalWorkspace`（只读，主流程 authority 判定）、`canonicalWritebackBusinessInput`、`loadOrCreateJournal`、`prepareWritebackCandidate`。
-- `crctl.mjs`：dispatch 新增 `case 'version-set'`；`cmdRegister` 参数面调整；HELP 文本补行。`version-set` 复用 `cmdOwnerSet` 的 durable ledger 事务骨架（`recoverLedgerCommand`/`beginLedgerCommand`/tracked-clean 前置/受控 git add-commit/回滚）。
+- `crctl.mjs`：dispatch 新增 `case 'version-set'`；`cmdRegister` 参数面调整；HELP 文本补行。`version-set` 复用 `cmdOwnerSet` 的 durable ledger 事务骨架（`recoverLedgerCommand`/`beginLedgerCommand`/tracked-clean 前置/受控 git add-commit/回滚）；`recoverLedgerCommand` 的调用时点按 §4.4 时序修订（不复刻 owner-set「先恢复后校验」顺序）。
 - Skill 文档层：只改业务判断与输出约束（FR-1：不改状态机、不改 `review-record` schema 必填字段集、不改 attempt 账本）。
 
 ---
@@ -110,8 +110,9 @@ guardWritebackVersion(crMdTargetRaw, inputTargetRaw):
 | 输出 | `{ op: "version-set", cr, from, to, changed, files: [<workspace-relative paths>] }`；幂等短路 `changed=false` 零新 commit |
 | 状态副作用 | 不改变 CR status（不 advance、不发 status 事件） |
 | 业务错误码 | `VERSION_SET_INVALID` / `VERSION_SET_NOT_UNASSIGNED` / `VERSION_SET_STATE_INVALID` / `VERSION_SET_DERIVED_DRIFT`（PRD FR-15 已闭合，SDD 不发明） |
+| 断点恢复（可恢复优先路径） | 允许状态校验通过后、tracked-clean 与漂移检查之前：`recoverLedgerCommand(ws, ledgerTxKey('version', cr))`——内部先 `hasLedgerTransaction` 只读探测（无残留 no-op；有残留则幂等回滚未提交写集到 before 快照，或按 head+`AI-First-Tx` trailer 识别已提交并清理 journal）。禁止状态在恢复前短路（零恢复）；键 `version/{cr}` 与其它 op 隔离，外部 dirty 不被恢复 |
 
-前置/基础设施失败复用 owner-set 同款机制与同前缀错误码族（`VERSION_SET_WORKTREE_DIRTY`、`VERSION_SET_COMMIT_FAILED`、`VERSION_SET_COMMIT_ROLLBACK_FAILED`，镜像 `OWNER_*`；不属于四条业务码，AC-15 负向向量不涉及）。
+前置/基础设施失败复用 owner-set 同款机制与同前缀错误码族（`VERSION_SET_WORKTREE_DIRTY`、`VERSION_SET_COMMIT_FAILED`、`VERSION_SET_COMMIT_ROLLBACK_FAILED`，镜像 `OWNER_*`；不属于四条业务码，AC-15 负向向量不涉及）。恢复原语与错误码族复用 owner-set，但恢复时点不同：owner-set 先恢复后校验，version-set 为「允许状态校验 → 恢复 → tracked-clean → 漂移检查」（理由见 §4.4 时序修订，B-SDD-005）。
 
 ## 2.4 test-report.md 机器区 additive 字段（FR-16）
 
@@ -296,15 +297,15 @@ cmdVersionSet(ws, cr, gates, flags)
   1. 缺 --to → BAD_ARGS
   2. to = normalizeTargetVersion(flags.to, { allowUnassigned: false })
      !to.ok → VERSION_SET_INVALID（零写入）
-  3. resolveCrState(ws, cr)：status 不在允许集 → VERSION_SET_STATE_INVALID
-  4. tracked clean 前置（queryTrackedChanges）→ VERSION_SET_WORKTREE_DIRTY
-  5. 双投影 + 派生产物漂移检查：
+  3. resolveCrState(ws, cr)：status 不在允许集 → VERSION_SET_STATE_INVALID（禁止状态在恢复之前短路 → 零恢复）
+  4. await recoverLedgerCommand(ws, ledgerTxKey('version', cr))    # 可恢复优先路径：允许状态已核验，先于 tracked-clean/漂移（见下注）
+  5. tracked clean 前置（queryTrackedChanges）→ VERSION_SET_WORKTREE_DIRTY（步骤 4 之后残留已清，任何 tracked 变更必为外部 dirty）
+  6. 双投影 + 派生产物漂移检查（在恢复后的事务前状态上执行）：
      - crMd.value = normalizeTargetVersion(cr.md target-version)（必须 ok）
      - backlog 条目 target-version 缺失或规范化后 ≠ crMd.value → VERSION_SET_DERIVED_DRIFT
      - 每个已存在的 prd/sdd/plan/TASK-*：frontmatter 缺 target-version 或规范化后 ≠ crMd.value → VERSION_SET_DERIVED_DRIFT
      - crMd.value ≠ 'unassigned' 且 ≠ to.value → VERSION_SET_NOT_UNASSIGNED
      - crMd.value === to.value 且全部已存在产物 === to.value → 幂等短路 ok({changed:false})（零 commit）
-  6. await recoverLedgerCommand(ws, ledgerTxKey('version', cr))     # 断点恢复（全部只读前置校验通过后才执行，见下注）
   7. 行级编辑纯函数 editTargetVersionLine(text, to.value)：
      - cr.md / prd / sdd / plan / TASK-*：frontmatter 内 ^target-version: 行替换（cr.md 先 \r\n→\n 规范化）
      - _backlog.yml：matchEntryBlock 条目块内 target-version 行替换（同 editBacklogSet 的行级模式）
@@ -318,7 +319,10 @@ cmdVersionSet(ws, cr, gates, flags)
 
 不调 `updateCrMdStatus`（status 不变）、不发 status outbox 事件、不写 approval.yml。`owner-history`/`handover-history` 不动。
 
-**时序修订（B-SDD-005 结论）**：`recoverLedgerCommand` 从原第 3 步移至全部只读前置校验（步骤 2 的 `--to` 规范化、步骤 3 状态允许集、步骤 4 tracked clean、步骤 5 双投影/派生产物漂移）通过之后、行级编辑与 `beginLedgerCommand` 之前。恢复原语会回滚未完成写集或删除 journal——若在禁止状态（如 `merging`）或漂移/脏工作区检查之前执行，`VERSION_SET_STATE_INVALID`/`VERSION_SET_DERIVED_DRIFT` 等负向码可能在返回前已产生持久化变化，违反 FR-15「失败零写、无半成品」。修订后：AC-15 全部负向向量在到达 recover 前即短路（零写零恢复）；recover 只作用于已通过全部校验的输入上残留的 version-set 断点（键 `version/{cr}`，与其它 op 的 journal 隔离，且自身是幂等恢复）。与 owner-set 的差异（owner-set 先 recover 后校验）是有意的：owner-set 无禁止状态面/零写观察点约束，version-set 有 FR-15 硬契约，故不复刻其顺序。
+**时序修订（B-SDD-005 结论，attempt-2 定稿）**：`recoverLedgerCommand` 位于允许状态校验（步骤 3）之后、tracked clean（步骤 5）与漂移检查（步骤 6）之前，构成 version ledger 的可恢复优先路径，同时满足两条硬约束：
+
+1. **禁止状态零恢复**：步骤 3 在恢复之前短路——`merging`/`writing-back`/终态直接 `VERSION_SET_STATE_INVALID`，恢复原语不会在禁止状态产生任何持久化变化。与 owner-set「先 recover 后校验」的顺序差异是有意为之：owner-set 无禁止状态面与零写观察点约束，version-set 有 FR-15 硬契约，故不复刻其顺序（owner-set 自身不改，zero_diff）。
+2. **中断重试闭环（本事务残留 vs 外部 dirty）**：`beginLedgerTransaction` 在 commit 前即把多文件 write-set 落盘（journal phase `written`）；此时中断，重试若先跑 tracked-clean 或漂移检查，会先命中 `VERSION_SET_WORKTREE_DIRTY`/`VERSION_SET_DERIVED_DRIFT` 而永远无法到达恢复。步骤 4 的提前恢复后：`recoverLedgerCommand` 内部先 `hasLedgerTransaction`（只读探测，键 `version/{cr}`）——无残留 → no-op；有残留 → 幂等恢复：未提交写集回滚到 before 快照（工作区回到事务前状态，步骤 5/6 在恢复后状态上通过）；已提交则按 head + `AI-First-Tx` trailer 识别确认并清理 journal（全链已等于 `to.value`，步骤 6 幂等短路 `changed=false` 零新 commit）。键 `version/{cr}` 与其它 op 的 journal 隔离：只有本事务残留被触碰，外部 dirty 不在该键下、不被恢复，仍在步骤 5 被 `VERSION_SET_WORKTREE_DIRTY` 拒绝。负向向量（非法 `--to`、禁止状态）在恢复前即短路——零写零恢复；恢复与事务写入共用同一 `ledger-version/{cr}` 键锁，并发重试安全。
 
 ## 4.5 skipped 计算（FR-16）
 
@@ -351,7 +355,7 @@ renderTestMachineReport：每 command 块末追加 "    skipped: {c.skipped}"
 | 决策 | 选择 | 替代与否决理由 | 是否 ADR |
 |---|---|---|---|
 | D-1 版本规范化纯函数落点 | `workspace-transactions.mjs` 新导出，三命令共用 | ① crctl.mjs 内联：三处复制、测试需经 CLI 间接覆盖；② 独立新文件：无必要的新模块边界。lib 已是被 crctl.mjs 与测试共同 import 的既有落点 | 否（易逆转、上下文自明、有真实替代但权衡清楚） |
-| D-2 version-set 同构 owner-set | 复用 `recoverLedgerCommand`/`beginLedgerCommand`/tracked-clean/受控 git/回滚骨架 | ① 新事务框架：违反 NFR-2 与 ARCHITECTURE.md §6 否决记录；② 独立账本文件：违反「账本唯一写入通道」不变量；③ `backlog-set` 白名单扩展：backlog-set 只覆盖单账本标量，做不到 cr.md+backlog+派生六文件原子 | 否 |
+| D-2 version-set 同构 owner-set | 复用 `recoverLedgerCommand`/`beginLedgerCommand`/tracked-clean/受控 git/回滚骨架；恢复时点按 §4.4 时序修订调整（不复刻 owner-set「先恢复后校验」顺序） | ① 新事务框架：违反 NFR-2 与 ARCHITECTURE.md §6 否决记录；② 独立账本文件：违反「账本唯一写入通道」不变量；③ `backlog-set` 白名单扩展：backlog-set 只覆盖单账本标量，做不到 cr.md+backlog+派生六文件原子 | 否 |
 | D-3 skipped 在 `runTestPlan` 计算 | `crctl test` 机器区单一计算点 | ① review-code 自行解析框架输出：FR-16 明令禁止（框架输出多样，reviewer 裁量差异正是 AIFI-14 教训）；② 新 coverage ledger：PRD 排除 | 否 |
 | D-4 前缀强制在 Skill 文本层 | 四个 review SKILL.md 契约 + FR-3 机械核对规则 | crctl `review-record` 加内容校验：违反 FR-1「不改 review-record schema」与 FR-17「静态检查仅重复失败且规则确定时下沉」——前缀规则是本 CR 首建，尚无"重复失败"事实 | 否 |
 | D-5 批准范围承载 | SDD 文档固定章节（模板 + write-tech-design 契约） | ① 新 ledger 文件：FR-5 明令禁止；② crctl schema 字段：会把纯文档事实引入受控账本，扩大 CR-2026-039 收紧的 schema 面 | 否 |
@@ -402,7 +406,7 @@ renderTestMachineReport：每 command 块末追加 "    skipped: {c.skipped}"
 - `normalizeTargetVersion` 单测：全值域表（合法：`unassigned`/`0.30`/`v0.30`→`0.30`/`V0.30`/`0.1.0`；非法：缺省/空/`tbd`/`TBD`/`n/a`/`pending`/`0.29-rc`/`1`/`0.30.0.1`/`latest`/内嵌空白/非 string）。
 - register 负向：`REGISTER_VERSION_INVALID` × 6 类输入，断言 cr.md/backlog 新条目/journal 均不存在（零写入）；正向：`unassigned`/`0.30`/`v0.30` 成功且 cr.md 与 JSON `targetVersion` 为规范化值；幂等：同 key `v0.30`→`0.30` 续跑同 CR。
 - writeback 守卫：三 stage × {MISMATCH、UNASSIGNED、INVALID}，每次调用后断言 §3.2 六项禁止观察点；同参重试同码无增量；`status=drafting` 夹具证明版本错误优先于 `WRITEBACK_STATE_MISMATCH`（AC-14.6）；INVALID 向量含显式空串 `--target-version ""`（与缺 flag 的 `BAD_ARGS` 区分断言，B-SDD-003）与规范化值回灌断言（`v0.2`/`V0.2` 输入下 businessInputDigest/manifest `targetVersion` 为 `0.2`，B-SDD-002）。
-- version-set：正向 unassigned→`0.30` 全链同步（files 六类全列）；幂等 changed=false 零 commit；`--to unassigned`/畸形 → INVALID；`merging` → STATE_INVALID；cr.md 手改真实版本而 PRD 仍 unassigned → DRIFT；允许状态抽样 + 终态拒绝；重试无半成品。
+- version-set：正向 unassigned→`0.30` 全链同步（files 六类全列）；幂等 changed=false 零 commit；`--to unassigned`/畸形 → INVALID；`merging` → STATE_INVALID；cr.md 手改真实版本而 PRD 仍 unassigned → DRIFT；允许状态抽样 + 终态拒绝。中断重试闭环（B-SDD-005）：`CRCTL_FAULT_POINT=tx-apply-between-rename`（既有通用注入点，`applyWriteSet` 内触发，FAULT_POINTS 零新增）中断 version-set → 残留 journal + 部分落盘写集；无注入重跑 → 可恢复优先路径先回滚到 before 快照，tracked-clean/漂移检查在恢复后状态上通过 → 新事务成功：恰 1 个 version-set commit、六类文件全等于 to.value、重试全程不出现 `VERSION_SET_WORKTREE_DIRTY`/`VERSION_SET_DERIVED_DRIFT`；`ledger-after-commit` 中断（commit 后 finish 前，`injectLedgerFault` 插点同 owner-set）→ 重跑 → 按 head+trailer 识别已提交 → 清理 journal → 全链已等于 to.value → changed=false 零新 commit。禁止状态零恢复：`merging` 夹具预置 `version/{cr}` 残留 → 运行 → `VERSION_SET_STATE_INVALID`，journal 与脏文件原样保留（恢复未执行）。外部 dirty 不被恢复：无 `version/{cr}` 残留但工作区有无关 tracked 变更 → `VERSION_SET_WORKTREE_DIRTY`（键隔离证明）。
 - skipped：命中模式表夹具（`# skip`、`ok 3 # skip`、`skipped: 2`、`SKIPPED`、`no tests to run`、CRLF 变体）→ `skipped:true`；无模式 exit 0 → false；non-zero → false（非 skip）；模式文本只出现在 `$ <cmd> <args>` 行或 `(exit=0)` 行 → false（两域外不命中，B-SDD-004 回归）；标记缺失/重复 → `TEST_LOG_MARKER_INVALID` 硬失败（NFR-3）。
 - AC-1～AC-4（评审行为夹具）不自动化：评审判断是模型行为，证据载体是 `review-annotations/*.yml` 内容，由评审执行时按 AC-1～AC-4 夹具验证；AC-4 由既有 `contract-scan.test.mjs` 零命中断言。
 - AC-17：diff 审阅（不引入未再次失败的新 validator）；AC-18：`node --test skills/shared/crctl/scripts/test/crctl.test.mjs` 及既有 writeback/archive/register/test-cr 全绿。
@@ -425,7 +429,7 @@ renderTestMachineReport：每 command 块末追加 "    skipped: {c.skipped}"
 | AC-12 register 正负向量 | FR-12 | 六类负向 `REGISTER_VERSION_INVALID` 零写入；`unassigned`/`0.30`/`v0.30` 成功且 `targetVersion` 规范化值；本 CR `cr.md` 已为 `unassigned` 为正向例 | 校验点位于 registerCr 顶部（任何副作用之前） |
 | AC-13 继承侧 | FR-13 | 本 CR PRD/SDD `target-version: unassigned` 与 cr.md 全等；夹具 `version-set` 后已存在产物 frontmatter 与 cr.md 全等 | 产物 frontmatter 由 Skill 契约写入；version-set 原子写集覆盖六类文件 |
 | AC-14 writeback 守卫观察点 | FR-14 | 三 stage × 三错误码；每次失败后六项禁止观察点；同参重试同码；drafting 夹具版本错误优先 | 守卫时序 §4.3 保证先于 candidate/journal/authority 断言 |
-| AC-15 version-set 正负向量 | FR-15 | 正向全链同步 + JSON from/to/files；INVALID/STATE_INVALID/DERIVED_DRIFT 零写；手改 cr.md 不被官方入口支持（既有保护不变） | 允许状态集与漂移检查在写入前；durable ledger transaction 保证零半成品 |
+| AC-15 version-set 正负向量 | FR-15 | 正向全链同步 + JSON from/to/files；INVALID/STATE_INVALID/DERIVED_DRIFT 零写；中断重试经可恢复优先路径闭环（重试全程无 WORKTREE_DIRTY/DERIVED_DRIFT 误报）；禁止状态零恢复；手改 cr.md 不被官方入口支持（既有保护不变） | 允许状态校验先于恢复与一切写入；`version/{cr}` 键隔离的恢复先于 tracked-clean 与漂移检查；durable ledger transaction 保证零半成品 |
 | AC-16 skip 语义 | FR-16 | 关键 AC 唯一证据 `cmd-NN` 且 `skipped:true` → review-code blocker（`implement-code`）+ 摘要含「未执行」；log 夹具断言 `crctl test` 写 `skipped:true/false` | `skipped` 由 `crctl test` 唯一计算；review-code 只读机器区 |
 | AC-17 无未触发新 validator | FR-17 | diff 不含 P1-3 举例其余检查实现 | 范围冻结 + diff 审阅 |
 | AC-18 回归全绿 | NFR-1 + §6.1 | `node --test` 全部通过，既有用例不失败 | 夹具适配清单 §6.1 先行 |
@@ -434,10 +438,10 @@ renderTestMachineReport：每 command 块末追加 "    skipped: {c.skipped}"
 
 # 7. 安全与性能考量
 
-- **零写入失败面（FR-12/14/15）**：三个版本入口的失败路径全部发生在任何持久化副作用之前（register 顶部校验、writeback 守卫先于 candidate/journal、version-set 校验先于 `recoverLedgerCommand`/`beginLedgerCommand`）。version-set 的写入经 durable ledger transaction（before snapshots + recoverable write-set），commit 前中断整组回滚，无半成品。
-- **并发与 CAS**：register 复用既有 lock + journal envelope + inputDigest（含规范化 targetVersion）；version-set 复用 ledger tx key + expectedHash CAS + tracked-clean 前置；writeback 守卫纯读不取锁。同参重试语义（幂等或同错误码）由 §3 契约覆盖。
+- **零写入失败面（FR-12/14/15）**：三个版本入口的失败路径全部发生在任何持久化副作用之前（register 顶部校验、writeback 守卫先于 candidate/journal、version-set 的负向校验——非法 `--to`、禁止状态——先于恢复与一切写入）。version-set 的恢复时序为「允许状态校验 → keyed 可恢复优先路径 → tracked-clean → 漂移检查 → 行级编辑 → 事务写入」：禁止状态在恢复前短路（零恢复），本事务残留被幂等回滚后才判定外部 dirty 与真实漂移（AC-15 中断重试闭环）。version-set 的写入经 durable ledger transaction（before snapshots + recoverable write-set），commit 前中断整组回滚，无半成品。
+- **并发与 CAS**：register 复用既有 lock + journal envelope + inputDigest（含规范化 targetVersion）；version-set 复用 ledger tx key + expectedHash CAS + tracked-clean 前置，恢复与事务写入共用同一 `ledger-version/{cr}` 键锁（并发重试串行、恢复幂等）；writeback 守卫纯读不取锁。同参重试语义（幂等或同错误码）由 §3 契约覆盖。
 - **行尾与硬失败（NFR-3）**：新增 `editTargetVersionLine`、skipped 两段提取均先 `\r\n→\n`；`LEDGER_PARSE_FAILED` / `TEST_LOG_MARKER_INVALID` 硬失败不静默。
-- **性能（NFR-4，复评 R1 修订口径）**：三个版本守卫（register 顶部规范化、writeback 守卫、version-set `--to` 规范化）均为常数时间字符串比较/正则，无网络调用、无目录扫描——这是 NFR-4「入口守卫常数时间」的完整覆盖。version-set **命令整体**不是常数时间：FR-15 契约要求全链原子同步与漂移检查，必须枚举并读取原子写入集的已存在文件（cr.md、`_backlog.yml`、prd/sdd/plan/TASK-*，§3.3 固定文件面），复杂度 O(该面已存在文件数)，不随仓库规模无界增长；这是满足 AC-15 全链同步的固有成本，且全部读取发生在任何写入之前（§4.4 步骤 3–5 先于步骤 6–8）。writeback 守卫每次读取单个 cr.md（frontmatter 行级），无网络调用。`skipped` 只对已生成的 log 文本做两段提取 + 5 个正则测试，每个命令一次。
+- **性能（NFR-4，复评 R1 修订口径）**：三个版本守卫（register 顶部规范化、writeback 守卫、version-set `--to` 规范化）均为常数时间字符串比较/正则，无网络调用、无目录扫描——这是 NFR-4「入口守卫常数时间」的完整覆盖。version-set **命令整体**不是常数时间：FR-15 契约要求全链原子同步与漂移检查，必须枚举并读取原子写入集的已存在文件（cr.md、`_backlog.yml`、prd/sdd/plan/TASK-*，§3.3 固定文件面），复杂度 O(该面已存在文件数)，不随仓库规模无界增长；这是满足 AC-15 全链同步的固有成本，且全部读取发生在任何写入之前（§4.4 步骤 5–6 的读取先于步骤 7–9 的写入；步骤 4 恢复无残留时 no-op）。writeback 守卫每次读取单个 cr.md（frontmatter 行级），无网络调用。`skipped` 只对已生成的 log 文本做两段提取 + 5 个正则测试，每个命令一次。
 - **安全（NFR-5）**：不改变 `approve` 的 TTY/`--grant` 约束；version-set 调用者约束与 `owner-set` 相同（非 TTY 限制，identity 由 crctl 生成）；不新增绕过 crctl 的账本写路径；审计日志（`.crctl/audit.log`）覆盖 version-set 与 register 校验失败路径按既有 `fail` 语义输出 stderr JSON。
 - **边界条件**：`v` 前缀剥离仅恰好一个（`vv0.30` → 畸形）；版本号禁止前导零（`0` 本身除外）；`0.1.0` 合法（MAJOR.MINOR.PATCH）；backlog 条目缺 `target-version` 视为漂移拒绝（不静默补写）；TASK-* 缺 frontmatter 字段同上。
 
@@ -526,7 +530,7 @@ renderTestMachineReport：每 command 块末追加 "    skipped: {c.skipped}"
    relative path: `skills/shared/crctl/scripts/crctl.mjs`
    stable symbol/对象: `cmdOwnerSet`（第 2461 行起）及其骨架：`ledgerTxKey`（第 676 行）、`recoverLedgerCommand`（第 689 行）、`beginLedgerCommand`（第 703 行）、`queryTrackedChanges` tracked-clean 前置、`rollbackOwnerWrite`（第 2455 行附近）
    commit SHA: 7ddeeb7ae57ed097518e2fe176f2e6b31e084ac2
-   依赖结论: `version-set` 同构复用该事务骨架（决策 D-2）；错误码族镜像 `OWNER_*`。
+   依赖结论: `version-set` 同构复用该事务骨架（决策 D-2）；错误码族镜像 `OWNER_*`。复用但调整恢复时点（B-SDD-005）：owner-set 先 recover 后校验，version-set 改为允许状态校验后、tracked-clean 前调用 `recoverLedgerCommand`——该既有原语内部先 `hasLedgerTransaction` 只读探测再幂等恢复/确认，自带键隔离（`version/{cr}`）与锁（`ledger-version/{cr}`），SDD 不新增 lib 函数；owner-set 自身顺序不动（zero_diff 不涉）。
 9. repo: tools
    relative path: `skills/shared/crctl/scripts/crctl.mjs`
    stable symbol/对象: `editCrOwnerProjection`（第 2400 行）/`editBacklogOwnerProjection`（第 2418 行）/`editBacklogSet`（BACKLOG_SET_FIELDS，第 2449 行起）的行级正则改写模式与 `matchEntryBlock`/`findBlockEnd`；`readOwnerState`（第 2325 行）双投影一致性思路
