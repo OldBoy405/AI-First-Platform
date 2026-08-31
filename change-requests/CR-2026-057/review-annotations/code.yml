@@ -1,0 +1,51 @@
+cr-id: CR-2026-057
+review-type: code
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-01T03:31:54+08:00"
+verdict: block
+blockers:
+  - "本轮新增：B-CODE-001 [FR-15/AC-15] `skills/shared/crctl/scripts/crctl.mjs:2597` 的 `_backlog.yml` 条目替换未保留目标块与后继条目之间的换行：`matchEntryBlock().end` 指向下一条目的首字符，而 `block.text`/`lines.join('\n')` 不含块尾换行，当前拼接会把目标块最后一行与下一条 `- id:` 连在一起，导致对非末尾 CR 执行 `version-set` 时破坏 backlog YAML。现有 `version-set.test.mjs` 每个 fixture 只注册一个 CR，未覆盖该真实场景。请保留块边界换行，并增加“目标 CR 后仍有至少一个 backlog 条目”的集成回归，断言两条投影均可解析且后继条目字节/字段不被破坏；repair-target=implement-code。"
+  - "本轮新增：B-CODE-002 [测试证据可重放性] `change-requests/CR-2026-057/test-report.md:79,81` 出现两条 `<!-- crctl:analysis-below -->`，违反机器区/分析区唯一 marker 契约；同实现的 `parseAnalysisMarker` 明确要求恰好 1 条，因此后续 reviewLoop 重新生成测试证据会直接 `TEST_MARKER_INVALID`，当前回修路径不可执行。请收敛为唯一 marker，并通过 `write-test-report`/`crctl test` 合法路径重新生成可重放证据，保持六条命令与 plan §5.3 冻结口径不变；repair-target=implement-code。"
+dimensions:
+  代码↔TASK↔SDD 对齐: "BLOCK：批准范围前置核对通过——tools 实际 diff 仅触及 SDD §1.1/§6 批准的 22 个文件，未触碰 §9 zero_diff；multica merge-base diff 为空。但 version-set 对非末尾 backlog 条目存在数据破坏路径，AC-15 的全链原子同步与当前验收可达性未闭合。"
+  工程质量: "BLOCK：核心实现总体复用既有 ledger transaction 且无新增依赖/状态/事务框架；但 backlog 拼接遗漏分隔换行，属于确定性账本损坏。test-report 双 marker 还使证据再生成不具备幂等可恢复性。"
+  关键路径可读性: "PASS：register/writeback/version-set/skipped 的顺序、错误码与恢复时序均有局部注释，调用链可追踪；本轮 blocker 均可定位到单一拼接点或证据文件。"
+  安全性: "PASS：审批 TTY/受控 Git/账本唯一写入边界未扩张，controlled-shell rules、durable-tx、yaml-subset、REVIEW_REPAIR_TARGETS 均零 diff；未发现凭证或路径逃逸改动。"
+  测试覆盖: "BLOCK：机器区 cmd-01～cmd-06 均 exit-code=0、timed-out=false、skipped=false，关键 AC 唯一证据 cmd-02～cmd-06 未被 skip；但 version-set 测试缺少目标 CR 非 backlog 末项的关键失败路径，未捕获 B-CODE-001。"
+  测试证据可信度: "BLOCK：test-report status=pass、generated-by=crctl-test，traceability 的 status/command-digest 与报告一致，六个 cmd-NN 日志及 BR-1/BR-2 日志均存在；但分析 marker 重复使 canonical 报告无法被后续 crctl test 合法消费，证据闭环不可重放。"
+  前端质量: "N/A：实际 diff 未触及 tsx/vue/css/html。"
+suggestions: []
+review-loop:
+  current-attempt: 1
+release-subjects:
+  version: 1
+  repositories:
+    - repo: ai-first-platform-docs
+      remote-ref: refs/heads/requirement/CR-2026-057
+      reviewed-source-sha: 819497a4d371bae3342bfdbc77c9ae9e8d085c57
+    - repo: multica
+      remote-ref: refs/heads/requirement/CR-2026-057
+      reviewed-source-sha: ae955fa02cdcda9a4a9d3abc5dcbd54167eadae6
+    - repo: tools
+      remote-ref: refs/heads/requirement/CR-2026-057
+      reviewed-source-sha: 45006b7314b3365ea293c66528635ea2b8e3c3e5
+  artifacts:
+    algorithm: sha256
+    canonicalization: crlf-to-lf+path-sort
+    files:
+      - { path: change-requests/CR-2026-057/plan.md, sha256: d8516be330bbb52256b60ed50d05807b2f100a6f700d192b60e12618b20fb176 }
+      - { path: change-requests/CR-2026-057/prd.md, sha256: 9ae7ec873509fca0bec4cb9adb7e5c3528d999fac25e4c4ec74345c59ac3178b }
+      - { path: change-requests/CR-2026-057/sdd.md, sha256: 5e39a5324518d9e44574b8b0ad736ced66fed3ac7a6a7ea2648375e6aeac8525 }
+      - { path: change-requests/CR-2026-057/tasks/TASK-01.md, sha256: be34bbb6a016eebbf72784f671713e5078958b8b8c1fbe782a86d08107271baa }
+      - { path: change-requests/CR-2026-057/tasks/TASK-02.md, sha256: 9f0a437e87b2c2489b91ec3883434599cb34d0081f5956057ef6bf319ade75ef }
+      - { path: change-requests/CR-2026-057/tasks/TASK-03.md, sha256: 1e480421a8fd95e63356eb21f12d92b191686ad2c70729f92ed2e334ac5ce93f }
+      - { path: change-requests/CR-2026-057/tasks/TASK-04.md, sha256: bd0b63090fc3f63ec58c67900aaa000bd4d6b3481ad748e9aced025704279026 }
+      - { path: change-requests/CR-2026-057/tasks/TASK-05.md, sha256: ad95c502f7c6b00cded76747a840b82c66f28e4f29d667085528fafaeb04056b }
+      - { path: change-requests/CR-2026-057/tasks/TASK-06.md, sha256: aa621490958c4a9df13bfaad171e993bf5e309c79ac5aaa0ddf1af4471e6215f }
+      - { path: change-requests/CR-2026-057/tasks/TASK-07.md, sha256: 7c0418952c110e8142131fcc8319b8e6c9039023be1ceb43952a67e7089e6686 }
+      - { path: change-requests/CR-2026-057/tasks/TASK-08.md, sha256: 1b702538e94113d6d18af9ed06d32b3683cd8cea5e13bdefce99247e73c21f8e }
+      - { path: change-requests/CR-2026-057/tasks/TASK-09.md, sha256: 6d6c56f755ef66e469e5164cff006fcc3240c25783daa08578b205c5fa924210 }
+      - { path: change-requests/CR-2026-057/tasks/TASK-10.md, sha256: bd1ff96c0a4fc81a7811906cbc5ba5d17efe99c4478ce197b07df3e38e2606b3 }
+      - { path: change-requests/CR-2026-057/tasks/TASK-11.md, sha256: c572fe5c86ebf16acc206ae431957ed6fe9da132d39b42954092f2ee762e19c1 }
+      - { path: change-requests/CR-2026-057/tasks/_index.yml, sha256: f1e12c466dcbbd8919c15fd92fee638a2b085c5b377f702334462dd7b1e10ff6 }
+    digest: 7dd05609ca460ea7e86f8ae22f0259848605db725782128e67aedb5a4801368b
