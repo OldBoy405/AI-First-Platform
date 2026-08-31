@@ -3,7 +3,7 @@ cr: CR-2026-057
 status: pass
 tester: Ray
 generated-by: crctl-test
-generated-at: "2026-09-01T03:05:20+08:00"
+generated-at: "2026-09-01T04:29:52+08:00"
 command-digest: 9ed980e2da893df7a9e9bc457696dd474c0d2eafb3ffaa21101ed6e13f96cc0f
 commands:
   - repo: tools
@@ -78,11 +78,9 @@ commands:
 
 <!-- crctl:analysis-below -->
 
-<!-- crctl:analysis-below -->
-
 ## 分析区（CR-2026-057 TASK-11，机器证据核对与基线红例外）
 
-**生成说明**：本区由 dev-agent 在 `crctl test` 机器区（marker 上方）之外补写，不覆盖机器证据；机器区 `generated-by: crctl-test`、attempt 2（attempt 1 为误用主 checkout 旧二进制生成、无 `skipped` 字段，已删 journal 用 CR worktree 二进制重跑，两轮 attempt 均留痕于 review-loop.yml）。
+**生成说明**：本区由 dev-agent 在 `crctl test` 机器区（marker 上方）之外补写，不覆盖机器证据；机器区 `generated-by: crctl-test`、attempt 3（attempt 1 误用主 checkout 旧二进制、无 `skipped` 字段；attempt 2 首次重跑；attempt 3 为 review-code 首轮 BLOCK 后的 B-CODE-001/002 回修证据，经合法 `crctl test` 路径重生成，marker 已收敛为唯一一条）。三轮 attempt 均留痕于 review-loop.yml。
 
 ### 1. 六命令机器区核对（plan §5.1 / §5.3 规则 3/4）
 
@@ -92,7 +90,7 @@ commands:
 
 ### 2. 基线红例外核对（plan §5.3 规则 1/2/5）
 
-实施 HEAD（tools CR worktree，`crctl git rev-parse HEAD` = `45006b7`，TASK-01～07 提交序列：`e8b8dc0`→`1c2aa5a`→`e27c9a8`→`cac84b5`→`24f8cca`→`bfb3a3f`→`45006b7`）以 spec reporter、**不带** skip-pattern 完整重跑 BR-1/BR-2 所在两个测试文件，失败集合与例外表逐条全等，红计数 = 2 不因本 CR 增加：
+实施 HEAD（tools CR worktree，`crctl git rev-parse HEAD` = `07b47da`，提交序列：TASK-01～07 `e8b8dc0`→`1c2aa5a`→`e27c9a8`→`cac84b5`→`24f8cca`→`bfb3a3f`→`45006b7` + 回修 `07b47da`（B-CODE-001：backlog 条目块边界换行保留 + 非末条目集成回归））以 spec reporter、**不带** skip-pattern 完整重跑 BR-1/BR-2 所在两个测试文件，失败集合与例外表逐条全等，红计数 = 2 不因本 CR 增加（本回修提交后重新实测）：
 
 | BR-ID | 证据日志 | 完整重跑结果 | 与例外表核对 |
 |---|---|---|---|
@@ -109,7 +107,7 @@ commands:
 ### 3. 四项静态核对
 
 1. **AC-4 contract-scan**：`contract-scan.test.mjs` 7/7 全绿——3 Pipeline + 11 SKILL 对四个禁止字段零命中。
-2. **AC-17 diff 审阅**：tools diff（基线 8c0a6db..HEAD）仅含 plan/SDD 批准面文件——新增确定性检查只有 FR-12/FR-14/FR-15 版本守卫与 FR-16 `skipped` 字段（P1-3 允许清单），无 PLAN symbol 存在性检查等未再次失败的新 validator；`durable-tx.mjs` 零 diff → `FAULT_POINTS` 零新增（version-set 测试复用既有 `tx-apply-between-rename`/`ledger-after-commit` 注入点）。
+2. **AC-17 diff 审阅**：tools diff（基线 8c0a6db..HEAD=`07b47da`）仍仅含 plan/SDD 批准面文件（回修 commit 只改 `crctl.mjs` 与 `version-set.test.mjs`，两者均在原 22 文件批准面内）——新增确定性检查只有 FR-12/FR-14/FR-15 版本守卫与 FR-16 `skipped` 字段（P1-3 允许清单），无 PLAN symbol 存在性检查等未再次失败的新 validator；`durable-tx.mjs` 零 diff → `FAULT_POINTS` 零新增（version-set 测试复用既有 `tx-apply-between-rename`/`ledger-after-commit` 注入点）。
 3. **AC-11 gates 零改动**：`gates.json` 不在 diff 中；`deliveryIndexComplete` 行为不变（archive-tx 既有用例除 BR-2 外全绿）。
 4. **AC-13 frontmatter 全等**：cr.md / prd.md / sdd.md / plan.md / 全部 11 张 TASK 卡 `target-version: unassigned`，全等无 `tbd`。
 
@@ -127,7 +125,7 @@ commands:
 
 - AC-12（register 版本校验正负向量与零写入）：cmd-02，负向 7 类输入 `REGISTER_VERSION_INVALID` 零写入 + 正向 `unassigned`/`0.30`/`v0.30`（写入 `0.30`）+ 同 key 规范化幂等/异值 `REGISTRATION_INPUT_MISMATCH`。
 - AC-14（writeback 版本守卫时序与六项零观察点）：cmd-03，三 stage × 三错误码各断言 specs 哈希/candidate 目录/journal/锁/authority/origin commit 数六项零观察点 + 同参重试同码 + drafting 夹具版本错误优先（AC-14.6）+ 缺 flag `BAD_ARGS` vs 显式空串 `WRITEBACK_VERSION_INVALID`（B-SDD-003）+ 回灌断言（B-SDD-002）。
-- AC-15（version-set 全链同步/幂等/漂移拒绝/中断重试闭环）：cmd-04，正向六类文件全等 to.value + `merging`/终态 `VERSION_SET_STATE_INVALID` 零恢复 + 漂移/键隔离 + `tx-apply-between-rename` 中断重跑恰 1 commit 全程无 WORKTREE_DIRTY/DERIVED_DRIFT + `ledger-after-commit` 幂等确认（B-SDD-005）+ AC-13 全链同步断言。
+- AC-15（version-set 全链同步/幂等/漂移拒绝/中断重试闭环）：cmd-04，正向六类文件全等 to.value + `merging`/终态 `VERSION_SET_STATE_INVALID` 零恢复 + 漂移/键隔离 + `tx-apply-between-rename` 中断重跑恰 1 commit 全程无 WORKTREE_DIRTY/DERIVED_DRIFT + `ledger-after-commit` 幂等确认（B-SDD-005）+ AC-13 全链同步断言 + **B-CODE-001 回归（目标 CR 后仍有 backlog 条目：后继条目逐字节不变、双投影仍可解析）**。
 - AC-16（自动化侧 skipped 计算）：cmd-05，冻结模式表五条各命中 + CRLF 变体 + non-zero/两域外不命中 + 标记缺失/重复 `TEST_LOG_MARKER_INVALID` 硬失败。
 - AC-18（全量回归）：cmd-06（skip BR-1|BR-2 后 exit 0）+ §2 红计数=2 不增加。
 
@@ -135,3 +133,18 @@ commands:
 
 - 评审行为侧 AC（AC-1～AC-4、AC-6/7/9/10/16 评审侧）为模型行为夹具，证据载体是后续 review 轮的 `review-annotations/*.yml` 内容，不由本测试报告自动化断言（SDD §6.2）。
 - BR-1/BR-2 根因修复不纳入本 CR（§5.3 例外表），follow_up 去向见 §2。
+
+### 8. review-code 首轮 BLOCK 回修说明（B-CODE-001 / B-CODE-002）
+
+**B-CODE-001（FR-15/AC-15，crctl.mjs `editBacklogTargetVersionLine` 块边界换行）**：
+
+- 修复：块替换改为在权威区间 `norm.slice(block.start, block.end)` 上做单行定点替换——区间文本自带块尾换行（`matchEntryBlock().end` 指向后继条目首字符，块尾换行不在 `block.text` 内，split/join 重建会丢失分隔换行把目标块最后一行与下一条 `- id:` 拼接）；替换未命中一律 `LEDGER_PARSE_FAILED` 硬失败（纪律 #1）。回修 commit `07b47da`（tools worktree）。
+- 集成回归（`version-set.test.mjs`，cmd-04 内）：注册两个 CR（不同 registration key）→ cr1 worktree 合并 trunk 后 `_backlog.yml` 含 cr1+cr2 两条目（目标条目非末项真实路径）→ `version-set cr1 --to 0.30` → 断言：cr2 条目块文本与缩进**逐字节不变**、`_backlog.yml` 整体 parseYaml 双条目（cr1=0.30、cr2=unassigned）、cr.md frontmatter 可解析且同步、六类文件全等 0.30、恰 1 个新 commit。
+- 红/绿证据：同一回归测试在**旧拼接实现**下失败于「后继条目必须仍可定位（不得被拼接破坏）」（cr2 的 `- id:` 行首被粘连），修复后 version-set.test.mjs 12/12 全绿。
+
+**B-CODE-002（测试证据可重放性，test-report.md 双 marker）**：
+
+- 修复：分析区重复的两条分析分界标记收敛为唯一一条（分析区为模型补写区，机器区 `generated-by: crctl-test` 未动）；随后经合法 `write-test-report`/`crctl test` 路径一次重跑（`.crctl/tmp/test-plan.json` 原 plan 未改，六命令与 plan §5.3 BR-1/BR-2 冻结口径不变）重生成机器区、traceability `tests` 段、review-loop（write-test-report attempt 3）与六个 cmd-NN 日志。
+- 可重放性：`parseAnalysisMarker` 现恰好命中 1 条（缺失/重复/未闭合硬失败契约），后续 reviewLoop 重建证据不再 `TEST_MARKER_INVALID`；六命令 `exit-code: 0`×6、`skipped: false`×6、`status: pass`。
+
+**范围外观察（follow_up，不纳入本 CR）**：同款 `slice(0, block.start) + join('\n') + slice(block.end)` 拼接形态仍存在于 `editBacklogSet` / `editBacklogOwnerProjection` / `editInboxEmit`（CR-2026-019/021/039 既有命令路径，非本 CR 改造点域），非末条目 backlog 上同有粘连风险；建议 follow_up CR 统一收敛为区间定点替换（`editTaskDone` 已有补 `\n` 先例修复）。
