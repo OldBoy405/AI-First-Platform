@@ -6,7 +6,7 @@ title: writeback 版本守卫：cr.md unassigned + 真实版本放行并原子�
 target-version: 0.30
 status: draft
 created: 2026-09-01T14:13:52+08:00
-updated: 2026-09-01T15:19:05+08:00
+updated: 2026-09-01T17:15:00+08:00
 ---
 
 # writeback 版本守卫：cr.md unassigned + 真实版本放行并原子回灌 技术设计
@@ -43,7 +43,7 @@ CONTEXT.md 无上述条目；本 CR 不改写跨 CR 术语表（与 CR-2026-056 
 
 | 文件 | 本 CR 变化 | 责任边界 |
 |---|---|---|
-| `skills/shared/crctl/scripts/lib/workspace-transactions.mjs` | ① 新增 `resolveWritebackAuthorityPath`（窄只读路径解析）；② 重写 `guardWritebackVersion` 判定表（返回 authority 快照，B-SDD-02 绑定源）；③ 新增 `planVersionRefill`（同源绑定 + backlog 预检 + 账本行级编辑）+ 两个行级编辑纯函数；④ `applyWritebackAtomic` 插入 authority 快照校验、回灌计划、journal payload 持久化与 write-set 条目合成 | 版本事实与回灌的唯一实现；**不**反向依赖 crctl.mjs；`durable-tx.mjs` 零改动 |
+| `skills/shared/crctl/scripts/lib/workspace-transactions.mjs` | ① 新增 `resolveWritebackAuthorityPath`（窄只读路径解析）；② 重写 `guardWritebackVersion` 判定表（返回 authority 快照，B-SDD-02 绑定源）；③ 新增 `planVersionRefill`（同源绑定 + backlog 预检 + 账本行级编辑）+ 两个行级编辑纯函数（**三者均 export，B-DP-01 测试 seam**，见 §1.4）；④ `applyWritebackAtomic` 插入 authority 快照校验、回灌计划、journal payload 持久化与 write-set 条目合成 | 版本事实与回灌的唯一实现；**不**反向依赖 crctl.mjs；`durable-tx.mjs` 零改动 |
 | `skills/shared/crctl/scripts/test/writeback-tx.test.mjs` | 改写 AC-14 unassigned 拒绝向量；新增回灌正向/冲突/故障点/FR-3 分叉夹具测试（§6.2） | 集成回归；`merge-fixture.mjs` 增加 unassigned 参数化（§6.2 证据 6） |
 | `skills/shared/crctl/scripts/test/crctl.test.mjs` | 新增 `guardWritebackVersion` / 窄解析器纯判定正负向量（§6.2） | 单测层；import 模式与既有 `normalizeTargetVersion` 测试一致 |
 | `README.md` | 行 22/行 76 两处 writeback 版本守卫表述改为 FR-1 判定表语义 +「唯一更正入口」加 writeback 事务限定（FR-5/§4.7） | 人读入口；`git grep` 不再出现「规范化全等才放行」作为现行规则（AC-5） |
@@ -96,9 +96,11 @@ crctl writeback-apply CR-2026-057 --stage baseline --spec-id X --target-version 
 |---|---|---|---|
 | `resolveWritebackAuthorityPath(ctx, cr)` | workspace-transactions.mjs | export | 窄只读路径解析（§4.1）；返回 `{ path, source }`，永不抛 STATE/OPERATIONAL_WORKSPACE 类错误 |
 | `guardWritebackVersion(ctx, cr, inputTargetRaw)` | 同上 | export（签名不变） | 返回扩为 `{ ok, value, refill, authority: { path, source } }`；错误码判定表 §2.1；authority 快照是 B-SDD-02 绑定唯一事实源 |
-| `planVersionRefill({ txws, authority, cr, stage, version })` | 同上 | 模块私有 | 同源绑定（⓪）+ backlog 预检（①）+ cr.md 语义复核（③）+ 行级编辑；产物 `{ inputVersion, crMd: entry/null, backlog: entry/null, crMdBase: {text, sha256}/null }` |
-| `applyTargetVersionToCrMd(text, version)` | 同上 | 模块私有 | frontmatter 内 `^target-version:` 行级替换（幂等口径 + 硬失败纪律，§4.3） |
-| `editBacklogEntryTargetVersion(text, cr, version)` | 同上 | 模块私有 | `_backlog.yml` 条目块内 `target-version` 行级替换（B-CODE-001 区间替换口径） |
+| `planVersionRefill({ txws, authority, cr, stage, version })` | 同上 | **export**（B-DP-01） | 同源绑定（⓪）+ backlog 预检（①）+ cr.md 语义复核（③）+ 行级编辑；产物 `{ inputVersion, crMd: entry/null, backlog: entry/null, crMdBase: {text, sha256}/null }` |
+| `applyTargetVersionToCrMd(text, version)` | 同上 | **export**（B-DP-01） | frontmatter 内 `^target-version:` 行级替换（幂等口径 + 硬失败纪律，§4.3） |
+| `editBacklogEntryTargetVersion(text, cr, version)` | 同上 | **export**（B-DP-01） | `_backlog.yml` 条目块内 `target-version` 行级替换（B-CODE-001 区间替换口径） |
+
+> **测试 seam 统一（B-DP-01，tech-design 回修）**：上表三个新增纯函数一律 `export`。`crctl.test.mjs` 单测直接 import（与既有 `normalizeTargetVersion`/`readCrMdTargetVersion` 的 export+直测模式一致），`planVersionRefill` 的语义复核/同源断言/错误码向量与两个行级编辑函数的 CRLF/硬失败向量因此在单测层全部可达；保持私有会使「两次采样间漂移」分支（guard 读 unassigned、plan 重读已变）在集成层无 fault-point 可构造（新注入点违反 §9 zero_diff），同源断言 ⓪ 防御位被 §4.4 第 5.5 步前置拦截而不可达，验收将不可执行。导出不改变调用面（生产侧仅 `applyWritebackAtomic` 与测试消费），§9 zero_diff 不受影响；可见性变化随本轮 SDD 修订与 `review-tech-design` 复评一并批准（决策 D-5）。
 | `journal.writeback.versionRefill` | journal payload | 持久化字段 | `{ inputVersion, crMd: {path,beforeSha256,afterSha256,afterText} \| null, backlog: {path,beforeSha256,afterSha256,afterText} \| null }`；crMd 仅 tasks/traceability 非 null；baseline 的 cr.md 侧并入 `statusTransition.afterText`（§2.2/§4.5） |
 
 ### 1.5 ARCHITECTURE.md 对照
@@ -276,7 +278,7 @@ guardWritebackVersion(ctx, cr, inputTargetRaw):
 
 纯判定 + 一次只读文件读取；常数时间、零网络（NFR-4）。无 journal/candidate/lock 痕迹（在 `loadExistingJournal`/`prepareWritebackCandidate`/`acquireLock` 之前，§4.4）。返回的 `authority` 快照是 **B-SDD-02 绑定唯一事实源**：后续 `applyWritebackAtomic` 第 5.5 步校验它与 opWs 同源同路径，`planVersionRefill` 以它为唯一回灌位置并在该位置上做语义复核。
 
-### 4.3 planVersionRefill（FR-2/FR-2.1 唯一实现）
+### 4.3 planVersionRefill（FR-2/FR-2.1 唯一实现；export——B-DP-01 测试 seam，见 §1.4/§6.2 AC-4）
 
 ```text
 planVersionRefill({ txws, authority, cr, stage, version }):
@@ -468,6 +470,12 @@ payload.statusTransition = { from: 'merging', to: 'writing-back', ..., beforeSha
 - **Alternatives**：a) 预检放 guard 内——guard 是纯判定、不碰 `_backlog.yml`（写入面与读面分离），放进来会破坏其可单测性与错误面；b) 放 journal 创建后——违反 FR-2.1 时序。
 - **Consequences**：预检在 txws 断言之后立即执行（§4.4 第 4–7 步），失败零 candidate/journal/lock 痕迹；非 txws 场景先得既有 `WRITEBACK_STATE_MISMATCH`，预检天然不触达。
 
+### 决策 D-5：`planVersionRefill` 与两个行级编辑纯函数导出为测试 seam（B-DP-01）
+
+- **Context**：SDD §6.2 AC-4 / TASK-05 要求 `crctl.test.mjs` 直接验证 `planVersionRefill` 的语义复核、同源断言与行级编辑硬失败行为；测试只能 import 已导出符号，而 §1.4 初版把三个符号定为模块私有——「直测不可达」与「验收要求直测」矛盾（B-DP-01，dev-plan 首评上游 blocker）。
+- **Alternatives**：a) 保持私有、向量下沉集成层（writeback-tx.test.mjs 经 CLI/`applyWritebackAtomic` 观察）——语义复核「两次采样间漂移」分支（guard 读 unassigned、plan 重读已变）在集成层无 fault-point 可构造（新注入点违反 §9 zero_diff），同源断言 ⓪ 防御位被 §4.4 第 5.5 步前置拦截而不可达，行级编辑 CRLF/硬失败向量亦需直调——验收不可执行；b) 新增仅测试可见的代理/包装——为测试开专用导出面，比直接 export 更糟（测试专用符号污染）；c) **export 三个纯函数**——与既有 `normalizeTargetVersion`/`readCrMdTargetVersion`（export + crctl.test.mjs 直测）同一模式，调用面不变（生产侧仅 `applyWritebackAtomic` 与测试消费），可见性变化随本轮 SDD 修订与 `review-tech-design` 复评一并批准。
+- **Consequences**：三个符号在 workspace-transactions.mjs 顶层 export；`crctl.test.mjs` 直接 import 落单测向量（§6.2 AC-4）；§1.4 可见性列同步；§9 scope_in 增注 FR-4 测试 seam。无运行时行为变化（纯函数），§9 zero_diff 面不受影响。
+
 ---
 
 ## 6. FR 到技术实现映射
@@ -544,17 +552,24 @@ AC-3（worktree 与 txws 版本分裂，FR-3）
 可达性说明：merged 夹具 merge 后手改 worktree 副本的 target-version（不影响 txws）；code-approved
            夹具 = makeCodeApprovedFixture 未 merge（版本不一致向量）
 AC-4（测试改写与回归）
-设计落点：writeback-tx.test.mjs 删除/改写旧断言 + crctl.test.mjs 新增 guard/plan 向量
+设计落点：writeback-tx.test.mjs 删除/改写旧断言（UNASSIGNED 期望收敛到冻结负向向量）+ crctl.test.mjs 新增 guard/plan 向量（B-DP-01 测试 seam：`planVersionRefill`/`applyTargetVersionToCrMd`/`editBacklogEntryTargetVersion` 为 export，单测直接 import）
 可观测结果：`node --test skills/shared/crctl/scripts/test/crctl.test.mjs` 与
            `node --test skills/shared/crctl/scripts/test/writeback-tx.test.mjs` 通过；
-           grep 确认不再断言「unassigned cr.md + 真实输入 → UNASSIGNED」；既有 AC-14 其它
-           零观察点拒绝路径保持；crctl.test.mjs 另含：guard source 条件向量（txws 回灌 / worktree
-           回退 refill=false 两分支）与 planVersionRefill 语义复核向量（仍 unassigned → 放行；
-           已=输入 → 幂等 null；已=另一真实 → MISMATCH；非法 → INVALID）及同源断言向量
-           （authority.path ≠ txws → WRITEBACK_STATE_MISMATCH，复用既有码、extra 保持既有形状）
-可达性说明：crctl.test.mjs 已 import workspace-transactions 纯函数（既有模式）；guard 需要 ctx——
-           用 resolveRepositories(kb)（fixture 内 kb 是 InstWS）；plan 向量用临时目录直接构造
-           cr.md/_backlog 内容（不依赖完整夹具）
+           正反语义向量证明（B-DP-03）：writeback-tx.test.mjs 的 `WRITEBACK_VERSION_UNASSIGNED`
+           期望仅存在于冻结负向向量 AC-1.2（cr.md 真实 + 输入 unassigned）与 AC-1.3（两侧
+           unassigned）测试内（逐 test 块结构化核对），放行向量 AC-1.1（cr.md=unassigned +
+           输入真实）执行断言「不得为 UNASSIGNED」——旧「cr.md=unassigned + 真实输入 →
+           UNASSIGNED」正向拒绝断言与 AC-1.1 同 (fixture,输入) 组合、期望互斥，执行层与静态层
+           双层证明其零残留；既有 AC-14 其它零观察点拒绝路径保持（unassigned 向量并入 AC-1.2）；
+           crctl.test.mjs 另含：guard source 条件向量（txws 回灌 / worktree 回退 refill=false
+           两分支）与 planVersionRefill 语义复核向量（仍 unassigned → 放行；已=输入 → 幂等 null；
+           已=另一真实 → MISMATCH；非法 → INVALID）及同源断言向量（authority.path ≠ txws →
+           WRITEBACK_STATE_MISMATCH，复用既有码、extra 保持既有形状）
+可达性说明：crctl.test.mjs 已 import workspace-transactions 纯函数（既有模式；planVersionRefill/
+           applyTargetVersionToCrMd/editBacklogEntryTargetVersion 为本 CR 新增 export——B-DP-01）；
+           guard 需要 ctx——用 resolveRepositories(kb)（fixture 内 kb 是 InstWS）；plan 向量用临时
+           目录直接构造 cr.md/_backlog 内容（不依赖完整夹具）；writeback-tx 向量经既有
+           makeMergedFixture({targetVersion}) 参数化夹具（§6.3 证据 6）在 CLI 层观察
 AC-5（人读文案）
 设计落点：README 行 22/行 76 + guard 错误文案（§4.7）
 可观测结果：`git grep -n "规范化全等才放行" ../tools/README.md` 零命中（FR-1 判定表语义替代）；
@@ -636,7 +651,7 @@ AC-6（CLI 信封，B-03）
 
 ## 9. 批准范围
 
-- **scope_in**：CR-2026-058 必须交付：FR-1（guardWritebackVersion 判定表与文案，含 authority 快照）、FR-2/FR-2.1/FR-2.2（回灌分支、backlog 预检、故障边界；journal payload 完整持久化 crMd/backlog 条目且落盘即冻结）、FR-3（窄解析器与 authority 对齐；authority 同源绑定与语义复核）、FR-4（writeback-tx.test.mjs 改写与 crctl.test.mjs 新增向量）、FR-5（README 行 22/行 76 + 守卫文案）、FR-6（CLI 信封观察面）；验收 AC-1～AC-6（§6.2）。新增错误码：仅 PRD FR-2.1 已允许的 `WRITEBACK_BACKLOG_VERSION_MISMATCH` / `WRITEBACK_BACKLOG_ENTRY_DUPLICATE` 两个（NFR-2/§7 上限）。B-SDD-02 同源绑定硬失败**复用既有 `WRITEBACK_STATE_MISMATCH`**（新增 throw 位、extra 保持既有 `{cr, phase}` 形状、guard 快照与 opWs 的证据进 message）——不新增第三个公开错误码（B-SDD-04：PRD FR-6.2 未列，SDD 不得单方面扩契约）。
+- **scope_in**：CR-2026-058 必须交付：FR-1（guardWritebackVersion 判定表与文案，含 authority 快照）、FR-2/FR-2.1/FR-2.2（回灌分支、backlog 预检、故障边界；journal payload 完整持久化 crMd/backlog 条目且落盘即冻结）、FR-3（窄解析器与 authority 对齐；authority 同源绑定与语义复核）、FR-4（writeback-tx.test.mjs 改写与 crctl.test.mjs 新增向量；测试 seam：`planVersionRefill`/`applyTargetVersionToCrMd`/`editBacklogEntryTargetVersion` 以 export 提供——B-DP-01；UNASSIGNED 期望收敛到 AC-1.2/AC-1.3 冻结负向向量，AC-4 静态核对用正反语义向量证明——B-DP-03）、FR-5（README 行 22/行 76 + 守卫文案）、FR-6（CLI 信封观察面）；验收 AC-1～AC-6（§6.2）。新增错误码：仅 PRD FR-2.1 已允许的 `WRITEBACK_BACKLOG_VERSION_MISMATCH` / `WRITEBACK_BACKLOG_ENTRY_DUPLICATE` 两个（NFR-2/§7 上限）。B-SDD-02 同源绑定硬失败**复用既有 `WRITEBACK_STATE_MISMATCH`**（新增 throw 位、extra 保持既有 `{cr, phase}` 形状、guard 快照与 opWs 的证据进 message）——不新增第三个公开错误码（B-SDD-04：PRD FR-6.2 未列，SDD 不得单方面扩契约）。
 - **scope_out**：不放宽 `version-set` 合法状态集（merging/writing-back 仍禁止）；不回灌/不改写冻结的 `prd.md`/`sdd.md`/`plan.md`/`TASK-*.md`；不推进、不代跑 CR-2026-057 的 writeback/archive（057 保持 `merging` 直至本 CR 合入主仓）；不回写修复已归档 AIFI-14（CR-2026-056）历史产物；不新增 Agent/Pipeline/状态机状态与转换/CLI 子命令/事务框架/fault-point（仅允许 FR-2.1 两个新错误码；authority 绑定复用既有 `WRITEBACK_STATE_MISMATCH`）；不修改 `../multica/`；不扩大 post-review 白名单、不放松 `verifyReleaseSubjects`；不处理 AIFI-15 附件中除本拍板最小面以外的建议。
 - **zero_diff**：`crctl.mjs` 的 `cmdWritebackApply`（含 flag 面、callbacks）、`fail()`/`ok()`/`runTxAsync` 信封形态；`resolveOperationalWorkspace` 的签名与抛错契约（唯一 authority 断言点）；`durable-tx.mjs` 全部导出与 `FAULT_POINTS` 登记表；`lib/yaml-subset.mjs` 全部导出；writeback 三个 generator 脚本及其 manifest 格式（v1/v2 校验不变）；`guardWritebackVersion` 的**调用签名**（`(ctx, cr, inputTargetRaw)` 不变，仅返回值扩展）；`statusTransition` 既有字段结构与投影逻辑；`verifyReleaseSubjects` 白名单集合。
 - **follow_up**：无。发现但留给后续 CR 的缺口：PRD FR-2.1 明确排除的「账本已分裂但两侧真实」（backlog 与 cr.md 均为真实版本但互不一致）的检核与自愈，本 CR 不扩进范围——若未来需要，应另开 CR 定义其判定与入口（不得在本 CR 实现期顺手扩展）。
