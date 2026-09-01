@@ -16,9 +16,9 @@ owners:
 target-version: 0.32
 source: AIFI-16
 origin: ""
-status: requirement-reviewing
+status: drafting
 created: "2026-09-01T22:50:02+08:00"
-updated: "2026-09-01T23:41:30+08:00"
+updated: "2026-09-02T00:19:14+08:00"
 remote-ref: ""
 last-push-at: ""
 last-push-by: ""
