@@ -1,11 +1,11 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 # 五段链路：需求 FR ↔ 技术设计 SDD ↔ 交付 TASK ↔ 代码 merge SHA ↔ CR-ID
 spec-id: ai-first-platform
-cr-ref: CR-2026-058
-cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029, CR-2026-028, CR-2026-030, CR-2026-031, CR-2026-037, CR-2026-032, CR-2026-033, CR-2026-038, CR-2026-039, CR-2026-040, CR-2026-041, CR-2026-043, CR-2026-042, CR-2026-044, CR-2026-045, CR-2026-046, CR-2026-047, CR-2026-048, CR-2026-049, CR-2026-050, CR-2026-051, CR-2026-052, CR-2026-053, CR-2026-054, CR-2026-055, CR-2026-056, CR-2026-058]
-target-version: "0.30"
+cr-ref: CR-2026-057
+cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029, CR-2026-028, CR-2026-030, CR-2026-031, CR-2026-037, CR-2026-032, CR-2026-033, CR-2026-038, CR-2026-039, CR-2026-040, CR-2026-041, CR-2026-043, CR-2026-042, CR-2026-044, CR-2026-045, CR-2026-046, CR-2026-047, CR-2026-048, CR-2026-049, CR-2026-050, CR-2026-051, CR-2026-052, CR-2026-053, CR-2026-054, CR-2026-055, CR-2026-056, CR-2026-058, CR-2026-057]
+target-version: "0.31"
 baseline-since: "0.10"
-generated-at: "2026-09-01T21:02:32+08:00"
+generated-at: "2026-09-01T21:58:58+08:00"
 
 # 已知缺口：CR-2026-003~CR-2026-006 未生成本文件的里程碑段（writeback-traceability 在那四个
 # CR 回写时被跳过，PRD.md/SDD.md/_index.yml 侧的累积记录不受影响、仍完整）。本次（CR-2026-008）
@@ -3966,3 +3966,63 @@ milestones:
         code: { verdict: pass, path: change-requests/CR-2026-058/review-annotations/code.yml, sha256: 5bf4df3591699725064288d761bbcc11526dceeed699a0c52f69bd88e1059e78 }
       approval: { status: approved, path: change-requests/CR-2026-058/approval.yml, sha256: 0c3870e9226faf412409d490c5d195e28e7ca3cfbc163be6ced5e98e381825f1 }
       merge: { status: merged, path: change-requests/CR-2026-058/merge-commits.yml, sha256: ea20a2e887ebc590057f72fa754beac58a201907f1a19525b037a6448cd55f2d }
+  - cr: CR-2026-057
+    milestone: M-CR-2026-057
+    target-version: "0.31"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 5efba64d0e946fbe743b6b256fda981b0ba86cff
+        branch: requirement/CR-2026-057
+      - repo: multica
+        trunk: main
+        sha: 217b281ce0eb90e9dd042dfd8865efc54665193e
+        branch: requirement/CR-2026-057
+      - repo: tools
+        trunk: custom/main
+        sha: 860288ce96d568ed31a86a8c478d1cfa7f1087e9
+        branch: requirement/CR-2026-057
+    frs:
+      - fr: FR-1
+        title: 首轮完整契约域
+      - fr: FR-2
+        title: blocker / suggestion 分级
+      - fr: FR-3
+        title: 每轮评审报告结构
+      - fr: FR-4
+        title: 回修必须可重验，且不恢复已删除 canonical 字段
+      - fr: FR-5
+        title: SDD「批准范围」固定章节
+      - fr: FR-6
+        title: 写入与冻结时机
+      - fr: FR-7
+        title: 下游评审先核对此节（分阶段可执行路由）
+      - fr: FR-8
+        title: plan.md 覆盖矩阵必填
+      - fr: FR-9
+        title: 无唯一 TASK owner 不得进入开发启动审批
+      - fr: FR-10
+        title: 禁止流程控制交付 TASK
+      - fr: FR-11
+        title: 评审核验与归档门禁不变
+      - fr: FR-12
+        title: `register` 硬校验 `--target-version`
+      - fr: FR-13
+        title: 后续产物继承同一版本
+      - fr: FR-14
+        title: `writeback-apply` 一致性守卫
+      - fr: FR-15
+        title: `unassigned` 更正为真实版本的唯一入口
+      - fr: FR-16
+        title: 关键测试 SKIP ≠ 完整通过
+      - fr: FR-17
+        title: 下沉触发规则
+    evidence:
+      test: { status: pass, path: change-requests/CR-2026-057/test-report.md, sha256: 7286b8826021c8a2eda1a790930482af8d159418063b8141c352a2680c24614a }
+      reviews:
+        requirement: { verdict: pass, path: change-requests/CR-2026-057/review-annotations/requirement.yml, sha256: 3d07d65431d0235e92cd5cbb105a605c8087185e33b1a9a562b14e819725f9b0 }
+        tech-design: { verdict: pass, path: change-requests/CR-2026-057/review-annotations/sdd.yml, sha256: ee5afcc711775a717091b5812cfd4d1a0388565dc90f083a4b43a5468979f298 }
+        dev-plan: { verdict: pass, path: change-requests/CR-2026-057/review-annotations/dev-plan.yml, sha256: 6f6ee3f36409ea38fb0b0d750b7f71fb75125f00f7d9d5dbc542d38a15b4f9d8 }
+        code: { verdict: pass, path: change-requests/CR-2026-057/review-annotations/code.yml, sha256: 085f4ff3f97b69c43bb6279de62e4e6abd6bf48d638ce30ad1c4933a82574011 }
+      approval: { status: approved, path: change-requests/CR-2026-057/approval.yml, sha256: 5a04c3958d1d6abef890bc937e706d16ee8553b3c7e9e59dcd54a1d2cbe9f3c3 }
+      merge: { status: merged, path: change-requests/CR-2026-057/merge-commits.yml, sha256: 071cb9a117e1e1241b4532692292e66ac4ce050d7a071d3fdadc01d9a4dfd704 }
