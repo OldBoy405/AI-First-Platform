@@ -29,8 +29,12 @@ created: 2026-09-01T16:50:00+08:00
 ## 3. 实现要点
 
 1. **保留既有断言**（不改）：两侧真实但不一致 → `WRITEBACK_VERSION_MISMATCH` + 六项零观察点；输入 `n/a` → `WRITEBACK_VERSION_INVALID`；输入 `unassigned`（含两侧 unassigned）→ `WRITEBACK_VERSION_UNASSIGNED`；同参重试同码。
-2. **删除或改写**「cr.md=unassigned + 输入真实版本 → UNASSIGNED」正向拒绝断言（AC-4 静态可核对：grep 不再命中）。
-3. **AC-1 判定表六行**（merged 夹具，authority=txws）：`makeMergedFixture({ targetVersion: 'unassigned' })` 参数化夹具 + 默认 `0.2` 夹具：1) unassigned+`0.30`（及 `v0.30` 规范化等价）→ 非版本错误（放行并回灌或既有后续错误，不得为 `WRITEBACK_VERSION_UNASSIGNED`）；2) unassigned+`unassigned` → UNASSIGNED + 六项零观察点；3) `0.2`+`unassigned` → UNASSIGNED；4) `0.2`+`0.9` → MISMATCH；5) `n/a` → INVALID；6) `0.2`+`0.2` → 放行不改版本字段。
+2. **删除**「cr.md=unassigned + 输入真实版本 → UNASSIGNED」正向拒绝断言——该 (fixture, 输入) 组合的新语义是放行回灌（AC-1.1）。**UNASSIGNED 期望收敛（B-DP-03）**：改写后 `writeback-tx.test.mjs` 中 `WRITEBACK_VERSION_UNASSIGNED` 期望只允许出现在两个冻结负向向量内——`AC-1.2`（cr.md 真实 + 输入 unassigned）与 `AC-1.3`（两侧 unassigned）；原 CR-2026-057 AC-14 的 unassigned 向量并入 AC-1.2（保留六项零观察点与同参重试同码断言）。正反语义向量证明的完整规则见 §3.3 冻结向量标识与 §4 验收 2。
+3. **AC-1 判定表六行 + 冻结向量标识**（merged 夹具，authority=txws；B-DP-03 正反语义向量证明的载体）：`makeMergedFixture({ targetVersion: 'unassigned' })` 参数化夹具 + 默认 `0.2` 夹具：
+   - **AC-1.1（放行向量，冻结名）**：cr.md=unassigned + `0.30`（及 `v0.30` 规范化等价）→ 非版本错误（放行并回灌或既有后续错误，**不得为 `WRITEBACK_VERSION_UNASSIGNED`**）；测试名必须含冻结标识 `AC-1.1`；
+   - **AC-1.2（输入侧 unassigned 负向，冻结名）**：cr.md=`0.2`（真实）+ 输入 `unassigned` → UNASSIGNED + 六项零观察点 + 同参重试同码（承接原 CR-2026-057 AC-14 的 unassigned 向量）；测试名必须含冻结标识 `AC-1.2`；
+   - **AC-1.3（两侧 unassigned 负向，冻结名）**：cr.md=unassigned + 输入 `unassigned` → UNASSIGNED + 六项零观察点；测试名必须含冻结标识 `AC-1.3`；
+   - 4) `0.2`+`0.9` → MISMATCH；5) `n/a` → INVALID；6) `0.2`+`0.2` → 放行不改版本字段（MISMATCH/INVALID/全等行沿用既有断言，无冻结名要求）。
 4. **AC-2.1 成功回灌**（baseline 必须走 2.1）：两账本均 `unassigned` + `--target-version 0.30` → 两账本 target-version=规范化 `0.30`；`prd.md`/`sdd.md`/`plan.md`/`TASK-*.md` 哈希与调用前全等（NFR-6）；baseline status 变迁与版本回灌同一次 commit（`git show` 该 commit 同时含 cr.md status=writing-back+版本行、_backlog 版本行、specs 三文件）；tasks/traceability 各跑一次只断言版本行无新 diff（`git log --follow` 两账本路径仅首 commit 含版本行变更）。
 5. **AC-2.2 backlog 冲突五向量**（txws authority 上直接构造）：1) 条目已是另一真实版本 `0.29` → exit 1、`WRITEBACK_BACKLOG_VERSION_MISMATCH`、`error.backlog=0.29`、`error.input=0.30`；2) 删除条目 → `ENTRY_NOT_IN_BACKLOG`；3) 复制条目命中>1 → `WRITEBACK_BACKLOG_ENTRY_DUPLICATE` 且 `error.count>=2`；4) 条目 target-version 非法（`n/a`）→ `WRITEBACK_VERSION_INVALID`（含 `backlogReason`）；5) 条目已=输入 `0.30`、cr.md 仍 unassigned → 放行只回灌 cr.md、backlog 版本行无 diff。全部拒绝路径：specs/candidate/journal/lock/cr.md(status+target-version)/_backlog 字节级零变化、零 commit（既有 `snapshotSixPoints` 扩展 _backlog 哈希）。
 6. **AC-2.3 三故障点 + 1b 部分 apply 冻结回归**（`CRCTL_FAULT_POINT` 既有注入点，禁止发明新注入点）：
@@ -45,7 +49,11 @@ created: 2026-09-01T16:50:00+08:00
 ## 4. 验收条件
 
 1. `node --test --test-reporter=dot skills/shared/crctl/scripts/test/writeback-tx.test.mjs` 通过（exit 0）：全部既有保留断言 + 新增夹具全绿（AC-1/AC-2/AC-3/AC-6）。
-2. 静态核对：`grep -n "unassigned.*WRITEBACK_VERSION_UNASSIGNED\|WRITEBACK_VERSION_UNASSIGNED.*unassigned" writeback-tx.test.mjs` 中「cr.md=unassigned + 输入真实版本 → UNASSIGNED」正向拒绝断言零残留（AC-4）；CR-2026-057 既有 AC-14 其它零观察点（candidate/journal 零痕迹）在拒绝路径上保持。
+2. **正反语义向量证明（B-DP-03，AC-4 静态核对）**：
+   - 正向：`writeback-tx.test.mjs` 必须包含冻结标识 `AC-1.1`/`AC-1.2`/`AC-1.3` 各 ≥1 处（放行向量与两条合法负向向量存在且命名可核对）；
+   - 反向：逐 `test(...)` 块结构化核对——任何包含 `WRITEBACK_VERSION_UNASSIGNED` 期望的测试块，其测试名必须含 `AC-1.2` 或 `AC-1.3`；旧「cr.md=unassigned + 真实输入 → UNASSIGNED」正向拒绝断言与该规则不相容（其 (fixture,输入) 组合已被 AC-1.1 放行语义覆盖）→ 零残留可判定；禁止标识 `AC-1.1-OLD` 零出现（防命名混淆）；
+   - 执行层：AC-1.1 放行向量与旧正向拒绝断言同 (fixture,输入) 组合、期望互斥，cmd-02 执行绿即证明旧断言未被执行生效；
+   - CR-2026-057 既有 AC-14 其它零观察点（candidate/journal 零痕迹）在拒绝路径上保持（unassigned 向量并入 AC-1.2）。
 3. `merge-fixture.mjs` 默认行为不变：`makeCodeApprovedFixture()` 无参数时仍为 `target-version: 0.2`（既有断言零影响）；`_backlog.yml` 条目补行对既有断言无破坏（cmd-02 全绿即证）。
 4. 零新增 fault-point：`FAULT_POINTS` 登记表 `git diff` 零改动（grep 核对仅用既有 `writeback-after-apply`/`writeback-after-commit`/`writeback-after-push`/`tx-apply-between-rename`）。
 5. `git diff --name-only` 仅含 `merge-fixture.mjs` 与 `writeback-tx.test.mjs` 两个文件（本 TASK 边界）。

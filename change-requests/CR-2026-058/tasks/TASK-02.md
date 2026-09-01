@@ -15,7 +15,7 @@ created: 2026-09-01T16:50:00+08:00
 
 ## 1. 任务描述
 
-目标：实现 SDD §4.3 `planVersionRefill`（模块私有）——回灌分支的唯一计划器：同源绑定（⓪）+ backlog 预检四错误码（①）+ cr.md 同源重读语义复核（③）+ 两个行级编辑纯函数。产物为 journal payload 持久化的 `versionRefill` 计划（`inputVersion` / `crMd` 条目 / `backlog` 条目 / `crMdBase`），**纯读 + 纯文本变换，无任何文件写入、无 journal/lock/candidate 副作用**。
+目标：实现 SDD §4.3 `planVersionRefill`（**export**，B-DP-01 测试 seam——与既有 `normalizeTargetVersion`/`readCrMdTargetVersion` 的 export+直测模式一致，供 crctl.test.mjs 直接 import）——回灌分支的唯一计划器：同源绑定（⓪）+ backlog 预检四错误码（①）+ cr.md 同源重读语义复核（③）+ 两个行级编辑纯函数（**同批 export**）。产物为 journal payload 持久化的 `versionRefill` 计划（`inputVersion` / `crMd` 条目 / `backlog` 条目 / `crMdBase`），**纯读 + 纯文本变换，无任何文件写入、无 journal/lock/candidate 副作用**。
 
 背景：FR-2.1 要求回灌前对同一 authority 的 `_backlog.yml` 预检（条目唯一性 + 前置值），禁止静默覆盖另一真实版本、禁止缺失时插入；B-SDD-02 要求 guard 采样与 plan 二次读取同源绑定、值级语义复核。
 
@@ -23,7 +23,7 @@ created: 2026-09-01T16:50:00+08:00
 
 ## 2. 涉及文件 / 模块
 
-- `skills/shared/crctl/scripts/lib/workspace-transactions.mjs`（新增模块私有 `planVersionRefill` / `applyTargetVersionToCrMd` / `editBacklogEntryTargetVersion`）
+- `skills/shared/crctl/scripts/lib/workspace-transactions.mjs`（新增 **export** `planVersionRefill` / `applyTargetVersionToCrMd` / `editBacklogEntryTargetVersion`——B-DP-01：三个符号顶层导出，crctl.test.mjs 单测直接 import；生产侧仍仅 `applyWritebackAtomic` 消费，调用面不变）
 - `skills/shared/crctl/scripts/test/crctl.test.mjs`（新增 plan 向量）
 
 ## 3. 实现要点
@@ -58,7 +58,7 @@ crctl.test.mjs plan 向量全部通过（exit 0）；错误码清单符合 B-SDD
 ## 6. 接口契约
 
 - 消费：TASK-01 产出 `guardWritebackVersion` 的 authority 快照语义；`matchEntryBlock(text, id)` → `{start, end, text, indent}`；`normalizeTargetVersion(raw, {allowUnassigned})`；`backlogLines(text)`；`matchFrontmatter(text)`。
-- 产出（供 TASK-03 消费）：
+- 产出（供 TASK-03/TASK-05 消费）：
   - `planVersionRefill({txws, authority, cr, stage, version})` → `{inputVersion: string, crMd: RefillEntry|null, backlog: RefillEntry|null, crMdBase: {text: string, sha256: string}|null}`；`RefillEntry = {path: string, beforeSha256: string, afterSha256: string, afterText: string}`；
-  - 模块私有 `applyTargetVersionToCrMd(text, version)` → string；`editBacklogEntryTargetVersion(text, cr, version)` → string；
+  - **export** `applyTargetVersionToCrMd(text, version)` → string；**export** `editBacklogEntryTargetVersion(text, cr, version)` → string（TASK-05 的 crctl.test.mjs 直接 import 做行级编辑 CRLF/硬失败向量）；
   - throw 码：`WRITEBACK_STATE_MISMATCH`（复用）、`ENTRY_NOT_IN_BACKLOG`、`WRITEBACK_BACKLOG_ENTRY_DUPLICATE`、`WRITEBACK_BACKLOG_VERSION_MISMATCH`、`WRITEBACK_VERSION_INVALID`（extra 见 SDD §3.2）。

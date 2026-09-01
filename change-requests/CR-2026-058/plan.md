@@ -6,7 +6,7 @@ sdd-ref: "change-requests/CR-2026-058/sdd.md"
 target-version: 0.30
 status: draft
 created: 2026-09-01T16:50:00+08:00
-updated: 2026-09-01T16:50:00+08:00
+updated: 2026-09-01T17:15:00+08:00
 ---
 
 # 1. 交付里程碑
@@ -17,8 +17,8 @@ updated: 2026-09-01T16:50:00+08:00
 |---|---|---:|---|
 | M1 守卫与回灌计划 | TASK-01：`resolveWritebackAuthorityPath` 窄只读解析器 + `guardWritebackVersion` 判定表重写（FR-1/FR-3）+ guard 单测向量；TASK-02：`planVersionRefill`（同源绑定 + backlog 预检四错误码 + cr.md 语义复核）+ 两个行级编辑纯函数（FR-2.1）+ plan 单测向量 | 22h | crctl.test.mjs 新增向量绿、既有用例除 BR-1 外绿（§5.3）；tools worktree HEAD=`2bb66294` 基线核对完成 |
 | M2 事务集成 | TASK-03：`applyWritebackAtomic` 最小插入（authority 快照绑定复用 `WRITEBACK_STATE_MISMATCH`、`payload.versionRefill` 冻结持久化、entries 合成、baseline cr.md 单条目合成、恢复协议五现场）（FR-2/FR-2.2/FR-6） | 14h | §4.4 插入点清单逐项存在；zero_diff 面零改动；writeback-tx.test.mjs 既有 14 用例仍绿 |
-| M3 测试与文案 | TASK-04：`merge-fixture.mjs` 参数化 + `writeback-tx.test.mjs` 改写与新增（AC-1/AC-2/AC-3/AC-6 全夹具，含 direct tasks/traceability 回灌与 1b 部分 apply 冻结回归）；TASK-05：`crctl.test.mjs` 同源断言向量 + AC-4 静态核对；TASK-06：README 行 22/行 76 改写 + 静态文案断言（FR-5） | 22h | cmd-02 全绿；cmd-01 全绿（含 README 禁止串零命中断言）；`git grep` 不再断言「unassigned cr.md + 真实输入 → UNASSIGNED」 |
-| M4 全量回归与测试报告 | TASK-07：cmd-01～cmd-03 全量运行、`write-test-report` 落盘 test-report.md、覆盖矩阵 cmd-NN 与机器区 commands 下标全等核对 | 5h | 机器区 status=pass（三命令 exit 0 且 skipped=false，§5.3 例外表逐条核对）；test-report.md 存在且证据映射完整 |
+| M3 测试与文案 | TASK-04：`merge-fixture.mjs` 参数化 + `writeback-tx.test.mjs` 改写与新增（AC-1/AC-2/AC-3/AC-6 全夹具，含 direct tasks/traceability 回灌与 1b 部分 apply 冻结回归）；TASK-05：`crctl.test.mjs` 同源断言向量 + AC-4 静态核对（依赖 TASK-04 的 writeback-tx 改写事实，B-DP-02）；TASK-06：README 行 22/行 76 改写 + 静态文案断言（FR-5） | 22h | cmd-02 全绿；cmd-01 全绿（含 README 禁止串零命中断言）；writeback-tx 的 UNASSIGNED 期望仅存在于 AC-1.2/AC-1.3 冻结负向向量（正反语义向量证明，B-DP-03） |
+| M4 全量回归与测试报告 | TASK-07：cmd-01～cmd-03 全量运行（`crctl test` 证据由 testCr 原子发布到 KB CR worktree `change-requests/CR-2026-058/test-evidence/cmd-NN.log`，B-DP-04）、`write-test-report` 落盘 test-report.md、覆盖矩阵 cmd-NN 与机器区 commands 下标全等核对 | 5h | 机器区 status=pass（三命令 exit 0 且 skipped=false，§5.3 例外表逐条核对）；test-report.md 存在且证据映射完整 |
 | M5 评审与人工审批 | review-dev-plan → approve-dev-start → review-code → approve-code | 流程节点 | 评审 blocker 清零后经人工审批 |
 
 预计总工时：**63h**（TASK-01～TASK-07 合计，1 人天 = 8h，约 7.9 人天）。M1→M2→M3→M4 为主链；TASK-06 与 M1/M2 无代码依赖（只动 README），但 crctl.test.mjs 与 TASK-05 共用文件，串行落盘避免冲突；M5 为流程节点，不建交付 TASK（FR-10）。
@@ -28,14 +28,14 @@ updated: 2026-09-01T16:50:00+08:00
 ```text
 TASK-01 窄解析器 + guard 判定表重写（FR-1/FR-3，含 guard 向量）
   ├──> TASK-02 planVersionRefill + 行级编辑（FR-2.1，含 plan 向量）
-  │        └──> TASK-05 crctl.test.mjs 同源断言 + AC-4 静态核对
-  │               └──> TASK-06 README 行 22/76 + 静态文案断言（FR-5）
-  └──> TASK-03 applyWritebackAtomic 集成（FR-2/FR-2.2/FR-6）
-         └──> TASK-04 merge-fixture 参数化 + writeback-tx 改写与新增（FR-4）
-                └──> TASK-07 全量回归与测试报告（cmd-01～cmd-03）
+  │        └──> TASK-03 applyWritebackAtomic 集成（FR-2/FR-2.2/FR-6）
+  │               └──> TASK-04 merge-fixture 参数化 + writeback-tx 改写与新增（FR-4）
+  │                      ├──> TASK-05 crctl.test.mjs 同源断言 + AC-4 静态核对（B-DP-02：依赖 TASK-04 的 writeback-tx 改写事实）
+  │                      │        └──> TASK-06 README 行 22/76 + 静态文案断言（FR-5）
+  │                      └──> TASK-07 全量回归与测试报告（cmd-01～cmd-03，依赖 TASK-01～06 全部）
 ```
 
-TASK-02 依赖 TASK-01（消费 guard 的 authority 快照语义与规范化 value 约定）；TASK-03 依赖 TASK-01（`versionGuard.authority/refill`）与 TASK-02（`refillPlan`）；TASK-04 依赖 TASK-03（集成夹具需要完整接线）；TASK-05 依赖 TASK-02（向量针对 `planVersionRefill` 签名与 `WRITEBACK_STATE_MISMATCH` 复用位）；TASK-06 依赖 TASK-05（crctl.test.mjs 同文件串行）；TASK-07 依赖 TASK-01～TASK-06 全部。跨任务接口签名见各 TASK「接口契约」节，TASK-07 汇总核对签名一致性。
+TASK-02 依赖 TASK-01（消费 guard 的 authority 快照语义与规范化 value 约定）；TASK-03 依赖 TASK-01（`versionGuard.authority/refill`）与 TASK-02（`refillPlan`）；TASK-04 依赖 TASK-03（集成夹具需要完整接线）；**TASK-05 依赖 TASK-02（向量针对 `planVersionRefill` 签名与 `WRITEBACK_STATE_MISMATCH` 复用位）与 TASK-04（AC-4 静态核对以 writeback-tx.test.mjs 改写后的 UNASSIGNED 冻结向量为对象，B-DP-02）**；TASK-06 依赖 TASK-05（crctl.test.mjs 同文件串行）；TASK-07 依赖 TASK-01～TASK-06 全部。跨任务接口签名见各 TASK「接口契约」节，TASK-07 汇总核对签名一致性。
 
 实施资源（`crctl workspace inspect` 返回，实施期以输出为准不重拼路径）：
 
@@ -72,7 +72,7 @@ TASK 工时明细：TASK-01 10h / TASK-02 12h / TASK-03 14h / TASK-04 14h / TASK
 
 ## 5.1 测试命令集（cmd-NN 稳定关联，实施期固定顺序，与覆盖矩阵全等）
 
-cwd = tools CR worktree（`C:\Users\GOBAO\Downloads\AI\AI First Platform\.rayai-worktrees\tools\requirement\CR-2026-058`）；`shell:false` 经 `crctl test` 执行。NN = 机器区 `commands` 列表 1-based 下标，与 `test-evidence/cmd-NN.log` 文件名全等（FR-16）。统一 `--test-reporter=dot`（spec reporter 摘要恒含 `skipped` 字样会误命中 FR-16 模式 4 把命令误标 skipped；dot reporter 仅点字符，五条冻结模式零命中——CR-2026-057 计划 §5.1 已逐条实测）。
+cwd = tools CR worktree（`C:\Users\GOBAO\Downloads\AI\AI First Platform\.rayai-worktrees\tools\requirement\CR-2026-058`）；`shell:false` 经 `crctl test` 执行。NN = 机器区 `commands` 列表 1-based 下标，与证据文件名 `cmd-NN.log` 全等（FR-16）。**证据落点（B-DP-04）**：`crctl test` 的 testCr（HEAD=`2bb66294` 既有实现）把 `cmd-NN.log` 原子发布到 **knowledge-base CR worktree** 的 `change-requests/CR-2026-058/test-evidence/cmd-NN.log`（`logRel = change-requests/${cr}/test-evidence/cmd-${NN}.log` 写入 `authorityWorkspace` = 本 CR KB worktree，随测试记录 journal/write-set 同一 commit 落盘；tools worktree 不产生 test-evidence 目录）。统一 `--test-reporter=dot`（spec reporter 摘要恒含 `skipped` 字样会误命中 FR-16 模式 4 把命令误标 skipped；dot reporter 仅点字符，五条冻结模式零命中——CR-2026-057 计划 §5.1 已逐条实测）。
 
 | cmd-NN | 命令 | 覆盖 |
 |---|---|---|
@@ -113,7 +113,7 @@ cwd = tools CR worktree（`C:\Users\GOBAO\Downloads\AI\AI First Platform\.rayai-
 | AC-1 FR-1 判定表六行向量（merged 夹具 authority=txws；放行/UNASSIGNED/MISMATCH/INVALID/全等） | §2.1 / §4.2 / §6.2 | CR-2026-058-TASK-04 | cmd-02 |
 | AC-2 回灌原子性（2.1 成功回灌 + 2.2 backlog 冲突五向量 + 2.3 三故障点与 1b 部分 apply 冻结回归） | §2.2/§2.3/§2.4 / §4.3/§4.4/§4.6 / §6.2 | CR-2026-058-TASK-04 | cmd-02 |
 | AC-3 worktree 与 txws 版本分裂（FR-3：txws 为准只回灌 txws；code-approved 上 MISMATCH 优先） | §4.1 / §4.4 第 5.5 步 / §6.2 | CR-2026-058-TASK-04 | cmd-02 |
-| AC-4 测试改写与回归（writeback-tx 不再断言 unassigned+真实→UNASSIGNED；crctl.test.mjs 含 FR-1 表正负向量与 plan/同源向量；`node --test` 通过） | §6.2 AC-4 | CR-2026-058-TASK-05 | cmd-01 |
+| AC-4 测试改写与回归（writeback-tx 的 UNASSIGNED 期望仅存在于 AC-1.2/AC-1.3 冻结负向向量——正反语义向量证明，B-DP-03；crctl.test.mjs 含 FR-1 表正负向量与 plan/同源向量——planVersionRefill 等 export 测试 seam，B-DP-01；`node --test` 通过） | §6.2 AC-4 | CR-2026-058-TASK-05 | cmd-01 |
 | AC-5 人读文案（README 与守卫文案与 FR-1 一致；禁止串零命中） | §4.7 / §6.2 AC-5 | CR-2026-058-TASK-06 | cmd-01 |
 | AC-6 CLI 信封（exit 0 `phase=complete`/`changed`/`files` 含两账本/`recoverCommand`；失败 exit 1 扁平 error） | §3.1/§3.2 / §6.2 AC-6 | CR-2026-058-TASK-04 | cmd-02 |
 
