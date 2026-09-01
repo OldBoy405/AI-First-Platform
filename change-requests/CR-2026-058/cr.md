@@ -16,9 +16,9 @@ owners:
 target-version: 0.30
 source: AIFI-15
 origin: ""
-status: code-approved
+status: merging
 created: "2026-09-01T13:00:50+08:00"
-updated: "2026-09-01T20:54:08+08:00"
+updated: "2026-09-01T20:56:27+08:00"
 remote-ref: ""
 last-push-at: ""
 last-push-by: ""
