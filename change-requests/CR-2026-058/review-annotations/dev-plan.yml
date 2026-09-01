@@ -1,0 +1,25 @@
+cr-id: CR-2026-058
+review-type: dev-plan
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-01T16:57:16+08:00"
+verdict: block
+repair-target: write-tech-design
+blockers:
+  - "本轮新增： [B-DP-01] SDD §1.4 与 TASK-02 §1/§6 把 planVersionRefill 定义为模块私有，但 SDD §6.2 AC-4 与 TASK-05 §6 又要求 crctl.test.mjs 直接验证其语义并消费其‘导出行为’；当前真实代码的 crctl.test.mjs 只能 import workspace-transactions.mjs 的 export。现有批准设计没有可执行测试 seam：保持私有则直测不可达，改为 export 又改变已批准可见性，须回到 write-tech-design 统一设计与验收落点。"
+  - "本轮新增： [B-DP-02] TASK-05 要静态核对 TASK-04 对 writeback-tx.test.mjs 的改写事实，但 tasks/_index.yml 与 TASK-05 frontmatter 仅依赖 TASK-01/TASK-02，plan §2 也把 TASK-05 排在 TASK-04 完成之前的并行支路；按当前拓扑执行时 TASK-05 会读取旧文件，无法可靠完成。须补 TASK-04 依赖并同步依赖图/说明。"
+  - "本轮新增： [B-DP-03] TASK-04 §4.2 用 unassigned 与 WRITEBACK_VERSION_UNASSIGNED 的宽泛行级 grep 零命中来证明旧正向拒绝断言已删除，但 FR-1 仍合法要求‘输入 unassigned’和‘两侧 unassigned’返回该错误码；该检查既可能误伤合法负向用例，也可能因夹具与断言分行而漏掉旧用例，不能形成 AC-4 的可验证证据。应改为语义向量：cr.md=unassigned+真实输入成功回灌，同时输入 unassigned 仍拒绝。"
+  - "本轮新增： [B-DP-04] TASK-07 §2 把 cmd-NN 日志定位为 tools worktree/test-evidence/cmd-NN.log，但 resources[repo=tools] HEAD=2bb66294 的真实 testCr 实现固定发布 change-requests/{CR-ID}/test-evidence/cmd-NN.log 到 knowledge-base CR workspace；当前完成标志与取证路径错误，实施时会找不到 canonical 证据。须修正 plan/TASK 的仓库与路径。"
+dimensions:
+  sdd-to-plan: "block"
+  plan-to-tasks: "block"
+  task-executability: "block"
+  dependency-topology: "block"
+  interface-contracts: "block"
+  acceptance-verifiability: "block"
+  scope-and-simplicity: "pass"
+  risk-and-rollback: "pass"
+  reviewer-model: "openai/gpt-5.6-sol (pi, reasoning=high)"
+suggestions: []
+review-loop:
+  current-attempt: 0
+subject-sha256: db79dc07e4fa0df30c8c9267e145ba6b1553649e98950cf71f5edf4b0090b0e2
