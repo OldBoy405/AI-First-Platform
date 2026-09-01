@@ -6,7 +6,7 @@ title: writeback 版本守卫：cr.md unassigned + 真实版本放行并原子�
 target-version: 0.30
 status: draft
 created: 2026-09-01T14:13:52+08:00
-updated: 2026-09-01T14:43:45+08:00
+updated: 2026-09-01T15:19:05+08:00
 ---
 
 # writeback 版本守卫：cr.md unassigned + 真实版本放行并原子回灌 技术设计
@@ -28,7 +28,7 @@ updated: 2026-09-01T14:43:45+08:00
 | 条目命中次数 | merge 侧 `locateBacklogEntry` 的 `hits.length` | FR-2.1「与既有 matchEntryBlock / merge 条目扫描同口径」 | 预检用同一行级正则 `^([ \t]*)- id:\s*["']?([^\s"']+)["']?\s*$` 在 `backlogLines()` 上计数，见 §4.3 |
 | 「两侧须为真实版本且全等才放行」 | PRD FR-5 引用的**语义表述**（README 实际行文为「`--target-version` 与 `cr.md` 规范化全等才放行」，见 §4.7/§6.3 证据 7） | FR-5 要求改写 | 改为 FR-1 判定表（§2.1），README 行 22/行 76 + 守卫错误文案三处同步 |
 | 规范化失败 | `normalizeTargetVersion` 返回 `{ok:false, reason}` | backlog 侧失败与 cr.md 侧失败共码 `WRITEBACK_VERSION_INVALID` | 以 `error.crMdReason` / `error.backlogReason` 区分来源（FR-6.2） |
-| **authority 快照**（B-SDD-02 绑定锚点） | `guard.authority = { path, source }` | 守卫采样的版本事实源路径，必须与后续 `resolveOperationalWorkspace` 的 opWs 同源同路径 | `applyWritebackAtomic` 第 5.5 步校验，不一致 → `WRITEBACK_AUTHORITY_DRIFT` 零写入硬失败（§4.4） |
+| **authority 快照**（B-SDD-02 绑定锚点） | `guard.authority = { path, source }` | 守卫采样的版本事实源路径，必须与后续 `resolveOperationalWorkspace` 的 opWs 同源同路径 | `applyWritebackAtomic` 第 5.5 步校验，不一致 → 复用既有 `WRITEBACK_STATE_MISMATCH`（新增 throw 位）零写入硬失败（§4.4；不新增公开错误码——B-SDD-04） |
 | **语义复核**（B-SDD-02 内容绑定） | `planVersionRefill` 第 ③ 步对同源重读的 cr.md 重新规范化 | guard 首次读取与 plan 二次读取之间允许字节漂移，但**版本值**必须仍为 `unassigned` 或已等于输入真实版本 | 已等于输入 → 幂等（cr.md 不成条目）；另一真实版本 → `WRITEBACK_VERSION_MISMATCH`；非法 → `WRITEBACK_VERSION_INVALID`（§4.3） |
 
 CONTEXT.md 无上述条目；本 CR 不改写跨 CR 术语表（与 CR-2026-056 同先例：只在平台级敲定时扩展）。
@@ -74,7 +74,8 @@ crctl writeback-apply CR-2026-057 --stage baseline --spec-id X --target-version 
   2) traceability complete-replay 分支（既有，零改动；无 journal 时 no-op）
   3) resolveOperationalWorkspace → source=transaction-workspace 断言（既有）
   3.5) authority 快照绑定（B-SDD-02）：guard.authority.path === opWs.path 且 source=transaction-workspace，
-       不一致 → WRITEBACK_AUTHORITY_DRIFT 零写入硬失败（先于 candidate/journal/lock）
+       不一致 → 复用既有 WRITEBACK_STATE_MISMATCH 零写入硬失败（先于 candidate/journal/lock；
+       不新增错误码——B-SDD-04）
   4) planVersionRefill（仅 refill=true）：同一 authority 上重读 cr.md 并语义复核（仍为 unassigned 才继续；
      已变为输入版本 → crMd 幂等 null；另一真实版本 → WRITEBACK_VERSION_MISMATCH）＋ backlog 预检（条目
      唯一性 + 前置值）＋ 生成 crMd 行级 after 文本（baseline：status+version 同一条；tasks/traceability：
@@ -102,7 +103,7 @@ crctl writeback-apply CR-2026-057 --stage baseline --spec-id X --target-version 
 
 ### 1.5 ARCHITECTURE.md 对照
 
-已存在（`../tools/ARCHITECTURE.md`，tools resource HEAD=`2bb66294db30b116e0d53aea48990611017c75d6`，即 CR-2026-057 merge 提交；§6.3 证据已在本 HEAD 重核），只读引用。本 CR 属于「单个 CR 的功能改动」，按 §8 维护规则**不需要修订**。逐条核对：§5.1 状态单一写者 ✓（回灌不改 status 通道）、§5.2 账本单一写入通道 ✓（回灌在 writeback-apply 事务内，非新通道）、§5.3 零第三方依赖 ✓、§5.4 行尾硬失败 ✓（§4.3）、§5.6 git 是权威 ✓（§4.6）、§5.7 人工审批无旁路 ✓（无关）；§6 Negative Space 无冲突（不新开脚本库、不新事务框架、不引 YAML 库）。
+已存在（`../tools/ARCHITECTURE.md`，取证对象 = `resources[repo=tools].worktreePath`：branch=`requirement/CR-2026-058`（本 CR 派生 worktree，非 trunk `custom/main`），HEAD=`2bb66294db30b116e0d53aea48990611017c75d6`（即 CR-2026-057 merge 提交，本 CR 分支自该点派生）；§6.3 证据已在该 worktree HEAD 重核），只读引用。本 CR 属于「单个 CR 的功能改动」，按 §8 维护规则**不需要修订**。逐条核对：§5.1 状态单一写者 ✓（回灌不改 status 通道）、§5.2 账本单一写入通道 ✓（回灌在 writeback-apply 事务内，非新通道）、§5.3 零第三方依赖 ✓、§5.4 行尾硬失败 ✓（§4.3）、§5.6 git 是权威 ✓（§4.6）、§5.7 人工审批无旁路 ✓（无关）；§6 Negative Space 无冲突（不新开脚本库、不新事务框架、不引 YAML 库）。
 
 ---
 
@@ -115,14 +116,14 @@ crctl writeback-apply CR-2026-057 --stage baseline --spec-id X --target-version 
 | a（cr.md） | b（输入） | 结果 | 错误码 |
 |---|---|---|---|
 | `unassigned` | 真实版本 | **放行**：`{ ok, value: b, refill: true, authority }`（仅当 authority.source=transaction-workspace；窄解析器回退到 cr-worktree 时 refill=false，见下行） | 无 |
-| `unassigned`（authority 为 cr-worktree 回退） | 真实版本 | 放行（refill=false）：后续落到既有 `WRITEBACK_STATE_MISMATCH`（opWs=cr-worktree）或 `WRITEBACK_AUTHORITY_DRIFT`（opWs=txws 而快照=worktree，§4.4 第 5.5 步） | 无（守卫内） |
+| `unassigned`（authority 为 cr-worktree 回退） | 真实版本 | 放行（refill=false）：后续落到 `WRITEBACK_STATE_MISMATCH`——opWs=cr-worktree 为既有 throw 位；opWs=txws 而快照=worktree 为本 CR 新增 throw 位（§4.4 第 5.5 步）。两处同码、均零写入 | 无（守卫内） |
 | 真实 A | 真实 A | 放行：`{ ok, value: a, refill: false }`（今日行为） | 无 |
 | 真实 A | 真实 B（≠） | 拒绝 | `WRITEBACK_VERSION_MISMATCH`（extra 既有 `cr`/`crMd`/`input`） |
 | `unassigned` | `unassigned` | 拒绝 | `WRITEBACK_VERSION_UNASSIGNED` |
 | 真实 | `unassigned` | 拒绝 | `WRITEBACK_VERSION_UNASSIGNED` |
 | 任一侧规范化失败 | * | 拒绝 | `WRITEBACK_VERSION_INVALID`（extra 既有 `cr`/`input`/`inputReason`/`crMdReason`） |
 
-- 错误优先级不变：版本错误（MISMATCH / INVALID / 两侧或输入侧 unassigned）> `WRITEBACK_STATE_MISMATCH` > `WRITEBACK_AUTHORITY_DRIFT`（事务一致性检查，§4.4 第 5.5 步，零写入）> 其它。`unassigned`+真实**不再是版本错误**——非 txws authority 夹具（`status=drafting`/`code-approved`）落到既有 `WRITEBACK_STATE_MISMATCH`（零写入），回灌不发生。
+- 错误优先级不变：版本错误（MISMATCH / INVALID / 两侧或输入侧 unassigned）> `WRITEBACK_STATE_MISMATCH`（既有 throw 位 + 本 CR 新增的 authority 快照绑定 throw 位，§4.4 第 5.5 步，零写入）> 其它。`unassigned`+真实**不再是版本错误**——非 txws authority 夹具（`status=drafting`/`code-approved`）落到既有 `WRITEBACK_STATE_MISMATCH`（零写入），回灌不发生。
 - `WRITEBACK_VERSION_UNASSIGNED` 文案按 FR-5 改写：`writeback 版本守卫：两侧或输入侧为 unassigned 一律拒绝（cr.md=${a}，输入=${b}）；仅 cr.md=unassigned 且输入为真实版本时放行并回灌账本`。
 - 放行后 `input.targetVersion = guard.value`（规范化串，B-SDD-002 保留），`canonicalWritebackBusinessInput` 的 `startsWith('v')` 剥离降为防御性 no-op。
 
@@ -146,9 +147,12 @@ versionRefill = {
 
 - **baseline 的 cr.md 侧不单独成条目**：`statusTransition.afterText` 已是「status=writing-back + target-version=真实版本」合成文本（§4.5），`crMd=null`；`inputVersion` 供合成与恢复重放。
 - **tasks/traceability 的 cr.md 侧**：无 status 变迁（`statusTransition=null`），cr.md 的 write-set 条目由 `crMd` **完整持久化**（path/before/after 哈希 + after 文本随 payload 落盘，与 `statusTransition` 同口径）——**B-SDD-01**：`writeback-after-apply` 中断后重试时 guard 已读到真实版本（`refill=false`、`refillPlan=null`），entries 的 cr.md 条目**只从 `payload.versionRefill.crMd` 重建**，不依赖瞬时计划；`payload.files` 投影因此稳定包含 cr.md。
-- 持久化时点：`created=true` 时写入完整 payload（含 crMd 与 backlog 条目全文），随 `save('start')` 落盘。恢复路径（`created=false`）：
-  - guard 仍 `refill=true`（文件未动，如 `writeback-after-journal-create` 中断）→ 重跑预检与语义复核得新计划，**以其覆写** `payload.versionRefill`（journal 未 commit 前可改写；若 `payload.statusTransition` 已存在则保留其持久化文本），entries 用覆写后的 payload（§4.4 第 9 步）；
-  - guard 已 `refill=false`（cr.md 已是真实版本）→ 校验 `payload.versionRefill.inputVersion === guard.value`，不一致 → `TX_INPUT_CONFLICT`（既有码）；entries 只用 payload 持久化条目，不回算 after。
+- 持久化时点：`created=true` 时写入完整 payload（含 crMd 与 backlog 条目全文），随 `save('start')` 落盘。**`payload.versionRefill` 一旦落盘即冻结：任何恢复路径（`created=false`）都不得重算、不得覆写**（B-SDD-01）。覆写的缺陷：write-set 在 rename 间中断时可能 backlog 已是 after、cr.md 仍为 `unassigned`，重算会把 backlog 条目降为 null，随后 `recoverWriteSet` 按原 manifest 补齐文件，却使 commit/`files` 丢 backlog 或触发 staged-set 不一致。恢复一律「保留首次 payload + 按 manifest 向前恢复」，现场用既有 write-set manifest/phase 区分（§4.4 第 9 步）：
+  - manifest 缺失（尚未 apply：`writeback-after-journal-create` 中断，文件未动）→ entries 从 payload 持久化条目重建，`applyWriteSet` 首轮落盘；第 7 步重算的 plan 仅作纯读 fail-fast、不落入 payload（首次预检结果已随 save('start') 冻结；第三方改动由 applyWriteSet 的 before 哈希预检以 `TX_RECOVERY_CONFLICT` 拦截，零写入）；
+  - manifest state=`prepared`（部分 apply：rename 间中断）→ `recoverWriteSet` 按 manifest 补齐 after；entries 从 payload 重建（与 manifest 同路径同哈希），`applyWriteSet` 全 skip，随后补 commit；
+  - manifest state=`complete`（apply 已全量落盘、commit 前）→ entries 从 payload 重建，`applyWriteSet` 全 skip，补 `git add`+commit；
+  - guard 已 `refill=false`（cr.md 已是真实版本）→ 校验 `payload.versionRefill.inputVersion === guard.value`，不一致 → `TX_INPUT_CONFLICT`（既有码，恢复协议硬阻断）；entries 只用 payload 持久化条目，不回算 after；
+  - 防御：guard 仍 `refill=true` 但 payload **无** versionRefill——本 CR 语义下不可恢复（只可能来自部署前旧守卫创建的在途 journal，其 write-set 从未含回灌条目），`TX_INPUT_CONFLICT` 硬阻断、零写入，人工处置。
 - 幂等语义：journal 完成后同参重跑，guard 因 cr.md 已是真实版本 → `refill=false`，不产生新版本行 diff（AC-2.1/AC-6.2）。
 
 ### 2.3 backlog 预检状态模型（FR-2.1）
@@ -169,7 +173,7 @@ versionRefill = {
 | 规范化失败（缺字段/非法/同义值） | 拒绝 | `WRITEBACK_VERSION_INVALID`（共码；extra 在既有 `cr`/`input`/`inputReason`/`crMdReason` 基础上并列 `backlogReason`） |
 
 - 优先级：FR-1 版本守卫（cr.md vs 输入）> 本预检 > 后续非 `WRITEBACK_STATE_MISMATCH` 错误；预检失败**先于** candidate 生成与 journal 创建，零 candidate/journal/lock/commit 痕迹（§4.4 时序）。
-- 预检在每次 `refill=true` 运行执行（含恢复重跑）；恢复重跑时预检通过的新计划覆写已持久化的 `payload.versionRefill`（§2.2）。
+- 预检结果只在 fresh 运行（`created=true`）时随 `save('start')` 冻结进 payload；found 重试上第 7 步的重算仅作纯读 fail-fast（零写入），不落入 payload、不覆写 `payload.versionRefill`（§2.2 冻结规则）；账本在恢复期的漂移由 `applyWriteSet` 的 before/after 哈希分类与第三值 `TX_RECOVERY_CONFLICT` 拦截（零写入）。
 - 非回灌分支（两侧真实且全等）**不**因 backlog 另值额外拒绝——「账本已分裂但两侧真实」不在本 CR 范围（PRD FR-2.1）。
 
 ### 2.4 故障边界状态模型（FR-2.2，沿用既有 writeback 事务）
@@ -213,8 +217,7 @@ versionRefill = {
 | `WRITEBACK_BACKLOG_VERSION_MISMATCH` | `cr`、`crMd`、`backlog`、`input` |
 | `WRITEBACK_BACKLOG_ENTRY_DUPLICATE` | `cr`、`count` |
 | `ENTRY_NOT_IN_BACKLOG` | `cr` |
-| `WRITEBACK_AUTHORITY_DRIFT`（本 CR 新增，B-SDD-02 绑定硬失败） | `cr`、`reason`（仅 `authority-mismatch`）、`guardSource`、`guardPath`、`opPath` |
-| 既有其它 writeback/Tx 码 | 保持既有 extra，本 CR 不改 |
+| 既有其它 writeback/Tx 码 | 保持既有 extra，本 CR 不改；其中 `WRITEBACK_STATE_MISMATCH` 新增一个 throw 位（authority 快照绑定，B-SDD-02），extra 保持既有 `{cr, phase}` 形状，guard 快照与 opWs 的路径证据进 `message` |
 
 ---
 
@@ -264,7 +267,7 @@ guardWritebackVersion(ctx, cr, inputTargetRaw):
   if a.value == 'unassigned' && b.value != 'unassigned'   # source=cr-worktree（窄解析器回退）
       → return { ok: true, value: b.value, refill: false, authority: { path: auth.path, source: auth.source } }
           # 回灌禁用；后续落到既有 WRITEBACK_STATE_MISMATCH（opWs=cr-worktree）
-          # 或 WRITEBACK_AUTHORITY_DRIFT（opWs=txws 而快照=worktree，§4.4 第 5.5 步），两者均零写入
+          # 或本 CR 新增的 WRITEBACK_STATE_MISMATCH throw 位（opWs=txws 而快照=worktree，§4.4 第 5.5 步），两处同码均零写入
   if a.value == 'unassigned' || b.value == 'unassigned'
       → throw WRITEBACK_VERSION_UNASSIGNED（FR-5 新文案；extra: cr/crMd/input）
   if a.value != b.value → throw WRITEBACK_VERSION_MISMATCH（extra 既有）
@@ -279,7 +282,7 @@ guardWritebackVersion(ctx, cr, inputTargetRaw):
 planVersionRefill({ txws, authority, cr, stage, version }):
   # ⓪ 同源绑定（B-SDD-02）：调用方已在 §4.4 第 5.5 步校验，此处防御性重申
   if authority.source !== 'transaction-workspace' || authority.path !== txws
-      → throw WRITEBACK_AUTHORITY_DRIFT（reason:'authority-mismatch'；正常不可达，防未来重构漂移）
+      → throw WRITEBACK_STATE_MISMATCH（复用既有码；message 载 authority-mismatch 与两侧路径；正常不可达，防未来重构漂移）
   # ① backlog 预检（FR-2.1；先于任何 write-set/journal/candidate 副作用）
   raw = read(txws/change-requests/_backlog.yml)      # 不可读 → ENTRY_NOT_IN_BACKLOG（{cr}）
   norm = raw.replaceAll('\r\n', '\n')
@@ -346,26 +349,39 @@ planVersionRefill({ txws, authority, cr, stage, version }):
 4   const opWs = resolveOperationalWorkspace(ctx, cr)        # 既有；非 txws → WRITEBACK_STATE_MISMATCH
 5   const txws = opWs.path
 5.5 **if (versionGuard.authority.source !== 'transaction-workspace' || versionGuard.authority.path !== opWs.path)
-       throw WRITEBACK_AUTHORITY_DRIFT（reason:'authority-mismatch'；extra: cr/guardSource/guardPath/opPath）
+       throw WRITEBACK_STATE_MISMATCH（复用既有码；extra 保持既有 {cr, phase} 形状，guardSource/guardPath/opPath
+       证据进 message——不新增公开错误码，B-SDD-04）
        # B-SDD-02：守卫采样的版本权威必须与将被写入的 operational workspace 同源同路径；
        # 该检查先于 business/candidate/journal/lock，失败零写入**
 6   **let refillPlan = null**
 7   **if (versionGuard.refill) refillPlan = planVersionRefill({ txws, authority: versionGuard.authority, cr, stage, version: versionGuard.value })**
-      # ← 同源绑定/预检/语义复核在 candidate 生成（prepareWritebackCandidate）与 journal 创建之前，FR-2.1 时序成立
+      # ← 同源绑定/预检/语义复核在 candidate 生成（prepareWritebackCandidate）与 journal 创建之前，FR-2.1 时序成立；
+      #    found 重试（journal 已存在）时本步重算的 refillPlan 仅作纯读预检（零写入 fail-fast），不落入 payload——
+      #    payload.versionRefill 一旦落盘即冻结（B-SDD-01，见第 9 步）
 8   [business / resolveWritebackCandidate / loadExistingJournal / prepareWritebackCandidate——既有，零改动]
-9   [found 分支] **payload 已含 versionRefill 时：
-       a) 本轮 versionGuard.refill === true：重跑的计划已通过全部预检与语义复核，以 refillPlan
-          覆写 payload.versionRefill（journal 未 commit 前可改写；若 payload.statusTransition
-          已存在则保留其持久化文本，不重算）；
-       b) 本轮 versionGuard.refill === false：校验 payload.versionRefill.inputVersion ===
-          versionGuard.value，不一致 → TX_INPUT_CONFLICT（既有码，恢复协议硬阻断）；
-          entries 只从 payload 持久化条目重建（B-SDD-01），不回算 after**
+9   [found 分支] **payload 已含 versionRefill 时：保留首次 payload，禁止重算/覆写（B-SDD-01 冻结）。以既有
+       write-set manifest/phase 区分现场并向前恢复（若 payload.statusTransition 已存在则保留其持久化文本，不重算）：
+       a) manifest 缺失（尚未 apply：writeback-after-journal-create 中断，文件未动）→ entries 从 payload
+          持久化条目重建，applyWriteSet 首轮落盘；第 7 步重算只作纯读 fail-fast、不覆写 payload（首次预检
+          结果已随 save('start') 冻结；第三方改动由 applyWriteSet before 哈希预检以 TX_RECOVERY_CONFLICT
+          拦截，零写入）；
+       b) manifest state=prepared（部分 apply：rename 间中断，可能 backlog 已 after、cr.md 仍 unassigned）→
+          recoverWriteSet 按 manifest 补齐 after；entries 从 payload 重建（与 manifest 同路径同哈希），
+          applyWriteSet 全 skip；两账本路径保留在 entries/git add/files 内（不因本轮重算把 backlog 条目
+          降为 null 而丢失，commit/files 不丢 backlog、不触发 staged-set 不一致）；
+       c) manifest state=complete（apply 已全量落盘、commit 前）→ entries 从 payload 重建，applyWriteSet
+          全 skip，补 git add+commit；
+       d) 本轮 versionGuard.refill === false：另校验 payload.versionRefill.inputVersion === versionGuard.value，
+          不一致 → TX_INPUT_CONFLICT（既有码，恢复协议硬阻断）；entries 只用 payload 持久化条目，不回算 after；
+       e) 防御：guard 仍 refill=true 但 payload 无 versionRefill（只可能来自部署前旧守卫创建的在途 journal，
+          其 write-set 从未含回灌条目）→ TX_INPUT_CONFLICT 硬阻断、零写入，人工处置**
 10  [baseline advanceCandidate / verifyReleaseSubjects / origin 前置——既有，零改动]
 11  loadOrCreateJournal（created=true 时）：
       **if (refillPlan) payload.versionRefill = { inputVersion: refillPlan.inputVersion,
           crMd: refillPlan.crMd && { path, beforeSha256, afterSha256, afterText },
           backlog: refillPlan.backlog && { path, beforeSha256, afterSha256, afterText } }
-      await save('start')**                                  # 与既有 save('start') 合并，不新增 phase
+      await save('start')**                                  # 与既有 save('start') 合并，不新增 phase；
+                                                             # created=false（found 重试）不触碰 payload.versionRefill（冻结，第 9 步）
 12  [statusTransition 构建——既有；合成版本行见 §4.5]
 13  entries = snapshot.files.map(...)                        # 既有
     if (payload.statusTransition) entries.push(...)          # 既有
@@ -380,9 +396,9 @@ planVersionRefill({ txws, authority, cr, stage, version }):
 要点：
 
 - **cr.md 全局恰好一条 write-set 记录**：baseline = `statusTransition` 条目（afterText 已含版本行）；tasks/traceability = `payload.versionRefill.crMd` 条目（无 status 变迁，`statusTransition=null`）。二者互斥，不存在两写。
-- **恢复一致性（B-SDD-01）**：`payload.files = entries.map(...)`（既有第 13 步后逻辑零改动）→ `files` 自动含两账本路径（FR-6.1 落点）。tasks/traceability 的 `writeback-after-apply` 中断后重试：guard 读 txws cr.md 已是真实版本 → `refill=false` → 预检跳过；entries 的 cr.md 条目**只从 `payload.versionRefill.crMd`（持久化）重建**，backlog 条目从 `payload.versionRefill.backlog` 重建；`applyWriteSet` 按当前 hash 分类（=after → skip；=before → redo）→ 向前恢复成立，无需回滚账本；重试后的 commit 与 files 与中断前语义一致（两账本 + 本 stage 业务文件同 commit，files 含 cr.md）。
-- **`writeback-after-journal-create` 中断**：文件未动，guard 仍 `refill=true`，预检/语义复核重跑并以新计划覆写 `payload.versionRefill` → 继续（步骤 9a；覆写而非逐字段比对——预检已重新保证了前置值与同源性，逐字段比对会把良性字节漂移错误升级为恢复阻断）。
-- **错误优先级**：预检抛出的 `ENTRY_NOT_IN_BACKLOG` / `WRITEBACK_BACKLOG_*` / INVALID(backlog) 均发生在 `resolveOperationalWorkspace` **之后**、candidate/journal 之前——非 txws 夹具先得 `WRITEBACK_STATE_MISMATCH`（FR-1 允许的落点），预检不会在错误 authority 上执行。`WRITEBACK_AUTHORITY_DRIFT`（第 5.5 步）同样先于 candidate/journal，零写入。
+- **恢复一致性（B-SDD-01）**：`payload.files = entries.map(...)`（既有第 13 步后逻辑零改动）→ `files` 自动含两账本路径（FR-6.1 落点）。`payload.versionRefill` 一旦随 `save('start')` 落盘即冻结，found 重试一律保留首次 payload 并按 manifest/phase 向前恢复：尚未 apply → `applyWriteSet` 首轮落盘；部分 apply（rename 间）→ `recoverWriteSet` 按 manifest 补齐，entries 从 payload 重建后全 skip；已 apply 未 commit → 补 commit。tasks/traceability 的 `writeback-after-apply` 中断后重试：guard 读 txws cr.md 已是真实版本 → `refill=false` → entries 的 cr.md 条目**只从 `payload.versionRefill.crMd`（持久化）重建**，backlog 条目从 `payload.versionRefill.backlog` 重建；`applyWriteSet` 按当前 hash 分类（=after → skip；=before → redo；第三值 → TX_RECOVERY_CONFLICT 零写入）→ 向前恢复成立，无需回滚账本；重试后的 commit 与 files 与中断前语义一致（两账本 + 本 stage 业务文件同 commit，files 含 cr.md）。
+- **`writeback-after-journal-create` 中断**：文件未动、manifest 缺失；guard 仍 `refill=true`。重试保留首次 payload（versionRefill 已随 save('start') 落盘），entries 从 payload 重建，`applyWriteSet` 首轮落盘——第 7 步重算不落入 payload（首次预检已保证前置值；第三方改动由 applyWriteSet before 哈希预检以 TX_RECOVERY_CONFLICT 拦截，零写入）。
+- **错误优先级**：预检抛出的 `ENTRY_NOT_IN_BACKLOG` / `WRITEBACK_BACKLOG_*` / INVALID(backlog) 均发生在 `resolveOperationalWorkspace` **之后**、candidate/journal 之前——非 txws 夹具先得 `WRITEBACK_STATE_MISMATCH`（FR-1 允许的落点），预检不会在错误 authority 上执行。authority 快照绑定（第 5.5 步，复用既有 `WRITEBACK_STATE_MISMATCH` 的新 throw 位）同样先于 candidate/journal，零写入。
 
 ### 4.5 baseline cr.md 单条目合成（status + target-version 同一条 afterText）
 
@@ -390,7 +406,8 @@ planVersionRefill({ txws, authority, cr, stage, version }):
 
 ```text
 let afterText, beforeSha256
-if (payload.versionRefill && refillPlan) {                    # 回灌分支（含恢复重跑，guard refill=true）
+if (payload.versionRefill && refillPlan) {                    # 回灌分支（fresh 运行；或 journal-create 中断后
+    # statusTransition 尚未持久化的 baseline 重试——两者 guard refill=true 且本块未被持久化跳过）
     # 底本 = plan 语义复核过的文本（B-SDD-02 绑定：复核文本即 applyWriteSet 的 before 锚点）
     afterText = crMdStatusText(refillPlan.crMdBase.text, 'writing-back', { at: journal.createdAt })
     afterText = applyTargetVersionToCrMd(afterText, payload.versionRefill.inputVersion)
@@ -412,7 +429,7 @@ payload.statusTransition = { from: 'merging', to: 'writing-back', ..., beforeSha
 - `writeback-after-commit`：`payload.committed=true` 短路第 13–14 步的 commit 段；只 push + complete。
 - `writeback-after-push`：`payload.pushed=true` 短路 push 段；只补投影与 `save('complete')`。
 
-其余既有点（`writeback-after-journal-create` 等）语义不变；`writeback-after-journal-create` 时尚无 write-set，重试继续同一 journal，不得「提前回灌账本」（§4.4 第 11 步：versionRefill 只随 payload 持久化，文件写入只经 applyWriteSet）。
+其余既有点（`writeback-after-journal-create` 等）语义不变；`writeback-after-journal-create` 时尚无 write-set、manifest 缺失，重试保留首次 payload、entries 从 payload 重建并首轮 apply（§4.4 第 9a 步），不得「提前回灌账本」（versionRefill 只随 payload 持久化，文件写入只经 applyWriteSet）。
 
 ### 4.7 FR-5 人读文案落点
 
@@ -437,7 +454,7 @@ payload.statusTransition = { from: 'merging', to: 'writing-back', ..., beforeSha
 
 - **Context**：`writeback-after-apply` 中断后，txws 的 cr.md 已是真实版本，重算回灌计划会得到「无需回灌」而把 `_backlog.yml` 变更遗留未提交——违反 FR-2.2 半成品禁令与 AC-2.3.1。
 - **Alternatives**：a) 每次重算——上述缺陷；b) 另立独立 journal/ledger 文件——违反「账本单一写入通道」与 Negative Space（不新开事务文件面）。
-- **Consequences**：与既有 `statusTransition` 同口径：before/after 哈希 + after 文本随 payload 落盘（crMd 与 backlog 条目均完整持久化，B-SDD-01）；恢复时 `refill=true` 重跑预检并覆写计划、`refill=false` 只从 payload 重建（§2.2），不回算 after；`durable-tx.mjs` envelope 校验只要求 payload 非空，零改动（§2.2）。
+- **Consequences**：与既有 `statusTransition` 同口径：before/after 哈希 + after 文本随 payload 落盘（crMd 与 backlog 条目均完整持久化，B-SDD-01）；**payload 落盘即冻结**，found 重试一律从 payload 重建并按 manifest/phase 向前恢复（尚未 apply / 部分 apply / 已 apply 三现场，§2.2/§4.4 第 9 步），不回算 after、不覆写计划；`durable-tx.mjs` envelope 校验只要求 payload 非空，零改动（§2.2）。
 
 ### 决策 D-3：回灌只经 recoverable write-set 向前恢复，不引入回滚
 
@@ -493,28 +510,37 @@ AC-2.2（backlog 冲突五向量）
            全部拒绝路径：specs/candidate/journal/lock/cr.md(status+target-version)/_backlog 字节级
            零变化、零 commit（snapshotSixPoints 扩展 _backlog 哈希）
 可达性说明：五向量在 txws authority 上直接构造（改 txws 内 _backlog.yml），预检先于 candidate/journal
-AC-2.3（三故障点）
-设计落点：既有 FAULT_POINTS + 持久化 versionRefill（§2.4/§4.6）
+AC-2.3（三故障点 + B-SDD-01 部分 apply 冻结回归）
+设计落点：既有 FAULT_POINTS + 持久化 versionRefill + manifest/phase 向前恢复（§2.4/§4.6/§4.4 第 9 步）
 可观测结果：1: 首次 exit≠0 FAULT_INJECTED、HEAD 无 writeback commit；同参重试 exit 0、phase=complete、
            origin 恰好一个 writeback {stage} commit 且同时含两账本 0.30 与业务文件；
-           [baseline 断言同前]；direct tasks/traceability 回灌夹具（cr.md/_backlog 仍为 unassigned 时
-           直接跑 tasks/traceability）：writeback-after-apply 后同参重试，guard 读 cr.md 已是真实版本
-           （refill=false、refillPlan=null），cr.md 条目仅由 payload.versionRefill.crMd 重建，重试
-           commit 含 cr.md 版本行 + _backlog 版本行 + 本 stage 业务文件，stdout files 含 cr.md 与
-           _backlog 两路径（B-SDD-01 回归）；
+           [baseline 断言同前]；direct tasks/traceability 回灌夹具（txws status=writing-back + 两账本
+           target-version=unassigned，不经 baseline 直接跑 tasks stage）：writeback-after-apply 后同参重试，
+           guard 读 cr.md 已是真实版本（refill=false），cr.md 条目仅由 payload.versionRefill.crMd 重建，重试
+           commit 含 cr.md 版本行 + _backlog 版本行 + 本 stage 业务文件，stdout files 含 cr.md 与 _backlog
+           两路径（B-SDD-01 回归）；
+           1b（部分 apply 冻结回归，B-SDD-01）：direct 夹具 + CRCTL_FAULT_POINT=tx-apply-between-rename →
+           首次 exit≠0 FAULT_INJECTED、manifest state=prepared；随后夹具把 txws _backlog.yml 置为
+           payload.versionRefill.backlog.afterText（构造「backlog 已 after、cr.md 仍 unassigned」的 rename
+           间现场）；同参重试（不设 env）：payload.versionRefill 保持首次落盘值（不重算、backlog 条目不降为
+           null），recoverWriteSet 按 manifest 补齐 cr.md，commit 同时含两账本 0.30 与业务文件，stdout
+           files 含两账本路径；
            2: 同参重试不新增 commit（writeback {stage} 恰好 1 条）；3: 同参重试 exit 0、phase=complete、
            commit=中断前 sha、origin 不新增、两账本保持该 commit 映像
-可达性说明：CRCTL_FAULT_POINT 既有入口校验（FAULT_POINTS 表未变，三点全登记）；重试不设 env；
-           direct tasks/traceability 回灌夹具 = merged 夹具（两账本 unassigned）上不跑 baseline 直接
-           跑 tasks stage（AC-2.2.5 同理构造）
+可达性说明：CRCTL_FAULT_POINT 既有入口校验（FAULT_POINTS 表未变，三点 + tx-apply-between-rename 全登记）；
+           重试不设 env；direct tasks/traceability 回灌夹具 = txws 直接构造 status=writing-back + 两账本
+           target-version=unassigned 的夹具（生成器前置只校验 cr.md status——§6.3 证据 5——writing-back
+           即通过；该状态即旧守卫下 worktree/txws 版本分裂 CR 经 baseline 后的真实现场，本 CR 收编此类分裂）；
+           merged（status=merging）夹具不满足 tasks/traceability 生成器前置，不可作 direct 夹具
 AC-3（worktree 与 txws 版本分裂，FR-3）
 设计落点：resolveWritebackAuthorityPath 的 txws 优先（§4.1）+ authority 快照绑定（§4.4 第 5.5 步）
 可观测结果：requirement worktree cr.md 与 txws cr.md 版本不一致时，guard 以 txws 值为准（txws=
            unassigned+输入真实 → 放行且只回灌 txws，worktree 文件内容不变）；code-approved 夹具上
            MISMATCH 仍优先于 WRITEBACK_STATE_MISMATCH；窄解析器回退（source=cr-worktree）时
-           refill=false，opWs=txws 的快照不一致路径 → WRITEBACK_AUTHORITY_DRIFT 零写入
-           （authority-mismatch；单测层以 planVersionRefill 同源断言 + guard source 条件向量覆盖，
-           见 AC-4；运行时竞态窗口由第 5.5 步检查兜底）
+           refill=false，opWs=txws 的快照不一致路径 → WRITEBACK_STATE_MISMATCH 零写入
+           （authority 快照绑定 throw 位，复用既有码；message 含 guardPath/opPath；单测层以
+           planVersionRefill 同源断言 + guard source 条件向量覆盖，见 AC-4；运行时竞态窗口由
+           第 5.5 步检查兜底）
 可达性说明：merged 夹具 merge 后手改 worktree 副本的 target-version（不影响 txws）；code-approved
            夹具 = makeCodeApprovedFixture 未 merge（版本不一致向量）
 AC-4（测试改写与回归）
@@ -525,7 +551,7 @@ AC-4（测试改写与回归）
            零观察点拒绝路径保持；crctl.test.mjs 另含：guard source 条件向量（txws 回灌 / worktree
            回退 refill=false 两分支）与 planVersionRefill 语义复核向量（仍 unassigned → 放行；
            已=输入 → 幂等 null；已=另一真实 → MISMATCH；非法 → INVALID）及同源断言向量
-           （authority.path ≠ txws → WRITEBACK_AUTHORITY_DRIFT）
+           （authority.path ≠ txws → WRITEBACK_STATE_MISMATCH，复用既有码、extra 保持既有形状）
 可达性说明：crctl.test.mjs 已 import workspace-transactions 纯函数（既有模式）；guard 需要 ctx——
            用 resolveRepositories(kb)（fixture 内 kb 是 InstWS）；plan 向量用临时目录直接构造
            cr.md/_backlog 内容（不依赖完整夹具）
@@ -547,7 +573,7 @@ AC-6（CLI 信封，B-03）
 
 ### 6.3 既有实现依赖与事实
 
-按正文首次出现顺序；commit SHA 均来自 tools 仓 resource 当前 HEAD（`2bb66294db30b116e0d53aea48990611017c75d6`，branch=custom/main，即 CR-2026-057 merge 提交；已按 `resources[repo=tools].worktreePath` 受控执行 `crctl git rev-parse HEAD` 核实，七项 path/symbol/conclusion 均在本 HEAD 重核）。
+按正文首次出现顺序；commit SHA 均来自 tools 仓 resource worktree 当前 HEAD（`2bb66294db30b116e0d53aea48990611017c75d6`，即 CR-2026-057 merge 提交；已按 `resources[repo=tools].worktreePath` 受控执行 `crctl git rev-parse HEAD` 与 `crctl git branch --show-current --cwd <worktreePath>` 核实：HEAD=`2bb66294`，branch=`requirement/CR-2026-058`（本 CR 派生 worktree，非 trunk `custom/main`），七项 path/symbol/conclusion 均在该 worktree HEAD 重核）。
 
 1. repo: tools
    relative path: skills/shared/crctl/scripts/lib/workspace-transactions.mjs
@@ -595,7 +621,7 @@ AC-6（CLI 信封，B-03）
 
 ## 7. 安全与性能考量
 
-- **边界条件**：authority cr.md 缺失/无 frontmatter/缺 `target-version` 行 → `WRITEBACK_VERSION_INVALID`（既有）；txws 缺失/状态不自洽 → 窄解析器回退 cr-worktree 比较、后续既有 STATE_MISMATCH/OPERATIONAL_WORKSPACE 兜底；guard 采样与 opWs 不同源同路径 → `WRITEBACK_AUTHORITY_DRIFT` 零写入（§4.4 第 5.5 步）；plan 二次读取语义复核（仍 unassigned / 已=输入幂等 / 另一真实 MISMATCH / 非法 INVALID，§4.3 ③）；backlog 条目缺行/非法/重复/缺失 → §2.3 四码，全部零写入；`writeback-after-apply` 后重试的 hash 分类（=after skip / =before redo / 第三值 `TX_RECOVERY_CONFLICT`）由既有 `applyWriteSet` 预检保证（回灌分支 before 锚点后的任何漂移均被第三值拦截，零账本写入）。
+- **边界条件**：authority cr.md 缺失/无 frontmatter/缺 `target-version` 行 → `WRITEBACK_VERSION_INVALID`（既有）；txws 缺失/状态不自洽 → 窄解析器回退 cr-worktree 比较、后续既有 STATE_MISMATCH/OPERATIONAL_WORKSPACE 兜底；guard 采样与 opWs 不同源同路径 → 复用既有 `WRITEBACK_STATE_MISMATCH` 零写入（§4.4 第 5.5 步新增 throw 位）；plan 二次读取语义复核（仍 unassigned / 已=输入幂等 / 另一真实 MISMATCH / 非法 INVALID，§4.3 ③）；backlog 条目缺行/非法/重复/缺失 → §2.3 四码，全部零写入；`writeback-after-apply` 后重试的 hash 分类（=after skip / =before redo / 第三值 `TX_RECOVERY_CONFLICT`）由既有 `applyWriteSet` 预检保证（回灌分支 before 锚点后的任何漂移均被第三值拦截，零账本写入）。
 - **性能（NFR-4）**：guard/预检均为常数时间——一次 `readFileSync`（cr.md、backlog）+ 行级正则 + 纯函数文本变换；无网络调用（`mergeStatus` 只读本地 journal；`resolveWritebackAuthorityPath` 不 fetch）。
 - **安全（NFR-5）**：不新增绕过 crctl 的账本写路径（回灌只经 `applyWriteSet` 既有通道、lock/journal/commit 全复用）；不扩大 post-review 白名单（回灌的两路径 `cr.md`/`_backlog.yml` 已在 `verifyReleaseSubjects` KB 白名单内，NFR-6 依赖 §6.3 证据 1 的既有实现）；版本写入值恒为规范化串（无引号/空白注入面）；`resolveWritebackAuthorityPath` 不做 authority 断言（不替代 `resolveOperationalWorkspace`），回退路径天然禁止回灌；B-SDD-02 双层绑定（路径同源断言 + 值级语义复核 + `applyWriteSet` 末段 hash CAS）保证「覆盖另一真实版本」不可能：路径不一致零写入硬失败，版本值在两次采样间漂移则 MISMATCH/INVALID 拒绝，漂移发生在复核之后则 `TX_RECOVERY_CONFLICT` 拦截。
 - **行尾纪律（NFR-3）**：所有新增读文件先 `\r\n→\n`；行级解析用既有 `backlogLines`（`\r?\n` 口径）与 `split('\n')`；跨行/单行正则匹配失败一律硬失败（`ENTRY_NOT_IN_BACKLOG`/`WRITEBACK_VERSION_INVALID`/`WRITEBACK_STATUS_INVALID`/`LEDGER 类`），禁止静默返回原文（§4.3 两条编辑函数均带「替换未命中 → 硬失败」断言）。
@@ -610,7 +636,7 @@ AC-6（CLI 信封，B-03）
 
 ## 9. 批准范围
 
-- **scope_in**：CR-2026-058 必须交付：FR-1（guardWritebackVersion 判定表与文案，含 authority 快照）、FR-2/FR-2.1/FR-2.2（回灌分支、backlog 预检、故障边界；journal payload 完整持久化 crMd/backlog 条目）、FR-3（窄解析器与 authority 对齐；authority 同源绑定与语义复核）、FR-4（writeback-tx.test.mjs 改写与 crctl.test.mjs 新增向量）、FR-5（README 行 22/行 76 + 守卫文案）、FR-6（CLI 信封观察面）；验收 AC-1～AC-6（§6.2）。新增错误码：`WRITEBACK_BACKLOG_VERSION_MISMATCH` / `WRITEBACK_BACKLOG_ENTRY_DUPLICATE`（PRD FR-2.1 已允许）+ `WRITEBACK_AUTHORITY_DRIFT`（第三个新码，评审 B-SDD-02 要求的同源绑定硬失败观察面；PRD 对错误码为允许性列举而非排他性上限，复用既有码会污染其 extra 契约且无法唯一断言——若评审认为超范围，可降级为复用 `WRITEBACK_STATE_MISMATCH` 新 throw 位，但语义与测试观察面都会变差）。
-- **scope_out**：不放宽 `version-set` 合法状态集（merging/writing-back 仍禁止）；不回灌/不改写冻结的 `prd.md`/`sdd.md`/`plan.md`/`TASK-*.md`；不推进、不代跑 CR-2026-057 的 writeback/archive（057 保持 `merging` 直至本 CR 合入主仓）；不回写修复已归档 AIFI-14（CR-2026-056）历史产物；不新增 Agent/Pipeline/状态机状态与转换/CLI 子命令/事务框架/fault-point（允许 FR-2.1 两个新错误码 + 评审要求的一个 authority 绑定错误码，见 scope_in）；不修改 `../multica/`；不扩大 post-review 白名单、不放松 `verifyReleaseSubjects`；不处理 AIFI-15 附件中除本拍板最小面以外的建议。
+- **scope_in**：CR-2026-058 必须交付：FR-1（guardWritebackVersion 判定表与文案，含 authority 快照）、FR-2/FR-2.1/FR-2.2（回灌分支、backlog 预检、故障边界；journal payload 完整持久化 crMd/backlog 条目且落盘即冻结）、FR-3（窄解析器与 authority 对齐；authority 同源绑定与语义复核）、FR-4（writeback-tx.test.mjs 改写与 crctl.test.mjs 新增向量）、FR-5（README 行 22/行 76 + 守卫文案）、FR-6（CLI 信封观察面）；验收 AC-1～AC-6（§6.2）。新增错误码：仅 PRD FR-2.1 已允许的 `WRITEBACK_BACKLOG_VERSION_MISMATCH` / `WRITEBACK_BACKLOG_ENTRY_DUPLICATE` 两个（NFR-2/§7 上限）。B-SDD-02 同源绑定硬失败**复用既有 `WRITEBACK_STATE_MISMATCH`**（新增 throw 位、extra 保持既有 `{cr, phase}` 形状、guard 快照与 opWs 的证据进 message）——不新增第三个公开错误码（B-SDD-04：PRD FR-6.2 未列，SDD 不得单方面扩契约）。
+- **scope_out**：不放宽 `version-set` 合法状态集（merging/writing-back 仍禁止）；不回灌/不改写冻结的 `prd.md`/`sdd.md`/`plan.md`/`TASK-*.md`；不推进、不代跑 CR-2026-057 的 writeback/archive（057 保持 `merging` 直至本 CR 合入主仓）；不回写修复已归档 AIFI-14（CR-2026-056）历史产物；不新增 Agent/Pipeline/状态机状态与转换/CLI 子命令/事务框架/fault-point（仅允许 FR-2.1 两个新错误码；authority 绑定复用既有 `WRITEBACK_STATE_MISMATCH`）；不修改 `../multica/`；不扩大 post-review 白名单、不放松 `verifyReleaseSubjects`；不处理 AIFI-15 附件中除本拍板最小面以外的建议。
 - **zero_diff**：`crctl.mjs` 的 `cmdWritebackApply`（含 flag 面、callbacks）、`fail()`/`ok()`/`runTxAsync` 信封形态；`resolveOperationalWorkspace` 的签名与抛错契约（唯一 authority 断言点）；`durable-tx.mjs` 全部导出与 `FAULT_POINTS` 登记表；`lib/yaml-subset.mjs` 全部导出；writeback 三个 generator 脚本及其 manifest 格式（v1/v2 校验不变）；`guardWritebackVersion` 的**调用签名**（`(ctx, cr, inputTargetRaw)` 不变，仅返回值扩展）；`statusTransition` 既有字段结构与投影逻辑；`verifyReleaseSubjects` 白名单集合。
 - **follow_up**：无。发现但留给后续 CR 的缺口：PRD FR-2.1 明确排除的「账本已分裂但两侧真实」（backlog 与 cr.md 均为真实版本但互不一致）的检核与自愈，本 CR 不扩进范围——若未来需要，应另开 CR 定义其判定与入口（不得在本 CR 实现期顺手扩展）。
