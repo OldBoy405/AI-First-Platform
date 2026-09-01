@@ -2,32 +2,38 @@ cr-id: CR-2026-058
 tasks:
   - id: CR-2026-058-TASK-01
     title: "窄只读路径解析器与 guardWritebackVersion 判定表重写（FR-1/FR-3）"
-    status: pending
+    status: done
+    done-at: "2026-09-01T18:25:07+08:00"
     estimate: 10h
     depends-on: []
   - id: CR-2026-058-TASK-02
     title: "planVersionRefill 与行级编辑纯函数（FR-2.1 backlog 预检 + cr.md 语义复核）"
-    status: pending
+    status: done
+    done-at: "2026-09-01T18:25:08+08:00"
     estimate: 12h
     depends-on: [CR-2026-058-TASK-01]
   - id: CR-2026-058-TASK-03
     title: "applyWritebackAtomic 回灌集成（authority 快照绑定 / payload 冻结 / entries 合成 / 恢复协议）"
-    status: pending
+    status: done
+    done-at: "2026-09-01T18:25:08+08:00"
     estimate: 14h
     depends-on: [CR-2026-058-TASK-01, CR-2026-058-TASK-02]
   - id: CR-2026-058-TASK-04
     title: "merge-fixture 参数化与 writeback-tx 集成测试改写（FR-4 集成层，AC-1/AC-2/AC-3/AC-6）"
-    status: pending
+    status: done
+    done-at: "2026-09-01T18:25:08+08:00"
     estimate: 14h
     depends-on: [CR-2026-058-TASK-03]
   - id: CR-2026-058-TASK-05
     title: "crctl.test.mjs 同源断言与 AC-4 静态核对"
-    status: pending
+    status: done
+    done-at: "2026-09-01T18:25:08+08:00"
     estimate: 5h
     depends-on: [CR-2026-058-TASK-01, CR-2026-058-TASK-02, CR-2026-058-TASK-04]
   - id: CR-2026-058-TASK-06
     title: "README 行 22/行 76 改写与静态文案断言（FR-5，AC-5）"
-    status: pending
+    status: done
+    done-at: "2026-09-01T18:25:08+08:00"
     estimate: 3h
     depends-on: [CR-2026-058-TASK-05]
   - id: CR-2026-058-TASK-07
