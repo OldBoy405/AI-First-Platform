@@ -1,0 +1,60 @@
+﻿✔ TASK-09 AC-1：happy path — 四账本同批 + trailer + cleanup 全清 + 幂等重放 (23329.846ms)
+✔ TASK-09 AC-1：cleanup fault → CR_ARCHIVE_CLEANUP_PENDING（status 恒 archived），重跑只续清理不重复 commit (23686.65ms)
+✔ TASK-09 AC-2：dirty CR worktree 零删除 → cleanup-pending 保留现场；清理后重跑 complete (23472.2916ms)
+✔ review repair：archive 删除 requirement ref 前必须证明 source 已合入 origin trunk (22857.0369ms)
+✔ TASK-09 AC-2：rejected CR — authority 来自 CR worktree，归档在 detached trunk 提交并保留未合并 ref (10125.1204ms)
+✔ TASK-01 RED-1：happy path 固定返回 commit/lastCleanupError/recoverCommand/warnings (22689.9579ms)
+✔ TASK-01 RED-2：必需 emitter — 缺失/非法在 lock/journal/commit/push/outbox 前 ARCHIVE_EMITTER_REQUIRED (18564.0695ms)
+✔ TASK-01 RED-3：正常归档产生唯一 schema v1 archive 事件（六业务字段 + 真实 SHA） (22813.4242ms)
+✔ TASK-01 RED-4：cleanup fault → pending + 非空 lastCleanupError + 真实 commit；重跑零新 commit (23532.8424ms)
+✔ TASK-01 RED-5：dirty worktree — remaining 非空而 lastCleanupError=null（资源保留≠执行异常） (23265.5646ms)
+✔ TASK-01 RED-6：outbox 失败 → exit 0 + EMIT_FAILED warning + authority 不回滚；重跑补发零新 commit (23281.3483ms)
+✖ TASK-01 RED-7：预存确定性 dedup 文件 → 命中同名补记，数量不增、内容不覆盖 (23222.8044ms)
+✔ TASK-01 RED-8：rejected/withdrawn — 固定返回、零事件（archive/status）、preservedRefs 保留 (20095.5197ms)
+✔ TASK-01 RED-9：complete 幂等重放 — changed=false、固定字段、outbox 数量不增 (23058.6939ms)
+✔ TASK-01 RED-10：remote rebuild — 返回 commit 与事件 commit_sha 均为最终 origin SHA (23774.9197ms)
+✔ CR-2026-041 证据门：evidence digest 漂移 → ARCHIVE_EVIDENCE_DRIFT 硬失败且零 journal/authority (18835.3088ms)
+✔ CR-2026-041 证据门：证据缺失 → ARCHIVE_EVIDENCE 硬失败且零 journal (18848.7081ms)
+✔ CR-2026-054 候选校验：首次构建损坏候选 → ARCHIVE_YAML_INVALID 且零 stage/commit/push (151529.4379ms)
+✔ CR-2026-054 候选校验：history 缺少必需根键 → ARCHIVE_YAML_INVALID 且零 stage/commit/push (19361.8008ms)
+✔ CR-2026-054 候选校验：index 缺少必需根键 → ARCHIVE_YAML_INVALID 且零 stage/commit/push (19110.1244ms)
+✔ CR-2026-054 候选校验：remote rebuild 损坏基线 → ARCHIVE_YAML_INVALID 且零新增 commit (20500.081ms)
+ℹ tests 21
+ℹ suites 0
+ℹ pass 20
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 576044.8487
+
+✖ failing tests:
+
+test at skills\shared\crctl\scripts\test\archive-tx.test.mjs:353:1
+✖ TASK-01 RED-7：预存确定性 dedup 文件 → 命中同名补记，数量不增、内容不覆盖 (23222.8044ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be loosely deep-equal:
+  
+  [
+    {
+      code: 'EMIT_FAILED',
+      event_kind: 'archive'
+    }
+  ]
+  
+  should loosely deep-equal
+  
+  []
+      at TestContext.<anonymous> (file:///C:/Users/GOBAO/Downloads/AI/AI%20First%20Platform/.rayai-worktrees/tools/requirement/CR-2026-057/skills/shared/crctl/scripts/test/archive-tx.test.mjs:371:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1201:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+      at Test.postRun (node:internal/test_runner/test:1330:19)
+      at Test.run (node:internal/test_runner/test:1258:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ { code: 'EMIT_FAILED', event_kind: 'archive' } ],
+    expected: [],
+    operator: 'deepEqual',
+    diff: 'simple'
+  }

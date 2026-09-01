@@ -1,0 +1,53 @@
+cr-id: CR-2026-057
+review-type: code
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-01T10:33:51+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  代码↔TASK↔SDD 对齐: "PASS：B-CODE-003 回修位于 SDD 批准范围的 workspace-transactions.mjs 与 crctl.test.mjs；仅将 CR 内 _context.md 归入既有 KB 工作流文件白名单，不改变工件 digest、非 KB HEAD 相等性或状态机语义。"
+  工程质量: "PASS：生产改动为既有 allowed 集合增加一个精确路径和说明注释，无新 validator、依赖、抽象或写入入口；07b47da..3f8b1fb 仅 2 文件。"
+  关键路径可读性: "PASS：注释直接说明 _context.md 的每-run 刷新与流程文件属性；允许项与 cr.md、traceability.yml 等同类路径并列，局部语义清楚。"
+  安全性: "PASS：白名单仅匹配 change-requests/${cr}/_context.md 精确路径；_context2.md 负例仍以 RELEASE_SUBJECT_DRIFT/post-review-path-drift 拒绝并保持 approval.yml 零写入，未放宽 CR 外路径或前缀匹配。"
+  测试覆盖: "PASS：新增独立双 fixture 回归覆盖评审后 _context.md 提交可审批以及近似非白名单路径拒绝；cmd-01/cmd-06 中该用例通过，BR-1/BR-2 失败集合与冻结例外表不增。"
+  测试证据可信度: "PASS：test-report 机器区 generated-by=crctl-test、status=pass；六命令均 exit-code=0、timed-out=false、skipped=false，cmd-NN 日志齐备；traceability status/command-digest 与报告的 9ed980e2… 一致。评审只读取证，未重跑 lint/test/build。"
+  前端质量: "N/A：实际增量未触及 tsx/vue/css/html。"
+suggestions:
+  - "已解决：B-CODE-003 [代码审批 release-subjects 重核]。verifyReleaseSubjects 的 KB allowed 集合已精确加入 change-requests/${cr}/_context.md；正向后继提交可通过，_context2.md 仍拒绝且零写入。归属节点：implement-code。"
+  - "已解决：B-CODE-001 [FR-15/AC-15]。editBacklogTargetVersionLine 已采用权威区间内定点替换并由非末项回归覆盖。归属节点：implement-code。"
+  - "已解决：B-CODE-002 [测试证据可重放性]。机器区、traceability、review-loop 与 cmd-NN 日志已通过 crctl test 合法路径重建。归属节点：write-test-report。"
+  - "范围外：editBacklogSet / editBacklogOwnerProjection / editInboxEmit 的既有 split/join 拼接风险继续留给 follow_up CR，本轮未改。归属节点：follow_up CR。"
+review-loop:
+  current-attempt: 3
+release-subjects:
+  version: 1
+  repositories:
+    - repo: ai-first-platform-docs
+      remote-ref: refs/heads/requirement/CR-2026-057
+      reviewed-source-sha: afcb01b1db1cfb9699487f1a8a8a99f246b11c19
+    - repo: multica
+      remote-ref: refs/heads/requirement/CR-2026-057
+      reviewed-source-sha: ae955fa02cdcda9a4a9d3abc5dcbd54167eadae6
+    - repo: tools
+      remote-ref: refs/heads/requirement/CR-2026-057
+      reviewed-source-sha: 3f8b1fb8195375c2a0ff395db84b52a35a9b6d47
+  artifacts:
+    algorithm: sha256
+    canonicalization: crlf-to-lf+path-sort
+    files:
+      - { path: change-requests/CR-2026-057/plan.md, sha256: d8516be330bbb52256b60ed50d05807b2f100a6f700d192b60e12618b20fb176 }
+      - { path: change-requests/CR-2026-057/prd.md, sha256: 9ae7ec873509fca0bec4cb9adb7e5c3528d999fac25e4c4ec74345c59ac3178b }
+      - { path: change-requests/CR-2026-057/sdd.md, sha256: 5e39a5324518d9e44574b8b0ad736ced66fed3ac7a6a7ea2648375e6aeac8525 }
+      - { path: change-requests/CR-2026-057/tasks/TASK-01.md, sha256: be34bbb6a016eebbf72784f671713e5078958b8b8c1fbe782a86d08107271baa }
+      - { path: change-requests/CR-2026-057/tasks/TASK-02.md, sha256: 9f0a437e87b2c2489b91ec3883434599cb34d0081f5956057ef6bf319ade75ef }
+      - { path: change-requests/CR-2026-057/tasks/TASK-03.md, sha256: 1e480421a8fd95e63356eb21f12d92b191686ad2c70729f92ed2e334ac5ce93f }
+      - { path: change-requests/CR-2026-057/tasks/TASK-04.md, sha256: bd0b63090fc3f63ec58c67900aaa000bd4d6b3481ad748e9aced025704279026 }
+      - { path: change-requests/CR-2026-057/tasks/TASK-05.md, sha256: ad95c502f7c6b00cded76747a840b82c66f28e4f29d667085528fafaeb04056b }
+      - { path: change-requests/CR-2026-057/tasks/TASK-06.md, sha256: aa621490958c4a9df13bfaad171e993bf5e309c79ac5aaa0ddf1af4471e6215f }
+      - { path: change-requests/CR-2026-057/tasks/TASK-07.md, sha256: 7c0418952c110e8142131fcc8319b8e6c9039023be1ceb43952a67e7089e6686 }
+      - { path: change-requests/CR-2026-057/tasks/TASK-08.md, sha256: 1b702538e94113d6d18af9ed06d32b3683cd8cea5e13bdefce99247e73c21f8e }
+      - { path: change-requests/CR-2026-057/tasks/TASK-09.md, sha256: 6d6c56f755ef66e469e5164cff006fcc3240c25783daa08578b205c5fa924210 }
+      - { path: change-requests/CR-2026-057/tasks/TASK-10.md, sha256: bd1ff96c0a4fc81a7811906cbc5ba5d17efe99c4478ce197b07df3e38e2606b3 }
+      - { path: change-requests/CR-2026-057/tasks/TASK-11.md, sha256: c572fe5c86ebf16acc206ae431957ed6fe9da132d39b42954092f2ee762e19c1 }
+      - { path: change-requests/CR-2026-057/tasks/_index.yml, sha256: f1e12c466dcbbd8919c15fd92fee638a2b085c5b377f702334462dd7b1e10ff6 }
+    digest: 7dd05609ca460ea7e86f8ae22f0259848605db725782128e67aedb5a4801368b

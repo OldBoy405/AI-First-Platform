@@ -1,0 +1,22 @@
+cr-id: CR-2026-057
+review-type: dev-plan
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-01T00:13:17+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  sdd-to-plan: "pass"
+  plan-to-tasks: "pass"
+  task-executability: "pass"
+  dependency-topology: "pass"
+  interface-contracts: "pass"
+  acceptance-verifiability: "pass"
+  scope-and-simplicity: "pass"
+  risk-and-rollback: "pass"
+  reviewer-model: "openai/gpt-5.6-sol (pi, high)"
+suggestions:
+  - "已解决：AC-18/TASK-11 的退出口径不可执行。plan §1 M5、§5.2、§5.3 与 TASK-11 已统一为冻结的 BR-1/BR-2 例外表；机器区仅在六条排除已登记例外后的命令均 exit 0 时 status=pass，status=block 无旁路；六条命令逐条要求 skipped=false；实施 HEAD 另以不带 skip-pattern 的完整重跑核对失败集合恰等于例外表且红计数=2。归属节点：write-dev-plan。"
+  - "已解决：两条基线红根因修复保持范围外；TASK-11 已要求在 test-report.md 分析区保留逐条根因、证据与 follow_up，新红不得静默扩表。归属节点：TASK-11。"
+review-loop:
+  current-attempt: 2
+subject-sha256: 5e9062ad5049c8008e16c1c36eb4dba8fdd75a0fa93709991661ff30b4832b05

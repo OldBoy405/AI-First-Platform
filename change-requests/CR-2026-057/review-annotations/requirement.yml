@@ -1,0 +1,26 @@
+cr-id: CR-2026-057
+review-type: requirement
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-31T17:53:00+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  结构完整性: "pass - PRD 包含概述、用户故事、FR、AC、成功指标和范围排除"
+  FR可测试性: "pass - FR-12/14/15 CLI 边界、错误码、幂等、状态副作用和 AC-12/14/15 观察点已闭合；AC-1~AC-4 覆盖四个 review 节点"
+  范围合理性: "pass - FR-7 明确既有路由；review-code 越界只回 implement-code，未新增状态或转换"
+  与规划对齐: "pass - 需求覆盖附件 §7 P0-1~P1-3 与 §9 验收要求，且保留明确范围排除"
+  依赖识别: "pass - 明确状态机、review-record、Pipeline reviewLoop、派生产物、authority 与 crctl 依赖"
+  契约域闭合: "pass - register、writeback-apply、version-set 的输入规范化、错误码、调用者、输出、幂等、状态副作用和失败观察点已统一定义"
+suggestions:
+  - "已解决：B-001 [P0-2/批准范围回退] FR-7 明确 review-dev-plan 沿既有双轨分流，review-code 的范围越界统一 repair-target=implement-code；AC-7 覆盖该路由，且明确不得新增状态/转换。"
+  - "已解决：B-002 [P1-1/版本更正闭环] FR-15 将 version-set 定为唯一更正入口，限定允许状态，原子同步 cr.md、backlog 与已存在派生产物；失败零写、可重试，AC-15 验证全链一致。"
+  - "已解决：B-003 [P1-1/crctl CLI 契约闭合] FR-12/14/15 统一版本值域与规范化，固定三条命令的 flag、错误码、调用者、JSON/stderr、幂等、状态副作用和负向验收向量。"
+  - "已解决：B-004 [P0-4/流程 TASK 可完成性] FR-10 取消完成于 merge 的发布准备 TASK 例外，禁止流程控制 TASK 进入交付 ledger，保持 task done 仅允许 developing；AC-10 覆盖。"
+  - "已解决：B-005 [P0-1/四类 review 验收覆盖] AC-1~AC-4 以参数化矩阵覆盖 review-requirement、review-tech-design、review-dev-plan、review-code 的首轮闭合、分级、逐条回修和禁止字段扫描。"
+  - "已解决：B-006 [P1-1/writeback 零副作用观察点] FR-14 规定三 stage 在 candidate/journal/authority 之前做版本守卫，并在 AC-14 验证零痕迹、事务状态、authority 与同参重试。"
+  - "已解决：S-001 [归属节点：write-test-report + review-code] FR-16/AC-16 固定 cmd-NN 与机器区 commands、evidence 文件的关联，并以 skipped 字段作为唯一 skip 证据来源。"
+  - "已解决：S-002 [归属节点：四个 review-*] FR-3 固定已解决：/部分解决：/未解决：/本轮新增：/范围外：前缀，并要求四个 review Skill 使用。"
+review-loop:
+  current-attempt: 2
+subject-file: change-requests/CR-2026-057/prd.md
+subject-sha256: 9ae7ec873509fca0bec4cb9adb7e5c3528d999fac25e4c4ec74345c59ac3178b

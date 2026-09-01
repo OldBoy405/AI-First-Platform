@@ -1,0 +1,27 @@
+cr-id: CR-2026-057
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-08-31T19:43:03+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  PRD↔SDD 对齐: "pass - FR-1～FR-17、NFR-1～NFR-6 与 AC-1～AC-18 均有技术落点；B-SDD-005 的中断重试闭环已补齐"
+  架构合理性: "pass - version-set 复用既有 durable ledger，恢复位于允许状态校验之后、tracked-clean 与漂移检查之前，符合单一账本写入与零第二事务框架约束"
+  数据模型完整性: "pass - 版本值域、version-set 原子写入集、批准范围四字段及 skipped 机器字段均完整"
+  接口契约: "pass - register/writeback-apply/version-set 的 flag、规范化、错误码、幂等、输出与状态副作用已闭合"
+  多仓架构约束: "pass - 目标仓、依赖方向及 requirement worktree 路径 authority 明确，未引入跨仓路径拼接或新依赖"
+  性能与安全: "pass - 常数时间口径仅用于入口版本守卫；全链同步明确为固定写入面 O(n)；禁止状态在恢复前零写短路"
+  可测试性: "pass - 提交前中断、提交后未清 journal、禁止状态预置残留及外部 dirty 均有独立回归向量"
+  Prompt 采纳影响: "pass - SDD §8 已列出 dispatch 与机器区变化对应的 Skill 同步清单"
+suggestions:
+  - "已解决：B-SDD-001 [FR-14/AC-14] 版本守卫经 crWorktreePath + readCrMdTargetVersion 读取 requirement worktree 的 cr.md，不调用 resolveOperationalWorkspace；归属节点：review-tech-design。"
+  - "已解决：B-SDD-002 [FR-12/FR-14/AC-14] guard.value 已明确回灌 canonicalWritebackBusinessInput、manifest 与 generator --version；归属节点：review-tech-design。"
+  - "已解决：B-SDD-003 [FR-14/AC-14.3] 已按 flag 存在性区分缺 target-version 的 BAD_ARGS 与显式空串的 WRITEBACK_VERSION_INVALID；归属节点：review-tech-design。"
+  - "已解决：B-SDD-004 [FR-16/AC-16] skip 匹配域已限定为 stdout/stderr 两段，marker 缺失或重复以 TEST_LOG_MARKER_INVALID 硬失败；归属节点：review-tech-design。"
+  - "已解决：B-SDD-005 [FR-15/AC-15] recoverLedgerCommand 已移至允许状态校验后、tracked-clean 与漂移检查前；version/{cr} 键隔离使本事务残留先恢复，外部 dirty 后续拒绝，并以提交前/提交后中断向量闭合重试；归属节点：review-tech-design。"
+  - "已解决：B-SDD-006 [NFR-4/FR-15] 已将 O(1) 口径限定为入口规范化守卫，并明确 version-set 全链同步为固定写入面上已存在文件数的 O(n)；归属节点：review-tech-design。"
+  - "范围外：无本轮范围外发现；归属节点：review-tech-design。"
+review-loop:
+  current-attempt: 3
+subject-file: change-requests/CR-2026-057/sdd.md
+subject-sha256: 5e39a5324518d9e44574b8b0ad736ced66fed3ac7a6a7ea2648375e6aeac8525
