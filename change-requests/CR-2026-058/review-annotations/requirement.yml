@@ -1,20 +1,20 @@
 cr-id: CR-2026-058
 review-type: requirement
 reviewer: "OldBoy405"
-reviewed-at: "2026-09-01T13:11:03+08:00"
-verdict: block
-blockers:
-  - "本轮新增： [B-01] FR-2 / AC-2 未闭合 `_backlog.yml` 回灌前的冲突语义。现文只比较 authority `cr.md` 与业务输入，随后直接改写两本账；若 backlog 条目已是另一真实版本、缺失或重复，实现既可覆盖也可拒绝，会带来版本事实被静默覆盖的数据风险。请补充 backlog 允许的前置值、冲突/缺失/重复时的确定错误码与零写入观察点，并加入对应 AC。"
-  - "本轮新增： [B-02] FR-2 与 AC-2 的失败原子性不可唯一验收：`后续 writeback 失败必须整组回滚`、`与既有 recoverable write-set 相同` 和 `既有 fault-point 或等价` 混用了回滚与断点续跑语义，未区分 apply 后 commit 前、commit 后 push 前、push 后 complete 前。请按既有事务边界列出各故障点预期（回滚还是保留 journal/commit 并同参恢复），并指定 AC 使用的故障点及重试后的最终不变量。"
-  - "本轮新增： [B-03] 修改后的 `crctl writeback-apply` CLI 契约未闭合 JSON/stdout 观察面。FR-4 用 `phase=complete（或该 stage 既有成功口径）` 给出可替代结果，且未说明成功时 `status/files/changed/recoverCommand` 如何体现两账本回灌，也未明确失败时 exit、stdout/stderr 与 `error.code/details` 是否保持既有契约；调用方与测试无法据此形成唯一断言。请明确修改分支的结构化成功/失败输出（可声明其余字段保持既有契约，但须列出本次可观察字段），并同步 AC。"
+reviewed-at: "2026-09-01T13:23:50+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  结构完整性: "BLOCK：概述、用户故事、FR、AC 与范围排除齐全，但 CLI 契约及账本冲突/恢复语义尚未闭合。"
-  FR可测试性: "BLOCK：FR 与 AC 基本逐项对应；B-01 至 B-03 导致冲突、故障注入和结构化输出无法形成唯一断言。"
-  范围合理性: "PASS：仅限 tools 守卫、事务写集、回归与说明，排除 version-set 放宽、冻结产物和 CR-2026-057 状态推进。"
-  与规划对齐: "PASS：覆盖 AIFI-15 已拍板 A 方案的最小修复面，并保持 CR-2026-057 在 merging 等待。"
-  依赖识别: "BLOCK：已识别 txws authority、release-subjects 与既有 recoverable write-set，但对 backlog 一致性和事务故障边界的依赖契约仍缺失。"
-suggestions: []
+  结构完整性: "PASS：概述、用户故事、FR、AC、非功能需求与范围排除齐全；回灌前置值、事务恢复边界和 CLI I/O 契约均已闭合。"
+  FR可测试性: "PASS：FR-1 至 FR-6 均有对应 AC；backlog 五类前置值、三个既有 fault-point、首次成功与幂等重跑的 stdout/stderr/exit/files/changed 均可唯一断言。"
+  范围合理性: "PASS：仍限定于 tools 的版本守卫、writeback write-set、回归测试和人读说明；明确排除 version-set 放宽、冻结产物改写及 CR-2026-057 状态推进。"
+  与规划对齐: "PASS：完整覆盖已拍板 A 方案，并保持 CR-2026-057 在本 CR 合入前停留 merging。"
+  依赖识别: "PASS：已明确 txws authority、_backlog.yml 唯一条目、recoverable write-set、既有 FAULT_POINTS、release-subjects 白名单及 CR-2026-057 前置依赖。"
+suggestions:
+  - "已解决： [B-01] FR-2.1 / AC-2.2 已规定 backlog 仅允许 unassigned 或等于输入真实版本，另一真实版本、缺失、重复、非法字段均有确定错误码；预检先于 journal/candidate，拒绝路径含 backlog 字节级不变及完整零写入观察点。"
+  - "已解决： [B-02] FR-2.2 / AC-2.3 已统一为既有 recoverable write-set 的向前恢复语义，并分别绑定 writeback-after-apply、writeback-after-commit、writeback-after-push，明确各现场、续跑动作及 commit/origin 最终不变量。"
+  - "已解决： [B-03] FR-6 / AC-6 已固定成功 exit 0 与 phase=complete、首次 changed=true、files 同列两账本、幂等重跑字段，并明确失败 exit 1、stderr error 扁平 extra、stdout 无成功对象且不存在 error.details。"
 review-loop:
-  current-attempt: 1
+  current-attempt: 2
 subject-file: change-requests/CR-2026-058/prd.md
-subject-sha256: 4e8c0732364b14d5c8f44baffe5155b1a806080152b8e3c6bd8f7ee024ffb39c
+subject-sha256: 44fb9adca18ef28ffe9b95dadb42d32a5880117a8ae4da8fa490c3ed1aae216b
