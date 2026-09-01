@@ -13,7 +13,7 @@ owners:
   test:
     id: Ray
     assigned-at: "2026-09-01T22:50:02+08:00"
-target-version: unassigned
+target-version: 0.32
 source: AIFI-16
 origin: ""
 status: drafting
