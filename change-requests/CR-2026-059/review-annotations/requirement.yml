@@ -1,0 +1,25 @@
+cr-id: CR-2026-059
+review-type: requirement
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-01T23:24:48+08:00"
+verdict: block
+blockers:
+  - "本轮新增： [B-HTTP-1] Discussion HTTP 主契约尚未闭合，当前实现与验收不能唯一确定：`GET /api/chat/sessions/{sessionId}/messages` 只有‘项目成员可列出’一句，缺响应结构、分页/排序/游标和状态/错误约定；`POST .../messages` 未定义 content/attachment_ids 的空值、至少一项、重复 ID 等输入约束；成功状态仅写‘2xx’，而已归档、错误 kind、跨项目又允许 404/409 二选一。请对四个主 endpoint 逐一补齐或明确继承的 request、response、精确 HTTP 状态与 error-code 映射，并为这些分支增加可执行 AC。"
+  - "本轮新增： [B-HTTP-2] FR-13 修改了 `POST /api/projects/{id}/chat/merge-forward`，但只写了新增 `message_ids`，没有闭合该修改契约：`message_ids` 与 `comment_ids` 是否互斥/可混用、空数组/重复/顺序/跨 session 输入约束、权限、响应、错误码、成功状态、幂等与状态副作用均未定义。AC-15 只能证明一条成功路径。请按 HTTP 八项闭包补齐并覆盖失败与重复请求。"
+  - "本轮新增： [B-IDEMP-1] 两个会产生持久副作用的发送入口缺少重试/幂等契约：Discussion `POST .../messages` 可创建 message、可选 task 并绑定附件，merge-forward 会调用 Team Agent 发送内核；事务原子性不能处理‘服务端已提交但客户端未收到响应’后的重试，可能重复消息/task，或让同一附件的重试退化为 `attachment_already_bound`。请规定 idempotency key/稳定请求标识、重复请求返回语义与并发收敛规则（若明确非幂等，也必须给出客户端对提交结果未知的可恢复协议），并补 AC。"
+  - "本轮新增： [B-ACL-1] shared session 的安全负向契约与验收不完整。PRD 只规定项目成员可读写/收实时事件，未明确同 workspace 非本项目成员、被移出项目的旧成员以及直接持有 session/message/attachment UUID 的调用者，对 Discussion GET、消息列表、发送、已发送附件下载和实时订阅分别应收到什么拒绝；AC-20 仅覆盖部分跨项目 PATCH/发送，AC-6 只覆盖成员间正向可见。请补齐服务端拒绝与实时退订/不广播规则及可执行负向 AC，避免 shared 分支产生越权泄漏。"
+  - "本轮新增： [B-COORD-1] Coordinator 生命周期存在两个未裁决的事实源：FR-7 把绑定结果写入 `chat_session.agent_id`，FR-11 又要求使用‘当前项目绑定的 Coordinator’，而项目设置 `discussion_coordinator_agent_id` 仍存在；PRD 未定义首次无 Coordinator 后绑定、替换、解绑、Agent 删除/失效时二者如何原子同步，GET 返回谁，@mention 校验与 task 实际路由读谁，以及绑定/替换时 `base_*` 是否重新取快照、已入队 task 是否保持旧 Coordinator。AC-14 只覆盖简单绑定/解绑。请明确唯一权威源、各转换与竞态语义，并补重绑/失效/在途任务 AC。"
+dimensions:
+  结构完整性: "通过：概述、用户故事、FR、NFR、AC、成功指标、排除项齐全；21 条 FR 均被 AC 映射。"
+  FR可测试性: "阻断：主消息 API、merge-forward、发送重试幂等、安全负向路径及 Coordinator 重绑/失效路径仍缺确定契约或可执行 AC，详见 B-HTTP-1/B-HTTP-2/B-IDEMP-1/B-ACL-1/B-COORD-1。"
+  范围合理性: "通过：核心范围与 CR-B 拆分一致；FR-13 仅保留既有 Discussion 转投/merge-forward 的 Discussion 侧适配，Team Agent 发送内核、升级、历史全量迁移、多参与者均明确排除。"
+  与规划对齐: "通过：覆盖来源附件 CR-B 的 shared session、单 Coordinator、无 Issue、附件、只读历史与 Private Ask 隔离；依赖 CR-2026-056 已明确。"
+  依赖识别: "通过：CR-2026-056 的配置解析、任务快照、附件校验以及既有 CR-2026-012 转投/merge-forward 均已识别，并声明不得复制实现。"
+  HTTP_API契约闭包: "BLOCK：endpoint=已列四个主 endpoint 且 FR-13 另修改 merge-forward；request=主 POST 与 merge-forward 约束不全；response=GET messages/merge-forward 缺失；error=主 endpoint 映射不确定且 merge-forward 缺失；权限=正向角色已列但负向成员/实时边界不全；幂等=GET 创建有并发收敛，两个副作用 POST 缺失；状态=active session 约束存在但精确 HTTP 状态不全；验收观察点=多数存在，缺上述失败、重试与重绑路径。"
+  crctl_CLI契约闭包: "N/A：本 CR 不新增或修改 crctl/CLI；命令与 flag、输入约束、JSON/stdout、错误码、调用者约束、幂等、状态副作用、验收观察点八项均不适用。"
+  Skill契约闭包: "N/A：本 CR 不新增或修改 Skill；必填参数、落盘路径、允许状态转换、失败码、crctl 唯一写入边界五项均不适用。"
+suggestions: []
+review-loop:
+  current-attempt: 1
+subject-file: change-requests/CR-2026-059/prd.md
+subject-sha256: 58dc8a5793a200a1f602c3a7e11c6184a14f88c63c6f2172402143809320bdd3
