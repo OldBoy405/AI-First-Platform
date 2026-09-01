@@ -1,0 +1,23 @@
+cr-id: CR-2026-058
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-01T17:16:15+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  批准范围: "PASS：§9 的 scope_in / scope_out / zero_diff / follow_up 四字段齐全；export 测试 seam 已明确纳入 FR-4，未扩大 CLI、错误码、fault-point 或账本写入边界。"
+  PRD↔SDD对齐: "PASS：FR 6/6 保持完整落点；本轮仅统一 AC-4 的测试 seam，未改变已审批的 guard、原子回灌、authority 与 CLI 信封语义。"
+  架构合理性: "PASS：三个新增 helper 的 export 只增加模块可测试性；生产调用仍收敛于 applyWritebackAtomic，不形成第二命令入口或账本写入通道。D-5 给出保持私有、测试代理与直接 export 的真实权衡。"
+  数据模型完整性: "PASS：versionRefill payload、crMd/backlog 条目与恢复冻结协议未变；本轮可见性调整不影响数据模型。"
+  接口契约: "PASS：公共 CLI 合同与已批准错误码集合不变；helper export 的参数、返回值与错误语义已在 §1.4/§4.3/§6.2 明确。"
+  多仓架构约束: "PASS：实施仍仅限 tools 仓；过程文档来自 operationalWorkspace，代码事实按 resources[repo=tools].worktreePath 取证，HEAD=2bb66294db30b116e0d53aea48990611017c75d6。"
+  性能与安全: "PASS：export 的三个 helper 不新增写入口、网络调用或白名单；账本落盘仍只能经 writeback-apply 的既有 recoverable write-set。"
+  可测试性: "PASS：planVersionRefill 的两次采样漂移、同源防御位以及两个行级编辑函数的 CRLF/硬失败分支现可由 crctl.test.mjs 直接 import 构造；与既有 normalizeTargetVersion/readCrMdTargetVersion 的直测模式一致。"
+  Prompt采纳影响: "PASS：仍不触及 crctl.mjs dispatch 或 controlled-shell/rules.json#protectedPaths.deny，§8 N/A 理由成立。"
+  既有实现依赖: "PASS：本轮受控复核 tools resource HEAD=2bb66294db30b116e0d53aea48990611017c75d6；normalizeTargetVersion/readCrMdTargetVersion/guardWritebackVersion 均为既有顶层 export，crctl.test.mjs 已采用命名 import 直测前两者，D-5 的模式依据成立。"
+suggestions:
+  - "已解决： [B-DP-01] SDD §1.4、§4.3、D-5、§6.2 AC-4 与 §9 已统一为 planVersionRefill/applyTargetVersionToCrMd/editBacklogEntryTargetVersion 顶层 export；测试消费路径、不可达分支理由与批准范围闭合。"
+review-loop:
+  current-attempt: 1
+subject-file: change-requests/CR-2026-058/sdd.md
+subject-sha256: 0e7cdd3f1528952e8dfc3d355a4607025ad2cd051a0c72ba1736ca3612389649

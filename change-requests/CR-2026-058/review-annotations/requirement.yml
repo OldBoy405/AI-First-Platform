@@ -1,0 +1,20 @@
+cr-id: CR-2026-058
+review-type: requirement
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-01T13:23:50+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  结构完整性: "PASS：概述、用户故事、FR、AC、非功能需求与范围排除齐全；回灌前置值、事务恢复边界和 CLI I/O 契约均已闭合。"
+  FR可测试性: "PASS：FR-1 至 FR-6 均有对应 AC；backlog 五类前置值、三个既有 fault-point、首次成功与幂等重跑的 stdout/stderr/exit/files/changed 均可唯一断言。"
+  范围合理性: "PASS：仍限定于 tools 的版本守卫、writeback write-set、回归测试和人读说明；明确排除 version-set 放宽、冻结产物改写及 CR-2026-057 状态推进。"
+  与规划对齐: "PASS：完整覆盖已拍板 A 方案，并保持 CR-2026-057 在本 CR 合入前停留 merging。"
+  依赖识别: "PASS：已明确 txws authority、_backlog.yml 唯一条目、recoverable write-set、既有 FAULT_POINTS、release-subjects 白名单及 CR-2026-057 前置依赖。"
+suggestions:
+  - "已解决： [B-01] FR-2.1 / AC-2.2 已规定 backlog 仅允许 unassigned 或等于输入真实版本，另一真实版本、缺失、重复、非法字段均有确定错误码；预检先于 journal/candidate，拒绝路径含 backlog 字节级不变及完整零写入观察点。"
+  - "已解决： [B-02] FR-2.2 / AC-2.3 已统一为既有 recoverable write-set 的向前恢复语义，并分别绑定 writeback-after-apply、writeback-after-commit、writeback-after-push，明确各现场、续跑动作及 commit/origin 最终不变量。"
+  - "已解决： [B-03] FR-6 / AC-6 已固定成功 exit 0 与 phase=complete、首次 changed=true、files 同列两账本、幂等重跑字段，并明确失败 exit 1、stderr error 扁平 extra、stdout 无成功对象且不存在 error.details。"
+review-loop:
+  current-attempt: 2
+subject-file: change-requests/CR-2026-058/prd.md
+subject-sha256: 44fb9adca18ef28ffe9b95dadb42d32a5880117a8ae4da8fa490c3ed1aae216b
