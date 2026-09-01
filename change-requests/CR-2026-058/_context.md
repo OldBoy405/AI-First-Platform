@@ -6,8 +6,10 @@
 
 - CR-ID: CR-2026-058（CR-2026-057 的 follow-up，tools 仓修复；target-version=0.30）
 - status: `developing`（approve-dev-start 已通过，approval 落盘于 13:00:50 +08:00）
-- next: implement-code（TASK-01~07 全部 done，test-report pass，等待 review-code）
-- reviewLoops: review-requirement=2/3；review-tech-design=cycle2 1/3（PASS）；review-dev-plan=1/3（PASS）
+- next: `push-progress → review-code`（静态建议文本，code.yml 落盘前恒显示；两项前置本轮已全部完成，剩余动作 = review-code）
+- 统一 checkpoint（pipeline node-8）: batchId=`36d14c9c3fa8c30d`，phase=complete，changed=true；repos 全 confirmed 并推送（ai-first-platform-docs=`a2dbac30`、multica=`0843f3a8`、tools=`e984c232`，ref=`requirement/CR-2026-058`）；metadataCommit=`e0b693a5`；`_backlog.yml` 条目已写 latest-checkpoint（last-push-at/by 旧字段按 CR-2026-033 语义由 snapshot 取代）
+- workspace-freshness（pipeline node-17, gate=review-start）: `allFresh=true`、syncable=false → route=**continue**（三仓均 fresh、dirty=false）
+- reviewLoops: review-requirement=2/3；review-tech-design=cycle2 1/3（PASS）；review-dev-plan=1/3（PASS）；write-test-report=1/3（pass）
 - 权威 worktree: `.rayai-worktrees/knowledge-base/requirement/CR-2026-058`（主仓 master 视图陈旧，crctl 命令带 `--workspace`，crctl git 带 `--cwd <worktree>`）
 - 关联: CR-2026-057 保持 `merging` 未动；本 CR 合入主仓后 057 才以 0.30 继续 writeback
 
@@ -19,9 +21,9 @@
 | SDD | `change-requests/CR-2026-058/sdd.md` | tech-design cycle 2 PASS（`d8c32bc`）+ 架构二次审批；B-DP-01 export seam |
 | PLAN | `change-requests/CR-2026-058/plan.md` | `26b080d` 重建；7 TASK / 63h；§5.1 cmd-01~03；§5.3 BR-1/BR-2 基线红例外 |
 | TASKS | `tasks/TASK-01~07.md` + `_index.yml` | TASK-01~07 全部 `done`（crctl task done，`86e2e7a`） |
-| 测试报告 | `change-requests/CR-2026-058/test-report.md` | 机器区 status=pass（`generated-by: crctl-test`，command-digest `6cc25bdd…`）+ 分析段 |
+| 测试报告 | `change-requests/CR-2026-058/test-report.md` | 机器区 status=pass（command-digest `6cc25bdd…`）+ 分析段 |
 | 测试证据 | `change-requests/CR-2026-058/test-evidence/cmd-01~03.log` | 三命令 exit 0 且 skipped=false（B-DP-04 canonical 路径） |
-| 评审账本 | `change-requests/CR-2026-058/review-annotations/` | requirement/sdd/dev-plan 均 PASS |
+| 评审账本 | `change-requests/CR-2026-058/review-annotations/` | requirement/sdd/dev-plan 均 PASS；code.yml 尚缺（本轮评审将落盘） |
 | tools 代码 | `resources[repo=tools].worktreePath` = `.rayai-worktrees/tools/requirement/CR-2026-058`（branch=`requirement/CR-2026-058`） | 实施提交：`bbe0a3f`（TASK-01/02/03）、`a0bab38`（TASK-04）、`e984c23`（TASK-05/06） |
 
 ## 3. 规则指针（只放指针，不复述）
@@ -37,6 +39,6 @@
 
 ## 4. 待办
 
-1. quality-reviewer-agent 执行 `review-code`（权威 worktree `.rayai-worktrees/knowledge-base/requirement/CR-2026-058`；主仓 master 视图陈旧请勿采信；代码事实按 `resources[].worktreePath` 取证）→ PASS 后由 cr-coordinator-agent 接管人工 `approve-code`。
-2. BLOCK 时按 blocker 回修（repair-target=implement-code），重跑受影响命令并刷新 test-evidence 后直接 @ 复评。
+1. quality-reviewer-agent 执行 `review-code`（权威 worktree `.rayai-worktrees/knowledge-base/requirement/CR-2026-058`；主仓 master 视图陈旧请勿采信；代码事实按 `resources[].worktreePath` 取证；评审记录经 `crctl review-record --stage code` 落盘）→ PASS 后由 cr-coordinator-agent 接管人工 `approve-code`。
+2. BLOCK 时按 blocker 回修（repair-target=implement-code），重跑受影响命令并刷新 test-evidence，重跑 checkpoint + review-start freshness 后直接 @ 复评。
 3. 本 CR 合入主仓后 CR-2026-057 才以 `--target-version 0.30` 继续 writeback（本 CR 不推进 057）。
