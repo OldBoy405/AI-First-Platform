@@ -2405,3 +2405,45 @@ history:
         event: archived
         to: ["Ray"]
         payload: {"final-status":"archived","archive-reason":"cr-archive","archived-at":"2026-08-31T07:43:33+08:00","writeback-spec-id":"ai-first-platform"}
+  - id: CR-2026-058
+    title: writeback 版本守卫：cr.md unassigned + 真实版本放行并原子回灌
+    summary: "CR-2026-057 follow-up（tools 仓）：修订 guardWritebackVersion——cr.md=unassigned + 业务输入=真实版本 → 放行，并在 writeback 事务内原子回灌 authority 的 cr.md/_backlog 的 target-version；回灌只碰这两个评审后白名单文件，不碰冻结的 prd/sdd/plan/tasks。修订 CR-2026-057 AC-14 的 unassigned 拒绝断言为「cr.md=unassigned + 输入=真实版本 → 放行并回灌；两侧 unassigned 仍拒绝」。守卫的 cr.md 读取/回灌位置必须与 writeback authority 一致（merging/writing-back 为 txws，不得用 crWorktreePath 造成版本事实分裂）。本 CR 承接 0.30 发布面。不含 version-set 放宽、不含改冻结产物、不含推进 CR-2026-057 状态。"
+    owner: Ray
+    owners:
+      requirement:
+        id: Ray
+        assigned-at: "2026-09-01T13:00:50+08:00"
+      development:
+        id: Ray
+        assigned-at: "2026-09-01T13:00:50+08:00"
+      test:
+        id: Ray
+        assigned-at: "2026-09-01T13:00:50+08:00"
+    target-version: 0.30
+    source: AIFI-15
+    origin: ""
+    prd-path: "change-requests/CR-2026-058/prd.md"
+    created: "2026-09-01T13:00:50+08:00"
+    updated: "2026-09-01T13:00:50+08:00"
+    latest-checkpoint:
+      batch-id: 5bd7522f563ed4f0
+      repositories:
+        - repo: ai-first-platform-docs
+          source-sha: 9776ed1f31c1cbb95bd78f51d47bceb76e7a8e8a
+          remote-ref: refs/heads/requirement/CR-2026-058
+        - repo: multica
+          source-sha: 0843f3a868ffbaca5e73eb8ae6e80dea2e236fa0
+          remote-ref: refs/heads/requirement/CR-2026-058
+        - repo: tools
+          source-sha: a9fd6096f06b694dfb4eaa234062e50642b6c6b1
+          remote-ref: refs/heads/requirement/CR-2026-058
+  
+    final-status: archived
+    archive-reason: "cr-archive"
+    writeback-spec-id: ai-first-platform
+    archived-at: "2026-09-01T21:03:09+08:00"
+    notify-log:
+      - at: "2026-09-01T21:03:09+08:00"
+        event: archived
+        to: ["Ray"]
+        payload: {"final-status":"archived","archive-reason":"cr-archive","archived-at":"2026-09-01T21:03:09+08:00","writeback-spec-id":"ai-first-platform"}
