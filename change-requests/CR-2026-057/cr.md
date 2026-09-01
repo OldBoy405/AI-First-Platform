@@ -13,12 +13,12 @@ owners:
   test:
     id: Ray
     assigned-at: "2026-08-31T17:13:10+08:00"
-target-version: unassigned
+target-version: 0.31
 source: AIFI-15
 origin: ""
-status: merging
+status: writing-back
 created: "2026-08-31T17:13:10+08:00"
-updated: "2026-09-01T21:55:03+08:00"
+updated: "2026-09-01T21:55:39+08:00"
 remote-ref: ""
 last-push-at: ""
 last-push-by: ""
