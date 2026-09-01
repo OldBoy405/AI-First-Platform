@@ -1,35 +1,36 @@
 cr-id: CR-2026-057
 review-type: code
 reviewer: "OldBoy405"
-reviewed-at: "2026-09-01T04:51:14+08:00"
+reviewed-at: "2026-09-01T10:33:51+08:00"
 verdict: pass
 blockers: []
 dimensions:
-  代码↔TASK↔SDD 对齐: "PASS：B-CODE-001 已在 FR-15/AC-15 点域闭合；区间定点替换保留 matchEntryBlock 权威区间的块尾换行，非末项回归覆盖后继条目逐字节不变、backlog/cr.md 双投影可解析、六类文件同步与单提交语义。"
-  工程质量: "PASS：修复复用既有 matchEntryBlock 区间与行级替换，无新增依赖或事务抽象；替换未命中以 LEDGER_PARSE_FAILED 硬失败，符合 CRLF 规范化与解析失败硬失败纪律。"
-  关键路径可读性: "PASS：editBacklogTargetVersionLine 的块边界不变量、失败条件与回归意图均可从局部代码和测试直接追踪。"
-  安全性: "PASS：回修仅触及 crctl.mjs 与 version-set.test.mjs 两个既有批准面文件；状态机、gates、pipeline-templates、durable-tx、yaml-subset、controlled-shell rules 与 multica 均无 diff，未扩大账本写入或权限边界。"
-  测试覆盖: "PASS：cmd-04 日志为 exit-code=0、timed-out=false、skipped=false，dot reporter 显示 12/12；新增双 CR 集成用例构造目标条目非末项路径并核对后继块、整体 YAML、cr.md、六类文件与 commit 数。"
-  测试证据可信度: "PASS：test-report 由 crctl-test 生成且 status=pass，六命令均 exit-code=0/timed-out=false/skipped=false；traceability 的 status/command-digest 与报告一致，cmd-NN 日志齐备；分析 marker 当前恰一条，write-test-report attempt 3 与 generated-at 同步证明证据已按合法路径重建。BR-1/BR-2 完整重跑失败集合仍与冻结例外表逐条全等。"
-  前端质量: "N/A：实际 diff 未触及 tsx/vue/css/html。"
+  代码↔TASK↔SDD 对齐: "PASS：B-CODE-003 回修位于 SDD 批准范围的 workspace-transactions.mjs 与 crctl.test.mjs；仅将 CR 内 _context.md 归入既有 KB 工作流文件白名单，不改变工件 digest、非 KB HEAD 相等性或状态机语义。"
+  工程质量: "PASS：生产改动为既有 allowed 集合增加一个精确路径和说明注释，无新 validator、依赖、抽象或写入入口；07b47da..3f8b1fb 仅 2 文件。"
+  关键路径可读性: "PASS：注释直接说明 _context.md 的每-run 刷新与流程文件属性；允许项与 cr.md、traceability.yml 等同类路径并列，局部语义清楚。"
+  安全性: "PASS：白名单仅匹配 change-requests/${cr}/_context.md 精确路径；_context2.md 负例仍以 RELEASE_SUBJECT_DRIFT/post-review-path-drift 拒绝并保持 approval.yml 零写入，未放宽 CR 外路径或前缀匹配。"
+  测试覆盖: "PASS：新增独立双 fixture 回归覆盖评审后 _context.md 提交可审批以及近似非白名单路径拒绝；cmd-01/cmd-06 中该用例通过，BR-1/BR-2 失败集合与冻结例外表不增。"
+  测试证据可信度: "PASS：test-report 机器区 generated-by=crctl-test、status=pass；六命令均 exit-code=0、timed-out=false、skipped=false，cmd-NN 日志齐备；traceability status/command-digest 与报告的 9ed980e2… 一致。评审只读取证，未重跑 lint/test/build。"
+  前端质量: "N/A：实际增量未触及 tsx/vue/css/html。"
 suggestions:
-  - "已解决：B-CODE-001 [FR-15/AC-15]。editBacklogTargetVersionLine 已改为在 norm.slice(block.start, block.end) 权威区间内单行替换并原样保留块尾换行；新增非末条目集成回归，cmd-04 为 12/12。归属节点：implement-code。"
-  - "已解决：B-CODE-002 [测试证据可重放性]。test-report.md 已收敛为唯一分析 marker，并由同一 crctl test 路径重生成机器区、traceability、write-test-report attempt 3 与六个 cmd-NN 日志；当前证据可再次消费。归属节点：write-test-report。"
-  - "范围外：editBacklogSet / editBacklogOwnerProjection / editInboxEmit 的同类 split/join 拼接风险属于 CR-2026-019/021/039 既有路径，本 CR 未改；已在 test-report.md §8 登记，建议后续 CR 统一改为区间定点替换并补非末条目回归。归属节点：follow_up CR。"
+  - "已解决：B-CODE-003 [代码审批 release-subjects 重核]。verifyReleaseSubjects 的 KB allowed 集合已精确加入 change-requests/${cr}/_context.md；正向后继提交可通过，_context2.md 仍拒绝且零写入。归属节点：implement-code。"
+  - "已解决：B-CODE-001 [FR-15/AC-15]。editBacklogTargetVersionLine 已采用权威区间内定点替换并由非末项回归覆盖。归属节点：implement-code。"
+  - "已解决：B-CODE-002 [测试证据可重放性]。机器区、traceability、review-loop 与 cmd-NN 日志已通过 crctl test 合法路径重建。归属节点：write-test-report。"
+  - "范围外：editBacklogSet / editBacklogOwnerProjection / editInboxEmit 的既有 split/join 拼接风险继续留给 follow_up CR，本轮未改。归属节点：follow_up CR。"
 review-loop:
-  current-attempt: 2
+  current-attempt: 3
 release-subjects:
   version: 1
   repositories:
     - repo: ai-first-platform-docs
       remote-ref: refs/heads/requirement/CR-2026-057
-      reviewed-source-sha: a8883afff411ef0bc3b1a423d8d7f91c0a74f503
+      reviewed-source-sha: afcb01b1db1cfb9699487f1a8a8a99f246b11c19
     - repo: multica
       remote-ref: refs/heads/requirement/CR-2026-057
       reviewed-source-sha: ae955fa02cdcda9a4a9d3abc5dcbd54167eadae6
     - repo: tools
       remote-ref: refs/heads/requirement/CR-2026-057
-      reviewed-source-sha: 07b47dadd3c28e7d90df199ea4eb5b6861b914d3
+      reviewed-source-sha: 3f8b1fb8195375c2a0ff395db84b52a35a9b6d47
   artifacts:
     algorithm: sha256
     canonicalization: crlf-to-lf+path-sort
