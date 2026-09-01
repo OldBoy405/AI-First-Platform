@@ -1,11 +1,11 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 # 五段链路：需求 FR ↔ 技术设计 SDD ↔ 交付 TASK ↔ 代码 merge SHA ↔ CR-ID
 spec-id: ai-first-platform
-cr-ref: CR-2026-056
-cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029, CR-2026-028, CR-2026-030, CR-2026-031, CR-2026-037, CR-2026-032, CR-2026-033, CR-2026-038, CR-2026-039, CR-2026-040, CR-2026-041, CR-2026-043, CR-2026-042, CR-2026-044, CR-2026-045, CR-2026-046, CR-2026-047, CR-2026-048, CR-2026-049, CR-2026-050, CR-2026-051, CR-2026-052, CR-2026-053, CR-2026-054, CR-2026-055, CR-2026-056]
-target-version: "0.29"
+cr-ref: CR-2026-058
+cr-history: [CR-2026-001, CR-2026-002, CR-2026-008, CR-2026-009, CR-2026-007, CR-2026-010, CR-2026-011, CR-2026-012, CR-2026-018, CR-2026-019, CR-2026-020, CR-2026-021, CR-2026-022, CR-2026-023, CR-2026-024, CR-2026-025, CR-2026-026, CR-2026-027, CR-2026-029, CR-2026-028, CR-2026-030, CR-2026-031, CR-2026-037, CR-2026-032, CR-2026-033, CR-2026-038, CR-2026-039, CR-2026-040, CR-2026-041, CR-2026-043, CR-2026-042, CR-2026-044, CR-2026-045, CR-2026-046, CR-2026-047, CR-2026-048, CR-2026-049, CR-2026-050, CR-2026-051, CR-2026-052, CR-2026-053, CR-2026-054, CR-2026-055, CR-2026-056, CR-2026-058]
+target-version: "0.30"
 baseline-since: "0.10"
-generated-at: "2026-08-31T06:56:18+08:00"
+generated-at: "2026-09-01T21:02:32+08:00"
 
 # 已知缺口：CR-2026-003~CR-2026-006 未生成本文件的里程碑段（writeback-traceability 在那四个
 # CR 回写时被跳过，PRD.md/SDD.md/_index.yml 侧的累积记录不受影响、仍完整）。本次（CR-2026-008）
@@ -3928,3 +3928,41 @@ milestones:
         code: { verdict: pass, path: change-requests/CR-2026-056/review-annotations/code.yml, sha256: 18bcbb424c22d7ca6ef2bee7843bd914f3d6b4eaba0c0bd86a89f2b672666e19 }
       approval: { status: approved, path: change-requests/CR-2026-056/approval.yml, sha256: 34506d830c27cf3ce3963b420ba063f8b7717129a91627bdbb91f9382f8a10fb }
       merge: { status: merged, path: change-requests/CR-2026-056/merge-commits.yml, sha256: 8e1d59433bf6f1e01e1e3f8128d33d6e022f0e0915e3ef99f567cd6f40690d90 }
+  - cr: CR-2026-058
+    milestone: M-CR-2026-058
+    target-version: "0.30"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: ab7f265a536ca52dce58447bba60065b5a1a99e5
+        branch: requirement/CR-2026-058
+      - repo: multica
+        trunk: main
+        sha: 09a78923ba4646a0a3da70afbdb8c61807d0b4c8
+        branch: requirement/CR-2026-058
+      - repo: tools
+        trunk: custom/main
+        sha: 70ac5a5773a6f51bfbebaa81651a9de5ab885305
+        branch: requirement/CR-2026-058
+    frs:
+      - fr: FR-1
+        title: 修订 `guardWritebackVersion` 判定表
+      - fr: FR-2
+        title: writeback 事务内原子回灌账本版本
+      - fr: FR-3
+        title: 守卫读取与回灌位置必须等于 writeback authority
+      - fr: FR-4
+        title: 修订 AC-14 测试并补正负回归
+      - fr: FR-5
+        title: 人读说明与错误文案同步
+      - fr: FR-6
+        title: 回灌分支的 CLI 结构化输出契约
+    evidence:
+      test: { status: pass, path: change-requests/CR-2026-058/test-report.md, sha256: 583e48397bba262e29259e99dfa1a369c01f5c433559da57aab9bc04e8edebb4 }
+      reviews:
+        requirement: { verdict: pass, path: change-requests/CR-2026-058/review-annotations/requirement.yml, sha256: 95c8427a3241b543be5ce835c84dd49f8c29c430648c03d0d3ee07cab4451ed7 }
+        tech-design: { verdict: pass, path: change-requests/CR-2026-058/review-annotations/sdd.yml, sha256: ed69747b1ccdf87b62ab7355a94098aabe45ff603b62ad838534d9661e2e23e1 }
+        dev-plan: { verdict: pass, path: change-requests/CR-2026-058/review-annotations/dev-plan.yml, sha256: 0e9491710da8bd88e265391c7dc71e86f526a73d1e89f419bb267c1c456508aa }
+        code: { verdict: pass, path: change-requests/CR-2026-058/review-annotations/code.yml, sha256: 5bf4df3591699725064288d761bbcc11526dceeed699a0c52f69bd88e1059e78 }
+      approval: { status: approved, path: change-requests/CR-2026-058/approval.yml, sha256: 0c3870e9226faf412409d490c5d195e28e7ca3cfbc163be6ced5e98e381825f1 }
+      merge: { status: merged, path: change-requests/CR-2026-058/merge-commits.yml, sha256: ea20a2e887ebc590057f72fa754beac58a201907f1a19525b037a6448cd55f2d }
