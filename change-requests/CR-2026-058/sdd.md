@@ -296,9 +296,11 @@ planVersionRefill({ txws, authority, cr, stage, version }):
   blk = matchEntryBlock(norm, cr)                     # 既有 yaml-subset 函数（含 start/end）
   blk == null → throw ENTRY_NOT_IN_BACKLOG（防御性；正常不可达）
   line = blk.text.split('\n').find(l => /^[ \t]*target-version:/.test(l))
-  line == null → throw WRITEBACK_VERSION_INVALID（{cr, backlogReason: 'missing'}）
+  # B-CODE-02：backlog INVALID 信封按 PRD FR-6.2 / SDD §3.2 保留 cr/input/inputReason/crMdReason 并列
+  # backlogReason（扁平并入，无 error.details）；input=原始入参（guard 规范化前捕获，applyWritebackAtomic 透传）
+  line == null → throw WRITEBACK_VERSION_INVALID（{cr, input, inputReason: null, crMdReason: null, backlogReason: 'missing'}）
   bv = normalizeTargetVersion(line 解析出的 raw)       # allowUnassigned=true
-  !bv.ok → throw WRITEBACK_VERSION_INVALID（{cr, backlogReason: bv.reason}）
+  !bv.ok → throw WRITEBACK_VERSION_INVALID（{cr, input, inputReason: null, crMdReason: null, backlogReason: bv.reason}）
   backlogEntry = null
   if bv.value == 'unassigned':
       after = editBacklogEntryTargetVersion(norm, blk, version)   # ② 区间定点替换
@@ -307,11 +309,14 @@ planVersionRefill({ txws, authority, cr, stage, version }):
   else if bv.value == version: backlogEntry = null     # 幂等：条目不改写
   else → throw WRITEBACK_BACKLOG_VERSION_MISMATCH（{cr, crMd: 'unassigned', backlog: bv.value, input: version}）
   # ③ cr.md 同源重读 + 语义复核（B-SDD-02：绑定 guard 首次采样与本次读取）
+  # B-CODE-01 单样本纪律：语义复核必须解析同一份 beforeRaw（禁止二次采样）——before hash/afterText 与
+  # 语义分支出自同一次读取；若以第二次读到的 unassigned 放行、却以第一次读到的另一真实版本为 before 锚点，
+  # CAS 会覆盖该真实版本（违反 FR-2.1 零写入）。回归断言锁 fs 桩：cr.md 恰好一次采样（AC-4）。
   rel = `change-requests/${cr}/cr.md`
   beforeRaw = read(txws/rel)                           # 与 guard 同一 authority 路径（⓪ 已断言）
   beforeRaw == null → throw WRITEBACK_VERSION_INVALID（{crMdReason:'missing'}）
   before = beforeRaw.replaceAll('\r\n', '\n')
-  rv = 行级提取 before 的 target-version → normalizeTargetVersion   # 与 readCrMdTargetVersion 同口径
+  rv = 行级提取 before 的 target-version → normalizeTargetVersion   # 同一份 beforeRaw 内解析，与 readCrMdTargetVersion 同口径
   !rv.ok → throw WRITEBACK_VERSION_INVALID（{crMdReason: rv.reason}）
   crMdEntry = null; crMdBase = null
   if rv.value == version:
@@ -356,7 +361,8 @@ planVersionRefill({ txws, authority, cr, stage, version }):
        # B-SDD-02：守卫采样的版本权威必须与将被写入的 operational workspace 同源同路径；
        # 该检查先于 business/candidate/journal/lock，失败零写入**
 6   **let refillPlan = null**
-7   **if (versionGuard.refill) refillPlan = planVersionRefill({ txws, authority: versionGuard.authority, cr, stage, version: versionGuard.value })**
+7   **if (versionGuard.refill) refillPlan = planVersionRefill({ txws, authority: versionGuard.authority, cr, stage, version: versionGuard.value, input: 原始入参 })**
+      # input = guard 规范化前捕获的原始 --target-version（B-CODE-02：backlog INVALID 信封保留 input）
       # ← 同源绑定/预检/语义复核在 candidate 生成（prepareWritebackCandidate）与 journal 创建之前，FR-2.1 时序成立；
       #    found 重试（journal 已存在）时本步重算的 refillPlan 仅作纯读预检（零写入 fail-fast），不落入 payload——
       #    payload.versionRefill 一旦落盘即冻结（B-SDD-01，见第 9 步）
@@ -505,36 +511,43 @@ AC-1（FR-1 判定表，merged 夹具 authority=txws）
 AC-2.1（成功回灌原子性）
 设计落点：planVersionRefill ⓪①③ + entries 合成 + 单 commit（§4.3/§4.4）
 可观测结果：authority cr.md/_backlog 该条目 target-version=规范化 0.30；prd/sdd/plan/TASK-* 哈希
-           与调用前全等；baseline status 变迁与版本回灌同一次 commit（git show 该 commit 同时含
-           cr.md status=writing-back+版本行、_backlog 版本行、specs 三文件）；tasks/traceability
-           重跑版本行无新 diff（git log --follow 两账本路径仅首 commit 含版本行变更）
+           与调用前全等；baseline status 变迁与版本回灌同一次 commit——**diff-tree 变更集断言
+           （B-CODE-03）**：`git diff-tree --no-commit-id --name-only -r <commit>` 同时含
+           cr.md、_backlog.yml 与 specs 三文件（specs/_index.yml、PRD.md、SDD.md），禁止 ls-tree
+           存在性断言（fixture 初始 trunk 已创建 specs 路径，存在性无法证明本 commit 修改了业务文件）；
+           tasks/traceability 重跑版本行无新 diff（git log --follow 两账本路径仅首 commit 含版本行变更）
 可达性说明：refill 分支仅当 txws cr.md=unassigned（参数化夹具）+ 输入真实版本；baseline 首跑
            status=merging 满足 validateBaselineAdvance
 AC-2.2（backlog 冲突五向量）
 设计落点：planVersionRefill ①预检表（§2.3）
 可观测结果：exit 1 + 对应 error.code/extra（1: WRITEBACK_BACKLOG_VERSION_MISMATCH {backlog:0.29,
            input:0.30}；2: ENTRY_NOT_IN_BACKLOG；3: WRITEBACK_BACKLOG_ENTRY_DUPLICATE {count>=2}；
-           4: WRITEBACK_VERSION_INVALID {backlogReason}；5: 放行且只回灌 cr.md、backlog 行无 diff）；
+           4: WRITEBACK_VERSION_INVALID **扁平信封 {cr, input, inputReason:null, crMdReason:null,
+           backlogReason}（B-CODE-02，无 error.details）**；4b: 条目缺 target-version 行 → 同码同信封
+           {backlogReason:'missing'}；5: 放行且只回灌 cr.md、backlog 行无 diff）；
            全部拒绝路径：specs/candidate/journal/lock/cr.md(status+target-version)/_backlog 字节级
            零变化、零 commit（snapshotSixPoints 扩展 _backlog 哈希）
 可达性说明：五向量在 txws authority 上直接构造（改 txws 内 _backlog.yml），预检先于 candidate/journal
 AC-2.3（三故障点 + B-SDD-01 部分 apply 冻结回归）
 设计落点：既有 FAULT_POINTS + 持久化 versionRefill + manifest/phase 向前恢复（§2.4/§4.6/§4.4 第 9 步）
 可观测结果：1: 首次 exit≠0 FAULT_INJECTED、HEAD 无 writeback commit；同参重试 exit 0、phase=complete、
-           origin 恰好一个 writeback {stage} commit 且同时含两账本 0.30 与业务文件；
+           origin 恰好一个 writeback {stage} commit 且同时含两账本 0.30 与业务文件——**diff-tree 变更集
+           断言（B-CODE-03）**：`git diff-tree --no-commit-id --name-only -r <commit>` 同时含两账本与
+           本 stage 业务文件（baseline=specs 三文件；tasks=delivery/task/*）；
            [baseline 断言同前]；direct tasks/traceability 回灌夹具（txws status=writing-back + 两账本
            target-version=unassigned，不经 baseline 直接跑 tasks stage）：writeback-after-apply 后同参重试，
            guard 读 cr.md 已是真实版本（refill=false），cr.md 条目仅由 payload.versionRefill.crMd 重建，重试
-           commit 含 cr.md 版本行 + _backlog 版本行 + 本 stage 业务文件，stdout files 含 cr.md 与 _backlog
-           两路径（B-SDD-01 回归）；
+           commit 含 cr.md 版本行 + _backlog 版本行 + 本 stage 业务文件（diff-tree 口径），stdout files 含
+           cr.md 与 _backlog 两路径（B-SDD-01 回归）；
            1b（部分 apply 冻结回归，B-SDD-01）：direct 夹具 + CRCTL_FAULT_POINT=tx-apply-between-rename →
            首次 exit≠0 FAULT_INJECTED、manifest state=prepared；随后夹具把 txws _backlog.yml 置为
            payload.versionRefill.backlog.afterText（构造「backlog 已 after、cr.md 仍 unassigned」的 rename
            间现场）；同参重试（不设 env）：payload.versionRefill 保持首次落盘值（不重算、backlog 条目不降为
-           null），recoverWriteSet 按 manifest 补齐 cr.md，commit 同时含两账本 0.30 与业务文件，stdout
-           files 含两账本路径；
-           2: 同参重试不新增 commit（writeback {stage} 恰好 1 条）；3: 同参重试 exit 0、phase=complete、
-           commit=中断前 sha、origin 不新增、两账本保持该 commit 映像
+           null），recoverWriteSet 按 manifest 补齐 cr.md，commit 同时含两账本 0.30 与业务文件（diff-tree
+           口径），stdout files 含两账本路径；
+           2: 同参重试不新增 commit（writeback {stage} 恰好 1 条），该唯一 commit 的 diff-tree 变更集同含
+           两账本与 specs 三文件（B-CODE-03）；3: 同参重试 exit 0、phase=complete、
+           commit=中断前 sha、origin 不新增、两账本保持该 commit 映像（diff-tree 变更集口径同 2）
 可达性说明：CRCTL_FAULT_POINT 既有入口校验（FAULT_POINTS 表未变，三点 + tx-apply-between-rename 全登记）；
            重试不设 env；direct tasks/traceability 回灌夹具 = txws 直接构造 status=writing-back + 两账本
            target-version=unassigned 的夹具（生成器前置只校验 cr.md status——§6.3 证据 5——writing-back
@@ -564,7 +577,12 @@ AC-4（测试改写与回归）
            crctl.test.mjs 另含：guard source 条件向量（txws 回灌 / worktree 回退 refill=false
            两分支）与 planVersionRefill 语义复核向量（仍 unassigned → 放行；已=输入 → 幂等 null；
            已=另一真实 → MISMATCH；非法 → INVALID）及同源断言向量（authority.path ≠ txws →
-           WRITEBACK_STATE_MISMATCH，复用既有码、extra 保持既有形状）
+           WRITEBACK_STATE_MISMATCH，复用既有码、extra 保持既有形状）；
+           **B-CODE-01 单样本回归**：fs 桩锁 cr.md 恰好一次采样（首次读=另一真实 0.29、若二次采样则
+           读到 unassigned → 必须按首次读抛 MISMATCH 且读取次数=1）+ CRLF 锚点同源断言
+           （beforeSha256=原始字节、afterText=同一份 beforeRaw 规范化结果）；
+           **B-CODE-02 扁平信封向量**：backlog 缺行/非法两路径断言 error.cr/input/inputReason/crMdReason/
+           backlogReason 扁平并入且无 error.details（单测 + AC-2.2 公共 CLI 双向）
 可达性说明：crctl.test.mjs 已 import workspace-transactions 纯函数（既有模式；planVersionRefill/
            applyTargetVersionToCrMd/editBacklogEntryTargetVersion 为本 CR 新增 export——B-DP-01）；
            guard 需要 ctx——用 resolveRepositories(kb)（fixture 内 kb 是 InstWS）；plan 向量用临时
