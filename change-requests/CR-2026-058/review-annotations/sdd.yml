@@ -1,0 +1,25 @@
+cr-id: CR-2026-058
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-01T14:24:51+08:00"
+verdict: block
+blockers:
+  - "本轮新增： [B-SDD-01] `versionRefill` 的恢复载荷与 entries 重建互相矛盾：SDD §2.2 声称 tasks/traceability 的 `crMd` 条目会持久化，但给出的 payload schema 与 §4.4 step 11 只保存 `inputVersion`/`backlog`；step 13 却仍依赖瞬时 `refillPlan.crMd`。`writeback-after-apply` 后重试时 guard 已读到真实版本，`refillPlan=null`，因此 cr.md 条目无法从 journal 重建，可能留下未入同一 commit 的账本改动且 `payload.files` 缺 cr.md，违反 FR-2/FR-2.2/FR-6。须把 crMd 的 before/after 哈希与 afterText 一并持久化，并让恢复 entries 只依赖 payload，同时补 direct tasks/traceability 回灌的 after-apply 复跑断言。"
+  - "本轮新增： [B-SDD-02] guard 读取的 authority 快照未与回灌计划绑定：§4.2 从 `auth.path` 读 cr.md 后只返回 value/source，§4.3 又从 `txws` 重新读取并无条件替换 target-version，既不证明 `auth.path===txws`，也不复核第二次读取仍为 `unassigned` 或匹配首次哈希。窄解析器回退或两次读取间漂移时可把 authority 上另一真实版本覆盖掉；`applyWriteSet` 的 beforeSha 从第二次读取生成，不能发现这类前置漂移。须携带并核验 authority path/source + 首次内容哈希（或在 plan 中重新规范化并要求仍为 unassigned，同时校验路径一致），不一致时零写入硬失败。"
+  - "本轮新增： [B-SDD-03] ‘既有实现依赖与事实’的证据 SHA 与权威 resource 不符：SDD §1.5/§6.3 七项均声明 tools 分支 HEAD=`1ec6bad4518f030c6b98ce74e8eea17a92181849`，但按 `resources[repo=tools].worktreePath` 执行受控 `crctl git rev-parse HEAD` 得到 `2bb66294db30b116e0d53aea48990611017c75d6`。请在实际 resource HEAD 重新核验七项 path/symbol/conclusion 并修正证据锚点，禁止以主工作区或陈旧 SHA 代替。"
+dimensions:
+  批准范围: "PASS：§9 存在且 scope_in/scope_out/zero_diff/follow_up 四字段齐全。"
+  PRD↔SDD对齐: "BLOCK：FR-2/FR-2.2/FR-6 的恢复与 files 契约在 tasks/traceability direct refill 路径不可由当前 payload 设计实现（B-SDD-01）；authority 同一性缺少可执行保证（B-SDD-02）。"
+  架构合理性: "BLOCK：整体复用现有 writeback recoverable write-set 且依赖方向符合 ARCHITECTURE.md，但 journal 恢复状态与瞬时计划分裂、authority 快照未绑定会破坏账本单一事实与原子边界。"
+  数据模型完整性: "BLOCK：`journal.writeback.versionRefill` 缺少文中声称已持久化的 tasks/traceability crMd entry，恢复所需字段不完整（B-SDD-01）。"
+  接口契约: "BLOCK：成功/失败信封定义清晰，但 after-apply 恢复时 `files` 无法稳定包含 cr.md，FR-6 观察面不可保证（B-SDD-01）。"
+  多仓架构约束: "PASS：实施限定 tools 仓，代码事实路径来自 workspace inspect 的 resources，未拼接主工作区作为实现事实源。"
+  性能与安全: "BLOCK：无网络与零第三方依赖边界清晰；但 authority 两次读取缺少同源/CAS 绑定，存在覆盖另一真实版本的安全风险（B-SDD-02）。"
+  可测试性: "BLOCK：AC 映射总体具体，但缺少能证明 direct tasks/traceability refill 在 after-apply 后从 journal 完整恢复 cr.md entry/files 的断言（B-SDD-01）。"
+  Prompt采纳影响: "PASS：本 CR 不触及 crctl.mjs dispatch 或 controlled-shell/rules.json#protectedPaths.deny，§8 的 N/A 理由成立。"
+  既有实现依赖: "BLOCK：七项 path/symbol 大体可在 tools resource 中定位，但全部 commit SHA 与该 resource 当前 HEAD 不一致，canonical 事实证据不可复现（B-SDD-03）。"
+suggestions: []
+review-loop:
+  current-attempt: 1
+subject-file: change-requests/CR-2026-058/sdd.md
+subject-sha256: a1c920f030e3ccf712678d3d6d5f7848c56323650e356a5a3dd22fc88dbcdda0
