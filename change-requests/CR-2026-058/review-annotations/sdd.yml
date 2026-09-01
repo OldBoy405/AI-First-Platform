@@ -1,26 +1,25 @@
 cr-id: CR-2026-058
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-09-01T15:02:31+08:00"
-verdict: block
-blockers:
-  - "部分解决： [B-SDD-01] `versionRefill.crMd` 已补齐持久化且 step 13 已改为只从 payload 重建，但恢复协议仍未闭合：§2.2/§4.4 规定 found journal 且 guard 仍 `refill=true` 时重算并覆写 `payload.versionRefill`，只把该情形等同于 journal-create 前文件未动；既有 recoverable write-set 在 rename 间进程中断时可能已把 backlog 写成 after、而 cr.md 仍为 `unassigned`，此时重算会把 backlog 条目降为 null，随后 `recoverWriteSet` 又按原 manifest 补齐 after，导致 commit entries/files 丢 backlog 或触发 staged-set 不一致。须以既有 write-set manifest/phase 区分“尚未 apply”与“部分 apply”，部分 apply 必须保留首次 payload 并向前恢复，不得覆写计划。另外，§6.2 所称 merged fixture 不跑 baseline 直接跑 tasks/traceability 不可达：现有 generator 明确要求 tasks/traceability 的 cr.md status=`writing-back`，merged fixture 为 `merging`；须构造 status=`writing-back` 且两账本仍 unassigned 的可达夹具并据此保留 direct after-apply 复跑断言。"
-  - "部分解决： [B-SDD-03] 七项 commit SHA 已修正为受控 resource HEAD `2bb66294db30b116e0d53aea48990611017c75d6`，path/symbol/conclusion 复核也与代码一致；但 §1.5/§6.3 仍把该 resource 分支写成 `custom/main`。本轮 `workspace inspect` 与受控 `crctl git branch --show-current` 均显示 resources[repo=tools].worktreePath 的分支是 `requirement/CR-2026-058`。请改正或删除 branch 断言，避免把 trunk 视图冒充本轮取证 resource。"
-  - "本轮新增： [B-SDD-04] SDD 未经已审批 PRD 扩大了公开错误码契约：PRD NFR-2/§7 只明确允许 FR-2.1 的两个新码，FR-6.2 的失败表也没有 `WRITEBACK_AUTHORITY_DRIFT`；SDD §3.2/§9 却把第三个新码加入 scope_in，并自行断言 PRD 列举非排他。该码会进入公共 CLI stderr 与测试观察面，属于接口/批准范围变化。请在不削弱 B-SDD-02 同源零写入硬失败的前提下复用已批准的既有码，或先走需求修订与重新审批，不能由 SDD 单方面扩 scope。"
+reviewed-at: "2026-09-01T15:31:21+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  批准范围: "BLOCK：四字段齐全，但 scope_in 新增第三个公开错误码，与已审批 PRD 仅明确允许的两个 FR-2.1 新码不一致（B-SDD-04）。"
-  PRD↔SDD对齐: "BLOCK：FR 6/6 均有落点，但 FR-2.2 的部分 apply 恢复仍可丢失持久化条目，且 direct tasks/traceability 验收前置状态不可达；错误码契约另有未审批扩张。"
-  架构合理性: "BLOCK：authority 双层绑定方案成立，但 found+refill 的无条件重算覆写与既有 recoverable write-set manifest 权威冲突，会破坏向前恢复和单 commit 不变量。"
-  数据模型完整性: "BLOCK：crMd 字段已完整，但 payload 状态转换未建模 write-set 尚未 apply 与部分 apply 的区别，导致恢复时可能错误覆写首次计划。"
-  接口契约: "BLOCK：成功/失败信封其余字段明确；但部分 apply 后 files 可能丢 backlog，且新增 WRITEBACK_AUTHORITY_DRIFT 未获 PRD 契约授权。"
-  多仓架构约束: "PASS：实施仍限 tools 仓，取证路径来自 workspace inspect 的 resources，未拼接主工作区；但 §6.3 branch 标签需按 B-SDD-03 修正。"
-  性能与安全: "BLOCK：常数时间、零网络、CAS 方向成立；但部分 apply 恢复覆写 payload 可使已写账本未进入同一 commit，构成数据一致性风险。"
-  可测试性: "BLOCK：direct tasks/traceability after-apply 断言已写入，但所述 merged fixture 在既有 status gate 下不可达，不能产生该观察结果。"
+  批准范围: "PASS：§9 四字段齐全；scope_in 仅保留 PRD 已批准的两个 FR-2.1 新错误码，authority 绑定复用既有 WRITEBACK_STATE_MISMATCH。"
+  PRD↔SDD对齐: "PASS：FR 6/6 均有唯一设计落点；本轮冻结 payload、按 manifest 恢复与 direct writing-back 夹具闭合 FR-2.2/AC-2.3。"
+  架构合理性: "PASS：回灌仍寄生既有 writeback recoverable write-set；found journal 保留首次 payload，并按 manifest 缺失/prepared/complete 向前恢复，符合 ARCHITECTURE.md 不变量。"
+  数据模型完整性: "PASS：versionRefill 完整持久化 inputVersion/crMd/backlog，落盘后冻结；恢复现场由既有 manifest state 区分。"
+  接口契约: "PASS：成功 phase/files/commit 与失败扁平信封明确；未新增未审批公开错误码。"
+  多仓架构约束: "PASS：实施限 tools 仓；事实取证使用 resources[repo=tools].worktreePath，分支 requirement/CR-2026-058、HEAD 2bb66294。"
+  性能与安全: "PASS：纯读预检保持常数时间、零网络；同源断言、语义复核与 hash CAS 保证冲突零写入，冻结 payload 防止部分 apply 丢账本。"
+  可测试性: "PASS：AC-2.3 增加 tx-apply-between-rename 的 prepared 现场回归；direct tasks/traceability 夹具改为 status=writing-back 且两账本 unassigned，可通过现有 generator 状态门。"
   Prompt采纳影响: "PASS：不触及 crctl.mjs dispatch 或 controlled-shell/rules.json#protectedPaths.deny，§8 N/A 理由成立。"
-  既有实现依赖: "BLOCK：SHA 与七项代码事实已重核通过；resource branch 的 `custom/main` 断言仍与实际 `requirement/CR-2026-058` 不符（B-SDD-03）。"
+  既有实现依赖: "PASS：七项依赖仍锚定 tools resource HEAD 2bb66294；resource 分支断言已修正为 requirement/CR-2026-058，符号与结论快速复核无漂移。"
 suggestions:
-  - "已解决： [B-SDD-02] guard 已返回 authority path/source，apply 前做同源同路径断言，plan 对同源 cr.md 重新规范化并以 before hash 交给 applyWriteSet CAS；另一真实版本、非法值及复核后第三值均有零写入硬失败，原覆盖风险已闭合。"
+  - "已解决： [B-SDD-01] payload.versionRefill 现随首次 save('start') 冻结，found journal 不再覆写；manifest 缺失/prepared/complete 分流向前恢复，direct 夹具改为 writing-back 且补 prepared 部分 apply 回归。"
+  - "已解决： [B-SDD-03] §1.5/§6.3 已把受控 resource 分支修正为 requirement/CR-2026-058，并保留 HEAD=2bb66294 的七项事实锚点。"
+  - "已解决： [B-SDD-04] WRITEBACK_AUTHORITY_DRIFT 已删除；同源零写入硬失败复用既有 WRITEBACK_STATE_MISMATCH，scope_in 重新收敛到 PRD 允许的两个新码。"
 review-loop:
-  current-attempt: 2
+  current-attempt: 3
 subject-file: change-requests/CR-2026-058/sdd.md
-subject-sha256: 42842f50657518e89946737f57ddcb2611fefc7a068c7e12483b0599e9357dae
+subject-sha256: 01cd0e09fb62d3b444e80d4e4255669ab0fffb4c75f863c80a023674a8676a66
