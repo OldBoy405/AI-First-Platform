@@ -2612,3 +2612,52 @@ tasks:
     cr-ref: CR-2026-056
     target-version: "0.29"
     estimate: 8h
+  - id: CR-2026-058-TASK-01
+    file: TASK-0.30-CR-2026-058-01-resolve-writeback-authority-guard.md
+    title: 窄只读路径解析器与 guardWritebackVersion 判定表重写（FR-1/FR-3）
+    status: done
+    cr-ref: CR-2026-058
+    target-version: "0.30"
+    estimate: 10h
+  - id: CR-2026-058-TASK-02
+    file: TASK-0.30-CR-2026-058-02-plan-version-refill.md
+    title: planVersionRefill 与行级编辑纯函数（FR-2.1 backlog 预检 + cr.md 语义复核）
+    status: done
+    cr-ref: CR-2026-058
+    target-version: "0.30"
+    estimate: 12h
+  - id: CR-2026-058-TASK-03
+    file: TASK-0.30-CR-2026-058-03-apply-writeback-atomic-refill.md
+    title: applyWritebackAtomic 回灌集成（authority 快照绑定 / payload 冻结 / entries 合成 / 恢复协议）
+    status: done
+    cr-ref: CR-2026-058
+    target-version: "0.30"
+    estimate: 14h
+  - id: CR-2026-058-TASK-04
+    file: TASK-0.30-CR-2026-058-04-writeback-tx-refill-fixtures.md
+    title: merge-fixture 参数化与 writeback-tx 集成测试改写（FR-4 集成层，AC-1/AC-2/AC-3/AC-6）
+    status: done
+    cr-ref: CR-2026-058
+    target-version: "0.30"
+    estimate: 14h
+  - id: CR-2026-058-TASK-05
+    file: TASK-0.30-CR-2026-058-05-crctl-test-same-source-assertions.md
+    title: crctl.test.mjs 同源断言与 AC-4 静态核对
+    status: done
+    cr-ref: CR-2026-058
+    target-version: "0.30"
+    estimate: 5h
+  - id: CR-2026-058-TASK-06
+    file: TASK-0.30-CR-2026-058-06-readme-guard-wording.md
+    title: README 行 22/行 76 改写与静态文案断言（FR-5，AC-5）
+    status: done
+    cr-ref: CR-2026-058
+    target-version: "0.30"
+    estimate: 3h
+  - id: CR-2026-058-TASK-07
+    file: TASK-0.30-CR-2026-058-07-full-regression-test-report.md
+    title: 全量回归与测试报告（cmd-01～cmd-03）
+    status: done
+    cr-ref: CR-2026-058
+    target-version: "0.30"
+    estimate: 5h
