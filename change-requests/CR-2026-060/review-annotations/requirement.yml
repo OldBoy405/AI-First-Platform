@@ -1,0 +1,25 @@
+cr-id: CR-2026-060
+review-type: requirement
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-02T17:02:03+08:00"
+verdict: block
+blockers:
+  - "本轮新增： [B-REG-MODE] FR-01.1/FR-01.2 把 target_spec_id 定义为可选，并规定缺字段即进入 legacy mode；这与同文的“对新注册严格写入”、NFR-04 的“缺字段旧 CR 才兼容”、以及来源方案第 5/6 节要求新 register 写 target-spec-id 相冲突，会让合同上线后的新 CR 仍可永久落入 legacy。请先唯一裁决 new/legacy 判据与 target_spec_id 在 Pipeline、requirement-register、crctl register 三层的必填性，并补正向/负向 AC；若确需允许新 CR 缺省，须明确其产品结果与回写路径，不能继续借 legacy 含混承接。"
+  - "本轮新增： [B-VERSION-GATE] FR-01.3 允许 new mode 使用 unassigned，却遗漏来源方案第 6.3/6.5 节的关键门禁：unassigned 只可停留在 drafting，进入 requirement-reviewing 前必须经既有 version-set 固化，失败应无状态/账本副作用。请在 FR 与 AC 中补齐适用模式、触发时点、调用入口、可观察失败结果及 CR-2026-060（legacy、0.33）不受影响的边界。"
+  - "本轮新增： [B-CLI-CONTRACT] 本 CR 明确修改 crctl/CLI 的注册与 new/legacy writeback 合同，但 PRD 尚未按首轮闭包给出完整 CLI delta：精确命令/flag 名与必选关系、输入约束、JSON/stdout 字段、错误码、允许调用者、幂等、状态/文件/事务副作用及逐项验收观察点；例如 register 的字段目前使用业务下划线名，writeback 的模式不一致也只有“零写入”而没有可断言失败契约。请新增一张按受影响命令闭合的合同表；未修改的 CLI/HTTP 项须显式标为 N/A 并说明原因，技术实现细节可留给 SDD，但产品可观察结果不能留空。"
+  - "本轮新增： [B-SKILL-CONTRACT] PRD 同时改变 requirement、design、plan/task、coding/test/review、writeback、planning/competitive/resume 等多组可调用 Skill 的输入与职责，却没有按受影响 Skill（或等价同合同分组）闭合必填参数、结构化输出/落盘路径、允许状态转换、失败码/失败路由及与 crctl 的唯一写入边界；现有 FR-05 多为散列字段名，无法唯一判断 required/optional、输出由谁消费以及失败时是否 abort/skip/reviewLoop。请补 Skill delta 合同矩阵，并对不适用项显式 N/A，使 writer/reviewer 和 Pipeline 测试可使用同一断言。"
+  - "本轮新增： [B-TASK-COUNT] 来源方案明确实施单位为“一个 CR、四个 TASK”，且四个 TASK 与四个提交组一一隔离；当前 FR-06/AC-17 只要求四个变更组，未约束最终 TASK 数量或一一对应关系，因此拆成任意数量 TASK 仍可通过。请补充“恰好四个实施 TASK、分别对应四组”的 FR/AC，或明确记录经用户确认的偏离及替代验收。"
+dimensions:
+  结构完整性: "通过：概述、用户故事、FR、NFR、AC、成功指标、依赖风险和范围排除七类章节齐全，主体结构可评审。"
+  FR可测试性: "BLOCK：多数 FR 已有关联 AC，但 new/legacy 注册判据、unassigned 需求评审门禁、CLI/Skill delta 和四 TASK 组织仍缺唯一且可机械断言的验收合同，详见 B-REG-MODE、B-VERSION-GATE、B-CLI-CONTRACT、B-SKILL-CONTRACT、B-TASK-COUNT。"
+  范围合理性: "通过：范围集中于既有生命周期合同对齐，明确排除新状态、并行事务/账本、迁移器、feature flag、新业务 UI/API 与历史批量迁移。"
+  与规划对齐: "BLOCK：主体覆盖来源方案的四组改造与 new/legacy 回写，但遗漏来源明确要求的四 TASK、一处 unassigned 评审前固化门禁，并在 target-spec-id 必填性上与来源及自身严格写入原则冲突。"
+  依赖识别: "通过：已识别附件、workspace dir-graph、tools 索引/Pipeline/crctl/gates/既有测试及跨仓路径与 legacy 自升级风险。"
+  HTTP_API契约闭包: "N/A：范围排除明确本 CR 不新增产品 HTTP API 或用户数据模型；PRD 仅要求未来 SDD 在实际涉及 HTTP 时遵循目标仓约定。"
+  crctl_CLI契约闭包: "BLOCK：受影响的 register、version gate 与 writeback new/legacy 合同未一次闭合命令/flag、输入、输出、错误、调用者、幂等、副作用和验收观察点。"
+  Skill契约闭包: "BLOCK：多组 Skill 的输入字段已被修改，但 required/optional、结构化输出/落盘、状态转换、失败码/路由与 crctl 写入边界尚未形成完整可断言矩阵。"
+suggestions: []
+review-loop:
+  current-attempt: 1
+subject-file: change-requests/CR-2026-060/prd.md
+subject-sha256: 96bf9737e3538c99faf524eba9f5e9d50c84811b5ca1df5372a3a75ab3a9e187
