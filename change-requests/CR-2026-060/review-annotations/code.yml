@@ -1,41 +1,40 @@
 cr-id: CR-2026-060
 review-type: code
 reviewer: "OldBoy405"
-reviewed-at: "2026-09-03T04:31:07+08:00"
-verdict: block
-blockers:
-  - "本轮新增：TASK-04 的 cmd-04/cmd-05 未覆盖 AC-11/AC-12/AC-13 新向量。tools diff 相对 merge-base `860288ce` 不含 `skills/shared/crctl/scripts/test/writeback-tx.test.mjs` 与 `archive-tx.test.mjs`（零 diff）；cmd-04/cmd-05 机器区 pass 只证明基线套件未红（cmd-04 ≈27、cmd-05 ≈20 点），不能验收 new 省略 spec/version、WRITEBACK_SPEC_REQUIRED、WRITEBACK_TASKS_PENDING 三类 reason、new traceability 确定性生成、archive journal 重放 / ARCHIVE_SPEC_REQUIRED。这些 AC 的唯一 cmd-NN 证据缺口，回到 implement-code 补向量并重发 test-report。"
-  - "本轮新增：G4 Skill 合同未落地。`skills/writeback/writeback-prd-sdd/SKILL.md`、`writeback-tasks/SKILL.md`、`writeback-traceability/SKILL.md`、`skills/cr/cr-archive/SKILL.md` 相对 `860288ce` 零 diff。现合同仍把 spec_id/target_version/milestone_file 标为必填并固定传 `--spec-id/--target-version/--milestone-file`，未声明 new 可省略、milestone=N/A、tasks pending preflight（WRITEBACK_TASKS_PENDING）、archive 清理后 journal 重放。SDD §3.2 与 TASK-04/AC-11/AC-13/AC-18 要求这些 SKILL 修订。"
-  - "本轮新增：cmdWritebackApply 未按 SDD §4.4 用 strict authority 重裁 mode/spec。实现先以 CR worktree 调用 `resolveTargetSpecMode`，new 分支 `specId` 取自该结果；虽调用 `resolveWritebackAuthorityStrict`，但从未 `resolveTargetSpecMode({authority: strictAuth})`。AC-02/AC-11 要求 new 分支权威=strict txws，禁止消费 cr-worktree 回退值。落点 `crctl.mjs` cmdWritebackApply。"
-  - "本轮新增：archive 清理后重放未按 SDD §2.2.4 只读 journal payload。`cmdArchive` 每次从 CR worktree 判 mode（cleanup 后 worktree 删除会误判 legacy）；`archiveCr` 的 inputDigest=`sha256(cr+'|'+(specId||''))`，省略 `--spec-id` 重放会与首跑 digest 不一致。未实现「禁止重新解析已删除路径；payload 缺 specId 且无 flag → ARCHIVE_SPEC_REQUIRED」。AC-13。落点 `crctl.mjs` cmdArchive + `workspace-transactions.mjs` archiveCr。"
-  - "本轮新增：preflightTasksAllDone 未知 status 未归 index-invalid。SDD §4.6：未知 status → `WRITEBACK_TASKS_PENDING` reason=`index-invalid`（硬失败禁止静默降级）；实现把任何 `status !== 'done'`（含未知值）列入 reason=`pending`。AC-12 三类 reason 合同被折叠。落点 `workspace-transactions.mjs` preflightTasksAllDone。"
+reviewed-at: "2026-09-03T06:40:53+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  批准范围: "PASS：实际 diff 未触碰 gates.json / rules.json deny 与 git 白名单 / durable-tx.mjs / writeback-prd-sdd.mjs / writeback-tasks.mjs / cmdVersionSet / cmdApprove / cmdReviewRecord / cmdTaskAppend / cmdTaskDone / multica 仓 / specs 与 delivery。未把 follow_up 做成当前交付。缺失项属于 scope_in 未交付，不记本维越界。"
-  代码对齐: "BLOCK：G1/G3（register flag/统一 builder/registrationAt、pre-review+advance guard、count-hint、PLAN/TASK/review-code SKILL）有实现与 cmd-02/cmd-03 向量。G4 未完成：writeback/archive SKILL 零改、cmdWritebackApply 未 strict 重裁、archive 重放未只读 journal、preflight 未知 status 分类错误；与 SDD §2.2.2–2.2.4/§4.4/§4.6 及 AC-11/12/13/18 不符。"
-  工程质量: "BLOCK：G4 入口把 CR worktree 当作 new-mode spec 来源、archive inputDigest 把可省 spec-id 编进幂等键，属于契约唯一性缺陷，不是风格问题。"
-  关键路径可读性: "PASS：G1 的 resolveTargetSpecMode / runPreReviewGateChecks / assertRequirementReviewAdvanceGuard / buildRegisterResult 与 G3 assertCountHint 挂点清晰；G4 偏差也可从 cmdWritebackApply/cmdArchive 顺序直接读出。"
-  安全性: "PASS：--target-spec-id 正则白名单在 cmdRegister 与 registerCr 双点；未改 rules.json deny/git 白名单；pre-review/advance guard 失败零写入。G4 权威绑定错误记代码对齐，不升本维。"
-  测试覆盖: "BLOCK：cmd-02/cmd-03 覆盖 AC-01/02/03/08；cmd-04/cmd-05 无 CR-2026-060 新增向量，AC-11/12/13 无针对性断言。cmd-01 覆盖 TASK-02/03 SKILL 与 requirement-authoring prompt，不能替代 writeback/archive CLI 证据。"
-  测试证据可信度: "BLOCK：test-report.md 机器区 generated-by=crctl-test、status=pass；traceability.yml#tests 的 status/command-digest 与报告一致；cmd-01..06.log 均存在，skipped=false、timed-out=false、exit-code=0。但作为 AC-11/12/13 唯一证据的 cmd-04/cmd-05 未执行新向量，不得把基线套件 exit 0 叙述成这些 AC 已验证。timeout-seconds 与 plan §5.1 不一致不单独构成本维 blocker（见 suggestions）。"
+  批准范围: "PASS：diff 未触碰 gates.json / rules.json deny 与 git 白名单 / durable-tx.mjs / writeback-prd-sdd.mjs / writeback-tasks.mjs / cmdVersionSet / cmdApprove / cmdReviewRecord / cmdTaskAppend / cmdTaskDone / multica 仓 / specs 与 delivery。未把 follow_up 做成当前交付。repair 仅补 G4 合同缺口。"
+  代码对齐: "PASS：G1/G2/G3 保持 attempt 1 已验收实现。G4 五条缺口已闭环——cmdWritebackApply new 分支以 strictAuth 重裁 mode/spec；archive 清理后只读 journal payload 且幂等键不再编入可省 spec-id；preflightTasksAllDone 未知 status → index-invalid；四份 SKILL 合同已落地；cmd-04/05 新增 AC-11/12/13 向量。"
+  工程质量: "PASS：new 分支 spec/version 权威绑定 txws；archive 重放不解析已删除路径；未知 status 硬失败禁止静默降级。无契约唯一性缺陷。"
+  关键路径可读性: "PASS：cmdWritebackApply 的 CR-worktree 初裁 → new 分支 strict 重裁顺序、cmdArchive 的 journal-first 分支、preflightTasksAllDone 的 status 枚举均可直接读出。"
+  安全性: "PASS：未改 rules.json deny/git 白名单；txws 缺失不回退 cr-worktree；preflight/strict 失败均在 candidate/journal 之前零写入。"
+  测试覆盖: "PASS：cmd-02/03 覆盖 AC-01/02/03/08；cmd-04 覆盖 omit spec/version、WRITEBACK_SPEC_REQUIRED、WRITEBACK_TASKS_PENDING 三类 reason+未知 status、new traceability；cmd-05 覆盖 archive 省略 spec-id 首跑+journal 重放与 ARCHIVE_SPEC_REQUIRED。cmd-01 覆盖 G2/G3 SKILL 与 Pipeline 机器事实。"
+  测试证据可信度: "PASS：test-report.md 机器区 generated-by=crctl-test、status=pass、generated-at=2026-09-03T06:28:34+08:00；traceability.yml#tests 的 status/command-digest 与报告一致（383d43f22c…）；cmd-01..06.log 均存在，skipped=false、timed-out=false、exit-code=0。cmd-04 日志 33 点、cmd-05 22 点，对应新增 6+2 条向量。"
   前端质量: "N/A：diff 未触及 tsx/vue/css/html。"
   reviewer-model: "grok-4.6 / quality-reviewer-agent"
 suggestions:
-  - "范围外：plan §5.1 冻结的 cmd-02..06 timeout（120/120/180/180/120s）与本轮机器区 timeout-seconds=900 不一致。测试实际跑完且 skipped=false，属环境口径而非本 CR 代码缺陷。code 评审不能路由回 write-dev-plan；后续 CR 修订冻结值，或由人工 approve-code reject 另开计划修订。本轮回修不必改 timeout。"
-  - "范围外：new traceability `buildNewMilestone` 按 plan.md 行序构造 frs，未显式按 FR id 升序（SDD §4.8.2）；TASK 卡 title 未作为独立输入。在补齐 cmd-04 向量时顺手固化排序即可，不单列为本轮 blocker。"
+  - "已解决：TASK-04 的 cmd-04/cmd-05 未覆盖 AC-11/AC-12/AC-13 新向量。writeback-tx.test.mjs 新增 6 条 CR-2026-060 测试（preflight 三类 reason+未知 status、strict authority 返回 txws / WRITEBACK_SPEC_REQUIRED、省略 spec/version 从 strict 补全、tasks pending 零发布、new traceability 无 milestone-file）；archive-tx.test.mjs 新增 2 条（省略 spec-id 首跑持久化 payload + 清理后 journal 重放、txws 缺失 ARCHIVE_SPEC_REQUIRED）。cmd-04 日志 33 点、cmd-05 22 点（基线约 27/20），skipped=false。"
+  - "已解决：G4 Skill 合同未落地。writeback-prd-sdd / writeback-tasks / writeback-traceability / cr-archive 四份 SKILL.md 已修订：new 可省 spec/version；traceability milestone=N/A 且输入=冻结 PLAN/TASK/test-report/merge facts；tasks 写明 WRITEBACK_TASKS_PENDING 三类 reason 与恢复；archive 写明清理后 journal 重放无需 spec-id。"
+  - "已解决：cmdWritebackApply 未按 SDD §4.4 用 strict authority 重裁 mode/spec。new 分支在 resolveWritebackAuthorityStrict 之后以 strictAuth 快照重裁 resolveTargetSpecMode；specId 与省略 --target-version 均取自 txws；txws 缺失/不自洽 → WRITEBACK_SPEC_REQUIRED，禁止回退 cr-worktree。"
+  - "已解决：archive 清理后重放未按 SDD §2.2.4 只读 journal payload。cmdArchive 先查既有 archive journal，存在则只读 payload 的 mode/specId/targetSpecId；archiveCr 幂等键改为 sha256('archive:'+cr)，不再编入可省 spec-id。cmd-05 覆盖首跑+清理后重放同一 journal。"
+  - "已解决：preflightTasksAllDone 未知 status 未归 index-invalid。仅允许 done|pending；未知值硬失败 reason=index-invalid（不再归入 pending）。cmd-04 单测覆盖三类 reason + 未知 status。"
+  - "范围外：plan §5.1 冻结的 cmd-02..06 timeout（120/120/180/180/120s）与本轮机器区 timeout-seconds=900 仍不一致。测试实际跑完且 skipped=false，属环境口径；code 评审不能路由回 write-dev-plan。"
 review-loop:
-  current-attempt: 1
+  current-attempt: 2
 release-subjects:
   version: 1
   repositories:
     - repo: ai-first-platform-docs
       remote-ref: refs/heads/requirement/CR-2026-060
-      reviewed-source-sha: e6d5239fc316c3331507875437051c90c2b1af15
+      reviewed-source-sha: 0a14479bb5bdb23e770786547895e94a2b145199
     - repo: multica
       remote-ref: refs/heads/requirement/CR-2026-060
       reviewed-source-sha: 217b281ce0eb90e9dd042dfd8865efc54665193e
     - repo: tools
       remote-ref: refs/heads/requirement/CR-2026-060
-      reviewed-source-sha: fc2b142b0ee6e6af2e5ece22dc4ad28f5319b3c2
+      reviewed-source-sha: 900736267073dbb63b8c79573ce740f2f57c9559
   artifacts:
     algorithm: sha256
     canonicalization: crlf-to-lf+path-sort
