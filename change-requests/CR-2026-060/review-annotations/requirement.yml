@@ -1,23 +1,21 @@
 cr-id: CR-2026-060
 review-type: requirement
 reviewer: "OldBoy405"
-reviewed-at: "2026-09-02T18:54:46+08:00"
-verdict: block
-blockers:
-  - "部分解决： [B-CLI-CONTRACT] operational_workspace 的唯一生产者、target-spec 缺参优先级和 version-set 分支优先级已闭合，但 register/version-set 的成功 JSON 仍不能形成唯一可断言信封：3.2 的 register 行同时声明 snake_case 的 tx_id/target_version 与 camelCase 的 sideEffects/recoverCommand，紧随其后的字段冻结又要求 register JSON 键使用 snake_case，AC-03 还重新写成 txId/sideEffects/recoverCommand；version-set 成功结构固定 from:\"unassigned\"，却同时要求当前已是同一真实版本时 changed=false，此幂等分支的 from 实际不可能是 unassigned。另 pre-review 对 target-spec authority drift 仍给出 GATE_BLOCKED 或 VERSION_SET_DERIVED_DRIFT 两种可能，未冻结唯一错误信封。请统一 register 全部公开 JSON 键及 AC 引用，明确 version-set 同值幂等时 from 的确定值，并为每个 pre-review authority 输入冻结唯一外层 error 与 check code。"
+reviewed-at: "2026-09-02T20:18:20+08:00"
+verdict: pass
+blockers: []
 dimensions:
   结构完整性: "通过：七类主体章节、18 条 AC、CLI/Skill 补充矩阵与四 TASK 约束完整。"
-  FR可测试性: "BLOCK：版本前置顺序与 Skill 消费面已可测试，但 register/version-set 成功信封和 pre-review authority 错误仍有互斥断言。"
+  FR可测试性: "通过：register/version-set 成功信封及 pre-review authority 错误信封均已冻结为唯一、可机械断言的结果。"
   范围合理性: "通过：继续复用既有状态机、事务、账本、reviewLoop 与审批边界，排除项清晰。"
   与规划对齐: "通过：四个 TASK、规划/市场/竞品/resume 输入与来源方案的四组交付及跨组对齐目标一致。"
   依赖识别: "通过：已识别目标 workspace、tools 事实源、Pipeline、Skill、crctl/gates、generator 与测试依赖。"
   HTTP_API契约闭包: "N/A：本 CR 不新增或修改 HTTP endpoint、request、response、error 或 HTTP 权限契约。"
-  crctl_CLI契约闭包: "BLOCK：命令、flags、调用者和副作用主体齐全，但公开成功字段及 authority 错误码仍非唯一。"
+  crctl_CLI契约闭包: "通过：register 公开 JSON 键统一 snake_case；version-set 首次与同值幂等分支的 from 语义唯一；pre-review authority failure 统一外层 GATE_BLOCKED 且各输入类 check code 唯一。"
   Skill契约闭包: "通过：review-requirement 顺序、四个 approve-*、planning/market/competitive/resume 与 review-alignment 的参数、输出/落盘、路由和 crctl 边界已闭合。"
 suggestions:
-  - "已解决： [B-VERSION-GATE] 已冻结 pre-review 只读 guard → review-record → advance 的机械顺序，并以真实版本正向 AC 和 unassigned 在临时 payload/canonical/status/outbox/journal/commit 前失败的零副作用 AC 闭合。"
-  - "已解决： [B-SKILL-CONTRACT] 已补齐四个 approve-*、product-planning、market-to-plan、competitive-radar、resume-cr 与 review-alignment 的 required/optional、结构化输出/落盘、状态/失败路由及 crctl 边界，并明确规划审批与 alignment 的只读边界。"
+  - "已解决： [B-CLI-CONTRACT] register 公开 JSON 键及 AC-03 引用已统一为 tx_id/side_effects/recover_command；version-set 首次变更与同值幂等分支分别冻结 from 为 unassigned 与同一真实版本，并明确 changed:false、files:[]、无新 commit；pre-review target-spec/target-version authority failure 已统一使用外层 GATE_BLOCKED，各输入类均冻结唯一 check code。"
 review-loop:
-  current-attempt: 3
+  current-attempt: 1
 subject-file: change-requests/CR-2026-060/prd.md
-subject-sha256: a744f4402656d879be912feaea75638ec1d3b84ed41d57559a94801af5ab1716
+subject-sha256: d74ac20a97dcaf92c4fbc3d957326a104a20d3e0befe91e0df37198687737586
