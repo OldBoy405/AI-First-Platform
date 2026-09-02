@@ -1,25 +1,23 @@
 cr-id: CR-2026-060
 review-type: requirement
 reviewer: "OldBoy405"
-reviewed-at: "2026-09-02T17:51:43+08:00"
+reviewed-at: "2026-09-02T18:54:46+08:00"
 verdict: block
 blockers:
-  - "部分解决： [B-VERSION-GATE] 已补齐 new mode 的 unassigned 仅可停留 drafting、version-set 唯一固化入口、gate/advance 错误码及零副作用 AC，但评审前置顺序仍不可唯一实现：CLI 矩阵规定 gate --for requirement-reviewing 同时检查 PRD 与 requirement review passCondition；若在 review-record 前调用，真实版本也会因尚无 PASS 评审而整体 GATE_BLOCKED；若在 review-record 后调用，unassigned 已产生 annotation/review-loop/traceability，与 AC-03 的评审零副作用冲突。请明确一个可机械执行的前置点（例如由 review-record 在三账本事务前校验 mode/version，或为 gate 冻结不依赖评审证据的 pre-review 语义），并在 review-requirement Skill 顺序和正反 AC 中断言 unassigned 零 canonical 写入、真实版本可继续 review-record→advance。"
-  - "部分解决： [B-CLI-CONTRACT] 受影响命令矩阵已覆盖大多数 flags、输入、输出、错误、调用者、幂等和副作用，但 register 的精确输出合同仍自相矛盾：FR-01.5/AC-03 要求返回真实 operational_workspace，CLI 成功 JSON 行却未列该字段；Skill 行又声明原样返回 register JSON，而后续 execution context 只能消费 cr_id + operational_workspace，导致该路径无唯一生产者。此外 register 的“缺 flag=BAD_ARGS”与“target spec 缺失=REGISTER_TARGET_SPEC_ID_REQUIRED”、version-set 的同值幂等与“非 unassigned=VERSION_SET_NOT_UNASSIGNED”存在重叠。请在矩阵中冻结唯一字段名/生产者与错误优先级，使每个输入只命中一个可断言信封。"
-  - "部分解决： [B-SKILL-CONTRACT] 生命周期主链的 requirement/design/plan-task/code-test-review/merge/writeback/archive 已形成合同矩阵，但 PRD 明确修改而矩阵未覆盖的公开 Skill 仍有缺口：FR-05.4 的四个 approve-*（含 approver 输入与结构化结果）、FR-05.5~05.8 的 planning/market/competitive/resume 消费 Skill，以及 FR-04.7 的 review-alignment 只读诊断合同。请为这些受影响 Skill 增补等价分组，闭合 required/optional、结构化输出或落盘、合法状态/失败路由和 crctl 写入边界；若某项仅改 Pipeline 映射而不改 Skill，须显式 N/A 并指向既有 Skill 参数，避免 AC-14/AC-15 无共同断言源。"
+  - "部分解决： [B-CLI-CONTRACT] operational_workspace 的唯一生产者、target-spec 缺参优先级和 version-set 分支优先级已闭合，但 register/version-set 的成功 JSON 仍不能形成唯一可断言信封：3.2 的 register 行同时声明 snake_case 的 tx_id/target_version 与 camelCase 的 sideEffects/recoverCommand，紧随其后的字段冻结又要求 register JSON 键使用 snake_case，AC-03 还重新写成 txId/sideEffects/recoverCommand；version-set 成功结构固定 from:\"unassigned\"，却同时要求当前已是同一真实版本时 changed=false，此幂等分支的 from 实际不可能是 unassigned。另 pre-review 对 target-spec authority drift 仍给出 GATE_BLOCKED 或 VERSION_SET_DERIVED_DRIFT 两种可能，未冻结唯一错误信封。请统一 register 全部公开 JSON 键及 AC 引用，明确 version-set 同值幂等时 from 的确定值，并为每个 pre-review authority 输入冻结唯一外层 error 与 check code。"
 dimensions:
-  结构完整性: "通过：七类主体章节、模式裁决、CLI/Skill 矩阵与四 TASK 章节均已补齐。"
-  FR可测试性: "BLOCK：注册模式与四 TASK 已可机械验收；版本评审前置顺序、register 输出/错误优先级及遗漏的 Skill 分组仍不能形成唯一测试路径。"
-  范围合理性: "通过：继续复用现有状态机、事务、账本与 reviewLoop，排除项清晰，未以新框架承接兼容。"
-  与规划对齐: "BLOCK：四 TASK 与 new/legacy 目标已对齐来源，但版本 gate 与 canonical review 的先后关系尚未闭合，且来源覆盖的 planning/competitive/resume 与 alignment Skill 变更未进入合同矩阵。"
-  依赖识别: "通过：已识别附件、workspace/tools 事实源、Pipeline、Skill、crctl/gates、generator 与相关测试依赖。"
-  HTTP_API契约闭包: "N/A：本 CR 不新增或修改 HTTP endpoint、request、response、error 或 HTTP 权限契约，PRD 已显式说明。"
-  crctl_CLI契约闭包: "BLOCK：命令面主体已补齐，但 pre-review gate 可执行顺序、register operational_workspace 输出及重叠错误优先级仍需唯一裁决。"
-  Skill契约闭包: "BLOCK：生命周期主链已补齐；approve-*、planning/market/competitive/resume 与 review-alignment 等本 CR 明确改变的 Skill 尚未闭合或显式 N/A。"
+  结构完整性: "通过：七类主体章节、18 条 AC、CLI/Skill 补充矩阵与四 TASK 约束完整。"
+  FR可测试性: "BLOCK：版本前置顺序与 Skill 消费面已可测试，但 register/version-set 成功信封和 pre-review authority 错误仍有互斥断言。"
+  范围合理性: "通过：继续复用既有状态机、事务、账本、reviewLoop 与审批边界，排除项清晰。"
+  与规划对齐: "通过：四个 TASK、规划/市场/竞品/resume 输入与来源方案的四组交付及跨组对齐目标一致。"
+  依赖识别: "通过：已识别目标 workspace、tools 事实源、Pipeline、Skill、crctl/gates、generator 与测试依赖。"
+  HTTP_API契约闭包: "N/A：本 CR 不新增或修改 HTTP endpoint、request、response、error 或 HTTP 权限契约。"
+  crctl_CLI契约闭包: "BLOCK：命令、flags、调用者和副作用主体齐全，但公开成功字段及 authority 错误码仍非唯一。"
+  Skill契约闭包: "通过：review-requirement 顺序、四个 approve-*、planning/market/competitive/resume 与 review-alignment 的参数、输出/落盘、路由和 crctl 边界已闭合。"
 suggestions:
-  - "已解决： [B-REG-MODE] 已明确新注册三层 target_spec_id 必填、双账本一致才是 new、双缺仅兼容既有 legacy，并补齐 authority drift 与正反 AC。"
-  - "已解决： [B-TASK-COUNT] 已明确本 CR 恰好四个 TASK、与四个变更组一一对应、task_count_hint=4，以及缺失/重复/第五个/跨组/流程控制 TASK 的拒绝验收。"
+  - "已解决： [B-VERSION-GATE] 已冻结 pre-review 只读 guard → review-record → advance 的机械顺序，并以真实版本正向 AC 和 unassigned 在临时 payload/canonical/status/outbox/journal/commit 前失败的零副作用 AC 闭合。"
+  - "已解决： [B-SKILL-CONTRACT] 已补齐四个 approve-*、product-planning、market-to-plan、competitive-radar、resume-cr 与 review-alignment 的 required/optional、结构化输出/落盘、状态/失败路由及 crctl 边界，并明确规划审批与 alignment 的只读边界。"
 review-loop:
-  current-attempt: 2
+  current-attempt: 3
 subject-file: change-requests/CR-2026-060/prd.md
-subject-sha256: efa8733cc0bb43e9118ee101c6413ff5b3d93bde9b027b809290b34c26f33e04
+subject-sha256: a744f4402656d879be912feaea75638ec1d3b84ed41d57559a94801af5ab1716
