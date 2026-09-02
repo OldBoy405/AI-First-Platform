@@ -1,0 +1,22 @@
+cr-id: CR-2026-060
+tasks:
+  - id: CR-2026-060-TASK-01
+    title: "G1 注册与 authority（flag、mode 裁决、pre-review、advance guard）"
+    status: pending
+    estimate: 16h
+    depends-on: []
+  - id: CR-2026-060-TASK-02
+    title: "G2 PRD/SDD writer-reviewer 与四个 approve 合同"
+    status: pending
+    estimate: 8h
+    depends-on: [CR-2026-060-TASK-01]
+  - id: CR-2026-060-TASK-03
+    title: "G3 PLAN/TASK/Coding/test/review 合同与 task-init count-hint"
+    status: pending
+    estimate: 12h
+    depends-on: [CR-2026-060-TASK-01]
+  - id: CR-2026-060-TASK-04
+    title: "G4 writeback/archive 双路径、new traceability 与 Pipeline 收敛"
+    status: pending
+    estimate: 18h
+    depends-on: [CR-2026-060-TASK-01, CR-2026-060-TASK-03]
