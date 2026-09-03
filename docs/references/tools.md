@@ -1,7 +1,7 @@
 # tools
 
 - 仓库：https://github.com/OldBoy405/AI-First-tools.git（自有仓库）
-- 分支：custom/main
+- 分支：main
 - 引用 commit：`c4b10d505d737c423c81ee9a4f3dd6980647f46a`（2026-08-21 刷新；`merge CR-2026-050: tools`——pipeline 合约修复与 architecture-design prompt 收敛；前值 `75d72a3583d08795d9a0f4b39ece20d7e9eddd38`）
 - 本地路径（评审/开发时按需 clone）：`C:\Users\GOBAO\Downloads\AI\tools`
 - 用途：研发方法论包（**9 Agent / 56 Skill / 8 Pipeline** + `skills/shared/crctl` 治理 CLI），五方组装中的方法论层
