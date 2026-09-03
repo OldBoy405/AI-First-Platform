@@ -2,13 +2,14 @@ cr-id: CR-2026-059
 reviews:
   requirement:
     reviewer: "OldBoy405"
-    verdict: pass
-    reviewed-at: "2026-09-01T23:41:12+08:00"
-    blocker-count: 0
+    verdict: block
+    reviewed-at: "2026-09-03T21:22:16+08:00"
+    blocker-count: 1
     annotation: "change-requests/CR-2026-059/review-annotations/requirement.yml"
+    repair-target: write-requirement-prd
     review-loop:
       current-cycle: 1
-      current-attempt: 2
+      current-attempt: 3
       max-attempts: 3
       attempts:
         - attempt: 1
@@ -22,4 +23,10 @@ reviews:
           reviewed-at: "2026-09-01T23:41:12+08:00"
           result: pass
           blocker-count: 0
+          repair-target: write-requirement-prd
+        - attempt: 3
+          cycle: 1
+          reviewed-at: "2026-09-03T21:22:16+08:00"
+          result: block
+          blocker-count: 1
           repair-target: write-requirement-prd
