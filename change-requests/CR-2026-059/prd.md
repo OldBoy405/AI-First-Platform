@@ -8,7 +8,7 @@ owner: Ray
 owner-role: requirement
 status: draft
 created: 2026-09-03T20:00:41+08:00
-updated: 2026-09-03T21:58:00+08:00
+updated: 2026-09-03T23:53:38+08:00
 ---
 
 # 1. 概述
@@ -42,7 +42,7 @@ Discussion:
 
 1. `chat_session.kind` 区分 `private` 与 `project_shared`；每个项目最多一个 active shared session。
 2. Discussion GET 只创建或读取 shared session，不得创建 `project_discussion` Issue。
-3. 项目成员读写 shared session；`creator_id` 只作审计，不作 ACL。
+3. 项目成员（= 当前 workspace 成员，口径见 FR-25）读写 shared session；`creator_id` 只作审计，不作 ACL。
 4. Discussion 会话级模型 / Thinking Mode 复用 CR-2026-056 的解析、校验和任务快照，不得第二套实现。
 5. 普通消息只写 `chat_message`，不创建 Agent task、不创建 Issue。
 6. 明确 @mention Coordinator 或分析/总结请求才创建无 Issue 的 chat task；回复写回同一 shared session。
@@ -83,6 +83,10 @@ Discussion:
 | 错误体与发送错误映射已存在 | `handler.go` `writeErrorCode`（L549）；`handler/project_chat.go` `writeProjectChatSendError`（L589） |
 | 同步后 trunk 新增内容不涉及 Discussion 代码路径 | multica main 相对本 CR 原基线（`217b281c`）新增：merge CR-2026-060: multica、`cr-prompts-revised/` Agent 提示词包、服务端 pipeline registry 再生成（`gate_nodes_gen.go`/`transitions_gen.go`） |
 
+## 1.5 修订记录
+
+- **2026-09-03（选项 A 裁决，AIFI-16）**：成员口径定点修订——「项目成员 := 当前 workspace 成员」。依据：来源文档的 8 处成员表述（7 处直写「项目成员」+ 1 处 project/workspace 并写）均为 ACL 表述、无独立成员建模；multica 成员唯一模型是 workspace 级 `member`（无项目级成员表）；KB 延期清单第 10 项已把「项目级成员模型」列为未来引入项。本次修订把 FR-25 负向契约中「同 workspace 非本项目成员」空类改写为「非本 workspace 成员」，把「已被移出项目」改写为「已被移出 workspace（member 行删除，挂接平台已有 revoke-member 事务与退订机制）」，并同步 FR-4/FR-9/FR-10/FR-17/FR-20、Discussion 与 merge-forward HTTP 契约权限行、AC-20/AC-28/AC-29、成功指标与范围排除的措辞，保证可测性。其余需求不变。
+
 # 2. 用户故事
 
 - **US-1 项目成员**：作为项目成员，我希望打开 Discussion 时不会悄悄创建一个隐藏 Issue，从而普通沟通不再污染工作项列表。
@@ -110,7 +114,7 @@ Discussion:
 
 ## FR-4 `creator_id` 不作 shared session ACL
 
-shared session 仍写入 `creator_id`（首次打开者，审计用）。项目成员读取、发送、订阅实时事件不得因 `caller != creator_id` 被拒绝。不得用 `creator_id` 过滤 shared session 消息列表。非成员 / 已移出成员 / 仅持有 UUID 的拒绝规则见 FR-25，不得用「项目成员可读写」一句话代替负向契约。来源 FR-17、§9、AC-21。
+shared session 仍写入 `creator_id`（首次打开者，审计用）。项目成员（= 当前 workspace 成员，口径见 FR-25）读取、发送、订阅实时事件不得因 `caller != creator_id` 被拒绝。不得用 `creator_id` 过滤 shared session 消息列表。非 workspace 成员 / 已被移出 workspace / 仅持有 UUID 的拒绝规则见 FR-25，不得用「项目成员可读写」一句话代替负向契约。来源 FR-17、§9、AC-21。
 
 ## FR-5 Private Ask 与 1:1 的 creator-only 不得被放宽
 
@@ -133,13 +137,13 @@ shared session 在未绑定 Coordinator 时 `agent_id` 必须允许 NULL，以�
 `PATCH /api/chat/sessions/{sessionId}/config`：
 
 - `kind=private`：保持 CR-2026-056 行为（creator-only；无 `project_id` 的 1:1 仍 404）。
-- `kind=project_shared`：项目成员可 GET 配置；PATCH 仅 owner/admin。非 owner/admin PATCH 返回 403 `forbidden_chat_config`。
+- `kind=project_shared`：当前 workspace 成员（项目成员口径见 FR-25）可 GET 配置；PATCH 仅 owner/admin。非 owner/admin PATCH 返回 403 `forbidden_chat_config`。
 
 有效值解析、三态 PATCH（省略 / `null` 或空串清除 override / 非空设置 override）、目录与 runtime 校验必须调用 CR-2026-056 已落地的 `ResolveChatConfig` / `ValidateResolvedChatConfig` / `LoadChatCatalogForConfig`，禁止第二套快照逻辑。无 Coordinator（`agent_id` 为空）时不得走「创建者 Agent」路径，也不得调用 `UpdateAgent`。来源 FR-26、FR-28、§6、§7.2；依赖 CR-2026-056。
 
 ## FR-10 普通 Discussion 消息只写 chat_message
 
-项目成员发送普通文字或附件消息：只创建 `chat_message`（`role=user`），不创建 Agent task，不创建 Issue，不写 comment。来源 FR-15、AC-17、AC-18、§8.2。
+当前 workspace 成员发送普通文字或附件消息：只创建 `chat_message`（`role=user`），不创建 Agent task，不创建 Issue，不写 comment。来源 FR-15、AC-17、AC-18、§8.2。
 
 ## FR-11 明确请求才创建无 Issue 的 chat task
 
@@ -190,8 +194,8 @@ Discussion 的配置 PATCH 与发送必须针对 GET 返回的 `session_id`。�
 
 | 条件 | 状态 | error-code |
 |---|---|---|
-| session 不存在、跨 workspace、跨项目、`kind≠project_shared`、调用者不是该项目**当前**成员 | 404 | `chat_session_not_found` |
-| 调用者是当前项目成员，但 `status≠active`（已归档/关闭）且操作为 PATCH 或 POST | 409 | `chat_session_closed_or_changed` |
+| session 不存在、跨 workspace、跨项目、`kind≠project_shared`、调用者不是当前 workspace 成员（项目成员口径见 FR-25） | 404 | `chat_session_not_found` |
+| 调用者是当前 workspace 成员，但 `status≠active`（已归档/关闭）且操作为 PATCH 或 POST | 409 | `chat_session_closed_or_changed` |
 | 同上，但操作为消息列表 GET | 200 | （只读；不创建新 session） |
 
 不得静默另开 session，不得落到 Private Ask 行上。来源 §7.2、§7.3。
@@ -223,9 +227,9 @@ legacy `comment_ids` 路径继续使用既有 400 `invalid_comment_selection`（
 
 `DiscussionPane` 必须以 `session_id` 为会话身份：拉消息、发送、附件、配置控件、实时更新都走 shared session API，不再把 GET 的 `issue_id` 当作可写容器。硬降级规则对齐 CR-2026-056：`session_id` 缺失 / 空 / 非 UUID 时只读并重试 GET，禁止拿空 id 去 PATCH/发送。只读历史通过 `legacy_issue_id` 渲染旧 Issue timeline，且明确不可在该流发送。Model / Thinking 控件调用会话配置接口，不调用 `UpdateAgent`。来源 FR-29 中与功能接入相关的部分（不重做 composer 视觉，视觉属 CR-D）。
 
-## FR-20 实时事件对项目成员可见
+## FR-20 实时事件对当前 workspace 成员可见
 
-shared session 的新消息、协办 task 事件必须广播给**当前**项目成员，不得沿用 Private Ask 的 per-creator 投递。Private Ask 事件投递保持 per-user。成员被移出后的退订 / 不广播见 FR-25。来源 §9、AC-21。
+shared session 的新消息、协办 task 事件必须广播给**当前** workspace 成员（项目成员口径见 FR-25），不得沿用 Private Ask 的 per-creator 投递。Private Ask 事件投递保持 per-user。成员被移出 workspace 后的退订 / 不广播见 FR-25。来源 §9、AC-21。
 
 ## FR-21 迁移、sqlc 与定制台账
 
@@ -260,16 +264,18 @@ shared session 的新消息、协办 task 事件必须广播给**当前**项目�
 
 ## FR-25 shared session 安全负向契约
 
-授权以**请求当时**的项目成员资格为准，不看 `creator_id`，不看历史上是否开过面板。
+授权以**请求当时**的 workspace 成员资格为准，不看 `creator_id`，不看历史上是否开过面板。
+
+**成员口径（选项 A 裁决，AIFI-16）**：项目成员 := 当前 workspace 成员。来源文档的 8 处成员表述（7 处直写「项目成员」+ 1 处 project/workspace 并写）均为 ACL 表述、无独立成员建模；multica 成员唯一模型是 workspace 级 `member`（`034_projects.up.sql` 仅 `lead_id`，无项目级成员表）；KB 延期清单 `docs/product/部分/CR后续工作汇总-优先级清单.md` 第 10 项已把「项目级成员模型」列为未来引入项，本 CR 不引入。因此「同 workspace 非本项目成员」是空类（能访问本项目的 workspace 成员即项目成员），负向契约按下表以 workspace 成员资格表述。
 
 | 调用者 | 项目路径 `GET /discussion` | session 路径（消息 GET/POST、PATCH config） | 已发送附件下载 | 实时 |
 |---|---|---|---|---|
-| 当前项目成员 | 按主契约 | 按主契约 | 允许 | 订阅并接收 |
-| 同 workspace 非本项目成员 | 403 `forbidden_project_discussion` | 404 `chat_session_not_found` | 404（不确认附件存在） | 拒绝订阅；不广播 |
-| 已被移出项目的旧成员 | 同上 403 | 同上 404 | 同上 404 | 成员变更处理中退订；之后不广播 |
-| 仅持有 session/message/attachment UUID、无当前成员资格 | 无项目路径则不适用 | 404 `chat_session_not_found` | 404 | 拒绝订阅；不广播 |
+| 当前 workspace 成员（= 项目成员） | 按主契约 | 按主契约 | 允许 | 订阅并接收 |
+| 非本 workspace 成员 | 403 `forbidden_project_discussion` | 404 `chat_session_not_found` | 404（不确认附件存在） | 拒绝订阅；不广播 |
+| 已被移出 workspace 的旧成员 | 同上 403 | 同上 404 | 同上 404 | 移出事务中退订；之后不广播 |
+| 仅持有 session/message/attachment UUID、无当前 workspace 成员资格 | 无项目路径则不适用 | 404 `chat_session_not_found` | 404 | 拒绝订阅；不广播 |
 
-未绑定草稿仍仅上传者可访问（FR-14）。Private Ask 维持 creator-only。不得因持有 UUID 而从 shared 分支漏读。
+「已被移出 workspace」= workspace `member` 行删除，挂接平台已有 revoke-member 事务（`revokeAndRemoveMember`，`server/internal/handler/workspace_revoke.go`）与既有退订机制（AC-29）。未绑定草稿仍仅上传者可访问（FR-14）。Private Ask 维持 creator-only。不得因持有 UUID 而从 shared 分支漏读。
 
 ## FR-26 Coordinator 唯一权威源与生命周期
 
@@ -313,7 +319,7 @@ POST   /api/chat/sessions/{sessionId}/messages
 | 项 | 契约 |
 |---|---|
 | request | 无 body。`projectId` 为 UUID。 |
-| 权限 | 当前项目成员。同 workspace 非成员 / 已移出：403 `forbidden_project_discussion`。项目不在本 workspace：404（现有 `project not found`，无 code）。 |
+| 权限 | 当前 workspace 成员（= 项目成员，口径见 FR-25）。非本 workspace 成员 / 已被移出 workspace：403 `forbidden_project_discussion`。项目不在本 workspace：404（现有 `project not found`，无 code）。 |
 | 成功 | **200**。创建或读取该项目唯一 active `project_shared` session；不得创建 Issue。 |
 | 幂等 | 不要求 `Idempotency-Key`。并发 GET 在项目锁下收敛到同一 `session_id`（FR-3）。若仅有已归档 shared session，本 GET **新建**一条 active session，不自动解档。 |
 | 副作用 | 可能插入一行 `chat_session`；禁止插入 `project_discussion` Issue。 |
@@ -343,7 +349,7 @@ POST   /api/chat/sessions/{sessionId}/messages
 | 项 | 契约 |
 |---|---|
 | request | 无 `session_id` 字段（id 在 path）。body 三态与 CR-2026-056 FR-6 全等：`model` / `thinking_level` 省略=保持，`null` 或 `""`=清 override，非空=设 override。 |
-| 权限 | 当前项目 owner/admin。当前成员但非 owner/admin：403 `forbidden_chat_config`。非成员 / 跨项目 / 错误 kind：404 `chat_session_not_found`（FR-17）。 |
+| 权限 | 当前项目 owner/admin。当前 workspace 成员但非 owner/admin：403 `forbidden_chat_config`。非 workspace 成员 / 跨项目 / 错误 kind：404 `chat_session_not_found`（FR-17）。 |
 | 成功 | **200**。响应配置字段与 GET Discussion 相同（含 `session_id`；`issue_id` 仍为 null）。 |
 | 错误 | 400 `invalid_model_or_thinking_level`；409 `chat_session_closed_or_changed`（成员看到已归档 session）。非法 JSON：400（现有 `invalid request body`）。 |
 | 幂等 | 不要求 `Idempotency-Key`；末次提交获胜。不创建 session。 |
@@ -359,7 +365,7 @@ Discussion **禁止**对 shared session 返回无分页裸数组。`GET .../mess
 |---|---|
 | request | query：`limit` 可选，默认 50，范围 1–100；`before_created_at`（RFC3339Nano）与 `before_id`（UUID）必须成对出现或成对省略。非法 limit/缺一半 cursor：400 `invalid_cursor`。无 body。 |
 | 排序 | SQL 先取更新窗口，序列化前反转为页内时间正序（与现有 `ListChatMessagesPage` 全等）。 |
-| 权限 | 当前项目成员。非成员 / 错误 kind / 跨项目：404 `chat_session_not_found`。已归档 shared session：**200** 只读。 |
+| 权限 | 当前 workspace 成员。非 workspace 成员 / 错误 kind / 跨项目：404 `chat_session_not_found`。已归档 shared session：**200** 只读。 |
 | 成功 | **200**。 |
 | 幂等 | 只读，无 `Idempotency-Key`。 |
 | 副作用 | 无。不得混入 Private Ask 消息。 |
@@ -409,7 +415,7 @@ Discussion **禁止**对 shared session 返回无分页裸数组。`GET .../mess
 
 | 项 | 契约 |
 |---|---|
-| 权限 | 当前项目成员可发普通消息。协办另需 Agent 调用权限，否则 403（现有 invocation）。非成员：404 `chat_session_not_found`。 |
+| 权限 | 当前 workspace 成员可发普通消息。协办另需 Agent 调用权限，否则 403（现有 invocation）。非 workspace 成员：404 `chat_session_not_found`。 |
 | 成功 | **201 Created**（禁止 200/204/空 body）。 |
 | 错误 | FR-17 归档 409 `chat_session_closed_or_changed`；FR-11 两个 409 coordinator code；已绑定附件 409 `attachment_already_bound`（仅当**非**幂等重放）；配置 400 `invalid_model_or_thinking_level`；缺幂等头 400 `idempotency_key_required`；指纹冲突 409 `idempotency_key_reused`。 |
 | 幂等 | FR-24。指纹 = trim(`content`) + 稳定排序后的 `attachment_ids` + `coordinator_request`（重复 ID 在校验阶段已 400，进不了指纹）。重放 201 且同一 `message_id`/`task_id`。 |
@@ -457,7 +463,7 @@ Discussion **禁止**对 shared session 返回无分页裸数组。`GET .../mess
 
 | 项 | 契约 |
 |---|---|
-| 权限 | 当前项目成员且具备既有 Team Agent 发送权限（含 presenter 规则）。非成员：403 `forbidden_project_discussion`。项目不存在：404 `project not found`。 |
+| 权限 | 当前 workspace 成员（= 项目成员）且具备既有 Team Agent 发送权限（含 presenter 规则）。非 workspace 成员：403 `forbidden_project_discussion`。项目不存在：404 `project not found`。 |
 | 成功 | **201**。体为既有 `SendProjectChatMessageResponse`：`session_id`、`issue_id`、`comment_id`、`task_id`（Team Agent 侧，均非空 UUID）。 |
 | 错误 | 内核错误沿用 `writeProjectChatSendError`（403 `presenter_required`、409 `team_agent_not_configured`、429 `project_queue_full`、502 `enqueue_failed` 等）。`message_ids` 路径缺 `Idempotency-Key`：400 `idempotency_key_required`；指纹冲突：409 `idempotency_key_reused`。 |
 | 幂等 | **仅** `message_ids` 路径要求 `Idempotency-Key`（FR-24）。指纹 = 去重后顺序保留的 `message_ids` + `register_cr`。重放 201 且同一 `comment_id`/`task_id`。legacy `comment_ids` 不新要求该头。 |
@@ -502,7 +508,7 @@ Discussion GET 用独立 zod schema，不要把 `session_id` 做成可写的空�
 | AC-17 | FR-19、NFR-8 | `packages/core/api/schemas.test.ts`：Discussion GET 缺/空/非 UUID `session_id` → 硬降级只读；合法 `session_id` 且 `issue_id` 为 null 时可发送。前端不得用 `legacy_issue_id` 调用发送。 |
 | AC-18 | FR-19、NFR-2 | DiscussionPane 在有 `session_id` 时不再依赖可写 `issue_id`；新增文案 en/ja/ko/zh-Hans 对称，`parity.test.ts` 全绿。 |
 | AC-19 | FR-21、FR-6 | 从 481 起的迁移：无**新增** FK；481 up 使 `agent_id` 可空并把既有约束 `chat_session_agent_id_fkey` 由 `ON DELETE CASCADE` 改为 `ON DELETE SET NULL`（`pg_get_constraintdef` 验证定义）；481 down 恢复 CASCADE + `SET NOT NULL`（迁移 up/down 往返测试全绿）；新增索引均为 `CONCURRENTLY` 且一文件一条；Private Ask 唯一索引谓词已排除 `project_shared`；`CUSTOM.md` 已按当时结构登记本 CR 条目。 |
-| AC-20 | FR-17、FR-18 | 当前成员对已归档 shared session 的 PATCH/发送返回 409 `chat_session_closed_or_changed`；错误 kind / 跨项目 / 非成员的 session 路径返回 404 `chat_session_not_found`；不得写入其他项目或其他 kind 的 session。消息列表对已归档 shared session 仍 200。 |
+| AC-20 | FR-17、FR-18 | 当前 workspace 成员对已归档 shared session 的 PATCH/发送返回 409 `chat_session_closed_or_changed`；错误 kind / 跨项目 / 非 workspace 成员的 session 路径返回 404 `chat_session_not_found`；不得写入其他项目或其他 kind 的 session。消息列表对已归档 shared session 仍 200。 |
 | AC-21 | FR-9、NFR-9 | 配置解析与协办入队的 catalog / waitable / blocked 判定复用 CR-2026-056 单一实现（`ResolveChatConfig` / `LoadChatCatalogForConfig`）；测试不得再复制第二套规则表。 |
 | AC-22 | NFR-6、NFR-7 | Team Agent GET 仍不创建 Issue；Private Ask creator-only 夹具全绿；`go test ./server/internal/handler/ ./server/internal/service/ -count=1` 不新增与 Discussion 无关的失败。 |
 | AC-23 | FR-22 | `GET .../messages`（shared）无 cursor 时 200 且 body 为分页对象（含 `messages`/`limit`/`has_more`），不是裸数组；`limit=0` 或只给 `before_id` 返回 400 `invalid_cursor`。页内 `created_at` 非递减。 |
@@ -510,8 +516,8 @@ Discussion GET 用独立 zod schema，不要把 `session_id` 做成可写的空�
 | AC-25 | FR-23 | merge-forward 同时给非空 `comment_ids` 与 `message_ids` → 400 `invalid_merge_forward_selection` 且 Team Agent 侧无新 comment/task。`message_ids` 含他项目 / Private Ask / 另一 session 的 id → 400 `invalid_message_selection`。重复 `message_ids` 只产生一条合并 comment。 |
 | AC-26 | FR-24 | Discussion `POST .../messages` 缺 `Idempotency-Key` → 400 `idempotency_key_required` 零写入。同一 key+同一指纹重试（含响应丢失后重放）→ 两次都 201 且 `message_id`/`task_id` 相同，附件不返回 409 `attachment_already_bound`，DB 仍一条 message。同一 key 不同 content → 409 `idempotency_key_reused` 零写入。并发同一 key 只提交一次。 |
 | AC-27 | FR-24、FR-23 | `message_ids` merge-forward 缺 `Idempotency-Key` → 400 `idempotency_key_required`。同一 key 重放 → 201 且同一 `comment_id`/`task_id`，Team Agent 侧不新增第二对 comment/task。legacy `comment_ids` 不带该头仍可 201。 |
-| AC-28 | FR-25 | 同 workspace 非项目成员：`GET /discussion` 403 `forbidden_project_discussion`；持有 `session_id` 的消息 GET/POST 与 PATCH → 404 `chat_session_not_found`；已发送附件下载 404 且无文件字节。被移出的旧成员即时失去上述能力。 |
-| AC-29 | FR-25、FR-20 | 非成员 / 已移出成员订阅 shared session 实时通道被拒绝；移出后服务端退订，后续 shared 消息/task 事件不再投递给该用户。成员 B 仍能收到。夹具：handler 或 realtime 测试，命令 `go test ./server/internal/handler/ ./server/internal/service/ -count=1`。 |
+| AC-28 | FR-25 | 非本 workspace 成员：`GET /discussion` 403 `forbidden_project_discussion`；持有 `session_id` 的消息 GET/POST 与 PATCH → 404 `chat_session_not_found`；已发送附件下载 404 且无文件字节。已被移出 workspace 的旧成员（member 行删除，挂接平台已有 revoke-member 事务）即时失去上述能力。 |
+| AC-29 | FR-25、FR-20 | 非 workspace 成员 / 已被移出 workspace 的成员订阅 shared session 实时通道被拒绝；移出 workspace 后服务端退订（挂接平台已有 revoke-member 事务与退订机制），后续 shared 消息/task 事件不再投递给该用户。成员 B 仍能收到。夹具：handler 或 realtime 测试，命令 `go test ./server/internal/handler/ ./server/internal/service/ -count=1`。 |
 | AC-30 | FR-26 | 首次绑定 Coordinator：settings 与 active session.`agent_id` 同 UUID；若 `base_*` 为空则被补写为该 Agent 当时默认。替换为另一 Agent：session.`agent_id` 更新，`base_*` 不变；已入队 task 的 `agent_id` 与 `chat_config` 不变。解绑：session.`agent_id` 为空，历史消息仍可读。 |
 | AC-31 | FR-26、FR-11 | Coordinator Agent 归档后：GET `coordinator_agent_id` 仍为原 UUID；新的 @mention/analyze 返回 409 `discussion_coordinator_unavailable` 且不建 task；settings 不被 GET 清掉。Agent hard-delete 后的完整验收见 AC-32。并发 settings PATCH 与 GET 后 session.`agent_id` 与 settings 一致。 |
 | AC-32 | FR-7、FR-21、FR-26 | Coordinator Agent 行 hard-delete 后：`chat_session` 行与历史 `chat_message` 行**全部保留**（FK 置 NULL 不级联删除）；session.`agent_id` 为 NULL（投影置 NULL）；GET `/discussion` 的 `coordinator_agent_id` 仍返回 settings 原 UUID；消息列表 GET 仍 200 且可完整回放删除前的历史；新 @mention/analyze 409 `discussion_coordinator_unavailable` 零写入。删除事务只移除 agent 行并把 session.`agent_id` 置 NULL，不留半成品、不触碰消息与设置。 |
@@ -525,7 +531,7 @@ Discussion GET 用独立 zod schema，不要把 `session_id` 做成可写的空�
 - 明确协办任务 **100%** 满足 `chat_session_id` 非空且 `issue_id` 为空。
 - 同一项目 active `project_shared` session 数 = **1**，且与 Private Ask active session 可并存。
 - 发送前未绑定附件被非上传者读取的次数为 **0**。
-- 非当前项目成员成功读取 shared 消息、已发送附件或实时事件的次数为 **0**。
+- 非当前 workspace 成员成功读取 shared 消息、已发送附件或实时事件的次数为 **0**。
 - Private Ask 非创建者成功读取或 PATCH 的次数为 **0**。
 
 # 7. 范围排除
@@ -544,4 +550,5 @@ Discussion GET 用独立 zod schema，不要把 `session_id` 做成可写的空�
 - 在 Multica 服务端复制 CR 状态机或直接写 knowledge-base 的 `_backlog.yml`。
 - 自定义 promotion 表；复制一套独立 Discussion 消息表。
 - mobile 端。
+- 项目级成员模型（per-project member 子系统）。KB 延期清单第 10 项已列为未来引入项；本 CR 成员口径为「项目成员 := 当前 workspace 成员」（FR-25），项目级成员模型另行 CR。
 - `../tools/` 仓改动。
