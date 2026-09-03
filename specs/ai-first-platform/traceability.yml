@@ -1,0 +1,65 @@
+# specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
+spec-id: ai-first-platform
+cr-ref: CR-2026-060
+cr-history: [CR-2026-060]
+target-version: "0.33"
+baseline-since: "0.33"
+generated-at: "2026-09-03T11:16:33+08:00"
+
+milestones:
+  - cr: CR-2026-060
+    milestone: CR 全生命周期合同对齐
+    target-version: "0.33"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 0e47fbb9493a8cb22288c06a14d832b256b8c16e
+        branch: requirement/CR-2026-060
+      - repo: multica
+        trunk: main
+        sha: b6ff5ca33d88b93abed7b8ca212022b3e2491163
+        branch: requirement/CR-2026-060
+      - repo: tools
+        trunk: custom/main
+        sha: 511f8fecd90bf1af3b8b427283dffd89a168a2f1
+        branch: requirement/CR-2026-060
+    frs:
+      - fr: FR-01
+        title: 注册合同与单一目标事实
+        sdd: SDD §2.1/§2.2/§2.4/§3.1 register 行/§4.1/§4.3/§4.7
+        tasks: [CR-2026-060-TASK-01]
+        evidence: cmd-02
+      - fr: FR-02
+        title: PRD/SDD 作者与 reviewer 标准对齐
+        sdd: SDD §3.2 前六行（write/review requirement 与 tech-design）
+        tasks: [CR-2026-060-TASK-02]
+        evidence: cmd-01
+      - fr: FR-03
+        title: PLAN/TASK、Coding、测试与代码评审对齐
+        sdd: SDD §3.2 中段/§4.5
+        tasks: [CR-2026-060-TASK-03]
+        evidence: cmd-03
+      - fr: FR-04
+        title: 回写成为确定性投影
+        sdd: SDD §3.1 writeback/archive 行/§4.4/§4.6/§4.8
+        tasks: [CR-2026-060-TASK-04]
+        evidence: cmd-04
+      - fr: FR-05
+        title: Pipeline、规划与审批输入契约对齐
+        sdd: SDD §4.9/§3.2 approve/规划/竞品/resume 段
+        tasks: [CR-2026-060-TASK-04]
+        evidence: cmd-01
+      - fr: FR-06
+        title: 兼容、变更组织与验证闭环
+        sdd: SDD §1.1 四组/§7/§9
+        tasks: [CR-2026-060-TASK-04]
+        evidence: cmd-06
+    evidence:
+      test: { status: pass, path: change-requests/CR-2026-060/test-report.md, sha256: d476a75d78d144756ed3a800ecee0f87bd7920977792cbe5e60f5b857fca7e8a }
+      reviews:
+        requirement: { verdict: pass, path: change-requests/CR-2026-060/review-annotations/requirement.yml, sha256: d9d941b945529c1a509d132b316bad57502268859875eea8e2572881d4aa22a8 }
+        tech-design: { verdict: pass, path: change-requests/CR-2026-060/review-annotations/sdd.yml, sha256: 950ee55fba14579637908a91cf27735a84133921f5e1abb9a6b7e9d29ea45cdf }
+        dev-plan: { verdict: pass, path: change-requests/CR-2026-060/review-annotations/dev-plan.yml, sha256: a4d03dbe637287014ee160e5191fff69161fd795d1f6b21415309c6b8f1d962b }
+        code: { verdict: pass, path: change-requests/CR-2026-060/review-annotations/code.yml, sha256: 2045c030bb1211151638aa55ac28c83649aff6180d018fd903f499c90aad0f7b }
+      approval: { status: approved, path: change-requests/CR-2026-060/approval.yml, sha256: 30a73713e97952062659de923afbe5a0e8e7e20a6bb307f07800cb01d7cafbca }
+      merge: { status: merged, path: change-requests/CR-2026-060/merge-commits.yml, sha256: 64f2f7e39f3c1515a32b7072b2e09bc06867741f4fe205578790b40f272207f0 }
