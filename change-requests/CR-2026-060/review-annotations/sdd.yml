@@ -1,0 +1,31 @@
+cr-id: CR-2026-060
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-02T23:50:50+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  批准范围: "PASS：§9 四字段齐全；zero_diff 已精确冻结 performAdvance/cmdTaskInit/applyWritebackAtomic 内核与 writeback-traceability legacy 分支，并显式允许本轮所需的只读 guard、count-hint、tasks preflight 与 new 生成分支，与 AC-03/08/11/12 自洽。"
+  PRD↔SDD对齐: "PASS：FR-01..06 均有技术方案落点；AC-01..18 均给出设计落点、可观测结果与可达性。直接 advance 拒绝 unassigned、pending-task 零写入、new traceability 生成链均已闭环。"
+  架构合理性: "PASS：仍遵守 tools ARCHITECTURE.md 四层边界与硬不变量 1/2/4/7；authority 按生命周期绑定 CR worktree 或 strict txws；D-01..D-06 均含真实权衡。"
+  数据模型完整性: "PASS：target-spec-id、registrationAt、writeback/archive journal 的 mode/spec 快照、new traceability 冻结输入与确定性映射均已定义形状。"
+  接口契约: "PASS：HTTP API 为 N/A；CLI/Skill 矩阵均有唯一落点；顶层 TARGET_SPEC_AUTHORITY_DRIFT 与 gate check code 一对一映射；register 统一 builder 覆盖成功/幂等/恢复。"
+  多仓架构约束: "PASS：可交付代码只落 tools；取证使用 resources[].worktreePath；§3.2/§8/§10 的 Skill/Pipeline 路径已按实际目录修正。"
+  性能与安全: "PASS：新增逻辑为 O(文件行数) 只读扩展；stale cr-worktree 回退被 strict 解析器取代；pending TASK 部分发布与注册时间漂移风险已闭合。"
+  可测试性: "PASS：AC-16 补齐 advance 直连拒绝、registrationAt 三处精确相等、pending 三类 reason、new traceability 确定性生成加 legacy 逐字节回归、archive journal 重放等可执行断言。"
+  Prompt采纳影响: "PASS：本 CR 触及 crctl.mjs 命令面；§8 已列出 register/gate/advance/writeback/archive/task init 新入口对应的 Skill/Pipeline 调用形态，路径已修正。"
+  既有实现依赖: "PASS：§10 有序清单覆盖正文直接依赖的 crctl/事务/generator/Skill/Pipeline；tools HEAD 860288ce 与核验一致，行号与符号可在 tools worktree 对上；kb 269ca7 已标明为 PRD 审批基线而非当前 HEAD。"
+suggestions:
+  - "已解决：[B-SDD-01][AC-03/AC-16] §4.7 在 preflightAdvance（crctl.mjs:963）于 runGateChecks 之前新增 assertRequirementReviewAdvanceGuard；new mode unassigned 直连 advance 返回 GATE_BLOCKED/TARGET_VERSION_UNASSIGNED 且零写入；§9 将 performAdvance 内核与 preflight 只读分支分离；AC-03/AC-16 补 advance 直连断言。"
+  - "已解决：[B-SDD-02][AC-12] §4.8 与 D-04 在既有 writeback-traceability.mjs 内新增 --mode new 分支；canonical 输入为冻结 PLAN 两表、TASK 账本与卡、test-report、merge-commits.yml；确定性映射生成 FR→SDD→TASK→repo@mergeSHA→cmd；prepareWritebackCandidate 在 new 分支跳过 milestoneFile 必填并 spawn --mode new；legacy 分支逐字节保留。"
+  - "已解决：[B-SDD-03][AC-11/AC-12] §4.6 与 D-05 将 preflightTasksAllDone 挂在 applyWritebackAtomic 入口、prepareWritebackCandidate/journal 之前；单一码 WRITEBACK_TASKS_PENDING（reason=index-missing/index-invalid/pending）零写入零发布；恢复语义为补齐 done 后重跑同命令；generator 子集筛选保留为防御性 no-op。"
+  - "已解决：[B-SDD-04][FR-01.4/AC-01] §2.4/§4.3 将 registrationAt 持久化进 register journal payload（save allocated 冻结、重试只读）；ledger 时间字段与 owners outbox 原样消费并删除 crctl.mjs:3103 的第二个 nowIso()；AC-01/AC-16 增加精确相等断言。"
+  - "已解决：[B-SDD-05][AC-01] §4.3.2 定义统一 buildRegisterResult 覆盖成功/幂等/恢复；inputDigest（:679）纳入 targetSpecId，recoverCommand（:684）含 --target-spec-id；删除 :3098 早退，changed=false 同构输出 snake_case 全键且 outbox=null。"
+  - "已解决：[B-SDD-06][AC-02/AC-11/AC-13] §2.2.2-2.2.4 为 resolveTargetSpecMode 增加 authority 参数并由调用方按生命周期绑定；writeback/archive 的 new 分支使用 resolveWritebackAuthorityStrict，txws 缺失显式失败，禁止消费 resolveWritebackAuthorityPath 的 cr-worktree 回退；archive 清理后幂等重放只读 archive journal payload。"
+  - "已解决：[B-SDD-07][AC-02/CLI] §2.3 与 D-06 将顶层码唯一为 TARGET_SPEC_AUTHORITY_DRIFT（extra.kind∈missing|invalid|mismatch）；pre-review check code 按 kind 映射 _MISSING/_INVALID/_DRIFT；_MISSING 可达前提为单侧缺失；WRITEBACK_SPEC_REQUIRED/WRITEBACK_SPEC_MISMATCH 的唯一前提已固定。"
+  - "已解决：[B-SDD-08][依赖证据] §3.2/§8 已把 approve 路径改为四个实际 SKILL.md（approve-requirement 在 requirement 域），requirement-authoring 改为 pipeline-templates/requirement-authoring.pipeline.json；§10 补齐正文直接依赖的 repo/path/symbol/SHA；tools HEAD 860288ce 已核验；kb 269ca7 标明为 PRD 审批基线。"
+  - "已解决：[B-SDD-09][AC-08] §4.5 改为三步：Skill 写入前组映射 preflight（失败回滚草稿、零 crctl 调用）→ crctl task init --count-hint 4 写入前校验（TASK_COUNT_MISMATCH 零写入）→ init 后防并发复核（保留现场、同命令幂等刷新、通过前不得推进）。"
+review-loop:
+  current-attempt: 2
+subject-file: change-requests/CR-2026-060/sdd.md
+subject-sha256: 3d283b93fbe9390b96e297db929b89505fa26732532a77494991ffb35ea932db
