@@ -1,26 +1,26 @@
 cr-id: CR-2026-059
 review-type: requirement
 reviewer: "OldBoy405"
-reviewed-at: "2026-09-03T21:22:16+08:00"
-verdict: block
-blockers:
-  - "本轮新增： [B-COORD-2] FR-7/FR-26/AC-30/AC-31 要求 Coordinator Agent 被删除后 shared session 仍可读、GET 仍返回 settings 中的原 UUID，且 session.agent_id 投影为 NULL；但同步后的基线 033_chat.up.sql:7 仍是 agent_id UUID NOT NULL REFERENCES agent(id) ON DELETE CASCADE。当前 FR-21 只要求允许 agent_id 可空且不新增 FK，没有规定移除或改变该既有 CASCADE；若按现有约束实施，删除 Agent 会先级联删除 chat_session 及其 chat_message，AC-31 的回放与历史保留不可能成立，造成数据完整性/验收不可达阻断。修复方向：在 FR-21/FR-26 中明确 481+ 迁移的既有 FK 生命周期方案（推荐将 agent_id 改为可空并把现有 FK 改为 ON DELETE SET NULL，或删除该 CASCADE FK 并明确应用层 workspace/Agent 校验），同时明确 hard-delete 后保留 session/message、设置 UUID 保留、投影置 NULL 的事务与回放验收；补充对应 migration/down 与 AC。"
+reviewed-at: "2026-09-03T22:35:20+08:00"
+verdict: pass
+blockers: []
 dimensions:
   结构完整性: "通过：frontmatter、概述、用户故事、FR、NFR、AC、成功指标与范围排除齐全。"
-  FR可测试性: "阻断：Coordinator hard-delete 生命周期与现有 chat_session ON DELETE CASCADE 冲突，AC-31 当前不可达；其余 FR/AC 具备可执行条件。"
-  范围合理性: "通过：需求仍限定于 CR-B shared Discussion、单 Coordinator、附件、历史只读与 Private Ask 隔离，未扩入已排除的升级、多参与者或 Team Agent 内核。"
-  与规划对齐: "通过：覆盖来源 CR-B 的 shared session、无 Issue、单 Coordinator、附件、只读历史与 Private Ask 隔离；新增阻断来自同步后基线事实。"
-  依赖识别: "通过：已明确依赖 CR-2026-056 配置解析、任务快照与附件契约，以及 CR-2026-012 转投/merge-forward 兼容边界。"
-  HTTP_API契约闭包: "通过：Discussion 主 endpoint 与 merge-forward 的 endpoint、request、response、精确状态/error-code、权限、幂等、状态副作用及 AC-23～AC-29 观察点均已闭合。"
+  FR可测试性: "通过：回修已将 Coordinator hard-delete 的 FK 生命周期、session/message 保留、settings 原 UUID、agent_id 置 NULL、消息回放与零写入条件落到 FR-7、FR-21、FR-26、AC-19、AC-31、AC-32；其余 FR/AC 仍有可执行观察点。"
+  范围合理性: "通过：需求仍限定于 CR-B shared Discussion、单 Coordinator、附件、历史只读与 Private Ask 隔离；481 仅转换既有 chat_session.agent_id FK，不扩入多参与者、升级或 Team Agent 内核。"
+  与规划对齐: "通过：覆盖来源 CR-B 的 shared session、无 Issue、单 Coordinator、附件、只读历史与 Private Ask 隔离；针对同步后基线发现的既有 CASCADE，已补充可执行的 481 up/down 生命周期方案。"
+  依赖识别: "通过：已明确依赖 CR-2026-056 配置解析、任务快照与附件契约，以及 CR-2026-012 转投/merge-forward 兼容边界；数据库自动命名约束事实和回滚数据依赖已注明。"
+  HTTP_API契约闭包: "通过：Discussion 主 endpoint 与 merge-forward 的 endpoint、request、response、精确状态/error-code、权限、幂等、状态副作用及 AC-20、AC-23～AC-29 观察点均已闭合；本轮复查确认此前 HTTP、幂等与 ACL 闭合内容仍在。"
   crctl_CLI契约闭包: "N/A：本 CR 不新增或修改 crctl/CLI。"
   Skill契约闭包: "N/A：本 CR 不新增或修改 Skill。"
 suggestions:
+  - "已解决： [B-COORD-2] FR-7/FR-21/FR-26 已明确 481 将 chat_session.agent_id 改可空，并把既有 chat_session_agent_id_fkey 从 ON DELETE CASCADE 转为 ON DELETE SET NULL；FR-26 读规则与 AC-32 已闭合 hard-delete 后 session/message 保留、投影置 NULL、settings 原 UUID、历史回放和协办零写入，down 的 NULL 数据依赖回滚也已明确。"
   - "已解决： [B-HTTP-1] 四个 Discussion 主 endpoint 已明确 request/response、分页、精确成功状态与错误分支，并由 FR-22、AC-20、AC-23、AC-24 覆盖。"
   - "已解决： [B-HTTP-2] merge-forward 已明确 comment_ids/message_ids 选择规则、顺序与去重、权限、响应、错误、幂等及源消息副作用，并由 FR-23、AC-15、AC-25、AC-27 覆盖。"
   - "已解决： [B-IDEMP-1] 两个有副作用入口已定义 Idempotency-Key、同指纹重放、异指纹冲突、并发收敛及附件重放语义，并由 FR-24、AC-26、AC-27 覆盖。"
   - "已解决： [B-ACL-1] 当前成员资格、非成员/移出成员/仅持 UUID 的 session、附件与实时拒绝及退订规则已由 FR-25、AC-28、AC-29 闭合。"
   - "已解决： [B-COORD-1] project.settings 写权威、session.agent_id 锁内投影、首次绑定/替换/解绑、Agent 失效、GET/路由与在途 task 语义已由 FR-26、AC-30、AC-31 闭合。"
 review-loop:
-  current-attempt: 3
+  current-attempt: 1
 subject-file: change-requests/CR-2026-059/prd.md
-subject-sha256: 279dd39ef7dd4d207ce0db753e7e33d2d13b86d341f9e1494d677b4a6963f50f
+subject-sha256: 63fbfcb52c76f4fbac8dce1ec20dddc9c1c2896001d3171a0cd64495ba1a88b7
