@@ -1,29 +1,31 @@
 cr-id: CR-2026-059
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-09-04T11:54:25+08:00"
+reviewed-at: "2026-09-04T14:15:34+08:00"
 verdict: block
 blockers:
-  - "本轮新增： [B-MIG-1] 位置：sdd.md §2.6 L161–181、§7.2 L554；事实：487 的 CREATE TABLE 内声明复合 PRIMARY KEY，PostgreSQL 会隐式创建唯一索引，但 multica/CLAUDE.md:115 与 ARCHITECTURE.md §5.6 要求包括新表在内的每个新索引都必须以 CREATE [UNIQUE] INDEX CONCURRENTLY 在独立单语句迁移中创建，故‘索引全部 CONCURRENTLY’断言不成立；影响：违反仓库硬不变量并使 AC-19 不可按设计验收；修复方向：487 建表不内联 PK，新增独立迁移用 CREATE UNIQUE INDEX CONCURRENTLY 建幂等键索引，必要时再以另一单语句迁移 USING INDEX 挂主键，或直接以该唯一索引作为 ON CONFLICT 仲裁，并同步 down、编号区间、§4.9/§6/§9。"
-  - "本轮新增： [B-MIG-2] 位置：sdd.md §2.3 L118–133；事实：设计先在 483 DROP 现有 chat_session_project_creator_active_unique，再在 484 并发重建，窗口内并发 Private Ask get-or-create 可插入重复 active 行；ORDER BY ... LIMIT 1 只能隐藏重复读，不能阻止重复，也不能保证 484 的唯一索引构建成功；影响：在线/滚动部署期间可能令迁移失败并永久留下重复 active 会话，AC-8/AC-19 不可达；修复方向：先以新名称 CONCURRENTLY 建好 kind='private' 唯一索引，再 CONCURRENTLY 删除旧索引，避免任何无唯一约束窗口，并同步名称依赖、down 与部署顺序。"
-  - "本轮新增： [B-CONFIG-1] 位置：sdd.md §3.2 L214–224、§4.2 L317–349、§4.4 L372–381、D-6 L445；事实：无 Coordinator 时 PATCH 被设计为接受任意 override 且不做目录/runtime 校验，协办发送算法也未落出 LoadChatCatalogForConfig + ValidateResolvedChatConfig 的确定调用点；这与 PRD FR-9 L142 要求三态 PATCH 必须复用解析/目录/runtime 校验、AC-10 L501 要求不支持值在 PATCH 与协办入队均返回 400 冲突；影响：非法配置可成功持久化，AC-10/AC-21 当前不可达且实现者无法唯一决定无 Coordinator 的验证 authority；修复方向：明确无 Coordinator 时可保存配置与合法值校验如何同时成立，给出确定的 provider/catalog authority 并复用既有三函数，且在 SendDiscussionMessage 流程标出入队前校验与事务边界；若物理上无法满足，应先经需求修订澄清契约。"
-  - "本轮新增： [B-IDEMP-1] 位置：sdd.md §4.6 L413；事实：消息指纹写为序列化‘排序去重前的原始 attachment_ids’，而 PRD POST 契约 L421 明定使用稳定排序后的 attachment_ids；影响：同一附件集合仅顺序不同的安全重试会被判为不同指纹并返回 409 idempotency_key_reused，破坏 FR-24/AC-26 的重放语义；修复方向：在重复 ID 校验后对 attachment_ids 做稳定排序再规范 JSON + sha256，并在 §3.4、§4.6 与 AC 映射中统一口径及测试向量。"
-  - "本轮新增： [B-REALTIME-1] 位置：sdd.md §4.7 L418–423、§10 D-26/D-27；事实：设计声称多服务器经‘既有 relay 广播断连指令’，但 be6426a7 基线的 realtime.Broadcaster 仅有消息广播方法，redis_relay.go deliverEnvelope 只向本地客户端 fanout，无服务端断连控制消息或 DisconnectWorkspaceUser；相关 relay 文件也未列入 §10 依赖；影响：若移出事务落在节点 A，节点 B 上旧连接仍留在 workspace room 并继续接收广播，PRD AC-29 的即时服务端退订不可达；修复方向：定义可实现的跨节点断连控制契约、scope/envelope、各 relay 模式消费与本地 Hub 清理路径，列入显式依赖，并给出双节点验收（移出后 B 节点连接关闭且后续事件不投递）。"
-  - "本轮新增： [B-COORD-1] 位置：sdd.md §4.2 L329–340、§4.3 L359–367、§4.5 L383–404；事实：detectCoordinatorTrigger 只接收‘可路由 Coordinator’，归档/hard-delete 后该值为空，因此正文 @mention 已失效但仍配置在 settings 的 Coordinator 无法命中 needTask，会退化为普通消息，而 PRD AC-31/AC-32 要求新的 @mention 返回 409 discussion_coordinator_unavailable 且零写入；影响：失效 Coordinator 的 @mention 验收不可达；修复方向：触发检测同时携带 settings 中配置 UUID 与可路由状态，先识别对配置 Coordinator 的 mention，再按未配置/已配置但不可路由分别映射 not_configured/unavailable，保留其它 Agent mention 为普通消息，并补归档/hard-delete向量。"
-  - "本轮新增： [B-AUTHOR-1] 位置：sdd.md §2.5 L146–158、§3.3 L225–250、§6.3 SDD-CLOSE-03 L531；事实：M486 声明 author_type/author_id 用于群聊展示，但消息列表响应示例、ChatMessageResponse 落点、packages/core ChatMessage/ChatMessageSchema 与 DiscussionPane 方案均未定义这两个字段的序列化、兼容降级或展示消费，仅 merge-forward 使用作者列；影响：SDD-CLOSE-03 实际未关闭，多成员 user 消息在前端无法唯一归属，接口实现不唯一；修复方向：补齐服务端 ChatMessageResponse、core 类型/zod 的可空兼容契约、DiscussionPane 作者解析/展示与 malformed/legacy 测试，并明确 private/旧行 NULL 的降级。"
+  - "本轮新增：[B-MIG-3] 位置：sdd.md §2.2 M482、§2.4 M485、§2.5 M486、§4.9、§6.2 AC-19。事实：§1.2 宣称 481–490 十个迁移各有 down，且 AC-19 要求 up/down 往返；但正文没有定义 482.down（kind 列）、485.down（project_shared 唯一索引）、486.down（作者列）的 SQL、部分状态/数据依赖或回滚顺序，§4.9 的 down 登记清单也只列 484.down。影响：实现者无法按当前 SDD 生成完整回滚集，AC-19 的 down 往返不可验收，且 485 的 CONCURRENTLY 索引删除与 482/486 的数据损失边界不唯一。修复方向：补齐 482.down、485.down、486.down 的单语句/顺序与部分状态处理；明确 485.down 的 DROP INDEX CONCURRENTLY 无构建钩子、482/486 的数据依赖与失败语义，并同步 §4.9、§6.2 的回滚与测试向量。"
+  - "本轮新增：[B-AUTH-2] 位置：sdd.md §3.2、§3.4、§4.2、§4.8、§7.1、AC-28/AC-29。事实：shared session 的成员资格目前只写成事务外的 pre-tx 门禁；§4.2 进入事务后仅锁 session，没有在任何写入前重新读取/锁定 member 行。现有 revokeAndRemoveMember 通过另一把 LockSubscriberWrites 锁删除 member，设计没有说明二者的锁序或共享同步点。因此请求可在 pre-tx 通过后与移出并发，并在 member 删除提交后继续提交 chat_message、task 或附件绑定。影响：违反 FR-25 的请求时成员授权以及移出后的 FR-10/FR-11/FR-15/AC-28/AC-29，造成已移出成员仍能写入 shared 会话。修复方向：在 shared POST/PATCH 及其 task/附件写路径中，于事务内、首次写入前执行带行锁的成员资格复核，或与 revoke 使用同一同步锁并明确无死锁锁序；补充移出先提交/发送先锁竞态测试，确保失败事务不留下幂等、消息、task 或附件写入。"
 dimensions:
-  批准范围: "PASS：§9 存在且 scope_in、scope_out、zero_diff、follow_up 四字段齐全，空值与边界均明确。"
-  PRD到SDD对齐: "BLOCK：FR-1–FR-26 均有映射，但 FR-9/AC-10 的配置校验、FR-24 的附件指纹、FR-26/AC-31/32 的失效 Coordinator mention 三处与 PRD 契约冲突。"
-  架构合理性: "BLOCK：模块依赖方向与多数决策成立；M487 隐式非并发主键索引违反硬不变量，M483→M484 存在可令唯一索引重建失败的无约束窗口。"
-  数据模型完整性: "BLOCK：kind、作者、幂等、FK 生命周期主体完整，但幂等唯一键的建索引方式不合规，作者字段缺少端到端消费契约。"
-  接口契约: "BLOCK：主 endpoint 与错误矩阵大体闭合；无 Coordinator 配置验证、失效 Coordinator mention、作者字段响应/兼容契约和跨节点断连控制尚未闭合。"
-  多仓架构约束: "BLOCK：workspace inspect 三仓 healthy/clean，代码事实绑定 multica@be6426a7；但 §4.7 依赖未声明的 relay 控制能力，跨节点边界没有可实现契约。"
-  性能与安全: "BLOCK：成员/附件门禁与事务思路成立；索引替换窗口危及数据完整性，跨节点旧连接未被可靠退订会造成移除后继续泄漏事件。"
-  可测试性: "BLOCK：32 条 AC 均有表格落点，但 AC-8/10/19/21/26/29/31/32 受上述设计缺口影响不可按当前方案稳定验收，作者闭环也缺少前端兼容测试向量。"
-  Prompt采纳影响: "N/A：本 CR 不触及 crctl dispatch 或 controlled-shell protectedPaths.deny，tools 仓零实施改动。"
-  AC闭环与既有实现依赖: "BLOCK：§10 的 38 项声明已在 multica@be6426a7 按路径/稳定符号复核，修复后的 SHA 与资源 HEAD 一致；但 realtime relay 控制能力既不存在于基线也未进入显式依赖，且七项独立缺口使相关 AC/SDD-CLOSE 不可达。"
-suggestions: []
+  PRD↔SDD对齐: "block"
+  架构合理性: "block"
+  数据模型完整性: "block"
+  接口契约: "block"
+  多仓架构约束: "pass"
+  性能与安全: "block"
+  可测试性: "block"
+  Prompt采纳影响: "N/A（本 CR 不触及 crctl dispatch 或 protectedPaths.deny）"
+  批准范围: "pass（固定章节及四字段齐全）"
+  SDD-CLOSE与AC闭环: "block"
+suggestions:
+  - "归属节点：write-tech-design。已解决：[B-MIG-1] §2.6 已改为 487 建表不内联 PK、488 CONCURRENTLY 建唯一索引、489 USING INDEX 挂主键、490 建辅助索引，仲裁靶及 down 逆序已同步。"
+  - "归属节点：write-tech-design。已解决：[B-MIG-2] §2.3 已改为先建新名收窄唯一索引再删旧索引，双强制窗口、改名引用与 down 数据依赖已写明。"
+  - "归属节点：write-tech-design。已解决：[B-CONFIG-1] §4.4 已定义 L1/L2 provider/catalog authority 阶梯，§4.2 已固定入队前校验、事务边界及回滚零写入。"
+  - "归属节点：write-tech-design。已解决：[B-IDEMP-1] §4.6 已改为重复校验后按 UUID 规范串稳定排序再计算规范 JSON sha256，并补充顺序不变性验收向量。"
+  - "归属节点：write-tech-design。已解决：[B-REALTIME-1] §4.7 已定义 DisconnectWorkspaceUser、user scope 控制帧、各 relay 消费矩阵、提交后挂接、失败重试及双节点向量。"
+  - "归属节点：write-tech-design。已解决：[B-COORD-1] §4.3/§4.5 已同时携带 settings 配置 UUID 与 routable 状态，失效 Coordinator mention 分流为 unavailable 并保证零写入。"
+  - "归属节点：write-tech-design。已解决：[B-AUTHOR-1] §2.5/§3.3 已补齐响应、core schema、DiscussionPane 展示/回退及 NULL/malformed 三层消费测试契约。"
 review-loop:
-  current-attempt: 1
+  current-attempt: 2
 subject-file: change-requests/CR-2026-059/sdd.md
-subject-sha256: adc47db86316cc7883bc858c2c6e1c28554bcab80570ca144664b06e4fcf870c
+subject-sha256: d1c8b23e04b45ba01e55a4d8129d47738549fee0dca267b6baca6c04f81c719c
