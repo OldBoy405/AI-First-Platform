@@ -1,8 +1,8 @@
 ---
 cr: CR-2026-059
-pipeline-node: write-dev-plan（dev-plan attempt 1 BLOCK 回修完成，待独立 review-dev-plan 复评 attempt 2/3）
+pipeline-node: write-dev-plan（回修完成；attempt 2/3 独立复评被平台扣费失败挂起，待人工充值后重发）
 status: task-breakdown
-updated: 2026-09-04T17:55:00+08:00
+updated: 2026-09-04T18:05:00+08:00
 owner-agent: dev-agent
 ---
 
@@ -15,6 +15,7 @@ owner-agent: dev-agent
 - 架构期已闭环：sdd.md cycle 3 复评 PASS（canonical 落盘，attempt 3/3），人工 `approve --stage tech-design` 已于 2026-09-04 批准。
 - dev-plan 评审环 attempt 1/3 = **BLOCK（9 条 blocker B-DP-01..09，`review-annotations/dev-plan.yml` 已落盘并随 commit `6067ca8` 提交）**，已按 repair-target 回修完成：commit `88cd3ee`（plan.md + TASK-01..04 + _index.yml + cr.md status 重推 task-breakdown），checkpoint batch `2b831656f9c40467` 三仓 confirmed 并推送。
 - 下一步：独立 `quality-reviewer-agent` 执行 `review-dev-plan` 复评（attempt 2/3，逐条闭合 B-DP-01..09）。
+- ⚠ 2026-09-04 17:54+08 平台事件：attempt 2 复评委托任务 `01a06bd7-5dcc-7cd5-915b-c41c54c1a7bf` 在 provider 扣费预检阶段失败（`insufficient_user_quota`：余额 $0.387556 < 预扣 $0.586544），未执行即终败、无自动重试。review-loop dev-plan 仍 attempt 1/3，零落盘、零清理需求。**恢复入口：人工充值额度后，由 dev-agent 重新 @ `quality-reviewer-agent` 发起 attempt 2 复评（闭合清单不变，见下节）。**
 
 ## 本轮回修落点（attempt 1 → 2）
 
