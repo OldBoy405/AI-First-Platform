@@ -1,0 +1,9 @@
+$ go test ./cmd/server/ ./internal/handler/ ./internal/service/ ./internal/realtime/ -count=1
+(exit=0)
+--- stdout ---
+ok  	github.com/multica-ai/multica/server/cmd/server	0.187s
+ok  	github.com/multica-ai/multica/server/internal/handler	0.198s
+ok  	github.com/multica-ai/multica/server/internal/service	1.122s
+ok  	github.com/multica-ai/multica/server/internal/realtime	2.662s
+
+--- stderr ---

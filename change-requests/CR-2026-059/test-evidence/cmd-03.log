@@ -1,0 +1,681 @@
+$ go test ./internal/handler/ ./pkg/agent/ -count=1
+(exit=1)
+--- stdout ---
+ok  	github.com/multica-ai/multica/server/internal/handler	0.133s
+2026/09/05 05:38:51 WARN custom_args: blocked protocol-critical flag, skipping flag=--output-format
+2026/09/05 05:38:51 WARN custom_args: blocked protocol-critical flag, skipping flag=--permission-mode
+2026/09/05 05:38:51 WARN custom_args: blocked protocol-critical flag, skipping flag=--settings
+2026/09/05 05:38:51 WARN custom_args: blocked protocol-critical flag, skipping flag=--settings
+2026/09/05 05:38:51 WARN custom_args: blocked protocol-critical flag, skipping flag=--listen
+2026/09/05 05:38:51 WARN custom_args: blocked protocol-critical flag, skipping flag=--listen
+2026/09/05 05:38:51 INFO cursor-agent: routing through powershell -File to preserve argv tokens powershell=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe ps1=C:\Users\GOBAO\AppData\Local\Temp\multica-task-3508185087\TestCursorExecutePromptSurvivesPowerShellShimpowershell.exe1579613206\001\cursor-agent.ps1 original=C:\Users\GOBAO\AppData\Local\Temp\multica-task-3508185087\TestCursorExecutePromptSurvivesPowerShellShimpowershell.exe1579613206\001\cursor-agent.cmd
+2026/09/05 05:38:51 INFO agent command provider=cursor exec=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe args="[<redacted> <redacted> <redacted> <redacted> <redacted> -p --output-format <redacted> --yolo]" arg_count=9
+2026/09/05 05:38:51 INFO cursor-agent started pid=23224 cwd="" model=""
+2026/09/05 05:38:52 INFO agent stream protocol summary provider=cursor-agent cli_version="" model="" exit_code=1 event_count=1 invalid_event_count=0 assistant_event_count=0 tool_use_count=0 saw_result=true result_is_error=false result_bytes=2 last_assistant_bytes=0 scanner_error=false last_event_type=result unhandled_event_type_count=0 unhandled_event_types="" unhandled_subtype_count=0 unreadable_assistant_count=0 anthropic_base_url_configured=false
+2026/09/05 05:38:52 INFO cursor-agent finished pid=23224 status=completed duration=678ms
+--- FAIL: TestDimBackendUsesOwnedProcessTree (30.31s)
+    dim_windows_test.go:57: descendant pid never appeared at C:\Users\GOBAO\AppData\Local\Temp\multica-task-3508185087\TestDimBackendUsesOwnedProcessTree4251045138\001\descendant.pid
+--- FAIL: TestExplainExecErrorNamesPackageAndRepairCommand (0.00s)
+    exec_format_test.go:63: diagnosis is missing "cd 'C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestExplainExecErrorNamesPackageAndRepairCommand3520713109\\001\\claude-code' && node install.cjs":
+        fork/exec C:\Users\GOBAO\AppData\Local\Temp\multica-task-3508185087\TestExplainExecErrorNamesPackageAndRepairCommand3520713109\001\claude-code\bin\claude.exe: exec format error: C:\Users\GOBAO\AppData\Local\Temp\multica-task-3508185087\TestExplainExecErrorNamesPackageAndRepairCommand3520713109\001\claude-code\bin\claude.exe is not a runnable executable on windows/amd64. It is the bin entry of npm package @anthropic-ai/claude-code, so the usual cause is that its postinstall never ran (npm 12 allowScripts, pnpm 10 approve-builds, --ignore-scripts, --omit=optional all block it), leaving the package's placeholder stub in place. Run `Set-Location 'C:\Users\GOBAO\AppData\Local\Temp\multica-task-3508185087\TestExplainExecErrorNamesPackageAndRepairCommand3520713109\001\claude-code'; node install.cjs` to install the native binary, or reinstall the CLI with install scripts enabled, then retry
+--- FAIL: TestExplainExecErrorReadsRepairCommandFromManifest (0.00s)
+    exec_format_test.go:79: diagnosis is missing "cd 'C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestExplainExecErrorReadsRepairCommandFromManifest2182467453\\001\\claude-code' && node ./postinstall.mjs":
+        fork/exec C:\Users\GOBAO\AppData\Local\Temp\multica-task-3508185087\TestExplainExecErrorReadsRepairCommandFromManifest2182467453\001\claude-code\bin\claude.exe: exec format error: C:\Users\GOBAO\AppData\Local\Temp\multica-task-3508185087\TestExplainExecErrorReadsRepairCommandFromManifest2182467453\001\claude-code\bin\claude.exe is not a runnable executable on windows/amd64. It is the bin entry of npm package opencode-ai, so the usual cause is that its postinstall never ran (npm 12 allowScripts, pnpm 10 approve-builds, --ignore-scripts, --omit=optional all block it), leaving the package's placeholder stub in place. Run `Set-Location 'C:\Users\GOBAO\AppData\Local\Temp\multica-task-3508185087\TestExplainExecErrorReadsRepairCommandFromManifest2182467453\001\claude-code'; node ./postinstall.mjs` to install the native binary, or reinstall the CLI with install scripts enabled, then retry
+--- FAIL: TestExplainExecErrorQuotesPathsForTheShell (0.00s)
+    exec_format_test.go:141: repair command is not shell-safe, want "cd 'C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestExplainExecErrorQuotesPathsForTheShell1701084962\\001\\it'\\''s a dir' && node install.cjs" in:
+        fork/exec C:\Users\GOBAO\AppData\Local\Temp\multica-task-3508185087\TestExplainExecErrorQuotesPathsForTheShell1701084962\001\it's a dir\bin\cli: exec format error: C:\Users\GOBAO\AppData\Local\Temp\multica-task-3508185087\TestExplainExecErrorQuotesPathsForTheShell1701084962\001\it's a dir\bin\cli is not a runnable executable on windows/amd64. It is the bin entry of npm package pkg, so the usual cause is that its postinstall never ran (npm 12 allowScripts, pnpm 10 approve-builds, --ignore-scripts, --omit=optional all block it), leaving the package's placeholder stub in place. Run `Set-Location 'C:\Users\GOBAO\AppData\Local\Temp\multica-task-3508185087\TestExplainExecErrorQuotesPathsForTheShell1701084962\001\it''s a dir'; node install.cjs` to install the native binary, or reinstall the CLI with install scripts enabled, then retry
+--- FAIL: TestGrokNoUsableAuthMethodFailsBeforeSession (0.00s)
+    --- FAIL: TestGrokNoUsableAuthMethodFailsBeforeSession/none (0.00s)
+        grok_test.go:482: execute: grok executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestGrokNoUsableAuthMethodFailsBeforeSessionnone3532166681\\001\\grok": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestGrokNoUsableAuthMethodFailsBeforeSessionnone3532166681\\001\\grok": executable file not found in %PATH%
+    --- FAIL: TestGrokNoUsableAuthMethodFailsBeforeSession/unknown (0.00s)
+        grok_test.go:482: execute: grok executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestGrokNoUsableAuthMethodFailsBeforeSessionunknown2030780124\\001\\grok": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestGrokNoUsableAuthMethodFailsBeforeSessionunknown2030780124\\001\\grok": executable file not found in %PATH%
+    --- FAIL: TestGrokNoUsableAuthMethodFailsBeforeSession/api (0.00s)
+        grok_test.go:482: execute: grok executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestGrokNoUsableAuthMethodFailsBeforeSessionapi3341930276\\001\\grok": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestGrokNoUsableAuthMethodFailsBeforeSessionapi3341930276\\001\\grok": executable file not found in %PATH%
+--- FAIL: TestGrokUsesAdvertisedAPIKeyMethod (0.00s)
+    grok_test.go:523: execute: grok executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestGrokUsesAdvertisedAPIKeyMethod3386541538\\001\\grok": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestGrokUsesAdvertisedAPIKeyMethod3386541538\\001\\grok": executable file not found in %PATH%
+--- FAIL: TestGrokDrainsNotificationsAfterPromptResponse (0.00s)
+    grok_test.go:555: execute: grok executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestGrokDrainsNotificationsAfterPromptResponse2566917946\\001\\grok": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestGrokDrainsNotificationsAfterPromptResponse2566917946\\001\\grok": executable file not found in %PATH%
+--- FAIL: TestGrokPropagatesMCPAndUsage (0.00s)
+    grok_test.go:591: execute: grok executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestGrokPropagatesMCPAndUsage1741021546\\001\\grok": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestGrokPropagatesMCPAndUsage1741021546\\001\\grok": executable file not found in %PATH%
+--- FAIL: TestGrokTimeoutAndCancellation (0.00s)
+    --- FAIL: TestGrokTimeoutAndCancellation/timeout (0.00s)
+        grok_test.go:708: execute: grok executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestGrokTimeoutAndCancellationtimeout2260311758\\001\\grok": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestGrokTimeoutAndCancellationtimeout2260311758\\001\\grok": executable file not found in %PATH%
+    --- FAIL: TestGrokTimeoutAndCancellation/cancel (0.00s)
+        grok_test.go:708: execute: grok executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestGrokTimeoutAndCancellationcancel1577729222\\001\\grok": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestGrokTimeoutAndCancellationcancel1577729222\\001\\grok": executable file not found in %PATH%
+--- FAIL: TestDiscoverGrokModelsWaitsForAdvertisedAuth (0.00s)
+    grok_test.go:757: a successful ACP discovery must not be marked Fallback
+    grok_test.go:764: grok-4.6 thinking = &{SupportedLevels:[{Value:low Label:Low Description:} {Value:medium Label:Medium Description:} {Value:high Label:High Description:} {Value:xhigh Label:Extra high Description:}] DefaultLevel:}, want advertised catalog with high default
+--- FAIL: TestDiscoverGrokModelsStopsOnAuthFailures (0.00s)
+    --- FAIL: TestDiscoverGrokModelsStopsOnAuthFailures/no_methods (0.00s)
+        grok_test.go:820: read requests: open C:\Users\GOBAO\AppData\Local\Temp\multica-task-3508185087\TestDiscoverGrokModelsStopsOnAuthFailuresno_methods2071568703\001\requests.jsonl: The system cannot find the file specified.
+    --- FAIL: TestDiscoverGrokModelsStopsOnAuthFailures/authenticate_rejected (0.00s)
+        grok_test.go:820: read requests: open C:\Users\GOBAO\AppData\Local\Temp\multica-task-3508185087\TestDiscoverGrokModelsStopsOnAuthFailuresauthenticate_rejected3055899332\001\requests.jsonl: The system cannot find the file specified.
+2026/09/05 05:39:22 INFO pi: routing through powershell -Command to preserve stdin powershell=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe ps1=C:\Users\GOBAO\AppData\Local\Temp\multica-task-3508185087\TestPiExecutePromptSurvivesPowerShellShimpowershell.exe3671268127\001\pi.ps1 original=C:\Users\GOBAO\AppData\Local\Temp\multica-task-3508185087\TestPiExecutePromptSurvivesPowerShellShimpowershell.exe3671268127\001\pi.cmd
+2026/09/05 05:39:22 INFO agent command provider=pi exec=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe args="[<redacted> <redacted> <redacted> <redacted> <redacted> -p --mode <redacted> --session <redacted> --model <redacted>]" arg_count=12
+2026/09/05 05:39:22 INFO pi started pid=8596 cwd="" model=cpa/grok-4.5-high
+2026/09/05 05:39:23 INFO pi finished pid=8596 status=completed duration=674ms
+2026/09/05 05:39:23 INFO pi: routing through powershell -Command to preserve stdin powershell=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe ps1=C:\Users\GOBAO\AppData\Local\Temp\multica-task-3508185087\TestPiExecutePromptSurvivesPowerShellShimRPCDiscoveryBeforeStdin1671695168\001\pi.ps1 original=C:\Users\GOBAO\AppData\Local\Temp\multica-task-3508185087\TestPiExecutePromptSurvivesPowerShellShimRPCDiscoveryBeforeStdin1671695168\001\pi.cmd
+--- FAIL: TestQoderBackendDeliversFinalAnswerWithoutNarration (0.00s)
+    --- FAIL: TestQoderBackendDeliversFinalAnswerWithoutNarration/tool_use_emitted_at_start (0.00s)
+        qoder_test.go:454: execute: qodercli executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQoderBackendDeliversFinalAnswerWithoutNarrationtool_use_emi1997043937\\001\\qodercli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQoderBackendDeliversFinalAnswerWithoutNarrationtool_use_emi1997043937\\001\\qodercli": executable file not found in %PATH%
+    --- FAIL: TestQoderBackendDeliversFinalAnswerWithoutNarration/tool_use_deferred_until_completion (0.00s)
+        qoder_test.go:454: execute: qodercli executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQoderBackendDeliversFinalAnswerWithoutNarrationtool_use_def3626620309\\001\\qodercli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQoderBackendDeliversFinalAnswerWithoutNarrationtool_use_def3626620309\\001\\qodercli": executable file not found in %PATH%
+--- FAIL: TestQoderBackendDoesNotWaitForeverForReaderAfterPromptDone (0.00s)
+    qoder_test.go:620: execute: qodercli executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQoderBackendDoesNotWaitForeverForReaderAfterPromptDone3526795919\\001\\qodercli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQoderBackendDoesNotWaitForeverForReaderAfterPromptDone3526795919\\001\\qodercli": executable file not found in %PATH%
+--- FAIL: TestQoderBackendIgnoresLateReaderOutputAfterGrace (0.00s)
+    qoder_test.go:674: execute: qodercli executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQoderBackendIgnoresLateReaderOutputAfterGrace2322523714\\001\\qodercli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQoderBackendIgnoresLateReaderOutputAfterGrace2322523714\\001\\qodercli": executable file not found in %PATH%
+2026/09/05 05:39:28 INFO qwen: routing through powershell -File to preserve argv tokens powershell=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe ps1=C:\Users\GOBAO\AppData\Local\Temp\multica-task-3508185087\TestQwenExecutePromptSurvivesPowerShellShimpowershell.exe1448814927\001\qwen.ps1 original=C:\Users\GOBAO\AppData\Local\Temp\multica-task-3508185087\TestQwenExecutePromptSurvivesPowerShellShimpowershell.exe1448814927\001\qwen.cmd
+2026/09/05 05:39:28 INFO agent command provider=qwen exec=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe args="[<redacted> <redacted> <redacted> <redacted> <redacted> --output-format <redacted> --model <redacted> --yolo]" arg_count=10
+2026/09/05 05:39:28 INFO qwen started pid=23536 cwd="" model=qwen-test
+2026/09/05 05:39:28 INFO agent stream protocol summary provider=qwen cli_version="" model=qwen-test exit_code=0 event_count=2 invalid_event_count=0 assistant_event_count=0 tool_use_count=0 saw_result=true result_is_error=false result_bytes=4 last_assistant_bytes=0 scanner_error=false last_event_type=result unhandled_event_type_count=0 unhandled_event_types="" unhandled_subtype_count=0 unreadable_assistant_count=0 anthropic_base_url_configured=false
+2026/09/05 05:39:28 INFO qwen finished pid=23536 status=completed duration=663ms
+2026/09/05 05:39:28 WARN custom_args: blocked protocol-critical flag, skipping flag=--model
+2026/09/05 05:39:28 WARN custom_args: blocked protocol-critical flag, skipping flag=--system-prompt
+2026/09/05 05:39:28 WARN custom_args: blocked protocol-critical flag, skipping flag=--session-id
+2026/09/05 05:39:28 WARN custom_args: blocked protocol-critical flag, skipping flag=--message
+2026/09/05 05:39:28 WARN custom runtime fixed_args: blocked protocol-critical flag, skipping flag=--permission-mode
+2026/09/05 05:39:28 WARN custom runtime fixed_args: blocked protocol-critical flag, skipping flag=--output-format
+2026/09/05 05:39:28 WARN openclaw error event error="model not found: gpt-99"
+2026/09/05 05:39:28 WARN custom_args: blocked managed Codex config override namespace=shell_environment_policy flag=-c key=shell_environment_policy.inherit
+2026/09/05 05:39:28 WARN custom_args: blocked managed Codex config override namespace=mcp_servers flag=-c key=mcp_servers.evil.command
+2026/09/05 05:39:28 WARN custom runtime fixed_args: blocked protocol-critical flag, skipping flag=-p
+--- FAIL: TestQoderBackendClearsSessionIDWhenResumedSessionNotFoundAtSetModel (0.01s)
+    qoder_test.go:978: execute: qodercli executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQoderBackendClearsSessionIDWhenResumedSessionNotFoundAtSetMo1986897621\\001\\qodercli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQoderBackendClearsSessionIDWhenResumedSessionNotFoundAtSetMo1986897621\\001\\qodercli": executable file not found in %PATH%
+--- FAIL: TestQoderBackendHappyPath (0.01s)
+    qoder_test.go:404: execute: qodercli executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQoderBackendHappyPath2220097392\\001\\qodercli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQoderBackendHappyPath2220097392\\001\\qodercli": executable file not found in %PATH%
+2026/09/05 05:39:28 INFO agent command provider=opencode exec=C:\Users\GOBAO\AppData\Local\Temp\multica-task-3508185087\TestOpencodeExecuteOversizedPromptStartsOnWindows2198364280\001\opencode.exe args="[run --format <redacted> --dangerously-skip-permissions --model <redacted>]" arg_count=6 prompt_bytes=45028
+--- FAIL: TestKiroDrainsNotificationsAfterPromptResponse (0.01s)
+    kiro_test.go:1308: execute: kiro executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroDrainsNotificationsAfterPromptResponse3165156307\\001\\kiro-cli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroDrainsNotificationsAfterPromptResponse3165156307\\001\\kiro-cli": executable file not found in %PATH%
+--- FAIL: TestQoderDrainsNotificationsAfterPromptResponse (0.01s)
+    qoder_test.go:1027: execute: qodercli executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQoderDrainsNotificationsAfterPromptResponse1935682334\\001\\qoder": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQoderDrainsNotificationsAfterPromptResponse1935682334\\001\\qoder": executable file not found in %PATH%
+--- FAIL: TestKiroFreshOversizedHistoryImageDoesNotSignalResumeRejected (0.01s)
+    kiro_test.go:1272: execute: kiro executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroFreshOversizedHistoryImageDoesNotSignalResumeRejected3839198079\\001\\kiro-cli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroFreshOversizedHistoryImageDoesNotSignalResumeRejected3839198079\\001\\kiro-cli": executable file not found in %PATH%
+--- FAIL: TestKiroResumedOversizedHistoryImageSignalsResumeRejected (0.01s)
+    kiro_test.go:1247: execute: kiro executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroResumedOversizedHistoryImageSignalsResumeRejected2292126636\\001\\kiro-cli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroResumedOversizedHistoryImageSignalsResumeRejected2292126636\\001\\kiro-cli": executable file not found in %PATH%
+--- FAIL: TestKiroBackendInvokesACPWithTrustAllTools (0.01s)
+    kiro_test.go:935: execute: kiro executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroBackendInvokesACPWithTrustAllTools2471111505\\001\\kiro-cli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroBackendInvokesACPWithTrustAllTools2471111505\\001\\kiro-cli": executable file not found in %PATH%
+--- FAIL: TestKiroBackendClearsSessionIDWhenSetModelSessionNotFound (0.01s)
+    kiro_test.go:809: execute: kiro executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroBackendClearsSessionIDWhenSetModelSessionNotFound2231520319\\001\\kiro-cli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroBackendClearsSessionIDWhenSetModelSessionNotFound2231520319\\001\\kiro-cli": executable file not found in %PATH%
+--- FAIL: TestKiroBackendClearsSessionIDWhenPromptSessionNotFound (0.01s)
+    kiro_test.go:886: execute: kiro executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroBackendClearsSessionIDWhenPromptSessionNotFound1093667589\\001\\kiro-cli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroBackendClearsSessionIDWhenPromptSessionNotFound1093667589\\001\\kiro-cli": executable file not found in %PATH%
+--- FAIL: TestKiroBackendCompletedRetryAfterEarlierFailureIsCompleted (0.01s)
+    kiro_test.go:711: execute: kiro executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroBackendCompletedRetryAfterEarlierFailureIsCompleted2730849341\\001\\kiro-cli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroBackendCompletedRetryAfterEarlierFailureIsCompleted2730849341\\001\\kiro-cli": executable file not found in %PATH%
+--- FAIL: TestKiroLoadIncludesMcpServersFromConfig (0.01s)
+    kiro_test.go:1088: execute: kiro executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroLoadIncludesMcpServersFromConfig1226983405\\002\\kiro-cli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroLoadIncludesMcpServersFromConfig1226983405\\002\\kiro-cli": executable file not found in %PATH%
+--- FAIL: TestKiroBackendDoesNotCompleteAfterFailedCommentAddResult (0.01s)
+    kiro_test.go:750: execute: kiro executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroBackendDoesNotCompleteAfterFailedCommentAddResult1712769479\\001\\kiro-cli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroBackendDoesNotCompleteAfterFailedCommentAddResult1712769479\\001\\kiro-cli": executable file not found in %PATH%
+--- FAIL: TestKiroBackendUsesSessionLoadForResume (0.01s)
+    kiro_test.go:994: execute: kiro executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroBackendUsesSessionLoadForResume3294121005\\001\\kiro-cli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroBackendUsesSessionLoadForResume3294121005\\001\\kiro-cli": executable file not found in %PATH%
+--- FAIL: TestKiroBackendFailedFinalCommentOverridesEarlierSuccess (0.01s)
+    kiro_test.go:696: execute: kiro executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroBackendFailedFinalCommentOverridesEarlierSuccess2320468027\\001\\kiro-cli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroBackendFailedFinalCommentOverridesEarlierSuccess2320468027\\001\\kiro-cli": executable file not found in %PATH%
+--- FAIL: TestKiroBackendPreservesCompletionOnRealGPT56SolFrames (0.01s)
+    kiro_test.go:651: execute: kiro executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroBackendPreservesCompletionOnRealGPT56SolFrames2245974231\\001\\kiro-cli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroBackendPreservesCompletionOnRealGPT56SolFrames2245974231\\001\\kiro-cli": executable file not found in %PATH%
+--- FAIL: TestKiroBackendTreatsCompletedCommentAddWithNonTerminalTitleAsCompleted (0.01s)
+    kiro_test.go:594: execute: kiro executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroBackendTreatsCompletedCommentAddWithNonTerminalTitleAsCo2674775692\\001\\kiro-cli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroBackendTreatsCompletedCommentAddWithNonTerminalTitleAsCo2674775692\\001\\kiro-cli": executable file not found in %PATH%
+--- FAIL: TestKiroBackendDoesNotCompleteRunningGoalCompleteWithoutResult (0.01s)
+    kiro_test.go:551: execute: kiro executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroBackendDoesNotCompleteRunningGoalCompleteWithoutResult1634037433\\001\\kiro-cli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroBackendDoesNotCompleteRunningGoalCompleteWithoutResult1634037433\\001\\kiro-cli": executable file not found in %PATH%
+--- FAIL: TestKiroBackendDoesNotCompleteRunningCommentAddWithoutResult (0.01s)
+    kiro_test.go:534: execute: kiro executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroBackendDoesNotCompleteRunningCommentAddWithoutResult2546397623\\001\\kiro-cli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroBackendDoesNotCompleteRunningCommentAddWithoutResult2546397623\\001\\kiro-cli": executable file not found in %PATH%
+--- FAIL: TestZeroclawSessionResumeTransientError (0.01s)
+    zeroclaw_test.go:850: Execute error: zeroclaw executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestZeroclawSessionResumeTransientError318647913\\001\\zeroclaw": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestZeroclawSessionResumeTransientError318647913\\001\\zeroclaw": executable file not found in %PATH%
+--- FAIL: TestClaudeBackendLaunchesWrapperSubcommandFirst (0.01s)
+    launch_test.go:750: Execute: claude executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestClaudeBackendLaunchesWrapperSubcommandFirst4181481129\\001\\ccms": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestClaudeBackendLaunchesWrapperSubcommandFirst4181481129\\001\\ccms": executable file not found in %PATH%
+--- FAIL: TestZeroclawSessionNewMissingAliasErrorIsActionable (0.01s)
+    zeroclaw_test.go:736: Execute error: zeroclaw executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestZeroclawSessionNewMissingAliasErrorIsActionable303856439\\001\\zeroclaw": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestZeroclawSessionNewMissingAliasErrorIsActionable303856439\\001\\zeroclaw": executable file not found in %PATH%
+--- FAIL: TestZeroclawTimeout (0.01s)
+    zeroclaw_test.go:794: Execute error: zeroclaw executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestZeroclawTimeout2697368405\\001\\zeroclaw": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestZeroclawTimeout2697368405\\001\\zeroclaw": executable file not found in %PATH%
+--- FAIL: TestMcodeLoadSessionWhenCapabilityAppears (0.01s)
+    mcode_test.go:286: Execute: mcode executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestMcodeLoadSessionWhenCapabilityAppears1657292648\\001\\mcode": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestMcodeLoadSessionWhenCapabilityAppears1657292648\\001\\mcode": executable file not found in %PATH%
+--- FAIL: TestZeroclawSessionNewOmitsAgentAliasWhenUnset (0.01s)
+    zeroclaw_test.go:628: Execute error: zeroclaw executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestZeroclawSessionNewOmitsAgentAliasWhenUnset1360689008\\001\\zeroclaw": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestZeroclawSessionNewOmitsAgentAliasWhenUnset1360689008\\001\\zeroclaw": executable file not found in %PATH%
+--- FAIL: TestZeroclawDoesNotForwardMcpServers (0.01s)
+    zeroclaw_test.go:571: Execute error: zeroclaw executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestZeroclawDoesNotForwardMcpServers1412716833\\001\\zeroclaw": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestZeroclawDoesNotForwardMcpServers1412716833\\001\\zeroclaw": executable file not found in %PATH%
+--- FAIL: TestMcodeUnsupportedResumeRequestsFreshRetry (0.01s)
+    mcode_test.go:253: Execute: mcode executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestMcodeUnsupportedResumeRequestsFreshRetry1773713057\\001\\mcode": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestMcodeUnsupportedResumeRequestsFreshRetry1773713057\\001\\mcode": executable file not found in %PATH%
+--- FAIL: TestZeroclawDoesNotAttemptModelSelection (0.01s)
+    zeroclaw_test.go:528: Execute error: zeroclaw executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestZeroclawDoesNotAttemptModelSelection1499656584\\001\\zeroclaw": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestZeroclawDoesNotAttemptModelSelection1499656584\\001\\zeroclaw": executable file not found in %PATH%
+2026/09/05 05:39:29 WARN openclaw error event error="rate limit exceeded"
+2026/09/05 05:39:29 WARN codex: ignored lower-priority feature disable feature=fast_mode
+2026/09/05 05:39:29 WARN openclaw error event error="model gpt-99 not available"
+2026/09/05 05:39:29 WARN openclaw error event error=AuthenticationError
+--- FAIL: TestMcodeSessionNewExitAfterInitializeReportsStartupFailure (0.01s)
+    mcode_test.go:225: Execute: mcode executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestMcodeSessionNewExitAfterInitializeReportsStartupFailure2944127304\\001\\mcode": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestMcodeSessionNewExitAfterInitializeReportsStartupFailure2944127304\\001\\mcode": executable file not found in %PATH%
+--- FAIL: TestMcodeWaitsForSessionNewReadinessAfterInitialize (0.01s)
+    mcode_test.go:199: Execute: mcode executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestMcodeWaitsForSessionNewReadinessAfterInitialize2133297656\\001\\mcode": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestMcodeWaitsForSessionNewReadinessAfterInitialize2133297656\\001\\mcode": executable file not found in %PATH%
+--- FAIL: TestZeroclawLegacyChoiceReturnsProtocolErrorThroughClient (0.01s)
+    zeroclaw_test.go:456: Execute error: zeroclaw executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestZeroclawLegacyChoiceReturnsProtocolErrorThroughClient989112490\\001\\zeroclaw": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestZeroclawLegacyChoiceReturnsProtocolErrorThroughClient989112490\\001\\zeroclaw": executable file not found in %PATH%
+--- FAIL: TestZeroclawResumeNotFound (0.01s)
+    zeroclaw_test.go:363: Execute error: zeroclaw executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestZeroclawResumeNotFound388508574\\001\\zeroclaw": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestZeroclawResumeNotFound388508574\\001\\zeroclaw": executable file not found in %PATH%
+--- FAIL: TestMcodeFreshSessionUsesACPAndForwardsMCP (0.01s)
+    mcode_test.go:152: Execute: mcode executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestMcodeFreshSessionUsesACPAndForwardsMCP3289131998\\001\\mcode": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestMcodeFreshSessionUsesACPAndForwardsMCP3289131998\\001\\mcode": executable file not found in %PATH%
+--- FAIL: TestZeroclawResumeDropsReplayedHistory (0.01s)
+    zeroclaw_test.go:313: Execute error: zeroclaw executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestZeroclawResumeDropsReplayedHistory2314790497\\001\\zeroclaw": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestZeroclawResumeDropsReplayedHistory2314790497\\001\\zeroclaw": executable file not found in %PATH%
+--- FAIL: TestEnsureCodexMcpConfigWritesManagedBlock (0.01s)
+    codex_test.go:4588: expected mode 0o600 for secret-bearing config, got 666
+2026/09/05 05:39:29 WARN custom runtime fixed_args: blocked protocol-critical flag, skipping flag=--output-format
+2026/09/05 05:39:29 WARN custom_args: blocked protocol-critical flag, skipping flag=--effort
+2026/09/05 05:39:29 WARN custom runtime fixed_args: blocked protocol-critical flag, skipping flag=-p
+2026/09/05 05:39:29 WARN custom runtime fixed_args: blocked protocol-critical flag, skipping flag=--output-format
+--- FAIL: TestTraecliUsesSessionLoadForResume (0.01s)
+    traecli_test.go:272: execute: traecli executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestTraecliUsesSessionLoadForResume3297049500\\001\\traecli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestTraecliUsesSessionLoadForResume3297049500\\001\\traecli": executable file not found in %PATH%
+--- FAIL: TestZeroclawSessionNew (0.01s)
+    zeroclaw_test.go:117: Execute error: zeroclaw executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestZeroclawSessionNew454073212\\001\\zeroclaw": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestZeroclawSessionNew454073212\\001\\zeroclaw": executable file not found in %PATH%
+--- FAIL: TestTraecliDrainsNotificationsAfterPromptResponse (0.01s)
+    traecli_test.go:321: execute: traecli executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestTraecliDrainsNotificationsAfterPromptResponse2975692281\\001\\trae": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestTraecliDrainsNotificationsAfterPromptResponse2975692281\\001\\trae": executable file not found in %PATH%
+--- FAIL: TestZeroclawPromptModelMetadataControlsUsageAttribution (0.01s)
+    zeroclaw_test.go:158: Execute error: zeroclaw executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestZeroclawPromptModelMetadataControlsUsageAttribution510389473\\001\\zeroclaw": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestZeroclawPromptModelMetadataControlsUsageAttribution510389473\\001\\zeroclaw": executable file not found in %PATH%
+--- FAIL: TestTraecliBackendStreamsAndCompletes (0.01s)
+    traecli_test.go:96: execute: traecli executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestTraecliBackendStreamsAndCompletes1538761995\\001\\traecli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestTraecliBackendStreamsAndCompletes1538761995\\001\\traecli": executable file not found in %PATH%
+--- FAIL: TestZeroclawResumeCapabilityUnavailableReportsRejection (0.01s)
+    zeroclaw_test.go:273: Execute error: zeroclaw executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestZeroclawResumeCapabilityUnavailableReportsRejection657599733\\001\\zeroclaw": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestZeroclawResumeCapabilityUnavailableReportsRejection657599733\\001\\zeroclaw": executable file not found in %PATH%
+--- FAIL: TestZeroclawResumeUsesSessionResume (0.01s)
+    zeroclaw_test.go:201: Execute error: zeroclaw executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestZeroclawResumeUsesSessionResume3996221699\\001\\zeroclaw": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestZeroclawResumeUsesSessionResume3996221699\\001\\zeroclaw": executable file not found in %PATH%
+--- FAIL: TestTraecliSetModelFailureFailsTask (0.01s)
+    traecli_test.go:231: execute: traecli executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestTraecliSetModelFailureFailsTask3029384499\\001\\traecli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestTraecliSetModelFailureFailsTask3029384499\\001\\traecli": executable file not found in %PATH%
+2026/09/05 05:39:29 WARN custom_args: blocked managed Codex config override namespace=mcp_servers flag=-c key=mcp_servers.fetch
+2026/09/05 05:39:29 WARN custom runtime fixed_args: blocked protocol-critical flag, skipping flag=--help
+2026/09/05 05:39:29 WARN openclaw lifecycle failure phase=failed error="timeout exceeded"
+2026/09/05 05:39:29 WARN openclaw lifecycle failure phase=error error="agent crashed unexpectedly"
+2026/09/05 05:39:29 WARN openclaw lifecycle failure phase=cancelled error="unknown openclaw error"
+2026/09/05 05:39:29 WARN custom runtime fixed_args: blocked protocol-critical flag, skipping flag=--login
+2026/09/05 05:39:29 WARN custom runtime fixed_args: blocked protocol-critical flag, skipping flag=--auth
+2026/09/05 05:39:29 WARN custom runtime fixed_args: blocked protocol-critical flag, skipping flag=-h
+--- FAIL: TestTraecliBlockedArgsFiltering (0.01s)
+    traecli_test.go:165: execute: traecli executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestTraecliBlockedArgsFiltering2106313004\\001\\traecli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestTraecliBlockedArgsFiltering2106313004\\001\\traecli": executable file not found in %PATH%
+--- FAIL: TestKimiBackendDropsHistoryReplayOnResume (0.01s)
+    kimi_test.go:789: execute: kimi executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKimiBackendDropsHistoryReplayOnResume2802392389\\001\\kimi": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKimiBackendDropsHistoryReplayOnResume2802392389\\001\\kimi": executable file not found in %PATH%
+--- FAIL: TestKimiDrainsNotificationsAfterPromptResponse (0.01s)
+    kimi_test.go:721: execute: kimi executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKimiDrainsNotificationsAfterPromptResponse985728327\\001\\kimi": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKimiDrainsNotificationsAfterPromptResponse985728327\\001\\kimi": executable file not found in %PATH%
+2026/09/05 05:39:29 WARN custom_args: blocked managed Codex config override namespace=features.fast_mode flag=-c key=features.fast_mode
+2026/09/05 05:39:29 WARN custom_args: blocked managed Codex config override namespace=features.fast_mode flag=--config key=features.fast_mode
+2026/09/05 05:39:29 WARN codex: ignored lower-priority feature disable feature=fast_mode
+2026/09/05 05:39:29 WARN codex: ignored lower-priority feature disable feature=fast_mode
+--- FAIL: TestKimiBackendInvokesACPSubcommand (0.01s)
+    kimi_test.go:567: execute: kimi executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKimiBackendInvokesACPSubcommand4259470510\\001\\kimi": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKimiBackendInvokesACPSubcommand4259470510\\001\\kimi": executable file not found in %PATH%
+--- FAIL: TestKimiBackendClearsSessionIDWhenSetModelSessionNotFound (0.01s)
+    kimi_test.go:506: execute: kimi executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKimiBackendClearsSessionIDWhenSetModelSessionNotFound1980003376\\001\\kimi": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKimiBackendClearsSessionIDWhenSetModelSessionNotFound1980003376\\001\\kimi": executable file not found in %PATH%
+--- FAIL: TestKimiFreshSessionIncludesMcpServers (0.01s)
+    kimi_test.go:664: execute: kimi executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKimiFreshSessionIncludesMcpServers637152531\\002\\kimi": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKimiFreshSessionIncludesMcpServers637152531\\002\\kimi": executable file not found in %PATH%
+--- FAIL: TestValidateServiceTierCodexPerModelCatalog (0.01s)
+    thinking_test.go:999: ValidateServiceTier("codex", "gpt-5.6-sol", Command{Path: "priority"}) = false, want true
+--- FAIL: TestKimiBackendOmitsThinkingConfigOnResumedSessionWhenUnset (0.01s)
+    kimi_test.go:408: execute: kimi executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKimiBackendOmitsThinkingConfigOnResumedSessionWhenUnset2510983561\\002\\kimi": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKimiBackendOmitsThinkingConfigOnResumedSessionWhenUnset2510983561\\002\\kimi": executable file not found in %PATH%
+--- FAIL: TestKimiBackendSetsThinkingLevelOnResumedSession (0.01s)
+    kimi_test.go:382: execute: kimi executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKimiBackendSetsThinkingLevelOnResumedSession507315115\\002\\kimi": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKimiBackendSetsThinkingLevelOnResumedSession507315115\\002\\kimi": executable file not found in %PATH%
+--- FAIL: TestKimiBackendOmitsThinkingConfigWhenUnset (0.01s)
+    kimi_test.go:336: execute: kimi executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKimiBackendOmitsThinkingConfigWhenUnset2324210050\\002\\kimi": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKimiBackendOmitsThinkingConfigWhenUnset2324210050\\002\\kimi": executable file not found in %PATH%
+--- FAIL: TestKimiResumeIncludesMcpServers (0.01s)
+    kimi_test.go:617: execute: kimi executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKimiResumeIncludesMcpServers115798642\\002\\kimi": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKimiResumeIncludesMcpServers115798642\\002\\kimi": executable file not found in %PATH%
+--- FAIL: TestHermesCustomProfileDropsRemoteMcpWhenCapabilityOmitted (0.01s)
+    hermes_test.go:3531: execute: hermes executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHermesCustomProfileDropsRemoteMcpWhenCapabilityOmitted3171363862\\002\\jcode": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHermesCustomProfileDropsRemoteMcpWhenCapabilityOmitted3171363862\\002\\jcode": executable file not found in %PATH%
+--- FAIL: TestKimiBackendThinkingFailureWarnsAndContinues (0.01s)
+    kimi_test.go:276: execute: kimi executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKimiBackendThinkingFailureWarnsAndContinues658288601\\002\\kimi": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKimiBackendThinkingFailureWarnsAndContinues658288601\\002\\kimi": executable file not found in %PATH%
+--- FAIL: TestHermesBackendKeepsSessionOnRefusalAfterActivity (0.01s)
+    hermes_test.go:3934: execute: hermes executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHermesBackendKeepsSessionOnRefusalAfterActivity3103605837\\001\\hermes": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHermesBackendKeepsSessionOnRefusalAfterActivity3103605837\\001\\hermes": executable file not found in %PATH%
+--- FAIL: TestHermesBackendIgnoresRefusalOnFreshSession (0.01s)
+    hermes_test.go:3979: execute: hermes executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHermesBackendIgnoresRefusalOnFreshSession2642849254\\001\\hermes": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHermesBackendIgnoresRefusalOnFreshSession2642849254\\001\\hermes": executable file not found in %PATH%
+--- FAIL: TestHermesBackendKeepsSessionOnRefusalWithLateActivity (0.01s)
+    hermes_test.go:3957: execute: hermes executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHermesBackendKeepsSessionOnRefusalWithLateActivity1989586543\\001\\hermes": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHermesBackendKeepsSessionOnRefusalWithLateActivity1989586543\\001\\hermes": executable file not found in %PATH%
+--- FAIL: TestHermesForwardsRemoteMcpUnderOmittedCapabilitiesException (0.01s)
+    hermes_test.go:3478: execute: hermes executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHermesForwardsRemoteMcpUnderOmittedCapabilitiesException2170045921\\002\\hermes": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHermesForwardsRemoteMcpUnderOmittedCapabilitiesException2170045921\\002\\hermes": executable file not found in %PATH%
+--- FAIL: TestKimiBackendSetsThinkingLevelBeforePrompt (0.01s)
+    kimi_test.go:235: execute: kimi executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKimiBackendSetsThinkingLevelBeforePrompt2502069971\\002\\kimi": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKimiBackendSetsThinkingLevelBeforePrompt2502069971\\002\\kimi": executable file not found in %PATH%
+--- FAIL: TestHermesBackendKeepsProviderErrorOnRefusedResume (0.01s)
+    hermes_test.go:3908: execute: hermes executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHermesBackendKeepsProviderErrorOnRefusedResume466081996\\001\\hermes": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHermesBackendKeepsProviderErrorOnRefusedResume466081996\\001\\hermes": executable file not found in %PATH%
+--- FAIL: TestHermesKeepsRemoteMcpWhenCapabilityAdvertised (0.01s)
+    hermes_test.go:3636: execute: hermes executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHermesKeepsRemoteMcpWhenCapabilityAdvertised3295252768\\002\\hermes": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHermesKeepsRemoteMcpWhenCapabilityAdvertised3295252768\\002\\hermes": executable file not found in %PATH%
+--- FAIL: TestHermesBackendRecoversFromRefusedResume (0.01s)
+    hermes_test.go:3885: execute: hermes executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHermesBackendRecoversFromRefusedResume1791537444\\001\\hermes": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHermesBackendRecoversFromRefusedResume1791537444\\001\\hermes": executable file not found in %PATH%
+2026/09/05 05:39:29 WARN custom runtime fixed_args: blocked protocol-critical flag, skipping flag=--help
+2026/09/05 05:39:29 WARN custom runtime fixed_args: blocked protocol-critical flag, skipping flag=--auth-setup
+2026/09/05 05:39:29 WARN custom runtime fixed_args: blocked protocol-critical flag, skipping flag=--remote
+2026/09/05 05:39:29 WARN custom runtime fixed_args: blocked protocol-critical flag, skipping flag=-h
+--- FAIL: TestKimiBackendSetModelFailureFailsTask (0.01s)
+    kimi_test.go:125: execute: kimi executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKimiBackendSetModelFailureFailsTask3140074454\\001\\kimi": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKimiBackendSetModelFailureFailsTask3140074454\\001\\kimi": executable file not found in %PATH%
+--- FAIL: TestHermesDropsRemoteMcpWhenCapabilityExplicitlyDeclined (0.01s)
+    hermes_test.go:3584: execute: hermes executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHermesDropsRemoteMcpWhenCapabilityExplicitlyDeclined401839559\\002\\hermes": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHermesDropsRemoteMcpWhenCapabilityExplicitlyDeclined401839559\\002\\hermes": executable file not found in %PATH%
+--- FAIL: TestHermesBackendClearsSessionIDWhenSetModelSessionNotFound (0.01s)
+    hermes_test.go:2691: execute: hermes executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHermesBackendClearsSessionIDWhenSetModelSessionNotFound259900480\\001\\hermes": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHermesBackendClearsSessionIDWhenSetModelSessionNotFound259900480\\001\\hermes": executable file not found in %PATH%
+--- FAIL: TestHermesBackendDoesNotPromoteOnTransientRetry (0.01s)
+    hermes_test.go:2773: execute: hermes executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHermesBackendDoesNotPromoteOnTransientRetry3402683792\\001\\hermes": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHermesBackendDoesNotPromoteOnTransientRetry3402683792\\001\\hermes": executable file not found in %PATH%
+--- FAIL: TestHermesResumeIncludesMcpServers (0.01s)
+    hermes_test.go:3418: execute: hermes executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHermesResumeIncludesMcpServers1870328221\\002\\hermes": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHermesResumeIncludesMcpServers1870328221\\002\\hermes": executable file not found in %PATH%
+--- FAIL: TestHermesSendsSetModelWhenModelDiffersFromCurrent (0.01s)
+    hermes_test.go:3369: execute: hermes executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHermesSendsSetModelWhenModelDiffersFromCurrent1334672219\\002\\hermes": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHermesSendsSetModelWhenModelDiffersFromCurrent1334672219\\002\\hermes": executable file not found in %PATH%
+--- FAIL: TestHermesSetModelPreservesCustomModelIDWithColon (0.01s)
+    hermes_test.go:3275: execute: hermes executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHermesSetModelPreservesCustomModelIDWithColon1715014414\\002\\hermes": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHermesSetModelPreservesCustomModelIDWithColon1715014414\\002\\hermes": executable file not found in %PATH%
+--- FAIL: TestHermesSkipsRedundantSetModelWhenAlreadyCurrent (0.01s)
+    hermes_test.go:3329: execute: hermes executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHermesSkipsRedundantSetModelWhenAlreadyCurrent2041914790\\002\\hermes": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHermesSkipsRedundantSetModelWhenAlreadyCurrent2041914790\\002\\hermes": executable file not found in %PATH%
+--- FAIL: TestHermesExecuteFailsClosedOnMalformedMcpConfig (0.01s)
+    hermes_test.go:3138: expected error to mention mcp_config, got "hermes executable not found at \"C:\\\\Users\\\\GOBAO\\\\AppData\\\\Local\\\\Temp\\\\multica-task-3508185087\\\\TestHermesExecuteFailsClosedOnMalformedMcpConfig1372699934\\\\001\\\\hermes\": exec: \"C:\\\\Users\\\\GOBAO\\\\AppData\\\\Local\\\\Temp\\\\multica-task-3508185087\\\\TestHermesExecuteFailsClosedOnMalformedMcpConfig1372699934\\\\001\\\\hermes\": executable file not found in %PATH%"
+--- FAIL: TestKiroBackendTreatsCommentAddCloseErrorAsCompleted (0.01s)
+    kiro_test.go:360: execute: kiro executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroBackendTreatsCommentAddCloseErrorAsCompleted3108708600\\001\\kiro-cli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroBackendTreatsCommentAddCloseErrorAsCompleted3108708600\\001\\kiro-cli": executable file not found in %PATH%
+--- FAIL: TestHermesBackendClearsSessionIDWhenResumedSessionNotFound (0.01s)
+    hermes_test.go:2613: execute: hermes executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHermesBackendClearsSessionIDWhenResumedSessionNotFound3136033348\\001\\hermes": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHermesBackendClearsSessionIDWhenResumedSessionNotFound3136033348\\001\\hermes": executable file not found in %PATH%
+--- FAIL: TestHermesBackendPromotesProviderErrorWithNonEmptyOutput (0.01s)
+    hermes_test.go:2461: execute: hermes executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHermesBackendPromotesProviderErrorWithNonEmptyOutput3927372197\\001\\hermes": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHermesBackendPromotesProviderErrorWithNonEmptyOutput3927372197\\001\\hermes": executable file not found in %PATH%
+--- FAIL: TestKiroBackendDoesNotCompleteAfterFailedGoalComplete (0.01s)
+    kiro_test.go:294: execute: kiro executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroBackendDoesNotCompleteAfterFailedGoalComplete2981921561\\001\\kiro-cli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroBackendDoesNotCompleteAfterFailedGoalComplete2981921561\\001\\kiro-cli": executable file not found in %PATH%
+--- FAIL: TestHermesBackendAttributesUsageToACPDefaultModel (0.01s)
+    hermes_test.go:2283: execute: hermes executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHermesBackendAttributesUsageToACPDefaultModel2222886522\\001\\hermes": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHermesBackendAttributesUsageToACPDefaultModel2222886522\\001\\hermes": executable file not found in %PATH%
+--- FAIL: TestHermesBackendMergesLateCumulativeUsageAfterPromptResponse (0.01s)
+    hermes_test.go:2330: execute: hermes executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHermesBackendMergesLateCumulativeUsageAfterPromptResponse285144346\\001\\hermes": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHermesBackendMergesLateCumulativeUsageAfterPromptResponse285144346\\001\\hermes": executable file not found in %PATH%
+--- FAIL: TestKiroBackendTreatsGoalCompleteCloseErrorAsCompleted (0.01s)
+    kiro_test.go:250: execute: kiro executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroBackendTreatsGoalCompleteCloseErrorAsCompleted3709931593\\001\\kiro-cli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroBackendTreatsGoalCompleteCloseErrorAsCompleted3709931593\\001\\kiro-cli": executable file not found in %PATH%
+--- FAIL: TestQwenpawBlockedWorkspaceAndAgentArgs (0.01s)
+    qwenpaw_test.go:781: Execute error: qwenpaw executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQwenpawBlockedWorkspaceAndAgentArgs1104855526\\002\\qwenpaw": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQwenpawBlockedWorkspaceAndAgentArgs1104855526\\002\\qwenpaw": executable file not found in %PATH%
+--- FAIL: TestQwenpawWorkspaceArgs (0.01s)
+    qwenpaw_test.go:640: Execute error: qwenpaw executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQwenpawWorkspaceArgs1877612196\\002\\qwenpaw": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQwenpawWorkspaceArgs1877612196\\002\\qwenpaw": executable file not found in %PATH%
+--- FAIL: TestKiroBackendSetModelFailureFailsTask (0.01s)
+    kiro_test.go:140: execute: kiro executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroBackendSetModelFailureFailsTask3652011696\\001\\kiro-cli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroBackendSetModelFailureFailsTask3652011696\\001\\kiro-cli": executable file not found in %PATH%
+--- FAIL: TestKiroBackendAttributesUsageToCurrentModel (0.01s)
+    kiro_test.go:187: execute: kiro executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroBackendAttributesUsageToCurrentModel1931737547\\001\\kiro-cli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKiroBackendAttributesUsageToCurrentModel1931737547\\001\\kiro-cli": executable file not found in %PATH%
+--- FAIL: TestQwenpawExtraArgsReachTheCommandLine (0.02s)
+    qwenpaw_test.go:709: Execute error: qwenpaw executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQwenpawExtraArgsReachTheCommandLine2538336140\\002\\qwenpaw": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQwenpawExtraArgsReachTheCommandLine2538336140\\002\\qwenpaw": executable file not found in %PATH%
+--- FAIL: TestQwenpawBackendUsage (0.01s)
+    qwenpaw_test.go:369: Execute error: qwenpaw executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQwenpawBackendUsage2780149186\\001\\qwenpaw": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQwenpawBackendUsage2780149186\\001\\qwenpaw": executable file not found in %PATH%
+--- FAIL: TestQwenpawSessionLoadSendsCodingProjectDir (0.02s)
+    qwenpaw_test.go:570: Execute error: qwenpaw executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQwenpawSessionLoadSendsCodingProjectDir2525085113\\001\\qwenpaw": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQwenpawSessionLoadSendsCodingProjectDir2525085113\\001\\qwenpaw": executable file not found in %PATH%
+--- FAIL: TestQwenpawUsageModelIgnored (0.01s)
+    qwenpaw_test.go:412: Execute error: qwenpaw executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQwenpawUsageModelIgnored3935366427\\001\\qwenpaw": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQwenpawUsageModelIgnored3935366427\\001\\qwenpaw": executable file not found in %PATH%
+--- FAIL: TestQwenpawSessionLoadTransientError (0.01s)
+    qwenpaw_test.go:480: Execute error: qwenpaw executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQwenpawSessionLoadTransientError4160091211\\001\\qwenpaw": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQwenpawSessionLoadTransientError4160091211\\001\\qwenpaw": executable file not found in %PATH%
+--- FAIL: TestQwenpawSessionNewSendsCodingProjectDir (0.02s)
+    qwenpaw_test.go:523: Execute error: qwenpaw executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQwenpawSessionNewSendsCodingProjectDir3566973207\\001\\qwenpaw": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQwenpawSessionNewSendsCodingProjectDir3566973207\\001\\qwenpaw": executable file not found in %PATH%
+2026/09/05 05:39:29 WARN custom_args: blocked protocol-critical flag, skipping flag=--output-format
+2026/09/05 05:39:29 WARN custom_args: blocked protocol-critical flag, skipping flag=--prompt
+2026/09/05 05:39:29 WARN custom_args: blocked protocol-critical flag, skipping flag=-o
+2026/09/05 05:39:29 WARN custom_args: blocked protocol-critical flag, skipping flag=--model
+2026/09/05 05:39:29 WARN custom_args: blocked protocol-critical flag, skipping flag=--resume
+2026/09/05 05:39:29 WARN custom_args: blocked protocol-critical flag, skipping flag=--safe-mode
+2026/09/05 05:39:29 WARN custom_args: blocked protocol-critical flag, skipping flag=--chat-recording
+2026/09/05 05:39:29 WARN custom_args: blocked protocol-critical flag, skipping flag=--mcp-config
+2026/09/05 05:39:29 WARN custom_args: blocked protocol-critical flag, skipping flag=--mcp-config
+2026/09/05 05:39:29 WARN custom_args: blocked protocol-critical flag, skipping flag=--yolo
+2026/09/05 05:39:29 WARN custom_args: blocked protocol-critical flag, skipping flag=-y
+2026/09/05 05:39:29 WARN custom_args: blocked protocol-critical flag, skipping flag=--approval-mode
+2026/09/05 05:39:29 WARN custom_args: blocked protocol-critical flag, skipping flag=--core-tools
+2026/09/05 05:39:29 WARN custom_args: blocked protocol-critical flag, skipping flag=--core-tools
+--- FAIL: TestQwenpawTimeout (0.01s)
+    qwenpaw_test.go:339: Execute error: qwenpaw executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQwenpawTimeout1878523694\\001\\qwenpaw": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQwenpawTimeout1878523694\\001\\qwenpaw": executable file not found in %PATH%
+--- FAIL: TestQwenpawSessionLoadNotFound (0.01s)
+    qwenpaw_test.go:191: Execute error: qwenpaw executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQwenpawSessionLoadNotFound794423908\\001\\qwenpaw": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQwenpawSessionLoadNotFound794423908\\001\\qwenpaw": executable file not found in %PATH%
+2026/09/05 05:39:29 WARN skipping invalid mcp_config entry name=bad error="entry has neither command nor url"
+--- FAIL: TestQwenpawUsesSessionLoad (0.01s)
+    qwenpaw_test.go:274: Execute error: qwenpaw executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQwenpawUsesSessionLoad2994456006\\001\\qwenpaw": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQwenpawUsesSessionLoad2994456006\\001\\qwenpaw": executable file not found in %PATH%
+--- FAIL: TestQwenpawSessionLoad (0.01s)
+    qwenpaw_test.go:150: Execute error: qwenpaw executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQwenpawSessionLoad4023444189\\001\\qwenpaw": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQwenpawSessionLoad4023444189\\001\\qwenpaw": executable file not found in %PATH%
+--- FAIL: TestQwenpawSessionNew (0.01s)
+    qwenpaw_test.go:109: Execute error: qwenpaw executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQwenpawSessionNew3803579489\\001\\qwenpaw": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQwenpawSessionNew3803579489\\001\\qwenpaw": executable file not found in %PATH%
+--- FAIL: TestKimiBackendPropagatesACPPromptUsage (0.01s)
+    kimi_test.go:1074: execute: kimi executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKimiBackendPropagatesACPPromptUsage1079197153\\001\\kimi": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKimiBackendPropagatesACPPromptUsage1079197153\\001\\kimi": executable file not found in %PATH%
+--- FAIL: TestKimiBackendReportsUsageFromWireLog (0.01s)
+    kimi_test.go:1121: execute: kimi executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKimiBackendReportsUsageFromWireLog1334277925\\002\\kimi": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKimiBackendReportsUsageFromWireLog1334277925\\002\\kimi": executable file not found in %PATH%
+--- FAIL: TestGrokAttributesUsageOnResumeWithoutConfiguredModel (0.01s)
+    grok_test.go:653: execute: grok executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestGrokAttributesUsageOnResumeWithoutConfiguredModel2775540274\\001\\grok": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestGrokAttributesUsageOnResumeWithoutConfiguredModel2775540274\\001\\grok": executable file not found in %PATH%
+--- FAIL: TestGrokAuthFailureFailsTask (0.01s)
+    grok_test.go:445: execute: grok executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestGrokAuthFailureFailsTask259769792\\001\\grok": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestGrokAuthFailureFailsTask259769792\\001\\grok": executable file not found in %PATH%
+--- FAIL: TestGrokSetModelFailureFailsTask (0.01s)
+    grok_test.go:271: execute: grok executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestGrokSetModelFailureFailsTask215314186\\001\\grok": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestGrokSetModelFailureFailsTask215314186\\001\\grok": executable file not found in %PATH%
+--- FAIL: TestGrokUsesSessionLoadForResume (0.01s)
+    grok_test.go:312: execute: grok executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestGrokUsesSessionLoadForResume3808466824\\001\\grok": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestGrokUsesSessionLoadForResume3808466824\\001\\grok": executable file not found in %PATH%
+--- FAIL: TestGrokBlockedArgsFiltering (0.01s)
+    grok_test.go:206: execute: grok executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestGrokBlockedArgsFiltering1013847815\\001\\grok": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestGrokBlockedArgsFiltering1013847815\\001\\grok": executable file not found in %PATH%
+--- FAIL: TestDimConfigFailThenResumeReestablishes (0.01s)
+    dim_test.go:536: execute A: dim executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestDimConfigFailThenResumeReestablishes1001854092\\002\\dim": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestDimConfigFailThenResumeReestablishes1001854092\\002\\dim": executable file not found in %PATH%
+2026/09/05 05:39:29 WARN deveco error event error="unknown deveco error"
+2026/09/05 05:39:29 WARN deveco error event error="Model not found: bad/model"
+--- FAIL: TestGrokBackendStreamsAndCompletes (0.01s)
+    grok_test.go:141: execute: grok executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestGrokBackendStreamsAndCompletes1474206036\\001\\grok": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestGrokBackendStreamsAndCompletes1474206036\\001\\grok": executable file not found in %PATH%
+2026/09/05 05:39:29 INFO codex lifecycle phase=thread_start_sent task_id="" runtime_id="" pid=0 attempt=0 active_launches=0 method=thread/start
+--- FAIL: TestDimConfigFailClosesSession (0.01s)
+    dim_test.go:490: Execute error: dim executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestDimConfigFailClosesSession2578918949\\002\\dim": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestDimConfigFailClosesSession2578918949\\002\\dim": executable file not found in %PATH%
+--- FAIL: TestDimDrainsLateFinalNotificationAfterPromptResponse (0.01s)
+    dim_test.go:454: Execute error: dim executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestDimDrainsLateFinalNotificationAfterPromptResponse1634457793\\002\\dim": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestDimDrainsLateFinalNotificationAfterPromptResponse1634457793\\002\\dim": executable file not found in %PATH%
+--- FAIL: TestDimSessionLoadRetryCancelled (0.01s)
+    dim_test.go:758: Execute error: dim executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestDimSessionLoadRetryCancelled1863624909\\002\\dim": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestDimSessionLoadRetryCancelled1863624909\\002\\dim": executable file not found in %PATH%
+--- FAIL: TestDimPromptMissingNotificationStillCompletes (0.01s)
+    dim_test.go:414: Execute error: dim executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestDimPromptMissingNotificationStillCompletes3545563706\\002\\dim": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestDimPromptMissingNotificationStillCompletes3545563706\\002\\dim": executable file not found in %PATH%
+--- FAIL: TestDimResumeNotFound (0.01s)
+    dim_test.go:296: Execute error: dim executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestDimResumeNotFound494489542\\002\\dim": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestDimResumeNotFound494489542\\002\\dim": executable file not found in %PATH%
+--- FAIL: TestDimSessionLoadRetryExhausted (0.01s)
+    dim_test.go:718: Execute error: dim executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestDimSessionLoadRetryExhausted994043725\\002\\dim": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestDimSessionLoadRetryExhausted994043725\\002\\dim": executable file not found in %PATH%
+--- FAIL: TestDimCleanupKillsHangingChild (0.01s)
+    dim_test.go:342: Execute error: dim executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestDimCleanupKillsHangingChild3966458389\\002\\dim": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestDimCleanupKillsHangingChild3966458389\\002\\dim": executable file not found in %PATH%
+--- FAIL: TestDimSessionLoadRetrySucceeds (0.01s)
+    dim_test.go:676: Execute error: dim executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestDimSessionLoadRetrySucceeds2715566312\\002\\dim": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestDimSessionLoadRetrySucceeds2715566312\\002\\dim": executable file not found in %PATH%
+--- FAIL: TestDimResumeLoadsSession (0.01s)
+    dim_test.go:249: Execute error: dim executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestDimResumeLoadsSession994694732\\002\\dim": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestDimResumeLoadsSession994694732\\002\\dim": executable file not found in %PATH%
+2026/09/05 05:39:29 WARN custom_args: blocked protocol-critical flag, skipping flag=--resume
+2026/09/05 05:39:29 WARN custom_args: blocked protocol-critical flag, skipping flag=--acp
+2026/09/05 05:39:29 WARN custom_args: blocked protocol-critical flag, skipping flag=--yolo
+2026/09/05 05:39:29 WARN custom_args: blocked protocol-critical flag, skipping flag=--output-format
+2026/09/05 05:39:29 WARN custom_args: blocked protocol-critical flag, skipping flag=--yolo
+2026/09/05 05:39:29 WARN custom_args: blocked protocol-critical flag, skipping flag=--output-format
+--- FAIL: TestDimSessionNew (0.01s)
+    dim_test.go:196: Execute error: dim executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestDimSessionNew1557573076\\002\\dim": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestDimSessionNew1557573076\\002\\dim": executable file not found in %PATH%
+--- FAIL: TestDimSetModelFailClosesSession (0.01s)
+    dim_test.go:627: Execute error: dim executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestDimSetModelFailClosesSession1405453858\\002\\dim": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestDimSetModelFailClosesSession1405453858\\002\\dim": executable file not found in %PATH%
+2026/09/05 05:39:29 INFO codex lifecycle phase=thread_start_sent task_id="" runtime_id="" pid=0 attempt=0 active_launches=0 method=thread/start
+2026/09/05 05:39:29 WARN codex thread/resume returned no thread ID; falling back to thread/start prior_thread_id=thr_prior
+2026/09/05 05:39:29 INFO codex lifecycle phase=thread_start_sent task_id="" runtime_id="" pid=0 attempt=0 active_launches=0 method=thread/start
+--- FAIL: TestDevecoBackendArgvShapeAndNoPrompt (0.01s)
+    deveco_test.go:83: execute: deveco executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestDevecoBackendArgvShapeAndNoPrompt2042854326\\001\\deveco": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestDevecoBackendArgvShapeAndNoPrompt2042854326\\001\\deveco": executable file not found in %PATH%
+--- FAIL: TestQoderBackendClearsSessionIDWhenResumedSessionNotFoundAtPrompt (0.01s)
+    qoder_test.go:932: execute: qodercli executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQoderBackendClearsSessionIDWhenResumedSessionNotFoundAtPromp1969299463\\001\\qodercli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQoderBackendClearsSessionIDWhenResumedSessionNotFoundAtPromp1969299463\\001\\qodercli": executable file not found in %PATH%
+2026/09/05 05:39:29 INFO codex lifecycle phase=thread_start_sent task_id="" runtime_id="" pid=0 attempt=0 active_launches=0 method=thread/start
+--- FAIL: TestQoderFiltersRemoteMcpWhenInitializeDoesNotAdvertiseCapability (0.01s)
+    qoder_test.go:791: execute: qodercli executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQoderFiltersRemoteMcpWhenInitializeDoesNotAdvertiseCapabilit4137670353\\001\\qodercli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQoderFiltersRemoteMcpWhenInitializeDoesNotAdvertiseCapabilit4137670353\\001\\qodercli": executable file not found in %PATH%
+2026/09/05 05:39:29 INFO codex lifecycle phase=thread_start_sent task_id="" runtime_id="" pid=0 attempt=0 active_launches=0 method=thread/start
+--- FAIL: TestQoderBackendAttributesUsageToACPDefaultModel (0.01s)
+    qoder_test.go:883: execute: qodercli executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQoderBackendAttributesUsageToACPDefaultModel1187058685\\001\\qodercli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQoderBackendAttributesUsageToACPDefaultModel1187058685\\001\\qodercli": executable file not found in %PATH%
+2026/09/05 05:39:29 INFO codex lifecycle phase=thread_start_sent task_id="" runtime_id="" pid=0 attempt=0 active_launches=0 method=thread/start
+--- FAIL: TestQoderForwardsMcpAuthHeaderToSessionNew (0.01s)
+    qoder_test.go:730: execute: qodercli executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQoderForwardsMcpAuthHeaderToSessionNew2720246952\\001\\qodercli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQoderForwardsMcpAuthHeaderToSessionNew2720246952\\001\\qodercli": executable file not found in %PATH%
+--- FAIL: TestQoderPromotesTerminalProviderErrorWithOutput (0.01s)
+    qoder_test.go:842: execute: qodercli executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQoderPromotesTerminalProviderErrorWithOutput1739889793\\001\\qodercli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQoderPromotesTerminalProviderErrorWithOutput1739889793\\001\\qodercli": executable file not found in %PATH%
+--- FAIL: TestQoderBackendProviderErrorDetectionUsesFullOutput (0.00s)
+    qoder_test.go:550: execute: qodercli executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQoderBackendProviderErrorDetectionUsesFullOutput4054903948\\001\\qodercli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQoderBackendProviderErrorDetectionUsesFullOutput4054903948\\001\\qodercli": executable file not found in %PATH%
+--- FAIL: TestQoderBackendToolTerminatedTurnFallsBackToLatestTextBlock (0.01s)
+    qoder_test.go:514: execute: qodercli executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQoderBackendToolTerminatedTurnFallsBackToLatestTextBlock219872486\\001\\qodercli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQoderBackendToolTerminatedTurnFallsBackToLatestTextBlock219872486\\001\\qodercli": executable file not found in %PATH%
+--- FAIL: TestQoderBackendNonPositiveTimeoutDoesNotImposeDeadline (0.01s)
+    qoder_test.go:585: execute: qodercli executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQoderBackendNonPositiveTimeoutDoesNotImposeDeadline3652116725\\001\\qodercli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQoderBackendNonPositiveTimeoutDoesNotImposeDeadline3652116725\\001\\qodercli": executable file not found in %PATH%
+2026/09/05 05:39:29 WARN dropping sse MCP server: runtime did not advertise mcpCapabilities.sse backend=kimi name=sse-drop
+2026/09/05 05:39:29 WARN dropping http MCP server: runtime did not advertise mcpCapabilities.http backend=hermes name=http-drop
+2026/09/05 05:39:29 WARN dropping http MCP server: runtime did not advertise mcpCapabilities.http backend=hermes name=http
+2026/09/05 05:39:29 WARN dropping sse MCP server: runtime did not advertise mcpCapabilities.sse backend=hermes name=sse
+2026/09/05 05:39:29 WARN dropping http MCP server: runtime did not advertise mcpCapabilities.http backend=hermes name=http
+2026/09/05 05:39:29 WARN dropping sse MCP server: runtime did not advertise mcpCapabilities.sse backend=hermes name=sse
+2026/09/05 05:39:29 WARN dropping http MCP server: runtime did not advertise mcpCapabilities.http backend=hermes name=http
+2026/09/05 05:39:29 WARN dropping sse MCP server: runtime did not advertise mcpCapabilities.sse backend=hermes name=sse
+2026/09/05 05:39:29 WARN dropping http MCP server: runtime did not advertise mcpCapabilities.http backend=hermes name=http
+2026/09/05 05:39:29 WARN dropping sse MCP server: runtime did not advertise mcpCapabilities.sse backend=hermes name=sse
+2026/09/05 05:39:29 WARN dropping http MCP server: runtime did not advertise mcpCapabilities.http backend=hermes name=http
+2026/09/05 05:39:29 WARN dropping sse MCP server: runtime did not advertise mcpCapabilities.sse backend=hermes name=sse
+2026/09/05 05:39:29 WARN dropping http MCP server: runtime did not advertise mcpCapabilities.http backend=hermes name=http
+2026/09/05 05:39:29 WARN dropping sse MCP server: runtime did not advertise mcpCapabilities.sse backend=hermes name=sse
+2026/09/05 05:39:29 WARN dropping http MCP server: runtime did not advertise mcpCapabilities.http backend=hermes name=http
+2026/09/05 05:39:29 WARN dropping sse MCP server: runtime did not advertise mcpCapabilities.sse backend=hermes name=sse
+2026/09/05 05:39:29 WARN dropping http MCP server: runtime did not advertise mcpCapabilities.http backend=hermes name=http
+2026/09/05 05:39:29 WARN dropping sse MCP server: runtime did not advertise mcpCapabilities.sse backend=hermes name=sse
+2026/09/05 05:39:29 WARN dropping http MCP server: runtime did not advertise mcpCapabilities.http backend=hermes name=http
+2026/09/05 05:39:29 WARN dropping sse MCP server: runtime did not advertise mcpCapabilities.sse backend=hermes name=sse
+2026/09/05 05:39:29 WARN dropping http MCP server: runtime did not advertise mcpCapabilities.http backend=hermes name=http
+2026/09/05 05:39:29 WARN dropping sse MCP server: runtime did not advertise mcpCapabilities.sse backend=hermes name=sse
+2026/09/05 05:39:29 WARN dropping http MCP server: runtime did not advertise mcpCapabilities.http backend=hermes name=http
+2026/09/05 05:39:29 WARN dropping sse MCP server: runtime did not advertise mcpCapabilities.sse backend=hermes name=sse
+2026/09/05 05:39:29 WARN dropping http MCP server: runtime did not advertise mcpCapabilities.http backend=hermes name=http
+2026/09/05 05:39:29 WARN dropping sse MCP server: runtime did not advertise mcpCapabilities.sse backend=hermes name=sse
+2026/09/05 05:39:29 WARN codex thread/resume failed due to transport error; not falling back to thread/start prior_thread_id=thr_stale error="codex process exited"
+2026/09/05 05:39:29 WARN codex thread/resume failed; falling back to thread/start prior_thread_id=thr_stale error="thread/resume: unknown thread (code=-32602)"
+2026/09/05 05:39:29 INFO codex lifecycle phase=thread_start_sent task_id="" runtime_id="" pid=0 attempt=0 active_launches=0 method=thread/start
+2026/09/05 05:39:29 INFO codex lifecycle phase=thread_start_response task_id="" runtime_id="" pid=0 attempt=0 active_launches=0 method=thread/start latency=5ms latency_ms=5
+2026/09/05 05:39:29 WARN dropping http MCP server: runtime did not advertise mcpCapabilities.http backend=kimi name=http
+2026/09/05 05:39:29 INFO opencode started pid=23748 cwd="" model=lanz/Lanz-Medium
+2026/09/05 05:39:29 WARN dropping sse MCP server: runtime did not advertise mcpCapabilities.sse backend=kimi name=sse
+2026/09/05 05:39:29 WARN dropping http MCP server: runtime did not advertise mcpCapabilities.http backend=kiro name=http
+2026/09/05 05:39:29 WARN dropping sse MCP server: runtime did not advertise mcpCapabilities.sse backend=kiro name=sse
+2026/09/05 05:39:29 WARN dropping http MCP server: runtime did not advertise mcpCapabilities.http backend=grok name=http
+2026/09/05 05:39:29 WARN dropping sse MCP server: runtime did not advertise mcpCapabilities.sse backend=grok name=sse
+2026/09/05 05:39:29 WARN dropping http MCP server: runtime did not advertise mcpCapabilities.http backend=qoder name=http
+2026/09/05 05:39:29 WARN dropping sse MCP server: runtime did not advertise mcpCapabilities.sse backend=qoder name=sse
+2026/09/05 05:39:29 WARN dropping http MCP server: runtime did not advertise mcpCapabilities.http backend=reasonix name=http
+2026/09/05 05:39:29 WARN dropping sse MCP server: runtime did not advertise mcpCapabilities.sse backend=reasonix name=sse
+2026/09/05 05:39:29 WARN dropping http MCP server: runtime did not advertise mcpCapabilities.http backend=traecli name=http
+2026/09/05 05:39:29 WARN dropping sse MCP server: runtime did not advertise mcpCapabilities.sse backend=traecli name=sse
+2026/09/05 05:39:29 WARN dropping http MCP server: runtime did not advertise mcpCapabilities.http backend=qwenpaw name=http
+2026/09/05 05:39:29 WARN dropping sse MCP server: runtime did not advertise mcpCapabilities.sse backend=qwenpaw name=sse
+2026/09/05 05:39:29 WARN dropping http MCP server: runtime did not advertise mcpCapabilities.http backend=mcode name=http
+2026/09/05 05:39:29 WARN dropping sse MCP server: runtime did not advertise mcpCapabilities.sse backend=mcode name=sse
+2026/09/05 05:39:29 INFO runtime declared no mcpCapabilities; forwarding remote MCP servers under this runtime's verified exception backend=hermes
+2026/09/05 05:39:29 INFO codex lifecycle phase=thread_start_response task_id="" runtime_id="" pid=0 attempt=0 active_launches=0 method=thread/start latency=5ms latency_ms=5
+--- FAIL: TestQoderBackendSetModelFailureFailsTask (0.00s)
+    qoder_test.go:292: execute: qodercli executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQoderBackendSetModelFailureFailsTask2770157161\\001\\qodercli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQoderBackendSetModelFailureFailsTask2770157161\\001\\qodercli": executable file not found in %PATH%
+2026/09/05 05:39:29 INFO codex lifecycle phase=thread_start_response task_id="" runtime_id="" pid=0 attempt=0 active_launches=0 method=thread/start latency=5ms latency_ms=5
+--- FAIL: TestQoderBackendInvokesACPFlagAndFiltersBlockedArgs (0.00s)
+    qoder_test.go:347: execute: qodercli executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQoderBackendInvokesACPFlagAndFiltersBlockedArgs2827129390\\001\\qodercli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestQoderBackendInvokesACPFlagAndFiltersBlockedArgs2827129390\\001\\qodercli": executable file not found in %PATH%
+2026/09/05 05:39:29 WARN opencode stdout scanner error error="simulated I/O error"
+2026/09/05 05:39:29 WARN opencode error event error="Model not found: bad/model"
+2026/09/05 05:39:29 WARN opencode error event error=RateLimitError
+2026/09/05 05:39:29 INFO codex turn/completed received thread_id=thr_main turn_id=turn-main status=completed
+2026/09/05 05:39:29 INFO codex turn/completed received thread_id=thr_main turn_id=turn-main status=completed
+2026/09/05 05:39:29 INFO codex turn/completed received thread_id="" turn_id=turn-1 status=completed
+2026/09/05 05:39:29 INFO codex turn/completed received thread_id="" turn_id=turn-1 status=completed
+2026/09/05 05:39:29 INFO codex lifecycle phase=thread_start_response task_id="" runtime_id="" pid=0 attempt=0 active_launches=0 method=thread/start latency=5ms latency_ms=5
+2026/09/05 05:39:29 INFO codex lifecycle phase=thread_start_response task_id="" runtime_id="" pid=0 attempt=0 active_launches=0 method=thread/start latency=5ms latency_ms=5
+--- FAIL: TestOpencodeBackendOmitsMCPEnvWhenEmpty (0.00s)
+    opencode_mcp_test.go:491: execute: opencode executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestOpencodeBackendOmitsMCPEnvWhenEmpty4170868590\\001\\opencode": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestOpencodeBackendOmitsMCPEnvWhenEmpty4170868590\\001\\opencode": executable file not found in %PATH%
+2026/09/05 05:39:29 INFO codex lifecycle phase=thread_start_response task_id="" runtime_id="" pid=0 attempt=0 active_launches=0 method=thread/start latency=5ms latency_ms=5
+--- FAIL: TestOpencodeBackendOverridesUserOpenCodeConfigContent (0.01s)
+    opencode_mcp_test.go:541: execute: opencode executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestOpencodeBackendOverridesUserOpenCodeConfigContent4291097877\\001\\opencode": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestOpencodeBackendOverridesUserOpenCodeConfigContent4291097877\\001\\opencode": executable file not found in %PATH%
+--- FAIL: TestOpencodeBackendInjectsMCPConfigViaEnv (0.01s)
+    opencode_mcp_test.go:429: execute: opencode executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestOpencodeBackendInjectsMCPConfigViaEnv3601166629\\001\\opencode": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestOpencodeBackendInjectsMCPConfigViaEnv3601166629\\001\\opencode": executable file not found in %PATH%
+2026/09/05 05:39:29 WARN codex thread/name/set failed; continuing without provider-native thread title thread_id=thr_named error="thread/name/set: unsupported method (code=-32601)"
+2026/09/05 05:39:29 WARN codex error notification message=reconnecting will_retry=true
+2026/09/05 05:39:29 WARN codex error notification message=boom will_retry=false
+2026/09/05 05:39:29 INFO codex turn/completed received thread_id="" turn_id=turn-error status=failed
+2026/09/05 05:39:29 INFO codex turn/completed received thread_id="" turn_id=turn-f status=failed
+2026/09/05 05:39:29 INFO codex turn/completed received thread_id="" turn_id=turn-f status=failed
+2026/09/05 05:39:29 INFO codex turn/completed received thread_id="" turn_id=turn-2 status=cancelled
+2026/09/05 05:39:29 INFO codex turn/completed received thread_id="" turn_id="" status=completed
+2026/09/05 05:39:29 INFO codex turn/completed received thread_id="" turn_id="" status=completed
+2026/09/05 05:39:29 INFO codex turn/completed received thread_id="" turn_id=turn-1 status=completed
+2026/09/05 05:39:29 INFO codex turn/completed received thread_id="" turn_id="" status=completed
+2026/09/05 05:39:29 INFO codex turn/completed received thread_id="" turn_id="" status=completed
+2026/09/05 05:39:29 INFO codex turn/completed received thread_id="" turn_id=turn-1 status=completed
+2026/09/05 05:39:29 INFO codex turn/completed received thread_id="" turn_id=turn-1 status=completed
+2026/09/05 05:39:29 INFO codex turn/completed received thread_id="" turn_id=turn-1 status=completed
+2026/09/05 05:39:29 INFO codex turn/completed received thread_id="" turn_id=turn-usage status=completed
+2026/09/05 05:39:29 INFO codex turn/completed received thread_id="" turn_id=turn-1 status=completed
+2026/09/05 05:39:29 WARN codex: unhandled server request method=some/unknown/method id=13
+2026/09/05 05:39:29 WARN custom_args: blocked protocol-critical flag, skipping flag=--output-format
+2026/09/05 05:39:29 WARN custom_args: blocked protocol-critical flag, skipping flag=--permission-mode
+2026/09/05 05:39:29 WARN custom_args: blocked protocol-critical flag, skipping flag=--effort
+2026/09/05 05:39:29 WARN custom_args: blocked protocol-critical flag, skipping flag=--thinking
+2026/09/05 05:39:29 WARN custom_args: blocked protocol-critical flag, skipping flag=--thinking
+2026/09/05 05:39:29 WARN custom_args: blocked protocol-critical flag, skipping flag=--thinking
+2026/09/05 05:39:29 WARN custom_args: blocked protocol-critical flag, skipping flag=--thinking
+2026/09/05 05:39:29 WARN custom_args: Pi positional input would alter the stdin task prompt, skipping
+2026/09/05 05:39:29 WARN custom_args: Pi file input would alter the stdin task prompt, skipping
+2026/09/05 05:39:29 WARN custom_args: Pi positional input would alter the stdin task prompt, skipping
+2026/09/05 05:39:29 WARN custom_args: Pi positional input would alter the stdin task prompt, skipping
+--- FAIL: TestOpencodeBackendAppendsExitDetailOnMidStepCrash (0.00s)
+    opencode_test.go:1832: execute: opencode executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestOpencodeBackendAppendsExitDetailOnMidStepCrash3052908580\\001\\opencode": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestOpencodeBackendAppendsExitDetailOnMidStepCrash3052908580\\001\\opencode": executable file not found in %PATH%
+2026/09/05 05:39:29 WARN custom_args: blocked protocol-critical flag, skipping flag=--mcp-config
+2026/09/05 05:39:29 WARN custom_args: blocked protocol-critical flag, skipping flag=--local
+--- FAIL: TestOpencodeBackendFailsOnStreamEndingMidTool (0.00s)
+    opencode_test.go:1778: execute: opencode executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestOpencodeBackendFailsOnStreamEndingMidTool2448486376\\001\\opencode": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestOpencodeBackendFailsOnStreamEndingMidTool2448486376\\001\\opencode": executable file not found in %PATH%
+2026/09/05 05:39:29 WARN custom_args: blocked protocol-critical flag, skipping flag=--output-format
+2026/09/05 05:39:29 INFO agent command provider=claude exec=C:\Users\GOBAO\AppData\Local\Temp\multica-task-3508185087\go-build3538880215\b548\agent.test.exe args="[-p --output-format <redacted> --input-format <redacted> --verbose --permission-mode <redacted> --disallowedTools <redacted>]" arg_count=10
+2026/09/05 05:39:29 INFO agent command provider=claude exec=C:\Users\GOBAO\AppData\Local\Temp\multica-task-3508185087\go-build3538880215\b548\agent.test.exe args="[-p --output-format <redacted> --input-format <redacted> --verbose --permission-mode <redacted> --disallowedTools <redacted>]" arg_count=10
+--- FAIL: TestOpencodeBackendBlocksDirOverride (0.01s)
+    opencode_test.go:1712: execute: opencode executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestOpencodeBackendBlocksDirOverride2052535666\\001\\opencode": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestOpencodeBackendBlocksDirOverride2052535666\\001\\opencode": executable file not found in %PATH%
+2026/09/05 05:39:29 INFO agent command provider=claude exec=C:\Users\GOBAO\AppData\Local\Temp\multica-task-3508185087\go-build3538880215\b548\agent.test.exe args="[-p --output-format <redacted> --input-format <redacted> --verbose --permission-mode <redacted> --disallowedTools <redacted>]" arg_count=10
+2026/09/05 05:39:29 INFO agent command provider=claude exec=C:\Users\GOBAO\AppData\Local\Temp\multica-task-3508185087\go-build3538880215\b548\agent.test.exe args="[-p --output-format <redacted> --input-format <redacted> --verbose --permission-mode <redacted> --disallowedTools <redacted>]" arg_count=10
+--- FAIL: TestOpencodeBackendDoesNotUsePermissionEnvOverride (0.00s)
+    opencode_test.go:1604: execute: opencode executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestOpencodeBackendDoesNotUsePermissionEnvOverride1939592892\\001\\opencode": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestOpencodeBackendDoesNotUsePermissionEnvOverride1939592892\\001\\opencode": executable file not found in %PATH%
+--- FAIL: TestOpencodeBackendQuestionDenySurvivesUserConfig (0.01s)
+    opencode_test.go:1657: execute: opencode executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestOpencodeBackendQuestionDenySurvivesUserConfig1595243166\\001\\opencode": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestOpencodeBackendQuestionDenySurvivesUserConfig1595243166\\001\\opencode": executable file not found in %PATH%
+--- FAIL: TestOpencodeBackendNeverEmitsPromptFlag (0.01s)
+    opencode_test.go:1478: execute: opencode executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestOpencodeBackendNeverEmitsPromptFlag505864531\\001\\opencode": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestOpencodeBackendNeverEmitsPromptFlag505864531\\001\\opencode": executable file not found in %PATH%
+--- FAIL: TestOpencodeBackendAnchorsDirAndPWD (0.01s)
+    opencode_test.go:1393: execute: opencode executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestOpencodeBackendAnchorsDirAndPWD836495147\\001\\opencode": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestOpencodeBackendAnchorsDirAndPWD836495147\\001\\opencode": executable file not found in %PATH%
+--- FAIL: TestHardenBrowserMcpConfigNoopOffWindows (0.00s)
+    browser_mcp_config_test.go:41: non-Windows config changed:
+         got {"mcpServers":{"playwright":{"args":["@playwright/mcp","--headless","--config","C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestHardenBrowserMcpConfigNoopOffWindows3615385991\\001\\playwright-windows-browser.json"],"command":"node"}}}
+        want {"mcpServers":{"playwright":{"command":"node","args":["@playwright/mcp","--headless"]}}}
+--- FAIL: TestAntigravityBackendStreamPreservesNewlines (0.00s)
+    antigravity_test.go:756: execute: agy executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestAntigravityBackendStreamPreservesNewlines4200691569\\001\\agy": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestAntigravityBackendStreamPreservesNewlines4200691569\\001\\agy": executable file not found in %PATH%
+--- FAIL: TestAntigravityBackendProviderErrorSurfacesAsFailed (0.00s)
+    antigravity_test.go:434: execute: agy executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestAntigravityBackendProviderErrorSurfacesAsFailed3773283791\\001\\agy": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestAntigravityBackendProviderErrorSurfacesAsFailed3773283791\\001\\agy": executable file not found in %PATH%
+--- FAIL: TestAntigravityBackendPrintTimeoutSurfacesAsTimeout (0.00s)
+    antigravity_test.go:389: execute: agy executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestAntigravityBackendPrintTimeoutSurfacesAsTimeout185027987\\001\\agy": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestAntigravityBackendPrintTimeoutSurfacesAsTimeout185027987\\001\\agy": executable file not found in %PATH%
+--- FAIL: TestBuildAntigravityArgsNoCapUsesLargePrintTimeout (0.00s)
+    antigravity_test.go:99: buildAntigravityArgs(timeout=0) mismatch
+         got: [-p hello --dangerously-skip-permissions --print-timeout 24h0m0s --log-file /tmp/agy.log --add-dir \work]
+        want: [-p hello --dangerously-skip-permissions --print-timeout 24h0m0s --log-file /tmp/agy.log --add-dir /work]
+--- FAIL: TestBuildAntigravityArgsModel (0.00s)
+    antigravity_test.go:65: buildAntigravityArgs with model mismatch
+         got: [-p hello --dangerously-skip-permissions --model Claude Opus 4.6 (Thinking) --print-timeout 20m0s --log-file /tmp/agy.log --add-dir \work]
+        want: [-p hello --dangerously-skip-permissions --model Claude Opus 4.6 (Thinking) --print-timeout 20m0s --log-file /tmp/agy.log --add-dir /work]
+--- FAIL: TestBuildAntigravityArgsBasic (0.00s)
+    antigravity_test.go:38: buildAntigravityArgs basic mismatch
+         got: [-p hello --dangerously-skip-permissions --print-timeout 20m0s --log-file /tmp/agy.log --add-dir \work]
+        want: [-p hello --dangerously-skip-permissions --print-timeout 20m0s --log-file /tmp/agy.log --add-dir /work]
+--- FAIL: TestAntigravityBackendRecoversEmptyStdoutFromTranscript (0.03s)
+    antigravity_test.go:674: execute: agy executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestAntigravityBackendRecoversEmptyStdoutFromTranscript2207807536\\002\\agy": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestAntigravityBackendRecoversEmptyStdoutFromTranscript2207807536\\002\\agy": executable file not found in %PATH%
+2026/09/05 05:39:29 WARN opencode error event error=RateLimitError
+2026/09/05 05:39:29 WARN opencode error event error="unknown opencode error"
+2026/09/05 05:39:29 WARN custom_args: blocked protocol-critical flag, skipping flag=--output-format
+2026/09/05 05:39:29 WARN custom_args: blocked protocol-critical flag, skipping flag=--permission-mode
+2026/09/05 05:39:29 INFO opencode finished pid=23748 status=completed duration=52ms
+2026/09/05 05:39:29 WARN custom_args: blocked protocol-critical flag, skipping flag=-p
+2026/09/05 05:39:29 WARN custom_args: blocked protocol-critical flag, skipping flag=--output-format
+2026/09/05 05:39:29 WARN opencode error event error="Model not found: definitely/not-a-model."
+2026/09/05 05:39:29 WARN custom runtime fixed_args: blocked protocol-critical flag, skipping flag=-p
+--- FAIL: TestOpencodeBackendInjectsThinkingVariant (0.00s)
+    opencode_test.go:1539: execute: opencode executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestOpencodeBackendInjectsThinkingVariant1343522272\\001\\opencode": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestOpencodeBackendInjectsThinkingVariant1343522272\\001\\opencode": executable file not found in %PATH%
+2026/09/05 05:39:29 WARN codex: ignored lower-priority feature disable feature=fast_mode
+2026/09/05 05:39:29 WARN custom_args: blocked managed Codex config override namespace=features.fast_mode flag=-c key=features.fast_mode
+2026/09/05 05:39:29 WARN codex: ignored lower-priority feature disable feature=fast_mode
+2026/09/05 05:39:29 WARN custom_args: blocked managed Codex config override namespace=shell_environment_policy flag=-c key=shell_environment_policy.include_only
+2026/09/05 05:39:29 WARN custom_args: blocked managed Codex config override namespace=shell_environment_policy flag=--config key="profiles.work.\"shell_environment_policy\".inherit"
+2026/09/05 05:39:29 WARN custom_args: blocked managed Codex config override namespace=shell_environment_policy flag=--config key=profiles.work.shell_environment_policy.ignore_default_excludes
+2026/09/05 05:39:29 WARN custom_args: blocked managed Codex config override namespace=mcp_servers flag=-c key=mcp_servers.fetch
+2026/09/05 05:39:29 WARN custom_args: blocked managed Codex config override namespace=mcp_servers flag=-c key=mcp_servers
+2026/09/05 05:39:29 WARN custom_args: blocked managed Codex config override namespace=mcp_servers flag=--config key=mcp_servers.x.env.KEY
+2026/09/05 05:39:29 WARN custom_args: blocked managed Codex config override namespace=mcp_servers flag=-c key=mcp_servers.fetch
+--- FAIL: TestZeroclawSessionNewSendsConfiguredAgentAlias (0.00s)
+    --- FAIL: TestZeroclawSessionNewSendsConfiguredAgentAlias/separate_value (0.01s)
+        zeroclaw_test.go:676: Execute error: zeroclaw executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestZeroclawSessionNewSendsConfiguredAgentAliasseparate_value3927168210\\001\\zeroclaw": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestZeroclawSessionNewSendsConfiguredAgentAliasseparate_value3927168210\\001\\zeroclaw": executable file not found in %PATH%
+    --- FAIL: TestZeroclawSessionNewSendsConfiguredAgentAlias/long_spelling (0.01s)
+        zeroclaw_test.go:676: Execute error: zeroclaw executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestZeroclawSessionNewSendsConfiguredAgentAliaslong_spelling82678472\\001\\zeroclaw": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestZeroclawSessionNewSendsConfiguredAgentAliaslong_spelling82678472\\001\\zeroclaw": executable file not found in %PATH%
+    --- FAIL: TestZeroclawSessionNewSendsConfiguredAgentAlias/inline_value (0.01s)
+        zeroclaw_test.go:676: Execute error: zeroclaw executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestZeroclawSessionNewSendsConfiguredAgentAliasinline_value2407454286\\001\\zeroclaw": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestZeroclawSessionNewSendsConfiguredAgentAliasinline_value2407454286\\001\\zeroclaw": executable file not found in %PATH%
+2026/09/05 05:39:29 WARN no safe grant offered; selecting offered reject option method=session/request_permission optionId=deny
+2026/09/05 05:39:29 WARN no safely selectable permission option offered; returning error method=session/request_permission
+2026/09/05 05:39:29 WARN no safely selectable permission option offered; returning error method=session/request_permission
+2026/09/05 05:39:29 WARN no safely selectable permission option offered; returning error method=session/request_permission
+2026/09/05 05:39:29 WARN no safely selectable permission option offered; returning error method=session/request_permission
+2026/09/05 05:39:29 WARN no safe grant offered; selecting offered reject option method=session/request_permission optionId=deny
+2026/09/05 05:39:29 WARN no safe grant offered; selecting offered reject option method=session/request_permission optionId=deny
+--- FAIL: TestGrokAuthenticatesBeforeSession (0.00s)
+    --- FAIL: TestGrokAuthenticatesBeforeSession/new_session (0.00s)
+        grok_test.go:377: execute: grok executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestGrokAuthenticatesBeforeSessionnew_session2308580855\\001\\grok": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestGrokAuthenticatesBeforeSessionnew_session2308580855\\001\\grok": executable file not found in %PATH%
+    --- FAIL: TestGrokAuthenticatesBeforeSession/resume (0.00s)
+        grok_test.go:377: execute: grok executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestGrokAuthenticatesBeforeSessionresume1821880891\\001\\grok": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestGrokAuthenticatesBeforeSessionresume1821880891\\001\\grok": executable file not found in %PATH%
+2026/09/05 05:39:29 INFO claude: forced foreground tool execution request_id=req-42 tool=Bash
+2026/09/05 05:39:29 INFO claude: forced foreground tool execution request_id=req-42 tool=Agent
+--- FAIL: TestKimiBackendThinkingConfirmationFailureWarnsAndContinues (0.00s)
+    --- FAIL: TestKimiBackendThinkingConfirmationFailureWarnsAndContinues/mismatch (0.01s)
+        kimi_test.go:309: execute: kimi executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKimiBackendThinkingConfirmationFailureWarnsAndContinuesmism2142347739\\002\\kimi": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKimiBackendThinkingConfirmationFailureWarnsAndContinuesmism2142347739\\002\\kimi": executable file not found in %PATH%
+    --- FAIL: TestKimiBackendThinkingConfirmationFailureWarnsAndContinues/missing (0.01s)
+        kimi_test.go:309: execute: kimi executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKimiBackendThinkingConfirmationFailureWarnsAndContinuesmiss2423104615\\002\\kimi": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestKimiBackendThinkingConfirmationFailureWarnsAndContinuesmiss2423104615\\002\\kimi": executable file not found in %PATH%
+--- FAIL: TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlock (0.00s)
+    --- FAIL: TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlock/qoderclicn/tool_use_deferred_until_completion (0.01s)
+        acp_deliverable_test.go:369: execute qoderclicn: qoderclicn executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockqode1280395796\\001\\qoderclicn": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockqode1280395796\\001\\qoderclicn": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlock/traecli/tool_use_deferred_until_completion (0.01s)
+        acp_deliverable_test.go:369: execute traecli: traecli executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlocktrae2640344846\\001\\traecli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlocktrae2640344846\\001\\traecli": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlock/qoderclicn/tool_use_emitted_at_start (0.01s)
+        acp_deliverable_test.go:369: execute qoderclicn: qoderclicn executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockqode2034073861\\001\\qoderclicn": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockqode2034073861\\001\\qoderclicn": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlock/hermes/tool_use_emitted_at_start (0.01s)
+        acp_deliverable_test.go:369: execute hermes: hermes executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockherm1157771720\\001\\hermes": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockherm1157771720\\001\\hermes": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlock/qoder/tool_use_deferred_until_completion (0.00s)
+        acp_deliverable_test.go:369: execute qoder: qodercli executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockqode2217422097\\001\\qodercli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockqode2217422097\\001\\qodercli": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlock/qoder/tool_use_emitted_at_start (0.01s)
+        acp_deliverable_test.go:369: execute qoder: qodercli executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockqode2497413618\\001\\qodercli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockqode2497413618\\001\\qodercli": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlock/kiro/tool_use_emitted_at_start (0.01s)
+        acp_deliverable_test.go:369: execute kiro: kiro executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockkiro1235551714\\001\\kiro-cli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockkiro1235551714\\001\\kiro-cli": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlock/kiro/tool_use_deferred_until_completion (0.01s)
+        acp_deliverable_test.go:369: execute kiro: kiro executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockkiro3249667084\\001\\kiro-cli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockkiro3249667084\\001\\kiro-cli": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlock/mcode/tool_use_deferred_until_completion (0.00s)
+        acp_deliverable_test.go:369: execute mcode: mcode executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockmcod2553750687\\001\\mcode": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockmcod2553750687\\001\\mcode": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlock/grok/tool_use_deferred_until_completion (0.01s)
+        acp_deliverable_test.go:369: execute grok: grok executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockgrok1003056596\\001\\grok": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockgrok1003056596\\001\\grok": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlock/mcode/tool_use_emitted_at_start (0.01s)
+        acp_deliverable_test.go:369: execute mcode: mcode executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockmcod3894986186\\001\\mcode": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockmcod3894986186\\001\\mcode": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlock/grok/tool_use_emitted_at_start (0.01s)
+        acp_deliverable_test.go:369: execute grok: grok executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockgrok1810739130\\001\\grok": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockgrok1810739130\\001\\grok": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlock/traecli/tool_use_emitted_at_start (0.01s)
+        acp_deliverable_test.go:369: execute traecli: traecli executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlocktrae4042995653\\001\\traecli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlocktrae4042995653\\001\\traecli": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlock/dim/tool_use_emitted_at_start (0.01s)
+        acp_deliverable_test.go:369: execute dim: dim executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockdim1778139203\\001\\dim": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockdim1778139203\\001\\dim": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlock/zeroclaw/tool_use_deferred_until_completion (0.01s)
+        acp_deliverable_test.go:369: execute zeroclaw: zeroclaw executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockzero2378684129\\001\\zeroclaw": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockzero2378684129\\001\\zeroclaw": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlock/zeroclaw/tool_use_emitted_at_start (0.01s)
+        acp_deliverable_test.go:369: execute zeroclaw: zeroclaw executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockzero2529357536\\001\\zeroclaw": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockzero2529357536\\001\\zeroclaw": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlock/dim/tool_use_deferred_until_completion (0.01s)
+        acp_deliverable_test.go:369: execute dim: dim executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockdim3229054789\\001\\dim": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockdim3229054789\\001\\dim": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlock/kimi/tool_use_deferred_until_completion (0.01s)
+        acp_deliverable_test.go:369: execute kimi: kimi executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockkimi2411045376\\001\\kimi": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockkimi2411045376\\001\\kimi": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlock/reasonix/tool_use_emitted_at_start (0.01s)
+        acp_deliverable_test.go:369: execute reasonix: reasonix executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockreas3151479652\\001\\reasonix": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockreas3151479652\\001\\reasonix": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlock/reasonix/tool_use_deferred_until_completion (0.01s)
+        acp_deliverable_test.go:369: execute reasonix: reasonix executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockreas678264422\\001\\reasonix": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockreas678264422\\001\\reasonix": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlock/kimi/tool_use_emitted_at_start (0.01s)
+        acp_deliverable_test.go:369: execute kimi: kimi executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockkimi3706410336\\001\\kimi": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockkimi3706410336\\001\\kimi": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlock/hermes/tool_use_deferred_until_completion (0.01s)
+        acp_deliverable_test.go:369: execute hermes: hermes executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockherm4048238692\\001\\hermes": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsToolTerminatedTurnFallsBackToLatestTextBlockherm4048238692\\001\\hermes": executable file not found in %PATH%
+--- FAIL: TestACPBackendsDeliverFinalAnswerWithoutNarration (0.00s)
+    --- FAIL: TestACPBackendsDeliverFinalAnswerWithoutNarration/hermes/tool_use_emitted_at_start (0.01s)
+        acp_deliverable_test.go:327: execute hermes: hermes executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationhermestool_us4211307421\\001\\hermes": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationhermestool_us4211307421\\001\\hermes": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsDeliverFinalAnswerWithoutNarration/qoderclicn/tool_use_deferred_until_completion (0.01s)
+        acp_deliverable_test.go:327: execute qoderclicn: qoderclicn executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationqoderclicntoo2344205536\\001\\qoderclicn": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationqoderclicntoo2344205536\\001\\qoderclicn": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsDeliverFinalAnswerWithoutNarration/qoderclicn/tool_use_emitted_at_start (0.01s)
+        acp_deliverable_test.go:327: execute qoderclicn: qoderclicn executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationqoderclicntoo2207239206\\001\\qoderclicn": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationqoderclicntoo2207239206\\001\\qoderclicn": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsDeliverFinalAnswerWithoutNarration/qoder/tool_use_deferred_until_completion (0.01s)
+        acp_deliverable_test.go:327: execute qoder: qodercli executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationqodertool_use3927204316\\001\\qodercli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationqodertool_use3927204316\\001\\qodercli": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsDeliverFinalAnswerWithoutNarration/qoder/tool_use_emitted_at_start (0.01s)
+        acp_deliverable_test.go:327: execute qoder: qodercli executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationqodertool_use3575255969\\001\\qodercli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationqodertool_use3575255969\\001\\qodercli": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsDeliverFinalAnswerWithoutNarration/kiro/tool_use_deferred_until_completion (0.01s)
+        acp_deliverable_test.go:327: execute kiro: kiro executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationkirotool_use_2167637447\\001\\kiro-cli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationkirotool_use_2167637447\\001\\kiro-cli": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsDeliverFinalAnswerWithoutNarration/kiro/tool_use_emitted_at_start (0.01s)
+        acp_deliverable_test.go:327: execute kiro: kiro executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationkirotool_use_4245486886\\001\\kiro-cli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationkirotool_use_4245486886\\001\\kiro-cli": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsDeliverFinalAnswerWithoutNarration/mcode/tool_use_emitted_at_start (0.01s)
+        acp_deliverable_test.go:327: execute mcode: mcode executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationmcodetool_use2390052553\\001\\mcode": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationmcodetool_use2390052553\\001\\mcode": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsDeliverFinalAnswerWithoutNarration/mcode/tool_use_deferred_until_completion (0.01s)
+        acp_deliverable_test.go:327: execute mcode: mcode executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationmcodetool_use3832460912\\001\\mcode": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationmcodetool_use3832460912\\001\\mcode": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsDeliverFinalAnswerWithoutNarration/grok/tool_use_emitted_at_start (0.01s)
+        acp_deliverable_test.go:327: execute grok: grok executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationgroktool_use_2871484714\\001\\grok": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationgroktool_use_2871484714\\001\\grok": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsDeliverFinalAnswerWithoutNarration/grok/tool_use_deferred_until_completion (0.01s)
+        acp_deliverable_test.go:327: execute grok: grok executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationgroktool_use_302089760\\001\\grok": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationgroktool_use_302089760\\001\\grok": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsDeliverFinalAnswerWithoutNarration/traecli/tool_use_deferred_until_completion (0.01s)
+        acp_deliverable_test.go:327: execute traecli: traecli executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationtraeclitool_u1137450239\\001\\traecli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationtraeclitool_u1137450239\\001\\traecli": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsDeliverFinalAnswerWithoutNarration/traecli/tool_use_emitted_at_start (0.01s)
+        acp_deliverable_test.go:327: execute traecli: traecli executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationtraeclitool_u439859726\\001\\traecli": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationtraeclitool_u439859726\\001\\traecli": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsDeliverFinalAnswerWithoutNarration/zeroclaw/tool_use_deferred_until_completion (0.01s)
+        acp_deliverable_test.go:327: execute zeroclaw: zeroclaw executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationzeroclawtool_122253519\\001\\zeroclaw": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationzeroclawtool_122253519\\001\\zeroclaw": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsDeliverFinalAnswerWithoutNarration/zeroclaw/tool_use_emitted_at_start (0.01s)
+        acp_deliverable_test.go:327: execute zeroclaw: zeroclaw executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationzeroclawtool_1660910204\\001\\zeroclaw": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationzeroclawtool_1660910204\\001\\zeroclaw": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsDeliverFinalAnswerWithoutNarration/dim/tool_use_emitted_at_start (0.00s)
+        acp_deliverable_test.go:327: execute dim: dim executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationdimtool_use_e1088880532\\001\\dim": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationdimtool_use_e1088880532\\001\\dim": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsDeliverFinalAnswerWithoutNarration/dim/tool_use_deferred_until_completion (0.01s)
+        acp_deliverable_test.go:327: execute dim: dim executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationdimtool_use_d405255527\\001\\dim": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationdimtool_use_d405255527\\001\\dim": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsDeliverFinalAnswerWithoutNarration/reasonix/tool_use_deferred_until_completion (0.00s)
+        acp_deliverable_test.go:327: execute reasonix: reasonix executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationreasonixtool_1582831689\\001\\reasonix": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationreasonixtool_1582831689\\001\\reasonix": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsDeliverFinalAnswerWithoutNarration/reasonix/tool_use_emitted_at_start (0.00s)
+        acp_deliverable_test.go:327: execute reasonix: reasonix executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationreasonixtool_4180167247\\001\\reasonix": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationreasonixtool_4180167247\\001\\reasonix": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsDeliverFinalAnswerWithoutNarration/kimi/tool_use_deferred_until_completion (0.00s)
+        acp_deliverable_test.go:327: execute kimi: kimi executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationkimitool_use_2158610596\\001\\kimi": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationkimitool_use_2158610596\\001\\kimi": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsDeliverFinalAnswerWithoutNarration/kimi/tool_use_emitted_at_start (0.00s)
+        acp_deliverable_test.go:327: execute kimi: kimi executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationkimitool_use_482031894\\001\\kimi": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationkimitool_use_482031894\\001\\kimi": executable file not found in %PATH%
+    --- FAIL: TestACPBackendsDeliverFinalAnswerWithoutNarration/hermes/tool_use_deferred_until_completion (0.00s)
+        acp_deliverable_test.go:327: execute hermes: hermes executable not found at "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationhermestool_us3733698967\\001\\hermes": exec: "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-task-3508185087\\TestACPBackendsDeliverFinalAnswerWithoutNarrationhermestool_us3733698967\\001\\hermes": executable file not found in %PATH%
+2026/09/05 05:39:29 INFO claude started pid=21252 cwd="" model=""
+2026/09/05 05:39:29 INFO claude started pid=21724 cwd="" model=""
+2026/09/05 05:39:29 INFO claude started pid=7536 cwd="" model=""
+2026/09/05 05:39:29 INFO claude started pid=23308 cwd="" model=""
+2026/09/05 05:39:29 INFO agent stream protocol summary provider=claude cli_version="" model="" exit_code=0 event_count=3 invalid_event_count=0 assistant_event_count=0 tool_use_count=0 saw_result=true result_is_error=false result_bytes=27 last_assistant_bytes=0 scanner_error=false last_event_type="" unhandled_event_type_count=0 unhandled_event_types="" unhandled_subtype_count=0 unreadable_assistant_count=0 anthropic_base_url_configured=false
+2026/09/05 05:39:29 INFO claude finished pid=21252 status=failed duration=41ms
+2026/09/05 05:39:29 INFO claude: forced foreground tool execution request_id=req-bg tool=Bash
+2026/09/05 05:39:29 INFO agent stream protocol summary provider=claude cli_version="" model="" exit_code=0 event_count=4 invalid_event_count=0 assistant_event_count=0 tool_use_count=0 saw_result=true result_is_error=false result_bytes=29 last_assistant_bytes=0 scanner_error=false last_event_type="" unhandled_event_type_count=0 unhandled_event_types="" unhandled_subtype_count=0 unreadable_assistant_count=0 anthropic_base_url_configured=false
+2026/09/05 05:39:29 INFO claude finished pid=21724 status=completed duration=50ms
+2026/09/05 05:39:29 INFO agent stream protocol summary provider=claude cli_version="" model="" exit_code=0 event_count=4 invalid_event_count=0 assistant_event_count=1 tool_use_count=0 saw_result=true result_is_error=false result_bytes=18 last_assistant_bytes=8 scanner_error=false last_event_type="" unhandled_event_type_count=0 unhandled_event_types="" unhandled_subtype_count=0 unreadable_assistant_count=0 anthropic_base_url_configured=false
+2026/09/05 05:39:29 INFO claude finished pid=23308 status=completed duration=48ms
+2026/09/05 05:39:29 INFO agent stream protocol summary provider=claude cli_version="" model="" exit_code=0 event_count=257 invalid_event_count=0 assistant_event_count=0 tool_use_count=0 saw_result=true result_is_error=false result_bytes=4 last_assistant_bytes=0 scanner_error=false last_event_type="" unhandled_event_type_count=0 unhandled_event_types="" unhandled_subtype_count=0 unreadable_assistant_count=0 anthropic_base_url_configured=false
+2026/09/05 05:39:29 INFO claude finished pid=7536 status=completed duration=52ms
+FAIL
+FAIL	github.com/multica-ai/multica/server/pkg/agent	37.960s
+FAIL
+
+--- stderr ---
