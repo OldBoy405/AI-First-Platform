@@ -1,8 +1,8 @@
 ---
 cr: CR-2026-059
-pipeline-node: write-dev-plan（回修完成；attempt 2/3 独立复评被平台扣费失败挂起，待人工充值后重发）
+pipeline-node: review-dev-plan（attempt 2/3 复评 PASS 已落盘；待人工 approve --stage dev-start）
 status: task-breakdown
-updated: 2026-09-04T18:05:00+08:00
+updated: 2026-09-05T02:20:00+08:00
 owner-agent: dev-agent
 ---
 
@@ -15,7 +15,10 @@ owner-agent: dev-agent
 - 架构期已闭环：sdd.md cycle 3 复评 PASS（canonical 落盘，attempt 3/3），人工 `approve --stage tech-design` 已于 2026-09-04 批准。
 - dev-plan 评审环 attempt 1/3 = **BLOCK（9 条 blocker B-DP-01..09，`review-annotations/dev-plan.yml` 已落盘并随 commit `6067ca8` 提交）**，已按 repair-target 回修完成：commit `88cd3ee`（plan.md + TASK-01..04 + _index.yml + cr.md status 重推 task-breakdown），checkpoint batch `2b831656f9c40467` 三仓 confirmed 并推送。
 - 下一步：独立 `quality-reviewer-agent` 执行 `review-dev-plan` 复评（attempt 2/3，逐条闭合 B-DP-01..09）。
-- ⚠ 2026-09-04 17:54+08 平台事件：attempt 2 复评委托任务 `01a06bd7-5dcc-7cd5-915b-c41c54c1a7bf` 在 provider 扣费预检阶段失败（`insufficient_user_quota`：余额 $0.387556 < 预扣 $0.586544），未执行即终败、无自动重试。review-loop dev-plan 仍 attempt 1/3，零落盘、零清理需求。**恢复入口：人工充值额度后，由 dev-agent 重新 @ `quality-reviewer-agent` 发起 attempt 2 复评（闭合清单不变，见下节）。**
+- ⚠ 2026-09-04 17:54+08 平台事件：attempt 2 复评委托任务 `01a06bd7-5dcc-7cd5-915b-c41c54c1a7bf` 在 provider 扣费预检阶段失败（`insufficient_user_quota`），未执行即终败。
+- 2026-09-04 18:05/18:28/18:35+08 三次从 Issue 主工作区触发的 reviewer run 均为无效 run（未执行 review-record、零账本改动、罐头 verdict），attempt 2 始终未消耗。
+- 2026-09-04 21:xx+08：coordinator 指令 dev-agent 从绑定上下文重发 attempt 2：`multica cr bind-current-task CR-2026-059`（changed=true）→ `crctl gate --for dev-plan-reviewing` = pass → 评论 @ quality-reviewer-agent 要求实际执行 `crctl review-record --stage dev-plan --bump-attempt`。
+- 2026-09-05 02:17+08：attempt 2/3 复评 **PASS 已落盘**（`review-annotations/dev-plan.yml` verdict=pass、blockers=[]；`review-loop.yml` review-dev-plan current-attempt=2/3；`traceability.yml` 投影同步；subject-sha256 = 回修后 plan+TASK 集 composite digest）。B-DP-01..09 逐条闭合（9 条 `已解决：` 记录）。**下一步：coordinator 发布人工 `approve --stage dev-start` → `developing`，在 multica CR worktree（HEAD `be6426a7c`）开始 TASK-01..04 实施。**
 
 ## 本轮回修落点（attempt 1 → 2）
 
@@ -37,7 +40,7 @@ owner-agent: dev-agent
 
 ## 评审入口（给 reviewer / 恢复会话）
 
-1. 权威 worktree：`C:\Users\GOBAO\Downloads\AI\AI First Platform\.rayai-worktrees\knowledge-base\requirement\CR-2026-059`（分支 `requirement/CR-2026-059`，HEAD `571f64b` = checkpoint metadata）。
+1. 权威 worktree：`C:\Users\GOBAO\Downloads\AI\AI First Platform\.rayai-worktrees\knowledge-base\requirement\CR-2026-059`（分支 `requirement/CR-2026-059`，HEAD `cc698bc`；`.crctl/tmp` 空、worktree clean）。
 2. 评审对象：回修后 `plan.md` + `tasks/TASK-01..04.md` + `tasks/_index.yml`，对照已审批 `sdd.md`；evidence 基线 = multica CR worktree HEAD `be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d`。
 3. 前置：`multica cr bind-current-task CR-2026-059` → `crctl gate CR-2026-059 --for dev-plan-reviewing`（已预跑 pass）→ `crctl review-record CR-2026-059 --stage dev-plan --bump-attempt`（attempt 2，轮次由 crctl 记账；无论 PASS/BLOCK 都落盘 canonical；**落盘后请随即提交并推送三账本**）。
 4. **复评必须逐条闭合**：B-DP-01（plan §6.1 canonical+断言）、B-DP-02（TASK-01/02 uploader 门禁）、B-DP-03（TASK-01/02/03 完整契约与 deps）、B-DP-04（TASK-02/03 带 taskSvc 签名）、B-DP-05（plan cmd-04/TASK-03 验收 2）、B-DP-06（plan §7 + cmd-06 + TASK-04 验收 3）、B-DP-07（TASK-04 merge-forward 前端）、B-DP-08（各 TASK CUSTOM.md 完成标志）、B-DP-09（TASK-03/04 HTTP 契约）。
