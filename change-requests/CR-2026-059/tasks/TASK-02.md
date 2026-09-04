@@ -23,7 +23,7 @@ created: 2026-09-04T16:40:00+08:00
 
 - 新建 `server/internal/service/discussion_session.go`：ensure/send/trigger/投影/幂等指纹与重放（§4.1/§4.2/§4.3/§4.5/§4.6）。
 - 新建 `server/internal/service/chat_idempotency_cleanup.go`：`SweepChatIdempotency`（每小时、`created_at < now()-24h`、`maxPerTick` 形态对齐 `SweepChatDraftAttachments`）。
-- `server/internal/service/project_chat.go`：GET 路径解除 `EnsureProjectDiscussionIssue` 调用（保留函数）；新增 `buildMergedForwardContentFromMessages`（平行函数，署名读作者列，legacy 路径字节级不变）；`RouteDiscussionToTeamAgent` 触发源从 Discussion Issue comment 改为 shared session 消息（入参适配，内核零 diff，KG-1/KG-2 保持）。
+- `server/internal/service/project_chat.go`：GET 路径解除 `EnsureProjectDiscussionIssue` 调用（保留函数）；新增 `buildMergedForwardContentFromMessages`（平行函数，署名读作者列，legacy 路径字节级不变）；`MergeForwardDiscussion` 扩展 `messages []db.ChatMessage` + `idempotencyKey string`（legacy 传空串跳过幂等）；`RouteDiscussionToTeamAgent` 触发源从 Discussion Issue comment 改为 shared session 消息（入参适配，内核零 diff，KG-1/KG-2 保持）。
 - `server/internal/service/task.go`：复用 `mergeChatConfigContext` / `CreateChatTask` 组合；`ChatSessionCreatorID` 辅助扩展为同时返回 kind（§3.7）；`writeChatCompletionOutcome` 写 shared 回复时补作者列（`author_type='agent', author_id=task.agent_id`）。
 - `server/internal/service/project_chat_session.go`（参照模板，不新增文件）：`SnapshotAgentDefaults` 复用。
 
@@ -37,7 +37,19 @@ created: 2026-09-04T16:40:00+08:00
 
 ## 接口契约
 
-**消费（TASK-01 产出）**：`GetActiveProjectSharedSession` / `InsertProjectSharedSession` / `GetChatMessageInWorkspace` / `BindDraftAttachmentsToChatMessage` / `InsertChatIdempotencyReservation` / `GetChatIdempotencyByKey` / `FinalizeChatIdempotency` / `SweepChatIdempotency`（签名以 TASK-01 为准，sqlc 生成后对齐）。
+**消费（TASK-01 产出，签名逐字一致）**：`GetActiveProjectSharedSession` / `InsertProjectSharedSession` / `SetChatSessionAgentID` / `GetChatMessageInWorkspace` / `BindDraftAttachmentsToChatMessage` / `InsertChatIdempotencyReservation` / `GetChatIdempotencyByKey` / `FinalizeChatIdempotency` / `DeleteChatIdempotencyByKey` / `SweepChatIdempotency`（Params 字段/pgtype、返回与冲突/无行语义以 TASK-01「接口契约」为准）。
+
+**DiscussionSessionDeps（B-DP-03 修复：完整字段与所有权）** — `server/internal/service/discussion_session.go` 定义：
+
+```go
+type DiscussionSessionDeps struct {
+    Queries   *db.Queries   // 全部 DB 访问：WithTx、会话/成员/幂等/附件查询、GetAgentRuntimeForWorkspace、ListAgentRuntimes
+    TxStarter TxStarter     // Begin() 事务入口；handler 组装层传 TaskService.TxStarter 同一实例（单一实现，无第二套）
+    TaskSvc   *TaskService  // mergeChatConfigContext 组合、SnapshotAgentDefaults、Catalog 端口（TaskSvc.ChatCatalog，§4.4 L1/L2 唯一 catalog authority，禁止另建）
+}
+```
+
+事件/队列责任边界（写入本 TASK 注释与 TASK-03 消费侧）：`SendDiscussionMessage`/`EnsureProjectDiscussionSession`/`UpdateProjectSettingsWithDiscussionCoordinator` **只回结果、不发布事件、不做 daemon 唤醒**——post-commit `publishChat(..., kind=project_shared)`、`task:queued`（kind 标注）与 `NotifyTaskEnqueued` 由 TASK-03 handler 在拿到成功结果后按 §4.2 post-commit 段执行（`publishChat` 在 handler 包，服务层不引用 handler 包）。
 
 **产出（供 TASK-03 消费）**：
 
@@ -68,28 +80,49 @@ func SendDiscussionMessage(ctx context.Context, deps DiscussionSessionDeps, wsID
 //   discussion_coordinator_not_configured | discussion_coordinator_unavailable |
 //   invalid_model_or_thinking_level | attachment_already_bound |
 //   idempotency_key_reused | replay（重放时 Result 为首次响应、Error=nil）
+// §4.2 附件绑定（B-DP-02 消费签名）：LockUnboundDraftAttachments 锁行后
+//   BindDraftAttachmentsToChatMessage(ctx, db.BindDraftAttachmentsToChatMessageParams{
+//       ChatSessionID: sessionID, ChatMessageID: messageID, TaskID: taskID, WorkspaceID: wsID,
+//       AttachmentIds: ids, UploaderType: "member", UploaderID: callerID})  // 恒由鉴权身份推导，绝不来自请求体
+//   len(bound) < len(ids) → 409 attachment_already_bound（跨上传者绑定同样命中该分支）
 
 func detectCoordinatorTrigger(content, coordinatorRequest string, configured uuid.UUID, routable *db.Agent) triggerDecision
 // triggerDecision{NeedTask bool, Reason string}：Reason ∈ none|not_configured|unavailable
 
 func UpdateProjectSettingsWithDiscussionCoordinator(ctx context.Context, deps DiscussionSessionDeps, wsID, projectID uuid.UUID, newAgentID *uuid.UUID) error // nil=解绑
 
-// project_chat.go
-func buildMergedForwardContentFromMessages(ctx context.Context, msgs []db.ChatMessage, registerCR bool) (string, error)
+// project_chat.go（B-DP-04 修复：签名与 SDD §3.5 逐字一致，taskSvc 不省略）
+func buildMergedForwardContentFromMessages(ctx context.Context, taskSvc *TaskService, msgs []db.ChatMessage, registerCR bool) string
+// 包归属：server/internal/service（unexported，同包调用）；msgs 按 created_at ASC 由调用方排序；
+// 署名读 M486 作者列（author_type/author_id），NULL 退化为 role 字面（对齐 commentAuthorDisplayName best-effort [D-20]）；
+// 结构对齐 buildMergedForwardContent（Trigger message + Conversation history + 可选 registerCR 块），legacy comment 路径字节级不变
+
+func (s *IssueService) MergeForwardDiscussion(ctx context.Context, workspaceID, projectID, callerID pgtype.UUID,
+    comments []db.Comment, messages []db.ChatMessage, registerCR bool, idempotencyKey string) (*SendProjectChatMessageResult, error)
+// message_ids 路径（messages 非空且 idempotencyKey 非空）幂等（§3.5/§4.6，scope_type=merge_forward_messages，scope_id=project_id）：
+//   1) 指纹 = 去重后顺序保留的 message ids + register_cr 的规范 JSON sha256
+//   2) 短事务 InsertChatIdempotencyReservation → ErrNoRows 冲突 → GetChatIdempotencyByKey：
+//      赢家同指纹且 response_body 非 NULL → 直接回存 {status,body}（201 重放，不重跑内核）
+//      赢家同指纹且 response_body 为 NULL（上次执行中断）→ 本请求接管：重跑内核并 finalize
+//      赢家异指纹 → error 409 idempotency_key_reused
+//   3) sendProjectChatCore 零 diff 执行（其自开事务，presenter/校验语义不变）
+//   4) 短事务 FinalizeChatIdempotency(status 201, body=SendProjectChatMessageResult JSON)；内核失败 → DeleteChatIdempotencyByKey（键可复用）
+//   诚实注记：内核自开事务不可包裹 → 步骤 3 提交后、4 完成前崩溃的重试会重跑内核（可能重复一对 comment/task）；
+//   正常重放（body 已存）不重跑，AC-27 正常路径不受影响（zero_diff 内核无法内联幂等，代价已接受并注记）
 
 // chat_idempotency_cleanup.go
 func SweepChatIdempotency(ctx context.Context, q *db.Queries, cutoff time.Time) (int64, error)
 ```
 
-`DiscussionSessionDeps` 汇总本 TASK 服务所需依赖（queries/tx/ports/agent 服务），不依赖 handler 包（层次合规 handler → service）。
+`DiscussionSessionDeps` 只依赖 service 包与 `db`/`pgtype`，不引用 handler 包（层次合规 handler → service）。
 
 ## 验收条件
 
-1. `go test ./server/internal/handler/ ./server/internal/service/ -count=1` 全绿且覆盖：并发 GET 收敛同一 session（AC-8）；普通消息无 task/Issue（AC-3）；协办 task `issue_id=NULL` + `context.chat_config`（AC-4）；回复写回同 session（AC-5）；发送失败零残留 + 附件原子绑定（AC-13）；幂等重放/冲突/并发单提交（AC-26）；移出先提交 → 404 零写入（AC-28 竞态向量）；归档后 409 `unavailable`（AC-31）；hard-delete 保留与回放（AC-32）。
+1. `go test ./server/internal/handler/ ./server/internal/service/ -count=1` 全绿且覆盖：并发 GET 收敛同一 session（AC-8）；普通消息无 task/Issue（AC-3）；协办 task `issue_id=NULL` + `context.chat_config`（AC-4）；回复写回同 session（AC-5）；发送失败零残留 + 附件原子绑定（AC-13）；**跨上传者负向向量（B-DP-02）：成员 B 发送时携带成员 A 的未绑定草稿 id → 绑定 0 行 → 409 `attachment_already_bound` 零残留（AC-12/AC-13）**；幂等重放/冲突/并发单提交（AC-26）；移出先提交 → 404 零写入（AC-28 竞态向量）；归档后 409 `unavailable`（AC-31）；hard-delete 保留与回放（AC-32）。
 2. `go test ./server/internal/handler/ ./server/pkg/agent/ -count=1` 覆盖 AC-10 入队臂与 AC-21（单一实现复用，无第二套规则表）。
 3. 本 TASK diff 不含 `sendProjectChatCore` 任何改动（`git diff` 审查该函数零行变化）。
 4. 服务注释一律英文；无 TBD。
 
 ## 完成标志
 
-上述测试命令全绿 + zero_diff 审查通过 + 所有服务函数已落盘并 commit 到 `requirement/CR-2026-059`（`developing` 内可被 `crctl task done` 登记的事件）。
+上述测试命令全绿 + zero_diff 审查通过 + 所有服务函数已落盘并 commit 到 `requirement/CR-2026-059` + `CUSTOM.md` 本 TASK 条目已按当时实际结构登记（`discussion_session.go`、`chat_idempotency_cleanup.go`、`project_chat.go` 改动/挂钩点；不预登记 TASK-03/04 文件）（`developing` 内可被 `crctl task done` 登记的事件）。
