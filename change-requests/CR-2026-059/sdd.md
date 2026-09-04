@@ -6,7 +6,7 @@ title: Discussion 无 Issue 共享会话 技术设计
 target-version: 0.32
 status: draft
 created: 2026-09-04T01:50:00+08:00
-updated: 2026-09-04T14:20:00+08:00
+updated: 2026-09-04T14:40:00+08:00
 ---
 
 > 输入：`change-requests/CR-2026-059/prd.md`（选项 A 定点修订后版本，cycle 3 复评 PASS）。成员口径 = 「项目成员 := 当前 workspace 成员」（PRD FR-25 成员口径段，选项 A 裁决，2026-09-03，AIFI-16）。
@@ -113,6 +113,8 @@ ALTER TABLE chat_session
 
 存量行（1:1 与 Private Ask）经列默认值成为 `private`；ADD COLUMN 带常量默认不重写表。新 Private Ask / 1:1 插入继续走默认或显式 `private`（既有 `CreateChatSession` 无需改签名，sqlc 参数缺省即默认值）。
 
+- `down`（`482_chat_session_kind.down.sql`）：`ALTER TABLE chat_session DROP COLUMN kind;`——普通 ALTER、无 CONCURRENTLY、不登记任何钩子（§4.9）。**数据依赖（有损回滚，cycle 2 blocker B-MIG-3 回修）**：PostgreSQL 不为「仍存在 project_shared 行」设防，语句无条件成功；若回滚时仍有 shared 行，其 kind 区分被抹除、行退回 private 语义（旧代码将按 Private Ask 行处理）——回滚序（§4.9）要求先归档/清理 shared session 行再回滚，down 文件注释写明该损失边界，不静默吞错。
+
 ## 2.3 M483/M484 — Private Ask 唯一索引谓词收窄：先建新名再删旧（落地 FR-6/FR-5；cycle 1 blocker B-MIG-2 回修）
 
 旧设计（483 先 DROP 旧索引 → 484 同名收窄重建）存在**无唯一约束窗口**：窗口内并发 Private Ask get-or-create 可插入重复 active 行，`ORDER BY ... LIMIT 1` 只能隐藏重复读，既不能阻止重复、也不能保证后续唯一索引构建成功（重复行会使构建失败）。现改为**先以新名称 `CONCURRENTLY` 建好收窄唯一索引，再 `CONCURRENTLY` 删除旧索引**——全程至少有一个唯一约束在位：
@@ -150,6 +152,8 @@ CREATE UNIQUE INDEX CONCURRENTLY chat_session_project_shared_active_unique
 
 `chat_session.project_id` 为软引用（迁移 214，无 FK [D-05]），shared session 复用该列；项目删除走既有 `ClearChatSessionProjectByProject`（置 NULL）——置 NULL 行自动落出谓词，不产生悬挂唯一键。
 
+- `down`（`485_chat_session_project_shared_active_unique.down.sql`）：`DROP INDEX CONCURRENTLY IF EXISTS chat_session_project_shared_active_unique;`——CONCURRENTLY **删除**、不构建索引，**无构建钩子**：不登记 `concurrentDownIndexCleanups`（该 map 只收 down 方向以 CONCURRENTLY 构建索引的迁移，§4.9）。**数据依赖（cycle 2 blocker B-MIG-3 回修）**：删除后「每项目一个 active shared」的 DB 唯一保证消失；若服务端 kind 分流代码未先回滚，并发首开可产生重复 active shared 行——回滚窗口契约 = 代码先于该 down 回滚（§4.9 逆序清单），down 文件注释写明。
+
 ## 2.5 M486 — `chat_message` 作者列（落地群聊展示与 merge-forward 署名）
 
 `486_chat_message_author.up.sql`：
@@ -168,6 +172,8 @@ ALTER TABLE chat_message
   - core 契约：`ChatMessageSchema`/`ChatMessage` 增可空字段，malformed/legacy 独立降级（§3.3）；
   - 前端展示：`DiscussionPane` 消息气泡按作者字段解析展示，NULL/malformed 回退现状渲染（§3.3 回退表）；
   - 测试：服务端 NULL/private 行向量 + core malformed/legacy 向量 + pane 作者渲染/回退向量（§6.2 AC-6/AC-18 行）。
+
+- `down`（`486_chat_message_author.down.sql`）：`ALTER TABLE chat_message DROP COLUMN author_type, DROP COLUMN author_id;`——普通 ALTER、无钩子登记（§4.9）。**数据依赖（有损回滚，cycle 2 blocker B-MIG-3 回修）**：已写 shared 消息的作者归属被不可逆抹除，回滚后展示退回本节所述 NULL 降级（role 字面）；private/旧行不受影响（其列本就 NULL）——down 文件注释写明该损失，操作者须知晓（回滚序见 §4.9）。
 
 ## 2.6 M487–M490 — 幂等记录表：建表不内联 PK，索引全 CONCURRENTLY（落地 FR-24；cycle 1 blocker B-MIG-1 回修）
 
@@ -213,7 +219,7 @@ CREATE INDEX CONCURRENTLY idx_chat_idempotency_created ON chat_idempotency (crea
 - 无 REFERENCES（不变量 6）；CHECK 是表级值约束、不创建索引，不受 CONCURRENTLY 条款约束。`USING INDEX` 要求目标索引唯一、非部分、列序匹配——488 全满足；挂 PK 取 ACCESS EXCLUSIVE 锁，但此时表为空（487 刚建、代码未上线），瞬时完成，不构成热表风险。
 - 收敛语义不变：同一 (workspace, user, scope, key) 的并发请求在 PK 上串行；§4.2/§4.6 的冲突仲裁写为 `ON CONFLICT ON CONSTRAINT chat_idempotency_pkey DO NOTHING`——以约束名而非索引名为仲裁靶，索引更名/漂移不影响（决策 D-12）。
 - `created_at` 普通索引供 24h sweeper 范围删（§4.6）。
-- **down（逆序）**：`490.down` 删 `idx_chat_idempotency_created`；`489.down` `DROP CONSTRAINT IF EXISTS chat_idempotency_pkey`（底层索引随约束一并删除）；`488.down` `DROP INDEX CONCURRENTLY IF EXISTS chat_idempotency_scope_key_uidx`（489 已回滚时为 no-op，仅对「488 已应用、489 未应用」的部分状态生效）；`487.down` 删表。
+- **down（逆序）**：`490.down` = `DROP INDEX IF EXISTS idx_chat_idempotency_created;`（普通 DROP，幂等表小无需 CONCURRENTLY）；`489.down` `DROP CONSTRAINT IF EXISTS chat_idempotency_pkey`（底层索引随约束一并删除）；`488.down` `DROP INDEX CONCURRENTLY IF EXISTS chat_idempotency_scope_key_uidx`（489 已回滚时为 no-op，仅对「488 已应用、489 未应用」的部分状态生效）；`487.down` `DROP TABLE chat_idempotency;`（删表即删幂等历史，有损、回滚即接受）。
 - **登记**：488/490 登记 `concurrentIndexCleanups`；489 为普通 ALTER、484/483/488 的 CONCURRENTLY 删除均不构建索引，无需登记（total 不变量依据见 §4.9）。
 - **编号影响**：迁移区间延伸到 **481–490**（PRD「481 起」的下界不变）。
 
@@ -252,6 +258,7 @@ type ProjectDiscussionResponse struct {
   - 会话状态：`status≠active` → 409 `chat_session_closed_or_changed`；kind/项目不符 → 404。
   - 校验（§4.4 **provider/catalog authority 阶梯**，cycle 1 blocker B-CONFIG-1 回修）：**L1** settings 配置了 Coordinator 且 agent 行存在（可路由或已归档）→ 按该 agent 行逐字走 `LoadChatCatalogForConfig` + `ValidateResolvedChatConfig`（与现 Private Ask 同一实现，禁止第二套 [D-17]；归档 → Blocked verdict → 400）；**L2** 未配置或 agent 行已 hard-delete → 以 workspace ready-runtime 并集 authority 校验（纯 sentinel 恒过；非空值须至少一个 ready runtime 的 catalog 接受，否则 400 `invalid_model_or_thinking_level`）。旧「无 Coordinator 不校验、推迟到入队」口径废除——它使非法配置可成功持久化、AC-10 PATCH 臂不可达（决策 D-6 已重写）。
   - 错误顺序：403/404/409 门禁先于 400 校验（与现 Private Ask BLOCK-003 顺序同构）；校验在服务侧 `LockChatSessionInWorkspace` [D-07] 锁内执行（catalog I/O 期间事务只持会话行锁，与 `SendDirectChatMessage` task.go L2530–2566 同构）。
+  - **事务内成员资格复核（cycle 2 blocker B-AUTH-2 回修）**：shared 分支进入事务后、任何写入前，先取 `LockSubscriberWrites(workspace_id, caller)`（**第一把锁**，先于会话行锁——与 `revokeAndRemoveMember` 同一把 (workspace, user) advisory [D-27]，双方都以它为第一把锁 → 与移出串行、锁序一致、无死锁）；随后在事务内 `GetMemberByUserAndWorkspace` 复核成员行存在且 role ∈ {owner, admin}（读的是 advisory 持有下最新已提交状态）：已移出 → 404 `chat_session_not_found`、整个事务回滚、零写入（override 不落库）；advisory 持有至提交（owner/admin PATCH 低频；阻塞面仅同 (ws,user) 的移出，最坏一次 30s LiveLoad round 已封顶）。
   - 写入：`LockChatSessionInWorkspace` [D-07] 下三态写 override（复用 `parseChatConfigFieldPatch`）；无 Coordinator 不走「创建者 Agent」路径、绝不调用 `UpdateAgent`（FR-9）。
   - 已入队 task 不受影响（快照已在 `task.context`，FR-11/FR-26 表）。
 
@@ -291,6 +298,7 @@ author_id: z.string().nullable().catch(null).optional(),
 - `attachment_ids` 重复 → 拒绝（不静默去重；重复 ID 进不了指纹，见 §4.6）；非 UUID → 现有 `parseUUIDSliceOrBadRequest` 400；
 - `coordinator_request ∈ {none, mention, analyze, summarize}`，缺省 `none`，非法枚举拒绝；
 - 缺 `Idempotency-Key` → 400 `idempotency_key_required`；>255B → 400（`MaxIdempotencyBytes` [D-29]）。
+- **成员门禁双保险（cycle 2 blocker B-AUTH-2 回修）**：pre-tx 成员 fast-fail（非成员 → 404）之外，§4.2 事务内先取 `LockSubscriberWrites` 与 revoke 串行、再复核成员资格——pre-tx 通过后并发移出的请求在事务内 404、回滚零写入。
 
 成功 **201**，响应体：
 
@@ -310,7 +318,7 @@ type DiscussionSendResponse struct {
 - `message_ids` 路径：逐条 `GetChatMessageInWorkspace`（新 sqlc 查询：`id + workspace_id`）校验「同属本项目唯一 active/已归档 `project_shared` session」（跨 session/跨项目/`kind=private`/普通 Issue → 400）；重复 id 按首次出现去重（与 comment 路径一致）；去重后 1–50。
 - 渲染：新增 `buildMergedForwardContentFromMessages(ctx, taskSvc, msgs []db.ChatMessage, registerCR bool)`——结构对齐 `buildMergedForwardContent`（Trigger message + Conversation history + 可选 registerCR 块）[D-20]，署名改读作者列（§2.5）；**不**抽公共接口泛化，legacy comment 路径保持字节级不变。
 - 内核：仍调 `sendProjectChatCore`（零改动，NFR-7）；`message_ids` 路径要求 `Idempotency-Key`（scope_type=`merge_forward_messages`，scope_id=project_id），legacy `comment_ids` 路径不要求（PRD FR-24）。
-- 权限：成员 + 既有 Team Agent 发送权限（presenter 规则在内核内，零改动）；非成员 → 403 `forbidden_project_discussion`。
+- 权限：成员 + 既有 Team Agent 发送权限（presenter 规则在内核内，零改动）；非成员 → 403 `forbidden_project_discussion`。**移出竞态（cycle 2 blocker B-AUTH-2 回修）**：`message_ids` 路径在派发 `sendProjectChatCore` 前做一次即时成员复核（`GetMemberByUserAndWorkspace`，最新已提交行），内核自身 presenter 守卫 + `revokeAndRemoveMember` [D-27] 同事务回收 presenter grants 构成第二层。诚实注记：内核事务为 zero_diff、不接 advisory，若 revoke 在内核 presenter 检查后、内核提交前完成，该次转投仍会落一条 Team Agent 消息——与 legacy `comment_ids` 路径现状同语义，本 CR 不放大；已移出者随即失去全部读取权（FR-25）。
 
 ## 3.6 其余 session 级 endpoint 的 kind 闭合（接口闭包，SDD-CLOSE-04）
 
@@ -369,8 +377,13 @@ commit
 形态对齐 `SendDirectChatMessage`（事务内 task+消息+附件原子提交、提交后才通知/广播 [D-13]），但无 channel/quick-actions 分支：
 
 ```text
-pre-tx: 头/体校验（§3.4）；成员门禁（非成员 → 404）
+pre-tx: 头/体校验（§3.4）；成员门禁（非成员 → 404，fast-fail；权威复核在事务内，见下）
 tx begin
+  LockSubscriberWrites(ws, caller)                   // 第一把锁（B-AUTH-2）：与 revokeAndRemoveMember 同一
+                                                     // (workspace, user) advisory [D-27]，双方都以它为第一把锁
+                                                     // → 与移出串行、无死锁（锁序见块后段）
+  member ← GetMemberByUserAndWorkspace(ws, caller)   // 事务内成员资格复核：advisory 持有下读到最新已提交状态；
+      无行 → 404 chat_session_not_found             // pre-tx 通过后并发移出的请求在此拦截，回滚零写入
   advisory "project-discussion-session|{ws}|{project}"
   session ← LockChatSessionInWorkspace(sid, ws) FOR UPDATE [D-07]
       不存在/跨项目/kind≠project_shared → 404 chat_session_not_found
@@ -410,6 +423,12 @@ commit
 post-commit: publishChat(EventChatMessage, kind=project_shared)（workspace 广播）
              协办时再发 task:queued（kind 标注）+ NotifyTaskEnqueued（daemon 唤醒）
 ```
+
+**锁序与移出竞态（cycle 2 blocker B-AUTH-2 回修）**：
+
+- 锁序（固定，禁止重排）：`LockSubscriberWrites(ws, caller)` → `project-discussion-session|{ws}|{project}` advisory → 会话行锁 → 幂等键/附件行锁。`revokeAndRemoveMember` 以 `LockSubscriberWrites` 为第一把锁（其后 member 删除与订阅清理，不触碰会话行）[D-27]；delegated auto-subscribe / autopilot 订阅路径同样以它为第一把锁，本事务不触碰 issue_subscriber/autopilot_subscriber——三方首锁一致、其余锁集合不相交，无死锁环。§3.2 shared PATCH 同序（advisory 先于会话行锁）。
+- 竞态二择一（FR-25「请求时授权」）：**移出先提交** → revoke 先取 advisory、删 member 行并提交，本事务随后取锁、复核无行 → 404 回滚零写入（幂等预留行随回滚消失，Idempotency-Key 可复用）；**发送先锁** → 本事务复核通过、写完消息/task/附件并提交，revoke 随后删 member 并在提交后挂接 `DisconnectWorkspaceUser`（§4.7）断开其连接——落库消息是移除生效前最后一条合法消息，移除后新请求即时 404。
+- 失败事务零残留：复核之后的任何一步失败 → 整体回滚，不留下幂等预留、chat_message、task 或附件绑定（幂等冲突分支除外，其自身有重放语义）。
 
 新 sqlc 查询 `BindDraftAttachmentsToChatMessage`（`attachment.sql`）：对已锁行写 `chat_session_id/chat_message_id/task_id(可空)`，WHERE 保持五类绑定全空 + `source_context_id IS NULL` + uploader=调用者，`RETURNING id`——与 `BindUnboundDraftAttachments`（issue/comment/task 三靶）同构 [D-10]；不复用 `LinkAttachmentsToChatMessage`（其允许 `chat_session_id` 已等于目标且不写 `task_id`，语义不满足 FR-15 协办绑定）。
 
@@ -536,7 +555,7 @@ settings PATCH（`project.go` coordinator 分支 [D-18]）扩展：
 | `*MirroredRelay`（dual 模式） | 转发 primary/mirror 两者，各自发布（两类流族都落控制帧，消费侧同一分支） |
 | `*DualWriteBroadcaster`（各 Redis 模式的外层包装） | 本地 `hub.DisconnectWorkspaceUser` 立即执行 + `relay.PublishWithID(user scope, 控制帧)`；环回信封再执行一次，幂等无操作 |
 
-5. **挂接点**：`revokeAndRemoveMember` [D-31] **事务提交后**调用 `broadcaster.DisconnectWorkspaceUser(userID, workspaceID)`，**独立于 `revocationResult.isEmpty()`**（被移出成员即使不拥有任何 runtime 也可能持有 WS 连接；`publishRevocation` 在空结果时提前返回，不能承载此步）。daemon 连接不在此面：由既有 revoke 的 token 吊销路径覆盖（零 diff）。
+5. **挂接点**：`revokeAndRemoveMember` [D-27] **事务提交后**调用 `broadcaster.DisconnectWorkspaceUser(userID, workspaceID)`，**独立于 `revocationResult.isEmpty()`**（被移出成员即使不拥有任何 runtime 也可能持有 WS 连接；`publishRevocation` 在空结果时提前返回，不能承载此步）。daemon 连接不在此面：由既有 revoke 的 token 吊销路径覆盖（零 diff）。
 6. **重连与残留**：连接被断后重连走 `IsMember` → 拒绝；请求级成员门禁（member 行已删）即时阻断新读取。残留窗口：事务提交 → 断连完成（本地同步；跨节点 = 一次 XADD + 消费者唤醒，亚秒级）之间在途帧可能仍送达；XADD 失败记日志+指标并重试一次，仍失败仅记录（请求级门禁与重连拒绝是安全边界，WS 投递为信息面）。
 7. **双节点验收向量（AC-29）**：用户 U 在节点 B 持连接；移出事务落节点 A → A 发布控制信封 → B 消费并关闭 U 的连接；其后 workspace 广播不达 U，成员 B（同在节点 B）不受影响。测试：`realtime` 包 hub 级单测（断连/房间清理）+ relay 级控制信封消费测（fake 流）+ handler 级挂接测（含 isEmpty 结果仍断连）；命令见 §6.2 AC-29 行。
 
@@ -544,11 +563,30 @@ settings PATCH（`project.go` coordinator 分支 [D-18]）扩展：
 
 `loadAttachmentForRequest` [D-32] 现按上传者门放行未绑定草稿；扩展：附件 `chat_session_id` 非空且所属 session `kind=project_shared` 时，放行条件改为「当前 workspace 成员」（非成员 → 404，不确认存在）；`kind=private` 与未绑定草稿行为不变。
 
+读路径不产生写入、无需与移出事务串行：门禁读实时 `member` 表（与 §3.1 同源），移出提交后新请求即时 404（AC-28）；在途下载在移出后完成不构成后续写入面。shared 写路径的移出竞态由 §4.2/§3.2 的 `LockSubscriberWrites` 事务内复核关闭（B-AUTH-2）。
+
 ## 4.9 迁移与部署顺序
 
 481 → 482 → 483 → 484 → 485 → 486 → 487 → 488 → 489 → 490（编号即部署序；每一步的单向安全性见 §2.3/§2.6：先建新名再删旧、建表→唯一索引→挂 PK→辅助索引）。服务端 kind 分流代码在 482 之后生效；482 落地但代码未上线期间不存在 `project_shared` 行（无创建者），窗口安全。代码在 490 之后上线（`ON CONFLICT ON CONSTRAINT chat_idempotency_pkey` 依赖 489 完成）。
 
-**迁移运行器纪律（硬不变量；cycle 1 blocker B-MIG-1/B-MIG-2 同源回修）**：运行器在事务外逐文件应用（`cmd/migrate` runMigrations，单连接会话级 advisory lock）以支持 CONCURRENTLY；**每个以 CONCURRENTLY 构建索引的 up 迁移必须登记 `concurrentIndexCleanups`**（重试前清理中断构建遗留的 INVALID 索引），**每个以 CONCURRENTLY 构建索引的 down 迁移必须登记 `concurrentDownIndexCleanups`**——两 map 均为 total 不变量，由 `TestEveryConcurrentUpBuildHasCleanup` 守护，漏登记直接挂 CI。本 CR 登记清单：up = 483（`chat_session_private_creator_active_unique`）、485（`chat_session_project_shared_active_unique`）、488（`chat_idempotency_scope_key_uidx`）、490（`idx_chat_idempotency_created`）；down = 484.down（旧宽谓词索引重建）。484.up/483.down/488.down 为 CONCURRENTLY 删除（不构建）、489 为普通 ALTER，均不登记。
+**迁移运行器纪律（硬不变量；cycle 1 blocker B-MIG-1/B-MIG-2、cycle 2 blocker B-MIG-3 同源回修）**：运行器在事务外逐文件应用（`cmd/migrate` runMigrations，单连接会话级 advisory lock）以支持 CONCURRENTLY；**每个以 CONCURRENTLY 构建索引的 up 迁移必须登记 `concurrentIndexCleanups`**（重试前清理中断构建遗留的 INVALID 索引），**每个以 CONCURRENTLY 构建索引的 down 迁移必须登记 `concurrentDownIndexCleanups`**——两 map 均为 total 不变量，由 `TestEveryConcurrentUpBuildHasCleanup` 守护，漏登记直接挂 CI。本 CR 登记清单：up = 483（`chat_session_private_creator_active_unique`）、485（`chat_session_project_shared_active_unique`）、488（`chat_idempotency_scope_key_uidx`）、490（`idx_chat_idempotency_created`）；down = **仅 484.down**（旧宽谓词索引重建——十个 down 中唯一以 CONCURRENTLY 构建索引者）。484.up/483.down/485.down/488.down 为 CONCURRENTLY 删除（不构建）、481/482/486/487/489/490 为普通 ALTER/DROP，均不登记。
+
+**down 全集（481–490，逆序回滚；cycle 2 blocker B-MIG-3 回修——§1.2「各有 down」在此逐条闭环）**：
+
+| 迁移.down | 语句 | 类型 | 钩子登记 | 数据依赖 / 失败语义 |
+|---|---|---|---|---|
+| 490.down | `DROP INDEX IF EXISTS idx_chat_idempotency_created;` | 普通 DROP | 无 | 幂等表小，无需 CONCURRENTLY |
+| 489.down | `DROP CONSTRAINT IF EXISTS chat_idempotency_pkey;` | 普通 ALTER（底层索引随约束删除） | 无 | 488.down 因此 no-op（§2.6 部分状态注记） |
+| 488.down | `DROP INDEX CONCURRENTLY IF EXISTS chat_idempotency_scope_key_uidx;` | CONCURRENTLY 删除（不构建） | 无 | 仅对「488 已应用、489 未应用」部分状态生效 |
+| 487.down | `DROP TABLE chat_idempotency;` | 普通 DROP | 无 | 删表即删幂等历史（有损，回滚即接受） |
+| 486.down | `ALTER TABLE chat_message DROP COLUMN author_type, DROP COLUMN author_id;` | 普通 ALTER | 无 | **有损**：已写 shared 消息作者归属不可逆丢失，展示退回 NULL 降级（§2.5） |
+| 485.down | `DROP INDEX CONCURRENTLY IF EXISTS chat_session_project_shared_active_unique;` | CONCURRENTLY 删除（不构建） | **无**（无构建钩子，§2.4） | 每项目单 active 的 DB 保证消失；代码未先回滚时并发首开可产生重复 active shared 行（§2.4） |
+| 484.down | `CREATE UNIQUE INDEX CONCURRENTLY chat_session_project_creator_active_unique ...`（旧宽谓词） | CONCURRENTLY **构建** | **`concurrentDownIndexCleanups`（唯一）** | 仍存 project_shared active 行与同 (project, creator) private 行并存时构建**硬失败**（§2.3） |
+| 483.down | `DROP INDEX CONCURRENTLY IF EXISTS chat_session_private_creator_active_unique;` | CONCURRENTLY 删除（不构建） | 无 | 回滚序先 484.down 后 483.down，双索引并存过约束但安全（§2.3） |
+| 482.down | `ALTER TABLE chat_session DROP COLUMN kind;` | 普通 ALTER | 无 | **有损**：仍存 project_shared 行时 kind 区分被抹除、行退回 private 语义；无条件成功，注释写明损失（§2.2） |
+| 481.down | `DROP CONSTRAINT` → 重建 `ON DELETE CASCADE` → `SET NOT NULL`（同文件按序三句，PRD FR-21 授权形态） | 普通 ALTER | 无 | 存在 NULL 行时 `SET NOT NULL` 失败（不静默吞错，§2.1） |
+
+回滚序 = 编号逆序（490→481），`cmd/migrate down` 逐文件、事务外、同一运行器纪律；**代码与迁移回滚顺序**：服务端 kind 分流代码先于 485/482.down 回滚（否则 485.down 后并发首开可重复、482.down 抹除 kind 区分），与 up 方向「代码在 490 之后上线」对称。
 
 sqlc：新/改查询后 `make sqlc` 再生成（不变量 5，生成文件不手改）。`CUSTOM.md` 登记（编号顺延）：481–490 迁移（含上述钩子登记）、`discussion_session.go`、handler kind 分流、settings 清除分支、事件 kind 字段与路由、Broadcaster 断连与 relay 控制分支、幂等表与 sweeper、新绑定查询、前端 discussion-pane、schema 与作者字段。
 
@@ -601,7 +639,7 @@ sqlc：新/改查询后 `make sqlc` 再生成（不变量 5，生成文件不手
 | FR-15 | §4.2 同事务绑定（`BindDraftAttachmentsToChatMessage`）+ 失败零残留 + 草稿保留重试 |
 | FR-16 | §3.1 `legacy_issue_id` 只读 [D-34]；不双写、不删除、不补建 |
 | FR-17 | §3.2/§3.4/§3.6 固定状态映射表（404/409/200 只读）+ `LockChatSessionInWorkspace` 锁内复验 [D-07] |
-| FR-18 | 全部 code 落点：§3.1–§3.5 + `writeErrorCode`/`writeProjectChatSendError` [D-31][D-21]；legacy `invalid_comment_selection` 不动 |
+| FR-18 | 全部 code 落点：§3.1–§3.5 + `writeErrorCode`/`writeProjectChatSendError` [D-24][D-18]；legacy `invalid_comment_selection` 不动 |
 | FR-19 | 前端：schema 重写（`session_id` 硬降级只读）、discussion-pane session 身份、legacy 只读流、配置控件走 PATCH config（不 `UpdateAgent`） |
 | FR-20 | §3.7 事件 kind 字段 + §4.7 路由与退订 |
 | FR-21 | §2.1 M481（SQL 与 PRD 逐字一致）+ §4.9 编号/CONCURRENTLY/CUSTOM.md/英文注释 |
@@ -633,7 +671,7 @@ sqlc：新/改查询后 `make sqlc` 再生成（不变量 5，生成文件不手
 | AC-16 | §3.5 内核复用 `sendProjectChatCore`（zero_diff） | 转投仍走既有内核；本 CR diff 不含该函数 | diff 审查 + 既有内核测试全绿 |
 | AC-17 | 前端 schema 硬降级（`session_id` 缺失/空/非 UUID → 只读） | `packages/core/api/schemas.test.ts` 用例；`legacy_issue_id` 不参与发送 | schema 是响应唯一解析入口（NFR-8） |
 | AC-18 | discussion-pane session 身份 + 四语 key + §3.3 作者展示/回退 | pane 不依赖可写 `issue_id`；user 气泡作者展示（member/agent 解析，NULL/已移出成员回退）；`parity.test.ts` 全绿 | 文案经 locales 单一出口；作者回退文案四语对称（B-AUTHOR-1 回修） |
-| AC-19 | §2.1–§2.6 + §4.9 | `pg_get_constraintdef` 见 `ON DELETE SET NULL`；down 往返全绿；**每个新索引（含新表 PK 的隐式索引）均由独立单语句迁移 `CONCURRENTLY` 构建**（487 不内联 PK → 488 CONCURRENTLY 唯一索引 → 489 `USING INDEX` 挂 PK → 490）；`concurrentIndexCleanups`/`concurrentDownIndexCleanups` 登记完整（`TestEveryConcurrentUpBuildHasCleanup` 绿）；`CUSTOM.md` 登记 | 迁移测试直查约束定义与索引创建方式；481 前提已核（无后续引用 [D-03]）；B-MIG-1/B-MIG-2 回修 |
+| AC-19 | §2.1–§2.6 + §4.9（含 down 全集与逆序回滚清单） | `pg_get_constraintdef` 见 `ON DELETE SET NULL`；**up/down 往返全绿（481–490 十条 down 各自可执行，含 482/485/486.down）**；**每个新索引（含新表 PK 的隐式索引）均由独立单语句迁移 `CONCURRENTLY` 构建**（487 不内联 PK → 488 CONCURRENTLY 唯一索引 → 489 `USING INDEX` 挂 PK → 490）；`concurrentIndexCleanups`/`concurrentDownIndexCleanups` 登记完整且 down 侧**仅 484.down**（唯一 down 方向 CONCURRENTLY 构建；485.down 为 CONCURRENTLY 删除无构建钩子）；482/486 有损回滚注释存在；`CUSTOM.md` 登记 | 迁移测试直查约束定义与索引创建方式；481 前提已核（无后续引用 [D-03]）；命令 `go test ./server/cmd/migrate/ -count=1`（up/down 往返与登记完整性守护）；B-MIG-1/B-MIG-2/B-MIG-3 回修 |
 | AC-20 | §3.2/§3.4 状态映射 + §3.3 归档只读 200 | 成员对归档 session PATCH/POST 409；错 kind/跨项目/非成员 404；列表仍 200 | 映射集中在一个分流函数，无二义分支 |
 | AC-21 | §3.2/§4.2/§4.4 只调 `ResolveChatConfig`/`LoadChatCatalogForConfig`/`ValidateResolvedChatConfig` [D-17] | 测试不出现第二套规则表；L2 并集为同一组函数 + `runtimeVerdict` 的复用，无新增 model/thinking 规则 | 单一实现函数签名不变，新调用点只是新 caller（B-CONFIG-1 回修） |
 | AC-22 | §3.6 闭包 + NFR-6/7 零改动面 | Team Agent GET 仍不建 Issue；Private Ask 夹具全绿；`go test ./server/internal/handler/ ./server/internal/service/ -count=1` 无新增无关失败 | private 分支逐行保留，回归基线可比 |
@@ -642,8 +680,8 @@ sqlc：新/改查询后 `make sqlc` 再生成（不变量 5，生成文件不手
 | AC-25 | §3.5 互斥/选择校验 | 双非空 400 `invalid_merge_forward_selection` 且 Team Agent 侧零新行；跨源 400 `invalid_message_selection`；重复只合并一条 | 校验先于内核调用；去重与 comment 路径同语义 |
 | AC-26 | §2.6/§4.6 | 缺头 400 零写入；同指纹重放两次 201 同 id、附件不 409、DB 单条；异指纹 409 零写入；**同一附件集合仅请求顺序不同 → 同指纹 → 201 重放（非 409）**；并发单次提交 | PK 冲突收敛由数据库唯一性保证（§4.6）；指纹的 `attachment_ids` 稳定排序（B-IDEMP-1 回修） |
 | AC-27 | §3.5 message_ids 幂等 | 缺头 400；重放 201 同 `comment_id/task_id`；legacy 无头仍 201 | 幂等仅挂 message_ids 分支 |
-| AC-28 | §3.1 403 + §3.2/§3.4 404 + §4.8 附件 404 | 非成员：项目路径 403 `forbidden_project_discussion`、session 路径 404、附件 404 无字节；移出 workspace 即时同效 | 门禁读 `member` 表实时资格，无历史缓存 |
-| AC-29 | §4.7 断连契约（`Broadcaster.DisconnectWorkspaceUser` + user-scope 控制帧 + 各模式消费矩阵）+ 拒绝重连 | 非成员/移出者订阅被拒；移出后不再收到；成员 B 不受影响；**双节点向量：U 连接在节点 B，移出事务落节点 A → B 关闭 U 连接且后续事件不达**；`go test ./server/internal/handler/ ./server/internal/service/ ./server/internal/realtime/ -count=1`（PRD 夹具口径「handler 或 realtime 测试」） | 断连挂接 `revokeAndRemoveMember` 事务提交后钩子、独立于 `revocationResult` 空否 [D-31][D-41–D-44]；B-REALTIME-1 回修 |
+| AC-28 | §3.1 403 + §3.2/§3.4 404 + §4.8 附件 404 + §4.2/§3.2 事务内复核（B-AUTH-2） | 非成员：项目路径 403 `forbidden_project_discussion`、session 路径 404、附件 404 无字节；移出 workspace 即时同效；**竞态向量：pre-tx 通过后并发移出先提交 → 发送/PATCH 事务内复核 404、零写入（无幂等/消息/task/附件残留）** | 门禁读 `member` 表实时资格，无历史缓存；写路径以 `LockSubscriberWrites` 与 revoke 串行后复核（B-AUTH-2） |
+| AC-29 | §4.7 断连契约（`Broadcaster.DisconnectWorkspaceUser` + user-scope 控制帧 + 各模式消费矩阵）+ 拒绝重连 | 非成员/移出者订阅被拒；移出后不再收到；成员 B 不受影响；**双节点向量：U 连接在节点 B，移出事务落节点 A → B 关闭 U 连接且后续事件不达**；`go test ./server/internal/handler/ ./server/internal/service/ ./server/internal/realtime/ -count=1`（PRD 夹具口径「handler 或 realtime 测试」） | 断连挂接 `revokeAndRemoveMember` 事务提交后钩子、独立于 `revocationResult` 空否 [D-27][D-41–D-44]；B-REALTIME-1 回修；**移出与发送并发二择一（B-AUTH-2）：revoke 先提交 → 发送 404 零写入；发送先提交 → 消息落库后断连生效（§4.7）** |
 | AC-30 | §4.5 投影事务 | 首绑 settings=session.agent_id 同值、空 `base_*` 补写；替换只动 `agent_id`、已入队不变；解绑回空、历史可读 | 写权威与投影同一事务同一锁，无分叉窗口 |
 | AC-31 | §4.5 归档行 + §4.3 配置身份匹配 | GET 仍回原 UUID；新协办（analyze/summarize 或 @mention 命中失效 Coordinator）409 `discussion_coordinator_unavailable` 零写入；**归档向量：归档后 @mention 失效 Coordinator → 409 零写入，@mention 其它 Agent 仍为普通消息**；settings 不被 GET 清；并发后投影一致 | 读规则集中在一个解析函数；触发检测同时携带 settings UUID 与可路由状态（B-COORD-1 回修） |
 | AC-32 | §2.1 SET NULL + §4.5 hard-delete 行 + §4.3 配置身份匹配 | agent 行删后 session/message 全保留、`agent_id` NULL、GET 回 settings 原值、回放 200、新 @mention/analyze 409 零写入；**hard-delete 向量：删除后 @mention 失效 Coordinator（mention 链接携原 UUID）→ 409 零写入** | FK 在 DB 层执行，无应用层竞态窗口；mention 匹配为 UUID 归一化比较、不依赖 agent 行存在（B-COORD-1 回修） |
@@ -659,7 +697,7 @@ sqlc：新/改查询后 `make sqlc` 再生成（不变量 5，生成文件不手
 | SDD-CLOSE-05 | FR-23 merge-forward 修改契约 | §3.5 + §4.2（幂等复用）；八项全闭合，legacy 零变化 |
 | SDD-CLOSE-06 | FR-26 解绑/投影数据模型 | §4.5 settings 三态清除分支 + 锁内投影事务 + 归档/硬删生命周期 |
 | SDD-CLOSE-07 | FR-8/FR-9 无 Coordinator 配置边界 | §4.4 authority 阶梯 + 决策 D-6（重写）：无 Coordinator 校验 authority = workspace ready-runtime 并集（L2），可保存与合法值校验同时成立；入队前校验与事务边界见 §4.2（B-CONFIG-1 回修） |
-| SDD-CLOSE-08 | FR-21/FR-6 迁移序列 | §2.1–§2.6 + §4.9：481–490 全序列（先建新名再删旧、建表不内联 PK + CONCURRENTLY 唯一索引 + `USING INDEX` 挂 PK）、钩子登记清单、down 数据依赖注记（B-MIG-1/B-MIG-2 回修） |
+| SDD-CLOSE-08 | FR-21/FR-6 迁移序列 | §2.1–§2.6 + §4.9：481–490 全序列（先建新名再删旧、建表不内联 PK + CONCURRENTLY 唯一索引 + `USING INDEX` 挂 PK）、钩子登记清单、**down 全集与逆序回滚清单（482/485/486.down 已补）、down 数据依赖注记**（B-MIG-1/B-MIG-2/B-MIG-3 回修） |
 | SDD-CLOSE-09 | FR-5 `GetProjectChatSessionForCreator` 泄漏点 | 查询加 `AND kind = 'private'`；三调用点（`project_chat.go:343/378`、`autopilot.go:990` [D-06]）语义全部保持——它们都只要 Private Ask |
 | SDD-CLOSE-10 | FR-16 legacy 回放身份 | §3.1 `legacy_issue_id`（只读 `GetProjectDiscussionIssue`，不补建） |
 
@@ -667,7 +705,7 @@ sqlc：新/改查询后 `make sqlc` 再生成（不变量 5，生成文件不手
 
 ## 7.1 安全
 
-- **授权模型**：请求时 `member` 表实时资格（无缓存旁路）；session 路径对非成员一律 404（不确认存在）；项目路径 403。`creator_id` 永不作 ACL（FR-4）。
+- **授权模型**：请求时 `member` 表实时资格（无缓存旁路）；session 路径对非成员一律 404（不确认存在）；项目路径 403。`creator_id` 永不作 ACL（FR-4）。**写路径移出竞态关闭（cycle 2 blocker B-AUTH-2 回修）**：shared POST/PATCH 于事务内、首次写入前取与 `revokeAndRemoveMember` 相同的 `LockSubscriberWrites(ws, caller)` advisory 并复核成员行——复核失败整个事务回滚，幂等/消息/task/附件零残留（§4.2/§3.2）；锁序固定见 §4.2。
 - **UUID 猜测**：`GetChatSessionInWorkspace` 强制 `workspace_id` 谓词 [D-07]；shared 附件下载 404；实时连接经 `IsMember` [D-28]。
 - **fail-closed 实时**：kind 缺省/未知 → 维持 recipient-only 或丢弃（§3.7），漏填的最坏结果是少投递不是泄漏。
 - **事务完整性**：发送/绑定/协办单事务零残留（§4.2）；settings 写权威与投影同事务（§4.5）。
@@ -831,10 +869,10 @@ sqlc：新/改查询后 `make sqlc` 再生成（不变量 5，生成文件不手
     commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
     依赖结论: workspace fanout 的成员资格前提；新增按 (user, workspace) 断连的宿主；user-scope 自动订阅是 §4.7 控制帧「持有连接的节点必然消费 user 流」的消费前提（B-REALTIME-1）
 27. repo: multica
-    relative path: server/internal/handler/workspace_revoke.go
-    stable symbol/对象: revokeAndRemoveMember (L43)、publishRevocation (L269)、LockSubscriberWrites 锁序
+    relative path: server/internal/handler/workspace_revoke.go + server/internal/handler/subscriber.go + server/internal/handler/autopilot.go + server/pkg/db/queries/member.sql + server/pkg/db/queries/subscriber.sql
+    stable symbol/对象: revokeAndRemoveMember (L43)、publishRevocation (L269)、LockSubscriberWrites 锁序（subscriber.sql L27 的 pg_advisory_xact_lock(hashtext(ws), hashtext(user))）；delegated auto-subscribe 路径 subscriber.go:239 / autopilot.go:841 同一把锁；member.sql GetMemberByUserAndWorkspace (L10)/DeleteMember (L24)
     commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
-    依赖结论: 「已被移出 workspace」的挂接点（AC-28/AC-29）；断连在事务提交后执行
+    依赖结论: 「已被移出 workspace」的挂接点（AC-28/AC-29）；断连在事务提交后执行；B-AUTH-2 的共享串行锁（与 revoke 双方都以它为第一把锁）及事务内成员资格复核的查询宿主
 28. repo: multica
     relative path: server/pkg/publicapi/v1/foundation.go
     stable symbol/对象: HeaderIdempotencyKey (L4)、MaxIdempotencyBytes=255 (L6)
