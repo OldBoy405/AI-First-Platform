@@ -6,7 +6,7 @@ title: Discussion 无 Issue 共享会话 技术设计
 target-version: 0.32
 status: draft
 created: 2026-09-04T01:50:00+08:00
-updated: 2026-09-04T01:50:00+08:00
+updated: 2026-09-04T09:43:00+08:00
 ---
 
 > 输入：`change-requests/CR-2026-059/prd.md`（选项 A 定点修订后版本，cycle 3 复评 PASS）。成员口径 = 「项目成员 := 当前 workspace 成员」（PRD FR-25 成员口径段，选项 A 裁决，2026-09-03，AIFI-16）。
@@ -76,9 +76,15 @@ packages/views/projects/      discussion-pane.tsx（session 身份重写）、lo
 
 # 2. 数据模型
 
-新迁移从 **481** 起（现最大编号 480 已核实 [D-03]）。编号 481–487 连续，每个文件一条主语句（索引类一律 `CREATE [UNIQUE] INDEX CONCURRENTLY`、一文件一条，PRD FR-21 / ARCHITECTURE 不变量 6），不新增任何 FOREIGN KEY / REFERENCES（481 属「转换既有约束」，是唯一例外且由 PRD 明批）。
+新迁移从 **481** 起（现最大编号 480 已核实 [D-03]）。编号 481–487 连续，每个文件一条主语句（索引类一律 `CREATE [UNIQUE] INDEX CONCURRENTLY`、一文件一条，PRD FR-21 / ARCHITECTURE 不变量 6），不新增任何 FOREIGN KEY / REFERENCES（481 属「转换既有约束」，是唯一例外且由 PRD 明批——授权段落引注见 §2.1）。
 
 ## 2.1 M481 — `agent_id` 可空 + 既有 FK CASCADE→SET NULL（落地 FR-7/FR-21/FR-26）
+
+> **授权引注（FR↔SDD 映射自证；cycle 3 attempt 2 blocker 定点回修）**：本节的 FK 转换（既有约束 `chat_session_agent_id_fkey` 由 `ON DELETE CASCADE` → `ON DELETE SET NULL`）属已批 PRD 的**显式授权范围**，非 SDD 新引入的设计变更：
+>
+> - **授权段落 1 — PRD FR-7**（`prd.md` `## FR-7`，§3 功能需求，L127/L129）：「列级 NOT NULL 与既有 CASCADE FK 的改动由 481 迁移落地（FR-21）：Coordinator Agent 被 hard-delete 时 session/message 行必须保留（不得级联删除）、`agent_id` 由 FK 置 NULL（AC-31/AC-32 验收）」；
+> - **授权段落 2 — PRD FR-21**（`prd.md` `## FR-21`，§3 功能需求，L234–L249）：将 481 迁移定为「**唯一允许的既有 FK 生命周期改动**（这是『转换既有约束』，不是新增 FK）」（L236/L238），并给出完整 `up` SQL（L241–L246：`DROP NOT NULL` → `DROP CONSTRAINT` → `ADD CONSTRAINT ... ON DELETE SET NULL`），与下方本节 SQL **逐字一致**；
+> - **基线区分（防误读）**：PRD L74 出现的 `agent_id UUID NOT NULL REFERENCES agent(id) ON DELETE CASCADE` 位于 `## 1.4 当前代码事实（落笔前核实）` 基线表内，是 `033_chat.up.sql` **现状实现的引用**（现有实现基线描述），不是目标态；目标态以上述两个授权段落为准，二者不构成矛盾。
 
 `481_chat_session_agent_nullable_set_null.up.sql`（同文件按序，与 PRD FR-21 给出的 SQL 一致）：
 
@@ -123,7 +129,7 @@ CREATE UNIQUE INDEX CONCURRENTLY chat_session_project_creator_active_unique
 ```
 
 - **沿用原索引名**：代码中仅 `chat.sql:16` 注释与 sqlc 生成注释引用该名字 [D-04]，同名重建零代码联动；谓词加 `kind='private'` 即 PRD FR-6 的「收窄为仅 kind='private'」。
-- 483→484 窗口内 Private Ask 并发 get-or-create 暂失唯一兜底：`GetProjectChatSessionForCreator` 的 `ORDER BY created_at DESC LIMIT 1` 保证读侧收敛，多余行不产生功能故障（评审关注点，窗口仅部署间隔）；484 落地后恢复唯一收敛。
+- 483→484 窗口内 Private Ask 并发 get-or-create 暂失唯一兜底：`GetProjectChatSessionForCreator` 的 `ORDER BY created_at DESC LIMIT 1` 保证读侧收敛，多余行不产生功能故障；484 落地后恢复唯一收敛。**窗口量化（上界）**：483/484 由同一次 `cmd/migrate up` 运行按版本序逐条应用（迁移循环持会话级 advisory lock、文件按版本排序后顺序执行，且在服务启动前跑完——`server/cmd/migrate/main.go`、`server/internal/migrations.Files`），故窗口仅存在于**同一 deploy batch 内**两条迁移之间，上界 = 迁移循环执行间隔 + 484 `CREATE INDEX CONCURRENTLY` 构建时长；该索引谓词窄、表小，构建秒级，正常情形远小于 5 分钟，取 **≤5 分钟**作为含重试的保守上界；不存在跨部署批次的长窗口。
 
 ## 2.4 M485 — shared session 每项目一个 active（落地 FR-3）
 
@@ -403,7 +409,7 @@ settings PATCH（`project.go` coordinator 分支 [D-18]）扩展：
 - 并发：PK `(ws,user,scope,key)` + `ON CONFLICT DO NOTHING`；PostgreSQL 对唯一冲突的等待语义保证并发同 key 串行见到已提交赢家 → 同指纹重放 / 异指纹 409，**恰好一次提交**。
 - 赢家事务回滚时其行不可见，输家插入成功——无死锁残留。
 - 重放不重新执行副作用：直接回存储的 `{status, body}`，已绑定附件不再进入绑定路径（不会 409 `attachment_already_bound`，AC-26）。
-- 保留：`SweepChatIdempotency` 每小时删 `created_at < now()-24h`（严格：恰好 24h 的行本轮保留，语义与 `SweepChatDraftAttachments` 的 168h 边界一致 [D-33]；PRD「至少 24h」满足）。
+- 保留：`SweepChatIdempotency` 每小时删 `created_at < now()-24h`（严格：恰好 24h 的行本轮保留，语义与 `SweepChatDraftAttachments` 的 168h 边界一致 [D-33]）。**口径澄清**：PRD FR-24「记录至少保留 24h」取**保留下限**语义——sweeper 只删严格超过 24h 的行，实际保留时长 ∈ [24h, 25h)（每小时清扫一次）；本 CR 实现为**固定 24h 阈值、不引入可配置保留期**，可配置化如有需要属后续事项（见 §9 follow_up ⑤）。
 
 ## 4.7 实时投递与移出退订（落地 FR-20/FR-25/AC-29）
 
@@ -555,7 +561,7 @@ settings PATCH（`project.go` coordinator 分支 [D-18]）扩展：
 - **scope_in**（本 CR 必须交付）：FR-1–FR-26 / AC-1–AC-32 全量，即：481–488 迁移；`chat_session.kind` 与 shared session 生命周期；Discussion GET/PATCH config/GET messages/POST messages 的 kind 分流与成员门禁；协办触发/无 Issue chat task/回复写回；草稿附件原子绑定；merge-forward `message_ids` 扩展；`Idempotency-Key` 幂等；settings 解绑与投影；实时 kind 感知投递与移出退订；旧容器只读回放；前端 discussion-pane session 身份化与四语文案；`CUSTOM.md` 登记。
 - **scope_out**（明确排除）：项目级成员模型（PRD §7 排除项，成员口径=当前 workspace 成员）；Discussion → Issue/CR 升级；历史 comment 全量迁移；Team Agent 配置与发送内核；CR-2026-056 KG-1/KG-2；`agent_task_queue` 模型/Thinking 专用列；`discussion_participant` 表；mobile；`../tools/` 改动；发送框视觉重构。
 - **zero_diff**（不得改动的调用点/签名）：`sendProjectChatCore` 全函数（NFR-7）；`ResolveChatConfig`/`ValidateResolvedChatConfig`/`LoadChatCatalogForConfig`/`mergeChatConfigContext`/`SnapshotAgentDefaults` 签名与语义；`LockUnboundDraftAttachments`/`BindUnboundDraftAttachments`/`LinkAttachmentsToChatMessage` 既有查询；`CreateChatTask` 查询本身；`kind=private` 的 `PatchChatSessionConfig`/`SendChatMessage`/`ListChatMessages`/`GetChatSession` 行为（逐行保留）；`EnsureProjectChatSession`（Team Agent 表路径）；`handleDiscussionContainerMentionTrigger`（保留不删）；168h 草稿 sweeper 谓词；legacy merge-forward `comment_ids` 路径与 `invalid_comment_selection`。
-- **follow_up**（发现但留给后续）：① 项目级成员模型引入后，FR-25 负向契约从 workspace 口径升级（KB 延期清单第 10 项）；② 客户端 scope 订阅落地后，shared 事件从 workspace fanout 迁到 `BroadcastToScope("chat", ...)`（`listeners.go` 现有注释已预留一行切换点）；③ `project_chat_session`（Team Agent）与 `chat_session(kind=project_shared)` 两表并存的长期收敛评估；④ Discussion 会话的主动归档/关闭管理面（本 CR 仅定义权限，不提供入口）。
+- **follow_up**（发现但留给后续）：① 项目级成员模型引入后，FR-25 负向契约从 workspace 口径升级（KB 延期清单第 10 项）；② 客户端 scope 订阅落地后，shared 事件从 workspace fanout 迁到 `BroadcastToScope("chat", ...)`（`listeners.go` 现有注释已预留一行切换点）；③ `project_chat_session`（Team Agent）与 `chat_session(kind=project_shared)` 两表并存的长期收敛评估；④ Discussion 会话的主动归档/关闭管理面（本 CR 仅定义权限，不提供入口）；⑤ 幂等记录保留期可配置化（本 CR 固定 24h 阈值，口径见 §4.6 澄清）。
 
 # 10. 既有实现依赖与事实
 

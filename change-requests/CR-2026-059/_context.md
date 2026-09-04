@@ -1,8 +1,8 @@
 ---
 cr: CR-2026-059
-pipeline-node: review-tech-design（待评审）
+pipeline-node: review-tech-design（回修复评待发起）
 status: tech-design-review-pending
-updated: 2026-09-04T01:55:00+08:00
+updated: 2026-09-04T09:48:00+08:00
 owner-agent: dev-agent
 ---
 
@@ -10,11 +10,12 @@ owner-agent: dev-agent
 
 > 导航缓存，非 canonical。canonical 事实以 cr.md / review-loop.yml / traceability.yml / 评审记录为准。
 
-## 当前状态
+## 当前状态（cycle 3 attempt 2 BLOCK 定点回修后）
 
-- status = `tech-design-review-pending`（`tech-designing` 经 `crctl advance --to tech-design-review-pending --trigger write-tech-design-complete --expect tech-designing` 推进）。
-- `sdd.md` 已落盘（本 run，fix-mode 续写：上一 run 因成员语义冲突停在产出前；选项 A 裁决 + PRD 定点修订复评 PASS 后恢复）。
-- 下一步 = 独立 `quality-reviewer-agent` 执行 `review-tech-design`（cr_id=CR-2026-059、reviewer=ai-reviewer、对象=本 worktree 的 sdd.md）。
+- status = `tech-design-review-pending`（本轮回修：`review-tech-design:block -> write-tech-design` 进入 `tech-designing` → 回修落盘 → `write-tech-design-complete` 推回）。
+- 回修背景：reviewer BLOCK 未落盘（仅评论），coordinator 裁决事实冲突（PRD FR-7/FR-21 已授权 481 FK 转换；PRD L74 是 §1.4 基线描述非目标态），选项 b（重开 PRD）排除，采纳选项 a（SDD 补引注）。
+- 本轮回修改动（定点，未重写已确认方案）：§2.1 增加授权引注块（PRD FR-7 L127/L129 + FR-21 L234–L249 SQL 逐字一致 + L74 基线区分）；§2 引导句加引注指针；§2.3 483→484 窗口量化（同一 `cmd/migrate up` 顺序应用，窗口 ≤5 分钟保守上界）；§4.6 “至少 24h”口径澄清（保留下限 [24h,25h)，固定 24h 阈值不引入可配置）；§9 follow_up 增 ⑤ 幂等保留期可配置化；frontmatter updated 刷新。
+- 下一步 = 独立 `quality-reviewer-agent` 新开 `review-tech-design` 复评（对象=回修后 sdd.md）；**复评必须先落盘**：`crctl gate CR-2026-059 --for tech-design-reviewing` + `crctl review-record CR-2026-059 --stage tech-design --bump-attempt`（上一轮 BLOCK 未落盘，tech-design 环尚未开出）。
 
 ## 本轮产出
 
