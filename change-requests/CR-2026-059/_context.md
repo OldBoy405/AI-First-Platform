@@ -1,8 +1,8 @@
 ---
 cr: CR-2026-059
-pipeline-node: review-tech-design（fix-mode 定点修复后复评待发起）
+pipeline-node: review-tech-design（cycle 1 BLOCK 回修完成，复评待发起）
 status: tech-design-review-pending
-updated: 2026-09-04T11:36:00+08:00
+updated: 2026-09-04T14:35:00+08:00
 owner-agent: dev-agent
 ---
 
@@ -10,30 +10,42 @@ owner-agent: dev-agent
 
 > 导航缓存，非 canonical。canonical 事实以 cr.md / review-loop.yml / traceability.yml / 评审记录为准。
 
-## 当前状态（复评技术中止后 fix-mode 定点修复）
+## 当前状态（cycle 1 BLOCK → 回修完成）
 
-- status = `tech-design-review-pending`（本轮：`review-tech-design:block -> write-tech-design` 进入 `tech-designing` → 定点修复落盘 → `write-tech-design-complete` 推回）。
-- 修复背景：上一轮独立复评因环境前置**技术中止**（未生成 verdict、未落盘、未 advance）：硬因 ① multica/tools 资源 worktree 脏（quality-reviewer prompt 误放，Ray 拍板 A 后 coordinator 已还原，三仓复归 healthy/clean）；硬因 ② SDD §10 证据基线 SHA 与 multica CR worktree HEAD 字面不一致（wip checkpoint 前推 → 还原提交对冲）。附带观察：§2.6 SQL 示例一文件两语句，与「一迁移一条语句、索引全 CONCURRENTLY」口径不一致。
-- 本轮修复（定点，未改任何依赖条目内容与已确认方案）：
-  1. §10 证据基线 SHA 对齐：文件头引导句、§10 引导句、38 条依赖条目共 40 处 `e8b252597a6d21718c2533d497fba4109a79b37b` → `be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d`（= 当前 multica CR worktree HEAD，还原提交，树与 main `e8b25259` 逐字节一致）；§10 引导句新增注记行。
-  2. §2.6 SQL 示例拆分：`487_chat_idempotency.up.sql`（仅 CREATE TABLE）+ `488_idx_chat_idempotency_created.up.sql`（仅 `CREATE INDEX CONCURRENTLY`）。
-  3. 一致性清扫：§1.2「481–487（7 个新迁移）」→「481–488（8 个新迁移）」；§2 引导句「编号 481–487 连续」→「编号 481–488 连续」；全文已确认零残留。
-- 下一步 = 独立 `quality-reviewer-agent` 新开 `review-tech-design` 复评（对象=修复后 sdd.md，fresh run）；**复评必须先落盘**：`crctl gate CR-2026-059 --for tech-design-reviewing` + `crctl review-record CR-2026-059 --stage tech-design --bump-attempt`（上两轮均未落盘，tech-design 环至今未开出，人工 approve --stage tech 的 evidence 门禁过不去）。
+- 上一轮独立复评**已 canonical 落盘**（与前两轮不同）：verdict=`block`，评审三账本提交 `179a3a9`，status 由评审方回退至 `tech-designing`，review-loop tech-design cycle 1/3 已开出（`review-annotations/sdd.yml` 为准）。
+- 本轮 = `write-tech-design` 回修（reviewLoop fix-mode），逐项闭合 7 个 blocker（B-MIG-1 / B-MIG-2 / B-CONFIG-1 / B-IDEMP-1 / B-REALTIME-1 / B-COORD-1 / B-AUTHOR-1），全部定点修订于 `sdd.md`，PRD 零改动。
+- 回修后由本会话 `write-tech-design-complete` 推回 `tech-design-review-pending`；下一步 = 独立 `quality-reviewer-agent` 复评（必须逐条闭合上述 7 项）。
 
-## 本轮产出
+## 回修摘要（逐项 → sdd 落点）
 
-- `change-requests/CR-2026-059/sdd.md`：9 章 + 既有实现依赖清单（38 项，全部绑定 multica HEAD `be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d`）。
-- 核心设计点：迁移 481–488 序列（481 agent_id 可空+FK SET NULL；482 kind；483/484 Private Ask 唯一索引同名收窄；485 shared 每项目一个 active；486 chat_message 作者列；487/488 chat_idempotency 表+索引）；`SendDiscussionMessage` 事务（幂等 PK 冲突收敛 + 协办触发 + 附件原子绑定）；`PatchChatSessionConfig`/`SendChatMessage`/消息列表按 kind 分流；settings 三态清除分支 + 锁内投影（与 Team Agent 关旧建新刻意不同，决策 D-5）；`events.Event.ChatSessionKind` + listeners kind 路由（fail-closed 缺省保持 private）；`revokeAndRemoveMember` 挂接 `DisconnectWorkspaceUser`；`GetProjectChatSessionForCreator` 加 `kind='private'` 过滤（三调用点语义保持）。
-- SDD-CLOSE-01..10 关闭 PRD 延后设计项；决策记录 D-1..D-10；zero_diff 清单见 §9。
+1. **B-MIG-1**（487 内联 PK 隐式唯一索引违反 CONCURRENTLY 硬不变量）→ §2.6 重写：487 建表不内联 PK → 488 `CREATE UNIQUE INDEX CONCURRENTLY chat_idempotency_scope_key_uidx` → 489 单语句 `ADD CONSTRAINT chat_idempotency_pkey PRIMARY KEY USING INDEX` → 490 `CREATE INDEX CONCURRENTLY idx_chat_idempotency_created`；down 逆序；`ON CONFLICT ON CONSTRAINT chat_idempotency_pkey` 为仲裁靶（决策 D-12）。迁移区间 481–490（10 个）。
+2. **B-MIG-2**（483 先删后建有无约束窗口）→ §2.3 重写：**先以新名 `chat_session_private_creator_active_unique` CONCURRENTLY 建好收窄索引（483），再 CONCURRENTLY 删旧索引（484）**；全程至少一个唯一约束在位（双强制窗口只过约束不漏放）；改名联动 `chat.sql:16` 注释与 sqlc 生成注释（已核实无 ON CONFLICT 按名引用）；484.down 重建旧宽谓词（数据依赖注记）；决策 D-3 重写。
+3. **B-CONFIG-1**（无 Coordinator 时 PATCH 免校验 + 入队校验无确定调用点）→ §4.4 重写为 **provider/catalog authority 阶梯**：L1 = 已配置且 agent 行存在（可路由/归档）→ `LoadChatCatalogForConfig` 逐字；L2 = 未配置/hard-deleted → workspace ready-runtime 并集（`ListAgentRuntimes` created_at ASC + `runtimeVerdict().Ready()` + `ValidateResolvedChatConfig` 逐 runtime，纯 sentinel 恒过，至多 1 次 30s LiveLoad round）；§4.2 `if trigger.needTask` 块标出**入队前校验**（事务内、`CreateChatTask` 之前、400 回滚零写入、Idempotency-Key 可复用）；决策 D-6 重写（推翻「接受并推迟」）。
+4. **B-IDEMP-1**（指纹用排序前 attachment_ids）→ §4.6：重复校验后**稳定排序**（UUID 规范串升序）再规范 JSON + sha256；顺序不变性测试向量；§3.4/AC-26 行同步。
+5. **B-REALTIME-1**（"既有 relay 广播断连指令"不存在）→ §4.7 重写为完整跨节点断连契约：`Broadcaster.DisconnectWorkspaceUser`（纯新增）+ 保留控制帧 `realtime.control`（绝不投递客户端）+ 载体复用 `user:{userID}` scope 流（持有连接的节点必然消费）+ `deliverEnvelope` 唯一新增分支 + 各模式消费矩阵（Hub/RedisRelay/Sharded/Mirrored/DualWrite）+ 挂接点独立于 `revocationResult.isEmpty()` + 双节点验收向量；§10 新增依赖 41–44（broadcaster/redis_relay/sharded+mirrored/main.go 接线），dep 26 补 user-scope 自动订阅前提；决策 D-11。
+6. **B-COORD-1**（触发检测只收可路由 Coordinator，失效 Coordinator mention 退化为普通消息）→ §4.3 重写：输入同时携带 `configured`（settings UUID）与 `routable`；先识别「配置身份 mention」（UUID 归一化比较），再分未配置 → 409 not_configured / 已配置不可路由 → 409 unavailable（均零写入）；其它 Agent mention 保持普通消息；§4.5 归档/hard-delete 行 + AC-31/AC-32 补测试向量。
+7. **B-AUTHOR-1**（作者列无端到端消费）→ §2.5 端到端消费契约 + §3.3：服务端 `ChatMessageResponse` 增 `author_type/author_id` 可空字段（`chatMessageToResponse` 直映；`SELECT message.*` 免改查询）；core `ChatMessageSchema`/`ChatMessage` 可空契约（malformed catch 降级）；`DiscussionPane` 作者解析/展示 + NULL/已移出成员回退；三层测试向量；SDD-CLOSE-03 真关闭。
+
+## 本轮附带补强（同源事实，非新方案）
+
+- §4.9 迁移运行器纪律：`concurrentIndexCleanups`/`concurrentDownIndexCleanups` total 不变量 + `TestEveryConcurrentUpBuildHasCleanup`（本 CR 登记清单：up=483/485/488/490，down=484.down）——此前 SDD 未写，缺登记直接挂 CI。
+- §10 新增依赖 39–44（runtime.sql ListAgentRuntimes、agent_ready.go runtimeVerdict、realtime 四文件 + main.go 接线），全部绑定 `be6426a7`。
+- dep 4/13/26/33/34 结论按 blocker 扩展；§1.2 模块表、§6.1/§6.2/§6.3/§7.2/§9 口径同步（481–490、10 个迁移、指纹稳定排序、并集 authority、断连契约、作者链）。
 
 ## 评审入口（给 reviewer / 恢复会话）
 
 1. 权威 worktree：`.rayai-worktrees/knowledge-base/requirement/CR-2026-059`（本目录）。
-2. 评审对象：`change-requests/CR-2026-059/sdd.md`；对照 `prd.md`（选项 A 修订版）。
-3. 证据基线：multica CR worktree HEAD `be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d`（还原提交，树 = main `e8b25259`；§10 依赖事实不因 SHA 刷新而变）。
-4. 前置：`crctl gate CR-2026-059 --for tech-design-reviewing`（预检）→ `crctl review-record CR-2026-059 --stage tech-design --bump-attempt`（轮次记账，无论 PASS/BLOCK 都落盘）。
-5. PASS：reviewer 落盘评审记录并回报；人工 `crctl approve --stage tech` 由 coordinator 发布。BLOCK：按 reviewLoop 直连回 `write-tech-design`（@ dev-agent，不走 coordinator）。
+2. 评审对象：回修后 `change-requests/CR-2026-059/sdd.md`；对照 `prd.md`（选项 A 修订版）。复评必须逐条闭合 B-MIG-1、B-MIG-2、B-CONFIG-1、B-IDEMP-1、B-REALTIME-1、B-COORD-1、B-AUTHOR-1。
+3. 证据基线：multica CR worktree HEAD `be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d`（还原提交，树 = main `e8b25259`；§10 依赖 44 项）。
+4. 前置：`crctl gate CR-2026-059 --for tech-design-reviewing` → `crctl review-record CR-2026-059 --stage tech-design --bump-attempt`（轮次由 crctl 记账；cycle 1 已落盘，本轮为 attempt 2）。
+5. PASS：reviewer 落盘并回报，人工 `crctl approve --stage tech` 由 coordinator 发布。BLOCK：直连回 `write-tech-design`（@ dev-agent）。
 
-## 已核实事实基线（设计基底，全部已并入 sdd §10）
+## 已核实事实基线（本轮新增核实项）
 
-multica worktree HEAD `be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d`（树与 main `e8b25259` 逐字节一致）：迁移最大编号 480；`chat_session_agent_id_fkey` 无后续迁移引用；436 谓词不区分 kind；478 配置列在位；`CreateChatTask` issue_id 恒 NULL；`writeChatCompletionOutcome` 在 `server/internal/service/task.go:5057`（注意：不是 handler 目录）；`BindUnboundDraftAttachments` 只写三靶、`LinkAttachmentsToChatMessage` 不写 task_id（故新增 `BindDraftAttachmentsToChatMessage`）；`GetProjectChatSessionForCreator` 三调用点（project_chat.go:343/378、autopilot.go:990）；chat.sql 的 INNER JOIN agent 查询均为 agent 作用域（builder/系统 runtime/creator 待办），不受 NULL agent_id 影响；实时 fail-closed 在 `server/cmd/server/listeners.go`；settings PATCH coordinator 分支无清除语义；`sendProjectChatCore`/`MergeForwardDiscussion`/`buildMergedForwardContent` 结构；`util.ParseMentions`；`SweepChatDraftAttachments` 168h 边界语义；Team Agent 会话是独立表 `project_chat_session`（472），与 `chat_session(kind=project_shared)` 不同。
+- `CLAUDE.md`「Database and Migration Rules」：每个新索引（含新表）必须 `CREATE [UNIQUE] INDEX CONCURRENTLY`、独立单语句迁移；运行器事务外执行文件（B-MIG-1 依据）。
+- `cmd/migrate` runMigrations：单连接会话级 advisory lock、事务外逐文件；`concurrentIndexCleanups`/`concurrentDownIndexCleanups` total 不变量，`TestEveryConcurrentUpBuildHasCleanup` 守护。
+- 旧索引 `chat_session_project_creator_active_unique` 仅被 436 迁移与 `chat.sql:16` 注释/生成注释引用，无 ON CONFLICT 按名引用（改名安全）。
+- `ListAgentRuntimes(workspace_id)` ORDER BY created_at ASC；`runtimeVerdict` 为仅依赖 runtime 行的 verdict 原语（L2 并集依据）。
+- realtime：`Broadcaster` 仅四广播方法；`deliverEnvelope` 仅客户端 fanout；`Hub.Run` register 自动订阅 workspace+user scope；relay 模式 = hub 单节点/legacy/sharded/dual-mirror + DualWrite 包装（B-REALTIME-1 依据）。
+- `ChatMessageResponse`/`chatMessageToResponse`（chat.go L2175/~L2217）；列表查询 `SELECT message.*`（M486 列自动进入）；`ChatMessageSchema` `.loose()` + `quick_actions` 独立降级先例（B-AUTHOR-1 依据）。
+- 此前基线（迁移 480 上限、481 FK 前提、436 谓词、三调用点、`writeChatCompletionOutcome` 在 service/task.go:5057 等）仍有效，见 sdd §10。
