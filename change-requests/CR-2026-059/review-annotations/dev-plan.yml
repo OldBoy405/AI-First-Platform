@@ -1,0 +1,30 @@
+cr-id: CR-2026-059
+review-type: dev-plan
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-04T17:21:31+08:00"
+verdict: block
+repair-target: write-dev-plan
+blockers:
+  - "本轮新增：[B-DP-01] 位置 change-requests/CR-2026-059/plan.md:73-98：交付覆盖表的「主责/关联TASK」全部使用短名 TASK-01..TASK-04，而 tasks/_index.yml:3,8,13,18 的 canonical id 是 CR-2026-059-TASK-01..04。tools/skills/writeback/scripts/writeback-traceability.mjs:230 只解析完整 CR-YYYY-NNN-TASK-NN，当前表会让后续 FR→TASK traceability 生成空 tasks（生成器不会为此报错），违反两张稳定表与账本的双向核对并丢失任务归因。修复方向：覆盖表全部改用完整 canonical TASK id，并在回修后对覆盖表与 _index.yml 做双向集合断言。"
+  - "本轮新增：[B-DP-02] 位置 tasks/TASK-01.md:33,50；对照 sdd.md:433：BindDraftAttachmentsToChatMessage 的声明签名只有 workspace、attachmentIDs、chatSessionID、chatMessageID、taskID，没有 uploader_type/uploader_id，也没有声明如何安全推导调用者；但 SDD 要求 WHERE 保持 uploader=调用者，现有 multica/server/pkg/db/generated/attachment.sql.go:74-87 的绑定查询明确接收 uploader 字段。按当前契约无法机械落实上传者门禁，存在把其他成员的未绑定草稿绑定到当前消息的权限缺口，AC-12/AC-13 不可达。修复方向：把 uploader type/id 纳入 canonical Params 与 TASK-02 消费签名，或明确且可验证的消息作者推导，并加入跨上传者负向验收。"
+  - "本轮新增：[B-DP-03] 位置 tasks/TASK-01.md:47-51、tasks/TASK-02.md:38-84、tasks/TASK-03.md:41-47：sqlc CRUD 使用位置参数和省略号（InsertChatIdempotencyReservation/Get/Finalize/Sweep 的参数、冲突无行语义均未定义），DiscussionSessionDeps 只有“汇总 queries/tx/ports/agent service”的描述，没有字段、端口和事件/队列通知责任。目标 multica 的生成 API 已按 Params 结构工作（server/pkg/db/generated/chat.sql.go:1283、attachment.sql.go:87），因此实现者必须自行发明转换层，幂等作用域/指纹/响应字段及 handler→service 边界会漂移，不能作为可编译的跨 TASK 契约。修复方向：逐项列出 query 名、生成 Params 字段/pgtype 类型、返回值和冲突/无行语义；定义 DiscussionSessionDeps 的完整字段与所有权，并让 TASK-02/03 使用同一签名。"
+  - "本轮新增：[B-DP-04] 位置 sdd.md:319、tasks/TASK-02.md:78、tasks/TASK-03.md:43：SDD 要求 buildMergedForwardContentFromMessages(ctx, taskSvc, msgs []db.ChatMessage, registerCR bool)，TASK-02 产出和 TASK-03 消费却都声明为 buildMergedForwardContentFromMessages(ctx, msgs, registerCR)。现有 multica/server/internal/service/project_chat.go:492 的 legacy 渲染器及 commentAuthorDisplayName 依赖 *TaskService 查询 member/agent 名称；缺少 taskSvc 时无法实现 SDD 要求的作者署名，只能改签名或退化为类型字面。修复方向：按 SDD 统一 TASK-02 产出、TASK-03 消费的完整签名、包归属和错误语义。"
+  - "本轮新增：[B-DP-05] 位置 sdd.md:684、plan.md:109,149、tasks/TASK-03.md:55-56：SDD 的 AC-29 明确要求 handler/service/realtime 联合验收；cmd-04 实际只执行 go test ./internal/realtime/。本 CR 又修改 server/cmd/server/listeners.go 与 server/internal/handler/workspace_revoke.go，当前稳定命令既不执行 listener 路由测试，也不执行 revokeAndRemoveMember 的事务提交后断连挂接测试；TASK-03 却把“handler 级挂接测”写成该命令的覆盖内容，存在 shared workspace fanout、private fail-closed 和移出断连缺失而证据仍通过的假绿。修复方向：扩展 cmd-04 的直接 spawn args 至少覆盖 ./cmd/server/、./internal/handler/、./internal/service/、./internal/realtime/，或拆分稳定命令并把 AC-29/FR-20 映射到实际执行的全部命令。"
+  - "本轮新增：[B-DP-06] 位置 sdd.md:661,673、plan.md:126,138、plan.md:111、tasks/TASK-04.md:47-52：AC-6 包含 shared 作者气泡的 member/agent/缺失回退，AC-18 包含 DiscussionPane 的 session 身份、作者展示和不调用 UpdateAgent；计划却把 AC-6 唯一 owner/证据设为 TASK-03/cmd-02（仅后端 handler/service），把 AC-18 设为 TASK-04/cmd-06，而 cmd-06 只执行 locales/parity.test.ts，TASK-04 的 pane 行为仍是手工核对，没有任何稳定命令执行 discussion-pane.test.tsx。关键前端行为既没有唯一可验证 owner，也没有可执行证据。修复方向：增加 pane 行为测试到稳定命令（或新增稳定 cmd），并将跨层 AC-6/AC-18 的唯一主责与证据重新映射；后端可作为关联 TASK。"
+  - "本轮新增：[B-DP-07] 位置 sdd.md:314-320、prd.md:437-470、tasks/TASK-03.md:45-51、tasks/TASK-04.md:16-45，以及当前代码 packages/views/projects/components/discussion-pane.tsx:360：现有 DiscussionPane 的 merge-forward 仍把选中 comment id 传给 mergeForwardDiscussion；SDD/PRD 已要求新增 message_ids、顺序去重、Idempotency-Key、legacy comment_ids 保持不变，但 TASK-04 的涉及文件/接口契约只列 shared GET/PATCH/POST，没有要求前端选择 ChatMessage id、发送 message_ids 或覆盖该 client schema。按当前拆分，前端重写后要么保留旧 comment_ids 而违反 FR-23，要么丢失现有转投功能，AC-15/25/27 的后端测试无法证明端到端可达。修复方向：在 TASK-04 明确 merge-forward 的输入/输出/client 方法、message_ids 与幂等头和 legacy 分支，并增加对应前端验收。"
+  - "本轮新增：[B-DP-08] 位置 sdd.md:591,731、plan.md:22,46、tasks/TASK-01.md:35,58、tasks/TASK-02.md:93、tasks/TASK-03.md:60、tasks/TASK-04.md:56：SDD/FR-21 要求 481-490 及 discussion service、handler、realtime、frontend 全部新文件和挂钩按 multica 当时实际结构登记 CUSTOM.md；计划把全部登记责任指定给先执行的 TASK-01，而 TASK-01 里程碑只能看到迁移/数据层，验收也只检查“本 TASK 条目”，TASK-02..04 没有任何登记完成标志。后续代码可以在 developing 内标 done，却没有完整 CUSTOM 台账，违反 fork rebase 追踪要求。修复方向：按任务分别登记各自实际落盘文件/挂钩并纳入各自完成标志，或由一个仍在 developing 内的明确收敛任务负责全量登记，禁止预登记猜测未来结构。"
+  - "本轮新增：[B-DP-09] 位置 sdd.md:230-251,268-291、tasks/TASK-03.md:45-51：TASK-03 声称传给 TASK-04 的 HTTP 契约“与 PRD 逐字一致”，但 GET /projects/{id}/discussion 只写了非成员 403，遗漏项目不存在 404；shared GET messages 只写 200/invalid_cursor，遗漏非成员/错 kind/跨项目 404 和归档 200 只读等关键权限/状态语义。TASK-04 依赖这份缩略契约，handler 与前端可能在错误顺序和回退行为上分叉，接口闭包与 FR-17/FR-22 不可验证。修复方向：补齐并锁定 SDD §3.1/§3.3 的 request、response、状态/error-code、权限、幂等和副作用，或在 TASK-03/04 明确引用同一完整契约并增加对应验收。"
+dimensions:
+  sdd-to-plan: "block"
+  plan-to-tasks: "block"
+  task-executability: "block"
+  dependency-topology: "pass"
+  interface-contracts: "block"
+  acceptance-verifiability: "block"
+  scope-and-simplicity: "pass"
+  risk-and-rollback: "block"
+  reviewer-model: "gpt-5.6-sol / pi local runner"
+suggestions: []
+review-loop:
+  current-attempt: 1
+subject-sha256: 24181767981edb4ede14f854e59d0d1706e06b83117e2b0b02e0fd6ab02e621f
