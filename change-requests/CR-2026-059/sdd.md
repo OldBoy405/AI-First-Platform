@@ -6,12 +6,12 @@ title: Discussion 无 Issue 共享会话 技术设计
 target-version: 0.32
 status: draft
 created: 2026-09-04T01:50:00+08:00
-updated: 2026-09-04T09:43:00+08:00
+updated: 2026-09-04T11:35:00+08:00
 ---
 
 > 输入：`change-requests/CR-2026-059/prd.md`（选项 A 定点修订后版本，cycle 3 复评 PASS）。成员口径 = 「项目成员 := 当前 workspace 成员」（PRD FR-25 成员口径段，选项 A 裁决，2026-09-03，AIFI-16）。
 >
-> 所有既有实现断言均按 multica 仓 CR-2026-059 requirement worktree HEAD `e8b252597a6d21718c2533d497fba4109a79b37b` 逐项核实，证据清单见第 10 节（`sdd.explicit_existing_dependencies`），正文引用按首次出现顺序编号 [D-xx]。
+> 所有既有实现断言均按 multica 仓 CR-2026-059 requirement worktree HEAD `be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d` 逐项核实，证据清单见第 10 节（`sdd.explicit_existing_dependencies`），正文引用按首次出现顺序编号 [D-xx]。
 
 # 1. 架构概览
 
@@ -22,7 +22,7 @@ updated: 2026-09-04T09:43:00+08:00
 ## 1.2 模块边界与改动面（multica 仓；`../tools/` 零改动）
 
 ```text
-server/migrations/            481–487（7 个新迁移，各有 down）
+server/migrations/            481–488（8 个新迁移，各有 down）
 server/pkg/db/queries/        chat.sql（1 条收窄 + 若干新查询）、attachment.sql（1 条新绑定查询）、
                               idempotency.sql（新）、chat_message 相关插入查询扩展作者列
 server/internal/service/      discussion_session.go（新：ensure/send/coordinator/投影/幂等）、
@@ -76,7 +76,7 @@ packages/views/projects/      discussion-pane.tsx（session 身份重写）、lo
 
 # 2. 数据模型
 
-新迁移从 **481** 起（现最大编号 480 已核实 [D-03]）。编号 481–487 连续，每个文件一条主语句（索引类一律 `CREATE [UNIQUE] INDEX CONCURRENTLY`、一文件一条，PRD FR-21 / ARCHITECTURE 不变量 6），不新增任何 FOREIGN KEY / REFERENCES（481 属「转换既有约束」，是唯一例外且由 PRD 明批——授权段落引注见 §2.1）。
+新迁移从 **481** 起（现最大编号 480 已核实 [D-03]）。编号 481–488 连续，每个文件一条主语句（索引类一律 `CREATE [UNIQUE] INDEX CONCURRENTLY`、一文件一条，PRD FR-21 / ARCHITECTURE 不变量 6），不新增任何 FOREIGN KEY / REFERENCES（481 属「转换既有约束」，是唯一例外且由 PRD 明批——授权段落引注见 §2.1）。
 
 ## 2.1 M481 — `agent_id` 可空 + 既有 FK CASCADE→SET NULL（落地 FR-7/FR-21/FR-26）
 
@@ -174,7 +174,12 @@ CREATE TABLE chat_idempotency (
     created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
     PRIMARY KEY (workspace_id, user_id, scope_type, scope_id, key)
 );
-CREATE INDEX idx_chat_idempotency_created ON chat_idempotency (created_at);
+```
+
+`488_idx_chat_idempotency_created.up.sql`：
+
+```sql
+CREATE INDEX CONCURRENTLY idx_chat_idempotency_created ON chat_idempotency (created_at);
 ```
 
 - 无 REFERENCES（不变量 6）；`created_at` 普通索引供 24h sweeper 范围删（见 §4.6）。索引与建表分两个迁移文件（一文件一条索引语句）：`487` 建表，`488` 建 `idx_chat_idempotency_created`——**编号因此延伸到 488**，即本 CR 迁移区间为 **481–488**（PRD「481 起」的下界不变）。
@@ -565,195 +570,196 @@ settings PATCH（`project.go` coordinator 分支 [D-18]）扩展：
 
 # 10. 既有实现依赖与事实
 
-> 按正文首次出现顺序。repo 均为 `multica`，commit SHA 均为 `e8b252597a6d21718c2533d497fba4109a79b37b`（本 CR requirement worktree HEAD）。
+> 按正文首次出现顺序。repo 均为 `multica`，commit SHA 均为 `be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d`（本 CR requirement worktree HEAD）。
+> 注：该 HEAD 为还原提交，树与 main `e8b25259` 逐字节一致（先前 wip 前推已对冲归零），§10 依赖事实不因 SHA 刷新而变。
 
 1. repo: multica
    relative path: server/internal/handler/project_chat.go
    stable symbol/对象: GetProjectDiscussion (L224)、ProjectDiscussionResponse (L215)、L250 对 EnsureProjectDiscussionIssue 的调用
-   commit SHA: e8b252597a6d21718c2533d497fba4109a79b37b
+   commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
    依赖结论: GET 现行为即「懒创建隐藏 Issue」，本 CR 的改写对象与响应契约基线
 2. repo: multica
    relative path: server/internal/service/project_chat.go
    stable symbol/对象: EnsureProjectDiscussionIssue (L55)、ensureContainerIssue 的 "project-discussion" advisory 前缀与 origin_type='project_discussion' 容器机制
-   commit SHA: e8b252597a6d21718c2533d497fba4109a79b37b
+   commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
    依赖结论: GET 解除调用后不得再有其它创建入口；函数保留供存量语义
 3. repo: multica
    relative path: server/migrations/033_chat.up.sql
    stable symbol/对象: chat_session 表 L7 `agent_id UUID NOT NULL REFERENCES agent(id) ON DELETE CASCADE`（内联 FK，自动命名 chat_session_agent_id_fkey）；chat_message 基础列
-   commit SHA: e8b252597a6d21718c2533d497fba4109a79b37b
+   commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
    依赖结论: 481 转换的唯一目标约束；全量迁移核查确认其后无迁移引用/改写该约束
 4. repo: multica
    relative path: server/migrations/436_chat_session_project.up.sql
    stable symbol/对象: chat_session_project_creator_active_unique（谓词 `project_id IS NOT NULL AND status='active'`，不区分 kind）
-   commit SHA: e8b252597a6d21718c2533d497fba4109a79b37b
+   commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
    依赖结论: FR-6 必须收窄的现存索引；代码仅注释引用其名（可同名重建）
 5. repo: multica
    relative path: server/migrations/214_chat_session_project.up.sql
    stable symbol/对象: chat_session.project_id（软引用，无 FK）
-   commit SHA: e8b252597a6d21718c2533d497fba4109a79b37b
+   commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
    依赖结论: shared session 复用该列；项目删除经 ClearChatSessionProjectByProject 置 NULL
 6. repo: multica
    relative path: server/pkg/db/queries/chat.sql
    stable symbol/对象: GetProjectChatSessionForCreator (L12)；GetChatSessionInWorkspace、LockChatSessionInWorkspace（FOR UPDATE，L~40）；ListChatMessagesPage (L1065)；CreateChatTask (L1107, issue_id 恒 NULL)；chat_session_project_creator_active_unique 注释 (L16)
-   commit SHA: e8b252597a6d21718c2533d497fba4109a79b37b
+   commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
    依赖结论: 泄漏点收窄对象、会话锁读、分页复用、协办入队 INSERT、索引名引用盘点
 7. repo: multica
    relative path: server/internal/handler/project_chat.go + server/internal/service/autopilot.go
    stable symbol/对象: GetProjectChatSessionForCreator 三处调用点（project_chat.go:343/378、autopilot.go:990）
-   commit SHA: e8b252597a6d21718c2533d497fba4109a79b37b
+   commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
    依赖结论: 加 `kind='private'` 过滤后三处语义全部保持（均只要 Private Ask）
 8. repo: multica
    relative path: server/pkg/db/queries/attachment.sql
    stable symbol/对象: LockUnboundDraftAttachments (L188)、BindUnboundDraftAttachments (L205)、LinkAttachmentsToChatMessage (~L107)、DetachAttachmentsFromUserChatMessageByTask、CountUnboundChatAttachmentsForTask、BindChatAttachmentsToMessage
-   commit SHA: e8b252597a6d21718c2533d497fba4109a79b37b
+   commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
    依赖结论: 草稿锁序与既有绑定语义；新查询与其同构且不改动既有查询
 9. repo: multica
    relative path: server/internal/service/task.go
    stable symbol/对象: writeChatCompletionOutcome (L5057)
-   commit SHA: e8b252597a6d21718c2533d497fba4109a79b37b
+   commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
    依赖结论: FR-12 回复按 task.ChatSessionID 自动写回同 session；仅需补作者列
 10. repo: multica
     relative path: server/internal/service/task.go
     stable symbol/对象: mergeChatConfigContext (L1478)、其在 L1559（mention 路径）与 L2572（SendDirectChatMessage）的两处调用
-    commit SHA: e8b252597a6d21718c2533d497fba4109a79b37b
+    commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
     依赖结论: chat_config 快照的单一 merge 缝，FR-11 直接复用，不新增第二套
 11. repo: multica
     relative path: server/internal/service/task.go
     stable symbol/对象: EnqueueChatTask (L2069)、enqueueChatTaskTx (L2159)、SendDirectChatMessage (L2479) 的事务形态（CreateChatTask+Context、SetChatTaskInputOwnerSelf、提交后通知）
-    commit SHA: e8b252597a6d21718c2533d497fba4109a79b37b
+    commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
     依赖结论: Discussion 发送事务的结构模板与归因字段参照（priority=2、chat 路径签章）
 12. repo: multica
     relative path: server/internal/handler/chat.go
     stable symbol/对象: PatchChatSessionConfig (L858)
-    commit SHA: e8b252597a6d21718c2533d497fba4109a79b37b
+    commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
     依赖结论: kind 分流的宿主；private 分支逐行保留
 13. repo: multica
     relative path: server/internal/handler/chat.go
     stable symbol/对象: SendChatMessage (L955)、gatePublicChatSessionForUser (L306)、ListChatMessages (L1301)、ListChatMessagesPage (L1334)、parseChatMessagesPageParams (L1174)、ChatMessageResponse (L2175)
-    commit SHA: e8b252597a6d21718c2533d497fba4109a79b37b
+    commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
     依赖结论: 消息/列表入口与门禁现状；kind 分流与 shared 分页对象化的基线
 14. repo: multica
     relative path: server/internal/service/chat_config.go
     stable symbol/对象: ResolveChatConfig (L50)、resolveChatConfigValue 的四级优先、ValidateResolvedChatConfig (L88)、LoadChatCatalogForConfig (L125)、ChatConfigSource 枚举（含 agent_default 仅 legacy 语义）
-    commit SHA: e8b252597a6d21718c2533d497fba4109a79b37b
+    commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
     依赖结论: 配置解析/校验单一实现；shared 路径以无效 agentDefault 杜绝 agent_default
 15. repo: multica
     relative path: server/internal/handler/project.go
     stable symbol/对象: settings PATCH 分支 (L547 起)、discussion_coordinator 校验分支 (L592–613)、requireWorkspaceRole 门禁 (L549)
-    commit SHA: e8b252597a6d21718c2533d497fba4109a79b37b
+    commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
     依赖结论: FR-26 写权威入口；现无清除/解绑分支（非字符串即 400），本 CR 新增
 16. repo: multica
     relative path: server/internal/service/project_chat_session.go
     stable symbol/对象: EnsureProjectChatSession、ProjectChatSessionAdvisoryPrefix ("project-chat-session")、LockIssueDuplicateKey advisory 用法、SnapshotAgentDefaults、insert-conflict+reselect 模式
-    commit SHA: e8b252597a6d21718c2533d497fba4109a79b37b
+    commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
     依赖结论: Discussion ensure 的同构模板；advisory 前缀隔离的依据；Team Agent 表（project_chat_session）与本 CR 表不同
 17. repo: multica
     relative path: server/internal/service/project_chat.go
     stable symbol/对象: SendProjectChatMessage、MergeForwardDiscussion (L176)、sendProjectChatCore、buildMergedForwardContent (L492)、commentAuthorDisplayName、错误契约注释（403/409/429/502 映射）
-    commit SHA: e8b252597a6d21718c2533d497fba4109a79b37b
+    commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
     依赖结论: FR-13 适配对象；内核零改动约束；消息渲染平行函数的结构参照
 18. repo: multica
     relative path: server/internal/handler/project_chat.go
     stable symbol/对象: MergeForwardDiscussion handler（comment_ids 校验/去重/容器校验）、writeProjectChatSendError (L589)、PatchProjectChatConfig（owner/admin+三态 PATCH 参照）
-    commit SHA: e8b252597a6d21718c2533d497fba4109a79b37b
+    commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
     依赖结论: merge-forward 扩展宿主与错误映射复用
 19. repo: multica
     relative path: server/internal/util/mention.go
     stable symbol/对象: Mention 结构、ParseMentions (L24)、MentionRe（`mention://agent/<id>` 语法）
-    commit SHA: e8b252597a6d21718c2533d497fba4109a79b37b
+    commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
     依赖结论: FR-11 @mention Coordinator 检测直接复用现有解析器
 20. repo: multica
     relative path: server/internal/handler/comment.go
     stable symbol/对象: handleDiscussionContainerMentionTrigger (L2664)
-    commit SHA: e8b252597a6d21718c2533d497fba4109a79b37b
+    commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
     依赖结论: 旧 comment 触发路径保留不删；新承载不经过它
 21. repo: multica
     relative path: server/cmd/server/listeners.go
     stable symbol/对象: chat 事件路由（L253–270 区段：ChatSessionID 非空必须带 ChatRecipientID，SendToUser，缺失丢弃+ERROR 的 fail-closed 语义）
-    commit SHA: e8b252597a6d21718c2533d497fba4109a79b37b
+    commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
     依赖结论: FR-20 的改造点；private 语义与 fail-closed 缺省必须保持
 22. repo: multica
     relative path: server/internal/events/bus.go
     stable symbol/对象: events.Event 的 TaskID/ChatSessionID/ChatRecipientID 字段与其契约注释（生产者必须同时设置、桥层 fail-closed）
-    commit SHA: e8b252597a6d21718c2533d497fba4109a79b37b
+    commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
     依赖结论: 新增 ChatSessionKind 字段的宿主与既有契约边界
 23. repo: multica
     relative path: server/internal/handler/daemon.go
     stable symbol/对象: task 流式帧的 chatSessionID/chatRecipientID 解析与 events.Event 发布（L4690–4800 区段）
-    commit SHA: e8b252597a6d21718c2533d497fba4109a79b37b
+    commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
     依赖结论: 生产端 kind 标注改造点（其本已加载 session 行）
 24. repo: multica
     relative path: server/internal/handler/handler.go
     stable symbol/对象: publishChat (L747)、requireWorkspaceMember (L923)、requireWorkspaceRole (L943)
-    commit SHA: e8b252597a6d21718c2533d497fba4109a79b37b
+    commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
     依赖结论: 事件发布助手扩参；成员/角色门禁的唯一复用入口
 25. repo: multica
     relative path: server/internal/service/task.go
     stable symbol/对象: ChatSessionCreatorID 的四处消费（L6938/L7249/L7327/L7447）
-    commit SHA: e8b252597a6d21718c2533d497fba4109a79b37b
+    commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
     依赖结论: 任务事件生产端 kind 标注的扩展面（辅助函数同时返回 kind）
 26. repo: multica
     relative path: server/internal/realtime/hub.go
     stable symbol/对象: MembershipChecker (L23–26)、HandleWebSocket (L775, L803/L835 IsMember)、BroadcastToWorkspace (L566)、SendToUser (L572)
-    commit SHA: e8b252597a6d21718c2533d497fba4109a79b37b
+    commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
     依赖结论: workspace fanout 的成员资格前提；新增按 (user, workspace) 断连的宿主
 27. repo: multica
     relative path: server/internal/handler/workspace_revoke.go
     stable symbol/对象: revokeAndRemoveMember (L43)、publishRevocation (L269)、LockSubscriberWrites 锁序
-    commit SHA: e8b252597a6d21718c2533d497fba4109a79b37b
+    commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
     依赖结论: 「已被移出 workspace」的挂接点（AC-28/AC-29）；断连在事务提交后执行
 28. repo: multica
     relative path: server/pkg/publicapi/v1/foundation.go
     stable symbol/对象: HeaderIdempotencyKey (L4)、MaxIdempotencyBytes=255 (L6)
-    commit SHA: e8b252597a6d21718c2533d497fba4109a79b37b
+    commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
     依赖结论: FR-24 头与长度约束的既有基建
 29. repo: multica
     relative path: server/internal/handler/file.go
     stable symbol/对象: loadAttachmentForRequest (L728) 及其两处消费 (L650/L1299)
-    commit SHA: e8b252597a6d21718c2533d497fba4109a79b37b
+    commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
     依赖结论: 已发送 shared 附件「非成员 404」的扩展点；草稿上传者门不变
 30. repo: multica
     relative path: server/internal/service/chat_draft_attachment_cleanup.go
     stable symbol/对象: SweepChatDraftAttachments（168h、严格边界、maxPerTick）
-    commit SHA: e8b252597a6d21718c2533d497fba4109a79b37b
+    commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
     依赖结论: 幂等 24h sweeper 的模式参照（谓词不改）
 31. repo: multica
     relative path: server/pkg/db/queries/issue.sql
     stable symbol/对象: GetProjectDiscussionIssue (L622)
-    commit SHA: e8b252597a6d21718c2533d497fba4109a79b37b
+    commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
     依赖结论: legacy_issue_id 只读回放查询；无创建副作用
 32. repo: multica
     relative path: server/internal/service/discussion_coordinator.go
     stable symbol/对象: ProjectSettingDiscussionCoordinatorID (L22)、RouteDiscussionToTeamAgent (L103)
-    commit SHA: e8b252597a6d21718c2533d497fba4109a79b37b
+    commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
     依赖结论: coordinator settings key 常量与转投路由的 Discussion 侧适配对象
 33. repo: multica
     relative path: packages/core/api/schemas.ts
     stable symbol/对象: ProjectDiscussion/ProjectDiscussionSchema/EMPTY_PROJECT_DISCUSSION (L1400–1416)、parseWithFallback (client.ts:242/862)
-    commit SHA: e8b252597a6d21718c2533d497fba4109a79b37b
+    commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
     依赖结论: FR-19/NFR-8 的前端契约基线；新 schema 独立定义并硬降级
 34. repo: multica
     relative path: packages/views/projects/components/discussion-pane.tsx
     stable symbol/对象: 以 discussion.issue_id 为可写身份的现结构（L80/L90 等）、useIssueTimeline、草稿 key 约定
-    commit SHA: e8b252597a6d21718c2533d497fba4109a79b37b
+    commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
     依赖结论: FR-19 重写对象；草稿上传既有机制复用
 35. repo: multica
     relative path: server/internal/service/project_chat_session.go
     stable symbol/对象: UpdateProjectSettingsWithTeamAgentRebind (L462)（换绑即关旧会话语义）
-    commit SHA: e8b252597a6d21718c2533d497fba4109a79b37b
+    commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
     依赖结论: 决策 D-5 的对照项——Discussion 投影刻意不复制该「关旧建新」语义
 36. repo: multica
     relative path: server/cmd/server/router.go
     stable symbol/对象: /api/chat/sessions/{sessionId} 路由块 (L2316–2344)、/api/projects/{id}/chat/merge-forward (L2014)、/api/projects/{id}/discussion (L2022)
-    commit SHA: e8b252597a6d21718c2533d497fba4109a79b37b
+    commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
     依赖结论: 端点挂载现状；本 CR 不新增平行 URL（PRD 契约前言行）
 37. repo: multica
     relative path: CUSTOM.md
     stable symbol/对象: 按 CR 里程碑分组、行号稳定 ID、合并核对口径的台账结构
-    commit SHA: e8b252597a6d21718c2533d497fba4109a79b37b
+    commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
     依赖结论: FR-21 登记义务的结构基线（登记在代码实施期按其当时结构执行）
 38. repo: multica
     relative path: server/migrations/472_project_chat_session.up.sql + server/pkg/db/queries/project_chat_session.sql
     stable symbol/对象: project_chat_session 表与 GetProjectChatSessionByID/LockProjectChatSessionByID
-    commit SHA: e8b252597a6d21718c2533d497fba4109a79b37b
+    commit SHA: be6426a7c8d93ed58e6a69210e8a3d1d4357fe6d
     依赖结论: 口径澄清——Team Agent 会话是独立表，本 CR 零改动，防与 chat_session(kind=project_shared) 混淆
