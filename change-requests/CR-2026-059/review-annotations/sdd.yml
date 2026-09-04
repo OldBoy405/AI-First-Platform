@@ -1,31 +1,25 @@
 cr-id: CR-2026-059
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-09-04T14:15:34+08:00"
-verdict: block
-blockers:
-  - "本轮新增：[B-MIG-3] 位置：sdd.md §2.2 M482、§2.4 M485、§2.5 M486、§4.9、§6.2 AC-19。事实：§1.2 宣称 481–490 十个迁移各有 down，且 AC-19 要求 up/down 往返；但正文没有定义 482.down（kind 列）、485.down（project_shared 唯一索引）、486.down（作者列）的 SQL、部分状态/数据依赖或回滚顺序，§4.9 的 down 登记清单也只列 484.down。影响：实现者无法按当前 SDD 生成完整回滚集，AC-19 的 down 往返不可验收，且 485 的 CONCURRENTLY 索引删除与 482/486 的数据损失边界不唯一。修复方向：补齐 482.down、485.down、486.down 的单语句/顺序与部分状态处理；明确 485.down 的 DROP INDEX CONCURRENTLY 无构建钩子、482/486 的数据依赖与失败语义，并同步 §4.9、§6.2 的回滚与测试向量。"
-  - "本轮新增：[B-AUTH-2] 位置：sdd.md §3.2、§3.4、§4.2、§4.8、§7.1、AC-28/AC-29。事实：shared session 的成员资格目前只写成事务外的 pre-tx 门禁；§4.2 进入事务后仅锁 session，没有在任何写入前重新读取/锁定 member 行。现有 revokeAndRemoveMember 通过另一把 LockSubscriberWrites 锁删除 member，设计没有说明二者的锁序或共享同步点。因此请求可在 pre-tx 通过后与移出并发，并在 member 删除提交后继续提交 chat_message、task 或附件绑定。影响：违反 FR-25 的请求时成员授权以及移出后的 FR-10/FR-11/FR-15/AC-28/AC-29，造成已移出成员仍能写入 shared 会话。修复方向：在 shared POST/PATCH 及其 task/附件写路径中，于事务内、首次写入前执行带行锁的成员资格复核，或与 revoke 使用同一同步锁并明确无死锁锁序；补充移出先提交/发送先锁竞态测试，确保失败事务不留下幂等、消息、task 或附件写入。"
+reviewed-at: "2026-09-04T15:01:07+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  PRD↔SDD对齐: "block"
-  架构合理性: "block"
-  数据模型完整性: "block"
-  接口契约: "block"
+  PRD↔SDD对齐: "pass"
+  架构合理性: "pass"
+  数据模型完整性: "pass"
+  接口契约: "pass"
   多仓架构约束: "pass"
-  性能与安全: "block"
-  可测试性: "block"
+  性能与安全: "pass"
+  可测试性: "pass"
   Prompt采纳影响: "N/A（本 CR 不触及 crctl dispatch 或 protectedPaths.deny）"
-  批准范围: "pass（固定章节及四字段齐全）"
-  SDD-CLOSE与AC闭环: "block"
+  批准范围: "pass"
+  SDD-CLOSE与AC闭环: "pass"
 suggestions:
-  - "归属节点：write-tech-design。已解决：[B-MIG-1] §2.6 已改为 487 建表不内联 PK、488 CONCURRENTLY 建唯一索引、489 USING INDEX 挂主键、490 建辅助索引，仲裁靶及 down 逆序已同步。"
-  - "归属节点：write-tech-design。已解决：[B-MIG-2] §2.3 已改为先建新名收窄唯一索引再删旧索引，双强制窗口、改名引用与 down 数据依赖已写明。"
-  - "归属节点：write-tech-design。已解决：[B-CONFIG-1] §4.4 已定义 L1/L2 provider/catalog authority 阶梯，§4.2 已固定入队前校验、事务边界及回滚零写入。"
-  - "归属节点：write-tech-design。已解决：[B-IDEMP-1] §4.6 已改为重复校验后按 UUID 规范串稳定排序再计算规范 JSON sha256，并补充顺序不变性验收向量。"
-  - "归属节点：write-tech-design。已解决：[B-REALTIME-1] §4.7 已定义 DisconnectWorkspaceUser、user scope 控制帧、各 relay 消费矩阵、提交后挂接、失败重试及双节点向量。"
-  - "归属节点：write-tech-design。已解决：[B-COORD-1] §4.3/§4.5 已同时携带 settings 配置 UUID 与 routable 状态，失效 Coordinator mention 分流为 unavailable 并保证零写入。"
-  - "归属节点：write-tech-design。已解决：[B-AUTHOR-1] §2.5/§3.3 已补齐响应、core schema、DiscussionPane 展示/回退及 NULL/malformed 三层消费测试契约。"
+  - "已解决：[B-MIG-3] §2.2/§2.4/§2.5/§2.6 与 §4.9 已补齐 482.down、485.down、486.down 的 SQL、部分状态、数据依赖、失败语义、逆序和 concurrentDownIndexCleanups 登记；AC-19/SDD-CLOSE-08 已同步。"
+  - "已解决：[B-AUTH-2] §3.2/§3.4/§4.2/§3.5/§4.8/§7.1 与 AC-28/AC-29 已补齐事务内成员复核、LockSubscriberWrites 首锁一致性、移出竞态二择一及失败零残留；§10 [D-27] 依赖清单覆盖锁宿主。"
+  - "范围外：归属节点：write-tech-design。SDD §3.1/§3.7 仍有少量 [D-*] 交叉引用可进一步校正（例如 writeErrorCode、GetProjectDiscussionIssue、publishChat 的引用号指向了不相关依赖）；不影响当前设计结论或验收可达性。"
 review-loop:
-  current-attempt: 2
+  current-attempt: 3
 subject-file: change-requests/CR-2026-059/sdd.md
-subject-sha256: d1c8b23e04b45ba01e55a4d8129d47738549fee0dca267b6baca6c04f81c719c
+subject-sha256: 0ab286fe24cae8f7f7a967fc9c7a9d1778d63499712d2ea8c30c7a02b9e82ca5
