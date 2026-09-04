@@ -1,0 +1,22 @@
+cr-id: CR-2026-059
+tasks:
+  - id: CR-2026-059-TASK-01
+    title: "迁移与数据层：481–490 迁移 + sqlc 查询扩展"
+    status: pending
+    estimate: 16h
+    depends-on: []
+  - id: CR-2026-059-TASK-02
+    title: "服务层：Discussion 会话/发送/协办/投影/幂等"
+    status: pending
+    estimate: 24h
+    depends-on: [CR-2026-059-TASK-01]
+  - id: CR-2026-059-TASK-03
+    title: "处理层与实时：handler kind 分流 + 事件 + 断连控制"
+    status: pending
+    estimate: 20h
+    depends-on: [CR-2026-059-TASK-01, CR-2026-059-TASK-02]
+  - id: CR-2026-059-TASK-04
+    title: "前端：DiscussionPane session 身份 + schemas + 四语文案"
+    status: pending
+    estimate: 12h
+    depends-on: [CR-2026-059-TASK-02, CR-2026-059-TASK-03]
