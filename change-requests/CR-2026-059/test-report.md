@@ -3,7 +3,7 @@ cr: CR-2026-059
 status: block
 tester: Ray
 generated-by: crctl-test
-generated-at: "2026-09-05T05:39:40+08:00"
+generated-at: "2026-09-05T08:16:45+08:00"
 command-digest: b03f22f957ea1ad02f34e7ebe3c8248bffcb5cee87e6c70dbeaee97dcc89cb9a
 commands:
   - repo: multica
@@ -81,7 +81,7 @@ commands:
 # 测试摘要（CR-2026-059，TASK-01~04）
 
 - **tester**: Ray（`cr.md owners.test`）；执行环境：Windows 本机 + 真 PostgreSQL（migrations 481–490 已按 §4.9 部署序应用）。
-- **结果**: 6 条 canonical 命令中 5 绿；**cmd-03 失败**，根因是 `pkg/agent` 包 163 项上游测试在本机的 Windows 环境假设失败（与本 CR 零关联，证据见下）。
+- **结果**: 6 条 canonical 命令中 5 绿；**cmd-03 失败**，根因是 `pkg/agent` 包 163 项上游测试在本机的 Windows 环境假设失败（与本 CR 零关联，证据见下）。本报告为 write-test-report 第 2 次运行（attempt 2/3），机器区 6 命令 exit-code 与第 1 次完全一致（5×0 + cmd-03=1）。
 - 实现产物：multica 仓 4 个 commit（`eaa054032` TASK-01 → `575e13aaa` TASK-02 → `e1ee77488` TASK-03 → `2054e8662` TASK-04）；`tasks/_index.yml` 四 TASK 均已 `crctl task done`。
 
 # 命令结果与解读
@@ -101,6 +101,13 @@ commands:
 - **基线对比证明**：在未改动的独立 multica 主克隆（`C:\Users\GOBAO\Downloads\AI\multica`，树与本 CR 证据基线 `be6426a7` 一致）跑同一命令，失败名单完全一致（163 项）——本 CR 的 diff 不含任何 `pkg/agent` 文件（`git diff --stat` 可证）。
 - 本 CR 需要的 AC-21 覆盖（`ValidateChatConfig`/`StaticCatalog`/`ModelIDForCapabilityLookup`，CR-2026-056 既有套件）单独运行**全绿**：`go test ./pkg/agent/ -run 'ValidateChatConfig|ModelIDForCapabilityLookup|StaticCatalog|ChatConfig' -count=1`。
 - 该失败类别已列入 multica `CUSTOM.md`《已知测试失败基线》（环境假设类："上游 Windows 环境假设…CI 上不会失败"）。
+
+# 定向 ③ 裁定（2026-09-05，Ray 本线程确认；coordinator 已核实 CUSTOM.md 先例与 cmd-03 覆盖）
+
+- **裁定**：cmd-03 的 163 项 `pkg/agent` 失败按 multica `CUSTOM.md`《已知测试失败基线》条款人工核定，属上游 Windows 环境假设，**不计入本 CR 回归，判定不阻塞**。
+- **证据**：① 本 CR diff 不含任何 `pkg/agent` 文件；② 未改动 multica 主克隆（`C:\Users\GOBAO\Downloads\AI\multica`）跑同一命令，163 项失败名单逐条一致（A/B 基线对比，2026-09-05）；③ 本 CR 需要的 AC-21 覆盖子集（`ValidateChatConfig|ModelIDForCapabilityLookup|StaticCatalog|ChatConfig`）单独运行全绿。
+- **台账**：`CUSTOM.md`《已知测试失败基线》`server/pkg/agent` 条目已按基线一节「若数量或名单变化才需要排查」扩记本次 163 项（fake CLI 无 `.exe`、路径引号断言）+ A/B 证据（2026-09-05），随本 checkpoint 一并提交。
+- **机器区说明**：frontmatter `status: block` 由 crctl 按 canonical 证据命令表（plan.md §6.2）执行 exit-code 聚合得出（cmd-03 exit 1）；证据命令表不可改写，crctl 无人工豁免字段。③ 裁定与不阻塞判定记录于此分析段；机器门禁的推进路径见「下一步建议」。
 
 # 真库补证（补充证据，不替代 canonical 命令）
 
@@ -137,4 +144,6 @@ commands:
 
 # 下一步建议
 
-cmd-03 的 pkg/agent 失败与 AC 覆盖无关联且为基线环境问题；其余 5 条 canonical 命令与全部补证均绿。建议：评审按 CUSTOM.md《已知测试失败基线》核定 cmd-03，或在 Linux/CI 上复跑 cmd-03 后进入 review-code。
+- ③ 裁定已记录：cmd-03 的 pkg/agent 163 项失败与 AC 覆盖无关联且为基线环境问题，不计入本 CR 回归；其余 5 条 canonical 命令与全部补证均绿。
+- 机器区 status 仍为 `block`（cmd-03 exit 1，canonical 命令集不可改）；`crctl next` = implement-code（write-test-report loop 2/3）。按 coordinator 指令，write-test-report 仍 block → 停在本节点回线程汇报，不自行越节点。
+- 机器门禁下使 status=pass 的路径：修订 plan.md §6.2（cmd-03 的 pkg/agent 改为 AC-21 覆盖子集 `-run` 形态，需 dev-plan 重评），或在 Linux/CI 复跑 cmd-03。
