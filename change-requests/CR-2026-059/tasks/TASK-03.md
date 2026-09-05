@@ -60,9 +60,9 @@ created: 2026-09-04T16:40:00+08:00
 ## 验收条件
 
 1. `go test ./server/internal/handler/ ./server/internal/service/ -count=1` 全绿且覆盖：FR-18 错误码矩阵逐条（AC-20/22/23/24/25/27/28，含 §3.1 项目不存在 404、§3.3 非成员/错 kind/跨项目 404 与归档 200 只读向量）；成员门禁与移出竞态（AC-28）；legacy `comment_ids` 路径与 Private Ask creator-only 夹具零回归（AC-22）；`issue_id` 恒 null（AC-1）。
-2. `go test ./server/cmd/server/ ./server/internal/handler/ ./server/internal/service/ ./server/internal/realtime/ -count=1`（= plan cmd-04，B-DP-05 修复：AC-29/FR-20 联合验收，handler/service 不再被 cmd-04 遗漏）全绿且覆盖：`listeners.go` kind 感知路由（shared → `BroadcastToWorkspace`；private/缺失 → 原 recipient 路径 fail-closed）；`DisconnectWorkspaceUser` 断连/房间清理 hub 单测 + 控制信封 relay 消费测（fake 流）+ `revokeAndRemoveMember` 事务提交后挂接测（含 `revocationResult` 空仍断连）+ 发送/移出竞态二择一 + 双节点验收向量（用户 U 连接在节点 B，移出事务落节点 A → B 关闭 U 连接、后续事件不达、成员 B 不受影响）（AC-29）。
+2. `go test ./server/cmd/server/ ./server/internal/handler/ ./server/internal/service/ ./server/internal/realtime/ -count=1`（= plan cmd-05，B-DP-05 修复：AC-29/FR-20 联合验收，handler/service 不再被 cmd-05 遗漏）全绿且覆盖：`listeners.go` kind 感知路由（shared → `BroadcastToWorkspace`；private/缺失 → 原 recipient 路径 fail-closed）；`DisconnectWorkspaceUser` 断连/房间清理 hub 单测 + 控制信封 relay 消费测（fake 流）+ `revokeAndRemoveMember` 事务提交后挂接测（含 `revocationResult` 空仍断连）+ 发送/移出竞态二择一 + 双节点验收向量（用户 U 连接在节点 B，移出事务落节点 A → B 关闭 U 连接、后续事件不达、成员 B 不受影响）（AC-29）。
 3. 事件层 fail-closed 保持：kind 空/未知时走原 recipient 路径或丢弃 + ERROR 日志（§3.7）。
-4. 跨层 AC-6/AC-18 前端作者气泡、session 身份与 merge-forward 请求形状归 TASK-04（plan §7：cmd-06）；本 TASK 仅承担后端隔离/门禁/事件部分（cmd-02/cmd-04）。
+4. 跨层 AC-6/AC-18 前端作者气泡、session 身份与 merge-forward 请求形状归 TASK-04（plan §7：cmd-07）；本 TASK 仅承担后端隔离/门禁/事件部分（cmd-02/cmd-05）。
 5. 代码注释英文；无 TBD。
 
 ## 完成标志

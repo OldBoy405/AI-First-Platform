@@ -6,7 +6,7 @@ sdd-ref: "change-requests/CR-2026-059/sdd.md"
 target-version: "0.32"
 status: draft
 created: 2026-09-04T16:35:00+08:00
-updated: 2026-09-04T17:45:00+08:00
+updated: 2026-09-05T09:40:00+08:00
 ---
 
 # 开发计划：Discussion 无 Issue 共享会话（CR-2026-059）
@@ -23,7 +23,7 @@ updated: 2026-09-04T17:45:00+08:00
 | M1 服务层 | Discussion ensure/发送/协办/投影/幂等/转投与 merge-forward 渲染 | TASK-02 | 24h（3 人天） |
 | M2 处理层与实时 | handler kind 分流、错误码矩阵、幂等头、事件 kind 标注、跨节点断连、附件门禁 | TASK-03 | 20h（2.5 人天） |
 | M3 前端 | schemas 硬降级、DiscussionPane session 身份化、merge-forward 前端适配（message_ids+幂等头）、作者展示、四语文案 | TASK-04 | 12h（1.5 人天） |
-| M4 验证与评审 | `crctl test` 证据闭环（cmd-01..06）、review-dev-plan / review-code 评审环、人工审批 | 非交付 TASK（审计事实承载） | 8h（1 人天） |
+| M4 验证与评审 | `crctl test` 证据闭环（cmd-01..07）、review-dev-plan / review-code 评审环、人工审批 | 非交付 TASK（审计事实承载） | 8h（1 人天） |
 
 交付 TASK 总工时 = **72h（9 人天）**（TASK-01 16h + TASK-02 24h + TASK-03 20h + TASK-04 12h，与 `tasks/_index.yml` 的 `totalEstimateHours` 一致）；M4 为流程性投入，不建交付 TASK（完成边界须在 `developing` 内，见 write-dev-tasks FR-10 纪律）。
 
@@ -58,11 +58,11 @@ TASK-01 迁移与数据层
 
 ## 5. 验收与发布策略
 
-- **发布前 checklist**：① 三仓 worktree healthy/clean；② `crctl test` 全绿且 `test-evidence/cmd-01..06.log` 与 §7 证据命令表全等；③ review-dev-plan PASS（canonical 落盘）；④ 人工 `approve --stage dev-start`；⑤ review-code PASS + test-report status=pass；⑥ 人工 `approve --stage code`；⑦ `CUSTOM.md` 按当时实际结构登记完整（481–490 迁移与钩子 + 各 service/handler/realtime/listeners/frontend 新文件与挂钩，由 TASK-01..04 各自登记并纳入完成标志，见 §3 关键纪律）。
+- **发布前 checklist**：① 三仓 worktree healthy/clean；② `crctl test` 全绿且 `test-evidence/cmd-01..07.log` 与 §7 证据命令表全等；③ review-dev-plan PASS（canonical 落盘）；④ 人工 `approve --stage dev-start`；⑤ review-code PASS + test-report status=pass；⑥ 人工 `approve --stage code`；⑦ `CUSTOM.md` 按当时实际结构登记完整（481–490 迁移与钩子 + 各 service/handler/realtime/listeners/frontend 新文件与挂钩，由 TASK-01..04 各自登记并纳入完成标志，见 §3 关键纪律）。
 - **发布顺序**：迁移先行（481→490，`cmd/migrate up`），服务端代码在 490 之后上线；旧前端在服务端上线窗口内继续读 legacy Issue 只读流（`legacy_issue_id`），新前端与旧服务端并存时 schema 硬降级只读——kind 列天然隔离（482 落地但代码未上线期间不存在 `project_shared` 行）。
 - **feature-flag**：不引入独立 flag；`chat_session.kind` 即开关，`project_shared` 行由新代码唯一创建。
 - **估算总工时（交付 TASK）**：72h（9 人天），与 §3 及 `tasks/_index.yml` `totalEstimateHours` 一致。
-- 证据命令执行经 `crctl test --plan`（cr-test-plan/v1），机器区 `commands` 顺序与 §7 证据命令表 1:1 对应，日志落 `test-evidence/cmd-NN.log`（cmd-05/06 前置 `pnpm install` 属实施期准备，不在证据命令内）。
+- 证据命令执行经 `crctl test --plan`（cr-test-plan/v1），机器区 `commands` 顺序与 §7 证据命令表 1:1 对应，日志落 `test-evidence/cmd-NN.log`（cmd-06/07 前置 `pnpm install` 属实施期准备，不在证据命令内）。
 
 ## 6. 交付覆盖表（稳定表 1/2）与证据命令表（稳定表 2/2）
 
@@ -90,8 +90,8 @@ TASK-01 迁移与数据层
 | FR-16 | §3.1 `legacy_issue_id` 只读查询；不双写、不删除、不补建 | CR-2026-059-TASK-02（关联 CR-2026-059-TASK-03） | cmd-02 | revert CR-2026-059-TASK-02 commit |
 | FR-17 | §3.1/§3.2/§3.4/§3.6 固定状态映射（项目不存在 404、非成员/错 kind/跨项目 404、403/409、归档列表 200 只读）+ `LockChatSessionInWorkspace` 锁内复验 | CR-2026-059-TASK-03 | cmd-02 | revert CR-2026-059-TASK-03 commit |
 | FR-18 | §3.1–§3.5 全部 error-code 落点 + `writeErrorCode`/`writeProjectChatSendError` 复用；legacy code 不动 | CR-2026-059-TASK-03 | cmd-02 | revert CR-2026-059-TASK-03 commit |
-| FR-19 | 前端 schema 硬降级（session_id 缺失/空/非 UUID → 只读）+ discussion-pane session 身份 + `legacy_issue_id` 只读流 + merge-forward `message_ids` 前端适配（client 方法 + pane 选择 + `Idempotency-Key`，legacy `comment_ids` 分支保留）+ 配置控件走 PATCH config + 四语 | CR-2026-059-TASK-04 | cmd-05；cmd-06 | revert CR-2026-059-TASK-04 commit |
-| FR-20 | §3.7 `Event.ChatSessionKind` + §4.7 路由与移出退订 | CR-2026-059-TASK-03 | cmd-04 | revert CR-2026-059-TASK-03 commit |
+| FR-19 | 前端 schema 硬降级（session_id 缺失/空/非 UUID → 只读）+ discussion-pane session 身份 + `legacy_issue_id` 只读流 + merge-forward `message_ids` 前端适配（client 方法 + pane 选择 + `Idempotency-Key`，legacy `comment_ids` 分支保留）+ 配置控件走 PATCH config + 四语 | CR-2026-059-TASK-04 | cmd-06；cmd-07 | revert CR-2026-059-TASK-04 commit |
+| FR-20 | §3.7 `Event.ChatSessionKind` + §4.7 路由与移出退订 | CR-2026-059-TASK-03 | cmd-05 | revert CR-2026-059-TASK-03 commit |
 | FR-21 | §2.1 M481 SQL（与 PRD 逐字一致）+ §4.9 编号/CONCURRENTLY/钩子登记/CUSTOM.md（各 TASK 登记各自文件）/英文注释 | CR-2026-059-TASK-01（关联 CR-2026-059-TASK-02/CR-2026-059-TASK-03/CR-2026-059-TASK-04） | cmd-01 | 481–490 down 逆序 |
 | FR-22 | §3.1–§3.4 八项闭合（精确状态 + code + 权限 + 幂等 + 副作用 + 观察点；§3.1 项目 404 与 §3.3 非成员/错 kind/跨项目 404、归档 200 只读锁定并 CR-2026-059-TASK-03/CR-2026-059-TASK-04 共用同一契约） | CR-2026-059-TASK-03（关联 CR-2026-059-TASK-02） | cmd-02 | revert CR-2026-059-TASK-03 commit |
 | FR-23 | §3.5 修改契约闭合（互斥/空/重复/顺序/跨 session/权限/幂等；前端 message_ids 选择与 legacy 分支） | CR-2026-059-TASK-03（关联 CR-2026-059-TASK-02/CR-2026-059-TASK-04） | cmd-02 | revert CR-2026-059-TASK-03 commit |
@@ -109,12 +109,13 @@ TASK-01 迁移与数据层
 |---|---|---|---|---|---|
 | cmd-01 | multica | server | go | ["test", "./cmd/migrate/", "-count=1"] | 900 |
 | cmd-02 | multica | server | go | ["test", "./internal/handler/", "./internal/service/", "-count=1"] | 1800 |
-| cmd-03 | multica | server | go | ["test", "./internal/handler/", "./pkg/agent/", "-count=1"] | 1800 |
-| cmd-04 | multica | server | go | ["test", "./cmd/server/", "./internal/handler/", "./internal/service/", "./internal/realtime/", "-count=1"] | 1800 |
-| cmd-05 | multica | packages/core | node | ["node_modules/vitest/vitest.mjs", "run", "api/schemas.test.ts"] | 1200 |
-| cmd-06 | multica | packages/views | node | ["node_modules/vitest/vitest.mjs", "run", "locales/parity.test.ts", "projects/components/discussion-pane.test.tsx"] | 1200 |
+| cmd-03 | multica | server | go | ["test", "./internal/handler/", "-count=1"] | 1800 |
+| cmd-04 | multica | server | go | ["test", "./pkg/agent/", "-run", "ValidateChatConfig|ModelIDForCapabilityLookup|StaticCatalog|ChatConfig", "-count=1"] | 1800 |
+| cmd-05 | multica | server | go | ["test", "./cmd/server/", "./internal/handler/", "./internal/service/", "./internal/realtime/", "-count=1"] | 1800 |
+| cmd-06 | multica | packages/core | node | ["node_modules/vitest/vitest.mjs", "run", "api/schemas.test.ts"] | 1200 |
+| cmd-07 | multica | packages/views | node | ["node_modules/vitest/vitest.mjs", "run", "locales/parity.test.ts", "projects/components/discussion-pane.test.tsx"] | 1200 |
 
-覆盖口径：cmd-01 = 迁移 up/down 往返与钩子登记完整性（AC-19，`TestEveryConcurrentUpBuildHasCleanup` 守护）；cmd-02 = Discussion/Private Ask/merge-forward 主路径、错误码矩阵、幂等、成员门禁与移出竞态（AC-1..5、7、8、11..16、20、22..28）；cmd-03 = 配置 authority 阶梯 PATCH/入队臂（AC-9/10/21）；cmd-04 = AC-29/FR-20 联合验收：`./cmd/server/`（listeners kind 感知路由）+ `./internal/handler/`（revokeAndRemoveMember 事务提交后断连挂接、含 `revocationResult` 空仍断连）+ `./internal/service/`（发送/移出竞态二择一）+ `./internal/realtime/`（hub 断连/房间清理、控制信封 relay 消费、双节点向量）；cmd-05 = 前端 schema 硬降级与作者字段 malformed 降级向量（AC-17）；cmd-06 = DiscussionPane 行为测试（session 身份、作者气泡 member/agent/NULL 回退、不调 `UpdateAgent`、merge-forward `message_ids`+`Idempotency-Key`+legacy 分支）+ 四语 parity（AC-6/AC-18/NFR-2）。
+覆盖口径：cmd-01 = 迁移 up/down 往返与钩子登记完整性（AC-19，`TestEveryConcurrentUpBuildHasCleanup` 守护）；cmd-02 = Discussion/Private Ask/merge-forward 主路径、错误码矩阵、幂等、成员门禁与移出竞态（AC-1..5、7、8、11..16、20、22..28）；cmd-03 = 配置 authority 阶梯 handler 臂（AC-9/10：非 owner 403 + 不调 `UpdateAgent`、非法配置 PATCH/入队 400；`./internal/handler/` 全绿）；cmd-04 = AC-21 配置校验单一实现（`./pkg/agent/` `-run` 子集；2026-09-05 修订收敛：全包 163 项失败为上游 Windows 环境假设基线，见 CUSTOM.md《已知测试失败基线》与 test-report 归因段）；cmd-05 = AC-29/FR-20 联合验收：`./cmd/server/`（listeners kind 感知路由）+ `./internal/handler/`（revokeAndRemoveMember 事务提交后断连挂接、含 `revocationResult` 空仍断连）+ `./internal/service/`（发送/移出竞态二择一）+ `./internal/realtime/`（hub 断连/房间清理、控制信封 relay 消费、双节点向量）；cmd-06 = 前端 schema 硬降级与作者字段 malformed 降级向量（AC-17）；cmd-07 = DiscussionPane 行为测试（session 身份、作者气泡 member/agent/NULL 回退、不调 `UpdateAgent`、merge-forward `message_ids`+`Idempotency-Key`+legacy 分支）+ 四语 parity（AC-6/AC-18/NFR-2）。
 
 ## 7. AC/业务闭环覆盖矩阵
 
@@ -127,7 +128,7 @@ TASK-01 迁移与数据层
 | AC-3 普通消息零 task | §4.2 | CR-2026-059-TASK-02 | cmd-02 |
 | AC-4 协办 task 参数 | §4.2/§4.3 | CR-2026-059-TASK-02 | cmd-02 |
 | AC-5 回复写回同 session | §4.2 | CR-2026-059-TASK-02 | cmd-02 |
-| AC-6 成员互见 + Private Ask 隔离 + 作者气泡 | §4.2/§3.6/§3.2/§2.5/§3.3 | CR-2026-059-TASK-04（关联 CR-2026-059-TASK-03，后端隔离/门禁证据 cmd-02） | cmd-06 |
+| AC-6 成员互见 + Private Ask 隔离 + 作者气泡 | §4.2/§3.6/§3.2/§2.5/§3.3 | CR-2026-059-TASK-04（关联 CR-2026-059-TASK-03，后端隔离/门禁证据 cmd-02） | cmd-07 |
 | AC-7 旧 Issue 只读回放 | §3.1 | CR-2026-059-TASK-02 | cmd-02 |
 | AC-8 并发收敛 + Private 并存 | §2.3/§2.4/§4.1 | CR-2026-059-TASK-02 | cmd-02 |
 | AC-9 非 owner 403 + 不调 UpdateAgent | §3.2/§4.4 | CR-2026-059-TASK-03 | cmd-03 |
@@ -138,11 +139,11 @@ TASK-01 迁移与数据层
 | AC-14 无 Coordinator GET/发送 + 解绑回空 | §2.1/§4.1/§4.5 | CR-2026-059-TASK-02 | cmd-02 |
 | AC-15 merge-forward 仅 message_ids 201 | §3.5 | CR-2026-059-TASK-03 | cmd-02 |
 | AC-16 转投内核 zero_diff | §3.5 | CR-2026-059-TASK-02 | cmd-02 |
-| AC-17 前端 schema 硬降级 | 前端 schema（schemas.test.ts） | CR-2026-059-TASK-04 | cmd-05 |
-| AC-18 pane 不依赖可写 issue_id + 四语 + 作者回退 | discussion-pane + locales | CR-2026-059-TASK-04 | cmd-06 |
+| AC-17 前端 schema 硬降级 | 前端 schema（schemas.test.ts） | CR-2026-059-TASK-04 | cmd-06 |
+| AC-18 pane 不依赖可写 issue_id + 四语 + 作者回退 | discussion-pane + locales | CR-2026-059-TASK-04 | cmd-07 |
 | AC-19 迁移 up/down 往返 + CONCURRENTLY + 钩子 | §2.1–§2.6/§4.9 | CR-2026-059-TASK-01 | cmd-01 |
 | AC-20 归档/错 kind/非成员状态映射 | §3.2/§3.4/§3.3 | CR-2026-059-TASK-03 | cmd-02 |
-| AC-21 配置校验单一实现 | §3.2/§4.2/§4.4 | CR-2026-059-TASK-02 | cmd-03 |
+| AC-21 配置校验单一实现 | §3.2/§4.2/§4.4 | CR-2026-059-TASK-02 | cmd-04 |
 | AC-22 Team Agent/Private Ask 零回归 | §3.6 + NFR-6/7 | CR-2026-059-TASK-03 | cmd-02 |
 | AC-23 shared 消息列表分页对象 | §3.3 | CR-2026-059-TASK-03 | cmd-02 |
 | AC-24 POST 输入校验 400/201 | §3.4 | CR-2026-059-TASK-03 | cmd-02 |
@@ -150,7 +151,7 @@ TASK-01 迁移与数据层
 | AC-26 幂等重放/冲突/并发单提交 | §2.6/§4.6 | CR-2026-059-TASK-02 | cmd-02 |
 | AC-27 message_ids 幂等 + legacy 无头 201 | §3.5 | CR-2026-059-TASK-03 | cmd-02 |
 | AC-28 非成员/移出即时失效 + 竞态零残留 | §3.1/§3.2/§3.4/§4.8/§4.2 | CR-2026-059-TASK-03 | cmd-02 |
-| AC-29 移出退订 + 双节点断连（handler/service/realtime 联合） | §4.7 + `workspace_revoke.go` 挂接 + `listeners.go` 路由 | CR-2026-059-TASK-03 | cmd-04 |
+| AC-29 移出退订 + 双节点断连（handler/service/realtime 联合） | §4.7 + `workspace_revoke.go` 挂接 + `listeners.go` 路由 | CR-2026-059-TASK-03 | cmd-05 |
 | AC-30 首绑/替换/解绑投影 | §4.5 | CR-2026-059-TASK-02 | cmd-02 |
 | AC-31 归档后 409 unavailable | §4.5/§4.3 | CR-2026-059-TASK-02 | cmd-02 |
 | AC-32 hard-delete 保留 + 回放 + 409 | §2.1/§4.5/§4.3 | CR-2026-059-TASK-02 | cmd-02 |

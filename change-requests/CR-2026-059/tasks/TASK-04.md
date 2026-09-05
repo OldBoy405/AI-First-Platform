@@ -59,9 +59,9 @@ mergeForwardDiscussion(projectId: string,
 
 1. `node node_modules/vitest/vitest.mjs run api/schemas.test.ts`（cwd `packages/core`）全绿：GET 缺/空/非 UUID `session_id` → 硬降级只读；合法 `session_id` 且 `issue_id` 为 null 时可发送；`author_type` 缺失/非枚举/非字符串 → 消息仍可解析（作者落 null）；前端不得用 `legacy_issue_id` 调用发送（AC-17）。
 2. `node node_modules/vitest/vitest.mjs run locales/parity.test.ts`（cwd `packages/views`）全绿：新增 key en/ja/ko/zh-Hans 对称（AC-18/NFR-2）。
-3. `node node_modules/vitest/vitest.mjs run projects/components/discussion-pane.test.tsx`（cwd `packages/views`；与 2 同属 plan cmd-06，B-DP-06 修复）全绿且覆盖：有 `session_id` 时不再依赖可写 `issue_id`；user 气泡作者展示（member/agent 解析，NULL/已移出成员回退）；旧 Issue 流只读（不可发送）；配置控件不调 `UpdateAgent`；**merge-forward 请求形状（B-DP-07）：shared 会话确认 → `mergeForwardDiscussion(projectId, {messageIds: [...]}, registerCr, key)` 且请求带 `Idempotency-Key` 头与 `message_ids` body；legacy 流确认 → `{commentIds: [...]}` 不带头；失败保留多选与预览（DD-6）**（AC-6/AC-18 前端闭合）。
+3. `node node_modules/vitest/vitest.mjs run projects/components/discussion-pane.test.tsx`（cwd `packages/views`；与 2 同属 plan cmd-07，B-DP-06 修复）全绿且覆盖：有 `session_id` 时不再依赖可写 `issue_id`；user 气泡作者展示（member/agent 解析，NULL/已移出成员回退）；旧 Issue 流只读（不可发送）；配置控件不调 `UpdateAgent`；**merge-forward 请求形状（B-DP-07）：shared 会话确认 → `mergeForwardDiscussion(projectId, {messageIds: [...]}, registerCr, key)` 且请求带 `Idempotency-Key` 头与 `message_ids` body；legacy 流确认 → `{commentIds: [...]}` 不带头；失败保留多选与预览（DD-6）**（AC-6/AC-18 前端闭合）。
 4. `pnpm typecheck` 相关包无新增错误（web 与 desktop 共享 `packages/views`，NFR-1）。
 
 ## 完成标志
 
-schemas.test.ts + parity.test.ts + discussion-pane.test.tsx 全绿（= plan cmd-05/cmd-06 覆盖面）+ pane 行为核对通过 + 四语 key 齐全 + `CUSTOM.md` 本 TASK 条目已按当时实际结构登记（schemas.ts/client.ts/types/chat.ts、discussion-pane.tsx、locales 四语 key），且全部已 commit 到 `requirement/CR-2026-059`（`developing` 内可被 `crctl task done` 登记的事件）。
+schemas.test.ts + parity.test.ts + discussion-pane.test.tsx 全绿（= plan cmd-06/cmd-07 覆盖面）+ pane 行为核对通过 + 四语 key 齐全 + `CUSTOM.md` 本 TASK 条目已按当时实际结构登记（schemas.ts/client.ts/types/chat.ts、discussion-pane.tsx、locales 四语 key），且全部已 commit 到 `requirement/CR-2026-059`（`developing` 内可被 `crctl task done` 登记的事件）。
