@@ -1,0 +1,46 @@
+cr-id: CR-2026-059
+review-type: code
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-06T14:56:16+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  代码↔TASK↔SDD对齐: "pass（FR-1..FR-26/AC-1..AC-32 实现落点与 SDD §2.1–§2.6/§3.1–§3.7/§4.1–§4.9 逐项核对一致；481–490 迁移 SQL 与 PRD FR-21 授权形态逐字一致）"
+  工程质量: "pass（lint/test/build 结论全部来自 test-report.md 机器区 crctl-test：7 命令 exit 0，无 timed-out/skipped；docs 仓 plan.md §6.2/§6.1/§7/TASK-03/04 cmd-NN 重编号与机器区 1-based 下标全等）"
+  关键路径可读性: "pass（discussion_session.go/handler kind 分流/实时控制帧均注释充分，英文注释符合 multica CLAUDE.md）"
+  安全性: "pass（成员门禁实时 member 行、LockSubscriberWrites 首锁+事务内复核关移出竞态、404 不确认存在、控制帧绝不 fanout 客户端、附件上传者门由鉴权身份推导、kind 空值 fail-closed 收窄投递）"
+  测试覆盖: "pass（服务端触发矩阵/指纹/渲染单测 + handler 真库向量 + realtime 断连/控制帧 + listeners 路由向量 + 前端 schema/pane/parity；TASK 覆盖矩阵四 TASK 全部 done 且有对应证据）"
+  测试证据可信度: "pass（traceability.yml#tests 与 test-report.md 的 status/command-digest 一致（73e16bfa…）；test-evidence/cmd-01..07.log 全部存在且 exit 0；cmd-02 无库形态的 DB 子测试 SKIP 已在报告明文披露并以真库补证覆盖，非静默）"
+  前端质量: "pass（pane 有 loading/empty/degraded 三态与重试入口；作者字段 malformed 独立降级不毒化消息解析；无新增依赖、无体积预算风险；颜色沿用既有 token 无新增对比度风险）"
+  批准范围核对: "pass（scope_in 全量交付；scope_out 零触碰（tools 仓零改动、sendProjectChatCore/EnsureProjectChatSession/handleDiscussionContainerMentionTrigger/168h sweeper 零 diff）；zero_diff 调用点逐一核对未改；follow_up 五项均未做成当前交付。developing 门禁的 dev-plan digest/EVIDENCE_DRIFT 漂移为 ① 裁定链修订的预期后果，按 coordinator 裁定不计入 code blockers）"
+suggestions:
+  - "范围外：归属节点 review-code（后续 CR）。shared 会话的 pin/archive/title 变更事件仍以 kind=\"private\" 发布（chat.go 三个 owner/admin 端点 hardcode），事件只送达操作者本人、不广播 workspace。FR-20 的强制广播集合仅含新消息与协办 task 事件，本行为属 fail-closed 收窄方向、无泄漏面；如需其他成员即时感知归档/置顶，可留后续 CR 补 kind 感知。"
+  - "范围外：归属节点 review-code（后续 CR）。merge-forward message_ids 幂等指纹在服务端先按 created_at 排序再计算（生产侧同一消息集合的不同客户端顺序收敛为同一指纹 → 重放而非 409），与 PRD「去重后顺序保留」的字面描述存在方向性偏差（实现更宽容）；且 sort.Slice 非稳定，理论上同 created_at 并列消息的重放指纹可能不稳定（普通发送路径每事务仅写一条 user 消息，实际概率极低）。不影响 AC-27 重放语义与当前验收可达性。"
+  - "范围外：归属节点 review-code（后续 CR）。message_ids 的 50 条上限在去重前校验（60 条含 20 重复 → 400），与 PRD「去重后仍须 ≤50」的字面读法偏严；但与 legacy comment_ids 臂的既有形状完全一致（PRD 要求「与现有 comment 去重一致」），无回归风险。"
+review-loop:
+  current-attempt: 1
+release-subjects:
+  version: 1
+  repositories:
+    - repo: ai-first-platform-docs
+      remote-ref: refs/heads/requirement/CR-2026-059
+      reviewed-source-sha: 66711ef538780f28958eae70cb4a9020182158f9
+    - repo: multica
+      remote-ref: refs/heads/requirement/CR-2026-059
+      reviewed-source-sha: 6027a340b6d8057c2c5f637050b4d834d6cf3748
+    - repo: tools
+      remote-ref: refs/heads/requirement/CR-2026-059
+      reviewed-source-sha: 8b1e35207ff13466e5c28f765833babc0e906a41
+  artifacts:
+    algorithm: sha256
+    canonicalization: crlf-to-lf+path-sort
+    files:
+      - { path: change-requests/CR-2026-059/plan.md, sha256: c454208b450d547e218c06e3c36c9307319176f3abbd1751effb9fc70dec0a69 }
+      - { path: change-requests/CR-2026-059/prd.md, sha256: 686d10d12ec92e09a4e894dff85223022e37b669f34c85687638ca4189d40975 }
+      - { path: change-requests/CR-2026-059/sdd.md, sha256: 0ab286fe24cae8f7f7a967fc9c7a9d1778d63499712d2ea8c30c7a02b9e82ca5 }
+      - { path: change-requests/CR-2026-059/tasks/TASK-01.md, sha256: 9da160c6c3fbbb3b1baaa54a5f79c65c3ea9bdd67f17bb27980911d1cb55f177 }
+      - { path: change-requests/CR-2026-059/tasks/TASK-02.md, sha256: 0819accd0557ebafcd87f61312f81091696439cee66fa5fd676b01c8b7803a83 }
+      - { path: change-requests/CR-2026-059/tasks/TASK-03.md, sha256: ed47727d0b1a62cf9e2696ac1fe3ca5574033ad839dc72d461c0ebaef66dfaba }
+      - { path: change-requests/CR-2026-059/tasks/TASK-04.md, sha256: 57f50709cf379da27bcde871b0af225846efd2dbdadf5f0aff48554b2275098b }
+      - { path: change-requests/CR-2026-059/tasks/_index.yml, sha256: 9f241cac8fc84dd9ae23cc53b43fb77a078fab0d367ee07eb1d888b1a36e2bfe }
+    digest: 2cdea9e83e52586ed5500a372762b00d7dbf84ff2baf93e53274542791eba014
