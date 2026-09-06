@@ -1,0 +1,29 @@
+cr-id: CR-2026-059
+review-type: dev-plan
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-05T02:17:54+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  sdd-to-plan: "pass"
+  plan-to-tasks: "pass"
+  task-executability: "pass"
+  dependency-topology: "pass"
+  interface-contracts: "pass"
+  acceptance-verifiability: "pass"
+  scope-and-simplicity: "pass"
+  risk-and-rollback: "pass"
+  reviewer-model: "pi local runner (claude)"
+suggestions:
+  - "已解决：[B-DP-01] plan.md §6.1 交付覆盖表「主责/关联TASK」全部改用 canonical `CR-2026-059-TASK-01..04`，并新增双向集合断言段（A=表内 canonical id 集，B=tasks/_index.yml id 集；复核实测 A=B={01,02,03,04}，writeback 短名解析风险消除）。"
+  - "已解决：[B-DP-02] TASK-01 `BindDraftAttachmentsToChatMessageParams` 增 `UploaderType string`/`UploaderID pgtype.UUID` 且 WHERE 含 uploader 门禁（与基线 attachment.sql.go 既有 uploader 参数同构）；TASK-02 消费侧恒从鉴权身份推导（`\"member\"`，绝不来自请求体），验收 1 含跨上传者负向向量（成员 B 携成员 A 未绑定草稿 → 0 行 → 409 `attachment_already_bound` 零残留），AC-12/AC-13 机械可达。"
+  - "已解决：[B-DP-03] TASK-01 接口契约逐项锁定 sqlc 生成签名（Params 字段/pgtype、返回类型、冲突/无行语义；含幂等五查询与 `GetChatMessageInWorkspace` 经 session JOIN、`SetChatSessionAgentID` execrows 语义）；TASK-02 `DiscussionSessionDeps{Queries,TxStarter,TaskSvc}` 完整字段与所有权 + 事件/队列责任边界（service 只回结果，post-commit publish/task:queued/NotifyTaskEnqueued 归 TASK-03）；TASK-03 消费同一签名，跨 TASK 契约可编译。"
+  - "已解决：[B-DP-04] `buildMergedForwardContentFromMessages(ctx, taskSvc *TaskService, msgs []db.ChatMessage, registerCR bool) string` 在 TASK-02 产出与 TASK-03 消费逐字一致（包归属 service、unexported、署名读 M486 作者列，NULL 退化 role 字面），与 SDD §3.5 一致；基线 project_chat.go 既有渲染器确带 `*TaskService`，legacy 路径字节级不变。"
+  - "已解决：[B-DP-05] plan §6.2 cmd-04 args 扩展为 `./cmd/server/ ./internal/handler/ ./internal/service/ ./internal/realtime/`（timeout 1800），TASK-03 验收 2 引用同一命令；覆盖 listeners.go kind 感知路由、workspace_revoke.go 事务提交后断连挂接（含 revocationResult 空仍断连）、service 发送/移出竞态与 realtime 双节点向量，AC-29/FR-20 假绿消除。"
+  - "已解决：[B-DP-06] cmd-06 增跑 `projects/components/discussion-pane.test.tsx`（基线确认该文件已存在）；plan §7 AC-6 唯一主责 = CR-2026-059-TASK-04（cmd-06，后端隔离/门禁关联 TASK-03 cmd-02）、AC-18 = CR-2026-059-TASK-04（cmd-06）；TASK-04 验收 3 逐项覆盖 session 身份/作者回退/旧流只读/不调 UpdateAgent/merge-forward 请求形状，前端关键行为有唯一 owner 与可执行证据。"
+  - "已解决：[B-DP-07] TASK-04 补 merge-forward 前端契约：client `mergeForwardDiscussion(projectId, {commentIds}|{messageIds}, registerCr, idempotencyKey?)`；pane 消息源切换（shared 会话选 ChatMessage id、legacy Issue 流选 comment id，互斥不混送）；`messageIds` 分支必带 `Idempotency-Key` 头与 `message_ids` body（缺失 client 抛错不发送）、legacy 分支不带头；验收 3 含两分支请求形状与失败保留多选向量，AC-15/25/27 端到端可达。"
+  - "已解决：[B-DP-08] CUSTOM.md 登记改为各 TASK 各自登记并纳入各自完成标志（plan §3 关键纪律/§5 ⑦；TASK-01..04 完成标志均含本 TASK 条目登记范围），禁止预登记猜测未来结构；登记收敛于各 TASK 的 developing 内完成边界，与 crctl task done 兼容。"
+  - "已解决：[B-DP-09] TASK-03 产出 HTTP 契约补全（GET discussion 项目不存在 404；shared 消息列表非成员/错 kind/跨项目 404、归档 200 只读、恒分页对象；POST 头门禁/幂等/零残留；PATCH 三态与权限；merge-forward message_ids 互斥/去重/权限/幂等全状态），TASK-04 消费同一份完整清单（逐 endpoint 对照），FR-17/FR-22 接口闭包可验证。"
+review-loop:
+  current-attempt: 2
+subject-sha256: 56d4776eb98c17e85cfa1263e8444938fdacc99109469f3afefe277bc78de26b

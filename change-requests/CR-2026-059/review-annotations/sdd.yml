@@ -1,0 +1,25 @@
+cr-id: CR-2026-059
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-04T15:01:07+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  PRD↔SDD对齐: "pass"
+  架构合理性: "pass"
+  数据模型完整性: "pass"
+  接口契约: "pass"
+  多仓架构约束: "pass"
+  性能与安全: "pass"
+  可测试性: "pass"
+  Prompt采纳影响: "N/A（本 CR 不触及 crctl dispatch 或 protectedPaths.deny）"
+  批准范围: "pass"
+  SDD-CLOSE与AC闭环: "pass"
+suggestions:
+  - "已解决：[B-MIG-3] §2.2/§2.4/§2.5/§2.6 与 §4.9 已补齐 482.down、485.down、486.down 的 SQL、部分状态、数据依赖、失败语义、逆序和 concurrentDownIndexCleanups 登记；AC-19/SDD-CLOSE-08 已同步。"
+  - "已解决：[B-AUTH-2] §3.2/§3.4/§4.2/§3.5/§4.8/§7.1 与 AC-28/AC-29 已补齐事务内成员复核、LockSubscriberWrites 首锁一致性、移出竞态二择一及失败零残留；§10 [D-27] 依赖清单覆盖锁宿主。"
+  - "范围外：归属节点：write-tech-design。SDD §3.1/§3.7 仍有少量 [D-*] 交叉引用可进一步校正（例如 writeErrorCode、GetProjectDiscussionIssue、publishChat 的引用号指向了不相关依赖）；不影响当前设计结论或验收可达性。"
+review-loop:
+  current-attempt: 3
+subject-file: change-requests/CR-2026-059/sdd.md
+subject-sha256: 0ab286fe24cae8f7f7a967fc9c7a9d1778d63499712d2ea8c30c7a02b9e82ca5
