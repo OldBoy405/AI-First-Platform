@@ -1,10 +1,10 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 spec-id: ai-first-platform
-cr-ref: CR-2026-060
-cr-history: [CR-2026-060]
-target-version: "0.33"
+cr-ref: CR-2026-059
+cr-history: [CR-2026-060, CR-2026-059]
+target-version: "0.32"
 baseline-since: "0.33"
-generated-at: "2026-09-03T11:16:33+08:00"
+generated-at: "2026-09-06T16:46:36+08:00"
 
 milestones:
   - cr: CR-2026-060
@@ -63,3 +63,159 @@ milestones:
         code: { verdict: pass, path: change-requests/CR-2026-060/review-annotations/code.yml, sha256: 2045c030bb1211151638aa55ac28c83649aff6180d018fd903f499c90aad0f7b }
       approval: { status: approved, path: change-requests/CR-2026-060/approval.yml, sha256: 30a73713e97952062659de923afbe5a0e8e7e20a6bb307f07800cb01d7cafbca }
       merge: { status: merged, path: change-requests/CR-2026-060/merge-commits.yml, sha256: 64f2f7e39f3c1515a32b7072b2e09bc06867741f4fe205578790b40f272207f0 }
+  - cr: CR-2026-059
+    milestone: M-CR-2026-059
+    target-version: "0.32"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: f453f5f0769354b4253644a47e3bb07638b608e7
+        branch: requirement/CR-2026-059
+      - repo: multica
+        trunk: main
+        sha: 8067b36a6b29bd085b5350f8c2f7c8bb5bccdd84
+        branch: requirement/CR-2026-059
+      - repo: tools
+        trunk: main
+        sha: ba63048fbbb2018d14410e68839c1b37877cbd56
+        branch: requirement/CR-2026-059
+    frs:
+      - fr: FR-1
+        title: 打开 Discussion 不得创建工作 Issue
+        sdd: SDD §3.1 GET 重写 + §4.1 EnsureProjectDiscussionSession；EnsureProjectDiscussionIssue 解除调用；无其它 origin_type='project_discussion' 写入路径
+        tasks: [CR-2026-059-TASK-02, CR-2026-059-TASK-03]
+        evidence: cmd-02
+      - fr: FR-2
+        title: Discussion 使用 chat_session.kind = project_shared
+        sdd: SDD §2.2 M482 kind 列 + CHECK 枚举 + 存量默认 private
+        tasks: [CR-2026-059-TASK-01]
+        evidence: cmd-01
+      - fr: FR-3
+        title: 每个项目最多一个 active shared session
+        sdd: SDD §2.4 M485 部分唯一索引 + §4.1 advisory 收敛
+        tasks: [CR-2026-059-TASK-02, CR-2026-059-TASK-01]
+        evidence: cmd-02
+      - fr: FR-4
+        title: creator_id 不作 shared session ACL
+        sdd: SDD §3.1/§4.2 门禁一律成员资格；creator_id 仅审计列
+        tasks: [CR-2026-059-TASK-03, CR-2026-059-TASK-02]
+        evidence: cmd-02
+      - fr: FR-5
+        title: Private Ask 与 1:1 的 creator-only 不得被放宽
+        sdd: SDD §2.3 M483/M484 谓词收窄 + GetProjectChatSessionForCreator 加 kind='private'
+        tasks: [CR-2026-059-TASK-01, CR-2026-059-TASK-03]
+        evidence: cmd-02
+      - fr: FR-6
+        title: 必须改写 Private Ask active 唯一索引谓词
+        sdd: SDD §2.3 M483/M484（先建新名再删旧）+ §2.4 M485
+        tasks: [CR-2026-059-TASK-01]
+        evidence: cmd-01
+      - fr: FR-7
+        title: agent_id 对 shared session 可空
+        sdd: SDD §2.1 M481 agent_id 可空 + FK ON DELETE SET NULL；NULL 贯穿查询盘点
+        tasks: [CR-2026-059-TASK-01]
+        evidence: cmd-01
+      - fr: FR-8
+        title: Discussion 配置属于共享 session，owner/admin 可改
+        sdd: SDD §3.1 base_* 快照规则 + §4.4 L2 workspace ready-runtime 并集 authority
+        tasks: [CR-2026-059-TASK-02, CR-2026-059-TASK-03]
+        evidence: cmd-03
+      - fr: FR-9
+        title: 配置 PATCH 按 kind 分流，复用 CR-A 解析与校验
+        sdd: SDD §3.2 kind 分流；复用 ResolveChatConfig/ValidateResolvedChatConfig/LoadChatCatalogForConfig
+        tasks: [CR-2026-059-TASK-03, CR-2026-059-TASK-02]
+        evidence: cmd-03
+      - fr: FR-10
+        title: 普通 Discussion 消息只写 chat_message
+        sdd: SDD §4.2 普通消息只写 chat_message（无 task/Issue/comment）
+        tasks: [CR-2026-059-TASK-02]
+        evidence: cmd-02
+      - fr: FR-11
+        title: 明确请求才创建无 Issue 的 chat task
+        sdd: SDD §4.2/§4.3 触发判定 + CreateChatTask(issue_id=NULL) + 快照 + 两个 409 + invocation 403 复用
+        tasks: [CR-2026-059-TASK-02]
+        evidence: cmd-02
+      - fr: FR-12
+        title: Coordinator 回复写回同一 shared session
+        sdd: SDD §4.2 writeChatCompletionOutcome 按 task.ChatSessionID 写回 + 作者列
+        tasks: [CR-2026-059-TASK-02]
+        evidence: cmd-02
+      - fr: FR-13
+        title: 现有 Coordinator 转投与 merge-forward 的 Discussion 侧适配
+        sdd: SDD §3.5 message_ids 路径 + RouteDiscussionToTeamAgent 触发源适配（内核 zero_diff）
+        tasks: [CR-2026-059-TASK-02, CR-2026-059-TASK-03]
+        evidence: cmd-02
+      - fr: FR-14
+        title: 发送前附件是上传者草稿
+        sdd: 复用 CR-2026-056 草稿契约（五空上传、上传者门、168h sweeper 谓词不改）
+        tasks: [CR-2026-059-TASK-03, CR-2026-059-TASK-02]
+        evidence: cmd-02
+      - fr: FR-15
+        title: 发送成功原子绑定，失败保留草稿
+        sdd: SDD §4.2 同事务绑定 BindDraftAttachmentsToChatMessage + 失败零残留 + 草稿保留重试
+        tasks: [CR-2026-059-TASK-02, CR-2026-059-TASK-01]
+        evidence: cmd-02
+      - fr: FR-16
+        title: 旧 project_discussion Issue 只读、不双写、不补建
+        sdd: SDD §3.1 legacy_issue_id 只读查询；不双写、不删除、不补建
+        tasks: [CR-2026-059-TASK-02, CR-2026-059-TASK-03]
+        evidence: cmd-02
+      - fr: FR-17
+        title: GET/PATCH/发送携带 session 身份并防漂移
+        sdd: SDD §3.1/§3.2/§3.4/§3.6 固定状态映射 + LockChatSessionInWorkspace 锁内复验
+        tasks: [CR-2026-059-TASK-03]
+        evidence: cmd-02
+      - fr: FR-18
+        title: 可区分错误与前端回滚
+        sdd: SDD §3.1–§3.5 全部 error-code 落点 + writeErrorCode/writeProjectChatSendError 复用；legacy code 不动
+        tasks: [CR-2026-059-TASK-03]
+        evidence: cmd-02
+      - fr: FR-19
+        title: 前端 DiscussionPane 改走 shared session
+        sdd: 前端 schema 硬降级 + discussion-pane session 身份 + legacy_issue_id 只读流 + merge-forward message_ids 前端适配 + 配置控件走 PATCH config + 四语
+        tasks: [CR-2026-059-TASK-04]
+        evidence: cmd-06; cmd-07
+      - fr: FR-20
+        title: 实时事件对当前 workspace 成员可见
+        sdd: SDD §3.7 Event.ChatSessionKind + §4.7 路由与移出退订
+        tasks: [CR-2026-059-TASK-03]
+        evidence: cmd-05
+      - fr: FR-21
+        title: 迁移、sqlc 与定制台账
+        sdd: SDD §2.1 M481 SQL（与 PRD 逐字一致）+ §4.9 编号/CONCURRENTLY/钩子登记/CUSTOM.md/英文注释
+        tasks: [CR-2026-059-TASK-01, CR-2026-059-TASK-02, CR-2026-059-TASK-03, CR-2026-059-TASK-04]
+        evidence: cmd-01
+      - fr: FR-22
+        title: Discussion 四主 endpoint HTTP 八项闭合
+        sdd: SDD §3.1–§3.4 八项闭合（精确状态 + code + 权限 + 幂等 + 副作用 + 观察点）
+        tasks: [CR-2026-059-TASK-03, CR-2026-059-TASK-02]
+        evidence: cmd-02
+      - fr: FR-23
+        title: merge-forward 入参扩展必须闭合修改契约
+        sdd: SDD §3.5 修改契约闭合（互斥/空/重复/顺序/跨 session/权限/幂等；前端 message_ids 选择与 legacy 分支）
+        tasks: [CR-2026-059-TASK-03, CR-2026-059-TASK-02, CR-2026-059-TASK-04]
+        evidence: cmd-02
+      - fr: FR-24
+        title: 有副作用的 Discussion 入口必须可安全重试
+        sdd: SDD §2.6 M487–490（建表/唯一索引/挂 PK/辅助索引）+ §4.6 收敛算法 + §3.4/§3.5 缺头/冲突错误
+        tasks: [CR-2026-059-TASK-02, CR-2026-059-TASK-01, CR-2026-059-TASK-03]
+        evidence: cmd-02
+      - fr: FR-25
+        title: shared session 安全负向契约
+        sdd: SDD §3.1/§3.2/§3.4 成员门禁 + §4.7 实时拒绝/退订 + §4.8 附件 404 + 草稿仅上传者
+        tasks: [CR-2026-059-TASK-03, CR-2026-059-TASK-02]
+        evidence: cmd-02
+      - fr: FR-26
+        title: Coordinator 唯一权威源与生命周期
+        sdd: SDD §4.5 写权威/投影/读规则/竞态/归档/hard-delete 全表
+        tasks: [CR-2026-059-TASK-02, CR-2026-059-TASK-03]
+        evidence: cmd-02
+    evidence:
+      test: { status: pass, path: change-requests/CR-2026-059/test-report.md, sha256: 0ef4d05282eb5daf9edd58d787a5203dc33c2dfbb40f221e6fa8fd3830e74aa1 }
+      reviews:
+        requirement: { verdict: pass, path: change-requests/CR-2026-059/review-annotations/requirement.yml, sha256: 2b17333987bd7fe1b9ebccc5a07f403f2a3d7b626922d1f80c23cae8fe2bbb80 }
+        tech-design: { verdict: pass, path: change-requests/CR-2026-059/review-annotations/sdd.yml, sha256: 60bcdc7e85f611c36501deab35aa59f4ca4855a5b16eaf1d6187c4a7d03517f1 }
+        dev-plan: { verdict: pass, path: change-requests/CR-2026-059/review-annotations/dev-plan.yml, sha256: e05265b087a20f63ba3e8d9b6d48be45d2ce73d9aa323596fe19ef15d8625ed6 }
+        code: { verdict: pass, path: change-requests/CR-2026-059/review-annotations/code.yml, sha256: 24754e1b8c64f2ed7d12b24e5c1cbb269f13b8221fdf0b24a6ca935476261dff }
+      approval: { status: approved, path: change-requests/CR-2026-059/approval.yml, sha256: c88e42d67d654ae1cf3ca0900edaf61ceaafd03f0251b3ca1247727fd1befbb9 }
+      merge: { status: merged, path: change-requests/CR-2026-059/merge-commits.yml, sha256: 18ca13d5ac6b26bf8e739946ff8cb58d33c12262217d02c289c6bf55dc5bfd75 }
