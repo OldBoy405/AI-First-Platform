@@ -1,7 +1,7 @@
 cr-id: CR-2026-061
 review-type: requirement
 reviewer: "OldBoy405"
-reviewed-at: "2026-09-08T00:26:21+08:00"
+reviewed-at: "2026-09-08T00:29:29+08:00"
 verdict: pass
 blockers: []
 dimensions:
@@ -11,7 +11,11 @@ dimensions:
   planning-alignment: "pass"
   dependencies: "pass"
 suggestions:
-  - "|-"
+  - "已解决：B-API-01 [prd.md FR-10、HTTP 契约「副作用」/「错误闭包」、AC-8]：attempt 2 已闭合（canonical verdict=pass）；v0.3 按 A 口径将 pipeline task 语义替换为预建 run 语义，本域重新核查通过——副作用按默认/upgrade_to_cr=true 分支拆分（默认仅 Issue+context_refs+幂等记录；upgrade_to_cr=true 追加 pipeline_run+pipeline_node_run，禁 comment/task/agent_task_queue）；Issue+context_refs+幂等记录+run 行同一事务、事件通知提交后发出；run 创建失败 502 pipeline_run_create_failed 整体回滚零残留；唯一 run 语义（每目标 Issue 至多一条，同 key 重放回放首次 run_id，同源不同 key 锁内查重命中后至多补建一次，并发由项目级锁串行化）；run_id 已全面替代 v0.2 task id（pipeline_task_id 全文零残留）。A 口径代码事实逐项核实通过：451 表结构（cr_id 可 NULL、issue_id、inputs/execution_context JSONB、started_by NOT NULL）、456 部分唯一索引、requirement-register 首节点 id 00000000-0000-0000-0011-000000000001（seq=1，tools 模板）、findOrCreateRun 按 cr_id 命中同一 run。"
+  - "已解决：B-API-02 [prd.md FR-6/FR-7、HTTP 契约「canonical fingerprint」/「幂等与查重优先级」、AC-5]：attempt 2 已闭合；v0.3 未回退——canonical fingerprint（固定键序 JSON+SHA-256、projectId/session_id 小写、message_ids/attachment_ids 排序去重、upgrade_to_cr 布尔化缺省 false、title/description 不参与）、key 作用域 (workspace_id, user_id, scope_type='discussion_promotion', scope_id=project_id, key) 与输入限制（必填非空≤255 字节）、确定性优先级（同 key 指纹冲突 409 先于来源查重；同 key 先普通升级后 upgrade_to_cr=true 因指纹含 upgrade_to_cr 必不同→409；换新 key→返回同一 Issue 且至多补建一条 run）；AC-5 重放与并发验收可执行。"
+  - "已解决：B-API-03 [prd.md FR-8、HTTP 契约「判定顺序」、AC-6]：attempt 2 已闭合；v0.3 未回退——固定判定顺序（请求形态 400→project 解析 400/404→成员门禁 403→Issue 创建权限 403→session 解析 404），每步失败即返回零写入；成员缺失唯一 403 forbidden_promotion、session 级失败唯一 404 chat_session_not_found；AC-6 唯一响应映射与契约一致。"
+  - "已解决：B-API-04 [prd.md FR-3/FR-13、HTTP 契约「错误闭包」、AC-2/AC-11]：attempt 2 已闭合；v0.3 错误闭包表逐类齐备并同步 A 口径——502 行改为 pipeline_run_create_failed（run/首节点写入、执行上下文校验失败），锁/DB/事务失败 500 internal_error；全部给出固定 code、{code,error} 错误体、零写入范围与客户端动作；500/502 均原 key 幂等安全重试；AC-2/AC-11 覆盖全部失败路径。"
+  - "建议（归 SDD 节点，不阻塞）：①预建 run 识别键（workspace_id, pipeline_id='requirement-authoring', issue_id, cr_id IS NULL, status='running'）的查询路径建议在 SDD 补索引设计（现有 idx_pipeline_run_workspace_status 为弱覆盖）；②AC-13 绑定端点建议沿用 bind-current-task 同族鉴权口径，并明确绑定幂等的冲突响应（二次绑定返回固定错误而非静默）；③首节点 pipeline_node_run 在 CR 注册完成前的状态推进语义（何时由 running 标记为 passed）需 SDD 明确与现有投影协作方式，避免节点状态与投影事件脱节。"
 review-loop:
   current-attempt: 3
 subject-file: change-requests/CR-2026-061/prd.md
