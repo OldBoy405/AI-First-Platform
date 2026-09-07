@@ -1,21 +1,21 @@
 cr-id: CR-2026-061
 review-type: requirement
 reviewer: "OldBoy405"
-reviewed-at: "2026-09-07T14:15:51+08:00"
-verdict: block
-blockers:
-  - "本轮新增：B-API-01 [prd.md §Discussion promotion HTTP 契约“副作用”、FR-10、契约末段]：契约将副作用限定为新增 Issue/context_refs/幂等记录并明确“不得创建 comment / task”，但 FR-10 与契约末段又要求 upgrade_to_cr=true 创建 requirement-authoring pipeline task 并返回 pipeline_task_id。未定义 pipeline task 创建失败时的 HTTP 状态/错误码、Issue 与幂等记录是否同事务回滚，以及同源或同 key 重复升级是否只创建一个 pipeline task。该矛盾使 upgrade_to_cr 分支无法唯一实现，也无法验证 FR-10、FR-13、AC-8、AC-11。修复方向：拆分默认分支与 upgrade_to_cr=true 的条件副作用，明确 task 输入/响应、事务边界或补偿、失败零残留，以及重放/查重时唯一的 task 语义。"
-  - "本轮新增：B-API-02 [prd.md FR-6/FR-7、HTTP 契约“幂等”、AC-5]：只写“相同请求指纹”，没有定义指纹的规范化算法、字段集合或幂等键作用域。未说明 projectId、规范化来源数组、title/description、upgrade_to_cr（及默认值）如何参与指纹，也未规定同一来源集合不同 key 但请求字段不同、同一 key 先普通升级后 upgrade_to_cr=true 时，FR-6 的查重命中与 FR-7 的 key 冲突谁优先。因而不同实现可能返回不同 Issue/状态或重复触发 CR pipeline，当前重放与并发验收不可唯一执行。修复方向：定义 canonical fingerprint、key 的 endpoint/project/调用者作用域与输入限制，并给出来源集合查重、key 重放/冲突和 upgrade_to_cr 状态组合的确定性规则，保证最多一个目标 Issue 与符合预期的 pipeline task。"
-  - "本轮新增：B-API-03 [prd.md FR-8、HTTP 契约“权限”/“状态码”、AC-6]：权限响应互相矛盾。契约先规定非 workspace 成员或无 Issue 创建权限统一 403 forbidden_promotion，随后又把“非 workspace 成员/已被移出 workspace”列为 404 chat_session_not_found；AC-6 更写成“403 或 404”。同一输入无法得到唯一的客户端行为和验收结果，也无法判断应在哪个校验阶段零写入。修复方向：明确成员缺失、Issue 创建权限缺失、跨项目/归档/非 project_shared session 的固定判定顺序、唯一 HTTP 状态与 error code，并使 AC-6 与之完全一致。"
-  - "本轮新增：B-API-04 [prd.md FR-3、FR-7、FR-13、HTTP 契约“request”/“校验”/“状态码”]：错误闭包不完整。虽然要求可区分错误和零残留，但契约未定义 projectId/UUID、数组元素形态、title 超限、Idempotency-Key 长度或非法值，以及锁/数据库/事务失败（尤其 upgrade_to_cr task 失败）的明确 HTTP 状态、code、error body 和重试/保留选择动作；“非法 JSON”也只给出非结构化的现有文案。缺少这些契约时 AC-2、AC-5、AC-11 无法覆盖所有失败路径，前端也无法按 FR-13 恢复。修复方向：补齐逐类错误的状态、固定 code/error 响应、零写入范围和客户端动作；至少覆盖输入解析、权限/来源、key 冲突、并发/事务及 pipeline task 失败。"
+reviewed-at: "2026-09-07T16:16:32+08:00"
+verdict: pass
+blockers: []
 dimensions:
   structure: "pass"
-  fr-testability: "block"
+  fr-testability: "pass"
   scope: "pass"
   planning-alignment: "pass"
   dependencies: "pass"
-suggestions: []
+suggestions:
+  - "已解决：B-API-01 [prd.md FR-10、HTTP 契约“副作用”/“错误闭包”、AC-8]：副作用已按分支拆分——默认分支仅新增 Issue+context_refs+幂等记录同事务、禁 comment/task；upgrade_to_cr=true 分支追加 pipeline_run/pipeline_node_run/agent_task_queue 同事务写入，入队与事件通知在提交后发出。pipeline task 创建失败已定义 502 pipeline_task_create_failed、事务整体回滚、零残留（无 Issue/context_refs/幂等记录/task 行）；唯一 task 语义已定义：每个目标 Issue 至多一个 task，同 key 同指纹重放回放首次 pipeline_task_id，同源不同 key 命中后至多补建一次，并发由项目级锁串行化。upgrade_to_cr 分支可唯一实现，FR-10/FR-13/AC-8/AC-11 可验证。"
+  - "已解决：B-API-02 [prd.md FR-6/FR-7、HTTP 契约“canonical fingerprint”/“幂等与查重优先级”、AC-5]：canonical fingerprint 已定义（固定键序 JSON + SHA-256；projectId/session_id 小写；message_ids/attachment_ids 排序去重；upgrade_to_cr 布尔化、缺省 false；title/description 不参与指纹）；key 作用域 (workspace_id, user_id, scope_type='discussion_promotion', scope_id=project_id, key) 与输入限制（必填、非空、≤255 字节）已定义。优先级确定性规则齐备：同 key 指纹冲突 409 先于同源查重；同 key 先普通升级后 upgrade_to_cr=true → 409（指纹含 upgrade_to_cr 必不同）；换新 key → 返回同一 Issue 且至多补建一个 task。重放与并发验收可唯一执行。"
+  - "已解决：B-API-03 [prd.md FR-8、HTTP 契约“判定顺序”/“错误闭包”、AC-6]：固定判定顺序已定义（请求形态 400 类 → project 解析 400/404 → 成员门禁 403 → Issue 创建权限 403 → session 解析 404），每步失败即返回、零写入、不依赖后续步骤；成员缺失唯一 403 forbidden_promotion，session 级失败唯一 404 chat_session_not_found，口径与 CR-B 项目路径先例一致；AC-6 已改写为唯一响应映射并与契约完全一致，同输入唯一响应可验收。"
+  - "已解决：B-API-04 [prd.md FR-3/FR-13、HTTP 契约“错误闭包”、AC-2/AC-11]：错误闭包表逐类齐备——非法 JSON/invalid_request_body、projectId 非法/invalid_project_id、project 不存在/project_not_found、来源选择与数组形态/invalid_promotion_selection、title 超限/invalid_promotion_title、description 超限/invalid_promotion_description、key 缺失或非法/idempotency_key_required|invalid_idempotency_key、成员或权限/forbidden_promotion、session 级失败/chat_session_not_found、同 key 不同指纹/idempotency_key_reused、锁/DB/事务失败 500 internal_error、pipeline task 失败 502 pipeline_task_create_failed、其它 500 internal_error——均给出固定 code、{code,error} 错误体、零写入范围与客户端动作；500/502 均为原 key 幂等安全重试。AC-2/AC-5/AC-11 已覆盖全部失败路径，FR-13 前端恢复可执行。"
 review-loop:
-  current-attempt: 1
+  current-attempt: 2
 subject-file: change-requests/CR-2026-061/prd.md
-subject-sha256: ce7fd6bd8ff29aa183f164aca9f9508c9dd551413c18a70ce376f5fb905551d4
+subject-sha256: 6e5a2f58801ddddef892d17d96d356dee45794700f0085ecbdd5b96661dc995e
