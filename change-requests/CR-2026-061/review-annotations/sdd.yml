@@ -1,10 +1,9 @@
 cr-id: CR-2026-061
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-09-08T01:19:26+08:00"
-verdict: block
-blockers:
-  - "本轮新增：[sdd.md §12 既有实现依赖清单] 正文引用的既有实现事实漏列/错列，违反 review-tech-design Step 2.1「SDD 正文存在但未列入依赖清单的同类事实引用形成 blocker」——以下 8 项正文引用的事实设计结论均依赖之、但未出现在 §12 清单（已由本评审在 multica HEAD 78e14082845f7fb19f33a356169349b07042c04b 逐项核实存在，仅清单未列）：① §2.2 SweepChatIdempotency（server/internal/service/chat_idempotency_cleanup.go L17 + idempotency 清理查询；「24h 清理自动覆盖新 scope、无需新清理器」结论依赖，已核实按 created_at 全 scope 清理，行为属实）；② §4.3 步骤 4 / D-6 CheckIssueCreateCapacity 与 ResolveIssueCountPolicy（server/internal/service/issue_limit.go L67/L34；403 映射与 AC-6 可达性依赖，§12 #3 仅列 AllocateIssueNumber）；③ §4.3 步骤 8 / §13.4 GetMemberByUserAndWorkspace（server/pkg/db/queries/member.sql L15；事务内鉴权复核依赖）；④ §4.4 / §4.6 GetProjectInWorkspace（server/pkg/db/queries/project.sql L8）；⑤ §7.3 InsertProjectSharedSession（server/pkg/db/queries/chat.sql；agent_id=NULL 无 Coordinator 边界声明依赖）；⑥ §4.6 chatMessageAuthorDisplayName（server/internal/service/project_chat.go L739；默认描述摘要复用依赖）；⑦ §7.2 issue_properties_gin（迁移 192；507 模式一致性依赖）；⑧ §4.3 dbid.NewV7（server/pkg/dbid/dbid.go L51；runID 预生成依赖）。另 §12 #13 的 relative path 仅写 cr_bind.go+task.go，但 LockCrForCrBind/BindCrShellIssueIfNull 实际位于 server/pkg/db/queries/agent.sql（L1128/L1146），路径与符号不符。影响：依赖清单是实施期事实核验与 rebase 前对照的唯一固定锚点，漏列/错列使上述事实无 repo/path/symbol/结论 固定，AC 可达性依据（403 映射、事务内复核、无 Coordinator 边界）无法机械核验。修复方向：按正文首次出现顺序将 8 项补入 §12（每项含 repo/relative path/stable symbol/依赖结论，附 commit SHA 78e14082845f7fb19f33a356169349b07042c04b），并将 #13 的 path 修正为 agent.sql（或拆分为 handler/service 与 db queries 两条）。"
+reviewed-at: "2026-09-08T04:02:22+08:00"
+verdict: pass
+blockers: []
 dimensions:
   批准范围前置: "pass"
   PRD-SDD对齐: "pass"
@@ -16,12 +15,13 @@ dimensions:
   可测试性: "pass"
   Prompt采纳影响: "pass（条件不触发：不触及 crctl.mjs dispatch 与 rules.json#protectedPaths.deny）"
   AC闭环: "pass"
-  既有实现依赖核验: "block"
+  既有实现依赖核验: "pass"
 suggestions:
-  - "（归 write-tech-design）§4.5 违约护栏建议补明后果：若 KB 侧违约在绑定前推进 requirement-reviewing，投影按 cr_id 新建 issue_id=NULL 的 run 会占用 456 唯一索引槽位，后续绑定的 UPDATE cr_id 将触发 456 唯一冲突使绑定失败（500 CR_BIND_FAILED）——SDD 现仅说明「506 不冲突」，建议补写该后果与恢复路径（清理投影 run 后重试绑定），护栏描述才算完整。"
-  - "（归 write-tech-design）§3.2 错误表 401 行实际错误体为 {error:TASK_CONTEXT_REQUIRED}（bind-current-task 同族形状，已核实 cr_bind.go L36/L61），与 promotion 端点的 {code,error} 形状不同族；建议在表中注明「形状与 bind-current-task 一致」，避免实施期误套 writeErrorCode。"
-  - "（归 write-tech-design）§12 #13 路径修正与 8 项补列完成后，建议顺带把 §2.3 引用的 ArchitectureCoreRegistryJSON 与 §4.5 的 CreateActivity（server/pkg/db/queries/activity.sql L29）纳入清单或明确其归属条目，保证清单与正文一一对应。"
+  - "已解决：[sdd.md §12 既有实现依赖清单] 第 1 轮 blocker 关闭：8 项漏列事实（SweepChatIdempotency、CheckIssueCreateCapacity/ResolveIssueCountPolicy、GetMemberByUserAndWorkspace、dbid.NewV7、GetProjectInWorkspace、chatMessageAuthorDisplayName、issue_properties_gin、InsertProjectSharedSession）已按正文首现顺序补入并全量重排为 35 项，每项 repo/relative path/stable symbol/依赖结论/commit SHA 齐备；原 #13 已拆分为 #16（handler cr_bind.go + service task.go）与 #17（db queries agent.sql L1128/L1146/L1100），路径与符号对应。本评审在 multica worktree HEAD 78e14082845f7fb19f33a356169349b07042c04b 与 tools 49c46dd 上对全部行号/符号/谓词（456 谓词、192 索引、501-504 CHECK 与 pkey、451 表结构、pipelineForStatus L29/L30、findOrCreateRun 按 cr_id 命中、cr_bind.go L36/L61 401 形状、foundation.go L4/L6、模板 nodes[0].id、rules.json L28/L30、AllocateIssueNumber 实际位置等）逐项核实成立。"
+  - "（归 write-tech-design）§12 #30/#31 首现顺序微调：456 索引首现于 §4.5 违约后果推演，chatMessageAuthorDisplayName 首现于 §4.6，按「实质首现」口径两者建议互换，并可在 §12 引言注明排序口径，避免后续轮次误判漏列。"
+  - "（归 write-tech-design）§12 #24 的 AllocateIssueNumber 位于 server/internal/service/issue_limit.go L87（非 issue.sql，条目内「issue_limit 服务」括注已消歧），建议移入 #20 条目或标注 L87；§12 #18 的 loadIssueForUser 位于 server/internal/handler/handler.go L1049（IssueResponse/issueToResponse/GetIssue 确在 issue.go L37/L303/L2225），建议在路径字段注明。"
+  - "（归 write-tech-design，可选）§9 zero_diff 与 D-1 引用的既有符号（sendProjectChatCore、EnsureProjectDiscussionSession/EnsureProjectDiscussionIssue、GetProjectDiscussion 等）未入 §12；其性质为「不改动基线」而非设计依赖，本轮不构成 blocker；如后续要求清单与正文一一对应，可并入 #26/#33 条目或加注 zero_diff 属性。"
 review-loop:
-  current-attempt: 1
+  current-attempt: 2
 subject-file: change-requests/CR-2026-061/sdd.md
-subject-sha256: e8aaec0105817da1674f56b7e70af5e68cc597cdf755ab103b086decddfb2840
+subject-sha256: 310434e726469511a5018a8aab627f872b1e8fae8420776054789e38d1f184be
