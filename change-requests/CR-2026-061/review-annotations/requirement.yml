@@ -1,7 +1,7 @@
 cr-id: CR-2026-061
 review-type: requirement
 reviewer: "OldBoy405"
-reviewed-at: "2026-09-07T16:16:32+08:00"
+reviewed-at: "2026-09-08T00:26:21+08:00"
 verdict: pass
 blockers: []
 dimensions:
@@ -11,11 +11,8 @@ dimensions:
   planning-alignment: "pass"
   dependencies: "pass"
 suggestions:
-  - "已解决：B-API-01 [prd.md FR-10、HTTP 契约“副作用”/“错误闭包”、AC-8]：副作用已按分支拆分——默认分支仅新增 Issue+context_refs+幂等记录同事务、禁 comment/task；upgrade_to_cr=true 分支追加 pipeline_run/pipeline_node_run/agent_task_queue 同事务写入，入队与事件通知在提交后发出。pipeline task 创建失败已定义 502 pipeline_task_create_failed、事务整体回滚、零残留（无 Issue/context_refs/幂等记录/task 行）；唯一 task 语义已定义：每个目标 Issue 至多一个 task，同 key 同指纹重放回放首次 pipeline_task_id，同源不同 key 命中后至多补建一次，并发由项目级锁串行化。upgrade_to_cr 分支可唯一实现，FR-10/FR-13/AC-8/AC-11 可验证。"
-  - "已解决：B-API-02 [prd.md FR-6/FR-7、HTTP 契约“canonical fingerprint”/“幂等与查重优先级”、AC-5]：canonical fingerprint 已定义（固定键序 JSON + SHA-256；projectId/session_id 小写；message_ids/attachment_ids 排序去重；upgrade_to_cr 布尔化、缺省 false；title/description 不参与指纹）；key 作用域 (workspace_id, user_id, scope_type='discussion_promotion', scope_id=project_id, key) 与输入限制（必填、非空、≤255 字节）已定义。优先级确定性规则齐备：同 key 指纹冲突 409 先于同源查重；同 key 先普通升级后 upgrade_to_cr=true → 409（指纹含 upgrade_to_cr 必不同）；换新 key → 返回同一 Issue 且至多补建一个 task。重放与并发验收可唯一执行。"
-  - "已解决：B-API-03 [prd.md FR-8、HTTP 契约“判定顺序”/“错误闭包”、AC-6]：固定判定顺序已定义（请求形态 400 类 → project 解析 400/404 → 成员门禁 403 → Issue 创建权限 403 → session 解析 404），每步失败即返回、零写入、不依赖后续步骤；成员缺失唯一 403 forbidden_promotion，session 级失败唯一 404 chat_session_not_found，口径与 CR-B 项目路径先例一致；AC-6 已改写为唯一响应映射并与契约完全一致，同输入唯一响应可验收。"
-  - "已解决：B-API-04 [prd.md FR-3/FR-13、HTTP 契约“错误闭包”、AC-2/AC-11]：错误闭包表逐类齐备——非法 JSON/invalid_request_body、projectId 非法/invalid_project_id、project 不存在/project_not_found、来源选择与数组形态/invalid_promotion_selection、title 超限/invalid_promotion_title、description 超限/invalid_promotion_description、key 缺失或非法/idempotency_key_required|invalid_idempotency_key、成员或权限/forbidden_promotion、session 级失败/chat_session_not_found、同 key 不同指纹/idempotency_key_reused、锁/DB/事务失败 500 internal_error、pipeline task 失败 502 pipeline_task_create_failed、其它 500 internal_error——均给出固定 code、{code,error} 错误体、零写入范围与客户端动作；500/502 均为原 key 幂等安全重试。AC-2/AC-5/AC-11 已覆盖全部失败路径，FR-13 前端恢复可执行。"
+  - "|-"
 review-loop:
-  current-attempt: 2
+  current-attempt: 3
 subject-file: change-requests/CR-2026-061/prd.md
-subject-sha256: 6e5a2f58801ddddef892d17d96d356dee45794700f0085ecbdd5b96661dc995e
+subject-sha256: 8a58149fa2248a41827aac38e4e311e9ec1b62d2ab3f3c020b5cc7e337f771a8
