@@ -1,41 +1,35 @@
-# CR-2026-061 工作流导航缓存（dev-agent / 状态机治理 + 交接）
-
-> 仅供返工与 /resume 导航；canonical 事实以 cr.md / PRD / crctl 为准。
-> 最近刷新：2026-09-07（dev-agent 治理变更轮：tools 状态机回退转换落地并推送）
+# CR-2026-061 工作流导航缓存（dev-agent / SDD 节点）
+> 仅供返工与 /resume 导航；canonical 事实以 cr.md / sdd.md / review-annotations / crctl 为准。
+> 最近刷新：2026-09-08（dev-agent：write-tech-design SDD 落盘并推进至 tech-design-review-pending）
 
 ## 当前状态
+- status: `tech-design-review-pending`；reviewLoop `review-tech-design` attempt 0/3。
+- `next`（crctl）: 以 `crctl next CR-2026-061` 为准（预期 = review-tech-design 独立评审）。
 
-- status: `requirement-approved`（本 run 未做 `crctl advance`；下一步由 requirement-writer 执行）
-- legalNext 已含新边：`to: drafting, trigger: "write-tech-design:prd-blocker -> write-requirement-prd"`
-- reviewLoop：`review-requirement` current=2/3（下一轮 attempt 3/3，`--bump-attempt`）
+## 本 run 已交付
+- `change-requests/CR-2026-061/sdd.md`（本文件提交同事务）：覆盖 13 FR + HTTP 契约 + AC-1~AC-13 合同；
+  3 条第 3 轮 suggestions 全部「已处理」（SDD §11）；SDD-CLOSE-01~09 全部关闭（§10）。
+- 状态推进：`requirement-approved → tech-designing → tech-design-review-pending`（均经 crctl advance，未手改账本）。
 
-## 本 run 结论（已完成）
+## 关键设计锚点（返工时先读 sdd.md 对应节）
+- 唯一 Issue 写入路径 = `IssueService.createInTx`（自 Create 提取，FR-2/NFR-4）——SDD §4.3/D-7。
+- fingerprint（FR-7，含 upgrade_to_cr）与 dedupe_key（FR-6，来源集合）是两个摘要——SDD §4.1。
+- 预建 run：`pipeline_run(pipeline_id='requirement-authoring', cr_id=NULL, issue_id, started_by)` + 首节点
+  `00000000-0000-0000-0011-000000000001` seq1 running；绑定端点置 passed——SDD §2.3/§4.5。
+- 迁移 505（scope CHECK 扩展）/506（promotion run 部分唯一索引）/507（context_refs GIN）——SDD §2.6/§13。
+- 绑定端点 `POST /api/crs/{crID}/bind-promotion-run` + `multica cr bind-promotion-run`（task-token 同族；
+  二次绑定 409 RUN_CR_CONFLICT）——SDD §3.2/§3.3。
 
-- 需求负责人 Ray 已拍板 FR-10 口径 = **选项 A**，并批准状态机治理变更 ①。
-- 已在 tools 仓 `dir-graph.yaml#change-request-track.state_machine.transitions`
-  紧跟 `requirement-approved -> tech-designing`（write-tech-design）之后新增：
-  `- { from: requirement-approved, to: drafting, trigger: "write-tech-design:prd-blocker -> write-requirement-prd" }`
-  （只加这一条，其余转换未动）。
-- 提交 `49c46dd`（`[cr] AIFI-17 状态机增加 requirement-approved -> drafting 回退转换`）
-  已推送 origin main；本地 main == origin/main == `49c46dd`，工作区干净。
-- 验证通过：`crctl status CR-2026-061 --workspace <KB worktree>` 的 `legalNext`
-  出现 `to: drafting` + 该 trigger 边（stateMachine 源 =
-  `C:\Users\GOBAO\Downloads\AI\tools\dir-graph.yaml`）。
+## 恢复入口
+1. 独立 reviewer（quality-reviewer-agent，新会话）执行 `review-tech-design`：
+   - crctl 一律带 `--workspace C:\Users\GOBAO\Downloads\AI\AI First Platform\.rayai-worktrees\knowledge-base\requirement\CR-2026-061`
+   - 评审对象 `change-requests/CR-2026-061/sdd.md`；三仓基线 multica `78e14082` / tools `49c46dd` / docs CR 分支（含本提交）。
+2. BLOCK → repair-target 回 `write-tech-design`（作者会话 = dev-agent 本 Agent）：status 回到 `tech-designing`，
+   按 blocker 定点回修 sdd.md，再 `crctl advance --to tech-design-review-pending --trigger write-tech-design-complete`，
+   重新委派 reviewer 复评。
+3. PASS → 停在人工审批（`approve-tech-design`，届时需 Ray 审批）。
 
-## 已核实基线（HEAD；SDD 落笔以此为准）
-
-- 三仓 fresh：docs `98ce90ce` / multica `78e14082` / tools `49c46dd`（tools 已含本次转换）。
-- 其余基线事实（迁移号、EnqueuePipelineTask、幂等先例等）见上一版本文件与 AIFI-17
-  评论（dev-agent 预检报告 + requirement-writer 补充核实），不再复制。
-
-## 恢复入口（按顺序）
-
-1. requirement-writer 单轮执行（已委派）：
-   `crctl advance CR-2026-061 --to drafting --trigger "write-tech-design:prd-blocker -> write-requirement-prd"`
-   → 修订 PRD v0.3（A 口径 FR-10/HTTP 契约/AC-8 + §1.4 基线刷新至 multica `78e14082`）
-   → 提交纳入本文件（未跟踪 `_context.md`）→ checkpoint →
-   独立 reviewer 复审 `review-requirement`（attempt 3/3，`--bump-attempt`）→ PASS 停人工审批。
-2. v0.3 人工审批通过后，dev-agent 重新执行 write-tech-design（SDD 覆盖 13 FR + HTTP 契约，
-   基线 `78e14082`；状态 `requirement-approved -> tech-designing` 需再次走一遍审批/推进）。
-3. 若 v0.3 复审 BLOCK：requirement-writer 按 repair-target 回修（reviewLoop 已 3/3 上限，
-   需人工重置才可再评审）。
+## 环境提示
+- 三仓 worktree：docs（KB，operational）`C:\Users\GOBAO\Downloads\AI\AI First Platform\.rayai-worktrees\knowledge-base\requirement\CR-2026-061`；
+  multica / tools 同名 sibling worktree（`crctl workspace inspect` 为准）。
+- 本缓存随 SDD 提交一并纳入（不单独建提交）。
