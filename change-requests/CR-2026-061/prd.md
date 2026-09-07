@@ -8,7 +8,7 @@ owner: Ray
 owner-role: requirement
 status: draft
 created: 2026-09-07T12:00:41+08:00
-updated: 2026-09-07T14:32:14+08:00
+updated: 2026-09-08T00:11:25+08:00
 ---
 
 # 1. 概述
@@ -23,7 +23,7 @@ CR-2026-059（CR-B）已把 Discussion 改为项目级 shared `chat_session` / `
 - 「升级为 CR」路径不存在：来源文档 §10.2 要求升级只准备来源上下文并进入现有 `requirement-register`，Multica 不得写 CR 账本——目前该边界没有代码约束，也没有触发入口。
 - `issue.context_refs`（`001_init.up.sql`：`JSONB NOT NULL DEFAULT '[]'`）在响应中已读出（`handler/issue.go`），但全仓没有结构化写入路径，前端 schema 也未暴露。
 
-以上事实已在来源文档 §10 / §14 记录，并在本 CR 落笔前按 multica trunk `b5bf30ca`（CR-2026-059 已合入、AIFI-21 已合入）复核（见 §1.4）。本 CR 只做 Discussion → 工作 Issue 的显式升级与来源追溯，不改 CR-B 已交付的 Discussion 会话内核，不自动升级，不迁移历史。
+以上事实已在来源文档 §10 / §14 记录，并在本 CR 落笔前按 multica trunk `78e14082`（CR-2026-059 与 CR-2026-045/053 的 Runner、pipeline 投影均已合入，含 AIFI-21/AIFI-22 与 upstream 主线）复核（见 §1.4）。本 CR 只做 Discussion → 工作 Issue 的显式升级与来源追溯，不改 CR-B 已交付的 Discussion 会话内核，不自动升级，不迁移历史。
 
 ## 1.2 解决方案摘要
 
@@ -37,10 +37,12 @@ Discussion shared session
   -> 重复升级 / 重试返回同一个目标 Issue
   -> 原 Discussion 消息与附件保持原归属，不移动、不删除、不复制
 
-「升级为 CR」
+「升级为 CR」（A 口径，Ray 已拍板）
   -> 先得到目标 Issue + 来源上下文
-  -> 触发现有 requirement-authoring 流程（CreatePipelineTask 携带 Issue 上下文）
-  -> CR 注册与状态机仍由 knowledge-base 的 requirement-register 完成
+  -> 同事务预建一条 requirement-authoring pipeline run（cr_id=NULL、issue_id=目标 Issue，
+     携带注册意图与来源上下文；不创建 agent_task_queue 行）
+  -> knowledge-base 的 requirement-register 注册时按 issue_id/pipeline_id 定位并复用该 run
+  -> CR 注册与状态机仍由 knowledge-base 完成
   -> Multica 不写 CR 账本、不复制状态机
 ```
 
@@ -51,45 +53,51 @@ Discussion shared session
 3. 创建正式 Issue，并把规范化来源集合写入 `issue.context_refs`；原消息与附件归属不变（FR-23）。
 4. 以「规范化来源集合 + 项目级并发锁 + 幂等记录」保证同一来源集合只产生一个工作 Issue；重试返回已创建的目标 Issue（FR-24）。
 5. 工作 Issue 可回溯来源 session、消息与附件。
-6. 「升级为 CR」只准备来源上下文并进入现有 `requirement-register` 流程；Multica 不写 `_backlog.yml` 等 CR 账本（FR-25 / AC-27）。
+6. 「升级为 CR」只准备来源上下文并预建一条 `requirement-authoring` pipeline run（`cr_id=NULL`），knowledge-base 注册时按 `issue_id`/`pipeline_id` 定位并复用该 run（FR-10 配套点）；Multica 不写 `_backlog.yml` 等 CR 账本（FR-25 / AC-27）。
 7. 一期不新增 `discussion_promotion` 表，除非实现验证表明现有 `context_refs` 与并发锁无法满足幂等与审计（来源文档 §10.1）。
 
 ## 1.3 已拍板范围（采纳 cr.md summary，不重新定义）
 
-提供 Discussion 到正式工作 Issue 的显式升级出口：用户选择消息和附件并显式执行「转为工作 Issue」后创建正式 Issue，保存来源 session/消息/附件引用，原消息与附件保持原归属；以规范化来源集合与项目级并发锁保证重复升级不产生重复 Issue，重试返回既有目标 Issue。「升级为 CR」只准备来源上下文并进入现有 requirement-register 流程，Multica 不写 CR 账本。
+提供 Discussion 到正式工作 Issue 的显式升级出口：用户选择消息和附件并显式执行「转为工作 Issue」后创建正式 Issue，保存来源 session/消息/附件引用，原消息与附件保持原归属；以规范化来源集合与项目级并发锁保证重复升级不产生重复 Issue，重试返回既有目标 Issue。「升级为 CR」只准备来源上下文并预建一条 `requirement-authoring` pipeline run（`cr_id=NULL`，A 口径），knowledge-base 注册时按 `issue_id`/`pipeline_id` 定位并复用该 run；Multica 不写 CR 账本。
 
 不含自动升级、原消息/附件移动删除或静默复制、Discussion 多主题与多 Agent 参与者模型、新增 `discussion_promotion` 表（除非验证表明现有引用与锁不足）。依赖已归档 CR-2026-059 的 shared Discussion session、消息与附件来源，以及现有 Issue 创建能力和 knowledge-base 的 `requirement-register` 流程。
 
-目标仓库为 sibling `../multica/`。knowledge-base 承载本 PRD 与来源文档；`../tools/` 无实施改动。
+目标仓库为 sibling `../multica/`。knowledge-base 承载本 PRD 与来源文档；`../tools/` 除 FR-10 配套点（requirement-register 消费预建 run 的注册流程协同）外无实施改动；本 CR 回退转换（`requirement-approved -> drafting`，trigger `write-tech-design:prd-blocker -> write-requirement-prd`）已作为治理变更落地 tools trunk（`49c46dd`，AIFI-17 拍板）。
 
 `target-version` 继承 `cr.md` 的 `0.34`（注册阶段已确定），本文件不得改写该字段。`target-spec-id` 为 `ai-first-platform`，由注册事务写入双账本，本文件不得改写。
 
 ## 1.4 当前代码事实（落笔前核实）
 
-基线：multica trunk `b5bf30ca32d13f0001149cf6b38cd21f5876b53d`（含 CR-2026-059 Discussion shared session 与 AIFI-21 熔断；本 CR 的 multica requirement worktree 已同步至该 SHA）。以下结论均在该 SHA 上核实。
+基线：multica trunk `78e14082845f7fb19f33a356169349b07042c04b`（= origin/main；含 CR-2026-059 Discussion shared session、CR-2026-045/053 Runner 与 pipeline 投影、AIFI-21/AIFI-22 及 upstream 主线；本 CR 的 multica requirement worktree 已同步至该 SHA）。tools trunk `49c46dd`（含 AIFI-17 拍板的 `requirement-approved -> drafting` 回退转换）。以下结论均在该 SHA 上核实。
 
 | 结论 | 证据 |
 |---|---|
 | Discussion 已是 shared session，不再懒创建隐藏 Issue | `handler/project_chat.go` `GetProjectDiscussion`（L233）；服务层注释「EnsureProjectDiscussionIssue is no longer called from this path」（L231） |
-| `chat_session.kind` 已交付 | `server/migrations/482_chat_session_kind.up.sql`：`ADD COLUMN kind TEXT NOT NULL DEFAULT 'private'`（CR-2026-059 TASK-01） |
+| `chat_session.kind` 已交付 | `server/migrations/496_chat_session_kind.up.sql`：`ADD COLUMN kind TEXT NOT NULL DEFAULT 'private'`（CR-2026-059 TASK-01） |
 | Discussion 消息为 `chat_message`，附件可绑 session/message/task | `033_chat.up.sql`（`chat_message` 表）；`083_attachment_chat_columns.up.sql`；`164_attachment_task_id.up.sql` |
 | `issue.context_refs` 存在但无写入路径 | `001_init.up.sql` L67：`context_refs JSONB NOT NULL DEFAULT '[]'`；`handler/issue.go`（L877/L968 读出）；`pkg/db/queries/issue.sql` 无 context_refs 写入语句；前端 `packages/core/api/schemas.ts` 无对应字段 |
-| Idempotency-Key 基础设施已存在 | `server/pkg/publicapi/v1/foundation.go`：`HeaderIdempotencyKey = "Idempotency-Key"`、`MaxIdempotencyBytes = 255`；CR-B 幂等表 `487-490_chat_idempotency*`（scope 枚举 `discussion_message`/`merge_forward_messages`，含 `response_status`/`response_body` 回放能力） |
-| 项目级 advisory lock 先例已存在 | `service/project_chat.go` `ensureContainerIssueLocked` 经 `qtx.LockIssueDuplicateKey(ctx, lockKey)`（L110-111），锁键 `prefix|workspace|project` |
+| Idempotency-Key 基础设施已存在 | `server/pkg/publicapi/v1/foundation.go` L4/L6：`HeaderIdempotencyKey = "Idempotency-Key"`、`MaxIdempotencyBytes = 255`；CR-B 幂等表 `501-504_chat_idempotency*`（scope 枚举 `discussion_message`/`merge_forward_messages`，含 `response_status`/`response_body` 回放能力） |
+| 项目级 advisory lock 先例已存在 | `service/project_chat.go` `ensureContainerIssueLocked` 经 `qtx.LockIssueDuplicateKey(ctx, lockKey)`（L110-111），锁键 `prefix|workspace|project`；`projectChatSessionAdvisoryKey(workspaceID, projectID)`（L452） |
 | 旧 `project_discussion` Issue 保留只读 | `service/project_chat.go` `EnsureProjectDiscussionIssue`（L58）仍在，仅供历史容器路径；新路径不调用（L231） |
 | 前端 Discussion 面板已走 shared session | `packages/views/projects/components/discussion-pane.tsx`（CR-B 交付，携带 `session_id` 渲染分页消息） |
-| 平台已有 pipeline 任务创建与 CR 绑定能力 | `service/task.go` `CreatePipelineTask`（L410，创建 pipeline task 并原子写入可信来源上下文）；`handler/cr_bind.go` `HandleBindCurrentTask`（`POST /api/crs/{crID}/bind-current-task`）；`gate_nodes_gen.go` 已注册 `requirement-authoring` 节点（含 human_approval 节点） |
-| pipeline 任务唯一性 guard 先例 | `443_agent_task_pipeline_node_active_unique.up.sql`：`agent_task_queue(pipeline_node_run_id)` 部分唯一索引（active 状态仅一条）；`437_aifirst_pipeline_runs.up.sql`：`pipeline_run`/`pipeline_node_run` 表（`UNIQUE (run_id, node_id, attempt)`） |
-| `chat_idempotency` 幂等键作用域 | `488_chat_idempotency_scope_key_unique.up.sql`：唯一键 `(workspace_id, user_id, scope_type, scope_id, key)`；`487_chat_idempotency.up.sql`：`scope_type` CHECK 仅 `('discussion_message','merge_forward_messages')`——本 CR 新增 `discussion_promotion` scope 需扩展该 CHECK（迁移号 ≥ 491） |
-| 固定错误体 `{code, error}` 与 502 先例 | `handler/project_chat.go` `writeErrorCode`（固定 code+error 字段）；`writeProjectChatSendError` 默认分支：事务已整体回滚后统一 502 `enqueue_failed` |
+| pipeline task 创建三守卫（A 口径据此改道） | db `CreatePipelineTask`（`server/pkg/db/queries/agent.sql` L629）：① `JOIN cr` 要求同 workspace 的 CR 行已存在；② 来源 task 行须 `originator_source`/`originator_user_id` 非空且 `issue_id IS NOT NULL`；③ 执行者 agent 须同 workspace active 且 `runtime_id` 非空。任一守卫失败插入 0 行。服务层入口已演进为 `EnqueuePipelineTask`（`server/internal/service/task.go` L399）。promotion 是成员 HTTP 端点：无 source task、CR 尚未注册 → 该查询必然 0 行，v0.2 的「复用 CreatePipelineTask」不可用，v0.3 按 A 口径改道 |
+| Multica 无 requirement-authoring orchestrator | `server/internal/governance/runner.go` `HandleStartArchitecture`（L845）仅接受 `pipeline_id=architecture-design`，其它 pipeline_id 返回 `RUNNER_UNSUPPORTED_PIPELINE`（L31） |
+| `pipeline_run`/`pipeline_node_run` 唯一写路径是状态事件投影 | 无 sqlc INSERT 查询（全仓 grep 零命中，仅 `maturity.sql` 读取）；写路径为 `server/internal/governance/gate_projection.go` 内联 SQL：`findOrCreateRun`（L125，按 `(workspace_id, cr_id, pipeline_id)` 查非终态 run，无则新建）、`upsertNodeRunning`（L175）、`markNodePassed`（L199）、`applyReview`（L279）。由 crctl 状态事件驱动（`crsync.go` L451/L466 `projectGateTransition`，仅真实状态变更触发）；requirement-authoring 的 run 在 CR 进入 `requirement-reviewing`/`requirement-approved` 时才由投影创建（`pipelineForStatus`，L27） |
+| `pipeline_run` 表结构支持预建 run（A 口径） | `451_aifirst_pipeline_runs.up.sql`：`cr_id TEXT` 可 NULL（规划类 pipeline 无 CR）、`issue_id UUID`（`ON DELETE SET NULL`）、`inputs`/`execution_context` JSONB、`started_by UUID NOT NULL`；`pipeline_node_run` 含 `UNIQUE (run_id, node_id, attempt)`、`kind CHECK ('skill','human_approval','code_generation')` |
+| pipeline run/task 唯一性 guard 先例 | `456_pipeline_run_architecture_active_unique.up.sql`：`(workspace_id, pipeline_id, cr_id)` 部分唯一索引（`cr_id IS NOT NULL` 且 status active——run 绑定 CR 后防重复的 DB 保障）；`457_agent_task_pipeline_node_active_unique.up.sql`：`agent_task_queue(pipeline_node_run_id)` 部分唯一索引（active 状态仅一条） |
+| 节点 id 由 pipeline 模板确定 | `server/internal/governance/gate_nodes_gen.go`（自 tools pipeline-templates 生成）：requirement-authoring 已注册（review skill 节点 seq4、human_approval seq5）；首节点 `requirement-register` skill 节点 id `00000000-0000-0000-0011-000000000001`（seq 1） |
+| task 绑定先例 | `handler/cr_bind.go` `HandleBindCurrentTask`（`POST /api/crs/{crID}/bind-current-task`）——A 配套点 run 绑定通道的同族先例 |
+| `chat_idempotency` 幂等键作用域 | `502_chat_idempotency_scope_key_unique.up.sql`：唯一键 `(workspace_id, user_id, scope_type, scope_id, key)`；`501_chat_idempotency.up.sql`：`scope_type` CHECK 仅 `('discussion_message','merge_forward_messages')`——本 CR 新增 `discussion_promotion` scope 需扩展该 CHECK（迁移号 ≥ 505） |
+| 固定错误体 `{code, error}` 与 502 先例 | `handler/handler.go` `writeErrorCode`（L578，固定 code+error 字段）；`handler/project_chat.go` `writeProjectChatSendError`（L612）默认分支：事务已整体回滚后统一 502 `enqueue_failed`（L638） |
 | CR-B 项目路径成员门禁口径 | `handler/project_chat.go` `GetProjectDiscussion`（L233）成员门禁（SDD §3.1/FR-25）：项目路径（project 存在性已确认）非成员返回 **403** `forbidden_project_discussion`；**404 `chat_session_not_found` 只用于 session 级失败**（不存在/跨项目/归档） |
-| 当前最大迁移编号 | **490**（`490_idx_chat_idempotency_created.up.sql`） |
+| 当前最大迁移编号 | **504**（`504_idx_chat_idempotency_created.up.sql`） |
 | CR 注册与状态机在 knowledge-base，不在 Multica | KB `dir-graph.yaml#repositories`；`../tools/` 的 `requirement-register` Skill 经 `crctl register` 深原语写 `change-requests/`；Multica 无该账本写入路径 |
 
 ## 1.5 修订记录
 
 - 初稿（2026-09-07）：按来源文档 CR-C 段与注册摘要起草，代码事实在 multica trunk `b5bf30ca` 核实。
 - v0.2（2026-09-07）：按 review-requirement 第 1 轮 BLOCK（B-API-01~04）定点修复：①按分支拆分默认/`upgrade_to_cr=true` 条件副作用，明确 pipeline task 输入/响应、同事务边界、失败 502 零残留与唯一 task 语义（FR-10、契约、AC-8）；②定义 canonical fingerprint 算法、key 作用域与输入限制，确定 key 冲突优先于来源查重的确定性规则（FR-6/FR-7、契约、AC-5）；③权限判定固定为四步顺序，成员缺失唯一 403、session 级失败唯一 404，AC-6 与之一致（FR-8）；④补齐逐类错误闭包表（状态/固定 code/错误体/零写入范围/客户端动作）（FR-3/FR-13、契约、AC-2/AC-11）。
+- v0.3（2026-09-08）：按 Ray 拍板的 A 口径（write-tech-design 预检发现 FR-10 在 multica `78e14082` 上无法机械满足）定点修订：①FR-10/HTTP 契约「副作用」「成功响应」「幂等与查重优先级」「错误闭包」/AC-8 改为预建 `requirement-authoring` pipeline run（`cr_id=NULL`、`issue_id=目标`、`started_by=调用者`，`inputs`/`execution_context` 携带注册意图与来源上下文）+ 首节点 `pipeline_node_run`，不创建 `agent_task_queue`；响应以 `run_id`（pipeline_run.id）替代 v0.2 的 task id 字段；失败语义改为 502 `pipeline_run_create_failed`（其它事务失败 500 `internal_error`），均整体回滚零残留；②补齐 A 配套点消费契约（knowledge-base 注册按 `issue_id`/`pipeline_id` 定位并绑定复用预建 run，绑定失败=注册技术失败，同一 promotion 至多一条 run，新增 AC-13）；③§1.4 基线刷新至 multica `78e14082`（迁移号整体 +14：`chat_session_kind` 496、`chat_idempotency` 501–504、最新 504 → promotion scope CHECK ≥ 505；`CreatePipelineTask` 服务层入口演进为 `EnqueuePipelineTask`（task.go L399）+ db 三守卫（agent.sql L629）；`writeErrorCode` 实际位于 handler.go L578；pipeline run 写路径=gate_projection.go 状态事件投影、无 sqlc INSERT；唯一性 guard 451/456/457）。
 
 # 2. 用户故事
 
@@ -116,7 +124,7 @@ Discussion shared session
 
 ## FR-4 创建 Issue 并写入来源引用
 
-校验通过后创建正式 Issue，并把规范化来源集合写入 `issue.context_refs`（JSONB 数组，条目至少含 `session_id`、`message_ids[]`、`attachment_ids[]`、`promoted_by`、`promoted_at`）。`message_ids`/`attachment_ids` 为排序去重后的 UUID 列表。`upgrade_to_cr=true` 且 pipeline task 创建成功后，条目额外回写 `pipeline_task_id`（同一事务，FR-10）。目标 Issue 的标题、描述可由用户提供；未提供时服务端生成默认值（标题含项目名与升级时间，描述含来源消息摘要）。来源 FR-23、AC-26。
+校验通过后创建正式 Issue，并把规范化来源集合写入 `issue.context_refs`（JSONB 数组，条目至少含 `session_id`、`message_ids[]`、`attachment_ids[]`、`promoted_by`、`promoted_at`）。`message_ids`/`attachment_ids` 为排序去重后的 UUID 列表。`upgrade_to_cr=true` 且 pipeline run 创建成功后，条目额外回写 `pipeline_run_id`（同一事务，FR-10）。目标 Issue 的标题、描述可由用户提供；未提供时服务端生成默认值（标题含项目名与升级时间，描述含来源消息摘要）。来源 FR-23、AC-26。
 
 ## FR-5 原 Discussion 消息与附件保持原归属
 
@@ -139,11 +147,11 @@ fingerprint = SHA256(hex) of canonical JSON:
 
 `title`/`description` **不参与指纹**：同一来源集合不同标题/描述不构成指纹差异，也不构成查重差异（见 FR-6），标题/描述只在首次创建时生效。
 
-**key 作用域**：`Idempotency-Key` 的作用域为 `(workspace_id, user_id, scope_type='discussion_promotion', scope_id=project_id, key)`，复用 CR-B `chat_idempotency` 表（新增 `discussion_promotion` scope，需扩展 scope CHECK 约束，迁移号 ≥ 491）。同一 key 在不同项目、不同调用者之间互不影响。
+**key 作用域**：`Idempotency-Key` 的作用域为 `(workspace_id, user_id, scope_type='discussion_promotion', scope_id=project_id, key)`，复用 CR-B `chat_idempotency` 表（新增 `discussion_promotion` scope，需扩展 scope CHECK 约束，迁移号 ≥ 505）。同一 key 在不同项目、不同调用者之间互不影响。
 
 **key 输入限制**：必填、非空、≤ 255 字节（`pkg/publicapi/v1/foundation.go` `MaxIdempotencyBytes`）。缺失返回 400 `idempotency_key_required`；空串/纯空白/超 255 字节返回 400 `invalid_idempotency_key`。
 
-**重放语义**：同 key + 同指纹重放（含响应丢失后重试）→ 201 且回放首次响应（`created=false`，`upgrade_to_cr=true` 时回放首次返回的 `pipeline_task_id`，不新建 task）；同 key + 不同指纹 → 409 `idempotency_key_reused`，零写入（优先级先于 FR-6 查重）。同源不同 key 的重试经 FR-6 的查重返回同一目标 Issue；若先普通升级（`upgrade_to_cr=false`）后以新 key 再发 `upgrade_to_cr=true`，返回同一目标 Issue 并只补建一次 pipeline task（FR-10）。
+**重放语义**：同 key + 同指纹重放（含响应丢失后重试）→ 201 且回放首次响应（`created=false`，`upgrade_to_cr=true` 时回放首次返回的 `run_id`，不新建 run）；同 key + 不同指纹 → 409 `idempotency_key_reused`，零写入（优先级先于 FR-6 查重）。同源不同 key 的重试经 FR-6 的查重返回同一目标 Issue；若先普通升级（`upgrade_to_cr=false`）后以新 key 再发 `upgrade_to_cr=true`，返回同一目标 Issue 并只补建一次 pipeline run（FR-10）。
 
 ## FR-8 权限边界（固定判定顺序）
 
@@ -160,16 +168,28 @@ fingerprint = SHA256(hex) of canonical JSON:
 
 目标 Issue 详情与 API 响应可读到来源 `session_id`、消息与附件引用（经 `context_refs` 解析），前端在 Issue 详情页展示「来自 Discussion 升级」的来源入口，可跳转回 Discussion 定位消息。来源 AC-26。
 
-## FR-10 升级为 CR：只准备上下文，不写 CR 账本
+## FR-10 升级为 CR：预建 pipeline run，不写 CR 账本（A 口径）
 
-「升级为 CR」复用 FR-2 的 promotion 得到目标 Issue 与来源上下文，随后触发现有 requirement 流程：以目标 Issue 为来源上下文创建 `requirement-authoring` pipeline task（复用 `CreatePipelineTask` 与 CR-2026-053 FR-B12 的 Issue 上下文继承）。CR 注册（`crctl register` / `requirement-register`）与状态机仍在 knowledge-base 由 requirement 流程完成。Multica 服务端代码不得读写 knowledge-base `_backlog.yml` / `_history.yml` / `cr.md`，不得复制 CR 状态机与门禁。来源 FR-25、AC-27。
+「升级为 CR」复用 FR-2 的 promotion 得到目标 Issue 与来源上下文，随后在 Multica 侧预建一条 `requirement-authoring` pipeline run 作为注册意图的 run 事实（A 口径；v0.2 的「复用 `CreatePipelineTask` 创建 pipeline task」在 multica trunk `78e14082` 上被 db 三守卫机械拒绝：cr 行 JOIN 要求 CR 已存在、来源 task 要求 `originator_source`/`issue_id` 非空、执行者 agent 要求 active+runtime 绑定——promotion 是成员 HTTP 端点，无 source task 且 CR 尚未注册，见 §1.4）。CR 注册（`crctl register` / `requirement-register`）与状态机仍在 knowledge-base 由 requirement 流程完成。Multica 服务端代码不得读写 knowledge-base `_backlog.yml` / `_history.yml` / `cr.md`，不得复制 CR 状态机与门禁。来源 FR-25、AC-27。
 
 **条件副作用与事务边界（`upgrade_to_cr=true` 分支）**：
 
-- pipeline task 行（`pipeline_run` + `pipeline_node_run` + `agent_task_queue`）与目标 Issue、`context_refs`、幂等记录在**同一 DB 事务**内写入；task 入队/事件通知（`issue:created`、`EventTaskQueued` 等）在**事务提交后**按现有事件模式发出，提交前不得泄漏。
-- pipeline task 创建失败（含 task 上下文校验失败、attribution guard 失败、DB/入队失败）→ **整个事务回滚** → 502 `pipeline_task_create_failed`，**零残留**（无 Issue、无 `context_refs`、无幂等记录、无 task 行）；客户端动作：以同一 key 整体重试（FR-7 幂等安全）。
-- **唯一的 task 语义**：每个目标 Issue 至多创建一个 `requirement-authoring` pipeline task。同 key 同指纹重放回放首次返回的 `pipeline_task_id`；同源不同 key 的请求在锁内查重命中后：既有 `context_refs` 条目已含 `pipeline_task_id` → 直接返回该值；未含（先普通升级后升级为 CR）→ 在同一事务内补建一次并回写 `pipeline_task_id`。并发同源升级为 CR 在项目级锁下串行化，第二个请求只会拿到已存在的 task，不建第二个。
-- promotion 的 HTTP 响应额外携带 `pipeline_task_id`；CR 注册结果不在本端点返回（异步由 requirement 流程产出），Multica 不轮询也不写 CR 账本。
+- 预建 run 行（`pipeline_run` + 首节点 `pipeline_node_run`）与目标 Issue、`context_refs`、幂等记录在**同一 DB 事务**内写入；事件通知（`issue:created` 等）在**事务提交后**按现有事件模式发出，提交前不得泄漏。
+- `pipeline_run` 行：`pipeline_id='requirement-authoring'`、`cr_id=NULL`、`issue_id=目标 Issue`、`status='running'`、`started_by=调用者`（满足 `started_by NOT NULL` 约束）；`inputs` 携带来源上下文（`session_id`、排序去重的 `message_ids`/`attachment_ids`、`promoted_by`/`promoted_at`），`execution_context` 携带机器可读的注册意图标记（含 `intent: discussion-promotion`；字段形状由 SDD 定，必须机器可读且幂等可重放）。
+- 首节点 `pipeline_node_run`：requirement-authoring 模板第 1 节点（`requirement-register` skill 节点，`node_id=00000000-0000-0000-0011-000000000001`、`kind='skill'`、`seq=1`、`attempt=1`、`status='running'`）。
+- **不创建 `agent_task_queue` 行**：本端点没有 source task，`CreatePipelineTask` 的执行者解析与 attribution 语义不适用；run 的后续节点状态仍由 knowledge-base 注册后的 crctl 状态事件投影驱动（沿用现有投影路径，§1.4）。
+- run 创建失败（含 run/首节点写入失败、执行上下文校验失败、DB 失败）→ **整个事务回滚** → 502 `pipeline_run_create_failed`，**零残留**（无 Issue、无 `context_refs`、无幂等记录、无 run 行）；客户端动作：以同一 key 整体重试（FR-7 幂等安全）。锁/死锁/连接失败等其它事务失败 → 500 `internal_error`，同样整体回滚零残留（见错误闭包表）。
+- **唯一的 run 语义**：每个目标 Issue 至多创建一条 `requirement-authoring` pipeline run。同 key 同指纹重放回放首次返回的 `run_id`；同源不同 key 的请求在锁内查重命中后：既有 `context_refs` 条目已含 `pipeline_run_id` → 直接返回该值；未含（先普通升级后升级为 CR）→ 在同一事务内补建一次并回写 `pipeline_run_id`。并发同源升级为 CR 在项目级锁下串行化，第二个请求只会拿到已存在的 run，不建第二条。
+- promotion 的 HTTP 响应额外携带 `run_id`；CR 注册结果不在本端点返回（异步由 requirement 流程产出），Multica 不轮询也不写 CR 账本。
+
+**A 配套点：预建 run 的消费契约（knowledge-base 侧识别与复用，可评审）**：
+
+- **识别键**：`{workspace_id, pipeline_id='requirement-authoring', issue_id=目标 Issue, cr_id IS NULL, status='running'}`。promotion 响应与目标 Issue 的 `context_refs` 条目均携带 `pipeline_run_id`，供注册侧定位。
+- **传播**：用户从升级结果进入现有 requirement 注册入口时，注册上下文携带 promotion 的 `issue_id` 与 `run_id`（由升级响应与目标 Issue `context_refs` 读取；`requirement-register` 的 promotion 上下文为可选输入，缺失时按普通注册处理）。
+- **绑定（复用）**：`requirement-register` 注册产生 CR-ID 后，经 Multica 服务端受控绑定通道（与 `bind-current-task` 同族的 run 绑定端点，端点与鉴权由 SDD 设计）将该预建 run 的 `cr_id` 由 NULL 更新为新 CR-ID。绑定必须幂等，且仅允许 `cr_id IS NULL` 的 promotion 预建 run 被绑定一次（已绑定的 run 拒绝二次绑定）。绑定完成后，Multica 现有 cr 状态事件投影（`gate_projection.findOrCreateRun` 按 `cr_id` 命中同一 `status='running'` run）复用该 run，不新建；`456` 部分唯一索引同时保证绑定后不会出现第二条 active run。
+- **失败语义**：绑定失败（run 不存在/已被消费/服务不可达）→ `requirement-register` 按技术失败停止并报错，可经 `registration_key` 幂等重试；绑定完成前该 CR 不得推进到 `requirement-reviewing`。任何情况下同一 promotion 至多存在一条 `requirement-authoring` run（`cr_id` 为 NULL 或绑定后的 CR-ID，始终同一行）。
+- **普通注册**（无 promotion 上下文）不定位不绑定，走现有投影路径（进入 `requirement-reviewing` 时由投影新建 run），行为与现状一致。
+- **未消费的预建 run**：用户升级为 CR 后从未发起注册时，run 保持 `cr_id=NULL`、`status='running'` 原状，不影响任何现有路径；其过期与清理策略不在本 CR（见范围排除）。
 
 ## FR-11 前端交互
 
@@ -181,7 +201,7 @@ fingerprint = SHA256(hex) of canonical JSON:
 
 ## FR-13 可区分错误与零残留
 
-升级请求失败（校验失败、权限失败、key 冲突、并发/锁/数据库/事务失败、pipeline task 创建失败）不得留下半成品 Issue、半写 `context_refs`、半绑定附件或孤立幂等记录。错误体固定为 `{ "code", "error" }`（复用 CR-B `writeErrorCode` 形状），逐类错误的 HTTP 状态、固定 code、零写入范围与客户端动作见 HTTP 契约「错误闭包」表；前端按该表可区分并给出正确恢复动作（保留选择 / 换 key / 原 key 直接重试）。500 `internal_error` 与 502 `pipeline_task_create_failed` 均为可安全重试错误（幂等语义保证重试不产生重复 Issue 或重复 pipeline task）。
+升级请求失败（校验失败、权限失败、key 冲突、并发/锁/数据库/事务失败、pipeline run 创建失败）不得留下半成品 Issue、半写 `context_refs`、半绑定附件或孤立幂等记录。错误体固定为 `{ "code", "error" }`（复用 CR-B `writeErrorCode` 形状），逐类错误的 HTTP 状态、固定 code、零写入范围与客户端动作见 HTTP 契约「错误闭包」表；前端按该表可区分并给出正确恢复动作（保留选择 / 换 key / 原 key 直接重试）。500 `internal_error` 与 502 `pipeline_run_create_failed` 均为可安全重试错误（幂等语义保证重试不产生重复 Issue 或重复 pipeline run）。
 
 ## Discussion promotion HTTP 契约（可执行，覆盖 FR-2 / FR-3 / FR-4 / FR-6 / FR-7 / FR-8 / FR-10 / FR-13）
 
@@ -223,8 +243,8 @@ fingerprint = SHA256(hex) of canonical JSON（固定键序）:
 6. 来源选择校验（FR-3：400 `invalid_promotion_selection`）。
 7. 获取项目级 advisory lock（`prefix|workspace|project`，先例 `projectChatSessionAdvisoryKey`）；锁内：
    1. key 冲突检查（FR-7）：同 key 同指纹 → 回放首次响应（201，`created=false`）；同 key 不同指纹 → 409 `idempotency_key_reused`（**优先级先于查重**）。
-   2. 来源查重（FR-6）：同源命中 → 返回既有 Issue（`created=false`）；`upgrade_to_cr=true` 时按 FR-10 补建/复用唯一的 pipeline task。
-   3. 均未命中 → 创建 Issue + `context_refs` + 幂等记录（`upgrade_to_cr=true` 另含 pipeline task 行），同一事务提交。
+   2. 来源查重（FR-6）：同源命中 → 返回既有 Issue（`created=false`）；`upgrade_to_cr=true` 时按 FR-10 补建/复用唯一的 pipeline run。
+   3. 均未命中 → 创建 Issue + `context_refs` + 幂等记录（`upgrade_to_cr=true` 另含预建 run 行：`pipeline_run` + 首节点 `pipeline_node_run`，无 `agent_task_queue`），同一事务提交。
 
 ### 成功响应（201）
 
@@ -236,29 +256,29 @@ fingerprint = SHA256(hex) of canonical JSON（固定键序）:
   "source_refs": { "session_id": "<UUID>", "message_ids": ["<UUID>"], "attachment_ids": ["<UUID>"] },
   "created": true,
   "upgrade_to_cr": false,
-  "pipeline_task_id": null
+  "run_id": null
 }
 ```
 
-- `created=false`：重放或查重命中。重放回放的响应与首次一致（`issue_id`/`source_refs`/`pipeline_task_id` 同首次），但 `created` 恒为 false（表示本次请求未新建）。
-- `upgrade_to_cr=true` 且 pipeline task 已创建/已存在时，`pipeline_task_id` 为任务 UUID，否则为 null（FR-10）。
+- `created=false`：重放或查重命中。重放回放的响应与首次一致（`issue_id`/`source_refs`/`run_id` 同首次），但 `created` 恒为 false（表示本次请求未新建）。
+- `upgrade_to_cr=true` 且 pipeline run 已创建/已存在时，`run_id` 为 run UUID，否则为 null（FR-10）。
 
 ### 副作用（按分支拆分，FR-10）
 
 | 分支 | 副作用 | 禁止 |
 |---|---|---|
 | 默认（`upgrade_to_cr=false`） | 同一事务内：新增 Issue 行 + 写入 `context_refs` + 幂等记录 | 不得创建 comment / task；不得修改 `chat_message`、`attachment`、`chat_session` 行 |
-| `upgrade_to_cr=true` | 默认分支全部副作用 + 每个目标 Issue 至多一个 `requirement-authoring` pipeline task（`pipeline_run`/`pipeline_node_run`/`agent_task_queue` 行同事务写入，入队/事件通知在提交后发出） | 同上；不得写 knowledge-base CR 账本；task 创建失败 → 事务整体回滚 → 502 `pipeline_task_create_failed` 零残留 |
+| `upgrade_to_cr=true`（A 口径） | 默认分支全部副作用 + 每个目标 Issue 至多一条 `requirement-authoring` 预建 pipeline run（`pipeline_run`（`cr_id=NULL`、`issue_id=目标`、`started_by=调用者`、`inputs`/`execution_context` 携带注册意图与来源上下文）+ 首节点 `pipeline_node_run` 同事务写入；**不创建 `agent_task_queue` 行**；事件通知在提交后发出） | 同上；不得写 knowledge-base CR 账本；run 创建失败 → 事务整体回滚 → 502 `pipeline_run_create_failed` 零残留 |
 
 ### 幂等与查重优先级（确定性规则）
 
 | 场景 | 结果 |
 |---|---|
-| 同 key + 同指纹重放 | 201 回放首次响应（`created=false`）；`upgrade_to_cr=true` 回放首次 `pipeline_task_id`，不新建 task |
+| 同 key + 同指纹重放 | 201 回放首次响应（`created=false`）；`upgrade_to_cr=true` 回放首次 `run_id`，不新建 run |
 | 同 key + 不同指纹（含先普通升级后同 key 再 `upgrade_to_cr=true`；指纹含 `upgrade_to_cr`，必不同） | 409 `idempotency_key_reused`，零写入 |
 | 同源不同 key，串行/并发 | 201 返回既有 Issue（`created=false`）；`title`/`description` 不覆盖首次值 |
-| 同源不同 key，先普通升级、后 `upgrade_to_cr=true` | 返回同一 Issue；锁内查重命中且 `context_refs` 无 `pipeline_task_id` → 同一事务补建一次 task 并回写；已有 → 返回既有值。**至多一个 pipeline task** |
-| 同源不同 key 并发 `upgrade_to_cr=true` | 项目级锁串行化：第二个请求拿到的 `pipeline_task_id` 与第一个相同 |
+| 同源不同 key，先普通升级、后 `upgrade_to_cr=true` | 返回同一 Issue；锁内查重命中且 `context_refs` 无 `pipeline_run_id` → 同一事务补建一次 run 并回写；已有 → 返回既有值。**至多一条 pipeline run** |
+| 同源不同 key 并发 `upgrade_to_cr=true` | 项目级锁串行化：第二个请求拿到的 `run_id` 与第一个相同 |
 
 ### 错误闭包（逐类：状态 / 固定 code / 错误体 / 零写入范围 / 客户端动作）
 
@@ -280,7 +300,7 @@ fingerprint = SHA256(hex) of canonical JSON（固定键序）:
 | 消息不属于该 session / 附件未绑定该 session 消息（含草稿附件） | 400 | `invalid_promotion_selection` | 全部 | 保留选择，移除非法项后重试 |
 | 同 key 不同指纹 | 409 | `idempotency_key_reused` | 全部 | 换新 key 重发（同源由查重收敛） |
 | 锁/数据库/事务失败（死锁、超时、连接失败等） | 500 | `internal_error` | 全部（事务回滚） | 原 key 直接重试（幂等安全） |
-| `upgrade_to_cr=true` 且 pipeline task 创建失败 | 502 | `pipeline_task_create_failed` | 全部（事务回滚） | 原 key 直接重试（幂等安全，不会产生重复 Issue/task） |
+| `upgrade_to_cr=true` 且预建 pipeline run 创建失败（run/首节点写入、执行上下文校验失败） | 502 | `pipeline_run_create_failed` | 全部（事务回滚） | 原 key 直接重试（幂等安全，不会产生重复 Issue/run） |
 | 其它未预期内部错误 | 500 | `internal_error` | 全部 | 原 key 直接重试 |
 
 状态码总集：201（创建/幂等命中）；400/403/404/409/500/502 如上表；**200 不用于本端点**。
@@ -289,18 +309,18 @@ fingerprint = SHA256(hex) of canonical JSON（固定键序）:
 
 - DB：目标 Issue 行 + `context_refs` 含规范化来源集合；Discussion 消息/附件行数与绑定字段升级前后全等。
 - 同一来源集合两次升级 Issue 行数只增 1；`chat_idempotency` 存在 `scope_type='discussion_promotion'` 记录且指纹为 canonical fingerprint。
-- `upgrade_to_cr=true`：同一目标 Issue 对应的 `pipeline_node_run`/active task 至多 1 条；重放与查重命中均返回相同 `pipeline_task_id`。
-- 错误注入夹具：任一类失败后 Issue 表、`context_refs`、`chat_idempotency`、`pipeline_node_run`/`agent_task_queue` 均零残留。
+- `upgrade_to_cr=true`：同一目标 Issue 对应的 `requirement-authoring` `pipeline_run` 至多 1 条（`cr_id` 绑定前后同一行）；`agent_task_queue` 无新增行；重放与查重命中均返回相同 `run_id`。
+- 错误注入夹具：任一类失败后 Issue 表、`context_refs`、`chat_idempotency`、`pipeline_run`/`pipeline_node_run` 均零残留。
 
 # 4. 非功能需求
 
 - **NFR-1 双端一致**：web 与 desktop 共享 `packages/views` 行为一致；mobile 不在本 CR 范围。
 - **NFR-2 四语文案**：新增 UI 文案提供 en/ja/ko/zh-Hans；`packages/views/locales/parity.test.ts` 对新增 key 全绿。
-- **NFR-3 复用优先**：复用 `issue.context_refs`、CR-B 的幂等记录模式与 advisory lock 先例、现有 Issue 创建能力与 `CreatePipelineTask`；不复制 Discussion 消息表，不新造 Issue 写入路径，默认不新增 `discussion_promotion` 表（FR-12）。
-- **NFR-4 并发与事务**：同源并发升级在项目级锁（`prefix|workspace|project`）下收敛到一次创建；升级事务失败零残留（FR-13）；幂等记录、Issue 创建、`context_refs` 与 `upgrade_to_cr=true` 的 pipeline task 行（`pipeline_run`/`pipeline_node_run`/`agent_task_queue`）**同一事务提交**，提交后广播 `issue:created` 与任务入队等事件，提交前不得泄漏；事件广播失败不回滚已提交数据。
+- **NFR-3 复用优先**：复用 `issue.context_refs`、CR-B 的幂等记录模式与 advisory lock 先例、现有 Issue 创建能力与 `pipeline_run`/`pipeline_node_run` 表及投影语义；`upgrade_to_cr` 分支直接写预建 run 行（新增 sqlc INSERT 查询，SDD 落地），不复用 `EnqueuePipelineTask`（三守卫对无 source task 的 promotion 不可用，见 §1.4）；不复制 Discussion 消息表，不新造 Issue 写入路径，默认不新增 `discussion_promotion` 表（FR-12）。
+- **NFR-4 并发与事务**：同源并发升级在项目级锁（`prefix|workspace|project`）下收敛到一次创建；升级事务失败零残留（FR-13）；幂等记录、Issue 创建、`context_refs` 与 `upgrade_to_cr=true` 的预建 run 行（`pipeline_run` + 首节点 `pipeline_node_run`，无 `agent_task_queue`）**同一事务提交**，提交后广播 `issue:created` 等现有事件，提交前不得泄漏；事件广播失败不回滚已提交数据。
 - **NFR-5 安全**：权限校验服务端强制；不得凭 `session_id` 猜测跨项目读取或升级；`context_refs` 只写入可信来源集合，不接受任意 JSON 注入（由服务端生成，前端不能直接提交任意 `context_refs` 内容）。
 - **NFR-6 兼容**：旧 `project_discussion` Issue 仍只读回放；CR-B 的 Discussion GET/发送/协办行为除本 CR 明确新增的 promotion 入口外不得改变；Private Ask / Team Agent 路径不受影响。
-- **NFR-7 依赖**：必须使用已归档 CR-2026-059 的 shared session、消息与附件来源事实；「升级为 CR」必须走现有 `requirement-authoring` 流程入口，禁止平行实现。
+- **NFR-7 依赖**：必须使用已归档 CR-2026-059 的 shared session、消息与附件来源事实；「升级为 CR」必须走现有 `requirement-authoring` 流程入口，禁止平行实现；promotion 预建 run 是该升级意图唯一的 run 事实，knowledge-base 注册必须按 FR-10 配套点定位并复用，禁止平行新建第二条 run。
 
 # 5. 验收标准
 
@@ -310,22 +330,23 @@ fingerprint = SHA256(hex) of canonical JSON（固定键序）:
 | AC-2 | FR-2、FR-3 | 只选消息、只选附件、消息+附件混合，均 201 且目标 Issue 创建；空选择、含重复 UUID、含未绑定草稿附件、含他项目/Private Ask/另一 session 消息 → 400 `invalid_promotion_selection` 零写入；非法 JSON → 400 `invalid_request_body`；`projectId` 非 UUID → 400 `invalid_project_id`；`session_id` 非 UUID → 400 `invalid_promotion_selection`；`title` 超 200 字符 → 400 `invalid_promotion_title`；`description` 超 10,000 字符 → 400 `invalid_promotion_description`，均零写入。 |
 | AC-3 | FR-4 | 目标 Issue 的 `context_refs` 含 `session_id`、排序去重的 `message_ids[]`/`attachment_ids[]`、`promoted_by`/`promoted_at`；未提供 title 时服务端生成默认标题与描述摘要。 |
 | AC-4 | FR-5 | 升级前后 `chat_message` 行数、内容、`attachment` 绑定字段（`chat_session_id`/`chat_message_id`）全等；Discussion 消息流与附件列表渲染不变。 |
-| AC-5 | FR-6、FR-7 | 同一来源集合串行升级两次：第二次不创建新 Issue，返回与第一次相同的 `issue_id`；同 key+同指纹重放返回同一 Issue 且 `created=false`；同 key 不同指纹 → 409 `idempotency_key_reused` 零写入；同 key 先普通升级（`upgrade_to_cr=false`）后同 key 再发 `upgrade_to_cr=true` → 409 `idempotency_key_reused`（指纹含 `upgrade_to_cr`，必不同）；换新 key 重发 `upgrade_to_cr=true` → 返回同一 Issue 且至多补建一个 pipeline task；缺 `Idempotency-Key` → 400 `idempotency_key_required`；空 key/超 255 字节 → 400 `invalid_idempotency_key`。并发同源升级只产生一个 Issue（handler/service 测试夹具）。 |
+| AC-5 | FR-6、FR-7 | 同一来源集合串行升级两次：第二次不创建新 Issue，返回与第一次相同的 `issue_id`；同 key+同指纹重放返回同一 Issue 且 `created=false`；同 key 不同指纹 → 409 `idempotency_key_reused` 零写入；同 key 先普通升级（`upgrade_to_cr=false`）后同 key 再发 `upgrade_to_cr=true` → 409 `idempotency_key_reused`（指纹含 `upgrade_to_cr`，必不同）；换新 key 重发 `upgrade_to_cr=true` → 返回同一 Issue 且至多补建一条 pipeline run（`run_id` 与首次/既有值一致）；缺 `Idempotency-Key` → 400 `idempotency_key_required`；空 key/超 255 字节 → 400 `invalid_idempotency_key`。并发同源升级只产生一个 Issue（handler/service 测试夹具）。 |
 | AC-6 | FR-8 | 固定判定顺序，同输入唯一响应：非 workspace 成员 / 已被移出 workspace 升级 → 403 `forbidden_promotion`（唯一，不泄漏 session 存在性）；无 Issue 创建权限成员 → 403 `forbidden_promotion`；session 不存在/跨项目/非 `project_shared`/已归档 → 404 `chat_session_not_found`；project 不存在 → 404 `project_not_found`；以上均零写入。 |
 | AC-7 | FR-9 | 目标 Issue API 响应可解析出来源 `session_id` 与消息/附件引用；前端 Issue 详情展示「来自 Discussion」来源入口，点击可跳回 Discussion。 |
-| AC-8 | FR-10 | `upgrade_to_cr=true`：promotion 成功后创建 `requirement-authoring` pipeline task，任务上下文携带目标 Issue 与来源上下文；同一目标 Issue 至多一个 pipeline task（同 key 重放返回同一 `pipeline_task_id`；同源不同 key 第二次升级为 CR 不新建）；pipeline task 创建失败注入夹具 → 502 `pipeline_task_create_failed` 且 Issue/`context_refs`/幂等记录/task 行零残留，原 key 重试成功且不产生重复；Multica 代码库无对 knowledge-base `_backlog.yml` / `cr.md` 的写入调用（grep 验证零命中）；后续 CR 注册仍在 knowledge-base 经 `crctl register` 完成。 |
+| AC-8 | FR-10 | `upgrade_to_cr=true`：promotion 成功后同一事务写入预建 `requirement-authoring` pipeline run（`pipeline_run`：`cr_id=NULL`、`issue_id=目标 Issue`、`started_by=调用者`、`inputs`/`execution_context` 携带注册意图与来源上下文 + 首节点 `pipeline_node_run`），不创建 `agent_task_queue` 行，响应返回 `run_id`；同一目标 Issue 至多一条 run（同 key 重放返回同一 `run_id`；同源不同 key 第二次升级为 CR 不新建，至多补建一次并回写 `context_refs.pipeline_run_id`）；run 创建失败注入夹具 → 502 `pipeline_run_create_failed` 且 Issue/`context_refs`/幂等记录/run 行零残留，原 key 重试成功且不产生重复；Multica 代码库无对 knowledge-base `_backlog.yml` / `cr.md` 的写入调用（grep 验证零命中）；后续 CR 注册仍在 knowledge-base 经 `crctl register` 完成。 |
 | AC-9 | FR-11 | DiscussionPane 可选择消息与附件并触发两个升级入口；未配置 Coordinator 的纯人类 Discussion 同样可升级；升级成功后目标 Issue 链接可见、Discussion 内容不变；失败时选择保留并可重试。 |
 | AC-10 | FR-12 | 一期交付不新增 `discussion_promotion` 表（`server/migrations/` 无该命名迁移）；若 SDD 附验证证据证明 `context_refs` 不足，则该证据与 reviewer 裁决记录在案后方可引入。 |
-| AC-11 | FR-13、NFR-4 | 逐类失败夹具（400/403/404/409/500/502 各代表项）下，失败不留下半成品 Issue / 半写 `context_refs` / 孤立幂等记录 / 孤立 pipeline task 行；错误体含固定 `code`（断言「错误闭包」表逐条映射，code 与状态一一对应）；500/502 后以原 key 重试成功且 Issue 数/pipeline task 数不增加；前端按错误类型保留选择或提示重试。 |
+| AC-11 | FR-13、NFR-4 | 逐类失败夹具（400/403/404/409/500/502 各代表项）下，失败不留下半成品 Issue / 半写 `context_refs` / 孤立幂等记录 / 孤立 pipeline run 与 node_run 行；错误体含固定 `code`（断言「错误闭包」表逐条映射，code 与状态一一对应）；500/502 后以原 key 重试成功且 Issue 数/pipeline run 数不增加；前端按错误类型保留选择或提示重试。 |
+| AC-13 | FR-10 | promotion 来源的 CR 注册（knowledge-base 侧消费，跨仓验收）：`requirement-register` 按 `issue_id` + `pipeline_id='requirement-authoring'` 定位 `cr_id IS NULL`、`status='running'` 的预建 run 并绑定新 CR-ID（同一行被复用、不新建第二条 run；绑定幂等、仅允许绑定一次）；绑定后 CR 进入 `requirement-reviewing` 时 Multica 状态事件投影复用同一 run（`pipeline_run` 行数不增）；绑定失败 → 注册按技术失败停止、`registration_key` 幂等重试安全；普通注册（无 promotion 上下文）不定位不绑定、行为不变。以 tools 侧注册集成测试 + multica 侧 run 投影断言为准。 |
 | AC-12 | NFR-2、NFR-6 | 新增文案 en/ja/ko/zh-Hans 对称，`parity.test.ts` 全绿；旧 `project_discussion` Issue 只读回放不回归；CR-B Discussion GET/发送测试全绿。 |
 
-来源文档完成标志要求 AC-23 至 AC-27 全部满足；上表 AC-1 对应来源 AC-23（只有显式升级才创建工作 Issue），AC-4 对应 AC-24（原消息附件不被移动或删除），AC-5 对应 AC-25（重复升级不产生重复 Issue），AC-3/AC-7 对应 AC-26（工作 Issue 可回溯来源 session/消息/附件），AC-8 对应 AC-27（升级 CR 继续经过 requirement-register，Multica 不直接写 CR 账本）。AC-2/AC-6/AC-9/AC-10/AC-11/AC-12 覆盖同一闭环中必须可测、但来源完成标志未逐条编号的规则（来源选择校验、权限、前端交互、不新增 promotion 表、零残留与兼容性）。
+来源文档完成标志要求 AC-23 至 AC-27 全部满足；上表 AC-1 对应来源 AC-23（只有显式升级才创建工作 Issue），AC-4 对应 AC-24（原消息附件不被移动或删除），AC-5 对应 AC-25（重复升级不产生重复 Issue），AC-3/AC-7 对应 AC-26（工作 Issue 可回溯来源 session/消息/附件），AC-8/AC-13 对应 AC-27（升级 CR 继续经过 requirement-register，Multica 不直接写 CR 账本；注册复用 promotion 预建 run）。AC-2/AC-6/AC-9/AC-10/AC-11/AC-12 覆盖同一闭环中必须可测、但来源完成标志未逐条编号的规则（来源选择校验、权限、前端交互、不新增 promotion 表、零残留与兼容性）。
 
 # 6. 成功指标
 
 - 打开 Discussion、发送、附件、协办产生的正式工作 Issue 数为 **0**；升级产生的 Issue **100%** 来自显式升级操作。
 - 同一来源集合升级产生的目标 Issue 数 = **1**。
-- 同一目标 Issue 对应的 `requirement-authoring` pipeline task 数 ≤ **1**（重放 / 查重命中 / 并发不产生第二个 task）。
+- 同一目标 Issue 对应的 `requirement-authoring` pipeline run 数 ≤ **1**（重放 / 查重命中 / 并发不产生第二条 run）。
 - 原 Discussion 消息与附件被升级动作移动、删除或改绑的次数为 **0**。
 - 目标 Issue 可回溯来源（`context_refs` 完整含 session/消息/附件）的比例为 **100%**。
 - 升级失败留下半成品（孤立 Issue / 半写引用 / 孤立幂等记录）的次数为 **0**。
@@ -346,5 +367,6 @@ fingerprint = SHA256(hex) of canonical JSON（固定键序）:
 - Team Agent / Private Ask 的发送、配置内核改动。
 - 发送框整体视觉重构、对齐普通非项目聊天 composer（来源 CR-D）。
 - mobile 端。
-- `../tools/` 仓改动。
+- `../tools/` 仓改动（除 FR-10 配套点：requirement-register 消费预建 run 的注册流程协同外）。
+- 未消费的 promotion 预建 run 的过期与清理策略（用户升级后未发起注册时 run 保持 `cr_id=NULL`、`status='running'` 原状，不影响任何现有路径）。
 - 把 `/compact` 作为普通用户消息发送。
