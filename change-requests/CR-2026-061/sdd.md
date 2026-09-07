@@ -6,7 +6,7 @@ title: Discussion 显式升级 技术设计
 target-version: 0.34
 status: draft
 created: 2026-09-08T00:54:52+08:00
-updated: 2026-09-08T00:54:52+08:00
+updated: 2026-09-08T03:50:09+08:00
 ---
 
 # Discussion 显式升级（CR-2026-061）技术设计
@@ -219,6 +219,8 @@ server/internal/governance/gate_projection.go                [不改：复用语
 | `cr.shell_issue_id` 已被其它 Issue 占用 | 409 | `CR_ISSUE_CONFLICT` |
 | 其它失败（事务/审计） | 500 | `CR_BIND_FAILED` |
 
+> **错误体形状（suggestion-2 已处理）**：本端点所有错误行沿用 bind-current-task 同族形状 `{"error":"<code>"}`（`writeJSON(w, ..., map[string]string{"error": ...})` / `writeError`，见 cr_bind.go L36/L61 与 handler.go `writeError`），**不经** `writeErrorCode` 的 `{code,error}` 形状族（那是 §3.1 promotion 端点的形状）。实施期不得误套 writeErrorCode；契约测试按 `{"error":"TASK_CONTEXT_REQUIRED"}` 等固定形状断言。
+
 - **幂等语义**：同一 run + 同一 CR 重放 → 200 `changed=false`，零写入（CAS 判定来自锁内旧值，同 bind-current-task AC-B3 模式）。
 - **二次绑定固定响应**（suggestion-2）：run 已绑定到**不同** CR → 409 `RUN_CR_CONFLICT`；绑定到**相同** CR → 幂等成功。两种结果确定、可测试。
 - 绑定事务内同时：`pipeline_run.cr_id` NULL→CR-ID、`cr.shell_issue_id` NULL→run.issue_id（既有 `BindCrShellIssueIfNull` 复用）、首节点 `pipeline_node_run`（seq1）置 `passed`（§4.5）、`activity_log` 审计行（action=`promotion_run_bound`）。任一失败整体回滚。
@@ -359,7 +361,8 @@ BindPromotionRunToCR（service/task.go，同族 bind-current-task）:
 - **注册完成前**（run 未绑定）：首节点 `status='running'` = 「注册意图在途」。投影对无 `cr_id` 的 run 无写入（`findOrCreateRun` 按 `cr_id` 查，查不到也不新建——只有 cr 状态事件才触发投影）。
 - **绑定时**：`cr_id` 置 CR-ID + 首节点置 `passed`（注册事实落账）——同一事务，与 `cr.shell_issue_id`/审计原子。
 - **绑定后**：CR 进入 `requirement-reviewing` 的状态事件 → `projectGateTransition` → `findOrCreateRun(ws, crID, 'requirement-authoring')` **命中绑定后的同一行**（status='running'）→ 复用，不新建；`upsertNodeRunning` 只写审批门节点（seq5），不触碰 seq1；review 事件 `applyReview` 只写 seq4 节点行。→ 满足 AC-13「pipeline_run 行数不增」。
-- **护栏**：若 knowledge-base 违约在绑定前推进 `requirement-reviewing`，投影会按 `cr_id` 新建一条 `issue_id=NULL` 的 run（投影无权猜测 Issue）。该违约由 AC-13 在 knowledge-base 侧硬阻止（绑定失败即注册技术失败，不得推进）；Multica 侧 506 索引只约束有 `issue_id` 的 promotion run，投影新建行 `issue_id=NULL` 不冲突，账面上「同一 promotion 至多一条 run」仍成立（promotion 行未变）。SDD 将「绑定完成前不得推进 requirement-reviewing」列为本设计的不变量（§9 scope_in）。
+- **护栏**：若 knowledge-base 违约在绑定前推进 `requirement-reviewing`，投影会按 `cr_id` 新建一条 `issue_id=NULL` 的 run（投影无权猜测 Issue）。该违约由 AC-13 在 knowledge-base 侧硬阻止（绑定失败即注册技术失败，不得推进）；SDD 将「绑定完成前不得推进 requirement-reviewing」列为本设计的不变量（§9 scope_in）。
+- **违约后果与恢复路径（suggestion-1 已处理）**：投影新建行 `cr_id=CR-ID、pipeline_id='requirement-authoring'、status='running'`（`pipelineForStatus` 把 requirement-reviewing 映射到 requirement-authoring）会先占用 456 部分唯一索引 `(workspace_id,pipeline_id,cr_id)` 的槽位；此时 506 不冲突（506 谓词要求 `issue_id` 非空，投影行 `issue_id IS NULL`），但后续绑定的 `UPDATE pipeline_run SET cr_id=CR-ID WHERE id=<预建 run>` 将撞 456 唯一约束（SQLSTATE 23505）→ 绑定事务整体回滚，端点返回 500 `CR_BIND_FAILED`。恢复路径：按 `pipeline_id='requirement-authoring' AND cr_id=<CR-ID> AND issue_id IS NULL` 定位投影新建行，人工确认后删除（该行无任何绑定/Issue 语义挂靠），再重试绑定（CAS 幂等，重试安全）；绑定成功后再推进 CR 状态。推演依据见 §12 #31（456 谓词）与 §12 #4（pipelineForStatus 映射）。
 - 未消费的预建 run：保持 `cr_id=NULL, status='running'`，不影响任何既有路径；过期清理不在本 CR（PRD 范围排除）。
 
 ### 4.6 默认标题/描述生成（FR-4/AC-3）
@@ -608,151 +611,233 @@ AC-13（跨仓）
 | 2 | AC-13 绑定端点沿用 bind-current-task 同族鉴权口径，并明确二次绑定的固定冲突响应 | **已处理**：绑定端点仅接受 task token（401 `TASK_CONTEXT_REQUIRED`，与 bind-current-task 完全同族）；二次绑定固定响应 = 绑定到不同 CR → 409 `RUN_CR_CONFLICT`；同 CR 重放 → 200 `changed=false` 幂等（CAS 锁内旧值判定，同 AC-B3 模式） | §3.2、§4.5 |
 | 3 | 首节点 `pipeline_node_run` 在 CR 注册完成前的状态推进语义与 gate_projection 协作 | **已处理**：预建窗口内首节点 `status='running'`=「注册意图在途」；绑定事务同事务置 `passed`（投影不写 skill 节点，故完成信号由绑定端承担）；绑定后投影 `findOrCreateRun` 按 `cr_id` 命中同一行复用、`upsertNodeRunning`/`applyReview` 只写 seq5/seq4 节点不触碰 seq1；KB 侧「绑定完成前不得推进 requirement-reviewing」列为硬不变量，违约路径与护栏在 §4.5 明示 | §4.5、D-5、§9 |
 
+### 11.1 第 1 轮技术评审 3 条 suggestions 的处理（本次回修）
+
+| # | suggestion | 处置 | 落点 |
+|---|---|---|---|
+| 1 | §4.5 违约护栏补明后果（投影 run 占用 456 槽位 → 绑定 23505 冲突 500 `CR_BIND_FAILED`）与恢复路径 | **已处理**：§4.5 新增「违约后果与恢复路径」条目（456 谓词 + pipelineForStatus 映射推演；恢复 = 定位 `issue_id IS NULL` 投影行人工确认删除后幂等重试） | §4.5、§12 #4/#31 |
+| 2 | §3.2 错误表 401 行实际错误体 `{"error":"TASK_CONTEXT_REQUIRED"}`（bind-current-task 同族），与 promotion `{code,error}` 不同族 | **已处理**：§3.2 表后新增错误体形状注记（全表 `{"error":...}` 同族，不经 writeErrorCode；测试按固定形状断言） | §3.2、§12 #15/#16 |
+| 3 | `ArchitectureCoreRegistryJSON` 与 `CreateActivity` 纳入清单或明确归属 | **已处理**：分别并入 §12 #10（gate_nodes_gen.go 符号）与 §12 #29（activity.sql 独立条目） | §12 #10/#29 |
+
 ---
 
 ## 12. 既有实现依赖清单（按正文首次出现顺序）
 
+> v1.1（第 1 轮 review-tech-design 回修）：8 项漏列事实按正文首现顺序补入并全量重排为 35 项；#13 拆分为 handler/service 与 db queries 两条（现 #16/#17）；suggestion-3 的 `ArchitectureCoreRegistryJSON`/`CreateActivity` 分别并入 #10/#29；`rules.json`、`idx_pipeline_run_workspace_status`、`requirement-authoring.pipeline.json` 等正文事实一并锚定。
+
 ```text
 1. repo: multica
+   relative path: server/internal/service/issue.go
+   stable symbol/对象: IssueService.Create / IssueCreateParams.AllowDuplicate / IssueCreateOpts.BroadcastPayload / publishIssueCreated / captureCreatedAnalytics / issueguard.LockAndFindActiveDuplicate
+   commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
+   依赖结论: createInTx 提取的源（§1.1 唯一 Issue 写入路径的既有内核）；事件发布复用；promotion 以 AllowDuplicate=true 关闭标题查重（查重权威归 dedupe_key）
+
+2. repo: tools
+   relative path: skills/requirement/requirement-register/SKILL.md
+   stable symbol/对象: crctl register 深原语（registration_key 幂等、CAS_CONFLICT 重跑续跑语义）
+   commit SHA: 49c46dd9d77c0e7a5efb519c1cf8485692774f26
+   依赖结论: AC-13 在注册成功后追加绑定步骤（§1.1 模块边界）；深原语本身零改动
+
+3. repo: multica
+   relative path: server/cmd/multica/cmd_cr.go
+   stable symbol/对象: crBindCurrentTaskCmd / newAPIClient / cli.PrintJSON/PrintTable
+   commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
+   依赖结论: bind-promotion-run 薄命令复刻同族实现（§3.3）
+
+4. repo: multica
+   relative path: server/internal/governance/gate_projection.go
+   stable symbol/对象: findOrCreateRun（按 (workspace_id, cr_id, pipeline_id) 查 status IN ('running','waiting_approval')，无则新建）/ upsertNodeRunning / markNodePassed / applyReview / pipelineForStatus（requirement-reviewing/requirement-approved → PipelineIDs.RequirementAuthoring）
+   commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
+   依赖结论: AC-13「投影复用同一 run 不新建」成立的前提（绑定后按 cr_id 命中）；pipelineForStatus 映射是 §4.5 违约后果推演的依据；本 CR 不改投影
+
+5. repo: tools
+   relative path: skills/shared/crctl/scripts/crctl.mjs
+   stable symbol/对象: register 深原语入口（--registration-key/--target-spec-id 校验）
+   commit SHA: 49c46dd9d77c0e7a5efb519c1cf8485692774f26
+   依赖结论: 绑定不进入 crctl 命令面（走 multica CLI），本节仅证明「不改」的边界（§8）
+
+6. repo: multica
    relative path: server/pkg/db/queries/idempotency.sql
    stable symbol/对象: InsertChatIdempotencyReservation / GetChatIdempotencyByKey / FinalizeChatIdempotency / DeleteChatIdempotencyByKey
    commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
    依赖结论: promotion 幂等四分支直接复用（新 scope），不需要新幂等表或查询
 
-2. repo: multica
+7. repo: multica
+   relative path: server/internal/service/chat_idempotency_cleanup.go（L17 func）+ server/pkg/db/queries/idempotency.sql（L42 SweepChatIdempotency :execrows；L46 DELETE FROM chat_idempotency WHERE created_at < $1）
+   stable symbol/对象: SweepChatIdempotency(ctx, q, cutoff)（service）+ db SweepChatIdempotency
+   commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
+   依赖结论: 24h 清理按 created_at 全 scope 清理（无 scope_type 谓词），505 新增 'discussion_promotion' 行自动纳入清理，无需新清理器（§2.2）
+
+8. repo: multica
    relative path: server/migrations/501_chat_idempotency.up.sql / 502 / 503 / 504
    stable symbol/对象: chat_idempotency 表 + CHECK scope_type('discussion_message','merge_forward_messages') + PK + created_at 索引
    commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
    依赖结论: 505 扩展 CHECK 枚举；PK 约束名 chat_idempotency_pkey 是 ON CONFLICT 仲裁目标，扩展不得改名
 
-3. repo: multica
-   relative path: server/pkg/db/queries/issue.sql
-   stable symbol/对象: LockIssueDuplicateKey（pg_advisory_xact_lock(hashtextextended)）、CreateIssue、AllocateIssueNumber（issue_limit 服务）、FindActiveDuplicateIssue、CreateIssueWithOrigin
-   commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
-   依赖结论: 项目级锁原语、Issue 创建事务内核（D-7 提取自 Create）、AllowDuplicate 跳过标题查重、容量权威判定
-
-4. repo: multica
-   relative path: server/internal/service/issue.go
-   stable symbol/对象: IssueService.Create / IssueCreateParams.AllowDuplicate / IssueCreateOpts.BroadcastPayload / publishIssueCreated / captureCreatedAnalytics / issueguard.LockAndFindActiveDuplicate
-   commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
-   依赖结论: createInTx 提取的源；事件发布复用；promotion 以 AllowDuplicate=true 关闭标题查重（查重权威归 dedupe_key）
-
-5. repo: multica
-   relative path: server/internal/service/project_chat.go
-   stable symbol/对象: projectChatSessionAdvisoryKey / LockIssueDuplicateKey 调用先例 / ErrIdempotencyKeyReused / mergeForwardMessageFingerprint
-   commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
-   依赖结论: 锁键先例与 409 语义先例；promotion 使用新前缀但同原语
-
-6. repo: multica
-   relative path: server/internal/service/discussion_session.go
-   stable symbol/对象: DiscussionSessionAdvisoryPrefix / chatSessionKindProjectShared / discussionIdempotencyScopeMessage / GetActiveProjectSharedSession 消费
-   commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
-   依赖结论: session kind/active 判定口径与锁前缀命名风格；promotion 不占用 discussion-session 锁（D-4）
-
-7. repo: multica
-   relative path: server/pkg/db/queries/chat.sql
-   stable symbol/对象: GetActiveProjectSharedSession（kind='project_shared' AND status='active' 唯一）/ GetChatMessageInWorkspace
-   commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
-   依赖结论: FR-3/F-8 的 session 与消息归属校验查询，直接复用
-
-8. repo: multica
-   relative path: server/pkg/db/queries/attachment.sql
-   stable symbol/对象: ListAttachmentsByChatMessage / BindDraftAttachmentsToChatMessage（attachment.chat_message_id 列语义）
-   commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
-   依赖结论: 附件「已绑定 session 消息」判定（新增 promotion 专用 JOIN 查询，语义同 ListAttachmentsByChatMessage）
-
 9. repo: multica
    relative path: server/migrations/451_aifirst_pipeline_runs.up.sql
-   stable symbol/对象: pipeline_run（cr_id TEXT NULL、issue_id UUID SET NULL、inputs/execution_context JSONB、started_by NOT NULL、status CHECK）/ pipeline_node_run（UNIQUE(run_id,node_id,attempt)、kind CHECK）
+   stable symbol/对象: pipeline_run（cr_id TEXT NULL、issue_id UUID SET NULL、inputs/execution_context JSONB、started_by NOT NULL、status CHECK）/ pipeline_node_run（UNIQUE(run_id,node_id,attempt)、kind CHECK）/ idx_pipeline_run_workspace_status（workspace_id, status）
    commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
-   依赖结论: 预建 run 行与首节点行完全落在既有 schema 内（§2.3），无 DDL 变更
+   依赖结论: 预建 run 行与首节点行完全落在既有 schema 内（§2.3），无 DDL 变更；idx_pipeline_run_workspace_status 即 suggestion-1 指涉的弱覆盖索引（无 issue_id 前缀），506 补齐识别键点查
 
 10. repo: multica
-    relative path: server/migrations/456_pipeline_run_architecture_active_unique.up.sql
-    stable symbol/对象: idx_pipeline_run_architecture_active_cr（(workspace_id,pipeline_id,cr_id) WHERE cr_id IS NOT NULL AND active）
+    relative path: server/internal/governance/gate_nodes_gen.go
+    stable symbol/对象: PipelineIDs.RequirementAuthoring（L15）/ ApprovalGateNodes["requirement"]（seq5）/ ReviewGateNodes["requirement"]（seq4）/ ArchitectureCoreRegistryJSON（L57，architecture-core registry 节点 id 空间常量，生成源声明于文件头）
     commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
-    依赖结论: 绑定后（cr_id 非空）的防重复由 456 与投影 findOrCreateRun 双重保障；506 补齐 cr_id IS NULL 阶段
+    依赖结论: 首节点 node_id 与门/评审节点 id 空间共存不冲突（seq 1/4/5 不同 id）；ArchitectureCoreRegistryJSON 证明同族 registry 常量维护该 id 空间（§2.3）
 
-11. repo: multica
-    relative path: server/internal/governance/gate_projection.go
-    stable symbol/对象: findOrCreateRun（按 (workspace_id, cr_id, pipeline_id) 查 status IN ('running','waiting_approval')，无则新建）/ upsertNodeRunning / markNodePassed / applyReview / pipelineForStatus
-    commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
-    依赖结论: AC-13「投影复用同一 run 不新建」成立的前提（绑定后按 cr_id 命中）；本 CR 不改投影
+11. repo: tools
+    relative path: pipeline-templates/requirement-authoring.pipeline.json
+    stable symbol/对象: nodes[0].id = 00000000-0000-0000-0011-000000000001 / ref requirement-register / kind skill（seq=1 首节点）
+    commit SHA: 49c46dd9d77c0e7a5efb519c1cf8485692774f26
+    依赖结论: §2.3 首节点 node_id 的生成源（gate_nodes_gen.go 文件头声明生成源为 tools pipeline-templates），预建首节点与模板第 1 节点对齐
 
 12. repo: multica
-    relative path: server/internal/governance/gate_nodes_gen.go
-    stable symbol/对象: PipelineIDs.RequirementAuthoring / ApprovalGateNodes["requirement"]（seq5）/ ReviewGateNodes["requirement"]（seq4）；首节点 id 00000000-0000-0000-0011-000000000001 来自 tools pipeline-templates requirement-authoring.pipeline.json（生成源声明于文件头）
-    commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
-    依赖结论: 首节点 node_id 与门/评审节点 id 空间共存不冲突（seq 1/4/5 不同 id）
-
-13. repo: multica
-    relative path: server/internal/handler/cr_bind.go + server/internal/service/task.go
-    stable symbol/对象: HandleBindCurrentTask / BindCurrentTaskToCR / LockCrForCrBind / BindCrShellIssueIfNull / LockAgentTaskForCrBind / activity_log 审计模式 / publishCRUpdated
-    commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
-    依赖结论: 绑定端点/服务的同族模板（token 校验、CAS、冲突码、审计、刷新事件）；BindCrShellIssueIfNull 直接复用
-
-14. repo: multica
-    relative path: server/cmd/multica/cmd_cr.go
-    stable symbol/对象: crBindCurrentTaskCmd / newAPIClient / cli.PrintJSON/PrintTable
-    commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
-    依赖结论: bind-promotion-run 薄命令复刻同族实现
-
-15. repo: multica
-    relative path: server/pkg/publicapi/v1/foundation.go
-    stable symbol/对象: HeaderIdempotencyKey / MaxIdempotencyBytes(255)
-    commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
-    依赖结论: 请求头常量与长度上限
-
-16. repo: multica
-    relative path: server/internal/handler/handler.go
-    stable symbol/对象: writeErrorCode（固定 {code,error}）/ writeJSON / parseUUIDOrBadRequest / parseUUIDSliceOrBadRequest / requireUserID / getWorkspaceMember
-    commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
-    依赖结论: 错误体与解析/成员门禁辅助函数
-
-17. repo: multica
-    relative path: server/internal/handler/project_chat.go
-    stable symbol/对象: MergeForwardDiscussion（message_ids 臂的成员门禁、Idempotency-Key 校验、选择校验、409 映射）
-    commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
-    依赖结论: promotion handler 的校验顺序与错误映射先例；mergeForwardMaxComments=50 作为防御 cap 同值
-
-18. repo: multica
-    relative path: server/cmd/server/router.go
-    stable symbol/对象: 项目路由树（GET /discussion、POST /chat/merge-forward 注册处）
-    commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
-    依赖结论: promotion 与 bind-promotion-run 路由注册位置
-
-19. repo: multica
     relative path: server/cmd/migrate/main.go
     stable symbol/对象: concurrentIndexCleanups / concurrentDownIndexCleanups 登记表与总登记测试
     commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
     依赖结论: 506/507 必须登记，否则 `TestEveryConcurrentUpBuildHasCleanup` 类测试失败
 
-20. repo: multica
+13. repo: multica
+    relative path: server/cmd/server/router.go
+    stable symbol/对象: 项目路由树（GET /discussion、POST /chat/merge-forward 注册处）
+    commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
+    依赖结论: promotion 与 bind-promotion-run 路由注册位置
+
+14. repo: multica
+    relative path: server/pkg/publicapi/v1/foundation.go
+    stable symbol/对象: HeaderIdempotencyKey / MaxIdempotencyBytes(255)
+    commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
+    依赖结论: 请求头常量与长度上限
+
+15. repo: multica
+    relative path: server/internal/handler/handler.go
+    stable symbol/对象: writeErrorCode（{code,error}）/ writeError（{error}）/ writeJSON / parseUUIDOrBadRequest / parseUUIDSliceOrBadRequest / requireUserID / getWorkspaceMember
+    commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
+    依赖结论: promotion 端点错误体（writeErrorCode）与解析/成员门禁辅助函数；writeError 是绑定端点 {error} 形状族（§3.2 形状注记）
+
+16. repo: multica
+    relative path: server/internal/handler/cr_bind.go + server/internal/service/task.go
+    stable symbol/对象: HandleBindCurrentTask（X-Actor-Source=task_token 门禁，401 {"error":"TASK_CONTEXT_REQUIRED"}）/ BindCurrentTaskToCR / activity_log 审计模式 / publishCRUpdated
+    commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
+    依赖结论: 绑定端点/服务的同族模板（token 校验、CAS、冲突码、审计、刷新事件）；401 错误体形状与 bind-current-task 一致（§3.2 已注明）
+
+17. repo: multica
+    relative path: server/pkg/db/queries/agent.sql
+    stable symbol/对象: LockCrForCrBind（L1128）/ BindCrShellIssueIfNull（L1146）/ LockAgentTaskForCrBind（L1100）
+    commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
+    依赖结论: 绑定事务的 cr 行锁 CAS 与 shell_issue_id 复用的既有查询（§4.5 步骤 2/3），直接复用不新建
+
+18. repo: multica
+    relative path: server/internal/handler/issue.go
+    stable symbol/对象: IssueResponse / issueToResponse / loadIssueForUser / GetIssue（L2225 起）
+    commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
+    依赖结论: context_refs 当前未透出（issueToResponse 无该字段），本 CR additive 暴露（§3.4）
+
+19. repo: multica
     relative path: packages/views/projects/components/discussion-pane.tsx + packages/core/api/client.ts + packages/core/api/schemas.ts
     stable symbol/对象: DiscussionPane 多选/MergeForwardPreviewDialog 模式、mergeForwardDiscussion()（Idempotency-Key 客户端强制）、ProjectDiscussionSchema、parseWithFallback
     commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
     依赖结论: 前端入口复用既有面板与客户端模式；新 schema 走 parseWithFallback + malformed 测试
 
-21. repo: tools
-    relative path: skills/requirement/requirement-register/SKILL.md
-    stable symbol/对象: crctl register 深原语（registration_key 幂等、CAS_CONFLICT 重跑续跑语义）
-    commit SHA: 49c46dd9d77c0e7a5efb519c1cf8485692774f26
-    依赖结论: AC-13 在注册成功后追加绑定步骤；深原语本身零改动
+20. repo: multica
+    relative path: server/internal/service/issue_limit.go
+    stable symbol/对象: CheckIssueCreateCapacity（L67，只读预检）/ ResolveIssueCountPolicy（L34，policy 决议）
+    commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
+    依赖结论: D-6 步骤 4 预检口径依据（与事务内 AllocateIssueNumber 权威判定双查）；403 forbidden_promotion 映射的既有口径来源（普通 CreateIssue 映射 402 issue_limit_reached 是既有行为，promotion 按 PRD 闭包映射 403）
 
-22. repo: tools
-    relative path: skills/shared/crctl/scripts/crctl.mjs
-    stable symbol/对象: register 深原语入口（--registration-key/--target-spec-id 校验）
-    commit SHA: 49c46dd9d77c0e7a5efb519c1cf8485692774f26
-    依赖结论: 绑定不进入 crctl 命令面（走 multica CLI），本节仅证明「不改」的边界（§8）
+21. repo: multica
+    relative path: server/internal/service/discussion_session.go
+    stable symbol/对象: DiscussionSessionAdvisoryPrefix / chatSessionKindProjectShared / discussionIdempotencyScopeMessage / GetActiveProjectSharedSession 消费
+    commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
+    依赖结论: session kind/active 判定口径与锁前缀命名风格；promotion 不占用 discussion-session 锁（D-4）
+
+22. repo: multica
+    relative path: server/pkg/db/queries/chat.sql
+    stable symbol/对象: GetActiveProjectSharedSession（L1723，kind='project_shared' AND status='active' 唯一）/ GetChatMessageInWorkspace（L1748，workspace 谓词经 session JOIN）
+    commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
+    依赖结论: FR-3/FR-8 的 session 与消息归属校验查询，直接复用
 
 23. repo: multica
-    relative path: server/internal/handler/issue.go
-    stable symbol/对象: IssueResponse / issueToResponse / loadIssueForUser / GetIssue（L2225 起）
+    relative path: server/pkg/db/queries/attachment.sql
+    stable symbol/对象: ListAttachmentsByChatMessage / BindDraftAttachmentsToChatMessage（attachment.chat_message_id 列语义）
     commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
-    依赖结论: context_refs 当前未透出（issueToResponse 无该字段），本 CR additive 暴露（§3.4）
+    依赖结论: 附件「已绑定 session 消息」判定（新增 promotion 专用 JOIN 查询，语义同 ListAttachmentsByChatMessage）
+
+24. repo: multica
+    relative path: server/pkg/db/queries/issue.sql
+    stable symbol/对象: LockIssueDuplicateKey（pg_advisory_xact_lock(hashtextextended)）、CreateIssue、AllocateIssueNumber（issue_limit 服务）、FindActiveDuplicateIssue、CreateIssueWithOrigin
+    commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
+    依赖结论: 项目级锁原语、Issue 创建事务内核（D-7 提取自 Create）、AllowDuplicate 跳过标题查重、容量权威判定
+
+25. repo: multica
+    relative path: server/pkg/db/queries/member.sql
+    stable symbol/对象: GetMemberByUserAndWorkspace（L15）
+    commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
+    依赖结论: §4.3 步骤 8 / §13.4 事务内鉴权复核查询（锁内、首次写入前，与并发撤销串行）
+
+26. repo: multica
+    relative path: server/internal/service/project_chat.go
+    stable symbol/对象: projectChatSessionAdvisoryKey / LockIssueDuplicateKey 调用先例 / ErrIdempotencyKeyReused / mergeForwardMessageFingerprint
+    commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
+    依赖结论: 锁键先例与 409 语义先例（§4.3 步骤 9 idempotency_key_reused 同族）；promotion 使用新前缀但同原语（D-4）
+
+27. repo: multica
+    relative path: server/pkg/dbid/dbid.go
+    stable symbol/对象: NewV7()（L51）
+    commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
+    依赖结论: runID Go 侧预生成，条目在创建前携带 pipeline_run_id（§4.3 步骤 10 / D-7）
+
+28. repo: multica
+    relative path: server/pkg/db/queries/project.sql
+    stable symbol/对象: GetProjectInWorkspace（L8）
+    commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
+    依赖结论: §4.4 404 project_not_found 映射（ErrNoRows）与 §4.6 默认标题项目名读取（同一查询）
+
+29. repo: multica
+    relative path: server/pkg/db/queries/activity.sql
+    stable symbol/对象: CreateActivity（L29）
+    commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
+    依赖结论: §4.5 绑定事务审计行（action='promotion_run_bound'）的既有写入查询
+
+30. repo: multica
+    relative path: server/internal/service/project_chat.go
+    stable symbol/对象: chatMessageAuthorDisplayName（L739 调用 / L760 定义）
+    commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
+    依赖结论: §4.6 默认描述摘要的作者显示名复用，无需新实现
+
+31. repo: multica
+    relative path: server/migrations/456_pipeline_run_architecture_active_unique.up.sql
+    stable symbol/对象: idx_pipeline_run_architecture_active_cr（(workspace_id,pipeline_id,cr_id) WHERE cr_id IS NOT NULL AND status IN ('running','waiting_approval')）
+    commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
+    依赖结论: 绑定后（cr_id 非空）的防重复由 456 与投影 findOrCreateRun 双重保障；506 补齐 cr_id IS NULL 阶段（D-8）；§4.5 违约后果（456 槽位占用 → 绑定 23505 冲突）的推演依据
+
+32. repo: multica
+    relative path: server/migrations/192_issue_properties_gin_index.up.sql
+    stable symbol/对象: idx_issue_properties_gin（ON issue USING GIN (properties jsonb_path_ops)）
+    commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
+    依赖结论: 507（context_refs GIN jsonb_path_ops + 并发建索引单文件单语句 + cleanup 登记）与既有模式一致（§7.2）
+
+33. repo: multica
+    relative path: server/internal/handler/project_chat.go
+    stable symbol/对象: MergeForwardDiscussion（message_ids 臂的成员门禁、Idempotency-Key 校验、选择校验、409 映射）
+    commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
+    依赖结论: promotion handler 的校验顺序与错误映射先例；mergeForwardMaxComments=50 作为防御 cap 同值（§7.3）
+
+34. repo: multica
+    relative path: server/pkg/db/queries/chat.sql
+    stable symbol/对象: InsertProjectSharedSession（L1731）
+    commit SHA: 78e14082845f7fb19f33a356169349b07042c04b
+    依赖结论: agent_id=NULL 时无 Coordinator 的 project_shared session 依然可建（481 起合法）——§7.3「promotion 与 Coordinator 配置无关」边界声明的依据
+
+35. repo: tools
+    relative path: skills/shared/controlled-shell/rules.json
+    stable symbol/对象: protectedPaths（L28，deny 列表始于 L30；git 三元组白名单 + forbiddenFlags 的单一事实源）
+    commit SHA: 49c46dd9d77c0e7a5efb519c1cf8485692774f26
+    依赖结论: §8「不触及」判定与 §9 scope_out 边界的唯一事实源（本 CR 零变更）
 ```
 
-无待核实依赖（以上均在 `78e14082`/`49c46dd` HEAD 上逐项核实）。
+无待核实依赖（以上 35 项均在 `78e14082`/`49c46dd` HEAD 上逐项核实；8 项补列、#16/#17 拆分与 3 条 suggestions 采纳项按第 1 轮评审 blocker/suggestions 完成）。
 
 ---
 
@@ -823,3 +908,4 @@ tools: 对应 SKILL 集成测试脚本
 4. 绑定端点 = bind-current-task 同族（task-token/CAS/审计/固定冲突码），投影零改动即复用（AC-13）。
 5. 迁移 505/506/507 全部满足并发索引单文件单语句 + 登记 + down 数据依赖语义。
 6. 3 条 suggestions 全部「已处理」（§11），无未关闭的 PRD 延后项（§10）。
+7. §12 既有实现依赖清单 v1.1 回修后 35 项，按正文首现顺序、全部绑定 repo/path/symbol/结论/commit SHA；第 1 轮技术评审 3 条 suggestions 亦全部「已处理」（§11.1）。
