@@ -1,29 +1,29 @@
 cr-id: CR-2026-061
 review-type: code
 reviewer: "OldBoy405"
-reviewed-at: "2026-09-08T18:59:07+08:00"
+reviewed-at: "2026-09-08T19:44:30+08:00"
 verdict: block
 blockers:
-  - "本轮新增： [B-CODE-02] `change-requests/CR-2026-061/test-report.md` 与 `test-evidence/cmd-01.log`：当前 canonical 测试报告仍为修复前生成（generated-at=2026-09-08T17:22:33+08:00，status=block），其 cmd-01 日志未包含本轮新增的 `TestPromoteDiscussionBackfillPreservesHeterogeneousContextRefs`；multica 当前评审 HEAD 已从上一轮 `a622e0ab3` 前移到 `5aadba5be`。dev-agent 评论中的专项测试自报不是 `crctl test --plan` 生成的固定证据，不能证明 B-CODE-01 修复在当前 release subject 上已执行。影响：测试证据与当前源码漂移，且机器区 status 非 pass，按 review-code Step 1/Step 4 不得进入代码人工审批。修复方向：从当前 CR worktree 通过 write-test-report/`crctl test --plan` 重新生成并提交绑定当前修复版本的 canonical test-report 与 cmd-NN 日志，确保新回归测试实际进入引用日志；若已知 Windows 上游失败仍使机器区 block，需在新 command-digest/当前源码证据上完成允许的治理或人工裁定后再发起 attempt 3/3。"
+  - "部分解决： [B-CODE-02] `change-requests/CR-2026-061/test-report.md` 与 `test-evidence/cmd-01.log`：canonical 报告已重新生成（generated-at=2026-09-08T19:29:13+08:00），当前 multica HEAD 仍为 `5aadba5be`，且新回归 `TestPromoteDiscussionBackfillPreservesHeterogeneousContextRefs` 已进入 cmd-01.log；但该回归在 canonical 日志中实际为 `SKIP`（数据库不可达），cmd-01 仍 exit=1，机器区 `status=block`。报告分析段所列 dev 库专项 PASS 与人工归因不是 test-report 引用的 cmd-NN canonical 证据，不能替代当前 release subject 的固定证据。影响：B-CODE-01 的真实 DB 回归未在 canonical 命令中执行，且 `test-report.status=block` 直接不满足 review-code Step 1/Step 5 与 pipeline passCondition，仍不得进入代码人工审批。修复方向：经合法流程让当前 release subject 的 canonical 证据实际执行该 DB 回归并生成 `status=pass`、blockers=[]；review-code 本轮达到 3/3，停止继续自动回修并升级 coordinator 裁决恢复路径。"
+  - "本轮新增： [B-CODE-03] `change-requests/CR-2026-061/test-report.md` 机器区 cmd-05 与 `plan.md` §7 AC-13 tools 消费面：cmd-05 被机器判定为 `skipped=true`，而它是 AC-13 tools 消费契约的唯一验收证据。review-code 的 skip 语义明确要求只读机器区、不得自行解析框架输出；因此不能用分析段中的 `ℹ skipped 0`/dot reporter 自报覆盖该机器判定。影响：关键 AC 的唯一证据按 canonical 事实为未执行，必须 blocker，即使 exit-code=0 也不能进入审批。修复方向：经合法流程消除 cmd-05 的 skipped 机器判定（例如修订冻结命令/检测口径后由 `crctl test --plan` 重新生成 canonical 证据），并取得 `skipped=false`；本轮已达 review-code 3/3，交 coordinator 选择合法恢复链路。"
 dimensions:
-  批准范围前置核对: "通过：本轮修复仅触及 promotion SQL/service/test、sqlc 生成物与 CUSTOM.md，位于 SDD scope_in，未触碰 scope_out/follow_up/zero_diff。"
-  代码TASK与SDD对齐: "通过：B-CODE-01 的元素级 JSONB 合并与 fail-closed 校验符合 SDD §2.1、§4.3 的同元素回写及不覆盖/不删除历史条目契约。"
-  工程质量: "阻塞：源码修复可读且 sqlc 真源/生成物一致，但当前 canonical test-report 仍为修复前、status=block，不能支撑当前 HEAD 的工程质量结论。"
-  关键路径可读性: "通过：写入集中在单一 MergeIssueContextRefPipelineRun 查询，Go 窄类型仅作只读定位，RETURNING 后显式校验失败即回滚。"
-  安全性: "通过：本轮未改变 workspace/member 权限、事务边界、绑定鉴权或敏感数据处理。"
-  测试覆盖: "阻塞：新增真实 DB 回归测试的测试代码覆盖了异构 context_refs 保留语义，但当前被引用 cmd-01.log 生成于该测试加入前，canonical 证据未执行它。"
-  测试证据可信度: "阻塞：test-report 机器区 status=block，且引用日志未绑定本轮 5aadba5be 修复；评论中的手工专项结果不是 canonical cmd-NN 证据。"
-  前端质量: "通过：本轮未改前端；上一轮已通过的 loading/成功/失败保留选择、来源跳转与无新增 CSS/依赖结论不变。"
-suggestions:
-  - "已解决： [B-CODE-01] `server/pkg/db/queries/promotion.sql`、`server/internal/service/promotion.go`、`server/internal/service/promotion_test.go`：旧整数组窄类型重写已删除；`MergeIssueContextRefPipelineRun` 通过 `jsonb_array_elements ... WITH ORDINALITY` + 元素级 `||` 仅向 kind=`discussion_promotion` 且 dedupe_key 命中的元素合入 `pipeline_run_id`，其余元素、顺序及未知字段保留，service 对 RETURNING 结果 fail-closed 校验命中元素与 run id；新增真实 DB 异构三元素回归测试覆盖匹配元素 extra/nested 字段、legacy jsonb 全等及另一 promotion 条目不受污染。源码层面已闭合 SDD §2.1 追加/不删历史契约；测试执行可信度另由 B-CODE-02 阻塞。"
+  批准范围前置核对: "通过：当前源码仍为上一轮已核实的 5aadba5be；B-CODE-01 修复只触及 promotion SQL/service/test、sqlc 生成物与 CUSTOM.md，均在 SDD scope_in，未触碰 scope_out/follow_up/zero_diff。"
+  代码TASK与SDD对齐: "通过：B-CODE-01 元素级 JSONB 合并、RETURNING 后 fail-closed 校验及异构 context_refs 回归测试代码继续符合 SDD §2.1/§4.3；本轮源码无新增变化。"
+  工程质量: "阻塞：test-report 机器区 status=block，cmd-01 exit=1；人工归因不能覆盖 review-code 的 canonical status=pass 前置条件。"
+  关键路径可读性: "通过：MergeIssueContextRefPipelineRun 仍集中执行元素级合并，Go 侧窄类型只读且校验失败回滚，未发现新增可读性缺口。"
+  安全性: "通过：本轮无源码变化，既有 workspace/member 权限、事务边界、绑定鉴权与敏感数据处理结论不变。"
+  测试覆盖: "阻塞：B-CODE-01 新真实 DB 回归在 canonical cmd-01 中为 SKIP；AC-13 tools 唯一证据 cmd-05 的机器区 skipped=true。"
+  测试证据可信度: "阻塞：traceability 与 test-report 的 status/command-digest 一致且日志齐全，但二者一致记录的是 status=block；分析段专项 PASS/人工裁定不是引用的 canonical cmd-NN 证据，不能升级为 pass。"
+  前端质量: "通过：本轮未改前端；此前对 loading/成功/失败保留选择、来源跳转、a11y 与无新增依赖的结论不变，cmd-03/cmd-04 均 exit=0。"
+suggestions: []
 review-loop:
-  current-attempt: 2
+  current-attempt: 3
 release-subjects:
   version: 1
   repositories:
     - repo: ai-first-platform-docs
       remote-ref: refs/heads/requirement/CR-2026-061
-      reviewed-source-sha: a443f6a88314b990277ae50a0709715bfb373101
+      reviewed-source-sha: 9e41bcc1812711bf1cf185b91d222202bfdce0f7
     - repo: multica
       remote-ref: refs/heads/requirement/CR-2026-061
       reviewed-source-sha: 5aadba5be9f4895fd1cfcfdfd0f6600ed117be91
