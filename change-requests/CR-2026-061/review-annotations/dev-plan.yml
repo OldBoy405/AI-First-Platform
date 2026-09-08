@@ -1,26 +1,22 @@
 cr-id: CR-2026-061
 review-type: dev-plan
 reviewer: "OldBoy405"
-reviewed-at: "2026-09-08T12:32:21+08:00"
-verdict: block
-repair-target: write-dev-plan
-blockers:
-  - "本轮新增：[plan.md §7 AC/业务闭环覆盖矩阵，AC-7 行组] 关键 AC-7 缺少唯一 TASK owner，违反 CR-2026-057 FR-8「每条关键 AC 或业务闭环一行」与 FR-9「关键 AC 必须有且仅有一个唯一 TASK owner」。事实：矩阵以三行覆盖 AC-7——「AC-7 前端来源入口（用户可观察面）」owner=CR-2026-061-TASK-04、「AC-7·API 响应解析面」owner=CR-2026-061-TASK-03、「AC-7·client schema 兼容面」owner=CR-2026-061-TASK-04，同一关键 AC 出现两个不同 owner，且无 AC-13 那样的唯一 owner 注记。影响：review-dev-plan 的 FR-9 门禁要求关键 AC 在矩阵内机械可判唯一 owner，approve-dev-start 的 passCondition（verdict=pass 且 blockers=[]）依赖本门禁；当前结构无法机械判定 AC-7 的唯一 owner，开发启动审批无法消费。修复方向：AC-7 合并为恰一行并写唯一 owner（用户可观察面责任层 = CR-2026-061-TASK-04，可在 SDD 落点列注明 API 面关联 CR-2026-061-TASK-03）；「API 响应解析面」「client schema 兼容面」两行改列「业务闭环」行（保留各自 cmd-01/cmd-04 证据），与表尾既有业务闭环行同一模式。"
-  - "本轮新增：[plan.md §7 AC/业务闭环覆盖矩阵，AC-13 行组] 关键 AC-13 缺少机械可判的唯一 TASK owner，违反 CR-2026-057 FR-9。事实：三行覆盖 AC-13，owner 分别为 CR-2026-061-TASK-03（multica 面两行）与 CR-2026-061-TASK-04（「AC-13 tools 面」行）；表后说明称该 tools 行为「独立业务闭环行」，但矩阵 AC 列仍标「AC-13 tools 面」且 owner 列=CR-2026-061-TASK-04，说明与矩阵互相矛盾。影响：AC-13 是 PRD 明示的跨仓关键 AC（「以 tools 侧注册集成测试 + multica 侧 run 投影断言为准」），无机械唯一 owner 判定则 FR-9 门禁不可执行，开发启动审批无法消费。修复方向：把「AC-13 tools 面」行移出 AC-13 的 owner 行——与「业务闭环：promotion SKILL 改动不引入 crctl 命令面/prompt 漂移」行合并或并列为业务闭环行（owner=CR-2026-061-TASK-04、证据 cmd-05/cmd-06）；AC-13 保留唯一 owner=CR-2026-061-TASK-03（证据 cmd-01/cmd-02），使矩阵与表后说明一致。"
+reviewed-at: "2026-09-08T12:53:26+08:00"
+verdict: pass
+blockers: []
 dimensions:
   sdd-to-plan: "pass"
   plan-to-tasks: "pass"
   task-executability: "pass"
   dependency-topology: "pass"
   interface-contracts: "pass"
-  acceptance-verifiability: "block"
+  acceptance-verifiability: "pass"
   scope-and-simplicity: "pass"
   risk-and-rollback: "pass"
   reviewer-model: "deepseek-v4-pro (pi runner)"
 suggestions:
-  - "（归 write-dev-plan）plan §8 第 1 条保留理由的事实表述有误：「§12 #30/#31 现序已与正文一致、互换反而背离」不成立——SDD 正文 §4.5 违约后果推演（引用 456 索引）先于 §4.6 默认描述（引用 chatMessageAuthorDisplayName），按首现顺序 #31 应先于 #30，原 suggestion 方向正确。保留不动的真实理由应是「sdd.md 已评审且已人工审批、冻结不动（subject-sha256 310434e7… 保持），plan 层只锁定实施期用途引用顺序」。建议更正该条理由文本，避免把错误的正文序写进实施期事实。"
-  - "（归 write-dev-plan）plan §0 基线表中 ai-first-platform-docs CR 分支 SHA 731216db 是计划落笔时快照；当前 docs CR 分支 HEAD 已为 1dceced（plan/tasks/状态提交后，与 crctl workspace freshness 一致）。建议给该列加「落笔时快照」注记，避免实施期按陈旧 SHA 对照。"
-  - "（归 write-dev-plan）AC-5 行的「缺 key/空 key/超长 key → 400 三码」是 handler 侧（CR-2026-061-TASK-03）验收面，AC-11 行的「前端按错误类型保留选择/提示重试」是 CR-2026-061-TASK-04/cmd-03 面；建议两行的 SDD 落点注明关联 TASK，保持 owner 与证据面归属一致（与 AC-7/AC-13 重构后的口径对齐）。"
+  - "已解决：[plan.md §7 AC/业务闭环覆盖矩阵，AC-7 行组] 关键 AC-7 缺少唯一 TASK owner，违反 CR-2026-057 FR-8「每条关键 AC 或业务闭环一行」与 FR-9「关键 AC 必须有且仅有一个唯一 TASK owner」——本轮（attempt 2）复核已闭合：AC-7 已合并为恰一行，唯一 owner = CR-2026-061-TASK-04（用户可观察面责任层：前端来源入口与可跳回，证据 cmd-03；SDD 落点注明 API 面关联 TASK-03）；「AC-7 API 响应解析面」（TASK-03，cmd-01）与「AC-7 client schema 兼容面」（TASK-04，cmd-04）已改列「业务闭环」行，与表尾既有业务闭环行同一模式；表后注记重写为 AC-7/AC-13 双唯一 owner 机械可判说明，矩阵与注记一致。FR-8/FR-9 机械可判成立。"
+  - "已解决：[plan.md §7 AC/业务闭环覆盖矩阵，AC-13 行组] 关键 AC-13 缺少机械可判的唯一 TASK owner，违反 CR-2026-057 FR-9——本轮（attempt 2）复核已闭合：AC-13 已合并为恰一行，唯一 owner = CR-2026-061-TASK-03（绑定端点错误矩阵/幂等/CAS/审计 + 绑定后投影复用同一 run 不新建，证据 cmd-01 / cmd-02，均为稳定 cmd-NN）；「AC-13 tools 面」已移出 owner 行，改列「业务闭环：AC-13 tools 消费面」（TASK-04，cmd-05），与 prompt 漂移防护业务闭环行（TASK-04，cmd-06）并列；表后注记与矩阵一致。FR-9 机械可判唯一 owner 成立。"
 review-loop:
-  current-attempt: 1
-subject-sha256: 720329488d8cd82257ebd9e9b0eed32ad51e3cd5f3d1d91ecd058c445b375bf6
+  current-attempt: 2
+subject-sha256: 80322c42958fe33c960ac28d0f4b8df69a69876febd8b54e5ab1b32965a7cc4d
