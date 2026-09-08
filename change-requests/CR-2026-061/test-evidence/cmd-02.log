@@ -1,7 +1,147 @@
 $ go test ./internal/governance/ ./cmd/migrate/ -count=1
 (exit=0)
 --- stdout ---
-ok  	github.com/multica-ai/multica/server/internal/governance	0.103s
-ok  	github.com/multica-ai/multica/server/cmd/migrate	0.263s
+Skipping governance integration tests: database not reachable: failed to connect to `user=multica database=multica`:
+	[::1]:5432 (localhost): dial error: dial tcp [::1]:5432: connectex: No connection could be made because the target machine actively refused it.
+	127.0.0.1:5432 (localhost): failed SASL auth: FATAL: password authentication failed for user "multica" (SQLSTATE 28P01)
+ok  	github.com/multica-ai/multica/server/internal/governance	0.093s
+=== RUN   TestChannelChatRouteRollbackGuardRunsBeforeConcurrentIndexDrop
+    channel_chat_route_rollback_test.go:17: integration test requires Postgres at DATABASE_URL
+--- SKIP: TestChannelChatRouteRollbackGuardRunsBeforeConcurrentIndexDrop (0.00s)
+=== RUN   TestAgentRuntimeLastSeenAtIndexRetirement
+    migrate_agent_runtime_last_seen_at_index_retirement_test.go:16: database not reachable at postgres://multica:multica@localhost:5432/multica?sslmode=disable: failed to connect to `user=multica database=multica`:
+        	[::1]:5432 (localhost): dial error: dial tcp [::1]:5432: connectex: No connection could be made because the target machine actively refused it.
+        	127.0.0.1:5432 (localhost): failed SASL auth: FATAL: password authentication failed for user "multica" (SQLSTATE 28P01)
+--- SKIP: TestAgentRuntimeLastSeenAtIndexRetirement (0.02s)
+=== RUN   TestCommentSearchIndexStrategyChoosesOneUsableIndexPerEnvironment
+    migrate_comment_search_index_strategy_test.go:14: database not reachable at postgres://multica:multica@localhost:5432/multica?sslmode=disable: failed to connect to `user=multica database=multica`:
+        	[::1]:5432 (localhost): dial error: dial tcp [::1]:5432: connectex: No connection could be made because the target machine actively refused it.
+        	127.0.0.1:5432 (localhost): failed SASL auth: FATAL: password authentication failed for user "multica" (SQLSTATE 28P01)
+--- SKIP: TestCommentSearchIndexStrategyChoosesOneUsableIndexPerEnvironment (0.00s)
+=== RUN   TestCommentContentBigramRequirementMatchesRealPGBigm
+    migrate_comment_search_index_strategy_test.go:141: database not reachable at postgres://multica:multica@localhost:5432/multica?sslmode=disable: failed to connect to `user=multica database=multica`:
+        	[::1]:5432 (localhost): dial error: dial tcp [::1]:5432: connectex: No connection could be made because the target machine actively refused it.
+        	127.0.0.1:5432 (localhost): failed SASL auth: FATAL: password authentication failed for user "multica" (SQLSTATE 28P01)
+--- SKIP: TestCommentContentBigramRequirementMatchesRealPGBigm (0.01s)
+=== RUN   TestRunMigrationsConcurrentPending
+    migrate_concurrent_test.go:254: database not reachable at postgres://multica:multica@localhost:5432/multica?sslmode=disable: failed to connect to `user=multica database=multica`:
+        	[::1]:5432 (localhost): dial error: dial tcp [::1]:5432: connectex: No connection could be made because the target machine actively refused it.
+        	127.0.0.1:5432 (localhost): failed SASL auth: FATAL: password authentication failed for user "multica" (SQLSTATE 28P01)
+--- SKIP: TestRunMigrationsConcurrentPending (0.01s)
+=== RUN   TestRunMigrationsConcurrentAlreadyApplied
+    migrate_concurrent_test.go:292: database not reachable at postgres://multica:multica@localhost:5432/multica?sslmode=disable: failed to connect to `user=multica database=multica`:
+        	[::1]:5432 (localhost): dial error: dial tcp [::1]:5432: connectex: No connection could be made because the target machine actively refused it.
+        	127.0.0.1:5432 (localhost): failed SASL auth: FATAL: password authentication failed for user "multica" (SQLSTATE 28P01)
+--- SKIP: TestRunMigrationsConcurrentAlreadyApplied (0.01s)
+=== RUN   TestRunMigrationsAdvisoryLockSerializes
+    migrate_concurrent_test.go:342: database not reachable at postgres://multica:multica@localhost:5432/multica?sslmode=disable: failed to connect to `user=multica database=multica`:
+        	[::1]:5432 (localhost): dial error: dial tcp [::1]:5432: connectex: No connection could be made because the target machine actively refused it.
+        	127.0.0.1:5432 (localhost): failed SASL auth: FATAL: password authentication failed for user "multica" (SQLSTATE 28P01)
+--- SKIP: TestRunMigrationsAdvisoryLockSerializes (0.01s)
+=== RUN   TestRunMigrationsConcurrentMixedPoolStress
+    migrate_concurrent_test.go:436: small pool not reachable: failed to connect to `user=multica database=multica`:
+        	[::1]:5432 (localhost): dial error: dial tcp [::1]:5432: connectex: No connection could be made because the target machine actively refused it.
+        	127.0.0.1:5432 (localhost): failed SASL auth: FATAL: password authentication failed for user "multica" (SQLSTATE 28P01)
+--- SKIP: TestRunMigrationsConcurrentMixedPoolStress (0.01s)
+=== RUN   TestRunMigrationsRejectsInvalidDirection
+--- PASS: TestRunMigrationsRejectsInvalidDirection (0.00s)
+=== RUN   TestDelegatedFailurePendingIndexRetirement
+    migrate_delegated_failure_pending_index_retirement_test.go:14: database not reachable at postgres://multica:multica@localhost:5432/multica?sslmode=disable: failed to connect to `user=multica database=multica`:
+        	[::1]:5432 (localhost): dial error: dial tcp [::1]:5432: connectex: No connection could be made because the target machine actively refused it.
+        	127.0.0.1:5432 (localhost): failed SASL auth: FATAL: password authentication failed for user "multica" (SQLSTATE 28P01)
+--- SKIP: TestDelegatedFailurePendingIndexRetirement (0.01s)
+=== RUN   TestDiscussionSharedSessionMigrationsUpDownRoundtrip
+    migrate_discussion_shared_session_test.go:48: database not reachable at postgres://multica:multica@localhost:5432/multica?sslmode=disable: failed to connect to `user=multica database=multica`:
+        	[::1]:5432 (localhost): dial error: dial tcp [::1]:5432: connectex: No connection could be made because the target machine actively refused it.
+        	127.0.0.1:5432 (localhost): failed SASL auth: FATAL: password authentication failed for user "multica" (SQLSTATE 28P01)
+--- SKIP: TestDiscussionSharedSessionMigrationsUpDownRoundtrip (0.01s)
+=== RUN   TestDriftFindingMigrationsUpDownRoundtrip
+    migrate_drift_finding_test.go:46: database not reachable at postgres://multica:multica@localhost:5432/multica?sslmode=disable: failed to connect to `user=multica database=multica`:
+        	[::1]:5432 (localhost): dial error: dial tcp [::1]:5432: connectex: No connection could be made because the target machine actively refused it.
+        	127.0.0.1:5432 (localhost): failed SASL auth: FATAL: password authentication failed for user "multica" (SQLSTATE 28P01)
+--- SKIP: TestDriftFindingMigrationsUpDownRoundtrip (0.01s)
+=== RUN   TestRunMigrationsRepairsInvalidConcurrentIndexBeforeRetry
+    migrate_invalid_index_test.go:16: database not reachable at postgres://multica:multica@localhost:5432/multica?sslmode=disable: failed to connect to `user=multica database=multica`:
+        	[::1]:5432 (localhost): dial error: dial tcp [::1]:5432: connectex: No connection could be made because the target machine actively refused it.
+        	127.0.0.1:5432 (localhost): failed SASL auth: FATAL: password authentication failed for user "multica" (SQLSTATE 28P01)
+--- SKIP: TestRunMigrationsRepairsInvalidConcurrentIndexBeforeRetry (0.01s)
+=== RUN   TestRunMigrationsRepairsDingTalkGroupRouteIndexesBeforeRetry
+    migrate_invalid_index_test.go:100: database not reachable at postgres://multica:multica@localhost:5432/multica?sslmode=disable: failed to connect to `user=multica database=multica`:
+        	[::1]:5432 (localhost): dial error: dial tcp [::1]:5432: connectex: No connection could be made because the target machine actively refused it.
+        	127.0.0.1:5432 (localhost): failed SASL auth: FATAL: password authentication failed for user "multica" (SQLSTATE 28P01)
+--- SKIP: TestRunMigrationsRepairsDingTalkGroupRouteIndexesBeforeRetry (0.01s)
+=== RUN   TestRunMigrationsRepairsInvalidConcurrentIndexDuringRollback
+    migrate_invalid_index_test.go:248: database not reachable at postgres://multica:multica@localhost:5432/multica?sslmode=disable: failed to connect to `user=multica database=multica`:
+        	[::1]:5432 (localhost): dial error: dial tcp [::1]:5432: connectex: No connection could be made because the target machine actively refused it.
+        	127.0.0.1:5432 (localhost): failed SASL auth: FATAL: password authentication failed for user "multica" (SQLSTATE 28P01)
+--- SKIP: TestRunMigrationsRepairsInvalidConcurrentIndexDuringRollback (0.01s)
+=== RUN   TestRunMigrationsRepairsInvalidTerminalCompletedAtIndex
+    migrate_invalid_index_test.go:376: database not reachable at postgres://multica:multica@localhost:5432/multica?sslmode=disable: failed to connect to `user=multica database=multica`:
+        	[::1]:5432 (localhost): dial error: dial tcp [::1]:5432: connectex: No connection could be made because the target machine actively refused it.
+        	127.0.0.1:5432 (localhost): failed SASL auth: FATAL: password authentication failed for user "multica" (SQLSTATE 28P01)
+--- SKIP: TestRunMigrationsRepairsInvalidTerminalCompletedAtIndex (0.01s)
+=== RUN   TestRunMigrationsRepairsShareLinkIndexesBeforeRetry
+    migrate_invalid_index_test.go:541: database not reachable at postgres://multica:multica@localhost:5432/multica?sslmode=disable: failed to connect to `user=multica database=multica`:
+        	[::1]:5432 (localhost): dial error: dial tcp [::1]:5432: connectex: No connection could be made because the target machine actively refused it.
+        	127.0.0.1:5432 (localhost): failed SASL auth: FATAL: password authentication failed for user "multica" (SQLSTATE 28P01)
+--- SKIP: TestRunMigrationsRepairsShareLinkIndexesBeforeRetry (0.01s)
+=== RUN   TestIssueLastActivityIndexRetirement
+    migrate_issue_last_activity_index_retirement_test.go:15: database not reachable at postgres://multica:multica@localhost:5432/multica?sslmode=disable: failed to connect to `user=multica database=multica`:
+        	[::1]:5432 (localhost): dial error: dial tcp [::1]:5432: connectex: No connection could be made because the target machine actively refused it.
+        	127.0.0.1:5432 (localhost): failed SASL auth: FATAL: password authentication failed for user "multica" (SQLSTATE 28P01)
+--- SKIP: TestIssueLastActivityIndexRetirement (0.01s)
+=== RUN   TestIssuePropertiesBigramIndexBuildsOnlyWherePGBigmExists
+    migrate_issue_properties_bigm_index_test.go:35: database not reachable at postgres://multica:multica@localhost:5432/multica?sslmode=disable: failed to connect to `user=multica database=multica`:
+        	[::1]:5432 (localhost): dial error: dial tcp [::1]:5432: connectex: No connection could be made because the target machine actively refused it.
+        	127.0.0.1:5432 (localhost): failed SASL auth: FATAL: password authentication failed for user "multica" (SQLSTATE 28P01)
+--- SKIP: TestIssuePropertiesBigramIndexBuildsOnlyWherePGBigmExists (0.01s)
+=== RUN   TestIssuePropertiesBigramIndexNeedsAnalyzeForItsExpression
+    migrate_issue_properties_bigm_index_test.go:124: database not reachable at postgres://multica:multica@localhost:5432/multica?sslmode=disable: failed to connect to `user=multica database=multica`:
+        	[::1]:5432 (localhost): dial error: dial tcp [::1]:5432: connectex: No connection could be made because the target machine actively refused it.
+        	127.0.0.1:5432 (localhost): failed SASL auth: FATAL: password authentication failed for user "multica" (SQLSTATE 28P01)
+--- SKIP: TestIssuePropertiesBigramIndexNeedsAnalyzeForItsExpression (0.01s)
+=== RUN   TestOperatorClassAvailabilityFailsClosed
+    migrate_issue_properties_bigm_index_test.go:264: database not reachable at postgres://multica:multica@localhost:5432/multica?sslmode=disable: failed to connect to `user=multica database=multica`:
+        	[::1]:5432 (localhost): dial error: dial tcp [::1]:5432: connectex: No connection could be made because the target machine actively refused it.
+        	127.0.0.1:5432 (localhost): failed SASL auth: FATAL: password authentication failed for user "multica" (SQLSTATE 28P01)
+--- SKIP: TestOperatorClassAvailabilityFailsClosed (0.01s)
+=== RUN   TestConcurrentIndexCleanupsMatchTheirMigrations
+--- PASS: TestConcurrentIndexCleanupsMatchTheirMigrations (0.01s)
+=== RUN   TestEveryConcurrentDownBuildHasCleanup
+--- PASS: TestEveryConcurrentDownBuildHasCleanup (0.04s)
+=== RUN   TestEveryConcurrentUpBuildHasCleanup
+--- PASS: TestEveryConcurrentUpBuildHasCleanup (0.04s)
+=== RUN   TestRunMigrationsRepairsInvalidRuntimeIDIndex
+    migrate_mul5999_index_retry_test.go:166: database not reachable at postgres://multica:multica@localhost:5432/multica?sslmode=disable: failed to connect to `user=multica database=multica`:
+        	[::1]:5432 (localhost): dial error: dial tcp [::1]:5432: connectex: No connection could be made because the target machine actively refused it.
+        	127.0.0.1:5432 (localhost): failed SASL auth: FATAL: password authentication failed for user "multica" (SQLSTATE 28P01)
+--- SKIP: TestRunMigrationsRepairsInvalidRuntimeIDIndex (0.00s)
+=== RUN   TestPromotionMigrationsUpDownRoundtrip
+    migrate_promotion_test.go:51: database not reachable at postgres://multica:multica@localhost:5432/multica?sslmode=disable: failed to connect to `user=multica database=multica`:
+        	[::1]:5432 (localhost): dial error: dial tcp [::1]:5432: connectex: No connection could be made because the target machine actively refused it.
+        	127.0.0.1:5432 (localhost): failed SASL auth: FATAL: password authentication failed for user "multica" (SQLSTATE 28P01)
+--- SKIP: TestPromotionMigrationsUpDownRoundtrip (0.00s)
+=== RUN   TestRedundantIndexMigrationsPreserveCoveringQueryPlansAndRollback
+    migrate_redundant_indexes_test.go:18: database not reachable at postgres://multica:multica@localhost:5432/multica?sslmode=disable: failed to connect to `user=multica database=multica`:
+        	[::1]:5432 (localhost): dial error: dial tcp [::1]:5432: connectex: No connection could be made because the target machine actively refused it.
+        	127.0.0.1:5432 (localhost): failed SASL auth: FATAL: password authentication failed for user "multica" (SQLSTATE 28P01)
+--- SKIP: TestRedundantIndexMigrationsPreserveCoveringQueryPlansAndRollback (0.00s)
+=== RUN   TestSourceContextMigrationsRollbackFailsClosedWithCapturedData
+    migrate_source_context_test.go:15: database not reachable at postgres://multica:multica@localhost:5432/multica?sslmode=disable: failed to connect to `user=multica database=multica`:
+        	[::1]:5432 (localhost): dial error: dial tcp [::1]:5432: connectex: No connection could be made because the target machine actively refused it.
+        	127.0.0.1:5432 (localhost): failed SASL auth: FATAL: password authentication failed for user "multica" (SQLSTATE 28P01)
+--- SKIP: TestSourceContextMigrationsRollbackFailsClosedWithCapturedData (0.00s)
+=== RUN   TestCRSyncEventWorkspaceMigrationHappyPath
+    migrate_workspace_seam_test.go:141: database not reachable at postgres://multica:multica@localhost:5432/multica?sslmode=disable: failed to connect to `user=multica database=multica`:
+        	[::1]:5432 (localhost): dial error: dial tcp [::1]:5432: connectex: No connection could be made because the target machine actively refused it.
+        	127.0.0.1:5432 (localhost): failed SASL auth: FATAL: password authentication failed for user "multica" (SQLSTATE 28P01)
+--- SKIP: TestCRSyncEventWorkspaceMigrationHappyPath (0.00s)
+=== RUN   TestCRSyncEventWorkspacePreflightBlocksOrphanAndAmbiguous
+    migrate_workspace_seam_test.go:271: database not reachable at postgres://multica:multica@localhost:5432/multica?sslmode=disable: failed to connect to `user=multica database=multica`:
+        	[::1]:5432 (localhost): dial error: dial tcp [::1]:5432: connectex: No connection could be made because the target machine actively refused it.
+        	127.0.0.1:5432 (localhost): failed SASL auth: FATAL: password authentication failed for user "multica" (SQLSTATE 28P01)
+--- SKIP: TestCRSyncEventWorkspacePreflightBlocksOrphanAndAmbiguous (0.00s)
+PASS
+ok  	github.com/multica-ai/multica/server/cmd/migrate	0.297s
 
 --- stderr ---
