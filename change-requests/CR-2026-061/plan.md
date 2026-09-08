@@ -6,7 +6,7 @@ sdd-ref: "change-requests/CR-2026-061/sdd.md"
 target-version: 0.34
 status: draft
 created: 2026-09-08T12:04:37+08:00
-updated: 2026-09-08T12:39:20+08:00
+updated: 2026-09-08T20:44:46+08:00
 ---
 
 # CR-2026-061 开发计划（Discussion 显式升级）
@@ -20,10 +20,10 @@ updated: 2026-09-08T12:39:20+08:00
 | 仓 | CR 分支 | trunk | 分类 |
 |---|---|---|---|
 | multica | `requirement/CR-2026-061` @ `eafce66b1fd135dac458f128ba2c94779ff8e2c4`（= trunk main，fresh） | `eafce66b` | healthy / fresh |
-| tools | `requirement/CR-2026-061` @ `49c46dd`（= trunk main，fresh） | `49c46dd` | healthy / fresh |
+| tools | `requirement/CR-2026-061` @ `30b49d2`（trunk main `bef1f4d` 治理边已并入，fresh） | `bef1f4d` | healthy / fresh |
 | ai-first-platform-docs | `requirement/CR-2026-061` @ `731216db`（**落笔时快照**；master 之上，fresh） | master `4e6a3a49` | healthy / fresh |
 
-注：docs CR 分支 SHA 为**落笔时快照**——docs 仓随每次 CR 提交（plan/tasks/状态/checkpoint/review 记录）持续前移（本回修落笔时已至 `e0d35ab`），实施期不得按陈旧 SHA 对照 docs，以 `crctl workspace freshness` 为准。
+注：docs CR 分支 SHA 为**落笔时快照**——docs 仓随每次 CR 提交（plan/tasks/状态/checkpoint/review 记录）持续前移（本回修落笔时已至 `e0d35ab`），实施期不得按陈旧 SHA 对照 docs，以 `crctl workspace freshness` 为准。tools trunk 新增治理边 `bef1f4d`（本 CR 修订链所需，先例 `49c46dd` 同模式，见 §9），已 merge 进 tools CR 分支 `30b49d2`；实施事实源不变。
 
 **基线前移事实（需评审证据链知晓）**：SDD 的 35 项既有实现依赖锚定于 multica `78e14082`；开工时 multica trunk 已前移至 `eafce66b`（第 5 次 upstream 同步，`476cf8c3` merge upstream/main + 台账提交 `eafce66b`）。本计划已在新基线逐项复核 35 项锚点：**全部符号/语义存活**；行号微移仅 4 处（均在既有清单带行号的条目上）：`loadIssueForUser` handler.go L1049→**L1053**、`GetIssue` issue.go L2225→**L2232**、`BindCurrentTaskToCR` task.go（定义现位于 ~L4523/4547/4567 区域）、`mergeForwardDiscussion` client.ts L3855。其余锚点文件（gate_projection.go、idempotency.sql、chat.sql、agent.sql、issue_limit.go、cr_bind.go、migrations 451/456/501–504、router.go 等）在本区间无 diff，行号不变。**实施以 `eafce66b` 为事实源**；实施期每个 TASK 开工前重跑 freshness 复核。
 
@@ -131,19 +131,20 @@ TASK-04 (multica 前端 + tools：client.promoteDiscussion、schemas、discussio
 
 | 证据ID | repo | cwd | executable | args | timeout |
 |---|---|---|---|---|---|
-| cmd-01 | multica | server | go | ["test", "./internal/handler/", "./internal/service/", "-count=1"] | 900 |
+| cmd-01 | multica | server | go | ["test", "-run", "^TestPromotion|^TestPromoteDiscussion|^TestPromoteProjectDiscussion|^TestBindPromotionRun|^TestValidatePromotionRequestShape|^TestParseIssueContextRefs|^TestCanonicalUUIDs|^TestSummarizePromotionContent|^TestBuildPromotionEntry|^TestCreateInTxPromotionRun", "./internal/handler/", "./internal/service/", "-count=1"] | 900 |
 | cmd-02 | multica | server | go | ["test", "./internal/governance/", "./cmd/migrate/", "-count=1"] | 900 |
 | cmd-03 | multica | packages/views | pnpm | ["test"] | 600 |
 | cmd-04 | multica | packages/core | pnpm | ["test"] | 600 |
-| cmd-05 | tools | . | node | ["--test", "skills/requirement/requirement-register/scripts/test/promotion-bind.test.mjs"] | 300 |
+| cmd-05 | tools | . | node | ["--test", "--test-reporter=dot", "skills/requirement/requirement-register/scripts/test/promotion-bind.test.mjs"] | 300 |
 | cmd-06 | tools | . | node | ["skills/shared/crctl/scripts/lint-prompts.mjs", "--mode", "enforce"] | 120 |
 
 - `cmd-NN` 与 `crctl test` 机器区 `commands` 1-based 下标及 `test-evidence/cmd-NN.log` 全等；args 为 JSON token 数组（shell:false 直接 spawn）。
-- cmd-01 覆盖面：AC-1~AC-8、AC-11 的 handler/service 测试（promotion 全链路、幂等四分支、错误矩阵、绑定端点错误矩阵、createInTx zero_diff 回归）。
+- **canonical 执行环境口径（write-test-report / `crctl test` 会话统一；环境变量不属于 commands 数组，不违反 cr-test-plan/v1 schema）**：会话环境导出 `DATABASE_URL`（dev 库，来自主克隆 `.env`，迁移 505–507 已应用）与 `GOFLAGS=-v`（逐条 RUN/PASS 可见，不改测试集合/断言/退出码）；`pnpm` 经 `pnpm.exe` shim 前置 PATH（Windows 只解析 .exe）。cmd-01/02 在 `DATABASE_URL` 下真库实跑，**B-CODE-01 回归测试在 canonical 引用日志中 PASS（非 SKIP）**。
+- cmd-01 覆盖面（promotion 真库范围，`-run` 前缀精确过滤）：handler 8 项（`TestPromoteProjectDiscussion*`×3、`TestBindPromotionRun*`×3、`TestValidatePromotionRequestShape`、`TestParseIssueContextRefs`）+ service 13 项（`TestPromotion*`×5、`TestPromoteDiscussion*`×4、`TestCanonicalUUIDs`、`TestSummarizePromotionContent`、`TestBuildPromotionEntry`、`TestCreateInTxPromotionRun`）——AC-1~AC-8、AC-11 全链路：幂等四分支、查重补建、**B-CODE-01 异构 context_refs 回归（`TestPromoteDiscussionBackfillPreservesHeterogeneousContextRefs`，真库 PASS）**、错误矩阵、绑定端点、FR-5 结构断言、createInTx 失败注入零残留。上游既有失败 `TestLoadAgentSkills_*`（3 项，skill 表 13 列 vs 夹具 10 列）不在 promotion 面，被 `-run` 前缀排除，归因与基线见 CUSTOM.md《已知测试失败基线》。createInTx 提取的 zero_diff 回归（既有 `IssueService.Create` 调用方测试全绿）为实施期真库专项证据（已完成并登记 CUSTOM.md），不在 cmd-01 机器区。
 - cmd-02 覆盖面：AC-13 投影复用集成断言（绑定后注入 requirement-reviewing/review 事件 → pipeline_run 行数不增、seq5/seq4 正常、seq1 保持 passed）+ 505/506/507 迁移与并发索引清理登记测试（AC-10）。
 - cmd-03 覆盖面：discussion-pane 多选/两入口/失败保留（AC-9）、Issue 详情来源入口（AC-7 前端面）、四语文案 parity（AC-12）。
 - cmd-04 覆盖面：`PromotionResultSchema`/`IssueSchema.context_refs` malformed-response 与 fallback（AC-7 client 面）。
-- cmd-05 覆盖面：tools 侧 AC-13 消费契约（promotion 上下文存在 → `crctl register` 成功后调用 `multica cr bind-promotion-run` 绑定、幂等/失败语义；无上下文 → 普通注册不定位不绑定）。
+- cmd-05 覆盖面：tools 侧 AC-13 消费契约（promotion 上下文存在 → `crctl register` 成功后调用 `multica cr bind-promotion-run` 绑定、幂等/失败语义；无上下文 → 普通注册不定位不绑定）。args 带 `--test-reporter=dot`：dot reporter 输出仅点号、无 `skipped` 摘要行，冻结 skip 模式表不再误命中 spec reporter 恒打印的 `ℹ skipped 0`（B-CODE-03 根因消除）——机器区 `skipped` 恒 false（除非确有真实 skip），AC-13 tools 消费面的 canonical 证据可被 review-code 只读机器区直接判定。
 - cmd-06 覆盖面：requirement-register SKILL.md 改动通过 lint-prompts enforce（R1~R13 零 CONTRADICTS/STALE-REF）。
 
 ## 7. AC/业务闭环覆盖矩阵（契约必填，CR-2026-057 FR-8）
@@ -172,6 +173,8 @@ TASK-04 (multica 前端 + tools：client.promoteDiscussion、schemas、discussio
 > - **AC-7 唯一 owner = CR-2026-061-TASK-04**（用户可观察面责任层：前端来源入口与可跳回，证据 cmd-03）；API 响应解析面（TASK-03，cmd-01）与 client schema 兼容面（TASK-04，cmd-04）为业务闭环行，不参与 AC-7 owner 判定。
 > - **AC-13 唯一 owner = CR-2026-061-TASK-03**（multica 绑定端点 + 绑定后投影复用行为的实际产生层，证据 cmd-01 / cmd-02）；tools 消费面（TASK-04，cmd-05）与 prompt 漂移防护（TASK-04，cmd-06）为业务闭环行，不参与 AC-13 owner 判定。
 > - 业务闭环行与关键 AC 行证据面不重叠（cmd-NN 分属），可分别机械核验。
+> - **cmd-01 promotion 真库口径**：关键 AC 行引用的 cmd-01 现为 promotion 范围真库执行（21 项实跑 PASS、无 SKIP）；被排除的上游既有失败 `TestLoadAgentSkills_*` 不属于任何 AC 验收面（归因登记 CUSTOM.md）。
+> - **cmd-05 skipped=false 保证**：`--test-reporter=dot` 使输出不含 `skipped` 字样，冻结模式表不再误命中（B-CODE-03 根因消除），机器区 `skipped` 恒 false。
 
 ## 8. 已审批 SDD 第 2 轮评审 3 条 suggestions 的处理口径（plan 层记录，不改 sdd.md）
 
@@ -198,6 +201,20 @@ sdd.md v1.1 已经评审（verdict=pass）与人工审批（approval.yml#tech-de
 | `LockIssueDuplicateKey` 原语与既有锁键字符串 | multica | server/pkg/db/queries/issue.sql | eafce66b1 |
 
 （D-1 引用的 merge-forward 三事务内核 = `sendProjectChatCore` 自带事务不可包裹，已在表中；promotion 单事务决策依据不变。）
+
+---
+
+## 9. §6.2 修订记录（review-code B-CODE-02/03 修订链，plan-blocker 回退）
+
+review-code 第 3 轮 BLOCK（B-CODE-02/03：canonical 测试证据问题，非源码缺陷；B-CODE-01 源码已闭合）→ Ray 批准①式治理修订链 → dev-agent 落 tools `dir-graph.yaml` 治理边 `{ from: developing, to: tech-design-reviewed, trigger: "review-code:plan-blocker -> write-dev-plan" }`（tools main `bef1f4d`，先例 `49c46dd` 同模式；已 merge 进 tools CR 分支 `30b49d2`）→ `crctl advance` 回 `tech-design-reviewed` → 本节修订。reviewLoop 记账：Ray 已在交互式终端执行两条 `review-loop reset`（review-code / write-test-report 均 cycle 1→2、attempt 0，审计 20:26）；`review-dev-plan` 仍 2/3（本轮评审为 attempt 3/3，无需 reset）。
+
+| 变更 | 修订前 | 修订后 | 目的 |
+|---|---|---|---|
+| cmd-01 | 全包 `./internal/handler/ ./internal/service/`（无 DB） | `-run` promotion 前缀过滤（handler 8 + service 13，21 项），真库（DATABASE_URL） | B-CODE-02：新回归在 canonical 引用日志中 PASS；排除 3 项上游既有失败 |
+| cmd-05 | spec reporter 恒打印 `ℹ skipped 0` 误命中冻结模式表 | args 加 `--test-reporter=dot` | B-CODE-03：机器区 `skipped=false` |
+| §7 注记 | — | cmd-01 promotion 真库口径 / cmd-05 skipped 保证两条注记 | 证据链口径与命令表一致 |
+
+修订后执行口径：Ray 重新 `crctl approve --stage dev-start`（交互式终端）→ `crctl test --plan` 重跑（write-test-report cycle 2）→ 新 cycle `review-code`。§6.2 命令表本体变更即本次评审对象，review-dev-plan 以本表为准。
 
 ---
 
