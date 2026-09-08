@@ -1,46 +1,34 @@
-# CR-2026-061 工作流导航缓存（dev-agent / SDD 节点）
-> 仅供返工与 /resume 导航；canonical 事实以 cr.md / sdd.md / review-annotations / crctl 为准。
-> 最近刷新：2026-09-08T03:50+08:00（dev-agent：review-tech-design 第 1 轮 BLOCK 回修完成，SDD v1.1 提交并推进 tech-design-review-pending，待第 2 轮复审）
+# CR-2026-061 工作流导航缓存（dev-agent / code-implementation 计划与任务节点）
+> 仅供返工与 /resume 导航；canonical 事实以 cr.md / plan.md / tasks/_index.yml / review-annotations / crctl 为准。
+> 最近刷新：2026-09-08T12:04+08:00（dev-agent：write-dev-plan + write-dev-tasks 完成，待独立 review-dev-plan）
 
 ## 当前状态
-- status: `tech-design-review-pending`；reviewLoop `review-tech-design` attempt 1/3（第 1 轮 BLOCK 已记账）。
-- `next`（crctl）: 以 `crctl next CR-2026-061` 为准（预期 = review-tech-design 独立复评，attempt 2/3）。
+- status: `task-breakdown`（计划与 TASK 拆分完成，经 crctl advance，未手改账本）。
+- reviewLoop `review-dev-plan` 未启动（0/3）；`next`（crctl）以 `crctl next CR-2026-061` 为准。
 
-## 本 run 已交付（第 1 轮评审回修）
-- `change-requests/CR-2026-061/sdd.md` v1.1（与 `_context.md` 同一提交）：
-  - §12 按正文首现顺序全量重排为 35 项：8 项漏列事实补入（SweepChatIdempotency、
-    CheckIssueCreateCapacity/ResolveIssueCountPolicy、GetMemberByUserAndWorkspace、
-    GetProjectInWorkspace、InsertProjectSharedSession、chatMessageAuthorDisplayName、
-    issue_properties_gin（迁移 192）、dbid.NewV7）；原 #13 拆分为 handler/service（#16）
-    与 agent.sql db queries（#17，LockCrForCrBind L1128 / BindCrShellIssueIfNull L1146）。
-  - suggestion-1 已处理：§4.5 新增「违约后果与恢复路径」（投影行占 456 槽位 → 绑定 23505
-    冲突 500 CR_BIND_FAILED；恢复 = 定位 issue_id IS NULL 投影行删除后幂等重试）。
-  - suggestion-2 已处理：§3.2 错误体形状注记（绑定端点全表 {"error":...} 同族，不经 writeErrorCode）。
-  - suggestion-3 已处理：ArchitectureCoreRegistryJSON 并入 §12 #10、CreateActivity 独立条目 #29。
-  - 处置台账：§11.1；审查要点速览 #7 同步更新。
-- 状态推进：`tech-designing → tech-design-review-pending`（经 crctl advance，未手改账本）。
+## 本 run 已交付
+- `change-requests/CR-2026-061/plan.md`（§0 基线核实 allFresh；§6 两张稳定表：13 FR 交付覆盖表 + 6 条证据命令表 cmd-01..06；§7 AC/业务闭环覆盖矩阵；§8 第 2 轮 3 条 suggestions 处理口径 + zero_diff 基线锁定表；TASK 拆分预分配 4 组）。
+- `change-requests/CR-2026-061/tasks/TASK-01..04.md` + `tasks/_index.yml`（crctl task init --count-hint 4）：
+  - TASK-01 数据层（12h）：迁移 505/506/507 + promotion.sql 10 查询 + migrate 登记。
+  - TASK-02 服务内核（24h）：createInTx 提取 + PromoteDiscussion + 纯函数 + 默认标题描述。
+  - TASK-03 HTTP/绑定/CLI（20h）：promotion handler/错误闭包/context_refs 暴露/bind 端点/CLI。
+  - TASK-04 前端+tools（16h）：client/schemas/discussion-pane/issue-detail/locales + requirement-register SKILL 绑定步骤与测试。
+  - 依赖链：TASK-01 → TASK-02 → TASK-03 → TASK-04（无环）。
+- 估算总工时（TASK 账本口径）：72h。
 
-## 关键设计锚点（返工时先读 sdd.md 对应节）
-- 唯一 Issue 写入路径 = `IssueService.createInTx`（自 Create 提取，FR-2/NFR-4）——SDD §4.3/D-7。
-- fingerprint（FR-7，含 upgrade_to_cr）与 dedupe_key（FR-6，来源集合）是两个摘要——SDD §4.1。
-- 预建 run：`pipeline_run(pipeline_id='requirement-authoring', cr_id=NULL, issue_id, started_by)` + 首节点
-  `00000000-0000-0000-0011-000000000001` seq1 running；绑定端点置 passed——SDD §2.3/§4.5。
-- 迁移 505（scope CHECK 扩展）/506（promotion run 部分唯一索引）/507（context_refs GIN）——SDD §2.6/§13。
-- 绑定端点 `POST /api/crs/{crID}/bind-promotion-run` + `multica cr bind-promotion-run`（task-token 同族；
-  二次绑定 409 RUN_CR_CONFLICT；错误体 {"error":...} 同族形状）——SDD §3.2/§3.3。
-- 456 部分唯一索引谓词 = cr_id IS NOT NULL AND status IN ('running','waiting_approval')——§12 #31（§4.5 违约推演依据）。
+## 关键设计锚点（返工时先读 plan.md 对应节）
+- 基线：multica `eafce66b`（trunk 已前移，SDD 锚点 78e14082 → 新基线逐项复核存活，行号微移 4 处见 plan §0）、tools `49c46dd`、docs CR 分支 `731216db`。
+- 证据命令表（plan §6.2）：cmd-01 go handler/service；cmd-02 go governance/migrate；cmd-03 pnpm views；cmd-04 pnpm core；cmd-05 node --test promotion-bind；cmd-06 lint-prompts enforce。
+- 已审批 SDD 不修订：3 条 suggestions 处理口径在 plan §8（含 zero_diff 基线锁定表）。
 
 ## 恢复入口
-1. 独立 reviewer（quality-reviewer-agent，新会话）执行 `review-tech-design` 复评（attempt 2/3，--bump-attempt）：
+1. 独立 reviewer（quality-reviewer-agent，新会话）执行 `review-dev-plan`（attempt 1/3）：
    - crctl 一律带 `--workspace C:\Users\GOBAO\Downloads\AI\AI First Platform\.rayai-worktrees\knowledge-base\requirement\CR-2026-061`
-   - 评审对象 `change-requests/CR-2026-061/sdd.md`（v1.1）；重点复核 §12 35 项补列/拆分与 §11.1 三条处置结论；
-     三仓基线 multica `78e14082` / tools `49c46dd` / docs CR 分支（含本提交）。
-2. BLOCK → repair-target 回 `write-tech-design`（作者会话 = dev-agent 本 Agent）：status 回到 `tech-designing`，
-   按 blocker 定点回修 sdd.md，再 `crctl advance --to tech-design-review-pending --trigger write-tech-design-complete`，
-   重新委派 reviewer 复评。
-3. PASS → 停在人工审批（`approve-tech-design`，届时需 Ray 审批）。
+   - 评审对象：`change-requests/CR-2026-061/plan.md` + `tasks/`（TASK-01..04）；重点：批准范围四字段译对、13 FR 交付覆盖表、6 条 cmd 证据面、AC 矩阵唯一 owner、4 TASK 可执行性/接口契约/依赖、§8 suggestions 处理口径、plan §0 基线前移事实。
+2. BLOCK → repair-target `write-dev-plan`（作者会话 = dev-agent 本 Agent）：状态回 `tech-design-reviewed`，按 blocker 修订 plan.md（必要时重生成 TASK + `crctl task init --count-hint 4` 刷新），再推进 `task-breakdown` 后重新委派 reviewer 复评。
+3. PASS → 停在 `task-breakdown`，进入 push-progress → 开发启动人工审批（`approve-dev-start`，届时需 Ray 确认）。
 
 ## 环境提示
 - 三仓 worktree：docs（KB，operational）`C:\Users\GOBAO\Downloads\AI\AI First Platform\.rayai-worktrees\knowledge-base\requirement\CR-2026-061`；
   multica / tools 同名 sibling worktree（`crctl workspace inspect` 为准）。KB worktree 分支 = `requirement/CR-2026-061`。
-- 本缓存随 SDD 提交一并纳入（不单独建提交）。
+- 本缓存随 plan/tasks 提交一并纳入（不单独建提交）。
