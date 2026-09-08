@@ -51,14 +51,14 @@ created: 2026-09-08T12:04:37+08:00
 
 1. `go test ./internal/handler/ -count=1` 全绿：AC-2 选择矩阵（只消息/只附件/混合 201；空/重复/草稿附件/他 session → 400 `invalid_promotion_selection`；非法 JSON → `invalid_request_body`；projectId/session_id 非 UUID；title>200/description>10000 各自 400，均零写入）；AC-6 固定顺序（非成员 403 不泄漏 session 存在性；limit 夹具 403；session 四类 404；project 404）；AC-11 逐类错误夹具零残留 + 500/502 原 key 重试成功。
 2. 绑定端点错误矩阵：401 `TASK_CONTEXT_REQUIRED`（错误体 `{"error":...}` 形状断言）/400 `INVALID_RUN_ID`/404 `RUN_NOT_FOUND`/404 `CR_NOT_FOUND`/409 `RUN_CR_CONFLICT`（二次绑定异 CR）/200 `changed=false` 幂等重放/审计行 `promotion_run_bound`；`IssueResponse.context_refs` 透出与解析失败降级。
-3. `go test ./internal/governance/ -count=1` 全绿：投影协作集成（绑定后注入 requirement-reviewing/review 事件 → 行数不增、seq1 保持 passed）。
+3. `go test ./internal/governance/ -count=1`（实施期全包专项证据；无 DB 时 DB 项 SKIP 通过）全绿：投影协作集成（绑定后注入 requirement-reviewing/review 事件 → 行数不增、seq1 保持 passed）；真库整包的 5 项上游既有失败不在本 TASK 面，canonical 收敛口径见 §6.2 cmd-02。
 4. `multica cr bind-promotion-run --output json` 端到端（受控夹具）：成功透传、task token 缺失 401 形状、`--run-id` 非法 400。
 
 ## 5. 完成标志
 
 - 上述 4 条全部通过；`go vet ./...`（server）零报错；
 - 提交落盘 multica CR 分支（独立 commit）；
-- `go test ./internal/handler/ ./internal/service/ -count=1` 全绿（**非 canonical 实施期全包专项证据**）；`go test ./internal/governance/ ./cmd/migrate/ -count=1`（cmd-02）全绿；canonical cmd-01 为 §6.2 口径（21 项 promotion `-run` 过滤 + DATABASE_URL 真库，其中 handler 8 项由本 TASK 产出）。
+- `go test ./internal/handler/ ./internal/service/ -count=1` 全绿（**非 canonical 实施期全包专项证据**）；`go test ./internal/governance/ ./cmd/migrate/ -count=1`（**非 canonical 实施期全包专项证据**）；canonical cmd-01 为 §6.2 口径（21 项 promotion `-run` 过滤 + DATABASE_URL 真库，其中 handler 8 项由本 TASK 产出）；canonical cmd-02 为 §6.2 口径（`-run` 收敛至 AC-13/AC-10 相关 5 项测试函数 + DATABASE_URL 真库，其中 governance 1 项由本 TASK 产出）。
 
 ## 6. 接口契约
 

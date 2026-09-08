@@ -51,7 +51,7 @@ created: 2026-09-08T12:04:37+08:00
 ## 4. 验收条件
 
 1. `cd server && sqlc generate` 零错误；`go build ./...` 通过；`pkg/db/generated` 含全部 10 个新查询的 Go 签名。
-2. `go test ./cmd/migrate/ -count=1` 全绿：既有 `TestEveryConcurrentUpBuildHasCleanup` 类 total-invariant 测试不回归，506/507 登记断言通过。
+2. `go test ./cmd/migrate/ -count=1`（实施期全包专项证据；无 DB 时 DB 项 SKIP 通过）全绿：既有 `TestEveryConcurrentUpBuildHasCleanup` 类 total-invariant 测试不回归，506/507 登记断言通过；真库整包的 2 项上游既有失败不在本 TASK 面，canonical 收敛口径见 §6.2 cmd-02。
 3. 迁移夹具：`server/migrations/` 无 `discussion_promotion` 命名迁移（AC-10 grep 断言）；505 后 `scope_type='discussion_promotion'` 可插入、约束名断言成立；506 后同一 `(workspace_id, issue_id)` 两条非终态 requirement-authoring run 插入第二行触发唯一冲突（23505）。
 4. 505 down 在无 `discussion_promotion` 行时成功；506/507 down 经 `concurrentDownIndexCleanups` 可清理（夹具验证）。
 
@@ -59,7 +59,7 @@ created: 2026-09-08T12:04:37+08:00
 
 - 上述 4 条验收全部通过；`sqlc generate` 与 `go vet ./...`（server 内）零报错；
 - 迁移与查询提交落盘 multica CR 分支（commit 独立、可单独 revert）；
-- `go test ./cmd/migrate/ -count=1` 与 `go test ./internal/governance/ -count=1` 全绿（cmd-02 面，本 TASK 完成后该命令先行跑通）。
+- `go test ./cmd/migrate/ -count=1` 与 `go test ./internal/governance/ -count=1`（**非 canonical 实施期全包专项证据**，无 DB 执行口径）；canonical cmd-02 为 §6.2 口径（`-run` 收敛至 AC-13/AC-10 相关 5 项测试函数 + DATABASE_URL 真库，其中 migrate 4 项由本 TASK 产出）。
 
 ## 6. 接口契约
 
