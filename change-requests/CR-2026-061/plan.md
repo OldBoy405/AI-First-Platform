@@ -6,7 +6,7 @@ sdd-ref: "change-requests/CR-2026-061/sdd.md"
 target-version: 0.34
 status: draft
 created: 2026-09-08T12:04:37+08:00
-updated: 2026-09-08T12:04:37+08:00
+updated: 2026-09-08T12:39:20+08:00
 ---
 
 # CR-2026-061 开发计划（Discussion 显式升级）
@@ -21,7 +21,9 @@ updated: 2026-09-08T12:04:37+08:00
 |---|---|---|---|
 | multica | `requirement/CR-2026-061` @ `eafce66b1fd135dac458f128ba2c94779ff8e2c4`（= trunk main，fresh） | `eafce66b` | healthy / fresh |
 | tools | `requirement/CR-2026-061` @ `49c46dd`（= trunk main，fresh） | `49c46dd` | healthy / fresh |
-| ai-first-platform-docs | `requirement/CR-2026-061` @ `731216db`（master 之上，fresh） | master `4e6a3a49` | healthy / fresh |
+| ai-first-platform-docs | `requirement/CR-2026-061` @ `731216db`（**落笔时快照**；master 之上，fresh） | master `4e6a3a49` | healthy / fresh |
+
+注：docs CR 分支 SHA 为**落笔时快照**——docs 仓随每次 CR 提交（plan/tasks/状态/checkpoint/review 记录）持续前移（本回修落笔时已至 `e0d35ab`），实施期不得按陈旧 SHA 对照 docs，以 `crctl workspace freshness` 为准。
 
 **基线前移事实（需评审证据链知晓）**：SDD 的 35 项既有实现依赖锚定于 multica `78e14082`；开工时 multica trunk 已前移至 `eafce66b`（第 5 次 upstream 同步，`476cf8c3` merge upstream/main + 台账提交 `eafce66b`）。本计划已在新基线逐项复核 35 项锚点：**全部符号/语义存活**；行号微移仅 4 处（均在既有清单带行号的条目上）：`loadIssueForUser` handler.go L1049→**L1053**、`GetIssue` issue.go L2225→**L2232**、`BindCurrentTaskToCR` task.go（定义现位于 ~L4523/4547/4567 区域）、`mergeForwardDiscussion` client.ts L3855。其余锚点文件（gate_projection.go、idempotency.sql、chat.sql、agent.sql、issue_limit.go、cr_bind.go、migrations 451/456/501–504、router.go 等）在本区间无 diff，行号不变。**实施以 `eafce66b` 为事实源**；实施期每个 TASK 开工前重跑 freshness 复核。
 
@@ -152,22 +154,24 @@ TASK-04 (multica 前端 + tools：client.promoteDiscussion、schemas、discussio
 | AC-2 选择矩阵与零写入 | §6.2 AC-2 | CR-2026-061-TASK-03 | cmd-01 |
 | AC-3 来源引用与默认标题/描述 | §6.2 AC-3 | CR-2026-061-TASK-02 | cmd-01 |
 | AC-4 原消息/附件全等 | §6.2 AC-4 | CR-2026-061-TASK-02 | cmd-01 |
-| AC-5 幂等/查重/并发收敛 | §6.2 AC-5 | CR-2026-061-TASK-02 | cmd-01 |
+| AC-5 幂等/查重/并发收敛 | §6.2 AC-5（缺 key/空 key/超长 key → 400 三码属 handler 面，关联 CR-2026-061-TASK-03） | CR-2026-061-TASK-02 | cmd-01 |
 | AC-6 权限固定顺序 | §6.2 AC-6 | CR-2026-061-TASK-03 | cmd-01 |
-| AC-7 前端来源入口（用户可观察面：详情展示并可跳回 Discussion） | §6.2 AC-7 | CR-2026-061-TASK-04 | cmd-03 |
-| AC-7·API 响应解析面（issueToResponse 透出 context_refs） | §6.2 AC-7 / §3.4 | CR-2026-061-TASK-03 | cmd-01 |
-| AC-7·client schema 兼容面（fallback/malformed） | §3.4 | CR-2026-061-TASK-04 | cmd-04 |
+| AC-7 前端来源入口（用户可观察面：详情展示并可跳回 Discussion） | §6.2 AC-7（唯一 owner 行；API 响应解析面关联 CR-2026-061-TASK-03，见下行业务闭环行） | CR-2026-061-TASK-04 | cmd-03 |
+| 业务闭环：AC-7 API 响应解析面（issueToResponse 透出 context_refs） | §6.2 AC-7 / §3.4 | CR-2026-061-TASK-03 | cmd-01 |
+| 业务闭环：AC-7 client schema 兼容面（fallback/malformed） | §3.4 | CR-2026-061-TASK-04 | cmd-04 |
 | AC-8 预建 run 同事务/run_id/502 零残留/无 agent_task_queue | §6.2 AC-8 | CR-2026-061-TASK-02 | cmd-01 |
 | AC-9 前端交互与失败保留 | §6.2 AC-9 | CR-2026-061-TASK-04 | cmd-03 |
 | AC-10 无新表 | §6.2 AC-10 | CR-2026-061-TASK-01 | cmd-02 |
-| AC-11 逐类失败零残留 + 原 key 重试 | §6.2 AC-11 | CR-2026-061-TASK-03 | cmd-01 |
+| AC-11 逐类失败零残留 + 原 key 重试 | §6.2 AC-11（前端按错误类型保留选择/提示重试子句关联 CR-2026-061-TASK-04，证据面 cmd-03） | CR-2026-061-TASK-03 | cmd-01 |
 | AC-12 四语文案 parity + 旧容器不回归 | §6.2 AC-12 | CR-2026-061-TASK-04 | cmd-03 |
-| AC-13 multica 面：绑定端点错误矩阵/幂等/CAS/审计 | §3.2/§4.5 | CR-2026-061-TASK-03 | cmd-01 |
-| AC-13 multica 面：绑定后投影复用同一 run 不新建 | §4.5 | CR-2026-061-TASK-03 | cmd-02 |
-| AC-13 tools 面：requirement-register 定位/绑定/失败语义/普通注册不变 | §3.3/§4.5（tools SKILL 增量，SDD §9 scope_in） | CR-2026-061-TASK-04 | cmd-05 |
+| AC-13 绑定端点错误矩阵/幂等/CAS/审计 + 绑定后投影复用同一 run 不新建（multica 面，唯一 owner 行） | §3.2/§4.5 | CR-2026-061-TASK-03 | cmd-01 / cmd-02 |
+| 业务闭环：AC-13 tools 消费面（requirement-register 定位/绑定/失败语义/普通注册不变） | §3.3/§4.5（tools SKILL 增量，SDD §9 scope_in） | CR-2026-061-TASK-04 | cmd-05 |
 | 业务闭环：promotion SKILL 改动不引入 crctl 命令面/prompt 漂移 | §8（Prompt 采纳影响不触发）+ lint-prompts | CR-2026-061-TASK-04 | cmd-06 |
 
-> AC-13 的「唯一 TASK owner」说明：AC-13 主路径验收的**责任层**为 multica 绑定端点（TASK-03，实际产生绑定与投影复用行为）；tools 侧 consumption 面以独立业务闭环行覆盖（TASK-04），两行证据面不重叠、可分别机械核验。
+> 关键 AC 唯一 owner 说明（CR-2026-057 FR-9，矩阵内机械可判）：
+> - **AC-7 唯一 owner = CR-2026-061-TASK-04**（用户可观察面责任层：前端来源入口与可跳回，证据 cmd-03）；API 响应解析面（TASK-03，cmd-01）与 client schema 兼容面（TASK-04，cmd-04）为业务闭环行，不参与 AC-7 owner 判定。
+> - **AC-13 唯一 owner = CR-2026-061-TASK-03**（multica 绑定端点 + 绑定后投影复用行为的实际产生层，证据 cmd-01 / cmd-02）；tools 消费面（TASK-04，cmd-05）与 prompt 漂移防护（TASK-04，cmd-06）为业务闭环行，不参与 AC-13 owner 判定。
+> - 业务闭环行与关键 AC 行证据面不重叠（cmd-NN 分属），可分别机械核验。
 
 ## 8. 已审批 SDD 第 2 轮评审 3 条 suggestions 的处理口径（plan 层记录，不改 sdd.md）
 
@@ -175,7 +179,7 @@ sdd.md v1.1 已经评审（verdict=pass）与人工审批（approval.yml#tech-de
 
 | # | suggestion（canonical，review-annotations/sdd.yml） | 处理口径 | 证据一致性影响 |
 |---|---|---|---|
-| 1 | §12 #30/#31 首现顺序互换，§12 引言注明排序口径 | **保留理由（plan 层落实）**：§12 排序按 SDD 正文首现顺序，v1.1 口径下 #30（§4.6 chatMessageAuthorDisplayName）先于 #31（§4.5 违约后果推演中的 456）——排序目标已达成（正文序），互换反而引入与正文不一致。plan 锁定实施期事实引用顺序：#31（456 谓词）用于 §4.5 违约推演、#30 用于 §4.6 默认描述，实施按用途取用不按编号。若未来 SDD 经合法修订（如 dev-plan upstream blocker），可一并加注「排序口径=正文首现顺序」 | 无功能影响；不触碰 subject-sha256。 |
+| 1 | §12 #30/#31 首现顺序互换，§12 引言注明排序口径 | **保留理由（plan 层落实；理由文本经 review-dev-plan 第 1 轮更正）**：sdd.md v1.1 已经评审（verdict=pass）与人工审批（approval.yml#tech-design），**冻结不动**（subject-sha256 `310434e7…` 保持），§12 编号顺序不得由 plan 层静默改写。正文首现顺序事实以 SDD 原文为准：§4.5 违约后果推演（引用 456）先于 §4.6 默认描述（引用 chatMessageAuthorDisplayName），即 **#31 先于 #30**，原 suggestion 的顺位方向正确，仅因产物冻结无法执行。plan 锁定实施期事实引用顺序：#31（456 谓词）用于 §4.5 违约推演、#30 用于 §4.6 默认描述，实施按用途取用不按编号。若未来 SDD 经合法修订（如 dev-plan upstream blocker），可一并互换 #30/#31 并在 §12 引言加注「排序口径=正文首现顺序」 | 无功能影响；不触碰 subject-sha256。 |
 | 2 | #24 `AllocateIssueNumber` 实际位于 issue_limit.go L87；#18 `loadIssueForUser` 实际位于 handler.go L1049 | **已处理（plan 层核实并锁定）**：本计划开工核实（multica `eafce66b`）：`AllocateIssueNumber` = `server/internal/service/issue_limit.go` **L87** ✓（与 suggestion 一致；SDD #24 括注「issue_limit 服务」本已消歧）；`loadIssueForUser` = `server/internal/handler/handler.go` L1049（`78e14082`）✓，新基线 `eafce66b` 处为 **L1053**。plan/TASK 实施期一律以修正后的位置标注为准（见 TASK-02/TASK-03 涉及文件） | 无功能影响；行号标注修正不改变结论。 |
 | 3 | §9 zero_diff / D-1 引用符号未入 §12 | **已处理（plan 层补齐基线声明锚定）**：suggestion 自认「性质为基线声明而非设计依赖」。plan 在下方新增「zero_diff 基线锁定表」，把 §9 zero_diff 与 D-1 引用的既有符号逐项锚定 repo/path/symbol/SHA（`eafce66b`），达到「清单与正文一一对应」意图，且不动 sdd.md | 无功能影响；plan 层锚定表作为实施期 zero_diff 回归的核对清单。 |
 
