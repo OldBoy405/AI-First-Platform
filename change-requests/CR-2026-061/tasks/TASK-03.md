@@ -58,7 +58,7 @@ created: 2026-09-08T12:04:37+08:00
 
 - 上述 4 条全部通过；`go vet ./...`（server）零报错；
 - 提交落盘 multica CR 分支（独立 commit）；
-- `go test ./internal/handler/ ./internal/service/ -count=1`（cmd-01）与 `go test ./internal/governance/ ./cmd/migrate/ -count=1`（cmd-02）全绿。
+- `go test ./internal/handler/ ./internal/service/ -count=1` 全绿（**非 canonical 实施期全包专项证据**）；`go test ./internal/governance/ ./cmd/migrate/ -count=1`（cmd-02）全绿；canonical cmd-01 为 §6.2 口径（21 项 promotion `-run` 过滤 + DATABASE_URL 真库，其中 handler 8 项由本 TASK 产出）。
 
 ## 6. 接口契约
 

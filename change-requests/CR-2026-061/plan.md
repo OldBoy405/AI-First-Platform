@@ -6,7 +6,7 @@ sdd-ref: "change-requests/CR-2026-061/sdd.md"
 target-version: 0.34
 status: draft
 created: 2026-09-08T12:04:37+08:00
-updated: 2026-09-08T20:44:46+08:00
+updated: 2026-09-08T21:10:00+08:00
 ---
 
 # CR-2026-061 开发计划（Discussion 显式升级）
@@ -45,7 +45,7 @@ updated: 2026-09-08T20:44:46+08:00
 TASK-01 (multica 数据层：迁移 505/506/507 + promotion.sql sqlc)
    │  产出：sqlc 生成的 Go 查询接口（FindPromotionDuplicateIssue / InsertPipelineRun /
    │        InsertPipelineNodeRun / FindActiveRequirementRunForIssue /
-   │        SetIssueContextRefPipelineRun / AppendIssueContextRefs / ListAttachmentsForPromotion）
+   │        MergeIssueContextRefPipelineRun :one / AppendIssueContextRefs / ListAttachmentsForPromotion）
    ▼
 TASK-02 (multica 服务层：createInTx 提取 + PromoteDiscussion + 纯函数)
    │  产出：IssueService.createInTx、IssueService.PromoteDiscussion、
@@ -213,6 +213,19 @@ review-code 第 3 轮 BLOCK（B-CODE-02/03：canonical 测试证据问题，非�
 | cmd-01 | 全包 `./internal/handler/ ./internal/service/`（无 DB） | `-run` promotion 前缀过滤（handler 8 + service 13，21 项），真库（DATABASE_URL） | B-CODE-02：新回归在 canonical 引用日志中 PASS；排除 3 项上游既有失败 |
 | cmd-05 | spec reporter 恒打印 `ℹ skipped 0` 误命中冻结模式表 | args 加 `--test-reporter=dot` | B-CODE-03：机器区 `skipped=false` |
 | §7 注记 | — | cmd-01 promotion 真库口径 / cmd-05 skipped 保证两条注记 | 证据链口径与命令表一致 |
+
+### 9.1 B-DEVPLAN-03 接口同步回修（review-dev-plan 第 3 轮 BLOCK）
+
+review-dev-plan attempt 3/3 BLOCK（B-DEVPLAN-03，评审提交 `77ec994`）→ 按状态机回退 `tech-design-reviewed`（提交 `2f7d077`）→ 本节回修。B-CODE-01 修复（multica `5aadba5be`）把查重回填接口由 `SetIssueContextRefPipelineRun`（整段 `context_refs` 覆写，已删除）改为 `MergeIssueContextRefPipelineRun :one`，但 plan §2 与 TASK-01/02 仍引用旧接口、TASK-02/03 完成标志仍把无 `-run` 全包命令标作 cmd-01。本轮按 multica worktree 实际实现逐处同步：
+
+| 变更 | 修订前 | 修订后 | 目的 |
+|---|---|---|---|
+| plan §2 依赖图 TASK-01 产出 | 列含 `SetIssueContextRefPipelineRun` | `MergeIssueContextRefPipelineRun :one` | plan→TASK 接口与实现一致 |
+| TASK-01 §3/§6 | `SetIssueContextRefPipelineRun :exec`（service 侧构建合并后完整数组整体覆写） | `MergeIssueContextRefPipelineRun :one`：`jsonb_array_elements … WITH ORDINALITY` 元素级合并，只向 `kind='discussion_promotion' AND dedupe_key=@dedupe_key` 的元素合入 `pipeline_run_id`，其余元素与未知扩展字段逐字节保留，COALESCE 兜底，`RETURNING context_refs`；params `{DedupeKey, PipelineRunID string; ID pgtype.UUID}`，返回 `([]byte, error)` | 接口契约与 multica 生成物一致，防按旧整段覆写语义重引入 B-CODE-01 |
+| TASK-02 §3/§6 | 查重分支调 `SetIssueContextRefPipelineRun`（无返回） | 调 `MergeIssueContextRefPipelineRun` + fail-closed 消费契约：解析 RETURNING 数组，匹配条目必须携带预期 `pipeline_run_id`，否则报错整体回滚 | 追加语义 + 可扩展字段不丢失（SDD §2.1）由消费契约锁定 |
+| TASK-02/TASK-03 §5 完成标志 | 无 `-run` 全包命令标作 cmd-01 | 明确标注「非 canonical 实施期全包专项证据」；canonical cmd-01 口径指向 §6.2（21 项 promotion 过滤 + DATABASE_URL 真库） | 完成标志与稳定命令表机械可核对 |
+
+reviewLoop 记账：`review-dev-plan` 第 3 轮 BLOCK 后 3/3 耗尽；按恢复路径须由 Ray 在交互式 TTY 执行 `crctl review-loop reset --loop review-dev-plan`（cycle 1→2、attempt 归零）后方可发起新 cycle 独立复评，attempt 按 reset 后口径记账。本轮回修不推进 dev-start 审批（评审 PASS 前不得进入人工审批 gate）。
 
 修订后执行口径：Ray 重新 `crctl approve --stage dev-start`（交互式终端）→ `crctl test --plan` 重跑（write-test-report cycle 2）→ 新 cycle `review-code`。§6.2 命令表本体变更即本次评审对象，review-dev-plan 以本表为准。
 

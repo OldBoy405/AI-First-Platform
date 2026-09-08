@@ -37,7 +37,7 @@ created: 2026-09-08T12:04:37+08:00
 - **`PromoteDiscussion` 主流程（§4.3 步骤 7–12）**：
   - 前置 1–6 由 handler（TASK-03）完成；service 事务内：`qtx.LockIssueDuplicateKey(ctx, "project-discussion-promotion|{ws}|{project}")`（新前缀 D-4）→ 锁内 `GetMemberByUserAndWorkspace` 复核 → `InsertChatIdempotencyReservation(scope='discussion_promotion', scope_id=projectID, key, fingerprint)` 四分支（同 fingerprint+NULL body 接管；异 fingerprint → `ErrIdempotencyKeyReused`；ResponseBody 非空 → 重放回放）→ `FindPromotionDuplicateIssue(dedupe_key)` 分支：
     - 未命中（创建分支）：`runID := upgradeToCR ? dbid.NewV7() : 无效`；构建 §2.1 条目（upgradeToCR 时含 `pipeline_run_id`）；`createInTx(..., AllowDuplicate:true, ContextRefs:[entry], PromotionRun: upgradeToCR ? &PromotionRunPlan{RunID, Inputs, ExecutionContext} : nil)`；`createInTx` 内注入 `AppendIssueContextRefs` 与 `InsertPipelineRun`+`InsertPipelineNodeRun`。
-    - 命中（查重分支）：source_refs 从条目还原；`upgradeToCR && 条目无 pipeline_run_id` → 补建 run + `SetIssueContextRefPipelineRun`；506 唯一冲突（23505）→ `FindActiveRequirementRunForIssue` 重读采用既有 id，不报错；已有 → 直接返回既有值。
+    - 命中（查重分支）：source_refs 从条目还原；`upgradeToCR && 条目无 pipeline_run_id` → 补建 run + `MergeIssueContextRefPipelineRun`（按 `dedupe_key` 元素级原位合并 `pipeline_run_id`，其余元素与未知扩展字段逐字节保留，`RETURNING` 合并后数组）；service 对 RETURNING 结果 **fail-closed 校验**（匹配条目必须携带预期 `pipeline_run_id`，否则报错整体回滚）；506 唯一冲突（23505）→ `FindActiveRequirementRunForIssue` 重读采用既有 id，不报错；已有 → 直接返回既有值。
   - `FinalizeChatIdempotency(key, 201, body=result)` 同一事务；`PromotionRun` 任何写入错误 → sentinel `ErrPromotionRunCreateFailed`（handler 映射 502，§4.4），整事务回滚零残留。
   - **FR-5 零写不变量**：本 service 事务对 `chat_message`/`attachment`/`chat_session` 零 UPDATE/DELETE/INSERT（结构测试 grep 断言）。
   - 提交后事件（`publishIssueCreated`/`captureCreatedAnalytics`）由 `Create` 的提交后路径承接（`IssueCreateOpts.BroadcastPayload`），promotion 不新增事件类型（§4.3 步骤 12/SDD-CLOSE-05）。
@@ -55,7 +55,7 @@ created: 2026-09-08T12:04:37+08:00
 
 - 上述 4 条全部通过；`go vet ./...`（server）零报错；
 - 提交落盘 multica CR 分支（独立 commit）；
-- `go test ./internal/handler/ ./internal/service/ -count=1` 中 service 部分全绿（cmd-01 面先行跑通）。
+- `go test ./internal/service/ -count=1` 全绿（**非 canonical 实施期全包专项证据**）；canonical cmd-01 为 §6.2 口径（21 项 promotion `-run` 过滤 + DATABASE_URL 真库，其中 service 13 项由本 TASK 产出，完成时先行跑通）。
 
 ## 6. 接口契约
 
@@ -64,7 +64,9 @@ created: 2026-09-08T12:04:37+08:00
 ```go
 q.FindPromotionDuplicateIssue(ctx, db.FindPromotionDuplicateIssueParams{WorkspaceID, DedupeKey}) (db.Issue, error)
 q.AppendIssueContextRefs(ctx, db.AppendIssueContextRefsParams{ID, ContextRefs []byte}) error
-q.SetIssueContextRefPipelineRun(ctx, db.SetIssueContextRefPipelineRunParams{ID, ContextRefs []byte}) error
+q.MergeIssueContextRefPipelineRun(ctx, db.MergeIssueContextRefPipelineRunParams{DedupeKey, PipelineRunID string; ID pgtype.UUID}) ([]byte, error)
+  // :one，RETURNING context_refs（合并后数组）。fail-closed 消费契约（B-CODE-01）：解析返回数组并校验
+  // 匹配条目（kind='discussion_promotion' 且 dedupe_key 相等）已携带预期 pipeline_run_id，任一不满足即报错回滚，不得静默降级。
 q.InsertPipelineRun(ctx, db.InsertPipelineRunParams{...}) (db.PipelineRun, error)
 q.InsertPipelineNodeRun(ctx, db.InsertPipelineNodeRunParams{...}) (db.PipelineNodeRun, error)
 q.FindActiveRequirementRunForIssue(ctx, db.FindActiveRequirementRunForIssueParams{WorkspaceID, IssueID}) (db.PipelineRun, error)

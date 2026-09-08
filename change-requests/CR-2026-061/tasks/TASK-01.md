@@ -37,7 +37,7 @@ created: 2026-09-08T12:04:37+08:00
 - **promotion.sql**（新查询，逐字对齐 SDD §4.2/§4.3/§4.5；无新表，FR-12）：
   - `FindPromotionDuplicateIssue :one`：`SELECT * FROM issue WHERE workspace_id = $1 AND context_refs @> jsonb_build_array(jsonb_build_object('dedupe_key', $2::text)) LIMIT 1;`（SDD §4.2 原文）
   - `AppendIssueContextRefs :exec`：`UPDATE issue SET context_refs = context_refs || $2::jsonb WHERE id = $1;`（幂等追加语义，SDD §2.1）
-  - `SetIssueContextRefPipelineRun :exec`：`UPDATE issue SET context_refs = $2 WHERE id = $1;`（service 侧构建合并后的完整数组）
+  - `MergeIssueContextRefPipelineRun :one`：查重回填（SDD §4.3 步骤 10 / §2.1 追加语义）——`UPDATE issue SET context_refs = COALESCE((SELECT jsonb_agg(elem ORDER BY ord) FROM (SELECT t.ord, CASE WHEN t.elem->>'kind'='discussion_promotion' AND t.elem->>'dedupe_key'=$1::text THEN t.elem || jsonb_build_object('pipeline_run_id',$2::text) ELSE t.elem END AS elem FROM jsonb_array_elements(issue.context_refs) WITH ORDINALITY AS t(elem,ord)) AS merged), issue.context_refs) WHERE id=$3 RETURNING context_refs;`——按 `dedupe_key` 元素级原位合并 `pipeline_run_id`，其余数组元素与未知扩展字段逐字节保留（B-CODE-01：不整段覆写、不丢历史）；service 消费 RETURNING 数组做 fail-closed 校验
   - `InsertPipelineRun :one`：451 全字段（`workspace_id/pipeline_id/cr_id NULL/issue_id/status='running'/inputs/execution_context/started_by`），`RETURNING *`（SDD §2.3）
   - `InsertPipelineNodeRun :one`：`run_id/node_id/ref='requirement-register'/kind='skill'/seq=1/attempt=1/status='running'`（node_id=`00000000-0000-0000-0011-000000000001`），`RETURNING *`（SDD §2.3）
   - `FindActiveRequirementRunForIssue :one`：`SELECT * FROM pipeline_run WHERE workspace_id = $1 AND issue_id = $2 AND pipeline_id = 'requirement-authoring' AND status IN ('running','waiting_approval') LIMIT 1;`（506 冲突后重读，SDD §4.3）
@@ -73,8 +73,9 @@ func (q *Queries) FindPromotionDuplicateIssue(ctx context.Context, arg FindPromo
   // FindPromotionDuplicateIssueParams{ WorkspaceID pgtype.UUID; DedupeKey string }
 func (q *Queries) AppendIssueContextRefs(ctx context.Context, arg AppendIssueContextRefsParams) error
   // AppendIssueContextRefsParams{ ID pgtype.UUID; ContextRefs []byte }   // $2::jsonb
-func (q *Queries) SetIssueContextRefPipelineRun(ctx context.Context, arg SetIssueContextRefPipelineRunParams) error
-  // SetIssueContextRefPipelineRunParams{ ID pgtype.UUID; ContextRefs []byte }
+func (q *Queries) MergeIssueContextRefPipelineRun(ctx context.Context, arg MergeIssueContextRefPipelineRunParams) ([]byte, error)
+  // MergeIssueContextRefPipelineRunParams{ DedupeKey, PipelineRunID string; ID pgtype.UUID }
+  // :one，RETURNING context_refs（合并后数组）——TASK-02 消费后必须 fail-closed 校验（B-CODE-01）
 func (q *Queries) InsertPipelineRun(ctx context.Context, arg InsertPipelineRunParams) (PipelineRun, error)
   // InsertPipelineRunParams{ WorkspaceID, IssueID pgtype.UUID; PipelineID, CrID *string→sql.NullString;
   //   Status string; Inputs, ExecutionContext []byte; StartedBy pgtype.UUID }
