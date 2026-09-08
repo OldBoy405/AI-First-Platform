@@ -1,7 +1,7 @@
 cr-id: CR-2026-061
 review-type: dev-plan
 reviewer: "OldBoy405"
-reviewed-at: "2026-09-08T21:52:13+08:00"
+reviewed-at: "2026-09-08T22:56:12+08:00"
 verdict: pass
 blockers: []
 dimensions:
@@ -14,8 +14,7 @@ dimensions:
   scope-and-simplicity: "pass"
   risk-and-rollback: "pass"
   reviewer-model: "OpenAI/gpt-5.6-sol (pi runner, high reasoning)"
-suggestions:
-  - "已解决： [B-DEVPLAN-03] plan §2、TASK-01 §3/§6 与 TASK-02 §3/§6 已统一为 MergeIssueContextRefPipelineRun :one；参数 DedupeKey/PipelineRunID/ID、返回 []byte、按 dedupe_key 元素级合并并保留其余元素及未知字段、RETURNING 后 fail-closed 校验均与 multica 5aadba5be 的 promotion.sql、sqlc 生成物和 service 消费代码一致。TASK-02/TASK-03 §5 已把无 -run 全包命令标为非 canonical 实施期专项证据，并把 canonical cmd-01 指向 plan §6.2 的 21 项 promotion 真库命令；实际测试符号核对为 handler 8 项 + service 13 项。plan §9.1 已记录接口与证据标识修订，新 cycle 账本为 cycle 2 / attempt 0，具备本次 bump 前置。"
+suggestions: []
 review-loop:
-  current-attempt: 1
-subject-sha256: cd383aa0d3896b7f81f23aa9ac71ade5a19255b9aaf28b46dd38beef735c7b1e
+  current-attempt: 2
+subject-sha256: 90818ae92ed177247b77a18a01ab61a8723ac0e225b623829cf4ea75f6f8f1be
