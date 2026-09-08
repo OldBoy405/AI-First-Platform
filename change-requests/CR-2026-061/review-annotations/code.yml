@@ -1,37 +1,35 @@
 cr-id: CR-2026-061
 review-type: code
 reviewer: "OldBoy405"
-reviewed-at: "2026-09-08T23:37:25+08:00"
-verdict: block
-blockers:
-  - "本轮新增： [B-CODE-04] `packages/views/projects/components/discussion-pane.tsx:181-225,779-812` 与 `packages/views/projects/components/discussion-pane.test.tsx:350-430`：当前选择状态只保存 message ID；附件仅由 `AttachmentList` 展示，没有附件选择控件；`handlePromote` 只发送 `message_ids`，未发送 `attachment_ids`，并以 `selectedMessages.length === 0` 阻止只选附件的升级。事实与 PRD FR-11/AC-9、SDD §6.2 AC-9 及 TASK-04 明示的“可选择消息与附件”、只选附件/混合来源消费面不一致。影响：用户无法执行附件独立选择、附件-only 或消息+附件升级，目标 Issue 的来源引用会遗漏用户期望的附件，当前 AC-9 验收不可达。修复方向：为消息附件提供独立可选择状态/控件，把选中的 UUID 作为 `attachment_ids` 发送，允许 message-only、attachment-only 与 mixed 三种合法选择，保持失败选择与幂等重试语义，并补齐 DiscussionPane 三种选择形态及失败保留测试。"
-  - "本轮新增： [B-CODE-05] `skills/requirement/requirement-register/SKILL.md` Step 2.5、`scripts/promotion-bind.mjs:45-86` 与 `scripts/test/promotion-bind.test.mjs`：Skill 将 `promotion_issue_id` 与 `promotion_run_id` 定义为成对定位上下文，但执行脚本只接收 `{cr_id} {run_id}`，完全不消费 `promotion_issue_id`；成功响应也只检查 `out.run_id` 非空而不校验它等于请求 run，并丢弃/不校验 `out.issue_id`。现有测试只验证 CLI 参数，没有覆盖上下文错配。影响：若 issue_id/run_id 组合错配或 CLI 返回了非请求 run，注册流程仍可能把 CR 绑定到错误 Issue 并报告成功，破坏 AC-13 的 `issue_id+pipeline_id` 定位契约与 CR/Issue 数据完整性。修复方向：把期望 `promotion_issue_id` 传入可执行绑定步骤，成功前 fail-closed 校验响应 `run_id` 与请求 run 全等、`issue_id` 与 promotion 上下文全等；错配按技术失败停止，并增加 issue/run/响应错配集成测试，同时保留普通注册不绑定与同键幂等重试语义。"
+reviewed-at: "2026-09-09T00:19:36+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  批准范围前置核对: "通过：multica 5aadba5be、tools 30b49d2 的变更均落在 SDD scope_in；未发现 scope_out、follow_up 或 zero_diff 越界。"
-  代码TASK与SDD对齐: "阻塞：B-CODE-04 缺失消息附件选择/attachment_ids 消费，B-CODE-05 未以 issue_id+run_id fail-closed 校验 promotion 绑定上下文，分别使 AC-9 与 AC-13 当前不可达。"
-  工程质量: "阻塞：六条 canonical 命令均通过，但通过的测试未覆盖 B-CODE-04/B-CODE-05 的缺失契约；测试成功不能替代实现完整性。"
-  关键路径可读性: "通过：promotion 后端事务、幂等、绑定服务与来源回填路径集中且注释清晰；未发现额外可读性 blocker。"
-  安全性: "通过：后端 workspace 成员门禁、容量复核、task-token 绑定与事务边界符合 SDD；未发现新的权限或敏感数据缺口。"
-  测试覆盖: "阻塞：DiscussionPane 测试仅覆盖消息选择，未覆盖 attachment-only/mixed；tools 测试未覆盖 promotion_issue_id 与绑定响应的 issue/run 错配。"
-  测试证据可信度: "通过：test-report 机器区由 crctl-test 生成且 status=pass；traceability 的 status/command-digest 一致，cmd-01..06 日志齐全，cmd-01 21/21、cmd-02 5/5、cmd-05 skipped=false，命令与 plan §6.2 转录一致。"
-  前端质量: "阻塞：loading/empty/error、成功链接及失败保留消息选择已有覆盖，未见新增依赖或明显 AA 对比度问题；但附件选择交互完全缺失，直接违反 AC-9。"
+  批准范围前置核对: "pass：本轮 multica 修订仅触及 discussion-pane、对应测试与 CUSTOM.md 台账，tools 修订仅触及 requirement-register Skill/绑定脚本/测试，均属于 SDD §9 scope_in；未触及 scope_out、follow_up 或 zero_diff 项。"
+  代码TASK与SDD对齐: "pass：B-CODE-04 已覆盖 SDD AC-9/TASK-04 的消息与附件独立选择、三种合法形态和失败保留；B-CODE-05 已覆盖 AC-13 的 issue_id+run_id fail-closed 定位契约、幂等与普通注册语义。"
+  工程质量: "pass：变更复用既有 AttachmentList 过滤 helper 与现有 promotion 错误/幂等分支，无新增依赖；canonical 六条命令均 exit=0。"
+  关键路径可读性: "pass：附件选择态、渲染、请求消费和重置集中在 DiscussionBody/SharedDiscussionMessage；绑定脚本的输入、响应校验与失败码路径清晰且单一。"
+  安全性: "pass：绑定响应的 run_id/issue_id 在报告成功前全等校验，错配 fail-closed；前端只提交当前显式选中的附件 UUID，服务端既有 workspace/session 归属校验继续生效。"
+  测试覆盖: "pass：cmd-03 包含 attachment-only、mixed、失败保留重试新增用例；cmd-05 覆盖 run/issue 响应错配、缺字段、缺参数、幂等重放与普通注册条件分支。"
+  测试证据可信度: "pass：test-report 机器区由 crctl-test 生成且 status=pass；traceability 的 status/command-digest 001d7209…一致；cmd-01..06 日志齐全、均 exit=0、timed-out=false、skipped=false，并与 plan §6.2 转录一致。"
+  前端质量: "pass：附件 selector 使用 label+Checkbox，沿用既有 muted/foreground token，未见 WCAG AA 回退；既有 loading/empty/error 与成功/失败状态保持，未新增依赖或构建体积风险。"
 suggestions:
-  - "已解决： [B-CODE-02] canonical `test-report.md` 已于 cycle 2 / attempt 2 按修订后的 plan §6.2 重跑，机器区 `status=pass`；cmd-01 exit=0、21/21 PASS、0 SKIP，且 `TestPromoteDiscussionBackfillPreservesHeterogeneousContextRefs` 在引用日志中真实 PASS，上一轮 DB 回归证据缺口已关闭。"
-  - "已解决： [B-CODE-03] canonical cmd-05 现为 exit=0、`skipped=false`，dot reporter 日志与 plan §6.2 命令转录一致；AC-13 tools 消费面不再被机器判定为未执行，上一轮 skip 证据缺口已关闭。"
+  - "已解决： [B-CODE-04] `packages/views/projects/components/discussion-pane.tsx` 已增加与消息选择独立的 `selectedAttachments`、基于 `selectStandaloneAttachments` 的附件 checkbox，并在 promotion 请求中发送 `attachment_ids`；双空守卫、批处理计数及两个升级 CTA 已同步允许 message-only / attachment-only / mixed。失败分支不清空两类选择，成功才退出选择模式；`discussion-pane.test.tsx` 已覆盖 attachment-only、mixed、失败保留并重试，cmd-03 为 427 files / 5043 tests 全绿。上一轮 AC-9 验收不可达缺口已关闭。"
+  - "已解决： [B-CODE-05] `promotion-bind.mjs` 已接收第三位置参数 `promotion_issue_id`，成功前对响应 `run_id` 与请求 run、响应 `issue_id` 与 promotion 上下文执行全等校验；缺失或错配均以 `BIND_RESPONSE_MISMATCH` 非零停止并保留 registration_key 幂等重试指引，成功输出保留 `issue_id`/`changed`。SKILL Step 2.5 与测试已同步，覆盖 run/issue 错配、缺失 issue_id、幂等重放与普通注册条件分支；cmd-05 16 项全过且 skipped=false。上一轮 AC-13 数据完整性缺口已关闭。"
 review-loop:
-  current-attempt: 1
+  current-attempt: 2
 release-subjects:
   version: 1
   repositories:
     - repo: ai-first-platform-docs
       remote-ref: refs/heads/requirement/CR-2026-061
-      reviewed-source-sha: 215db67c8a17156bd9c0a1755c1081708265eaba
+      reviewed-source-sha: 13ae7c559432d7b4abc68ae1b164a4ebe747714a
     - repo: multica
       remote-ref: refs/heads/requirement/CR-2026-061
-      reviewed-source-sha: 5aadba5be9f4895fd1cfcfdfd0f6600ed117be91
+      reviewed-source-sha: f02660ae924ac64137654024f7063c5a079a4ded
     - repo: tools
       remote-ref: refs/heads/requirement/CR-2026-061
-      reviewed-source-sha: 30b49d2492c12c0c1a83c34cf813133ca6fd2f0e
+      reviewed-source-sha: bfd3747922882b6738be4b0a1e6a073ce3f793b8
   artifacts:
     algorithm: sha256
     canonicalization: crlf-to-lf+path-sort
