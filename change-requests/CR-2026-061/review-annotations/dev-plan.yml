@@ -1,22 +1,22 @@
 cr-id: CR-2026-061
 review-type: dev-plan
 reviewer: "OldBoy405"
-reviewed-at: "2026-09-08T12:53:26+08:00"
-verdict: pass
-blockers: []
+reviewed-at: "2026-09-08T20:54:03+08:00"
+verdict: block
+repair-target: write-dev-plan
+blockers:
+  - "本轮新增： [B-DEVPLAN-03] plan.md §2 L48、TASK-01 §3/§6 与 TASK-02 §3/§6 仍把查重回填接口定义为已删除的 SetIssueContextRefPipelineRun（整段 context_refs 覆写），且 TASK-02/TASK-03 完成标志仍把无 -run 的全包命令称为 cmd-01；当前 multica 权威 worktree 的 promotion.sql 已改为 MergeIssueContextRefPipelineRun :one（按 dedupe_key 元素级合并并 RETURNING，B-CODE-01 的实际修复），而修订后的 plan §6.2 cmd-01 已是 21 项 promotion 过滤命令。影响：plan→TASK 的接口与证据标识不再对应当前实现/稳定命令表，重新批准 dev-start 会冻结一组可执行性相互冲突的指令，后续回修或接手者可能按旧整数组覆写语义重引入 B-CODE-01，且无法从 TASK 完成标志机械核对新 cmd-01。请在 write-dev-plan 重放中同步修订 plan §2 与 TASK-01/TASK-02 的查询名、参数、RETURNING/fail-closed 消费契约为 MergeIssueContextRefPipelineRun，并把 TASK-02/TASK-03 中标注为 cmd-01 的命令改成 §6.2 当前 token 数组或明确降级为非 canonical 的实施期全包专项证据；在 §9 记录该 B-CODE-01 接口增量。"
 dimensions:
   sdd-to-plan: "pass"
-  plan-to-tasks: "pass"
-  task-executability: "pass"
+  plan-to-tasks: "block"
+  task-executability: "block"
   dependency-topology: "pass"
-  interface-contracts: "pass"
-  acceptance-verifiability: "pass"
+  interface-contracts: "block"
+  acceptance-verifiability: "block"
   scope-and-simplicity: "pass"
   risk-and-rollback: "pass"
-  reviewer-model: "deepseek-v4-pro (pi runner)"
-suggestions:
-  - "已解决：[plan.md §7 AC/业务闭环覆盖矩阵，AC-7 行组] 关键 AC-7 缺少唯一 TASK owner，违反 CR-2026-057 FR-8「每条关键 AC 或业务闭环一行」与 FR-9「关键 AC 必须有且仅有一个唯一 TASK owner」——本轮（attempt 2）复核已闭合：AC-7 已合并为恰一行，唯一 owner = CR-2026-061-TASK-04（用户可观察面责任层：前端来源入口与可跳回，证据 cmd-03；SDD 落点注明 API 面关联 TASK-03）；「AC-7 API 响应解析面」（TASK-03，cmd-01）与「AC-7 client schema 兼容面」（TASK-04，cmd-04）已改列「业务闭环」行，与表尾既有业务闭环行同一模式；表后注记重写为 AC-7/AC-13 双唯一 owner 机械可判说明，矩阵与注记一致。FR-8/FR-9 机械可判成立。"
-  - "已解决：[plan.md §7 AC/业务闭环覆盖矩阵，AC-13 行组] 关键 AC-13 缺少机械可判的唯一 TASK owner，违反 CR-2026-057 FR-9——本轮（attempt 2）复核已闭合：AC-13 已合并为恰一行，唯一 owner = CR-2026-061-TASK-03（绑定端点错误矩阵/幂等/CAS/审计 + 绑定后投影复用同一 run 不新建，证据 cmd-01 / cmd-02，均为稳定 cmd-NN）；「AC-13 tools 面」已移出 owner 行，改列「业务闭环：AC-13 tools 消费面」（TASK-04，cmd-05），与 prompt 漂移防护业务闭环行（TASK-04，cmd-06）并列；表后注记与矩阵一致。FR-9 机械可判唯一 owner 成立。"
+  reviewer-model: "OpenAI/gpt-5.6-sol (pi runner, high reasoning)"
+suggestions: []
 review-loop:
-  current-attempt: 2
-subject-sha256: 80322c42958fe33c960ac28d0f4b8df69a69876febd8b54e5ab1b32965a7cc4d
+  current-attempt: 3
+subject-sha256: c694696333799c4568b3f9404895c0c3420d64d2ec8aa329dbea608991ffbead
