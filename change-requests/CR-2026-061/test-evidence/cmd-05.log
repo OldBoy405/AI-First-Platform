@@ -1,26 +1,6 @@
-$ node --test skills/requirement/requirement-register/scripts/test/promotion-bind.test.mjs
+$ node --test --test-reporter=dot skills/requirement/requirement-register/scripts/test/promotion-bind.test.mjs
 (exit=0)
 --- stdout ---
-✔ ① 有 promotion 上下文：绑定命令被调用且参数为 {cr_id} --run-id {run_id}，changed=true 成功 (374.0768ms)
-✔ ①b 同 run 同 CR 幂等重放：changed=false 同样视为成功 (85.4604ms)
-▶ ② 绑定失败（404/409/401/500）：技术失败停止且输出含幂等重试指引
-  ✔ 404 RUN_NOT_FOUND (82.601ms)
-  ✔ 404 CR_NOT_FOUND (78.5217ms)
-  ✔ 409 RUN_CR_CONFLICT (75.0652ms)
-  ✔ 409 CR_ISSUE_CONFLICT (77.0837ms)
-  ✔ 401 TASK_CONTEXT_REQUIRED (74.923ms)
-  ✔ 500 CR_BIND_FAILED (79.4057ms)
-✔ ② 绑定失败（404/409/401/500）：技术失败停止且输出含幂等重试指引 (470.1349ms)
-✔ ②b multica 可执行文件不可用：技术失败停止 (42.5224ms)
-✔ ③ 无 promotion 上下文：SKILL.md 声明按普通注册处理、不定位不绑定（行为不变） (2.4853ms)
-✔ ④ SKILL.md 含「绑定完成前不得推进 requirement-reviewing」硬不变量 (2.307ms)
-ℹ tests 12
-ℹ suites 0
-ℹ pass 12
-ℹ fail 0
-ℹ cancelled 0
-ℹ skipped 0
-ℹ todo 0
-ℹ duration_ms 1066.7132
+............
 
 --- stderr ---
