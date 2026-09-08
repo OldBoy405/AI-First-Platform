@@ -1,34 +1,38 @@
 # CR-2026-061 工作流导航缓存（dev-agent / code-implementation 实现与测试节点）
 > 仅供返工与 /resume 导航；canonical 事实以 cr.md / plan.md / tasks/_index.yml / review-annotations / crctl 为准。
-> 最近刷新：2026-09-08T17:30+08:00（dev-agent，write-test-report attempt 1 完成，status=block 待人工裁定）
+> 最近刷新：2026-09-08（dev-agent，review-code attempt 1/3 BLOCK（B-CODE-01）回修完成，待委派 attempt 2/3 复评）
 
 ## 当前状态
 
-- status: `developing`；TASK-01..04 全部 `done`（`crctl task done` 记账，`tasks/_index.yml` 四行 done）。
-- `crctl next` = `implement-code`（test-report.status=block，按 replayNodes 回修路径）。block 来源见下。
-- reviewLoop `write-test-report` = 1/3（`crctl test` attempt=1 已记账）。
+- status: `developing`（review-code:block → implement-code 回修路径；修复后不回退状态，`crctl next` = `implement-code`，待复评 PASS 后进 `code-reviewing`）。
+- reviewLoop `review-code` = 1/3（attempt 1 BLOCK 由 quality-reviewer-agent 落盘，提交 `ae666bd`）；TASK-01..04 全部 done。
+- test-report.status=block 已经 Ray 人工核定（3 项上游 Windows 既有失败 + cmd-05 skipped 误报，选项 ①），不构成本轮代码 blocker。
+
+## B-CODE-01 回修（本轮完成，待评审）
+
+- 问题：查重命中补建 run 时，Go 侧把整个 `issue.context_refs` 解码为 `[]promotionContextRefEntry` 再整体 marshal + UPDATE，非 promotion 条目与未知扩展字段被静默清空（违反 SDD v1.1 §2.1 追加语义）。
+- 修复（multica CR 分支）：
+  - `server/pkg/db/queries/promotion.sql`：`SetIssueContextRefPipelineRun`（整数组覆盖）→ **`MergeIssueContextRefPipelineRun`**（`:one`，UPDATE … RETURNING）：`jsonb_agg` + 元素级 `||` 只对 `kind='discussion_promotion' AND dedupe_key=@dedupe_key` 的元素合并 `pipeline_run_id`，其余元素与未知字段原样保留；`COALESCE(..., context_refs)` 兜底；sqlc 重生（`make sqlc`，未手改生成物）。
+  - `server/internal/service/promotion.go`：backfill 分支改调合并查询，RETURNING 后 fail-closed 校验（matched 元素 `pipeline_run_id` 落位，否则回滚）；`promotionContextRefEntry` 注释改为只读视图口径。
+  - `server/internal/service/promotion_test.go`：新增 `TestPromoteDiscussionBackfillPreservesHeterogeneousContextRefs`（真库回归：异构 legacy 条目 + 匹配条目未知扩展字段 + 不同 dedupe 的第二 promotion 条目，升级后三者原样保留、仅匹配元素合入 run id）。
+  - `CUSTOM.md` #78/#79 台账更新（查询改名 + 合并语义 + 回归测试 + 合并注意 ⑤/④）。
+- 验证证据（本机真库，DATABASE_URL 取主克隆 `.env`）：service promotion 12 项全 PASS（含新回归）；handler promotion/bind 5 项 PASS；governance projection PASS；`gofmt` clean。
+- 提交：multica CR 分支 commit（`[cr] CR-2026-061 fix: ...`）+ checkpoint 推送；KB 仓本文件随提交。
 
 ## 交付与提交（checkpoint batch `22e65d6f7e72cf69`，三仓 confirmed 并推送）
 
-- multica `requirement/CR-2026-061` @ `a622e0ab3`：TASK-01 `2c73e6a43` / TASK-02 `1240647eb` / TASK-03 `b306fc867` / fix `50898d205`（InsertPipelineRun 预生成 id + 重放 created=false + DB 夹具 agent_id NULL）/ TASK-04 `a622e0ab3`（前端两入口 + 测试 + CUSTOM.md #78-#81 + 基线登记）。
+- multica `requirement/CR-2026-061` @ `a622e0ab3`（B-CODE-01 修复前 HEAD）：TASK-01 `2c73e6a43` / TASK-02 `1240647eb` / TASK-03 `b306fc867` / fix `50898d205` / TASK-04 `a622e0ab3`。
 - tools `requirement/CR-2026-061` @ `6fbc5c82`：requirement-register SKILL Step 2.5 promotion 绑定 + `scripts/promotion-bind.mjs` + `scripts/test/promotion-bind.test.mjs`。
-- docs/KB `requirement/CR-2026-061` @ `d62f2465`（metadata）+ `5b4713e1`（write-test-report 证据提交）。
-
-## test-report.md（attempt 1，机器区 status=block）
-
-- cmd-02/03/04/06 exit 0 ✓；cmd-05 exit 0 但机器区 `skipped=true`（冻结模式表误命中 node spec reporter 的 `ℹ skipped 0` 行，实测 12/12 全过，dot reporter 复核全绿）。
-- **cmd-01 exit=1，仅 3 项上游既有失败**：`TestLoadAgentSkills_*`（skill 表 13 列 vs 夹具 10 列）。未改动 trunk `eafce66b` A/B 失败名单逐条一致；本 CR 零 diff 相关文件；已登记 CUSTOM.md《已知测试失败基线》。
-- 分析段含处置选项：① 人工核定（CR-2026-059 先例）后进 review-code；② review-dev-plan 修订 §6.2（cmd-01 收窄 + cmd-05 加 `--test-reporter=dot`）后重跑取 pass。自修复不可行（改上游测试文件属 scope_out）。
-- 真库专项（DATABASE_URL）全绿：迁移往返 / governance 投影复用 / service 5 项 / handler 6 项。
+- docs/KB `requirement/CR-2026-061`：metadata + write-test-report 证据提交 + review-code 评审记录（`ae666bd`）。
 
 ## 环境提示（本机复现用）
 
-- DB：`.env` 的 `DATABASE_URL`（真密码）→ 本机 5432 直连可用；dev 库 `schema_migrations` 已按 CUSTOM.md 第 3 条修复（快照 `schema_migrations_bak_cr2026061`）并应用 505–507。
-- `crctl test` 的 `pnpm` executable 在 Windows 需真实 .exe：PATH 前置 `C:\temp\pnpm-shim\pnpm.exe`（go 转发 shim，非仓库产物）。
-- 组合运行顺序缺陷：`internal/handler` 4 项 deferred-fallback 测试仅 DATABASE_URL 置位 + 组合跑时互踩失败（单独全绿，trunk 同症，已登记基线）。
+- DB：主克隆 `C:\Users\GOBAO\Downloads\AI\multica\.env` 的 `DATABASE_URL`（真密码）→ 本机 5432 直连可用；dev 库 `schema_migrations` 已按 CUSTOM.md 第 3 条修复并应用 505–507。
+- 受控 git 一律 `crctl git <sub> … --cwd <worktree>`；commit 消息必须以 `wip: `/`[cr] `/`merge(` 开头。
+- `crctl test` 的 `pnpm` 需 PATH 前置 `C:\temp\pnpm-shim\pnpm.exe`；cmd-01 三项 `TestLoadAgentSkills_*` 上游失败基线已登记 CUSTOM.md。
 
 ## 恢复入口
 
-1. 若裁定走 review-code：独立 reviewer（quality-reviewer-agent，新会话）执行 `review-code`（attempt 1/3，`--bump-attempt`）；crctl 一律带 `--workspace C:\Users\GOBAO\Downloads\AI\AI First Platform\.rayai-worktrees\knowledge-base\requirement\CR-2026-061`；评审对象 = 三仓 CR 分支 diff（multica `a622e0ab3` / tools `6fbc5c82`）+ test-report.md。
-2. 若裁定修订 plan：回 `tech-design-reviewed` 修 plan §6.2 → `review-dev-plan` 复评 → 重跑 `crctl test` 取 pass。
-3. BLOCK 回修：repair-target `implement-code`（作者会话 = dev-agent 本 Agent），按 review-annotations/code.yml blockers 定点修。
+1. 本轮收尾：只 mention `quality-reviewer-agent` 发起 `review-code` attempt 2/3 独立复评（新 reviewer 会话，`--bump-attempt`；crctl 一律带 `--workspace C:\Users\GOBAO\Downloads\AI\AI First Platform\.rayai-worktrees\knowledge-base\requirement\CR-2026-061`；评审对象 = multica CR 分支新 HEAD + B-CODE-01 回修 diff + 新回归测试）。
+2. 若复评再 BLOCK：repair-target `implement-code`，按 `review-annotations/code.yml` blockers 定点修（作者会话 = dev-agent 本 Agent）。
+3. 复评 PASS：保持 CR 状态推进至 `code-reviewing`，停在该 gate 待人工 `approve-code`（approval.yml 仅 crctl approve 写入）。
