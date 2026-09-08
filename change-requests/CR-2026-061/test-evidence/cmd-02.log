@@ -2,17 +2,17 @@ $ go test -run ^TestGateProjectionReusesBoundPromotionRun|^TestPromotionMigratio
 (exit=0)
 --- stdout ---
 === RUN   TestGateProjectionReusesBoundPromotionRun
---- PASS: TestGateProjectionReusesBoundPromotionRun (0.07s)
+--- PASS: TestGateProjectionReusesBoundPromotionRun (0.06s)
 PASS
-ok  	github.com/multica-ai/multica/server/internal/governance	0.212s
+ok  	github.com/multica-ai/multica/server/internal/governance	0.197s
 === RUN   TestConcurrentIndexCleanupsMatchTheirMigrations
 --- PASS: TestConcurrentIndexCleanupsMatchTheirMigrations (0.01s)
 === RUN   TestEveryConcurrentDownBuildHasCleanup
---- PASS: TestEveryConcurrentDownBuildHasCleanup (0.03s)
+--- PASS: TestEveryConcurrentDownBuildHasCleanup (0.02s)
 === RUN   TestEveryConcurrentUpBuildHasCleanup
---- PASS: TestEveryConcurrentUpBuildHasCleanup (0.03s)
+--- PASS: TestEveryConcurrentUpBuildHasCleanup (0.02s)
 === RUN   TestPromotionMigrationsUpDownRoundtrip
---- PASS: TestPromotionMigrationsUpDownRoundtrip (0.11s)
+--- PASS: TestPromotionMigrationsUpDownRoundtrip (0.13s)
 PASS
 ok  	github.com/multica-ai/multica/server/cmd/migrate	0.242s
 

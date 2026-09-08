@@ -2,14 +2,14 @@ $ go test -run ^TestPromotion|^TestPromoteDiscussion|^TestPromoteProjectDiscussi
 (exit=0)
 --- stdout ---
 EmailService: DEV mode — codes printed to stdout (set MULTICA_DEV_VERIFICATION_CODE in .env for a fixed local code)
-2026/09/08 23:16:03 INFO llm retry policy max_retries=2 source=default request_timeout=1m0s enabled=false
+2026/09/09 00:04:36 INFO llm retry policy max_retries=2 source=default request_timeout=1m0s enabled=false
 === RUN   TestValidatePromotionRequestShape
 --- PASS: TestValidatePromotionRequestShape (0.00s)
 === RUN   TestParseIssueContextRefs
-2026/09/08 23:16:03 WARN issue context_refs parse failed; degrading to empty error="json: cannot unmarshal object into Go value of type []handler.IssueContextRefResponse"
+2026/09/09 00:04:36 WARN issue context_refs parse failed; degrading to empty error="json: cannot unmarshal object into Go value of type []handler.IssueContextRefResponse"
 --- PASS: TestParseIssueContextRefs (0.00s)
 === RUN   TestPromoteProjectDiscussionCreatesIssueAndRun
---- PASS: TestPromoteProjectDiscussionCreatesIssueAndRun (0.05s)
+--- PASS: TestPromoteProjectDiscussionCreatesIssueAndRun (0.07s)
 === RUN   TestPromoteProjectDiscussionSelectionAndErrorMatrix
 --- PASS: TestPromoteProjectDiscussionSelectionAndErrorMatrix (0.02s)
 === RUN   TestPromoteProjectDiscussionForbiddenNonMember
@@ -17,7 +17,7 @@ EmailService: DEV mode — codes printed to stdout (set MULTICA_DEV_VERIFICATION
 === RUN   TestBindPromotionRunEndpoint
 --- PASS: TestBindPromotionRunEndpoint (0.03s)
 === RUN   TestBindPromotionRunCRIssueConflict
---- PASS: TestBindPromotionRunCRIssueConflict (0.02s)
+--- PASS: TestBindPromotionRunCRIssueConflict (0.03s)
 === RUN   TestBindPromotionRunNonPromotionShapeNotFound
 --- PASS: TestBindPromotionRunNonPromotionShapeNotFound (0.01s)
 PASS
@@ -35,20 +35,20 @@ ok  	github.com/multica-ai/multica/server/internal/handler	0.508s
 === RUN   TestPromotionSelectionDefensiveRejections
 --- PASS: TestPromotionSelectionDefensiveRejections (0.00s)
 === RUN   TestPromoteDiscussionCreateAndReplay
---- PASS: TestPromoteDiscussionCreateAndReplay (0.10s)
+--- PASS: TestPromoteDiscussionCreateAndReplay (0.11s)
 === RUN   TestPromoteDiscussionDedupeHitAndUpgradeBackfill
---- PASS: TestPromoteDiscussionDedupeHitAndUpgradeBackfill (0.08s)
+--- PASS: TestPromoteDiscussionDedupeHitAndUpgradeBackfill (0.07s)
 === RUN   TestPromoteDiscussionBackfillPreservesHeterogeneousContextRefs
---- PASS: TestPromoteDiscussionBackfillPreservesHeterogeneousContextRefs (0.07s)
+--- PASS: TestPromoteDiscussionBackfillPreservesHeterogeneousContextRefs (0.08s)
 === RUN   TestPromoteDiscussionForbiddenAndZeroWrites
 --- PASS: TestPromoteDiscussionForbiddenAndZeroWrites (0.04s)
 === RUN   TestCreateInTxPromotionRunFailureZeroResidue
---- PASS: TestCreateInTxPromotionRunFailureZeroResidue (0.04s)
+--- PASS: TestCreateInTxPromotionRunFailureZeroResidue (0.05s)
 === RUN   TestPromotionSourcesNeverWriteChatTables
 --- PASS: TestPromotionSourcesNeverWriteChatTables (0.00s)
 === RUN   TestPromotionReplayBodyShape
 --- PASS: TestPromotionReplayBodyShape (0.00s)
 PASS
-ok  	github.com/multica-ai/multica/server/internal/service	0.442s
+ok  	github.com/multica-ai/multica/server/internal/service	0.477s
 
 --- stderr ---
