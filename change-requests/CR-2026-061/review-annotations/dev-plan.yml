@@ -1,22 +1,21 @@
 cr-id: CR-2026-061
 review-type: dev-plan
 reviewer: "OldBoy405"
-reviewed-at: "2026-09-08T20:54:03+08:00"
-verdict: block
-repair-target: write-dev-plan
-blockers:
-  - "本轮新增： [B-DEVPLAN-03] plan.md §2 L48、TASK-01 §3/§6 与 TASK-02 §3/§6 仍把查重回填接口定义为已删除的 SetIssueContextRefPipelineRun（整段 context_refs 覆写），且 TASK-02/TASK-03 完成标志仍把无 -run 的全包命令称为 cmd-01；当前 multica 权威 worktree 的 promotion.sql 已改为 MergeIssueContextRefPipelineRun :one（按 dedupe_key 元素级合并并 RETURNING，B-CODE-01 的实际修复），而修订后的 plan §6.2 cmd-01 已是 21 项 promotion 过滤命令。影响：plan→TASK 的接口与证据标识不再对应当前实现/稳定命令表，重新批准 dev-start 会冻结一组可执行性相互冲突的指令，后续回修或接手者可能按旧整数组覆写语义重引入 B-CODE-01，且无法从 TASK 完成标志机械核对新 cmd-01。请在 write-dev-plan 重放中同步修订 plan §2 与 TASK-01/TASK-02 的查询名、参数、RETURNING/fail-closed 消费契约为 MergeIssueContextRefPipelineRun，并把 TASK-02/TASK-03 中标注为 cmd-01 的命令改成 §6.2 当前 token 数组或明确降级为非 canonical 的实施期全包专项证据；在 §9 记录该 B-CODE-01 接口增量。"
+reviewed-at: "2026-09-08T21:52:13+08:00"
+verdict: pass
+blockers: []
 dimensions:
   sdd-to-plan: "pass"
-  plan-to-tasks: "block"
-  task-executability: "block"
+  plan-to-tasks: "pass"
+  task-executability: "pass"
   dependency-topology: "pass"
-  interface-contracts: "block"
-  acceptance-verifiability: "block"
+  interface-contracts: "pass"
+  acceptance-verifiability: "pass"
   scope-and-simplicity: "pass"
   risk-and-rollback: "pass"
   reviewer-model: "OpenAI/gpt-5.6-sol (pi runner, high reasoning)"
-suggestions: []
+suggestions:
+  - "已解决： [B-DEVPLAN-03] plan §2、TASK-01 §3/§6 与 TASK-02 §3/§6 已统一为 MergeIssueContextRefPipelineRun :one；参数 DedupeKey/PipelineRunID/ID、返回 []byte、按 dedupe_key 元素级合并并保留其余元素及未知字段、RETURNING 后 fail-closed 校验均与 multica 5aadba5be 的 promotion.sql、sqlc 生成物和 service 消费代码一致。TASK-02/TASK-03 §5 已把无 -run 全包命令标为非 canonical 实施期专项证据，并把 canonical cmd-01 指向 plan §6.2 的 21 项 promotion 真库命令；实际测试符号核对为 handler 8 项 + service 13 项。plan §9.1 已记录接口与证据标识修订，新 cycle 账本为 cycle 2 / attempt 0，具备本次 bump 前置。"
 review-loop:
-  current-attempt: 3
-subject-sha256: c694696333799c4568b3f9404895c0c3420d64d2ec8aa329dbea608991ffbead
+  current-attempt: 1
+subject-sha256: cd383aa0d3896b7f81f23aa9ac71ade5a19255b9aaf28b46dd38beef735c7b1e
