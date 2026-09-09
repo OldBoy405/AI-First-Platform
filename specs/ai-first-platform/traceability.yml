@@ -1,10 +1,10 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 spec-id: ai-first-platform
-cr-ref: CR-2026-059
-cr-history: [CR-2026-060, CR-2026-059]
-target-version: "0.32"
+cr-ref: CR-2026-061
+cr-history: [CR-2026-060, CR-2026-059, CR-2026-061]
+target-version: "0.34"
 baseline-since: "0.33"
-generated-at: "2026-09-06T16:46:36+08:00"
+generated-at: "2026-09-09T11:21:40+08:00"
 
 milestones:
   - cr: CR-2026-060
@@ -219,3 +219,107 @@ milestones:
         code: { verdict: pass, path: change-requests/CR-2026-059/review-annotations/code.yml, sha256: 24754e1b8c64f2ed7d12b24e5c1cbb269f13b8221fdf0b24a6ca935476261dff }
       approval: { status: approved, path: change-requests/CR-2026-059/approval.yml, sha256: c88e42d67d654ae1cf3ca0900edaf61ceaafd03f0251b3ca1247727fd1befbb9 }
       merge: { status: merged, path: change-requests/CR-2026-059/merge-commits.yml, sha256: 18ca13d5ac6b26bf8e739946ff8cb58d33c12262217d02c289c6bf55dc5bfd75 }
+  - cr: CR-2026-061
+    milestone: 0.34
+    target-version: "0.34"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: b1e3e1dc6bd09bc082f9dc2928face9ece39ae0f
+        branch: requirement/CR-2026-061
+      - repo: multica
+        trunk: main
+        sha: 117fc6be657f91d43df5892b52782a18329c7aed
+        branch: requirement/CR-2026-061
+      - repo: tools
+        trunk: main
+        sha: e1ce23a6d5483db7495d846f64feddacaf10fac6
+        branch: requirement/CR-2026-061
+    frs:
+      - fr: FR-1
+        title: 只有显式升级才创建工作 Issue
+        sdd: §6.1 FR-1：promotion 是唯一新增 Issue 写入路径（经 `createInTx`）；Discussion GET/发送/协办/merge-forward 零改动；AC-1 断言
+        tasks: [CR-2026-061-TASK-02]
+        code: [ai-first-platform-docs@b1e3e1dc6bd0, multica@117fc6be657f, tools@e1ce23a6d548]
+        evidence: [cmd-01]
+      - fr: FR-2
+        title: 升级入口契约
+        sdd: §3.1 端点 + §1.1 模块边界（router.go 注册）+ D-7（复用既有创建内核，无第二写入路径）
+        tasks: [CR-2026-061-TASK-03]
+        code: [ai-first-platform-docs@b1e3e1dc6bd0, multica@117fc6be657f, tools@e1ce23a6d548]
+        evidence: [cmd-01]
+      - fr: FR-3
+        title: 来源选择校验
+        sdd: §4.3 前置步骤 1/5/6（形状校验器 + `GetActiveProjectSharedSession` + `GetChatMessageInWorkspace` + `ListAttachmentsForPromotion`）
+        tasks: [CR-2026-061-TASK-03]
+        code: [ai-first-platform-docs@b1e3e1dc6bd0, multica@117fc6be657f, tools@e1ce23a6d548]
+        evidence: [cmd-01]
+      - fr: FR-4
+        title: 创建 Issue 并写入来源引用
+        sdd: §2.1 条目 schema + §4.3 创建分支（`AppendIssueContextRefs`）+ §4.6 默认标题/描述
+        tasks: [CR-2026-061-TASK-02]
+        code: [ai-first-platform-docs@b1e3e1dc6bd0, multica@117fc6be657f, tools@e1ce23a6d548]
+        evidence: [cmd-01]
+      - fr: FR-5
+        title: 原消息附件保持原归属
+        sdd: §6.1 FR-5：promotion 事务对 chat_* 零写（AC-4 结构测试 grep 断言）
+        tasks: [CR-2026-061-TASK-02]
+        code: [ai-first-platform-docs@b1e3e1dc6bd0, multica@117fc6be657f, tools@e1ce23a6d548]
+        evidence: [cmd-01]
+      - fr: FR-6
+        title: 同源唯一（查重）
+        sdd: §4.1 dedupe_key + §4.2 查重 SQL + §4.3 步骤 7/10（项目级锁 + 507 GIN）
+        tasks: [CR-2026-061-TASK-02]
+        code: [ai-first-platform-docs@b1e3e1dc6bd0, multica@117fc6be657f, tools@e1ce23a6d548]
+        evidence: [cmd-01]
+      - fr: FR-7
+        title: 幂等键（fingerprint 与重放）
+        sdd: §4.1 promotionFingerprint + §2.2 505 scope + §4.3 步骤 9 四分支（reservation/replay/takeover/409）
+        tasks: [CR-2026-061-TASK-02]
+        code: [ai-first-platform-docs@b1e3e1dc6bd0, multica@117fc6be657f, tools@e1ce23a6d548]
+        evidence: [cmd-01]
+      - fr: FR-8
+        title: 权限边界（固定顺序）
+        sdd: §4.3 前置 1–6 + 事务内成员复核 + D-6（容量双查 → 403 `forbidden_promotion`）
+        tasks: [CR-2026-061-TASK-03]
+        code: [ai-first-platform-docs@b1e3e1dc6bd0, multica@117fc6be657f, tools@e1ce23a6d548]
+        evidence: [cmd-01]
+      - fr: FR-9
+        title: 可回溯来源
+        sdd: §3.4 `IssueResponse.context_refs` 暴露（Go）+ 前端「来自 Discussion」来源入口
+        tasks: [CR-2026-061-TASK-04]
+        code: [ai-first-platform-docs@b1e3e1dc6bd0, multica@117fc6be657f, tools@e1ce23a6d548]
+        evidence: [cmd-03]
+      - fr: FR-10
+        title: 升级为 CR（预建 run，不写 CR 账本）
+        sdd: §2.3/§2.4 预建 run + 首节点 + §4.3 创建/补建分支 + 502 `pipeline_run_create_failed` 闭包 + 506 唯一语义 + AC-8/AC-13
+        tasks: [CR-2026-061-TASK-02]
+        code: [ai-first-platform-docs@b1e3e1dc6bd0, multica@117fc6be657f, tools@e1ce23a6d548]
+        evidence: [cmd-01]
+      - fr: FR-11
+        title: 前端交互
+        sdd: §6.1 FR-11：discussion-pane 多选/两入口/结果链接/失败保留选择（复用 merge-forward 模式）
+        tasks: [CR-2026-061-TASK-04]
+        code: [ai-first-platform-docs@b1e3e1dc6bd0, multica@117fc6be657f, tools@e1ce23a6d548]
+        evidence: [cmd-03]
+      - fr: FR-12
+        title: 不新增 discussion_promotion 表
+        sdd: §2.5/§2.6：仅 CHECK 扩展 + 2 索引；AC-10 断言 server/migrations/ 无该命名迁移
+        tasks: [CR-2026-061-TASK-01]
+        code: [ai-first-platform-docs@b1e3e1dc6bd0, multica@117fc6be657f, tools@e1ce23a6d548]
+        evidence: [cmd-02]
+      - fr: FR-13
+        title: 可区分错误与零残留
+        sdd: §4.4 错误闭包表逐条实现（`writeErrorCode` `{code,error}`）+ 单事务整体回滚
+        tasks: [CR-2026-061-TASK-03]
+        code: [ai-first-platform-docs@b1e3e1dc6bd0, multica@117fc6be657f, tools@e1ce23a6d548]
+        evidence: [cmd-01]
+    evidence:
+      test: { status: pass, path: change-requests/CR-2026-061/test-report.md, sha256: 82c741ea1282aecc353ba507907e32f250433a3e88ad1618b737b037b5bb6517 }
+      reviews:
+        requirement: { verdict: pass, path: change-requests/CR-2026-061/review-annotations/requirement.yml, sha256: 0990ef5202a5b49c445eb159e802ed9b37bb79ffc85b38ee382ebf6d5cbb1e68 }
+        tech-design: { verdict: pass, path: change-requests/CR-2026-061/review-annotations/sdd.yml, sha256: 0a8d7debf6aade5bafa022744e87a94acccf0969a9d761c4758ed9a05a6391d1 }
+        dev-plan: { verdict: pass, path: change-requests/CR-2026-061/review-annotations/dev-plan.yml, sha256: 3f0fd88da2433f8fff1b43bfb24b4c1c8390aaf6c3c741520b4e38e174a471f3 }
+        code: { verdict: pass, path: change-requests/CR-2026-061/review-annotations/code.yml, sha256: 226cf6307c2bb09415ea86d607ae7e5a604bcc6387d8d1c87f2cd090075fa863 }
+      approval: { status: approved, path: change-requests/CR-2026-061/approval.yml, sha256: d260b0fa7ca18851b27cf6dd61bcf0caae9df1132dbf6f3f72d65fda86f946e6 }
+      merge: { status: merged, path: change-requests/CR-2026-061/merge-commits.yml, sha256: b2e05e89ab0fad86144f4d5d915a108e106bf3a96e759c399a45a0b133ae137f }
