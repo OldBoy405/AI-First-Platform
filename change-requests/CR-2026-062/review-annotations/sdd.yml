@@ -1,24 +1,24 @@
 cr-id: CR-2026-062
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-09-09T18:38:32+08:00"
-verdict: block
-blockers:
-  - "部分解决：B-003 [sdd.md §4.2 SubmitButton running 判定、§4.3.1 发送失败分支、§6 AC-5(h)/§6.9(iii)] 位置：连续发送时第二次发送失败后的 composer 动作状态。事实：SDD 明确 Team Agent 传 allowSubmitWhileRunning=true，且 SubmitButton 的 running 判定为 trackedActive && (!allowSubmitWhileRunning || isEmpty || pendingUploads > 0)；mutation reject 又保留非空草稿和旧 sentTaskId/sentIssueId。因此失败回流后即使旧 task A 仍活动，isEmpty=false 会令 running=false，右下角实际渲染发送/重试按钮，而不是 §6 AC-5(h) 与 §6.9(iii) 声称的 stop；对应“stop 仍渲染、点击仍调用 cancelTaskById(A)”测试没有可通过的实现落点。影响：失败分支的可观察行为内部矛盾，B-003 的目标保留虽已实现，但 FR-5/FR-7、AC-5 的 stop/retry 行为仍不能由当前设计唯一保证。修复方向：在不改变人工授权的“发送失败保留旧活动目标”前提下，明确选择一致且可达的交互——若保留现有 queue-send/retry 优先级，则把 AC-5/§6.9 修订为失败后发送按钮保留草稿供重试，并在草稿清空后 stop 重新出现且点击取消 A；若要求失败后立即可停止，则必须设计独立且可达的 stop 入口并同步 §4.2 判定。同步修订 §4.3.1、AC-5 与测试矩阵。"
+reviewed-at: "2026-09-09T18:54:38+08:00"
+verdict: pass
+blockers: []
 dimensions:
   批准范围前置: "pass：§9 批准范围存在，scope_in/scope_out/zero_diff/follow_up 四字段齐全且均有明确内容"
-  PRD-SDD对齐: "block：FR-1~FR-4、FR-6、FR-8 与 AC-1~AC-4、AC-6~AC-8 依据当前 SDD 映射快速复核仍闭合；FR-5/FR-7 与 AC-5 的失败回流动作状态受 B-003 残留阻断"
-  架构合理性: "block：views→core+ui 依赖方向、两层 DOM、双源任务活动性与成功空 ID 原子清空成立；但失败回流同时承诺非空草稿重试与 stop 立即渲染，组件状态机产生互斥结论"
-  数据模型完整性: "pass（N/A）：本 CR 无持久化数据模型、schema 或迁移变更；sent 目标为组件局部单一 useState"
-  接口契约: "pass：不新增或修改 HTTP API；既有 send fallback、task-runs、queue-items 与 cancel 契约已在 multica HEAD 117fc6be657f91d43df5892b52782a18329c7aed 核验"
-  多仓架构约束: "pass：实施范围仅 multica packages/views；knowledge-base 承载过程文档，tools 无实施改动；代码事实按 workspace inspect 返回的 multica worktree 取证"
-  性能与安全: "pass：双源复用现有 query key 与 task 事件失效，无新增轮询/服务端写路径；成功空 ID 原子清空已避免错误取消旧 task，既有服务端取消权限未扩大"
-  可测试性: "block：成功空 ID 顺序分支已有可执行断言，但发送失败保留非空草稿时 running 判定必为 false，AC-5(h)/§6.9(iii) 的 stop 断言不可达"
+  PRD-SDD对齐: "pass：FR-1~FR-8 均有技术落点；本轮 B-003 失败回流已统一为保草稿时显示发送/重试、清空草稿后显示 stop，符合 FR-5/FR-7 与 AC-5"
+  架构合理性: "pass：views→core+ui 边界、两层 DOM、双源任务活动性与 sent ID 确定性转移保持成立；失败回流可见动作现由 §4.2 单一 running 判定式唯一决定"
+  数据模型完整性: "pass（N/A）：本 CR 无持久化数据模型、schema 或迁移变更；sent 目标仅为组件局部状态"
+  接口契约: "pass：不新增或修改 HTTP API；现有 send、task-runs、queue-items 与 cancel 契约只读复用"
+  多仓架构约束: "pass：实施范围仅 multica packages/views；knowledge-base 仅承载过程文档，tools 无实施改动；代码事实按 workspace inspect 返回资源取证"
+  性能与安全: "pass：双源复用既有 query key 与 task 事件失效，无新增轮询或服务端写路径；取消仍由既有服务端权限强制"
+  可测试性: "pass：AC-5(h)/§6.9(iii) 明确覆盖失败保草稿→发送/重试、清空草稿→stop→cancelTaskById(A)，并覆盖重试成功更新最新目标"
   Prompt采纳影响: "pass（条件不触发）：本 CR 不触及 crctl.mjs dispatch 或 rules.json#protectedPaths.deny"
-  AC闭环: "block：AC-1~AC-4、AC-6~AC-8 有设计落点、可观测结果与可达前置；AC-5 的发送失败分支在同一状态下同时要求 retry send 与 stop，结果不唯一"
-  既有实现依赖核验: "pass：显式清单 21 项均绑定 multica HEAD 117fc6be657f91d43df5892b52782a18329c7aed；本轮重点复核 #13/#15 及 ChatInputCore/SubmitButton，确认 fallback 与失败保草稿事实成立，残留来自 SDD 内部按钮判定而非依赖事实缺失"
-suggestions: []
+  AC闭环: "pass：AC-1~AC-8 均具设计落点、可观测结果与可达前置；AC-5 失败回流不再同时要求互斥按钮状态"
+  既有实现依赖核验: "pass：multica HEAD 117fc6be657f91d43df5892b52782a18329c7aed；本轮复核依赖 #2/#3，ChatInput 判定式与 ChatInputCore 失败不 commit、成功清空 isEmpty 的事实均与修订一致；其余 19 项未受本轮定点修订影响并依据既有核验快速复核"
+suggestions:
+  - "已解决：B-003 [sdd.md §4.2、§4.3、§4.3.1、§4.4、D-7、§6 AC-5(h)/§6.9(iii)、SDD-CLOSE-04/05] 上一轮失败回流状态矛盾已关闭：mutation reject 保留非空草稿与旧 sent 目标时，allowSubmitWhileRunning=true 使 running=false 并显示发送（重试）按钮；清空草稿后 running=true，stop 重新出现并取消 A。关键流程、状态表、硬降级、AC 与测试矩阵均已同步，且与 multica HEAD 117fc6be 的 ChatInput/ChatInputCore 事实一致。"
 review-loop:
-  current-attempt: 1
+  current-attempt: 2
 subject-file: change-requests/CR-2026-062/sdd.md
-subject-sha256: 5dd22d05885cb2c1a97c226a2a7694e58b4aafdc9dc916b159558efa086b5c1e
+subject-sha256: 473887394cea62372b911907a5ea7e61ae8d135fde6f2dc29a08c6ef52bb3b0f
