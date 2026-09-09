@@ -1,26 +1,26 @@
 cr-id: CR-2026-062
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-09-09T17:09:08+08:00"
+reviewed-at: "2026-09-09T17:44:15+08:00"
 verdict: block
 blockers:
-  - "本轮新增：B-001 [sdd.md §4.1 第 3/5 条、§1.2、§6 AC-1；既有实现依赖 #1/#6] 位置：TeamAgentStreamView 与 ProjectQueueBar 的拟议几何结构。事实：SDD 要求 gutter→column 两层嵌套，却分别把 CHAT_GUTTER 与 CHAT_COLUMN 合并到同一个元素（TeamAgentStreamView 为 cn(CHAT_GUTTER, CHAT_COLUMN, ...)；队列栏内部同样为 cn(CHAT_GUTTER, CHAT_COLUMN, ...)）。multica@117fc6be 的 packages/views/chat/components/chat-column.ts 明确说明单元素组合会让 max-w-4xl 把 padding 计入封顶宽度、使内容边缘比 composer surface 内缩；chat-message-list.tsx 的权威基线也是外层 CHAT_GUTTER、内层 CHAT_COLUMN。影响：Team Agent 消息列/队列栏与发送框边缘仍相差一个 gutter，AC-1 的宽面板对齐与‘单一几何事实源’不可达。修复方向：把 TeamAgentStreamView 和 ProjectQueueBar 都明确设计为外层 CHAT_GUTTER、内层 CHAT_COLUMN 的两个 DOM 层，并同步修订依赖图、§4.1、FR/AC 映射和测试断言。"
-  - "本轮新增：B-002 [sdd.md §3.2、§6 FR-6/AC-7、§7；既有实现依赖 #3/#10/#11] 位置：ChatInputCore 与移入工具栏后的只读配置控件可访问性。事实：SDD 声称现有控件的 aria/tooltip 原样即可，但 multica@117fc6be 的 chat-input.tsx ChatInputCore 调用 SubmitButton 时只传 tooltip/stopTooltip，未传 ariaLabel/stopAriaLabel；submit-button.tsx 的 ArrowUp/Square 均 aria-hidden，因此图标按钮没有可访问名称。另 Team Agent canConfigure=false 时 ModelPicker/ThinkingPicker 返回的只读 span 只有值文本与 title，没有类别 aria-label；SDD 又移除现有可见的 Model/Thinking 标签。影响：AC-7 要求的发送/停止及只读配置语义可访问名称无法由当前设计产生，且承诺的 role/name 测试没有可通过的实现落点。修复方向：在不改 SubmitButton/Picker 本体和不新增文案 key 的前提下，明确让 ChatInputCore 传入既有 send/stop 本地化字符串作为 ariaLabel/stopAriaLabel，并为 Team Agent 只读 Model/Thinking 值保留可被辅助技术读取的类别标签（如现有文案的 sr-only 语义）；同步补齐组件级契约与 AC-7 测试落点。"
-  - "本轮新增：B-003 [sdd.md §4.3、§6 FR-5/AC-5；既有实现依赖 #4/#8/#11] 位置：Team Agent 右下角运行中停止动作。事实：SDD 明确写 Team Agent 继续不给 ChatInputCore 传 onStop，仅依赖队列栏取消；但 multica@117fc6be 的 submit-button.tsx 在 running=true 时把右下角按钮 onClick 直接绑定 onStop，当前 TeamAgentComposer 只传 isRunning={isPending}，故该停止按钮是无处理器的图标控件。ProjectQueueBar 的展开后取消是另一入口，不能让 composer 右下角停止动作生效。影响：PRD FR-5/AC-5 与来源 CR-D 对‘右下角发送/停止动作、运行中停止行为’的当前验收不可达，测试即使断言图标存在也不能证明行为。修复方向：SDD 必须裁定并设计 Team Agent composer 的可执行停止路径（复用既有受权队列取消能力并明确目标 task/竞态/错误语义），或在需求授权下明确不渲染不可用的 stop；不得保留无处理器按钮并以队列栏替代右下角动作。"
+  - "部分解决：B-003 [sdd.md §4.3.1、§4.3、§6 FR-5/AC-5、§7；既有实现依赖 #8/#13/#16] 位置：Team Agent composer 的 trackedActive/isRunning 生命周期。上一轮指出的无处理器 stop 已通过 sentTaskId、onStop 与 useCancelProjectQueueTask 补上动作目标、竞态和错误语义，但活动性仍未覆盖真正的 running 状态：SDD 一方面把 projectQueueItemsOptions 的 items 明确记为服务端只返回 queued/dispatched（依赖 #8/#13，project-queue-bar.tsx 的 statusLabel 也只处理这两态），另一方面却把‘task_id 仍存在于 items’解释为排队/派发/运行。任务从 dispatched 进入 running 后会离开该列表，trackedActive 随即为 false，ChatInputCore 右下角按钮回到发送态，运行中 stop 仍不可达；§6.9 仅把 task 放进 mock items 的测试也只能证明 queued/dispatched 取消，不能证明运行中停止。影响：PRD FR-5/AC-5、来源 CR-D 规则 5/8 与 AC-33 要求的 composer 运行中停止仍无法由当前设计产生。修复方向：改用或复用一个实际包含 running task 的既有事实源（例如由 Team Agent 已读取的任务时间线按 sentTaskId 派生并传入 composer），或组合 queued/dispatched items 与 running 任务事实，使 queued→dispatched→running 全生命周期内 isRunning/onStop 都可达；同步修订 §4.3.1、D-7、依赖清单、AC-5 与测试场景，且不得以改变 queue-items 服务端契约或新增 API 绕过本 CR 的 zero_diff。"
 dimensions:
-  批准范围前置: "pass：批准范围章节存在，scope_in/scope_out/zero_diff/follow_up 四字段齐全且均有明确内容"
-  PRD-SDD对齐: "block：FR-1/AC-1 的嵌套几何、FR-6/AC-7 的可访问名称、FR-5/AC-5 的 Team Agent 停止动作存在 B-001~B-003"
-  架构合理性: "block：模块依赖方向符合 ARCHITECTURE.md，但 B-001 违反 chat-column.ts 的唯一嵌套不变量，B-003 未闭合动作契约"
-  数据模型完整性: "pass（N/A）：本 CR 明确无数据模型、schema、迁移或状态存储变更"
-  接口契约: "pass：不新增/修改 HTTP API；两条既有 PATCH 消费路径、三态 body 与权限边界在 multica@117fc6be 核验成立"
-  多仓架构约束: "pass：实施改动限定 multica packages/views，knowledge-base 仅承载 CR 文档，tools 无实施改动；取证使用 workspace inspect 返回的 resources 路径"
-  性能与安全: "pass：纯 CSS flow/wrap、不新增请求或状态；现有 owner/admin、creator-only 与服务端 403 权限边界保持"
-  可测试性: "block：测试入口总体明确，但 B-001 的对齐、B-002 的 role/name、B-003 的停止交互在当前设计下不能通过行为验收"
+  批准范围前置: "pass：§9 批准范围存在，scope_in/scope_out/zero_diff/follow_up 四字段齐全且均有明确内容"
+  PRD-SDD对齐: "block：FR-1 与 FR-6 的上一轮缺口已关闭；FR-5/AC-5 的 Team Agent 真正 running 状态仍受 B-003 残留阻断"
+  架构合理性: "block：views→core+ui 依赖方向、两层 DOM 不变量与组件边界成立，但 B-003 把仅 queued/dispatched 的列表误作 running 事实源，状态生命周期不闭合"
+  数据模型完整性: "pass（N/A）：本 CR 无数据模型、schema、迁移或持久化状态变更；sentTaskId 为组件局部指针"
+  接口契约: "pass：不新增/修改 HTTP API；既有 PATCH、send、cancel 契约及三态/权限边界在 multica@117fc6be 核验成立"
+  多仓架构约束: "pass：实施仅涉及 multica packages/views；knowledge-base 承载 CR 文档，tools 无实施改动；代码取证使用 workspace inspect 返回的 multica worktree"
+  性能与安全: "pass：两层布局与 flow/wrap 为纯 CSS；停止动作复用既有取消权限与 ApiError 路径，未扩大权限；同 query key 复用 TanStack Query server-state 方向成立"
+  可测试性: "block：B-001/B-002 的 DOM 与 role/name 断言已有明确落点；B-003 当前测试计划只覆盖 mock queue items，无法覆盖真实 running 状态下的 composer stop"
   Prompt采纳影响: "pass（条件不触发）：本 CR 不触及 crctl.mjs dispatch 或 rules.json#protectedPaths.deny"
-  AC闭环: "block：AC-1 受 B-001 阻断，AC-5 受 B-003 阻断，AC-7 受 B-002 阻断；其余 AC-2/3/4/6/8 有设计落点、可观测结果与可达前置"
-  既有实现依赖核验: "pass：显式清单 12 项均在 resource multica HEAD 117fc6be657f91d43df5892b52782a18329c7aed 按列明路径/稳定符号核验；文件与符号可读，正文同类依赖由清单覆盖"
-suggestions: []
+  AC闭环: "block：AC-1、AC-2、AC-3、AC-4、AC-6、AC-7、AC-8 均有设计落点、可观测结果与可达前置；AC-5 因 queue items 不含 running 而仍不可达"
+  既有实现依赖核验: "pass：显式清单 16 项均在 resource multica HEAD 117fc6be657f91d43df5892b52782a18329c7aed 按列明路径/稳定符号核验；但 #8/#13/#16 的事实恰好暴露 B-003 的 queued/dispatched 与 running 语义冲突"
+suggestions:
+  - "已解决：B-001 [sdd.md §1.2、§4.1、§6 AC-1；既有实现依赖 #1/#6] TeamAgentStreamView、ProjectQueueBar 与 composer 横幅区现均明确为外层 CHAT_GUTTER、内层 CHAT_COLUMN 的两个 DOM 层；依赖图、FR/AC 映射和组件测试均要求节点分离，已与 chat-column.ts/chat-message-list.tsx 的权威嵌套一致。"
+  - "已解决：B-002 [sdd.md §3.2、§4.2、§6 FR-6/AC-7、§7；既有实现依赖 #3/#10/#11/#12] ChatInputCore 已明确补传既有 send_tooltip/stop_tooltip 作为 ariaLabel/stopAriaLabel，Team Agent 与 Private Ask 的 Model/Thinking 分支补有既有文案的 sr-only 类别标签，role/name 与类别语义测试落点已闭合且无需新增 locale key。"
 review-loop:
-  current-attempt: 1
+  current-attempt: 2
 subject-file: change-requests/CR-2026-062/sdd.md
-subject-sha256: 013da2fd36ac9a03cbf2fcf2e95519f0da56ca25062da36c34eab52c7854adcb
+subject-sha256: 7e9b425a96870f2b4fdd18d590e5bda95c369f61ea99c432c0b93dc64fc92e4b
