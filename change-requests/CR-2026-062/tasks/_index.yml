@@ -1,0 +1,22 @@
+cr-id: CR-2026-062
+tasks:
+  - id: CR-2026-062-TASK-01
+    title: "ChatInputCore 共享 composer 视觉对齐（两层 DOM + flow 底栏 + 可访问名称 + allowSubmitWhileRunning）"
+    status: pending
+    estimate: 16h
+    depends-on: []
+  - id: CR-2026-062-TASK-02
+    title: "Team Agent 面板对齐与运行中停止（消息流/队列栏/横幅两层 + @container + 工具栏 + 双源停止）"
+    status: pending
+    estimate: 20h
+    depends-on: [CR-2026-062-TASK-01]
+  - id: CR-2026-062-TASK-03
+    title: "Private Ask 面板对齐（横幅两层 + leftAdornment 工具栏 + 停止路径原样）"
+    status: pending
+    estimate: 12h
+    depends-on: [CR-2026-062-TASK-01, CR-2026-062-TASK-02]
+  - id: CR-2026-062-TASK-04
+    title: "e2e 交付与差异文档 + 全量回归收尾"
+    status: pending
+    estimate: 16h
+    depends-on: [CR-2026-062-TASK-02, CR-2026-062-TASK-03]
