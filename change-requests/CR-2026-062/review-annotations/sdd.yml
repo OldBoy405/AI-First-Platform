@@ -1,24 +1,27 @@
 cr-id: CR-2026-062
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-09-09T18:54:38+08:00"
-verdict: pass
-blockers: []
+reviewed-at: "2026-09-09T21:50:10+08:00"
+verdict: block
+blockers:
+  - "部分解决：B-001 [sdd.md §1.1 project-team-agent-chat.tsx 行、§3.2 Team Agent toolbar 片段、§6 AC-4、§9 scope_in/zero_diff 的 testid 保留/替换契约] 位置：Team Agent 外层定位锚点 `project-chat-model-row`。事实：§9 先规定“既有 testid 全部保留，唯一替换为 `private-ask-model-row` → `private-ask-model-picker`”，但同一条随后又规定 `project-chat-model-row` 独立行移除、只点名其内部四个 testid 随 `leftAdornment` 保留；§1.1 同样只保证内部 testid，§3.2 的唯一 Team Agent toolbar JSX 片段以 Fragment 为根且没有迁移/保留 `project-chat-model-row`。因此当前设计同时允许“保留该 testid 并迁到 toolbar 容器”和“随独立行删除”，与声称的唯一保留/替换契约不一致。影响：开发者与测试无法唯一判断 `project-chat-model-row` 是必须保留、迁移还是删除，原 B-001 的实施白名单/定位锚点冲突仍有一个 Team Agent 残留，AC-4/AC-8 及 testid 零差异断言不能由当前 SDD 唯一闭合。修复方向：在 §1.1、§3.2、§6 AC-4、§9 scope_in/zero_diff 统一二选一——若保留，则明确迁移后的承载 DOM 并在 toolbar 片段展示 `data-testid=\"project-chat-model-row\"`；若删除，则把它列为第二个明确移除项，并把“既有 testid 全部保留/唯一替换”改成准确的保留、移除、替换清单；同步测试/e2e 锚点文字。"
 dimensions:
-  批准范围前置: "pass：§9 批准范围存在，scope_in/scope_out/zero_diff/follow_up 四字段齐全且均有明确内容"
-  PRD-SDD对齐: "pass：FR-1~FR-8 均有技术落点；本轮 B-003 失败回流已统一为保草稿时显示发送/重试、清空草稿后显示 stop，符合 FR-5/FR-7 与 AC-5"
-  架构合理性: "pass：views→core+ui 边界、两层 DOM、双源任务活动性与 sent ID 确定性转移保持成立；失败回流可见动作现由 §4.2 单一 running 判定式唯一决定"
-  数据模型完整性: "pass（N/A）：本 CR 无持久化数据模型、schema 或迁移变更；sent 目标仅为组件局部状态"
-  接口契约: "pass：不新增或修改 HTTP API；现有 send、task-runs、queue-items 与 cancel 契约只读复用"
-  多仓架构约束: "pass：实施范围仅 multica packages/views；knowledge-base 仅承载过程文档，tools 无实施改动；代码事实按 workspace inspect 返回资源取证"
-  性能与安全: "pass：双源复用既有 query key 与 task 事件失效，无新增轮询或服务端写路径；取消仍由既有服务端权限强制"
-  可测试性: "pass：AC-5(h)/§6.9(iii) 明确覆盖失败保草稿→发送/重试、清空草稿→stop→cancelTaskById(A)，并覆盖重试成功更新最新目标"
+  批准范围前置: "block：§9 固定章节与 scope_in/scope_out/zero_diff/follow_up 四字段齐全，但 scope_in/zero_diff 对 project-chat-model-row 的保留与移除口径互相冲突，批准范围尚未唯一"
+  PRD-SDD对齐: "block：FR-1~FR-8 均有技术落点；B-001 Team Agent 外层 testid 的保留/删除仍不唯一，影响 AC-4/AC-8 的可执行定位与范围核对"
+  架构合理性: "pass：views→core+ui 依赖方向、两层 DOM、flow toolbar、双源任务活动性与 sent ID 确定性转移保持成立；本轮未新增抽象或越界模块"
+  数据模型完整性: "pass（N/A）：本 CR 无持久化数据模型、schema 或迁移变更；sent 目标仍为组件局部状态"
+  接口契约: "pass：不新增或修改 HTTP API；现有配置、send、task-runs、queue-items 与 cancel 契约只读复用"
+  多仓架构约束: "pass：产品代码范围仍为 multica packages/views，CUSTOM.md 是同仓治理 sidecar；knowledge-base 承载过程文档，tools 无实施改动；路径 authority 使用 workspace inspect resources"
+  性能与安全: "pass：双源继续复用现有 TanStack Query key 与 WS 失效，无新增轮询或服务端写路径；配置和取消权限保持服务端强制"
+  可测试性: "block：真实 e2e、packages/views 全量回归和受控 diff 证据口径已明确，但 project-chat-model-row 的保留/删除没有唯一预期，相关组件/e2e selector 断言仍有两种合法实现"
   Prompt采纳影响: "pass（条件不触发）：本 CR 不触及 crctl.mjs dispatch 或 rules.json#protectedPaths.deny"
-  AC闭环: "pass：AC-1~AC-8 均具设计落点、可观测结果与可达前置；AC-5 失败回流不再同时要求互斥按钮状态"
-  既有实现依赖核验: "pass：multica HEAD 117fc6be657f91d43df5892b52782a18329c7aed；本轮复核依赖 #2/#3，ChatInput 判定式与 ChatInputCore 失败不 commit、成功清空 isEmpty 的事实均与修订一致；其余 19 项未受本轮定点修订影响并依据既有核验快速复核"
+  AC闭环: "block：AC-1~AC-8 均有设计落点；AC-3/AC-5/AC-7 的真实 e2e 与 AC-8 受控 diff 可达性已闭合，但 AC-4/AC-8 的 Team Agent testid 契约仍有歧义"
+  既有实现依赖核验: "pass：multica HEAD 117fc6be657f91d43df5892b52782a18329c7aed；显式依赖 #1~#21 的路径与稳定符号均按 resources[].worktreePath 复核存在，关键 ChatInput/ChatInputCore、Team Agent、Private Ask、queue/task-runs、WS 失效、cancel 与服务端 queue 过滤事实与正文一致"
+  reviewer-model: "OpenAI/gpt-5.6-sol (pi, reasoning=high)"
 suggestions:
-  - "已解决：B-003 [sdd.md §4.2、§4.3、§4.3.1、§4.4、D-7、§6 AC-5(h)/§6.9(iii)、SDD-CLOSE-04/05] 上一轮失败回流状态矛盾已关闭：mutation reject 保留非空草稿与旧 sent 目标时，allowSubmitWhileRunning=true 使 running=false 并显示发送（重试）按钮；清空草稿后 running=true，stop 重新出现并取消 A。关键流程、状态表、硬降级、AC 与测试矩阵均已同步，且与 multica HEAD 117fc6be 的 ChatInput/ChatInputCore 事实一致。"
+  - "已解决：B-002/B-003 [sdd.md §6 AC-3/AC-7/AC-8、§6.9-3] SDD 已明确浏览器行为必须真跑（`--list` 不得冒充）、环境不可建立时技术中止、packages/views 全量回归与受控 `crctl git diff --name-only 117fc6be --cwd <resources[].multica.worktreePath>` 各形成稳定证据职责；plan/TASK 的具体 cmd-NN 重建留待重新进入 review-dev-plan 时核验。"
+  - "范围外：B-004 属 plan/TASK 的回滚拓扑合同；SDD 当前共享组件与宿主依赖方向未新增矛盾，需在架构重新通过并获批后由 plan/TASK 按逆拓扑组合回滚单元闭合。"
 review-loop:
-  current-attempt: 2
+  current-attempt: 1
 subject-file: change-requests/CR-2026-062/sdd.md
-subject-sha256: 473887394cea62372b911907a5ea7e61ae8d135fde6f2dc29a08c6ef52bb3b0f
+subject-sha256: 197d768ed2aa716ace5ed0cd623fbaa6188d262b97a4c5e2b787cba3a26b7d7c
