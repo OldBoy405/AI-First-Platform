@@ -1,14 +1,12 @@
 cr-id: CR-2026-062
 review-type: dev-plan
 reviewer: "OldBoy405"
-reviewed-at: "2026-09-09T21:31:24+08:00"
+reviewed-at: "2026-09-09T22:57:43+08:00"
 verdict: block
 repair-target: write-tech-design
 blockers:
-  - "本轮新增：B-001 [sdd.md §9 scope_in/zero_diff；plan.md §5、§6.1 FR-7；TASK-03 §3；TASK-04 §2/§3] 批准范围本身无法形成可满足的实施白名单。事实：SDD zero_diff 要求既有 `project-chat-*`/`private-ask-*` testid 全部不变，但已批准设计和 TASK-03 又要求移除 `private-ask-model-row` 并新增/改用 `private-ask-model-picker`；同时 SDD scope_in 把实施 diff 限定为 §1.1 文件、测试、e2e spec 与差异文档，PLAN/TASK 却按仓库强制纪律要求修改 `multica/CUSTOM.md`，且 TASK-04 的白名单复核没有为该治理文件留出口。影响：任何实现 diff 都至少违反一项已批准约束，开发者无法唯一判断应保留 testid、修改 testid，或如何合法登记 CUSTOM 台账，AC-8 与开工门禁不可同时满足。修复方向：回到技术设计明确 testid 的保留/替换契约，并把强制 CUSTOM.md 治理 sidecar 纳入批准范围或明确为不计入产品改动白名单的受控例外；重新评审/审批 SDD 后再重建 plan/TASK。"
-  - "本轮新增：B-002 [plan.md §5、§6.1/§6.2；TASK-04 §3/§4/§5] 稳定证据命令无法证明其声称覆盖的关键验收。事实：cmd-06 只执行 Playwright `--list`，只能证明 spec 可发现，不能证明宽面板边缘、360px 无溢出/无重叠、运行中停止或键盘发送；TASK-04 又允许真实 e2e 环境不可用时以 ENVIRONMENT_MISMATCH 仍完成任务。另有 TASK-04 必须通过 packages/views 全量 `vitest run` 的完成条件，但 cmd-01/cmd-02 只跑定向文件，六条 cmd 中没有全量测试命令；FR-7/AC-8 的 diff 白名单也被映射到只检查 wildcard export/typecheck 的 cmd-04/cmd-05，二者不检查变更路径。影响：cmd-01..06 可以全绿而 AC-1/AC-3/AC-5/AC-7 的浏览器行为、全量回归及 AC-8 范围纪律均未被执行验证，形成假绿并使当前验收不可达。修复方向：重建证据表与 TASK-04 完成边界，为真实窄面板/交互 e2e、packages/views 全量测试和 diff 白名单各提供稳定可执行证据；依赖环境无法建立时应技术中止而不是把未执行的关键 AC 记为完成。"
-  - "本轮新增：B-003 [TASK-04 §3 交付 diff 白名单核对] TASK 把 `git diff --name-only` 写成实施验收步骤，但本运行环境禁止原生 git，所有 Git 读取必须经 `crctl git <sub> ... --cwd <resource worktreePath>`；该命令会被 deny-closed gateway 拒绝。影响：TASK-04 的完成标志在权威执行环境不可执行，也无法产生 AC-8 证据。修复方向：改为受控 `crctl git diff`（从 execution_context.resources 取绝对 worktreePath，不硬编码/拼接），或使用已入库且受控的版本化白名单检查器，并把它登记为稳定 cmd-NN。"
-  - "本轮新增：B-004 [plan.md §2、§4 R2/R3 与段末；§6.1 回滚列] 回滚单元与依赖拓扑矛盾。事实：TASK-02/03 消费 TASK-01 的 `allowSubmitWhileRunning` 采纳、surface/toolbar 渲染契约，TASK-03 又消费 TASK-02 的 `ModePane @container`；计划却声明每个 TASK commit 可独立 revert 且不影响其余，并在高风险 R2 中只回滚 TASK-01。影响：先回滚上游而保留下游会留下依赖契约不完整的组合，尤其 Team Agent 续发/stop 判定与容器 gutter 行为会偏离已批准 SDD，高风险改动没有可执行的安全回滚。修复方向：按逆拓扑定义组合回滚单元（回滚 TASK-01 时同时回滚依赖它的 TASK-02/03/04，或明确兼容性证明），并同步风险表和交付覆盖表的回滚列。"
+  - "本轮新增：B-005 [sdd.md §4.3.1 的 taskEntry/taskActive/taskTerminal；TASK-02 §3 停止路径] SDD 与 TASK 把 `api.listTasksByIssue(sentIssueId)` 的 `useQuery` 结果直接定义为单个 `taskEntry`，随后读取 `taskEntry.status`，但 multica HEAD `117fc6be657f91d43df5892b52782a18329c7aed` 的 `ApiClient.listTasksByIssue` 明确返回 `Promise<AgentTask[]>`，既有 `ProjectTeamAgentChat` 也以 `const { data: tasks = [] }` 消费该数组；当前设计/TASK 未定义按 `sentTaskId` 从数组选择目标 task 的步骤，也未定义列表为空或未命中时的降级。影响：照文档实现会对数组读取 `status`、无法通过 TypeScript，且 running/terminal 判定无法唯一关联最近一次发送任务，AC-5 的 stop 可达性与终态覆盖不可实现。修复方向：回到 SDD 明确 `tasks` 数组到 `taskEntry = tasks.find(task => task.id === sentTaskId)`（或等价唯一选择）的契约、空列表/未命中行为及相应测试，再重新评审/审批 SDD 并同步重建 TASK-02。"
+  - "本轮新增：B-006 [plan.md §5 验收门槛 5/6、§6.1 FR-7、§6.2 cmd-08；TASK-01 §5；TASK-04 §3/§4-5] `cmd-08` 只有 `crctl git diff --name-only 117fc6be…` 的文件名清单，却被用来证明同一文件内部的 `ChatInput` 函数体与 `ChatInputProps`/`ChatInputCoreProps` 签名 zero_diff；TASK-04 甚至要求这些符号“在 diff 清单中零出现”。但本 CR 必须修改同一个 `packages/views/chat/components/chat-input.tsx` 中的 `ChatInputCore`，所以该文件必然出现在 name-only 输出，而 name-only 根本不包含函数/签名级信息。影响：TASK-01/04 的完成标志按字面不可满足，或 cmd-08 全绿时仍无法证明批准范围内的普通聊天基线/签名未改，AC-8 会形成假绿。修复方向：重建 plan/TASK 时增加可执行的符号级/patch 级 zero_diff 证据（优先入库版本化检查器并登记稳定 cmd-NN，或明确受控 patch diff 的可审计判定），并删除“name-only 清单可证明符号零 diff/符号不出现”的错误完成条件；cmd-08 仅保留文件白名单职责。"
 dimensions:
   sdd-to-plan: "block"
   plan-to-tasks: "block"
@@ -17,9 +15,13 @@ dimensions:
   interface-contracts: "block"
   acceptance-verifiability: "block"
   scope-and-simplicity: "block"
-  risk-and-rollback: "block"
+  risk-and-rollback: "pass"
   reviewer-model: "OpenAI/gpt-5.6-sol (pi, reasoning=high)"
-suggestions: []
+suggestions:
+  - "已解决：B-001 [sdd.md §1.1/§3.2/§6/§9；plan.md §5/§6.1；TASK-02/03/04] 上一轮批准范围冲突已闭合：`private-ask-model-row`→`private-ask-model-picker` 与 `project-chat-model-row` 删除且无替换锚点的 testid 清单已唯一，`CUSTOM.md` 已作为治理 sidecar 纳入批准范围及 AC-8 文件白名单。"
+  - "已解决：B-002 [plan.md §6.2 cmd-04/cmd-07/cmd-08；TASK-04 §3-5] 真实 Playwright e2e、packages/views 无文件参数全量 `vitest run` 与 diff 白名单已拆成独立稳定命令；e2e 环境无法建立时明确 ENVIRONMENT_MISMATCH 技术中止且 TASK-04 不得 done，不再以 `--list` 或定向测试冒充关键浏览器行为/全量回归证据。"
+  - "已解决：B-003 [plan.md §6.2 cmd-08；TASK-04 §3] diff 文件白名单核对已改为从 execution_context.resources 解析路径后执行受控 `crctl git diff --name-only`，不再使用原生 git 或硬编码工作区路径。"
+  - "已解决：B-004 [plan.md §2/§4/§6.1；TASK-01~04 §5] 回滚已按依赖逆拓扑定义 RU1={04}、RU2={03,04}、RU3={02,03,04}、RU4={01,02,03,04}，revert 顺序为 TASK 编号降序，风险表、覆盖表与各 TASK 完成标志口径一致。"
 review-loop:
   current-attempt: 0
-subject-sha256: c33ce1dd49e8d02a58e496d2d7f4306f3198a5593d2e41923d234f09141fc7c1
+subject-sha256: 4426855b4ff7c4b0c9d6816b1806644a6a6d1f61affd68d4d29063689aa872b7
