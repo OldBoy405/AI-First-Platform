@@ -1,0 +1,25 @@
+cr-id: CR-2026-062
+review-type: dev-plan
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-09T21:31:24+08:00"
+verdict: block
+repair-target: write-tech-design
+blockers:
+  - "本轮新增：B-001 [sdd.md §9 scope_in/zero_diff；plan.md §5、§6.1 FR-7；TASK-03 §3；TASK-04 §2/§3] 批准范围本身无法形成可满足的实施白名单。事实：SDD zero_diff 要求既有 `project-chat-*`/`private-ask-*` testid 全部不变，但已批准设计和 TASK-03 又要求移除 `private-ask-model-row` 并新增/改用 `private-ask-model-picker`；同时 SDD scope_in 把实施 diff 限定为 §1.1 文件、测试、e2e spec 与差异文档，PLAN/TASK 却按仓库强制纪律要求修改 `multica/CUSTOM.md`，且 TASK-04 的白名单复核没有为该治理文件留出口。影响：任何实现 diff 都至少违反一项已批准约束，开发者无法唯一判断应保留 testid、修改 testid，或如何合法登记 CUSTOM 台账，AC-8 与开工门禁不可同时满足。修复方向：回到技术设计明确 testid 的保留/替换契约，并把强制 CUSTOM.md 治理 sidecar 纳入批准范围或明确为不计入产品改动白名单的受控例外；重新评审/审批 SDD 后再重建 plan/TASK。"
+  - "本轮新增：B-002 [plan.md §5、§6.1/§6.2；TASK-04 §3/§4/§5] 稳定证据命令无法证明其声称覆盖的关键验收。事实：cmd-06 只执行 Playwright `--list`，只能证明 spec 可发现，不能证明宽面板边缘、360px 无溢出/无重叠、运行中停止或键盘发送；TASK-04 又允许真实 e2e 环境不可用时以 ENVIRONMENT_MISMATCH 仍完成任务。另有 TASK-04 必须通过 packages/views 全量 `vitest run` 的完成条件，但 cmd-01/cmd-02 只跑定向文件，六条 cmd 中没有全量测试命令；FR-7/AC-8 的 diff 白名单也被映射到只检查 wildcard export/typecheck 的 cmd-04/cmd-05，二者不检查变更路径。影响：cmd-01..06 可以全绿而 AC-1/AC-3/AC-5/AC-7 的浏览器行为、全量回归及 AC-8 范围纪律均未被执行验证，形成假绿并使当前验收不可达。修复方向：重建证据表与 TASK-04 完成边界，为真实窄面板/交互 e2e、packages/views 全量测试和 diff 白名单各提供稳定可执行证据；依赖环境无法建立时应技术中止而不是把未执行的关键 AC 记为完成。"
+  - "本轮新增：B-003 [TASK-04 §3 交付 diff 白名单核对] TASK 把 `git diff --name-only` 写成实施验收步骤，但本运行环境禁止原生 git，所有 Git 读取必须经 `crctl git <sub> ... --cwd <resource worktreePath>`；该命令会被 deny-closed gateway 拒绝。影响：TASK-04 的完成标志在权威执行环境不可执行，也无法产生 AC-8 证据。修复方向：改为受控 `crctl git diff`（从 execution_context.resources 取绝对 worktreePath，不硬编码/拼接），或使用已入库且受控的版本化白名单检查器，并把它登记为稳定 cmd-NN。"
+  - "本轮新增：B-004 [plan.md §2、§4 R2/R3 与段末；§6.1 回滚列] 回滚单元与依赖拓扑矛盾。事实：TASK-02/03 消费 TASK-01 的 `allowSubmitWhileRunning` 采纳、surface/toolbar 渲染契约，TASK-03 又消费 TASK-02 的 `ModePane @container`；计划却声明每个 TASK commit 可独立 revert 且不影响其余，并在高风险 R2 中只回滚 TASK-01。影响：先回滚上游而保留下游会留下依赖契约不完整的组合，尤其 Team Agent 续发/stop 判定与容器 gutter 行为会偏离已批准 SDD，高风险改动没有可执行的安全回滚。修复方向：按逆拓扑定义组合回滚单元（回滚 TASK-01 时同时回滚依赖它的 TASK-02/03/04，或明确兼容性证明），并同步风险表和交付覆盖表的回滚列。"
+dimensions:
+  sdd-to-plan: "block"
+  plan-to-tasks: "block"
+  task-executability: "block"
+  dependency-topology: "pass"
+  interface-contracts: "block"
+  acceptance-verifiability: "block"
+  scope-and-simplicity: "block"
+  risk-and-rollback: "block"
+  reviewer-model: "OpenAI/gpt-5.6-sol (pi, reasoning=high)"
+suggestions: []
+review-loop:
+  current-attempt: 0
+subject-sha256: c33ce1dd49e8d02a58e496d2d7f4306f3198a5593d2e41923d234f09141fc7c1
