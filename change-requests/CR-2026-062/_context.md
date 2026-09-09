@@ -5,18 +5,18 @@
 ## 当前状态
 
 - CR：CR-2026-062（AIFI-18 · 来源文档 CR-D：Team Agent 和 Private Ask 发送框 UI 优化，target-version 0.35）
-- status：`tech-design-review-pending`（review-dev-plan BLOCK route=upstream → 回技术设计修订链；canonical 评审提交 `db136cbe`，状态回退提交 `aeef8813`）
-- Pipeline：architecture-design，下一节点 = `review-tech-design`（humanApproval=false，why=存在较新的 dev-plan 上游设计疑点，技术评审证据过时，重新评审）
-- reviewLoop：`review-tech-design` cycle 2 / attempt 2（上次 PASS）；**本轮 SDD 已再修订，复评将 bump 至 cycle 2 attempt 3/3（该 cycle 最后一轮，BLOCK 则需人工 review-loop reset）**；`review-dev-plan` attempt 0/3（UPSTREAM 未 bump）
+- status：`tech-design-review-pending`（review-tech-design cycle 3 attempt 1 BLOCK：B-001 `project-chat-model-row` 锚点残留 → 本轮定点回修完成，待独立复评）
+- Pipeline：architecture-design，下一节点 = `review-tech-design`（humanApproval=false，why=SDD 已修订（subject digest 不一致），重新评审刷新证据）
+- reviewLoop：`review-tech-design` **cycle 3 / attempt 1**（本轮 bump 后将至 2/3）；`review-dev-plan` attempt 0/3（UPSTREAM 未 bump）
 - 下一步以 `crctl next CR-2026-062` 为准
 
 ## 产物
 
 - PRD：`change-requests/CR-2026-062/prd.md`（review-requirement PASS、人工审批通过）
-- SDD：`change-requests/CR-2026-062/sdd.md`（本轮 B-001 上游回修提交 `13c46469`：§9 testid 保留/替换契约 + `multica/CUSTOM.md` 治理 sidecar 纳入 scope_in + AC-8 受控 `crctl git diff` + §6.9-3 e2e 真跑证据契约；上轮 PASS subject-sha256 `47388739…` 已失效，待重新评审/审批）
+- SDD：`change-requests/CR-2026-062/sdd.md`（本轮 B-001 定点回修提交 `19d98578`：testid 二选一闭合为「删除、不迁移」——§9 scope_in 改显式保留/移除/替换清单（移除 2 项：`private-ask-model-row`（替换为新增 `private-ask-model-picker`）、`project-chat-model-row`（无替换锚点）；新增 1 项；其余保留），§1.1/§3.2/AC-4/§6.9-2/zero_diff/依赖 #4 同步；上轮 PASS subject-sha256 `47388739…` 已失效，待重新评审/审批）
 - PLAN：`change-requests/CR-2026-062/plan.md`（提交 `40654e0b`，**待 SDD 重新审批后按 B-002/B-003/B-004 重建**）
 - TASK：`change-requests/CR-2026-062/tasks/TASK-01..04.md` + `tasks/_index.yml`（提交 `0d3497ac`，同上待重建）
-- 状态提交：本轮 advance `tech-design-review-pending → tech-designing`（trigger `review-tech-design:block -> write-tech-design`）与 `tech-designing → tech-design-review-pending`（trigger `write-tech-design-complete`）
+- 状态提交：本轮 advance `tech-designing → tech-design-review-pending`（trigger `write-tech-design-complete`）；上一轮评审回退 `tech-design-review-pending → tech-designing`（`659133dc`）与评审证据 `93eaeb2f` 由 reviewer 落盘
 
 ## dev-plan 评审 blockers（canonical `review-annotations/dev-plan.yml`，route=upstream）
 
@@ -41,8 +41,8 @@
 ## 评审与回修入口
 
 - 下一节点 `review-tech-design`（独立 fresh reviewer，由本 run 收尾评论 mention 发起）：
-  - 评审对象：`change-requests/CR-2026-062/sdd.md`（本轮修订点：§1.1 表 CUSTOM.md 行、§9 scope_in/zero_diff testid 契约与治理 sidecar、§6 AC-3/AC-7/AC-8、§6.9-3 证据契约）；对照 `prd.md`、来源文档 §12 CR-D/§13
-  - 前置：CR status=`tech-design-review-pending`；`workspace inspect` 三仓 healthy；reviewLoop cycle 2 attempt 2 → 本轮 bump 至 3/3
-  - PASS 且 blockers=[] → 停在人工架构审批节点（`crctl approve --stage tech-design`，指令由 coordinator 发布，本 Agent 不代签）；审批后由 coordinator 委派重建 plan/TASK（落实 B-002/B-003/B-004）
-  - BLOCK → `crctl advance --to tech-designing --trigger "review-tech-design:block -> write-tech-design" --expect tech-design-review-pending`；若 bump 后达到 maxAttempts=3 则停止自动回修，需人工 `review-loop reset`
+  - 评审对象：`change-requests/CR-2026-062/sdd.md`（本轮修订点：§1.1 两宿主行、§3.2 两 TSX 锚点注释、§6 AC-4/§6.9-2 锚点口径、§9 scope_in 保留/移除/替换清单 + zero_diff、依赖 #4；B-001 闭合为「删除、不迁移」）；对照 `prd.md`、来源文档 §12 CR-D/§13；dev-plan 上游 blockers 见 canonical `review-annotations/dev-plan.yml`（提交 `db136cbe`）
+  - 前置：CR status=`tech-design-review-pending`；`workspace inspect` 三仓 healthy；reviewLoop cycle 3 attempt 1 → 本轮 bump 至 2/3（如仍 BLOCK，按 Skill 回退 `tech-designing`，达到 3/3 则需人工 `review-loop reset`）
+  - PASS 且 blockers=[] → 停在人工架构审批节点（`crctl approve --stage tech-design`，指令由 coordinator 发布，本 Agent 不代签）；审批后由 coordinator 委派重建 plan/TASK（落实 B-002/B-003/B-004：稳定证据命令、受控 crctl git diff、逆拓扑组合回滚单元）
+  - BLOCK → `crctl advance --to tech-designing --trigger "review-tech-design:block -> write-tech-design" --expect tech-design-review-pending`
 - 后续节点：approve-tech-design（人工）→ write-dev-plan → write-dev-tasks → review-dev-plan → approve-dev-start（人工）→ implement-code → write-test-report → review-code → approve-code（人工）；发布经 merge/writeback 流程（不进交付 TASK）
