@@ -1,26 +1,24 @@
 cr-id: CR-2026-062
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-09-09T17:44:15+08:00"
+reviewed-at: "2026-09-09T18:16:24+08:00"
 verdict: block
 blockers:
-  - "部分解决：B-003 [sdd.md §4.3.1、§4.3、§6 FR-5/AC-5、§7；既有实现依赖 #8/#13/#16] 位置：Team Agent composer 的 trackedActive/isRunning 生命周期。上一轮指出的无处理器 stop 已通过 sentTaskId、onStop 与 useCancelProjectQueueTask 补上动作目标、竞态和错误语义，但活动性仍未覆盖真正的 running 状态：SDD 一方面把 projectQueueItemsOptions 的 items 明确记为服务端只返回 queued/dispatched（依赖 #8/#13，project-queue-bar.tsx 的 statusLabel 也只处理这两态），另一方面却把‘task_id 仍存在于 items’解释为排队/派发/运行。任务从 dispatched 进入 running 后会离开该列表，trackedActive 随即为 false，ChatInputCore 右下角按钮回到发送态，运行中 stop 仍不可达；§6.9 仅把 task 放进 mock items 的测试也只能证明 queued/dispatched 取消，不能证明运行中停止。影响：PRD FR-5/AC-5、来源 CR-D 规则 5/8 与 AC-33 要求的 composer 运行中停止仍无法由当前设计产生。修复方向：改用或复用一个实际包含 running task 的既有事实源（例如由 Team Agent 已读取的任务时间线按 sentTaskId 派生并传入 composer），或组合 queued/dispatched items 与 running 任务事实，使 queued→dispatched→running 全生命周期内 isRunning/onStop 都可达；同步修订 §4.3.1、D-7、依赖清单、AC-5 与测试场景，且不得以改变 queue-items 服务端契约或新增 API 绕过本 CR 的 zero_diff。"
+  - "部分解决：B-003 [sdd.md §4.3.1「硬降级」与 sentTaskId/sentIssueId 状态表、§6 AC-5/§6.9；既有实现依赖 #13/#15] 位置：连续发送后的硬降级状态转移。事实：双源判定已经覆盖 queued/dispatched/running/waiting_local_directory/terminal，但 SDD 规定发送成功返回 task_id=\"\" 或 issue_id=\"\" 时‘不写入’ sent 状态，并断言 trackedActive 恒 false；该结论只在初始 sent 状态为空时成立。若先前一次成功发送留下仍活动的 sentTaskId/sentIssueId，随后一次成功发送经 ProjectChatSendResult fallback 得到空 ID，‘不写入’会保留旧目标，trackedActive 仍可能为 true，右下角 stop 将取消旧 task，而不是回落到无可追踪目标的发送态。现有 task_id=\"\" 测试也只要求单次硬降级，无法证明该连续发送分支。影响：停止动作目标唯一性和 SDD 自己承诺的‘硬降级不渲染死按钮’仍不闭合，可能对错误任务执行取消，PRD FR-5/FR-7 与 AC-5 的 stop 行为保持不可由当前状态机唯一保证。修复方向：明确仅在发送成功且返回的 task_id/issue_id 任一无效时原子清空 sentTaskId 与 sentIssueId（发送失败仍保留旧活动目标），并增加‘有效活动 task A → 下一次发送成功但返回空 ID’的顺序测试，断言 stop 消失且不会调用 cancelTaskById(A)；同步修订硬降级、状态表和 AC-5 测试文字。"
 dimensions:
   批准范围前置: "pass：§9 批准范围存在，scope_in/scope_out/zero_diff/follow_up 四字段齐全且均有明确内容"
-  PRD-SDD对齐: "block：FR-1 与 FR-6 的上一轮缺口已关闭；FR-5/AC-5 的 Team Agent 真正 running 状态仍受 B-003 残留阻断"
-  架构合理性: "block：views→core+ui 依赖方向、两层 DOM 不变量与组件边界成立，但 B-003 把仅 queued/dispatched 的列表误作 running 事实源，状态生命周期不闭合"
-  数据模型完整性: "pass（N/A）：本 CR 无数据模型、schema、迁移或持久化状态变更；sentTaskId 为组件局部指针"
-  接口契约: "pass：不新增/修改 HTTP API；既有 PATCH、send、cancel 契约及三态/权限边界在 multica@117fc6be 核验成立"
-  多仓架构约束: "pass：实施仅涉及 multica packages/views；knowledge-base 承载 CR 文档，tools 无实施改动；代码取证使用 workspace inspect 返回的 multica worktree"
-  性能与安全: "pass：两层布局与 flow/wrap 为纯 CSS；停止动作复用既有取消权限与 ApiError 路径，未扩大权限；同 query key 复用 TanStack Query server-state 方向成立"
-  可测试性: "block：B-001/B-002 的 DOM 与 role/name 断言已有明确落点；B-003 当前测试计划只覆盖 mock queue items，无法覆盖真实 running 状态下的 composer stop"
+  PRD-SDD对齐: "block：FR-1~FR-4、FR-6、FR-8 及 AC-1~AC-4、AC-6~AC-8 快速复核仍闭合；FR-5/FR-7 与 AC-5 的连续发送硬降级分支受 B-003 残留阻断"
+  架构合理性: "block：双源活动性判定、views→core+ui 依赖方向、两层 DOM 与 query-key 复用成立，但空响应成功分支缺少清旧目标的确定状态转移，取消目标不唯一"
+  数据模型完整性: "pass（N/A）：本 CR 无持久化数据模型/schema/迁移变更；sentTaskId/sentIssueId 为组件局部状态"
+  接口契约: "pass：不新增/修改 HTTP API；既有 PATCH、send、task-runs、cancel 契约在 multica@117fc6be 核验，ProjectChatSendResult 的空 fallback 边界已识别"
+  多仓架构约束: "pass：实施范围仅 multica packages/views；knowledge-base 承载过程文档，tools 无实施改动；代码事实均从 workspace inspect 返回的 multica worktree 取证"
+  性能与安全: "block：同 query key 可避免同 issueId 的重复请求、既有服务端取消权限未扩大；但硬降级后旧 sent target 可被错误取消，动作目标安全性未闭合"
+  可测试性: "block：七态双源矩阵已能证明 running 且 items 缺席时 stop 可达，但 task_id/issue_id 空 fallback 缺少带旧活动目标的顺序测试，无法证明无错误取消"
   Prompt采纳影响: "pass（条件不触发）：本 CR 不触及 crctl.mjs dispatch 或 rules.json#protectedPaths.deny"
-  AC闭环: "block：AC-1、AC-2、AC-3、AC-4、AC-6、AC-7、AC-8 均有设计落点、可观测结果与可达前置；AC-5 因 queue items 不含 running 而仍不可达"
-  既有实现依赖核验: "pass：显式清单 16 项均在 resource multica HEAD 117fc6be657f91d43df5892b52782a18329c7aed 按列明路径/稳定符号核验；但 #8/#13/#16 的事实恰好暴露 B-003 的 queued/dispatched 与 running 语义冲突"
-suggestions:
-  - "已解决：B-001 [sdd.md §1.2、§4.1、§6 AC-1；既有实现依赖 #1/#6] TeamAgentStreamView、ProjectQueueBar 与 composer 横幅区现均明确为外层 CHAT_GUTTER、内层 CHAT_COLUMN 的两个 DOM 层；依赖图、FR/AC 映射和组件测试均要求节点分离，已与 chat-column.ts/chat-message-list.tsx 的权威嵌套一致。"
-  - "已解决：B-002 [sdd.md §3.2、§4.2、§6 FR-6/AC-7、§7；既有实现依赖 #3/#10/#11/#12] ChatInputCore 已明确补传既有 send_tooltip/stop_tooltip 作为 ariaLabel/stopAriaLabel，Team Agent 与 Private Ask 的 Model/Thinking 分支补有既有文案的 sr-only 类别标签，role/name 与类别语义测试落点已闭合且无需新增 locale key。"
+  AC闭环: "block：AC-1~AC-4、AC-6~AC-8 有设计落点、可观测结果与可达前置；AC-5 的连续发送硬降级空值分支仍可保留旧取消目标"
+  既有实现依赖核验: "pass：显式清单 21 项均以 multica HEAD 117fc6be657f91d43df5892b52782a18329c7aed 对照列明路径/符号核验；新增双源事实成立，B-003 残留来自其局部状态转移而非事实源缺失"
+suggestions: []
 review-loop:
-  current-attempt: 2
+  current-attempt: 3
 subject-file: change-requests/CR-2026-062/sdd.md
-subject-sha256: 7e9b425a96870f2b4fdd18d590e5bda95c369f61ea99c432c0b93dc64fc92e4b
+subject-sha256: f431100862eebad046cc5c1752ffe89c9e5c369ee27b7a74304d4125673f20f1
