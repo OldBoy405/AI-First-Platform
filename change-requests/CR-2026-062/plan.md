@@ -131,7 +131,7 @@ TASK-04 (multica e2e spec 真跑 + 差异文档 + 全量回归 + 交付 diff 白
 | FR-5 视觉状态一致（AC-5） | §4.3 状态映射表 + §4.3.1/D-7（双源活动性判定、确定性转移、失败回流可见动作）+ §4.2 `running` 判定式；§6 AC-5（含 e2e 运行中停止真跑） | CR-2026-062-TASK-02（关联 CR-2026-062-TASK-01/CR-2026-062-TASK-04） | cmd-01；cmd-02；cmd-07 | RU3 |
 | FR-6 可访问性保持（AC-7） | §3.2（ChatInputCore 补传 `ariaLabel`/`stopAriaLabel`；只读/可编辑控件带 sr-only 类别标签）+ 依赖 #10/#11（chip 内建 aria/tooltip）；§6 AC-7（含 e2e 键盘发送真跑） | CR-2026-062-TASK-01（关联 CR-2026-062-TASK-02/CR-2026-062-TASK-03） | cmd-01；cmd-02；cmd-07 | RU4 |
 | FR-7 不新增数据与业务语义（AC-6/AC-8） | §1.1 改动面白名单（仅 packages/views + e2e + 差异文档 + `CUSTOM.md` 治理 sidecar）+ §2 数据模型 N/A + §9 zero_diff（ChatInput 函数体/props 签名、draft adapter、`useProjectChatStore`、全部 packages/core、server 零改动）+ §9 testid 保留/移除/替换清单；§6 AC-6/AC-8 | CR-2026-062-TASK-04（关联 CR-2026-062-TASK-01/02/03） | cmd-08；cmd-04；cmd-06 | RU1（收口交付；违规改动落在其它 TASK 时按 §4.0 取含该 TASK 的最小 RU） |
-| FR-8 共享组件适配与测试（AC-7/AC-8） | §6.9 测试计划（chat-input/项目组件/e2e spec 真跑）+ SDD-CLOSE-04/D-6 差异文档（`project-chat-composer-layout-diff.md`）；Web/Desktop 共享 packages/views | CR-2026-062-TASK-04（关联 CR-2026-062-TASK-01/02/03） | cmd-04；cmd-05；cmd-06；cmd-07 | RU1 |
+| FR-8 共享组件适配与测试（AC-7/AC-8） | §6.9 测试计划（chat-input/项目组件/e2e spec 真跑）+ SDD-CLOSE-04/D-6 差异文档（`project-chat-composer-layout-diff.md`）；Web/Desktop 共享 packages/views；NFR-3 四语 parity | CR-2026-062-TASK-04（关联 CR-2026-062-TASK-01/02/03） | cmd-03；cmd-04；cmd-05；cmd-06；cmd-07 | RU1 |
 
 ### 6.2 证据命令表（稳定表 2/2）
 
