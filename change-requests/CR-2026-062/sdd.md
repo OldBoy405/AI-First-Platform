@@ -6,7 +6,7 @@ title: Team Agent 和 Private Ask 发送框 UI 优化 技术设计
 target-version: 0.35
 status: draft
 created: 2026-09-09T16:41:00+08:00
-updated: 2026-09-09T17:24:00+08:00
+updated: 2026-09-09T18:05:00+08:00
 ---
 
 # 1. 架构概览
@@ -21,7 +21,7 @@ updated: 2026-09-09T17:24:00+08:00
 |---|---|---|
 | `packages/views/chat/components/chat-input.tsx` | 修改（`ChatInputCore` 仅） | wrapper（外层）采用 `CHAT_GUTTER`；surface（内层）采用 `CHAT_COLUMN` + 与 `ChatInput` 一致的 chrome；底部工具栏由 absolute 改为 flow 布局（见 §4）；`SubmitButton` 调用补传 `ariaLabel`/`stopAriaLabel`；采纳 `ChatInputProps` 既有 `allowSubmitWhileRunning` 字段（签名不变，见 §3.2/§4.2） |
 | `packages/views/chat/components/chat-column.ts` | 只读复用 | 不修改，复用 `CHAT_GUTTER`/`CHAT_COLUMN` |
-| `packages/views/projects/components/project-team-agent-chat.tsx` | 修改 | composer wrapper 对齐（横幅区迁入「外层 `CHAT_GUTTER`>内层 `CHAT_COLUMN`」两层块）；`*-model-row` 独立行移除，Model/Thinking 控件经 `leftAdornment` 进底部工具栏（只读值带 sr-only 类别标签）；`TeamAgentStreamView` 根容器改为「外层 `CHAT_GUTTER`>内层 `CHAT_COLUMN`」两层 DOM；新增运行中停止路径（§4.3.1/D-7） |
+| `packages/views/projects/components/project-team-agent-chat.tsx` | 修改 | composer wrapper 对齐（横幅区迁入「外层 `CHAT_GUTTER`>内层 `CHAT_COLUMN`」两层块）；`*-model-row` 独立行移除，Model/Thinking 控件经 `leftAdornment` 进底部工具栏（只读值带 sr-only 类别标签）；`TeamAgentStreamView` 根容器改为「外层 `CHAT_GUTTER`>内层 `CHAT_COLUMN`」两层 DOM；新增运行中停止路径（§4.3.1/D-7：`sentTaskId`/`sentIssueId` + 任务时间线（task-runs）与 queue items 双源活动性，覆盖 running） |
 | `packages/views/projects/components/project-private-ask.tsx` | 修改 | composer wrapper 对齐（pending-message 迁入「外层 `CHAT_GUTTER`>内层 `CHAT_COLUMN`」两层块）；`private-ask-model-row` 移除，控件经 `leftAdornment` 进底部工具栏（带 sr-only 类别标签）；停止路径（`pendingTaskId → api.cancelTaskById`）原样不动 |
 | `packages/views/projects/components/project-chat-panel.tsx` | 修改（一行类名） | `ModePane` 根加 `@container`（容器感知 gutter 的前提，见 §4.1） |
 | `packages/views/projects/components/project-queue-bar.tsx` | 修改（最小） | 根 `px-4` 移除，内部内容改为「外层 `CHAT_GUTTER`>内层 `CHAT_COLUMN`」两层 DOM，与消息列/发送框边缘对齐（禁止单元素合并，见 §4.1 规则 5） |
@@ -40,7 +40,8 @@ project-chat-panel.tsx (ModePane, 加 @container)
   ├─ project-team-agent-chat.tsx  TeamAgentComposer ────────────┤
   │   横幅区: 外层 CHAT_GUTTER > 内层 CHAT_COLUMN；                │
   │   ChatInputCore(leftAdornment=Model/Thinking 工具栏,         │
-  │                 allowSubmitWhileRunning + onStop 停止路径 §4.3.1) │
+  │                 allowSubmitWhileRunning + onStop 停止路径 §4.3.1,│
+  │                 运行态=task-runs 时间线 + queue items 双源)    │
   └─ project-private-ask.tsx  PrivateAskComposer ───────────────┤
       横幅区: 外层 CHAT_GUTTER > 内层 CHAT_COLUMN；                │
       ChatInputCore(leftAdornment=Model/Thinking 工具栏)         │
@@ -66,8 +67,9 @@ chat-input.tsx ChatInputCore ── 复用 ──> chat-column.ts (CHAT_GUTTER /
        PATCH /api/chat/sessions/:id/config（Private Ask）→ 不改 Agent 配置
 发送：ContentEditor → handleSend（draftAdapter/附件引用/pendingUploads 门禁原样）
      → 宿主 onSend → pending-message 渲染（原样）
-停止：Team Agent 运行中 → SubmitButton stop → onStop 取消最近一次发送的 task_id
-     （useCancelProjectQueueTask，TSUG-007 三支语义，§4.3.1）；Private Ask → onStop 原样
+停止：Team Agent 运行中（task-runs 时间线含 sentTaskId 且 status∈active，或仍在 queue items
+     ——§4.3.1 双源）→ SubmitButton stop → onStop 取消该 task（useCancelProjectQueueTask，
+     TSUG-007 三支语义）；Private Ask → onStop 原样
 ```
 
 ## 1.4 与 crctl/guard 命令面关系
@@ -252,23 +254,41 @@ CHAT_COLUMN = "mx-auto w-full max-w-4xl"     // 居中、封顶、封顶下满�
 | 附件预览/上传中 | `ContentEditor` attachments + `pendingUploads`（chat-input.tsx L870） | 不变 |
 | 上传中禁发 | `SubmitButton disabled` 含 `pendingUploads > 0`（L1140）+ `handleSend` 内 `hasActiveUploads()` 门禁 | 不变 |
 | 发送中 | `isSubmitting` → `SubmitButton loading` | 不变 |
-| 运行中停止 | Team Agent：`isRunning`=最近一次发送 task 仍在活动队列、`onStop`=受权取消该 task（§4.3.1）；Private Ask：`running/pendingTaskId → onStop=api.cancelTaskById` 原样 | §4.3.1 |
+| 运行中停止 | Team Agent：`isRunning`=最近一次发送 task 处于活动生命周期（queued/dispatched 由 queue items、running/waiting_local_directory 由任务时间线判定，§4.3.1 双源）；`onStop`=受权取消该 task（§4.3.1）；Private Ask：`running/pendingTaskId → onStop=api.cancelTaskById` 原样 | §4.3.1 |
 | 失败重试 | 宿主 `onSend` 返回 false 保草稿 + toast（原样） | 不变 |
 | 空态 | placeholder（原样） | 不变 |
 
-### 4.3.1 Team Agent composer 运行中停止路径（B-003 回修）
+### 4.3.1 Team Agent composer 运行中停止路径（B-003 回修 v2）
 
 事实（multica@117fc6be）：`TeamAgentComposer` 当前 `isRunning={isPending}`（`useSendProjectChatMessage` 的本地入队窗口）且不传 `onStop`；`SubmitButton` 在 `running=true` 时把右下角按钮 `onClick` 直接绑定 `onStop`——当前渲染的是一个**无处理器的停止按钮**，且入队窗口结束后任务真正运行期间反而没有任何运行态。`ProjectQueueBar` 展开后的取消是另一入口，不能替代 composer 右下角动作。PRD FR-5/AC-5、来源 AC-33 与规则 5「右下角复用普通聊天的发送/停止按钮和 loading、上传中、运行中状态」要求该动作可用；同时规则 8 要求保留运行中停止。因此裁定：**接入可执行停止路径，而不是渲染不可用按钮或以队列栏替代**（「不渲染 stop」无需求授权）。
 
-状态与动作（全部复用既有受权队列能力，零新增 API/状态管理/请求）：
+**B-003 v2 修正（上一轮语义错误）**：`projectQueueItemsOptions` 的 items 由服务端查询 `ListProjectPendingTasks`（server/pkg/db/queries/agent.sql L2947-2961）过滤为**仅 queued + dispatched**——任务进入 `running` 后离开该列表，因此 items 不能单独作为 `running` 的事实源。本设计改用**双源活动性判定**：queue items 覆盖 queued/dispatched 窗口，**容器 Issue 任务时间线**（Team Agent 消息流已读取的 task-runs 列表，`AgentTask.status` 含 `running`/`waiting_local_directory`）覆盖 running 及其后生命周期，两者取并、终态覆盖，闭合 queued→dispatched→running→terminal 全生命周期。零新增 API、零服务端契约变更（zero_diff）。
+
+状态与动作（全部复用既有受权能力，零新增 API/状态管理；两个事实源复用既有 query 缓存，无新增请求）：
 
 | 信号 | 来源 | 语义 |
 |---|---|---|
-| `sentTaskId` | `useSendProjectChatMessage(...).mutateAsync()` 成功返回值 `ProjectChatSendResult.task_id`（schemas.ts L1524；组件内 `useState` 保存，发送失败/硬降级 `task_id=""` 时不写入） | 本 composer 最近一次成功入队的 task |
-| `trackedActive` | `useQuery(projectQueueItemsOptions(wsId, projectId)).data.items` 中是否存在 `task_id === sentTaskId`（items 由服务端过滤为 queued/dispatched，queries.ts L59） | 该 task 仍处于可取消窗口（排队/派发/运行） |
-| `isRunning`（传 ChatInputCore） | `trackedActive` | 运行态：task 进入终态/离开 items 后自动回落 false |
+| `sentTaskId` / `sentIssueId` | `useSendProjectChatMessage(...).mutateAsync()` 成功返回值 `ProjectChatSendResult.task_id` / `issue_id`（schemas.ts L1524-1529；组件内单条语句 `useState` 保存，发送失败/硬降级 `task_id=""` 或 `issue_id=""` 时不写入） | 本 composer 最近一次成功入队的 task 与其容器 Issue |
+| `taskInItems` | `useQuery(projectQueueItemsOptions(wsId, projectId)).data.items` 中是否存在 `task_id === sentTaskId`（items 服务端过滤 queued/dispatched，见依赖 #21；与 ProjectQueueBar 共用同一 query key 缓存，react-query 去重） | queued/dispatched 取消窗口 |
+| `taskEntry` | `useQuery({ queryKey: issueKeys.tasks(sentIssueId), queryFn: () => api.listTasksByIssue(sentIssueId), staleTime: 30_000, enabled: !!sentIssueId })`——与 `ProjectTeamAgentChat` 消息流已读取的 task-runs 列表（本文件 L98-102）同一 query key（`["issues","tasks",issueId]`，issues/queries.ts L179）；两者同时启用时收敛为同一缓存，**不产生重复请求** | 该 task 的权威状态（含 running/waiting_local_directory 与终态） |
+| `taskActive` | `taskEntry != null && ACTIVE.has(taskEntry.status)`，`ACTIVE = { queued, dispatched, waiting_local_directory, running }`（与 agent.ts L286-298 状态联合及「active vs done」分桶注释一致） | 任务时间线判定的活动态（含真正的 running） |
+| `taskTerminal` | `taskEntry != null && TERMINAL.has(taskEntry.status)`，`TERMINAL = { completed, failed, cancelled }` | 任务时间线判定的终态 |
+| `trackedActive` | `(taskInItems || taskActive) && !taskTerminal` | 运行态判定：任一源说活动即活动；任务时间线说终态即覆盖陈旧 items 残留 |
+| `isRunning`（传 ChatInputCore） | `trackedActive` | 运行态：终态落地后自动回落 false，按钮回发送态 |
 | `onStop` | `handleStop`：`cancelTask.mutateAsync(sentTaskId)`（`useCancelProjectQueueTask`，本文件 TaskExecutionCard 已使用） | 取消最近一次发送的 task |
 | `allowSubmitWhileRunning`（传 ChatInputCore） | `true` | 运行中仍可续发（队列语义），与现状「入队完成后即可再发」一致（FR-7 不回归） |
+
+生命周期闭合表（B-003 验收口径，测试计划 §6.9 逐行覆盖）：
+
+| 阶段 | queue items（服务端过滤 queued+dispatched） | 任务时间线（`GET /api/issues/:id/task-runs`） | `trackedActive` |
+|---|---|---|---|
+| queued | ✓ 含 sentTaskId | ✓ status=queued | true（两源均真） |
+| dispatched | ✓ 含 sentTaskId | ✓ status=dispatched | true |
+| running | ✗（离开 items） | ✓ status=running | true（任务时间线单独支撑） |
+| waiting_local_directory | ✗ | ✓ status=waiting_local_directory（active 分桶） | true |
+| completed / failed / cancelled | ✗ | ✓ status=terminal | false（`!taskTerminal` 覆盖陈旧 items 残留，不渲染死按钮） |
+
+两个事实源的实时性由既有 WS 失效保障：`task:*` 前缀事件失效 `["issues","tasks"]`（use-realtime-sync.ts L926）与 `projectKeys.queueStatusAll(wsId)`（L902，items 键挂在同一前缀下）——composer 与消息流卡片、队列栏同一次刷新，无需新增订阅或轮询。
 
 竞态与错误语义（沿用 TSUG-007 三支，与 TaskExecutionCard/ProjectQueueBar 完全一致）：
 
@@ -278,10 +298,11 @@ CHAT_COLUMN = "mx-auto w-full max-w-4xl"     // 居中、封顶、封顶下满�
 
 边界：
 
-- **入队窗口**（mutation in-flight）：`isRunning=false`，ChatInputCore 内部 `isSubmitting` 显示 loading（不再显示无目标的 stop）；响应落地后 `sentTaskId` 写入、items 经 WS `task:*` 前缀失效刷新，短暂窗口内 `trackedActive` 可能滞后翻 true，可接受（与 ProjectQueueBar 同一实时缓存口径）。
-- **续发**：`allowSubmitWhileRunning=true` 时，运行中 + 有内容 → 按钮为发送（queue send），空输入/上传中 → stop；再次发送成功后 `sentTaskId` 指向最新 task——**stop 只作用于最近一次**，其余任务仍由队列栏逐条取消（差异文档记录）。
-- **硬降级**：send 返回 `task_id=""`（schema fallback）→ `sentTaskId=null`，`trackedActive` 恒 false，composer 无运行态（不渲染死按钮）。
-- **取消成功回流**：`useCancelProjectQueueTask.onSettled` 失效 `projectKeys.queueStatus` 前缀（含 items），`trackedActive` 翻 false、按钮回发送态。
+- **入队窗口**（mutation in-flight）：`isRunning=false`，ChatInputCore 内部 `isSubmitting` 显示 loading（不再显示无目标的 stop）；响应落地后 `sentTaskId`/`sentIssueId` 写入、任务时间线与 items 经 WS `task:*` 前缀失效刷新，短暂窗口内 `trackedActive` 可能滞后翻 true，可接受（与消息流/队列栏同一实时缓存口径）。
+- **首次发送的容器绑定**：面板持有的 `chat.issue_id`（`projectChatOptions` 缓存，全局 staleTime=Infinity 且 send 成功路径不失效，见依赖 #15）可能在首次发送后短暂停留在旧值；composer **不依赖面板 props**，以发送响应自带的 `issue_id`（`ProjectChatSendResultSchema` L1531-1537 为 UUID 必填）键定任务时间线查询——首条消息的 running 覆盖不依赖面板刷新。面板缓存随后收敛为同一 issueId 时，两边 query key 相同、缓存自动去重。无容器（`sentIssueId` 为空：未发送/硬降级）时查询 disabled，活动性回落 items-only（恒 false，因 sentTaskId 也未写入）。
+- **续发**：`allowSubmitWhileRunning=true` 时，运行中 + 有内容 → 按钮为发送（queue send），空输入/上传中 → stop；再次发送成功后 `sentTaskId`/`sentIssueId` 指向最新 task——**stop 只作用于最近一次**，其余任务仍由队列栏逐条取消（差异文档记录）。
+- **硬降级**：send 返回 `task_id=""`（schema fallback）→ 不写入任何 sent 状态，`trackedActive` 恒 false，composer 无运行态（不渲染死按钮）。
+- **取消成功回流**：`useCancelProjectQueueTask.onSettled` 失效 `projectKeys.queueStatus` 前缀（含 items）+ WS `task:*` 事件失效任务时间线，`trackedActive` 翻 false、按钮回发送态。
 - **权限**：取消权限由服务端 403 强制（originator 或 owner/admin）；本路径只取消本 composer 最近发送的 task（originator 恒为当前用户），不扩大权限面、不新增可写路径。
 
 ## 4.4 术语硬化（Step 2.5）
@@ -290,7 +311,7 @@ CHAT_COLUMN = "mx-auto w-full max-w-4xl"     // 居中、封顶、封顶下满�
 |---|---|---|
 | 「底部工具栏控件 / leftAdornment 或等价底部工具栏 slot」 | 选定现有 `ChatInputCore.leftAdornment` slot（**不**新建等价 slot/组件）；代码别名 `leftAdornment` | 360px 浮窗 + 长模型 ID：chip `min-w-0 truncate` 截断 + 左组 wrap，验证不横向溢出 |
 | 「窄屏换行（不挤压输入区）」 | 解释 = 底栏整体在自身行带内换行、输入区永不与控件重叠；编辑区 `flex-1 min-h-8 overflow-y-auto` 地板 | 底栏两行场景：编辑器仍可聚焦、可滚动、发送按钮不被顶出 |
-| 「运行中停止（Team Agent）」 | 解释 = composer 右下角 stop 作用于最近一次发送且仍在 queued/dispatched 窗口的 task；代码别名 `sentTaskId`/`trackedActive` | 边界验证：task 已终态（不在 items）→ stop 不渲染、按钮回发送态；重复点击 → 幂等静默（TSUG-007 分支 1） |
+| 「运行中停止（Team Agent）」 | 解释 = composer 右下角 stop 作用于最近一次发送且处于活动生命周期的 task（queued/dispatched 由 queue items、running/waiting_local_directory 由任务时间线判定）；代码别名 `sentTaskId`/`sentIssueId`/`taskInItems`/`taskEntry`/`trackedActive` | 边界验证：task 在任务时间线为终态（completed/failed/cancelled）→ stop 不渲染、按钮回发送态（终态覆盖陈旧 items）；running 且离开 items → stop 仍渲染；重复点击 → 幂等静默（TSUG-007 分支 1） |
 | 「单一输入 surface」 | = `ChatInputCore` surface 采用与 `ChatInput` 相同的 border/bg/focus/圆角/内部滚动类名集合 | 焦点态：`focus-within:ring-2 ring-ring/20` 与普通聊天一致（组件测试断言） |
 
 无语义冲突需需求负责人澄清，全部在 PRD 授权范围内裁定。
@@ -339,12 +360,12 @@ CHAT_COLUMN = "mx-auto w-full max-w-4xl"     // 居中、封顶、封顶下满�
 - **Alternatives**：a) 放 `apps/docs`——面向用户的产品文档站，不适合内部实现注记；b) 放 openwiki——生成物，禁手编。
 - **Consequences**：实施期若差异变化，同 PR 内更新该文件。
 
-## D-7 Team Agent 运行中停止路径（B-003 回修）
+## D-7 Team Agent 运行中停止路径（B-003 回修 v2）
 
-- **Decision**：composer 的 `isRunning`/`onStop` 绑定「最近一次发送 task 仍在活动队列」，`onStop` 复用 `useCancelProjectQueueTask` 取消该 task，并传 `allowSubmitWhileRunning=true` 保持运行中可续发；不渲染无处理器的 stop。
-- **Context**：现状 `isRunning={isPending}` 只在入队窗口显示停止且无处理器；队列栏取消是另一入口。PRD FR-5/AC-5 与来源 AC-33 要求运行中停止可用；FR-7 要求 send/stop 业务行为不回归（取消端点、权限、TSUG-007 语义均复用现状）。
-- **Alternatives**：a) 不渲染 stop、只留队列栏——违反来源规则 5「右下角复用发送/停止按钮和运行中状态」，无需求授权；b) `isRunning` 常 true 并锁发送直到 task 终态——改变现状「入队完成后即可再发」的发送行为，违反 FR-7；c) 给 ChatInputCore 新增独立 stop 槽位解耦——扩大共享组件契约面，超出「最小调整」。
-- **Consequences**：stop 只作用于最近一次 task（其余由队列栏逐条管理）；入队窗口短暂无运行态（loading）；该语义记入差异文档。
+- **Decision**：`isRunning` 采用**双源活动性判定**——queue items（服务端过滤 queued+dispatched，覆盖排队/派发窗口）∪ 容器 Issue 任务时间线（`issueKeys.tasks(sentIssueId)`，`AgentTask.status` 覆盖 running/waiting_local_directory 与终态），并集后以任务时间线终态覆盖；`onStop` 复用 `useCancelProjectQueueTask` 取消 `sentTaskId`，并传 `allowSubmitWhileRunning=true` 保持运行中可续发；不渲染无处理器的 stop。
+- **Context**：上一轮「items 含 sentTaskId ⇒ 排队/派发/运行」不成立——items 只含 queued/dispatched，任务 running 后离开列表、按钮会错误回发送态（B-003 复评指出）。任务时间线是 Team Agent 消息流已读取的既有事实源（同一 query key，缓存收敛去重），且 WS `task:*` 事件同时失效两个源（use-realtime-sync.ts L926/L902），生命周期闭合无需新契约。PRD FR-5/AC-5 与来源 AC-33 要求运行中停止可用；FR-7 要求 send/stop 业务行为不回归（取消端点、权限、TSUG-007 语义均复用现状）。
+- **Alternatives**：a) 不渲染 stop、只留队列栏——违反来源规则 5「右下角复用发送/停止按钮和运行中状态」，无需求授权；b) `isRunning` 常 true 并锁发送直到 task 终态——改变现状「入队完成后即可再发」的发送行为，违反 FR-7；c) 给 ChatInputCore 新增独立 stop 槽位解耦——扩大共享组件契约面，超出「最小调整」；d) 修改 queue-items 服务端过滤或新增 API 返回 running——违反本 CR zero_diff（不新增/修改 API、服务端零改动）。
+- **Consequences**：stop 只作用于最近一次 task（其余由队列栏逐条管理）；入队窗口短暂无运行态（loading）；running 期间（含离开 items 后）按钮保持 stop 态，终态落地后回发送态；该语义与生命周期闭合表（§4.3.1）记入差异文档。
 
 # 6. FR 到技术实现映射
 
@@ -354,7 +375,7 @@ CHAT_COLUMN = "mx-auto w-full max-w-4xl"     // 居中、封顶、封顶下满�
 | FR-2 单一输入 surface | ChatInputCore surface 类名集合 = ChatInput surface（border-surface-border/bg-surface/rounded-lg/focus-within ring/内部滚动）；分层结构 §4.2 | AC-2 |
 | FR-3 控件入底部工具栏 | 两宿主构造 `leftAdornment`（§3.2），`persistModel`/`persistThinking` 原样；Team Agent 三态（可编辑/只读徽标/runtime guide）原样；Private Ask creator-only 原样 | AC-4 |
 | FR-4 窄屏不溢出不遮挡 | §4.2 flow 布局 + wrap + `min-h-8` 地板；e2e 360px 回归 | AC-3 |
-| FR-5 视觉状态一致 | §4.3 状态映射表逐项不变；`SubmitButton` 复用；Team Agent 运行中停止路径 §4.3.1（可执行，非死按钮） | AC-5 |
+| FR-5 视觉状态一致 | §4.3 状态映射表逐项不变；`SubmitButton` 复用；Team Agent 运行中停止路径 §4.3.1（可执行，非死按钮；双源覆盖 queued→dispatched→running 全生命周期） | AC-5 |
 | FR-6 可访问性保持 | ChatInputCore 传 `ariaLabel`/`stopAriaLabel`（B-002）；只读/可编辑配置控件带 sr-only 类别标签；chip variant 自带 aria-label/tooltip；键盘发送 Mod+Enter 由 ContentEditor `onSubmit` 原样承载 | AC-7 |
 | FR-7 不新增数据与业务语义 | 改动清单仅渲染层（§1.1）；`zero_diff` 清单（§9） | AC-6/AC-8 |
 | FR-8 共享组件适配与测试 | Web/Desktop 共享 `packages/views`；组件测试 + Playwright（§6.9）；差异文档（§5.6） | AC-7/AC-8 |
@@ -365,7 +386,7 @@ CHAT_COLUMN = "mx-auto w-full max-w-4xl"     // 居中、封顶、封顶下满�
 - **AC-2** 设计落点：ChatInputCore surface 类名集合（§4.1-2）。可观测结果：组件测试对 surface 断言 `border-surface-border bg-surface rounded-lg focus-within:ring-2` 等 token；长文本注入后编辑器区 `overflow-y-auto` 生效、发送按钮仍在视口内。可达性：与 draft 内容长度解耦，测试直接驱动。
 - **AC-3** 设计落点：§4.2 底栏 flow 布局 + `ModePane @container`。可观测结果：Playwright 在 360px 视口打开项目聊天面板，断言无横向溢出（`scrollWidth <= clientWidth`）且输入区/附件预览/配置控件/发送停止按钮无重叠（boundingBox 检查 + 截图基线）。可达性：面板宽度由 e2e 固定 viewport 决定，不依赖数据。
 - **AC-4** 设计落点：两宿主 `leftAdornment` 内容（§3.2），`persistModel`/`persistThinking` 与 `patchProjectChatConfig`/`patchChatSessionConfig` 调用路径不变。可观测结果：组件测试沿用既有 `project-chat-model-picker`/`project-chat-model-readonly`/`project-chat-model-runtime-guide`/`project-chat-thinking-picker`/`private-ask-thinking-picker` testid 断言三态与渲染；Private Ask 模型控件以新 `private-ask-model-picker` testid 定位（`private-ask-model-row` 随行移除）；mock api 断言 PATCH URL/body 与现状一致且无 `updateAgent` 调用。可达性：三态由 `canConfigure`/`runtimeReady` 分支决定，既有测试已覆盖全部三态路径。
-- **AC-5** 设计落点：§4.3 映射表（`pendingUploads`/`isSubmitting`/运行态门禁）+ §4.3.1 Team Agent 停止路径（`sentTaskId`/`trackedActive`/`handleStop`）。可观测结果：既有 chat-input/项目聊天测试全绿；新增——Team Agent mock 发送返回 `task_id` 且该 task 在 mock 队列 items 中 → composer 渲染 stop 且点击后 `cancelTaskById(task_id)` 被调用；task 不在 items → 按钮回发送态；取消返回非 cancelled 终态 → `cancel_already_finished` toast。可达性：状态由既有 hooks/query 驱动，布局改动不参与状态机。
+- **AC-5** 设计落点：§4.3 映射表（`pendingUploads`/`isSubmitting`/运行态门禁）+ §4.3.1 Team Agent 停止路径（`sentTaskId`/`sentIssueId`/`taskInItems`/`taskEntry`/`trackedActive`/`handleStop`，双源）。可观测结果：既有 chat-input/项目聊天测试全绿；新增——（a）queued/dispatched 窗口：mock 发送返回 `task_id` 且 mock queue items 含该 task → stop 渲染、点击后 `cancelTaskById(task_id)` 被调用；（b）**running**：mock 发送返回 `task_id`+`issue_id`，mock `listTasksByIssue(issue_id)`（task-runs）含该 task 且 `status="running"`、mock items **不含**该 task → stop 仍渲染（证明运行中停止可达，不依赖 items）；（c）终态回流：task-runs 该 task `status="completed"`（items 即使陈旧仍含该 task）→ 按钮回发送态（终态覆盖）；（d）`waiting_local_directory` → stop 渲染；（e）取消返回非 cancelled 终态 → `cancel_already_finished` toast；（f）硬降级 `task_id=""` → 不渲染死按钮。可达性：状态由既有 hooks/query（queue items 缓存与 task-runs 缓存，WS `task:*` 失效）驱动，布局改动不参与状态机；task-runs 查询以发送响应自带的 `issue_id` 键定，不依赖面板 `chat.issue_id` 刷新（§4.3.1 边界）。
 - **AC-6** 设计落点：`ChatInputCore` 仍只依赖 `draftAdapter`（接口不变）；两宿主 `useTeamAgentDraftAdapter`/`usePrivateAskDraftAdapter` 不变；pending-message 渲染迁入 gutter 对齐块但 testid/渲染条件不变。可观测结果：`chat-input.test.tsx` adapter isolation 套件全绿（`useChatStore` 零订阅）；项目组件测试断言 `project-chat-pending-message`/`private-ask-pending-message` 仍按原条件渲染。可达性：结构性事实，无前置过滤。
 - **AC-7** 设计落点：ChatInputCore 传 `ariaLabel`/`stopAriaLabel`（send_tooltip/stop_tooltip 既有 key）+ 配置控件 sr-only 类别标签（model_label/thinking_label）+ chip 内建 aria-label/tooltip + Mod+Enter 原样。可观测结果：role/name 断言——发送按钮 accessible name=send_tooltip 文案、运行态停止按钮=stop_tooltip 文案、Team Agent 只读 model/thinking 值各有「模型/思考级别」类别 sr-only 标签；Playwright 键盘发送 + 运行中停止（§4.3.1）。可达性：不依赖平台（Web/Desktop 共享同一组件）。
 - **AC-8** 设计落点：§1.1 改动清单闭合性。可观测结果：实施 diff 范围审查（`git diff --name-only` 白名单核对，无 `server/`、无 `server/migrations/`）；普通聊天截图基线对比（`ChatInput` 路径零 diff）；差异文档存在且每条有理由。可达性：范围由提交内容静态可查。
@@ -373,14 +394,14 @@ CHAT_COLUMN = "mx-auto w-full max-w-4xl"     // 居中、封顶、封顶下满�
 ## 组件测试与 Playwright 计划（FR-8 细化）
 
 1. `packages/views/chat/components/chat-input.test.tsx`：ChatInputCore 套件新增——wrapper（外层 GUTTER）/surface（内层 COLUMN）两层类名断言 + surface token、底栏流布局结构、`leftAdornment` 渲染于左组、`data-slot="chat-input-surface"`；a11y——发送按钮 accessible name=send_tooltip 文案、`running+onStop` 时停止按钮 accessible name=stop_tooltip 文案；`allowSubmitWhileRunning=true` 时运行中+有内容 → 发送可用且 handleSend 放行、空输入 → 停止；未传该字段 → 运行中发送被拦（现状行为，Private Ask 依赖）。
-2. `packages/views/projects/components/project-team-agent-chat.test.tsx` / `project-private-ask.test.tsx`：断言模型/思考控件 testid 现在位于 composer 区域内（`project-chat-composer`/`private-ask-composer` 子树）；既有三态与 PATCH 断言保持；新增——sr-only 类别标签存在（model_label/thinking_label 文案）、Team Agent 消息流根/队列栏两层 DOM 结构（外层 GUTTER 节点与内层 COLUMN 节点分离）、Team Agent 停止路径（§4.3.1：send 返回 task_id + items 含该 task → stop 出现并可点击；点击调用 `cancelTaskById(task_id)`；非 cancelled 终态 → `cancel_already_finished` toast；task 不在 items → 按钮回发送态）。
+2. `packages/views/projects/components/project-team-agent-chat.test.tsx` / `project-private-ask.test.tsx`：断言模型/思考控件 testid 现在位于 composer 区域内（`project-chat-composer`/`private-ask-composer` 子树）；既有三态与 PATCH 断言保持；新增——sr-only 类别标签存在（model_label/thinking_label 文案）、Team Agent 消息流根/队列栏两层 DOM 结构（外层 GUTTER 节点与内层 COLUMN 节点分离）、Team Agent 停止路径双源矩阵（§4.3.1 生命周期闭合表逐行）：mock `listTasksByIssue` 返回含 `sentTaskId` 的 task-runs（queued / dispatched / **running** / waiting_local_directory / completed / failed / cancelled 七态各一例），mock queue items 按服务端过滤口径只放 queued/dispatched——断言 queued/dispatched 时 stop 出现（items 含）、**running 且 items 不含该 task 时 stop 仍出现**（任务时间线支撑）、终态时按钮回发送态（终态覆盖陈旧 items 残留）、点击 stop 调用 `cancelTaskById(task_id)`、非 cancelled 终态 → `cancel_already_finished` toast、`task_id=""` 硬降级不渲染死按钮。
 3. e2e 新增 `e2e/project-chat-composer.spec.ts`（或并入既有 spec）：宽面板截图（发送框 vs 消息列边缘对齐、与普通聊天 surface 视觉一致）；窄面板 360px 回归（AC-3）；运行中停止交互（AC-5/§4.3.1）与键盘发送（AC-7）。
 4. 差异文档：`packages/views/projects/components/project-chat-composer-layout-diff.md`。
 
 # 7. 安全与性能考量
 
 - **权限**：Model/Thinking 控件的可编辑性完全沿用现状分支（Team Agent `canConfigure` owner/admin；Private Ask creator-only），服务端 403 强制（CR-2026-056）不变；只读徽标/runtime guide 形态保留。布局改动不新增任何可写路径。
-- **数据**：不新增请求——控件数据源沿用 `runtimeModelsOptions`、`projectChatOptions`、`projectPrivateChatOptions` 等既有 query；底栏换行纯 CSS，无测量/无新 state。
+- **数据**：不新增请求——控件数据源沿用 `runtimeModelsOptions`、`projectChatOptions`、`projectPrivateChatOptions` 等既有 query；停止路径双源复用既有缓存：queue items 与 ProjectQueueBar 同 key、task-runs 与 TeamAgentStreamView 同 key（`issueKeys.tasks`），react-query 收敛去重；底栏换行纯 CSS，无测量/无新 state。
 - **可访问性**：ChatInputCore 补传 `ariaLabel`/`stopAriaLabel`（send_tooltip/stop_tooltip，与 `ChatInput` 同 key，B-002）；只读 Model/Thinking 值带 sr-only 类别标签（model_label/thinking_label）；chip 控件自带 aria-label 与 tooltip；`aria-disabled`（noAgent）不变；焦点可见性（focus-within ring）与普通聊天一致（增强）。
 - **边界**：窄面板 360px、长模型 ID（truncate）、thinkingLevels 为空（不渲染 thinking 控件）、agent 为 null（不渲染工具栏）、noAgent 置灰——逐一在 §4 设计中覆盖。
 - **失败模式**：CSS 类名改动最坏结果为视觉回退，无数据/事务风险；无需回滚方案（无迁移）。停止路径失败按 TSUG-007 三支降级为 toast，无状态写入。
@@ -390,9 +411,9 @@ CHAT_COLUMN = "mx-auto w-full max-w-4xl"     // 居中、封顶、封顶下满�
 - **scope_in**（本 CR 必须交付）：
   - FR-1~FR-8 全部实现条目（§6 映射表），验收 AC-1~AC-8。
   - 改动文件白名单：§1.1 表列文件 + 上表测试文件 + `e2e/project-chat-composer.spec.ts` + `packages/views/projects/components/project-chat-composer-layout-diff.md`。
-  - Team Agent composer 运行中停止路径（§4.3.1/D-7，复用 `useCancelProjectQueueTask`，不新增 API）；ChatInputCore 的 `ariaLabel`/`stopAriaLabel` 补传与 `allowSubmitWhileRunning` 采纳（§3.2）。
+  - Team Agent composer 运行中停止路径（§4.3.1/D-7，双源：queue items + 容器 Issue 任务时间线（`issueKeys.tasks`/`api.listTasksByIssue` 只读复用），`onStop` 复用 `useCancelProjectQueueTask`，不新增 API）；ChatInputCore 的 `ariaLabel`/`stopAriaLabel` 补传与 `allowSubmitWhileRunning` 采纳（§3.2）。
 - **scope_out**（明确排除）：server 任何代码；任何 API 变更；`server/migrations/`；任务快照逻辑；数据模型；`ChatInput`（全局）视觉基线与业务语义；`useProjectChatStore` 结构；Discussion UI；mobile；新 UI 组件库/新状态管理；`ModelPicker`/`ThinkingPicker`/`SubmitButton`/`ChatAddMenu` 组件本体；draft adapter 接口。
-- **zero_diff**（不得改动）：`chat-input.tsx` 中 `ChatInput`（全局）函数体与 `ChatInputProps` 签名；`ChatInputCore` props 签名；`ChatInputDraftAdapter` 接口；`packages/core/api/client.ts` 全部；`useProjectChatStore` 与其 adapter hook 的读写语义；`ContentEditor` 及 editor 包；`PATCH` 端点与三态 body 语义；`project-team-agent-chat.tsx` 中 `handleComposerUpload`/`persistModel`/`persistThinking` 函数体、`handleSend` 的业务语义（唯一新增一行：成功后记录 `sentTaskId`，§4.3.1）、既有 testid（`project-chat-*`/`private-ask-*` 系列）；locale 文件（无新 key）；`ChatInputCore` props 签名与 `SubmitButton`/`ModelPicker`/`ThinkingPicker` 组件本体。
+- **zero_diff**（不得改动）：`chat-input.tsx` 中 `ChatInput`（全局）函数体与 `ChatInputProps` 签名；`ChatInputCore` props 签名；`ChatInputDraftAdapter` 接口；`packages/core/api/client.ts` 全部（含 `listTasksByIssue`/`getProjectQueueItems`/`cancelTaskById`，只读消费）；`packages/core/issues/queries.ts`、`packages/core/chat/queries.ts`、`packages/core/projects/queries.ts`/`mutations.ts`、`packages/core/realtime/use-realtime-sync.ts` 全部（`issueKeys.tasks` 与失效路径只读复用）；`useProjectChatStore` 与其 adapter hook 的读写语义；`ContentEditor` 及 editor 包；`PATCH` 端点与三态 body 语义；server 任何代码（含 queue-items 过滤口径与 `/api/issues/:id/task-runs`）；`project-team-agent-chat.tsx` 中 `handleComposerUpload`/`persistModel`/`persistThinking` 函数体、`handleSend` 的业务语义（唯一新增一条语句：成功后记录 `sentTaskId`/`sentIssueId`，§4.3.1）、既有 testid（`project-chat-*`/`private-ask-*` 系列）；locale 文件（无新 key）；`ChatInputCore` props 签名与 `SubmitButton`/`ModelPicker`/`ThinkingPicker` 组件本体。
 - **follow_up**（留给后续 CR）：Discussion 面板视觉对齐（CR 顺序边界明令不混入）；mobile 端；`ChatInputCore` 与 `ChatInput` 两套 composer 实现的结构性合并去重（本 CR 只做视觉对齐，不做大重构）。
 
 # 既有实现依赖与事实
@@ -419,9 +440,9 @@ CHAT_COLUMN = "mx-auto w-full max-w-4xl"     // 居中、封顶、封顶下满�
 
 4. repo: multica
    relative path: packages/views/projects/components/project-team-agent-chat.tsx
-   stable symbol/对象: `TeamAgentStreamView` 根 `"mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-3"`（L313）；`TeamAgentComposer` wrapper `"shrink-0 border-t px-4 py-3"`（L864）、`data-testid="project-chat-model-row"` 独立行（L916，含 `project-chat-model-readonly` L925 / `project-chat-model-picker` L935 / `project-chat-model-runtime-guide` L945 / `project-chat-thinking-picker` L951）、`ChatInputCore` 使用点（L968-973，只传 `isRunning={isPending}` 不传 `onStop`——B-003 事实）、`useSendProjectChatMessage` 解构 `{mutateAsync, isPending}`（L675）、`useCancelProjectQueueTask` 已在本文件 TaskExecutionCard 使用（L499，TSUG-007 三支 L514-520）；`persistModel`（L733）/`persistThinking`（L746）调用 `patchProjectChatConfig`；L686-692 注释「api.updateAgent 不得从聊天路径调用」
+   stable symbol/对象: `TeamAgentStreamView` 根 `"mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-3"`（L313）；`TeamAgentComposer` wrapper `"shrink-0 border-t px-4 py-3"`（L864）、`data-testid="project-chat-model-row"` 独立行（L916，含 `project-chat-model-readonly` L925 / `project-chat-model-picker` L935 / `project-chat-model-runtime-guide` L945 / `project-chat-thinking-picker` L951）、`ChatInputCore` 使用点（L968-973，只传 `isRunning={isPending}` 不传 `onStop`——B-003 事实）、`useSendProjectChatMessage` 解构 `{mutateAsync, isPending}`（L675）、`useCancelProjectQueueTask` 已在本文件 TaskExecutionCard 使用（L499，TSUG-007 三支 L514-520）；`persistModel`（L733）/`persistThinking`（L746）调用 `patchProjectChatConfig`；L686-692 注释「api.updateAgent 不得从聊天路径调用」；**任务时间线已读取**——`ProjectTeamAgentChat` 容器 `useQuery({ queryKey: issueKeys.tasks(issueId), queryFn: () => api.listTasksByIssue(issueId), staleTime: 30_000, enabled: hasContainer })`（L98-102，L8 已 import `issueKeys`）；`taskStatusKind`（L445-457，queued/dispatched/waiting_local_directory/running → "running" kind）；`TaskExecutionCard.canStop = task.status === "running" && (isOriginator || canConfigure)`（L510，取消动作经同一 mutation L514）
    commit SHA: 117fc6be657f91d43df5892b52782a18329c7aed
-   依赖结论: Team Agent 侧改造对象；三态分支、testid、PATCH 路径全部保留；B-001（两层 DOM）、B-002（sr-only）、B-003（停止路径）改动点所在。
+   依赖结论: Team Agent 侧改造对象；三态分支、testid、PATCH 路径全部保留；B-001（两层 DOM）、B-002（sr-only）改动点所在；B-003 v2 的任务时间线事实源（`issueKeys.tasks`）已由消息流读取，composer 以发送响应 `issue_id` 自键定同 key 复用，不产生重复请求。
 
 5. repo: multica
    relative path: packages/views/projects/components/project-private-ask.tsx
@@ -443,9 +464,9 @@ CHAT_COLUMN = "mx-auto w-full max-w-4xl"     // 居中、封顶、封顶下满�
 
 8. repo: multica
    relative path: packages/views/projects/components/project-queue-bar.tsx
-   stable symbol/对象: 根 `"shrink-0 border-t px-4 py-2"`（L61），位于消息流与 composer 之间；展开列表取消经 `useCancelProjectQueueTask`（L33，TSUG-007 三支 L39-50）；items 来自 `projectQueueItemsOptions`（服务端过滤 queued/dispatched）
+   stable symbol/对象: 根 `"shrink-0 border-t px-4 py-2"`（L61），位于消息流与 composer 之间；展开列表取消经 `useCancelProjectQueueTask`（L33，TSUG-007 三支 L39-50）；items 来自 `projectQueueItemsOptions`（服务端过滤 queued/dispatched，见 #21）
    commit SHA: 117fc6be657f91d43df5892b52782a18329c7aed
-   依赖结论: 队列栏边缘参与「消息列↔发送框对齐」链，需两层 DOM 最小对齐（B-001）；其取消语义与停止路径复用同一 mutation 与同一查询缓存。
+   依赖结论: 队列栏边缘参与「消息列↔发送框对齐」链，需两层 DOM 最小对齐（B-001）；其取消语义与停止路径复用同一 mutation；其 items 查询缓存与 composer 双源之一共用同一 query key（react-query 去重）。
 
 9. repo: multica
    relative path: packages/core/api/client.ts
@@ -473,33 +494,63 @@ CHAT_COLUMN = "mx-auto w-full max-w-4xl"     // 居中、封顶、封顶下满�
 
 13. repo: multica
     relative path: packages/core/api/schemas.ts
-    stable symbol/对象: `ProjectChatSendResult`（L1524，含 `task_id`，schema fallback 时 `task_id=""`）；`QueueItem`（L1736，`task_id`/`status`/`originator`；items 由服务端过滤为 queued/dispatched）
+    stable symbol/对象: `ProjectChatSendResult`（L1524-1529，含 `task_id` 与 `issue_id`；`ProjectChatSendResultSchema` L1531-1537 二者为 UUID 必填，fallback 时整体降级为空串）；`QueueItem`（L1736，`task_id`/`status`/`originator`；items 由服务端过滤为 queued/dispatched）；`AgentTaskSchema.status: z.string().default("cancelled")`（L2261）
     commit SHA: 117fc6be657f91d43df5892b52782a18329c7aed
-    依赖结论: B-003 停止目标（send 返回的 task_id）与活动性判定（task 是否仍在 items）的数据事实源。
+    依赖结论: B-003 双源数据事实源——停止目标（send 返回的 task_id）+ 容器 Issue id（send 返回的 issue_id）+ 两个活动性事实源（items 与 task-runs）的 schema 边界。
 
 14. repo: multica
     relative path: packages/core/api/client.ts
-    stable symbol/对象: `sendProjectChatMessage`（L3756，POST /api/projects/:id/chat/messages，返回 `ProjectChatSendResult`）；`cancelTaskById`（L3569，POST /api/tasks/:id/cancel，终态任务返回幂等 200 携带真实状态）
+    stable symbol/对象: `sendProjectChatMessage`（L3756，POST /api/projects/:id/chat/messages，返回 `ProjectChatSendResult`）；`cancelTaskById`（L3569，POST /api/tasks/:id/cancel，终态任务返回幂等 200 携带真实状态）；`listTasksByIssue`（L2478，GET /api/issues/:id/task-runs，`AgentTaskListSchema` fallback `[]`）
     commit SHA: 117fc6be657f91d43df5892b52782a18329c7aed
-    依赖结论: B-003 发送返回 task_id 与取消端点的既有契约（本 CR 不改，只消费）。
+    依赖结论: B-003 发送返回（task_id/issue_id）、取消端点与任务时间线端点的既有契约（本 CR 不改，只消费）。
 
 15. repo: multica
     relative path: packages/core/projects/mutations.ts
-    stable symbol/对象: `useSendProjectChatMessage`（L63，返回 `{mutateAsync, isPending}`，isPending=本地入队窗口）；`useCancelProjectQueueTask`（L93，`mutateAsync(taskId)`、onSettled 失效 `projectKeys.queueStatus` 前缀含 items；TSUG-007 三支语义）
+    stable symbol/对象: `useSendProjectChatMessage`（L63-77，返回 `{mutateAsync, isPending}`，isPending=本地入队窗口；onError 仅 409 失效 `projectKeys.chat`——成功路径不失效）；`useCancelProjectQueueTask`（L93-106，`mutateAsync(taskId)`、onSettled 失效 `projectKeys.queueStatus` 前缀含 items；TSUG-007 三支语义）
     commit SHA: 117fc6be657f91d43df5892b52782a18329c7aed
-    依赖结论: B-003 复用对象——停止路径与 TaskExecutionCard/ProjectQueueBar 同一 mutation、同一竞态/错误语义；无新增请求。
+    依赖结论: B-003 复用对象——停止路径与 TaskExecutionCard/ProjectQueueBar 同一 mutation、同一竞态/错误语义；无新增请求；`projectKeys.chat` 成功路径不失效（全局 staleTime=Infinity，query-client.ts）是 composer 用发送响应 `issue_id` 自键定任务时间线的依据（§4.3.1 边界）。
 
 16. repo: multica
     relative path: packages/core/projects/queries.ts
-    stable symbol/对象: `projectQueueItemsOptions`（L59，queryKey=`projectKeys.queueItems(wsId, id)`，WS `task:*` 前缀失效）
+    stable symbol/对象: `projectQueueItemsOptions`（L59，queryKey=`projectKeys.queueItems(wsId, id)`=queueStatus 前缀 + `"items"`，WS `task:*` 前缀失效；服务端过滤 queued/dispatched，见 #21）
     commit SHA: 117fc6be657f91d43df5892b52782a18329c7aed
-    依赖结论: composer 的 trackedActive 与 ProjectQueueBar 共用同一 query 缓存（react-query 去重），NFR-4「不新增重复请求」成立。
+    依赖结论: composer 双源之一（queued/dispatched 窗口）与 ProjectQueueBar 共用同一 query 缓存（react-query 去重），NFR-4「不新增重复请求」成立；items 不含 running 是 B-003 v2 引入任务时间线源的原因。
+
+17. repo: multica
+    relative path: packages/core/issues/queries.ts
+    stable symbol/对象: `issueKeys.tasks(issueId)`=`["issues","tasks",issueId]`（L179）；`issueKeys.tasksAll()`（L177）注释「any task lifecycle event refreshes every per-issue list, regardless of which issue is currently mounted」
+    commit SHA: 117fc6be657f91d43df5892b52782a18329c7aed
+    依赖结论: B-003 任务时间线事实源的 query key——composer 以发送响应的 `issue_id` 键定（`issueKeys.tasks(sentIssueId)`），与 TeamAgentStreamView 同 key 时收敛为同一缓存，不产生重复请求。
+
+18. repo: multica
+    relative path: packages/core/types/agent.ts
+    stable symbol/对象: `AgentTask.status` 联合：`"queued" | "dispatched" | "waiting_local_directory" | "running" | "completed" | "failed" | "cancelled"`（L291-298）；`waiting_local_directory` 注释「Treated as an active (non-terminal) state alongside queued/dispatched/running by every consumer that buckets tasks into "active vs done"」（L286-290）
+    commit SHA: 117fc6be657f91d43df5892b52782a18329c7aed
+    依赖结论: B-003 的 ACTIVE/TERMINAL 集合定义事实源——ACTIVE={queued,dispatched,waiting_local_directory,running}、TERMINAL={completed,failed,cancelled}，与既有 active-vs-done 分桶口径一致。
+
+19. repo: multica
+    relative path: packages/core/realtime/use-realtime-sync.ts
+    stable symbol/对象: `task:` 前缀失效：`qc.invalidateQueries({ queryKey: ["issues","tasks"] })`（L926）与 `projectKeys.queueStatusAll(wsId)`（L902）；WS 断线重连时 `issueKeys.tasksAll()`（L683）
+    commit SHA: 117fc6be657f91d43df5892b52782a18329c7aed
+    依赖结论: 双源的实时性保障——任一 task 生命周期事件（含 task:running/task:completed）同时刷新任务时间线与 queue items，composer 无需新增订阅/轮询；B-003 v2 生命周期闭合的时效前提。
+
+20. repo: multica
+    relative path: server/internal/service/project_chat.go
+    stable symbol/对象: `sendProjectChatCore` 经 `CreateAgentTask`（task.go L1655-1660）以 `IssueID: issue.ID`（容器 Issue）创建 Team Agent 任务；send 成功后广播 `EventCommentCreated`/`EventTaskQueued`（L557/L578）
+    commit SHA: 117fc6be657f91d43df5892b52782a18329c7aed
+    依赖结论: Team Agent 任务**必然出现在容器 Issue 的 task-runs 列表**（`/api/issues/:id/task-runs`），且 task-runs 生命周期覆盖 queued→dispatched→running→terminal——B-003 v2 用任务时间线覆盖 running 的成立前提（服务端事实，本 CR 不改）。
+
+21. repo: multica
+    relative path: server/pkg/db/queries/agent.sql
+    stable symbol/对象: `ListProjectPendingTasks`（L2947-2961）注释「identical pending reading (queued + dispatched on the project's issues)」，WHERE `i.project_id = $1`
+    commit SHA: 117fc6be657f91d43df5892b52782a18329c7aed
+    依赖结论: queue items 服务端过滤口径的权威事实——items 只含 queued+dispatched，任务 running 后离开列表；这是 B-003 v2 必须引入任务时间线作为 running 事实源的原因（服务端契约保持，zero_diff）。
 
 # SDD-CLOSE 关闭记录
 
 - **SDD-CLOSE-01** PRD §1.2 规则 3「输入区、附件预览、底部工具栏分层」→ 关闭：§4.2 flow 两层结构 + 编辑器 `overflow-y-auto`；附件预览仍由 ContentEditor 在编辑器区内承载（与普通聊天同构）。判定覆盖数据生产/消费与兼容降级：本项纯渲染分层，无数据生产/存储/传输/schema/降级层，无遗漏层。
 - **SDD-CLOSE-02** PRD §1.2 规则 4「leftAdornment 或等价底部工具栏 slot」的机制选定 → 关闭：选定现有 `leftAdornment`（D-3），§3.2 给出两宿主构造契约。
 - **SDD-CLOSE-03** PRD §1.2 规则 2/FR-1「复用单一输入 surface、对齐」的落地类名集合 → 关闭：§4.1-2 逐类名给出（border-surface-border/bg-surface/rounded-lg/focus-within ring），且全部对齐块均为外层 `CHAT_GUTTER` > 内层 `CHAT_COLUMN` 两层 DOM（B-001 回修）。
-- **SDD-CLOSE-04** 来源完成标志「差异说明文档」的落点与内容 → 关闭：`packages/views/projects/components/project-chat-composer-layout-diff.md`（D-6）；最小内容大纲：a) 消息列/队列栏/发送框共用 CHAT_GUTTER+CHAT_COLUMN 两层嵌套的说明；b) 底栏 flow 布局与普通聊天 absolute 行的等价性；c) surface `max-h-40`（vs 普通聊天 `max-h-96`）保留理由；d) Model/Thinking 可见文字 label 不再常驻、chip+tooltip 承载，类别语义由 sr-only 标签保留；e) Team Agent composer 停止作用于最近一次发送 task 的语义（其余任务仍由队列栏逐条取消）。每项均须给出「是否必要差异 + 理由」。
+- **SDD-CLOSE-04** 来源完成标志「差异说明文档」的落点与内容 → 关闭：`packages/views/projects/components/project-chat-composer-layout-diff.md`（D-6）；最小内容大纲：a) 消息列/队列栏/发送框共用 CHAT_GUTTER+CHAT_COLUMN 两层嵌套的说明；b) 底栏 flow 布局与普通聊天 absolute 行的等价性；c) surface `max-h-40`（vs 普通聊天 `max-h-96`）保留理由；d) Model/Thinking 可见文字 label 不再常驻、chip+tooltip 承载，类别语义由 sr-only 标签保留；e) Team Agent composer 停止作用于最近一次发送 task 的语义（其余任务仍由队列栏逐条取消），含双源生命周期闭合表（queued/dispatched 由 queue items、running/waiting_local_directory 由任务时间线，终态覆盖）。每项均须给出「是否必要差异 + 理由」。
 
-- **SDD-CLOSE-05** PRD FR-5/规则 5「右下角复用发送/停止按钮和 loading、上传中、运行中状态」在 Team Agent 侧的运行态来源与停止语义（PRD 未给落点）→ 关闭：§4.3.1/D-7（sentTaskId + queue items 活动性 + `useCancelProjectQueueTask`；send/stop/retry 业务行为与权限不变）。
+- **SDD-CLOSE-05** PRD FR-5/规则 5「右下角复用发送/停止按钮和 loading、上传中、运行中状态」在 Team Agent 侧的运行态来源与停止语义（PRD 未给落点）→ 关闭：§4.3.1/D-7（`sentTaskId`/`sentIssueId` + 双源活动性——queue items 覆盖 queued/dispatched、容器 Issue 任务时间线覆盖 running/waiting_local_directory/终态，终态覆盖闭合 queued→dispatched→running 全生命周期 + `useCancelProjectQueueTask`；send/stop/retry 业务行为与权限不变，零新增 API）。
