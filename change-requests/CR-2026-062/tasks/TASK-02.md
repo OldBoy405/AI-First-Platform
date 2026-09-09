@@ -32,7 +32,7 @@ created: 2026-09-09T21:14:52+08:00
 - **`ModePane` @container（§4.1 规则 4）**：`project-chat-panel.tsx` L199 根 div 加 `@container`（`@2xl`/`@4xl` 变体按面板宽度生效；Discussion 面板同用 ModePane，无 @ 变体使用方，零影响）。
 - **队列栏两层（§4.1 规则 5）**：根 `"shrink-0 border-t px-4 py-2"` → 根保持 `shrink-0 border-t`（`data-testid="project-queue-bar"` 保留），内部外层 `<div className={cn(CHAT_GUTTER)}>` + 内层 `<div className={cn(CHAT_COLUMN, "py-2")}>`（toggle + expanded list 内容与交互零改动）。
 - **composer 外层与横幅区（§4.1 规则 6）**：wrapper `"shrink-0 border-t px-4 py-3"` → `"shrink-0 border-t"`；横幅区（pending-message / presenter-required / queue-full）迁入两层块：外层 `cn(CHAT_GUTTER, "pt-3")`、内层 `cn(CHAT_COLUMN)`（无横幅时该块仍渲染，保留 pt-3 顶部间距）；横幅右缘与 surface 右缘一致。
-- **工具栏 leftAdornment（§3.2，B-002）**：按 SDD §3.2 TeamAgentComposer 片段逐字构造 `toolbar`——三态分支（`project-chat-model-readonly` / `project-chat-model-picker` / `project-chat-model-runtime-guide`）与 `project-chat-thinking-picker` 全部保留；可见文字 label 不再渲染，以 `<span className="sr-only">{t(($) => $.chat.stream.model_label)}</span>` / `thinking_label` 补类别语义（只读 chip 为纯 `<span>`+title，无类别可访问名称）；`thinkingLevels.length > 0` 条件保留。`persistModel`/`persistThinking` 函数体零改动（仍走 `patchProjectChatConfig`，不得从聊天路径调用 `api.updateAgent`）。
+- **工具栏 leftAdornment（§3.2，B-002）**：按 SDD §3.2 TeamAgentComposer 片段逐字构造 `toolbar`——三态分支（`project-chat-model-readonly` / `project-chat-model-picker` / `project-chat-model-runtime-guide`）与 `project-chat-thinking-picker` 全部保留；**testid 契约（§9 移除清单第 2 项）**：`project-chat-model-row` testid 随独立行**一并移除、不迁移、无替换锚点**——Fragment 根**不**携带 `data-testid`，断言以四个内部 testid 位于 `project-chat-composer` 子树为准；可见文字 label 不再渲染，以 `<span className="sr-only">{t(($) => $.chat.stream.model_label)}</span>` / `thinking_label` 补类别语义（只读 chip 为纯 `<span>`+title，无类别可访问名称）；`thinkingLevels.length > 0` 条件保留。`persistModel`/`persistThinking` 函数体零改动（仍走 `patchProjectChatConfig`，不得从聊天路径调用 `api.updateAgent`）。
 - **停止路径（§4.3.1，B-003 v2）**：
   - `sentTaskId`/`sentIssueId`：`useSendProjectChatMessage(...).mutateAsync()` 成功返回值 `ProjectChatSendResult.task_id`/`issue_id`（schemas.ts L1524-1529），组件内 `useState` 保存。**确定性转移**：发送成功且任一 ID 无效（空）→ **原子清空两个 ID**；发送失败（mutation reject，`handleSend` catch 返回 false，成功行 setState 未执行）→ **保留**旧值。
   - `taskInItems`：`useQuery(projectQueueItemsOptions(wsId, projectId)).data.items` 中是否存在 `task_id === sentTaskId`（items 服务端过滤 queued/dispatched，依赖 #16/#21）。
@@ -55,8 +55,8 @@ created: 2026-09-09T21:14:52+08:00
 ## 5. 完成标志
 
 - 上述 5 条验收全部通过；`persistModel`/`persistThinking`/`handleComposerUpload`/`handleSend` 业务语义 diff 白名单核对（仅新增 sent 状态记录语句）；
-- 提交落盘 multica CR 分支（独立 commit、可单独 revert）；multica `CUSTOM.md` 按当时实际结构登记本 TASK 的修改文件（project-team-agent-chat.tsx、project-chat-panel.tsx、project-queue-bar.tsx 及对应测试文件）；
-- canonical 证据为 plan §6.2 cmd-02 与 cmd-05。
+- 提交落盘 multica CR 分支（独立 commit；回滚单元按 plan §4.0 **RU3**——连带消费其 `@container` 的 TASK-03 与消费其行为的 TASK-04，逆拓扑 revert 04→03→02，非单独 revert）；multica `CUSTOM.md` 按当时实际结构登记本 TASK 的修改文件（project-team-agent-chat.tsx、project-chat-panel.tsx、project-queue-bar.tsx 及对应测试文件，治理 sidecar 受控例外）；
+- canonical 证据为 plan §6.2 cmd-02 与 cmd-06。
 
 ## 6. 接口契约
 

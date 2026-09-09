@@ -47,8 +47,8 @@ created: 2026-09-09T21:14:52+08:00
 ## 5. 完成标志
 
 - 上述 5 条验收全部通过；`ChatInput`（全局）函数体与 `ChatInputProps`/`ChatInputCoreProps` 签名零 diff（diff 白名单核对）；
-- 提交落盘 multica CR 分支（独立 commit、可单独 revert）；multica `CUSTOM.md` 按当时实际结构登记本 TASK 的修改文件（chat-input.tsx、chat-input.test.tsx）；
-- canonical 证据为 plan §6.2 cmd-01（chat-input.test.tsx 全量）与 cmd-05（typecheck）。
+- 提交落盘 multica CR 分支（独立 commit；回滚单元按 plan §4.0 **RU4**——共享基座回滚须连带全部消费者，逆拓扑 revert 04→03→02→01，非单独 revert）；multica `CUSTOM.md` 按当时实际结构登记本 TASK 的修改文件（chat-input.tsx、chat-input.test.tsx，治理 sidecar 受控例外）；
+- canonical 证据为 plan §6.2 cmd-01（chat-input.test.tsx 全量）与 cmd-06（packages/views typecheck）。
 
 ## 6. 接口契约
 

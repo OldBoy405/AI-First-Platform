@@ -28,7 +28,7 @@ created: 2026-09-09T21:14:52+08:00
 
 - **composer wrapper（§4.1 规则 6）**：`"shrink-0 border-t px-4 py-3"`（L392）→ `"shrink-0 border-t"`。
 - **横幅区两层块（§4.1 规则 6）**：`private-ask-pending-message` 迁入两层块——外层 `cn(CHAT_GUTTER, "pt-3")`、内层 `cn(CHAT_COLUMN)`（无横幅时该块仍渲染，保留 pt-3 顶部间距）；pending-message 的 testid/渲染条件零改动；横幅右缘与 surface 右缘一致。
-- **工具栏 leftAdornment（§3.2，B-002）**：按 SDD §3.2 PrivateAskComposer 片段逐字构造 `toolbar`——`agent` 非空渲染 `private-ask-model-picker`（`private-ask-model-row` 随行移除，改用新 testid 定位）；`private-ask-thinking-picker` 保留；可见文字 label 不再渲染，以 `<span className="sr-only">{t(($) => $.chat.stream.model_label)}</span>` / `thinking_label` 补类别语义；`thinkingLevels.length > 0` 条件保留。`persistModel`（L327）/`persistThinking`（L340）函数体零改动（仍走 `patchChatSessionConfig`，creator-only 服务端 403 语义不变）。
+- **工具栏 leftAdornment（§3.2，B-002）**：按 SDD §3.2 PrivateAskComposer 片段逐字构造 `toolbar`——`agent` 非空渲染 `private-ask-model-picker`；**testid 契约（§9 移除清单第 1 项）**：`private-ask-model-row` testid 随独立行**一并移除、不迁移**，替换锚点为新增 `private-ask-model-picker`；`private-ask-thinking-picker` 保留；可见文字 label 不再渲染，以 `<span className="sr-only">{t(($) => $.chat.stream.model_label)}</span>` / `thinking_label` 补类别语义；`thinkingLevels.length > 0` 条件保留。`persistModel`（L327）/`persistThinking`（L340）函数体零改动（仍走 `patchChatSessionConfig`，creator-only 服务端 403 语义不变）。
 - **ChatInputCore 使用点（L436）**：`draftAdapter/onSend/onUploadFile/onStop/isRunning/disabled=running` 原样；**不传** `allowSubmitWhileRunning`（行为与现状逐位一致，§3.2）；停止路径 `pendingTaskId → api.cancelTaskById` 原样不动（§4.3 状态映射表「Private Ask：原样」）。
 - **zero_diff 红线（§9）**：`persistModel`/`persistThinking` 函数体、draft adapter、pending-message 语义、testid 系列（除 `private-ask-model-row` 移除对应的 `private-ask-model-picker` 定位调整）零改动。
 - 行尾纪律（AGENTS.md #1）：修改文件保持仓库既有行尾（git 检出后按 LF 规范化处理）。
@@ -44,8 +44,8 @@ created: 2026-09-09T21:14:52+08:00
 ## 5. 完成标志
 
 - 上述 5 条验收全部通过；`persistModel`/`persistThinking`/停止路径 diff 白名单核对（零业务语义改动）；
-- 提交落盘 multica CR 分支（独立 commit、可单独 revert）；multica `CUSTOM.md` 按当时实际结构登记本 TASK 的修改文件（project-private-ask.tsx 及测试文件）；
-- canonical 证据为 plan §6.2 cmd-02 与 cmd-05。
+- 提交落盘 multica CR 分支（独立 commit；回滚单元按 plan §4.0 **RU2**——连带消费其行为的 TASK-04，逆拓扑 revert 04→03，非单独 revert）；multica `CUSTOM.md` 按当时实际结构登记本 TASK 的修改文件（project-private-ask.tsx 及测试文件，治理 sidecar 受控例外）；
+- canonical 证据为 plan §6.2 cmd-02 与 cmd-06。
 
 ## 6. 接口契约
 
