@@ -1,0 +1,27 @@
+cr-id: CR-2026-061
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-08T04:02:22+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  批准范围前置: "pass"
+  PRD-SDD对齐: "pass"
+  架构合理性: "pass"
+  数据模型完整性: "pass"
+  接口契约: "pass"
+  多仓架构约束: "pass"
+  性能与安全: "pass"
+  可测试性: "pass"
+  Prompt采纳影响: "pass（条件不触发：不触及 crctl.mjs dispatch 与 rules.json#protectedPaths.deny）"
+  AC闭环: "pass"
+  既有实现依赖核验: "pass"
+suggestions:
+  - "已解决：[sdd.md §12 既有实现依赖清单] 第 1 轮 blocker 关闭：8 项漏列事实（SweepChatIdempotency、CheckIssueCreateCapacity/ResolveIssueCountPolicy、GetMemberByUserAndWorkspace、dbid.NewV7、GetProjectInWorkspace、chatMessageAuthorDisplayName、issue_properties_gin、InsertProjectSharedSession）已按正文首现顺序补入并全量重排为 35 项，每项 repo/relative path/stable symbol/依赖结论/commit SHA 齐备；原 #13 已拆分为 #16（handler cr_bind.go + service task.go）与 #17（db queries agent.sql L1128/L1146/L1100），路径与符号对应。本评审在 multica worktree HEAD 78e14082845f7fb19f33a356169349b07042c04b 与 tools 49c46dd 上对全部行号/符号/谓词（456 谓词、192 索引、501-504 CHECK 与 pkey、451 表结构、pipelineForStatus L29/L30、findOrCreateRun 按 cr_id 命中、cr_bind.go L36/L61 401 形状、foundation.go L4/L6、模板 nodes[0].id、rules.json L28/L30、AllocateIssueNumber 实际位置等）逐项核实成立。"
+  - "（归 write-tech-design）§12 #30/#31 首现顺序微调：456 索引首现于 §4.5 违约后果推演，chatMessageAuthorDisplayName 首现于 §4.6，按「实质首现」口径两者建议互换，并可在 §12 引言注明排序口径，避免后续轮次误判漏列。"
+  - "（归 write-tech-design）§12 #24 的 AllocateIssueNumber 位于 server/internal/service/issue_limit.go L87（非 issue.sql，条目内「issue_limit 服务」括注已消歧），建议移入 #20 条目或标注 L87；§12 #18 的 loadIssueForUser 位于 server/internal/handler/handler.go L1049（IssueResponse/issueToResponse/GetIssue 确在 issue.go L37/L303/L2225），建议在路径字段注明。"
+  - "（归 write-tech-design，可选）§9 zero_diff 与 D-1 引用的既有符号（sendProjectChatCore、EnsureProjectDiscussionSession/EnsureProjectDiscussionIssue、GetProjectDiscussion 等）未入 §12；其性质为「不改动基线」而非设计依赖，本轮不构成 blocker；如后续要求清单与正文一一对应，可并入 #26/#33 条目或加注 zero_diff 属性。"
+review-loop:
+  current-attempt: 2
+subject-file: change-requests/CR-2026-061/sdd.md
+subject-sha256: 310434e726469511a5018a8aab627f872b1e8fae8420776054789e38d1f184be

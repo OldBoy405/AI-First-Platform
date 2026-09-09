@@ -1,0 +1,44 @@
+cr-id: CR-2026-061
+review-type: code
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-09T10:49:44+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  批准范围前置核对: "pass：本轮新 subject 相对上一轮 PASS subject——multica f02660ae9 零变化；tools bfd3747→7e51f14 的 delta 仅为 dir-graph.yaml 治理边一行（merging→code-approved precondition-fail，Ray 批准的 release-drift 恢复链，已先落 tools main 2e4442d）；docs 13ae7c5→f4c7bbd 仅 _context.md 刷新与 crctl 治理账本提交（cr.md/approval.yml/review-annotations/review-loop/traceability/_backlog）。未触碰 SDD §9 scope_out（crctl.mjs、controlled-shell rules.json、gate_projection.go、crsync.go 零 diff）、未把 follow_up 做成当前交付、zero_diff 调用点零 diff；plan/prd/sdd/tasks/test-report 均未变化。"
+  代码TASK与SDD对齐: "pass：本轮无新功能代码；attempt-2 已闭合 B-CODE-04（AC-9 附件独立选择与 attachment_ids 消费）与 B-CODE-05（AC-13 fail-closed issue_id/run_id 绑定校验），multica/tools 功能文件相对上一轮 PASS 零变化，对齐结论保持。"
+  工程质量: "pass：本轮 delta 为一行治理边与导航缓存刷新，无逻辑/依赖变化；canonical 六条命令 exit=0，cmd-06 lint-prompts 0 findings；三 worktree healthy、allFresh、clean。"
+  关键路径可读性: "pass：新增治理边 from/to/trigger 三字段与既有 transitions 同形自明；_context.md 刷新以 canonical 事实源（cr.md/plan/tasks/review-annotations）为声明，可读性无回退。"
+  安全性: "pass：无新代码面；B-CODE-05 响应 run_id/issue_id 全等 fail-closed 校验与 B-CODE-04 显式附件 UUID 提交保持；治理边仅扩展状态机恢复转换，不改变既有转移与账本写入路径。"
+  测试覆盖: "pass：cmd-01 21/21（handler 8 + service 13）、cmd-02 5/5（§9.2 收敛口径）、cmd-03 427 files / 5043 tests、cmd-04 147 / 1796、cmd-05 16 用例 dot 全过、cmd-06 0 findings；覆盖矩阵与 plan §7 一致，关键 AC 无空白通过。"
+  测试证据可信度: "pass：test-report.md 机器区 generated-by crctl-test、status=pass、command-digest 001d7209…；traceability#tests 的 status/command-digest 与机器区全等；cmd-01..06.log 齐全且 skipped=false，与 plan §6.2 命令表转录一致。"
+  前端质量: "pass：本轮无 tsx/css 新 diff（multica 与上一轮 PASS subject 相同）；附件 selector 的 WCAG AA 与既有 loading/empty/error 状态结论保持。"
+suggestions:
+  - "范围外： tools 7e51f14 相对被审批 subject bfd3747 的唯一 delta 为 dir-graph.yaml 治理边一行（merging→code-approved precondition-fail 恢复转换，Ray 批准的 release-drift 恢复链，已先落 tools main 2e4442d 并同步 CR 分支），属恢复性状态机扩展，不在本 CR 产品交付范围（SDD §9 scope_in）；本轮评审刷新 release-subjects 后随 approve --stage code 重签即可，无需代码回修。"
+review-loop:
+  current-attempt: 3
+release-subjects:
+  version: 1
+  repositories:
+    - repo: ai-first-platform-docs
+      remote-ref: refs/heads/requirement/CR-2026-061
+      reviewed-source-sha: f4c7bbd330b94732bbcc6d39aa8844e6be403862
+    - repo: multica
+      remote-ref: refs/heads/requirement/CR-2026-061
+      reviewed-source-sha: f02660ae924ac64137654024f7063c5a079a4ded
+    - repo: tools
+      remote-ref: refs/heads/requirement/CR-2026-061
+      reviewed-source-sha: 7e51f14d8c81a80462fa3ee80a49f65644c97a6d
+  artifacts:
+    algorithm: sha256
+    canonicalization: crlf-to-lf+path-sort
+    files:
+      - { path: change-requests/CR-2026-061/plan.md, sha256: a2bd7055d0aee4af26526f682b6de6bca4028d413b63b8491957cdede092e20e }
+      - { path: change-requests/CR-2026-061/prd.md, sha256: 8a58149fa2248a41827aac38e4e311e9ec1b62d2ab3f3c020b5cc7e337f771a8 }
+      - { path: change-requests/CR-2026-061/sdd.md, sha256: 310434e726469511a5018a8aab627f872b1e8fae8420776054789e38d1f184be }
+      - { path: change-requests/CR-2026-061/tasks/TASK-01.md, sha256: 30c59dbe99a77c79473182e72f09bd9c403bd9665c0d26a228e6fce4239ef2ed }
+      - { path: change-requests/CR-2026-061/tasks/TASK-02.md, sha256: 591bf6216426203650051468bee41f6c07bf2cfe381707546892a7afdcf4ed2d }
+      - { path: change-requests/CR-2026-061/tasks/TASK-03.md, sha256: ed55d608237f43e294a2425a35cc79626c7489298c4517f23a27ff195a12933a }
+      - { path: change-requests/CR-2026-061/tasks/TASK-04.md, sha256: 799ea63ac51477d37a1d2ad6d9898c1abab1f531888e2329cf2d2e8e28daac8b }
+      - { path: change-requests/CR-2026-061/tasks/_index.yml, sha256: 08a0e1b120a5f02ffece35d39ab27cbf0444cc4e89cbb9abb4ec1e0fee63d4ac }
+    digest: b4610df19b89d4331ea0416031895a581a2a51148d2b48fafa78d1d9538cada5

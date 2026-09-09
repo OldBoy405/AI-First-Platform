@@ -17,9 +17,9 @@ target-version: 0.34
 target-spec-id: ai-first-platform
 source: AIFI-17
 origin: ""
-status: drafting
+status: code-approved
 created: "2026-09-07T11:57:18+08:00"
-updated: "2026-09-07T11:57:18+08:00"
+updated: "2026-09-09T11:16:11+08:00"
 remote-ref: ""
 last-push-at: ""
 last-push-by: ""
