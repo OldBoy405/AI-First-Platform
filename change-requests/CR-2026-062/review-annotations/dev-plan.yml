@@ -1,27 +1,22 @@
 cr-id: CR-2026-062
 review-type: dev-plan
 reviewer: "OldBoy405"
-reviewed-at: "2026-09-09T22:57:43+08:00"
-verdict: block
-repair-target: write-tech-design
-blockers:
-  - "本轮新增：B-005 [sdd.md §4.3.1 的 taskEntry/taskActive/taskTerminal；TASK-02 §3 停止路径] SDD 与 TASK 把 `api.listTasksByIssue(sentIssueId)` 的 `useQuery` 结果直接定义为单个 `taskEntry`，随后读取 `taskEntry.status`，但 multica HEAD `117fc6be657f91d43df5892b52782a18329c7aed` 的 `ApiClient.listTasksByIssue` 明确返回 `Promise<AgentTask[]>`，既有 `ProjectTeamAgentChat` 也以 `const { data: tasks = [] }` 消费该数组；当前设计/TASK 未定义按 `sentTaskId` 从数组选择目标 task 的步骤，也未定义列表为空或未命中时的降级。影响：照文档实现会对数组读取 `status`、无法通过 TypeScript，且 running/terminal 判定无法唯一关联最近一次发送任务，AC-5 的 stop 可达性与终态覆盖不可实现。修复方向：回到 SDD 明确 `tasks` 数组到 `taskEntry = tasks.find(task => task.id === sentTaskId)`（或等价唯一选择）的契约、空列表/未命中行为及相应测试，再重新评审/审批 SDD 并同步重建 TASK-02。"
-  - "本轮新增：B-006 [plan.md §5 验收门槛 5/6、§6.1 FR-7、§6.2 cmd-08；TASK-01 §5；TASK-04 §3/§4-5] `cmd-08` 只有 `crctl git diff --name-only 117fc6be…` 的文件名清单，却被用来证明同一文件内部的 `ChatInput` 函数体与 `ChatInputProps`/`ChatInputCoreProps` 签名 zero_diff；TASK-04 甚至要求这些符号“在 diff 清单中零出现”。但本 CR 必须修改同一个 `packages/views/chat/components/chat-input.tsx` 中的 `ChatInputCore`，所以该文件必然出现在 name-only 输出，而 name-only 根本不包含函数/签名级信息。影响：TASK-01/04 的完成标志按字面不可满足，或 cmd-08 全绿时仍无法证明批准范围内的普通聊天基线/签名未改，AC-8 会形成假绿。修复方向：重建 plan/TASK 时增加可执行的符号级/patch 级 zero_diff 证据（优先入库版本化检查器并登记稳定 cmd-NN，或明确受控 patch diff 的可审计判定），并删除“name-only 清单可证明符号零 diff/符号不出现”的错误完成条件；cmd-08 仅保留文件白名单职责。"
+reviewed-at: "2026-09-09T23:48:35+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  sdd-to-plan: "block"
-  plan-to-tasks: "block"
-  task-executability: "block"
-  dependency-topology: "pass"
-  interface-contracts: "block"
-  acceptance-verifiability: "block"
-  scope-and-simplicity: "block"
-  risk-and-rollback: "pass"
+  sdd-to-plan: "pass：批准范围、FR-1~FR-8、AC-1~AC-8、验证与回滚均进入 plan；B-005 数组语义和 B-006 符号级证据均与最新批准 SDD 的边界一致"
+  plan-to-tasks: "pass：4 个计划交付组与 TASK-01~04、_index.yml 双向闭合；稳定覆盖表引用的 TASK 集与账本一致"
+  task-executability: "pass：每个 TASK 均给出目标、输入、文件、实现要点、至少 2 条验收步骤及 developing 内可登记的完成标志，无 TBD 或流程控制 TASK"
+  dependency-topology: "pass：TASK-01→TASK-02→TASK-03→TASK-04 的产出消费关系无环、无悬空引用；同仓串行边界明确"
+  interface-contracts: "pass：TASK-02 以 AgentTask[] 消费 listTasksByIssue，并用 tasks.find(task => task.id === sentTaskId) 唯一选取；空列表和非空未命中均回落 items-only"
+  acceptance-verifiability: "pass：两张稳定表齐全，cmd-01~09 双向映射；真实 e2e、全量回归、文件白名单与符号级 zero_diff 职责分离，关键 AC 均有唯一 TASK owner"
+  scope-and-simplicity: "pass：未引入 SDD scope_out/follow_up；改动限于批准的 views/e2e/测试/差异文档及 CUSTOM.md sidecar，任务粒度为 1.5~2.5 天"
+  risk-and-rollback: "pass：高风险共享基座、双源停止、窄屏和 e2e 环境均有验证与降级；RU1~RU4 按逆拓扑闭包且与各 TASK 完成标志一致"
   reviewer-model: "OpenAI/gpt-5.6-sol (pi, reasoning=high)"
 suggestions:
-  - "已解决：B-001 [sdd.md §1.1/§3.2/§6/§9；plan.md §5/§6.1；TASK-02/03/04] 上一轮批准范围冲突已闭合：`private-ask-model-row`→`private-ask-model-picker` 与 `project-chat-model-row` 删除且无替换锚点的 testid 清单已唯一，`CUSTOM.md` 已作为治理 sidecar 纳入批准范围及 AC-8 文件白名单。"
-  - "已解决：B-002 [plan.md §6.2 cmd-04/cmd-07/cmd-08；TASK-04 §3-5] 真实 Playwright e2e、packages/views 无文件参数全量 `vitest run` 与 diff 白名单已拆成独立稳定命令；e2e 环境无法建立时明确 ENVIRONMENT_MISMATCH 技术中止且 TASK-04 不得 done，不再以 `--list` 或定向测试冒充关键浏览器行为/全量回归证据。"
-  - "已解决：B-003 [plan.md §6.2 cmd-08；TASK-04 §3] diff 文件白名单核对已改为从 execution_context.resources 解析路径后执行受控 `crctl git diff --name-only`，不再使用原生 git 或硬编码工作区路径。"
-  - "已解决：B-004 [plan.md §2/§4/§6.1；TASK-01~04 §5] 回滚已按依赖逆拓扑定义 RU1={04}、RU2={03,04}、RU3={02,03,04}、RU4={01,02,03,04}，revert 顺序为 TASK 编号降序，风险表、覆盖表与各 TASK 完成标志口径一致。"
+  - "已解决：B-005 [sdd.md §4.3.1；plan.md §1/§2/§4.1/§6.1/§7；TASK-02 §3/§4/§6] task-runs 已统一按 AgentTask[] 数组消费，并以 tasks.find(task => task.id === sentTaskId) 按 id 唯一关联最近一次发送 task；空列表与非空未命中均令 taskEntry=undefined、taskActive/taskTerminal=false 并回落 items-only，且未命中矩阵覆盖另一 running task 不得误判。"
+  - "已解决：B-006 [plan.md §5/§6.1 FR-7/§6.2 cmd-08/cmd-09；TASK-01 §2~§5；TASK-04 §3~§5] cmd-08 已收窄为文件白名单职责；新增入库版本化 chat-input-zero-diff.test.ts 作为 cmd-09，按基线 117fc6be 的 S1~S4 快照、CRLF 规范化、唯一符号锚点和读取/解析硬失败机械证明 ChatInput/props/draft adapter 零差异，TASK 完成条件不再要求 name-only 清单证明符号零 diff。"
 review-loop:
-  current-attempt: 0
-subject-sha256: 4426855b4ff7c4b0c9d6816b1806644a6a6d1f61affd68d4d29063689aa872b7
+  current-attempt: 1
+subject-sha256: ed739d05f189e9bb56ac6f55d0787a3a5bbe19cdcc3606b9024ae95c813a1c81
