@@ -4,36 +4,40 @@
 
 ## 当前状态
 
-- CR：CR-2026-062（AIFI-18 · 来源文档 CR-D：Team Agent 和 Private Ask 发送框 UI 优化）
-- status：`tech-design-review-pending`（cycle 2 attempt 2 定点回修完成，已推进待复评）
-- Pipeline：architecture-design，节点 2 = `review-tech-design`（独立 reviewer，humanApproval=false）
-- reviewLoop：`review-tech-design` cycle=2、current-attempt=1（所有者 review-loop reset 授权开启 cycle 2；下一轮评审为 cycle 2 attempt 2/3）
+- CR：CR-2026-062（AIFI-18 · 来源文档 CR-D：Team Agent 和 Private Ask 发送框 UI 优化，target-version 0.35）
+- status：`task-breakdown`（code-implementation 第 1、2 节点 write-dev-plan → write-dev-tasks 已完成）
+- Pipeline：code-implementation，下一节点 = `review-dev-plan`（独立 reviewer，humanApproval=false；合并评审 plan + TASK）
+- reviewLoop：`review-dev-plan` 尚未有记录（首次评审 attempt 1/3 待 reviewer bump）；`review-tech-design` cycle 2 / attempt 2（PASS，人工审批已通过）
 - 下一步以 `crctl next CR-2026-062` 为准
 
 ## 产物
 
 - PRD：`change-requests/CR-2026-062/prd.md`（review-requirement PASS、人工审批通过）
-- SDD：`change-requests/CR-2026-062/sdd.md`（首版 `06f0f28`；attempt 1 回修 B-001/B-002/B-003；attempt 2 回修 B-003 v2 双源活动性 `cae70aa`；cycle 2 回修 B-003 硬降级原子清空 `681ac67`；cycle 2 attempt 2 回修 B-003 失败回流可见动作 `9ca36ec`）
-- 评审记录：`change-requests/CR-2026-062/review-annotations/sdd.yml`（verdict=block；评审提交 `f7009b1`（attempt 1）、`8862ffe`（attempt 2）、`f287ef8`（attempt 3，B-003 硬降级顺序分支残留，maxAttempts 耗尽）、`5d5a06d`（cycle 2 attempt 1，B-003 失败回流可见动作矛盾））
-- review-loop：`136cac2`（review-loop reset cycle 2，独立治理提交，crctl 独占）
-- 状态提交历史：`3d58dac`（→tech-designing）、`31fffd2`（→tech-design-review-pending）、`2a10fd08`（attempt 1 BLOCK 回退）、`e006c37c`（attempt 2 BLOCK 回退）、`dcc8ab2`（cycle 2 attempt 1 BLOCK 回退）、cycle 2 attempt 2 本轮 advance 提交（→tech-design-review-pending）
+- SDD：`change-requests/CR-2026-062/sdd.md`（review-tech-design PASS cycle 2 attempt 2；评审证据 `178bae83`，人工审批 `cf3482d3`）
+- PLAN：`change-requests/CR-2026-062/plan.md`（本 run 新增，提交 `40654e0b`；两张稳定表 + AC/业务闭环覆盖矩阵 + 4 任务组映射附录；总工时 64h 账本口径）
+- TASK：`change-requests/CR-2026-062/tasks/TASK-01..04.md` + `tasks/_index.yml`（本 run 新增，提交 `0d3497ac`；`crctl task init --count-hint 4` 生成，taskCount=4、totalEstimateHours=64）
+- 状态提交：`f5bd8d09`（`tech-design-reviewed → task-breakdown`，trigger `write-dev-tasks`）
+
+## TASK 拆分（4 个，组映射 1:1，见 plan.md 附录）
+
+- TASK-01（16h）：ChatInputCore 两层 DOM + flow 底栏 + ariaLabel/stopAriaLabel + allowSubmitWhileRunning（multica packages/views/chat）
+- TASK-02（20h）：Team Agent 消息流/队列栏/横幅两层 + ModePane @container + 工具栏 leftAdornment + 双源停止路径（multica packages/views/projects）；depends TASK-01
+- TASK-03（12h）：Private Ask 横幅两层 + 工具栏 leftAdornment + 停止路径原样；depends TASK-01、TASK-02
+- TASK-04（16h）：e2e spec + 差异文档 + 全量回归收尾；depends TASK-02、TASK-03
+- 证据命令 cmd-01..06 见 plan.md §6.2（cmd-06 = playwright --list 口径；e2e 真跑需 FRONTEND_ORIGIN 环境）
 
 ## 权威工作区与代码基线
 
 - operational_workspace：`C:\Users\GOBAO\Downloads\AI\AI First Platform\.rayai-worktrees\knowledge-base\requirement\CR-2026-062`
-- 代码仓（resources[] 原样）：multica worktree `C:\Users\GOBAO\Downloads\AI\AI First Platform\.rayai-worktrees\multica\requirement\CR-2026-062`（HEAD `117fc6be657f91d43df5892b52782a18329c7aed`，SDD 全部既有实现证据基于此 SHA 实读）
-- tools worktree：`C:\Users\GOBAO\Downloads\AI\AI First Platform\.rayai-worktrees\tools\requirement\CR-2026-062`
-
-## 历轮回修（review-tech-design BLOCK，repair-target=write-tech-design）
-
-- attempt 1（已关闭）：B-001 两层 DOM（外层 `CHAT_GUTTER`>内层 `CHAT_COLUMN`，禁止单元素合并）；B-002 可访问名称（ChatInputCore 补传 `ariaLabel`/`stopAriaLabel`；Model/Thinking 工具栏控件带 sr-only 类别标签，无新 key）；B-003 初版停止路径（`sentTaskId` + `useCancelProjectQueueTask` + `allowSubmitWhileRunning`）。
-- attempt 2（已关闭）：修正「items 含 sentTaskId ⇒ 排队/派发/运行」语义错误——queue items 服务端仅过滤 queued+dispatched（agent.sql `ListProjectPendingTasks` L2947-2961），任务 running 后离开列表。改为**双源活动性判定**：`trackedActive = (taskInItems || taskActive) && !taskTerminal`；`taskEntry` 来自容器 Issue 任务时间线 `issueKeys.tasks(sentIssueId)`（`api.listTasksByIssue`，与 TeamAgentStreamView 同 query key，缓存收敛去重），ACTIVE={queued,dispatched,waiting_local_directory,running}、TERMINAL={completed,failed,cancelled}；`sentIssueId` 取自 `ProjectChatSendResult.issue_id`（不依赖面板 `chat.issue_id` 刷新）。
-- cycle 2 定点回修（已关闭）：唯一残留 B-003 硬降级顺序分支——发送成功且返回 `task_id`/`issue_id` **任一无效（空）** → **原子清空 `sentTaskId`+`sentIssueId`**（确定性转移，不留旧目标）；发送**失败** → **保留**旧活动目标。补「有效活动 A → 下一次发送成功返回空 ID」顺序测试：断言 stop 消失且不调用 `cancelTaskById(A)`。同步修订 §4.3.1 硬降级/sent 状态表、§6 AC-5（f）（g）（h）、§6.9 矩阵（i）（ii）（iii）。
-- cycle 2 attempt 2（本轮，唯一残留 B-003 失败回流可见动作）：复评指出保留旧目标 + 失败保草稿（`isEmpty=false`）+ Team Agent `allowSubmitWhileRunning=true` ⇒ §4.2 `running` 判定式为 false，右下角实际渲染**发送（重试）按钮**而非 AC-5(h)/§6.9(iii) 原断言的 stop。裁定（选项一，保留 queue-send/retry 优先级，与 ChatInput L758-767 权威判定式及 host 代码「on failure the draft is preserved so the user can just hit send again」一致）：**失败后保草稿 + 发送（重试）按钮；清空草稿后（`isEmpty=true`）stop 重新出现并可取消保留的旧目标 A**。同步修订 §4.2（可见动作口径单一事实 + JSX 注释）、§4.3 失败重试行、§4.3.1 sent 状态表/硬降级、§4.4 边界验证、D-7 Consequences、§1.3 一屏流程、AC-5（a）（b）（d）（h）（成功路径 stop 断言补 isEmpty 前置）、§6.9（iii）与双源矩阵 stop 断言前置、SDD-CLOSE-04e/05、依赖 #2/#3（补 ChatInput L758-767 判定式与 handleSend 保草稿行号）。未扩面，零契约变更。
+- 代码仓（resources[] 原样）：multica worktree `C:\Users\GOBAO\Downloads\AI\AI First Platform\.rayai-worktrees\multica\requirement\CR-2026-062`（HEAD `117fc6be657f91d43df5892b52782a18329c7aed`，SDD 全部既有实现证据基于此 SHA）
+- tools worktree：`C:\Users\GOBAO\Downloads\AI\AI First Platform\.rayai-worktrees\tools\requirement\CR-2026-062`（无实施改动）
 
 ## 评审与回修入口
 
-- 评审对象：`sdd.md`；关键审查点 = §4.3.1 双源活动性判定与生命周期闭合表（queued→dispatched→running→terminal）+ 硬降级确定性转移（成功空 ID → 原子清空；失败 → 保留旧目标）+ **失败回流可见动作**（保草稿 → 发送/重试按钮、清空草稿 → stop 重新出现，与 §4.2 `running` 判定式一致）、AC-5（a）~（h）与 §6.9 矩阵（成功路径 stop 断言带 isEmpty 前置；顺序分支断言不调用 `cancelTaskById(A)`）、§9 批准范围、既有实现依赖 21 条（SHA 117fc6be）
-- BLOCK → 按 reviewLoop 回 `write-tech-design`（status 回 `tech-designing`，attempt 由 reviewer bump；当前 cycle 2 attempt 1/3，下次 BLOCK 即 2/3）
-- PASS + blockers=[] → 停在人工审批节点（`crctl approve --stage tech-design`），审批指令由 coordinator 发布，本 Agent 不代签
-- 工作区保持干净：`_context.md` 必须随 CR 提交（独立 context 提交），否则 review-tech-design 的 workspace inspect 会因 dirty 中止
+- 下一节点 `review-dev-plan`（独立 fresh reviewer，由本 run 收尾评论 mention 发起）：
+  - 评审对象：`plan.md` + `tasks/`（对照 `sdd.md` 已审批内容、`prd.md` 按 SDD 引用抽查、来源文档 §12 CR-D/§13）
+  - 前置：CR status=`task-breakdown`；`workspace inspect` 三仓 healthy；输入文件齐备
+  - PASS 且 blockers=[] → 保持 `task-breakdown`，停在人工审批节点（`crctl approve --stage dev-start`，指令由 coordinator 发布，本 Agent 不代签）
+  - BLOCK repair-target=`write-dev-plan` → `crctl advance --to tech-design-reviewed --trigger "review-dev-plan:block -> write-dev-plan" --expect task-breakdown`，回修 plan/TASK 后按 write-dev-plan → write-dev-tasks → review-dev-plan 重放
+  - BLOCK repair-target=`write-tech-design`（上游设计疑点）→ 回 `tech-design-review-pending`，走技术设计修订链
+- 后续节点：approve-dev-start → implement-code（4 个 TASK 串行）→ write-test-report（cmd-01..06）→ review-code → approve-code；发布经 merge/writeback 流程（不进交付 TASK）
