@@ -1,0 +1,26 @@
+cr-id: CR-2026-062
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-09T23:17:02+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  批准范围前置: "pass：§9 固定章节存在，scope_in/scope_out/zero_diff/follow_up 四字段齐全；B-005 的 task-runs 数组、按 sentTaskId 唯一选取及未命中 items-only 降级均落在 scope_in/zero_diff"
+  PRD-SDD对齐: "pass：FR-1~FR-8 覆盖 8/8；本轮修订保持 PRD FR-5/AC-5 的最近一次发送 task 停止语义，并消除数组被误当单项的实现冲突"
+  架构合理性: "pass：views→core+ui 依赖方向、TanStack Query 服务端状态边界、两层 DOM、flow toolbar 与双源活动性保持成立；taskEntry 通过 tasks.find(task.id===sentTaskId) 唯一选取，不按顺序猜测"
+  数据模型完整性: "pass（N/A）：本 CR 无持久化数据模型、schema 或迁移变更；sentTaskId/sentIssueId 仍为组件局部状态"
+  接口契约: "pass：不新增或修改 HTTP API；api.listTasksByIssue 的 Promise<AgentTask[]>、AgentTask.id/status、解析失败 fallback [] 与未命中降级已按既有契约准确消费"
+  多仓架构约束: "pass：产品代码仍仅落 multica packages/views，CUSTOM.md 为同仓治理 sidecar；knowledge-base 承载过程文档，tools 无实施改动；路径 authority 来自 workspace inspect resources"
+  性能与安全: "pass：task-runs 与既有 TeamAgentStreamView 使用同一 issueKeys.tasks key，queue items 与 ProjectQueueBar 共用既有 key，WS task:* 失效两源，无新增轮询；取消与配置权限继续由服务端强制"
+  可测试性: "pass：AC-5(i)(j) 与 §6.9-2(iv)(v) 分别覆盖空数组、非空未命中且含另一 running task、items-only 两分支；可观察结果足以防止容器 Issue 其他 task 误判"
+  Prompt采纳影响: "pass（条件不触发）：本 CR 不触及 crctl.mjs dispatch 或 rules.json#protectedPaths.deny"
+  AC闭环: "pass：AC-1~AC-8 均有设计落点、可观察结果与可达性；B-005 修订使 AC-5 的 running/terminal 判定唯一关联 sentTaskId，空列表/未命中行为明确且可执行"
+  既有实现依赖核验: "pass：multica HEAD 117fc6be657f91d43df5892b52782a18329c7aed；按 resources[].worktreePath 复核本轮影响的依赖 #4/#14/#18：既有组件以 tasks=[] 数组消费，ApiClient.listTasksByIssue 返回 Promise<AgentTask[]> 并以 AgentTaskListSchema 解析、失败 fallback []，AgentTask.id 为 string 且 status 联合覆盖 active/terminal；其余显式依赖仍锚定同一未变代码基线，正文与有序清单一致"
+  reviewer-model: "OpenAI/gpt-5.6-sol (pi, reasoning=high)"
+suggestions:
+  - "已解决：B-005 [sdd.md §1.3、§4.3.1、§4.4、D-7、§6 AC-5(i)(j)、§6.9-2(iv)(v)、§9、依赖 #4/#14/#18、SDD-CLOSE-04/05] task-runs 已统一定义为 AgentTask[]，并以 tasks.find(task => task.id === sentTaskId) 按 id 唯一选取最近一次发送 task；空数组或非空未命中均令 taskEntry=undefined、taskActive/taskTerminal=false 并回落 items-only，且测试矩阵明确覆盖另一 running task 不得造成误判。"
+  - "范围外：B-006 [plan.md/TASK-01/TASK-04] 符号级或 patch 级 zero_diff 稳定证据与 cmd-08 职责收窄属于架构重新审批后的 plan/TASK 重建及 review-dev-plan 核验，本次技术设计评审不据此阻断。"
+review-loop:
+  current-attempt: 1
+subject-file: change-requests/CR-2026-062/sdd.md
+subject-sha256: 5259087713930e7eee00bb6074ae0d4a3d78f9df4eb18d1256401e6afb5fdf28

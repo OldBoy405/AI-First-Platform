@@ -1,0 +1,22 @@
+cr-id: CR-2026-062
+review-type: dev-plan
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-09T23:48:35+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  sdd-to-plan: "pass：批准范围、FR-1~FR-8、AC-1~AC-8、验证与回滚均进入 plan；B-005 数组语义和 B-006 符号级证据均与最新批准 SDD 的边界一致"
+  plan-to-tasks: "pass：4 个计划交付组与 TASK-01~04、_index.yml 双向闭合；稳定覆盖表引用的 TASK 集与账本一致"
+  task-executability: "pass：每个 TASK 均给出目标、输入、文件、实现要点、至少 2 条验收步骤及 developing 内可登记的完成标志，无 TBD 或流程控制 TASK"
+  dependency-topology: "pass：TASK-01→TASK-02→TASK-03→TASK-04 的产出消费关系无环、无悬空引用；同仓串行边界明确"
+  interface-contracts: "pass：TASK-02 以 AgentTask[] 消费 listTasksByIssue，并用 tasks.find(task => task.id === sentTaskId) 唯一选取；空列表和非空未命中均回落 items-only"
+  acceptance-verifiability: "pass：两张稳定表齐全，cmd-01~09 双向映射；真实 e2e、全量回归、文件白名单与符号级 zero_diff 职责分离，关键 AC 均有唯一 TASK owner"
+  scope-and-simplicity: "pass：未引入 SDD scope_out/follow_up；改动限于批准的 views/e2e/测试/差异文档及 CUSTOM.md sidecar，任务粒度为 1.5~2.5 天"
+  risk-and-rollback: "pass：高风险共享基座、双源停止、窄屏和 e2e 环境均有验证与降级；RU1~RU4 按逆拓扑闭包且与各 TASK 完成标志一致"
+  reviewer-model: "OpenAI/gpt-5.6-sol (pi, reasoning=high)"
+suggestions:
+  - "已解决：B-005 [sdd.md §4.3.1；plan.md §1/§2/§4.1/§6.1/§7；TASK-02 §3/§4/§6] task-runs 已统一按 AgentTask[] 数组消费，并以 tasks.find(task => task.id === sentTaskId) 按 id 唯一关联最近一次发送 task；空列表与非空未命中均令 taskEntry=undefined、taskActive/taskTerminal=false 并回落 items-only，且未命中矩阵覆盖另一 running task 不得误判。"
+  - "已解决：B-006 [plan.md §5/§6.1 FR-7/§6.2 cmd-08/cmd-09；TASK-01 §2~§5；TASK-04 §3~§5] cmd-08 已收窄为文件白名单职责；新增入库版本化 chat-input-zero-diff.test.ts 作为 cmd-09，按基线 117fc6be 的 S1~S4 快照、CRLF 规范化、唯一符号锚点和读取/解析硬失败机械证明 ChatInput/props/draft adapter 零差异，TASK 完成条件不再要求 name-only 清单证明符号零 diff。"
+review-loop:
+  current-attempt: 1
+subject-sha256: ed739d05f189e9bb56ac6f55d0787a3a5bbe19cdcc3606b9024ae95c813a1c81

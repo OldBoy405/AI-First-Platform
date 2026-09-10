@@ -1,0 +1,16 @@
+$ node node_modules/@playwright/test/cli.js test e2e/project-chat-composer.spec.ts
+(exit=0)
+--- stdout ---
+◇ injected env (0) from .env.worktree // tip: ⌘ enable debugging { debug: true }
+
+Running 4 tests using 1 worker
+
+◇ injected env (0) from .env.worktree // tip: ⌘ enable debugging { debug: true }
+  ok 1 [chromium] › e2e\project-chat-composer.spec.ts:227:3 › Project chat composer (CR-2026-062) › (a) wide panel: composer surface edges align with the message column (<1px) (3.0s)
+  ok 2 [chromium] › e2e\project-chat-composer.spec.ts:254:3 › Project chat composer (CR-2026-062) › (b) 360px narrow panel: no overflow, no overlap (4.3s)
+  ok 3 [chromium] › e2e\project-chat-composer.spec.ts:297:3 › Project chat composer (CR-2026-062) › (c) running stop: send queues a task and the bottom-right stop cancels it (4.3s)
+  ok 4 [chromium] › e2e\project-chat-composer.spec.ts:317:3 › Project chat composer (CR-2026-062) › (d) keyboard send: Mod+Enter sends from the composer (4.6s)
+
+  4 passed (17.4s)
+
+--- stderr ---
