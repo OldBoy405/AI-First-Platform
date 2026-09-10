@@ -1,86 +1,22 @@
 cr-id: CR-2026-062
 review-type: code
 reviewer: "OldBoy405"
-reviewed-at: "2026-09-10T11:40:47+08:00"
+reviewed-at: "2026-09-10T11:41:58+08:00"
 verdict: pass
 blockers: []
 dimensions:
-  批准范围前置核对: "pass：按 SDD §9 scope_in 核对实际 diff（14 文件）全部在册——packages/views/chat/components/{chat-input.tsx,
-chat-input.test.tsx, chat-input-zero-diff.test.ts}；packages/views/projects/components/{project-team-agent-chat,
-project-private-ask, project-chat-panel, project-queue-bar}.tsx 及其测试；e2e/project-chat-composer.spec.ts；
-project-chat-composer-layout-diff.md；CUSTOM.md 治理 sidecar 受控例外。cmd-08 name-only 输出与 merge-base
-117fc6be...HEAD 的 diff 文件集全等。scope_out（server、任何 API、server/migrations、任务快照、数据模型、
-ChatInput 视觉基线与业务语义、useProjectChatStore 结构、Discussion UI、mobile、新组件库/新状态管理、
-ModelPicker/ThinkingPicker/SubmitButton/ChatAddMenu 组件本体、draft adapter 接口）零触碰；follow_up
-（Discussion 视觉对齐、mobile、两套 composer 结构性合并）未做成当期交付。zero_diff 调用点零 diff：
-crctl git diff --unified=3 117fc6be...HEAD -- packages/views/chat/components/chat-input.tsx 的全部 5 个
-hunk 落点均 >= L840（均在 ChatInputCore 函数体内），ChatInput（全局）函数体、ChatInputProps 签名、
-ChatInputDraftAdapter 接口、ChatInputCoreProps 签名、packages/core/*（client.ts/queries.ts/schemas.ts/
-use-realtime-sync.ts）、useProjectChatStore、ContentEditor、SubmitButton 本体全部零改动。testid 契约按 §9
-唯一执行：移除 project-chat-model-row（无替换锚点，内部四个 testid 保留）、private-ask-model-row
-（替换为新增 private-ask-model-picker），其余 project-chat-*/private-ask-* testid 值不变。TASK-04 环境回修
-4 项（locator 收窄到 [data-testid=project-chat-composer] 子树、seeded runtime 补 owner_id/visibility/provider、
-经真实服务端机制种入模型目录、360px 断言改两轴包围盒不相交）全部落在既有白名单文件 e2e/project-chat-composer.spec.ts
-内，AC 语义未变——524428782→004cb002d 仅 CUSTOM.md + e2e spec 两文件，产品代码零变化；
-524428782→004cb002d 之外无任何未列入白名单的文件。"
-  代码TASK与SDD对齐: "pass：§4.1 规则 1-6 逐条落地（ChatInputCore wrapper 外层 CHAT_GUTTER / surface 内层 CHAT_COLUMN +
-data-slot=\"chat-input-surface\" 两层独立 DOM；TeamAgentStreamView 根、队列栏、两 composer 横幅区均两层嵌套；
-ModePane 根加 @container）；§4.2 flow 底栏（左组 min-w-0 flex-1 flex-wrap、右组 shrink-0、编辑器
-flex-1 min-h-8 overflow-y-auto、surface pb-9→pb-0、底栏 px-1.5 pb-1.5）与判定式
-running = !!isRunning && (!allowSubmitWhileRunning || isEmpty || pendingUploads > 0) 与 SDD 逐字一致；
-handleSend 门禁 isRunning && !allowSubmitWhileRunning；ariaLabel/stopAriaLabel 按 send_tooltip/stop_tooltip
-既有 key 补传；allowSubmitWhileRunning 由 Team Agent 传 true、Private Ask 不传（stop-only 逐位不变）；
-§3.2 工具栏三态（readonly/picker/runtime-guide）与 sr-only 类别标签、Private Ask 新锚点
-private-ask-model-picker、persistModel/persistThinking 仍走既有 PATCH；§4.3.1/D-7 双源停止
-（sentTaskId/sentIssueId 确定性转移：成功且两 ID 有效→写入、任一空→原子清空、失败→保留旧值；
-tasks.find(task => task.id === sentTaskId) 唯一选取；trackedActive=(taskInItems||taskActive)&&!taskTerminal；
-未命中/空列表回落 items-only；useCancelProjectQueueTask 与 TSUG-007 三支，与同文件 TaskExecutionCard L519-531
-完全同款错误处理）；差异文档 project-chat-composer-layout-diff.md 覆盖 SDD-CLOSE-04 a~e 且每项含
-「是否必要差异 + 理由」。TASK-01..04 完成标志逐条可核：cmd-01/06/09、cmd-02/06、cmd-02/06、
-cmd-03/04/05/06/07/08/09。"
-  工程质量: "pass：test-report.md 机器区 9/9 exit-code=0、skipped=false（cmd-01 61 例 / cmd-02 92 例 / cmd-03 160 例 /
-cmd-04 428 文件 5081 例 / cmd-05 wildcard exports clean / cmd-06 tsc --noEmit 零错误 / cmd-07 e2e 4 passed
-17.4s / cmd-08 白名单清单 / cmd-09 5 例）；无新增依赖（e2e 复用 e2e/helpers、e2e/fixtures 与既有 pg 客户端）；
-行尾纪律满足（检查器运行时 \r\n→\n 规范化，读取/解析失败硬失败）；tasks/_index.yml 经 crctl task done
-即时登记 TASK-01..04 全 done（无回写期补账）；CUSTOM.md"
-  关键路径可读性: "pass：新增/改动处均带 CR 溯源注释（chat-input.tsx 内 3 处 AIFIRST (CR-2026-062 TASK-01)；项目组件内
-CR-2026-062 §3.2/§4.1/§4.3.1 注释），双源活动性、确定性转移、可见动作判定式均有逐行注释说明意图；
-chat-input-zero-diff.test.ts 文件头写明提取来源 SHA/行号/提取时机（修改前）与 CRLF 规范化、硬失败纪律；
-差异文档以表格给出双源生命周期闭合表，评审与 rebase 均可直接对照。"
-  安全性: "pass：零新增 API、零新增可写路径、零数据模型/schema 变更（packages/core/* 与 server/* 零 diff）；
-取消权限继续由服务端强制（403，originator 或 owner/admin，本 CR 未放宽），composer 只取消本 composer
-最近一次发送的 task（sentTaskId 由发送响应唯一确定；handleStop 以 !sentTaskId 早退，空 ID 分支原子清空
-两个 ID 且不取消旧 task，组件测试 (ii) 断言 cancelTaskById(A) 未被调用）；配置写入仍为
-patchProjectChatConfig / patchChatSessionConfig，无 updateAgent 调用（组件测试断言）；
-e2e 以一次性用户 + 自建项目 seed，afterEach 显式清理 issue/project/agent/runtime；无敏感数据外泄路径。"
-  测试覆盖: "pass：组件面 cmd-01/02 覆盖 AC-1/AC-2/AC-3/AC-4/AC-5/AC-6/AC-7（两层 DOM 双节点断言、surface token、
-flow 底栏左组/右组分离与 leftAdornment 落位、可访问名称 send/stop、allowSubmitWhileRunning 三态、
-三态工具栏 + PATCH 目标断言、sr-only 类别标签、pending-message 原条件、queue-bar 两层与 ModePane @container）；
-AC-5 双源矩阵逐行覆盖（queued/dispatched：items+timeline；running/waiting_local_directory：timeline 单独
-支撑且 items 不含；completed/failed/cancelled：终态覆盖陈旧 items；硬降级 (i)(ii)(iii)；未命中矩阵 (iv)(v)
-含「另一 running task 不得误判」）；浏览器面 cmd-07 真跑覆盖 AC-1/AC-2/AC-3/AC-5/AC-7 四组用例；
-NFR-3 四语 parity cmd-03 与 packages/views 全量回归 cmd-04 无空白通过；AC-8 由 cmd-08（文件级）+ cmd-09
-（符号级）+ cmd-04/cmd-06 共同承载。"
-  测试证据可信度: "pass：test-report.md 机器区 generated-by=crctl-test、status=pass、command-digest d4910228…，
-与 traceability.yml#tests 的 status/command-digest 全等；test-evidence/cmd-01..09.log 齐全，
-逐条与机器区 exit-code/skipped/timed-out 一致，评审未重跑任何 lint/test/build。cmd-07 为无 --list 的真跑
-（4 passed / 17.4s，日志列出四条用例），6 次尝试（1 次 chromium 缺失、1 次环境修复后重跑、4 次回修迭代）
-在分析段如实记录，未包装成一次通过；ENVIRONMENT_MISMATCH 仅存在于历史 attempt（提交 53ab98bd），
-当前机器区无环境中止项。AC-7 浏览器证据由「聊天气泡出现」改为「键盘发送 → 队列栏 item 显示消息 summary」，
-判为等价可观察行为而非验收口径下调：PRD AC-7（来源 AC-35）只要求可访问名称/tooltip/键盘发送可用，
-新断言证明真实键盘事件 → composer → POST → 服务端入队 → WS task:* 驱动 UI 更新，比乐观本地气泡更强的
-端到端信号；气泡缺失根因是首发送不刷新 chat context（CR-2026-006 既有数据流，scope_out），非本 CR 引入。
-cmd-08 严格限于文件级（输出为文件名清单，未据其推导任何符号结论）；符号级 zero_diff 由 cmd-09 唯一承担
-（S1-S4 基线快照逐字命中 + 五符号锚点各恰一次 + 空读硬失败 + CRLF 规范化），评审侧另以
-crctl git diff --unified=3 人工核对全部 hunk 落于 ChatInputCore 区域。"
-  前端质量: "pass（diff 触及 *.tsx）：① 无对比度回退——未删除任何前景/背景色 token，新增 focus-within:ring-2
-ring-ring/20 焦点可见性，被移除的可见文字 label 的类别语义由 sr-only 同 key 文案保留，未发现破坏
-WCAG AA 的项；② loading/empty/error 状态完整保留（isSubmitting loading、上传中禁发、noAgent/agentArchived/
-agentAccessRevoked 占位、pending-message、queue-full/presenter-required 横幅、runtime-guide 态）且由
-cmd-01/02/04 覆盖；③ 无新增依赖或模块（纯类名/结构/CSS 改动），证据集无构建体积门禁定义，
-该类改动无体积风险。"
+  批准范围前置核对: "pass：按 SDD §9 scope_in 核对实际 diff（14 文件）全部在册——packages/views/chat/components/{chat-input.tsx, chat-input.test.tsx, chat-input-zero-diff.test.ts}；packages/views/projects/components/{project-team-agent-chat, project-private-ask, project-chat-panel, project-queue-bar}.tsx 及其测试；e2e/project-chat-composer.spec.ts；project-chat-composer-layout-diff.md；CUSTOM.md 治理 sidecar 受控例外。cmd-08 name-only 输出与 merge-base 117fc6be...HEAD 的 diff 文件集全等。scope_out（server、任何 API、server/migrations、任务快照、数据模型、ChatInput 视觉基线与业务语义、useProjectChatStore 结构、Discussion UI、mobile、新组件库/新状态管理、ModelPicker/ThinkingPicker/SubmitButton/ChatAddMenu 组件本体、draft adapter 接口）零触碰；follow_up（Discussion 视觉对齐、mobile、两套 composer 结构性合并）未做成当期交付。zero_diff 调用点零 diff：crctl git diff --unified=3 117fc6be...HEAD -- packages/views/chat/components/chat-input.tsx 的全部 5 个 hunk 落点均 >= L840（均在 ChatInputCore 函数体内），ChatInput（全局）函数体、ChatInputProps 签名、ChatInputDraftAdapter 接口、ChatInputCoreProps 签名、packages/core/*（client.ts/queries.ts/schemas.ts/use-realtime-sync.ts）、useProjectChatStore、ContentEditor、SubmitButton 本体全部零改动。testid 契约按 §9 唯一执行：移除 project-chat-model-row（无替换锚点，内部四个 testid 保留）、private-ask-model-row（替换为新增 private-ask-model-picker），其余 project-chat-*/private-ask-* testid 值不变。TASK-04 环境回修 4 项（locator 收窄到 [data-testid=project-chat-composer] 子树、seeded runtime 补 owner_id/visibility/provider、经真实服务端机制种入模型目录、360px 断言改两轴包围盒不相交）全部落在既有白名单文件 e2e/project-chat-composer.spec.ts 内，AC 语义未变——524428782→004cb002d 仅 CUSTOM.md + e2e spec 两文件，产品代码零变化。"
+  代码TASK与SDD对齐: "pass：§4.1 规则 1-6 逐条落地（ChatInputCore wrapper 外层 CHAT_GUTTER / surface 内层 CHAT_COLUMN + data-slot=\"chat-input-surface\" 两层独立 DOM；TeamAgentStreamView 根、队列栏、两 composer 横幅区均两层嵌套；ModePane 根加 @container）；§4.2 flow 底栏（左组 min-w-0 flex-1 flex-wrap、右组 shrink-0、编辑器 flex-1 min-h-8 overflow-y-auto、surface pb-9→pb-0、底栏 px-1.5 pb-1.5）与判定式 running = !!isRunning && (!allowSubmitWhileRunning || isEmpty || pendingUploads > 0) 均与 SDD 逐字一致；handleSend 门禁 isRunning && !allowSubmitWhileRunning；ariaLabel/stopAriaLabel 按 send_tooltip/stop_tooltip 既有 key 补传；allowSubmitWhileRunning 由 Team Agent 传 true、Private Ask 不传（stop-only 逐位不变）；§3.2 工具栏三态（readonly/picker/runtime-guide）与 sr-only 类别标签、Private Ask 新锚点 private-ask-model-picker、persistModel/persistThinking 仍走既有 PATCH；§4.3.1/D-7 双源停止（sentTaskId/sentIssueId 确定性转移：成功且两 ID 有效→写入、任一空→原子清空、失败→保留旧值；tasks.find(task => task.id === sentTaskId) 唯一选取；trackedActive=(taskInItems||taskActive)&&!taskTerminal；未命中/空列表回落 items-only；useCancelProjectQueueTask 与 TSUG-007 三支，与同文件 TaskExecutionCard L519-531 完全同款错误处理）；差异文档 project-chat-composer-layout-diff.md 覆盖 SDD-CLOSE-04 a~e 且每项含「是否必要差异 + 理由」。TASK-01..04 完成标志逐条可核：cmd-01/06/09、cmd-02/06、cmd-02/06、cmd-03/04/05/06/07/08/09。"
+  工程质量: "pass：test-report.md 机器区 9/9 exit-code=0、skipped=false（cmd-01 61 例 / cmd-02 92 例 / cmd-03 160 例 / cmd-04 428 文件 5081 例 / cmd-05 wildcard exports clean / cmd-06 tsc --noEmit 零错误 / cmd-07 e2e 4 passed 17.4s / cmd-08 白名单清单 / cmd-09 5 例）；无新增依赖（e2e 复用 e2e/helpers、e2e/fixtures 与既有 pg 客户端）；行尾纪律满足（检查器运行时 \r\n→\n 规范化，读取/解析失败硬失败）；tasks/_index.yml 经 crctl task done 即时登记 TASK-01..04 全 done（无回写期补账）；CUSTOM.md #82-#85 按该台账当时结构登记（顶部 CR 汇总行 #82–#85 + 独立 CR-2026-062 段落 6 列表格，含环境回修与 cmd-07 真跑结论、每 TASK 合并注意与验证命令）。"
+  关键路径可读性: "pass：新增/改动处均带 CR 溯源注释（chat-input.tsx 内 3 处 AIFIRST (CR-2026-062 TASK-01)；项目组件内 CR-2026-062 §3.2/§4.1/§4.3.1 注释），双源活动性、确定性转移、可见动作判定式均有逐行注释说明意图；chat-input-zero-diff.test.ts 文件头写明提取来源 SHA/行号/提取时机（修改前）与 CRLF 规范化、硬失败纪律；差异文档以表格给出双源生命周期闭合表，评审与 rebase 可直接对照。"
+  安全性: "pass：零新增 API、零新增可写路径、零数据模型/schema 变更（packages/core/* 与 server/* 零 diff）；取消权限继续由服务端强制（403，originator 或 owner/admin，本 CR 未放宽），composer 只取消本 composer 最近一次发送的 task（sentTaskId 由发送响应唯一确定；handleStop 以 !sentTaskId 早退，空 ID 分支原子清空两个 ID 且不取消旧 task，组件测试 (ii) 断言 cancelTaskById(A) 未被调用）；配置写入仍为 patchProjectChatConfig / patchChatSessionConfig，无 updateAgent 调用（组件测试断言）；e2e 以一次性用户 + 自建项目 seed，afterEach 显式清理 issue/project/agent/runtime；无敏感数据外泄路径。"
+  测试覆盖: "pass：组件面 cmd-01/02 覆盖 AC-1/AC-2/AC-3/AC-4/AC-5/AC-6/AC-7（两层 DOM 双节点断言、surface token、flow 底栏左组/右组分离与 leftAdornment 落位、可访问名称 send/stop、allowSubmitWhileRunning 三态、三态工具栏 + PATCH 目标断言、sr-only 类别标签、pending-message 原条件、queue-bar 两层与 ModePane @container）；AC-5 双源矩阵逐行覆盖（queued/dispatched：items+timeline；running/waiting_local_directory：timeline 单独支撑且 items 不含；completed/failed/cancelled：终态覆盖陈旧 items；硬降级 (i)(ii)(iii)；未命中矩阵 (iv)(v) 含「另一 running task 不得误判」）；浏览器面 cmd-07 真跑覆盖 AC-1/AC-2/AC-3/AC-5/AC-7 四组用例；NFR-3 四语 parity cmd-03 与 packages/views 全量回归 cmd-04 无空白通过；AC-8 由 cmd-08（文件级）+ cmd-09（符号级）+ cmd-04/cmd-06 共同承载。"
+  测试证据可信度: "pass：test-report.md 机器区 generated-by=crctl-test、status=pass、command-digest d4910228…，与 traceability.yml#tests 的 status/command-digest 全等；test-evidence/cmd-01..09.log 齐全，逐条与机器区 exit-code/skipped/timed-out 一致，评审未重跑任何 lint/test/build。cmd-07 为无 --list 的真跑（4 passed / 17.4s，日志列出四条用例），6 次尝试（1 次 chromium 缺失、1 次环境修复后重跑、4 次回修迭代）在分析段如实记录，未包装成一次通过；ENVIRONMENT_MISMATCH 仅存在于历史 attempt（提交 53ab98bd），当前机器区无环境中止项。AC-7 浏览器证据由「聊天气泡出现」改为「键盘发送 → 队列栏 item 显示消息 summary」，判为等价可观察行为而非验收口径下调：PRD AC-7（来源 AC-35）只要求可访问名称/tooltip/键盘发送可用，新断言证明真实键盘事件 → composer → POST → 服务端入队 → WS task:* 驱动 UI 更新，比乐观本地气泡更强的端到端信号；气泡缺失根因是首发送不刷新 chat context（CR-2026-006 既有数据流，scope_out），非本 CR 引入。cmd-08 严格限于文件级（输出为文件名清单，未据其推导任何符号结论）；符号级 zero_diff 由 cmd-09 唯一承担（S1-S4 基线快照逐字命中 + 五符号锚点各恰一次 + 空读硬失败 + CRLF 规范化），评审侧另以 crctl git diff --unified=3 人工核对全部 hunk 落于 ChatInputCore 区域。"
+  前端质量: "pass（diff 触及 *.tsx）：① 无对比度回退——未删除任何前景/背景色 token，新增 focus-within:ring-2 ring-ring/20 焦点可见性，被移除的可见文字 label 的类别语义由 sr-only 同 key 文案保留，未发现破坏 WCAG AA 的项；② loading/empty/error 状态完整保留（isSubmitting loading、上传中禁发、noAgent/agentArchived/agentAccessRevoked 占位、pending-message、queue-full/presenter-required 横幅、runtime-guide 态）且由 cmd-01/02/04 覆盖；③ 无新增依赖或模块（纯类名/结构/CSS 改动），证据集无构建体积门禁定义，该类改动无体积风险。"
 suggestions:
-  - ">-"
+  - "范围外：SDD §4.1 规则 2 的括注「ChatInput 与其测试均不受影响——两组件从不同时挂载」与实施期实测不符：项目聊天页同时挂载 Team Agent composer 与右栏全局 ChatWindow composer，两处共享 data-slot=\"chat-input-surface\"（e2e 首跑的 strict-mode 冲突/误量即由此而来），实施方已在白名单内把定位收窄到 [data-testid=project-chat-composer] 子树解决，产品行为与既有测试零影响（cmd-01/04 全绿）。按 AGENTS.md #4「实施期发现不符须以 revision 修订并注明结论是否受影响」，建议在 writeback/SDD 修订时把该括注更正为「项目聊天页可能同时挂载两个 surface，定位需收窄到 composer 子树」，结论（补 data-slot 不破坏 ChatInput 与其测试）不受影响。归属节点：SDD 修订（writeback 期）。"
+  - "范围外：AC-3 窄面板证据建议后续加固——本轮 cmd-07 (b) 已覆盖面板无横向溢出、编辑器↔发送按钮两轴包围盒不相交、模型 chip 落在 surface 内，但 TASK-04 §3 列出的「附件预览」显式断言与「截图基线」未实现（附件预览由 ContentEditor 在编辑器区内承载，被编辑器包围盒间接覆盖；仓库 e2e 无 toHaveScreenshot 基线基建，仅有 artifact 截图）。属后续 e2e 加固项，不影响本轮 AC-3 可达性判定。归属节点：后续 CR 的 e2e 增强（TASK-04 遗留项）。"
+  - "范围外：cmd-07 spec 定位依赖英文文案（button[aria-label=\"Send\"/\"Stop\"]、队列栏 item 的 summary 文本），默认 locale 或文案 key 变更时会以定位失败而非行为失败告警；建议后续改为 testid/role 组合定位（该 spec 为 fork 新增文件，改动成本低）。归属节点：后续 CR 的 e2e 加固（TASK-04 遗留项）。"
 review-loop:
   current-attempt: 1
 release-subjects:
@@ -88,7 +24,7 @@ release-subjects:
   repositories:
     - repo: ai-first-platform-docs
       remote-ref: refs/heads/requirement/CR-2026-062
-      reviewed-source-sha: f42e5b1bb79d6c4bc612c3449e8e07b37ce59cbf
+      reviewed-source-sha: c136810da0b949d271de176e456035d78427b772
     - repo: multica
       remote-ref: refs/heads/requirement/CR-2026-062
       reviewed-source-sha: 004cb002de09ebcd37e205e1bfc1e54633ba6e4f
