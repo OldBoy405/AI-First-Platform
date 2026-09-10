@@ -1,10 +1,10 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 spec-id: ai-first-platform
-cr-ref: CR-2026-061
-cr-history: [CR-2026-060, CR-2026-059, CR-2026-061]
-target-version: "0.34"
+cr-ref: CR-2026-062
+cr-history: [CR-2026-060, CR-2026-059, CR-2026-061, CR-2026-062]
+target-version: "0.35"
 baseline-since: "0.33"
-generated-at: "2026-09-09T11:21:40+08:00"
+generated-at: "2026-09-10T12:05:18+08:00"
 
 milestones:
   - cr: CR-2026-060
@@ -323,3 +323,77 @@ milestones:
         code: { verdict: pass, path: change-requests/CR-2026-061/review-annotations/code.yml, sha256: 226cf6307c2bb09415ea86d607ae7e5a604bcc6387d8d1c87f2cd090075fa863 }
       approval: { status: approved, path: change-requests/CR-2026-061/approval.yml, sha256: d260b0fa7ca18851b27cf6dd61bcf0caae9df1132dbf6f3f72d65fda86f946e6 }
       merge: { status: merged, path: change-requests/CR-2026-061/merge-commits.yml, sha256: b2e05e89ab0fad86144f4d5d915a108e106bf3a96e759c399a45a0b133ae137f }
+  - cr: CR-2026-062
+    milestone: 0.35
+    target-version: "0.35"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 4a7bc48f1901e382256d5ebe01c94cbf64f22086
+        branch: requirement/CR-2026-062
+      - repo: multica
+        trunk: main
+        sha: f624d68a64d35bc09e2db373ea543130a41b46f1
+        branch: requirement/CR-2026-062
+      - repo: tools
+        trunk: main
+        sha: ebdd6290f1523ffb682609b7ad6ab83e7d30245e
+        branch: requirement/CR-2026-062
+    frs:
+      - fr: FR-1
+        title: 发送框布局对齐（AC-1）
+        sdd: §4.1 规则 1/2（ChatInputCore wrapper/surface 两层 DOM + data-slot）、规则 3（Team Agent 消息流根两层）、规则 5（队列栏两层）、规则 6（两 composer 横幅区两层）、规则 4（ModePane `@container`）；§6 AC-1
+        tasks: [CR-2026-062-TASK-01, CR-2026-062-TASK-02, CR-2026-062-TASK-03]
+        code: [ai-first-platform-docs@4a7bc48f1901, multica@f624d68a64d3, tools@ebdd6290f152]
+        evidence: [cmd-01, cmd-02, cmd-07]
+      - fr: FR-2
+        title: 单一输入 surface（AC-2）
+        sdd: §4.1 规则 2（surface 类名集合与 `ChatInput` 一致：border-surface-border/bg-surface/rounded-lg/focus-within ring）+ §4.2（输入区/底栏分层、编辑器 `overflow-y-auto` 内部滚动）；§6 AC-2
+        tasks: [CR-2026-062-TASK-01]
+        code: [ai-first-platform-docs@4a7bc48f1901, multica@f624d68a64d3, tools@ebdd6290f152]
+        evidence: [cmd-01]
+      - fr: FR-3
+        title: 配置控件入底部工具栏（AC-4）
+        sdd: §3.2（两宿主 `leftAdornment` 构造：三态分支/sr-only 类别标签/PATCH 路径不变/testid 保留-移除-替换清单）+ D-3（chip variant 复用）；§6 AC-4
+        tasks: [CR-2026-062-TASK-02, CR-2026-062-TASK-03]
+        code: [ai-first-platform-docs@4a7bc48f1901, multica@f624d68a64d3, tools@ebdd6290f152]
+        evidence: [cmd-02]
+      - fr: FR-4
+        title: 窄屏双端不溢出不遮挡（AC-3）
+        sdd: §4.2（底栏 flow 布局 + 左组 flex-wrap + 右组 shrink-0 + `min-h-8` 地板）+ D-2/D-5；§6 AC-3（360px e2e 真跑回归）
+        tasks: [CR-2026-062-TASK-01, CR-2026-062-TASK-02, CR-2026-062-TASK-04]
+        code: [ai-first-platform-docs@4a7bc48f1901, multica@f624d68a64d3, tools@ebdd6290f152]
+        evidence: [cmd-01, cmd-07]
+      - fr: FR-5
+        title: 视觉状态一致（AC-5）
+        sdd: §4.3 状态映射表 + §4.3.1/D-7（双源活动性判定：queue items ∪ 容器 Issue 任务时间线——`AgentTask[]` 数组、`tasks.find(task => task.id === sentTaskId)` 唯一选取最近发送 task、空列表/未命中回落 items-only，确定性转移、失败回流可见动作）+ §4.2 `running` 判定式；§6 AC-5（含 e2e 运行中停止真跑）
+        tasks: [CR-2026-062-TASK-02, CR-2026-062-TASK-01, CR-2026-062-TASK-04]
+        code: [ai-first-platform-docs@4a7bc48f1901, multica@f624d68a64d3, tools@ebdd6290f152]
+        evidence: [cmd-01, cmd-02, cmd-07]
+      - fr: FR-6
+        title: 可访问性保持（AC-7）
+        sdd: §3.2（ChatInputCore 补传 `ariaLabel`/`stopAriaLabel`；只读/可编辑控件带 sr-only 类别标签）+ 依赖 #10/#11（chip 内建 aria/tooltip）；§6 AC-7（含 e2e 键盘发送真跑）
+        tasks: [CR-2026-062-TASK-01, CR-2026-062-TASK-02, CR-2026-062-TASK-03]
+        code: [ai-first-platform-docs@4a7bc48f1901, multica@f624d68a64d3, tools@ebdd6290f152]
+        evidence: [cmd-01, cmd-02, cmd-07]
+      - fr: FR-7
+        title: 不新增数据与业务语义（AC-6/AC-8）
+        sdd: §1.1 改动面白名单（仅 packages/views + e2e + 差异文档 + 零差异检查器测试文件 + `CUSTOM.md` 治理 sidecar）+ §2 数据模型 N/A + §9 zero_diff（ChatInput 函数体/props 签名、draft adapter、`useProjectChatStore`、全部 packages/core、server 零改动）+ §9 testid 保留/移除/替换清单；§6 AC-6/AC-8
+        tasks: [CR-2026-062-TASK-04, CR-2026-062-TASK-01]
+        code: [ai-first-platform-docs@4a7bc48f1901, multica@f624d68a64d3, tools@ebdd6290f152]
+        evidence: [cmd-08, cmd-09, cmd-04, cmd-06]
+      - fr: FR-8
+        title: 共享组件适配与测试（AC-7/AC-8）
+        sdd: §6.9 测试计划（chat-input/项目组件/e2e spec 真跑）+ SDD-CLOSE-04/D-6 差异文档（`project-chat-composer-layout-diff.md`）；Web/Desktop 共享 packages/views；NFR-3 四语 parity
+        tasks: [CR-2026-062-TASK-04, CR-2026-062-TASK-01]
+        code: [ai-first-platform-docs@4a7bc48f1901, multica@f624d68a64d3, tools@ebdd6290f152]
+        evidence: [cmd-03, cmd-04, cmd-05, cmd-06, cmd-07]
+    evidence:
+      test: { status: pass, path: change-requests/CR-2026-062/test-report.md, sha256: 38e82fb3e1f82b19f2fafebc9becf28664aa8d7036eced1cac00e9de635e6938 }
+      reviews:
+        requirement: { verdict: pass, path: change-requests/CR-2026-062/review-annotations/requirement.yml, sha256: d6851e783d1d0c5d4c2bcdd0a43b3b24c265af4a82f620d89c3cc36137313723 }
+        tech-design: { verdict: pass, path: change-requests/CR-2026-062/review-annotations/sdd.yml, sha256: 5cf89932e05a43876e85115dc2a814c2215c234f17081ce4a65ae17dea366b27 }
+        dev-plan: { verdict: pass, path: change-requests/CR-2026-062/review-annotations/dev-plan.yml, sha256: 605c135d04cdd50c334694f46dd2737f9a927c79165a54b215dfbdc4278b2501 }
+        code: { verdict: pass, path: change-requests/CR-2026-062/review-annotations/code.yml, sha256: f862b645ffbedeab091f990fca6d859f48b3e120840500b9c99b6de4caf5a22d }
+      approval: { status: approved, path: change-requests/CR-2026-062/approval.yml, sha256: 62338df88e4ddfe075ac366d7a3d6883527f7670cdd8eebbdf13ec2622dc442d }
+      merge: { status: merged, path: change-requests/CR-2026-062/merge-commits.yml, sha256: 934b3fa708bd54a2eaca362060e638a379e81ad2836847b2a00f95ecc9596dca }
