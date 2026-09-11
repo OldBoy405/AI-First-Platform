@@ -1,24 +1,24 @@
 cr-id: CR-2026-063
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-09-11T21:23:23+08:00"
+reviewed-at: "2026-09-11T23:54:19+08:00"
 verdict: pass
 blockers: []
 dimensions:
-  批准范围四字段: "通过：§9 的 scope_in、scope_out、zero_diff、follow_up 四字段齐全；本轮仅更新 AC-12 授权相关五处，批准范围未扩大。"
-  PRD对齐: "通过：FR-1～FR-11 与 AC-1～AC-12 均有技术落点；owner Ray 已在权威评论 01a09099-97cf-7b5c-887e-4a8a369fa80e 显式选择选项 A，§6.1、§6.3、§6.4 已将 AC-12 统一为唯一授权口径。"
-  SDD关闭义务: "通过：SDD-CLOSE-01～16 均有关闭结论；SDD-CLOSE-13 已记录裁决人、权威评论、授权范围与人工 gate 关系，上一轮 B-02 契约半闭合。"
-  架构合理性: "通过：模块边界、依赖方向、durable ledger 复用及 tools/multica ARCHITECTURE.md 不变量未被本轮授权文本修改；未新增架构层、状态写者或依赖。"
-  数据模型完整性: "通过：无 DDL/schema 变更；review-loop.yml、ledger journal、错误体及 Prompt/CUSTOM 文本结构和回滚语义完整，本轮无数据模型改动。"
-  接口契约: "通过：reset 的本地 catch 错误收敛、gate 恢复串、成功/失败字段出现面仍保持上一轮已核验契约；commit 75bf93a1 未触及 §3.2、§3.5、§4.2.1 或 W2c。"
-  多仓架构约束: "通过：workspace inspect 三仓均 healthy 且 dirty=false；tools HEAD ebdd6290f1523ffb682609b7ad6ab83e7d30245e、multica HEAD 5fde81c1f463e7031663ef8111ee0b7ce39aac3c 与 dep 绑定一致，§4.6 跨仓 revision 绑定未变。"
-  性能与安全: "通过：20 分钟证据预算、TTY 门槛、提交隔离、journal/index 回滚、W2c 收敛与审计顺序未被本轮改动；授权边界明确不扩大 scope_in。"
-  可测试性: "通过：AC-5 三块锚点、AC-9 窗口向量及 AC-12 无重不漏分区均可机械验证；AC-12 的通过条件现唯一为 21 个文件全执行且失败集恰等于 BR-1～BR-5、不得新增或减少。"
-  Prompt采纳影响: "N/A 成立：本 CR 不改 dispatch 分支或 rules.json deny 面；本轮只修改 SDD 授权相关文本。"
-  既有实现依赖核验: "通过：显式依赖清单仍为 dep-1～dep-29；tools/multica HEAD 与清单 SHA 一致，commit 75bf93a1 仅修改 SDD 授权相关五处和受控状态文件，未改依赖仓或既有关闭锚点。"
+  批准范围四字段: "通过：§9 批准范围的 scope_in / scope_out / zero_diff / follow_up 四字段齐全且均非空（空项无、未留占位）；0.1.4 只改 FR-1① 相关文本，未扩大任何写入面，zero_diff 清单未被触碰。"
+  PRD对齐: "通过：FR-1～FR-11 与 AC-1～AC-12 均有设计落点（§6 映射表 + §6.1 逐条落点/可观测结果/可达性）；R-13 的 PRD↔SDD 互斥已按 owner 口径甲唯一化——§6 FR-1① 目标段落文本改为不含文件名指称的禁用句（禁止语义逐字保留），AC-1① 的「命中 0」、AC-2 的计入/排除集合与 §4.5 的字面 grep 与阈值在本轮 diff 中逐字未动，prd.md 保持 9247c107b1f87b72a5ee4ec5750f2f1da8be784aed04d23f47bb8d153eabda70。"
+  SDD关闭义务: "通过：SDD-CLOSE-01～16 均有唯一关闭结论且与 PRD 契约一致；SDD-CLOSE-08 已补「口径授权」两行（归零可达前提 = 授权版目标文本；集合/阈值/判定方式不变、指向 §6.5），状态仍为已关闭，无新增未关闭项。"
+  架构合理性: "通过：§1.1/§1.2 对 tools ARCHITECTURE.md §4 分层与依赖方向、§5 硬不变量 1~8、§6 刻意不做的逐条核对未被本轮改动；D-1～D-3 三条决策仍满足三判据（难以逆转/无上下文会疑惑/有真实替代），未伪造替代；本轮未新增模块、依赖方向、状态写者或账本通道。"
+  数据模型完整性: "通过：§2.1 无 DDL/schema 变更（N/A + 理由成立）；review-loop.yml 结构（renderLoopText 全量生成、LF-only）、ledger journal envelope、gate 错误体形态、CUSTOM.md 表结构与 Prompt 文本结构均未因本轮改动变化；§2.3 的文件级回滚语义原样。"
+  接口契约: "通过：§3.1 gate 错配错误体、§3.2 reset 命令契约与 recoverCommand 出现面、§3.3 单文件 write-set 前置条件、§3.4 非 CLI 契约（含 R7 判定）与 §3.5 契约确定性四查均未被本轮改动；§3.4-C 声明本 CR 不新增/修改 HTTP API，FR-08.2 条件基线不触发。"
+  多仓架构约束: "通过：crctl workspace inspect 三资源均 healthy 且 dirty=false（评审现场实测）；tools HEAD ebdd6290f1523ffb682609b7ad6ab83e7d30245e、multica HEAD 5fde81c1f463e7031663ef8111ee0b7ce39aac3c 与 §10 依赖绑定的 SHA 一致；§1.4 路径 authority 取 resources[].worktreePath 原样值（未拼接 .rayai-worktrees、无主工作区回退），跨仓只有「事实源→部署副本」单向登记关系，无跨仓运行时依赖与跨仓事务需求。"
+  性能与安全: "通过：§7.1 六个安全控制点（恢复串无自由输入、零写入错误路径、TTY 人类在环无旁路、受控 git 边界、提交不夹带外来变更、审计不丢）与 §7.2 预算（证据命令 ≤ write-test-report 节点 1200 s）未被本轮改动；§6.5 授权边界明文「任何 AC 判定面与阈值一律不动、不改 prd.md、不改 tools/multica、不得自行改选口径乙」，未引入语义豁免或排除面。"
+  可测试性: "通过（现场复算）：SDD 内 §6.2 三块旧块哈希与表内逐字相等（块 1 6 行/574 B/fd0e9ce6c039b512362c3033902236a6c1010e91c13b9e23b53e59c320453daa、块 2 1/300/06b084c200e3c982475d63461d069ae5e012452bc8c49585d0826f02d5083148、块 3 1/141/de2554c90a9218dcd6d64e9ae1fe8948203584b9e34cf5f06122c8650c8537a8）；三块新块与两行替换块亦相等（7/975/833517ffb7a70b238d338be51e4579736bc961cb4035c4c9513287a419a31525、1/373/dcd3b8e45b8cadd858f4f59789e31535e0b19835a064b27e039513521a5c8da8、1/278/ed1941707f03c8691325737471c1c08698269eea9d96e52bb664f8d5f3550115、2/422/fc247a12436ea84e0bd6403b36c7151d149717fc30b5537f12cca91798a32f38），整文件派生值 872457e62ddfbadd40637dc7a293660fa8669c2e220afafa31454c53d271281c（6019 B / 69 行）成立；test/ 目录恰 21 个 *.test.mjs + merge-fixture.mjs 且与 §6.3 枚举双向一致；5 条基线红的定义行/断言行（crctl.test.mjs 1335/1343、checkpoint-tx.test.mjs 480/489、crctl.test.mjs 4585/4597 与 dir-graph 现 31 条声明、crctl.test.mjs 4797/4803、archive-tx.test.mjs 373/391）与实测事实一致；AC-1①/AC-2 在口径甲下可机械核对（计入集合 multica 现 2 命中→FR-1①/② 后归零；tools 现 2 命中均在 L1317-1318→FR-1③ 后归零）。"
+  Prompt采纳影响: "N/A 成立（条件未触发）：§8 存在并给出四项核验——本 CR 不改 crctl dispatch（FR-9 只改 cmdReviewLoopReset 函数体，case 'review-loop' 的 return 调用形态原样、main().catch 已有）；rules.json 零 diff；lint 扫描面（SKILL.md / *.pipeline.json / README.md / agents/*.md）内 'review-loop reset' 0 命中；'--mode pre-review' 仅 1 命中（review-requirement/SKILL.md:42）且已含 --for requirement-reviewing。采纳清单为空成立。"
+  既有实现依赖核验: "通过：§10「既有实现依赖与事实」29 项齐全、每项含 repo/相对路径/稳定符号/依赖结论与 commit SHA；依赖仓 HEAD 与清单 SHA 一致（tools ebdd6290…、multica 5fde81c1…）。本轮抽验稳定符号与结论均在场且行为相符：fail L43-47、cmdGate pre-review L957-960、cmdReviewLoopReset L1821/L1844、readFileChecked+sha256 先例 L2183/L2193、durable-tx L487 与 L311、allowed 集合 L1311-1319（恰 2 处命中）、CR-2026-057 测试 L4554-4580、rules.json add/commit/diff/rev-parse 形态（含 commit flags s 容多行 trailer）、runTestPlan sourceRevision = cmd.absoluteCwd 的 HEAD、parseTestPlan 的 TEST_CWD_ESCAPE、FROZEN_SKIP_PATTERNS、agent-skill-matrix.yml L25-29、agents/_index.yml 9 个 agent、coordinator 章节目录 L11/15/24/38/45/55/63、CUSTOM.md L387 与表头。唯一偏差为辅助行号标注少量漂移（dep-3 的 sha256 实为 L64；dep-6 的 requireCr / main().catch 实为 L3494 / L3499；dep-15 的 walkFiles / splitMarkdown 实为 L144 / L167）：按本 Skill「行号只作辅助、不作唯一证据」口径，符号存在性与依赖结论均不受影响，不构成 blocker。"
 suggestions:
-  - "已解决：B-02 [prd.md NFR-1/AC-12；sdd.md §6.1 AC-12、§6.3、§6.4、§9 follow_up 第 7 条、SDD-CLOSE-13]：owner Ray 已在权威评论 01a09099-97cf-7b5c-887e-4a8a369fa80e 显式选择选项 A；§6.4 记录裁决人、时间、授权范围、授权边界及与人工 gate 的关系，§6.1/§6.3/§9/SDD-CLOSE-13 同步为该唯一口径，不再保留待裁决或第二种通过定义。"
+  - "已解决：R-13（来源 = dev-plan 上游 blocker、repair-target=write-tech-design）[sdd.md §3.4-B / §6 FR-1① / §6.1 AC-1① 口径注 / §4.5 口径注 / §11 SDD-CLOSE-08 / §13 修订 0.1.4 + 新增 §6.5 授权记录]：owner Ray 已在权威评论 01a0911c-b1ed-79bc-9164-99e611e2b51a（2026-09-11T15:36:12Z，本地 23:36:12+08:00）明文裁决口径甲；§6 FR-1① 目标段落文本已改为不含 _context.md 文件名指称的禁用句（禁止语义逐字保留），AC-1① 的「两份副本文件内 _context.md 命中 0」、AC-2 的计入/排除集合与 §4.5 的文件级字面 grep 与阈值全部原样，prd.md 保持 9247c107…；§6.5 记录授权范围与边界（仅该目标段落文本、任何 AC 判定面与阈值不动、不得自行改选口径乙），tools/multica 实现文件零改动。互斥目标文本已唯一化，本轮不再有第二种落地口径。"
 review-loop:
-  current-attempt: 3
+  current-attempt: 1
 subject-file: change-requests/CR-2026-063/sdd.md
-subject-sha256: ce51c16838e41a7572e4271c29f0564ef1a195adfcf3b309e0a9010db13e5cd2
+subject-sha256: e1d44437202ed7aee59655e75df61ed798c1abffb70a9be66076a0fc3977525b
