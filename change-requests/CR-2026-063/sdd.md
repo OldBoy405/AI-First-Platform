@@ -6,7 +6,7 @@ title: CR-P0 流程正确性止血 — `_context.md` 合同退役、Prompt 源/o
 target-version: 0.36
 status: draft
 created: 2026-09-11T18:22:49+08:00
-updated: 2026-09-11T20:18:49+08:00
+updated: 2026-09-11T23:41:00+08:00
 ---
 
 # 0. 阅读约定
@@ -228,7 +228,7 @@ lint-prompts R7（版本化 Prompt 侧配对检查）
 
 **B. Prompt 文本契约（FR-1/FR-3/FR-5/FR-6）**
 
-- multica 两份部署副本：`_context.md` 段落被 §6 FR-1 给出的目标文本原位替换；替换后两份文件均不出现 `_context.md`。
+- multica 两份部署副本：`_context.md` 段落被 §6 FR-1 给出的目标文本原位替换（该目标文本按 owner 授权**口径甲**落地：保留「不得创建或读取上下文副本」的禁止语义、**不写出文件名指称**；授权记录见 §6.5）；替换后两份文件均不出现 `_context.md` —— 该「不出现」按**文件级字面检索**判定（与 §4.5 同口径），判定面与 AC-1①/AC-2 均**未变**。
 - coordinator overlay：三节的目标文本**逐字固化在本 SDD §6.2**（含三块的替换边界、旧块/替换块的逐块 `sha256`、LF 归一口径与来源文件 SHA256）；实现期**逐字复制，不得转述**，不得改写标点、空格、换行或代码标记（AC-5 的锚点因此落在 CR worktree 内，不再依赖 worktree 之外的来源副本）；**块 3 按 §6.2 的两行替换块固化（旧 bullet 逐字保留 + 行首两空格的插入行）**，不是“在节内找个位置插一段”的自由形式；其余四节与 frontmatter 保持原样。
 - `tools/agents/dev-agent.md`：`## 委派路由合同（评审）` 内含六条要求（新 task/run、Runner、只传声明输入与 canonical 引用、不复述步骤/门禁/advance/修法、只读 `BAD_ARGS` 可恢复一次、版本化来源错误须同时报 `CONTRACT_DRIFT`）。
 - `CUSTOM.md` #75 职责单元格含五要素（AC-3）。
@@ -437,6 +437,7 @@ Get-ChildItem -Path (Join-Path $repo 'skills\shared\crctl\scripts\test') -Recurs
 - 字面量检索不受行尾差异影响；命中清单仍须按工作区纪律 #1 报"检索命令 + 归一后行号"。
 - 排除集合内的每一处命中都必须能读出「拒绝 `_context.md`」语义；出现任何「放行 `_context.md`」的正例断言即判不通过（AC-2）。
 - 该判定是**人工逐条 + 命中清单证据**（S-5：机械化属新 lint/新规则范围，不在本 CR）。
+- **口径注（口径甲，§6.5 授权记录）**：计入集合的判定为**文件级字面检索**（`-SimpleMatch`、无排除面、无语义豁免）；multica `cr-prompts-revised/dev-agent.md` 的替换段落按 §6 FR-1① 的**授权版**落地（不含该文件名指称、保留「不得创建或读取上下文副本」的禁止语义），因此「计入集合命中 0」与替换段落的禁止语义**不冲突**；本 CR **不采用**「禁止句不计入活跃合同引用」的语义口径（口径乙）。集合、阈值与判定方式均保持上文原样、未变。
 
 ## 4.6 验收证据命令契约（AC-12 全量回归分区 / `crctl test` 执行语义）
 
@@ -511,10 +512,12 @@ Get-ChildItem -Path (Join-Path $repo 'skills\shared\crctl\scripts\test') -Recurs
 
 | # | 落点 | 原位落法 | 目标内容 | AC |
 |---|---|---|---|---|
-| ① | `multica` `cr-prompts-revised/dev-agent.md`（`## 环境与代码边界` 末段，基线 L45–49） | **整段替换**（不得"保留旧段 + 段后追加说明"） | 目标段落原文（保留反引号格式）：「不得手工修改受控账本、`review-annotations`、`review-loop`、`traceability` 或 `specs/`；对应写入必须经专用 Skill/crctl。恢复或返工时直接读取 `crctl status {cr_id}`、`crctl next {cr_id}`、`cr.md`、`review-loop.yml` 与 canonical review annotations；不得创建或读取 `_context.md` 等上下文副本，也不得让缓存替代状态、评审证据或门禁。」 | AC-1① |
+| ① | `multica` `cr-prompts-revised/dev-agent.md`（`## 环境与代码边界` 末段，基线 L45–49） | **整段替换**（不得"保留旧段 + 段后追加说明"） | 目标段落原文（保留反引号格式；**口径甲授权版：末句不含文件名指称**，见 §6.5 授权记录）：「不得手工修改受控账本、`review-annotations`、`review-loop`、`traceability` 或 `specs/`；对应写入必须经专用 Skill/crctl。恢复或返工时直接读取 `crctl status {cr_id}`、`crctl next {cr_id}`、`cr.md`、`review-loop.yml` 与 canonical review annotations；不得创建或读取上下文副本，也不得让缓存替代状态、评审证据或门禁。」 | AC-1① |
 | ② | `multica` `cr-prompts-revised/quality-reviewer-agent.md`（`## 入口识别与证据` 首段，基线 L19） | 段内**删除** `_context.md` 引用并改写为 canonical 口径 | 首句保留"不凭评论文字猜阶段"；证据面改为 `dir-graph.yaml` + `crctl status/next` 返回 + 当前 CR canonical 产物 + 该 Skill 指定证据，并保留"canonical 事实优先于缓存、评论和执行方自报"（两处落点基线 dep-22） | AC-1② |
 | ③ | `tools` `skills/shared/crctl/scripts/lib/workspace-transactions.mjs`（post-review `allowed` 集合，基线 L1317–1318） | 删除**条目 + 其上方注释**；不新增 `crProcessCachePath()`、不放宽 `classifyRepoWorkspace()` | 删除后判定见 §4.4（dep-10） | AC-1③ |
 | ④ | `tools` `skills/shared/crctl/scripts/test/crctl.test.mjs`（CR-2026-057 白名单测试，基线 L4554 起） | 同一测试**原位改为退役合同测试**（禁止"保留原测试 + 旁边新增反向测试"） | 断言改为：① 评审后新增/修改 `_context.md` → `RELEASE_SUBJECT_DRIFT` / `reason=post-review-path-drift` 且 `approval.yml` 零写入；② `_context2.md` 非白名单断言保留（证明不存在前缀式放宽）（测试基线 dep-12） | AC-1④ |
+
+**① 目标段落文本的口径授权（口径甲，§6.5）**：① 行的目标段落原文**不含 `_context.md` 文件名指称**，末句为「不得创建或读取上下文副本，也不得让缓存替代状态、评审证据或门禁」——禁止语义与需求来源 §3.1.1 的替换块一致，只去掉文件名指称；**判据不动**：AC-1① 的「两份副本文件内 `_context.md` 命中 0」与 §4.5/AC-2 的计入集合字面 grep 归零（含 multica `cr-prompts-revised/` 全文件）均按原样执行；`prd.md`（`9247c107…`）保持审批版本、不改动。裁决人/裁决时间/权威评论/授权范围与边界见 §6.5。
 
 ## FR-2 活跃引用全量核对
 
@@ -615,6 +618,8 @@ Get-ChildItem -Path (Join-Path $repo 'skills\shared\crctl\scripts\test') -Recurs
 | AC-10 | FR-10 | 5 处文档补写 | 5 处均出现"单行标量"边界说明（含"不得使用多行引号标量或折叠块"）；`lib/yaml-subset.mjs` 零 diff；示例结构未变 | 5 处为独立文档位置；lint R1~R13 不因这些补充文本产生新 finding（补充文本为约束说明，不含 guard-deny 路径 + 写动词组合，不含状态机副本） |
 | AC-11 | FR-11 | 交付 diff 与 §9 `zero_diff` | diff 中无新增 SLO/M1–M8/P50–P90/计数门禁/账本字段/评审维度/Pipeline 节点；无 `crProcessCachePath`；`rules.json` 零 diff；`multica/aifirst/agent-import.mjs` 零 diff；multica 侧除 4 个文件外无其它改动 | `zero_diff` 项不进入任何 TASK 写入面，核对方式为 `git diff --name-only` 白名单比对 |
 | AC-12 | 全部 | 全部既有测试文件（§6.3 的基线红例外登记，依赖事实见 dep-29）+ 本 CR 新增/修订用例 | ①`tools/skills/shared/crctl/scripts/test/` 下**全部** `*.test.mjs`（本轮枚举为 21 个，逐文件清单与计数见 §6.3）在改动后被真实执行，失败集合**恰等于** §6.3 登记的 5 条基线红（不多不少；**不得新增任何红**，也不得靠 skip/删测试制造假绿）——该口径相对 PRD AC-12/NFR-1 原文的差异属**已由 owner 显式授权的目标放宽**（选项 A，授权记录见 **§6.4**）；②全部文件按 §4.6 的**无重不漏分区**纳入 canonical cmd-NN（每条带 `sourceRevision` 与 `test-evidence/cmd-NN.log` 绑定），例外仅以锚定完整测试名的模式排除，`skipped=true` 不接受为通过；③multica 被改文件结构完好（Markdown 表格/frontmatter 完整） | 新用例与既有用例共享同一 runner；`durable-tx.mjs` 的放宽对 4 个既有调用点零行为差异（§3.3）；§6.3 的 5 条红在未改动基线上已逐条复现，与本 CR 改动面无关（全部落在 `zero_diff` 对象上）；①的**可观测性**（同样可机械核对）与「验收通过」的成立条件均由 §6.4 授权记录的唯一口径确定，本 CR 不再有第二种通过定义 |
+
+**AC-1① 的口径注（口径甲，§6.5）**：① 的设计落点 = §6 FR-1① 的**授权版目标文本**（不含 `_context.md` 文件名指称、保留「不得创建或读取上下文副本」的禁止语义）；其可观测结果「两份副本文件内 `_context.md` 命中 0」与判定面**不变**（文件级字面检索；§4.5/AC-2 的计入集合含 multica `cr-prompts-revised/` 全文件，仍要求 0 命中）。即：替换段落自身不携带该文件名，是本条 AC 可达（grep = 0）的**前提**，不是对判据的放宽（本 CR 不采用「禁止句不计入活跃合同引用」的语义口径）。
 
 **AC 反查结论**：逐条从 AC 回查正文——每条 AC 的设计落点均在 §1–§5 有对应设计（AC-1/2→§4.5、AC-3/5/6/10→§6 各行、AC-7→§3.1+§4.1、AC-8→§4.3、AC-9→§3.2+§4.2、AC-11→§9、AC-12→§4.6+§6.3）；无"设计落点缺失"、无"与 PRD 契约冲突"、无"结果不可观察"；关键前置（TTY 门槛、耗尽门槛、healthy workspace、CR-ID 语法判定）均不会过滤掉 AC 目标对象——其中 TTY 与耗尽门槛是 AC-9④ 的**被验对象**而非阻碍，CR-ID 语法判定的非常规分支正是 AC-7 的第二个向量。
 
@@ -727,6 +732,28 @@ workspace-resolver.test.mjs    writeback-tx.test.mjs          yaml-subset.test.m
 **未采纳的选项 B（不授权例外，记录备查）**：AC-12 保持 PRD 原文（全绿），并须在同一决策中给出 5 条基线红的处理归属，二者之一：①扩大 `scope_in` 到 `pipeline-templates/**`、`dir-graph.yaml`、`write-requirement-prd/SKILL.md`、`checkpoint`、`archive` 内核（等于把一个新 CR 的工作并入本 CR）；②把 AC-12 的交付责任改为“随 follow_up CR 转绿”，并在 `follow_up`（§9）中逐条登记 5 条的根因归属。本次未采纳该选项，无需再指定归属，`approve-dev-start` 的前置不因该项受阻。
 
 **决策落点与状态机边界**：`change-request-track.state_machine` 中 `tech-designing` / `tech-design-review-pending` 的出边只有 `→ tech-design-review-pending`、`approve-tech-design:reject → tech-designing`（以及任意活动态 → `rejected`/`withdrawn`），**没有回到需求侧（`write-requirement-prd`）的转移**——唯一的 `write-tech-design:prd-blocker` 边挂在 `requirement-approved` 上，本 CR 首次 `write-tech-design` 进入时已经跨过。因此 PRD 级口径的确认点只能是：本节点的 owner 决策项，或人工 gate——本 CR 已按前者取得显式授权（见上方授权记录），并将在人工 gate 一并签核。`prd.md` 保持审批版本（`9247c107…`）不变；该授权口径的需求侧记录随回写期 `specs/` 累积文档与后续需求 CR 承载，**不在本 CR 内改 `prd.md`**。
+
+## 6.5 FR-1① 目标段落文本口径授权记录（owner 显式授权 **口径甲**）
+
+**授权记录（本 CR FR-1① 目标段落文本的唯一有效口径）**
+
+| 项 | 值 |
+|---|---|
+| 裁决人 | `Ray`（需求 owner，本 CR `owners.requirement`） |
+| 裁决 | **口径甲** —— 授权把 §6 FR-1① 的目标段落原文改写为**不含 `_context.md` 文件名指称**的禁用句：「…不得创建或读取上下文副本，也不得让缓存替代状态、评审证据或门禁」——禁止语义逐字保留，只去掉文件名指称 |
+| 裁决时间 | `2026-09-11T15:36:12Z`（本地 `2026-09-11T23:36:12+08:00`） |
+| 权威评论 | `01a0911c-b1ed-79bc-9164-99e611e2b51a`（Issue AIFI-24 线程；由 `cr-coordinator-agent` 以正式 mention 转派并留档于 `01a0911d-449e-7b0c-ae69-d9b9f5a01f8d`） |
+| 授权范围 | **仅** §6 FR-1① 的目标段落文本（改写为不含文件名指称的禁用句）；同步落点 = §3.4-B、§6 FR-1①、§6.1（AC-1① 口径注）、§4.5（口径注）、§11 `SDD-CLOSE-08`、§13/`updated` |
+| 授权边界 | **任何 AC 的判定面与阈值一律不动**（AC-1① 的「两份副本文件内 `_context.md` 命中 0」、AC-2 的计入/排除集合、§4.5 的字面 grep 与阈值均保持原样——这正是选甲的理由）；不改 `prd.md`（审批绑定 `9247c107…`）；不改 tools / multica 实现文件；不得自行改选口径乙 |
+| 与人工 gate 的关系 | 下一步人工 gate `crctl approve --stage tech-design` 签的新版 SDD **包含**本口径；本授权决策项从此关闭，FR-1① 不再有第二种目标文本 |
+
+**为何需要 owner 授权（事实，非 SDD 可自决项）**：需求来源 §3.1.1 的 `text` 替换块与 `prd.md` FR-1①（L155，审批绑定）**逐字含**「不得创建或读取 `_context.md` 等上下文副本」；而同一份已审批 PRD 的 §1.5（L132）/AC-1①（L276）与 SDD §4.5 的 multica 计入集合（`cr-prompts-revised/` 全文件、**字面 grep**）要求该文件名命中 0。两侧不可兼得：逐字含文件名的替换段落落在 `cr-prompts-revised/dev-agent.md` 内，其自身即命中 1 次 ⇒ AC-1①/AC-2 必红。SDD 无权自行改写已审批的需求契约（本节点在状态机上也**没有**回需求侧的转移边，见 §6.4 末段），故由 owner 明文裁决；owner 选择口径甲，本 SDD 按该唯一口径落地。
+
+**偏离登记（本 SDD 相对来源/PRD 的授权偏离）**：§6 FR-1① 的授权版目标文本与来源 §3.1.1 的 `text` 块、`prd.md` FR-1① 引号内的逐字句**不相同**，差异**仅**为该文件名指称（禁止语义一致）；该偏离由 owner 明文授权（上表），`prd.md` 保持审批版本不变，AC 判定面不变。
+
+**未采纳的口径乙（记录备查）**：保留替换块逐字（含文件名），把 §4.5 / §6.1 AC-1① 的 multica 判定改为语义口径（「不得创建或读取…」这类**禁止句不计入**「活跃合同引用」）。未采纳理由（owner 裁决判据）：① 口径甲不牺牲禁止语义（与来源 §3.1.1 语义一致）；② AC-1①/AC-2/§4.5 的判据保持**字面可机械验收**（grep = 0），不引入语义判定、不改写任何判据。口径乙若日后启用，须另经 owner 明文授权并同步改判据（本 CR 不做）。
+
+**可达性不变式（本轮改动后）**：§6 FR-1① 授权版文本 + §6 FR-1②（reviewer 副本段内删引用）+ §6 FR-1③（tools `allowed` 条目删除）三处落地后，§4.5 的计入集合（tools 的 `agents/`/`skills/`/`pipeline-templates/` 全文件 + multica `cr-prompts-revised/` 全文件）字面 grep 命中 0 可达；本记录**不新增**任何排除面、不改 AC-1①/AC-2 的阈值，也不改 `prd.md`。
 
 # 7. 安全与性能考量
 
@@ -1042,6 +1069,8 @@ SDD-CLOSE-08  AC-2 的验证方式（tech_context 指定：按 PRD §1.5 已确�
   关闭结论: 计入集合（tools 的 agents/skills/pipeline-templates 全文件 + multica 的 cr-prompts-revised 全文件）命中 0；
             排除集合（tools 的 scripts/test/**）命中必须全为拒绝语义；交付检索命令与命中清单；
             不做语义机械化（S-5 范围外）。算法见 §4.5。
+            口径授权: multica 计入集合归零的可达前提 = §6 FR-1① 目标段落按 owner 授权口径甲落地（不含 `_context.md` 文件名指称、
+            保留「不得创建或读取上下文副本」的禁止语义）；集合、阈值与判定方式不变（文件级字面 grep），授权记录见 §6.5。
   状态: 已关闭
 
 SDD-CLOSE-09  多仓路径 authority 与提交/checkpoint 口径
@@ -1127,4 +1156,7 @@ SDD-CLOSE-16  跨仓证据命令的 revision 绑定（cycle 2 评审 B-04）
   - **B-03（FR-5 块 3 的唯一插入边界）**：§6.2 把块 3 从"在既有失败 bullet 内插入段"冻结为**两行替换块**——第 1 行 = 旧 bullet 逐字保留（141 B / `de2554c9…`）、第 2 行 = 行首两个半角空格 + 插入段正文（280 B / `0fdd50ac…`，去缩进后 = 块 3 的 `ed1941…`）；替换块整体 422 B / `fc247a12…`，并给出块 1/块 2 的旧块 `sha256` 与整文件派生值 `872457e6…`；§3.4-B、§6 FR-5 的 §3.3.3 条目与 AC-5 的判据同步为可机械核对的三个判据；`SDD-CLOSE-14` 更新。
   - **B-04（跨仓证据命令的 revision 绑定）**：§4.6.1 推论 1 改为"`repo` 列 = 验收对象仓，且是该命令 `sourceRevision` 的唯一绑定面（`cwd` 必须相对且不越界）"，明确跨仓只读核对**不得**把 `repo` 换成脚本所在仓（脚本用绝对、正斜杠化路径），并要求被读仓 revision 由同一 plan 内 `repo` = 该仓的绑定命令给出（"对象仓 + 被读仓"两条 `sourceRevision` 的组合才是完整证据面）；无法表达时拆两条命令；`SDD-CLOSE-16`。
   - 约束核对：未触碰 `prd.md`（审批绑定 `9247c107…`）；`scope_in` / `scope_out` / `zero_diff` 的边界未变（§9 只新增两条 `follow_up` 登记）；FR 11/11、AC 12/12 覆盖不变；tools / multica 两仓零改动。
-- 结构规模：9 个 Skill 规定章节 + 既有实现依赖与事实（29 项，含本轮补条 dep-26~29）+ SDD-CLOSE 关闭清单 + carry-over 处理 + §4.6 证据命令契约 + §6.2 逐字锚点 + §6.3 基线红例外登记 + §6.4 AC-12 口径授权项；FR 覆盖率 11/11，AC 覆盖率 12/12。
+- 修订 0.1.4（2026-09-11，dev-plan 上游 blocker R-13 → owner 口径甲裁决 → `write-tech-design`；承接评审注释记为 0.1.3 的 `ce51c168…` 版）：按 Issue AIFI-24 权威评论 `01a0911c-b1ed-79bc-9164-99e611e2b51a` 的 **口径甲**授权，把 §6 FR-1① 的目标段落原文改写为**不含 `_context.md` 文件名指称**的禁用句（禁止语义逐字保留），并同步 §3.4-B、§6.1（AC-1① 口径注）、§4.5（口径注）、§11 `SDD-CLOSE-08`；新增 **§6.5** 授权记录（裁决人 `Ray` / 时间 `2026-09-11T15:36:12Z` / 权威评论 / 授权范围 = 仅该目标段落文本 / 边界 = AC 判定面与阈值不动）。
+  - **未动**：`prd.md`（`9247c107…`）、任何 AC 的判定面与阈值（AC-1①/AC-2/§4.5 的集合与 grep 判据原样）、§6.2 三块锚点（实测其覆盖面为 multica `cr-prompts-revised/cr-coordinator-agent.md`，与 FR-1①/§3.4-B/§6.1/§4.5/§11 无交集，**无哈希重算**）、plan/TASK、tools/multica 实现文件。
+  - 说明：0.1.3（cycle 2 评审 B-02 契约半 + owner 选项 A 授权，落 §6.1/§6.3/§6.4/§9 `follow_up` 第 7 条/`SDD-CLOSE-13`）未在 §13 单列条目，本条按同一编号口径续编为 0.1.4。
+- 结构规模：9 个 Skill 规定章节 + 既有实现依赖与事实（29 项，含本轮补条 dep-26~29）+ SDD-CLOSE 关闭清单 + carry-over 处理 + §4.6 证据命令契约 + §6.2 逐字锚点 + §6.3 基线红例外登记 + §6.4 AC-12 口径授权项 + §6.5 FR-1① 目标文本口径授权记录；FR 覆盖率 11/11，AC 覆盖率 12/12。
