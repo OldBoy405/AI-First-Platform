@@ -23,7 +23,7 @@ created: 2026-09-11T22:49:24+08:00
 
 **背景**：`tools/skills/shared/crctl/scripts/lib/workspace-transactions.mjs` 的 post-review `allowed` 集合当前含 `_context.md` 条目（SDD dep-10），使评审后对它的修改被放行；退役后判定算法不变（SDD §4.4：`unexpected = changedPaths(reviewedSha..HEAD) \ (allowed ∪ review-annotations/ 前缀)`，非空即 `bad('code', { reason:'post-review-path-drift' })`）。
 
-**输入条件**：tools CR worktree；`crctl workspace freshness CR-2026-063`（gate=implement-start）通过；SDD `ce51c168…` 只读。
+**输入条件**：tools CR worktree；`crctl workspace freshness CR-2026-063`（gate=implement-start）通过；SDD 修订 0.1.4 `e1d44437…` 只读。
 
 ## 2. 涉及文件 / 模块
 

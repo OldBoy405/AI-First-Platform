@@ -23,7 +23,7 @@ created: 2026-09-11T22:49:24+08:00
 
 **背景**：现状 `cmdGate` 的错配分支只 `fail('BAD_ARGS', ...)`（SDD dep-1），调用方拿不到「该调用与版本化 Skill/Pipeline 声明不一致」的信号，也拿不到可复制的恢复方向；`lint-prompts.mjs` 的 R7 只有 `advance` / `backlog-set` / `commit --template` 三类行级子判据（SDD dep-15）。
 
-**输入条件**：tools CR worktree（`resources[].worktreePath`，分支 `requirement/CR-2026-063`）；`crctl workspace freshness CR-2026-063`（gate=implement-start）通过；SDD `ce51c168…` 与 PRD `9247c107…` 只读。
+**输入条件**：tools CR worktree（`resources[].worktreePath`，分支 `requirement/CR-2026-063`）；`crctl workspace freshness CR-2026-063`（gate=implement-start）通过；SDD 修订 0.1.4 `e1d44437…`（审批绑定 `c05a6c02…`）与 PRD `9247c107…` 只读。
 
 ## 2. 涉及文件 / 模块
 

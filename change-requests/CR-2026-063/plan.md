@@ -6,7 +6,7 @@ sdd-ref: "change-requests/CR-2026-063/sdd.md"
 target-version: 0.36
 status: draft
 created: 2026-09-11T22:54:10+08:00
-updated: 2026-09-11T22:54:10+08:00
+updated: 2026-09-12T00:08:00+08:00
 ---
 
 # CR-2026-063 开发计划（CR-P0 流程正确性止血 —— `_context.md` 合同退役、Prompt 源/overlay 归位、委派合同收紧、crctl 原子性与错误可操作化）
@@ -15,17 +15,17 @@ updated: 2026-09-11T22:54:10+08:00
 
 | 输入 | 版本 | SHA256 | 绑定 |
 |---|---|---|---|
-| `change-requests/CR-2026-063/sdd.md` | SDD（协调上下文称「修订 0.1.3」；SDD §13 修订记录末条为「修订 0.1.2」，末次 owner 授权记录落在 §6.4 / `SDD-CLOSE-13`，本计划按 SHA 引用、不依赖版本号） | `ce51c16838e41a7572e4271c29f0564ef1a195adfcf3b309e0a9010db13e5cd2` | `review-annotations/sdd.yml#subject-sha256` + `approval.yml#tech-design`（`11539869a82067d8…`，`2026-09-11T21:37:20+08:00`，target `tech-design-reviewed`） |
+| `change-requests/CR-2026-063/sdd.md` | SDD 修订 **0.1.4**（§13 修订记录末条；owner 授权记录落在 §6.4「AC-12 选项 A」与 **§6.5「FR-1① 目标段落文本口径甲」**） | `e1d44437202ed7aee59655e75df61ed798c1abffb70a9be66076a0fc3977525b` | `review-annotations/sdd.yml#subject-sha256`（cycle 3 / attempt 1，`verdict=pass`、`blockers=[]`）+ `approval.yml#tech-design`（`c05a6c02c8cf950319b92595f8141bb622af3cb652064e13a2798bf5a3cb98c8`，`2026-09-11T23:56:39+08:00`，target `tech-design-reviewed`） |
 | `change-requests/CR-2026-063/prd.md` | PRD 修订 0.1.1 | `9247c107b1f87b72a5ee4ec5750f2f1da8be784aed04d23f47bb8d153eabda70` | 需求人工审批 evidence |
 
 - **两个硬边界**：①**不改 `sdd.md`**；②**不改 `prd.md`**。二者哈希均被人工审批绑定，任何正文修订都必须走既有上游轨（`review-tech-design` → 二次人工审批），不得在 plan/TASK 里静默改写设计。
-- **本计划与上一版 plan/TASK 的关系**：上一版（`327a4cf8…`）是照 SDD 0.1.0 写的，且 `review-dev-plan` 判 `route=upstream`、`repair-target=write-tech-design`（`review-annotations/dev-plan.yml`，6 条 blocker）——**整份作废**。本版按当前 SDD（`ce51c168…`，含 B-01~B-06 / S-1~S-5 的全部回修与 owner 对 AC-12 的选项 A 授权）从零重做；TASK 卡同样重写（不增量打补丁）。§8 给出旧评审发现与新版的收口对照。
+- **本计划版本谱系（三版，同一份文件）**：① `327a4cf8…`（照 SDD 0.1.0 写的初版，被 `review-dev-plan` 判 `route=upstream`、`repair-target=write-tech-design`，6 条 blocker，**整份作废**）；② 本版正文（按 SDD 0.1.2 = `ce51c168…` 从零重做，含 B-01~B-06 / S-1~S-5 的全部回修与 owner 对 AC-12 的选项 A 授权，TASK 卡同步重写）；③ **本轮定向刷新**（同一份 plan/TASK，SDD 修订 **0.1.4** = `e1d44437…` 定稿并重签后，只刷新 R-13 相关文本与全份对 SDD 修订号/哈希/审批证据摘要的引用——见 §4.1 R-13 与 §8 末行；**其余 10 个 FR 的 plan/TASK 与 `cmd-01`~`cmd-06` 六条证据命令逐字未动**，上一轮已被独立复评核验通过）。§8 给出评审发现的收口对照。
 - 目标版本 `0.36`：继承 `cr.md#target-version`（未改写、无 `tbd`）。
 - 交付面**唯一白名单** = PRD §1.3.1 的 14 行「仓 + 文件」表；`zero_diff` 清单见 SDD §9。本计划 §6.2 的 `cmd-03` / `cmd-04` 把该白名单做成机器判据。
 
 ## 0. 基线与工作区事实（落笔实读，一次读，未轮询）
 
-- status = `tech-design-reviewed`；`crctl next CR-2026-063` = `write-dev-plan`（`humanApproval=false`）；架构阶段终点 checkpoint 已闭合（`crctl checkpoint --message 架构设计已审批`：`phase=complete`、`changed=true`、`batchId=f0a5978edf89bd03`、`metadataCommit=a7c0e28bd047572f857fbbbe531dfdae57b15fd3`，三仓 `confirmed=true`）。
+- status = `tech-design-reviewed`；`crctl next CR-2026-063` = `write-dev-plan`（`humanApproval=false`）。架构阶段终点 checkpoint 曾于 SDD 修订**前**的基线上闭合（`crctl checkpoint --message 架构设计已审批`：`phase=complete`、`changed=true`、`batchId=f0a5978edf89bd03`、`metadataCommit=a7c0e28bd047572f857fbbbe531dfdae57b15fd3`，三仓 `confirmed=true`）；**该批次不覆盖 SDD 修订 0.1.4 之后的架构基线**（SDD 修订 `ab0b102b`、复评 `90226cf`、重签 `ab14322c` 均在其后）。按 `push-progress` 的既有口径（阶段终点 checkpoint 失效时**重跑同一 checkpoint、不重新审批**），本轮收尾以一次 `crctl checkpoint --message 架构设计重签后基线；开发计划与任务` 重新补齐，使远端重新拿到一个完整批次（结果随本次 Issue 汇报，不回写本文件）。
 - `crctl workspace inspect CR-2026-063`：三个资源全部 `classification=healthy`、`dirty=false`、`localBranch/remoteBranch=true`；`operationalWorkspace` = KB requirement worktree（非空）。
 - 路径 authority（`resources[].worktreePath` 原样值，**不拼接、不回退主工作区**）：
 
@@ -43,7 +43,7 @@ updated: 2026-09-11T22:54:10+08:00
 
 | 里程碑 | 内容 | 对应 TASK | 估时 |
 |---|---|---|---|
-| M1 设计冻结 | PRD 修订 0.1.1 + SDD `ce51c168…`（`tech-design-reviewed` + 人工审批）+ 架构阶段终点 checkpoint | 已发生 | 0 |
+| M1 设计冻结 | PRD 修订 0.1.1 + SDD 修订 **0.1.4** `e1d44437…`（`tech-design-reviewed` + 人工重签 `c05a6c02…`）+ 架构阶段终点 checkpoint（重签后基线于本轮重新补齐，见 §0） | 已发生 | 0 |
 | M2 计划与任务拆分 | 本 `plan.md` + `tasks/TASK-01…04.md` + `tasks/_index.yml`（`crctl task init --count-hint 4`）+ 推进 `task-breakdown` | 流程节点（非交付 TASK） | 0.5 人天 |
 | M3 `gate` 错配可操作化与配对 lint | `crctl.mjs` `cmdGate` 错配分支 + `crIdForRecover` helper；`lint-prompts.mjs` R7 配对子判据；两侧用例（含 AC-7 双向量） | CR-2026-063-TASK-01 | 12h |
 | M4 `review-loop reset` 原子提交 | `cmdReviewLoopReset` 改 async + 单文件 ledger 事务 + `git add`/commit + 提交隔离前置 + 失败回滚（`abort`→`syncLedgerIndex`→clean 复核）+ 审计；`lib/durable-tx.mjs` 前置条件一处放宽；新用例 W1/W2/W2b/W2c + 成功路径夹具迁移 | CR-2026-063-TASK-02 | 16h |
@@ -133,7 +133,7 @@ TASK-04 (multica + tools 文本层：dev-agent.md / quality-reviewer-agent.md �
 | R-10 | coordinator overlay 三节替换越界或改写（AC-5 的逐字面） | 中 | 目标文本与替换边界由 SDD §6.2 唯一固定（本计划不复述、只引用）；cmd-04 按边界提取 + LF 归一 + 去尾换行 + `sha256` 比对（块 1 `833517ff…`、块 2 `dcd3b8e4…`、块 3 两行替换块 `fc247a12…`、插入段 `ed1941…`、整文件派生 `872457e6…`），并断言旧块 `de2554c9…` 不单独出现 | RU1 |
 | R-11 | W2c 向量（恢复链自身失败）构造不当 → 断言恒真或恒假 | 中 | 用既有 `core.hooksPath` + `.githooks/pre-commit` 机制（SDD dep-13 先例）：hook 先把 `review-loop.yml` 写成第三值再 `exit 1`，断言链为「提交隔离失败 → `abortLedgerTransaction` 抛 `TX_RECOVERY_CONFLICT` → 本地 catch 映射 `..._ROLLBACK_FAILED` + 审计 + exit 1」；同时断言 stderr **不含** `TX_RECOVERY_CONFLICT` 作为对外码 | RU3 |
 | R-12 | 单文件 write-set 的 journal/manifest 结构被顺手改动（越过 FR-9 第 3 条的「仅」边界） | 中 | `zero_diff` 明列该文件除比较数值外的全部内容；cmd-03 的白名单允许该文件出现，但 AC-9⑥ 与 `cmd-01` 的 `durable-tx.test.mjs` 全绿约束其行为面；review-code 按 SDD §3.3 逐项核对 | RU3 |
-| R-13 | **FR-1① 的措辞冲突**：SDD §6 FR-1① 的目标段落原文（逐字来自来源 §3.1.1）含「不得创建或读取 `_context.md` 等上下文副本」，而 §6.1 AC-1① / §4.5 的计入集合 / PRD §1.5「两份部署副本归零」要求该文件 `_context.md` 命中 **0** | 高 | 本计划按**可机械验收**的一侧落地：替换段落保留 canonical resume 口径与「不得创建或读取工作流上下文缓存副本」的禁止语义，**去掉文件名指称**（否则 `cmd-04` + AC-2 必然失败）；该裁决与两侧原文（SDD §6 FR-1① ↔ §6.1 AC-1① / §4.5 / PRD §1.5）在本计划 §8 明列，交 `review-dev-plan` 显式裁决——评审判定须按逐字文本时 `repair-target=write-tech-design` 走 upstream，plan/TASK 不自行改动 SDD | RU1 |
+| R-13 | **FR-1① 的目标文本与 AC-1①/§4.5 的计入集合互相排斥**——上一轮 `review-dev-plan` 的 upstream blocker，**本轮已收口** | 高（已关闭） | **收口方式（上游轨，已完成）**：owner `Ray` 明文裁决 **口径甲**（权威评论 `01a0911c-b1ed-79bc-9164-99e611e2b51a`，`2026-09-11T15:36:12Z`），SDD 修订 **0.1.4** 据此把 §6 FR-1① 的目标段落改写为**不含 `_context.md` 文件名指称**的禁用句（禁止语义逐字保留），并新增 **§6.5** 授权记录（裁决人 / 时间 / 权威评论 / 授权范围 = 仅该目标段落文本 / 授权边界 = **任何 AC 判定面与阈值不动**）；复评 `review-tech-design` cycle 3 attempt 1 判 `pass` 且 `blockers=[]`，Ray 已在交互式终端重签 `--stage tech-design`（`c05a6c02…`，`gateBlockers` 已归空）。**plan/TASK 侧**：TASK-04 §3.1 的现用措辞（「不得创建或读取工作流上下文缓存副本」，不写出文件名指称）与该授权版文本**天然一致**——本轮只做核对，**未改一个字节**；`cmd-04` 与 `cmd-01`~`cmd-06` 的判据**均无需改动** | RU1 |
 
 无迁移 / DDL / down 语义。回滚一律经受控 `crctl git` 形态执行。
 
@@ -163,7 +163,7 @@ TASK-04 (multica + tools 文本层：dev-agent.md / quality-reviewer-agent.md �
 - **登记事实源**：SDD §6.3「既有测试基线红例外登记（AC-12 的绑定对象）」逐条登记 BR-1~BR-5（文件 / 测试名逐字 / 失败事实 / 归属），其事实依据为 SDD §10 **dep-29**（tools `ebdd6290…` 未改动工作区实测：21 个 `*.test.mjs` 单跑 exit=1、857 s、失败标记恰好 5 个）。本计划**不复制该表**，只给出可执行口径。
 - **可执行口径（本计划的机器判据）**：`cmd-01` 的 `--test-skip-pattern` = §6.3 五个**完整测试名**（正则元字符转义后）的锚定交替 `^(?:名字1|…|名字5)$`（本计划 §6.2 给出逐字模式，其中 BR-2 的 `[]` 需转义）；**不得**使用未锚定片段。
 - **fail-closed**：模式拼写一旦失效，对应用例会被真正执行并报红 → `cmd-01` exit 1 → test-report `block`；同一命令内任何其它红同样是 `block`。
-- **判定**：AC-12 = 「21 个 `*.test.mjs` 全部被 `cmd-01` 真实执行；失败集合**恰等于**登记 5 条（不得新增红、也不得靠 skip/删测试少红）」；该口径相对 PRD AC-12/NFR-1 原文的目标放宽**已由 owner 显式授权（选项 A）**：裁决人 `Ray`、权威评论 `01a09099-97cf-7b5c-887e-4a8a369fa80e`、授权记录 SDD **§6.4**，并已随架构人工审批 `11539869a82067d8…` 一并签核。本计划只承接该唯一口径，**不新增第二种通过定义**（`cmd-01` 的 `--test-name-pattern` 实测见 §6.3 干跑记录③）。
+- **判定**：AC-12 = 「21 个 `*.test.mjs` 全部被 `cmd-01` 真实执行；失败集合**恰等于**登记 5 条（不得新增红、也不得靠 skip/删测试少红）」；该口径相对 PRD AC-12/NFR-1 原文的目标放宽**已由 owner 显式授权（选项 A）**：裁决人 `Ray`、权威评论 `01a09099-97cf-7b5c-887e-4a8a369fa80e`、授权记录 SDD **§6.4**，并已随架构人工审批 `c05a6c02c8cf9503…` 一并签核。本计划只承接该唯一口径，**不新增第二种通过定义**（`cmd-01` 的 `--test-name-pattern` 实测见 §6.3 干跑记录③）。
 - **`merge-fixture.mjs` 的显式处置**（SDD §4.6.2 要求）：目录内 22 个文件的并集 = 21 个 `*.test.mjs`（全部进 `cmd-01`）+ 1 个非测试辅助模块 `merge-fixture.mjs`（被测试 `import`、不含 `test()`）。`cmd-03` 对它给出两条机械判据：① 逐行断言不存在 `test(` 定义行；② `require()` 加载成功且导出 `git`/`runCrctl`/`sha256` 三个函数（可加载性证明）。同时 `merge-tx.test.mjs`（在 `cmd-01` 内）本来就 `import` 它，构成第二条加载证据。
 
 ### 5.4 证据命令集的预算说明（`write-test-report` 节点 `timeoutMinutes=20`）
@@ -311,10 +311,10 @@ workspace-resolver.test.mjs    writeback-tx.test.mjs          yaml-subset.test.m
 | **B-05** 目录级全量回归未进 `cmd-NN`（无 `sourceRevision`/日志绑定）；例外用未锚定片段 | §4.6.2 无重不漏分区 + 锚定完整测试名 + `skipped` 语义 + 预算可达；§6.3 枚举 21 个 `*.test.mjs` 与 `merge-fixture.mjs` 的显式处置 | `cmd-01` 把 21 个文件**全部**纳入（每文件恰好一次），例外只用锚定交替；`merge-fixture.mjs` 由 `cmd-03` 显式处置；预算实测见 §5.4/§6.3 |
 | **B-06** 恢复串断言面矛盾（成功输出被要求携带 `recoverCommand`） | §3.2「`recoverCommand` 出现面」行 + §6.1 AC-7/AC-9③（只对失败结果断言、两向量分开） | TASK-01/TASK-02 的验收向量按该口径写：成功结果**不作**恢复串断言，失败结果分别断言规范 CR-ID 内插 / 非规范回退 `<CR-ID>` |
 | 旧 plan U-1…U-6（5 条技术设计 suggestion + AC-12 口径） | SDD §13 修订 0.1.1/0.1.2 + §6.4 授权记录 + `SDD-CLOSE-11…16` | 整节作废；本条仅作历史对照，不产生任何 TASK 或证据命令 |
-| **本轮新发现（R-13，非旧评审项）：FR-1① 的目标文本与 AC-1①/§4.5 的计入集合互相排斥** | 两侧原文：SDD §6 FR-1①（逐字取自来源《AIFI-18…》§3.1.1 的 ```` ```text ```` 块）给出「…不得创建或读取 \`_context.md\` 等上下文副本，也不得让缓存替代状态、评审证据或门禁。」；SDD §6.1 AC-1① 的可观测结果为「两份副本文件内 `_context.md` 命中 0 且含 canonical resume 口径」，§4.5 的计入集合含 `multica: cr-prompts-revised/`（必须 0 命中），PRD §1.5 亦写「`../multica` 侧同口径适用（两份部署副本归零，无测试例外）」；而 PRD/SDD AC-1① 同时要求保留「canonical resume 口径」 | 本计划按**可机械验收的一侧**落地（TASK-04）：替换段落保留 canonical resume 口径 + 禁止创建/读取上下文副本的语义，但**不写出 `_context.md` 文件名指称**——否则 `cmd-04` 与 AC-2 必然失败、AC-1① 字面不成立。二者不可兼得时需人/上游裁决：若 `review-dev-plan` 判定必须按 FR-1① 逐字文本落地，则 `repair-target=write-tech-design`（需 SDD 澄清 §4.5/§6.1 与 §6 FR-1① 的冲突口径），plan/TASK 侧不自行改动 SDD；若判定按 AC 口径落地，本计划的 TASK-04 措辞即为本次实现唯一口径 |
+| **上一轮 `review-dev-plan` 的 upstream blocker：R-13（FR-1① 目标文本 ↔ §6.1 AC-1① / §4.5 计入集合互斥）** | SDD 修订 **0.1.4** = `e1d44437202ed7aee59655e75df61ed798c1abffb70a9be66076a0fc3977525b`：§6 FR-1① 目标段落按 owner **口径甲** 改为**不含文件名指称**的禁用句（落点为 §3.4-B / §6 FR-1① / §6.1 AC-1① 口径注 / §4.5 口径注 / §11 `SDD-CLOSE-08`），并新增 **§6.5** 授权记录；**AC-1①/AC-2/§4.5 的集合、阈值与 grep 判据一字未动**（这是口径甲的定义性边界）；复评 `review-tech-design` cycle 3 attempt 1 判 `pass`、`blockers=[]`；人工重签 `--stage tech-design` = `approval.yml#tech-design.evidence-digest c05a6c02…`（`gateBlockers` 已归空，不再有 `EVIDENCE_DRIFT`） | **已收口**：TASK-04 §3.1 的既有措辞与该授权版文本天然一致（本轮逐字核对，无差异、未改动）；`cmd-04` 判据、`cmd-01`~`cmd-06` 六条证据命令、§6.2 两张稳定表、§7 覆盖矩阵、§4.0 回滚单元**逐字未动**。本计划本轮只做**定向刷新**：① 全份对 SDD 的修订号引用（0.1.3 → **0.1.4**）与哈希引用（`ce51c168…` → `e1d44437…`）；② 审批证据摘要（`11539869…` → `c05a6c02…`）与签核时间（`2026-09-11T23:56:39+08:00`）；③ §4.1 R-13 与本行（§8）的收口记录；④ §0 的 checkpoint 事实与本节末两条路由约束。其余 10 个 FR 的 plan/TASK **不重做、不改判据** |
 
-- 本节点不修改 `sdd.md` / `prd.md`，不自行调用 `crctl advance` 到 `tech-design-review-pending`。
-- `review-dev-plan` 若判 `verdict=block` 且 `repair-target=write-tech-design`：按节点契约 `crctl advance --to tech-design-review-pending --trigger review-dev-plan:upstream-design-blocker --expect task-breakdown --embedded`，由协调者派回 `write-tech-design`；SDD 修订 + 重跑 `review-tech-design` + 二次人工审批后，本节点按新 SDD 刷新 plan/TASK。
+- 本节点不修改 `sdd.md` / `prd.md`，不自行调用 `crctl advance` 到 `tech-design-review-pending`。**本轮硬边界**：SDD 修订 0.1.4 已被人工 gate 绑定（`approval.yml#tech-design` 的 `evidence-digest = c05a6c02…`，其证据面 = `review-annotations/sdd.yml`），对其任何字面改动都会再次产生 `EVIDENCE_DRIFT` 并让本次重签失效——因此 plan/TASK 与评审评论均**不得写出、不得暗示任何 SDD 正文修改**（S-1 类的非阻塞观察同样只登记不改动）。
+- `review-dev-plan` 若判 `verdict=block` 且 `repair-target=write-tech-design`：按节点契约 `crctl advance --to tech-design-review-pending --trigger review-dev-plan:upstream-design-blocker --expect task-breakdown --embedded`，由协调者派回 `write-tech-design`；SDD 修订 + 重跑 `review-tech-design` + 二次人工审批后，本节点按新 SDD 刷新 plan/TASK。**R-13 这一事项已由 SDD 0.1.4 §6.5 收口并重签，不得就同一事项再判 upstream**；若本轮出现新的上游疑点，须给出与该事项不同的、可复核的独立事实（并沿用同一 `advance` 形态）。
 - 若判 `verdict=block` 且 `repair-target=write-dev-plan`（普通轨）：按 `write-dev-plan` Step 2a / `write-dev-tasks` Step 2a 回修本 plan/TASK（≤3 轮），**不动 SDD 正文、不扩大 `scope_out`**。
 
 ## 9. TASK 拆分预分配（`write-dev-tasks` 的输入，共 4 个，组映射 1:1）

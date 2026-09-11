@@ -23,7 +23,7 @@ created: 2026-09-11T22:49:24+08:00
 
 **背景**：改造前 `cmdReviewLoopReset` 同步直写 `review-loop.yml`（SDD dep-2），失败后可能留下 dirty 中间态且无审计——这是本 CR（流程正确性止血）的核心目标之一。既有 4 个 ledger 事务调用点全部 ≥2 文件，`beginLedgerTransaction` 的前置条件 `writes.length < 2`（SDD dep-8）会拒绝单文件 write-set，故须原位放宽为 `< 1`（SDD §3.3 / D-1）。
 
-**输入条件**：`CR-2026-063-TASK-01` 已完成（`crIdForRecover` 可用）；`crctl workspace freshness CR-2026-063`（gate=implement-start）通过；SDD `ce51c168…` 只读。
+**输入条件**：`CR-2026-063-TASK-01` 已完成（`crIdForRecover` 可用）；`crctl workspace freshness CR-2026-063`（gate=implement-start）通过；SDD 修订 0.1.4 `e1d44437…` 只读。
 
 ## 2. 涉及文件 / 模块
 

@@ -23,7 +23,7 @@ created: 2026-09-11T22:54:10+08:00
 
 **背景**：旧副本与 DB 投影被当成第二事实源、委派链把 Skill 步骤复述进评论、payload 的 YAML 子集边界未写在 SKILL 里——这些都是「流程正确性」的根因（PRD §1.1）。
 
-**输入条件**：`CR-2026-063-TASK-01/02/03` 已完成；`crctl workspace freshness CR-2026-063`（gate=implement-start）通过；SDD `ce51c168…` 与 PRD `9247c107…` 只读。
+**输入条件**：`CR-2026-063-TASK-01/02/03` 已完成；`crctl workspace freshness CR-2026-063`（gate=implement-start）通过；SDD 修订 0.1.4 `e1d44437…`（审批绑定 `c05a6c02…`）与 PRD `9247c107…` 只读。
 
 ## 2. 涉及文件 / 模块
 
@@ -40,11 +40,11 @@ created: 2026-09-11T22:54:10+08:00
 
 ## 3. 实现要点
 
-1. **FR-1① 替换段落（本 TASK 的措辞裁决，见 R-13）**：目标段落内**不得出现 `_context.md` 文件名指称**（SDD §6.1 AC-1① 与 §4.5 计入集合要求该文件命中 0；PRD §1.5「两份部署副本归零」）。规定文本：
+1. **FR-1① 替换段落（唯一口径 = SDD §6.5 授权记录绑定的 owner 裁决「口径甲」）**：目标段落内**不得出现 `_context.md` 文件名指称**（SDD §6.1 AC-1① 与 §4.5 计入集合要求该文件命中 0；PRD §1.5「两份部署副本归零」）。规定文本：
    ```text
    不得手工修改受控账本、`review-annotations`、`review-loop`、`traceability` 或 `specs/`；对应写入必须经专用 Skill/crctl。恢复或返工时直接读取 `crctl status {cr_id}`、`crctl next {cr_id}`、`cr.md`、`review-loop.yml` 与 canonical review annotations；不得创建或读取工作流上下文缓存副本，也不得让缓存替代状态、评审证据或门禁。
    ```
-   （与来源 §3.1.1 / PRD FR-1① 的唯一差别 = 禁止句不写出文件名，语义不变、口径自洽；否则 AC-1①/AC-2 的机械判据必然失败。）
+   （与来源 §3.1.1 / PRD FR-1① 的唯一差别 = 禁止句不写出文件名，语义不变。该偏离已由 owner 明文裁决 **口径甲** 授权 —— 裁决人 `Ray`、权威评论 `01a0911c-b1ed-79bc-9164-99e611e2b51a`、授权记录 **SDD §6.5**（授权范围 = 仅该目标段落文本；授权边界 = 任何 AC 判定面与阈值不动）；复评 `review-tech-design` cycle 3 attempt 1 `pass`、人工重签 `c05a6c02…`。因此本段落**逐字按上文落地**，不得自行改选口径乙、不得改成含文件名的写法（那会让 AC-1①/AC-2 的机械判据必然失败）。）
 2. **FR-1② 段落**（来源 §3.1.2 目标文本）：
    ```text
    评审前读取目标 workspace `dir-graph.yaml`、`crctl status/next` 返回、当前 CR canonical 产物和该 Skill 指定的证据；canonical 事实优先于缓存、评论和执行方自报。
@@ -83,7 +83,7 @@ created: 2026-09-11T22:54:10+08:00
 
 | 输入 | 精确形态与来源 |
 |---|---|
-| SDD §6.2 三块逐字目标文本与替换边界 | SDD `ce51c168…` §6.2（含块 1 `833517ff…`、块 2 `dcd3b8e4…`、块 3 插入段 `ed1941…`、块 3 两行替换块 `fc247a12…`、整文件派生 `872457e6…`、旧块 `de2554c9…`）；本计划不复述，只引用 |
+| SDD §6.2 三块逐字目标文本与替换边界 | SDD 修订 0.1.4 `e1d44437…` §6.2（含块 1 `833517ff…`、块 2 `dcd3b8e4…`、块 3 插入段 `ed1941…`、块 3 两行替换块 `fc247a12…`、整文件派生 `872457e6…`、旧块 `de2554c9…`）；本计划不复述，只引用 |
 | `cr-prompts-revised/cr-coordinator-agent.md` 基线结构 | SDD dep-23：`## 职责` L11 / `## 事实源与读取` L15 / `## 路由` L24 / `## 委派与评论` L38 / `## 评审闭环` L45 / `## 平台层权限` L55 / `## 失败与输出` L63 |
 | `cr-prompts-revised/{dev-agent,quality-reviewer-agent}.md` 落点 | SDD dep-22：dev-agent.md `## 环境与代码边界` 末段 L47；quality-reviewer-agent.md `## 入口识别与证据` 首段 L19 |
 | `CUSTOM.md` #75 落点 | SDD dep-24：第 75 行第 3 列；表头 `| # | 位置 | 改动 | 原因 / 追溯 | 日期 | 合并注意 |` |
