@@ -109,6 +109,8 @@ lint-prompts R7（版本化 Prompt 侧配对检查）
 | `multica` | `C:\Users\GOBAO\Downloads\AI\AI First Platform\.rayai-worktrees\multica\requirement\CR-2026-063` | `requirement/CR-2026-063` | `5fde81c1f463e7031663ef8111ee0b7ce39aac3c` |
 | `tools` | `C:\Users\GOBAO\Downloads\AI\AI First Platform\.rayai-worktrees\tools\requirement\CR-2026-063` | `requirement/CR-2026-063` | `ebdd6290f1523ffb682609b7ad6ab83e7d30245e` |
 
+表内 HEAD 为采写时刻（`crctl workspace inspect` + 受控只读）的快照。knowledge-base 仓的 HEAD 会随本 CR 的每次产物/状态提交前移（本 SDD 自身的落盘与状态推进提交均在其后），按 CR-2026-060 的同款口径，**KB 的 HEAD 不作为依赖证据**；第 10 节的既有实现依赖只绑定 tools（`ebdd6290…`）与 multica（`5fde81c1…`）两仓 HEAD，评审时以受控只读重核这两个 SHA 未变即可。
+
 - 本 SDD 落 knowledge-base 的 operational workspace（`change-requests/CR-2026-063/sdd.md`），**不写 `specs/`**。
 - 代码/文本改动按所属仓分别落在该仓 worktree：`multica` 4 个文件、`tools` 为代码与 Prompt 主体（清单以 PRD §1.3.1 为准）；各仓分别提交，架构审批后由同一批 `crctl checkpoint` 纳入（PRD §1.3.2）。
 - 跨仓改动不存在运行时依赖，只有"事实源 → 部署副本"的登记关系；因此不需要跨仓事务，`checkpoint` 的既有"全仓 source commit → publish"语义足够。
