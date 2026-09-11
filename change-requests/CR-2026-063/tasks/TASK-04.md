@@ -5,114 +5,97 @@ cr-ref: CR-2026-063
 plan-ref: "change-requests/CR-2026-063/plan.md"
 sdd-ref: "change-requests/CR-2026-063/sdd.md"
 target-version: 0.36
-title: Prompt/文档案位归位与委派合同收紧（multica 4 文件 + tools 6 处）与范围收口核对
-slug: prompt-source-overlay-and-scope-closeout
+title: "Prompt/文档案位归位与委派合同收紧（multica 4 文件 + tools 6 处）与范围收口核对"
+slug: prompt-source-placement-and-delegation-contract
 status: pending
 estimate: 16h
 depends-on: [CR-2026-063-TASK-01, CR-2026-063-TASK-02, CR-2026-063-TASK-03]
-created: 2026-09-11T19:30:00+08:00
+created: 2026-09-11T22:54:10+08:00
 ---
+
+# CR-2026-063-TASK-04 —— Prompt/文档案位归位与委派合同收紧、范围收口
+
+覆盖 FR：**FR-1①②、FR-3、FR-4、FR-5、FR-6、FR-10、FR-11**（SDD §6 FR-1①②/FR-3/FR-4/FR-5/FR-6/FR-10/FR-11）；变更组 G4；主责仓：`multica` + `tools`。
 
 ## 1. 任务描述
 
-在 multica 与 tools 两个 CR worktree 完成**文本层原位修订**（FR-1①② / FR-3 / FR-5 / FR-6 / FR-10 / FR-4）并作为收口层承担 FR-11 的反向验收与 AC-11 / AC-12 的核对：
+**目标**：① 两份 multica 部署副本的 `_context.md` 合同段落原位退役为 canonical resume 口径；② `CUSTOM.md#75` 职责单元格原位重写为「公共 Prompt 事实源 = `tools/agents/`、coordinator = Multica 专属 overlay、DB 是部署投影」；③ coordinator overlay 三节按 SDD §6.2 逐字替换；④ `tools/agents/dev-agent.md` 的委派路由合同收紧为六条；⑤ `skills/shared/crctl/SKILL.md` + 4 份 review SKILL 补写 YAML 子集（单行标量）边界说明；⑥ 反向验收（AC-4）与交付 diff 白名单核对（AC-11）。
 
-1. **FR-1①**：`multica` `cr-prompts-revised/dev-agent.md` 的 `## 环境与代码边界` 末段（基线 L47）**整段替换**为 canonical resume 口径（见 §3.1），不得「保留旧段 + 段后追加说明」。
-2. **FR-1②**：`multica` `cr-prompts-revised/quality-reviewer-agent.md` 的 `## 入口识别与证据` 首段删除 `_context.md` 引用，改为 canonical 证据面（见 §3.2）。
-3. **FR-3**：`multica` `CUSTOM.md` #75 行**第 3 列（职责/改动）单元格**原位重写为五要素（见 §3.3）；不新增登记行、不改表结构、不动其它行与其它列。
-4. **FR-5**：`multica` `cr-prompts-revised/cr-coordinator-agent.md` 的 `## 委派与评论` / `## 评审闭环` / `## 失败与输出` 三节按来源 §3.3.1/§3.3.2/§3.3.3 **逐字**原位替换/扩写；保留 `## 职责`、`## 事实源与读取`、`## 路由`、`## 平台层权限` 与 frontmatter（不整文件重写、不追加第五节；`## 评审闭环` 的 BLOCK / Suggestions / alignment 责任边界保留）。
-5. **FR-6**：`tools` `agents/dev-agent.md` 的 `## 委派路由合同（评审）` 原位收紧为六条要求（见 §3.5）；不新增 R14 或等价委派 lint。
-6. **FR-10**：5 处**原位补写** YAML 子集边界说明（见 §3.6）；不改 `lib/yaml-subset.mjs`、不换解析器、不新增字段、不改示例结构。
-7. **FR-4 / FR-11 反向验收 + AC-12 收口**：`tools`/`multica` 的 `zero_diff` 文件零改动核对、交付 diff 白名单核对、全量回归运行记录与基线红对照。
+**背景**：旧副本与 DB 投影被当成第二事实源、委派链把 Skill 步骤复述进评论、payload 的 YAML 子集边界未写在 SKILL 里——这些都是「流程正确性」的根因（PRD §1.1）。
 
-输入：已审批 SDD §3.4-B（Prompt 文本契约）、§6 FR-1①②/FR-3/FR-4/FR-5/FR-6/FR-10/FR-11、§6.1 AC-1①②/AC-3/AC-4/AC-5/AC-6/AC-10/AC-11/AC-12、§9（`scope_in`/`scope_out`/`zero_diff`/`follow_up`）+ dep-15 / dep-18 / dep-19 / dep-20 / dep-22 / dep-23 / dep-24；已审批 PRD 修订 0.1.1 §1.3.1（14 行文件表，multica 恰 4 文件）、FR-1①②/FR-3~FR-6/FR-10/FR-11、AC-1/AC-3~AC-6/AC-10~AC-12、§1.5；plan.md §5.3（基线红登记）、§5.4、§6.2（cmd-03…cmd-10）、§7、§8.2（U-5/U-6）。
-
-本 TASK **不**改 `sdd.md`、**不**改 `prd.md`、**不**改平台 DB / `multica/aifirst/agent-import.mjs`（部署由 owner 执行）、**不**改 `pipeline-templates/**`、**不**把 coordinator 加进 `tools/agents/_index.yml`。
-
-> **上游设计修订项（plan §8.2）**：
->
-> - **U-5（S-5）**：FR-5 三节目标文本的**权威锚点**（来源 §3.3.1/2/3 的逐字文本或内容哈希）在 SDD 侧未写入；来源文档不在任何 worktree 内，且在 KB 仓为 untracked。本 TASK 按「**逐字复制、不得转述**」实现，工作来源写为「Issue AIFI-24 附件（与主 checkout `docs/analysis/AIFI-18_SDD到planTASK_原位修订方案.md` 归一后逐字节一致，24585 B、SHA256 `b774e41d…`，PRD §1.4 事实 1）」；最终权威锚点以 SDD 修订结果为准。**逐字校验不在 `crctl test` 计划内**（cmd-07 只覆盖结构/关键词/无步骤复述面），作为本 TASK 的验收条件由评审/审批逐条核对。
-> - **U-6（AC-12 口径）**：`../tools` 基线的 5 条既有红见 plan §5.3；本 TASK 的全量回归判据 = 失败集 ⊆ 登记集合、无新增红。
+**输入条件**：`CR-2026-063-TASK-01/02/03` 已完成；`crctl workspace freshness CR-2026-063`（gate=implement-start）通过；SDD `ce51c168…` 与 PRD `9247c107…` 只读。
 
 ## 2. 涉及文件 / 模块
 
-修改（PRD §1.3.1 第 1、2、3、4、5、12、13 行）：
+| 文件 | 仓 / 相对路径 | 改动性质 |
+|---|---|---|
+| multica 部署副本 1 | `cr-prompts-revised/dev-agent.md`（`## 环境与代码边界` 末段，基线 L47） | **整段替换**（不得「保留旧段 + 段后追加说明」） |
+| multica 部署副本 2 | `cr-prompts-revised/quality-reviewer-agent.md`（`## 入口识别与证据` 首段，基线 L19） | 段内删除 `_context.md` 引用并改写为 canonical 证据面 |
+| multica overlay | `cr-prompts-revised/cr-coordinator-agent.md`（`## 委派与评论`、`## 评审闭环` 标准入口段、`## 失败与输出` 第 1 条 bullet） | 三处按 SDD §6.2 **逐字替换**（块 1 整节含标题行；块 2 仅标准入口段；块 3 两行替换块） |
+| multica 台账 | `CUSTOM.md`（第 75 行第 3 列单元格，基线 L387） | 同一单元格内重写（五要素）；不新增行、不改表结构、不动其它行 |
+| tools 公共 Prompt | `agents/dev-agent.md`（`## 委派路由合同（评审）`，基线 L31） | 节内原位收紧为六条要求，保留三条既有内容 |
+| tools SKILL 文档 | `skills/shared/crctl/SKILL.md`（`review-record` 行，基线 L34）+ `skills/requirement/review-requirement/SKILL.md`、`skills/develop/review-tech-design/SKILL.md`、`skills/develop/review-dev-plan/SKILL.md`、`skills/develop/review-code/SKILL.md` | 既有 payload 示例处**原位补写**同一约束注释；不新增字段、不改示例结构 |
 
-- `multica` `cr-prompts-revised/dev-agent.md`（`## 环境与代码边界` 末段，基线 L43–49）
-- `multica` `cr-prompts-revised/quality-reviewer-agent.md`（`## 入口识别与证据` 首段，基线 L19）
-- `multica` `cr-prompts-revised/cr-coordinator-agent.md`（基线 L38 / L45 / L63 三节）
-- `multica` `CUSTOM.md`（#75 行，基线 L387）
-- `tools` `agents/dev-agent.md`（`## 委派路由合同（评审）`，基线 L31）
-- `tools` `skills/shared/crctl/SKILL.md`（`review-record` 行，基线 L34）
-- `tools` `skills/requirement/review-requirement/SKILL.md`、`skills/develop/review-tech-design/SKILL.md`、`skills/develop/review-dev-plan/SKILL.md`、`skills/develop/review-code/SKILL.md`（各自 payload 示例处的原位补写）
+**不得触碰**（SDD §9 `zero_diff` / `scope_out`）：`tools/agents/_index.yml`、`tools/agent-skill-matrix.yml`、`multica/cr-prompts-revised/agent-skill-matrix.yml`（AC-4 反向验收对象）；`multica/aifirst/agent-import.mjs`、平台 DB；`lib/yaml-subset.mjs`；`rules.json`；`pipeline-templates/**`；`write-requirement-prd/SKILL.md`；除上表 4 个 multica 文件外的任何 multica 文件。
 
-只读核对（不改）：`tools/agents/_index.yml`、`tools/agent-skill-matrix.yml`、`multica/cr-prompts-revised/agent-skill-matrix.yml`、`tools/skills/shared/controlled-shell/rules.json`、`tools/skills/shared/crctl/scripts/lib/yaml-subset.mjs`、`tools/skills/shared/crctl/gates.json`、`tools/dir-graph.yaml`、`tools/pipeline-templates/**`、`multica/aifirst/agent-import.mjs`。
+## 3. 实现要点
 
-## 3. 实现要点（逐字对齐 SDD）
-
-### 3.1 FR-1① 目标段原文（SDD §6 FR-1①，整段替换，保留反引号格式）
-
-> 不得手工修改受控账本、`review-annotations`、`review-loop`、`traceability` 或 `specs/`；对应写入必须经专用 Skill/crctl。恢复或返工时直接读取 `crctl status {cr_id}`、`crctl next {cr_id}`、`cr.md`、`review-loop.yml` 与 canonical review annotations；不得创建或读取 `_context.md` 等上下文副本，也不得让缓存替代状态、评审证据或门禁。
-
-### 3.2 FR-1② 目标内容（SDD §6 FR-1②）
-
-首句保留「不凭评论文字猜阶段」；证据面改为「`dir-graph.yaml` + `crctl status/next` 返回 + 当前 CR canonical 产物 + 该 Skill 指定的证据」，并保留「canonical 事实优先于缓存、评论和执行方自报」。
-
-### 3.3 FR-3 `CUSTOM.md` #75 单元格五要素（SDD §6 FR-3）
-
-同一单元格内重写，含：① 公共 Agent Prompt 唯一事实源 = `tools/agents/`；② `cr-prompts-revised/cr-coordinator-agent.md` 是 Multica 专属 overlay；③ 目录内公共 Prompt 副本**不再独立演进**，owner 部署时以 tools 同名文件覆盖平台公共 Agent（原「仓库侧快照」定性被本单元格取代）；④ DB 是部署投影、不是事实源（禁止把 DB/UI 临时编辑反向当规范）；⑤ `cr-coordinator-agent` 不进入 tools agent index。第 4 列（`原因 / 追溯`）与第 5 列（`合并注意`）不改、不新增行、行数不变（492）。
-
-### 3.4 FR-5 三节替换口径（SDD §6 FR-5；**逐字复制、不得转述**）
-
-- `## 委派与评论`（L38）：§3.3.1 文本 → 标准 Pipeline 节点只经既有 Runner 启动；计划外人工委派只传事实清单（CR-ID、节点/Skill 名、`crctl status/next` 返回、workspace/resources **原样值**、canonical feedback 引用、当前责任 Agent）；不复述 Skill/Pipeline 步骤、不内联状态推进或 Git 命令、不把 blocker 正文改写成执行步骤、不声明未来节点已满足；`mention://agent/<id>` 是工作委派不是抄送；一条评论只 mention 一个当前目标；每次触发记录一次 squad activity。
-- `## 评审闭环`（L45）：§3.3.2 文本 → **保留**既有 BLOCK / Suggestions / alignment 责任边界，原位改写**标准评审入口**（标准评审由 Pipeline Runner 按 registry 节点启动新的 `quality-reviewer-agent` task/run；协调者不得用评论重建 review Skill 步骤；BLOCK 按 `review-record` 返回的 `repair-target` 与 Pipeline `reviewLoop` 处理；介入条件限定为 repair target 无效、最大轮次耗尽、权限/事实冲突、技术失败或人工 gate）。
-- `## 失败与输出`（L63）：§3.3.3 文本 → 在既有失败 bullet 内**原位扩写**：评论/Prompt 与当前 Skill/Pipeline 事实冲突时停止该次手工委派并报告 `CONTRACT_DRIFT` 与冲突两侧；crctl 恢复信息只逐字段转发，不改写成协调者自己的 Git/状态序列。
-- 交付性质声明（写入 TASK 证据即可，不写进目标文件）：这是 **Prompt 合同缓解**，不宣称平台新增运行时校验；owner 复制该文件到平台后才生效（部署不在本 CR 范围）。
-
-### 3.5 FR-6 六条要求（SDD §6 FR-6；保留三条既有内容）
-
-新增/明确：① 每轮评审使用**新的** reviewer task/run；② 标准节点走 Pipeline Runner；③ 只传 review Skill 已声明的结构化输入与 canonical 引用（CR-ID、权威 workspace、resources 原样值）；④ 不在委派评论中复述 Skill 步骤、门禁命令、`advance` 参数或 blocker 修法；⑤ 只读命令出现零写入 `BAD_ARGS` 时，可按 crctl 明示的恢复方向恢复一次；⑥ 错误命令来自**版本化 Skill/Pipeline** 时，当前 run 可按安全恢复完成，但**必须同时报告 `CONTRACT_DRIFT`**，不得以成功掩盖合同错误。**保留**：作者不得在同一运行中自评；创建路径必须携带可信来源上下文（来源 Issue 或父 task）；不接受时停在 review 节点并提示另开独立会话（不得退化为作者自评）。文本纪律：新段落不得出现 ≥3 个具名状态、不得把 `_backlog.yml` 与状态判断写进同一段、不得出现 guard-deny 文件路径 + 写动词组合（dep-15 R12/R13）。
-
-### 3.6 FR-10 五处原位补写（SDD §6 FR-10）
-
-在**既有 payload 示例处补同一约束注释**（不改示例字段名与层级、不新增字段/维度）：payload 中 `blockers` / `suggestions` 等值必须使用 YAML 子集支持的**单行标量**；**不得使用多行引号标量或折叠块**；依据是既有 `lib/yaml-subset.mjs` 的解析边界（块标量 `|`/`>` 仅保守拼接为文本；锚点/别名/tag/多文档不支持，dep-19）。五处：`skills/shared/crctl/SKILL.md` 的 `review-record` 行 + 4 份 review SKILL 的 payload 示例注释（`requirement/review-requirement`、`develop/review-tech-design`、`develop/review-dev-plan`、`develop/review-code`）。`lib/yaml-subset.mjs` **零改动**。
-
-### 3.7 收口核对（FR-4 / FR-11 / AC-12）
-
-- `zero_diff` 反向验收：`tools/agents/_index.yml`（仍 9 agent）、`tools/agent-skill-matrix.yml`（`cr-coordinator-agent` `kind: system`/`mode: leader` 声明保留）、`multica/cr-prompts-revised/agent-skill-matrix.yml`、`rules.json`、`yaml-subset.mjs`、`gates.json`、`dir-graph.yaml`、`pipeline-templates/**`、`multica/aifirst/agent-import.mjs` 全部**不出现在** cmd-09/cmd-10 的 diff 清单内。
-- 交付 diff 白名单：multica 恰 4 文件（§2 前四项）；tools 清单 ⊆ PRD §1.3.1 表内文件（含测试文件），无新增脚本/包/迁移。
-- 全量回归运行记录（implement 期）：`node --test --test-reporter=dot --test-skip-pattern "CR-2026-037 Prompt|TASK-06 ⑤|已知 Skill 越界文本零命中|checkpoint T05 contract|TASK-01 RED-7" skills/shared/crctl/scripts/test/`（cwd = tools worktree）→ 失败集 ⊆ plan §5.3 的 5 条、无新增红。
-- multica 台账（纪律 #10）：本 TASK 对 multica 的改动由 `CUSTOM.md#75` 单元格重写覆盖；**无新文件、无 `// AIFIRST:` 挂钩点、不新增登记行**。
-- 行尾纪律（AGENTS.md #1）：新增/替换文本 LF；对仓库文件做哈希/跨行处理前统一 `\r\n → \n`，失败硬失败。
+1. **FR-1① 替换段落（本 TASK 的措辞裁决，见 R-13）**：目标段落内**不得出现 `_context.md` 文件名指称**（SDD §6.1 AC-1① 与 §4.5 计入集合要求该文件命中 0；PRD §1.5「两份部署副本归零」）。规定文本：
+   ```text
+   不得手工修改受控账本、`review-annotations`、`review-loop`、`traceability` 或 `specs/`；对应写入必须经专用 Skill/crctl。恢复或返工时直接读取 `crctl status {cr_id}`、`crctl next {cr_id}`、`cr.md`、`review-loop.yml` 与 canonical review annotations；不得创建或读取工作流上下文缓存副本，也不得让缓存替代状态、评审证据或门禁。
+   ```
+   （与来源 §3.1.1 / PRD FR-1① 的唯一差别 = 禁止句不写出文件名，语义不变、口径自洽；否则 AC-1①/AC-2 的机械判据必然失败。）
+2. **FR-1② 段落**（来源 §3.1.2 目标文本）：
+   ```text
+   评审前读取目标 workspace `dir-graph.yaml`、`crctl status/next` 返回、当前 CR canonical 产物和该 Skill 指定的证据；canonical 事实优先于缓存、评论和执行方自报。
+   ```
+   （首句「不凭评论文字猜阶段」等原文保留；段内不得出现 `_context.md`。）
+3. **FR-5 三节替换**：目标文本、替换边界、逐块 `sha256`、块 3 的两行替换块形态与整文件派生哈希**全部以 SDD §6.2 为唯一锚点**（本计划不复述）：块 1 = `## 委派与评论` 整节（含标题行，按 §6.2 边界到该节最后一个非空内容行）；块 2 = `## 评审闭环` 内首个非空段（单行）；块 3 = `## 失败与输出` 第 1 条既有 bullet 后插入「两个半角空格 + 插入段正文」（旧 bullet 行逐字保留、不得换成其它列表标记）。三块**逐字复制、不得转述**；除替换边界外不得改动标点、空格、换行或反引号；保留 `## 职责`、`## 事实源与读取`、`## 路由`、`## 平台层权限` 四节与 frontmatter 原样，不追加第五节。
+4. **FR-3 `CUSTOM.md#75` 单元格**：同一单元格内写全五要素——①公共 Agent Prompt 唯一事实源 = `tools/agents/`；②`cr-prompts-revised/cr-coordinator-agent.md` 是 Multica 专属 overlay；③目录内公共 Prompt 副本**不再独立演进**（owner 部署时以 tools 同名文件覆盖平台公共 Agent）；④DB 是部署**投影**、不是事实源；⑤`cr-coordinator-agent` 不进入 tools **agent index**。**不新增登记行**、不改表头与其它行、不动第 4 列历史 provenance。
+5. **FR-6 `tools/agents/dev-agent.md`**：`## 委派路由合同（评审）` 节内保留既有三条（作者不得自评／创建路径必须携带可信来源上下文／不支持时停在 review 节点提示另开独立会话，不得退化为作者自评），并写入六条要求：①每轮评审使用**新的** reviewer `task/run`；②标准节点走 Pipeline `Runner`；③只传 review Skill 已声明的结构化输入与 `canonical` 引用（CR-ID、权威 workspace、resources 原样值）；④不在委派评论中复述 Skill 步骤、门禁命令、`advance` 参数或 blocker 修法；⑤只读命令出现零写入 `BAD_ARGS` 时可按 crctl 明示的恢复方向恢复一次；⑥错误命令来自版本化 Skill/Pipeline 时须同时报告 `CONTRACT_DRIFT`。**不新增** R14 或等价委派 lint。文本纪律：新段落不得出现 ≥3 个具名状态同段、不得把 `_backlog.yml` 与状态判断写进同一段、不出现 guard-deny 文件路径 + 写动词组合。
+6. **FR-10 五处 SKILL 边界说明**：5 处既有 payload 示例处各补写同一约束——`blockers`/`suggestions` 等值必须使用 YAML 子集支持的**单行标量**，**不得使用多行引号标量或折叠块**（依据 `lib/yaml-subset.mjs` 的既有解析边界）。不新增字段、不改示例结构。
+7. **反向验收与收口（FR-4 / FR-11）**：落地后按 `plan.md §6.2 cmd-03`（tools 白名单机器判据）、`cmd-04`（multica 恰 4 文件）、`cmd-05`/`cmd-06`（原始 diff 清单）核对；三个反向验收对象不得出现在任何清单中。
 
 ## 4. 验收条件
 
-1. **cmd-07**（`node -e "<plan §6.2-B 脚本>"`，cwd = multica worktree）：`multica text-contract failures = 0`（含 dev-agent / quality-reviewer-agent 无 `_context.md`、coordinator 七节结构与三节关键词、无 `--trigger`/`--expect`/`crctl approve --stage`/`git commit`/`git push`、`CUSTOM.md` 492 行且 #75 行含五要素）。
-2. **cmd-08**（`node -e "<plan §6.2-C 脚本>"`，cwd = tools worktree）：`tools text-contract failures = 0`（委派合同六条 + 三项保留内容、`lint-prompts.mjs` 无 `R14`、5 处含「单行标量」与「多行引号标量」）。
-3. **cmd-09 / cmd-10**（`crctl git diff --name-only <基线> --cwd <被测仓 worktree> --workspace <KB worktree>`）：multica 清单 = §2 的 4 个文件；tools 清单 ⊆ PRD §1.3.1 表且**不含**任何 `zero_diff` 文件。
-4. **cmd-03**（`node --test --test-reporter=dot skills/shared/crctl/scripts/test/{contract-scan,pipeline-structure,check-agents-contract,check-skill-matrix}.test.mjs`）与 **cmd-04**（`node skills/shared/crctl/scripts/lint-prompts.mjs --mode enforce`）：全绿 / exit 0 零 finding（R12/R13 对新增文本无误报）。
-5. **人工逐条验收（不可机械替代，U-5）**：`cr-coordinator-agent.md` 三节正文与来源 §3.3.1/§3.3.2/§3.3.3 **逐字一致、无转述压缩**；`## 职责`/`## 事实源与读取`/`## 路由`/`## 平台层权限` 与 frontmatter 与基线逐字一致；`CUSTOM.md` 除 #75 第 3 列外零 diff。
-6. **实现期全量回归**：失败集 ⊆ plan §5.3 的 5 条基线红、无新增红（运行命令见 §3.7）。
+1. **FR-1①② + AC-1①②**：`plan.md §6.2 cmd-04` 输出 `AC-2 multica accounted-set hits = 0`、两条「不再含 `_context.md`」断言通过、两份副本的 canonical 关键词齐全；`cmd-03` 输出 `AC-2 tools accounted-set hits = 0`。
+2. **FR-5 + AC-5**：`cmd-04` 的块 1/块 2/块 3（两行替换块）与整文件派生 `sha256` 全部等于 SDD §6.2 的目标值，且旧块 `de2554c9…` 不单独出现；三块新文本不含 `--trigger`/`--expect`/`crctl approve --stage`/`git commit`/`git push`。
+3. **FR-3 + AC-3**：`cmd-04` 的 `CUSTOM.md` 行数 = 492 且 `| 75 |` 行含五要素关键词；`cmd-06` 的 multica 清单**恰等于** 4 个文件。
+4. **FR-6 + AC-6**：`cmd-03` 的六条要求关键词与三条既有内容断言通过、`lint-prompts.mjs` 无 `R14`；`cmd-02` 真实仓库 `0 findings`（含 R1~R13）。
+5. **FR-10 + AC-10**：`cmd-03` 的 5 处「单行标量」「多行引号标量」断言通过；`cmd-02` 无新增 finding；`lib/yaml-subset.mjs` 不出现在 `cmd-03`/`cmd-05` 的 diff 清单中。
+6. **FR-4 + FR-11 + AC-4/AC-11**：`cmd-03`（tools diff ∈ PRD §1.3.1 白名单）与 `cmd-04`（multica diff 恰 4 文件）均通过；`agents/_index.yml`、两仓 `agent-skill-matrix.yml`、`rules.json`、`gates.json`、`dir-graph.yaml`、`pipeline-templates/**`、`aifirst/agent-import.mjs` 零改动。
+7. **全量回归（AC-12）**：`plan.md §6.2 cmd-01` exit 0、`skipped=false`（21 个 `*.test.mjs` 全部真实执行、失败集恰等于 SDD §6.3 登记的 5 条基线红）。
+8. **结构完好**：被改的 multica 文件 Markdown 结构（表格列数、frontmatter 分隔符、`##` 标题层级）完好，无语法/结构破损。
 
 ## 5. 完成标志
 
-- 上述 6 条验收全部通过（第 5 条为人工逐条判据，须在 `write-test-report` 分析段逐条给出结论与证据；第 1/2/3/4/6 条为机器证据）。
-- 提交落盘：multica 4 文件改动提交到 multica CR 分支（独立 commit，`[cr] ` 前缀消息）；tools 6 处改动提交到 tools CR 分支（独立 commit）。两仓分别提交、不跨仓混合。
-- 任务账本：`crctl task done CR-2026-063 --task CR-2026-063-TASK-04`（仅 `developing` 下可登记）。
-- 本 TASK 完成边界为 `developing` 内可被 `crctl task done` 登记的事件（文本落盘 + 证据命令全绿 + diff 白名单/零改动核对结论 + 账本登记），**不含** merge / writeback / archive / code-reviewing / code-approved / 部署（平台 DB 与 importer 由 owner 在本 CR 落地后执行）。
-- 台账：`CUSTOM.md#75` 单元格重写覆盖 multica 侧 4 文件的登记义务（无新文件、无挂钩点）；tools 侧无新增自研包，无需登记。
+- 上述 §4 的 8 条全部实测通过，并留下可复核的命令与输出摘要（含 `cmd-03`/`cmd-04` 的完整命中清单：计入集合归零、排除集合逐条语义判定——该人工判定同时抄入 `write-test-report` 的分析段）。
+- tools diff 与 multica diff 均落在白名单内（`cmd-03`/`cmd-04` 机器判据 + `cmd-05`/`cmd-06` 原始清单）。
+- 本 TASK 触及的文件恰为 §2 的 10 个（tools 6 处 + multica 4 个）；不夹带任何其它文件。
+- 按 `../multica/CUSTOM.md` 的**当时实际结构**登记本 CR 对 multica 的 4 个文件改动（纪律 #10；若该表已含等价行则只更新对应单元格，不新增重复行）。
+- 本 TASK 自行提交（按仓分别提交，受控 `crctl git` 形态、`[cr] ` 前缀），例如 `[cr] CR-2026-063 TASK-04 prompt placement and delegation contract`。
+- `crctl task done CR-2026-063-TASK-04 --workspace <KB worktree>` 登记完成。
+- **不**改写 `sdd.md` / `prd.md`；**不**修改 TASK-01/02/03 的文件。
 
 ## 6. 接口契约
 
-**消费**（上游 TASK 产出，逐字对齐）：
+**消费（上游 TASK 与既有实现）**
 
-- CR-2026-063-TASK-01：`cmdGate` 错配错误体（`{error:{code:'BAD_ARGS', contractDrift:true, recoverCommand}}`）与 R7 配对判据 —— 本 TASK 的 cmd-04 以其「零误报」为核对对象（新文本不得令 R1~R13 产生新 finding）。
-- CR-2026-063-TASK-02 / TASK-03：`reset` 原子提交、`allowed` 集合删除与退役测试 —— 本 TASK 的 diff 白名单与全量回归核对以其提交为基础。
-- `tools` 既有静态守卫：`contract-scan.test.mjs`（canonical 文本零命中）、`pipeline-structure.test.mjs`、`check-agents-contract.test.mjs`、`check-skill-matrix.test.mjs`（读真实仓库文件的契约族）；`lint-prompts.mjs` 的 `walkFiles` 扫描面（`**/SKILL.md` + `*.pipeline.json` + `README.md` + `agents/*.md`，dep-15）。
-- 受控 git：`crctl git diff --name-only <sha> --cwd <path> --workspace <path>`（白名单形态 `^--name-only .+$`）、`crctl git diff --unified=3 <sha> -- <path>`（`^--unified=\d+ .+$`，评审侧审计辅助）；`crctl git add -A -- <path>` / `crctl git commit -m "[cr] …"`。
+| 输入 | 精确形态与来源 |
+|---|---|
+| SDD §6.2 三块逐字目标文本与替换边界 | SDD `ce51c168…` §6.2（含块 1 `833517ff…`、块 2 `dcd3b8e4…`、块 3 插入段 `ed1941…`、块 3 两行替换块 `fc247a12…`、整文件派生 `872457e6…`、旧块 `de2554c9…`）；本计划不复述，只引用 |
+| `cr-prompts-revised/cr-coordinator-agent.md` 基线结构 | SDD dep-23：`## 职责` L11 / `## 事实源与读取` L15 / `## 路由` L24 / `## 委派与评论` L38 / `## 评审闭环` L45 / `## 平台层权限` L55 / `## 失败与输出` L63 |
+| `cr-prompts-revised/{dev-agent,quality-reviewer-agent}.md` 落点 | SDD dep-22：dev-agent.md `## 环境与代码边界` 末段 L47；quality-reviewer-agent.md `## 入口识别与证据` 首段 L19 |
+| `CUSTOM.md` #75 落点 | SDD dep-24：第 75 行第 3 列；表头 `| # | 位置 | 改动 | 原因 / 追溯 | 日期 | 合并注意 |` |
+| `tools/agents/dev-agent.md` 委派合同节 | SDD dep-20：`## 委派路由合同（评审）` L31；`agents/_index.yml` 9 个 agent；`agent-skill-matrix.yml:25–29` 的 `cr-coordinator-agent`（`kind: system` / `mode: leader`） |
+| 五处 SKILL payload 落点 | SDD dep-18/dep-19：`crctl/SKILL.md` 的 `review-record` 行（L34）+ 四份 review SKILL 的 payload 示例；`lib/yaml-subset.mjs` L1–5 的解析边界 |
+| CR-2026-063-TASK-03 的 AC-2 机械证据面 | 同一 `cmd-03`/`cmd-04` 命令（本 TASK 的收口核对共用，不另造命令） |
 
-**产出**（交付物，无代码接口）：
+**产出（供 `write-test-report` / `review-code` / writeback 消费）**
 
-- `multica` 4 文件：`cr-prompts-revised/dev-agent.md`（canonical resume 段）、`cr-prompts-revised/quality-reviewer-agent.md`（canonical 证据面段）、`cr-prompts-revised/cr-coordinator-agent.md`（三节逐字替换/扩写）、`CUSTOM.md`（#75 第 3 列五要素）。
-- `tools` 6 处：`agents/dev-agent.md` 委派合同的六条要求 + 三条保留；`skills/shared/crctl/SKILL.md` 与 4 份 review SKILL 的「单行标量 / 不得使用多行引号标量或折叠块」边界说明。
-- 收口证据：cmd-09/cmd-10 的 diff 清单核对结论（白名单 ∈ / `zero_diff` 零出现）、cmd-07/cmd-08 的文本合同断言日志、实现期全量回归运行记录（失败集 ⊆ plan §5.3 登记集合）。
+| 产出 | 精确形态 |
+|---|---|
+| multica 4 文件的新正文 | ① `cr-prompts-revised/dev-agent.md`：`## 环境与代码边界` 末段为上述 canonical resume 段落（无 `_context.md` 指称）；② `cr-prompts-revised/quality-reviewer-agent.md`：首段 canonical 证据面（无 `_context.md`）；③ `cr-prompts-revised/cr-coordinator-agent.md`：三节按 SDD §6.2 逐字替换（`##` 标题集合与顺序不变、frontmatter 不变）；④ `CUSTOM.md`：第 75 行第 3 列含五要素、行数 492 |
+| tools 6 处新正文 | `agents/dev-agent.md` 委派合同节六条要求 + 三条既有内容；5 份 SKILL 各含「单行标量」与「多行引号标量」边界说明 |
+| AC-2 语义判定证据 | `cmd-03` 日志中的排除集合命中清单 + 逐条「拒绝语义」判定（写入 `write-test-report` 分析段） |
+| AC-11 机器判据 | `cmd-03`（tools 白名单）+ `cmd-04`（multica 恰 4 文件）+ `cmd-05`/`cmd-06`（原始清单）的日志 |
