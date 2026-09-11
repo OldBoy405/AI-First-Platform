@@ -67,12 +67,18 @@ reviews:
   dev-plan:
     reviewer: "OldBoy405"
     verdict: block
-    reviewed-at: "2026-09-11T23:09:05+08:00"
+    reviewed-at: "2026-09-12T00:13:30+08:00"
     blocker-count: 1
     annotation: "change-requests/CR-2026-063/review-annotations/dev-plan.yml"
-    repair-target: write-tech-design
+    repair-target: write-dev-plan
     review-loop:
       current-cycle: 1
-      current-attempt: 0
+      current-attempt: 1
       max-attempts: 3
-      attempts: []
+      attempts:
+        - attempt: 1
+          cycle: 1
+          reviewed-at: "2026-09-12T00:13:30+08:00"
+          result: block
+          blocker-count: 1
+          repair-target: write-dev-plan
