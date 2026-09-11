@@ -160,7 +160,7 @@ TASK-04 (multica + tools 文本层：dev-agent.md / quality-reviewer-agent.md /
 
 ### 5.4 证据命令集的预算说明（write-test-report 节点）
 
-`code-implementation` pipeline 的 `write-test-report` 节点 `timeoutMinutes=20`。§6.2 的 10 条命令实测/估算总时延约 **15–17 min**（其中 cmd-01 ≈ 8 min、cmd-05 ≈ 6 min，其余 ≤1 min）；因此**目录级 22 文件全量运行（单跑 858 s）不作为 cmd-NN 纳入 `crctl test` 计划**，而是作为 implement-code 期的验证项写入 TASK-01/02/04 的完成标志（`implement-code` 节点预算 240 min）。AC-12 的机器证据由 cmd-01（crctl + ledger/durable-tx 族）、cmd-02（prompt lint 族）、cmd-03（pipeline structure / contract-scan / agents-contract / skill-matrix 族）、cmd-05（事务消费者族）四条共同承担，覆盖 SDD §6.1 AC-12 明列的族。若 reviewer 判定需把目录级全量运行也纳入 `crctl test`，落点为 §6.2 增补 `cmd-11`（预计 +5 min，仍在节点预算内）——**该增补是 plan 的可选项，不属 SDD 未批准能力**。
+`code-implementation` pipeline 的 `write-test-report` 节点 `timeoutMinutes=20`。§6.2 的 10 条命令实测/估算总时延约 **15–17 min**（其中 cmd-01 ≈ 8 min、cmd-05 ≈ 6 min，其余 ≤1 min）；因此**目录级 22 文件全量运行（单跑 858 s）不作为 cmd-NN 纳入 `crctl test` 计划**，而是作为 implement-code 期的验证项写入 TASK-02（共享原语改动）与 TASK-04（收口）的完成标志（`implement-code` 节点预算 240 min）。AC-12 的机器证据由 cmd-01（crctl + ledger/durable-tx 族）、cmd-02（prompt lint 族）、cmd-03（pipeline structure / contract-scan / agents-contract / skill-matrix 族）、cmd-05（事务消费者族）四条共同承担，覆盖 SDD §6.1 AC-12 明列的族。若 reviewer 判定需把目录级全量运行也纳入 `crctl test`，落点为 §6.2 增补 `cmd-11`（预计 +5 min，仍在节点预算内）——**该增补是 plan 的可选项，不属 SDD 未批准能力**。
 
 ## 6. 两张稳定表（契约必填节，CR-2026-060 AC-07）
 
@@ -205,16 +205,24 @@ TASK-04 (multica + tools 文本层：dev-agent.md / quality-reviewer-agent.md /
 
 #### §6.2-A `cmd-06` 脚本（AC-2 计入集合检索，机械面）
 
-断言：`tools` 的 `agents/`、`skills/`、`pipeline-templates/`（排除 `skills/shared/crctl/scripts/test/**`、`.git`、`node_modules`）与 `multica` 的 `cr-prompts-revised/` 全文件中，字面量 `_context.md` 命中数 = 0；有命中则打印 `路径:行号: 行内容` 并 exit 1。行号按逐行字面检索（不跨行正则、不做语义分类），排除集合 `scripts/test/**` **不在本命令扫描面内**（其命中按 SDD §4.5 人工逐条核对）。
+断言：`tools` 的 `agents/`、`skills/`、`pipeline-templates/`（排除 `skills/shared/crctl/scripts/test/**`、`.git`、`node_modules`）与 `multica` 的 `cr-prompts-revised/` 全文件中，字面量 `_context.md` 命中数 = 0；有命中则打印 `路径:行号: 行内容` 并 exit 1。命令同时**列印排除集合**（`tools/skills/shared/crctl/scripts/test/**`）的命中清单供人工逐条判定「全为拒绝语义」（SDD §4.5；不归零、不做语义分类），并只以计入集合的命中数决定退出码。行号按逐行字面检索（不跨行正则、不做语义分类）。
 
 ```js
 const fs=require('fs'),path=require('path');
-const targets=[['<resources[].tools.worktreePath>',['agents','skills','pipeline-templates']],['<resources[].multica.worktreePath>',['cr-prompts-revised']]];
-const hits=[];
-function walk(d){for(const e of fs.readdirSync(d,{withFileTypes:true})){const p=path.join(d,e.name);const n=p.split(path.sep).join('/');if(e.isDirectory()){if(n.includes('skills/shared/crctl/scripts/test')||e.name==='.git'||e.name==='node_modules')continue;walk(p);}else{const lines=fs.readFileSync(p,'utf8').split(String.fromCharCode(10));for(let i=0;i<lines.length;i++){if(lines[i].includes('_context.md'))hits.push(n+':'+(i+1)+': '+lines[i].trim());}}}}
-for(const t of targets){for(const s of t[1]){walk(path.join(t[0],s));}}
-if(hits.length){console.log('AC-2 accounted-set hits = '+hits.length);hits.forEach(h=>console.log(h));process.exit(1);}
-console.log('AC-2 accounted-set hits = 0');
+const T='<resources[].tools.worktreePath>';
+const M='<resources[].multica.worktreePath>';
+const NL=String.fromCharCode(10);
+const norm=p=>p.split(path.sep).join('/');
+function walk(d,collect,skipTest){for(const e of fs.readdirSync(d,{withFileTypes:true})){const p=path.join(d,e.name);const n=norm(p);if(e.isDirectory()){if(e.name==='.git'||e.name==='node_modules')continue;if(skipTest&&n.includes('/skills/shared/crctl/scripts/test'))continue;walk(p,collect,skipTest);}else{const lines=fs.readFileSync(p,'utf8').split(NL);for(let i=0;i<lines.length;i++){if(lines[i].includes('_context.md'))collect.push(n+':'+(i+1)+': '+lines[i].trim());}}}}
+const accounted=[],excluded=[];
+for(const s of ['agents','skills','pipeline-templates'])walk(path.join(T,s),accounted,true);
+walk(path.join(M,'cr-prompts-revised'),accounted,false);
+walk(path.join(T,'skills/shared/crctl/scripts/test'),excluded,false);
+console.log('AC-2 accounted-set hits = '+accounted.length);
+accounted.forEach(h=>console.log(h));
+console.log('AC-2 excluded-set (scripts/test/**, 人工逐条判定为拒绝语义) hits = '+excluded.length);
+excluded.forEach(h=>console.log(h));
+if(accounted.length)process.exit(1);
 ```
 
 #### §6.2-B `cmd-07` 脚本（multica Prompt 文本合同断言）
