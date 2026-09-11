@@ -1,27 +1,24 @@
 cr-id: CR-2026-063
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-09-11T20:59:34+08:00"
-verdict: block
-blockers:
-  - "部分解决：B-02 [prd.md NFR-1/AC-12；sdd.md §6.1 AC-12、§6.3、§6.4、SDD-CLOSE-13]：dep-29、5 条基线红的稳定测试符号/失败事实/SHA 与失败集合恰等于 5 条的机械判据已补齐；但 §6.4 明文确认选项 A/B 仍待 owner 显式裁决，当前 SDD 也声明该放宽尚未获得需求契约授权。因而 §6.1/§6.3 仍以选项 A 定义通过，而已审批 PRD NFR-1/AC-12 仍要求全量既有测试通过。影响：同一 AC 继续存在两种通过定义，PRD↔SDD 对齐和当前验收可达性尚未闭合，不能进入架构人工审批。修复：先取得 owner 对 A/B 的明确裁决；再由 write-tech-design 把 §6.1、§6.3、§6.4 与 SDD-CLOSE-13 同步为已授权且唯一的口径后重新评审；若选 B，须保持全绿并明确 5 条红的处理归属。"
+reviewed-at: "2026-09-11T21:23:23+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  批准范围四字段: "通过：§9 的 scope_in、scope_out、zero_diff、follow_up 四字段齐全；文件面、零改动面和后续项边界明确。"
-  PRD对齐: "阻塞：FR-1～FR-11 均有技术落点，AC-1～AC-11 可观察且可达；AC-12 仍待 owner 对相对已审批 PRD 的例外口径作显式授权，见 B-02。"
-  SDD关闭义务: "阻塞：SDD-CLOSE-11/15、14、16 分别随 B-01/B-03/B-04 的回修形成可实现闭环；SDD-CLOSE-13 的机械面已关闭，但其自身承认需求契约授权尚未完成，见 B-02。"
-  架构合理性: "通过：模块边界、依赖方向、既有 durable ledger 复用和 tools/multica ARCHITECTURE.md 硬不变量一致；未新增第二事务框架、状态写者或第三方依赖。"
-  数据模型完整性: "通过：无 DDL/schema 变更；review-loop.yml、ledger journal、gate 错误体与 Prompt/CUSTOM 文本的结构及回滚语义完整，账本无新增字段。"
-  接口契约: "通过：reset 恢复链已改为本地 try 内直接 abort/sync/clean，内部 TX_* 统一映射为 op-scoped rollback 码并先审计；gate 两个 CR-ID 向量与 recoverCommand 出现面自洽。"
-  多仓架构约束: "通过：三仓 authority 与 HEAD 可核验；§4.6.1 现固定 repo 为验收对象仓、cwd 相对且不越界、跨仓脚本绝对正斜杠化，并用同一 plan 的另一命令绑定被读仓 revision。"
-  性能与安全: "通过：20 分钟预算、TTY 硬门槛、提交隔离、journal/index 回滚、W2c 第三值冲突收敛与审计顺序均有明确设计；无网络、轮询或自由输入进入恢复串。"
-  可测试性: "阻塞：AC-5 的三块旧/新边界、AC-9 的 W1/W2/W2b/W2c/W3 向量与跨仓 sourceRevision 组合均可机械验证；AC-12 的执行机制可测，但未获授权前不能作为唯一通过判据，见 B-02。"
-  Prompt采纳影响: "N/A 成立：本 CR 不改 dispatch 分支或 rules.json deny 面；FR-8 仅在既有 R7 内扩展，未新增子命令、评审维度或规则编号。"
-  既有实现依赖核验: "通过：tools HEAD ebdd6290f1523ffb682609b7ad6ab83e7d30245e、multica HEAD 5fde81c1f463e7031663ef8111ee0b7ce39aac3c 未变；受影响的 dep-3/26/28 与 dep-29 五个测试符号均在声明路径可定位，结论与源码/测试断言一致。"
+  批准范围四字段: "通过：§9 的 scope_in、scope_out、zero_diff、follow_up 四字段齐全；本轮仅更新 AC-12 授权相关五处，批准范围未扩大。"
+  PRD对齐: "通过：FR-1～FR-11 与 AC-1～AC-12 均有技术落点；owner Ray 已在权威评论 01a09099-97cf-7b5c-887e-4a8a369fa80e 显式选择选项 A，§6.1、§6.3、§6.4 已将 AC-12 统一为唯一授权口径。"
+  SDD关闭义务: "通过：SDD-CLOSE-01～16 均有关闭结论；SDD-CLOSE-13 已记录裁决人、权威评论、授权范围与人工 gate 关系，上一轮 B-02 契约半闭合。"
+  架构合理性: "通过：模块边界、依赖方向、durable ledger 复用及 tools/multica ARCHITECTURE.md 不变量未被本轮授权文本修改；未新增架构层、状态写者或依赖。"
+  数据模型完整性: "通过：无 DDL/schema 变更；review-loop.yml、ledger journal、错误体及 Prompt/CUSTOM 文本结构和回滚语义完整，本轮无数据模型改动。"
+  接口契约: "通过：reset 的本地 catch 错误收敛、gate 恢复串、成功/失败字段出现面仍保持上一轮已核验契约；commit 75bf93a1 未触及 §3.2、§3.5、§4.2.1 或 W2c。"
+  多仓架构约束: "通过：workspace inspect 三仓均 healthy 且 dirty=false；tools HEAD ebdd6290f1523ffb682609b7ad6ab83e7d30245e、multica HEAD 5fde81c1f463e7031663ef8111ee0b7ce39aac3c 与 dep 绑定一致，§4.6 跨仓 revision 绑定未变。"
+  性能与安全: "通过：20 分钟证据预算、TTY 门槛、提交隔离、journal/index 回滚、W2c 收敛与审计顺序未被本轮改动；授权边界明确不扩大 scope_in。"
+  可测试性: "通过：AC-5 三块锚点、AC-9 窗口向量及 AC-12 无重不漏分区均可机械验证；AC-12 的通过条件现唯一为 21 个文件全执行且失败集恰等于 BR-1～BR-5、不得新增或减少。"
+  Prompt采纳影响: "N/A 成立：本 CR 不改 dispatch 分支或 rules.json deny 面；本轮只修改 SDD 授权相关文本。"
+  既有实现依赖核验: "通过：显式依赖清单仍为 dep-1～dep-29；tools/multica HEAD 与清单 SHA 一致，commit 75bf93a1 仅修改 SDD 授权相关五处和受控状态文件，未改依赖仓或既有关闭锚点。"
 suggestions:
-  - "已解决：B-01 [sdd.md §3.2、§3.5、§4.2.1 步骤 13、§4.2.2 W2c、dep-3/dep-26]：恢复链已直接 await abortLedgerTransaction、直接调用 syncLedgerIndex 并由本地 catch 统一映射；TX_GIT_FAILED 已降为内部底层原因，W2c 用第三值冲突验证不得泄漏 TX_RECOVERY_CONFLICT，错误码与审计契约闭合。"
-  - "已解决：B-03 [sdd.md §3.4-B、§6 FR-5、§6.1 AC-5、§6.2 块 3]：块 3 已冻结为唯一旧 bullet 加两空格缩进行的两行替换块，明确位于第 1 条与第 2 条 bullet 之间，并同时绑定旧块、替换块、插入正文与整文件派生摘要；实现边界唯一。"
-  - "已解决：B-04 [sdd.md §4.6.1、§6.1 AC-12、dep-28、SDD-CLOSE-16]：repo/sourceRevision 已统一绑定验收对象仓，跨仓脚本改用绝对正斜杠路径，并要求同一 plan 以另一 canonical 命令绑定每个被读仓 revision；无法表达时拆命令，证据组合可执行且可证明。"
+  - "已解决：B-02 [prd.md NFR-1/AC-12；sdd.md §6.1 AC-12、§6.3、§6.4、§9 follow_up 第 7 条、SDD-CLOSE-13]：owner Ray 已在权威评论 01a09099-97cf-7b5c-887e-4a8a369fa80e 显式选择选项 A；§6.4 记录裁决人、时间、授权范围、授权边界及与人工 gate 的关系，§6.1/§6.3/§9/SDD-CLOSE-13 同步为该唯一口径，不再保留待裁决或第二种通过定义。"
 review-loop:
-  current-attempt: 2
+  current-attempt: 3
 subject-file: change-requests/CR-2026-063/sdd.md
-subject-sha256: 00338b7f8ecaa9010e87a7268c528f1532bafcef0f709260fcfb979ec08422ce
+subject-sha256: ce51c16838e41a7572e4271c29f0564ef1a195adfcf3b309e0a9010db13e5cd2
