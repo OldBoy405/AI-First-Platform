@@ -149,7 +149,7 @@ lint-prompts R7（版本化 Prompt 侧配对检查）
 | commit 失败（进程内） | 事务对象仍在手 | `abortLedgerTransaction(tx)` + `syncLedgerIndex` | 文件与 index 都回到执行前（执行前 tracked-clean 时为完全 clean） |
 | commit 成功后、complete 前 | HEAD 含 `AI-First-Tx: <txId>` | `recoverLedgerTransaction` 用 trailer 判定"已提交"，只清 journal | 保留已提交事实，不重复写入 |
 
-部分状态语义：**不存在"文件已改但 index 未改"的可观测中间态**——失败路径先还原文件再 `git add -A -- <relpath>` 使 index 与还原后内容一致（dep-3 `syncLedgerIndex`）。
+部分状态语义：**不存在"文件已改但 index 未改"的可观测中间态**——失败路径先还原文件再 `git add -A -- <relpath>` 使 index 与还原后内容一致（dep-3 `syncLedgerIndex`）。**恢复链自身失败**（journal 还原遇第三值、index 恢复的 `git add` 失败等）不产生第三种中间态：它先落审计再以 `REVIEW_LOOP_RESET_COMMIT_ROLLBACK_FAILED` 退出，**不得**以内部 `TX_*` 码对外（§3.2、§3.5、§4.2.1 步骤 13）。
 
 # 3. 接口契约
 
@@ -201,7 +201,7 @@ lint-prompts R7（版本化 Prompt 侧配对检查）
 | 成功输出 | **与改造前字段集完全一致**：`op`/`cr`/`loop`/`current-cycle`/`current-attempt`/`file`/`reason`（exit 0）；**不含 `recoverCommand`**（见下「`recoverCommand` 出现面」行） |
 | 提交隔离前置（步骤 12，FR-9 第 4 条的唯一保证手段） | `git add` 只 stage `review-loop.yml` 一个路径；**commit 之前**断言 `queryTrackedChanges`（dep-7）的 `unstaged` 为空且 `staged` 恰为 `[review-loop.yml]`（镜像 dep-5 的 `owner-set` L2541–2543 / `version-set` L2832–2833 同款断言）。断言不成立（含执行前已存在 staged 变更、或 `git add` 本身失败）⇒ **不执行 commit**，直接进入步骤 13 的失败回滚路径（因此外来 staged 变更永不被夹带进提交） |
 | 失败输出（commit 失败） | exit 1；`error.code = REVIEW_LOOP_RESET_COMMIT_FAILED`；extra `{changed:false, rolled_back:true, recoverCommand}`；**两个产生点**：①步骤 12 的提交隔离断言不成立；②断言成立但 `git commit` 命令失败；文件与 index 已回到执行前（执行前 tracked-clean 时即完全 clean）；审计已写（`kind=review-loop-reset`、`result: commit-failed`） |
-| 失败输出（回滚未完成） | exit 1；`error.code = REVIEW_LOOP_RESET_COMMIT_ROLLBACK_FAILED`；extra `{affected:[<relpath>]}`（与 dep-5 的 `OWNER_COMMIT_ROLLBACK_FAILED` 同族口径）；**唯一产生点 = 步骤 13 的 try/catch**：`abortLedgerTransaction` 的 journal 还原、`syncLedgerIndex` 的 index 恢复、还原后的 tracked-clean 复核三者任一失败（含执行前已存在 staged 变更使 clean 复核不过的情形）；审计在 `fail()` 之前落盘，语义同上一行 |
+| 失败输出（回滚未完成） | exit 1；`error.code = REVIEW_LOOP_RESET_COMMIT_ROLLBACK_FAILED`；extra `{affected:[<relpath>]}`（与 dep-5 的 `OWNER_COMMIT_ROLLBACK_FAILED` 同族口径）；**唯一产生点 = 步骤 13 的 try/catch**：恢复链三步任一失败——①`abortLedgerTransaction` 的 journal 还原（可抛 `TX_JOURNAL_INVALID` / `TX_RECOVERY_CONFLICT`，dep-8）、②`syncLedgerIndex` 的 index 恢复（可抛 `TX_GIT_FAILED`，dep-26）、③还原后的 tracked-clean 复核（含执行前已存在 staged 变更使 clean 复核不过的情形）。这三步在步骤 13 内**直接 `await` / 直接调用**，**禁止**经 `runTxAsync` 包装（该 helper 捕获 `TxError` 后调用 `fail()` → `process.exit(1)`，会让本地 `catch` 与审计永不执行，dep-3），因此上述内部 `TX_*` 码一律被本地 `catch` 收敛为本码、**不得**作为对外退出码出现；审计在 `fail()` 之前落盘，语义同上一行 |
 | `recoverCommand` 出现面 | **只出现在失败结果与 FR-7 错误体**：`REVIEW_LOOP_RESET_COMMIT_FAILED` 的 `error.recoverCommand`、`crctl gate --mode pre-review` 错配错误体（§3.1）；`..._ROLLBACK_FAILED` 携带 `affected` 而不携带 `recoverCommand`（同族口径）；成功结果**不含该字段**（字段集不变，NFR-1）。因此对恢复串的断言（AC-7/AC-9③）**只以失败结果与 FR-7 错误体为对象**，不对成功结果作恢复串断言 |
 | 幂等与可重入 | 以目标文件 expected hash 为前提；同事务键残留先恢复再执行；失败回滚后重跑等价于一次干净执行（NFR-2） |
 | 无自由输入进入恢复串 | `recoverCommand` 的 `--reason` 位置使用占位符 `<reason>`，用户文本永不拼接（NFR-3）；CR-ID 位置按 §4.1.1 的语法判定内插或回退占位符 |
@@ -229,7 +229,7 @@ lint-prompts R7（版本化 Prompt 侧配对检查）
 **B. Prompt 文本契约（FR-1/FR-3/FR-5/FR-6）**
 
 - multica 两份部署副本：`_context.md` 段落被 §6 FR-1 给出的目标文本原位替换；替换后两份文件均不出现 `_context.md`。
-- coordinator overlay：三节的目标文本**逐字固化在本 SDD §6.2**（含三块的替换边界、LF 归一口径、每块 `sha256` 与来源文件 SHA256）；实现期**逐字复制，不得转述**，不得改写标点、空格、换行或代码标记（AC-5 的锚点因此落在 CR worktree 内，不再依赖 worktree 之外的来源副本）；其余四节与 frontmatter 保持原样。
+- coordinator overlay：三节的目标文本**逐字固化在本 SDD §6.2**（含三块的替换边界、旧块/替换块的逐块 `sha256`、LF 归一口径与来源文件 SHA256）；实现期**逐字复制，不得转述**，不得改写标点、空格、换行或代码标记（AC-5 的锚点因此落在 CR worktree 内，不再依赖 worktree 之外的来源副本）；**块 3 按 §6.2 的两行替换块固化（旧 bullet 逐字保留 + 行首两空格的插入行）**，不是“在节内找个位置插一段”的自由形式；其余四节与 frontmatter 保持原样。
 - `tools/agents/dev-agent.md`：`## 委派路由合同（评审）` 内含六条要求（新 task/run、Runner、只传声明输入与 canonical 引用、不复述步骤/门禁/advance/修法、只读 `BAD_ARGS` 可恢复一次、版本化来源错误须同时报 `CONTRACT_DRIFT`）。
 - `CUSTOM.md` #75 职责单元格含五要素（AC-3）。
 
@@ -241,7 +241,7 @@ lint-prompts R7（版本化 Prompt 侧配对检查）
 |---|---|---|
 | 幂等 | 只读路径，可任意重放，无副产物 | 以 expected hash 为前提；同命令残留按 journal 恢复；重复调用在"未耗尽"时拒绝（不产生第二个 cycle） |
 | 权限 | 无权限面（零写入只读 CLI） | 既有 TTY 人类在环硬检查，无旁路；不改 `rules.json`（受控 git 仍按既有白名单三元组放行） |
-| 错误闭包 | `BAD_ARGS` + `contractDrift` + `recoverCommand`（§3.1） | `NOT_TTY` / `BAD_ARGS` / `UNKNOWN_LOOP` / `LOOP_NOT_EXHAUSTED` / `CAS_CONFLICT`（事务内抖动）/ `REVIEW_LOOP_RESET_COMMIT_FAILED`（步骤 12 隔离断言不成立或 commit 命令失败）/ `REVIEW_LOOP_RESET_COMMIT_ROLLBACK_FAILED`（步骤 13 恢复链任一环失败，镜像 dep-5）/ `TX_GIT_FAILED`（`syncLedgerIndex` 的 index 恢复失败，见 dep-26） |
+| 错误闭包 | `BAD_ARGS` + `contractDrift` + `recoverCommand`（§3.1） | `NOT_TTY` / `BAD_ARGS` / `UNKNOWN_LOOP` / `LOOP_NOT_EXHAUSTED` / `CAS_CONFLICT`（事务内抖动）/ `REVIEW_LOOP_RESET_COMMIT_FAILED`（步骤 12 隔离断言不成立或 commit 命令失败）/ `REVIEW_LOOP_RESET_COMMIT_ROLLBACK_FAILED`（步骤 13 恢复链任一环失败，镜像 dep-5）。**对外错误闭包到此为止**：恢复链内部抛出的 `TX_JOURNAL_INVALID` / `TX_RECOVERY_CONFLICT`（dep-8 的 journal 还原）与 `TX_GIT_FAILED`（dep-26 的 index 恢复）是**内部底层原因**，一律由步骤 13 的本地 catch 映射为上述唯一码后对外，不得以 `TX_*` 形式退出（§3.2「失败输出（回滚未完成）」行、§4.2.1 步骤 13） |
 | 副作用 | 零写入 | 单文件 commit + 审计一条；**两条失败路径同样落审计**（`kind=review-loop-reset`、`result: commit-failed`，含 `fromCycle`/`toCycle`/`reason`/`by`，不新增字段）；无 outbox、无状态推进、无网络 |
 
 # 4. 关键算法与流程
@@ -320,9 +320,12 @@ async function cmdReviewLoopReset(ws, cr, gates, flags):
      success = isolated && commitR.ok
   13 if (!success):
          try {                                              # 恢复链：与 dep-5 的 rollbackOwnerWrite / rollbackVersionWrite 同构
-             rolled = await runTxAsync(abortLedgerTransaction(ledgerTx))      # 按 journal 的 beforeText 还原文件
-             if (rolled.paths.length) await runTxAsync(syncLedgerIndex(ws, rolled.paths, 'crctl-review-loop-reset'))
-                                                                              # git add -A -- <rel>：index 与还原后内容一致
+             rolled = await abortLedgerTransaction(ledgerTx)                  # 按 journal 的 beforeText 还原文件
+                                                                             # 直接 await：TxError 原样抛出，交本 catch 映射
+                                                                             # （runTxAsync 会把 TxError 转成 fail()→process.exit(1)，本 catch 永不执行，dep-3）
+             if (rolled.paths.length) syncLedgerIndex(ws, rolled.paths, 'crctl-review-loop-reset')
+                                                                             # git add -A -- <rel>：index 与还原后内容一致
+                                                                             # 直接调用：失败抛 TX_GIT_FAILED，同样由本 catch 映射
              clean = queryTrackedChanges(ws, { audit:true })
              if (!clean.ok || clean.staged.length || clean.unstaged.length) {
                throw new Error(`clean baseline 复核失败 staged=[${(clean.staged||[]).join(',')}] unstaged=[${(clean.unstaged||[]).join(',')}]`)
@@ -350,7 +353,7 @@ async function cmdReviewLoopReset(ws, cr, gates, flags):
 步骤 12/13 的三条设计要点（对应本轮上游回修 B-01；PRD FR-9 第 4/5/6 条）：
 
 1. **FR-9 第 4 条的保证手段唯一定位在步骤 12**：仅靠"`git add` 只加了一个路径"不能保证 commit 的内容（`git commit` 提交整个 index）。步骤 12 的 `isolated` 断言把"提交只含 `review-loop.yml`"变成可在提交前判定的事实，并且不成立时**不提交**——执行前已存在的 staged 变更因此永远进不了 commit（也不会被本命令回滚或改写，只会在步骤 13 的 clean 复核处暴露）。
-2. **`REVIEW_LOOP_RESET_COMMIT_ROLLBACK_FAILED` 的唯一产生点是步骤 13 的 catch**：`abortLedgerTransaction` / `syncLedgerIndex` / clean 复核三者任一失败都在此转成该码（不再像改造前那样以 `TX_*` 透传），与 dep-5 的 `OWNER_COMMIT_ROLLBACK_FAILED` / `VERSION_SET_COMMIT_ROLLBACK_FAILED` 同族同形（`{affected}`、无 `recoverCommand`）。
+2. **`REVIEW_LOOP_RESET_COMMIT_ROLLBACK_FAILED` 的唯一产生点是步骤 13 的 catch，且恢复链不经过 `runTxAsync`**：`abortLedgerTransaction` / `syncLedgerIndex` / clean 复核三者任一失败都在此转成该码（不再像改造前那样以 `TX_*` 透传），与 dep-5 的 `OWNER_COMMIT_ROLLBACK_FAILED` / `VERSION_SET_COMMIT_ROLLBACK_FAILED` 同族同形（`{affected}`、无 `recoverCommand`）。**实现约束**：恢复链两步必须在本地 `try` 内直接调用（`await abortLedgerTransaction(tx)`、`syncLedgerIndex(ws, rolled.paths, 'crctl-review-loop-reset')`）——若包进 `runTxAsync`，`TxError` 会先被该 helper 交给 `fail()` → `process.exit(1)`，本 catch 与其审计都不会执行，「唯一产生点」被破坏（本轮上游回修 B-01 的根因）；可验向量见 §4.2.2 W2c。
 3. **两条失败路径的审计语义相同且显式**：`kind='review-loop-reset'`、`result='commit-failed'`（既有字段与取值，不新增审计字段）、`fromCycle`/`toCycle`/`reason`/`by` 与成功路径同形；两者的区分由**返回错误码与 `error.extra`** 承担，而不是审计字段（NFR-5 只要求"失败路径同样落审计"）。
 
 > 既有用例夹具（AC-9⑤，dep-14）：`crctl.test.mjs:3430` 现有 reset 耗尽态用例使用**非 git** 夹具 `makeWorkspace()`；改造后步骤 11–12 必做 `git add`/`git commit`，该用例**必须**迁移到 `makeGitWorkspace()`（必要时补一次基线 commit 以建立 HEAD）且**断言与断言语义逐字不变**；该迁移属 PRD §1.3.1 第 14 行"既有测试修订"面，不是对 `reset` 契约的放宽。
@@ -362,10 +365,11 @@ async function cmdReviewLoopReset(ws, cr, gates, flags):
 | W1 apply 完成、complete 标记前 | `CRCTL_FAULT_POINT=tx-apply-before-complete`（dep-9） | 文件=新内容；journal=`prepared/written`；HEAD 未变 | 步骤 4 判定未提交 → 按 journal 还原到执行前 → 继续执行一次干净 reset（只递增一次 cycle） |
 | W2 add/commit 失败（进程内） | git `pre-commit` hook `exit 1`（dep-13 先例） | 文件=新内容且已暂存；HEAD 未变 | 步骤 13 立即还原文件 + 恢复 index；退出 1 并写审计；重跑（修好 hook 后）等价于一次干净执行 |
 | W2b 提交隔离前置不成立（执行前已有 staged 变更） | 测试夹具在 reset 前 `git add` 一个无关文件（同一 git 夹具） | 文件=新内容且已暂存；无关文件仍 staged；HEAD 未变 | 步骤 12 判定 `isolated=false` ⇒ **不执行 commit**；步骤 13 还原 `review-loop.yml` 并恢复其 index；clean 复核因无关 staged 仍在而失败 ⇒ `REVIEW_LOOP_RESET_COMMIT_ROLLBACK_FAILED`（`affected:[<relpath>]`）；无关 staged 变更保持原样、未被提交、未被夹带 |
+| W2c 恢复链自身失败（`TxError` 向量） | git `pre-commit` hook **先把 `review-loop.yml` 写成第三值、再 `exit 1`**（同一既有 `core.hooksPath` + hook 机制，dep-13；不新增 fault point） | 文件=第三值；journal 仍在（`prepared`/`written`）；HEAD 未变 | 步骤 12 提交失败 → 步骤 13 的 `abortLedgerTransaction` 按 journal 校验当前 hash ∈ {before, after} 失败 ⇒ 抛 `TX_RECOVERY_CONFLICT`（dep-8）⇒ 本地 catch 映射 `REVIEW_LOOP_RESET_COMMIT_ROLLBACK_FAILED`（`affected:[rel]`）+ 审计（`result=commit-failed`）+ exit 1；**不得**以 `TX_RECOVERY_CONFLICT` 退出——该项即「恢复链不经 `runTxAsync`」的可验向量 |
 | W3 commit 成功、complete 前 | `CRCTL_FAULT_POINT=ledger-after-commit` | 文件=新内容**且已提交**（HEAD 含 `AI-First-Tx: <txId>`）；journal 未清理 | 步骤 4 用 trailer 判定"已提交"→ 只清理 journal，**不重复递增**；随后按当前状态返回 `LOOP_NOT_EXHAUSTED`（重置已成事实） |
 | W4 无残留 | — | clean | 正常执行 |
 
-W3 的分支价值：验证 `commitRequired=true` 的"已提交/未提交"判定口径与 `approve` 一致；W1/W2 覆盖"未提交 → 必须回滚且不留 dirty 中间态"。
+W3 的分支价值：验证 `commitRequired=true` 的"已提交/未提交"判定口径与 `approve` 一致；W1/W2 覆盖"未提交 → 必须回滚且不留 dirty 中间态"；W2b 覆盖"外来 staged 变更不被夹带"；W2c 覆盖"恢复链内部 `TxError` 被收敛为唯一对外码、不泄漏 `TX_*`"。
 
 步骤 5 的 `readAttempts`、步骤 7 的 `attemptsFilePath`/`readFileChecked`/`sha256`、步骤 13/14 的 `auditLog`/`identity` 均为既有符号（dep-7、dep-3），本 CR 不重写它们。
 
@@ -447,7 +451,11 @@ Get-ChildItem -Path (Join-Path $repo 'skills\shared\crctl\scripts\test') -Recurs
 
 推论（命令设计必须遵守）：
 
-1. **`repo` 列是"被测仓"**：`args` 里的**相对路径一律从该仓 worktree 解析**。因此 `repo=multica` 的命令不得引用只存在于 `tools` 仓的相对脚本（旧 plan 的 `cmd-09` 即此错）；跨仓只读核对选 `repo` = 脚本所在仓，再用 crctl 自身旗标 `--cwd <目标仓 worktree 绝对路径>` 指向被测仓（`crctl git` 的 `--cwd`/`--workspace` 是 crctl 旗标，不透传给 git）。
+1. **`repo` 列是"被测仓"，也是该命令 `sourceRevision` 的唯一绑定面**：`cwd` 必须是**相对路径且落在该仓 worktree 内**（`parseTestPlan` 对绝对路径 / `..` / 越出 worktree 一律 `TEST_CWD_ESCAPE`），`sourceRevision` = **该仓 worktree 的 HEAD**（同一 worktree 下任何 `cwd` 取值都是同一个 HEAD，dep-28）。因此：
+   - `args` 里的**相对路径一律从该仓 worktree 解析**：`repo=multica` 的命令不得引用只存在于 `tools` 仓的相对脚本（旧 plan 的 `cmd-09` 即此错）。
+   - **跨仓只读核对不得把 `repo` 改成"脚本所在仓"**：脚本用**绝对、正斜杠化**路径引用（脚本可以在 `tools`，`repo` 仍保持为被验收对象仓），否则 `sourceRevision` 只会绑定到脚本所在仓、无法证明目标仓对应修订上的验收事实（例如 tools 脚本读 multica 时，日志不绑定 multica 的被测 SHA）；`crctl git` 的 `--cwd`/`--workspace` 是 crctl 自旗标、不透传给 git，只能作为命令内部的读手段，不改变 `repo` 列与 `sourceRevision` 的绑定关系。
+   - **被读仓的 revision 必须由同一 plan 内的另一条 canonical 命令绑定**：对每条跨仓断言，plan 必须同时包含 `repo` = 每个被读仓的绑定命令（`args` 只引用该仓内路径或绝对路径，例如既有的 `crctl git --cwd <该仓 worktree 绝对路径> rev-parse HEAD`），其 `sourceRevision` + `cmd-NN.log` 即该仓 revision 的证据；一条跨仓断言的证据面 = 「对象仓 `sourceRevision`」+「被读仓 `sourceRevision`」两条记录的组合，缺一即该断言不可证明。
+   - 若某断言无法用"对象仓 `repo` + 绝对脚本路径"表达（例如断言主体本身就是脚本所在仓），则**拆成两条命令**分属两仓、各自绑定 `sourceRevision`，不得合并为一条。
 2. **路径注入必须 JSON/JS 安全**：把 worktree 绝对路径注入 `node -e` 脚本的字符串字面量时，必须使用正斜杠形式（`C:/Users/...`）或 JSON 安全转义（`C:\\Users\\...`）；**禁止**把反斜杠路径原样拼进单引号字面量（`\U` 会被吞成 `U`，脚本静默指向错误路径）。
 3. **冻结前必须按同一语义干跑**：每条含脚本路径或注入路径的 cmd-NN 在写入 plan 证据表之前，必须以 `spawnSync(executable, args, { cwd, shell:false })` 在真实 worktree 上执行一次，并把干跑结论（可达性 + 当前预期失败集/命中清单）记入 plan 对应行；"表格可读"不等于"命令可执行"。
 
@@ -534,7 +542,7 @@ Get-ChildItem -Path (Join-Path $repo 'skills\shared\crctl\scripts\test') -Recurs
 - 原位落法：**三处按 §6.2 逐字复制**（§3.3.1 整节含标题行替换；§3.3.2 仅替换标准评审入口段、保留既有 BLOCK/Suggestions/alignment 边界；§3.3.3 在既有失败 bullet 内插入给定段）；保留 `职责`、`事实源与读取`、`路由`、`平台层权限` 四节与 frontmatter；不整文件重写、不追加第五节。
   - §3.3.1：标准 Pipeline 节点只经既有 Runner 启动；计划外人工委派只传事实清单（CR-ID、节点/Skill 名、`crctl status/next` 返回、workspace/resources 原样值、canonical feedback 引用、当前责任 Agent）；不复述 Skill/Pipeline 步骤，不内联状态推进或 Git 命令，不把 blocker 正文改写成执行步骤，不声明未来节点已满足；`mention://agent/<id>` 是工作委派不是抄送；一条评论只 mention 一个当前目标；每次触发记录一次 squad activity。
   - §3.3.2：标准评审由 Runner 启动新的 reviewer task/run，协调者不得用评论重建 review Skill 步骤；BLOCK 按 `review-record` 返回的 `repair-target` 与 Pipeline `reviewLoop` 处理；介入条件限定为 repair target 无效、最大轮次耗尽、权限/事实冲突、技术失败或人工 gate。
-  - §3.3.3：评论/Prompt 与当前 Skill/Pipeline 事实冲突时停止该次手工委派并报告 `CONTRACT_DRIFT` 与冲突两侧；crctl 恢复信息只逐字段转发，不改写成协调者自己的 Git/状态序列。
+  - §3.3.3：在 `## 失败与输出` 的**第 1 条**既有失败 bullet 后，按 §6.2 的两行替换块插入该段（内容 = 评论/Prompt 与当前 Skill/Pipeline 事实冲突时停止该次手工委派并报告 `CONTRACT_DRIFT` 与冲突两侧；来自 crctl 的恢复信息只逐字段转发、不改写成协调者自己的 Git/状态序列）；第 2 行行首恰两个半角空格，旧 bullet 行逐字保留、不加其它列表标记。
 - 交付性质声明：这是 **Prompt 合同缓解**，不宣称平台新增运行时校验；owner 复制该文件到平台后才生效（部署不在本 CR 范围）。
 - AC：AC-5。
 
@@ -599,14 +607,14 @@ Get-ChildItem -Path (Join-Path $repo 'skills\shared\crctl\scripts\test') -Recurs
 | AC-2 | FR-2、FR-1 | §4.5 的检索流程（计入/排除集合 + 命令 + 命中清单） | 计入集合命中数 0；排除集合命中全部为拒绝语义；交付证据含检索命令与清单 | 计入集合的非零命中只可能来自三处改动的遗漏；三处改动都在本 CR 的 scope_in 内，无需外部依赖 |
 | AC-3 | FR-3 | `CUSTOM.md` #75 第 3 列单元格 | 单元格含五要素；其它行文字零 diff，行数不变 | 单元格文本由实现期一次写入；核对用 `git diff -U0 CUSTOM.md` 只应命中该行 |
 | AC-4 | FR-4 | 三个零改动文件 | `git diff` 对三者零改动；`_index.yml` 仍 9 个 agent；矩阵 `cr-coordinator-agent`（`kind: system`/`mode: leader`）声明保留 | 本 CR 不产生任何写这些文件的步骤（§9 `zero_diff`），故天然可达 |
-| AC-5 | FR-5 | coordinator overlay 三节正文 | 三节逐条对应来源 §3.3.1/3.3.2/3.3.3；四节 + frontmatter 原样；文件内无 Skill/Pipeline 步骤复述 | 三节为独立 Markdown 节，替换互不影响；"无步骤复述"以"新文本不含 `crctl advance`/`git` 等可复制推进命令"为判据（`## 平台层权限` 的**禁止清单**按 FR-5 要求保留原文，不属于可复制执行的推进命令） |
+| AC-5 | FR-5 | coordinator overlay 三节正文 | 三节逐条对应来源 §3.3.1/3.3.2/3.3.3；四节 + frontmatter 原样（派生核对：整文件 `sha256` = `872457e6…`）；文件内无 Skill/Pipeline 步骤复述；**块 3 以 §6.2 的两行替换块形式出现**（`fc247a12…`；旧块 `de2554c9…` 不单独出现，第 2 行 = 两空格 + 插入段 `ed1941…`） | 三节为独立 Markdown 节，替换互不影响；"无步骤复述"以"新文本不含 `crctl advance`/`git` 等可复制推进命令"为判据（`## 平台层权限` 的**禁止清单**按 FR-5 要求保留原文，不属于可复制执行的推进命令） |
 | AC-6 | FR-6 | `tools/agents/dev-agent.md` 委派合同节 | 六条要求齐备；`lint-prompts.mjs` 不存在 R14 或等价委派 lint | 六条为同节文本；R14 不存在由 FR-8 只改 R7 且 dep-15 的规则清单不变保证 |
 | AC-7 | FR-7 | `cmdGate` pre-review 错配分支 + §4.1.1 取值算法 | 退出码非 0；`error.code === 'BAD_ARGS'`；`error.contractDrift === true`；`error.recoverCommand` 为固定形态串且不含用户输入，两个向量均必须成立：①**规范 CR-ID 向量**（真实 CR，如 `CR-2026-063`）⇒ 内插该 CR（`crctl workspace inspect CR-2026-063`）；②**非规范位置参数向量**（如 `CR-X`）⇒ 回退占位符 `<CR-ID>`（不内插）；执行前后 worktree 文件哈希集合零变化；`--for requirement-reviewing` 路径行为与既有测试不变 | 分支在 `runGateChecks` 之前 `fail()`，结构上零写入；恢复串只由 `cr` 经语法判定（§4.1.1）派生，自由文本无入口 |
 | AC-8 | FR-8 | §4.3 的 R7 子判据 + `test/lint-prompts.test.mjs` 向量（dep-16） | 向量 A（含 `gate … --mode pre-review` 缺 `--for requirement-reviewing`）产生 R7 finding；向量 B（两者同现）不产生；既有三类 R7 向量结果不变；无新增规则编号 | 向量由独立临时 fixture 驱动（`makeFixture`），不依赖真实 tools 内容；基线零误报由 dep-21 保证 |
-| AC-9 | FR-9 | §4.2 时序 + §3.2 契约 + `test/crctl.test.mjs` 新用例 | ①成功路径：变更已提交（提交只含该文件、消息含 `[cr] ` 与 tx trailer）、`git status --porcelain` 为空；②W2 窗口：失败返回 + 文件/index 回到执行前 + 审计已写；W2b 窗口（执行前已有 staged 变更）：不 commit、不夹带，按 §4.2.2 得到 `..._ROLLBACK_FAILED`；W1 窗口：下次同命令按 journal 还原后干净执行一次；③恢复串断言**只以失败结果为对象**：`REVIEW_LOOP_RESET_COMMIT_FAILED` 的 `error.recoverCommand` 不含 `reason` 用户文本，且两个向量分开断言（规范 CR-ID 内插 / 非规范输入回退 `<CR-ID>`）；**成功结果不含 `recoverCommand`，不作恢复串断言**（§3.2 出现面行）；④三条既有拒绝行为不变；⑤cycle+1、attempt=0、attempts 保留；⑥`writes.length===1` 被接受、空集仍 `TX_WRITESET_INVALID`、4 个既有调用点事务测试全绿 | ①②③⑤需要 git 仓夹具（既有 `makeGitWorkspace`/hook 先例，dep-13/dep-14）；⑤的既有用例 `crctl.test.mjs:3430` 现用非 git 的 `makeWorkspace()`，**必须**迁到 `makeGitWorkspace()` 且断言逐字不变（dep-14）；⑥只需 `durable-tx.test.mjs` + 既有事务测试；W1/W3 由既有 fault point 驱动（dep-9），W2b 由同一 git 夹具的预置 staged 变更驱动，无新增注册项 |
+| AC-9 | FR-9 | §4.2 时序 + §3.2 契约 + `test/crctl.test.mjs` 新用例 | ①成功路径：变更已提交（提交只含该文件、消息含 `[cr] ` 与 tx trailer）、`git status --porcelain` 为空；②W2 窗口：失败返回 + 文件/index 回到执行前 + 审计已写；W2b 窗口（执行前已有 staged 变更）：不 commit、不夹带，按 §4.2.2 得到 `..._ROLLBACK_FAILED`；**W2c 窗口（恢复链自身失败：`pre-commit` hook 写第三值后 `exit 1`）**：`abortLedgerTransaction` 抛 `TX_RECOVERY_CONFLICT`（TxError）⇒ 本地 catch 映射 `..._ROLLBACK_FAILED`（`affected:[rel]`）+ 审计，**不得**以 `TX_RECOVERY_CONFLICT` 退出；W1 窗口：下次同命令按 journal 还原后干净执行一次；③恢复串断言**只以失败结果为对象**：`REVIEW_LOOP_RESET_COMMIT_FAILED` 的 `error.recoverCommand` 不含 `reason` 用户文本，且两个向量分开断言（规范 CR-ID 内插 / 非规范输入回退 `<CR-ID>`）；**成功结果不含 `recoverCommand`，不作恢复串断言**（§3.2 出现面行）；④三条既有拒绝行为不变；⑤cycle+1、attempt=0、attempts 保留；⑥`writes.length===1` 被接受、空集仍 `TX_WRITESET_INVALID`、4 个既有调用点事务测试全绿 | ①②③⑤需要 git 仓夹具（既有 `makeGitWorkspace`/hook 先例，dep-13/dep-14）；⑤的既有用例 `crctl.test.mjs:3430` 现用非 git 的 `makeWorkspace()`，**必须**迁到 `makeGitWorkspace()` 且断言逐字不变（dep-14）；⑥只需 `durable-tx.test.mjs` + 既有事务测试；W1/W3 由既有 fault point 驱动（dep-9），W2b 由同一 git 夹具的预置 staged 变更驱动，W2c 由同一 git 夹具的 `pre-commit` hook（写第三值 + `exit 1`）驱动，均无新增注册项 |
 | AC-10 | FR-10 | 5 处文档补写 | 5 处均出现"单行标量"边界说明（含"不得使用多行引号标量或折叠块"）；`lib/yaml-subset.mjs` 零 diff；示例结构未变 | 5 处为独立文档位置；lint R1~R13 不因这些补充文本产生新 finding（补充文本为约束说明，不含 guard-deny 路径 + 写动词组合，不含状态机副本） |
 | AC-11 | FR-11 | 交付 diff 与 §9 `zero_diff` | diff 中无新增 SLO/M1–M8/P50–P90/计数门禁/账本字段/评审维度/Pipeline 节点；无 `crProcessCachePath`；`rules.json` 零 diff；`multica/aifirst/agent-import.mjs` 零 diff；multica 侧除 4 个文件外无其它改动 | `zero_diff` 项不进入任何 TASK 写入面，核对方式为 `git diff --name-only` 白名单比对 |
-| AC-12 | 全部 | 全部既有测试文件（§6.3 的基线红例外登记）+ 本 CR 新增/修订用例 | ①`tools/skills/shared/crctl/scripts/test/` 下**全部** `*.test.mjs`（本轮枚举为 21 个，逐文件清单与计数见 §6.3）在改动后被真实执行，**失败集 ⊆ §6.3 登记的 5 条基线红**且**不得新增任何红**（PRD NFR-1/AC-12 的"全量既有测试不回归"按此可复核口径落地）；②全部文件按 §4.6 的**无重不漏分区**纳入 canonical cmd-NN（每条带 `sourceRevision` 与 `test-evidence/cmd-NN.log` 绑定），例外仅以锚定完整测试名的模式排除，`skipped=true` 不接受为通过；③multica 被改文件结构完好（Markdown 表格/frontmatter 完整） | 新用例与既有用例共享同一 runner；`durable-tx.mjs` 的放宽对 4 个既有调用点零行为差异（§3.3）；§6.3 的 5 条红在未改动基线上已逐条复现，与本 CR 改动面无关（全部落在 `zero_diff` 对象上） |
+| AC-12 | 全部 | 全部既有测试文件（§6.3 的基线红例外登记，依赖事实见 dep-29）+ 本 CR 新增/修订用例 | ①`tools/skills/shared/crctl/scripts/test/` 下**全部** `*.test.mjs`（本轮枚举为 21 个，逐文件清单与计数见 §6.3）在改动后被真实执行，失败集合**恰等于** §6.3 登记的 5 条基线红（不多不少；**不得新增任何红**，也不得靠 skip/删测试制造假绿）——该口径相对 PRD AC-12/NFR-1 原文的差异属**需 owner 显式授权的目标放宽**，决策项见 **§6.4**；②全部文件按 §4.6 的**无重不漏分区**纳入 canonical cmd-NN（每条带 `sourceRevision` 与 `test-evidence/cmd-NN.log` 绑定），例外仅以锚定完整测试名的模式排除，`skipped=true` 不接受为通过；③multica 被改文件结构完好（Markdown 表格/frontmatter 完整） | 新用例与既有用例共享同一 runner；`durable-tx.mjs` 的放宽对 4 个既有调用点零行为差异（§3.3）；§6.3 的 5 条红在未改动基线上已逐条复现，与本 CR 改动面无关（全部落在 `zero_diff` 对象上）；口径授权与否不改变①的**可观测性**（同样可机械核对），只决定它是否是“验收通过”的成立条件 |
 
 **AC 反查结论**：逐条从 AC 回查正文——每条 AC 的设计落点均在 §1–§5 有对应设计（AC-1/2→§4.5、AC-3/5/6/10→§6 各行、AC-7→§3.1+§4.1、AC-8→§4.3、AC-9→§3.2+§4.2、AC-11→§9、AC-12→§4.6+§6.3）；无"设计落点缺失"、无"与 PRD 契约冲突"、无"结果不可观察"；关键前置（TTY 门槛、耗尽门槛、healthy workspace、CR-ID 语法判定）均不会过滤掉 AC 目标对象——其中 TTY 与耗尽门槛是 AC-9④ 的**被验对象**而非阻碍，CR-ID 语法判定的非常规分支正是 AC-7 的第二个向量。
 
@@ -616,11 +624,23 @@ Get-ChildItem -Path (Join-Path $repo 'skills\shared\crctl\scripts\test') -Recurs
 
 **块文本口径**：块内文本按 LF 归一（`\r\n → \n`）、**去掉块末换行**后的 UTF-8 字节串；下表 `sha256` 即按该字节串计算。核对方式：从 `multica/cr-prompts-revised/cr-coordinator-agent.md` 按下列替换边界提取对应文本 → LF 归一 → 去尾换行 → `sha256` 必须等于表内值。
 
-| 块 | 来源节 | 替换边界（落在 multica 文件） | 行数 / 字节（去尾换行） | `sha256`（LF 归一、去尾换行） |
+| 块 | 来源节 | 目标文本在该节内的形式 | 行数 / 字节（去尾换行） | `sha256`（LF 归一、去尾换行） |
 |---|---|---|---|---|
-| 块 1 | §3.3.1 | `## 委派与评论` **整节**（含该标题行，至下一 `## ` 之前） | 7 / 975 | `833517ffb7a70b238d338be51e4579736bc961cb4035c4c9513287a419a31525` |
-| 块 2 | §3.3.2 | `## 评审闭环` 内的**标准评审入口段**（保留该节标题与其它段） | 1 / 373 | `dcd3b8e45b8cadd858f4f59789e31535e0b19835a064b27e039513521a5c8da8` |
-| 块 3 | §3.3.3 | `## 失败与输出` 的**既有失败 bullet 内插入段** | 1 / 278 | `ed1941707f03c8691325737471c1c08698269eea9d96e52bb664f8d5f3550115` |
+| 块 1 | §3.3.1 | 替换 `## 委派与评论` **整节**（含该标题行，至下一 `## ` 之前） | 7 / 975 | `833517ffb7a70b238d338be51e4579736bc961cb4035c4c9513287a419a31525` |
+| 块 2 | §3.3.2 | 替换 `## 评审闭环` 内的**标准评审入口段**（保留该节标题与其它段） | 1 / 373 | `dcd3b8e45b8cadd858f4f59789e31535e0b19835a064b27e039513521a5c8da8` |
+| 块 3 | §3.3.3 | **插入段正文**（不含任何缩进；作为 `## 失败与输出` 第 1 条既有失败 bullet 的紧跟下一行插入） | 1 / 278 | `ed1941707f03c8691325737471c1c08698269eea9d96e52bb664f8d5f3550115` |
+
+**三块的旧块 / 替换块边界（唯一定义，落在目标文件内；均按 LF 归一去尾换行计数）：**
+
+| 块 | 旧块（替换前，逐字定位） | 旧块 行数 / 字节 / `sha256` | 替换块（替换后，完整目标块） | 替换块 行数 / 字节 / `sha256` |
+|---|---|---|---|---|
+| 块 1 | `## 委派与评论` 标题行起、至该节**最后一个非空内容行**止（含标题行；节与下一节之间的空行不计入） | 6 / 574 / `fd0e9ce6c039b512362c3033902236a6c1010e91c13b9e23b53e59c320453daa` | 块 1 全文（上表，7 行） | 7 / 975 / `833517ffb7a70b238d338be51e4579736bc961cb4035c4c9513287a419a31525` |
+| 块 2 | `## 评审闭环` 内首个非空段（整行、单行；该节其它 3 段保持原样） | 1 / 300 / `06b084c200e3c982475d63461d069ae5e012452bc8c49585d0826f02d5083148` | 块 2 全文（上表，1 行） | 1 / 373 / `dcd3b8e45b8cadd858f4f59789e31535e0b19835a064b27e039513521a5c8da8` |
+| 块 3 | `## 失败与输出` 的**第 1 条**既有失败 bullet（以 `- 任何权限缺失、事实冲突或不可恢复技术错误：` 开头，至该行末），整行、单行 | 1 / 141 / `de2554c90a9218dcd6d64e9ae1fe8948203584b9e34cf5f06122c8650c8537a8` | **两行**：第 1 行 = 旧块逐字保留；第 2 行 = 两个半角空格 + 块 3 插入段正文（即 `"  "` + 278 B 块文本，自身 280 B） | 2 / 422 / `fc247a12436ea84e0bd6403b36c7151d149717fc30b5537f12cca91798a32f38` |
+
+- **块 3 的机械提取规则（唯一旧块起止）**：在 `## 失败与输出` 节内，该 bullet 行必须**恰**由上述替换块的两行组成——第 1 行逐字等于旧块（`de2554c9…`）；第 2 行逐字等于「`"  "` + 块 3 正文」（`0fdd50aca448ac9debd1bfaea9ccd26c5f88de9c3d6e5054e659b0d3543f850c`，280 B）。该 bullet 行下**不得**出现不含那个两空格缩进行的裸 bullet 形态（否则“原样插入、未入 bullet 内”判不通过），也**不得**把插入段写成其他列表标记（会改变替换块 `sha256`，同样判不通过）；插入位置固定为 bullet 行之后、该节第 2 条 bullet（`- 不重试跨节点…`）之前。
+- **插入段正文仍逐字可校验**：第 2 行去掉行首两个半角空格后 = 上表块 3（`ed1941…`）；“逐字复制、不得转述”的校验对象因此是两个：完整替换块（`fc247a12…`）与插入段正文（`ed1941…`）。
+- **整文件派生核对项**：三处按上表替换完成后，`cr-coordinator-agent.md` 的 LF 归一去尾换行 `sha256` = `872457e62ddfbadd40637dc7a293660fa8669c2e220afafa31454c53d271281c`（6019 B / 69 行；构造口径 = 块 1/块 2/块 3 按上表替换，节间空行与其余四节 + frontmatter 保持原样）。该哈希只作派生核对，不是独立判据；若它不等而三块各自相等，优先复核未替换区域的空白/换行差异。
 
 **块 1（替换 `## 委派与评论` 整节）**
 
@@ -646,11 +666,11 @@ Get-ChildItem -Path (Join-Path $repo 'skills\shared\crctl\scripts\test') -Recurs
 当评论、Agent Prompt 与当前 Skill/Pipeline 事实发生冲突时，停止该次手工委派，报告 `CONTRACT_DRIFT` 与冲突两侧，不自行选择一套步骤继续。来自 crctl 的恢复信息只逐字段转发，不改写为协调者自己的 Git/状态序列。
 ```
 
-**实现与验收纪律**：三块**逐字复制，不得转述**；除替换边界外不得改动标点、空格、换行或代码标记（包括反引号）。AC-5 的"与来源 §3.3.1/3.3.2/3.3.3 逐条对应"因此升级为两个可机械核对的判据：①上述三块按边界出现在目标文件内（`sha256` 相等）；②四节与 frontmatter 原样、全文不出现可复制的推进命令。
+**实现与验收纪律**：三块**逐字复制，不得转述**；除替换边界外不得改动标点、空格、换行或代码标记（包括反引号）。AC-5 的"与来源 §3.3.1/3.3.2/3.3.3 逐条对应"因此升级为三个可机械核对的判据：①三块按上表边界出现在目标文件内（逐块 `sha256` 相等）；②**块 3 必须以上表的**两行替换块**形式出现（旧块 `de2554c9…` 不单独出现，第 2 行 = 两空格 + `ed1941…`）；③四节与 frontmatter 原样（派生核对：整文件 `sha256` = `872457e6…`）、全文不出现可复制的推进命令。
 
 ## 6.3 既有测试基线红例外登记（AC-12 的绑定对象）
 
-**登记依据（本轮在 tools CR worktree `ebdd6290…` 未改动工作区复测）**：`node --test --test-reporter=dot <test/ 下全部 *.test.mjs，共 21 个>` → **exit=1、耗时 857 s、失败标记恰好 5 个**（dot 串：`.` × 548 pass、`X` × 5 fail），失败测试名逐字如下表。5 条全部在**本 CR 改动前即红**，且均落在本 CR 的 `zero_diff` 对象或 `scope_out` 面（无一是本 CR 改动面）。
+**登记依据（本轮在 tools CR worktree `ebdd6290…` 未改动工作区复测；逐条事实作为既有实现依赖 **dep-29** 入§10）**：`node --test --test-reporter=dot <test/ 下全部 *.test.mjs，共 21 个>` → **exit=1、耗时 857 s、失败标记恰好 5 个**（dot 串：`.` × 548 pass、`X` × 5 fail），失败测试名逐字如下表。5 条全部在**本 CR 改动前即红**，且均落在本 CR 的 `zero_diff` 对象或 `scope_out` 面（无一是本 CR 改动面）。
 
 | # | 文件:行（测试定义 / 失败断言） | 测试名（逐字；锚定例外的唯一匹配对象） | 失败事实（本轮实测） | 归属 |
 |---|---|---|---|---|
@@ -676,11 +696,25 @@ workspace-resolver.test.mjs    writeback-tx.test.mjs          yaml-subset.test.m
 
 **判定规则（冻结，fail-closed）**：
 
-- AC-12 判据 = 「上表 21 个文件全部被 canonical `cmd-NN` 真实执行；失败集 ⊆ 上表 5 条；**不得新增任何红**」（PRD NFR-1/AC-12 的"全量既有测试不回归"按此可复核口径落地；`prd.md` 不改）。
+- AC-12 判据 = 「上表 21 个文件全部被 canonical `cmd-NN` 真实执行；失败集合**恰等于**上表 5 条（既不多也不少）；不得新增红」（实现 PRD §6 成功指标“既有测试回归数 = 0”的可复核口径）。该口径**尚未获得需求契约层面的明确授权**——其与 PRD NFR-1/AC-12 “全量既有测试通过”的差异及 owner 决策项见 **§6.4**；owner 选选项 B 时按 §6.4 的归属处理，本 SDD 不自行放宽 PRD 目标。
 - 例外模式 = 上表 5 个**完整测试名**（正则元字符转义）的锚定交替 `^(?:名字1|…)$`；禁用未锚定片段（片段会连带静默跳过名字包含该片段的新用例）。拼写失效 → 该用例真跑 → 红 → exit 1（fail-closed），**不产生假绿**。
 - 任一命令 `skipped=true` 不接受为通过（全套命令统一 `--test-reporter=dot`）。
 - 单跑 857 s 是**全集**一次运行的上限依据；§4.6.2 的无重不漏分区必须让「全集 + lint + 断言类命令」总时长落在 `write-test-report` 节点 20 min 预算内。
-- BR-1/BR-5 的根因修复属 CR-2026-060 §5.3 的 follow_up，本 CR 不修（不扩大 `scope_out`）；BR-2/BR-3/BR-4 各自的对象均在 `zero_diff` 或 `scope_out` 面。
+- BR-1/BR-5 的根因修复属 CR-2026-060 §5.3 的 follow_up，本 CR 不修（不扩大 `scope_out`）；BR-2/BR-3/BR-4 各自的对象均在 `zero_diff` 或 `scope_out` 面（逐条归属见 §9 `follow_up` 第 6 条与 dep-29）。本表 5 条与 AC-12 口径的授权关系见 §6.4。
+
+## 6.4 AC-12 口径冲突与 owner 授权项（人工审批的显式决策，不得默认）
+
+**PRD 目标契约（原文，本 SDD 不改动、不代签）**：NFR-1「`../tools` 全量既有测试（crctl、ledger/durable-tx、prompt lint、pipeline structure、contract-scan 等）保持通过」；AC-12「`../tools` 全量既有测试通过」。
+
+**基线事实（§6.3 表、dep-29，tools `ebdd6290…` 未改动工作区实测）**：全集 21 个 `*.test.mjs` 单跑 exit=1、857 s、失败标记恰好 5 个（BR-1~BR-5）。五条的根因对象分别落在本 CR §9 的 `zero_diff`（`pipeline-templates/**`、`dir-graph.yaml`、`write-requirement-prd/SKILL.md`）或 `scope_out`（`checkpoint`、`archive`）面；BR-1/BR-5 的根因修复已由 CR-2026-060 §5.3 登记为 follow_up。
+
+**冲突（必须由人裁决，不是实现细节）**：PRD 原文口径要求这 5 条也通过；而“让它们通过”的对象不在本 CR 的 `scope_in` 内（§9），二者不可同时成立。**本 SDD 既不擅自放宽 PRD 的验收目标，也不擅自扩大批准范围**——它把两条路都摆在这里，请 owner 在人工节点择一并显式记录。
+
+**本 SDD 请求授权的口径（选项 A，推荐）**：AC-12 = 「21 个文件全部被真实执行；**失败集合恰等于**改动前基线集合（BR-1~BR-5，逐条见 §6.3）；不得新增红，**也不得少**（skip / 删除 / 改名制造假绿即判不通过）」。比 PRD 原文更严的部分 = 枚举全集 + 无重不漏分区 + 锚定例外 + 失败集必须与基线逐条相等；比 PRD 原文更弱的唯一部分 = 接受 5 条既有基线红（不要求它们在本 CR 内转绿）。这就是 PRD §6 成功指标「既有测试回归数 = 0」的可复核落地。
+
+**选项 B（不授权例外）**：AC-12 保持 PRD 原文（全绿）。此时必须在同一决策中给出 5 条基线红的处理归属，二者之一：①扩大 `scope_in` 到 `pipeline-templates/**`、`dir-graph.yaml`、`write-requirement-prd/SKILL.md`、`checkpoint`、`archive` 内核（等于把一个新 CR 的工作并入本 CR）；②把 AC-12 的交付责任改为“随 follow_up CR 转绿”，并在 `follow_up`（§9）中逐条登记 5 条的根因归属。在 owner 给出归属前，本 CR 不得进入开发启动（`approve-dev-start` 前置不成立）。
+
+**决策落点与状态机边界**：`change-request-track.state_machine` 中 `tech-designing` / `tech-design-review-pending` 的出边只有 `→ tech-design-review-pending`、`approve-tech-design:reject → tech-designing`（以及任意活动态 → `rejected`/`withdrawn`），**没有回到需求侧（`write-requirement-prd`）的转移**——唯一的 `write-tech-design:prd-blocker` 边挂在 `requirement-approved` 上，本 CR 首次 `write-tech-design` 进入时已经跨过。因此 PRD 级口径的确认点只能是：本节点的 owner 决策项，或人工 gate。`prd.md` 保持审批版本（`9247c107…`）不变；口径若获授权，其需求侧记录随回写期 `specs/` 累积文档与后续需求 CR 承载，**不在本 CR 内改 `prd.md`**。
 
 # 7. 安全与性能考量
 
@@ -759,12 +793,14 @@ workspace-resolver.test.mjs    writeback-tx.test.mjs          yaml-subset.test.m
 3. AC-2 的"计入/排除"判定目前是人工逐条 + 命中清单证据（S-5）；机械化为检索 lint 属新规则范围，本 CR 不做。
 4. CR-R：`recoverCommand`（`gate` 错配 + `reset` 失败）→ 结构化 `recovery` 的原子迁移，以及本 CR 新增的两个 `REVIEW_LOOP_RESET_COMMIT_*` 错误码的消费迁移，全部归 CR-R。
 5. 历史 CR 目录内的既有 `_context.md` 不迁移、不清洗（随 CR 自然归档）。
+6. **基线红 BR-2 / BR-3 / BR-4 的根因修复**：`checkpoint` 的 alignment reader 不读 `latest-checkpoint`（BR-2）；`dir-graph.yaml` 状态机声明数与既有断言口径（BR-3，测试断言 28 条声明、当前 31 条）；`write-requirement-prd/SKILL.md` Step 4 措辞（BR-4）。三者对象均在本 CR 的 `zero_diff` 或 `scope_out` 面，本 CR 不修（不扩大批准范围）；BR-1/BR-5 沿用 CR-2026-060 §5.3 的 follow_up。AC-12 的口径授权见 §6.4。
+7. **AC-12 口径的需求侧记录**：若 owner 在人工节点采纳 §6.4 选项 A（接受 5 条已登记基线红），该口径的需求侧记录随回写期 `specs/` 累积文档与后续需求 CR 承载；本 CR 内不改 `prd.md`（审批绑定 `9247c107…`），也不自行宣告该放宽已生效。
 
 # 10. 既有实现依赖与事实
 
 本节按 write-tech-design 的固定结构列出，**顺序 = 正文首次依赖出现顺序**（§1 → §8）；正文以 `dep-N` 引用本节第 N 项。全部在本 CR 三个 worktree 的当前 HEAD 上核实（SHA 见 §1.4 表）。
 
-> 本轮（2026-09-11 上游回修，如 §13）补入 **dep-26 / dep-27 / dep-28** 三条（正文首次引用分别在 §3.5、§4.1.1+§5.3、§4.6.1）；为避免全表重编号，三条追加于表尾，其编号不再对应首次出现序；其余各项仍按首次出现序编号。
+> 本轮（2026-09-11 上游回修，如 §13）补入 **dep-26 / dep-27 / dep-28** 三条（正文首次引用分别在 §3.5、§4.1.1+§5.3、§4.6.1），cycle 2 回修再补入 **dep-29**（§6.3 基线红例外登记的事实依据）；为避免全表重编号，这四条追加于表尾，其编号不再对应首次出现序；其余各项仍按首次出现序编号。
 
 1. repo: tools
    relative path: skills/shared/crctl/scripts/crctl.mjs
@@ -920,7 +956,7 @@ workspace-resolver.test.mjs    writeback-tx.test.mjs          yaml-subset.test.m
    relative path: skills/shared/crctl/scripts/crctl.mjs
    stable symbol/对象: `syncLedgerIndex`（L682–689）在 index 恢复失败时抛出的 `TX_GIT_FAILED`（L688，携 `{paths}`）
    commit SHA: ebdd6290f1523ffb682609b7ad6ab83e7d30245e
-   依赖结论: §3.5 四查表的错误闭包中 `TX_GIT_FAILED` 的真实来源（本轮补条）；也说明 reset 失败路径中该码只可能来自 index 恢复环节，而不是通用 git 失败兜底
+   依赖结论: 恢复链中 `TX_GIT_FAILED` 的**内部**产生点（本轮补条）；步骤 13 直接调用 `syncLedgerIndex` 并由本地 catch 把它（连同 `TX_JOURNAL_INVALID` / `TX_RECOVERY_CONFLICT`）映射为 `REVIEW_LOOP_RESET_COMMIT_ROLLBACK_FAILED`，因此它**不在 reset 的对外错误闭包内**（§3.2、§3.5、§4.2.1 步骤 13，cycle 2 回修 B-01）
 
 27. repo: tools
    relative path: skills/shared/crctl/scripts/crctl.mjs；skills/shared/crctl/scripts/lib/workspace-transactions.mjs
@@ -934,7 +970,18 @@ workspace-resolver.test.mjs    writeback-tx.test.mjs          yaml-subset.test.m
    commit SHA: ebdd6290f1523ffb682609b7ad6ab83e7d30245e
    依赖结论: §4.6 的四条证据命令契约均基于该执行器的真实语义（`repo` 列 = 被测仓/cwd 解析面与 `sourceRevision` 绑定面；`shell:false`；dot reporter 下 skip 不可见）；本 CR 不改该执行器
 
-**待核实依赖**：无（上列 28 项均已在三个 worktree 的当前 HEAD 上逐条核实）。
+29. repo: tools
+   relative path: skills/shared/crctl/scripts/test/crctl.test.mjs（BR-1 / BR-3 / BR-4）、skills/shared/crctl/scripts/test/checkpoint-tx.test.mjs（BR-2）、skills/shared/crctl/scripts/test/archive-tx.test.mjs（BR-5）
+   stable symbol/对象: 五个既有测试用例（完整测试名逐字 + 定义行 / 失败断言行，行号为采写时刻基线）：
+     BR-1  crctl.test.mjs:1335 / 断言 :1343 — `CR-2026-037 Prompt 采纳：Skill/Pipeline 调 task init 且不指导直写索引`
+     BR-2  checkpoint-tx.test.mjs:480 / 断言 :489 — `checkpoint T05 contract：Pipeline 只编排 Skill，active alignment reader 不读旧 checkpoints[]`
+     BR-3  crctl.test.mjs:4585 / 断言 :4597 — `TASK-06 ⑤: release-drift 单一回退转换 code-approved -> developing 合法；状态机口径 28 声明/50 展开（AC-3）`
+     BR-4  crctl.test.mjs:4797 / 断言 :4803 — `CR-2026-042 静态合同：已知 Skill 越界文本零命中`
+     BR-5  archive-tx.test.mjs:373 / 断言 :391 — `TASK-01 RED-7：预存确定性 dedup 文件 → 命中同名补记，数量不增、内容不覆盖`
+   commit SHA: ebdd6290f1523ffb682609b7ad6ab83e7d30245e
+   依赖结论: 在未改动基线（该 SHA）上整目录实测 `node --test --test-reporter=dot`（21 个 `*.test.mjs`）→ exit=1、857 s、失败标记恰好 5 个（548 pass / 5 fail），逐条失败事实与归属见 §6.3 表；五条在本 CR 改动前即红，其根因对象分别落在本 CR 的 `zero_diff`（`pipeline-templates/**`、`dir-graph.yaml`、`write-requirement-prd/SKILL.md`）或 `scope_out`（`checkpoint`、`archive`）面，因此它们是**基线事实**而非本 CR 的回归；AC-12 的口径授权与 owner 决策项见 §6.4
+
+**待核实依赖**：无（上列 29 项均已在三个 worktree 的当前 HEAD 上逐条核实）。
 
 # 11. SDD-CLOSE 关闭清单
 
@@ -1012,17 +1059,32 @@ SDD-CLOSE-12  「commit 只含 review-loop.yml」的保证手段（本轮 upstre
   覆盖层: 契约（§3.2 提交隔离前置行）→ 算法（§4.2.1 步骤 12）→ 窗口（W2b）→ 安全控制点（§7.1）→ 验收（AC-9①②）。
   状态: 已关闭
 
-SDD-CLOSE-13  AC-12 的可复核口径落地（本轮 upstream 回修 B-02/U-6、B-05）
-  关闭结论: AC-12 = 「全部 *.test.mjs（本轮枚举 21 个）被执行，失败集 ⊆ §6.3 登记的 5 条基线红，且不得新增红」；
-            全量回归按 §4.6.2 做无重不漏分区纳入 canonical cmd-NN（每条带 sourceRevision 与 cmd-NN.log 绑定）；
-            例外仅以 5 条完整测试名的锚定模式排除，skipped=true 不作为通过；merge-fixture.mjs 需显式处置。
-  覆盖层: 契约（§4.6）→ 登记（§6.3）→ 验收（AC-12）→ 预算（§7.2）。
+SDD-CLOSE-13  AC-12 的可复核口径落地（本轮 upstream 回修 B-02/U-6、B-05；cycle 2 由评审 B-02 补强）
+  关闭结论: AC-12 的**可复核判据** = 「全部 *.test.mjs（本轮枚举 21 个）被执行，失败集合恰等于 §6.3 登记的
+            5 条基线红（不多也不少），不得新增红」；全量回归按 §4.6.2 做无重不漏分区纳入 canonical cmd-NN（每条带
+            sourceRevision 与 cmd-NN.log 绑定）；例外仅以 5 条完整测试名的锚定模式排除，skipped=true 不作为通过；
+            merge-fixture.mjs 需显式处置。基线红事实作为 dep-29 入§10（repo/path/测试名逐字/失败结论/SHA）。
+            该口径相对 PRD AC-12/NFR-1 原文属目标放宽，其**授权不由 SDD 自行完成**，已作为 owner 决策项写入 §6.4。
+  覆盖层: 契约（§4.6）→ 登记（§6.3）→ 依赖事实（dep-29）→ 授权决策项（§6.4）→ 验收（AC-12）→ 预算（§7.2）。
+  状态: 已关闭（口径落地完成；其授权属人工节点决策项，见 §6.4）
+
+SDD-CLOSE-14  FR-5 目标文本的仓内权威锚点（本轮 upstream 回修 B-03/S-5；cycle 2 由评审 B-03 补强）
+  关闭结论: 三节目标文本逐字固化于 §6.2（含替换边界、LF 归一口径、逐块 sha256、来源文件 SHA256 与字节数）；
+            块 3 额外冻结"旧块 + 两空格缩进行"的两行替换块（旧块 de2554c9… / 替换块 fc247a12… / 插入段 ed1941…），
+            旧块起止唯一（该 bullet 行必须紧跟插入行，不得出现裸旧块或其它列表标记）；
+            实现期逐字复制、不得转述；核对方式 = 按边界提取 + LF 归一 + 去尾换行 + sha256 比对（含整文件派生值 872457e6…）。
+SDD-CLOSE-15  reset 恢复链的错误码收敛与 `TxError` 可验向量（cycle 2 评审 B-01 补强）
+  关闭结论: 恢复链三步（abort / syncLedgerIndex / clean 复核）在步骤 13 内直接调用，不经 runTxAsync；
+            内部 TxError（TX_JOURNAL_INVALID / TX_RECOVERY_CONFLICT / TX_GIT_FAILED）一律由本地 catch 映射为
+            REVIEW_LOOP_RESET_COMMIT_ROLLBACK_FAILED（{affected}）+ 审计，不得以 TX_* 退出；可验向量 §4.2.2 W2c。
+  覆盖层: 契约（§3.2 失败输出行）→ 错误闭包（§3.5）→ 算法（§4.2.1 步骤 13）→ 窗口（W2c）→ 决策（§5.2 D-2）→ 验收（AC-9②）。
   状态: 已关闭
 
-SDD-CLOSE-14  FR-5 目标文本的仓内权威锚点（本轮 upstream 回修 B-03/S-5）
-  关闭结论: 三节目标文本逐字固化于 §6.2（含替换边界、LF 归一口径、逐块 sha256、来源文件 SHA256 与字节数），
-            实现期逐字复制、不得转述；核对方式 = 按边界提取 + LF 归一 + 去尾换行 + sha256 比对。
-  覆盖层: 契约（§3.4-B）→ FR 落点（§6 FR-5）→ 锚点（§6.2）→ 验收（AC-5）。
+SDD-CLOSE-16  跨仓证据命令的 revision 绑定（cycle 2 评审 B-04）
+  关闭结论: repo 列 = 验收对象仓，sourceRevision = 该仓 worktree HEAD（cwd 必须相对且不越界，dep-28）；
+            跨仓只读核对保持 repo = 对象仓、脚本用绝对正斜杠化路径；被读仓 revision 由同一 plan 内 repo = 该仓的
+            绑定命令给出（“对象仓 + 被读仓”两条 sourceRevision 的组合才是完整证据面）；无法表达时拆两条命令。
+  覆盖层: 契约（§4.6.1 推论 1）→ 分区（§4.6.2）→ 执行器语义（dep-28）→ 验收（AC-12②）。
   状态: 已关闭
 ```
 
@@ -1046,4 +1108,10 @@ SDD-CLOSE-14  FR-5 目标文本的仓内权威锚点（本轮 upstream 回修 B-
   - **B-06（恢复串断言面与向量）**：§3.2 新增"`recoverCommand` 出现面"行（只在失败结果与 FR-7 错误体；成功输出字段集不变、不含该字段），AC-7 与 AC-9③ 改为"只对失败结果断言 + 规范 CR-ID / 非规范输入两个向量分开断言"。
   - **U-4 / S-4（§10 补条）**：新增 dep-26（`syncLedgerIndex` 的 `TX_GIT_FAILED`）、dep-27（archive / version-set / workspace 的 CR-ID 校验正则，含 `ARCHIVE_CR_INVALID`）、dep-28（`crctl test` 执行器 `runTestPlan` 与 `crctl git --cwd` 语义）；§10 表头说明补条编号不再等于首次出现序。
   - 约束核对：未触碰 `prd.md`（审批绑定 `9247c107…`）；`scope_in`/`scope_out`/`zero_diff` 的边界未变（本轮新增条目均为既有批准范围内的设计澄清与证据契约）；`FR 11/11`、`AC 12/12` 覆盖不变。
-- 结构规模：9 个 Skill 规定章节 + 既有实现依赖与事实（28 项，含本轮补条 dep-26~28）+ SDD-CLOSE 关闭清单 + carry-over 处理 + §4.6 证据命令契约 + §6.2 逐字锚点 + §6.3 基线红例外登记；FR 覆盖率 11/11，AC 覆盖率 12/12。
+- 修订 0.1.2（2026-09-11，`review-tech-design` cycle 2 BLOCK 回修 → `write-tech-design`）：按 canonical `review-annotations/sdd.yml`（`route=repair`、`repairTarget=write-tech-design`、attempt 1/3）逐条收口四条「部分解决」的 blocker（B-01~B-04）；B-05/B-06 的关闭结论不受影响：
+  - **B-01（`reset` 恢复链的错误码收敛）**：§4.2.1 步骤 13 改为**直接** `await abortLedgerTransaction` / 直接调用 `syncLedgerIndex`（删除 `runTxAsync` 包装），恢复链的内部 `TxError`（`TX_JOURNAL_INVALID` / `TX_RECOVERY_CONFLICT` / `TX_GIT_FAILED`）一律由本地 catch 映射为 `REVIEW_LOOP_RESET_COMMIT_ROLLBACK_FAILED`；§3.2 失败输出行、§3.5 错误闭包（**删除** `TX_GIT_FAILED` 的对外码地位，改为"内部底层原因"）、§2.3、§5.2 D-2、dep-26 结论同步；新增 §4.2.2 **W2c** 窗口（`pre-commit` hook 写第三值后 `exit 1` ⇒ `TX_RECOVERY_CONFLICT` ⇒ 映射码 + 审计，不得以 `TX_*` 退出）作为"恢复链不经 `runTxAsync`"的可验向量，AC-9② 同步；`SDD-CLOSE-15`。
+  - **B-02（AC-12 口径与基线事实）**：基线红 5 条逐条进入 §10 **dep-29**（repo / relative path / 测试名逐字 + 定义行 + 失败断言行 / 失败结论 / commit SHA），§6.3 从其引用；AC-12 与 §6.3 判据从"失败集 ⊆ 5 条"改为"失败集合**恰等于** 5 条（不多不少）"；新增 **§6.4** 把该口径相对 PRD AC-12/NFR-1 原文的放宽写为 **owner 人工决策项**（选项 A 授权例外 / 选项 B 保持全绿并指定 5 条红的归属），并说明本 node 在状态机上无回需求侧的边、`prd.md` 保持审批版本；§9 `follow_up` 补第 6/7 条；`SDD-CLOSE-13` 更新。
+  - **B-03（FR-5 块 3 的唯一插入边界）**：§6.2 把块 3 从"在既有失败 bullet 内插入段"冻结为**两行替换块**——第 1 行 = 旧 bullet 逐字保留（141 B / `de2554c9…`）、第 2 行 = 行首两个半角空格 + 插入段正文（280 B / `0fdd50ac…`，去缩进后 = 块 3 的 `ed1941…`）；替换块整体 422 B / `fc247a12…`，并给出块 1/块 2 的旧块 `sha256` 与整文件派生值 `872457e6…`；§3.4-B、§6 FR-5 的 §3.3.3 条目与 AC-5 的判据同步为可机械核对的三个判据；`SDD-CLOSE-14` 更新。
+  - **B-04（跨仓证据命令的 revision 绑定）**：§4.6.1 推论 1 改为"`repo` 列 = 验收对象仓，且是该命令 `sourceRevision` 的唯一绑定面（`cwd` 必须相对且不越界）"，明确跨仓只读核对**不得**把 `repo` 换成脚本所在仓（脚本用绝对、正斜杠化路径），并要求被读仓 revision 由同一 plan 内 `repo` = 该仓的绑定命令给出（"对象仓 + 被读仓"两条 `sourceRevision` 的组合才是完整证据面）；无法表达时拆两条命令；`SDD-CLOSE-16`。
+  - 约束核对：未触碰 `prd.md`（审批绑定 `9247c107…`）；`scope_in` / `scope_out` / `zero_diff` 的边界未变（§9 只新增两条 `follow_up` 登记）；FR 11/11、AC 12/12 覆盖不变；tools / multica 两仓零改动。
+- 结构规模：9 个 Skill 规定章节 + 既有实现依赖与事实（29 项，含本轮补条 dep-26~29）+ SDD-CLOSE 关闭清单 + carry-over 处理 + §4.6 证据命令契约 + §6.2 逐字锚点 + §6.3 基线红例外登记 + §6.4 AC-12 口径授权项；FR 覆盖率 11/11，AC 覆盖率 12/12。
