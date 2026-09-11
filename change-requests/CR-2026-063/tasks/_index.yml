@@ -1,0 +1,22 @@
+cr-id: CR-2026-063
+tasks:
+  - id: CR-2026-063-TASK-01
+    title: "gate --mode pre-review 错配可操作化（contractDrift + recoverCommand + crIdForRecover）与 R7 配对 lint"
+    status: pending
+    estimate: 12h
+    depends-on: []
+  - id: CR-2026-063-TASK-02
+    title: "review-loop reset 原子提交（单文件 ledger 事务 + add/commit + 失败回滚）与 durable-tx write-set 前置条件放宽"
+    status: pending
+    estimate: 16h
+    depends-on: [CR-2026-063-TASK-01]
+  - id: CR-2026-063-TASK-03
+    title: "_context.md 活跃合同退役（post-review 白名单删条目 + CR-2026-057 测试原位改为退役合同测试）与活跃引用全量核对"
+    status: pending
+    estimate: 8h
+    depends-on: []
+  - id: CR-2026-063-TASK-04
+    title: "Prompt/文档案位归位与委派合同收紧（multica 4 文件 + tools 6 处）与范围收口核对"
+    status: pending
+    estimate: 16h
+    depends-on: [CR-2026-063-TASK-01, CR-2026-063-TASK-02, CR-2026-063-TASK-03]
