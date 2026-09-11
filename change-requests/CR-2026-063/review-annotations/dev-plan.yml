@@ -1,27 +1,28 @@
 cr-id: CR-2026-063
 review-type: dev-plan
 reviewer: "OldBoy405"
-reviewed-at: "2026-09-11T19:43:56+08:00"
+reviewed-at: "2026-09-11T23:09:05+08:00"
 verdict: block
 repair-target: write-tech-design
 blockers:
-  - "本轮新增：B-01 [plan.md §8.2 U-1/U-2；sdd.md §3.2、§4.2.1 步骤 12–13、§5.2 D-2；TASK-02 §1/§3.1]：已审批 SDD 同时声明 REVIEW_LOOP_RESET_COMMIT_ROLLBACK_FAILED，却没有其产生路径；又声明 commit 只含 review-loop.yml，却没有 commit 前 index 恰等于 write-set 的前置断言。TASK-02 已明确 U-1 不可实现，却又准备在 U-2 上自行补实现手段。影响：原子回滚错误闭包和提交隔离均无唯一实现，直接进入 developing 会在两种既有先例间任意分叉并可能夹带预存 staged 变更。修复：由 write-tech-design 先为步骤 13 明确回滚失败的 try/catch/错误码/审计语义或删除该码，并在步骤 12 明确 staged/unstaged 前置断言，再重跑技术评审与审批。"
-  - "本轮新增：B-02 [plan.md §5.3/§8.2 U-3、U-6；sdd.md dep-14、§6.1 AC-9/AC-12；TASK-02 §1/§3.4]：SDD 把非 git 夹具上的既有 reset 用例写成可原样继续通过，并要求 ../tools 全量既有测试通过；plan 已实测基线存在 5 条红且承认该夹具改造后必红。影响：当前 AC-9/AC-12 字面验收不可达，实施者无法同时满足已审批 SDD 与真实基线。修复：由 write-tech-design 明文规定该用例迁移到 makeGitWorkspace() 且断言不变，并把 AC-12 改为绑定明确基线红集合且不得新增红的可执行判据；基线集合及归属需成为可复核的批准事实。"
-  - "本轮新增：B-03 [plan.md §8.2 U-5；sdd.md §3.4-B、§6 FR-5；TASK-04 §1/§3.4/§4.5]：AC-5 要求 coordinator 三节逐字等于来源，但来源只在 Issue 附件/主 checkout untracked 副本中，当前 CR 三个 worktree 均无批准后可复现的原文或摘要哈希锚点。影响：实现者与后续独立评审无法从权威 CR 证据判断逐字一致，cmd-07 也只检查关键词和结构，验收可假绿。修复：由 write-tech-design 把三节逐字文本或确定性内容摘要及来源 SHA 固化到 SDD，并明确逐字复制、不得转述；随后让 TASK/cmd 使用该仓内批准锚点。"
-  - "本轮新增：B-04 [plan.md §6.2 cmd-06～cmd-10；write-test-report 的 spawnSync 契约]：稳定证据命令不可按表直接执行。cmd-09 的 repo/cwd 是 multica/.，但首个 node 参数是相对路径 skills/shared/crctl/scripts/crctl.mjs，该文件只存在于 tools worktree；cmd-06～cmd-08 又把 Windows 绝对路径占位符直接放入 JavaScript 单引号字面量，原样替换会吞掉反斜杠（例如 C:\Users... 变成 C:Users...）。影响：canonical crctl test 会因脚本/资源路径错误而失败，作者的手工干跑不能替代稳定表。修复：在刷新 plan 时给出可逐字转录的 args：脚本路径和资源路径必须由 execution_context 确定性解析并以 JSON 安全转义或正斜杠形式进入 -e，cmd-09/10 也必须从各自 repo cwd 可达；逐条用与 crctl test 相同的 shell:false/cwd 语义验证。"
-  - "本轮新增：B-05 [plan.md §5.3～§5.4、§6.2 cmd-01/cmd-05、§7 AC-12；TASK-02 §4.3；TASK-04 §3.7/§4.6]：AC-12 的目录级 22 文件回归被放在 cmd-NN 之外，canonical 命令仅覆盖 13 个测试文件，因而其结果没有 crctl test 的 sourceRevision 与 cmd-NN 日志绑定；同时 --test-skip-pattern 使用未锚定片段，不等价于只排除登记的 5 个完整测试名，可能把同片段的新回归一并跳过。影响：全量无新增红和基线例外的 fail-closed 声明无法由后续 code review 的固定证据集证明。修复：刷新证据表，把全部 22 文件按预算分区或作为明确 cmd-NN 纳入 canonical test plan，并把 5 个例外改成仅匹配完整测试名的确定性表达；所有分区均需在 20 分钟节点预算内且失败集合只能等于/包含批准口径允许的集合。"
-  - "本轮新增：B-06 [TASK-01 §3.4；TASK-02 §3.4；sdd.md §3.2/§6.1 AC-9]：TASK-01 用非规范 CR-X 调用却同时要求 recoverCommand 等于 crctl workspace inspect CR-X 和非规范输入回退 <CR-ID>，与 crIdForRecover 契约互斥；TASK-02 又要求成功结果中的 recoverCommand 不含 reason，但成功输出字段集明确没有 recoverCommand，SDD AC-9 也复述了同一矛盾。影响：验收向量无法同时通过，接口契约与完成标志不确定。修复：SDD 先把恢复串断言限定到失败结果，并分别定义规范 CR-ID 内插与非规范输入占位符两个向量；随后刷新 TASK-01/02 的预期值和断言。"
+  - "本轮新增：R-13 [sdd.md §6 FR-1① 目标段落原文 / §3.4-B / §6.1 AC-1① / §4.5；prd.md FR-1① 同句与 §1.5；plan.md §4.1 R-13、§8；tasks/TASK-04.md §3.1]：已审批 SDD 对 FR-1① 的落地文本自相矛盾——§6 FR-1① 的目标段落原文含「不得创建或读取 `_context.md` 等上下文副本」，而 §3.4-B 同一句要求「替换后两份文件均不出现 `_context.md`」、AC-1① 的可观测结果为「两份副本文件内 `_context.md` 命中 0」、§4.5 的 multica 计入集合（cr-prompts-revised/ 全文件）必须 0 命中，PRD §1.5 亦称「两份部署副本归零，无测试例外」。二者不可兼得：逐字复制该目标段落必然在这两份部署副本内留下该字面量，使 AC-1①/AC-2 及其机器判据（plan §6.2 cmd-04 断言文件内不含该字面量）不可达。本计划据此自选了「按可机械验收的一侧落地」（TASK-04 §3.1 规定的文本保留禁止语义但去掉文件名指称），未经任何授权，故 plan/TASK 的交付文本与 SDD §6 FR-1① 的目标段落原文不一致。影响：同一交付物存在两种互斥的已审批目标文本，实现唯一性不成立；若实施者按 FR-1① 逐字落地则 cmd-04 必红、AC-1①/AC-2 不成立（该段落经 owner 部署后即为生效的 Prompt 合同）。修复方向（上游，非 plan/TASK 可自决）：由 write-tech-design 在 SDD 内落地唯一口径——或把 §6 FR-1① 的目标段落原文改为不含文件名指称的禁用句（使其与 §3.4-B / AC-1① / §4.5 一致，本 plan/TASK 的文本即该口径的现成落地），或按 PRD §1.5 的语义口径重写 AC-1①/§4.5 的 multica 判定并同步 cmd-04 判据；无论哪条路都必须改 SDD 正文、重跑 review-tech-design 并重新人工审批，plan/TASK 侧不得自行改 SDD。"
 dimensions:
-  sdd-to-plan: "block：FR/AC 与交付映射齐全，但 U-1/U-2/U-3/U-5/U-6 及成功输出恢复串矛盾证明已审批 SDD 本身需修；U-4 的 dep-N 清单精度仍是非阻塞 carry-over，应按 owner 指令在同一上游修订周期落地，但不单独升级为 blocker。"
-  plan-to-tasks: "block：4 个 TASK 均被稳定表引用且 ids 与 _index.yml 双向一致，但证据命令转录、TASK-01 恢复值和 TASK-02 成功输出断言存在互斥要求。"
-  task-executability: "block：TASK-01/02 的验收值无法同时成立，且 TASK-02 明示 U-1 未闭环前不可执行。"
-  dependency-topology: "pass：_index.yml 无悬空、无环；TASK-02 依赖 TASK-01，TASK-04 依赖 01/02/03，TASK-03 独立，均与真实产出消费关系相容。"
-  interface-contracts: "block：reset 回滚错误码无产生点、commit 隔离前置缺失、规范/非规范 CR-ID 恢复向量互斥、成功输出被要求携带不存在的 recoverCommand。"
-  acceptance-verifiability: "block：cmd-06～cmd-10 路径语义不可直接执行，AC-12 全量运行未进入 canonical cmd-NN，基线 skip 正则也不是完整名精确排除。"
-  scope-and-simplicity: "pass：14 行文件白名单、scope_out/zero_diff/follow_up 被 plan/TASK 正确翻译；5 条既有基线红的根因没有被擅自扩进本 CR。"
-  risk-and-rollback: "block：RU1～RU4 与逆拓扑已定义，但 U-1 未决定回滚失败闭包，原子 reset 的最高风险仍无可执行唯一方案。"
-  reviewer-model: "OpenAI/gpt-5.6-sol"
-suggestions: []
+  sdd-to-plan: "block：FR-1～FR-11 与 AC-1～AC-12 在 plan/TASK 均有落点（§6.1 覆盖表 + §7 矩阵；TASK-01→FR-7/FR-8、TASK-02→FR-9、TASK-03→FR-1③④/FR-2、TASK-04→其余 7 个 FR），但 FR-1① 的目标段落原文与 AC-1①/§4.5 的落地判据互斥（见 blockers R-13），plan 自选一侧即构成对已审批设计的再裁决；其余 10 个 FR 未见此类偏离。"
+  plan-to-tasks: "pass：§6.1 交付覆盖表 11 个 in-scope FR 各出现一次、验收证据列均为 cmd-01～cmd-06 且与证据命令表双向唯一映射；tasks/_index.yml 的 id 集与覆盖表主责/关联 TASK 列双向一致（TASK-01～04 均被引用、无账本孤儿）；4 个 TASK 均回指 plan/FR/SDD。"
+  task-executability: "pass：4 个 TASK 均有目标/输入条件/涉及文件/实现要点/验收条件/完成标志，无 TBD；验收条件分别 7/9/6/8 条且均为可实测断言（命令、cwd、exit、关键断言行），W1/W2/W2b/W2c 的注入方式与断言面逐条给出。"
+  dependency-topology: "pass：TASK-02 depends-on TASK-01（消费 crIdForRecover）、TASK-04 depends-on 01/02/03（收口核对）、TASK-03 无依赖；无悬空、无环，与 plan §2 的产出/消费关系一致。"
+  interface-contracts: "pass：crIdForRecover 在 TASK-01 产出侧与 TASK-02 消费侧逐字同形（SDD §4.1.1 的语法判定与占位符回退，一处定义两处调用）；gate 错配错误体字段（BAD_ARGS 不变 + contractDrift 恒真 + recoverCommand）、reset 成功/失败字段集与 recoverCommand 出现面、单文件 write-set 与 durable-tx 仅改比较数值的边界、两条失败路径的审计字段，均与 SDD §3.1/§3.2/§3.3/§3.5 及 dep-3/5/7/8/26/27 一致。"
+  acceptance-verifiability: "pass：本轮逐条复核并现场复算——cmd-01 的 args 恰含 21 个 *.test.mjs（无重复、无遗漏，与 §6.3 枚举一一对应）且单元格与 JSON.stringify(args) 逐字相同；--test-skip-pattern 在真实测试名集合上恰好命中登记的 5 条（BR-1～BR-5，第 2 条的方括号已正确转义，不多不少）；cmd-02～cmd-06 同样可 JSON 往返逐字转录（脚本内零双引号、零反斜杠、零管道符）；SDD §6.2 三块锚点哈希现场复算等于表内值（块 1 833517ff…、块 2 dcd3b8e4…、插入段 ed1941…、两行替换块 fc247a12…、旧块 de2554c9…）；cmd-03 的 merge-fixture 可加载性在本机 Node v24.15.0 实测成立（require 成功且 git/runCrctl/sha256 均为函数）；预算 848.2+0.1+0.2+0.2+0.1+0.1 ≈ 849s ≤ write-test-report 节点 1200s（pipeline 实测 timeoutMinutes=20），各 timeoutSeconds 均 ≥ 实测时长。唯一例外：AC-1①/AC-2 的判据本身即 R-13 的冲突面。"
+  scope-and-simplicity: "pass：TASK 触及文件全部落在 PRD §1.3.1 的 14 行白名单内（tools 13 个 + multica 4 个），zero_diff 对象（rules.json、gates.json、yaml-subset.mjs、dir-graph.yaml、pipeline-templates/**、agents/_index.yml、两仓 agent-skill-matrix.yml、agent-import.mjs）不在任何 TASK 的写入面；未引入 SDD 未批准能力；TASK 粒度 1～2 天，且无流程控制 TASK（完成边界均为 developing 内可被 crctl task done 登记的事件）。"
+  risk-and-rollback: "pass：RU1～RU4 逆拓扑回滚单元与 R-01～R-12 覆盖高风险改动（reset 原子性与提交隔离、durable-tx 前置条件放宽、夹具迁移、例外锚定、证据预算），各有验证向量（W1/W2/W2b/W2c、cmd-NN）与回滚映射；R-13 已登记冲突两侧原文并在 §8 交本轮裁决，其修复权不在 plan/TASK（路由见 blockers）。"
+  reviewer-model: "deepseek/deepseek-flash（pi runner，reasoning=max）"
+suggestions:
+  - "已解决：B-01 [sdd.md §4.2.1 步骤 12/13、§4.2.2 W2b/W2c；plan.md §2/§4.0/§8；tasks/TASK-02.md §3.2～§3.4/§4.2～§4.5]：步骤 13 的回滚失败码已有唯一产生点——恢复链在本地 try 内直接调用 abortLedgerTransaction / syncLedgerIndex / clean 复核，内部 TX_* 由本地 catch 收敛为 REVIEW_LOOP_RESET_COMMIT_ROLLBACK_FAILED（W2c 为可验向量）；步骤 12 的提交隔离前置（unstaged 空 + staged 恰为 write-set）与 W2b 向量已在 TASK-02 落实，TASK-02 不再需要自行补实现手段。"
+  - "已解决：B-02 [sdd.md dep-14、§6.1 AC-12、§6.3、§6.4；plan.md §5.3、§6.2 cmd-01；tasks/TASK-02.md §3.7]：既有 reset 成功路径用例迁移到 makeGitWorkspace 且断言逐字不变已写入 dep-14 与 TASK-02；AC-12 改为「21 个文件全部真实执行 + 失败集合恰等于登记的 5 条基线红」，例外只用 5 条完整测试名的锚定交替（本轮实测恰好命中 5 条），该口径经 owner 选项 A 授权并已随架构人工审批签核。"
+  - "已解决：B-03 [sdd.md §6.2、§3.4-B；plan.md §6.2 cmd-04；tasks/TASK-04.md §3.3/§4.2]：三节目标文本、替换边界与逐块 sha256 已固化在 SDD §6.2（含块 3 的两行替换块），cmd-04 按边界提取 + LF 归一 + 去尾换行做哈希比对并断言旧块不单独出现；本评审现场复算三块与旧块哈希全部等于 SDD 表内值。"
+  - "已解决：B-04 [sdd.md §4.6.1；plan.md §6.2 及其 args 列口径注、§6.3]：六条证据命令按「repo = 验收对象仓、cwd 相对且不越界、跨仓脚本用绝对正斜杠路径、被读仓 revision 由同表另一条命令绑定」重做；脚本内零双引号、零反斜杠、零管道符，JSON 往返逐字一致；cmd-03/cmd-05 绑 tools、cmd-04/cmd-06 绑 multica；六条已按 spawnSync(executable,args,{cwd,shell:false}) 干跑并记录预期失败面。"
+  - "已解决：B-05 [sdd.md §4.6.2；plan.md §5.3/§5.4、§6.2/§6.2.2；tasks/TASK-02.md §4.9、TASK-04.md §4.7]：21 个 *.test.mjs 全部纳入单条 cmd-01（本轮复核：恰 21 个、无重不漏、与 §6.3 枚举一致），merge-fixture.mjs 由 cmd-03 显式处置；例外改为锚定完整测试名（本轮实测恰好 5 条且全部报红）；预算 849s ≤ 1200s。"
+  - "已解决：B-06 [sdd.md §3.2 recoverCommand 出现面行、§6.1 AC-7/AC-9③；tasks/TASK-01.md §4.1/§4.2、TASK-02.md §4.6]：恢复串只对失败结果断言，成功结果字段集不变且不含 recoverCommand；规范 CR-ID 内插与非规范回退占位符两个向量在 TASK-01/TASK-02 中分别断言，--reason 位置恒为占位符。"
 review-loop:
   current-attempt: 0
-subject-sha256: 29d669ef4ea55e4f4788f247f5783eddc40676ecc56358888035a1b213272b32
+subject-sha256: 8dbb02d10efae470beea29476647ec93771b9d1149052856674d401416279e9f
