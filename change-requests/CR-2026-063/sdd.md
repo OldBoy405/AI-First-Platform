@@ -614,7 +614,7 @@ Get-ChildItem -Path (Join-Path $repo 'skills\shared\crctl\scripts\test') -Recurs
 | AC-9 | FR-9 | §4.2 时序 + §3.2 契约 + `test/crctl.test.mjs` 新用例 | ①成功路径：变更已提交（提交只含该文件、消息含 `[cr] ` 与 tx trailer）、`git status --porcelain` 为空；②W2 窗口：失败返回 + 文件/index 回到执行前 + 审计已写；W2b 窗口（执行前已有 staged 变更）：不 commit、不夹带，按 §4.2.2 得到 `..._ROLLBACK_FAILED`；**W2c 窗口（恢复链自身失败：`pre-commit` hook 写第三值后 `exit 1`）**：`abortLedgerTransaction` 抛 `TX_RECOVERY_CONFLICT`（TxError）⇒ 本地 catch 映射 `..._ROLLBACK_FAILED`（`affected:[rel]`）+ 审计，**不得**以 `TX_RECOVERY_CONFLICT` 退出；W1 窗口：下次同命令按 journal 还原后干净执行一次；③恢复串断言**只以失败结果为对象**：`REVIEW_LOOP_RESET_COMMIT_FAILED` 的 `error.recoverCommand` 不含 `reason` 用户文本，且两个向量分开断言（规范 CR-ID 内插 / 非规范输入回退 `<CR-ID>`）；**成功结果不含 `recoverCommand`，不作恢复串断言**（§3.2 出现面行）；④三条既有拒绝行为不变；⑤cycle+1、attempt=0、attempts 保留；⑥`writes.length===1` 被接受、空集仍 `TX_WRITESET_INVALID`、4 个既有调用点事务测试全绿 | ①②③⑤需要 git 仓夹具（既有 `makeGitWorkspace`/hook 先例，dep-13/dep-14）；⑤的既有用例 `crctl.test.mjs:3430` 现用非 git 的 `makeWorkspace()`，**必须**迁到 `makeGitWorkspace()` 且断言逐字不变（dep-14）；⑥只需 `durable-tx.test.mjs` + 既有事务测试；W1/W3 由既有 fault point 驱动（dep-9），W2b 由同一 git 夹具的预置 staged 变更驱动，W2c 由同一 git 夹具的 `pre-commit` hook（写第三值 + `exit 1`）驱动，均无新增注册项 |
 | AC-10 | FR-10 | 5 处文档补写 | 5 处均出现"单行标量"边界说明（含"不得使用多行引号标量或折叠块"）；`lib/yaml-subset.mjs` 零 diff；示例结构未变 | 5 处为独立文档位置；lint R1~R13 不因这些补充文本产生新 finding（补充文本为约束说明，不含 guard-deny 路径 + 写动词组合，不含状态机副本） |
 | AC-11 | FR-11 | 交付 diff 与 §9 `zero_diff` | diff 中无新增 SLO/M1–M8/P50–P90/计数门禁/账本字段/评审维度/Pipeline 节点；无 `crProcessCachePath`；`rules.json` 零 diff；`multica/aifirst/agent-import.mjs` 零 diff；multica 侧除 4 个文件外无其它改动 | `zero_diff` 项不进入任何 TASK 写入面，核对方式为 `git diff --name-only` 白名单比对 |
-| AC-12 | 全部 | 全部既有测试文件（§6.3 的基线红例外登记，依赖事实见 dep-29）+ 本 CR 新增/修订用例 | ①`tools/skills/shared/crctl/scripts/test/` 下**全部** `*.test.mjs`（本轮枚举为 21 个，逐文件清单与计数见 §6.3）在改动后被真实执行，失败集合**恰等于** §6.3 登记的 5 条基线红（不多不少；**不得新增任何红**，也不得靠 skip/删测试制造假绿）——该口径相对 PRD AC-12/NFR-1 原文的差异属**需 owner 显式授权的目标放宽**，决策项见 **§6.4**；②全部文件按 §4.6 的**无重不漏分区**纳入 canonical cmd-NN（每条带 `sourceRevision` 与 `test-evidence/cmd-NN.log` 绑定），例外仅以锚定完整测试名的模式排除，`skipped=true` 不接受为通过；③multica 被改文件结构完好（Markdown 表格/frontmatter 完整） | 新用例与既有用例共享同一 runner；`durable-tx.mjs` 的放宽对 4 个既有调用点零行为差异（§3.3）；§6.3 的 5 条红在未改动基线上已逐条复现，与本 CR 改动面无关（全部落在 `zero_diff` 对象上）；口径授权与否不改变①的**可观测性**（同样可机械核对），只决定它是否是“验收通过”的成立条件 |
+| AC-12 | 全部 | 全部既有测试文件（§6.3 的基线红例外登记，依赖事实见 dep-29）+ 本 CR 新增/修订用例 | ①`tools/skills/shared/crctl/scripts/test/` 下**全部** `*.test.mjs`（本轮枚举为 21 个，逐文件清单与计数见 §6.3）在改动后被真实执行，失败集合**恰等于** §6.3 登记的 5 条基线红（不多不少；**不得新增任何红**，也不得靠 skip/删测试制造假绿）——该口径相对 PRD AC-12/NFR-1 原文的差异属**已由 owner 显式授权的目标放宽**（选项 A，授权记录见 **§6.4**）；②全部文件按 §4.6 的**无重不漏分区**纳入 canonical cmd-NN（每条带 `sourceRevision` 与 `test-evidence/cmd-NN.log` 绑定），例外仅以锚定完整测试名的模式排除，`skipped=true` 不接受为通过；③multica 被改文件结构完好（Markdown 表格/frontmatter 完整） | 新用例与既有用例共享同一 runner；`durable-tx.mjs` 的放宽对 4 个既有调用点零行为差异（§3.3）；§6.3 的 5 条红在未改动基线上已逐条复现，与本 CR 改动面无关（全部落在 `zero_diff` 对象上）；①的**可观测性**（同样可机械核对）与「验收通过」的成立条件均由 §6.4 授权记录的唯一口径确定，本 CR 不再有第二种通过定义 |
 
 **AC 反查结论**：逐条从 AC 回查正文——每条 AC 的设计落点均在 §1–§5 有对应设计（AC-1/2→§4.5、AC-3/5/6/10→§6 各行、AC-7→§3.1+§4.1、AC-8→§4.3、AC-9→§3.2+§4.2、AC-11→§9、AC-12→§4.6+§6.3）；无"设计落点缺失"、无"与 PRD 契约冲突"、无"结果不可观察"；关键前置（TTY 门槛、耗尽门槛、healthy workspace、CR-ID 语法判定）均不会过滤掉 AC 目标对象——其中 TTY 与耗尽门槛是 AC-9④ 的**被验对象**而非阻碍，CR-ID 语法判定的非常规分支正是 AC-7 的第二个向量。
 
@@ -696,25 +696,37 @@ workspace-resolver.test.mjs    writeback-tx.test.mjs          yaml-subset.test.m
 
 **判定规则（冻结，fail-closed）**：
 
-- AC-12 判据 = 「上表 21 个文件全部被 canonical `cmd-NN` 真实执行；失败集合**恰等于**上表 5 条（既不多也不少）；不得新增红」（实现 PRD §6 成功指标“既有测试回归数 = 0”的可复核口径）。该口径**尚未获得需求契约层面的明确授权**——其与 PRD NFR-1/AC-12 “全量既有测试通过”的差异及 owner 决策项见 **§6.4**；owner 选选项 B 时按 §6.4 的归属处理，本 SDD 不自行放宽 PRD 目标。
+- AC-12 判据 = 「上表 21 个文件全部被 canonical `cmd-NN` 真实执行；失败集合**恰等于**上表 5 条（既不多也不少）；不得新增红」（实现 PRD §6 成功指标“既有测试回归数 = 0”的可复核口径）。该口径相对 PRD NFR-1/AC-12 “全量既有测试通过”的差异属**已由 owner 显式授权的目标放宽（选项 A）**——裁决人、裁决时间、权威评论与授权范围见 **§6.4 授权记录**；本 SDD 只承接该已授权口径，不再保留第二种通过定义。
 - 例外模式 = 上表 5 个**完整测试名**（正则元字符转义）的锚定交替 `^(?:名字1|…)$`；禁用未锚定片段（片段会连带静默跳过名字包含该片段的新用例）。拼写失效 → 该用例真跑 → 红 → exit 1（fail-closed），**不产生假绿**。
 - 任一命令 `skipped=true` 不接受为通过（全套命令统一 `--test-reporter=dot`）。
 - 单跑 857 s 是**全集**一次运行的上限依据；§4.6.2 的无重不漏分区必须让「全集 + lint + 断言类命令」总时长落在 `write-test-report` 节点 20 min 预算内。
 - BR-1/BR-5 的根因修复属 CR-2026-060 §5.3 的 follow_up，本 CR 不修（不扩大 `scope_out`）；BR-2/BR-3/BR-4 各自的对象均在 `zero_diff` 或 `scope_out` 面（逐条归属见 §9 `follow_up` 第 6 条与 dep-29）。本表 5 条与 AC-12 口径的授权关系见 §6.4。
 
-## 6.4 AC-12 口径冲突与 owner 授权项（人工审批的显式决策，不得默认）
+## 6.4 AC-12 口径授权记录（owner 显式授权 **选项 A**，已闭环）
+
+**授权记录（本 CR AC-12 的唯一有效口径）**
+
+| 项 | 值 |
+|---|---|
+| 裁决人 | `Ray`（需求 owner，本 CR `owners.requirement`） |
+| 裁决 | **选项 A**（授权例外口径） |
+| 裁决时间 | `2026-09-11T13:13:00Z`（本地 `2026-09-11T21:13:00+08:00`） |
+| 权威评论 | `01a09099-97cf-7b5c-887e-4a8a369fa80e`（Issue AIFI-24 线程；由 `cr-coordinator-agent` 以正式 mention 转派并留档于 `01a0909a-9764-7778-8ee2-078f92bbbc94`） |
+| 授权范围 | AC-12 = 「21 个文件全部被真实执行；**失败集合恰等于**改动前基线集合（BR-1~BR-5，逐条见 §6.3）；不得新增红，**也不得少**（skip / 删除 / 改名制造假绿即判不通过）」——即 PRD NFR-1/AC-12「`../tools` 全量既有测试通过」在本 CR 的落地口径；5 条红的根因修复留 `follow_up`（§9 第 6 条） |
+| 授权边界 | 只覆盖本 CR（`CR-2026-063`）的 AC-12 验收口径；**不改 `prd.md`**（审批绑定 `9247c107…`）、不改 PRD 其它条目、不扩大 `scope_in` |
+| 与人工 gate 的关系 | 下一步人工 gate `crctl approve --stage tech-design` 签的即包含本口径（PRD NFR-1/AC-12 在本 CR 由「失败集恰等于已登记 5 条基线红」落地）；授权决策项从此关闭，不再有第二种通过定义 |
 
 **PRD 目标契约（原文，本 SDD 不改动、不代签）**：NFR-1「`../tools` 全量既有测试（crctl、ledger/durable-tx、prompt lint、pipeline structure、contract-scan 等）保持通过」；AC-12「`../tools` 全量既有测试通过」。
 
 **基线事实（§6.3 表、dep-29，tools `ebdd6290…` 未改动工作区实测）**：全集 21 个 `*.test.mjs` 单跑 exit=1、857 s、失败标记恰好 5 个（BR-1~BR-5）。五条的根因对象分别落在本 CR §9 的 `zero_diff`（`pipeline-templates/**`、`dir-graph.yaml`、`write-requirement-prd/SKILL.md`）或 `scope_out`（`checkpoint`、`archive`）面；BR-1/BR-5 的根因修复已由 CR-2026-060 §5.3 登记为 follow_up。
 
-**冲突（必须由人裁决，不是实现细节）**：PRD 原文口径要求这 5 条也通过；而“让它们通过”的对象不在本 CR 的 `scope_in` 内（§9），二者不可同时成立。**本 SDD 既不擅自放宽 PRD 的验收目标，也不擅自扩大批准范围**——它把两条路都摆在这里，请 owner 在人工节点择一并显式记录。
+**冲突成因与本次解决（记录备查）**：PRD 原文口径要求这 5 条也通过；而“让它们通过”的对象不在本 CR 的 `scope_in` 内（§9），二者不可同时成立——这必须由人裁决，不是实现细节。该冲突已由上方授权记录以**选项 A** 解决：**本 SDD 既不擅自放宽 PRD 的验收目标，也不擅自扩大批准范围**，只在授权范围内原样承接唯一口径；未采纳的选项 B 记录见下。
 
-**本 SDD 请求授权的口径（选项 A，推荐）**：AC-12 = 「21 个文件全部被真实执行；**失败集合恰等于**改动前基线集合（BR-1~BR-5，逐条见 §6.3）；不得新增红，**也不得少**（skip / 删除 / 改名制造假绿即判不通过）」。比 PRD 原文更严的部分 = 枚举全集 + 无重不漏分区 + 锚定例外 + 失败集必须与基线逐条相等；比 PRD 原文更弱的唯一部分 = 接受 5 条既有基线红（不要求它们在本 CR 内转绿）。这就是 PRD §6 成功指标「既有测试回归数 = 0」的可复核落地。
+**被授权的口径（选项 A，= 本 SDD §6.1/§6.3 现行口径）**：AC-12 = 「21 个文件全部被真实执行；**失败集合恰等于**改动前基线集合（BR-1~BR-5，逐条见 §6.3）；不得新增红，**也不得少**（skip / 删除 / 改名制造假绿即判不通过）」。比 PRD 原文更严的部分 = 枚举全集 + 无重不漏分区 + 锚定例外 + 失败集必须与基线逐条相等；比 PRD 原文更弱的唯一部分 = 接受 5 条既有基线红（不要求它们在本 CR 内转绿）。这就是 PRD §6 成功指标「既有测试回归数 = 0」的可复核落地。
 
-**选项 B（不授权例外）**：AC-12 保持 PRD 原文（全绿）。此时必须在同一决策中给出 5 条基线红的处理归属，二者之一：①扩大 `scope_in` 到 `pipeline-templates/**`、`dir-graph.yaml`、`write-requirement-prd/SKILL.md`、`checkpoint`、`archive` 内核（等于把一个新 CR 的工作并入本 CR）；②把 AC-12 的交付责任改为“随 follow_up CR 转绿”，并在 `follow_up`（§9）中逐条登记 5 条的根因归属。在 owner 给出归属前，本 CR 不得进入开发启动（`approve-dev-start` 前置不成立）。
+**未采纳的选项 B（不授权例外，记录备查）**：AC-12 保持 PRD 原文（全绿），并须在同一决策中给出 5 条基线红的处理归属，二者之一：①扩大 `scope_in` 到 `pipeline-templates/**`、`dir-graph.yaml`、`write-requirement-prd/SKILL.md`、`checkpoint`、`archive` 内核（等于把一个新 CR 的工作并入本 CR）；②把 AC-12 的交付责任改为“随 follow_up CR 转绿”，并在 `follow_up`（§9）中逐条登记 5 条的根因归属。本次未采纳该选项，无需再指定归属，`approve-dev-start` 的前置不因该项受阻。
 
-**决策落点与状态机边界**：`change-request-track.state_machine` 中 `tech-designing` / `tech-design-review-pending` 的出边只有 `→ tech-design-review-pending`、`approve-tech-design:reject → tech-designing`（以及任意活动态 → `rejected`/`withdrawn`），**没有回到需求侧（`write-requirement-prd`）的转移**——唯一的 `write-tech-design:prd-blocker` 边挂在 `requirement-approved` 上，本 CR 首次 `write-tech-design` 进入时已经跨过。因此 PRD 级口径的确认点只能是：本节点的 owner 决策项，或人工 gate。`prd.md` 保持审批版本（`9247c107…`）不变；口径若获授权，其需求侧记录随回写期 `specs/` 累积文档与后续需求 CR 承载，**不在本 CR 内改 `prd.md`**。
+**决策落点与状态机边界**：`change-request-track.state_machine` 中 `tech-designing` / `tech-design-review-pending` 的出边只有 `→ tech-design-review-pending`、`approve-tech-design:reject → tech-designing`（以及任意活动态 → `rejected`/`withdrawn`），**没有回到需求侧（`write-requirement-prd`）的转移**——唯一的 `write-tech-design:prd-blocker` 边挂在 `requirement-approved` 上，本 CR 首次 `write-tech-design` 进入时已经跨过。因此 PRD 级口径的确认点只能是：本节点的 owner 决策项，或人工 gate——本 CR 已按前者取得显式授权（见上方授权记录），并将在人工 gate 一并签核。`prd.md` 保持审批版本（`9247c107…`）不变；该授权口径的需求侧记录随回写期 `specs/` 累积文档与后续需求 CR 承载，**不在本 CR 内改 `prd.md`**。
 
 # 7. 安全与性能考量
 
@@ -794,7 +806,7 @@ workspace-resolver.test.mjs    writeback-tx.test.mjs          yaml-subset.test.m
 4. CR-R：`recoverCommand`（`gate` 错配 + `reset` 失败）→ 结构化 `recovery` 的原子迁移，以及本 CR 新增的两个 `REVIEW_LOOP_RESET_COMMIT_*` 错误码的消费迁移，全部归 CR-R。
 5. 历史 CR 目录内的既有 `_context.md` 不迁移、不清洗（随 CR 自然归档）。
 6. **基线红 BR-2 / BR-3 / BR-4 的根因修复**：`checkpoint` 的 alignment reader 不读 `latest-checkpoint`（BR-2）；`dir-graph.yaml` 状态机声明数与既有断言口径（BR-3，测试断言 28 条声明、当前 31 条）；`write-requirement-prd/SKILL.md` Step 4 措辞（BR-4）。三者对象均在本 CR 的 `zero_diff` 或 `scope_out` 面，本 CR 不修（不扩大批准范围）；BR-1/BR-5 沿用 CR-2026-060 §5.3 的 follow_up。AC-12 的口径授权见 §6.4。
-7. **AC-12 口径的需求侧记录**：若 owner 在人工节点采纳 §6.4 选项 A（接受 5 条已登记基线红），该口径的需求侧记录随回写期 `specs/` 累积文档与后续需求 CR 承载；本 CR 内不改 `prd.md`（审批绑定 `9247c107…`），也不自行宣告该放宽已生效。
+7. **AC-12 口径的需求侧记录**：owner 已显式采纳 §6.4 选项 A（接受 5 条已登记基线红，授权记录见 §6.4），该口径的需求侧记录随回写期 `specs/` 累积文档与后续需求 CR 承载；本 CR 内不改 `prd.md`（审批绑定 `9247c107…`），需求侧口径以 §6.4 授权记录为唯一依据。
 
 # 10. 既有实现依赖与事实
 
@@ -1059,14 +1071,15 @@ SDD-CLOSE-12  「commit 只含 review-loop.yml」的保证手段（本轮 upstre
   覆盖层: 契约（§3.2 提交隔离前置行）→ 算法（§4.2.1 步骤 12）→ 窗口（W2b）→ 安全控制点（§7.1）→ 验收（AC-9①②）。
   状态: 已关闭
 
-SDD-CLOSE-13  AC-12 的可复核口径落地（本轮 upstream 回修 B-02/U-6、B-05；cycle 2 由评审 B-02 补强）
+SDD-CLOSE-13  AC-12 的可复核口径落地（本轮 upstream 回修 B-02/U-6、B-05；cycle 2 由评审 B-02 补强 + owner 授权闭环）
   关闭结论: AC-12 的**可复核判据** = 「全部 *.test.mjs（本轮枚举 21 个）被执行，失败集合恰等于 §6.3 登记的
             5 条基线红（不多也不少），不得新增红」；全量回归按 §4.6.2 做无重不漏分区纳入 canonical cmd-NN（每条带
             sourceRevision 与 cmd-NN.log 绑定）；例外仅以 5 条完整测试名的锚定模式排除，skipped=true 不作为通过；
             merge-fixture.mjs 需显式处置。基线红事实作为 dep-29 入§10（repo/path/测试名逐字/失败结论/SHA）。
-            该口径相对 PRD AC-12/NFR-1 原文属目标放宽，其**授权不由 SDD 自行完成**，已作为 owner 决策项写入 §6.4。
-  覆盖层: 契约（§4.6）→ 登记（§6.3）→ 依赖事实（dep-29）→ 授权决策项（§6.4）→ 验收（AC-12）→ 预算（§7.2）。
-  状态: 已关闭（口径落地完成；其授权属人工节点决策项，见 §6.4）
+            该口径相对 PRD AC-12/NFR-1 原文属目标放宽，其**授权不由 SDD 自行完成**，已由 owner 显式给出（选项 A；裁决人 Ray /
+            权威评论 01a09099-97cf-7b5c-887e-4a8a369fa80e），授权记录见 §6.4；复评与人工 gate 均按该唯一口径。
+  覆盖层: 契约（§4.6）→ 登记（§6.3）→ 依赖事实（dep-29）→ 授权记录（§6.4）→ 验收（AC-12）→ 预算（§7.2）。
+  状态: 已关闭（口径落地完成；owner 授权已闭环，见 §6.4 授权记录）
 
 SDD-CLOSE-14  FR-5 目标文本的仓内权威锚点（本轮 upstream 回修 B-03/S-5；cycle 2 由评审 B-03 补强）
   关闭结论: 三节目标文本逐字固化于 §6.2（含替换边界、LF 归一口径、逐块 sha256、来源文件 SHA256 与字节数）；
