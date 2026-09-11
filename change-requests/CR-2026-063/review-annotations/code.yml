@@ -1,0 +1,43 @@
+cr-id: CR-2026-063
+review-type: code
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-12T01:56:09+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  代码↔TASK↔SDD对齐: "pass：四个 TASK 的验收条件逐条在现场实现与测试中找到对应落点（非转述）。TASK-01 —— cmdGate 的 --mode pre-review 错配分支为原 fail 调用补 contractDrift 恒真常量与 recoverCommand（`crctl workspace inspect ` + crIdForRecover(cr)），message 与 SDD §3.1 原文逐字一致；crIdForRecover 一处定义两处调用、正则 `^CR-\d{4}-\d{3,}$` 与 §4.1.1 逐字一致；--for requirement-reviewing 正常序列与输出未动。TASK-02 —— cmdReviewLoopReset 改 async 后按 §4.2.1 步骤 1–14 逐条落地（残留恢复先于状态判断、expectedHash 取未归一原文 sha256、单文件 write-set、git add -A 单路径、步骤 12 提交隔离断言 isolated=false 时不 commit、步骤 13 本地 try/catch 直接 await abortLedgerTransaction 与直接调用 syncLedgerIndex、审计先于 fail、步骤 14 injectLedgerFault+finish）；成功输出字段集不含 recoverCommand；失败 extra 分别为 {changed:false, rolled_back:true, recoverCommand} 与 {affected:[rel]}，与 §3.2 表逐格一致。lib/durable-tx.mjs 仅把 writes.length < 2 放宽为 < 1 并同步该前置条件的错误文案（不更新文案会与新前置条件自相矛盾；导出面、journal/manifest、recover/abort/finish 语义、FAULT_POINTS 零改动）；本轮已读全 4 个既有调用点（approve 2 条、owner-set 2 条、version-set cr.md+backlog 起步、review-record annotation+traceability 起步），全部恒 ≥2 文件，故放宽对既有调用点零行为差异，边界值单文件被接受、空集仍被本前置条件与 applyWriteSet 双重拒绝。TASK-03 —— post-review allowed 集合的 `_context.md` 条目与其上方注释一并删除，判定算法未动、未新增 crProcessCachePath、未放宽 classifyRepoWorkspace。TASK-04 —— tools agents/dev-agent.md 委派合同节六条要求与三条既有内容齐备；5 处 SKILL 的 YAML 子集边界说明原位补写；multica 侧 4 文件（两份副本段落、coordinator 三节、CUSTOM.md#75 单元格）与 SDD §6.2 锚点逐字一致。"
+  工程质量: "pass：全量回归实测 556 pass / 0 fail（cmd-01 日志 dot 串 = 556 个 `.`、零 `X` 失败标记、exit 0、stderr 空）；cmd-02~cmd-06 全部 exit 0 且 skipped=false。错误闭包按 SDD §3.5 收敛到 op-scoped 码：W2c 用例断言 stderr 不出现 TX_（恢复链不经 runTxAsync 的可验向量），成功路径无 recoverCommand、失败路径有；read-only gate 错配路径由 treeHashes 前后相等断言证明零写入。新增 8 条用例覆盖触发路径、四个崩溃窗口与边界值，无 skip／删测试制造假绿。"
+  关键路径可读性: "pass：cmdReviewLoopReset 在恢复链与提交隔离前置处写明了设计约束（为何禁止经 runTxAsync、为何 isolated=false 不 commit），关键失败路径有唯一产生点注释；crIdForRecover 有独立注释说明语法判定与占位符回退理由；lint-prompts.mjs 新子判据带 why 文本与 file:line 锚点，说明用 \bgate\b 而非字面相邻的原因。核心逻辑与既有 owner-set／version-set 同族同形，可对照阅读。"
+  安全性: "pass：reset 的交互式 TTY 人类在环硬检查与三条既有拒绝（NOT_TTY／缺参 BAD_ARGS／LOOP_NOT_EXHAUSTED）行为不变、无旁路参数或环境变量；恢复串由语法校验后的 CR-ID、gates.json 闭合枚举的 loopRef 与占位符 <reason> 组装，--reason 用户文本实测零命中（W2 向量②断言）；提交隔离前置保证执行前已存在的 staged／unstaged 变更既不被夹带进 commit 也不被本命令回滚改写（W2b 实测：HEAD 不变、无关 staged 保持原样）。未新增权限面、未改 rules.json 白名单三元组、未新增网络或状态推进副作用。"
+  测试覆盖: "pass：AC-7 双向量 + 零写入（treeHashes）、AC-8 正负向量 + 无 R14、AC-9①⑤（提交事实与字段集）、AC-9②W1/W2/W2b/W2c 四窗口、AC-9④ 三条既有拒绝、AC-9⑥ 单文件 write-set 接受与空集双重拒绝、AC-1④ 三向拒绝（新增／修改／_context2.md）、AC-4 反向验收与 AC-11 白名单核对，均有可复核的机器断言。既有 CR-2026-049 reset 用例夹具迁移为 makeGitWorkspace() 后断言与语义逐字不变（本轮读 diff 确认仅夹具与新增断言变化，旧断言未改）。"
+  测试证据可信度: "pass：test-report.md 机器区由 crctl-test 生成、status=pass、command-digest=841bb486d23b55c0fefd9d1f0f0838d2bc9548278f40539688889b6fa1675f7e —— 本轮以 canonicalCommandSubject 对盘上 .crctl/tmp/test-plan.json 独立复算得到同一值，且与 plan.md 冻结值逐字相等，证明 6 条命令确系从 §6.2 证据表转录；traceability.yml#tests 的 status/command-digest 与报告一致；cmd-01…cmd-06 日志齐备且各自 echo 的命令与机器区 repo／cwd／timeout／args 一致；cmd-01 的 --test-skip-pattern 五个锚定分支与 SDD §6.3 登记的 5 条基线红测试名逐字相等（含 BR-2 的 [] 转义）、模式为 ^(?:...)$ 锚定交替且 skip 后实测 0 红（fail-closed）；无任一命令 skipped=true。"
+  前端质量: "pass（不适用）：本轮 diff 未触及 *.tsx／*.vue／*.css／*.html，三项检查（a11y 对比度、loading/empty/error 状态、构建体积）不触发。"
+suggestions:
+  - "范围外：sdd.md §10 的辅助行号漂移（dep-3 / dep-6 / dep-15）沿用 review-tech-design / review-dev-plan 的登记与协调者裁定——SDD 正文已被人工 gate 绑定（approval.yml#tech-design 的 evidence-digest = c05a6c02…），不为辅助行号改写正文、不作废重签；本轮未动、不重新判定、不改变本轮 passCondition，留作后续 SDD 修订顺手收口。"
+review-loop:
+  current-attempt: 1
+release-subjects:
+  version: 1
+  repositories:
+    - repo: ai-first-platform-docs
+      remote-ref: refs/heads/requirement/CR-2026-063
+      reviewed-source-sha: 89391b0fbfa70b9a5aae11d9e680e0b8b7546297
+    - repo: multica
+      remote-ref: refs/heads/requirement/CR-2026-063
+      reviewed-source-sha: d965ade50a52aed1fe4ed243016f99d4a182fa0b
+    - repo: tools
+      remote-ref: refs/heads/requirement/CR-2026-063
+      reviewed-source-sha: dca106cc5ab191caaf5ff3f1cd175d9d72dafc51
+  artifacts:
+    algorithm: sha256
+    canonicalization: crlf-to-lf+path-sort
+    files:
+      - { path: change-requests/CR-2026-063/plan.md, sha256: b5c54c05724c33e3abf960cb91ea396ba4da4ab82a0b715343f1c5af6b281863 }
+      - { path: change-requests/CR-2026-063/prd.md, sha256: 9247c107b1f87b72a5ee4ec5750f2f1da8be784aed04d23f47bb8d153eabda70 }
+      - { path: change-requests/CR-2026-063/sdd.md, sha256: e1d44437202ed7aee59655e75df61ed798c1abffb70a9be66076a0fc3977525b }
+      - { path: change-requests/CR-2026-063/tasks/TASK-01.md, sha256: b9733a839c2581d37a259649e007d150c79935e80dd77da83144fb0dda0f66ce }
+      - { path: change-requests/CR-2026-063/tasks/TASK-02.md, sha256: 4b101ef16a7450e8344c4fc3e6548c52fd378f9bf6ea540a80b42b8f215298cd }
+      - { path: change-requests/CR-2026-063/tasks/TASK-03.md, sha256: 55bc94deed25144ae29d485387811f05b7064d363e3778447fffb998357d8b42 }
+      - { path: change-requests/CR-2026-063/tasks/TASK-04.md, sha256: 8701c036fd5d43744c0824a3d97ae0a730c0cd04f8ff8e40162276a0d777c88a }
+      - { path: change-requests/CR-2026-063/tasks/_index.yml, sha256: 1e847dc4ffe1c86aaf8eec0fce32fc10f97ce36c59868631e8734eb96595729e }
+    digest: 5f9313879abc38f2d5e81b86a7068ea60eb0aa60224f34d175706ff23076a004
