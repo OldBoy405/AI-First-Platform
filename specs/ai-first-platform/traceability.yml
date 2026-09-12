@@ -1,10 +1,10 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 spec-id: ai-first-platform
-cr-ref: CR-2026-062
-cr-history: [CR-2026-060, CR-2026-059, CR-2026-061, CR-2026-062]
-target-version: "0.35"
+cr-ref: CR-2026-063
+cr-history: [CR-2026-060, CR-2026-059, CR-2026-061, CR-2026-062, CR-2026-063]
+target-version: "0.36"
 baseline-since: "0.33"
-generated-at: "2026-09-10T12:05:18+08:00"
+generated-at: "2026-09-12T08:45:52+08:00"
 
 milestones:
   - cr: CR-2026-060
@@ -397,3 +397,95 @@ milestones:
         code: { verdict: pass, path: change-requests/CR-2026-062/review-annotations/code.yml, sha256: f862b645ffbedeab091f990fca6d859f48b3e120840500b9c99b6de4caf5a22d }
       approval: { status: approved, path: change-requests/CR-2026-062/approval.yml, sha256: 62338df88e4ddfe075ac366d7a3d6883527f7670cdd8eebbdf13ec2622dc442d }
       merge: { status: merged, path: change-requests/CR-2026-062/merge-commits.yml, sha256: 934b3fa708bd54a2eaca362060e638a379e81ad2836847b2a00f95ecc9596dca }
+  - cr: CR-2026-063
+    milestone: 0.36
+    target-version: "0.36"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: a1b375c2c86cb0fd79871cc4cb566b140e87a5ca
+        branch: requirement/CR-2026-063
+      - repo: multica
+        trunk: main
+        sha: ab9609483d17db12117cb8e9adb2d896f413917d
+        branch: requirement/CR-2026-063
+      - repo: tools
+        trunk: main
+        sha: dddd0ad63fb79bd7608314b4553f30e8ce7b7289
+        branch: requirement/CR-2026-063
+    frs:
+      - fr: FR-1
+        title: `_context.md` 活跃合同退役（AC-1①②③④）
+        sdd: §6 FR-1 四行（① multica `dev-agent.md` 整段替换；② multica `quality-reviewer-agent.md` 首段改写；③ `workspace-transactions.mjs` post-review `allowed` 删条目+注释；④ `crctl.test.mjs` 既有白名单测试原位改为退役合同测试）+ §4.4 漂移判定 + dep-10/dep-12/dep-22
+        tasks: [CR-2026-063-TASK-03, CR-2026-063-TASK-04]
+        code: [ai-first-platform-docs@a1b375c2c86c, multica@ab9609483d17, tools@dddd0ad63fb7]
+        evidence: [cmd-04, cmd-03, cmd-01]
+      - fr: FR-2
+        title: 活跃引用全量核对（AC-2）
+        sdd: §6 FR-2 + §4.5 检索算法（计入/排除集合、检索命令、命中清单；不做语义机械化）
+        tasks: [CR-2026-063-TASK-03, CR-2026-063-TASK-04]
+        code: [ai-first-platform-docs@a1b375c2c86c, multica@ab9609483d17, tools@dddd0ad63fb7]
+        evidence: [cmd-03, cmd-04]
+      - fr: FR-3
+        title: Prompt 事实源归位（`CUSTOM.md#75`）（AC-3）
+        sdd: §6 FR-3（第 3 列单元格原位重写、五要素齐备；表结构不变、不新增行）
+        tasks: [CR-2026-063-TASK-04]
+        code: [ai-first-platform-docs@a1b375c2c86c, multica@ab9609483d17, tools@dddd0ad63fb7]
+        evidence: [cmd-04, cmd-06]
+      - fr: FR-4
+        title: 矩阵与索引零改动（AC-4）
+        sdd: §6 FR-4 + §9 `zero_diff`（`agents/_index.yml` 仍 9 agent、`agent-skill-matrix.yml` 保留 `cr-coordinator-agent` system actor、multica 矩阵零改动）
+        tasks: [CR-2026-063-TASK-04]
+        code: [ai-first-platform-docs@a1b375c2c86c, multica@ab9609483d17, tools@dddd0ad63fb7]
+        evidence: [cmd-01, cmd-03, cmd-06]
+      - fr: FR-5
+        title: coordinator overlay 三节原位替换（AC-5）
+        sdd: §6 FR-5（三处按 SDD §6.2 逐字替换；保留四节 + frontmatter；不整文件重写、不追加第五节）
+        tasks: [CR-2026-063-TASK-04]
+        code: [ai-first-platform-docs@a1b375c2c86c, multica@ab9609483d17, tools@dddd0ad63fb7]
+        evidence: [cmd-04, cmd-06]
+      - fr: FR-6
+        title: 公共 dev-agent 委派合同（AC-6）
+        sdd: §6 FR-6（六条要求齐备；保留三条既有内容；不新增 R14 或等价委派 lint；文本纪律）
+        tasks: [CR-2026-063-TASK-04]
+        code: [ai-first-platform-docs@a1b375c2c86c, multica@ab9609483d17, tools@dddd0ad63fb7]
+        evidence: [cmd-03, cmd-02]
+      - fr: FR-7
+        title: `gate --mode pre-review` 错配可操作化（AC-7）
+        sdd: §3.1 错误体契约 + §3.1.1 `contractDrift` 定位 + §4.1.1 `crIdForRecover` 取值算法 + §4.1.2 判定树 + dep-1/dep-6/dep-27
+        tasks: [CR-2026-063-TASK-01]
+        code: [ai-first-platform-docs@a1b375c2c86c, multica@ab9609483d17, tools@dddd0ad63fb7]
+        evidence: [cmd-01]
+      - fr: FR-8
+        title: 版本化 Prompt 的配对 lint（AC-8）
+        sdd: §3.4-A 判定契约 + §4.3 算法（R7 段内新增子判据、不新增规则编号、豁免机制不变）
+        tasks: [CR-2026-063-TASK-01]
+        code: [ai-first-platform-docs@a1b375c2c86c, multica@ab9609483d17, tools@dddd0ad63fb7]
+        evidence: [cmd-01, cmd-02]
+      - fr: FR-9
+        title: `review-loop reset` 原子提交（AC-9①–⑥）
+        sdd: §3.2 命令契约 + §3.3 write-set 前置条件 + §4.2.1 时序（步骤 12 提交隔离 / 步骤 13 恢复链）+ §4.2.2 真值表（W1/W2/W2b/W2c）+ dep-2/dep-3/dep-8/dep-9/dep-13/dep-14/dep-26
+        tasks: [CR-2026-063-TASK-02]
+        code: [ai-first-platform-docs@a1b375c2c86c, multica@ab9609483d17, tools@dddd0ad63fb7]
+        evidence: [cmd-01]
+      - fr: FR-10
+        title: `review-record` payload 的 YAML 子集边界（AC-10）
+        sdd: §6 FR-10（5 处原位补写：`crctl/SKILL.md` + 4 份 review SKILL；`yaml-subset.mjs` 零改动；示例结构不变）
+        tasks: [CR-2026-063-TASK-04]
+        code: [ai-first-platform-docs@a1b375c2c86c, multica@ab9609483d17, tools@dddd0ad63fb7]
+        evidence: [cmd-03, cmd-02]
+      - fr: FR-11
+        title: 零新增与不修改边界（AC-11）
+        sdd: §6 FR-11 + §9 `scope_in`/`scope_out`/`zero_diff`
+        tasks: [CR-2026-063-TASK-04]
+        code: [ai-first-platform-docs@a1b375c2c86c, multica@ab9609483d17, tools@dddd0ad63fb7]
+        evidence: [cmd-03, cmd-04, cmd-05, cmd-06]
+    evidence:
+      test: { status: pass, path: change-requests/CR-2026-063/test-report.md, sha256: 5918762d23dbc4274b8a6c97110de6d2ec2725b9559574f2c7d0f03bc536fbd3 }
+      reviews:
+        requirement: { verdict: pass, path: change-requests/CR-2026-063/review-annotations/requirement.yml, sha256: 4865236c8b695756174deb3eaaa78c12a0df7257b40333c2aefa19e890cc1ddc }
+        tech-design: { verdict: pass, path: change-requests/CR-2026-063/review-annotations/sdd.yml, sha256: f0df1493d5eba506225288f4865c919c7ea25793d89ac3610ac747ce4d5da0a4 }
+        dev-plan: { verdict: pass, path: change-requests/CR-2026-063/review-annotations/dev-plan.yml, sha256: 10e52b50f8752137a31207458d4d56671b23c855919a5f15fe14395f82ba9f8c }
+        code: { verdict: pass, path: change-requests/CR-2026-063/review-annotations/code.yml, sha256: 36b289aab2baa930b46de5cf61229c5efe45396170f4a42270e80b770e7f1546 }
+      approval: { status: approved, path: change-requests/CR-2026-063/approval.yml, sha256: 060503cd68b62350594362c4824171f4dc5d9e630bac3cc8602ce4d7ba08e54d }
+      merge: { status: merged, path: change-requests/CR-2026-063/merge-commits.yml, sha256: 652e42ff57b0b545373ee7d282b3e44e72f20e3b2f4bfce17faa6354dfbe60d2 }
