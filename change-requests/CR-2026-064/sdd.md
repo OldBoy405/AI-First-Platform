@@ -604,7 +604,7 @@ PRD 显式延后到 SDD 的设计项逐项关闭（覆盖数据生产、存储/�
    依赖结论: 这些函数是全部恢复动作的生产者，其返回结构与 `extra` 字段名即本 CR 的迁移对象；`buildRecovery` 落在本文件内（D-3），因此本文件同时是唯一构造器的宿主。局部名 `checkpointRecoverCommand` 是站点 4（merge publication lag → `checkpoint`）的既有承载点：大小写敏感的退役名扫描对它零命中（不属退役名、不计入本盘点），但 `~L1570` / `~L1573` 两处 `extra.recoverCommand` 在本 CR 内同批改为 `extra.recovery`，该局部值随之由 shell string 改为 `buildRecovery(...)` 产出的结构化对象，旧名与旧串均不保留（§4.3 `mergeCr` 行同址）。
 2. repo: `tools`
    relative path: `skills/shared/crctl/scripts/crctl.mjs`
-   stable symbol/对象: `crIdForRecover`（`~L963`）、`cmdGate` pre-review 错配分支（`~L974`）、`cmdReviewLoopReset` 提交失败分支（`~L1906`）、`buildRegisterResult`（`~L2753`）、`cmdRegister` 输出对象双投影（`~L3304`）；同一文件内 `cmdReviewLoopReset` 的 `NOT_TTY` 前置校验（`~L1840`）与 `fail/ok` 输出契约（`~L31`/`~L35`）；`canonicalEvidenceDigest`（`~L87`）把 `test/fixtures/digest-vectors/` 声明为 Go 侧等价实现的固定共享测试向量（§4.4-3 排除收窄的事实依据）
+   stable symbol/对象: `crIdForRecover`（`~L963`）、`cmdGate` pre-review 错配分支（`~L974`）、`cmdReviewLoopReset` 提交失败分支（`~L1906`）、`buildRegisterResult`（`~L2753`）、`cmdRegister` 输出对象双投影（`~L3304`）；同一文件内 `cmdReviewLoopReset` 的 `NOT_TTY` 前置校验（`~L1840`）与 `fail`/`ok` 输出信封契约（定义位置 `~L43`/`~L49`：错误 `{ error: {...} }` 走 stderr + exit 1，成功对象走 stdout）；`canonicalEvidenceDigest`（`~L87`）把 `test/fixtures/digest-vectors/` 声明为 Go 侧等价实现的固定共享测试向量（§4.4-3 排除收窄的事实依据）
    commit SHA: `dddd0ad63fb79bd7608314b4553f30e8ce7b7289`
    依赖结论: CLI 是唯一投影层；`error.recovery` 与顶层 `recovery` 的落点由 `fail()`/`ok()` 的既有形状决定（见 3）；`NOT_TTY` 校验是 `requiresTTY: true` 的事实依据。
 3. repo: `tools`
