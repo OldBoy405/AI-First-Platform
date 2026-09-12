@@ -1,0 +1,26 @@
+cr-id: CR-2026-064
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-12T22:57:53+08:00"
+verdict: block
+blockers:
+  - "本轮新增：TD-BL-1 位置：sdd.md §4.4、D-5、§6.3 AC-06 与 SDD-CLOSE-05。事实：设计只把少数已知源码、4 个 Skill、1 个生成文档和7个迁移测试加入显式清单，仅对 Pipeline 动态枚举；未覆盖 skills/_index.yml 登记的56个 active Skill、agents/_index.yml 登记的9个 active Agent，也未覆盖其余活跃源码/测试。影响：任一未列活跃文件重新引入两个待退役字段名时扫描仍可通过，FR-11/AC-06 的退役门禁不完整，当前验收不可达。修复方向：从 active 索引或明确的活跃根动态派生 Skill/Agent/源码/测试范围，仅对历史证据、夹具、迁移文档和扫描器自身做可审计排除，并为 active Skill、Agent、源码、测试各补一个命中即失败的代表性用例。"
+  - "本轮新增：TD-BL-2 位置：sdd.md §4.3 的 OpenWiki 行、§11-12 与 §9 follow_up。事实：tools/AGENTS.md 明确 openwiki/ 是生成索引且不得手工编辑，.github/workflows/openwiki-update.yml 以 openwiki code --update 生成；当前设计却安排手工修改生成页并接受后续生成措辞漂移。影响：生成器可覆盖本 CR 的手工合同，违反 PRD FR-8 的‘修改权威输入后重新生成’要求，AC-05 的文档迁移结果不可稳定复现。修复方向：把权威源码修改与既有生成步骤写成同一实施闭环，由生成器产出该页面并核对结果；删除手工维护和把再生成漂移降为非门槛的方案。"
+  - "本轮新增：TD-BL-3 位置：sdd.md D-1、§4.3/§4.4 与 §11 既有实现依赖清单。事实：在固定 HEAD dddd0ad63fb79bd7608314b4553f30e8ce7b7289 上按文中同一有界 rg 口径实际为16文件/72行（非73行），workspace-transactions.mjs 为23行/25次匹配（均非文中24处）；正文还依赖 ai-first-platform-docs/AGENTS.md 的 node 入口约定及 tools/AGENTS.md、openwiki-update.yml 的生成规则，但这些事实未按 repo/path/stable symbol/结论进入显式依赖清单。影响：既有事实基线既不准确也不闭合，FR-14/AC-12 的盘点输入与本轮架构判断无法由清单复核。修复方向：声明行数与匹配次数的唯一计数口径并重跑更正；把正文实际依赖的 KB 入口约定和 OpenWiki 生成约束逐项补入有序依赖清单并绑定资源 HEAD，或删除对这些事实的依赖。"
+dimensions:
+  批准范围: "pass：§9 存在且 scope_in、scope_out、zero_diff、follow_up 四字段齐全。"
+  PRD↔SDD 对齐: "block：FR-8 与 FR-11 的设计落点分别违反生成文档约束并遗漏 active Skill/Agent/源码/测试覆盖。"
+  架构合理性: "block：依赖方向与单一构造器分层基本成立，但生成 OpenWiki 页面手工维护违反 tools/AGENTS.md。"
+  数据模型完整性: "pass：recovery 字段、类型、可选性、键序、存储边界与无迁移结论完整。"
+  接口契约: "pass：结构化响应、错误载体、argv、cwd、TTY 与 promptFor 语义及错误闭包已定义。"
+  多仓架构约束: "pass：workspace 与 resources authority 分离明确，tools/multica 变更边界和 checkpoint 口径清晰。"
+  性能与安全: "pass：纯数据、非 shell argv、人在环和零额外常驻开销的控制点完整。"
+  可测试性: "block：生产者结构向量明确，但退役扫描范围不足以证明 FR-11/AC-06。"
+  Prompt 采纳影响: "pass：触及 crctl 命令面后列出了需要迁移的 Skill/Agent 提示词及平台部署边界。"
+  AC 闭环与既有实现依赖: "block：AC-05、AC-06、AC-12 未闭环，显式依赖清单存在计数错误和正文依赖漏列。"
+  SDD-CLOSE: "block：SDD-CLOSE-05 与 SDD-CLOSE-06 宣称关闭，但扫描覆盖和生成文档闭环尚未成立。"
+suggestions: []
+review-loop:
+  current-attempt: 1
+subject-file: change-requests/CR-2026-064/sdd.md
+subject-sha256: 30469c0d83fa292ec7c8d01a6be287ec244b0e3d31624fc9510d0c48a9a13c74
