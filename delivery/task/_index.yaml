@@ -2850,3 +2850,31 @@ tasks:
     cr-ref: CR-2026-062
     target-version: "0.35"
     estimate: 16h
+  - id: CR-2026-063-TASK-01
+    file: TASK-0.36-CR-2026-063-01-gate-pre-review-drift-and-r7-pairing.md
+    title: gate --mode pre-review 错配可操作化（contractDrift + recoverCommand + crIdForRecover）与 R7 配对 lint
+    status: done
+    cr-ref: CR-2026-063
+    target-version: "0.36"
+    estimate: 12h
+  - id: CR-2026-063-TASK-02
+    file: TASK-0.36-CR-2026-063-02-review-loop-reset-atomic-commit.md
+    title: review-loop reset 原子提交（单文件 ledger 事务 + 提交隔离 + 失败回滚）与 durable-tx write-set 前置条件放宽
+    status: done
+    cr-ref: CR-2026-063
+    target-version: "0.36"
+    estimate: 16h
+  - id: CR-2026-063-TASK-03
+    file: TASK-0.36-CR-2026-063-03-retire-context-md-active-contract.md
+    title: _context.md 活跃合同退役（post-review 白名单删条目 + CR-2026-057 测试原位改为退役合同测试）与活跃引用全量核对
+    status: done
+    cr-ref: CR-2026-063
+    target-version: "0.36"
+    estimate: 8h
+  - id: CR-2026-063-TASK-04
+    file: TASK-0.36-CR-2026-063-04-prompt-source-placement-and-delegation-contract.md
+    title: Prompt/文档案位归位与委派合同收紧（multica 4 文件 + tools 6 处）与范围收口核对
+    status: done
+    cr-ref: CR-2026-063
+    target-version: "0.36"
+    estimate: 16h
