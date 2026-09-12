@@ -6,7 +6,7 @@ title: CR-S：测试基线与门禁可信化 — 断言去硬编码、4 条基�
 target-version: 0.38
 status: draft
 created: 2026-09-13T03:26:00+08:00
-updated: 2026-09-13T03:52:00+08:00
+updated: 2026-09-13T03:48:00+08:00
 ---
 
 > 输入：`change-requests/CR-2026-065/prd.md`（sha256(LF) `467b5d47…`，已评审 PASS 并经人工审批）。
