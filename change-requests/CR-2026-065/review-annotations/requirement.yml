@@ -1,0 +1,26 @@
+cr-id: CR-2026-065
+review-type: requirement
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-13T02:44:55+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  结构完整性: "通过。七章齐备（概述／用户故事／功能需求／非功能需求／验收标准／成功指标／范围排除）；§1.1 问题陈述含 5 条基线红表与四类不成立项，§1.2 方案摘要对应四项交付，§1.3 需求来源与第一手实测表在位。frontmatter 与 cr.md 全等（title、target-version=0.38、owner=Ray、owner-role=requirement、status=draft），无未替换占位符，纯 LF；本轮实测 sha256(LF 规范化)=467b5d478a99a97ee780632dcaaeec38fd7fc11ed49616a823757ca9de911a18，与作者回报的 467b5d47… 一致。规模自洽：5 US／17 FR／15 AC。"
+  FR可测试性: "通过（一条覆盖缺口见 S-1，不影响本 CR 验收可达性）。17 条 FR 均有 AC 落点：FR-1/2→AC-02，FR-3→AC-03，FR-4→AC-04，FR-5→AC-05，FR-6→AC-06，FR-7→AC-07，FR-8/9→AC-08，FR-10→AC-09，FR-11→AC-01＋AC-11，FR-12→AC-10，FR-13→AC-11，FR-14→AC-12，FR-15→AC-13，FR-16→AC-14，FR-17→AC-15；AC-01/06/07/09/11/12 给出可机械复核的判据（退出码与失败集合、注入即红、到期例外门禁红）。本轮独立复算基线（tools worktree，dddd0ad6）：按测试名过滤单跑 crctl.test.mjs＋checkpoint-tx.test.mjs＋archive-tx.test.mjs，exit 1、失败恰 5 条且恰为 BR-1…BR-5（无其它失败），与 §1.3 实测表一致；5 条红的断言与事实源逐条对盘成立——pipeline 对 crctl task init 零命中、review-alignment/SKILL.md 对 checkpoint 零命中、dir-graph.yaml 实测 31 条声明（断言 28）、write-requirement-prd/SKILL.md 现为「七个章节、未替换占位符」且 5 个禁用词零命中、archive RED-7 预写同名不同内容致 warnings 非空。PRD 所引行号（crctl.test.mjs 1337/4777/4989、checkpoint-tx.test.mjs 480、archive-tx.test.mjs 373）与仓库实况逐条相符。"
+  范围合理性: "通过。与 owner 裁决逐条对齐：AIFI-25 线程 owner（Ray，2026-09-12T18:19:25Z）原文为「按照最新建议，范围：A;一个CR；BR-5都不选，RED-7 的构造改对 实施」，PRD 五项范围（断言去硬编码／BR-1…BR-4 同步转绿／BR-5 构造改对＋契约声明／CI 真门禁＋并发参数收敛／例外治理）逐项落到 FR-1…FR-14，无扩写、无缩水。§7 排除项与 AIFI-26 边界一致：不含包 B（write-tech-design／review-tech-design 的 SDD 评审合同）、不含 CR-2026-064 的 recovery 迁移本身、不改 5 条红的根因对象、不新增测试框架或第三方依赖、不以降断言强度换绿。FR-15 的最小改写边界（BR-1…BR-4 只改测试、BR-5 只改构造＋FR-10 所需最小产品面）与 issue 的 scope_in 建议一致。"
+  与规划对齐: "通过（source=AIFI-26、origin 空，无规划报告，与 cr.md 一致；对齐口径取 issue 已批准验收目标与 owner 裁决）。issue 的验收目标「CI 全量步骤变绿且此后漂移在引入它的 CR 内当场红」由 FR-11＋FR-13 直接承接，并写成可自证的负控（AC-11：三类断言各注入一次真实漂移→全量变红→还原恢复绿），issue 的 5 项范围无遗漏；包 B 与 CR-2026-064 迁移面按 owner 裁决排除，未混入。"
+  依赖识别: "通过。已识别并登记：CR-2026-064 为下游且原地冻结（本 CR 为其前置，§7.2 排除迁移面，NFR 兼容性声明不依赖 recoverCommand 现状）；CR-2026-052 TASK-08 的 drift-audit 排除 payload.detected_at 语义为不可回归依赖（FR-8.3／AC-08，本轮已在 crctl.mjs:320-340 核对实现）；BR-1…BR-4 的引入变更（14b4458、fc2b142、bef1f4d＋2e4442d＋49c46dd、fc797ed）已作为事实源登记；基线固定 tools@dddd0ad63fb79bd7608314b4553f30e8ce7b7289 且明确标注「全集 894.8 s 为既有实测、实现期须自行复测」；平台侧部署（§7.9）已声明不在本 CR。"
+  HTTP_API契约闭包: "N/A：本 CR 不新增或修改任何 HTTP endpoint／request／response／error／权限契约（FR-17 与 §7 明示；变更面只有 tests、CI 配置与去重比较字段契约所需的最小产品面）。"
+  crctl_CLI契约闭包: "N/A：不新增 crctl 子命令或 flag，不改调用者约束、状态副作用与 JSON 输出；断言面只读（§4.2 明示不新增受治理账本写路径）。唯一带契约性质的内部面（例外登记面）不属于 CLI 契约，单列一行给结论。"
+  Skill契约闭包: "N/A：不改任何 Skill 的参数、落盘路径、允许的状态转换、失败码或与 crctl 的唯一写入边界；FR-7 明确禁止为转绿回写 write-requirement-prd/SKILL.md 文本，AC-05 同理禁止向 review-alignment/SKILL.md 补写 latest-checkpoint。"
+  例外登记面四查: "通过（细节见 S-4／S-5）。幂等：同一稳定标识重复登记不产生重复条目、同一到期日内重复检查结论一致（FR-17 第 1 条）；权限与写入边界：例外清单只能经受控写入变更、测试与产品代码不得写入或自动续期、变更可审计（FR-14.4＋FR-17 第 2 条）；错误闭包：缺失稳定标识／缺失原因／缺失 owner／缺失到期／到期已过仍存在／例外标识与真实失败集合不匹配 六类一律门禁失败＋明确错误消息＋零写入（FR-17 第 3 条）；副作用：登记只影响门禁结论、不得以登记替代执行（FR-17 第 4 条）。无例外时该面须显式声明为空、不得以文件不存在充当（FR-14.5＋AC-12）。"
+suggestions:
+  - "建议（不阻塞，归 write-requirement-prd）：S-1（本轮新增）[prd.md §3 FR-11.2 与 §5 AC-01／AC-14]：FR-11 第 2 条禁止「靠删测试／改测试名／放宽或删除断言达成绿」，但现有 AC 只验「执行到的测试总数 > 0、文件级 skip 数为 0、21 个文件全部被真实执行」（AC-01）与「无新增红、无新增 skip」（AC-14）——用例集合或用例总数下降不会留痕，该禁令没有可机械复核的落点；而 AC-01 正文里的 21 又正是 FR-1 要求「从事实源推导」的测试文件数，两者合起来恰落进 FR-3 的「必须钉死的目标值」一档。建议补一条判据：把交付的测试清单（文件集合＋每文件用例数或用例名集合）登记为受控清单并断言不得低于基线，或断言 CI 实际执行的清单与登记清单相等，使「删测试换绿」在门禁上可见。"
+  - "建议（不阻塞，归 write-requirement-prd，落点可在 SDD 细化）：S-2（本轮新增）[prd.md §3 FR-12.1 与 §5 AC-10]：FR-12 第 1 条（保留 --test-concurrency=2 时须给出「它在 CI 环境下可收敛、可复现的证据」）与 AC-10（「命令、耗时、是否停滞」的可复现证据）证据口径不一致——CI 环境证据在本地交付链上通常不可得，而观察到不收敛的一方恰恰是本机；实现方若选择保留该参数，按 FR-12.1 字面可能无证据可交。建议统一为「本机复现证据＋（若可得的）CI 运行证据」，并把交付物固定字段写死（命令、耗时、停滞观察、结论），避免验收时口径之争。"
+  - "建议（不阻塞，归 SDD，必要时由 write-requirement-prd 在 FR-6 补一句）：S-3（本轮新增）[prd.md §3 FR-6 与 §1.3 计数口径]：FR-6.2 钉死的是具名状态集合与每条声明转换的稳定标识，但 wildcard 展开面还有一份独立事实——any-active 目标集合（本轮实测：from: any-active 2 条、any-active 目标 12 个，故当前展开数 = 31 − 2 + 12×2 = 53）。若只登记声明条目、不把 any-active 目标集合并入受控清单，向该集合增删一个目标不会使断言变红，而它恰会改变展开口径。建议在 FR-6 的「必须钉死的目标值」里显式纳入 any-active 目标集合，或由 AC-06 的负控补一条该注入。"
+  - "建议（不阻塞，归 SDD）：S-4（本轮新增）[prd.md §3 FR-17 四查的「权限与写入边界」「错误闭包」]：例外登记面写「只能经受控写入变更」，但 FR-17 同时声明本 CR 不新增 crctl 子命令或 flag——受控写入的具体入口（人改 git 跟踪文件并以 git 历史审计，还是走某既有命令路径）未定义，SDD 需给出唯一答案，否则「谁可以写、怎么写」在实现期存在两种读法。另建议把「明确错误消息」收紧为可机械核对的固定标识（固定 check code 或固定消息前缀，与既有 crctl gate check code 风格一致），使 AC-12 的「构造一条到期例外 → 门禁红」除退出码外还有可断言的具体信号。"
+  - "建议（不阻塞，归 SDD）：S-5（本轮新增）[prd.md §3 FR-14.2]：到期的定义写成「日期或可判定的条件」，其中「可判定的条件」缺确定性（判定时钟源、比较口径、由谁判定），实现期易被读成任意条件，从而削弱「到期未清即红」。建议限定为日期（含时区与比较基准，例如 CI 运行日 UTC）或给出条件的具体判定式。"
+review-loop:
+  current-attempt: 1
+subject-file: change-requests/CR-2026-065/prd.md
+subject-sha256: 467b5d478a99a97ee780632dcaaeec38fd7fc11ed49616a823757ca9de911a18
