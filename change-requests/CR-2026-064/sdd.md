@@ -591,7 +591,7 @@ PRD 显式延后到 SDD 的设计项逐项关闭（覆盖数据生产、存储/�
 | 行数 | `rg -c "recoverCommand\|recover_command"` 逐文件求和 | 含 ≥1 次命中的行（同一行多次命中只计 1） |
 | 匹配次数 | `rg -o "recoverCommand\|recover_command"` 计数 | 全部 match 总数（同一行多次命中各计 1） |
 
-口径固定项：大小写敏感（只退役响应字段名 `recoverCommand` / `recover_command`；内部局部变量 `checkpointRecoverCommand` 里的 `RecoverCommand` 不属退役名，实施时可顺带改名但不计入本盘点）、不加 `-w`、用 `rg` 默认的 `.git`/`.gitignore` 过滤（不用 `-uu`，不遍历被忽略目录与隐藏文件）。正文凡「X 文件 / Y 行 / Z 次」均按上表三项分别给值，不混用口径。
+口径固定项：大小写敏感（只退役响应字段名 `recoverCommand` / `recover_command`；内部局部变量 `checkpointRecoverCommand`（仅存在于 `skills/shared/crctl/scripts/lib/workspace-transactions.mjs` 的 `mergeCr` 内，`~L1557`；`~L1570` / `~L1573` 取值）里的 `RecoverCommand` 不属退役名，随站点 4 结构化一并改写名称但不计入本盘点）、不加 `-w`、用 `rg` 默认的 `.git`/`.gitignore` 过滤（不用 `-uu`，不遍历被忽略目录与隐藏文件）。正文凡「X 文件 / Y 行 / Z 次」均按上表三项分别给值，不混用口径。
 
 另一套规模口径（§4.4-2 扫描面，同一工作树枚举）：`tools@dddd0ad63fb79bd7608314b4553f30e8ce7b7289` 工作树 214 文件 − 扫描器自身 1 − 历史 traceability 精确路径 `skills/shared/crctl/scripts/test/fixtures/traceability-191k.yml` 1 = **扫描面 212 文件**；`skills/**` + `pipeline-templates/**` 递归 `.mjs` 共 **40**（活跃源码 16 / 活跃测试 24）；三个 active 索引条目数 **56 / 9 / 8**（条目全部存在于磁盘）；`fixtures/` 目录内 4 个文件中 **3 个在扫描面内**（`digest-vectors/**`，对两个退役名零命中）、**1 个被排除**（历史 `traceability-191k.yml`）。旧字段命中计数仍按上表三项口径，两者不混用。
 
@@ -599,12 +599,12 @@ PRD 显式延后到 SDD 的设计项逐项关闭（覆盖数据生产、存储/�
 
 1. repo: `tools`
    relative path: `skills/shared/crctl/scripts/lib/workspace-transactions.mjs`
-   stable symbol/对象: `registerCr` / `syncWorkspaceToTrunk` / `mergeCr` / `checkpointCr` / `applyWritebackAtomic` / `archiveCr` / `testCr` / `buildTestResponse` 的返回值与 `TxError.extra` 载体（本文件 23 行 / 25 次旧字段命中）
+   stable symbol/对象: `registerCr` / `syncWorkspaceToTrunk` / `mergeCr` / `checkpointCr` / `applyWritebackAtomic` / `archiveCr` / `testCr` / `buildTestResponse` 的返回值与 `TxError.extra` 载体（本文件 23 行 / 25 次旧字段命中）；其中 `mergeCr` 内的局部名 `checkpointRecoverCommand`（`~L1557`，`~L1570` / `~L1573` 两个 `TxError` 的 `extra.recoverCommand` 取值来源）
    commit SHA: `dddd0ad63fb79bd7608314b4553f30e8ce7b7289`
-   依赖结论: 这些函数是全部恢复动作的生产者，其返回结构与 `extra` 字段名即本 CR 的迁移对象；`buildRecovery` 落在本文件内（D-3），因此本文件同时是唯一构造器的宿主。
+   依赖结论: 这些函数是全部恢复动作的生产者，其返回结构与 `extra` 字段名即本 CR 的迁移对象；`buildRecovery` 落在本文件内（D-3），因此本文件同时是唯一构造器的宿主。局部名 `checkpointRecoverCommand` 是站点 4（merge publication lag → `checkpoint`）的既有承载点：大小写敏感的退役名扫描对它零命中（不属退役名、不计入本盘点），但 `~L1570` / `~L1573` 两处 `extra.recoverCommand` 在本 CR 内同批改为 `extra.recovery`，该局部值随之由 shell string 改为 `buildRecovery(...)` 产出的结构化对象，旧名与旧串均不保留（§4.3 `mergeCr` 行同址）。
 2. repo: `tools`
    relative path: `skills/shared/crctl/scripts/crctl.mjs`
-   stable symbol/对象: `crIdForRecover`（`~L963`）、`cmdGate` pre-review 错配分支（`~L974`）、`cmdReviewLoopReset` 提交失败分支（`~L1906`）、`buildRegisterResult`（`~L2753`）、`cmdRegister` 输出对象双投影（`~L3304`）；同一文件内 `cmdReviewLoopReset` 的 `NOT_TTY` 前置校验（`~L1840`）与 `fail/ok` 输出契约（`~L31`/`~L35`）；`canonicalEvidenceDigest`（`~L87`）把 `test/fixtures/digest-vectors/` 声明为 Go 侧等价实现的固定共享测试向量（§4.4-3 排除收窄的事实依据）、`checkpointRecoverCommand`（内部局部名，不属退役名）
+   stable symbol/对象: `crIdForRecover`（`~L963`）、`cmdGate` pre-review 错配分支（`~L974`）、`cmdReviewLoopReset` 提交失败分支（`~L1906`）、`buildRegisterResult`（`~L2753`）、`cmdRegister` 输出对象双投影（`~L3304`）；同一文件内 `cmdReviewLoopReset` 的 `NOT_TTY` 前置校验（`~L1840`）与 `fail/ok` 输出契约（`~L31`/`~L35`）；`canonicalEvidenceDigest`（`~L87`）把 `test/fixtures/digest-vectors/` 声明为 Go 侧等价实现的固定共享测试向量（§4.4-3 排除收窄的事实依据）
    commit SHA: `dddd0ad63fb79bd7608314b4553f30e8ce7b7289`
    依赖结论: CLI 是唯一投影层；`error.recovery` 与顶层 `recovery` 的落点由 `fail()`/`ok()` 的既有形状决定（见 3）；`NOT_TTY` 校验是 `requiresTTY: true` 的事实依据。
 3. repo: `tools`
