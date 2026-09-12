@@ -91,13 +91,14 @@ assert.deepEqual(res.recovery.promptFor, []);
 4. **AC-03 用户输入向量**：6 类 reason 向量全部通过，每类四件事（`args` 不含值、`promptFor` 含 `reason`、`requiresTTY === true`、序列化后该值不出现）。
 5. **AC-01/AC-02/AC-07/AC-08/AC-10 断言面**：7 个迁移文件的结构与 argv 断言通过；`register` 单投影断言通过（`recover_command` 不再出现）；`merge` publication lag 断言 `recovery.args` 指向 `checkpoint` 且 `cwd` 为 installRoot；`writeback` 的 `--target-version` 独立元素断言通过。
 6. **AC-04 守卫**：`shell: true` / `Invoke-Expression` 守卫断言通过。
-7. **全量回归**：`plan.md §6.2 cmd-01`（21 个 `*.test.mjs`，含 `contract-scan.test.mjs`）exit 0 且机器区 `skipped=false`；`cmd-02`（`skills/writeback/scripts/test/writeback.test.mjs`）exit 0。
+7. **全量回归**：`plan.md §6.2 cmd-01`（21 个 `*.test.mjs`，含 `contract-scan.test.mjs`，带 §5.3 登记的 5 条锚定例外）exit 0 且机器区 `skipped=false`；不带例外模式时为 exit 1 且失败集合**恰等于**登记 5 条（即本 TASK 不得新增红、也不得靠删/改这 5 条无关用例「消红」）；`cmd-02`（`skills/writeback/scripts/test/writeback.test.mjs`）exit 0。
 8. **范围**：`plan.md §6.2 cmd-05` 的 tools diff 白名单通过——本 TASK 的增量路径 ⊆ {7 个既有测试文件 + `contract-scan.test.mjs`}。
 
 ## 5. 完成标志
 
 - 上述 §4 的 8 条全部实测通过，并留下可复核的命令与输出摘要（命令、cwd、exit、关键断言行、注入用例名）。
 - `plan.md §6.2 cmd-03` 的整树零命中在实现完成后为真（本 TASK 是整树扫描面最后一个迁移面）。
+- **基线红边界**：`plan.md §5.3` 登记的 5 条用例（`crctl.test.mjs` 3 条 / `checkpoint-tx.test.mjs` 1 条 / `archive-tx.test.mjs` 1 条）**逐字保留**（不改名称、不删用例、不改成断言恒真）；本 TASK 只改这些文件内与恢复字段有关的字符串断言。
 - 本 TASK 产生的文件（8 个测试文件）由本 TASK 自行提交：`[cr] CR-2026-064 TASK-04 recovery tests and contract scan`（受控 `crctl git` 形态，`[cr] ` 前缀）。
 - `crctl task done CR-2026-064-TASK-04 --workspace <KB worktree>` 登记完成（纪律 #8）。
 - **不**在本 TASK 内改写 `sdd.md` / `prd.md`；**不**改 `fixtures/**` 内容；**不**改源码与文档（属前三个 TASK）。
