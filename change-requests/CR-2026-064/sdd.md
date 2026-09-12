@@ -591,7 +591,7 @@ PRD 显式延后到 SDD 的设计项逐项关闭（覆盖数据生产、存储/�
 | 行数 | `rg -c "recoverCommand\|recover_command"` 逐文件求和 | 含 ≥1 次命中的行（同一行多次命中只计 1） |
 | 匹配次数 | `rg -o "recoverCommand\|recover_command"` 计数 | 全部 match 总数（同一行多次命中各计 1） |
 
-口径固定项：大小写敏感（只退役响应字段名 `recoverCommand` / `recover_command`；内部局部变量 `checkpointRecoverCommand`（仅存在于 `skills/shared/crctl/scripts/lib/workspace-transactions.mjs` 的 `mergeCr` 内，`~L1557`；`~L1570` / `~L1573` 取值）里的 `RecoverCommand` 不属退役名，随站点 4 结构化一并改写名称但不计入本盘点）、不加 `-w`、用 `rg` 默认的 `.git`/`.gitignore` 过滤（不用 `-uu`，不遍历被忽略目录与隐藏文件）。正文凡「X 文件 / Y 行 / Z 次」均按上表三项分别给值，不混用口径。
+口径固定项：大小写敏感（只退役响应字段名 `recoverCommand` / `recover_command`；内部局部变量 `checkpointRecoverCommand`（仅存在于 `skills/shared/crctl/scripts/lib/workspace-transactions.mjs` 的 `mergeCr` 内，`~L1557`；`~L1570` / `~L1573` 取值）里的 `RecoverCommand` 不属退役名，随站点 4 结构化一并改写名称但不计入本盘点）、不加 `-w`、用 `rg` 默认的 `.git`/`.gitignore` 过滤（不用 `-uu`，不遍历被忽略目录与隐藏文件）。正文凡「X 文件 / Y 行 / Z 次」均按上表三项分别给值，不混用口径。计数文件集为该 commit 的 tracked 内容——在 CR 的 `tools` worktree（HEAD 同上、`git status` clean）上执行即为该集合；工作树内未跟踪文件不属该 commit，不计入（例：主检出里遗留的未跟踪 `skills/shared/crctl/scripts/reference/error-codes.md` 含 2 行 / 2 次，不进 16 / 72 / 87）。
 
 另一套规模口径（§4.4-2 扫描面，同一工作树枚举）：`tools@dddd0ad63fb79bd7608314b4553f30e8ce7b7289` 工作树 214 文件 − 扫描器自身 1 − 历史 traceability 精确路径 `skills/shared/crctl/scripts/test/fixtures/traceability-191k.yml` 1 = **扫描面 212 文件**；`skills/**` + `pipeline-templates/**` 递归 `.mjs` 共 **40**（活跃源码 16 / 活跃测试 24）；三个 active 索引条目数 **56 / 9 / 8**（条目全部存在于磁盘）；`fixtures/` 目录内 4 个文件中 **3 个在扫描面内**（`digest-vectors/**`，对两个退役名零命中）、**1 个被排除**（历史 `traceability-191k.yml`）。旧字段命中计数仍按上表三项口径，两者不混用。
 
