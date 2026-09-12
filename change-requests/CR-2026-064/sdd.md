@@ -581,31 +581,36 @@ PRD 显式延后到 SDD 的设计项逐项关闭（覆盖数据生产、存储/�
     commit SHA: `dddd0ad63fb79bd7608314b4553f30e8ce7b7289`
     依赖结论: publication lag 的恢复入口（`extra.recovery`）是该 Skill 的既定分支，字段名变更须同步（FR-7）。
 11. repo: `tools`
-    relative path: `README.md`（§7「恢复与 `crctl status/next`」）与 `openwiki/operations/crctl-transactions.md`（frontmatter `invariants`、Recovery 条、Change-Safety 条）
-    stable symbol/对象: 两处文档对恢复合同的描述；openwiki 的 `openwiki.source_paths` 指向同一份 crctl 源码
+    relative path: `README.md`（§7「恢复与 `crctl status/next`」第 2 条）
+    stable symbol/对象: 「中途失败：按输出的 `recoverCommand` 重跑同一条命令」的合同描述
     commit SHA: `dddd0ad63fb79bd7608314b4553f30e8ce7b7289`
-    依赖结论: 文档必须与代码同批迁移且不得新增第二套描述（FR-8）；openwiki 由定时工作流按 `source_paths` 重新生成（`.github/workflows/openwiki-update.yml`），权威输入是源码本身。
-12. repo: `multica`
+    依赖结论: 使用方仓库最先读到的恢复合同说明，必须与代码同批迁移且不得新增第二套描述（FR-8）。
+12. repo: `tools`
+    relative path: `openwiki/operations/crctl-transactions.md`
+    stable symbol/对象: frontmatter `invariants[1]`、正文「Durable Transaction Envelope → Recovery」条、「Change-Safety Guidance」第 3 条；`openwiki.source_paths` 指向同一份 crctl 源码
+    commit SHA: `dddd0ad63fb79bd7608314b4553f30e8ce7b7289`
+    依赖结论: 该页面是三处旧合同断言的活跃文档；其权威输入是 `source_paths` 指向的源码（本 CR 同批迁移），页面由 `.github/workflows/openwiki-update.yml` 定时重新生成，故手工迁移与再生成方向一致，不构成第二套描述（FR-8）。
+13. repo: `multica`
     relative path: `cr-prompts-revised/delivery-agent.md`
     stable symbol/对象: 交付纪律段（`L27`「明确 `recoverCommand`」、`L44` 失败汇报项）
     commit SHA: `ab9609483d17db12117cb8e9adb2d896f413917d`
     依赖结论: 交付 Agent 的 owner 可复制提示词是 FR-7 指定的活跃消费者之一；平台 DB 内版本由 owner 另行部署（FR-16）。
-13. repo: `tools`
+14. repo: `tools`
     relative path: `agents/delivery-agent.md` 与 `agents/*.md`
     stable symbol/对象: 方法论包内的 Agent 提示词全集
     commit SHA: `dddd0ad63fb79bd7608314b4553f30e8ce7b7289`
     依赖结论: 全量检索确认这些文件**不含**旧字段名（故列入 `zero_diff`，不可借机改动）；`agents/dev-agent.md` 的「按 crctl 明示的恢复方向恢复一次」措辞不绑定字段名，语义在新合同下仍成立。
-14. repo: `tools`
+15. repo: `tools`
     relative path: `skills/shared/engineering-docs/templates/SDD-template.md`、`skills/develop/write-tech-design/SKILL.md`
     stable symbol/对象: 本 SDD 的章节与范围章节契约
     commit SHA: `dddd0ad63fb79bd7608314b4553f30e8ce7b7289`
     依赖结论: 本 SDD 的章节结构、`target-version` 继承与 §9 四字段约束来自该模板与 Skill，落地时必须符合。
-15. repo: `tools`
+16. repo: `tools`
     relative path: `.github/workflows/crctl-ci.yml`
     stable symbol/对象: 全量测试命令 `node --test --test-concurrency=2 skills/shared/crctl/scripts/test/*.test.mjs`、Pipeline JSON 动态枚举（`readdirSync('pipeline-templates')`）、`writeback` 单测命令
     commit SHA: `dddd0ad63fb79bd7608314b4553f30e8ce7b7289`
     依赖结论: AC-07 的验收命令与 §4.4 动态 Pipeline 段的既有先例均来自该文件；本 CR 不改 CI 配置。
-16. repo: `tools`
+17. repo: `tools`
     relative path: `ARCHITECTURE.md`
     stable symbol/对象: §3 代码地图（`lib/` 模块枚举与 `crctl.mjs` 职责）、§4 分层规则、§5 不变量（状态单一写者、零依赖、行尾纪律、状态机口径）、§8 维护规则
     commit SHA: `dddd0ad63fb79bd7608314b4553f30e8ce7b7289`
