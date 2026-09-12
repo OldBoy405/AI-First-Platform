@@ -1,24 +1,25 @@
 cr-id: CR-2026-064
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-09-12T23:33:10+08:00"
+reviewed-at: "2026-09-12T23:49:10+08:00"
 verdict: block
 blockers:
-  - "部分解决：TD-BL-1 位置：sdd.md §4.4-2/3/4、D-5、§6.3 AC-06、SDD-CLOSE-05。上一轮遗漏的 11 个活跃 MJS 与 16 个 TS 源码现已通过整树枚举进入扫描面；但设计仍把 skills/shared/crctl/scripts/test/fixtures/** 整个目录作为排除项。当前该目录除获准保留旧名的历史 traceability-191k.yml 外，还包含 digest-vectors/expected.json、review-annotations-code.yml、test-report.md 三个活跃 canonical digest 一致性测试向量，crctl.test.mjs:548-556 直接消费它们，crctl.mjs:87 也把该目录定义为固定共享向量；它们不是 PRD FR-11 允许排除的历史 CR、历史 traceability、归档 delivery、changelog/migration 文档或扫描器禁止名单。影响：现有 digest-vectors 或今后新增的活跃 fixture 可重新引入退役字段而 contract-scan 仍通过，活跃测试扫描范围仍有可扩张盲区，FR-11/AC-06 当前门禁不可达。修复方向：把目录级排除收窄为扫描器自身与确属历史 traceability 的 traceability-191k.yml 精确路径（或仅对获准历史内容做同等窄化处理），让 digest-vectors 及未来 fixture 默认进入扫描面；冻结精确排除并同步更新枚举规模、正反用例与断言。"
+  - "本轮新增：TD-BL-4 — 既有实现依赖清单仍有错误的 stable symbol 归属。位置：sdd.md §11 依赖项 2 及计数口径说明。依赖项 2 把 checkpointRecoverCommand 列在 tools/skills/shared/crctl/scripts/crctl.mjs 的 stable symbol/对象中，但固定资源 tools@dddd0ad63fb79bd7608314b4553f30e8ce7b7289 上该文件零命中；该局部变量实际位于 skills/shared/crctl/scripts/lib/workspace-transactions.mjs:1557，并由 mergeCr 在 1570/1573 使用。影响：显式既有实现依赖未满足 repo/path/stable symbol/结论可复核要求，实施者按清单定位会得到不存在的对象，且 TD-BL-3 要求的事实准确性尚未完全成立。修复方向：从依赖项 2 删除 checkpointRecoverCommand，并在依赖项 1 的 workspace-transactions.mjs / mergeCr 对象中准确登记该局部变量及其迁移结论；同步检查正文计数说明不得暗示其位于 crctl.mjs。"
 dimensions:
-  批准范围: "pass：§9 存在且 scope_in、scope_out、zero_diff、follow_up 四字段齐全；本轮扫描修订未越过批准范围。"
-  PRD↔SDD 对齐: "block：FR-1 至 FR-10、FR-12 至 FR-17 快速复核仍有明确设计落点；FR-11 的整树方案仍以 fixtures/** 目录级排除超出 PRD 允许排除类别，AC-06 不可达。"
-  架构合理性: "pass：单一 buildRecovery、CLI 向下依赖、既有 OpenWiki 生成链路及不新增状态/账本写通道均符合 tools/ARCHITECTURE.md。"
+  批准范围: "pass：§9 的 scope_in、scope_out、zero_diff、follow_up 四字段齐全；本轮扫描排除收窄与现有方案均在批准范围内。"
+  PRD↔SDD 对齐: "pass：FR-1 至 FR-17 均有技术落点；上一轮 FR-11 扫描盲区已通过两条精确路径排除方案闭合。"
+  架构合理性: "pass：单一 buildRecovery、CLI 向下依赖、既有 OpenWiki 生成链路、整树扫描与不新增状态或账本写通道均符合 tools/ARCHITECTURE.md。"
   数据模型完整性: "pass：recovery 的 executable、args、cwd、requiresTTY、promptFor 字段、可选性、键序、指纹与不落盘边界完整。"
-  接口契约: "pass：顶层/error.recovery 投影、argv 边界、promptFor 映射、固定判定顺序与错误闭包清晰且与 PRD 一致。"
-  多仓架构约束: "pass：过程文档与 resources authority 分离；tools、multica、KB 的变更、生成、平台 DB 边界与 checkpoint 口径明确，三仓 HEAD 已按资源路径核验。"
-  性能与安全: "pass：纯数据、非 shell argv、可信 TTY、显示与执行分离、零副作用与无第三方依赖约束完整。"
-  可测试性: "block：生产者结构断言、六类 reason、OpenWiki 生成证据与整树代表性注入均可重验，但目录级排除使活跃 digest fixture 与未来 fixture 的退役字段回流无法被扫描发现。"
-  Prompt 采纳影响: "pass：触及 crctl 结果合同后已列出 4 个 Skill 与 1 个 Agent 的采纳点，并明确平台 DB 不在本 CR。"
-  AC 闭环与既有实现依赖: "block：21 项显式依赖的 repo/HEAD/path/symbol/conclusion 已按固定资源核验，计数 16 文件/72 行/87 次、3 文件/6 行/6 次及索引 56/9/8 一致；但 AC-06 因 active digest fixtures 被 fixtures/** 排除而未闭合。"
-  SDD-CLOSE: "block：SDD-CLOSE-01 至 04、06 仍闭合；SDD-CLOSE-05 声称排除面只含获准历史证据不成立，fixtures/** 同时覆盖三份活跃 digest 测试向量。"
-suggestions: []
+  接口契约: "pass：顶层与 error.recovery 投影、argv 边界、promptFor 映射、固定判定顺序与错误闭包清晰且与 PRD 一致。"
+  多仓架构约束: "pass：workspace 与 resources authority 分离；tools、multica、KB 的变更、生成、平台 DB 与 checkpoint 边界明确，三仓 HEAD 均按资源路径核验。"
+  性能与安全: "pass：纯数据、非 shell argv、可信 TTY、显示与执行分离、零副作用、全仓静态扫描与零第三方依赖约束完整。"
+  可测试性: "pass：生产者结构断言、六类 reason、OpenWiki 生成证据、整树零命中与八组代表性注入可重验；枚举 214、扫描面 212、fixture 3 in / 1 out 已独立复核一致。"
+  Prompt 采纳影响: "pass：触及 crctl 结果合同时已列出 4 个 Skill 与 1 个 Agent 的采纳点，并明确平台 DB 不在本 CR。"
+  AC 闭环与既有实现依赖: "block：AC-01 至 AC-14 的设计落点、可观察结果和可达性均已给出，TD-BL-1 的 AC-06 扫描闭环已恢复；但 §11 依赖项 2 把 checkpointRecoverCommand 错列到 crctl.mjs，固定 HEAD 上对象不存在，显式依赖事实仍不准确。"
+  SDD-CLOSE: "pass：SDD-CLOSE-01 至 06 均有结论；SDD-CLOSE-05 已收窄为扫描器自身与 traceability-191k.yml 两条精确路径排除，digest vectors 与新增 fixture 默认入面。"
+suggestions:
+  - "已解决：TD-BL-1 — 退役扫描排除面已从 fixtures/** 整目录通配收窄为扫描器自身与 traceability-191k.yml 两条精确路径；独立复核为枚举 214、扫描面 212，digest-vectors 三文件均在面内且旧名零命中，唯一被排除的历史 traceability 为 2 次命中。"
 review-loop:
-  current-attempt: 3
+  current-attempt: 1
 subject-file: change-requests/CR-2026-064/sdd.md
-subject-sha256: 0d133abc623e9dd53f0cf29dafc1db6024413a72aafc1a3ed23e73dcc7472608
+subject-sha256: 19ae033d47a4c743804115956655ad88406430e51e5fd91d795fd3fe22198401
