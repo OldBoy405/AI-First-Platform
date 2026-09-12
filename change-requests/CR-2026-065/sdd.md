@@ -6,10 +6,11 @@ title: CR-S：测试基线与门禁可信化 — 断言去硬编码、4 条基�
 target-version: 0.38
 status: draft
 created: 2026-09-13T03:26:00+08:00
-updated: 2026-09-13T03:26:00+08:00
+updated: 2026-09-13T03:52:00+08:00
 ---
 
 > 输入：`change-requests/CR-2026-065/prd.md`（sha256(LF) `467b5d47…`，已评审 PASS 并经人工审批）。
+> 修订（`review-tech-design` attempt 1/3 BLOCK 后的定点回修）：**B-1** §4.4 BR-2 行——三词改为「否定辖域」机械判据、零命中面收缩为已核对为真的 `latest-checkpoint` / `checkpoints[]`；**B-2** §6.3 第 5 项拆为两项——按本机实测登记 `merge-fixture.mjs` 的真实导出，新增第 6 项承载 `archive-tx.test.mjs` 的文件内局部 helper；**B-3** §3.1/§4.3/§2.2 统一 VOLATILE 键空间（`OUTBOX_VOLATILE_PAYLOAD_KEYS`，payload 根下相对键）并补「投影闭合」不变量。本轮一并关闭 3 条 in-scope suggestions（S-1 非收敛例外的判读、S-2 恒真结构自检、S-3 显式钉 TAP reporter + 解析自测），逐条落点见 §6.5 `SDD-CLOSE-09`…`SDD-CLOSE-11`。
 > 目标代码仓：**`tools` 仓自身**（本 CR 改 `skills/`、`skills/shared/crctl/scripts/`、`.github/workflows/crctl-ci.yml`），故按 `write-tech-design` Step 1.2 的特殊分支读取 `tools/ARCHITECTURE.md`（**只读不改**，13562 B，已存在）。
 > 本文档只描述设计与实现契约；实测证据（负控、收敛、耗时）由实施与测试期产出，格式由 §4.6 与 §3.2 固定。
 
@@ -41,7 +42,7 @@ tools 包的分层（`tools/ARCHITECTURE.md` §4）：使用方仓库 → Pipeli
 | `skills/shared/crctl/scripts/test/checkpoint-tx.test.mjs` | 改 `:480` BR-2 断言 | FR-5 | 测试 |
 | `skills/shared/crctl/scripts/test/archive-tx.test.mjs` | 改 `:373` RED-7 构造 + 新增「同名不同内容」用例 | FR-8 / FR-9 | 测试 |
 | `skills/shared/crctl/scripts/test/trace-outbox.test.mjs` | 新增去重契约断言（含字段分类负例） | FR-10 | 测试 |
-| `skills/shared/crctl/scripts/test/contract-scan.test.mjs` | 新增受控清单 / 例外登记面 / 写入口静态断言 | FR-14 / FR-17 | 测试 |
+| `skills/shared/crctl/scripts/test/contract-scan.test.mjs` | 新增受控清单 / 例外登记面 / 写入口静态断言 + `suite-gate` 报告解析自测（内联 TAP 片段，关闭 S-3） | FR-14 / FR-17 | 测试 |
 
 **不新增测试文件**：`*.test.mjs` 文件集合保持基线 21 个（`AC-01` 的「21 个文件全部被真实执行」按此口径成立）。新增的两个 `.mjs` 都不匹配 `*.test.mjs`，不被 runner 采集。
 
@@ -72,10 +73,11 @@ CI step「crctl full test suite」
        1. 读 gate-registry.json（缺失/坏 schema → 硬失败，零静默）
        2. 用固定命令跑全量套件，边跑边落 TAP 报告（--report-out）
        3. 解析 TAP → 实际执行的文件集合 / 每文件用例数 / 失败用例名 / 文件级 skip 数
-            （解析失败 → SUITE_REPORT_UNPARSEABLE 硬失败，禁止降级为空结果）
+            （解析失败 → SUITE_REPORT_UNPARSEABLE 硬失败，禁止降级为空结果；进程未自行结束的分支见 §3.2 非收敛口径）
        4. 受控清单核对（文件集合相等、每文件用例数 ≥ 基线）
        5. 例外面核对（schema / owner / 到期 / 与真实失败集合的双向匹配）
-       6. 结论：退出码 0 当且仅当「（观测失败集合 − 未到期例外）为空」且 3/4/5 全过
+       6. 结论：退出码 0 当且仅当 §3.2 check code 表中无任一**未被抑制**的触发
+            （正常收敛：失败集合差为空且 3/4/5 全过；非收敛分支：改判 `SUITE_NONCONVERGENCE` 行，不做 3/4 核对）
 ```
 
 ---
@@ -104,7 +106,7 @@ CI step「crctl full test suite」
 |---|---|---|
 | `v` / `event_kind` / `cr_id` / `from_status` / `to_status` / `trigger` / `commit_sha` / `actor` / `evidence` / `payload` | **参与** | 内容面；`payload` 逐键参与 |
 | `occurred_at` | **不参与**（顶层易变） | 每次 `nowIso()` 重新生成；排除后同名文件重放不产生假冲突 |
-| `payload.detected_at` | **不参与**（唯一登记的 payload 易变路径） | CR-2026-052 TASK-08 语义：同一漂移在被采集前重复观测不产生 `OUTBOX_DEDUP_CONFLICT` |
+| `payload.detected_at` | **不参与**（唯一登记的 payload 易变键） | 键名读法 = `payload` 根下的 `detected_at`（**相对键**，不是事件对象全路径），由 `OUTBOX_VOLATILE_PAYLOAD_KEYS` 枚举排除；CR-2026-052 TASK-08 语义：同一漂移在被采集前重复观测不产生 `OUTBOX_DEDUP_CONFLICT` |
 
 语义不变（FR-8）：文件名存在且比较面**逐字段相等** → 视为已发送（返回文件名、不覆盖、不新增）；比较面**不等** → `OUTBOX_DEDUP_CONFLICT` → 调用方 `EMIT_FAILED` → 不覆盖、不静默去重。本 CR 只把上表从注释提为可检查声明（§3.1），**不改变任何字段语义**。
 
@@ -151,7 +153,7 @@ converged     进程是否自行结束（false = 触发 --max-runtime-ms 被终�
 exit_code     被测命令退出码（被终止时为 null）
 files_executed / cases_executed / skipped_file_level
 failures[]    失败用例名
-checks[]      [{ code, ok, detail }] 逐项门禁结论（固定 check code）
+checks[]      [{ code, ok, detail, suppressed_by?, not_evaluated? }] 逐项门禁结论（固定 check code；被例外抑制时 ok=false 且带 suppressed_by=<exception-id>；非收敛分支未做的核对项带 not_evaluated=true）
 registry      { sha256, exceptions_count }
 platform      { platform, node }
 verdict       "pass" | "block"
@@ -171,7 +173,7 @@ verdict       "pass" | "block"
 // 单一事实源：字段分类 + 投影函数。产品与测试共同 import，禁止第二份副本。
 export const OUTBOX_COMPARED_FIELDS = Object.freeze([...]);      // 参与比较（§2.2 上半表）
 export const OUTBOX_EXCLUDED_FIELDS = Object.freeze(['occurred_at']);          // 顶层不参与
-export const OUTBOX_VOLATILE_PAYLOAD_PATHS = Object.freeze(['detected_at']);   // payload 路径级排除
+export const OUTBOX_VOLATILE_PAYLOAD_KEYS = Object.freeze(['detected_at']);    // payload 根下键名（相对键）
 export function buildOutboxEvent(input, nowIsoString) { /* 规范化事件对象 */ }
 export function buildOutboxComparable(event) { /* 由上面三个声明驱动的投影 */ }
 ```
@@ -180,9 +182,10 @@ export function buildOutboxComparable(event) { /* 由上面三个声明驱动的
 
 1. `crctl.mjs#emitOutboxEvent` 改用 `buildOutboxEvent` + `buildOutboxComparable`；`crctl.mjs` 中**不得**再出现字段枚举或 `detected_at` 的语义副本（只允许指向本模块的指针注释）。
 2. 不变性（测试断言）：`Object.keys(buildOutboxEvent(sample, now)) ≡ OUTBOX_COMPARED_FIELDS ∪ OUTBOX_EXCLUDED_FIELDS`（集合相等）。⇒ 任何新增字段若未登记进两类之一，契约检查直接红（这就是 AC-09 负控的落点）。
-3. 不变性：`OUTBOX_VOLATILE_PAYLOAD_PATHS` 只做**枚举排除**，不得实现为「按名字/类型自动排除所有时间类字段」；测试用反例证明：`payload.observed_at`（未登记）**仍参与比较**。
-4. 不变性：投影只读不改入参（不得就地 delete 原事件字段）。
-5. 行为等价：对同一比较面的事件重放仍视为已发送（返回文件名）；比较面不等仍抛 `OUTBOX_DEDUP_CONFLICT`（FR-8 语义零变化）。
+3. 不变性：`OUTBOX_VOLATILE_PAYLOAD_KEYS` 只做**枚举排除**，不得实现为「按名字/类型自动排除所有时间类字段」；测试用反例证明：`payload.observed_at`（未登记）**仍参与比较**。
+4. 不变性（投影闭合）：对任意入参，`Object.keys(buildOutboxComparable(ev).payload) ∩ OUTBOX_VOLATILE_PAYLOAD_KEYS = ∅` —— 登记键绝不出现在投影结果中；键缺失、`payload` 为空、嵌套对象三种边界同样成立。⇒ 常量与投影必须处于**同一键空间**（声明与实现同读法），否则本条直接红。
+5. 不变性：投影只读不改入参（不得就地 delete 原事件字段）。
+6. 行为等价：对同一比较面的事件重放仍视为已发送（返回文件名）；比较面不等仍抛 `OUTBOX_DEDUP_CONFLICT`（FR-8 语义零变化）。
 
 ### 3.2 `test/suite-gate.mjs`（CI 门禁契约；「例外登记面」四查在此闭合）
 
@@ -203,7 +206,7 @@ node skills/shared/crctl/scripts/test/suite-gate.mjs --report <tap> --rc <exit-c
 |---|---|
 | 幂等 | 同一稳定标识重复登记 → `EXCEPTION_DUPLICATE` 红（不产生重复条目）；同一例外在同一到期日内重复检查结论一致（判定只读登记值 + 运行时瞬时，不看检查次数）；`--report/--rc` 模式判定与 `--run` 判定同源同一函数 |
 | 权限与写入边界 | 唯一写入口 = **人类编辑 `gate-registry.json` + git commit**（谁=commit author、何时=commit time、为什么=commit message；`git log -- gate-registry.json` 即审计）。不新增 crctl 子命令/flag（FR-17）；门禁与测试**只读**该文件；静态断言：仓库内不存在对该文件的写入调用（`writeFileSync`/`appendFileSync`/`rmSync`/`renameSync`/`truncate`），且 `suite-gate` 自身无写路径 |
-| 错误闭包 | 见下表；每类 = 固定 check code + 非零退出 + 零写入（门禁从不写登记面，故「零写入」恒成立） |
+| 错误闭包 | 见下表；每类 = 固定 check code + 非零退出（唯一例外：表中明列为「可抑制」的 `SUITE_NONCONVERGENCE` 在有匹配未到期例外时不产生非零退出）+ 零写入（门禁从不写登记面，故「零写入」恒成立） |
 | 副作用 | 登记只影响**判定**，不改变执行：`--run` 永远先真实执行全量命令；即使失败被容忍，报告仍列出 `failures[]`（登记不得替代执行）。门禁不修改被测仓、不写 `gate-registry.json`、不写 `.crctl/` 受治理账本 |
 
 **固定 check code（关闭 S-4：可机械核对的固定标识，风格与既有 crctl gate check code 一致）**
@@ -218,10 +221,17 @@ node skills/shared/crctl/scripts/test/suite-gate.mjs --report <tap> --rc <exit-c
 | `EXCEPTION_FIELD_MISSING` / `EXCEPTION_SCHEMA_INVALID` / `EXCEPTION_DUPLICATE` | 例外条目缺 id/kind/reason/owner/expires、kind 非枚举、重复 id | 否 |
 | `EXCEPTION_EXPIRED` | `now >= expires`（UTC 瞬时，见 §2.1） | 否 |
 | `EXCEPTION_NOT_OBSERVED` | 登记的例外在本次运行中**未出现**（陈旧登记） | 否 |
-| `SUITE_FAILURES_UNREGISTERED` | 观测失败集合中存在未被未到期例外覆盖的失败 | 否 |
-| `SUITE_NONCONVERGENCE` | `--run` 超过 `--max-runtime-ms` 仍未结束（被终止） | 允许 `kind: suite-nonconvergence` 登记，且仍记 `converged: false` |
+| `SUITE_FAILURES_UNREGISTERED` | 观测失败集合中存在未被未到期例外覆盖的失败 | 否（容忍在**触发条件内**实现：未到期例外覆盖的失败不计入本项，故已登记的失败不会触发本项；本项一旦触发即不可抑制） |
+| `SUITE_NONCONVERGENCE` | `--run` 超过 `--max-runtime-ms` 仍未结束（被终止） | **可抑制（可绿）**：仅当存在一条未到期、`kind: suite-nonconvergence` 且稳定标识与本项匹配的登记例外；报告仍记 `converged: false` 与 `checks[SUITE_NONCONVERGENCE]`（事实永不隐藏）；无匹配例外 / 例外已过期 → 红 |
 
-退出码：**0 当且仅当**上表无任一触发（例外的「容忍」只作用于 `SUITE_FAILURES_UNREGISTERED` 一项的集合差）。
+退出码：**0 当且仅当**上表无任一触发。例外的「容忍」只有两个确定落点（均已写死，不存在两读法）：
+
+- `SUITE_FAILURES_UNREGISTERED`：容忍落在**触发条件内** —— 观测失败 − 未到期例外覆盖的失败；本项一旦触发即不可抑制；
+- `SUITE_NONCONVERGENCE`：容忍落在**已触发项的退出码**上 —— 可抑制（可绿），条件 = 存在未到期、`kind: suite-nonconvergence` 且稳定标识匹配的登记例外（= PRD `FR-14` 示例「已知不收敛的配置」的落地形态）。
+
+其余 check code（登记缺失 / schema 不符、报告不可解析、文件加载失败、清单漂移 / 用例数下降、例外面自身错误、陈旧例外登记）**一律不可容忍**。被抑制的项仍全程可见：`checks[]` 保留该 code（`ok:false` 且标注 `suppressed_by:<exception-id>`）、`failures[]` 与 `converged` 原样上报 —— 抑制只影响退出码，不影响事实面（关闭本轮 S-1）。
+
+**非收敛分支的判定口径（关闭 S-1 的两种读法）**：`converged = false` 时不做清单核对与失败集合核对（报告记 `files_executed = null` / `cases_executed = null` / 相关 `checks[].not_evaluated = true`），只判定 `SUITE_NONCONVERGENCE` 与登记面自身错误（`EXCEPTION_*`）。`SUITE_REPORT_UNPARSEABLE` 只在「进程已自行结束（`converged = true`）而 TAP 结构仍不完整」时触发 —— 终止导致的不完整是终止的后果，不是解析缺陷，两者不混算。
 特例（本 CR 交付态）：`exceptions = []` ⇒ 退出码 0 当且仅当失败集合为空 —— 与 `AC-01` 逐字一致。
 
 ### 3.3 不新增用户可调用契约（FR-17）
@@ -251,7 +261,7 @@ N/A —— 本 CR 不新增或修改任何 HTTP API（PRD 无 HTTP 契约；tool
 7. expanded     = Σ declarations: wildcards[t.from]?.length ?? 1
    当前实测：31 条声明、2 条 from=any-active、any-active 12 个目标 → 31 − 2 + 12×2 = 53
 8. identifiers  = declarations.map(t => `${t.from}|${t.to}|${t.trigger}`)（集合比较，抗行序变化）
-9. 结构不变量（推导侧，供断言）：
+9. 结构自检（推导侧；对同一批 declarations **恒真**，不作为覆盖率或断言项，只把「推导自身写错」暴露成异常）：
    - 每条声明的 from/to ∈ namedStates ∪ {'(new)'} ∪ wildcard 名
    - 每条 wildcard 的目标 ⊆ namedStates
    - namedStates ∩ wildcard 名 = ∅
@@ -262,11 +272,10 @@ N/A —— 本 CR 不新增或修改任何 HTTP API（PRD 无 HTTP 契约；tool
 ```text
 推导集合 ≡ gate-registry.stateMachine.*（具名状态集合 / wildcard 目标集合 / 转换标识集合）
 且 expanded 计数 ≡ 由登记集合自洽推出的值
-且 上述结构不变量全部成立
 ⇒ 向 dir-graph.yaml 增删任意一条转换或 wildcard 目标，集合比较失败 → 本测试红（AC-06 负控）
 ```
 
-**反恒真设计**：登记值不是「当前读到的值」（不是 `declared.length === declared.length` 型重述），而是**上一轮显式登记的目标值**；推导与登记是两条独立来源，二者相等才通过。
+**反恒真设计**：登记值不是「当前读到的值」（不是 `declared.length === declared.length` 型重述），而是**上一轮显式登记的目标值**；推导与登记是两条独立来源，二者相等才通过。承重断言只有上面三条集合/计数等价；**推导侧结构自检恒真、不计入覆盖**（关闭本轮 S-2，避免被读成检查项）。
 
 ### 4.2 全量套件门禁（FR-11 / FR-12 / FR-14）
 
@@ -274,9 +283,12 @@ N/A —— 本 CR 不新增或修改任何 HTTP API（PRD 无 HTTP 契约；tool
 
 ```text
 registry = readJson(gateRegistryPath)          // 缺失/坏 → 硬失败（check code 表）
-cmd      = ['node', '--test', ...(CONCURRENCY ? ['--test-concurrency=' + CONCURRENCY] : []),
+cmd      = ['node', '--test', '--test-reporter=tap',
+            ...(CONCURRENCY ? ['--test-concurrency=' + CONCURRENCY] : []),
             'skills/shared/crctl/scripts/test/*.test.mjs']
 （glob 由包装器展开为 21 个文件绝对路径：单参数太长时按批传参；展开后必须非空，否则硬失败）
+（`--test-reporter=tap` **显式钉死**：解析器硬依赖 TAP 结构，而 reporter 默认值随 Node 版本与是否 TTY 变化 ——
+ 不把门禁结论交给未登记的外部默认值；该命令是唯一来源（§5.4 / TDEC-4），关闭本轮 S-3）
 
 child = spawn(cmd, { cwd: toolsRoot, shell: false })
   ├─ stdout → TAP 报告文件（--report-out）+ 摘要
@@ -295,6 +307,8 @@ exit(checks.anyFail ? 1 : 0)
 
 **TAP 解析规则（必须硬失败）**：以缩进栈识别 `# Subtest: <name>` 块；文件名块（`<name>` 以 `.test.mjs` 结尾）必须有 file 级 plan `1..N`，其 N = 该文件**实际执行的用例数**；块内 `not ok` 行 = 失败用例名（`# SKIP` / `# TODO` 后缀分别计入 skip / todo）；无 file 级 plan、块不成对、plan 与实际行数矛盾 → 抛错。任何解析异常都不得返回「零失败」结果（工程纪律 #1：跨行解析失败必须硬失败）。
 
+**解析自测（关闭本轮 S-3）**：`contract-scan.test.mjs` 用**内联 TAP 片段**（合法片段 + 三类畸形片段：无 file 级 plan、块不成对、plan 与实际行数矛盾）走 `--report/--rc` 形态，断言合法片段判绿、三个畸形片段各自落 `SUITE_REPORT_UNPARSEABLE` 且退出非零 —— 不新增测试文件、不新增 fixture 目录（`*.test.mjs` 集合仍为 21）。
+
 **收敛与停滞的可观测化**：`converged=false` 时 `duration_ms` 记实际墙钟、`exit_code=null`、报告保留终止前已落盘的 TAP 内容；`--run` 的 stdout 打印固定字段（S-2：命令 / 耗时 / 是否停滞 / 结论），使 AC-10 的证据无需人工回忆。
 
 **进程树终止**：POSIX 用 `detached:true` + `process.kill(-pid, 'SIGKILL')`；Windows 用 `taskkill /PID <child.pid> /T /F`。**只终止本包装器自己 spawn 的 PID 树**，不按名字终止任何进程。
@@ -310,7 +324,7 @@ buildOutboxEvent(input, now):
 buildOutboxComparable(event):
   out = {}; for (f of OUTBOX_COMPARED_FIELDS) out[f] = event[f]
   payload = { ...event.payload }
-  for (p of OUTBOX_VOLATILE_PAYLOAD_PATHS) delete payload[p.split('.').slice(1).join('.')]   // 'payload.detected_at' → 'detected_at'
+  for (k of OUTBOX_VOLATILE_PAYLOAD_KEYS) delete payload[k]   // 'detected_at' = payload 根下键名（与 §3.1 常量同一键空间）
   out.payload = payload
   return out
 ```
@@ -325,10 +339,11 @@ buildOutboxComparable(event):
 |---|---|---|
 | BR-1 指令载体 | `skills/develop/write-dev-tasks/SKILL.md`：含 `crctl task init`；含对其受控账本 `tasks/_index.yml` 的「禁止手写」约束 | 删除任一要素 → 红 |
 | BR-1 pipeline 语义 | `code-implementation.pipeline.json`：节点数 ≡ `pipeline-templates/_index.yml#code-implementation-v1.nodes`（跨文件投影）；所有节点 prompt 对受治理账本写指令零命中（命令面 `crctl (task init|task append|task done|advance|review-record|approve|owner-set|version-set)` 与账本文件名 `_index.yml` / `_backlog.yml`）；skill 节点 `ref` 存在 | 向任一 prompt 注入账本写指令 → 红 |
-| BR-2 reader 事实源 | `skills/review/review-alignment/SKILL.md`：读取契约命中 `change-requests/_backlog.yml` 与 `cr.md`；`checkpoints[]` 零命中；`latest-checkpoint` **零命中**；`mtime` / `merge-commit` / `fingerprint` 零命中 | 回退事实源（写回 `latest-checkpoint` 或删 `_backlog.yml` 引用）→ 红 |
+| BR-2 reader 事实源 | `skills/review/review-alignment/SKILL.md`：读取契约命中 `change-requests/_backlog.yml` 与 `cr.md`；`checkpoints[]` 零命中；`latest-checkpoint` **零命中**；`mtime` / `merge-commit` / `fingerprint` **不得作为事实源被读出**（机械判据见下方「否定辖域」） | 回退事实源（写回 `latest-checkpoint`、删 `_backlog.yml` 引用、或把 `mtime` / `merge-commit` / `fingerprint` 写成读取依据）→ 红 |
 | BR-4 落盘校验语义 | `write-requirement-prd/SKILL.md`：定位含「重新读取」的校验句（先规范化行尾），断言该句内同时含三类对象——frontmatter 必填字段 / `七个章节` / `未替换占位符`；5 个禁用词零命中；`crctl validate` 与手工 commit 配方零命中 | 删除任一类对象或注入禁用词 → 红 |
 
 > 「句内要素」判据：以中文句读（`。`/`；`/换行）切句后取命中断言锚点（`重新读取`）的那一句，再做要素包含判断。锚点本身就是被断言语义的一部分（该校验步骤的动词），不是措辞钉死对象。
+> 「否定辖域」判据（BR-2 三词）：以**同一**句读切句后，对每个命中 `mtime` / `merge-commit` / `fingerprint` 的句子断言含否定锚点 `不读`；零命中同样满足。⇒ 把三词写成读取依据（非否定句）即红，而既有的「不读 mtime/merge-commit/fingerprint」表述不再被误判。**不对该文件要求零命中、也不回写该文件**：本机实测 `review-alignment/SKILL.md` 现共 2 处命中（`:33` 读取契约括号、`:51` 说明引用），均在含「不读」的否定句内。
 > 现有实现提示：`write-requirement-prd/SKILL.md` 在 Windows 检出为 CRLF（本机实测失败输出含 `\r\n`），上述「先规范化」是硬要求。
 
 ### 4.5 BR-5 构造修正（FR-8 / FR-9）
@@ -370,7 +385,7 @@ buildOutboxComparable(event):
 |---|---|---|---|---|
 | N-1 | 状态机口径 | 向 `tools/dir-graph.yaml#state_machine.transitions` 增加一条真实转换（例如 `from: developing, to: developing, trigger: "crctl-test-injection"`） | `crctl.test.mjs` BR-3 用例（集合/计数不等） | 删除该行，`git status --short` 确认该文件干净 |
 | N-2 | pipeline/Skill 文本语义 | 向 `write-requirement-prd/SKILL.md` 注入一个禁用词（例如 `validate-doc`）或删除「七个章节」要素 | `crctl.test.mjs` BR-4 用例 | 同上 |
-| N-3 | 去重比较字段契约 | 在 `lib/outbox-contract.mjs#buildOutboxEvent` 增加一个未登记字段（例如 `observed_at`），或在 `OUTBOX_VOLATILE_PAYLOAD_PATHS` 增加未登记路径 | `trace-outbox.test.mjs` 契约用例（字段分类不变性） | 同上 |
+| N-3 | 去重比较字段契约 | 在 `lib/outbox-contract.mjs#buildOutboxEvent` 增加一个未登记字段（例如 `observed_at`），或在 `OUTBOX_VOLATILE_PAYLOAD_KEYS` 增加未登记键 | `trace-outbox.test.mjs` 契约用例（字段分类不变性） | 同上 |
 
 证据留存（S-2 固定字段）：每个注入点存 1 份 `test-evidence/cmd-NN.log`，内容 = 命令、`duration_ms`、`converged`、`exit_code`、失败名、注入 diff 摘要、还原后的重跑结论。**注意**：全量命令每轮耗时以实测为准（基线既有实测 894.8 s；本机名字过滤子集实测 23.8 s），负控总计需要 6 次全量运行（3 注入 + 3 还原），实施/测试期需按其预算排期。
 
@@ -385,7 +400,7 @@ buildOutboxComparable(event):
 - **Decision**：全量测试门禁由 `test/suite-gate.mjs` 包装 `node --test`，解析 TAP 后判定；CI 步骤只调用包装器。
 - **Context**：FR-14 需要「登记但不得替代执行 + 到期即红 + 与真实失败集合双向匹配」，这些判定必须在**运行结果之上**做；FR-12 需要机械化的「耗时 / 是否停滞」证据；S-1 需要「每文件用例数」——三者都不是单个 `node --test` 进程能自报的。
 - **Alternatives**：（a）全部塞进某个 `*.test.mjs`（否决：测试进程看不到其他文件的执行结果，且会让被测集合包含判定器本身）；（b）CI YAML 内联 shell+node 脚本（否决：命令与并发参数会同时出现在 CI 与文档两处，违反 FR-12.3「同一口径」）；（c）不引入包装器、只在测试里断言登记面（否决：残缺——无法覆盖「到期/集合差」语义）。
-- **Consequences**：多一个新脚本与 TAP 解析面；TAP 结构变化是唯一外部耦合点，用「解析失败即硬失败」换取不静默降级。
+- **Consequences**：多一个新脚本与 TAP 解析面；TAP 结构是唯一外部耦合点，用「reporter 显式钉死（§4.2）+ 解析失败即硬失败」换取不静默降级。
 
 ### TDEC-2 受控清单承载：仓库内 git 跟踪的 JSON 数据文件
 
@@ -425,7 +440,7 @@ buildOutboxComparable(event):
 | FR-7 BR-4 语义要素 | §4.4 第 4 行 | `crctl.test.mjs:4989` |
 | FR-8 保留去重语义 | §3.1 行为等价 + §2.2 字段归类 | `lib/outbox-contract.mjs`、`crctl.mjs` |
 | FR-9 冻结向量构造改对 + 真实冲突用例 | §4.5 构造 A / B | `archive-tx.test.mjs:373` 与新增用例 |
-| FR-10 去重契约可检查 | §3.1 三条不变性（字段分类 / 枚举排除 / 只读投影） | `lib/outbox-contract.mjs` + `trace-outbox.test.mjs` |
+| FR-10 去重契约可检查 | §3.1 不变性（字段分类 / 枚举排除 / 投影闭合 / 只读投影） | `lib/outbox-contract.mjs` + `trace-outbox.test.mjs` |
 | FR-11 CI 真门禁 | §4.2 全流程 + 清单核对（21 文件集合相等） | `suite-gate.mjs`、`crctl-ci.yml:109-111` |
 | FR-12 并发收敛决定 | TDEC-4 + §3.2 报告字段 + §4.2 停滞可观测化 | `suite-gate.mjs`（常量 + `--max-runtime-ms`） |
 | FR-13 漂移负控 | §4.6 协议（3 类注入 + 全量命令 + 证据字段） | 实施/测试期证据 `test-evidence/cmd-NN.log` |
@@ -442,11 +457,11 @@ buildOutboxComparable(event):
 | AC-02 | §4.4 断言→事实源两列表 + §6.6 分类清单 | 交付内含映射表；每条可用命令复取事实源；负控 N-1/N-2 使其变红 | 映射覆盖 BR-1…BR-4 涉及的计数/文本/跨文件投影三类；负控为可重放命令 |
 | AC-03 | §6.6（D/P 两张表）+ §4.1 反恒真 | 归类清单逐条；`stateMachine.*` 显式登记；无「等于文件行数」型重述 | P 表由登记值承载，D 表由推导承载，二者独立来源 → 恒真式不可能同时满足集合比较与负控 |
 | AC-04 | §4.4 BR-1 两行 | `crctl.test.mjs:1337` 用例绿；pipeline 零账本写指令；`write-dev-tasks` 载体含指令 | 只改测试断言（FR-15.1），产品文本零 diff |
-| AC-05 | §4.4 BR-2 行 | `checkpoint-tx.test.mjs:480` 绿；`review-alignment/SKILL.md` 未新增 `latest-checkpoint` | 断言对象是**当前**事实源（`cr.md` + `_backlog.yml` 条目信息），不需要改 SKILL 文本（改文本会被零命中断言抓住） |
-| AC-06 | §4.1 + §2.3 | 状态机用例绿；声明/展开由推导得出；具名状态与转换标识集合显式登记；负控 N-1 变红 | 推导源（`dir-graph.yaml`）与登记源（registry）独立；结构不变量同时断言 |
+| AC-05 | §4.4 BR-2 行 | `checkpoint-tx.test.mjs:480` 绿；`review-alignment/SKILL.md` 未新增 `latest-checkpoint`；三词仅在否定句内出现 | 断言对象是**当前**事实源（`cr.md` + `_backlog.yml` 条目信息），不需要改 SKILL 文本——该文件对 `latest-checkpoint` / `checkpoints[]` 当前零命中，三词的 2 处既有命中均在含「不读」的否定句内（本机实测），故断言按事实源现状成立 |
+| AC-06 | §4.1 + §2.3 | 状态机用例绿；声明/展开由推导得出；具名状态与转换标识集合显式登记；负控 N-1 变红 | 推导源（`dir-graph.yaml`）与登记源（registry）独立，承重断言 = 三条集合/计数等价；推导侧结构自检恒真、仅作诊断（不计入覆盖） |
 | AC-07 | §4.4 BR-4 行 | `crctl.test.mjs:4989` 绿；5 禁用词零命中；负控 N-2 变红 | 句内要素检查覆盖「删除校验步骤语义」与「注入禁用词」两种注入 |
 | AC-08 | §4.5 构造 A/B + 回归保护 | RED-7 绿且构造为「内容一致 + journal 未标记」；新用例断言 `EMIT_FAILED`/`OUTBOX_DEDUP_CONFLICT`、pending、补发成功零新 commit；BR-5 语义未变 | 构造只动测试与 fixture journal 状态；产品零语义变更（§3.1 契约等价），drift-audit 既有用例不在改写面内 |
-| AC-09 | §3.1 不变性 2/3 + §4.3 | `trace-outbox` 契约用例绿；字段分类集合相等；`payload.observed_at` 反例证明非自动排除；负控 N-3 变红 | 新增字段必须登记进两个集合之一，否则集合相等断言直接失败（不依赖人工比对） |
+| AC-09 | §3.1 不变性 2/3/4 + §4.3 | `trace-outbox` 契约用例绿；字段分类集合相等；`payload.observed_at` 反例证明非自动排除；投影结果与 `OUTBOX_VOLATILE_PAYLOAD_KEYS` 交集为空；负控 N-3 变红 | 新增字段必须登记进两个集合之一、新增易变键必须登记进 `OUTBOX_VOLATILE_PAYLOAD_KEYS`，否则集合相等 / 投影闭合断言直接失败（不依赖人工比对） |
 | AC-10 | TDEC-4 + §3.2/§2.4 固定字段 | 交付含 `command/duration_ms/converged/exit_code` 与结论；CI 与文档同口径（命令只来自包装器常量） | 默认分支（去参）与回退分支（`=1`）都在包内可执行；`--max-runtime-ms` 保证「停滞」可产出证据而不是无限挂起 |
 | AC-11 | §4.6 | N-1/N-2/N-3 各一次注入 → 全量命令红 → 还原后绿；命令与关键输出留 `test-evidence/` | 注入点全部在本 CR 的断言覆盖面上；注入物由 `git checkout -- <path>` 还原并核验干净 |
 | AC-12 | §2.3 `exceptions` + §3.2 | 交付态 `exceptions: []`（显式空，非文件缺失）；构造到期条目 → `EXCEPTION_EXPIRED` 非零；登记面写入口仅人工提交；`contract-scan` 静态断言无代码写路径 | 到期判定只用运行时瞬时 + 登记时间戳，确定性；「不匹配即红」由双向集合比较实现 |
@@ -493,25 +508,35 @@ buildOutboxComparable(event):
 
 5. repo: tools
    relative path: skills/shared/crctl/scripts/test/merge-fixture.mjs
-   stable symbol/对象: runCrctl / git / makeWritebackFixture / makeCodeApprovedFixture / originMasterCount / archiveOutboxFiles
+   stable symbol/对象: 导出 `sha256`(:11) / `git`(:14) / `runCrctl`(:20) / `makeFixture`(:27) / `makeCodeApprovedFixture`(:95) / `originMasterCount`(:197)
+                       （本机实测：该文件共 6 个 `export`，无其他导出形式）
    commit SHA: dddd0ad63fb79bd7608314b4553f30e8ce7b7289
-   依赖结论: 既有共享 fixture；本 CR 的 archive 用例与状态机用例沿用同一构造方式，
-             不新增 fixture 框架。
+   依赖结论: 既有共享 fixture；本 CR 的 archive 用例与状态机用例沿用同一构造方式（`makeCodeApprovedFixture` 造 code-approved 场景，
+             `git` / `runCrctl` / `sha256` / `originMasterCount` 做断言与计数），不新增 fixture 框架。
 
 6. repo: tools
+   relative path: skills/shared/crctl/scripts/test/archive-tx.test.mjs
+   stable symbol/对象: 文件内局部 helper `makeWritebackFixture`(:14) 与 `archiveOutboxFiles`(:231)
+                       （两者是本文件局部函数，**不在 `merge-fixture.mjs` 中**；本机实测）
+   commit SHA: dddd0ad63fb79bd7608314b4553f30e8ce7b7289
+   依赖结论: RED-7 所在文件的构造面——用例体（:374）用 `makeWritebackFixture` 造 kb 场景、:393 用
+             `archiveOutboxFiles` 枚举 outbox 事件文件。本 CR 的 RED-7 构造改对与「同名不同内容」新用例
+             沿用这两个局部 helper，**不上提**到共享 fixture（不扩大 diff、不影响其他测试文件）。
+
+7. repo: tools
    relative path: .github/workflows/crctl-ci.yml
    stable symbol/对象: 步骤 `crctl full test suite`（:109-111）
    commit SHA: dddd0ad63fb79bd7608314b4553f30e8ce7b7289
    依赖结论: 现状命令 = `node --test --test-concurrency=2 skills/shared/crctl/scripts/test/*.test.mjs`
              （无例外、无 skip 白名单）。本 CR 把该步骤改为调用 suite-gate（§4.2），命令单一来源迁入包装器常量。
 
-7. repo: tools
+8. repo: tools
    relative path: skills/develop/write-dev-tasks/SKILL.md
    stable symbol/对象: `crctl task init` 指令（:106）与受控账本禁手写约束（:115）
    commit SHA: dddd0ad63fb79bd7608314b4553f30e8ce7b7289
    依赖结论: BR-1 断言对象的真实载体——该指令的权威落点是本 SKILL，而不是 pipeline JSON。
 
-8. repo: tools
+9. repo: tools
    relative path: pipeline-templates/code-implementation.pipeline.json
    stable symbol/对象: nodes[16]；`crctl task init` / `_index.yml` / 手写索引 指令均为零命中（本机实测）
    commit SHA: dddd0ad63fb79bd7608314b4553f30e8ce7b7289
@@ -519,32 +544,32 @@ buildOutboxComparable(event):
              pipeline-templates/_index.yml#code-implementation-v1.nodes（本机实测 = 16），
              断言以跨文件投影形式读取该值，不在测试里写第二份 16。
 
-9. repo: tools
+10. repo: tools
    relative path: skills/review/review-alignment/SKILL.md
    stable symbol/对象: 读取契约第 2 条（读 cr.md frontmatter + _backlog.yml 条目基本信息；不读 mtime/merge-commit/fingerprint；检查清单 AL-01…AL-06）
    commit SHA: dddd0ad63fb79bd7608314b4553f30e8ce7b7289
    依赖结论: BR-2 断言对象。本机实测该文件对 `checkpoint` 零命中；当前事实源是 cr.md + _backlog.yml 条目信息。
 
-10. repo: tools
+11. repo: tools
     relative path: skills/requirement/write-requirement-prd/SKILL.md
     stable symbol/对象: Step 4 落盘后重新读取校验句（:89）
     commit SHA: dddd0ad63fb79bd7608314b4553f30e8ce7b7289
     依赖结论: BR-4 断言对象。现文为「七个章节、未替换占位符」（连接词已由 AIFI-22 改为顿号），
               5 个禁用词零命中；本机实测该文件在 Windows 检出为 CRLF → 断言必须先做行尾规范化。
 
-11. repo: tools
+12. repo: tools
     relative path: skills/shared/crctl/scripts/test/*.test.mjs
     stable symbol/对象: 测试文件集合 = 21 个（本机实测目录计数）
     commit SHA: dddd0ad63fb79bd7608314b4553f30e8ce7b7289
     依赖结论: manifest 基线的登记对象；本 CR 不新增测试文件，交付后仍为 21 个。
 
-12. repo: tools
+13. repo: tools
     relative path: skills/shared/crctl/scripts/test/archive-tx.test.mjs
     stable symbol/对象: `TASK-01 RED-7`（:373）——当前构造预写「同名但内容不同」的占位文件
     commit SHA: dddd0ad63fb79bd7608314b4553f30e8ce7b7289
     依赖结论: owner 裁定「构造改对」的对象（§4.5）；原断言集合全部保留。
 
-13. 基线红登记（本 CR 的起点事实，不是方案前提）
+14. 基线红登记（本 CR 的起点事实，不是方案前提）
     repo: tools / commit SHA: dddd0ad63fb79bd7608314b4553f30e8ce7b7289
     本机实测（SDD 作者，2026-09-13，Windows / Node v24.15.0，CR worktree clean）：
       命令: node --test --test-name-pattern="CR-2026-037|checkpoint T05|TASK-06|CR-2026-042|RED-7"
@@ -585,6 +610,9 @@ buildOutboxComparable(event):
 | SDD-CLOSE-06 | FR-14.4（不得自证绿） | 关闭：门禁只读登记面（无写路径）+ `contract-scan` 静态断言「仓库内无对登记文件的写调用」+ 登记不替代执行（失败始终上报） |
 | SDD-CLOSE-07 | FR-10（契约落点） | 关闭：`lib/outbox-contract.mjs` 单一事实源（TDEC-3），产品与测试共同 import |
 | SDD-CLOSE-08 | FR-17（契约面声明） | 关闭：不新增用户可调用契约（§3.3）；例外登记面四查逐条结论见 §3.2 |
+| SDD-CLOSE-09 | 本轮评审 S-1（`SUITE_NONCONVERGENCE` 的可容忍性两读法） | 关闭：显式定为「可抑制（可绿）」，条件 = 未到期 + `kind: suite-nonconvergence` + 稳定标识匹配；事实面（`converged:false`、`checks[]`、`failures[]`）永不隐藏；非收敛分支不做清单/失败集合核对、不混算 `SUITE_REPORT_UNPARSEABLE`；其余 check code 一律不可容忍（§3.2 退出码段） |
+| SDD-CLOSE-10 | 本轮评审 S-2（推导侧结构不变量恒真） | 关闭：§4.1 步 9 标注为「推导侧自检，恒真」并从断言块移出、不计入覆盖；承重断言只有三条集合/计数等价（§4.1、§6.2 AC-06） |
+| SDD-CLOSE-11 | 本轮评审 S-3（TAP reporter 依赖未登记默认值） | 关闭：包装器唯一命令来源显式钉 `--test-reporter=tap`（§4.2），并以**内联 TAP 片段**在 `contract-scan.test.mjs` 做 `--report/--rc` 解析自测（合法 + 三类畸形），不新增测试文件（§4.2、§1.2） |
 
 ### 6.6 FR-3 归类清单：可推导的事实 vs 必须钉死的目标值
 
@@ -597,7 +625,7 @@ buildOutboxComparable(event):
 | D3 | 测试文件集合与执行规模 | 目录实际执行集合（runner 报告）↔ `manifest` | 集合相等 + 计数 ≥ 基线 | 实际值由 runner 产出，登记值由人工维护 |
 | D4 | pipeline 是否指导直写受治理账本 | pipeline JSON prompt 文本 | 命令面/账本文件名扫描（零命中） | 注入即红（N-2 同类） |
 | D5 | Skill 文本的禁用词与结构性载荷 | 相关 `SKILL.md` | 零命中 + 句内要素 | 注入/删除即红 |
-| D6 | reader 事实源引用 | `review-alignment/SKILL.md` 读取契约段 | 命名标识在/不在 | 回退事实源即红 |
+| D6 | reader 事实源引用 | `review-alignment/SKILL.md` 读取契约段 | 命名标识在/不在 + 三词否定辖域（§4.4） | 回退事实源（写回 `latest-checkpoint` 或把三词写成读取依据）即红 |
 
 **必须钉死的目标值（显式登记，不得由推导自动接受）**
 
@@ -620,7 +648,7 @@ buildOutboxComparable(event):
 ### 7.1 边界条件与错误处理
 
 - **行尾纪律**（ARCHITECTURE 不变量 4）：所有新断言与解析在 `replaceAll('\r\n','\n')` 之后进行（本机实测 `write-requirement-prd/SKILL.md` 为 CRLF 检出，BR-4 的失败输出即含 `\r\n`）。
-- **解析硬失败**：状态机推导（结构不符）、TAP 解析（结构不符 / 无 plan / 数量矛盾）、`gate-registry.json`（缺失 / schema 不符）一律抛错 → 非零退出，**禁止**降级为空集合或「零失败」。
+- **解析硬失败**：状态机推导（结构不符）、TAP 解析（结构不符 / 无 plan / 数量矛盾）、`gate-registry.json`（缺失 / schema 不符）一律抛错 → 非零退出，**禁止**降级为空集合或「零失败」。唯一例外是登记面自身的可抑制项（§3.2）：进程未自行结束时改判 `SUITE_NONCONVERGENCE`，且该分支不产生 `SUITE_REPORT_UNPARSEABLE`。
 - **空集合必须显式**：`exceptions: []` 是显式声明；文件缺失是 `SUITE_REGISTRY_MISSING`（红），不是「无例外」。
 - **不静默改写**：门禁判定全程只读；任何失败都不写 `gate-registry.json`、不写受治理账本、不改被测仓。
 - **进程管理**：超时终止只针对本包装器自己的子进程树（POSIX 进程组 / Windows `taskkill /T`），不按进程名终止。
@@ -641,7 +669,7 @@ buildOutboxComparable(event):
 ### 7.4 兼容性
 
 - 双环境一致：命令与断言不依赖 shell 特性（`shell:false` spawn + 在包装器内展开 glob），Windows（本机 CR worktree，autocrlf 检出）与 CI（bash）同结论。
-- Node 版本：只用 Node ≥ 18 标准库（本机 v24.15.0；CI 为 Node 20）；TAP 解析不依赖 Node 版本专有输出格式，结构不符即硬失败。
+- Node 版本：只用 Node ≥ 18 标准库（本机 v24.15.0；CI 为 Node 20）；`--test-reporter=tap` 显式钉死（§4.2），TAP 解析不依赖 Node 版本专有输出格式，结构不符即硬失败。
 - 历史证据不改写：不动历史 CR 产物与归档；不改 `specs/`、`delivery/`。
 
 ---
@@ -699,5 +727,5 @@ git diff -U0 -- skills/shared/crctl/scripts/crctl.mjs | Select-String 'case .(ta
 ### `follow_up`（发现但留给后续 CR）
 
 1. `tools/ARCHITECTURE.md` §5 不变量 5 的「28 条声明 / wildcard 展开 50 条」已滞后于 `dir-graph.yaml` 当前内容（31 / 53）；按该文档 §8 维护规则，属需独立触发的文档修订，不在本 CR 内改（本 CR 未改变状态机，登记目标值一律从 `dir-graph.yaml` 推导）。建议随下一次触及状态机口径的 CR 一并修正，或单开文档修订 CR。
-2. `pipeline-structure.test.mjs` / `contract-scan.test.mjs` 中其余 pipeline 节点数硬编码断言（当前为绿）未纳入本次「跨文件投影」改造；若后续 CR 触及 `_index.yml#nodes`，应在同一 CR 内一并改为投影断言（本 CR 只改 BR-1 触及处，避免扩大 diff）。
+2. 其余 pipeline 节点数硬编码断言（本轮评审 S-4，本机核对）未纳入本次「跨文件投影」改造：`crctl.test.mjs:4961`（读 `_index.yml#nodes` 后钉死 16）、`pipeline-structure.test.mjs:41`（`ids.length` 钉死 16；同文件 `:94-96` 已有同口径跨文件投影断言）、`pipeline-structure.test.mjs:183`（requirement-authoring 钉死 7）。三条当前均为绿；若后续 CR 触及 `_index.yml#nodes`，应在同一 CR 内一并改为投影断言（本 CR 只改 BR-1 触及处，避免扩大 diff）。
 3. 例外登记面若在后续 CR 首次出现真实例外，需同步在 `test-report` 与回写产物中记录「例外 → owner → 到期」闭环；本 CR 交付态为空，未产生该流程的运行实例。
