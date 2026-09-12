@@ -1,0 +1,22 @@
+cr-id: CR-2026-064
+tasks:
+  - id: CR-2026-064-TASK-01
+    title: "生产者迁移：唯一构造器 buildRecovery 与 9 类场景 9 个生产者站点原位改为结构化 recovery"
+    status: pending
+    estimate: 16h
+    depends-on: []
+  - id: CR-2026-064-TASK-02
+    title: "CLI 投影迁移：register 单投影、gate 错配与 reset 失败分支结构化、删除占位符 helper"
+    status: pending
+    estimate: 8h
+    depends-on: [CR-2026-064-TASK-01]
+  - id: CR-2026-064-TASK-03
+    title: "消费方与文档迁移：4 份 tools SKILL + README 原位改读 recovery、OpenWiki 生成页重生成、multica 交付 Agent 提示词"
+    status: pending
+    estimate: 12h
+    depends-on: [CR-2026-064-TASK-01, CR-2026-064-TASK-02]
+  - id: CR-2026-064-TASK-04
+    title: "测试迁移与契约退役保护：7 个既有测试改结构断言、contract-scan 整树扫描面与八条命中用例、shell 逃逸守卫"
+    status: pending
+    estimate: 16h
+    depends-on: [CR-2026-064-TASK-01, CR-2026-064-TASK-02, CR-2026-064-TASK-03]
