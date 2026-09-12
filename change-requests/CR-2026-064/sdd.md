@@ -6,13 +6,14 @@ title: CR-R：结构化恢复合同原子迁移 — `recoverCommand`/`recover_co
 target-version: 0.37
 status: draft
 created: "2026-09-12T22:48:00+08:00"
-updated: "2026-09-12T22:48:00+08:00"
+updated: "2026-09-12T23:09:00+08:00"
 ---
 
 # CR-R：结构化恢复合同原子迁移 — 技术设计
 
 > 输入：`change-requests/CR-2026-064/prd.md`（5 US / 17 FR / 14 AC，评审 PASS + 人工审批）。
 > 本文只设计「把恢复动作从命令字符串改为结构化 `recovery`」的落点与算法；不改任何既有错误码语义、状态转换、事务边界与业务算法。
+> 修订：`review-tech-design` attempt 1/3 判 BLOCK（TD-BL-1 扫描覆盖 / TD-BL-2 OpenWiki 生成闭环 / TD-BL-3 依赖事实与计数口径）后的定点回修；改动限于 §1.1、§4.3、§4.4、D-5、新增 D-7、§6.1–§6.4、§9、§11，方案主体未重写。
 
 ## 1. 架构概览
 
@@ -24,7 +25,7 @@ updated: "2026-09-12T22:48:00+08:00"
 | `tools` | `skills/shared/crctl/scripts/crctl.mjs` | 投影层：删除 `recoverCommand`/`recover_command` 双投影，2 处错误恢复改为结构化，注册结果单投影 |
 | `tools` | `skills/shared/crctl/scripts/test/*.test.mjs` | 7 个既有测试文件由字符串包含断言改为结构与 argv 断言；`contract-scan.test.mjs` 扩展退役名单与活跃范围 |
 | `tools` | `skills/shared/crctl/SKILL.md`、`skills/cr/cr-archive/SKILL.md`、`skills/sync/push-progress/SKILL.md`、`skills/writeback/merge-feature-branch/SKILL.md` | 消费方提示词：改读 `recovery.executable/args/cwd/requiresTTY/promptFor` |
-| `tools` | `README.md`、`openwiki/operations/crctl-transactions.md` | 文档单一事实源改为结构化合同（旧合同描述删除，不新增第二套描述） |
+| `tools` | `README.md`（手工原位迁移）、`openwiki/operations/crctl-transactions.md`（**生成物**，不手工编辑） | README 原位改读结构化合同；OpenWiki 页面由既有生成步骤从迁移后的权威源码重新生成并核对（D-7），旧合同描述随之消失，不新增第二套描述 |
 | `multica` | `cr-prompts-revised/delivery-agent.md` | 交付 Agent 提示词的 owner 可复制版本改读结构化结果（本 CR 不更新平台 DB） |
 | 知识库 | `change-requests/CR-2026-064/sdd.md` + 后续 PLAN/TASK | 本 CR 产物 |
 
@@ -245,7 +246,7 @@ export function buildRecovery(args, { cwd, requiresTTY = false, promptFor = [] }
 | `skills/sync/push-progress/SKILL.md` | Step 2 错误分流行、错误表「其它事务错误」行 | 改为按 `recovery` 重跑同一命令 |
 | `skills/writeback/merge-feature-branch/SKILL.md` | publication lag 行 | 「按 extra.recoverCommand 先 checkpoint」→「按 `error.recovery` 先 checkpoint」 |
 | `README.md` | §7「中途失败」条 | 改为按输出的 `recovery`（结构化 argv）重跑同一命令 |
-| `openwiki/operations/crctl-transactions.md` | frontmatter `invariants[1]`、正文「Recovery」条、「Change-Safety」条 | 改为结构化 `recovery` 描述（生成来源仍是 `openwiki.source_paths` 指向的同一份源码） |
+| `openwiki/operations/crctl-transactions.md` | frontmatter `invariants[1]`、正文「Durable Transaction Envelope → Recovery」条、「Change-Safety Guidance」第 3 条 | **生成物，不手工编辑**：源码迁移完成后由既有生成步骤（`openwiki code --update`，与 `openwiki-update.yml` 同源）重新生成该页，再核对三处旧合同断言归零（D-7） |
 | `skills/shared/crctl/scripts/test/archive-tx.test.mjs` | `TASK-01 RED-1` 标题、`L259`、`L317` | 结构断言（`executable`/`args`/`requiresTTY`/`promptFor`） |
 | `skills/shared/crctl/scripts/test/checkpoint-tx.test.mjs` | 测试标题、`L224` | 同上 |
 | `skills/shared/crctl/scripts/test/crctl.test.mjs` | 成功结果字段集用例、reset 双向量用例、rollback 用例、gate 双向量用例 | 同上；补 6 类 reason 向量与 `promptFor` 断言 |
@@ -253,22 +254,51 @@ export function buildRecovery(args, { cwd, requiresTTY = false, promptFor = [] }
 | `skills/shared/crctl/scripts/test/register-tx.test.mjs` | `L143`、`L164`、`L637` 标题、`L650`（`recover_command`） | 同上；双投影用例改为单投影断言 |
 | `skills/shared/crctl/scripts/test/workspace-freshness.test.mjs` | `L269` | 同上 |
 | `skills/shared/crctl/scripts/test/writeback-tx.test.mjs` | `L818` 标题、`L831` | 断言 `--target-version` 为独立元素且值正确 |
-| `skills/shared/crctl/scripts/test/contract-scan.test.mjs` | `RETIRED` / `ACTIVE_PATHS` / 扫描断言 | 见 §4.4 |
+| `skills/shared/crctl/scripts/test/contract-scan.test.mjs` | `FORBIDDEN` / `RETIRED_LEGACY` / `ACTIVE_PATHS`（既有）+ 新增 `RETIRED_RECOVERY`、派生活跃面与排除断言 | 见 §4.4（CR-2026-041 既有断言保持不动） |
 | `multica/cr-prompts-revised/delivery-agent.md` | `L27`、`L44` | 「明确 `recoverCommand`」→「明确的结构化 `recovery`（argv）」；失败汇报项改名 |
 
 ### 4.4 契约扫描算法（FR-11）
 
-复用**既有**静态合同扫描机制（`contract-scan.test.mjs`，CR-2026-041 FR-06/07 建立），做三处扩展：
+复用**既有**静态合同扫描机制（`contract-scan.test.mjs`，CR-2026-041 FR-06/07 建立），做三处扩展：退役名单、**派生活跃面**、判定与正反用例。
 
-1. **退役名单**：`RETIRED` 追加 `'recoverCommand'`、`'recover_command'`（与既有 3 个退役 Skill 名同一名单）；
-2. **活跃范围（显式清单 + 动态 Pipeline 段）**：在既有 `ACTIVE_PATHS` 基础上补入本 CR 的活跃面 ——
-   `skills/shared/crctl/scripts/crctl.mjs`、`skills/shared/crctl/scripts/lib/workspace-transactions.mjs`、`skills/shared/crctl/scripts/lib/durable-tx.mjs`、`skills/shared/crctl/scripts/lib/yaml-subset.mjs`、`skills/shared/crctl/SKILL.md`、`skills/cr/cr-archive/SKILL.md`、`skills/sync/push-progress/SKILL.md`、`skills/writeback/merge-feature-branch/SKILL.md`、`openwiki/operations/crctl-transactions.md`、7 个被迁移的测试文件；
-   另加一段 **动态 Pipeline 段**：`readdirSync('pipeline-templates')` 过滤 `*.pipeline.json`（与 `crctl-ci.yml` 既有做法同源，避免清单漂移）；
-3. **判定与正反用例**：抽出纯谓词 `retiredHits(text, names)`（先 `\r\n → \n` 规范化，再 `includes`），活跃面统一断言 `retiredHits(text, RETIRED)` 为空；并新增两类反例断言：
-   - **命中即失败**：合成文本 `'x recoverCommand y'` 必须被同一谓词判为命中（证明扫描有效，非恒真）；
-   - **允许排除不误报**：`test/fixtures/traceability-191k.yml` 属于历史证据，仍**合法包含**旧字段名，且不在活跃清单内 —— 用例显式断言「该文件含旧字段名」且「不被扫描」，证明排除是刻意且必要的。
+**1. 退役名单：按名分范围**
 
-**排除范围**（刻意不扫，与 PRD FR-11 一致）：历史 CR 产物与历史 traceability、归档 delivery 证据、`test/fixtures/**` 历史夹具、迁移/changelog 文档、扫描器自身的禁止名单（其文本含被扫字符串作为模式）。
+| 名单 | 名称 | 扫描范围 |
+|---|---|---|
+| `RETIRED_RECOVERY`（本 CR 新增） | `recoverCommand`、`recover_command` | 派生活跃面（下表） |
+| `RETIRED_LEGACY`（CR-2026-041 既有） | `change-impact-analysis`、`feedback-writeback`、`feedback-writeback-done` | 保持既有显式 `ACTIVE_PATHS` 与既有断言，**本 CR 不改其名单与范围** |
+
+分名分范围的事实依据（已在资源 HEAD 上核实，记录见 §11-5）：三个既有退役名在活跃面内**合法存在** —— `skills/shared/crctl/scripts/lint-prompts.mjs`（linter 的禁止名单）、`crctl.test.mjs` / `lint-prompts.test.mjs`（禁止名单的用例样本）、`CUSTOM.md`（台账引述）。把 `RETIRED_LEGACY` 并入派生活跃面会让 CR-2026-041 的断言立刻失败，而迁移这些名单不在本 CR 范围（§9 `zero_diff`）；PRD FR-11 要求加入退役清单的只有两个恢复字段名，故按名分范围。
+
+**2. 派生活跃面：从索引与活跃根派生，不手工列举**
+
+| 类别 | 派生规则（唯一事实源） | 当前规模 |
+|---|---|---|
+| active Skill | `skills/_index.yml` 中 `status: active` 条目的 `path` | 56 |
+| active Agent | `agents/_index.yml` 中 `status: active` 条目的 `path` | 9 |
+| Pipeline | `pipeline-templates/_index.yml` 的 active `path`（去 `tools/` 前缀）与 `readdirSync('pipeline-templates')` 的 `*.pipeline.json` **互为校验**，集合不相等即硬失败 | 8 |
+| 活跃源码 | `skills/shared/crctl/scripts/*.mjs` + `skills/shared/crctl/scripts/lib/*.mjs`（`readdirSync`） | 7 |
+| 活跃测试 | `skills/shared/crctl/scripts/test/**`（递归枚举），扣除 `fixtures/**` 与扫描器自身 | 21 |
+| 活跃文档 | 仓库根 `*.md`（不区分大小写）/ `*.yml` / `*.yaml` + `docs/**/*.md` + `openwiki/**/*.md`（`readdirSync` 递归枚举） | 8 + 4 + 14 |
+
+派生面当前合计 127 个文件。索引解析与文件读取一律先 `replaceAll('\r\n', '\n')` 再 `split(/\r?\n/)`（仓库行尾纪律）；索引解析出 0 条 active、或目录枚举为空，必须**硬失败**，不得静默降级为空数组（`check-skill-matrix.mjs` 已有「空结构守卫」先例，CR-2026-012 教训）。
+
+**3. 可审计排除：恰两项，且被断言固定**
+
+| 排除项 | 理由 | 固定方式 |
+|---|---|---|
+| `skills/shared/crctl/scripts/test/contract-scan.test.mjs` | 扫描器自身的退役名单 —— 加入两个字段名后该文件必然含被扫字符串 | 断言其仍含退役名单文本、且不在被扫描集合内 |
+| `skills/shared/crctl/scripts/test/fixtures/**`（含 `traceability-191k.yml`） | 历史 evidence 夹具，合法保留旧字段名 | 断言夹具含旧字段名且不在派生活跃面内 |
+
+不排除其它任何位置：`tools` 仓内没有 changelog/migration 文档含旧字段名；历史 CR 产物、历史 traceability 与归档 delivery 证据位于 KB 仓（不在 `tools` 仓扫描范围），故 PRD 允许的四类排除在 `tools` 仓内只落为上述两项。
+
+**4. 判定与正反用例**
+
+- 纯谓词 `retiredHits(text, names)`（先 `\r\n → \n` 规范化，再大小写敏感的 `includes`）；`scanScope(files, names)` 返回命中文件列表。
+- **零命中断言**：`scanScope(派生活跃面, RETIRED_RECOVERY)` 为空。
+- **命中即失败的四个代表性用例**（active Skill / active Agent / 活跃源码 / 活跃测试各一条）：分别取 `skills/cr/cr-archive/SKILL.md`、`agents/delivery-agent.md`、`skills/shared/crctl/scripts/lib/workspace-transactions.mjs`、`skills/shared/crctl/scripts/test/archive-tx.test.mjs` 的真实文本，在内存中追加一行含 `recoverCommand` 的合成行，断言 `scanScope` 对同一路径判为命中 —— 证明四类范围都不是恒真空断言，任一未列活跃文件回流旧名即失败。
+- **允许排除不误报**：夹具文件仍合法含旧名，断言 `retiredHits(夹具文本) === true` 且 `scanScope(派生活跃面)` 不含它，证明排除是刻意且必要的。
+- **排除不隐形**：断言排除集合恰为上表两项 —— 新增排除必须改测试并被评审看见。
 
 **跨仓边界（诚实口径）**：扫描运行在 `tools` 仓测试套件内，只能覆盖 `tools` 仓活跃面；`multica` 仓的 `cr-prompts-revised/delivery-agent.md` 与 KB 侧文档不在本扫描范围，其迁移由 §4.3 清单 + FR-14 有界盘点 + 本 CR 评审（`review-tech-design`/`review-code`）覆盖，不由工具机器证明。
 
@@ -321,12 +351,12 @@ assert.deepEqual(res.recovery.promptFor, []);
 - **Alternatives**：① 在 `args` 里保留 `<CR-ID>` / `<plan>` 哨兵 —— 与 FR-1「每元素是一个完整 argv」相抵，并把「该值必须重新获取」这一事实降级为字符串约定；② 非规范 CR-ID 场景干脆不返回恢复 —— 会丢失既有恢复方向（FR-13 要求保留原义）。
 - **Consequences**：`args` 永不含占位符；忽略 `promptFor` 的消费方撞上目标 CLI 既有 `BAD_ARGS`（零副作用，§3.4）；`crIdForRecover` 的占位符语义被删除。
 
-### D-5 退役扫描复用既有机制 + 显式活跃清单（采用）
+### D-5 退役扫描复用既有机制 + 索引派生的活跃面（采用）
 
-- **Context**：既有机制是 `node --test` 内的固定路径清单 + `includes` 断言；PRD 要求「复用既有 contract-scan」「以活跃范围命中为失败」「不得以全仓零命中为唯一实现」。
-- **Decision**：扩展既有清单与退役名单、抽出纯谓词用于正反用例；Pipeline 段用 `readdirSync` 动态枚举（CI 已有同源做法）。
-- **Alternatives**：① 全仓遍历 + 排除表 —— 覆盖面更宽，但排除面一旦漏项就会对历史证据误报（`test/fixtures/traceability-191k.yml` 即真实反例），且改动面远大于本 CR 目标；② 在 CI 里加 grep 步骤 —— 与既有测试机制并行成第二套扫描，违背「复用」。
-- **Consequences**：扫描语义是「活跃清单零命中」，历史证据与夹具合法保留旧字段名；新增活跃文件需显式入清单（评审可见）。
+- **Context**：既有机制是 `node --test` 内的固定路径清单 + `includes` 断言；PRD FR-11 要求扫描范围为「活跃源码、活跃 Skill、活跃 Agent、Pipeline、活跃测试」，并允许排除历史证据/夹具/迁移文档/扫描器自身。手工清单在 56 个 active Skill、9 个 active Agent、21 个活跃测试的规模上必然漏项：本轮评审即以「未覆盖其余活跃文件」判 BLOCK（漏项本身不可见）。
+- **Decision**：两个待退役字段名的扫描范围改为**从索引与活跃根派生**（§4.4-2），不再手工列举；`RETIRED_LEGACY`（CR-2026-041 的三个退役 Skill 名）保持既有显式范围不变（理由见 §4.4-1）；排除项恰两项并以断言固定；四类活跃面各补一条命中即失败的代表性用例。
+- **Alternatives**：① 继续扩张手工清单 —— 漏项风险随规模增长且不可见，正是本轮 blocker；② 全仓遍历 + 排除表 —— 排除面漏项即对历史证据/历史报告误报（`test/fixtures/traceability-191k.yml`、`docs/*.html` 即真实反例），且需要改写历史材料；③ 在 CI 里加 grep 步骤 —— 与既有测试机制并行成第二套扫描，违背「复用」。
+- **Consequences**：活跃范围随索引自动增长（新增 active Skill/Agent 无需改扫描器）；新增排除是显式且被断言的评审动作；扫描语义仍是「活跃面零命中」，历史证据与夹具合法保留旧字段名。
 
 ### D-6 消费者侧四类检查落在提示词合同（采用）
 
@@ -334,6 +364,13 @@ assert.deepEqual(res.recovery.promptFor, []);
 - **Decision**：四类缺失检查与固定判定顺序写在 `skills/shared/crctl/SKILL.md` 的「`recovery` 消费合同」小节（单一事实源），四个消费 Skill 与 `delivery-agent.md` 只引用该合同并声明本节点动作；生产者侧由构造器与测试保证形状合法。
 - **Alternatives**：新增一个 `validateRecovery()` 生产代码函数 —— 无任何生产调用点（死代码），只为测试存在，与本 CR「不新增通用命令执行框架」的边界相冲。
 - **Consequences**：AC-11 的验证方式是「提示词文本逐条核对 + 生产者形状断言 + 旧字段结构上不可回退」，在 §6.3 显式写明，不以伪造的运行期测试冒充证据。
+
+### D-7 OpenWiki 页面由既有生成步骤产出，不手工编辑（采用）
+
+- **Context**：`openwiki/operations/crctl-transactions.md` 是三处旧合同断言的活跃文档，其 frontmatter 的 `openwiki.source_paths` 恰好指向本 CR 迁移的四个源码文件；`tools/AGENTS.md` 的 OpenWiki 段明确「Do not hand-edit generated OpenWiki pages unless explicitly asked; prefer updating source code/docs and letting OpenWiki regenerate」，`.github/workflows/openwiki-update.yml` 以 `openwiki code --update` 定时生成并开 PR（`add-paths: openwiki/AGENTS.md/CLAUDE.md/workflow`）。
+- **Decision**：本 CR **不手工编辑**该页面。源码迁移与页面更新是同一个实施闭环：(1) 先改权威源码（§4.3）；(2) 在 `tools` 工作树内用同一生成命令（`openwiki` + `openwiki code --update`，provider/model 配置同 `openwiki-update.yml`）重新生成；(3) 核对生成结果——两个退役字段名零命中（按 §4.4 派生活跃面口径）+ 恢复合同描述为结构化 `recovery` + 生成 diff 不覆盖页面之外的人工内容；(4) 生成结果随本 CR 分支一并提交，生成命令与核对结论进入 `test-report.md` 证据。该步骤是 TASK 的完成条件；生成环境不可用（无 provider key / 无网络）时以环境阻塞上报，不得回退为手工编辑。
+- **Alternatives**：① 手工改生成页 —— 违反 `tools/AGENTS.md` 约束，且下一次生成会覆盖，形成「手工维护 + 生成漂移」双源（本轮评审 BLOCK 的方案）；② 不迁移该页、只留 follow_up —— FR-8 要求文档单一事实源，旧合同描述留在活跃文档等于迁移不完整；③ 在 CI 加页面文本检查步骤 —— 与既有测试机制并行，且不能替代生成。
+- **Consequences**：该页面回归「源码 → 生成器」单一回路；文档迁移结论由生成产物本身证明，不再有「手工迁移 + 后续漂移不算门槛」的降级口径；生成器对 `AGENTS.md`/`CLAUDE.md`/workflow 的附带改动不属本 CR 交付物（§9 `zero_diff` 优先，不纳入本 CR）。
 
 ## 6. FR 到技术实现映射
 
@@ -348,10 +385,10 @@ assert.deepEqual(res.recovery.promptFor, []);
 | FR-5 | §4.1 逐个生产者 args 取值表（11 行，含条件参数保序） | `lib/workspace-transactions.mjs` 9 类场景 |
 | FR-6 | §4.2 投影迁移四步（单投影、双投影删除、错误路径结构化、CLI 不拼串） | `crctl.mjs` 5 处 |
 | FR-7 | §4.3 消费方四份 SKILL.md + `delivery-agent.md` 改法 | 5 个提示词文件 |
-| FR-8 | §4.3 README + openwiki 改法；同一份源码即生成来源，不新增第二套描述 | `README.md`、`openwiki/operations/crctl-transactions.md` |
+| FR-8 | §4.3 README 原位迁移 + OpenWiki 生成闭环（D-7，不手工编辑）；同一份源码即生成来源，不新增第二套描述 | `README.md`、`openwiki/operations/crctl-transactions.md`（生成） |
 | FR-9 | §4.5 结构断言模板 + 6 类 reason 向量 + 反脆弱快照规则 | 7 个测试文件 |
 | FR-10 | §4.1 第 6 步（原位删除、不并排双写）+ §2.3 别名表（无 alias/shim/fallback） | 全量站点 |
-| FR-11 | §4.4 扫描算法（退役名单 + 活跃清单 + 动态 Pipeline 段 + 正反用例 + 排除范围） | `contract-scan.test.mjs` |
+| FR-11 | §4.4 扫描算法（分名退役名单 + 派生活跃面 + 两项可审计排除 + 四类代表性命中用例） | `contract-scan.test.mjs` |
 | FR-12 | §4.5 向量 3/4/5/6（参数边界、6 类用户输入、四类缺失、`executable` 安全） | 测试 + 提示词合同 |
 | FR-13 | §2.2 不落盘 + §3.3「其它字段与错误码/exit code/txId/rollback/files 不变」+ §4.2 只改载体 | 全量 diff 约束 |
 | FR-14 | §11 既有实现依赖清单即基线盘点；六类归档口径在本表与 §4.3 已落形，正式归档表由 `write-dev-plan` 产出 | `plan.md`（下游节点） |
@@ -361,7 +398,7 @@ assert.deepEqual(res.recovery.promptFor, []);
 
 ### 6.2 复杂度与改动面
 
-- 生产者 9 类 / 站点 11 处；CLI 投影 5 处；消费方提示词 5 个文件；文档 2 个；测试 8 个文件。
+- 生产者 9 类 / 站点 11 处；CLI 投影 5 处；消费方提示词 5 个文件；文档 1 个（README 原位）+ 生成页 1 个（OpenWiki，由生成器产出，D-7）；测试 8 个文件。
 - 净新增生产代码仅 `buildRecovery`（约 12 行）+ 站点改写（等价行数）；无新命令、无新状态、无新持久化。
 
 ### 6.3 AC 逐项设计与验收映射
@@ -383,13 +420,13 @@ assert.deepEqual(res.recovery.promptFor, []);
   - 可观测结果：`crctl.mjs` 与 `lib/*.mjs` 内 `shell: true`、`Invoke-Expression` 零命中（新增守卫断言）。
   - 可达性说明：断言对象为活跃源码本身，无运行时前置条件。
 - **AC-05**（FR-7/FR-8/FR-9/FR-10）
-  - 设计落点：§4.3 逐文件改法清单（含 4 Skill + 1 Agent + 2 文档 + 7 测试）。
-  - 可观测结果：活跃范围内旧字段名零命中（扫描）；`multica` overlay 与 tools 侧清单逐条核对；无 alias/shim/fallback。
-  - 可达性说明：`multica` 与 KB 侧不在 tools 扫描范围（§4.4 跨仓边界），由 §4.3 清单 + 评审比对 diff 覆盖。
+  - 设计落点：§4.3 逐文件改法清单（4 Skill + 1 Agent + 1 文档 + 7 测试）+ D-7 的 OpenWiki 生成闭环。
+  - 可观测结果：派生活跃面内旧字段名零命中（扫描）；生成页由生成器从迁移后的源码产出且三处旧合同断言归零；`multica` overlay 逐条核对；无 alias/shim/fallback。
+  - 可达性说明：`multica` 与 KB 侧不在 tools 扫描范围（§4.4 跨仓边界），由 §4.3 清单 + 评审比对 diff 覆盖；生成页的证据是「生成命令 + 生成前后 diff + 页面零命中」三条（D-7）。
 - **AC-06**（FR-11）
-  - 设计落点：§4.4 扫描算法（退役名单、活跃清单、动态 Pipeline 段、纯谓词）。
-  - 可观测结果：活跃面命中即测试失败；合成命中用例通过；历史夹具仍含旧名且被排除（不误报）。
-  - 可达性说明：扫描是纯文件读 + 字符串判定，无环境依赖。
+  - 设计落点：§4.4 扫描算法（退役名单分名分范围、索引派生活跃面、两项可审计排除、四类代表性命中用例）。
+  - 可观测结果：派生活跃面命中即测试失败；四类代表性注入用例证明范围非恒真；历史夹具仍含旧名且被排除（不误报）；索引/枚举空结构硬失败（不静默降级）。
+  - 可达性说明：扫描是纯文件读 + 字符串判定，无环境依赖；索引与目录均为仓内既有依赖（§11）。
 - **AC-07**（FR-13）
   - 设计落点：零语义变更约束（§3.3）。
   - 可观测结果：`node --test --test-concurrency=2 skills/shared/crctl/scripts/test/*.test.mjs` 全绿 + `skills/writeback/scripts/test/*.test.mjs` 全绿。
@@ -411,9 +448,9 @@ assert.deepEqual(res.recovery.promptFor, []);
   - 可观测结果：提示词文本逐条可核对（顺序、停止、报告、零副作用、不猜测、不回退）；生产者输出形状断言全绿；旧字段无 alias ⇒ 回退在结构上不可达。
   - 可达性说明：消费方是提示词而非本仓代码，本 CR 无执行 `recovery` 的代码路径，故以「提示词合同 + 生产者形状断言」验证，不伪造运行期测试（D-6）。
 - **AC-12**（FR-14）
-  - 设计落点：六类归档口径（producer / code consumer / Prompt-Skill consumer / active test / active docs / historical evidence）+ §11 清单作为基线盘点。
+  - 设计落点：六类归档口径（producer / code consumer / Prompt-Skill consumer / active test / active docs / historical evidence）+ §11 清单作为基线盘点；扫描范围本身由 §4.4 的派生规则从索引得出（与盘点口径一致）。
   - 可观测结果：`plan.md` 内存在一次有界搜索的六类归档表，且未新增持续观测机制。
-  - 可达性说明：盘点在 `write-dev-plan` 节点执行；本 SDD 已按同一口径完成一次基线盘点（§4.3 + §11）。
+  - 可达性说明：盘点在 `write-dev-plan` 节点执行；本 SDD 已按同一口径完成一次基线盘点（§4.3 + §11，行数/匹配次数口径见 §11 开头）。
 - **AC-13**（FR-15）
   - 设计落点：单发布原子迁移（同 CR 内生产者 + 消费者 + 删除 + 扫描）。
   - 可观测结果：交付分支不存在「部分生产者新合同 / 部分消费者旧合同」；回滚方案为整体回滚（回退上一完整 `tools` 版本，不在当前版本双写）。
@@ -431,8 +468,8 @@ PRD 显式延后到 SDD 的设计项逐项关闭（覆盖数据生产、存储/�
 - **SDD-CLOSE-02（argv 边界与 executable 规范化）**：token 拆分、顺序、含空格路径、node 形态 `args[0]` → §4.1/§3.2 关闭；同时关闭「`test` 恢复中的 `{TOOLS_ROOT}`/`<worktree>` 占位符」问题（改用真实路径）。
 - **SDD-CLOSE-03（`promptFor` 解析约定）**：逻辑值名 → CLI 入口映射、从 `args` 省略、忽略时的安全失败 → §3.4 关闭；覆盖 `reason`/`plan`/`CR-ID` 三处生产点与消费侧取值要求。
 - **SDD-CLOSE-04（错误闭包与判定顺序）**：固定 5 步顺序、四类缺失的停止/报告动作、零副作用、不回退旧字段、非 shell 执行 → §3.5 + §8 关闭（消费者侧文本合同 + 生产者侧形状保证 + 旧字段结构性删除）。
-- **SDD-CLOSE-05（契约扫描实现方式）**：复用既有机制的扩展点、活跃范围、排除范围、命中即失败与不误报的正反用例、跨仓边界 → §4.4 关闭。
-- **SDD-CLOSE-06（逐文件改法与文案口径）**：11 个生产者站点 + 5 个 CLI/投影点 + 5 个提示词 + 2 个文档 + 8 个测试的改法；错误消息与展示文案不得引用退役字段名、显示文本只能从 `recovery` 渲染 → §4.3 关闭（含「消息文本去旧名」两条）。
+- **SDD-CLOSE-05（契约扫描实现方式）**：复用既有机制的扩展点、索引派生的活跃范围、两项可审计排除、四类命中即失败用例与不误报的正反用例、分名分范围的既有名单不变式、跨仓边界 → §4.4 关闭。
+- **SDD-CLOSE-06（逐文件改法与文案口径）**：11 个生产者站点 + 5 个 CLI/投影点 + 5 个提示词 + 1 个文档（README 原位）+ 1 个生成页（OpenWiki 由生成器产出并核对，D-7）+ 8 个测试的改法；错误消息与展示文案不得引用退役字段名、显示文本只能从 `recovery` 渲染 → §4.3 关闭（含「消息文本去旧名」两条）。
 
 无未关闭项；无遗留待办。
 
@@ -483,7 +520,7 @@ PRD 显式延后到 SDD 的设计项逐项关闭（覆盖数据生产、存储/�
 - 唯一结构化恢复合同 `recovery`（`executable`/`args[]`/`cwd`/`requiresTTY`/`promptFor[]`）与唯一构造器 `buildRecovery`（§3.2）。
 - 11 个生产者站点迁移（§4.1 表 1–9）与 5 处 CLI 投影/错误面迁移（§4.2），含 `register` 双投影删除。
 - 旧字段 `recoverCommand` / `recover_command` 在本 CR 内删除，无 alias/shim/fallback。
-- 5 个活跃提示词的消费方式迁移（§8）+ 2 个文档的事实源迁移（§4.3）+ `skills/shared/crctl/SKILL.md` 新增「`recovery` 消费合同」小节。
+- 5 个活跃提示词的消费方式迁移（§8）+ 1 个文档原位迁移（`README.md`）+ 1 个生成页由既有生成步骤产出并核对（`openwiki/operations/crctl-transactions.md`，D-7）+ `skills/shared/crctl/SKILL.md` 新增「`recovery` 消费合同」小节。
 - 7 个既有测试文件的结构断言迁移 + `contract-scan.test.mjs` 的退役名单/活跃范围/正反用例扩展 + `shell: true`/`Invoke-Expression` 守卫断言。
 - FR-1…FR-17、AC-01…AC-14 全部。
 
@@ -510,7 +547,6 @@ PRD 显式延后到 SDD 的设计项逐项关闭（覆盖数据生产、存储/�
 
 - `mergeCr` 的 `phase=release-drift` 结果仍携带「重跑 merge」方向的 `recovery`，但该分支已由深原语自动回退 `code-approved → developing`，重跑 merge 不会成功。本 CR 只做等价迁移（FR-13 零语义变更），方向修正留待后续 CR 评估。
 - `tools/agents/delivery-agent.md`（方法论包内的 Agent 基底版）与 `multica/cr-prompts-revised/delivery-agent.md` 内容已不同步；本 CR 只迁移后者（PRD 指定），两者收敛留待后续 CR。
-- OpenWiki 页面由定时工作流按 `openwiki.source_paths` 重新生成；若再生成文本与本 CR 的手工迁移文本出现措辞差异，以源码为权威，属文档层收敛，不构成本 CR 的验收门槛。
 
 ## 10. 术语硬化与边界场景验证
 
@@ -528,11 +564,21 @@ PRD 显式延后到 SDD 的设计项逐项关闭（覆盖数据生产、存储/�
 
 ## 11. 既有实现依赖与事实
 
-盘点基线：`rg "recoverCommand|recover_command"`（排除 `.git`、`node_modules`）在 `tools@dddd0ad63fb79bd7608314b4553f30e8ce7b7289` 命中 **16 个文件 / 73 行**，在 `multica@ab9609483d17db12117cb8e9adb2d896f413917d` 命中 **3 个文件 / 6 行**（其中 2 个文件是 `server/internal/governance/testdata/` 历史黄金数据）。以下为按正文首次出现顺序的依赖清单：
+**计数口径（唯一，三个数字各自对应一条命令）**：在固定 HEAD 的仓库工作树根执行——
+
+| 数字 | 命令 | 语义 |
+|---|---|---|
+| 文件数 | `rg -l "recoverCommand\|recover_command"` | 含 ≥1 次命中的 distinct 文件 |
+| 行数 | `rg -c "recoverCommand\|recover_command"` 逐文件求和 | 含 ≥1 次命中的行（同一行多次命中只计 1） |
+| 匹配次数 | `rg -o "recoverCommand\|recover_command"` 计数 | 全部 match 总数（同一行多次命中各计 1） |
+
+口径固定项：大小写敏感（只退役响应字段名 `recoverCommand` / `recover_command`；内部局部变量 `checkpointRecoverCommand` 里的 `RecoverCommand` 不属退役名，实施时可顺带改名但不计入本盘点）、不加 `-w`、用 `rg` 默认的 `.git`/`.gitignore` 过滤（不用 `-uu`，不遍历被忽略目录与隐藏文件）。正文凡「X 文件 / Y 行 / Z 次」均按上表三项分别给值，不混用口径。
+
+盘点基线（本节开头口径重跑）：`tools@dddd0ad63fb79bd7608314b4553f30e8ce7b7289` = **16 文件 / 72 行 / 87 次**；`multica@ab9609483d17db12117cb8e9adb2d896f413917d` = **3 文件 / 6 行 / 6 次**（其中 2 个文件是 `server/internal/governance/testdata/` 历史黄金数据，另 1 个是 `cr-prompts-revised/delivery-agent.md`）。以下为按正文首次出现顺序的依赖清单（D-7 与 §4.4 派生范围的事实源接在既有 17 项之后）：
 
 1. repo: `tools`
    relative path: `skills/shared/crctl/scripts/lib/workspace-transactions.mjs`
-   stable symbol/对象: `registerCr` / `syncWorkspaceToTrunk` / `mergeCr` / `checkpointCr` / `applyWritebackAtomic` / `archiveCr` / `testCr` / `buildTestResponse` 的返回值与 `TxError.extra` 载体（本文件 24 处旧字段命中）
+   stable symbol/对象: `registerCr` / `syncWorkspaceToTrunk` / `mergeCr` / `checkpointCr` / `applyWritebackAtomic` / `archiveCr` / `testCr` / `buildTestResponse` 的返回值与 `TxError.extra` 载体（本文件 23 行 / 25 次旧字段命中）
    commit SHA: `dddd0ad63fb79bd7608314b4553f30e8ce7b7289`
    依赖结论: 这些函数是全部恢复动作的生产者，其返回结构与 `extra` 字段名即本 CR 的迁移对象；`buildRecovery` 落在本文件内（D-3），因此本文件同时是唯一构造器的宿主。
 2. repo: `tools`
@@ -552,9 +598,9 @@ PRD 显式延后到 SDD 的设计项逐项关闭（覆盖数据生产、存储/�
    依赖结论: 本仓既有代码已以 `executable` + `args` + `shell:false` 执行外部命令，`recovery` 合同沿用同一形态与命名，属仓内既有先例而非新范式（D-1、§10）。
 5. repo: `tools`
    relative path: `skills/shared/crctl/scripts/test/contract-scan.test.mjs`
-   stable symbol/对象: `FORBIDDEN` / `RETIRED` / `ACTIVE_PATHS` 静态扫描机制与 `readFileSync + replaceAll('\r\n','\n') + includes` 判定
+   stable symbol/对象: `FORBIDDEN` / `RETIRED` / `ACTIVE_PATHS` 既有静态扫描机制与 `readFileSync + replaceAll('\r\n','\n') + includes` 判定；`skills/_index.yml` / `agents/_index.yml` / `pipeline-templates/_index.yml` 的 active 条目（`status` + `path`）是 §4.4-2 派生活跃面的事实源
    commit SHA: `dddd0ad63fb79bd7608314b4553f30e8ce7b7289`
-   依赖结论: FR-11 要求复用既有静态合同扫描机制——该文件即既有机制，本 CR 在其上追加退役名与活跃面（§4.4），不新建扫描器。
+   依赖结论: FR-11 要求复用既有静态合同扫描机制——该文件即既有机制，本 CR 在其上按名分范围追加 `RETIRED_RECOVERY` 与派生范围（§4.4），不新建扫描器。既有 `RETIRED_LEGACY` 三个名字在活跃面内**合法存在**（`lint-prompts.mjs` 禁止名单、`crctl.test.mjs` / `lint-prompts.test.mjs` 用例样本、`CUSTOM.md` 台账引述，本 HEAD 上共 4 个文件），故其范围保持既有显式 `ACTIVE_PATHS` 不变。
 6. repo: `tools`
    relative path: `skills/shared/crctl/scripts/test/{archive-tx,checkpoint-tx,merge-tx,register-tx,workspace-freshness,writeback-tx,crctl}.test.mjs`
    stable symbol/对象: 旧字段字符串断言（`result.recoverCommand.includes(...)`、`assert.match(r.json.recoverCommand, …)`、`assert.equal(r.stderr.error.recoverCommand, …)`、`recover_command`）
@@ -567,17 +613,17 @@ PRD 显式延后到 SDD 的设计项逐项关闭（覆盖数据生产、存储/�
    依赖结论: 该文件是 crctl 命令面的权威 Skill 文档，也是新增「`recovery` 消费合同」的落点（§8、D-6）。
 8. repo: `tools`
    relative path: `skills/cr/cr-archive/SKILL.md`
-   stable symbol/对象: Step 2/Step 3 结果分类表、输出模板「恢复」行、错误处置表（6 处旧字段命中）
+   stable symbol/对象: Step 2/Step 3 结果分类表、输出模板「恢复」行、错误处置表（6 行 / 7 次旧字段命中）
    commit SHA: `dddd0ad63fb79bd7608314b4553f30e8ce7b7289`
    依赖结论: `archive` 的清理/补发续跑语义依赖恢复动作，提示词必须改读结构化 `recovery`（FR-7）。
 9. repo: `tools`
    relative path: `skills/sync/push-progress/SKILL.md`
-   stable symbol/对象: Step 2 错误分流与错误处置表（2 处旧字段命中）
+   stable symbol/对象: Step 2 错误分流与错误处置表（2 行 / 3 次旧字段命中）
    commit SHA: `dddd0ad63fb79bd7608314b4553f30e8ce7b7289`
    依赖结论: `checkpoint` 重跑口径依赖恢复动作（FR-7）。
 10. repo: `tools`
     relative path: `skills/writeback/merge-feature-branch/SKILL.md`
-    stable symbol/对象: `MERGE_SOURCE_MISSING` / `RELEASE_REMOTE_NOT_PUSHED` 行（1 处旧字段命中）
+    stable symbol/对象: `MERGE_SOURCE_MISSING` / `RELEASE_REMOTE_NOT_PUSHED` 行（1 行 / 1 次旧字段命中）
     commit SHA: `dddd0ad63fb79bd7608314b4553f30e8ce7b7289`
     依赖结论: publication lag 的恢复入口（`extra.recovery`）是该 Skill 的既定分支，字段名变更须同步（FR-7）。
 11. repo: `tools`
@@ -587,9 +633,9 @@ PRD 显式延后到 SDD 的设计项逐项关闭（覆盖数据生产、存储/�
     依赖结论: 使用方仓库最先读到的恢复合同说明，必须与代码同批迁移且不得新增第二套描述（FR-8）。
 12. repo: `tools`
     relative path: `openwiki/operations/crctl-transactions.md`
-    stable symbol/对象: frontmatter `invariants[1]`、正文「Durable Transaction Envelope → Recovery」条、「Change-Safety Guidance」第 3 条；`openwiki.source_paths` 指向同一份 crctl 源码
+    stable symbol/对象: frontmatter `invariants[1]`、正文「Durable Transaction Envelope → Recovery」条、「Change-Safety Guidance」第 3 条（3 行 / 3 次旧字段命中）；`openwiki.source_paths` 指向本 CR 迁移的四个 crctl 源码
     commit SHA: `dddd0ad63fb79bd7608314b4553f30e8ce7b7289`
-    依赖结论: 该页面是三处旧合同断言的活跃文档；其权威输入是 `source_paths` 指向的源码（本 CR 同批迁移），页面由 `.github/workflows/openwiki-update.yml` 定时重新生成，故手工迁移与再生成方向一致，不构成第二套描述（FR-8）。
+    依赖结论: 该页面是三处旧合同断言的活跃文档，且是**生成物**：权威输入是 `source_paths` 指向的源码（本 CR 同批迁移），页面按 `.github/workflows/openwiki-update.yml` 的既有生成步骤重新生成后核对（D-7）。本 CR 不手工维护该页，不存在第二套描述。
 13. repo: `multica`
     relative path: `cr-prompts-revised/delivery-agent.md`
     stable symbol/对象: 交付纪律段（`L27`「明确 `recoverCommand`」、`L44` 失败汇报项）
@@ -607,13 +653,58 @@ PRD 显式延后到 SDD 的设计项逐项关闭（覆盖数据生产、存储/�
     依赖结论: 本 SDD 的章节结构、`target-version` 继承与 §9 四字段约束来自该模板与 Skill，落地时必须符合。
 16. repo: `tools`
     relative path: `.github/workflows/crctl-ci.yml`
-    stable symbol/对象: 全量测试命令 `node --test --test-concurrency=2 skills/shared/crctl/scripts/test/*.test.mjs`、Pipeline JSON 动态枚举（`readdirSync('pipeline-templates')`）、`writeback` 单测命令
+    stable symbol/对象: 全量测试命令 `node --test --test-concurrency=2 skills/shared/crctl/scripts/test/*.test.mjs`、Pipeline JSON 动态枚举（`readdirSync('pipeline-templates')` + 读 `skills/_index.yml` 求 active Skill 集合）、`writeback` 单测命令
     commit SHA: `dddd0ad63fb79bd7608314b4553f30e8ce7b7289`
-    依赖结论: AC-07 的验收命令与 §4.4 动态 Pipeline 段的既有先例均来自该文件；本 CR 不改 CI 配置。
+    依赖结论: AC-07 的验收命令与 §4.4 派生范围的既有先例（按索引求 active + 目录动态枚举）均来自该文件；本 CR 不改 CI 配置。
 17. repo: `tools`
     relative path: `ARCHITECTURE.md`
     stable symbol/对象: §3 代码地图（`lib/` 模块枚举与 `crctl.mjs` 职责）、§4 分层规则、§5 不变量（状态单一写者、零依赖、行尾纪律、状态机口径）、§8 维护规则
     commit SHA: `dddd0ad63fb79bd7608314b4553f30e8ce7b7289`
     依赖结论: 本 CR 的设计必须不违反上述不变量（构造器下沉 lib、CLI 单向依赖、零第三方依赖、行尾规范化、无新状态），且因未触发 §8 修订条件而不修该文档（D-3）。
 
-**待核实依赖**：无（上列各项均已在本 CR 资源 HEAD 上按符号与行为核对；历史黄金数据 `multica/server/internal/governance/testdata/traceability-golden.{json,yml}` 与 `tools/skills/shared/crctl/scripts/test/fixtures/traceability-191k.yml` 属历史证据，按 FR-11 排除范围处理，不计入依赖）。
+18. repo: `tools`
+    relative path: `AGENTS.md`（`<!-- OPENWIKI:START -->` 段与「单一事实源」表）
+    stable symbol/对象: OpenWiki 段约束「scheduled workflow refreshes the repository wiki. Do not hand-edit generated OpenWiki pages unless explicitly asked; prefer updating source code/docs and letting OpenWiki regenerate」；单一事实源表把 `skills/_index.yml`（Active Skill 清单）、`agents/_index.yml`（Active Agent 清单）、`pipeline-templates/_index.yml`（Active Pipeline 清单）指定为权威
+    commit SHA: `dddd0ad63fb79bd7608314b4553f30e8ce7b7289`
+    依赖结论: D-7 的「不手工编辑生成页 + 由生成器产出并核对」与 §4.4-2 的「从 active 索引派生范围」均建立在该文件的两条约束上。
+19. repo: `tools`
+    relative path: `.github/workflows/openwiki-update.yml`
+    stable symbol/对象: `Install OpenWiki`（`openwiki@0.2.3` + provider/model 环境变量）与 `Run OpenWiki`（`openwiki code --update --print`）两步；`add-paths: openwiki, AGENTS.md, CLAUDE.md, .github/workflows/openwiki-update.yml`
+    commit SHA: `dddd0ad63fb79bd7608314b4553f30e8ce7b7289`
+    依赖结论: 既有生成命令即本 CR OpenWiki 页面迁移的实施路径（D-7 第 2 步）；生成范围含 `openwiki/**`（FR-8 的目标页在内），本 CR 只取该范围内的生成结果，`zero_diff` 优先。
+20. repo: `tools`
+    relative path: `skills/_index.yml`、`agents/_index.yml`、`pipeline-templates/_index.yml`
+    stable symbol/对象: 三个索引的 `status: active` 条目及其 `path` 字段（本 HEAD：Skill 56 / Agent 9 / Pipeline 8；Pipeline 索引的 path 带 `tools/` 前缀，派生时去前缀）
+    commit SHA: `dddd0ad63fb79bd7608314b4553f30e8ce7b7289`
+    依赖结论: §4.4-2 派生活跃面的唯一事实源；索引解析出 0 条 active 必须硬失败（不静默降级），Pipeline 索引与目录枚举集合不相等也硬失败。
+21. repo: `ai-first-platform-docs`
+    relative path: `AGENTS.md`（「tools 包的挂载方式」段与「读取顺序」）
+    stable symbol/对象: crctl 规范入口 `node {TOOLS_ROOT}/skills/shared/crctl/scripts/crctl.mjs …`（Tools Root = `workspace.tools_package_path`，无回退）；「状态推进一律走 crctl」约束
+    commit SHA: `7110880af2606d5a923dc99a1f355ceb2db19bc6`（本次修订落盘时的 `ai-first-platform-docs` worktree HEAD）
+    依赖结论: D-1 选择 `node` + `args[0]` = 脚本绝对路径的对外依据（裸 `crctl` 不在 PATH，KB 侧规范入口就是 node 形式）；即 `recovery.args[0]` 的形态在知识库侧已有权威约定，不是本 CR 自创。
+
+**旧字段命中分布（按本节开头口径重跑，用于复核上列条目）**：
+
+| repo | path | 行 | 次 | 处置 |
+|---|---|---|---|---|
+| `tools` | `skills/shared/crctl/scripts/lib/workspace-transactions.mjs` | 23 | 25 | 迁移（生产者 + 构造器宿主） |
+| `tools` | `skills/shared/crctl/scripts/crctl.mjs` | 6 | 10 | 迁移（投影 + 错误面） |
+| `tools` | `skills/shared/crctl/scripts/test/crctl.test.mjs` | 11 | 13 | 迁移（测试） |
+| `tools` | `skills/shared/crctl/scripts/test/register-tx.test.mjs` | 4 | 4 | 迁移（测试） |
+| `tools` | `skills/shared/crctl/scripts/test/archive-tx.test.mjs` | 3 | 4 | 迁移（测试） |
+| `tools` | `skills/shared/crctl/scripts/test/merge-tx.test.mjs` | 3 | 5 | 迁移（测试） |
+| `tools` | `skills/shared/crctl/scripts/test/checkpoint-tx.test.mjs` | 2 | 2 | 迁移（测试） |
+| `tools` | `skills/shared/crctl/scripts/test/writeback-tx.test.mjs` | 2 | 4 | 迁移（测试） |
+| `tools` | `skills/shared/crctl/scripts/test/workspace-freshness.test.mjs` | 1 | 1 | 迁移（测试） |
+| `tools` | `skills/cr/cr-archive/SKILL.md` | 6 | 7 | 迁移（提示词） |
+| `tools` | `skills/sync/push-progress/SKILL.md` | 2 | 3 | 迁移（提示词） |
+| `tools` | `skills/writeback/merge-feature-branch/SKILL.md` | 1 | 1 | 迁移（提示词） |
+| `tools` | `skills/shared/crctl/SKILL.md` | 2 | 2 | 迁移（提示词 + 新增消费合同） |
+| `tools` | `README.md` | 1 | 1 | 迁移（文档，原位） |
+| `tools` | `openwiki/operations/crctl-transactions.md` | 3 | 3 | 生成物：由生成器重新生成并核对（D-7） |
+| `tools` | `skills/shared/crctl/scripts/test/fixtures/traceability-191k.yml` | 2 | 2 | 排除（历史夹具，§4.4-3） |
+| `multica` | `cr-prompts-revised/delivery-agent.md` | 2 | 2 | 迁移（提示词，owner 可复制版） |
+| `multica` | `server/internal/governance/testdata/traceability-golden.yml` | 2 | 2 | 排除（历史黄金数据） |
+| `multica` | `server/internal/governance/testdata/traceability-golden.json` | 2 | 2 | 排除（历史黄金数据） |
+
+**待核实依赖**：无（上列各项均已按 repo / path / stable symbol / 结论在对应资源 HEAD 上核对；行数与匹配次数按本节开头的唯一口径重跑）。历史黄金数据 `multica/server/internal/governance/testdata/traceability-golden.{json,yml}` 与 `tools/skills/shared/crctl/scripts/test/fixtures/traceability-191k.yml` 属历史证据，按 FR-11 排除范围处理，不计入依赖。
