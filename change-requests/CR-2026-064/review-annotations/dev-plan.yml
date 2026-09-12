@@ -1,0 +1,23 @@
+cr-id: CR-2026-064
+review-type: dev-plan
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-13T01:13:54+08:00"
+verdict: block
+repair-target: write-tech-design
+blockers:
+  - "本轮新增：AC-07 的验收口径与其证据命令被 plan 单方面替换，而承载该验收目标的 SDD 层（人工作为审批绑定）没有对应记录，本 CR 的验收目标因此在实现层被放宽且无人授权。位置：plan.md §5.3 / §5.4 / §5.5-1 / §5.5-2 / §6.2 cmd-01 / §7 AC-07 行；tasks/TASK-04.md §4.7 与 §5「基线红边界」；对照基线 sdd.md §6.3 AC-07（可观测结果写作 node --test --test-concurrency=2 … 全绿、可达性说明写作「CI 同一命令（crctl-ci.yml），本机可复现」）与 §9 scope_in/scope_out。事实（本节点在固定 tools@dddd0ad63fb79bd7608314b4553f30e8ce7b7289 的 tools CR worktree 上独立复现，非转述作者结论）：① 不带例外运行含红的三个测试文件 = 624.5 s、失败集合恰为登记的 5 条（CR-2026-037 Prompt 采纳… / checkpoint T05 contract… / TASK-06 ⑤: release-drift… / CR-2026-042 静态合同：已知 Skill 越界文本零命中 / TASK-01 RED-7…），按这 5 个名字单跑 = 22.8 s 全红，即 SDD §6.3 AC-07 的「全绿」在审批基线上不可达；② plan.md §6.2 cmd-01 因此改为「锚定 --test-skip-pattern 排除这 5 条 + 断言失败集合恰等于登记 5 条」，并去掉 SDD 明文要求的 --test-concurrency=2；③ plan.md §5.5-1 自述该口径「未在本 CR 的 SDD 中单独授权」，把是否沿用列为待评审判定项；④ .github/workflows/crctl-ci.yml 的 crctl full test suite 步骤正是不带例外的同一命令，故 SDD 所称「CI 同一命令」在本基线已经是红的，合入后该 CI 仍会红。影响：AC-07 正是人工 approve-tech-design 所签的验收目标（approval.yml#tech-design，evidence-digest 824cf303…，绑定 SDD a5101d59 / sha256 72ea75ed…）；把「全量测试通过」替换为「失败集合恰等于登记 5 条」是对已审批验收目标的放宽，而平台既有先例要求该放宽必须在设计层由人登记授权——CR-2026-063 的同一组 5 条红是在其 SDD §6.4 记录 owner 显式授权「选项 A」，且该授权明示「只覆盖本 CR（CR-2026-063）的 AC-12 验收口径」，不随 CR 继承。若本节点判 pass，approve-dev-start 的 passCondition（verdict=pass 且 blockers 为空）会使「确认进入代码开发」的人工 gate 为一个与本 CR 已审批 SDD 不一致的验收口径背书，构成门禁完整性缺口；且即便接受放宽口径，「失败集合恰等于登记 5 条」这一半目前只由 TASK 级手工步骤承担、不在 §6.2 证据命令表内，write-test-report 的机器证据只覆盖「带例外 exit 0」，放宽口径下 AC-07 的完整证明链在 cmd-NN 上无落点。修复方向（上游轨，由 write-tech-design 在 SDD 内闭合，不得留给实现层取舍）：① 明确 AC-07 在本 CR 的唯一落地口径 = 「21 个文件全部被真实执行；失败集合恰等于登记 5 条；不得新增红、不得靠 skip/删/改名少红」，并附 owner 授权记录（裁决人 / 裁决时间 / 权威评论 / 授权范围与边界 / 与人工 gate 的关系，格式照 CR-2026-063 SDD §6.4）；② 同步 AC-07「可观测结果」的命令与参数（--test-concurrency=2 保留或按实测改写，并在 SDD 内写明理由）；③ 把 5 条基线红作为既有实现依赖登记进 §11，逐条说明其根因对象落在本 CR 的 zero_diff/scope_out 面；④ 给出「失败集合恰等于 5 条」的机器证据落点（新增 cmd-NN 或写明承接口径），使 AC-07 在 §6.1/§6.2/§7 的证据链闭合；⑤ 若裁决为「必须全绿」，则同时给出 5 条的归属（扩大 scope_in 或登记 follow_up）。"
+dimensions:
+  sdd-to-plan: "block"
+  plan-to-tasks: "pass"
+  task-executability: "pass"
+  dependency-topology: "pass"
+  interface-contracts: "pass"
+  acceptance-verifiability: "block"
+  scope-and-simplicity: "pass"
+  risk-and-rollback: "pass"
+  reviewer-model: "deepseek/deepseek-flash (pi runner, reasoning=max)"
+suggestions:
+  - "范围外：5 条基线红的根因修复不在本 CR 范围内——BR-1 crctl.test.mjs:1345、BR-3 crctl.test.mjs:4789、BR-4 crctl.test.mjs:4995 的对象分别落在 Prompt 文本、dir-graph.yaml 状态机口径与 write-requirement-prd 文本面（均为本 CR 的 zero_diff/scope_out），BR-2 checkpoint-tx.test.mjs:489 与 BR-5 archive-tx.test.mjs:391 的根因对象分别是 pipeline/alignment reader 合同与 archive outbox 发射链路；本 CR 只承接其口径、不改其对象，根因修复留后续 CR。"
+review-loop:
+  current-attempt: 0
+subject-sha256: 5fe937a16e6b016d570beab9463f7047846d726d77ee16be98849bec1d665ba3
