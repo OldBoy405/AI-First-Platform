@@ -275,7 +275,7 @@ export function buildRecovery(args, { cwd, requiresTTY = false, promptFor = [] }
 
 | 项 | 规则（唯一事实源） |
 |---|---|
-| 枚举根 | `tools` 仓库工作树根（`ROOT`）；`readdirSync(dir, { withFileTypes: true, recursive: true })` 递归枚举**全部文件**，目录级只跳过 `.git/**` 与 `node_modules/**` |
+| 枚举根 | `tools` 仓库工作树根（`ROOT`）；`readdirSync(dir, { withFileTypes: true, recursive: true })` 递归枚举**全部文件**，目录级只跳过两个被冻结的枚举边界 `.git/**` 与 `node_modules/**`（前者是版本库元数据、后者是 `.gitignore` 忽略的依赖目录，均非仓库跟踪内容；`SKIP_DIRS = ['.git', 'node_modules']` 由断言冻结，见 §4.4-3） |
 | 扫描面 | 枚举结果 − 下表两项排除；**不按目录、不按扩展名、不按文件名**推断活跃性 |
 | 派生规模（`tools@dddd0ad6` 实测，与实现共用同一枚举） | 枚举 **214** 文件 − 历史夹具 **4** − 扫描器自身 **1** = **扫描面 209 文件** |
 | 分类覆盖（同一扫描面内的核对，不缩小面） | active Skill **56**（`skills/_index.yml`）、active Agent **9**（`agents/_index.yml`）、Pipeline **8**（`pipeline-templates/_index.yml` 的 active `path` 去 `tools/` 前缀 ∩ `readdirSync('pipeline-templates')` 的 `*.pipeline.json`，集合必须相等）；`skills/**` + `pipeline-templates/**` 递归 `.mjs` 共 **40**，按路径是否含 `test/` 段二分 → 活跃源码 **16** / 活跃测试 **24**（进入扫描面 **23**，扣除扫描器自身） |
@@ -292,6 +292,8 @@ export function buildRecovery(args, { cwd, requiresTTY = false, promptFor = [] }
 | `skills/shared/crctl/scripts/test/fixtures/**` | 4（`traceability-191k.yml`、`digest-vectors/{expected.json,review-annotations-code.yml,test-report.md}`） | 历史 evidence 夹具，合法保留旧字段名 | 断言 `traceability-191k.yml` 含旧字段名且整目录不在扫描面内 |
 
 除上表两项外，扫描面不排除任何路径、目录或扩展名：`tools` 仓在本 HEAD 上没有含旧字段名的 changelog/migration 文档（PRD 允许的这几类排除在 `tools` 仓内只落为上述两项）；历史 CR 产物、历史 traceability 与归档 delivery 证据位于 KB 仓，不在 `tools` 整树枚举范围。
+
+**排除面与枚举边界均被冻结**：`assert.deepEqual(EXCLUDED, [<扫描器自身>, 'fixtures/**'])` 与 `assert.deepEqual(SKIP_DIRS, ['.git', 'node_modules'])`——任何新增排除或跳过目录都必须改测试并被评审看见，不存在「默默少扫一块」。
 
 **4. 判定与正反用例**
 
@@ -313,6 +315,7 @@ export function buildRecovery(args, { cwd, requiresTTY = false, promptFor = [] }
 
 - **允许排除不误报**：夹具文件仍合法含旧名，断言 `retiredHits(夹具文本) === true` 且 `scanScope(扫描面)` 不含它，证明排除是刻意且必要的。
 - **排除不隐形**：断言排除集合恰为上表两项 —— 新增排除必须改测试并被评审看见。
+- **规模口径：报告值 + 结构性断言，不用脆弱等式**：不写 `scanSurface.length === 209`（日后任何新增文件都会造成假失败，反过来诱发「改数字了事」）；规模（209 / 40 / 16 / 24 / 56 / 9 / 8）写进断言消息作覆盖度报告，真实保证由三条结构性断言给出——(1) 三个 active 索引的全部条目存在于磁盘且在扫描面内、Pipeline 索引与目录枚举集合相等（索引条目落入排除项或缺失即硬失败）；(2) 七条代表性路径全部在扫描面内；(3) `EXCLUDED` 与 `SKIP_DIRS` 被 `deepEqual` 冻结（§4.4-3）。
 
 **跨仓边界（诚实口径）**：扫描运行在 `tools` 仓测试套件内，只能覆盖 `tools` 仓整树扫描面；`multica` 仓的 `cr-prompts-revised/delivery-agent.md` 与 KB 侧文档不在本扫描范围，其迁移由 §4.3 清单 + FR-14 有界盘点 + 本 CR 评审（`review-tech-design`/`review-code`）覆盖，不由工具机器证明。
 
