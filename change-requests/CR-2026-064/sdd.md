@@ -528,7 +528,7 @@ PRD 显式延后到 SDD 的设计项逐项关闭（覆盖数据生产、存储/�
 
 ## 11. 既有实现依赖与事实
 
-盘点基线：`rg "recoverCommand|recover_command"`（排除 `.git`、`node_modules`）在 `tools@dddd0ad63fb79bd7608314b4553f30e8ce7b7289` 命中 **16 个文件 / 70 行**，在 `multica@ab9609483d17db12117cb8e9adb2d896f413917d` 命中 **3 个文件 / 6 行**（其中 2 个文件是 `server/internal/governance/testdata/` 历史黄金数据）。以下为按正文首次出现顺序的依赖清单：
+盘点基线：`rg "recoverCommand|recover_command"`（排除 `.git`、`node_modules`）在 `tools@dddd0ad63fb79bd7608314b4553f30e8ce7b7289` 命中 **16 个文件 / 73 行**，在 `multica@ab9609483d17db12117cb8e9adb2d896f413917d` 命中 **3 个文件 / 6 行**（其中 2 个文件是 `server/internal/governance/testdata/` 历史黄金数据）。以下为按正文首次出现顺序的依赖清单：
 
 1. repo: `tools`
    relative path: `skills/shared/crctl/scripts/lib/workspace-transactions.mjs`
