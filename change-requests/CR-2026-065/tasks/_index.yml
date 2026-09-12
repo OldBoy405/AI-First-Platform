@@ -1,0 +1,22 @@
+cr-id: CR-2026-065
+tasks:
+  - id: CR-2026-065-TASK-01
+    title: "断言层去硬编码：assertion-sources 推导模块 + gate-registry 受控登记 + BR-1…BR-4 四条断言按事实源重写"
+    status: pending
+    estimate: 16h
+    depends-on: []
+  - id: CR-2026-065-TASK-02
+    title: "去重契约提级：lib/outbox-contract.mjs 单一事实源 + emitOutboxEvent 最小改点 + BR-5 构造改对与同名不同内容用例"
+    status: pending
+    estimate: 16h
+    depends-on: []
+  - id: CR-2026-065-TASK-03
+    title: "CI 真门禁：suite-gate 包装器（TAP 解析 / 清单核对 / 例外面四查 / 退出码）+ contract-scan 静态断言与解析自测 + crctl-ci.yml 步骤改造"
+    status: pending
+    estimate: 20h
+    depends-on: [CR-2026-065-TASK-01, CR-2026-065-TASK-02]
+  - id: CR-2026-065-TASK-04
+    title: "收敛决定与漂移负控：--test-concurrency 有界实测定常量 + 三类注入证据 + manifest.cases 终值刷新 + 范围收口"
+    status: pending
+    estimate: 16h
+    depends-on: [CR-2026-065-TASK-01, CR-2026-065-TASK-02, CR-2026-065-TASK-03]
