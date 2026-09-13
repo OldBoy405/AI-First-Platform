@@ -1,24 +1,26 @@
 cr-id: CR-2026-064
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-09-13T00:02:07+08:00"
-verdict: pass
-blockers: []
+reviewed-at: "2026-09-13T21:10:11+08:00"
+verdict: block
+blockers:
+  - "本轮新增：AC-07 的验收命令与「CI 同一命令」这条可达性依据在合并后的 trunk 上已不成立，而该 AC 正是 approve-tech-design 绑定（approval.yml#tech-design，evidence-digest 824cf303…）并将在 plan/TASK/test-report 证据链中落地的验收口径。位置：sdd.md §6.3 AC-07（可观测结果 + 可达性说明）、§11 依赖项 16。事实（本节点在 resources[].worktreePath 的 tools worktree 上独立取证；HEAD 81d31b8b9d4c36cfef24cd076bf9fe635b67b2b6，clean）：① .github/workflows/crctl-ci.yml:109-111 的全量步骤已是 run: node skills/shared/crctl/scripts/test/suite-gate.mjs --run（步骤名 crctl full test suite），且 rg -n test-concurrency .github/workflows/ 零命中；② suite-gate 的登记面 skills/shared/crctl/scripts/test/gate-registry.json#manifest = 21 文件 / 578 用例 / exceptions: []，其判定含 per-file 顶层用例数不得低于 manifest.cases（SUITE_MANIFEST_CASE_DROP，suite-gate.mjs:452-453）与磁盘集合 ≡ manifest.files（SUITE_MANIFEST_FILE_DRIFT，suite-gate.mjs:437-447）；③ KB 仓 change-requests/CR-2026-065/test-evidence/concurrency/{default,conc2,conc1}-run{1,2}.json 实测：池=默认两次 converged=true / exit 0（783.4 s / 781.4 s），池=2 与池=1 四次均 converged=false / exit_code null（--max-runtime-ms 1200 s 到期），按 CR-2026-065 SDD TDEC-4 与 §7.4 P8，池大小与 node --test-concurrency=N 同为文件级并发语义。影响：AC-07 点名的命令既不在 CI 中执行，也没有在新基线上的收敛与全绿证据（同语义配置的实测是不收敛），可达性依据「CI 同一命令（crctl-ci.yml）」为假；按 SDD 字面执行等于把验收证据押在一条非 CI、且有不收敛观测的命令上，按 CI 现状执行则重复 review-dev-plan 判 BLOCK 的同一模式（plan 单方面替换 AC-07 证据口径而 SDD 层无记录）。修复方向（上游轨，由 write-tech-design 在 SDD 内闭合）：① §6.3 AC-07 的可观测结果改为当前 CI 入口 node skills/shared/crctl/scripts/test/suite-gate.mjs --run（manifest 21 文件全部被真实 spawn、failures 空、exceptions 空、退出码 0）＋ writeback 单测 node --test skills/writeback/scripts/test/*.test.mjs（与 crctl-ci.yml:115 逐字一致）；若坚持保留 --test-concurrency=2 字面命令，须附该命令在 tools@81d31b8 上的收敛与全绿实测证据并写明保留理由；② §11 依赖项 16 的 stable symbol 与依赖结论同步为合并后事实（CI 全量步骤 = suite-gate；Pipeline 索引动态枚举与 writeback 单测两步不变），并顺带把 §4.4-2 与 §11 的规模口径标注为合并后基线重跑值（本节点按同一枚举规则实测工作树 219 文件，SDD 写的 214 为 dddd0ad6 值；测试侧保持结构性断言、不写死数字），同时消除 §4.3 与 §4.4-1 把既有退役名单常量写成 RETIRED_LEGACY、而 §11-5 与实际代码为 RETIRED 的不一致；③ §4.5 与 §9 明确新门禁对测试迁移的硬约束：7 个迁移文件与 contract-scan.test.mjs 的 per-file 顶层用例数不得低于 manifest.cases，而该登记面的唯一写入口是人类编辑 + git commit、不在本 CR scope_in 内，故须写明迁移不减少任何文件用例数（或在 scope_in 显式纳入登记面更新与 owner 授权）；④ 记录事实变更：旧基线 5 条红已由 CR-2026-065 修复，AC-07 回到全绿口径，无需任何例外授权。"
 dimensions:
-  批准范围: "pass：§9 的 scope_in、scope_out、zero_diff、follow_up 四字段齐全；本轮仅修订 §11 的依赖定位与计数文件集口径，未扩大批准范围。"
-  PRD↔SDD 对齐: "pass：FR-1 至 FR-17 均有技术落点，14 条 AC 均给出设计落点、可观测结果与可达性；本轮修订未改变合同或覆盖关系。"
-  架构合理性: "pass：单一 buildRecovery、CLI 向下依赖、既有 OpenWiki 生成链路、整树扫描及不新增状态或账本写通道均符合 tools/ARCHITECTURE.md。"
-  数据模型完整性: "pass：recovery 的 executable、args、cwd、requiresTTY、promptFor 字段、可选性、键序、指纹与不落盘边界完整。"
-  接口契约: "pass：顶层与 error.recovery 投影、argv 边界、promptFor 映射、固定判定顺序及错误闭包清晰且与 PRD 一致。"
-  多仓架构约束: "pass：workspace 与 resources authority 分离；tools、multica、KB 的变更、生成、平台 DB 与 checkpoint 边界明确；资源 HEAD 分别核验为 a5101d593dbccbfc5115595abba24638856e1491、ab9609483d17db12117cb8e9adb2d896f413917d、dddd0ad63fb79bd7608314b4553f30e8ce7b7289。"
-  性能与安全: "pass：恢复合同为纯数据、执行采用非 shell argv、可信 TTY 与 promptFor 保持人在环，显示和执行分离；静态扫描不引入常驻开销或第三方依赖。"
-  可测试性: "pass：生产者结构断言、六类 reason、OpenWiki 生成证据、整树零命中与八组代表性注入均可重验；独立复核枚举 214、排除 2、扫描面 212、fixture 3 in / 1 out 一致。"
-  Prompt 采纳影响: "pass：触及 crctl 结果合同时已列出 4 个 Skill 与 1 个 Agent 的采纳点，并明确平台 DB 不在本 CR；基线检索与逐文件清单一致。"
-  AC 闭环与既有实现依赖: "pass：AC-01 至 AC-14 均闭环；§11 的 21 项显式依赖按 resources 路径复核，tools 旧字段计数 16 文件/72 行/87 次、multica 3 文件/6 行/6 次一致；checkpointRecoverCommand 仅在 workspace-transactions.mjs 的 mergeCr 内出现 3 次，crctl.mjs 零命中，fail/ok 实际定义位置为 L43/L49。"
-  SDD-CLOSE: "pass：SDD-CLOSE-01 至 06 均有结论；扫描排除面保持扫描器自身与 traceability-191k.yml 两条精确路径，依赖归属修订未引入未关闭项。"
+  批准范围: "pass：§9 的 scope_in / scope_out / zero_diff / follow_up 四字段齐全（follow_up 两项均显式登记）；本轮无批准范围扩大；修复方向③是否需要把 gate-registry.json 登记面纳入 scope_in，由作者在本轮修复中判定。"
+  PRD↔SDD 对齐: "pass：FR-1…FR-17 在 §6.1 均有技术落点；PRD AC-01…AC-14 均有设计条目与可观测结果；本轮未发现 FR 覆盖缺口（AC-07 的问题在证据面而非设计落点）。"
+  架构合理性: "pass：消费方提示词 → crctl 投影层 → lib 生产者 的分层不变；buildRecovery 落在 workspace-transactions.mjs 与 ARCHITECTURE.md:43 的 lib 模块枚举一致（不新增 lib 模块、零架构文档漂移）；不新增状态/转换/账本写通道。"
+  数据模型完整性: "pass：recovery 五键、可选 cwd、固定键序、幂等指纹字段集与不落盘边界完整，未受基线变更影响。"
+  接口契约: "pass：顶层与 error.recovery 投影、argv 边界、promptFor 值名映射与固定 5 步判定顺序清晰；未触发 FR-08.2 的 HTTP 接口条件基线。"
+  多仓架构约束: "pass：workspace 与 resources[].worktreePath 的 authority 分离成立；三仓 worktree 均 healthy/clean（ai-first-platform-docs 644274c5、multica dead9fe0、tools 81d31b8）；multica 面清单在新 HEAD 上复核仍为 3 文件 / 6 行 / 6 次（delivery-agent.md 2 次 + 历史黄金数据 4 次）；KB 侧 AGENTS.md 的 node 入口约定在 644274c5 上仍成立；KB specs 的旧名命中全落在历史里程碑节内（writeback 累积语义），不属本 CR 迁移面。"
+  性能与安全: "pass：恢复合同为纯数据、执行采用非 shell argv、可信 TTY 与 promptFor 保持人在环；新基线未引入新的执行面或常驻开销。"
+  可测试性: "block：AC-07 的证据面（证据命令 + CI 可达性 + 新门禁的 per-file 用例数下限）与合并后基线不一致，见本轮 blocker；其余测试面（八类恢复路径、6 类 reason 向量、八条扫描命中用例与不误报正反用例、结构断言模板）设计仍成立。"
+  Prompt 采纳影响: "pass：§8 五处采纳点与基线计数一致（crctl/SKILL.md 2、cr-archive 6、push-progress 2、merge-feature-branch 1、platform delivery-agent 2）；平台 DB 不在本 CR 的边界声明不变。"
+  AC 闭环与既有实现依赖: "block：§11 依赖项 16（.github/workflows/crctl-ci.yml 的全量命令）在 tools@81d31b8 上已变为 suite-gate，行为与 SDD 记录不符，见本轮 blocker；其余依赖项在新 HEAD 上复核成立（tools 旧字段 16 文件 / 72 行 / 87 次与 dddd0ad6 一致；checkpointRecoverCommand 仅 workspace-transactions.mjs:1557/1570/1573 三处；fixtures/digest-vectors 三文件在扫描面内；三个索引 56/9/8；ARCHITECTURE.md lib 枚举；openwiki 页 3 次命中；agents/*.md 零命中；writeback 单测步骤与 Pipeline 索引枚举步骤均仍在）。"
+  SDD-CLOSE: "pass：SDD-CLOSE-01…06 均有结论且与 PRD 契约一致；扫描面收窄为两条精确路径排除的冻结结论未受基线变更影响。"
 suggestions:
-  - "已解决：TD-BL-4 — §11 已从 crctl.mjs 依赖项删除 checkpointRecoverCommand，并把它准确登记到 workspace-transactions.mjs 的 mergeCr（L1557 声明、L1570/L1573 使用）；固定 tools HEAD 上独立复核为该文件 3 次命中、crctl.mjs 零命中，迁移结论同时明确局部 shell string 与 extra.recoverCommand 同批结构化。"
+  - "已解决：review-dev-plan 轮 upstream 疑点的前半前提——「旧基线 5 条红使 AC-07 的全绿不可达」——已随 CR-2026-065 合入 trunk 消失：本节点在 tools@81d31b8 上核到相关断言已改为从真实载体与事实源派生（crctl.test.mjs 的 CR-2026-037 用例、checkpoint-tx.test.mjs 的 reader 事实源），RED-7 构造改为真实崩溃窗口重放（archive-tx.test.mjs），CI 全量步骤已换为 suite-gate 且登记面 exceptions 为空；plan.md §5.3 与 §5.5-1 的「失败集合恰等于登记 5 条」放宽因此失去依据，AC-07 可回到全绿口径。其后半前提（--test-concurrency=2 字面命令的可达性）未随之消失，见本轮 blockers。"
+  - "范围外：旧 5 条红的根因对象（Prompt 文本、dir-graph.yaml 状态机口径、write-requirement-prd 文本、pipeline/alignment reader 合同、archive outbox 发射链路）不在本 CR scope_in，其修复已在 CR-2026-065 内闭合；本 CR 只承接其口径。"
 review-loop:
-  current-attempt: 2
+  current-attempt: 3
 subject-file: change-requests/CR-2026-064/sdd.md
 subject-sha256: 72ea75eddf4c3d771aa85d329ec98c8968be35b6078478325afd2d15de8efe5d
