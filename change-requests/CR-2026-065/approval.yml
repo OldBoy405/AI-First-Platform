@@ -17,3 +17,34 @@ development-start:
   via: crctl-approve
   evidence-digest: "c499f283af4e969a02aaac3bc39df6ae3e66bb4740a97eddfd37f1456f1c3cb5"
   target-status: developing
+code:
+  approver: "OldBoy405"
+  approved-at: "2026-09-13T20:06:30+08:00"
+  via: crctl-approve
+  evidence-digest: "6f12de583e1073d8ff765cbda9474c2b8779217a846b9ab17519db6f29e5d829"
+  target-status: code-approved
+  release-subjects:
+    version: 1
+    repositories:
+      - repo: ai-first-platform-docs
+        remote-ref: refs/heads/requirement/CR-2026-065
+        reviewed-source-sha: ac262ed02c79475f4f2e1859550c57a21c585d93
+      - repo: multica
+        remote-ref: refs/heads/requirement/CR-2026-065
+        reviewed-source-sha: ab9609483d17db12117cb8e9adb2d896f413917d
+      - repo: tools
+        remote-ref: refs/heads/requirement/CR-2026-065
+        reviewed-source-sha: d33271a3c10f31a78659ab60981fe12ffd23fdc1
+    artifacts:
+      algorithm: sha256
+      canonicalization: crlf-to-lf+path-sort
+      files:
+        - { path: change-requests/CR-2026-065/plan.md, sha256: 2761e88cb1008f68d36a9de1b5eed20a8c97453e6bce677e7437ea087b73af1d }
+        - { path: change-requests/CR-2026-065/prd.md, sha256: 467b5d478a99a97ee780632dcaaeec38fd7fc11ed49616a823757ca9de911a18 }
+        - { path: change-requests/CR-2026-065/sdd.md, sha256: ecc1f90253ad28438bfc5ac20e7485b9c8dff57797d0805dadace5cd8917d62f }
+        - { path: change-requests/CR-2026-065/tasks/TASK-01.md, sha256: 1630c5e179f6a461295456a3781d040f002bef91a3d6cc1ee805b4f61a5d87e9 }
+        - { path: change-requests/CR-2026-065/tasks/TASK-02.md, sha256: f15b4940ca190bd33c610c8ddc87dbd71fc05ed784d900bf7087e5377f707069 }
+        - { path: change-requests/CR-2026-065/tasks/TASK-03.md, sha256: db45a25a6f3758f2c86bbd738d13e6a5f9f3b8bedcff13913ce5f7b45af0f727 }
+        - { path: change-requests/CR-2026-065/tasks/TASK-04.md, sha256: 85b27a343753da33079a4aceb55fa11a0912c9a2dfec0a5503b7b41e000ffa36 }
+        - { path: change-requests/CR-2026-065/tasks/_index.yml, sha256: b30d221804ba1ea12ecd39123e0003d75692876346c3d09fe615fbf0f1e9db5c }
+      digest: 2fb8a61d252e5a3a62832f26d981e2f42a3e08dda8fce4b4925eb5e47426b272
