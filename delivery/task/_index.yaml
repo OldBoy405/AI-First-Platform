@@ -2878,3 +2878,31 @@ tasks:
     cr-ref: CR-2026-063
     target-version: "0.36"
     estimate: 16h
+  - id: CR-2026-065-TASK-01
+    file: TASK-0.38-CR-2026-065-01-assertion-sources-and-br1-4.md
+    title: 断言层去硬编码：assertion-sources 推导模块 + gate-registry 受控登记 + BR-1…BR-4 四条断言按事实源重写
+    status: done
+    cr-ref: CR-2026-065
+    target-version: "0.38"
+    estimate: 16h
+  - id: CR-2026-065-TASK-02
+    file: TASK-0.38-CR-2026-065-02-outbox-dedup-contract-and-br5.md
+    title: 去重契约提级：lib/outbox-contract.mjs 单一事实源 + emitOutboxEvent 最小改点 + BR-5 构造改对与同名不同内容用例
+    status: done
+    cr-ref: CR-2026-065
+    target-version: "0.38"
+    estimate: 16h
+  - id: CR-2026-065-TASK-03
+    file: TASK-0.38-CR-2026-065-03-ci-suite-gate-and-exception-governance.md
+    title: CI 真门禁：suite-gate 包装器（TAP 解析 / 清单核对 / 例外面四查 / 退出码）+ contract-scan 静态断言与解析自测 + crctl-ci.yml 步骤改造
+    status: done
+    cr-ref: CR-2026-065
+    target-version: "0.38"
+    estimate: 20h
+  - id: CR-2026-065-TASK-04
+    file: TASK-0.38-CR-2026-065-04-concurrency-decision-drift-negative-controls.md
+    title: 收敛决定与漂移负控：--test-concurrency 有界实测定常量 + 三类注入证据 + manifest.cases 终值刷新 + 范围收口
+    status: done
+    cr-ref: CR-2026-065
+    target-version: "0.38"
+    estimate: 16h
