@@ -1,0 +1,304 @@
+{
+  "schema": "crctl-suite-gate-report/v1",
+  "command": "node --test --test-reporter=tap <21 files> (pool=15, availableParallelism=16)",
+  "observer": "tap-per-file",
+  "duration_ms": 784877,
+  "converged": true,
+  "exit_code": 1,
+  "files_executed": 21,
+  "cases_executed": 576,
+  "skipped_file_level": 0,
+  "files": [
+    {
+      "file": "archive-tx.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 24,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 761860
+    },
+    {
+      "file": "check-agents-contract.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 1,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 176
+    },
+    {
+      "file": "check-skill-matrix.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 8,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 1297
+    },
+    {
+      "file": "checkpoint-tx.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 23,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 372044
+    },
+    {
+      "file": "contract-scan.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 15,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 887
+    },
+    {
+      "file": "crctl.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 224,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 268712
+    },
+    {
+      "file": "durable-tx.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 10,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 634
+    },
+    {
+      "file": "fault-harness.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 8,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 10994
+    },
+    {
+      "file": "lint-prompts.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 38,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 4060
+    },
+    {
+      "file": "merge-tx.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 17,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 355243
+    },
+    {
+      "file": "pipeline-structure.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 35,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 426
+    },
+    {
+      "file": "register-tx.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 26,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 346555
+    },
+    {
+      "file": "test-cr.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 27,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 57443
+    },
+    {
+      "file": "trace-outbox.test.mjs",
+      "state": "failed",
+      "exit_code": 1,
+      "cases": 12,
+      "failures": [
+        "CR-2026-065 不变性 2：字段分类集合相等（新增字段未登记进两类之一即红）"
+      ],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 265187
+    },
+    {
+      "file": "trace-semantic.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 5,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 946
+    },
+    {
+      "file": "upgrade-check.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 2,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 37348
+    },
+    {
+      "file": "version-set.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 12,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 239465
+    },
+    {
+      "file": "workspace-freshness.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 32,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 355391
+    },
+    {
+      "file": "workspace-resolver.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 7,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 2716
+    },
+    {
+      "file": "writeback-tx.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 33,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 783881
+    },
+    {
+      "file": "yaml-subset.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 17,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 204
+    }
+  ],
+  "failures": [
+    "CR-2026-065 不变性 2：字段分类集合相等（新增字段未登记进两类之一即红）"
+  ],
+  "checks": [
+    {
+      "code": "SUITE_REGISTRY_MISSING",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "SUITE_REGISTRY_SCHEMA_INVALID",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "SUITE_REPORT_UNPARSEABLE",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "SUITE_FILE_LOAD_FAILURE",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "SUITE_MANIFEST_FILE_DRIFT",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "SUITE_MANIFEST_CASE_DROP",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "EXCEPTION_FIELD_MISSING",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "EXCEPTION_SCHEMA_INVALID",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "EXCEPTION_DUPLICATE",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "EXCEPTION_EXPIRED",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "EXCEPTION_NOT_OBSERVED",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "SUITE_FAILURES_UNREGISTERED",
+      "ok": false,
+      "detail": "未登记失败：CR-2026-065 不变性 2：字段分类集合相等（新增字段未登记进两类之一即红）"
+    },
+    {
+      "code": "SUITE_NONCONVERGENCE",
+      "ok": true,
+      "detail": "ok"
+    }
+  ],
+  "registry": {
+    "sha256": "e642b97e6f610c99ba904fd395c8c637f5a695d3e8e79953bbff589fd486ab4c",
+    "exceptions_count": 0
+  },
+  "platform": {
+    "platform": "win32",
+    "node": "24.15.0"
+  },
+  "verdict": "block"
+}

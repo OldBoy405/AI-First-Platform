@@ -1,0 +1,304 @@
+{
+  "schema": "crctl-suite-gate-report/v1",
+  "command": "node --test --test-reporter=tap <21 files> (pool=15, availableParallelism=16)",
+  "observer": "tap-per-file",
+  "duration_ms": 782711,
+  "converged": true,
+  "exit_code": 1,
+  "files_executed": 21,
+  "cases_executed": 576,
+  "skipped_file_level": 0,
+  "files": [
+    {
+      "file": "archive-tx.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 24,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 760677
+    },
+    {
+      "file": "check-agents-contract.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 1,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 200
+    },
+    {
+      "file": "check-skill-matrix.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 8,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 1311
+    },
+    {
+      "file": "checkpoint-tx.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 23,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 370461
+    },
+    {
+      "file": "contract-scan.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 15,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 904
+    },
+    {
+      "file": "crctl.test.mjs",
+      "state": "failed",
+      "exit_code": 1,
+      "cases": 224,
+      "failures": [
+        "TASK-06 ⑤: release-drift 单一回退转换 code-approved -> developing 合法；状态机口径 28 声明/50 展开（AC-3）"
+      ],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 265457
+    },
+    {
+      "file": "durable-tx.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 10,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 640
+    },
+    {
+      "file": "fault-harness.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 8,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 8638
+    },
+    {
+      "file": "lint-prompts.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 38,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 4084
+    },
+    {
+      "file": "merge-tx.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 17,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 353462
+    },
+    {
+      "file": "pipeline-structure.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 35,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 422
+    },
+    {
+      "file": "register-tx.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 26,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 343201
+    },
+    {
+      "file": "test-cr.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 27,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 52917
+    },
+    {
+      "file": "trace-outbox.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 12,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 262800
+    },
+    {
+      "file": "trace-semantic.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 5,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 977
+    },
+    {
+      "file": "upgrade-check.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 2,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 34098
+    },
+    {
+      "file": "version-set.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 12,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 237035
+    },
+    {
+      "file": "workspace-freshness.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 32,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 353022
+    },
+    {
+      "file": "workspace-resolver.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 7,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 2739
+    },
+    {
+      "file": "writeback-tx.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 33,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 781683
+    },
+    {
+      "file": "yaml-subset.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 17,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 200
+    }
+  ],
+  "failures": [
+    "TASK-06 ⑤: release-drift 单一回退转换 code-approved -> developing 合法；状态机口径 28 声明/50 展开（AC-3）"
+  ],
+  "checks": [
+    {
+      "code": "SUITE_REGISTRY_MISSING",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "SUITE_REGISTRY_SCHEMA_INVALID",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "SUITE_REPORT_UNPARSEABLE",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "SUITE_FILE_LOAD_FAILURE",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "SUITE_MANIFEST_FILE_DRIFT",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "SUITE_MANIFEST_CASE_DROP",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "EXCEPTION_FIELD_MISSING",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "EXCEPTION_SCHEMA_INVALID",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "EXCEPTION_DUPLICATE",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "EXCEPTION_EXPIRED",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "EXCEPTION_NOT_OBSERVED",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "SUITE_FAILURES_UNREGISTERED",
+      "ok": false,
+      "detail": "未登记失败：TASK-06 ⑤: release-drift 单一回退转换 code-approved -> developing 合法；状态机口径 28 声明/50 展开（AC-3）"
+    },
+    {
+      "code": "SUITE_NONCONVERGENCE",
+      "ok": true,
+      "detail": "ok"
+    }
+  ],
+  "registry": {
+    "sha256": "b06dcd93dc4d78b22e4c69dc855d2b5c1ad0d7919a317dcd53eee34991a70f49",
+    "exceptions_count": 0
+  },
+  "platform": {
+    "platform": "win32",
+    "node": "24.15.0"
+  },
+  "verdict": "block"
+}
