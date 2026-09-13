@@ -101,3 +101,16 @@ authorization:
 - **实测结论**：`cmd-01` exit 0 / 783,450 ms / `converged=true` / `failures=[]` / 21 文件；`cmd-02` 481 ms、`cmd-03` 40,102 ms、`cmd-04` 138 ms、`cmd-05` 37 ms **全 exit 0**；窄跑 `--test-name-pattern CR-2026-065` 命中 8 条用例。
 - **恢复入口**：`write-test-report`（node-7）按 `plan.md §6.2` 逐字转录执行 5 条命令（cmd-01 单条 ~783 s，节点 20 min 预算需按 R-01 留意）→ 独立 `quality-reviewer-agent` run 执行 `review-code`（node-9，不得自评）。
 - **本轮偏差（供评审裁决）**：① `files[].skipped` 序列化为 `skipped_cases`（J-8 冻结模式 `/\bSKIPPED\b/i` 与 SDD §2.4 字段名冲突，取 J-8）；② 还原手段 `git checkout --`（`crctl git checkout` 实测 `FORBIDDEN_SUBCOMMAND`）；③ N-1 注入期发现并修复单文件 TAP 解析缺陷（诊断块内缩进 `...` 误判），已补回归自测。
+
+---
+
+## node-7/node-8/node-17 导航：write-test-report 收尾（2026-09-13 19:0x，dev-agent）
+
+- **CR 状态**：`developing`（状态未推进；测试报告已 `pass`，`review-code` 经 trigger `review-code` 推进到 `code-reviewing`）。
+- **产物**：`test-report.md`（机器区 `status=pass` / `command-digest=df94c863…` / `generated-at 2026-09-13T18:56:51+08:00`）＋ 分析段 §A…§I（只写在机器区标记之下，机器区零改动、`crctl validate` = `valid: true`）；`test-evidence/cmd-01…05.log`（5 份）；`traceability.yml#tests`（pass / Ray / 同 digest）；`review-loop.yml#write-test-report` = `{current-cycle:1, current-attempt:1}`（1/3）。
+- **node-7 实测**：`crctl test` 只跑 1 次（`18:42:26` → `18:56:51` = **865 s**，节点预算 1200 s，未超时）：cmd-01 **exit 0** / 822,652 ms / `converged=true` / `failures=[]` / 21 文件 / 576 用例 / `skipped_file_level=0` / `pool=15`；cmd-02 exit 0（4 命中）、cmd-03 exit 0（8 命中）、cmd-04 exit 0（`diff paths = 11` 全在白名单）、cmd-05 exit 0（`failures = 0`）。`manifest.cases` 21/21 ≡ `files[].cases`，Σ = 576 ≡ `cases_executed`。
+- **node-8 checkpoint**：`crctl checkpoint --message 代码与测试证据` → `phase=complete` / `batchId=f9bbed9997d361ee` / KB `c895be62` / multica `ab960948` / tools `52fa8d7a`（三仓 `confirmed=true`）/ `metadataCommit=78fe6196`。
+- **node-17 freshness（gate=review-start）**：三仓 `freshness=fresh`、`allFresh=true`、`syncable=false`、`dirty=false` ⇒ **route=continue**。
+- **本次登记的残余项（供 `review-code` 裁决，逐条见 `test-report.md` §G/§H）**：① AC-12 到期例外不可观测（`exceptions=[]`，本轮保留 + 附可复跑配方）；② `plan` §6.1 FR-8 / §7 AC-08 的 drift-audit 归属应读作 `cmd-01`（用例实体在 `crctl.test.mjs:800`，`cmd-03` 不覆盖）；③ `cmd-02`/`cmd-03` 窄跑零命中亦 exit 0（以 dot 点数 4/8 锚定）；④ 机器区未含 `sourceRevision`/`logSha256`（本版 crctl 既有形态，`workspace-transactions.mjs:4103-4124`）；⑤ 执行偏差 1 条：计划落在 **KB** `.crctl/tmp/test-plan.json`（tools worktree 无 `.crctl/`；`workspace-transactions.mjs:4198`、`:4206-4210` 要求 plan 在 `<workspace>/.crctl/tmp` 内）；⑥ `cmd-04`/`cmd-05` 的 args 内置绝对路径与基线 SHA（plan §6.2 注④/注⑧ 既定口径）。
+- **恢复入口**：新建独立 `quality-reviewer-agent` run 执行 `review-code`（node-9，不得自评）→ PASS 落 `code-reviewing` → 人工 `crctl approve --stage code`（TTY）。回修面仅限上述残余项与 reviewer 的 blockers；`test-report.md` 机器区**不得手改**。
+- **未触碰**：`sdd.md`（`sha256(LF)=ecc1f902…` 不变）、`prd.md`、`review-annotations/**`、`approval.yml`、`cr.md` status、`dir-graph.yaml`、`pipeline-templates/**`、multica（零改动）、CR-2026-064。
