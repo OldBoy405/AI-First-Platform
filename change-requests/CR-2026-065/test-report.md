@@ -3,7 +3,7 @@ cr: CR-2026-065
 status: pass
 tester: Ray
 generated-by: crctl-test
-generated-at: "2026-09-13T18:56:51+08:00"
+generated-at: "2026-09-13T19:43:39+08:00"
 command-digest: df94c863f10f5ebbac01d0774a84994c3843f7f2de946f7459d60421e41ebe51
 commands:
   - repo: tools
@@ -70,19 +70,20 @@ commands:
 ## 分析段 · CR-2026-065（`write-test-report` node-7）
 
 > 本段只写在机器区下方的分析标记之后；`generated-by: crctl-test` 之上的机器区**未改动一个字节**，`traceability.yml` / `review-loop.yml` 全部由 `crctl test` 独占写入。
-> 证据命令集 = `plan.md` §6.2 证据命令表 5 行**逐字转录**（`cr-test-plan/v1`，token 数 4/12/8/2/2），不重排、不补 flag、不改 `--test-reporter=dot`；本轮 `crctl test` 只执行 **1 次**，未重跑、未删命令、未放宽任何 AC。
+> 证据命令集 = `plan.md` §6.2 证据命令表 5 行**逐字转录**（`cr-test-plan/v1`，token 数 4/12/8/2/2），不重排、不补 flag、不改 `--test-reporter=dot`；本（回修后重跑）轮 `crctl test` 只执行 **1 次**，未删命令、未放宽任何 AC；5 条命令与 attempt=1 逐字相同（`commandDigest` 不变）。
 
 ### A. 执行事实（第一手）
 
 | 项 | 值 |
 |---|---|
 | 调用 | `crctl test CR-2026-065 --plan .crctl/tmp/test-plan.json --workspace <KB worktree>`（crctl 取 tools worktree） |
-| 起止 / 墙钟 | `2026-09-13 18:42:26 +08:00` → `18:56:51 +08:00` = **865 s**；node-7 预算 1200 s，余量 ≈ 335 s，**未触发超时** |
-| 结果 | `status=pass` / `attempt=1` / `commandDigest=df94c863f10f5ebbac01d0774a84994c3843f7f2de946f7459d60421e41ebe51` / `changed=true`；输出无 blockers（5/5 命令 exit 0） |
-| 写入面 | journal `phase=complete`，entries = `test-report.md` + `traceability.yml` + `review-loop.yml` + `test-evidence/cmd-01…05.log`（8 条） |
-| 测试源绑定 | 执行前 tools HEAD = `52fa8d7a2209e0873b4b98f1c3d7db240300f1ce`（clean）；KB HEAD = `4a5cf168…`（clean） |
+| 起止 / 墙钟 | `2026-09-13 19:29:51 +08:00` → `19:43:39 +08:00` = **828 s**；node-7 预算 1200 s，余量 ≈ 372 s，**未触发超时** |
+| 结果 | `status=pass` / `attempt=2`（BLOCK 后回修轮）/ `commandDigest=df94c863f10f5ebbac01d0774a84994c3843f7f2de946f7459d60421e41ebe51`（与 attempt=1 **逐字相等**：命令集未变，符合「回修不改命令表」的预期）/ `changed=true`；输出无 blockers（5/5 命令 exit 0） |
+| 写入面 | journal `phase=complete`，entries = `test-report.md` + `traceability.yml` + `review-loop.yml` + `test-evidence/cmd-01…05.log`（8 条）。`cmd-01.log` 内容变化被重写；`cmd-02…05.log` 本轮已重跑且输出与上轮逐字节相同，写集按 `durable-tx.mjs#applyWriteSet` 的 `action='skip'`（`afterSha256 ≡ 现存内容`）跳过重写 ⇒ 其 mtime 保持 18:56 属设计行为，非旧证据复用 |
+| 测试源绑定 | 执行前 tools HEAD = `d33271a3c10f31a78659ab60981fe12ffd23fdc1`（本轮回修 commit，clean）；KB HEAD = `35c47128…`（评审 BLOCK 提交，clean） |
+| 回修前置 | `review-code` cycle 1 / attempt 1 = `BLOCK`（blocker 1 条：AC-12/FR-14 例外判定面在证据集与测试面零观测零覆盖；4 条 suggestions 均标 `范围外`）。回修面 = `contract-scan.test.mjs`（+2 用例）+ `gate-registry.json#manifest.cases`（15 → 17，只升不降）；`plan.md` §6.2 命令表一字未改 |
 | 转录校验 | 表内 cells → `JSON.parse` → `JSON.stringify(args)` **逐条往返相等**（21 个 token 全等）；`plan.md` §6.2 注③ 口径复核：cmd-04/cmd-05 脚本体 `"`/`\`/`\|`/换行 = 0 |
-| 评审预算 | `review-loop.yml`：`write-test-report` `{current-cycle:1, current-attempt:1}`（1/3） |
+| 评审预算 | `review-loop.yml`：`write-test-report` `{current-cycle:1, current-attempt:2}`（2/3）；`review-code` 仍 `{cycle:1, attempt:1}`（1/3） |
 
 **执行偏差登记（1 条，如实）**：派单文字要求计划写到 **tools worktree** 的 `.crctl/tmp/test-plan.json`；实测 tools worktree **不存在 `.crctl/`**，而 `crctl test` 对 `--plan` 的定位是 `path.resolve(workspace, planPath)` 且必须落在 `<workspace>/.crctl/tmp` 之内（`skills/shared/crctl/scripts/lib/workspace-transactions.mjs:4198`、`:4206-4210`）。故计划实际落在 **KB worktree** `…/.rayai-worktrees/knowledge-base/requirement/CR-2026-065/.crctl/tmp/test-plan.json`（6235 B；被 `.crctl/.gitignore` 的 `*` 排除，不入 Git）。`--plan` 参数值仍是逐字相对路径 `.crctl/tmp/test-plan.json`；该偏差只涉及「哪个 worktree 的 `.crctl/tmp`」，不影响证据内容与 `commandDigest`（后者只由 5 条命令的 canonical subject 决定）。
 
@@ -90,7 +91,7 @@ commands:
 
 | 证据ID | 命令要点（逐字 args 摘要） | 实测 | 覆盖的 plan 行 |
 |---|---|---|---|
-| cmd-01 | `suite-gate.mjs --run --max-runtime-ms 1200000`（timeout 1500 s） | **exit 0** / 822,652 ms / `verdict=pass` / `converged=true` / `failures=[]` / `files_executed=21` / `cases_executed=576` / `skipped_file_level=0` / `observer=tap-per-file` / `command=node --test --test-reporter=tap <21 files> (pool=15, availableParallelism=16)` | §6.1 FR-11/FR-12/FR-14/FR-16/FR-17；§7 AC-01/AC-10/AC-11/AC-12/AC-14/AC-15 + 3 条业务闭环 |
+| cmd-01 | `suite-gate.mjs --run --max-runtime-ms 1200000`（timeout 1500 s） | **exit 0** / 787,330 ms / `verdict=pass` / `converged=true` / `failures=[]` / `files_executed=21` / `cases_executed=578` / `skipped_file_level=0` / `observer=tap-per-file` / `command=node --test --test-reporter=tap <21 files> (pool=15, availableParallelism=16)` | §6.1 FR-11/FR-12/FR-14/FR-16/FR-17；§7 AC-01/AC-10/AC-11/AC-12/AC-14/AC-15 + 3 条业务闭环 |
 | cmd-02 | `--test --test-reporter=dot` + 4 × `--test-name-pattern`（BR-1…BR-4 用例名） | **exit 0**，stdout `....`（4 个用例命中；基线 exit 1） | §6.1 FR-1…FR-7；§7 AC-02…AC-07 |
 | cmd-03 | `--test --test-reporter=dot` + `TASK-01 RED-7` + `CR-2026-065`（archive-tx / trace-outbox） | **exit 0**，stdout `........`（8 个用例命中；基线 exit 1 / `EMIT_FAILED`） | §6.1 FR-8/FR-9/FR-10；§7 AC-08/AC-09 |
 | cmd-04 | 登记面 schema + `stateMachine` 计数 + diff 白名单（`-e` 单参数） | **exit 0**：`FR-15 diff paths = 11`（全在白名单）、`registry-scope-audit failures = 0`（基线去实施前 = 9 条） | §6.1 FR-1/FR-3/FR-6/FR-15；§7 AC-02/AC-03/AC-13 |
@@ -109,15 +110,15 @@ commands:
 | `files_executed` | `21` | 21 |
 | `files[]` | 21 条，`state` 全 `ok`（`failures: []`、`skipped_cases: 0`） | 恰 21 条且全 ok |
 | `skipped_file_level` | `0` | 0 |
-| `cases_executed` | `576` | > 0 |
+| `cases_executed` | `578`（= 576 + 本轮回修新增 2） | > 0 |
 | `observer` | `tap-per-file` | 非空 |
 | `command` | `node --test --test-reporter=tap <21 files> (pool=15, availableParallelism=16)` | 与 `suite-gate.mjs` 常量一致（`CONCURRENCY = null`，本机 `availableParallelism()=16` ⇒ 池 = 15） |
 | `checks[]` | 13 条 check code 全 `ok: true`（含 `SUITE_MANIFEST_CASE_DROP`、`EXCEPTION_EXPIRED`、`SUITE_NONCONVERGENCE`） | 无 check 复用例外，`exceptions=[]` |
-| `registry` | `sha256=e642b97e6f610c99ba904fd395c8c637f5a695d3e8e79953bbff589fd486ab4c`、`exceptions_count=0` | 例外显式为空 |
+| `registry` | `sha256=f8d983a04656d1fae05588af9daa14b128872bc124e5bcddfd155088b53bd5bf`、`exceptions_count=0` | 例外显式为空；sha 随本轮回修（`manifest.cases` 15 → 17）刷新，已与 worktree 内登记面独立复算逐字相等 |
 | `platform` | `win32` / node `24.15.0` | B-4 修订后的机制前提（v24 单文件 TAP 顶层 plan ≡ 顶层结果行数） |
-| `duration_ms` | `822,652`（基线整跑 894.8 s 同口径对比 → 缩短 ≈ 72 s；与 implement-code 期 default-run1 `783,450 ms` 同量级，抖动 ≈ +39 s） | 与 894.8 s 同口径 |
+| `duration_ms` | `787,330`（基线整跑 894.8 s 同口径 → 缩短 ≈ 107 s；与 attempt=1 的 `822,652 ms` 差 −35.3 s、与 implement-code 期 default-run1 `783,450 ms` 差 +3.9 s ⇒ 运行间抖动，不构成性能回归） | 与 894.8 s 同口径 |
 
-`cmd-01.log` 结构复核：`--- stdout ---` / `--- stderr ---` 标记**各恰好 1 次**；stdout = 15 字段 JSON（第 1–300 行）+ 6 行 `suite-gate:` 人类摘要；stderr 空；人类摘要用 `skipped_file_level=`（下划线形态，不命中冻结 skip 模式表）⇒ crctl 判定 `commands[].skipped = false` 与日志自洽。
+`cmd-01.log` 结构复核：`--- stdout ---` / `--- stderr ---` 标记**各恰好 1 次**；stdout = 15 字段 JSON（第 4–303 行）+ 6 行 `suite-gate:` 人类摘要（第 304–309 行）；stderr 空；人类摘要用 `skipped_file_level=`（下划线形态，不命中冻结 skip 模式表）⇒ crctl 判定 `commands[].skipped = false` 与日志自洽。
 
 ### D. `files[].cases` ↔ `manifest.cases` 逐项对照（21/21 全等）
 
@@ -129,7 +130,7 @@ commands:
 | check-agents-contract.test.mjs | 1 | 1 | | register-tx.test.mjs | 26 | 26 |
 | check-skill-matrix.test.mjs | 8 | 8 | | test-cr.test.mjs | 27 | 27 |
 | checkpoint-tx.test.mjs | 23 | 23 | | trace-outbox.test.mjs | 12 | 12 |
-| contract-scan.test.mjs | 15 | 15 | | trace-semantic.test.mjs | 5 | 5 |
+| contract-scan.test.mjs | 17 | 17 | | trace-semantic.test.mjs | 5 | 5 |
 | crctl.test.mjs | 224 | 224 | | upgrade-check.test.mjs | 2 | 2 |
 | durable-tx.test.mjs | 10 | 10 | | version-set.test.mjs | 12 | 12 |
 | fault-harness.test.mjs | 8 | 8 | | workspace-freshness.test.mjs | 32 | 32 |
@@ -137,7 +138,7 @@ commands:
 | merge-tx.test.mjs | 17 | 17 | | writeback-tx.test.mjs | 33 | 33 |
 | | | | | yaml-subset.test.mjs | 17 | 17 |
 
-合计：Σ`files[].cases` = **576** ≡ Σ`manifest.cases` = **576** ≡ `cases_executed` = **576**；不匹配项 **0**。刷新幅度（`2c84241` → `52fa8d7`）：初值 21 项中 20 项由 `1` 刷成实测值，`check-agents-contract.test.mjs` 终值仍为 `1`（该文件恰 1 个用例，非漏刷新）；值域全部满足「终值 ≥ 初值且为正整数」（TASK-04 §4.3）。
+合计：Σ`files[].cases` = **578** ≡ Σ`manifest.cases` = **578** ≡ `cases_executed` = **578**；不匹配项 **0**。刷新历史：`2c84241` → `52fa8d7` 把 21 项初值中的 20 项由 `1` 刷成实测值；本轮回修把 `contract-scan.test.mjs` 15 → 17（该文件新增 2 条例外治理用例后由 `cmd-01` 实测复核，只升不降）；`check-agents-contract.test.mjs` 终值仍为 `1`（该文件恰 1 个用例，非漏刷新）；值域全部满足「终值 ≥ 初值且为正整数」（TASK-04 §4.3）。
 
 ### E. TASK 验收覆盖矩阵（每条证据 → 验收条件）
 
@@ -149,9 +150,9 @@ commands:
 | TASK-01 | ④diff 面一览 + `zero_diff` 零 diff | cmd-04 + 补充观测 | 11 条路径全在白名单；`crctl git diff --name-only dddd0ad6 -- skills/shared/controlled-shell/rules.json dir-graph.yaml pipeline-templates` = **空** | ✅ |
 | TASK-02 | ①`cmd-03` exit 0 | cmd-03 | exit 0 / 8 用例命中（RED-7 构造 A/B + `CR-2026-065` 前缀契约用例） | ✅ |
 | TASK-02 | ②回归保护「同一漂移二次观测」（`detected_at` 语义不回归） | **cmd-01**（非 cmd-03，归属更正见 H-1） | `crctl.test.mjs` 224/224 用例 `state=ok`；用例实体在 `crctl.test.mjs:800`（`CR-2026-052 AC-11`） | ✅（归属如实报告） |
-| TASK-02 | ③契约面自检（`lib/outbox-contract.mjs` 五导出 + 不变性） | cmd-03 + cmd-01 | `contract-scan.test.mjs` 15/15 用例 ok；`CR-2026-065` 契约用例绿 | ✅ |
+| TASK-02 | ③契约面自检（`lib/outbox-contract.mjs` 五导出 + 不变性） | cmd-03 + cmd-01 | `contract-scan.test.mjs` 17/17 用例 ok（含本轮回修新增的 2 条例外治理自测）；`CR-2026-065` 契约用例绿 | ✅ |
 | TASK-02 | ④diff 面自检（4 个允许路径 + 无 `SKILL.md` 改动） | cmd-04 | 11 条含 `outbox-contract.mjs` / `crctl.mjs` / `archive-tx.test.mjs` / `trace-outbox.test.mjs`；**无任何 `SKILL.md`** | ✅ |
-| TASK-03 | ①`contract-scan` 窄跑（exit 0 + 命中清单 ≥ 4） | 补充观测（非 canonical 证据集） | exit 0；dot = 8 点；tap 逐名 **8 条**（≥ 4），含「合法片段判绿 / 无顶层 plan / plan 与结果行数矛盾 / 缩进栈不成对 / 诊断块 `...` 回归 / 归属自测 / 禁词自测 / 零写路径静态断言」 | ✅ |
+| TASK-03 | ①`contract-scan` 窄跑（exit 0 + 命中清单 ≥ 4） | 补充观测（非 canonical 证据集） | 本轮回修后重跑 exit 0；dot = **10 点**；tap 逐名 **10 条**（≥ 4）：合法片段判绿 / 无顶层 plan / plan 与结果行数矛盾 / 缩进栈不成对 / 诊断块 `...` 回归 / 归属自测 / **到期未清即红** / **例外未观测即红** / 禁词自测 / 零写路径静态断言 | ✅ |
 | TASK-03 | ②`cmd-01` 全量（§C 全部门槛） | cmd-01 | 见 §C，10 项门槛全满足 | ✅ |
 | TASK-03 | ③`cmd-04` exit 0 | cmd-04 | exit 0 | ✅ |
 | TASK-03 | ④CI 步骤改动限于 `:109-111` | 补充观测（`crctl git diff --unified=0`） | `@@ -111 +111 @@` 单行替换（`--test-concurrency=2 …*.test.mjs` → `suite-gate.mjs --run`），**落在声明区间内**；`--stat` = `1 file changed, 1 insertion(+), 1 deletion(-)` | ✅ |
@@ -161,7 +162,7 @@ commands:
 | TASK-04 | ③`cmd-04` exit 0 + `manifest.cases` 终值 ≥ 初值 | cmd-04 + 逐项对照 | `manifest.cases` 全部正整数且 ≥ 初值；21/21 与 `files[].cases` 全等 | ✅ |
 | TASK-04 | ④还原留痕（tools clean、注入物不在 diff） | 补充观测 | tools `status --short` = 空；11 条 diff 不含 `dir-graph.yaml` / `SKILL.md` | ✅ |
 
-### F. 新增 / 修改交付文件（相对登记基线 `dddd0ad6`，11 条 / +1410 −61）
+### F. 新增 / 修改交付文件（相对登记基线 `dddd0ad6`，11 条 / +1464 −61；其中回修轮 +54 插入）
 
 | 类别 | 路径 | 幅度 |
 |---|---|---|
@@ -170,7 +171,7 @@ commands:
 |  | `skills/shared/crctl/scripts/test/assertion-sources.mjs` | +98 |
 |  | `skills/shared/crctl/scripts/lib/outbox-contract.mjs` | +62 |
 | 测试修改（4） | `test/archive-tx.test.mjs`、`test/trace-outbox.test.mjs`、`test/checkpoint-tx.test.mjs`、`test/crctl.test.mjs` | ±（见 `cmd-04` 输出的 11 条清单） |
-|  | `test/contract-scan.test.mjs` | 既有文件新增静态断言与解析/归属自测 |
+|  | `test/contract-scan.test.mjs` | 既有文件新增静态断言与解析/归属自测；回修轮再 +2 条例外治理自测（该文件相对基线的插入行数 227 → 281） |
 | 产品面最小改写（1） | `skills/shared/crctl/scripts/crctl.mjs` | +36/−… |
 | CI（1） | `.github/workflows/crctl-ci.yml` | 1 行替换（`:111`） |
 
@@ -178,11 +179,15 @@ commands:
 
 ### G. 未覆盖风险与残余项（不得空白通过）
 
-1. **AC-12 的「到期例外 → 门禁红」在证据面无观测点（保留）**：交付态 `exceptions: []`，`EXCEPTION_EXPIRED` 不可观测（`checks[].EXCEPTION_EXPIRED.ok=true` 只说明「当前无到期例外」，不等于「到期即红」被证明）。**可复跑配方**（本轮不执行：node-7 不能重跑注入，且会污染 `cmd-01` 证据）：① 临时向 `gate-registry.json#exceptions` 追加一条 `{id: <稳定标识>, kind: suite-nonconvergence, reason: <原因>, owner: Ray, expires: <过去时点 ISO-8601 带偏移>}` → ② `node skills/shared/crctl/scripts/test/suite-gate.mjs --run --max-runtime-ms 1200000` 应 **红**（`checks[].EXCEPTION_EXPIRED.ok=false`、`failures` 含该 code、退出码非 0）→ ③ `crctl git checkout -- skills/shared/crctl/scripts/test/gate-registry.json` 还原 → ④ `crctl git status --short` 空。取证强度建议由 `review-code` 判定是否需要在本 CR 内补一次。
+1. **已关闭（本轮回修）：AC-12 / FR-14 的例外判定面不再零观测**。`review-code` cycle 1 blocker 的修复方向 = 用既有 probe-root + `suite-gate --report <ndjson>` 机制补两条例外治理自测（用例名以 `CR-2026-065` 起始）：
+   - ①`CR-2026-065 例外治理自测：到期未清的例外 → EXCEPTION_EXPIRED 且退出非零`：登记面副本含一条字段齐备（`id/kind/reason/owner/expires`）、`expires=2020-01-01T00:00:00+08:00`（带时区偏移、已过）的例外 → 断言 `verdict=block`、进程退出非零、`checks[EXCEPTION_EXPIRED].ok=false`、`registry.exceptions_count=1`；
+   - ②`CR-2026-065 例外治理自测：例外标识未匹配本次失败集合 → EXCEPTION_NOT_OBSERVED 且退出非零`：未到期例外登记的失败名（`match`）在本次（全绿）运行中未出现 → 断言 `verdict=block`、退出非零、`checks[EXCEPTION_NOT_OBSERVED].ok=false`，且 `checks[SUITE_FAILURES_UNREGISTERED].ok=true`（两个判定面互不串台）；
+   - **承载方式**：两用例都在 `cmd-01` 的全量整跑内真实执行（`contract-scan.test.mjs` 17/17 ok，见 §C/§D）；窄跑锚点见 §E TASK-03 ①（10 条命中名含这两条）。登记面副本写在 `os.tmpdir()`，不触碰仓库登记面（仓库登记面零写路径由同文件静态断言覆盖）；
+   - **非空注脚（自检，非 canonical 证据）**：排除「用例空转」——临时把 `suite-gate.mjs` 的 `EXCEPTION_EXPIRED` 触发条件与 `EXCEPTION_NOT_OBSERVED` 触发条件各自短路 → 该两用例立即 `not ok`（17 项中 pass 15 / fail 2）；还原后 17/17 ok，且 `git diff --name-only` 只剩本轮两条预期路径（`suite-gate.mjs` 与还原前逐字节相同）。注入物不在交付 diff 中。
 2. **`plan` §6.1 FR-8 / §7 AC-08 把 「drift-audit 不回归」的证据归属写为 `cmd-03`，与实测不符（如实报告，不改 plan 正文）**：该用例实体在 `skills/shared/crctl/scripts/test/crctl.test.mjs:800`（`CR-2026-052 AC-11：同一漂移二次观测…`），`cmd-03` 的文件集（archive-tx / trace-outbox）与 pattern 集都不含它 ⇒ **真实承载者 = `cmd-01`**（全量 21 文件，`crctl.test.mjs` 224/224 ok）。故 AC-08 的「drift-audit 不回归」证据应读作 `cmd-01`；`cmd-03` 实际只承载构造 A/B 与 `CR-2026-065` 契约用例。
 3. **窄跑证据的强度：`cmd-02` = 4 点、`cmd-03` = 8 点，但退出码无法区分「命中 4/8 条」与「命中 0 条」**（Node 无命中时同样 exit 0）。本轮以 dot 点数（第一手计数）作为锚点；若要更强的机械锚，应改用 tap 逐名（如 TASK-03 §4.1 对 `contract-scan` 的窄跑已做）。此外该面依赖 Node 对**重复 `--test-name-pattern` 取并集**的语义（plan §6.2 注②），本机 v24.15.0 实测成立（4 点 + 8 点）；运行时语义若变化会静默改变命中集合，属残余依赖。
 4. **负控（N-1/N-2/N-3）证据是 `implement-code` 期产物，本轮只做形态核对**：`cmd-05` 只读 `verdict` / `converged` / `failures[]`，不重放注入 ⇒ 「注入确实发生过」的强度取决于 TASK-04 期的逐次整跑记录（`drift/NC-*` 与 `concurrency/*`），本轮未重跑（预算 + 不污染证据集）。
-5. **机器区未发布 `sourceRevision` / `logSha256`**（`SKILL.md` 文本提到 resultFacts）：本版 crctl 的机器区 per-command 字段固定为 `repo/cwd/executable/args/timeout-seconds/exit-code/signal/timed-out/started/skipped/log`（`lib/workspace-transactions.mjs:4103-4124`）。证据绑定面实际为 repo+worktree（`52fa8d7` clean）+ 真实退出码 + `log` 路径 + `commandDigest`。属 crctl 既有形态、在本 CR `scope_in` 之外，登记为观察项，**不作为本报告的 block**。
+5. **机器区未发布 `sourceRevision` / `logSha256`**（`SKILL.md` 文本提到 resultFacts）：本版 crctl 的机器区 per-command 字段固定为 `repo/cwd/executable/args/timeout-seconds/exit-code/signal/timed-out/started/skipped/log`（`lib/workspace-transactions.mjs:4103-4124`）。证据绑定面实际为 repo+worktree（本轮 `d33271a` clean）+ 真实退出码 + `log` 路径 + `commandDigest`。属 crctl 既有形态、在本 CR `scope_in` 之外，登记为观察项，**不作为本报告的 block**。
 6. **`cmd-04` / `cmd-05` 的 args 内含硬编码绝对路径与基线 SHA**（`dddd0ad6…`、两个 worktree 绝对路径）：换机、换 worktree 路径或基线前移都会使这两条命令语义失效（脚本会照旧判绿或全判缺失）。这是 `plan.md` §6.2 注④/注⑧ 的既定口径（正斜杠化 + KB 绝对路径），本轮实测通过；仅作残余项登记。
 7. **lint / build 步骤：不适用**——本 CR 无 lint/build 门禁（CI 的 `contracts` job 门禁面 = 全量测试步骤 `:111`），`zero_diff` 面不含任何 lint 配置；证据集按 `plan.md` §6.2 只声明测试面。
 
@@ -191,10 +196,11 @@ commands:
 | # | 内容 | 处置 | 实测依据 |
 |---|---|---|---|
 | H-1 | drift-audit 不回归被归给 `cmd-03`，真实载体在 `crctl.test.mjs:800`（只由 `cmd-01` 承载） | **已处理（如实报告归属，不改 plan 正文）** | 见 §G-2；`cmd-01` `crctl.test.mjs` 224/224 ok |
-| H-2 | AC-12「构造到期例外 → 门禁红」证据面缺命令承载 | **保留（本轮不可执行）** | 见 §G-1（含可复跑配方与「不可观测」事实：`exceptions=[]`） |
-| H-3 | `manifest.cases` 全为 1 时「只查正整数」会漏刷新 | **已由本轮 `cmd-01` 逐项对照承载** | 见 §D（21/21 全等、Σ 576 ≡ `cases_executed`；`SUITE_MANIFEST_CASE_DROP` check ok） |
+| H-2 | AC-12「构造到期例外 → 门禁红」证据面缺命令承载 | **已关闭（本轮回修）** | 新增 2 条例外治理自测（到期即红 / 标示未匹配即红）随 `cmd-01` 全量执行；`gate-registry.json#manifest.cases.contract-scan.test.mjs` 15 → 17（只升不降）；`command-digest` 不变（命令集未改）。详见 §G-1 |
+| H-3 | `manifest.cases` 全为 1 时「只查正整数」会漏刷新 | **已由本轮 `cmd-01` 逐项对照承载** | 见 §D（21/21 全等、Σ 578 ≡ `cases_executed`；`SUITE_MANIFEST_CASE_DROP` check ok） |
 | H-4 | `plan` 记 `cmd-05 = 17 项缺失`，复评为 19 项 | **以实测为准报告**：交付态 **0 项失败**；基线态按 `cmd-05` 同一脚本口径复算 = **19**（13 条「缺失 X」+ 6 条「X 非法 JSON」——`readJson` 对不存在的文件返回 `null` 亦计入），与复评的 19 一致，`plan` 的 17 属欠计 2 条 | 只读复算（`EV` 指向不存在的目录，无副作用） |
 | H-5 | SDD §4.6 写 `test-evidence/cmd-NN.log`，plan §6.4 / TASK-04 用 `test-evidence/drift/NC-*` | **按 TASK-04 现状执行并登记命名映射（不改 SDD）** | 见下方映射表 |
+| H-6 | `review-code` attempt 1 的 4 条 suggestions（`skipped_cases` 字段名 / 例外匹配语义 / `--report` 形态 `duration_ms` / CI 池收敛） | **按 reviewer 的「范围外」判定保留，本 CR 内不改** | ① 把 `skipped_cases` 改回 `skipped` 会命中冻结 skip 模式表 `\bSKIPPED\b`（键名后接引号即词边界）⇒ 会把 `cmd-01` 判成 skip 态并作废本 CR 证据面；②③ 需先由设计/计划明文定义例外匹配键与报告字段语义，留待后续 CR；④ 属 SDD §6.4 已登记的待核实依赖，非本 CR 验收面 |
 
 **命名映射（H-5，本轮实测路径）**
 
@@ -207,6 +213,6 @@ commands:
 
 ### I. 下一步建议
 
-1. `test-report.md#status = pass` ⇒ 走 `push-progress` 一次（`crctl checkpoint CR-2026-065 --message 代码与测试证据`）把 KB 写面（报告 + 5 份日志 + 账本投影）与 tools `52fa8d7` 一起 checkpoint，再做 `workspace-freshness gate=review-start`。
-2. `review-code`（独立 reviewer）优先复核：§D 的逐项对照是否足以替代「manifest 漏刷新」缺口（H-3）、§G-1 的 AC-12 观测缺口是否需要在 CR 内补一次注入（H-2）、§G-2 的 AC-08 证据归属更正是否需回改 plan 正文（本轮未改）。
-3. 若 `review-code` 判 `block`，回修面只应是上述 §G 残余项，不涉及本报告机器区（`status=pass` 为 `crctl` 按真实退出码判定，不得手改）。
+1. `test-report.md#status = pass` ⇒ 走 `push-progress` 一次（`crctl checkpoint CR-2026-065 --message 代码与测试证据`）把 KB 写面（报告 + 5 份日志 + 账本投影）与 tools `d33271a` 一起 checkpoint，再做 `workspace-freshness gate=review-start`。
+2. `review-code`（独立 reviewer，新 run）优先复核本轮回修：§G-1 的两条例外治理用例是否足以关闭 blocker（含 mutation 自检），以及 §G-2…§G-7 残余项与 §H-6 的范围外处置理由是否成立。
+3. 若 `review-code` 再判 `block`，回修面只应是 §G 残余项，不涉及本报告机器区（`status=pass` 为 `crctl` 按真实退出码判定，不得手改）。
