@@ -1,0 +1,36 @@
+$ node -e const fs=require('fs'),path=require('path'),cp=require('child_process');const R=process.cwd();const NL=String.fromCharCode(10);const CRCTL=path.join(R,'skills/shared/crctl/scripts/crctl.mjs');const T='skills/shared/crctl/scripts/test/';const WL=['README.md','openwiki/operations/crctl-transactions.md','skills/shared/crctl/SKILL.md','skills/cr/cr-archive/SKILL.md','skills/sync/push-progress/SKILL.md','skills/writeback/merge-feature-branch/SKILL.md','skills/shared/crctl/scripts/crctl.mjs','skills/shared/crctl/scripts/lib/workspace-transactions.mjs'].concat(['archive-tx','checkpoint-tx','crctl','merge-tx','register-tx','workspace-freshness','writeback-tx','contract-scan'].map(n=>T+n+'.test.mjs'));const ZERO=['ARCHITECTURE.md','dir-graph.yaml','skills/shared/crctl/gates.json','skills/shared/controlled-shell/rules.json','skills/shared/crctl/scripts/test/gate-registry.json','skills/shared/crctl/scripts/lib/durable-tx.mjs','skills/shared/crctl/scripts/lib/yaml-subset.mjs','skills/_index.yml','agents/_index.yml'];const bad=[];const SKIPS=['.git','node_modules'];const walk=(d,out)=>{for(const e of fs.readdirSync(d,{withFileTypes:true})){const p=path.join(d,e.name);const r=path.relative(R,p).split(path.sep).join('/');if(e.isDirectory()){if(SKIPS.includes(e.name))continue;walk(p,out);}else if(r.endsWith('.mjs'))out.push(r);}};const lib=[];walk(path.join(R,'skills/shared/crctl/scripts/lib'),lib);const guard=['skills/shared/crctl/scripts/crctl.mjs'].concat(lib);const BADT=['shell: true','shell:true','Invoke-Expression'];const ZP=['pipeline-templates/','.github/workflows/','agents/'];let falseCount=0;for(const f of guard){const t=fs.readFileSync(path.join(R,f),'utf8');for(const s of BADT)if(t.includes(s))bad.push('shell 逃逸守卫命中: '+f+' 含 '+s);const mm=t.match(/shell:[ ]*false/g);if(mm!==null)falseCount+=mm.length;}console.log('guard files = '+guard.length+' shell:false = '+falseCount);if(falseCount<1)bad.push('argv 先例 shell:false 计数异常');const r=cp.spawnSync(process.execPath,[CRCTL,'git','diff','--name-only','81d31b8b9d4c36cfef24cd076bf9fe635b67b2b6','--cwd',R],{encoding:'utf8'});if(r.status!==0){bad.push('crctl git diff 失败');console.log(String(r.stderr).trim());}else{const parts=String(r.stdout).split(NL);const b=parts.findIndex(l=>l.trim()==='{');const names=parts.slice(0,b<0?parts.length:b).map(s=>s.trim()).filter(Boolean);console.log('tools diff paths = '+names.length);names.forEach(f=>console.log('  '+f));const inScope=f=>{if(f.startsWith('openwiki/'))return true;return WL.includes(f);};for(const f of names)if(inScope(f)===false)bad.push('tools diff 越界路径（不在 SDD §1.1 白名单）: '+f);for(const f of names){if(ZP.some(z=>f.startsWith(z)))bad.push('zero_diff 面被改动: '+f);if(ZERO.includes(f))bad.push('zero_diff 面被改动: '+f);}for(const f of WL)if(names.includes(f)===false)bad.push('tools diff 缺少应改文件: '+f);if(names.length===0)bad.push('tools diff 为空（实现未落盘？）');}if(bad.length>0){bad.forEach(b=>console.log('FAIL '+b));process.exit(1);}console.log('tools-guard-audit failures = 0');
+(exit=0)
+--- stdout ---
+guard files = 5 shell:false = 13
+tools diff paths = 28
+  README.md
+  openwiki/.last-update.json
+  openwiki/architecture/agent-skill-matrix.md
+  openwiki/architecture/index.md
+  openwiki/architecture/overview.md
+  openwiki/engineering-docs/index.md
+  openwiki/index.md
+  openwiki/operations/ci-guards.md
+  openwiki/operations/crctl-transactions.md
+  openwiki/operations/drift-governance.md
+  openwiki/operations/index.md
+  openwiki/pipelines/index.md
+  openwiki/pipelines/overview.md
+  openwiki/quickstart.md
+  skills/cr/cr-archive/SKILL.md
+  skills/shared/crctl/SKILL.md
+  skills/shared/crctl/scripts/crctl.mjs
+  skills/shared/crctl/scripts/lib/workspace-transactions.mjs
+  skills/shared/crctl/scripts/test/archive-tx.test.mjs
+  skills/shared/crctl/scripts/test/checkpoint-tx.test.mjs
+  skills/shared/crctl/scripts/test/contract-scan.test.mjs
+  skills/shared/crctl/scripts/test/crctl.test.mjs
+  skills/shared/crctl/scripts/test/merge-tx.test.mjs
+  skills/shared/crctl/scripts/test/register-tx.test.mjs
+  skills/shared/crctl/scripts/test/workspace-freshness.test.mjs
+  skills/shared/crctl/scripts/test/writeback-tx.test.mjs
+  skills/sync/push-progress/SKILL.md
+  skills/writeback/merge-feature-branch/SKILL.md
+tools-guard-audit failures = 0
+
+--- stderr ---
