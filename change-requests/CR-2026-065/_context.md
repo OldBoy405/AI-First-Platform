@@ -1,0 +1,131 @@
+# CR-2026-065 工作流导航缓存（`_context.md`）
+
+> 本文件是**导航缓存**，不是 canonical 事实。canonical 事实优先：`cr.md`、`review-loop.yml`、
+> `traceability.yml`、`review-annotations/**`、`tasks/_index.yml`、`approval.yml`。
+> 用途：返工与 `/resume` 时快速定位「做到哪、卡在哪、从哪继续」。
+
+## 0. 路径甲授权落账（逐字留档，2026-09-13）
+
+```yaml
+cr_id: CR-2026-065
+authorized_path: 甲
+authorization:
+  quote: "授权甲"
+  by: Ray
+  at: 2026-09-13T02:59:36Z
+  comment: 01a098b4-bae5-7c9a-b197-c070a9f4546c
+  scope: "以既有边 review-code:plan-blocker -> write-dev-plan 作为 code 阶段发现 SDD 前提失效的治理回退入口；本次回退无 review-code BLOCK 前因，该事实经此授权成立"
+```
+
+- 授权原话载体：AIFI-26 评论 `01a098b4-bae5-7c9a-b197-c070a9f4546c`（作者 `Ray`，`2026-09-13T02:59:36Z`，正文四字「**授权甲**」）。
+- 派单载体：AIFI-26 评论 `01a098b7-9775-74e5-b915-a6f03726fb4f`（`cr-coordinator-agent`，`2026-09-13T03:02:43Z`，§3 列出 A1→A3 与 `authorization` 块）。
+- **触发串与事实的对应关系**（关键：本回退**没有** `review-code` 的 BLOCK 前因，该事实在上列授权下成立）：
+
+| 项 | 事实 |
+|---|---|
+| 使用的边 | `dir-graph.yaml` 已声明：`{ from: developing, to: tech-design-reviewed, trigger: "review-code:plan-blocker -> write-dev-plan" }` |
+| 为什么用它 | `developing → tech-design-review-pending` **无边**；code 阶段治理（CR-2026-057 FR-6/FR-7）明文禁止为此新增状态转换 |
+| 前提失效的事实 | SDD §3.4/§4.2 的 TAP 归属机制（`# Subtest: <file>.test.mjs` 文件名块 + file 级 plan `1..N`）在目标运行时**不存在**（B-4；第一手实测见 `plan.md` §0.0 一栏，**已关闭**） |
+| 「无 BLOCK 前因」的含义 | 本次触发串**不声称**存在 `review-code` 的 BLOCK 结论；它是一条经人工授权的「code 阶段发现 SDD/证据链前提失效」治理回退入口 |
+| 授权范围外 | 不新增状态转换、不 push |
+
+## 1. 当前状态（最近一次刷新：`write-dev-plan`/`write-dev-tasks` replay run，2026-09-13 14:0x +08:00）
+
+- CR：`CR-2026-065`；权威 workspace = `.rayai-worktrees/knowledge-base/requirement/CR-2026-065`；受控路径只走 `crctl`。
+- CR 状态（canonical）：`tech-design-reviewed`（KB HEAD `db64dd37`）；`crctl gate --for tech-design-reviewed` = **`pass: true`**；
+  审批绑定**修订版 SDD**（`review-annotations/sdd.yml#subject-sha256` = `approval.yml#tech-design` 的证据面 = `ecc1f902…`，与当前 `sdd.md` 逐字节相等）。
+- 本条 run 的节点：`code-implementation / node-1 write-dev-plan` → `node-2 write-dev-tasks`（**B-4 修订后的二次 replay**，
+  `reviewLoop.replayNodes` = `write-dev-plan` → `write-dev-tasks` → `review-dev-plan`）。
+- 本 run 落盘：`change-requests/CR-2026-065/plan.md`（全文按修订版 SDD 重述）+ `tasks/TASK-03.md` / `tasks/TASK-04.md`
+  （阻断叙事 → 关闭叙事；逐文件 spawn / 单文件 TAP / 15 字段报告 / `--report <ndjson>` 口径）+ 本文件刷新；
+  单提交 `[cr] write dev plan CR-2026-065`（**不 push**）。
+- 随后（同一 run 的 node-2 收尾）：`crctl advance --to task-breakdown --trigger write-dev-tasks --expect tech-design-reviewed`（**非 embedded**）⇒ **已执行实测**：`advanced=true` / `from=tech-design-reviewed` / `to=task-breakdown` / `committed=true` / `outbox=20260913T061123508Z-CR-2026-065-status-2de33f9f.json`；KB HEAD = `2de33f9f`、`status --short` 空。
+  - **`crctl next` 读法提醒**：该命令现在返回 `write-tech-design`（why：上一条 `review-annotations/dev-plan.yml` 仍是 attempt 1 的 `verdict=block` / `repair-target=write-tech-design`）；该上游阻断已于 `fd48041c` 关闭，**本计划的下一节点是 `review-dev-plan`**，`crctl next` 的返回值不构成阻断事实。
+  - **advance 后已知提醒**：`crctl status` 会报 `gateBlockers.developing = [EVIDENCE_DRIFT(development-start)]` —— 上一轮 `developing` 期签发的审批覆盖的 `plan.md` 被本轮 replay 修订（预期）；人工 `approve --stage dev-start` 写入时以新摘要重签即自然消失（`approveAndAdvance` 的 evidence override）。
+- 再随后：新建独立 `quality-reviewer-agent` run 执行 `review-dev-plan`（**不得自评**）；PASS 后人工 `approve --stage dev-start`（输 `y`）→ `developing`。
+- 未触碰：`sdd.md`（一个字节都不改）、`prd.md`、`review-annotations/**`、`review-loop.yml`、`approval.yml`、`cr.md` 的 status（只经 `crctl advance`）、
+  `skills/**`、`pipeline-templates/**`、`dir-graph.yaml`、`TASK-01/02` 卡片与实现、CR-2026-064。
+
+## 2. TASK 进度与第一手证据
+
+| TASK | 状态（`tasks/_index.yml`，canonical） | 证据 / 本 run 处置 |
+|---|---|---|
+| `CR-2026-065-TASK-01` | `done` | cmd-02 = **exit 0 / 506 ms**（BR-1…BR-4 全绿）；`gate-registry.json` = 具名 15 / 声明 31 / any-active 12；**卡片与实现不动** |
+| `CR-2026-065-TASK-02` | `done` | cmd-03 = **exit 0 / 40.0 s**（BR-5 构造 A/B + 契约用例）；**卡片与实现不动** |
+| `CR-2026-065-TASK-03` | `pending` | 本 run 重述：§0 改为阻断关闭声明；§3.1 `--report <ndjson>`（`--rc` 取消）；§3.2 逐文件 spawn（池 = `CONCURRENCY`）；§3.3 报告 15 字段；§3.4 单文件 TAP 硬失败；§3.6 单文件片段解析自测 + 归属自测 + 用例名以 `CR-2026-065` 起始；§4.1 须附被命中用例名清单 |
+| `CR-2026-065-TASK-04` | `pending` | 本 run 重述：§0 改为阻断关闭；§3.1 **三候选**（默认 / 2 / 1）× ≥2 次；§3.2 证据固定字段**补 `verdict`**；§3.3 `manifest.cases` 逐文件终值；§4 证据清单 = 6 份 concurrency + 6 份 drift |
+
+- 账本口径：`_index.yml` 已有 TASK-01/02 的 `done` + `done-at` ⇒ `crctl task init` 被 `guardTaskIndexHasNoProgress`（`crctl.mjs:1653-1663`）拒绝（预期 `TASK_INDEX_HAS_PROGRESS`，零写入）⇒ 本 run **不重跑 `task init`**，`id`/`title`/`estimate`/`depends-on` 与账本逐项全等（只读复核通过）。
+- 卡片 `status` 字段**非权威**（`crctl` 只读账本；`renderTaskIndex`（`crctl.mjs:1628-1638`）一律渲染 `pending`）；TASK-01/02 卡片保留 `pending` 是有意的（边界要求其卡片不动）。
+- tools worktree：HEAD `2c84241462ed42580eeb1571de8d60d9c55d5a4b`、**clean**、未 push；交付面 9 条路径全部落在 `cmd-04` 白名单内。
+- KB worktree：本 run 后 HEAD = `[cr] write dev plan CR-2026-065`（+ `advance` 的 `cr.md` 提交）。
+
+## 3. B-4 阻断与本次修订的定稿口径（第一手实测；当前机制，未变）
+
+**旧前提（已证伪，`051adca6` 引入、`1678ab09`/`0505ed2c` 沿用、`fd48041c` 废止）**：SDD §3.4/§4.2 用「TAP 文件名块（`# Subtest: <file>.test.mjs`）+ file 级 plan `1..N`」取 per-file 归属。
+**实测**：正常文件下该形态**不存在**（`# Subtest:` 全是用例名、唯一 plan 是全局 `1..N`）；文件名块只在「整文件加载失败」时出现，且其**名字形态随 Node 版本变**（v24 = 文件名，v20 = 绝对路径）。
+
+**定稿机制（已批准、当前权威）**：
+
+| 维度 | 定稿 | 探针（原始输出在 `sdd.md` §7.4） |
+|---|---|---|
+| 归属 | **逐文件 spawn**（每文件一个 `node --test --test-reporter=tap <file>` 子进程），归属由 spawn 构造给出，**不读报告** | ——（构造保证，与格式无关） |
+| 文件集合事实源 | 磁盘目录 `readTestFileSet` ↔ `manifest.files` | —— |
+| 每文件用例数 | 单文件 TAP 的**顶层 plan ≡ 顶层结果行数**；证据面 = 报告 `files[]` | P9：真实套件文件单跑，v24 与 **v20.20.2（CI 同版本）** 逐字一致（17 / 7） |
+| 并发 | 包装器池常量 `CONCURRENCY`（文件级并发）；默认 = `max(1, availableParallelism()-1)`，**候选 {默认,2,1}** 由 TASK-04 有界实测定值 | P8 |
+| 失效出口 | 解析不符 → **硬失败红**；唯一允许的替代 = 每文件观察通道换成结构化事件流（需双运行时探针 + 报告 `observer` 登记 + `review-code` 覆盖） | P1/P2/P3 |
+| 明确**不采用** | junit `file`（v20 无）、目录参数/glob 位置参数（跨版本不一致）、`--test-isolation`（v20 无此选项） | P3 / P5 / P6 / P7 |
+
+**不变的不变量（未放宽）**：每文件被真实执行 + 每文件用例数 ≥ 基线 + 解析失败硬失败（`sdd.md` §3.2 I1…I3）。
+
+## 4. 恢复入口
+
+1. **node-2 收尾未完成**（`crctl status` 仍为 `tech-design-reviewed`）：先 `crctl gate CR-2026-065 --for tech-design-reviewed` 复核 `pass: true`，再
+   `crctl advance CR-2026-065 --to task-breakdown --trigger write-dev-tasks --expect tech-design-reviewed`（非 embedded）。
+2. 独立 `review-dev-plan`（新建 `quality-reviewer-agent` run；`repair-target` 缺省 `write-dev-plan`）：
+   - PASS → 人工 `approve CR-2026-065 --stage dev-start`（输 `y`）→ `developing`；
+   - BLOCK（普通轨）→ 按 `replayNodes` 回修本计划/`tasks/**` 后复评（`maxAttempts=3`）；
+   - BLOCK（`repair-target=write-tech-design`）→ 走 `review-dev-plan:upstream-design-blocker`（条件性出口，须附第一手证据）。
+3. `developing` 后：TASK-03 → TASK-04 → `write-test-report` → checkpoint → 独立 `review-code` → 人工 `approve --stage code`。
+4. 已就绪可复用：`test/suite-gate.mjs` 的判定面 / 例外四查 / check code 表 / `--report` 解析自测框架；`assertion-sources.mjs`、`gate-registry.json`、`lib/outbox-contract.mjs` 与 TASK-01/02 全部用例。
+   **TASK-03 待补齐**：逐文件 spawn（池 = `CONCURRENCY`）、单文件 TAP 解析、`files[]` / `observer`（13 → 15 字段）、`--report <ndjson>`（`--rc` 取消）、`crctl-ci.yml:109-111` 接线。
+5. 范围外待办（`sdd.md` §9 `follow_up` 第 4 条）：`crctl gate --for tech-design-reviewed` 不校验 annotation 的 `subject-sha256` 是否等于当前 `sdd.md` —— 单开 CR 处理，不塞进本 CR。
+
+---
+
+## node-6/node-7 前哨：implement-code（TASK-03/04）收尾导航（2026-09-13 18:2x，dev-agent）
+
+- **CR 状态**：`developing`（未推进状态；`crctl next` = `implement-code → write-test-report`）。
+- **本轮落盘**：tools worktree `52fa8d7`（clean，未 push；4 条交付路径：`test/suite-gate.mjs`、`test/contract-scan.test.mjs`、`test/gate-registry.json`、`.github/workflows/crctl-ci.yml:109-111`）；KB `63c3de7d`（`test-evidence/**` 13 份 + `NC-summary.md`）+ `543c1cd9`（`tasks/_index.yml` 标 TASK-03/04 done）。
+- **证据面**：`test-evidence/concurrency/{default,conc2,conc1}-run{1,2}.json`（并发决定：选中默认 pool=15）、`test-evidence/drift/NC-{1,2,3}-{inject,restore}.json`、`test-evidence/NC-summary.md`。
+- **实测结论**：`cmd-01` exit 0 / 783,450 ms / `converged=true` / `failures=[]` / 21 文件；`cmd-02` 481 ms、`cmd-03` 40,102 ms、`cmd-04` 138 ms、`cmd-05` 37 ms **全 exit 0**；窄跑 `--test-name-pattern CR-2026-065` 命中 8 条用例。
+- **恢复入口**：`write-test-report`（node-7）按 `plan.md §6.2` 逐字转录执行 5 条命令（cmd-01 单条 ~783 s，节点 20 min 预算需按 R-01 留意）→ 独立 `quality-reviewer-agent` run 执行 `review-code`（node-9，不得自评）。
+- **本轮偏差（供评审裁决）**：① `files[].skipped` 序列化为 `skipped_cases`（J-8 冻结模式 `/\bSKIPPED\b/i` 与 SDD §2.4 字段名冲突，取 J-8）；② 还原手段 `git checkout --`（`crctl git checkout` 实测 `FORBIDDEN_SUBCOMMAND`）；③ N-1 注入期发现并修复单文件 TAP 解析缺陷（诊断块内缩进 `...` 误判），已补回归自测。
+
+---
+
+## node-7/node-8/node-17 导航：write-test-report 收尾（2026-09-13 19:0x，dev-agent）
+
+- **CR 状态**：`developing`（状态未推进；测试报告已 `pass`，`review-code` 经 trigger `review-code` 推进到 `code-reviewing`）。
+- **产物**：`test-report.md`（机器区 `status=pass` / `command-digest=df94c863…` / `generated-at 2026-09-13T18:56:51+08:00`）＋ 分析段 §A…§I（只写在机器区标记之下，机器区零改动、`crctl validate` = `valid: true`）；`test-evidence/cmd-01…05.log`（5 份）；`traceability.yml#tests`（pass / Ray / 同 digest）；`review-loop.yml#write-test-report` = `{current-cycle:1, current-attempt:1}`（1/3）。
+- **node-7 实测**：`crctl test` 只跑 1 次（`18:42:26` → `18:56:51` = **865 s**，节点预算 1200 s，未超时）：cmd-01 **exit 0** / 822,652 ms / `converged=true` / `failures=[]` / 21 文件 / 576 用例 / `skipped_file_level=0` / `pool=15`；cmd-02 exit 0（4 命中）、cmd-03 exit 0（8 命中）、cmd-04 exit 0（`diff paths = 11` 全在白名单）、cmd-05 exit 0（`failures = 0`）。`manifest.cases` 21/21 ≡ `files[].cases`，Σ = 576 ≡ `cases_executed`。
+- **node-8 checkpoint**：`crctl checkpoint --message 代码与测试证据` → `phase=complete` / `batchId=f9bbed9997d361ee` / KB `c895be62` / multica `ab960948` / tools `52fa8d7a`（三仓 `confirmed=true`）/ `metadataCommit=78fe6196`。
+- **node-17 freshness（gate=review-start）**：三仓 `freshness=fresh`、`allFresh=true`、`syncable=false`、`dirty=false` ⇒ **route=continue**。
+- **本次登记的残余项（供 `review-code` 裁决，逐条见 `test-report.md` §G/§H）**：① AC-12 到期例外不可观测（`exceptions=[]`，本轮保留 + 附可复跑配方）；② `plan` §6.1 FR-8 / §7 AC-08 的 drift-audit 归属应读作 `cmd-01`（用例实体在 `crctl.test.mjs:800`，`cmd-03` 不覆盖）；③ `cmd-02`/`cmd-03` 窄跑零命中亦 exit 0（以 dot 点数 4/8 锚定）；④ 机器区未含 `sourceRevision`/`logSha256`（本版 crctl 既有形态，`workspace-transactions.mjs:4103-4124`）；⑤ 执行偏差 1 条：计划落在 **KB** `.crctl/tmp/test-plan.json`（tools worktree 无 `.crctl/`；`workspace-transactions.mjs:4198`、`:4206-4210` 要求 plan 在 `<workspace>/.crctl/tmp` 内）；⑥ `cmd-04`/`cmd-05` 的 args 内置绝对路径与基线 SHA（plan §6.2 注④/注⑧ 既定口径）。
+- **恢复入口**：新建独立 `quality-reviewer-agent` run 执行 `review-code`（node-9，不得自评）→ PASS 落 `code-reviewing` → 人工 `crctl approve --stage code`（TTY）。回修面仅限上述残余项与 reviewer 的 blockers；`test-report.md` 机器区**不得手改**。
+- **未触碰**：`sdd.md`（`sha256(LF)=ecc1f902…` 不变）、`prd.md`、`review-annotations/**`、`approval.yml`、`cr.md` status、`dir-graph.yaml`、`pipeline-templates/**`、multica（零改动）、CR-2026-064。
+
+---
+
+## node-9 BLOCK 回修轮导航：implement-code + write-test-report attempt 2（2026-09-13 19:2x–19:4x，dev-agent）
+
+- **触发**：`review-code` cycle 1 / attempt 1 = `BLOCK`（blocker 1 条；4 条 suggestions 均标 `范围外`）⇒ `crctl advance --to developing --trigger "review-code:block -> implement-code"`；`repair-target=implement-code`（code 阶段不可回设计）。
+- **回修面（只碰 2 个文件）**：tools `skills/shared/crctl/scripts/test/contract-scan.test.mjs`（+2 条例外治理自测；`makeProbeRoot` 增第三参 `exceptions`）+ `skills/shared/crctl/scripts/test/gate-registry.json#manifest.cases.contract-scan.test.mjs` 15 → 17（只升不降）。tools HEAD = `d33271a3`（`[cr] CR-2026-065 code repair: …`）；`plan.md` §6.2 命令表未改。
+  - ① `CR-2026-065 例外治理自测：到期未清的例外 → EXCEPTION_EXPIRED 且退出非零`（`expires=2020-01-01T00:00:00+08:00`）⇒ `verdict=block` / 退出非零 / `checks[EXCEPTION_EXPIRED].ok=false` / `registry.exceptions_count=1`；
+  - ② `CR-2026-065 例外治理自测：例外标识未匹配本次失败集合 → EXCEPTION_NOT_OBSERVED 且退出非零` ⇒ `EXCEPTION_NOT_OBSERVED.ok=false` 且 `SUITE_FAILURES_UNREGISTERED.ok=true`（两面互不串台）；
+  - 非空自检（非 canonical 证据）：临时短路 `suite-gate.mjs` 的两处触发条件 ⇒ 两用例 `not ok`（17 项中 pass 15 / fail 2）；还原后 17/17 ok、`git diff --name-only` 只剩本轮预期路径。
+- **node-7 重跑（attempt 2）**：`crctl test` 只跑 1 次（`19:29:51` → `19:43:39` = 828 s）⇒ `status=pass` / `command-digest` 与 attempt 1 **逐字相等**（`df94c863…`）/ cmd-01 exit 0 / 787,330 ms / 21 文件 / **578 用例** / `failures=[]` / `registry.sha256=f8d983a0…`；cmd-02…05 均 exit 0（11 条 diff 全在白名单、`evidence-form-audit failures = 0`）；`manifest.cases` 21/21 ≡ `files[].cases`，Σ 578 ≡ `cases_executed`。
+- **KB 写面**：`test-report.md` + `traceability.yml` + `review-loop.yml`（`write-test-report` `{cycle:1, attempt:2}`）+ `cmd-01.log` 重写；`cmd-02…05.log` 本轮重跑但逐字节相同 ⇒ 写集按 `action='skip'` 未重写（mtime 未变属设计行为，非旧证据复用）。
+- **产物刷新**：`test-report.md` 分析段 §A…§I 已按本轮重写：§G-1/H-2 记 blocker 关闭（含承载方式与 mutation 自检），新增 §H-6 登记 4 条范围外 suggestions 的处置理由；§C/§D/§E/§F 数字同步（578 用例、`contract-scan` 17/17、窄跑 10 命中、diff `+1464 −61`）。
+- **恢复入口**：`crctl checkpoint CR-2026-065 --message 代码与测试证据`（三仓 confirmed）→ `workspace-freshness gate=review-start`（`route=continue` 方可）→ 新建独立 `quality-reviewer-agent` run 执行 `review-code` 复评（消费下一 attempt；不得在作者会话内自评）；PASS 落 `code-reviewing` → 人工 `crctl approve --stage code`（TTY）。
+- **未触碰**：`prd.md` / `sdd.md` / `plan.md` / `tasks/**`、`review-annotations/**`、`approval.yml`、`cr.md` status（只经 crctl）、`dir-graph.yaml`、`pipeline-templates/**`、multica（零 diff）、CR-2026-064；`cmd-01…05` 机器区未手改。
