@@ -80,7 +80,7 @@ updated: 2026-09-13T14:05:00+08:00
 
 ## 0. 基线与工作区事实（本节点实测，落笔即读，未轮询）
 
-- `crctl status CR-2026-065`（`--workspace` = CR worktree）= **`tech-design-reviewed`**（`db64dd37`）；`crctl next` = **`write-dev-plan`**（why：技术设计已审批，编写开发计划；本节点实测）；`legalNext` 含 `task-breakdown`(`write-dev-tasks`) 与 reject/withdraw 轨；`reviewLoops` = `review-requirement 1/3`、`review-tech-design 1/3`（cycle 2 内计数）、`review-dev-plan 1/3`（attempt 1 为 upstream 轨，Skill 规定 upstream 轨不递增 attempt）。
+- `crctl status CR-2026-065`（`--workspace` = CR worktree）= **`tech-design-reviewed`**（`db64dd37`，node-1 入口值）；`crctl next` = **`write-dev-plan`**（why：技术设计已审批，编写开发计划；node-1 入口实测，**advance 后的读法见 §0.6**）；`legalNext` 含 `task-breakdown`(`write-dev-tasks`) 与 reject/withdraw 轨；`reviewLoops` = `review-requirement 1/3`、`review-tech-design 1/3`（cycle 2 内计数）、`review-dev-plan 1/3`（attempt 1 为 upstream 轨，Skill 规定 upstream 轨不递增 attempt）。
 - **本条 run（B-4 后 replay）落盘**：`plan.md` 全文按修订版 SDD 重述 + `tasks/TASK-03.md` / `TASK-04.md` 相关节重述 + `_context.md` 刷新；commit `[cr] write dev plan CR-2026-065`（KB worktree，**不 push**）。修订前后 digest、`advance` 实测与收尾事实见 §0.6（本条 run 事实栏）。
 - **A2 回退实测（历史，上一轮 plan 节点）**：`advance CR-2026-065 --to tech-design-reviewed --trigger "review-code:plan-blocker -> write-dev-plan" --expect developing` → `advanced=true` / `from=developing` / `to=tech-design-reviewed` / `committed=true` / `outbox=20260913T030812107Z-CR-2026-065-status-fce32046.json`；KB worktree 随后 `status --short` 为空（无 `cr.md` 残留）。
 - **A1 保命本地提交（历史，上一轮 plan 节点）**：tools `2c84241`（`crctl.mjs` + 4 个 test + 4 个新增文件，9 files changed）、KB `77148b08`（`tasks/_index.yml` 两次 done 标记 + `_context.md`）。**未 push**（保命提交，非 checkpoint）。
@@ -140,6 +140,10 @@ updated: 2026-09-13T14:05:00+08:00
 | 干跑（§6.3 同一语义：`spawnSync(executable,args,{cwd,shell:false})`） | cmd-02 **exit 0 / 506 ms**；cmd-03 **exit 0 / 40.0 s**；cmd-04 **exit 0 / 141 ms**（`FR-15 diff paths = 9` 全在白名单、`registry-scope-audit failures = 0`）；cmd-05 **exit 1 / 44 ms**（17 项实施期证据缺失 = 实施前基线）；cmd-01 **未复跑**（全量 ~900 s 量级，本节点 15 min 预算不足；上游既有观测见 §0） | 本节点 |
 
 - **账本口径（为什么本节点不重跑 `crctl task init`）**：`tasks/_index.yml` 已有进度（TASK-01/02 `done` + `done-at`），而 `cmdTaskInit` 在写入前经 `guardTaskIndexHasNoProgress` 校验（`crctl.mjs:1653-1663`）——含进度的账本**拒绍覆盖**，预期错误码 `TASK_INDEX_HAS_PROGRESS`、零写入。本轮 replay 不重排/不删/不改任何 TASK 的 `id` / `title` / `estimate` / `depends-on`（它们以账本为权威），因此**无需**也无权刷新账本；四张卡的组映射与 count-hint 断言改以**只读复核**形式完成（见 §9）。
+
+- **node-2 收尾实测（`advance` 后，供下一节点与人工门禁定位）**：`crctl advance CR-2026-065 --to task-breakdown --trigger write-dev-tasks --expect tech-design-reviewed`（非 embedded）⇒ `advanced=true` / `from=tech-design-reviewed` / **`to=task-breakdown`** / `committed=true` / `outbox=20260913T061123508Z-CR-2026-065-status-2de33f9f.json`；KB HEAD = `2de33f9f`（`[cr] status CR-2026-065 tech-design-reviewed -> task-breakdown`）、`status --short` 空。
+- **`crctl next` 的两个读法（防误读为阻断）**：本条 run **进入 node-1 时**（advance 前）`crctl next` = **`write-dev-plan`**（why：「技术设计已审批，编写开发计划」）；advance 落账后，`crctl next` 会返回 **`write-tech-design`**（why：「开发计划评审发现上游设计疑点（repair-target=write-tech-design），先修订 SDD」）—— 这是因为它读的是 `review-annotations/dev-plan.yml`（仍是上一轮 attempt 1 的 `verdict=block` / `repair-target=write-tech-design`），**该 annotation 描述的上游阻断已在 `fd48041c` 关闭**（§0.0），新 `review-dev-plan` 会覆盖它。⇒ **本计划的下一节点是 `review-dev-plan`；`crctl next` 的该返回值不构成阻断事实。**
+- **人工门禁前的已知提醒**：advance 后 `crctl status` 会报 `gateBlockers.developing = [EVIDENCE_DRIFT：approval.yml#development-start 的 4d2d6869… vs 当前重算 befe681a…]` —— 原因是上一轮 `developing` 期签发的 `development-start` 审批覆盖的 `plan.md` 在本轮 replay 中被修订（属预期）。该阻塞由人工 `approve --stage dev-start` **在写入时用新摘要重签**（`approveAndAdvance` 的 evidence override，`crctl.mjs:1108-1119`）而自然消失；不影响评审节点与门禁期望态（`dev-start` 的 `expect` = `task-breakdown`）。
 
 ---
 

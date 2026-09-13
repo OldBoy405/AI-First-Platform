@@ -39,8 +39,9 @@ authorization:
 - 本 run 落盘：`change-requests/CR-2026-065/plan.md`（全文按修订版 SDD 重述）+ `tasks/TASK-03.md` / `tasks/TASK-04.md`
   （阻断叙事 → 关闭叙事；逐文件 spawn / 单文件 TAP / 15 字段报告 / `--report <ndjson>` 口径）+ 本文件刷新；
   单提交 `[cr] write dev plan CR-2026-065`（**不 push**）。
-- 随后（同一 run 的 node-2 收尾）：`crctl advance --to task-breakdown --trigger write-dev-tasks --expect tech-design-reviewed`（**非 embedded**）。
-  → 若当前读到 `task-breakdown`，说明该步已执行；若仍读到 `tech-design-reviewed`，按 §4 恢复入口重跑该步（先 `crctl status` 复核门禁）。
+- 随后（同一 run 的 node-2 收尾）：`crctl advance --to task-breakdown --trigger write-dev-tasks --expect tech-design-reviewed`（**非 embedded**）⇒ **已执行实测**：`advanced=true` / `from=tech-design-reviewed` / `to=task-breakdown` / `committed=true` / `outbox=20260913T061123508Z-CR-2026-065-status-2de33f9f.json`；KB HEAD = `2de33f9f`、`status --short` 空。
+  - **`crctl next` 读法提醒**：该命令现在返回 `write-tech-design`（why：上一条 `review-annotations/dev-plan.yml` 仍是 attempt 1 的 `verdict=block` / `repair-target=write-tech-design`）；该上游阻断已于 `fd48041c` 关闭，**本计划的下一节点是 `review-dev-plan`**，`crctl next` 的返回值不构成阻断事实。
+  - **advance 后已知提醒**：`crctl status` 会报 `gateBlockers.developing = [EVIDENCE_DRIFT(development-start)]` —— 上一轮 `developing` 期签发的审批覆盖的 `plan.md` 被本轮 replay 修订（预期）；人工 `approve --stage dev-start` 写入时以新摘要重签即自然消失（`approveAndAdvance` 的 evidence override）。
 - 再随后：新建独立 `quality-reviewer-agent` run 执行 `review-dev-plan`（**不得自评**）；PASS 后人工 `approve --stage dev-start`（输 `y`）→ `developing`。
 - 未触碰：`sdd.md`（一个字节都不改）、`prd.md`、`review-annotations/**`、`review-loop.yml`、`approval.yml`、`cr.md` 的 status（只经 `crctl advance`）、
   `skills/**`、`pipeline-templates/**`、`dir-graph.yaml`、`TASK-01/02` 卡片与实现、CR-2026-064。
