@@ -5,28 +5,23 @@ cr-ref: CR-2026-064
 sdd-ref: "change-requests/CR-2026-064/sdd.md"
 target-version: 0.37
 status: draft
-created: 2026-09-13T00:12:55+08:00
-updated: 2026-09-13T00:12:55+08:00
+created: "2026-09-13T22:05:00+08:00"
+updated: "2026-09-13T22:05:00+08:00"
 ---
 
 # CR-2026-064 开发计划（CR-R：结构化恢复合同原子迁移 —— `recoverCommand`/`recover_command` 全量退役为结构化 `recovery`）
 
-**权威输入（审批绑定，本计划不改其一个字节）**
-
-| 输入 | 版本 | SHA256 | 绑定 |
-|---|---|---|---|
-| `change-requests/CR-2026-064/sdd.md` | commit `a5101d59`（`tech-design-reviewed`，纯 LF：CR 字节 0） | `72ea75eddf4c3d771aa85d329ec98c8968be35b6078478325afd2d15de8efe5d` | `review-annotations/sdd.yml`（`review-tech-design` cycle 2 / attempt 2，`verdict=pass`、`blockers=[]`，评审 commit `95bd360`，`subject-sha256` 与本行逐字一致）+ `approval.yml#tech-design`（approver `OldBoy405`，`2026-09-13T00:04:11+08:00`，via `crctl-approve`，target-status `tech-design-reviewed`，evidence-digest `824cf303…`） |
-| `change-requests/CR-2026-064/prd.md` | 需求评审 PASS 版（14 AC / 17 FR） | `4df6f1590e5c04bf2585bfe76bc21a496f702dcea17f2502b0e3584217176457` | 需求人工审批 evidence（`approval.yml#requirement`，本 CR 注册阶段完成） |
-
-- **两个硬边界**：①**不改 `sdd.md`**；②**不改 `prd.md`**。二者哈希均被人工审批绑定，任何正文修订都必须走上游轨（`review-tech-design` → 二次人工审批），不得在 plan/TASK 里静默改写设计。
-- 目标版本 `0.37`：继承 `cr.md#target-version`（未改写、未标 `tbd`；CR-2026-057 FR-13）。
-- 交付面白名单见 SDD §1.1 变更边界表与 §9 `scope_in`；`zero_diff` 清单见 SDD §9（本计划 §6.2 的 `cmd-03`～`cmd-06` 把其中可机器判定的部分做成判据）。
+> **本版为整体重写（v2），不是对上一版 `c0750ae5` 的增量补丁。**
+>
+> 上一版建立在一个**已经不存在的前提**上：「基线 5 条红 + 锚定 `--test-skip-pattern` 例外」。该前提已被 CR-2026-065（`tools@81d31b8`）清除：`gate-registry.json#manifest` 的 `exceptions` 已为 `[]`，CI 全量步骤已改为 `node skills/shared/crctl/scripts/test/suite-gate.mjs --run`；SDD 已在 `6c5c9a11` 把 §6.3 AC-07 的可观测结果定为 CI 的两条现有步骤，并由人工审批（`ab6f9347`，`evidence-digest 2d637724…`）绑定为验收目标。
+>
+> 因此本版：**不再保留任何例外、skip 模式、并发参数或替代验收口径**；`cmd-01` / `cmd-02` 按 SDD §6.3 AC-07 的命令转录（`cmd-02` 的 reporter 转录注记见 §6.2.1）；§5.3 的全部数字在本节点于新基线（tools `81d31b8`、multica `dead9fe0`、KB `ab6f9347`）上**重新实测**，不沿用上一版任何数值。
+>
+> 上一轮 `review-dev-plan` 判 **BLOCK / UPSTREAM_DESIGN_BLOCKER**（`review-annotations/dev-plan.yml`，`repair-target: write-tech-design`，`subject-sha256 5fe937a1…`）——该 blocker 的唯一残留点（AC-07 的口径与证据命令在合并后 trunk 上失效）已由 SDD 修订闭合，本轮由此计划承接；`dev-plan.yml` 的旧记录在本节点复评时由 `crctl review-record` 原子刷新。
 
 ## 0. 基线与工作区事实（落笔实读，一次读，未轮询）
 
-- status = `tech-design-reviewed`；`crctl next CR-2026-064` = `write-dev-plan`（`why: 技术设计已审批，编写开发计划`，`humanApproval=false`）。
-- 架构阶段终点 checkpoint 已闭合：`phase=complete`、`batchId=2cfcb5eb7ca667e4`、三仓 `confirmed=true`、metadata commit `9079005f`（`[cr] checkpoint CR-2026-064 batch 2cfcb5eb7ca667e4`）。
-- **`crctl workspace inspect CR-2026-064`（原样透传）**：
+### 0.1 入口校验 `crctl workspace inspect CR-2026-064`（主 workspace，原样透传）
 
 | repo | worktreePath | classification | dirty | localBranch / remoteBranch |
 |---|---|---|---|---|
@@ -34,174 +29,175 @@ updated: 2026-09-13T00:12:55+08:00
 | `multica` | `C:\Users\GOBAO\Downloads\AI\AI First Platform\.rayai-worktrees\multica\requirement\CR-2026-064` | **healthy** | false | true / true |
 | `tools` | `C:\Users\GOBAO\Downloads\AI\AI First Platform\.rayai-worktrees\tools\requirement\CR-2026-064` | **healthy** | false | true / true |
 
-`changed: false`、`operationalWorkspace: "C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform\\.rayai-worktrees\\knowledge-base\\requirement\\CR-2026-064"`（非空）、`operationalWorkspaceError: null`。三仓全 `healthy`，node-1 入口条件满足。
+`changed: false`；`operationalWorkspace = "C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform\\.rayai-worktrees\\knowledge-base\\requirement\\CR-2026-064"`（非空）；`operationalWorkspaceError: null`。三仓全 healthy，入口条件满足。
 
-- 路径 authority（`resources[].worktreePath` 原样值，**不拼接、不回退主工作区**）：
+### 0.2 三仓 HEAD（本计划落笔时刻）与职责
 
-| repo | worktreePath | HEAD（本计划落笔时刻） | 代码事实绑定 |
+| repo | HEAD | 职责与代码事实绑定 |
+|---|---|---|
+| `ai-first-platform-docs` | `ab6f9347`（`[cr] approve CR-2026-064 tech-design approval+status -> tech-design-reviewed`） | 只承载本 CR 过程文档（plan / tasks / test-report / 证据）；**不写** `specs/`、`delivery/`、`docs/`（回写属 `feature-writeback`） |
+| `multica` | `dead9fe0d5a24118547a5be56d59241fdcc443a8`（`merge CR-2026-065: multica`） | 只改 `cr-prompts-revised/delivery-agent.md`（2 行 / 2 次旧字段命中）；`server/internal/governance/testdata/traceability-golden.{yml,json}` 为历史黄金数据（排除，不改） |
+| `tools` | `81d31b8b9d4c36cfef24cd076bf9fe635b67b2b6`（`merge CR-2026-065: tools`） | 本 CR **唯一代码变更仓**；§5.3 扫描面/门禁/守卫数字、§8 盘点、`cmd-01`/`cmd-03`/`cmd-05` 的 diff 基线均绑此 SHA（`git status` clean） |
+
+### 0.3 输入产物与绑定
+
+| 输入 | 版本 | SHA256 | 绑定事实 |
 |---|---|---|---|
-| `tools` | `…\.rayai-worktrees\tools\requirement\CR-2026-064` | `dddd0ad63fb79bd7608314b4553f30e8ce7b7289` | 本 CR 的**唯一代码变更仓**；§4.4 扫描面、§11 依赖清单、全部行号均绑此 SHA（`git status` clean） |
-| `multica` | `…\.rayai-worktrees\multica\requirement\CR-2026-064` | `ab9609483d17db12117cb8e9adb2d896f413917d` | 只改 `cr-prompts-revised/delivery-agent.md`（2 行 / 2 次旧字段命中）；`server/internal/governance/testdata/traceability-golden.{json,yml}` 为历史黄金数据（排除，不改） |
-| `ai-first-platform-docs` | `…\.rayai-worktrees\knowledge-base\requirement\CR-2026-064` | `9079005fa5b0a3c4be482b089dcd1ff86819d020` | 只承载本 CR 过程文档（plan / tasks / test-report / 证据）；**不写** `specs/`、`delivery/`、`docs/` |
-
-- 无 DDL / 无迁移 / 无新增持久化（SDD §2.2：`recovery` 是响应期数据，journal payload 与五本账本零字段变更）；无新增子命令、状态、转换、Pipeline 节点、账本写入通道。
-- 代码事实一律按 **stable symbol** 定位（SDD §11 的 21 项依赖已逐条绑定 repo / relative path / symbol / SHA）；本计划中的行号（`~L…`）只作参考，实施定位一律以实时 `rg "recoverCommand|recover_command"` 为准（PRD 明文禁止按行号盲改）。开工前每个 TASK 重跑 `crctl workspace freshness CR-2026-064`（gate=implement-start）。
-- **行尾纪律**：本计划与全部 TASK 卡、扫描脚本一律按 LF 口径书写；任何读取仓库文件做哈希 / 跨行判定 / 逐行解析的实现，读入后必须先 `replaceAll('\r\n','\n')` 规范化；跨行匹配失败一律硬失败，禁止静默降级为「空集合」。
+| `change-requests/CR-2026-064/sdd.md` | commit `6c5c9a11`（91780 B，纯 LF：CRLF 计数 0） | `d9f727b6bb7d6d87f5449ccadbcbc986695e642d77c282f1d39b603d385a621b` | `review-annotations/sdd.yml`：`verdict: pass`、`blockers: []`、cycle 3 / attempt 1、`subject-sha256` 与本行逐字一致（评审 commit `a73f95b6`）+ `approval.yml#tech-design`（approver `OldBoy405`，`2026-09-13T21:37:13+08:00`，via `crctl-approve`，`target-status: tech-design-reviewed`，`evidence-digest 2d63772450a4a8dd83f6154050c8b609015625068e03c571fed8efd496bca5ca`） |
+| `change-requests/CR-2026-064/prd.md` | commit `c5f90be7`（21507 B，纯 LF） | `4df6f1590e5c04bf2585bfe76bc21a496f702dcea17f2502b0e3584217176457` | 需求评审 PASS（`traceability.yml#reviews.requirement`）+ `approval.yml#requirement`（`evidence-digest 558deb7d…`，target-status `requirement-approved`） |
+| CR status / 下一步 | — | — | 本节点入口：status = `tech-design-reviewed`、`gateBlockers: {}`、`crctl next CR-2026-064` = `write-dev-plan`（why：技术设计已审批，编写开发计划） |
+| 上一轮评审记录 | `review-annotations/dev-plan.yml` | `subject-sha256 5fe937a16e6b016d570beab9463f7047846d726d77ee16be98849bec1d665ba3` | `verdict: block`、`repair-target: write-tech-design`（upstream 轨，`current-attempt 0`）；本计划重写后由 `review-dev-plan` 的独立 run 重评并原子刷新 |
 
 ## 1. 交付里程碑
 
 | 里程碑 | 内容 | 对应 TASK | 估时 |
 |---|---|---|---|
-| M1 设计冻结 | 需求审批 + SDD `a5101d59`（`review-tech-design` cycle 2 attempt 2 `pass`、blockers 0）+ 人工架构审批（`824cf303…`）+ 架构阶段终点 checkpoint（`batchId=2cfcb5eb7ca667e4`、`phase=complete`） | 已发生 | 0 |
-| M2 计划与任务拆分 | 本 `plan.md` + `tasks/TASK-01…04.md` + `tasks/_index.yml`（`crctl task init --count-hint 4`）+ 推进 `task-breakdown` + 独立 `review-dev-plan` | 流程节点（非交付 TASK） | 0.5 人天 |
-| M3 生产者与唯一构造器 | `lib/workspace-transactions.mjs`：新增 `buildRecovery`（约 12 行）+ 9 类场景的 9 个生产者站点原位改为结构化 `recovery`；`checkpointRecoverCommand` 局部值改由构造器产出 | CR-2026-064-TASK-01 | 16h |
+| M1 设计冻结 | 需求审批 + SDD `6c5c9a11`（`review-tech-design` cycle 3 attempt 1 `pass`、blockers 0，评审 commit `a73f95b6`）+ 人工架构审批（`ab6f9347`，`evidence-digest 2d637724…`） | 已发生 | 0 |
+| M2 计划与任务拆分 | 本 `plan.md`（整体重写）+ `tasks/TASK-01…04.md` 重生成 + `tasks/_index.yml`（`crctl task init --count-hint 4`）+ 推进 `task-breakdown` + 独立 `review-dev-plan` | 流程节点（非交付 TASK） | 0.5 人天 |
+| M3 生产者与唯一构造器 | `lib/workspace-transactions.mjs`：新增 `buildRecovery`（约 12 行）+ 9 类场景 9 个生产者站点原位改为结构化 `recovery`；`mergeCr` 内局部名 `checkpointRecoverCommand` 归位 | CR-2026-064-TASK-01 | 16h |
 | M4 CLI 投影与错误面 | `crctl.mjs`：`register` 双投影删除（单 `recovery`）、`gate --mode pre-review` 错配分支与 `review-loop reset` 提交失败分支结构化、`cmdRegister` 输出字段改名；`crIdForRecover` 占位符语义删除 | CR-2026-064-TASK-02 | 8h |
-| M5 消费方与文档迁移 | 4 份 `tools` SKILL（crctl / cr-archive / push-progress / merge-feature-branch）+ `multica/cr-prompts-revised/delivery-agent.md` + `tools/README.md` 原位改读结构化合同；`openwiki/operations/crctl-transactions.md` 由既有生成步骤（`openwiki code --update`）重新生成并核对（D-7，不手工编辑） | CR-2026-064-TASK-03 | 12h |
-| M6 测试迁移与退役保护 | 7 个既有测试文件改为结构与 argv 断言（含 6 类 reason 向量）+ `contract-scan.test.mjs` 扩展 `RETIRED_RECOVERY` / 整树派生扫描面 / 两项精确路径排除 / 八条代表性命中用例 + `shell: true`、`Invoke-Expression` 守卫断言 | CR-2026-064-TASK-04 | 16h |
-| M7 评审与人工审批 | `review-dev-plan` → `approve --stage dev-start` → `implement-code` → `write-test-report`（`crctl test` 跑 §6.2 六条命令）→ `review-code` → `approve --stage code` | 流程节点 | 流程 |
-| M8 发布 | `merge-feature-branch` / writeback / archive（平台侧 Prompt 部署由 owner 在本 CR 落地后另行执行，不属本 CR） | 流程控制节点 | 流程 |
+| M5 消费方与文档迁移 | 4 份 `tools` SKILL（crctl / cr-archive / push-progress / merge-feature-branch）+ `multica/cr-prompts-revised/delivery-agent.md` + `tools/README.md` 原位改读结构化合同；`openwiki/operations/crctl-transactions.md` 由既有生成步骤（`openwiki` + `openwiki code --update`，与 `openwiki-update.yml` 同源）重新生成并核对（D-7，不手工编辑） | CR-2026-064-TASK-03 | 12h |
+| M6 测试迁移与退役保护 | 7 个既有测试文件改为结构与 argv 断言（含 6 类 reason 向量）+ `contract-scan.test.mjs` 扩展 `RETIRED_RECOVERY` / 整树派生扫描面 / 两项精确路径排除 / 八条代表性命中用例 + `shell: true`、`Invoke-Expression` 守卫断言；全部满足 §4.5-7 的「逐用例原位替换、只增不减、不新增该目录测试文件」硬约束 | CR-2026-064-TASK-04 | 16h |
+| M7 评审与人工审批 | `review-code` → `approve --stage code`（`review-dev-plan` 通过后先经人工「确认进入代码开发」gate → `approve-dev-start`） | 流程节点 | 流程 |
+| M8 发布与回写 | `merge-feature-branch` / `feature-writeback`（`specs/`、`delivery/`）/ `archive`；平台侧 Prompt 部署由 owner 在本 CR 落地后另行执行（不属本 CR，§9 `zero_diff`） | 流程控制节点 | 流程 |
 
-**估算总工时（TASK 账本口径）= 52h**（16h + 8h + 12h + 16h），与 `tasks/_index.yml#totalEstimateHours` 一致（由 `crctl task init --count-hint 4` 的返回值交叉校验）。M2 的 0.5 人天与 M7/M8 是流程节点，不进 TASK 账本。发布经既有 CR merge 流程，**不建交付 TASK**（流程控制 TASK 禁止：完成边界必须落在 `developing` 内可被 `crctl task done` 登记的事件，见 `write-dev-tasks` Step 2 与 SDD §6.1 FR-15/AC-13）。
+**估算总工时 = 52h（= 6.5 人天）**。与 `crctl task init` 返回的 `totalEstimateHours` 交叉核对（§3 / `write-dev-tasks` Step 4 FR-23）。
 
 ## 2. 任务依赖图
 
-```text
-TASK-01 (tools：lib/workspace-transactions.mjs
-          + buildRecovery(args, {cwd, requiresTTY, promptFor}) 唯一构造器（约 12 行）
-          + 9 类场景的 9 个生产者站点原位改为结构化 recovery（register / workspace sync /
-            merge / merge publication lag / checkpoint / writeback replay /
-            writeback apply / archive / test）
-          + 消息文本去旧字段名；checkpointRecoverCommand 局部值改由构造器产出)
-   │ 产出：buildRecovery（唯一契约构造点，键序固定）
-   ▼
-TASK-02 (tools：crctl.mjs
-          + buildRegisterResult 单投影（删 recover_command 双投影）
-          + cmdGate --mode pre-review 错配分支 → error.recovery
-          + cmdReviewLoopReset 提交失败分支 → error.recovery（promptFor:['reason']、requiresTTY:true）
-          + 删除 crIdForRecover 占位符语义（规范 CR-ID 独立 argv / 非规范入 promptFor）
-          + cmdRegister 输出对象字段改名)
-   │ 产出：CLI 顶层 recovery 与 error.recovery 的落点契约
-   ▼
-TASK-03 (tools + multica 文本层：tools/skills/shared/crctl/SKILL.md（含新增「recovery 消费合同」
-          小节：固定 5 步判定 + 四类错误闭包）、cr-archive / push-progress /
-          merge-feature-branch SKILL.md、README.md 原位迁移；
-          openwiki/operations/crctl-transactions.md 由既有生成步骤重新生成并按 D-7 核对
-          （不手工编辑）；multica/cr-prompts-revised/delivery-agent.md 改读结构化 recovery)
-   │ 产出：活跃提示词/文档面单一一套合同描述；OpenWiki 生成页与权威源码同源
-   ▼
-TASK-04 (tools 测试面：7 个既有测试文件改结构断言（含 6 类 reason 向量、参数边界向量、
-          合同缺失向量）、contract-scan.test.mjs 扩展 RETIRED_RECOVERY + 整树派生扫描面
-          + 两项精确路径排除 + 八条代表性命中用例 + 不误报正反用例 + deepEqual 冻结，
-          shell:true / Invoke-Expression 守卫断言)
+```
+CR-2026-064-TASK-01  生产者迁移：buildRecovery + 9 个生产者站点（tools/lib/workspace-transactions.mjs）
+        │  产出：buildRecovery(args, {cwd, requiresTTY, promptFor}) → Recovery；9 类场景的结构化 recovery
+        ▼
+CR-2026-064-TASK-02  CLI 投影迁移：register 单投影、gate 错配、reset 失败分支、占位符 helper 删除（tools/crctl.mjs）
+        │  消费：TASK-01 的构造器；产出：error.recovery / 顶层 recovery 的投影面
+        ▼
+CR-2026-064-TASK-03  消费方与文档迁移：4 份 SKILL + README + OpenWiki 生成页 + multica 交付 Agent 提示词
+        │  消费：TASK-01/02 的字段与形状（提示词只引用字段名，不引用实现）
+        ▼
+CR-2026-064-TASK-04  测试迁移与契约退役保护：7 个测试文件 + contract-scan 扩展 + shell 逃逸守卫
+           消费：TASK-01/02/03 全部产物（断言对象即前三者的输出与文本）
 ```
 
-- 依赖性质：TASK-02 消费 TASK-01 的 `buildRecovery`（SDD §3.2/§3.3 站点 10/11 在 CLI 侧构造）；TASK-03 的 OpenWiki 生成以「先改权威源码」为前置（SDD D-7 第 1–2 步）；TASK-04 的结构断言断言前三个 TASK 的最终形状，且其整树零命中面覆盖 TASK-03 迁移后的提示词与文档文件。
-- 全部四个 TASK 都写 `tools` 仓（TASK-03 另加 `multica` 一个文件）→ **同仓单写者串行执行**，依赖声明与执行顺序一致。
-- 无环、无悬空引用；`depends-on` 只声明真实产出/消费关系（TASK-01 为空）。
-- **组映射（`write-dev-tasks` 三步断言的输入，`task_count_hint = 4`）**：G1 = 生产者 + 唯一构造器（FR-1、FR-2、FR-3、FR-5、FR-10 的代码侧、FR-13、FR-17 的构造面）→ TASK-01；G2 = CLI 投影与错误面（FR-4、FR-6）→ TASK-02；G3 = 活跃提示词与文档迁移 + OpenWiki 生成闭环（FR-7、FR-8、FR-16 的采纳口径）→ TASK-03；G4 = 测试迁移与契约退役保护（FR-9、FR-11、FR-12、FR-14 的完整性证明面）→ TASK-04。每组恰一个 TASK、每个 TASK 恰属一组，4 个 TASK 覆盖 SDD §6.2 的四个改动簇（生产者 11 站点 / CLI 5 处 / 提示词 5 + 文档 2 / 测试 8 文件）。
+- 依赖为**严格串行单链**（`TASK-04` 亦依赖 `TASK-03`：扫描面覆盖提示词文本）；`depends-on` 字段与上图逐条一致，无环、无悬空引用。
+- 同仓单写者：四个 TASK 均落在 `tools`（`TASK-03` 另含 `multica` 的 1 个 prompt 文件），按链路顺序执行，不存在并行写者。
+- 变更组映射（`write-dev-tasks` Step 4「写入前组映射 preflight」的输入）：**G1 生产者 + 唯一构造器 → TASK-01；G2 CLI 投影与错误面 → TASK-02；G3 提示词/文档 + OpenWiki 生成 → TASK-03；G4 测试迁移与契约退役保护 → TASK-04**。每组恰一个 TASK、每个 TASK 恰属一组（4 组 ↔ 4 TASK）。
 
 ## 3. 资源与分工
 
-- `cr.md` owners（权威）：requirement / development / test 均为 Ray（`assigned-at` 齐备，实施期从 `cr.md` 读取，不用本文件的缓存）。
-- 实施执行：`dev-agent`（TASK-01…04）；测试报告由 `cr.md owners.test.id` 执行 `write-test-report` 并消费 `implement-code` 的真实验证结果；计划/代码评审由**新建的独立** `quality-reviewer-agent` task/run 执行（不自评、不复用作者会话）。
-- 实施只写 `resources[].worktreePath` 指向的 worktree：tools 改动落 tools CR worktree，multica 改动落 multica CR worktree，过程文档落 KB worktree。
-
-| TASK | 估时 | 仓库 | 说明 |
+| TASK | 估时 | 仓库 | 范围（SDD 落点） |
 |---|---|---|---|
-| CR-2026-064-TASK-01 | 16h | tools | `lib/workspace-transactions.mjs`：`buildRecovery` + 9 个生产者站点 + 局部名归位（单文件、单写者） |
-| CR-2026-064-TASK-02 | 8h | tools | `crctl.mjs`：`buildRegisterResult` / `cmdRegister` / `cmdGate` / `cmdReviewLoopReset` / `crIdForRecover` 5 处 |
-| CR-2026-064-TASK-03 | 12h | tools + multica | 4 份 tools SKILL + `README.md` + `openwiki/operations/crctl-transactions.md`（生成）+ multica `delivery-agent.md` |
-| CR-2026-064-TASK-04 | 16h | tools | 7 个既有测试文件 + `contract-scan.test.mjs` 扩展 + 守卫断言 |
+| CR-2026-064-TASK-01 | 16h | tools | `lib/workspace-transactions.mjs`：`buildRecovery` + §4.1 站点 1–9 + 局部名归位（单文件、单写者） |
+| CR-2026-064-TASK-02 | 8h | tools | `crctl.mjs`：`buildRegisterResult` / `cmdRegister` / `cmdGate` / `cmdReviewLoopReset` / `crIdForRecover` 5 处（§4.2 + §3.3 站点 10/11） |
+| CR-2026-064-TASK-03 | 12h | tools + multica | 4 份 `tools` SKILL + `README.md` + `openwiki/operations/crctl-transactions.md`（生成物）+ `multica/cr-prompts-revised/delivery-agent.md` |
+| CR-2026-064-TASK-04 | 16h | tools | 7 个既有测试文件 + `contract-scan.test.mjs` 扩展 + `shell: true`/`Invoke-Expression` 守卫断言；受 §4.5-7 用例下限约束 |
+
+分工与审批边界：`cr.md owners.development.id = Ray`（实现与开发期审批）、`owners.test.id = Ray`（测试报告与验证证据）。人工 gate（进入开发 / 代码审批）只能在交互式 TTY 由人执行，本计划不代签、不预置 grant。
 
 ## 4. 风险与回滚策略
 
-### 4.0 回滚单元（唯一：整体回滚，SDD §6.1 FR-15 / AC-13）
+### 4.0 回滚单元（唯一：整体回滚｜SDD FR-15 / AC-13）
 
-CR-R 是**单发布原子迁移**：生产者、消费者、旧字段删除与退役保护在同一个 CR 内完成。因此**回滚单元唯一 = 整个 CR**（`RU-ALL`）：
-
-1. 合并前失败：revert 本 CR 全部四个 TASK commit（逆序 TASK-04 → 03 → 02 → 01），经**受控** `crctl git revert --no-edit <sha> --cwd <worktree>`（白名单形态 `^--no-edit (-m 1 )?\S+$`）。
-2. 已发布版本若必须回退：回退到上一完整 `tools` 版本，**不得**在当前版本恢复旧字段双写。
-
-**不提供部分回滚单元**：任何「部分生产者新合同 / 部分消费者旧合同」或「旧字段临时恢复」的分支状态都是 PRD FR-15 明确禁止的半迁移态。若实施期确认某 TASK 的 diff 完全独立（例如纯文本面），也仍需与整批同进退——该口径已在 SDD §9 `scope_out` 与 §6.1 FR-15 固定，本计划不新增第二种回滚定义。
+**RU-ALL = 整体回滚本 CR 的全部四个 TASK**。依据 SDD §9：本迁移是单发布原子切换，**不存在**「部分生产者新合同 / 部分消费者旧合同」的合法状态。任一 TASK 失败或评审 blocker 无法在本 loop 内闭合 → 整体 revert（回退到上一完整 `tools` 版本 `81d31b8` 的口径），**不得**靠临时恢复 `recoverCommand` 让半迁移版本发布，**不得**引入双写兼容期、deprecated alias 或 migration shim。SDD 本身（`6c5c9a11`，人工作为审批目标绑定 `2d637724…`）不在回滚面内——本计划无权改 SDD。
 
 ### 4.1 风险表
 
 | # | 风险 | 等级 | 应对 | 回滚 |
 |---|---|---|---|---|
-| R-01 | 迁移不彻底：遗漏站点或测试/提示词标题里的旧名残留 → 整树扫描面命中，`cmd-03` 与 `cmd-01` 内 contract-scan 用例红 | 高 | `cmd-03` 按 SDD §4.4-2 同一枚举重放「整树 − 两项精确路径」零命中断言并打印命中清单；`cmd-01` 内 `contract-scan.test.mjs` 的八条代表性命中用例证明范围非恒真；TASK-01…04 的完成标志各自含「本 TASK 触达文件零命中」 | RU-ALL |
-| R-02 | OpenWiki 生成环境不可用（无 provider key / 无网络） | 中 | 按 SDD D-7 第 4 步：以**环境阻塞**上报（`ENVIRONMENT_MISMATCH`），**不得回退为手工编辑生成页**；生成命令 + 生成前后 diff + 页面零命中三条证据缺一不可（`cmd-06` 提供页面事实面）。是否由 owner 放宽前提由人工决定，不在本计划内自行降级 | RU-ALL |
-| R-03 | `RETIRED_LEGACY`（CR-2026-041 的三个退役 Skill 名）被误并入整树扫描面 → 既有活跃文件（`lint-prompts.mjs` 禁止名单、`crctl.test.mjs` / `lint-prompts.test.mjs` 用例样本、`CUSTOM.md` 台账引述、`docs/` 历史报告、历史夹具）立刻误报 | 中 | 严格按 SDD §4.4-1「按名分范围」：`RETIRED_LEGACY` 保持既有显式 `ACTIVE_PATHS` 与既有断言**逐字不动**（CR-2026-041 的 `zero_diff` 范围），整树面只适用于两个恢复字段名；`cmd-01` 内既有两条 CR-2026-041 用例保持通过 | RU-ALL |
-| R-04 | 测试文件自身含旧名字符串（用例标题、断言、`recover_command` 双投影用例）→ 全树扫描红 | 中 | TASK-04 逐文件迁移标题与断言（7 文件 + `crctl.test.mjs` 的 reset / gate / 成功结果字段集用例）；`cmd-03` 零命中兜底；禁止靠「加排除」消红（新增排除必须改 `deepEqual` 冻结值并被评审看见，SDD §4.4-3） | RU-ALL |
-| R-05 | 站点 4（merge publication lag → `checkpoint`）的局部名 `checkpointRecoverCommand` 未随结构化一并改名，或改名后取值断裂 → 恢复方向丢失 | 中 | 按 SDD §11 计数口径原文（「随站点 4 结构化一并改写名称」）把该局部名改写为新合同口径名（`checkpointRecovery`）；TASK-01 完成标志含两条：改写后 `rg -n --case-sensitive "checkpointRecoverCommand"` 在 `tools` 仓**零命中**，且站点 4 的两个 `TxError` 的 `extra.recovery` 仍取该局部值（值类型由 shell string 变为 `buildRecovery(...)` 结果）；`cmd-01` 内 `merge-tx.test.mjs` 断言 `recovery.args` 指向 `checkpoint` 且 `cwd` 为 installRoot | RU-ALL |
-| R-06 | reset 的 6 类 reason 向量在非 TTY 环境提前退出 → 用例恒真/恒假，AC-03 假绿 | 中 | 用既有 `runCrctlInTty` 包装（SDD §6.3 AC-03 可达性说明）；每类断言四件事：`args` 不含该值、`promptFor` 含 `reason`、`requiresTTY===true`、`JSON.stringify(recovery)` 中该值不出现（`cmd-01`） | RU-ALL |
-| R-07 | 证据命令超出 `write-test-report` 节点 20 min 预算 | 中 | `cmd-01` 是 21 个 `*.test.mjs` 的**单条**全量命令，带 §5.3 登记的 5 条锚定例外（`--test-skip-pattern`）+ `--test-reporter=dot`；本节点实测 **887.3 s** exit 0（不带例外为 894.8 s exit 1）。例外模式**fail-closed**：模式拼写一旦失效，对应用例会被真实执行并报红 → `cmd-01` exit 1 → test-report `block`，不会假绿。`cmd-02`～`cmd-06` 均为秒级（见 §5.4）。**不拆分**套件：按文件分组会让墙钟上升（CR-2026-063 实测分组后 > 954 s） | 非代码缺陷，不触发回滚 |
+| R-01 | 迁移不彻底：遗漏站点，或测试标题/提示词/文档残留旧名 → 整树扫描面命中（`cmd-03` 零命中断言红、`cmd-01` 内 `contract-scan.test.mjs` 红） | 高 | `cmd-03` 按 SDD §4.4-2 同一枚举规则重放「整树 − 两项精确路径」零命中并打印命中清单；`cmd-01` 内八条代表性命中用例证明范围非恒真；TASK-01…04 的完成标志各自含「本 TASK 触达文件零命中」 | RU-ALL |
+| R-02 | OpenWiki 生成环境不可用（无 provider key / 无网络） | 中 | 按 SDD D-7 第 4 步以**环境阻塞**上报（`ENVIRONMENT_MISMATCH`），**不得回退为手工编辑生成页**；三条证据缺一不可：生成命令、生成前后 diff、页面零命中（`cmd-06` 提供页面事实面） | RU-ALL |
+| R-03 | CR-2026-041 的三个既有退役 Skill 名（代码常量名 `RETIRED`）被误并入整树扫描面 → 活跃文件（`lint-prompts.mjs` 禁止名单、`crctl.test.mjs` / `lint-prompts.test.mjs` 用例样本、`CUSTOM.md` 台账引述、`docs/` 历史报告与历史夹具）立刻误报 | 中 | 严格按 SDD §4.4-1「按名分范围」：既有名单保持既有显式 `ACTIVE_PATHS` 与既有断言**逐字不动**（CR-2026-041 范围），整树面只适用于两个恢复字段名；`cmd-01` 内既有 CR-2026-041 用例保持通过 | RU-ALL |
+| R-04 | 测试文件自身含旧名字符串（用例标题、断言、`recover_command` 双投影用例）→ 整树扫描红 | 中 | TASK-04 逐文件迁移标题与断言（7 文件 + `crctl.test.mjs` 的 reset / gate / 成功结果字段集用例）；`cmd-03` 零命中兜底；**禁止靠「加排除」消红**——新增排除必须改 `assert.deepEqual(EXCLUDED, …)` 冻结值并被评审看见（SDD §4.4-3） | RU-ALL |
+| R-05 | 站点 4（merge publication lag → `checkpoint`）的局部名 `checkpointRecoverCommand` 未随结构化一并改名，或改名后取值断裂 → 恢复方向丢失 | 中 | 按 SDD §11 计数口径原文把该局部名改写为新合同口径名（`checkpointRecovery`）；TASK-01 完成标志含两条：改写后区分大小写检索在 `tools` 仓零命中，且站点 4 的两个 `TxError` 的 `extra.recovery` 仍取该局部值（值类型由 shell string 变为 `buildRecovery(...)` 结果）；`cmd-01` 内 `merge-tx.test.mjs` 断言 `recovery.args` 指向 `checkpoint` 且 `cwd` 为 installRoot | RU-ALL |
+| R-06 | reset 的 6 类 reason 向量在非 TTY 环境提前退出 → 用例恒真/恒假，AC-03 假绿 | 中 | 用既有 `runCrctlInTty` 包装（SDD §6.3 AC-03 可达性说明）；每类断言四件事：`args` 不含该值、`promptFor` 含 `reason`、`requiresTTY === true`、`JSON.stringify(recovery)` 中该值不出现（`cmd-01`） | RU-ALL |
+| R-07 | 证据命令超出 `write-test-report` 节点 20 min 预算（`timeoutMinutes=20`） | 中 | `cmd-01` 是本节点实测 **786.5 s**（新基线，见 §5.3）的单条全量命令，`cmd-02` 1.2 s，`cmd-03…cmd-06` 各秒级 ⇒ 预计总时长 ≈ 800 s，预算内余量 ≈ 6.5 min；`cmd-01` 的 timeout 设 **1080 s**（< 节点预算），超时即 `block`（**不静默、不降级**）；套件自身的收敛上限是 30 min（`DEFAULT_MAX_RUNTIME_MS`），故 1080 s 是**更早**的失败闸。**不拆分套件**（按文件分组会让墙钟上升） | 非代码缺陷，不触发回滚 |
 | R-08 | 删除 `register` 双投影后，既有「成功结果字段集与改造前一致」类断言变红 | 中 | 该断言属 FR-6 授权的迁移面：TASK-04 同步更新为「字段集含 `recovery`、不含 `recoverCommand`/`recover_command`」；`cmd-01` 内 `register-tx.test.mjs` 的单投影断言即证据；不得放宽为「不检查字段集」 | RU-ALL |
-| R-09 | 全树扫描面在**新增**文件上误报（未来在本仓落历史迁移/changelog 文档） | 低 | 这是 SDD D-5 明示的**取舍**（新增排除是显式且被断言的评审动作），非本 CR 的缺陷；本 CR 期间 `tools` 仓无此类文件，`cmd-03` 零命中即事实面 | RU-ALL |
-| R-10 | 采集/扫描实现忽略行尾差异 → 跨行判定静默漏检（历史三次咬人点） | 中 | 全部读取先 `replaceAll('\r\n','\n')`；扫描面枚举为空、索引 0 条 active、索引与目录集合不相等一律**硬失败**（SDD §4.4-2 硬失败清单）；`cmd-03` 以扫描面规模下界（≥200）做空面哨兵 | RU-ALL |
-| R-11 | `multica` 侧 `CUSTOM.md` 台账登记义务的边界判定 | 低 | SDD §1.1 的多仓变更边界只含 `cr-prompts-revised/delivery-agent.md`，本 CR 不改 `CUSTOM.md`：该文件行 `#75` 登记的事实（`cr-prompts-revised/` 是 tools 同名 Prompt 的对照快照、平台 DB 是部署投影）在本 CR 后仍然成立。若 owner/reviewer 判定需要补记，走上游 SDD 变更，不在 plan/TASK 内扩面 | 非代码缺陷，不触发回滚 |
-| R-12 | 生成页与 README 被写进**第二套**合同描述（手工另写一段解释） | 低 | TASK-03 完成标志含「README 只原位改写既有条目、未新增恢复合同章节；OpenWiki 页不手工编辑」；`cmd-06` 断言页面与 README 的旧字段零命中且含结构化字段名 | RU-ALL |
-
-无 DDL / 无 down 迁移 / 无数据回填语义（SDD §2.2：`recovery` 不落盘、不入 journal、不入账本）。回滚一律经受控 `crctl git` 形态执行。
+| R-09 | 整树扫描面在**新增**文件上误报（未来在本仓落历史迁移/changelog 文档） | 低 | 这是 SDD D-5 明示的**取舍**（新增排除是显式且被断言的评审动作），非本 CR 缺陷；本 CR 期间 `tools` 仓无此类文件，`cmd-03` 零命中即事实面 | RU-ALL |
+| R-10 | 采集/扫描实现忽略行尾差异 → 跨行判定静默漏检（历史三次咬人点） | 中 | 全部读取先做 `CRLF → LF` 规范化；扫描面枚举为空、排除项不存在于磁盘、索引 0 条 active、Pipeline 索引与目录集合不相等一律**硬失败**（SDD §4.4-2 硬失败清单）；`cmd-03` 以扫描面规模下界（≥200）做空面哨兵 | RU-ALL |
+| R-11 | `multica` 侧 `CUSTOM.md` 台账登记义务的边界判定 | 低 | SDD §1.1 的多仓变更边界只含 `cr-prompts-revised/delivery-agent.md`（提示词文本，非代码/迁移/自研包），本 CR 不改 `CUSTOM.md`：该台账第 75 行登记的事实（`cr-prompts-revised/` 是 `tools` 同名 Prompt 的对照快照、平台 DB 是部署投影）在本 CR 后仍成立。若 owner/reviewer 判定需补记，走上游 SDD 变更，不在 plan/TASK 内扩面 | 非代码缺陷，不触发回滚 |
+| R-12 | 生成页与 README 被写进**第二套**合同描述（手工另写一段解释） | 低 | TASK-03 完成标志含「README 只原位改写既有条目、未新增恢复合同章节；OpenWiki 页不手工编辑」；`cmd-06` 断言页面与 README 旧字段零命中且含结构化字段名 | RU-ALL |
+| R-13 | **测试迁移触碰合并后门禁的登记面下限**：`suite-gate.mjs:437-453` 对 `skills/shared/crctl/scripts/test/` 施加两条机器判定——磁盘（以及被真实 spawn 的）文件集合须 ≡ `manifest.files`（恰 **21** 个，`SUITE_MANIFEST_FILE_DRIFT`）、每文件顶层用例数不得低于 `manifest.cases`（`SUITE_MANIFEST_CASE_DROP`）。迁移中删/合并/重命名/跳过任一顶层用例，或新增该目录测试文件，都会让 `cmd-01` 红 | 高 | SDD §4.5-7 的三条硬约束逐条落进 TASK-04 的完成标志：字符串包含断言 → 结构断言**逐用例原位替换**；**不新增**该目录测试文件；**不改** `gate-registry.json` 的 `manifest.files` / `manifest.cases` / `exceptions`（唯一写入口是人类编辑 + git commit，不属本 CR `scope_in`，且本 CR 无例外通道）。本节点实测基线：`manifest.files` = 21、`manifest.cases` 合计 = 578、`exceptions: []`、磁盘测试文件集合 ≡ `manifest.files`；迁移的 8 个文件逐文件下限 = `archive-tx` 24 / `checkpoint-tx` 23 / `crctl` 224 / `merge-tx` 17 / `register-tx` 26 / `workspace-freshness` 32 / `writeback-tx` 33 / `contract-scan` 17（只增不减）。`cmd-01` 的 GREEN 即该约束的机器证据 | RU-ALL |
+| R-14 | **冻结 skip 模式与证据命令的交互**：机器区 `skipped` 字段按冻结模式表（`workspace-transactions.mjs` 的 `FROZEN_SKIP_PATTERNS`，含 `/\bSKIPPED\b/i`）在 stdout/stderr 上判定；`node --test` 默认 spec reporter 的摘要行 `ℹ skipped 0` 会命中该模式 → 该命令在 `test-report.md` 机器区被记为 `skipped: true`（**本次实测**，见 §5.3），而真实 skip 数为 0 | 中 | `cmd-02` 的 `args` 在 SDD §6.3 AC-07 命令 2 之上**只增加** `--test-reporter=dot`（转录注记见 §6.2.1）：文件集合、断言、退出码语义均不变，仅为规避冻结模式的假命中（`write-test-report` Skill 对 node --test 命令的统一要求——「计划统一使用 `--test-reporter=dot` 保证 `skipped` 恒 false」）。`cmd-01` 无需该参数：`suite-gate.mjs` 的 stdout 报告按自身约定不含独立词 `skipped`（用 `skipped_cases` / `skipped_file_level`），并有 CR-2026-065 的禁词自测守护（本次实测零命中） | 非代码缺陷，不触发回滚 |
+| R-15 | `write-test-report` 的 `cmd-02` 若被记为 `skipped`（见 R-14），`review-code` 只读该字段、不得自行解析输出 → 误判为「证据被跳过」而 BLOCK | 中 | 由 R-14 的转录消除根因；`test-report.md` 的分析段（`<!-- crctl:analysis-below -->` 以下，允许模型撰写）须逐字记录 `cmd-02` 的真实结果（13 pass / 0 fail / 0 skip）与 reporter 转录事实，供 `review-code` 对表 | 非代码缺陷，不触发回滚 |
 
 ## 5. 验收与发布策略
 
-**估算总工时（TASK 账本口径）= 52h**（TASK-01 16h + TASK-02 8h + TASK-03 12h + TASK-04 16h）。
+### 5.1 发布前 checklist（全部为机器可判或逐行可核）
 
-### 5.1 发布前 checklist
-
-1. §6.2 的 cmd-01…cmd-06 逐条转录入 `cr-test-plan/v1` 并由 `crctl test` 执行且 **exit 0 且机器区每行 `skipped=false`**（cmd-NN 与 `test-evidence/cmd-NN.log` 一一对应，`sourceRevision` 绑定被测仓 HEAD）。
-2. `write-test-report` `status=pass` 且 `blockers=[]`（命令集**只**来自 §6.2，不在 plan 之外另造命令；D-7 的生成命令与逐份核对结论写在 test-report 分析段，不冒充机器命令）。
-3. 独立 `review-dev-plan` `verdict=pass`、`blockers=[]`（plan + TASK 合并评审）；`review-code` 同理。
-4. `crctl approve --stage dev-start` 与 `--stage code` 均由人工（Ray）在交互式终端完成；**SDD 已被审批绑定，若实现期发现需改 SDD，必须走上游轨重新评审 + 二次人工审批**。
-5. 交付 diff 在白名单内（§6.2 `cmd-05` tools 侧、`cmd-04` multica 侧、`cmd-06` KB 侧三条机器判据）；`zero_diff` 对象（SDD §9）零改动。
-6. `multica` 侧只改 1 个文件；`CUSTOM.md` 台账边界见 R-11（本 CR 零改动 + 理由已记录）。
-7. 无新增 SLO / 指标 / 计数门禁 / 账本字段 / Pipeline 节点 / 评审维度（PRD §6、§7；SDD §9 `scope_out`）。
+- [ ] `cmd-01` exit 0：`verdict: pass`、`converged: true`、`files_executed = 21`、`cases_executed ≥ 578`、`failures` 空、`checks` 全 `ok`、`registry.exceptions_count = 0`（登记面 21 文件 / 578 用例下限不破）。
+- [ ] `cmd-02` exit 0：writeback 单测全绿。
+- [ ] `cmd-03` 零失败：整树扫描面旧名零命中；`EXCLUDED` 恰两项精确路径（无通配）；唯一被排除的 `traceability-191k.yml` 仍含旧名（不误报口径成立）；`fixtures/` 在面内 3 个；扫描面 ≥ 200；`manifest.files` 恰 21 且 ≡ 磁盘集合、`exceptions: []`。
+- [ ] `cmd-04` 零失败：`multica` 仓内旧名仅剩两个历史黄金数据文件；`cr-prompts-revised/**` 零命中；diff 仅 `cr-prompts-revised/delivery-agent.md`。
+- [ ] `cmd-05` 零失败：`shell: true` / `Invoke-Expression` 在 `crctl.mjs` + `lib/*.mjs` 零命中；`tools` diff ⊆ SDD §1.1 白名单（`openwiki/**` 由生成器产出）；`zero_diff` 面（`ARCHITECTURE.md` / `dir-graph.yaml` / `gates.json` / `controlled-shell/rules.json` / `pipeline-templates/**` / `.github/workflows/**` / `agents/**` / `gate-registry.json`）零改动。
+- [ ] `cmd-06` 零失败：README 与 OpenWiki 页旧名零命中且含结构化字段名；本 CR 产物无平台侧已生效的声称；KB diff ⊆ `change-requests/CR-2026-064/**` + `change-requests/_backlog.yml`。
+- [ ] OpenWiki 生成闭环三证据齐备（生成命令 + 生成前后 diff + 页面零命中），缺一即按 R-02 以环境阻塞上报。
+- [ ] 无 alias / shim / fallback：整树零命中断言（`cmd-03`）+ `register` 单投影断言（`cmd-01`）+ diff 面核对（`cmd-05`）三者并置。
+- [ ] `tasks/_index.yml` 四个 TASK 全部 `done`（做完一个标一个，不积压到回写期）。
 
 ### 5.2 发布与观测
 
-- 无 feature-flag：本 CR 是原位迁移（字段改名 + 结构断言 + 退役扫描），不引入开关语义；不存在「新旧合同并存」的窗口（SDD §9 `scope_out` 明列不做双写）。
-- **部署边界**：平台侧对 Agent / Skill 提示词的采纳由 owner 在本 CR 落地后另行执行（FR-16）；本 CR 只交付 owner 可复制版本（`multica/cr-prompts-revised/delivery-agent.md`），交付结论中不得出现平台侧已生效的声称。
-- 发布经既有 CR merge 流程（merge / writeback / archive），不进交付 TASK；审计以 `approval.yml`、`merge-commits.yml`、checkpoint 元数据为准。
-- 发布后按 PRD §6 成功指标核验（一次性事实，不引入运行期观测）：活跃范围内恢复结果字段名只剩 `recovery`；6 类 reason 向量全通过且 reason 不进 `args[]`；既有全量测试全绿且错误码/状态转换/txId/rollback/files 语义未变；contract-scan 命中即失败且对排除面不误报；盘点的六类无「已知调用方未迁移」遗留项；交付分支不存在半迁移中间态。
+- 发布路径由 Pipeline 控制：`approve --stage dev-start` → `implement-code` → `write-test-report` → `review-code` → `approve --stage code` → `merge-feature-branch` → `feature-writeback` → `archive`。
+- **不新增任何运行期观测**：本 CR 不引入使用量、失败率、SLO、迁移统计或持续观测机制（PRD §6 / FR-14 末句）；退役保护是既有静态测试的扩展，不新增 CI 步骤（`.github/workflows/**` 为 `zero_diff`）。
+- 平台侧 Prompt 部署由 owner 在 `tools` 发布后另行执行（FR-16）；本 CR 只交付 owner 可复制版本，**不声称平台 DB 已生效**。
 
-### 5.3 基线与既有事实
+### 5.3 基线与既有事实（本节点在新基线上重新实测，非沿用上一版）
 
-- 旧字段命中基线（唯一口径，SDD §11 开头：文件数 `rg -l`、行数 `rg -c` 逐文件求和、匹配次数 `rg -o` 计数；大小写敏感、不加 `-w`、用 rg 默认过滤、文件集为 commit 的 tracked 内容）：`tools@dddd0ad6` = **16 文件 / 72 行 / 87 次**；`multica@ab960948` = **3 文件 / 6 行 / 6 次**（其中 2 文件是历史黄金数据）。
-- 扫描面规模口径（同一工作树枚举）：`tools@dddd0ad6` 枚举 **214** 文件 − 扫描器自身 **1** − 历史 traceability 精确路径 **1** = **扫描面 212**；`fixtures/` 内 4 个文件中 **3 个在面内**、1 个被排除。规模只作覆盖度报告写进断言消息，**不写脆弱等式**（SDD §4.4-4）。
-- **既有测试基线红：5 条（本节点实测，非本 CR 引入）**。在 `tools@dddd0ad6` 的 CR worktree（`git status` clean）上按 §6.2 `cmd-01` 的**同一枚举与同一 reporter** 实跑两次：
-  - ①**不加例外**：`node --test --test-reporter=dot <21 个 *.test.mjs>` → **exit 1**、墙钟 **894.8 s**、失败集合**恰 5 条**；
-  - ②**加错定例外**（`--test-skip-pattern` = 下表 5 条测试名的错定交替）→ **exit 0**、墙钟 **887.3 s**、零失败；
-  两次均未见其它失败——即「基线红集合恰等于下表 5 条」是由**双向实测**得出的事实，而非引用推断。因此 cmd-01 必须带错定例外模式，cmd-02（writeback 单文件）无基线红、不加例外。
+**新基线的三个 HEAD**：tools `81d31b8`、multica `dead9fe0`、KB `ab6f9347`（三仓 clean）。
 
-| # | 测试名（逐字，错定例外的唯一匹配对象） | 文件:行 | 失败事实（本节点实测，`--test-name-pattern` 单跑 23.2 s） | 归属与为何不在本 CR 修 |
-|---|---|---|---|---|
-| BR-1 | `CR-2026-037 Prompt 采纳：Skill/Pipeline 调 task init 且不指导直写索引` | `skills/shared/crctl/scripts/test/crctl.test.mjs:1345` | `AssertionError: The input did not match the regular expression /crctl task init/` | CR-2026-037 遗留的 Prompt 文本契约断言；本 CR 的 Prompt 改动面（SDD §1.1 / §8）不含该文本 |
-| BR-2 | `checkpoint T05 contract：Pipeline 只编排 Skill，active alignment reader 不读旧 checkpoints[]` | `skills/shared/crctl/scripts/test/checkpoint-tx.test.mjs:489` | `AssertionError: The expression evaluated to a falsy value` | Pipeline / alignment reader 合同断言；`pipeline-templates/**` 在本 CR 是 `zero_diff`（SDD §9） |
-| BR-3 | `TASK-06 ⑤: release-drift 单一回退转换 code-approved -> developing 合法；状态机口径 28 声明/50 展开（AC-3）` | `skills/shared/crctl/scripts/test/crctl.test.mjs:4789` | `AssertionError: CR-2026-031 TASK-06 后声明转移 = 28`（断言值与当前状态机口径不符） | 状态机声明数与转移语义属 `dir-graph.yaml` / 门禁层，本 CR 明列 `zero_diff`；口径以 `../tools/dir-graph.yaml#change-request-track.state_machine` 当前内容为准（KB AGENTS.md 纪律 #2） |
-| BR-4 | `CR-2026-042 静态合同：已知 Skill 越界文本零命中` | `skills/shared/crctl/scripts/test/crctl.test.mjs:4995` | `AssertionError: write-requirement-prd 保留等价文档校验` | CR-2026-041/042 的 `RETIRED_LEGACY` 文本面；本 CR 明确不改其名单与范围（SDD §4.4-1），也不动 `skills/requirement/write-requirement-prd/SKILL.md` |
-| BR-5 | `TASK-01 RED-7：预存确定性 dedup 文件 → 命中同名补记，数量不增、内容不覆盖` | `skills/shared/crctl/scripts/test/archive-tx.test.mjs:391` | `warnings` 期望 `[]`、实得 `[{code:'EMIT_FAILED',event_kind:'archive'}]` | archive outbox 发射链路 / 环境面；本 CR 只把该文件的**字符串断言**改为结构断言，不改发射与 outbox 语义（`zero_diff`） |
+**(a) AC-07 的两条命令（本节点实测，实测对象均为 tools CR worktree，cwd = 仓根）**
 
-  这 5 条在 SDD 审批基线上已存在，**与 recovery 合同迁移无关**（根因均在其他 CR 的遗留面），且与 CR-2026-063 已登记的 BR-1…BR-5 为同一集合（该 CR 由 owner 显式授权「选项 A」：接受基线红、以「失败集合恰等于登记名单」为验收口径，记录在其 SDD §6.4）。本 CR 沿用同一手法：cmd-01 以 `--test-skip-pattern` 错定交替排除这 5 条，验收口径为「21 个测试文件全部被真实执行；失败集合恰等于登记 5 条」。**该口径相对 PRD AC-07 原文（全量通过）的放宽未在本 CR 的 SDD 中单独授权**，因此本计划把它列为本轮**待评审/待人工裁决项**（见 §5.5），不自行认定为已授权。
+| 命令 | 实测结果 |
+|---|---|
+| `node skills/shared/crctl/scripts/test/suite-gate.mjs --run` | `verdict: pass`、`exit_code: 0`、`converged: true`、`duration_ms: 786516`（≈13.1 min）、`files_executed: 21`、`cases_executed: 578`、`failures: 0`、`checks: 13/13 ok`、`skipped_file_level: 0`、`registry.sha256 f8d983a04656d1fae05588af9daa14b128872bc124e5bcddfd155088b53bd5bf`、`registry.exceptions_count: 0`；`command = node --test --test-reporter=tap <21 files> (pool=15, availableParallelism=16)`；`platform = win32 / node 24.15.0`；`files[].state` 全 `ok`（`cases` 逐文件求和 = 578）。同 HEAD 的另一次独立测量（`…\Temp\suite-gate-CR-2026-064\suite-report.json`，20:58）为 `duration_ms 788986`、同样全绿 ⇒ **两次独立运行均 pass**，耗时稳定在 ≈13 min |
+| `node --test skills/writeback/scripts/test/*.test.mjs` | `exit 0`、`tests 13 / pass 13 / fail 0 / skipped 0`、墙钟 **1226 ms**（node 24.15.0）。glob 以**字面字符串**作为独立 argv 元素传参（`shell:false`），由 node（≥22）自身展开；本节点实测该形态与 CI 的 bash 展开命中同一文件集合（`skills/writeback/scripts/test/writeback.test.mjs`） |
 
-### 5.4 证据命令集的预算说明（`write-test-report` 节点 `timeoutMinutes=20`）
+**旧基线（`tools@dddd0ad6`）的 5 条红已由 CR-2026-065 清除**：断言改为从真实载体与事实源派生、RED-7 改为真实崩溃窗口重放；登记面 `exceptions` 已清空 ⇒ AC-07 回到**「全绿」**口径、**无需任何例外授权**（SDD §6.3 AC-07 基线事实段）。本计划因此**不含**任何 skip 模式、例外授权或替代口径。
+
+**(b) 门禁登记面（`gate-registry.json`，本节点实测）**：`manifest.files` 恰 **21** 个、与磁盘 `skills/shared/crctl/scripts/test/*.test.mjs` 集合**相等**；`manifest.cases` 合计 **578**；`exceptions: []`。迁移的 8 个文件逐文件用例下限见 R-13。
+
+**(c) 旧字段盘点（SDD §11 唯一计数口径，本节点重跑）**
+
+| repo | 文件数（`rg -l`） | 行数（`rg -c` 求和） | 匹配次数（`rg -o` 计数） |
+|---|---|---|---|
+| `tools@81d31b8` | **16** | **72** | **87** |
+| `multica@dead9fe0` | **3** | **6** | **6** |
+
+`tools` 侧逐文件分布见 §8；`multica` 侧为 `cr-prompts-revised/delivery-agent.md`（2/2）+ 两个历史黄金数据（2/2、2/2）。计数口径固定：大小写敏感、不加 `-w`、用 `rg` 默认的 `.git`/`.gitignore` 过滤、按「文件 / 行 / 次」三项分别给值、不混用。
+
+**(d) 扫描面规模（SDD §4.4-2 同一枚举规则，本节点实测，报告值 + 结构性断言）**
+
+- 枚举：`readdirSync(..., { withFileTypes: true, recursive: true })` 的非目录条目 **219** 个，其中 1 个是工作树的 `.git` **文件**（按路径段排除）⇒ 枚举 **218** 文件（= 该 commit 的 tracked 集合，工作树 clean）。
+- 扫描面 = 218 − 扫描器自身 1 − 历史 traceability 精确路径 1 = **216 文件**。
+- `skills/**` + `pipeline-templates/**` 递归 `.mjs` 共 **43**（活跃源码 **17** / 活跃测试 **26**；入扫描面 17 + 25 = **42**）。
+- 三个 active 索引：Skill **56** / Agent **9** / Pipeline **8**，条目全部存在于磁盘（实现在 `contract-scan.test.mjs` 与 `check-skill-matrix.test.mjs` 内断言，随 `cmd-01` 执行）。
+- `fixtures/` 目录 4 个文件：**3 个在面内**（`digest-vectors/**`，对两个退役名零命中）、**1 个被排除**（`traceability-191k.yml`）。
+
+**(e) shell 逃逸守卫基线（AC-04）**：`crctl.mjs` + `lib/*.mjs`（5 个文件）中 `shell: true` **0** 处、`Invoke-Expression` **0** 处、`shell: false` **13** 处。
+
+**(f) 冻结 skip 模式重放（R-14 的实测依据）**：以 `FROZEN_SKIP_PATTERNS` 五条正则重放两条 AC-07 命令的真实输出——`cmd-01` stdout（suite-gate 报告 + 人类摘要）**零命中**（suite-gate 自身的设计约定 + CR-2026-065 的禁词自测共同保证）；`cmd-02` 使用默认 reporter 时命中 `\bSKIPPED\b/i` 一次（摘要行 `ℹ skipped 0`），故 `cmd-02` 按 §6.2.1 增加 `--test-reporter=dot`。
+
+### 5.4 证据命令集的预算说明（`write-test-report` 节点 `timeoutMinutes=20` ⇒ 1200 s）
 
 | 命令 | 预期时长量级 | 依据 |
 |---|---|---|
-| cmd-01 | 单条全量命令；本节点实测 **894.8 s**（不带例外，exit 1、失败恰 5 条）/ **887.3 s**（带 §5.3 的锚定例外，exit 0）；CR-2026-063 同仓同规模参照值 848.2 s | 已计入预算（887.3 s < 1200 s） |
-| cmd-02 | 秒级～十秒级 | 单文件 `writeback.test.mjs` |
-| cmd-03 / cmd-04 / cmd-05 / cmd-06 | 各秒级（纯文件读 + 字符串判定 + 一次 `crctl git diff`） | 无子进程套件、无网络 |
+| `cmd-01` | **786.5 s**（本节点实测；同 HEAD 另一次 789.0 s） | 已计入预算：786.5 s < 1080 s（timeout）< 1200 s（节点预算） |
+| `cmd-02` | 秒级（1.2 s） | 单文件 `writeback.test.mjs` |
+| `cmd-03` / `cmd-04` / `cmd-05` / `cmd-06` | 各秒级（纯文件读 + 字符串判定 + 一次 `crctl git diff`） | 无子进程套件、无网络 |
 
-- 预算约束下**不允许**把 cmd-01 拆成多条顺序命令：拆分会让墙钟上升（CR-2026-063 实测 6 文件组 > 600 s、三组合计 > 954 s），全集单命令是唯一同时满足「无重不漏」与「≤ 20 min」的分区。also **不限制 `--test-concurrency`**：按 node 默认并发跑全套（与 CR-2026-063 的实测口径逐字一致）；本节点实测把并发压到 2 时套件在 tools worktree 内长时间不收敛（经验证：父进程空闲、子进程 CPU 停滞），故本轮不采用该参数。
-- 每条命令的 `timeoutSeconds` ≥ 该命令实测时长的安全倍数（cmd-01 声明 1500 s；其余 300 s / 120 s）。`timeoutSeconds` 是 kill-switch 上限，不参与预算比较。
-- `cmd-03`～`cmd-06` 的 `-e` 脚本遵守既有转录纪律：单参数、脚本内不含双引号 / 反斜杠 / 换行 / `|`（需要这些字符时用 `String.fromCharCode(…)` 构造）、路径一律正斜杠化、可 `JSON.stringify` 往返逐字相同。
+预计总时长 ≈ 800 s，节点预算内余量 ≈ 6.5 min。`cmd-01` 的 timeout = 1080 s 是**比套件自身 30 min 收敛上限更早**的失败闸：超过即 `block`（不静默、不会假绿）。
 
-### 5.5 待评审 / 待人工裁决项（本节点主动上报，不自行判定）
+### 5.5 与上一版计划的差异 / 上一版遗留待裁决项的收敛记录
 
-1. **基线红例外口径（对应上文 §5.3）**：`cmd-01` 用锚定例外模式把 5 条基线红排除后 exit 0。这相对 PRD AC-07 原文「全量测试通过」的目标放宽**未在本 CR 的 SDD 中单独授权**（CR-2026-063 的同一手法由 owner 显式授权「选项 A」并记录在其 SDD §6.4；本 CR 的 SDD §6.3 AC-07 写的是「全绿」）。本计划按既有机制承接并把口径显式化为「21 个测试文件全部被真实执行；失败集合恰等于登记 5 条（不得新增红、不得靠 skip/删测试少红）」，但请评审判定：
-   - 若判「沿用既有已授权机制 + fail-closed 锚定例外即可」→ 按本计划执行；
-   - 若判「需 SDD 层单独授权 / 属上游设计落点问题」→ 按 `review-dev-plan` 的 upstream 轨（`repair-target=write-tech-design`）处理，本计划**不自行认定已获授权、不自行放宽 SDD**。
-2. **`--test-concurrency` 参数差异**：SDD §6.3 AC-07 的可达性说明写的是 `node --test --test-concurrency=2 …`；本节点实测该并发设置在 tools CR worktree 内长时间不收敛（30+ 分钟时父进程空闲、两个子进程 CPU 停滞；终止后重跑正常），故本计划的 `cmd-01` **去掉该参数**（与 CR-2026-063 的实测口径一致，887.3 s exit 0）。此差异只影响执行参数、不改变验收面（同一文件全集、同一 reporter）。
-3. **例外集合的事后一致性**：§5.3 的 5 条测试名分别位于 `crctl.test.mjs`（3 条）、`checkpoint-tx.test.mjs`（1 条）、`archive-tx.test.mjs`（1 条）——三者都是 CR-2026-064-TASK-04 要迁移的文件。TASK-04 只把这些文件内的**旧字段字符串断言**改为结构断言，**不得**顺手修改或删除这 5 条无关用例（否则例外模式失配 → `cmd-01` 真跑那 5 条 → 报红 → `block`，即 fail-closed 应当表现出来）。
+| 上一版（`c0750ae5`）的项 | 本版处置 | 依据 |
+|---|---|---|
+| §5.3「基线红 5 条」清单与归因 | **整体删除**（5 条红已不存在） | CR-2026-065 合入 `tools@81d31b8`；SDD §6.3 AC-07 基线事实段 |
+| §5.5-1「基线红例外是否沿用既有授权」（待评审判定项） | **已消失**：无红即无例外，无需授权 | 同上；`gate-registry.json#exceptions: []` |
+| §5.5-2「`cmd-01` 去掉 SDD 明文要求的并发参数」（待评审判定项） | **已收敛**：SDD 修订已把 AC-07 的可观测结果定为 CI 的两条现有步骤；本计划按 SDD 逐字转录，不存在需要评审判定的参数取舍 | SDD §6.3 AC-07（含其「不采用旧字面并发命令」的三条理由段） |
+| 标注「未在本 CR 的 SDD 中单独授权」的放宽口径 | **不存在**：AC-07 = 全绿 | 同上 |
+| `cmd-01` 的 `--test-skip-pattern` 锚定例外与失败集合断言 | **整体删除**；`cmd-01` = SDD §6.3 AC-07 命令 1 逐字 | 同上 |
+| `cmd-02` 的 dot reporter（上一版已有） | **保留**，并在 §6.2.1 补齐实测理由（R-14） | `write-test-report` Skill 的统一要求 + 本次冻结模式重放实测 |
+
+**本版无待评审判定项、无例外、无 skip 模式、无并发参数、无「待人工裁决」占位。**
 
 ## 6. 两张稳定表（契约必填节，CR-2026-060 AC-07）
 
@@ -209,70 +205,53 @@ CR-R 是**单发布原子迁移**：生产者、消费者、旧字段删除与�
 
 | FR/关键AC | SDD交付项 | 主责/关联TASK | 验收证据 | 回滚 |
 |---|---|---|---|---|
-| FR-1 唯一恢复合同字段 `recovery`（AC-01） | §2.1 字段表 + §3.1 类型 + §3.2 构造器（键序固定、可选性、恒定 `executable`）+ SDD-CLOSE-01 | CR-2026-064-TASK-01（关联 CR-2026-064-TASK-02 的 CLI 投影面） | cmd-01 | RU-ALL |
-| FR-2 argv 边界与参数完整性（AC-01） | §4.1 拆 token 六步 + 11 站点 `args` 取值表 + SDD-CLOSE-02 | CR-2026-064-TASK-01 | cmd-01（结构断言逐元素）、cmd-03（活跃面零命中） | RU-ALL |
-| FR-3 `executable` 安全约束（AC-10） | §3.2 保证 1–2（`'node'` 恒定 + `args[0]` 为脚本路径）+ §4.5 守卫 | CR-2026-064-TASK-01（关联 CR-2026-064-TASK-04 的守卫断言） | cmd-01、cmd-05 | RU-ALL |
+| FR-1 唯一恢复合同字段 `recovery`（AC-01、AC-10） | §2.1 字段表 + §3.1 类型 + §3.2 构造器（键序固定、可选性、恒定 `executable`）+ SDD-CLOSE-01 | CR-2026-064-TASK-01（关联 CR-2026-064-TASK-02 的投影面） | cmd-01 | RU-ALL |
+| FR-2 argv 边界与参数完整性（AC-01） | §4.1 拆 token 六步 + 11 站点 `args` 取值表 + SDD-CLOSE-02 | CR-2026-064-TASK-01 | cmd-01、cmd-03 | RU-ALL |
+| FR-3 `executable` 安全约束（AC-10） | §3.2 保证 1–2（`'node'` 恒定 + `args[0]` 为脚本路径）+ §4.5 向量 6 | CR-2026-064-TASK-01（关联 CR-2026-064-TASK-04 的守卫断言） | cmd-01、cmd-05 | RU-ALL |
 | FR-4 `promptFor[]` 人工输入行为（AC-03、SDD-CLOSE-03） | §3.4 值名 → CLI 入口映射 + §4.1 第 5 步（`reason` / `plan` / `CR-ID` 不进 `args`） | CR-2026-064-TASK-02（关联 CR-2026-064-TASK-04 的 6 类向量） | cmd-01 | RU-ALL |
-| FR-5 全部已知生产者迁移（AC-01、AC-02） | §4.1 站点 1–9（9 处生产者构造）+ §3.3 载体表 + SDD-CLOSE-06 | CR-2026-064-TASK-01 | cmd-01、cmd-03 | RU-ALL |
+| FR-5 全部已知生产者迁移（AC-01、AC-02） | §4.1 站点 1–9（9 类场景的构造）+ §3.3 载体表 + SDD-CLOSE-06 | CR-2026-064-TASK-01 | cmd-01、cmd-03 | RU-ALL |
 | FR-6 CLI 投影迁移（AC-02） | §4.2 四步 + §3.3 站点 10/11（`gate` 错配、`reset` 提交失败）+ `register` 单投影 | CR-2026-064-TASK-02 | cmd-01 | RU-ALL |
 | FR-7 全部活跃 Skill/Agent 消费者迁移（AC-05） | §4.3 消费方行 + §8 采纳完整性（5 处，无遗留采纳项）+ D-6 消费合同单一事实源 | CR-2026-064-TASK-03 | cmd-03、cmd-04、cmd-06 | RU-ALL |
 | FR-8 文档迁移且不产生第二套合同（AC-05） | §4.3 `README.md` 行 + D-7 生成闭环（四步，不手工编辑生成页） | CR-2026-064-TASK-03 | cmd-03、cmd-06 | RU-ALL |
-| FR-9 测试改为结构断言（AC-02、AC-07） | §4.5 结构断言模板 + 向量 3/4/5/6 + 反脆弱快照规则 | CR-2026-064-TASK-04 | cmd-01 | RU-ALL |
-| FR-10 旧字段同 CR 删除、不留兼容路径（AC-05） | §4.1 第 6 步（原位删除、不并排双写）+ §2.3 别名表（无 alias/shim/fallback） | CR-2026-064-TASK-01（关联 CR-2026-064-TASK-02/03/04 的全量删除面） | cmd-03、cmd-04 | RU-ALL |
+| FR-9 测试改为结构断言（AC-02、AC-07） | §4.5 结构断言模板 + 向量 3/4/5/6 + §4.5-7 用例下限硬约束 | CR-2026-064-TASK-04 | cmd-01 | RU-ALL |
+| FR-10 旧字段同 CR 删除、不留兼容路径（AC-05） | §4.1 第 6 步（原位删除、不并排双写）+ §2.3 别名表（无 alias/shim/fallback）+ §9 `scope_out` | CR-2026-064-TASK-01（关联 CR-2026-064-TASK-02/03/04 的全量删除面） | cmd-03、cmd-04 | RU-ALL |
 | FR-11 contract-scan 退役保护（AC-06、SDD-CLOSE-05） | §4.4 全节：分名名单 + 整树派生扫描面 + 两项精确路径排除 + 四条结构性断言 + 八条命中用例 + 不误报正反用例 | CR-2026-064-TASK-04 | cmd-01（`contract-scan.test.mjs` 在列）、cmd-03 | RU-ALL |
 | FR-12 安全测试向量（AC-03、AC-10、AC-11） | §4.5 向量 3（参数边界）/ 4（6 类用户输入）/ 5（四类缺失）/ 6（shell 逃逸守卫） | CR-2026-064-TASK-04 | cmd-01、cmd-05 | RU-ALL |
-| FR-13 既有语义零改变（AC-07、AC-08） | §2.2 不落盘 + §3.3 尾段（错误码/exit code/txId/rollback/files 不变）+ §4.2「只改载体」 | CR-2026-064-TASK-01（关联 CR-2026-064-TASK-02 与 CR-2026-064-TASK-04 的回归面） | cmd-01、cmd-02、cmd-05 | RU-ALL |
+| FR-13 既有语义零改变（AC-07、AC-08） | §2.2 不落盘 + §3.3 尾段（错误码/exit code/txId/rollback/files 不变）+ §4.2「只改载体」+ §6.3 AC-07 的两条 CI 命令 | CR-2026-064-TASK-04（关联 CR-2026-064-TASK-01、CR-2026-064-TASK-02 的回归面） | cmd-01、cmd-02、cmd-05 | RU-ALL |
 | FR-14 实施前有界盘点（AC-12） | §11 依赖清单即基线盘点 + §4.3 逐文件清单；六类归档表见本计划 §8（plan 节点产物） | CR-2026-064-TASK-04（关联 CR-2026-064-TASK-01/02/03 的迁移面） | cmd-03、cmd-06 | RU-ALL |
 | FR-15 整体回滚（AC-13） | §9 `scope_out` 与 §6.1 FR-15 + 本计划 §4.0（回滚单元唯一 = RU-ALL） | CR-2026-064-TASK-01（关联 CR-2026-064-TASK-02/03/04 同进退） | cmd-03（活跃面无半迁移态）、cmd-05 | RU-ALL |
 | FR-16 回写与平台部署边界（AC-09、AC-14） | §1.1 范围表（不更新平台 DB）+ §8 平台部署边界 + §6.1 FR-16 | CR-2026-064-TASK-03（关联 CR-2026-064-TASK-04 的口径断言） | cmd-06 | RU-ALL |
 | FR-17 合同确定性（AC-04、AC-11、SDD-CLOSE-04） | §2.4 指纹字段集 + §3.5 固定 5 步判定与四类错误闭包 + §3.1 零副作用 | CR-2026-064-TASK-01（关联 CR-2026-064-TASK-02 构造、CR-2026-064-TASK-03 消费合同、CR-2026-064-TASK-04 守卫） | cmd-01、cmd-05 | RU-ALL |
 
-**表注（防假绿）**
-
-① 「验收证据」列按「主责命令在前」列出覆盖本行验收面的全部 `cmd-NN`；每个 `cmd-NN` 与 §6.2 证据命令表的 `证据ID`、`crctl test` 机器区 `commands` 1-based 下标、`test-evidence/cmd-NN.log` 三者全等。六个 `cmd-NN` 全部被本表引用；反向本表每个引用都在 §6.2 内有定义（双向可机械核对）。
-② FR-14 的六类归档表是 **plan 节点产物**（本计划 §8），其完整性面的机器判据落在 CR-2026-064-TASK-04 的整树零命中扫描（`cmd-03`）与 CR 产物口径断言（`cmd-06`）——即「盘点声称的六类都已被同一口径的扫描面覆盖」，不是让 TASK 重新产出一份盘点表。
-③ FR-15 的「回滚」列对该 CR 全部 FR 都是同一个 `RU-ALL`：PRD FR-15 / SDD §9 `scope_out` 禁止部分回滚与半迁移态，本计划不提供第二种回滚单元（§4.0）。
-④ FR-16 的 `cmd-06` 只证明「本 CR 产物未声称平台侧已生效、KB 未提前产出 `specs/`/`delivery/`」；平台侧实际采纳动作不属本 CR 验收面（AC-09 的可达性说明）。
-⑤ FR-7 的跨仓面（`multica`）由 `cmd-04` 覆盖，`tools` 整树扫描（`cmd-03`）不覆盖 `multica` 仓（SDD §4.4 跨仓边界为诚实口径：跨仓迁移由 §4.3 清单 + 有界盘点 + 本 CR 评审证明）。
+覆盖校验：**17 行 = FR-1…FR-17 各恰一次**；`主责/关联TASK` 全部使用 canonical 完整 id（与 `tasks/_index.yml` 的 id 集一致）；`验收证据` 列出现的标识集合 = {`cmd-01`…`cmd-06`}，与 §6.2 双向唯一映射（无孤证、无表外引用）；回滚列唯一取值为 `RU-ALL`（§4.0）。
 
 ### 6.2 证据命令表（稳定表 2/2）
 
 | 证据ID | repo | cwd | executable | args | timeout |
 |---|---|---|---|---|---|
-| cmd-01 | tools | . | node | `["--test","--test-reporter=dot","--test-skip-pattern","^(?:CR-2026-037 Prompt 采纳：Skill/Pipeline 调 task init 且不指导直写索引|checkpoint T05 contract：Pipeline 只编排 Skill，active alignment reader 不读旧 checkpoints\\[\\]|TASK-06 ⑤: release-drift 单一回退转换 code-approved -> developing 合法；状态机口径 28 声明/50 展开（AC-3）|CR-2026-042 静态合同：已知 Skill 越界文本零命中|TASK-01 RED-7：预存确定性 dedup 文件 → 命中同名补记，数量不增、内容不覆盖)$","skills/shared/crctl/scripts/test/archive-tx.test.mjs","skills/shared/crctl/scripts/test/check-agents-contract.test.mjs","skills/shared/crctl/scripts/test/check-skill-matrix.test.mjs","skills/shared/crctl/scripts/test/checkpoint-tx.test.mjs","skills/shared/crctl/scripts/test/contract-scan.test.mjs","skills/shared/crctl/scripts/test/crctl.test.mjs","skills/shared/crctl/scripts/test/durable-tx.test.mjs","skills/shared/crctl/scripts/test/fault-harness.test.mjs","skills/shared/crctl/scripts/test/lint-prompts.test.mjs","skills/shared/crctl/scripts/test/merge-tx.test.mjs","skills/shared/crctl/scripts/test/pipeline-structure.test.mjs","skills/shared/crctl/scripts/test/register-tx.test.mjs","skills/shared/crctl/scripts/test/test-cr.test.mjs","skills/shared/crctl/scripts/test/trace-outbox.test.mjs","skills/shared/crctl/scripts/test/trace-semantic.test.mjs","skills/shared/crctl/scripts/test/upgrade-check.test.mjs","skills/shared/crctl/scripts/test/version-set.test.mjs","skills/shared/crctl/scripts/test/workspace-freshness.test.mjs","skills/shared/crctl/scripts/test/workspace-resolver.test.mjs","skills/shared/crctl/scripts/test/writeback-tx.test.mjs","skills/shared/crctl/scripts/test/yaml-subset.test.mjs"]` | 1500 |
-| cmd-02 | tools | . | node | `["--test","--test-reporter=dot","skills/writeback/scripts/test/writeback.test.mjs"]` | 600 |
-| cmd-03 | tools | . | node | `["-e","const fs=require('fs'),path=require('path');;const R=process.cwd();;const NAMES=['recoverCommand','recover_command'];;const SKIP=['.git','node_modules'];;const EXCLUDED=['skills/shared/crctl/scripts/test/contract-scan.test.mjs','skills/shared/crctl/scripts/test/fixtures/traceability-191k.yml'];;const rel=p=>path.relative(R,p).split(path.sep).join('/');;const walk=(d,out)=>{for(const e of fs.readdirSync(d,{withFileTypes:true})){const p=path.join(d,e.name);const r=rel(p);const seg=r.split('/');if(seg.some(s=>SKIP.includes(s)))continue;if(e.isDirectory())walk(p,out);else out.push(r);}};;const all=[];walk(R,all);;const surface=all.filter(r=>!EXCLUDED.includes(r)).sort();;const hit=(f)=>{const t=fs.readFileSync(path.join(R,f),'utf8').split(String.fromCharCode(13)+String.fromCharCode(10)).join(String.fromCharCode(10));return NAMES.some(n=>t.includes(n));};;const hits=surface.filter(hit);;console.log('enumerated = '+all.length);;console.log('scan surface = '+surface.length);;console.log('retired-name hits in surface = '+hits.length);;hits.forEach(h=>console.log('  HIT '+h));;const exHit=EXCLUDED.filter(hit);;console.log('excluded = '+EXCLUDED.length+' (of which hit = '+exHit.length+')');;exHit.forEach(h=>console.log('  EXCLUDED-HIT '+h));;const fx=surface.filter(r=>r.startsWith('skills/shared/crctl/scripts/test/fixtures/'));;console.log('fixtures in surface = '+fx.length);;fx.forEach(f=>console.log('  IN '+f));;const bad=[];;if(hits.length)bad.push('surface hits = '+hits.length);;if(EXCLUDED.length!==2)bad.push('excluded count = '+EXCLUDED.length);;if(exHit.length!==1)bad.push('excluded hit count = '+exHit.length);;if(fx.length!==3)bad.push('fixtures in surface = '+fx.length);;if(surface.length<200)bad.push('scan surface suspiciously small = '+surface.length);;if(bad.length){bad.forEach(b=>console.log('FAIL '+b));process.exit(1);};console.log('scan-audit failures = 0');"]` | 300 |
-| cmd-04 | multica | . | node | `["-e","const fs=require('fs'),path=require('path'),cp=require('child_process');;const R=process.cwd();;const NAMES=['recoverCommand','recover_command'];;const DIR='cr-prompts-revised';;const NL=String.fromCharCode(10);;const pick=(...v)=>{for(const x of v)if(x)return String(x);return '';};;const bad=[];;const files=fs.readdirSync(path.join(R,DIR)).filter(f=>f.endsWith('.md'));;const hits=files.filter(f=>{const t=fs.readFileSync(path.join(R,DIR,f),'utf8');return NAMES.some(n=>t.includes(n));});;console.log('cr-prompts-revised md files = '+files.length);;console.log('retired-name hits = '+hits.length);;hits.forEach(h=>console.log('  HIT '+DIR+'/'+h));;if(hits.length)bad.push('prompt hits = '+hits.length);;const dev=fs.readFileSync(path.join(R,DIR,'delivery-agent.md'),'utf8');;if(!dev.includes('recovery'))bad.push('delivery-agent.md 未改读结构化 recovery');;if(NAMES.some(n=>dev.includes(n)))bad.push('delivery-agent.md 仍含退役字段名');;const gold=['server/internal/governance/testdata/traceability-golden.yml','server/internal/governance/testdata/traceability-golden.json'];;for(const g of gold){const t=fs.readFileSync(path.join(R,g),'utf8');if(!NAMES.some(n=>t.includes(n)))bad.push('历史黄金数据不含旧字段名（排除依据失效）: '+g);};;const CRCTL='C:/Users/GOBAO/Downloads/AI/AI First Platform/.rayai-worktrees/tools/requirement/CR-2026-064/skills/shared/crctl/scripts/crctl.mjs';;const r=cp.spawnSync(process.execPath,[CRCTL,'git','diff','--name-only','ab9609483d17db12117cb8e9adb2d896f413917d','--cwd',R],{encoding:'utf8'});;if(r.status!==0){bad.push('crctl git diff 失败: '+pick(r.stderr,r.stdout).trim());}else{const parts=String(pick(r.stdout)).split(NL);const b=parts.findIndex(l=>l.trim()==='{');const names=parts.slice(0,b<0?parts.length:b).map(s=>s.trim()).filter(Boolean);;console.log('multica diff paths = '+names.length);;names.forEach(f=>console.log('  '+f));;const want=[DIR+'/delivery-agent.md'];;for(const f of names)if(!want.includes(f))bad.push('multica diff 越界路径: '+f);;for(const f of want)if(!names.includes(f))bad.push('multica diff 缺少应改文件: '+f);};;if(bad.length){bad.forEach(b=>console.log('FAIL '+b));process.exit(1);};console.log('multica-audit failures = 0');"]` | 300 |
-| cmd-05 | tools | . | node | `["-e","const fs=require('fs'),path=require('path'),cp=require('child_process');;const R=process.cwd();;const NL=String.fromCharCode(10);;const pick=(...v)=>{for(const x of v)if(x)return String(x);return '';};;const bad=[];;const SKIPS=['.git','node_modules'];;const walk=(d,out)=>{for(const e of fs.readdirSync(d,{withFileTypes:true})){const p=path.join(d,e.name);const r=path.relative(R,p).split(path.sep).join('/');if(e.isDirectory()){if(SKIPS.includes(e.name))continue;walk(p,out);}else if(r.endsWith('.mjs'))out.push(r);}};;const lib=[];walk(path.join(R,'skills/shared/crctl/scripts/lib'),lib);;const guard=['skills/shared/crctl/scripts/crctl.mjs'].concat(lib);;const BAD=['shell: true','shell:true','Invoke-Expression'];;for(const f of guard){const t=fs.readFileSync(path.join(R,f),'utf8');for(const s of BAD)if(t.includes(s))bad.push('shell 逃逸守卫命中: '+f+' 含 '+s);};;const CRCTL=path.join(R,'skills/shared/crctl/scripts/crctl.mjs');;const r=cp.spawnSync(process.execPath,[CRCTL,'git','diff','--name-only','dddd0ad63fb79bd7608314b4553f30e8ce7b7289','--cwd',R],{encoding:'utf8'});;if(r.status!==0){bad.push('crctl git diff 失败: '+pick(r.stderr,r.stdout).trim());}else{const parts=String(pick(r.stdout)).split(NL);const b=parts.findIndex(l=>l.trim()==='{');const names=parts.slice(0,b<0?parts.length:b).map(s=>s.trim()).filter(Boolean);;console.log('tools diff paths = '+names.length);;names.forEach(f=>console.log('  '+f));;const WL=['README.md','openwiki/operations/crctl-transactions.md','skills/shared/crctl/SKILL.md','skills/cr/cr-archive/SKILL.md','skills/sync/push-progress/SKILL.md','skills/writeback/merge-feature-branch/SKILL.md','skills/shared/crctl/scripts/crctl.mjs','skills/shared/crctl/scripts/lib/workspace-transactions.mjs','skills/shared/crctl/scripts/test/contract-scan.test.mjs'];;const inScope=f=>WL.includes(f)?true:['archive-tx','checkpoint-tx','crctl','merge-tx','register-tx','workspace-freshness','writeback-tx'].map(n=>'skills/shared/crctl/scripts/test/'+n+'.test.mjs').includes(f);;for(const f of names)if(!inScope(f))bad.push('tools diff 越界路径（不在 SDD §1.1 白名单）: '+f);};;if(bad.length){bad.forEach(b=>console.log('FAIL '+b));process.exit(1);};console.log('tools-guard-audit failures = 0');"]` | 300 |
-| cmd-06 | ai-first-platform-docs | . | node | `["-e","const fs=require('fs'),path=require('path'),cp=require('child_process');;const R=process.cwd();;const NL=String.fromCharCode(10);;const pick=(...v)=>{for(const x of v)if(x)return String(x);return '';};;const bad=[];;const CR='change-requests/CR-2026-064';;const plan=fs.readFileSync(path.join(R,CR,'plan.md'),'utf8');;const cats=['producer','code consumer','Prompt-Skill consumer','active test','active docs','historical evidence'];;for(const c of cats)if(!plan.includes(c))bad.push('plan.md 六类归档缺少类别: '+c);;const TOOLS='C:/Users/GOBAO/Downloads/AI/AI First Platform/.rayai-worktrees/tools/requirement/CR-2026-064';;const NAMES=['recoverCommand','recover_command'];;for(const f of ['README.md','openwiki/operations/crctl-transactions.md']){const t=fs.readFileSync(path.join(TOOLS,f),'utf8');if(NAMES.some(n=>t.includes(n)))bad.push('活跃文档仍含退役字段名: '+f);};;const page=fs.readFileSync(path.join(TOOLS,'openwiki/operations/crctl-transactions.md'),'utf8');;for(const k of ['recovery','executable','args','promptFor'])if(!page.includes(k))bad.push('OpenWiki 页缺少结构化合同字段名: '+k);;const claim=['平台 DB','已部署'].join('');;const tdir=path.join(R,CR,'tasks');;const arts=[path.join(R,CR,'plan.md')].concat(fs.existsSync(tdir)?fs.readdirSync(tdir).filter(f=>f.endsWith('.md')).map(f=>path.join(tdir,f)):[]);;for(const a of arts){const t=fs.readFileSync(a,'utf8');if(t.includes(claim))bad.push('CR 产物出现部署声称: '+path.relative(R,a));};;const r=cp.spawnSync(process.execPath,['C:/Users/GOBAO/Downloads/AI/AI First Platform/.rayai-worktrees/tools/requirement/CR-2026-064/skills/shared/crctl/scripts/crctl.mjs','git','diff','--name-only','9079005fa5b0a3c4be482b089dcd1ff86819d020','--cwd',R],{encoding:'utf8'});;if(r.status!==0){bad.push('crctl git diff 失败: '+pick(r.stderr,r.stdout).trim());}else{const parts=String(pick(r.stdout)).split(NL);const b=parts.findIndex(l=>l.trim()==='{');const names=parts.slice(0,b<0?parts.length:b).map(s=>s.trim()).filter(Boolean);;console.log('KB diff paths = '+names.length);;names.forEach(f=>console.log('  '+f));;for(const f of names)if(!(f.startsWith(CR+'/')?true:f==='change-requests/_backlog.yml'))bad.push('KB diff 越界路径: '+f);};;if(bad.length){bad.forEach(b=>console.log('FAIL '+b));process.exit(1);};console.log('kb-audit failures = 0');"]` | 300 |
+| cmd-01 | tools | . | node | `["skills/shared/crctl/scripts/test/suite-gate.mjs","--run"]` | 1080 |
+| cmd-02 | tools | . | node | `["--test","--test-reporter=dot","skills/writeback/scripts/test/*.test.mjs"]` | 300 |
+| cmd-03 | tools | . | node | `["-e","const fs=require('fs'),path=require('path');const R=process.cwd();const NL=String.fromCharCode(10);const NAMES=['recoverCommand','recover_command'];const SKIP=['.git','node_modules'];const SCANNER='skills/shared/crctl/scripts/test/contract-scan.test.mjs';const HIST='skills/shared/crctl/scripts/test/fixtures/traceability-191k.yml';const EXCLUDED=[SCANNER,HIST];const rel=p=>path.relative(R,p).split(path.sep).join('/');const segs=p=>rel(p).split('/');const norm=t=>t.split(String.fromCharCode(13)+NL).join(NL);const all=[];const walk=d=>{for(const e of fs.readdirSync(d,{withFileTypes:true})){const p=path.join(d,e.name);if(segs(p).some(s=>SKIP.includes(s)))continue;if(e.isDirectory())walk(p);else all.push(rel(p));}};walk(R);const surface=all.filter(r=>EXCLUDED.includes(r)===false).sort();const hit=f=>{const t=norm(fs.readFileSync(path.join(R,f),'utf8'));return NAMES.some(n=>t.includes(n));};const hits=surface.filter(hit);const exHit=EXCLUDED.filter(hit);const fx=surface.filter(r=>r.startsWith('skills/shared/crctl/scripts/test/fixtures/'));const reg=JSON.parse(norm(fs.readFileSync('skills/shared/crctl/scripts/test/gate-registry.json','utf8')));const mf=reg.manifest.files.slice();const disk=all.filter(f=>f.startsWith('skills/shared/crctl/scripts/test/')&&f.endsWith('.test.mjs')).map(f=>f.split('/').pop()).sort();const bad=[];console.log('enumerated = '+all.length);console.log('scan surface = '+surface.length);console.log('retired-name hits in surface = '+hits.length);hits.forEach(h=>console.log('  HIT '+h));console.log('excluded = '+EXCLUDED.length+' (hit = '+exHit.length+')');exHit.forEach(h=>console.log('  EXCLUDED-HIT '+h));console.log('fixtures in surface = '+fx.length);fx.forEach(f=>console.log('  IN '+f));console.log('manifest.files = '+mf.length+' cases floor sum = '+Object.values(reg.manifest.cases).reduce((a,b)=>a+b,0)+' exceptions = '+reg.exceptions.length);if(hits.length>0)bad.push('surface hits = '+hits.length);if(EXCLUDED.length!==2)bad.push('excluded count = '+EXCLUDED.length);if(EXCLUDED.filter(e=>[e.includes('*'),e.includes('?')].some(x=>x)).length!==0)bad.push('excluded 含通配');if(EXCLUDED.includes(SCANNER)===false)bad.push('扫描器自身不在排除项');if(EXCLUDED.includes(HIST)===false)bad.push('历史 traceability 不在排除项');if(exHit.length!==1)bad.push('excluded hit count = '+exHit.length);if(fx.length!==3)bad.push('fixtures in surface = '+fx.length);if(surface.length<200)bad.push('scan surface suspiciously small = '+surface.length);if(mf.length!==21)bad.push('manifest.files = '+mf.length);if(JSON.stringify(mf.slice().sort())!==JSON.stringify(disk))bad.push('manifest.files 与磁盘测试文件集合不相等');if(reg.exceptions.length!==0)bad.push('exceptions 非空 = '+reg.exceptions.length);if(bad.length>0){bad.forEach(b=>console.log('FAIL '+b));process.exit(1);}console.log('scan-audit failures = 0');"]` | 300 |
+| cmd-04 | multica | . | node | `["-e","const fs=require('fs'),path=require('path'),cp=require('child_process');const R=process.cwd();const NL=String.fromCharCode(10);const NAMES=['recoverCommand','recover_command'];const DIR='cr-prompts-revised';const GOLD=['server/internal/governance/testdata/traceability-golden.yml','server/internal/governance/testdata/traceability-golden.json'];const CRCTL='C:/Users/GOBAO/Downloads/AI/AI First Platform/.rayai-worktrees/tools/requirement/CR-2026-064/skills/shared/crctl/scripts/crctl.mjs';const SKIP=['.git','node_modules'];const rel=p=>path.relative(R,p).split(path.sep).join('/');const all=[];const walk=d=>{for(const e of fs.readdirSync(d,{withFileTypes:true})){const p=path.join(d,e.name);if(rel(p).split('/').some(s=>SKIP.includes(s)))continue;if(e.isDirectory())walk(p);else all.push(rel(p));}};walk(R);const hit=f=>{const t=fs.readFileSync(path.join(R,f),'utf8').split(String.fromCharCode(13)+NL).join(NL);return NAMES.some(n=>t.includes(n));};const remain=all.filter(hit).sort();const bad=[];const files=fs.readdirSync(path.join(R,DIR)).filter(f=>f.endsWith('.md'));const dhits=files.filter(f=>{const t=fs.readFileSync(path.join(R,DIR,f),'utf8');return NAMES.some(n=>t.includes(n));});console.log('multica files containing retired names = '+remain.length);remain.forEach(f=>console.log('  REMAIN '+f));console.log('cr-prompts-revised md files = '+files.length+' hits = '+dhits.length);dhits.forEach(h=>console.log('  HIT '+DIR+'/'+h));const dev=fs.readFileSync(path.join(R,DIR,'delivery-agent.md'),'utf8');if(dev.includes('recovery')===false)bad.push('delivery-agent.md 未改读结构化 recovery');if(NAMES.some(n=>dev.includes(n)))bad.push('delivery-agent.md 仍含退役字段名');for(const g of GOLD){const t=fs.readFileSync(path.join(R,g),'utf8');if(NAMES.some(n=>t.includes(n))===false)bad.push('历史黄金数据不含旧字段名（排除依据失效）: '+g);}if(dhits.length>0)bad.push('prompt hits = '+dhits.length);if(remain.length!==2)bad.push('multica 旧名残留文件数 = '+remain.length+'（应为 2 个历史黄金数据）');const r=cp.spawnSync(process.execPath,[CRCTL,'git','diff','--name-only','dead9fe0d5a24118547a5be56d59241fdcc443a8','--cwd',R],{encoding:'utf8'});if(r.status!==0){bad.push('crctl git diff 失败');console.log(String(r.stderr).trim());}else{const parts=String(r.stdout).split(NL);const b=parts.findIndex(l=>l.trim()==='{');const names=parts.slice(0,b<0?parts.length:b).map(s=>s.trim()).filter(Boolean);console.log('multica diff paths = '+names.length);names.forEach(f=>console.log('  '+f));const want=[DIR+'/delivery-agent.md'];for(const f of names)if(want.includes(f)===false)bad.push('multica diff 越界路径: '+f);for(const f of want)if(names.includes(f)===false)bad.push('multica diff 缺少应改文件: '+f);}if(bad.length>0){bad.forEach(b=>console.log('FAIL '+b));process.exit(1);}console.log('multica-audit failures = 0');"]` | 300 |
+| cmd-05 | tools | . | node | `["-e","const fs=require('fs'),path=require('path'),cp=require('child_process');const R=process.cwd();const NL=String.fromCharCode(10);const CRCTL=path.join(R,'skills/shared/crctl/scripts/crctl.mjs');const T='skills/shared/crctl/scripts/test/';const WL=['README.md','openwiki/operations/crctl-transactions.md','skills/shared/crctl/SKILL.md','skills/cr/cr-archive/SKILL.md','skills/sync/push-progress/SKILL.md','skills/writeback/merge-feature-branch/SKILL.md','skills/shared/crctl/scripts/crctl.mjs','skills/shared/crctl/scripts/lib/workspace-transactions.mjs'].concat(['archive-tx','checkpoint-tx','crctl','merge-tx','register-tx','workspace-freshness','writeback-tx','contract-scan'].map(n=>T+n+'.test.mjs'));const ZERO=['ARCHITECTURE.md','dir-graph.yaml','skills/shared/crctl/gates.json','skills/shared/controlled-shell/rules.json','skills/shared/crctl/scripts/test/gate-registry.json','skills/shared/crctl/scripts/lib/durable-tx.mjs','skills/shared/crctl/scripts/lib/yaml-subset.mjs','skills/_index.yml','agents/_index.yml'];const bad=[];const SKIPS=['.git','node_modules'];const walk=(d,out)=>{for(const e of fs.readdirSync(d,{withFileTypes:true})){const p=path.join(d,e.name);const r=path.relative(R,p).split(path.sep).join('/');if(e.isDirectory()){if(SKIPS.includes(e.name))continue;walk(p,out);}else if(r.endsWith('.mjs'))out.push(r);}};const lib=[];walk(path.join(R,'skills/shared/crctl/scripts/lib'),lib);const guard=['skills/shared/crctl/scripts/crctl.mjs'].concat(lib);const BADT=['shell: true','shell:true','Invoke-Expression'];const ZP=['pipeline-templates/','.github/workflows/','agents/'];let falseCount=0;for(const f of guard){const t=fs.readFileSync(path.join(R,f),'utf8');for(const s of BADT)if(t.includes(s))bad.push('shell 逃逸守卫命中: '+f+' 含 '+s);const mm=t.match(/shell:[ ]*false/g);if(mm!==null)falseCount+=mm.length;}console.log('guard files = '+guard.length+' shell:false = '+falseCount);if(falseCount<1)bad.push('argv 先例 shell:false 计数异常');const r=cp.spawnSync(process.execPath,[CRCTL,'git','diff','--name-only','81d31b8b9d4c36cfef24cd076bf9fe635b67b2b6','--cwd',R],{encoding:'utf8'});if(r.status!==0){bad.push('crctl git diff 失败');console.log(String(r.stderr).trim());}else{const parts=String(r.stdout).split(NL);const b=parts.findIndex(l=>l.trim()==='{');const names=parts.slice(0,b<0?parts.length:b).map(s=>s.trim()).filter(Boolean);console.log('tools diff paths = '+names.length);names.forEach(f=>console.log('  '+f));const inScope=f=>{if(f.startsWith('openwiki/'))return true;return WL.includes(f);};for(const f of names)if(inScope(f)===false)bad.push('tools diff 越界路径（不在 SDD §1.1 白名单）: '+f);for(const f of names){if(ZP.some(z=>f.startsWith(z)))bad.push('zero_diff 面被改动: '+f);if(ZERO.includes(f))bad.push('zero_diff 面被改动: '+f);}for(const f of WL)if(names.includes(f)===false)bad.push('tools diff 缺少应改文件: '+f);if(names.length===0)bad.push('tools diff 为空（实现未落盘？）');}if(bad.length>0){bad.forEach(b=>console.log('FAIL '+b));process.exit(1);}console.log('tools-guard-audit failures = 0');"]` | 300 |
+| cmd-06 | ai-first-platform-docs | . | node | `["-e","const fs=require('fs'),path=require('path'),cp=require('child_process');const R=process.cwd();const NL=String.fromCharCode(10);const CR='change-requests/CR-2026-064';const TOOLS='C:/Users/GOBAO/Downloads/AI/AI First Platform/.rayai-worktrees/tools/requirement/CR-2026-064';const NAMES=['recoverCommand','recover_command'];const CATS=['producer','code consumer','Prompt-Skill consumer','active test','active docs','historical evidence'];const CRCTL=path.join(TOOLS,'skills/shared/crctl/scripts/crctl.mjs');const bad=[];const plan=fs.readFileSync(path.join(R,CR,'plan.md'),'utf8');for(const c of CATS)if(plan.includes(c)===false)bad.push('plan.md 六类归档缺少类别: '+c);if(plan.includes('平台 DB')===false)bad.push('plan.md 未记录平台部署边界');const docs=['README.md','openwiki/operations/crctl-transactions.md'];for(const f of docs){const t=fs.readFileSync(path.join(TOOLS,f),'utf8');if(NAMES.some(n=>t.includes(n)))bad.push('活跃文档仍含退役字段名: '+f);}const page=fs.readFileSync(path.join(TOOLS,'openwiki/operations/crctl-transactions.md'),'utf8');for(const k of ['recovery','executable','args','promptFor'])if(page.includes(k)===false)bad.push('OpenWiki 页缺少结构化合同字段名: '+k);const claim=['平台 DB','已部署'].join('');const tdir=path.join(R,CR,'tasks');const arts=[path.join(R,CR,'plan.md')].concat(fs.existsSync(tdir)?fs.readdirSync(tdir).filter(f=>f.endsWith('.md')).map(f=>path.join(tdir,f)):[]);for(const a of arts){const t=fs.readFileSync(a,'utf8');if(t.includes(claim))bad.push('CR 产物出现部署声称: '+path.relative(R,a));}const r=cp.spawnSync(process.execPath,[CRCTL,'git','diff','--name-only','ab6f9347','--cwd',R],{encoding:'utf8'});if(r.status!==0){bad.push('crctl git diff 失败');console.log(String(r.stderr).trim());}else{const parts=String(r.stdout).split(NL);const b=parts.findIndex(l=>l.trim()==='{');const names=parts.slice(0,b<0?parts.length:b).map(s=>s.trim()).filter(Boolean);console.log('KB diff paths = '+names.length);names.forEach(f=>console.log('  '+f));for(const f of names)if(f.startsWith(CR+'/')===false&&f!=='change-requests/_backlog.yml')bad.push('KB diff 越界路径: '+f);}if(bad.length>0){bad.forEach(b=>console.log('FAIL '+b));process.exit(1);}console.log('kb-audit failures = 0');"]` | 300 |
 
-**args 列口径（转录纪律，逐条可机械核对）**
+#### 6.2.1 `cmd-01` / `cmd-02` 的转录与注记（人读副本；权威文本以 §6.2 行内 `args` 为准）
 
-① `args` 为 JSON token 数组，**直接就是 `cr-test-plan/v1` 的 `args` 字段原文**：`write-test-report` 逐字转录，不得重新排版、不得取消转义、不得改写引号。
-② `cmd-03`～`cmd-06` 的 `-e` 脚本是**单参数**：脚本内不含双引号、反斜杠、换行与 `|`（需要 CRLF 常量与换行处用 `String.fromCharCode(13)`/`String.fromCharCode(10)` 拼接，需要 `|` 处一律改用多元素数组或 `includes`），因此 `JSON.stringify` 往返逐字相同。
-③ **路径注入一律正斜杠化**（`C:/Users/…`），跨仓脚本用绝对路径；`cwd` 为对象仓 worktree 内的相对路径（本 CR 全部为 `.`），`repo` 列 = **验收对象仓**，即 `crctl test` 计算 `sourceRevision` 的绑定面。
-④ **被读仓 revision 的绑定**：`cmd-01`/`cmd-02`/`cmd-03`/`cmd-05` 的 `repo=tools` 绑定 tools HEAD（`dddd0ad6`）；`cmd-04` 的 `repo=multica` 绑定 multica HEAD（`ab960948`），其内部经绝对路径执行 tools 的 `crctl.mjs`（`crctl git`）读取 multica worktree；`cmd-06` 的 `repo=ai-first-platform-docs` 绑定 KB HEAD，其内部读 tools worktree 与 KB worktree 两侧文件（tools 侧 revision 由同表 `cmd-03`/`cmd-05` 绑定）。跨仓断言的证据面 = 「对象仓 `sourceRevision`」+「被读仓 `sourceRevision`」两条记录的组合。
-⑤ 无 shell 字符串、无 pipe/redirect、无 env、无 `command` 字段、无绝对 `cwd`、无 `continueOnError`；`executable` 直接可 spawn（`node`）。
-⑥ `cmd-01` 的 21 个文件枚举 = `skills/shared/crctl/scripts/test/*.test.mjs` 全集，按文件名升序，每文件恰好一次（非测试辅助模块 `merge-fixture.mjs` 不在枚举内，它由 `merge-tx.test.mjs` import 而被真实执行）。
-⑦ `cmd-03` 的扫描面枚举规则与 SDD §4.4-2 **共用同一规则**：整树递归、按路径段跳过 `.git`/`node_modules`、减两条精确路径排除；排除集合与 `SKIP_DIRS` 的 `deepEqual` 冻结在 `contract-scan.test.mjs` 内（`cmd-01`），`cmd-03` 只做同一口径的独立重放与命中清单输出。
-⑧ `cmd-01` 的 `--test-skip-pattern` 在表内按 **JSON 字符串原文**书写：单元格里出现的 `|` 是锚定交替的分隔符（字面字符），`\\[` 序列是 JSON 层转义（`JSON.parse` 后得回正则层 `\[` / `\]`）。本表**不对该单元格做 Markdown 转义**（与 CR-2026-063 同一先例）；转录时连同 `\\` 一并逐字落盘，不得改成单个 `\`（会让 JSON 非法），也不得改写成等价写法。人读副本见 §6.2.1。
-
-#### 6.2.1 cmd-01 的 `--test-skip-pattern` 字样（人读副本；转录以 §6.2 行内为准）
-
-```text
-^(?:CR-2026-037 Prompt 采纳：Skill/Pipeline 调 task init 且不指导直写索引|checkpoint T05 contract：Pipeline 只编排 Skill，active alignment reader 不读旧 checkpoints\[\]|TASK-06 ⑤: release-drift 单一回退转换 code-approved -> developing 合法；状态机口径 28 声明/50 展开（AC-3）|CR-2026-042 静态合同：已知 Skill 越界文本零命中|TASK-01 RED-7：预存确定性 dedup 文件 → 命中同名补记，数量不增、内容不覆盖)$
-```
-
-- 五个名字逐字来自 §5.3 的登记表（本节点实测失败集合）；锚点 `^(?:…)$` 保证只匹配完整测试名（不用未锚定片段）；BR-2 的 `checkpoints[]` 在正则层转义为 `checkpoints\[\]`，其余名字无正则元字符。
+- **`cmd-01`** = SDD §6.3 AC-07「可观测结果」第 1 条命令**逐字**：`node skills/shared/crctl/scripts/test/suite-gate.mjs --run`（= CI 步骤 `crctl full test suite`，`crctl-ci.yml:109-111`）。无参数增删。
+- **`cmd-02`** = SDD §6.3 AC-07「可观测结果」第 2 条命令（= CI 步骤 `writeback unit tests`，`crctl-ci.yml:113-115`）**逐字 + 一个 reporter 参数**：`node --test --test-reporter=dot skills/writeback/scripts/test/*.test.mjs`。该参数**不改变**文件集合、断言与退出码语义，只消除 R-14 实测的冻结 skip 模式假命中；这是 `write-test-report` Skill 对 `node --test` 类证据命令的统一要求。若复评/协调人要求与 SDD 字面完全一致，可去掉 `--test-reporter=dot`——代价是 `test-report.md` 机器区把该命令记为 `skipped: true`（本次实测，真实 skip = 0）。
+- **`cmd-03`…`cmd-06`** 是本计划自有的审计命令（非 SDD 命令）：均由 `cmd-03`/`cmd-01` 的同一口径派生（整树枚举 + 精确排除 + 行尾规范化 + diff 面白名单），只读不写，不新增第二套验收口径。
 
 ### 6.3 各命令覆盖的验收面（人读摘要；权威文本以 §6.2 行内为准）
 
-- **cmd-01（repo=tools）**：AC-01 五键结构与 `args` 逐元素断言、AC-02 八类恢复路径结构化、AC-03 6 类 reason 向量（`runCrctlInTty` 包装）、AC-04 部分（守卫断言随测试文件执行）、AC-06 八条命中用例 + 不误报正反用例 + `EXCLUDED`/`SKIP_DIRS` 冻结 + 索引一致性硬失败、AC-07/AC-08 全量回归、AC-10 `executable`/`args[0]` 断言、AC-11 生产者形状。
-- **cmd-02（repo=tools）**：AC-07 的 writeback 侧回归面（`skills/writeback/scripts/test/writeback.test.mjs`，SDD §6.3 AC-07 的第二条命令）。
-- **cmd-03（repo=tools）**：AC-05/AC-06/AC-13 的「活跃面零命中 + 排除恰好两项 + 排除必需（被排除的历史 traceability 仍含旧名）+ `fixtures/` 内 3 个活跃向量在面内 + 扫描面规模哨兵」事实面。
-- **cmd-04（repo=multica）**：AC-05 的跨仓提示词面（`cr-prompts-revised/*.md` 零命中 + `delivery-agent.md` 已改读结构化 `recovery`）+ 历史黄金数据仍含旧名（排除依据未失效）+ multica diff 白名单（恰 1 文件）。
-- **cmd-05（repo=tools）**：AC-04（`shell: true` / `Invoke-Expression` 在 `crctl.mjs` 与 `lib/*.mjs` 零命中）+ tools diff 白名单（9 个具名路径 + 7 个既有测试文件）。
-- **cmd-06（repo=ai-first-platform-docs）**：AC-12（plan.md 六类归档齐备）+ AC-05 文档面（`README.md` 与 OpenWiki 页零旧名、页面含结构化字段名）+ AC-09/AC-14 的 KB 侧边界（无部署声称、KB diff 只落 CR 过程文档与 `_backlog.yml` 投影）。
+| 证据ID | 覆盖的 FR / AC | 说明 |
+|---|---|---|
+| cmd-01 | AC-01、AC-02、AC-03、AC-05（测试面）、AC-06（扫描器在列）、AC-07（第一条）、AC-08、AC-10、AC-11、AC-13（无半迁移态的用例面） | 合并后 CI 入口：登记面 21 文件全部被真实 spawn、用例数不低于 `manifest.cases` 下限、`exceptions: []` |
+| cmd-02 | AC-07（第二条）、FR-13（writeback 回归面） | writeback 单测（不在 `readTestFileSet` 的登记面内，可正常新增用例） |
+| cmd-03 | FR-2、FR-5、FR-7（提示词面）、FR-8、FR-10、FR-11、FR-14、FR-15 | 整树扫描面零命中 + 排除面恰两项且无通配 + 唯一被排除文件仍含旧名（不误报）+ `fixtures/` 在面 3 个 + 登记面文件集合与 `exceptions` 不变 |
+| cmd-04 | FR-7、FR-10、FR-14 | `multica` 仓旧名仅剩两个历史黄金数据；diff 仅 `cr-prompts-revised/delivery-agent.md` |
+| cmd-05 | FR-3、FR-12（向量 6）、FR-13、FR-15、FR-17（副作用段） | `shell: true` / `Invoke-Expression` 零命中 + `tools` diff ⊆ SDD §1.1 白名单 + `zero_diff` 面零改动 + 应改文件齐备 |
+| cmd-06 | FR-7（README/生成页）、FR-8、FR-14、FR-16 | 活跃文档与生成页旧名零命中且含结构化字段名 + 六类归档在 plan.md + 无平台部署声称 + KB diff 面 |
 
 ## 7. AC/业务闭环覆盖矩阵（契约必填节，CR-2026-057 FR-8）
 
@@ -284,7 +263,7 @@ CR-R 是**单发布原子迁移**：生产者、消费者、旧字段删除与�
 | AC-04 代码消费者使用 argv 边界执行，无 `shell: true` / `Invoke-Expression` 用于恢复动作 | §3.5 副作用段 + §4.5 向量 6 | CR-2026-064-TASK-04 | cmd-05 |
 | AC-05 活跃源码 / Skill / Agent / Pipeline / README / 活跃测试均不再消费旧字段；无 alias / shim / fallback | §4.3 逐文件清单 + §4.4 + D-7 + §8 采纳表 | CR-2026-064-TASK-03（关联 CR-2026-064-TASK-01、CR-2026-064-TASK-02、CR-2026-064-TASK-04） | cmd-03、cmd-04、cmd-06 |
 | AC-06 旧字段仅存于历史证据 / 迁移文档 / 退役名单；扫描命中即失败、对允许排除面不误报 | §4.4-1/2/3/4 + SDD-CLOSE-05 | CR-2026-064-TASK-04 | cmd-01、cmd-03 |
-| AC-07 crctl / ledger / freshness / merge / writeback / archive 全量测试通过 | §6.3 AC-07 可达性（两条命令）+ §2.2/§3.3 零语义变更；验收口径含 §5.3 登记的 5 条基线红例外，见 §5.5-1 | CR-2026-064-TASK-04（关联 CR-2026-064-TASK-01、CR-2026-064-TASK-02） | cmd-01、cmd-02 |
+| AC-07 crctl / ledger / freshness / merge / writeback / archive 全量测试通过（**全绿口径，无例外**） | §6.3 AC-07 的两条 CI 命令 + §2.2/§3.3 零语义变更 | CR-2026-064-TASK-04（关联 CR-2026-064-TASK-01、CR-2026-064-TASK-02） | cmd-01、cmd-02 |
 | AC-08 未改变错误码 / 状态转换 / transaction id / rollback / files 语义 | §3.3 尾段 + §4.2「只改载体」+ §2.2 不落盘 | CR-2026-064-TASK-01（关联 CR-2026-064-TASK-02） | cmd-01、cmd-05 |
 | AC-09 平台侧 Prompt 采纳由 owner 在 CR 之后执行；本 CR 产物不出现平台侧已生效的声称 | §1.1 范围表 + §8 平台部署边界 | CR-2026-064-TASK-03 | cmd-06 |
 | AC-10 `executable` 不含空格分隔参数与任何 shell 运算符；node 形态脚本路径在 `args[0]` | §3.2 保证 1–2 + §4.5 向量 3 | CR-2026-064-TASK-01（关联 CR-2026-064-TASK-04） | cmd-01 |
@@ -293,21 +272,17 @@ CR-R 是**单发布原子迁移**：生产者、消费者、旧字段删除与�
 | AC-13 交付分支不存在部分生产者新合同 / 部分消费者旧合同的中间态；回滚为整体回滚 | §9 `scope_out` + §6.1 FR-15 + 本计划 §4.0 | CR-2026-064-TASK-01（关联 CR-2026-064-TASK-02/03/04） | cmd-03、cmd-05 |
 | AC-14 正常 writeback 所需的 `specs/` 与 `delivery/` 更新包含在本 CR 内 | §9 `scope_in` + §6.1 FR-16（由 `feature-writeback` 节点产出） | CR-2026-064-TASK-03 | cmd-06 |
 
-**矩阵表注**：① 关键 AC（影响主路径验收可达性，含成功/失败/隔离/幂等）共 14 条，逐行给出唯一 TASK owner；每行「验收证据」均为稳定标识 `cmd-NN`，与 §6.1/§6.2 全等。② AC-14 的可达性动作发生在 `feature-writeback` 节点，本阶段的证据面是 `cmd-06` 的 KB diff 白名单（本阶段**不得**提前产出 `specs/`、`delivery/`），不在本计划内伪造 writeback 产物。③ AC-11 的消费方是提示词而非本仓代码（SDD D-6）：其验证面是「提示词文本逐条可核对 + 生产者形状断言 + 旧字段结构上不可回退」，`cmd-01`/`cmd-05` 覆盖后两者，提示词文本面由 `review-code` 逐条比对（SDD §6.3 AC-11 可达性说明）。
+矩阵校验：14 条 AC 各一行；每条关键 AC 的 `验收证据` 均为稳定标识 `cmd-NN`（与 §6.1/§6.2 全等）；TASK owner 归属实际产生该结果的层（生产者在 TASK-01、投影在 TASK-02、提示词/文档在 TASK-03、测试与退役保护在 TASK-04、流程产物在对应流程节点）。
 
-## 8. FR-14 有界盘点归档（六类，本节点产出；口径 = SDD §11 的唯一计数口径）
+## 8. FR-14 有界盘点归档（六类，本节点产出；口径 = SDD §11 的唯一计数口径 + §5.3(c) 实测）
 
-> 本节即 AC-12 要求的「一次有界盘点」结果，按 producer / code consumer / Prompt-Skill consumer / active test / active docs / historical evidence（排除）六类归档。盘点在 `tools@dddd0ad63fb79bd7608314b4553f30e8ce7b7289`（tools CR worktree，clean、tracked 内容）与 `multica@ab9609483d17db12117cb8e9adb2d896f413917d` 上执行，命令为 `rg -l / rg -c / rg -o "recoverCommand|recover_command"`（大小写敏感、不加 `-w`、rg 默认过滤）。**不新增任何持续观测机制**（PRD FR-14 尾句）。
-
-| 类别 | 文件（repo / path） | 行 / 次 | 本 CR 处置 |
+| 类别 | 文件（repo / path） | 行 / 次（本节点实测） | 本 CR 处置 |
 |---|---|---|---|
-| **producer**（构造恢复动作的代码） | `tools/skills/shared/crctl/scripts/lib/workspace-transactions.mjs` | 23 / 25 | 迁移：新增唯一构造器 `buildRecovery` + 11 个站点原位结构化 |
-| **code consumer**（消费/投影恢复动作的代码） | `tools/skills/shared/crctl/scripts/crctl.mjs` | 6 / 10 | 迁移：双投影删除、`gate` 错配与 `reset` 失败分支结构化、字段改名 |
-| **Prompt-Skill consumer**（提示词面消费方） | `tools/skills/cr/cr-archive/SKILL.md`、`tools/skills/sync/push-progress/SKILL.md`、`tools/skills/writeback/merge-feature-branch/SKILL.md`、`tools/skills/shared/crctl/SKILL.md`、`multica/cr-prompts-revised/delivery-agent.md` | 6/7、2/3、1/1、2/2（tools）；2/2（multica） | 迁移：改读 `recovery.executable/args/cwd/requiresTTY/promptFor`；`crctl/SKILL.md` 新增「`recovery` 消费合同」小节 |
-| **active test**（活跃测试面） | `tools/skills/shared/crctl/scripts/test/{crctl,register-tx,archive-tx,merge-tx,checkpoint-tx,writeback-tx,workspace-freshness}.test.mjs` | 11/13、4/4、3/4、3/5、2/2、2/4、1/1 | 迁移：字符串包含断言 → 结构/argv 断言（含 6 类 reason 向量与参数边界向量） |
+| **producer**（构造恢复动作的代码） | `tools/skills/shared/crctl/scripts/lib/workspace-transactions.mjs` | 23 / 25 | 迁移：新增唯一构造器 `buildRecovery` + 站点 1–9 原位结构化 |
+| **code consumer**（消费/投影恢复动作的代码） | `tools/skills/shared/crctl/scripts/crctl.mjs` | 6 / 10 | 迁移：双投影删除、`gate` 错配与 `reset` 失败分支结构化、字段改名、占位符 helper 删除 |
+| **Prompt-Skill consumer**（提示词面消费方） | `tools/skills/cr/cr-archive/SKILL.md`、`tools/skills/sync/push-progress/SKILL.md`、`tools/skills/writeback/merge-feature-branch/SKILL.md`、`tools/skills/shared/crctl/SKILL.md`、`multica/cr-prompts-revised/delivery-agent.md` | 6/7、2/3、1/1、2/2（tools）；2/2（multica） | 迁移：改读 `recovery.executable/args/cwd/requiresTTY/promptFor`；`crctl/SKILL.md` 新增「`recovery` 消费合同」小节（单一事实源） |
+| **active test**（活跃测试面） | `tools/skills/shared/crctl/scripts/test/{crctl,register-tx,archive-tx,merge-tx,checkpoint-tx,writeback-tx,workspace-freshness}.test.mjs` + 退役保护 `contract-scan.test.mjs` | 11/13、4/4、3/4、3/5、2/2、2/4、1/1；`contract-scan` 为扫描器自身（排除项，本节点在面外） | 迁移：字符串包含断言 → 结构/argv 断言（含 6 类 reason 向量与参数边界向量）；`contract-scan` 扩展退役名单/扫描面/正反用例；**全部逐用例原位替换、只增不减**（R-13） |
 | **active docs**（活跃文档与生成页） | `tools/README.md`（1/1，原位迁移）、`tools/openwiki/operations/crctl-transactions.md`（3/3，**生成物**：由既有 `openwiki code --update` 从迁移后源码重新生成并核对，D-7） | 1 / 1；3 / 3 | 迁移：README 原位改读结构化合同；生成页不手工编辑 |
 | **historical evidence（排除）** | `tools/skills/shared/crctl/scripts/test/fixtures/traceability-191k.yml`（2/2）、`multica/server/internal/governance/testdata/traceability-golden.yml`（2/2）、`.../traceability-golden.json`（2/2） | 2 / 2 每个 | 排除：本 CR 不改写（PRD FR-11 允许排除的历史 traceability / 历史黄金数据；`tools` 侧以**精确路径**排除，见 SDD §4.4-3） |
 
-**盘点合计**：`tools` = 16 文件 / 72 行 / 87 次；`multica` = 3 文件 / 6 行 / 6 次。上表六类各含 ≥1 条记录，**无「已知调用方未迁移」遗留项**：producer（1）+ code consumer（1）+ Prompt-Skill consumer（5）+ active test（7）+ active docs（2）= 16 个迁移对象，与 `tools` 16 文件 / `multica` 1 文件的迁移集合逐条对应；其余 3 个命中文件全部归入 historical evidence（排除）。
-
-**收口对照（本计划相对 SDD 的唯一增量）**：本计划不新增设计决策、不改 SDD 任何字节；相对 SDD 的增量仅为「把 SDD §4.3/§11 的清单与 §6.2 的改动簇翻译为四个 TASK、两条稳定表与一组可执行证据命令」。SDD 遗留的三处未闭合项全部按 SDD 口径承接：① D-7 的 OpenWiki 生成（TASK-03 完成条件 + R-02 环境阻塞口径）；② FR-14 的六类归档（本节，plan 节点产出）；③ §9 `follow_up` 两项（`release-drift` 重跑方向、`tools/agents/delivery-agent.md` 与 multica overlay 的不同步）**不在本 CR 内处置**，本计划不为其建 TASK。
+盘点口径说明：本表是 FR-14 要求的**一次性有界搜索**结果（口径固定为「大小写敏感 + `rg` 默认过滤 + 文件/行/次三项分列」），**不转化为持续观测机制**（AC-12）；`tools` 侧合计 16 文件 / 72 行 / 87 次、`multica` 侧合计 3 文件 / 6 行 / 6 次，与本表各行求和一致（16 = 1 + 1 + 4 + 8 + 2 中的在面文件数口径以 SDD §11 分布表为准；`contract-scan.test.mjs` 与历史夹具不计入迁移对象）。
