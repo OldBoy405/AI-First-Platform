@@ -6,7 +6,7 @@ title: CR-R：结构化恢复合同原子迁移 — `recoverCommand`/`recover_co
 target-version: 0.37
 status: draft
 created: "2026-09-12T22:48:00+08:00"
-updated: "2026-09-12T23:45:00+08:00"
+updated: "2026-09-13T21:35:00+08:00"
 ---
 
 # CR-R：结构化恢复合同原子迁移 — 技术设计
@@ -16,6 +16,7 @@ updated: "2026-09-12T23:45:00+08:00"
 > 修订：`review-tech-design` attempt 1/3 判 BLOCK（TD-BL-1 扫描覆盖 / TD-BL-2 OpenWiki 生成闭环 / TD-BL-3 依赖事实与计数口径）后的定点回修；改动限于 §1.1、§4.3、§4.4、D-5、新增 D-7、§6.1–§6.4、§9、§11，方案主体未重写。
 > 修订：`review-tech-design` attempt 2/3 判 BLOCK（TD-BL-1 未清：扫描面把「未列目录」默认为非活跃，漏掉 11 个活跃 MJS）后的定点回修；扫描面改为**整树派生 + 两项被断言排除**，改动限于 §1.1、§4.3、§4.4、D-5、§6.1、§6.3 AC-05/AC-06、SDD-CLOSE-05、§9、§11，合同字段、生产者改法、D-1…D-4/D-6/D-7 未重写。
 > 修订（`review-tech-design` attempt 3/3 判 BLOCK 后的**新 cycle 定点回修**，`review-annotations/sdd.yml` 评审 commit `f4e6cfd`）：唯一残留点 TD-BL-1 —— 排除面把 `skills/shared/crctl/scripts/test/fixtures/**` 整目录排除，而该目录下三个 canonical digest 向量是活跃测试证据。排除面收窄为**扫描器自身 + `test/fixtures/traceability-191k.yml` 精确路径**两项，`fixtures/digest-vectors/**` 与今后新增夹具默认入面；扫描面 209 → **212**，代表性用例七条 → **八条**。改动限于 §4.4、D-5、§6.1、§6.3 AC-06、SDD-CLOSE-05、§9、§10、§11；合同字段、生产者改法、D-1…D-7 方案面未重写。
+> 修订（`review-tech-design` cycle 2 attempt 3/3 判 BLOCK、合并 trunk 后的**新基线复评**：唯一 blocker = AC-07 的验收命令与「CI 同一命令」可达性依据在 `tools@81d31b8` 上已失效，CI 全量步骤已由 CR-2026-065 换为 `suite-gate.mjs --run`）：定点回修 §4.3、§4.4、§4.5、§6.3 AC-07、§9、§11 与本节修订记录；并记录事实变更——旧基线（`tools@dddd0ad6`）5 条红已由 CR-2026-065 修复，AC-07 回到「全绿」口径、**无需任何例外授权**。合同字段、生产者改法、D-1…D-7 方案面未重写。
 
 ## 1. 架构概览
 
@@ -256,7 +257,7 @@ export function buildRecovery(args, { cwd, requiresTTY = false, promptFor = [] }
 | `skills/shared/crctl/scripts/test/register-tx.test.mjs` | `L143`、`L164`、`L637` 标题、`L650`（`recover_command`） | 同上；双投影用例改为单投影断言 |
 | `skills/shared/crctl/scripts/test/workspace-freshness.test.mjs` | `L269` | 同上 |
 | `skills/shared/crctl/scripts/test/writeback-tx.test.mjs` | `L818` 标题、`L831` | 断言 `--target-version` 为独立元素且值正确 |
-| `skills/shared/crctl/scripts/test/contract-scan.test.mjs` | `FORBIDDEN` / `RETIRED_LEGACY` / `ACTIVE_PATHS`（既有）+ 新增 `RETIRED_RECOVERY`、整树扫描面与排除断言 | 见 §4.4（CR-2026-041 既有断言保持不动） |
+| `skills/shared/crctl/scripts/test/contract-scan.test.mjs` | `FORBIDDEN` / `RETIRED` / `ACTIVE_PATHS`（既有）+ 新增 `RETIRED_RECOVERY`、整树扫描面与排除断言 | 见 §4.4（CR-2026-041 既有断言保持不动） |
 | `multica/cr-prompts-revised/delivery-agent.md` | `L27`、`L44` | 「明确 `recoverCommand`」→「明确的结构化 `recovery`（argv）」；失败汇报项改名 |
 
 ### 4.4 契约扫描算法（FR-11）
@@ -268,18 +269,18 @@ export function buildRecovery(args, { cwd, requiresTTY = false, promptFor = [] }
 | 名单 | 名称 | 扫描范围 |
 |---|---|---|
 | `RETIRED_RECOVERY`（本 CR 新增） | `recoverCommand`、`recover_command` | 扫描面（§4.4-2） |
-| `RETIRED_LEGACY`（CR-2026-041 既有） | `change-impact-analysis`、`feedback-writeback`、`feedback-writeback-done` | 保持既有显式 `ACTIVE_PATHS` 与既有断言，**本 CR 不改其名单与范围** |
+| `RETIRED`（CR-2026-041 既有；代码实际常量名，SDD 前几版按语义写作 `RETIRED_LEGACY`，本轮统一为实际名，见 §11-5） | `change-impact-analysis`、`feedback-writeback`、`feedback-writeback-done` | 保持既有显式 `ACTIVE_PATHS` 与既有断言，**本 CR 不改其名单与范围** |
 
-分名分范围的事实依据（已在资源 HEAD 上核实，记录见 §11-5）：三个既有退役名在活跃面内**合法存在** —— `skills/shared/crctl/scripts/lint-prompts.mjs`（linter 的禁止名单）、`crctl.test.mjs` / `lint-prompts.test.mjs`（禁止名单的用例样本）、`CUSTOM.md`（台账引述）。把 `RETIRED_LEGACY` 并入整树扫描面会让 CR-2026-041 的断言立刻失败，而迁移这些名单不在本 CR 范围（§9 `zero_diff`）；PRD FR-11 要求加入退役清单的只有两个恢复字段名，故按名分范围。**整树扫描面只适用于两个恢复字段名**：它们在本 HEAD 的 `tools` 仓内除迁移对象与两项排除外零命中（下表的 212 文件扫描面成立），而三个既有退役名在 `docs/` 下的历史报告与历史夹具里合法存在（`rg -l` 本 HEAD 共 8 个文件，§11-5），套用整树扫描会立刻误报。
+分名分范围的事实依据（已在资源 HEAD 上核实，记录见 §11-5）：三个既有退役名在活跃面内**合法存在** —— `skills/shared/crctl/scripts/lint-prompts.mjs`（linter 的禁止名单）、`crctl.test.mjs` / `lint-prompts.test.mjs`（禁止名单的用例样本）、`CUSTOM.md`（台账引述）。把 `RETIRED` 并入整树扫描面会让 CR-2026-041 的断言立刻失败，而迁移这些名单不在本 CR 范围（§9 `zero_diff`）；PRD FR-11 要求加入退役清单的只有两个恢复字段名，故按名分范围。**整树扫描面只适用于两个恢复字段名**：它们在本 HEAD 的 `tools` 仓内除迁移对象与两项排除外零命中（下表的 216 文件扫描面成立），而三个既有退役名在 `docs/` 下的历史报告与历史夹具里合法存在（`rg -l` 本 HEAD 共 8 个文件，§11-5），套用整树扫描会立刻误报。
 
 **2. 扫描面：整树派生 + 两项被断言的排除，不声明「哪些目录/扩展名算活跃」**
 
 | 项 | 规则（唯一事实源） |
 |---|---|
-| 枚举根 | `tools` 仓库工作树根（`ROOT`）；`readdirSync(dir, { withFileTypes: true, recursive: true })` 递归枚举**全部文件**，只跳过两个被冻结的枚举边界 `.git` 与 `node_modules`（前者是版本库元数据、后者是 `.gitignore` 忽略的依赖目录，均非仓库跟踪内容；`SKIP_DIRS = ['.git', 'node_modules']` 由断言冻结，见 §4.4-3。按**路径段**判定，不区分文件/目录——`tools` 工作树里 `.git` 是文件，同样排除，故枚举数 214 与实现共用同一规则） |
+| 枚举根 | `tools` 仓库工作树根（`ROOT`）；`readdirSync(dir, { withFileTypes: true, recursive: true })` 递归枚举**全部文件**，只跳过两个被冻结的枚举边界 `.git` 与 `node_modules`（前者是版本库元数据、后者是 `.gitignore` 忽略的依赖目录，均非仓库跟踪内容；`SKIP_DIRS = ['.git', 'node_modules']` 由断言冻结，见 §4.4-3。按**路径段**判定，不区分文件/目录——`tools` 工作树里 `.git` 是文件，同样排除，故合并后基线的枚举数 218 与实现共用同一规则） |
 | 扫描面 | 枚举结果 − 下表两项排除；两项排除都是**精确路径**（无目录/扩展名通配）；**不按目录、不按扩展名、不按文件名**推断活跃性 |
-| 派生规模（`tools@dddd0ad6` 实测，与实现共用同一枚举） | 枚举 **214** 文件 − 扫描器自身 **1** − 历史 traceability 精确路径 **1** = **扫描面 212 文件** |
-| 分类覆盖（同一扫描面内的核对，不缩小面） | active Skill **56**（`skills/_index.yml`）、active Agent **9**（`agents/_index.yml`）、Pipeline **8**（`pipeline-templates/_index.yml` 的 active `path` 去 `tools/` 前缀 ∩ `readdirSync('pipeline-templates')` 的 `*.pipeline.json`，集合必须相等）；`skills/**` + `pipeline-templates/**` 递归 `.mjs` 共 **40**，按路径是否含 `test/` 段二分 → 活跃源码 **16** / 活跃测试 **24**（进入扫描面 **23**，扣除扫描器自身） |
+| 派生规模（**合并后基线** `tools@81d31b8` 重跑，与实现共用同一枚举；报告值，不冻结为等式） | 枚举 **218** 文件 − 扫描器自身 **1** − 历史 traceability 精确路径 **1** = **扫描面 216 文件**（`dddd0ad6` 基线对应 214 − 1 − 1 = 212） |
+| 分类覆盖（同一扫描面内的核对，不缩小面） | active Skill **56**（`skills/_index.yml`）、active Agent **9**（`agents/_index.yml`）、Pipeline **8**（`pipeline-templates/_index.yml` 的 active `path` 去 `tools/` 前缀 ∩ `readdirSync('pipeline-templates')` 的 `*.pipeline.json`，集合必须相等）；`skills/**` + `pipeline-templates/**` 递归 `.mjs` 共 **43**，按路径是否含 `test/` 段二分 → 活跃源码 **17** / 活跃测试 **26**（进入扫描面 **25**，扣除扫描器自身） |
 
 **为什么是整树而不是「活跃目录白名单」**：attempt 2 把活跃源码限定为 `skills/shared/crctl/scripts/**.mjs`、活跃测试限定为该目录 `scripts/test/**`，于是 `tools@dddd0ad6` 上另有 **11 个活跃 MJS 落在面外**——`pipeline-templates/emit-registry.mjs`、`skills/requirement/requirement-register/scripts/promotion-bind.mjs`（+ 其 `scripts/test/promotion-bind.test.mjs`）、`skills/shared/crctl/adapters/{claude-code,cursor}/hooks/*.mjs`（3 个）、`skills/writeback/scripts/{lib,writeback-prd-sdd,writeback-tasks,writeback-traceability}.mjs`（4 个）+ `skills/writeback/scripts/test/writeback.test.mjs`。这 11 个文件在本 HEAD 上对两个退役名零命中（已核实），**不是迁移对象**；纳入面内是防回流。同类盲区还有按 `.mjs` 白名单必然漏掉的 `skills/shared/engineering-docs/scripts/src/**`（16 个 `.ts` 活跃源码）。因此活跃性不再由「是否被列举」定义，而由「是否被显式排除」定义——未被排除即在面内。
 
@@ -317,7 +318,7 @@ export function buildRecovery(args, { cwd, requiresTTY = false, promptFor = [] }
 
 - **允许排除不误报**：唯一被排除的夹具文件（`traceability-191k.yml`）仍合法含旧名，断言 `retiredHits(排除项文本) === true` 且 `scanScope(扫描面)` 不含它；同目录其余三个文件断言相反（在面内且零命中）。两者并置才证明排除是刻意、精确且必要的，而不是「整目录一关了事」。
 - **排除不隐形**：断言排除集合恰为上表两项精确路径 —— 新增排除必须改测试并被评审看见。
-- **规模口径：报告值 + 结构性断言，不用脆弱等式**：不写 `scanSurface.length === 212`（日后任何新增文件都会造成假失败，反过来诱发「改数字了事」）；规模（212 / 40 / 16 / 24 / 56 / 9 / 8）写进断言消息作覆盖度报告，真实保证由四条结构性断言给出——(1) 三个 active 索引的全部条目存在于磁盘且在扫描面内、Pipeline 索引与目录枚举集合相等（索引条目落入排除项或缺失即硬失败）；(2) 八条代表性路径全部在扫描面内；(3) `EXCLUDED` 与 `SKIP_DIRS` 被 `deepEqual` 冻结（§4.4-3）；(4) 排除项恰为两条精确路径且不含任何通配，`fixtures/` 目录下未被排除的文件（本 HEAD 3 个 digest 向量）全部在扫描面内——**新增 fixture 默认入面，无需改测试即可被扫到**。
+- **规模口径：报告值 + 结构性断言，不用脆弱等式**：不写 `scanSurface.length === 216`（日后任何新增文件都会造成假失败，反过来诱发「改数字了事」）；规模（216 / 43 / 17 / 26 / 56 / 9 / 8）写进断言消息作覆盖度报告，真实保证由四条结构性断言给出——(1) 三个 active 索引的全部条目存在于磁盘且在扫描面内、Pipeline 索引与目录枚举集合相等（索引条目落入排除项或缺失即硬失败）；(2) 八条代表性路径全部在扫描面内；(3) `EXCLUDED` 与 `SKIP_DIRS` 被 `deepEqual` 冻结（§4.4-3）；(4) 排除项恰为两条精确路径且不含任何通配，`fixtures/` 目录下未被排除的文件（本 HEAD 3 个 digest 向量）全部在扫描面内——**新增 fixture 默认入面，无需改测试即可被扫到**。
 
 **跨仓边界（诚实口径）**：扫描运行在 `tools` 仓测试套件内，只能覆盖 `tools` 仓整树扫描面；`multica` 仓的 `cr-prompts-revised/delivery-agent.md` 与 KB 侧文档不在本扫描范围，其迁移由 §4.3 清单 + FR-14 有界盘点 + 本 CR 评审（`review-tech-design`/`review-code`）覆盖，不由工具机器证明。
 
@@ -339,6 +340,10 @@ assert.deepEqual(res.recovery.promptFor, []);
 4. **用户输入向量**（`review-loop reset`，6 类）：`normal reason`、含双引号、含分号、含换行、`$(substitution)`、反引号表达式 —— 每类断言：`args` 不含该值、`promptFor` 含 `reason`、`requiresTTY === true`、`JSON.stringify(recovery)` 中该值不出现（数据而非 shell command）；
 5. **合同缺失向量**：四类场景（§3.5 表）由消费方提示词合同承接（§8），生产者侧对应保证是「构造器只产出合法形状 + 每类生产者结构断言」，不新增运行期校验代码；
 6. **shell 逃逸守卫**：新增断言 `crctl.mjs` / `lib/*.mjs` 内不存在 `shell: true` / `Invoke-Expression`（AC-04），与既有 `spawnSync(..., { shell: false })` 事实一致（§11-4）。
+7. **迁移不得减少任何登记文件的用例数（合并后门禁的硬约束）**：合并后 CI 全量步骤（`suite-gate.mjs --run`）对 `skills/shared/crctl/scripts/test/` 施加两条机器判定（`suite-gate.mjs:437-453`）：(a) 磁盘测试文件集合 ≡ `gate-registry.json#manifest.files`（恰 **21** 个文件，`SUITE_MANIFEST_FILE_DRIFT`），且**被真实 spawn 的文件集合**也须与之一致；(b) 每个文件的顶层用例数不得低于 `manifest.cases`（`SUITE_MANIFEST_CASE_DROP`，`suite-gate.mjs:452-453`）。本 CR 迁移的 7 个文件与 `contract-scan.test.mjs` 全部落在该目录内，因此：
+   - 字符串包含断言 → 结构断言的改写**逐用例原位替换**，不得删除、合并、重命名或跳过任何顶层用例（新增用例允许，只增不减）；
+   - **本 CR 不新增该目录下的测试文件**（会撞文件集合等式），也不改登记面 —— `gate-registry.json` 的 `manifest.files` / `manifest.cases` / `exceptions` 唯一写入口是人类编辑 + git commit（CR-2026-065 SDD TDEC-2），不属本 CR `scope_in`；因 `exceptions: []`，本 CR 内**没有可用例外通道**，迁移必须自证全绿（见 §6.3 AC-07）；
+   - writeback 单测（`skills/writeback/scripts/test/*.test.mjs`）不在该登记面内（`readTestFileSet` 只枚举前者），可正常新增用例。
 
 ## 5. 技术选型与替代方案
 
@@ -373,9 +378,9 @@ assert.deepEqual(res.recovery.promptFor, []);
 ### D-5 退役扫描复用既有机制 + 整树派生的扫描面（采用）
 
 - **Context**：既有机制是 `node --test` 内的固定路径清单 + `includes` 断言；PRD FR-11 要求扫描范围为「活跃源码、活跃 Skill、活跃 Agent、Pipeline、活跃测试」，并允许排除历史证据/夹具/迁移文档/扫描器自身。该范围**已两次以同一方式咬人**：attempt 1 用手工清单，被「未覆盖其余活跃文件」判 BLOCK；attempt 2 改为按索引与活跃代码根派生，但把活跃源码限定为 crctl 的 7 个 `.mjs`、活跃测试限定为其 `scripts/test/**`，于是 `tools@dddd0ad6` 上另有 11 个活跃 MJS（`pipeline-templates/emit-registry.mjs`、requirement-register 的 production/test、3 个 crctl adapter hook、4 个 writeback production 脚本 + `writeback.test.mjs`）落在面外——「未列目录」被默认当成非活跃，漏项本身不可见。
-- **Decision**：两个待退役字段名的扫描面改为**整树派生**（工作树全部文件，跳过 `.git` 与 `node_modules` 路径段）**减去恰两项被断言的精确路径排除**（扫描器自身、历史 traceability `skills/shared/crctl/scripts/test/fixtures/traceability-191k.yml`），见 §4.4-2/§4.4-3；不再按目录或扩展名声明活跃性——**活跃性由「是否被显式排除」定义**。索引派生的 active Skill/Agent/Pipeline 集合降为一致性断言（条目必须存在于磁盘且落在扫描面内），规模只作覆盖度报告。`RETIRED_LEGACY`（CR-2026-041 的三个退役 Skill 名）保持既有显式范围不变（理由见 §4.4-1）。
+- **Decision**：两个待退役字段名的扫描面改为**整树派生**（工作树全部文件，跳过 `.git` 与 `node_modules` 路径段）**减去恰两项被断言的精确路径排除**（扫描器自身、历史 traceability `skills/shared/crctl/scripts/test/fixtures/traceability-191k.yml`），见 §4.4-2/§4.4-3；不再按目录或扩展名声明活跃性——**活跃性由「是否被显式排除」定义**。索引派生的 active Skill/Agent/Pipeline 集合降为一致性断言（条目必须存在于磁盘且落在扫描面内），规模只作覆盖度报告。`RETIRED`（CR-2026-041 的三个退役 Skill 名）保持既有显式范围不变（理由见 §4.4-1）。
 - **Alternatives**：① 继续扩张手工清单 —— 已两次咬人，漏项不可见；② 只把代码面从 crctl 扩到 `skills/**/*.mjs` + `pipeline-templates/*.mjs`（评审给出的最小扩面）——仍是以扩展名/目录白名单声明活跃，同类盲区会重演（本仓已有 16 个活跃 `.ts` 不在 `.mjs` 白名单内，日后新增 `.js`/`.ps1` 或新目录同理）；③ 在 CI 里加 grep 步骤 —— 与既有测试机制并行成第二套扫描，违背「复用」。
-- **Consequences**：新增活跃文件零成本进入面内，不因未列举而漏；排除用精确路径而非目录通配，故**同目录下的活跃向量与今后新增的 fixture 默认在面内**（这是 attempt 3 的唯一残留点，已收窄）；新增排除是显式且被断言的评审动作；代价是「零命中」从此覆盖整仓——今后若在 `tools` 落历史迁移/changelog 文档，必须显式加入排除表并被评审看见。历史 traceability 证据（精确路径一项）合法保留旧字段名（`RETIRED_LEGACY` 亦保留其显式范围）。
+- **Consequences**：新增活跃文件零成本进入面内，不因未列举而漏；排除用精确路径而非目录通配，故**同目录下的活跃向量与今后新增的 fixture 默认在面内**（这是 attempt 3 的唯一残留点，已收窄）；新增排除是显式且被断言的评审动作；代价是「零命中」从此覆盖整仓——今后若在 `tools` 落历史迁移/changelog 文档，必须显式加入排除表并被评审看见。历史 traceability 证据（精确路径一项）合法保留旧字段名（`RETIRED` 亦保留其显式范围）。
 
 ### D-6 消费者侧四类检查落在提示词合同（采用）
 
@@ -448,8 +453,12 @@ assert.deepEqual(res.recovery.promptFor, []);
   - 可达性说明：扫描是纯文件读 + 字符串判定，无环境依赖；整树枚举与三个索引均为仓内既有依赖（§11）。
 - **AC-07**（FR-13）
   - 设计落点：零语义变更约束（§3.3）。
-  - 可观测结果：`node --test --test-concurrency=2 skills/shared/crctl/scripts/test/*.test.mjs` 全绿 + `skills/writeback/scripts/test/*.test.mjs` 全绿。
-  - 可达性说明：CI 同一命令（`crctl-ci.yml`），本机可复现。
+  - 可观测结果（两条命令逐字取自合并后基线的 `.github/workflows/crctl-ci.yml`，均为 CI 步骤）：
+    1. `node skills/shared/crctl/scripts/test/suite-gate.mjs --run` —— `gate-registry.json#manifest` 登记的 **21** 个文件全部被真实 spawn（`--run` 按登记面逐文件 spawn，池大小 = `suite-gate.mjs` 的 `CONCURRENCY` 常量）、报告 `verdict: pass`、`failures` 空、`exceptions_count: 0`（`exceptions: []`）、退出码 0（`converged: true`）；
+    2. `node --test skills/writeback/scripts/test/*.test.mjs` —— 全绿。
+  - 可达性说明：两条命令分别是 `crctl-ci.yml:109-111`（`crctl full test suite`）与 `crctl-ci.yml:113-115`（`writeback unit tests`）的 CI 步骤，本机可复现；验收命令即 CI 门禁的判定入口，不存在「本地验收命令 ≠ CI 命令」的口径差。
+  - 基线事实（本轮更新，CR-2026-065 已合入 trunk `tools@81d31b8`）：旧基线（`tools@dddd0ad6`）上的 5 条红已由 CR-2026-065 修复（断言改为从真实载体与事实源派生、RED-7 改为真实崩溃窗口重放），登记面 `exceptions` 已清空 ⇒ AC-07 回到**「全绿」**口径、**无需任何例外授权**（计划层原「失败集合恰等于登记 5 条」的例外口径由 `write-dev-plan` 节点按本项收敛，不属本 SDD 变更面）。
+  - **不采用** `node --test --test-concurrency=2 skills/shared/crctl/scripts/test/*.test.mjs` 作为验收命令（本节点在 `tools@81d31b8` 上独立取证）：① 它不在 CI 中执行（`rg -n test-concurrency .github/workflows/` 零命中；CI 全量步骤已是 `suite-gate.mjs --run`）；② 同语义配置（文件级并发池 = 2，CR-2026-065 SDD TDEC-4）在合并后基线上无收敛与全绿证据——`change-requests/CR-2026-065/test-evidence/concurrency/conc2-run{1,2}.json` 与 `conc1-run{1,2}.json` 实测 `converged: false` / `exit_code: null`（`--max-runtime-ms` 1200 s 到期），而默认池两次 `converged: true` / `exit_code: 0`（783.4 s / 781.4 s）；③ 测试并发参数不属本 CR 变更面（`crctl-ci.yml` 与 `suite-gate.mjs#CONCURRENCY` 均不在 `scope_in`）。
 - **AC-08**（FR-13）
   - 设计落点：diff 仅落在 `recovery` 载体与旧字段名措辞。
   - 可观测结果：既有错误码（`MERGE_SOURCE_MISSING`、`RELEASE_REMOTE_NOT_PUSHED`、`REVIEW_LOOP_RESET_COMMIT_FAILED`、`BAD_ARGS`…）、状态转换、`txId`、`rollback`/`files` 字段与事务测试未变部分全绿。
@@ -540,7 +549,7 @@ PRD 显式延后到 SDD 的设计项逐项关闭（覆盖数据生产、存储/�
 - 11 个生产者站点迁移（§4.1 表 1–9）与 5 处 CLI 投影/错误面迁移（§4.2），含 `register` 双投影删除。
 - 旧字段 `recoverCommand` / `recover_command` 在本 CR 内删除，无 alias/shim/fallback。
 - 5 个活跃提示词的消费方式迁移（§8）+ 1 个文档原位迁移（`README.md`）+ 1 个生成页由既有生成步骤产出并核对（`openwiki/operations/crctl-transactions.md`，D-7）+ `skills/shared/crctl/SKILL.md` 新增「`recovery` 消费合同」小节。
-- 7 个既有测试文件的结构断言迁移 + `contract-scan.test.mjs` 的退役名单/扫描面/正反用例扩展 + `shell: true`/`Invoke-Expression` 守卫断言。
+- 7 个既有测试文件的结构断言迁移 + `contract-scan.test.mjs` 的退役名单/扫描面/正反用例扩展 + `shell: true`/`Invoke-Expression` 守卫断言；上述文件（含 `contract-scan.test.mjs`）的顶层用例数**只增不减**（逐用例原位替换，`manifest.cases` 为下限，见 §4.5-7）。
 - FR-1…FR-17、AC-01…AC-14 全部。
 
 ### scope_out
@@ -552,6 +561,7 @@ PRD 显式延后到 SDD 的设计项逐项关闭（覆盖数据生产、存储/�
 - 不更新 Multica DB/平台 Prompt、不改 Multica API 或 importer（含 `aifirst/agent-import.mjs`）。
 - 不新增使用量/失败率/SLO/迁移统计或持续观测机制。
 - 不包含 AIFI-18 的 SDD review 规则、`_context.md` 删除、plan/TASK 增量回修、Pipeline 节点调整。
+- 不新增 `skills/shared/crctl/scripts/test/*.test.mjs` 测试文件、不修改 `gate-registry.json` 的登记面（`manifest.files` / `manifest.cases` / `exceptions`）——其唯一写入口是人类编辑 + git commit（CR-2026-065 SDD TDEC-2），需 owner 授权；本 CR 内无例外通道（`exceptions: []`，见 §4.5-7），确需新增测试文件或例外时另开 CR。
 - 不与 CR-P1 / CR-P2 合并为同一发布单元。
 
 ### zero_diff
@@ -593,9 +603,9 @@ PRD 显式延后到 SDD 的设计项逐项关闭（覆盖数据生产、存储/�
 
 口径固定项：大小写敏感（只退役响应字段名 `recoverCommand` / `recover_command`；内部局部变量 `checkpointRecoverCommand`（仅存在于 `skills/shared/crctl/scripts/lib/workspace-transactions.mjs` 的 `mergeCr` 内，`~L1557`；`~L1570` / `~L1573` 取值）里的 `RecoverCommand` 不属退役名，随站点 4 结构化一并改写名称但不计入本盘点）、不加 `-w`、用 `rg` 默认的 `.git`/`.gitignore` 过滤（不用 `-uu`，不遍历被忽略目录与隐藏文件）。正文凡「X 文件 / Y 行 / Z 次」均按上表三项分别给值，不混用口径。计数文件集为该 commit 的 tracked 内容——在 CR 的 `tools` worktree（HEAD 同上、`git status` clean）上执行即为该集合；工作树内未跟踪文件不属该 commit，不计入（例：主检出里遗留的未跟踪 `skills/shared/crctl/scripts/reference/error-codes.md` 含 2 行 / 2 次，不进 16 / 72 / 87）。
 
-另一套规模口径（§4.4-2 扫描面，同一工作树枚举）：`tools@dddd0ad63fb79bd7608314b4553f30e8ce7b7289` 工作树 214 文件 − 扫描器自身 1 − 历史 traceability 精确路径 `skills/shared/crctl/scripts/test/fixtures/traceability-191k.yml` 1 = **扫描面 212 文件**；`skills/**` + `pipeline-templates/**` 递归 `.mjs` 共 **40**（活跃源码 16 / 活跃测试 24）；三个 active 索引条目数 **56 / 9 / 8**（条目全部存在于磁盘）；`fixtures/` 目录内 4 个文件中 **3 个在扫描面内**（`digest-vectors/**`，对两个退役名零命中）、**1 个被排除**（历史 `traceability-191k.yml`）。旧字段命中计数仍按上表三项口径，两者不混用。
+另一套规模口径（§4.4-2 扫描面，同一枚举规则，**合并后基线** `tools@81d31b8` 重跑；报告值，不冻结为等式）：工作树枚举 **218** 文件（`readdirSync(..., { withFileTypes: true, recursive: true })` 返回的非目录条目共 219，其中 1 个是被本规则按路径段排除的 `.git` 文件；按规则排除后 = 该 commit 的 tracked 集合 218，工作树 clean）− 扫描器自身 1 − 历史 traceability 精确路径 `skills/shared/crctl/scripts/test/fixtures/traceability-191k.yml` 1 = **扫描面 216 文件**；`skills/**` + `pipeline-templates/**` 递归 `.mjs` 共 **43**（活跃源码 17 / 活跃测试 26，进入扫描面 25）；三个 active 索引条目数 **56 / 9 / 8**（条目全部存在于磁盘）；`fixtures/` 目录内 4 个文件中 **3 个在扫描面内**（`digest-vectors/**`，对两个退役名零命中）、**1 个被排除**（历史 `traceability-191k.yml`）。`dddd0ad6` 基线对应值为 214 / 212 / 40（16 / 24）。旧字段命中计数仍按上表三项口径，两者不混用。
 
-盘点基线（本节开头口径重跑）：`tools@dddd0ad63fb79bd7608314b4553f30e8ce7b7289` = **16 文件 / 72 行 / 87 次**；`multica@ab9609483d17db12117cb8e9adb2d896f413917d` = **3 文件 / 6 行 / 6 次**（其中 2 个文件是 `server/internal/governance/testdata/` 历史黄金数据，另 1 个是 `cr-prompts-revised/delivery-agent.md`）。以下为按正文首次出现顺序的依赖清单（D-7 与 §4.4 派生范围的事实源接在既有 17 项之后）：
+盘点基线（本节开头口径重跑）：`tools@dddd0ad63fb79bd7608314b4553f30e8ce7b7289` = **16 文件 / 72 行 / 87 次**（合并后 HEAD `81d31b8` 上重跑同值——本 CR 至今未落实现代码，迁移对象集合不变）；`multica@ab9609483d17db12117cb8e9adb2d896f413917d` = **3 文件 / 6 行 / 6 次**（合并后 HEAD `dead9fe0d5a24118547a5be56d59241fdcc443a8` 上复核同值；其中 2 个文件是 `server/internal/governance/testdata/` 历史黄金数据，另 1 个是 `cr-prompts-revised/delivery-agent.md`）。本节清单中的 `commit SHA` 字段是该事实**首次核实**的基线，不随 trunk 合并改写；`review-tech-design` cycle 2 attempt 3 节点已在合并后基线（`tools@81d31b8`、`multica@dead9fe0`、KB `3b951289`）上逐项复核，除第 16 项（CI 全量步骤行为已变，本次修订更新）与两处规模口径（本次修订更新）外，其余各项的 `relative path` / `stable symbol` / 依赖结论在新 HEAD 上仍成立。以下为按正文首次出现顺序的依赖清单（D-7 与 §4.4 派生范围的事实源接在既有 17 项之后）：
 
 1. repo: `tools`
    relative path: `skills/shared/crctl/scripts/lib/workspace-transactions.mjs`
@@ -621,7 +631,7 @@ PRD 显式延后到 SDD 的设计项逐项关闭（覆盖数据生产、存储/�
    relative path: `skills/shared/crctl/scripts/test/contract-scan.test.mjs`
    stable symbol/对象: `FORBIDDEN` / `RETIRED` / `ACTIVE_PATHS` 既有静态扫描机制与 `readFileSync + replaceAll('\r\n','\n') + includes` 判定；`skills/_index.yml` / `agents/_index.yml` / `pipeline-templates/_index.yml` 的 active 条目（`status` + `path`）是 §4.4-2 索引一致性断言（条目必须存在于磁盘且落在扫描面内）的事实源
    commit SHA: `dddd0ad63fb79bd7608314b4553f30e8ce7b7289`
-   依赖结论: FR-11 要求复用既有静态合同扫描机制——该文件即既有机制，本 CR 在其上按名分范围追加 `RETIRED_RECOVERY` 与整树派生扫描面（§4.4），不新建扫描器。既有 `RETIRED_LEGACY` 三个名字在活跃面内**合法存在**（`lint-prompts.mjs` 禁止名单、`crctl.test.mjs` / `lint-prompts.test.mjs` 用例样本、`CUSTOM.md` 台账引述），另有 `docs/` 下两份历史报告与历史夹具亦含这些名字（`rg -l` 本 HEAD 共 8 个文件）——故其范围必须保持既有显式 `ACTIVE_PATHS` 不变（整树扫描会对历史报告误报）。
+   依赖结论: FR-11 要求复用既有静态合同扫描机制——该文件即既有机制，本 CR 在其上按名分范围追加 `RETIRED_RECOVERY` 与整树派生扫描面（§4.4），不新建扫描器。既有 `RETIRED` 三个名字在活跃面内**合法存在**（`lint-prompts.mjs` 禁止名单、`crctl.test.mjs` / `lint-prompts.test.mjs` 用例样本、`CUSTOM.md` 台账引述），另有 `docs/` 下两份历史报告与历史夹具亦含这些名字（`rg -l` 本 HEAD 共 8 个文件）——故其范围必须保持既有显式 `ACTIVE_PATHS` 不变（整树扫描会对历史报告误报）。
 6. repo: `tools`
    relative path: `skills/shared/crctl/scripts/test/{archive-tx,checkpoint-tx,merge-tx,register-tx,workspace-freshness,writeback-tx,crctl}.test.mjs`
    stable symbol/对象: 旧字段字符串断言（`result.recoverCommand.includes(...)`、`assert.match(r.json.recoverCommand, …)`、`assert.equal(r.stderr.error.recoverCommand, …)`、`recover_command`）；`crctl.test.mjs` 的 digest-vectors 用例（`~L548-556`）直接读取 `test/fixtures/digest-vectors/{expected.json,review-annotations-code.yml,test-report.md}` 三个文件做 canonical digest 一致性断言——这三个文件因此是活跃测试向量而非历史证据（§4.4-3 排除收窄的事实依据）
@@ -674,9 +684,9 @@ PRD 显式延后到 SDD 的设计项逐项关闭（覆盖数据生产、存储/�
     依赖结论: 本 SDD 的章节结构、`target-version` 继承与 §9 四字段约束来自该模板与 Skill，落地时必须符合。
 16. repo: `tools`
     relative path: `.github/workflows/crctl-ci.yml`
-    stable symbol/对象: 全量测试命令 `node --test --test-concurrency=2 skills/shared/crctl/scripts/test/*.test.mjs`、Pipeline JSON 动态枚举（`readdirSync('pipeline-templates')` + 读 `skills/_index.yml` 求 active Skill 集合）、`writeback` 单测命令
-    commit SHA: `dddd0ad63fb79bd7608314b4553f30e8ce7b7289`
-    依赖结论: AC-07 的验收命令与 §4.4 索引一致性校验的既有先例（按索引求 active + 目录动态枚举）均来自该文件；本 CR 不改 CI 配置。
+    stable symbol/对象: 全量测试步骤 `crctl full test suite` = `node skills/shared/crctl/scripts/test/suite-gate.mjs --run`（`:109-111`）、Pipeline JSON 结构步骤（`:68-70`，`readdirSync('pipeline-templates')` + 读 `skills/_index.yml` 求 active Skill 集合）、`writeback unit tests` 步骤 = `node --test skills/writeback/scripts/test/*.test.mjs`（`:113-115`）
+    commit SHA: `81d31b8b9d4c36cfef24cd076bf9fe635b67b2b6`
+    依赖结论: AC-07 的两条验收命令与 §4.4 索引一致性校验的既有先例（按索引求 active + 目录动态枚举）均来自该文件；本 CR 不改 CI 配置。全量步骤已由 CR-2026-065 从 `node --test --test-concurrency=2 …` 换为 `suite-gate.mjs --run`（`test-concurrency` 在 `.github/workflows/` 零命中），SDD 记录的验收入口随合并后事实更新（见 §6.3 AC-07）；Pipeline 索引动态枚举与 writeback 单测两步不变。
 17. repo: `tools`
     relative path: `ARCHITECTURE.md`
     stable symbol/对象: §3 代码地图（`lib/` 模块枚举与 `crctl.mjs` 职责）、§4 分层规则、§5 不变量（状态单一写者、零依赖、行尾纪律、状态机口径）、§8 维护规则
