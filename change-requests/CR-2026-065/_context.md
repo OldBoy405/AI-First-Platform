@@ -90,3 +90,14 @@ authorization:
 4. 已就绪可复用：`test/suite-gate.mjs` 的判定面 / 例外四查 / check code 表 / `--report` 解析自测框架；`assertion-sources.mjs`、`gate-registry.json`、`lib/outbox-contract.mjs` 与 TASK-01/02 全部用例。
    **TASK-03 待补齐**：逐文件 spawn（池 = `CONCURRENCY`）、单文件 TAP 解析、`files[]` / `observer`（13 → 15 字段）、`--report <ndjson>`（`--rc` 取消）、`crctl-ci.yml:109-111` 接线。
 5. 范围外待办（`sdd.md` §9 `follow_up` 第 4 条）：`crctl gate --for tech-design-reviewed` 不校验 annotation 的 `subject-sha256` 是否等于当前 `sdd.md` —— 单开 CR 处理，不塞进本 CR。
+
+---
+
+## node-6/node-7 前哨：implement-code（TASK-03/04）收尾导航（2026-09-13 18:2x，dev-agent）
+
+- **CR 状态**：`developing`（未推进状态；`crctl next` = `implement-code → write-test-report`）。
+- **本轮落盘**：tools worktree `52fa8d7`（clean，未 push；4 条交付路径：`test/suite-gate.mjs`、`test/contract-scan.test.mjs`、`test/gate-registry.json`、`.github/workflows/crctl-ci.yml:109-111`）；KB `63c3de7d`（`test-evidence/**` 13 份 + `NC-summary.md`）+ `543c1cd9`（`tasks/_index.yml` 标 TASK-03/04 done）。
+- **证据面**：`test-evidence/concurrency/{default,conc2,conc1}-run{1,2}.json`（并发决定：选中默认 pool=15）、`test-evidence/drift/NC-{1,2,3}-{inject,restore}.json`、`test-evidence/NC-summary.md`。
+- **实测结论**：`cmd-01` exit 0 / 783,450 ms / `converged=true` / `failures=[]` / 21 文件；`cmd-02` 481 ms、`cmd-03` 40,102 ms、`cmd-04` 138 ms、`cmd-05` 37 ms **全 exit 0**；窄跑 `--test-name-pattern CR-2026-065` 命中 8 条用例。
+- **恢复入口**：`write-test-report`（node-7）按 `plan.md §6.2` 逐字转录执行 5 条命令（cmd-01 单条 ~783 s，节点 20 min 预算需按 R-01 留意）→ 独立 `quality-reviewer-agent` run 执行 `review-code`（node-9，不得自评）。
+- **本轮偏差（供评审裁决）**：① `files[].skipped` 序列化为 `skipped_cases`（J-8 冻结模式 `/\bSKIPPED\b/i` 与 SDD §2.4 字段名冲突，取 J-8）；② 还原手段 `git checkout --`（`crctl git checkout` 实测 `FORBIDDEN_SUBCOMMAND`）；③ N-1 注入期发现并修复单文件 TAP 解析缺陷（诊断块内缩进 `...` 误判），已补回归自测。
