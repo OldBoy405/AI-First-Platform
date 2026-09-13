@@ -1,10 +1,10 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 spec-id: ai-first-platform
-cr-ref: CR-2026-063
-cr-history: [CR-2026-060, CR-2026-059, CR-2026-061, CR-2026-062, CR-2026-063]
-target-version: "0.36"
+cr-ref: CR-2026-065
+cr-history: [CR-2026-060, CR-2026-059, CR-2026-061, CR-2026-062, CR-2026-063, CR-2026-065]
+target-version: "0.38"
 baseline-since: "0.33"
-generated-at: "2026-09-12T08:45:52+08:00"
+generated-at: "2026-09-13T20:15:15+08:00"
 
 milestones:
   - cr: CR-2026-060
@@ -489,3 +489,131 @@ milestones:
         code: { verdict: pass, path: change-requests/CR-2026-063/review-annotations/code.yml, sha256: 36b289aab2baa930b46de5cf61229c5efe45396170f4a42270e80b770e7f1546 }
       approval: { status: approved, path: change-requests/CR-2026-063/approval.yml, sha256: 060503cd68b62350594362c4824171f4dc5d9e630bac3cc8602ce4d7ba08e54d }
       merge: { status: merged, path: change-requests/CR-2026-063/merge-commits.yml, sha256: 652e42ff57b0b545373ee7d282b3e44e72f20e3b2f4bfce17faa6354dfbe60d2 }
+  - cr: CR-2026-065
+    milestone: 0.38
+    target-version: "0.38"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: e0139121a2054ff90ec7940ec8a769f48398d8ad
+        branch: requirement/CR-2026-065
+      - repo: multica
+        trunk: main
+        sha: dead9fe0d5a24118547a5be56d59241fdcc443a8
+        branch: requirement/CR-2026-065
+      - repo: tools
+        trunk: main
+        sha: 81d31b8b9d4c36cfef24cd076bf9fe635b67b2b6
+        branch: requirement/CR-2026-065
+    frs:
+      - fr: FR-1
+        title: 计数类断言从事实源推导（AC-02、AC-03）
+        sdd: §4.1 推导算法（parseYaml strict、硬失败、`identifiers` 集合比较、`expanded` 公式）+ §6.6 D1/D2/D3
+        tasks: [CR-2026-065-TASK-01]
+        code: [ai-first-platform-docs@e0139121a205, multica@dead9fe0d5a2, tools@81d31b8b9d4c]
+        evidence: [cmd-02, cmd-04]
+      - fr: FR-2
+        title: 文本类断言只查语义（AC-02、AC-07）
+        sdd: §4.4 两步法（行尾规范化 + 要素/零命中）+「句内要素」判据
+        tasks: [CR-2026-065-TASK-01]
+        code: [ai-first-platform-docs@e0139121a205, multica@dead9fe0d5a2, tools@81d31b8b9d4c]
+        evidence: [cmd-02]
+      - fr: FR-3
+        title: 反风险：推导不得宽到接受产品错误（AC-03）
+        sdd: §6.6 D/P 两张表 + §4.1 反恒真设计（登记值与推导值两条独立来源）
+        tasks: [CR-2026-065-TASK-01]
+        code: [ai-first-platform-docs@e0139121a205, multica@dead9fe0d5a2, tools@81d31b8b9d4c]
+        evidence: [cmd-04, cmd-02]
+      - fr: FR-4
+        title: BR-1 对齐真实载体（AC-04）
+        sdd: §4.4 表第 1、2 行 + §6.3 第 8/9 项（`write-dev-tasks/SKILL.md:106`、`_index.yml#nodes` 跨文件投影）
+        tasks: [CR-2026-065-TASK-01]
+        code: [ai-first-platform-docs@e0139121a205, multica@dead9fe0d5a2, tools@81d31b8b9d4c]
+        evidence: [cmd-02]
+      - fr: FR-5
+        title: BR-2 对齐 reader 事实源（AC-05）
+        sdd: §4.4 表第 3 行 +「否定辖域」判据
+        tasks: [CR-2026-065-TASK-01]
+        code: [ai-first-platform-docs@e0139121a205, multica@dead9fe0d5a2, tools@81d31b8b9d4c]
+        evidence: [cmd-02]
+      - fr: FR-6
+        title: BR-3 推导 + 显式登记（AC-06）
+        sdd: §4.1 三条集合/计数等价 + §2.3 `stateMachine` 段 + §6.6 P1/P2/P3
+        tasks: [CR-2026-065-TASK-01]
+        code: [ai-first-platform-docs@e0139121a205, multica@dead9fe0d5a2, tools@81d31b8b9d4c]
+        evidence: [cmd-02, cmd-04]
+      - fr: FR-7
+        title: BR-4 语义要素（AC-07）
+        sdd: §4.4 表第 4 行（句内三类对象 + 5 禁用词 + 禁 `crctl validate` / 命令形态 `Commit：`）
+        tasks: [CR-2026-065-TASK-01]
+        code: [ai-first-platform-docs@e0139121a205, multica@dead9fe0d5a2, tools@81d31b8b9d4c]
+        evidence: [cmd-02]
+      - fr: FR-8
+        title: 保留「内容相等才算已发送」语义（AC-08）
+        sdd: §3.1 行为等价 + §2.2 字段归类（含 `payload.detected_at` 排除）
+        tasks: [CR-2026-065-TASK-02]
+        code: [ai-first-platform-docs@e0139121a205, multica@dead9fe0d5a2, tools@81d31b8b9d4c]
+        evidence: [cmd-03]
+      - fr: FR-9
+        title: 冻结向量构造改对 + 真实冲突用例（AC-08）
+        sdd: §4.5 构造 A（真实崩溃窗口）+ 构造 B（同名不同内容四步断言）
+        tasks: [CR-2026-065-TASK-02]
+        code: [ai-first-platform-docs@e0139121a205, multica@dead9fe0d5a2, tools@81d31b8b9d4c]
+        evidence: [cmd-03]
+      - fr: FR-10
+        title: 去重比较字段契约可检查（AC-09）
+        sdd: §3.1 六条不变性（字段分类集合相等 / 枚举排除非自动 / 投影闭合 / 只读投影 / 单一事实源 / 行为等价）
+        tasks: [CR-2026-065-TASK-02]
+        code: [ai-first-platform-docs@e0139121a205, multica@dead9fe0d5a2, tools@81d31b8b9d4c]
+        evidence: [cmd-03]
+      - fr: FR-11
+        title: CI 全量步骤成为真门禁（AC-01、AC-12）
+        sdd: §4.2 全流程 + §2.3 `manifest`（文件集合相等 + 用例数 ≥ 基线）+ `crctl-ci.yml:109-111` 改造
+        tasks: [CR-2026-065-TASK-03]
+        code: [ai-first-platform-docs@e0139121a205, multica@dead9fe0d5a2, tools@81d31b8b9d4c]
+        evidence: [cmd-01]
+      - fr: FR-12
+        title: 并发收敛决定（AC-10）
+        sdd: TDEC-4 有界协议 + §2.4 报告固定字段（`command`/`duration_ms`/`converged`/`exit_code`/`observer`）+ 命令单一来源常量
+        tasks: [CR-2026-065-TASK-04]
+        code: [ai-first-platform-docs@e0139121a205, multica@dead9fe0d5a2, tools@81d31b8b9d4c]
+        evidence: [cmd-01, cmd-05]
+      - fr: FR-13
+        title: 漂移当场红负控证据（AC-11）
+        sdd: §4.6 三类注入协议（N-1 状态机 / N-2 文本语义 / N-3 去重字段）+ 证据固定字段
+        tasks: [CR-2026-065-TASK-04]
+        code: [ai-first-platform-docs@e0139121a205, multica@dead9fe0d5a2, tools@81d31b8b9d4c]
+        evidence: [cmd-05]
+      - fr: FR-14
+        title: 例外单一登记处 + owner + 到期 + 到期即红（AC-12）
+        sdd: §2.3 `exceptions` + §3.2 四查与 **13 个 check code** + §5.3 口径
+        tasks: [CR-2026-065-TASK-03]
+        code: [ai-first-platform-docs@e0139121a205, multica@dead9fe0d5a2, tools@81d31b8b9d4c]
+        evidence: [cmd-01, cmd-04]
+      - fr: FR-15
+        title: 范围与产品语义最小改写（AC-13）
+        sdd: §1.2 变更面（产品面仅 `lib/outbox-contract.mjs` + `crctl.mjs#emitOutboxEvent`）+ §9 `scope_in`/`scope_out`/`zero_diff`
+        tasks: [CR-2026-065-TASK-04]
+        code: [ai-first-platform-docs@e0139121a205, multica@dead9fe0d5a2, tools@81d31b8b9d4c]
+        evidence: [cmd-04]
+      - fr: FR-16
+        title: 零回归与覆盖不降级（AC-14）
+        sdd: §2.3 `manifest.cases` ≥ 基线 + §4.4/§4.5 回归保护 + §7.3 耗时对比
+        tasks: [CR-2026-065-TASK-04]
+        code: [ai-first-platform-docs@e0139121a205, multica@dead9fe0d5a2, tools@81d31b8b9d4c]
+        evidence: [cmd-01]
+      - fr: FR-17
+        title: 契约面声明与确定性四查（AC-15）
+        sdd: §3.3 不新增用户可调用契约 + §3.2 四查（幂等 / 写入边界 / 错误闭包 / 副作用）
+        tasks: [CR-2026-065-TASK-03]
+        code: [ai-first-platform-docs@e0139121a205, multica@dead9fe0d5a2, tools@81d31b8b9d4c]
+        evidence: [cmd-01, cmd-04]
+    evidence:
+      test: { status: pass, path: change-requests/CR-2026-065/test-report.md, sha256: 4f7d9689776b5519c473661a699ac70eb169d46c274b170a7d12e4eb722e766a }
+      reviews:
+        requirement: { verdict: pass, path: change-requests/CR-2026-065/review-annotations/requirement.yml, sha256: da6fd39b227c43480090d3b9a307771b587fd0fef04d6a83a25f69649d3977ba }
+        tech-design: { verdict: pass, path: change-requests/CR-2026-065/review-annotations/sdd.yml, sha256: f70a65b3abe34bf1ad43b46e5ef538d883a05feb2171129f1892d3cc2338b10c }
+        dev-plan: { verdict: pass, path: change-requests/CR-2026-065/review-annotations/dev-plan.yml, sha256: 370792eb6283861026ad27a84dc76fe40a9e8881b41828c7aa8e15574b32a47d }
+        code: { verdict: pass, path: change-requests/CR-2026-065/review-annotations/code.yml, sha256: 6ab4b5793b4c46cbb9de2b394c53d579c7fcc6c00dec017b4a5f2a528690c05f }
+      approval: { status: approved, path: change-requests/CR-2026-065/approval.yml, sha256: 01663bc4e21bdf173dad3d7beb9ac3b6aafb6046ca2a26de6bcf7a60ecb1ff85 }
+      merge: { status: merged, path: change-requests/CR-2026-065/merge-commits.yml, sha256: ee8a350254ce3adef2655e1271232faa0495ac9e35571cd8509f51630418143b }
