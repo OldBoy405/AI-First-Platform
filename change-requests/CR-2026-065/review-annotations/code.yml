@@ -1,0 +1,48 @@
+cr-id: CR-2026-065
+review-type: code
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-13T19:56:36+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  批准范围: "通过（Step 2.5 前置核对，本轮实测）。tools worktree HEAD d33271a3c10f31a78659ab60981fe12ffd23fdc1 相对 trunk origin/main merge-base dddd0ad63fb79bd7608314b4553f30e8ce7b7289 的 diff 仍为恰 11 条路径（返修只改 contract-scan.test.mjs + gate-registry.json 两条，均在 SDD §1.2/§9 scope_in 交付面内）；无 scope_out 面触碰（未动 write-tech-design / review-tech-design 评审合同、CR-2026-064 恢复合同、5 条红根因对象本体、multica 仓、第三方依赖、历史证据）；zero_diff 面实测零 diff（dir-graph.yaml、pipeline-templates/**、所有 SKILL.md、controlled-shell/rules.json、lib/yaml-subset.mjs、lib/durable-tx.mjs、lib/workspace-transactions.mjs 均不在 diff 名单）；KB 侧 37 条全为 CR-2026-065 自身产物 + _backlog.yml / 账本的 crctl 登记；multica 零 diff（crctl workspace inspect 三仓 healthy / dirty=false）。"
+  代码↔TASK↔SDD对齐: "通过（上一轮 blocker 已关闭）。BR-1…BR-5 的代码面处置本轮返修未触碰，与上一轮逐条复核结论一致；新增 2 条例外治理自测属 TASK-03 交付面，逐条对应 FR-14.3 / FR-14.4 与 SDD §3.2 check code 表、§6.2 AC-12 可观测结果；manifest.cases 终值刷新符合 TASK-01 §3.2 / TASK-04 §3.3 的「只升不降」约束。"
+  工程质量: "通过。返修 diff 纯增量（+58 −4，零删除既有断言）：makeProbeRoot 第三参默认显式空数组、新增用例复用既有 probe-root（mkdtempSync）+ suite-gate --report <ndjson> 机制，零新增依赖 / 零新增测试文件 / 零 fixture 目录；新用例只写 os.tmpdir() 的 probe-root 并在 finally 整目录删除，仓库登记面零写路径由该文件既有静态断言覆盖；suite-gate.mjs 在返修提交内逐字节未变（返修 diff 只含 2 文件），排除 mutation 自检注入物混入交付面。"
+  关键路径可读性: "通过。两条新用例带意图注释（错误闭包①/② 的语义、为何只有非空登记面才可观测 FR-14.3/FR-14.4、为何不得静默判绿），断言面直指固定 check code 与退出码，可机械核对。"
+  安全性: "通过。新用例不扩大权限面与写面（probe-root 在 os.tmpdir()，finally 整目录 rmSync）；门禁仍零写登记面与受治理账本，进程终止面未变。"
+  测试覆盖: "通过（上一轮 blocker 关闭）。contract-scan.test.mjs 由 15 → 17 用例，cmd-01 全量执行后 17/17 ok；用例①断言 verdict=block / 退出非零 / checks[EXCEPTION_EXPIRED].ok=false / registry.exceptions_count=1；用例②断言 checks[EXCEPTION_NOT_OBSERVED].ok=false 且 checks[SUITE_FAILURES_UNREGISTERED].ok=true。我逐行读 suite-gate.mjs 判定实现确认断言与触发路径因果相连：EXCEPTION_EXPIRED 仅由 validateExceptions 的过期分支 trigger（主流程无第二写入点）、EXCEPTION_NOT_OBSERVED 仅由 stale 集合 trigger；若移除任一触发条件，对应断言立即失败（与作者方非 canonical 的 mutation 自检结论一致，不构成 canonical 证据）。"
+  测试证据可信度: "通过。test-report.md 机器区 generated-by=crctl-test / status=pass / command-digest=df94c863f10f5ebbac01d0774a84994c3843f7f2de946f7459d60421e41ebe51（与 attempt 1 逐字相同，命令集未改）与 traceability.yml#tests 的 status / generated-at / command-digest 逐字一致（无 TEST_EVIDENCE_DRIFT）；5 条命令全 exit-code=0 / skipped=false / started=true / timed-out=false，5 份 test-evidence/cmd-0N.log 齐备（6655/387/257/3744/1592 B）。cmd-01 报告 15 字段自洽：verdict=pass / converged=true / failures=[] / files_executed=21 / cases_executed=578 / skipped_file_level=0 / 13 个 check 全 ok；registry.sha256=f8d983a04656d1fae05588af9daa14b128872bc124e5bcddfd155088b53bd5bf 由我独立复算 gate-registry.json（LF 规范化）逐字相等；files[].cases ↔ manifest.cases 21/21 全等且 Σ=578=cases_executed；新 cmd-01.log 对 5 条冻结 skip 模式零命中（证据面未被 skip 语义污染）。"
+  前端质量: "N/A（本轮 diff 不触及 *.tsx / *.vue / *.css / *.html，该项条件未触发）。"
+suggestions:
+  - "已解决：本轮新增：AC-12 / FR-14 的例外判定面在交付证据集内零观测、在测试面零覆盖 —— 「到期未清即红」（FR-14.3）与「例外标识与实际失败集合不匹配即红」（FR-14.4）两条语义没有任何用例承载。位置：change-requests/CR-2026-065/test-report.md §G-1 / §H-2（报告自报本轮不可执行、只给可复跑配方）、plan.md §7 AC-12 行（证据只写 cmd-01 与 cmd-04）、test-evidence/cmd-01.log 的 checks[EXCEPTION_EXPIRED].ok=true（只说明当前无到期例外，不等于到期即红成立）。事实（我本轮只读复核）：交付套件 576 用例全绿、21 个文件全 state=ok，但全仓（tools worktree）EXCEPTION_EXPIRED / EXCEPTION_NOT_OBSERVED / 未覆盖失败判定只出现在 skills/shared/crctl/scripts/test/suite-gate.mjs 的判定代码（validateExceptions 与 judge），没有任何 test 构造过期例外或标识不匹配例外；contract-scan.test.mjs 已有 probe-root（mkdtempSync + gate-registry.json 副本）与 suite-gate --report <ndjson> 自测机制，具备承载能力却未使用。影响：PRD §5 AC-12 明文「构造一条到期例外 → 门禁红」与 SDD §6.2 AC-12 可观测结果「构造到期条目 → EXCEPTION_EXPIRED 非零」均无证据，FR-14.4 的「不匹配即红」同样无证据 —— 本 CR 的核心治理承诺成为未验证前提，与本次事故同源（前提为假/未验证却一路绿到实现阶段）。修复方向：在 skills/shared/crctl/scripts/test/contract-scan.test.mjs 用既有 probe-root + suite-gate --report <ndjson> 机制补用例（用例名以 CR-2026-065 起始）：① 登记面含一条字段齐备（id/kind/reason/owner/expires）、expires 为过去时点且带时区偏移的例外 → 断言 verdict=block、进程退出非零、checks[EXCEPTION_EXPIRED].ok=false、registry.exceptions_count=1；② 登记面含一条在本次运行中未出现的失败名（或未覆盖的观测失败）→ 断言 checks[EXCEPTION_NOT_OBSERVED].ok=false 或 checks[SUITE_FAILURES_UNREGISTERED].ok=false；随后按 TASK-01 §3.2 / TASK-04 §3.3 刷新 gate-registry.json#manifest.cases.contract-scan.test.mjs 的终值（只升不降），并重跑一次 crctl test 刷新 test-report.md 机器区与 cmd-NN 证据（若证据命令集不变则 command-digest 不变，无需改 plan §6.2）。 —— 本轮 attempt 复核（quality-reviewer-agent 新建独立 run，只读证据面，未转发任何自报值）：① 修复落点逐字核对：返修提交 d33271a3 仅 2 文件（+58 −4）—— contract-scan.test.mjs 增 makeProbeRoot 第三参 exceptions（默认显式空数组，不改既有调用面）+ 2 条以 CR-2026-065 起始的例外治理用例；gate-registry.json#manifest.cases.contract-scan.test.mjs 15 → 17（只升不降，Σ manifest.cases = 578）。② 用例①（FR-14.3）语义我按判定实现逐行复核：登记面含一条字段齐备、expires=2020-01-01T00:00:00+08:00（带偏移、已过）的例外 ⇒ validateExceptions 过期分支 trigger(EXCEPTION_EXPIRED) 后 continue（不进入 live 集合、不静默续期）；断言 checks[EXCEPTION_EXPIRED].ok=false / verdict=block / 进程退出非零（main 结尾 process.exit(verdict === pass ? 0 : 1)）/ registry.exceptions_count=1（登记条数）与断言面一一对应。③ 用例②（FR-14.4）同法复核：未到期例外 kind=suite-failure、其 match 为本次运行未出现的失败名 ⇒ stale 集合非空 trigger(EXCEPTION_NOT_OBSERVED)；同时本次运行无失败 ⇒ SUITE_FAILURES_UNREGISTERED 保持 ok（其 trigger 只取 uncovered=失败集合差集），两个判定面互不串台，与用例断言一致。④ 交付执行面自证：cmd-01 全量 21 文件 / 578 用例全绿，contract-scan 17/17 ok；用例数口径我按 TAP 核对（14 个非循环用例 + 3 元素循环展开 3 条 = 17 ≡ manifest 终值）。旧 blocker 完全关闭，无残留。"
+  - "范围外：报告 files[] 的每文件跳过计数字段名为 skipped_cases，与批准文本（SDD §2.4 报告模型 / TASK-03 §3.3 逐字字段表 / plan §2.1）固定的 skipped 不一致 —— 本轮复核确认保留理由成立：crctl 冻结 skip 模式表（lib/workspace-transactions.mjs:3992-3998）第 4 条为 SKIPPED 独立词（i 旗标），会把 JSON 键名 \"skipped\" 判成 skip 态；我实测新 cmd-01.log 对 5 条冻结模式零命中，而含 \"skipped\": 0 的等价 JSON 命中该条 —— 本 CR 内改名会把 cmd-01 判成 skip 态并作废证据面。建议后续文档/计划修订把字段表改为 skipped_cases 并登记改名理由。"
+  - "范围外：例外匹配语义与批准文本不一致（① SUITE_NONCONVERGENCE 的抑制条件批准文本要求「未到期 + kind=suite-nonconvergence + 稳定标识与本项匹配」，见 SDD §3.2 check code 表、§6.5 SDD-CLOSE-09、plan J-7，实测实现只按 kind + 未到期即抑制，nonconvergenceExceptions 不做任何标识匹配；② SUITE_FAILURES_UNREGISTERED 的覆盖键 match 不在 SDD/PRD 例外必填字段集 id/kind/reason/owner/expires 内、不参与 schema 校验）。本轮复核实测仍如此，属 fail-closed（缺 match 时不覆盖任何失败并同时落 EXCEPTION_NOT_OBSERVED，不形成静默自证绿通道）；交付态 exceptions=[] 无当前验收影响。修法是先由设计/计划明文定义例外的匹配键落在哪个字段，再改判定代码，留后续 CR。"
+  - "范围外：suite-gate --report 形态报告的 duration_ms 取各记录 duration_ms 之和（我按 suite-gate.mjs judge 入口的 context 构造复核：durationMs = records.reduce(...)），与 SDD §2.4「= 池式执行的整体墙钟，不是各文件耗时之和」不符；--run 形态正确，本 CR 证据（cmd-01 与负控/并发）全为 --run 输出，不影响本 CR 判定，留后续修订。"
+  - "范围外：CI 平台（ubuntu + Node 20）上的池大小收敛性未验证 —— SDD §6.4 已登记为待核实依赖（本机不可得；证据按 S-2 口径以「本机复现 + 可得时的 CI 运行」交付），本机实测 pool=2 / pool=1 四次整跑均在 1200 s 被终止、默认 pool=15 两次收敛。建议 merge 前在 CI 上留一次 suite-gate --run 记录（非本 CR 验收面，不阻塞 code 阶段）。"
+review-loop:
+  current-attempt: 2
+release-subjects:
+  version: 1
+  repositories:
+    - repo: ai-first-platform-docs
+      remote-ref: refs/heads/requirement/CR-2026-065
+      reviewed-source-sha: ac262ed02c79475f4f2e1859550c57a21c585d93
+    - repo: multica
+      remote-ref: refs/heads/requirement/CR-2026-065
+      reviewed-source-sha: ab9609483d17db12117cb8e9adb2d896f413917d
+    - repo: tools
+      remote-ref: refs/heads/requirement/CR-2026-065
+      reviewed-source-sha: d33271a3c10f31a78659ab60981fe12ffd23fdc1
+  artifacts:
+    algorithm: sha256
+    canonicalization: crlf-to-lf+path-sort
+    files:
+      - { path: change-requests/CR-2026-065/plan.md, sha256: 2761e88cb1008f68d36a9de1b5eed20a8c97453e6bce677e7437ea087b73af1d }
+      - { path: change-requests/CR-2026-065/prd.md, sha256: 467b5d478a99a97ee780632dcaaeec38fd7fc11ed49616a823757ca9de911a18 }
+      - { path: change-requests/CR-2026-065/sdd.md, sha256: ecc1f90253ad28438bfc5ac20e7485b9c8dff57797d0805dadace5cd8917d62f }
+      - { path: change-requests/CR-2026-065/tasks/TASK-01.md, sha256: 1630c5e179f6a461295456a3781d040f002bef91a3d6cc1ee805b4f61a5d87e9 }
+      - { path: change-requests/CR-2026-065/tasks/TASK-02.md, sha256: f15b4940ca190bd33c610c8ddc87dbd71fc05ed784d900bf7087e5377f707069 }
+      - { path: change-requests/CR-2026-065/tasks/TASK-03.md, sha256: db45a25a6f3758f2c86bbd738d13e6a5f9f3b8bedcff13913ce5f7b45af0f727 }
+      - { path: change-requests/CR-2026-065/tasks/TASK-04.md, sha256: 85b27a343753da33079a4aceb55fa11a0912c9a2dfec0a5503b7b41e000ffa36 }
+      - { path: change-requests/CR-2026-065/tasks/_index.yml, sha256: b30d221804ba1ea12ecd39123e0003d75692876346c3d09fe615fbf0f1e9db5c }
+    digest: 2fb8a61d252e5a3a62832f26d981e2f42a3e08dda8fce4b4925eb5e47426b272
