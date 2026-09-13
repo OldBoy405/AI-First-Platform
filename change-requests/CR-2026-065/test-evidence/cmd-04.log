@@ -1,0 +1,18 @@
+$ node -e const fs=require('fs'),cp=require('child_process'),path=require('path');const T='C:/Users/GOBAO/Downloads/AI/AI First Platform/.rayai-worktrees/tools/requirement/CR-2026-065';const BASE='dddd0ad63fb79bd7608314b4553f30e8ce7b7289';const NL=String.fromCharCode(10);const bad=[];const rp=path.join(T,'skills/shared/crctl/scripts/test/gate-registry.json');let reg=null;if(!fs.existsSync(rp)){bad.push('gate-registry.json 缺失');}else{try{reg=JSON.parse(fs.readFileSync(rp,'utf8'));}catch(e){bad.push('gate-registry.json 非法 JSON');}}if(reg!==null){if(reg.schema!=='crctl-suite-gate/v1'){bad.push('registry schema 不符: '+reg.schema);}const files=fs.readdirSync(path.join(T,'skills/shared/crctl/scripts/test')).filter(f=>f.endsWith('.test.mjs')).sort();let mf=[];if(reg.manifest&&reg.manifest.files){mf=reg.manifest.files;}if(JSON.stringify([...mf].sort())!==JSON.stringify(files)){bad.push('manifest.files 与实际 '+files.length+' 个测试文件集合不等: '+mf.length);}let cs={};if(reg.manifest&&reg.manifest.cases){cs=reg.manifest.cases;}if(JSON.stringify(Object.keys(cs).sort())!==JSON.stringify(files)){bad.push('manifest.cases 键集与文件集合不等');}for(const f of Object.keys(cs)){if(!(Number.isInteger(cs[f])&&cs[f]>0)){bad.push('manifest.cases['+f+'] 非正整数');}}let sm={};if(reg.stateMachine){sm=reg.stateMachine;}if(!Array.isArray(sm.namedStates)){bad.push('stateMachine.namedStates 非数组');}else if(sm.namedStates.length!==15){bad.push('stateMachine.namedStates 数量 != 15');}if(!Array.isArray(sm.transitions)){bad.push('stateMachine.transitions 非数组');}else if(sm.transitions.length!==31){bad.push('stateMachine.transitions 数量 != 31');}let wc={};if(sm.wildcards){wc=sm.wildcards;}if(!Array.isArray(wc['any-active'])){bad.push('stateMachine.wildcards.any-active 非数组');}else if(wc['any-active'].length!==12){bad.push('stateMachine.wildcards.any-active 目标数 != 12');}if(!Array.isArray(reg.exceptions)){bad.push('exceptions 非数组');}else if(reg.exceptions.length!==0){bad.push('exceptions 不是显式空数组');}}const r=cp.spawnSync(process.execPath,[T+'/skills/shared/crctl/scripts/crctl.mjs','git','diff','--name-only',BASE,'--cwd',T],{encoding:'utf8'});if(r.status!==0){bad.push('crctl git diff 失败');}else{const out=String(r.stdout==null?'':r.stdout).split(NL);const b=out.findIndex(l=>l.trim()==='{');const changed=out.slice(0,b<0?out.length:b).map(s=>s.trim()).filter(Boolean);console.log('FR-15 diff paths = '+changed.length);changed.forEach(p=>console.log('  '+p));const okPath=p=>{if(p.startsWith('skills/shared/crctl/scripts/test/')){return true;}if(p==='skills/shared/crctl/scripts/lib/outbox-contract.mjs'){return true;}if(p==='skills/shared/crctl/scripts/crctl.mjs'){return true;}if(p==='.github/workflows/crctl-ci.yml'){return true;}return false;};for(const p of changed){if(!okPath(p)){bad.push('越界改动: '+p);}}}if(bad.length>0){console.log('registry-scope-audit failures = '+bad.length);bad.forEach(b=>console.log(b));process.exit(1);}console.log('registry-scope-audit failures = 0');
+(exit=0)
+--- stdout ---
+FR-15 diff paths = 11
+  .github/workflows/crctl-ci.yml
+  skills/shared/crctl/scripts/crctl.mjs
+  skills/shared/crctl/scripts/lib/outbox-contract.mjs
+  skills/shared/crctl/scripts/test/archive-tx.test.mjs
+  skills/shared/crctl/scripts/test/assertion-sources.mjs
+  skills/shared/crctl/scripts/test/checkpoint-tx.test.mjs
+  skills/shared/crctl/scripts/test/contract-scan.test.mjs
+  skills/shared/crctl/scripts/test/crctl.test.mjs
+  skills/shared/crctl/scripts/test/gate-registry.json
+  skills/shared/crctl/scripts/test/suite-gate.mjs
+  skills/shared/crctl/scripts/test/trace-outbox.test.mjs
+registry-scope-audit failures = 0
+
+--- stderr ---
