@@ -1,0 +1,48 @@
+cr-id: CR-2026-065
+review-type: code
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-13T19:24:06+08:00"
+verdict: block
+blockers:
+  - "本轮新增：AC-12 / FR-14 的例外判定面在交付证据集内零观测、在测试面零覆盖 —— 「到期未清即红」（FR-14.3）与「例外标识与实际失败集合不匹配即红」（FR-14.4）两条语义没有任何用例承载。位置：change-requests/CR-2026-065/test-report.md §G-1 / §H-2（报告自报本轮不可执行、只给可复跑配方）、plan.md §7 AC-12 行（证据只写 cmd-01 与 cmd-04）、test-evidence/cmd-01.log 的 checks[EXCEPTION_EXPIRED].ok=true（只说明当前无到期例外，不等于到期即红成立）。事实（我本轮只读复核）：交付套件 576 用例全绿、21 个文件全 state=ok，但全仓（tools worktree）EXCEPTION_EXPIRED / EXCEPTION_NOT_OBSERVED / 未覆盖失败判定只出现在 skills/shared/crctl/scripts/test/suite-gate.mjs 的判定代码（validateExceptions 与 judge），没有任何 test 构造过期例外或标识不匹配例外；contract-scan.test.mjs 已有 probe-root（mkdtempSync + gate-registry.json 副本）与 suite-gate --report <ndjson> 自测机制，具备承载能力却未使用。影响：PRD §5 AC-12 明文「构造一条到期例外 → 门禁红」与 SDD §6.2 AC-12 可观测结果「构造到期条目 → EXCEPTION_EXPIRED 非零」均无证据，FR-14.4 的「不匹配即红」同样无证据 —— 本 CR 的核心治理承诺成为未验证前提，与本次事故同源（前提为假/未验证却一路绿到实现阶段）。修复方向：在 skills/shared/crctl/scripts/test/contract-scan.test.mjs 用既有 probe-root + suite-gate --report <ndjson> 机制补用例（用例名以 CR-2026-065 起始）：① 登记面含一条字段齐备（id/kind/reason/owner/expires）、expires 为过去时点且带时区偏移的例外 → 断言 verdict=block、进程退出非零、checks[EXCEPTION_EXPIRED].ok=false、registry.exceptions_count=1；② 登记面含一条在本次运行中未出现的失败名（或未覆盖的观测失败）→ 断言 checks[EXCEPTION_NOT_OBSERVED].ok=false 或 checks[SUITE_FAILURES_UNREGISTERED].ok=false；随后按 TASK-01 §3.2 / TASK-04 §3.3 刷新 gate-registry.json#manifest.cases.contract-scan.test.mjs 的终值（只升不降），并重跑一次 crctl test 刷新 test-report.md 机器区与 cmd-NN 证据（若证据命令集不变则 command-digest 不变，无需改 plan §6.2）。"
+dimensions:
+  批准范围: "通过（Step 2.5 前置核对，我本轮实测）。tools worktree HEAD 52fa8d7a2209e0873b4b98f1c3d7db240300f1ce 相对 trunk origin/main merge-base dddd0ad63fb79bd7608314b4553f30e8ce7b7289 的 diff = 恰 11 条路径（suite-gate.mjs、gate-registry.json、assertion-sources.mjs、outbox-contract.mjs、crctl.mjs、crctl-ci.yml、5 个测试文件），逐条落在 SDD §1.2/§9 scope_in 的交付面上，无 scope_out 面（未触碰 write-tech-design / review-tech-design 评审合同、CR-2026-064 恢复合同、5 条红根因对象本体、multica 仓、第三方依赖、历史证据）；zero_diff 面实测零 diff（dir-graph.yaml、pipeline-templates/**、所有 SKILL.md、controlled-shell/rules.json、lib/yaml-subset.mjs、lib/durable-tx.mjs、lib/workspace-transactions.mjs 均不在 diff 名单；crctl.mjs 改点仅在 import 行与 emitOutboxEvent 内部，顶层 dispatch 与既有子命令签名/参数/错误码零 diff）；KB 侧 36 条 diff 全是 CR-2026-065 自身产物 + _backlog.yml 的 crctl 登记，multica 零 diff。"
+  代码↔TASK↔SDD对齐: "通过（除 blockers 所列例外判定面缺口）。BR-1…BR-4 断言按其真实载体重写并保留机械判据（BR-1 = write-dev-tasks/SKILL.md 指令载体 + pipeline 节点数跨文件投影 _index.yml#code-implementation-v1.nodes + prompt 对账本写指令零命中；BR-2 = reader 事实源 cr.md + change-requests/_backlog.yml 且三词走否定辖域；BR-3 = deriveStateMachine 推导 ≡ gate-registry 登记两条独立来源；BR-4 = 句内三要素 + 禁用词零命中）；BR-5 按 SDD §4.5 落地构造 A（真实崩溃窗口：内容一致 + journal 未标记）与构造 B（同名不同内容 → EMIT_FAILED / OUTBOX_DEDUP_CONFLICT + pending + 补发），RED-7 原断言集合保留；lib/outbox-contract.mjs 五导出 + 六条不变性断言与 SDD §3.1 逐条对应；suite-gate.mjs 两形态 CLI、13 个 check code、15 字段报告、逐文件 spawn 与单文件 TAP 硬失败与修订版 SDD §3.2/§4.2 同形；crctl-ci.yml 仅 :111 单行替换。报告 files[] 的每文件跳过数字段名 skipped_cases 与批准文本的 fixed 字段名 skipped 不一致（见 suggestions 第 1 条）。"
+  工程质量: "通过。零新增第三方依赖；无新增 crctl 子命令/flag（FR-17/§3.3）；断言只读、门禁只写调用方显式指定的 --report-out / --json-out（contract-scan 静态断言 + 我核对 suite-gate.mjs 仅两处 writeFileSync）；行尾纪律落实（assertion-sources.readTextNormalized 与 suite-gate 读入均先 CRLF→LF）；解析失败硬失败（deriveStateMachine throw、SUITE_REPORT_UNPARSEABLE、--report 空记录 exit 2）；证据与交付物绑定成立：cmd-01.log 的 registry.sha256=e642b97e6f610c99ba904fd395c8c637f5a695d3e8e79953bbff589fd486ab4c 与当前 gate-registry.json 的 sha256 由我独立复算逐字相等。"
+  关键路径可读性: "通过。suite-gate.mjs 顶部集中登记唯一并发常量 CONCURRENCY（null = max(1, availableParallelism()-1)）、13 个 check code、J-8 禁词约束与 I1…I3；单文件 TAP 解析规则、非收敛分支、例外面四查（幂等/写边界/错误闭包/副作用）均带 SDD 条款指针；outbox-contract.mjs 注释钉死 VOLATILE 键的 payload 根下相对键空间。"
+  安全性: "通过。门禁零写登记面与受治理账本（静态断言 + 实测仅两个显式输出路径）；进程终止只针对本包装器自己 spawn 的 PID 树（POSIX 进程组 / Windows taskkill /T /F），不按进程名终止；例外写入口唯一 = 人工编辑 + git commit；无新增权限面与敏感数据处理。"
+  测试覆盖: "不通过（见 blockers 第 1 条）。正方：21 个 *.test.mjs / 576 用例全绿，manifest.cases 21/21 与 cmd-01 files[].cases 逐项相等且 Σ=576=cases_executed（我独立复算）；三类负控 NC-1/2/3 注入红（失败集合恰为预期红点）与还原绿证据 6 份齐备；并发三候选 ×2 次整跑 6 份齐备（默认 pool=15 连续收敛 783450 / 781420 ms，pool=2 与 pool=1 四次均在 1200 s 被终止）；parse/归属/禁词自测与静态写路径断言已入 contract-scan。缺：例外判定面（到期、标识不匹配、非收敛抑制）零用例覆盖。"
+  测试证据可信度: "部分通过。test-report.md 机器区 generated-by=crctl-test、status=pass、command-digest=df94c863f10f5ebbac01d0774a84994c3843f7f2de946f7459d60421e41ebe51 与 traceability.yml#tests 的 status/generated-at/command-digest 逐字一致（无 TEST_EVIDENCE_DRIFT），5 条命令全 exit-code=0 / skipped=false / started=true / timed-out=false，5 份 test-evidence/cmd-0N.log 齐备（6655/387/257/3744/1592 B）且 cmd-01 的 13 个 check 全 ok、21 文件全 state=ok、skipped_file_level=0、converged=true、observer=tap-per-file；窄跑 cmd-02=4 点、cmd-03=8 点与我按用例名的推演一致，且这些用例全部包含在 cmd-01 的 21 文件全量内；报告 §G/§H 如实登记残余项。缺口 = blockers 所列 AC-12 观测面（报告自报本轮不可执行、只给配方）。"
+  前端质量: "N/A（本轮 diff 不触及 *.tsx / *.vue / *.css / *.html，该项条件未触发）。"
+suggestions:
+  - "范围外：报告 files[] 的每文件跳过数字段名是 skipped_cases，与批准文本固定的字段名 skipped（SDD §2.4 报告模型 / TASK-03 §3.3 逐字字段表 / plan §2.1）不一致。该改名有硬约束支撑且不应在本 CR 内回改：plan J-8（plan §6.1 表注⑦）禁止包装器 stdout 与 JSON 出现独立单词 skipped，而 crctl 的冻结 skip 模式表（lib/workspace-transactions.mjs:3992-3998）含 SKIPPED 独立词（i 旗标）—— 我本轮实测：交付的 cmd-01.log 不命中全部 5 条冻结模式，而把键名写回 skipped 会命中 SKIPPED 独立词（键名后接引号即词边界），会把 cmd-01 判成 skip 态并作废本 CR 的证据面。建议在后续文档/计划修订中把 SDD §2.4 / TASK-03 §3.3 的字段表改为 skipped_cases 并登记改名理由。"
+  - "范围外：例外匹配语义与批准文本不一致，需先补文本口径再改判定，留给后续 CR。① SUITE_NONCONVERGENCE 的抑制条件批准文本是「未到期 + kind=suite-nonconvergence + 稳定标识与本项匹配」（SDD §3.2 check code 表与退出码段、§6.5 SDD-CLOSE-09、plan J-7），实测实现只按 kind 与未到期即抑制，nonconvergenceExceptions 未做任何标识匹配；② SUITE_FAILURES_UNREGISTERED 的覆盖键为 match 字段，该字段不在 SDD/PRD 的例外必填字段集（id/kind/reason/owner/expires）内，也不参与 schema 校验（缺 match 时不覆盖任何失败、并同时落 EXCEPTION_NOT_OBSERVED，属 fail-closed，不会形成静默自证绿通道）。交付态 exceptions=[] 无当前验收影响；修法是先由设计/计划明文定义例外的匹配键落在哪个字段（PRD FR-14.2 称「稳定标识（测试名或断言标识）」），再改判定代码。"
+  - "范围外：suite-gate --report 形态报告的 duration_ms 取各记录 duration_ms 之和，与 SDD §2.4「= 池式执行的整体墙钟，不是各文件耗时之和」不符（--run 形态正确，本 CR 的 cmd-01 与 NC/并发证据均为 --run 输出，不影响本 CR 证据）。属自测与负控路径的字段语义瑕疵，建议后续修订时改为墙钟或明确该形态不承诺该字段语义。"
+  - "范围外：CI 平台（ubuntu + Node 20）上的池大小收敛性未验证。本机实测 pool=2 与 pool=1 在 1200 s 内均不收敛，而 CI runner 的实际核心数未知（availableParallelism 低核时池会退化为 1）。SDD §6.4 已把该面登记为待核实依赖；建议 merge 前在 CI 上留一次 suite-gate --run 记录（非本 CR 验收面，不阻塞 code 阶段）。"
+review-loop:
+  current-attempt: 1
+release-subjects:
+  version: 1
+  repositories:
+    - repo: ai-first-platform-docs
+      remote-ref: refs/heads/requirement/CR-2026-065
+      reviewed-source-sha: 5327d7375987c0d742bb5ba9abc6be5cc071bca8
+    - repo: multica
+      remote-ref: refs/heads/requirement/CR-2026-065
+      reviewed-source-sha: ab9609483d17db12117cb8e9adb2d896f413917d
+    - repo: tools
+      remote-ref: refs/heads/requirement/CR-2026-065
+      reviewed-source-sha: 52fa8d7a2209e0873b4b98f1c3d7db240300f1ce
+  artifacts:
+    algorithm: sha256
+    canonicalization: crlf-to-lf+path-sort
+    files:
+      - { path: change-requests/CR-2026-065/plan.md, sha256: 2761e88cb1008f68d36a9de1b5eed20a8c97453e6bce677e7437ea087b73af1d }
+      - { path: change-requests/CR-2026-065/prd.md, sha256: 467b5d478a99a97ee780632dcaaeec38fd7fc11ed49616a823757ca9de911a18 }
+      - { path: change-requests/CR-2026-065/sdd.md, sha256: ecc1f90253ad28438bfc5ac20e7485b9c8dff57797d0805dadace5cd8917d62f }
+      - { path: change-requests/CR-2026-065/tasks/TASK-01.md, sha256: 1630c5e179f6a461295456a3781d040f002bef91a3d6cc1ee805b4f61a5d87e9 }
+      - { path: change-requests/CR-2026-065/tasks/TASK-02.md, sha256: f15b4940ca190bd33c610c8ddc87dbd71fc05ed784d900bf7087e5377f707069 }
+      - { path: change-requests/CR-2026-065/tasks/TASK-03.md, sha256: db45a25a6f3758f2c86bbd738d13e6a5f9f3b8bedcff13913ce5f7b45af0f727 }
+      - { path: change-requests/CR-2026-065/tasks/TASK-04.md, sha256: 85b27a343753da33079a4aceb55fa11a0912c9a2dfec0a5503b7b41e000ffa36 }
+      - { path: change-requests/CR-2026-065/tasks/_index.yml, sha256: b30d221804ba1ea12ecd39123e0003d75692876346c3d09fe615fbf0f1e9db5c }
+    digest: 2fb8a61d252e5a3a62832f26d981e2f42a3e08dda8fce4b4925eb5e47426b272
