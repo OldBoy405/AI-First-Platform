@@ -15,6 +15,13 @@ created: 2026-09-13T05:05:00+08:00
 
 # CR-2026-065-TASK-04 收敛决定、漂移负控与范围收口（G4，FR-12、FR-13、FR-15、FR-16）
 
+## 0. 阻断声明（本轮 `write-dev-tasks` replay，2026-09-13）
+
+**本卡被上游阻断（传递性），当前不可执行。** 依赖链：`plan.md` §0.0 的阻断事实（SDD §3.4 的 TAP per-file 归属机制在目标运行时不存在）⇒ TASK-03 的 per-file 核对面不可判、`cmd-01` 永红 ⇒ 本卡 §3.2 / §3.3 / §3.4 的验收面（`cmd-01` exit 0、`cmd-04`、`cmd-05`）不可达。
+
+- **与归属无关、可在修订版 SDD 落地后并入的部分**：§3.1 的并发收敛测量（`converged` / `duration_ms` / `command` 三个字段不依赖 per-file 归属；已有 1 份观测：去参 891.1 s / `converged=true` / `failures=0`）。
+- **出口**：`repair-target=write-tech-design` → upstream 链（`plan.md` §9.1）。不得在本卡内以任何形式降级 AC-10 / AC-11 / AC-13 / AC-14 —— 三类注入、`exceptions=[]` 交付态与 `manifest.cases` 终值刷新在修订版 SDD 定稿后**照原门槛**执行。
+
 ## 1. 任务描述
 
 **目标**：把「门禁绿」做成**有约束力且可复现**的：① 用有界实测协议定掉 `--test-concurrency`（TDEC-4）；② 对三类断言面各做一次**真实漂移注入** → 全量命令变红 → 还原 → 复绿，并把证据落盘（FR-13/AC-11）；③ 在全部新用例落地后刷新 `manifest.cases` 终值；④ 用 diff 白名单收口范围（FR-15/AC-13）。

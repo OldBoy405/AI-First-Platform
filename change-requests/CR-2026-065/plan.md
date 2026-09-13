@@ -6,7 +6,7 @@ sdd-ref: "change-requests/CR-2026-065/sdd.md"
 target-version: 0.38
 status: draft
 created: 2026-09-13T04:34:00+08:00
-updated: 2026-09-13T04:34:00+08:00
+updated: 2026-09-13T11:14:00+08:00
 ---
 
 # CR-2026-065 开发计划（CR-S：测试基线与门禁可信化 — 断言去硬编码、4 条基线漂移转绿、CI 全量步骤成为真门禁）
@@ -19,15 +19,57 @@ updated: 2026-09-13T04:34:00+08:00
 | `change-requests/CR-2026-065/prd.md` | 需求人工审批 evidence-digest（SDD §输入引用） | sha256(LF) `467b5d47…`（SDD 头部登记值；本计划只按 SDD 引用定位抽查，不全量复审 PRD） |
 | `cr.md#target-version` | 注册期继承 | `0.38`（禁止 tbd / 自行改写，CR-2026-057 FR-13） |
 
-- **两个硬边界**：① 不改 `sdd.md`（任何正文修订都会使 `subject-sha256` 失配、让已通过的评审与已落盘的人工审批失效，正确出口是状态机既有回退）；② 不改 `prd.md`。
+- **两个硬边界**：① **不改 `sdd.md`** —— 本计划落笔时已确认 SDD §3.4/§4.2 的 TAP 归属机制在目标运行时不存在（**§0.0**）；修订它的唯一合法出口是回 `write-tech-design` + 重新评审 + 重新人工审批，**不在本计划与本 TASK 集内**；② 不改 `prd.md`。
 - **目标代码仓 = `tools` 仓自身**（`skills/`、`skills/shared/crctl/scripts/**`、`.github/workflows/crctl-ci.yml`）；`ai-first-platform-docs`（KB）只承载本 CR 的过程文档（plan / tasks / test-report / test-evidence）；`multica` 仓**零改动**。
 - **本计划交付面**：`FR-1…FR-17` 全部在 scope；`zero_diff` 面（`dir-graph.yaml`、`pipeline-templates/*`、所有 `SKILL.md`、`lib/yaml-subset.mjs`、`lib/durable-tx.mjs`、`lib/workspace-transactions.mjs`、`skills/shared/controlled-shell/rules.json`）零 diff；§9 `follow_up` 三处硬编码断言（`crctl.test.mjs:4961`、`pipeline-structure.test.mjs:41`、`:183`）不进本轮 diff。
 
 ---
 
+## 0.0 阻断性事实：SDD §3.4 / §4.2 的 TAP 归属机制在目标运行时不存在（本节点第一手复核）
+
+**本计划是「路径甲」（人工授权）下回退轨的重放产物。** 回退入口 = 状态机既有边
+`review-code:plan-blocker -> write-dev-plan`（`developing -> tech-design-reviewed`）；
+授权原话「**授权甲**」（`Ray`，`2026-09-13T02:59:36Z`，AIFI-26 评论 `01a098b4-bae5-7c9a-b197-c070a9f4546c`），
+逐字留档见导航缓存 `_context.md` §0。**本次回退没有 `review-code` 的 BLOCK 前因**，该事实在授权下成立。
+
+**事实（`implement-code` 在 TASK-03 首次接触真实输出时发现，本节点按 `resources[].worktreePath` 复核）**：
+已批准 SDD 把「每文件归属」的唯一取法钉成 TAP 的「文件名块 + file 级 plan」：
+
+| SDD 要求（§3.4 解析规则 / §4.2 主干 / TDEC-1） | 目标运行时实测（第一手） |
+|---|---|
+| 以缩进栈识别 `# Subtest: <name>` 块；**文件名块（`<name>` 以 `.test.mjs` 结尾）必须有 file 级 plan `1..N`**，N = 该文件实际执行用例数 | 真实 21 文件全量 TAP：`# Subtest:` 共 **568 行，全部是用例名**；`# Subtest: *.test.mjs` = **0**；全文唯一 plan = 全局 `1..568`；passing 用例的 YAML 块内亦无 `location`（无任何 per-file 归属信息） |
+| 结构不符 → 硬失败 `SUITE_REPORT_UNPARSEABLE`（禁止静默降级为空结果） | 该分支在目标运行时**不是异常输入，而是唯一可能的输入形态**：按字面实现，`files_executed` 恒为 ∅ |
+| TDEC-1「TAP 结构是唯一外部耦合点」+ 命令单一来源显式钉 `--test-reporter=tap` | Node **24.15.0**（SDD §6.3/§7.4 登记的本地环境）、**20.20.2**（CI `node-version: 20`）、**18.20.8** 三版本输出一致（flat） |
+
+**排除性核查（同一运行时下的变量已逐一试过，结论不变）**：`--test-isolation=process` / `=none`、
+`--test-concurrency=1`、显式文件列表 vs 目录发现 —— 均不产生文件名块；文件名块**唯一**出现的场景是
+「整文件加载失败」（`# Subtest: <path>` + `not ok`，即 `SUITE_FILE_LOAD_FAILURE` 的形态），
+**不是**正常文件的正常分组。
+
+**后果（不得就地放宽）**：`files_executed` / 每文件用例数 / `manifest.files` 集合核对**不可判**
+⇒ `cmd-01` 永红 ⇒ **AC-01 / AC-11 / AC-12 / AC-13 / AC-14 不可达**，FR-11…FR-17 的验收证据面断裂。
+把 per-file 基线降级为全局口径、或跳过 per-file 核对 = 放弃「删用例换绿留痕」这条治理本意，
+正是 PRD §6 / SDD §2.3 要求关掉的口子，**不属实现自由度**。
+
+**修复面不属于 plan / TASK**：归属机制是 SDD §3.4 的设计选择，与 §4.2 的命令形态、TDEC-1 的
+「唯一外部耦合点」口径、`manifest.cases` 的 per-file 基线语义相互绑定。修订它 = 改已人工审批的
+SDD 正文 → 必须回 `write-tech-design` → 重新评审 → 重新人工审批。**本计划与 `tasks/` 不改
+`sdd.md` 一个字**，也不得就地实现未批准的替代机制（追加第二个 reporter 目的地 / 逐文件 spawn /
+改全局口径 —— 三者在 SDD 里都是**未批准能力**，见 §9.1 与 TASK-03 §0）。
+
+**因此本计划的 review 出口是 UPSTREAM**：`review-dev-plan` 的正确结论是
+`repair-target=write-tech-design` → 沿 `review-dev-plan:upstream-design-blocker`
+（状态机已声明：`task-breakdown -> tech-design-review-pending`）转技术设计修订链。
+即：本节之后的内容不是「可立即执行的实施计划」，而是「**带证据的阻断登记 + 未受影响的实施契约**」；
+SDD 修订落地后本计划需再次 replay 以吸收新设计。
+
+---
+
 ## 0. 基线与工作区事实（本节点实测，落笔即读，未轮询）
 
-- `crctl status CR-2026-065`（`--workspace` = CR worktree）= **`tech-design-reviewed`**；`crctl next` = **`write-dev-plan`**（`humanApproval=false`，why：技术设计已审批，编写开发计划）。`legalNext` 含 `write-dev-tasks` 与 reject/withdraw 轨。
+- `crctl status CR-2026-065`（`--workspace` = CR worktree）= **`tech-design-reviewed`**；`crctl next` = **`write-dev-tasks`**（why：技术设计已审批 + 本计划已由 `write-dev-plan` 重放落盘；阻断见 §0.0）。`legalNext` 含 `task-breakdown` 与 reject/withdraw 轨。
+- **A2 回退实测（本节点）**：`advance CR-2026-065 --to tech-design-reviewed --trigger "review-code:plan-blocker -> write-dev-plan" --expect developing` → `advanced=true` / `from=developing` / `to=tech-design-reviewed` / `committed=true` / `outbox=20260913T030812107Z-CR-2026-065-status-fce32046.json`；KB worktree 随后 `status --short` 为空（无 `cr.md` 残留）。
+- **A1 保命本地提交（本节点）**：tools `2c84241`（`crctl.mjs` + 4 个 test + 4 个新增文件，9 files changed）、KB `77148b08`（`tasks/_index.yml` 两次 done 标记 + `_context.md`）。**未 push**（保命提交，非 checkpoint）。
 - `crctl workspace inspect CR-2026-065`：三仓 `classification=healthy`、`dirty=false`、`localBranch/remoteBranch=true`；`operationalWorkspace` 非空。
 - 架构阶段终点 checkpoint 已在本节点首位执行：`crctl checkpoint CR-2026-065 --message 架构设计已审批` → `phase=complete`、`changed=true`、`batchId=ea4a2e983ad72769`、`metadataCommit=0ef787ef7dcdef755427cc9e123a3c5da469b158`，三仓 `confirmed=true`（`sourceSha`：KB `de8b5110…` / multica `ab960948…` / tools `dddd0ad63fb79bd7608314b4553f30e8ce7b7289`）。
 - 路径 authority（`crctl workspace inspect` 的 `resources[]` 原样值，**不拼接、不回退主工作区**）：
@@ -55,7 +97,8 @@ updated: 2026-09-13T04:34:00+08:00
 
 **基线红登记（本 CR 的起点事实，不是方案前提）**
 
-- 固定 `tools@dddd0ad63fb79bd7608314b4553f30e8ce7b7289` 上不带例外跑全量 21 个 `*.test.mjs`：**exit 1 / 894.8 s / 失败恰 5 条**（**既有实测**：AIFI-25 作者与 reviewer 各独立跑过一次；本节点 15 min 预算不足以重跑全量，未复跑）。
+- 固定 `tools@dddd0ad63fb79bd7608314b4553f30e8ce7b7289` 上不带例外跑全量 21 个 `*.test.mjs`：**exit 1 / 894.8 s / 失败恰 5 条**（**既有实测**：AIFI-25 作者与 reviewer 各独立跑过一次；重放本计划时 15 min 预算不足以重跑全量，未复跑）。
+- **TASK-01/02 落地后的本机实测**（`implement-code` 节点，2026-09-13）：全量 21 文件、去参（runner 默认并发）**exit 0 / `1..568` / pass 568 / fail 0 / 891.1 s**；`cmd-02`、`cmd-03` 各自 exit 0。⇒ 五条红在本地全量口径下已清空，BR-1…BR-5 的处置有效。**这不改变 §0.0 的阻断**：`cmd-01` 走的是 `suite-gate.mjs` 的 per-file 判定面，其归属前提不存在。
 - **AC-01 的「exit 0 / 失败集合为空」是本 CR 的交付目标，不是变更前事实。** 5 条红在本计划与 TASK 里一律按「**待修的红**」登记：
 
 | # | 用例（逐字） | 载体文件、断言锚点 | 引入变更 | 本 CR 处置 TASK |
@@ -79,8 +122,8 @@ updated: 2026-09-13T04:34:00+08:00
 | M2 计划与任务拆分 | 本 `plan.md` + `tasks/TASK-01…04.md` + `tasks/_index.yml`（`crctl task init --count-hint 4`）→ `task-breakdown` | 流程节点（非交付 TASK） | 0.5 人天 |
 | M3 断言层去硬编码 + 四条漂移转绿 | `assertion-sources.mjs` + `gate-registry.json`（受控清单，含 `stateMachine.*`）+ BR-1…BR-4 四条断言按其事实源重写 | CR-2026-065-TASK-01 | 16h |
 | M4 去重契约提级 + BR-5 构造改对 | `lib/outbox-contract.mjs` + `crctl.mjs#emitOutboxEvent` 最小改点 + RED-7 构造 A（真实崩溃窗口）+ 新用例 B（同名不同内容）+ 契约断言 | CR-2026-065-TASK-02 | 16h |
-| M5 CI 真门禁 + 例外治理 | `suite-gate.mjs`（TAP 解析 / 清单核对 / 例外面四查 / 退出码）+ `contract-scan.test.mjs` 静态断言与解析自测 + `crctl-ci.yml:109-111` 改造 | CR-2026-065-TASK-03 | 20h |
-| M6 收敛决定 + 漂移负控证据 + 范围收口 | `--test-concurrency` 有界实测（≥2 次/候选）→ 定常量；三类注入 → 全量红 → 还原绿（6 次全量）；`manifest.cases` 终值刷新；diff 白名单审计 | CR-2026-065-TASK-04 | 16h |
+| M5 CI 真门禁 + 例外治理 | `suite-gate.mjs`（TAP 解析 / 清单核对 / 例外面四查 / 退出码）+ `contract-scan.test.mjs` 静态断言与解析自测 + `crctl-ci.yml:109-111` 改造 —— **阻断：见 §0.0，待 SDD 修订 + 重评 + 重批后 replay 本计划方可执行** | CR-2026-065-TASK-03 | 20h |
+| M6 收敛决定 + 漂移负控证据 + 范围收口 | `--test-concurrency` 有界实测（≥2 次/候选）→ 定常量；三类注入 → 全量红 → 还原绿（6 次全量）；`manifest.cases` 终值刷新；diff 白名单审计 —— **阻断：见 §0.0（其验收面依赖 `cmd-01`）** | CR-2026-065-TASK-04 | 16h |
 | M7 评审与人工门禁 | `review-dev-plan` → `approve --stage dev-start` → `implement-code` → `write-test-report`（§6.2 五条命令）→ `review-code` → `approve --stage code` | 流程节点 | 流程 |
 | M8 发布 | `merge-feature-branch` → writeback → archive（既有 CR 流程，**不建交付 TASK**） | 流程控制节点 | 流程 |
 
@@ -151,7 +194,7 @@ TASK-02 outbox 契约与 BR-5         │
 | R-01 | 证据集超出 `write-test-report` 节点 20 min 预算 | 高 | 本节点实测分量：cmd-02 = 11.0 s～135 ms、cmd-03 = 22.6 s、cmd-04/05 ≈ 2 s；**全部不确定性在 cmd-01（全量整跑）**。按 §5.4 预算（≈ 900 s + 145 s）留 ≈ 155 s 余量；若 TASK-04 测得全量整跑 > 1000 s，则**优先调 `--test-concurrency` 常量选更快且收敛的配置**，而不是删命令或放宽 AC |
 | R-02 | 全量整跑超 `--max-runtime-ms`（cmd-01 传 1200000 ms）被判非收敛 | 中 | cmd-01 的 `--max-runtime-ms` 刻意取 1200 s < cmd 超时 1500 s，使「停滞」以门禁自己的 `converged=false` + `SUITE_NONCONVERGENCE` 落证据（而非 crctl 超时）；TASK-04 的并发决定必须同时满足「整跑 ≤ 1200 s」，不满足则按 R-01 处理 |
 | R-03 | 并发根因未知（`=2` 本机 30+ min 不收敛，与同配置 894.8 s 的既有实测矛盾） | 中高 | TDEC-4 有界协议：两候选各 ≥2 次连续整跑，证据写入 `test-evidence/concurrency/`；若不收敛可在 `--max-runtime-ms` 下复现为可观测事件；**禁止**把「已知不收敛观测」的配置不经实测就写进门禁常量 |
-| R-04 | TAP 解析是唯一外部耦合点（reporter 默认值随 Node 版本 / 是否 TTY 变化） | 中 | 命令单一来源显式钉 `--test-reporter=tap`；解析失败硬失败（`SUITE_REPORT_UNPARSEABLE`）；`contract-scan.test.mjs` 用内联 TAP 片段做合法 + 三类畸形自测（不新增测试文件） |
+| R-04 | **TAP 解析是唯一外部耦合点 —— 该风险已实现为阻断性事实**：SDD §3.4 要求的「文件名块 + file 级 plan」在 Node 24.15.0 / 20.20.2 / 18.20.8 上**均不产生**（`# Subtest: *.test.mjs` = 0；全文唯一 plan = 全局 `1..568`），per-file 归属不可判 | **阻断（已实现）** | 见 §0.0：**不就地放宽**（不加第二 reporter 目的地 / 不逐文件 spawn / 不降全局口径）；出口 = `repair-target=write-tech-design` → upstream 设计修订链（§9.1）。修订版 SDD 定稿前，实现面候选（O1/O2/O3）**不得**进入本 TASK 集 |
 | R-05 | 例外登记面成为「自证绿」通道 | 中 | 交付态 `exceptions: []`（显式空数组）；`contract-scan` 静态断言仓库内无对 `gate-registry.json` 的写入调用；登记不替代执行（失败始终上报）；到期即红 |
 | R-06 | 推导退化为等价重述（恒真式），绿无约束力 | 中高 | 登记值与推导值是两条独立来源（推导 → `dir-graph.yaml`；登记 → `gate-registry.json`），集合/计数比较 + 三类负控注入（§6.4）证明「注入即红」 |
 | R-07 | BR-5 新用例构造复杂（journal 置 pending + 同名不同内容 + 补发）易脆 | 中 | 沿用 `archive-tx.test.mjs` 文件内局部 helper（`makeWritebackFixture`:14 / `archiveOutboxFiles`:231），不上提共享 fixture；构造 B 的四步断言按 SDD §4.5 逐条落地；断言面用文件内容比较而非时间/顺序 |
@@ -224,6 +267,7 @@ TASK-02 outbox 契约与 BR-5         │
 ② **FR-13 的执行面在实施期、证据面在 cmd-05**：三类注入各需「注入 → 全量整跑 → 还原 → 全量整跑」，共 6 次整跑，无法装入 `write-test-report` 的 20 min 预算（§5.4）；因此协议在 `implement-code`（`TASK-04`）内执行并落证据文件，`cmd-05` 只核对记录形态（`verdict` / `failures` / `converged`）。**这不是假绿**：注入确实在交付分支内真实发生过并留下逐次日志，注入物不在交付 diff 中（由 `cmd-04` 的 diff 白名单兜底）。
 ③ FR-1…FR-3 的「断言 → 事实源」映射 = SDD §4.4 两列表 + §6.6 D/P 两张表（已审批，本计划不复述其内容），其**机器可核面**是 cmd-02（集合/计数等价）与 cmd-04（登记值 schema），不靠人工比对。
 ④ FR-16 的「无新增 skip」由 cmd-01 的 `skipped_file_level=0` + crctl `commands[].skipped=false` 双向承载。
+⑤ **本表 FR-11…FR-17 行的「验收证据」在本计划下不可达（阻断，见 §0.0）**：`cmd-01` 的 per-file 归属前提（SDD §3.4）在目标运行时不存在 ⇒ FR-11、FR-12、FR-13、FR-14、FR-15、FR-16、FR-17 的验收面断裂。**本表仍按 SDD 逐字登记其原定证据面（不改结构、不删行、不改列）**，以便 SDD 修订后 replay 本计划时逐行复核；但它**不能**被读成「这些 FR 已有可达证据」。已达标（`cmd-02`/`cmd-03` = exit 0）：FR-1…FR-10。
 
 ### 6.2 证据命令表（稳定表 2/2）
 
@@ -320,6 +364,8 @@ TASK-02 outbox 契约与 BR-5         │
 > - AC-02 / AC-03 的唯一 owner = TASK-01（断言与事实源的推导层；证据 cmd-02、cmd-04）。
 > - 四个 TASK 均在矩阵中出现，与 `tasks/_index.yml#id` 集双向一致；业务闭环行不与关键 AC 行争用同一证据语义。
 
+> **本轮阻断标注（见 §0.0）**：**AC-01 / AC-10 / AC-11 / AC-12 / AC-13 / AC-14 的验收证据在本计划下不可达**（依赖 `cmd-01` 的 per-file 归属面，或依赖 `cmd-01` 绿）；本表行结构、TASK owner 与证据标识**逐字保留**，SDD 修订后 replay 时逐行复核。**已达标**：AC-04…AC-09（TASK-01/02；`cmd-02`、`cmd-03` = exit 0，见 §0）。本标注不改变任何 AC 的验收门槛（**不降级、不豁免**）。
+
 ---
 
 ## 8. 任务输入约束与残余项收口对照
@@ -362,3 +408,16 @@ TASK-02 outbox 契约与 BR-5         │
 - 四张 TASK 卡的完成边界全部落在 `developing` 内可被 `crctl task done` 登记的事件（实现已落盘 + 证据命令绿 + 任务账本登记），**无 merge / writeback / archive / code-reviewing / code-approved 前置**（流程控制 TASK 禁止）。
 - TASK-02 新增用例的 `test(...)` 名必须以 `CR-2026-065` 起始（§6.2 表注②）；TASK-04 负责 `manifest.cases` 终值刷新（§4.1 R-10）。
 - **`zero_diff` 复核清单（TASK 卡须逐条声明不触碰）**：`dir-graph.yaml`、`pipeline-templates/*`、所有 `SKILL.md`、`lib/yaml-subset.mjs`、`lib/durable-tx.mjs`、`lib/workspace-transactions.mjs`、`skills/shared/controlled-shell/rules.json`、`crctl.mjs` 顶层 dispatch 与既有子命令签名/参数/错误码、历史 CR 产物与 `specs/`、`delivery/`。
+
+### 9.1 本轮阻断与本计划的 review 出口（`write-dev-plan` 回退轨）
+
+| 组 | TASK | 本轮状态（`tasks/_index.yml`） | 阻断关系 |
+|---|---|---|---|
+| G1 断言推导与四条漂移转绿 | `CR-2026-065-TASK-01` | **`done`** | 不受 §0.0 影响（四条断言的判据面均为仓内事实） |
+| G2 去重契约提级与 BR-5 修正 | `CR-2026-065-TASK-02` | **`done`** | 不受 §0.0 影响（去重语义与 TAP 归属无关） |
+| G3 CI 真门禁与例外治理 | `CR-2026-065-TASK-03` | `pending` | **阻断**：`suite-gate.mjs` 的判定面已按 SDD 落地，但清单核对面（`manifest.files` / `manifest.cases`）**依赖 SDD §3.4 的 per-file 归属机制** |
+| G4 收敛决定、漂移负控与范围收口 | `CR-2026-065-TASK-04` | `pending` | **传递阻断**：其验收面（`cmd-01` exit 0）以 TASK-03 的 per-file 归属为前提；§3.1 的并发测量本身与归属无关，可在修订版 SDD 落地后并入 |
+
+- **review 出口（唯一合法结论）**：`review-dev-plan` 的 `repair-target = write-tech-design`，route = **UPSTREAM** → `advance --to tech-design-review-pending --trigger review-dev-plan:upstream-design-blocker --expect task-breakdown --embedded`，由人工走「修订 SDD → 重新评审 → 重新审批」链。**不得**把本计划判为 pass（那等于带着已失效的前提进实现），**不得**把 route 改判为 normal（那不是 plan/TASK 的翻译错误，而是 SDD 的设计前提为假）。
+- **SDD 修订落地后需要 replay 的范围**：本计划全文 + TASK-03 §0/§3.4/§5 + TASK-04 §3.3/§3.4/§5（`manifest.cases` 的 per-file 语义与 `cmd-01` 的报告字段口径按新设计重述）；TASK-01/02 的卡片与已交付实现**不动**（其 `done` 登记与实现产物保留）。
+- **可复用资产（修订版 SDD 下无需重做）**：`test/suite-gate.mjs` 的判定面 / 例外面四查 / check code 表 / 13 字段报告模型 / `--report` 解析自测；`assertion-sources.mjs`、`gate-registry.json`、`lib/outbox-contract.mjs` 与 TASK-01/02 的全部用例。

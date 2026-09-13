@@ -15,6 +15,18 @@ created: 2026-09-13T05:05:00+08:00
 
 # CR-2026-065-TASK-03 CI 真门禁与例外治理（G3，FR-11、FR-14、FR-17）
 
+## 0. 阻断声明（本轮 `write-dev-tasks` replay，2026-09-13）
+
+**本卡在已批准 SDD（`review-annotations/sdd.yml#subject-sha256 = 1e6af84f…`）下不可完成 —— 设计前提为假。** 本声明不修 SDD、不降级任何验收门槛，只登记事实与出口（完整证据见 `plan.md` §0.0）。
+
+**事实（第一手）**：SDD §3.4 / §4.2 要求解析器以「文件名块（`# Subtest: <file>.test.mjs`）+ file 级 plan `1..N`」取得**每文件归属**。真实 21 文件全量 TAP 实测：`# Subtest:` 568 行**全部是用例名**、`# Subtest: *.test.mjs` = **0**、全文唯一 plan = 全局 `1..568`；Node 24.15.0 / 20.20.2 / 18.20.8 三版本一致；`--test-isolation=process|none`、`--test-concurrency=1`、显式文件 vs 目录发现均不产生文件名块。⇒ `files_executed` / `manifest.files` / `manifest.cases` 三项核对面**不可判** ⇒ `cmd-01` 永红 ⇒ AC-01 / AC-12 / AC-15 不可达。
+
+**已完成且可复用的部分**（`implement-code` 已落地，留在 tools worktree 提交 `2c84241`）：`test/suite-gate.mjs` 的两形态 CLI、唯一命令来源（显式 `--test-reporter=tap` + `CONCURRENCY` 常量）、13 个 check code 与退出码规则、例外面四查、非收敛分支与 E-2 收口、13 字段报告模型、`--run` 全字段 JSON 到 stdout。**缺的只有被 §3.4 依赖的 per-file 归属面**；`crctl-ci.yml:109-111` **一字未改**（不把不可用的门禁接进 CI）。
+
+**出口（不属于本卡）**：归属机制是 SDD §3.4 的设计选择，与 §4.2 命令形态、TDEC-1 口径、`manifest.cases` 的 per-file 语义相互绑定 ⇒ `repair-target=write-tech-design` → upstream 链（`plan.md` §9.1）。**不得**在本卡内实现未批准的替代机制（追加第二 reporter 目的地 / 逐文件 spawn / 全局口径），也不得放宽 §3.4 的硬失败语义。
+
+**本卡 §1…§6 保持原样**：它们是 SDD 修订后 replay 本计划的输入契约，届时按修订版 SDD 重述 §3.4 与相关判据面。
+
 ## 1. 任务描述
 
 **目标**：让 `.github/workflows/crctl-ci.yml:109-111` 的全量测试步骤成为**真门禁**——由 `test/suite-gate.mjs` 包装 `node --test`、解析 TAP、核对受控清单与例外登记面、按固定 check code 与退出码规则判定；并在 `contract-scan.test.mjs` 增补「登记面不得自证绿」的静态断言与 TAP 解析自测。
@@ -70,6 +82,8 @@ verdict       "pass" | "block"
 
 ### 3.4 TAP 解析（硬失败，禁止降级）
 
+> **本轮阻断点（见 §0）**：本节的「文件名块 + file 级 plan」在目标运行时**不存在** —— 按字面实现，`files_executed` 恒为 ∅。本小节在修订版 SDD 定稿前**不得**以任何替代机制落地，也不得降级为全局口径。
+
 - 以缩进栈识别 `# Subtest: <name>` 块；文件名块（`<name>` 以 `.test.mjs` 结尾）必须有 file 级 plan `1..N`，`N` = 该文件**实际执行的用例数**；块内 `not ok` 行 = 失败用例名（`# SKIP` / `# TODO` 后缀分别计入 skip / todo）；
 - 无 file 级 plan、块不成对、plan 与实际行数矛盾 → 抛错（`SUITE_REPORT_UNPARSEABLE`）；**任何解析异常都不得返回「零失败」结果**（工程纪律 #1）；
 - 非收敛分支：`converged=false` 时不做清单核对与失败集合核对（`files_executed=null` / `cases_executed=null` / 相关 `checks[].not_evaluated=true`），只判 `SUITE_NONCONVERGENCE` 与登记面自身错误（`EXCEPTION_*`）；`SUITE_REPORT_UNPARSEABLE` 只在「进程已自行结束（`converged=true`）而 TAP 结构仍不完整」时触发（两者不混算）；
@@ -120,6 +134,7 @@ verdict       "pass" | "block"
 
 ## 5. 完成标志
 
+- **前置（阻断解除）**：修订版 SDD（`write-tech-design` → 重新评审 → 重新人工审批）落地后 replay 本卡；在此之前本卡不得标 `done`，也不得修改 `crctl-ci.yml:109-111`。
 - `suite-gate.mjs` 落地：§3.1 CLI、§3.2 唯一命令来源（显式 `--test-reporter=tap`）、§3.3 报告字段、§3.4 TAP 硬失败与非收敛口径、§3.5 check code 与退出码、J-8 禁词；
 - `contract-scan.test.mjs` 静态断言 + 三类畸形 TAP 自测绿；CI 步骤改为调用包装器；
 - `cmd-01` 首次 `--run` 落盘报告（字段齐备、判定与失败集合自洽；绿或按非收敛口径落红证据）；`cmd-04` exit 0；
