@@ -6,11 +6,12 @@ title: CR-S：测试基线与门禁可信化 — 断言去硬编码、4 条基�
 target-version: 0.38
 status: draft
 created: 2026-09-13T03:26:00+08:00
-updated: 2026-09-13T03:48:00+08:00
+updated: 2026-09-13T13:35:00+08:00
 ---
 
 > 输入：`change-requests/CR-2026-065/prd.md`（sha256(LF) `467b5d47…`，已评审 PASS 并经人工审批）。
 > 修订（`review-tech-design` attempt 1/3 BLOCK 后的定点回修）：**B-1** §4.4 BR-2 行——三词改为「否定辖域」机械判据、零命中面收缩为已核对为真的 `latest-checkpoint` / `checkpoints[]`；**B-2** §6.3 第 5 项拆为两项——按本机实测登记 `merge-fixture.mjs` 的真实导出，新增第 6 项承载 `archive-tx.test.mjs` 的文件内局部 helper；**B-3** §3.1/§4.3/§2.2 统一 VOLATILE 键空间（`OUTBOX_VOLATILE_PAYLOAD_KEYS`，payload 根下相对键）并补「投影闭合」不变量。本轮一并关闭 3 条 in-scope suggestions（S-1 非收敛例外的判读、S-2 恒真结构自检、S-3 显式钉 TAP reporter + 解析自测），逐条落点见 §6.5 `SDD-CLOSE-09`…`SDD-CLOSE-11`。
+> 修订（`review-tech-design` attempt 2/3 BLOCK 后、由 `review-dev-plan` upstream 阻断（`review-annotations/dev-plan.yml`，`repair-target=write-tech-design`）触发的定点回修；本轮 = `review-tech-design` attempt 3/3）：**B-4（唯一 blocker）** 已批准 SDD 的 per-file 归属前提「TAP 文件名块 + file 级 plan」在**目标运行时不存在**（Node v24.15.0 与 CI 同版本 v20.20.2 均非此形态，§7.4 P1/P2 实跑探针）⇒ 归属机制改为「**逐文件 spawn + 逐文件观察**」：归属由 spawn 构造给出，**不读任何报告的块结构**；文件集合漂移改为对**磁盘事实源**（`readTestFileSet`）核对；每文件用例数改为「单文件顶层 plan / 顶层结果行数一致」并逐文件与 `manifest.cases` 比对。落点：§1.3/§1.4、§2.3、§2.4（新增 `files[]` / `observer`）、§3.2（**归属不变量 I1…I3 + 机制与替代**）、§4.2、TDEC-1/TDEC-4、§6.2（AC 可达性）、§6.4、§6.5（`SDD-CLOSE-11` 改写 + 新增 `SDD-CLOSE-12`）、§7.4（无证据的保证性陈述 → 两运行时实跑探针表）。**不变量未放宽**：真实执行 / 每文件用例数 ≥ 基线 / 解析失败硬失败仍是硬约束（§3.2 I1…I3）；证据面见 §7.4 与 §6.4。
 > 目标代码仓：**`tools` 仓自身**（本 CR 改 `skills/`、`skills/shared/crctl/scripts/`、`.github/workflows/crctl-ci.yml`），故按 `write-tech-design` Step 1.2 的特殊分支读取 `tools/ARCHITECTURE.md`（**只读不改**，13562 B，已存在）。
 > 本文档只描述设计与实现契约；实测证据（负控、收敛、耗时）由实施与测试期产出，格式由 §4.6 与 §3.2 固定。
 
@@ -54,7 +55,7 @@ tools 包的分层（`tools/ARCHITECTURE.md` §4）：使用方仓库 → Pipeli
         ▼
 test/suite-gate.mjs ──读──▶ test/gate-registry.json        （只读；唯一写入口 = 人类编辑 + git commit）
         │
-        │  spawn: node --test <glob>   （单一命令来源）
+        │  spawn × N: node --test --test-reporter=tap <file>   （每文件一个子进程；文件清单由包装器展开，单一命令来源）
         ▼
 *.test.mjs（21 个）──读──▶ test/assertion-sources.mjs ──▶ lib/yaml-subset.mjs（既有解析器）
         │
@@ -71,10 +72,10 @@ test/suite-gate.mjs ──读──▶ test/gate-registry.json        （只读�
 CI step「crctl full test suite」
   └─ suite-gate --run
        1. 读 gate-registry.json（缺失/坏 schema → 硬失败，零静默）
-       2. 用固定命令跑全量套件，边跑边落 TAP 报告（--report-out）
-       3. 解析 TAP → 实际执行的文件集合 / 每文件用例数 / 失败用例名 / 文件级 skip 数
-            （解析失败 → SUITE_REPORT_UNPARSEABLE 硬失败，禁止降级为空结果；进程未自行结束的分支见 §3.2 非收敛口径）
-       4. 受控清单核对（文件集合相等、每文件用例数 ≥ 基线）
+       2. 按登记面清单**逐文件** spawn 全量子进程（池大小 = CONCURRENCY 常量），每个子进程的原始 TAP + 退出码落 --report-out（NDJSON）
+       3. 逐文件解析该文件**自己的** TAP → 该文件用例数 / 失败用例名 / 文件级 skip；**归属由 spawn 构造给出，不读报告**（§3.2 I1）
+            （任一文件解析失败 → SUITE_REPORT_UNPARSEABLE 硬失败，禁止降级为空结果；进程未自行结束的分支见 §3.2 非收敛口径）
+       4. 受控清单核对（磁盘 `*.test.mjs` 集合 ≡ 登记集合；每文件用例数 ≥ 基线，逐项见报告 `files[]`）
        5. 例外面核对（schema / owner / 到期 / 与真实失败集合的双向匹配）
        6. 结论：退出码 0 当且仅当 §3.2 check code 表中无任一**未被抑制**的触发
             （正常收敛：失败集合差为空且 3/4/5 全过；非收敛分支：改判 `SUITE_NONCONVERGENCE` 行，不做 3/4 核对）
@@ -132,14 +133,16 @@ Schema `crctl-suite-gate/v1`（字段全部必填，缺 = 红）：
 
 | 段 | 语义 | 谁读 | 变更后果 |
 |---|---|---|---|
-| `manifest.files` | 全量命令必须执行的测试文件集合（仓库相对文件名） | `suite-gate` | 实际执行集合 ≠ 登记集合 → `SUITE_MANIFEST_FILE_DRIFT` 红 |
-| `manifest.cases` | 每文件用例数**基线**（实施期实测登记，见 FR-16） | `suite-gate` | 实际用例数 < 基线 → `SUITE_MANIFEST_CASE_DROP` 红（关闭 S-1：删用例换绿在门禁上留痕） |
+| `manifest.files` | 必须被执行的测试文件集合（仓库相对文件名） | `suite-gate`（执行面 + 核对面） | ① 磁盘上 `test/*.test.mjs` 的实际集合 ≠ 登记集合 → `SUITE_MANIFEST_FILE_DRIFT` 红；② 登记集合中任一文件未被真实 spawn、或未产出可判结论 → `SUITE_REPORT_UNPARSEABLE` / `SUITE_FILE_LOAD_FAILURE` 红（归属由 spawn 构造保证，§3.2 I1） |
+| `manifest.cases` | 每文件用例数**基线**（实施期实测登记，见 FR-16）。计数单位 = 该文件在**独立子进程**中执行时其 TAP 的**顶层结果数**（顶层 plan `1..N` 与顶层 `ok`/`not ok` 行数一致；两目标运行时实测同形态，§7.4 P9） | `suite-gate` | 该文件实际顶层用例数 < 基线 → `SUITE_MANIFEST_CASE_DROP` 红（关闭 S-1：删用例换绿在门禁上留痕） |
 | `stateMachine.namedStates` | 具名状态集合（15 个；注册前态 `(new)` 单列，不入集合） | 状态机断言 | 与推导集合不等 → 红（FR-6.2） |
 | `stateMachine.wildcards` | wildcard 名 → 目标集合（当前 `any-active` → 12 个） | 状态机断言 | 增删目标即红（关闭 S-3） |
 | `stateMachine.transitions` | 每条声明转换的稳定标识 `(from,to,trigger)`（当前 31 条） | 状态机断言 | 增删改名任一转换即红，除非显式更新登记值 |
 | `exceptions` | 例外单一登记处；本 CR 交付态 = **空数组**（显式声明为空，非「文件不存在」） | `suite-gate` | 见 §3.2 错误码表 |
 
-**登记值的初值来源**：`stateMachine.*` 由实施期从 `dir-graph.yaml` 推导后原样登记（当前实测：具名状态 15、声明转移 31、`from: any-active` 2 条、`any-active` 目标 12 个、展开 31−2+12×2 = **53**）；`manifest.cases` 由实施期在 5 条修复与新增用例落地后实测登记。登记后**不得**再由脚本自动改写（受控写入 = 人工提交）。
+**登记值的初值来源**：`stateMachine.*` 由实施期从 `dir-graph.yaml` 推导后原样登记（当前实测：具名状态 15、声明转移 31、`from: any-active` 2 条、`any-active` 目标 12 个、展开 31−2+12×2 = **53**）；`manifest.cases` 由实施期在 5 条修复与新增用例落地后**逐文件**实测登记。登记后**不得**再由脚本自动改写（受控写入 = 人工提交）。
+
+**归属与基线的事实源分工（B-4 修订）**：本段的 `manifest.*` 只承载**目标值**（§6.6 P5），不承载归属机制。「某条结果属于哪个文件」这一事实由**执行构造**给出 —— 每个登记文件一个独立 `node --test` 子进程，包装器在 spawn 时就已持有归属，**不解析任何报告即得**（§3.2 I1、§4.2）。于是归因链上唯一的报告解析面收缩为「单文件内取顶层用例数与失败名」，解析不符即 `SUITE_REPORT_UNPARSEABLE` 硬失败（工程纪律 #1），不存在静默降级；文件集合本身的事实源也改为**磁盘目录**（`readTestFileSet`），不再是「从一份多文件报告里读出来的实际执行集合」。
 
 ### 2.4 新增实体 2：门禁运行报告（`suite-gate` 的固定字段，关闭 S-2）
 
@@ -147,12 +150,14 @@ Schema `crctl-suite-gate/v1`（字段全部必填，缺 = 红）：
 
 ```text
 schema        "crctl-suite-gate-report/v1"
-command       实际执行的完整命令（含并发参数，字符串）
-duration_ms   全量命令耗时（整数）
-converged     进程是否自行结束（false = 触发 --max-runtime-ms 被终止，即停滞）
-exit_code     被测命令退出码（被终止时为 null）
+command       实际执行的命令模板与展开规模（含池大小常量，字符串；唯一命令来源仍是包装器，§3.2）
+observer      本轮实际使用的每文件观察通道（"tap-per-file" = 本设计默认；替代通道见 §3.2「机制与替代」）
+duration_ms   全量门禁耗时（整数；= 池式执行的整体墙钟，不是各文件耗时之和）
+converged     全部子进程是否已自行结束（false = 触发 --max-runtime-ms 被终止，即停滞）
+exit_code     全量结论退出码（全绿 0；被终止时为 null；逐文件退出码在 files[]）
 files_executed / cases_executed / skipped_file_level
-failures[]    失败用例名
+files[]       每文件观察记录 [{ file, state, exit_code, cases, failures[], skipped, todo, duration_ms }]；state ∈ ok|failed|file-load-failure|unfinished（unfinished = 停滞终止时仍在运行）
+failures[]    失败用例名（全部文件的并集，去重）
 checks[]      [{ code, ok, detail, suppressed_by?, not_evaluated? }] 逐项门禁结论（固定 check code；被例外抑制时 ok=false 且带 suppressed_by=<exception-id>；非收敛分支未做的核对项带 not_evaluated=true）
 registry      { sha256, exceptions_count }
 platform      { platform, node }
@@ -160,6 +165,7 @@ verdict       "pass" | "block"
 ```
 
 字段名固定（S-2 要求「交付物字段写死」），实施期不得改名；`test-report` 的 `test-evidence/cmd-NN.log` 直接落该 JSON。
+**本轮变更（B-4）**：新增 `files[]` 与 `observer` 两个字段。`files[]` 使「每文件用例数 ≥ 基线」这条不变量（I2）在证据面上**逐项可核**（`files[].cases` ↔ `manifest.cases`），不再需要二次解析报告；`observer` 登记实际观察通道，使「机制被替换过」这件事在证据里留痕（§3.2）。
 
 **数据/schema 变更触发声明**：本 CR 不涉及数据库 schema、数据迁移或写路径鉴权（N/A，理由：断言只读 + 唯一新数据文件为 git 跟踪的受控清单，无事务/回滚语义）。故本节不含 down/回滚设计。
 
@@ -192,32 +198,46 @@ export function buildOutboxComparable(event) { /* 由上面三个声明驱动的
 **调用形态**
 
 ```text
-node skills/shared/crctl/scripts/test/suite-gate.mjs --run [--report-out <tap>] [--json-out <json>]
+node skills/shared/crctl/scripts/test/suite-gate.mjs --run [--report-out <ndjson>] [--json-out <json>]
                                                            [--max-runtime-ms <n>] [--cwd <tools-root>]
-node skills/shared/crctl/scripts/test/suite-gate.mjs --report <tap> --rc <exit-code> [--json-out <json>]
+node skills/shared/crctl/scripts/test/suite-gate.mjs --report <ndjson> [--json-out <json>]
 ```
 
-- `--run`（CI 与本地证据的唯一形态）：由包装器**自己**以固定命令 spawn 全量套件（并发参数由包装器内常量决定，见 §5.4）。
-- `--report/--rc`：只做判定，不跑套件（负控与回归自测用）。
+- `--run`（CI 与本地证据的唯一形态）：由包装器**自己**按登记面清单**逐文件** spawn 全量套件 —— 每文件一个 `node --test --test-reporter=tap <abs file>` 子进程，池大小由包装器内唯一常量 `CONCURRENCY` 决定（TDEC-4）；每行落一条 `{ file, exit_code, converged, tap }`（NDJSON）。
+- `--report <ndjson>`：只做判定，不跑套件（负控与回归自测用）；输入与 `--run --report-out` **同一形状**，因此判定函数只有一份。
+
+**归属不变量 I1…I3（必须为真，与机制无关；机制不得违反）**
+
+| # | 不变量 | 承载点 |
+|---|---|---|
+| I1 | 登记清单里**每一个文件**都被真实执行，且「某条结果属于哪个文件」**可判** —— 不靠人工核对，也不靠报告的块结构猜 | 逐文件 spawn：归属在 spawn 时由包装器持有（§4.2）；登记集合 ≡ 磁盘集合（`readTestFileSet`，FR-3/D3） |
+| I2 | 每个文件的执行规模（用例数）**可观测**，并与登记基线**逐文件**比较（`<` 即红） | 每文件自己的 TAP 顶层结果数；`files[].cases` ↔ `manifest.cases` 逐项比对（§2.4） |
+| I3 | 任何使 I1/I2 **不可判**的输入（报告结构不符、文件缺失、子进程未产出可判结论）必须**硬失败（红）**，禁止降级为「全局口径」「零失败」或跳过 | `SUITE_REPORT_UNPARSEABLE` / `SUITE_FILE_LOAD_FAILURE` / `SUITE_MANIFEST_FILE_DRIFT`（见下表） |
+
+**机制与替代（B-4：本次事故的根因是机制失效时设计里没有合法出口，本节把这个出口写死）**
+
+- **当前选用的机制**：逐文件 spawn + **每文件 TAP**（`--test-reporter=tap` 显式钉死）。该机制的两个外部前提已由本轮实跑探针在两目标运行时上证伪/证实：① **归属不再依赖任何报告结构**（旧前提已证伪，§7.4 P1/P2）；② 单文件 TAP 的**顶层 plan 与顶层结果行数一致**在两运行时上逐字一致（§7.4 P9）。
+- **失效时的允许替代（唯一，且不是「降级」）**：若某目标运行时的单文件 TAP 不满足解析前提，**禁止**降级为全局计数、禁止跳过该文件（必须红）。允许的替代只有一条：把**每文件的观察通道**换成**结构化事件流**（`--test-reporter=<本仓本地 reporter 模块>`：按 `test:pass|test:fail|test:skip|test:todo` 事件计数，事件自带 `file` 字段），且必须**同时**满足：① 在本机 v24.15.0 与 CI 同版本（Node 20）两种运行时各留一份实跑探针输出；② 在报告 `observer` 字段登记所用通道（§2.4）；③ 由本 CR 的 `review-code` 覆盖。任一条不满足，门禁保持红，替代不得落地。
+- **反向要求**：不变量 I1…I3 不得为了适配任何机制而被放宽（工程纪律 #1）；已批准 SDD 中「降为全局口径」「删用例换绿」「不可判静默放过」三条仍是禁止项。
 
 **四查（FR-17 对例外登记面的确定性要求）**
 
 | 查 | 结论 |
 |---|---|
-| 幂等 | 同一稳定标识重复登记 → `EXCEPTION_DUPLICATE` 红（不产生重复条目）；同一例外在同一到期日内重复检查结论一致（判定只读登记值 + 运行时瞬时，不看检查次数）；`--report/--rc` 模式判定与 `--run` 判定同源同一函数 |
+| 幂等 | 同一稳定标识重复登记 → `EXCEPTION_DUPLICATE` 红（不产生重复条目）；同一例外在同一到期日内重复检查结论一致（判定只读登记值 + 运行时瞬时，不看检查次数）；`--report` 模式判定与 `--run` 判定同源同一函数 |
 | 权限与写入边界 | 唯一写入口 = **人类编辑 `gate-registry.json` + git commit**（谁=commit author、何时=commit time、为什么=commit message；`git log -- gate-registry.json` 即审计）。不新增 crctl 子命令/flag（FR-17）；门禁与测试**只读**该文件；静态断言：仓库内不存在对该文件的写入调用（`writeFileSync`/`appendFileSync`/`rmSync`/`renameSync`/`truncate`），且 `suite-gate` 自身无写路径 |
 | 错误闭包 | 见下表；每类 = 固定 check code + 非零退出（唯一例外：表中明列为「可抑制」的 `SUITE_NONCONVERGENCE` 在有匹配未到期例外时不产生非零退出）+ 零写入（门禁从不写登记面，故「零写入」恒成立） |
-| 副作用 | 登记只影响**判定**，不改变执行：`--run` 永远先真实执行全量命令；即使失败被容忍，报告仍列出 `failures[]`（登记不得替代执行）。门禁不修改被测仓、不写 `gate-registry.json`、不写 `.crctl/` 受治理账本 |
+| 副作用 | 登记只影响**判定**，不改变执行：`--run` 永远先真实执行全量清单；即使失败被容忍，报告仍列出 `failures[]`（登记不得替代执行）。门禁不修改被测仓、不写 `gate-registry.json`、不写 `.crctl/` 受治理账本 |
 
 **固定 check code（关闭 S-4：可机械核对的固定标识，风格与既有 crctl gate check code 一致）**
 
 | check code | 触发条件 | 可否被例外容忍 |
 |---|---|---|
 | `SUITE_REGISTRY_MISSING` / `SUITE_REGISTRY_SCHEMA_INVALID` | 登记文件缺失 / schema 不符（含字段缺失、类型错误、`expires` 无时区偏移） | 否 |
-| `SUITE_REPORT_UNPARSEABLE` | TAP 解析失败或结构不完整（硬失败，禁止降级为空结果） | 否 |
-| `SUITE_FILE_LOAD_FAILURE` | 某文件整体加载/执行失败（文件级 `not ok`，无 file 级 plan） | 否（FR-11.2：文件必须被真实执行） |
-| `SUITE_MANIFEST_FILE_DRIFT` | 实际执行文件集合 ≠ `manifest.files` | 否 |
-| `SUITE_MANIFEST_CASE_DROP` | 某文件实际用例数 < `manifest.cases` 基线 | 否 |
+| `SUITE_REPORT_UNPARSEABLE` | 某文件的 TAP 结构不符（无顶层 plan、plan 与顶层结果行数矛盾、缩进栈不成对）或未产出任何可判结论（硬失败，禁止降级为空结果） | 否 |
+| `SUITE_FILE_LOAD_FAILURE` | 某文件整体加载/执行失败：该文件子进程非 0 退出，且（a）其 TAP 中只有一条顶层 `not ok`、其名字为该文件绝对路径或以该文件名结尾（两目标运行时实测形态，§7.4 P2）；或（b）非 0 退出且顶层结果数为 0 | 否（FR-11.2：文件必须被真实执行） |
+| `SUITE_MANIFEST_FILE_DRIFT` | 磁盘 `test/*.test.mjs` 实际集合 ≠ `manifest.files`（新增/删除文件即红）；或登记集合中存在未被真实 spawn 的文件 | 否 |
+| `SUITE_MANIFEST_CASE_DROP` | 某文件实际顶层用例数 < `manifest.cases` 基线 | 否 |
 | `EXCEPTION_FIELD_MISSING` / `EXCEPTION_SCHEMA_INVALID` / `EXCEPTION_DUPLICATE` | 例外条目缺 id/kind/reason/owner/expires、kind 非枚举、重复 id | 否 |
 | `EXCEPTION_EXPIRED` | `now >= expires`（UTC 瞬时，见 §2.1） | 否 |
 | `EXCEPTION_NOT_OBSERVED` | 登记的例外在本次运行中**未出现**（陈旧登记） | 否 |
@@ -231,8 +251,10 @@ node skills/shared/crctl/scripts/test/suite-gate.mjs --report <tap> --rc <exit-c
 
 其余 check code（登记缺失 / schema 不符、报告不可解析、文件加载失败、清单漂移 / 用例数下降、例外面自身错误、陈旧例外登记）**一律不可容忍**。被抑制的项仍全程可见：`checks[]` 保留该 code（`ok:false` 且标注 `suppressed_by:<exception-id>`）、`failures[]` 与 `converged` 原样上报 —— 抑制只影响退出码，不影响事实面（关闭本轮 S-1）。
 
-**非收敛分支的判定口径（关闭 S-1 的两种读法）**：`converged = false` 时不做清单核对与失败集合核对（报告记 `files_executed = null` / `cases_executed = null` / 相关 `checks[].not_evaluated = true`），只判定 `SUITE_NONCONVERGENCE` 与登记面自身错误（`EXCEPTION_*`）。`SUITE_REPORT_UNPARSEABLE` 只在「进程已自行结束（`converged = true`）而 TAP 结构仍不完整」时触发 —— 终止导致的不完整是终止的后果，不是解析缺陷，两者不混算。
+**非收敛分支的判定口径（关闭本轮 S-1 的两种读法）**：`converged = false`（`--max-runtime-ms` 到期仍有子进程未自行结束）时不做清单用例数核对与失败集合核对（报告记 `cases_executed = null` / `failures = []` 且不参与判定 / 相关 `checks[].not_evaluated = true`），只判定 `SUITE_NONCONVERGENCE` 与登记面自身错误（`EXCEPTION_*`）；但 `files[]` **必须原样保留每个文件的状态**（`ok|failed|file-load-failure|unfinished`）—— 「停滞时哪些文件仍在运行」是 FR-12 的收敛观测面，不得隐藏。`SUITE_REPORT_UNPARSEABLE` 只在「子进程已自行结束（`converged = true`）而 TAP 结构仍不完整」时触发 —— 终止导致的不完整是终止的后果，不是解析缺陷，两者不混算。
 特例（本 CR 交付态）：`exceptions = []` ⇒ 退出码 0 当且仅当失败集合为空 —— 与 `AC-01` 逐字一致。
+
+**`--run` 的两种失败粒度（新增，B-4）**：文件级失败（加载失败 / 实例未执行）与用例级失败（顶层 `not ok` 且名字是用例名）都进 `files[]`；`failures[]` 只收用例级失败名，文件级失败由 `SUITE_FILE_LOAD_FAILURE` 单独承载（与 §2.1 术语表一致：「与文件级加载失败分开计数」）。
 
 ### 3.3 不新增用户可调用契约（FR-17）
 
@@ -283,33 +305,36 @@ N/A —— 本 CR 不新增或修改任何 HTTP API（PRD 无 HTTP 契约；tool
 
 ```text
 registry = readJson(gateRegistryPath)          // 缺失/坏 → 硬失败（check code 表）
-cmd      = ['node', '--test', '--test-reporter=tap',
-            ...(CONCURRENCY ? ['--test-concurrency=' + CONCURRENCY] : []),
-            'skills/shared/crctl/scripts/test/*.test.mjs']
-（glob 由包装器展开为 21 个文件绝对路径：单参数太长时按批传参；展开后必须非空，否则硬失败）
-（`--test-reporter=tap` **显式钉死**：解析器硬依赖 TAP 结构，而 reporter 默认值随 Node 版本与是否 TTY 变化 ——
- 不把门禁结论交给未登记的外部默认值；该命令是唯一来源（§5.4 / TDEC-4），关闭本轮 S-3）
+diskSet  = readTestFileSet(toolsRoot)          // 磁盘 `test/*.test.mjs` 升序文件名集合（空集合硬失败）
+manifestSet = registry.manifest.files
+diskSet ≠ manifestSet → SUITE_MANIFEST_FILE_DRIFT（立即红，不降级）
 
-child = spawn(cmd, { cwd: toolsRoot, shell: false })
-  ├─ stdout → TAP 报告文件（--report-out）+ 摘要
-  └─ 计时；超过 --max-runtime-ms → killTree(child) → converged = false（SUITE_NONCONVERGENCE）
-rc = child.exitCode
+// 逐文件 spawn：归属在 spawn 时由包装器持有，不从任何报告读取（I1）——池大小 = CONCURRENCY 常量（TDEC-4）
+for file of manifestSet（池并发 = CONCURRENCY，按登记面顺序取任务）:
+    child = spawn(['node', '--test', '--test-reporter=tap', abs(file)], { cwd: toolsRoot, shell: false })
+    捕获：该子进程 stdout（= 该文件的 TAP，不与他人混流） + 退出码 + 墙钟
+池整体计时；超过 --max-runtime-ms 而仍子进程未自行结束 → killTree(仍在运行的子进程树) → converged = false（SUITE_NONCONVERGENCE）
+records = manifestSet.map(f => ({ file: f, exit_code, converged, tap }))   // 落 NDJSON（--report-out）
 
-tap = parseTap(report)                          // 见 4.3；失败 → SUITE_REPORT_UNPARSEABLE
+files[] = records.map(r => parseFileTap(r))    // 单文件解析，见下方解析规则；失败 → SUITE_REPORT_UNPARSEABLE
+  → 每项 { file, state, exit_code, cases: 顶层结果数, failures: 顶层 not ok 用例名, skipped, todo, duration_ms }
+  文件级失败（SUITE_FILE_LOAD_FAILURE 判定成立）→ state = 'file-load-failure'（仍计入 files[]，从 failures[] 剔除）
+
 checks = []
-checks += manifestCheck(tap, registry.manifest)  // 文件集合相等；每文件用例数 ≥ 基线；文件级 skip = 0
-checks += exceptionCheck(registry.exceptions, tap, nowUtc)   // schema/到期/双向匹配
-checks += failureCheck(tap.failures, liveExceptionIds, rc)    // 差集为空
-print human summary (command / duration_ms / converged / files / cases / failures / checks)
-writeJson(--json-out)  → §2.4 报告模型
+checks += manifestCheck(files, registry.manifest)    // 每文件 cases ≥ 基线；skipped_file_level = 顶层结果为 0 的文件数
+checks += exceptionCheck(registry.exceptions, files, nowUtc)   // schema/到期/双向匹配
+checks += failureCheck(union(files[].failures), rc, liveExceptionIds)    // 差集为空
+print human summary (command / observer / duration_ms / converged / files / cases / failures / checks)
+writeNdjson(--report-out) ; writeJson(--json-out)  → §2.4 报告模型
 exit(checks.anyFail ? 1 : 0)
 ```
 
-**TAP 解析规则（必须硬失败）**：以缩进栈识别 `# Subtest: <name>` 块；文件名块（`<name>` 以 `.test.mjs` 结尾）必须有 file 级 plan `1..N`，其 N = 该文件**实际执行的用例数**；块内 `not ok` 行 = 失败用例名（`# SKIP` / `# TODO` 后缀分别计入 skip / todo）；无 file 级 plan、块不成对、plan 与实际行数矛盾 → 抛错。任何解析异常都不得返回「零失败」结果（工程纪律 #1：跨行解析失败必须硬失败）。
+**单文件 TAP 解析规则（必须硬失败；B-4 修订）**：以**单个文件**为单位解析（不再是「一份多文件报告里的文件名块」）。该文件的 TAP 必须同时满足：① 恰有一条**顶层** plan `1..N`；② 顶层结果行（缩进 0 的 `ok` / `not ok`）数 = N；③ 缩进栈自洽（子块闭合，无孤立 `...`）。`# SKIP` / `# TODO` 后缀分别计入 skip / todo。任一不满足 → 抛 `SUITE_REPORT_UNPARSEABLE`。**任何解析异常都不得返回「零失败」结果**（工程纪律 #1：跨行解析失败必须硬失败）。
+- **为什么单一文件就够**：归属已由 spawn 构造给出（I1），解析器不需从文本推断「这是哪个文件」；它只看一个进程的一份 TAP。旧规则里的「文件名块 + file 级 plan」整段删除（该形态在目标运行时不存在，§7.4 P1/P2），仅 `SUITE_FILE_LOAD_FAILURE` 的判定会参考「顶层 `not ok` 的名字等于该文件路径/文件名」这一实测形态。
 
-**解析自测（关闭本轮 S-3）**：`contract-scan.test.mjs` 用**内联 TAP 片段**（合法片段 + 三类畸形片段：无 file 级 plan、块不成对、plan 与实际行数矛盾）走 `--report/--rc` 形态，断言合法片段判绿、三个畸形片段各自落 `SUITE_REPORT_UNPARSEABLE` 且退出非零 —— 不新增测试文件、不新增 fixture 目录（`*.test.mjs` 集合仍为 21）。
+**解析自测（关闭本轮 S-3）**：`contract-scan.test.mjs` 用**内联单文件 TAP 片段**（合法片段 + 三类畸形片段：无顶层 plan、plan 与顶层结果行数矛盾、缩进栈不成对）构造 `--report <ndjson>` 输入，断言合法片段判绿、三个畸形片段各自落 `SUITE_REPORT_UNPARSEABLE` 且退出非零；**并补一条归属自测**：两条记录（**同一用例名**、不同 `file`）必须分别归属到各自文件（证明归属不来自用例名或报告文本，I1 的机械证据）—— 不新增测试文件、不新增 fixture 目录（`*.test.mjs` 集合仍为 21）。
 
-**收敛与停滞的可观测化**：`converged=false` 时 `duration_ms` 记实际墙钟、`exit_code=null`、报告保留终止前已落盘的 TAP 内容；`--run` 的 stdout 打印固定字段（S-2：命令 / 耗时 / 是否停滞 / 结论），使 AC-10 的证据无需人工回忆。
+**收敛与停滞的可观测化**：`converged=false` 时 `duration_ms` 记池整体实际墙钟、`exit_code=null`、报告保留已结束子进程的 TAP 内容与每个文件的 `files[].state`（未结束者 = `unfinished`）；`--run` 的 stdout 打印固定字段（命令 / 观察通道 / 耗时 / 是否停滞 / 结论），使 AC-10 的证据无需人工回忆，并让 FR-12 的「停滞根因」可归因到**具体文件**（不再只有一句「父进程空闲、子进程停滞」）。
 
 **进程树终止**：POSIX 用 `detached:true` + `process.kill(-pid, 'SIGKILL')`；Windows 用 `taskkill /PID <child.pid> /T /F`。**只终止本包装器自己 spawn 的 PID 树**，不按名字终止任何进程。
 
@@ -395,12 +420,12 @@ buildOutboxComparable(event):
 
 （决策记录仅在同时满足「难以逆转 + 无上下文会疑惑 + 有真实权衡替代」时记录，共 4 条。）
 
-### TDEC-1 门禁形态：包装器 + TAP 报告
+### TDEC-1 门禁形态：包装器 + 逐文件子进程 + 单文件 TAP
 
-- **Decision**：全量测试门禁由 `test/suite-gate.mjs` 包装 `node --test`，解析 TAP 后判定；CI 步骤只调用包装器。
-- **Context**：FR-14 需要「登记但不得替代执行 + 到期即红 + 与真实失败集合双向匹配」，这些判定必须在**运行结果之上**做；FR-12 需要机械化的「耗时 / 是否停滞」证据；S-1 需要「每文件用例数」——三者都不是单个 `node --test` 进程能自报的。
-- **Alternatives**：（a）全部塞进某个 `*.test.mjs`（否决：测试进程看不到其他文件的执行结果，且会让被测集合包含判定器本身）；（b）CI YAML 内联 shell+node 脚本（否决：命令与并发参数会同时出现在 CI 与文档两处，违反 FR-12.3「同一口径」）；（c）不引入包装器、只在测试里断言登记面（否决：残缺——无法覆盖「到期/集合差」语义）。
-- **Consequences**：多一个新脚本与 TAP 解析面；TAP 结构是唯一外部耦合点，用「reporter 显式钉死（§4.2）+ 解析失败即硬失败」换取不静默降级。
+- **Decision**：全量测试门禁由 `test/suite-gate.mjs` 包装（**逐文件** spawn `node --test --test-reporter=tap <file>`，池式并发）并解析**每文件自己的** TAP 后判定；CI 步骤只调用包装器。
+- **Context**：FR-14 需要「登记但不得替代执行 + 到期即红 + 与真实失败集合双向匹配」，这些判定必须在**运行结果之上**做；FR-12 需要机械化的「耗时 / 是否停滞」证据；S-1 需要「每文件用例数」。上版把「每文件」寄望于单次多文件运行报告里的文件名块，已证伪（§7.4 P1/P2）——而归属一旦由 spawn 构造给出，这三个需求里最脆弱的一环（从文本推归属）就整个消失了。
+- **Alternatives**：（a）全部塞进某个 `*.test.mjs`（否决：测试进程看不到其他文件的执行结果，且会让被测集合包含判定器本身）；（b）CI YAML 内联 shell+node 脚本（否决：命令与并发参数会同时出现在 CI 与文档两处，违反 FR-12.3「同一口径」）；（c）不引入包装器、只在测试里断言登记面（否决：残缺——无法覆盖「到期/集合差」语义）；（d）**单次多文件运行 + junit 的 `file` 属性**取归属（**否决，本机实测反例**：该属性在 v24.15.0 存在、在 CI 运行时 v20.20.2 不存在，§7.4 P3）；（e）单次多文件运行 + 自写自定义 reporter 的事件流（**不作为默认**：它把归属重新押在另一份外部报告 schema 上；已列入 §3.2 的**允许替代通道**之一，需双运行时探针 + `observer` 登记 + `review-code` 覆盖）。
+- **Consequences**：多一个新脚本与单文件 TAP 解析面；外部耦合点从「TAP 的块结构」**收窄**为「单文件 TAP 的顶层 plan 与其顶层结果行数一致」（§7.4 P9 两运行时实测一致），且解析不符即硬失败；停滞可归因到具体文件（TDEC-4）；不再依赖 glob / 目录发现 / isolation 开关 / junit `file`（均已实测跨版本不一致，§7.4 P3、P5、P6、P7）。
 
 ### TDEC-2 受控清单承载：仓库内 git 跟踪的 JSON 数据文件
 
@@ -416,12 +441,12 @@ buildOutboxComparable(event):
 - **Alternatives**：（a）运行时读 JSON 数据文件（否决：新增运行时 I/O 失败面，且 `emitOutboxEvent` 已在失败路径上，读文件失败会放大为业务失败）；（b）仅保留注释 + 测试内复制一份期望（否决：正是 FR-10 要消灭的双份）；（c）`gates.json` 加段（否决：该文件语义是状态/审批门禁映射，混入 outbox 契约会破坏其「运行时适配信息」定位）。
 - **Consequences**：产品 import 面新增一个本地模块（零依赖、无副作用）；`crctl.mjs` 中原来的长注释收敛为指针，避免第二份语义描述。
 
-### TDEC-4 `--test-concurrency=2` 的处置：按有界实测协议决定，默认去参
+### TDEC-4 并发处置：包装器池大小常量（与 `--test-concurrency` 同语义），按有界实测协议定值
 
-- **Decision**：设计默认 = **移除显式 `--test-concurrency=2`**（使用 runner 默认并发），并把该值作为唯一常量放在 `suite-gate.mjs` 内（命令单一来源）；若实测表明默认并发不收敛，则按 FR-12.2 改为 `--test-concurrency=1` 并同样留存证据。**不论哪个分支，交付必须带 §4.6 口径的实测证据。**
-- **Context**：CR 输入约束（owner 转交）记录该参数下「本机 30+ 分钟不收敛（父进程空闲、子进程停滞）」；既有实测的全量 894.8 s（失败恰 5 条）未标注并发口径。即：唯一有「不收敛」观测的配置就是 `=2`，没有任何观测支持必须保留它。本机名字过滤子集实测 23.8 s/22 用例，说明断言面本身并不慢，慢/挂来自全量并发调度。
-- **Alternatives**：（a）原样保留 `=2` 并只补文档（否决：会把「已知不收敛观测」的配置固化成门禁，且 FR-12.1 要求「保留须有 CI 可收敛证据」，本地不可得）；（b）直接写死 `--test-concurrency=1`（否决：无实测依据的顺序化可能使全量时间翻倍，且掩盖真正的停滞根因）；（c）删参数但不留测量（否决：AC-10 要求可复现证据）。
-- **Consequences**：CI 与本地同命令；并发值变更只改一个常量；由 `--max-runtime-ms`（默认 30 min）把「停滞」从「无限挂起」变为「可观测、可登记的非收敛」。
+- **Decision**：逐文件 spawn 后，**并发度不再由 runner 参数控制，而由包装器内唯一常量 `CONCURRENCY`（池大小）控制**（与 Node `--test-concurrency=N` 的「N 个文件并行」同语义，§7.4 P8）；设计默认 = **runner 默认并发的等价物** `max(1, availableParallelism() - 1)`，候选集 = {默认、2、1}；若实测表明默认不收敛，则按 FR-12.2 降为 `1`（或 `2`）并同样留存证据。**不论哪个分支，交付必须带 §4.6 口径的实测证据。**
+- **Context**：CR 输入约束（owner 转交）记录 `--test-concurrency=2` 下「本机 30+ 分钟不收敛（父进程空闲、子进程停滞）」；既有实测的全量 894.8 s（失败恰 5 条）未标注并发口径 —— 即：唯一有「不收敛」观测的配置就是 `=2`，没有任何观测支持必须保留它。本机名字过滤子集实测 23.8 s/22 用例，说明断言面本身并不慢，慢/挂来自全量并发调度。池式执行额外买到一个观测面：停滞时能指名**哪个文件**仍在跑（§2.4 `files[].state=unfinished`）。
+- **Alternatives**：（a）原样保留多文件 + `=2` 并只补文档（否决：会把「已知不收敛观测」的配置固化成门禁，且 FR-12.1 要求「保留须有 CI 可收敛证据」，本地不可得）；（b）直接写死池 = 1（否决：无实测依据的顺序化可能使全量时间翻倍，且掩盖真正的停滞根因）；（c）不定值也不留测量（否决：AC-10 要求可复现证据）；（d）逐文件顺序跑（否决：与池 = 1 等价但不引入池的话便无法在保持归属的同时并行）。
+- **Consequences**：CI 与本地同命令模板、池大小变更只改一个常量；由 `--max-runtime-ms`（默认 30 min）把「停滞」从「无限挂起」变为「可观测、可归因、可登记的非收敛」；耗时对比的口径必须在证据里写明（池 = 2 与旧多文件 `--test-concurrency=2` 同调度语义，§6.2 AC-14）。
 
 ---
 
@@ -453,7 +478,7 @@ buildOutboxComparable(event):
 
 | AC | 设计落点 | 可观测结果 | 可达性说明 |
 |---|---|---|---|
-| AC-01 | `suite-gate --run`（§4.2）；`exceptions=[]` 时退出码 ≡ 失败集合为空 | CI 步骤退出码 0；报告 `failures=[]`、`files_executed=21`、`skipped_file_level=0`、`cases_executed>0` | 5 条红的修复（FR-4…FR-9）都在本 CR 内；`21` 由 `manifest.files` 登记并由实际执行集合核对；不依赖任何 skip/删除 |
+| AC-01 | `suite-gate --run`（§4.2）；`exceptions=[]` 时退出码 ≡ 失败集合为空 | CI 步骤退出码 0；报告 `failures=[]`、`files_executed=21`、`files[]`恰 21 条且全为 `state=ok`、`skipped_file_level=0`、`cases_executed>0` | 5 条红的修复（FR-4…FR-9）都在本 CR 内；`21` 由 `manifest.files` 登记并与**磁盘集合**核对；per-file 归属由逐文件 spawn 给出（I1，不依赖报告块结构）；不依赖任何 skip/删除 |
 | AC-02 | §4.4 断言→事实源两列表 + §6.6 分类清单 | 交付内含映射表；每条可用命令复取事实源；负控 N-1/N-2 使其变红 | 映射覆盖 BR-1…BR-4 涉及的计数/文本/跨文件投影三类；负控为可重放命令 |
 | AC-03 | §6.6（D/P 两张表）+ §4.1 反恒真 | 归类清单逐条；`stateMachine.*` 显式登记；无「等于文件行数」型重述 | P 表由登记值承载，D 表由推导承载，二者独立来源 → 恒真式不可能同时满足集合比较与负控 |
 | AC-04 | §4.4 BR-1 两行 | `crctl.test.mjs:1337` 用例绿；pipeline 零账本写指令；`write-dev-tasks` 载体含指令 | 只改测试断言（FR-15.1），产品文本零 diff |
@@ -462,11 +487,11 @@ buildOutboxComparable(event):
 | AC-07 | §4.4 BR-4 行 | `crctl.test.mjs:4989` 绿；5 禁用词零命中；负控 N-2 变红 | 句内要素检查覆盖「删除校验步骤语义」与「注入禁用词」两种注入 |
 | AC-08 | §4.5 构造 A/B + 回归保护 | RED-7 绿且构造为「内容一致 + journal 未标记」；新用例断言 `EMIT_FAILED`/`OUTBOX_DEDUP_CONFLICT`、pending、补发成功零新 commit；BR-5 语义未变 | 构造只动测试与 fixture journal 状态；产品零语义变更（§3.1 契约等价），drift-audit 既有用例不在改写面内 |
 | AC-09 | §3.1 不变性 2/3/4 + §4.3 | `trace-outbox` 契约用例绿；字段分类集合相等；`payload.observed_at` 反例证明非自动排除；投影结果与 `OUTBOX_VOLATILE_PAYLOAD_KEYS` 交集为空；负控 N-3 变红 | 新增字段必须登记进两个集合之一、新增易变键必须登记进 `OUTBOX_VOLATILE_PAYLOAD_KEYS`，否则集合相等 / 投影闭合断言直接失败（不依赖人工比对） |
-| AC-10 | TDEC-4 + §3.2/§2.4 固定字段 | 交付含 `command/duration_ms/converged/exit_code` 与结论；CI 与文档同口径（命令只来自包装器常量） | 默认分支（去参）与回退分支（`=1`）都在包内可执行；`--max-runtime-ms` 保证「停滞」可产出证据而不是无限挂起 |
+| AC-10 | TDEC-4 + §3.2/§2.4 固定字段 | 交付含 `command/observer/duration_ms/converged/exit_code` 与结论；停滞时 `files[].state=unfinished` 指名停滞文件；CI 与文档同口径（命令只来自包装器常量） | 默认分支（池 = runner 默认等价物）与回退分支（池 = 1 或 2）都在包内可执行；`--max-runtime-ms` 保证「停滞」可产出证据而不是无限挂起 |
 | AC-11 | §4.6 | N-1/N-2/N-3 各一次注入 → 全量命令红 → 还原后绿；命令与关键输出留 `test-evidence/` | 注入点全部在本 CR 的断言覆盖面上；注入物由 `git checkout -- <path>` 还原并核验干净 |
 | AC-12 | §2.3 `exceptions` + §3.2 | 交付态 `exceptions: []`（显式空，非文件缺失）；构造到期条目 → `EXCEPTION_EXPIRED` 非零；登记面写入口仅人工提交；`contract-scan` 静态断言无代码写路径 | 到期判定只用运行时瞬时 + 登记时间戳，确定性；「不匹配即红」由双向集合比较实现 |
 | AC-13 | §1.2 变更面 + §9 scope | diff 仅 tests / CI / `lib/outbox-contract.mjs` + `crctl.mjs` 的最小改点；BR-1…BR-4 产品面零 diff；无新增依赖/框架 | 产品面改点仅 `emitOutboxEvent` 的契约提级，`git diff --stat` 可逐条核 |
-| AC-14 | §2.3 `manifest.cases` + §4.4/§4.5 | 全量 21 文件无新增红、无新增 skip（`skipped_file_level=0`）；交付含与 894.8 s 同口径的耗时对比 | 用例数 ≥ 基线为门禁硬约束；耗时同口径由 `suite-gate` 报告字段保证 |
+| AC-14 | §2.3 `manifest.cases` + §4.4/§4.5 | 全量 21 文件无新增红、无新增 skip（`skipped_file_level=0`）；交付含与 894.8 s 同口径的耗时对比 | 用例数 ≥ 基线为门禁硬约束（逐文件在 `files[].cases` 可核）；耗时对比的口径在证据里写明：894.8 s 基线 = 多文件 + `--test-concurrency=2`，池 = 2 与之同调度语义（TDEC-4） |
 | AC-15 | §3.2 四查 + §3.3 + §8 | 交付声明无新增用户可调用契约；例外面四查逐条结论；未新增对外入口 | 本 CR 无 crctl dispatch/deny 面变更（§8 已核） |
 
 ### 6.3 既有实现依赖与事实
@@ -596,7 +621,9 @@ buildOutboxComparable(event):
 |---|---|---|
 | `tools/ARCHITECTURE.md` §5 不变量 5 的「28 条声明、wildcard 展开 50 条」 | 与 `dir-graph.yaml` 当前内容（31 / 53）**不一致**（既有文档口径滞后，非本 CR 引入） | **不作为本 CR 方案前提**：本 CR 的登记目标值全部从 `dir-graph.yaml` 推导并登记到 `gate-registry.json`，方案不读该段文本；修正该段列入 §9 `follow_up`（ARCHITECTURE.md 对普通 CR 只读，其 §8 维护规则规定该类修订需独立触发） |
 | CI（ubuntu+windows / Node 20）上的全量耗时与收敛性 | 本机不可得 | 按 S-2 口径：证据以「本机复现 + 可得时的 CI 运行」交付；AC-10 只要求「可复现证据」，不在本地伪造 CI 事实 |
-| `--test-concurrency` 两个候选配置的收敛性 | 需实测 | TDEC-4 的协议：默认（去参）与 `=1` 各 ≥2 次连续运行；选中者写入包装器常量 |
+| CI 平台（ubuntu）上单文件 TAP 的产物形态与池式并发行为 | 本机不可得（本轮回修只在本机 Windows 上跑探针） | 设计的外部耦合点（单文件 TAP 顶层 plan ↔ 顶层结果行数，§7.4 P9）已在**本机 v24.15.0 + CI 同版本 v20.20.2** 上验证（§7.4）；平台差异属实施/测试期证据面；解析不符即硬失败红（I3），不存在静默通过 |
+| 包装器池大小（`CONCURRENCY`）的收敛性 | 需实测 | TDEC-4 的协议：候选 {runner 默认等价物、2、1} 各 ≥2 次连续运行；选中者写入包装器常量，且报告 `command` 记录展开规模与池值 |
+| 全量 21 文件在**本机制**（逐文件 spawn + 池）下的耗时与停滞面 | 本机不可得（单次全量 ≈ 15 min 量级；本轮回修不重跑全量） | 交付期按 §4.6/§5.4 预算实测留证；本轮回修的证据范围仅到「两运行时单文件/双文件形态一致」（§7.4 P9/P10），不转述任何未跑的值 |
 
 ### 6.5 SDD-CLOSE（PRD/评审显式延后到 SDD 的设计项，逐项关闭）
 
@@ -612,7 +639,8 @@ buildOutboxComparable(event):
 | SDD-CLOSE-08 | FR-17（契约面声明） | 关闭：不新增用户可调用契约（§3.3）；例外登记面四查逐条结论见 §3.2 |
 | SDD-CLOSE-09 | 本轮评审 S-1（`SUITE_NONCONVERGENCE` 的可容忍性两读法） | 关闭：显式定为「可抑制（可绿）」，条件 = 未到期 + `kind: suite-nonconvergence` + 稳定标识匹配；事实面（`converged:false`、`checks[]`、`failures[]`）永不隐藏；非收敛分支不做清单/失败集合核对、不混算 `SUITE_REPORT_UNPARSEABLE`；其余 check code 一律不可容忍（§3.2 退出码段） |
 | SDD-CLOSE-10 | 本轮评审 S-2（推导侧结构不变量恒真） | 关闭：§4.1 步 9 标注为「推导侧自检，恒真」并从断言块移出、不计入覆盖；承重断言只有三条集合/计数等价（§4.1、§6.2 AC-06） |
-| SDD-CLOSE-11 | 本轮评审 S-3（TAP reporter 依赖未登记默认值） | 关闭：包装器唯一命令来源显式钉 `--test-reporter=tap`（§4.2），并以**内联 TAP 片段**在 `contract-scan.test.mjs` 做 `--report/--rc` 解析自测（合法 + 三类畸形），不新增测试文件（§4.2、§1.2） |
+| SDD-CLOSE-11 | 本轮评审 S-3（TAP reporter 依赖未登记默认值） | 关闭：包装器的逐文件命令显式钉 `--test-reporter=tap`（§3.2/§4.2），并以**内联单文件 TAP 片段**在 `contract-scan.test.mjs` 做 `--report` 解析自测（合法 + 三类畸形），不新增测试文件（§4.2、§1.2）。**B-4 补充**：`--test-reporter=tap` 只负责「拿到一份扁平的 TAP」，**不再承担 per-file 归属**（归属改由 spawn 构造给出）—— 本项关闭不再依赖任何 reporter 的块结构 |
+| SDD-CLOSE-12 | **B-4（本轮唯一 blocker，来自 `review-dev-plan` 的 upstream 阻断）**：已批准 SDD §3.4/§4.2 的 per-file 归属前提「TAP 文件名块 + file 级 plan」在目标运行时不存在 | 关闭：① 归属机制改为**逐文件 spawn + 逐文件观察**（§3.2 I1、§4.2）；② 文件集合漂移改为对**磁盘事实源**（`readTestFileSet`）核对，不再使用「从一份多文件报告里读出的实际执行集合」（§2.3、§3.2、§6.6 D3）；③ 每文件用例数 = 「单文件顶层 plan 与顶层结果行数一致」，逐文件与 `manifest.cases` 比对且写入报告 `files[]`（§2.3、§2.4、§4.2）；④ 机制失效时的**合法出口**写死在 §3.2「机制与替代」（替代通道唯一，需双运行时探针 + `observer` 登记 + `review-code` 覆盖，否则保持红）；⑤ §7.4 删除无证据的保证性陈述，代之以两目标运行时的实跑探针表（含命令形态差异 P1…P10），未在本机验证的部分进 §6.4。**不变量未放宽**：真实执行 / 每文件用例数 ≥ 基线 / 解析失败硬失败仍是硬约束 |
 
 ### 6.6 FR-3 归类清单：可推导的事实 vs 必须钉死的目标值
 
@@ -622,7 +650,7 @@ buildOutboxComparable(event):
 |---|---|---|---|---|
 | D1 | 状态机声明转移数 / 展开数 / wildcard 目标集合 | `dir-graph.yaml#state_machine` | `deriveStateMachine()`（parseYaml，硬失败） | 与显式登记的 P2/P3 集合比较；两条独立来源 |
 | D2 | pipeline 节点数与节点结构 | `pipeline-templates/*.pipeline.json` ↔ `_index.yml#nodes` | 跨文件投影比较 | 任一侧单独漂移即红 |
-| D3 | 测试文件集合与执行规模 | 目录实际执行集合（runner 报告）↔ `manifest` | 集合相等 + 计数 ≥ 基线 | 实际值由 runner 产出，登记值由人工维护 |
+| D3 | 测试文件集合与执行规模 | 磁盘目录集合（`readTestFileSet`）↔ `manifest.files`；每文件单进程 TAP 的顶层结果数 ↔ `manifest.cases` | 集合相等（新增/删文件即红）+ 逐文件计数 ≥ 基线 | 集合与计数都由**独立事实源**产出：磁盘目录（而非「runner 报告的实际执行集合」）+ 每文件自己的子进程；登记值由人工维护 |
 | D4 | pipeline 是否指导直写受治理账本 | pipeline JSON prompt 文本 | 命令面/账本文件名扫描（零命中） | 注入即红（N-2 同类） |
 | D5 | Skill 文本的禁用词与结构性载荷 | 相关 `SKILL.md` | 零命中 + 句内要素 | 注入/删除即红 |
 | D6 | reader 事实源引用 | `review-alignment/SKILL.md` 读取契约段 | 命名标识在/不在 + 三词否定辖域（§4.4） | 回退事实源（写回 `latest-checkpoint` 或把三词写成读取依据）即红 |
@@ -648,7 +676,7 @@ buildOutboxComparable(event):
 ### 7.1 边界条件与错误处理
 
 - **行尾纪律**（ARCHITECTURE 不变量 4）：所有新断言与解析在 `replaceAll('\r\n','\n')` 之后进行（本机实测 `write-requirement-prd/SKILL.md` 为 CRLF 检出，BR-4 的失败输出即含 `\r\n`）。
-- **解析硬失败**：状态机推导（结构不符）、TAP 解析（结构不符 / 无 plan / 数量矛盾）、`gate-registry.json`（缺失 / schema 不符）一律抛错 → 非零退出，**禁止**降级为空集合或「零失败」。唯一例外是登记面自身的可抑制项（§3.2）：进程未自行结束时改判 `SUITE_NONCONVERGENCE`，且该分支不产生 `SUITE_REPORT_UNPARSEABLE`。
+- **解析硬失败**：状态机推导（结构不符）、**单文件 TAP 解析**（无顶层 plan / plan 与顶层结果行数矛盾 / 缩进栈不成对）、`gate-registry.json`（缺失 / schema 不符）一律抛错 → 非零退出，**禁止**降级为空集合或「零失败」；文件集合与磁盘不一致、文件未产出可判结论同样是硬失败（§3.2 I3）。唯一例外是登记面自身的可抑制项（§3.2）：子进程未自行结束时改判 `SUITE_NONCONVERGENCE`，且该分支不产生 `SUITE_REPORT_UNPARSEABLE`。
 - **空集合必须显式**：`exceptions: []` 是显式声明；文件缺失是 `SUITE_REGISTRY_MISSING`（红），不是「无例外」。
 - **不静默改写**：门禁判定全程只读；任何失败都不写 `gate-registry.json`、不写受治理账本、不改被测仓。
 - **进程管理**：超时终止只针对本包装器自己的子进程树（POSIX 进程组 / Windows `taskkill /T`），不按进程名终止。
@@ -666,10 +694,83 @@ buildOutboxComparable(event):
 - `--max-runtime-ms` 默认 30 min：把「停滞」从无限挂起变为可观测事件（`converged=false` + `SUITE_NONCONVERGENCE`）。
 - 负控实验（§4.6）需 6 次全量运行，实施/测试期按实际耗时排期；不要求额外的基础设施。
 
-### 7.4 兼容性
+### 7.4 兼容性（外部运行时前提 = 本轮实跑探针，B-4）
 
-- 双环境一致：命令与断言不依赖 shell 特性（`shell:false` spawn + 在包装器内展开 glob），Windows（本机 CR worktree，autocrlf 检出）与 CI（bash）同结论。
-- Node 版本：只用 Node ≥ 18 标准库（本机 v24.15.0；CI 为 Node 20）；`--test-reporter=tap` 显式钉死（§4.2），TAP 解析不依赖 Node 版本专有输出格式，结构不符即硬失败。
+> 上一版此处写的是「TAP 解析不依赖 Node 版本专有输出格式」—— 这是一句**无证据的保证性陈述**，且事实为假：已批准 SDD 的 per-file 归属前提正是押在它上面（§3.4/§4.2 旧文）。本节改为**两目标运行时的第一手实跑探针**；表内每一条均为本轮（2026-09-13，Windows 本机）实跑所得，**不转发任何转述值**。
+
+**探针装置**：临时目录下四个文件 `a.test.mjs`（2 个通过用例）/ `b.test.mjs`（1 个）/ `c.test.mjs`（1 失败 + 1 通过）/ `d.test.mjs`（import 期抛错 = 整文件加载失败）；另用真实套件文件 `yaml-subset.test.mjs`（17 用例）/ `workspace-resolver.test.mjs`（7 用例）。
+**运行时**：Node A = 本机 `v24.15.0`（`D:\Program Files (x86)\nodejs\node.exe`）；Node B = CI 同版本 **`v20.20.2`**（`.github/workflows/crctl-ci.yml:46-48` `node-version: 20`；取得方式 = 官方发行包 `node-v20.20.2-win-x64.zip` 本机解压），两者命令均**不经 shell**、同一份探针文件。
+
+| # | 命令形态 | v24.15.0 实测 | v20.20.2 实测 | 对本设计的影响 |
+|---|---|---|---|---|
+| P1 | `node --test --test-reporter=tap <显式文件列表>`（正常文件） | 扁平：`# Subtest:` 全是**用例名**；全文唯一 plan = 全局 `1..3`；**无任何文件名块** | 逐字同形态 | **旧前提已证伪**（文件名块不存在）⇒ 归属不能从报告读 ⇒ 逐文件 spawn（I1） |
+| P2 | 同上 + 整文件加载失败 | 文件级块只在此时出现：`# Subtest: d.test.mjs` + top-level `not ok 2 - d.test.mjs` | 同形态，但块名是**绝对路径**（`# Subtest: C:\…\d.test.mjs`） | 文件级块的**名字形态都随版本变** ⇒ 只作 `SUITE_FILE_LOAD_FAILURE` 的辅助判据，**不作归属来源** |
+| P3 | `node --test --test-reporter=junit <文件列表>` | 每个 `<testcase>` 带 `file="<绝对路径>"`（通过/失败都有） | **无 `file` 属性**；仅加载失败那条的 `name` 是绝对路径 | 「junit 取归属」在 **CI 运行时不存在** ⇒ 已从 TDEC-1 备选里否决（P3 就是反例） |
+| P4 | `node --test --test-reporter=tap`（目录发现，无位置参数） | 发现并执行 | 发现并执行 | 可用但**不可依赖**（见 P5/P6） |
+| P5 | `node --test … .` / `… ./`（目录作位置参数） | **失败**：stderr `Could not find '.'` / `Could not find './'`，exit 1 | 成功发现并执行 | 目录参数形态跳版本不一致 ⇒ 包装器**自己**用 `readTestFileSet` 展开，不把发现交给 runner |
+| P6 | `node --test … '**/*.test.mjs'`（glob 位置参数） | 成功（runner 展开 glob） | **失败**：`Could not find 'C:\…\**\*.test.mjs'`，exit 1 | 同上：glob 支持跳版本不一致 ⇒ 清单只来自登记面 + 磁盘集合 |
+| P7 | `--test-isolation=none` | 接受（正常执行） | **拒绝**：`bad option: --test-isolation=none`，exit 9 | 设计**不使用**该开关（CI 运行时没有它） |
+| P8 | `--test-concurrency=2` | 接受 | 接受 | 池大小常量与它同语义（文件级并发，TDEC-4） |
+| P9 | **单文件** `node --test --test-reporter=tap <file>`（真实套件文件） | `yaml-subset` 顶层 plan `1..17`；`workspace-resolver` `1..7`（`# tests` 同值） | 逐字相同（17 / 7） | **本设计选用的机制**：真实文件上两运行时一致 ⇒ 每文件用例数可判（I2） |
+| P10 | 两文件一次运行（P9 的两个文件） | 全局 plan `1..24`（= 17+7） | 全局 plan `1..24`（= 17+7） | 逐文件结果之和 ≡ 多文件结果 ⇒ 逐文件执行**不改变用例口径**（AC-01/AC-14 的计数基线可比） |
+
+**关键原始输出（截取，逐字）**
+
+```text
+# P1 —— Node A（v24.15.0）：node --test --test-reporter=tap ./a.test.mjs ./b.test.mjs   [exit 0]
+TAP version 13
+# Subtest: alpha one
+ok 1 - alpha one
+# Subtest: alpha two
+ok 2 - alpha two
+# Subtest: beta one
+ok 3 - beta one
+1..3
+# tests 3
+# pass 3
+# fail 0
+   （注：# Subtest: 3 行全是用例名；以 .test.mjs 结尾的 # Subtest: = 0；唯一 plan = 全局 1..3）
+
+# P2 —— 同一运行时，加一个 import 期抛错的 d.test.mjs（文件级块的唯一出现场景）
+# Subtest: d.test.mjs
+not ok 2 - d.test.mjs
+  ---
+  failureType: 'testCodeFailure'
+  error: 'test failed'
+  ...
+1..3
+# fail 2
+
+# P2 —— Node B（v20.20.2）同一命令：块名变成绝对路径
+# Subtest: C:\tmp\probe65\d.test.mjs
+not ok 2 - C:\tmp\probe65\d.test.mjs
+
+# P3 —— Node B（v20.20.2）：node --test --test-reporter=junit ./a.test.mjs ./b.test.mjs ./c.test.mjs ./d.test.mjs
+<testcase name="alpha one" time="0.000965" classname="test"/>          ← 无 file 属性
+<testcase name="beta one" time="0.000909" classname="test"/>
+<testcase name="C:\tmp\probe65\d.test.mjs" time="0.044479" classname="test" failure="test failed">
+
+# P3 —— Node A（v24.15.0）同一命令（对照）
+<testcase name="alpha one" time="0.000515" classname="test" file="C:\tmp\probe65\a.test.mjs"/>
+
+# P9 —— Node B（v20.20.2），真实套件文件：tail
+1..17
+# tests 17
+# pass 17
+# fail 0
+
+# P10 —— Node B（v20.20.2），两个真实套件文件一次运行：tail
+1..24
+# tests 24
+# pass 24
+# fail 0
+```
+
+**保留的结论（有新证据支撑）**：单文件 TAP 的**顶层 plan 与顶层结果行数一致**这一形态，在本机 v24.15.0 与 CI 同版本 v20.20.2 上逐字一致（P9/P10），构成本设计唯一的外部耦合点；除此之外的一切格式/发现/isolation 假设（文件名块、junit `file`、目录参数、glob、`--test-isolation`）**已由探针证明随版本变化**，因此全部从承载前提上移除；解析不符即 `SUITE_REPORT_UNPARSEABLE` 硬失败（红），不存在静默通过。**未在本机验证的部分**：见 §6.4（CI 平台 ubuntu 侧形态、全量耗时与收敛性）。
+
+**其余兼容性**：
+- 双环境一致：命令与断言不依赖 shell 特性（`shell:false` spawn，文件清单由包装器从登记面展开，不经 shell/glob），Windows（本机 CR worktree，autocrlf 检出）与 CI（bash）同结论。
+- Node 版本（修订）：只用 Node ≥ 18 标准库（本机 v24.15.0；CI 为 Node 20）；外部耦合点已收窄并带探针（P9）。
 - 历史证据不改写：不动历史 CR 产物与归档；不改 `specs/`、`delivery/`。
 
 ---
@@ -729,3 +830,4 @@ git diff -U0 -- skills/shared/crctl/scripts/crctl.mjs | Select-String 'case .(ta
 1. `tools/ARCHITECTURE.md` §5 不变量 5 的「28 条声明 / wildcard 展开 50 条」已滞后于 `dir-graph.yaml` 当前内容（31 / 53）；按该文档 §8 维护规则，属需独立触发的文档修订，不在本 CR 内改（本 CR 未改变状态机，登记目标值一律从 `dir-graph.yaml` 推导）。建议随下一次触及状态机口径的 CR 一并修正，或单开文档修订 CR。
 2. 其余 pipeline 节点数硬编码断言（本轮评审 S-4，本机核对）未纳入本次「跨文件投影」改造：`crctl.test.mjs:4961`（读 `_index.yml#nodes` 后钉死 16）、`pipeline-structure.test.mjs:41`（`ids.length` 钉死 16；同文件 `:94-96` 已有同口径跨文件投影断言）、`pipeline-structure.test.mjs:183`（requirement-authoring 钉死 7）。三条当前均为绿；若后续 CR 触及 `_index.yml#nodes`，应在同一 CR 内一并改为投影断言（本 CR 只改 BR-1 触及处，避免扩大 diff）。
 3. 例外登记面若在后续 CR 首次出现真实例外，需同步在 `test-report` 与回写产物中记录「例外 → owner → 到期」闭环；本 CR 交付态为空，未产生该流程的运行实例。
+4. **门禁陈旧性（范围外观察，不阻塞本 CR，得留后续 CR）**：`crctl gate --for tech-design-reviewed` 只校 `review-annotations/sdd.yml` 的 `verdict=pass` + `blockers=[]` + `approval.yml#tech-design` 存在，**不校验 annotation 的 `subject-sha256` 是否等于当前 `sdd.md` 的哈希**。后果：「旧 pass annotation + 旧审批 + 已被修订的 SDD」也会报绿 —— 与本次「前提为假却一路绿到实现期」同源（同为「登记值与当前事实脱钩时不报警」）。本轮靠 pipeline 节点序（修订 → 重新评审 → 重新人工审批）挡住，不受影响；但该折扣落在 `crctl` 自身的门禁面，不在本 CR `scope_in`（本 CR 不新增 crctl 子命令/flag，FR-17；本次只把 per-file 归属这个具体断裂点修掉）。建议单开 CR，把「annotation 绑定的 `subject-sha256` 必须等于当前产物」收进门禁断言面。
