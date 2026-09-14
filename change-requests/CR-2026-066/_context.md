@@ -4,19 +4,29 @@
 > `traceability.yml`、`review-annotations/**`、`approval.yml`、`_backlog.yml`、`tasks/_index.yml`。
 > 用途：返工与 `/resume` 时快速定位「做到哪、卡在哪、从哪继续」。
 
-## 1. 当前状态（最近一次刷新：实施 run 收尾，2026-09-14 17:4x +08:00）
+## 1. 当前状态（最近一次刷新：node-15 checkpoint run 收尾，2026-09-14 18:0x +08:00）
 
 - CR：`CR-2026-066`（AIFI-27；CR-P3「评审 PASS 发布与 checkpoint 委派收敛」）。
 - 权威 workspace = `.rayai-worktrees/knowledge-base/requirement/CR-2026-066`；三仓 worktree =
   `.rayai-worktrees/{knowledge-base,multica,tools}/requirement/CR-2026-066`；命令一律带 `--workspace <权威路径>`
   （主 checkout 视图陈旧，AGENTS.md 纪律 #9）。
-- 本 run 节点：`approve-dev-start` 复核（**未重复审批**）→ `workspace-freshness`（implement-start，`continue`）→
+- 上一 run（实施）节点：`approve-dev-start` 复核（**未重复审批**）→ `workspace-freshness`（implement-start，`continue`）→
   **`implement-code`（四张 TASK 全部落盘）** → **`write-test-report`（`crctl test`，`status=pass`）** →
-  **`push-progress`（node-8）** → **`workspace-freshness`（review-start，`continue`）** → 现已委派独立 `review-code`。
-- 状态：`status = developing`；`crctl next` = **`push-progress → review-code`**（`humanApproval=false`，
-  why「测试证据 pass，推送 checkpoint 后进入代码评审」；该提示是状态级建议——node-8 已执行，下一节点是 review-code）。
+  **`push-progress`（node-8）** → **`workspace-freshness`（review-start，`continue`）** → `review-code`（独立 reviewer）。
+- 上一 run（评审）结果：`review-code` **cycle 1 / attempt 1 PASS**、`blockers=[]`、`repair-target=null`；canonical 记录提交
+  `aaf99ff8`、状态推进提交 `747b94f8`（`developing → code-reviewing`）、导航缓存提交 `bc12d40c`。
+- **本次 run（node-15 checkpoint 委派）事实**：收到协调者委派时，**人工代码审批已先行发生**——`approval.yml#code`
+  已由 `crctl approve`（TTY，`via: crctl-approve`、`approver OldBoy405`、`approved-at 2026-09-14T17:46:59+08:00`）写入
+  并推进到 `code-approved`（提交 `6383baac`），早于协调者「等 checkpoint 再审批」指令的发布（相隔约 30 s）
+  ⇒ **node-15「审批前 checkpoint」在时序上已无法按其原语义执行**（审批 gate 的 `phase=complete` 前置被跳过）。
+- **本次 run 结果：checkpoint 未完成（本机到 github.com 网络中断）**——`crctl checkpoint` 的 `git fetch origin` 步失败
+  （`TX_GIT_FAILED`：`Failed to connect to github.com port 443`），连续四次重试同症状；三仓 `git ls-remote` 同样失败
+  ⇒ 环境网络问题，非仓库/凭据问题。**零副作用**：KB HEAD 仍 `6383baac`、三仓工作区干净、
+  `_backlog.yml#latest-checkpoint.batch-id` 仍 `d3eac1f35ead840e`（本文件被刷新，成为下一次 checkpoint 的搭车内容）。
+- 状态：`status = code-approved`（未被本次 run 改动）；`crctl next` = `merge-feature-branch`（`humanApproval=false`，
+  why「代码已审批，进入回写合并」）——**发布未完成前不得起 `merge`**。
 - 任务账本：`tasks/_index.yml` **四张卡全部 `done`**（TASK-01 15:54 / TASK-03 16:22 / TASK-02 16:28 / TASK-04 17:04，均带 `done-at`）。
-- 发布：`crctl checkpoint CR-2026-066 --message 代码与测试证据` ⇒ `phase=complete`、**batchId `d3eac1f35ead840e`**、
+- 最近一次**成功**的发布（node-8）：`crctl checkpoint CR-2026-066 --message 代码与测试证据` ⇒ `phase=complete`、**batchId `d3eac1f35ead840e`**、
   `metadataCommit 7eb5c223`；三仓 `confirmed=true`：KB `bed340ea` / multica `d47818025` / tools `25ad2588`。
 - 提交链：tools `6cd1d60`(TASK-01) → `a0823f8`(TASK-03) → `d2947a5`(TASK-02) → `25ad258`(TASK-04)；
   multica `b37825407`(TASK-02) → `d47818025`(TASK-04)；KB `62d46b35` … → `bed340ea`(测试证据) → `7eb5c223`(metadata)。
@@ -41,8 +51,10 @@
 
 | 项 | 事实 |
 |---|---|
-| 当前节点 | **`review-code`（code-implementation node-9）已委派给独立 `quality-reviewer-agent` run**（新 run、不复用作者会话）；`reviewLoop`：maxAttempts=3、`repair-target=implement-code` |
-| PASS 之后（本 Agent 的下一步） | `push-progress`（node-15，message=代码评审通过后审批前 checkpoint）→ 回报 `commit`/`batchId`/`verdict`/`crctl next` 给 `cr-coordinator-agent`（由协调者给 Ray 出 `crctl approve --stage code` 指令）→ **停在人工代码审批 gate 前**（Agent 不代签、不写 `approval.yml`） |
+| 当前节点 | **`push-progress` 发布（node-15 审批前 checkpoint 与 node-12 代码审批结果已合并为同一次发布）——因网络受阻未完成**：`crctl checkpoint` 的 `git fetch origin` 无法连 github.com:443（`TX_GIT_FAILED`） |
+| **恢复入口（唯一）** | 本机网络恢复后**只重跑同一 checkpoint**（不重新审批、不重跑 review、不改 `approval.yml`）：`crctl checkpoint CR-2026-066 --message "代码审批结果" --workspace <权威路径>` ⇒ 确认 `phase=complete` 并回报 `batchId`／`repositories`／`phase`，之后才交 `delivery-agent` 走 `merge`。**不得**在发布完成前起 `merge`（其 publication preflight 必报 `MERGE_SOURCE_MISSING` / `RELEASE_REMOTE_NOT_PUSHED`） |
+| message 口径说明 | 未逐字用 node-15 的「代码评审通过后审批前 checkpoint」：审批已先发生，该措辞与批次内容（含审批记录）不符；改用 node-12 canonical「代码审批结果」。因发布未成功（零批次产生），改回无追溯污染 |
+| 已终结节点（勿重跑） | `review-code`（node-9）cycle 1 / attempt 1 PASS；人工代码审批（human_approval node-10）已由 Ray 在 TTY 通过；`approve-code`（node-11）的效应已由该 `crctl approve` 产生（**不得重复调用**，否则 `CR_STATUS_CURRENT_MISMATCH`；也不代签、不写 `approval.yml`） |
 | **BLOCK 回修入口** | reviewer 的 `repair-target=implement-code` ⇒ 按 `reviewLoop.replayNodes` 重放：`implement-code → write-test-report → push-progress → workspace-freshness → review-code`（≤3 轮）；同一根因下所有失败点一次修完（`coding-discipline` §3） |
 | 上游设计缺口（备用出口） | `review-dev-plan:upstream-design-blocker` / 状态机既有边 `code-approved -> developing`（release-drift）；**不得**就地放宽 SDD 或 `zero_diff` |
 | 证据冻结机制 | `sdd.md`（`78846c1b…`）与 `prd.md`（`9b43bbfa…`）改一字即 `APPROVED_ARTIFACT_DRIFT`；`plan.md`/`tasks` 是评审证据面，实施期零改动 |
