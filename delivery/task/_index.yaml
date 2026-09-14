@@ -2934,3 +2934,31 @@ tasks:
     cr-ref: CR-2026-064
     target-version: "0.37"
     estimate: 16h
+  - id: CR-2026-066-TASK-01
+    file: TASK-0.39-CR-2026-066-01-pipeline-node-retirement.md
+    title: pipeline 节点退役与测试面连带闭合：审批后/冗余 checkpoint 节点对象删除 + _index.yml 与四个既有测试文件的同步改写
+    status: done
+    cr-ref: CR-2026-066
+    target-version: "0.39"
+    estimate: 24h
+  - id: CR-2026-066-TASK-02
+    file: TASK-0.39-CR-2026-066-02-review-pass-publish-and-permissions.md
+    title: 评审 PASS 发布、clean 前置与权限面：四个 review SKILL 同构改造 + 矩阵/派生表/两份 quality-reviewer Prompt 同步
+    status: done
+    cr-ref: CR-2026-066
+    target-version: "0.39"
+    estimate: 24h
+  - id: CR-2026-066-TASK-03
+    file: TASK-0.39-CR-2026-066-03-archive-local-trunk-sync.md
+    title: 归档尾部 trunk 同步：archiveCr 三个成功返回点改经局部包装 + 返回值新增 localTrunkSync + AC-8 六项用例
+    status: done
+    cr-ref: CR-2026-066
+    target-version: "0.39"
+    estimate: 16h
+  - id: CR-2026-066-TASK-04
+    file: TASK-0.39-CR-2026-066-04-checkpoint-wording-and-hitchhike-rules.md
+    title: 口径改写、搭车硬规则与登记收口：四处同口径 + 四份 Prompt 副本 + FR-7 静态断言 + 交付登记块
+    status: done
+    cr-ref: CR-2026-066
+    target-version: "0.39"
+    estimate: 24h
