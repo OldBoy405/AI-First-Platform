@@ -18,7 +18,7 @@ updated: 2026-09-14T12:57:00+08:00
 | # | 设计不变量 | 判据落点 |
 |---|---|---|
 | I1 | **发布只发生在三个被授权的位置**：① 评审 run 内（FR-1）；② 已排定的下一阶段委派**内**（同一 run）；③ `recovery` 指定的同 run 重跑。除此之外任何位置不得出现 `push-progress`/checkpoint | FR-6 / FR-7 / AC-6 |
-| I2 | **全仓 `git add -A` 之前，必须先证明启动工作区是干净的**——发布者（评审者）在跑 `push-progress` 前复核全部 resources `healthy`（`dirty=false`），不干净则不发布、不代提交 | FR-2 / FR-1 第 1 条 / AC-3 |
+| I2 | **全仓 `git add -A` 之前，必须先证明启动工作区是干净的**——发布者（评审者）在跑 `push-progress` 前复核全部 resources `healthy`（`healthy` ⇒ `dirty=false`，更强前置：还要求 worktree 已注册且 HEAD 在 CR 分支上，与 §4.2 同口径），不干净则不发布、不代提交 | FR-2 / FR-1 第 1 条 / AC-3 |
 | I3 | **发布的必须是被评审的**——发布后用只读取证把「发布批次」绑定到「评审对象」；不成立即 `CONTRACT_DRIFT` 技术中止，不改 verdict、不改状态 | FR-3 / AC-3 |
 | I4 | **归档是终态事务，其尾部 trunk 同步必须是 best-effort**：只 ff-only、永不破坏本地在途修改、逐仓失败只反映在返回行、不新增错误码、不改退出码 | FR-10 / AC-8 |
 
@@ -192,7 +192,7 @@ crctl archive（终态事务，既有语义不变）
 |---|---|
 | 新增字段 | `localTrunkSync`（与 `recovery` 同级），类型 = 上述行数组 |
 | 既有字段 | `commit` / `lastCleanupError` / `remaining` / `preservedRefs` / `recovery` / `warnings` **逐字不变** |
-| `phase` 分类 | `complete` / `cleanup-pending` **不变**；两个返回路径都带 `localTrunkSync` |
+| `phase` 分类 | `complete` / `cleanup-pending` **不变**；三个成功返回点（幂等重放早退 / `complete` / `cleanup-pending`）都带 `localTrunkSync` |
 | 退出码 | **不变**（trunk 同步失败不改变退出码） |
 | 错误码 | **不新增**（`fetch-failed` / `trunk-unavailable` / `ff-only-failed` 只出现在返回行的 `reason`） |
 | 幂等重放 | `changed=false` 的 complete 重放路径同样返回 `localTrunkSync`（按当次实况），不产生新 commit；三个成功返回点（幂等重放早退 / `complete` / `cleanup-pending`）都带该字段 |
@@ -453,7 +453,7 @@ archiveCr(ctx, input):
 | AC-5 | NFR-1；§6.4 | CI（Ubuntu+Windows）六个步骤全绿；不签例外 | 所有被删除节点牵连的断言都在 §6.4 登记并改写；`lint-prompts --mode enforce` 的风险面在 §7.1 说明（新增文本不得构成状态机副本/裸 git/下一步映射） |
 | AC-6 | §4.5 + §6.6（延期验证点登记格式） | 交付说明登记：载体（交付后新注册的小体量演练 CR／次选 CR-P1 首链）、时点、观察项 ①~④、责任 agent、关闭触发条件 | 该演练在本 CR 交付时**不可能**产出证据（需另一个 CR 走完四阶段），故设计为「登记即达成、未登记即 AC-6 未通过」；观察项 ① 的判据（`confirmed=true` + `metadataCommit` 非空 + 对账通过）在本 CR 的四次发布中即可部分自证（本 CR 自身就是载体之一） |
 | AC-7 | §6.5 四处口径改写 | 四处均出现「阶段终点完成条件 = 评审 PASS 的 checkpoint（评审者执行、每阶段一次）」与「审批后无 checkpoint 节点 / 搭车」；无「审批后的阶段终点 checkpoint 为强制完成条件」旧句 | 四处均为仓库内文本，可逐字核对；额外把 `openwiki/pipelines/overview.md` 的 replayNodes 例（现含 checkpoint）与 `/coding` mermaid 的两个 checkpoint 节点一并改准，避免同文件内出现第二套事实 |
-| AC-8 | §4.6 | `archive-tx.test.mjs`：① 两分支均含 `localTrunkSync`；② 4 状态 × 6 reason 分类正确；③ dirty ⇒ `skipped/dirty` 且本地逐字节未变；④ argv 级命令面白名单：零 `reset/clean/stash/--force/push` 且命令面恰为 7 项（判据见右）；⑤ `changed=false` 重放仍返回且零新 commit；⑥ SKILL 与 delivery 汇报面含该字段 | ④ 的「命令面断言」必须是 **argv 级**，文本级子串判据在 §9 明令零 diff 的函数体上恒假（`rows.push(row)` 含 `push`；git 命令以 argv 数组书写、无字面 `merge --ff-only`），故不采用。实现：抽 `export function reconcileLocalTrunks` 起至下一个顶层 `}` 的函数体文本 → 抽其中全部 `gitRun`/`gitMust` 的第二个实参 argv（实测 7 个调用点）→ 归一化签名（取首 token；argv 含 `--prune`/`--verify`/`--is-ancestor`/`--ff-only` 之一时并入该选项）去重后**恰为** `rev-parse`／`rev-parse --verify`／`symbolic-ref`／`status`／`fetch --prune`／`merge-base --is-ancestor`／`merge --ff-only`（无多无少），且全部 argv 元素不含 `reset`/`clean`/`stash`/`--force`/`push`——子串判据只作用于 argv 元素，**不作用于整段函数体文本**；函数体或 argv 抽取失败、调用点数 ≠ 7 ⇒ **硬失败**（不降级为空串/空集）。该断言与 §9 的函数体零 diff 约束相容（判据落在命令面而非文本），与 ③ 的字节比对互为独立证据 |
+| AC-8 | §4.6 | `archive-tx.test.mjs`：① 三个成功返回点（幂等重放早退 / `complete` / `cleanup-pending`，即 `phase` 两值）均含 `localTrunkSync`；② 4 状态 × 6 reason 分类正确；③ dirty ⇒ `skipped/dirty` 且本地逐字节未变；④ argv 级命令面白名单：零 `reset/clean/stash/--force/push` 且命令面恰为 7 项（判据见右）；⑤ `changed=false` 重放仍返回且零新 commit；⑥ SKILL 与 delivery 汇报面含该字段 | ④ 的「命令面断言」必须是 **argv 级**，文本级子串判据在 §9 明令零 diff 的函数体上恒假（`rows.push(row)` 含 `push`；git 命令以 argv 数组书写、无字面 `merge --ff-only`），故不采用。实现：抽 `export function reconcileLocalTrunks` 起至下一个顶层 `}` 的函数体文本 → 抽其中全部 `gitRun`/`gitMust` 的第二个实参 argv（实测 7 个调用点）→ 归一化签名（取首 token；argv 含 `--prune`/`--verify`/`--is-ancestor`/`--ff-only` 之一时并入该选项）去重后**恰为** `rev-parse`／`rev-parse --verify`／`symbolic-ref`／`status`／`fetch --prune`／`merge-base --is-ancestor`／`merge --ff-only`（无多无少），且全部 argv 元素不含 `reset`/`clean`/`stash`/`--force`/`push`——子串判据只作用于 argv 元素，**不作用于整段函数体文本**；函数体或 argv 抽取失败、调用点数 ≠ 7 ⇒ **硬失败**（不降级为空串/空集）。该断言与 §9 的函数体零 diff 约束相容（判据落在命令面而非文本），与 ③ 的字节比对互为独立证据 |
 | AC-9 | §6.7 | 交付说明登记受影响映射清单（见 §6.7 表）且必有「重启生成前保持 Runner 禁用」或「已重生成」之一 | 映射清单由节点下标直接算出（可复算）；`ArchitectureRunnerEnabled()` 默认 false（`runner.go:56-63`）是既有事实；本 CR 不改 `gate_nodes_gen.go`，故只能走「保持禁用 + 登记」分支 |
 | AC-10 | §9 批准范围（scope_in/scope_out/zero_diff） | ① diff 不含平台执行层/Runner/continuation、新节点/维度/账本字段/观测指标、事务层/状态机/错误码改动、`recovery` 字段名改动、`recoverCommand` 复活；② 不含 `onFail:skip` + 输入端开关形式的「审批后/评审后 checkpoint」；③ 在途 CR 唯一（066）、063/064/065 均 archived；④ 与 CR-P1/P2 的面零 diff | ③ 现成（`crctl status` 可查）；④ 由 zero_diff 清单 + 交付前 diff 复核保证；① 的 `recoverCommand` 面由 `contract-scan` 的 `RETIRED_RECOVERY` 整树扫描兜底 |
 
@@ -461,7 +461,7 @@ archiveCr(ctx, input):
 
 ## 6.3 既有实现依赖与事实
 
-正文存在但未列入本清单的同类事实引用视为漏列；本清单按仓与依赖面分组、组内按正文首次出现顺序排列（B-2 回修新增项按其正文首现位置插入对应分组）。
+正文存在但未列入本清单的同类事实引用视为漏列；本清单按仓与依赖面分组、组内按正文首次出现顺序排列（B-2 两轮回修与 S-10 的新增项都按其正文首现位置插入对应分组；0.3 版共 47 项）。
 
 1. repo: tools
    relative path: ARCHITECTURE.md
@@ -560,124 +560,144 @@ archiveCr(ctx, input):
     依赖结论: §4.3.2 code 阶段判据与该既有复核语义同源（KB 不比 HEAD 全等），避免评审者自造第二套判据。
 20. repo: tools
     relative path: skills/shared/crctl/scripts/lib/workspace-transactions.mjs
-    stable symbol/对象: `reconcileLocalTrunks(ctx)`（L1487-1521：行形状 `{repo,trunk,before,remote,after,status,reason}`；`status ∈ unchanged|synced|skipped|failed`；`reason ∈ wrong-branch|dirty|diverged|fetch-failed|trunk-unavailable|ff-only-failed`；仅 `fetch --prune origin` + `merge --ff-only`；全程局部捕获不抛错）
+    stable symbol/对象: `mergeCr(ctx, input)`（L1532 定义）的 publication preflight 块（L1583-1606：注释「新事务全仓 publication preflight——远端 requirement source 精确等于本地 HEAD 才允许首次 prepare」＋ `checkpointRecovery`（L1586）＋ `MERGE_SOURCE_MISSING`（L1599）＋ `RELEASE_REMOTE_NOT_PUSHED`（L1602））
+    commit SHA: 5d5a4ada96b882eb2c640e34bb72857a7073b668
+    依赖结论: FR-6 code 路径兜底所依赖的既有语义（§4.5「`merge` 的 publication preflight 语义不变」）与 SDD-CLOSE-02 第 8 项「唯一远端相等要求」的证据；preflight 只在首次 prepare（`payload.repos` 为空）时执行，两个错误都携 `recovery`（checkpoint argv）⇒ writeback run 可就地执行一次并在同 run 重跑；§9 zero_diff 亦把其函数签名与 `checkpointCr`/`applyWriteback`/`registerCr` 并列。
+21. repo: tools
+    relative path: skills/shared/crctl/scripts/lib/workspace-transactions.mjs
+    stable symbol/对象: `reconcileLocalTrunks(ctx)`（L1487-1530，即自 `export function reconcileLocalTrunks` 起至下一个顶层 `}`，与 AC-8④ 的抽取边界一致；行形状 `{repo,trunk,before,remote,after,status,reason}`；`status ∈ unchanged|synced|skipped|failed`；`reason ∈ wrong-branch|dirty|diverged|fetch-failed|trunk-unavailable|ff-only-failed`；仅 `fetch --prune origin` + `merge --ff-only`；全程局部捕获不抛错）
     commit SHA: 5d5a4ada96b882eb2c640e34bb72857a7073b668
     依赖结论: FR-10 复用对象；其分类与形状即 `localTrunkSync` 契约，也是 AC-8②③④ 的判据源。
-21. repo: tools
+22. repo: tools
     relative path: skills/shared/crctl/scripts/lib/workspace-transactions.mjs
     stable symbol/对象: `reconcileLocalTrunks` 在 merge 的既有唯一调用点（L1786）与返回（L1791）
     commit SHA: 5d5a4ada96b882eb2c640e34bb72857a7073b668
     依赖结论: 证明「函数已被生产路径验证」且字段名已被消费；本 CR 只加第二个调用点与返回字段（FR-10.1/2）。
-22. repo: tools
+23. repo: tools
     relative path: skills/shared/crctl/scripts/lib/workspace-transactions.mjs
     stable symbol/对象: `archiveCr(ctx, input)`（L3498 起）：`result()` 固定返回构造、三个成功返回点（L3597 幂等 complete 早退 / L3757 complete / L3759 cleanup-pending）、既有返回字段 `commit`/`lastCleanupError`/`remaining`/`preservedRefs`/`recovery`/`warnings`
     commit SHA: 5d5a4ada96b882eb2c640e34bb72857a7073b668
     依赖结论: §4.6.1 的最小侵入点（三返回点 + 局部包装）；既有字段与 `phase` 分类不得改变（AC-8①、§3.2）。
-23. repo: tools
+24. repo: tools
     relative path: skills/shared/controlled-shell/rules.json
     stable symbol/对象: `git[]` 白名单（`rev-parse` → `callers:["*"]` 且含 `^--verify \S+$`；`show` → `callers:["system-orchestrator"]` 且只放行 `review-annotations/*`）、`protectedPaths.deny`（账本/审批/评审记录路径）
     commit SHA: 5d5a4ada96b882eb2c640e34bb72857a7073b668
     依赖结论: FR-3 的取证手段只能用 `rev-parse`（`HEAD`/`--verify HEAD^`）+ 文件只读；`git show` 不可用于业务文件；评审者不得写账本（deny 面不变）。
-24. repo: tools
+25. repo: tools
     relative path: agent-skill-matrix.yml
     stable symbol/对象: `quality-reviewer-agent`（L178-208：`can-call` 4 项、块注释 L192-194、`forbidden` 含 `push-progress` 与 `checkpoint`）
     commit SHA: 5d5a4ada96b882eb2c640e34bb72857a7073b668
     依赖结论: FR-8 的改动对象与 AC-4① 的判据；注释扩容是本 CR 三处载体之一。
-25. repo: tools
+26. repo: tools
     relative path: AGENT-SKILL-MATRIX.md
     stable symbol/对象: `## 本 CR 权限变更` 节（L46）与既有数据行（L52，`quality-reviewer-agent`/`controlled-shell`，属既有 CR）
     commit SHA: 5d5a4ada96b882eb2c640e34bb72857a7073b668
     依赖结论: S-8 要求本 CR 行内带 CR 编号以与既有行区分；`check-skill-matrix.mjs` 不校验 can-call/forbidden，故本表是人工可读的补充载体。
-26. repo: tools
+27. repo: tools
     relative path: agents/quality-reviewer-agent.md
     stable symbol/对象: `## 权限事实源` 节（L35-38：只声明「权限矩阵：agent-skill-matrix.yml」；文件 42 行、无 crctl 子命令清单）
     commit SHA: 5d5a4ada96b882eb2c640e34bb72857a7073b668
     依赖结论: S-8③ 的「tools 侧不存在『受限 crctl 权限块』、对应节名是『权限事实源』」的事实源；本 CR 需在该节给出同一允许面声明（载体 ③a）。
-27. repo: tools
+28. repo: tools
     relative path: agents/dev-agent.md、agents/delivery-agent.md
     stable symbol/对象: `dev-agent.md` 的评审前置句（「先有代码、测试报告和统一 checkpoint…」「checkpoint 未完成时，不进入后续人工审批」在 tools 侧**实测不存在**——该两句仅存在于 multica 部署副本，tools 侧 dev-agent.md 现文为「委派路由合同（评审）」）；`delivery-agent.md` 的「不裸调 crctl 原语」句
     commit SHA: 5d5a4ada96b882eb2c640e34bb72857a7073b668
-    依赖结论: FR-7 的 tools 侧增量是**新增**搭车硬规则与发布职责，不是原位改写；原位改写的两个句子落在 multica 副本（见 29）。**PRD §1.4 事实 12 的「multica dev-agent.md L23/L41」与 tools 侧现行文本的差异在此登记为已核实事实。**
-28. repo: tools
+    依赖结论: FR-7 的 tools 侧增量是**新增**搭车硬规则与发布职责，不是原位改写；原位改写的两个句子落在 multica 副本（见下条 multica 的 `cr-prompts-revised/dev-agent.md` 项）。**PRD §1.4 事实 12 的「multica dev-agent.md L23/L41」与 tools 侧现行文本的差异在此登记为已核实事实。**
+29. repo: tools
     relative path: README.md、openwiki/pipelines/overview.md、dir-graph.yaml
     stable symbol/对象: `README.md` L61-75（第 6 节 checkpoint 行 L65）、`openwiki/pipelines/overview.md` L114/L116/L118（三段描述）、L120-140（`/coding` mermaid 的 `D8["checkpoint"]` 与 `D12["checkpoint (mandatory)"]`）、L73（replayNodes 例含 checkpoint）、L172（contract 第 9 条）、`dir-graph.yaml` L178（`pipeline_templates.contract` 第 5 条）
     commit SHA: 5d5a4ada96b882eb2c640e34bb72857a7073b668
     依赖结论: FR-9/AC-7 的四处口径目标与两处连带（mermaid、replayNodes 例）都落在这些既有行上；`dir-graph.yaml` 第 5 条现文「按顺序列出修复、证据、checkpoint 与当前评审节点」必须改写。
-29. repo: multica
+30. repo: multica
     relative path: cr-prompts-revised/quality-reviewer-agent.md
     stable symbol/对象: `## 受限 crctl 权限` 节（L35-46：`仅限评审所需的以下子命令` + 四条允许项 L39-42 + 禁止面枚举 L46 含 `checkpoint`）、L54「本 Agent 不负责 push/checkpoint，后续发布由 Pipeline 中对应的同步节点完成」
     commit SHA: 43848770bff13465de8ed9a0e28ecc7371716514
     依赖结论: B-1 事实源（`workspace inspect` 两侧均未出现）；L54 与 FR-1 直接冲突必须原位改写；载体 ③b 的断言 B 落点。
-30. repo: multica
+31. repo: multica
     relative path: cr-prompts-revised/dev-agent.md
     stable symbol/对象: L23「代码评审：先有代码、测试报告和统一 checkpoint，再由独立 reviewer 调用 `review-code`」、L41「评审 blocker 未清空、测试报告未 pass 或 checkpoint 未完成时，不进入后续人工审批」
     commit SHA: 43848770bff13465de8ed9a0e28ecc7371716514
     依赖结论: FR-7 的两个「原位改写」句子实测在 multica 副本而非 tools 侧；改写为「评审 PASS 即发布」口径。
-31. repo: multica
+32. repo: multica
+    relative path: cr-prompts-revised/delivery-agent.md
+    stable symbol/对象: L27「本 Agent 只传业务输入、消费结构化结果和解释错误，不裸调 crctl 原语、不跨节点补跳」（FR-7 的 recovery 例外要在本句上开洞）与 L44 的归档终态汇报面（`complete`/`cleanup-pending` 与归档结果字段）
+    commit SHA: 43848770bff13465de8ed9a0e28ecc7371716514
+    依赖结论: FR-7 交付集的第四份 multica 副本（§1.2 树与 §4.7 表行都把它列为同步对象）；§4.5 要求其增量文本写明「`recovery` argv 属于被授权的同 run 重跑、不受『不裸调 crctl 原语』约束」且「该例外不赋予独立发起 checkpoint 的权力」，§4.6.2 要求其汇报面含 `localTrunkSync`。
+33. repo: multica
     relative path: cr-prompts-revised/cr-coordinator-agent.md
     stable symbol/对象: L19/L60（`crctl` 仅只读 `status`/`next`，禁止 `advance`/`approve`/`checkpoint` 等写入型子命令）
     commit SHA: 43848770bff13465de8ed9a0e28ecc7371716514
     依赖结论: 「门后节点只能被单独委派」的直接原因；FR-7 需在本文件增加「不得为 checkpoint 单开委派」的显式禁止（不改其 crctl 只读边界）。
-32. repo: multica
+34. repo: multica
     relative path: CUSTOM.md
     stable symbol/对象: 条目 75（表行，物理行 387）（`cr-prompts-revised/` 定性：公共 Prompt 唯一事实源为 `tools/agents/`、目录内副本不再独立演进、以 tools 为准人工对齐、`cr-coordinator-agent` 不进 tools agent index）
     commit SHA: 43848770bff13465de8ed9a0e28ecc7371716514
     依赖结论: D-6（S-7 排除第五份副本）与 D-5（multica 侧不建 CI 断言）的治理依据；本 CR 不改 CUSTOM.md。
-33. repo: tools
+35. repo: tools
     relative path: skills/shared/crctl/scripts/test/pipeline-structure.test.mjs
     stable symbol/对象: AC-1/AC-2/AC-3 断言（L24-52、L91-99、L114-137）、CR-2026-044 段（L168-213）、CR-2026-050 FR-12.x 段（L304-380）、8 条 pipeline 节点数表（L516-530）、architecture registry 断言（L262-278）、L229（architecture 后续节点不得依赖 `node-1.md`）
     commit SHA: 5d5a4ada96b882eb2c640e34bb72857a7073b668
     依赖结论: §6.4 中必须改写的断言清单来源；也是 AC-1/AC-2/AC-4 新断言的落点。
-34. repo: tools
+36. repo: tools
+    relative path: skills/shared/crctl/scripts/test/archive-tx.test.mjs
+    stable symbol/对象: 既有 fixture `makeWritebackFixture`（L17 定义）与 `makeNewModeArchiveFixture`（L86 定义）（文件 783 行；AC-8 六项新用例的落点）
+    commit SHA: 5d5a4ada96b882eb2c640e34bb72857a7073b668
+    依赖结论: AC-8 六项用例的唯一落点（§1.2 树、§6.2 AC-8 行与 §6.4「文件与 fixture 既有」）；SDD-CLOSE-01 的「不拆」判据③直接以「复用既有 fixture、不新建夹具」为前提 ⇒ 两个 fixture 的既有形状是本 CR 测试面成立的前置事实。
+37. repo: tools
     relative path: skills/shared/crctl/scripts/test/contract-scan.test.mjs
     stable symbol/对象: replayNodes 结构快照（L81-98）、`RETIRED_RECOVERY = ['recoverCommand','recover_command']` 整树扫描（L418-425 区域）
     commit SHA: 5d5a4ada96b882eb2c640e34bb72857a7073b668
     依赖结论: replayNodes 快照含 `push-progress` ⇒ 必须随 FR-5 改写（§6.4）；FR-7 的静态文本断言按「同风格」落在此文件；`RETIRED_RECOVERY` 兜底 AC-3 的零命中判据。
-35. repo: tools
+38. repo: tools
     relative path: skills/shared/crctl/scripts/test/crctl.test.mjs、checkpoint-tx.test.mjs
     stable symbol/对象: `crctl.test.mjs` L5036（code pipeline inputs 逐字列表含 `auto_push_after_task`）、L5038（`ids.length === 16`）、L5040（`…0017` 是 `…0009` 的直接前驱；L5039 是 `…0013` 已删除断言）；`checkpoint-tx.test.mjs` L487-495（跨 4 份 pipeline 过滤 `push-progress`/`list-remote-checkpoints` 节点做 prompt 负向断言）
     commit SHA: 5d5a4ada96b882eb2c640e34bb72857a7073b668
     依赖结论: 这两处是 §1.3.1 第 13 行未列出、但会被 FR-4/FR-5 直接证伪的既有断言；`checkpoint-tx` 的 `filter` 形态在删除后集合退化为 1 项（resume-cr 的 `list-remote-checkpoints`），须改为显式枚举以杜绝「过滤为空 → 断言静默失效」。
-36. repo: tools
+39. repo: tools
     relative path: skills/shared/crctl/scripts/test/gate-registry.json、suite-gate.mjs
     stable symbol/对象: `manifest.files` / `manifest.cases`（下界语义：`SUITE_MANIFEST_CASE_DROP` 仅在用例数 `<` 基线时红）、`manifest.files` 磁盘集合等式
     commit SHA: 5d5a4ada96b882eb2c640e34bb72857a7073b668
     依赖结论: 本 CR 只新增用例、不改测试文件集合 ⇒ **不需要**改 `gate-registry.json`（若新增文件则必须同步）。
-37. repo: tools
+40. repo: tools
     relative path: .github/workflows/crctl-ci.yml
     stable symbol/对象: 六个步骤（`lint-prompts --mode enforce`、`check-skill-matrix.mjs`、`check-agents-contract.mjs`、pipeline JSON 结构断言、`suite-gate.mjs --run`、writeback 单测）与 `paths` 触发面
     commit SHA: 5d5a4ada96b882eb2c640e34bb72857a7073b668
     依赖结论: AC-5 的判据面；其中 `lint-prompts` 的规则面（R1~R13）是本 CR 新增文本必须避让的约束（§7.1）。
-38. repo: tools
+41. repo: tools
     relative path: pipeline-templates/emit-registry.mjs
     stable symbol/对象: canonical JSON（`body.pipeline.nodes[].{id,kind,label,ref,prompt,approvalPrompt,onFail,reviewLoop}`）→ `digest = sha256(canonical)`；当前 digest `sha256:5454bfd990f88748fac3351e0abc1d044f14b490cdcef70ac6d627f5959c91cc`
     commit SHA: 5d5a4ada96b882eb2c640e34bb72857a7073b668
     依赖结论: 删除 architecture `…0005` 必然改变 digest（节点对象进入 canonical JSON）；FR-11 只需登记，不要求本 CR 重生成。
-39. repo: multica
+42. repo: multica
     relative path: server/internal/governance/gate_nodes_gen.go、server/internal/governance/runner.go、server/internal/governance/gen/generate-gate-nodes.mjs
     stable symbol/对象: `ApprovalGates`/`ReviewGates` 的 `{PipelineID,NodeID,Seq}` 映射（requirement `…0005`/Seq 5、`…0004`/Seq 4；tech-design `…0003`/Seq 3、`…0002`/Seq 2；dev-start `…0004`/Seq 5；code `…0010`/Seq 14、`…0009`/Seq 12）、`ArchitectureCoreRegistryJSON` 内嵌 registry、`ArchitectureRunnerEnabled()`（`AIFIRST_ARCHITECTURE_RUNNER` 未设 ⇒ false）、生成器 `--check`（对 `../tools` 做比较）
     commit SHA: 43848770bff13465de8ed9a0e28ecc7371716514
     依赖结论: §6.7 受影响映射清单的来源；Runner 默认关闭 ⇒ 未重生成期间不影响运行；实测 multica `.github/workflows/*` 对 `gate-nodes`/`gate_nodes`/`governance` **零命中**，故未重生成不会让 multica CI 变红（`--check` 是人工/验证时动作）。
-40. repo: multica
+43. repo: multica
     relative path: cr-prompts-revised/agent-skill-matrix.yml
     stable symbol/对象: L192-194 reviewer 块注释（与 tools 同名文件逐字相同、未含 `workspace inspect`）
     commit SHA: 43848770bff13465de8ed9a0e28ecc7371716514
     依赖结论: S-7 的事实源；D-6 判定为 deployment snapshot（无代码消费者、无静态解析器，`grep -rn "cr-prompts-revised"` 只命中 `CUSTOM.md`），排除出本 CR 改动面。
-41. repo: tools
+44. repo: tools
     relative path: skills/sync/workspace-freshness/SKILL.md
     stable symbol/对象: 「用途」段（L13-15，关键句 L15）：「本 Skill 职责收敛为『远端 trunk 新鲜度预检』…fetch/sync 失败可中止当前 Pipeline 节点，但不改变 CR status、approval、review verdict 或 reviewLoop attempt」
     commit SHA: 5d5a4ada96b882eb2c640e34bb72857a7073b668
     依赖结论: SDD-CLOSE-02 第 2 项的证据：其 fetch 只用于感知 behind，本地 ahead 判定不依赖远端内容 ⇒ 与「审批提交只在本地」不冲突；其两个节点（code `…0016`/`…0017`）本 CR 不删。
-42. repo: tools
+45. repo: tools
     relative path: skills/shared/crctl/scripts/crctl.mjs
     stable symbol/对象: `approveAndAdvance`（L1095 定义；approval + status 原子提交核心，TTY 与 `--grant` 共用）
     commit SHA: 5d5a4ada96b882eb2c640e34bb72857a7073b668
     依赖结论: SDD-CLOSE-02 第 3 项的证据：四个 `approve-*` 的输入面 = `approval.yml` + `review-annotations/*` + `gates.json`（code 阶段另经 `verifyReleaseSubjects`，不 fetch、不读 remote-tracking ref）⇒ 审批是网络无关的本地账本事务，支撑 FR-6 的搭车取舍。
-43. repo: tools
+46. repo: tools
     relative path: skills/shared/crctl/scripts/lib/workspace-transactions.mjs
     stable symbol/对象: `applyWriteback(ctx, input)`（L3182 定义；内部化 `applyWritebackAtomic`）
     commit SHA: 5d5a4ada96b882eb2c640e34bb72857a7073b668
     依赖结论: SDD-CLOSE-02 第 5 项的证据：writeback 只消费 txws 内 approval/release-subjects 与 traceability journal，不做 trunk 相等性校验 ⇒ 不引入远端前置；§9 zero_diff 亦把其签名与 `checkpointCr`/`mergeCr`/`registerCr` 并列。
+47. repo: tools
+    relative path: skills/shared/crctl/scripts/test/assertion-sources.mjs
+    stable symbol/对象: 现有导出面（`readTextNormalized`（L17）/ `deriveStateMachine`（L36）/ `readTestFileSet`（L90）；文件 98 行，自述「测试辅助模块、不匹配 `*.test.mjs`」）——**不含**函数体文本／argv 抽取 helper
+    commit SHA: 5d5a4ada96b882eb2c640e34bb72857a7073b668
+    依赖结论: §9 `follow_up` 第 7 项的取舍依据（AC-8④ 的抽取 helper 在 `archive-tx.test.mjs` 内就地实现、不上移本模块）；本 CR 只读其现有导出，不新增导出、不改该文件。
 
 ## 6.4 既有测试面改动清单（连带闭合，逐断言）
 
@@ -700,7 +720,7 @@ archiveCr(ctx, input):
 | 同上 | **新增** | FR-7 静态文本断言：tools 三份 Prompt（`agents/{dev,quality-reviewer,delivery}-agent.md`）均含搭车硬规则文本（token 级：`push-progress` + `单独开委派`/`同 run`，不断言整句） |
 | `crctl.test.mjs` | L5036（inputs 逐字含 `auto_push_after_task`）、L5038（16 节点）、L5040（`…0017` 直接前驱 `…0009`；L5039 是 `…0013` 已删除断言） | **改写**：inputs = `['cr_id','target_version']`；节点数按事实源推导；保留 `…0017` 与 `…0009` 相邻关系（删除后仍相邻） |
 | `checkpoint-tx.test.mjs` | L487-495（跨 4 份 pipeline 的 `filter(...)` 负向断言） | **改写**：改为显式枚举剩余节点集合（`resume-cr` 的 `list-remote-checkpoints`；`requirement/architecture/code` 三份为空集合）并断言该枚举非空 + 逐条负向断言；**禁止**保留会随删除退化为空集的 `filter` 形态 |
-| `archive-tx.test.mjs` | **新增用例**（AC-8 六项；文件与 fixture 既有） | ① 两分支含 `localTrunkSync`；② 分类正确；③ dirty ⇒ `skipped/dirty` + 本地内容逐字节未变；④ 从函数体抽 `gitRun`/`gitMust` 的 argv（7 个调用点）→ 归一化签名集合恰为 `rev-parse`/`rev-parse --verify`/`symbolic-ref`/`status`/`fetch --prune`/`merge-base --is-ancestor`/`merge --ff-only`，且 argv 元素零 `reset/clean/stash/--force/push`（argv 级；抽取失败或调用点数 ≠ 7 硬失败；判据全文见 §6.2 AC-8 行）；⑤ `changed=false` 重放仍返回且零新 commit；⑥ SKILL/delivery 汇报面含字段（文本断言） |
+| `archive-tx.test.mjs` | **新增用例**（AC-8 六项；文件与 fixture 既有） | ① 三个成功返回点（幂等重放早退 / `complete` / `cleanup-pending`）均含 `localTrunkSync`；② 分类正确；③ dirty ⇒ `skipped/dirty` + 本地内容逐字节未变；④ 从函数体抽 `gitRun`/`gitMust` 的 argv（7 个调用点）→ 归一化签名集合恰为 `rev-parse`/`rev-parse --verify`/`symbolic-ref`/`status`/`fetch --prune`/`merge-base --is-ancestor`/`merge --ff-only`，且 argv 元素零 `reset/clean/stash/--force/push`（argv 级；抽取失败或调用点数 ≠ 7 硬失败；判据全文见 §6.2 AC-8 行）；⑤ `changed=false` 重放仍返回且零新 commit；⑥ SKILL/delivery 汇报面含字段（文本断言） |
 | `gate-registry.json` | `manifest.files` / `manifest.cases` | **不改**（无新增测试文件；`cases` 是下界，新增用例无需登记） |
 
 ## 6.5 FR-9 口径改写清单（四处同口径 + 两处连带）
@@ -802,7 +822,7 @@ AC-6 延期验证点
 | 7 | `gates.json` | 只读本地 | 声明式文件 + `passCondition` 由 pipeline JSON/annotation 求值 |
 | 8 | 唯一远端相等要求 = `merge` 的 publication preflight | 成立 | `mergeCr` L1587-1606：`MERGE_SOURCE_MISSING`/`RELEASE_REMOTE_NOT_PUSHED` 是唯一「远端 requirement ref == 本地 HEAD」判定，且携 `recovery`（checkpoint argv） |
 
-⇒ PRD §1.4 事实 22 的残留面（「未逐条重跑」）**关闭**：唯一依赖远端的是归档（非 gate）与 merge 的 publication preflight（已由 FR-6 兜底）。本表引用的 `workspace-freshness/SKILL.md`、`approveAndAdvance`、`applyWriteback` 三项已按 B-2 回修补登 §6.3（末三项）。
+⇒ PRD §1.4 事实 22 的残留面（「未逐条重跑」）**关闭**：唯一依赖远端的是归档（非 gate）与 merge 的 publication preflight（已由 FR-6 兜底）。本表引用的 `workspace-freshness/SKILL.md`、`approveAndAdvance`、`applyWriteback` 三项已按 B-2 回修补登 §6.3（第 44~46 项）。
 
 ## SDD-CLOSE-03 S-7：第五份权限面副本的收口（纳入 vs 排除）
 
@@ -875,3 +895,4 @@ AC-6 延期验证点
 
 - 初稿（2026-09-14）：按 PRD（`a7cbd947`，`sha256(LF)` `9b43bbfa…`）与来源附件起草；基线事实在 tools@`5d5a4ada`、multica@`43848770`、KB worktree@`3a553e3b` 三个 HEAD 上逐条核实（初稿为「既有实现依赖与事实」36 项，B-2 回修后 43 项）。三条对 PRD 的技术性细化落点：① FR-3 的 KB 取证链（D-4，基于 checkpoint 的 `kbSourceSha`/metadata-staged-set 合同）；② FR-1 的发布前置复用 `crctl workspace inspect`（不引入裸 `git status`，保持评审者能力面不扩张）；③ FR-4/FR-5 的连带面（`node-N.md` 判定、`node-3.md` 悬空引用核查、四个测试文件的既有断言改写清单）。SDD-CLOSE-01~05 关闭 PRD 与需求评审转交的 5 项延后事项。
 - 回修 0.2（2026-09-14，`review-tech-design` cycle 1 / attempt 1 BLOCK → 按 `repair-target=write-tech-design` 回修）：**B-1** 把 AC-8④ 由「函数体文本级子串断言」重定义为 **argv 级命令面白名单**（§6.2 AC-8 行 ④＋可达性、§6.4 `archive-tx.test.mjs` 行、§7.1、§9 zero_diff 同步）——原判据在 §9 明令零 diff 的函数体上恒假（`rows.push(row)` 含 `push`；git 命令为 argv 数组、无字面 `merge --ff-only`）；**B-2** 在 §6.3 补登 4 项正文同类既有事实（`ARCHITECTURE.md`、`skills/shared/crctl/gates.json`、`merge-feature-branch/SKILL.md`、`cr-archive/SKILL.md`），并按「补进清单」处理 SDD-CLOSE-02 引用的 3 项（`workspace-freshness/SKILL.md`、`approveAndAdvance`、`applyWriteback`），清单 36 → 43 项；同批采纳 S-1~S-6（§4.7 三份 tools Prompt、§3.4 CONTRACT_DRIFT 表述、§6.3 PRD 349 行口径、§9 交付说明补断言 B 结论、三处行号精度、§4.2 `healthy ⇒ dirty=false`）。基线事实仍为 tools@`5d5a4ada`、multica@`43848770`；PRD 零触碰（`sha256(LF)` `9b43bbfa…`）。
+- 回修 0.3（2026-09-14，`review-tech-design` cycle 1 / attempt 2 BLOCK → 按 `repair-target=write-tech-design` 定点回修）：**B-2 收敛**在 §6.3 再补登 3 项正文同类既有事实——`skills/shared/crctl/scripts/test/archive-tx.test.mjs`（AC-8 六项用例落点与 SDD-CLOSE-01 判据③所据的既有 fixture，文件 783 行、`makeWritebackFixture` L17 / `makeNewModeArchiveFixture` L86）、`../multica/cr-prompts-revised/delivery-agent.md`（FR-7 交付集第四份副本）、`mergeCr`（FR-6 code 路径兜底所据的 publication preflight 语义，定义 L1532 / preflight 块 L1583-1606），并按 S-10 登记 `assertion-sources.mjs`（`follow_up` 第 7 项的取舍依据），清单 43 → **47 项**、全表重编号与两处数值互引同步（其中原「（见 29）」改为显式对象名，避免序号再漂移）；同批采纳 S-7（§1.1 I2 改「`healthy` ⇒ `dirty=false`，更强前置」）、S-8（§6.3 第 21 项行号区间改 L1487-1530）、S-9（§3.2／§6.2／§6.4 统一为「三个成功返回点」，即 `phase` 两值）。基线事实仍为 tools@`5d5a4ada`、multica@`43848770`；PRD 零触碰（`sha256(LF)` `9b43bbfa…`）。
