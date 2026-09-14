@@ -4,54 +4,57 @@
 > `traceability.yml`、`review-annotations/**`、`approval.yml`、`_backlog.yml`、`tasks/_index.yml`。
 > 用途：返工与 `/resume` 时快速定位「做到哪、卡在哪、从哪继续」。
 
-## 1. 当前状态（最近一次刷新：`review-dev-plan` PASS 后的发布 run，2026-09-14 15:4x +08:00）
+## 1. 当前状态（最近一次刷新：实施 run 收尾，2026-09-14 17:4x +08:00）
 
 - CR：`CR-2026-066`（AIFI-27；CR-P3「评审 PASS 发布与 checkpoint 委派收敛」）。
 - 权威 workspace = `.rayai-worktrees/knowledge-base/requirement/CR-2026-066`；三仓 worktree =
   `.rayai-worktrees/{knowledge-base,multica,tools}/requirement/CR-2026-066`；命令一律带 `--workspace <权威路径>`
   （主 checkout 视图陈旧，AGENTS.md 纪律 #9）。
-- 本 run 节点：**`push-progress`（code-implementation node-4，`message=计划与任务`）** —— 计划与 TASK 评审 PASS 后的发布批次；
-  本 run 只发布，**未推进状态、未代签**（发布点按当前基线仍在「审批前」；本 CR 落地后该节点退役、发布点前移到评审 PASS）。
-- 评审结果（canonical `review-annotations/dev-plan.yml`）：`verdict: pass` / `blockers: []` /
-  `subject-sha256 36859a01…89305`（= `plan.md` ＋ 4 份 `TASK-*.md` 的 composite digest；本 run 独立复算**逐字一致**）；
-  `review-loop.yml` 的 `review-dev-plan` = **cycle 1 / attempt 2/3**；评审记录提交 `58339651`。
-- 状态：`status = task-breakdown`（未变）；`crctl next` = **`crctl approve --stage dev-start`**（`humanApproval=true`，
-  why「开发计划评审 pass 且无 blocker，等待开发启动人工确认」）——**下一步只有人工审批，Agent 不代签**。
-- 发布：`crctl checkpoint CR-2026-066 --message 计划与任务 --workspace <权威路径>`；batchId 与各仓 `sourceSha`
-  见 `_backlog.yml#latest-checkpoint`（canonical）与本 Issue 评论（本文件在 checkpoint 之前写入，故不抄 batchId）。
+- 本 run 节点：`approve-dev-start` 复核（**未重复审批**）→ `workspace-freshness`（implement-start，`continue`）→
+  **`implement-code`（四张 TASK 全部落盘）** → **`write-test-report`（`crctl test`，`status=pass`）** →
+  **`push-progress`（node-8）** → **`workspace-freshness`（review-start，`continue`）** → 现已委派独立 `review-code`。
+- 状态：`status = developing`；`crctl next` = **`push-progress → review-code`**（`humanApproval=false`，
+  why「测试证据 pass，推送 checkpoint 后进入代码评审」；该提示是状态级建议——node-8 已执行，下一节点是 review-code）。
+- 任务账本：`tasks/_index.yml` **四张卡全部 `done`**（TASK-01 15:54 / TASK-03 16:22 / TASK-02 16:28 / TASK-04 17:04，均带 `done-at`）。
+- 发布：`crctl checkpoint CR-2026-066 --message 代码与测试证据` ⇒ `phase=complete`、**batchId `d3eac1f35ead840e`**、
+  `metadataCommit 7eb5c223`；三仓 `confirmed=true`：KB `bed340ea` / multica `d47818025` / tools `25ad2588`。
+- 提交链：tools `6cd1d60`(TASK-01) → `a0823f8`(TASK-03) → `d2947a5`(TASK-02) → `25ad258`(TASK-04)；
+  multica `b37825407`(TASK-02) → `d47818025`(TASK-04)；KB `62d46b35` … → `bed340ea`(测试证据) → `7eb5c223`(metadata)。
 - 本 run 未触碰：`prd.md`（冻结 `9b43bbfa…`）、`sdd.md`（冻结 `78846c1b…`）、`plan.md` / `tasks/TASK-0*.md`
-  （**PASS 证据面，改动会使 `devPlanFreshness` 漂移、`crctl next` 退回 `review-dev-plan`**）、`approval.yml`、
-  `review-annotations/**`、`review-loop.yml`、`traceability.yml`；`_backlog.yml` 仅由 checkpoint 自身写入
-  `latest-checkpoint`（+ 本文件随该批次一起提交）。
+  （**评审证据面，一个字节未改**）、`approval.yml`、`review-annotations/**`；`review-loop.yml` / `traceability.yml`
+  仅由 `crctl test` 写入其专属段落；`_backlog.yml` 仅由 checkpoint 写 `latest-checkpoint`。
 
-## 2. 上一轮回修要点（历史，已随本轮 PASS 关闭；canonical 见 `plan.md` §8.E ＋ `review-annotations/dev-plan.yml`）
+## 2. 实施 run 的实测证据（canonical 见 `test-report.md` 与 `test-evidence/cmd-01…07.log`）
 
-| 项 | 内容 |
+| 项 | 实测 |
 |---|---|
-| **B-1（已闭合）** | `cmd-03` 的 5 个既有用例名无存在性守卫（dot 报告器不可交付名字证据、`--test-name-pattern` 空跑即绿）⇒ `cmd-05` 新增源码级守卫（g）：**3 文件 × 5 token**（`CR-2026-042 静态合同` / `checkpoint T05 contract` / `CR-2026-044 AC-13` / `CR-2026-044 AC-14` / `CR-2026-050 AC-12`），逐 (文件, token) 断言声明形态 `test('<token>` ≥ 1 并逐行打印计数；评审者负控已证可判红 |
-| S-1~S-6（已闭合） | `RETIRED_RECOVERY` 归属改 `cmd-02`；`cmd-07` 正向 token 面收窄为 §10 区块；TASK-04 §5 = 13 个文件（tools 9 ＋ multica 4）；TASK-01 计数口径按 SDD §6.4 表格行（四测试文件既有断言共 15 行 = 12＋1＋1＋1）；SDD §4.7 落点错位登记（`sdd.md` 不改）；TASK-01 §3.3② 改按 7 个完整节点 id 断言 |
-| 保留用例名口径 | 「保留用例名」= 保留 **token 前缀**（改前缀即守卫红）；后缀按新事实同步（如 `16 节点` → `12 节点`、`（7 节点）` → `（5 节点）`） |
+| cmd-01 | `verdict=pass` / `files_executed=21` / **`cases_executed=596`** / `failures=0` / `skipped_file_level=0` / `exceptions_count=0` / 906 s（plan §5.4 基线 786 s；差异来自 `archive-tx` 新增 3 fixture 与机器负载） |
+| cmd-02 | exit 0（`pipeline-structure` 36 用例含新 A/B/C/D 断言块 + `contract-scan` 含 FR-7 静态断言） |
+| cmd-03 | exit 0（10 点）；存在性由 cmd-05 守卫（g）承载：`CR-2026-042 静态合同=5` / `checkpoint T05 contract=1` / `CR-2026-044 AC-13=2` / `CR-2026-044 AC-14=1` / `CR-2026-050 AC-12=1` |
+| cmd-04 | exit 0（6 点 = 6 条 `CR-2026-066 AC-8` 用例通过；守卫（f）：token=6 ∧ `test(`=38） |
+| cmd-05 | exit 0：`tools diff paths = 25` 双向相等、zero_diff 零命中、hunk 禁改 token 零命中、FR-9 四处正/负 token 全过 |
+| cmd-06 | exit 0：`multica diff paths = 4`；权限块含只读 `workspace inspect` ∧ 保留 `checkpoint` 禁止面；三句旧前提零命中；四副本硬规则齐备；`localTrunkSync` 在册；无部署声称 |
+| cmd-07 | exit 0：`plan section10 lines = 35`；16 正向 token 齐备；负向零命中；KB diff 全在 `change-requests/CR-2026-066/**` ∪ `change-requests/_backlog.yml` |
+| 负控（非证据） | 五组：`_index.yml` 12→16、`ref=push-progress` 篡改、删矩阵注释/删 SKILL「请作者先提交」、`archiveCr` 去掉 `localTrunkSync`、删 Prompt 硬规则 token（tools 与 multica）——**各自对应断言必红，还原即绿** |
 
-## 3. 评审反馈与恢复入口（canonical：`review-annotations/*.yml`、`review-loop.yml`、`gates.json`）
+## 3. 下一步与恢复入口（canonical：`review-annotations/code.yml`、`review-loop.yml`、`crctl next`）
 
 | 项 | 事实 |
 |---|---|
-| 本轮 verdict | `review-dev-plan` **cycle 1 / attempt 2/3 = PASS**（8 项判据维度全 `pass`；0 blocker；attempt 1 的 blocker 已闭合） |
-| 下一节点 | **人工 dev-start 审批 gate**：`crctl approve CR-2026-066 --stage dev-start --workspace <权威路径>`（仅交互式 TTY，Agent 不代签）；approve → `developing`；回答非 `y/yes` → `approve-dev-start:reject -> write-dev-plan`（合法裁决） |
-| BLOCK 路由（备用） | 普通轨 `repair-target=write-dev-plan` → 重放 `write-dev-plan → write-dev-tasks → review-dev-plan`（≤3 轮）；上游设计缺口 → `review-dev-plan:upstream-design-blocker`（`task-breakdown → tech-design-review-pending`） |
-| 证据冻结机制 | `crctl.mjs#devPlanFreshness`：`plan.md` ＋ 全部 `tasks/TASK-*.md` 的 composite digest 必须等于 annotation 的 `subject-sha256`；不一致 ⇒ `crctl next` 与 dev-start 门禁均报「plan/TASK 在评审后被改动，重审刷新证据」 |
-| 审批后（按当前基线） | 人工 approve → `approve-dev-start` → `workspace-freshness`（实施前）→ `implement-code`（TASK 逐项实现；**每完成一个即在 `tasks/_index.yml` 标 done**，不积压到回写期） |
+| 当前节点 | **`review-code`（code-implementation node-9）已委派给独立 `quality-reviewer-agent` run**（新 run、不复用作者会话）；`reviewLoop`：maxAttempts=3、`repair-target=implement-code` |
+| PASS 之后（本 Agent 的下一步） | `push-progress`（node-15，message=代码评审通过后审批前 checkpoint）→ 回报 `commit`/`batchId`/`verdict`/`crctl next` 给 `cr-coordinator-agent`（由协调者给 Ray 出 `crctl approve --stage code` 指令）→ **停在人工代码审批 gate 前**（Agent 不代签、不写 `approval.yml`） |
+| **BLOCK 回修入口** | reviewer 的 `repair-target=implement-code` ⇒ 按 `reviewLoop.replayNodes` 重放：`implement-code → write-test-report → push-progress → workspace-freshness → review-code`（≤3 轮）；同一根因下所有失败点一次修完（`coding-discipline` §3） |
+| 上游设计缺口（备用出口） | `review-dev-plan:upstream-design-blocker` / 状态机既有边 `code-approved -> developing`（release-drift）；**不得**就地放宽 SDD 或 `zero_diff` |
+| 证据冻结机制 | `sdd.md`（`78846c1b…`）与 `prd.md`（`9b43bbfa…`）改一字即 `APPROVED_ARTIFACT_DRIFT`；`plan.md`/`tasks` 是评审证据面，实施期零改动 |
 
-## 4. 本轮 4 条非阻塞精度项（评审者标 `范围外`；本 run **保留不动**，理由见末行）
+## 4. 残余与非阻塞登记（不阻断 review-code；供后续 CR/owner 处理）
 
-| # | 落点 | 事实 | 若重开后的改法 |
+| # | 项 | 事实 | 处置 |
 |---|---|---|---|
-| 1 | `plan.md` §7 AC-2 证据列 | 写「`crctl.test.mjs` / `checkpoint-tx.test.mjs` 的 **3 个** token 守卫」，实为 **2 个**（两文件各 1 个）；全量守卫集是 **3 文件 × 5 token** | 改为「2 个 token 守卫（上述两文件各 1 个；连同 `pipeline-structure` 的 3 个共 3 文件 × 5 token）」。实施期以 §6.1 表注④／§6.2.1(g) 的 5 行枚举与 `cmd-05` 实测输出为准 |
-| 2 | `plan.md` §6.1 表注④ 括注 | 「某个名字消失后点号数仍可 ≥ 10」不成立（10 个点号正是那 5 个 pattern 的命中：5＋1＋2＋1＋1，少一个即下降）；正确理由是「点号数只说明有若干用例跑了，不显示名字、也不是本命令的阈值」；另可写明守卫锁定**单引号声明形态** `test('…'` | 按上述口径重写括注；**结论不变**（点号数不是存在性证据、唯一判红通道是守卫（g）） |
-| 3 | `tasks/TASK-01.md` §3.2 标题 | 「12 行处置台账（11 改写 ＋ 1 保留；**逐条对应** SDD §6.4 的 12 行既有断言）」与 §2 的「**合并覆盖**」口径不一致：台账第 11 行合并了 SDD 两行（L306-320 ＋ L341-375），第 12 行（L229 保留）登记在 SDD §6.3 | 标题沿用 §2 措辞，或写明「11 行改写**合并覆盖** §6.4 的 12 行既有断言 ＋ 1 行保留（L229，SDD §6.3）」；覆盖面本身完整 |
-| 4 | `tasks/TASK-02.md` §4.1 第 2 条 | 「变更前实测 `exit 1 / 13 failures`」应为 **14**（与 `plan.md` §6.3 一致；该卡枚举漏 `delivery-agent 缺 [同 run]` 一项） | 13 → 14，或写明「与本卡直接相关 4 项」。不影响该卡验收（= `cmd-06` `exit 0`） |
-
-**保留理由（四项统一）**：均为 `plan.md` / `TASK-*` 内的措辞与计数精度项，**不影响验收判据**；而任一改动都会使
-`subject-sha256 36859a01…` 失效 ⇒ `devPlanFreshness` 判「plan/TASK 在评审后被改动」⇒ `crctl next` 退回
-`review-dev-plan`、dev-start 门禁 passCondition 失败，需再开一轮独立评审（当前 attempt 2/3，仅余 1 轮，耗尽即需人工
-`review-loop reset`）。收益远小于代价，故本 run 不动证据面；留待后续因真实发现重开 plan/TASK 时按上表一次性改正。
+| 1 | AC-6 延期验证点 | 本 CR 交付时不可能产出证据 | 按「登记即达成」提交（`plan.md` §10 与交付评论）；载体 = 交付后新注册的演练 CR（首选）/ CR-P1 首链（次选） |
+| 2 | FR-11 平台生成物 | `gate_nodes_gen.go` Seq 与 registry digest 必变 | 走「**未重生成** ⇒ 重新生成前 `AIFIRST_ARCHITECTURE_RUNNER` 保持禁用」分支；重生成归 owner 部署窗口（`follow_up` 第 5 项） |
+| 3 | 部署时序（SDD-CLOSE-05） | 本 CR 只改仓库内文本 | 部署窗口必须与 tools 侧改动成对生效；不构成平台部署声称 |
+| 4 | `openwiki/pipelines/index.md` / `quickstart.md` 仍含 "mandatory checkpoints" | 不在 SDD §1.2 的 29 文件交付面内；`cmd-05` 的 25 文件白名单双向相等会拒绝越界改动 | 本 CR 不改，登记为残余（建议后续文档 CR / CR-P1 一并清理） |
+| 5 | AC-8② 的 `diverged`/`fetch-failed`/`trunk-unavailable`/`ff-only-failed` 未做活值覆盖 | 以函数体赋值路径 + 枚举闭包 + 内存负控判定 | 已记入 `test-report.md` §5；活值覆盖 `synced`/`unchanged`/`skipped(dirty｜wrong-branch)` |
+| 6 | 上一版 `_context.md` §4 的 4 条 plan/TASK 精度项 | 均属证据面措辞/计数精度，**实施期未动证据面**（改即 `devPlanFreshness` 漂移） | 保留不动，留待因真实发现重开 `plan/TASK` 时一次性改正（原文见 Git 历史 `bed340ea^` 之前的版本） |
+| 7 | `AGENTS.md` replayNodes 描述仍含 "checkpoint 节点" | `zero_diff` 明令零 diff | 保留（通用形状描述，非本 CR 数值面） |
