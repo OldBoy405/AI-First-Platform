@@ -1,10 +1,10 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 spec-id: ai-first-platform
-cr-ref: CR-2026-064
-cr-history: [CR-2026-060, CR-2026-059, CR-2026-061, CR-2026-062, CR-2026-063, CR-2026-065, CR-2026-064]
-target-version: "0.37"
+cr-ref: CR-2026-066
+cr-history: [CR-2026-060, CR-2026-059, CR-2026-061, CR-2026-062, CR-2026-063, CR-2026-065, CR-2026-064, CR-2026-066]
+target-version: "0.39"
 baseline-since: "0.33"
-generated-at: "2026-09-14T09:34:33+08:00"
+generated-at: "2026-09-14T19:12:40+08:00"
 
 milestones:
   - cr: CR-2026-060
@@ -745,3 +745,95 @@ milestones:
         code: { verdict: pass, path: change-requests/CR-2026-064/review-annotations/code.yml, sha256: 70b6df699cf9c42dac35eff56e227981f131ca8e90158efd5d2992cc93ecdbe8 }
       approval: { status: approved, path: change-requests/CR-2026-064/approval.yml, sha256: 83168e4213684983cfb6ca449c1f3aaaf9f2ae611079c0305e8e4091739ad8ac }
       merge: { status: merged, path: change-requests/CR-2026-064/merge-commits.yml, sha256: d84ffe92eebc11da68a44fec200ddb19c82fc9a623ddfe51bbc780a0e5f047a9 }
+  - cr: CR-2026-066
+    milestone: 0.39
+    target-version: "0.39"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 469d8f5659d1453e0ccc2039def56a9b1c0aeef7
+        branch: requirement/CR-2026-066
+      - repo: multica
+        trunk: main
+        sha: 9c6888bbea7b44e830d677beeecdda55b8f61c78
+        branch: requirement/CR-2026-066
+      - repo: tools
+        trunk: main
+        sha: cd453121945407dbe29ef4d8f5a9414a8f06ab11
+        branch: requirement/CR-2026-066
+    frs:
+      - fr: FR-1
+        title: 评审 PASS 发布（AC-3）
+        sdd: §4.1 发布序列（步骤 3 按 stage 分派）＋ §3.1 四 SKILL 合同（PASS 分支一次 `push-progress`，`message=<阶段>评审通过`，四字段透传，BLOCK 不发布）
+        tasks: [CR-2026-066-TASK-02, CR-2026-066-TASK-01]
+        code: [ai-first-platform-docs@469d8f5659d1, multica@9c6888bbea7b, tools@cd4531219454]
+        evidence: [cmd-02, cmd-01]
+      - fr: FR-2
+        title: 评审前置干净检查（AC-3、AC-4）
+        sdd: §4.2 前置算法（Step 1 起始、`crctl workspace inspect`、`classification=healthy`、不代提交）＋ §3.3 四处载体
+        tasks: [CR-2026-066-TASK-02]
+        code: [ai-first-platform-docs@469d8f5659d1, multica@9c6888bbea7b, tools@cd4531219454]
+        evidence: [cmd-02, cmd-06, cmd-05]
+      - fr: FR-3
+        title: 发布与评审对象对账（AC-3）
+        sdd: §4.3 取证链（KB/非 KB 分解）＋逐阶段判据（`subject-sha256` / composite / `release-subjects`）＋ `CONTRACT_DRIFT` 失败语义（不改 verdict）
+        tasks: [CR-2026-066-TASK-02]
+        code: [ai-first-platform-docs@469d8f5659d1, multica@9c6888bbea7b, tools@cd4531219454]
+        evidence: [cmd-02]
+      - fr: FR-4
+        title: 审批后 checkpoint 节点退役（AC-1）
+        sdd: §4.4.1 删除表（`…0007`/`…0005`/`…0012` 对象级删除，不重编号、不新增替代节点）
+        tasks: [CR-2026-066-TASK-01]
+        code: [ai-first-platform-docs@469d8f5659d1, multica@9c6888bbea7b, tools@cd4531219454]
+        evidence: [cmd-02, cmd-03, cmd-05]
+      - fr: FR-5
+        title: 冗余 checkpoint 节点退役与连带面（AC-1、AC-2）
+        sdd: §4.4.1（`…0003`×2、`…0008`、`…0015` ＋ 输入 `auto_push_*`）＋ §4.4.2 连带面 1-6（`_index.yml`、replayNodes 5→4、`approvalPrompt` 前提句、四个测试文件）
+        tasks: [CR-2026-066-TASK-01]
+        code: [ai-first-platform-docs@469d8f5659d1, multica@9c6888bbea7b, tools@cd4531219454]
+        evidence: [cmd-02, cmd-03, cmd-05]
+      - fr: FR-6
+        title: 审批后发布由搭车承担（AC-6）
+        sdd: §4.5（code 路径同 run 内执行 `recovery` 一次后重跑 merge；审批搭车；禁止单开委派）
+        tasks: [CR-2026-066-TASK-04]
+        code: [ai-first-platform-docs@469d8f5659d1, multica@9c6888bbea7b, tools@cd4531219454]
+        evidence: [cmd-02, cmd-06]
+      - fr: FR-7
+        title: 搭车规则写入 Agent 委派合同（AC-6）
+        sdd: §4.7 落点表（tools 三份 Prompt ＋ multica 四份副本）＋ §4.5 的 delivery 双向边界（recovery 例外不赋予独立发起 checkpoint 的权力）
+        tasks: [CR-2026-066-TASK-04, CR-2026-066-TASK-02]
+        code: [ai-first-platform-docs@469d8f5659d1, multica@9c6888bbea7b, tools@cd4531219454]
+        evidence: [cmd-02, cmd-06]
+      - fr: FR-8
+        title: 评审者的发布职责与权限（AC-4）
+        sdd: §3.3 权限契约（`forbidden` 去 `push-progress`、`can-call` 加 `push-progress`、只读 `workspace inspect` 入允许面、`checkpoint` 仍在 `forbidden`）
+        tasks: [CR-2026-066-TASK-02]
+        code: [ai-first-platform-docs@469d8f5659d1, multica@9c6888bbea7b, tools@cd4531219454]
+        evidence: [cmd-02, cmd-06, cmd-05]
+      - fr: FR-9
+        title: FR-07 口径重写（AC-7）
+        sdd: §6.5 四处同口径 ＋ 两处连带（`/coding` mermaid 的 `D8`/`D12` 删除、replayNodes 例）
+        tasks: [CR-2026-066-TASK-04]
+        code: [ai-first-platform-docs@469d8f5659d1, multica@9c6888bbea7b, tools@cd4531219454]
+        evidence: [cmd-05]
+      - fr: FR-10
+        title: 归档后本地各仓与 origin 一致（AC-8）
+        sdd: §4.6 算法（三个成功返回点改经局部包装、`localTrunkSync` 与 `recovery` 同级、best-effort、幂等按当次实况）
+        tasks: [CR-2026-066-TASK-03, CR-2026-066-TASK-04]
+        code: [ai-first-platform-docs@469d8f5659d1, multica@9c6888bbea7b, tools@cd4531219454]
+        evidence: [cmd-04, cmd-01, cmd-06]
+      - fr: FR-11
+        title: 平台生成物登记（AC-9）
+        sdd: §6.7 受影响映射清单（`gate_nodes_gen.go` 的 `NodeID`/`Seq` ＋ registry digest）＋二选一登记
+        tasks: [CR-2026-066-TASK-04]
+        code: [ai-first-platform-docs@469d8f5659d1, multica@9c6888bbea7b, tools@cd4531219454]
+        evidence: [cmd-07]
+    evidence:
+      test: { status: pass, path: change-requests/CR-2026-066/test-report.md, sha256: 2050213419bcf87a328d5eb6720ec059420fecd1779edbdf6fcc300b13298761 }
+      reviews:
+        requirement: { verdict: pass, path: change-requests/CR-2026-066/review-annotations/requirement.yml, sha256: ad9fe0cf428833341b319ab8e21c1241227e2a297fab36f223701fd2ec8867dc }
+        tech-design: { verdict: pass, path: change-requests/CR-2026-066/review-annotations/sdd.yml, sha256: f11ec8697fc8a3215195c0f8caea83743f9ae39cabe71604e40579157e1faf53 }
+        dev-plan: { verdict: pass, path: change-requests/CR-2026-066/review-annotations/dev-plan.yml, sha256: 8bd4a8cfd33bf4266e2368c7acc89bf817fae695f590ae5267fa38f1e1da9eed }
+        code: { verdict: pass, path: change-requests/CR-2026-066/review-annotations/code.yml, sha256: dcf4b1e61a57263f1e170e13ad89f98cc2657958736907ce459a9de7c12a5da5 }
+      approval: { status: approved, path: change-requests/CR-2026-066/approval.yml, sha256: 7fd4a13d0883f6bb335ad0fff306e013b8f75fd018d27e1bd74f411787225199 }
+      merge: { status: merged, path: change-requests/CR-2026-066/merge-commits.yml, sha256: 5731f46652d994676e95e8b10d4e2e04b612e15c4d710da4a9289462f1100a40 }
