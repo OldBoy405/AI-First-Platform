@@ -1,0 +1,18 @@
+$ node -e const fs=require('fs'),path=require('path'),cp=require('child_process');const R=process.cwd();const NL=String.fromCharCode(10);const CR='change-requests/CR-2026-064';const TOOLS='C:/Users/GOBAO/Downloads/AI/AI First Platform/.rayai-worktrees/tools/requirement/CR-2026-064';const NAMES=['recoverCommand','recover_command'];const CATS=['producer','code consumer','Prompt-Skill consumer','active test','active docs','historical evidence'];const CRCTL=path.join(TOOLS,'skills/shared/crctl/scripts/crctl.mjs');const bad=[];const plan=fs.readFileSync(path.join(R,CR,'plan.md'),'utf8');for(const c of CATS)if(plan.includes(c)===false)bad.push('plan.md 六类归档缺少类别: '+c);if(plan.includes('平台 DB')===false)bad.push('plan.md 未记录平台部署边界');const docs=['README.md','openwiki/operations/crctl-transactions.md'];for(const f of docs){const t=fs.readFileSync(path.join(TOOLS,f),'utf8');if(NAMES.some(n=>t.includes(n)))bad.push('活跃文档仍含退役字段名: '+f);}const page=fs.readFileSync(path.join(TOOLS,'openwiki/operations/crctl-transactions.md'),'utf8');for(const k of ['recovery','executable','args','promptFor'])if(page.includes(k)===false)bad.push('OpenWiki 页缺少结构化合同字段名: '+k);const claim=['平台 DB','已部署'].join('');const tdir=path.join(R,CR,'tasks');const arts=[path.join(R,CR,'plan.md')].concat(fs.existsSync(tdir)?fs.readdirSync(tdir).filter(f=>f.endsWith('.md')).map(f=>path.join(tdir,f)):[]);for(const a of arts){const t=fs.readFileSync(a,'utf8');if(t.includes(claim))bad.push('CR 产物出现部署声称: '+path.relative(R,a));}const r=cp.spawnSync(process.execPath,[CRCTL,'git','diff','--name-only','ab6f9347','--cwd',R],{encoding:'utf8'});if(r.status!==0){bad.push('crctl git diff 失败');console.log(String(r.stderr).trim());}else{const parts=String(r.stdout).split(NL);const b=parts.findIndex(l=>l.trim()==='{');const names=parts.slice(0,b<0?parts.length:b).map(s=>s.trim()).filter(Boolean);console.log('KB diff paths = '+names.length);names.forEach(f=>console.log('  '+f));for(const f of names)if(f.startsWith(CR+'/')===false&&f!=='change-requests/_backlog.yml')bad.push('KB diff 越界路径: '+f);}if(bad.length>0){bad.forEach(b=>console.log('FAIL '+b));process.exit(1);}console.log('kb-audit failures = 0');
+(exit=0)
+--- stdout ---
+KB diff paths = 11
+  change-requests/CR-2026-064/approval.yml
+  change-requests/CR-2026-064/cr.md
+  change-requests/CR-2026-064/plan.md
+  change-requests/CR-2026-064/review-annotations/dev-plan.yml
+  change-requests/CR-2026-064/review-loop.yml
+  change-requests/CR-2026-064/tasks/TASK-01.md
+  change-requests/CR-2026-064/tasks/TASK-02.md
+  change-requests/CR-2026-064/tasks/TASK-03.md
+  change-requests/CR-2026-064/tasks/TASK-04.md
+  change-requests/CR-2026-064/tasks/_index.yml
+  change-requests/CR-2026-064/traceability.yml
+kb-audit failures = 0
+
+--- stderr ---

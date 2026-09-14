@@ -1,0 +1,17 @@
+$ node -e const fs=require('fs'),path=require('path');const R=process.cwd();const NL=String.fromCharCode(10);const NAMES=['recoverCommand','recover_command'];const SKIP=['.git','node_modules'];const SCANNER='skills/shared/crctl/scripts/test/contract-scan.test.mjs';const HIST='skills/shared/crctl/scripts/test/fixtures/traceability-191k.yml';const EXCLUDED=[SCANNER,HIST];const rel=p=>path.relative(R,p).split(path.sep).join('/');const segs=p=>rel(p).split('/');const norm=t=>t.split(String.fromCharCode(13)+NL).join(NL);const all=[];const walk=d=>{for(const e of fs.readdirSync(d,{withFileTypes:true})){const p=path.join(d,e.name);if(segs(p).some(s=>SKIP.includes(s)))continue;if(e.isDirectory())walk(p);else all.push(rel(p));}};walk(R);const surface=all.filter(r=>EXCLUDED.includes(r)===false).sort();const hit=f=>{const t=norm(fs.readFileSync(path.join(R,f),'utf8'));return NAMES.some(n=>t.includes(n));};const hits=surface.filter(hit);const exHit=EXCLUDED.filter(hit);const fx=surface.filter(r=>r.startsWith('skills/shared/crctl/scripts/test/fixtures/'));const reg=JSON.parse(norm(fs.readFileSync('skills/shared/crctl/scripts/test/gate-registry.json','utf8')));const mf=reg.manifest.files.slice();const disk=all.filter(f=>f.startsWith('skills/shared/crctl/scripts/test/')&&f.endsWith('.test.mjs')).map(f=>f.split('/').pop()).sort();const bad=[];console.log('enumerated = '+all.length);console.log('scan surface = '+surface.length);console.log('retired-name hits in surface = '+hits.length);hits.forEach(h=>console.log('  HIT '+h));console.log('excluded = '+EXCLUDED.length+' (hit = '+exHit.length+')');exHit.forEach(h=>console.log('  EXCLUDED-HIT '+h));console.log('fixtures in surface = '+fx.length);fx.forEach(f=>console.log('  IN '+f));console.log('manifest.files = '+mf.length+' cases floor sum = '+Object.values(reg.manifest.cases).reduce((a,b)=>a+b,0)+' exceptions = '+reg.exceptions.length);if(hits.length>0)bad.push('surface hits = '+hits.length);if(EXCLUDED.length!==2)bad.push('excluded count = '+EXCLUDED.length);if(EXCLUDED.filter(e=>[e.includes('*'),e.includes('?')].some(x=>x)).length!==0)bad.push('excluded 含通配');if(EXCLUDED.includes(SCANNER)===false)bad.push('扫描器自身不在排除项');if(EXCLUDED.includes(HIST)===false)bad.push('历史 traceability 不在排除项');if(!EXCLUDED.every(hit))bad.push('excluded hit count = '+exHit.length);if(fx.length!==3)bad.push('fixtures in surface = '+fx.length);if(surface.length<200)bad.push('scan surface suspiciously small = '+surface.length);if(mf.length!==21)bad.push('manifest.files = '+mf.length);if(JSON.stringify(mf.slice().sort())!==JSON.stringify(disk))bad.push('manifest.files 与磁盘测试文件集合不相等');if(reg.exceptions.length!==0)bad.push('exceptions 非空 = '+reg.exceptions.length);if(bad.length>0){bad.forEach(b=>console.log('FAIL '+b));process.exit(1);}console.log('scan-audit failures = 0');
+(exit=0)
+--- stdout ---
+enumerated = 218
+scan surface = 216
+retired-name hits in surface = 0
+excluded = 2 (hit = 2)
+  EXCLUDED-HIT skills/shared/crctl/scripts/test/contract-scan.test.mjs
+  EXCLUDED-HIT skills/shared/crctl/scripts/test/fixtures/traceability-191k.yml
+fixtures in surface = 3
+  IN skills/shared/crctl/scripts/test/fixtures/digest-vectors/expected.json
+  IN skills/shared/crctl/scripts/test/fixtures/digest-vectors/review-annotations-code.yml
+  IN skills/shared/crctl/scripts/test/fixtures/digest-vectors/test-report.md
+manifest.files = 21 cases floor sum = 578 exceptions = 0
+scan-audit failures = 0
+
+--- stderr ---

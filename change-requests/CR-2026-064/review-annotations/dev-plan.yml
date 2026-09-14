@@ -1,0 +1,22 @@
+cr-id: CR-2026-064
+review-type: dev-plan
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-13T23:42:32+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  sdd-to-plan: "pass"
+  plan-to-tasks: "pass"
+  task-executability: "pass"
+  dependency-topology: "pass"
+  interface-contracts: "pass"
+  acceptance-verifiability: "pass"
+  scope-and-simplicity: "pass"
+  risk-and-rollback: "pass"
+  reviewer-model: "deepseek/deepseek-flash (pi runner, reasoning=max)"
+suggestions:
+  - "已解决：上一轮 dev-plan 的唯一 blocker（AC-07 的验收口径与其证据命令被 plan 单方面替换、承载该验收目标的 SDD 层无 owner 授权记录；位置原指 plan.md §5.3 / §5.4 / §5.5-1 / §5.5-2 / §6.2 cmd-01 / §7 AC-07 行与 tasks/TASK-04.md §4.7、§5，对照 SDD §6.3 AC-07 与 §9 scope_in/scope_out）本轮已闭合。本节点在权威 worktree 上独立复核（非转述作者结论）：① 受审计划整体重写（plan.md commit 0b1c83f0、LF 规范化 sha256 77f64cc4e58f73b7abed0b0b8af2aa21646647167a6a6ba8da216b0faa646e5、54152 B），全文零 --test-skip-pattern、零 --test-concurrency、零例外授权、零待人工裁决项；② cmd-01 与 SDD §6.3 AC-07 第 1 条命令逐字相同（node skills/shared/crctl/scripts/test/suite-gate.mjs --run = .github/workflows/crctl-ci.yml:109-111），cmd-02 为第 2 条 CI 命令（crctl-ci.yml:113-115）加 --test-reporter=dot 的转录注记，理由与代价已在 plan §6.2.1 / R-14 / R-15 写明（不改文件集合、断言与退出码语义）；③ SDD 侧人工作为授权与证据齐备：review-annotations/sdd.yml verdict pass / blockers [] / cycle 3 attempt 1、subject-sha256 d9f727b6bb7d6d87f5449ccadbcbc986695e642d77c282f1d39b603d385a621b 与磁盘 sdd.md（commit 6c5c9a11、91780 B、纯 LF）逐字一致，approval.yml#tech-design evidence-digest 2d63772450a4a8dd83f6154050c8b609015625068e03c571fed8efd496bca5ca、target-status tech-design-reviewed；④ 旧 blocker 的根因（审批基线上 AC-07 的全绿不可达）已随 CR-2026-065 合入 trunk 消除，本节点在固定 HEAD 的 tools CR worktree（81d31b8b9d4c36cfef24cd076bf9fe635b67b2b6、git status clean）重放 cmd-01：exit 0、verdict pass、files_executed 21、cases_executed 578、skipped_file_level 0、failures 0、exceptions_count 0、registry.sha256 f8d983a04656d1fae05588af9daa14b128872bc124e5bcddfd155088b53bd5bf、墙钟 805.6 s（command=node --test --test-reporter=tap、pool=15、availableParallelism=16），与 plan §5.3 记录的 786.5 s / 789.0 s 同量级；同时实测 gate-registry.json 的 manifest.files 恰 21、manifest.cases 合计 578、exceptions []、磁盘 skills/shared/crctl/scripts/test 的 21 个 .test.mjs 集合与 manifest.files 相等 ⇒ 本轮无需要例外的验收口径，旧 blocker 的五条修复方向全部落地。"
+  - "范围外：冻结 skip 模式与 node --test 默认 spec reporter 的耦合不在本 CR 范围。本节点实测事实：skills/shared/crctl/scripts/lib/workspace-transactions.mjs L3992-3998 的 FROZEN_SKIP_PATTERNS 五条正则中含 SKIPPED 词边界正则（第 4 条），L4060 在子进程 stdout+stderr 上做 skipped 判定；以默认 reporter 运行 cmd-02 的同一命令时摘要行（skipped 0）命中该模式，而真实 skip 数为 0 ⇒ test-report.md 机器区会把该命令记为 skipped: true。本 CR 的处置是按 write-test-report SKILL.md:68 的统一要求（计划统一使用 --test-reporter=dot 保证 skipped 恒 false）转录，未改命令语义；根因（模式表按裸词匹配框架摘要行）与 evidence/CI 命令的统一 reporter 约定留后续 CR。"
+review-loop:
+  current-attempt: 1
+subject-sha256: 0913eedc8da6c5a4dc3b9ccecef0cd0431d7045d9a907d44bc6f0a5f668aaed8
