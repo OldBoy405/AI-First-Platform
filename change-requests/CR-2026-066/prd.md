@@ -8,7 +8,7 @@ owner: Ray
 owner-role: requirement
 status: draft
 created: 2026-09-14T10:47:00+08:00
-updated: 2026-09-14T10:47:00+08:00
+updated: 2026-09-14T11:22:00+08:00
 ---
 
 # 1. 概述
@@ -29,11 +29,11 @@ updated: 2026-09-14T10:47:00+08:00
 按来源 §3「目标节奏」逐条落地（每组都锚定「仓 + 文件」，见 §1.3.1 与 §3 各 FR）：
 
 1. **评审 PASS 发布**（FR-1）：`review-requirement` / `review-tech-design` / `review-dev-plan` / `review-code` 四个 SKILL 在 PASS 分支新增发布步骤——`review-record`（及该阶段既有 `advance`）完成、工作树干净之后调用既有 `push-progress`（`message = <阶段>评审通过`），消费 `phase` / `batchId` / `repositories[]` / `metadataCommit` 并在评审报告透传；BLOCK 分支不发布。
-2. **评审前置干净检查**（FR-2）：四个 review SKILL 的 Step 1 新增 `crctl workspace inspect <CR>` 全部 resources `classification=healthy`（`dirty=false`）前置；不满足则**不评审**、报告「存在未提交内容，请作者先提交」，评审者不得代提交。理由：`push-progress` 是 `git add -A` 全仓提交，评审者发布前必须确保不会把作者未提交内容一并发布。
+2. **评审前置干净检查**（FR-2）：四个 review SKILL 的 Step 1 新增 `crctl workspace inspect <CR>` 全部 resources `classification=healthy`（`dirty=false`）前置（该前置是**只读**既有子命令，其授权由 FR-8 同步写入评审者允许面，见 §1.5 第 5 条）；不满足则**不评审**、报告「存在未提交内容，请作者先提交」，评审者不得代提交。理由：`push-progress` 是 `git add -A` 全仓提交，评审者发布前必须确保不会把作者未提交内容一并发布。
 3. **发布与评审对象对账**（FR-3）：评审者发布后必须校验「发布的就是评审的」——requirement / tech-design 用注解 `subject-sha256`（PRD / SDD 文件）在 KB 发布批次的 `sourceSha` 上复算 LF-only sha256；dev-plan 用 plan.md + 全部 `TASK-*.md` 的 composite digest；code 用 `review-annotations/code.yml#release-subjects[].reviewed-source-sha` 与 `repositories[].sourceSha` 逐仓比对。不等即 `CONTRACT_DRIFT` 技术中止（**不改 verdict**），报原始差异。
 4. **审批后与冗余 checkpoint 节点退役**（FR-4 / FR-5）：删除 requirement `…0007` / `…0003`＋输入 `auto_push_after_prd`、architecture `…0005`、code `…0012` / `…0003`＋输入 `auto_push_after_task` / `…0008` / `…0015`＋审批提示前提句，并从 `review-code.reviewLoop.replayNodes` 删掉 `…0008` 一项；节点数 requirement 7→5、architecture 5→4、code 16→12，`_index.yml` 计数与 `pipeline-structure.test.mjs` 断言同步。
 5. **审批后发布由搭车承担**（FR-6 / FR-7）：code 路径由 `merge` 的 publication preflight（`MERGE_SOURCE_MISSING` / `RELEASE_REMOTE_NOT_PUSHED` + 结构化 `recovery`）在**同一 writeback run 内**硬兜底；requirement / tech-design / dev-start 的审批提交由下一阶段评审 PASS checkpoint 带回；**任何情况下不得为 checkpoint 单开 task/委派**——该硬规则写入 coordinator / dev / delivery / reviewer 四份 Agent 合同（tools 公共 Prompt 为唯一事实源，multica 侧同步部署副本）。
-6. **评审者的发布职责与权限**（FR-8）：`agent-skill-matrix.yml` 的 `quality-reviewer-agent` 从 `forbidden` 移除 `push-progress`、在 `can-call` 增加 `push-progress`（`checkpoint` 仍留在 `forbidden`——评审者只用 `push-progress` Skill，不用 `crctl checkpoint` 原语），`AGENT-SKILL-MATRIX.md` 的「本 CR 权限变更」节同步。
+6. **评审者的发布职责与权限**（FR-8）：`agent-skill-matrix.yml` 的 `quality-reviewer-agent` 从 `forbidden` 移除 `push-progress`、在 `can-call` 增加 `push-progress`（`checkpoint` 仍留在 `forbidden`——评审者只用 `push-progress` Skill，不用 `crctl checkpoint` 原语），`AGENT-SKILL-MATRIX.md` 的「本 CR 权限变更」节同步；并把 FR-2 强制前置所需的**只读** `workspace inspect` 写入该 actor 的 crctl 允许面（三处载体同步：矩阵注释、`AGENT-SKILL-MATRIX.md` 变更行、tools 与 multica 两份 `quality-reviewer-agent` 的受限 crctl 权限块——B-1 闭合）。
 7. **FR-07 口径重写 + 归档后 trunk 同步 + 平台伴随项**（FR-9 / FR-10 / FR-11）：`push-progress/SKILL.md`、`README.md`、`openwiki/pipelines/overview.md`、`dir-graph.yaml#pipeline_templates.contract` 同步为「阶段终点完成条件 = 评审 PASS 的 checkpoint」；`archiveCr` 复用既有 `reconcileLocalTrunks(ctx)` 并在返回结构新增 `localTrunkSync`；节点集变化对平台生成物（`emit-registry.mjs` digest、`gate_nodes_gen.go` 的 `NodeID/Seq`）的影响只**登记契约变化**，重生成由 owner 在部署窗口执行。
 
 ## 1.3 已拍板范围（采纳 cr.md summary，不重新定义）
@@ -54,14 +54,14 @@ updated: 2026-09-14T10:47:00+08:00
 | 4 | `../tools` | `pipeline-templates/_index.yml` | `nodes` 计数 5 / 4 / 12 与 brief 同步 |
 | 5 | `../tools` | `skills/{requirement/review-requirement,develop/review-tech-design,develop/review-dev-plan,develop/review-code}/SKILL.md` | Step 1 前置 clean 检查；PASS 分支新增 `push-progress`；发布对账；失败语义；「调用时机 / 用途」里的 checkpoint 前提句同步 |
 | 6 | `../tools` | `skills/sync/push-progress/SKILL.md` | FR-07 口径重写（评审 PASS 强制、审批后无节点、搭车） |
-| 7 | `../tools` | `agent-skill-matrix.yml` + `AGENT-SKILL-MATRIX.md` | reviewer 去 `forbidden: push-progress`、加 `can-call: push-progress`，注释与派生表同步 |
-| 8 | `../tools` | `agents/{dev-agent,quality-reviewer-agent,delivery-agent}.md` | 搭车硬规则 + 评审者发布职责（公共 Prompt 唯一事实源） |
+| 7 | `../tools` | `agent-skill-matrix.yml` + `AGENT-SKILL-MATRIX.md` | reviewer 去 `forbidden: push-progress`、加 `can-call: push-progress`；crctl 允许面注释与「本 CR 权限变更」行**新增只读 `workspace inspect`**（FR-2 前置的授权来源，B-1），注释与派生表同步 |
+| 8 | `../tools` | `agents/{dev-agent,quality-reviewer-agent,delivery-agent}.md` | 搭车硬规则 + 评审者发布职责（公共 Prompt 唯一事实源）；`quality-reviewer-agent.md` 的受限 crctl 允许面显式含只读 `workspace inspect`、`checkpoint` 仍在禁止面 |
 | 9 | `../tools` | `skills/shared/crctl/scripts/lib/workspace-transactions.mjs` | `archiveCr` 末尾调用 `reconcileLocalTrunks(ctx)`，返回增加 `localTrunkSync` |
 | 10 | `../tools` | `skills/cr/cr-archive/SKILL.md` | 结果分类表 / 输出块新增 `localTrunkSync`（`recovery` 语义不变） |
 | 11 | `../tools` | `skills/writeback/merge-feature-branch/SKILL.md` | publication lag 行补「同 run 内搭车、不单独委派」语义（`recovery` 字段名不变） |
 | 12 | `../tools` | `README.md`、`openwiki/pipelines/overview.md`、`dir-graph.yaml`（`pipeline_templates.contract`） | FR-07 与新节奏口径 |
 | 13 | `../tools` | `skills/shared/crctl/scripts/test/{pipeline-structure,archive-tx}.test.mjs` | 断言重写 + 新增（见 AC-1 / AC-2 / AC-3 / AC-8） |
-| 14 | `../multica` | `cr-prompts-revised/{cr-coordinator-agent,dev-agent,delivery-agent,quality-reviewer-agent}.md` | 搭车硬规则 + 评审者发布职责（部署副本，owner 部署） |
+| 14 | `../multica` | `cr-prompts-revised/{cr-coordinator-agent,dev-agent,delivery-agent,quality-reviewer-agent}.md` | 搭车硬规则 + 评审者发布职责（部署副本，owner 部署）；`quality-reviewer-agent.md` 的「受限 crctl 权限」穷尽式白名单**新增只读 `workspace inspect`**，其禁止面枚举（含 `checkpoint`）不变 |
 
 **`../multica` 改动共 4 个文件**（上表最后一行）；不改 `CUSTOM.md`（#75 已定义该目录是 tools 的部署副本，本 CR 不重写该行）、不改 `agent-skill-matrix.yml` 部署副本、不改平台 DB 与 `aifirst/agent-import.mjs`。
 
@@ -76,7 +76,7 @@ updated: 2026-09-14T10:47:00+08:00
 
 本 CR 有两处**用户可调用契约**的变更，四查（幂等 / 权限 / 错误闭包 / 副作用）落点为 FR-1（Skill 契约）、FR-10（crctl CLI 契约）与 AC-1、AC-8：
 
-- **Skill 契约**（FR-1、FR-2、FR-3）：四个 review SKILL 的调用面与落盘面**不变**——不新增 Skill 参数、不新增落盘文件、不新增状态转换、不新增错误码；新增的只有「PASS 分支内的一次 `push-progress` 调用 + 一次对账 + 前置 `workspace inspect` 只读检查」。
+- **Skill 契约**（FR-1、FR-2、FR-3）：四个 review SKILL 的调用面与落盘面**不变**——不新增 Skill 参数、不新增落盘文件、不新增状态转换、不新增错误码；新增的只有「PASS 分支内的一次 `push-progress` 调用 + 一次对账 + 前置 `workspace inspect` 只读检查」。该前置是 crctl **既有只读子命令**（不新增命令、不新增错误码），其授权由 FR-8 的 actor 允许面变更承载：`crctl workspace inspect` 必须在 SKILL 文本与 actor 允许面**两侧同时**存在，由 AC-3 与 AC-4 联合断言（B-1）。
 - **crctl CLI 契约**（FR-10）：`crctl archive` 的返回结构**新增** `localTrunkSync` 字段；既有字段（`commit`、`lastCleanupError`、`remaining`、`preservedRefs`、`recovery`、`warnings`）与退出码语义不变，不新增错误码。
 
 其余 FR 是 Prompt / 文档 / 矩阵 / 测试侧的原位修订（FR-4~FR-9、FR-11），不定义新的用户可调用契约；其验收以「文本合同 + 检索/测试证据」形式给出（AC-2~AC-7、AC-9、AC-10）。
@@ -106,7 +106,7 @@ updated: 2026-09-14T10:47:00+08:00
 | 9 | `push-progress` Skill 契约面 | 参数 `cr_id`（必填）+ `message`（可选）；返回消费 `phase` / `changed` / `batchId` / `repositories[]`（每仓 `sourceSha`+`confirmed`）/ `metadataCommit`；错误分流 `CHECKPOINT_SENSITIVE_PATH`、`CHECKPOINT_REMOTE_ADVANCED`、`CHECKPOINT_REMOTE_DIVERGED`、`CHECKPOINT_REMOTE_HISTORY_REWRITTEN`、`TX_*`、终态 `ILLEGAL_LEDGER_STATE`；幂等重放返回 `changed=false` |
 | 10 | reviewer 在矩阵里的当前归属 | `agent-skill-matrix.yml` 的 `quality-reviewer-agent`：`can-call = [review-planning-report, cr-show, controlled-shell, crctl]`，`forbidden` 含 `push-progress` 与 `checkpoint`（均在列）；注释声明 crctl 仅允许 `status`/`next`/对应 review 的 `gate`/`review-record`/`advance` |
 | 11 | `AGENT-SKILL-MATRIX.md` 的派生面 | L20「主责矩阵」（owns）、L46「本 CR 权限变更」节（`| Actor | 新增 can-call | 约束 |` 表，当前一行 `quality-reviewer-agent` / `controlled-shell`）、L54「设计缺口」；`check-skill-matrix.mjs` 机械校验的是三份 `owns` 声明（can-call / forbidden **不在**其校验面） |
-| 12 | Agent 合同当前把「checkpoint 完成」写成评审/审批前提 | multica `cr-prompts-revised/dev-agent.md` L23「先有代码、测试报告和统一 checkpoint，再由独立 reviewer 调用 `review-code`」、L41「checkpoint 未完成时，不进入后续人工审批」；`cr-prompts-revised/quality-reviewer-agent.md` L54「本 Agent 不负责 push/checkpoint，后续发布由 Pipeline 中对应的同步节点完成」（**与本 CR FR-1 直接冲突，必须原位改写**）、L46 的 crctl 禁止清单含 `checkpoint` |
+| 12 | Agent 合同当前把「checkpoint 完成」写成评审/审批前提 | multica `cr-prompts-revised/dev-agent.md` L23「先有代码、测试报告和统一 checkpoint，再由独立 reviewer 调用 `review-code`」、L41「checkpoint 未完成时，不进入后续人工审批」；`cr-prompts-revised/quality-reviewer-agent.md` L54「本 Agent 不负责 push/checkpoint，后续发布由 Pipeline 中对应的同步节点完成」（**与本 CR FR-1 直接冲突，必须原位改写**）、L46 的 crctl 禁止清单含 `checkpoint`；同文件 L35–L46 的「受限 crctl 权限」块是**穷尽式白名单**——L37 明写「仅限评审所需的以下子命令」后只列 `status`／`next`、`gate`、`review-record`、`advance`（L39–L42），L46 按写入型子命令枚举禁止面，`workspace inspect` **两侧均未出现**（FR-2 与之冲突，B-1 的事实源；本 PRD 按 §1.5 第 5 条把它写入允许面）；tools 侧 `agents/quality-reviewer-agent.md`（42 行）通篇无该清单，只声明「权限矩阵：`agent-skill-matrix.yml`」为事实源 |
 | 13 | `agent-skill-matrix.yml` 禁止 coordinator 发布 | multica `cr-prompts-revised/cr-coordinator-agent.md` L19/L60：`crctl` 仅只读 `status`/`next`，禁止 `advance`/`approve`/`checkpoint` 等写入型子命令——这是「门后节点只能被单独委派」的直接原因（来源 §1.2） |
 | 14 | `reconcileLocalTrunks` 的现有归属、形状与分类 | `lib/workspace-transactions.mjs:1487` 定义，**唯一调用点** `:1786`（merge 路径），merge 返回 `localTrunkSync`（`:1791`）；行形状 `{repo, trunk, before, remote, after, status, reason}`；分类 `status ∈ {unchanged, synced, skipped, failed}`，`reason ∈ {wrong-branch, dirty, diverged, fetch-failed, **trunk-unavailable**, ff-only-failed}`（来源文档只列了 5 个 reason，漏 `trunk-unavailable`，见 §1.5）；副作用仅 `fetch --prune origin` 与 `merge --ff-only`，全程 best-effort、不抛错、不写 journal/账本 |
 | 15 | `archiveCr` 现有返回字段 | `archiveCr(ctx, input)`（`:3498`）：`commit` / `lastCleanupError` / `remaining` / `preservedRefs` / `recovery` / `warnings`；`cr-archive/SKILL.md` Step 3 逐字透传这些字段；`archive-tx.test.mjs` 已有「固定返回 commit/lastCleanupError/recovery/warnings」与「complete 幂等重放 changed=false」用例 |
@@ -116,6 +116,7 @@ updated: 2026-09-14T10:47:00+08:00
 | 19 | `recoverCommand` / `recover_command` 的退役名单在测试里 | `test/contract-scan.test.mjs:418` `RETIRED_RECOVERY = ['recoverCommand', 'recover_command']`，全树扫描 |
 | 20 | 来源 §1.1 的 6 次 checkpoint 台账只有最后一次可核 | KB `change-requests/_history.yml` 的 `CR-2026-063.latest-checkpoint.batch-id = 7dfd04f27a18486c`，与来源表第 6 行一致；前 5 次 batchId 属来源记载，本 PRD 未逐条复核（**不影响根因结论**：门后节点在 agent 驱动模式下必须新开唤醒） |
 | 21 | 串行约束当前成立 | `crctl status` 对 CR-2026-063/064/065 均为 `archived`；`change-requests/` 最大编号 065（无撞号）、注册前 `_backlog.yml` 为空；本次注册 `crctl register` 返回 `changed=true`、txId 事务化落三账本与三仓 worktree |
+| 22 | 来源 §3「gate 阻塞性结论」的锚点与未重核面 | 来源 §3 声称已逐条核对「下一阶段入口 `crctl workspace inspect`、`workspace-freshness`（ahead-only=fresh）、四个 `approve-*`、`review-record`、`writeback-apply`、`cr-archive`、`gates.json` 全部只依赖本地事实，唯一远端相等要求是 `merge` 的 publication preflight」。本 PRD 独立核实的锚点是 tools `ARCHITECTURE.md` 的 CR-2026-044 段（「release-subjects 构造/重核只读本地 healthy committed worktree（不 fetch、不读 remote-tracking ref），status/gate/review/approve 不受网络影响；发布完整性由 checkpoint 与 merge 首次 prepare 前的全仓 publication preflight 承担（publication lag 保持 `code-approved` 并指向 checkpoint）」）与 §1.4 事实 16 的 publication lag 语义。**未逐条重跑**来源 §3 的 8 项门禁核对：若 SDD/实现期发现某门禁依赖远端事实，FR-6 的取舍需重新评估（不影响 FR-1~FR-5、FR-7 的成立） |
 
 ## 1.5 对来源文档的事实更正与需人工确认的口径
 
@@ -123,9 +124,11 @@ updated: 2026-09-14T10:47:00+08:00
 2. **删除后不再有 push-progress 节点（来源未写明的口径补充）**：FR-4 删 3 个、FR-5 删 4 个之后，requirement 剩 5 节点、architecture 剩 4 节点、code 剩 12 节点，**三份 JSON 中不再存在任何 `ref=push-progress` 的节点对象**——发布一律由 review SKILL 内的 `push-progress` 调用承担，pipeline 里不再有「发布节点」这一形态。AC-1 据此采用两条判据：「不存在任何位于 `human_approval` 之后的 push-progress 节点」**且**「`nodes[].ref=push-progress` 计数为 0」——只写前者不足以表达删除后「零发布节点」的更强事实，只写后者不足以表达「不得在审批后再新增发布节点」。
 3. **Skill 契约的发布动作不在 `crctl` 子命令面**：评审者的发布调用的是 **`push-progress` Skill**（其内部调用 `crctl checkpoint`），不是让评审者直接执行 `crctl checkpoint`。因此 FR-8 只把 `push-progress` 移出 `forbidden`、把 `checkpoint` **留在** `forbidden`；`cr-prompts-revised/quality-reviewer-agent.md:46` 的 crctl 禁止清单**不改**。此项需在人工审批时一并确认。
 4. **§1.1 的事实面限定**：6 次 checkpoint / 3 次单独委派的具体数字来自来源文档记载（见 §1.4 事实 20），本 CR 的目标与验收不依赖这些数字，只依赖「门后节点必须重新唤醒」这一机制性结论。
+5. **评审前置 `workspace inspect` 的授权面（本 PRD 收口裁定，需人工一并确认）**：来源 FR-2 把只读 `crctl workspace inspect` 写成四个 review SKILL 的强制前置，但该 actor 的 crctl 允许面（矩阵注释与 multica 部署副本的穷尽式白名单）不含它（§1.4 事实 12）——同一份合同下会得到两种互斥读法：「违反自己的穷尽式权限合同去执行前置」或「跳过前置而违反 FR-2」。本 PRD 采用评审建议的**方案 (a)**：在 FR-8 明确把**只读** `workspace inspect` 加入该 actor 的 crctl 允许面，并把三处载体（`agent-skill-matrix.yml` 注释、`AGENT-SKILL-MATRIX.md` 变更行、tools 与 multica 两份 `quality-reviewer-agent.md` 的受限 crctl 权限块）同步列入 §1.3.1 第 7、8、14 行；`checkpoint` 仍在禁止面（发布只经 `push-progress` Skill，不放开 crctl 原语）。该授权**不新增** crctl 子命令、不新增错误码、不引入任何写入面，落地由 AC-4 的权限面闭合判据机械复核。
 
 ## 1.6 修订记录
 
+- 修订 0.2（2026-09-14，cycle1 attempt1 BLOCK 回修）：闭合 **B-1**——FR-2 的强制前置 `crctl workspace inspect` 与 `quality-reviewer-agent` 的穷尽式权限合同互相矛盾；按评审给出的**方案 (a)** 把**只读** `workspace inspect` 写入该 actor 的 crctl 允许面：§1.3.1 第 7、8、14 行登记三处载体（矩阵注释 / `AGENT-SKILL-MATRIX.md` 变更行 / tools 与 multica 两份 `quality-reviewer-agent.md` 的受限 crctl 权限块），FR-8 新增载体同步条目，§1.5 新增第 5 条授权面裁定，§1.4 事实 12 补登穷尽式白名单证据，AC-4 增加权限面闭合判据（两侧同时断言 + 反向断言 `crctl checkpoint` 不出现在 review SKILL）。同轮一并承接 6 条 suggestions：S-1（AC-6 载体/时点/延期验证点）、S-2（FR-3 只读取证手段，明示 `git show` 不可用）、S-3（FR-7 增加既有测试面静态文本断言）、S-4（`dir-graph.yaml` contract 第 5 条改显式枚举）、S-5（delivery-agent 的 `recovery` argv 例外）、S-6（§1.4 新增事实 22 与 §7 承接 §8 取舍/回滚边界）。
 - 初稿（2026-09-14）：按来源附件 §1–§9 与注册摘要（`cr.md` summary）起草；基线事实在 §1.4 三个 worktree HEAD 上逐条核实。FR 编号与来源 §4 的 FR-1~FR-11 一一对应（不重编号）；AC-1~AC-9 对应来源 §5；**AC-10 为本 PRD 新增**，用于把来源 §2.2 的 scope_out 与 §7 的「不与其他 CR 并发」写成可检查约束（来源文档没有对应 AC）。§1.5 记录三处对来源文档的事实更正与一处口径解释，需在人工审批时一并确认。
 
 # 2. 用户故事
@@ -161,6 +164,7 @@ updated: 2026-09-14T10:47:00+08:00
 - 不满足时：**不进入评审**——不写临时 payload、不调用 `review-record`、不 `advance`、不改 status、不发布；报告须含**逐仓的 dirty 事实与该仓未提交文件清单**，并给出「存在未提交内容，请作者先提交」的明确指示。
 - **不得**由评审者 `git add` / `commit` / `stash` / 清除作者未提交内容。
 - 该检查**不新增 crctl 子命令、不新增错误码**（复用 `workspace inspect` 既有只读输出）。
+- **授权来源（B-1 闭合）**：该前置由 FR-8 的允许面变更授权——`workspace inspect` 是 crctl 既有只读子命令，写入 `quality-reviewer-agent` 的 crctl 允许面后，SKILL 侧的前置与 actor 侧的权限合同指向同一件事。**不得只改 SKILL 而不改允许面**：两侧必须同时存在（缺任一侧即 CI 变红，判据见 AC-3 与 AC-4）；该前置不产生任何写入，也不改变 FR-1 的发布顺序。
 
 ## FR-3 发布与评审对象对账〔来源 §4 FR-3〕
 
@@ -172,6 +176,7 @@ updated: 2026-09-14T10:47:00+08:00
 | dev-plan | annotation `subject-sha256`（`plan.md` + 全部 `TASK-*.md` 的 composite digest） | 同口径复算 composite digest，必须全等 |
 | code | `review-annotations/code.yml#release-subjects[].reviewed-source-sha` | 与 checkpoint 返回的 `repositories[].sourceSha` **逐仓**相等（仓名与 SHA 一一对应）；KB 受控 artifact 哈希与 release snapshot 一致 |
 
+- **取证手段（只读、不新增能力面）**：复算前必须先把发布批次绑定到当前提交——取该仓 `crctl git rev-parse HEAD`（controlled-shell 白名单 `rev-parse`，`callers=*`）与 checkpoint 返回的 `repositories[].sourceSha` 比较；两者**相等**且 FR-2 的 `dirty=false` 成立时，「当前提交 = 发布内容 = 工作区内容」成立（`push-progress` 以 `git add -A` 提交），据此按 LF-only 复算 sha256 才有效。**禁止**在两者不相等时用工作区文件复算（那等于用 `subject-sha256` 自证，对账失去意义，尤其对 dev-plan 的 composite digest 与 code 的逐仓比对）：此时按 `CONTRACT_DRIFT` 技术中止并报告两侧 SHA。`git show` **不得**作为取证手段（`rules.json` 的 `show` 只向 `system-orchestrator` 放行 `review-annotations/*` 路径，shape 不含业务文件；`git diff`/`log`/`rev-parse` 等只读命令可用）。
 - 判定不等 → `CONTRACT_DRIFT` **技术中止**：**不改 verdict**、不重评、不回退状态；报告须含「期望值 vs 实际值」两侧原始 SHA 与复算所用内容来源。
 - 复算必须遵循行尾纪律（读入先 `\r\n → \n` 归一；跨行/逐行解析失败**硬失败报错**，禁止静默降级）。
 - **不新增**账本字段、不新增注解字段、不新增哈希算法或口径（沿用既有 `subject-sha256` / composite / `release-subjects` 三套既有事实源）。
@@ -225,15 +230,18 @@ updated: 2026-09-14T10:47:00+08:00
 | `../tools` | `agents/delivery-agent.md` | 新增搭车规则（merge/writeback 路径的 publication lag 局部处理） |
 | `../multica` | `cr-prompts-revised/{quality-reviewer-agent,dev-agent,delivery-agent,cr-coordinator-agent}.md` | 同步上述文本（coordinator 增加「不得为 checkpoint 单开委派」的显式禁止） |
 
-约束：**不新增**委派 lint 规则（与 CR-2026-063 的既有结论一致：无法机械检查真实运行期评论的规则不引入）；本 FR 是 **Prompt 合同**，不宣称平台已新增运行时委派校验；平台 DB 部署由 owner 执行。
+`delivery-agent` 的增量文本必须写明两件事：① `merge` 的 publication lag 返回的结构化 `recovery` argv 属于**被授权的同 run 重跑**，不受「不裸调 crctl 原语」约束；② 该例外**不**赋予独立发起 checkpoint 的权力（不得把 recovery 变成一次单独委派）。
+
+约束：**不新增**委派 lint 规则（与 CR-2026-063 的既有结论一致：无法机械检查真实运行期评论的规则不引入）；该硬规则的落地以一条**同风格静态文本断言**兜底——在既有 `contract-scan.test.mjs` 面内断言 tools 侧三份 Prompt（`agents/{dev,quality-reviewer,delivery}-agent.md`）均含该硬规则文本（不新增 lint 规则、不新增扫描面）；本 FR 是 **Prompt 合同**，不宣称平台已新增运行时委派校验；平台 DB 部署由 owner 执行。
 
 ## FR-8 评审者的发布职责与权限〔来源 §4 FR-8〕
 
 - `agent-skill-matrix.yml` 的 `quality-reviewer-agent`：`forbidden` **移除** `push-progress`；`can-call` **增加** `push-progress`。`checkpoint` **保留**在 `forbidden`（FR-8 只放开 Skill，不放开 crctl 原语；见 §1.5 第 3 条）。
-- 该 actor 的 crctl 允许子命令注释同步：仍为 `status` / `next` / 对应 review 的 `gate` / `review-record` / `advance`，**不新增** `checkpoint`。
+- 该 actor 的 crctl 允许子命令注释同步为：`status` / `next` / **只读 `workspace inspect`**（FR-2 的 Step 1 强制前置，B-1 闭合）/ 对应 review 的 `gate` / `review-record` / `advance`；**不新增** `checkpoint`，也不放行其它写入型子命令。
+- **允许面的载体同步（三处，缺一即交付缺陷）**：① `agent-skill-matrix.yml` 的 `quality-reviewer-agent` 块注释；② `AGENT-SKILL-MATRIX.md`「本 CR 权限变更」节的本 CR 行（约束列写明 `workspace inspect` 为只读前置）；③ `../tools/agents/quality-reviewer-agent.md` 与 `../multica/cr-prompts-revised/quality-reviewer-agent.md` 的受限 crctl 权限块——multica 副本的穷尽式白名单必须把只读 `workspace inspect` 列入允许项（其禁止面枚举保持含 `checkpoint` 不变），tools 副本的「权限事实源」节必须给出同一允许面声明，不得在同一份合同下留第二种读法。
 - `AGENT-SKILL-MATRIX.md` 的「本 CR 权限变更」节追加本 CR 一行（`quality-reviewer-agent` / 新增 can-call `push-progress` / 约束：仅在对应 review SKILL 的 PASS 分支内发布一次，不修改业务文件、不推进状态、不改 verdict）。
 - 评审者边界（写进 Prompt 与 SKILL）：**只发布、不修改**业务文件；发布失败**不改 verdict**、不重评、不代提交；评审者不承担任何状态推进（`advance` 例外仅为各 review SKILL 既有要求）。
-- 平台侧把 `push-progress` 绑定给 `quality-reviewer-agent` 属 **owner 部署动作**（本 CR 交付后的部署项，不在代码范围内）。
+- 平台侧把 `push-progress` 绑定给 `quality-reviewer-agent` 属 **owner 部署动作**（本 CR 交付后的部署项，不在代码范围内）；更新后的 `quality-reviewer-agent` 部署副本（含放宽后的只读 crctl 允许面）必须在同一部署窗口同步生效——在部署前，Multica 侧实际运行的副本仍是旧白名单（FR-2 与 AC-4 的机械断言只约束仓库内文本，部署时序由 owner 把握）。
 
 ## FR-9 FR-07 口径重写〔来源 §4 FR-9〕
 
@@ -241,7 +249,7 @@ updated: 2026-09-14T10:47:00+08:00
 
 > **阶段终点完成条件 = 评审 PASS 的 checkpoint**（由评审者执行，每阶段一次）；审批后不再有 checkpoint 节点，未发布的审批提交由下一阶段评审 checkpoint 或 `merge` 的 publication preflight 搭车承担；发布失败保持当前状态、重跑同一 checkpoint，**不重新评审 / 不重新审批**。
 
-约束：不新增文档体系（新不变量写成既有文档内的一句话）；`openwiki/operations/` 与 `openwiki/pipelines/overview.md` 之间不产生第二套口径；`dir-graph.yaml` 的 `pipeline_templates.contract` 仍必须表达「新增或修改 pipeline JSON 后同步 `_index.yml` 计数」与「`replayNodes[]` 按顺序列出修复、证据、checkpoint 与当前评审节点」两条既有约束（其中 checkpoint 的词法需与新节奏一致，即指评审 run 内的发布）。
+约束：不新增文档体系（新不变量写成既有文档内的一句话）；`openwiki/operations/` 与 `openwiki/pipelines/overview.md` 之间不产生第二套口径；`dir-graph.yaml` 的 `pipeline_templates.contract` 仍必须表达「新增或修改 pipeline JSON 后同步 `_index.yml` 计数」与 reviewLoop 重放清单两条既有约束；其中第 5 条（现文「按顺序列出修复、证据、checkpoint 与当前评审节点」）必须**改写为显式枚举**——评审 PASS 发布发生在当前评审节点**内部**、不再是独立 replay 节点（且 architecture 与删除后的 code `replayNodes` 均不含 checkpoint 项），故该条须写为「按顺序列出修复、证据、基线重核与当前评审节点」（或等价地显式写明「评审 PASS 发布不再是 replay 节点」），不得保留会把实现期读成「`replayNodes` 里应有一个 checkpoint 项」的旧词法。
 
 ## FR-10 归档后本地各仓与 origin 一致〔来源 §4 FR-10〕
 
@@ -285,9 +293,9 @@ updated: 2026-09-14T10:47:00+08:00
 | AC-1 | FR-4、FR-5 | §5 AC-1 | 三份 pipeline JSON 节点数 = **5 / 4 / 12**；**不存在任何位于 `human_approval` 之后的 `push-progress` 节点**（静态断言，按 JSON 节点序求值）；**且**三份 JSON 中 `ref=push-progress` 的节点对象计数 = **0**；`_index.yml` 的 `nodes:` 与 JSON 实际节点数一致；被删节点 id 不出现在任何 JSON 中。 |
 | AC-2 | FR-5、NFR-5 | §5 AC-2 | `pipeline-structure.test.mjs` 的既有断言按新事实同步（「16 节点」「`review-code` < checkpoint < `human_approval`」「replayNodes 5 项」「`…0010` 含 `评审后 checkpoint phase=complete`」等改为事实源推导），全套断言全绿；新增断言覆盖 AC-1 两条判据与「review SKILL 含发布步骤 + clean 前置」。断言不得钉死易漂移措辞（NFR-5）。 |
 | AC-3 | FR-1、FR-2、FR-3 | §5 AC-3 | 四个 review SKILL **均含**：评审前置 `healthy` 检查（`crctl workspace inspect` + `dirty=false` 判据 + 「请作者先提交」语义）、PASS 后 `push-progress` 调用（`message = <阶段>评审通过`、消费 `phase`/`batchId`/`repositories[]`/`metadataCommit`）、发布对账（三阶段各自判据）、失败语义（不改 verdict / 不重评 / 不代提交 / 按 `recovery` 重试同一 checkpoint）；BLOCK 分支**不含**发布调用；四个 SKILL 均**不含** `recoverCommand` / `recover_command`（`contract-scan.test.mjs` 的 `RETIRED_RECOVERY` 全树零命中）。 |
-| AC-4 | FR-8 | §5 AC-4 | `agent-skill-matrix.yml`：`quality-reviewer-agent` 的 `can-call` 含 `push-progress`、`forbidden` 不含 `push-progress` 且仍含 `checkpoint`；`AGENT-SKILL-MATRIX.md` 的「本 CR 权限变更」节登记本 CR 一行；`check-skill-matrix.mjs` / `check-agents-contract.mjs` / `lint-prompts.mjs --mode enforce` 全绿。 |
+| AC-4 | FR-2、FR-8 | §5 AC-4 ＋ B-1 回归判据 | ① 矩阵：`quality-reviewer-agent` 的 `can-call` 含 `push-progress`、`forbidden` 不含 `push-progress` 且仍含 `checkpoint`；② **权限面闭合（B-1 回归判据，机械复核）**：只读 `workspace inspect` 在**三处载体**（矩阵注释、`AGENT-SKILL-MATRIX.md` 变更行、multica 部署副本的受限 crctl 权限块）均被列入该 actor 的允许面，**且**四个 review SKILL 均含该前置调用——两侧在同一条断言内同时校验，缺任一侧即失败；③ 反向：四个 review SKILL 文本不含 `crctl checkpoint`（发布只经 `push-progress` Skill），tools 与 multica 两份 `quality-reviewer-agent.md` 的受限 crctl 权限块均含 `workspace inspect`（旧白名单不得原样保留）；④ `AGENT-SKILL-MATRIX.md` 的「本 CR 权限变更」节登记本 CR 一行；`check-skill-matrix.mjs` / `check-agents-contract.mjs` / `lint-prompts.mjs --mode enforce` 全绿。 |
 | AC-5 | 全部 | §5 AC-5 | CI（`crctl-ci.yml`，Ubuntu + Windows）全量绿：lint-prompts、skill matrix、agents contract、pipeline JSON 结构断言、`suite-gate.mjs --run`、writeback 单测——**不得签任何新例外**。 |
-| AC-6 | FR-1、FR-6、FR-7 | §5 AC-6 | 一次受控端到端演练（可选用小 CR）：① 每个 review PASS 后远端存在完整批次（`repositories[].confirmed=true`、`metadataCommit` 非空、对账通过）；② 审批动作**不产生**任何 checkpoint 委派（评审 PASS 之后的 checkpoint 次数 = 0）；③ 审批未发布时 `merge` 给出 `MERGE_SOURCE_MISSING`/`RELEASE_REMOTE_NOT_PUSHED` + `recovery`，同 run 内执行后可继续（或首次即通过）；④ 「为单个 `push-progress` 单独开 task」次数 = 0。 |
+| AC-6 | FR-1、FR-6、FR-7 | §5 AC-6（＋本 PRD 定义载体与时点） | **交付时可判定**：受控端到端演练的**载体与时点已写死**——载体 = 本 CR 交付后新注册的一个小体量演练 CR（首选，owner 指定；次选 CR-P1 的首次阶段评审 PASS 链），时点 = 该载体走完四个阶段的评审发布与审批后；观察项 ① 每个 review PASS 后远端存在完整批次（`repositories[].confirmed=true`、`metadataCommit` 非空、对账通过）；② 审批动作**不产生**任何 checkpoint 委派（评审 PASS 之后的 checkpoint 次数 = 0）；③ 审批未发布时 `merge` 给出 `MERGE_SOURCE_MISSING`/`RELEASE_REMOTE_NOT_PUSHED` + `recovery`，同 run 内执行后可继续（或首次即通过）；④ 「为单个 `push-progress` 单独开 task」次数 = 0。**该演练在本 CR 交付时无法产出证据**，故本 CR 交付说明必须把 AC-6 登记为**延期验证点**：写明载体（CR-ID 或候选集）、观察项 ①~④、责任 agent（delivery-agent 记录发布批次与 `merge` 兜底、cr-coordinator-agent 记录委派计数）与关闭触发条件（载体归档或该链路首次走完）；未登记即 AC-6 未通过。 |
 | AC-7 | FR-9 | §5 AC-7 | `README.md`、`openwiki/pipelines/overview.md`、`dir-graph.yaml#pipeline_templates.contract`、`push-progress/SKILL.md` 四处口径一致：阶段终点完成条件 = 评审 PASS 的 checkpoint（评审者执行、每阶段一次）、审批后无 checkpoint 节点、未发布审批提交由搭车承担；四处均不再出现「审批后的阶段终点 checkpoint 为强制完成条件」的旧句。 |
 | AC-8 | FR-10 | §5 AC-8 | `archive-tx.test.mjs`：① `archiveCr` 返回含 `localTrunkSync`（`phase=complete` 与 `cleanup-pending` 两分支均含）；② 分类正确：`unchanged` / `synced` / `skipped(wrong-branch|dirty|diverged)` / `failed(fetch-failed|trunk-unavailable|ff-only-failed)`；③ **dirty 跳过用例**：主 checkout dirty → `skipped`+`reason=dirty`、本地内容逐字节未变；④ 全流程不出现 `reset`/`clean`/`stash`/强推（命令面断言）；⑤ 归档幂等重放（`changed=false`）时 `localTrunkSync` 仍返回、不产生新 commit；⑥ `cr-archive/SKILL.md` 与 delivery-agent 汇报面含该字段与分类说明。 |
 | AC-9 | FR-11 | §5 AC-9 | 本 CR 交付说明中登记：`gate_nodes_gen.go` 的 `NodeID`/`Seq` 与 registry digest 因节点集变化需重新生成（给出触发原因与受影响映射清单），**或**声明「重新生成前 `AIFIRST_ARCHITECTURE_RUNNER` 保持禁用」；两种表述**必有其一**，不得静默。 |
@@ -299,6 +307,7 @@ updated: 2026-09-14T10:47:00+08:00
 
 - 每个阶段的**评审 PASS 后**远端存在完整批次的比例 = 100%（`repositories[].confirmed=true` 且 `metadataCommit` 非空）。
 - **审批后**产生的 checkpoint 次数 = 0；「为单个 `push-progress`/checkpoint 单独开 task/委派」次数 = 0。
+- AC-6 的延期验证点（载体、观察项、责任 agent、关闭触发条件）在本 CR 交付说明中登记 = 100%；未登记则「审批后 checkpoint 委派次数 = 0」无证据可交。
 - 三份 pipeline JSON 中 `ref=push-progress` 的节点数 = 0；审批后 push-progress 节点数 = 0。
 - 评审发布的对账通过率 = 100%（不等即 `CONTRACT_DRIFT`，无静默通过）。
 - `archiveCr` 返回 `localTrunkSync` 的比例 = 100%；归档后各仓主 checkout 与 origin trunk 不一致且未被如实报告（静默 dirty/diverged）的次数 = 0。
@@ -326,6 +335,12 @@ updated: 2026-09-14T10:47:00+08:00
 
 - `review-tech-design` 的 Step 2.x 区块与 `quality-reviewer-agent#评审判断` 归 CR-P1；code pipeline 的 dev-start 提示、`review-dev-plan` 的 acceptance-verifiability 面归 CR-P2。
 - 本 CR 不往 dev-start 提示加任何 checkpoint 前提，也不重编号 `review-tech-design` 的 Step 2.1/2.2/2.3。
+
+**来源 §8 的取舍与回滚边界（本 CR 承接，需人工一并确认）**
+
+- 取舍一：实现→评审窗口**不再有中途恢复点**（统一 checkpoint `…0008` 删除后）；如需恢复该节点必须另起 CR（本 CR 不做，见上「不做『审批后可选 checkpoint』节点」）。
+- 取舍二：审批提交在下一阶段评审前**只在本地**（换机恢复需重签一次），code 路径由 `merge` 的 publication preflight 在同 run 内硬兜底；该取舍已在 §1.3.3 与 FR-6 写明。
+- 回滚边界：FR-1~FR-3（review 发布）与 FR-4~FR-5（节点退役）互为补充但**可分别回退**；FR-10（trunk 同步）**完全独立**；FR-9 与 FR-11 只改文本与登记，回退即还原。
 
 **本次明确不碰的既有资产**
 
