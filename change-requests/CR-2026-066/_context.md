@@ -4,41 +4,45 @@
 > `traceability.yml`、`review-annotations/**`、`approval.yml`、`_backlog.yml`、`tasks/_index.yml`。
 > 用途：返工与 `/resume` 时快速定位「做到哪、卡在哪、从哪继续」。
 
-## 1. 当前状态（最近一次刷新：`write-tech-design` 回修 run，2026-09-14 13:45 +08:00）
+## 1. 当前状态（最近一次刷新：`code-implementation` node-1/node-2 run，2026-09-14 15:0x +08:00）
 
 - CR：`CR-2026-066`（AIFI-27；CR-P3「评审 PASS 发布与 checkpoint 委派收敛」）。
 - 权威 workspace = `.rayai-worktrees/knowledge-base/requirement/CR-2026-066`；三仓 worktree =
   `.rayai-worktrees/{knowledge-base,multica,tools}/requirement/CR-2026-066`；命令一律带 `--workspace <权威路径>`
   （主 checkout 视图陈旧，AGENTS.md 纪律 #9）。
-- 本 run 节点：`architecture-design / node-1 write-tech-design`，**回修模式**——上一轮 `review-tech-design`
-  **cycle 1 / attempt 3 = BLOCK**（`maxAttempts=3` 已用尽，`--bump-attempt` 会被 `LOOP_EXHAUSTED` 拒绝；
-  这是 Pipeline 既有的**人工出口**，不是故障）：协调者已请 Ray 在**交互式终端**执行
-  `crctl review-loop reset CR-2026-066 --loop review-tech-design`（1 → cycle 2、attempt 归零、历史 attempts 保留）。
-  本 run **不自行发起复评**。
-- 本 run 落盘：`change-requests/CR-2026-066/sdd.md`（**rev 0.4**）+ 本文件；单提交
-  `[cr] repair tech design CR-2026-066 (rev 0.4: B-2 cmdArchive + S-11)`（**不 push**；发布点仍在人工审批后 node-5）。
-- 本 run 收尾命令（逐字留档，状态以 `crctl status` 实测为准）：
-  `crctl advance --to tech-design-review-pending --trigger write-tech-design-complete --expect tech-designing`
-  ⇒ 预期 status = `tech-design-review-pending`（`humanApproval=false`）。
-- 未触碰：`prd.md`（冻结，`sha256(LF)` `9b43bbfa…` 零触碰）、`review-annotations/**`（评审者写）、`review-loop.yml`
-  （只由人类在 TTY 执行的 `review-loop reset` 写）、`traceability.yml`、`approval.yml`、`cr.md` 的 status
-  （只经 `crctl advance`）；tools / multica 两个代码仓本节点零改动。
+- 本 run 节点：`architecture-design / node-4 → node-5`（收尾）＋ `code-implementation / node-1 → node-2`。
+- **本 run 落盘**：`change-requests/CR-2026-066/plan.md`（422 行 / 65 KB 级）＋
+  `tasks/TASK-01..04.md` ＋ `tasks/_index.yml`（`crctl task init --count-hint 4` ⇒ `taskCount=4`、
+  `totalEstimateHours=88`）＋ 本文件；提交 `[cr] write dev plan CR-2026-066 (plan.md + tasks/TASK-01..04 + _index.yml)`
+  与状态提交 `[cr] status CR-2026-066 tech-design-reviewed -> task-breakdown`（**均未 push**；
+  下一批次由上一条命令的 `push-progress` 承担）。
+- 架构阶段终点 checkpoint（node-5）**已在本 run 首位执行**：`phase=complete`、`changed=true`、
+  `batchId=a6c98051920971b1`、`metadataCommit=e97c4edaceb9aa3f76681c36d0196515c25f6531`、
+  三仓 `confirmed=true`（KB `d5339ab9` / multica `43848770` / tools `5d5a4ada`）、`txId=f98839539c6d4edebfe234b1da3254c3`。
+- `crctl status/next` 实测：**`task-breakdown`** / `crctl next` = **`review-dev-plan`**
+  （`humanApproval=false`，why「缺少 dev-plan.yml 评审记录，先跑 review-dev-plan」）。
+- 未触碰：`prd.md`、`sdd.md`（**审批冻结，post-approval 改动会触发 `APPROVED_ARTIFACT_DRIFT`**）、
+  `approval.yml`、`review-annotations/**`、`review-loop.yml`、`traceability.yml`；tools / multica 两个代码仓
+  本 run 零改动。
 
-## 2. 本 run 回修内容（rev 0.3 → 0.4）
+## 2. 本 run 出的计划要点（canonical：`plan.md`）
 
-| 项 | 处置 |
+| 项 | 值 |
 |---|---|
-| B-2 残余 1 项（唯一 blocker） | §6.3 补登 **`cmdArchive`**（tools / `skills/shared/crctl/scripts/crctl.mjs`：定义 L3566 ＋ dispatch L3526 ＋ `ok({ op: 'archive', ...result })` L3640 / `tools@5d5a4ada` / 依赖结论 = §3.2・§8・§9 三处声明的既有前提），插入为第 17 项（紧邻第 16 项 `cmdCheckpoint`，同文件、同 CLI 命令面）。 |
-| 评审者点名的两个候选 | **一并登记**（口径单一，不写「不登记理由」）：第 22 项 结构化 `recovery` 合同的构造与字段面（`buildRecovery` L26 ＋ `executable`/`args`/`cwd`/`requiresTTY`/`promptFor`）、第 25 项 `gitRun` L378／`gitMust` L383（AC-8④ 的抽取锚点）。§6.3 节首新增**收录判据**（① 设计陈述/判据的成立前提 ② 本 CR 直接修改的既有文本 ③ §9 `zero_diff` 点名对象 ④ SDD-CLOSE-0x 的证据）。 |
-| S-11 | 第 35 项括注改按 `delivery-agent.md` L44 原文（只有「归档返回 `complete` 或 Skill 明确的完成态」才发最终汇报，汇报项含「归档结果」；全文件 `cleanup-pending` 零命中），把 `cleanup-pending` 与汇报面 `localTrunkSync` 明写为 §4.6.2／AC-8⑥ 的**设计目标**而非既有事实。 |
-| 清单与互引 | 47 → **50 项**、编号 1→50 连续、全表重编号；数值互引 SDD-CLOSE-02「第 44~46 项」→「第 47~49 项」；其余 47 项内容未动。 |
+| 组映射（4 TASK） | TASK-01 pipeline 节点退役+测试面连带（FR-4/FR-5，24h）；TASK-02 评审 PASS 发布/clean 前置/权限面（FR-1/2/3/8，24h）；TASK-03 归档 trunk 同步（FR-10，16h）；TASK-04 口径+搭车硬规则+登记收口（FR-6/7/9/11，24h） |
+| 依赖 | TASK-01 → TASK-02 → TASK-04；TASK-03 独立但 TASK-04 依赖它（共享 Agent Prompt 与 delivery 汇报面） |
+| 证据命令 | cmd-01 全量 suite-gate（基线实测 exit 0 / 786 s / 588 用例）→ cmd-02 pipeline-structure+contract-scan → cmd-03 定点既有断言 → cmd-04 archive-tx 定点（`CR-2026-066` 前缀）→ cmd-05 tools 收口审计（CI 静态五步+diff/zero_diff+口径四处+AC-8 守卫）→ cmd-06 multica 审计 → cmd-07 KB 登记面审计 |
+| 基线实测 | 全量套件 `verdict=pass` / 786 s；CI 静态五步全绿；cmd-05 变更前 exit 1 / 42 failures；cmd-06 变更前 exit 1 / 14 failures；`cmd-04` 空跑即绿（假绿口子）由 cmd-05 的 token 守卫闭合 |
+| 附带项 | S-13 → TASK-02 交付项 + 负向 token 断言；S-14 → TASK-01 写准 L487-506 区间（只改 L491 的 `filter` 形态、L495-506 逐字保留）；S-12 → 保留理由（判据③ 按「设计成立依赖」解释，sdd.md 冻结不可改） |
+| 交付登记块 | `plan.md` §10（AC-6 六字段 / FR-11「未重生成 ⇒ Runner 保持禁用」/ D-6 排除理由 / 部署窗口成对生效 / 断言 B 结论），由 `cmd-07` 机械核对 |
 
-## 3. 评审反馈与恢复入口（canonical：`review-annotations/sdd.yml`、`review-loop.yml`）
+## 3. 评审反馈与恢复入口（canonical：`review-annotations/*.yml`、`review-loop.yml`）
 
 | 项 | 事实 |
 |---|---|
-| 上一轮 verdict | `block`（cycle 1 / attempt 3；`subject-sha256` `fa863c11…`；同批提交 `838e53b9`，状态推进 `ad37a10f`） |
-| 本 run 后 subject | `change-requests/CR-2026-066/sdd.md`，rev 0.4（917 行 / 112,204 B / 纯 LF），`sha256(LF)` 以 `crctl next` 实测 digest 为准 |
-| 下一节点 | 协调者核对 `review-loop.yml` 已到 cycle 2 / attempt 0 → 新建独立 `quality-reviewer-agent` run 跑 `review-tech-design`（cycle 2 / attempt 1，`--bump-attempt`）；PASS 后止于**人工架构审批 gate**（`crctl approve --stage tech-design`，Agent 不代签、不手写 `approval.yml`） |
-| 已知工具提示 | `tech-designing` 状态下 `crctl next` 只按 `sdd.md` 是否存在建议 `review-tech-design`（`crctl.mjs` 未读 `sdd.yml` 的 block 记录）；路由以 canonical `repair-target` 与 pipeline `reviewLoop` 为准 |
-| 现场状态 | KB worktree 干净（本提交后）；tools / multica worktree `healthy`、`dirty=false`、`remoteBranch=true`；三仓均未 push |
+| 上一轮 verdict | `review-tech-design` cycle 2 / attempt 1 = **pass**（`subject-sha256 78846c1b…`，同批提交 `875e1d60`）；人工架构审批已落盘（`approval.yml#tech-design`，`d5339ab9`） |
+| 下一节点 | **`review-dev-plan`**（新建独立 quality-reviewer-agent run；`reviewLoop.maxAttempts=3`、`repair-target=write-dev-plan`）→ PASS 后由 dev-agent 执行 `push-progress`（`message=计划与任务`）→ 止于**人工 dev-start 审批 gate**（`crctl approve --stage dev-start`，Agent 不代签） |
+| BLOCK 路由 | 普通轨（`repair-target=write-dev-plan`）→ `reviewLoop.replayNodes` 重放 `write-dev-plan → write-dev-tasks → review-dev-plan`；上游设计缺口走 `review-dev-plan:upstream-design-blocker`（`task-breakdown → tech-design-review-pending`） |
+| 已知工具提示 | `task-breakdown` 状态下 `crctl next` 由 `dev-plan.yml` 是否存在于 `review-annotations/` 判定；路由以 canonical `repair-target` 与 pipeline `reviewLoop` 为准 |
+| 现场状态 | KB worktree 最终干净（本 run 两次提交：`[cr] write dev plan …` + `[cr] draft dev plan CR-2026-066 (plan §7 AC-8 row + navigation cache)`，均**未 push**）；tools / multica worktree `healthy`、本 run 零改动、未 push |
+| 证据面预算 | `write-test-report` 节点 20 min；预算合计 ≤ 966 s（cmd-01 独占 786 s），顺序把 cmd-01 排第一 |

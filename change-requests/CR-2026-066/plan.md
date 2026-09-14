@@ -304,7 +304,7 @@ TASK-03（归档尾部 trunk 同步；FR-10）  TASK-04（口径改写、搭车�
 | AC-5 CI 六步骤全绿、不签例外 | §6.4 ＋ NFR-1 ＋ `.github/workflows/crctl-ci.yml` | CR-2026-066-TASK-04（关联 CR-2026-066-TASK-01/02/03） | cmd-01（suite-gate 步骤 + 全量套件）；cmd-05（其余五步本机等价面） |
 | AC-6 延期验证点登记块（载体/时点/观察项①~④/责任 agent/关闭触发） | §6.6 ＋ PRD AC-6 | CR-2026-066-TASK-04 | cmd-07 |
 | AC-7 四处口径一致、旧句零命中 | §6.5 | CR-2026-066-TASK-04 | cmd-05 |
-| AC-8 六项用例（三返回点含字段 / 分类 / dirty 逐字节未变 / argv 白名单 / 幂等重放 / 文档面） | §4.6 ＋ §6.2 AC-8 | CR-2026-066-TASK-03 | cmd-04；cmd-01（argv 面随套件执行） |
+| AC-8 六项用例（三返回点含字段 / 分类 / dirty 逐字节未变 / argv 白名单 / 幂等重放 / 文档面） | §4.6 ＋ §6.2 AC-8 | CR-2026-066-TASK-03（关联 CR-2026-066-TASK-04：delivery 汇报面） | cmd-04；cmd-01（argv 面随套件执行）；cmd-06（delivery 汇报面的 multica 半） |
 | AC-9 交付说明登记 `NodeID`/`Seq` 与 digest 需重生成 **或**「未重生成 ⇒ Runner 保持禁用」 | §6.7 ＋ FR-11 | CR-2026-066-TASK-04 | cmd-07 |
 | AC-10 ①scope_out 可检查（无平台执行层/新节点维度账本字段、无事务层与状态机改动、无 `recoverCommand` 复活）；②不做「审批后可选 checkpoint」；③串行（在途唯一）；④与 CR-P1/P2 面零 diff | §9 `scope_out`/`zero_diff` ＋ §7 | CR-2026-066-TASK-04 | cmd-05（tools diff/zero_diff + hunk 级禁改 token）；cmd-06（multica diff）；cmd-07（KB diff）；cmd-04（`RETIRED_RECOVERY` 零命中） |
 | 业务闭环：发布的必须是被评审的（对账即发布，无静默通过） | §4.3 ＋ §3.4 `CONTRACT_DRIFT` | CR-2026-066-TASK-02 | cmd-02 |
