@@ -111,7 +111,7 @@ tools 三份 Prompt（agents/dev-agent.md / agents/quality-reviewer-agent.md / a
 
 ## 5. 完成标志
 
-- 11 个文件就位并随 CR 提交（`[cr]` 前缀消息）；`cmd-05`/`cmd-06`/`cmd-07`/`cmd-02` exit 0；`cmd-01` 全量套件绿（无例外）。
+- **13 个文件**（§2 表 10 行展开：5 处文档 `skills/sync/push-progress/SKILL.md` / `README.md` / `openwiki/pipelines/overview.md` / `dir-graph.yaml` / `skills/writeback/merge-feature-branch/SKILL.md` ＋ tools 三份 Agent Prompt ＋ multica `cr-prompts-revised/` 四份副本（§2 为 1 行、展开 4 文件）＋ `contract-scan.test.mjs`；按仓 = tools 9 ＋ multica 4；其中两份 `quality-reviewer-agent` 与 TASK-02 共用）就位并随 CR 提交（`[cr]` 前缀消息）；`cmd-05`/`cmd-06`/`cmd-07`/`cmd-02` exit 0；`cmd-01` 全量套件绿（无例外）。
 - **四处同口径对照表**（现文 → 目标文 → `grep` 证据）与**七份 Prompt 硬规则落点表**（文件 → 行 → token）写入本任务完成记录。
 - 交付说明必填块五块随交付评论发布，并在完成记录中登记发布位置（Issue 评论 id / `test-report.md` 分析段）。
 - **任务账本登记**：`crctl task done CR-2026-066 --task CR-2026-066-TASK-04`（即时标 `done` 带 `done-at`）。

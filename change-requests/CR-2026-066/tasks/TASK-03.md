@@ -72,7 +72,7 @@ archiveCr(ctx, input):
 | ⑤ | `CR-2026-066 AC-8⑤ changed=false 重放仍返回且零新 commit` | 归档幂等重放（`changed=false`）时仍返回 `localTrunkSync`（按当次实况）、无新 commit、无第二次清理 |
 | ⑥ | `CR-2026-066 AC-8⑥ cr-archive SKILL 分类/输出块含 localTrunkSync` | 文本断言：`skills/cr/cr-archive/SKILL.md` 含 `localTrunkSync` 且含 4 状态 × 6 reason 的分类说明。**delivery 汇报面的一半归 TASK-04**（SDD §4.6.2 的 delivery 汇报面句，落在 `agents/delivery-agent.md` 与 `../multica/cr-prompts-revised/delivery-agent.md`）——分卡是为了让本卡可独立验收：本卡完成后 `cmd-04` 即可绿；交付态的 AC-8⑥ 由 `cmd-04`（SKILL 面）与 `cmd-06`（multica delivery 副本含 `localTrunkSync`）两条命令共同覆盖 |
 
-- **命名约定是硬约束**：`cmd-04`（`--test-name-pattern CR-2026-066`）与 `cmd-05`（token `CR-2026-066 AC-8` ≥ 6）都依赖它；本条 run 已实测：用例不存在时 `--test-name-pattern` **空跑 exit 0**（无摘要）⇒ 单靠 `cmd-04` 的退出码不构成存在性证据。
+- **命名约定是硬约束**：`cmd-04`（`--test-name-pattern CR-2026-066`）与 `cmd-05` 的守卫（f）（token `CR-2026-066 AC-8` ≥ 6）都依赖它；本条 run 已实测：用例不存在时 `--test-name-pattern` **空跑 exit 0**（无摘要），且 dot 报告器**不输出用例名与摘要** ⇒ **单靠 `cmd-04` 的退出码（或点号数）不构成存在性证据**，用例名与存在性一律由 `cmd-05` 的源码级守卫（f）承载（plan §6.1 表注⑤）。
 - **`test(` 调用数**：基线 28（既有 24 用例）→ 本卡后 ≥ 34；`cmd-05` 的守卫要求 ≥ 30。
 - ⑥ 与 TASK-04 的分工：本卡只落 `cr-archive/SKILL.md` 的一半与它自己的文本断言；delivery 汇报面句（tools `agents/delivery-agent.md` + multica 副本）由 TASK-04 落盘，其机器判据在 `cmd-06`（multica 副本含 `localTrunkSync`）。**不得**为让某条命令提前变绿而跨卡落盘。
 
@@ -84,7 +84,7 @@ archiveCr(ctx, input):
 
 ## 4. 验收条件（可执行）
 
-1. **`cmd-04`**（plan §6.2，`repo=tools`）：`node --test --test-reporter=dot --test-name-pattern CR-2026-066 skills/shared/crctl/scripts/test/archive-tx.test.mjs` → **exit 0**，且**命中用例数 ≥ 6**（在完成记录中逐字记录日志的命中用例名清单与计数）。
+1. **`cmd-04`**（plan §6.2，`repo=tools`）：`node --test --test-reporter=dot --test-name-pattern CR-2026-066 skills/shared/crctl/scripts/test/archive-tx.test.mjs` → **exit 0**；用例名清单与存在性**不由本命令的 stdout 承载**（dot 报告器只输出点号，无名字、无摘要；空跑亦 exit 0）——在完成记录中登记：① `cmd-05` 守卫（f）的两行实测值（`archive-tx AC-8 tokens`≥ 6、`test(` count ≥ 30）；② 六项用例名与源码行号对照表；③ `cmd-04` 的 dot 点数（= 命中且通过的用例数，期望 ≥ 6，作为「执行面」辅助计数）。
 2. **`cmd-05`** 的 AC-8 存在性守卫：`archive-tx AC-8 tokens ≥ 6` ∧ `test( count ≥ 30` → 该守卫不得出现在失败清单中。
 3. **`cmd-01`** 全量套件 → `verdict=pass` / `failures=0` / **`cases_executed ≥ 594`**（588 基线 + 本卡 6 条新用例）。
 4. 负控自检（非证据）：临时把某一返回点改回**不带** `localTrunkSync`，或把 `reconcileLocalTrunks` 的某个 `gitRun` argv 换成含 `push` 的元素 → ①/④ **必须红** → 还原 → `crctl git status --short` 干净。
@@ -92,8 +92,8 @@ archiveCr(ctx, input):
 
 ## 5. 完成标志
 
-- 3 个文件就位并随 CR 提交（`[cr]` 前缀消息）；`cmd-04` exit 0 且命中 ≥ 6；`cmd-05` 守卫通过；`cmd-01` 全量套件绿（无例外）。
-- **六项用例 → 用例名 → 运行日志命中数**三列对照表写入本任务完成记录；④ 的**实测调用点数 = 7** 与归一化签名集合逐项留档（硬失败分支的活性亦留一条负控痕迹）。
+- 3 个文件就位并随 CR 提交（`[cr]` 前缀消息）；`cmd-04` exit 0（dot 点数 ≥ 6，仅作执行面辅助计数）；`cmd-05` 守卫（f）通过（`CR-2026-066 AC-8` token ≥ 6 ∧ `test(` ≥ 30）；`cmd-01` 全量套件绿（无例外）。
+- **六项用例 → 用例名（源码 token）→ `cmd-05` 守卫（f）实测计数**三列对照表写入本任务完成记录（另附 `cmd-04` 的 dot 点数）；④ 的**实测调用点数 = 7** 与归一化签名集合逐项留档（硬失败分支的活性亦留一条负控痕迹）。
 - `zero_diff` 面零 diff（`crctl.mjs` / 五个函数的签名与内部逻辑 / `reconcileLocalTrunks` 函数体 / `archiveCr` 既有字段与 `phase` 分类 / 退出码）。
 - **任务账本登记**：`crctl task done CR-2026-066 --task CR-2026-066-TASK-03`（即时标 `done` 带 `done-at`）。
 
