@@ -1,0 +1,25 @@
+$ node -e const cp=require('child_process'),fs=require('fs'),path=require('path'); const R=process.cwd(),NL=String.fromCharCode(10),CR=String.fromCharCode(13)+NL; const read=p=>fs.readFileSync(path.join(R,p),'utf8').split(CR).join(NL); const bad=[],CRD='change-requests/CR-2026-066/'; const plan=read(CRD+'plan.md').split(NL).filter(l=>l.indexOf('const cp=require(')<0).join(NL); const pl=plan.split(NL); const i0=pl.findIndex(l=>l.indexOf('## 10. ')===0); let i1=pl.length; if(i0<0){bad.push('plan.md 缺 [## 10. 交付说明必填块] 节');}else{for(let i=i0+1;i<pl.length;i++){if(pl[i].indexOf('## ')===0){i1=i;break;}}} const L10=i0<0?0:i1-i0; console.log('plan section10 lines = '+L10); if(L10<10){bad.push('plan.md 交付说明必填块节行数 = '+L10+'（< 10，疑似空节）');} const blk=i0<0?'':pl.slice(i0,i1).join(NL); for(const t of ['AC-6 延期验证点','载体','时点','观察项 ①','观察项 ②','观察项 ③','观察项 ④','责任 agent','关闭触发','AIFIRST_ARCHITECTURE_RUNNER','未重生成','D-6','cr-prompts-revised/agent-skill-matrix.yml','部署窗口','受限 crctl 权限','workspace inspect']){if(blk.indexOf(t)<0){bad.push('plan.md 交付说明必填块（section10）缺 token '+t);}} if(plan.indexOf('已重生成')>=0){bad.push('plan.md 不得声称已重生成（本 CR 走 [未重生成 + Runner 保持禁用] 分支）');} if(plan.indexOf('平台已部署')>=0){bad.push('plan.md 出现平台部署声称');} const CRCTL='C:/Users/GOBAO/Downloads/AI/AI First Platform/.rayai-worktrees/tools/requirement/CR-2026-066/skills/shared/crctl/scripts/crctl.mjs'; const r0=cp.spawnSync(process.execPath,[CRCTL,'git','diff','--name-only','9a64fc4fac97e328a2dee0bff1711cc4f2a4c367','--cwd',R],{encoding:'utf8'}); if(r0.status!==0){bad.push('crctl git diff 失败');}else{const parts=String(r0.stdout).split(NL);const bi=parts.findIndex(l=>l.trim()==='{');const changed=parts.slice(0,bi<0?parts.length:bi).map(s=>s.trim()).filter(Boolean);console.log('KB diff paths = '+changed.length);changed.forEach(f=>console.log('  '+f));for(const f of changed){if(f.indexOf(CRD)!==0&&f!=='change-requests/_backlog.yml'){bad.push('KB 越界路径 '+f);}}} if(bad.length>0){console.log('kb-audit failures = '+bad.length);bad.forEach(x=>console.log('FAIL '+x));process.exit(1);} console.log('kb-audit failures = 0');
+(exit=0)
+--- stdout ---
+plan section10 lines = 35
+KB diff paths = 17
+  change-requests/CR-2026-066/_context.md
+  change-requests/CR-2026-066/approval.yml
+  change-requests/CR-2026-066/cr.md
+  change-requests/CR-2026-066/plan.md
+  change-requests/CR-2026-066/prd.md
+  change-requests/CR-2026-066/review-annotations/dev-plan.yml
+  change-requests/CR-2026-066/review-annotations/requirement.yml
+  change-requests/CR-2026-066/review-annotations/sdd.yml
+  change-requests/CR-2026-066/review-loop.yml
+  change-requests/CR-2026-066/sdd.md
+  change-requests/CR-2026-066/tasks/TASK-01.md
+  change-requests/CR-2026-066/tasks/TASK-02.md
+  change-requests/CR-2026-066/tasks/TASK-03.md
+  change-requests/CR-2026-066/tasks/TASK-04.md
+  change-requests/CR-2026-066/tasks/_index.yml
+  change-requests/CR-2026-066/traceability.yml
+  change-requests/_backlog.yml
+kb-audit failures = 0
+
+--- stderr ---
