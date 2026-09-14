@@ -1,0 +1,46 @@
+cr-id: CR-2026-066
+review-type: code
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-14T18:50:47+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  批准范围: "通过（Step 2.5 前置核对，本轮实测）。tools worktree HEAD 25ad2588 相对 origin/main merge-base 5d5a4ada 的 diff 恰 25 条路径，与 SDD §1.2/§9 的 tools 25 文件交付面双向相等；multica 恰 4 条 cr-prompts-revised 下 Prompt；KB 侧全部落在 change-requests/CR-2026-066 目录与 change-requests/_backlog.yml。scope_out 未触碰：无平台执行层、无新增节点/评审维度/账本字段/观测指标/错误码，multica 的 cr-prompts-revised/agent-skill-matrix.yml、CUSTOM.md、aifirst 与任何 Go/TS 零 diff。zero_diff 实测零改动：crctl.mjs、rules.json、gates.json、gate-registry.json、emit-registry.mjs、ARCHITECTURE.md、AGENTS.md 均不在 diff 名单；workspace-transactions.mjs 的 hunk 只在 archiveCr 尾部（新增局部包装与三个返回点改经包装），checkpointCr/mergeCr/applyWriteback/registerCr 与 reconcileLocalTrunks 函数体零改动；dir-graph.yaml 仅 pipeline_templates.contract 第 5 条一处。prd.md 与 sdd.md 逐字节未变（subject 面与既有 release-subjects 一致）。"
+  代码↔TASK↔SDD对齐: "通过。TASK-01~04 产出与 SDD 落点逐条对得上：三份 pipeline JSON 对象级删除 7 个节点（requirement 7→5、architecture 5→4、code 16→12；push-progress 计数 0；被删完整 id 零出现；auto_push 与 SKIPPED 字面量零残留；…0010 approvalPrompt 的 checkpoint 前提句已随节点对象删除）；_index.yml 计数与 brief 与 JSON 事实一致；四个 review SKILL 同构落地 clean 前置（classification == healthy 判据、不得对作者工作区写操作）、PASS 发布与对账、BLOCK 不发布；archiveCr 三个成功返回点（幂等重放早退/complete/cleanup-pending）均经 resultWithTrunkSync 带出 localTrunkSync 七键行；权限面四处载体（矩阵 can-call 加 push-progress 与 forbidden 保留 checkpoint、AGENT-SKILL-MATRIX.md 本 CR 行、tools 权限事实源节、multica 受限 crctl 权限块）与 SKILL 前置在同一断言（pipeline-structure 新 A/B/C/D 用例）内闭合；FR-9 四处口径与 openwiki mermaid（删 D8/D12、D9 直连 D10、无悬空引用）同批改准；七份 Prompt 搭车硬规则与 contract-scan 的 FR-7 静态断言就位；交付登记块（AC-6、FR-11、D-6、部署时序、断言 B）逐字转录 plan 第 10 节并在 test-report 第 6 节落位。"
+  工程质量: "通过。改动形态与 SDD 声明一致且为最小侵入：workspace-transactions.mjs 仅 +13/−3 行（局部包装不导出、不新建模块，三个返回点改经包装）；测试面全部在既有文件内改写或追加（不新增测试文件，gate-registry.json 零 diff，manifest.files 保持 21）；零新增依赖；行尾纪律贯彻（断言读入统一 CRLF 归一，函数体/argv 抽取失败与解析失败一律硬失败，未发现静默降级路径）。"
+  关键路径可读性: "通过。archiveCr 的新增包装带来源与 best-effort 语义注释；AC-8 的函数体与 argv 抽取器带失败即抛注释并配负控；四个 SKILL 新增步骤为编号序列、与既有步骤衔接明确；cr-archive SKILL 给出 4 状态乘 6 reason 穷尽表与人类补救指引；test-report 逐 TASK 给出行级核对表与未覆盖风险。"
+  安全性: "通过。权限面变更为只增不减：矩阵为 reviewer 新增 can-call push-progress，forbidden 保留 checkpoint 与全部写入型子命令；crctl 允许面新增项为只读 workspace inspect，穷尽式白名单同批更新且禁止面枚举不变。归档尾部同步的命令面经独立抽读函数体核实：恰 7 个 gitRun/gitMust 调用点，归一化签名集合为 rev-parse、rev-parse --verify、symbolic-ref、status、fetch --prune、merge-base --is-ancestor、merge --ff-only，argv 元素零 reset/clean/stash/--force/push；只对 dir-graph 主 checkout 生效，dirty 与 wrong-branch 一律跳过，失败不改变归档退出码与 phase 分类。"
+  测试覆盖: "通过。新增断言与行为一一对应且带活性设计：AC-1 先断言节点集非空再判零（防空集合静默通过）；AC-8 六用例含活值交叉核对（synced、unchanged、skipped/dirty、skipped/wrong-branch、逐字节未变、重放零新 commit 与同一 authority commit）与内存负控；AC-3/AC-4 的 A/B/C/D 断言含反向 token 与读空保护；contract-scan 追加 FR-7 静态文本断言；四个被连带证伪的既有测试文件同批改写且保留用例名 token 前缀（cmd-05 守卫（g）逐个判定）。证据面 cmd-01 全量 21 文件 596 用例全绿、failures=0，cmd-02 至 cmd-07 全 exit 0。"
+  测试证据可信度: "通过。test-report.md 机器区 generated-by 为 crctl-test、status=pass、command-digest 9b2a728b 开头，与 traceability.yml 的 tests 段 status/generated-at/command-digest 逐字一致（无 TEST_EVIDENCE_DRIFT）；7 条命令 exit-code 全 0、skipped 与 timed-out 全 false，7 份 test-evidence/cmd-0N.log 齐备且与记录命令一致（逐份实读：cmd-01 verdict=pass 与 cases_executed=596、cmd-05 tools-close-audit failures=0 且 tools diff paths=25、cmd-06 multica-audit failures=0 且 multica diff paths=4、cmd-07 kb-audit failures=0）；AC-6 按登记即达成登记完整，FR-11 走未重生成且 Runner 保持禁用分支登记完整；未覆盖风险在报告第 5 节如实登记。分析段 cmd-01 的 duration_ms 与日志值不一致一处（906098 对 857601），不影响任何判据与阈值，列入 suggestions。"
+  前端质量: "N/A（本轮 diff 不触及 *.tsx / *.vue / *.css / *.html，该项条件未触发）。"
+suggestions:
+  - "test-report.md 分析段第 2 节的 cmd-01 duration_ms=906098 与唯一证据源 test-evidence/cmd-01.log 的 duration_ms=857601 不一致（906098 在全部证据内无其它出处；若为含封装开销的墙钟口径应在段内注明）。位置：change-requests/CR-2026-066/test-report.md 第 2 节 cmd-01 行与同节末耗时与预算段。事实：cmd-01.log 的 verdict 行与 suite-gate 摘要行均为 857601；906 秒低于 timeoutSeconds 1080、七条合计低于节点预算 1200 的结论在 857601 口径下同样成立，判据与阈值不受影响。影响：分析段数字不可回溯，按日志复算会得到不同值。修复方向：更正为证据值或在段内注明 906098 的测量口径与来源。归 write-test-report。"
+  - "三份 pipeline JSON 的文件尾换行在本 diff 中被移除（requirement-authoring、architecture-design、code-implementation 现以右花括号直接结束，diff 标记 No newline at end of file），而同目录其余 5 份 pipeline JSON 均以换行结束。位置：tools 仓 pipeline-templates 下三份 JSON 的 EOF。事实：不影响 JSON 解析与任何断言（cmd-01 至 cmd-05 全绿），属文本一致性瑕疵。影响：与同目录惯例不一致。修复方向：后续触及这三份文件时补回尾换行。归 implement-code。"
+  - "范围外：openwiki/pipelines/index.md 与 openwiki/quickstart.md 仍含 mandatory checkpoint(s) 旧口径字样；两文件不在 SDD 第 1.2 节的 29 文件交付面内（FR-9 的四处口径面不含它们），test-report 第 5 节已登记为残余。影响：与 overview.md 的新口径并存会形成第二套说法。建议后续文档 CR 或 CR-P1 一并清理。归后续 CR。"
+review-loop:
+  current-attempt: 2
+release-subjects:
+  version: 1
+  repositories:
+    - repo: ai-first-platform-docs
+      remote-ref: refs/heads/requirement/CR-2026-066
+      reviewed-source-sha: 281a244ee2b85d37ee2099a4d37a8eb7a434205f
+    - repo: multica
+      remote-ref: refs/heads/requirement/CR-2026-066
+      reviewed-source-sha: d478180250bec1d8697c4c06d752bd85874812d2
+    - repo: tools
+      remote-ref: refs/heads/requirement/CR-2026-066
+      reviewed-source-sha: 25ad25880c0c15230945679077704ec82a921b2b
+  artifacts:
+    algorithm: sha256
+    canonicalization: crlf-to-lf+path-sort
+    files:
+      - { path: change-requests/CR-2026-066/plan.md, sha256: e20f7eed7c57cd9a6df7b8f9ca594fe89f57175d808d68d18af3bf655b10ee98 }
+      - { path: change-requests/CR-2026-066/prd.md, sha256: 9b43bbfafa3be7a82c7e86900b17f64c3e95365347c9ed8588883e8d53aef1db }
+      - { path: change-requests/CR-2026-066/sdd.md, sha256: 78846c1bc7f17662bb8566ea71eb0ccaa11f1deec103abf3e4d42a8b649aa410 }
+      - { path: change-requests/CR-2026-066/tasks/TASK-01.md, sha256: 44f639327f23f785a52f7b517c72fa24ecaa207f0ac69a1b9e2bf519e8c01f58 }
+      - { path: change-requests/CR-2026-066/tasks/TASK-02.md, sha256: 19fa09403df30b9814ce3b8d207f799e836b02518f03428020788ca9053861c7 }
+      - { path: change-requests/CR-2026-066/tasks/TASK-03.md, sha256: 6c42f8834bcf14573700abc1749e17f84732a4e43e53997c4cf9bd1888fcd2dc }
+      - { path: change-requests/CR-2026-066/tasks/TASK-04.md, sha256: 92c26b16a9c300bd622c04d90d8dc5318abcdaa67778836e3895e5bacbefc90f }
+      - { path: change-requests/CR-2026-066/tasks/_index.yml, sha256: 0058269ffa3b1e2e3ab9d881f2baccdab29d9a05bc409a95823e213e2942cc02 }
+    digest: 8130ff61395d8b930990530e24feed307c42588ff3fc8a130ace5d5342a4f894
