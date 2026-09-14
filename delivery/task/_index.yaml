@@ -2906,3 +2906,31 @@ tasks:
     cr-ref: CR-2026-065
     target-version: "0.38"
     estimate: 16h
+  - id: CR-2026-064-TASK-01
+    file: TASK-0.37-CR-2026-064-01-recovery-producer-migration-build-recovery.md
+    title: 生产者迁移：唯一构造器 buildRecovery 与 9 类场景 9 个生产者站点原位改为结构化 recovery
+    status: done
+    cr-ref: CR-2026-064
+    target-version: "0.37"
+    estimate: 16h
+  - id: CR-2026-064-TASK-02
+    file: TASK-0.37-CR-2026-064-02-cli-projection-migration-single-projection.md
+    title: CLI 投影迁移：register 单投影、gate 错配与 reset 失败分支结构化、删除占位符 helper
+    status: done
+    cr-ref: CR-2026-064
+    target-version: "0.37"
+    estimate: 8h
+  - id: CR-2026-064-TASK-03
+    file: TASK-0.37-CR-2026-064-03-consumer-prompt-doc-migration-openwiki.md
+    title: 消费方与文档迁移：4 份 tools SKILL + README 原位改读 recovery、OpenWiki 生成页重生成、multica 交付 Agent 提示词
+    status: done
+    cr-ref: CR-2026-064
+    target-version: "0.37"
+    estimate: 12h
+  - id: CR-2026-064-TASK-04
+    file: TASK-0.37-CR-2026-064-04-test-migration-retired-name-guard.md
+    title: 测试迁移与契约退役保护：7 个既有测试改结构断言、contract-scan 整树扫描面与八条命中用例、shell 逃逸守卫
+    status: done
+    cr-ref: CR-2026-064
+    target-version: "0.37"
+    estimate: 16h
