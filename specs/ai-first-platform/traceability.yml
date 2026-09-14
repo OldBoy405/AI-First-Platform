@@ -1,10 +1,10 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 spec-id: ai-first-platform
-cr-ref: CR-2026-065
-cr-history: [CR-2026-060, CR-2026-059, CR-2026-061, CR-2026-062, CR-2026-063, CR-2026-065]
-target-version: "0.38"
+cr-ref: CR-2026-064
+cr-history: [CR-2026-060, CR-2026-059, CR-2026-061, CR-2026-062, CR-2026-063, CR-2026-065, CR-2026-064]
+target-version: "0.37"
 baseline-since: "0.33"
-generated-at: "2026-09-13T20:15:15+08:00"
+generated-at: "2026-09-14T09:34:33+08:00"
 
 milestones:
   - cr: CR-2026-060
@@ -617,3 +617,131 @@ milestones:
         code: { verdict: pass, path: change-requests/CR-2026-065/review-annotations/code.yml, sha256: 6ab4b5793b4c46cbb9de2b394c53d579c7fcc6c00dec017b4a5f2a528690c05f }
       approval: { status: approved, path: change-requests/CR-2026-065/approval.yml, sha256: 01663bc4e21bdf173dad3d7beb9ac3b6aafb6046ca2a26de6bcf7a60ecb1ff85 }
       merge: { status: merged, path: change-requests/CR-2026-065/merge-commits.yml, sha256: ee8a350254ce3adef2655e1271232faa0495ac9e35571cd8509f51630418143b }
+  - cr: CR-2026-064
+    milestone: 0.37
+    target-version: "0.37"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 0a32ca9e71a514ef42457388cabba269865b9ace
+        branch: requirement/CR-2026-064
+      - repo: multica
+        trunk: main
+        sha: 43848770bff13465de8ed9a0e28ecc7371716514
+        branch: requirement/CR-2026-064
+      - repo: tools
+        trunk: main
+        sha: 5d5a4ada96b882eb2c640e34bb72857a7073b668
+        branch: requirement/CR-2026-064
+    frs:
+      - fr: FR-1
+        title: 唯一恢复合同字段 `recovery`（AC-01、AC-10）
+        sdd: §2.1 字段表 + §3.1 类型 + §3.2 构造器（键序固定、可选性、恒定 `executable`）+ SDD-CLOSE-01
+        tasks: [CR-2026-064-TASK-01, CR-2026-064-TASK-02]
+        code: [ai-first-platform-docs@0a32ca9e71a5, multica@43848770bff1, tools@5d5a4ada96b8]
+        evidence: [cmd-01]
+      - fr: FR-2
+        title: argv 边界与参数完整性（AC-01）
+        sdd: §4.1 拆 token 六步 + 11 站点 `args` 取值表 + SDD-CLOSE-02
+        tasks: [CR-2026-064-TASK-01]
+        code: [ai-first-platform-docs@0a32ca9e71a5, multica@43848770bff1, tools@5d5a4ada96b8]
+        evidence: [cmd-01, cmd-03]
+      - fr: FR-3
+        title: `executable` 安全约束（AC-10）
+        sdd: §3.2 保证 1–2（`'node'` 恒定 + `args[0]` 为脚本路径）+ §4.5 向量 6
+        tasks: [CR-2026-064-TASK-01, CR-2026-064-TASK-04]
+        code: [ai-first-platform-docs@0a32ca9e71a5, multica@43848770bff1, tools@5d5a4ada96b8]
+        evidence: [cmd-01, cmd-05]
+      - fr: FR-4
+        title: `promptFor[]` 人工输入行为（AC-03、SDD-CLOSE-03）
+        sdd: §3.4 值名 → CLI 入口映射 + §4.1 第 5 步（`reason` / `plan` / `CR-ID` 不进 `args`）
+        tasks: [CR-2026-064-TASK-02, CR-2026-064-TASK-04]
+        code: [ai-first-platform-docs@0a32ca9e71a5, multica@43848770bff1, tools@5d5a4ada96b8]
+        evidence: [cmd-01]
+      - fr: FR-5
+        title: 全部已知生产者迁移（AC-01、AC-02）
+        sdd: §4.1 站点 1–9（9 类场景的构造）+ §3.3 载体表 + SDD-CLOSE-06
+        tasks: [CR-2026-064-TASK-01]
+        code: [ai-first-platform-docs@0a32ca9e71a5, multica@43848770bff1, tools@5d5a4ada96b8]
+        evidence: [cmd-01, cmd-03]
+      - fr: FR-6
+        title: CLI 投影迁移（AC-02）
+        sdd: §4.2 四步 + §3.3 站点 10/11（`gate` 错配、`reset` 提交失败）+ `register` 单投影
+        tasks: [CR-2026-064-TASK-02]
+        code: [ai-first-platform-docs@0a32ca9e71a5, multica@43848770bff1, tools@5d5a4ada96b8]
+        evidence: [cmd-01]
+      - fr: FR-7
+        title: 全部活跃 Skill/Agent 消费者迁移（AC-05）
+        sdd: §4.3 消费方行 + §8 采纳完整性（5 处，无遗留采纳项）+ D-6 消费合同单一事实源
+        tasks: [CR-2026-064-TASK-03]
+        code: [ai-first-platform-docs@0a32ca9e71a5, multica@43848770bff1, tools@5d5a4ada96b8]
+        evidence: [cmd-03, cmd-04, cmd-06]
+      - fr: FR-8
+        title: 文档迁移且不产生第二套合同（AC-05）
+        sdd: §4.3 `README.md` 行 + D-7 生成闭环（四步，不手工编辑生成页）
+        tasks: [CR-2026-064-TASK-03]
+        code: [ai-first-platform-docs@0a32ca9e71a5, multica@43848770bff1, tools@5d5a4ada96b8]
+        evidence: [cmd-03, cmd-06]
+      - fr: FR-9
+        title: 测试改为结构断言（AC-02、AC-07）
+        sdd: §4.5 结构断言模板 + 向量 3/4/5/6 + §4.5-7 用例下限硬约束
+        tasks: [CR-2026-064-TASK-04]
+        code: [ai-first-platform-docs@0a32ca9e71a5, multica@43848770bff1, tools@5d5a4ada96b8]
+        evidence: [cmd-01]
+      - fr: FR-10
+        title: 旧字段同 CR 删除、不留兼容路径（AC-05）
+        sdd: §4.1 第 6 步（原位删除、不并排双写）+ §2.3 别名表（无 alias/shim/fallback）+ §9 `scope_out`
+        tasks: [CR-2026-064-TASK-01, CR-2026-064-TASK-02]
+        code: [ai-first-platform-docs@0a32ca9e71a5, multica@43848770bff1, tools@5d5a4ada96b8]
+        evidence: [cmd-03, cmd-04]
+      - fr: FR-11
+        title: contract-scan 退役保护（AC-06、SDD-CLOSE-05）
+        sdd: §4.4 全节：分名名单 + 整树派生扫描面 + 两项精确路径排除 + 四条结构性断言 + 八条命中用例 + 不误报正反用例
+        tasks: [CR-2026-064-TASK-04]
+        code: [ai-first-platform-docs@0a32ca9e71a5, multica@43848770bff1, tools@5d5a4ada96b8]
+        evidence: [cmd-01, cmd-03]
+      - fr: FR-12
+        title: 安全测试向量（AC-03、AC-10、AC-11）
+        sdd: §4.5 向量 3（参数边界）/ 4（6 类用户输入）/ 5（四类缺失）/ 6（shell 逃逸守卫）
+        tasks: [CR-2026-064-TASK-04]
+        code: [ai-first-platform-docs@0a32ca9e71a5, multica@43848770bff1, tools@5d5a4ada96b8]
+        evidence: [cmd-01, cmd-05]
+      - fr: FR-13
+        title: 既有语义零改变（AC-07、AC-08）
+        sdd: §2.2 不落盘 + §3.3 尾段（错误码/exit code/txId/rollback/files 不变）+ §4.2「只改载体」+ §6.3 AC-07 的两条 CI 命令
+        tasks: [CR-2026-064-TASK-04, CR-2026-064-TASK-01, CR-2026-064-TASK-02]
+        code: [ai-first-platform-docs@0a32ca9e71a5, multica@43848770bff1, tools@5d5a4ada96b8]
+        evidence: [cmd-01, cmd-02, cmd-05]
+      - fr: FR-14
+        title: 实施前有界盘点（AC-12）
+        sdd: §11 依赖清单即基线盘点 + §4.3 逐文件清单；六类归档表见本计划 §8（plan 节点产物）
+        tasks: [CR-2026-064-TASK-04, CR-2026-064-TASK-01]
+        code: [ai-first-platform-docs@0a32ca9e71a5, multica@43848770bff1, tools@5d5a4ada96b8]
+        evidence: [cmd-03, cmd-06]
+      - fr: FR-15
+        title: 整体回滚（AC-13）
+        sdd: §9 `scope_out` 与 §6.1 FR-15 + 本计划 §4.0（回滚单元唯一 = RU-ALL）
+        tasks: [CR-2026-064-TASK-01, CR-2026-064-TASK-02]
+        code: [ai-first-platform-docs@0a32ca9e71a5, multica@43848770bff1, tools@5d5a4ada96b8]
+        evidence: [cmd-03, cmd-05]
+      - fr: FR-16
+        title: 回写与平台部署边界（AC-09、AC-14）
+        sdd: §1.1 范围表（不更新平台 DB）+ §8 平台部署边界 + §6.1 FR-16
+        tasks: [CR-2026-064-TASK-03, CR-2026-064-TASK-04]
+        code: [ai-first-platform-docs@0a32ca9e71a5, multica@43848770bff1, tools@5d5a4ada96b8]
+        evidence: [cmd-06]
+      - fr: FR-17
+        title: 合同确定性（AC-04、AC-11、SDD-CLOSE-04）
+        sdd: §2.4 指纹字段集 + §3.5 固定 5 步判定与四类错误闭包 + §3.1 零副作用
+        tasks: [CR-2026-064-TASK-01, CR-2026-064-TASK-02, CR-2026-064-TASK-03, CR-2026-064-TASK-04]
+        code: [ai-first-platform-docs@0a32ca9e71a5, multica@43848770bff1, tools@5d5a4ada96b8]
+        evidence: [cmd-01, cmd-05]
+    evidence:
+      test: { status: pass, path: change-requests/CR-2026-064/test-report.md, sha256: 84a42dc66a7d0272793175eb4a7036c429b1a66f679311917223477c4eafd824 }
+      reviews:
+        requirement: { verdict: pass, path: change-requests/CR-2026-064/review-annotations/requirement.yml, sha256: 95f72de236c5085f863d9bbab3f6d730d4a96f953e49fb0558323e32eb094e50 }
+        tech-design: { verdict: pass, path: change-requests/CR-2026-064/review-annotations/sdd.yml, sha256: ad73df51f1b6634ce634f0fd4d0345cad01cc6e0a8ae1323ba9a612001e23d9b }
+        dev-plan: { verdict: pass, path: change-requests/CR-2026-064/review-annotations/dev-plan.yml, sha256: 4df4e5bb3d2461cf8c4c13d6c55802fa13435bddae323e3ac3274cedc085fff9 }
+        code: { verdict: pass, path: change-requests/CR-2026-064/review-annotations/code.yml, sha256: 70b6df699cf9c42dac35eff56e227981f131ca8e90158efd5d2992cc93ecdbe8 }
+      approval: { status: approved, path: change-requests/CR-2026-064/approval.yml, sha256: 83168e4213684983cfb6ca449c1f3aaaf9f2ae611079c0305e8e4091739ad8ac }
+      merge: { status: merged, path: change-requests/CR-2026-064/merge-commits.yml, sha256: d84ffe92eebc11da68a44fec200ddb19c82fc9a623ddfe51bbc780a0e5f047a9 }
