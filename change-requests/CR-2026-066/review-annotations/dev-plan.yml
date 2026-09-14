@@ -1,0 +1,28 @@
+cr-id: CR-2026-066
+review-type: dev-plan
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-14T15:08:01+08:00"
+verdict: block
+repair-target: write-dev-plan
+blockers:
+  - "本轮新增：cmd-03 的 5 个既有用例名没有存在性守卫，且两条 TASK 验收步骤声明了 dot 报告器无法交付的证明（证据活性缺口、可空跑即绿）[位置：plan.md §6.1 表注④＋§6.2 cmd-03 行；tasks/TASK-01.md §4.2 第 2 条；tasks/TASK-03.md §4.1／§5 同源写法]。事实（本轮在权威 tools worktree 上只读实测，非转述）：① cmd-03 逐字指定 --test-reporter=dot；本轮以同一 args 实跑，stdout 只有 10 个点号，无用例名、无摘要行 ⇒ TASK-01 §4.2 的「stdout 命中数 ≥ 5（证明 5 个既有用例名仍在、断言体已按新事实改写）」无法证明其声称的结论（某个名字消失后计数仍可 ≥ 5）。② 本轮实跑 node --test --test-reporter=dot --test-name-pattern ZZZ-no-such-case-9999 skills/shared/crctl/scripts/test/crctl.test.mjs ⇒ exit 0、无任何告警 ⇒ cmd-03 的任一 pattern 在用例名被删除或改到 pattern 之外时仍绿。③ plan.md §6.1 表注④ 写「若改名，则本行证据失效即红」，与本计划表注⑤ 自测的「缺用例时 --test-name-pattern 空跑 exit 0（无摘要）」互相矛盾：不存在任何把它判红的机械通道。④ cmd-05 的源码级存在性守卫只覆盖 archive-tx.test.mjs 的 CR-2026-066 AC-8 token（≥6）与 test( 计数（≥30），未覆盖 cmd-03 的 5 个既有用例名（CR-2026-042 静态合同／checkpoint T05 contract／CR-2026-044 AC-13／CR-2026-044 AC-14／CR-2026-050 AC-12）；本轮实跑这 5 个 pattern 命中 10 条用例，故这 5 个名字当前确实存在、是活判据，缺的只是守卫。影响：crctl.test.mjs（CR-2026-042 静态合同的 inputs 与节点数断言）与 checkpoint-tx.test.mjs（L491 的 filter 形态改写）按表注③ 不整文件进证据集，其在 FR-4／FR-5／AC-1／AC-2 行上的「既有断言按新事实同步」唯一机械证据就是 cmd-03；一旦某个用例被删除或改名到 pattern 之外，cmd-01 全套件与 cmd-03 都会绿，而该行声称的定点证据实际零覆盖 —— AC-2 对这两个文件只剩人工清单、没有机械判据，与本计划为 cmd-04 建立的守卫标准（表注⑤：必须与 cmd-05 守卫同批判读）不一致。TASK-03 §4.1／§5 要求「逐字记录日志的命中用例名清单与计数」，同理由 dot 报告器的输出不可得（该命令的 stdout 不含用例名）。修复方向：在 cmd-05 增加与 AC-8 同款的源码级存在性守卫（对 crctl.test.mjs 断言上述 5 个用例名 token 各 ≥ 1），并把 TASK-01 §4.2 的验收步骤改为「exit 0 ∧ cmd-05 的 5 个用例名 token 守卫同批绿」，同时修正表注④ 的措辞（不得声称存在不存在的判红机制）；TASK-03 §4.1／§5 的完成记录改为记录 cmd-05 守卫的 token 清单与命中计数（write-test-report 的 dot 约定保持不变，不新增报告器）。"
+dimensions:
+  sdd-to-plan: "pass"
+  plan-to-tasks: "pass"
+  task-executability: "pass"
+  dependency-topology: "pass"
+  interface-contracts: "pass"
+  acceptance-verifiability: "block"
+  scope-and-simplicity: "pass"
+  risk-and-rollback: "pass"
+  reviewer-model: "pi agent runtime / provider=deepseek model=deepseek-flash (PI_PROVIDER / PI_MODEL 环境自报；Multica task 01a09eb5-638e-7656-aa76-a6fb0f664e6a)"
+suggestions:
+  - "范围外：（本轮新增，证据归属面）plan.md §6.1 FR-3 行与 §7 AC-10 行的「验收证据」列把 RETIRED_RECOVERY 零命中归给 cmd-04，但该判据的唯一载体是 contract-scan.test.mjs 的整树扫描（本轮实读：L413-425 起 RETIRED_RECOVERY = ['recoverCommand','recover_command'] ＋ enumerateWorktreeAt 整树枚举），即 cmd-02；cmd-04 只跑 archive-tx.test.mjs 的 CR-2026-066 用例，TASK-03 的 AC-8 六项不含任何退役字段名扫描。同一判据在 §7 AC-3 行已按 cmd-02 归属，SDD §6.2 AC-10 行亦写明由 contract-scan 兜底 ⇒ 两张稳定表内出现互斥归属。归属节点：write-dev-plan。修复方向：该两行的 cmd-04 改为 cmd-02（或至少在 AC-10 行补 cmd-02）；当前 7 条命令同批执行、cmd-02 会实跑该扫描，故验收可达性本身不受影响，但按行核对会得到错误归属。"
+  - "范围外：（本轮新增，判据活性）cmd-07 的正向 token 扫描面是 plan.md 全文减去三行 -e 脚本行，本轮实测 16 个正向 token 中有 12 个可在 §10 之外自证：AIFIRST_ARCHITECTURE_RUNNER 命中 L238／L270；未重生成 命中 L174／L238／L270／L304；受限 crctl 权限 命中 L86／L266；部署窗口 命中 L174／L270；D-6 命中 L90／L103／L270／L309；AC-6 延期验证点 命中 L103／L195／L301／L369（其中 L266／L270 是 §6.2.2／§6.2.3 的判据说明面，不含 const cp=require( 故未落入自证防护的剔除集合）；真正只在 §10 出现的正向 token 只有 观察项 ①~④。影响：AC-6／AC-9 的登记块内容（FR-11 二选一分支、D-6 排除理由、部署时序、断言 B 结论）即便从 §10 整体移除，cmd-07 仍可整体绿。归属节点：write-dev-plan。修复方向：把正向 token 扫描限定在 §10 区块内（例如先取 **AC-6 延期验证点** 到 ## 11. 之间的文本再判 token），或把 §6.2.1~§6.2.3 的说明行也纳入剔除集合。"
+  - "范围外：（本轮新增，计数口径）tasks/TASK-04.md §5 完成标志写「11 个文件就位」，而 §2 表实际列出 13 处文件（push-progress SKILL／README／openwiki／dir-graph／merge SKILL 各 1 处 ＋ tools 三份 Agent Prompt ＋ multica 四份副本 ＋ contract-scan.test.mjs），其中 tools 的 quality-reviewer-agent.md 与 multica 的 quality-reviewer-agent.md 与 TASK-02 共用。归属节点：write-dev-tasks。修复方向：改为 13（或写明「含与 TASK-02 共用的 2 份 Prompt 共 13 处」），与 SDD §1.2 的 tools 25 ＋ multica 4 口径对齐。"
+  - "范围外：（本轮新增，计数口径）tasks/TASK-01.md §2 表与 §3.2 标题写「9 处」，而 §3.2 逐条实列 12 行（11 行改写 ＋ 第 12 行为保留项）；§5 又写「SDD §6.4 的 14 处连带改写」。本轮实读 SDD §6.4：pipeline-structure.test.mjs 共 12 行（含 1 行新增），四个测试文件的非新增改写行合计 14 行 ⇒ 两处数字口径不同但都可由 SDD 表复算。归属节点：write-dev-tasks。修复方向：统一为一处口径（例如「既有断言改写 14 处，其中 pipeline-structure 11 处」）并同步 §2 行内数字，避免实施期按 9 处自查漏改。"
+  - "范围外：（本轮新增，SDD 落点错位登记）SDD §4.7 把 dev-agent 的两句旧前提句（先有代码、测试报告和统一 checkpoint 再由 reviewer 评审；checkpoint 未完成时不得进入后续人工审批）登记在 tools 的 agents/dev-agent.md 上；本轮实测该文件（71 行）通篇无此两句，两句实际只存在于 multica 的 cr-prompts-revised/dev-agent.md L23／L41。plan §0.6 与 TASK-04 §3.3 已按实测落 multica，cmd-06 亦按 multica 判据核对，交付面不受影响（tools 侧 dev-agent 仍按计划落硬规则与发布口径）。归属节点：write-dev-plan。修复方向：在 §8 附带项登记该 SDD 落点错位（不改 SDD 正文），使 review-code 与交付说明能解释 tools 侧 dev-agent 为何不含那两句。"
+  - "范围外：（本轮新增，断言措辞风险）tasks/TASK-01.md §3.3 ② 写「被删的 7 个 id 后缀（…0003／…0007／…0005／…0012／…0008／…0015 ＋ requirement 侧 …0003）在任何 JSON 中零出现」；本轮实测这些末四位编号在同 pipeline 或其它 pipeline 的存活节点上仍存在（如 architecture 段的 …0016-000000000003 为 human_approval、code 段的 …0015-000000000004 为 human_approval），若按「后缀」字面实现会得到恒假断言（实施期会红、不会静默，但会消耗一轮返工）。归属节点：write-dev-tasks。修复方向：明写按全 id（含 pipeline 段，如 00000000-0000-0000-0011-000000000003）断言零出现。"
+review-loop:
+  current-attempt: 1
+subject-sha256: b4b21a39017ff499ce5e156860b2443a661ec35b513be47dc6a342a6b607f391
