@@ -1,0 +1,50 @@
+# approval.yml — 人工审批记录（各段仅接受 crctl approve 写入）
+requirement:
+  approver: "OldBoy405"
+  approved-at: "2026-09-15T08:17:02+08:00"
+  via: crctl-approve
+  evidence-digest: "b4326457673dcb48298ef983a0807949fe877806d3720701a24334126876cd69"
+  target-status: requirement-approved
+tech-design:
+  approver: "OldBoy405"
+  approved-at: "2026-09-15T09:20:01+08:00"
+  via: crctl-approve
+  evidence-digest: "99dda63a13925d895bc76ec7cb3efcb96924694c6d63bc6b641ebd6299ff890e"
+  target-status: tech-design-reviewed
+development-start:
+  approver: "OldBoy405"
+  approved-at: "2026-09-15T11:10:23+08:00"
+  via: crctl-approve
+  evidence-digest: "506561d94b6dd32df21ae08b179c0b35c7c2f52fb1a743ef35bd22b87de311a3"
+  target-status: developing
+code:
+  approver: "OldBoy405"
+  approved-at: "2026-09-15T14:24:11+08:00"
+  via: crctl-approve
+  evidence-digest: "b19918085580e821c75aef034ea5ddc1a09665cd171116b312deac604dd4522f"
+  target-status: code-approved
+  release-subjects:
+    version: 1
+    repositories:
+      - repo: ai-first-platform-docs
+        remote-ref: refs/heads/requirement/CR-2026-067
+        reviewed-source-sha: aeeb0ddd2bdf0c7153f5d5bd29250175294964e4
+      - repo: multica
+        remote-ref: refs/heads/requirement/CR-2026-067
+        reviewed-source-sha: 5c1880f2125e73733b1a5bfc7501db310ab7f584
+      - repo: tools
+        remote-ref: refs/heads/requirement/CR-2026-067
+        reviewed-source-sha: afb818a942b337e32c951d0663fb5e96e2841de7
+    artifacts:
+      algorithm: sha256
+      canonicalization: crlf-to-lf+path-sort
+      files:
+        - { path: change-requests/CR-2026-067/plan.md, sha256: fe436f2fc2ec947e9c9ad997ab7e77eda755f51c9c434c7ecfe74939f58432a3 }
+        - { path: change-requests/CR-2026-067/prd.md, sha256: efde31fd0ce727ee58c733de6f97b464b95e069dcdfc615c71488113cbeb0fea }
+        - { path: change-requests/CR-2026-067/sdd.md, sha256: 551f5a39fea79b858920ac723dc6e1fb779f775baac39fa0a58a86fc6eaad2fe }
+        - { path: change-requests/CR-2026-067/tasks/TASK-01.md, sha256: a9829b047965667a0194411d3732f86bb9bbba5d965d688446db32cc565f7efd }
+        - { path: change-requests/CR-2026-067/tasks/TASK-02.md, sha256: 9df72ecfe30c096e8441353efac5c2dd0826565773b974678210ed8f2e24ea7c }
+        - { path: change-requests/CR-2026-067/tasks/TASK-03.md, sha256: 0ae2ad4bad7498c348d6d861de8deeb16fbf6c8442f7aea2cb82d33dc1ad842a }
+        - { path: change-requests/CR-2026-067/tasks/TASK-04.md, sha256: db329685cd789deda1a4c873e054373fc4b92b203c93c91adacd3daa7b6f8b3d }
+        - { path: change-requests/CR-2026-067/tasks/_index.yml, sha256: 8d550ec01826697e0a8ba034c5d2861d95df49d8c6754f6dedbbc07ebc9c567c }
+      digest: 3635d84476edcc51b1d236858bacd6ca3b08e447277ee6add5087a65da96c6d3

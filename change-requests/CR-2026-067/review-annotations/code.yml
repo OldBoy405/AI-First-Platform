@@ -1,0 +1,44 @@
+cr-id: CR-2026-067
+review-type: code
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-15T14:10:59+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  代码↔TASK↔SDD 对齐: "通过。TASK-01~04 四项可执行验收全部机械复算成立：SDD §6.5-A~G 的 10 个目标文本块（A/B×3/C/D/E1×2/E2/F）逐块切出后与原文件 includes 全等（读入先 \r\n → \n 归一，0 失败）；PRD AC-1~AC-9 逐条独立复算通过（含 AC-2⑥ 的 Step 编号集 1,2,2.1,2.2,2.3,3,4,5,6 与 Step 1 内「0. 只读 clean 前置」条目、AC-3② 的 quality-reviewer-agent.md 零 diff 且"
+  工程质量: "通过。test-report.md 机器区 generated-by=crctl-test、status=pass；6/6 命令 exit-code=0 / skipped=false / timed-out=false / started=true；suite-gate verdict=pass、files_executed=21、cases_executed=597、failures=0、skipped_file_level=0、converged=true、exceptions_count=0；cmd-06 的 lint-prompts --mode enforce / skill-matrix / agents-contract / writeback-tests 四步 exit 0、pipeline structure checked=8。按 Skill 只读取证未重跑任何 lint/test/build。"
+  关键路径可读性: "通过。四处写侧与三处评侧修订均落在既有段落内部、Step 编号不变、无新增小节；新增文字为可判定判据（40 位 SHA 必填、dep-N 引用必须已定义、未承载事实成 blocker、编号只增不改），不含「足够详细」「合理范围」类不可判定表述，也不含把评审判断降级为关键词即通过的表述。"
+  安全性: "通过。diff 全部在 Prompt 判据文本与既有断言面，未新增/删除 crctl 子命令、flag、错误码、落盘路径或写入口（crctl.mjs / scripts/lib/** / gates.json / rules.json / pipeline-templates/** 零 diff）；判据方向为单向收紧（并可附 → 必填、集合比较 → 引用关系式），不放宽任何既有门禁；新增文字不触发 lint-prompts 的 R1（手写 deny 面）/R2（裸 git）/R7/R9/R12/R13。无权限、密钥、数据完整性面变化。"
+  测试覆盖: "通过。目标用例 CR-2026-055 blocker 修复: SDD 依赖清单输出与 reviewer 消费规则明确 原位改写，两组 term 与 SDD §6.5-F 集合逐项相等（写侧 9 项 / 评侧 6 项，用例名与结构不变，顶层 test( 计数 36 未减、未新增第二用例）；term 组覆盖 PRD FR-6.1 的写侧（小节名 + dep-N 固定结构 + 五字段名 + 排序与消费口径）与评侧（显式小节 + 有序清单 + dep-N 引用规则 + commit SHA 必填 + 消费口径 + 正文漏列）两面；CR-2026-066 断言 A/B/C/D 与 contract-scan 的 RETIRED_RECOVERY 未放宽（该文件 4 行改动全部位于 L618/L622 两行）。"
+  测试证据可信度: "通过。三条独立对账均成立：① traceability.yml#tests 的 status=pass / command-digest=af1bdc76… 与 test-report.md 机器区逐字一致（无 TEST_EVIDENCE_DRIFT）；② 机器区 6 条命令的 executable/args/timeout 与 plan.md §6.2 稳定表逐条全等（无转写漂移）；③ 证据覆盖交付态——cmd-01 报告的 registry_sha256=5a7b54f6… 与本轮实测 gate-registry.json 的 sha256(LF) 全等，且该次 suite-gate 在 pipeline-structure.test.mjs 新 term 组下 36 用例全绿，反证运行时两份 SKILL 与两个测试文件均已是交付终态。6 条 cmd-NN 日志齐备、可归因到本 CR worktree，无「之前跑过」或共享实例输出。"
+  前端质量: "N/A（本轮 diff 未触及 *.tsx / *.vue / *.css / *.html，三项判据条件未触发）。"
+suggestions:
+  - "范围外：同一根因域的其他 manifest.cases 登记值仍与实测不一致（本 CR 的 AC-6③ 只点名 pipeline-structure.test.mjs 一个键，故不在本 CR 范围）。以 cmd-01 报告的 TAP 实测为准：archive-tx.test.mjs 登记 24 / 实测 30、contract-scan.test.mjs 登记 17 / 实测 26、crctl.test.mjs 登记 224 / 实测 226、writeback-tx.test.mjs 登记 33 / 实测 34（其余 16 项精确相等，无「实测 小于 登记」项、本次门禁仍全绿）。影响：这 4 项各留有 1~9 条用例的下界松动，后续删用例不会触发 SUITE_MANIFEST_CASE_DROP。修复方向：后续 CR 把登记值统一收敛为实测值，或把 suite-gate 的「低于登记值即红」升级为严格相等（与 SDD follow_up 第 3 项同类门禁面）。"
+  - "范围外：FR-1② 的「实现事实只在该表定义一次 / 正文不得重述」与 FR-1⑥ 的编号生命周期（「只增不改 / 编号不复用」）在 committed 断言面零覆盖——本轮 tools 终态实测：实现事实只在该表定义一次、SDD 正文只能写、不得在正文重新陈述、只增不改、编号不复用 五个 token 在 skills/shared/crctl/scripts/test/** 的命中文件数均为 0，仅由 plan §6.2 的 cmd-03（非套件命令）一次性覆盖。按 PRD FR-6.1 对两组 term 的覆盖面定义（写侧 = 小节名 + dep-N 固定结构 + 五字段名）这属设计内结果，AC-6① 仍达标、不影响本 CR 验收可达性；但合同面强于断言面，日后若这两条不变量被回退，CI 不会拦。修复方向：需改 SDD §6.5-F 的目标 term 集或新增独立用例，属后续 CR 面。"
+review-loop:
+  current-attempt: 1
+release-subjects:
+  version: 1
+  repositories:
+    - repo: ai-first-platform-docs
+      remote-ref: refs/heads/requirement/CR-2026-067
+      reviewed-source-sha: aeeb0ddd2bdf0c7153f5d5bd29250175294964e4
+    - repo: multica
+      remote-ref: refs/heads/requirement/CR-2026-067
+      reviewed-source-sha: 5c1880f2125e73733b1a5bfc7501db310ab7f584
+    - repo: tools
+      remote-ref: refs/heads/requirement/CR-2026-067
+      reviewed-source-sha: afb818a942b337e32c951d0663fb5e96e2841de7
+  artifacts:
+    algorithm: sha256
+    canonicalization: crlf-to-lf+path-sort
+    files:
+      - { path: change-requests/CR-2026-067/plan.md, sha256: fe436f2fc2ec947e9c9ad997ab7e77eda755f51c9c434c7ecfe74939f58432a3 }
+      - { path: change-requests/CR-2026-067/prd.md, sha256: efde31fd0ce727ee58c733de6f97b464b95e069dcdfc615c71488113cbeb0fea }
+      - { path: change-requests/CR-2026-067/sdd.md, sha256: 551f5a39fea79b858920ac723dc6e1fb779f775baac39fa0a58a86fc6eaad2fe }
+      - { path: change-requests/CR-2026-067/tasks/TASK-01.md, sha256: a9829b047965667a0194411d3732f86bb9bbba5d965d688446db32cc565f7efd }
+      - { path: change-requests/CR-2026-067/tasks/TASK-02.md, sha256: 9df72ecfe30c096e8441353efac5c2dd0826565773b974678210ed8f2e24ea7c }
+      - { path: change-requests/CR-2026-067/tasks/TASK-03.md, sha256: 0ae2ad4bad7498c348d6d861de8deeb16fbf6c8442f7aea2cb82d33dc1ad842a }
+      - { path: change-requests/CR-2026-067/tasks/TASK-04.md, sha256: db329685cd789deda1a4c873e054373fc4b92b203c93c91adacd3daa7b6f8b3d }
+      - { path: change-requests/CR-2026-067/tasks/_index.yml, sha256: 8d550ec01826697e0a8ba034c5d2861d95df49d8c6754f6dedbbc07ebc9c567c }
+    digest: 3635d84476edcc51b1d236858bacd6ca3b08e447277ee6add5087a65da96c6d3
