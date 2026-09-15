@@ -1,7 +1,7 @@
 cr-id: CR-2026-068
 review-type: dev-plan
 reviewer: "OldBoy405"
-reviewed-at: "2026-09-16T00:10:43+08:00"
+reviewed-at: "2026-09-16T01:17:32+08:00"
 verdict: pass
 blockers: []
 dimensions:
@@ -15,8 +15,7 @@ dimensions:
   risk-and-rollback: "pass"
   reviewer-model: "deepseek-v4.1-flash"
 suggestions:
-  - "已解决：上轮唯一 blocker（plan §6.2 证据命令表 cmd-03~cmd-06 的 args 列不是可执行 argv、字面脚本被推迟到实现期且声明取自不存在的 .crctl/tmp/audit-{skill,ci,diff}.js、映射缺 cmd-04/cmd-06）——本轮独立复评定点核验：① 四条 cell 均为字面 -e 脚本，JSON.parse/JSON.stringify 往返与原 cell 逐字相同；脚本内裸双引号/反斜杠/裸换行/竖线均 0 出现，无 .crctl/tmp 与 audit-*.js 引用、无任何文件写入调用；② 从表内 cell 直接取 args 按 spawnSync('node', args, {shell:false})（cwd=tools worktree）复跑，与 §6.3 基线逐项相等：cmd-03 exit 1/54 failures（write 28 = upstream 11+B-1 4+B-2 3+B-3 1+C 9；tasks 7；review 9；implement 4；pipeline 6）、cmd-04 exit 1/5 failures、cmd-05 exit 1/5 failures（tools diff paths = 0 ⇒ 5 项缺少应改文件）、cmd-06 exit 0/1.5 s（pipeline structure checked = 8 / active skills = 56）；③ §6.2.5 已重写为「表内 cell 即字面值、逐字转录、无第二生成步骤」，表注③已同步并新增⑥，TASK-04 §3.3 已改为逐字转录+复跑至失败清零并补齐 AUDIT-SKILL/AUDIT-PIPELINE/AUDIT-DIFF/AUDIT-CI 四条映射；④ 复跑后 tools/KB 两 worktree git status --porcelain 为空。无残留、无部分解决。"
-  - "已解决：上轮 2 条范围外 suggestion 已被作者顺带采纳并经本轮独立实读复核——① §7「关键 AC 唯一 owner 说明」已与 §7 AC-5 行、§6.1 FR-5 行同口径（AC-5 唯一 owner=TASK-04、关联 TASK-01），AC-3 句已删除对 §6.1 的错误归属（§6.1 FR-3 行「主责 TASK-01、关联 TASK-03」保留）；② plan §0.5/§2 与 TASK-01 §2 的 write-dev-plan/SKILL.md 锚点按 tools@49fa3774 实读对齐（章节清单第 5 项 L57、验收证据 L68、回滚 L69、证据命令表 bullets L76~L77），本轮逐条实读一致；TASK-02 Step 2a L46、TASK-03 L82/L129、TASK-04 L102 亦核实一致。"
+  - "范围外：本轮为人工授权的单点修复（plan §6.2 cmd-03 args cell 内查表键，其余零扩散）；plan.md frontmatter updated:（2026-09-15T23:58:00+08:00）与 §11 修订记录未随本次修订刷新——不影响任何门禁、证据或 freshness 判定（由复合 subject-sha256 承担），如后续再有 plan 修订可一并刷新。"
 review-loop:
-  current-attempt: 2
-subject-sha256: 5adc3adbb5d6fadf8df7e51263541de1be59f65852394b3ae5cbea276ae7dd11
+  current-attempt: 3
+subject-sha256: b9669ca599ca36ceb0f07e56d8db52df35de6f47840b299d5f65e5a2d0076b13
