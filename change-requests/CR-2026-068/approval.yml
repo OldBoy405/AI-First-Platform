@@ -17,3 +17,34 @@ development-start:
   via: crctl-approve
   evidence-digest: "25c47abde80b4e41c3cd7bfef98e94e559637657756e2b924f1bc0739fdce6ab"
   target-status: developing
+code:
+  approver: "Ray"
+  approved-at: "2026-09-16T07:47:23+08:00"
+  via: crctl-approve
+  evidence-digest: "cc801245d3e888f57c2387dd2c915fb0c0eab32f2dee9ca779d6fe5c1ae2f8fc"
+  target-status: code-approved
+  release-subjects:
+    version: 1
+    repositories:
+      - repo: ai-first-platform-docs
+        remote-ref: refs/heads/requirement/CR-2026-068
+        reviewed-source-sha: 335a02318bba1199e5195c0880ebeb00199424d5
+      - repo: multica
+        remote-ref: refs/heads/requirement/CR-2026-068
+        reviewed-source-sha: d4a49e2b9ca7d83368737cd57d6a697d3bd042b4
+      - repo: tools
+        remote-ref: refs/heads/requirement/CR-2026-068
+        reviewed-source-sha: b2cbdce602b4015ff730267ec630c15dff80f3da
+    artifacts:
+      algorithm: sha256
+      canonicalization: crlf-to-lf+path-sort
+      files:
+        - { path: change-requests/CR-2026-068/plan.md, sha256: 99058baeded0f7f3970cf5b5e659da780974c4bdc560b2931beccb779e4dde03 }
+        - { path: change-requests/CR-2026-068/prd.md, sha256: 5cb67f17d6d6e0e8076712873b186b3286734045ba11cf5cd57ad114d42f2596 }
+        - { path: change-requests/CR-2026-068/sdd.md, sha256: d2562c30145326f949d3376481a8ced48157934b7addbc684d89f8b6e69979f3 }
+        - { path: change-requests/CR-2026-068/tasks/TASK-01.md, sha256: 847d46d26eec6f33dca0878bb0a4e3359460c55ed9fce848fb9644d7caca6231 }
+        - { path: change-requests/CR-2026-068/tasks/TASK-02.md, sha256: f765e6466d0edc3e4ba7d42b5e0034e080bb77a9bebf17a9494d289ec0a33086 }
+        - { path: change-requests/CR-2026-068/tasks/TASK-03.md, sha256: d432bc04ecf96a9b44a155698c53f505786b9ce778239a867bbc68c7e9e9f7ac }
+        - { path: change-requests/CR-2026-068/tasks/TASK-04.md, sha256: c1b96a014a5438f998f94c2e82eedc0a68e8065c56033d860c8675276f74d5eb }
+        - { path: change-requests/CR-2026-068/tasks/_index.yml, sha256: 464859a8a08f8b0f22189778a0c2a1e1ff53740fbfe2e9919753e70668bc7ad0 }
+      digest: 45b6e1cf03db9b590bd3da40fc852482fa4f74ab27f26b6429fd4135f4305b30
