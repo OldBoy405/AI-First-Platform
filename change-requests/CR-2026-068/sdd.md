@@ -6,7 +6,7 @@ title: CR-P2：plan/TASK 返工成本与执行前提 技术设计
 target-version: 0.41
 status: draft
 created: 2026-09-15T20:52:00+08:00
-updated: 2026-09-15T20:52:00+08:00
+updated: 2026-09-15T21:20:00+08:00
 ---
 
 # 1. 架构概览
@@ -28,13 +28,14 @@ updated: 2026-09-15T20:52:00+08:00
 
 ## 1.2 变更面鸟瞰
 
-**一批纯文本原位修订**：交付 diff 只含 5 个 tools 文件（其中 4 个 SKILL.md + 1 个 pipeline JSON 的一个字符串字段），共 7 处落点：
+**一批纯文本原位修订**：交付 diff 只含 5 个 tools 文件（其中 4 个 SKILL.md + 1 个 pipeline JSON 的一个字符串字段），共 7 处落点（计数单位 = §6.5 的逐字目标文本条款 `A`~`G`，一处落点可承载多个 FR）：
 
 ```text
 ../tools（本 CR 代码实施面全部在此；SHA 见 dep-5 取证口径）
   skills/develop/write-dev-plan/SKILL.md        ← FR-1（Step 2a upstream 轨）+ FR-3（两张稳定表说明）
                                                    + FR-4（交付覆盖表 `回滚` bullet）
-                                                   + FR-5（章节 5「验收与发布策略」）      = 4 处
+                                                   + FR-5（章节 5「验收与发布策略」）      = 3 处（§6.5-A/B/C）
+                                                   （按落点计：A 承载 FR-1，B 合并承载 FR-3 与 FR-4，C 承载 FR-5）
   skills/develop/write-dev-tasks/SKILL.md       ← FR-2（Step 2a 第 1 条原位改写）          = 1 处
   skills/develop/review-dev-plan/SKILL.md       ← FR-3 评侧（既有 acceptance-verifiability） = 1 处
   skills/develop/implement-code/SKILL.md        ← FR-5 implement 侧（既有环境节同节共生）   = 1 处
@@ -203,7 +204,7 @@ implement 侧（dep-13 所指既有环境节，同节共生追加 bullets，不�
 | S3 | 交付覆盖表 `回滚` 列的**闭包判据**（含下游消费者 + 逆拓扑一致 + 单点回滚禁令） | `dep-9` 所指 bullet | 原位扩写；列集不变 |
 | S4 | **TASK 卡 delta 面**：受影响 TASK 的输入 / 输出 / 接口 / 命令 / `depends-on` / 完成标志 / 回滚同步更新 | `dep-4` 所指段落 + TASK 卡既有结构（`dep-6`） | 语义收紧；TASK frontmatter 与正文 6 节结构不变 |
 | S5 | `…0004` approvalPrompt 的**静态前提确认内容** | `dep-14` 所指字符串值 | 值替换；JSON 结构与节点对象字段不变 |
-| S6 | 现有实现事实的**单一表达点**（`dep-N` 表） | 本文档 §6.3 | 依 `dep-5` 的既有 `dep-N` 合同表达 |
+| S6 | 现有实现事实的**单一表达点**（`dep-N` 表） | 本文档 §6.3 | 采用 `dep-N` 固定结构表达（写作合同载体见 §5 D-6） |
 
 S4 的「依赖闭包」定义为 `depends-on` 有向边上的**传递闭包**（受影响 TASK 可达的全部下游 TASK）；口径与边界场景见 §2.4 的 `TERM-02`。S1~S5 均不引入新的可查询实体，因此不存在「字段完整性 / 迁移」问题。
 
@@ -340,12 +341,12 @@ S4 的「依赖闭包」定义为 `depends-on` 有向边上的**传递闭包**�
 ```text
 plan 侧（dep-12）：若证据依赖常驻服务/浏览器/数据库 →
    声明 {owner, 建立方式, 可获得性, readiness=复用该环境所保障行 FR 的既有 cmd-NN, 缺失处置=引用 ENVIRONMENT_MISMATCH}
-   readinesMap：environment → cmd-NN（必须已存在于证据命令表且被交付覆盖表引用）
+   readinessMap：environment → cmd-NN（必须已存在于证据命令表且被交付覆盖表引用）
 dev-start 侧（dep-14）：人工只确认上述静态前提 → 不要求服务在线（动态健康不入审批）
 implement 侧（dep-13）：执行顺序
    for each TASK in topoOrder(tasks):
        若 TASK 依赖环境 E 且 E 尚未 readiness 验证:
-           执行 plan 指定的 readinesMap[E]（既有「一次环境检查」的执行内容；最多一次重跑）
+           执行 plan 指定的 readinessMap[E]（既有「一次环境检查」的执行内容；最多一次重跑）
            fail → ENVIRONMENT_MISMATCH 中止 + 报告所需建立动作（不写账本/状态/评审 blocker）
        否则：照常执行（环境无关 TASK 不被提前阻断）
 不变量：不新增环境 Pipeline 节点；coordinator 不启停共享服务
@@ -414,9 +415,9 @@ diff(本 CR) ⊆ { dep-3, dep-9, dep-12 所在文件（write-dev-plan/SKILL.md�
 ## D-6 本 CR 自身 SDD 的依赖表形态：`dep-N` 固定结构（选定）
 
 - **Decision**：本文档 §6.3 采用 `dep-N` 固定结构（`repo` / `relative path` / `stable symbol/对象` / `40 位 commit SHA` / `依赖结论`）。
-- **Context**：`dep-5` 的 `dep-N` 合同自 CR-2026-067 合并起对后续 SDD 生效；CR-2026-067 SDD 的 `D-6` 因当时合同尚未生效而使用实施前的编号列表形态，本 CR 不适用该时序差。
+- **Context**：本文档 §6.3 的 `dep-N` 固定结构以 `dep-23` 为合同载体（`write-tech-design` 的「既有实现依赖与事实」合同段 + `review-tech-design` Step 2.1 引用核验规则），该合同自 CR-2026-067 合并起对后续 SDD 生效；CR-2026-067 SDD 的 `D-6` 因当时合同尚未生效而使用实施前的编号列表形态，本 CR 不适用该时序差。
 - **Alternatives**：沿用编号列表形态（否决：与本 CR 生效中的写作合同冲突，会形成第二套形态）。
-- **Consequences**：正文对既有实现事实只写「设计依赖 `dep-N`」；编号按正文首次出现顺序分配（KB 设计输入与 tools 实现事实混排，不按仓分组，同一仓的条目编号不保证连续），本 CR 共 22 项。
+- **Consequences**：正文对既有实现事实只写「设计依赖 `dep-N`」；编号按正文首次出现顺序分配（KB 设计输入与 tools 实现事实混排，不按仓分组，同一仓的条目编号不保证连续），本 CR 共 23 项。
 
 ---
 
@@ -469,7 +470,7 @@ diff(本 CR) ⊆ { dep-3, dep-9, dep-12 所在文件（write-dev-plan/SKILL.md�
 
 **AC-6（FR-5，映射不破坏）**
 
-- 设计落点：`§6.5-C` ④（readiness 复用既有 `cmd-NN`）+ §4.5 的 `readinesMap` + §9 `follow_up` 第 1 项。
+- 设计落点：`§6.5-C` ④（readiness 复用既有 `cmd-NN`）+ §4.5 的 `readinessMap` + §9 `follow_up` 第 1 项。
 - 可观测结果：两张稳定表「验收证据 ↔ 证据ID」双向唯一映射未被放宽或修改（`dep-7` 覆盖矩阵节机械核对判据原样保留）；全文无「为 readiness 单独申请新 `cmd-NN`」的形态文字；无法复用场景的文字指向「另立 CR」。
 - 可达性说明：`dep-9` 的证据命令表要求每条命令有 `证据ID`/`executable`/`args`/`timeout` 且被交付覆盖表引用（`dep-7` 双向核对），因此「合法 `cmd-NN`」的定义域不含「仅 readiness 用」的命令行；本设计只引用既有行，不产生不可达的目标对象。
 
@@ -700,6 +701,15 @@ dep-22
   commit SHA: 49fa37748d9b2fc7fc58fd53f839e2ed293bde17
   依赖结论: AC-9③「suite-gate 全量绿 + 登记值一致 + 零例外」的判据来源；本 CR 不改该文件，改动面不新增用例也不删除用例。
 ```
+
+```text
+dep-23
+  repo: tools
+  relative path: skills/develop/write-tech-design/SKILL.md；skills/develop/review-tech-design/SKILL.md
+  stable symbol/对象: `write-tech-design` `### Step 2.6 — AC 级输出合同与既有实现证据（CR-2026-055）` 内的「既有实现依赖与事实」合同段（`dep-N` 稳定标识、五要素固定结构、`commit SHA` 必填 40 位、编号按正文首次出现顺序分配且只增不改）与同名小节标题 `### 既有实现依赖与事实`；`review-tech-design` `### Step 2.1 — AC 闭环与既有实现依赖核验` 的 `dep-N` 引用核验规则（`sdd.explicit_existing_dependencies` 仅指该清单；正文出现未被 `dep-N` 引用承载的当前实现事实形成 blocker）
+  commit SHA: 49fa37748d9b2fc7fc58fd53f839e2ed293bde17
+  依赖结论: 本文档 §6.3 采用的 `dep-N` 固定结构以本条为唯一合同载体——`dep-5` 的 `ARCHITECTURE.md` 全文不含 `dep-N` /「既有实现依赖」字样，不承载该合同（本轮实读更正）；该合同由 CR-2026-067 实施提交引入并沿用至本次取证的 tools HEAD，自 CR-2026-067 合并起对后续 SDD 生效，本 CR 对这两个文件零 diff（§9 `zero_diff`），故合同面不发生变更；合同文本另由既有用例（`skills/shared/crctl/scripts/test/pipeline-structure.test.mjs` 的「CR-2026-055 blocker 修复: SDD 依赖清单输出与 reviewer 消费规则明确」）机械断言，属零改动保持面。
+```
 ## 6.4 既有测试面改动清单与零改动核对清单
 
 **改动清单：无。** 本 CR 预期不新增、不修改任何测试文件（`dep-1` §1.5 第 2 条）。逐条理由：
@@ -752,7 +762,7 @@ dep-22
 
 ```text
    - `验收证据`：稳定标识 `cmd-NN`（两位十进制，与 `crctl test` 机器区 `commands` 1-based 下标及 `test-evidence/cmd-NN.log` 全等）；该命令必须实际覆盖本行所声称的验收面，不得只覆盖其中一部分造成假绿。
-     - 观测面 ≥ 声称面：每个 `cmd-NN` 必须能观测该表行声称的 AC 结果；命令必须可执行（`executable` 直接可 spawn 的单个可执行文件，`args` 为 JSON token 数组，`cwd` 为 tools CR worktree 内相对路径，`timeout` 为秒）。
+     - 观测面 ≥ 声称面：每个 `cmd-NN` 必须能观测该表行声称的 AC 结果；命令的可执行形态（`executable` / `args` / `cwd` / `timeout` 四项）沿用证据命令表 bullets 的既有口径，此处只引用不复述细节，不另立第二套形态判据。
      - 四类典型错配：`--list` 类命令不能证明浏览器行为；文件级 `--name-only` 不能证明符号级不变量；子集测试不能声称全量；涉及 Git 的命令必须使用 `rules.json` 已允许的受控入口（不新开裸面、不改 `rules.json`）。
      - 命令算法唯一事实源 = 证据命令表行；不得通过委派评论补写命令算法。
 ```
@@ -812,7 +822,7 @@ dep-22
 **替换目标（JSON 字符串值；节点 id / kind / label / onFail / timeoutMinutes 不变，节点集不变）**：
 
 ```json
-"approvalPrompt": "TASK 拆分已完成（change-requests/{{inputs.cr_id}}/plan.md 与 tasks/），当前应为 task-breakdown。请确认是否进入代码开发，并一并确认 plan.md「验收与发布策略」声明的环境静态前提：\n\n环境静态前提（只确认静态事实，不要求审批时所有服务在线）：环境 owner 已明确、建立方式已写明、可获得性已声明。动态健康状态由 implement-code 在第一个依赖环境的 TASK 前用 plan 指定的 readiness 证据即时验证，审批不为其背书。\n\n✅ 通过：勾选此 Todo，下一节点 approve-dev-start 会记录确认并推进到 developing\n❌ 暂缓：补充任务拆分意见或环境前提说明，重新执行 write-dev-tasks 后再确认"
+"approvalPrompt": "TASK 拆分已完成（change-requests/{{inputs.cr_id}}/plan.md 与 tasks/），当前应为 task-breakdown。请确认是否进入代码开发，并一并确认 plan.md「验收与发布策略」声明的环境静态前提：\n\n环境静态前提（只确认静态事实，不要求审批时所有服务在线）：环境 owner 已明确、建立方式已写明、可获得性已声明。动态健康状态由 implement-code 在第一个依赖环境的 TASK 前用 plan 指定的 readiness 证据即时验证，审批不为其背书。\n\n✅ 通过：勾选此 Todo，下一节点 approve-dev-start 会记录确认并推进到 developing\n❌ 暂缓：补充任务拆分意见或环境前提说明后，按缺口所属产物回到对应写作节点（plan 侧环境声明回 write-dev-plan、TASK 拆分侧回 write-dev-tasks）重新执行后再确认"
 ```
 
 **字面量自查（逐条对应 `dep-15`）**：不含 `git` / `journal`（词边界、大小写不敏感均零命中）；不含 `review-annotations` / `reject_reason`；保留 ✅ 通过 / ❌ 暂缓两分支结构化决定。
@@ -832,7 +842,7 @@ dep-22
 
 ## 6.7 SDD-CLOSE 关闭义务（CR-2026-060 AC-06）
 
-**预检结论**：`dep-1` 全文（本轮实读 297 行）**未出现**「留待 SDD」「延后到设计」「设计期确定」类显式延后项（检索面：`dep-1`）；因此不存在「PRD 显式延后到 SDD 的设计项」这一义务来源。为便于 `review-tech-design` 机械核对，本 SDD 仍把四项需求期只给语义、需设计期钉定到可实施形态的事项逐项关闭（编号从 `SDD-CLOSE-01` 起，只在本节定义）：
+**预检结论**：`dep-1` 全文（本轮实读 297 行）**未出现**「留待 SDD」「延后到设计」「设计期确定」类显式延后项（检索面：`dep-1`）；因此不存在「PRD 显式延后到 SDD 的设计项」这一义务来源。为便于 `review-tech-design` 机械核对，本 SDD 仍把四项需求期只给语义、需设计期钉定到可实施形态的事项逐项关闭（编号从 `SDD-CLOSE-01` 起：`SDD-CLOSE-01`~`04` 见本节表，`SDD-CLOSE-05` 见 §7.1）：
 
 | 编号 | 事项（需求期状态） | 关闭结论 | 覆盖层（数据生产 / 存储·传输 / 响应·schema / 消费 / 兼容降级） |
 |---|---|---|---|
@@ -930,3 +940,10 @@ dep-22
 1. **readiness 无法复用既有 `cmd-NN` 的场景**：需修改两张稳定表「验收证据 ↔ 证据ID」双向唯一映射合同与对应评审判据（本 CR 不放宽该映射）；出口 = 另立 CR（`dep-1` FR-5 第 4 条、§7）。
 2. **需求文本的 EOL 表述**：`dep-1` §1.4 事实 21 的「`cmp` 逐字节一致 / 33,478 B」建议在后续需求侧 revision 改写为「内容一致（EOL 归一后逐字节一致）」并注明结论不受影响（`dep-21` 的 canonical suggestion）；该处属需求文本、非本 CR 交付面。
 3. **观测面判据的机械化**：本 CR 的判据以 Prompt 合同形式落在写侧与评侧，尚无可判定的机械校验面；若未来需要机械校验（如证据命令表行的静态扫描），需另立 CR 评估（本 CR 不新增 lint 规则 / crctl 校验面）。
+
+---
+
+# 修订记录
+
+- 初稿（2026-09-15）：按冻结 PRD（`dep-1`，`sha256(LF)` = `5cb67f17d6d6e0e8076712873b186b3286734045ba11cf5cd57ad114d42f2596`）与需求来源（`dep-2` §6）起草；基线事实在 `tools@49fa3774`、`multica@d4a49e2b`、KB worktree@`a459fde8` 上逐条核实（§6.3 共 22 项依赖）。
+- 回修 1/3（2026-09-15，`review-tech-design` attempt 1/3 = BLOCK 定点修复，被修复版本 `sha256(LF)` = `1eceb0575ade7f0aba534e149666d248d089e2d6f53b9e451e24a7e5bbac56bb`）：① 按 blocker 把 `dep-N` 合同的真实载体（`tools@49fa3774` 实读：`write-tech-design` 的「既有实现依赖与事实」合同段与 `review-tech-design` Step 2.1 引用核验规则）登记为 §6.3 `dep-23`，并把 D-6 Context 与 §2.2 `S6` 行中该合同对 `dep-5` 的错误归属改为指向 `dep-23`（`S6` 行经 §5 D-6 指向，以保持 §6.3「按正文首次出现顺序编号」）；§6.3 依赖项计数由 22 改为 23。② 采纳本轮四条 `范围外` suggestion：§6.7 的编号定义范围、§1.2 鸟瞰图的落点计数单位、§6.5-G `❌` 分支的修复路径、§6.5-B `B-1` 中命令形态的复述改为引用证据命令表 bullets 口径。③ 修正 §4.5 / §6.2 的 `readinesMap` 拼写为 `readinessMap`。除上述定点修订外，§6.5 其余目标文本、§9 四字段、D-1~D-5、SDD-CLOSE-01~05 均未改动。
