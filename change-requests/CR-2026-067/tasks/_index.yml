@@ -1,0 +1,22 @@
+cr-id: CR-2026-067
+tasks:
+  - id: CR-2026-067-TASK-01
+    title: "写侧四处原位修订：Step 2.6 证据段与依赖小节改 dep-N 固定结构 + 回修句整体重证扩写 + 批准范围四字段自洽判据追加"
+    status: pending
+    estimate: 8h
+    depends-on: []
+  - id: CR-2026-067-TASK-02
+    title: "评侧两处原位修订：Step 2.1 两段改 dep-N 关系式核验与 commit SHA 必填 + 批准范围前置块追加同判据"
+    status: pending
+    estimate: 8h
+    depends-on: []
+  - id: CR-2026-067-TASK-03
+    title: "断言同步：pipeline-structure.test.mjs 的 CR-2026-055 目标用例两组 term 原位改写为 dep-N 口径"
+    status: pending
+    estimate: 6h
+    depends-on: [CR-2026-067-TASK-01, CR-2026-067-TASK-02]
+  - id: CR-2026-067-TASK-04
+    title: "登记值同步与交付面收口：gate-registry 的 manifest.cases 35→36 + diff/zero_diff/全量套件三面收口"
+    status: pending
+    estimate: 6h
+    depends-on: [CR-2026-067-TASK-01, CR-2026-067-TASK-02, CR-2026-067-TASK-03]
