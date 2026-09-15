@@ -1,0 +1,22 @@
+cr-id: CR-2026-067
+review-type: dev-plan
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-15T10:57:51+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  sdd-to-plan: "pass"
+  plan-to-tasks: "pass"
+  task-executability: "pass"
+  dependency-topology: "pass"
+  interface-contracts: "pass"
+  acceptance-verifiability: "pass"
+  scope-and-simplicity: "pass"
+  risk-and-rollback: "pass"
+  reviewer-model: "pi agent runtime / provider=Gobao model=deepseek-flash（PI_PROVIDER / PI_MODEL 环境自报；Multica task 01a0a2e6-d036-71da-880d-b749bf31034d）"
+suggestions:
+  - "范围外：（本轮新增，快照精度，归 write-dev-plan）plan.md §0.3 的 KB 仓「HEAD（本节点实测）」记为 `58b426a7…`（§0.2 checkpoint metadata commit），本轮在权威 KB worktree 实测 `crctl git rev-parse HEAD` = `fa227b909cb458c645dd024e85d7e12002514e71`（`write-dev-tasks` 的状态推进提交；plan/tasks 提交 `ef930740` 在其前）⇒ 该行是起草时快照、现已过期。与 §0.2 已发布的 batch `91c65d76b5d09013` / KB source-sha `64457f14`（`_backlog.yml#latest-checkpoint` 本轮实测在位）不矛盾；diff 审计基线在 tools 仓（`7094e492…` 本轮实测仍为 tools HEAD、`crctl git diff --name-only` 输出为空），不影响验收可达性。修复方向：该行标注「起草时快照」或刷新为当前 HEAD。"
+  - "范围外：（本轮新增，发布口径表述，归 write-dev-plan）plan.md §5.2 写本 CR 的发布点为「`review-dev-plan` PASS 之后的 `push-progress`（`message=开发计划与任务`）」，而 `skills/develop/review-dev-plan/SKILL.md#Step 5.3` 固定 `message=开发计划评审通过`（该字符串同时是 `pipeline-structure.test.mjs` L641 用例断言 A 的四条载体之一，本轮实测在位）；发布执行方按 SKILL 执行，故不影响验收与既有断言面。修复方向：§5.2 的 message 与 SKILL 对齐（本节点本轮实际发布取 SKILL 值）。"
+review-loop:
+  current-attempt: 1
+subject-sha256: 7e108cf0fe9a53ee7171537b113a95ed54c623171f372d961370410801435343
