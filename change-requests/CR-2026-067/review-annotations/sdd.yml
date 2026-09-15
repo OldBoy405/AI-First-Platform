@@ -1,0 +1,23 @@
+cr-id: CR-2026-067
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-15T08:38:29+08:00"
+verdict: block
+blockers:
+  - "本轮新增：§6.3 依赖清单第 27 项（repo: tools / relative path: skills/develop/review-requirement/SKILL.md）指向不存在的文件。tools@7094e492 实测 `skills/develop/` 下只有 write-tech-design / review-tech-design / write-dev-plan / write-dev-tasks / review-dev-plan / review-code 等目录，没有 review-requirement；该 SKILL 实际位于 `skills/requirement/review-requirement/SKILL.md`（同文件 skills/shared/crctl/scripts/test/pipeline-structure.test.mjs 的 REVIEW_SKILLS 常量 L637 也写作 skills/requirement/...）。同一错误路径在 §9 `zero_diff` 表复现：`skills/develop/{review-requirement,review-dev-plan,review-code}/SKILL.md`。影响：该条依赖的 (repo, path, SHA) 锚点不可核验，属本 Skill Step 2.1「核验文件/稳定符号；事实缺失或行为不符形成业务 blocker（附 repo/SHA/path/symbol/conclusion 证据）」的直接情形；且 §9 该行按字面路径执行会漏检真实文件，使「四个 review SKILL 中除 review-tech-design 外的三个零 diff」对本文件的核验面失效——本 CR 的目标正是让依赖事实可核验，自身依赖表不宜留不可解析锚点。修复方向：把 §6.3 第 27 项的 relative path 与 §9 该行路径改为 `skills/requirement/review-requirement/SKILL.md`（`review-dev-plan` 与 `review-code` 实际都在 `skills/develop/` 下，仅 `review-requirement` 一项需改），改后复核其余 35 项路径仍可解析。"
+dimensions:
+  PRD↔SDD对齐: "通过。FR-1~FR-7 各有设计落点（§6.1 逐条映射），AC-1~AC-9 各有可观测结果与可达性说明（§6.2 逐条 + 反查段）；§1.5 把 PRD §1.5 的六条裁定逐条落到 SDD 章节。D-6 声明的「本 SDD 沿用实施前的编号列表形态」由 PRD §1.3.3「评审判据只对评审发生时的 SKILL 版本生效」授权，是合同的时序差而非两套判据并存（§6.3 与 SDD-CLOSE-05 均已写明）。本轮独立复算：§6.5-A/B 目标文本命中写侧全部 9 项 term，§6.5-E1 目标文本命中评侧全部 6 项 term，且该目标文本不含「并可附」；§6.5-D 与 §6.5-E2 的 ①~④ 逐字相同。"
+  架构合理性: "通过。本 CR 只改 Prompt 判据文本，与 tools/ARCHITECTURE.md 的 §4 分层与依赖方向（Pipeline → Skill → crctl，依赖只朝下）及 §5 硬不变量 1 状态单一写者 / 2 账本单一写入通道 / 3 零第三方依赖 / 4 行尾与硬失败纪律 / 8 Skill 通用约束归仓逐条相符（本轮实读 §4/§5 原文）；§1.3 给出三条硬约束，且不新增层级、不新增写入口与账本文件。决策记录 D-1~D-6 同时满足「难以逆转 + 无上下文会疑惑 + 有真实权衡替代」三判据，替代方案均为真实可选项（D-1 三条否决、D-2 三条、D-3 两条、D-4 三条、D-5 两条、D-6 两条），未发现伪造替代。"
+  数据模型完整性: "通过。本 CR 不新增实体、字段与账本（§2.1、NFR-2）；唯一改动的数据形状是 §2.2 的 `dep-N` 文本条目（`dep-N` 首行 + 五字段缩进两格），字段名与小节名逐字不变、旧 `1. repo:` 前缀退役有明确口径；§4.1 给出分配算法与三条不变量（引用必须已定义、只续编不复用空洞、无法绑定即待核实依赖且不作方案前提）。§2.4 的状态与门禁声明本轮与 dir-graph.yaml 的三条转换及 gates.json（`tech-design-review-pending` 为 fileExists sdd.md、`tech-designing` 为 approval/requirement）实测一致，未新增状态与转移。"
+  接口契约: "通过。§3.1 的 Skill 调用契约零变化（两份 SKILL 的参数表、落盘路径、允许的状态转换、失败码逐项不变），§3.2 的 crctl CLI 契约零变化，§3.5 的 HTTP / IPC / 事件为 N/A，与 PRD §1.3.3 的四查 N/A 结论一致。按本 Skill 的条件基线（FR-08.2），本 CR 不新增或修改 HTTP API，故不要求接口契约（OpenAPI）面。§3.3 的文本合同面 8 个锚点（§6.5-A~G）逐字给出，且与既有 L616 用例的 term 组互为覆盖（本轮逐 term 复算）。"
+  多仓架构约束: "通过。三仓依赖方向与路径 authority 一致：代码事实只按 resources[].worktreePath 取证（§6.3 按仓给出 SHA 口径，未做 .rayai-worktrees 目录名拼接）；交付面在 `../tools`（4 个文件），KB 只承载过程产物且不改 specs/ delivery/ docs/，`../multica` 零 diff。跨仓提交与 checkpoint 口径与 §1.2 变更面一致，未引入跨仓写路径或新的发布口径。"
+  性能与安全: "通过。本 CR 无运行时开销（§7.4：只改文本判据与一个既有断言的两组 term，测试执行规模不变，顶层用例数 36 不变）；安全与越权面明确（§7.2）：评审批注仍唯一经 crctl review-record 落盘、状态仍唯一经 crctl advance，本 CR 不新增写入口、不放宽既有门禁。§7.3 对唯一的强度变化（评侧 commit SHA 由「并可附」改必填）给出兼容性论证，且明确不追溯既有已归档 CR、不改任何状态转换与错误码。"
+  可测试性: "通过。AC-1~AC-9 的验收均可机械核对（文本读出 / 既有断言 / diff 枚举 / 既有门禁运行），§6.2 逐条给出可观测结果与可达性说明，且不存在「关键前置条件提前过滤目标」的情形；§6.5-F 的目标 term 组与 §6.5-A/B/E1 目标文本逐项对应（本轮独立复算全部命中）。§6.6 与 NFR-1 的回归面（lint-prompts enforce / skill matrix / agents contract / pipeline JSON 结构断言 / suite-gate --run / writeback 单测六个 step，加 contract-scan）均为既有入口且零 diff。行尾纪律（NFR-5）保持既有 CRLF 归一读取形态与 assert 硬失败语义，无「匹配不到即静默通过」的降级分支。"
+  Prompt采纳影响: "N/A。本 CR 的 diff 不触及 skills/shared/crctl/scripts/crctl.mjs 的 dispatch 分支，也不触及 skills/shared/controlled-shell/rules.json 的 protectedPaths.deny（§9 zero_diff 与 §8 判定一致，本轮实读 rules.json 白名单与 crctl.mjs 命令面确认），条件未触发，故不存在「crctl 新增能力、某 Skill 该采纳却未采纳」的漂移面。"
+suggestions:
+  - "本轮新增：§6.3 自设的收录判据第 ③ 条（「§9 `zero_diff` 点名对象」入册）未与 §9 表逐项对齐，未各自入册的点名对象包括：`pipeline-templates/**` 的其余 7 个 pipeline JSON 与 `_index.yml` 的 nodes 计数（第 22 项只覆盖 architecture-design.pipeline.json）、`AGENT-SKILL-MATRIX.md`、`check-skill-matrix.mjs` 与 `check-agents-contract.mjs`（§6.6 以「依赖第 23、10 项」间接声明）、KB 的 `review-loop.yml` / `traceability.yml` 与 `specs/` / `delivery/` / `docs/`。这些对象均已在 §9 逐条零 diff 约束，并由 AC-7② / AC-9① 以 diff 枚举直接核对，不影响设计唯一性与验收可达性；建议补齐条目，或把判据 ③ 的措辞收窄为「§9 中设计所依赖的既有实现文本」，以免自设判据与清单长期不一致。"
+  - "范围外：PRD §1.4 事实 16 的计数「CR-2026-055 相关 4 条（L568 / L585 / L602 / L616）」在 tools@7094e492 实测为 5 条——同文件 L627 另有 `test('CR-2026-055 blocker 修复: 权限解释文档同步新增 can-call 关系', ...)`。本 SDD 未继承该计数（§6.3 第 11/12 项只引用 L616 目标用例与顶层总数 36），故不影响本 CR 的设计唯一性与验收可达性；`prd.md` 已随需求审批冻结，建议回写期或后续需求类 CR 一并修正（与既有 S-1「七条 / 八条」同类）。"
+review-loop:
+  current-attempt: 1
+subject-file: change-requests/CR-2026-067/sdd.md
+subject-sha256: b5d91ae3136670947a9e62ca8c80eaf0ea6bca640bb97ac89f184853624a3253
