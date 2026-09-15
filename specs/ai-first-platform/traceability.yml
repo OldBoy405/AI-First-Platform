@@ -1,10 +1,10 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 spec-id: ai-first-platform
-cr-ref: CR-2026-067
-cr-history: [CR-2026-060, CR-2026-059, CR-2026-061, CR-2026-062, CR-2026-063, CR-2026-065, CR-2026-064, CR-2026-066, CR-2026-067]
-target-version: "0.40"
+cr-ref: CR-2026-068
+cr-history: [CR-2026-060, CR-2026-059, CR-2026-061, CR-2026-062, CR-2026-063, CR-2026-065, CR-2026-064, CR-2026-066, CR-2026-067, CR-2026-068]
+target-version: "0.41"
 baseline-since: "0.33"
-generated-at: "2026-09-15T14:57:04+08:00"
+generated-at: "2026-09-16T07:54:21+08:00"
 
 milestones:
   - cr: CR-2026-060
@@ -905,3 +905,65 @@ milestones:
         code: { verdict: pass, path: change-requests/CR-2026-067/review-annotations/code.yml, sha256: 695c99acc2e9ac5e71c882ef184a73edee8ab8efc0ea85528c479504c4864e69 }
       approval: { status: approved, path: change-requests/CR-2026-067/approval.yml, sha256: 0947499bf9aa8ce0a124a1b5ccf2bb8c5a2e6f279ee08f8b196003b05b5815ac }
       merge: { status: merged, path: change-requests/CR-2026-067/merge-commits.yml, sha256: c9f790d3b6d58f3bd29166045568ddd48bc9095afdda44ff258c7de30a5ad01e }
+  - cr: CR-2026-068
+    milestone: "0.41"
+    target-version: "0.41"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: ea9033cd35514cf5d1f9b3de09e67b6a33a8a107
+        branch: requirement/CR-2026-068
+      - repo: multica
+        trunk: main
+        sha: 3a7bfd2ee3838babc878ae29996fdc732d5cf7e9
+        branch: requirement/CR-2026-068
+      - repo: tools
+        trunk: main
+        sha: 82e43dc53d51f69a799904c786900ea78e57ca12
+        branch: requirement/CR-2026-068
+    frs:
+      - fr: FR-1
+        title: upstream 后 plan 增量回修（AC-1①~⑤）
+        sdd: §1.4.1 ＋ §4.1 算法 ＋ §6.5-A（Step 2a 末 upstream 轨四条；普通轨三条逐字保留、Step 编号不重编）
+        tasks: [CR-2026-068-TASK-01]
+        code: [ai-first-platform-docs@ea9033cd3551, multica@3a7bfd2ee383, tools@82e43dc53d51]
+        evidence: [cmd-03, cmd-02]
+      - fr: FR-2
+        title: TASK 及依赖闭包 delta 重算（AC-2①~⑤）
+        sdd: §1.4.2 ＋ §4.2 算法 ＋ §6.5-D（Step 2a 第 1 条整体替换；第 2、3 条逐字保留；`crctl task init` 只刷新索引；`重新生成` 零残留）
+        tasks: [CR-2026-068-TASK-02]
+        code: [ai-first-platform-docs@ea9033cd3551, multica@3a7bfd2ee383, tools@82e43dc53d51]
+        evidence: [cmd-03, cmd-02, cmd-01]
+      - fr: FR-3
+        title: 证据命令可执行性与证明力（AC-3①~⑤）
+        sdd: §1.4.3 ＋ §4.3 判据算法 ＋ §6.5-B（写侧六项：观测面 ≥ 声称面 / 四类错配 / 命令算法唯一事实源；既有概括句保留）＋ §6.5-E（评侧两条 blocker 判据，同表述同强度）
+        tasks: [CR-2026-068-TASK-01, CR-2026-068-TASK-03]
+        code: [ai-first-platform-docs@ea9033cd3551, multica@3a7bfd2ee383, tools@82e43dc53d51]
+        evidence: [cmd-03, cmd-02]
+      - fr: FR-4
+        title: 回滚单元是依赖闭包（AC-4①~④）
+        sdd: §1.4.4 ＋ §4.4 算法 ＋ §6.5-B B-2（`回滚` bullet 三项闭包判据原位扩写；列集不变）
+        tasks: [CR-2026-068-TASK-01]
+        code: [ai-first-platform-docs@ea9033cd3551, multica@3a7bfd2ee383, tools@82e43dc53d51]
+        evidence: [cmd-03]
+      - fr: FR-5
+        title: 环境责任与即时 readiness（AC-5①~③、AC-6①~③）
+        sdd: §1.4.5 ＋ §4.5 三侧流程 ＋ §6.5-C（plan 章节 5 五要素）/ §6.5-F（implement 两条 bullets）/ §6.5-G（`…0004` approvalPrompt 值）
+        tasks: [CR-2026-068-TASK-04, CR-2026-068-TASK-01]
+        code: [ai-first-platform-docs@ea9033cd3551, multica@3a7bfd2ee383, tools@82e43dc53d51]
+        evidence: [cmd-03, cmd-04, cmd-02]
+      - fr: FR-6
+        title: 边界与零新增（AC-7①~④、AC-8①~④、AC-9①~③）
+        sdd: §1.4.6 ＋ §4.6 零 diff 面 ＋ §6.4 改动/零改动清单 ＋ §9 `scope_in`/`zero_diff`
+        tasks: [CR-2026-068-TASK-04, CR-2026-068-TASK-01]
+        code: [ai-first-platform-docs@ea9033cd3551, multica@3a7bfd2ee383, tools@82e43dc53d51]
+        evidence: [cmd-05, cmd-06, cmd-01]
+    evidence:
+      test: { status: pass, path: change-requests/CR-2026-068/test-report.md, sha256: fb3110911ae8dbba81a91fdc75832ca0c16fb2ffa9ebe567e4045dd8aa2803a4 }
+      reviews:
+        requirement: { verdict: pass, path: change-requests/CR-2026-068/review-annotations/requirement.yml, sha256: 0b983479763e369589549068771507f68509e9199cadc5628ae62fe73d011bc4 }
+        tech-design: { verdict: pass, path: change-requests/CR-2026-068/review-annotations/sdd.yml, sha256: a43133f6e311ba98f2a54e76dc326846c2fdb79f82f0537cb61f103419dfb99c }
+        dev-plan: { verdict: pass, path: change-requests/CR-2026-068/review-annotations/dev-plan.yml, sha256: e6c3e693c6a5ea0b0c8f8d36bc1bcae04d75081034ef64f9e0bd1524753ffcd9 }
+        code: { verdict: pass, path: change-requests/CR-2026-068/review-annotations/code.yml, sha256: 92793f54a390472aeb3cca2d31bf5dc300572b8a0125f1d9c63233692c61bdf1 }
+      approval: { status: approved, path: change-requests/CR-2026-068/approval.yml, sha256: dec2e05ac1041c446e6273017c38d3415c2c5ceda65163f8e29e4ee16a948e0b }
+      merge: { status: merged, path: change-requests/CR-2026-068/merge-commits.yml, sha256: 2f51522ae6235e9c10def4d98ce975438ef71200f5fa0fa7ea86a50914c85f87 }
