@@ -27,9 +27,9 @@ created: 2026-09-15T23:25:00+08:00
 
 ## 2. 涉及文件 / 模块
 
-| 文件（相对 `tools` 仓根） | 动作 | 锚点（plan §0.5 实测行号，实施期以实时搜索为准） |
+| 文件（相对 `tools` 仓根） | 动作 | 锚点（plan §0.5 回修 1/3 复核实测行号 = tools@`49fa3774`，实施期以实时搜索为准） |
 |---|---|---|
-| `skills/develop/write-dev-plan/SKILL.md` | 改 3 处落点（B 内含 3 个子点）：① Step 2a 段末追加；② `验收证据` / `回滚` bullets 扩写 + 证据命令表 bullets 后追加一句；③ 章节清单第 5 项整体替换 | ① `### Step 2a — 回修模式（CR-2026-026 FR-8/FR-9）` 段末（第 3 条之后、`### Step 3` 之前）；② L76 `验收证据` bullet / L78 `回滚` bullet / L77 证据命令表 bullets 末尾；③ L55 `5. **验收与发布策略** — 发布前 checklist / feature-flag 计划` |
+| `skills/develop/write-dev-plan/SKILL.md` | 改 3 处落点（B 内含 3 个子点）：① Step 2a 段末追加；② `验收证据` / `回滚` bullets 扩写 + 证据命令表 bullets 后追加一句；③ 章节清单第 5 项整体替换 | ① `### Step 2a — 回修模式（CR-2026-026 FR-8/FR-9）` 段末（第 3 条之后、`### Step 3` 之前；该段 L86 起）；② L68 `验收证据` bullet / L69 `回滚` bullet / 证据命令表区块 L73~L79 的 bullets 末尾（L77 之后）；③ L57 `5. **验收与发布策略** — 发布前 checklist / feature-flag 计划` |
 
 **段级零 diff（本卡逐字保留）**：Step 1 / Step 2 其余章节清单项（1~4、6、7）/ Step 2a 普通轨三条 / Step 3 / Step 4 / 两张稳定表表头与列集 / 证据命令表六项既有形态判据 bullets / frontmatter。**不引入** `crctl checkpoint` 家族反向 token、`git`/`journal` 字面量、退役字段名（`recoverCommand` / `recover_command` / `repair-instructions` / `fixed-blockers` / `suggestion_policy`）。
 

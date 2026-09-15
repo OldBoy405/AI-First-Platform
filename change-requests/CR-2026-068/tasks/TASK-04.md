@@ -57,8 +57,8 @@ created: 2026-09-15T23:25:00+08:00
 
 ### 3.3 收口（FR-6 / plan §5.1）
 
-- 按 plan §6.2.5 转录纪律把 `.crctl/tmp/audit-{skill,ci,diff}.js` 平面化为 `cmd-03`~`cmd-05` 的单 `-e` 参数（无裸双引号/反斜杠/换行/竖线），在本机干跑确认与 plan §6.3 语义一致后交付 `write-test-report`。
-- 收口断言：`cmd-03` failures = 0（写侧 + tasks + review + pipeline + implement 五组全清零）、`cmd-04` failures = 0、`cmd-05` 输出 `tools diff paths = 5` 且 failures = 0、`cmd-06` exit 0、`cmd-02` exit 0。
+- 四条审计命令（`cmd-03` = AUDIT-SKILL / `cmd-04` = AUDIT-PIPELINE / `cmd-05` = AUDIT-DIFF / `cmd-06` = AUDIT-CI）的 `-e` 脚本**字面值已在 plan §6.2 证据命令表内**；本卡**逐字转录**该表 cell 形成 `cr-test-plan/v1`（`JSON.parse` / `JSON.stringify` 往返与原 cell 逐字相同即可），**不另行生成、不改写、不补写命令算法**，也不依赖任何临时脚本文件（plan §6.2.5）。
+- 在本机按 `spawnSync(executable, args, { shell:false })` 同语义复跑四条命令，对照 plan §6.3「变更后预期」列收口：`cmd-03` / `cmd-04` / `cmd-05` failures = 0（`cmd-05` 同时输出 `tools diff paths = 5`）、`cmd-06` exit 0；四条命令的转录用 args 与 plan §6.2 表逐字相同（往返留档），再交付 `write-test-report`。
 - `git status --short`（经 `crctl git status --short`）只显示本卡 2 个文件（TASK-01/02/03 已各自提交后为空增量）。
 
 ### 3.4 通用纪律
@@ -67,7 +67,7 @@ created: 2026-09-15T23:25:00+08:00
 
 ## 4. 验收条件（可执行）
 
-1. **`cmd-03` / `cmd-04` / `cmd-05` 全部 failures = 0**（plan §6.2；`repo=tools`，`cwd=.`）——含 `cmd-05` 输出 `tools diff paths = 5` 且白名单双向相等、zero_diff 前缀表零命中。
+1. **`cmd-03` / `cmd-04` / `cmd-05` 全部 failures = 0**（plan §6.2；`repo=tools`，`cwd=.`；四条审计命令的 args 逐字转录自 plan §6.2 表，无 plan 外命令集）——含 `cmd-05` 输出 `tools diff paths = 5` 且白名单双向相等、zero_diff 前缀表零命中。
 2. **`cmd-02` exit 0**：`dep-15` CR-2026-043（`\bgit\b` / `\bjournal\b` 对全部 prompt 与 approvalPrompt 零命中）与 CR-2026-050（human_approval 无 `review-annotations` / `reject_reason`、保留 approve/reject）用例真实执行仍绿。
 3. **`cmd-06` exit 0**（lint-prompts / skill-matrix / agents-contract / writeback-tests / pipeline JSON 结构断言）。
 4. **负控自检**（非证据）：临时在 `…0004.approvalPrompt` 写入 `journal` 一词 → `cmd-02` 的 CR-2026-043 用例必须红 → 还原 → `cmd-03` 的 `FAIL pipeline residual 重新执行 write-dev-tasks 后再确认` 消失确认。
@@ -76,7 +76,7 @@ created: 2026-09-15T23:25:00+08:00
 ## 5. 完成标志
 
 - 2 个文件修订就位并随 CR 提交；`cmd-03`/`cmd-04`/`cmd-05` 全清零、`cmd-02`/`cmd-06` exit 0，输出留档（diff 面恰 5 文件 = SDD §9 `scope_in` 双向相等）。
-- 可机械核对事实写入任务完成记录：① `…0004` 五个其余字段值逐项留档；② implement 环境节 bullets 数 6 → 8 且既有六条逐字在位；③ diff 白名单输出原样粘贴。
+- 可机械核对事实写入任务完成记录：① `…0004` 五个其余字段值逐项留档；② implement 环境节 bullets 数 6 → 8 且既有六条逐字在位；③ diff 白名单输出原样粘贴；④ 四条审计命令的转录用 args 与 plan §6.2 表逐字相同（`JSON.parse` 往返结果留档）且 `cmd-03`~`cmd-06` 复跑结果与 plan §6.3 一致。
 - **任务账本登记**：`crctl task done CR-2026-068 --task CR-2026-068-TASK-04`（即时标 `done`，工程纪律 #8）。
 
 ## 6. 接口契约

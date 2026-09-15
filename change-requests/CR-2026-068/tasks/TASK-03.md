@@ -53,7 +53,7 @@ created: 2026-09-15T23:25:00+08:00
 
 ## 4. 验收条件（可执行）
 
-1. **`cmd-03` 的 review 判据清零**：输出中**无** `FAIL review …` 行（11 项正向 token 全命中：两条加粗 blocker 句、四类错配四 token、受控入口、委派评论、`不留到 implement 阶段才暴露`、`不新增维度名或证据账本`、既有概括句仍在、决策表行仍在）。
+1. **`cmd-03` 的 review 判据清零**：输出中**无** `FAIL review …` 行（11 项正向 token 全命中：两条加粗 blocker 句、四类错配四 token（含受控入口 `rules.json`）、委派评论（`命令算法只存在于委派评论而不在证据命令表行`）、`不留到 implement 阶段才暴露`、`不新增维度名或证据账本`、既有概括句仍在、决策表行仍在）。
 2. **`cmd-02` exit 0**：S-13 反向断言（四个 review SKILL 对三 token 与 `crctl checkpoint` 零命中）真实执行仍绿。
 3. **`cmd-06` exit 0**（同 TASK-01）。
 4. **负控自检**（非证据）：临时把该 bullet 还原为现行概括句 → `cmd-03` 必须出现 `FAIL review missing **观测面窄于声称面即 blocker**` → 再落地 → 工作区干净。
