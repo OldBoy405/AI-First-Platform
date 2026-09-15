@@ -1,0 +1,26 @@
+cr-id: CR-2026-068
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-15T21:08:44+08:00"
+verdict: block
+blockers:
+  - "本轮新增：SDD §5「技术选型与替代方案」D-6（本 CR 自身 SDD 的依赖表形态）Context 行「`dep-5` 的 dep-N 合同自 CR-2026-067 合并起对后续 SDD 生效」事实归属错误且未由 dep-N 承载。取证（tools@49fa37748d9b2fc7fc58fd53f839e2ed293bde17 实读）：dep-5 = ARCHITECTURE.md，全文无「dep-N」/「既有实现依赖」字样（dep-5 登记的 stable symbol 清单亦不含该合同）；全 tools 仓含「dep-N」的文件仅 skills/develop/write-tech-design/SKILL.md（「既有实现依赖与事实」合同段）、skills/develop/review-tech-design/SKILL.md（Step 2.1 引用核验规则）与 test/pipeline-structure.test.mjs——前两者即 dep-N 合同真实载体（CR-2026-067 面），均未登记入 §6.3 依赖表。影响：该断言是 D-6 决策（本文档 §6.3 采用 dep-N 固定结构）的直接前提，按 review-tech-design Step 2.1「正文出现未通过 dep-N 引用承载的当前实现事实形成 blocker」、SDD §6.3 收录判据①/③（设计判据成立前提、§9 zero_diff 中设计所依赖的既有文本须入册）与工程纪律4（事实断言先核实），按 dep-5 追核该合同的后续读者必然落空，且与 PRD §7「CR-2026-067 面：write-tech-design / review-tech-design 的 dep-N 表达」的既有归属矛盾。修复方向：把真实载体登记为 §6.3 新 dep 条目（repo=tools、40 位 SHA=49fa37748d9b2fc7fc58fd53f839e2ed293bde17、relative path=skills/develop/write-tech-design/SKILL.md（及/或 skills/develop/review-tech-design/SKILL.md）、stable symbol=「既有实现依赖与事实」dep-N 合同段与 Step 2.1 引用核验规则），并把 D-6 Context 的「dep-5 的」改写为指向该条目的准确归属；「自 CR-2026-067 合并起生效」与「CR-2026-067 SDD 的 D-6 时序差」两半句经核实为真（change-requests/CR-2026-067/sdd.md D-6 实读），可保留。"
+dimensions:
+  PRD↔SDD对齐: "通过——FR-1~FR-6 与 AC-1~AC-9 逐条有设计落点与可观测结果（§6.1/§6.2）；7 处目标文本（§6.5-A~G）的既有锚点本轮全部实读取证成立（write-dev-plan Step 2a 普通轨三条、两张稳定表 bullets、章节清单 7 章；write-dev-tasks Step 2a 第 1 条「重新生成」全文唯一出现于 L50、AC-2① 零残留可达；review-dev-plan acceptance-verifiability 现文逐字在库；implement-code 环境节六条 bullets；…0004 approvalPrompt 现值与 {{inputs.cr_id}} 既有占位符惯例）；批准范围四字段前置核对通过（§9 四字段齐全、无同对象冲突、follow_up 不承载当前 AC 必要条件）。"
+  架构合理性: "不通过（单点）——D-6 Context 把 dep-N 合同错误归属到 dep-5 且真实载体未入册（详见 blockers 第 1 条）；其余架构面通过：分层与依赖方向、ARCHITECTURE.md §5 硬不变量 1/2/3/4/8（本轮实读）逐条不冲突，D-1~D-5 决策记录三判据成立、替代方案真实不伪造。"
+  数据模型完整性: "通过——零新增实体/字段/账本（§2.1/§2.2 S1~S6 均为既有文档文本形状）；TERM-02 依赖闭包（depends-on 传递闭包）口径与边界场景自洽。"
+  接口契约: "通过（条件基线 N/A）——本 CR 不新增/修改 HTTP API（§3.5），Skill/crctl 调用契约零变化（§3.1/§3.2），不强制 OpenAPI 面。"
+  多仓架构约束: "通过——路径 authority 只取 crctl workspace inspect 的 operationalWorkspace/resources[].worktreePath（本轮实读三仓 classification=healthy、HEAD 均在 requirement/CR-2026-068）；跨仓依赖 KB→tools 单向、../multica 零 diff（HEAD d4a49e2b 实读为基线）；发布经 review-tech-design PASS 分支既有 push-progress，本 CR 不新增发布动作。"
+  性能与安全: "通过——纯提示词与人工审批文本、无运行时路径；§7.2 越权面六行与 §7.3 唯一强度变化（acceptance-verifiability 收紧、对已归档 CR 无追溯效力）论证成立。"
+  可测试性: "通过——AC-1~AC-9 均可逐字/机械核对；既有断言面本轮实测：pipeline-structure.test.mjs 顶层 36 用例与 gate-registry manifest.cases=36 一致、exceptions=[]；CR-2026-037 doesNotMatch（重新生成…TASK 与 _index.yml 形态）删词后天然仍绿、两条 match 断言字面量保留；…0004 目标文本无 git/journal（词边界断言面）与账本写指令；S-13 三 token 与 crctl checkpoint 在 review-dev-plan 目标文本零命中。"
+  Prompt采纳影响: "N/A——本 CR diff 不触及 crctl.mjs dispatch 分支与 rules.json protectedPaths.deny（两文件零 diff，本轮实读 deny 面），条件未触发（§8 判定依据 write-tech-design 章节 8 与 review-tech-design Step 2 行均实读成立）。"
+suggestions:
+  - "范围外：（表达一致性，可在本轮回修顺带处理）§6.7 声明「编号从 SDD-CLOSE-01 起，只在本节定义」，但 SDD-CLOSE-05 实际定义在 §7.1，且 §6.7 末段自己引用「见 §7.1（SDD-CLOSE-05）」；05 已关闭且结论与 PRD NFR-5 一致，不影响关闭义务核验，建议把「只在本节定义」改为「01–04 见本节表、05 见 §7.1」或将 05 收编进 §6.7 表。"
+  - "范围外：（计数口径，可在本轮回修顺带处理）§1.2 鸟瞰图 write-dev-plan 行标注「= 4 处」（FR-1/FR-3/FR-4/FR-5 四个关切），逐文件求和 4+1+1+1+1=8，与同段「共 7 处落点」及 §9/§6.4/AC-7 的 7 处口径（write-dev-plan 为 §6.5-A/B/C 三处落点，B 合并承载 FR-3+FR-4）表面矛盾；建议鸟瞰行注明计数单位或改为按落点计 3 处。"
+  - "范围外：（目标文本精度，可在本轮回修顺带处理）§6.5-G ❌ 暂缓分支「补充任务拆分意见或环境前提说明，重新执行 write-dev-tasks 后再确认」——环境静态前提五要素的承载产物是 plan.md 第 5 章（write-dev-plan 产出），仅重跑 write-dev-tasks 修复不了 plan 侧环境声明缺口；PRD FR-5 dev-start 侧与 AC-5② 未 gate 该文案故非 blocker，建议区分两类暂缓原因的修复路径或泛化为按缺口所属产物回到对应写作节点。"
+  - "范围外：（单一表述点，可在本轮回修顺带处理）§6.5-B B-1 子项 1 末句「命令必须可执行（executable 直接可 spawn 的单个可执行文件、args 为 JSON token 数组、cwd 相对路径、timeout 秒）」与证据命令表既有 bullet（write-dev-plan/SKILL.md L77）同一判据双点复述（PRD FR-3 写侧六项不含该复述）；两处今日语义一致但存在日后单点漂移风险，建议改为引用表行口径。"
+  - "范围外：（笔误）§4.5 算法伪代码与 §6.2 AC-6 设计落点的 readinesMap 拼写应为 readinessMap；SDD 内部标识，不进任何目标文本。"
+review-loop:
+  current-attempt: 1
+subject-file: change-requests/CR-2026-068/sdd.md
+subject-sha256: 1eceb0575ade7f0aba534e149666d248d089e2d6f53b9e451e24a7e5bbac56bb
