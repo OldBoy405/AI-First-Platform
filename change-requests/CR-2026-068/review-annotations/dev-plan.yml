@@ -1,0 +1,24 @@
+cr-id: CR-2026-068
+review-type: dev-plan
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-15T23:45:51+08:00"
+verdict: block
+repair-target: write-dev-plan
+blockers:
+  - "本轮新增：plan §6.2 证据命令表的 args 列在 cmd-03 / cmd-04 / cmd-05 / cmd-06 四行不是可执行 argv，而是「待实现期平面化」的占位描述（原样：数组第二元素为 「AUDIT-SKILL 单参数只读脚本；语义见 §6.2.1，args 原样值由 write-dev-tasks 按 §6.2.4 转录纪律从 .crctl/tmp/audit-skill.js 平面化生成（单引号→String.fromCharCode(39)、反引号→String.fromCharCode(96)、无裸换行/竖线/双引号）」），字面脚本的产生被 §6.2.5 与 TASK-04 §3.3 推迟到实现期（TASK-04 收口时）并声明取自 .crctl/tmp/audit-{skill,ci,diff}.js。盘上事实（resources[].worktreePath 实读）：KB worktree 的 .crctl/tmp/ 为空目录、tools worktree 无 .crctl/ 目录、AI 目录 find audit-*.js 零命中，且 KB 的 .crctl/.gitignore 只放行 .gitignore 与 keys/ —— 该输入既不可能「随 TASK 提交归档」，提交进 tools 又会撞 §10.4 不新增文件与 cmd-05 的 5 文件白名单；该指令的映射也不完整：四条审计命令含 cmd-04（AUDIT-PIPELINE）与 cmd-06（AUDIT-CI），文件名集合 {skill,ci,diff} 缺 pipeline 对应项，TASK-04 §3.3 也只覆盖 cmd-03~cmd-05。消费侧合同：write-test-report 的 SKILL L49 要求测试计划的 commands 以 plan.md 的证据命令表为唯一来源逐条转录、不得在 plan 之外另造命令集，crctl 的 test 以 spawnSync(executable, args, {shell:false}) 执行 —— 按占位描述转录/执行必然失败；若改为实现期把字面 args 回写 plan.md，则与本轮 review-dev-plan PASS 将写入的 subject-sha256（plan.md 与全部 TASK-*.md 的 composite digest）冲突（plan 修订使 PASS 失效、next 重路由、approve-dev-start 硬失败），且 TASK-04 自述写面仅 2 个 tools 文件、未含 plan.md。影响：TASK-01/02/03/04 的验收条件（cmd-03/cmd-04/cmd-05 清零）与 plan §5.1 第 4~6 项在「被评审的 plan」上不可达，本 CR 的主证据（四条审计命令）事实上只能在评审后由实现方自行编写，与 FR-3 判据域（证据命令表是命令算法的唯一事实源、不得通过委派评论补写命令算法）正面冲突。修复方向：本轮把四条审计命令的字面 -e 脚本（与 CR-2026-066/067 同款、可直接逐字转录进 cr-test-plan/v1 的形态）写进 §6.2 证据命令表 args 列，并同步修订 §6.2.5、§6.2 表注与 TASK-04 §3.3（去掉对不存在临时文件的依赖、补齐 cmd-04/cmd-06 的映射）；若坚持实现期平面化，须先给出与既有 canonical 转录门禁及 dev-plan 证据绑定兼容的合法载体，并把该载体本身纳入本轮 plan/TASK 的受评审面。"
+dimensions:
+  sdd-to-plan: "pass"
+  plan-to-tasks: "pass"
+  task-executability: "block"
+  dependency-topology: "pass"
+  interface-contracts: "pass"
+  acceptance-verifiability: "block"
+  scope-and-simplicity: "pass"
+  risk-and-rollback: "pass"
+  reviewer-model: "deepseek-v4.1-flash"
+suggestions:
+  - "范围外：（覆盖矩阵 owner 标签一致性，可在本轮回修顺带处理）§7 关键 AC 唯一 owner 说明把「AC-5（plan 侧半）」列为 TASK-01 的唯一 owner，与 §7 AC-5 行及 §6.1 FR-5 行把 TASK-01 记为「关联 TASK」不一致；同块的 AC-3 句「写侧半边由 TASK-01 承担并在 §6.1 记为关联」与 §6.1 FR-3 行（主责 TASK-01、关联 TASK-03）也对不上。两处均不影响实现动作与验收证据（每个半边在行内已有唯一产生层），建议统一为「主责 TASK-04 + 关联 TASK-01」等同族口径。"
+  - "范围外：（锚点行号漂移，可在本轮回修顺带处理）plan §0.5 与 TASK-01 §2 标注的 write-dev-plan/SKILL.md 实测行号与本轮 tools@49fa3774 实读不符：章节清单第 5 项实为 L57（标注 L55）、验收证据 bullet 实为 L68（标注 L76）、回滚 bullet 实为 L69（标注 L78）、证据命令表 bullets 实为 L73~L79（标注 L77）；TASK-02/03/04 的行号锚点（write-dev-tasks Step 2a L46、review-dev-plan L82/L129、implement-code L102）本轮实读一致。两份文档均已声明「实施期以实时搜索为准」故不阻塞，建议下一轮对齐以免实施期误锚。"
+review-loop:
+  current-attempt: 1
+subject-sha256: 3da17b7037eb34e31ea49e7232d30fabe44b0971daf02ae14fa2f2adfd7f6957
