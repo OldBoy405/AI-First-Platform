@@ -1,0 +1,22 @@
+cr-id: CR-2026-068
+tasks:
+  - id: CR-2026-068-TASK-01
+    title: "write-dev-plan 写侧三处落点：Step 2a 末追加 upstream 轨四条 + 两张稳定表说明三处原位扩写 + 章节清单第 5 项替换为环境五要素"
+    status: pending
+    estimate: 8h
+    depends-on: []
+  - id: CR-2026-068-TASK-02
+    title: "write-dev-tasks Step 2a 第 1 条整体替换：delta 重算 + 下游依赖闭包同步 + 未受影响 TASK 保留 + 索引只刷新"
+    status: pending
+    estimate: 8h
+    depends-on: []
+  - id: CR-2026-068-TASK-03
+    title: "review-dev-plan 评侧判据同表述收紧：acceptance-verifiability bullet 整体替换为两条 blocker 判据"
+    status: pending
+    estimate: 8h
+    depends-on: [CR-2026-068-TASK-01]
+  - id: CR-2026-068-TASK-04
+    title: "implement-code 环境节追加 readiness 两条 bullets + …0004 approvalPrompt 值替换 + 交付面/零 diff 收口"
+    status: pending
+    estimate: 6h
+    depends-on: [CR-2026-068-TASK-01, CR-2026-068-TASK-02, CR-2026-068-TASK-03]
