@@ -1,0 +1,21 @@
+cr-id: CR-2026-067
+review-type: requirement
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-15T08:04:29+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  结构完整性: "通过。七章齐备（概述／用户故事／功能需求／非功能需求／验收标准／成功指标／范围排除）；frontmatter 与 cr.md 一致（title 逐字相同、target-version 0.40、owner Ray、owner-role requirement、status draft）；本轮独立复算 change-requests/CR-2026-067/prd.md＝285 行／51864 字节／CRLF 计数 0／sha256(LF 规范化)＝efde31fd0ce727ee58c733de6f97b464b95e069dcdfc615c71488113cbeb0fea，与作者回报及协调者复核值逐字一致；全文 TODO／FIXME／待填／双花括号占位 0 命中。"
+  FR可测试性: "通过。7 条 FR 均有 AC 落点（FR-1→AC-1、FR-2→AC-2、FR-3→AC-3、FR-4→AC-4、FR-5→AC-5、FR-6→AC-6、FR-7→AC-7，AC-9 承载边界与串行，AC-8 横切 FR-1／FR-2／FR-4／FR-7）；AC 判据均可机械核对（既有『并可附 commit SHA』措辞零残留、目标用例两组 term 原位改写、顶层用例数不减（实测基线 36）、manifest.cases 与实际顶层用例数一致、exceptions 保持空、四个 review SKILL 反向 token 零命中、Step 编号集不变），无不可判定表述；§1.4 事实 9／12／13／16 本轮实测复核成立（用例两组 term 逐字一致、manifest.cases＝35、suite-gate 判据为 cases 小于基线即红、顶层用例 36）。"
+  范围合理性: "通过。§1.3 逐字采纳 cr.md summary；§1.3.1 把 scope_in 收敛为 4 行『仓＋文件＋原位修订面』并附零 diff 面清单（四个 review SKILL 中除 review-tech-design 外、agents/quality-reviewer-agent.md、crctl 事务层、pipeline-templates、agent-skill-matrix、write-dev-plan／write-dev-tasks／review-dev-plan 等）；§7 逐条排除 crctl 事务层、新 annotation dimension／账本字段／评审指标／Pipeline 节点、plan／TASK 写作合同（CR-P2）、multica 部署副本；AC-7／AC-9 把边界与串行写成可检查约束；范围与来源 §5 授权面一致，无扩张。"
+  与规划对齐: "通过。来源 docs/analysis/AIFI-18_SDD到planTASK_原位修订方案.md §5.1.1／5.1.2／5.2／5.3／5.4／5.5 与 §2 边界逐条落到 FR-1~FR-7 与 AC-1~AC-9（本轮逐节对盘）；§1.5 登记的三处对来源的更正与钉定（写侧 commit SHA 本就必填、真正收口在评侧；gate-registry 登记 35 而实测 36 按同步口径收口；dep-N 编号稳定性口径）均为正向闭合且已交人工一并确认，不改变来源目标；反向 token 约束按保持性约束处理（四 review SKILL 现状实测全 0 命中），write-tech-design 现存 checkpoint 句不删与来源授权面核对成立（该句不在 CR-2026-066 的 REVIEW_SKILLS 反向断言面内）。"
+  依赖识别: "通过。前置 CR-2026-063／064／065／066 本轮 crctl status 实测均 archived、_backlog.yml 在途条目只有本 CR；串行顺序（063→064→065→066→067→CR-P2）与 tools 单写者约束写入 §7／AC-9；对 CR-2026-055 目标用例与 CR-2026-066 断言面（REVIEW_SKILLS 四处载体、Step 1.0／Step 5／Step 6 占用）的依赖已登记并给出同 CR 同步方案；target-spec-id＝ai-first-platform、target-version 0.40 与 cr.md 一致；三仓 HEAD 实测与 §1.4 基线表相符（tools 7094e492＝main、multica 5c1880f2；KB 行登记的 0a325340 为 register 提交，其上 d4f366fa 即本 PRD 提交）。"
+  HTTP_API契约闭包: "N/A：本 CR 不新增或修改任何 HTTP endpoint／request／response／error／权限契约（§1.3.3 逐条给理由；§7 排除平台执行层与平台 API）。"
+  crctl_CLI契约闭包: "N/A：不新增／删除 crctl 子命令与 flag，不改 JSON／stdout 输出形状、错误码、调用者约束与状态副作用（crctl.mjs／lib／gates.json 同 CR 零 diff）；FR-6 只改既有测试文件的目标用例 term 与 manifest 基线值，不改 suite-gate.mjs 判据语义、不签新例外。"
+  Skill契约闭包: "N/A：write-tech-design 与 review-tech-design 的必填参数（本轮对两份 SKILL 参数表逐项实测，与 §1.4 事实 18 一致）、落盘路径（sdd.md；review-annotations 经 crctl review-record 独占写）、允许的状态转换（requirement-approved→tech-designing→tech-design-review-pending；评侧 PASS 保持、block 回退）与失败码零变化；本 CR 改的是 SKILL 正文内评审与写作判据（Prompt 合同），§1.3.3 已就评侧 commit SHA 由可选改必填的唯一强度变化给出不触及调用契约、不追溯既有 CR 的说明。"
+suggestions:
+  - "本轮新增：S-1（归 write-requirement-prd，落点 prd.md §5 末段）来源计数口径不一致——正文写『来源 §5.5 的七条验收与上表一一对应』，实测来源 §5.5 为 8 条 bullet（写手与 reviewer 同 dep-N 语义且 commit SHA 同为必填／正文不再重复定义既有实现事实／状态链完整重证不扩散／scope 四字段两侧一致／首轮全量句零改动且 Agent Prompt 未新增小节／不新增五类结构件且 066 四要素与 Step 编号未动／CR-2026-055 用例已原位同步／suite-gate 全绿且 manifest 已同步未签例外）；AC-1~AC-8 对该 8 条覆盖完整（第 1 条拆为 AC-1／AC-2、第 6 条拆为 AC-7／AC-8，其余逐条对应），不影响实现唯一性与验收可达性。建议把『七条』改为『八条』或去掉计数，避免交付期逐条核对时误读为有一条未映射。"
+review-loop:
+  current-attempt: 1
+subject-file: change-requests/CR-2026-067/prd.md
+subject-sha256: efde31fd0ce727ee58c733de6f97b464b95e069dcdfc615c71488113cbeb0fea
