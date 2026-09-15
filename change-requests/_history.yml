@@ -2832,3 +2832,46 @@ history:
         event: archived
         to: ["Ray"]
         payload: {"final-status":"archived","archive-reason":"cr-archive","archived-at":"2026-09-14T19:13:31+08:00","writeback-spec-id":"ai-first-platform"}
+  - id: CR-2026-067
+    title: CR-P1：评审输入结构与回修闭合
+    summary: "收紧 SDD 既有实现事实的表达与评审闭合：写侧把既有实现事实收敛为带稳定 dep-N 的唯一依赖表（commit SHA 必填），正文只引用不重述；reviewer 侧 commit SHA 同为必填并核验 dep 引用；状态链类 blocker 必须整体重证、批准范围四字段判据在写手与评审两侧一致。同 CR 原位同步 pipeline-structure.test.mjs 的 CR-2026-055 依赖清单用例与 gate-registry.json 用例数，不新增 annotation dimension、账本字段、评审指标或 Pipeline 节点。"
+    owner: Ray
+    owners:
+      requirement:
+        id: Ray
+        assigned-at: "2026-09-15T07:32:28+08:00"
+      development:
+        id: Ray
+        assigned-at: "2026-09-15T07:32:28+08:00"
+      test:
+        id: Ray
+        assigned-at: "2026-09-15T07:32:28+08:00"
+    target-version: 0.40
+    target-spec-id: ai-first-platform
+    source: AIFI-29
+    origin: ""
+    prd-path: "change-requests/CR-2026-067/prd.md"
+    created: "2026-09-15T07:32:28+08:00"
+    updated: "2026-09-15T07:32:28+08:00"
+    latest-checkpoint:
+      batch-id: 3abca3701bf99868
+      repositories:
+        - repo: ai-first-platform-docs
+          source-sha: 1d5932ab9cb390adc36189dcf63e6373ef616b3c
+          remote-ref: refs/heads/requirement/CR-2026-067
+        - repo: multica
+          source-sha: 5c1880f2125e73733b1a5bfc7501db310ab7f584
+          remote-ref: refs/heads/requirement/CR-2026-067
+        - repo: tools
+          source-sha: afb818a942b337e32c951d0663fb5e96e2841de7
+          remote-ref: refs/heads/requirement/CR-2026-067
+  
+    final-status: archived
+    archive-reason: "cr-archive"
+    writeback-spec-id: ai-first-platform
+    archived-at: "2026-09-15T14:57:29+08:00"
+    notify-log:
+      - at: "2026-09-15T14:57:29+08:00"
+        event: archived
+        to: ["Ray"]
+        payload: {"final-status":"archived","archive-reason":"cr-archive","archived-at":"2026-09-15T14:57:29+08:00","writeback-spec-id":"ai-first-platform"}
