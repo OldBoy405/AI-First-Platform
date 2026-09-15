@@ -6,7 +6,7 @@ title: CR-P1：评审输入结构与回修闭合 技术设计
 target-version: 0.40
 status: draft
 created: 2026-09-15T08:30:00+08:00
-updated: 2026-09-15T08:30:00+08:00
+updated: 2026-09-15T08:45:00+08:00
 ---
 
 # 1. 架构概览
@@ -378,7 +378,7 @@ procedure verify_existing_dependencies(sdd, resources):
 
 ## 6.3 既有实现依赖与事实
 
-**收录判据（单一口径，与 CR-2026-066 SDD 同族）**：SDD 正文引用到的任一既有实现事实都必须入册——① 设计陈述或判据的成立前提（模块行为、文本形态、返回形状、调用顺序、抽取锚点）；② 本 CR 直接修改的既有文本；③ §9 `zero_diff` 点名对象；④ SDD-CLOSE 的证据。正文出现但未列入本清单的同类事实引用视为漏列。
+**收录判据（单一口径，与 CR-2026-066 SDD 同族）**：SDD 正文引用到的任一既有实现事实都必须入册——① 设计陈述或判据的成立前提（模块行为、文本形态、返回形状、调用顺序、抽取锚点）；② 本 CR 直接修改的既有文本；③ §9 `zero_diff` 中**设计所依赖的**既有实现文本（§9 其余零 diff 对象由该表自身与 AC-7②/AC-9① 的 diff 枚举直接核对，不逐项入册）；④ SDD-CLOSE 的证据。正文出现但未列入本清单的同类事实引用视为漏列。
 
 **排序**：按仓与依赖面分组，组内按正文首次出现顺序排列。
 
@@ -517,7 +517,7 @@ procedure verify_existing_dependencies(sdd, resources):
     commit SHA: 7094e492822594b971699924478ba27ccf612c42
     依赖结论: FR-5 的判据落点边界——本 CR 不在该 Skill 内新增判据，只把"范围冲突必须在本阶段拦下"写进 `review-tech-design`（§6.5-E2）；该文件零 diff（AC-9①）。
 27. repo: tools
-    relative path: skills/develop/review-requirement/SKILL.md
+    relative path: skills/requirement/review-requirement/SKILL.md
     stable symbol/对象: 需求评审 Skill（七个评审维度与固定前缀句的事实源之一）
     commit SHA: 7094e492822594b971699924478ba27ccf612c42
     依赖结论: §1.3.1「四个 review SKILL 中除 `review-tech-design` 外的三个零 diff」的点名对象；AC-8 的 `REVIEW_SKILLS` 四处载体之一。
@@ -775,7 +775,7 @@ term 组的覆盖对照（PRD FR-6.1）：写侧 = 小节名（`### 既有实现
 | `agent-skill-matrix.yml`、`AGENT-SKILL-MATRIX.md` | 零 diff（不改任何 actor 的 `owns`/`can-call`/`forbidden`、不新增 Skill） |
 | `agents/quality-reviewer-agent.md`（及 `tools/agents/**`） | 零 diff（`##` 小节集合保持 7 个，无新增小节与判据副本） |
 | `skills/develop/{write-dev-plan,write-dev-tasks,review-dev-plan}/SKILL.md` | 零 diff（CR-P2 面） |
-| `skills/develop/{review-requirement,review-dev-plan,review-code}/SKILL.md` | 零 diff（四个 review SKILL 中除 `review-tech-design` 外的三个） |
+| `skills/requirement/review-requirement/SKILL.md`、`skills/develop/{review-dev-plan,review-code}/SKILL.md` | 零 diff（四个 review SKILL 中除 `review-tech-design` 外的三个） |
 | `review-tech-design` Step 1 / 1.0 / 2.2 / 2.3 / 3 / 4 / 5 / 6 与 `write-tech-design` Step 1 / 2.5 / 3 / 4 / 5 | 零 diff（含 Step 2.2 首轮全量句逐字保留、Step 2.3 分级边界与固定前缀句逐字保留） |
 | `write-tech-design` Step 1 第 2 条的 `crctl checkpoint` 提交口径句 | 零 diff（本 CR 不删该句） |
 | `skills/shared/crctl/scripts/test/suite-gate.mjs`、`contract-scan.test.mjs`、`lint-prompts.mjs`、`check-*.mjs` | 零 diff（不改判据语义、不新增扫描面） |
@@ -790,6 +790,7 @@ term 组的覆盖对照（PRD FR-6.1）：写侧 = 小节名（`### 既有实现
 3. **`manifest.cases` 的下界语义**：本 CR 只把登记值同步为实测值，不改 `suite-gate` 的"低于登记值即红"语义；若后续需要"登记值 = 实际值"的严格校验，属独立门禁 CR。
 4. **评侧 `commit SHA` 必填对新写 SDD 的即时影响**：新口径会拦下缺失 SHA 的 SDD；首个受影响对象是新口径生效后撰写 SDD 的 CR（本 CR 自身的 SDD 按 D-6 沿用实施前形态）。
 5. **`review-loop` 达标后的重证质量**：本 CR 只提供回修判据文本（Prompt 合同），不提供机械校验；若后续出现"整体重证"被形式化执行的情况，需要新的观测面（本 CR 明确不新增观测指标）。
+6. **PRD §1.4 事实 16 的计数偏差（`review-tech-design` attempt 1/3 的 `范围外` suggestion）**：`CR-2026-055` 相关用例实测为 5 条（`L568` / `L585` / `L602` / `L616` 之外，同文件 `L627` 另有 `test('CR-2026-055 blocker 修复: 权限解释文档同步新增 can-call 关系', ...)`），PRD 写作"4 条"。本 SDD 未继承该计数（§6.3 第 11/12 项只引用 L616 目标用例与顶层总数 36），设计唯一性与验收可达性不受影响；`prd.md` 已随需求审批冻结，本 CR 不改该文件，建议回写期或后续需求类 CR 与本列表第 1 项（S-1）一并修正措辞。
 
 ---
 
@@ -827,3 +828,4 @@ term 组的覆盖对照（PRD FR-6.1）：写侧 = 小节名（`### 既有实现
 
 - 初稿（2026-09-15）：按冻结 PRD（`change-requests/CR-2026-067/prd.md`，285 行 / 51,864 B / LF-only / `sha256(LF)` `efde31fd…`，引入提交 `d4f366fa`）与来源附件 §5 起草；基线事实在 `tools@7094e492`、`multica@5c1880f2`、KB worktree@`31db6d20` 三个 HEAD 上逐条核实（§6.3 共 36 项依赖）。设计细化的三处落点：① 写侧 `dep-N` 的**分配算法**（§4.1，PRD 只给形态、未给流程）与条目形状表（§2.2）；② 评侧**关系式核验算法**（§4.2）与"集合比较 → 引用关系"的显式升级表述（§6.5-E1）；③ 批准范围四条判据在两侧的**逐字同表述**形态（§6.5-D/E2），使 AC-5① 可 diff 核对。六项 SDD-CLOSE 逐项关闭（其中 SDD-CLOSE-01/02 为 P0 设计项，03~06 为边界与时序项）。
 - 本节点开工前的发布收口：上一阶段（需求审批）的本地提交 `14c2b6c1`（`approval.yml` + status）按 `push-progress` 既有语义一次发布为 batch `0afd3f235aaf3cfb`（`ai-first-platform-docs` 源提交 `14c2b6c1` confirmed、`multica` `5c1880f2`、`tools` `7094e492`，metadataCommit `31db6d201f081d6e78a5fa73e6676d4fa55d319e`）；本 SDD 不对发布口径做任何改动。
+- 回修 1/3（2026-09-15，`review-tech-design` attempt 1/3 = BLOCK 定点修复，被修复版本 `sha256(LF)` = `b5d91ae3136670947a9e62ca8c80eaf0ea6bca640bb97ac89f184853624a3253`）：① 按 `tools@7094e492` 实测把 §6.3 第 27 项 `relative path` 与 §9 `zero_diff` 对应行中需求评审 SKILL 的仓内前缀由 `skills/develop/` 更正为 `skills/requirement/`（实测 `skills/develop/` 下无 `review-requirement`；该 SKILL 与 `pipeline-structure.test.mjs#REVIEW_SKILLS` 均写 `skills/requirement/review-requirement/SKILL.md`，同行的 `review-dev-plan` / `review-code` 仍在 `skills/develop/` 下，未改），修正后 §6.3 全部 36 项 `relative path` 与 §9 全部字面路径可解析；② 采纳本轮 suggestion，把 §6.3 收录判据 ③ 由「§9 `zero_diff` 点名对象」收窄为「§9 `zero_diff` 中设计所依赖的既有实现文本」，与清单实际收录面一致（§9 其余零 diff 对象由该表与 AC-7②/AC-9① 直接核对）；③ 本轮 `范围外` suggestion（PRD §1.4 事实 16 的计数）登记为 `follow_up` 第 6 项。除上述定点修订外，§6.5 目标文本、§9 其余行、D-1~D-6、SDD-CLOSE-01~06 均未改动。
