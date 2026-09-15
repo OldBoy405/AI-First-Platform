@@ -1,0 +1,12 @@
+$ node -e const cp=require('child_process'),fs=require('fs'),P=require('path');const R=process.cwd(),NL=String.fromCharCode(10),CR=String.fromCharCode(13)+NL;const read=p=>fs.readFileSync(P.join(R,p),'utf8').split(CR).join(NL);const bad=[];const base='49fa37748d9b2fc7fc58fd53f839e2ed293bde17';const WL=['skills/develop/write-dev-plan/SKILL.md','skills/develop/write-dev-tasks/SKILL.md','skills/develop/review-dev-plan/SKILL.md','skills/develop/implement-code/SKILL.md','pipeline-templates/code-implementation.pipeline.json'];const ZERO=['skills/shared/crctl/scripts/','skills/develop/write-tech-design/','skills/develop/review-tech-design/','skills/develop/review-code/','skills/develop/write-test-report/','skills/develop/coding-discipline/','pipeline-templates/','agents/','agent-skill-matrix.yml','AGENT-SKILL-MATRIX.md','dir-graph.yaml','ARCHITECTURE.md'];const CRCTL=P.join(R,'skills/shared/crctl/scripts/crctl.mjs');const r=cp.spawnSync(process.execPath,[CRCTL,'git','diff','--name-only',base,'--cwd',R],{encoding:'utf8',shell:false});if(r.status!==0){bad.push('FAIL diff crctl git diff status='+r.status);console.log(String(r.stderr?r.stderr:'').slice(-400));}else{const parts=String(r.stdout).split(NL);const bi=parts.findIndex(l=>l.trim()==='{');const changed=parts.slice(0,bi<0?parts.length:bi).map(s=>s.trim()).filter(Boolean);console.log('tools diff paths = '+changed.length);for(const f of changed){console.log('  '+f);}for(const f of changed){const inWL=WL.indexOf(f)>=0;if(!inWL){bad.push('FAIL diff 越界路径 '+f);}for(const z of ZERO){if(f.indexOf(z)===0){if(!inWL){bad.push('FAIL diff zero_diff 面被改动 '+f);}}}}for(const f of WL){if(changed.indexOf(f)<0){bad.push('FAIL diff 缺少应改文件 '+f);}const t=read(f);if(t.length<3000){bad.push('FAIL diff '+f+' 读空或过短 length='+t.length);}}}if(bad.length){console.log('audit-diff failures = '+bad.length);for(const x of bad){console.log(x);}process.exit(1);}console.log('audit-diff failures = 0');
+(exit=0)
+--- stdout ---
+tools diff paths = 5
+  pipeline-templates/code-implementation.pipeline.json
+  skills/develop/implement-code/SKILL.md
+  skills/develop/review-dev-plan/SKILL.md
+  skills/develop/write-dev-plan/SKILL.md
+  skills/develop/write-dev-tasks/SKILL.md
+audit-diff failures = 0
+
+--- stderr ---

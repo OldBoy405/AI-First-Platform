@@ -1,0 +1,22 @@
+cr-id: CR-2026-068
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-15T21:26:08+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  PRD↔SDD对齐: "通过。回修面（§6.3 新增 dep-23、D-6 Context、§2.2 S6、§1.2 鸟瞰计数、§6.5-G ❌ 分支、§6.5-B B-1 子项 1 末句、§4.5/§6.2 readinessMap 拼写、§6.7 编号定义、修订记录）不改任何 FR/AC 落点：§6.1 的 FR-1~FR-6 与 §6.2 的 AC-1~AC-9 逐条映射仍在（本轮全文重读 + PRD 实读 6 FR / 9 AC，无「留待 SDD」类显式延后项）；§1.2 计数口径已钉定（计数单位 = §6.5 逐字目标文本条款 A~G；write-dev-plan = 3 处 §6.5-A/B/C，B 合并承载 FR-3+FR-4，逐文件求和 3+1+1+1+1 = 7，与「共 7 处落点」、§9 scope_in 七条、AC-7 一致）；§6.5 围栏目标文本本轮机器复核零 dep-N、七处落点与 §9 逐条对齐；批准范围四字段前置核对通过（scope_in/scope_out/zero_diff/follow_up 显式齐备，scope_in 与 zero_diff 无同对象冲突，follow_up 三项均不承载当前 AC 必要条件）。"
+  架构合理性: "通过。上轮单点 blocker（D-6 合同载体归属错误）已修复并取证：D-6 Context 现以 dep-23 为合同载体；本轮在 tools worktree@49fa37748d9b2fc7fc58fd53f839e2ed293bde17（= resources 按 repo 匹配的 worktreePath，HEAD 实读）实读 write-tech-design/SKILL.md L100~L128（Step 2.6 合同段：dep-N 稳定标识、五要素固定结构、commit SHA 必填 40 位、首引序只增不改；`### 既有实现依赖与事实` 小节与固定结构样例）与 review-tech-design/SKILL.md L71~L89（Step 2.1 引用核验规则），ARCHITECTURE.md 全文对 dep-N/「既有实现依赖」零命中（dep-5 不承载该合同的结论成立）；git log 实读 fa179bb（CR-2026-067 TASK-01 引入合同）、7d9e2d3（TASK-02 reviewer 侧规则）、d62d16e（merge CR-2026-067）佐证「自 CR-2026-067 合并起对后续 SDD 生效」，CR-2026-067/sdd.md D-6 实读确认时序差半句；D-1~D-5 决策记录零改动、三判据成立；分层与 ARCHITECTURE.md 硬不变量面未变（Prompt 文本面 CR，无新层级/写入口/账本/第三方依赖）。"
+  数据模型完整性: "通过。回修未新增实体/字段/账本（§2.1 零变化）；§2.2 S6 行已由「dep-5 的 dep-N 合同」改为「写作合同载体见 §5 D-6」，与 D-6/dep-23 归属一致；TERM-02 传递闭包口径与边界场景不变。"
+  接口契约: "通过。§3.1 Skill 调用契约、§3.2 crctl CLI 契约、§3.4 错误语义、§3.5（N/A）本轮零 diff；§3.3 文本合同面 C1~C7 七锚点仍在；§6.5-B B-1 的命令形态复述已改为引用证据命令表 bullets 既有口径并加「不另立第二套形态判据」（AC-3① 判据面不缩小）。按条件基线（FR-08.2），本 CR 不新增/修改 HTTP API，不要求 OpenAPI 面。"
+  多仓架构约束: "通过。路径 authority 只取 crctl workspace inspect 的 operationalWorkspace/resources[].worktreePath（本轮实读三仓 classification=healthy、dirty=false、HEAD 均在 requirement/CR-2026-068，KB HEAD=cef7e199）；dep 取证全部按 resources 匹配 repo 取 worktreePath（tools=49fa3774 实读）；KB→tools 单向依赖、../multica 零 diff（d4a49e2b 基线，上轮已证、本轮回修未触及该仓）；阶段终点发布由本 PASS 分支既有 push-progress（crctl checkpoint）承担，不新增发布动作。"
+  性能与安全: "通过。纯提示词与人工审批文本、无运行时路径（§7.4）；§7.2 越权面六行与 §7.3 唯一强度变化（acceptance-verifiability 收紧、对已归档 CR 无追溯效力）论证零改动；§7.1 行尾与硬失败纪律（SDD-CLOSE-05）未变。"
+  可测试性: "通过。AC-1~AC-9 验收仍可逐字/机械核对；本轮独立复测：§6.3 依赖表 23 条编号 1..23 连续、五要素齐备、commit SHA 全部 40 位且 tools 条目与 worktree HEAD 全等；正文 243 处 dep-N 引用全部在表内定义（引用零缺失）、首引序 1..23 严格递增（dep-22 首引 §4.6、dep-23 首引 §5 D-6）；gate-registry.json 实读 manifest.cases=36、exceptions=[]，pipeline-structure.test.mjs 顶层用例 36 且含 L616「CR-2026-055 blocker 修复: SDD 依赖清单输出与 reviewer 消费规则明确」用例（dep-23 依赖结论所引断言面在库）；readinesMap 拼写正文残留 0 处（修订记录 L949 为对被修复拼写的历史性引用，§4.5/§6.2 均为 readinessMap）。"
+  Prompt采纳影响: "N/A。本 CR diff 不触及 skills/shared/crctl/scripts/crctl.mjs 的 dispatch 分支，也不触及 skills/shared/controlled-shell/rules.json 的 protectedPaths.deny（两文件在 §9 zero_diff 面内，本轮回修未触及），条件未触发，不存在应采纳未采纳的漂移面。"
+suggestions:
+  - "已解决：§6.3 依赖清单缺 dep-N 合同真实载体、D-6 Context 把「dep-5 的 dep-N 合同」错误归属（上轮 blocker，对照键 = 该条全文）。本轮逐项闭合复核：① §6.3 新增 dep-23：repo=tools、relative path=skills/develop/write-tech-design/SKILL.md；skills/develop/review-tech-design/SKILL.md、stable symbol=「既有实现依赖与事实」合同段（write-tech-design Step 2.6：dep-N 稳定标识、五要素固定结构、commit SHA 必填 40 位、首引序只增不改）+ review-tech-design Step 2.1 引用核验规则、commit SHA=49fa37748d9b2fc7fc58fd53f839e2ed293bde17（=本轮 tools worktree HEAD 实读；五要素齐备、40 位）；其依赖结论写明 dep-5 的 ARCHITECTURE.md 全文不含 dep-N/「既有实现依赖」字样、不承载该合同——本轮实读零命中，与结论一致。② D-6 Context 与 §2.2 S6 的错误归属均已改为指向 dep-23（S6 经 §5 D-6 指向）；「自 CR-2026-067 合并起对后续 SDD 生效」「CR-2026-067 SDD 的 D-6 时序差」两半句保留，本轮以 CR-2026-067/sdd.md D-6 实读 + git log（fa179bb=CR-2026-067 TASK-01 引入合同、d62d16e=merge CR-2026-067）复核成立。③ 计数 22→23：D-6 Consequences「本 CR 共 23 项」与 §6.3 实际条目数一致。④ 编号序自检：dep-23 首引在 §5 D-6（晚于 dep-22 首引 §4.6），正文 243 处 dep-N 引用零缺失、首引序 1..23 严格递增、表内连续无空洞。无残留、无部分解决。"
+  - "已解决：上轮 5 条范围外 suggestion（非 blocker）本轮全部被作者顺带采纳并逐条核实：① §6.7 编号定义改为「SDD-CLOSE-01~04 见本节表，SDD-CLOSE-05 见 §7.1」（与 05 实际定义处一致）；② §1.2 鸟瞰图注明计数单位（= §6.5 条款 A~G）且 write-dev-plan 行改「= 3 处（§6.5-A/B/C）」、B 合并承载 FR-3 与 FR-4，逐文件求和 3+1+1+1+1=7 与「共 7 处落点」/§9/AC-7 一致；③ §6.5-G ❌ 分支改为「按缺口所属产物回到对应写作节点（plan 侧环境声明回 write-dev-plan、TASK 拆分侧回 write-dev-tasks）重新执行后再确认」；④ §6.5-B B-1 命令形态复述改为引用证据命令表 bullets 既有口径并加「不另立第二套形态判据」（AC-3① 判据面不缩小）；⑤ §4.5/§6.2 的 readinesMap 拼写已修正为 readinessMap（正文残留 0 处；修订记录 L949 的 readinesMap 为对被修复拼写的历史性引用）。均未扩大批准范围、未改验收门槛。"
+review-loop:
+  current-attempt: 2
+subject-file: change-requests/CR-2026-068/sdd.md
+subject-sha256: d2562c30145326f949d3376481a8ced48157934b7addbc684d89f8b6e69979f3
