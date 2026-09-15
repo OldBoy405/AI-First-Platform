@@ -17,9 +17,9 @@ target-version: 0.40
 target-spec-id: ai-first-platform
 source: AIFI-29
 origin: ""
-status: tech-design-reviewed
+status: task-breakdown
 created: "2026-09-15T07:32:28+08:00"
-updated: "2026-09-15T09:20:01+08:00"
+updated: "2026-09-15T10:24:43+08:00"
 remote-ref: ""
 last-push-at: ""
 last-push-by: ""
