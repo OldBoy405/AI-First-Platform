@@ -1,0 +1,22 @@
+cr-id: CR-2026-069
+review-type: requirement
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-17T15:16:40+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  结构完整性: "通过——7 章齐全（概述／用户故事／FR／NFR／AC／成功指标／范围排除），§1.4 十六项落笔前事实与 §1.5 九条口径钉定齐备；本轮实测 §1.3 的 scope 段与 cr.md summary、_backlog.yml summary 三者逐字一致，§1.3.1 的 scope_in 前缀与来源 §1 三项原文一致（含 FR-3～FR-7、FR-9 排除句）"
+  FR可测试性: "通过——FR-1／FR-2／FR-8 各有对应 AC；AC-1～AC-16 与来源 §9.1 十六条编号连续、逐条一一对应且不合并判据，AC-17～AC-21 在表内标注为本 PRD 新增；判据均为可机械核对的观察点（零 diff 断言、字段集合比对、端到端 sentinel、负向测试、脚本内可测函数），无空泛表述"
+  范围合理性: "通过——§1.3／§1.3.1／§1.3.2／§7 四处的 scope 与排除项互相一致；FR-3～FR-7、FR-9 仅作候选 Backlog 编号占位出现，实读 prd.md 未见任何顺手实施；交付面限定 tools／multica／knowledge-base 三仓且逐仓给出明确不碰清单"
+  与规划对齐: "通过——三条 FR 与来源 §5／§6／§7 逐节对应（FR-8／FR-1／FR-2 的阈值、策略、不变量逐项落地），AC 与 §9.1 一一对应，Q4／Q5／Q7／Q9／Q11／Q16／Q18／Q20／Q21／Q26／Q30／Q32／Q35 的收敛结论在 PRD 内各有落点"
+  依赖识别: "通过——复用面（durable-tx／workspace-transactions／gates／pipeline／writeback／CI）与 FR-2 既有调用方同步义务、Multica 仅接线边界、Runtime 能力不确定风险均已识别并各配 AC；版本与 spec 口径取自 cr.md／specs/_index.yml 事实"
+  契约域闭包: "通过——§1.3.3 显式声明两个新契约（FR-1 的 hook 裁剪决策、FR-2 的新增 --detail）的适用面，并为 FR-8 与既有 HTTP endpoint 写明 N/A 理由；首轮按 Skill 闭包清单核对：命令与 flag、JSON／stdout 输出、错误码、调用者约束、幂等、状态副作用、验收观察点在 FR-2 第 1～7 条与 AC-10／AC-11／AC-21 闭合；FR-1 的必填输入面、落盘面、动作终态集、失败码闭包与 crctl 唯一写入边界在 FR-1 第 1／5／6／7／8／9 条与 AC-3～AC-8、AC-15、AC-16 闭合；残留的 flag 输入约束面见 S-1"
+suggestions:
+  - "本轮新增：S-1（归 write-requirement-prd，落点 prd.md §3 FR-2 第 1～3 条与 §5 AC-10／AC-21）FR-2 钉死了投影命令集（基线选出、覆盖 ≥80% crctl 输出 token 的最小集合）、默认 compact summary 与 --detail 取全量，但未定义新增 flag 的输入约束：未投影命令收到 --detail 时是接受（等价于现状）、忽略，还是按既有未知 flag 口径拒绝；FR-2 第 4 条只写了错误路径不进 summary 投影，未写 --detail 与错误路径叠加时的口径。影响：不改变任何 AC 判据（未投影命令默认输出即全量，无真实调用方需要在该处补 --detail），但 SDD／实现期存在两种读法，后续按 AC-21 机械核对『调用方显式补 --detail』时也无法判定越界。建议二选一写死一句，例如『--detail 仅由投影命令集识别，其它命令保持既有 flag 校验口径、不新增 --detail 语义』或『所有命令接受 --detail、未投影命令等价于现状』，并在 AC-10／AC-21 的核对点引用该句。"
+  - "本轮新增：S-2（归 write-requirement-prd，落点 prd.md §3 FR-1 第 7 条末句）FR-1 第 7 条末句写『unavailable 只由第 8 项的降级面产生』，与同条第 5 项及第 7 条④『某条 Runtime 路径无法安全保持字段／结果结构 → 不得裁剪并把该路径标 coverage=unavailable』（AC-15 亦如此要求）不一致——路径级 unavailable 也是该取值的合法来源。影响：AC-15 与第 5 条已把路径级标记钉住，实现唯一性与验收可达性不受影响；但末句字面冲突可能被实现期读成『路径级 unavailable 不合法』而漏标，使 FR-8 的覆盖度口径失真。建议改为『unavailable 只由第 5 项的字段／结构不可保持面与第 8 项的降级面产生』，与 AC-15 对齐。"
+  - "本轮新增：S-3（归 write-requirement-prd，落点 prd.md §1.5 第 4 条与 §5 AC-4）AC-4 是硬验收（Pi／Claude／CodeBuddy／Qoder 四个 Adapter 通过 conformance.json 的 full 向量），而 §1.5 第 4 条允许实施期发现某 Runtime 不具备 full 能力时把 capabilities.json 降为 partial／unavailable 并『据此调整 §6.11 启用顺序』，未写明该降级对 AC-4 的影响与决策入口。影响：AC-4 的判据本身仍可机械核对（无『宣称 full 但向量缺失』），但『目标未达成』与『诚实降级』在交付中缺判据区分，存在把降级静默吸收为通过的空间。建议在 §1.5 第 4 条补一句：任一 Runtime 由 full 降级即视为 AC-4 未达成，须回到人工确认（scope amendment）后重定 AC-4，不在交付中静默吸收。"
+  - "本轮新增：S-4（归 write-requirement-prd，落点 prd.md §1.4 事实 7 与事实 10 的计数口径）事实 7 的『ok( 调用点 36 处』未注明计数口径——本轮实测：语句起始的 ok( 调用点 36 处，而全量匹配 ok( 共 45 处（差集含定义 1 处、return ok( 5 处等），同句 fail( 247 处与全量匹配一致；事实 10 的 1032／604 为落笔时盘面，本轮复核实测 1036／606，而按来源区间过滤的 584+89=673 与事实一致。影响：不影响任何 FR／AC 判据，但按字面复核会得到不同数字，重复事实 16 已记录的『cmp／逐字节』同类假失败教训。建议为该类计数补口径与观测时刻（或改写为『重跑该命令即得』），与 AC-17③ 不硬编码样本常量的口径一致。"
+review-loop:
+  current-attempt: 1
+subject-file: change-requests/CR-2026-069/prd.md
+subject-sha256: 4747bd529a281a08139561b33f6f59dca63987cb75c4a42c0d907016e7514866
