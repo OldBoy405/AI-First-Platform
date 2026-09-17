@@ -17,9 +17,9 @@ target-version: 0.42
 target-spec-id: ai-first-platform
 source: AIFI-32
 origin: ""
-status: code-approved
+status: merging
 created: "2026-09-17T14:33:42+08:00"
-updated: "2026-09-17T22:03:25+08:00"
+updated: "2026-09-17T22:06:23+08:00"
 remote-ref: ""
 last-push-at: ""
 last-push-by: ""
