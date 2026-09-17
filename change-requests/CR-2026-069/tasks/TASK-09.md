@@ -32,11 +32,11 @@ created: 2026-09-17T17:32:00+08:00
 | `server/internal/daemon/execenv/outputguard_config.go` | 新增（挂载解析；只写路径引用，**不复制 policy**；`// AIFIRST:` 标记 + `CR-2026-069` 追溯） | §4.9 A9 第 1~3 步 |
 | `server/internal/daemon/execenv/crguard_config.go` | 改（**签名逐字不变**；在既有 claude 分支的单写入点内消费 `prepareOutputGuard(...)` 的可空产出并合成 OutputGuard hooks；挂载不可得时行为逐字不变） | §4.9 A9 第 3/5 步 |
 | `server/internal/daemon/execenv/outputguard_config_test.go` | 新增（同包回归：≥4 个 `TestOutputGuard*` 函数） | §6.4 改动清单 |
-| `CUSTOM.md` | 改（《代码改动明细》新增稳定 ID **#95** 行：`crguard_config.go` 新入参 + `outputguard_config.go` 新文件；含「合并注意」与「验证：」最小命令） | `dep-18`、AGENTS.md 纪律 10 |
+| `CUSTOM.md` | 改（《代码改动明细》新增稳定 ID **#95** 行：`crguard_config.go` 单写入点内合成 OutputGuard hooks（挂载输入经 `prepareOutputGuard(...)` 取得）+ `outputguard_config.go` 新文件；含「合并注意」与「验证：」最小命令） | `dep-18`、AGENTS.md 纪律 10 |
 
 ## 3. 实现要点
 
-1. **A9 七步逐条**（§4.9）：① 读本地安装配置（一个显式环境变量指向 Tools Release 根；**未配置 ⇒ 本次挂载整体跳过、既有行为逐字不变**）；② 解析 `output-guard/adapters/<provider>/` 下的 hook 入口绝对路径与 policy 读取面（**只写路径引用**）；③ provider 分支表（写入者唯一 = daemon）；④ `codebuddy` / `qoder` / `pi` / `codex` 一律**不写**（显式设计）；⑤ claude 分支：目标 `{workDir}/.claude/settings.json`，与该 provider 既有的 crctl 守卫 hooks **在同一个配置对象内合成**——同一 JSON 只写一次，hooks 数组按"既有段在前、OutputGuard 段在后"追加。
+1. **A9 五步逐条**（§4.9）：① 读本地安装配置（一个显式环境变量指向 Tools Release 根；**未配置 ⇒ 本次挂载整体跳过、既有行为逐字不变**）；② 解析 `output-guard/adapters/<provider>/` 下的 hook 入口绝对路径与 policy 读取面（**只写路径引用**）；③ provider 分支表（写入者唯一 = daemon）；④ `codebuddy` / `qoder` / `pi` / `codex` 一律**不写**（显式设计）；⑤ claude 分支：目标 `{workDir}/.claude/settings.json`，与该 provider 既有的 crctl 守卫 hooks **在同一个配置对象内合成**——同一 JSON 只写一次，hooks 数组按"既有段在前、OutputGuard 段在后"追加。
 2. **不 clobber 判据（沿用既有语义）**：目标 `.claude/settings.json` **已存在**（用户自带配置 / `local_directory` 流）⇒ 不写、不合并、不覆盖，沿用 `dep-4` 的"存在即跳过并告警"；该次挂载记为未完成，由安装期检查（`check-install.mjs`）显式报告（AC-19③，不静默假装生效）。
 3. **挂载不可得 ⇒ 既有输出逐字不变**：Tools Release 根未配置（`prepareOutputGuard` 返回 `ok=false`）时，`prepareCRGuard` 写出内容与改造前**逐字相同**（含 JSON 缩进与末尾换行）；新增测试必须逐字断言这一点。此即 SDD §1.2「新增可空入参」的可读落实——可空的是**挂载输入**（`outputGuardMount` + `ok` 位），不是调用方要传的形参：Go 无默认参数，加形参会强制改调用点 `execenv.go`，而 SDD §1.2 的 multica 落点清单未包含该文件（§4.9 第 1 步的输入恰为 `envRoot`/`workDir`/`provider`）。
 4. **唯一 hooks 写入分支**：`crguard_config.go` 内 `provider ==` 的比较**恰出现一次**且是 `"claude"`（机械判据）；不得为其它 provider 新增写点。
