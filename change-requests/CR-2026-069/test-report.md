@@ -3,7 +3,7 @@ cr: CR-2026-069
 status: pass
 tester: Ray
 generated-by: crctl-test
-generated-at: "2026-09-17T20:53:56+08:00"
+generated-at: "2026-09-17T21:47:17+08:00"
 command-digest: 2f583dabc4e0b309fd236d60f271d3a7cf7db149bc517d15caabd517a8f06a39
 commands:
   - repo: tools
@@ -114,93 +114,69 @@ commands:
 
 ## 1. 测试摘要（对应 TASK 验收条件）
 
-`write-test-report` attempt **1/3**（`review-loop.yml#write-test-report`），`crctl test` 一次执行即 `status=pass`：**9 条证据命令全部 `exit-code=0`、`timed-out=false`、`skipped=false`**。命令集为 `plan.md` §6.2 表内字面 args 的**逐字转录**（`.crctl/tmp/test-plan.json`，9 行竖线数全 7、9 个 `args` cell 全部 `JSON.parse` 通过），无第二生成步骤、未在实现期改写命令算法。
+`write-test-report` attempt **2/3**（`review-loop.yml#write-test-report`；本轮为 `review-code` 第 1 轮 BLOCK 的回修复跑），`crctl test` 一次执行即 `status=pass`：**9 条证据命令全部 `exit-code=0` / `timed-out=false` / `skipped=false`**。命令集为 `plan.md` §6.2 表内字面 args 的**逐字转录**（`.crctl/tmp/test-plan.json` 用入库前的转录脚本重放，9 行竖线数全 7、9 个 `args` cell 全部 `JSON.parse` 通过），且 **`command-digest = 2f583dabc4e0b309…` 与 dev-start 基线那一轮完全相等** ⇒ 命令集合零漂移、验收门槛未被改动。
 
-- 全量回归（`cmd-01`）：`files_executed=23` / `cases_executed=613` / `failures=0` / `skipped_file_level=0` / `exceptions_count=0` / `verdict=pass`，`duration_ms=929968`（池 15）；棘轮 `registry_sha256=8e034859426f5dc24ebb342d2db615e1191dc18a0aba4b87d559a8d2dcaa406f`。
-- 落点即 §5.1 checklist 的 10 条：第 1、2、3、4、5、6、7、8、9 条由下表的 `cmd-NN` 逐条兑现；第 10 条由 `crctl next` 兑现（本节点收口后 `next = push-progress → review-code`，无 `gateBlocker`）。
-- 时长预算：本批 ≈ 940 s（`cmd-01` 930 s 为主要耗时）< 节点 `timeoutMinutes=20`（1200 s）。
+- 全量回归（`cmd-01`）：`files_executed=23` / `cases_executed=613` / `failures=0` / `skipped_file_level=0` / `exceptions_count=0` / `verdict=pass`，`duration_ms=886821`（池 15）；棘轮 `registry_sha256=8e034859426f5dc24ebb342d2db615e1191dc18a0aba4b87d559a8d2dcaa406f`（与上一轮同值）。
+- 新增合同面（`cmd-02`）：6 个测试文件 **62 用例全绿**（spec 口径复算 `tests 62 / pass 62 / fail 0 / skipped 0`；其中 `output-guard/test/**` 三个文件 35 用例：core 20 + conformance 6 + adapters-contract 9）。
+- 时长预算：本批 ≈ 890 s（`cmd-01` 887 s 为主要耗时）< 节点 `timeoutMinutes=20`（1200 s）。
 
-## 2. 验证命令与结果解读
+## 2. 本轮回修（review-code 第 1 轮 4 条 blocker）与判据落点
+
+| blocker | 根因 | 实现改动（tools / multica） | 机械判据（本轮新增，均在 `cmd-02` / `cmd-06` 执行面内） |
+|---|---|---|---|
+| B-1 逃生阀在 Post 面不生效 | Post 面决策拿不到本调用命令首行，`evaluateResult` 只按结果正文封顶 | `core.mjs#evaluateResult` 先回放 §4.2 步骤②：本调用 `callCommand` 首行合法逃生阀 ⇒ `action=passthrough`、正文逐字、`trailer=''`；五个 Adapter（claude/codebuddy/qoder/codex 的 `posttooluse-guard.mjs` + pi 的 `index.ts`）从**同一 payload** 取 `tool_input.command` / `event.input.command` 传入 | 向量 `dec-05`（`expect.trailer=''` + `expect.body` 逐字 + `adapterExpect.patch=false`）→ `conf-05`（Core 侧）与 `ac-03`（五个 Adapter 侧：**无回填、stdout 无 trailer**）双侧断言；`core.test.mjs` 增「Post 面逃生阀回放」用例（含不合法标记 ⇒ 仍裁剪、非 shell 工具无逃生阀面、跨调用零状态三条边界） |
+| B-2 读取行号与续读锚点不是调用实际窗口 | `truncateRead` 把窗口第一行硬编为 1、续读硬编为 `kept+1`；`ResultInput` 与 Adapter 都不传本调用 `offset` | `truncateRead(lines, policy, windowStart)`：行号 = `windowStart + i`、续读锚点 = `windowStart + kept`；缺省 1（与改造前逐字相同）；Adapter 从同一 payload 取 `offset`（正整数生效） | 向量 `dec-06`（`offset=500` + 900 行正文）：`probe.bodyFirstLinePrefix='500\t'`、`bodyIncludes=['offset=638 limit=138']`、`bodyExcludes=['1\tfile-line-500','offset=139 limit=138']`（**同时钉住旧行为负向**）；`core.test.mjs` 增「窗口起点非 1 / 缺省 / 非法 offset 回落」用例。一手复现：`first="500\tfile-line-500"`、`hint="继续读取：offset=638 limit=138"` |
+| B-3 `cat`/`Get-Content` 结果没走读取面算法 | Post 面的 kind 只从结果正文/工具名推断（`inferKind`），拿不到 Pre 面已判定的命令族 | `core.mjs#resultKind`：显式 `input.kind` → 本调用命令族（`classifyFamily` 且 `determinate=true`）→ `inferKind`；族判定函数与 Pre 面同一个 | 向量 `dec-07`（`callCommand='cat output-guard/core.mjs'` + 无路径/无命中正文）：`expect.kind='read'`、`probe.bodyFirstLinePrefix='1\t'`、`bodyExcludes=['已省略']`；`core.test.mjs` 增「读取族/列举族/搜索族/不确定命令」四类对照用例（同一条正文在有/无 `callCommand` 下 kind 分别为 `read` / `generic`） |
+| B-4 `capabilities.paths` 的 full 路径在安装面不可达 | 四份 Adapter 模板与 multica 合成面的 `matcher` 只枚举 shell 工具名（`Bash\|Shell\|run_in_terminal`），非 shell 读取路径（`Read`/`Grep`/`read_file`/`apply_patch`）不会触发 hook，但 `capabilities.json` 声明其为 full | 四份模板 matcher 改为**覆盖该 Runtime 声明的全部已覆盖路径**（claude `Bash\|Read\|Grep`、codebuddy `Bash\|Read`、qoder `run_in_terminal\|read_file`、codex `Bash\|apply_patch`）；`../multica` 的 `composeOutputGuardHooks` 同批改为按 `outputGuardClaudeMatcherToolNames` 常量合成，并删去不可达的 per-provider 表与 `known` 分支 | `adapters-contract.test.mjs` 新增 **ac-09**：逐 Runtime 读模板 matcher 工具名集合，断言 **`paths[full] ⊆ matcher`** 且 **`matcher ⊆ 已声明路径`**（双向；pi 走扩展入口不在 matcher 面，显式排除并单独钉住入口存在与 full 非空）；multica 侧新增同包 `TestOutputGuardClaudeMatcherCoversDeclaredFullPaths`（合成 matcher 必须覆盖 `Bash`/`Read`/`Grep`，且不得退回 shell-only 枚举）。一手读数：四 Runtime 全部 `full⊆matcher=true` |
+
+**取向说明（供复评核对，避免静默吸收）**：B-1/B-2/B-3 按 blocker 给出的「判定落在 Core 内」取向实现（三者在同一处 Post 映射完成，Adapter 内零算法）。该取向的契约载体是 `output-guard/core.mjs` 的 `ResultInput` JSDoc —— **SDD §3.2 原话「类型（结构化契约；实施时以 JSDoc 承载，不引入 TS 构建）」**，三个输入（`kind` / `callCommand` / `offset`）是**纯追加可选字段**，不改变 §3.2 已宣告字段（`runtime`/`toolName`/`toolCallId`/`isError`/`exitCode?`/`body`/`structure`）的名字与语义；既有的 `kind` 即同类扩展的既有先例。
+
+B-1/B-2 的另一个取向（「同步改写 SDD §3.2 的 `ResultInput`」）与本 CR 已批准的约束**不可同时成立**：`plan.md` 第 366 行明文「不改 `sdd.md`/`prd.md` 一个字节（评审与审批双重绑定；`cmd-05` 的 KB `zero_diff` 面机械兑现）」，而 `cmd-05` 正是本 CR 的 canonical 证据命令之一；`plan.md` 自身又参与 dev-start 复合摘要与审批 `evidence-digest`。本轮按「保持 `sdd.md` 零字节改动」落地（`sha256(LF)=912627cb08d1a405068375c4fc5ad706241031a55a01cd435deba0fe0acea480`，与技术评审 `review-annotations/sdd.yml#subject-sha256` 全等；`cmd-05` 的 KB `zero_diff` 面实测零命中）。该取向差异已同步写入 `evidence/ac14-smoke.md` §8 更正记录与 Issue 回修记录；**若复评要求改走 SDD 同步取向，需 owner 裁定**（改 `plan.md` 会直接触发 dev-plan digest 漂移与 dev-start 审批 `EVIDENCE_DRIFT`，属人工动作，本节点不得自行吸收）。
+
+## 3. 验证命令与结果解读
 
 | 证据ID | 执行面（repo / cwd） | exit | 关键读数（`test-evidence/cmd-NN.log`） |
 |---|---|---|---|
-| cmd-01 | tools / `.`：`suite-gate.mjs --run` 全量回归 + 棘轮 | 0 | 23 文件 / **613 用例** / `failures=0` / `exceptions_count=0` / `verdict=pass`（930 s，`converged=true`） |
-| cmd-02 | tools / `.`：6 个新增测试文件（`--test-reporter=dot`） | 0 | **56 用例全绿**（点阵 20+20+16；`skipped` 恒 false，dot reporter 已避开 spec reporter 的 `skipped` 字样误命中） |
+| cmd-01 | tools / `.`：`suite-gate.mjs --run` 全量回归 + 棘轮 | 0 | 23 文件 / **613 用例** / `failures=0` / `exceptions_count=0` / `verdict=pass`（887 s，`converged=true`） |
+| cmd-02 | tools / `.`：6 个新增测试文件（`--test-reporter=dot`） | 0 | **62 用例全绿**（点阵输出全绿 + 退出码 0；spec 口径复算 `tests 62 / pass 62 / fail 0 / skipped 0`，`skipped` 恒 false） |
 | cmd-03 | tools / `.`：CI 静态面四步（lint-prompts / skill-matrix / agents-contract / writeback-tests） | 0 | 四步各 `exit=0`；`pipeline templates = 8` / `reviewLoops = 6` / `active skills = 56`；`audit-ci failures = 0` |
 | cmd-04 | tools / `.`：交付面审计（37 个必到文件 + 零依赖 + 零第二份 policy + 零阈值常量 + README/模板不复刻 + `ok(`/`fail(` 计数 + golden 面 + 棘轮 manifest） | 0 | `checked files = 37`；`ok(` = 45 / `fail(` = 247 不变量成立；`--detail` 落在 `parseArgs` 内；`manifest.files` = 23、`exceptions = []`；`audit-delivery failures = 0` |
-| cmd-05 | tools+multica+KB / `.`：三仓 diff 白名单 + AC-10 活体核对 | 0 | tools diff **50** 路径（白名单**双向相等**）、multica diff **4** 路径、KB diff **22** 路径；`crctl.mjs changed lines = +8 / −1`（上界 10，无 `fail(`/门禁行删改）；`SUMMARY_PROJECTORS` 键集 ≡ `evidence/ac10-selection.json#minimalSet` = **4 项**；`audit-diff failures = 0` |
-| cmd-06 | multica / `server`：`go test ./internal/daemon/execenv/ -run TestOutputGuard -v -count=1` | 0 | 6 个 `TestOutputGuard*` 全 `--- PASS:`（`ok … 0.124s`），含「已存在则不 clobber」告警路径与「无 Tools Root ⇒ 既有输出逐字不变」两条 |
-| cmd-07 | multica / `.`：源码级存在性守卫（防 `-run` 空跑假绿）+ `CUSTOM.md#95` 台账 | 0 | `func TestOutputGuard = 6` / `func Test(合计) = 6`；`crguard_config.go` 的 `provider ==` 仍**恰 1 处**（claude）；`outputguard_config.go` 只写路径引用；`CUSTOM.md` 命中 `CR-2026-069` / `#95` / 验证句；`audit-multica failures = 0` |
+| cmd-05 | tools+multica+KB / `.`：三仓 diff 白名单 + AC-10 活体核对 | 0 | tools diff **50** 路径、multica diff **4** 路径、KB diff **33** 路径（含 `evidence/**`、`test-report.md`、`test-evidence/**`、`traceability.yml`、`review-loop.yml`、`_backlog.yml`）；`crctl.mjs changed lines = +8 / −1`（上界 10，无 `fail(`/门禁行删改）；`SUMMARY_PROJECTORS` 键集 ≡ `evidence/ac10-selection.json#minimalSet` = **4 项**；`audit-diff failures = 0`（KB `zero_diff` 面含 `sdd.md`/`prd.md`，本轮实测零命中） |
+| cmd-06 | multica / `server`：`go test ./internal/daemon/execenv/ -run TestOutputGuard -v -count=1` | 0 | **7 个 `TestOutputGuard*` 全 `--- PASS:`**（含本轮新增的 matcher 覆盖断言），`ok … 0.141s` |
+| cmd-07 | multica / `.`：源码级存在性守卫（防 `-run` 空跑假绿）+ `CUSTOM.md#95` 台账 | 0 | `func TestOutputGuard = 7` / `func Test(合计) = 7`；`crguard_config.go` 的 `provider ==` 仍**恰 1 处**（claude）；`outputguard_config.go` 只写路径引用、零阈值键名；`CUSTOM.md` 命中 `CR-2026-069` / `#95` / 验证句；`audit-multica failures = 0` |
 | cmd-08 | KB / `.`：证据面审计（baseline 字段集与口径义务 + 最小集合独立重算 + ac9 抽检面 + ac14 逐 Runtime 段） | 0 | `ac10 独立重算最小集合 = 4 项` ≡ `evidence.minimalSet`；`baselineSha256` 绑定成立；逐 Runtime 四类行为关键词与 `ENVIRONMENT_MISMATCH` 段的「所需建立动作」齐备；`audit-evidence failures = 0` |
-| cmd-09 | tools / `.`：安装期只读读数（`check-install.mjs --tools-root .`）+ 只读负向 | 0 | `[check-install] exit=0`；**5 行 canonical**：`pi`/`claude`/`codebuddy`/`qoder` = `coverage=full`，`codex` = `coverage=partial`（`policy=v1`）；`read-only negative: worktree status unchanged (empty=true)`；`audit-check-install failures = 0` |
+| cmd-09 | tools / `.`：安装期只读读数（`check-install.mjs --tools-root .`）+ 只读负向 | 0 | `[check-install] exit=0`；**5 行 canonical**：`pi`/`claude`/`codebuddy`/`qoder` = `coverage=full`，`codex` = `coverage=partial`（`policy=v1`）；`read-only negative: worktree status unchanged`；`audit-check-install failures = 0` |
 
-## 3. TASK 验收覆盖矩阵
+**证据链覆盖声明**：本轮全部新增断言（`dec-05` / `dec-06` / `dec-07` / `ac-09` / core 三条新用例 / multica 新 Go 用例）都落在 `cmd-02` 与 `cmd-06` 的执行面内，且 `command-digest` 与上一轮全等 ⇒ **未通过改命令集来"覆盖"新断言**。
 
-| TASK | 交付面 | 验收证据 | 结果 |
-|---|---|---|---|
-| TASK-01 | `cr-cost.mjs` 四子命令 + lib 四件 + 回归面；并产出 `policy.json` thresholds 数值与 FR-2 summary 命令集 | cmd-02、cmd-04（零硬编码 672/585）、cmd-08（baseline 字段集与口径） | pass |
-| TASK-02 | Core 纯函数 + `policy.json` / `capabilities.json` / `conformance.json` + `check-install.mjs` + README + 三个测试 + CI 触发面 | cmd-02、cmd-04、cmd-09、cmd-03（CI 步骤 token） | pass |
-| TASK-03 | Pi Adapter（`index.ts` + 宿主级安装 README） | cmd-02、cmd-04（相对说明符 / 无 `{TOOLS_ROOT}`）、cmd-09 | pass |
-| TASK-04 | Claude Adapter（pre/post + `settings.template.json`） | cmd-02、cmd-06（与 daemon 合成面契约一致） | pass |
-| TASK-05 | CodeBuddy Adapter（pre/post + `updatedToolOutput`） | cmd-02、cmd-04 | pass |
-| TASK-06 | Qoder Adapter（同协议族 + `startRecord=none`） | cmd-02、cmd-04（`capabilities.qoder.startRecord=none`）、cmd-09 | pass |
-| TASK-07 | Codex Adapter（partial + `hooks.json.template` + uncovered 逐条） | cmd-02、cmd-04（`coverage=partial` 与 uncovered 声明） | pass |
-| TASK-08 | FR-2 投影层 + `crctl.mjs` 三处落点 + golden 金样本 + 两张合同测试 + 棘轮登记 + 5 份 Skill 采纳面 + 导航 | cmd-01（棘轮 23 文件）、cmd-04（计数与 manifest）、cmd-05（活体 4 项、+8/−1） | pass |
-| TASK-09 | multica Managed 挂载：单写入点合成（仅 claude）+ `outputguard_config.go` + 同包回归 + `CUSTOM.md#95` | cmd-06、cmd-07、cmd-05（multica 4 路径且 5 个 `zero_diff` 面零 diff） | pass |
-| TASK-10 | 冒烟与启用顺序取证 + `after` 复测能力 + AC-9 抽检记录面 | cmd-08、cmd-09；`evidence/ac14-smoke.md` §6/§7 | pass（AC-14 **真实会话冒烟**按 `ENVIRONMENT_MISMATCH` 登记，见 §5 第 1 条） |
+## 4. TASK 验收覆盖矩阵（本轮受影响面）
 
-## 4. 新增 / 修改测试文件
+| TASK | 受影响的验收条件 | 本轮证据 |
+|---|---|---|
+| TASK-02（core/policy/capabilities/conformance + check-install） | 条件 1 向量面、条件 3 三份 JSON 形态 | `cmd-02`（conformance 16 向量 / `declaredVectorCount=16` 自棘轮）、`cmd-04`、`cmd-09` |
+| TASK-03（Pi Adapter） | **条件 4「逃生阀 ⇒ 完整结果」**（上一轮判为未达成） | `dec-05` 经 `ac-03` 在 pi 入口执行（无回填、无 trailer）；`core.test.mjs` 的 Post 面回放用例 |
+| TASK-04（Claude Adapter） | **条件 3 的「裁剪（`cat` 全文）」**（上一轮因 AC-14 环境中止未执行；本轮按 SDD §4.3 判定并机械断言） | `dec-07`（`cat` ⇒ `kind=read`）、`dec-06`（窗口锚点）、`ac-09`（claude matcher 覆盖 `Bash\|Read\|Grep`） |
+| TASK-05 / TASK-06 / TASK-07（CodeBuddy / Qoder / Codex Adapter） | 安装面 matcher 与声明一致（B-4） | `ac-09` 逐 Runtime；`cmd-09` 的 `coverage` 读数；codex 侧 daemon 合成面见 `cmd-06` |
+| TASK-09（Multica Managed 挂载） | 单写入点合成 + 不 clobber + 未配置即逐字不变 + 非 claude 零写入 | `cmd-06`（7 用例全绿）、`cmd-07`（`provider ==` 恰 1 处；`CUSTOM.md#95` 已补记 matcher 面与验证入口） |
 
-- **tools 新增 6**：`output-guard/test/core.test.mjs`、`output-guard/test/conformance.test.mjs`、`output-guard/test/adapters-contract.test.mjs`、`skills/shared/metrics/test/cr-cost.test.mjs`、`skills/shared/crctl/scripts/test/crctl-summary.test.mjs`、`skills/shared/crctl/scripts/test/caller-contract.test.mjs`（cmd-02 执行，合计 56 用例）。
-- **multica 新增 1**：`server/internal/daemon/execenv/outputguard_config_test.go`（6 个 `TestOutputGuard*`：cmd-06 执行、cmd-07 源码级计数防空跑）。
-- **既有测试面同批修改**：`skills/shared/crctl/scripts/test/gate-registry.json`（`manifest.files` 21 → **23** + 两个新测试文件的 `cases` 条目，`exceptions` 保持 `[]`）；`.github/workflows/crctl-ci.yml`（新增 output-guard 与 metrics 两条 step）。
+## 5. 新增/修改的测试面（本 CR 内，无新增文件）
 
-## 5. 未覆盖风险（含「不适用」说明）
+- `output-guard/conformance.json`：向量 `13 → 16`（`dec-05`/`dec-06`/`dec-07`），新增 `probe`（正文机械断言）与 `adapterExpect.patch`（Post 面是否必须无回填）两个向量字段口径，`$comment` 同步。
+- `output-guard/test/conformance.test.mjs`：`probe` 断言 + `conf-06`（三个新向量的自检：必须带 Post 面无回填声明 / 必须是非 1 窗口起点 / 必须是 shell 读取族命令词）。
+- `output-guard/test/adapters-contract.test.mjs`：`postPayload` 带上本调用入参（`tool_input.command|offset`、pi `input`）、`ac-03` 增「无回填」分支与 `probe` 断言、新增 `ac-09`（paths ↔ matcher 双向一致）。
+- `output-guard/test/core.test.mjs`：+3 用例（窗口起点非 1 / Post 面逃生阀回放 / 命令族 kind 优先）+1 条 trailer 数值形态断言。
+- `server/internal/daemon/execenv/outputguard_config_test.go`：+1 用例（合成 matcher 覆盖声明 full 路径）。`TestOutputGuard*` 由 6 → **7**，`cmd-07` 的存在性守卫随之由 6 → 7（仍 ≥ 4）。
 
-1. **AC-14 真实会话冒烟未执行（`ENVIRONMENT_MISMATCH`，技术中止标签，非代码 blocker）**：五个 Runtime 的宿主级/项目级安装面与 Multica 每任务 env 均未建立（安装是部署动作，`dep-1` FR-1 第 10 项）；已按逐 Runtime「所需建立动作」登记在 `evidence/ac14-smoke.md`，五个 Runtime 一律记**未启用**，离线等价面在 `output-guard/test/adapters-contract.test.mjs`（cmd-02 覆盖），**未用离线观测冒充真实冒烟**。处置口径与部署窗口清单见 §7。
-2. **Codex partial 的 uncovered 路径**：`hosted-WebSearch` / `codex-cloud-tasks` 不经本地 hook、本适配器**不生效**，设计即声明为 uncovered（`capabilities.json`，cmd-04 断言其在位），**不追求覆盖**，非缺陷。
-3. **multica `execenv` 包上游既有红面（24 项本机失败）**：不登记为本 CR 例外、也不声明整包绿（plan §5.3）；本 CR 以定点 `-run TestOutputGuard` + 源码级存在性守卫取证（cmd-06 + cmd-07），上游债务不在本 CR 范围。
-4. **`review-dev-plan` cycle 2 建议 1（`cmd-09` 降级态假红通道）保留**：`cmd-09` 的输出语义扫描会对含 `install` 等子串的行判红，而符合契约的 repair 行若写脚本全路径会命中 `install`。两个修复方向都要改 `plan.md`（判据或契约措辞），而 `plan.md` 已随 dev-start 审批以 digest 钉住（改它 ⇒ `EVIDENCE_DRIFT` + 重审 + 人工复批），**超出本节点授权**；当前实现不触发（repair 行不含四个子串，`cmd-09` exit 0）。触发条件与修复方向已登记，供后续维护 CR 消费。
-5. **`review-dev-plan` cycle 2 建议 3（`cmd-03` 的 `reviewLoops` / active skills 为日志读数）保留**：同理属 `plan.md` 判据/表述层，本节点不改；且两值另有硬判据兜住（各模板节点数逐表断言、`maxAttempts=3` 硬断言、`skills/_index.yml` 与 `pipeline-templates/_index.yml` 落在 `cmd-05` 的 `zero_diff` 面）。本批实测读数与申报值一致（6 / 56）。
-6. **不适用声明**：本 CR 无独立 lint / build 面——tools 与新增脚本为零依赖 ESM（无构建步骤，静态面由 `cmd-03`/`cmd-04` 承担），multica 侧编译由 `cmd-06` 的 `go test`（编译失败即非零退出）承担；不新增打包形态、不启停共享服务、不跑数据库迁移（plan §5.0 不适用声明）。
+## 6. 未覆盖风险
 
-## 6. M4/M5 取证清单（部署窗口 + 评审口径）
-
-**6.1 `owners.development` 的 A/B 事实核对结果（本节点独立复测，落盘 `31d69cb1`）**
-
-| 项 | owner 原述 | 本节点实测 | 处置 |
-|---|---|---|---|
-| A：宿主级配置面 | 「宿主机的配置都有，只是当前的 worktree 环境获取不到」 | **文件存在性成立**：`~/.pi/agent/settings.json`（2,645 B）、`~/.claude/settings.json`（1,185 B）、`~/.codebuddy/settings.json`（101 B）、`~/.qoder/settings.json`（1,812 B）四面存在；**均 0 处 OutputGuard 安装痕迹**；`~/.codex/hooks.json` 与（设计所钉的）`~/.lingma/settings.json` 两面**文件不存在**。「worktree 获取不到」不成立——同一宿主进程可直接读到这四个文件；唯一仍不可观测的是 **Multica 每任务 env**（与登记一致） | 「面存在、安装未建立」的口径补正写入 `evidence/ac14-smoke.md` §0 与 §8；**结论不受影响**（五面安装一律未建立 ⇒ 仍全部「未启用」） |
-| B：qodercli 安装路径 | `C:\Users\GOBAO.qoder-cn\bin\qoderclicn\` | 本机**不存在**该路径（按字面与按 `.qoder-cn` 两种读法均 False；`C:\Users` / `D:\tools` / `%APPDATA%` / `%LOCALAPPDATA%` 下无任何 `qoder-cn` 目录）。实际：`qodercli` → `D:\tools\npm-global\qodercli.ps1`（同目录 `qodercli.cmd` / `qoder.cmd` / `qoder.ps1`） | 同上，写进 §0 补正；**未改判**：安装面仍按已审批设计（`dep-11` / SDD §2.2.2 的 `.lingma/settings.json` + `startRecord=none`），差异留痕在 `output-guard/adapters/qoder/README.md` §1 与本证据 §4 |
-
-**6.2 为什么这次更正不触动已审批对象（机器证明）**
-
-- dev-start 审批的 `evidence-digest` 覆盖面 = `gates.json#approvalStages["dev-start"].evidence`（`review-annotations/dev-plan.yml` + `plan.md`），**不含** `evidence/**`；dev-plan 复合摘要 = `plan.md` + `tasks/TASK-*.md`（`crctl.mjs#devPlanCompositeDigest`）。
-- 更正落盘后现算：`devPlanCompositeDigest = 8eb8a68197fbb59267cd58bbc4c4df2c9b55dd06111a06f4808c800779cf0929` **= annotation `subject-sha256`**（无漂移）；`plan.md` LF sha256 = `93d7627ff9567ee5c2d328032aa93fdd491fb5ea4637c558fbf6374bb82a9e7a` **= 审批钉住值**；`crctl gate CR-2026-069 --for developing` → `pass: true`（`approval#development-start` 检查项 `ok`），`gateBlockers` 未出现 `EVIDENCE_DRIFT`。
-- 更正是**只增不改**的口径补正：`cmd-08` 的逐 Runtime 段落扫描仍全绿（`runtime=` 出现次数仍为 5，逐段四类行为与 `所需建立动作` 齐备）。
-- **未做的部分**：B 项的**安装面改判**（`.lingma` → `.qoder`）属 **scope amendment**，仅在 owner 明确指示后才可改，本节点不自行改写（代码与 `capabilities.json` 仍按已审批设计）。
-
-**6.3 Qoder 配置面差异的既有结论（供 `review-code` 按同一口径复核，勿按 README 字面重开）**
-
-- 事实：厂商现行 CLI hooks 文档给 `.qoder/settings.json`（并列出 `SessionStart`），已审批设计钉 `.lingma/settings.json` + `startRecord=none`。
-- 结论：**按已审批设计结案 + 差异留痕 + 由部署窗口的四类行为冒烟判定**；hook 协议族（`PreToolUse`/`PostToolUse` + `updatedToolOutput`）与 `level=full` 判定**不受影响**；受影响的是部署窗口的安装路径与「无会话启动记录」前提。
-- 留痕两处：`output-guard/adapters/qoder/README.md` §1、`evidence/ac14-smoke.md` §4（及本次 §0/§8 补正）。
-
-**6.4 部署窗口待办（`owners.development` = Ray；本 CR 的门禁、状态与验收**不**由此回收）**
-
-1. 按各 Adapter README 在对应面**显式安装一次**（pi = 宿主级 `extensions[]`；claude = daemon 单写入点合成或项目/用户级模板；codebuddy / qoder = 项目级或用户级 hooks 段，daemon 不触碰；codex = `hooks.json` + `/hooks` 信任）。
-2. 每个 Runtime 在**真实会话**内执行四类行为各一次（拒绝 / 裁剪 / 逃生 / 损坏降级），把读数与 5 行 canonical 安装期读数贴回 `evidence/ac14-smoke.md`；Qoder 的安装路径差异在此步**立即显形**（hooks 是否真的触发即判定）。codex 需至少实测一条 uncovered 路径「不生效」。
-3. FR-8 `after` 复测：`node skills/shared/metrics/scripts/cr-cost.mjs after --window 14d --out <KB evidence 路径> --baseline <本 CR 的 evidence/fr8-baseline.json>`；样本不足 ⇒ `insufficient-sample`（不产出成本结论、不延长本 CR）；结论**不回收**为门禁/状态/验收条件。
-4. 只有三件齐备（conformance 通过 ∧ 真实冒烟通过 ∧ 降级验证通过）才把对应 Runtime 记为**已启用**并按 `capabilities.json#enableOrder` 推进；当前**五项都停在第 2 项**。
-
-**6.5 给 `review-code`（M5）的取证口径提醒**
-
-- 验证证据只读本报告机器区（`generated-by: crctl-test`）、`traceability.yml#tests` 与 `test-evidence/cmd-NN.log`，**不重跑** lint/test/build。
-- §5 第 4、5 条两条建议的**触发条件**已写明：不因 `plan.md` 的字面措辞把它们当 blocker（修它们需要重开计划评审与人工复批）。
-- §6.3 的 Qoder 结论按「已审批设计 + 差异留痕」复核；若要改判，走 scope amendment，不在 code 评审内改。
+1. **AC-14 真实会话冒烟仍为 `ENVIRONMENT_MISMATCH`**（五面安装未建立，属部署窗口；见 `evidence/ac14-smoke.md` §0/§8）：逃生阀、裁剪、拒绝、降级四类行为的**真实会话**观测仍是未覆盖面。本轮把「逃生阀 ⇒ 无回填」从「只有 Pre 面证据」补成「Pre+Post 双侧机械断言」，**不等于**真实会话已观测。
+2. **跨仓 matcher 字面量的双写**：tools 模板的 matcher 与 multica 的 `outputGuardClaudeMatcherToolNames` 是两仓两处字面量，各自有断言（ac-09 / Go 用例）但**没有跨仓一致性断言**（任一仓库的测试都无法读对方 worktree）。只改一侧会静默漂移，需人工核对或后续 CR 增一条跨仓检查命令。
+3. **`read_file` / `apply_patch` 的 kind 归入 generic**：B-4 选择「声明不变、matcher 扩到声明路径」，故 qoder `read_file`、codex `apply_patch` 的结果现在**确实受治理**（超阈值走头尾保留），但不在 §4.3 的三族五命令映射内，会被判 generic 而非 read。若复评认为这两条应走读取面算法，属改 §4.3 映射（scope amendment），本轮未自行扩大。
+4. **Qoder 安装面差异**：`~/.lingma/settings.json` vs 文档的 `~/.qoder/settings.json`（`startRecord=none`）按已审批设计保留，差异留痕在 `adapters/qoder/README.md` §1 与 `evidence/ac14-smoke.md` §4；本轮未改判。
+5. **`reason=DISABLED` 无产生路径**（上一轮 suggestion，本轮未处理）：`check-install.mjs` 只做 Release 内文件存在性检查，不检查「Adapter 是否被 Runtime 配置面引用」；AC-19③ 的验证句只要求打印缺失/损坏与修复命令，故不影响本轮验收。
+6. **AC-9 抽检表的取证边界**：`evidence/ac9-sampling.md` 的逐类分布不是 `cr-cost.mjs replay` 的直接输出（该子命令只发布总数/超阈数四项），已在该文件补记口径与「`read` 行判定属 §4.3 判据陈述、非样本级复核」的边界；数值不受本轮回修影响（不传 `callCommand`/`offset` 时行为逐字不变）。
 
 ## 7. 下一步建议
 
-`crctl next CR-2026-069` 原样：`{"cr":"CR-2026-069","status":"developing","next":"push-progress → review-code","humanApproval":false,"why":"测试证据 pass，推送 checkpoint 后进入代码评审"}`。
-
-本节点提交后交**独立 `quality-reviewer-agent` run** 执行 `review-code`（`workspace-freshness` gate=review-start 前置；三仓 `healthy` / `dirty=false`）；阶段发布的 checkpoint 由 `review-code` 的 PASS 分支按既有口径执行一次，`approve-code` 人工审批不由 Agent 代签。
+- 以 `crctl next CR-2026-069` 为准：**`review-code` 独立复评**（本节点不自行发布、不自造审批命令）。
+- 复评的两条待判点已在 §2 取向说明与 §6 风险 2/3 写明：① 若坚持「SDD §3.2 同步」取向，需 owner 裁定并处理 `plan.md` / `sdd.md` 的 digest 面；② 若要求 `read_file` / `apply_patch` 走读取面算法，属 scope amendment。

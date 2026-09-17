@@ -10,12 +10,13 @@
 
 | 类别 | 条数 | 判定 | 可执行替代写法是否给出 |
 |---|---|---|---|
-| `read`（连续行窗口） | 98 | **合法裁剪**：保留前 `lineWindow` 行 + 原始行号 + `offset/limit` 具体值 | 是（`hints.nextOffset`） |
+| `read`（连续行窗口） | 98 | **合法裁剪**：保留前 `lineWindow` 行 + 原始行号 + `nextOffset` 具体值 | 是（`hints.nextOffset`） |
 | `generic`（头尾保留） | 107 | **合法裁剪**：保留头 `headLines` 行 + 中间省略量 + 尾 `tailLines` 行 | 是（`hints.omitted`） |
 | `search`（唯一文件列表 + 命中数） | 6 | **合法裁剪**：命中数与文件列表来自原始正文的机械统计 | 是（`hints.narrow`） |
 | `list`（去重稳定排序路径 + 总条目数） | 3 | **合法裁剪**：字典序稳定排序，逐字可复现 | 是（`hints.narrow`） |
 
 - 单条最大丢弃量：**11648 token**；单条最大保留量：**9126 token**（裁剪后的可见正文）。
+- **本表的取证边界（回修补记，不改变上述计数）**：① 逐类分布由 TASK-01 抽检侧按 SDD §4.3 映射逐条判定得出；`cr-cost.mjs replay` 子命令只发布 `stats.{results,overCap,overCapTokens,overCapRatio}` 四项，**不发布逐类分布**，故本表不是该命令的直接输出；② `read` 行的「原始行号 + `nextOffset` 具体值」在补记时是按 **§4.3 判据**记下的判定（样本未携带本调用 `offset`），**不是样本级复核**——该两条不变量现由向量 `dec-06`（窗口起点 500）与 `dec-07`（`cat` ⇒ `kind=read`）逐字断言，见 `output-guard/test/conformance.test.mjs`；③ 回修后 `evaluateResult` 在不传 `callCommand`/`offset` 时行为逐字不变，所以本表四类计数不受本次回修影响。
 - 上述四类变换均为**非语义**变换：不调用 LLM、不做摘要、不改写正文内容，只做「唯一文件列表 / 连续行窗口 + 原始行号 / 头尾保留」三类机械变换（SDD §4.3）。
 
 ## 2. 抽检判定表（抽样 20 条，`passthrough` 段）
