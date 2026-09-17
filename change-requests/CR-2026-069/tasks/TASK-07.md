@@ -49,12 +49,12 @@ created: 2026-09-17T17:28:00+08:00
 1. `node --test --test-reporter=dot output-guard/test/adapters-contract.test.mjs` 中 Codex 的 partial 向量通过；`capabilities.codex.level="partial"` 与 `paths[]` 中每条 `uncovered: true` 路径在 README 中**逐条出现**（逐条比对，可机械核对）。
 2. `hooks.json.template` 可 JSON 解析，含 `PreToolUse` / `PostToolUse` 两类与正则 matcher；不含阈值数值与能力矩阵。
 3. README 含信任步骤（`/hooks` 审查-信任 + 按哈希 + 脚本变更需重新信任）与回滚动作（移除 hooks 条目 ⇒ 该 Runtime 停用，新会话生效）。
-4. 真实冒烟（owner 部署窗口）：一次真实 Codex 会话内触发拒绝 / 裁剪 / 逃生 / 损坏降级；**且**至少一条 uncovered 路径（如 hosted `WebSearch`）被实测确认"不生效"并记入 TASK-10 的证据文件。
+4. 真实冒烟（**plan §5.0 的 owner 预部署窗口**，落在 `developing` 内；记录落 `evidence/ac14-smoke.md`，本卡只登记执行入口与预期观测）：一次真实 Codex 会话内触发拒绝 / 裁剪 / 逃生 / 损坏降级；**且**至少一条 uncovered 路径（如 hosted `WebSearch`）被实测确认"不生效"并记入 TASK-10 的证据文件。
 5. `node output-guard/scripts/check-install.mjs --tools-root .` 中 Codex 行形态正确（`coverage=partial` 或按实读）。
 
 ## 5. 完成标志
 
-- `output-guard/adapters/codex/**` 4 文件落盘并提交；验收条件 1~5 的实测命令与结果记入 TASK 完成记录（4 需在部署窗口执行）。
+- `output-guard/adapters/codex/**` 4 文件落盘并提交；验收条件 1~5 的实测命令与结果记入 TASK 完成记录（条件 4 的真实冒烟在 **plan §5.0 声明的 owner 预部署窗口**执行，落在 `developing` 内；记录落 TASK-10 的 `evidence/ac14-smoke.md`，本卡只登记执行入口与预期观测 ⇒ `crctl task done` 在 `developing` 内可达，见 plan §2.1 / §9）。
 - 明确登记「信任步骤 + 按哈希重信任」与「uncovered 路径清单」两项事实（供 TASK-10 的 AC-14 / AC-20 取证使用）。
 - `tasks/_index.yml` 本 TASK 标 `done`。
 - **不**包含：把 Codex 提升为 full（那需要 scope amendment）、`capabilities.json` 改写、任何 daemon 写点。

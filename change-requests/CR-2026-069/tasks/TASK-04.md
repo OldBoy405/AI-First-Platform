@@ -49,13 +49,13 @@ created: 2026-09-17T17:25:00+08:00
 
 1. `node --test --test-reporter=dot output-guard/test/adapters-contract.test.mjs` 中 Claude 的全部向量通过；`coverage` 读数与 `capabilities.claude.level` 一致。
 2. `settings.template.json` 的 hooks 段与 TASK-09 写的对象**同构**（逐字段比对 `hooks.PreToolUse[].matcher` / `hooks.PreToolUse[].hooks[].{type,command}` / `PostToolUse` 同形），且不含任何阈值数值或能力矩阵。
-3. 真实冒烟（owner 部署窗口）：一次真实 Claude 会话内触发拒绝（`find` 无界列举）、裁剪（`cat` 全文）、逃生（首行逃生阀）、损坏降级（临时移走 `policy.json`）四类行为各一次；`hookSpecificOutput.updatedToolOutput` 只在裁剪路径出现。
+3. 真实冒烟（**plan §5.0 的 owner 预部署窗口**，落在 `developing` 内；记录落 `evidence/ac14-smoke.md`，本卡只登记执行入口与预期观测）：一次真实 Claude 会话内触发拒绝（`find` 无界列举）、裁剪（`cat` 全文）、逃生（首行逃生阀）、损坏降级（临时移走 `policy.json`）四类行为各一次；`hookSpecificOutput.updatedToolOutput` 只在裁剪路径出现。
 4. `node output-guard/scripts/check-install.mjs --tools-root .` 中 Claude 行形态正确。
 5. 四条负向：逃生阀不绕过 `rules.json` 的 git 白名单 / protected paths / 审批 / 账本写入控制（`adapters-contract.test.mjs` 并列验证）。
 
 ## 5. 完成标志
 
-- `output-guard/adapters/claude/**` 4 文件落盘并提交；验收条件 1~5 的实测命令与结果记入 TASK 完成记录（3 需在部署窗口执行）。
+- `output-guard/adapters/claude/**` 4 文件落盘并提交；验收条件 1~5 的实测命令与结果记入 TASK 完成记录（条件 3 的真实冒烟在 **plan §5.0 声明的 owner 预部署窗口**执行，落在 `developing` 内；记录落 TASK-10 的 `evidence/ac14-smoke.md`，本卡只登记执行入口与预期观测 ⇒ `crctl task done` 在 `developing` 内可达，见 plan §2.1 / §9）。
 - 明确登记「模板 hooks 段形状 ↔ TASK-09 合成入参」的逐字段对应关系（供 TASK-09 与 code review 核对）。
 - `tasks/_index.yml` 本 TASK 标 `done`。
 - **不**包含：daemon 侧挂载实现（TASK-09）、任何对 `skills/shared/crctl/adapters/**` 的改动。

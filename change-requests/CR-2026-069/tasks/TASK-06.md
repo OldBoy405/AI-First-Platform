@@ -48,13 +48,13 @@ created: 2026-09-17T17:27:00+08:00
 
 1. `node --test --test-reporter=dot output-guard/test/adapters-contract.test.mjs` 中 Qoder 的全部向量通过；`coverage` 读数与 `capabilities.qoder.level` 一致，且**不存在**伪造的启动记录断言。
 2. README 含三级 `.lingma/settings.json` 落点、`startRecord=none` 的口径说明、重启生效与回滚动作；模板不含阈值数值与能力矩阵。
-3. 真实冒烟（owner 部署窗口）：一次真实 Qoder 会话内触发拒绝 / 裁剪 / 逃生 / 损坏降级四类行为各一次；安装面不经 daemon。
+3. 真实冒烟（**plan §5.0 的 owner 预部署窗口**，落在 `developing` 内；记录落 `evidence/ac14-smoke.md`，本卡只登记执行入口与预期观测）：一次真实 Qoder 会话内触发拒绝 / 裁剪 / 逃生 / 损坏降级四类行为各一次；安装面不经 daemon。
 4. `node output-guard/scripts/check-install.mjs --tools-root .` 中 Qoder 行形态正确（`coverage` 取值按实读）。
 5. 四条负向：逃生阀不绕过 git 白名单 / protected paths / 审批 / 账本写入控制。
 
 ## 5. 完成标志
 
-- `output-guard/adapters/qoder/**` 4 文件落盘并提交；验收条件 1~5 的实测命令与结果记入 TASK 完成记录（3 需在部署窗口执行）。
+- `output-guard/adapters/qoder/**` 4 文件落盘并提交；验收条件 1~5 的实测命令与结果记入 TASK 完成记录（条件 3 的真实冒烟在 **plan §5.0 声明的 owner 预部署窗口**执行，落在 `developing` 内；记录落 TASK-10 的 `evidence/ac14-smoke.md`，本卡只登记执行入口与预期观测 ⇒ `crctl task done` 在 `developing` 内可达，见 plan §2.1 / §9）。
 - 明确登记「无会话启动记录」（`startRecord=none`）与 FR-8 覆盖度派生精度的影响事实（供 TASK-10 的 `coverage` 派生取证使用）。
 - `tasks/_index.yml` 本 TASK 标 `done`。
 - **不**包含：daemon 写点、任何对 `../multica` 的改动、任何 `capabilities.json` 改写。

@@ -49,7 +49,7 @@ created: 2026-09-17T17:30:00+08:00
    - `ok(obj)` 内：`const out = ACTIVE_PROJECTION ? ACTIVE_PROJECTION(obj) : obj;` 后仍 `JSON.stringify(out, null, 2) + '\n'`（**不在全局 `ok()` 删字段**，未注册命令逐字走原路径）；
    - `parseArgs` 的 `--detail` **布尔专用分支**（出现即为真、且**不消费后随 token**，避免 `crctl status --detail CR-2026-069` 被解析成 `flags.detail='CR-2026-069'` 并吃掉位置参数）；
    - HELP 增一行说明 `--detail`。
-   合计 ±10 行以内（SDD §1.2 的上界是"≤6 行不含新增导入"）；`ok(` 计数保持 45、`fail(` 计数保持 247 是机械判据。
+   合计 ±10 行以内（SDD §1.2 的上界是"≤6 行不含新增导入"）；`ok(` 计数保持 45、`fail(` 计数保持 247 是机械判据——**该计数与 `--detail` 落点断言由 `cmd-04` 承担**（`crctl.mjs` 已入其 `REQ`），`cmd-05` 只承担 `--unified=0` 的删改扫描与行数上界。
 3. **投影函数是每命令独立的纯函数**：输入成功出口对象、输出 compact summary 对象；**不读全局状态、不访问文件系统**；summary 必须按"调用方充分性"设计——先在 A10 表里枚举每个被投影命令的既有消费字段，再据此定义 summary 必须保留的字段（`--detail` 是显式例外，不是大面积补丁）。
 4. **三层等价性合同**（§4.6）：① `fieldPaths(--detail 输出)` ≡ 金样本 `fieldPaths`；② 金样本标 `stable` 的字段路径值逐字相等；③ 标 `volatile` 的字段路径值类型与形态匹配（ISO 8601 / 40 hex / 绝对路径）。**禁止字节比对**。另加一条负向断言：未注册命令 + 未传 `--detail` 时输出与改造前逐字相同（D-9 的代价项）。
 5. **A10 扫描表与调用方同步**（§4.10）：扫描面 = `skills/**/SKILL.md`、`pipeline-templates/*.pipeline.json`、`agents/*.md`、`skills/**/*.mjs`、`README.md`；提取 `crctl <子命令> [args]` 与 `node …/crctl.mjs …` 形态；逐条判定 a（子命令不在投影集合 ⇒ 无需动作）/ b（消费字段 ⊆ summary 字段集 ⇒ 无需动作）/ c（需要 summary 之外的字段 ⇒ **必须显式补 `--detail`**）。扫描面之外的**真实调用方**（如 KB 仓 `.github/workflows/cr-guard.yml` 这类仓外 CI）不因"在扫描面外"豁免——逐条做同一字段消费检查并把结论登记进同一张表（按仓标注）；只消费退出码的记"无需动作"。该显式表落成 `caller-contract.test.mjs` 的数据段（人工审过的白名单 + 机械断言）。
@@ -65,7 +65,7 @@ created: 2026-09-17T17:30:00+08:00
 3. 逐命令比对：被投影命令默认输出 = compact summary；加 `--detail` 与金样本三层等价；退出码不变；错误码与错误体不变（`fail()` 出口零语义变更）。
 4. `crctl git diff --name-only <tools base> -- skills/shared/crctl/scripts/crctl.mjs` 的改动行数 ≤ 10 且被删行不含 `fail(` / `passCondition` / `reviewLoop` / `stateMachine` / `approvalStages` / `protectedPaths`。
 5. A10 表：扫描面内每一处 (b) 类调用与显式表一致、(c) 类调用都带 `--detail`；`git diff` 中命中的 `agents/*.md` 与 `pipeline-templates/*.pipeline.json` 落点与表一致（未命中则相应文件零 diff）。
-6. `node -e "..."` 的 `SUMMARY_PROJECTORS` 键集与 `evidence/ac10-selection.json.minimalSet` 全等（由 TASK-01 的 `verify-selection` 机械核对）。
+6. **AC-10 的机械核对入口是 `cmd-05` 的活体比对**（cwd = tools worktree；KB 路径经 `crctl workspace inspect CR-2026-069` 的 `resources[].worktreePath` 解析，不拼接）：`require('skills/shared/crctl/scripts/lib/summary-projectors.mjs').SUMMARY_PROJECTORS` 的键集与 `<KB>/change-requests/CR-2026-069/evidence/ac10-selection.json#minimalSet` **双向全等**；注册表缺失/未导出/evidence 缺失/不等 ⇒ `cmd-05` 非零退出。同时 golden 金样本存在性（目录 + `*.json` 非空）由 `cmd-04` 断言。
 
 ## 5. 完成标志
 

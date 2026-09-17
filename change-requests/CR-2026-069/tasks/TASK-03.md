@@ -47,13 +47,13 @@ created: 2026-09-17T17:24:00+08:00
 
 1. `node --test --test-reporter=dot output-guard/test/adapters-contract.test.mjs` 中 Pi 的全部向量（`escape-hatch` / `decision` / `degradation` / `idempotence`）通过；Pi 行的 `coverage` 读数与 `capabilities.pi.level` 一致。
 2. `node output-guard/scripts/check-install.mjs --tools-root .` 中 Pi 行形态正确（`output-guard runtime=pi coverage=full policy=v1` 或按实读降级值）。
-3. 端到端：一次真实 Pi 会话内执行 `grep -rn <token> .`，模型可见结果只含唯一文件列表 + 命中数 + 缩小范围写法，且带 `action=truncate complete=false` trailer；被丢弃正文（sentinel）不出现在结果、session 文件与任何新增日志（AC-7 / AC-15）。
+3. 端到端真实冒烟（**plan §5.0 的 owner 预部署窗口**，落在 `developing` 内；记录落 `evidence/ac14-smoke.md`，本卡只登记执行入口与预期观测）：一次真实 Pi 会话内执行 `grep -rn <token> .`，模型可见结果只含唯一文件列表 + 命中数 + 缩小范围写法，且带 `action=truncate complete=false` trailer；被丢弃正文（sentinel）不出现在结果、session 文件与任何新增日志（AC-7 / AC-15）。
 4. 逃生阀：首行 `# output-guard: full reason=<单行限长>` 的调用得到完整结果，且**不**影响 `rules.json` 的 git 白名单 / protected paths / 审批 / 账本写入控制（四条负向由 `adapters-contract.test.mjs` 并列验证）。
 5. 降级：临时移走 `policy.json`（或注入损坏 payload）后，原调用继续、结果不改，stderr 出现 `OUTPUT_GUARD_UNAVAILABLE runtime=pi reason=POLICY_INVALID`。
 
 ## 5. 完成标志
 
-- `output-guard/adapters/pi/{index.ts,README.md}` 落盘并提交；验收条件 1~5 的**实测命令与结果**记入 TASK 完成记录（其中 3/C 需在 owner 部署窗口的宿主级安装后执行，见 plan §5.0）。
+- `output-guard/adapters/pi/{index.ts,README.md}` 落盘并提交；验收条件 1~5 的**实测命令与结果**记入 TASK 完成记录（其中条件 3 的真实冒烟在 **plan §5.0 声明的 owner 预部署窗口**执行 —— 该窗口落在 `developing` 内、**不是**部署后窗口；逐 Runtime 冒烟记录统一落 TASK-10 的 `evidence/ac14-smoke.md`，本卡只登记执行入口与预期观测 ⇒ `crctl task done` 在 `developing` 内可达，见 plan §2.1 / §9）。
 - 覆盖 Pi 的启用前置三件（conformance 通过 / 真实冒烟通过 / 降级验证通过）逐条给出证据入口；未完成时如实记「未启用」，不得声明启用。
 - `tasks/_index.yml` 本 TASK 标 `done`。
 - **不**包含：把 Pi 加入任何 daemon 写点、改 `pkg/agent/pi.go`、改 `capabilities.json`。

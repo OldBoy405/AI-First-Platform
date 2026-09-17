@@ -56,7 +56,11 @@ created: 2026-09-17T17:20:00+08:00
 
 1. `node --test --test-reporter=dot skills/shared/metrics/test/cr-cost.test.mjs` exit 0，且覆盖：`insufficient-sample` 分支、14 天窗口判定、`≥20% ∧ 三护栏不恶化` 判定、`costSource=unavailable ⇒ k=null`、A8 贪心集合（正例/反例）、`verify-selection` 注册表相等/不等两向。
 2. `node skills/shared/metrics/scripts/cr-cost.mjs baseline --out <tmp>/fr8-baseline.json` 执行成功，产物 JSON 含 §3.2 全部字段，且每个计数字段带 `observedAt` + `rule`。
-3. `node skills/shared/metrics/scripts/cr-cost.mjs verify-selection --baseline change-requests/CR-2026-069/evidence/fr8-baseline.json`（KB 侧副本，TASK-08 落地后）与 `SUMMARY_PROJECTORS` 键集全等；不等时必须非零退出（负例已由测试 1 覆盖）。
+3. **可执行形态**（cwd = tools worktree；KB 路径不拼接，先由 `crctl workspace inspect CR-2026-069` 的 `resources[].worktreePath` 解析出 `ai-first-platform-docs` worktree，记为 `<KB>`）：
+   ```text
+   node skills/shared/metrics/scripts/cr-cost.mjs verify-selection --baseline <KB>/change-requests/CR-2026-069/evidence/fr8-baseline.json
+   ```
+   与 `SUMMARY_PROJECTORS` 键集全等；不等时必须非零退出（负例已由测试 1 覆盖）。该核对在 `cmd-05` 内另有**活体副本**（`cmd-05` 自行 `require` 工具仓的 `summary-projectors.mjs` 并与同一份 `ac10-selection.json#minimalSet` 双向全等，不可判即硬失败），两处不得只做其一。
 4. `evidence/fr8-baseline.json` 与 `evidence/ac9-sampling.md` 落 KB 且随 CR 提交；`evidence/ac10-selection.json` 由 `verify-selection` 产出（含 `baselineSha256` / `registryKeys` / `minimalSet` / `verdict` / `observedAt` / `rule`）。
 5. `cmd-04` 的「样本常量零硬编码」与「零依赖」两条判据为 0 失败。
 
