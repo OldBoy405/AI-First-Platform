@@ -1,0 +1,53 @@
+diff --git a/skills/shared/crctl/scripts/crctl.mjs b/skills/shared/crctl/scripts/crctl.mjs
+index 7b6e12b..7541b17 100644
+--- a/skills/shared/crctl/scripts/crctl.mjs
++++ b/skills/shared/crctl/scripts/crctl.mjs
+@@ -21,6 +21,8 @@ import { spawnSync } from 'node:child_process';
+ import { fileURLToPath } from 'node:url';
+ // CR-2026-031 TASK-03：YAML 子集解析器与 workspace 基础设施同源共享（lib/ 下，禁止在 crctl.mjs 复刻）。
+ import { parseYaml, matchEntryBlock } from './lib/yaml-subset.mjs';
++// CR-2026-069 TASK-08（FR-2）：成功出口的 summary 投影器（唯一投影实现，不在此处复刻字段清单）。
++import { resolveProjection, setActiveProjection, applyProjection } from './lib/summary-projectors.mjs';
+ // CR-2026-065 TASK-02（FR-8/FR-10）：outbox 去重比较字段的唯一事实源（字段分类 + 投影）
+ import { buildOutboxEvent, buildOutboxComparable } from './lib/outbox-contract.mjs';
+ import {
+@@ -48,8 +50,10 @@ function fail(code, message, extra = {}) {
+   process.exit(1);
+ }
+ 
++// FR-2（CR-2026-069）：模块级状态 ACTIVE_PROJECTION 住在 lib/summary-projectors.mjs，由 main() 设定；
++// 未注册命令与 --detail 均映射为 null ⇒ 这里逐字走原路径。
+ function ok(obj) {
+-  process.stdout.write(JSON.stringify(obj, null, 2) + '\n');
++  process.stdout.write(JSON.stringify(applyProjection(obj), null, 2) + '\n');
+ }
+ 
+ // nowIso 与 FAULT_POINTS 自 TASK-04 起 re-import 自 lib/durable-tx.mjs（唯一实现）。
+@@ -3451,6 +3455,7 @@ const HELP = `crctl — CR 状态机 gate CLI（漂移治理 v2 组件 A）
+   crctl upgrade-check                                         临时只读预检（TASK-11）：origin 权威事实分类新协议激活风险（safe/requiresReapproval/blocksUpgrade/canActivate）；有 blocker 或事实不确定 exit 1，全程零写入；协议切换后随 CUSTOM-TODO-009 整体删除
+   crctl report [--period <N>d]                   跨 CR 聚合：状态直方图/SLA（累计口径）+ periodActivity（受 --period 窗口过滤，如 7d/30d；不传则不过滤，只读）
+   crctl test    <cr_id> --plan <temp-json>      结构化测试闭环：读 cr-test-plan/v1，shell:false 执行，原子发布机器证据/traceability tests/review-loop
++  crctl <命令> [--detail]                      布尔开关：默认输出 compact summary（仅注册了投影的命令）；--detail 输出改造前完整字段集
+   crctl next    <cr_id>                          输出下一个该跑的节点（blocker 未清空绝不给 human_approval）
+   crctl git     <sub> [args...] [--cwd <p>]      controlled-shell 白名单执行（只读/安全面；写路径一律走深原语）
+   crctl task init <cr_id> [--count-hint <N>]   从 TASK-NN.md 确定性创建/刷新 tasks/_index.yml（开发启动前，CAS+审计）；--count-hint 写入前校验 TASK 集恰为 {cr}-TASK-01..{pad2(N)}（失败 TASK_COUNT_MISMATCH 零写入）
+@@ -3467,6 +3472,7 @@ function parseArgs(argv) {
+   for (let i = 0; i < argv.length; i++) {
+     const a = argv[i];
+     if (a === '--cmd') { flags.cmdList.push(argv[++i]); continue; }
++    if (a === '--detail') { flags.detail = true; continue; }
+     if (a.startsWith('--')) {
+       const key = a.slice(2);
+       const next = argv[i + 1];
+@@ -3496,6 +3502,7 @@ async function main() {
+   const [cmd, ...rest] = process.argv.slice(2);
+   if (!cmd || cmd === 'help' || cmd === '--help' || cmd === '-h') { process.stdout.write(HELP); return; }
+   const { flags, positional } = cmd === 'git' ? parseGitArgs(rest) : parseArgs(rest);
++  setActiveProjection(resolveProjection(cmd, positional, flags));
+   const ws = detectWorkspace(flags.workspace);
+   const gates = loadGates(ws);
+   switch (cmd) {
+{
+  "ok": true,
+  "exit": 0
+}
