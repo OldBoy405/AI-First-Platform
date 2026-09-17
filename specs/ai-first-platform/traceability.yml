@@ -1,10 +1,10 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 spec-id: ai-first-platform
-cr-ref: CR-2026-068
-cr-history: [CR-2026-060, CR-2026-059, CR-2026-061, CR-2026-062, CR-2026-063, CR-2026-065, CR-2026-064, CR-2026-066, CR-2026-067, CR-2026-068]
-target-version: "0.41"
+cr-ref: CR-2026-069
+cr-history: [CR-2026-060, CR-2026-059, CR-2026-061, CR-2026-062, CR-2026-063, CR-2026-065, CR-2026-064, CR-2026-066, CR-2026-067, CR-2026-068, CR-2026-069]
+target-version: "0.42"
 baseline-since: "0.33"
-generated-at: "2026-09-16T07:54:21+08:00"
+generated-at: "2026-09-17T22:07:24+08:00"
 
 milestones:
   - cr: CR-2026-060
@@ -967,3 +967,47 @@ milestones:
         code: { verdict: pass, path: change-requests/CR-2026-068/review-annotations/code.yml, sha256: 92793f54a390472aeb3cca2d31bf5dc300572b8a0125f1d9c63233692c61bdf1 }
       approval: { status: approved, path: change-requests/CR-2026-068/approval.yml, sha256: dec2e05ac1041c446e6273017c38d3415c2c5ceda65163f8e29e4ee16a948e0b }
       merge: { status: merged, path: change-requests/CR-2026-068/merge-commits.yml, sha256: 2f51522ae6235e9c10def4d98ce975438ef71200f5fa0fa7ea86a50914c85f87 }
+  - cr: CR-2026-069
+    milestone: "0.42"
+    target-version: "0.42"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 4a0ee643e3f02eb138934cf676f808fd76e3d669
+        branch: requirement/CR-2026-069
+      - repo: multica
+        trunk: main
+        sha: 951cf4554c40243cbc1d15621efeadafe2b709e8
+        branch: requirement/CR-2026-069
+      - repo: tools
+        trunk: main
+        sha: c3e7c934ef2636c56cc840543cadb4feb5f554aa
+        branch: requirement/CR-2026-069
+    frs:
+      - fr: FR-1
+        title: 通用 OutputGuard（AC-3~AC-8、AC-13~AC-16、AC-19、AC-20）
+        sdd: §1.4.1/§1.4.2 决策链与覆盖度派生 ＋ §2.2.1~§2.2.4 四个数据形状 ＋ §3.2~§3.4 模块/hook/安装契约 ＋ §3.8 唯一降级码 ＋ §4.1~§4.5 A1~A5 ＋ §4.9 A9 挂载合成 ＋ §6.5 SDD-CLOSE-01/-04/-05/-06/-09/-10
+        tasks: [CR-2026-069-TASK-02, CR-2026-069-TASK-03, CR-2026-069-TASK-04, CR-2026-069-TASK-05, CR-2026-069-TASK-06, CR-2026-069-TASK-07, CR-2026-069-TASK-09, CR-2026-069-TASK-10]
+        code: [ai-first-platform-docs@4a0ee643e3f0, multica@951cf4554c40, tools@c3e7c934ef26]
+        evidence: [cmd-02, cmd-04, cmd-06, cmd-07, cmd-09, cmd-08, cmd-05]
+      - fr: FR-2
+        title: crctl 输出瘦身（AC-10、AC-11、AC-21①~③）
+        sdd: §1.4.3 投影层 ＋ §3.1 `--detail` 契约 ＋ §4.6 A6 投影与三层等价性合同 ＋ §4.8 A8 选择算法 ＋ §4.10 A10 调用方同步扫描 ＋ §6.4 棘轮与零改动清单 ＋ §6.5 SDD-CLOSE-02/-03 ＋ §8 Prompt 采纳影响
+        tasks: [CR-2026-069-TASK-08, CR-2026-069-TASK-01, CR-2026-069-TASK-02]
+        code: [ai-first-platform-docs@4a0ee643e3f0, multica@951cf4554c40, tools@c3e7c934ef26]
+        evidence: [cmd-02, cmd-04, cmd-01, cmd-05, cmd-03]
+      - fr: FR-8
+        title: 离线成本与质量度量（AC-9、AC-17①~⑤、AC-18①~④）
+        sdd: §1.4.4 两次执行与扩项判定 ＋ §2.2.1 `thresholds` 数值面 ＋ §3.6 脚本 CLI 契约 ＋ §4.7 A7 聚合与 `k` ＋ §4.8 A8 选择算法 ＋ §6.5 SDD-CLOSE-07/-08
+        tasks: [CR-2026-069-TASK-01, CR-2026-069-TASK-02, CR-2026-069-TASK-08, CR-2026-069-TASK-10]
+        code: [ai-first-platform-docs@4a0ee643e3f0, multica@951cf4554c40, tools@c3e7c934ef26]
+        evidence: [cmd-08, cmd-02, cmd-04, cmd-05]
+    evidence:
+      test: { status: pass, path: change-requests/CR-2026-069/test-report.md, sha256: 92cdaab8a6a6bed6615e77eeecdab71010d18b7163c630ee5ff76159ff574f3e }
+      reviews:
+        requirement: { verdict: pass, path: change-requests/CR-2026-069/review-annotations/requirement.yml, sha256: 58b1878c69bfed2f29ee67081297403fe27e24d74ea62e0eab176870bf5847f6 }
+        tech-design: { verdict: pass, path: change-requests/CR-2026-069/review-annotations/sdd.yml, sha256: 0d5128c6ddf82fc139f03318e592c0e35e27f5dd3f1a9d7ff2324c46e6a0dc28 }
+        dev-plan: { verdict: pass, path: change-requests/CR-2026-069/review-annotations/dev-plan.yml, sha256: b3f639b0d52f75ab27149246161718a5a0c223cb230aab9882960c75c6c7e9c0 }
+        code: { verdict: pass, path: change-requests/CR-2026-069/review-annotations/code.yml, sha256: eff3dd1eb6c764715f9356809dff0338315561288311f636b1e1c96a8641e997 }
+      approval: { status: approved, path: change-requests/CR-2026-069/approval.yml, sha256: fd502d87022b03dc5644744db115c5254866ac7dab7eda12ea6e9372b7987806 }
+      merge: { status: merged, path: change-requests/CR-2026-069/merge-commits.yml, sha256: 3a644a90159afee1671dd458c57545bbb0d57f0b0dc43287ef51a9dc4547ac3e }
