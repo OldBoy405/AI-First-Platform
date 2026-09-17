@@ -1,0 +1,22 @@
+$ go test ./internal/daemon/execenv/ -count=1 -v -run TestOutputGuard
+(exit=0)
+--- stdout ---
+=== RUN   TestOutputGuardClaudeComposesBothHookSetsInOneWrite
+--- PASS: TestOutputGuardClaudeComposesBothHookSetsInOneWrite (0.01s)
+=== RUN   TestOutputGuardNeverClobbersAnExistingSettingsFile
+2026/09/17 21:47:16 WARN crguard: per-task .claude/settings.json already exists; hooks not overwritten path=C:\Users\GOBAO\AppData\Local\Temp\multica-task-3736729390\TestOutputGuardNeverClobbersAnExistingSettingsFile52532455\003\.claude\settings.json
+--- PASS: TestOutputGuardNeverClobbersAnExistingSettingsFile (0.02s)
+=== RUN   TestOutputGuardWithoutToolsRootKeepsBaselineOutputVerbatim
+--- PASS: TestOutputGuardWithoutToolsRootKeepsBaselineOutputVerbatim (0.01s)
+=== RUN   TestOutputGuardUnavailableWhenAdapterEntryIsMissing
+--- PASS: TestOutputGuardUnavailableWhenAdapterEntryIsMissing (0.01s)
+=== RUN   TestOutputGuardClaudeMatcherCoversDeclaredFullPaths
+--- PASS: TestOutputGuardClaudeMatcherCoversDeclaredFullPaths (0.01s)
+=== RUN   TestOutputGuardNonClaudeProvidersWriteNoHooks
+--- PASS: TestOutputGuardNonClaudeProvidersWriteNoHooks (0.03s)
+=== RUN   TestOutputGuardMountResolverIsPathReferencesOnly
+--- PASS: TestOutputGuardMountResolverIsPathReferencesOnly (0.01s)
+PASS
+ok  	github.com/multica-ai/multica/server/internal/daemon/execenv	0.137s
+
+--- stderr ---
