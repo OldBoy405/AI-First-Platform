@@ -4,6 +4,7 @@
 
 - **AC-14 的真实冒烟要求**：每个已启用 Runtime 至少一次真实会话冒烟，覆盖拒绝 / 裁剪 / 逃生 / 损坏降级四类行为；挂载面逐 provider 可区分，且「手工安装是否真的生效」由安装期检查读数 + 四类行为观测共同判定，**不由部署过程自证**（SDD §1.4.2 / AC-14）。
 - **本节点的实际前提**：五个 Runtime 的原生配置面（宿主级 `~/.pi/agent/settings.json#extensions`、`~/.claude/settings.json`、`~/.codebuddy/settings.json`、`~/.lingma/settings.json`、`~/.codex/hooks.json` + `/hooks` 信任）与 Multica 每任务 env **均未在当前环境建立**——按 `dep-1` FR-1 第 10 项，安装动作是**部署动作**，不在 CR 过程中执行。
+- **宿主级配置面的实测补正（M4 取证期现读，2026-09-17）**：上一句读的是**安装面**（OutputGuard 的 extension / hooks 条目是否建立），**不是**配置文件本身是否存在。本节点现读事实：`~/.pi/agent/settings.json`（2,645 B）、`~/.claude/settings.json`（1,185 B）、`~/.codebuddy/settings.json`（101 B）、`~/.qoder/settings.json`（1,812 B）**四面文件存在但 0 处 OutputGuard 安装痕迹**；`~/.codex/hooks.json` 与设计所钉的 `~/.lingma/settings.json` **两面文件本身不存在**（codex 仅有 `~/.codex/config.toml`，3,719 B）。**结论不受影响**：五面的 OutputGuard 安装一律未建立 ⇒ 五个 Runtime 仍全部记为**未启用**，仍按 `ENVIRONMENT_MISMATCH` + 所需建立动作登记，真实会话冒烟仍待部署窗口执行。另：`qodercli` 实为 `D:\tools\npm-global\qodercli.ps1`（同目录另有 `qodercli.cmd` / `qoder.cmd` / `qoder.ps1`）；本机**不存在** `qoder-cn` 目录（`C:\Users\GOBAO.qoder-cn\…` 与 `C:\Users\GOBAO\.qoder-cn\…` 两种读法均 False，`C:\Users` / `D:\tools` / `%APPDATA%` / `%LOCALAPPDATA%` 下无任何 `qoder-cn` 目录）。
 - 因此本文件对每个 Runtime 登记两件事：① 本节点**可执行**的离线等价观测（`output-guard/test/adapters-contract.test.mjs` 以真实子进程、按该 Runtime 原生 payload 驱动同一组 conformance 向量）；② 真实会话冒烟的 `ENVIRONMENT_MISMATCH` 中止段与**所需建立动作**。
 - **禁止**把离线观测当作真实会话冒烟：下方每条离线观测均显式标注「离线（adapters-contract）」，启用状态一律记为**未启用**。
 
@@ -92,3 +93,14 @@ output-guard runtime=codex coverage=partial policy=v1
 - **产物落点**：`--out` 指向 KB `change-requests/CR-2026-069/evidence/` 下的复测 JSON（人读摘要只走 stdout，不写第二份产物）。
 - **终态语义**：样本不足 ⇒ `status=insufficient-sample`（**不产出成本结论、不延长本 CR**）；样本充足 ⇒ 按「目标桶 tokens/CR 下降 ≥20% ∧ 三项护栏均不恶化」给出 `target-met` / `no-improvement`，四条判据逐条可见。
 - **不回收声明**：该次执行的结论**不回收为本 CR 的门禁、状态或验收条件**（plan §2.1 / R-14）。
+
+---
+
+## 8. 更正记录（M4 取证期，只增不改）
+
+| 日期 | 触发 | 更正内容 | 是否触动已审批对象 |
+|---|---|---|---|
+| 2026-09-17 | 本线程 owner 的 A/B 事实核对（原文见 AIFI-32）+ `cr-coordinator-agent` 的只读实测 → 本节点独立复测 | §0 的「五个 Runtime 的原生配置面…均未在当前环境建立」补正为：**安装面未建立**；宿主级五面中四面文件存在且 0 处安装痕迹、两面文件本身不存在；并补记 `qodercli` 的本机安装路径与「本机无 `qoder-cn` 目录」 | **否**。dev-start 审批的 `evidence-digest` 覆盖 `review-annotations/dev-plan.yml` + `plan.md`（`gates.json#approvalStages.dev-start.evidence`），dev-plan 复合摘要覆盖 `plan.md` + `tasks/TASK-*.md`（`crctl.mjs#devPlanCompositeDigest`）——两者**均不含** `evidence/**`；本次更正落盘后 `crctl status` 的 `gateBlockers` 未新增 `EVIDENCE_DRIFT`、dev-plan digest 未漂移（实测值见 `test-report.md` 分析段） |
+
+- **未做的部分（留给 owner 裁定）**：Qoder 安装面改判（`.lingma/settings.json` → `.qoder/settings.json`）属 **scope amendment**，本更正**不含**：设计所钉的 `.lingma/settings.json` + `startRecord=none` 原样保留，代码与 `capabilities.json` 仍按**已审批设计**落，差异留痕在 `output-guard/adapters/qoder/README.md` §1 与本文件 §4。
+- **取证口径**：本更正是**只增不改**的口径补正，不改变任何一条机器判据所断言的 token（`cmd-08` 的逐 Runtime 段扫描与 `ENVIRONMENT_MISMATCH`/`所需建立动作` 断言在更正后仍全绿，见 `test-report.md`）。
