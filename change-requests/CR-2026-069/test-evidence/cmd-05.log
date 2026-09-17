@@ -1,0 +1,87 @@
+$ node -e const cp = require('child_process'), fs = require('fs'), P = require('path'); const R = process.cwd(), NL = String.fromCharCode(10), CRLF = String.fromCharCode(13, 10); const bad = []; const any2 = (xs) => { for (const x of xs) { if (x) { return true; } } return false; }; const CRCTL = P.join(R, 'skills/shared/crctl/scripts/crctl.mjs'); const jrun = (args, cwd) => { const r = cp.spawnSync(process.execPath, [CRCTL].concat(args), { cwd, encoding: 'utf8', shell: false }); if (r.status !== 0) { bad.push('FAIL crctl ' + args.join(' ') + ' status=' + r.status); console.log(String(r.stderr == null ? '' : r.stderr).slice(-400)); return null; } return String(r.stdout == null ? '' : r.stdout).split(CRLF).join(NL); }; const names = (root, base) => { const out = jrun(['git', 'diff', '--name-only', base, '--cwd', root], R); if (out === null) { return null; } const parts = out.split(NL); const bi = parts.findIndex((l) => l.trim() === '{'); return parts.slice(0, bi < 0 ? parts.length : bi).map((s) => s.trim()).filter(Boolean); }; const wsRaw = jrun(['workspace', 'inspect', 'CR-2026-069'], R); if (wsRaw === null) { bad.push('FAIL workspace inspect 不可判（硬失败）'); } let ws = null; if (wsRaw !== null) { try { ws = JSON.parse(wsRaw); } catch (e) { bad.push('FAIL workspace inspect 输出不可解析 ' + e.message); } } const pathOf = (id) => { if (!ws) { return null; } if (!Array.isArray(ws.resources)) { return null; } const x = ws.resources.filter((r) => r.repo === id)[0]; return x ? x.worktreePath : null; }; const MUL = pathOf('multica'), KB = pathOf('ai-first-platform-docs'); if (!MUL) { bad.push('FAIL 取不到 multica worktreePath'); } if (!KB) { bad.push('FAIL 取不到 ai-first-platform-docs worktreePath'); } const TB = '82e43dc53d51f69a799904c786900ea78e57ca12'; const tz = names(R, TB); if (tz === null) { bad.push('FAIL tools diff 不可判'); } else { console.log('tools diff paths = ' + tz.length); for (const f of tz) { console.log('  ' + f); } if (tz.length === 0) { bad.push('FAIL tools diff 为空（硬失败：基线或分支不对，不得静默通过）'); } const A_EXACT = ['skills/shared/crctl/scripts/crctl.mjs', 'skills/shared/crctl/scripts/lib/summary-projectors.mjs', 'skills/shared/crctl/scripts/test/gate-registry.json', 'skills/shared/crctl/scripts/test/crctl-summary.test.mjs', 'skills/shared/crctl/scripts/test/caller-contract.test.mjs', 'skills/shared/crctl/SKILL.md', 'skills/develop/review-tech-design/SKILL.md', 'skills/develop/review-code/SKILL.md', 'skills/develop/review-dev-plan/SKILL.md', 'skills/requirement/review-requirement/SKILL.md', 'skills/requirement/approve-requirement/SKILL.md', 'skills/develop/approve-tech-design/SKILL.md', 'skills/develop/approve-dev-start/SKILL.md', 'skills/develop/approve-code/SKILL.md', 'README.md', 'ARCHITECTURE.md', '.github/workflows/crctl-ci.yml']; const A_PREFIX = ['output-guard/', 'skills/shared/metrics/', 'skills/shared/crctl/scripts/test/golden/', 'skills/sync/', 'agents/']; const ZERO = ['skills/shared/crctl/scripts/lib/durable-tx.mjs', 'skills/shared/crctl/scripts/lib/workspace-transactions.mjs', 'skills/shared/crctl/scripts/lib/outbox-contract.mjs', 'skills/shared/crctl/scripts/lib/yaml-subset.mjs', 'skills/shared/crctl/gates.json', 'dir-graph.yaml', 'agent-skill-matrix.yml', 'AGENT-SKILL-MATRIX.md', 'skills/shared/controlled-shell/rules.json', 'pipeline-templates/_index.yml', 'skills/_index.yml']; const Z_PREFIX = ['skills/shared/crctl/adapters/', 'skills/develop/write-tech-design/', 'skills/develop/write-dev-plan/', 'skills/develop/write-dev-tasks/', 'skills/develop/write-test-report/', 'skills/develop/implement-code/', 'skills/develop/coding-discipline/', 'skills/shared/crctl/scripts/test/suite-gate.mjs', 'skills/shared/crctl/scripts/test/assertion-sources.mjs', 'skills/shared/crctl/scripts/test/fault-harness.test.mjs']; const isPipe = (f) => f.indexOf('pipeline-templates/') === 0 && f.endsWith('.pipeline.json'); for (const f of tz) { const okAllow = any2([A_EXACT.indexOf(f) >= 0, A_PREFIX.some((p) => f.indexOf(p) === 0), isPipe(f)]); if (!okAllow) { bad.push('FAIL tools diff 越界路径 ' + f); } if (ZERO.indexOf(f) >= 0) { bad.push('FAIL tools diff zero_diff 面被改动 ' + f); } for (const z of Z_PREFIX) { if (f.indexOf(z) === 0) { bad.push('FAIL tools diff zero_diff 前缀面被改动 ' + f); } } } const MIN = ['output-guard/core.mjs', 'output-guard/policy.json', 'output-guard/capabilities.json', 'output-guard/conformance.json', 'output-guard/README.md', 'output-guard/scripts/check-install.mjs', 'output-guard/test/core.test.mjs', 'output-guard/test/conformance.test.mjs', 'output-guard/test/adapters-contract.test.mjs', 'output-guard/adapters/pi/index.ts', 'output-guard/adapters/pi/README.md', 'output-guard/adapters/claude/pretooluse-guard.mjs', 'output-guard/adapters/claude/posttooluse-guard.mjs', 'output-guard/adapters/claude/settings.template.json', 'output-guard/adapters/claude/README.md', 'output-guard/adapters/codebuddy/pretooluse-guard.mjs', 'output-guard/adapters/codebuddy/posttooluse-guard.mjs', 'output-guard/adapters/codebuddy/settings.template.json', 'output-guard/adapters/codebuddy/README.md', 'output-guard/adapters/qoder/pretooluse-guard.mjs', 'output-guard/adapters/qoder/posttooluse-guard.mjs', 'output-guard/adapters/qoder/settings.template.json', 'output-guard/adapters/qoder/README.md', 'output-guard/adapters/codex/pretooluse-guard.mjs', 'output-guard/adapters/codex/posttooluse-guard.mjs', 'output-guard/adapters/codex/hooks.json.template', 'output-guard/adapters/codex/README.md', 'skills/shared/metrics/scripts/cr-cost.mjs', 'skills/shared/metrics/scripts/lib/sessions.mjs', 'skills/shared/metrics/scripts/lib/aggregate.mjs', 'skills/shared/metrics/scripts/lib/select.mjs', 'skills/shared/metrics/scripts/lib/render.mjs', 'skills/shared/metrics/test/cr-cost.test.mjs', 'skills/shared/crctl/scripts/lib/summary-projectors.mjs', 'skills/shared/crctl/scripts/crctl.mjs', 'skills/shared/crctl/scripts/test/crctl-summary.test.mjs', 'skills/shared/crctl/scripts/test/caller-contract.test.mjs', 'skills/shared/crctl/scripts/test/gate-registry.json', '.github/workflows/crctl-ci.yml', 'README.md', 'ARCHITECTURE.md', 'skills/shared/crctl/SKILL.md', 'skills/develop/review-tech-design/SKILL.md', 'skills/develop/review-code/SKILL.md', 'skills/develop/review-dev-plan/SKILL.md', 'skills/requirement/review-requirement/SKILL.md']; for (const f of MIN) { if (tz.indexOf(f) < 0) { bad.push('FAIL tools diff 缺少应改文件 ' + f); } } if (tz.length > 100) { bad.push('FAIL tools diff 路径数 = ' + tz.length + '（上界 100）'); } const u0 = jrun(['git', 'diff', '--unified=0', TB, '--', 'skills/shared/crctl/scripts/crctl.mjs', '--cwd', R], R); if (u0 !== null) { const lines = u0.split(NL); let plus = 0, minus = 0; for (const l of lines) { if (any2([l.indexOf('+++') === 0, l.indexOf('---') === 0])) { continue; } if (l[0] === '+') { plus++; } if (l[0] === '-') { minus++; } } console.log('crctl.mjs changed lines = +' + plus + ' / -' + minus); if (plus + minus < 1) { bad.push('FAIL crctl.mjs diff 为空（投影入口未落地，硬失败）'); } if (plus + minus > 10) { bad.push('FAIL crctl.mjs 改动行数 = ' + (plus + minus) + '（上界 10 = SDD §1.2 的 6 行不含导入 + HELP 与导入余量）'); } for (const l of lines) { if (l[0] !== '-') { continue; } const t = l.slice(1); if (t.indexOf('fail(') >= 0) { bad.push('FAIL crctl.mjs 删改了 fail( 出口: ' + t.slice(0, 80)); } for (const k of ['passCondition', 'reviewLoop', 'stateMachine', 'approvalStages', 'protectedPaths']) { if (t.indexOf(k) >= 0) { bad.push('FAIL crctl.mjs 删改 ' + k + ' 相关行'); } } } } } const MB = '947386318d52ecdb026a017f76220cde2ef7b94e'; if (MUL) { const mz = names(MUL, MB); if (mz === null) { bad.push('FAIL multica diff 不可判'); } else { console.log('multica diff paths = ' + mz.length); for (const f of mz) { console.log('  ' + f); } if (mz.length === 0) { bad.push('FAIL multica diff 为空（硬失败）'); } const M_EXACT = ['CUSTOM.md', 'server/internal/daemon/execenv/crguard_config.go', 'server/internal/daemon/execenv/outputguard_config.go', 'server/internal/daemon/execenv/outputguard_config_test.go']; const M_ZERO = ['server/internal/daemon/tool_output_preview.go', 'server/internal/governance/runner.go', 'server/pkg/agent/pi.go', 'server/internal/daemon/execenv/runtime_config.go', 'server/internal/daemon/execenv/execenv.go']; for (const f of mz) { const okAllow = any2([M_EXACT.indexOf(f) >= 0, (f.indexOf('server/internal/daemon/execenv/') === 0 && f.endsWith('_test.go'))]); if (!okAllow) { bad.push('FAIL multica diff 越界路径 ' + f); } if (M_ZERO.indexOf(f) >= 0) { bad.push('FAIL multica diff zero_diff 面被改动 ' + f); } } for (const f of M_EXACT) { if (mz.indexOf(f) < 0) { bad.push('FAIL multica diff 缺少应改文件 ' + f); } } if (mz.length > 10) { bad.push('FAIL multica diff 路径数 = ' + mz.length + '（上界 10）'); } } } const KB0 = '82cd4c3370594f4963b8e212682281fd48c6cb80'; if (KB) { const kz = names(KB, KB0); if (kz === null) { bad.push('FAIL KB diff 不可判'); } else { console.log('KB diff paths = ' + kz.length); for (const f of kz) { console.log('  ' + f); } const K_ZERO = ['change-requests/CR-2026-069/prd.md', 'change-requests/CR-2026-069/sdd.md', 'AGENTS.md', 'dir-graph.yaml', 'CONTEXT.md', 'README.md', 'maturity-config.yaml']; const K_ZPREFIX = ['specs/', 'delivery/', 'docs/']; for (const f of kz) { if (K_ZERO.indexOf(f) >= 0) { bad.push('FAIL KB diff zero_diff 面被写入 ' + f); } for (const z of K_ZPREFIX) { if (f.indexOf(z) === 0) { bad.push('FAIL KB diff zero_diff 前缀面被写入 ' + f); } } const okK = any2([f.indexOf('change-requests/CR-2026-069/') === 0, ['change-requests/_backlog.yml', 'change-requests/_history.yml', 'change-requests/_index.yml'].indexOf(f) >= 0]); if (!okK) { bad.push('FAIL KB diff 越界路径 ' + f); } } for (const f of ['change-requests/CR-2026-069/plan.md', 'change-requests/CR-2026-069/evidence/fr8-baseline.json', 'change-requests/CR-2026-069/evidence/ac10-selection.json', 'change-requests/CR-2026-069/evidence/ac9-sampling.md', 'change-requests/CR-2026-069/evidence/ac14-smoke.md', 'change-requests/CR-2026-069/tasks/_index.yml']) { if (kz.indexOf(f) < 0) { bad.push('FAIL KB diff 缺少应写文件 ' + f); } } } } const SP = P.join(R, 'skills/shared/crctl/scripts/lib/summary-projectors.mjs'); const SEL = KB ? P.join(KB, 'change-requests/CR-2026-069/evidence/ac10-selection.json') : null; if (!fs.existsSync(SP)) { bad.push('FAIL 缺 skills/shared/crctl/scripts/lib/summary-projectors.mjs（AC-10 活体比对不可判，硬失败）'); } else if (SEL === null) { bad.push('FAIL 缺 KB worktreePath（AC-10 活体比对不可判）'); } else if (!fs.existsSync(SEL)) { bad.push('FAIL 缺 ' + SEL + '（AC-10 活体比对不可判，硬失败）'); } else { let reg = null; try { const m = require(SP); reg = m && m.SUMMARY_PROJECTORS ? Object.keys(m.SUMMARY_PROJECTORS).slice().sort() : null; } catch (e) { bad.push('FAIL summary-projectors.mjs 载入失败 ' + e.message); } if (reg === null) { bad.push('FAIL SUMMARY_PROJECTORS 未导出（AC-10 活体比对不可判）'); } else { const selRaw = fs.readFileSync(SEL, 'utf8').split(CRLF).join(NL); if (selRaw.length < 50) { bad.push('FAIL ac10-selection.json 读空或过短 length=' + selRaw.length); } let sel = null; try { sel = JSON.parse(selRaw); } catch (e) { bad.push('FAIL ac10-selection.json 解析失败 ' + e.message); } const ms = sel && Array.isArray(sel.minimalSet) ? sel.minimalSet.slice().sort() : null; if (ms === null) { bad.push('FAIL ac10-selection.minimalSet 缺失或空（AC-10 活体比对不可判）'); } else if (ms.length < 1) { bad.push('FAIL ac10-selection.minimalSet 缺失或空（AC-10 活体比对不可判）'); } else if (JSON.stringify(reg) !== JSON.stringify(ms)) { bad.push('FAIL 活体 SUMMARY_PROJECTORS 键集 ' + JSON.stringify(reg) + ' != evidence minimalSet ' + JSON.stringify(ms)); } else { console.log('ac10 活体核对：SUMMARY_PROJECTORS 键集 = minimalSet = ' + reg.length + ' 项'); } } } if (bad.length) { console.log('audit-diff failures = ' + bad.length); for (const x of bad) { console.log(x); } process.exit(1); } console.log('audit-diff failures = 0');
+(exit=0)
+--- stdout ---
+tools diff paths = 50
+  .github/workflows/crctl-ci.yml
+  ARCHITECTURE.md
+  README.md
+  output-guard/README.md
+  output-guard/adapters/claude/README.md
+  output-guard/adapters/claude/posttooluse-guard.mjs
+  output-guard/adapters/claude/pretooluse-guard.mjs
+  output-guard/adapters/claude/settings.template.json
+  output-guard/adapters/codebuddy/README.md
+  output-guard/adapters/codebuddy/posttooluse-guard.mjs
+  output-guard/adapters/codebuddy/pretooluse-guard.mjs
+  output-guard/adapters/codebuddy/settings.template.json
+  output-guard/adapters/codex/README.md
+  output-guard/adapters/codex/hooks.json.template
+  output-guard/adapters/codex/posttooluse-guard.mjs
+  output-guard/adapters/codex/pretooluse-guard.mjs
+  output-guard/adapters/pi/README.md
+  output-guard/adapters/pi/index.ts
+  output-guard/adapters/qoder/README.md
+  output-guard/adapters/qoder/posttooluse-guard.mjs
+  output-guard/adapters/qoder/pretooluse-guard.mjs
+  output-guard/adapters/qoder/settings.template.json
+  output-guard/capabilities.json
+  output-guard/conformance.json
+  output-guard/core.mjs
+  output-guard/policy.json
+  output-guard/scripts/check-install.mjs
+  output-guard/test/adapters-contract.test.mjs
+  output-guard/test/conformance.test.mjs
+  output-guard/test/core.test.mjs
+  skills/develop/review-code/SKILL.md
+  skills/develop/review-dev-plan/SKILL.md
+  skills/develop/review-tech-design/SKILL.md
+  skills/requirement/review-requirement/SKILL.md
+  skills/shared/crctl/SKILL.md
+  skills/shared/crctl/scripts/crctl.mjs
+  skills/shared/crctl/scripts/lib/summary-projectors.mjs
+  skills/shared/crctl/scripts/test/caller-contract.test.mjs
+  skills/shared/crctl/scripts/test/crctl-summary.test.mjs
+  skills/shared/crctl/scripts/test/gate-registry.json
+  skills/shared/crctl/scripts/test/golden/crctl-detail/advance.json
+  skills/shared/crctl/scripts/test/golden/crctl-detail/review-record.json
+  skills/shared/crctl/scripts/test/golden/crctl-detail/status.json
+  skills/shared/crctl/scripts/test/golden/crctl-detail/workspace-inspect.json
+  skills/shared/metrics/scripts/cr-cost.mjs
+  skills/shared/metrics/scripts/lib/aggregate.mjs
+  skills/shared/metrics/scripts/lib/render.mjs
+  skills/shared/metrics/scripts/lib/select.mjs
+  skills/shared/metrics/scripts/lib/sessions.mjs
+  skills/shared/metrics/test/cr-cost.test.mjs
+crctl.mjs changed lines = +8 / -1
+multica diff paths = 4
+  CUSTOM.md
+  server/internal/daemon/execenv/crguard_config.go
+  server/internal/daemon/execenv/outputguard_config.go
+  server/internal/daemon/execenv/outputguard_config_test.go
+KB diff paths = 22
+  change-requests/CR-2026-069/approval.yml
+  change-requests/CR-2026-069/cr.md
+  change-requests/CR-2026-069/evidence/ac10-selection.json
+  change-requests/CR-2026-069/evidence/ac14-smoke.md
+  change-requests/CR-2026-069/evidence/ac9-sampling.md
+  change-requests/CR-2026-069/evidence/fr8-baseline.json
+  change-requests/CR-2026-069/plan.md
+  change-requests/CR-2026-069/review-annotations/dev-plan.yml
+  change-requests/CR-2026-069/review-loop.yml
+  change-requests/CR-2026-069/tasks/TASK-01.md
+  change-requests/CR-2026-069/tasks/TASK-02.md
+  change-requests/CR-2026-069/tasks/TASK-03.md
+  change-requests/CR-2026-069/tasks/TASK-04.md
+  change-requests/CR-2026-069/tasks/TASK-05.md
+  change-requests/CR-2026-069/tasks/TASK-06.md
+  change-requests/CR-2026-069/tasks/TASK-07.md
+  change-requests/CR-2026-069/tasks/TASK-08.md
+  change-requests/CR-2026-069/tasks/TASK-09.md
+  change-requests/CR-2026-069/tasks/TASK-10.md
+  change-requests/CR-2026-069/tasks/_index.yml
+  change-requests/CR-2026-069/traceability.yml
+  change-requests/_backlog.yml
+ac10 活体核对：SUMMARY_PROJECTORS 键集 = minimalSet = 4 项
+audit-diff failures = 0
+
+--- stderr ---
