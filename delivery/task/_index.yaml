@@ -3018,3 +3018,73 @@ tasks:
     cr-ref: CR-2026-068
     target-version: "0.41"
     estimate: 6h
+  - id: CR-2026-069-TASK-01
+    file: TASK-0.42-CR-2026-069-01-metrics-cr-cost-baseline.md
+    title: FR-8 离线度量脚本 cr-cost.mjs 四子命令 + lib 四件 + 回归面，并产出 policy.json thresholds 数值与 FR-2 summary 命令集合
+    status: done
+    cr-ref: CR-2026-069
+    target-version: "0.42"
+    estimate: 20h
+  - id: CR-2026-069-TASK-02
+    file: TASK-0.42-CR-2026-069-02-output-guard-core-contracts.md
+    title: OutputGuard Core 纯函数 + policy/capabilities/conformance 三份唯一事实源 + check-install + README + core/conformance/adapters-contract 三个测试 + CI 触发面与步骤
+    status: done
+    cr-ref: CR-2026-069
+    target-version: "0.42"
+    estimate: 22h
+  - id: CR-2026-069-TASK-03
+    file: TASK-0.42-CR-2026-069-03-adapter-pi.md
+    title: Pi Adapter：tool_call / tool_result 双面映射 + 宿主级安装 README（首个启用 Runtime）
+    status: done
+    cr-ref: CR-2026-069
+    target-version: "0.42"
+    estimate: 12h
+  - id: CR-2026-069-TASK-04
+    file: TASK-0.42-CR-2026-069-04-adapter-claude.md
+    title: Claude Adapter：PreToolUse / PostToolUse 映射 + settings.template.json（与 daemon 单写入点合成面的接口一致）
+    status: done
+    cr-ref: CR-2026-069
+    target-version: "0.42"
+    estimate: 12h
+  - id: CR-2026-069-TASK-05
+    file: TASK-0.42-CR-2026-069-05-adapter-codebuddy.md
+    title: CodeBuddy Adapter：PreToolUse / PostToolUse 映射 + settings.template.json（显式安装一次，daemon 不写）
+    status: done
+    cr-ref: CR-2026-069
+    target-version: "0.42"
+    estimate: 12h
+  - id: CR-2026-069-TASK-06
+    file: TASK-0.42-CR-2026-069-06-adapter-qoder.md
+    title: Qoder Adapter：同协议族复用 + .lingma/settings.json 安装面 + startRecord=none 的覆盖度诚实
+    status: done
+    cr-ref: CR-2026-069
+    target-version: "0.42"
+    estimate: 10h
+  - id: CR-2026-069-TASK-07
+    file: TASK-0.42-CR-2026-069-07-adapter-codex.md
+    title: Codex Adapter：partial 声明 + hooks.json.template + /hooks 信任步骤 + uncovered 路径逐条列示
+    status: done
+    cr-ref: CR-2026-069
+    target-version: "0.42"
+    estimate: 12h
+  - id: CR-2026-069-TASK-08
+    file: TASK-0.42-CR-2026-069-08-crctl-summary-detail.md
+    title: FR-2 投影层：summary-projectors + crctl.mjs 三处落点 + golden 金样本 + 两张合同测试 + 棘轮登记 + Prompt 采纳面 + 导航
+    status: done
+    cr-ref: CR-2026-069
+    target-version: "0.42"
+    estimate: 20h
+  - id: CR-2026-069-TASK-09
+    file: TASK-0.42-CR-2026-069-09-multica-managed-mount.md
+    title: Multica Managed 挂载：crguard_config.go 单写入点合成（仅 claude）+ outputguard_config.go + 同包回归测试 + CUSTOM.md #95
+    status: done
+    cr-ref: CR-2026-069
+    target-version: "0.42"
+    estimate: 14h
+  - id: CR-2026-069-TASK-10
+    file: TASK-0.42-CR-2026-069-10-smoke-enable-order-evidence.md
+    title: 冒烟与启用顺序取证 + after 复测能力（14 天窗口与 insufficient-sample 判定）+ AC-9 抽检记录
+    status: done
+    cr-ref: CR-2026-069
+    target-version: "0.42"
+    estimate: 12h
