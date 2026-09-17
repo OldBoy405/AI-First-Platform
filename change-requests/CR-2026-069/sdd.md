@@ -6,7 +6,7 @@ title: CR 流程降本提效首期：FR-8 成本基线 + FR-1 OutputGuard + FR-2
 target-version: 0.42
 status: draft
 created: 2026-09-17T15:45:00+08:00
-updated: 2026-09-17T15:45:00+08:00
+updated: 2026-09-17T16:12:00+08:00
 ---
 
 # 1. 架构概览
@@ -67,24 +67,31 @@ updated: 2026-09-17T15:45:00+08:00
     skills/shared/crctl/scripts/test/gate-registry.json       ← manifest.files + manifest.cases 同步（AC-21②）
     skills/shared/crctl/SKILL.md                              ← `--detail` 采纳（§8）
     skills/develop/review-{tech-design,code,dev-plan}/SKILL.md ← 取证完整性规则采纳（AC-16，§8）
+    skills/requirement/review-requirement/SKILL.md            ← 同上（取证完整性规则 + 按 A10 表定点补 `--detail`；§9 scope_in 第 4 项）
+    skills/{requirement/approve-requirement,develop/approve-tech-design,develop/approve-dev-start,develop/approve-code}/SKILL.md ← 按 A10 表定点补 `--detail`（§9 scope_in 第 4 项）
+    skills/sync/**（A10 表命中项）                             ← 同上
+    pipeline-templates/*.pipeline.json（**仅 prompt 文本**）    ← A10 表判定命中时定点补 `--detail`（零节点 / 零 reviewLoop 变化；§9 scope_in 第 4 项）
+    agents/*.md（A10 表命中项）                                ← 同上
     README.md                                                 ← §8「权威事实源链接」增一行 + §4 一行导航（AC-13）
-    ARCHITECTURE.md                                           ← §3 代码地图增 output-guard / metrics 两条（只增不改 §4/§5/§6）
+    ARCHITECTURE.md                                           ← §1 鸟瞰的组成面清单增一条（本包新增 Runtime 侧执行面 `output-guard/`）+ §3 代码地图增 output-guard / metrics 两条；§4/§5/§6 不改——依据 §8 维护规则：不新增 skills 顶层分组、无 Pipeline 结构性变化、crctl 未新增写入子命令、状态机口径未变、未推翻任何否决记录
     .github/workflows/crctl-ci.yml                            ← paths 增 output-guard/** + metrics/**；steps 增两条测试步骤
   明确零 diff（见 §9 zero_diff）：
     skills/shared/crctl/scripts/lib/durable-tx.mjs、lib/workspace-transactions.mjs、lib/outbox-contract.mjs、
-    lib/yaml-subset.mjs、gates.json、dir-graph.yaml、pipeline-templates/*.pipeline.json、
+    lib/yaml-subset.mjs、gates.json、dir-graph.yaml、
+    pipeline-templates/*.pipeline.json 的**结构**（节点数 5/4/12、reviewLoop / replayNodes / maxAttempts；prompt 文本见上「既有文件改动」）、
     agent-skill-matrix.yml、skills/shared/controlled-shell/rules.json
 
 ../multica（平台底座；只做 Runtime 启动挂载，挂载先例与挂载点见 `dep-4`）
-  新增：server/internal/daemon/execenv/outputguard_config.go   ← TASK-09 挂载解析/拼接（不复制 policy）
-  既有文件改动：server/internal/daemon/execenv/crguard_config.go ← 单写入点内合成 OutputGuard hooks（新增可空入参）
+  新增：server/internal/daemon/execenv/outputguard_config.go   ← TASK-09 挂载解析 + claude 合成入参（不复制 policy）
+  既有文件改动：server/internal/daemon/execenv/crguard_config.go ← 单写入点内合成 OutputGuard hooks（新增可空入参；**仅 provider=claude 分支**，见 §4.9）
               server/internal/daemon/execenv/*_test.go（同包回归测试）
-              CUSTOM.md                                        ← 按其现状登记本次定制（AGENTS.md 纪律 10）
+              CUSTOM.md                                        ← 按其现状登记本次定制（AGENTS.md 纪律 10）：按 §9 scope_in 第 5 项**必须新增台账条目，不适用零 diff**
   明确零 diff：server/internal/daemon/tool_output_preview.go、server/internal/governance/runner.go、
               server/pkg/agent/pi.go（不新增/不放开任何 argv 面）、Provider 事件归一化实现
 
 ai-first-platform-docs（KB：只承载本 CR 过程产物）
-  变更：change-requests/CR-2026-069/{sdd.md（本文档）、evidence/fr8-baseline.json（TASK-01 机器结果副本）}
+  变更：change-requests/CR-2026-069/{sdd.md（本文档）、evidence/fr8-baseline.json（TASK-01 / TASK-10 机器结果副本）、
+        evidence/ac9-sampling.md（AC-9 的合法调用抽检清单与判定）、evidence/ac14-smoke.md（AC-14 的各 Runtime 冒烟记录 + 每个 Runtime 一行 check-install 输出）}
   零 diff：specs/、delivery/、docs/、四账本（cr.md 除 crctl 状态行外、_backlog.yml、traceability.yml、
           tasks/_index.yml）、prd.md（已随审批按 evidence-digest 钉住，本阶段不得改写）
 ```
@@ -147,9 +154,9 @@ Runtime 原生工具调用 → Runtime Adapter → OutputGuard Core → policy.j
 
 | scope | 配置面（各 Runtime 既有面） | 本 CR 的动作 | Adapter 是否由本 CR 自动写入 |
 |---|---|---|---|
-| Project | 目标 workspace 内的 `.claude/settings.json` / `.lingma/settings.json` / `.codebuddy/settings.json` / `.pi/settings.json` | 提供模板 + 安装说明 + 检查命令 | 否（人工安装一次） |
+| Project | 目标 workspace 内的 `.claude/settings.json` / `.lingma/settings.json` / `.codebuddy/settings.json` / `.pi/extensions/`（或 `.pi/settings.json#extensions`） | 提供模板 + 安装说明 + 检查命令 | 否（人工安装一次） |
 | User | `~/.claude/settings.json` / `~/.lingma/settings.json` / `~/.codebuddy/settings.json` / `~/.pi/agent/settings.json#extensions` | 同上 | 否（人工安装一次） |
-| Managed | Multica 每任务 env 内由 daemon 写入的 Runtime 配置（claude / codebuddy / qoder） + 宿主级 `~/.pi/agent/settings.json`（Pi） | daemon 挂载（TASK-09）+ 安装说明 | 是（仅 Managed：Multica 任务环境） |
+| Managed | **必须区分两类对象**：① **记忆文件** —— daemon 每任务写入的 `CLAUDE.md` / `CODEBUDDY.md` / `AGENTS.md`（`dep-15`）；② **hooks 配置文件** —— daemon 侧的写点**只有 claude 一个**：`{workDir}/.claude/settings.json`（`dep-4`）。codebuddy / qoder **没有** hooks 写点（`dep-15` 对二者只写记忆文件与 `.codebuddy/skills/`） | claude：daemon 单写入点合成（TASK-09）；codebuddy / qoder：**显式安装一次**（项目级 `<project-root>/.codebuddy/settings.json` / `.lingma/settings.json`，或用户级 `~/.codebuddy/settings.json` / `~/.lingma/settings.json`）；Pi：宿主级 `~/.pi/agent/settings.json#extensions` 安装一次；Codex：宿主级 `.codex/hooks.json` + 信任步骤（partial） | **只有 claude**；其余四个 Runtime 人工安装一次（逐 provider 落点见 §4.9 第 3、4 步；生效性由 `check-install.mjs` 读数 + AC-14 真实任务冒烟判定，不由部署过程自证） |
 
 ### 1.4.3 FR-2 成功输出投影（一次命令的呈现层）
 
@@ -185,7 +192,7 @@ TASK-01（FR-8 基线 + 命令聚合 + 历史回放）
    ├─→ TASK-02（Core / policy / capabilities / conformance）
    │        ├─→ TASK-03 Pi ─┐
    │        ├─→ TASK-04 Claude ─┤
-   │        ├─→ TASK-05 CodeBuddy ─┼─→ TASK-09 Multica 挂载（claude/codebuddy/qoder）→ TASK-10 部署后复测
+   │        ├─→ TASK-05 CodeBuddy ─┼─→ TASK-09 Multica 挂载（daemon 单写入点：仅 claude）→ TASK-10 部署后复测
    │        ├─→ TASK-06 Qoder ─┤
    │        └─→ TASK-07 Codex ─┘
    └─→ TASK-08（FR-2 summary/detail + 调用方同步 + 棘轮登记）
@@ -222,7 +229,7 @@ TASK-01（FR-8 基线 + 命令聚合 + 历史回放）
 | 第 5 条（逃生阀标记不合法 → 视为不存在） | §4.1 算法 A1：不合法标记 → `absent`，不拒绝调用、不新增 action 取值；若随后被裁剪仍输出 `action=truncate` trailer（SDD-CLOSE-04） |
 | 第 6 条（`--detail` 与旧完整输出的等价定义） | §3.1 契约 + §4.6 合同测试：**字段集合等价**（逐字段路径）＋稳定值等价＋易变字段形态等价；禁止字节比对（SDD-CLOSE-02） |
 | 第 7 条（棘轮登记同步义务） | §6.4：新增 `*.test.mjs` 即触发 `SUITE_MANIFEST_FILE_DRIFT`，因此 `manifest.files` + `manifest.cases` 必须同批更新；`exceptions` 保持空数组（SDD-CLOSE-03） |
-| 第 8 条（Adapter 与既有 crctl 适配器的关系） | §3.4 + §6.5 SDD-CLOSE-01：两套职责分目录、各自模板、各自安装入口；`policy.json` 不进入 `skills/shared/crctl/adapters/`；唯一联合点是 Managed scope 下单写入点合成（§4.9） |
+| 第 8 条（Adapter 与既有 crctl 适配器的关系） | §3.4 + §6.5 SDD-CLOSE-01：两套职责分目录、各自模板、各自安装入口；`policy.json` 不进入 `skills/shared/crctl/adapters/`；唯一联合点是 Managed scope 下的 daemon 单写入点合成（**仅 claude**，§4.9） |
 | 第 9 条（Plugin 打包形态交 SDD） | §5 决策 D-3：**不引入 plugin 打包形态**，沿用既有"模板 + 安装时物化绝对路径"先例；理由与替代方案见 D-3（SDD-CLOSE-06） |
 
 ---
@@ -242,7 +249,7 @@ TASK-01（FR-8 基线 + 命令聚合 + 历史回放）
 ```jsonc
 {
   "policyVersion": "v1",                  // 只表示格式版本（见 §1.4.6）
-  "families": [                            // 首期命令族（dep-1 FR-1 第 2 项钉定的五族）
+  "families": [                            // 首期命令族（dep-1 FR-1 第 2 项钉定的三族五命令：grep|rg / find|Get-ChildItem / cat|Get-Content）
     { "id": "grep",   "kind": "search", "match": ["grep", "rg"] },
     { "id": "find",   "kind": "list",   "match": ["find", "Get-ChildItem"] },
     { "id": "read",   "kind": "read",   "match": ["cat", "Get-Content"] }
@@ -406,7 +413,7 @@ type Policy      = { policyVersion, families[], thresholds{}, truncation{}, hint
 
 1. **目录归属**：OutputGuard 的 Adapter 一律落在 `output-guard/adapters/**`，**不进入** `skills/shared/crctl/adapters/**`；`policy.json` 不被复制到任何其它目录；两套适配器的配置文件不得合并成一份事实源。
 2. **安装入口是否共用**：**不共用**。`dep-10`（Claude）/ `dep-11`（Qoder）/ `dep-12`（Codex）的既有模板治理"裸 git / 受控路径写入 / SessionStart 注入"，其安装动作是"把 hooks 段合并进目标 Runtime 的 settings"；OutputGuard 沿用**同一安装形态**（模板 + 安装时物化 `{TOOLS_ROOT}` 绝对路径），但模板文件各自独立，互不嵌套引用。
-3. **唯一联合点**：Managed scope（Multica 每任务 env）下，daemon 把两套 hooks 写进**同一个** Runtime 配置对象（§4.9），写入点唯一，避免两个写者对同一文件互相 clobber。
+3. **唯一联合点（仅 claude）**：Managed scope（Multica 每任务 env）下，daemon 把两套 hooks 写进 claude 的**同一个**配置对象 `{workDir}/.claude/settings.json`（§4.9），写入点唯一，避免两个写者对同一文件互相 clobber。codebuddy / qoder 在 daemon 侧没有 hooks 写点（§4.9 第 4 步），两套 hooks 因此不共用安装入口，各自的安装动作由各自模板承担。
 
 ## 3.5 只读契约与「不复刻」边界
 
@@ -606,13 +613,27 @@ k：分子 = costSource 对应的计费金额；分母 = 同区间工具结果 t
 1. 读本地安装配置（一个显式环境变量指向 Tools Release 根；未配置 ⇒ 本次挂载整体跳过，既有行为逐字不变）
 2. 解析 output-guard/adapters/<provider>/ 下的 hook 入口绝对路径与 policy 读取面
    （**只写路径引用，不复制 policy、不复制 Adapter 正文**）
-3. 与该 provider 既有的 crctl 守卫 hooks **在同一个配置对象内合成**：
-   - 同一 JSON 写入一次（单一写者）；hooks 数组按"既有段在前、OutputGuard 段在后"追加
-   - 已存在的用户配置文件 **不 clobber**（沿用既有"存在即跳过并告警"的行为）
-4. provider 无 hook 支撑（Pi / Codex）⇒ 不写文件、不猜路径，只在报告里给出该 Runtime 的安装指引
+3. provider 分支表（写入者唯一 = daemon；"目标文件"一律是可解析出的绝对路径）：
+   provider    目标文件                        写入形态
+   claude      {workDir}/.claude/settings.json  与该 provider 既有的 crctl 守卫 hooks **在同一个配置对象内合成**：
+                                               同一 JSON 只写一次；hooks 数组按"既有段在前、OutputGuard 段在后"追加
+   codebuddy   不写（见第 4 步）               —
+   qoder       不写（见第 4 步）               —
+   pi          不写（见第 4 步）               —
+   codex       不写（见第 4 步）               —
+4. "不写"是显式设计而不是"暂无实现"：daemon 的 Runtime hooks 写点**只有 claude 一个**（`dep-4`；`dep-15` 的每任务写入面对
+   codebuddy / qoder 只有记忆文件与 skills 发现目录），给其余 Runtime 新开写点等于在平台层再造一个 Runtime hooks 配置面，
+   超出 FR-1 的"挂载"范围（见 D-7 的"范围澄清"）。因此这四个 Runtime 的挂载面是**显式安装一次**：
+   - codebuddy：项目级 `<project-root>/.codebuddy/settings.json`（可提交、团队共享）或用户级 `~/.codebuddy/settings.json`（`V-5`）
+   - qoder：项目级 `<project-root>/.lingma/settings.json` 或用户级 `~/.lingma/settings.json`（`dep-11`）
+   - pi：宿主级 `~/.pi/agent/settings.json#extensions`（或 `~/.pi/agent/extensions/`）——argv 面被 `dep-16` 封闭，不猜路径、不做 argv 注入
+   - codex：宿主级 `.codex/hooks.json` + `/hooks` 信任步骤（`dep-12`），按 partial 处理、uncovered 路径逐条声明
+   安装模板由 §3.4 的各自模板承担；生效性由 `check-install.mjs` 读数 + AC-14 的真实任务冒烟判定，不由部署过程自证。
+5. claude 分支的不 clobber 判据：目标 `.claude/settings.json` **已存在**（用户自带配置 / local_directory 流）⇒ 不写、不合并、
+   不覆盖，沿用 `dep-4` 的"存在即跳过并告警"；该次挂载记为未完成，由安装期检查显式报告（AC-19③，不静默假装生效）。
 ```
 
-**边界（`dep-1` §1.3.2 的 multica 行 + AC-12）**：只做挂载与写出配置；不碰 `dep-15` 的责任边界以外的语义、不放开 `dep-16` 的 argv 白名单面、不改 `dep-17`（preview/transcript 层）、不新增远程开关、不新增安装框架、不在 CR 过程中安装任何东西（安装是部署动作）。Pi 的挂载不走 argv 注入，改由宿主级配置面安装一次（§1.4.2 的 Managed 行）。
+**边界（`dep-1` §1.3.2 的 multica 行 + AC-12）**：只做挂载与写出配置；不碰 `dep-15` 的责任边界以外的语义、不放开 `dep-16` 的 argv 白名单面、不改 `dep-17`（preview/transcript 层）、不新增远程开关、不新增安装框架、不在 CR 过程中安装任何东西（安装是部署动作）。claude 的挂载走 daemon 单写入点；Pi / CodeBuddy / Qoder / Codex 不走 daemon 写点（第 4 步），改由各自原生配置面显式安装一次（§1.4.2 的 Managed 行）。
 
 ## 4.10 A10 — 调用方同步扫描（AC-21① 的可机械核对面）
 
@@ -625,6 +646,10 @@ k：分子 = costSource 对应的计费金额；分母 = 同区间工具结果 t
   c. 子命令 ∈ 投影集合 ∧ 该处需要 summary 之外的字段        → **必须显式补 `--detail`**
 检查：caller-contract.test.mjs 断言扫描面内每一处 (b) 类调用与显式表一致、(c) 类调用都带 `--detail`；
      新增/改动调用点若与表不符即红（表是人工审过的白名单，断言是机械的）
+扫描面之外的真实调用方（例：KB 仓 `.github/workflows/cr-guard.yml` 这类仓外 CI 调用；外部脚本、其它仓的 workflow 同理）
+不因"在扫描面外"而豁免：逐条做同一字段消费检查，并把结论登记进同一张表（按仓标注）。判定为"只消费退出码、
+不解析输出字段"的记 `无需动作`；判定为需要完整字段的按 (c) 类补 `--detail`。这样 AC-21① 的"全部真实既有调用方"
+覆盖范围可核——口径按字段消费，不按调用次数或所在仓。
 ```
 
 `summary` 的字段集**按"调用方充分性"设计**：先在 A10 的表里枚举每个被投影命令的既有消费字段，再据此定义 summary 必须保留的字段；只有确实无法进入 summary 的字段才用 `--detail` 兜住。这样 `--detail` 是"显式例外"，而不是"大面积补丁"。
@@ -683,8 +708,9 @@ k：分子 = costSource 对应的计费金额；分母 = 同区间工具结果 t
 - **Context**：Multica 平台在每任务 env 内**已经**为 claude 写项目级 Runtime 配置（`dep-4`）；纯手工安装会与该写入点竞争同一文件。
 - **选定**：在该写入点内合成（单写者、单次写），并把 OutputGuard 段落置于既有 hooks 之后。
 - **替代**：要求运维在用户级/项目级各装一次，daemon 不参与。
-- **否决理由**：AC-14 要求在真实 Multica 任务里冒烟，而项目级写入点会覆盖/竞争用户级配置，纯手工安装下"是否真的生效"不可判定（等于把降级风险藏进部署过程）。
+- **否决理由**（只针对 claude）：claude 的项目级写入点（`dep-4`）会与用户自带配置竞争同一文件，而 AC-14 要求在真实 Multica 任务里冒烟 —— 纯手工安装下"是否真的生效"不可判定（等于把降级风险藏进部署过程）。
 - **代价**：`../multica` 产生一处小改动（`dep-4` 文件 + 新文件），需按其 `dep-18` 登记定制。
+- **范围澄清（回修 r1，适用范围只在 claude）**：本条只适用于 daemon **已有** hooks 写入点的 Runtime —— 当前只有 claude（`dep-4`；`dep-15` 的每任务写入面只覆盖记忆文件与 skills 发现目录）。codebuddy / qoder 在 daemon 侧没有 hooks 写点，本 CR **不**为它们在平台层新开写点：那会把"一次挂载"变成"为某个 Runtime 新造一个配置面"的架构动作，并会与用户自己的项目级配置竞争同一对象。二者的 Managed 挂载面因此是各自原生配置面 + 显式安装一次（§4.9 第 4 步），其"是否真的生效"由 `check-install.mjs` 读数 + AC-14 真实任务冒烟共同判定，不由部署过程自证。
 
 ## D-8 FR-8 的 token 估计：带标识的自研 estimator（选定） vs 引入 BPE tokenizer
 
@@ -738,7 +764,7 @@ k：分子 = costSource 对应的计费金额；分母 = 同区间工具结果 t
 
 | AC | 设计落点 | 可观测结果 | 可达性说明 |
 |---|---|---|---|
-| AC-1 | §9 `zero_diff` 清单 + §6.4 零改动核对清单 | `crctl git diff --name-only <baseRef>..HEAD` 对清单内路径逐条为空；状态机/门禁/审批/账本/事务行为类文件零变化 | 本 CR 的改动面（`output-guard/**`、`skills/shared/metrics/**`、`crctl.mjs` 投影层、CI/README/ARCHITECTURE、multica `execenv` 两文件）与清单无交集，断言可机械执行 |
+| AC-1 | §9 `zero_diff` 清单 + §6.4 零改动核对清单 | `crctl git diff --name-only <baseRef>..HEAD` 对清单内路径逐条为空；状态机/门禁/审批/账本/事务行为类文件零变化 | 本 CR 的改动面（`output-guard/**`、`skills/shared/metrics/**`、`crctl.mjs` 投影层、Prompt 采纳面（§9 `scope_in` 第 3、4 项）、CI/README/ARCHITECTURE、multica `execenv` 两文件 + `CUSTOM.md`）与清单无交集（`dep-6` 的 `crctl.mjs` 与 `dep-9` 的 pipeline JSON 按**落点** carve-out 切分：投影落点/命中的 prompt 文本在 `scope_in`、其余在 `zero_diff`），断言可机械执行 |
 | AC-2 | §4.9/§6.4 + 新增代码的依赖纪律 | `dep-5` 的 lib 四文件零 diff；全 diff 无锁/journal/write-set/CAS/提交框架；无手写账本；passCondition/状态映射/reviewLoop 算法零复制 | 新增代码不写任何账本、不引入文件锁（度量脚本只写 `--out`，Adapter 只读 policy）；复制类漂移由既有 prompt 合同扫描 + 人工复核兜住 |
 | AC-3 | §3.2 三条实现约束 + `policy.json` | 幂等向量逐字相等；`core.mjs` 内阈值字面量零命中；阈值第二副本零命中 | policy 由 Adapter 读入并以参数进 Core；thresholds 唯一出现在 `policy.json` |
 | AC-4 | `capabilities.json` + `conformance.json` + 每 Adapter 的向量执行 | 测试输出能区分 full / partial / unavailable；Pi/Claude/CodeBuddy/Qoder 的 full 向量逐 Adapter 出结果；Codex 的 uncovered 路径逐条列示 | 若实测某 Runtime 不具备 full，按 §2.4 降级并触发 scope amendment（不静默吸收） |
@@ -746,13 +772,13 @@ k：分子 = costSource 对应的计费金额；分母 = 同区间工具结果 t
 | AC-6 | §4.1 + §3.3 | 逃生阀 valid/absent 两态向量；连续两次调用无跨调用状态；四条负向测试证明逃生阀不影响 git 白名单/受控路径/审批/账本写入 | OutputGuard 运行在 Runtime 权限与既有安全控制之后（① → ②），负向测试在 hook 层并列验证 |
 | AC-7 | §4.3 末段 + `evaluateResult` 的正文替换 | sentinel 端到端用例：sentinel 不在模型可见 `tool_result`、不在 session 文件、不在 transcript、不在新增日志；无 sidecar/JSONL/DB 新增 | 裁剪只替换正文；`details` 不被写入丢弃正文；测试夹具把 payload 控制在 Runtime 自身截断阈值之下以隔离 `V-3` |
 | AC-8 | §4.5 四场景 | 四场景各出 `OUTPUT_GUARD_UNAVAILABLE` 且 reason ∈ 四值；原调用继续、结果不改；无静默安装/修复（负向断言：不写任何文件） | 四场景可用可注入路径/损坏 bundle 在测试中复现（`BUNDLE_INVALID`/`POLICY_INVALID` 为纯函数可造） |
-| AC-9 | §4.7 `replay` | `baseline.json` 含可复现筛选规则与实际样本数；离线回放完成；合法调用抽检清单与判定入证据 | 回放是纯函数重算，不执行命令、不依赖网络 |
+| AC-9 | §4.7 `replay` | `baseline.json` 含可复现筛选规则与实际样本数；离线回放完成；合法调用抽检清单与判定入证据 `change-requests/CR-2026-069/evidence/ac9-sampling.md`（§9 `scope_in` 第 7 项） | 回放是纯函数重算，不执行命令、不依赖网络 |
 | AC-10 | §4.6 + §4.8 | 默认输出=compact summary；`verify-selection` 断言注册表 ≡ 基线最小集合；`--detail` 与金样本三层等价 | TASK-01 先于 TASK-08；baseline evidence 随 CR 提交，核对命令可复跑 |
 | AC-11 | §3.1 + §6.4 | 逐命令退出码不变；错误码与错误体不变（`fail()` 出口零 diff）；既有测试全绿（CI 双平台）；状态/门禁/审批/CAS/事务/Git 代码零改动 | `fail()` 与各 `cmdXxx` 的非成功分支完全未改；投影只在 `ok()` 内生效 |
 | AC-12 | §9 `zero_diff` | `crctl git diff --name-only` 对 `dep-17` 路径为空 | multica 改动只落在 `dep-4`/新增 `outputguard_config.go`/`dep-18` |
 | AC-13 | §3.5 判据 | README 仅增导航与权威入口链接；`thresholds` 数值与完整能力矩阵在 README/Skill 中零命中 | 检查脚本以"数值字面量 + 能力表关键词"为模式，纳入 CI |
-| AC-14 | §1.4.2 + TASK-03～TASK-07 / TASK-09 | 每个已启用 Runtime 至少一次真实冒烟，覆盖拒绝/裁剪/逃生/损坏降级四类行为；记录作为交付证据 | 冒烟在 Multica 启动的真实任务环境执行；失败按 §2.4 记降级并触发 scope amendment |
-| AC-15 | §4.2 可保持性检查 | sentinel 不在模型可见结果；`toolName`/`toolCallId`/`isError` 保留、`exitCode` 按其 Runtime 事实保留（`present` 必须保留 / `absent-by-runtime` 不作要求）；结果结构键集不变；任一 `present` 字段丢失即该路径不得裁剪并标 `unavailable` | 检查是 Core 的前置门，不通过的路径直接进入 `unavailable` 分支（不可能"裁了才发现"） |
+| AC-14 | §1.4.2 + TASK-03～TASK-07 / TASK-09 | 每个已启用 Runtime 至少一次真实冒烟，覆盖拒绝/裁剪/逃生/损坏降级四类行为；记录（含每个 Runtime 一行 `check-install.mjs` 输出）落 `change-requests/CR-2026-069/evidence/ac14-smoke.md` 作为交付证据 | 冒烟在 Multica 启动的真实任务环境执行；挂载面逐 provider 可区分（claude：daemon 自动写入；codebuddy/qoder：项目级/用户级配置文件已安装且**不被 daemon 触碰**；pi/codex：宿主级配置），因此"手工安装是否真的生效"由 `check-install.mjs` 读数 + 四类行为观测共同判定，不由部署过程自证；失败按 §2.4 记降级并触发 scope amendment |
+| AC-15 | §4.2 可保持性检查 | sentinel 不在模型可见结果；`toolName`/`toolCallId`/`isError` 保留、`exitCode` 按其 Runtime 事实保留（`present` 必须保留 / `absent-by-runtime` 不作要求）；结果结构键集不变；任一 `present` 字段丢失即该路径不得裁剪并标 `unavailable` | 检查是 Core 的前置门，不通过的路径直接进入 `unavailable` 分支（不可能"裁了才发现"）；`exitCode` 口径（D-6）与 D-5 随本 SDD 进入人工审批显式确认（§9 `follow_up` F-3），plan/TASK 的 AC-15 取证判据按该口径（`present` 必保留 / `absent-by-runtime` 不作要求）取值，不按 `prd.md` 字面重开口径 |
 | AC-16 | §2.2.4 trailer 指令 + §8 的 reviewer Skill 采纳 | 至少一条端到端用例：以 `complete=false` 结果提交门禁/审批判断时被要求继续切片取证或走逃生阀；trailer 指令文本为固定契约 | 无新门禁/新状态可用，拦截由"trailer 固定指令 + reviewer Skill 合同条款 + 端到端用例"三者共同承载；残余风险见 §7.4 |
 | AC-17 | §3.6 + §4.7 | ① 执行次数恰为两次（evidence 目录两个 JSON）；② 字段集 ≡ `dep-1` FR-8 第 3 项（来源 §5.4）；③ 样本数由脚本输出、代码与门禁零硬编码常量；④ 报告以 KB evidence + Issue 附件存在、四账本零变化；⑤ 14 天窗口与 `insufficient-sample` 为可测函数 | 脚本 CLI 显式提供 `baseline`/`after --window 14d`/`--out`；evidence 目录随 CR 提交 |
 | AC-18 | §4.7 `k` 段落 | 输出含 `costSource` + `tokenEstimator` + 分母 + 原始 usage 四维；`costSource=unavailable` ⇒ `k=null` 且无金额宣称；非 Pi 只报覆盖度与裁剪量 | 四维键名来自 `V-2` 的实读结构；Pi-only 由 `capabilities.level`/`coverage` 派生控制 |
@@ -791,7 +817,7 @@ dep-4
   relative path: server/internal/daemon/execenv/crguard_config.go
   stable symbol/对象: prepareCRGuard / CRGuardResult（每任务 env 锻造：PATH shim + provider=claude 时写 {workDir}/.claude/settings.json；hook 脚本路径从 rules.json 位置派生；已存在则跳过并告警）
   commit SHA: 947386318d52ecdb026a017f76220cde2ef7b94e
-  依赖结论: 本 CR 的挂载先例与挂载点：Runtime 启动接线在既有每任务 env 锻造流程内完成、且"派生路径而不是二次配置"是既有做法。本 CR 在同一写入点内合成 OutputGuard hooks；挂载入参为空时该函数行为逐字不变
+  依赖结论: 本 CR 的挂载先例与挂载点：Runtime 启动接线在既有每任务 env 锻造流程内完成、且"派生路径而不是二次配置"是既有做法。该函数内**唯一的 Runtime hooks 写入分支是 provider=claude**（其余 provider 只走 PATH shim），daemon 对 codebuddy / qoder 不写任何 hooks 配置（二者的每任务写入面见 dep-15）。本 CR 只在 claude 分支内合成 OutputGuard hooks；挂载入参为空时该函数行为逐字不变
 
 dep-5
   repo: tools
@@ -868,7 +894,7 @@ dep-15
   relative path: server/internal/daemon/execenv/runtime_config.go
   stable symbol/对象: 每任务运行时配置与记忆文件的写入责任面（per-provider 的 `CLAUDE.md` / `CODEBUDDY.md` / `AGENTS.md` 与各 Runtime 的原生 skills 发现路径，含 Pi 的 `.pi/skills/`）
   commit SHA: 947386318d52ecdb026a017f76220cde2ef7b94e
-  依赖结论: 每任务运行时资源写入的既有责任边界；OutputGuard 挂载只新增"Runtime hooks 配置"这一类文件，不改动 Prompt/记忆文件的既有语义
+  依赖结论: 每任务运行时资源写入的既有责任边界：该面写入的是 Prompt/记忆文件与各 Runtime 的原生 skills 发现路径，**不含任何 Runtime 的 hooks 配置文件**（hooks 写点只有 dep-4 的 claude 分支）。因此 codebuddy / qoder 的 OutputGuard 挂载不能落在此面；本 CR 不改动记忆文件的既有语义，也不为这两个 Runtime 新增写点（§4.9 第 4 步）
 
 dep-16
   repo: multica
@@ -896,7 +922,7 @@ dep-19
   relative path: .github/workflows/crctl-ci.yml
   stable symbol/对象: `on.push` / `on.pull_request` 的 `paths` 列表；`jobs.contracts.steps`（lint-prompts --mode enforce、check-skill-matrix、check-agents-contract、pipeline 结构断言、suite-gate --run、writeback 单测）
   commit SHA: 82e43dc53d51f69a799904c786900ea78e57ca12
-  依赖结论: 现有触发路径不含 `output-guard/**` 与 `skills/shared/metrics/**`；不扩展触发面则新目录的测试永不进入 CI（NFR-7 的回归保护失效）
+  依赖结论: `paths` 已含 `skills/**`，故新增的 `skills/shared/metrics/**` 本就在触发面内；`output-guard/**` 不在触发面内，不补则该新执行面的测试永不进入 CI。真正缺的是 `steps`：现有步骤里没有 metrics 与 output-guard 的测试步骤（动作结论不变：`paths` 增两项、`steps` 增两条；否则 NFR-7 的回归保护失效）
 
 dep-20
   repo: tools
@@ -945,7 +971,7 @@ V-7  Codex hooks 文档   来源 https://developers.openai.com/codex/hooks
   失败动作: 逐 Runtime 落 `capabilities.level`；任一 Runtime 由 full 降级即 AC-4 未达成（§2.4 + SDD-CLOSE-05），不得静默吸收
 ```
 
-**依赖引用规则自查**：① 正文出现的每个 `dep-N` 均在本节有定义；② 本节编号按正文首现顺序分配（自查实测：dep-1@16、dep-2@16、dep-3@30、dep-4@78、dep-5@106、dep-6@107、dep-7@116、dep-8@317、dep-9@330、dep-10@408、dep-11@408、dep-12@408、dep-13@560、dep-14@560、dep-15@615、dep-16@615、dep-17@615、dep-18@687、dep-19@773、dep-20@846、dep-21@853，单调且无空洞）；③ 无法绑定五要素的外部引用全部在"待核实依赖"单列，正文只以 `V-N` 引用；④ 本 CR 确有既有实现依赖，故本节不写 `N/A`。
+**依赖引用规则自查**：① 正文出现的每个 `dep-N` 均在本节有定义；② 本节编号按正文首现顺序分配（本轮自查：1～21 的首现序严格单调、无空洞、无未定义引用；行号随每次修订漂移，故不在此固化）；③ 无法绑定五要素的外部引用全部在"待核实依赖"单列，正文只以 `V-N` 引用；④ 本 CR 确有既有实现依赖，故本节不写 `N/A`。
 
 ## 6.4 既有测试面改动清单与零改动核对清单
 
@@ -957,9 +983,11 @@ V-7  Codex hooks 文档   来源 https://developers.openai.com/codex/hooks
 | `dep-13` 的 `gate-registry.json#exceptions` | **保持空数组**，不新增例外 | AC-21③ |
 | `output-guard/test/*.test.mjs` | 新增，由 CI 新增步骤执行 | 不在 `dep-13` 的扫描目录内，因此**必须**有独立 CI 步骤，否则新合同无回归保护 |
 | `skills/shared/metrics/test/cr-cost.test.mjs` | 新增，由 CI 新增步骤执行 | 同上 |
-| `dep-19` 的 `.github/workflows/crctl-ci.yml` | `paths` 增 `output-guard/**`、`skills/shared/metrics/**`；`steps` 增 `output-guard` 与 `metrics` 两条测试步骤 | 现有触发路径**不含**新目录 → 不增则新目录的测试永不运行（部署面裸奔） |
+| `dep-19` 的 `.github/workflows/crctl-ci.yml` | `paths` 增 `output-guard/**`、`skills/shared/metrics/**`；`steps` 增 `output-guard` 与 `metrics` 两条测试步骤 | `paths` 已含 `skills/**`（metrics 仅在触发面内），但 `output-guard/**` 不在；且两类测试都没有对应 `steps` → 不增则新目录的测试不会执行（部署面裸奔） |
 
-**零改动核对清单（提交前逐条 `git diff --name-only` 核对）**：`dep-5` 的 lib 四文件、`dep-7`、`dep-8`、`dir-graph.yaml`、`dep-9` 的全部 pipeline JSON、`agent-skill-matrix.yml`、`dep-18`；以及 multica 侧除 `dep-16`/`dep-17` 之外的运行时语义文件、`prd.md`、四账本（`cr.md` 的 status 行由 crctl 写入，不计入）、`specs/`、`delivery/`、`docs/`。
+**零改动核对清单（提交前逐条 `git diff --name-only` 核对）**：`dep-5` 的 lib 四文件、`dep-7`、`dep-8`、`dir-graph.yaml`、`dep-9` 全部 pipeline JSON 的**结构**（节点数 5/4/12、reviewLoop / replayNodes / maxAttempts；prompt 文本按 §9 `scope_in` 第 4 项的判定，最多补 `--detail`）、`agent-skill-matrix.yml`；以及 multica 侧除本次落点（`dep-4` 文件 + 新增 `outputguard_config.go` + 同包测试 + `CUSTOM.md`）之外的运行时语义文件（**含 `dep-15` 的 `runtime_config.go`**、`dep-16`、`dep-17`）；`prd.md`、四账本（`cr.md` 的 status 行由 crctl 写入，不计入）、`specs/`、`delivery/`、`docs/`。
+
+**`dep-18` 不在本清单内**：`../multica/CUSTOM.md` 按 §9 `scope_in` 第 5 项**必须**新增本次定制的台账条目，不适用零 diff（§1.2 的 multica 变更面已同步标注）。
 
 ## 6.5 SDD-CLOSE 关闭义务（CR-2026-060 AC-06）
 
@@ -967,7 +995,7 @@ V-7  Codex hooks 文档   来源 https://developers.openai.com/codex/hooks
 
 | 编号 | 待关闭项（来源） | 关闭结论 | 覆盖层 |
 |---|---|---|---|
-| SDD-CLOSE-01 | Adapter 目录归属与安装入口是否与既有 crctl 适配器共用（`dep-1` §1.5 第 8 条） | **分目录、分模板、分安装入口；唯一联合点是 Managed scope 下的单写入点合成**（§3.4、§4.9） | 生产（模板）／传输（安装物化）／消费（Runtime 配置）／降级（任一模板缺失只影响该 Runtime） |
+| SDD-CLOSE-01 | Adapter 目录归属与安装入口是否与既有 crctl 适配器共用（`dep-1` §1.5 第 8 条） | **分目录、分模板、分安装入口；唯一联合点是 Managed scope 下的 daemon 单写入点合成（仅 claude）**（§3.4、§4.9） | 生产（模板）／传输（安装物化）／消费（Runtime 配置）／降级（任一模板缺失只影响该 Runtime） |
 | SDD-CLOSE-02 | `--detail` 与旧完整输出的"等价"定义（§1.5 第 6 条） | **三层等价性合同：字段集合 ≡ / 稳定值逐字 ≡ / 易变字段形态 ≡；禁止字节比对**（§4.6） | 生产（投影函数）／传输（stdout）／消费（调用方字段集合，§4.10）／降级（未投影命令等价现状） |
 | SDD-CLOSE-03 | 新增合同测试的棘轮登记同步义务（§1.5 第 7 条） | **`manifest.files` + `manifest.cases` 同批更新；`exceptions` 保持空；新增目录另加独立 CI 步骤**（§6.4） | 生产（测试文件）／存储（登记面）／消费（suite-gate）／降级（不登记即红，不静默） |
 | SDD-CLOSE-04 | 逃生阀标记不合法时的行为（§1.5 第 5 条） | **视为不存在（`absent`）**：不拒绝调用、不新增 action 取值；若随后被裁剪仍出 `action=truncate` trailer（§4.1） | 生产（解析）／传输（Pre hook 决策）／消费（执行与结果面）／降级（无第二套错误码） |
@@ -975,7 +1003,7 @@ V-7  Codex hooks 文档   来源 https://developers.openai.com/codex/hooks
 | SDD-CLOSE-06 | 是否引入 plugin 打包形态（§1.5 第 9 条） | **不引入**；沿用模板 + 安装时物化绝对路径（D-3、§3.4） | 生产（模板）／传输（安装动作）／消费（Runtime 配置加载）／降级（未安装＝未启用，检查脚本报告） |
 | SDD-CLOSE-07 | FR-8 机器结果的落点与"不新增账本"的边界（`dep-1` FR-8 第 1/3 项与 AC-17④） | **机器 JSON：脚本 `--out` + KB `change-requests/CR-2026-069/evidence/` 副本 + Issue 附件；人读摘要只走 stdout（不写第二份产物文件）；四账本零变化**（§3.6） | 生产（聚合）／存储（evidence）／消费（TASK-08 选择 + TASK-10 复测）／降级（`insufficient-sample`） |
 | SDD-CLOSE-08 | 计数类断言的"口径 + 观测时刻"义务（§1.5 第 3 条 + 需求评审 S-4） | **每个计数字段携带 `observedAt` 与 `rule`；脚本与门禁中零硬编码样本常量**（§3.6） | 生产（脚本输出）／存储（JSON 字段）／消费（评审与复算）／降级（口径缺失即实现缺陷） |
-| SDD-CLOSE-09 | Managed scope 的挂载责任面（`dep-1` §1.3.2 multica 行） | **claude/codebuddy/qoder 由 daemon 单写入点合成挂载；Pi 走宿主级配置安装一次；Codex 走宿主级 + uncovered 声明**（§1.4.2、§4.9） | 生产（挂载解析）／传输（每任务配置文件）／消费（Runtime 加载）／降级（未配置即整体跳过，行为零变化） |
+| SDD-CLOSE-09 | Managed scope 的挂载责任面（`dep-1` §1.3.2 multica 行） | **daemon 写点只有一个：claude 的 `{workDir}/.claude/settings.json`（单写入点合成）；codebuddy/qoder/pi/codex 走各自原生配置面的显式安装一次，daemon 不为其新增写点**；生效性由 `check-install.mjs` 读数 + AC-14 冒烟判定（§1.4.2、§3.4、§4.9） | 生产（挂载解析）／传输（每任务配置文件 vs 安装时物化模板）／消费（Runtime 加载）／降级（未配置即整体跳过，行为零变化；目标文件已存在即跳过并告警） |
 | SDD-CLOSE-10 | `exitCode` 等"字段必须保留"的可执行化（`dep-1` FR-1 第 5 项） | **按 Runtime 结果结构的真实字段集判定：`present` 必保留，`absent-by-runtime` 不作要求且不因此降级**（§4.2、D-6） | 生产（可保持性检查）／传输（结果回填）／消费（门禁证据判定）／降级（不可保持 → `unavailable`） |
 
 ---
@@ -1025,6 +1053,7 @@ V-7  Codex hooks 文档   来源 https://developers.openai.com/codex/hooks
 | R-3 | 某 Runtime 实测不具备 full 能力（`V-4`～`V-7` 待核实） | 按 §2.4 降级 + scope amendment；不得静默吸收（SDD-CLOSE-05） |
 | R-4 | Runtime 自身的截断行为（`V-3`：Pi 把被丢弃正文放进 `details` 并写 `fullOutputPath`）会造成"谁的丢弃"混淆 | 测试夹具控制 payload 尺寸以隔离；该行为本 CR 不治理（F-5） |
 | R-5 | Pi 的扩展加载面（`V-1`）与 Multica 的 argv 白名单（`dep-16`）共同决定 Pi 只能走宿主级安装 | 已在 §1.4.2 / D-7 落成显式设计；AC-14 冒烟必须在 Multica 启动的真实任务环境完成 |
+| R-6 | codebuddy / qoder / pi / codex 的 Managed 挂载依赖**显式安装一次**，漏装即该 Runtime 静默无治理（会话里不会出现任何 trailer，与"未触发"不可区分） | 由 `check-install.mjs` 的逐 Runtime 读数（AC-19③）+ AC-20 的启用前置（conformance + 真实冒烟 + 降级验证）暴露；不新增远程开关、不做自动安装（AC-19③ 的负向面） |
 
 ---
 
@@ -1040,8 +1069,8 @@ V-7  Codex hooks 文档   来源 https://developers.openai.com/codex/hooks
 | `dep-21`：`skills/develop/review-tech-design/SKILL.md`、`skills/develop/review-code/SKILL.md`、`skills/develop/review-dev-plan/SKILL.md`、`skills/requirement/review-requirement/SKILL.md` | 四份均已以 `crctl status` / `next` / `gate` / `attempt` / `review-record` 原样调用，并逐字引用 `gateBlockers` / `reviewLoops` / `warnings` / `legalNext` 等字段 | 按 A10 表：若涉及字段不在该命令 summary 内 → 调用改为带 `--detail`；同时增一条"以 `complete=false` 结果不得作最终判断，须继续切片取证或走逃生阀（AC-16）"的规则条款 |
 | `skills/develop/approve-tech-design/SKILL.md`、`skills/develop/approve-dev-start/SKILL.md`、`skills/develop/approve-code/SKILL.md`、`skills/requirement/approve-requirement/SKILL.md` | 同样消费 `crctl status/gate` 的完整字段（证据摘要、`gateBlockers`） | 同上（按 A10 表定点补 `--detail`） |
 | `skills/sync/**`（`push-progress` / `pull-progress` / `workspace-freshness` / `handover-cr` / `resume-from-remote`） | 消费 `crctl status` / `workspace inspect` / `workspace freshness` 的完整字段 | 同上（按 A10 表定点补 `--detail`） |
-| `pipeline-templates/*.pipeline.json` 的 prompt 文本 | 含 `crctl <命令>` 示例调用 | 若示例所在步骤需要完整字段 → 补 `--detail`；不新增节点、不改 reviewLoop |
-| `agents/*.md` 与 `README.md` | 含 `crctl` 调用叙述 | 仅当叙述要求完整字段时补 `--detail`；README 只增导航与权威入口（AC-13） |
+| `pipeline-templates/*.pipeline.json` 的 prompt 文本 | 含 `crctl <命令>` 示例调用 | A10 扫描面内逐条判定：命中（该步骤需要完整字段）→ **在同一 CR 内**定点补 `--detail`（§9 `scope_in` 第 4 项的同一义务）；不新增节点、不改 reviewLoop、不改其余结构 |
+| `agents/*.md` 与 `README.md` | 含 `crctl` 调用叙述 | 同上（`agents/*.md` 命中即在本 CR 内补 `--detail`）；README 只增导航与权威入口（AC-13） |
 | `output-guard/**` 文档（新增） | — | README/模板只允许写"路径 + 安装命令 + 检查命令"，禁止复制 `policy.json` 阈值与 `capabilities.json` 能力矩阵 |
 
 **冻结机制**：A10 的显式表落成 `skills/shared/crctl/scripts/test/caller-contract.test.mjs` 的数据段。该表是**人工审过的白名单**，断言是机械的——任何调用点与表不符（缺 `--detail` 或声明与实际字段消费不一致）即红。因此 `dep-20` 抓不到的那一类漂移，在本 CR 里由该测试 + `review-dev-plan`/`review-code` 的 Prompt 采纳维度共同兜住。
@@ -1055,16 +1084,16 @@ V-7  Codex hooks 文档   来源 https://developers.openai.com/codex/hooks
 1. **FR-8 全量**：`skills/shared/metrics/scripts/cr-cost.mjs` + `scripts/lib/{sessions,aggregate,select,render}.mjs` + `test/cr-cost.test.mjs`；`baseline`/`after`/`replay`/`verify-selection` 四个子命令；TASK-01 的机器 JSON 副本落 `change-requests/CR-2026-069/evidence/`（AC-17 / AC-18 / AC-9）。
 2. **FR-1 全量**：`output-guard/{core.mjs,policy.json,capabilities.json,conformance.json}` + 五个 Adapter 目录 + `scripts/check-install.mjs` + `test/*` + 各 Adapter README（AC-3～AC-8、AC-13～AC-16、AC-19、AC-20）。
 3. **FR-2 全量**：`skills/shared/crctl/scripts/lib/summary-projectors.mjs`；`crctl.mjs` 的**三处改动**（`ok()` 投影入口、`parseArgs` 的 `--detail` 布尔分支、HELP 一行）；`test/crctl-summary.test.mjs`；`test/caller-contract.test.mjs`；`test/golden/crctl-detail/*.json`；`test/gate-registry.json` 的 `manifest.files` / `manifest.cases` 同步（AC-10、AC-11、AC-21）。
-4. **Prompt 采纳面**（§8）：`skills/shared/crctl/SKILL.md`、四个 review Skill、四个 approve Skill、`skills/sync/**` 中 A10 表命中项的定点补 `--detail` 与 AC-16 规则条款。
-5. **治理登记与 CI 面**：`dep-18`（`../multica/CUSTOM.md` 按其现状登记本次定制）；`dep-19`（`.github/workflows/crctl-ci.yml` 的 `paths` 增 `output-guard/**`、`skills/shared/metrics/**`，`steps` 增两条测试步骤）；`README.md` 增导航与权威入口；`ARCHITECTURE.md` 增 `output-guard/` 与 `skills/shared/metrics/` 两条代码地图条目。
-6. **TASK-09 挂载（Managed scope）**：`../multica` 新增 `server/internal/daemon/execenv/outputguard_config.go` + `crguard_config.go` 的单写入点合成入参 + 同包回归测试（AC-14、AC-19、AC-20）。
-7. **交付证据**：TASK-01/TASK-10 的机器 JSON、各 Runtime 的真实冒烟记录、conformance 结果、调用方扫描表、AC-10 的 `verify-selection` 输出。
+4. **Prompt 采纳面**（§8）：`skills/shared/crctl/SKILL.md`、四个 review Skill、四个 approve Skill、`skills/sync/**` 中 A10 表命中项的定点补 `--detail` 与 AC-16 规则条款；**同一义务覆盖 A10 扫描面内判定命中的 `pipeline-templates/*.pipeline.json` prompt 文本与 `agents/*.md` 落点**（只补 `--detail`，零节点/零结构变化——AC-21① 要求扫描面内全部真实调用方在同一 CR 内更新，故这些落点属于交付面而非后续项）。
+5. **治理登记与 CI 面**：`dep-18`（`../multica/CUSTOM.md` 按其现状登记本次定制，**该对象按定义就要改，不适用零 diff**）；`dep-19`（`.github/workflows/crctl-ci.yml` 的 `paths` 增 `output-guard/**`、`skills/shared/metrics/**`，`steps` 增两条测试步骤）；`README.md` 增导航与权威入口；`ARCHITECTURE.md` 增 §1 鸟瞰一条组成面 + §3 代码地图 `output-guard/` 与 `skills/shared/metrics/` 两条（依据 §8 维护规则，§4/§5/§6 不改）。
+6. **TASK-09 挂载（Managed scope）**：`../multica` 新增 `server/internal/daemon/execenv/outputguard_config.go`（挂载解析 + claude 合成入参）与 `crguard_config.go` 的单写入点合成（**仅 provider=claude 分支**）+ 同包回归测试；**不新增** codebuddy/qoder 的 daemon 写点（二者走各自原生配置面的显式安装一次，见 §4.9 第 4 步）（AC-14、AC-19、AC-20）。
+7. **交付证据**（KB `change-requests/CR-2026-069/evidence/`）：TASK-01/TASK-10 的机器 JSON（`fr8-baseline.json` 等）、各 Runtime 的真实冒烟记录 + 每个 Runtime 一行 `check-install.mjs` 输出（`ac14-smoke.md`）、conformance 结果、调用方扫描表（`caller-contract.test.mjs` 内的显式表，含扫描面之外的真实调用方判定）、AC-9 的合法调用抽检清单与判定（`ac9-sampling.md`）、AC-10 的 `verify-selection` 输出。
 
 ## scope_out（明确排除的路径和能力）
 
 - **FR-3 / FR-4 / FR-5 / FR-6 / FR-7 / FR-9**：候选 Backlog，编号保留、本 CR 不实施、不得借本 CR 顺手做（`dep-1` §7）。
 - **`dep-17`（`tool_output_preview.go`）及其上游 daemon 展示/transcript 语义**：零 diff（AC-12）。
-- **`dep-15` 的固定 `architecture-design` 切片语义与 Provider 事件归一化行为**：零 diff。
+- **`../multica` 的 `server/internal/governance/runner.go`（固定 `architecture-design` 切片）与 Provider 事件归一化行为**：零 diff（AC-12）。
 - **KB 的 `specs/` / `delivery/` / `docs/`**（含只读的历史分析文档）：零写入。
 - **治理结构**：不新增状态、门禁、审批、CR 生命周期节点、Pipeline 节点、账本字段、数据库表、仪表盘、sidecar 日志、WAL、CAS 层、事务框架、远程动态开关、shadow mode。
 - **实现手段**：不实现完整 Bash/PowerShell parser（管道/重定向/脚本嵌套不做解析）、不调用 LLM 做输出摘要、不做语义压缩、不优化 crctl 运行时小文件读取、不建 crctl 字段/错误码事实页、不引入 plugin 打包形态、不引入第三方 tokenizer 依赖。
@@ -1079,16 +1108,17 @@ V-7  Codex hooks 文档   来源 https://developers.openai.com/codex/hooks
 | `dep-5` 的 lib 四文件（`durable-tx.mjs` / `workspace-transactions.mjs` / `outbox-contract.mjs` / `yaml-subset.mjs`） | 零 diff 或仅消费式 `import`；不新增实现、不拆分、不重构 |
 | `dep-8` 的 `gates.json` | 零 diff |
 | `dir-graph.yaml`（含 `#change-request-track.state_machine`） | 零 diff（状态数与转移集不变） |
-| `dep-9` 的全部 pipeline JSON | 零 diff（节点数保持 5/4/12，reviewLoop / replayNodes / maxAttempts 不变） |
+| `dep-9` 的全部 pipeline JSON 的**结构**（节点数保持 5/4/12、reviewLoop / replayNodes / maxAttempts 不变、不增删节点） | 零 diff；prompt 文本见 `scope_in` 第 4 项（A10 判定命中时最多补 `--detail`）——同一 carve-out 写法 |
 | `agent-skill-matrix.yml` | 零 diff（不新增 Skill、不新增 actor/权限项） |
 | `dep-7` 的 `controlled-shell/rules.json` | 零 diff（`protectedPaths.deny` 与 git 白名单面不变） |
 | 既有测试文件的既有断言 | 语义零变化；只允许新增文件与新增用例，以及 `dep-13` 中 `manifest.files`/`manifest.cases` 的**增项** |
+| `dep-15` 的 `server/internal/daemon/execenv/runtime_config.go`（每任务记忆文件与 skills 发现路径写入面） | 零 diff（不为 codebuddy / qoder 在该面新增 hooks 写点；§4.9 第 4 步、§6.4） |
 | `../multica` 的 `server/internal/governance/runner.go`（固定 `architecture-design` 切片）与 Provider 事件归一化实现 | 零 diff |
 | `dep-16` 的 argv 白名单面（`piBlockedArgs` 等既有清单） | 零 diff（不新增、不放开任何被阻断的 argv） |
 | `dep-17`（`tool_output_preview.go`） | 零 diff（AC-12） |
 | KB：`prd.md`（审批 evidence-digest 钉住）、`specs/`、`delivery/`、`docs/`、四账本手工编辑 | 零写入 |
 
-（四字段自洽判据逐条自查：① 无对象同时出现在 `scope_in` 与 `zero_diff`——`dep-6` 按**落点**切分（三处投影落点在 `scope_in`、其余代码在 `zero_diff`），与 AC-1 的同一 carve-out 逐字一致；② 三处"外部规则强制修改"的对象——`dep-18` 的定制登记、`dep-13` 的棘轮登记同步、`dep-19` 的 CI 触发面——**全部已纳入 `scope_in`**，未留在 `zero_diff`；③ `scope_out` 未隐藏任何当前交付必须发生的治理修改；④ `follow_up` 各项均非当前 AC 的必要条件。）
+（四字段自洽判据逐条自查：① 无对象同时出现在 `scope_in` 与 `zero_diff`——`dep-6` 按**落点**切分（三处投影落点在 `scope_in`、其余代码在 `zero_diff`），与 AC-1 的同一 carve-out 逐字一致；`dep-9` 的 pipeline JSON 同按落点切分（**结构**在 `zero_diff`、判定命中的 prompt 文本在 `scope_in` 第 4 项）；② 三处"外部规则强制修改"的对象——`dep-18` 的定制登记、`dep-13` 的棘轮登记同步、`dep-19` 的 CI 触发面——**全部已纳入 `scope_in`**，未留在 `zero_diff`；③ `scope_out` 未隐藏任何当前交付必须发生的治理修改；④ `follow_up` 各项均非当前 AC 的必要条件。）
 
 ## follow_up（发现但留给后续 CR 的缺口）
 
@@ -1107,3 +1137,7 @@ V-7  Codex hooks 文档   来源 https://developers.openai.com/codex/hooks
 # 修订记录
 
 - **初稿（2026-09-17）**：以 `dep-1`（已审批 PRD，冻结）与 `dep-2`（收敛版需求来源）为输入；按 `write-tech-design` 的九节骨架起草，条件触发的第 8 节（Prompt 采纳影响）因本 CR 触及 `crctl.mjs` dispatch 与成功输出投影层而必填。§6.3 的既有实现依赖表按正文首次出现顺序编号（`dep-1` 起），待核实依赖（`V-1` 起）单列于同节。关闭 `dep-1` 显式延后到 SDD 的 10 项（SDD-CLOSE-01～10）；对需求评审的 4 条非阻塞 suggestion 的处理：S-1 由 §1.4.6 与 §3.1 裁决（未投影命令 + `--detail` 等价现状）、S-2 由 §1.4.6 的 `action`/`coverage` 三级定义对齐、S-3 由 §2.4 + SDD-CLOSE-05 的 scope amendment 出口关闭、S-4 由 §3.6 的 `observedAt` + `rule` 义务关闭；**均未改写 `prd.md`**（该文件已随审批按 `evidence-digest` 钉住）。
+- **回修 r1（2026-09-17）**：按 `review-tech-design` 第 1 轮（attempt 1/3、`verdict=block`）的 2 条 blocker 定点修订，未改写 `prd.md`、未逐 TASK 展开、未新增决策条目：
+  1. **Managed scope 挂载契约（blocker 1）**：§1.4.2 的 Managed 行改为区分「记忆文件」与「hooks 配置文件」；§4.9 A9 由"与既有 hooks 单点合成"改为**逐 provider 分支表**（claude = daemon 单写入点合成并写出不 clobber 判据；codebuddy / qoder / pi / codex = 各自原生配置面的显式安装一次，daemon 不为其新增写点）；`dep-4` / `dep-15` 的依赖结论补上前提事实（"函数内唯一的 hooks 写入分支是 claude"、"该写入面不含任何 hooks 配置文件"）；同步 §3.4 第 3 项、§1.5 第 8 条、§1.4.5 交付顺序图、§6.5 SDD-CLOSE-01/09、§9 `scope_in` 第 6 项，D-7 增"范围澄清"，§7.4 增 R-6（漏装即静默无治理）。
+  2. **变更面清单与 `scope_in` 自相矛盾（blocker 2）**：§6.4 把 `dep-18`（`../multica/CUSTOM.md`）从零改动清单移出并显式注明"按 §9 `scope_in` 第 5 项登记，不适用零 diff"；§1.2 的"既有文件改动（落点逐个列明）"补齐 `scope_in` 第 4 项点名的落点（`review-requirement`、四个 `approve-*`、`skills/sync/**`）以及 A10 判定命中的 `pipeline-templates/*.pipeline.json` prompt 文本与 `agents/*.md`（同时把 `dep-9` 的 zero_diff 收窄到"结构"，两侧按落点 carve-out，与 `dep-6` 同写法）；§6.4 的 `dep-19` 行与 `dep-19` 的依赖结论写准前提。
+  3. **第 1 轮 7 条 suggestion 逐条处理**：S1 §6.3 自查行号改为"不固化"（只保留单调无空洞的结论）；S2 `dep-19` 写准 `paths` 已含 `skills/**`、真正缺的是 `steps`；S3 §2.2.1 统一为"三族五命令"；S4 D-5/D-6 的确认动作写入 §6.2 AC-15 可达性（随人工审批显式确认，plan/TASK 的取证判据按该口径）；S5 `ARCHITECTURE.md` 更新范围补 §8 维护规则判定依据（§1 + §3 增，§4/§5/§6 不改）；S6 AC-9 / AC-14 的证据落点定为 `evidence/ac9-sampling.md` / `evidence/ac14-smoke.md`（§1.2 与 §9 `scope_in` 第 7 项同步）；S7 §4.10 补扫描面之外真实调用方的判定口径（按字段消费，不按所在仓豁免）。
