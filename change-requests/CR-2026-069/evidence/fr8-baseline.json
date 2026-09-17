@@ -1,0 +1,192 @@
+{
+  "window": "2026-01-01T00:00:00+08:00..2026-09-17T10:00:00Z",
+  "sampleCRs": 97,
+  "coverage": {
+    "pi": "unavailable",
+    "claude": "unavailable",
+    "codebuddy": "unavailable",
+    "qoder": "unavailable",
+    "codex": "unavailable"
+  },
+  "providerUsage": {
+    "input": 120128829,
+    "cachedInput": 4002095654,
+    "cacheWrite": 29088720,
+    "output": 22629288
+  },
+  "toolResultTokens": 35143100,
+  "k": 0.000030933732,
+  "metrics": {
+    "tokensPerCR": 362300,
+    "sessionsPerCR": 7.1856,
+    "searchTokenRatio": 0.001658,
+    "fullReadRatio": 0.588639,
+    "bootstrapTokensPerSession": 6620.27
+  },
+  "guardrails": {
+    "firstPassGateRate": 0,
+    "reviewLoopsPerCR": 1.8351,
+    "reviewDefectsPerCR": 1.7216
+  },
+  "crctlCommands": [
+    {
+      "command": "crctl status",
+      "tokens": 113340,
+      "calls": 368
+    },
+    {
+      "command": "crctl review-record",
+      "tokens": 34581,
+      "calls": 178
+    },
+    {
+      "command": "crctl workspace inspect",
+      "tokens": 19218,
+      "calls": 67
+    },
+    {
+      "command": "crctl advance",
+      "tokens": 10795,
+      "calls": 62
+    },
+    {
+      "command": "crctl next",
+      "tokens": 8862,
+      "calls": 185
+    },
+    {
+      "command": "crctl checkpoint",
+      "tokens": 7215,
+      "calls": 24
+    },
+    {
+      "command": "crctl writeback-apply",
+      "tokens": 3751,
+      "calls": 21
+    },
+    {
+      "command": "crctl merge",
+      "tokens": 3609,
+      "calls": 12
+    },
+    {
+      "command": "crctl test",
+      "tokens": 1748,
+      "calls": 10
+    },
+    {
+      "command": "crctl archive",
+      "tokens": 1568,
+      "calls": 9
+    },
+    {
+      "command": "crctl workspace freshness",
+      "tokens": 1303,
+      "calls": 4
+    },
+    {
+      "command": "crctl register",
+      "tokens": 1242,
+      "calls": 5
+    },
+    {
+      "command": "crctl approve",
+      "tokens": 1119,
+      "calls": 12
+    },
+    {
+      "command": "crctl validate",
+      "tokens": 936,
+      "calls": 15
+    },
+    {
+      "command": "crctl task init",
+      "tokens": 642,
+      "calls": 5
+    },
+    {
+      "command": "crctl gate",
+      "tokens": 581,
+      "calls": 8
+    },
+    {
+      "command": "crctl task",
+      "tokens": 428,
+      "calls": 5
+    },
+    {
+      "command": "crctl show",
+      "tokens": 335,
+      "calls": 2
+    },
+    {
+      "command": "crctl workspace sync",
+      "tokens": 265,
+      "calls": 1
+    },
+    {
+      "command": "crctl merge status",
+      "tokens": 231,
+      "calls": 1
+    },
+    {
+      "command": "crctl backlog-set",
+      "tokens": 207,
+      "calls": 3
+    },
+    {
+      "command": "crctl workspace ensure",
+      "tokens": 190,
+      "calls": 1
+    },
+    {
+      "command": "crctl review-loop",
+      "tokens": 185,
+      "calls": 3
+    },
+    {
+      "command": "crctl task done",
+      "tokens": 69,
+      "calls": 1
+    },
+    {
+      "command": "crctl attempt",
+      "tokens": 62,
+      "calls": 1
+    },
+    {
+      "command": "crctl workspace",
+      "tokens": 41,
+      "calls": 1
+    },
+    {
+      "command": "crctl bind-current-task",
+      "tokens": 34,
+      "calls": 1
+    }
+  ],
+  "tokenEstimator": "chars-div-4-v1",
+  "costSource": "pi-session-usage",
+  "observedAt": "2026-09-17T10:50:16.853Z",
+  "rule": "roots=C:\\Users\\GOBAO\\.multica\\pi-sessions,C:\\Users\\GOBAO\\.pi\\agent\\sessions ; files=*.jsonl ; window=2026-01-01T00:00:00+08:00..2026-09-17T10:00:00Z ; crId=CR-[0-9]{4}-[0-9]{3} ; candidates=ok() 出口命令（排除 crctl git* 与 crctl help） ; costSource=pi-session-usage ; estimator=chars-div-4-v1",
+  "counters": {
+    "sessions": 697,
+    "results": 41697,
+    "malformedLines": 0,
+    "unreadableFiles": 0,
+    "buckets": {
+      "search": 58269,
+      "list": 54869,
+      "read": 13454158,
+      "crctl": 370402,
+      "other": 21205402
+    }
+  },
+  "thresholds": {
+    "resultTokensCap": 2011,
+    "lineWindow": 138,
+    "maxHits": 66,
+    "headLines": 21,
+    "tailLines": 6
+  }
+}

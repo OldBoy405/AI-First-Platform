@@ -2,51 +2,62 @@ cr-id: CR-2026-069
 tasks:
   - id: CR-2026-069-TASK-01
     title: "FR-8 离线度量脚本 cr-cost.mjs 四子命令 + lib 四件 + 回归面，并产出 policy.json thresholds 数值与 FR-2 summary 命令集合"
-    status: pending
+    status: done
+    done-at: "2026-09-17T19:49:49+08:00"
     estimate: 20h
     depends-on: []
   - id: CR-2026-069-TASK-02
     title: "OutputGuard Core 纯函数 + policy/capabilities/conformance 三份唯一事实源 + check-install + README + core/conformance/adapters-contract 三个测试 + CI 触发面与步骤"
-    status: pending
+    status: done
+    done-at: "2026-09-17T19:49:49+08:00"
     estimate: 22h
     depends-on: [CR-2026-069-TASK-01]
   - id: CR-2026-069-TASK-03
     title: "Pi Adapter：tool_call / tool_result 双面映射 + 宿主级安装 README（首个启用 Runtime）"
-    status: pending
+    status: done
+    done-at: "2026-09-17T19:49:49+08:00"
     estimate: 12h
     depends-on: [CR-2026-069-TASK-02]
   - id: CR-2026-069-TASK-04
     title: "Claude Adapter：PreToolUse / PostToolUse 映射 + settings.template.json（与 daemon 单写入点合成面的接口一致）"
-    status: pending
+    status: done
+    done-at: "2026-09-17T19:49:49+08:00"
     estimate: 12h
     depends-on: [CR-2026-069-TASK-02]
   - id: CR-2026-069-TASK-05
     title: "CodeBuddy Adapter：PreToolUse / PostToolUse 映射 + settings.template.json（显式安装一次，daemon 不写）"
-    status: pending
+    status: done
+    done-at: "2026-09-17T19:49:49+08:00"
     estimate: 12h
     depends-on: [CR-2026-069-TASK-02]
   - id: CR-2026-069-TASK-06
     title: "Qoder Adapter：同协议族复用 + .lingma/settings.json 安装面 + startRecord=none 的覆盖度诚实"
-    status: pending
+    status: done
+    done-at: "2026-09-17T19:49:49+08:00"
     estimate: 10h
     depends-on: [CR-2026-069-TASK-02]
   - id: CR-2026-069-TASK-07
     title: "Codex Adapter：partial 声明 + hooks.json.template + /hooks 信任步骤 + uncovered 路径逐条列示"
-    status: pending
+    status: done
+    done-at: "2026-09-17T19:49:49+08:00"
     estimate: 12h
     depends-on: [CR-2026-069-TASK-02]
   - id: CR-2026-069-TASK-08
     title: "FR-2 投影层：summary-projectors + crctl.mjs 三处落点 + golden 金样本 + 两张合同测试 + 棘轮登记 + Prompt 采纳面 + 导航"
-    status: pending
+    status: done
+    done-at: "2026-09-17T19:49:50+08:00"
     estimate: 20h
     depends-on: [CR-2026-069-TASK-01]
   - id: CR-2026-069-TASK-09
     title: "Multica Managed 挂载：crguard_config.go 单写入点合成（仅 claude）+ outputguard_config.go + 同包回归测试 + CUSTOM.md #95"
-    status: pending
+    status: done
+    done-at: "2026-09-17T19:49:50+08:00"
     estimate: 14h
     depends-on: [CR-2026-069-TASK-03, CR-2026-069-TASK-04, CR-2026-069-TASK-05, CR-2026-069-TASK-06, CR-2026-069-TASK-07]
   - id: CR-2026-069-TASK-10
     title: "冒烟与启用顺序取证 + after 复测能力（14 天窗口与 insufficient-sample 判定）+ AC-9 抽检记录"
-    status: pending
+    status: done
+    done-at: "2026-09-17T19:49:50+08:00"
     estimate: 12h
     depends-on: [CR-2026-069-TASK-01, CR-2026-069-TASK-09]
+
