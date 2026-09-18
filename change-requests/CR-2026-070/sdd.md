@@ -6,7 +6,7 @@ title: Agent Skill 路由与 Pi bash 默认超时：评审无限阻塞最小治�
 target-version: 0.43
 status: draft
 created: 2026-09-18T10:20:00+08:00
-updated: 2026-09-18T10:20:00+08:00
+updated: 2026-09-18T10:40:00+08:00
 ---
 
 # CR-2026-070 技术设计（SDD）
@@ -202,12 +202,12 @@ Treat that list as the authoritative entry point for skill selection: the runtim
 
 | 子句 | 对应 FR-1 项 | 机械核对方式 |
 |---|---|---|
-| `Treat that list as the authoritative entry point for skill selection` | 1 | 该短语在全仓唯一命中（AC-1 的检索锚） |
+| `Treat that list as the authoritative entry point for skill selection` | 1 | 该短语为 AC-1 的检索锚：落点面（`dep-4`）命中 1 次、零复制面（见下）命中 0 次 |
 | `use the discovered copy directly, before any repository exploration` | 2 | 文本存在性 + 与列表同段落（同一 `b.WriteString` 序列） |
 | `no recursive search for \`SKILL.md\` ... no reads under guessed runtime-private directories; per-provider paths are deliberately not listed here` | 3 | 断言该段**不含**任一 Provider 私有目录字面量（表驱动负向断言，I7） |
 | `stop the current node and report the missing capability ... do not produce a business verdict, and do not write any CR state or ledger` | 4 | 文本存在性；行为证据见 AC-4（§4.4） |
 
-**零复制面（AC-1 的取证对象）**：`dep-13`（Multica 侧 Agent Prompt 副本与 `server/internal/**`）与 `dep-10`（tools 侧的 `skills/**`、`pipeline-templates/**`）中，检索锚短语命中数必须为 **0**。
+**零复制面（AC-1 的取证对象，＝本 CR 落点之外）**：`dep-13`（Multica 侧 Agent Prompt 副本与 `server/internal/**` 中本 CR 落点 `dep-4`／`dep-8` **之外**的文件）与 `dep-10`（tools 侧的 `skills/**`、`pipeline-templates/**`）中，检索锚短语命中数必须为 **0**；同一检索在落点面（`dep-4` 的 `runtime_config_sections.go`）的命中数恰为 **1**。二者是**同一次检索的互补结果**（零复制面＝落点之外），不是两个互相独立的判据；该限定的唯一裁决见 §6.3 `dep-13` 与 §9 Z-5。
 
 ## 3.3 注入面契约（FR-1 的下发路径，零改动）
 
@@ -259,16 +259,16 @@ function resolveTimeoutMs(timeout):               # 唯一改动点
 
 现状（`V-2`）：超时分支抛出的信号携带**调用方原始入参**（`timeout:${timeout}`），工具层从该字符串尾部取出秒数拼进错误文本。默认值生效时为「未传」，该值即 `undefined` → 错误文本会变成 `Command timed out after undefined seconds`。
 
-设计：信号携带**实际生效秒数**（`timeoutMs / 1000`），工具层的解析与文本拼接逻辑逐字不变。
+设计：信号携带**实际生效秒数**（未传＝默认值 300 秒，已传＝调用方原始入参本身），工具层的解析与文本拼接逻辑逐字不变。
 
 ```text
 现状: throw new Error(`timeout:${timeout}`)          # 未传时为 undefined（缺陷）
-设计: throw new Error(`timeout:${timeoutMs / 1000}`)  # 恒为生效值
+设计: throw new Error(`timeout:${timeout === undefined ? DEFAULT_TIMEOUT_MS / 1000 : timeout}`)
 ```
 
 **等价性证明**（不改变既有可观察行为）：
 
-- 显式合法值 v：`timeoutMs / 1000 = (v * 1000) / 1000 = v` → 与现状逐字相同（含小数秒，如 `0.5`）；
+- 显式合法值 v：信号值即 `v` 本身（**不**经 `v * 1000 / 1000` 的二次浮点往返），模板求值与现状**逐字相同**（含小数秒，如 `0.5`，及 `1958978.455463335` 这类往返不精确的双精度值）→ NFR-1「显式传 timeout 的调用行为逐字不变」在全值域字面成立；
 - 未传：现状 `undefined`（无意义），设计为 `300` → 错误文本首次有意义（`dep-1` FR-2 超时结果第 2 项的显式要求）；
 - 该信号的解析点（工具层 `startsWith("timeout:")` 分支与文本模板）**零 diff**。
 
@@ -288,7 +288,7 @@ function writeSkills(b, ctx):
 1. 规则文本是**函数内单一常量**，只在一个 `WriteString` 调用点出现 → 单次 run 内出现次数恒为 1；
 2. `writeSkills` 是本 brief 中输出 `## Skills` 段头的**唯一**函数（`dep-4` 的 grep 面唯一），其他段头各有唯一函数 → 不存在第二个"顺手也写一段路由规则"的位置；
 3. 平台 Skill 召回提示是既有文本且指名一个 Skill（`dep-4`），与本规则不构成同义重复（前者是"去哪查 Multica 合同"，后者是"Skill 从哪来"）；
-4. 复制面（`dep-10`／`dep-13`）不在本 CR diff 内，检索锚零命中即为 I1 的机械证据。
+4. 复制面（`dep-10`／`dep-13`，其中 `dep-13` 按 §6.3 的落点 carve-out）不在本 CR diff 内，检索锚零命中即为 I1 的机械证据（落点面命中 1 次、复制面命中 0 次，同一检索的互补结果，见 §6.2 AC-1）。
 
 **Provider-neutral 论证（I7）**：文本只使用 runtime 通用词（`the runtime`、`the current node`），不出现任何 Provider 名或目录字面量；负向断言（§6.4）对已知 Provider 目录名表驱动核对。
 
@@ -363,7 +363,7 @@ function writeSkills(b, ctx):
 ## DEC-4 超时错误秒数的传递：改信号的值为生效值（选定）vs 在调用点回填 `timeout` 参数（否决）
 
 - **Context**：`dep-1` §1.5 第 2 条要求「默认值生效时错误文本必须报告实际生效秒数」，而现状把调用方原始入参一路带到错误文本（`V-2`）。
-- **选定**：在解析点把信号值改为 `timeoutMs / 1000`（§4.2），工具层拼接逻辑零 diff。
+- **选定**：在解析点把信号值改为「未传取 `DEFAULT_TIMEOUT_MS / 1000`＝300、已传取调用方原始入参本身」（§4.2），工具层拼接逻辑零 diff。
 - **替代（否决）**：在工具层调用 `ops.exec` 处回填 `timeout ?? 300`。否决理由：① 该处是「工具 → operations」的公开 seam，回填会把默认值**外泄给自定义 operations 实现**（改变扩展可观察行为，B-2）；② 非法值与上限校验会因此前移到工具层，等于把校验点搬走——`dep-1` FR-2 的「复用现有校验顺序」不再成立。
 - **Consequences**：错误文本格式不变、语义变准；自定义 operations 的行为与接口签名零变化。
 
@@ -383,7 +383,7 @@ function writeSkills(b, ctx):
 
 | AC | 设计落点 | 可观测结果 | 可达性说明 |
 |---|---|---|---|
-| AC-1 | §3.2 文本契约 + §4.3 唯一性论证 + §6.4 零复制面 | 以 §3.2 第 1 子句短语全文检索：命中集 = `{runtime_config_sections.go}`（1 文件）；新增断言 `strings.Count(brief, RULE_TEXT) == 1` 且对 claude／codex／pi 等多 Provider 逐字一致 | 复制面（`dep-10`）与本 CR diff 无交集；文本为函数内常量，不存在第二写入点 |
+| AC-1 | §3.2 文本契约 + §4.3 唯一性论证 + §6.4 零复制面 | 以 §3.2 第 1 子句短语检索，同一次检索的互余两侧：① 落点面（`dep-4` 的 `runtime_config_sections.go`）命中数 = 1，即命中集 = `{runtime_config_sections.go}`；② 零复制面（§3.2＝落点之外：`dep-13` 的 Prompt 副本面与 `server/internal/**` 中除 `runtime_config_sections.go`／`runtime_config_test.go` 外的文件、`dep-10`）命中数 = 0。另断言 `strings.Count(brief, RULE_TEXT) == 1` 且对 claude／codex／pi 等多 Provider 逐字一致（断言引用常量符号，不内联锚短语） | 零复制面（`dep-13` 按 §6.3 的落点 carve-out、`dep-10`）与本 CR diff 无交集；文本为函数内常量，不存在第二写入点 |
 | AC-2 | §3.2／§3.3（规则在场）+ §4.4 重放设计 | 真实 smoke run 的会话记录中「含 `SKILL.md` 的递归搜索调用」数 = 0；Skill 内容取自 brief 列出的 slug | 规则文本注入时刻早于任何工具调用；两次事故的前置条件（已装 Skill + 要求加载 review Skill）可复现；run 必须真实执行（R-2） |
 | AC-3 | 同 AC-2 | 同上，额外断言猜测路径（`~/.pi/agent/skills`、`~/.multica/skills`）访问数 = 0 | 同上；规则文本中不出现任何 Provider 路径，避免"提示了路径反而诱导访问"（I7） |
 | AC-4 | §3.2 第 4 子句 + §4.4 场景构造 | run 报告缺失能力事实；run 前后五个受控文件 sha256 逐一致；无 verdict 落盘 | 构造必须保留 ≥1 其他 Skill（B-1）；否则规则文本不在场，构造无效——已在 §2.3 显式登记，不作为本 AC 的前置 |
@@ -487,10 +487,10 @@ dep-12
 
 dep-13
   repo: multica
-  relative path: cr-prompts-revised/（五个 Agent Prompt 副本：cr-coordinator-agent、delivery-agent、dev-agent、quality-reviewer-agent、requirement-writer）、server/internal/**（daemon／governance 侧运行时文本与生成物）
-  stable symbol/对象: 平台侧 Agent Prompt 副本与其交付形态、governance 运行时与生成物
+  relative path: cr-prompts-revised/（五个 Agent Prompt 副本：cr-coordinator-agent、delivery-agent、dev-agent、quality-reviewer-agent、requirement-writer）、server/internal/** 中本 CR 落点**之外**的文件（落点＝dep-4 的 server/internal/daemon/execenv/runtime_config_sections.go 与 dep-8 中改动的 server/internal/daemon/execenv/runtime_config_test.go；其余为 daemon／governance 侧运行时文本与生成物）
+  stable symbol/对象: 平台侧 Agent Prompt 副本与其交付形态、governance 运行时与生成物（落点文件除外）
   commit SHA: 59b47993810fabd12fcc393c2fa2e46611f9530d
-  依赖结论: AC-1 的零复制面在 multica 侧的对象（Prompt 副本池）；AC-10 的核对面。本 CR 对这些路径零 diff、零复制——FR-1 的规则文本**不得**在此追加第二份
+  依赖结论: AC-1 的零复制面在 multica 侧的对象（Prompt 副本池 + 落点之外的 server/internal 面）；AC-10 的核对面。本 CR 对这些路径零 diff、零复制——FR-1 的规则文本**不得**在此追加第二份。carve-out 的必然性：dep-4／dep-8 的落点文件由 §9 scope_in 第 1～2 项要求修改，按定义不在「零复制／零 diff 面」内；本项与 §6.4 核对清单、§9 Z-5 使用同一限定表述（唯一裁决）
 
 dep-14
   repo: tools
@@ -509,7 +509,7 @@ dep-1   ai-first-platform-docs  54f69aae89ed0dc3a73f6690c0ab218e8538483a   # 最
 dep-2   ai-first-platform-docs  c7fde42bd94214a30796aff4493af9428802df75   # 登记来源附件与 PRD 初稿的 checkpoint 提交
 dep-11  ai-first-platform-docs  c1db7b9e797714aa952deebd44df15ce303b9149   # 本 SDD 落盘前的本 CR worktree HEAD（dir-graph.yaml 未变）
 dep-3/4/5/6/7/8/9/13  multica   59b47993810fabd12fcc393c2fa2e46611f9530d
-dep-12/12/13          tools     c3e7c934ef2636c56cc840543cadb4feb5f554aa
+dep-10/12/14          tools     c3e7c934ef2636c56cc840543cadb4feb5f554aa
 ```
 
 **核验命令（可复跑；`{TOOLS_ROOT}` 由 KB `dir-graph.yaml#workspace.tools_package_path` 解析，路径取 `resources[].worktreePath` 原样值）**：
@@ -571,12 +571,12 @@ V-6  安装树历史痕迹（不计入本 CR 交付面）
 
 | 面 | 动作 | 触发原因 |
 |---|---|---|
-| `dep-8` 的 `runtime_config_test.go` | 在既有形状钉子测试内**追加**断言：规则文本出现次数 = 1；多 Provider 逐字一致；不含任一 Provider 目录字面量 | AC-1 的机械面（单点性 + Provider-neutral） |
+| `dep-8` 的 `runtime_config_test.go` | 在既有形状钉子测试内**追加**断言：规则文本出现次数 = 1；多 Provider 逐字一致；不含任一 Provider 目录字面量。断言引用被测常量符号（同文件内的常量），**不**把检索锚短语内联进测试文件——否则 AC-1 的落点面会从 1 文件扩为 2 文件 | AC-1 的机械面（单点性 + Provider-neutral） |
 | `dep-8` 的其它三条测试 | **零改动**，必须继续全绿 | B-1（空集与全隐藏情形整段不出现）与类别矩阵 |
 | 单元 B 选定路线的源码仓测试面 | 新增/扩展用例：① 未传 timeout → 解析为默认值；② 假时钟 + 真实子进程，未传时 300 秒到期、进程树被清理、文本为 `Command timed out after 300 seconds`；③ 显式 `1200` 不被覆盖；④ 0/负数/NaN/Infinity 与超上限、abort 的既有行为；⑤ schema 描述与默认值一致 | AC-5～AC-8 的可机械核对面 |
 | `dep-9` 的 `CUSTOM.md` | 新增本次定制的台账条目（编号顺延、原因追溯含 CR-ID 与 TASK、填写「合并注意」） | AGENTS.md 工程纪律 10；**不受** `zero_diff` 约束 |
 
-**零改动核对清单（提交前逐条核对 diff 文件名）**：`dep-7` 的注入实现（`context.go` 及其 Provider 映射）、`dep-6`、`dep-5`、`dep-10` 全部路径（`tools/skills/**`、`pipeline-templates/**`、`tools/dir-graph.yaml`、`agent-skill-matrix.yml`、`crctl/**`）、`dep-14`（`output-guard/**` 与 CI 步骤）、`dep-13`（Agent Prompt 副本与 `server/internal/**` 其它文件）、`dep-11`（KB `dir-graph.yaml`）、`dep-1`／`dep-2`（PRD 与来源）、`specs/`、`delivery/`、全部受控账本（`_backlog.yml`、`cr.md` 的 status 行由 crctl 写入不计、`review-loop.yml`、`traceability.yml`、`review-annotations/*`）。
+**零改动核对清单（提交前逐条核对 diff 文件名）**：`dep-7` 的注入实现（`context.go` 及其 Provider 映射）、`dep-6`、`dep-5`、`dep-10` 全部路径（`tools/skills/**`、`pipeline-templates/**`、`tools/dir-graph.yaml`、`agent-skill-matrix.yml`、`crctl/**`）、`dep-14`（`output-guard/**` 与 CI 步骤）、`dep-13`（`cr-prompts-revised/**` 与 `server/internal/**` 中除本 CR 落点 `dep-4`／`dep-8` 外的文件，同一限定见 §6.3）、`dep-11`（KB `dir-graph.yaml`）、`dep-1`／`dep-2`（PRD 与来源）、`specs/`、`delivery/`、全部受控账本（`_backlog.yml`、`cr.md` 的 status 行由 crctl 写入不计、`review-loop.yml`、`traceability.yml`、`review-annotations/*`）。
 
 **单元 B 的 diff 面例外**：选定路线的版本化源码与其测试文件（§1.3），不适用本仓库的零改动清单，但受 AC-12 的文件集合判据约束。
 
@@ -587,10 +587,14 @@ V-6  安装树历史痕迹（不计入本 CR 交付面）
 | 编号 | 待关闭项（来源） | 关闭结论 | 覆盖层 |
 |---|---|---|---|
 | SDD-CLOSE-01 | FR-1 规则正文的最终措辞与落点选择（`dep-1` §1.5 第 1 条） | **落点＝`writeSkills` 段末尾单点；文本逐字固定见 §3.2；四子句与 FR-1 四行为合同一一对应**（§4.3、DEC-1）。不存在与之并存完整语义的第二落点（`dep-1` §1.4 事实 3 已证无既有等价公共 contract） | 生产（常量合成）／传输（brief 段 → Provider 配置文件，`dep-5`）／消费（Agent 读取与选择 Skill）／降级（零 Skill 情形整段不注入＝B-1，显式登记） |
-| SDD-CLOSE-02 | FR-2 默认值与内部 `timeout:` 错误传递的接线方式（`dep-1` §1.5 第 2 条） | **默认值在 `resolveTimeoutMs` 的 `undefined` 分支注入（唯一 owner）；超时信号改为携带实际生效秒数 `timeoutMs / 1000`，错误文本格式与工具层解析零 diff**（§4.1、§4.2、DEC-4） | 生产（解析常量）／传输（超时信号字符串）／消费（工具层错误文本与 Agent 失败语义）／降级（默认值失效即回归无界，由 AC-5 断言兜底） |
+| SDD-CLOSE-02 | FR-2 默认值与内部 `timeout:` 错误传递的接线方式（`dep-1` §1.5 第 2 条） | **默认值在 `resolveTimeoutMs` 的 `undefined` 分支注入（唯一 owner）；超时信号改为携带实际生效秒数（未传取 `DEFAULT_TIMEOUT_MS / 1000`、已传取调用方原始入参本身，显式路径模板求值逐字相同），错误文本格式与工具层解析零 diff**（§4.1、§4.2、DEC-4） | 生产（解析常量）／传输（超时信号字符串）／消费（工具层错误文本与 Agent 失败语义）／降级（默认值失效即回归无界，由 AC-5 断言兜底） |
 | SDD-CLOSE-03 | Pi 侧交付路线、被升级版本产出方、PATH 切换记录（`dep-1` §1.5 第 3 条、§1.3.2） | **路线选择不属本阶段**：`dep-1` §7 第 11 条把它交给 `write-dev-plan`；本 SDD 关闭其路线无关部分＝落点符号（§4.1／V-4）、行为合同（§3.1）、测试判据（§6.4）、证据形态（§1.3／§4.6）、产出方与时点的记录字段（§1.3）。路线选定后由 PLAN/TASK 记录并在 SDD 的修订行追加「选定路线 + 产出方 + 时点」一栏，**不改变本节设计** | 生产（源码改动与构建）／传输（artifact 版本号／PR 链接）／消费（运行环境替换 `pi` 可执行文件，发生在 CR 合并之后）／降级（R-B 下 AC-5～AC-8 的运行环境侧验证顺延至上游发版后，`dep-1` AC-12 补充口径） |
 
 **PRD 侧未闭合 suggestion 的处置**：需求评审 S-6（`dep-1` §7 第 14 条与 §1.3.2 的 R-A 字面冲突）为非阻塞建议，需求评审已给出修复方向（「需求期不预先新建，是否建设施由开发计划按 §1.3.2 选定路线后决定」）。本 SDD **不删除** R-A／R-C，也不预设新建设施：§7 第 14 条按该修复方向理解为「需求期不预先建设施」，与 DEC-3（本 CR 内不扩充仓库声明）一致；实现期若选定 R-A／R-C，其建仓动作由 dev-plan 侧决定（`follow_up` F-2），不改本 SDD 的行为合同与 AC 判据。
+
+**DEC-2 后果的取证归属（本轮订正，评审 S-4）**：内置 PowerShell 工具的「未传 timeout」路径（§9 `scope_in` 第 5 项）在 PRD 的 AC 集里没有独立观察点，其取证归入 AC-5 的同一判据（`resolveTimeoutMs(undefined)` 与共享 schema 的用例），dev-plan／TASK **不**为该行为另造验收面或另加判据；若产品要求 PowerShell 保持无界，出口仍是 `follow_up` F-1。
+
+**R-A／R-C 建仓动作的归属（本轮订正，评审 S-5）**：Pi 源码仓的**建仓／源码检出**属本 CR dev-plan 的决策动作（供其选定路线后执行），`follow_up` F-2 **只**承载「`repositories` 声明变更」这一后续事项——因此四字段自洽判据 ④（`follow_up` 不得承载当前 AC 的必要条件）不被命中：F-2 不是任何当前 AC 的必要条件。
 
 ---
 
@@ -619,7 +623,7 @@ V-6  安装树历史痕迹（不计入本 CR 交付面）
 
 ## 7.3 性能与可观测
 
-1. **Brief 体积**：单元 A 只增加一段固定文本（约 70 个英文词），相对该段既有体积（`dep-1` §1.4 事实 2 记录的实测口径）为个位数百分比级别；不新增 per-run 变量，缓存前缀稳定性不受影响（`dep-4` 的既有裁决）。
+1. **Brief 体积**：单元 A 只增加一段固定文本（实读 108 个空白分隔词、其中 107 个含字母），相对该段既有体积（`dep-1` §1.4 事实 2 记录的实测口径）为个位数百分比级别；不新增 per-run 变量，缓存前缀稳定性不受影响（`dep-4` 的既有裁决）。
 2. **工具调用寿命**：未显式传 `timeout` 的调用从「无界」变为 ≤300 秒（`dep-1` NFR-4）；显式路径零变化。
 3. **可观测性**：不新增 metrics、字段或 UI（I5）；AC-2／AC-3 的观察面复用既有会话记录，不加埋点。
 
@@ -669,7 +673,7 @@ V-6  安装树历史痕迹（不计入本 CR 交付面）
 | Z-2 | `dep-6` 的 `modelVisibleSkills`／`resolveSkillSlugs`／`skillModelInvocationVisible` | 可见性过滤与 slug 派生语义不改（§1.4 术语口径的载体） |
 | Z-3 | Pi 侧 `BashOperations` 接口签名与「工具入参 → `ops.exec`」的传参 | 自定义 operations 的可观察行为不变（B-2、DEC-4） |
 | Z-4 | Pi 侧 `killProcessTree`／AbortSignal 分支／`MAX_TIMEOUT_MS` 上限常量与档 1／2 的错误文本 | 逐字不变（AC-8）；不得新增清理逻辑或第二计时器 |
-| Z-5 | `dep-10` 的全部路径（`tools/skills/**`、`pipeline-templates/**`、`tools/dir-graph.yaml`、`agent-skill-matrix.yml`、crctl 与 guard 声明） | AC-1 零复制面 + AC-10 零 diff 面；含四类 `review-*` Skill 与 Agent Prompt 副本（`dep-13`） |
+| Z-5 | `dep-10` 的全部路径（`tools/skills/**`、`pipeline-templates/**`、`tools/dir-graph.yaml`、`agent-skill-matrix.yml`、crctl 与 guard 声明）与 `dep-13`（`cr-prompts-revised/**` 与 `server/internal/**` 中除本 CR 落点 `dep-4`／`dep-8` 外的文件，同一限定见 §6.3） | AC-1 零复制面 + AC-10 零 diff 面；含四类 `review-*` Skill 与 Agent Prompt 副本。**本项不含 `dep-4`／`dep-8` 的落点文件**——后者由 `scope_in` 第 1～2 项要求修改（判据 ①：同一对象不得同时被要求修改与不修改） |
 | Z-6 | `dep-14`（`output-guard/**` 与 CI 触发/步骤） | AC-9；不新增测试基础设施 |
 | Z-7 | `dep-11`（KB `dir-graph.yaml`）、`dep-1`／`dep-2`（PRD 与来源）、`specs/`、`delivery/`、全部受控账本与 `dep-4` 的 `## Skills` 段形状（slug 索引、无描述、无 Provider 分支） | 段形状是本 CR 追加文本的容器，不得借本次改动重排 |
 | Z-8 | `dep-3` §5 的生成物（sqlc/governance） | 不手改 |
@@ -679,7 +683,7 @@ V-6  安装树历史痕迹（不计入本 CR 交付面）
 | 编号 | 缺口 | 说明 |
 |---|---|---|
 | F-1 | 内置 PowerShell 工具是否应保持无界 | DEC-2 的选定后果是"同样获得 300 秒默认值"。若产品明确要求 PowerShell 保持无界，须另立需求（或经本阶段评审裁决后改采 per-tool 方案），本 CR 不预留开关 |
-| F-2 | Pi 源码仓是否纳入 CR worktree 集合（`repositories` 声明变更） | 若 dev-plan 选定 R-A／R-C 且需要 checkpoint/对账覆盖 Pi 改动，由该阶段提出并走既有仓库声明变更流程（DEC-3） |
+| F-2 | Pi 源码仓是否纳入 CR worktree 集合（`repositories` 声明变更） | 若 dev-plan 选定 R-A／R-C 且需要 checkpoint/对账覆盖 Pi 改动，由该阶段提出并走既有仓库声明变更流程（DEC-3）；本项**只**承载 `repositories` 声明变更，「建仓／源码检出」动作属本 CR dev-plan 的决策动作（§6.5） |
 | F-3 | 零 Skill / 全 `disable-model-invocation` 任务的同类治理 | 该情形下规则文本不在场（B-1、R-3），需要另外的设计决策（例如规则段与列表解耦），不在本 CR 范围 |
 | F-4 | 隐式长调用面的显式 timeout 声明指引 | `dep-1` §7 第 13 条排除；若 300 秒在真实使用中误伤（R-1），需要的是调用方约定或配置面（后者已被 §7 第 8 条排除），须另立需求 |
 | F-5 | 已安装 Pi 包安装树的历史就地修改痕迹（V-6） | 来源不明、与本 CR 无关；双周 rebase 核对时可顺带确认 `dist` 是否被就地改过（与本 CR 的 AC-12 判据同源） |
@@ -691,3 +695,4 @@ V-6  安装树历史痕迹（不计入本 CR 交付面）
 | 版本 | 时间 | 作者 | 说明 |
 |---|---|---|---|
 | 0.1 | 2026-09-18 | dev-agent | 初稿：按 `dep-1` PRD v0.2 与 `dep-2` 来源出具技术设计；单元 A（FR-1 单点规则文本）与单元 B（FR-2 默认值 + 错误秒数传递）两个改动单元；§6.3 既有实现依赖 14 项 + 待核实依赖 6 项；§6.5 关闭 `dep-1` §1.5 三条延后项；四个决策（DEC-1～DEC-4，均满足三判据；DEC-2 的 PowerShell 继承后果已显式进入 `scope_in`）；`dep-1` §5 的 Pi 侧路线选择按 §7 第 11 条保留给 `write-dev-plan` |
+| 0.2 | 2026-09-18 | dev-agent | 技术评审 attempt 1 回修（repair-target=write-tech-design）。**B-1**：统一 AC-1 的零复制面口径——`dep-13` 的 `server/internal/**` 收窄为「本 CR 落点 `dep-4`／`dep-8` 之外的文件」，§3.2 零复制面、§6.2 的 AC-1 行、§6.3 `dep-13`、§6.4 核对清单与 §9 Z-5 五处使用同一限定（消除 `zero_diff` 与 `scope_in` 第 1～2 项对同一对象的矛盾，并写明落点面命中 1／零复制面命中 0 是同一次检索的两侧）；§6.4 补「断言引用常量符号、不内联锚短语」以保持落点面为 1 文件。**S-1** §6.3 的 tools 面编号 `dep-12/12/13`→`dep-10/12/14`；**S-2** §4.2 信号值改为「未传取 `DEFAULT_TIMEOUT_MS / 1000`、已传取调用方原始入参本身」，使显式路径与现状逐字相同（消除双精度往返误差，NFR-1 字面成立；DEC-4 与 SDD-CLOSE-02 同步）；**S-3** §7.3 词数订正为实读值（108 空白分隔词／107 含字母词）；**S-4** §6.5 写明 PowerShell 后果的取证归入 AC-5、不另造验收面；**S-5** §6.5 与 F-2 写明建仓／源码检出属 dev-plan 决策动作、F-2 只承载 `repositories` 声明变更。FR／AC 合同、`scope_in` 交付面、`target-version` 与四个决策的选定结论均未改动。 |
