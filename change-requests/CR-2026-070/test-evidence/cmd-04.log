@@ -1,0 +1,27 @@
+$ node -e const cp = require('child_process'), fs = require('fs'), P = require('path'); const R = process.cwd(), NL = String.fromCharCode(10), CRLF = String.fromCharCode(13, 10); const bad = []; const CRCTL = P.join(R, 'skills/shared/crctl/scripts/crctl.mjs'); const jrun = (args, cwd) => { const r = cp.spawnSync(process.execPath, [CRCTL].concat(args), { cwd, encoding: 'utf8', shell: false }); if (r.status !== 0) { bad.push('FAIL crctl ' + args.join(' ') + ' exit=' + r.status); console.log(String(r.stderr == null ? '' : r.stderr).slice(-300)); return null; } return String(r.stdout == null ? '' : r.stdout).split(CRLF).join(NL); }; const lines = (out) => { const p = out.split(NL); const i = p.findIndex((l) => l.trim() === '{'); return p.slice(0, i < 0 ? p.length : i).map((s) => s.trim()).filter(Boolean); }; const wsRaw = jrun(['workspace', 'inspect', 'CR-2026-070'], R); let ws = null; if (wsRaw !== null) { try { ws = JSON.parse(wsRaw); } catch (e) { bad.push('FAIL workspace inspect 输出不可解析 ' + e.message); } } const pathOf = (id) => { if (!ws) { return null; } if (!Array.isArray(ws.resources)) { return null; } const x = ws.resources.filter((r) => r.repo === id)[0]; return x ? x.worktreePath : null; }; const MUL = pathOf('multica'), KB = pathOf('ai-first-platform-docs'); if (!MUL) { bad.push('FAIL 取不到 multica worktreePath'); } if (!KB) { bad.push('FAIL 取不到 ai-first-platform-docs worktreePath'); } const names = (root, base) => { const out = jrun(['git', 'diff', '--name-only', base, '--cwd', root], R); return out === null ? null : lines(out); }; const T0 = 'c3e7c934ef2636c56cc840543cadb4feb5f554aa'; const M0 = '59b47993810fabd12fcc393c2fa2e46611f9530d'; const K0 = '349ae2271cfa53009dd90bbbb967d11ce98892c9'; const tz = names(R, T0); if (tz === null) { bad.push('FAIL tools diff 不可判'); } else { console.log('tools diff paths = ' + tz.length); for (const f of tz) { console.log('  ' + f); } if (tz.length !== 0) { bad.push('FAIL tools diff 非空 = ' + tz.length + '（AC-9/AC-10 的 zero_diff 面）'); } } const MZ = ['CUSTOM.md', 'server/internal/daemon/execenv/runtime_config_sections.go', 'server/internal/daemon/execenv/runtime_config_test.go']; if (MUL) { const mz = names(MUL, M0); if (mz === null) { bad.push('FAIL multica diff 不可判'); } else { console.log('multica diff paths = ' + mz.length); for (const f of mz) { console.log('  ' + f); } if (mz.length === 0) { bad.push('FAIL multica diff 为空（硬失败：基线或分支不对，不得静默通过）'); } for (const f of mz) { if (MZ.indexOf(f) < 0) { bad.push('FAIL multica diff 越界路径 ' + f); } } for (const f of MZ) { if (mz.indexOf(f) < 0) { bad.push('FAIL multica diff 缺应改文件 ' + f); } } if (mz.length > 3) { bad.push('FAIL multica diff 路径数 = ' + mz.length + '（上界 3）'); } } } if (KB) { const kz = names(KB, K0); if (kz === null) { bad.push('FAIL KB diff 不可判'); } else { console.log('KB diff paths = ' + kz.length); for (const f of kz) { console.log('  ' + f); } const KZ = ['AGENTS.md', 'dir-graph.yaml', 'CONTEXT.md', 'README.md', 'maturity-config.yaml', 'change-requests/CR-2026-070/prd.md', 'change-requests/CR-2026-070/sdd.md']; const KP = ['specs/', 'delivery/', 'docs/']; const ALLOW = ['change-requests/CR-2026-070/', 'change-requests/_backlog.yml', 'change-requests/_history.yml', 'change-requests/_index.yml']; for (const f of kz) { if (KZ.indexOf(f) >= 0) { bad.push('FAIL KB zero_diff 面被写入 ' + f); } for (const z of KP) { if (f.indexOf(z) === 0) { bad.push('FAIL KB zero_diff 前缀面被写入 ' + f); } } let okK = false; for (const a of ALLOW) { if (f.indexOf(a) === 0) { okK = true; } } if (!okK) { bad.push('FAIL KB diff 越界路径 ' + f); } } for (const f of ['change-requests/CR-2026-070/plan.md', 'change-requests/CR-2026-070/tasks/_index.yml', 'change-requests/CR-2026-070/evidence/fr1-smoke.json', 'change-requests/CR-2026-070/evidence/pi-source.json']) { if (kz.indexOf(f) < 0) { bad.push('FAIL KB diff 缺少应交付文件 ' + f); } } } } if (bad.length) { console.log('audit-diff failures = ' + bad.length); for (const x of bad) { console.log(x); } process.exit(1); } console.log('audit-diff failures = 0');
+(exit=0)
+--- stdout ---
+tools diff paths = 0
+multica diff paths = 3
+  CUSTOM.md
+  server/internal/daemon/execenv/runtime_config_sections.go
+  server/internal/daemon/execenv/runtime_config_test.go
+KB diff paths = 15
+  change-requests/CR-2026-070/approval.yml
+  change-requests/CR-2026-070/cr.md
+  change-requests/CR-2026-070/evidence/fr1-smoke.json
+  change-requests/CR-2026-070/evidence/pi-source.json
+  change-requests/CR-2026-070/evidence/pi-vitest.log
+  change-requests/CR-2026-070/plan.md
+  change-requests/CR-2026-070/review-annotations/dev-plan.yml
+  change-requests/CR-2026-070/review-loop.yml
+  change-requests/CR-2026-070/tasks/TASK-01.md
+  change-requests/CR-2026-070/tasks/TASK-02.md
+  change-requests/CR-2026-070/tasks/TASK-03.md
+  change-requests/CR-2026-070/tasks/TASK-04.md
+  change-requests/CR-2026-070/tasks/_index.yml
+  change-requests/CR-2026-070/traceability.yml
+  change-requests/_backlog.yml
+audit-diff failures = 0
+
+--- stderr ---

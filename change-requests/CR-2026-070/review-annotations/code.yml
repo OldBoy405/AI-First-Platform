@@ -1,0 +1,47 @@
+cr-id: CR-2026-070
+review-type: code
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-18T17:30:26+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  批准范围前置: "pass（Step 2.5／CR-2026-057 FR-7）。本 turn 实读三仓 diff（`crctl git diff --name-only <trunk-merge-base>...HEAD --cwd <worktree>`，merge-base：KB 8b49c901／multica 59b47993／tools c3e7c934）：multica 3 路径＝`CUSTOM.md`（scope_in 第 3 项的治理登记，SDD 明示不受 zero_diff 约束）＋`server/internal/daemon/execenv/runtime_config_sections.go`／`runtime_config_test.go`（scope_in 第 1 项落点）；tools 0 路径；KB 15 路径（cmd-04 的 K0=349ae227 基线）全部落在 `change-requests/CR-2026-070/**` ＋ `change-requests/_backlog.yml`。scope_out 第 1～6 项未被触碰（无 Locator／manifest／注册表／第二 Guard／Shell parser／新错误码／metrics／账本字段，Pi 仓未进 `dir-graph.yaml#repositories`）；zero_diff 逐条成立：Z-5 的 `cr-prompts-revised/**` 与 `server/internal/**` 非落点面零命中（本 turn 在 multica worktree 实跑锚短语 grep，仅命中落点文件自身）、Z-6 `output-guard/**` 零 diff、Z-7 的 KB `dir-graph.yaml`／`prd.md`／`sdd.md`／`specs/`／`delivery/` 零 diff；follow_up F-1～F-5 均未被做成当前交付。"
+  代码↔TASK↔SDD对齐: "pass。① FR-1 文本契约逐字核对（contract 面，本 turn 机读复算）：multica worktree 内常量 `skillsRoutingRule` 的值 671 字符与 SDD §3.2 围栏内逐字文本 **完全相等**（逐字符比较 true），插入点＝`writeSkills` 末尾（平台召回提示之后，`writeSkills` 内锚短语命中数＝1）；TASK-01 §3 第 1／2／3／5 条逐条满足（常量不导出、单点一次 `b.WriteString`、空集早退原位、英文注释）。② FR-2 对照 SDD §4.1／§4.2／§2.2.2／§3.1 与 TASK-02：`DEFAULT_TIMEOUT_MS = 300_000` 新增、`resolveTimeoutMs` 的 `undefined` 分支返回默认值（调用点 L88 → L120 计时器对「未传」首次可达）、超时信号取值＝`timeout === undefined ? DEFAULT_TIMEOUT_MS / 1000 : timeout`（与 §4.2 的 S-2 修订口径逐字一致）、`timeout` schema 文案改为 `optional, defaults to 300 seconds`；档 1／2 错误文本、AbortSignal 分支、`MAX_TIMEOUT_MS`、`killProcessTree` 与 `BashOperations` 签名逐字未动（Z-3／Z-4）。③ TASK-03：`CUSTOM.md` 台账行 #96 落在 CR-2026-070 小节、编号顺延（本 turn 机读全表 96 行、最大值 96、无重复）、含 CR-ID 与落点文件与「验证：」命令。④ TASK-04：`evidence/fr1-smoke.json`（schema cr-2026-070-fr1-smoke/v1，3 条 run 齐备）与 `evidence/pi-source.json`（schema cr-2026-070-pi-source/v1，13 字段齐备）落盘。⑤ S-6 取舍按 plan §4.1／TASK-02 §3 第 4 条落地（不导出模块私有符号，改从工具入口取证），符合技术评审对该 suggestion 的授权。"
+  工程质量: "pass。证据取自 `test-report.md` 机器区（`generated-by: crctl-test`，不可改写）与 `test-evidence/cmd-01..06.log` 原文，本 turn 未重跑任何 lint／test／build：cmd-01..cmd-06 六条全部 `exit-code: 0`、`skipped: false`、`timed-out: false`。cmd-02 日志实测 `--- PASS: TestBriefSkillsListIsNamesOnly` ＋ 7 项子用例（claude／codex／grok／some-unknown-provider／opencode／traecli／hermes，与既有形状钉子口径一致，无 `no tests to run`）；cmd-06 日志实测 `pi-side vitest exit=0`、`Test Files 1 passed`／`Tests 5 passed`（5 条断言名齐备）。变更面 3 文件（源码＋测试＋台账），无新增依赖／迁移／错误码／metrics。"
+  关键路径可读性: "pass。两处改动的注释均为英文（multica 硬规则）且写明「为什么」：`skillsRoutingRule` 段说明单点性、Provider-neutral 与「列表缺 skill 时停当前节点」的边界；`DEFAULT_TIMEOUT_MS` 段说明「无上界调用会让工具调用永不结束」；超时信号处说明「报告实际生效的秒数，避免把默认值叙述成调用方显式设定」。`writeSkills` 内追加位置带行内理由（置于列表之后，读作关于上方列表的规则而非列表项之一），与 SDD §3.2 的插入点理由一致。"
+  安全性: "pass。本 CR 不触及鉴权、权限、敏感数据面（SDD §7.2 六控制面零改动；tools `controlled-shell/rules.json` 零 diff 由 cmd-04 的 tools 0 路径佐证）。Pi 侧入参校验保持在启动子进程之前：本 turn 实读 `bash.ts` L88（`resolveTimeoutMs` 在 `spawn` 之前调用）与测试用例「invalid and over-limit timeouts keeps existing errors before spawn」（含 control 组证明 marker 缺席＝未启动进程而非断言不可达）。规则文本本身按要求零 Provider 路径字面量（cmd-03 实测规则窗口 8 个字面量零命中；SDD I7 的「不提示路径以免诱导访问」成立）。"
+  测试覆盖: "pass。FR-2 的 AC-5～AC-8 由新增 `packages/coding-agent/test/bash-default-timeout.test.ts` 5 条用例覆盖：默认 300 秒＋`Command timed out after 300 seconds` 文本、超时后父与后代 PID 均被清理（Windows `tasklist`／`taskkill`，`afterEach` 自带兜底清理与上限）、显式 `timeout: 1200` 不被覆盖、非法值（0／-1／NaN／Infinity）与超上限 2147484 及 abort 的错误文本逐字且均发生在 spawn 之前、schema 文案与默认值一致（不再含 `no default timeout`）。FR-1 侧由 `TestBriefSkillsListIsNamesOnly` 内的增项覆盖单点性（`strings.Count == 1`）、跨 Provider（claude／codex／pi／some-unknown-provider）逐字一致、规则文本不含 Provider 私有面字面量；断言引用常量符号而不内联锚短语（保持落点面为 1 文件，符合 SDD §6.4）。"
+  测试证据可信度: "pass。① 只读取证面完整：`test-report.md` 机器区为 crctl 生成、`status=pass`、`command-digest=035232f1…9e6c`，与 `traceability.yml#tests` 的 `status`／`command-digest` 逐字一致（`TEST_EVIDENCE_DRIFT` 不成立），六份 `test-evidence/cmd-NN.log` 均在场且原文与报告解读逐条对应。② 行为类 AC 用真实 run 而非静态断言顶替：AC-2／AC-3／AC-4 三条 run 的 `toolCalls` 由节点回报原文转录，并在 cmd-05 内经 `multica agent tasks` 平台面活体锚定（本 turn 读日志：三条 runId 均「平台可见」）；对账口径（同序前缀相等 ＋ 尾部差集 ≤3 段）与 test-report §3 表格逐条一致。③ 独立重算在场：cmd-05 内建算法（非节点自报）对三条数组重算 SKILL.md 搜索类调用数＝0、猜测私有目录访问数＝0。④ 负向自检实跑并留痕（test-report §5）：往 `fr1-smoke.json` 注入搜索类调用 ⇒ cmd-05 exit 1、删去 `pi-source.json` 的变更文件 ⇒ cmd-06 exit 1，两者逐字节复原（sha256 与变更前一致）后复跑 exit 0 ⇒ 断言非恒真。⑤ Pi 侧交付证据活体可复现：本 turn 独立复算 `evidence/pi-vitest.log` 的 sha256＝`a6fdddcc…fe11`（与 `pi-source.json#testLogSha256` 相等）、检出 HEAD＝`53a94e25`（与 `headCommit` 相等、工作树 clean）、`git diff --name-only <baseCommit>` 文件集＝记录的两文件且全落在 `packages/coding-agent/{src,test}/**`（无 dist／node_modules）。⑥ 基线数字差已登记且可解释（非门禁）：plan §6.3 记 cmd-01「38 pass」，本次实测 35；本 turn 机读三测试文件顶层 `test(` 计数＝20＋6＋9＝35，与 cmd-01 日志的点数（20＋15）逐字吻合 ⇒ 差异来自计划表陈旧基线数字，不是本次少了用例，且 tools 仓零 diff 已由 cmd-04 与本 turn 双向复核。"
+  前端质量: "N/A 有据。本 CR 全量 diff 不含 `*.tsx`／`*.vue`／`*.css`／`*.html`（multica 3 文件为 .go 与 .md；KB 为 CR 产物；Pi 侧 2 文件为 .ts），三项前端检查（WCAG AA 对比度／组件状态覆盖／构建体积）不适用。"
+  首轮完整契约域: "pass（CR-2026-057 FR-1，首轮完整检查，无上一轮 blocker）。同一契约域同轮列全，未在首个发现处提前结束：① FR-1 文本契约域——落点面（1 命中）／零复制面（multica `cr-prompts-revised/**`＋`server/internal/**` 非落点文件＋tools 仓，共 0 命中）两侧本 turn 各自独立复算；② FR-2 解析契约域——四档判定顺序（`undefined`→默认／非法→逐字错误／超上限→逐字错误／显式→原值）与 abort 分支逐档核对，含 spawn 前校验的关键失败路径；③ 证据契约域——rc 面、字段面、哈希面、平台锚定面与负向自检面五项齐备；④ 治理契约域——`CUSTOM.md` 编号顺延与 Pi 侧非本仓文件的边界描述。区分「测试未执行／测试失败／业务缺陷」：六条命令 `skipped=false` 且 exit 0，无未执行项，无业务缺陷。"
+  reviewer-model: "Gobao/deepseek-flash（quality-reviewer-agent，review-code attempt 1/3，2026-09-18）。取证面：`crctl workspace inspect CR-2026-070 --detail`（Step 0 只读 clean 前置，三仓 classification=healthy）、`crctl status/next`、`crctl git merge-base／diff --name-only／--unified=80／log／rev-parse／status --short`（三仓 CR worktree ＋ Pi 检出 `C:\Users\GOBAO\Downloads\AI\pi-mono`）、KB worktree 内 sdd.md／plan.md／tasks／test-report.md／test-evidence/*.log／traceability.yml／review-loop.yml／review-annotations/{requirement,sdd,dev-plan}.yml／evidence/{fr1-smoke,pi-source}.json 原文、multica worktree 内 runtime_config_sections.go／runtime_config_test.go／CUSTOM.md 原文、Pi 检出内 bash.ts／bash-default-timeout.test.ts 原文（含工作树 diff）、以及本 turn 自算的 sha256／字符级比较。未重跑任何 lint／test／build，未采信作者自报结论，未对作者工作区执行任何写操作。"
+suggestions:
+  - "范围外：`bash.ts` 的 `if (timeoutMs !== undefined)` guard 在默认值落地后恒真（本 turn 实读：解析点 L88 现恒返回数值，L120 分支随之恒成立）。该形态是 SDD §4.1「默认值使既有分支恒成立、无需新增代码路径」的显式选择，本 CR 内**不**要求改动（改它会扩大 diff 面并触碰 Z-3／Z-4 邻域）；若后续 CR 要收敛该恒真分支，需连带核对 `BashOperations` 自定义 operations 路径的语义，另立需求。"
+  - "范围外：cmd-05 对 AC-2／AC-3／AC-4 的负向面只覆盖 find 家族（`find `／`find.exe`／`Get-ChildItem`／`-Recurse`／`dir /s`／`rg --files`）＋4 个猜测路径字面量（`.pi/agent/skills`／`.multica/skills`／`.claude/skills`／`.claude/agents`）。本 turn 逐条实读 `fr1-smoke.json`：AC-4 run 的 `toolCalls[3]` 含 `ls -1 .pi/skills` 与 `ls -la .pi/skills/review-requirement`——这是**本次任务自身已物化**的 Skill 目录（与 AC-2／AC-3 正向读取的 `.pi/skills/<skill>/SKILL.md` 同源，即规则所指「已发现的副本」），不是「猜测的运行时私有目录」，故不计入负向面、不影响本轮 AC-4 达成判定与 verdict；仅登记：若后续要把「列目录」本身也纳入负向面，须另立 CR 并把该目录与正读路径区分开（否则会误伤正向取证面）。"
+review-loop:
+  current-attempt: 1
+release-subjects:
+  version: 1
+  repositories:
+    - repo: ai-first-platform-docs
+      remote-ref: refs/heads/requirement/CR-2026-070
+      reviewed-source-sha: 6f40ea1629ada2d4a34cb05c89b16992e89bd8b7
+    - repo: multica
+      remote-ref: refs/heads/requirement/CR-2026-070
+      reviewed-source-sha: dffcdc35ad1a0e9ae992aca6990a603a150db992
+    - repo: tools
+      remote-ref: refs/heads/requirement/CR-2026-070
+      reviewed-source-sha: c3e7c934ef2636c56cc840543cadb4feb5f554aa
+  artifacts:
+    algorithm: sha256
+    canonicalization: crlf-to-lf+path-sort
+    files:
+      - { path: change-requests/CR-2026-070/plan.md, sha256: 820faa861915aa25a35823093555fa2445e64e9fddbae3867ebe5b08d7a8f30d }
+      - { path: change-requests/CR-2026-070/prd.md, sha256: 8972e5c5d8e62389c1cb44b7d8bd7974378da03be754d145c5cb46884a3130f8 }
+      - { path: change-requests/CR-2026-070/sdd.md, sha256: 00a3f7274b1081f87776b7e68c8ce6a6be2b3f899a87bae23fe2699952536e4d }
+      - { path: change-requests/CR-2026-070/tasks/TASK-01.md, sha256: dd458af715b69b03cc0f5e605973a1c84d3c5b2c59593acd2422446cfa33c597 }
+      - { path: change-requests/CR-2026-070/tasks/TASK-02.md, sha256: fe2051c8b883432aeb00317b05754de24d699bc151903263b6ac5ff4af731416 }
+      - { path: change-requests/CR-2026-070/tasks/TASK-03.md, sha256: e349b8e1eb36c47b04d083bf1b1850ded751432bf91c9d4bd22a4ccc78d41771 }
+      - { path: change-requests/CR-2026-070/tasks/TASK-04.md, sha256: f5c78e4717473918d5dd0897a063d4c8c54b6819253c563adb020606f72bd118 }
+      - { path: change-requests/CR-2026-070/tasks/_index.yml, sha256: 9de9120cde5e7a9c9c56a341a45baf971ab22804ab54fd2022d6d773bd6bfc2d }
+    digest: 2b961dcd5b17f1575e1e6bffea5896f25b05e425ad9709809d3da057e44e9597
