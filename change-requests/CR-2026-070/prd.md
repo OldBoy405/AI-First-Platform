@@ -49,7 +49,7 @@ updated: 2026-09-18T09:50:00+08:00
 
 - 「在 Multica 单一共享 Skills brief 中要求 Agent 直接使用 Runtime 原生发现的 Skill、缺失时技术中止」（cr.md summary 逐字；同义展开见来源 §5）
 - 「在 Pi 内置 bash 的现有 timeout 解析点增加 300 秒默认值」（cr.md summary 逐字；同义展开见来源 §6）
-- 「禁止 Shell 或文件系统递归搜索 `SKILL.md`」与「未显式传入 timeout 的 Agent bash 调用使用 300 秒默认值」（来源 §1 首项、次项逐字；初稿第 1～2 条把这两句当作 cr.md summary 原文，属出处标错，本版改正）
+- 「不得通过 Shell 或文件系统递归搜索 `SKILL.md`」与「未显式传入 timeout 的 Agent bash 调用使用 300 秒默认值」（来源 §1 首项、次项逐字；初稿第 1～2 条把这两句当作 cr.md summary 原文，属出处标错，本版改正）
 - 「不新增 Skill Locator、Shell Guard/parser、错误码、metrics、数据库、sidecar、Pipeline 节点、账本或事务框架，不修改已归档 CR-2026-069 的 OutputGuard 合同」（cr.md summary）
 - 「本需求不重新打开已归档的 CR-2026-069，作为独立后续 CR 注册」（来源 §1 末段）
 - 「不关联其他CR、版本延续、负责人都是Ray」（AIFI-33 Issue 正文）
