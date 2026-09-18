@@ -1,0 +1,22 @@
+# CR-2026-070 TASK-02 - Pi bash default timeout: test execution log
+command: node C:/Users/GOBAO/Downloads/AI/pi-mono/node_modules/vitest/vitest.mjs run test/bash-default-timeout.test.ts --reporter=verbose
+cwd: C:/Users/GOBAO/Downloads/AI/pi-mono/packages/coding-agent
+checkout: C:/Users/GOBAO/Downloads/AI/pi-mono (detached@v0.85.1, base d981de1229ef899957bbe968bc8dcda02a21f477)
+checkout-head: 53a94e255d003d553ac0c2d041621430649eca18
+EXIT=0
+--- stdout ---
+
+ RUN  v4.1.9 C:/Users/GOBAO/Downloads/AI/pi-mono/packages/coding-agent
+
+ ✓ test/bash-default-timeout.test.ts > bash default timeout > no timeout uses the 300 second default 872ms
+ ✓ test/bash-default-timeout.test.ts > bash default timeout > default timeout reports 300 seconds and kills the process tree 1237ms
+ ✓ test/bash-default-timeout.test.ts > bash default timeout > explicit timeout 1200 is not overridden 868ms
+ ✓ test/bash-default-timeout.test.ts > bash default timeout > invalid and over-limit timeouts keeps existing errors before spawn 94ms
+ ✓ test/bash-default-timeout.test.ts > bash default timeout > schema description matches the default 1ms
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  12:51:53
+   Duration  3.87s (transform 371ms, setup 0ms, import 666ms, tests 3.07s, environment 0ms)
+--- stderr ---
+(empty)
