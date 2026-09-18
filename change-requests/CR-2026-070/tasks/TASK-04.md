@@ -17,7 +17,7 @@ created: 2026-09-18T11:30:00+08:00
 
 **目标**：产出两份证据文件，使 AC-2／AC-3／AC-4 与 AC-5～AC-8／AC-12 的验收可被机械观测：
 
-1. `change-requests/CR-2026-070/evidence/fr1-smoke.json` —— FR-1 的**三次真实 run** 记录（review-requirement 重放、review-dev-plan 重放、Skill 缺失构造），携带**原始 `toolCalls` 提取**与 AC-4 的受控文件 before/after sha256；
+1. `change-requests/CR-2026-070/evidence/fr1-smoke.json` —— FR-1 的**三次真实 run** 记录（review-requirement 重放、review-dev-plan 重放、Skill 缺失构造），携带**原始 `toolCalls` 提取**，与 AC-4 的受控文件 before/after sha256（**含 `change-requests/CR-2026-070/review-annotations/*.yml` 至少 1 条**）与 `reviewAnnotationsNewFiles` 空数组；
 2. `change-requests/CR-2026-070/evidence/pi-source.json` —— Pi 侧交付事实（上游 URL、基线 SHA、检出路径、检出形态（`detached@v0.85.1` = detached HEAD @ `d981de12`，**无分支**）/HEAD commit、变更文件集、用例与日志哈希、构建命令与产物版本、安装包负向基线）。
 
 **背景**：`dep-1` §5 补充判定口径明示「AC-2／AC-3 必须用真实 smoke run 留证，Prompt 静态断言只证明规则存在，不能替代真实行为验证」；SDD §4.4 固定观察面（Multica 任务 run 的会话记录）与三条场景构造；SDD §4.6 固定 Pi 侧证据的取证算法（文件路径清单 → 归属判定 → 安装包零出现 → 产出方与时点）。
