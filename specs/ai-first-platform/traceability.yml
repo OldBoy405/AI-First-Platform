@@ -1,10 +1,10 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 spec-id: ai-first-platform
-cr-ref: CR-2026-069
-cr-history: [CR-2026-060, CR-2026-059, CR-2026-061, CR-2026-062, CR-2026-063, CR-2026-065, CR-2026-064, CR-2026-066, CR-2026-067, CR-2026-068, CR-2026-069]
-target-version: "0.42"
+cr-ref: CR-2026-070
+cr-history: [CR-2026-060, CR-2026-059, CR-2026-061, CR-2026-062, CR-2026-063, CR-2026-065, CR-2026-064, CR-2026-066, CR-2026-067, CR-2026-068, CR-2026-069, CR-2026-070]
+target-version: "0.43"
 baseline-since: "0.33"
-generated-at: "2026-09-17T22:07:24+08:00"
+generated-at: "2026-09-18T17:51:28+08:00"
 
 milestones:
   - cr: CR-2026-060
@@ -1011,3 +1011,47 @@ milestones:
         code: { verdict: pass, path: change-requests/CR-2026-069/review-annotations/code.yml, sha256: eff3dd1eb6c764715f9356809dff0338315561288311f636b1e1c96a8641e997 }
       approval: { status: approved, path: change-requests/CR-2026-069/approval.yml, sha256: fd502d87022b03dc5644744db115c5254866ac7dab7eda12ea6e9372b7987806 }
       merge: { status: merged, path: change-requests/CR-2026-069/merge-commits.yml, sha256: 3a644a90159afee1671dd458c57545bbb0d57f0b0dc43287ef51a9dc4547ac3e }
+  - cr: CR-2026-070
+    milestone: "0.43"
+    target-version: "0.43"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 69deef8fe0bcc6ad9986161131c81a7637570b21
+        branch: requirement/CR-2026-070
+      - repo: multica
+        trunk: main
+        sha: 290a3ed031ec33ebb873539cdd6a2a4e91c8f9f6
+        branch: requirement/CR-2026-070
+      - repo: tools
+        trunk: main
+        sha: 3bf19dd45b87c2f37c0596b24c1d16b6dd000945
+        branch: requirement/CR-2026-070
+    frs:
+      - fr: FR-1
+        title: Agent 直接使用 Runtime 已发现的 Skill（AC-1～AC-4）
+        sdd: §2.2.1 形状 1（规则文本常量）＋ §3.2 逐字文本与零复制面 ＋ §3.3 注入面契约（零改动）＋ §4.3 A3 单点合成与唯一性 ＋ §4.4 A4 重放与场景设计 ＋ §6.4 既有测试面增项清单 ＋ §6.5 SDD-CLOSE-01
+        tasks: [CR-2026-070-TASK-01, CR-2026-070-TASK-03, CR-2026-070-TASK-04]
+        code: [ai-first-platform-docs@69deef8fe0bc, multica@290a3ed031ec, tools@3bf19dd45b87]
+        evidence: [cmd-03, cmd-02, cmd-04, cmd-05]
+      - fr: FR-2
+        title: Pi 内置 bash 未显式传 timeout 时默认 300 秒（AC-5～AC-8、AC-12）
+        sdd: §2.2.2 形状 2（`DEFAULT_TIMEOUT_MS` 与 schema 文案）＋ §3.1 参数契约与边界值表 ＋ §4.1 A1 解析算法 ＋ §4.2 A2 秒数传递 ＋ §4.6 A6 交付证据取证算法 ＋ §6.4 Pi 侧用例清单 ＋ §6.5 SDD-CLOSE-02
+        tasks: [CR-2026-070-TASK-02, CR-2026-070-TASK-03, CR-2026-070-TASK-04]
+        code: [ai-first-platform-docs@69deef8fe0bc, multica@290a3ed031ec, tools@3bf19dd45b87]
+        evidence: [cmd-06, cmd-04]
+      - fr: FR-3
+        title: 既有能力的复用合同（AC-9～AC-11）
+        sdd: §1.1 不变量 I1～I8 ＋ §4.5 A5 回归面复跑设计 ＋ §6.4 零改动核对清单 ＋ §9 zero_diff Z-1～Z-8
+        tasks: [CR-2026-070-TASK-01, CR-2026-070-TASK-02, CR-2026-070-TASK-03, CR-2026-070-TASK-04]
+        code: [ai-first-platform-docs@69deef8fe0bc, multica@290a3ed031ec, tools@3bf19dd45b87]
+        evidence: [cmd-01, cmd-04, cmd-03]
+    evidence:
+      test: { status: pass, path: change-requests/CR-2026-070/test-report.md, sha256: 4bf5400ed0e32b4d9cf8f0ae0a1d00a5c3063e59f2eae529a9141149586aff46 }
+      reviews:
+        requirement: { verdict: pass, path: change-requests/CR-2026-070/review-annotations/requirement.yml, sha256: a96800f0d8c88a8c112084bcf622ae7b7dd21263458a407ad5bddb38d6ae2d38 }
+        tech-design: { verdict: pass, path: change-requests/CR-2026-070/review-annotations/sdd.yml, sha256: 5e77f4cc058ce2a1349eac10b0e9a317f658c0acb93932d4095bad0a500ebf98 }
+        dev-plan: { verdict: pass, path: change-requests/CR-2026-070/review-annotations/dev-plan.yml, sha256: e9bb9d9b815d938da34b638a7367ac6a7abc54956f5bc16a68a0bcfcc471bf85 }
+        code: { verdict: pass, path: change-requests/CR-2026-070/review-annotations/code.yml, sha256: 09151476215c134b65c8af2229345c656f542d00ebaf59644473e9f5ad88b51f }
+      approval: { status: approved, path: change-requests/CR-2026-070/approval.yml, sha256: d6c1e99931ed4576f1ea74f3356135a823e5678646b79752925bf4512577f067 }
+      merge: { status: merged, path: change-requests/CR-2026-070/merge-commits.yml, sha256: 3535eb6dad12e7a9aaf41780e56e7a1e23cba2d902554663cc931d5621c2b424 }
