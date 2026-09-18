@@ -57,7 +57,7 @@ created: 2026-09-18T11:30:00+08:00
 | # | 验收步骤（可执行） | 期望 |
 |---|---|---|
 | 1 | `node <TOOLS>/skills/shared/crctl/scripts/crctl.mjs git diff --name-only 59b47993810fabd12fcc393c2fa2e46611f9530d --cwd <multica worktree>` | **判据时点 = TASK-01 完成时点（此时 TASK-03 未落地）**：恰好两个路径：`runtime_config_sections.go`、`runtime_config_test.go`。TASK-03 落地后同一基线上的 diff 变为三个路径（多 `CUSTOM.md`）——该三路径形态是 **TASK-03 完成时点**的判据（TASK-03 §4 第 3 条），不得在本 TASK 落地后把三路径形态判成回归 |
-| 2 | 在 multica worktree 的 `server/` 下 `go test ./internal/daemon/execenv/ -count=1 -v -run TestBriefSkills` | exit 0；stdout 含 `--- PASS:` 与 7 个 provider 子用例（不得出现 `no tests to run`） |
+| 2 | 在 multica worktree 的 `server/` 下 `go test ./internal/daemon/execenv/ -count=1 -v -run TestBriefSkills` | exit 0；stdout 含 `--- PASS:` 与 7 个 provider 子用例（不得出现 `no tests to run`）。**计数口径**：这 7 项是既有形状钉子组（claude／codex／opencode／hermes／grok／traecli／some-unknown-provider），**不含 pi**；pi 的覆盖落在 §3.4 第 2 条新增的跨 Provider 一致性断言组（claude／codex／pi／some-unknown-provider），该组为普通循环、不产生子用例 ⇒ 本行命令的输出里 pi 不体现为子用例，其存在性由 `cmd-03` 的源码级断言守卫（本 TASK 落地后按本行字面命令实测：7 项子用例 ＋ 外层 1 条 `--- PASS:`） |
 | 3 | 在 multica worktree 根执行 `cmd-03` 的表内字面命令（plan §6.2） | **计划内红点（分批时点）**：`cmd-03` 的 failures **恰为 1**，且唯一失败项为 `FAIL CUSTOM.md 缺 CR-2026-070 台账行`——该行是 TASK-03 的交付物（`depends-on: [TASK-01, TASK-02]`），故本 TASK **不**要求 `cmd-03` exit 0。除该项外，落点面锚短语命中数 = 1；零复制面（`server/internal/**` 落点两文件之外 + `cr-prompts-revised/**`，实测扫描面 1492 文件）命中数 = 0；测试文件引用 `skillsRoutingRule` 且**未**内联锚短语；规则窗口无 Provider 私有面字面量（落点／零复制／测试三面在本 TASK 落盘后单独转绿；台账面由 TASK-03 收口，`cmd-03` 达到 failures = 0 的时点是 TASK-03 完成时点，见 plan §6.3 的 `cmd-03` 行） |
 | 4 | 手动核对既有断言语义未被改写：`git diff` 中 `runtime_config_test.go` 的改动**只含新增行**（`+` 行），既有断言行不得出现 `-` 行 | 既有形状钉子（slug 索引、无描述、无 Provider 分支、空集不注入）逐字保留 |
 

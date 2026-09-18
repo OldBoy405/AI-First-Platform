@@ -6,7 +6,7 @@ sdd-ref: "change-requests/CR-2026-070/sdd.md"
 target-version: 0.43
 status: draft
 created: 2026-09-18T11:30:00+08:00
-updated: 2026-09-18T12:20:00+08:00
+updated: 2026-09-18T16:20:00+08:00
 ---
 
 # CR-2026-070 开发计划（Agent Skill 路由 + Pi bash 默认超时）
@@ -130,7 +130,7 @@ TASK-04 的产物是**过程证据与验收记录**，其完成边界限定在 `
 1. `evidence/pi-source.json` 落盘（schema `cr-2026-070-pi-source/v1`，字段集见 TASK-04），且 cmd-06 的**活体复跑**（变更文件集核对 + Pi 用例 exit 0 + 安装包 sha256 负向）在作者 run 内 exit 0；
 2. `evidence/pi-vitest.log` 落盘（TASK-02 的用例执行原文，含 `--- stdout ---`/`--- stderr ---` 两段与退出码），sha256 记入 `pi-source.json`；
 3. `evidence/fr1-smoke.json` 落盘（schema `cr-2026-070-fr1-smoke/v1`，三条 run 记录 + AC-4 的受控文件 before/after sha256），且 cmd-05 在作者 run 内 exit 0；
-4. 4 张 TASK 的 `crctl task done` 全部登记（工程纪律 8）。
+4. 本 TASK 的 `crctl task done` 登记即四张卡的最后一张（TASK-01～03 已在 developing 内登记 done；工程纪律 8：做完一个标一个，不积压到回写期）。
 
 **不得**把「`review-code` 通过」「merge 完成」「回写完成」写入任何 TASK 的完成标志（CR-2026-057 FR-10）：merge / 审批 / checkpoint 的审计事实以既有 `approval.yml`、`merge-commits.yml`、checkpoint 元数据为准，不进 TASK ledger。
 
@@ -203,7 +203,7 @@ TASK-04 的产物是**过程证据与验收记录**，其完成边界限定在 `
 | 2 | multica diff 白名单**双向相等**（恰 `runtime_config_sections.go` + `runtime_config_test.go` + `CUSTOM.md`，无越界、无缺项） | cmd-04 |
 | 3 | tools diff **为空**（zero diff）+ KB diff 全部落在 `change-requests/CR-2026-070/**` 与三个受控账本内，`specs/`／`delivery/`／`docs/`／`dir-graph.yaml`／`prd.md`／`sdd.md` 零写入 | cmd-04 |
 | 4 | FR-1 落点面锚短语命中数 = 1、零复制面命中数 = 0、测试文件不内联锚短语、规则窗口无 Provider 私有目录字面量 | cmd-03 |
-| 5 | 既有形状钉子测试执行面全绿（7 provider 子用例）+ 新断言引用常量符号 | cmd-02 / cmd-03 |
+| 5 | 既有形状钉子测试执行面全绿（7 provider 子用例，**不含 pi**；pi 的覆盖在新增跨 Provider 一致性断言组内、不产生子用例，存在性由 `cmd-03` 的源码级断言守卫）+ 新断言引用常量符号 | cmd-02 / cmd-03 |
 | 6 | OutputGuard conformance 复跑全绿（`output-guard/**` 零 diff） | cmd-01 / cmd-04 |
 | 7 | 三条 FR-1 真实 run 记录齐备且搜索类调用数 = 0、猜测路径访问数 = 0；AC-4 受控文件（**必须含 `change-requests/CR-2026-070/review-annotations/*.yml` 至少 1 条**）run 前后 sha256 逐一致、无业务 verdict、`reviewAnnotationsNewFiles` 为空 | cmd-05 |
 | 8 | Pi 侧变更文件集全部落在 `packages/coding-agent/{src,test}/**`、无 `dist`／`node_modules`、无安装包路径；用例活体复跑 exit 0 且断言名齐备；安装包 `bash.js` sha256 无漂移 | cmd-06 |
@@ -283,7 +283,7 @@ TASK-04 的产物是**过程证据与验收记录**，其完成边界限定在 `
 | 证据ID | 可达性 | 本条 run 实测（变更前基线） | 结论（变更后预期） |
 |---|---|---|---|
 | cmd-01 | 可达 | **exit 0** / 5.995 s / 38 pass（三文件） | 变更前后均须 exit 0（本 CR 在 tools 仓零 diff） |
-| cmd-02 | 可达 | **exit 0** / 3.649 s / `--- PASS: TestBriefSkillsListIsNamesOnly`（7 provider 子用例）——与本条审计面同批 | 变更后须仍 exit 0 且包含新增断言（`cmd-03` 提供源码级存在性守卫） |
+| cmd-02 | 可达 | **exit 0** / 3.649 s / `--- PASS: TestBriefSkillsListIsNamesOnly`（7 provider 子用例）——与本条审计面同批。**计数口径（防把 pi 误记在这 7 项内）**：这 7 项是既有形状钉子组（claude／codex／opencode／hermes／grok／traecli／some-unknown-provider）；本 CR 新增的跨 Provider 一致性断言组（claude／codex／pi／some-unknown-provider，TASK-01 §3.4 第 2 条）以普通循环实现、不产生子用例 ⇒ 该计数在本 CR 前后**均恰为 7**（TASK-01 落地后在 multica HEAD `dffcdc35` 按本行字面命令实跑复核：7 项子用例 ＋ 外层 1 条 `--- PASS:`），pi 的覆盖由 `cmd-03` 源码级断言守卫 | 变更后须仍 exit 0 且包含新增断言（`cmd-03` 提供源码级存在性守卫） |
 | cmd-03 | 可达 | **exit 1 / 8 failures**（B-5 回修轮复跑复核，失败项逐条一致）：落点面锚短语命中数 = 0（期望恰 1）1 项、规则四子句缺失 4 项、缺常量符号 `skillsRoutingRule` 1 项、测试文件未引用常量 1 项、`CUSTOM.md` 缺 CR-2026-070 台账行 1 项；`scanned=1492 copyFaceHits=0`（零复制面本已干净，**无一项来自 zero_diff 面**） | **时点判据（随 TASK-01／TASK-03 分批）**：TASK-01 完成时点须 failures = **1**，且唯一失败项为 `FAIL CUSTOM.md 缺 CR-2026-070 台账行`（TASK-03 交付面，见 TASK-01 §4 第 3 条／§5 第 2 条）；TASK-01＋TASK-03 齐备后（本 CR 变更全部落地）须 failures = 0（八项逐条对应 TASK-01 的 4 个交付面与 TASK-03 的台账面） |
 | cmd-04 | 可达 | **exit 1 / 6 failures**（按 §6.2 表内字面 args，**回修轮重跑**）：tools diff 0 路径（正确，zero diff 面）+ multica diff 0 路径 ⇒ `multica diff 为空` 1 项 + 应改文件缺失 3 项 + KB 应交付证据文件缺失 2 项（`fr1-smoke.json`／`pi-source.json`）；KB diff **10 路径**（`cr.md`、`plan.md`、`review-annotations/dev-plan.yml`、`review-loop.yml`、`tasks/TASK-01..04.md`、`tasks/_index.yml`、`traceability.yml`），全部落在 ALLOW 前缀内、无越界 | 变更后须 failures = 0（multica 白名单双向相等 + KB 交付面（含两份证据文件）齐备 + tools 零 diff + zero_diff 前缀面零命中）。**基线时点**：本行的 KB 路径数与 failures 数随 plan／tasks 落盘与提交变化（plan 落盘前为 0 路径／8 failures，plan+tasks 落盘后为 10 路径／6 failures）——M4 期以当次实测为准，不得把本行数字当门禁数 |
 | cmd-05 | 可达 | **exit 1 / 1 failure**（按 §6.2 表内字面 args，B-5 修复后本轮回修复跑，0.036 s；含 B-3 新增、B-5 改写为无竖线 `!(A && B)` 形态的两条 AC-4 断言）：`evidence/fr1-smoke.json` 未落地（本节点无该证据文件，属**显式红**而非假绿）；新增断言仍以**同一字面 args** 对合成证据做四态验证：受控文件集缺 `review-annotations/*.yml` 键 ＋ `reviewAnnotationsNewFiles` 缺失→恰 2 条定向 FAIL；`reviewAnnotationsNewFiles` 非空→恰 1 条定向 FAIL；该字段缺失→恰 1 条定向 FAIL（改写未放宽「缺字段即红」）；全齐（含真实平台 run 查询，三条 run 活体可见）→**exit 0** | 变更后须 failures = 0（三条 run 记录 + 独立重算零命中 + 受控文件集含 `review-annotations/*.yml` 且前后 sha256 全等 + `reviewAnnotationsNewFiles` 为空 + 平台 run 活体锚定） |
@@ -377,3 +377,4 @@ TASK-04 的产物是**过程证据与验收记录**，其完成边界限定在 `
 | 0.1 | 2026-09-18 | dev-agent | 初稿：按 SDD v0.2（`00a3f727…`）出具开发计划；4 个变更组 → 4 张 TASK；两张稳定表（3 条 FR 行 + 6 条证据命令）；AC 覆盖矩阵 12 行；§10 选定 Pi 侧路线 R-C 并记录 R-A／R-B 的否决依据；S-6 取舍（工具入口取证、不导出模块私有符号）并附探针实测；§0.2 记录上一阶段审批提交的发布收口口径（搭车 review-dev-plan 的 checkpoint） |
 | 0.2 | 2026-09-18 | dev-agent | dev-plan 回修轮（`review-dev-plan` attempt 1/3 BLOCK，4 条 blocker＋5 条 suggestion）：**B-1** Pi 检出改为在既有 detached HEAD 上以受控 `crctl git` 提交、`pi-source.json#branch` 记录实际形态（§0.3／§2／§4.0 RU2／§10；同步 TASK-02 §3.6／§5、TASK-04 §1／§3.5／§6）；**B-2** `cmd-03` 在 TASK-01 完成时点的判据改为「failures 恰 1 且唯一项为 `CUSTOM.md` 台账行」，残留由 TASK-03 收口（§6.3 cmd-03 行；同步 TASK-01 §4／§5）；**B-3** AC-4 受控文件集强制含 `change-requests/CR-2026-070/review-annotations/*.yml`（§6.2 `cmd-05` 字面 args 增两条断言：`review-annotations/` 键至少 1 条、`reviewAnnotationsNewFiles` 必须为空数组；同步 §5.1 第 7 项、TASK-04 §3.2／§6）；**B-4** 长任务夹具自带兜底清理（新增风险行 R-10；同步 TASK-02 §3.5）。Suggestion：§2 依赖序行文与依赖图／`_index.yml` 对齐、`cmd-04`／`cmd-05` 基线按回修后字面 args 重跑并加时点脚注、AC-6 的 daemon PID 子项显式登记 N/A（§7 表注）、TASK-01 钉定常量与 `WriteString` 落在 `writeSkills` 邻近窗口（TASK-01 §3）、TASK-01／TASK-03 的 diff 判据标时点 |
 | 0.3 | 2026-09-18 | dev-agent | dev-plan 回修轮（`review-dev-plan` attempt 2/3 BLOCK，1 条 blocker＋3 条 suggestion）：**B-5** `cmd-05` 行 args cell 内的两个**裸竖线**（布尔或运算符）把该行切成 8 个 cell，args 已不能按 §6.2.1「表内 cell 即字面值」转录（实测 `JSON.parse` 报 `Unterminated string in JSON at position 2823`）——改写为**等价无竖线**形态 `!(Array.isArray(…) && ….length === 0)`（旧式 vs 新式在 7 值网格 `undefined`／`null`／`[]`／`[x]`／字符串／`0`／`{}` 上逐一全等，且在 4 态合成证据上实跑：缺字段→1 条定向 FAIL、数组非空→1 条定向 FAIL、缺 `review-annotations/` 键→2 条定向 FAIL、全齐→exit 0）；同步：§6.2.1 增「**行内自校**」判据（竖线数 = 7 ⇒ 恰 6 cell、args cell 必须 `JSON.parse` 通过、四条 `-e` 源串零裸引号／反引号／反斜杠／竖线，破坏时不得据被截断片段重建命令算法）及改前／改后实测；§6.3 `cmd-05` 行按改后字面 args 重跑刷新（`exit 1 / 1 failure`，0.036 s）；§5.4 `cmd-05` 预算行同步该实测值。Suggestion：§6.3 `cmd-03` 行补齐第 8 项失败枚举（落点面锚短语命中数 = 0）、`tasks/TASK-03.md` 的 `title` 加引号并与 §9 写法统一（避免 YAML 把 `#96 …` 当注释、`crctl task init` 刷新 `_index.yml`）、TASK-04 §5 第 3 项完成标志改回本 TASK 自身口径（与 `depends-on` 一致） |
+| 0.4 | 2026-09-18 | dev-agent | dev-plan 回修轮（`review-dev-plan` cycle 2 attempt 1 BLOCK，1 条 blocker＋3 条 suggestion）：**B-6** `TASK-04` §3.1「对账规则」的执行主体由「采集 run 执行」更正为「平台数据可见后，由采集 run 之后的实施 run 执行并登记」（平台 `tool_calls` 只在 run 结束时随 `result` 落盘才可见，且节点边界①已把取数调用钉成结束前的最后一次 ⇒ 采集 run 内无执行窗口），采集 run 的义务收敛为「让尾部可判」；判据逐字不变（尾部差集 ≤ 3、取数调用未被数组自身覆盖时 ≤ 4、逐条落在允许集合、其他调用即硬失败），尾口径三段与节点边界④溯源中立逐字保留。Suggestion：§2.1 第 4 项完成边界改为本 TASK 口径（本 TASK 的 done 登记即四张卡的最后一张）；TASK-01 §4 第 2 条＋§5.1 第 5 项＋§6.3 `cmd-02` 行补 provider 子用例计数口径（7 项＝既有形状钉子组、不含 pi；pi 的覆盖在新增跨 Provider 一致性断言组内、不产生子用例，由 `cmd-03` 源码级断言守卫，按 multica HEAD `dffcdc35` 实跑复核）；TASK-04 §3.1 三处事实表述按实测收窄（`InvalidatePiSession` 删除非全局规律、`read(target)` 锚定改为条件句、`search=1` 归因改为可核对的一致关系） |
