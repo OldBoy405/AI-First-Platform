@@ -1,0 +1,39 @@
+$ go test ./internal/daemon/execenv/ -count=1 -v -run TestBriefSkills
+(exit=0)
+--- stdout ---
+=== RUN   TestBriefSkillsListIsNamesOnly
+=== PAUSE TestBriefSkillsListIsNamesOnly
+=== CONT  TestBriefSkillsListIsNamesOnly
+=== RUN   TestBriefSkillsListIsNamesOnly/claude
+=== PAUSE TestBriefSkillsListIsNamesOnly/claude
+=== RUN   TestBriefSkillsListIsNamesOnly/codex
+=== PAUSE TestBriefSkillsListIsNamesOnly/codex
+=== RUN   TestBriefSkillsListIsNamesOnly/opencode
+=== PAUSE TestBriefSkillsListIsNamesOnly/opencode
+=== RUN   TestBriefSkillsListIsNamesOnly/hermes
+=== PAUSE TestBriefSkillsListIsNamesOnly/hermes
+=== RUN   TestBriefSkillsListIsNamesOnly/grok
+=== PAUSE TestBriefSkillsListIsNamesOnly/grok
+=== RUN   TestBriefSkillsListIsNamesOnly/traecli
+=== PAUSE TestBriefSkillsListIsNamesOnly/traecli
+=== RUN   TestBriefSkillsListIsNamesOnly/some-unknown-provider
+=== PAUSE TestBriefSkillsListIsNamesOnly/some-unknown-provider
+=== CONT  TestBriefSkillsListIsNamesOnly/claude
+=== CONT  TestBriefSkillsListIsNamesOnly/grok
+=== CONT  TestBriefSkillsListIsNamesOnly/opencode
+=== CONT  TestBriefSkillsListIsNamesOnly/codex
+=== CONT  TestBriefSkillsListIsNamesOnly/some-unknown-provider
+=== CONT  TestBriefSkillsListIsNamesOnly/traecli
+=== CONT  TestBriefSkillsListIsNamesOnly/hermes
+--- PASS: TestBriefSkillsListIsNamesOnly (0.00s)
+    --- PASS: TestBriefSkillsListIsNamesOnly/claude (0.00s)
+    --- PASS: TestBriefSkillsListIsNamesOnly/codex (0.00s)
+    --- PASS: TestBriefSkillsListIsNamesOnly/grok (0.00s)
+    --- PASS: TestBriefSkillsListIsNamesOnly/some-unknown-provider (0.00s)
+    --- PASS: TestBriefSkillsListIsNamesOnly/opencode (0.00s)
+    --- PASS: TestBriefSkillsListIsNamesOnly/traecli (0.00s)
+    --- PASS: TestBriefSkillsListIsNamesOnly/hermes (0.00s)
+PASS
+ok  	github.com/multica-ai/multica/server/internal/daemon/execenv	0.055s
+
+--- stderr ---
