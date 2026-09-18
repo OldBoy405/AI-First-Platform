@@ -18,7 +18,7 @@ created: 2026-09-18T11:30:00+08:00
 **目标**：产出两份证据文件，使 AC-2／AC-3／AC-4 与 AC-5～AC-8／AC-12 的验收可被机械观测：
 
 1. `change-requests/CR-2026-070/evidence/fr1-smoke.json` —— FR-1 的**三次真实 run** 记录（review-requirement 重放、review-dev-plan 重放、Skill 缺失构造），携带**原始 `toolCalls` 提取**与 AC-4 的受控文件 before/after sha256；
-2. `change-requests/CR-2026-070/evidence/pi-source.json` —— Pi 侧交付事实（上游 URL、基线 SHA、检出路径、分支/HEAD、变更文件集、用例与日志哈希、构建命令与产物版本、安装包负向基线）。
+2. `change-requests/CR-2026-070/evidence/pi-source.json` —— Pi 侧交付事实（上游 URL、基线 SHA、检出路径、检出形态（`detached@v0.85.1` = detached HEAD @ `d981de12`，**无分支**）/HEAD commit、变更文件集、用例与日志哈希、构建命令与产物版本、安装包负向基线）。
 
 **背景**：`dep-1` §5 补充判定口径明示「AC-2／AC-3 必须用真实 smoke run 留证，Prompt 静态断言只证明规则存在，不能替代真实行为验证」；SDD §4.4 固定观察面（Multica 任务 run 的会话记录）与三条场景构造；SDD §4.6 固定 Pi 侧证据的取证算法（文件路径清单 → 归属判定 → 安装包零出现 → 产出方与时点）。
 
@@ -43,17 +43,17 @@ created: 2026-09-18T11:30:00+08:00
    - AC-2：以 `quality-reviewer-agent` 重放第一次事故场景（读取 Issue 上下文后**首次加载当前 `review-*` Skill**，即 `review-requirement`）；
    - AC-3：同形重放 `review-dev-plan` 复评场景（先尝试 HOME 级 Skill 目录 → 再根目录检索的形态）；
    - 观察面 = run 的会话记录（`toolCall` 名称 + `arguments.command` 文本）⇒ 记录 `toolCalls` 的**原始数组**（`{name, command}`），不得只记摘要计数；`toolCalls` 为空即取证不成立（硬失败，禁止「空提取 → 静默通过」）。
-2. **AC-4 的构造与取证**（SDD §4.4）：保留 ≥1 个其他 Skill（保证 `## Skills` 段与规则文本在场——**不得**使用零 Skill／全 `disable-model-invocation` 情形，否则构造无效，B-1），移除被评估节点的预期 Skill；run 前后对受控文件逐一取 sha256：`change-requests/CR-2026-070/cr.md`、`change-requests/_backlog.yml`、`change-requests/CR-2026-070/review-loop.yml`、`change-requests/CR-2026-070/traceability.yml`、`change-requests/CR-2026-070/review-annotations/*.yml`（≥4 条即可，记录键为仓库内相对路径）。判据：run 报告缺失能力事实（Skill 名／Runtime／任务）、**无业务 verdict 落盘**、前后 sha256 逐一致、零兜底搜索。
+2. **AC-4 的构造与取证**（SDD §4.4）：保留 ≥1 个其他 Skill（保证 `## Skills` 段与规则文本在场——**不得**使用零 Skill／全 `disable-model-invocation` 情形，否则构造无效，B-1），移除被评估节点的预期 Skill；run 前后对受控文件逐一取 sha256（记录键为仓库内相对路径）：`change-requests/CR-2026-070/cr.md`、`change-requests/_backlog.yml`、`change-requests/CR-2026-070/review-loop.yml`、`change-requests/CR-2026-070/traceability.yml`，以及**当时实际存在的全部** `change-requests/CR-2026-070/review-annotations/*.yml`——该目录是业务 verdict 的落盘位置，**强制必录（至少 1 条，建议全量）**，不得以「≥4 条」的旧口径把它漏出观测面（评审 B-3）。另：run 窗口内若出现 run 前不存在的 `review-annotations/<stage>.yml`（新文件不在 before 集内，sha256 对等检查天然覆盖不到），必须逐条记入 `reviewAnnotationsNewFiles`——该数组必须为空，非空即判 AC-4 不成立。判据：run 报告缺失能力事实（Skill 名／Runtime／任务）、**无业务 verdict 落盘**（`businessVerdictWritten=false` ＋ `reviewAnnotationsNewFiles` 为空 ＋ 上述受控文件前后 sha256 全等，观测面与声称面一致）、零兜底搜索。
 3. **哈希与解析纪律（工程纪律 1）**：所有读入先 `\r\n → \n` 归一后计算 sha256；SHA 取 40 位小写十六进制；JSON 写盘用 UTF-8，键名逐字照 §6。
 4. **平台锚定**：记录每个 run 的 `agentId`（`multica agent list --output json` 现查）与 `runId`（`multica agent tasks <agentId> --output json` 的对应项），`cmd-05` 会用同一命令**活体复核**这些 run 存在；不得手写未在平台出现的 id。
-5. **Pi 侧证据的取值**（SDD §4.6，路线无关）：`baseCommit` 必须逐字为 `d981de1229ef899957bbe968bc8dcda02a21f477`；`changedFiles` 由 `crctl git diff --name-only <baseCommit> --cwd <checkoutPath>` 实测（非手抄）；`installedPackage.path` = `npm root -g` 下的安装目录，`bashJsSha256` = 该目录 `dist/core/tools/bash.js` 归一后的 sha256；`testLogPath` = `change-requests/CR-2026-070/evidence/pi-vitest.log`（KB 相对路径），`testLogSha256` = 该文件归一后的 sha256。
+5. **Pi 侧证据的取值**（SDD §4.6，路线无关）：`baseCommit` 必须逐字为 `d981de1229ef899957bbe968bc8dcda02a21f477`；`branch` 记录检出的**实际形态**——本 CR 的落点是既有 detached HEAD（tag `v0.85.1` = `d981de12…`，`git branch --show-current` 输出为空；受控 git 入口不提供建分支形态，见 TASK-02 §3.6），故逐字记为 `detached@v0.85.1`（`cmd-06` 只校验该字段存在，取值语义以本句为准）；`headCommit` = 检出 HEAD（TASK-02 在该 detached HEAD 上提交后的 commit）；`changedFiles` 由 `crctl git diff --name-only <baseCommit> --cwd <checkoutPath>` 实测（非手抄）；`installedPackage.path` = `npm root -g` 下的安装目录，`bashJsSha256` = 该目录 `dist/core/tools/bash.js` 归一后的 sha256；`testLogPath` = `change-requests/CR-2026-070/evidence/pi-vitest.log`（KB 相对路径），`testLogSha256` = 该文件归一后的 sha256。
 6. **自检**：落盘后在 KB worktree 根按 plan §6.2 的表内字面命令执行 `cmd-05`、在 tools worktree 根执行 `cmd-06`，双双 exit 0 后方可登记完成。
 
 ## 4. 验收条件
 
 | # | 验收步骤（可执行） | 期望 |
 |---|---|---|
-| 1 | 在 KB worktree 根执行 `cmd-05` 表内字面命令（plan §6.2） | exit 0：三条 run 记录齐备、字段完整、`toolCalls` 非空、独立重算的搜索类调用数与猜测路径访问数均为 0、AC-4 受控文件前后 sha256 逐一致且 `businessVerdictWritten=false`、每个 `runId` 经 `multica agent tasks` 活体可见 |
+| 1 | 在 KB worktree 根执行 `cmd-05` 表内字面命令（plan §6.2） | exit 0：三条 run 记录齐备、字段完整、`toolCalls` 非空、独立重算的搜索类调用数与猜测路径访问数均为 0、AC-4 受控文件前后 sha256 逐一致（**含 `change-requests/CR-2026-070/review-annotations/*.yml` 至少 1 条**）、`businessVerdictWritten=false`、`reviewAnnotationsNewFiles` 为空数组、每个 `runId` 经 `multica agent tasks` 活体可见 |
 | 2 | 在 tools worktree 根执行 `cmd-06` 表内字面命令（plan §6.2） | exit 0：检出 HEAD 与记录一致、变更文件集与 git 实测全等且全部落在 `packages/coding-agent/{src,test}/**`、无 `dist`／`node_modules`、vitest 活体复跑 exit 0 且 5 条断言名齐备、日志 sha256 一致、安装包 `bash.js` sha256 无漂移且仍含 `no default timeout` |
 | 3 | 负向自检：把 `fr1-smoke.json` 的任一 `toolCalls` 替换为一条含 `SKILL.md` 与 `find` 的调用后重跑 `cmd-05` | **必须 exit 1**（证明重算不是装饰：命中即红），随后恢复文件并复跑确认 exit 0 |
 | 4 | 负向自检：把 `pi-source.json#changedFiles` 删去一个路径后重跑 `cmd-06` | **必须 exit 1**（文件集不一致即红），随后恢复并复跑确认 exit 0 |
@@ -96,18 +96,20 @@ created: 2026-09-18T11:30:00+08:00
       "toolCalls": [ { "name": "<tool>", "command": "<string>" } ],
       "missingCapabilityReported": true,
       "businessVerdictWritten": false,
+      "reviewAnnotationsNewFiles": [],
       "controlledFiles": {
         "change-requests/CR-2026-070/cr.md": { "beforeSha256": "<64hex>", "afterSha256": "<64hex，必须与 before 全等>" },
         "change-requests/_backlog.yml": { "beforeSha256": "<…>", "afterSha256": "<…>" },
         "change-requests/CR-2026-070/review-loop.yml": { "beforeSha256": "<…>", "afterSha256": "<…>" },
-        "change-requests/CR-2026-070/traceability.yml": { "beforeSha256": "<…>", "afterSha256": "<…>" }
+        "change-requests/CR-2026-070/traceability.yml": { "beforeSha256": "<…>", "afterSha256": "<…>" },
+        "change-requests/CR-2026-070/review-annotations/requirement.yml": { "beforeSha256": "<…>", "afterSha256": "<…>" }
       }
     }
   ]
 }
 ```
 
-（sha256 为 64 位小写十六进制；上表以 `<64hex>` 标记该位置的实际取值。）
+（sha256 为 64 位小写十六进制；上表以 `<64hex>` 标记该位置的实际取值。）**字段语义补充**：`controlledFiles` 的键名逐字为仓库内相对路径，其中 `change-requests/CR-2026-070/review-annotations/` 下的键必须覆盖 run 前**实际存在的全部**该目录文件（至少 1 条，建议全量；示例仅列 1 条，此处只是示例不是上限）；`reviewAnnotationsNewFiles` 必须在场且为空数组（run 期新落盘的 `review-annotations/<stage>.yml` 即判 AC-4 不成立）。
 
 **产出 2 —— `change-requests/CR-2026-070/evidence/pi-source.json`**（schema 逐字 `cr-2026-070-pi-source/v1`；被 `cmd-06` 消费）：
 
@@ -117,7 +119,7 @@ created: 2026-09-18T11:30:00+08:00
   "upstreamUrl": "https://github.com/earendil-works/pi-mono",
   "baseCommit": "d981de1229ef899957bbe968bc8dcda02a21f477",
   "checkoutPath": "<绝对路径，检出根>",
-  "branch": "<检出内分支名>",
+  "branch": "<检出实际形态；本 CR 逐字为 detached@v0.85.1（detached HEAD @ tag v0.85.1，无分支）>",
   "headCommit": "<40hex，检出 HEAD>",
   "changedFiles": [ "packages/coding-agent/src/core/tools/bash.ts", "packages/coding-agent/test/bash-default-timeout.test.ts" ],
   "testFile": "test/bash-default-timeout.test.ts",

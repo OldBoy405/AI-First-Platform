@@ -21,7 +21,7 @@ created: 2026-09-18T11:30:00+08:00
 
 **输入条件**：
 
-- **路线 = R-C、检出已就位**（plan §10）：`checkoutPath = C:\Users\GOBAO\Downloads\AI\pi-mono`，基线 = 上游 tag `v0.85.1` = `d981de1229ef899957bbe968bc8dcda02a21f477`（clone `--depth 1`，工作树 clean）；
+- **路线 = R-C、检出已就位**（plan §10）：`checkoutPath = C:\Users\GOBAO\Downloads\AI\pi-mono`，基线 = 上游 tag `v0.85.1` = `d981de1229ef899957bbe968bc8dcda02a21f477`（clone `--depth 1`；`git branch --show-current` 输出为空 = **detached HEAD**，工作树 clean）；
 - 工具链已实测可用：`npm ci`（2 m 14 s）、`npm --prefix packages/ai run hydrate-model-data`（4.9 s，`packages/ai/src/providers/data/**` 被 .gitignore，缺失则 vitest 无法导入 model catalog）、`npm run build:offline`（9.7 s）；
 - 源码锚点（基线实测）：`packages/coding-agent/src/core/tools/bash.ts` L22 `MAX_TIMEOUT_MS`、L25 `function resolveTimeoutMs(timeout: number | undefined): number | undefined`、L28 非法值错误、L32-33 超上限错误、L38-40 `bashSchema` 的 `timeout` 描述、L83-84 解析调用、L110/L116-118 `killProcessTree` + `setTimeout`、L136 超时信号 `` `timeout:${timeout}` ``、L355 工具层文本拼接；
 - 既有测试面：`packages/coding-agent/test/tools.test.ts` 的 `describe('bash tool')`（含 `should respect timeout` 与 stub `operations` 的文本回放用例）；该文件在本机基线为 **77 passed / 4 failed**（4 项均为 Windows 环境类，与本 TASK 无关）⇒ 本 TASK 的用例**必须**落在新增文件内。
@@ -75,7 +75,8 @@ created: 2026-09-18T11:30:00+08:00
    - 未传 timeout 时本地执行路径**不挂任何计时器**（基线捕获集为空 ⇒ 缺陷本体）；显式 `timeout: 300` 时调度 `300000` ms 计时器，触达后抛 `Command timed out after 300 seconds`；
    - 因此用例以「捕获解析点调度的计时器并触达」为等价于「假时钟推进 300 秒」的观测动作，可直接复用该可行形态（`vi.spyOn(globalThis, 'setTimeout')` 记录 `{delay, fn}` 并保留真实调度 → 轮询到 `delay === 300000` → 手动触达 `fn()` → 断言 rejection 文本）；也可改用 `vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })` + `advanceTimersByTimeAsync(300_000)`，但必须断言**同样两条可观察事实**（调度 300000 ms + 文本 `Command timed out after 300 seconds`）；
    - 长任务子进程用 `process.execPath -e "setInterval(() => {}, 1000)"`（不真实等待 300 秒，`dep-1` §5 补充判定口径）。
-6. **提交**：在检出内建分支（例如 `git switch -c cr-2026-070-bash-default-timeout`）并以 `[cr] ` 前缀提交（controlled-shell 白名单的 commit shape；检出非 CR 仓，不进 checkpoint 面，DEC-3）。
+   - **夹具必须自带兜底清理（plan R-10）**：长任务夹具及其后代 PID 必须在 `finally`／`afterEach` 内做**有界 kill**（先回收后代再回收父；`tasklist`／`ps` 有界轮询确认不存在，轮询上界 ≤10 s），且**独立于**被测 `killProcessTree()` 是否生效——红灯迭代、断言失败与异常路径上不得把该进程留在原地（残留会使作者 run 的进程树／管道不闭合 ⇒ run 不结算、后续委派排队，本 CR 来源 Issue AIFI-33 已有同类实测）。
+6. **提交（落点在既有 detached HEAD 上，本 TASK 不建分支）**：受控 git 入口**不提供任何可创建分支的形态**——`skills/shared/controlled-shell/rules.json` 的 `branch` 只有 `^(-d|-D) \S+$` 与 `^--show-current$`、`checkout` 形态 `^[^-]\S*$`（禁一切 flag，`-b` 不可用）、`-c`／`-C` 在 `forbiddenFlags` 内，且 `crctl git switch` 实测返回 `FORBIDDEN_SUBCOMMAND`；同时 AGENTS.md 与本阶段 Agent 合同禁止原生 git，Pi 检出又不属 CR worktree 集合（DEC-3）⇒ 无受控路径可建分支（评审 B-1）。因此：在检出现有 detached HEAD（tag `v0.85.1` = `d981de12…`）上**直接提交**——`crctl git add <两个文件路径> --cwd <checkoutPath>` 与 `crctl git commit -m '[cr] …' --cwd <checkoutPath>`（两者均为白名单 shape；detached HEAD 上的 commit 合法，提交后 HEAD 前移、不产生分支），提交形态记入 `pi-source.json#branch` = `detached@v0.85.1`（取值口径见 TASK-04 §3.5／§6）。检出非 CR 仓，不进 checkpoint 面（DEC-3）。
 
 ## 4. 验收条件
 
@@ -108,7 +109,7 @@ node <checkout>/node_modules/vitest/vitest.mjs run test/bash-default-timeout.tes
 
 ## 5. 完成标志
 
-1. 检出内分支存在且含上述两个文件的提交（`[cr] ` 前缀），工作树 clean（除 gitignored 的 `node_modules`／`dist`／`providers/data`）；
+1. 检出内**存在含上述两个文件的 `[cr] ` 前缀提交**（提交直接在既有 detached HEAD（tag `v0.85.1` = `d981de12…`）上产生，**不建分支**），检出 HEAD = 该提交，工作树 clean（除 gitignored 的 `node_modules`／`dist`／`providers/data`）；
 2. 验收条件 1～9 全部满足（1～5 由本 TASK 实跑，`Tests 5 passed`；6～9 逐条核对）；
 3. `change-requests/CR-2026-070/evidence/pi-vitest.log` 落盘（用例执行原文：命令、退出码、`--- stdout ---` 段含 5 条断言名、`--- stderr ---` 段），供 TASK-04 记入 `pi-source.json#testLogSha256`；
 4. 本 TASK 已在 `tasks/_index.yml` 登记 `done`（工程纪律 8）；
@@ -136,6 +137,8 @@ const bashSchema = Type.Object({ command: Type.String(), timeout: Type.Optional(
 | `createLocalShellOperations(...)` 内的本地执行路径 | `const timeoutMs = resolveTimeoutMs(timeout);` → `if (timeoutMs !== undefined) { timeoutHandle = setTimeout(() => { timedOut = true; if (child.pid) killProcessTree(child.pid); }, timeoutMs); }`（既有调用点，本 TASK 不改其结构） |
 | `createBashToolDefinition(cwd, options?)` → `createShellToolDefinition(cwd, bashToolConfig, options)`，`parameters: bashSchema` | 测试经 `createBashTool(cwd)` / `createBashToolDefinition(cwd)` 取证（S-6 取舍：不直接 import 私有函数） |
 | 工具层错误文本拼接（`startsWith("timeout:")` 分支） | 逐字不变：`Command timed out after <秒数> seconds` |
+
+**AC-6 的 daemon PID 面子项（显式登记，非静默漏项）**：SDD §6.2 的 AC-6 行把「Multica daemon PID 前后一致」列为可观测结果，但本 TASK 的验收面是 Pi 内置 bash 工具进程（`createBashTool(cwd)` 的本地执行路径），**不启动、不接触任何 daemon**（daemon 与 `bash.ts` 无调用关系）。故该子项在本 TASK 内**不适用（N/A，有据）**：判据落在父/后代 PID 不存在与既有 `killProcessTree(child.pid)` 路径（§4 用例 2，`cmd-06` 活体复跑），daemon 生命周期稳定性由本 CR「不启停／不重启任何共享服务」的边界保证，不为其新增观测设施（I5）。
 | PowerShell 内置工具 | 经同一 `resolveTimeoutMs` 与同一 `bashSchema` 共享默认值（DEC-2 的显式后果，`scope_in` 第 5 项；**不**为它另造验收面） |
 
 **不消费**：`BashOperations` 接口与自定义 `operations` 路径（B-2、Z-3）——默认值只在**内置本地执行路径**内解析，传给 `ops.exec` 的仍是工具原始入参。

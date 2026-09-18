@@ -42,7 +42,7 @@ created: 2026-09-18T11:30:00+08:00
    Treat that list as the authoritative entry point for skill selection: the runtime has already discovered those skills for this task, so use the discovered copy directly, before any repository exploration. Do not hunt for a skill on the filesystem — no recursive search for `SKILL.md` (or its shell equivalents) and no reads under guessed runtime-private directories; per-provider paths are deliberately not listed here. If a skill this task expects is not in the list, stop the current node and report the missing capability (skill name, runtime, task) through the existing technical-abort path: do not produce a business verdict, and do not write any CR state or ledger.
    ```
 
-2. **常量与落点**：常量名固定为 `skillsRoutingRule`（包内可见，**不导出**）；插入位置 = `writeSkills` 内既有输出的**最后**（段头 → 列表 → 平台召回提示 → 规则文本），理由见 SDD §3.2（召回提示的指代对象是其紧邻上方的列表）。实现形态为「一个常量 + 一次 `b.WriteString`」，**不新增分支、不新增字段、不新增解析器**。
+2. **常量与落点**：常量名固定为 `skillsRoutingRule`（包内可见，**不导出**）；插入位置 = `writeSkills` 内既有输出的**最后**（段头 → 列表 → 平台召回提示 → 规则文本），理由见 SDD §3.2（召回提示的指代对象是其紧邻上方的列表）。实现形态为「一个常量 + 一次 `b.WriteString`」，**不新增分支、不新增字段、不新增解析器**。**位置窗口（`cmd-03` 的负向断言面）**：常量声明与 `b.WriteString` 调用都必须落在 `writeSkills` 邻近（`cmd-03` 的规则窗口以锚短语为圆心取 ±1200／2400 字符切片，窗口会连带覆盖相邻代码与注释）——把常量声明放在 `writeSkills` 紧邻上方、`WriteString` 放在函数体末尾，即可让该窗口恰好覆盖规则文本与其紧邻上下文，使负向断言（无 Provider 私有面字面量）的覆盖语义固定可预测；不得把常量声明放到文件远端或另一文件。
 3. **空集早退不动**：`if len(skills) == 0 { return }` 保持原位与原语义（B-1：零 Skill 任务整段不注入，规则随之不出现）。
 4. **测试增项**（SDD §6.4，全部为「增项」，不改既有断言语义）：
    - `strings.Count(brief, skillsRoutingRule) == 1`（单点性）；
@@ -56,15 +56,15 @@ created: 2026-09-18T11:30:00+08:00
 
 | # | 验收步骤（可执行） | 期望 |
 |---|---|---|
-| 1 | `node <TOOLS>/skills/shared/crctl/scripts/crctl.mjs git diff --name-only 59b47993810fabd12fcc393c2fa2e46611f9530d --cwd <multica worktree>` | 恰好两个路径：`runtime_config_sections.go`、`runtime_config_test.go` |
+| 1 | `node <TOOLS>/skills/shared/crctl/scripts/crctl.mjs git diff --name-only 59b47993810fabd12fcc393c2fa2e46611f9530d --cwd <multica worktree>` | **判据时点 = TASK-01 完成时点（此时 TASK-03 未落地）**：恰好两个路径：`runtime_config_sections.go`、`runtime_config_test.go`。TASK-03 落地后同一基线上的 diff 变为三个路径（多 `CUSTOM.md`）——该三路径形态是 **TASK-03 完成时点**的判据（TASK-03 §4 第 3 条），不得在本 TASK 落地后把三路径形态判成回归 |
 | 2 | 在 multica worktree 的 `server/` 下 `go test ./internal/daemon/execenv/ -count=1 -v -run TestBriefSkills` | exit 0；stdout 含 `--- PASS:` 与 7 个 provider 子用例（不得出现 `no tests to run`） |
-| 3 | 在 multica worktree 根执行 `cmd-03` 的表内字面命令（plan §6.2） | exit 0：落点面锚短语命中数 = 1；零复制面（`server/internal/**` 落点两文件之外 + `cr-prompts-revised/**`，实测扫描面 1492 文件）命中数 = 0；测试文件引用 `skillsRoutingRule` 且**未**内联锚短语；规则窗口无 Provider 私有面字面量 |
+| 3 | 在 multica worktree 根执行 `cmd-03` 的表内字面命令（plan §6.2） | **计划内红点（分批时点）**：`cmd-03` 的 failures **恰为 1**，且唯一失败项为 `FAIL CUSTOM.md 缺 CR-2026-070 台账行`——该行是 TASK-03 的交付物（`depends-on: [TASK-01, TASK-02]`），故本 TASK **不**要求 `cmd-03` exit 0。除该项外，落点面锚短语命中数 = 1；零复制面（`server/internal/**` 落点两文件之外 + `cr-prompts-revised/**`，实测扫描面 1492 文件）命中数 = 0；测试文件引用 `skillsRoutingRule` 且**未**内联锚短语；规则窗口无 Provider 私有面字面量（落点／零复制／测试三面在本 TASK 落盘后单独转绿；台账面由 TASK-03 收口，`cmd-03` 达到 failures = 0 的时点是 TASK-03 完成时点，见 plan §6.3 的 `cmd-03` 行） |
 | 4 | 手动核对既有断言语义未被改写：`git diff` 中 `runtime_config_test.go` 的改动**只含新增行**（`+` 行），既有断言行不得出现 `-` 行 | 既有形状钉子（slug 索引、无描述、无 Provider 分支、空集不注入）逐字保留 |
 
 ## 5. 完成标志
 
 1. 上述两条文件已落盘并在 multica worktree 内以 `[cr] ` 前缀提交（工作树 clean，`crctl workspace inspect CR-2026-070` 中 `multica` 仍 `classification=healthy`）；
-2. 验收条件 1～4 全部满足（其中 3 由作者 run 内实跑留证）；
+2. 验收条件 1～4 全部满足（其中 3 由作者 run 内实跑留证：`cmd-03` failures **恰 1**、唯一项为 `CUSTOM.md` 台账行；该残留项**由 TASK-03 收口**，本 TASK 不为其提前落地、也不在标 done 时留未判红项——本 TASK 的完成判据是「failures 恰 1 且失败项归属 TASK-03」）；
 3. 本 TASK 已在 `tasks/_index.yml` 登记 `done`（`crctl task done CR-2026-070 --task CR-2026-070-TASK-01`，工程纪律 8）；
 4. **完成边界**：仅到「实现已落盘 + 关键测试命令可复跑」为止；**不**包含 `review-code`／`merge`／回写（CR-2026-057 FR-10）。
 

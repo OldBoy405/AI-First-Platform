@@ -47,7 +47,7 @@ created: 2026-09-18T11:30:00+08:00
 |---|---|---|
 | 1 | 在 multica worktree 根执行 `cmd-03` 的表内字面命令（plan §6.2） | exit 0：其中 `CUSTOM.md` 断言要求文本含 `CR-2026-070` 与 `runtime_config_sections.go`，且 `CUSTOM.md` 读长 ≥ 5000 字符 |
 | 2 | 逐行核对台账行 | 六列齐备；行号为 `96`（不重复、不跳号）；「原因 / 追溯」含 `CR-2026-070` 与 `TASK-01`；「合并注意」含「验证：」+ 上述最小命令 |
-| 3 | `git diff --name-only 59b47993810fabd12fcc393c2fa2e46611f9530d`（multica worktree） | 恰好三个路径：`runtime_config_sections.go`、`runtime_config_test.go`、`CUSTOM.md`（与 plan §6.2 `cmd-04` 的白名单双向相等判据一致） |
+| 3 | `git diff --name-only 59b47993810fabd12fcc393c2fa2e46611f9530d`（multica worktree） | **判据时点 = TASK-03 完成时点（此时 TASK-01 已落地）**：恰好三个路径：`runtime_config_sections.go`、`runtime_config_test.go`、`CUSTOM.md`（与 plan §6.2 `cmd-04` 的白名单双向相等判据一致）。注：两路径形态是 **TASK-01 完成时点**的判据（TASK-01 §4 第 1 条），本 TASK 落地后必然不再成立——不得据此判 TASK-01 回归 |
 
 ## 5. 完成标志
 
