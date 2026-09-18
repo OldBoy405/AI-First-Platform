@@ -62,7 +62,7 @@ created: 2026-09-18T11:30:00+08:00
 
 1. 两份证据文件落盘并在 KB worktree 内提交（`[cr] ` 前缀，可与其它 TASK 分批）；
 2. 验收条件 1～4 全部满足（3／4 的负向自检结果记入本 TASK 的实施说明或 `test-report` 的语境，不新增文件）；
-3. 四张 TASK 的 `crctl task done` 全部登记（工程纪律 8：做完一个标一个，不积压到回写期）；
+3. 本 TASK 已在 `tasks/_index.yml` 登记 `done`（`crctl task done CR-2026-070 --task CR-2026-070-TASK-04`，工程纪律 8：做完一个标一个，不积压到回写期）；
 4. **完成边界**：到「证据文件落盘 + cmd-05／cmd-06 作者 run 内 exit 0」为止；**不**包含 `review-code`／`merge`／`writeback`／`archive` 的完成（CR-2026-057 FR-10：`crctl task done` 仅允许 `status=developing`；merge/审批的审计事实以 `approval.yml`、`merge-commits.yml`、checkpoint 元数据为准）。
 
 ## 6. 接口契约

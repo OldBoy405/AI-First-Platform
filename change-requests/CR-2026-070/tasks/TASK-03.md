@@ -5,7 +5,7 @@ cr-ref: CR-2026-070
 plan-ref: "change-requests/CR-2026-070/plan.md"
 sdd-ref: "change-requests/CR-2026-070/sdd.md"
 target-version: 0.43
-title: CUSTOM.md #96 台账行（原因追溯含 CR-2026-070 与 TASK-01／TASK-02）
+title: "CUSTOM.md#96 台账行（原因追溯含 CR-2026-070 与 TASK-01／TASK-02）"
 slug: multica-custom-ledger-row
 status: pending
 estimate: 2h
