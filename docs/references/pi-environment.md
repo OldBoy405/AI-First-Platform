@@ -44,6 +44,12 @@
 - **装载面**：扩展有三个落点 —— `settings.json#extensions`（绝对路径）、**发现目录** `~/.pi/agent/extensions/`（自动加载其中的 `.ts`/`.js`，无需写 settings）、以及 **`settings.json#packages`**（npm / git 包）。2026-09-20 起两个自研扩展都改为**经 git 包**提供，发现目录已空。注意 `pi list` **只列 `packages`、不列散装扩展**，所以散装扩展“在不在”只能靠文件存在 + 自检，不能靠 `pi list`。
 - **不要双挂（已实测，非推测）**：pi 的去重按身份 —— git 包认「仓库 URL（不含 ref）」、本地路径认「解析后的绝对路径」，二者是**两个身份**。2026-09-20 用可区分加载标记实测：两类扩展在两份并存时都会加载。**代价按扩展不同** —— `pi-shell-timeout` **幂等**（第二次见 `timeout` 已设即跳过，无害）；`ponytail-always` **不幂等**，它的 handler 会给拿到的 `systemPrompt` 追加技能全文，两份都加载就注入两次、**每轮多付约 2K tokens**。因此两个散文件均已删除，备份同在 `C:\Users\GOBAO\fr2-artifacts\`：`pi-shell-timeout.loose-backup.ts`（7064 B，sha256 `301f0541…`）、`ponytail-always.loose-backup.ts`（7846 B，sha256 `d3b50efb…`），只保留 git 包这一份。
 - 本地路径形态的 `pi install` 实测（2026-09-20）：写入 `settings.json#packages`（**不是 `extensions`**）并转成相对路径；`pi remove` 能清干净（内容逐条复原，仅重排 JSON 排版）。
+- **改扩展的正确流程（避免双挂与「改了没生效」）**：两个自研扩展现在**只**由 git 包提供，所以改动必须走「仓 → tag → 装」，不能再丢散文件试：
+  1. 在 `C:\Users\GOBAO\Downloads\AI\pi-extensions` 改源码，跑 `npm run selfcheck:all`（两个自检都要绿）；
+  2. 提交并打**新 tag**（`git tag -a vX.Y.Z`）后再 `git push origin main && git push origin vX.Y.Z` —— tag 是安装身份的钉点，**不推 tag 就装不到**；
+  3. `pi install git:github.com/OldBoy405/pi-extensions@vX.Y.Z` 把本机 ref 移过去（pi 会重置/清理 clone 再 `npm install`）。
+  验证：`pi list` 看 ref 是否已变，再跑一次**装上的副本**自检；改动的生效时点是**下一个 pi 进程**（扩展在启动时加载，当前 run 不受影响）。
+  **两个反例**：① 为了试改动把文件丢回 `~/.pi/agent/extensions/` —— 那是另一个身份，会与包同时加载；`ponytail-always` 因此双注入（每轮约 +2K tokens）。② 只 `git push` 不打 tag、或打了 tag 不 `pi install` —— 本机与远端都不会变，而 `pi list` 会继续显示旧 ref，看起来像「改了没生效」。
 
 ## 4. MCP 服务器
 
