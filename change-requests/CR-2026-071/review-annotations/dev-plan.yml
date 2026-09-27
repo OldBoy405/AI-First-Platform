@@ -1,11 +1,11 @@
 cr-id: CR-2026-071
 review-type: dev-plan
 reviewer: "OldBoy405"
-reviewed-at: "2026-09-27T21:53:04+08:00"
+reviewed-at: "2026-09-27T22:15:01+08:00"
 verdict: block
 repair-target: write-dev-plan
 blockers:
-  - "部分解决：B-02 新增 cmd-11～cmd-13 将文件账本差异锚定本 CR 分支与 origin/master，范围覆盖已批准 AC-6/§9；但 plan.md §5/§6、TASK-04 §4、TASK-05 §3/§4 将 cmd-11 和 cmd-13 的通过条件写为 stdout 为空，实际按表行经受控 crctl git diff --stat 运行，在零差异时 stdout 仍为 {ok:true,exit:0}。本轮两条命令均 exit=0 且输出该 JSON；因此承诺的 cmd-08～cmd-13 全绿和 AC-6 合取在零差异时不可满足。请在证据表及 TASK 验收明确区分 diff 正文与 crctl 的成功回执（不能简单忽略所有输出），补可执行的零差异判定和非空阳性对照，并保持双向引用。"
+  - "部分解决：B-02 plan.md §6 与 TASK-04/05 已将 cmd-11/cmd-13 的零差异判据改为 diff 正文为空且回执绿；但 plan.md §6 证据命令表 cmd-11～cmd-13 的 args 未携带 --workspace/--cwd，TASK-05 §3 又要求照抄表行。在本轮实际 CRCTL_WORKSPACE 指向主工作区时，即使进程 cwd 为 KB CR worktree，原样运行 cmd-11～cmd-13 仍落到主仓 master，三者均只有 ok=true/exit=0 回执；同入口无路径限定的阳性对照也为空，无法满足 §6 机械判定。显式 --workspace 指向 KB CR worktree 才得到 17 文件阳性对照及本 CR 的 _backlog.yml 正文，但该参数只在委派评论/实测中，不在表行算法内。请把 KB CR worktree 的受控 Git 选址写入 cmd-11～cmd-13 的可执行 args 及阳性对照程序、TASK-04/05 回指，按表原样在 CRCTL_WORKSPACE 指向主仓的环境重测；不能依赖评论补参数或静默改写命令。"
 dimensions:
   sdd-to-plan: "block"
   plan-to-tasks: "block"
@@ -17,7 +17,7 @@ dimensions:
   risk-and-rollback: "pass"
   reviewer-model: "OpenAI/gpt-6-sol via pi quality-reviewer-agent"
 suggestions:
-  - "已解决：B-04 在线故障恢复已按前轮关闭，本轮 plan/TASK 未修改该部分。"
+  - "已解决：B-04 线上故障恢复沿用前轮已关闭方案，本轮未修改。"
 review-loop:
-  current-attempt: 1
-subject-sha256: a7dd522eebaeb22335765e7daa87e3373518cb47d8f25517322e38415fd5cc9f
+  current-attempt: 2
+subject-sha256: eb7cf86c8a97784c79fc9d614c415390d44ed783ef5ff669e0dac936ff1a84dd
