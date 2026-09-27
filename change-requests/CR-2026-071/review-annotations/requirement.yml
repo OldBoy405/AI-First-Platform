@@ -1,0 +1,18 @@
+cr-id: CR-2026-071
+review-type: requirement
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-27T13:26:17+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  structure: "概述、用户故事、FR、AC 齐全；FR-1 至 FR-4 与 AC-1 至 AC-6 对应。"
+  testability: "queued/coalesced/deferred、blocked 与 reason_code、目标缺失、仅人类 mention、线上一致性及 checkpoint 回修路径均有可观察验收点。"
+  scope: "P0/P1 与 Ray 新增 checkpoint 需求边界清楚；排除 AIFI-35 账本和其他 checkpoint 回滚。"
+  planning: "N/A：来源是 AIFI-36 与 Ray 线程，非规划报告。"
+  dependencies: "识别 AIFI-35 历史回执、CR-2026-066 节点删除、平台 admission 枚举和四 Agent 线上部署依赖。"
+  contract: "N/A：无新 HTTP、CLI 或 Skill 公共调用接口；现有 checkpoint 调用、输入、失败恢复、门禁和验收观察点在 FR-4 与 AC-5 中列明。"
+suggestions: []
+review-loop:
+  current-attempt: 1
+subject-file: change-requests/CR-2026-071/prd.md
+subject-sha256: ce27f44b29e7ad0ed18825f41a90d700e48315080e8d7e0534d46fac094305f8
