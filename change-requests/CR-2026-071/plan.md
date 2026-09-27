@@ -6,7 +6,7 @@ sdd-ref: "change-requests/CR-2026-071/sdd.md"
 target-version: 0.44
 status: draft
 created: 2026-09-27T16:37:21+08:00
-updated: 2026-09-27T20:05:00+08:00
+updated: 2026-09-27T21:45:00+08:00
 ---
 
 # CR-2026-071 开发计划
@@ -19,7 +19,7 @@ updated: 2026-09-27T20:05:00+08:00
 - **M1 — multica 判定修复与合同回归编写（0.5 人天）**：§4.1 四份提示词全文替换 + `delegation-contract.md` 新建 + §4.3 回归脚本三组断言；合同↔四份提示词↔平台枚举自洽子集绿灯（bak 集合不断言全绿，见 §2 B-01 说明）。对应 TASK-01、TASK-03。
 - **M2 — tools checkpoint 节点恢复（0.5 人天）**：§4.4 `...0003` 节点恢复 + `_index.yml` nodes 5→6 + `pipeline-structure.test.mjs` 断言同步；结构测试全绿。对应 TASK-02。
 - **M3 — bak 审计与线上同步（0.5 人天）**：§4.1 bak 审计（保留/排除理由落盘）+ §4.2 四个线上 Agent 同源同步 + 逐个 `agent get` 核验；以 TASK-03 合同源**文本**为输入（不以其 cmd-01 全绿为前置）；bak 修正完成后 cmd-01 含 bak 集合全绿为本里程碑完成门禁。对应 TASK-04。
-- **M4 — 全量验证与交付记录（0.5 人天）**：cmd-01～cmd-10 全绿 + 线上核验原文留存 + AIFI-35 三证据零变化核验（cmd-08/cmd-09/cmd-10 合取） + 交付记录。发布（`crctl checkpoint` / `push-progress`）由 `review-dev-plan` PASS 分支承接，不在本里程碑及 TASK-05 完成条件内（B-03）。对应 TASK-05。
+- **M4 — 全量验证与交付记录（0.5 人天）**：cmd-01～cmd-13 全绿 + 线上核验原文留存 + AIFI-35 六证据零变化核验（Issue 三证据 cmd-08/cmd-09/cmd-10 ∧ 文件账本三证据 cmd-11/cmd-12/cmd-13，合取） + 交付记录。发布（`crctl checkpoint` / `push-progress`）由 `review-dev-plan` PASS 分支承接，不在本里程碑及 TASK-05 完成条件内（B-03）。对应 TASK-05。
 
 估算总工时：2 人天。顺序 M1 → M2 → M3 → M4；M1 与 M2 无代码依赖可并行，但同属一人执行故串行。
 
@@ -61,7 +61,7 @@ B-01（首评 BLOCK 回修）：旧依赖把 TASK-03 完成条件写成"cmd-01 �
 
 ## 5. 验收与发布策略
 
-发布前 checklist：cmd-01～cmd-10 全绿（判据见下）；四份 `agent get` 成品与合同逐字一致（cmd-04～cmd-07 输出留存交付记录）；AIFI-35 零触发（cmd-08 新根数零新增 + cmd-09 逐线程尾零新增 verdict/零新 reviewer run + cmd-10 Issue 对象与基线一致，三者合取，任一变化即失败）；feature-flag 不适用（提示词与 Pipeline JSON 即时生效，无灰度开关）。范围声明：本机仅检出 CR-2026-071 三仓 worktree，未检出 CR-2026-001 的 git 工作区，故 AIFI-35 零改动结论的作用域为 Multica Issue 可观测面（评论/状态），不得声称为 CR-2026-001 的 `cr.md`/`review-annotations`/账本文件 SHA 级零 diff；基线捕获与比对程序见 §6 证据命令表注与 TASK-05 §3。
+发布前 checklist：cmd-01～cmd-13 全绿（判据见下）；四份 `agent get` 成品与合同逐字一致（cmd-04～cmd-07 输出留存交付记录）；AIFI-35 零触发零改动六证据合取——Issue 可观测面 cmd-08（新根零新增）∧ cmd-09（逐线程尾零新增 verdict/零新 reviewer run）∧ cmd-10（Issue 对象与基线一致），文件账本面 cmd-11（CR-2026-001 目录零文件变更）∧ cmd-12（`_backlog.yml` 无 CR-2026-001 行变更）∧ cmd-13（`_history.yml`/`_index.yml` 零变更），任一变化即失败；feature-flag 不适用（提示词与 Pipeline JSON 即时生效，无灰度开关）。范围声明（B-02 cycle-2 回修）：三仓远端均无 `requirement/CR-2026-001` live 分支（本轮 `git ls-remote --heads origin` 实测：KB 仅 master + CR-2026-071；multica 仅 main + CR-2026-071；tools 仅 main + agent 分支 + CR-2026-071），故无 CR-2026-001 live 工作区可比对；文件账本零 diff 锚定为"本 CR 分支 vs trunk 合并基点"（KB 以 `merge-base origin/master HEAD` 为 BASE，实测 `9ce4cde5…`），语义是"本 CR 未改动 CR-2026-001 文件与账本条目"——正是 SDD AC-6/§9 zero_diff 对本 CR 的要求，不是"CR-2026-001 自身历史无变化"；multica/tools 两仓无 CR-2026-001 路径，其改动集由各 TASK 文件侧范围核验（本 §6 标准）锁定为 SDD §4 声明集，不另立无路径可锚定的假证据命令。基线捕获与比对程序见 §6 证据命令表注与 TASK-05 §3。
 
 B-03（首评 BLOCK 回修）：`crctl checkpoint`（`push-progress` 深原语）发布是 `review-dev-plan` PASS 分支的职责，不属于 developing 内 TASK 完成条件。TASK-05（含本 checklist）的完成边界是 developing 内可被 `crctl task done` 登记的事件（验证输出留存 + 交付记录落盘），**不含** checkpoint/发布/merge/审批；checkpoint 审计事实以 checkpoint 元数据为准，不进 TASK ledger。
 
@@ -98,8 +98,11 @@ B-03（首评 BLOCK 回修）：`crctl checkpoint`（`push-progress` 深原语�
 | cmd-08 | multica | . | multica | ["issue", "comment", "list", "01a0ddf8-ea5a-7b11-9da5-8d753d34d5f1", "--roots-only", "--summary", "--output", "json"] | 60 |
 | cmd-09 | multica | . | multica | ["issue", "comment", "list", "01a0ddf8-ea5a-7b11-9da5-8d753d34d5f1", "--thread", "<root-id>", "--tail", "30", "--output", "json"] | 60 |
 | cmd-10 | multica | . | multica | ["issue", "get", "01a0ddf8-ea5a-7b11-9da5-8d753d34d5f1", "--output", "json"] | 60 |
+| cmd-11 | ai-first-platform-docs | . | node | ["C:/Users/GOBAO/Downloads/AI/AI First Platform/.rayai-worktrees/tools/requirement/CR-2026-071/skills/shared/crctl/scripts/crctl.mjs", "git", "diff", "--stat", "origin/master", "HEAD", "--", "change-requests/CR-2026-001"] | 60 |
+| cmd-12 | ai-first-platform-docs | . | node | ["C:/Users/GOBAO/Downloads/AI/AI First Platform/.rayai-worktrees/tools/requirement/CR-2026-071/skills/shared/crctl/scripts/crctl.mjs", "git", "diff", "--unified=3", "origin/master", "HEAD", "--", "change-requests/_backlog.yml"] | 60 |
+| cmd-13 | ai-first-platform-docs | . | node | ["C:/Users/GOBAO/Downloads/AI/AI First Platform/.rayai-worktrees/tools/requirement/CR-2026-071/skills/shared/crctl/scripts/crctl.mjs", "git", "diff", "--stat", "origin/master", "HEAD", "--", "change-requests/_history.yml", "change-requests/_index.yml"] | 60 |
 
-命令算法唯一事实源为本表行；`cwd` 为对应 repo CR worktree 内相对路径（`.` 即 worktree 根）；`executable` 直接可 spawn，无 shell 内建/管道/重定向；不涉及 Git 写操作，不改 `rules.json`。cmd-04～cmd-10 为工作区作用域只读 CLI（`multica` 在 PATH），`cwd` 仅为 spawn 占位、不参与判定，判定以 stdout JSON 为准：cmd-04～cmd-07 判据为 instructions 含规范三元组、无 `enqueued` 成功语义、无 `target_unavailable` status 语义（详见 TASK-04 §4）；cmd-08 判据窄化为**新根线程数零新增**（根 id 集合与基线一致；本命令看不见既有线程内新增回复，不得单独用作 verdict 证据——B-02 复评）；cmd-09 为模板命令，对 cmd-08 输出的**每一个**根 id 各执行一次，判据为各线程尾 30 条内无新增评论 id、无 reviewer verdict（PASS/BLOCK/TECHNICAL_ABORT）评论、无新的 AIFI-35 reviewer run（执行程序与基线比对见 TASK-05 §3）；cmd-10 判据窄化为 Issue 可观测面（`status`/`revision`/`updated_at` 与基线一致），不得单独声称文件级零 diff（B-02 复评）。AC-6 通过条件为 cmd-08 ∧ cmd-09 ∧ cmd-10 三者合取。
+命令算法唯一事实源为本表行；`cwd` 为对应 repo CR worktree 内相对路径（`.` 即 worktree 根）；`executable` 直接可 spawn，无 shell 内建/管道/重定向；不涉及 Git 写操作，不改 `rules.json`。cmd-04～cmd-10 为工作区作用域只读 CLI（`multica` 在 PATH），`cwd` 仅为 spawn 占位、不参与判定，判定以 stdout JSON 为准：cmd-04～cmd-07 判据为 instructions 含规范三元组、无 `enqueued` 成功语义、无 `target_unavailable` status 语义（详见 TASK-04 §4）；cmd-08 判据窄化为**新根线程数零新增**（根 id 集合与基线一致；本命令看不见既有线程内新增回复，不得单独用作 verdict 证据——B-02 复评）；cmd-09 为模板命令，对 cmd-08 输出的**每一个**根 id 各执行一次，判据为各线程尾 30 条内无新增评论 id、无 reviewer verdict（PASS/BLOCK/TECHNICAL_ABORT）评论、无新的 AIFI-35 reviewer run（执行程序与基线比对见 TASK-05 §3）；cmd-10 判据窄化为 Issue 可观测面（`status`/`revision`/`updated_at` 与基线一致），不得单独声称文件级零 diff（B-02 复评）。cmd-11～cmd-13 为 B-02 cycle-2 回修新增的文件账本面证据（受控 `crctl git` 只读子命令，均经白名单实测可用；`args[0]` 为 tools CR worktree 内 `crctl.mjs` 绝对路径，属本 CR pipeline resource，本轮已验证可执行）：cmd-11 判据为 stdout 为空（`change-requests/CR-2026-001` 目录零文件变更）；cmd-12 判据为统一 diff 输出中无 `CR-2026-001` 字符串（`_backlog.yml` 变更仅限本 CR 自身条目行，实测仅 `prd-path` 与本 CR `latest-checkpoint`）；cmd-13 判据为 stdout 为空（`_history.yml`/`_index.yml` 零变更）。空输出判据须配阳性对照：同次 `diff --stat origin/master HEAD`（无路径限定）输出非空且文件集仅含 CR-2026-071 自身路径与 `_backlog.yml` 本 CR 条目（防错路径假空）；锚定 `origin/master` 为 KB trunk（`ls-remote` 实测），`HEAD` 为本 CR 分支 tip，均为符号引用故执行期有效——TASK-05 启动时记录 `rev-parse origin/master` 与 `rev-parse HEAD` 作审计基线，结束复测，若 trunk 前移（两值变化）如实记录并以复测时 trunk 为准，不得静默。AC-6 通过条件为 cmd-08 ∧ cmd-09 ∧ cmd-10 ∧ cmd-11 ∧ cmd-12 ∧ cmd-13 六者合取。
 
 文件侧范围核验标准（各 TASK §4 统一引用，B-02 复评）：一律经受控 `crctl git` 只读子命令（禁止原生 git），三步可复验——(a) TASK 启动时 `crctl git rev-parse HEAD --cwd <worktree>` 记录 BASE（40 位）；(b) TASK 完成后 `crctl git log --oneline -5 --cwd <worktree>` 定位本 TASK 提交 C；(c) `crctl git diff --stat BASE C --cwd <worktree>` 列出精确文件集，判据为文件集 == 本 TASK §2 声明集（多一少一即失败），另 `crctl git status --short --cwd <worktree>` 须干净（无未提交夹带）。裸 `diff --stat`（无 BASE）在提交后恒为空，不得用作范围证据，各 TASK §4 已按此模板实例化并双向引用本段。
 
@@ -112,4 +115,4 @@ B-03（首评 BLOCK 回修）：`crctl checkpoint`（`push-progress` 深原语�
 | AC-3 源/bak/合同/回归/线上四份一致 | §4.2 + bak 审计 | CR-2026-071-TASK-04 | cmd-01、cmd-04、cmd-05、cmd-06、cmd-07 |
 | AC-4 回归覆盖与枚举对齐漂移变红 | §4.3 三组断言 | CR-2026-071-TASK-03 | cmd-01（编写与子集自洽归本 TASK；含 bak 全绿的最终门禁在 CR-2026-071-TASK-05 复验） |
 | AC-5 node-2 → checkpoint → review 顺序与回修重发 | §4.4 + _index/结构测试 | CR-2026-071-TASK-02 | cmd-02 |
-| AC-6 AIFI-35 零触发零账本改动、新 CR 未来流程 | §9 zero_diff/scope | CR-2026-071-TASK-05 | cmd-03、cmd-08、cmd-09、cmd-10（cmd-08 新根零新增 ∧ cmd-09 逐线程尾零新增 verdict ∧ cmd-10 Issue 对象一致；作用域为 Issue 可观测面，未来流程由 cmd-02/cmd-03 结构保证，见 TASK-05 §4） |
+| AC-6 AIFI-35 零触发零账本改动、新 CR 未来流程 | §9 zero_diff/scope | CR-2026-071-TASK-05 | cmd-03、cmd-08、cmd-09、cmd-10、cmd-11、cmd-12、cmd-13（cmd-08 新根零新增 ∧ cmd-09 逐线程尾零新增 verdict ∧ cmd-10 Issue 对象一致 ∧ cmd-11 CR-2026-001 目录零文件变更 ∧ cmd-12 `_backlog.yml` 无 CR-2026-001 行变更 ∧ cmd-13 `_history.yml`/`_index.yml` 零变更；Issue 面 + 文件账本面（分支-vs-trunk 合并基点锚定），未来流程由 cmd-02/cmd-03 结构保证，见 TASK-05 §4） |
