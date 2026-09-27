@@ -39,7 +39,7 @@ multica CR worktree（`C:\Users\GOBAO\Downloads\AI\AI First Platform\.rayai-work
 
 1. 上述两个新建文件已落盘；合同源与 TASK-01 四份提示词判定段落逐字一致（`diff` 无差异）。
 2. plan cmd-01 的子集断言绿灯：枚举对齐组 + 场景向量组（7 例 + 2 例否定，含 AIFI-35 回执重放判成功且零 `DELEGATION_FAILED`、零重复委派）+ 无漂移组中四份提示词部分绿灯；无漂移组中 bak 集合部分允许红灯（漂移正由 TASK-04 修复），失败输出已留存并移交，不谎称全绿（B-01：本 TASK 完成条件不含 bak 全绿）。
-3. 经受控入口 `crctl git diff --stat --cwd <multica CR worktree>` 核验本 TASK 仅新增上述两个文件（禁止原生 git；双向引用 plan.md §6 FR-3 行），未触碰提示词正文（那是 TASK-01 的产物）。
+3. 文件侧范围核验按 plan.md §6 文件侧范围核验标准执行（B-02 复评；禁止原生 git；双向引用 plan.md §6 FR-3 行）：启动时 `crctl git rev-parse HEAD --cwd <multica CR worktree>` 记 BASE；完成后 `crctl git log --oneline -5 --cwd <multica CR worktree>` 定位本 TASK 提交 C；`crctl git diff --stat BASE C --cwd <multica CR worktree>` 文件集须恰为上述两个新建文件；`crctl git status --short --cwd <multica CR worktree>` 须干净。未触碰提示词正文（那是 TASK-01 的产物）。
 
 ## 5. 完成标志
 
