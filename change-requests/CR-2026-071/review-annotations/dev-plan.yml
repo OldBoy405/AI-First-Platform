@@ -1,11 +1,11 @@
 cr-id: CR-2026-071
 review-type: dev-plan
 reviewer: "OldBoy405"
-reviewed-at: "2026-09-27T20:21:42+08:00"
+reviewed-at: "2026-09-27T21:53:04+08:00"
 verdict: block
 repair-target: write-dev-plan
 blockers:
-  - "部分解决：B-02 plan.md §6 已用 cmd-08 逐根扫描加 cmd-09 尾读比对覆盖线程内评论，且 TASK-01～05 已补受控 crctl git 的 BASE→C 范围核验；但 plan.md §5/§6 和 TASK-04/05 将 AC-6 限定为 AIFI-35 Issue 评论/状态可观测面，并明确不证明 CR-2026-001 文件级零 diff。这与已审批 sdd.md §6 AC-6 要求 CR 状态/账本零 diff、§9 zero_diff 要求 AIFI-35 全部文件零变更冲突；cmd-08～10 无法观测 cr.md、review-annotations、_backlog.yml，TASK 范围 diff 也只覆盖 CR-2026-071 三仓。须为 AIFI-35/CR-2026-001 的受控只读基线与终态文件及账本差异给出可执行证据、稳定表行和 TASK-05 判据；若无法取得权威工作区，应中止并请求上游提供证据，不能缩窄已审批 AC-6。"
+  - "部分解决：B-02 新增 cmd-11～cmd-13 将文件账本差异锚定本 CR 分支与 origin/master，范围覆盖已批准 AC-6/§9；但 plan.md §5/§6、TASK-04 §4、TASK-05 §3/§4 将 cmd-11 和 cmd-13 的通过条件写为 stdout 为空，实际按表行经受控 crctl git diff --stat 运行，在零差异时 stdout 仍为 {ok:true,exit:0}。本轮两条命令均 exit=0 且输出该 JSON；因此承诺的 cmd-08～cmd-13 全绿和 AC-6 合取在零差异时不可满足。请在证据表及 TASK 验收明确区分 diff 正文与 crctl 的成功回执（不能简单忽略所有输出），补可执行的零差异判定和非空阳性对照，并保持双向引用。"
 dimensions:
   sdd-to-plan: "block"
   plan-to-tasks: "block"
@@ -13,11 +13,11 @@ dimensions:
   dependency-topology: "pass"
   interface-contracts: "pass"
   acceptance-verifiability: "block"
-  scope-and-simplicity: "block"
+  scope-and-simplicity: "pass"
   risk-and-rollback: "pass"
-  reviewer-model: "OpenAI/gpt-6 via pi quality-reviewer-agent"
+  reviewer-model: "OpenAI/gpt-6-sol via pi quality-reviewer-agent"
 suggestions:
-  - "已解决：B-04 plan.md §4 R2 与 TASK-04 §2～§4 已将更新前快照定位为取证，首选经合同正文向前恢复并重验；含 enqueued 的旧快照不得作为安全恢复源，部分更新无法恢复时停用后续委派验证并交 Ray 处置，在线恢复不再依赖文件侧 revert。"
+  - "已解决：B-04 在线故障恢复已按前轮关闭，本轮 plan/TASK 未修改该部分。"
 review-loop:
-  current-attempt: 3
-subject-sha256: 0f6c46a1e4783c8fbff19e8dc3714547d934391c560344ab4bf003de69cb764e
+  current-attempt: 1
+subject-sha256: a7dd522eebaeb22335765e7daa87e3373518cb47d8f25517322e38415fd5cc9f
