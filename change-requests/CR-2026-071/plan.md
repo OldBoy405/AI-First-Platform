@@ -6,7 +6,7 @@ sdd-ref: "change-requests/CR-2026-071/sdd.md"
 target-version: 0.44
 status: draft
 created: 2026-09-27T16:37:21+08:00
-updated: 2026-09-27T16:37:21+08:00
+updated: 2026-09-27T19:50:00+08:00
 ---
 
 # CR-2026-071 开发计划
@@ -16,10 +16,10 @@ updated: 2026-09-27T16:37:21+08:00
 
 ## 1. 交付里程碑
 
-- **M1 — multica 判定修复与合同回归（0.5 人天）**：§4.1 四份提示词全文替换 + `delegation-contract.md` 新建 + §4.3 回归脚本三组断言；`node --test` 全绿。对应 TASK-01、TASK-03。
+- **M1 — multica 判定修复与合同回归编写（0.5 人天）**：§4.1 四份提示词全文替换 + `delegation-contract.md` 新建 + §4.3 回归脚本三组断言；合同↔四份提示词↔平台枚举自洽子集绿灯（bak 集合不断言全绿，见 §2 B-01 说明）。对应 TASK-01、TASK-03。
 - **M2 — tools checkpoint 节点恢复（0.5 人天）**：§4.4 `...0003` 节点恢复 + `_index.yml` nodes 5→6 + `pipeline-structure.test.mjs` 断言同步；结构测试全绿。对应 TASK-02。
-- **M3 — bak 审计与线上同步（0.5 人天）**：§4.1 bak 审计（保留/排除理由落盘）+ §4.2 四个线上 Agent 同源同步 + 逐个 `agent get` 核验。对应 TASK-04。
-- **M4 — 全量验证与交付记录（0.5 人天）**：cmd-01～cmd-03 全绿 + 线上核验原文留存 + AIFI-35 zero_diff 核验 + checkpoint 发布。对应 TASK-05。
+- **M3 — bak 审计与线上同步（0.5 人天）**：§4.1 bak 审计（保留/排除理由落盘）+ §4.2 四个线上 Agent 同源同步 + 逐个 `agent get` 核验；以 TASK-03 合同源**文本**为输入（不以其 cmd-01 全绿为前置）；bak 修正完成后 cmd-01 含 bak 集合全绿为本里程碑完成门禁。对应 TASK-04。
+- **M4 — 全量验证与交付记录（0.5 人天）**：cmd-01～cmd-09 全绿 + 线上核验原文留存 + AIFI-35 双证据零变化核验 + 交付记录。发布（`crctl checkpoint` / `push-progress`）由 `review-dev-plan` PASS 分支承接，不在本里程碑及 TASK-05 完成条件内（B-03）。对应 TASK-05。
 
 估算总工时：2 人天。顺序 M1 → M2 → M3 → M4；M1 与 M2 无代码依赖可并行，但同属一人执行故串行。
 
@@ -27,33 +27,43 @@ updated: 2026-09-27T16:37:21+08:00
 
 ```text
 TASK-01 (multica 四份提示词 §4.1)
-  └─► TASK-03 (合同源 + 回归 §4.3, 依赖 TASK-01 的替换落点)
-        └─► TASK-04 (bak 审计 + 线上同步 §4.1/§4.2, 依赖 TASK-03 的合同全文)
+  ├─► TASK-03 (合同源 + 回归 §4.3, 消费 TASK-01 的替换文本；完成条件为文件落盘 + 自洽子集绿灯，
+  │     bak 集合全绿不是其完成条件，见 B-01)
+  └─► TASK-04 (bak 审计 + 线上同步 §4.1/§4.2, 消费 TASK-01 文本与 TASK-03 合同源文本；
+        不以 TASK-03 的 cmd-01 全绿为前置；本 TASK 修正 bak 后 cmd-01 含 bak 全绿为其完成门禁)
 TASK-02 (tools ...0003 + index + 结构测试 §4.4, 独立可并行)
-  └─► TASK-05 (全量验证 + 交付, 依赖 TASK-03/TASK-04/TASK-02 全部完成)
+  └─► TASK-05 (全量验证 + 交付, 依赖 TASK-03/TASK-04/TASK-02 全部完成；复验 cmd-01～cmd-09 全绿)
 ```
+
+B-01（首评 BLOCK 回修）：旧依赖把 TASK-03 完成条件写成"cmd-01 全绿（含 bak 集合）"而 TASK-04 又依赖 TASK-03 绿灯，但 bak 漂移只能由 TASK-04 修复——死锁。现拆开"合同测试编写"与"最终全绿验证"：全绿门禁落在 TASK-04（含 bak 修正后）与 TASK-05（最终复验），TASK-03 只对自洽子集负责。
 
 跨仓依赖仅在 M4 会合；multica 与 tools 无共享代码依赖（SDD §1）。
 
 ## 3. 资源与分工
 
 - 执行人：dev-agent（设计期与开发期责任）；owner 三角色均为 Ray，仅人工审批与线上指令 owner 确认由 Ray 执行。
-- 工时分配：M1 0.5（含 dep-1～dep-4 取证复核）、M2 0.5（含 dep-5～dep-7 基线复核）、M3 0.5（4 次 `agent update` + 4 次 `agent get`）、M4 0.5（3 条证据命令 + 发布）。
+- 工时分配：M1 0.5（含 dep-1～dep-4 取证复核）、M2 0.5（含 dep-5～dep-7 基线复核）、M3 0.5（更新前快照 4 次 + 4 次 `agent update` + cmd-01/cmd-04～cmd-07 核验）、M4 0.5（9 条证据命令 + 交付记录）。
 - 工具：`crctl checkpoint`（发布）、`node --test`（回归/结构）、`multica agent update/get`（线上同步核验）。
 
 ## 4. 风险与回滚策略
 
-- **R1 平台枚举未来新增 status**：合同回归枚举对齐断言变红。回滚：revert TASK-03 commit（含合同与测试），下游 TASK-04（线上同步）一并回滚；顺序 TASK-04 → TASK-03（逆拓扑）。
-- **R2 线上指令更新部分失败**：某 Agent `agent get` 与合同不一致。回滚：revert TASK-04 commit；不触碰 TASK-01/TASK-03 文件侧（上游保留），仅重做线上同步。
-- **R3 结构测试基线误改**：`pipeline-structure.test.mjs` 断言与 JSON 不一致。回滚：revert TASK-02 commit（节点 + index + 测试同属一个回滚单元）。
-- **R4 bak 排除副本被误部署**：排除理由未留痕。回滚：revert TASK-04 的 bak 部分；下游无消费者，单点 revert 安全。
-- **R5 共享改动回滚牵连**：TASK-03 合同源被 TASK-01/TASK-04 消费，其回滚单元含下游 TASK-04；单点 revert TASK-03 而保留 TASK-04 会造成提示词与合同不一致，故禁止单点回滚，必须连带 TASK-04。
+- **R1 平台枚举未来新增 status**：合同回归枚举对齐断言变红。回滚（文件侧）：经受控入口 `crctl git revert --no-edit <TASK-03 commit>`（禁止原生 git），下游 TASK-04（含线上同步）一并回滚；顺序 TASK-04 线上先回滚（见 R2）→ TASK-04 文件侧 → TASK-03（逆拓扑）。
+- **R2 线上指令更新部分失败**：某 Agent `agent get` 与合同不一致。B-04（首评 BLOCK 回修）：`git revert` 只恢复仓库文件提交，**不能**恢复已 `multica agent update` 的线上运行时 instructions，故线上回滚不用 revert，必须走以下在线回滚步骤：
+  1. 快照前置：TASK-04 更新任一线上 Agent 之前，先 `multica agent get <id> --output json` 取其更新前 instructions 全文，落盘为 `change-requests/CR-2026-071/agent-snapshots/<agent>-before.json`（4 个文件，随 TASK-04 文件侧改动同批受控提交），作为回滚唯一输入。
+  2. 回滚执行：对漂移的 Agent 执行 `multica agent update <id> --instructions <快照全文>` 恢复旧判定段落，再 `multica agent get <id> --output json` 重验（须无 `enqueued` 成功语义、无 `target_unavailable` status 语义）。
+  3. 责任：执行人 dev-agent（implement-code 期）；线上 Agent owner 为 Ray，更新/回滚结果须经其确认。
+  4. 失败处理：任一重验不符即停止，不得进入 TASK-05；如实报告 `status` 与 `reason_code` 两侧事实与受影响 Agent 名；部分漂移未消除前不得重做同步；不触碰 TASK-01/TASK-03 文件侧（上游保留）。
+- **R3 结构测试基线误改**：`pipeline-structure.test.mjs` 断言与 JSON 不一致。回滚：经受控入口 `crctl git revert --no-edit <TASK-02 commit>`（节点 + index + 测试同属一个回滚单元）。
+- **R4 bak 排除副本被误部署**：排除理由未留痕。回滚：经受控入口 revert TASK-04 的 bak 部分；下游无消费者，单点 revert 安全。
+- **R5 共享改动回滚牵连**：TASK-03 合同源被 TASK-01/TASK-04 消费，其回滚单元含下游 TASK-04；单点 revert TASK-03 而保留 TASK-04 会造成提示词与合同不一致，故禁止单点回滚，必须连带 TASK-04（文件侧 + 线上侧按 R2 回滚）。
 
-回滚顺序（逆拓扑）：TASK-05（验证记录，无代码）→ TASK-04 → TASK-03 → TASK-01；TASK-02 独立分支单独 revert。
+回滚顺序（逆拓扑）：TASK-05（验证记录，无代码）→ TASK-04（线上侧按 R2 先行，文件侧随后）→ TASK-03 → TASK-01；TASK-02 独立分支单独 revert。文件侧一律经受控 `crctl git revert`，禁止原生 git。
 
 ## 5. 验收与发布策略
 
-发布前 checklist：cmd-01～cmd-03 全绿；四份 `agent get` 成品与合同逐字一致（原文留存交付记录）；AIFI-35 无新 reviewer run、其 CR 状态/账本零 diff；`crctl checkpoint` phase=complete 三仓 confirmed；feature-flag 不适用（提示词与 Pipeline JSON 即时生效，无灰度开关）。
+发布前 checklist：cmd-01～cmd-09 全绿（判据见下）；四份 `agent get` 成品与合同逐字一致（cmd-04～cmd-07 输出留存交付记录）；AIFI-35 无新 reviewer run（cmd-08 线程根数与 TASK-05 启动时基线一致）且其 Issue 对象无状态变更（cmd-09 `status`/`revision`/`updated_at` 与基线一致）；feature-flag 不适用（提示词与 Pipeline JSON 即时生效，无灰度开关）。
+
+B-03（首评 BLOCK 回修）：`crctl checkpoint`（`push-progress` 深原语）发布是 `review-dev-plan` PASS 分支的职责，不属于 developing 内 TASK 完成条件。TASK-05（含本 checklist）的完成边界是 developing 内可被 `crctl task done` 登记的事件（验证输出留存 + 交付记录落盘），**不含** checkpoint/发布/merge/审批；checkpoint 审计事实以 checkpoint 元数据为准，不进 TASK ledger。
 
 环境前提与即时验证口径：本计划验收证据均为离线命令与只读线上核验，无常驻服务、浏览器或数据库依赖。
 
@@ -67,12 +77,12 @@ TASK-02 (tools ...0003 + index + 结构测试 §4.4, 独立可并行)
 
 | FR/关键AC | SDD交付项 | 主责/关联TASK | 验收证据 | 回滚 |
 |---|---|---|---|---|
-| FR-1 委派回执按目标判定 | §4.1 四份提示词全文替换（dep-3 行号） | CR-2026-071-TASK-01 / 关联 CR-2026-071-TASK-03 | cmd-01 | revert TASK-01 commit（被 TASK-03/04 消费时连带下游，见 §4 R5） |
-| FR-2 源部署副本与线上一致 | §4.1 bak 审计 + §4.2 线上同源同步 | CR-2026-071-TASK-04 / 关联 CR-2026-071-TASK-01、CR-2026-071-TASK-03 | cmd-01 | revert TASK-04 commit（含 bak 与线上同步记录；文件侧上游保留） |
-| FR-3 单一合同与漂移回归 | §4.1 合同源 + §4.3 三组断言 | CR-2026-071-TASK-03 / 关联 CR-2026-071-TASK-01 | cmd-01 | revert TASK-03 commit（含下游 TASK-04，见 §4 R5） |
-| FR-4 恢复 node-2 后评审前 checkpoint | §4.4 `...0003` 节点 + `_index.yml` + 结构测试同步 | CR-2026-071-TASK-02 | cmd-02 | revert TASK-02 commit（节点 + index + 测试同一单元） |
+| FR-1 委派回执按目标判定 | §4.1 四份提示词全文替换（dep-3 行号） | CR-2026-071-TASK-01 / 关联 CR-2026-071-TASK-03 | cmd-01 | 经受控 `crctl git revert` 回滚 TASK-01 commit（被 TASK-03/04 消费时连带下游，见 §4 R5） |
+| FR-2 源部署副本与线上一致 | §4.1 bak 审计 + §4.2 线上同源同步 | CR-2026-071-TASK-04 / 关联 CR-2026-071-TASK-01、CR-2026-071-TASK-03 | cmd-01、cmd-04、cmd-05、cmd-06、cmd-07 | 文件侧经受控 revert 回滚 TASK-04 commit（上游保留）；线上侧按 §4 R2 快照在线回滚并 `agent get` 重验 |
+| FR-3 单一合同与漂移回归 | §4.1 合同源 + §4.3 三组断言 | CR-2026-071-TASK-03 / 关联 CR-2026-071-TASK-04、CR-2026-071-TASK-05 | cmd-01 | 经受控 revert 回滚 TASK-03 commit（含下游 TASK-04 文件侧 + 线上侧，见 §4 R5/R2） |
+| FR-4 恢复 node-2 后评审前 checkpoint | §4.4 `...0003` 节点 + `_index.yml` + 结构测试同步 | CR-2026-071-TASK-02 | cmd-02 | 经受控 revert 回滚 TASK-02 commit（节点 + index + 测试同一单元） |
 
-说明：FR-2 的线上四份 `agent get` 原文核验属在线只读动作，不属离线 cmd 观测面，列入 §5 checklist 并在 TASK-04 交付记录留存；cmd-01 观测其文件侧全量（四份 + 需维护 bak 与合同一致），不存在以子集声称全量。
+说明：cmd-01 观测文件侧全量（四份 + 需维护 bak 与合同一致）；FR-2 的线上四份 `agent get` 原文核验由 cmd-04～cmd-07 直接观测，不存在以子集声称全量。各 TASK 的 Git 范围核验一律经受控 `crctl git diff --stat --cwd <对应 CR worktree>`（禁止原生 git），双向引用见各 TASK §4。
 
 ### 证据命令表
 
@@ -81,8 +91,14 @@ TASK-02 (tools ...0003 + index + 结构测试 §4.4, 独立可并行)
 | cmd-01 | multica | . | node | ["--test", "cr-prompts-revised/test/delegation-contract.test.mjs"] | 120 |
 | cmd-02 | tools | . | node | ["--test", "skills/shared/crctl/scripts/test/pipeline-structure.test.mjs"] | 120 |
 | cmd-03 | tools | . | node | ["-e", "JSON.parse(require('fs').readFileSync('pipeline-templates/requirement-authoring.pipeline.json','utf8'));console.log('pipeline-json-ok')"] | 60 |
+| cmd-04 | multica | . | multica | ["agent", "get", "6317495b-d913-4d47-be79-0c0b342b03fd", "--output", "json"] | 60 |
+| cmd-05 | multica | . | multica | ["agent", "get", "ff6fcbb6-6bb6-42fb-9d88-03493c771411", "--output", "json"] | 60 |
+| cmd-06 | multica | . | multica | ["agent", "get", "2ed1a9de-4c8e-4b78-bfb1-055af99c6681", "--output", "json"] | 60 |
+| cmd-07 | multica | . | multica | ["agent", "get", "87ca2271-f4d8-4865-aef1-9a24523e1a20", "--output", "json"] | 60 |
+| cmd-08 | multica | . | multica | ["issue", "comment", "list", "01a0ddf8-ea5a-7b11-9da5-8d753d34d5f1", "--roots-only", "--summary", "--output", "json"] | 60 |
+| cmd-09 | multica | . | multica | ["issue", "get", "01a0ddf8-ea5a-7b11-9da5-8d753d34d5f1", "--output", "json"] | 60 |
 
-命令算法唯一事实源为本表行；`cwd` 为对应 repo CR worktree 内相对路径（`.` 即 worktree 根）；`executable` 直接可 spawn，无 shell 内建/管道/重定向；不涉及 Git 写操作，不改 `rules.json`。
+命令算法唯一事实源为本表行；`cwd` 为对应 repo CR worktree 内相对路径（`.` 即 worktree 根）；`executable` 直接可 spawn，无 shell 内建/管道/重定向；不涉及 Git 写操作，不改 `rules.json`。cmd-04～cmd-09 为工作区作用域只读 CLI（`multica` 在 PATH），`cwd` 仅为 spawn 占位、不参与判定，判定以 stdout JSON 为准：cmd-04～cmd-07 判据为 instructions 含规范三元组、无 `enqueued` 成功语义、无 `target_unavailable` status 语义（详见 TASK-04 §4）；cmd-08 判据为 AIFI-35 线程根数与 TASK-05 启动基线一致、无新增 reviewer verdict 评论；cmd-09 判据为 AIFI-35 的 `status`/`revision`/`updated_at` 与基线一致（详见 TASK-05 §4）。
 
 ## 7. AC/业务闭环覆盖矩阵
 
@@ -90,7 +106,7 @@ TASK-02 (tools ...0003 + index + 结构测试 §4.4, 独立可并行)
 |---|---|---|---|
 | AC-1 queued/coalesced/deferred 判成功零误报 | §4.1 + §4.3 向量前 3 例 | CR-2026-071-TASK-03 | cmd-01 |
 | AC-2 blocked/缺失 outcome/human-only/未知 status | §4.1 四分支 + §4.3 向量后 4 例 + 2 例否定 | CR-2026-071-TASK-03 | cmd-01 |
-| AC-3 源/bak/合同/回归/线上四份一致 | §4.2 + bak 审计 | CR-2026-071-TASK-04 | cmd-01 |
-| AC-4 回归覆盖与枚举对齐漂移变红 | §4.3 三组断言 | CR-2026-071-TASK-03 | cmd-01 |
+| AC-3 源/bak/合同/回归/线上四份一致 | §4.2 + bak 审计 | CR-2026-071-TASK-04 | cmd-01、cmd-04、cmd-05、cmd-06、cmd-07 |
+| AC-4 回归覆盖与枚举对齐漂移变红 | §4.3 三组断言 | CR-2026-071-TASK-03 | cmd-01（编写与子集自洽归本 TASK；含 bak 全绿的最终门禁在 CR-2026-071-TASK-05 复验） |
 | AC-5 node-2 → checkpoint → review 顺序与回修重发 | §4.4 + _index/结构测试 | CR-2026-071-TASK-02 | cmd-02 |
-| AC-6 AIFI-35 零触发零账本改动、新 CR 未来流程 | §9 zero_diff/scope | CR-2026-071-TASK-05 | cmd-03 |
+| AC-6 AIFI-35 零触发零账本改动、新 CR 未来流程 | §9 zero_diff/scope | CR-2026-071-TASK-05 | cmd-03、cmd-08、cmd-09（未来流程由 cmd-02/cmd-03 结构保证，见 TASK-05 §4） |

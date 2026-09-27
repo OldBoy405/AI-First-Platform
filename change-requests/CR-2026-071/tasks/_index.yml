@@ -19,9 +19,9 @@ tasks:
     title: "bak 副本审计与四个线上 Agent 指令同源同步"
     status: pending
     estimate: 2h
-    depends-on: [CR-2026-071-TASK-03]
+    depends-on: [CR-2026-071-TASK-01, CR-2026-071-TASK-03]
   - id: CR-2026-071-TASK-05
-    title: "全量验证与交付记录（含 AIFI-35 零改动核验与发布）"
+    title: "全量验证与交付记录（含 AIFI-35 零改动核验）"
     status: pending
     estimate: 2h
     depends-on: [CR-2026-071-TASK-02, CR-2026-071-TASK-03, CR-2026-071-TASK-04]

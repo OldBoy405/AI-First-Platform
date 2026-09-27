@@ -13,7 +13,7 @@ depends-on: [CR-2026-071-TASK-01]
 created: 2026-09-27T16:45:00+08:00
 ---
 
-# CR-2026-071-TASK-03 — 共享委派合同源新建与漂移回归检查
+# CR-2026-071-TASK-03 — 共享委派合同源新建与漂移回归检查（编写与子集自洽；bak 全绿门禁见 TASK-04/TASK-05）
 
 ## 1. 任务描述
 
@@ -37,16 +37,16 @@ multica CR worktree（`C:\Users\GOBAO\Downloads\AI\AI First Platform\.rayai-work
 
 ## 4. 验收条件
 
-1. `node --test cr-prompts-revised/test/delegation-contract.test.mjs`（plan cmd-01）在 multica worktree 根全绿（含三组断言全部通过）。
-2. 回归脚本逐字覆盖 SDD §4.1 合同正文：7 例场景向量 + 2 例否定全部通过；AIFI-35 回执重放判成功且零 `DELEGATION_FAILED`、零重复委派。
-3. 合同源与 TASK-01 四份提示词判定段落逐字一致（`diff` 无差异）；`git diff --stat` / 新文件清单仅含上述两个新建文件，未触碰提示词正文（那是 TASK-01 的产物）。
+1. 上述两个新建文件已落盘；合同源与 TASK-01 四份提示词判定段落逐字一致（`diff` 无差异）。
+2. plan cmd-01 的子集断言绿灯：枚举对齐组 + 场景向量组（7 例 + 2 例否定，含 AIFI-35 回执重放判成功且零 `DELEGATION_FAILED`、零重复委派）+ 无漂移组中四份提示词部分绿灯；无漂移组中 bak 集合部分允许红灯（漂移正由 TASK-04 修复），失败输出已留存并移交，不谎称全绿（B-01：本 TASK 完成条件不含 bak 全绿）。
+3. 经受控入口 `crctl git diff --stat --cwd <multica CR worktree>` 核验本 TASK 仅新增上述两个文件（禁止原生 git；双向引用 plan.md §6 FR-3 行），未触碰提示词正文（那是 TASK-01 的产物）。
 
 ## 5. 完成标志
 
-- 上述两个新建文件已落盘，验收条件 1～3 全部通过；`node --test` 全绿输出已留存；本 TASK 实际产生的文件已由本 TASK 落实登记，不预登记 TASK-04 的线上同步记录。
+- 上述两个新建文件已落盘，验收条件 1～3 全部通过；部分绿灯输出已留存；含 bak 集合的 cmd-01 全绿是 TASK-04（含 bak 修正后）的完成门禁与 TASK-05 的最终复验门禁，不是本 TASK 的完成条件；本 TASK 实际产生的文件已由本 TASK 落实登记，不预登记 TASK-04 的线上同步记录。
 
 ## 6. 接口契约
 
 - 消费：上游 TASK-01 产出的四份提示词判定段落原文（文件路径 + 判定段落全文）；SDD §4.1 合同正文（自然语言规则文本，非代码函数签名）。回归脚本只读三方（合同源、提示词/副本、平台枚举源），不写账本与状态。
-- 产出：下游 TASK-04 消费本 TASK 的合同源全文（做线上指令同源同步的唯一输入）与回归脚本的绿灯结论；下游 TASK-05 消费本 TASK 的 cmd-01 全绿证据。产出形态为 Markdown 合同文本 + `node --test` 脚本。
+- 产出：下游 TASK-04 消费本 TASK 的合同源全文（文本；不以本 TASK cmd-01 全绿为前置）与回归脚本；下游 TASK-05 复验 cmd-01 含 bak 全绿。产出形态为 Markdown 合同文本 + `node --test` 脚本。
 - 共享契约锁定：合同源全文、四份提示词内联全文、回归脚本内嵌的判定函数三者必须逐字对应；任一字差异即漂移，由本 TASK 的无漂移断言捕获。

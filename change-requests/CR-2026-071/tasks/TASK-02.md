@@ -41,7 +41,7 @@ tools CR worktree（`C:\Users\GOBAO\Downloads\AI\AI First Platform\.rayai-worktr
 
 1. `node -e "JSON.parse(require('fs').readFileSync('pipeline-templates/requirement-authoring.pipeline.json','utf8'));console.log('pipeline-json-ok')"`（plan cmd-03）在 tools worktree 根输出 `pipeline-json-ok`。
 2. `node --test skills/shared/crctl/scripts/test/pipeline-structure.test.mjs`（plan cmd-02）在 tools worktree 根全绿，且断言含 6 节点 / 评审前 `push-progress` 恰 1 个 / `...0003` 在位 / 审批后 `push-progress` 为 0。
-3. 节点顺序为 node-2 → `...0003` → review，可用 JSON 节点序列与结构测试双重核验；`git diff --stat` 仅触碰上述三个文件。
+3. 节点顺序为 node-2 → `...0003` → review，可用 JSON 节点序列与结构测试双重核验；经受控入口 `crctl git diff --stat --cwd <tools CR worktree>` 核验仅触碰上述三个文件（禁止原生 git；双向引用 plan.md §6 FR-4 行）。
 
 ## 5. 完成标志
 

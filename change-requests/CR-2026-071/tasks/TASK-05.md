@@ -5,7 +5,7 @@ cr-ref: CR-2026-071
 plan-ref: "change-requests/CR-2026-071/plan.md"
 sdd-ref: "change-requests/CR-2026-071/sdd.md"
 target-version: 0.44
-title: 全量验证与交付记录（含 AIFI-35 零改动核验与发布）
+title: 全量验证与交付记录（含 AIFI-35 零改动核验）
 slug: full-verification-and-delivery
 status: pending
 estimate: 2h
@@ -13,36 +13,36 @@ depends-on: [CR-2026-071-TASK-02, CR-2026-071-TASK-03, CR-2026-071-TASK-04]
 created: 2026-09-27T16:45:00+08:00
 ---
 
-# CR-2026-071-TASK-05 — 全量验证与交付记录（含 AIFI-35 零改动核验与发布）
+# CR-2026-071-TASK-05 — 全量验证与交付记录（含 AIFI-35 零改动核验）
 
 ## 1. 任务描述
 
-- 目标：跑通 plan §6 证据命令表 cmd-01～cmd-03，完成 plan §5 checklist（四份 `agent get` 成品一致、AIFI-35 零触发零账本改动、`crctl checkpoint` 发布），形成交付记录说明 P0/P1 实现、所跑测试、线上核验及未覆盖边界（AC-6）。
+- 目标：跑通 plan §6 证据命令表 cmd-01～cmd-09，完成 plan §5 checklist（cmd 全绿、四份 `agent get` 成品一致、AIFI-35 双证据零变化），形成交付记录说明 P0/P1 实现、所跑测试、线上核验及未覆盖边界（AC-6）。B-03：`crctl checkpoint` 发布是 `review-dev-plan` PASS 分支的职责，不是本 TASK 的完成前置。
 - 背景：本 TASK 无新增代码，是 M4 会合验证点；跨仓依赖仅在此会合（multica 与 tools 无共享代码依赖，SDD §1）。
 - 输入条件：TASK-02（tools 三文件）、TASK-03（合同 + 回归）、TASK-04（bak + 线上同步）全部完成；`plan.md` §5/§6、`sdd.md` §6 AC 映射与 §9 批准范围。
 
 ## 2. 涉及文件 / 模块
 
 - 只读执行（不修改被测文件）：multica CR worktree 根执行 cmd-01；tools CR worktree 根执行 cmd-02、cmd-03。
-- 只读核验：四个线上 Agent 的 `agent get` 成品（复用 TASK-04 留存原文，不重复更新线上指令）。
-- 只读核验：AIFI-35 线程（无新 reviewer run）与其 CR 状态/账本零 diff；本 CR 的 `approval.yml`、`merge-commits.yml`（如有）、checkpoint 元数据（审计事实来源，不进 TASK ledger）。
-- 本 TASK 落盘物：仅交付记录文本（实现/测试/核验/边界说明），不新建提示词、合同、Pipeline 节点文件。
+- 只读核验：四个线上 Agent 的 `agent get` 成品（plan cmd-04～cmd-07；复用 TASK-04 留存原文做一致性比对，不重复更新线上指令）。
+- 只读核验：AIFI-35——cmd-08（线程根数与本 TASK 启动时基线一致、无新增 reviewer verdict 评论）与 cmd-09（Issue 对象 `status`/`revision`/`updated_at` 与基线一致）；本 CR 的 `approval.yml`、`merge-commits.yml`（如有）、checkpoint 元数据为审计事实来源，不进 TASK ledger。
+- 本 TASK 落盘物：仅交付记录文本（实现/测试/核验/边界说明），不新建提示词、合同、Pipeline 节点文件，不执行 checkpoint/发布（B-03）。
 
 ## 3. 实现要点
 
-- 按 plan §6 证据命令表逐条执行：cmd-01 `node --test cr-prompts-revised/test/delegation-contract.test.mjs`（multica worktree 根，timeout 120）；cmd-02 `node --test skills/shared/crctl/scripts/test/pipeline-structure.test.mjs`（tools worktree 根，timeout 120）；cmd-03 `node -e "JSON.parse(...requirement-authoring.pipeline.json...)"`（tools worktree 根，timeout 60）。`cwd` 为各 worktree 根，executable 直接 spawn，无 shell 内建/管道/重定向。
+- 按 plan §6 证据命令表逐条执行：cmd-01 `node --test cr-prompts-revised/test/delegation-contract.test.mjs`（multica worktree 根，timeout 120）；cmd-02 `node --test skills/shared/crctl/scripts/test/pipeline-structure.test.mjs`（tools worktree 根，timeout 120）；cmd-03 `node -e "JSON.parse(...requirement-authoring.pipeline.json...)"`（tools worktree 根，timeout 60）；cmd-04～cmd-07 四个线上 `agent get`（任意 cwd，timeout 60）；cmd-08/cmd-09 AIFI-35 线程与 Issue 对象（任意 cwd，timeout 60）。`cwd` 为各 worktree 根，executable 直接 spawn，无 shell 内建/管道/重定向。
+- AIFI-35 基线：本 TASK 启动时先记录 cmd-08 输出的线程根数与 cmd-09 的 `status`/`revision`/`updated_at` 为基线，全部验证完成后复测比对一致才算通过；任一变化即失败（上报人类，不得静默覆盖）。
 - 交付记录列 P0/P1 实现、所跑测试、线上核验原文索引、未覆盖边界（含 SDD §9 follow_up：reviewer 提交禁令二选一、平台未来新增 status 跟进 CR、bak 排除副本重启用须补回归）。
-- 发布：`crctl checkpoint`（`push-progress` 深原语）`phase=complete` 三仓 confirmed；feature-flag 不适用（plan §5）。
 
 ## 4. 验收条件
 
-1. cmd-01、cmd-02、cmd-03 在各自 worktree 根全部绿灯（全绿输出留存，任一红灯即失败，不静默覆盖）。
-2. plan §5 checklist 全闭：cmd 全绿、四份 `agent get` 成品与合同逐字一致（原文留存）、AIFI-35 无新 reviewer run 且其 CR 状态/账本零 diff、`crctl checkpoint` phase=complete 三仓 confirmed。
-3. 交付记录已形成，含 P0/P1 实现、所跑测试、线上核验、未覆盖边界四节；`git diff --stat` 证明本 TASK 未修改提示词/合同/Pipeline/测试正文（仅交付记录文本）。
+1. cmd-01～cmd-09 在各自 worktree 根/工作区全部绿灯（全绿输出留存，任一红灯即失败，不静默覆盖；双向引用 plan.md §6 两张稳定表）。
+2. plan §5 checklist 全闭：cmd 全绿、四份 `agent get` 成品与合同逐字一致（原文留存；与 TASK-04 留存比对一致）、AIFI-35 双证据（cmd-08/cmd-09）与基线一致。
+3. 交付记录已形成，含 P0/P1 实现、所跑测试、线上核验、未覆盖边界四节；经受控入口 `crctl git diff --stat --cwd <知识库 CR worktree>` 证明本 TASK 仅新增交付记录文本（禁止原生 git），未修改提示词/合同/Pipeline/测试正文。
 
 ## 5. 完成标志
 
-- 三条证据命令全绿输出已留存，checklist 全闭，交付记录已落盘；验收条件 1～3 全部通过。本 TASK 的完成边界是 `developing` 内可被 `crctl task done` 登记的事件（验证落盘 + 记录形成），不含 merge/审批/checkpoint 的流程控制语义（审计事实以 approval.yml 与 checkpoint 元数据为准）。
+- 九条证据命令输出已留存，checklist 全闭，交付记录已落盘；验收条件 1～3 全部通过。本 TASK 的完成边界是 `developing` 内可被 `crctl task done` 登记的事件（验证输出留存 + 交付记录形成），B-03：完成前置与完成边界统一，不含 checkpoint/发布/merge/审批的流程控制语义（审计事实以 checkpoint 元数据与 approval.yml 为准，不进 TASK ledger）。
 
 ## 6. 接口契约
 

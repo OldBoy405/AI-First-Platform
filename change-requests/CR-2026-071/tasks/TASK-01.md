@@ -44,7 +44,7 @@ multica CR worktree（`C:\Users\GOBAO\Downloads\AI\AI First Platform\.rayai-work
 
 1. 四份文件均含 SDD §4.1 合同正文全部子句（成功三元组、按目标求值、缺失 outcome 失败、human-only 豁免、未知 status 不成功、发布失败二分、不掩盖不重复），且全文逐字一致，可用 `grep` 逐文件核验。
 2. 四份文件均不再含 `enqueued` 成功语义，且均不再把 `target_unavailable` 列为 status（允许作为 reason_code 记录出现），可用 `grep -n "enqueued\|target_unavailable"` 核验上下文。
-3. `git diff --stat` 仅触碰上述四份提示词文件，未触碰 `admission.go`、AIFI-35 路径与线上指令（线上同步属 TASK-04）。
+3. 经受控入口 `crctl git diff --stat --cwd <multica CR worktree>` 核验仅触碰上述四份提示词文件（禁止原生 git；双向引用 plan.md §6 FR-1 行），未触碰 `admission.go`、AIFI-35 路径与线上指令（线上同步属 TASK-04）。
 
 ## 5. 完成标志
 
