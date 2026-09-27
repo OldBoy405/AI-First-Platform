@@ -1,0 +1,25 @@
+cr-id: CR-2026-071
+review-type: dev-plan
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-27T18:56:01+08:00"
+verdict: block
+repair-target: write-dev-plan
+blockers:
+  - "本轮新增：B-01 TASK-03 §3/§4 要求回归覆盖需维护 bak 且 cmd-01 全绿才算完成，TASK-04 §1/§4 才审计修正含 enqueued 的 bak 并依赖 TASK-03 回归绿灯；现有 bak/cr-coordinator-agent.md:45 和 bak/quality-reviewer-agent.md:67 仍含漂移，故依赖顺序下 TASK-03 无法达成完成标志。请拆开合同测试编写与最终全绿验证，或先完成 bak 审计修正再把全绿作为依赖门禁。"
+  - "本轮新增：B-02 plan.md §7 AC-6 唯一证据 cmd-03 只是解析 Pipeline JSON，不能观测 AIFI-35 无新 reviewer run、账本零 diff 或新 CR 限定；AC-3 也只标 cmd-01 离线测试，无法观测四份线上 agent get。TASK-04/05 仅口头要求线上及 Git 核验，缺少本表可执行证据命令；TASK-01/02/03/05 的 git diff --stat 还未使用受控 crctl git 入口。请把每项关键 AC 的实际可执行只读命令与判据列入证据表，明确受控 Git 形态并双向引用。"
+  - "本轮新增：B-03 TASK-05 标题、§1/§3/§4 把 crctl checkpoint phase=complete 三仓 confirmed 当作本 TASK 的完成前置，§5 却称完成边界不含 checkpoint；plan.md §1/M4 与 §5 同样把发布纳入本任务。请统一 developing 内可登记 done 的验收边界；若发布属于评审 PASS 后的 push-progress，移出 TASK-05 完成条件，避免任务账本在开发期无法明确标 done。"
+  - "本轮新增：B-04 plan.md §4 R1/R2 以 revert TASK-04 commit 回滚线上指令部分更新，然而 git revert 文件提交不恢复 multica agent update 的运行时 instructions；TASK-04 亦未要求保存四份更新前指令用于回滚。请给出按 Agent 恢复旧指令并 agent get 核验的可执行回滚步骤、责任与失败处理，避免多 Agent 在线规则部分漂移。"
+dimensions:
+  sdd-to-plan: "block"
+  plan-to-tasks: "block"
+  task-executability: "block"
+  dependency-topology: "block"
+  interface-contracts: "pass"
+  acceptance-verifiability: "block"
+  scope-and-simplicity: "pass"
+  risk-and-rollback: "block"
+  reviewer-model: "OpenAI/gpt-6-sol via pi quality-reviewer-agent"
+suggestions: []
+review-loop:
+  current-attempt: 1
+subject-sha256: 11eedff7ebd801d585633aa349c63d5aeb2fa8db6201aeb9d0a687253befb4ae
