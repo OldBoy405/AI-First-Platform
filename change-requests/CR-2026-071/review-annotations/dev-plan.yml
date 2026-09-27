@@ -1,25 +1,23 @@
 cr-id: CR-2026-071
 review-type: dev-plan
 reviewer: "OldBoy405"
-reviewed-at: "2026-09-27T19:53:11+08:00"
+reviewed-at: "2026-09-27T20:21:42+08:00"
 verdict: block
 repair-target: write-dev-plan
 blockers:
-  - "部分解决：B-02 plan.md §6 cmd-04～09 增加了四个线上 Agent 与 AIFI-35 Issue 的读取，但 cmd-08 使用 --roots-only --summary，只能观察根评论预览及计数，不能读取既有线程内新增的 reviewer verdict；cmd-09 的 Issue status/revision/updated_at 不能证明 CR-2026-001 的 cr.md、review-annotations 与账本零 diff。plan.md §5/§7 与 TASK-05 §2～§4 却将两命令当作 AC-6 的全部证据；补入能读取线程新增回复及 CR 状态/账本基线差异的受控只读命令与比对判据，且在稳定表和 TASK 双向引用。各 TASK §4 的 crctl git diff --stat --cwd 未指定已提交基线，提交后无差异不等于文件范围零变化，亦须给出可复验的受控范围比较。"
-  - "部分解决：B-04 plan.md §4 R2 和 TASK-04 §3 虽新增更新前快照、在线 agent update 和 get，但要求用更新前原文恢复旧判定段落，同时要求重验无 enqueued 成功语义；当前 dev-agent 与 cr-coordinator-agent 线上 instructions 实测均含 enqueued，若直接恢复其更新前快照，不可能满足该重验判据。请明确故障时恢复到经过验证的安全版本、或把恢复旧错误版本定义为故障中止并给出部分更新隔离/停止使用/责任处置；使操作与验收判据一致，不以文件侧 revert 冒充在线恢复。"
+  - "部分解决：B-02 plan.md §6 已用 cmd-08 逐根扫描加 cmd-09 尾读比对覆盖线程内评论，且 TASK-01～05 已补受控 crctl git 的 BASE→C 范围核验；但 plan.md §5/§6 和 TASK-04/05 将 AC-6 限定为 AIFI-35 Issue 评论/状态可观测面，并明确不证明 CR-2026-001 文件级零 diff。这与已审批 sdd.md §6 AC-6 要求 CR 状态/账本零 diff、§9 zero_diff 要求 AIFI-35 全部文件零变更冲突；cmd-08～10 无法观测 cr.md、review-annotations、_backlog.yml，TASK 范围 diff 也只覆盖 CR-2026-071 三仓。须为 AIFI-35/CR-2026-001 的受控只读基线与终态文件及账本差异给出可执行证据、稳定表行和 TASK-05 判据；若无法取得权威工作区，应中止并请求上游提供证据，不能缩窄已审批 AC-6。"
 dimensions:
-  sdd-to-plan: "pass"
-  plan-to-tasks: "pass"
-  task-executability: "block"
+  sdd-to-plan: "block"
+  plan-to-tasks: "block"
+  task-executability: "pass"
   dependency-topology: "pass"
   interface-contracts: "pass"
   acceptance-verifiability: "block"
-  scope-and-simplicity: "pass"
-  risk-and-rollback: "block"
-  reviewer-model: "OpenAI/gpt-6-sol via pi quality-reviewer-agent"
+  scope-and-simplicity: "block"
+  risk-and-rollback: "pass"
+  reviewer-model: "OpenAI/gpt-6 via pi quality-reviewer-agent"
 suggestions:
-  - "已解决：B-01 TASK-03 的完成条件为合同及自洽子集，TASK-04 修复 bak 后承担 cmd-01 含 bak 全绿，TASK-05 最终复验；依赖拓扑已解除原先死锁。"
-  - "已解决：B-03 TASK-05 与 plan.md 均将 checkpoint 发布从任务完成边界移出，归于 review-dev-plan PASS，完成标志可在 developing 内登记。"
+  - "已解决：B-04 plan.md §4 R2 与 TASK-04 §2～§4 已将更新前快照定位为取证，首选经合同正文向前恢复并重验；含 enqueued 的旧快照不得作为安全恢复源，部分更新无法恢复时停用后续委派验证并交 Ray 处置，在线恢复不再依赖文件侧 revert。"
 review-loop:
-  current-attempt: 2
-subject-sha256: b17db6281644d1b022445b6de8540b2bb0ffccb16794fe940d2ff0c7486baa81
+  current-attempt: 3
+subject-sha256: 0f6c46a1e4783c8fbff19e8dc3714547d934391c560344ab4bf003de69cb764e
