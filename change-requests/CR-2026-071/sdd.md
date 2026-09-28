@@ -6,7 +6,7 @@ title: CR Agent 委派回执判定统一与需求 PRD 前 checkpoint 恢复 技�
 target-version: 0.44
 status: draft
 created: 2026-09-27T15:10:00+08:00
-updated: 2026-09-27T15:10:00+08:00
+updated: 2026-09-28T13:55:00+08:00
 ---
 
 # CR-2026-071 技术设计（SDD）
@@ -134,6 +134,12 @@ status 与 reason_code 分属不同字段；target_unavailable 是 reason_code�
 CR-2026-066 既有机制不变。`_index.yml` 同步 `nodes: 5 → 6`（SDD-CLOSE-03 要求见 §10），
 `pipeline-structure.test.mjs` 对应断言同步更新（见 §6）。
 
+**授权偏离注（Ray 2026-09-28 在 AIFI-36 评论 `01a0e687-ef04-71fd-899d-086a432847e2`
+裁定「包 1」）**：FR-4 实施时文件集为 4 个——第 4 个
+`skills/shared/crctl/scripts/test/checkpoint-tx.test.mjs` 仅为机械必需件（其 T05 断言
+显式枚举 requirement-authoring 的 `push-progress` 节点集合为空集，恢复 `...0003` 后必然
+红，见 dep-7），非新增范围；口径为「已声明 3 文件 + 1 授权件」。
+
 ## 5. 技术选型与替代方案
 
 - **合同源位置（SDD-CLOSE-01 结论）**：选 `multica/cr-prompts-revised/delegation-contract.md`。
@@ -161,7 +167,8 @@ CR-2026-066 既有机制不变。`_index.yml` 同步 `nodes: 5 → 6`（SDD-CLOS
   可达性：枚举对齐测试直读 admission.go 源字面量（dep-1），不经转述。
 - **FR-4**：§4.4 JSON 节点 + `_index.yml` nodes 6 + `pipeline-structure.test.mjs` 断言更新为
   `requirement-authoring` 6 节点、恰 1 个评审前 `push-progress` 节点（含 id `...0003`
-  在位）、审批后 `push-progress` 仍 0（dep-6/dep-7 现状基线）；可达性：`onFail=abort`
+  在位）、审批后 `push-progress` 仍 0（dep-6/dep-7 现状基线）+ `checkpoint-tx.test.mjs`
+  T05 集合同步（授权偏离件，见 §4.4 授权偏离注）；可达性：`onFail=abort`
   保证未发布不可达评审，repair 回 node-2 后正向必经 checkpoint。
 
 ### AC 逐项设计与验收映射
@@ -226,6 +233,10 @@ dep-7
   stable symbol/对象: Pipeline 结构回归断言
   commit SHA: c0e66ccbb84af6b730329a7db3fb3ac78e7e3e04
   依赖结论: FR-4 实施必须同步更新该测试的目标断言，否则实施即红
+  补充（2026-09-28 授权偏离，AIFI-36 评论 01a0e687-ef04-71fd-899d-086a432847e2）: 同目录
+    checkpoint-tx.test.mjs 的 T05 亦枚举 requirement-authoring 的 push-progress 节点集合为
+    空集，故 FR-4 的最小正确文件集 = pipeline-structure.test.mjs + checkpoint-tx.test.mjs；
+    实际落盘 4 文件（见 §4.4 授权偏离注、§6 FR-4）
 ```
 
 线上指令现状另经本轮 `multica agent get` 取证（dev-agent `ff6fcbb6…` 与
@@ -257,7 +268,8 @@ N/A——本 CR 不触及 `skills/shared/crctl/scripts/crctl.mjs` 的 dispatch �
 
 - `scope_in`：FR-1 四份提示词判定子句修正；FR-2 bak 审计修正 + 四个线上 Agent
   instructions 同源同步（含 `agent get` 核验）；FR-3 合同源 + 回归脚本；
-  FR-4 `...0003` 节点恢复 + `_index.yml` + 结构测试同步。仅此而已。
+  FR-4 `...0003` 节点恢复 + `_index.yml` + 结构测试同步（含授权偏离件
+  `checkpoint-tx.test.mjs`，见 §4.4 授权偏离注）。仅此而已。
 - `scope_out`：不改平台 admission 返回值；不碰 AIFI-35/CR-2026-001 状态、账本与评审；
   不动其他 Pipeline、其他被 CR-2026-066 删除的 checkpoint（含全部审批后 checkpoint）；
   不修 reviewer `crctl git` 写禁令与 Skill 的提交顺序矛盾（待 Ray 拍板并入或另开，
@@ -284,3 +296,12 @@ N/A——本 CR 不触及 `skills/shared/crctl/scripts/crctl.mjs` 的 dispatch �
 ---
 
 术语预检（首次推进前已完成）：风险术语均有 dep 绑定且单一批判，无待澄清项，可推进评审。
+
+---
+
+# 修订记录
+
+| 版本 | 时间 | 作者 | 说明 |
+|---|---|---|---|
+| 0.1 | 2026-09-27 | dev-agent | 初稿：§4.1 合同正文、§4.2 线上同步、§4.3 回归、§4.4 checkpoint 恢复；dep-1～dep-7 与 AC-1～AC-6 映射。 |
+| 0.2 | 2026-09-28 | dev-agent | 授权偏离订正（Ray 在 AIFI-36 评论 `01a0e687-ef04-71fd-899d-086a432847e2` 裁定「包 1」）：FR-4 文件集订正为「已声明 3 文件 + 1 授权件 `checkpoint-tx.test.mjs`」——§4.4 增授权偏离注，dep-7 补记最小正确文件集，§6 FR-4 与 §9 `scope_in` 同步。结论不受影响：节点恢复与结构测试语义未变，仅补齐 FR-4 的机械必需件。 |
