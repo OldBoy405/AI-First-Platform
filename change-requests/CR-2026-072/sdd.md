@@ -61,7 +61,7 @@ CLI 前置校验发生于 `loadGates`、状态查询和 CR 数据路径读取之
 
 # 4. 关键算法与流程
 
-1. **调用方迁移先于强校验发布。** 逐项清点 `agents/{requirement-writer,dev-agent,quality-reviewer-agent,delivery-agent}.md`、`pipeline-templates/*.pipeline.json`、`skills/**/SKILL.md` 中真实 crctl 调用、`skills/shared/crctl/SKILL.md`、`skills/sync/push-progress/SKILL.md`、CLI HELP、README 示例、自动注入 hook、以及扫描面外 CI/workflow/脚本。沿用既有 `caller-contract.test.mjs` 清单追加调用形态检查；历史叙述、夹具/生成转换脚本无需机械改写。注入 hook 在无可信路径时不得建议无旗标的状态调用，也不得把 cwd 枚举出的同名 CR 标记为本任务权威；可停止注入或仅给出带可信路径的可执行建议。设计依赖 dep-9、dep-10、dep-11、dep-12。
+1. **调用方迁移先于强校验发布。** 逐项清点 `agents/{requirement-writer,dev-agent,quality-reviewer-agent,delivery-agent}.md`、`pipeline-templates/*.pipeline.json`、`skills/**/SKILL.md` 中真实 crctl 调用、`skills/shared/crctl/SKILL.md`、`skills/sync/push-progress/SKILL.md`、CLI HELP、README 示例、自动注入 hook、以及扫描面外 CI/workflow/脚本。沿用既有 `caller-contract.test.mjs` 清单追加调用形态检查；历史叙述、夹具/生成转换脚本无需机械改写。注入 hook 在无可信路径时不得建议无旗标的状态调用，也不得把 cwd 枚举出的同名 CR 标记为本任务权威；可停止注入或仅给出带可信路径的可执行建议。CI workflow（如 `.github/workflows/cr-guard.yml`）只作为实施期调用点清点范围，其当前实现行为不构成本方案前提。设计依赖 dep-9、dep-10、dep-11。
 2. **统一 CLI 入口。** `parseArgs`/`parseGitArgs` 得出 flag，非 help 且需要 CR 数据访问的子命令先校验 `typeof workspace === 'string' && trim()`，否则 `fail('WORKSPACE_REQUIRED',...)`；合法值仅从该 flag 进入 `detectWorkspace`，删除 env/cwd 回退。显式路径绝对化后验证目标工作区，再 `loadGates` 和分发；可采用少量命令分类但不重写深原语。设计依赖 dep-1、dep-2。`status` 终态分支同样经过入口校验，设计依赖 dep-3。
 3. **daemon 绑定。** Pipeline 保留已预检的 root/operational，CR-ID 多匹配维持硬失败；非 Pipeline 通过现有项目 local_directory 解析结果注入，未匹配不写 env 键且清除继承的旧 CR 环境键。不能从 `CRWorkspaceRoots[0]` 或 workspace 当前 cwd 猜项目。工作目录为 disposable worktree 时，不将其等同 CR authority；使用资源对应的项目根，若不能确认该项目是 CR 根则不注入。设计依赖 dep-5、dep-6、dep-7。
 4. **写路径及审计。** 单 CR 写命令保留原 gate/CAS/事务，以显式路径与验证后的 operational path 一致为前置（含 symlink 和 Windows 路径）；旧 `CRCTL_OPERATIONAL_WORKSPACE` 若与其冲突则失败关闭，不能跳转到别的项目。daemon 将本任务预检 root 独立传给 gitguard 的审计参数/专用内部环境键，并在最终环境叠加后保证该值与任务绑定一致；gitguard 不再从 `CRCTL_WORKSPACE` 获取审计根。gitguard 先拒绝违规 git；只有可信任务 root 时才写其拒绝审计，未绑定时不写其他项目 outbox，拒绝错误码不变。设计依赖 dep-2、dep-8。
@@ -114,14 +114,14 @@ CLI 前置校验发生于 `loadGates`、状态查询和 CR 数据路径读取之
 
 # 9. 批准范围
 
-- **scope_in**：FR-1～FR-5 / AC-1～AC-5 必须交付的 tools Agent/Skill/Pipeline/README/CLI/回归测试与 multica daemon/gitguard/测试；必要时仅调整 knowledge-base 已识别的真实调用点（如 `.github/workflows/cr-guard.yml`）并在清单注明；multica 的实际定制改动同步登记 `CUSTOM.md`。
+- **scope_in**：FR-1～FR-5 / AC-1～AC-5 必须交付的 tools Agent/Skill/Pipeline/README/CLI/回归测试与 multica daemon/gitguard/测试；必要时仅调整 knowledge-base 实施期核实的真实调用点（如适用，`.github/workflows/cr-guard.yml`）并在清单注明；multica 的实际定制改动同步登记 `CUSTOM.md`。
 - **scope_out**：AIFI-35 的业务测试和 blocked 门禁；新 CR 根注册服务、状态机/账本事务重写、数据库迁移、新审批通道、无关前端/共享服务配置；确定性 PRD/SDD/TASK/traceability 转换脚本。
 - **zero_diff**：`dir-graph.yaml#change-request-track.state_machine` 与 `gates.json` 的状态/门禁定义、crctl 既有深原语的 CAS/commit/push 算法、multica 对外 HTTP 契约、`skills/shared/controlled-shell/rules.json#protectedPaths.deny`；CLI dispatch 的入口校验属于 scope_in，不在 zero_diff。
 - **follow_up**：普通任务若未来确有项目资源以外的自动 CR 根路由需求，另立窄任务定义可信绑定来源，不为当前 AC 添加猜根服务；当前 AC 的无根失败关闭不依赖此项。
 
 # 既有实现依赖与事实
 
-下列事实均在本 CR 的三个 `resources[].worktreePath` 所示 HEAD 核对，正文以 dep-N 引用，不以安装根或其他工作树冒充版本依据。SHA 为各仓当前完整 HEAD。
+下列事实在 tools、multica 两个目标代码仓的 `resources[].worktreePath` 所示版本核对，正文以 dep-N 引用，不以安装根或其他工作树冒充版本依据。SHA 为取证时各仓的完整 commit SHA；knowledge-base workflow 仅列为实施期扫描面，不作为当前实现依赖。
 
 | ID | repo | commit SHA | relative path | stable symbol/对象 | 依赖结论 |
 |---|---|---|---|---|---|
@@ -136,7 +136,6 @@ CLI 前置校验发生于 `loadGates`、状态查询和 CR 数据路径读取之
 | dep-9 | tools | `b2e935684d3bbfb4727ae3f0ec1f7e4026b5c293` | `skills/sync/push-progress/SKILL.md` | Step 1 checkpoint 命令 | Pipeline 示例依赖运行时注入 `CRCTL_WORKSPACE`，不显式传旗标 |
 | dep-10 | tools | `b2e935684d3bbfb4727ae3f0ec1f7e4026b5c293` | `skills/shared/crctl/adapters/claude-code/hooks/inject-cr-status.mjs` | `findBacklog` / `ctx` | hook 从 cwd 找 backlog、逐 CR 读状态，末尾建议无 flag 的 `crctl status <CR-ID>` |
 | dep-11 | tools | `b2e935684d3bbfb4727ae3f0ec1f7e4026b5c293` | `skills/shared/crctl/scripts/test/caller-contract.test.mjs` | `REVIEWED_CALLS` / `OUT_OF_SURFACE_CALLERS` | 已列投影命令的扫描面和 CI 面外调用；现有断言针对 detail/summary 消费，不等于全命令显式旗标检查 |
-| dep-12 | ai-first-platform-docs | `1602ef02ec2a968f15f50c5770de1d74631298f8` | `.github/workflows/cr-guard.yml` | Validate backlog / changed artifacts | 实际 CI 的 `crctl validate` 命令已带 `--workspace .`；须逐项核对 gate 等其他命令 |
 
 # SDD-CLOSE：需求延后到设计的事项
 
