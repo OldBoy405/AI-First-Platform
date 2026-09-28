@@ -164,7 +164,7 @@ TASK-04 之后线上指令无漂移。判定三元组 `status=queued|coalesced|d
 
 ---
 
-## 最终复测（交付记录提交后，同表行、同受控入口）
+## 最终复测①（TASK-05 记录提交后，同表行、同受控入口）
 
 - 锚定（TASK-05 启动 → 复测）：`origin/master = 9ce4cde52d2237810cf0c7121b47d87762139f09`（未前移）；
   `HEAD` 启动 `f83cbc28613dca24f0bd8a102235cc0da0fce4ac` → 记录提交 `40c78df1b5dca9d72f2b462a7a8a146c73a23db8`。
@@ -178,6 +178,25 @@ TASK-04 之后线上指令无漂移。判定三元组 `status=queued|coalesced|d
   `status=in_progress / revision=57 / updated_at=2026-09-27T02:01:52Z` 均与启动基线全等。✔
 - 文件侧范围核验（plan §6 标准，受控 `crctl git`）：BASE `f83cbc28` → C（记录提交）文件集 = 本文件单项；
   `crctl git status --short` 干净。
+
+---
+
+## 最终复测②（TASK-05 之后：cmd-02 门禁修复 + write-test-report attempt 1）
+
+- 锚定：`origin/master = 9ce4cde52d2237810cf0c7121b47d87762139f09`（未前移）；HEAD 由 TASK-05 期 `40c78df1`
+  → 门禁修复后的 `1b661228`（本记录事实订正）→ `e9f07eb0`（write-test-report attempt 1 产物提交）。
+- cmd-11：回执 `ok=true / exit=0`；正文去空白 0 字符 → `change-requests/CR-2026-001` 目录零变更。✔
+- cmd-12：回执绿；正文无 `CR-2026-001` 子串。✔
+- cmd-13：回执绿；正文 0 字符（`_history.yml` / `_index.yml` 零变更）。✔
+- cmd-14：回执绿；正文非空，`39 files changed, 3518 insertions(+), 3 deletions(-)`；文件集 =
+  `change-requests/CR-2026-071/**`38 项（含 `test-report.md`、`test-evidence/cmd-01…16.log`、本记录自身）
+  + `change-requests/_backlog.yml` 1 项；无 `CR-2026-001` 路径。✔
+- 本节提交后 HEAD 再前进一次，但变更文件仅本记录自身（已含在上述 39 项内），**文件集不变**，仅行数增长。
+- 三仓 `crctl workspace inspect --detail`：`ai-first-platform-docs` / `multica` / `tools` 均 `healthy`（`dirty=false`）；
+  `origin/requirement/CR-2026-071` 三仓均可快进（tools 已等同、KB 与 multica 本地领先），评审 PASS 分支发布时无需强推。
+- `write-test-report` attempt 1：机器区 `status=pass`、16 条命令全 `exit-code: 0`；`traceability.yml#tests.status=pass`、
+  `review-loop.yml#write-test-report.1/3`；两条命令的 `skipped: true` 误命中与 plan 表行缺口见本记录 §2.1 之后
+  的 `test-report.md` 分析段（简述：cmd-01/cmd-02 缺 `--test-reporter=dot`，模式表 `\bSKIPPED\b` 误命中，需授权改 plan 表行）。
 
 ---
 
