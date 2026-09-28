@@ -59,7 +59,7 @@ created: 2026-09-28T14:10:00+08:00
 | 证据 | 表行命令（repo / cwd） | 结果 |
 |---|---|---|
 | cmd-01 | multica・`.`：`node --test cr-prompts-revised/test/delegation-contract.test.mjs` | **19 tests / 19 pass / 0 fail**（exit 0） |
-| cmd-02 | tools・`.`：`node --test skills/shared/crctl/scripts/test/pipeline-structure.test.mjs` | **36 / 35 / 1**（机械判据，见 §2.1） |
+| cmd-02 | tools・`.`：`node --test skills/shared/crctl/scripts/test/pipeline-structure.test.mjs` | **36 / 36 / 0**（exit 0；原红项经 tools 主镜像 `09085f0` 修复、`d8ef2db` 合入本 CR 分支后转绿，见 §2.1） |
 | cmd-03 | tools・`.`：`node -e "JSON.parse(…requirement-authoring.pipeline.json…)"` | `pipeline-json-ok` |
 | cmd-04～07 | `multica agent get <id> --output json` ×4 | 四份全部合同正文逐字命中、`enqueued=0`、`target_unavailable` 仅 reason_code 语义（见 §3） |
 | cmd-08 | AIFI-35 `--roots-only --summary` | 3 根，与启动基线一致（§4） |
@@ -72,19 +72,25 @@ created: 2026-09-28T14:10:00+08:00
 
 附（TASK-02 第 4 件对应回归）：`skills/shared/crctl/scripts/test/checkpoint-tx.test.mjs` = **23 tests / 23 pass / 0 fail**。
 
-### 2.1 cmd-02 机械判据（授权口径：071 内不改 `review-dev-plan/SKILL.md`）
+### 2.1 cmd-02：原红项根因、修复与复跑（Ray 授权，comment `01a0e6ac`）
 
-- **071 现状**（tools CR worktree `045d8d6`）：`36 tests / 35 pass / 1 fail`；唯一红项
+- **TASK-05 执行期现状**（tools CR worktree `045d8d6`）：`36 tests / 35 pass / 1 fail`；唯一红项
   `✖ CR-2026-066 AC-3/AC-4: 四 review SKILL 的 clean 前置 + PASS 发布 + 对账 + 权限面四处载体（断言 A/B/C/D）`，
   `AssertionError [ERR_ASSERTION]: skills/develop/review-dev-plan/SKILL.md 缺对账失败语义 CONTRACT_DRIFT`。
-- **BASE 对照**（tools 主镜像 `3b4a131`，不含本 CR 任何改动）：同命令 `36 tests / 35 pass / 1 fail`，
-  唯一红项同名、同断言消息、同根因。
-- **判据成立**：唯一失败项与 BASE **逐字一致**（测试标题与断言消息相同）；行号偏移（BASE `:673` → 071 `:684`）
-  与本 TASK 在该文件新增 11 行断言一致，属预期差异。该红项与 071 改动无因果关系：
-  FR-4 相关断言（6 节点 / 评审前 `push-progress` 恰 1 / `...0003` 在位 / 审批后 0）在该测试内全绿。
-- **(B) 定案**：Ray 在 tools 主镜像自行补回 `review-dev-plan/SKILL.md` 的两条等价措辞（`CONTRACT_DRIFT` 对账失败语义、
-  BLOCK 分支不含发布调用），**071 内不改该文件**（含 worktree 副本）；修复后 071 的 cmd-02 预期转为 36/36，
-  本 CR 不为此改守卫断言、不把该文件带进本 CR diff。
+- **BASE 对照**（tools 主镜像 `3b4a131`，当时不含本 CR 任何改动）：同命令 `36 tests / 35 pass / 1 fail`，
+  唯一红项同名、同断言消息、同根因 → 该红项与 071 改动**无因果关系**（FR-4 相关断言——6 节点 /
+  评审前 `push-progress` 恰 1 / `...0003` 在位 / 审批后 0——在该测试内全绿；行号偏移 `:673` → `:684` 系本 CR 在该文件
+  新增断言所致）。
+- **修复事实**：Ray 在 tools 主镜像提交 `09085f0`
+  （`docs(review-dev-plan): 恢复 CONTRACT_DRIFT 判定并补 BLOCK 分支不发布说明`，两处字面落位 `:164`/`:167`，
+  与 CR worktree 副本逐字节相同：`sha256 63e1e10682bee99fbc4f955e2914e7bd12d6236e28572e20fd063cd6407b7286`），
+  并以 `d8ef2db`（`Merge origin/main (09085f0) into requirement/CR-2026-071：对齐 trunk 基线`）合入本 CR 分支。
+- **复跑实测**（tools CR worktree `d8ef2db`，命令同表行）：`tests 36 / pass 36 / fail 0 / skipped 0`、exit 0 ——
+  与 `write-test-report` 机器区 cmd-02 逐项一致。
+- **范围影响**：本 CR diff 因此含 `skills/develop/review-dev-plan/SKILL.md`（经 tools 主镜像合并带入，非本 CR 新增编辑）；
+  本 CR 未改该文件断言、未改 `pipeline-structure.test.mjs`、未为过门禁放宽任何守卫断言。
+- 遗留瑕疵（不阻塞门禁，留待后续小改）：`:164` 的 ` - 判定不等 → **`CONTRACT_DRIFT` 技术中止**……` 接在第 4 条原文末尾（同行续写），
+  断言只做字面包含；Ray 决定先按落盘字节随本 CR 合并，渲染整理另开一次小改。
 
 ### 2.2 AIFI-35 七证据合取（AC-6）
 
@@ -134,8 +140,8 @@ TASK-04 之后线上指令无漂移。判定三元组 `status=queued|coalesced|d
 2. 平台未来新增 status 时，合同回归会变红 → 须以跟进 CR 同步合同与四处内联（本 CR 只保证「变红可见」）。
 3. `bak/` 排除副本（`dev-agent.md`、`requirement-writer.md`、`delivery-agent.md`、`squad-CR协调小组.md`）
    若日后重新启用为部署来源，须先补进回归覆盖再部署。
-4. cmd-02 既有红项（`review-dev-plan/SKILL.md` 缺两 token）由 Ray 在 tools 主镜像修复，071 内不改；
-   本 CR 以 §2.1 机械判据记录，未把该文件带进本 CR diff。
+4. cmd-02 原红项（`review-dev-plan/SKILL.md` 缺两 token）已由 Ray 在 tools 主镜像 `09085f0` 修复、
+   `d8ef2db` 合入本 CR 分支；cmd-02 复跑 `36/36` 绿（§2.1），该文件随本 CR diff 一并交付。
 5. 未执行（不适用，B-03）：`crctl checkpoint` / 发布 / merge / 审批；线上指令以 `agent update` 即时生效，
    无 feature flag 灰度，故「回滚」按 TASK-04 §2 的向前恢复策略而非开关回退。
 6. 未改平台 admission 返回值（`scope_out`）：本 CR 只统一 Agent 侧判定与回归，不改变平台回执语义。
@@ -149,6 +155,8 @@ TASK-04 之后线上指令无漂移。判定三元组 `status=queued|coalesced|d
 | multica | `1c4f53ee6` | TASK-04 `bak/README.md` 处置表 + 2 份维护副本修正 |
 | multica | `8bf330e54` | `CUSTOM.md` #97 台账 |
 | tools | `aee0208` + `045d8d6` | TASK-02 checkpoint 恢复（3 声明 + 1 授权件；受控 `crctl git revert a285c31 d398a4c` 原样恢复） |
+| tools | `09085f0` | 主镜像修复 `review-dev-plan/SKILL.md` 两处守卫字面（Ray 授权，comment `01a0e6ac`）（Phase 2 门禁修复） |
+| tools | `d8ef2db` | `09085f0` 合入 `requirement/CR-2026-071`（本 CR 分支从 trunk 取得该修复） |
 | KB | `6ba719fc` | TASK-04 四个 Agent 更新前快照（审计件） |
 | KB | `e137986f` / `f83cbc28` | TASK 台账（TASK-01/03/04；TASK-02） |
 | KB | `1927dbe6` | SDD v0.2 授权偏离订正 |
