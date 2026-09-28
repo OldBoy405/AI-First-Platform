@@ -1,0 +1,32 @@
+$ node --test cr-prompts-revised/test/delegation-contract.test.mjs
+(exit=0)
+--- stdout ---
+✔ 枚举对齐：合同成功集合 = 平台 DispatchStatus - blocked，失败集合含 blocked (1.2853ms)
+✔ 枚举对齐：target_unavailable 只在 reason_code 语境出现，合同内不作 status (0.5841ms)
+✔ 场景向量：AC-1 AIFI-35 回执重放：status=queued / reason_code=queued 判成功且零误报 (0.1543ms)
+✔ 场景向量：coalesced 判成功 (0.0632ms)
+✔ 场景向量：deferred 判成功（含 suppress_run / backlog parked） (0.0608ms)
+✔ 场景向量：AC-2 blocked + reason_code=target_unavailable 判失败 (0.0986ms)
+✔ 场景向量：blocked + 其他 reason_code（runtime_offline）判失败 (0.0675ms)
+✔ 场景向量：被 mention 目标缺失 outcome 判失败 (0.0613ms)
+✔ 场景向量：AC-2 仅 mention 人类成员（如 PASS 后 @owner）且评论发布成功：不失败 (0.0987ms)
+✔ 场景向量：否定 1：未知 status 不判成功（fail-closed） (0.1268ms)
+✔ 场景向量：否定 2：评论写入失败不得伪称投递成功 (0.0544ms)
+✔ 场景向量：多目标互不掩盖：一成功一 blocked 整体判失败 (0.0535ms)
+✔ 无漂移：需维护集合已解析（四份提示词 + 至少一份 bak 副本） (0.4233ms)
+✔ 无漂移：requirement-writer.md 内联合同全文且零 enqueued (0.3555ms)
+✔ 无漂移：dev-agent.md 内联合同全文且零 enqueued (0.2989ms)
+✔ 无漂移：quality-reviewer-agent.md 内联合同全文且零 enqueued (0.3406ms)
+✔ 无漂移：cr-coordinator-agent.md 内联合同全文且零 enqueued (0.3043ms)
+✔ 无漂移：bak\cr-coordinator-agent.md 内联合同全文且零 enqueued (0.2614ms)
+✔ 无漂移：bak\quality-reviewer-agent.md 内联合同全文且零 enqueued (0.2656ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 19
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 67.8105
+
+--- stderr ---
