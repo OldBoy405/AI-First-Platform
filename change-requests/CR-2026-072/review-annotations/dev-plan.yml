@@ -1,25 +1,21 @@
 cr-id: CR-2026-072
 review-type: dev-plan
 reviewer: "OldBoy405"
-reviewed-at: "2026-09-29T00:35:45+08:00"
-verdict: block
-repair-target: write-dev-plan
-blockers:
-  - "部分解决： B-04 TASK-02 §2/§3/§6 已改为 override 与 env 同时存在时分别校验，但仅 CRCTL_OPERATIONAL_WORKSPACE=A、无 --operational-workspace、显式 --workspace=B 时仍规定返回 A；当前 advance 的 authorityWorkspace 结果直接用于 resolveCrState/写入，故可在 B 任务读取/推进 A 的同名 CR，违反 SDD §1/§4.4 的目标与任务 operational workspace 一致及 AC-3。请明确仅 env 存在时也须以已确认的 B authority 校验并失败关闭（不可采信 env 作唯一权威），或提供等价可信绑定；在 TASK-02 §4.3/cmd-01 增加此单 env 冲突的首次 CR 读写前非零、A/B 零副作用用例。"
+reviewed-at: "2026-09-29T01:03:19+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  sdd-to-plan: "block"
+  sdd-to-plan: "pass"
   plan-to-tasks: "pass"
-  task-executability: "block"
+  task-executability: "pass"
   dependency-topology: "pass"
-  interface-contracts: "block"
-  acceptance-verifiability: "block"
+  interface-contracts: "pass"
+  acceptance-verifiability: "pass"
   scope-and-simplicity: "pass"
   risk-and-rollback: "pass"
   reviewer-model: "pi/local coding agent"
 suggestions:
-  - "已解决： B-01 plan.md §7 AC-1～5 各只有一个 TASK owner（02/02/02/03/05）；AC-4 的 TASK-04 为关联 TASK，FR-4/cmd-04 可追溯。"
-  - "已解决： B-02 TASK-04 depends-on 已含 TASK-03，_index.yml、plan.md §2 和 §4 同步生产者到消费者的拓扑与逆序回滚。"
-  - "已解决： B-03 TASK-01 §3/§6 与 plan.md M1/cmd-02 已说明在现有 caller-contract.test.mjs 扩展 CR 数据命令抽取、逐处非空 --workspace 断言且保留 caller-01～08。"
+  - "已解决： B-04 TASK-02 §2/§3/§4.3/§6 明确 authorityWorkspace 权威来自显式 --operational-workspace，否则来自入口验证的 --workspace；仅 env=A/旗标缺失/显式 B 时，realpath 冲突在首次 CR 数据读写前以 OPERATIONAL_WORKSPACE_MISMATCH 非零失败，A/B 零副作用；env=B 时返回 B。plan.md §6 cmd-01 与 §7 AC-3 同步，仅 env 冲突用例与原双值冲突用例均可由 cmd-01 验证。"
 review-loop:
-  current-attempt: 2
-subject-sha256: 57b9f03cf859e11a1fa91ddb08e48e5a44faa2762dfceb46672fb679d16a1726
+  current-attempt: 3
+subject-sha256: aa39d14c68cb67cde770b85824f185a98f739e101aa8130414235d79e20f5b1e
