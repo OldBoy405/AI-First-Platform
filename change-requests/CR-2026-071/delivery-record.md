@@ -153,3 +153,20 @@ TASK-04 之后线上指令无漂移。判定三元组 `status=queued|coalesced|d
 | KB | `e137986f` / `f83cbc28` | TASK 台账（TASK-01/03/04；TASK-02） |
 | KB | `1927dbe6` | SDD v0.2 授权偏离订正 |
 | KB | 本记录提交 | TASK-05 交付记录 |
+
+---
+
+## 最终复测（交付记录提交后，同表行、同受控入口）
+
+- 锚定（TASK-05 启动 → 复测）：`origin/master = 9ce4cde52d2237810cf0c7121b47d87762139f09`（未前移）；
+  `HEAD` 启动 `f83cbc28613dca24f0bd8a102235cc0da0fce4ac` → 记录提交 `40c78df1b5dca9d72f2b462a7a8a146c73a23db8`。
+- cmd-11：回执 `ok=true / exit=0`；正文去空白 0 字符。✔
+- cmd-12：回执绿；正文无 `CR-2026-001` 子串。✔
+- cmd-13：回执绿；正文 0 字符。✔
+- cmd-14：回执绿；正文非空，`22 files changed, 1587 insertions(+), 3 deletions(-)`；文件集 =
+  `change-requests/CR-2026-071/**`（含本记录自身）+ `change-requests/_backlog.yml`，无 `CR-2026-001` 路径。✔
+  （较提交前 21 文件恰多本记录自身一项。）
+- AIFI-35 复测（同 §4）：cmd-08 3 根、cmd-09 三根尾序列、cmd-10
+  `status=in_progress / revision=57 / updated_at=2026-09-27T02:01:52Z` 均与启动基线全等。✔
+- 文件侧范围核验（plan §6 标准，受控 `crctl git`）：BASE `f83cbc28` → C（记录提交）文件集 = 本文件单项；
+  `crctl git status --short` 干净。
