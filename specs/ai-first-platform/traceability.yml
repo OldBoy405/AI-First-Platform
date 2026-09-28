@@ -1,10 +1,10 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 spec-id: ai-first-platform
-cr-ref: CR-2026-070
-cr-history: [CR-2026-060, CR-2026-059, CR-2026-061, CR-2026-062, CR-2026-063, CR-2026-065, CR-2026-064, CR-2026-066, CR-2026-067, CR-2026-068, CR-2026-069, CR-2026-070]
-target-version: "0.43"
+cr-ref: CR-2026-071
+cr-history: [CR-2026-060, CR-2026-059, CR-2026-061, CR-2026-062, CR-2026-063, CR-2026-065, CR-2026-064, CR-2026-066, CR-2026-067, CR-2026-068, CR-2026-069, CR-2026-070, CR-2026-071]
+target-version: "0.44"
 baseline-since: "0.33"
-generated-at: "2026-09-18T17:51:28+08:00"
+generated-at: "2026-09-28T18:21:08+08:00"
 
 milestones:
   - cr: CR-2026-060
@@ -1055,3 +1055,53 @@ milestones:
         code: { verdict: pass, path: change-requests/CR-2026-070/review-annotations/code.yml, sha256: 09151476215c134b65c8af2229345c656f542d00ebaf59644473e9f5ad88b51f }
       approval: { status: approved, path: change-requests/CR-2026-070/approval.yml, sha256: d6c1e99931ed4576f1ea74f3356135a823e5678646b79752925bf4512577f067 }
       merge: { status: merged, path: change-requests/CR-2026-070/merge-commits.yml, sha256: 3535eb6dad12e7a9aaf41780e56e7a1e23cba2d902554663cc931d5621c2b424 }
+  - cr: CR-2026-071
+    milestone: "0.44"
+    target-version: "0.44"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: b197a868b88436fab332f058f03b4216e83aaf41
+        branch: requirement/CR-2026-071
+      - repo: multica
+        trunk: main
+        sha: 0cfc1bbb9c9b1bd8bb941163688fedb5aa0b656d
+        branch: requirement/CR-2026-071
+      - repo: tools
+        trunk: main
+        sha: b793b8b68104554e65dfac998abd6beccce689e6
+        branch: requirement/CR-2026-071
+    frs:
+      - fr: FR-1
+        title: 委派回执按目标判定
+        sdd: §4.1 四份提示词全文替换（dep-3 行号）
+        tasks: [CR-2026-071-TASK-01, CR-2026-071-TASK-03]
+        code: [ai-first-platform-docs@b197a868b884, multica@0cfc1bbb9c9b, tools@b793b8b68104]
+        evidence: [cmd-01]
+      - fr: FR-2
+        title: 源部署副本与线上一致
+        sdd: §4.1 bak 审计 + §4.2 线上同源同步
+        tasks: [CR-2026-071-TASK-04, CR-2026-071-TASK-01, CR-2026-071-TASK-03]
+        code: [ai-first-platform-docs@b197a868b884, multica@0cfc1bbb9c9b, tools@b793b8b68104]
+        evidence: [cmd-01, cmd-04, cmd-05, cmd-06, cmd-07]
+      - fr: FR-3
+        title: 单一合同与漂移回归
+        sdd: §4.1 合同源 + §4.3 三组断言
+        tasks: [CR-2026-071-TASK-03, CR-2026-071-TASK-04, CR-2026-071-TASK-05]
+        code: [ai-first-platform-docs@b197a868b884, multica@0cfc1bbb9c9b, tools@b793b8b68104]
+        evidence: [cmd-01]
+      - fr: FR-4
+        title: 恢复 node-2 后评审前 checkpoint
+        sdd: §4.4 `...0003` 节点 + `_index.yml` + 结构测试同步
+        tasks: [CR-2026-071-TASK-02]
+        code: [ai-first-platform-docs@b197a868b884, multica@0cfc1bbb9c9b, tools@b793b8b68104]
+        evidence: [cmd-02]
+    evidence:
+      test: { status: pass, path: change-requests/CR-2026-071/test-report.md, sha256: 1da7b4c3e17787c7ad3ac65cdd5f8d49635b4bd483f5ed8417a2990cfe3801b9 }
+      reviews:
+        requirement: { verdict: pass, path: change-requests/CR-2026-071/review-annotations/requirement.yml, sha256: 3ec3afd5e59dd1bf6bc7a101537db1cd67d1bf577c6532c6cebaaf8e7b859d2e }
+        tech-design: { verdict: pass, path: change-requests/CR-2026-071/review-annotations/sdd.yml, sha256: 5eba06fd60500ca4253c5c35e473b971a07d6b0e1abeb4ebbabc2e1cc87403ee }
+        dev-plan: { verdict: pass, path: change-requests/CR-2026-071/review-annotations/dev-plan.yml, sha256: c4ccec112b0cfe7d07560eaa0e7d9df367a4b43ed63d25b6ee853e9d4d2fa33f }
+        code: { verdict: pass, path: change-requests/CR-2026-071/review-annotations/code.yml, sha256: 52f53548bf350ccb5059edcdd7181ff60f2671b57da2254ee3a2eaa82e7f1795 }
+      approval: { status: approved, path: change-requests/CR-2026-071/approval.yml, sha256: 743742e8f5befb47f8ff1a9f7de52afb8b9bc47fb929f2e503d2a3eda5021318 }
+      merge: { status: merged, path: change-requests/CR-2026-071/merge-commits.yml, sha256: 7ccac7f9040d254a4b744d4b15d11a7710aa27a995bc374d098f781c3b83f49e }
