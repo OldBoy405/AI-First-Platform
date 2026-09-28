@@ -170,3 +170,29 @@ TASK-04 之后线上指令无漂移。判定三元组 `status=queued|coalesced|d
   `status=in_progress / revision=57 / updated_at=2026-09-27T02:01:52Z` 均与启动基线全等。✔
 - 文件侧范围核验（plan §6 标准，受控 `crctl git`）：BASE `f83cbc28` → C（记录提交）文件集 = 本文件单项；
   `crctl git status --short` 干净。
+
+---
+
+## 附录 A — 线上指令指纹（复核用）
+
+复核方式：`multica agent get <id> --output json` 取 `instructions`，`\r\n → \n` 规范化后求 sha256，与下表比对；
+合同正文指纹取 `cr-prompts-revised/delegation-contract.md` 中 `CONTRACT-BEGIN/END` 之间正文（trim 后、同样规范化）。
+
+| 对象 | 长度 | sha256（LF 规范化） |
+|---|---|---|
+| 合同正文 | 666 | `53bb3f35a8155ca332627b1d8412fc7ea379f3fe514198afdf09baab4a9a8a2d` |
+| requirement-writer instructions | 3715 | `01fa074d935a5ed3b5bc7a89b691a866822430a41ba41b4263c8b3c5853e2629` |
+| dev-agent instructions | 4450 | `c6b4c3b2cf64e64d1ed5d34dfa9b7873d141f1574a8503932ff6e0813d99ca0a` |
+| quality-reviewer-agent instructions | 2770 | `af6261e584bb1196f9fcf7ebddfa8b7e679ae4227d77e78d01997a9dbf62e97a` |
+| cr-coordinator-agent instructions | 5957 | `e764f29f5d1b59604e2a4d821a084c9c11d48b6eb809d173c52270a4bf12e023` |
+
+合同正文在四份 instructions 中的逐字命中位置（`indexOf`）= 1853 / 1851 / 2260 / 2834。
+
+## 附录 B — AIFI-35 cmd-09 尾 30 条评论 id 基线（启动 = 复测，逐 id 相同）
+
+- root `01a0de2a-ad26-72be-925a-847aa812b858`（16 条，含根）：
+  `01a0de2a-ad26-72be-925a-847aa812b858, 01a0de31-0e04-7363-9334-c092a70631fb, 01a0de4c-5a7c-7125-9771-be0e1d1f5291, 01a0de55-95d6-7570-8cbd-9abf14499978, 01a0de5b-da67-73c9-b31c-c92494cd5fcb, 01a0de6c-263a-7673-ae5f-bb863e09e9ad, 01a0de7c-fb0f-7033-8251-a1860dacc84f, 01a0de8c-96ad-7b04-9c7a-84811f8b5dd0, 01a0deae-bd99-7cad-843a-6ce9317525a8, 01a0deb0-bc76-7d17-8319-02f630b1005d, 01a0deb3-3369-730b-89e1-47b8e6a17ffd, 01a0deb7-9afe-7855-90ad-2bc60057c901, 01a0deb9-6a86-7166-91d0-daed21542d3a, 01a0debd-0358-727d-a1d2-e6790d4d67db, 01a0dec0-9a36-7d7f-93e4-7e947d3562ec, 01a0dec5-443e-7024-ad64-2e01e5522fb6`
+- root `01a0dec7-bad2-72e5-a1e4-964ed98b8d50`（18 条，含根）：
+  `01a0dec7-bad2-72e5-a1e4-964ed98b8d50, 01a0deca-687c-764b-b553-bead16ba079a, 01a0ded2-b6bc-7593-b598-760c2926f882, 01a0ded8-187a-7331-bfa3-b45df8d1fd6e, 01a0dede-bd01-7bbb-97aa-e317ff778d39, 01a0e035-d77a-731b-8861-e14d9566c673, 01a0e039-966d-7269-b70f-137d434de3a5, 01a0e044-0f8a-7010-9bd1-0edbf08f214e, 01a0e045-2212-7803-bd5f-20756c2737a6, 01a0e04a-cf71-7942-9f87-68763a3af432, 01a0e050-3914-7be7-88e1-508680165cab, 01a0e05a-fe26-728b-a58f-08da2cfe32d4, 01a0e05b-ec4d-7f3b-854f-0de51cd44c21, 01a0e05f-f106-7ba7-9ae3-99716c8a5d50, 01a0e067-60c9-7d3c-a23e-262d2c2497dc, 01a0e067-d295-7351-ab0f-61003db4d1b0, 01a0e06d-9653-7bce-8a1a-ff6314974f19, 01a0e06f-9237-73cf-8fab-ca8b2631c5dc`
+- root `01a0e076-7f5e-762b-ac62-b4f1818652bf`（9 条，含根）：
+  `01a0e076-7f5e-762b-ac62-b4f1818652bf, 01a0e078-2fe7-7f03-96b4-18190ba8220b, 01a0e07b-0b9f-7eed-a8f8-4cd30981bda2, 01a0e07e-87a1-7e99-a0ed-28453598615b, 01a0e081-0e27-73a9-b764-babf9d764259, 01a0e087-290e-702f-a304-86ca665dad5f, 01a0e090-396f-7cf3-ac4b-355a73e78345, 01a0e095-8ecf-7514-81d6-98651a636c15, 01a0e098-e98a-712c-b7c7-cfe89b8efdd6`
