@@ -1,25 +1,25 @@
 cr-id: CR-2026-072
 review-type: dev-plan
 reviewer: "OldBoy405"
-reviewed-at: "2026-09-29T00:03:41+08:00"
+reviewed-at: "2026-09-29T00:35:45+08:00"
 verdict: block
 repair-target: write-dev-plan
 blockers:
-  - "本轮新增： B-01 plan.md §7 AC-4 将 TASK-03 与 TASK-04 同列 TASK owner；本 Skill 要求每个关键 AC 恰有一个唯一 owner。请明确单一 owner，另一个标为关联 TASK，并保持两张稳定表及任务账本引用一致；复核 AC-1～5 逐行唯一。"
-  - "本轮新增： B-02 tasks/TASK-04.md §1/§6 明确消费 TASK-03 注入的 CRCTL_TASK_AUDIT_ROOT，但 tasks/_index.yml 中 TASK-04 depends-on: []、plan.md §2 称 03/04 可并行；下游可在生产者前标 done，验收不可按拓扑复现。请将 TASK-04 依赖 TASK-03 并同步 plan 依赖图/说明。"
-  - "本轮新增： B-03 TASK-01.md §6 称现有 caller-contract.test.mjs 的 REVIEWED_CALLS / OUT_OF_SURFACE_CALLERS 是命令 argv 数组，可沿用条目结构断言所有 CR 数据调用；实际 REVIEWED_CALLS 仅 file/command/verdict/note，extractProjected 只抽取四类投影命令及 hasDetail，OUT_OF_SURFACE_CALLERS.commands 仅是命令名。按现有结构不能证明 FR-1 的全调用点显式旗标覆盖。请修订任务和 plan 证据说明，明确扩展现有测试的解析/断言以覆盖 CR 数据命令及非空 --workspace 参数，复核 cmd-02 对应验收面。"
-  - "本轮新增： B-04 TASK-02.md §6 指定 authorityWorkspace 用 override || CRCTL_OPERATIONAL_WORKSPACE 选一值后比对；当 override=B 而环境=A 时环境被短路，无法满足 TASK-02 §4.3 与 SDD §4.4 的错配必须在读写前拒绝。请明确双值分别校验和可信 operational path 的来源及缺失时行为，补测试覆盖两值同时存在且冲突。"
+  - "部分解决： B-04 TASK-02 §2/§3/§6 已改为 override 与 env 同时存在时分别校验，但仅 CRCTL_OPERATIONAL_WORKSPACE=A、无 --operational-workspace、显式 --workspace=B 时仍规定返回 A；当前 advance 的 authorityWorkspace 结果直接用于 resolveCrState/写入，故可在 B 任务读取/推进 A 的同名 CR，违反 SDD §1/§4.4 的目标与任务 operational workspace 一致及 AC-3。请明确仅 env 存在时也须以已确认的 B authority 校验并失败关闭（不可采信 env 作唯一权威），或提供等价可信绑定；在 TASK-02 §4.3/cmd-01 增加此单 env 冲突的首次 CR 读写前非零、A/B 零副作用用例。"
 dimensions:
   sdd-to-plan: "block"
-  plan-to-tasks: "block"
+  plan-to-tasks: "pass"
   task-executability: "block"
-  dependency-topology: "block"
+  dependency-topology: "pass"
   interface-contracts: "block"
   acceptance-verifiability: "block"
   scope-and-simplicity: "pass"
   risk-and-rollback: "pass"
   reviewer-model: "pi/local coding agent"
-suggestions: []
+suggestions:
+  - "已解决： B-01 plan.md §7 AC-1～5 各只有一个 TASK owner（02/02/02/03/05）；AC-4 的 TASK-04 为关联 TASK，FR-4/cmd-04 可追溯。"
+  - "已解决： B-02 TASK-04 depends-on 已含 TASK-03，_index.yml、plan.md §2 和 §4 同步生产者到消费者的拓扑与逆序回滚。"
+  - "已解决： B-03 TASK-01 §3/§6 与 plan.md M1/cmd-02 已说明在现有 caller-contract.test.mjs 扩展 CR 数据命令抽取、逐处非空 --workspace 断言且保留 caller-01～08。"
 review-loop:
-  current-attempt: 1
-subject-sha256: 4f6a6dbfc7e93455a95ecc52d1adb331e5c170a06c5e3513325524617744cd54
+  current-attempt: 2
+subject-sha256: 57b9f03cf859e11a1fa91ddb08e48e5a44faa2762dfceb46672fb679d16a1726
