@@ -6,7 +6,7 @@ sdd-ref: "change-requests/CR-2026-072/sdd.md"
 target-version: 0.45
 status: draft
 created: 2026-09-28T23:46:25+08:00
-updated: 2026-09-28T23:46:25+08:00
+updated: 2026-09-29T00:15:54+08:00
 ---
 
 # CR-2026-072 开发计划
@@ -17,7 +17,7 @@ updated: 2026-09-28T23:46:25+08:00
 
 | 里程碑 | 内容 | TASK | 估算 |
 |---|---|---|---|
-| M1 调用方迁移 | 四 Agent Prompt、共享 crctl 合同、Pipeline 模板、Skill、push-progress、注入 hook、README 全部可执行 CR 调用显式 `--workspace`；caller-contract 清单追加调用形态断言 | TASK-01 | 0.5 人天 |
+| M1 调用方迁移 | 四 Agent Prompt、共享 crctl 合同、Pipeline 模板、Skill、push-progress、注入 hook、README 全部可执行 CR 调用显式 `--workspace`；caller-contract 扩展解析与断言（CR 数据命令抽取 + 非空 `--workspace` 断言） | TASK-01 | 0.5 人天 |
 | M2 crctl CLI 入口强校验 | 非 help 的 CR 数据命令强制非空有效 `--workspace`，缺/空 `WORKSPACE_REQUIRED`、无效 `WORKSPACE_NOT_FOUND`，先于 `loadGates`/状态读取；删除 env/cwd 回退；含跨项目同名 CR 隔离回归用例 | TASK-02 | 1 人天 |
 | M3 daemon 任务绑定 | Pipeline 保留预检 root；删除普通任务 `CRWorkspaceRoots[0]` 回退；无可信 local_directory 绑定不注入并清除继承的 CRCTL_* 环境键；`CRCTL_OPERATIONAL_WORKSPACE` 与任务 operational path 不一致时写路径拒绝 | TASK-03 | 0.5 人天 |
 | M4 拒绝审计归属 | gitguard 拒绝行为不变；审计根改由任务预检 root 独立传入，不再读 `CRCTL_WORKSPACE`；无绑定时不写他项目 outbox，错误码不变 | TASK-04 | 0.5 人天 |
@@ -33,13 +33,15 @@ TASK-01 调用方迁移（tools：agents/pipeline-templates/skills/hook/README�
    │  发布顺序前置（同批交付门）：TASK-01 未完成不合入 TASK-02 强校验
    ▼
 TASK-02 crctl CLI 入口强校验（tools：crctl.mjs + test/crctl.test.mjs）
-TASK-03 daemon 任务绑定（multica：daemon.go / pipeline_task.go / local_directory.go + Go 测试）┐
-TASK-04 gitguard 拒绝审计归属（multica：cmd_gitguard.go + Go 测试）                          ┘ 与 TASK-01/02 可并行
+TASK-03 daemon 任务绑定（multica：daemon.go / pipeline_task.go / local_directory.go + Go 测试）
+   │  注入 CRCTL_TASK_AUDIT_ROOT（生产者 → 消费者）
+   ▼
+TASK-04 gitguard 拒绝审计归属（multica：cmd_gitguard.go + Go 测试）    【TASK-03 与 TASK-01/02 可并行】
    ▼
 TASK-05 全量回归 + 调用点清单 + 证据落盘（依赖 TASK-01～04 全部完成）
 ```
 
-依赖说明：TASK-02 对 TASK-01 仅为**发布顺序**约束（代码无调用关系）；TASK-03/04 同仓但相互独立；TASK-05 消费全部前置 TASK 的真实运行结果。
+依赖说明：TASK-02 对 TASK-01 仅为**发布顺序**约束（代码无调用关系）；TASK-04 硬依赖 TASK-03（消费其注入的 `CRCTL_TASK_AUDIT_ROOT`，生产者未完成消费者不得标记 done）；TASK-03 与 TASK-01/02 相互独立可并行；TASK-05 消费全部前置 TASK 的真实运行结果。
 
 ## 3. 资源与分工
 
@@ -55,13 +57,13 @@ TASK-05 全量回归 + 调用点清单 + 证据落盘（依赖 TASK-01～04 全�
 
 | # | 风险 | 缓解 | 回滚单元 |
 |---|---|---|---|
-| R1 | 扫描面外调用点遗漏（CI workflow、hook、脚本） | SDD §4.1 逐项清单 + caller-contract 追加显式旗标断言 + lint-prompts enforce；TASK-05 交付清单 | revert TASK-01（文档/Skill/Prompt，无下游代码消费者） |
+| R1 | 扫描面外调用点遗漏（CI workflow、hook、脚本） | SDD §4.1 逐项清单 + caller-contract 扩展解析与断言（CR 数据命令 + 非空 `--workspace`） + lint-prompts enforce；TASK-05 交付清单 | revert TASK-01（文档/Skill/Prompt，无下游代码消费者） |
 | R2 | CLI 强校验先于调用方迁移上线，旧 Pipeline 全量失败 | 同批交付门：TASK-01 完成才合入 TASK-02；`WORKSPACE_REQUIRED` 先于任何 CR 数据读取 | revert TASK-02（含其同批 CLI 用例） |
 | R3 | Windows 路径大小写 / symlink / 相对路径逃逸 | realpath 规范化比较 + TASK-02 用例覆盖等价与逃逸面 | 同 TASK-02 |
-| R4 | daemon 注入变更回归影响现有 Pipeline | Pipeline 预检路径保持不变；Go 回归覆盖有/无绑定两态 | revert TASK-03（含其同批 daemon 用例） |
+| R4 | daemon 注入变更回归影响现有 Pipeline | Pipeline 预检路径保持不变；Go 回归覆盖有/无绑定两态 | revert TASK-03（含其同批 daemon 用例）；`CRCTL_TASK_AUDIT_ROOT` 被 TASK-04 消费，TASK-04 为下游消费者，按逆拓扑顺序先于 TASK-03 回退 |
 | R5 | 拒绝审计误归属他项目 | gitguard 用例覆盖有根（归本项目）/ 无根（不写）两态；拒绝错误码不变；审计失败不放行 | revert TASK-04（含其同批审计用例） |
 
-整体回滚顺序（逆拓扑）：TASK-05（证据/报告）→ TASK-04 → TASK-03 → TASK-02 → TASK-01；knowledge-base 仅 CR 文档，随各 TASK commit 一并回退。单 TASK commit 均自含其新增测试，单点 revert 不破坏其余 TASK。
+整体回滚顺序（逆拓扑）：TASK-05（证据/报告）→ TASK-04 → TASK-03 → TASK-02 → TASK-01；knowledge-base 仅 CR 文档，随各 TASK commit 一并回退。单 TASK commit 均自含其新增测试；被消费的共享改动（TASK-03 注入的 `CRCTL_TASK_AUDIT_ROOT`）按逆拓扑先回退其下游消费者（TASK-04）再回退生产者，单点 revert 不破坏其余 TASK 的构建与测试。
 
 ## 5. 验收与发布策略
 
@@ -93,7 +95,7 @@ cwd 相对对应仓 CR worktree 根（tools：`.rayai-worktrees\tools\requiremen
 | cmd-03 | tools | skills/shared/crctl/scripts | node | ["lint-prompts.mjs","--mode","enforce"] | 300 |
 | cmd-04 | multica | server | go | ["test","./..."] | 900 |
 
-覆盖说明：cmd-01 观测 FR-2/AC-1～AC-3（含 TASK-02 新增的 A/B 同名 CR 隔离、缺/空/无效旗标用例，测试自建临时 workspace）；cmd-02 观测 FR-1 调用形态断言；cmd-03 观测 FR-1 的 prompt/README 漂移面（enforce 模式命中即非零）；cmd-04 观测 FR-3/FR-4/AC-4（含 TASK-03/04 新增 daemon 绑定与审计用例）。FR-5/AC-5 的验收面为四条命令结果的并集。
+覆盖说明：cmd-01 观测 FR-2/AC-1～AC-3（含 TASK-02 新增的 A/B 同名 CR 隔离、缺/空/无效旗标用例、operational 双值同时存在且冲突的失败关闭用例，测试自建临时 workspace）；cmd-02 观测 FR-1：既有 caller-01～08 登记/漂移/`--detail` 断言保持不变，本 CR 在同一测试内**扩展解析与断言**——现有 `extractProjected` 仅抽取四类投影命令与 `hasDetail`、`REVIEWED_CALLS` 条目仅 `file/command/verdict/note`、`OUT_OF_SURFACE_CALLERS.commands` 仅命令名，均不含 argv 结构，故新增 CR 数据命令抽取（覆盖投影集合之外的真实 CR 数据读写子命令）与逐调用点断言（每处 CR 数据读写命令含 `--workspace` 且路径 token 非空，扫描面内与已登记扫描面外调用点均纳入）；cmd-03 观测 FR-1 的 prompt/README 漂移面（enforce 模式命中即非零）；cmd-04 观测 FR-3/FR-4/AC-4（含 TASK-03/04 新增 daemon 绑定与审计用例）。FR-5/AC-5 的验收面为四条命令结果的并集。
 
 ## 7. AC/业务闭环覆盖矩阵
 
@@ -101,8 +103,8 @@ cwd 相对对应仓 CR worktree 根（tools：`.rayai-worktrees\tools\requiremen
 |---|---|---|---|
 | AC-1 显式 B 只见 B；终态查询不依赖 STATUS_DIVERGED 纠错 | SDD §1、§4.2 | CR-2026-072-TASK-02 | cmd-01 |
 | AC-2 cwd=B/env=A 缺/空旗标 → WORKSPACE_REQUIRED 非零且 A/B 零副作用 | SDD §2、§4.2 | CR-2026-072-TASK-02 | cmd-01 |
-| AC-3 显式 B/env=A 时读、gate、推进只采信 B；无效路径不回退 | SDD §1、§3、§4.2、§4.4 | CR-2026-072-TASK-02 | cmd-01 |
-| AC-4 Pipeline 用预检路径；普通任务无根不注入、有根只注入该项目、歧义报错；gitguard 审计不误归属 | SDD §4.3、§4.4 | CR-2026-072-TASK-03、CR-2026-072-TASK-04 | cmd-04 |
+| AC-3 显式 B/env=A 时读、gate、推进只采信 B；无效路径不回退；operational 双值冲突于读写前拒绝 | SDD §1、§3、§4.2、§4.4 | CR-2026-072-TASK-02 | cmd-01 |
+| AC-4 Pipeline 用预检路径；普通任务无根不注入、有根只注入该项目、歧义报错；gitguard 审计不误归属 | SDD §4.3、§4.4 | CR-2026-072-TASK-03 | cmd-04 |
 | AC-5 四类测试结果 + 确切调用点清单；显式覆盖率 100%；CLI 与调用方同批发布 | SDD §4.1、§4.5 | CR-2026-072-TASK-05 | cmd-01、cmd-02、cmd-03、cmd-04 |
 
-AC-1～AC-5 均为影响主路径验收可达性的关键 AC，逐行单列；无合并行。
+AC-1～AC-5 均为影响主路径验收可达性的关键 AC，逐行单列、TASK owner 逐行唯一；无合并行。AC-4 的 owner 为 TASK-03（daemon 绑定与 `CRCTL_TASK_AUDIT_ROOT` 注入的生产者层），TASK-04 为其**关联 TASK**（gitguard 审计归属消费者），TASK-04 的验收面经 §6 交付覆盖表 FR-4 行与 cmd-04 追溯。

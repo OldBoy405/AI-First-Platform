@@ -9,7 +9,7 @@ title: gitguard 拒绝审计归属：独立任务审计根
 slug: gitguard-audit-root-binding
 status: pending
 estimate: 4h
-depends-on: []
+depends-on: ["CR-2026-072-TASK-03"]
 created: 2026-09-28T23:52:00+08:00
 ---
 
