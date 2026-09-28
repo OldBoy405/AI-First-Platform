@@ -6,7 +6,7 @@ sdd-ref: "change-requests/CR-2026-072/sdd.md"
 target-version: 0.45
 status: draft
 created: 2026-09-28T23:46:25+08:00
-updated: 2026-09-29T00:15:54+08:00
+updated: 2026-09-29T00:55:00+08:00
 ---
 
 # CR-2026-072 开发计划
@@ -95,7 +95,7 @@ cwd 相对对应仓 CR worktree 根（tools：`.rayai-worktrees\tools\requiremen
 | cmd-03 | tools | skills/shared/crctl/scripts | node | ["lint-prompts.mjs","--mode","enforce"] | 300 |
 | cmd-04 | multica | server | go | ["test","./..."] | 900 |
 
-覆盖说明：cmd-01 观测 FR-2/AC-1～AC-3（含 TASK-02 新增的 A/B 同名 CR 隔离、缺/空/无效旗标用例、operational 双值同时存在且冲突的失败关闭用例，测试自建临时 workspace）；cmd-02 观测 FR-1：既有 caller-01～08 登记/漂移/`--detail` 断言保持不变，本 CR 在同一测试内**扩展解析与断言**——现有 `extractProjected` 仅抽取四类投影命令与 `hasDetail`、`REVIEWED_CALLS` 条目仅 `file/command/verdict/note`、`OUT_OF_SURFACE_CALLERS.commands` 仅命令名，均不含 argv 结构，故新增 CR 数据命令抽取（覆盖投影集合之外的真实 CR 数据读写子命令）与逐调用点断言（每处 CR 数据读写命令含 `--workspace` 且路径 token 非空，扫描面内与已登记扫描面外调用点均纳入）；cmd-03 观测 FR-1 的 prompt/README 漂移面（enforce 模式命中即非零）；cmd-04 观测 FR-3/FR-4/AC-4（含 TASK-03/04 新增 daemon 绑定与审计用例）。FR-5/AC-5 的验收面为四条命令结果的并集。
+覆盖说明：cmd-01 观测 FR-2/AC-1～AC-3（含 TASK-02 新增的 A/B 同名 CR 隔离、缺/空/无效旗标用例、operational 双值同时存在且冲突及仅 `CRCTL_OPERATIONAL_WORKSPACE` 存在且与显式 `--workspace` 冲突（env 不作唯一权威）的首次读写前失败关闭用例，测试自建临时 workspace）；cmd-02 观测 FR-1：既有 caller-01～08 登记/漂移/`--detail` 断言保持不变，本 CR 在同一测试内**扩展解析与断言**——现有 `extractProjected` 仅抽取四类投影命令与 `hasDetail`、`REVIEWED_CALLS` 条目仅 `file/command/verdict/note`、`OUT_OF_SURFACE_CALLERS.commands` 仅命令名，均不含 argv 结构，故新增 CR 数据命令抽取（覆盖投影集合之外的真实 CR 数据读写子命令）与逐调用点断言（每处 CR 数据读写命令含 `--workspace` 且路径 token 非空，扫描面内与已登记扫描面外调用点均纳入）；cmd-03 观测 FR-1 的 prompt/README 漂移面（enforce 模式命中即非零）；cmd-04 观测 FR-3/FR-4/AC-4（含 TASK-03/04 新增 daemon 绑定与审计用例）。FR-5/AC-5 的验收面为四条命令结果的并集。
 
 ## 7. AC/业务闭环覆盖矩阵
 
@@ -103,7 +103,7 @@ cwd 相对对应仓 CR worktree 根（tools：`.rayai-worktrees\tools\requiremen
 |---|---|---|---|
 | AC-1 显式 B 只见 B；终态查询不依赖 STATUS_DIVERGED 纠错 | SDD §1、§4.2 | CR-2026-072-TASK-02 | cmd-01 |
 | AC-2 cwd=B/env=A 缺/空旗标 → WORKSPACE_REQUIRED 非零且 A/B 零副作用 | SDD §2、§4.2 | CR-2026-072-TASK-02 | cmd-01 |
-| AC-3 显式 B/env=A 时读、gate、推进只采信 B；无效路径不回退；operational 双值冲突于读写前拒绝 | SDD §1、§3、§4.2、§4.4 | CR-2026-072-TASK-02 | cmd-01 |
+| AC-3 显式 B/env=A 时读、gate 只观察 B，推进仅以 B 为权威；无效路径不回退；operational 双值冲突及仅 env 冲突（env=A、无旗标、`--workspace=B`）均于首次读写前失败关闭（env 不作唯一权威，A/B 零副作用） | SDD §1、§3、§4.2、§4.4 | CR-2026-072-TASK-02 | cmd-01 |
 | AC-4 Pipeline 用预检路径；普通任务无根不注入、有根只注入该项目、歧义报错；gitguard 审计不误归属 | SDD §4.3、§4.4 | CR-2026-072-TASK-03 | cmd-04 |
 | AC-5 四类测试结果 + 确切调用点清单；显式覆盖率 100%；CLI 与调用方同批发布 | SDD §4.1、§4.5 | CR-2026-072-TASK-05 | cmd-01、cmd-02、cmd-03、cmd-04 |
 
