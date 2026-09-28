@@ -1,0 +1,18 @@
+cr-id: CR-2026-072
+review-type: requirement
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-28T22:52:19+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  结构完整性: "概述、用户故事、FR-1~FR-5、NFR、AC-1~AC-5、范围排除齐全。"
+  FR可测试性: "FR-1~FR-5分别有AC-1~AC-5；同名双根、缺旗标、错环境、daemon绑定和四类回归均有可观察结果。"
+  范围合理性: "调用方迁移、CLI入口、daemon绑定、拒绝审计同批交付；排除AIFI-35业务门禁和新全局注册器。"
+  与规划对齐: "来源为AIFI-37 Issue而非独立规划报告；FR覆盖Issue的错误根、显式路径、fail-closed和同批回归目标。"
+  依赖识别: "依赖既有crctl workspace inspect、Pipeline task root、push-progress、gitguard及现有测试；AIFI-35仅作问题来源。"
+  契约闭包: "CLI命令和flag、非空有效输入、结构化WORKSPACE_REQUIRED、非零退出、无读写副作用、调用方可信绑定、状态与验收观察点已覆盖；幂等沿用现有显式路径语义。HTTP API N/A无新增endpoint；Skill N/A无新增Skill契约，仅迁移既有crctl调用。"
+suggestions: []
+review-loop:
+  current-attempt: 1
+subject-file: change-requests/CR-2026-072/prd.md
+subject-sha256: 7f72a86455dc791c448027ce5a7dd9746249134c85e4f33030657a23f9e62d83
