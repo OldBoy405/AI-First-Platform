@@ -1,0 +1,21 @@
+cr-id: CR-2026-072
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-28T23:20:27+08:00"
+verdict: block
+blockers:
+  - "本轮新增： sdd.md 的既有实现依赖 dep-12 将 ai-first-platform-docs/.github/workflows/cr-guard.yml 标注为当前 HEAD 1602ef02ec2a968f15f50c5770de1d74631298f8，但资源 worktree 的 crctl git rev-parse HEAD 为 1f400473e077b6a89f4b46224b5971e1119020b6；违反依赖清单 commit SHA 与取证结果一致的约束。请修订 dep-12 的当前实现依赖结论及其正文引用，使其可在已提交 SDD 的权威版本复验，或删除不必要的现状依赖。"
+dimensions:
+  PRD↔SDD对齐: "FR-1～FR-5 均有 §1～§4 的方案；AC-1～AC-5 对应 §6，可观察双根路由、缺参、daemon 注入、审计及同批测试，均未被前置条件过滤。"
+  架构合理性: "tools ARCHITECTURE.md 的状态与账本单写者、Multica ARCHITECTURE.md 的任务单路径/CR authority 分离得到遵守；knowledge-base 工作树无 ARCHITECTURE.md。批准范围四字段自洽，SDD-CLOSE-01～03 给出结论；dep-12 的 KB 现状引用 SHA 与实际 HEAD 不符。"
+  数据模型完整性: "§2 重用 PipelineWorkspace、PipelineLocalWorkDir、ProjectResources 和 inspect 输出；无新增持久 schema，缺绑定时无 env 与 outbox。"
+  接口契约: "无 HTTP API 变更；§3 明确 CLI --workspace、WORKSPACE_REQUIRED、有效路径和既有双路径参数，gitguard 拒绝返回码保持。"
+  多仓架构约束: "tools、multica 与 KB 的责任及方向已分配；依赖核验时 tools HEAD=b2e935684d3bbfb4727ae3f0ec1f7e4026b5c293、multica HEAD=1c24d353cc8fda9024623f8bdc85f312e0364672 与 dep-1～11 对应声明一致；KB HEAD=1f400473e077b6a89f4b46224b5971e1119020b6 与 dep-12 声明不一致。"
+  性能与安全: "§7 拒绝错根、无绑定 fail-closed、realpath 与每次旗标校验；无全盘根扫描。"
+  可测试性: "§4.5 给出双 workspace、无旗标/空旗标/错环境、审计与四类既有测试的可观察结果；设计评审不执行实现回归。"
+  Prompt采纳影响: "§8 已列 dispatch 修改后的 Skill、push-progress、共享 crctl 与状态注入 hook；符合条件性维度，最终调用点清单仍须实现期核实。"
+suggestions: []
+review-loop:
+  current-attempt: 1
+subject-file: change-requests/CR-2026-072/sdd.md
+subject-sha256: 9073e40f0cde8234de330265025b3507fde1721bc43a5ccbc97efb4b688da13c
