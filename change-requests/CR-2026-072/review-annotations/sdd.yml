@@ -1,0 +1,21 @@
+cr-id: CR-2026-072
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-28T23:31:28+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  PRD↔SDD对齐: "FR-1～FR-5 对应 §1～§4；AC-1～AC-5 对应 §6；逐项有落点、可观测结果及可达路径；SDD-CLOSE-01～03 均已关闭。"
+  架构合理性: "§1～§4 保留 crctl 唯一状态/账本写者和 multica 任务路径与 CR 权威分离，§9 批准范围四字段齐全自洽；已删去错误 SHA 的 dep-12 依赖。"
+  数据模型完整性: "§2 复用 PipelineWorkspace、PipelineLocalWorkDir、ProjectResources 和 inspect 输出；无新增持久 schema，缺绑定不注入环境及错根审计。"
+  接口契约: "无 HTTP API 修改；§3 CLI 参数、WORKSPACE_REQUIRED、无效路径错误及双路径写语义清晰。"
+  多仓架构约束: "tools、multica、KB 职责边界清晰；dep-1～11 路径与符号在对应资源仓 HEAD 核对，tools=b2e935684d3bbfb4727ae3f0ec1f7e4026b5c293，multica=1c24d353cc8fda9024623f8bdc85f312e0364672；KB 不再有现状依赖。"
+  性能与安全: "§7 显式路径校验、realpath、无绑定 fail-closed 与审计归属隔离；每命令不扫描全盘。"
+  可测试性: "§4.5 与 §6 给出同名双根、缺/空旗标、环境错配、daemon 注入、拒绝审计及四类既有回归的可观察结果。"
+  Prompt采纳影响: "§8 列出 crctl dispatch 修改后 develop/requirement/writeback/sync Skill 与状态注入 hook 的采纳面；CI workflow 仅列为实施期调用点核对。"
+suggestions:
+  - "已解决： sdd.md 的既有实现依赖 dep-12 将 ai-first-platform-docs/.github/workflows/cr-guard.yml 标注为当前 HEAD 1602ef02ec2a968f15f50c5770de1d74631298f8，但资源 worktree 的 crctl git rev-parse HEAD 为 1f400473e077b6a89f4b46224b5971e1119020b6；违反依赖清单 commit SHA 与取证结果一致的约束。请修订 dep-12 的当前实现依赖结论及其正文引用，使其可在已提交 SDD 的权威版本复验，或删除不必要的现状依赖。复核：本轮 SDD 删除该依赖及正文引用；清单只含 dep-1～11，正文无未定义 dep-N；workflow 仅留作实施期调用点清点，不再构成现状依赖。"
+review-loop:
+  current-attempt: 2
+subject-file: change-requests/CR-2026-072/sdd.md
+subject-sha256: 59201a435303715917b19adf0c329c79d6f751fe2cf4813f1ff291b5f45f2163

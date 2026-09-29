@@ -1,0 +1,35 @@
+$ go test ./internal/daemon/ ./cmd/multica/ -count=1 -v -run Test(InjectTaskCRWorkspaceEnv|DaemonEnvBuildHasNoConfigFirstRootFallback|PreparePipelineTaskHydratesMachineLocalPaths|GitguardDenialAuditAttribution|GitguardExecHelperProcess)
+(exit=0)
+--- stdout ---
+=== RUN   TestInjectTaskCRWorkspaceEnvWithoutBinding
+--- PASS: TestInjectTaskCRWorkspaceEnvWithoutBinding (0.00s)
+=== RUN   TestInjectTaskCRWorkspaceEnvUsesTaskLocalDirectory
+=== RUN   TestInjectTaskCRWorkspaceEnvUsesTaskLocalDirectory/in_place
+=== RUN   TestInjectTaskCRWorkspaceEnvUsesTaskLocalDirectory/worktree
+--- PASS: TestInjectTaskCRWorkspaceEnvUsesTaskLocalDirectory (0.00s)
+    --- PASS: TestInjectTaskCRWorkspaceEnvUsesTaskLocalDirectory/in_place (0.00s)
+    --- PASS: TestInjectTaskCRWorkspaceEnvUsesTaskLocalDirectory/worktree (0.00s)
+=== RUN   TestInjectTaskCRWorkspaceEnvRejectsAmbiguousLocalDirectory
+--- PASS: TestInjectTaskCRWorkspaceEnvRejectsAmbiguousLocalDirectory (0.00s)
+=== RUN   TestInjectTaskCRWorkspaceEnvRequiresCRLedger
+--- PASS: TestInjectTaskCRWorkspaceEnvRequiresCRLedger (0.00s)
+=== RUN   TestInjectTaskCRWorkspaceEnvPipelineTask
+--- PASS: TestInjectTaskCRWorkspaceEnvPipelineTask (0.00s)
+=== RUN   TestDaemonEnvBuildHasNoConfigFirstRootFallback
+--- PASS: TestDaemonEnvBuildHasNoConfigFirstRootFallback (0.00s)
+=== RUN   TestPreparePipelineTaskHydratesMachineLocalPaths
+--- PASS: TestPreparePipelineTaskHydratesMachineLocalPaths (0.00s)
+PASS
+ok  	github.com/multica-ai/multica/server/internal/daemon	0.085s
+=== RUN   TestGitguardExecHelperProcess
+--- PASS: TestGitguardExecHelperProcess (0.00s)
+=== RUN   TestGitguardDenialAuditAttribution
+=== RUN   TestGitguardDenialAuditAttribution/unbound_task_writes_no_audit
+=== RUN   TestGitguardDenialAuditAttribution/bound_task_spools_to_its_own_project_outbox
+--- PASS: TestGitguardDenialAuditAttribution (0.06s)
+    --- PASS: TestGitguardDenialAuditAttribution/unbound_task_writes_no_audit (0.03s)
+    --- PASS: TestGitguardDenialAuditAttribution/bound_task_spools_to_its_own_project_outbox (0.03s)
+PASS
+ok  	github.com/multica-ai/multica/server/cmd/multica	0.139s
+
+--- stderr ---

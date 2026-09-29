@@ -1,0 +1,33 @@
+cr-id: CR-2026-072
+tasks:
+  - id: CR-2026-072-TASK-01
+    title: "调用方迁移：全量 CR 调用点显式 --workspace 与调用形态断言"
+    status: done
+    done-at: "2026-09-29T08:55:45+08:00"
+    estimate: 4h
+    depends-on: []
+  - id: CR-2026-072-TASK-02
+    title: "crctl CLI 入口失败关闭：强制显式 --workspace"
+    status: done
+    done-at: "2026-09-29T09:25:14+08:00"
+    estimate: 8h
+    depends-on: [CR-2026-072-TASK-01]
+  - id: CR-2026-072-TASK-03
+    title: "daemon 任务绑定：删除配置首根回退，普通任务按项目绑定注入"
+    status: done
+    done-at: "2026-09-29T10:15:14+08:00"
+    estimate: 4h
+    depends-on: []
+  - id: CR-2026-072-TASK-04
+    title: "gitguard 拒绝审计归属：独立任务审计根"
+    status: done
+    done-at: "2026-09-29T10:15:27+08:00"
+    estimate: 4h
+    depends-on: [CR-2026-072-TASK-03]
+  - id: CR-2026-072-TASK-05
+    title: "全量回归与证据：四类测试、调用点清单、同批交付核验"
+    status: done
+    done-at: "2026-09-29T12:00:40+08:00"
+    estimate: 4h
+    depends-on: [CR-2026-072-TASK-01, CR-2026-072-TASK-02, CR-2026-072-TASK-03, CR-2026-072-TASK-04]
+
