@@ -1,10 +1,10 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 spec-id: ai-first-platform
-cr-ref: CR-2026-071
-cr-history: [CR-2026-060, CR-2026-059, CR-2026-061, CR-2026-062, CR-2026-063, CR-2026-065, CR-2026-064, CR-2026-066, CR-2026-067, CR-2026-068, CR-2026-069, CR-2026-070, CR-2026-071]
-target-version: "0.44"
+cr-ref: CR-2026-072
+cr-history: [CR-2026-060, CR-2026-059, CR-2026-061, CR-2026-062, CR-2026-063, CR-2026-065, CR-2026-064, CR-2026-066, CR-2026-067, CR-2026-068, CR-2026-069, CR-2026-070, CR-2026-071, CR-2026-072]
+target-version: "0.45"
 baseline-since: "0.33"
-generated-at: "2026-09-28T18:21:08+08:00"
+generated-at: "2026-09-29T14:05:47+08:00"
 
 milestones:
   - cr: CR-2026-060
@@ -1105,3 +1105,59 @@ milestones:
         code: { verdict: pass, path: change-requests/CR-2026-071/review-annotations/code.yml, sha256: 52f53548bf350ccb5059edcdd7181ff60f2671b57da2254ee3a2eaa82e7f1795 }
       approval: { status: approved, path: change-requests/CR-2026-071/approval.yml, sha256: 743742e8f5befb47f8ff1a9f7de52afb8b9bc47fb929f2e503d2a3eda5021318 }
       merge: { status: merged, path: change-requests/CR-2026-071/merge-commits.yml, sha256: 7ccac7f9040d254a4b744d4b15d11a7710aa27a995bc374d098f781c3b83f49e }
+  - cr: CR-2026-072
+    milestone: "0.45"
+    target-version: "0.45"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 5e1b2b481c0015748a389483cfd08f7b0d118cd5
+        branch: requirement/CR-2026-072
+      - repo: multica
+        trunk: main
+        sha: 446397a1f45d5683d14dda353dded93df396c861
+        branch: requirement/CR-2026-072
+      - repo: tools
+        trunk: main
+        sha: 668a9f62141e0fb9310aa40df0ff17ca86e0abfd
+        branch: requirement/CR-2026-072
+    frs:
+      - fr: FR-1
+        title: 调用点迁移
+        sdd: SDD §4.1、§8
+        tasks: [CR-2026-072-TASK-01]
+        code: [ai-first-platform-docs@5e1b2b481c00, multica@446397a1f45d, tools@668a9f62141e]
+        evidence: [cmd-02, cmd-03]
+      - fr: FR-2
+        title: CLI 入口失败关闭
+        sdd: SDD §2、§4.2
+        tasks: [CR-2026-072-TASK-02]
+        code: [ai-first-platform-docs@5e1b2b481c00, multica@446397a1f45d, tools@668a9f62141e]
+        evidence: [cmd-01]
+      - fr: FR-3
+        title: daemon 任务绑定
+        sdd: SDD §2、§4.3
+        tasks: [CR-2026-072-TASK-03]
+        code: [ai-first-platform-docs@5e1b2b481c00, multica@446397a1f45d, tools@668a9f62141e]
+        evidence: [cmd-04]
+      - fr: FR-4
+        title: 拒绝审计归属
+        sdd: SDD §2、§4.4
+        tasks: [CR-2026-072-TASK-04]
+        code: [ai-first-platform-docs@5e1b2b481c00, multica@446397a1f45d, tools@668a9f62141e]
+        evidence: [cmd-04]
+      - fr: FR-5
+        title: 同批交付与回归
+        sdd: SDD §4.1、§4.5
+        tasks: [CR-2026-072-TASK-05]
+        code: [ai-first-platform-docs@5e1b2b481c00, multica@446397a1f45d, tools@668a9f62141e]
+        evidence: [cmd-01, cmd-02, cmd-03, cmd-04]
+    evidence:
+      test: { status: pass, path: change-requests/CR-2026-072/test-report.md, sha256: 5187673de7efe6683c41a5936637587e5a508a645f43d95ba2c3a57dbee13931 }
+      reviews:
+        requirement: { verdict: pass, path: change-requests/CR-2026-072/review-annotations/requirement.yml, sha256: aebf3a77dcb92077bf26c24dcd4af4ad569129f27070ec58b26ac0135d52d994 }
+        tech-design: { verdict: pass, path: change-requests/CR-2026-072/review-annotations/sdd.yml, sha256: 8cec58cf67f496c1595a040126d9cc50760597664dcdbd67ed0a5a20163ecde6 }
+        dev-plan: { verdict: pass, path: change-requests/CR-2026-072/review-annotations/dev-plan.yml, sha256: c241c67b5816d99631050e57ace78cf21ce245b7affb020f12cb68af0f7ab886 }
+        code: { verdict: pass, path: change-requests/CR-2026-072/review-annotations/code.yml, sha256: fdd3c596ebf9f97585dd5153bc10ed83e6ea3e9321003752176aab7c8c963c8b }
+      approval: { status: approved, path: change-requests/CR-2026-072/approval.yml, sha256: c87874038432bf35a68cbf1ae6b4ea0201339861c57939e65b44222ad215b544 }
+      merge: { status: merged, path: change-requests/CR-2026-072/merge-commits.yml, sha256: 13ae787dd1ac00c540a6d1691d6e5c6d33f9f16a9d41e164e0759be24d4d1286 }
