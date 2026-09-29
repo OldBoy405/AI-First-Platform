@@ -3151,3 +3151,38 @@ tasks:
     cr-ref: CR-2026-071
     target-version: "0.44"
     estimate: 2h
+  - id: CR-2026-072-TASK-01
+    file: TASK-0.45-CR-2026-072-01-caller-migration-explicit-workspace.md
+    title: 调用方迁移：全量 CR 调用点显式 --workspace 与调用形态断言
+    status: done
+    cr-ref: CR-2026-072
+    target-version: "0.45"
+    estimate: 4h
+  - id: CR-2026-072-TASK-02
+    file: TASK-0.45-CR-2026-072-02-crctl-workspace-required.md
+    title: crctl CLI 入口失败关闭：强制显式 --workspace
+    status: done
+    cr-ref: CR-2026-072
+    target-version: "0.45"
+    estimate: 8h
+  - id: CR-2026-072-TASK-03
+    file: TASK-0.45-CR-2026-072-03-daemon-task-workspace-binding.md
+    title: daemon 任务绑定：删除配置首根回退，普通任务按项目绑定注入
+    status: done
+    cr-ref: CR-2026-072
+    target-version: "0.45"
+    estimate: 4h
+  - id: CR-2026-072-TASK-04
+    file: TASK-0.45-CR-2026-072-04-gitguard-audit-root-binding.md
+    title: gitguard 拒绝审计归属：独立任务审计根
+    status: done
+    cr-ref: CR-2026-072
+    target-version: "0.45"
+    estimate: 4h
+  - id: CR-2026-072-TASK-05
+    file: TASK-0.45-CR-2026-072-05-regression-evidence-checklist.md
+    title: 全量回归与证据：四类测试、调用点清单、同批交付核验
+    status: done
+    cr-ref: CR-2026-072
+    target-version: "0.45"
+    estimate: 4h
