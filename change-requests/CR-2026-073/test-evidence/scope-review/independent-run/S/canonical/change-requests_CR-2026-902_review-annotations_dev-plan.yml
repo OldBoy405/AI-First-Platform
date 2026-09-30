@@ -1,0 +1,23 @@
+cr-id: CR-2026-902
+review-type: dev-plan
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-30T19:07:24+08:00"
+verdict: block
+repair-target: write-dev-plan
+blockers:
+  - "本轮新增：AC-1/AC-2（FR-1/FR-2）的声称面宽于关键证据的观测面——plan.md §5 写「本 CR 的验收要求全量测试通过」并以 cmd-01、cmd-02 为证据，TASK-01 完成标志同样要求「全量测试通过」，但证据命令表两条关键命令只是 `node --test --test-name-pattern <定向用例名> scripts/duration.test.mjs`，各只运行一个定向用例，属子集运行声称全量通过；已批准 SDD §4（关键证据按最窄用例选择）与 PRD AC-1/AC-2（定向用例通过）只要求定向用例，故为 plan/TASK 翻译问题而非 SDD 缺陷：删除 plan §5 与 TASK-01 完成标志的全量声称（plan §1 里程碑「全量声称核对」一并修订），使声称面与 cmd-01/cmd-02 观测面一致，repair-target=write-dev-plan。"
+dimensions:
+  sdd-to-plan: "pass"
+  plan-to-tasks: "pass"
+  task-executability: "pass"
+  dependency-topology: "pass"
+  interface-contracts: "pass"
+  acceptance-verifiability: "block"
+  scope-and-simplicity: "pass"
+  risk-and-rollback: "pass"
+  reviewer-model: "Gobao/deepseek-flash (pi coding agent; local run without Multica task context)"
+suggestions:
+  - "范围外：若确需全仓回归门槛，应另立 CR 或在 CI 常规流水线配置，不作为本 CR 的关键 cmd-NN 与 TASK 完成前置。"
+review-loop:
+  current-attempt: 1
+subject-sha256: 2ab660f153bd5b32ed6e5f1d072d97e7438998089f5ebd3dc13f5f976b87307c

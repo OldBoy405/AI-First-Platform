@@ -1,0 +1,21 @@
+cr-id: CR-2026-073
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-30T12:54:03+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  批准范围: "SDD 第8节四字段齐全；A/B/C 范围、排除、零差异与后续项自洽；当前 AC 未延后到 follow_up。"
+  PRD↔SDD对齐: "FR-1～FR-8 分别落于第2、3、4、6节；AC-1～AC-7 有对应设计、可观测结果与可达入口；未发现未关闭的 SDD-CLOSE 项。"
+  架构合理性: "tools ARCHITECTURE.md 的 Skill→crctl→事务单向依赖保持；有界缓冲、resolver 安装根与 Skill 文档约束不另开账本或事务通道；替代取舍见第5节。"
+  数据模型完整性: "10 MiB 上限、ENOBUFS 技术错误 extra、null exit 与诊断片段边界、audit JSONL 根/actor/稳定去重键及现有 plan/TASK 表均有设计；不变更 schema。"
+  接口契约: "runTestPlan、testCr、三个 CLI adapter 的入口及错误分流清楚；无新增 HTTP API，HTTP 契约项不适用。"
+  多仓架构约束: "代码事实仅按 inspect 的 tools/multica worktree 核对；九项 dep-N 的文件/符号与两仓 HEAD SHA 对齐；multica 仅引用 CUSTOM.md，上游全量例外与 tools 改动边界分明。"
+  性能与安全: "有限内存并抑制超限片段进入 canonical；归档前冻结 actor、归根写审计且不补造历史；本机日志不宣称跨机器持久化。"
+  可测试性: "A 含阈值内成功/失败及超限零变化，B 含三入口/清理/重放，C 含误设全仓/子集假绿/上游全量；各 AC 均有可观察断言。"
+  Prompt采纳影响: "仅变更 crctl.mjs 既有 adapter 审计调用，不改 dispatch 或 rules.json deny，SDD 第8节说明不触发清单要求。"
+suggestions: []
+review-loop:
+  current-attempt: 1
+subject-file: change-requests/CR-2026-073/sdd.md
+subject-sha256: 97a6c64904f6f4dd42f19e9da6b3eb5997a7c1a9ea810485d03f26546077d777

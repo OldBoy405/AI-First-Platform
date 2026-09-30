@@ -1,0 +1,108 @@
+## P（CR-2026-903）无 Multica task context 的本地 `review-dev-plan` 执行报告
+
+═══════════════════════════════════════════
+§0 执行环境与前置（受评版本，按技能正文执行）
+═══════════════════════════════════════════
+- 受评技能：`C:\Users\GOBAO\Downloads\AI\AI First Platform\.rayai-worktrees\tools\requirement\CR-2026-073\skills\develop\review-dev-plan\SKILL.md`（全文按 offset 切片读完，未受 `complete=false` 截断影响终判；Step 3.1 已登记：技能正文以切片完整取证，主题文档 plan/TASK/SDD/PRD 均完整正文读取）
+- crctl（受评版本）：`...\CR-2026-073\skills\shared\crctl\scripts\crctl.mjs`
+- `--workspace`（KB worktree）：`C:\Users\GOBAO\Downloads\AI\cr073-scope-fixtures\.rayai-worktrees\knowledge-base\requirement\CR-2026-903`
+- resources：`ai-first-platform-docs` = 上述 KB worktree；`tools` = `...\cr073-scope-fixtures\.rayai-worktrees\tools\requirement\CR-2026-903`（TASK 新事实只按此 `resources[].worktreePath` 取证，未重新 inspect、未拼接路径）
+- Step 1.0 clean 前置（`crctl workspace inspect CR-2026-903 --workspace <KB> --detail`，只读）：2 仓均 `classification=healthy`、`dirty=false`、`head=requirement/CR-2026-903` → 通过
+- Step 1.1/1.2：CR status = `task-breakdown`；`sdd.md` / `plan.md` / `tasks/_index.yml` / `TASK-01.md` / `review-annotations/sdd.yml` 均在（`prd.md` 仅按 SDD 引用抽查）
+- Step 3.0 FR-A7：本轮无 Multica task-scoped context → **跳过** `multica cr bind-current-task`，未调用 `multica` CLI 任何命令（含写命令）；未设置、未依赖 `MULTICA_CR_WORKSPACES`；未 `git push`
+
+═══════════════════════════════════════════
+§1 判定
+═══════════════════════════════════════════
+```
+verdict        : pass
+route          : pass（PASS 轨：保持 task-breakdown，本阶段不 advance）
+repair-target  : null / 缺省（PASS 轨 crctl 省略 annotation 顶层 repair-target）
+blockers       : 0 条（[])
+dimensions     : 八维全 pass + reviewer-model
+subject-sha256 : c733264659bb7d6504a47994e5094fd77c8ae31e85223a3310f2d0e657438719
+                 （读自落盘后的 canonical review-annotations/dev-plan.yml；
+                   本节点按 crctl 的权威定义独立复算 plan.md + tasks/TASK-01.md composite digest，逐字一致）
+```
+
+`blockers`（逐条带 FR/AC 与证据 ID）：**空**。逐行核验结论（无一条构成 blocker）：
+- FR-1 / AC-1 ↔ `cmd-01`、FR-2 / AC-2 ↔ `cmd-02`：交付覆盖表「验收证据」列全为稳定 `cmd-NN`（两位十进制），与证据命令表 `证据ID` 双向唯一映射；每个 in-scope FR 只出现一次；无观测面窄于声称面（子集冒充全量）情形。
+- 关键 AC 唯一 TASK owner：AC-1、AC-2 均 → `CR-2026-903-TASK-01`，无缺失、无多 owner。
+- `cmd-01` / `cmd-02` 为能观测该 FR/AC 的最窄命令（`--test-name-pattern` 收敛到单个定向用例），plan §5 与 TASK-01「完成标志」**显式标注运行范围 = 两个定向单元用例（子集）**，明确不声称全量测试通过；已批准 SDD §4 只要求定向单元用例、无全量要求 → 不触发 CR-2026-073 FR-7/FR-6 的「未获批准全量却设全仓命令」与「声称面宽于观测面」两类 blocker。
+- 流程控制（CR-2026-057 FR-10/FR-11）：TASK-01 完成边界是 developing 内可被 `crctl task done` 登记的事件，未以 merge / writeback / archive / code-reviewing / code-approved 为完成前置。
+- 批准范围前置核对（CR-2026-057 FR-7）：plan/TASK 未误译 §8 四字段、未把 `follow_up`（CLI 入口）做成当前 TASK、未扩大 `scope_out`、未触碰 `zero_diff` → 无冲突，不进入 `write-dev-plan` / `write-tech-design` 任一 BLOCK 路由。
+
+`suggestions`：
+1. `本轮新增：（非阻塞）plan §1 里程碑的实现 0.5 加验证 0.5 人天（约 8h）与 tasks/_index.yml 及 tasks/TASK-01.md 的 estimate 4h 存在普通工时口径差异，未揭示任务拆分、依赖或验收结构问题（按 CR-2026-057 估算一致性口径只记 suggestion），实施前对齐口径即可，不影响本轮 verdict。`
+
+`dimensions`（八维，判据取技能正文；已在 canonical 落盘）：
+```
+sdd-to-plan              : pass  SDD §3 两条交付项在 plan §2 各出现一次，映射 SDD §2/§3 + TASK-01 + cmd-01/cmd-02；
+                                 SDD §4/§5/§7 分别落入 plan §5/§4/§3（repo=tools），无遗漏、无未批准交付项
+plan-to-tasks            : pass  覆盖表 TASK 列只引用 TASK-01，与 tasks/_index.yml id 集双向一致；TASK-01 回指 plan/sdd；
+                                 两张稳定表双向唯一映射，无孤儿、无重复
+task-executability       : pass  目标/涉及文件/实现要点/2 条可执行验收/完成标志/接口契约齐备；无 TBD；
+                                 完成边界在 developing 内，无 merge 等前置（FR-10/FR-11）
+dependency-topology      : pass  depends-on 为空数组，无悬空引用、无环、无产出/消费倒置；_index 条目与 TASK frontmatter 一致
+interface-contracts      : pass  TASK-01 契约逐项对齐 SDD §2 签名与 §1 I2 错误面（非法入参返回 null/空串、不抛异常）；
+                                 tools worktree（HEAD=requirement/CR-2026-903，scripts/ 仅占位 README，无同名符号面）
+                                 与 SDD §1.1 greenfield 声明相符，无符号/签名冲突
+acceptance-verifiability : pass  AC-1/AC-2 各有唯一 TASK owner 且证据列为稳定 cmd-NN；cmd-01/cmd-02 为最窄定向命令，
+                                 观测面 = 声称面；plan §5 与 TASK 完成标志均标注子集、不声称全量，SDD §4 无全量要求；
+                                 证据命令无 Git 等受控边界外形态 → 不因缺全仓测试 block
+scope-and-simplicity     : pass  交付面落在 SDD §8 scope_in（duration.mjs + duration.test.mjs）；follow_up 未做成当前 TASK；
+                                 scope_out / zero_diff 均未被触碰；TASK 粒度 4h（1-3 天区间内）
+risk-and-rollback        : pass  plan §4 覆盖解析边界风险并有用例缓解，回滚=撤 TASK-01；与 SDD §5 单文件删除回滚一致
+reviewer-model           : Gobao/deepseek-flash（pi runner，reasoning=max）
+```
+
+═══════════════════════════════════════════
+§2 落盘（canonical 一律经 crctl；模型未直接写任何受控文件）
+═══════════════════════════════════════════
+- 临时 payload：`<KB>/.crctl/tmp/review-dev-plan.yml`（先写，crctl 成功后已自动删除，`.crctl/tmp/` 现为空）
+- `crctl review-record CR-2026-903 --stage dev-plan --bump-attempt --workspace "<KB>" --from "<KB>\.crctl\tmp\review-dev-plan.yml"` 原样输出：
+```json
+{
+  "op": "review-record",
+  "cr": "CR-2026-903",
+  "stage": "dev-plan",
+  "file": "C:/Users/GOBAO/Downloads/AI/cr073-scope-fixtures/.rayai-worktrees/knowledge-base/requirement/CR-2026-903/change-requests/CR-2026-903/review-annotations/dev-plan.yml",
+  "files": [
+    "C:/Users/GOBAO/Downloads/AI/cr073-scope-fixtures/.rayai-worktrees/knowledge-base/requirement/CR-2026-903/change-requests/CR-2026-903/review-annotations/dev-plan.yml",
+    "C:/Users/GOBAO/Downloads/AI/cr073-scope-fixtures/.rayai-worktrees/knowledge-base/requirement/CR-2026-903/change-requests/CR-2026-903/traceability.yml",
+    "C:/Users/GOBAO/Downloads/AI/cr073-scope-fixtures/.rayai-worktrees/knowledge-base/requirement/CR-2026-903/change-requests/CR-2026-903/review-loop.yml"
+  ],
+  "verdict": "pass",
+  "attempt": { "current": 1, "max": 3, "bumped": true },
+  "route": "pass",
+  "repairTarget": null
+}
+```
+- 三账本同批落盘：`review-annotations/dev-plan.yml`（verdict=pass、blockers=[]、八维、review-loop.current-attempt=1、subject-sha256=c7332646…）、`review-loop.yml`（current-cycle=1 / current-attempt=1）、`traceability.yml`（reviews.dev-plan 投影）。三件均为工作树新增文件，KB HEAD 仍 `54da209548804ef1132f65165c5c91feffdd0b2f`、`cr.md` 零 diff；tools worktree `git status` 干净。
+- **Step 5（PASS 发布与对账）未执行**：本轮独立 run 的边界为零平台副作用、无远端（两仓 `git remote -v` 为空）且硬约束禁止 `git push`，故未调用 `push-progress` / 未做发布对账，也未为发布而 commit（Step 5 的 `files[]` 提交前置按本夹具边界从简）。此偏离已如实登记，不改 verdict、不重评、不回退状态。
+
+═══════════════════════════════════════════
+§3 `crctl next`（原样输出，按 P.md 第 4 条要求）
+═══════════════════════════════════════════
+```json
+{
+  "cr": "CR-2026-903",
+  "status": "task-breakdown",
+  "next": "crctl approve --stage dev-start",
+  "humanApproval": true,
+  "why": "开发计划评审 pass 且无 blocker，等待开发启动人工确认"
+}
+```
+
+═══════════════════════════════════════════
+§4 Step 6 摘要
+═══════════════════════════════════════════
+```
+✅ 开发计划与 TASK 合并评审完成
+   CR        : CR-2026-903
+   Verdict   : PASS
+   Route     : pass
+   Blockers  : 0 条
+   下一步    : 以 `crctl next CR-2026-903 --workspace <workspace>` 为准 → humanApproval=true，
+               next=crctl approve --stage dev-start（人工审批）
+```
