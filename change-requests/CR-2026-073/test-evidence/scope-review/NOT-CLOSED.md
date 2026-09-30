@@ -5,6 +5,12 @@
 **三个独立本地 reviewer run**，证据已由 `independent-run/collect-evidence.ps1` 采集落盘（脚本编码修复 `721a9cb4`）。
 本文件先前的「三案 verdict 尚未执行、仍不得宣称闭合」结论**已被本轮实测取代**；历史说明保留在文末。
 
+**补记（2026-09-30，`review-code` attempt 2 复评回修）**：B-C1 指出 P 目录当时附的 `reviewer-run.log`（50021 bytes）是 19:05:26 那次
+**Step 1.0 技术中止**的 run（KB worktree dirty），不是产出 19:05:00 pass canonical 的那次 run。本轮按 blocker 第一条路径**找回**后者
+（pi session `01a0f1f9-…`）的原始会话日志并逐项核验，补 `independent-run/P/pass-run-raw-session.jsonl`（逐字节副本，417438 bytes，
+sha256 `934f8be6…`）、`pass-run-report.txt`（提取件）与 `P/PASS-RUN.md`（两次 run 区分 + 核验清单）；未改夹具、未新增 run。
+U/S 与 B-C2 上游对照本轮未变动。
+
 **采集口径与判据冲突声明（供 reviewer 裁定）**：三案的「设计轴与期望」只登记在本目录与 `independent-run/README.md`，
 **未写入** reviewer 输入（`prompts/{U,S,P}.md`）——reviewer 只拿到快照本身，不存在按期望诱导判定的提示。
 
@@ -20,6 +26,11 @@
 `canonical/`（`dev-plan.yml`、`review-loop.yml`、`traceability.yml`、`cr.md` 四份只读副本）、`crctl-next.txt`、
 `fixture-head.txt`、`fixture-status.txt`、`MANIFEST.txt`（逐文件 sha256 清单，三个 MANIFEST 均
 `canonical_dev_plan_present=True`、`reviewer_run_log_present=True`，无 `MISSING:` 行）。
+
+P 的 `reviewer-run.log`（50021 bytes）是 19:05:26 那次**技术中止** run 的记录（其自述未评审、未 `review-record`），**不作为** P 的 pass 证据；
+P 的 pass canonical（19:05:00）对应的是 19:00:41–19:05:26 那次 run，其原始会话日志为 `independent-run/P/pass-run-raw-session.jsonl`
+（417438 bytes，sha256 `934f8be6f6dcef7262f84629562ebc9d188ff60ce3664de3ce29f107b6206cb8`；提取件 `pass-run-report.txt`，
+sha256 `73c8bde94b2e322af145c6b562bc556dcfd35a9e1dc4fb1927ad51e2dfae3305`），逐项核验清单见 `independent-run/P/PASS-RUN.md`。
 
 ## 2. 三案 canonical 事实（可核）
 
@@ -38,6 +49,10 @@
 `fixtures/build-output.json#generatedAt` 按 `crctl` 的 dev-plan composite digest 口径（plan.md + `tasks/TASK-*.md`，LF 规范化后
 `sha256(JSON.stringify(entries))`）**重算** `subject-sha256`，三案与 canonical 记录**逐一相等**（U/S/P 全中）——
 即 verdict 绑定到本仓库现存夹具内容，而不是无法复现的宿主状态。三案 `canonical/` 四件副本的 sha256 亦与各自 `MANIFEST.txt` 逐条相等。
+P 的 pass canonical ↔ run 日志对应关系另作只读核验（`independent-run/P/PASS-RUN.md`）：canonical 的 9/9 `dimensions` 取值与
+`subject-sha256` 在 `pass-run-raw-session.jsonl` 中逐字命中；该日志记录 19:05:00 的 `review-record`（`verdict=pass`、attempt 1、canonical 三件）
+与随后的 `crctl next`/HEAD/`git status`，与 `crctl-next.txt`、`fixture-head.txt`、`fixture-status.txt` 一致；夹具 `.crctl/audit.log`
+中 `review-record` 账本记录**仅此一条**（19:05:00，verdict pass），其后无任何写入——与中止那次 run 的自述一致。
 
 ## 3. 残余偏离（须由 reviewer 裁定，不隐藏）
 

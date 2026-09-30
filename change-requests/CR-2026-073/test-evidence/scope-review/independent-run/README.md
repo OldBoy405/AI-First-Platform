@@ -63,7 +63,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File 'C:\Users\GOBAO\Downloads\AI
 
 | # | 证据 | 落点（`independent-run\<U|S|P>\`） | 说明 |
 |---|---|---|---|
-| 1 | 本地 run 原始会话日志（未截断） | `reviewer-run.log` | 含所用命令、cwd、模型自报、`crctl` 原样输出 |
+| 1 | 本地 run 原始会话日志（未截断） | `reviewer-run.log`（U/S）；P 另见 §7 | 含所用命令、cwd、模型自报、`crctl` 原样输出 |
 | 2 | canonical `review-annotations/dev-plan.yml` | `canonical\…_dev-plan.yml` | 由 `crctl review-record` 写；含 `verdict` / `blockers` / `dimensions` / `repair-target` / `subject-sha256` / `reviewer` / `reviewed-at` |
 | 3 | `review-loop.yml`、`traceability.yml` | `canonical\…` | attempt 与投影账本落盘后的原文 |
 | 4 | `crctl next <CR>` 原样输出 | `crctl-next.txt` | 路由证据 |
@@ -93,3 +93,14 @@ plan §5 的证据入口列出了「对应 issue reviewer 评论」。在零平�
 `reviewer-run.log`（reviewer 自己的原始报告）+ canonical 三件替代；
 若需要评论形态，可由 Ray 把每案 verdict 摘要（或 `reviewer-run.log` 原文）作为**人发评论**贴到 AIFI-38，
 该写入是人的动作、不涉及 CR 行或 `MULTICA_CR_WORKSPACES`。
+
+## 7. P 案补记（2026-09-30 复评回修）
+
+`review-code` attempt 2 的 B-C1 指出：P 目录里那份 `reviewer-run.log`（50021 bytes）是 19:05:26 那次 run 的
+`Start-Transcript`，而该 run 因 KB worktree 被前一次 run 留下的三件未提交 canonical 判为 dirty、在 Step 1.0 技术中止，
+**未作评审、未执行 `review-record`**；P 的 pass canonical 来自 19:05:00 另一次 run，两者不是同一次 run。
+
+本轮按 blocker 的第一条路径处理：**找回 19:05:00 那次 run（pi session `01a0f1f9-…`）的原始会话日志**并逐项核验，
+补 `P/pass-run-raw-session.jsonl`（原始日志逐字节副本，417438 bytes，sha256 `934f8be6…`）、
+`P/pass-run-report.txt`（该 run 最终报告逐字提取件）、`P/PASS-RUN.md`（两次 run 的区分与核验清单）。
+未改夹具、未新增 run；中止那次 run 的日志保留原位，仅作中止尝试的完整性留档，不作为 P 的 pass 证据。
