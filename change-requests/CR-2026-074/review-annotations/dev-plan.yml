@@ -1,25 +1,21 @@
 cr-id: CR-2026-074
 review-type: dev-plan
 reviewer: "OldBoy405"
-reviewed-at: "2026-10-01T01:59:43+08:00"
-verdict: block
-repair-target: write-dev-plan
-blockers:
-  - "部分解决： B-DEV-02 — plan.md §6.1 FR-8 已纳入 TASK-10、ARCHITECTURE.md 落点和逆拓扑回滚，交付覆盖表与任务账本的缺项已修复；但其验收证据列仍为 cmd-05 + cmd-06；地图内容由 review-code R7 检查项核验，而非全由已登记稳定 cmd-NN 承载。当前 tools HEAD 41b112ed4d97baaaca3b82367a72f35520dc3d4b 的 caller-contract.test.mjs:249-267 扫描面不含 ARCHITECTURE.md，lint-prompts.test.mjs:1-42 是临时 fixture 的规则测试；TASK-09 未安排在这两个入口内加入地图内容断言，TASK-10 验收条件1仅写 diff 检查，没有固定 argv/稳定证据ID。故地图内容仍无法从所声称的稳定证据链实际观测，不能以文件集 status 或未来 review-code R7 代替该缺口。请保留 SDD §8 随代码评审的人工内容检查，在既有批准范围内把地图内容的实际只读取证命令及比对判据固化到 plan.md §6.2 的稳定 cmd-NN 行和 TASK-10，并使 FR-8 验收证据列只引用已登记的稳定ID；说明文字移入对应 TASK/SDD 落点。Git 取证使用 rules.json 已允许的 crctl git diff --unified=N 形态并显式传 workspace/cwd，不需扩白名单、新增生产能力或删除 TASK-10。修订入口：plan.md §6.1/§6.2、TASK-10；repair-target=write-dev-plan。"
+reviewed-at: "2026-10-01T02:26:58+08:00"
+verdict: pass
+blockers: []
 dimensions:
   sdd-to-plan: "pass"
-  plan-to-tasks: "block"
-  task-executability: "block"
+  plan-to-tasks: "pass"
+  task-executability: "pass"
   dependency-topology: "pass"
   interface-contracts: "pass"
-  acceptance-verifiability: "block"
+  acceptance-verifiability: "pass"
   scope-and-simplicity: "pass"
   risk-and-rollback: "pass"
-  reviewer-model: "pi/local quality-reviewer-agent；模型标识未注入，未推测"
+  reviewer-model: "pi/local quality-reviewer-agent；PI_MODEL/PI_PROVIDER 未注入，未推测模型标识"
 suggestions:
-  - "已解决： B-DEV-01 — plan.md §7 将 AC-05 唯一主责明确为 CR-2026-074-TASK-08，TASK-04 仅关联协作；TASK-04/TASK-08 正文同步责任边界。四类结构负例、缺索引首写、正常历史保留、apply 并发拒绝及重放断言全部保留于 cmd-03/cmd-04，未删验收面换取唯一性。已核验修订提交 fafa372a 与 26120e2a。"
-  - "已解决： B-DEV-03 — TASK-01 验收条件3与 TASK-10 验收条件2 已改为 node skills/shared/crctl/scripts/crctl.mjs git status --porcelain --cwd <tools-worktree> --workspace <operational-workspace>，固定 argv 和占位绑定均落入产物；rules.json 的 status shape 允许 --porcelain。两卡明确 status 只证明文件集，不声称内容正确性；地图稳定内容证据的剩余问题仅归入 B-DEV-02，不重复计 blocker。"
-  - "已解决： B-DEV-04 — plan.md §2、TASK-10 depends-on、tasks/_index.yml 一致加入 CR-2026-074-TASK-09→CR-2026-074-TASK-10；TASK-09 产出与 TASK-10 消费明确等待最终 SKILL/README/HELP。10项任务的卡片/账本依赖逐项相同、无悬空引用且无环；plan.md R4 逆拓扑回滚现以 TASK-10→TASK-09 开始并符合其余依赖。"
+  - "已解决： B-DEV-02 — 已用 rules.json 允许的 crctl git diff --unified=3 及显式 workspace/cwd 核验 PLAN 修订 697d03af 与 TASK-10 修订 c65b4f04。plan §6.1 FR-8 验收证据现仅引用 cmd-05 + cmd-06 + cmd-07；§6.2 cmd-07 固定 repo=tools、cwd=.、executable=node、JSON argv、timeout=60，仅读 ARCHITECTURE.md，逐项断言 kb init/cmdKbInit/requireExplicitWorkspace/detectWorkspace/_backlog.yml/_index.yml/KB_INIT_PRECONDITION 七锚点。TASK-10 明确锚点与 TASK-01 及 SDD §2.1/§3.2/§4.1 的映射，机器证据仅证明锚点可观测；语义正确性与代码逐字一致继续由实现要点及 SDD §8/review-code R7 人工检查承载，未由 status 或 cmd-07 冒充。独立按提交表行原样 argv、shell=false、60秒上限验证当前未实施基线：exit=1，缺 kb init/cmdKbInit/requireExplicitWorkspace/detectWorkspace/KB_INIT_PRECONDITION，证明命令可执行且尚未实现，不是开发验收 PASS。TASK-01～09 与 _index.yml 相对 26120e2a 未变，10 FR/12 AC/10 TASK/7 cmd 双向覆盖、唯一 AC owner、依赖无环及 R4 逆拓扑回滚均闭合；20e889d1 后已审批 SDD 零 diff、tools HEAD 仍为 41b112ed4d97baaaca3b82367a72f35520dc3d4b，未扩大批准范围。未运行 lint/build/test，未修改被评审产物或执行人工审批。"
 review-loop:
-  current-attempt: 2
-subject-sha256: f2f0e8bba73e961fb114669ab9321eea526ea6189d85ddef432689f2f4f5dc34
+  current-attempt: 3
+subject-sha256: 8ae039701b96db747ccae909b89d8448a191ec54af51a84464bbdaa91a847697
