@@ -17,3 +17,34 @@ development-start:
   via: crctl-approve
   evidence-digest: "6cf8c89497b4b9042c532955a226a40f747e2eaf98ced7955cef30d8ce9bd450"
   target-status: developing
+code:
+  approver: "a0e71a32-509d-4ee9-aea4-d086a5b1ff93"
+  approved-at: "2026-09-30T20:12:37+08:00"
+  via: crctl-approve
+  evidence-digest: "6fd11833e12ba932a3c0ecf6d52ec10e33175521f5cd66e2720d31e9d9b46ef6"
+  target-status: code-approved
+  release-subjects:
+    version: 1
+    repositories:
+      - repo: ai-first-platform-docs
+        remote-ref: refs/heads/requirement/CR-2026-073
+        reviewed-source-sha: 6fe8ef723a3b5270e782df84c7f5a1c3d9bb3f19
+      - repo: multica
+        remote-ref: refs/heads/requirement/CR-2026-073
+        reviewed-source-sha: 820bb5a11a53463486383c4c1f5e9c17c5a9a43e
+      - repo: tools
+        remote-ref: refs/heads/requirement/CR-2026-073
+        reviewed-source-sha: ab01e2b8ba5dc5b45435cbad5987547c512f6a4a
+    artifacts:
+      algorithm: sha256
+      canonicalization: crlf-to-lf+path-sort
+      files:
+        - { path: change-requests/CR-2026-073/plan.md, sha256: 6cef73a9f642adc2f3d5af80bc3cbd1522e2945b0dd1d7d7af94169d2fcc38fa }
+        - { path: change-requests/CR-2026-073/prd.md, sha256: b5b600ba1e6f2817ac27130067b809d094617dfa62a2301692d30904c0950f42 }
+        - { path: change-requests/CR-2026-073/sdd.md, sha256: 97a6c64904f6f4dd42f19e9da6b3eb5997a7c1a9ea810485d03f26546077d777 }
+        - { path: change-requests/CR-2026-073/tasks/TASK-01.md, sha256: a1091c02d0359ee50d8ec942254756770a7f5aacf4a5300ee982cb6fc944df00 }
+        - { path: change-requests/CR-2026-073/tasks/TASK-02.md, sha256: d59a806107aa911e70eab5e16e9bac99f85326eb41523051d05270a22462335f }
+        - { path: change-requests/CR-2026-073/tasks/TASK-03.md, sha256: deff702c75d035c6602fd338ff3fe394a16869b7b9b93018c3cd362926ef10c4 }
+        - { path: change-requests/CR-2026-073/tasks/TASK-04.md, sha256: 335161628a3ee9b54fdd7912f9d5b4d70f2ec0eff92a5af65dc09dcd3f0d67ea }
+        - { path: change-requests/CR-2026-073/tasks/_index.yml, sha256: 9cefbe78171df5b0b04283bdcd0d836b92b0e2c1f26a2c279257ea38d04fb5e0 }
+      digest: b7b9d175f0e3c68c53a341edf429697abfa541a4650a8394d1f6dedf56fe72bd
