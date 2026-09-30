@@ -30,20 +30,20 @@ tools 仓 `ARCHITECTURE.md` 按 SDD §8 该行与 dep-15 地图维护规则，�
 
 ## 验收条件
 
-1. `ARCHITECTURE.md` diff 检查：新增条目仅覆盖 kb init 入口与权限/事务边界，与代码事实（KbInitResult、错误码集合、前置顺序）一致，不与其他章节冲突。
+1. 地图内容断言（稳定证据 cmd-07，命令算法唯一事实源为 plan §6.2 该表行，只读）：在 tools CR worktree 根执行 cmd-07，`ARCHITECTURE.md` 须逐项包含下列比对判据——`kb init`（写入入口名，与 HELP/SKILL/TASK-01 逐字一致）、`cmdKbInit` 与 `requireExplicitWorkspace`/`detectWorkspace`（kb 分支特判派发位置锚点，对齐 TASK-01 代码事实）、`_backlog.yml` 与 `_index.yml`（两账本模板独占创建的权限/事务边界落点，SDD §2.1/§4.1）、`KB_INIT_PRECONDITION`（错误边界与前置顺序锚点，SDD §3.2）。判据命中只证明锚点在文件中可机器观测；条目语义正确性、与代码事实逐字一致及不与其他章节冲突，仍由本卡实现要点约束与 review-code R7 人工内容检查（SDD §8「随代码评审检查」）承载，不由 cmd-07 代替。
 2. 文件为 UTF-8/LF；文件集检查经受控入口（本运行时禁止原生 Git；argv 固定于本卡，占位绑定同 TASK-01 验收条件 3：`--cwd` 取 Pipeline `resources[]` 中 repo=`tools` 的 `worktreePath` 原样值，`--workspace` 取 `crctl workspace inspect` 返回的 `operationalWorkspace` 原样值）。执行目录为 tools CR worktree 根：
 
    `node skills/shared/crctl/scripts/crctl.mjs git status --porcelain --cwd <tools-worktree> --workspace <operational-workspace>`
 
-   断言输出中本 TASK 相关变更仅 `ARCHITECTURE.md`。status 仅证明文件集；地图内容一致性由本卡验收条件 1 的 diff 断言与 review-code R7 检查项（SDD §8「随代码评审检查」）证明，不由 status 证明。
+   断言输出中本 TASK 相关变更仅 `ARCHITECTURE.md`。status 仅证明文件集；地图内容一致性由本卡验收条件 1 的 cmd-07 稳定证据断言与 review-code R7 人工内容检查证明，不由 status 证明。
 
 ## 完成标志
 
-- `ARCHITECTURE.md` 更新提交，作为 review-code 的 R7 检查项。
+- `ARCHITECTURE.md` 更新提交；cmd-07（plan §6.2）在 tools CR worktree 根执行全绿（7 项判据全部命中）；作为 review-code 的 R7 检查项。
 - 不夹带生产代码与其他文档变更（SDD §8 该行范围之外零 diff）。
 
 ## 接口契约
 
 **消费**：TASK-01 `cmdKbInit`/KbInitResult 的最终实现事实；TASK-09 完成后的 SKILL/README/HELP 最终形态（`depends-on` 已声明）；dep-15 `ARCHITECTURE.md` §4/§5/§8 现有地图结构与维护规则（新增写入子命令触发地图维护）。
 
-**产出**：`ARCHITECTURE.md` 中 kb init 地图条目（无代码签名变化）。review-code 的 R7 检查项与 TASK-09 的文档口径引用本条目，不得另造口径。
+**产出**：`ARCHITECTURE.md` 中 kb init 地图条目（无代码签名变化），其内容由 plan §6.2 cmd-07 只读断言锚定（比对判据见本卡验收条件 1）。review-code 的 R7 检查项与 TASK-09 的文档口径引用本条目，不得另造口径。
