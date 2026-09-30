@@ -1,5 +1,8 @@
 # U/S/P 三案的独立 reviewer run：人去执行的最小入口与证据清单
 
+> **状态（2026-09-30）**：三案 run 与采集**已由人执行完毕**，真实 verdict 逐案落在 `independent-run/{U,S,P}/`，
+> 结论与残余偏离见 `../NOT-CLOSED.md`。以下步骤保留为**已执行的操作记录**与复现入口（复跑会覆盖证据，无必要勿重跑）。
+
 CR-2026-073 TASK-04 / plan §5 的 C 项取证要求：U/S/P 三个隔离快照各由**一个新的独立 `quality-reviewer-agent` run**
 按 `review-dev-plan` 给出真实 verdict、subject SHA、canonical review-loop/next 与对应评论。
 

@@ -1,0 +1,22 @@
+cr-id: CR-2026-901
+review-type: dev-plan
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-30T19:11:55+08:00"
+verdict: block
+repair-target: write-dev-plan
+blockers:
+  - "本轮新增：FR-1/AC-1 的验收证据被设为全仓命令 cmd-01（repo=tools，make test），且 plan.md §5「验收与发布策略」与 tasks/TASK-01.md「完成标志」进一步把「全仓 make test 全绿」定为本 CR 的验收基线与 TASK 完成前置。已批准 SDD §4 要求关键证据命令按最窄用例选择（两案各自只跑一个用例），SDD §8 scope_out 明列「任何全仓质量门槛调整」，PRD AC-1 的可观测判据仅为定向用例 duration parse targeted case；本 CR 未获得任何已批准的全量要求，却引入全仓质量门槛，并使 AC-1 失去与 cmd-02 对称的最窄定向证据。修订入口：plan.md §2 交付覆盖表 FR-1 行、§3 证据命令表 cmd-01 行、§5 验收与发布策略，tasks/TASK-01.md 完成标志；repair-target=write-dev-plan。"
+dimensions:
+  sdd-to-plan: "pass"
+  plan-to-tasks: "pass"
+  task-executability: "pass"
+  dependency-topology: "pass"
+  interface-contracts: "pass"
+  acceptance-verifiability: "block"
+  scope-and-simplicity: "block"
+  risk-and-rollback: "pass"
+  reviewer-model: "Gobao/deepseek-flash（pi runner，reasoning=max）"
+suggestions: []
+review-loop:
+  current-attempt: 1
+subject-sha256: 64cc536dd0ab6dc61d21a9caa4fdcc0eab63fdff326410795a1fd7a3e3f2ff5d
