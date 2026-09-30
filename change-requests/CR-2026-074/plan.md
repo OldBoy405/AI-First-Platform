@@ -6,7 +6,7 @@ sdd-ref: "change-requests/CR-2026-074/sdd.md"
 target-version: 0.47
 status: draft
 created: 2026-10-01T00:35:38+08:00
-updated: 2026-10-01T01:35:00+08:00
+updated: 2026-10-01T02:13:32+08:00
 ---
 
 # CR-2026-074 开发计划
@@ -19,7 +19,7 @@ updated: 2026-10-01T01:35:00+08:00
 |---|---|---|---|
 | M1 实现 | 模块代码 + 所属测试入口定向用例 | TASK-01～TASK-07 | 2.0 |
 | M2 集成验证与文档同步 | 端到端 writeback 变体；说明/命令发现/计数同步 | TASK-08、TASK-09 | 1.0 |
-| M3 收尾与评审 | ARCHITECTURE 地图维护；全量证据回归（cmd-01～cmd-06）；test-report；review-code | TASK-10 + 全量回归 | 0.5 |
+| M3 收尾与评审 | ARCHITECTURE 地图维护；全量证据回归（cmd-01～cmd-07）；test-report；review-code | TASK-10 + 全量回归 | 0.5 |
 | M4 发布 | review-code PASS → 人工 approve-code → 交付回写 | reviewer / delivery-agent | — |
 
 M4 由 Pipeline 门禁承载，不属于开发 TASK；阶段发布由 reviewer 在评审 PASS 分支内一次闭合。
@@ -44,7 +44,7 @@ TASK-04/05/06 ─→ TASK-08 writeback-tx 无索引/证据齐全集成变体
 TASK-01、TASK-03～TASK-08 ─→ TASK-09 说明/命令发现/计数同步
 TASK-01、TASK-09 ─→ TASK-10 ARCHITECTURE.md 地图维护
         [TASK-10 消费 TASK-09 完成后的 SKILL/README/HELP 最终形态，须待 TASK-09 完成]
-全部 TASK ─→ 全量证据回归 cmd-01～cmd-06 ─→ review-code
+全部 TASK ─→ 全量证据回归 cmd-01～cmd-07 ─→ review-code
 ```
 
 ## 3. 资源与分工
@@ -91,7 +91,7 @@ TASK-01、TASK-09 ─→ TASK-10 ARCHITECTURE.md 地图维护
 | FR-5 | §2.2/§4.3 缺索引首写与全部既有索引 features 前置校验 | CR-2026-074-TASK-04 / TASK-08 | cmd-03 + cmd-04 | revert TASK-08 → TASK-04；TASK-08 为其下游消费者 |
 | FR-6 | §4.4 两规范表提取 | CR-2026-074-TASK-05 / TASK-08 | cmd-03 + cmd-04 | revert TASK-08 → TASK-05 |
 | FR-7 | §4.5 YAML trunk 解释 | CR-2026-074-TASK-06 / TASK-08 | cmd-03 + cmd-04 | revert TASK-08 → TASK-06 |
-| FR-8 | §8 说明/命令发现/测试计数同步 + §8 ARCHITECTURE.md 地图行（dep-15） | CR-2026-074-TASK-09 / TASK-10 | cmd-05 + cmd-06；地图内容由 review-code R7 检查项核验（SDD §8「随代码评审检查」） | revert TASK-10 → TASK-09（逆拓扑见 R4；TASK-10 为 TASK-09 下游） |
+| FR-8 | §8 说明/命令发现/测试计数同步 + §8 ARCHITECTURE.md 地图行（dep-15） | CR-2026-074-TASK-09 / TASK-10 | cmd-05 + cmd-06 + cmd-07 | revert TASK-10 → TASK-09（逆拓扑见 R4；TASK-10 为 TASK-09 下游） |
 | FR-9 | §4.6 merge-base 裸提交 shape | CR-2026-074-TASK-07 | cmd-01 | revert TASK-07，独立无下游 |
 | FR-10 | §2.3/§4.2 source 空缺省与历史指纹边界 | CR-2026-074-TASK-03 | cmd-02 | revert TASK-03，独立无下游 |
 
@@ -107,8 +107,9 @@ TASK-01、TASK-09 ─→ TASK-10 ARCHITECTURE.md 地图维护
 | cmd-04 | tools | . | node | ["--test","skills/shared/crctl/scripts/test/writeback-tx.test.mjs"] | 600 |
 | cmd-05 | tools | . | node | ["--test","skills/shared/crctl/scripts/test/caller-contract.test.mjs"] | 300 |
 | cmd-06 | tools | . | node | ["--test","skills/shared/crctl/scripts/test/lint-prompts.test.mjs"] | 300 |
+| cmd-07 | tools | . | node | ["-e","const fs=require('fs');const t=fs.readFileSync('ARCHITECTURE.md','utf8');const need=['kb init','cmdKbInit','requireExplicitWorkspace','detectWorkspace','_backlog.yml','_index.yml','KB_INIT_PRECONDITION'];const miss=need.filter(s=>!t.includes(s));if(miss.length){console.error('cmd-07 FAIL: ARCHITECTURE.md missing: '+miss.join(', '));process.exit(1);}console.log('cmd-07 ok: '+need.length+' map markers present');"] | 60 |
 
-命令算法唯一事实源为本表行；测试入口与证据范围对应 SDD §5.2 测试表。
+命令算法唯一事实源为本表行。cmd-01～cmd-06 对应 SDD §5.2 测试表入口；cmd-07 为 SDD §8 ARCHITECTURE.md 地图行（dep-15）的只读取证命令：cwd 即 tools CR worktree 根，argv 内联脚本仅读取该文件并逐项断言比对判据（`kb init`、`cmdKbInit`、`requireExplicitWorkspace`、`detectWorkspace`、`_backlog.yml`、`_index.yml`、`KB_INIT_PRECONDITION`），不写任何文件；判据到 TASK-01/§2.1/§3.2 代码事实的映射与其承载边界见 TASK-10 验收条件 1。SDD §8「随代码评审检查」的人工内容检查（review-code R7）保留，cmd-07 不代替、不删除该检查。
 
 ## 7. AC/业务闭环覆盖矩阵
 
