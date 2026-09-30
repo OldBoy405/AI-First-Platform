@@ -36,7 +36,11 @@ created: 2026-10-01T00:55:00+08:00
 
 1. 在 tools CR worktree 执行 `node --test skills/shared/crctl/scripts/test/crctl.test.mjs`（证据 cmd-01）全绿，且 init 定向用例覆盖：AC-01（精确模板、提交 tree 只含三候选文件、远端首 trunk、五字段输出、无 CR/task/outbox；二次 changed=false/无新 commit/push）；AC-02（每项前置固定 code/reason，双重错误 fixture 验证最先失败，前置前后业务文件/index/HEAD/remote/audit 相同）；AC-03（wx 并发 EEXIST → CAS_CONFLICT 且并发内容保留；经测试专用 preload/PATH shim 注入 create 与 add/commit/push 失败后断言残留与无成功审计，去注入同命令续跑）。
 2. 普通（非 help、非 kb）入口 workspace 守卫负测保持原行为：缺根语义不被 kb 特判改变；help 无根可用。
-3. `git -C <tools worktree> status --porcelain` 仅含本 TASK 声明的两个文件。
+3. 文件集检查经受控入口（本运行时禁止原生 Git；argv 固定于本卡）。执行目录为 tools CR worktree 根（与验收条件 1 相同）；占位绑定：`<tools-worktree>` 取 Pipeline `resources[]` 中 repo=`tools` 的 `worktreePath` 原样值，`<operational-workspace>` 取 `crctl workspace inspect` 返回的 `operationalWorkspace` 原样值，不拼接、不回退主工作区：
+
+   `node skills/shared/crctl/scripts/crctl.mjs git status --porcelain --cwd <tools-worktree> --workspace <operational-workspace>`
+
+   断言输出仅含本 TASK 声明的两个文件（`skills/shared/crctl/scripts/crctl.mjs`、`skills/shared/crctl/scripts/test/crctl.test.mjs`）。status 仅证明文件集，内容正确性由验收条件 1 的定向用例证明。
 
 ## 完成标志
 

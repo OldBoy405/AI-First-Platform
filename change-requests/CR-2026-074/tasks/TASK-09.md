@@ -49,4 +49,4 @@ created: 2026-10-01T00:55:00+08:00
 
 **消费**：TASK-01 的 kb 形态、KbInitResult 与错误码集合（文档描述与代码逐字一致：BAD_ARGS/WORKSPACE_REQUIRED/KB_INIT_PRECONDITION(reason)/KB_INIT_CONFLICT/CAS_CONFLICT/INTERNAL_ERROR/TX_GIT_FAILED(stage)）；TASK-03 的 source 默认空串语义与历史指纹冲突边界；dep-19 `TWO_WORD`/`CR_DATA_FIRST_WORDS` 两集合；dep-20/21/23/24 各文档现状。
 
-**产出**：文档与命令发现同步事实——SKILL.md 能力表 kb init 行（workspace 必填、无 change-requests 引导、完整成功/失败边界）、`TWO_WORD` 含 kb、gate-registry 新计数、HELP 含 `kb init`；无生产签名变化（HELP 文本除外）。下游消费方 TASK-10（ARCHITECTURE 地图条目与 SKILL/README 口径一致）与 review-code 检查项引用同一事实。
+**产出**：文档与命令发现同步事实——SKILL.md 能力表 kb init 行（workspace 必填、无 change-requests 引导、完整成功/失败边界）、`TWO_WORD` 含 kb、gate-registry 新计数、HELP 含 `kb init`；无生产签名变化（HELP 文本除外）。下游消费方 TASK-10（ARCHITECTURE 地图条目与 SKILL/README 口径一致；TASK-10 `depends-on` 本卡，须待本卡产出最终形态后执行）与 review-code 检查项引用同一事实。

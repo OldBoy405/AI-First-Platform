@@ -15,7 +15,7 @@ created: 2026-10-01T00:55:00+08:00
 
 ## 任务描述
 
-实现 baseline generator 对缺 `specs/_index.yml` 的首写与全部既有索引的 features 前置校验（SDD §2.2/§4.3；FR-5；AC-05 结构负例侧），结构错误全部在 writeCandidate 前返回。
+实现 baseline generator 对缺 `specs/_index.yml` 的首写与全部既有索引的 features 前置校验（SDD §2.2/§4.3；FR-5；AC-05 关联协作——结构负例与首写模块语义侧，本卡断言全部保留于 cmd-03；AC-05 主责为 TASK-08 的 writeback-tx 端到端可观察面），结构错误全部在 writeCandidate 前返回。
 
 ## 涉及文件 / 模块
 
