@@ -1,0 +1,23 @@
+cr-id: CR-2026-073
+review-type: dev-plan
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-30T13:11:28+08:00"
+verdict: block
+repair-target: write-dev-plan
+blockers:
+  - "本轮新增：B-01 plan.md §6 的 cmd-06/cmd-07 和 TASK-04 验收条件声称普通 CR 的误设全仓及子集冒充全量经 review 判 BLOCK（AC-6/AC-7），但证据命令只运行新建的 Node skill-scope.test.mjs，计划和 TASK 均未定义如何执行独立 review-dev-plan 评审或记录其真实 verdict；仅检查 Skill 文本/构造案例不能证明评审判定。请明确可执行的评审案例、实际 verdict 的证据入口及与 cmd-06/cmd-07 的关系，或收窄命令声称并补足真实评审取证。"
+  - "本轮新增：B-02 plan.md §6/§7 将 AC-7 的上游全量执行与 Windows 原始失败/基线对照绑定 cmd-08；TASK-04 验收条件明确 cmd-08 只核对文字合同、不实际运行 multica 上游全量，也没有指定上游同步实测日志/基线对照的证据入口。该 cmd 观测面不足以证明所声称的上游场景；请把规则核对与实际运行证据分开，并明确上游场景何时执行、原始结果和基线如何验证；若本 CR 不执行上游同步则如实限定该 cmd 的证明范围并调整覆盖声明。"
+dimensions:
+  sdd-to-plan: "pass"
+  plan-to-tasks: "pass"
+  task-executability: "pass"
+  dependency-topology: "pass"
+  interface-contracts: "pass"
+  acceptance-verifiability: "block"
+  scope-and-simplicity: "pass"
+  risk-and-rollback: "pass"
+  reviewer-model: "OpenAI/gpt-6-sol (pi)"
+suggestions: []
+review-loop:
+  current-attempt: 1
+subject-sha256: 2435f0e98461cfa7a843dc3008ac1541758eb68a7334edbd18f73a7f5569a7ad
