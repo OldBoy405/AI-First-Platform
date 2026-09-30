@@ -1,0 +1,128 @@
+purpose=item-by-item recheck of the 25 tests that fail in the merged tree but produced no failure line in the pre-merge full run
+tree=C:/Users/GOBAO/Downloads/AI/cr073-rerun/premerge head=95da7c9d7b026918fa0827652644b944a744b336
+database=cr073_cond-b-shorttmp_premerge
+tmpdir=C:/rt/cond-b-shorttmp-premerge
+start=2026-09-30T16:33:47+08:00
+command=cd server && go test -count=1 -timeout 300s -run '<25 names minus the hanging one>' ./cmd/multica/ ./cmd/migrate/ ./internal/daemon/repocache/
+excluded=TestRunDaemonDiskUsageJSONSurvivesServerFailure (hangs to the 10m package timeout in this tree)
+---
+warning: could not resolve issue statuses, STATUS column may be blank: Post "http://localhost:18080/api/daemon/workspaces/6c216b56-90b9-49fd-9daf-f039e6723dbe/issues/gc-check": dial tcp [::1]:18080: connectex: No connection could be made because the target machine actively refused it.
+panic: test timed out after 5m0s
+	running tests:
+		TestRunDaemonDiskUsageAllProfilesUsesPerProfileToken (5m0s)
+
+goroutine 40 [running]:
+testing.(*M).startAlarm.func1()
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/testing/testing.go:2802 +0x354
+created by time.goFunc
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/time/sleep.go:215 +0x2d
+
+goroutine 1 [chan receive, 5 minutes]:
+testing.(*T).Run(0x14e845d8a400, {0x7ff7ec8525e3?, 0x7ff7eb9087ce?}, 0x7ff7ec8b0430)
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/testing/testing.go:2109 +0x4c7
+testing.runTests.func1(0x14e845d8a400)
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/testing/testing.go:2585 +0x3e
+testing.tRunner(0x14e845d8a400, 0x14e84643fba8)
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/testing/testing.go:2036 +0xc3
+testing.runTests({0x7ff7ec832bae, 0x24}, {0x7ff7ec84c2d8, 0x30}, 0x14e845e8de60, {0x7ff7ed5b7700, 0x1ae, 0x1ae}, {0xc2a750865dc4d78c, 0x45da1d0f69, ...})
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/testing/testing.go:2583 +0x4f0
+testing.(*M).Run(0x14e845da2960)
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/testing/testing.go:2443 +0x6ac
+github.com/multica-ai/multica/server/cmd/multica.TestMain(0x14e845da2960)
+	C:/Users/GOBAO/Downloads/AI/cr073-rerun/premerge/server/cmd/multica/cmd_auth_test.go:28 +0x105
+main.main()
+	_testmain.go:906 +0xa5
+
+goroutine 37 [syscall, 4 minutes]:
+syscall.syscalln(0x0?, 0x0?, {0x14e8463c2b78?, 0x0?, 0x0?})
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/runtime/syscall_windows.go:431 +0x4e
+syscall.SyscallN(0x7ff7ed577760?, {0x14e8463c2b78?, 0x14e8463c2b80?, 0x7ff7eb7e349f?})
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/syscall/dll_windows.go:99 +0x1e
+syscall.writeFile(0x218, {0x14e845e754d0?, 0x6, 0x7ff7eb87517f?}, 0x7ff7ec59b560?, 0x0?)
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/syscall/zsyscall_windows.go:1180 +0xba
+syscall.WriteFile(...)
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/syscall/syscall_windows.go:530
+internal/poll.(*FD).Write.func1(0x7ff7ed577760?)
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/internal/poll/fd_windows.go:860 +0x4a
+internal/poll.(*FD).execIO(0x14e845e5a9c0, 0x77, 0x14e8463c2d80)
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/internal/poll/fd_windows.go:304 +0x2c9
+internal/poll.(*FD).Write(0x14e845e5a9c0, {0x14e845e754d0, 0x6, 0x330})
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/internal/poll/fd_windows.go:859 +0x2ba
+os.(*File).write(...)
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/os/file_posix.go:47
+os.(*File).Write(0x14e845e82898, {0x14e845e754d0?, 0x6, 0x8?})
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/os/file.go:215 +0x4e
+text/tabwriter.(*Writer).write0(0x4?, {0x14e845e754d0?, 0x6, 0x19a3fab1b90?})
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/text/tabwriter/tabwriter.go:252 +0x25
+text/tabwriter.(*Writer).writeLines(0x14e84632e160, 0x40?, 0x0?, 0x22)
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/text/tabwriter/tabwriter.go:319 +0x1b6
+text/tabwriter.(*Writer).format(0x14e84632e160, 0x14e845e2b808?, 0x1e846342630?, 0x22)
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/text/tabwriter/tabwriter.go:406 +0x1fd
+text/tabwriter.(*Writer).format(0x14e84632e160, 0x20?, 0x0?, 0x22)
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/text/tabwriter/tabwriter.go:400 +0x1b1
+text/tabwriter.(*Writer).format(0x14e84632e160, 0x10?, 0x0?, 0x22)
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/text/tabwriter/tabwriter.go:400 +0x1b1
+text/tabwriter.(*Writer).format(0x14e84632e160, 0x8?, 0x0?, 0x22)
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/text/tabwriter/tabwriter.go:400 +0x1b1
+text/tabwriter.(*Writer).format(0x14e84632e160, 0x7ff7ec5c8f00?, 0x30?, 0x22)
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/text/tabwriter/tabwriter.go:400 +0x1b1
+text/tabwriter.(*Writer).format(0x14e84632e160, 0x7ff7ec5c8d80?, 0x14e8463c31c0?, 0x23)
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/text/tabwriter/tabwriter.go:400 +0x1b1
+text/tabwriter.(*Writer).flushNoDefers(0x14e84632e160)
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/text/tabwriter/tabwriter.go:514 +0x11b
+text/tabwriter.(*Writer).flush(0x7ff7ec8c8e00?)
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/text/tabwriter/tabwriter.go:496 +0x53
+text/tabwriter.(*Writer).Flush(...)
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/text/tabwriter/tabwriter.go:489
+github.com/multica-ai/multica/server/internal/cli.PrintTable({0x7ff7ec8c8bc0, 0x14e845e82898}, {0x14e8463c35a0, 0x6, 0x6}, {0x14e845fd6e08, 0x21, 0x7ff7eb84831a?})
+	C:/Users/GOBAO/Downloads/AI/cr073-rerun/premerge/server/internal/cli/output.go:18 +0x185
+github.com/multica-ai/multica/server/cmd/multica.printDiskUsageTaskTable({0x7ff7ec8c8bc0, 0x14e845e82898}, {{0x14e84625ed80, 0x31}, {0x2dfd744c, 0xee24ec06e, 0x0}, {0x14e84602a9f0, 0x3, 0x3}, ...})
+	C:/Users/GOBAO/Downloads/AI/cr073-rerun/premerge/server/cmd/multica/cmd_daemon.go:2091 +0x651
+github.com/multica-ai/multica/server/cmd/multica.printAggregateDiskUsage({0x7ff7ec8c8bc0, 0x14e845e82898}, {{0x1e2d8340, 0xee24ec06d, 0x0}, {0x14e84602a120, 0x3, 0x3}, {0x14e846229420, 0x1, ...}, ...}, ...)
+	C:/Users/GOBAO/Downloads/AI/cr073-rerun/premerge/server/cmd/multica/cmd_daemon.go:2058 +0x28d
+github.com/multica-ai/multica/server/cmd/multica.runDaemonDiskUsageAggregate(0x14e8460bf508, 0x0, 0x0, {0x7ff7ec7f3b79, 0x5})
+	C:/Users/GOBAO/Downloads/AI/cr073-rerun/premerge/server/cmd/multica/cmd_daemon.go:1990 +0x3cf
+github.com/multica-ai/multica/server/cmd/multica.runDaemonDiskUsage(0x14e8460bf508, {0x7ff7eb9060c0?, 0x14e845d8a600?, 0x14e845e82890?})
+	C:/Users/GOBAO/Downloads/AI/cr073-rerun/premerge/server/cmd/multica/cmd_daemon.go:1801 +0x376
+github.com/multica-ai/multica/server/cmd/multica.TestRunDaemonDiskUsageAllProfilesUsesPerProfileToken.func1()
+	C:/Users/GOBAO/Downloads/AI/cr073-rerun/premerge/server/cmd/multica/cmd_daemon_diskusage_status_test.go:297 +0x1e
+github.com/multica-ai/multica/server/cmd/multica.captureStdout(0x14e845d8a600, 0x14e846007f38)
+	C:/Users/GOBAO/Downloads/AI/cr073-rerun/premerge/server/cmd/multica/cmd_skill_test.go:36 +0x12a
+github.com/multica-ai/multica/server/cmd/multica.TestRunDaemonDiskUsageAllProfilesUsesPerProfileToken(0x14e845d8a600)
+	C:/Users/GOBAO/Downloads/AI/cr073-rerun/premerge/server/cmd/multica/cmd_daemon_diskusage_status_test.go:297 +0x27c
+testing.tRunner(0x14e845d8a600, 0x7ff7ec8b0430)
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/testing/testing.go:2036 +0xc3
+created by testing.(*T).Run in goroutine 1
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/testing/testing.go:2101 +0x4a9
+
+goroutine 38 [IO wait, 4 minutes]:
+internal/poll.runtime_pollWait(0x19a64ff6200, 0x72)
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/runtime/netpoll.go:351 +0x85
+internal/poll.(*pollDesc).wait(0x14e845dba390?, 0x7ff7eb7a80c6?, 0x0)
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/internal/poll/fd_poll_runtime.go:84 +0x27
+internal/poll.(*FD).waitIO(0x14e845dba390?, 0x14e846289b58?)
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/internal/poll/fd_windows.go:228 +0x4c
+internal/poll.(*FD).execIO(0x14e845f7e000, 0x72, 0x14e846289bc8)
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/internal/poll/fd_windows.go:311 +0x365
+internal/poll.(*FD).acceptOne(0x14e845f7e000, 0x31c, {0x14e845eac0f0?, 0x10f00e846289c64?, 0x19a64f98b80?})
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/internal/poll/fd_windows.go:1129 +0x79
+internal/poll.(*FD).Accept(0x14e845f7e000, 0x14e846289db0)
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/internal/poll/fd_windows.go:1164 +0x190
+net.(*netFD).accept(0x14e845f7e000)
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/net/fd_windows.go:202 +0x4b
+net.(*TCPListener).accept(0x14e846394f00)
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/net/tcpsock_posix.go:159 +0x1b
+net.(*TCPListener).Accept(0x14e846394f00)
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/net/tcpsock.go:387 +0x30
+net/http.(*Server).Serve(0x14e845da1100, {0x7ff7ec8d39b0, 0x14e846394f00})
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/net/http/server.go:3432 +0x30c
+net/http/httptest.(*Server).goServe.func1()
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/net/http/httptest/server.go:341 +0x55
+created by net/http/httptest.(*Server).goServe in goroutine 37
+	C:/Users/GOBAO/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.windows-amd64/src/net/http/httptest/server.go:339 +0x65
+FAIL	github.com/multica-ai/multica/server/cmd/multica	300.108s
+ok  	github.com/multica-ai/multica/server/cmd/migrate	0.074s [no tests to run]
+ok  	github.com/multica-ai/multica/server/internal/daemon/repocache	0.065s [no tests to run]
+FAIL
+targeted_exit=1
+targeted_end=2026-09-30T16:38:49+08:00
