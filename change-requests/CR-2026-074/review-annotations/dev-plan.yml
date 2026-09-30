@@ -1,25 +1,25 @@
 cr-id: CR-2026-074
 review-type: dev-plan
 reviewer: "OldBoy405"
-reviewed-at: "2026-10-01T01:16:16+08:00"
+reviewed-at: "2026-10-01T01:59:43+08:00"
 verdict: block
 repair-target: write-dev-plan
 blockers:
-  - "本轮新增： B-DEV-01 — plan.md §7 的 AC-05 TASK owner 同时列 CR-2026-074-TASK-04（结构负例）与 TASK-08（apply 并发/重放）。AC-05 包含用户可观察的首写、隔离与幂等，属于关键 AC；review-dev-plan 要求每个关键 AC 有且仅有一个 TASK owner。请明确唯一主责 TASK，其余任务标为关联/协作，保留全部结构负例与 apply/重放断言及 cmd-03、cmd-04，不得删验收面来凑唯一性。修订入口：plan.md §7 及对应 TASK 的责任边界；repair-target=write-dev-plan。"
-  - "本轮新增： B-DEV-02 — tasks/_index.yml 存在 CR-2026-074-TASK-10，但 plan.md §6.1 交付覆盖表的主责/关联TASK列未引用该 id（FR-8 仅列 TASK-09；10 行覆盖表其余行也无 TASK-10），违反账本 id 集与稳定交付覆盖表双向核对。SDD §8/§9 已批准 ARCHITECTURE.md 地图维护，不能删 TASK-10；请把该交付项并入既有 FR-8 的关联 TASK/SDD 落点/可实际观测地图内容的稳定证据与回滚安排，保持每个 FR 一行及两稳定表映射。修订入口：plan.md §6.1/§6.2、TASK-09/TASK-10；repair-target=write-dev-plan。"
-  - "本轮新增： B-DEV-03 — TASK-01 验收条件第3条及 TASK-10 验收条件第2条直接使用 git -C <tools worktree> status --porcelain，未使用受控入口。review-dev-plan 的 acceptance-verifiability 明确把涉及 Git 的验收命令越过 rules.json 已允许入口列为 blocker；本运行时也禁止原生 Git。请改为 crctl git status --porcelain，显式传入当前业务 workspace 与 tools worktree 的 --cwd，保留文件集检查；固定 argv 必须在产物内，不能仅写在委派评论。注意 status 只能证明文件集，TASK-10 的内容一致性须另由相应稳定证据证明。修订入口：TASK-01/TASK-10 验收步骤及其必要证据关联；repair-target=write-dev-plan。"
-  - "本轮新增： B-DEV-04 — TASK-09 接口产出明确以 TASK-10 为下游；TASK-10 实现要点要求与 TASK-09 的 SKILL/README 一致，消费契约还写含 TASK-09 后的 HELP 形态，但 plan.md §2、TASK-10 depends-on 与 tasks/_index.yml 均仅声明 TASK-01→TASK-10，缺少 TASK-09→TASK-10，允许在所消费最终事实尚未产出时完成地图任务。请在 plan/TASK/受控生成账本中一致加入真实产出消费依赖并保持无环，且同步 plan R4 的逆拓扑回滚次序（当前 TASK-09 在 TASK-10 前回滚不符合该依赖）。修订入口：plan.md §2/§4、TASK-10 及 write-dev-tasks 受控重生成；repair-target=write-dev-plan。"
+  - "部分解决： B-DEV-02 — plan.md §6.1 FR-8 已纳入 TASK-10、ARCHITECTURE.md 落点和逆拓扑回滚，交付覆盖表与任务账本的缺项已修复；但其验收证据列仍为 cmd-05 + cmd-06；地图内容由 review-code R7 检查项核验，而非全由已登记稳定 cmd-NN 承载。当前 tools HEAD 41b112ed4d97baaaca3b82367a72f35520dc3d4b 的 caller-contract.test.mjs:249-267 扫描面不含 ARCHITECTURE.md，lint-prompts.test.mjs:1-42 是临时 fixture 的规则测试；TASK-09 未安排在这两个入口内加入地图内容断言，TASK-10 验收条件1仅写 diff 检查，没有固定 argv/稳定证据ID。故地图内容仍无法从所声称的稳定证据链实际观测，不能以文件集 status 或未来 review-code R7 代替该缺口。请保留 SDD §8 随代码评审的人工内容检查，在既有批准范围内把地图内容的实际只读取证命令及比对判据固化到 plan.md §6.2 的稳定 cmd-NN 行和 TASK-10，并使 FR-8 验收证据列只引用已登记的稳定ID；说明文字移入对应 TASK/SDD 落点。Git 取证使用 rules.json 已允许的 crctl git diff --unified=N 形态并显式传 workspace/cwd，不需扩白名单、新增生产能力或删除 TASK-10。修订入口：plan.md §6.1/§6.2、TASK-10；repair-target=write-dev-plan。"
 dimensions:
   sdd-to-plan: "pass"
   plan-to-tasks: "block"
   task-executability: "block"
-  dependency-topology: "block"
+  dependency-topology: "pass"
   interface-contracts: "pass"
   acceptance-verifiability: "block"
   scope-and-simplicity: "pass"
-  risk-and-rollback: "block"
+  risk-and-rollback: "pass"
   reviewer-model: "pi/local quality-reviewer-agent；模型标识未注入，未推测"
-suggestions: []
+suggestions:
+  - "已解决： B-DEV-01 — plan.md §7 将 AC-05 唯一主责明确为 CR-2026-074-TASK-08，TASK-04 仅关联协作；TASK-04/TASK-08 正文同步责任边界。四类结构负例、缺索引首写、正常历史保留、apply 并发拒绝及重放断言全部保留于 cmd-03/cmd-04，未删验收面换取唯一性。已核验修订提交 fafa372a 与 26120e2a。"
+  - "已解决： B-DEV-03 — TASK-01 验收条件3与 TASK-10 验收条件2 已改为 node skills/shared/crctl/scripts/crctl.mjs git status --porcelain --cwd <tools-worktree> --workspace <operational-workspace>，固定 argv 和占位绑定均落入产物；rules.json 的 status shape 允许 --porcelain。两卡明确 status 只证明文件集，不声称内容正确性；地图稳定内容证据的剩余问题仅归入 B-DEV-02，不重复计 blocker。"
+  - "已解决： B-DEV-04 — plan.md §2、TASK-10 depends-on、tasks/_index.yml 一致加入 CR-2026-074-TASK-09→CR-2026-074-TASK-10；TASK-09 产出与 TASK-10 消费明确等待最终 SKILL/README/HELP。10项任务的卡片/账本依赖逐项相同、无悬空引用且无环；plan.md R4 逆拓扑回滚现以 TASK-10→TASK-09 开始并符合其余依赖。"
 review-loop:
-  current-attempt: 1
-subject-sha256: 2b7c71574fa9be796f6ba9e73a0ce013f06ebe90b67afcb3a102bf739593dcac
+  current-attempt: 2
+subject-sha256: f2f0e8bba73e961fb114669ab9321eea526ea6189d85ddef432689f2f4f5dc34
