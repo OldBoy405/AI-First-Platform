@@ -1,4 +1,4 @@
-# collect-evidence.ps1 — 采集 U/S/P 三案本地 reviewer run 的证据（人运行）
+﻿# collect-evidence.ps1 — 采集 U/S/P 三案本地 reviewer run 的证据（人运行）
 #
 # 用法（在本地交互式 PowerShell 中，人执行）：
 #   powershell -NoProfile -ExecutionPolicy Bypass -File .\collect-evidence.ps1 -Case U
