@@ -1,0 +1,25 @@
+cr-id: CR-2026-074
+review-type: dev-plan
+reviewer: "OldBoy405"
+reviewed-at: "2026-10-01T01:16:16+08:00"
+verdict: block
+repair-target: write-dev-plan
+blockers:
+  - "本轮新增： B-DEV-01 — plan.md §7 的 AC-05 TASK owner 同时列 CR-2026-074-TASK-04（结构负例）与 TASK-08（apply 并发/重放）。AC-05 包含用户可观察的首写、隔离与幂等，属于关键 AC；review-dev-plan 要求每个关键 AC 有且仅有一个 TASK owner。请明确唯一主责 TASK，其余任务标为关联/协作，保留全部结构负例与 apply/重放断言及 cmd-03、cmd-04，不得删验收面来凑唯一性。修订入口：plan.md §7 及对应 TASK 的责任边界；repair-target=write-dev-plan。"
+  - "本轮新增： B-DEV-02 — tasks/_index.yml 存在 CR-2026-074-TASK-10，但 plan.md §6.1 交付覆盖表的主责/关联TASK列未引用该 id（FR-8 仅列 TASK-09；10 行覆盖表其余行也无 TASK-10），违反账本 id 集与稳定交付覆盖表双向核对。SDD §8/§9 已批准 ARCHITECTURE.md 地图维护，不能删 TASK-10；请把该交付项并入既有 FR-8 的关联 TASK/SDD 落点/可实际观测地图内容的稳定证据与回滚安排，保持每个 FR 一行及两稳定表映射。修订入口：plan.md §6.1/§6.2、TASK-09/TASK-10；repair-target=write-dev-plan。"
+  - "本轮新增： B-DEV-03 — TASK-01 验收条件第3条及 TASK-10 验收条件第2条直接使用 git -C <tools worktree> status --porcelain，未使用受控入口。review-dev-plan 的 acceptance-verifiability 明确把涉及 Git 的验收命令越过 rules.json 已允许入口列为 blocker；本运行时也禁止原生 Git。请改为 crctl git status --porcelain，显式传入当前业务 workspace 与 tools worktree 的 --cwd，保留文件集检查；固定 argv 必须在产物内，不能仅写在委派评论。注意 status 只能证明文件集，TASK-10 的内容一致性须另由相应稳定证据证明。修订入口：TASK-01/TASK-10 验收步骤及其必要证据关联；repair-target=write-dev-plan。"
+  - "本轮新增： B-DEV-04 — TASK-09 接口产出明确以 TASK-10 为下游；TASK-10 实现要点要求与 TASK-09 的 SKILL/README 一致，消费契约还写含 TASK-09 后的 HELP 形态，但 plan.md §2、TASK-10 depends-on 与 tasks/_index.yml 均仅声明 TASK-01→TASK-10，缺少 TASK-09→TASK-10，允许在所消费最终事实尚未产出时完成地图任务。请在 plan/TASK/受控生成账本中一致加入真实产出消费依赖并保持无环，且同步 plan R4 的逆拓扑回滚次序（当前 TASK-09 在 TASK-10 前回滚不符合该依赖）。修订入口：plan.md §2/§4、TASK-10 及 write-dev-tasks 受控重生成；repair-target=write-dev-plan。"
+dimensions:
+  sdd-to-plan: "pass"
+  plan-to-tasks: "block"
+  task-executability: "block"
+  dependency-topology: "block"
+  interface-contracts: "pass"
+  acceptance-verifiability: "block"
+  scope-and-simplicity: "pass"
+  risk-and-rollback: "block"
+  reviewer-model: "pi/local quality-reviewer-agent；模型标识未注入，未推测"
+suggestions: []
+review-loop:
+  current-attempt: 1
+subject-sha256: 2b7c71574fa9be796f6ba9e73a0ce013f06ebe90b67afcb3a102bf739593dcac
