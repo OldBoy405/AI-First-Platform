@@ -8,7 +8,7 @@ owner: a0e71a32-509d-4ee9-aea4-d086a5b1ff93
 owner-role: development
 status: draft
 created: 2026-09-30T23:02:00+08:00
-updated: 2026-09-30T23:02:00+08:00
+updated: 2026-10-01T00:06:52+08:00
 ---
 
 # CR-2026-074 — 新 KB 初始化与首次回写兼容方案
@@ -17,7 +17,7 @@ updated: 2026-09-30T23:02:00+08:00
 
 本设计承接已审批 `prd.md` 的 FR-1～FR-10、AC-01～AC-12，目标版本继承 `cr.md` 的 `0.47`。仅 tools 仓交付代码/说明/自动化测试，knowledge-base 仓承载本 CR 文档，multica 仓参与流程但无代码变更。代码路径取 Pipeline `resources[].worktreePath`；业务文档取 `workspace inspect.operationalWorkspace`。不以会话 cwd 或主 checkout 的陈旧 CR 快照作为编辑 authority。
 
-设计依赖 `dep-1`～`dep-15`。本轮只读 tools `ARCHITECTURE.md`；初始化属于无 CR 的显式引导，不建立第二事务框架。新增私有 `cmdKbInit` 留在 `crctl.mjs`，Git 执行依赖 `dep-3`，文件独占创建依赖 `dep-2`，不新增模块或导出。新增入口保留显式 workspace 守卫，只对 `kb` 分支绕开必须已有 `change-requests/` 的检测与 gates 加载。
+设计依赖 `dep-1`～`dep-24`。本轮只读 tools `ARCHITECTURE.md`；初始化属于无 CR 的显式引导，不建立第二事务框架。新增私有 `cmdKbInit` 留在 `crctl.mjs`，Git 执行依赖 `dep-3`，文件独占创建依赖 `dep-2`，不新增模块或导出。新增入口保留显式 workspace 守卫，只对 `kb` 分支绕开必须已有 `change-requests/` 的检测与 gates 加载。
 
 ```mermaid
 flowchart LR
@@ -57,7 +57,7 @@ flowchart LR
 | dep-4 | tools | 41b112ed4d97baaaca3b82367a72f35520dc3d4b | skills/shared/crctl/scripts/crctl.mjs | auditLog / cmdGit | auditLog 创建自忽略 .crctl 并写 JSONL；cmdGit 的白名单调用有审计，成功 push 可发 CR checkpoint outbox，因此 init 不经 cmdGit |
 | dep-5 | tools | 41b112ed4d97baaaca3b82367a72f35520dc3d4b | skills/shared/crctl/scripts/lib/workspace-transactions.mjs | ensureRepoWorkspace.create | 建立 repo.worktreePath 后执行 worktree add，创建路径未写 .rayai-worktrees/.gitignore；这是 FR-4 的窄修改点 |
 | dep-6 | tools | 41b112ed4d97baaaca3b82367a72f35520dc3d4b | skills/shared/crctl/scripts/lib/workspace-transactions.mjs | registerCr 的 source / inputDigest / loadOrCreateJournal | source 缺省为 manual 且参与 inputDigest；同 key 不同指纹转 REGISTRATION_INPUT_MISMATCH，指纹校验早于注册账本副作用 |
-| dep-7 | tools | 41b112ed4d97baaaca3b82367a72f35520dc3d4b | skills/writeback/scripts/writeback-prd-sdd.mjs | buildIndex | 缺 specs/_index.yml 报 STRUCTURE_MISMATCH；新 spec 在 features 后插入；已有目标条目缺 cr-history 仍报结构错误 |
+| dep-7 | tools | 41b112ed4d97baaaca3b82367a72f35520dc3d4b | skills/writeback/scripts/writeback-prd-sdd.mjs | buildIndex / selfCheck / 主流程的 writeCandidate 调用 | 缺索引报 STRUCTURE_MISMATCH；仅新 spec 分支检查 features 并插入，已有目标且含 cr-history 时未检查 features；目标缺 cr-history 拒绝；主流程在 buildIndex 成功后才写 candidate，selfCheck 仅检查索引目标条目数，不能兜底缺 features |
 | dep-8 | tools | 41b112ed4d97baaaca3b82367a72f35520dc3d4b | skills/writeback/scripts/lib.mjs | readFile / readHashRaw / writeCandidate | 文本读取规范行尾；before 锚点按磁盘字节；candidate 输出 blobs/manifest，缺文件 before 为 null，不写 authority |
 | dep-9 | tools | 41b112ed4d97baaaca3b82367a72f35520dc3d4b | skills/shared/crctl/scripts/lib/workspace-transactions.mjs | writebackAllowlist / applyWriteback | baseline 白名单含 specs/_index.yml；应用通过 manifest 与 recoverable write-set，并沿用事务恢复 |
 | dep-10 | tools | 41b112ed4d97baaaca3b82367a72f35520dc3d4b | skills/shared/crctl/scripts/lib/durable-tx.mjs | applyWriteSet / recoverWriteSet 的 beforeSha256 分支 | null 表示目标缺失，已有异内容不满足 before/after 时拒绝；已完成 after 可识别重放，不覆盖并发异内容 |
@@ -66,6 +66,15 @@ flowchart LR
 | dep-13 | tools | 41b112ed4d97baaaca3b82367a72f35520dc3d4b | skills/shared/controlled-shell/rules.json | git[sub=merge-base].shapes | 仅允许 origin/trunk 对 HEAD 与 is-ancestor 对 origin/ref 两种形态，裸提交对当前不在 shape 中 |
 | dep-14 | tools | 41b112ed4d97baaaca3b82367a72f35520dc3d4b | skills/requirement/write-requirement-prd/SKILL.md | Step 2 source 校验 | 非空 source 必须在 KB worktree 内且存在；空串不进入此条件；不需要改 writer 通用合同 |
 | dep-15 | tools | 41b112ed4d97baaaca3b82367a72f35520dc3d4b | ARCHITECTURE.md | §4/§5/§8 | 零依赖、状态/门禁经 crctl、目录与权限单一事实源；新增写入子命令触发地图维护，必须先过设计评审 |
+| dep-16 | tools | 41b112ed4d97baaaca3b82367a72f35520dc3d4b | skills/shared/crctl/scripts/test/register-tx.test.mjs | makeFixture / runCrctl | makeFixture 创建三仓和三 bare origin、最小 tools 身份、KB 两账本及根 runtime ignore；Git 身份只配临时仓，可裁剪为 init 输入，不可原样用于无账本/无根 ignore 场景 |
+| dep-17 | tools | 41b112ed4d97baaaca3b82367a72f35520dc3d4b | skills/shared/crctl/scripts/test/merge-fixture.mjs | makeCodeApprovedFixture | 可传 targetVersion/targetSpecId/enrichedPlan；建立 code-approved 多仓源、两张规范 PLAN 表、TASK/test-report 与 dev-plan/code 评审和 development-start/code 审批证据；不是全部 traceability 证据的完整 fixture |
+| dep-18 | tools | 41b112ed4d97baaaca3b82367a72f35520dc3d4b | skills/shared/crctl/scripts/test/writeback-tx.test.mjs | makeMergedFixture / makeNewModeMergedFixture / makeNewModeWritingBackFixture / addEvidenceFiles | 从 merge-fixture.mjs 导入 makeCodeApprovedFixture，merge 后消费 operationalWorkspace，baseline 后进入 writing-back；addEvidenceFiles 补 requirement/sdd 评审和 requirement/tech-design 审批字段，供 traceability 场景使用 |
+| dep-19 | tools | 41b112ed4d97baaaca3b82367a72f35520dc3d4b | skills/shared/crctl/scripts/test/caller-contract.test.mjs | TWO_WORD / CR_DATA_FIRST_WORDS | 两集合均未含 kb；命令发现按 TWO_WORD 组合子命令，显式根断言按 CR_DATA_FIRST_WORDS 分类，新增入口须同步两集合 |
+| dep-20 | tools | 41b112ed4d97baaaca3b82367a72f35520dc3d4b | skills/shared/crctl/SKILL.md | 子命令能力表 / IDE 用法的 workspace 说明 | 能力表无 kb init；IDE 用法仍写 workspace 默认从 cwd 向上探测，文档事实需与 dep-1 的显式根代码分开核验和修订 |
+| dep-21 | tools | 41b112ed4d97baaaca3b82367a72f35520dc3d4b | skills/requirement/requirement-register/SKILL.md | Step 1 / Step 2 / Step 3 / 错误处理 | 前置读取工作区声明，业务注册只调用一次 register 深原语并分类/续跑；尚无新 KB 初始化失败引导，source 参数仅写可选来源，需补引导与空默认说明，不增加自动代跑 |
+| dep-22 | tools | 41b112ed4d97baaaca3b82367a72f35520dc3d4b | skills/shared/controlled-shell/SKILL.md | 命令白名单表的 merge-base 行 | 只解释 origin/trunk 对 HEAD 和 is-ancestor 对 origin/trunk 两种形态；本行文档与 dep-13 的规则是不同事实源，需随裸提交 shape 同步 |
+| dep-23 | tools | 41b112ed4d97baaaca3b82367a72f35520dc3d4b | README.md | §1 Tools 定位 / §4 Pipeline 入口 / §7 恢复与状态查询 | 面向人的流程总览，执行合同指向 Pipeline/Skill/crctl；尚无 kb init 入口，新增简短引导不改变八条 Pipeline |
+| dep-24 | tools | 41b112ed4d97baaaca3b82367a72f35520dc3d4b | docs/QODER-使用指南.md | 工作区初始化 PowerShell 代码块的台账模板（63–102 行） | 含 backlog、CR index、specs index、delivery task index 四模板及 product-planning/competitive/market-insights/feedback/ideas/tech-notes 六种 docs 索引模板；本次删除前四种，后六种原文保留 |
 
 待核实依赖：无。历史样本用于测试，不作为本次功能已通过证据。CR-2026-061/066 的 PLAN 从 knowledge-base `change-requests/<CR>/plan.md` 裁剪，实施时记录原文 SHA（规范行尾）与来源 commit，再纳入 tools 测试 fixture，不修改签字源。
 
@@ -92,7 +101,7 @@ change-requests:
 
 ### 2.2 首次 baseline candidate 与 trace 数据
 
-缺 `specs/_index.yml` 时 `buildIndex` 的内存文本起始为 `schema: specs-index/v1\n\nfeatures:\n`，再插入本 spec。此 LF 转义仅说明字符串值，实际文件保留真实换行。不存在才取该文本；空文件或缺 features 的已存在文件不得被替换为模板。新索引不增加顶层 updated。设计依赖 `dep-7`～`dep-10`，只改变 generator 的缺文件输入分支，保留 manifest 的 `beforeSha256:null` 与生成后的应用边界。
+缺 `specs/_index.yml` 时 `buildIndex` 的内存文本起始为 `schema: specs-index/v1\n\nfeatures:\n`，再插入本 spec。此 LF 转义仅说明字符串值，实际文件保留真实换行。不存在才取该文本；空文件或缺 features 的已存在文件不得被替换为模板。新索引不增加顶层 updated。设计依赖 `dep-7`～`dep-10`；generator 同时交付缺文件首部与所有既有索引的 features 前置校验（§4.3），不以目标 spec/cr-history 已存在豁免结构检查。保留 manifest 的 `beforeSha256:null` 与生成后的应用边界。
 
 规范表仅提供 `fr-chain` 的 FR/SDD/TASK/evidence 与命令 ID 集合；`code` 来自 merge facts。trunk 来自解析后的 `repositories[]`，不从 ref 当前 HEAD 推断。新设计不改 manifest 版本、trace event payload、TASK/test-report/merge 证据 schema 或 validator。
 
@@ -186,7 +195,13 @@ root/checkout 核验使用 realpath；输入路径大小写/别名按文件身�
 
 ### 4.3 baseline 缺文件首写（FR-5）
 
-`buildIndex` 中 `readFile(indexPath)===null` 才取新首部；其后进入同一条 features/spec 插入及历史累积代码。设计依赖 `dep-7`、`dep-8`。before 从原索引路径读取而不是从内存模板推导，缺文件保持 null。candidate 后他人创建索引时由 apply 拒绝，不写 authority、不修改 CAS 函数；同事务重放沿 `dep-9`、`dep-10`。不通过新建根索引绕过畸形既有文件错误。
+设计依赖 `dep-7`、`dep-8`。FR-5 的目标合同需要最小前置校验，不把基线的分支遗漏当作兼容要求。`buildIndex` 顺序固定为：
+
+1. 读取原索引；仅 `readFile(indexPath)===null` 才使用 §2.2 首部，任何已存在文件（含空文件）都按其原文处理。
+2. 对选定文本先查 features 行，沿用精确判据 `line.trimStart()==='features:'`。未找到立即 `STRUCTURE_MISMATCH`；此检查位于目标 spec 提取/分支选择之前，对全部既有索引生效，包括已有目标 spec 且含 cr-history 的文件，不依赖末尾 selfCheck。
+3. 校验成功后，目标不存在则用已定位的 features 行插入；目标存在则沿用原字段更新及历史累积，缺 cr-history 仍 `STRUCTURE_MISMATCH`。不新增 schema、重复 features 等额外收紧项，不重建旧索引或删除旧条目。
+
+以上结构错误全部在 `writeCandidate` 前返回：无 baseline blobs/manifest 输出、无 authority 改写、无本阶段 journal；只读/内存中的 PRD/SDD 候选不算落盘。正常索引继续累积历史，重复事务不新增相同 spec/CR。before 从原索引路径读取而不是从内存模板推导，缺文件保持 null。candidate 后他人创建索引时由 apply 拒绝，不写 authority、不修改 CAS 函数；同事务重放沿 `dep-9`、`dep-10`，durable-tx/apply 零改动。
 
 ### 4.4 PLAN 规范表提取（FR-6）
 
@@ -217,14 +232,14 @@ Node ≥18，零新依赖；YAML 设计依赖 `dep-12`，不引入第三方 pars
 
 ### 5.2 验证落点与可达性
 
-沿 tools 的 `scripts/test` 体系加定向用例，不新增 Skill 或生产模块。初始化用三仓+bare origin 场景，抽取 register-tx 同构 fixture 到测试文件局部即可，不为了几条用例新增通用 fixture 框架。所有新 Git 配置仅发生在临时测试仓，禁止触及用户全局身份。
+在下表测试入口加定向用例，不新增 Skill 或生产模块。初始化 fixture 设计依赖 `dep-16`，在测试文件局部裁剪为仅 dir-graph、KB 无账本/远端 trunk，并为 AC-04 去掉根 runtime ignore；不新增通用 fixture 框架。完整回写与独立 trace 重放的 fixture 设计依赖 `dep-17`、`dep-18`：采用 enrichedPlan/targetSpecId 输入，按各阶段补齐证据，构造无 specs 索引变体；仅改临时测试数据，不改真实签字源。命令发现测试设计依赖 `dep-19`。所有新 Git 配置仅发生在临时测试仓，禁止触及用户全局身份。
 
 | 测试入口（相对 tools） | 证据范围 |
 | --- | --- |
 | skills/shared/crctl/scripts/test/crctl.test.mjs | init happy/noop/全部前置优先级、失败残留与恢复；普通命令 workspace 守卫；裸提交祖先/非祖先及拒绝形态 |
 | skills/shared/crctl/scripts/test/register-tx.test.mjs | init 后 register、无根忽略的 clean 主 KB；空 source 与历史指纹矩阵 |
 | skills/writeback/scripts/test/writeback.test.mjs | baseline 缺/畸形/已有索引；两规范表正负场景、空位/管道/诱饵、YAML trunk、LF/CRLF |
-| skills/shared/crctl/scripts/test/writeback-tx.test.mjs | makeCodeApprovedFixture 无索引变体，apply 并发/重放、完整归档及仅 trace 重放 |
+| skills/shared/crctl/scripts/test/writeback-tx.test.mjs | 设计依赖 dep-17、dep-18 的无索引/证据齐全变体，apply 并发/重放、完整归档及仅 trace 重放 |
 | skills/shared/crctl/scripts/test/caller-contract.test.mjs | 非 help 命令集合与 two-word 发现加入 kb；缺根/空根与文档入口契约 |
 | skills/shared/crctl/scripts/test/lint-prompts.test.mjs；skills/shared/crctl/scripts/test/gate-registry.json | 说明与可执行命令一致；按实际新增用例同步计数，不动门禁定义 |
 
@@ -265,18 +280,18 @@ source 的 writer 路径规则属于 prompt 合同（`dep-14`），测试以真�
 
 | AC | 设计落点 | 可观测结果 | 可达性说明 |
 | --- | --- | --- | --- |
-| AC-01 | §2.1/§3.1/§4.1，crctl init fixture | 精确模板、提交 tree 只含三候选文件、远端首 trunk、五输出字段、无 CR/task/outbox；二次 changed=false/无新 commit/push | kb 分支 symbolic-ref 不要求 HEAD，KB 空远端不当网络失败；code 仓另有远端 trunk |
+| AC-01 | §2.1/§3.1/§4.1/§5.2，init fixture（设计依赖 dep-16） | 精确模板、提交 tree 只含三候选文件、远端首 trunk、五输出字段、无 CR/task/outbox；二次 changed=false/无新 commit/push | kb 分支 symbolic-ref 不要求 HEAD，KB 空远端不当网络失败；code 仓另有远端 trunk |
 | AC-02 | §3.2 的有序检查 | 每项固定 code/reason；前置前后业务/index/HEAD/remote/audit 相同 | kb 特判先于 detectWorkspace，错误 priority 先 tools 后 graph 再 repo/branch/dirty/remote/ledger；双重错误 fixture 验证最先失败 |
 | AC-03 | §4.1/§5.2，wx 与 Git续跑 | 未提交补 commit，未推送补 push；并发内容保留、I/O 自清理、Git stage/residue，无成功审计；去注入后续跑 | 测试在全部前置通过后注入 create 或 Git阶段，避免被 dirty/账本冲突提前截断；不新增生产 faultPoint |
-| AC-04 | §4.2，register 三仓场景 | 第一 CR 分配、全部 worktree、主 KB clean、runtime ignore=*、根 ignore 哈希不变 | fixture 不预装根 runtime ignore，新 CR 必经 ensure create；init 不预建 CR |
-| AC-05 | §4.3 + apply fixture | before=null，新索引 apply/重放一次；坏索引/并发文件原文不变、旧历史保留 | 删测试 baseline 索引但保持 merging/writing-back 合法 authority；并发在 candidate 后/apply 前注入 |
+| AC-04 | §4.2/§5.2，register 三仓场景（设计依赖 dep-16） | 第一 CR 分配、全部 worktree、主 KB clean、runtime ignore=*、根 ignore 哈希不变 | fixture 不预装根 runtime ignore，新 CR 必经 ensure create；init 不预建 CR |
+| AC-05 | §2.2/§4.3/§5.2 + apply fixture（设计依赖 dep-17、dep-18） | 缺索引 before=null，apply/重放不重复 spec；空文件、缺 features 且无目标、缺 features 但已有目标 spec/cr-history、含 features 但目标缺 cr-history 均 STRUCTURE_MISMATCH，原索引不变且不输出 candidate/本阶段 journal；并发文件原文不变；正常索引旧历史保留 | 负测先满足合法 merging/writing-back authority 及其他证据，使用独立空 candidate 输出路径，只变索引以触达 buildIndex；已有目标/cr-history 的反例必须经过 features 前置检查；并发另在成功 candidate 后/apply 前注入 |
 | AC-06 | §4.4，061/066 与合成诱饵 fixture | 新链/命令 ID 与规范片段期望一致，表外无误收，空位不移列 | 标准表保留、换章节号，args 含管道仅验首格；诱饵表不满足表头不参与 |
 | AC-07 | §4.4/§5.2，各正负 LF/CRLF 对 | 结构错 STRUCTURE_MISMATCH；authority/本阶段 journal 不变；集合/错误在两行尾下相同 | 在合法 writing-back/其他证据齐全时变动目标表，让负测触达 parser，而非状态/缺证据先失败 |
 | AC-08 | §4.5，trunk 与交叉证据回归 | 引号/非首键 trunk 正确；缺有效 trunk 为 TRUNK_UNKNOWN；原 TASK/test/merge 负测保留 | 仅改测试 graph 文本或交叉输入，不调用磁盘 resolver 提前排除有效冻结声明 |
 | AC-09 | §8、caller-contract/说明检查 | 四手工模板消失、其他 docs 模板保留；显式根/role/tools/不代跑可见；相关定向测试计数一致 | 保留 ordinary command 入口负测；未改状态机/gates/Pipeline/Agent/矩阵的 diff 断言 |
 | AC-10 | §4.6，受控入口真实 Git fixture | 7/40 位裸提交通过 shape；exit=0/1 原语义，非法形态 FORBIDDEN_SUBCOMMAND；两旧 shape 通过 | 真/假使用真实可解析提交对象；拒绝样例须同时不匹配旧两 shape，不把旧放行误判回归 |
 | AC-11 | §2.3/§4.2/§5.2，source及合同检查 | 新 source 空串；显式路径合同不变；历史 manual/指纹不写、无重复 CR；旧省略冲突与显式同值重放矩阵 | 历史 fixture 用变更前 manual 注册指纹/现场，不由新代码重新造“旧默认”；空 source 不进入 writer 非空条件 |
-| AC-12 | §4.3～§4.5，writeback-tx enriched fixture | 无索引 merge→三阶段→archive；独立 trace 重放不改 baseline/tasks事务与签字源规范哈希 | fixture 内证据/状态满足各阶段；独立重放仍保持 writing-back，不先 archive，不伪造真实审批 |
+| AC-12 | §4.3～§4.5/§5.2，writeback-tx enriched fixture（设计依赖 dep-17、dep-18） | 无索引 merge→三阶段→archive；独立 trace 重放不改 baseline/tasks事务与签字源规范哈希 | fixture 内证据/状态满足各阶段；独立重放仍保持 writing-back，不先 archive，不伪造真实审批 |
 
 ### 6.3 SDD-CLOSE
 
@@ -296,22 +311,22 @@ source 的 writer 路径规则属于 prompt 合同（`dep-14`），测试以真�
 
 ## 8. Prompt 采纳影响与文档同步
 
-本 CR 触及 `crctl.mjs` dispatch，因此本节必填；guard deny 面保持不变。设计依赖 `dep-1`、`dep-13`、`dep-14`、`dep-15`。
+本 CR 触及 `crctl.mjs` dispatch，因此本节必填；guard deny 面保持不变。设计依赖 `dep-1`、`dep-13`～`dep-15`、`dep-19`～`dep-24`；CLI 代码、规则、各文档与测试集合分别绑定自身来源，不互相代替。
 
 | Skill / 文档路径（tools 相对） | 现状/依赖 | 应改为的调用或说明 |
 | --- | --- | --- |
-| skills/shared/crctl/SKILL.md | 子命令发现与根入口说明（dep-1） | 表增 kb init；workspace 必填，只有该入口可在无 change-requests 下引导；删 cwd向上探测说法；完整成功/失败边界 |
-| skills/requirement/requirement-register/SKILL.md | 注册前置与失败分类 | 加 WORKSPACE_NOT_FOUND/REPO_GRAPH_NOT_FOUND/TOOLS_PACKAGE_NOT_FOUND 的引导：人先提供最小 dir-graph、运行显式 kb init；Skill 不自动代跑、不重复注册；source 默认空串说明与历史指纹冲突边界 |
-| skills/shared/controlled-shell/SKILL.md | merge-base 能力解释（dep-13） | 同步裸提交对，强调三 shape 与 Git exit语义，不扩展 protectedPaths |
-| README.md | 流程总览 | 简短“新 KB先写dir-graph→显式kb init”入口，说明不是新 Pipeline/Skill |
-| docs/QODER-使用指南.md | 旧初始化模板段 | 删除 backlog/CR index/specs index/delivery task index 四模板；保留 docs 索引模板；示例补 tools_package_path、KB/code role 与声明 trunk，不写本机路径 |
+| skills/shared/crctl/SKILL.md | 设计依赖 dep-20；入口代码另依赖 dep-1 | 表增 kb init；workspace 必填，只有该入口可在无 change-requests 下引导；删 cwd向上探测说法；完整成功/失败边界 |
+| skills/requirement/requirement-register/SKILL.md | 设计依赖 dep-21 | 加 WORKSPACE_NOT_FOUND/REPO_GRAPH_NOT_FOUND/TOOLS_PACKAGE_NOT_FOUND 的引导：人先提供最小 dir-graph、运行显式 kb init；Skill 不自动代跑、不重复注册；source 默认空串说明与历史指纹冲突边界 |
+| skills/shared/controlled-shell/SKILL.md | 设计依赖 dep-22；规则另依赖 dep-13 | 同步裸提交对，强调三 shape 与 Git exit语义，不扩展 protectedPaths |
+| README.md | 设计依赖 dep-23 | 简短“新 KB先写dir-graph→显式kb init”入口，说明不是新 Pipeline/Skill |
+| docs/QODER-使用指南.md | 设计依赖 dep-24 | 删除 backlog/CR index/specs index/delivery task index 四模板；保留 docs 索引模板；示例补 tools_package_path、KB/code role 与声明 trunk，不写本机路径 |
 | ARCHITECTURE.md | 地图维护规则（dep-15） | 本轮只读；技术审批通过后的实施 TASK 内按 §8 补无 CR 初始化写入入口与权限/事务边界，非新增业务能力，随代码评审检查 |
 
-不改 `write-requirement-prd/SKILL.md` 通用校验（dep-14）；不让 writeback/approve 等 Skill 自动调用初始化。代码 HELP 追加 `kb init`，caller-contract 的首词集合/TWO_WORD 加 kb，gate-registry 按新增入口相关用例实际计数同步。不新增 active skill，不改 Agent、Pipeline或矩阵。
+不改 `write-requirement-prd/SKILL.md` 通用校验（dep-14）；不让 writeback/approve 等 Skill 自动调用初始化。代码 HELP 追加 `kb init`（设计依赖 `dep-1`），caller-contract 的 CR_DATA_FIRST_WORDS/TWO_WORD 加 kb（设计依赖 `dep-19`），gate-registry 按新增入口相关用例实际计数同步。不新增 active skill，不改 Agent、Pipeline或矩阵。
 
 ## 9. 批准范围
 
-- **scope_in**：FR-1～FR-10、AC-01～AC-12 全部。tools `skills/shared/crctl/scripts/crctl.mjs` 私有初始化入口/HELP；`skills/shared/crctl/scripts/lib/workspace-transactions.mjs` 仅 ensure create 自忽略与 source 缺省值；`skills/writeback/scripts/writeback-prd-sdd.mjs` 仅缺索引首部；`skills/writeback/scripts/writeback-traceability.mjs` 仅两表提取与 YAML trunk；`skills/shared/controlled-shell/rules.json` 仅追加一个 merge-base shape；§5.2 所列定向测试及必要 fixture/计数；§8 说明同步。治理必需的 `ARCHITECTURE.md` 地图维护仅在技术审批后实施，不借此改架构不变量。本 CR 的 PRD/SDD/PLAN/TASK及规范测试证据按各节点受控生成，不改历史源。
+- **scope_in**：FR-1～FR-10、AC-01～AC-12 全部。tools `skills/shared/crctl/scripts/crctl.mjs` 私有初始化入口/HELP；`skills/shared/crctl/scripts/lib/workspace-transactions.mjs` 仅 ensure create 自忽略与 source 缺省值；`skills/writeback/scripts/writeback-prd-sdd.mjs` 仅缺索引首部与 §4.3 全部既有索引的 features 前置校验（FR-5 必需），其余插入/累积及缺 cr-history 拒绝保持原合同；`skills/writeback/scripts/writeback-traceability.mjs` 仅两表提取与 YAML trunk；`skills/shared/controlled-shell/rules.json` 仅追加一个 merge-base shape；§5.2 所列定向测试及必要 fixture/计数；§8 说明同步。治理必需的 `ARCHITECTURE.md` 地图维护仅在技术审批后实施，不借此改架构不变量。本 CR 的 PRD/SDD/PLAN/TASK及规范测试证据按各节点受控生成，不改历史源。
 - **scope_out**：状态机、gates 定义、Pipeline、Agent/权限矩阵、tools dir-graph.required_roots、multica代码/CUSTOM；新 Skill/生产模块/导出；初始化锁/journal/故障点/daemon/watcher；账户/远端/Git仓创建；source-set或历史source迁移；修复异内容旧 KB账本；其他 Issue/KB 的现场恢复（含 AIFI-35）；全量真实人工审批E2E。
 - **zero_diff**：`durable-tx.mjs` 全文件、`workspace-transactions.mjs` 的 applyWriteback/writebackAllowlist/指纹计算与注册其余行为、`write-requirement-prd/SKILL.md` 通用source路径合同；`rules.json` 其他git形态/callers/forbiddenFlags/protectedPaths；既有签字 PLAN/approval/merge证据及本 CR cr.md 注册source/摘要/历史指纹（状态变化仅由crctl）；用户根.gitignore；其他docs索引模板。§4.2 两处必要例外明确属于 scope_in，不以“注册核心不改”重新否定 FR-10。
 - **follow_up**：AIFI-35工具安装版本确认与无在途trace事务后的原节点恢复，仍由其负责Agent独立执行，不是当前AC必要条件；无其他当前交付依赖延期。初始化跨Git index并发事务隔离不在本需求承诺内，若以后确有需求另立CR，不用它替代本轮wx/非快进测试。
@@ -321,3 +336,4 @@ source 的 writer 路径规则属于 prompt 合同（`dep-14`），测试以真�
 | 日期 | 版本 | 说明 |
 | --- | --- | --- |
 | 2026-09-30 | 0.1 | 承接需求审批；完成10 FR/12 AC设计闭环、15项既有依赖与5项SDD-CLOSE；等待独立技术评审 |
+| 2026-10-01 | 0.2 | tech-design attempt=1 BLOCK 后定点回修，self_repair_attempt=1：B-SDD-01 补 features 前置校验/生成前错误边界/AC-05反例并修订 scope_in；dep-7 基线遗漏澄清不改变 FR-5 需求结论。B-SDD-02 同轮核验 tools HEAD，新增 dep-16～24 并闭合 fixture、命令集合和文档逐处引用；生产方案、签字源、durable-tx/apply 及 validate-doc 均不改，等待新的独立复评 |
