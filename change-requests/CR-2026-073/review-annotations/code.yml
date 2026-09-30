@@ -1,0 +1,45 @@
+cr-id: CR-2026-073
+review-type: code
+reviewer: "OldBoy405"
+reviewed-at: "2026-09-30T14:44:57+08:00"
+verdict: block
+blockers:
+  - "本轮新增： B-C1 AC-6/AC-7、TASK-04 验收条件 1/2 与 plan §5 要求 U/S/P 三个隔离快照各自新的独立 quality-reviewer-agent run 的真实 review-dev-plan verdict、subject SHA、canonical review-loop/next 与评论；scope-review/NOT-CLOSED.md 确认三案均缺失。cmd-06/07 仅检验文字合同/夹具，不能证明 U/S block 或 P 不因缺全仓被 block。补取三案原始评审证据并逐案在 test-report 引用；目前 TASK-04 的 done 缺少完成标志所要求的证据。"
+  - "本轮新增： B-C2 AC-7、TASK-04 验收条件 3 与 plan §5 要求一笔真实上游同步的全量原始日志及同 Windows 合并前或纯上游基线，含命令、cwd、SHA、时间、exit code、失败逐项对照；upstream-sync/NOT-CLOSED.md 明确不存在，CUSTOM.md 摘要及 cmd-08 合同测试不能替代。取得可核原始证据并在 test-report 引用，否则不得认定 AC-7 与 TASK-04 已完成。"
+dimensions:
+  approved-scope: "pass"
+  task-sdd-alignment: "block"
+  engineering-quality: "pass"
+  readability: "pass"
+  security: "pass"
+  test-coverage: "block"
+  test-evidence-credibility: "block"
+  front-end: "not-applicable"
+suggestions: []
+review-loop:
+  current-attempt: 1
+release-subjects:
+  version: 1
+  repositories:
+    - repo: ai-first-platform-docs
+      remote-ref: refs/heads/requirement/CR-2026-073
+      reviewed-source-sha: e42b10e2de9d52ac809cd4d514d77a7ccf005c69
+    - repo: multica
+      remote-ref: refs/heads/requirement/CR-2026-073
+      reviewed-source-sha: 820bb5a11a53463486383c4c1f5e9c17c5a9a43e
+    - repo: tools
+      remote-ref: refs/heads/requirement/CR-2026-073
+      reviewed-source-sha: ab01e2b8ba5dc5b45435cbad5987547c512f6a4a
+  artifacts:
+    algorithm: sha256
+    canonicalization: crlf-to-lf+path-sort
+    files:
+      - { path: change-requests/CR-2026-073/plan.md, sha256: 6cef73a9f642adc2f3d5af80bc3cbd1522e2945b0dd1d7d7af94169d2fcc38fa }
+      - { path: change-requests/CR-2026-073/prd.md, sha256: b5b600ba1e6f2817ac27130067b809d094617dfa62a2301692d30904c0950f42 }
+      - { path: change-requests/CR-2026-073/sdd.md, sha256: 97a6c64904f6f4dd42f19e9da6b3eb5997a7c1a9ea810485d03f26546077d777 }
+      - { path: change-requests/CR-2026-073/tasks/TASK-01.md, sha256: a1091c02d0359ee50d8ec942254756770a7f5aacf4a5300ee982cb6fc944df00 }
+      - { path: change-requests/CR-2026-073/tasks/TASK-02.md, sha256: d59a806107aa911e70eab5e16e9bac99f85326eb41523051d05270a22462335f }
+      - { path: change-requests/CR-2026-073/tasks/TASK-03.md, sha256: deff702c75d035c6602fd338ff3fe394a16869b7b9b93018c3cd362926ef10c4 }
+      - { path: change-requests/CR-2026-073/tasks/TASK-04.md, sha256: 335161628a3ee9b54fdd7912f9d5b4d70f2ec0eff92a5af65dc09dcd3f0d67ea }
+      - { path: change-requests/CR-2026-073/tasks/_index.yml, sha256: 9cefbe78171df5b0b04283bdcd0d836b92b0e2c1f26a2c279257ea38d04fb5e0 }
+    digest: b7b9d175f0e3c68c53a341edf429697abfa541a4650a8394d1f6dedf56fe72bd
