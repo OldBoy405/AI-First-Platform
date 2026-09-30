@@ -6,7 +6,7 @@ sdd-ref: "change-requests/CR-2026-074/sdd.md"
 target-version: 0.47
 status: draft
 created: 2026-10-01T00:35:38+08:00
-updated: 2026-10-01T00:35:38+08:00
+updated: 2026-10-01T01:35:00+08:00
 ---
 
 # CR-2026-074 开发计划
@@ -42,7 +42,8 @@ TASK-04 buildIndex 缺文件首写 + features 前置校验（writeback-prd-sdd.m
 
 TASK-04/05/06 ─→ TASK-08 writeback-tx 无索引/证据齐全集成变体
 TASK-01、TASK-03～TASK-08 ─→ TASK-09 说明/命令发现/计数同步
-TASK-01 ─→ TASK-10 ARCHITECTURE.md 地图维护
+TASK-01、TASK-09 ─→ TASK-10 ARCHITECTURE.md 地图维护
+        [TASK-10 消费 TASK-09 完成后的 SKILL/README/HELP 最终形态，须待 TASK-09 完成]
 全部 TASK ─→ 全量证据回归 cmd-01～cmd-06 ─→ review-code
 ```
 
@@ -65,7 +66,7 @@ TASK-01 ─→ TASK-10 ARCHITECTURE.md 地图维护
 | R1 | rules.json 新 shape 扩大受控 Git 面 | 仅追加一条 merge-base shape，与两条旧 shape 并存；两旧 shape 单独回归，非法形态须不匹配全部三条才拒绝（SDD §4.6） | revert TASK-07，独立无下游 |
 | R2 | source 缺省值变更影响注册指纹 | 历史 `manual` 不迁移、不做全局别名；冲突按 SDD §2.3 矩阵报原错误，零账本重写 | revert TASK-03；恢复旧默认后新空 source 历史仍不迁移 |
 | R3 | features 前置校验对既有索引误拒 | 判据固定 `line.trimStart()==='features:'`，不新增其他收紧项；四类畸形负测覆盖（SDD §4.3、AC-05） | revert TASK-04 及其用例；TASK-05/06 无逻辑耦合 |
-| R4 | 共享测试文件（crctl.test.mjs / register-tx.test.mjs / writeback.test.mjs）跨 TASK 编辑 | 依赖图约束顺序编辑；revert 按逆拓扑顺序 | 逆拓扑回滚顺序：TASK-09 → TASK-10 → TASK-08 → TASK-06 → TASK-05 → TASK-04 → TASK-03 → TASK-02 → TASK-07 → TASK-01 |
+| R4 | 共享测试文件（crctl.test.mjs / register-tx.test.mjs / writeback.test.mjs）跨 TASK 编辑 | 依赖图约束顺序编辑；revert 按逆拓扑顺序 | 逆拓扑回滚顺序：TASK-10 → TASK-09 → TASK-08 → TASK-06 → TASK-05 → TASK-04 → TASK-03 → TASK-02 → TASK-07 → TASK-01 |
 | R5 | kb init 无跨阶段事务隔离 | 合法模板/暂存/本地 commit 保留是接口合同；远端竞争由普通非快进 push 拒绝；重跑重新执行全部前置（SDD §4.1/§5.3） | 无自动 rollback；失败残留按 §3.2 错误边界报告 |
 | R6 | 发布后缺陷 | 发布由门禁承载；不手改受控账本、不 force trunk、不改 durable-tx/apply | 正常 Git revert / 新 CR |
 | R7 | ARCHITECTURE.md 地图遗漏 | TASK-10 明确列入 code review 检查项（SDD §8） | revert TASK-10 |
@@ -90,7 +91,7 @@ TASK-01 ─→ TASK-10 ARCHITECTURE.md 地图维护
 | FR-5 | §2.2/§4.3 缺索引首写与全部既有索引 features 前置校验 | CR-2026-074-TASK-04 / TASK-08 | cmd-03 + cmd-04 | revert TASK-08 → TASK-04；TASK-08 为其下游消费者 |
 | FR-6 | §4.4 两规范表提取 | CR-2026-074-TASK-05 / TASK-08 | cmd-03 + cmd-04 | revert TASK-08 → TASK-05 |
 | FR-7 | §4.5 YAML trunk 解释 | CR-2026-074-TASK-06 / TASK-08 | cmd-03 + cmd-04 | revert TASK-08 → TASK-06 |
-| FR-8 | §8 说明/命令发现/测试计数同步 | CR-2026-074-TASK-09 | cmd-05 + cmd-06 | revert TASK-09，独立无下游 |
+| FR-8 | §8 说明/命令发现/测试计数同步 + §8 ARCHITECTURE.md 地图行（dep-15） | CR-2026-074-TASK-09 / TASK-10 | cmd-05 + cmd-06；地图内容由 review-code R7 检查项核验（SDD §8「随代码评审检查」） | revert TASK-10 → TASK-09（逆拓扑见 R4；TASK-10 为 TASK-09 下游） |
 | FR-9 | §4.6 merge-base 裸提交 shape | CR-2026-074-TASK-07 | cmd-01 | revert TASK-07，独立无下游 |
 | FR-10 | §2.3/§4.2 source 空缺省与历史指纹边界 | CR-2026-074-TASK-03 | cmd-02 | revert TASK-03，独立无下游 |
 
@@ -117,7 +118,7 @@ TASK-01 ─→ TASK-10 ARCHITECTURE.md 地图维护
 | AC-02 前置检查有序、错误 code/reason 固定 | §3.2 | CR-2026-074-TASK-01 | cmd-01 |
 | AC-03 wx/续跑/失败残留与去注入恢复 | §4.1/§5.2 | CR-2026-074-TASK-01 | cmd-01 |
 | AC-04 init 后首 CR：worktree、runtime ignore、主 KB clean | §4.2/§5.2（dep-16） | CR-2026-074-TASK-02 | cmd-02 |
-| AC-05 缺索引首写与四类畸形 STRUCTURE_MISMATCH、apply 不重复 | §2.2/§4.3/§5.2 + apply fixture（dep-17/18） | CR-2026-074-TASK-04（结构负例）/ TASK-08（apply 并发/重放） | cmd-03 + cmd-04 |
+| AC-05 缺索引首写与四类畸形 STRUCTURE_MISMATCH、apply 不重复 | §2.2/§4.3/§5.2 + apply fixture（dep-17/18） | CR-2026-074-TASK-08（主责：用户可观察的首写/隔离/幂等端到端面，writeback-tx apply 层产生该结果）；TASK-04 关联协作（buildIndex 结构负例与首写模块语义，断言全部保留于 cmd-03） | cmd-03 + cmd-04 |
 | AC-06 规范表链/命令 ID 提取与空位/管道/诱饵 | §4.4 | CR-2026-074-TASK-05 | cmd-03 |
 | AC-07 表结构正负、LF/CRLF 等价、authority 不变 | §4.4/§5.2 | CR-2026-074-TASK-05 | cmd-03 |
 | AC-08 YAML trunk 解析与 TRUNK_UNKNOWN | §4.5 | CR-2026-074-TASK-06 | cmd-03 |
