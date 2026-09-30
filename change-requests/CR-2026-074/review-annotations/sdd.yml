@@ -1,22 +1,22 @@
 cr-id: CR-2026-074
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-09-30T23:56:29+08:00"
-verdict: block
-blockers:
-  - "本轮新增： B-SDD-01 — FR-5/AC-05 的畸形既有索引拒绝分支未闭合。SDD §4.3（189–191 行）及 scope_in 将 buildIndex 变更限定为缺文件首部，其余继续沿用 dep-7 的原插入/累积代码；但 tools@41b112ed4d97baaaca3b82367a72f35520dc3d4b 的 skills/writeback/scripts/writeback-prd-sdd.mjs#buildIndex（85–134 行）仅在找不到目标 spec 时检查 features:，已有目标条目且含 cr-history 的无 features 索引会进入更新分支，末尾 selfCheck（210–214 行）也只检查目标条目数，不能得到 PRD 要求的 STRUCTURE_MISMATCH。这是目标契约而非需要照搬的基线描述。请在 SDD 明确所有既有索引的 features 前置校验及生成 candidate 前的错误边界，同步批准范围允许这项 FR-5 必需的最小校验，并在 AC-05 场景中明确覆盖‘缺 features 但已有目标 spec/cr-history’；保持缺文件首写、正常索引累积、缺 cr-history 拒绝及 durable-tx/apply 零改动。"
-  - "本轮新增： B-SDD-02 — 正文现有实现事实未全部由 dep-N 承载。SDD §8（305 行）将 docs/QODER-使用指南.md 的‘旧初始化模板段’作为四模板删除/其他模板保留的依据，但 dep-1～dep-15 没有该路径/对象的五要素依赖项；§5.2/§6.2 对现有 makeCodeApprovedFixture 的复用也没有对应 dep-N。已只读核实 tools@41b112ed4d97baaaca3b82367a72f35520dc3d4b 的 docs/QODER-使用指南.md:63–102 确有这些模板，skills/shared/crctl/scripts/test/writeback-tx.test.mjs:14,20,30,47–53 从 merge-fixture.mjs 导入该 fixture 且另补 traceability 证据；存在不等于正文引用关系已闭合。按 review-tech-design Step 2.1，正文未通过 dep-N 承载的当前实现事实必须形成 blocker。请补齐这些实际依赖的 repo/relative path/stable symbol或对象/40位SHA/依赖结论，并在相应正文逐处引用；其余当前事实同轮复核，不能用 dep-1 的 CLI代码引用代替不同文档或 fixture 的事实来源。不要求新增生产模块、改签字源或提前冻结 PLAN/TASK 命令。"
+reviewed-at: "2026-10-01T00:19:48+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  PRD↔SDD 对齐: "BLOCK：10/10 FR 有设计落点，12/12 AC 有映射；AC-05 的全部既有缺 features 索引拒绝与 §4.3 的仅缺文件变更矛盾，见 B-SDD-01。其余11项具备落点、可观测结果和可达性说明。"
-  架构合理性: "BLOCK：单一 crctl 写者、零依赖、私有入口、generator/candidate/apply 分层及 ARCHITECTURE.md §8 维护纳入 scope_in；15项显式依赖的40位SHA与resources HEAD一致，已按文件/符号核验；仍有未由 dep-N 承载的正文当前事实，见 B-SDD-02。无未定义 dep-N，无伪造 ADR。"
-  数据模型完整性: "BLOCK：两初始化账本、五输出字段、manifest before=null、source历史指纹矩阵完整；既有索引结构入口不覆盖所有缺 features 分支，见 B-SDD-01。"
-  接口契约: "PASS：CLI输入、输出、固定错误优先级、残留与重入合同明确；无HTTP API变更，OpenAPI条件基线N/A。"
-  多仓架构约束: "PASS：业务workspace与resources代码路径分离；tools改代码、KB存过程文档、multica零代码；init只接受主checkout且仅发布KB三文件，代码仓只读核验。"
-  性能与安全: "PASS：显式根/realpath/role、固定argv、wx独占、普通非快进拒绝、既有CAS；前置失败/残留/无锁边界明确，O(PLAN行数+仓库数)，无审批旁路或常驻轮询。"
-  可测试性: "BLOCK：AC-01～12均列出测试场景和观察结果，故障注入仅隔离测试；AC-05须补已有目标条目的缺features反例，显式复用fixture的事实引用须闭合，见B-SDD-01/B-SDD-02；未执行lint/build/test。"
-  Prompt 采纳影响: "PASS：触及dispatch，§8列出crctl/requirement-register/controlled-shell说明及使用文档；新入口不被Skill自动代跑，protectedPaths/Agent/Pipeline/矩阵保持不变。"
-suggestions: []
+  PRD↔SDD 对齐: "PASS：已审批 PRD 的 10/10 FR、12/12 AC 均有设计落点、可观测结果及可达性说明；SDD-CLOSE-01～05 已关闭。FR-5 对全部既有索引的 features 校验已置于分支选择及 writeCandidate 前，scope_in 与 AC-05 同步闭合。"
+  架构合理性: "PASS：对照 tools ARCHITECTURE.md §4/§5/§6/§8，保留单一 crctl 写者、私有入口、零新依赖及 generator/candidate/apply 分层；地图维护纳入技术审批后的 scope_in。24 项显式依赖的 40 位 SHA 均匹配 tools resources HEAD 41b112ed4d97baaaca3b82367a72f35520dc3d4b，文件/稳定符号/行为已只读核验；正文事实通过已定义 dep-N 承载，无伪造 ADR。"
+  数据模型完整性: "PASS：两账本精确 UTF-8/LF/null 根模板、五个输出字段、缺索引 beforeSha256=null、source 历史指纹矩阵完整；空文件及缺 features 的全部既有索引拒绝，正常插入/历史累积和缺 cr-history 拒绝保留，durable-tx/apply 零改动。"
+  接口契约: "PASS：CLI 唯一输入、显式 workspace、输出类型、固定错误优先级、前置零业务写入、合法残留与重入合同明确；无 HTTP API 变更，OpenAPI 条件基线 N/A。"
+  多仓架构约束: "PASS：业务 workspace 与 resources 代码取证路径分离；tools 承载实现，KB 承载过程文档，multica 无代码变更；init 仅接受主 checkout、仅提交 KB 三候选文件，其他 active code 仓只读核验。"
+  性能与安全: "PASS：显式根/realpath/role、固定 argv、wx 独占、普通非快进拒绝与既有 CAS 边界完整；无初始化锁/journal、无跨 Git index 事务承诺、无审批旁路、无常驻轮询；解析 O(PLAN 行数+仓库数)。"
+  可测试性: "PASS：12 项 AC 的场景/观察结果/前置可达性均明确；AC-05 覆盖缺 features 但已有目标 spec/cr-history 的反例并在生成前拒绝。dep-16～19 明确三仓 fixture 的裁剪、merge fixture 不完整的证据补齐及命令集合；隔离故障注入不新增生产 faultPoint，不改真实签字源。未执行 lint/build/test、crctl validate 或 validate-doc。"
+  Prompt 采纳影响: "PASS：触及 dispatch，SDD §8 逐项绑定 dep-19～24，列出 crctl/requirement-register/controlled-shell、README、QODER 使用指南和命令发现同步；Skill 不自动代跑初始化，protectedPaths/Agent/Pipeline/矩阵保持不变，writer 通用 source 合同不改。"
+suggestions:
+  - "已解决： B-SDD-01 — SDD v0.2 §2.2/§4.3 明确所有既有索引先校验 features，再选择目标 spec 分支；STRUCTURE_MISMATCH 位于 writeCandidate 前。§6.2 AC-05 明列缺 features 但已有目标 spec/cr-history 的反例，§9 scope_in 纳入 FR-5 必需的最小校验；正常历史累积、缺 cr-history 拒绝及 durable-tx/apply 零改动仍保留。"
+  - "已解决： B-SDD-02 — dep-16～24 补齐 fixture、命令集合及各文档的 repo/relative path/stable symbol或对象/40位SHA/依赖结论；§5.2/§6.2 对 dep-16～19、§8 对 dep-19～24 逐处引用，CLI、fixture 和文档来源不互相替代。已在同一 resources HEAD 核实 makeCodeApprovedFixture/addEvidenceFiles、两测试集合和 QODER 四治理模板/六 docs 模板，其余明确依赖同轮快速复核，无未定义 dep-N 或未承载的正文当前实现事实。"
 review-loop:
-  current-attempt: 1
+  current-attempt: 2
 subject-file: change-requests/CR-2026-074/sdd.md
-subject-sha256: 9e43da7be94792bb8c61f518a5aaaaf760b492f3969a364c69de09e77004ea28
+subject-sha256: 371ec7a8ca880f2a8dc48bb7a5cf29221fd1953f0abaa13f40b5785e6d6e71d3
