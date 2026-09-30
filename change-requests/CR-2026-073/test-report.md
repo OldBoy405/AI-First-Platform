@@ -138,8 +138,8 @@ commands:
 
 ## 5. 未覆盖风险（不适用与未闭合项，不得空白通过）
 
-1. **AC-6 / AC-7 的评审部分未闭合**：plan §5 的 U/S/P 三个快照需要各自的**新独立 `quality-reviewer-agent` run** 按 `review-dev-plan` 给出真实 verdict；本轮未在未准备快照的情况下发起 reviewer run（避免无有效输入的失败 run）。`cmd-06`/`cmd-07` 的绿色**不能代替**这些 verdict。缺口与判据清单：`test-evidence/scope-review/NOT-CLOSED.md`。
-2. **AC-7 的上游同步部分未闭合**：本机工作区检索不到第七次同步的原始全量日志（命令/cwd/commit SHA/时间/exit code）与合并前 `95da7c9d7` 基线日志；`CUSTOM.md#已知测试失败基线`（140 项 vs 合并前 114 项）只是摘要，按 plan §5 不足以宣称该场景通过。缺口与补取方式：`test-evidence/upstream-sync/NOT-CLOSED.md`。
+1. **AC-6 / AC-7 的评审部分未闭合**（阻塞原因已定位到平台前置）：plan §5 的 U/S/P 三个快照需要各自的**新独立 `quality-reviewer-agent` run** 按 `review-dev-plan` 给出真实 verdict。本轮已把三案夹具落盘并跑通可评审状态（`CR-2026-901/902/903`，`status=task-breakdown`、`next=review-dev-plan`，夹具根 `C:\Users\GOBAO\Downloads\AI\cr073-scope-fixtures`；构建器与自检原文见 `test-evidence/scope-review/fixtures/`、`test-evidence/scope-review/MECHANISM.md`），但**平台委派的 reviewer run 会在 `review-dev-plan` Step 3.0 的 `multica cr bind-current-task` 处技术中止**：绑定要求平台侧已有该 CR 的投影行（`server/internal/service/task.go#LockCrForCrBind` → `CR_NOT_FOUND`/404 零写入），而隔离夹具 CR 没有平台行（平台行只由已配置 root 的 outbox 状态事件或 root `_backlog.yml` 快照产生）。三条可行路径（A 平台可见测试 CR / B 无 task context 的本地执行 / C 正式修订验收合同）与各自代价逐条见 `test-evidence/scope-review/MECHANISM.md` §3，需人工或平台决定后执行。`cmd-06`/`cmd-07` 的绿色**不能代替**这些 verdict。缺口与判据清单：`test-evidence/scope-review/NOT-CLOSED.md`。
+2. **AC-7 的上游同步部分未闭合**：两轮检索（`Downloads/AI` 与 `.multica` 深度 6、>100 KB 日志、PowerShell 命令历史、2026-09-29 之后的 agent 会话记录）均找不到第七次同步的原始全量日志（命令/cwd/commit SHA/时间/exit code）与合并前 `95da7c9d7` 基线日志；`CUSTOM.md#已知测试失败基线`（140 项 vs 合并前 114 项）只是摘要，按 plan §5 不足以宣称该场景通过。三个可复跑的同条件提交在本机均存在（`95da7c9d7` / fork `main` / `upstream/main @ 4736a85d4`），重跑取证需授权。缺口与补取方式：`test-evidence/upstream-sync/NOT-CLOSED.md`。
 3. **不适用项**：本 CR 无 schema/数据迁移、无 feature flag、无常驻服务/浏览器/数据库依赖，故无对应验证；上游 merge/rebase 不在本 CR 范围（plan 明确不执行），故未运行上游全量 `make test`/`go test ./...`——这正是 C 项要收敛的默认全仓门槛，本 CR 的关键证据为定向 `cmd-NN`。
 4. **范围边界**：`cmd-04`/`cmd-05` 只跑 `terminal-audit.test.mjs` 的定向案例，不声称 tools 全仓套件通过；`cmd-06`～`cmd-08` 只跑 `skill-scope.test.mjs`，不声称任何运行时行为或评审结论。
 
