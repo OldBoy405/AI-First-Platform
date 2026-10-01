@@ -1,0 +1,53 @@
+cr-id: CR-2026-074
+review-type: code
+reviewer: "OldBoy405"
+reviewed-at: "2026-10-02T01:21:47+08:00"
+verdict: block
+blockers:
+  - "本轮新增： B-CODE-01（Major）— crctl.mjs:3378–3402 的 porcelain -z 解析消费 gitRun；workspace-transactions.mjs:378–380 先对 stdout 调用 trim()，会删除首条记录的未暂存状态前导空格。合法输入首条为 <空格>M<空格>dir-graph.yaml<NUL> 时，slice(3) 得到 ir-graph.yaml，被误判为白名单外 dirty，无法执行批准的初始化。违反 SDD §4.1 / TASK-01 / AC-02 对三候选路径的工作树与 index 白名单合同。回修须让该调用保留原始 porcelain 字节，不改变其他既有 Git 调用语义，并补已跟踪 dir-graph 存在未暂存允许修改及未暂存白名单外修改的定向回归。"
+  - "本轮新增： B-CODE-02（Major）— crctl.mjs:3430–3447 的账本父目录 realpath 守卫只在 pending 创建循环中执行；两个账本已存在且全文恰好匹配模板时，pending 为空，读取它们的 symlink/junction 父目录完全不核验，就继续 Git add。父目录越出主 checkout 的事实不能由可读模板豁免；当前入口缺少必须的 KB_INIT_PRECONDITION(reason=repo-invalid) 前置，并可能改报 dirty/conflict/Git add 失败。违反 SDD §4.1 / TASK-01 的路径边界及前置错误合同。回修须在任何账本创建或暂存前核验两个目标的父目录身份，覆盖现有匹配模板、缺文件和异内容场景；外部内容、index、HEAD、远端及成功审计保持不变。"
+  - "本轮新增： B-CODE-03（Major）— crctl.mjs:3322 将 cmdList 整体排除出额外旗标检查，而 parseArgs:3719 会把用户 --cmd 的值加入该数组，通用分支还接受用户 --cmdList。因而 kb init --cmd ignored --workspace <合法KB> 或额外 --cmdList 值不会得到 BAD_ARGS，而会进入有副作用的初始化流程。违反 SDD §3.1 / TASK-01 仅允许 init 与 workspace、额外 flag 必须 BAD_ARGS 的精确入口合同。回修须区分解析器内部空 cmdList 与用户传入的这些旗标，增加这两种负测并证明形态失败先于文件/Git/audit 副作用；保留 WORKSPACE_REQUIRED 的优先级。"
+  - "本轮新增： B-CODE-04（Major）— writeback-tx.test.mjs:1011–1051 的 AC-12 用例实际只调用 baseline、traceability、traceability 重放和 archive，没有 tasks 阶段；也未断言独立 trace 重放前后的 baseline/tasks 事务不变。1038–1039 在 trace 已执行后才取得 sigBefore2 并立即与同一现场比较，不能证明首次 trace 保留签字源。cmd-04 虽机器结论 pass，却未提供 TASK-08 验收条件1 / SDD §5.2 / AC-12 所承诺的三阶段全链与重放隔离证据，test-report 的全链覆盖叙述过度。回修须在无索引变体真实执行 baseline/tasks/traceability 后归档，并在 fixture 证据补齐后、trace 执行前冻结签字源及 baseline/tasks 事务事实，比较首次 trace 与重放后的事实；由 write-test-report 重新生成证据并据实更新分析区。"
+dimensions:
+  批准范围: "PASS：tools 实际 diff 17 文件均在 SDD §9 scope_in；multica 的 trunk merge-base 到 HEAD 无 diff；durable-tx、applyWriteback、writebackAllowlist、状态机、gates、Pipeline、Agent、矩阵、writer source 通用合同及用户根 gitignore 未触及。"
+  代码↔TASK↔SDD 对齐: "BLOCK：10/10 TASK 已逐卡检查，TASK index 均 done，但 TASK-01 存在 B-CODE-01～03 的当前接口缺陷，TASK-08 存在 B-CODE-04 的关键验收证据缺口；不能据完成标志判 10/10 验收通过。其余 baseline 首写/features 前置、规范表定位、YAML trunk、source 空默认、ensure 自忽略及裸 SHA shape 的生产 diff 与批准合同对齐。"
+  工程质量: "BLOCK：只读核验 generated-by=crctl-test、report/trace status=pass 与 command-digest 一致，官方 canonicalCommandSubject 与 PLAN 七条 argv/timeout 全等；七条机器记录 exit-code=0、started=true、skipped=false、timed-out=false，引用日志均存在且输出已取证。lint/build 的单列命令不适用说明已读取；未重跑任何测试。机器 pass 不能替代 B-CODE-04 缺失的业务验收。"
+  关键路径可读性: "PASS：私有 init 入口及三个生成器修改均已读取实际 diff与调用链；零新生产模块/导出/依赖。ARCHITECTURE.md 的新增入口、显式根、独占创建、普通 Git 发布、无 journal/锁/跨阶段原子性及 audit 无 CR outbox 的地图说明已做内容检查，不仅检查 cmd-07 字符串命中。"
+  安全性: "BLOCK：固定 argv、shell=false、独占创建、普通非快进 push、原 CAS/apply 边界保留，但 B-CODE-02 的现有账本路径前置缺失与 B-CODE-03 的入口旗标漏检必须在本 CR 修复；B-CODE-01 也影响白名单准确判定。"
+  测试覆盖: "BLOCK：已读取新增/变更测试的实际内容，不把日志汇总当覆盖证明；init 未覆盖 B-CODE-01～03 的上述边界，AC-12 唯一证据命令 cmd-04 对三阶段与签字源/重放隔离的断言不完整，详见 B-CODE-04。"
+  测试证据可信度: "BLOCK：当前 tools HEAD 实测为 3eda3eedd4fe5b6497647b3f6d02829e80187c51，与 test-report 记录及交接 implementation_commit 一致；无关键命令 skipped、无发现的 report/trace/PLAN 命令漂移。但 test-report 将未执行的 tasks 阶段叙述为全链覆盖，须随回修重新生成规范证据并收敛分析区，不得在评审阶段重跑。"
+  前端质量: "N/A：实际 diff 未触及 tsx、vue、css、html，不触发前端三项检查。"
+suggestions: []
+review-loop:
+  current-attempt: 1
+release-subjects:
+  version: 1
+  repositories:
+    - repo: ai-first-platform-docs
+      remote-ref: refs/heads/requirement/CR-2026-074
+      reviewed-source-sha: 9c0e9f37917da396be9b9d79f4e52bfa843a8451
+    - repo: multica
+      remote-ref: refs/heads/requirement/CR-2026-074
+      reviewed-source-sha: 78566fde28a1ea53527f2356249fb5df72bcb9cf
+    - repo: tools
+      remote-ref: refs/heads/requirement/CR-2026-074
+      reviewed-source-sha: 3eda3eedd4fe5b6497647b3f6d02829e80187c51
+  artifacts:
+    algorithm: sha256
+    canonicalization: crlf-to-lf+path-sort
+    files:
+      - { path: change-requests/CR-2026-074/plan.md, sha256: d1920c7ae4af348b8e5d88b26bcc041d6eedae2c50e88f286a6bb43e433329ab }
+      - { path: change-requests/CR-2026-074/prd.md, sha256: 1ec6f962b677f4423dfa2aaef3007f0122512ee82ea0b586e41d744d1a5ee57a }
+      - { path: change-requests/CR-2026-074/sdd.md, sha256: 371ec7a8ca880f2a8dc48bb7a5cf29221fd1953f0abaa13f40b5785e6d6e71d3 }
+      - { path: change-requests/CR-2026-074/tasks/TASK-01.md, sha256: 4c6907b5453e38a119d8c6d1b01ab1010aa3fedef9aa90fe5f64d898802a4318 }
+      - { path: change-requests/CR-2026-074/tasks/TASK-02.md, sha256: 75f8a71003b7a6e3bc3104e713eb10a1a97053416128e8d0f9c233af03faa673 }
+      - { path: change-requests/CR-2026-074/tasks/TASK-03.md, sha256: bdaa081c4f880f911f7bca100177bbe98e8be30501fbf9b892bfc8769dae327b }
+      - { path: change-requests/CR-2026-074/tasks/TASK-04.md, sha256: 7460bd2577f8368fab8c492c934034c83108473c0bbf794edb7ba8b59e0176b3 }
+      - { path: change-requests/CR-2026-074/tasks/TASK-05.md, sha256: 0c6de690bdd8f16db173eed75286a1df220024f5e67ca07d43272abd64b43081 }
+      - { path: change-requests/CR-2026-074/tasks/TASK-06.md, sha256: 71c19cecdd756e82150e960797431060b5d7ddc9344c98e3c73e7cdd56e0ad30 }
+      - { path: change-requests/CR-2026-074/tasks/TASK-07.md, sha256: e344dbaf60cdd6341119c804cee1b96a91d15299bffda8b9607d3035c9b0e229 }
+      - { path: change-requests/CR-2026-074/tasks/TASK-08.md, sha256: 9a4e582ae916551ec239f108cb6d7c30e6d5d108cb284b4b2b945faa4bab9aee }
+      - { path: change-requests/CR-2026-074/tasks/TASK-09.md, sha256: f4a400e8e20fa12a2019c588195525cbb78f6d9a477fc6aa7589ec4966d59f1c }
+      - { path: change-requests/CR-2026-074/tasks/TASK-10.md, sha256: e774e1410cec1c39127cee09f86a300ae3c56206c2e9e56a87eb70e7b2e058d7 }
+      - { path: change-requests/CR-2026-074/tasks/_index.yml, sha256: 8633c5d73ef77bd544b184e15adc4a16e5b613c74059c7c13cac5b69d52bcdea }
+    digest: f6f634b74462f6a586d4a94d324a6d638d25779e27e04c718362b3075c8f97bf
