@@ -17,3 +17,40 @@ development-start:
   via: crctl-approve
   evidence-digest: "8e84d1972b9ee5ede345e8642c81e2325973ae4ee1be03d9c6d99fe568ffeb1d"
   target-status: developing
+code:
+  approver: "a0e71a32-509d-4ee9-aea4-d086a5b1ff93"
+  approved-at: "2026-10-02T20:01:36+08:00"
+  via: crctl-approve
+  evidence-digest: "dc5035bf83da44ea1433d04ec1c580fdba62032e4633ffad9c899ac83bbc3a16"
+  target-status: code-approved
+  release-subjects:
+    version: 1
+    repositories:
+      - repo: ai-first-platform-docs
+        remote-ref: refs/heads/requirement/CR-2026-074
+        reviewed-source-sha: 2553612ec34d81cd6043d3d0c4c01356e2998f2e
+      - repo: multica
+        remote-ref: refs/heads/requirement/CR-2026-074
+        reviewed-source-sha: 38eca166597ebd540538d155f5ff2dee2bdb6845
+      - repo: tools
+        remote-ref: refs/heads/requirement/CR-2026-074
+        reviewed-source-sha: 9e7612e2b86d3955bcd23a3e6a8edbaa73da03d1
+    artifacts:
+      algorithm: sha256
+      canonicalization: crlf-to-lf+path-sort
+      files:
+        - { path: change-requests/CR-2026-074/plan.md, sha256: 3d4abfcabde367bc9570c93d863bab63208f78a6b1222e96bdf454a9d854093e }
+        - { path: change-requests/CR-2026-074/prd.md, sha256: 1ec6f962b677f4423dfa2aaef3007f0122512ee82ea0b586e41d744d1a5ee57a }
+        - { path: change-requests/CR-2026-074/sdd.md, sha256: 371ec7a8ca880f2a8dc48bb7a5cf29221fd1953f0abaa13f40b5785e6d6e71d3 }
+        - { path: change-requests/CR-2026-074/tasks/TASK-01.md, sha256: 4c6907b5453e38a119d8c6d1b01ab1010aa3fedef9aa90fe5f64d898802a4318 }
+        - { path: change-requests/CR-2026-074/tasks/TASK-02.md, sha256: 75f8a71003b7a6e3bc3104e713eb10a1a97053416128e8d0f9c233af03faa673 }
+        - { path: change-requests/CR-2026-074/tasks/TASK-03.md, sha256: bdaa081c4f880f911f7bca100177bbe98e8be30501fbf9b892bfc8769dae327b }
+        - { path: change-requests/CR-2026-074/tasks/TASK-04.md, sha256: 7460bd2577f8368fab8c492c934034c83108473c0bbf794edb7ba8b59e0176b3 }
+        - { path: change-requests/CR-2026-074/tasks/TASK-05.md, sha256: 0c6de690bdd8f16db173eed75286a1df220024f5e67ca07d43272abd64b43081 }
+        - { path: change-requests/CR-2026-074/tasks/TASK-06.md, sha256: 71c19cecdd756e82150e960797431060b5d7ddc9344c98e3c73e7cdd56e0ad30 }
+        - { path: change-requests/CR-2026-074/tasks/TASK-07.md, sha256: e344dbaf60cdd6341119c804cee1b96a91d15299bffda8b9607d3035c9b0e229 }
+        - { path: change-requests/CR-2026-074/tasks/TASK-08.md, sha256: 9a4e582ae916551ec239f108cb6d7c30e6d5d108cb284b4b2b945faa4bab9aee }
+        - { path: change-requests/CR-2026-074/tasks/TASK-09.md, sha256: f4a400e8e20fa12a2019c588195525cbb78f6d9a477fc6aa7589ec4966d59f1c }
+        - { path: change-requests/CR-2026-074/tasks/TASK-10.md, sha256: e774e1410cec1c39127cee09f86a300ae3c56206c2e9e56a87eb70e7b2e058d7 }
+        - { path: change-requests/CR-2026-074/tasks/_index.yml, sha256: 8633c5d73ef77bd544b184e15adc4a16e5b613c74059c7c13cac5b69d52bcdea }
+      digest: 11dbe5d2c975c2d8c02b78aab2e43c2e93ecbfa62bd28a2930ae6ccb7b7e35a2
