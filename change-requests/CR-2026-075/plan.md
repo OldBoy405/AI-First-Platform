@@ -113,7 +113,7 @@ TASK-01～TASK-09 ─→ TASK-10 全量证据回归 cmd-01～cmd-12 ─→ revie
 | FR-08 索引路径及责任唯一 | §2.4 路径权威与单索引解析、§4.4 索引文本生成 | CR-2026-075-TASK-04（关联 TASK-05、TASK-07） | cmd-02 + cmd-03 + cmd-07 | 逆拓扑：revert TASK-04 → TASK-05 → TASK-07 |
 | FR-09 两个业务专用受控操作 | §3.1 命令面与参数面、§4.3 执行骨架、§4.4 转换职责分离 | CR-2026-075-TASK-04（关联 TASK-05、TASK-03） | cmd-02 + cmd-03 | revert TASK-04 → TASK-05；TASK-03 是其上游生产者，须最后回退 |
 | FR-10 规划确认、冲突与重放 | §2.3 规划 payload 与回执、§4.4、§4.5 判定顺序 | CR-2026-075-TASK-04 | cmd-02 | revert TASK-04（含 `planning-entry.test.mjs`） |
-| FR-11 竞品确认、冲突与重放 | §2.3 竞品 payload 与回执、§4.4、§4.5 判定顺序 | CR-2026-075-TASK-05 | cmd-03 | revert TASK-05（含 `competitive-report.test.mjs`）；与 TASK-04 无互相依赖 |
+| FR-11 竞品确认、冲突与重放 | §2.3 竞品 payload 与回执、§4.4、§4.5 判定顺序 | CR-2026-075-TASK-05 | cmd-03 | revert TASK-05（含 `competitive-report.test.mjs`）；业务意图上与 TASK-04 互不依赖（实现产出按 §2 顺序消费 TASK-04 落地的唯一骨架与业务 helper） |
 | FR-12 一致性、错误闭包与事务恢复 | §4.3、§4.5（含 §4.5.2 key、§4.5.4 第 2 步锁内比对）、§5.1/§5.3 锁内取样 | CR-2026-075-TASK-03（关联 TASK-04、TASK-05） | cmd-04 + cmd-01 + cmd-02 + cmd-03 | 逆拓扑：先 revert TASK-04、TASK-05（消费者），再 revert TASK-03 |
 | FR-13 调用登记、命令示例与输入兼容 | §4.6（12 处 CR-ID、矩阵/Agent 定点登记、版本口径） | CR-2026-075-TASK-08 | cmd-01 + cmd-05 + cmd-06 | revert TASK-08（文本合同，无下游代码消费者） |
 | FR-14 绑定验证后收敛重复提示 | §4.6 收敛范围、§4.9 门槛 | CR-2026-075-TASK-08（关联 TASK-01、TASK-02） | cmd-05 + cmd-06 | revert TASK-08；门槛依赖 TASK-01/02，回退后提示恢复原样 |
