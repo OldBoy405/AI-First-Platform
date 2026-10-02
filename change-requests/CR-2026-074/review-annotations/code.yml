@@ -1,37 +1,37 @@
 cr-id: CR-2026-074
 review-type: code
 reviewer: "OldBoy405"
-reviewed-at: "2026-10-02T01:21:47+08:00"
+reviewed-at: "2026-10-02T11:03:57+08:00"
 verdict: block
 blockers:
-  - "本轮新增： B-CODE-01（Major）— crctl.mjs:3378–3402 的 porcelain -z 解析消费 gitRun；workspace-transactions.mjs:378–380 先对 stdout 调用 trim()，会删除首条记录的未暂存状态前导空格。合法输入首条为 <空格>M<空格>dir-graph.yaml<NUL> 时，slice(3) 得到 ir-graph.yaml，被误判为白名单外 dirty，无法执行批准的初始化。违反 SDD §4.1 / TASK-01 / AC-02 对三候选路径的工作树与 index 白名单合同。回修须让该调用保留原始 porcelain 字节，不改变其他既有 Git 调用语义，并补已跟踪 dir-graph 存在未暂存允许修改及未暂存白名单外修改的定向回归。"
-  - "本轮新增： B-CODE-02（Major）— crctl.mjs:3430–3447 的账本父目录 realpath 守卫只在 pending 创建循环中执行；两个账本已存在且全文恰好匹配模板时，pending 为空，读取它们的 symlink/junction 父目录完全不核验，就继续 Git add。父目录越出主 checkout 的事实不能由可读模板豁免；当前入口缺少必须的 KB_INIT_PRECONDITION(reason=repo-invalid) 前置，并可能改报 dirty/conflict/Git add 失败。违反 SDD §4.1 / TASK-01 的路径边界及前置错误合同。回修须在任何账本创建或暂存前核验两个目标的父目录身份，覆盖现有匹配模板、缺文件和异内容场景；外部内容、index、HEAD、远端及成功审计保持不变。"
-  - "本轮新增： B-CODE-03（Major）— crctl.mjs:3322 将 cmdList 整体排除出额外旗标检查，而 parseArgs:3719 会把用户 --cmd 的值加入该数组，通用分支还接受用户 --cmdList。因而 kb init --cmd ignored --workspace <合法KB> 或额外 --cmdList 值不会得到 BAD_ARGS，而会进入有副作用的初始化流程。违反 SDD §3.1 / TASK-01 仅允许 init 与 workspace、额外 flag 必须 BAD_ARGS 的精确入口合同。回修须区分解析器内部空 cmdList 与用户传入的这些旗标，增加这两种负测并证明形态失败先于文件/Git/audit 副作用；保留 WORKSPACE_REQUIRED 的优先级。"
-  - "本轮新增： B-CODE-04（Major）— writeback-tx.test.mjs:1011–1051 的 AC-12 用例实际只调用 baseline、traceability、traceability 重放和 archive，没有 tasks 阶段；也未断言独立 trace 重放前后的 baseline/tasks 事务不变。1038–1039 在 trace 已执行后才取得 sigBefore2 并立即与同一现场比较，不能证明首次 trace 保留签字源。cmd-04 虽机器结论 pass，却未提供 TASK-08 验收条件1 / SDD §5.2 / AC-12 所承诺的三阶段全链与重放隔离证据，test-report 的全链覆盖叙述过度。回修须在无索引变体真实执行 baseline/tasks/traceability 后归档，并在 fixture 证据补齐后、trace 执行前冻结签字源及 baseline/tasks 事务事实，比较首次 trace 与重放后的事实；由 write-test-report 重新生成证据并据实更新分析区。"
+  - "部分解决： B-CODE-03（Major）— cmdKbInit 的 extraFlags 已能拒绝单独的 --cmd/--cmdList，但参数组合仍绕过约定错误合同：crctl.mjs:3738 的 flags.cmdList.push 与 :3748 的通用 flags[key]=next 共用同一槽位；kb init --workspace <合法KB> --cmdList x --cmd ignored 先把 cmdList 改成字符串，再调用字符串不存在的 push，抛 TypeError，经 :3842 main().catch 变成 INTERNAL_ERROR，无法到达 :3330 的 BAD_ARGS。去掉 --workspace 的同一组合也在 :3782 requireExplicitWorkspace 之前抛错，丢失 WORKSPACE_REQUIRED 优先级。违反 SDD §3.1/§3.2、TASK-01 与 AC-02 的额外旗标 BAD_ARGS/缺根优先合同；当前 :6025–6027 只覆盖单旗标，不覆盖顺序组合。本结论来自只读源码调用链，未在评审阶段执行该命令或重跑测试。回修须使用户 --cmdList 无法破坏内部聚合器，保持非 kb 既有命令语义，并补两种旗标顺序、有根/缺根/空根向量，证明有根 BAD_ARGS、缺根或空根 WORKSPACE_REQUIRED，均先于文件/index/HEAD/remote/audit 副作用；随后由 write-test-report 重新生成规范证据。"
 dimensions:
-  批准范围: "PASS：tools 实际 diff 17 文件均在 SDD §9 scope_in；multica 的 trunk merge-base 到 HEAD 无 diff；durable-tx、applyWriteback、writebackAllowlist、状态机、gates、Pipeline、Agent、矩阵、writer source 通用合同及用户根 gitignore 未触及。"
-  代码↔TASK↔SDD 对齐: "BLOCK：10/10 TASK 已逐卡检查，TASK index 均 done，但 TASK-01 存在 B-CODE-01～03 的当前接口缺陷，TASK-08 存在 B-CODE-04 的关键验收证据缺口；不能据完成标志判 10/10 验收通过。其余 baseline 首写/features 前置、规范表定位、YAML trunk、source 空默认、ensure 自忽略及裸 SHA shape 的生产 diff 与批准合同对齐。"
-  工程质量: "BLOCK：只读核验 generated-by=crctl-test、report/trace status=pass 与 command-digest 一致，官方 canonicalCommandSubject 与 PLAN 七条 argv/timeout 全等；七条机器记录 exit-code=0、started=true、skipped=false、timed-out=false，引用日志均存在且输出已取证。lint/build 的单列命令不适用说明已读取；未重跑任何测试。机器 pass 不能替代 B-CODE-04 缺失的业务验收。"
-  关键路径可读性: "PASS：私有 init 入口及三个生成器修改均已读取实际 diff与调用链；零新生产模块/导出/依赖。ARCHITECTURE.md 的新增入口、显式根、独占创建、普通 Git 发布、无 journal/锁/跨阶段原子性及 audit 无 CR outbox 的地图说明已做内容检查，不仅检查 cmd-07 字符串命中。"
-  安全性: "BLOCK：固定 argv、shell=false、独占创建、普通非快进 push、原 CAS/apply 边界保留，但 B-CODE-02 的现有账本路径前置缺失与 B-CODE-03 的入口旗标漏检必须在本 CR 修复；B-CODE-01 也影响白名单准确判定。"
-  测试覆盖: "BLOCK：已读取新增/变更测试的实际内容，不把日志汇总当覆盖证明；init 未覆盖 B-CODE-01～03 的上述边界，AC-12 唯一证据命令 cmd-04 对三阶段与签字源/重放隔离的断言不完整，详见 B-CODE-04。"
-  测试证据可信度: "BLOCK：当前 tools HEAD 实测为 3eda3eedd4fe5b6497647b3f6d02829e80187c51，与 test-report 记录及交接 implementation_commit 一致；无关键命令 skipped、无发现的 report/trace/PLAN 命令漂移。但 test-report 将未执行的 tasks 阶段叙述为全链覆盖，须随回修重新生成规范证据并收敛分析区，不得在评审阶段重跑。"
-  前端质量: "N/A：实际 diff 未触及 tsx、vue、css、html，不触发前端三项检查。"
-suggestions: []
+  批准范围: "PASS：tools trunk merge-base 41b112ed4d97baaaca3b82367a72f35520dc3d4b 至当前 HEAD 的实际文件集合为 17 文件，生产落点及文档/测试在 SDD §9 和上轮明确回修范围内；multica merge-base 等于 HEAD、无 diff。未触及状态机/gates/Pipeline/Agent/矩阵、durable-tx、applyWriteback/writebackAllowlist、writer 通用 source 合同或用户根 gitignore。"
+  代码↔TASK↔SDD 对齐: "BLOCK：10/10 TASK 验收条件已逐卡对照；B-CODE-01/02/04 关闭，B-CODE-03 仍有入口参数组合与缺根优先级残留，TASK-01/AC-02 当前接口合同未全部满足。其余 source 空缺省/历史指纹、ensure 自忽略、缺索引首写/features 前置、两规范表提取/YAML trunk、裸提交祖先 shape、文档和集成变体未发现新的阻断。"
+  工程质量: "PASS：只读 generated-by=crctl-test 与 report/trace status=pass；用既有 canonicalCommandSubject 复算七条命令得到 c7e74fc0e056f6d45576944e7dca7370b724ec9999c6a55224c8d13ffdeeb5a5，与 report/trace 全等，argv/cwd/timeout 对照 PLAN §6.2；七条均 exit-code=0、started=true、skipped=false、timed-out=false，日志存在且读取命令和输出。未执行 lint/test/build；机器 pass 不豁免 B-CODE-03 的未覆盖接口缺陷。"
+  关键路径可读性: "PASS：读取私有 init 的实际实现/派发/参数解析调用链及三个相关生产文件，rawStdout 明确仅被 porcelain 消费且保留默认行为；无新生产模块、导出或依赖。ARCHITECTURE.md 新入口的显式根、独占创建、普通 Git 发布、无锁/journal/跨阶段原子性及无 CR outbox 边界与代码一致，不仅依赖 cmd-07 字符串命中。"
+  安全性: "BLOCK：父目录 junction 边界、工作树/index 路径白名单、固定 argv/shell=false、独占创建及普通非快进拒绝已复核，原 CAS/apply 保留；B-CODE-03 的用户旗标可覆盖内部聚合器并在显式根校验前抛错，失败关闭的错误优先级合同仍需修复；未发现该残留发生业务写入。"
+  测试覆盖: "BLOCK：回修定向测试覆盖 B-CODE-01/02 和 B-CODE-04 的真实三阶段与重放隔离；B-CODE-03 当前只测单独 --cmd/--cmdList，缺两旗标顺序组合和组合下有根/缺根/空根向量。其他 TASK 的规范命令与覆盖矩阵已对照。"
+  测试证据可信度: "PASS：tools HEAD 实测 cccb662591b1f2c64152219ed17fc8f7732e3832 与回修交接 implementation_commit 一致；读取 attempt 2 的 complete 测试 journal、test-report 分析区及七条引用日志，无关键命令 skipped、无 report/trace/PLAN 命令漂移发现；测试后的 checkpoint 提交时序按报告原文记录，不把作者自报代替测试覆盖。"
+  前端质量: "N/A：实际 diff 无 tsx/vue/css/html，不触发前端维度。"
+suggestions:
+  - "已解决： B-CODE-01（Major）— workspace-transactions.mjs:378–382 为 gitRun 增加选择性 rawStdout，默认 trim 语义保持；cmdKbInit:3410 的 porcelain -z 调用显式选用原始输出。crctl.test.mjs:6119–6150 已覆盖已跟踪 dir-graph 未暂存允许修改放行及未暂存白名单外 README.md 按原路径拒绝；cmd-01 机器记录 started=true、skipped=false、exit-code=0。"
+  - "已解决： B-CODE-02（Major）— cmdKbInit:3355–3365 在 dirty 展开、账本比较、创建及暂存之前核验已有账本父目录，pending 创建循环在 mkdir 后再次核验；匹配模板不再豁免身份检查。crctl.test.mjs:6152–6209 覆盖 junction 逃逸的匹配模板/缺文件/异内容三场景及正常父目录冲突对照，均对应 repo-invalid 或原 KB_INIT_CONFLICT 合同；cmd-01 规范证据未跳过。"
+  - "已解决： B-CODE-04（Major）— writeback-tx.test.mjs:1011–1085 已真实执行无索引 baseline→tasks→traceability→archive，tasks 产物落盘；addEvidenceFiles 后且首次 trace 前冻结 PLAN/test-report/approval/merge facts、specs 索引、delivery/task 文件集合及 baseline/tasks journal，首次 trace 与独立重放后逐项比较，且验证 writing-back 与 milestone 不重复。cmd-04 机器记录 started=true、skipped=false、exit-code=0；test-report 分析区已据实对应上述三阶段与冻结点。"
 review-loop:
-  current-attempt: 1
+  current-attempt: 2
 release-subjects:
   version: 1
   repositories:
     - repo: ai-first-platform-docs
       remote-ref: refs/heads/requirement/CR-2026-074
-      reviewed-source-sha: 9c0e9f37917da396be9b9d79f4e52bfa843a8451
+      reviewed-source-sha: 82fd1859ec5b84b926ddc1ac32398d763cfc1d89
     - repo: multica
       remote-ref: refs/heads/requirement/CR-2026-074
       reviewed-source-sha: 78566fde28a1ea53527f2356249fb5df72bcb9cf
     - repo: tools
       remote-ref: refs/heads/requirement/CR-2026-074
-      reviewed-source-sha: 3eda3eedd4fe5b6497647b3f6d02829e80187c51
+      reviewed-source-sha: cccb662591b1f2c64152219ed17fc8f7732e3832
   artifacts:
     algorithm: sha256
     canonicalization: crlf-to-lf+path-sort
