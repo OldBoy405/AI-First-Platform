@@ -17,9 +17,9 @@ target-version: 0.47
 target-spec-id: ai-first-platform
 source: manual
 origin: ""
-status: developing
+status: tech-design-reviewed
 created: "2026-09-30T21:33:16+08:00"
-updated: "2026-10-02T11:04:13+08:00"
+updated: "2026-10-02T17:02:30+08:00"
 remote-ref: ""
 last-push-at: ""
 last-push-by: ""
