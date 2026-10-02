@@ -1,27 +1,27 @@
 $ node --test skills/writeback/scripts/test/writeback.test.mjs
 (exit=0)
 --- stdout ---
-✔ lib: CRLF 归一 + frontmatter 读改（纪律 #1） (0.7913ms)
-✔ lib: extractBlock 缩进敏感提取 (0.2019ms)
-✔ lib: 账本路径隔离（AC-4 静态判据） (0.2188ms)
-✔ lib: computeInputDigest 与 crctl apply 侧公式一致（跨模块防漂移） (0.4742ms)
-✔ prd-sdd: candidate-only 首次回写（零写 ws）+ manifest v1 + inputDigest 自洽 (55.8235ms)
-✔ prd-sdd: 增量追加（既有内容保留 + H 级 +1）+ 重跑 noop (156.1783ms)
-✔ tasks: candidate-only + slug 命名 + SDD-BLOCK-001 幂等 + 索引顺序 + noop (99.8159ms)
-✔ traceability: candidate-only + 追加保留 + 幂等 + evidence 注入 + 无 status + 校验硬失败 (210.5097ms)
-✔ traceability: 数字 milestone 归一为字符串（新段带引号 + 冻结 payload 全段 string；CR-061..066 复盘） (63.3441ms)
-✔ traceability: 证据缺失/状态不通过 → EVIDENCE_INVALID 硬失败，零 candidate (156.8253ms)
-✔ traceability: trunk 缺条目 → TRUNK_UNKNOWN 硬失败（无 master 回退） (50.554ms)
-✔ traceability: --validate-evidence 复用唯一 validator（ok + path 互换/digest 漂移/verdict 非 pass） (330.427ms)
-✔ AC-4: 三脚本源码不包含账本文件写路径（静态扫描） (0.9848ms)
-✔ AC-4: candidate-only 硬边界——脚本不得写 ws 内容文件（writeFileSync 仅限 candidate/blobs 写入） (0.5722ms)
-✔ CR-2026-074 TASK-04 AC-05：四类结构负例 STRUCTURE_MISMATCH——原索引不变、无 candidate/manifest (201.1658ms)
-✔ CR-2026-074 TASK-04：缺文件首写正例——before=null、首部模板真实换行、插入新 spec 条目、首部无顶层 updated (56.3721ms)
-✔ CR-2026-074 TASK-04：正常索引旧历史保留——原字段更新与历史累积，重复事务不新增相同 spec/CR，不重建/不删除旧条目 (106.2331ms)
-✔ CR-2026-074 TASK-05 AC-06：新链/命令 ID 与规范片段一致——表外诱饵不误收、空位不移列、args 含管道仅验首格、FR 数字排序 (63.0931ms)
-✔ CR-2026-074 TASK-05 AC-06：061/066 历史规范片段——061 args 管道行收集、066 预算诱饵表不入集合（缺失证据按交叉校验硬失败） (170.0683ms)
-✔ CR-2026-074 TASK-05 AC-07：结构错 STRUCTURE_MISMATCH 且 authority 不变；集合在 LF/CRLF 两行尾下相同 (467.0345ms)
-✔ CR-2026-074 TASK-06 AC-08：引号/非首键/键序无关 trunk 正确解析；缺有效 trunk（缺失/不唯一/空值）→ TRUNK_UNKNOWN；无 master/main 回退；inactive 条目不参与 (316.7136ms)
+✔ lib: CRLF 归一 + frontmatter 读改（纪律 #1） (0.8815ms)
+✔ lib: extractBlock 缩进敏感提取 (0.1988ms)
+✔ lib: 账本路径隔离（AC-4 静态判据） (0.2189ms)
+✔ lib: computeInputDigest 与 crctl apply 侧公式一致（跨模块防漂移） (0.4763ms)
+✔ prd-sdd: candidate-only 首次回写（零写 ws）+ manifest v1 + inputDigest 自洽 (56.5487ms)
+✔ prd-sdd: 增量追加（既有内容保留 + H 级 +1）+ 重跑 noop (155.3725ms)
+✔ tasks: candidate-only + slug 命名 + SDD-BLOCK-001 幂等 + 索引顺序 + noop (108.2146ms)
+✔ traceability: candidate-only + 追加保留 + 幂等 + evidence 注入 + 无 status + 校验硬失败 (264.416ms)
+✔ traceability: 数字 milestone 归一为字符串（新段带引号 + 冻结 payload 全段 string；CR-061..066 复盘） (67.8124ms)
+✔ traceability: 证据缺失/状态不通过 → EVIDENCE_INVALID 硬失败，零 candidate (221.2754ms)
+✔ traceability: trunk 缺条目 → TRUNK_UNKNOWN 硬失败（无 master 回退） (55.2206ms)
+✔ traceability: --validate-evidence 复用唯一 validator（ok + path 互换/digest 漂移/verdict 非 pass） (378.3612ms)
+✔ AC-4: 三脚本源码不包含账本文件写路径（静态扫描） (1.1638ms)
+✔ AC-4: candidate-only 硬边界——脚本不得写 ws 内容文件（writeFileSync 仅限 candidate/blobs 写入） (0.6489ms)
+✔ CR-2026-074 TASK-04 AC-05：四类结构负例 STRUCTURE_MISMATCH——原索引不变、无 candidate/manifest (222.7506ms)
+✔ CR-2026-074 TASK-04：缺文件首写正例——before=null、首部模板真实换行、插入新 spec 条目、首部无顶层 updated (61.286ms)
+✔ CR-2026-074 TASK-04：正常索引旧历史保留——原字段更新与历史累积，重复事务不新增相同 spec/CR，不重建/不删除旧条目 (120.2333ms)
+✔ CR-2026-074 TASK-05 AC-06：新链/命令 ID 与规范片段一致——表外诱饵不误收、空位不移列、args 含管道仅验首格、FR 数字排序 (69.0905ms)
+✔ CR-2026-074 TASK-05 AC-06：061/066 历史规范片段——061 args 管道行收集、066 预算诱饵表不入集合（缺失证据按交叉校验硬失败） (196.3434ms)
+✔ CR-2026-074 TASK-05 AC-07：结构错 STRUCTURE_MISMATCH 且 authority 不变；集合在 LF/CRLF 两行尾下相同 (527.3427ms)
+✔ CR-2026-074 TASK-06 AC-08：引号/非首键/键序无关 trunk 正确解析；缺有效 trunk（缺失/不唯一/空值）→ TRUNK_UNKNOWN；无 master/main 回退；inactive 条目不参与 (316.7563ms)
 ℹ tests 21
 ℹ suites 0
 ℹ pass 21
@@ -29,6 +29,6 @@ $ node --test skills/writeback/scripts/test/writeback.test.mjs
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 2577.9385
+ℹ duration_ms 2896.7482
 
 --- stderr ---

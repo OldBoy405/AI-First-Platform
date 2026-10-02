@@ -1,19 +1,19 @@
 $ node --test skills/shared/crctl/scripts/test/caller-contract.test.mjs
 (exit=0)
 --- stdout ---
-✔ caller-01 扫描面内每处投影命令调用都在已审表内（无未登记调用点） (0.9696ms)
-✔ caller-02 已审表无陈旧行（每条都真的出现在扫描面内） (0.1793ms)
-✔ caller-03 判为 detail-required 的调用点必须显式带 --detail (0.1548ms)
-✔ caller-04 判为 no-action 的调用点不需要 --detail（summary 覆盖其消费字段） (0.2164ms)
-✔ caller-05 扫描面之外的真实调用方逐条登记并按字段消费判定 (0.1148ms)
-✔ caller-06 投影注册表是投影实现本体：其命中一律登记为 doc-only（不构成运行时调用点） (0.6065ms)
-✔ caller-07 四个 review Skill 已采纳 AC-16 取证完整性条款 (0.7724ms)
-✔ caller-08 权威 Skill 文档已记录 --detail 的默认面语义 (0.2869ms)
-✔ caller-09 扫描面内每处 CR 数据命令调用都携带非空 --workspace（或在白名单登记为非可执行提及） (0.2751ms)
-✔ caller-10 非可执行命中白名单无陈旧行（每条都真实出现在扫描面内） (0.3751ms)
-✔ caller-11 已登记扫描面外调用方文件内的 CR 数据命令同规则核对（文件可定位时） (1.0961ms)
-✔ caller-12 inject-cr-status.mjs：无可信路径不输出 crctl 命令建议；有可信路径建议显式 --workspace（CR-2026-072 TASK-01） (165.984ms)
-✔ caller-13 kb init 入口契约：缺根/空根 WORKSPACE_REQUIRED；两集合含 kb；文档/HELP 与代码入口一致 (111.4601ms)
+✔ caller-01 扫描面内每处投影命令调用都在已审表内（无未登记调用点） (1.0437ms)
+✔ caller-02 已审表无陈旧行（每条都真的出现在扫描面内） (0.1991ms)
+✔ caller-03 判为 detail-required 的调用点必须显式带 --detail (0.2663ms)
+✔ caller-04 判为 no-action 的调用点不需要 --detail（summary 覆盖其消费字段） (0.5013ms)
+✔ caller-05 扫描面之外的真实调用方逐条登记并按字段消费判定 (0.1633ms)
+✔ caller-06 投影注册表是投影实现本体：其命中一律登记为 doc-only（不构成运行时调用点） (0.3852ms)
+✔ caller-07 四个 review Skill 已采纳 AC-16 取证完整性条款 (0.7373ms)
+✔ caller-08 权威 Skill 文档已记录 --detail 的默认面语义 (0.2848ms)
+✔ caller-09 扫描面内每处 CR 数据命令调用都携带非空 --workspace（或在白名单登记为非可执行提及） (0.3768ms)
+✔ caller-10 非可执行命中白名单无陈旧行（每条都真实出现在扫描面内） (0.4114ms)
+✔ caller-11 已登记扫描面外调用方文件内的 CR 数据命令同规则核对（文件可定位时） (1.1606ms)
+✔ caller-12 inject-cr-status.mjs：无可信路径不输出 crctl 命令建议；有可信路径建议显式 --workspace（CR-2026-072 TASK-01） (143.5626ms)
+✔ caller-13 kb init 入口契约：缺根/空根 WORKSPACE_REQUIRED；两集合含 kb；文档/HELP 与代码入口一致 (118.5785ms)
 ℹ tests 13
 ℹ suites 0
 ℹ pass 13
@@ -21,6 +21,6 @@ $ node --test skills/shared/crctl/scripts/test/caller-contract.test.mjs
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 388.8802
+ℹ duration_ms 381.1693
 
 --- stderr ---
