@@ -445,7 +445,7 @@ businessTxKey(kind, 项目根, 身份) = 'biz-' + kind + '-' + sha256('v1|' + re
              且消息范围含 `AI-First-Tx: <该 journal 的 txId>`）→ committed（删该 tx 目录、零文件改动）
              否则 → rolledBack（既有 write-set 语义把本意图未收敛写入还原为 before）→ 转 3
              第三值 → 既有 TX_RECOVERY_CONFLICT（原样抛出，不改文件）
-   c 消息范围（dep-33 形态）：pre 的 ledger.headBefore 为 40 位十六进制且 ≠ 当前 HEAD 时取
+   c 消息范围（dep-33 形态）：pre.journal.ledger.headBefore 为 40 位十六进制且 ≠ 当前 HEAD 时取
        git log --reverse --format=%B <headBefore>..HEAD ；否则取 git log --format=%B -1
        取用失败（git 非零/形态被拒）→ TX_GIT_FAILED 硬失败，禁止静默降级为 HEAD 单条
    d 收敛即回执前置：committed → 不回滚、不新建事务，转 3 核对完成投影（成功后 commit 取 3.c 定位到的 C，
@@ -480,7 +480,7 @@ businessTxKey(kind, 项目根, 身份) = 'biz-' + kind + '-' + sha256('v1|' + re
        以当前报告文件为 before → 转 5（changed=true）
    d 竞品 且 presentDifferent 且 conflict_strategy=new-date → 「新日期」不新（该日期报告已存在）
        → BUSINESS_INTENT_CONFLICT
-   e 竞品 且报告已存在但缺 conflict_strategy → BUSINESS_CONFIRMATION_REQUIRED（4.3 第 5 步已拦）
+   e 竞品 且报告已存在但缺 conflict_strategy → BUSINESS_CONFIRMATION_REQUIRED（4.3 第 5 步已在业务写入前拦截；此处仅保留判定表面的完备性说明，不重复判定）
    f 其余（身份漂移、无法归类的差异）→ 原冲突码失败，不返回成功
 5 首次写入/合法覆盖/回滚后补成：beginLedgerTransaction({root: installRoot, targetRoot: 项目根, key,
      inputDigest: intentDigest, writes, headBefore: gitHeadSha(项目根), commitRequired: true})
