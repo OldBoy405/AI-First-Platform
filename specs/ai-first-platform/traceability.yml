@@ -1,10 +1,10 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 spec-id: ai-first-platform
-cr-ref: CR-2026-073
-cr-history: [CR-2026-060, CR-2026-059, CR-2026-061, CR-2026-062, CR-2026-063, CR-2026-065, CR-2026-064, CR-2026-066, CR-2026-067, CR-2026-068, CR-2026-069, CR-2026-070, CR-2026-071, CR-2026-072, CR-2026-073]
-target-version: "0.46"
+cr-ref: CR-2026-074
+cr-history: [CR-2026-060, CR-2026-059, CR-2026-061, CR-2026-062, CR-2026-063, CR-2026-065, CR-2026-064, CR-2026-066, CR-2026-067, CR-2026-068, CR-2026-069, CR-2026-070, CR-2026-071, CR-2026-072, CR-2026-073, CR-2026-074]
+target-version: "0.47"
 baseline-since: "0.33"
-generated-at: "2026-09-30T20:20:51+08:00"
+generated-at: "2026-10-02T20:06:53+08:00"
 
 milestones:
   - cr: CR-2026-060
@@ -1235,3 +1235,79 @@ milestones:
         code: { verdict: pass, path: change-requests/CR-2026-073/review-annotations/code.yml, sha256: 92abaaa6c0fcd162b20870f8242da5c19fb776a0ebc4db7afcb02483a6839ac4 }
       approval: { status: approved, path: change-requests/CR-2026-073/approval.yml, sha256: 0188c15bc4cb01acd52695c81a5d45740b6df3db6dffefd3b91ee42d1785500e }
       merge: { status: merged, path: change-requests/CR-2026-073/merge-commits.yml, sha256: 7387c37accea6376b0f393a63543af985736a8b50b626f6337334053dcf86540 }
+  - cr: CR-2026-074
+    milestone: "0.47"
+    target-version: "0.47"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: b90beee499e65d3ba07558da39336af479e20d6d
+        branch: requirement/CR-2026-074
+      - repo: multica
+        trunk: main
+        sha: 7233ca79dfb629229390826fd230772b485d2cda
+        branch: requirement/CR-2026-074
+      - repo: tools
+        trunk: main
+        sha: 061a12ff0a40028b7aba979108c2977313e1fb11
+        branch: requirement/CR-2026-074
+    frs:
+      - fr: FR-1
+        sdd: §1/§3.1/§4.1 kb init 入口特判、输出与帮助
+        tasks: [CR-2026-074-TASK-01]
+        code: [ai-first-platform-docs@b90beee499e6, multica@7233ca79dfb6, tools@061a12ff0a40]
+        evidence: [cmd-01]
+      - fr: FR-2
+        sdd: §3.2/§4.1 前置顺序、错误优先级与失败残留
+        tasks: [CR-2026-074-TASK-01]
+        code: [ai-first-platform-docs@b90beee499e6, multica@7233ca79dfb6, tools@061a12ff0a40]
+        evidence: [cmd-01]
+      - fr: FR-3
+        sdd: §2.1/§3.1/§4.1 两账本模板、独占创建、发布与重入
+        tasks: [CR-2026-074-TASK-01]
+        code: [ai-first-platform-docs@b90beee499e6, multica@7233ca79dfb6, tools@061a12ff0a40]
+        evidence: [cmd-01, cmd-02]
+      - fr: FR-4
+        sdd: §4.2 ensure create 自忽略
+        tasks: [CR-2026-074-TASK-02]
+        code: [ai-first-platform-docs@b90beee499e6, multica@7233ca79dfb6, tools@061a12ff0a40]
+        evidence: [cmd-02]
+      - fr: FR-5
+        sdd: §2.2/§4.3 缺索引首写与全部既有索引 features 前置校验
+        tasks: [CR-2026-074-TASK-04]
+        code: [ai-first-platform-docs@b90beee499e6, multica@7233ca79dfb6, tools@061a12ff0a40]
+        evidence: [cmd-03, cmd-04]
+      - fr: FR-6
+        sdd: §4.4 两规范表提取
+        tasks: [CR-2026-074-TASK-05]
+        code: [ai-first-platform-docs@b90beee499e6, multica@7233ca79dfb6, tools@061a12ff0a40]
+        evidence: [cmd-03, cmd-04]
+      - fr: FR-7
+        sdd: §4.5 YAML trunk 解释
+        tasks: [CR-2026-074-TASK-06]
+        code: [ai-first-platform-docs@b90beee499e6, multica@7233ca79dfb6, tools@061a12ff0a40]
+        evidence: [cmd-03, cmd-04]
+      - fr: FR-8
+        sdd: §8 说明/命令发现/测试计数同步 + §8 ARCHITECTURE.md 地图行（dep-15）
+        tasks: [CR-2026-074-TASK-09]
+        code: [ai-first-platform-docs@b90beee499e6, multica@7233ca79dfb6, tools@061a12ff0a40]
+        evidence: [cmd-05, cmd-06, cmd-07]
+      - fr: FR-9
+        sdd: §4.6 merge-base 裸提交 shape
+        tasks: [CR-2026-074-TASK-07]
+        code: [ai-first-platform-docs@b90beee499e6, multica@7233ca79dfb6, tools@061a12ff0a40]
+        evidence: [cmd-01]
+      - fr: FR-10
+        sdd: §2.3/§4.2 source 空缺省与历史指纹边界
+        tasks: [CR-2026-074-TASK-03]
+        code: [ai-first-platform-docs@b90beee499e6, multica@7233ca79dfb6, tools@061a12ff0a40]
+        evidence: [cmd-02]
+    evidence:
+      test: { status: pass, path: change-requests/CR-2026-074/test-report.md, sha256: 469bc6bd087885cd7986f2244d78ff88dc69e47ef5672ff51140d57bf253aec3 }
+      reviews:
+        requirement: { verdict: pass, path: change-requests/CR-2026-074/review-annotations/requirement.yml, sha256: c97e969258a4cca83dfd85a8e49bd1b8d8c12d06fb253f9dda94bc8e5327f7dd }
+        tech-design: { verdict: pass, path: change-requests/CR-2026-074/review-annotations/sdd.yml, sha256: eb1c2b128432f1d8ece33b5a710240725e8ff9eb9efbfb6cb9aa7720bc805a28 }
+        dev-plan: { verdict: pass, path: change-requests/CR-2026-074/review-annotations/dev-plan.yml, sha256: 5585fb8623b2b550d99314d2855defcc3271c78c466d4abd0efb2a7d0b903875 }
+        code: { verdict: pass, path: change-requests/CR-2026-074/review-annotations/code.yml, sha256: fe76c9b186f78fb71c2a9677e5611616466c1d378e12439f1f916ee6cdb00640 }
+      approval: { status: approved, path: change-requests/CR-2026-074/approval.yml, sha256: 44502151f8b25ef6c5ff44b2384c0d45447d32dbfb70e467cd52c7df5aaee562 }
+      merge: { status: merged, path: change-requests/CR-2026-074/merge-commits.yml, sha256: 54948fbcd90eb3c260b899d055341999c0ceb5de8143d41b091ebf16d8b98a92 }
