@@ -3133,3 +3133,46 @@ history:
         event: archived
         to: ["a0e71a32-509d-4ee9-aea4-d086a5b1ff93"]
         payload: {"final-status":"archived","archive-reason":"cr-archive","archived-at":"2026-09-30T20:21:22+08:00","writeback-spec-id":"ai-first-platform"}
+  - id: CR-2026-074
+    title: AI First tools：新 KB 初始化与首次回写兼容方案
+    summary: "提供显式 crctl kb init 初始化新 KB，支持首次回写缺少 specs/_index.yml 时安全首写，并修正 traceability 对 plan 两张稳定表及 repositories trunk 的解析；同步 worktree 自忽略、使用文档与 controlled-shell 裸提交祖先判定能力。复用现有事务和 CAS，不改变状态机、gates、Pipeline、Agent、注册核心或 multica 代码，按自动化验收发布 tools 修复版。"
+    owner: a0e71a32-509d-4ee9-aea4-d086a5b1ff93
+    owners:
+      requirement:
+        id: a0e71a32-509d-4ee9-aea4-d086a5b1ff93
+        assigned-at: "2026-09-30T21:33:16+08:00"
+      development:
+        id: a0e71a32-509d-4ee9-aea4-d086a5b1ff93
+        assigned-at: "2026-09-30T21:33:16+08:00"
+      test:
+        id: a0e71a32-509d-4ee9-aea4-d086a5b1ff93
+        assigned-at: "2026-09-30T21:33:16+08:00"
+    target-version: 0.47
+    target-spec-id: ai-first-platform
+    source: manual
+    origin: ""
+    prd-path: "change-requests/CR-2026-074/prd.md"
+    created: "2026-09-30T21:33:16+08:00"
+    updated: "2026-09-30T21:33:16+08:00"
+    latest-checkpoint:
+      batch-id: 04c5e084ec9012b0
+      repositories:
+        - repo: ai-first-platform-docs
+          source-sha: 7e86b8c6979dac9f245a1fdecba28b1101c42a02
+          remote-ref: refs/heads/requirement/CR-2026-074
+        - repo: multica
+          source-sha: 38eca166597ebd540538d155f5ff2dee2bdb6845
+          remote-ref: refs/heads/requirement/CR-2026-074
+        - repo: tools
+          source-sha: 9e7612e2b86d3955bcd23a3e6a8edbaa73da03d1
+          remote-ref: refs/heads/requirement/CR-2026-074
+  
+    final-status: archived
+    archive-reason: "cr-archive"
+    writeback-spec-id: ai-first-platform
+    archived-at: "2026-10-02T20:07:09+08:00"
+    notify-log:
+      - at: "2026-10-02T20:07:09+08:00"
+        event: archived
+        to: ["a0e71a32-509d-4ee9-aea4-d086a5b1ff93"]
+        payload: {"final-status":"archived","archive-reason":"cr-archive","archived-at":"2026-10-02T20:07:09+08:00","writeback-spec-id":"ai-first-platform"}
