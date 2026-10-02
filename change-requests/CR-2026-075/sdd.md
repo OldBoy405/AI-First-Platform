@@ -8,7 +8,7 @@ owner: a0e71a32-509d-4ee9-aea4-d086a5b1ff93
 owner-role: development
 status: draft
 created: "2026-10-02T21:49:29+08:00"
-updated: "2026-10-02T21:49:29+08:00"
+updated: "2026-10-02T22:16:00+08:00"
 ---
 
 # CR-2026-075 — CR 执行入口与声明一致性修订方案 技术设计
@@ -53,12 +53,18 @@ flowchart TB
 | 「合法别名」（FR-03 第 2 条） | 同真实目录的路径别名：符号链接/junction、Windows 大小写、尾分隔符、`\\?\` 前缀；**不**包含「同一 installation 的主 checkout 与 CR worktree」 | 绑定=worktree 时显式传 KB 主 checkout → `WORKSPACE_CONTEXT_MISMATCH`；传 worktree 的大小写变体 → 接受 |
 | 「互相冲突」（FR-03 第 3 条） | 绑定两值不属于同一 installation root（`deriveInstallRoot` 不同，`dep-7`） | operational 指向 A 项目 worktree、audit root 指向 B 项目根 → 拒绝 |
 | 「索引路径及责任唯一」（FR-08） | 解析顺序：目标项目根 `dir-graph.yaml#knowledge-docs.subdirs.<kind>.path|index`（存在时）→ 调用方合同固定默认路径；任一时刻只维护解析出的单一索引 | 项目根未声明 `knowledge-docs` 时不得因此新建第二份索引；同一目录下 `_index.yml` 与 `_index.yaml` 同时存在 → `BUSINESS_WRITE_SCOPE_DENIED` |
-| 「已完成重放」（FR-12） | 内容判定：当前关联文件与本次确定性候选的业务投影一致，且该内容所属的本地隔离提交可解析；`finishLedgerTransaction` 完成后 journal 目录被删除（`dep-5`），因此**不得**以「存在 complete journal」作为重放依据 | 首次成功后同 payload 重跑 → `changed=false` 且 `commit` 与首次一致；内容一致但提交不可解析 → `TX_RECOVERY_CONFLICT`（不返回成功） |
+| 「已完成重放」（FR-12） | 内容判定 + 提交定位：当前关联产物与本次确定性候选的业务投影一致，且能由提交消息 `AI-First-Intent: <intentDigest>` 唯一定位到本意图的隔离提交，且该提交之后没有任何提交再改动这些路径（§4.5 第 3 步）；`finishLedgerTransaction` 完成后 journal 目录被删除（`dep-5`），因此**不得**以「存在 complete journal」作为重放依据 | 首次成功后同 payload 重跑 → `changed=false` 且 `commit` 与首次一致；内容一致但提交不可唯一解析、或该提交之后关联路径又被改动 → `TX_RECOVERY_CONFLICT`（不返回成功） |
+| 「已确认的正式 id/目标路径」（FR-10） | 规划 `id = {YYYY-MM-DD}-{slug}`、`doc_path`、`index_path` 均由**已确认 payload** 给出（`path` 必填并与推导路径比对）；日期取自 `id` 前缀，**不**取自本次执行时钟 | D 日确认、D+1 日首次执行或重放 → `id`/`path`/`artifacts` 与 D 日逐字一致；只有目标不存在时首次写入的审计时间字段取执行时钟 |
+| 「业务意图摘要」（FR-10～12） | `intentDigest` = 已确认业务字段（含身份、推导路径、正文、冲突策略）canonical JSON 的 sha256，**不含**执行时钟时间字段与事务 id；同一摘要同时作为 journal 的 `inputDigest` 与完成提交的消息标记 | 同 payload 跨日执行/恢复/重放得到同一摘要；正文或策略变化 → 摘要变化 → 在途转 `TX_INPUT_CONFLICT`（零写入），已完成转 §4.5 第 4 步 |
+| 「同一意图原事务恢复」（FR-12） | 恢复**前**先核对 journal 的 `inputDigest` 与本意图摘要；不一致即 `TX_INPUT_CONFLICT` 且不改动旧现场；一致才调用既有恢复原语 | 同身份旧事务中断后，另一正文/策略的请求 → 非零、零业务写入、旧 journal 与已写文件保持原样 |
+| 「合法冲突决定」（FR-11） | 报告已存在时 `conflict_strategy` 必填；`overwrite` + `confirmed=true` 即合法覆盖，走正常写入并回 `changed=true`，不计入成功重放；`new-date` 指向已存在日期则不算新的合法决定 | 报告已存在、确认新正文并选覆盖 → 新提交 + `changed=true`；同身份同正文同策略再跑 → `changed=false` + 原提交 |
 | 「未声明维度」（FR-05） | `dir-graph` 未声明该类型的 `naming`/`locations`：WARN + `notChecked` 显式列出；声明存在但配置畸形 → FAIL（不用 WARN 豁免） | KB 当前未声明 `knowledge-docs`，`crctl validate change-requests/CR-2026-075/cr.md` 应 WARN「naming/locations 未检查」且仍 `valid: true` |
 
 ### 1.2 既有实现依赖与事实
 
 以下为本次在 resources HEAD 核验的事实，正文只按 `dep-N` 引用；相对路径以各自 repo 根为基准。编号按正文首次出现顺序分配、只增不改。核验覆盖「行为成立」，不以「文件或符号存在」代替。
+
+`dep-33`～`dep-34` 为 2026-10-02 回修（B-03/B-04）**追加**的编号（只增不改、不复用）：`dep-1`～`dep-32` 的路径、SHA 与核验结论不变，新行只补本轮新依赖的两个既有原语事实。
 
 | 标识 | repo | commit SHA | relative path | stable symbol/对象 | 依赖结论 |
 | --- | --- | --- | --- | --- | --- |
@@ -94,6 +100,8 @@ flowchart TB
 | dep-30 | multica | 56bdc70db62f4fe2473b238f0ed36b05712af3a9 | server/internal/daemon/types.go | Task.PipelinePrompt|PipelineCrID|PipelineWorkspace|PipelineLocalWorkDir|TriggerCommentContent|ProjectResources / ProjectResourceData | 设计所需输入均在 claim 载荷中可得：触发评论文本、项目资源、预检结果字段 |
 | dep-31 | multica | 56bdc70db62f4fe2473b238f0ed36b05712af3a9 | server/internal/daemon/cr_workspace_binding_test.go / pipeline_task_test.go | 既有绑定与预检用例 | 既有测试组织（同包、表驱动、无框架）可直接扩展 A 段向量；`TestInjectTaskCRWorkspaceEnvPipelineTask` 等断言需按成对写入语义同步 |
 | dep-32 | multica | 56bdc70db62f4fe2473b238f0ed36b05712af3a9 | server/go.mod | gopkg.in/yaml.v3 v3.0.1 | `execution_context` 的 YAML 解析可在 server 模块内用既有依赖完成，不新增第三方依赖 |
+| dep-33 | tools | 061a12ff0a40028b7aba979108c2977313e1fb11 | skills/shared/controlled-shell/rules.json | `git[sub=log].shapes` / `git[sub=rev-parse].shapes` / `forbiddenFlags` | 只读 Git 形态受限且本 CR 不改白名单（FR-15、DEC-5）：`log` 仅 `--oneline …`、`--format=%B -1`、`--reverse --format=<fmt> <rev>`；`rev-parse` 仅 `HEAD`、`--verify <rev>` 等；**没有**任意 blob 读取形态（`show <sha>:<path>` 只对评审 YAML 放行）。故完成提交的定位与核对只能用「提交消息匹配 + 路径范围遍历 + 短 SHA 规范化」，不能读历史 blob 内容 |
+| dep-34 | tools | 061a12ff0a40028b7aba979108c2977313e1fb11 | skills/shared/crctl/scripts/lib/durable-tx.mjs | `recoverLedgerTransaction({root,key,currentHead,headMessage})` 的 committed 判据 / `rollbackLedgerPayload` / `latestLedger` | committed 判定 = `payload.commitRequired && currentHead !== payload.headBefore && headMessage.includes('AI-First-Tx: <txId>')`，其中 `headMessage` 由**调用方**给出（既有私有 helper `recoverLedgerCommand` 只传当前 HEAD 的 `%B`），故「提交已落地但随后又有提交」会落进回滚分支；回滚按 before/after 双哈希判第三值，遇第三值抛 `TX_RECOVERY_CONFLICT` 且不改文件；同一 key 至多存在一个 journal（`beginLedgerTransaction` 见既有 journal 即 `TX_LEDGER_RECOVERY_REQUIRED`） |
 
 待核实依赖：无。历史 CR 的 SDD/测试只作为格式与组织参照，不作为本次功能已通过证据。
 
@@ -157,14 +165,15 @@ execution_context:
 | --- | --- | --- |
 | `schema` | string | 固定 `ai-first.planning-entry/v1` |
 | `confirmed` | bool | 必须 `true`；否则 `BUSINESS_CONFIRMATION_REQUIRED` 零写入 |
+| `id` | string | **必填**；正式规划 id = `{YYYY-MM-DD}-{slug}`。日期是确认时确定的身份，**不**与本次执行时钟比对（FR-10、B-01） |
+| `slug` | string | **必填**；`^[a-z0-9][a-z0-9-]*$`（`dep-14`），必须等于 `id` 的 `{slug}` 段 |
 | `source` | string | 上游草稿来源（`dep-16` 的 `source`） |
 | `title` | string | 非空 |
-| `slug` | string | `^[a-z0-9][a-z0-9-]*$`，`dep-14` 的 slug 口径；正式 id = `{YYYY-MM-DD}-{slug}` |
 | `target_version` | string | `MAJOR.MINOR[.PATCH]` 或 `unassigned`；经 `normalizeTargetVersion` 规范化后持久化（输入可带 v/V） |
 | `owner` | string | 非空；缺省 `product-owner` |
-| `body` | string | 已确认正文（不含 frontmatter） |
-| `path` | string | 可选；声明期望目标路径。与推导路径不一致 → `BUSINESS_WRITE_SCOPE_DENIED` |
-| `index_path` | string | 可选；同上，仅用于一致性核对 |
+| `body` | string | 已确认正文（不含 frontmatter）；读入后先做 `\r\n → \n` 规范化 |
+| `path` | string | **必填**；已确认的目标文档相对路径（POSIX 分隔符）。与 §2.4 推导路径不一致 → `BUSINESS_WRITE_SCOPE_DENIED`；是幂等作用域的一部分 |
+| `index_path` | string | 可选；声明期望索引路径，仅用于一致性核对（不参与 `intentDigest`，见 §4.5.1） |
 
 **竞品 `ai-first.competitive-report/v1`**
 
@@ -173,11 +182,12 @@ execution_context:
 | `schema` | string | 固定 `ai-first.competitive-report/v1` |
 | `confirmed` | bool | 必须 `true`；否则 `BUSINESS_CONFIRMATION_REQUIRED` 零写入 |
 | `competitor_id` | string | 必须已在竞品索引中登记（`dep-18` 的错误处理口径） |
-| `report_date` | string | `^\d{4}-\d{2}-\d{2}$`（北京时间日历） |
+| `report_date` | string | `^\d{4}-\d{2}-\d{2}$`；确认时确定的身份日期，**不**与本次执行时钟比对 |
 | `title` / `sources[]` / `body` | string / string[] / string | 报告正文与来源 |
 | `updates[]` | array | 每条 `{date,title,source,summary}`；`(date,title)` 为去重键 |
 | `conflict_strategy` | enum | `overwrite` \| `new-date`；报告文件已存在时必须显式给出（`dep-18` 的选择规则），缺失 → `BUSINESS_CONFIRMATION_REQUIRED` |
-| `path` / `index_path` | string | 可选；与推导路径不一致 → `BUSINESS_WRITE_SCOPE_DENIED` |
+| `path` | string | **必填**；已确认报告相对路径。与 §2.4 推导路径不一致 → `BUSINESS_WRITE_SCOPE_DENIED`；是幂等作用域的一部分 |
+| `index_path` | string | 可选；与推导路径不一致 → `BUSINESS_WRITE_SCOPE_DENIED`（不参与 `intentDigest`，见 §4.5.1） |
 
 **成功回执（stdout 单一 JSON，逐字满足 FR-12 表）**
 
@@ -194,6 +204,15 @@ execution_context:
 
 竞品同构：`identity = {kind:"competitive", competitorId, reportDate, path}`，`artifacts` 恰三项（报告、竞品主文件、reports 索引）。`phase` 的取值域在本 SDD 内只有 `complete`；失败一律不输出该对象（`dep-4`）。
 
+回执取值规则（FR-12）：`identity` 与 `artifacts` 一律取**已确认身份 + §2.4 推导路径**（不是执行时钟重算值、不是候选猜测值）；`commit` 在首次写入/合法覆盖成功时为本次隔离提交，在已完成同意图重放或第 2.c 步的 `committed` 恢复时为**该意图先前那次**提交。提交消息固定为：
+
+```text
+[cr] {planning-entry|competitive-report} {身份}
+
+AI-First-Tx: <txId>              # 既有恢复原语判据（dep-5、dep-34）
+AI-First-Intent: <intentDigest>  # §4.5 完成提交定位的唯一来源
+```
+
 ### 2.4 受影响文件与索引（路径权威）
 
 | 业务 | 目标文档 | 索引 | 路径权威 |
@@ -201,7 +220,7 @@ execution_context:
 | 规划 | `<docsRoot>/{YYYY-MM-DD}-{slug}.md` | `<docsRoot>/_index.yml` | `docsRoot` = `dir-graph.yaml#knowledge-docs.subdirs.product-planning.path`（存在时）→ 否则合同默认 `docs/product-planning` |
 | 竞品 | `<compRoot>/reports/{competitor-id}-{YYYY-MM-DD}.md` + `<compRoot>/{competitor-id}.md` | `<compRoot>/reports/_index.yml` | `compRoot` = `dir-graph.yaml#knowledge-docs.subdirs.competitive.path`（存在时）→ 否则合同默认 `docs/competitive` |
 
-规则：解析出的相对路径必须落在项目根内（真实路径包含检查，不用字符串前缀）；同一目录下同时存在 `_index.yml` 与 `_index.yaml` → `BUSINESS_WRITE_SCOPE_DENIED`（不双写、不改名）；索引不存在时由本次写入创建（规划/竞品的索引是该业务合同的一部分），但**不**为其他文档类型新建索引（`dep-16`/`dep-18` 之外的索引不在本 CR 范围）。
+规则：解析出的相对路径必须落在项目根内（真实路径包含检查，不用字符串前缀）；同一目录下同时存在 `_index.yml` 与 `_index.yaml` → `BUSINESS_WRITE_SCOPE_DENIED`（不双写、不改名）；索引不存在时由本次写入创建（规划/竞品的索引是该业务合同的一部分），但**不**为其他文档类型新建索引（`dep-16`/`dep-18` 之外的索引不在本 CR 范围）。本表推导出的 POSIX 相对路径就是回执 `identity.path`/`artifacts` 与 §4.5.1 `intentDigest` 的输入；payload 的 `path`/`index_path` 只用于与推导结果比对，不参与摘要。
 
 ### 2.5 CR 侧字段
 
@@ -220,6 +239,7 @@ crctl competitive-report --from <confirmed-payload.json> [--workspace <project-r
 - 两者在 `main()` 中按 `dep-3` 的特判先例派发：在 `requireExplicitWorkspace`（及 `bindTaskWorkspace`）之后、`detectWorkspace`/`loadGates` 之前，因此不要求项目根存在 `change-requests/`、不加载状态机与 gates。
 - 参数面收窄：只接受上表 flags；任何未登记旗标 → `BAD_ARGS`（沿用 `dep-4` 的旗标袋语义）。`--from` 缺失/不可读 → `BAD_ARGS`/`BUSINESS_INPUT_INVALID`。
 - 成功输出逐字为 §2.3 的回执；失败为 stderr 单一 `{error:{code,message,...}}` 且非零退出。两者都不注册 summary 投影（`dep-25` 的 `PROJECTED` 不含新命令），默认即完整字段。
+- 身份、路径、`intentDigest` 与事务 key 全部按 §2.3 与 §4.5 计算，不读 cwd、不读历史评论、不用 `input.now` 推身份；失败面新增两个既有原语码的使用点：`TX_INPUT_CONFLICT`（同 key 在途异意图，零写入）与 `TX_RECOVERY_CONFLICT`（第三值/完成提交不可解析）。
 
 ### 3.2 绑定归一（扩展现有入口）
 
@@ -248,7 +268,14 @@ crctl <任何非 help 子命令> [--workspace <path>]
 
 ### 3.4 校验通道（FR-05）
 
-`crctl validate <file> --workspace <ws>` 的失败/成功契约不变（`dep-11`），新增**维度报告**：
+`crctl validate <file> --workspace <ws>` 本轮**只新增一个「维度报告层」**：既有 artifact/schema 分支（`dep-11`：`cr.md`、`_backlog.yml`、评审 YAML 及同名 basename、`test-report.md`、`approval.yml`、`traceability.yml`）的判据、错误码与退出语义逐字不变，本次不改其中任何判断，也不扩大 `UNKNOWN_ARTIFACT` 纠正集合（AC-B5/B7）。新增层的落点、输入与判据：
+
+- **落点**：`cmdValidate` 分支派发之外的统一外壳（判定目标类型 → 读取声明 → 合并报告）；既有分支内部零改动。输出在既有 `file`/`valid`/`errors`/`warnings` 之外**新增** `dimensions` 键，既有键与退出码不变，调用方按新增键容错消费。
+- **声明输入**：目标项目根 `dir-graph.yaml#knowledge-docs.subdirs.<kind>.{naming,locations}`；`kind` 用既有分支的同一判定；`dir-graph.yaml` 不存在 → 视为未声明。
+- **未声明维度** → WARN + `dimensions.notChecked` 显式列出，不进 `errors`，`valid:true` 继续其他适用维度。
+- **声明存在且文件违反** → 与既有 violations 同一路径进 `errors`、`valid:false`、非零退出。
+- **声明存在但配置畸形**（`dir-graph.yaml` 不可解析、`knowledge-docs`/`subdirs`/字段类型错）→ FAIL，复用既有 `SCHEMA_INVALID` 码，不用 WARN 豁免。
+- **触发条件**改为「调用方步骤规定或用户显式请求」（删除 `dep-12` 的 blanket 承诺）。
 
 ```json
 { "file": "…", "valid": true,
@@ -256,10 +283,7 @@ crctl <任何非 help 子命令> [--workspace <path>]
   "warnings": ["naming：dir-graph 未声明该类型规则，本次未检查"] }
 ```
 
-- 声明存在且文件违反 → 仍进 `errors` 并 `valid:false` 非零退出（保留全部既有分支）。
-- 声明存在但配置畸形（无法解析、字段类型错）→ FAIL（`SCHEMA_INVALID` 类既有码），不用 WARN 豁免。
-- 声明缺失 → 新增 WARN + `notChecked`；`prd.md`/`sdd.md` 仍 `UNKNOWN_ARTIFACT`，不扩大纠正集合。
-- 触发条件改为「调用方步骤规定或用户显式请求」（`dep-12` 的 blanket 承诺删除）。
+当前基线（`dep-11` + KB 未声明 `knowledge-docs`）下实际可观测的是未声明 WARN 分支；`prd.md`/`sdd.md` 仍 `UNKNOWN_ARTIFACT`。声明违反与声明畸形两个分支必须同样落地（不由 WARN 替代），由 §5.2 的 validate 三态向量覆盖。
 
 ## 4. 关键算法与流程
 
@@ -328,14 +352,18 @@ bindTaskWorkspace(cmd, flags, env):
 cmdBusinessEntry(wsRoot, flags, kind):
   1 语法解析：--from 必填且可读；未登记旗标 → BAD_ARGS
   2 可信上下文：项目根 = realpath(--workspace 或绑定归一值)；必须在项目根内解析 dir-graph（存在时）
-  3 业务字段：payload 校验（schema/必填/枚举/日期/版本）→ BUSINESS_INPUT_INVALID
+  3 业务字段：payload 校验（schema/必填/枚举/日期/版本/已确认 id 与 path 形态）→ BUSINESS_INPUT_INVALID
   4 范围校验：推导文档路径与索引路径（2.4），与 payload 声明比对，真实路径包含检查 → BUSINESS_WRITE_SCOPE_DENIED
   5 确认与冲突策略：confirmed === true；报告已存在时 conflict_strategy 必填 → BUSINESS_CONFIRMATION_REQUIRED
-  6 幂等/恢复：recoverLedgerCommand(key) → 内容重放判定（4.5）→ BUSINESS_INTENT_CONFLICT / TX_RECOVERY_CONFLICT
-  7 事务与提交：beginLedgerTransaction(commitRequired=true) → controlledGit add(仅推导路径) → staged 集合恒等 → commit(AI-First-Tx trailer) → finishLedgerTransaction → auditLog → ok(回执)
+  6 意图摘要与幂等/恢复：intentDigest + businessTxKey（4.5.1/4.5.2）；在途事务**先核对** journal.inputDigest
+     （不一致 → TX_INPUT_CONFLICT，零写入、不动旧现场）→ 同意图才经 recoverBusinessLedgerCommand 收敛
+     → 已完成重放/冲突判定（4.5 第 3～4 步）→ BUSINESS_INTENT_CONFLICT / TX_RECOVERY_CONFLICT
+  7 事务与提交：beginLedgerTransaction({key, inputDigest: intentDigest, commitRequired: true}) → controlledGit add(仅推导路径)
+     → staged 集合恒等 → commit（AI-First-Tx + AI-First-Intent trailer）→ 提交后身份复核
+     → finishLedgerTransaction → auditLog → ok(回执)
 ```
 
-首失败即唯一结果；第 1～6 步全部零业务写入，第 7 步按 `dep-5` 的 write-set 恢复语义收敛，未收敛不返回 `phase=complete`、不输出成功回执（FR-12 / AC-B18）。
+首失败即唯一结果；第 1～5 步与第 6 步的意图核对零业务写入。第 6 步的恢复分支只可能作用于**同一已确认意图**（异意图已在摘要核对处 `TX_INPUT_CONFLICT` 失败），其回滚按既有 write-set 语义把本意图的未收敛写入还原为 before——这不是新业务写入，但**确实改动文件**，所以「1～6 全部零业务写入」的旧表述据此收窄；第三值一律 `TX_RECOVERY_CONFLICT`、不改文件。第 7 步未收敛不返回 `phase=complete`、不输出成功回执（FR-12 / AC-B18）。
 
 `tracked-clean` 前置与 `expectedHash` 取调用前 SHA 的 CAS 语义逐字沿用 `dep-10`：候选生成后并发修改 → `CAS_CONFLICT`，不覆盖第三值（AC-B17）。
 
@@ -345,35 +373,103 @@ cmdBusinessEntry(wsRoot, flags, kind):
 
 ```text
 buildPlanningEntry(input, current) -> { docText, indexText, identity, artifacts } | TxError
-  id        = `${beijingDate(input.now)}-${input.slug}`
-  docPath   = join(docsRoot, `${id}.md`)                 # docsRoot 由调用方解析后传入（2.4）
+  id        = input.id                                    # 已确认身份，不由执行时钟重算（B-01）
+  docPath   = join(docsRoot, `${id}.md`)                  # docsRoot 由调用方解析后传入（2.4）；必须等于 input.path
   frontmatter = DESIGN-DOC 字段集（dep-16）+ created/updated = beijingDate(now)
   body      = input.body（原文，不重排、不补写）
   indexText = 在现有 index 实体块中按 id 追加/更新条目（created-at = beijingIso(now)）
-  slug 冲突（同名不同内容）→ 不覆盖：由 Skill 用追加短 hash 的新 slug 重新确认（BUSINESS_INTENT_CONFLICT 返回）
+  created/updated/created-at 属自动审计时间：目标文档/索引已存在时从既有文件逐字继承（4.5.3），仅目标不存在时用执行时钟
+  同 id 不同已确认内容（slug 冲突）→ 不覆盖：由 Skill 按原 slug 冲突规则追加短 hash 形成**新身份**后重新确认（4.5 第 4.a 步）
 ```
 
-`lib/competitive-report.mjs`：生成报告文本（frontmatter 含 `addedAt` = `beijingIso(now)`，`reportDate` 纯日期）；对竞品主文件只重写 `updates[]` 条目集合，正文逐字保留；`(date,title)` 已存在则跳过（既不重复写也不因 source/summary 变化替换）；reports 索引按 `reportDate` 倒序重排并置 `status: new`。两份模块都不推进 CR 状态、不写审批、不读 `specs/`。
+`lib/competitive-report.mjs`：生成报告文本（frontmatter 含 `addedAt` = `beijingIso(now)`，`reportDate` 取已确认 `report_date`、不重算）；对竞品主文件只重写 `updates[]` 条目集合，正文逐字保留；`(date,title)` 已存在则跳过（既不重复写也不因 source/summary 变化替换）；reports 索引按 `reportDate` 倒序重排并置 `status: new`。报告/竞品主文件/索引已存在时，`addedAt`/`updated` 等自动审计时间从既有文件逐字继承（4.5.3），仅目标文件不存在时用执行时钟。两份模块都不推进 CR 状态、不写审批、不读 `specs/`。
 
 `yaml-subset.mjs`（`dep-9`）承担读写：块定位失败、字段缺失、跨行正则不匹配一律硬失败（工程纪律 #1），禁止静默降级。
 
 ### 4.5 B 段：幂等、重放与冲突（FR-10～12）
 
-幂等作用域 = 「可信项目根 + 正式业务身份」：规划为正式 id/目标路径，竞品为 `(competitor-id, report-date)`/已确认报告路径。比较对象 = 已确认业务字段 + 正文/索引业务内容，**排除**本次执行自动生成的时间字段（规划 `created`/`updated`/`created-at`；竞品 `addedAt`/`updated`）与事务标识；时间字段在重放时从既有文件原样继承，不重写。
+**幂等作用域** = 「可信项目根 + 正式业务身份」：规划为正式 `id`/目标文档路径；竞品为 `(competitor-id, report-date)`/已确认报告路径。以下四个小节依次定义摘要、key、时间字段与判定顺序；4.5.4 是唯一裁决。
 
-判定顺序（不得调换）：
+#### 4.5.1 业务意图摘要 `intentDigest`（SDD-CLOSE-03）
 
 ```text
-1 输入/范围/确认（4.3 的 1～5）—— 先于任何恢复与重放
-2 未完成同意图事务：recoverLedgerCommand(key)（dep-5/dep-10）
-3 已完成同意图重放：
-   a 由 payload 推导候选 → 与当前关联文件比较业务投影
-   b 若文件已等于候选（时间字段继承后）→ 解析隔离提交：gitRun("log","-1","--format=%H","--",<relPaths…>)
-       且该提交对每个 artifact 的 blob 逐字等于当前文件 → ok(phase=complete, changed=false, 同 identity/artifacts/commit)
-   c 文件等于候选但提交不可解析（无提交、blob 不符、或部分文件未纳入）→ TX_RECOVERY_CONFLICT（停止自动写入，请求裁决）
-   d 文件与候选不同 → 走 7 正常写入（changed=true）；同身份不同已确认内容 → BUSINESS_INTENT_CONFLICT
-4 超过上述范围（第三值、身份漂移、意图漂移）→ 原冲突码失败，不因曾完成而返回成功
+intentDigest(payload)：
+  1 文本字段先做 \r\n → \n 规范化（纪律 #1）；target_version 先过 normalizeTargetVersion
+  2 canonical JSON：对象键字典序、数组保序、无多余空白、UTF-8，键集固定为
+      规划：{v:1, kind:"planning", id, docPath, indexPath, title, source, targetVersion, owner, body}
+      竞品：{v:1, kind:"competitive", competitorId, reportDate, reportPath, mainPath, indexPath,
+             title, sources[], body, updates[]（payload 顺序）, conflictStrategy}
+    docPath/reportPath/mainPath/indexPath 取 §2.4 推导结果的 POSIX 相对路径
+  3 返回 sha256(canonicalJson) 的 64 位十六进制串
 ```
+
+`intentDigest` **不含**任何由执行时钟生成的时间字段（`created`/`updated`/`created-at`/`addedAt`），也**不含**事务 id/锁标识；可选声明字段 `index_path` 只用于比对，不参与摘要。故同一已确认 payload 在北京时间 D 日与 D+1 日执行、恢复或重放得到同一摘要——这是 B-01 的机器依据。
+
+#### 4.5.2 事务 key：安装根共享 journal 下的 workspace 隔离
+
+```text
+businessTxKey(kind, 项目根, 身份) = 'biz-' + kind + '-' + sha256('v1|' + realpath(项目根) + '|' + 身份串).slice(0,32)
+  身份串：规划 = id；竞品 = competitorId + '/' + reportDate
+  journal 目录：{deriveInstallRoot(项目根)}/.crctl/transactions/ledger/{key}    # dep-5/dep-7
+```
+
+- key 含 `realpath(项目根)`，故同一 installation root 下的不同项目根/不同 worktree 不共享现场；`rollbackLedgerPayload` 又按 journal 内的 `targetRoot` 写入，双重隔离。
+- key 只含身份、不含内容：**同一身份的不同意图共享同一 key**，这正是「异意图不得先恢复/改写旧现场」的判据来源（4.5.4 第 2 步）。
+- key 命中 `CR_OR_KEY_RE = ^[A-Za-z0-9._-]{1,128}$`（`dep-5`）；同一 key 至多一个 journal（`dep-34`）。
+
+#### 4.5.3 时间字段继承规则
+
+比较对象 = 已确认业务字段 + 正文/索引业务内容，**排除**执行时钟生成的时间字段与事务标识。目标文件（文档/报告/主文件/索引）**已存在**时，这些时间字段从既有文件逐字继承、不重写；仅目标不存在时用 §4.7 的 `beijingDate(now)`/`beijingIso(now)` 生成。继承后候选文本与现有文件在业务投影上可比，而不因跨日执行或重放产生差异。
+
+#### 4.5.4 判定顺序（不得调换）
+
+```text
+1 输入/范围/确认（4.3 的 1～5）+ 计算 intentDigest 与 key —— 零业务写入、零 Git 写入
+2 在途事务的意图核对（零写入，先于任何恢复）：
+   a loadExistingJournal({root: installRoot, op:'ledger', key})（dep-6，只读）
+   b 无 journal → 3
+   c 有 journal 且 journal.inputDigest === intentDigest → 同意图在途：
+       先按 3.b 定位完成提交；命中唯一完成提交 → 转 3.c（提交已落地，不再回滚）
+       未命中 → recoverBusinessLedgerCommand(wsRoot, key)（既有 recoverLedgerTransaction 原语）
+         committed → 转 3.c；rolledBack（现场回到 before）→ 转 5
+         第三值 → 既有 TX_RECOVERY_CONFLICT（原样抛出，不改文件）
+   d 有 journal 且 journal.inputDigest !== intentDigest（含缺该字段）→ TX_INPUT_CONFLICT
+       （零业务写入、不调用恢复、不改动旧 journal 与已写文件；旧证据保持原样待裁决）
+3 已完成同意图重放核对（零写入）：
+   a candidate = 转换模块对当前现场生成的候选投影（时间字段按 4.5.3 继承）
+   b 完成提交定位：git log --oneline --fixed-strings --grep='AI-First-Intent: <intentDigest>' -- <relPaths…>
+       （dep-33 允许的形态；命中 0 条 = 无完成事实；>1 条 = TX_RECOVERY_CONFLICT，不做选择）
+       唯一命中的短 SHA 经 git rev-parse --verify 规范化为 40 位 = 原业务意图提交 C
+   c C 存在时：git log --oneline --full-history C..HEAD -- <relPaths…> 必须为空
+       （空 = C 之后无任何提交改动关联产物，故当前关联产物逐字等于 C 的完成投影）
+       非空 → 关联产物在 C 之后被再次改动（第三值）→ TX_RECOVERY_CONFLICT
+       空 且 candidate === 当前关联文件（业务投影逐字，时间字段继承后）→
+         ok(phase=complete, changed=false, identity/artifacts 同该意图先前回执, commit=C)
+       空 但 candidate ≠ 当前文件 → TX_RECOVERY_CONFLICT（不返回成功）
+   d C 不存在时：candidate === 当前文件 → 内容与候选一致但无本意图隔离提交（无提交/已回滚/他人写入）
+       → TX_RECOVERY_CONFLICT；candidate ≠ 当前文件 → 4
+4 同身份不同已确认内容（candidate ≠ 当前文件且 C 不存在）——合法冲突决定判定（零写入）：
+   a 规划：无覆盖策略 → BUSINESS_INTENT_CONFLICT（Skill 按原 slug 冲突规则追加短 hash 形成新身份后重新确认）
+   b 竞品且 conflict_strategy=overwrite 且 confirmed=true → 合法覆盖：以当前报告文件为 before → 转 5（changed=true）
+   c 竞品且 conflict_strategy=new-date 但目标日期的报告文件已存在 → 「新日期」不新，无新的合法决定 → BUSINESS_INTENT_CONFLICT
+   d 竞品且报告已存在但缺 conflict_strategy → BUSINESS_CONFIRMATION_REQUIRED（4.3 第 5 步已拦）
+   e 其余（身份漂移、第三值、无法归类的差异）→ 原冲突码失败，不返回成功
+5 首次写入/合法覆盖：beginLedgerTransaction({root: installRoot, targetRoot: 项目根, key,
+     inputDigest: intentDigest, writes, headBefore: gitHeadSha(项目根), commitRequired: true})
+   → controlledGit add（仅推导路径）→ staged 集合恒等 → commit（消息 = §2.3 的三行形态）
+   → 提交后复核：重跑 3.b，要求恰好一条命中且其 40 位等于 `git rev-parse HEAD`（否则 TX_RECOVERY_CONFLICT）
+   → finishLedgerTransaction → auditLog → ok(changed=true, commit=HEAD)
+```
+
+判定要点：
+
+- **合法覆盖不是成功重放**：4.b 走第 5 步并返回 `changed=true` 与新提交；只有 3.c 返回 `changed=false` 与**原**提交；两者不互相代替（B-02）。
+- **在途异意图不得先恢复**：2.d 在调用任何恢复原语之前以 `inputDigest` 不一致硬失败，故 2.c 的恢复只可能是同意图现场，FR-10～12 的「仅同意图恢复 / TX_INPUT_CONFLICT 零重写」由此闭合（B-03）。
+- **完成提交的唯一来源**：不是「最后一个碰过这些路径的提交」，而是提交消息中带本意图摘要的唯一提交；配合 3.c 的 `C..HEAD` 路径范围为空，才能在**不读历史 blob**（`dep-33` 无该形态）的前提下证明「当前产物就是该提交的完成结果」（`dep-34`）——另一意图（如规划 B 更新共享 `_index.yml`）产生的提交不会被子意图 A 的重放误认为完成（B-04）。
+- **恢复回执（AC-B18）**：`committed`（含 2.c 的预定位命中）与 3.c 一样返回 `changed=false` + 原提交；`rolledBack` 后必须重走第 5 步写入与提交才返回 `phase=complete` 且 `changed=true`；未收敛、第三值、`TX_LOCK_HELD`、`CAS_CONFLICT` 一律非零且 stdout 无成功回执。
+- **提交已落地但随后另有提交时的恢复（dep-34）**：3.b 的命中先于恢复判定，命中即不再回滚；未命中时 `recoverBusinessLedgerCommand` 用 `headBefore..HEAD` 范围消息（而非仅 HEAD）作为 `headMessage`，使「本事务提交已落地、只是 finish 前中断」不被误判为回滚（新提交仍带 `AI-First-Tx` trailer，判据不变）。
+- **无跨仓/跨远端承诺**：commit 只在本 worktree 本地生成与核实（FR-12）。
+- **冲突时保持现场**：2.d/3.c/3.d 与 `TX_RECOVERY_CONFLICT` 一律零业务写入，既有的 journal、已写文件与 HEAD 都不删不改，交由原异常入口裁决；不自行补账、不换身份、不重映射为成功（FR-12）。
 
 ### 4.6 B 段：合同与提示对齐（FR-05～08、13～14）
 
@@ -390,6 +486,7 @@ buildPlanningEntry(input, current) -> { docText, indexText, identity, artifacts 
 
 - 工程文档侧（`dep-15`）：`today()` 改为 `today(now = new Date())` 走同一规则，`isoDate` pattern 不动（`dep-14`）；`base.ts` 与 `index-sync.ts` 的消费点随之修正。
 - 业务 timestamp 侧：crctl lib 生成 `addedAt`/`created-at`；竞品 `reportDate` 仍是纯日期；CR/角色/审计的既有完整 timestamp 不动。
+- 身份日期与执行时钟分离：正式 id 的 `{YYYY-MM-DD}` 与竞品 `report_date` 来自已确认 payload（§2.3），**不**由 `beijingDate(now)` 重算；`beijingDate(now)`/`beijingIso(now)` 只用于目标文件不存在时首次写入的自动审计时间，目标已存在时逐字继承（§4.5.3）。
 - 不批量重写存量文档，不调整前端 UTC 显示行为。
 
 ### 4.8 部署与回退（FR-15）
@@ -413,6 +510,8 @@ FR-14 的提示收敛只在 A 段以下全部为真后执行：①A1～A8 向量
 | YAML 解析用 multica 既有 `gopkg.in/yaml.v3`（`dep-32`）+ `yaml.Node` | 需要检测重复键；不增新依赖 | 手写正则解析（无法可靠识别重复键/多块） |
 | 北京时间 = UTC+8 固定偏移 | 与 `Asia/Shanghai` 在 1991 年后等价；无需 TZ 数据库、无需宿主时区（FR-07 要求不依赖宿主） | 依赖宿主 `Intl` 时区（宿主缺 tzdata 时静默降级）、依赖 `TZ` 环境变量 |
 | 重放判定走内容 + Git 提交可解析 | `finishLedgerTransaction` 删除 journal，complete 事实不可持久查询（`dep-5`）；内容比较不引入注册式幂等键 | 新增持久化完成记录（FR-12 明文禁止注册式幂等键与持久化 attempt 账本） |
+| 完成提交定位 = 提交消息 `AI-First-Intent: <intentDigest>` + `git log --grep` + `<C>..HEAD` 路径范围 | 摘要由已确认业务字段确定性派生，不是调用方注册的幂等键；定位与核对全部落在 `dep-33` 的既有白名单形态内，不读历史 blob、不改 `rules.json` | ①`git log -1 -- <paths>` 取最后碰过路径的提交（另一意图更新共享索引时会误认完成，B-04）；②读历史 blob 比对（`dep-33` 无该形态，需改白名单，FR-15 禁止）；③新增持久化完成台账 |
+| 在途事务意图核对 = `loadExistingJournal` 的 `inputDigest` + 由身份派生的 `businessTxKey` | 同一身份的不同意图共享 key 但摘要不同，故可在**恢复之前**零写入地拒绝异意图；只消费既有原语入参，不改 `durable-tx.mjs` | ①不加核对直接 `recoverLedgerCommand`（先回滚/改动旧现场先，B-03）；②把身份拆成不同 key 使异意图各自建现场（同身份并行写入，破坏幂等作用域） |
 
 ### 5.2 验证落点与可达性
 
@@ -425,16 +524,21 @@ FR-14 的提示收敛只在 A 段以下全部为真后执行：①A1～A8 向量
 | B8 | tools `engineering-docs/scripts`（vitest，跨宿主时区向量）+ crctl 侧同日向量 | 北京时间跨日边界两侧渲染匹配 `isoDate`；业务 timestamp 保持 |
 | B9～B13、B16 | tools `crctl.test.mjs` + 新增 `planning-entry.test.mjs` / `competitive-report.test.mjs`（同目录、`node --test`） | 已确认落盘、未确认零写入、越界拒绝、索引唯一、CR-ID 补全、版本口径、审批前提 |
 | B14 | 部署副本与实际 imported Skills 的版本比对（命令 + 结果入 `test-evidence/`） | 生效版本与仓库一致 |
-| B15、B17～B18 | `crctl.test.mjs` 业务入口用例 + `fault-harness.test.mjs`/`durable-tx.test.mjs` 既有故障注入 | 首次成功回执字段齐全；重放 `changed=false` 同提交；CAS 冲突不覆盖；中断按原事务恢复 |
+| B15、B17～B18 | `crctl.test.mjs` 业务入口用例 + 新增 `planning-entry.test.mjs`/`competitive-report.test.mjs` + `fault-harness.test.mjs`/`durable-tx.test.mjs` 既有故障注入 | 首次成功回执字段齐全；重放 `changed=false` 同提交；CAS 冲突不覆盖；中断按同意图原事务恢复 |
+| B15-a（B-01 跨日身份） | `planning-entry.test.mjs`（注入固定执行时钟，同一 payload 在 D/D+1/D+2 三个日历日各跑一次） | 三次 `identity.id/docPath/artifacts` 与 `intentDigest` 逐字相同；D+1 首次落盘后 D+2 重放 `changed=false` 且 `commit` 等于 D+1 的提交 |
+| B15-b（B-02 合法覆盖） | `competitive-report.test.mjs`（报告已存在 + 新正文 + `conflict_strategy=overwrite` + `confirmed=true`） | exit=0、`changed=true`、新提交；同 payload 再调 → `changed=false`、同一提交；缺 `conflict_strategy` → `BUSINESS_CONFIRMATION_REQUIRED` 零写入；`new-date` 指向已存在日期 → `BUSINESS_INTENT_CONFLICT` 零写入 |
+| B17-a（B-03 异意图在途） | `durable-tx.test.mjs` 故障注入（同 key 事务中断在 written 之后、commit 之前）+ 另一正文/策略的请求 | 第二个请求 `TX_INPUT_CONFLICT` 非零、零业务写入，旧 journal 与已写文件保持原样；随后同意图请求按原事务收敛（`rolledBack` → 补成 `changed=true`） |
+| B18-a（B-04 完成提交定位与第三值） | `planning-entry.test.mjs`/`competitive-report.test.mjs`（规划 A 完成 → 规划 B 完成并更新共享 `_index.yml` → 重放 A；另测「A 提交后另有提交时恢复」） | 重放 A 不得返回 B 的提交：按 §4.5 第 3.c/3.d 步归入 `TX_RECOVERY_CONFLICT`；A 的完成提交仍由 `AI-First-Intent` 唯一命中；提交已落地但随后另有提交时恢复返回 `committed` 而非回滚 |
+| B-05（validate 范围） | `crctl.test.mjs` validate 分支（未声明 / 已声明违反 / 已声明畸形三态） | 未声明 → WARN + `notChecked` 且 `valid:true`；违反 → `errors` + 非零；畸形 → `SCHEMA_INVALID` 非零；既有分支与 `UNKNOWN_ARTIFACT` 结果不变 |
 | B19、B20 | tools `check-skill-matrix.test.mjs`、`check-agents-contract.test.mjs`、`contract-scan.test.mjs`、`lint-prompts.test.mjs` | 合同一致性；矩阵只声明 Skill 级关系 |
 
-新增测试文件必须登记进 `gate-registry.json#manifest`（`dep-26`），全量门禁以 `node suite-gate.mjs --run` 执行为准；tools 测试一律先规范化行尾（`\r\n → \n`），跨行匹配失败硬失败（工程纪律 #1）。Windows 动态路径用例必须在 Windows 运行（AC-A8）。
+新增测试文件必须登记进 `gate-registry.json#manifest`（`dep-26`），全量门禁以 `node suite-gate.mjs --run` 执行为准；tools 测试一律先规范化行尾（`\r\n → \n`），跨行匹配失败硬失败（工程纪律 #1）。Windows 动态路径用例必须在 Windows 运行（AC-A8）。新增用例不得绕过 `controlledGit` 直接 `spawnSync('git', …)` 取证：完成提交核查只能用 `dep-33` 的形态（含测试内的对方提交注入）。
 
 ### 5.3 回滚与风险
 
 - 回滚面分层：绑定（`injectTaskCRWorkspaceEnv` + `bindTaskWorkspace`）可独立回退到显式根模式，业务入口可独立停用（Skill 回到原步骤，草稿保留）。
 - 风险：普通任务获得「默认 workspace = 自身项目根」（DEC-2）改变了缺失参数的观察行为；缓解 = 该行为只在存在可信绑定时生效，`--workspace` 显式异根仍拒绝，且 A 段测试逐条覆盖三种模式。
-- 风险：`finishLedgerTransaction` 删除 journal 使重放依赖 Git 可解析性；缓解 = 提交由本操作独占生成且路径固定，判定失败时失败关闭（不返回成功），不引入持久完成记录。
+- 风险：`finishLedgerTransaction` 删除 journal 使重放依赖 Git 可解析性；缓解 = 提交由本操作独占生成、路径固定且提交消息带 `AI-First-Intent` 摘要，定位/核对失败时失败关闭（不返回成功），不引入持久完成记录。
 
 ## 6. FR 与 AC 逐项映射
 
@@ -486,16 +590,16 @@ B 段：
 | AC-B6 | §3.4 | 未声明维度 WARN 且明确未检查；必需配置无效/违反规则仍失败 | WARN 只出现在声明缺失分支；畸形声明走 FAIL |
 | AC-B7 | §3.4 | 既有评审 YAML 分支有效；`prd.md`/`sdd.md` 仍 `UNKNOWN_ARTIFACT` | 既有分支未改；错误码未扩 |
 | AC-B8 | §4.7 | common 日期跨日边界正确、宿主时区无关；业务 timestamp 保留 | 两处实现同规则 + 同向量集 |
-| AC-B9 | §4.4、§4.6 | 已确认规划/竞品按各自字段/id/章节落盘，不调用未支持通用类型；未确认零写入 | `confirmed !== true` 在事务前返回 |
+| AC-B9 | §2.3、§4.4、§4.6 | 已确认规划/竞品按各自字段/id/章节落盘，不调用未支持通用类型；未确认零写入 | `confirmed !== true` 在事务前返回；`identity`/`path` 取已确认 payload 与推导路径，不取执行时钟重算值 |
 | AC-B10 | §2.4 | 只维护解析出的单一索引；无合同不新建；无双索引、不全仓改名 | 索引路径解析唯一，双索引存在即拒绝 |
 | AC-B11 | §4.6 | 12 处调用含 CR-ID，真实调用不在缺位置参数处 `BAD_ARGS` | 逐处文本修订 + 既有扫描测试兜底 |
 | AC-B12 | §2.3、§4.6 | `0.16.0`/v 前缀输入规范化至无前缀值；边界维持 | `normalizeTargetVersion` 行为不改，只改文档表述 |
 | AC-B13 | §4.6 | grant/TTY 与写入前提与实现一致；除定点业务登记外不放宽授权 | 审批/验签/白名单零改动 |
 | AC-B14 | §4.8 | 仓库、部署副本、实际 imported Skills 与 Agent instructions 生效版本一致 | 部署步骤带生效版本比对证据 |
-| AC-B15 | §2.3、§4.5 | 首次与重放回执字段、提交与身份一致；不重复登记 | 重放判定在事务前完成 |
+| AC-B15 | §2.3、§4.5 | 首次与重放回执字段、提交与身份一致；不重复登记；合法覆盖与重放分支互不代替 | 重放判定在事务前完成；完成提交由 `AI-First-Intent` 唯一定位，且 `C..HEAD` 对关联路径为空（§4.5 第 3 步） |
 | AC-B16 | §4.3 第 4 步 | 越界/任意文件清单/超范围输入在业务写入前拒绝 | 路径由推导产生，payload 声明只用于比对 |
-| AC-B17 | §4.3 第 7 步、§4.5 | 候选生成后并发变化 → 既有 CAS/冲突结果，不覆盖、不由 Skill 补账 | `expectedHash` 取调用前 SHA |
-| AC-B18 | §4.3、§4.5 | 中断非零退出、stderr 有既有错误/合法恢复、stdout 无成功回执；收敛后才 `phase=complete` | write-set + `AI-First-Tx` trailer 恢复语义原样复用 |
+| AC-B17 | §4.3 第 7 步、§4.5 | 候选生成后并发变化 → 既有 CAS/冲突结果，不覆盖、不由 Skill 补账 | `expectedHash` 取调用前 SHA；在途异意图 `TX_INPUT_CONFLICT` 零写入且不动旧现场，恢复遇第三值 `TX_RECOVERY_CONFLICT` |
+| AC-B18 | §4.3、§4.5 | 中断非零退出、stderr 有既有错误/合法恢复、stdout 无成功回执；收敛后才 `phase=complete` | write-set + `AI-First-Tx` trailer 恢复语义原样复用；恢复**前**核对 `journal.inputDigest`，恢复后按 `committed`/`rolledBack` 分叉决定 `changed` 与 `commit` |
 | AC-B19 | §2.4、§4.4 | 需索引但无获准入口 → 中止完整执行，只留参考模板/草稿 | 索引不可解析/不可写即失败，不跳过后报完成 |
 | AC-B20 | §4.6 | 两角色矩阵/Agent/Skill/必要索引一致，只声明各自操作 | 只登记 Skill 级关系，不宣称子命令级授权 |
 
@@ -505,16 +609,16 @@ B 段：
 | --- | --- | --- |
 | SDD-CLOSE-01 | §1.3「模块名称、命令名称…由 SDD 确定」 | 命令名 `crctl planning-entry` / `crctl competitive-report`（DEC-3）；调用形态见 §3.1 |
 | SDD-CLOSE-02 | §1.3、§7 任务 B「版本化转换模块落点由 SDD 确定」 | `skills/shared/crctl/scripts/lib/planning-entry.mjs`、`.../competitive-report.mjs`（DEC-4）；纯函数、零依赖、复用 `yaml-subset.mjs` |
-| SDD-CLOSE-03 | FR-10「序列化算法由 SDD 定义」、FR-12「序列化算法归 SDD」 | 幂等比较对象（业务投影，排除自动时间字段）与 `inputDigest` 构造见 §4.5；候选文本用行级编辑生成，不改既有文件字段序 |
-| SDD-CLOSE-04 | FR-12「事务实现方案由 SDD 确定」 | 复用 `beginLedgerTransaction`/`finishLedgerTransaction`/`recoverLedgerCommand` + `controlledGit` + `AI-First-Tx` trailer（§4.3、DEC-5） |
-| SDD-CLOSE-05 | FR-12「完整错误枚举、校验实现…归 SDD」 | 错误与优先级见 §4.3 与下表；优先级不改变 PRD 表列语义 |
-| SDD-CLOSE-06 | FR-05「校验被描述为自动触发」 | 触发条件与维度报告实现见 §3.4；WARN/FAIL 判据见 §1.1 与 §3.4 |
+| SDD-CLOSE-03 | FR-10「序列化算法由 SDD 定义」、FR-12「序列化算法归 SDD」 | 幂等比较对象（业务投影，排除执行时钟时间字段，§4.5.3）、`intentDigest` 的 canonical 字段集与序列化/摘要算法（§4.5.1）、身份→事务 key 的确定映射（§4.5.2）、完成提交定位与第三值分支（§4.5.4 第 3 步）全部给出；候选文本用行级编辑生成，不改既有文件字段序 |
+| SDD-CLOSE-04 | FR-12「事务实现方案由 SDD 确定」 | 复用 `beginLedgerTransaction`/`finishLedgerTransaction`/`recoverLedgerTransaction` + `controlledGit` + `AI-First-Tx` trailer（§4.3、DEC-5）；**恢复前**经 `loadExistingJournal` 核对 `journal.inputDigest`（异意图 `TX_INPUT_CONFLICT`、零写入），恢复调用的 `headMessage` 由 `headBefore..HEAD` 范围消息提供，`durable-tx.mjs` 不改 |
+| SDD-CLOSE-05 | FR-12「完整错误枚举、校验实现…归 SDD」 | 错误与优先级见 §4.3 与下表；阶段序不改变 PRD 表列的固定码语义 |
+| SDD-CLOSE-06 | FR-05「校验被描述为自动触发」 | 触发条件与维度报告实现见 §3.4（新增维度层 + 既有分支零改动，B-05）；WARN/FAIL 判据见 §1.1 与 §3.4 |
 | SDD-CLOSE-07 | FR-08「索引路径及责任唯一」 | 解析顺序与双索引拒绝见 §2.4；本 CR 不为任何项目新增 `knowledge-docs` 声明（缺口记入 follow_up） |
 | SDD-CLOSE-08 | FR-01/02「多仓路径 authority」 | CR 根（ledger/audit）与 operational workspace（业务写入）由同一绑定对给出，install root 一致性校验见 §2.1/§4.2；业务写入路径取 `resources[].worktreePath` 或 operational workspace，不拼接 |
 | SDD-CLOSE-09 | §5.1 证据组织「具体新增测试位置及可执行计划由开发期 SDD/PLAN/TASK 确认」 | 新增 `test/planning-entry.test.mjs`、`test/competitive-report.test.mjs`，扩展 `crctl.test.mjs`、`durable-tx.test.mjs`、`caller-contract.test.mjs`、`pipeline-structure.test.mjs`，登记 `gate-registry.json`；执行口径 `node suite-gate.mjs --run`（§5.2） |
 | SDD-CLOSE-10 | FR-15「核对实际生效版本」 | 生效版本核对的最小证据 = 部署副本与仓库文件的逐字节比对结果 + 实际 imported Skills 的取用路径列表，落 `test-evidence/`（§4.8） |
 
-错误枚举与优先级（两个业务入口，`SDD-CLOSE-05`）：`BAD_ARGS`（解析/缺 `--from`）→ `WORKSPACE_REQUIRED`/`WORKSPACE_CONTEXT_MISMATCH`（入口）→ `BUSINESS_INPUT_INVALID` → `BUSINESS_WRITE_SCOPE_DENIED` → `BUSINESS_CONFIRMATION_REQUIRED` → `BUSINESS_INTENT_CONFLICT` → `TX_INPUT_CONFLICT`/`REGISTRATION_INPUT_MISMATCH`（仅引用注册边界）→ `TX_LOCK_HELD`/`CAS_CONFLICT` → `TX_RECOVERY_CONFLICT`（含 §4.5 的「内容一致但提交不可解析」）→ `TX_GIT_FAILED`/写入中断。全部非零、零业务写入或按既有结构化恢复收敛；stdout 不出现成功回执。
+错误枚举与优先级（两个业务入口，`SDD-CLOSE-05`）：`BAD_ARGS`（解析/缺 `--from`）→ `WORKSPACE_REQUIRED`/`WORKSPACE_CONTEXT_MISMATCH`（入口）→ `BUSINESS_INPUT_INVALID` → `BUSINESS_WRITE_SCOPE_DENIED` → `BUSINESS_CONFIRMATION_REQUIRED`（4.3 第 5 步）→ 幂等/恢复阶段（4.5.4 第 2～4 步，顺序按 FR-10/FR-11 明文「先未完成同意图事务恢复、再已完成重放、再身份漂移冲突」）：`TX_INPUT_CONFLICT`（2.d，在途异意图，在调用恢复前判定）→ `BUSINESS_INTENT_CONFLICT`（4.a/4.c）→ `TX_RECOVERY_CONFLICT`（2.c/3.c/3.d）→ `REGISTRATION_INPUT_MISMATCH`（仅引用注册边界）→ `TX_LOCK_HELD`/`CAS_CONFLICT` → `TX_GIT_FAILED`/写入中断。同一阶段内取首失败；PRD 表列四类固定码的语义不变。全部非零、零业务写入或按既有结构化恢复收敛；stdout 不出现成功回执。
 
 ## 7. 安全与性能考量
 
@@ -523,7 +627,7 @@ B 段：
 - **审计**：`CRCTL_TASK_AUDIT_ROOT` 保持 gitguard 拒绝事件的唯一落点（`dep-29`）；两个业务入口的写入走 `auditLog` + `AI-First-Tx` trailer；`.crctl` 自忽略。
 - **不宣称机器级强保证**：矩阵与提示词只声明 Skill 级调用关系；`docs/` 下的规划/竞品索引不在 `protectedPaths` 内（`dep-21`），本 CR 不新增 guard 覆盖面，也不把提示词约定说成机器约束（记入 follow_up）。
 - **性能**：绑定复用一次只读预检（`workspace inspect`），不在每条命令重复根探索；无轮询、无重试服务、无持久化 attempt 账本；业务写入固定 ≤3 个文件，行级改写避免全量重排。
-- **并发与恢复**：`acquireLock` 串行化同 key 事务；`CAS_CONFLICT`/`TX_RECOVERY_CONFLICT` 一律不覆盖第三值；多文件可恢复但不承诺瞬时可见或全局原子。
+- **并发与恢复**：`acquireLock` 串行化同 key 事务；在途异意图由 `inputDigest` 核对在恢复之前拒绝（`TX_INPUT_CONFLICT`，零写入）；`CAS_CONFLICT`/`TX_RECOVERY_CONFLICT` 一律不覆盖第三值；多文件可恢复但不承诺瞬时可见或全局原子。
 - **不泄露凭据**：回执只含业务身份、路径、提交 SHA；不输出环境变量值、不输出 token。
 
 ## 8. Prompt 采纳影响与文档同步
@@ -547,7 +651,7 @@ B 段：
 
 **scope_in**
 
-- tools：`skills/shared/crctl/scripts/crctl.mjs`（私有 `bindTaskWorkspace`、两个业务入口的命令面与事务接线、`validate` 维度报告）；新增 `skills/shared/crctl/scripts/lib/planning-entry.mjs`、`lib/competitive-report.mjs`；`skills/shared/engineering-docs/scripts/src/utils/slug.ts` 与其两处消费点（`generators/base.ts`、`validators/index-sync.ts`）；测试 `crctl.test.mjs`、新增 `planning-entry.test.mjs`、`competitive-report.test.mjs`、`caller-contract.test.mjs`、`pipeline-structure.test.mjs`、`durable-tx.test.mjs`、`gate-registry.json`；合同与提示：`skills/shared/{crctl,validate-doc,engineering-docs}/SKILL.md`、`skills/planning/{planning-draft,write-planning-entry}/SKILL.md`、`skills/competitive/write-competitive-report/SKILL.md`、`skills/cr/cr-review-record/SKILL.md`、`skills/develop/{review-code,review-dev-plan,review-tech-design,write-dev-tasks,write-tech-design}/SKILL.md`、`skills/requirement/{review-requirement,requirement-register}/SKILL.md`、`agents/{product-planning-agent,competitive-analyst-agent}.md`、`agent-skill-matrix.yml`、`agents/_index.yml`、`pipeline-templates/{architecture-design,code-implementation}.pipeline.json`、`AGENTS.md`、`README.md`、`ARCHITECTURE.md`。
+- tools：`skills/shared/crctl/scripts/crctl.mjs`（新增私有 `bindTaskWorkspace`、`intentDigest`、`businessTxKey`、`recoverBusinessLedgerCommand` 与两个业务入口的命令面、事务接线、提交定型；`cmdValidate` 的新增维度层）；新增 `skills/shared/crctl/scripts/lib/planning-entry.mjs`、`lib/competitive-report.mjs`；`skills/shared/engineering-docs/scripts/src/utils/slug.ts` 与其两处消费点（`generators/base.ts`、`validators/index-sync.ts`）；测试 `crctl.test.mjs`、新增 `planning-entry.test.mjs`、`competitive-report.test.mjs`、`caller-contract.test.mjs`、`pipeline-structure.test.mjs`、`durable-tx.test.mjs`、`gate-registry.json`；合同与提示：`skills/shared/{crctl,validate-doc,engineering-docs}/SKILL.md`、`skills/planning/{planning-draft,write-planning-entry}/SKILL.md`、`skills/competitive/write-competitive-report/SKILL.md`、`skills/cr/cr-review-record/SKILL.md`、`skills/develop/{review-code,review-dev-plan,review-tech-design,write-dev-tasks,write-tech-design}/SKILL.md`、`skills/requirement/{review-requirement,requirement-register}/SKILL.md`、`agents/{product-planning-agent,competitive-analyst-agent}.md`、`agent-skill-matrix.yml`、`agents/_index.yml`、`pipeline-templates/{architecture-design,code-implementation}.pipeline.json`、`AGENTS.md`、`README.md`、`ARCHITECTURE.md`。
 - multica：`server/internal/daemon/pipeline_task.go`、`server/internal/daemon/daemon.go`、同包测试 `pipeline_task_test.go`、`cr_workspace_binding_test.go`；`cr-prompts-revised/{requirement-writer,dev-agent,quality-reviewer-agent,cr-coordinator-agent}.md`、`cr-prompts-revised/delegation-contract.md` 及其维护的部署副本与 delegation-contract 测试。
 - ai-first-platform-docs：本 CR 的 `change-requests/CR-2026-075/*`（含 `test-evidence/`）。
 
@@ -558,9 +662,10 @@ B 段：
 
 **zero_diff**
 
-- `crctl.mjs` 既有子命令的处理算法、状态机转换、gates 判据、审批 TTY/验签分支、`detectWorkspace`/`resolveToolsRoot` 语义：零改动（本次只新增入口前置归一与两个新命令分支）。
+- `crctl.mjs` 既有子命令的处理算法、状态机转换、gates 判据、审批 TTY/验签分支、`detectWorkspace`/`resolveToolsRoot` 语义：零改动。本次在 `crctl.mjs` 内的改动面**仅三类**（逐项列出以消除范围歧义）：①`main()` 入口的前置归一 `bindTaskWorkspace`（新增私有函数 + 一处调用点）；②两个新子命令分支及其私有 helper（`cmdBusinessEntry`、`intentDigest`、`businessTxKey`、`recoverBusinessLedgerCommand`，全部新增、不被既有命令调用）；③`cmdValidate` 的**新增维度层**（§3.4：声明读取 + `dimensions` 报告 + 畸形声明 FAIL），既有 artifact/schema 分支的判断逐字不改。
 - `normalizeTargetVersion` 及其持久化格式：零改动（只改文档示例口径）。
-- `dep-11` 既有 validate 分支的判据与错误码：零改动（只新增维度报告与 WARN）。
+- `dep-11` 既有 validate artifact/schema 分支（`cr.md`、`_backlog.yml`、评审 YAML 及同名 basename、`test-report.md`、`approval.yml`、`traceability.yml` 与 `UNKNOWN_ARTIFACT` 归属）：判据、错误码与退出语义零改动。本轮**确实修改** `cmdValidate`，但只新增维度层（读 `dir-graph.yaml#knowledge-docs` 声明、输出 `dimensions`、未声明 WARN、声明畸形复用 `SCHEMA_INVALID` FAIL）；因此本节只声称「既有分支零改动」，不再声称「validate 算法零改动」（B-05）。
+- `skills/shared/controlled-shell/rules.json`（git 白名单与 `forbiddenFlags`）与 `durable-tx.mjs`：零改动；完成提交定位与恢复前意图核对全部落在既有白名单形态（`dep-33`）与既有原语入参（`dep-34`）上。
 - `skills/shared/engineering-docs/schemas/*.json`、`templates/*`：零改动。
 - multica `gitguard` 的 `Check` 语义、`SpoolDenial` 路径规则、`isBlacklistedRealPath`/`findLocalDirectoryAssignment` 判据：零改动。
 - `approval.yml`/`review-annotations`/`traceability.yml`/`tasks/_index.yml` 结构：零改动。
@@ -577,3 +682,4 @@ B 段：
 | 日期 | 版本 | 说明 |
 | --- | --- | --- |
 | 2026-10-02 | 0.1 | 首版 SDD：承接 PRD FR-01～FR-16 / AC-A1～A8、B1～B20；A 段绑定归一与 B 段两个业务受控写入的设计、错误枚举、验证落点与批准范围；`dep-1`～`dep-32` 在 resources HEAD 核验；SDD-CLOSE-01～10 关闭 PRD 显式延后项 |
+| 2026-10-02 | 0.2 | 技术评审 attempt 1 BLOCK 回修（B-01～B-05）：①规划身份与目标路径改由已确认 payload 给出（`id`/`path` 必填），`intentDigest` 只含已确认业务字段，跨日执行/恢复/重放不依赖执行时钟（§1.1、§2.3、§4.4、§4.5.1/§4.5.3）；②明确合法覆盖出口与判定顺序，合法覆盖走正常写入而非成功重放（§4.5.4 第 4.b 步）；③引入 `intentDigest` 作为 journal `inputDigest` 与「安装根共享 journal 下的 workspace+身份 key」，恢复前先核对意图，异意图 `TX_INPUT_CONFLICT` 零写入，恢复后按 `committed`/`rolledBack` 决定回执（§4.5.2、§4.5.4 第 2 步、§4.3）；④完成提交改由提交消息 `AI-First-Intent` 唯一定位，并用 `C..HEAD` 路径范围证明未被后续提交改动，第三值 `TX_RECOVERY_CONFLICT`（§4.5.4 第 3 步、§2.3）；⑤统一 §3.4/§6.3/§9 的 validate 修改边界，明确既有分支零改动与新增维度层（B-05）；补 §5.2 回修向量与 `dep-33`/`dep-34` |
