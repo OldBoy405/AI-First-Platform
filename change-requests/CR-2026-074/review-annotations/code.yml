@@ -1,42 +1,42 @@
 cr-id: CR-2026-074
 review-type: code
 reviewer: "OldBoy405"
-reviewed-at: "2026-10-02T11:03:57+08:00"
+reviewed-at: "2026-10-02T18:12:22+08:00"
 verdict: block
 blockers:
-  - "部分解决： B-CODE-03（Major）— cmdKbInit 的 extraFlags 已能拒绝单独的 --cmd/--cmdList，但参数组合仍绕过约定错误合同：crctl.mjs:3738 的 flags.cmdList.push 与 :3748 的通用 flags[key]=next 共用同一槽位；kb init --workspace <合法KB> --cmdList x --cmd ignored 先把 cmdList 改成字符串，再调用字符串不存在的 push，抛 TypeError，经 :3842 main().catch 变成 INTERNAL_ERROR，无法到达 :3330 的 BAD_ARGS。去掉 --workspace 的同一组合也在 :3782 requireExplicitWorkspace 之前抛错，丢失 WORKSPACE_REQUIRED 优先级。违反 SDD §3.1/§3.2、TASK-01 与 AC-02 的额外旗标 BAD_ARGS/缺根优先合同；当前 :6025–6027 只覆盖单旗标，不覆盖顺序组合。本结论来自只读源码调用链，未在评审阶段执行该命令或重跑测试。回修须使用户 --cmdList 无法破坏内部聚合器，保持非 kb 既有命令语义，并补两种旗标顺序、有根/缺根/空根向量，证明有根 BAD_ARGS、缺根或空根 WORKSPACE_REQUIRED，均先于文件/index/HEAD/remote/audit 副作用；随后由 write-test-report 重新生成规范证据。"
+  - "本轮新增： B-CODE-05（Major）— 额外旗标 --__proto__ 被解析器静默丢弃，绕过 kb init 的 BAD_ARGS 前置：tools skills/shared/crctl/scripts/crctl.mjs:3729 将 flags 初始化为普通对象 {}，:3749/:3751 用 flags[key]=next/true 写入任意用户键；对 __proto__ 写入 argv 字符串或 true 会命中继承的 Object.prototype.__proto__ setter，值不是 object/null，赋值被忽略且不形成自有可枚举键。故 kb init --workspace <合法主KB> --__proto__ x（或末尾单独 --__proto__）到 :3324 的 Object.keys(flags) 时只有 workspace，extraFlags 为空，继续 resolveToolsRoot/仓库前置/创建/暂存/提交/推送/成功审计，而非约定 BAD_ARGS；缺根/空根仍由 requireExplicitWorkspace 先拒绝。违反 SDD §3.1/§3.2、TASK-01 和 AC-02 的仅 workspace/no extra flag、形态失败先于副作用合同。该调用链由只读源码确认，未在评审阶段运行 kb init 或重跑测试；cmd-01 的 AC-02 用例只覆盖普通未知键和 cmd/cmdList 组合，源码与该测试入口无 __proto__ 向量。回修须保留每个用户旗标为可检查的自有键或在 kb 入口校验原始旗标集合，不让继承 setter 吞掉未知键；保持非 kb 的既有语义及 WORKSPACE_REQUIRED 优先级，补 __proto__ 有值/无值 × 有根/缺根/空根向量与文件/index/HEAD/远端/audit 零副作用断言，再由 write-test-report 重建规范证据。"
 dimensions:
-  批准范围: "PASS：tools trunk merge-base 41b112ed4d97baaaca3b82367a72f35520dc3d4b 至当前 HEAD 的实际文件集合为 17 文件，生产落点及文档/测试在 SDD §9 和上轮明确回修范围内；multica merge-base 等于 HEAD、无 diff。未触及状态机/gates/Pipeline/Agent/矩阵、durable-tx、applyWriteback/writebackAllowlist、writer 通用 source 合同或用户根 gitignore。"
-  代码↔TASK↔SDD 对齐: "BLOCK：10/10 TASK 验收条件已逐卡对照；B-CODE-01/02/04 关闭，B-CODE-03 仍有入口参数组合与缺根优先级残留，TASK-01/AC-02 当前接口合同未全部满足。其余 source 空缺省/历史指纹、ensure 自忽略、缺索引首写/features 前置、两规范表提取/YAML trunk、裸提交祖先 shape、文档和集成变体未发现新的阻断。"
-  工程质量: "PASS：只读 generated-by=crctl-test 与 report/trace status=pass；用既有 canonicalCommandSubject 复算七条命令得到 c7e74fc0e056f6d45576944e7dca7370b724ec9999c6a55224c8d13ffdeeb5a5，与 report/trace 全等，argv/cwd/timeout 对照 PLAN §6.2；七条均 exit-code=0、started=true、skipped=false、timed-out=false，日志存在且读取命令和输出。未执行 lint/test/build；机器 pass 不豁免 B-CODE-03 的未覆盖接口缺陷。"
-  关键路径可读性: "PASS：读取私有 init 的实际实现/派发/参数解析调用链及三个相关生产文件，rawStdout 明确仅被 porcelain 消费且保留默认行为；无新生产模块、导出或依赖。ARCHITECTURE.md 新入口的显式根、独占创建、普通 Git 发布、无锁/journal/跨阶段原子性及无 CR outbox 边界与代码一致，不仅依赖 cmd-07 字符串命中。"
-  安全性: "BLOCK：父目录 junction 边界、工作树/index 路径白名单、固定 argv/shell=false、独占创建及普通非快进拒绝已复核，原 CAS/apply 保留；B-CODE-03 的用户旗标可覆盖内部聚合器并在显式根校验前抛错，失败关闭的错误优先级合同仍需修复；未发现该残留发生业务写入。"
-  测试覆盖: "BLOCK：回修定向测试覆盖 B-CODE-01/02 和 B-CODE-04 的真实三阶段与重放隔离；B-CODE-03 当前只测单独 --cmd/--cmdList，缺两旗标顺序组合和组合下有根/缺根/空根向量。其他 TASK 的规范命令与覆盖矩阵已对照。"
-  测试证据可信度: "PASS：tools HEAD 实测 cccb662591b1f2c64152219ed17fc8f7732e3832 与回修交接 implementation_commit 一致；读取 attempt 2 的 complete 测试 journal、test-report 分析区及七条引用日志，无关键命令 skipped、无 report/trace/PLAN 命令漂移发现；测试后的 checkpoint 提交时序按报告原文记录，不把作者自报代替测试覆盖。"
-  前端质量: "N/A：实际 diff 无 tsx/vue/css/html，不触发前端维度。"
+  批准范围: "PASS：逐仓实际 trunk merge-base 取证；tools 41b112ed4d97baaaca3b82367a72f35520dc3d4b..a259454a5573a1055507a5a14f34a19fdc7d0bfc 为既有 17 文件集合，生产/测试/说明仍在 SDD §9 与上轮明确回修范围内，multica merge-base=HEAD=38eca166597ebd540538d155f5ff2dee2bdb6845，无交付 diff。状态机/gates/Pipeline/Agent/矩阵、durable-tx、applyWriteback/writebackAllowlist、writer 通用 source 合同、用户根 gitignore 未变。全仓 diff 输出存在 crctl 自身 20000 字符上限，已改逐生产文件窄范围 diff 并读实际实现/测试，不用被截断的全仓正文作完整证据。"
+  代码↔TASK↔SDD 对齐: "BLOCK：10/10 TASK 已读取并对照 SDD/PLAN；B-CODE-03 的 cmdList 聚合器残留关闭，B-CODE-01/02/04 的修复保留，source 空缺省/ensure 自忽略/缺索引及 features 前置/两规范表/YAML trunk/裸提交 shape/说明与三阶段集成契约未发现新的阻断；B-CODE-05 使 TASK-01/AC-02 的额外旗标拒绝合同仍不完整。"
+  工程质量: "PASS：只读 report generated-by=crctl-test、status=pass 与 traceability.tests；用既有 canonicalCommandSubject 复算七条命令，与 PLAN §6.2 逐条 repo/cwd/executable/args/timeout 全等，command-digest=bb1e0976672d9f73c8ba056218926da87163751879515b212a69269ca0b688ab 在 report/trace/journal 中一致。七条均 started=true、skipped=false、exit-code=0、timed-out=false；lint/build 不单列的说明已读。评审未执行 lint/test/build。"
+  关键路径可读性: "PASS：已读私有 init 的前置/porcelain rawStdout/远端祖先/模板及普通 Git 发布与派发/解析链；局部 cmdAgg 消除共享槽位，无新生产模块/导出/依赖。ARCHITECTURE 的显式根、独占创建、普通 Git 发布、无锁/journal/跨阶段原子性及无 CR outbox 边界与实现一致；B-CODE-05 的正确性判定另列，不把 cmd-07 字符串命中当内容审查。"
+  安全性: "BLOCK：已有父目录 realpath/junction 失败关闭、raw porcelain 路径白名单、固定 argv/shell=false、wx、普通非快进及原 CAS 边界保留；但 B-CODE-05 的用户旗标可被继承 setter 吞掉，额外参数不再被失败关闭校验，非法形态可能继续业务写入。此为参数保留/拒绝缺口，不声称已经发生外部写入或任意对象 prototype pollution。"
+  测试覆盖: "BLOCK：B-CODE-03 两序 × 三根向量及 B-CODE-02 两账本父目录六向量已只读对照；B-CODE-04 的真实 baseline→tasks→traceability→archive 与 trace 前冻结及重放隔离断言仍在。B-CODE-05 对应 __proto__ 有值/无值与根优先级向量缺失，现有全绿不覆盖该接口缺口；其余 TASK 的关键证据命令均非 skipped。"
+  测试证据可信度: "PASS：读取完整测试 journal f898a7349baf42ca9589c91c3c156373（phase=complete、attempt=2、updatedAt=2026-10-02T17:56:54+08:00），七条日志存在、命令头与机器区 argv/exit 全等、stdout/stderr 标记唯一。先 CRLF→LF 后按既有 resultMetadata 键序以当前 tools SHA 和七条 logSha256 重建 inputDigest，与 journal.inputDigest 全等，确认无源码/日志漂移；不引入新 canonical aggregate 字段，不采信作者自报替代机器证据。multica ff 前移无本 CR diff，测试命令/来源绑定均仅 tools，此处只确认无证据漂移，不授予 freshness replay 规则豁免。"
+  前端质量: "N/A：实际变更集合无 tsx/vue/css/html，不触发前端维度。"
 suggestions:
-  - "已解决： B-CODE-01（Major）— workspace-transactions.mjs:378–382 为 gitRun 增加选择性 rawStdout，默认 trim 语义保持；cmdKbInit:3410 的 porcelain -z 调用显式选用原始输出。crctl.test.mjs:6119–6150 已覆盖已跟踪 dir-graph 未暂存允许修改放行及未暂存白名单外 README.md 按原路径拒绝；cmd-01 机器记录 started=true、skipped=false、exit-code=0。"
-  - "已解决： B-CODE-02（Major）— cmdKbInit:3355–3365 在 dirty 展开、账本比较、创建及暂存之前核验已有账本父目录，pending 创建循环在 mkdir 后再次核验；匹配模板不再豁免身份检查。crctl.test.mjs:6152–6209 覆盖 junction 逃逸的匹配模板/缺文件/异内容三场景及正常父目录冲突对照，均对应 repo-invalid 或原 KB_INIT_CONFLICT 合同；cmd-01 规范证据未跳过。"
-  - "已解决： B-CODE-04（Major）— writeback-tx.test.mjs:1011–1085 已真实执行无索引 baseline→tasks→traceability→archive，tasks 产物落盘；addEvidenceFiles 后且首次 trace 前冻结 PLAN/test-report/approval/merge facts、specs 索引、delivery/task 文件集合及 baseline/tasks journal，首次 trace 与独立重放后逐项比较，且验证 writing-back 与 milestone 不重复。cmd-04 机器记录 started=true、skipped=false、exit-code=0；test-report 分析区已据实对应上述三阶段与冻结点。"
+  - "已解决： B-CODE-03（Major）— crctl.mjs:3734 的局部 cmdAgg 与用户 flags 槽位隔离，:3753 仅在存在 --cmd 时赋回聚合结果；cmdKbInit:3324 不再豁免 cmdList。crctl.test.mjs:6021–6053 覆盖两种旗标顺序 × 有根/缺根/空根，有根 BAD_ARGS、缺根/空根 WORKSPACE_REQUIRED，并在 fixture 上核对账本未创建、HEAD 未提交、远端空、无成功审计。当前 tools HEAD a259454a5573a1055507a5a14f34a19fdc7d0bfc 与本轮七条命令 sourceRevision/log 内容重建的 test journal inputDigest 全等，原 TypeError→INTERNAL_ERROR 残留关闭；B-CODE-05 是不同保留键的新增缺口，不重复列原聚合器缺陷。"
+  - "范围外： 测试报告已披露 buildIndex 对既有条目秒精度 updated 的跨秒 flake，本轮 cmd-03 未失败；不改批准范围内的索引历史更新语义，后续 CR 可单独处理该既存幂等性问题。"
+  - "范围外： cmd-04 本轮在批准的 720s 内完成，但报告所述余量约 9.9% 且全表接近节点 20min 额度；未来工况/执行器预算治理可另行评估，本轮不擅自放宽 PLAN timeout 或 Pipeline。"
 review-loop:
-  current-attempt: 2
+  current-attempt: 3
 release-subjects:
   version: 1
   repositories:
     - repo: ai-first-platform-docs
       remote-ref: refs/heads/requirement/CR-2026-074
-      reviewed-source-sha: 82fd1859ec5b84b926ddc1ac32398d763cfc1d89
+      reviewed-source-sha: 0e7a3d7c23547257a52b99a3b0c95e5449f575bb
     - repo: multica
       remote-ref: refs/heads/requirement/CR-2026-074
-      reviewed-source-sha: 78566fde28a1ea53527f2356249fb5df72bcb9cf
+      reviewed-source-sha: 38eca166597ebd540538d155f5ff2dee2bdb6845
     - repo: tools
       remote-ref: refs/heads/requirement/CR-2026-074
-      reviewed-source-sha: cccb662591b1f2c64152219ed17fc8f7732e3832
+      reviewed-source-sha: a259454a5573a1055507a5a14f34a19fdc7d0bfc
   artifacts:
     algorithm: sha256
     canonicalization: crlf-to-lf+path-sort
     files:
-      - { path: change-requests/CR-2026-074/plan.md, sha256: d1920c7ae4af348b8e5d88b26bcc041d6eedae2c50e88f286a6bb43e433329ab }
+      - { path: change-requests/CR-2026-074/plan.md, sha256: 3d4abfcabde367bc9570c93d863bab63208f78a6b1222e96bdf454a9d854093e }
       - { path: change-requests/CR-2026-074/prd.md, sha256: 1ec6f962b677f4423dfa2aaef3007f0122512ee82ea0b586e41d744d1a5ee57a }
       - { path: change-requests/CR-2026-074/sdd.md, sha256: 371ec7a8ca880f2a8dc48bb7a5cf29221fd1953f0abaa13f40b5785e6d6e71d3 }
       - { path: change-requests/CR-2026-074/tasks/TASK-01.md, sha256: 4c6907b5453e38a119d8c6d1b01ab1010aa3fedef9aa90fe5f64d898802a4318 }
@@ -50,4 +50,4 @@ release-subjects:
       - { path: change-requests/CR-2026-074/tasks/TASK-09.md, sha256: f4a400e8e20fa12a2019c588195525cbb78f6d9a477fc6aa7589ec4966d59f1c }
       - { path: change-requests/CR-2026-074/tasks/TASK-10.md, sha256: e774e1410cec1c39127cee09f86a300ae3c56206c2e9e56a87eb70e7b2e058d7 }
       - { path: change-requests/CR-2026-074/tasks/_index.yml, sha256: 8633c5d73ef77bd544b184e15adc4a16e5b613c74059c7c13cac5b69d52bcdea }
-    digest: f6f634b74462f6a586d4a94d324a6d638d25779e27e04c718362b3075c8f97bf
+    digest: 11dbe5d2c975c2d8c02b78aab2e43c2e93ecbfa62bd28a2930ae6ccb7b7e35a2
