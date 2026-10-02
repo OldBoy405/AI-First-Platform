@@ -1,0 +1,52 @@
+cr-id: CR-2026-075
+tasks:
+  - id: CR-2026-075-TASK-01
+    title: "crctl 绑定归一与失败关闭"
+    status: pending
+    estimate: 8h
+    depends-on: []
+  - id: CR-2026-075-TASK-02
+    title: "daemon 绑定解析与三元组成对发布"
+    status: pending
+    estimate: 12h
+    depends-on: [CR-2026-075-TASK-01]
+  - id: CR-2026-075-TASK-03
+    title: "共享恢复原语锁内比对与取样"
+    status: pending
+    estimate: 8h
+    depends-on: []
+  - id: CR-2026-075-TASK-04
+    title: "规划业务入口与确定性转换"
+    status: pending
+    estimate: 12h
+    depends-on: [CR-2026-075-TASK-03]
+  - id: CR-2026-075-TASK-05
+    title: "竞品业务入口与确定性转换"
+    status: pending
+    estimate: 8h
+    depends-on: [CR-2026-075-TASK-03]
+  - id: CR-2026-075-TASK-06
+    title: "validate 维度报告层与触发条件对齐"
+    status: pending
+    estimate: 4h
+    depends-on: []
+  - id: CR-2026-075-TASK-07
+    title: "engineering-docs 合同与北京时间日期"
+    status: pending
+    estimate: 4h
+    depends-on: []
+  - id: CR-2026-075-TASK-08
+    title: "调用登记、命令示例与提示收敛"
+    status: pending
+    estimate: 8h
+    depends-on: [CR-2026-075-TASK-01, CR-2026-075-TASK-02, CR-2026-075-TASK-04, CR-2026-075-TASK-05, CR-2026-075-TASK-06, CR-2026-075-TASK-07]
+  - id: CR-2026-075-TASK-09
+    title: "部署副本收敛、合同对齐与生效版本台账"
+    status: pending
+    estimate: 4h
+    depends-on: [CR-2026-075-TASK-07, CR-2026-075-TASK-08]
+  - id: CR-2026-075-TASK-10
+    title: "全量证据回归与未覆盖风险清单"
+    status: pending
+    estimate: 4h
+    depends-on: [CR-2026-075-TASK-01, CR-2026-075-TASK-02, CR-2026-075-TASK-03, CR-2026-075-TASK-04, CR-2026-075-TASK-05, CR-2026-075-TASK-06, CR-2026-075-TASK-07, CR-2026-075-TASK-08, CR-2026-075-TASK-09]
