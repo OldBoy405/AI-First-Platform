@@ -6,7 +6,7 @@ sdd-ref: "change-requests/CR-2026-074/sdd.md"
 target-version: 0.47
 status: draft
 created: 2026-10-01T00:35:38+08:00
-updated: 2026-10-01T02:13:32+08:00
+updated: 2026-10-02T17:04:00+08:00
 ---
 
 # CR-2026-074 开发计划
@@ -129,3 +129,31 @@ cmd-04 的 `timeout=720` 是 2026-10-02 由 600 上调的结果，依据一次�
 | AC-10 裸提交祖先判定与拒绝形态 | §4.6 | CR-2026-074-TASK-07 | cmd-01 |
 | AC-11 source 空缺省、显式合同不变、历史指纹矩阵 | §2.3/§4.2/§5.2 | CR-2026-074-TASK-03 | cmd-02 |
 | AC-12 无索引 merge→三阶段→archive、独立 trace 重放 | §4.3～§4.5/§5.2（dep-17/18） | CR-2026-074-TASK-08 | cmd-04 |
+
+## 8. 修订记录（plan-blocker 治理回退：cmd-04 timeout 600→720 判据修订链）
+
+本节登记本计划在代码实现期的一次**计划侧判据修订**与配套回退的事实链，供后续节点定位证据来源；不改 §6.1/§6.2 两张稳定表的行/列契约，不改 SDD 批准范围。
+
+**① 触发事实（判据失效）**：`cmd-04`（`writeback-tx.test.mjs` 定向用例）在 `write-test-report` cycle 2 / attempt 1 撞 600s 上限——机器区 `started=true`、`exit-code=null`、`signal=SIGTERM`、`timed-out=true`，报告 `status: block`（`test-report.md`，`generated-at 2026-10-02T13:19:31+08:00`；同轮其余 6 条 `exit-code=0`、`skipped=false`）。报告分析区结论：本次 block 的**唯一成因是计划层额度**，`timeout=600` 低于当前工况实际耗时（§6.2 表下注记所列实测 573.5s / 628.6s / 637.3s / 652s）。
+
+**② 判据修订**：§6.2 `cmd-04` 行 `timeout` 由 600 上调为 720（KB 提交 `11c59987`，2026-10-02T16:39:34+08:00；依据与不取更大值的理由见 §6.2 表下注记）。该行是本轮唯一被改动的复合证据主体：`TASK-*.md` 自 `c65b4f04`（2026-10-01T02:16:54）起零改动，`tasks/_index.yml` 的 done 标记不在 dev-start 审批证据摘要内（`gates.json#approvalStages.dev-start.evidence`）。
+
+**③ 门禁后果**：上述修订落在 `review-dev-plan` PASS（`reviewed-at 2026-10-01T02:26:58+08:00`）与 `approve-dev-start`（`approved-at 2026-10-01T20:55:57+08:00`）之后，`developing` 门禁出现两条具名阻塞：dev-plan composite digest 漂移（annotation 记录 `8ae03970…`，当前重算 `d0846dce…`，`repairTarget=review-dev-plan`）与 `approval.yml#development-start` `EVIDENCE_DRIFT`（记录 `860b22fa…`，重算 `9957d96e…`）。
+
+**④ 回退（授权治理回退入口，非 `review-code` 的 plan-blocker 结论）**：按门禁自述的修复方向与 `crctl status` 的 `legalNext`，走状态机既有边退出 `developing`：
+
+```text
+crctl advance CR-2026-074 --to tech-design-reviewed \
+  --trigger "review-code:plan-blocker -> write-dev-plan" --expect developing
+→ advanced=true / from=developing / to=tech-design-reviewed / committed=true
+  KB 提交 fc3a47c1（[cr] status CR-2026-074 developing -> tech-design-reviewed，2026-10-02T17:02:30+08:00）
+  outbox=20261002T090230819Z-CR-2026-074-status-fc3a47c1.json
+```
+
+`review-annotations/code.yml`（attempt 2）的唯一未闭合 blocker 是 **B-CODE-03**（`cmdKbInit` 额外旗标的 `BAD_ARGS` 优先级与缺根优先合同缺陷，code 侧），其回修已由 `implement-code` 于 2026-10-02 交付（tools CR worktree `1f9c6032` + `a259454`），不因本轮回退重跑。本轮回退的成因是**计划层判据在实现/测试期被实测证伪**，故按既有先例（CR-2026-065 §0.0、CR-2026-069 同边用法）使用该边作为受权治理回退入口；**不声称**存在 `review-code` 的 plan-blocker 评审结论，未新增状态转换。
+
+**⑤ 回退后的重放链**：`write-dev-plan`（本节点：本节与 §6.2 注记）→ `write-dev-tasks`（TASK 集合与本次 timeout 修订无耦合，逐字保留；推进 `task-breakdown`）→ `review-dev-plan` 独立复评（刷新 `subject-sha256` 与 PASS 证据）→ 人工 `approve-dev-start` 重签（`expect=[task-breakdown]`，同时刷新 `approval.yml#development-start` 证据摘要）→ `developing`。`review-dev-plan` PASS 前不得进入人工审批。
+
+**⑥ reviewLoop 记账**：`review-dev-plan` cycle 2 / attempt 0（Ray 交互式终端 reset，KB 提交 `b9e9b592`，reset 原因即本轮 cmd-04 600s 超时）；`write-test-report` cycle 2 / attempt 1；`review-code` cycle 1 / attempt 2。
+
+**⑦ 范围边界**：本节仅登记计划侧修订与回退链；`sdd.md` 自技术审批（`2026-10-01T00:24:38+08:00`）后零提交（其最后一次改动为 `d30c049f`，2026-10-01T00:09:54），本轮零 diff；未改 §6.1/§6.2 表结构，未改 tools / multica 代码。
