@@ -3,7 +3,7 @@ cr: CR-2026-074
 status: block
 tester: a0e71a32-509d-4ee9-aea4-d086a5b1ff93
 generated-by: crctl-test
-generated-at: "2026-10-02T11:36:53+08:00"
+generated-at: "2026-10-02T13:19:31+08:00"
 command-digest: c7e74fc0e056f6d45576944e7dca7370b724ec9999c6a55224c8d13ffdeeb5a5
 commands:
   - repo: tools
@@ -33,7 +33,7 @@ commands:
     executable: node
     args: [--test, skills/writeback/scripts/test/writeback.test.mjs]
     timeout-seconds: 600
-    exit-code: 1
+    exit-code: 0
     signal: null
     timed-out: false
     started: true
@@ -91,77 +91,67 @@ commands:
 
 ## 测试摘要（对应 TASK 验收条件）
 
-全部 10 个 TASK（CR-2026-074-TASK-01 ～ TASK-10）已实现、登记 done 并提交（tools commit 3eda3ee）；本报告为 **review-code BLOCK（attempt 2/3，blocker=B-CODE-03）后的第二次回修轮证据**（write-test-report 环 attempt 3）。本轮回修内容：`parseArgs` 的 `--cmd` 聚合器搬到独立槽位（B-CODE-03），详见下节。
+- **本轮 = `write-test-report` 环 cycle 2 的首次 canonical 证据轮**（`review-loop.yml`：`current-cycle 2 / current-attempt 1`，`generated-at 2026-10-02T13:19:31+08:00`），由 `crctl test` 单次执行 `plan.md` §6.2 全表 7 条命令。逐条转录已机器校验（只读脚本 `.crctl/tmp/verify-plan.mjs` → `OK: 7 条命令逐条全等（含 timeout）`），未在 plan 之外另造命令、未改任何 timeout。
+- **机器区 `status: block`，唯一失败项 `cmd-04`**（600s 上限触发 SIGTERM：`started=true`、`exit-code=null`、`signal=SIGTERM`、`timed-out=true`）；其余 6 条全部 `exit-code=0`、`skipped=false`。
+- **与 cycle 1 attempt 3 相比的实质变化**：`cmd-03` 本轮 **21 pass / 0 fail**（上一轮 20 pass / 1 fail）——上一轮的 exit 1 未复现，确认该失败是跨秒边界 noop 误判的**概率性**缺陷，而非确定性回归。
+- **本轮无任何新增代码改动**：tools worktree HEAD `1f9c603`（B-CODE-03 修复已提交）、`git status --porcelain -uall` 空；KB worktree HEAD `534ecd4c`。故本轮证据与实现内容一一对应，不存在 attempt 3 那种「实现在工作树未提交」的绑定缺口。
 
-**机器区 `status: block`**：七条证据命令中 cmd-03 exit 1、cmd-04 超时，两处失败均**不归因于本轮回修**（下述实测证据）；cmd-01/02/05/06/07 全 exit 0。因 write-test-report 环已 3/3 耗尽且本报告 block，`crctl test` 现返回 `TEST_LOOP_EXHAUSTED`，本轮无法再发布 green 规范证据，处置需 owner 决策（见「下一步建议」）。
+## 验证命令与结果解读（cycle 2 attempt 1 机器区逐条）
 
-## B-CODE-03 回修内容（唯一代码改动）
-
-**根因（单一入口，非 kb 专属）**：`parseArgs` 以 `const flags = { cmdList: [] }` 预置聚合器，同时通用分支又写 `flags[key]`，两写者共用 `cmdList` 槽位。用户 `--cmdList x` 先把数组覆盖为字符串，随后 `--cmd` 命中 `String.prototype.push` 抛 `TypeError` → 经 `main().catch` 变 `INTERNAL_ERROR`，在 `requireExplicitWorkspace` 之前抛出，于是缺根组合丢失 `WORKSPACE_REQUIRED` 优先级、有根组合无法到达 `cmdKbInit` 的 `BAD_ARGS`（违反 SDD §3.1「先验证 workspace 非空字符串，再验证 kb 形态；缺根不会被 BAD_ARGS 掩盖」与 §3.2 序号 1）。
-
-**修法（一处根因修复，全部调用方共用）**：`parseArgs` 内部聚合器改用独立局部 `cmdAgg`，`flags` 不再预置 `cmdList`；仅当 `cmdAgg.length` 非空时回写 `flags.cmdList`。解析期对旗标组合不再抛错，`WORKSPACE_REQUIRED` 优先级由既有 `main` → `requireExplicitWorkspace`（先于 kb 派发）保证；两旗标共现时聚合器为准，键存在即非空 → 下游按额外旗标拒绝，不静默丢弃。`cmdKbInit` 的 `extraFlags` 随之收敛为 `k !== 'workspace'`（原「内部空数组豁免」分支在新不变量下不可达，删除，不留死代码）。
-
-**红→绿实测**（HEAD cccb662 原文与修复后工作树同机对照，两序 + 有根/缺根/空根）：
-
-| 向量 | 修复前（HEAD 原文） | 修复后 |
-|---|---|---|
-| `kb init --cmdList x --cmd ignored` | `INTERNAL_ERROR` `TypeError: flags.cmdList.push is not a function` @parseArgs:3738 | `WORKSPACE_REQUIRED` |
-| `kb init --workspace <任意> --cmdList x --cmd ignored` | 同上 `INTERNAL_ERROR` | `BAD_ARGS`（不接受额外旗标: --cmdList） |
-| 反序 `--cmd ignored --cmdList x`（两向量） | 同上 `INTERNAL_ERROR` | 同上（缺根 `WORKSPACE_REQUIRED` / 有根 `BAD_ARGS`） |
-| 显式空根 `--workspace ""` + 两序组合 | 同上 `INTERNAL_ERROR` | `WORKSPACE_REQUIRED` |
-
-定向回归新增到既有 AC-02 用例（未新增 `test()`，gate-registry 计数保持 237）：两序 ×（有根/缺根/空根）六向量，均断言 code 与「先于文件/index/HEAD/remote/audit 副作用」（`change-requests/` 不存在、HEAD 仍 unborn、远端仍空、无 audit 行）。cmd-01 机器记录 exit=0、started=true、skipped=false。
-
-## 验证命令与结果解读（attempt 3 机器区逐条）
-
-| 证据ID | 命令（tools worktree 根） | 机器区结果 | 覆盖解读 |
+| 证据ID | 命令（tools CR worktree 根；机器区 `repo=tools` `cwd=.`） | 机器区结果 | canonical 日志（`test-evidence/`） |
 |---|---|---|---|
-| cmd-01 | `node --test skills/shared/crctl/scripts/test/crctl.test.mjs` | exit 0，237 pass / 0 fail | TASK-01 kb init（AC-01/02/03 + 守卫回归）、TASK-07 裸提交（AC-10）、B-CODE-01/02 回归及既有全套回归；**含本轮 B-CODE-03 两序六向量** |
-| cmd-02 | `node --test skills/shared/crctl/scripts/test/register-tx.test.mjs` | exit 0，30 pass / 0 fail | TASK-02 ensure 自忽略（AC-04）、TASK-03 source 空缺省与历史指纹矩阵（AC-11）及回归 |
-| cmd-03 | `node --test skills/writeback/scripts/test/writeback.test.mjs` | **exit 1**，20 pass / 1 fail | 失败项 `prd-sdd: 增量追加（既有内容保留 + H 级 +1）+ 重跑 noop`（writeback.test.mjs:128，断言 `r3.stdout.includes('"noop": true')`）。**范围外既存缺陷、不由本轮引入**：该用例直接执行 `writeback-prd-sdd.mjs`（调用链无 crctl，与本轮 parseArgs 改动无交集），属 attempt 2 报告已登记「风险 1」的跨秒边界 noop 误判形态；同机重跑实测 21 pass / 0 fail（2.5s）。 |
-| cmd-04 | `node --test skills/shared/crctl/scripts/test/writeback-tx.test.mjs` | **exit null，timed-out true（600s 上限）** | **超时预算不足，非本轮引入**（见下节量化）。同机单跑实测 36 pass / 0 fail，耗时 **628.6s > 600s**，即本机当前性能下该命令无法在上限内完成；attempt 2 同命令耗时 573.5s（已占上限 95.6%）。 |
-| cmd-05 | `node --test skills/shared/crctl/scripts/test/caller-contract.test.mjs` | exit 0，13 pass / 0 fail | caller 契约、文档入口一致（AC-09）及回归；缺根/空根 WORKSPACE_REQUIRED 契约不受本轮改动影响 |
-| cmd-06 | `node --test skills/shared/crctl/scripts/test/lint-prompts.test.mjs` | exit 0，39 pass / 0 fail | 说明与可执行命令一致、skill matrix / prompt lint 0 findings（gate-registry 计数 crctl 237 未变） |
-| cmd-07 | plan §6.2 cmd-07 行原样 argv | exit 0，`7 map markers present` | TASK-10 ARCHITECTURE.md 地图锚点可机器观测（语义由 review-code R7 人工检查承载） |
+| cmd-01 | `node --test skills/shared/crctl/scripts/test/crctl.test.mjs` | exit 0，`skipped=false` | 237 pass / 0 fail · 161.6s |
+| cmd-02 | `node --test skills/shared/crctl/scripts/test/register-tx.test.mjs` | exit 0，`skipped=false` | 30 pass / 0 fail · 222.1s |
+| cmd-03 | `node --test skills/writeback/scripts/test/writeback.test.mjs` | exit 0，`skipped=false` | 21 pass / 0 fail · 2.5s |
+| cmd-04 | `node --test skills/shared/crctl/scripts/test/writeback-tx.test.mjs` | **exit null / SIGTERM / timed-out（600s）** | 日志 5 行、stdout/stderr 两段均空（SIGTERM 前无输出落盘） |
+| cmd-05 | `node --test skills/shared/crctl/scripts/test/caller-contract.test.mjs` | exit 0，`skipped=false` | 13 pass / 0 fail · 0.3s |
+| cmd-06 | `node --test skills/shared/crctl/scripts/test/lint-prompts.test.mjs` | exit 0，`skipped=false` | 39 pass / 0 fail · 2.3s |
+| cmd-07 | plan §6.2 cmd-07 行原样 argv | exit 0 | `cmd-07 ok: 7 map markers present` |
 
-执行上下文：tools CR worktree（`workspace freshness` 四仓 allFresh、classification=healthy）；Node v24.15.0。**本轮回修改动（crctl.mjs、crctl.test.mjs）仍在工作树未提交**——按 Pipeline，源码提交属 checkpoint/push-progress 批次，而该批次以 test-report pass 为前提，本轮为 block 故未提交、未推送（无 out-of-pipeline 步骤）。因此本报告命令日志与 command-digest 对应的实现内容为工作树状态，其 HEAD 仍为 cccb662（与 B-CODE-03 评审所据 reviewed-source-sha 一致）。
+## cmd-04 唯一失败项：三轮 canonical 量化
 
-## cmd-03 / cmd-04 失败不归因于本轮回修的量化依据
+| 轮次 | 机器区 cmd-04 | 同轮工况控制 cmd-01 / cmd-02 |
+|---|---|---|
+| attempt 2（`36eb05f6` 记录的 pass 轮） | 36 pass / 0 fail · **573.5s**（对 600s 上限余量 4.4%） | 136.7s / 199.1s |
+| attempt 3（`0fd93990`） | exit null / timed-out（600s） | 164.7s / 223.8s |
+| **cycle 2 attempt 1（本轮）** | exit null / timed-out（600s） | **161.6s / 222.1s** |
 
-- **cmd-03**：失败用例的调用链为测试进程 → `writeback-prd-sdd.mjs` 子进程，不含 `crctl.mjs`；本轮改动仅存在于 `parseArgs`。同机重跑该文件 21/21 pass。该形态在 attempt 2 报告中已作为「范围外既存缺陷（selfCheck / 索引无变化跳过推送的跨秒边界误报）」登记并建议后续 CR 单独治理。
-- **cmd-04**：对 attempt 2 与本轮单跑日志逐用例比对（36 用例同名对齐）：总耗时 573.4s → 628.6s（×1.0961）；**全部 36 用例一致变慢**（中位比 1.093，最小 1.015，最大 1.150），包含与本 CR 无任何调用关系的既有用例 → 本机整体约 +9.6% 的工况性变慢，非代码路径变慢。600s 上限相对 573.5s 基线仅 4.4% 余量，任何 >4.4% 的工况波动即超时，属 plan/SDD 层证据命令超时额度问题。
+- **控制组排除「本轮机器单点异常」**：本轮 cmd-01/cmd-02 与 attempt 3 同档（161.6 vs 164.7、222.1 vs 223.8），相对 attempt 2 为 +18.2% / +11.5% —— 时间轴上是**工况漂移**后稳定在 attempt 3 档位，不是一次性抖动。
+- **总量口径（attempt 2 canonical 日志）**：36 用例逐条耗时合计 573.4s ≈ wall 573.5s，即**严格串行、无并发**，中位数 13.0s；耗时由 fixture 级 git/子进程 I/O 主导（最长两例 `CR-2026-058 AC-2.2` 69.5s、`CR-2026-057 AC-14` 68.1s 均为既有用例）。
+- **与本 CR 的归因**：本 CR 新增两例（`TASK-08 AC-12` 20.2s + `AC-05 apply 侧` 13.9s）= **34.1s，占该文件 5.9%**。600s 上限不足**不是本 CR 新增用例造成的**，是该文件既有固有耗时（~9.5 分钟量级）叠加当前工况后的计划层额度问题。
+- 轮外实测（非本报告机器区，原样引用供决策参照）：attempt 3 单跑 628.6s、implement-code 节点 2026-10-02 12:2x 单跑 637.3s，均 >600s。
 
 ## TASK 验收覆盖矩阵
 
-| TASK | 验收条件 | 证据 |
-|---|---|---|
-| TASK-01 kb init 入口/前置/发布重入 | 1/2/3 | cmd-01（AC-01/02/03 定向 + 守卫负测 + B-CODE-01/02/03 回修定向回归，含两序 × 有根/缺根/空根） |
-| TASK-02 ensure create 自忽略 | 1/2 | cmd-02（AC-04 联测：init→register 首 CR→重入） |
-| TASK-03 source 空缺省 + 历史指纹矩阵 | 1/2/3 | cmd-02（矩阵四行 + 空/显式空串 + 非空合同） |
-| TASK-04 buildIndex 首写 + features 前置 | 1/2/3 | cmd-03（四类负例/首写正例/历史保留；本轮该文件 20/21，唯一失败项为范围外既存 flake，见上） |
-| TASK-05 两规范表提取 | 1/2/3 | cmd-03（AC-06/AC-07 + 061/066 片段 fixture） |
-| TASK-06 YAML trunk 解释 | 1/2 | cmd-03（AC-08 五向量 + 交叉负测） |
-| TASK-07 merge-base 裸提交 shape | 1/2 | cmd-01（AC-10 真实 Git fixture） |
-| TASK-08 writeback-tx 集成变体 | 1/2/3 | cmd-04（AC-12 三阶段全链 + trace 前冻结 + AC-05 apply 侧；本轮机器区超时，同机单跑 36/36 pass 628.6s） |
-| TASK-09 说明/命令发现/计数同步 | 1/2/3 | cmd-05（13）+ cmd-06（39）；crctl 计数 237 未变（本轮未新增 test()） |
-| TASK-10 ARCHITECTURE.md 地图维护 | 1/2 | cmd-07（7 判据全命中） |
+| TASK | 验收条件 | 证据 | 本轮状态 |
+|---|---|---|---|
+| TASK-01 kb init 入口/前置/发布重入 | 1/2/3 | cmd-01 | ✅ 237/0（含 AC-01/02/03 与 B-CODE-01/02/03 定向回归） |
+| TASK-02 ensure create 自忽略 | 1/2 | cmd-02 | ✅ 30/0 |
+| TASK-03 source 空缺省 + 历史指纹矩阵 | 1/2/3 | cmd-02 | ✅（含 AC-11 四行矩阵） |
+| TASK-04 buildIndex 首写 + features 前置 | 1/2/3 | cmd-03 | ✅ 21/0（上一轮同项 20/1，本轮 flake 未复现） |
+| TASK-05 两规范表提取 | 1/2/3 | cmd-03 | ✅（AC-06/AC-07） |
+| TASK-06 YAML trunk 解释 | 1/2 | cmd-03 | ✅（AC-08 五向量 + 交叉负测） |
+| TASK-07 merge-base 裸提交 shape | 1/2 | cmd-01 | ✅（AC-10 真实 Git fixture） |
+| TASK-08 writeback-tx 集成变体 | 1/2/3 | cmd-04 | ⛔ **本轮无 canonical 覆盖**（命令超时被 SIGTERM） |
+| TASK-09 说明/命令发现/计数同步 | 1/2/3 | cmd-05 + cmd-06 | ✅ 13 + 39；crctl 计数 237 未变 |
+| TASK-10 ARCHITECTURE.md 地图维护 | 1/2 | cmd-07 | ✅ 7 判据全命中 |
 
 ## 新增/修改测试文件
 
-- `skills/shared/crctl/scripts/test/crctl.test.mjs`：**无新增 `test()`**，在既有 `CR-2026-074 AC-02` 用例内新增 B-CODE-03 两序 ×（有根/缺根/空根）六向量断言与「先于文件/index/HEAD/remote/audit 副作用」断言，故 gate-registry 的 crctl.test.mjs 计数保持 237、lint-prompts 计数一致（cmd-06 通过）。
-- 生产改动仅 `skills/shared/crctl/scripts/crctl.mjs`：`parseArgs` 聚合器独立槽位 + `cmdKbInit` 额外旗标过滤收敛（+11/−10 行，无新增导出、无新依赖、无行为面扩张）。
+- **无**。tools worktree HEAD `1f9c603`、working tree clean，本轮 7 条命令全部在该提交上执行；`sourceRevision` 与日志哈希由 crctl 在发布时生成，本报告只消费、未改写。
 
-## 未覆盖风险与不适用说明
+## 未覆盖风险（含「不适用」说明）
 
-- **本轮 block 的两个成因未修（均超出本次回修批准范围）**：cmd-03 的跨秒边界 noop flake（既有 trunk 测试，改动它属范围外且需独立评审）；cmd-04 的 600s 超时额度（plan.md §6.2 / SDD §5.2 已批准证据表值，本地调小/调大属计划层变更）。
-- **不适用**：lint/build 单列命令（零依赖 CLI，cmd-01～06 即 lint+test 面）；真实人工审批 E2E（SDD scope_out）；`write-requirement-prd` writer 侧非空 source 存在性校验（prompt 合同）。
-- **残留风险**：本报告机器区对应的实现在工作树未提交（block 态不进入 checkpoint 批次），owner 决策后如重置环重跑，需以当时工作树状态为准。
+1. **cmd-04 无 canonical 覆盖**：AC-12（TASK-08）与 AC-05 的 apply 侧在本报告机器区没有通过证据；「36/36 通过」仅来自轮外单跑（573.5s / 628.6s / 637.3s 各轮有记录），不构成 canonical 证据。
+2. **计划层额度（本次 block 的唯一成因）**：`plan.md` §6.2 cmd-04 `timeout=600` 低于当前工况实际耗时；同轮 cmd-01/02 已稳定在 +12%～+20% 档位 → 上调额度需覆盖 ≥~640s 的真实值。
+3. **模板额度耦合（需一并核对，工具包内不可验其消费方）**：`pipeline-templates/code-implementation.pipeline.json` 的 `write-test-report` 节点声明 `timeoutMinutes: 20`（1200s）。本轮在 cmd-04 被 kill 处已累计约 989s；若 cmd-04 上限提到 900s 且用满，整节点累计 ≈1289s **超出该声明额度**。现实值（cmd-04 ≈640s → 节点 ≈1030s）仍有余量，但「600→900」这一改动的上界会撞到节点额度；`timeoutMinutes` 的消费方在平台 runner，本仓无实现可验其是否硬性执行。
+4. **cmd-03 跨秒 flake 未消除**：在 `writeback-prd-sdd.mjs` 的 `buildIndex` 对既有条目无条件重写秒精度 `updated`，属范围外既存缺陷（attempt 2 与本轮通过、attempt 3 命中），修改它超出本 CR 批准范围。
+5. **不适用**：lint/build 单列命令（零依赖 CLI，cmd-01～06 即 lint+test 面）；真实人工审批 E2E（SDD scope_out）；`write-requirement-prd` writer 侧非空 source 存在性校验（prompt 合同）。
+6. **额度台账**：`write-test-report` cycle 2 已用 1/3（cycle 1 的 attempt 1–3 保留在历史）。本次 block 为范围外计划层成因，代码侧无回修对象。
 
 ## 下一步建议
 
-`status=block` 且 **write-test-report 环 3/3 已耗尽**（实测 `crctl test` → `TEST_LOOP_EXHAUSTED: write-test-report 已达 maxAttempts=3，不得继续自修复`；`crctl next` → `implement-code`，why=`test-report.status=block，按 replayNodes 回修`）。按派单约束，本节点不得自重置 attempt、不跳门禁，现停在本节点并上报，需 owner/协调侧两项决策：
-
-1. **环重置（治理动作）**：`crctl review-loop reset CR-2026-074 --loop write-test-report --reason <...>`——本轮 block 由两处不可归因失败造成，不消耗真实自修复额度，重置后方可再次生成规范证据。
-2. **cmd-04 超时额度（计划层动作，重置的前置条件）**：plan.md §6.2 / SDD §5.2 的 cmd-04 `timeout=600` 相对实测 628.6s（attempt 2 基线 573.5s，余量 4.4%）已不足，需上调（建议 ≥900s）或按 SDD 变更流程修订，否则重置后必然重现超时。
-
-完成上述两项后，回修代码与本轮证据可由同一 checkpoint 批次提交推送，再按 pipeline 送 `review-code`（评审前 `workspace-freshness` gate=review-start）。
+1. **计划层（唯一出口）**：`plan.md` §6.2 cmd-04 `timeout` 600 → ≥900；同一改动中核对上条风险 3 的模板节点额度，避免新上界撞到 `timeoutMinutes: 20`。
+2. **治理顺序（反序会被脏树拒绝——见 2026-10-02T12:11 那次 `result=commit-failed`）**：先跑 `crctl review-loop reset CR-2026-074 --loop review-dev-plan --reason <…>` 的 TTY 重置入口，**再**改 `plan.md`。`plan.md` 任何字节改动都会漂移 dev-plan composite digest（`plan.md` + `tasks/TASK-*.md`），digest 漂移会把回修路由到已 3/3 耗尽的 `review-dev-plan`。
+3. **在 1+2 落地前不要重跑本节点**：本轮显示 cmd-04 之外的 6 条命令当前全绿（含上一轮的 cmd-03 flake 未复现），重跑只会复现同因 block、每轮消耗 cycle 2 的 1/3 额度（另附 cmd-03 的概率性 flake 风险）。
+4. 本报告所在 KB worktree 的证据改动（`test-report.md` / `test-evidence/cmd-01～07` / `traceability.yml` / `review-loop.yml`）由本节点落盘并提交，供 `review-code` 前的 `workspace-freshness`（gate=review-start）使用。
