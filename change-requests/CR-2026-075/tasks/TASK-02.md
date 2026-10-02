@@ -49,9 +49,11 @@ created: 2026-10-03T00:15:00+08:00
    - AC-A3：普通 Issue 的 `execution_context` 触发预检绑定，不依赖 `PipelinePrompt` 非空。
    - AC-A4：缺失/重复/冲突/非法上下文、无根/歧义/越界/坏 worktree 一律停止节点准备或零写入失败（无 agent 执行）。
    - AC-A7：并发 task 隔离；`custom_env` 在 `layerCustomEnvAndHermesHome` 之后不可覆写；无绑定清旧值（三值全清，含 `CRCTL_WORKSPACE`）。
-3. 文件集检查经受控入口（argv 固定），cwd = multica CR worktree 根；`<tools-worktree>` 取 Pipeline `resources[]` 中 repo=`tools` 的 `worktreePath` 原样值：
+3. 文件集检查经受控入口（argv 固定），cwd = multica CR worktree 根；`<tools-worktree>` 取 Pipeline `resources[]` 中 repo=`tools` 的 `worktreePath` 原样值，`<multica-worktree>` 同理取 repo=`multica` 的 `worktreePath`，`<operational-workspace>` 取 `crctl workspace inspect CR-2026-075` 的 `operationalWorkspace` 原样值：
 
-   `node <tools-worktree>/skills/shared/crctl/scripts/crctl.mjs git status --porcelain --cwd <multica-worktree> --workspace <multica-worktree>`
+   `node <tools-worktree>/skills/shared/crctl/scripts/crctl.mjs git status --porcelain --cwd <multica-worktree> --workspace <operational-workspace>`
+
+   `--cwd` 只决定 Git 子进程目录（multica），`--workspace` 必须是本节点传入的 KB operational workspace：目标 `detectWorkspace`（`crctl.mjs:147`）不向上探测，`change-requests/` 只存在于 KB worktree，而 multica worktree 不含 `change-requests/`；绑定生效后显式异根会先报 `WORKSPACE_CONTEXT_MISMATCH`。不得另设回退，不得修改 `detectWorkspace`。
 
    断言输出仅含本 TASK 声明的四个文件。status 仅证明文件集，语义正确性由验收条件 1/2 证明。
 
