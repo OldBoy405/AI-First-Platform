@@ -1,37 +1,37 @@
 cr-id: CR-2026-074
 review-type: code
 reviewer: "OldBoy405"
-reviewed-at: "2026-10-02T19:18:18+08:00"
-verdict: block
-blockers:
-  - "本轮新增： B-CODE-06（Major）— 新 KB 初始化指南的顺序不能满足新增 kb init 的前置合同。tools docs/QODER-使用指南.md:49–95 明示创建全新 workspace、git init，随后写六种 docs 索引；后续安装 tools/、生成 AGENTS.md 与 dir-graph，:209–219 直接让读者运行 kb init 并宣称完成后即可开始首个 CR。该环境准备节没有配置 KB origin、使 symbolic-ref 与声明 trunk 一致、或先提交这些白名单外文件的步骤/前提（全文只读取证未见 git remote/add/commit 指引）。实际 cmdKbInit 在 crctl.mjs:3367 起逐仓要求 origin，:3386 要求 KB symbolic-ref 等于声明 trunk，:3395–3425 只允许 dir-graph.yaml 与两账本的工作树/index 变更；因此原样执行指南先因缺 origin 返回 KB_INIT_PRECONDITION/repo-invalid，即使补 origin/正确分支，已创建的 docs 索引及 AGENTS.md/tools 仍在白名单外而返回 dirty，不能到达两账本初始化。此项是 TASK-09/SDD §8 对当前新增初始化说明与实际接口一致性的交付缺口，不是要求放宽初始化白名单或代建账户/远端；未执行 kb init、未声称发生业务写入。回修仅在已批准说明范围内补齐/重排引导：明确由维护者准备已有 origin 的正确 trunk 主 checkout，在调用 init 前已提交非白名单配置/文档/tools 文件，或先 init 后生成其余文件；保证教程每一步前置可满足，同时保留六种 docs 模板、不恢复四种手工治理模板、不改生产前置/状态机/权限边界，随后由 write-test-report 重建与新源码绑定的规范证据。"
+reviewed-at: "2026-10-02T19:55:49+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  批准范围: "PASS：tools trunk merge-base=41b112ed4d97baaaca3b82367a72f35520dc3d4b，当前 HEAD=ffa0c68bcad359bc7389103093c64d8ba8f57b9a，交付仍为既有17文件；本次回修仅 crctl.mjs 与 crctl.test.mjs。multica merge-base=38eca166597ebd540538d155f5ff2dee2bdb6845，与已有资源 HEAD 一致。生产改动为私有 init、rawStdout、ensure 自忽略/source缺省、两个 generator、一个 Git shape及必要说明；未触碰状态机/gates/Pipeline/Agent/矩阵、durable-tx、applyWriteback/writebackAllowlist、writer source通用合同或用户根gitignore。对裁剪的diff已用实际文件窄切片补足，不用 complete=false 正文作为充分证据。"
-  代码↔TASK↔SDD 对齐: "BLOCK：10/10 TASK与 SDD/PLAN、TASK done账本及测试覆盖已对照；B-CODE-01/02/03/04 修复仍保留，B-CODE-05 本轮关闭。实现的初始化、source、缺索引/规范表/YAML trunk、裸提交与三阶段集成未见新代码阻断；B-CODE-06 为 TASK-09 当前教程新增初始化调用与其自身准备顺序/生产前置不一致，须说明侧回修。"
-  工程质量: "PASS：只读 canonical report generated-by=crctl-test/status=pass 与 traceability.tests；PLAN §6.2 与机器区7条 repo/cwd/executable/args/timeout逐条全等，既有 canonicalCommandSubject 复算 command-digest=bb1e0976672d9f73c8ba056218926da87163751879515b212a69269ca0b688ab，在 report/trace/journal 中一致。七条均 started=true/skipped=false/exit-code=0/timed-out=false；不单列lint/build的说明已读。未执行 lint/test/build。"
-  关键路径可读性: "PASS：已读 init 的固定前置/porcelain rawStdout/真实父目录/远端祖先/模板/普通Git发布，parseArgs与flags消费点、两个generator实际实现、ARCHITECTURE新增地图条目及说明。无新生产模块/导出/依赖，无初始化锁/journal或跨Git index原子性承诺；地图内容与代码一致，未以cmd-07字符串命中代替内容审查。教程执行顺序问题单列 B-CODE-06。"
-  安全性: "PASS：B-CODE-05共享解析根因已修，额外旗标在kb业务写入前失败关闭；根守卫优先级保留。既有 realpath/junction、raw porcelain路径白名单、固定argv/shell=false、wx、普通非快进及原CAS边界未放宽。B-CODE-06 的恢复路径必须修改说明，不得放宽安全前置。"
-  测试覆盖: "PASS：TASK-01的原型旗标、cmd聚合器、父目录与失败残留向量已读；缺索引结构负例及 before=null、两表/交叉校验、source与ensure、裸提交形态的测试入口与覆盖矩阵对应。TASK-08真实baseline→tasks→trace→archive及trace前冻结/重放隔离断言已读。7条关键命令均非skipped；现有说明结构断言不证明QODER教程全流程前置满足，B-CODE-06独立列出。"
-  测试证据可信度: "PASS：完整读取 journal 9aabfc941f4544599e05747b34d8b57a（phase=complete、attempt=3、updatedAt=2026-10-02T19:05:14+08:00）。七条日志存在，命令头/exit与机器区全等，stdout/stderr标记各唯一；CRLF→LF后按既有resultMetadata键序，用当前tools SHA和七条logSha256重建 inputDigest=4313fe37ce885cf6281ad3a532127f72675ae73972f2afc59a107aa749d441d5，与journal全等。无源码/日志/命令漂移，不新增canonical aggregate字段，不用作者自报或共享实例替代证据。"
+  批准范围: "PASS：三仓初始 workspace inspect 均 classification=healthy、dirty=false。tools trunk merge-base=41b112ed4d97baaaca3b82367a72f35520dc3d4b，当前 HEAD=9e7612e2b86d3955bcd23a3e6a8edbaa73da03d1；trunk 至 HEAD 的17文件集合与 SDD §9 批准范围一致。ffa0c68 至当前 HEAD 的实际回修 diff 仅 docs/QODER-使用指南.md；multica HEAD=38eca166597ebd540538d155f5ff2dee2bdb6845 无本 CR 代码变更。生产差分已按单文件收窄并以实际源码补足，不以被裁剪正文判通过；状态机/gates/Pipeline/Agent/矩阵、durable-tx、applyWriteback/writebackAllowlist、writer source通用合同、用户根gitignore未改。"
+  代码↔TASK↔SDD 对齐: "PASS：10/10 TASK 验收与 PLAN §6.1/§7、SDD §8/§9及 done 账本对照。B-CODE-06 本轮关闭：指南第1步明确 KB 主 checkout、origin、symbolic-ref 等于声明 trunk；第5步先提交 AGENTS.md、六种 docs 索引与 tools 再 init，另说明 tools 外置且先 init 后生成的替代顺序，生产前置/白名单未放宽。当前初始化、ensure/source、索引首写、两规范表、YAML trunk、裸提交和三阶段集成契约仍保留，未见当前验收阻断。"
+  工程质量: "PASS：只读取证 canonical report generated-by=crctl-test/status=pass 与 traceability.tests；PLAN §6.2 的7条 repo/cwd/executable/args/timeout 与机器区逐条全等。使用既有 canonicalCommandSubject 复算 command-digest=bb1e0976672d9f73c8ba056218926da87163751879515b212a69269ca0b688ab，与 report/trace/journal 全等。七条均 started=true、skipped=false、exit-code=0、timed-out=false；已读不单列 lint/build 的适用说明，不重跑任何验证命令。"
+  关键路径可读性: "PASS：实际源码复核 cmdKbInit 的根/形态/realpath/逐仓 origin/trunk/porcelain rawStdout/远端祖先/模板/普通Git发布，parseArgs及main派发，两个 generator 的缺文件/结构/两表/YAML解析路径，以及 ARCHITECTURE 新增地图行。地图与代码一致，未用 cmd-07 字符串命中代替内容审查。教程准备顺序与实际入口对应；本轮说明侧修复未新增生产模块/导出/依赖或第二事务框架。"
+  安全性: "PASS：原 B-CODE-01/02/03/05 回修仍保留：原始 porcelain 字节、两账本父目录提前核验、额外 cmd/cmdList 拒绝、Object.create(null) 用户旗标袋。已读 __proto__ 有值/无值及缺根/空根/有根两序的 BAD_ARGS/WORKSPACE_REQUIRED 与零副作用断言。根守卫优先级、固定argv/shell=false、wx、非快进拒绝和原CAS边界未放宽；指南以正确前置和提交顺序修复，不要求绕过治理。"
+  测试覆盖: "PASS：10/10 TASK 对应 cmd-01～07；关键 AC 唯一命令均非 skipped。已对照当前测试入口与原型旗标/dirty/父目录/失败残留、features前置、两表结构与交叉校验、YAML trunk、source/ensure、裸提交形态及 TASK-08 的真实 baseline→tasks→trace→archive 与 trace 前冻结/重放隔离断言。TASK-09 的结构断言与说明实际内容共同支撑关闭；作者本地裸仓补充验证非 canonical，不替代命令表证据，也不标称已验证托管平台认证/保护。"
+  测试证据可信度: "PASS：完整读取 test journal 057f8c3cadf144958a2c1f738306dba8（phase=complete、attempt=1、updatedAt=2026-10-02T19:42:13+08:00）。七条规范日志存在且 stdout/stderr 标记各唯一，命令头及 exit 与机器区一致。CRLF→LF 后按既有 resultMetadata 键序，用当前 tools SHA及七条 logSha256 重建 inputDigest=f48fefe22457f7ef0636a09f876fa6602d2e36ab0284c120540b15df476d0a83，与 journal 全等。无源码/日志/命令漂移，不新增 canonical aggregate字段，不以作者自报或共享实例替代证据。"
   前端质量: "N/A：实际变更集合无tsx/vue/css/html，不触发前端维度。"
 suggestions:
-  - "已解决： B-CODE-05（Major）— crctl.mjs:3728–3764 的 parseArgs 使用 Object.create(null)，任意用户键含 __proto__ 均形成可枚举自有键，cmdKbInit:3324 的额外旗标检查不再被继承 setter 吞键绕过；根守卫仍先于 kb 形态。只读实际两文件回修 diff 与 crctl.test.mjs:6047–6075：有值/无值 × 有根/缺根/空根，有根含前后两序，分别断言 BAD_ARGS（消息含 --__proto__）与 WORKSPACE_REQUIRED，并核对无账本、无 HEAD 提交、远端空、无 audit。全部 flags 消费调用点未依赖对象原型方法；parseGitArgs 仍只写固定白名单键。当前 tools ffa0c68bcad359bc7389103093c64d8ba8f57b9a 与七条日志重建的 inputDigest 全等，原 blocker 关闭。"
-  - "范围外： test-report.md 已披露 buildIndex 无条件更新既有条目秒精度 updated 的跨秒 flake；本轮 canonical cmd-03 成功，不修改批准范围外的历史更新语义，后续 CR 可独立处理既存幂等性问题。"
-  - "范围外： canonical cmd-04 在批准的 720s 上限内完成，报告记载余量约 11.9%、全表约 1033s 接近节点 20min 额度；执行器预算/性能治理留后续评估，本轮不改 PLAN timeout 或 Pipeline。"
+  - "已解决： B-CODE-06（Major）— tools docs/QODER-使用指南.md:47–73 明确 KB 主 checkout（非 linked worktree）、已配置 origin、当前分支=声明 trunk，提供 clone 与 git init -b main/remote/symbolic-ref 两条准备路径；:216–242 明确先 git add -A/commit 提交白名单外 AGENTS.md、六种 docs 索引与 tools，再运行 kb init，并解释 tools外置/先init后生成的替代顺序与 repo-invalid/trunk-mismatch/dirty/remote-diverged/KB_INIT_CONFLICT。逐项对照 crctl.mjs:3317–3496 的真实前置，顺序可满足；六种 docs模板保留、四种手工治理模板未恢复。ffa0c68..9e7612e 仅该说明文件，不改生产前置/权限边界，canonical 新证据与9e7612e源码全等，原 blocker 关闭。"
+  - "范围外： test-report 已披露 buildIndex 对既有条目秒精度 updated 无条件更新的跨秒 flake；本轮 canonical cmd-03 成功，不修改批准范围外的历史更新语义，后续 CR 可独立处理。"
+  - "范围外： canonical cmd-04 在批准的720s上限内完成；报告披露644.2s、余量约10.5%，全表wall约1036s/节点1200s。预算与性能治理留后续评估，本轮不改PLAN timeout或Pipeline。"
+  - "范围外： 补充验证以本地裸仓充当 origin，托管平台首推认证/分支保护/默认分支差异未覆盖；指南已要求维护者准备远端与正确声明trunk，不把该补充实验当作真实托管平台验收。"
 review-loop:
-  current-attempt: 1
+  current-attempt: 2
 release-subjects:
   version: 1
   repositories:
     - repo: ai-first-platform-docs
       remote-ref: refs/heads/requirement/CR-2026-074
-      reviewed-source-sha: edb3237cd4154476101e4f374bc51c9fb6ef65c3
+      reviewed-source-sha: 2553612ec34d81cd6043d3d0c4c01356e2998f2e
     - repo: multica
       remote-ref: refs/heads/requirement/CR-2026-074
       reviewed-source-sha: 38eca166597ebd540538d155f5ff2dee2bdb6845
     - repo: tools
       remote-ref: refs/heads/requirement/CR-2026-074
-      reviewed-source-sha: ffa0c68bcad359bc7389103093c64d8ba8f57b9a
+      reviewed-source-sha: 9e7612e2b86d3955bcd23a3e6a8edbaa73da03d1
   artifacts:
     algorithm: sha256
     canonicalization: crlf-to-lf+path-sort
