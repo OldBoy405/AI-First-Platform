@@ -1,28 +1,24 @@
 cr-id: CR-2026-075
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-10-02T22:44:01+08:00"
-verdict: block
-blockers:
-  - "本轮新增：B-09 Git 完成事实仍在恢复锁外取样，同一个 journal/txId 未被替换也可能把已提交结果回滚。SDD §4.5.4 第 2.b/2.c 与 SDD-CLOSE-04 只把 expect={inputDigest,txId} 比对放入 ledger-<key> 锁，currentHead/headMessage 仍由调用方预先查询后传入 recoverLedgerTransaction；§9 又限定共享原语只新增 expect 比对、既有 committed 判据不变。tools 061a12ff0a40028b7aba979108c2977313e1fb11 的 durable-tx.mjs#beginLedgerTransaction 返回仍持有的 lock（491～512），写入者直到 finish/abort 才释放（517～529）；recoverLedgerTransaction 在取得锁后 latestLedger（462～465），却用传入的 currentHead/headMessage 判 committed（475～482）。可行交错：写入者 W 在同身份同意图事务 J 的 written 阶段持锁；恢复请求 R 锁外预读 J 并取到提交前 HEAD=H0、无 J trailer 的消息范围；W 随后完成提交 C 后在 finish 前中断；R 再接管 W 的陈旧锁，现场仍为 J，摘要和 txId 全部匹配，但旧 currentHead=J.headBefore、旧消息无 trailer，原语误判未提交并 rollbackLedgerPayload，把已提交两/三文件还原为 before。这里没有 J1→J2 替换，B17-b 的新增向量不能覆盖，B18-b 只覆盖中断后才启动重跑的顺序场景。违反 FR-12/NFR-03、AC-B17/B18 与本节不得回滚已落地结果。须在任何回滚前使 Git 完成事实与实际恢复的同一受锁保护现场一致，或以可证明的保守失败阻断旧快照回滚；补取样后 commit+中断、同 txId 不变的交错向量，要求 C 与已提交文件不被回滚且恢复回执可核实，并同步必要的批准范围。不得以改 key、换意图、仅重复一次锁外查询或新建事务框架代替该安全边界。"
+reviewed-at: "2026-10-02T23:25:07+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  PRD↔SDD 对齐: "BLOCK；逐项核对 PRD FR-01～16、AC-A1～A8/B1～B20 与 SDD §6，16/16 FR 与 28/28 AC 有落点。A 段绑定/隔离/显式兼容、B 段日期/索引/校验/调用/部署均有可观察设计和前置说明；首次写入与合法覆盖可达性本轮已闭合，AC-B17/B18 的恢复正确性仍受新 B-09 阻断。未把既有实现描述当作目标契约。"
-  架构合理性: "BLOCK；按 resources 重读 tools 与 multica ARCHITECTURE.md，纯转换模块→crctl→既有 durable 原语与 daemon 内部接线方向合理，无新执行器/事务框架/依赖/API/DB；DEC-1～6 的替代与权衡有依据。共享恢复原语的可选 expect 是局部变更，但尚未绑定 committed 判定的 Git 现场（B-09），不能以复用原语代替新操作安全证明。"
-  数据模型完整性: "PASS（字段层）；三元绑定、普通 Issue execution_context、规划 id/path、竞品身份/路径/策略、canonical intentDigest 字段集、workspace+身份 key、时间字段继承与 scene 四分类齐备；本轮 expect 的摘要/txId 字段明确。Git 完成事实的时间一致性缺口归 B-09，不重复计 blocker。"
-  接口契约: "BLOCK；HTTP 条件基线 N/A，仅 CLI 与 daemon 内部接口。两业务操作的限定 payload、成功 JSON phase/changed/identity/artifacts/commit 与错误优先级明确，firstWrite 可直达正常事务、overwrite 与重放分离、成功回执要求无 journal。旧 Git 快照可能触发已提交结果回滚，仍不能证明恢复回执契约（B-09）。"
-  多仓架构约束: "PASS（设计层）；两次 workspace inspect 三 resources 均 healthy、dirty=false，operationalWorkspace 与委派一致；受控 HEAD 为 KB b032e3a053b77aea8f6c0a0463ab66f1b57cb638、tools 061a12ff0a40028b7aba979108c2977313e1fb11、multica 56bdc70db62f4fe2473b238f0ed36b05712af3a9。代码事实只取 resources worktree，KB 只承载过程产物，本地业务 commit 不冒充远端发布。"
-  性能与安全: "BLOCK；custom_env 后成对绑定、真实路径/安装根核对、唯一触发评论、一次预检、≤3 文件范围、授权/审批/白名单不扩均保持；本轮摘要/txId 锁内比对已排除事务替换窗口。但受锁 journal 身份不等于受锁 Git 完成事实，B-09 的旧快照会误回滚已提交文件，属于数据完整性而非表达优化。"
-  可测试性: "BLOCK；§5.2 保留 A/B 全量向量、Windows 实跑、manifest 与节点回放要求；本轮新增 B17-b、B15-c、B18-b 分别覆盖现场替换、首次出口与提交后收敛。仍缺取样后同 txId 完成提交并中断的交错向量（B-09）。设计期未运行 lint/build/test，没有把逻辑推演写成实测通过。"
-  Prompt 采纳影响: "PASS（设计层）；dispatch 变更使此项适用，§8 明确两个业务命令调用方、shared 合同、七 Skill CR-ID 补正、矩阵/Agent/索引/部署同步；§4.9 在 A 实证后才收敛提示，保留 bootstrap/显式入口/上下文/职责/发布要求。"
-  批准范围: "PASS（当前四字段自洽）；§9 scope_in/scope_out/zero_diff/follow_up 齐备，已纳入 multica/CUSTOM.md 与 durable-tx 可选 expect 比对，zero_diff 已收窄，无把当前 AC 必需条件塞入 follow_up。§5.1 的不改 durable-tx 旧选型句应同步现行 §4.5.4/§9；此为已明确正文下的表达性补正，不单独升级 blocker。B-09 的安全边界回修须同步任何实际新增改动范围。"
-  AC闭环与SDD-CLOSE: "BLOCK；十个关闭项均有编号，01/02/03/05～10 可据正文核对；首次写入/覆盖/完成定位/维度三态均有独立判据。SDD-CLOSE-04 只关闭 journal 摘要/实例绑定，未证明 Git 完成事实在实际恢复时仍有效，AC-B17/B18 受 B-09 阻断。"
-  既有实现依赖与事实: "dep-1～36 显式编号与 40 位 SHA 齐备，正文引用均有定义；tools 与 multica HEAD 与上一轮 canonical 相同，未受影响事实据此快速复核，并重读入口/恢复 helper、durable begin/recover/rollback/finish/acquireLock、daemon 环境/预检、日期/schema、业务 Skill 与 Git 白名单。新增 dep-35 的无重入 mkdir 锁/锁内 latestLedger 与 dep-36 的 CUSTOM 三表/稳定编号口径属实；dep-1 是起草快照，受控 diff e125917b7d8a136cf665611dc30db7db1251fc97..HEAD 证实 cr.md 只改 status/updated，owner/version/spec 未漂移。重点事实：begin 返回持有锁直到 finish/abort，recover 的 committed 使用调用方快照，支持 B-09 交错推演。"
+  PRD↔SDD 对齐: "PASS（设计评审）；重读已审批 PRD 与 SDD v0.4，FR-01～16 全部有技术落点（16/16），AC-A1～A8、AC-B1～B20 全部有落点、可观察结果与可达性说明（28/28）。§4.5.4 将同意图恢复的 Git 完成事实取样移入受锁现场，AC-B17/B18 不再受 B-09 的旧快照误回滚阻断。未把既有实现基线描述当成目标契约，未声称实施或部署验收已通过。"
+  架构合理性: "PASS；按 resources 重读 tools 与 multica ARCHITECTURE.md，daemon 只接线任务环境/预检，CLI 独占受控执行，两个转换模块保持纯函数，依赖方向与现有架构一致；无新执行器、事务框架、依赖、HTTP API 或 DB 字段。DEC-1～6 有真实上下文与替代权衡。§4.5.4 的 sampleCommitState 回调由 CLI 提供且在 recoverLedgerTransaction 持锁期间执行并 await，durable 原语仍 Git 无关；共享原语和既有 recoverLedgerCommand 的必要改动已纳入批准范围。"
+  数据模型完整性: "PASS；三元绑定、execution_context、规划与竞品限定 payload、身份/路径、canonical intentDigest 字段集、workspace+身份 key、时间字段继承、scene 四分类与成功回执字段完整；expect={inputDigest,txId} 与锁内 sampleCommitState({targetRoot,headBefore}) 的来源明确。锁外预读仅构造 expect.txId，消息范围起点取实际受锁 payload.headBefore，不再混用预读对象。"
+  接口契约: "PASS；HTTP 条件基线 N/A（无新增/修改 HTTP API）。两个 CLI 操作的参数、限定范围、确认/冲突优先级与 phase/changed/identity/artifacts/commit 回执清晰；firstWrite 可直达写入，overwrite 与重放分离，两个成功出口都要求 journal 已收敛。锁内 Git 取样失败固定为 TX_GIT_FAILED、非零、无成功回执、零写入且 journal 保留，不降级为锁外快照或单条消息；committed 收敛后仍核对投影并定位原提交 C。"
+  多仓架构约束: "PASS；本轮两次 workspace inspect 三 resources 均 classification=healthy、dirty=false，operationalWorkspace 与委派完全一致。受控 HEAD：KB 60e07b5bc40182327d7f9fd42c1e69622ba777d7、tools 061a12ff0a40028b7aba979108c2977313e1fb11、multica 56bdc70db62f4fe2473b238f0ed36b05712af3a9。过程文档只取 operationalWorkspace，代码事实只取 resources.worktreePath；KB 不承载业务代码，本地业务提交不冒充远端发布。"
+  性能与安全: "PASS（设计层）；成对绑定在 custom_env 后发布、真实路径/安装根一致性、唯一触发评论、一次只读预检、固定两/三文件范围与授权/审批/白名单不扩均保留。期望比对、Git 现场取样、恢复动作同处 ledger-<key> 临界区；写入者从 begin 到 finish/abort 持有同锁，R 预读后 W 提交并中断的同 txId 交错会在接管后取到 C，不再把已提交结果还原为 before；取样失败保守保留现场，第三值仍拒绝覆盖。"
+  可测试性: "PASS（方案可重验，未运行 lint/build/test）；§5.2 保留 A/B 全量向量、Windows 实跑与节点回放要求；B18-c 明确同 txId/摘要不变、提交前预读→W 提交 C→finish 前中断→R 接管并锁内取样的交错，要求 C/已提交文件保留、changed=false/commit=C、journal 消失，并以回调内同 key begin 得 TX_LOCK_HELD 证明持锁；B18-d 覆盖取样失败零写入/journal 保留及恢复可用后的同意图收敛。既有 B17-b、B15-c、B18-b 与第三值向量继续保留，未把逻辑推演写成实测通过。"
+  Prompt 采纳影响: "PASS；dispatch 变更使本项适用，§8 明确两个业务操作调用方、shared 合同、七 Skill 的 CR-ID 补正、矩阵/Agent/索引/部署同步；§4.9 在 A1～A8 实证后才收敛重复提示，bootstrap/显式入口/execution_context/职责/检查/发布要求均保留。不把 Skill 级矩阵关系宣称为子命令级机器授权。"
+  批准范围: "PASS；§9 scope_in/scope_out/zero_diff/follow_up 四字段齐备且自洽，durable-tx 的可选 expect、锁内 sampleCommitState、取样失败出口与既有 recoverLedgerCommand 接线均显式纳入 scope_in，zero_diff 已逐项收窄；§5.1 旧选型句已同步。multica CUSTOM.md 的三表/稳定编号/CR 与 TASK 追溯仍在 scope_in。follow_up 不承载当前 AC 的必要条件，无同对象同时要求修改与零改动。"
+  AC闭环与SDD-CLOSE: "PASS；逐项复核 28 条 AC 的落点、契约一致、可观察性与前置可达性；§6.3 SDD-CLOSE-01～10 均有结论。SDD-CLOSE-04 现同时关闭 journal 摘要/实例绑定与 Git 完成事实的锁内取样边界；§4.3/§4.5.4/§5.1～5.3/§6.2～6.3/§7/§9 同步，恢复失败与成功回执可区分。不以 PLAN/TASK 粒度信息缺失制造设计 blocker。"
+  既有实现依赖与事实: "PASS；dep-1～37 均显式定义、40 位 SHA 齐备，正文无未定义 dep 引用。tools/multica HEAD 与上一轮 canonical 相同，未受影响依赖据相同提交及本轮正文/路径/关键符号复读快速核验；重点重读 durable 模块头、acquireLock/latestLedger/recover/begin/abort/finish、crctl recoverLedgerCommand 与 log/rev-parse 白名单、daemon 根/预检/环境来源、CUSTOM 台账口径。dep-37 的 Git 无关原语、锁外旧调用点与 begin→finish/abort 持锁事实属实，支持本轮回调接线设计。dep-1 为起草快照，受控 diff e125917b7d8a136cf665611dc30db7db1251fc97..HEAD 证实 cr.md 仅 status/updated 变化，owner/version/spec 未漂移；当前状态取 crctl next，不使用起草快照判断节点。"
 suggestions:
-  - "已解决：B-03 §4.5.4 第 2 步与 §9 明确可选 expect={inputDigest,txId} 在 ledger-<key> 锁内对实际 latestLedger 比对后才动作；异摘要 TX_INPUT_CONFLICT、同摘要异实例 TX_LEDGER_RECOVERY_REQUIRED 均零写入，B17-b 覆盖 J1→J2 替换，关闭上一轮核对对象与恢复对象脱节根因。§5.1 仍留只消费既有入参/不改 durable-tx 的旧句，应同步唯一裁决与批准范围；不同根因的 Git 现场快照缺口另列 B-09。"
-  - "已解决：B-06 §4.5.4 第 3.b/3.e/4.a 明确 firstWrite 与现存同/异内容、现场矛盾分开，规划及 new-date 竞品的不存在目标直接到第 5 步且不要求 conflict_strategy；§5.2 B15-c 给出首次成功 changed=true 与新提交向量。"
-  - "已解决：B-07 §4.5.4 恢复不再绕过原语收敛，committed 清理后再定位 C、两个 complete 出口均检查无残留 journal；B18-b 覆盖 commit 后 finish 前中断、重跑零业务变化及随后合法覆盖，关闭上一轮提前成功并残留 journal 的根因。Git 完成事实取样后变化的独立缺口另列 B-09。"
-  - "已解决：B-08 §9 scope_in 纳入 multica/CUSTOM.md 并按实施时现行结构登记 CR/TASK 追溯、稳定编号与三表一致；dep-36 与本轮资源文件头/ARCHITECTURE 的强制 fork tracking 相符，不要求设计期提前写任务或定制台账。"
+  - "已解决：B-09 §4.5.4 第 2.a～2.d 步把 Git 完成事实改为取得 ledger-<key> 锁后、对同一 latestLedger/payload 现场执行 sampleCommitState；原语持锁 await 回调，headSha 与 headBefore..headSha 消息集均由实际受锁对象取样，锁外预读只保留 expect.txId。故 R 预读后 W 完成 C 并在 finish 前中断、txId/摘要未变的交错，不再使用提交前快照误判并 rollback。取样失败固定 TX_GIT_FAILED 零写入/journal 保留/不回滚；B18-c/B18-d 明确交错、持锁、保留 C 与文件、恢复回执及失败后收敛的可观察要求；§4.3、§5.1～5.3、§6.2～6.3、§7、§9 与 dep-37 同步，scope_in/zero_diff 包含共享原语与既有 helper 接线。关闭的是设计缺口，实施期仍须以所列向量实证。"
 review-loop:
-  current-attempt: 3
+  current-attempt: 1
 subject-file: change-requests/CR-2026-075/sdd.md
-subject-sha256: e94f8431c5e652458f4891a9143ca92696ef6de8354af6f8470ddd0f57492fed
+subject-sha256: 86179d81c2c3a70c57ee1cfef178752429e20f80c45e5e82d59979d88973f9d6
