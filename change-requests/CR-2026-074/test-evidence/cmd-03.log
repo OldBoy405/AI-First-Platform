@@ -1,34 +1,57 @@
 $ node --test skills/writeback/scripts/test/writeback.test.mjs
-(exit=0)
+(exit=1)
 --- stdout ---
-✔ lib: CRLF 归一 + frontmatter 读改（纪律 #1） (0.7672ms)
-✔ lib: extractBlock 缩进敏感提取 (0.2029ms)
-✔ lib: 账本路径隔离（AC-4 静态判据） (0.2187ms)
-✔ lib: computeInputDigest 与 crctl apply 侧公式一致（跨模块防漂移） (0.4608ms)
-✔ prd-sdd: candidate-only 首次回写（零写 ws）+ manifest v1 + inputDigest 自洽 (55.2492ms)
-✔ prd-sdd: 增量追加（既有内容保留 + H 级 +1）+ 重跑 noop (151.804ms)
-✔ tasks: candidate-only + slug 命名 + SDD-BLOCK-001 幂等 + 索引顺序 + noop (99.5431ms)
-✔ traceability: candidate-only + 追加保留 + 幂等 + evidence 注入 + 无 status + 校验硬失败 (204.7625ms)
-✔ traceability: 数字 milestone 归一为字符串（新段带引号 + 冻结 payload 全段 string；CR-061..066 复盘） (58.4767ms)
-✔ traceability: 证据缺失/状态不通过 → EVIDENCE_INVALID 硬失败，零 candidate (152.4687ms)
-✔ traceability: trunk 缺条目 → TRUNK_UNKNOWN 硬失败（无 master 回退） (50.1714ms)
-✔ traceability: --validate-evidence 复用唯一 validator（ok + path 互换/digest 漂移/verdict 非 pass） (334.5662ms)
-✔ AC-4: 三脚本源码不包含账本文件写路径（静态扫描） (0.6724ms)
-✔ AC-4: candidate-only 硬边界——脚本不得写 ws 内容文件（writeFileSync 仅限 candidate/blobs 写入） (0.5309ms)
-✔ CR-2026-074 TASK-04 AC-05：四类结构负例 STRUCTURE_MISMATCH——原索引不变、无 candidate/manifest (191.399ms)
-✔ CR-2026-074 TASK-04：缺文件首写正例——before=null、首部模板真实换行、插入新 spec 条目、首部无顶层 updated (53.7698ms)
-✔ CR-2026-074 TASK-04：正常索引旧历史保留——原字段更新与历史累积，重复事务不新增相同 spec/CR，不重建/不删除旧条目 (104.8884ms)
-✔ CR-2026-074 TASK-05 AC-06：新链/命令 ID 与规范片段一致——表外诱饵不误收、空位不移列、args 含管道仅验首格、FR 数字排序 (62.4404ms)
-✔ CR-2026-074 TASK-05 AC-06：061/066 历史规范片段——061 args 管道行收集、066 预算诱饵表不入集合（缺失证据按交叉校验硬失败） (175.8938ms)
-✔ CR-2026-074 TASK-05 AC-07：结构错 STRUCTURE_MISMATCH 且 authority 不变；集合在 LF/CRLF 两行尾下相同 (444.5358ms)
-✔ CR-2026-074 TASK-06 AC-08：引号/非首键/键序无关 trunk 正确解析；缺有效 trunk（缺失/不唯一/空值）→ TRUNK_UNKNOWN；无 master/main 回退；inactive 条目不参与 (275.7577ms)
+✔ lib: CRLF 归一 + frontmatter 读改（纪律 #1） (0.7957ms)
+✔ lib: extractBlock 缩进敏感提取 (0.2062ms)
+✔ lib: 账本路径隔离（AC-4 静态判据） (0.2282ms)
+✔ lib: computeInputDigest 与 crctl apply 侧公式一致（跨模块防漂移） (0.4691ms)
+✔ prd-sdd: candidate-only 首次回写（零写 ws）+ manifest v1 + inputDigest 自洽 (56.0596ms)
+✖ prd-sdd: 增量追加（既有内容保留 + H 级 +1）+ 重跑 noop (159.2022ms)
+✔ tasks: candidate-only + slug 命名 + SDD-BLOCK-001 幂等 + 索引顺序 + noop (108.6988ms)
+✔ traceability: candidate-only + 追加保留 + 幂等 + evidence 注入 + 无 status + 校验硬失败 (210.7882ms)
+✔ traceability: 数字 milestone 归一为字符串（新段带引号 + 冻结 payload 全段 string；CR-061..066 复盘） (63.9898ms)
+✔ traceability: 证据缺失/状态不通过 → EVIDENCE_INVALID 硬失败，零 candidate (159.5954ms)
+✔ traceability: trunk 缺条目 → TRUNK_UNKNOWN 硬失败（无 master 回退） (60.6903ms)
+✔ traceability: --validate-evidence 复用唯一 validator（ok + path 互换/digest 漂移/verdict 非 pass） (337.3168ms)
+✔ AC-4: 三脚本源码不包含账本文件写路径（静态扫描） (0.7444ms)
+✔ AC-4: candidate-only 硬边界——脚本不得写 ws 内容文件（writeFileSync 仅限 candidate/blobs 写入） (0.5303ms)
+✔ CR-2026-074 TASK-04 AC-05：四类结构负例 STRUCTURE_MISMATCH——原索引不变、无 candidate/manifest (214.682ms)
+✔ CR-2026-074 TASK-04：缺文件首写正例——before=null、首部模板真实换行、插入新 spec 条目、首部无顶层 updated (61.5409ms)
+✔ CR-2026-074 TASK-04：正常索引旧历史保留——原字段更新与历史累积，重复事务不新增相同 spec/CR，不重建/不删除旧条目 (119.9169ms)
+✔ CR-2026-074 TASK-05 AC-06：新链/命令 ID 与规范片段一致——表外诱饵不误收、空位不移列、args 含管道仅验首格、FR 数字排序 (69.8307ms)
+✔ CR-2026-074 TASK-05 AC-06：061/066 历史规范片段——061 args 管道行收集、066 预算诱饵表不入集合（缺失证据按交叉校验硬失败） (193.7325ms)
+✔ CR-2026-074 TASK-05 AC-07：结构错 STRUCTURE_MISMATCH 且 authority 不变；集合在 LF/CRLF 两行尾下相同 (437.0017ms)
+✔ CR-2026-074 TASK-06 AC-08：引号/非首键/键序无关 trunk 正确解析；缺有效 trunk（缺失/不唯一/空值）→ TRUNK_UNKNOWN；无 master/main 回退；inactive 条目不参与 (267.9538ms)
 ℹ tests 21
 ℹ suites 0
-ℹ pass 21
-ℹ fail 0
+ℹ pass 20
+ℹ fail 1
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 2486.5247
+ℹ duration_ms 2594.8569
+
+✖ failing tests:
+
+test at skills\writeback\scripts\test\writeback.test.mjs:128:1
+✖ prd-sdd: 增量追加（既有内容保留 + H 级 +1）+ 重跑 noop (159.2022ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(r3.stdout.includes('"noop": true'))
+  
+      at TestContext.<anonymous> (file:///C:/Users/GOBAO/Downloads/AI/AI%20First%20Platform/.rayai-worktrees/tools/requirement/CR-2026-074/skills/writeback/scripts/test/writeback.test.mjs:152:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1201:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+      at Test.postRun (node:internal/test_runner/test:1330:19)
+      at Test.run (node:internal/test_runner/test:1258:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
 
 --- stderr ---
