@@ -1,0 +1,21 @@
+cr-id: CR-2026-075
+review-type: requirement
+reviewer: "OldBoy405"
+reviewed-at: "2026-10-02T21:20:32+08:00"
+verdict: block
+blockers:
+  - "本轮新增：B-01 新增规划/竞品公开 CLI 的成功输出契约未闭合。PRD FR-09～12 规定业务写入、幂等、错误 JSON 和正常 exit=0，但未规定成功时 stdout 是否为 JSON、调用方读取的最小结果及其语义，也未明确同意图已完成重放返回怎样的结果；AC-B15/B18 仅检查文件一致，无法验证 Skill 如何依据机器回执认定落盘与提交完成，而非凭 exit=0 或自然语言推断。请在 PRD 为两个操作补充最小成功/幂等回执合同（可引用既有 crctl 输出先例并说明差异），明确业务身份/实际产物、完成与改变或幂等语义、stdout 与诊断输出边界，以及事务未完成不得返回成功的消费规则，并给 AC-B15/B18 增加对应回执断言。具体命令命名、模块位置、序列化及事务算法仍由 SDD 决定，不要求需求期重写实现。"
+dimensions:
+  structure-completeness: "pass：概述、6 条用户故事、16 项 FR、28 项 AC、非功能、指标与排除项齐全；版本和三角色 owner 与 cr.md 一致。"
+  testability: "block：FR 与 A1～A8/B1～B20 全量映射；新业务操作成功及幂等回执未定义，见 B-01。"
+  scope-control: "pass：一个 CR、两个内部任务 A/B；复用现有能力，明确不新增执行器、通用写入、权限框架或 PRD/SDD validator。"
+  planning-alignment: "pass：source 为空，不存在仓库规划报告；已逐节对照来源 Issue 原始 v4 附件，核心目标、28 个向量、部署和安全回退完整保留。"
+  dependency-identification: "pass：复用 daemon 预检与既有事务/CAS/恢复/审计/隔离提交，A 验证后收敛提示；origin 为空，不关联其他 CR，独立 source 修复排除。"
+  cli-contract: "block：完成命令/参数语义、输入约束、错误顺序与代码、调用者边界、幂等、状态副作用及观察点全域检查；新操作具体命名由 SDD 映射符合来源授权，唯一缺口为 B-01 的成功 stdout/JSON 与回执消费。"
+  skill-contract: "pass：不新增 Skill；现有调用方参数/确认、指定落盘路径、状态与审批禁止变更、错误和 crctl 唯一受控写入边界均有约束，原必需自检与独立评审保持。"
+  http-contract: "N/A：本 CR 不新增或修改 HTTP endpoint/request/response；仅既有 daemon 本地 task 准备与 CLI/Skill 合同，FR-12 明确无新 HTTP 状态。"
+suggestions: []
+review-loop:
+  current-attempt: 1
+subject-file: change-requests/CR-2026-075/prd.md
+subject-sha256: 59a88c05e266c1c2b49be697517ebb9bd3c518b15e61be3dd531a030f0413b99
