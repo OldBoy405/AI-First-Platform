@@ -104,12 +104,14 @@ TASK-01、TASK-09 ─→ TASK-10 ARCHITECTURE.md 地图维护
 | cmd-01 | tools | . | node | ["--test","skills/shared/crctl/scripts/test/crctl.test.mjs"] | 600 |
 | cmd-02 | tools | . | node | ["--test","skills/shared/crctl/scripts/test/register-tx.test.mjs"] | 600 |
 | cmd-03 | tools | . | node | ["--test","skills/writeback/scripts/test/writeback.test.mjs"] | 600 |
-| cmd-04 | tools | . | node | ["--test","skills/shared/crctl/scripts/test/writeback-tx.test.mjs"] | 600 |
+| cmd-04 | tools | . | node | ["--test","skills/shared/crctl/scripts/test/writeback-tx.test.mjs"] | 720 |
 | cmd-05 | tools | . | node | ["--test","skills/shared/crctl/scripts/test/caller-contract.test.mjs"] | 300 |
 | cmd-06 | tools | . | node | ["--test","skills/shared/crctl/scripts/test/lint-prompts.test.mjs"] | 300 |
 | cmd-07 | tools | . | node | ["-e","const fs=require('fs');const t=fs.readFileSync('ARCHITECTURE.md','utf8');const need=['kb init','cmdKbInit','requireExplicitWorkspace','detectWorkspace','_backlog.yml','_index.yml','KB_INIT_PRECONDITION'];const miss=need.filter(s=>!t.includes(s));if(miss.length){console.error('cmd-07 FAIL: ARCHITECTURE.md missing: '+miss.join(', '));process.exit(1);}console.log('cmd-07 ok: '+need.length+' map markers present');"] | 60 |
 
 命令算法唯一事实源为本表行。cmd-01～cmd-06 对应 SDD §5.2 测试表入口；cmd-07 为 SDD §8 ARCHITECTURE.md 地图行（dep-15）的只读取证命令：cwd 即 tools CR worktree 根，argv 内联脚本仅读取该文件并逐项断言比对判据（`kb init`、`cmdKbInit`、`requireExplicitWorkspace`、`detectWorkspace`、`_backlog.yml`、`_index.yml`、`KB_INIT_PRECONDITION`），不写任何文件；判据到 TASK-01/§2.1/§3.2 代码事实的映射与其承载边界见 TASK-10 验收条件 1。SDD §8「随代码评审检查」的人工内容检查（review-code R7）保留，cmd-07 不代替、不删除该检查。
+
+cmd-04 的 `timeout=720` 是 2026-10-02 由 600 上调的结果，依据一次前台实测：在 tools CR worktree（`1f9c603`）以本表原样 argv/cwd 单跑一次 `timeout -s SIGTERM 720 node --test skills/shared/crctl/scripts/test/writeback-tx.test.mjs` → exit 0、36 pass / 0 fail、`duration_ms 651157.812`（wall 652s），对 720s 余量 ≈9.4%；同一命令此前实测 573.5s / 628.6s / 637.3s，均逼近或越过旧 600s 上限。不取更大值的理由：`write-test-report` 节点声明 `timeoutMinutes: 20`（1200s），同轮其余六条合计 ≈389s（cycle 2 attempt 1 机器区：cmd-04 被 SIGTERM 处累计 ≈989s，即 989−600），cmd-04 取 ≥900 时节点累计上界 ≈1289s 会越过该额度。
 
 ## 7. AC/业务闭环覆盖矩阵
 
