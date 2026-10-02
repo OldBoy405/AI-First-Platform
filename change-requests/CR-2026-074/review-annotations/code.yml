@@ -1,37 +1,37 @@
 cr-id: CR-2026-074
 review-type: code
 reviewer: "OldBoy405"
-reviewed-at: "2026-10-02T18:12:22+08:00"
+reviewed-at: "2026-10-02T19:18:18+08:00"
 verdict: block
 blockers:
-  - "本轮新增： B-CODE-05（Major）— 额外旗标 --__proto__ 被解析器静默丢弃，绕过 kb init 的 BAD_ARGS 前置：tools skills/shared/crctl/scripts/crctl.mjs:3729 将 flags 初始化为普通对象 {}，:3749/:3751 用 flags[key]=next/true 写入任意用户键；对 __proto__ 写入 argv 字符串或 true 会命中继承的 Object.prototype.__proto__ setter，值不是 object/null，赋值被忽略且不形成自有可枚举键。故 kb init --workspace <合法主KB> --__proto__ x（或末尾单独 --__proto__）到 :3324 的 Object.keys(flags) 时只有 workspace，extraFlags 为空，继续 resolveToolsRoot/仓库前置/创建/暂存/提交/推送/成功审计，而非约定 BAD_ARGS；缺根/空根仍由 requireExplicitWorkspace 先拒绝。违反 SDD §3.1/§3.2、TASK-01 和 AC-02 的仅 workspace/no extra flag、形态失败先于副作用合同。该调用链由只读源码确认，未在评审阶段运行 kb init 或重跑测试；cmd-01 的 AC-02 用例只覆盖普通未知键和 cmd/cmdList 组合，源码与该测试入口无 __proto__ 向量。回修须保留每个用户旗标为可检查的自有键或在 kb 入口校验原始旗标集合，不让继承 setter 吞掉未知键；保持非 kb 的既有语义及 WORKSPACE_REQUIRED 优先级，补 __proto__ 有值/无值 × 有根/缺根/空根向量与文件/index/HEAD/远端/audit 零副作用断言，再由 write-test-report 重建规范证据。"
+  - "本轮新增： B-CODE-06（Major）— 新 KB 初始化指南的顺序不能满足新增 kb init 的前置合同。tools docs/QODER-使用指南.md:49–95 明示创建全新 workspace、git init，随后写六种 docs 索引；后续安装 tools/、生成 AGENTS.md 与 dir-graph，:209–219 直接让读者运行 kb init 并宣称完成后即可开始首个 CR。该环境准备节没有配置 KB origin、使 symbolic-ref 与声明 trunk 一致、或先提交这些白名单外文件的步骤/前提（全文只读取证未见 git remote/add/commit 指引）。实际 cmdKbInit 在 crctl.mjs:3367 起逐仓要求 origin，:3386 要求 KB symbolic-ref 等于声明 trunk，:3395–3425 只允许 dir-graph.yaml 与两账本的工作树/index 变更；因此原样执行指南先因缺 origin 返回 KB_INIT_PRECONDITION/repo-invalid，即使补 origin/正确分支，已创建的 docs 索引及 AGENTS.md/tools 仍在白名单外而返回 dirty，不能到达两账本初始化。此项是 TASK-09/SDD §8 对当前新增初始化说明与实际接口一致性的交付缺口，不是要求放宽初始化白名单或代建账户/远端；未执行 kb init、未声称发生业务写入。回修仅在已批准说明范围内补齐/重排引导：明确由维护者准备已有 origin 的正确 trunk 主 checkout，在调用 init 前已提交非白名单配置/文档/tools 文件，或先 init 后生成其余文件；保证教程每一步前置可满足，同时保留六种 docs 模板、不恢复四种手工治理模板、不改生产前置/状态机/权限边界，随后由 write-test-report 重建与新源码绑定的规范证据。"
 dimensions:
-  批准范围: "PASS：逐仓实际 trunk merge-base 取证；tools 41b112ed4d97baaaca3b82367a72f35520dc3d4b..a259454a5573a1055507a5a14f34a19fdc7d0bfc 为既有 17 文件集合，生产/测试/说明仍在 SDD §9 与上轮明确回修范围内，multica merge-base=HEAD=38eca166597ebd540538d155f5ff2dee2bdb6845，无交付 diff。状态机/gates/Pipeline/Agent/矩阵、durable-tx、applyWriteback/writebackAllowlist、writer 通用 source 合同、用户根 gitignore 未变。全仓 diff 输出存在 crctl 自身 20000 字符上限，已改逐生产文件窄范围 diff 并读实际实现/测试，不用被截断的全仓正文作完整证据。"
-  代码↔TASK↔SDD 对齐: "BLOCK：10/10 TASK 已读取并对照 SDD/PLAN；B-CODE-03 的 cmdList 聚合器残留关闭，B-CODE-01/02/04 的修复保留，source 空缺省/ensure 自忽略/缺索引及 features 前置/两规范表/YAML trunk/裸提交 shape/说明与三阶段集成契约未发现新的阻断；B-CODE-05 使 TASK-01/AC-02 的额外旗标拒绝合同仍不完整。"
-  工程质量: "PASS：只读 report generated-by=crctl-test、status=pass 与 traceability.tests；用既有 canonicalCommandSubject 复算七条命令，与 PLAN §6.2 逐条 repo/cwd/executable/args/timeout 全等，command-digest=bb1e0976672d9f73c8ba056218926da87163751879515b212a69269ca0b688ab 在 report/trace/journal 中一致。七条均 started=true、skipped=false、exit-code=0、timed-out=false；lint/build 不单列的说明已读。评审未执行 lint/test/build。"
-  关键路径可读性: "PASS：已读私有 init 的前置/porcelain rawStdout/远端祖先/模板及普通 Git 发布与派发/解析链；局部 cmdAgg 消除共享槽位，无新生产模块/导出/依赖。ARCHITECTURE 的显式根、独占创建、普通 Git 发布、无锁/journal/跨阶段原子性及无 CR outbox 边界与实现一致；B-CODE-05 的正确性判定另列，不把 cmd-07 字符串命中当内容审查。"
-  安全性: "BLOCK：已有父目录 realpath/junction 失败关闭、raw porcelain 路径白名单、固定 argv/shell=false、wx、普通非快进及原 CAS 边界保留；但 B-CODE-05 的用户旗标可被继承 setter 吞掉，额外参数不再被失败关闭校验，非法形态可能继续业务写入。此为参数保留/拒绝缺口，不声称已经发生外部写入或任意对象 prototype pollution。"
-  测试覆盖: "BLOCK：B-CODE-03 两序 × 三根向量及 B-CODE-02 两账本父目录六向量已只读对照；B-CODE-04 的真实 baseline→tasks→traceability→archive 与 trace 前冻结及重放隔离断言仍在。B-CODE-05 对应 __proto__ 有值/无值与根优先级向量缺失，现有全绿不覆盖该接口缺口；其余 TASK 的关键证据命令均非 skipped。"
-  测试证据可信度: "PASS：读取完整测试 journal f898a7349baf42ca9589c91c3c156373（phase=complete、attempt=2、updatedAt=2026-10-02T17:56:54+08:00），七条日志存在、命令头与机器区 argv/exit 全等、stdout/stderr 标记唯一。先 CRLF→LF 后按既有 resultMetadata 键序以当前 tools SHA 和七条 logSha256 重建 inputDigest，与 journal.inputDigest 全等，确认无源码/日志漂移；不引入新 canonical aggregate 字段，不采信作者自报替代机器证据。multica ff 前移无本 CR diff，测试命令/来源绑定均仅 tools，此处只确认无证据漂移，不授予 freshness replay 规则豁免。"
-  前端质量: "N/A：实际变更集合无 tsx/vue/css/html，不触发前端维度。"
+  批准范围: "PASS：tools trunk merge-base=41b112ed4d97baaaca3b82367a72f35520dc3d4b，当前 HEAD=ffa0c68bcad359bc7389103093c64d8ba8f57b9a，交付仍为既有17文件；本次回修仅 crctl.mjs 与 crctl.test.mjs。multica merge-base=38eca166597ebd540538d155f5ff2dee2bdb6845，与已有资源 HEAD 一致。生产改动为私有 init、rawStdout、ensure 自忽略/source缺省、两个 generator、一个 Git shape及必要说明；未触碰状态机/gates/Pipeline/Agent/矩阵、durable-tx、applyWriteback/writebackAllowlist、writer source通用合同或用户根gitignore。对裁剪的diff已用实际文件窄切片补足，不用 complete=false 正文作为充分证据。"
+  代码↔TASK↔SDD 对齐: "BLOCK：10/10 TASK与 SDD/PLAN、TASK done账本及测试覆盖已对照；B-CODE-01/02/03/04 修复仍保留，B-CODE-05 本轮关闭。实现的初始化、source、缺索引/规范表/YAML trunk、裸提交与三阶段集成未见新代码阻断；B-CODE-06 为 TASK-09 当前教程新增初始化调用与其自身准备顺序/生产前置不一致，须说明侧回修。"
+  工程质量: "PASS：只读 canonical report generated-by=crctl-test/status=pass 与 traceability.tests；PLAN §6.2 与机器区7条 repo/cwd/executable/args/timeout逐条全等，既有 canonicalCommandSubject 复算 command-digest=bb1e0976672d9f73c8ba056218926da87163751879515b212a69269ca0b688ab，在 report/trace/journal 中一致。七条均 started=true/skipped=false/exit-code=0/timed-out=false；不单列lint/build的说明已读。未执行 lint/test/build。"
+  关键路径可读性: "PASS：已读 init 的固定前置/porcelain rawStdout/真实父目录/远端祖先/模板/普通Git发布，parseArgs与flags消费点、两个generator实际实现、ARCHITECTURE新增地图条目及说明。无新生产模块/导出/依赖，无初始化锁/journal或跨Git index原子性承诺；地图内容与代码一致，未以cmd-07字符串命中代替内容审查。教程执行顺序问题单列 B-CODE-06。"
+  安全性: "PASS：B-CODE-05共享解析根因已修，额外旗标在kb业务写入前失败关闭；根守卫优先级保留。既有 realpath/junction、raw porcelain路径白名单、固定argv/shell=false、wx、普通非快进及原CAS边界未放宽。B-CODE-06 的恢复路径必须修改说明，不得放宽安全前置。"
+  测试覆盖: "PASS：TASK-01的原型旗标、cmd聚合器、父目录与失败残留向量已读；缺索引结构负例及 before=null、两表/交叉校验、source与ensure、裸提交形态的测试入口与覆盖矩阵对应。TASK-08真实baseline→tasks→trace→archive及trace前冻结/重放隔离断言已读。7条关键命令均非skipped；现有说明结构断言不证明QODER教程全流程前置满足，B-CODE-06独立列出。"
+  测试证据可信度: "PASS：完整读取 journal 9aabfc941f4544599e05747b34d8b57a（phase=complete、attempt=3、updatedAt=2026-10-02T19:05:14+08:00）。七条日志存在，命令头/exit与机器区全等，stdout/stderr标记各唯一；CRLF→LF后按既有resultMetadata键序，用当前tools SHA和七条logSha256重建 inputDigest=4313fe37ce885cf6281ad3a532127f72675ae73972f2afc59a107aa749d441d5，与journal全等。无源码/日志/命令漂移，不新增canonical aggregate字段，不用作者自报或共享实例替代证据。"
+  前端质量: "N/A：实际变更集合无tsx/vue/css/html，不触发前端维度。"
 suggestions:
-  - "已解决： B-CODE-03（Major）— crctl.mjs:3734 的局部 cmdAgg 与用户 flags 槽位隔离，:3753 仅在存在 --cmd 时赋回聚合结果；cmdKbInit:3324 不再豁免 cmdList。crctl.test.mjs:6021–6053 覆盖两种旗标顺序 × 有根/缺根/空根，有根 BAD_ARGS、缺根/空根 WORKSPACE_REQUIRED，并在 fixture 上核对账本未创建、HEAD 未提交、远端空、无成功审计。当前 tools HEAD a259454a5573a1055507a5a14f34a19fdc7d0bfc 与本轮七条命令 sourceRevision/log 内容重建的 test journal inputDigest 全等，原 TypeError→INTERNAL_ERROR 残留关闭；B-CODE-05 是不同保留键的新增缺口，不重复列原聚合器缺陷。"
-  - "范围外： 测试报告已披露 buildIndex 对既有条目秒精度 updated 的跨秒 flake，本轮 cmd-03 未失败；不改批准范围内的索引历史更新语义，后续 CR 可单独处理该既存幂等性问题。"
-  - "范围外： cmd-04 本轮在批准的 720s 内完成，但报告所述余量约 9.9% 且全表接近节点 20min 额度；未来工况/执行器预算治理可另行评估，本轮不擅自放宽 PLAN timeout 或 Pipeline。"
+  - "已解决： B-CODE-05（Major）— crctl.mjs:3728–3764 的 parseArgs 使用 Object.create(null)，任意用户键含 __proto__ 均形成可枚举自有键，cmdKbInit:3324 的额外旗标检查不再被继承 setter 吞键绕过；根守卫仍先于 kb 形态。只读实际两文件回修 diff 与 crctl.test.mjs:6047–6075：有值/无值 × 有根/缺根/空根，有根含前后两序，分别断言 BAD_ARGS（消息含 --__proto__）与 WORKSPACE_REQUIRED，并核对无账本、无 HEAD 提交、远端空、无 audit。全部 flags 消费调用点未依赖对象原型方法；parseGitArgs 仍只写固定白名单键。当前 tools ffa0c68bcad359bc7389103093c64d8ba8f57b9a 与七条日志重建的 inputDigest 全等，原 blocker 关闭。"
+  - "范围外： test-report.md 已披露 buildIndex 无条件更新既有条目秒精度 updated 的跨秒 flake；本轮 canonical cmd-03 成功，不修改批准范围外的历史更新语义，后续 CR 可独立处理既存幂等性问题。"
+  - "范围外： canonical cmd-04 在批准的 720s 上限内完成，报告记载余量约 11.9%、全表约 1033s 接近节点 20min 额度；执行器预算/性能治理留后续评估，本轮不改 PLAN timeout 或 Pipeline。"
 review-loop:
-  current-attempt: 3
+  current-attempt: 1
 release-subjects:
   version: 1
   repositories:
     - repo: ai-first-platform-docs
       remote-ref: refs/heads/requirement/CR-2026-074
-      reviewed-source-sha: 0e7a3d7c23547257a52b99a3b0c95e5449f575bb
+      reviewed-source-sha: edb3237cd4154476101e4f374bc51c9fb6ef65c3
     - repo: multica
       remote-ref: refs/heads/requirement/CR-2026-074
       reviewed-source-sha: 38eca166597ebd540538d155f5ff2dee2bdb6845
     - repo: tools
       remote-ref: refs/heads/requirement/CR-2026-074
-      reviewed-source-sha: a259454a5573a1055507a5a14f34a19fdc7d0bfc
+      reviewed-source-sha: ffa0c68bcad359bc7389103093c64d8ba8f57b9a
   artifacts:
     algorithm: sha256
     canonicalization: crlf-to-lf+path-sort
