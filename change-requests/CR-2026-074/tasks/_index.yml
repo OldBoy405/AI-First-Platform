@@ -1,0 +1,63 @@
+cr-id: CR-2026-074
+tasks:
+  - id: CR-2026-074-TASK-01
+    title: "kb init 入口/CLI/前置/发布重入"
+    status: done
+    done-at: "2026-10-01T21:45:01+08:00"
+    estimate: 6h
+    depends-on: []
+  - id: CR-2026-074-TASK-02
+    title: "ensure create 自忽略"
+    status: done
+    done-at: "2026-10-01T21:51:24+08:00"
+    estimate: 1h
+    depends-on: [CR-2026-074-TASK-01]
+  - id: CR-2026-074-TASK-03
+    title: "source 空缺省 + 历史指纹矩阵"
+    status: done
+    done-at: "2026-10-01T21:57:20+08:00"
+    estimate: 1h
+    depends-on: [CR-2026-074-TASK-02]
+  - id: CR-2026-074-TASK-04
+    title: "buildIndex 缺文件首写 + features 前置校验"
+    status: done
+    done-at: "2026-10-01T22:14:29+08:00"
+    estimate: 3h
+    depends-on: []
+  - id: CR-2026-074-TASK-05
+    title: "两规范表提取"
+    status: done
+    done-at: "2026-10-01T22:26:09+08:00"
+    estimate: 2h
+    depends-on: [CR-2026-074-TASK-04]
+  - id: CR-2026-074-TASK-06
+    title: "YAML trunk 解释"
+    status: done
+    done-at: "2026-10-01T22:30:59+08:00"
+    estimate: 2h
+    depends-on: [CR-2026-074-TASK-05]
+  - id: CR-2026-074-TASK-07
+    title: "rules.json 裸提交 shape + controlled-shell SKILL 同步"
+    status: done
+    done-at: "2026-10-01T22:38:57+08:00"
+    estimate: 1h
+    depends-on: [CR-2026-074-TASK-01]
+  - id: CR-2026-074-TASK-08
+    title: "writeback-tx 无索引/证据齐全集成变体"
+    status: done
+    done-at: "2026-10-01T23:01:07+08:00"
+    estimate: 5h
+    depends-on: [CR-2026-074-TASK-04, CR-2026-074-TASK-05, CR-2026-074-TASK-06]
+  - id: CR-2026-074-TASK-09
+    title: "说明/命令发现/计数同步"
+    status: done
+    done-at: "2026-10-01T23:17:05+08:00"
+    estimate: 3h
+    depends-on: [CR-2026-074-TASK-01, CR-2026-074-TASK-03, CR-2026-074-TASK-04, CR-2026-074-TASK-05, CR-2026-074-TASK-06, CR-2026-074-TASK-07, CR-2026-074-TASK-08]
+  - id: CR-2026-074-TASK-10
+    title: "ARCHITECTURE.md 地图维护"
+    status: done
+    done-at: "2026-10-01T23:18:22+08:00"
+    estimate: 1h
+    depends-on: [CR-2026-074-TASK-01, CR-2026-074-TASK-09]
+

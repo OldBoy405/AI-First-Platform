@@ -1,0 +1,53 @@
+cr-id: CR-2026-074
+review-type: code
+reviewer: "OldBoy405"
+reviewed-at: "2026-10-02T19:55:49+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  批准范围: "PASS：三仓初始 workspace inspect 均 classification=healthy、dirty=false。tools trunk merge-base=41b112ed4d97baaaca3b82367a72f35520dc3d4b，当前 HEAD=9e7612e2b86d3955bcd23a3e6a8edbaa73da03d1；trunk 至 HEAD 的17文件集合与 SDD §9 批准范围一致。ffa0c68 至当前 HEAD 的实际回修 diff 仅 docs/QODER-使用指南.md；multica HEAD=38eca166597ebd540538d155f5ff2dee2bdb6845 无本 CR 代码变更。生产差分已按单文件收窄并以实际源码补足，不以被裁剪正文判通过；状态机/gates/Pipeline/Agent/矩阵、durable-tx、applyWriteback/writebackAllowlist、writer source通用合同、用户根gitignore未改。"
+  代码↔TASK↔SDD 对齐: "PASS：10/10 TASK 验收与 PLAN §6.1/§7、SDD §8/§9及 done 账本对照。B-CODE-06 本轮关闭：指南第1步明确 KB 主 checkout、origin、symbolic-ref 等于声明 trunk；第5步先提交 AGENTS.md、六种 docs 索引与 tools 再 init，另说明 tools 外置且先 init 后生成的替代顺序，生产前置/白名单未放宽。当前初始化、ensure/source、索引首写、两规范表、YAML trunk、裸提交和三阶段集成契约仍保留，未见当前验收阻断。"
+  工程质量: "PASS：只读取证 canonical report generated-by=crctl-test/status=pass 与 traceability.tests；PLAN §6.2 的7条 repo/cwd/executable/args/timeout 与机器区逐条全等。使用既有 canonicalCommandSubject 复算 command-digest=bb1e0976672d9f73c8ba056218926da87163751879515b212a69269ca0b688ab，与 report/trace/journal 全等。七条均 started=true、skipped=false、exit-code=0、timed-out=false；已读不单列 lint/build 的适用说明，不重跑任何验证命令。"
+  关键路径可读性: "PASS：实际源码复核 cmdKbInit 的根/形态/realpath/逐仓 origin/trunk/porcelain rawStdout/远端祖先/模板/普通Git发布，parseArgs及main派发，两个 generator 的缺文件/结构/两表/YAML解析路径，以及 ARCHITECTURE 新增地图行。地图与代码一致，未用 cmd-07 字符串命中代替内容审查。教程准备顺序与实际入口对应；本轮说明侧修复未新增生产模块/导出/依赖或第二事务框架。"
+  安全性: "PASS：原 B-CODE-01/02/03/05 回修仍保留：原始 porcelain 字节、两账本父目录提前核验、额外 cmd/cmdList 拒绝、Object.create(null) 用户旗标袋。已读 __proto__ 有值/无值及缺根/空根/有根两序的 BAD_ARGS/WORKSPACE_REQUIRED 与零副作用断言。根守卫优先级、固定argv/shell=false、wx、非快进拒绝和原CAS边界未放宽；指南以正确前置和提交顺序修复，不要求绕过治理。"
+  测试覆盖: "PASS：10/10 TASK 对应 cmd-01～07；关键 AC 唯一命令均非 skipped。已对照当前测试入口与原型旗标/dirty/父目录/失败残留、features前置、两表结构与交叉校验、YAML trunk、source/ensure、裸提交形态及 TASK-08 的真实 baseline→tasks→trace→archive 与 trace 前冻结/重放隔离断言。TASK-09 的结构断言与说明实际内容共同支撑关闭；作者本地裸仓补充验证非 canonical，不替代命令表证据，也不标称已验证托管平台认证/保护。"
+  测试证据可信度: "PASS：完整读取 test journal 057f8c3cadf144958a2c1f738306dba8（phase=complete、attempt=1、updatedAt=2026-10-02T19:42:13+08:00）。七条规范日志存在且 stdout/stderr 标记各唯一，命令头及 exit 与机器区一致。CRLF→LF 后按既有 resultMetadata 键序，用当前 tools SHA及七条 logSha256 重建 inputDigest=f48fefe22457f7ef0636a09f876fa6602d2e36ab0284c120540b15df476d0a83，与 journal 全等。无源码/日志/命令漂移，不新增 canonical aggregate字段，不以作者自报或共享实例替代证据。"
+  前端质量: "N/A：实际变更集合无tsx/vue/css/html，不触发前端维度。"
+suggestions:
+  - "已解决： B-CODE-06（Major）— tools docs/QODER-使用指南.md:47–73 明确 KB 主 checkout（非 linked worktree）、已配置 origin、当前分支=声明 trunk，提供 clone 与 git init -b main/remote/symbolic-ref 两条准备路径；:216–242 明确先 git add -A/commit 提交白名单外 AGENTS.md、六种 docs 索引与 tools，再运行 kb init，并解释 tools外置/先init后生成的替代顺序与 repo-invalid/trunk-mismatch/dirty/remote-diverged/KB_INIT_CONFLICT。逐项对照 crctl.mjs:3317–3496 的真实前置，顺序可满足；六种 docs模板保留、四种手工治理模板未恢复。ffa0c68..9e7612e 仅该说明文件，不改生产前置/权限边界，canonical 新证据与9e7612e源码全等，原 blocker 关闭。"
+  - "范围外： test-report 已披露 buildIndex 对既有条目秒精度 updated 无条件更新的跨秒 flake；本轮 canonical cmd-03 成功，不修改批准范围外的历史更新语义，后续 CR 可独立处理。"
+  - "范围外： canonical cmd-04 在批准的720s上限内完成；报告披露644.2s、余量约10.5%，全表wall约1036s/节点1200s。预算与性能治理留后续评估，本轮不改PLAN timeout或Pipeline。"
+  - "范围外： 补充验证以本地裸仓充当 origin，托管平台首推认证/分支保护/默认分支差异未覆盖；指南已要求维护者准备远端与正确声明trunk，不把该补充实验当作真实托管平台验收。"
+review-loop:
+  current-attempt: 2
+release-subjects:
+  version: 1
+  repositories:
+    - repo: ai-first-platform-docs
+      remote-ref: refs/heads/requirement/CR-2026-074
+      reviewed-source-sha: 2553612ec34d81cd6043d3d0c4c01356e2998f2e
+    - repo: multica
+      remote-ref: refs/heads/requirement/CR-2026-074
+      reviewed-source-sha: 38eca166597ebd540538d155f5ff2dee2bdb6845
+    - repo: tools
+      remote-ref: refs/heads/requirement/CR-2026-074
+      reviewed-source-sha: 9e7612e2b86d3955bcd23a3e6a8edbaa73da03d1
+  artifacts:
+    algorithm: sha256
+    canonicalization: crlf-to-lf+path-sort
+    files:
+      - { path: change-requests/CR-2026-074/plan.md, sha256: 3d4abfcabde367bc9570c93d863bab63208f78a6b1222e96bdf454a9d854093e }
+      - { path: change-requests/CR-2026-074/prd.md, sha256: 1ec6f962b677f4423dfa2aaef3007f0122512ee82ea0b586e41d744d1a5ee57a }
+      - { path: change-requests/CR-2026-074/sdd.md, sha256: 371ec7a8ca880f2a8dc48bb7a5cf29221fd1953f0abaa13f40b5785e6d6e71d3 }
+      - { path: change-requests/CR-2026-074/tasks/TASK-01.md, sha256: 4c6907b5453e38a119d8c6d1b01ab1010aa3fedef9aa90fe5f64d898802a4318 }
+      - { path: change-requests/CR-2026-074/tasks/TASK-02.md, sha256: 75f8a71003b7a6e3bc3104e713eb10a1a97053416128e8d0f9c233af03faa673 }
+      - { path: change-requests/CR-2026-074/tasks/TASK-03.md, sha256: bdaa081c4f880f911f7bca100177bbe98e8be30501fbf9b892bfc8769dae327b }
+      - { path: change-requests/CR-2026-074/tasks/TASK-04.md, sha256: 7460bd2577f8368fab8c492c934034c83108473c0bbf794edb7ba8b59e0176b3 }
+      - { path: change-requests/CR-2026-074/tasks/TASK-05.md, sha256: 0c6de690bdd8f16db173eed75286a1df220024f5e67ca07d43272abd64b43081 }
+      - { path: change-requests/CR-2026-074/tasks/TASK-06.md, sha256: 71c19cecdd756e82150e960797431060b5d7ddc9344c98e3c73e7cdd56e0ad30 }
+      - { path: change-requests/CR-2026-074/tasks/TASK-07.md, sha256: e344dbaf60cdd6341119c804cee1b96a91d15299bffda8b9607d3035c9b0e229 }
+      - { path: change-requests/CR-2026-074/tasks/TASK-08.md, sha256: 9a4e582ae916551ec239f108cb6d7c30e6d5d108cb284b4b2b945faa4bab9aee }
+      - { path: change-requests/CR-2026-074/tasks/TASK-09.md, sha256: f4a400e8e20fa12a2019c588195525cbb78f6d9a477fc6aa7589ec4966d59f1c }
+      - { path: change-requests/CR-2026-074/tasks/TASK-10.md, sha256: e774e1410cec1c39127cee09f86a300ae3c56206c2e9e56a87eb70e7b2e058d7 }
+      - { path: change-requests/CR-2026-074/tasks/_index.yml, sha256: 8633c5d73ef77bd544b184e15adc4a16e5b613c74059c7c13cac5b69d52bcdea }
+    digest: 11dbe5d2c975c2d8c02b78aab2e43c2e93ecbfa62bd28a2930ae6ccb7b7e35a2

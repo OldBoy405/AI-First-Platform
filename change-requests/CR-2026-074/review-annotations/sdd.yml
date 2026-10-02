@@ -1,0 +1,22 @@
+cr-id: CR-2026-074
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-10-01T00:19:48+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  PRD↔SDD 对齐: "PASS：已审批 PRD 的 10/10 FR、12/12 AC 均有设计落点、可观测结果及可达性说明；SDD-CLOSE-01～05 已关闭。FR-5 对全部既有索引的 features 校验已置于分支选择及 writeCandidate 前，scope_in 与 AC-05 同步闭合。"
+  架构合理性: "PASS：对照 tools ARCHITECTURE.md §4/§5/§6/§8，保留单一 crctl 写者、私有入口、零新依赖及 generator/candidate/apply 分层；地图维护纳入技术审批后的 scope_in。24 项显式依赖的 40 位 SHA 均匹配 tools resources HEAD 41b112ed4d97baaaca3b82367a72f35520dc3d4b，文件/稳定符号/行为已只读核验；正文事实通过已定义 dep-N 承载，无伪造 ADR。"
+  数据模型完整性: "PASS：两账本精确 UTF-8/LF/null 根模板、五个输出字段、缺索引 beforeSha256=null、source 历史指纹矩阵完整；空文件及缺 features 的全部既有索引拒绝，正常插入/历史累积和缺 cr-history 拒绝保留，durable-tx/apply 零改动。"
+  接口契约: "PASS：CLI 唯一输入、显式 workspace、输出类型、固定错误优先级、前置零业务写入、合法残留与重入合同明确；无 HTTP API 变更，OpenAPI 条件基线 N/A。"
+  多仓架构约束: "PASS：业务 workspace 与 resources 代码取证路径分离；tools 承载实现，KB 承载过程文档，multica 无代码变更；init 仅接受主 checkout、仅提交 KB 三候选文件，其他 active code 仓只读核验。"
+  性能与安全: "PASS：显式根/realpath/role、固定 argv、wx 独占、普通非快进拒绝与既有 CAS 边界完整；无初始化锁/journal、无跨 Git index 事务承诺、无审批旁路、无常驻轮询；解析 O(PLAN 行数+仓库数)。"
+  可测试性: "PASS：12 项 AC 的场景/观察结果/前置可达性均明确；AC-05 覆盖缺 features 但已有目标 spec/cr-history 的反例并在生成前拒绝。dep-16～19 明确三仓 fixture 的裁剪、merge fixture 不完整的证据补齐及命令集合；隔离故障注入不新增生产 faultPoint，不改真实签字源。未执行 lint/build/test、crctl validate 或 validate-doc。"
+  Prompt 采纳影响: "PASS：触及 dispatch，SDD §8 逐项绑定 dep-19～24，列出 crctl/requirement-register/controlled-shell、README、QODER 使用指南和命令发现同步；Skill 不自动代跑初始化，protectedPaths/Agent/Pipeline/矩阵保持不变，writer 通用 source 合同不改。"
+suggestions:
+  - "已解决： B-SDD-01 — SDD v0.2 §2.2/§4.3 明确所有既有索引先校验 features，再选择目标 spec 分支；STRUCTURE_MISMATCH 位于 writeCandidate 前。§6.2 AC-05 明列缺 features 但已有目标 spec/cr-history 的反例，§9 scope_in 纳入 FR-5 必需的最小校验；正常历史累积、缺 cr-history 拒绝及 durable-tx/apply 零改动仍保留。"
+  - "已解决： B-SDD-02 — dep-16～24 补齐 fixture、命令集合及各文档的 repo/relative path/stable symbol或对象/40位SHA/依赖结论；§5.2/§6.2 对 dep-16～19、§8 对 dep-19～24 逐处引用，CLI、fixture 和文档来源不互相替代。已在同一 resources HEAD 核实 makeCodeApprovedFixture/addEvidenceFiles、两测试集合和 QODER 四治理模板/六 docs 模板，其余明确依赖同轮快速复核，无未定义 dep-N 或未承载的正文当前实现事实。"
+review-loop:
+  current-attempt: 2
+subject-file: change-requests/CR-2026-074/sdd.md
+subject-sha256: 371ec7a8ca880f2a8dc48bb7a5cf29221fd1953f0abaa13f40b5785e6d6e71d3
