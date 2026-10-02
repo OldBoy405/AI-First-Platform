@@ -1,0 +1,28 @@
+cr-id: CR-2026-075
+review-type: tech-design
+reviewer: "OldBoy405"
+reviewed-at: "2026-10-02T22:02:10+08:00"
+verdict: block
+blockers:
+  - "本轮新增：B-01 已确认规划身份未进入输入，跨日执行/重放会换身份。PRD FR-10 要求只消费已确认的正式 id/目标路径，FR-12/AC-B15 要求重放保持同一 identity/artifacts/commit；SDD §2.3 的 planning payload 只有 slug（path 还可省略），§4.4 却以 beijingDate(input.now) 重新生成 id。北京时间 D 日确认或首次落盘的同一 payload，在 D+1 日首次执行、恢复或重放时会推导成另一 id；若带 D 日 path 则范围核对失败，若省略 path 则可创建第二份文档。§4.5 排除自动时间字段不能消除身份中的日期变化。须在 SDD 固定已确认身份/路径的输入及日期来源、校验和跨日恢复/重放规则，使同一合法意图不依赖本次执行时钟；补对应可观察向量。"
+  - "本轮新增：B-02 合法竞品覆盖被统一冲突分支拦截。PRD FR-11 明确保留已存在报告经重新明确确认后覆盖或改日期，FR-12 的 BUSINESS_INTENT_CONFLICT 仅针对没有新的合法冲突决定；SDD §2.3 虽列 conflict_strategy=overwrite|new-date，§4.5 第 3.d/4 步却对同身份不同已确认内容一律 BUSINESS_INTENT_CONFLICT，未给 confirmed=true 且 overwrite 的合法覆盖出口。按该判据，已存在报告确认新正文并选择覆盖仍不可达，违背 AC-B9/B15。须明确已完成同意图重放、重新确认覆盖、改日期、无合法决定冲突及在途事务意图冲突的分支与优先级；不能把合法覆盖归入成功重放。"
+  - "本轮新增：B-03 SDD-CLOSE-03 未真正关闭意图序列化与同意图恢复，直接复用恢复 helper 会先写后辨意图。§6.3 称 §4.5 已定义 inputDigest 构造，但该节没有 canonical 字段、序列化/摘要算法或 workspace+身份到事务 key 的确定映射；§4.3 第 6 步直接 recoverLedgerCommand(key)。在 tools 061a12ff0a40028b7aba979108c2977313e1fb11，crctl.mjs 的 recoverLedgerCommand(ws,key) 不接收/比对业务 inputDigest，durable-tx.mjs 的 recoverLedgerTransaction 会按旧 journal 回滚文件/删除 journal或确认提交；beginLedgerCommand 的 digest 则来自 expectedHash 和候选 afterSha256，并非已确认业务意图。因而同身份旧事务中断后，另一正文/策略的请求可以先恢复/改动旧现场，不能证明 FR-10～12 要求的仅同意图恢复、TX_INPUT_CONFLICT 零重写及 AC-B17/B18；§4.3 第 1～6 步全部零业务写入的声明也与恢复回滚事实冲突。须闭合业务意图摘要、安装根共享 journal 下的 workspace/key 隔离、恢复前意图核对以及恢复后 changed/commit 回执判定，保留既有事务原语而不新建框架。"
+  - "本轮新增：B-04 已完成重放不能唯一确定原意图提交或原完成结果。§4.5 第 3.b 用 git log -1 --format=%H -- <relPaths>，再以提交 tree 中各 artifact blob 等于当前文件判定完成；它没有将提交绑定到已确认业务身份/意图，也没有定义原完成业务投影的取证。例：规划 A 在 CA 完成，另一规划 B 在 CB 更新共享索引；重放 A 若从当前索引生成候选，log 会选 CB，CB 的 tree 同样包含 A 的旧文档与当前索引，所列 blob 检查不能证明 CB 是 A 的原隔离提交，可能错误返回 complete/commit=CB。若“纳入”指必须在该提交 diff 内改变全部产物，则这是另一种未定义判据，仍不能代替原意图/原结果定位。PRD FR-12/AC-B15 要求同意图重放 commit 等于先前结果，关联文件第三值不得成功；AC-B18 要求恢复后提交可核实。须定义原业务意图提交的唯一来源、关联产物完成投影及第三值分支，覆盖共享索引被其他意图提交后的重放/冲突向量。"
+  - "本轮新增：B-05 批准范围对 validate 修改自相矛盾。§9 scope_in 纳入 crctl.mjs 的 validate 维度报告，§3.4/SDD-CLOSE-06 还要求读取声明并把已声明命名/路径违反或畸形配置判为 FAIL；但 §9 zero_diff 又要求 crctl.mjs 既有子命令处理算法零改动，并括注本次只新增入口归一与两个新命令分支，另对 dep-11 validate 判据/错误码声明零改动且只新增报告与 WARN。在既有 cmdValidate 未实施这些目录图维度检查的基线上，新声明校验和 FAIL 判据不能同时归入处理算法零改动。命中批准范围 scope_in/zero_diff 对同一对象修改与不修改冲突；这是 FR-05/AC-B6 的当前必要条件，不能留到 dev-plan 或 follow_up。须在 SDD 明确保留的旧 artifact/schema 判据与本轮新增维度判据及允许修改范围，统一 §3.4、§6.3、§9。"
+dimensions:
+  PRD↔SDD 对齐: "BLOCK；16/16 FR 均有形式落点、28/28 AC 均有映射，但 B-01/B-02/B-03/B-04 使 FR-10～12 的身份、合法覆盖、恢复和完成回执不闭环。A1～A8、B1～B8、B10～B14、B16、B19～B20 的设计落点、观察结果和前置可达性已逐项核对；B9/B15/B17/B18 按上述 blocker 回修。未把已有实现基线当作 PRD 目标契约。"
+  架构合理性: "BLOCK；读取 tools 与 multica resources 下 ARCHITECTURE.md，分层、零依赖、单一 crctl 写者、daemon 内部接线和无新 API/DB 的方向符合约束；事务复用成立但 B-03 尚未闭合意图检查与恢复副作用，B-05 批准范围存在冲突。DEC-1～6 的上下文/替代已检查；DEC-2 在既有 taskCRWorkspaceRoot 的唯一已验证项目资源且带 CR 账本边界内成对发布以保留 gitguard 审计，不据此扩大主机根授权，本轮不据该边界本身判越出 PRD FR-02/03 与 NFR-02。"
+  数据模型完整性: "BLOCK；绑定三元组与竞品身份/字段有定义，无新增持久化 task/API 字段；规划缺少固定已确认身份来源（B-01），业务意图摘要和事务命名空间未定（B-03）。"
+  接口契约: "BLOCK；HTTP 条件基线 N/A，本 CR 仅 CLI/daemon 内部函数；两个公开命令、限定 JSON 输入与最小成功 JSON 已定义，但 overwrite 分支不可达（B-02）、恢复 changed/commit 与原完成提交来源不闭合（B-03/B-04）。"
+  多仓架构约束: "PASS（设计层）；按 workspace inspect 原样 resources 读取三仓，tools HEAD=061a12ff0a40028b7aba979108c2977313e1fb11，multica HEAD=56bdc70db62f4fe2473b238f0ed36b05712af3a9，KB HEAD=6417c00b80f29396b445af99b878d87fc58cc3bd；未用主 checkout 替代代码事实，依赖朝下，KB 不承载业务代码，未新增跨仓原子承诺。"
+  性能与安全: "BLOCK；一次预检、custom_env 后发布、真实路径比较、失败关闭与最多三文件边界有设计；无轮询/重试服务/授权或审批放宽。但 B-03 的恢复前意图核对缺口涉及旧事务现场安全，须闭合；不宣称矩阵或 docs 索引具有新增机器级隔离。"
+  可测试性: "BLOCK；§5.2 已覆盖 A/B 场景、Windows 实跑、模块纯函数与既有故障注入，新增测试入 manifest 口径明确；需按 B-01～B-04 加入跨日固定身份、合法重新确认覆盖、异意图在途恢复零重写、原完成提交与共享索引第三值向量。本评审未执行 lint/build/test，不把测试计划误报为测试通过。"
+  Prompt 采纳影响: "PASS（设计层）；因 dispatch 变更适用，§8 已列规划/竞品新命令调用方、shared 合同、CR-ID 补齐、矩阵/Agent 与部署同步；A 验证后才收敛 workspace 示例，保留 bootstrap/显式根、业务输入输出、角色职责与发布要求，不改 rules.json。"
+  批准范围: "BLOCK；scope_in/scope_out/zero_diff/follow_up 四字段齐备，B-05 为内部修改边界冲突；其余不改审批/状态机/白名单、docs guard 与目录图治理留后续的声明未隐藏当前必需治理修改。"
+  AC闭环与SDD-CLOSE: "BLOCK；十个 SDD-CLOSE 均有编号，但 SDD-CLOSE-03 的 inputDigest 构造实际缺失，04 的恢复接线尚不能满足同意图，06 受 B-05 范围矛盾影响；其余命令名/模块/错误枚举/路径权威/测试组织/生效版本核对已有设计结论。"
+  既有实现依赖与事实: "核验 dep-1～32 的资源、路径、稳定对象与依赖结论，正文 dep 引用可追溯。dep-2～26 的 tools SHA 与 dep-27～32 的 multica SHA 均等于本轮受控 HEAD；dep-1 是 e125917b7d8a136cf665611dc30db7db1251fc97 起草输入快照，受控 diff 到 KB 当前 HEAD 核实 cr.md 仅 status 从 tech-designing 推进到 tech-design-review-pending 及 updated 变化，owner/version/spec 一致，不把正常阶段推进误判为目标契约冲突。额外核实 recoverLedgerCommand 不验业务摘要、recoverLedgerTransaction 会回滚/清理、finishLedgerTransaction 删除 journal；据此形成 B-03/B-04。"
+suggestions: []
+review-loop:
+  current-attempt: 1
+subject-file: change-requests/CR-2026-075/sdd.md
+subject-sha256: 901f87cb9d61cac58bbe08f42ddd824d27d4bbc3dd3c58be30759f2a87eb074d
