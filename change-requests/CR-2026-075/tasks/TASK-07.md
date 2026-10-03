@@ -36,7 +36,7 @@ created: 2026-10-03T00:15:00+08:00
 
 ## 验收条件
 
-1. 在 `skills/shared/engineering-docs/scripts` 目录执行证据命令 `cmd-07`（plan §6.2 原样：repo=tools、cwd=`skills/shared/engineering-docs/scripts`、executable=`node`、args=`["node_modules/vitest/vitest.mjs","run"]`、timeout=600）：全绿。真实运行范围 = 该 TS 包自身的 vitest 全量（`vitest run`，等价于该包 `test` 脚本），**不声称 tools 仓全量**。新增/调整向量覆盖：
+1. 在 `skills/shared/engineering-docs/scripts` 目录执行证据命令 `cmd-07`（plan §6.2 原样：repo=tools、cwd=`skills/shared/engineering-docs/scripts`、executable=`node`、args=`["node_modules/vitest/vitest.mjs","run","src/__tests__/generators.test.ts","src/__tests__/validators.test.ts"]`、timeout=600）：全绿。真实运行范围 = 本 TASK 声明改动的两个测试文件（plan 0.7 起 `cmd-07` 观测面收窄；R12 记录该包 `chain.test.ts` 的 2 例 trunk 自带失败及其另开 CR 处置），**不声称该 TS 包全量绿，更不声称 tools 仓全量**。新增/调整向量覆盖：
    - AC-B8（日期面）：北京时间跨日边界两侧渲染匹配既有 `isoDate` schema；宿主时区差异下结果一致（含非 UTC+8 宿主的固定时钟向量）。
    - 默认参数兼容：不传 `now` 时 `today()` 仍返回当日北京时间日期。
 2. 业务 timestamp 侧的同规则由 TASK-04/05 产出的 `beijingDate(now)`/`beijingIso(now)` 实现，证据命令 `cmd-02`（`node --test skills/shared/crctl/scripts/test/planning-entry.test.mjs`）与 `cmd-03`（`node --test skills/shared/crctl/scripts/test/competitive-report.test.mjs`）在各自 TASK 内断言；本 TASK 只声明同一规则、不重复实现、不在本 TASK 内运行这两个命令。FR-07 的联合证据（cmd-07 + cmd-02 + cmd-03）由 TASK-10 汇总复跑并在 test-report 的 FR-07 行记录。
