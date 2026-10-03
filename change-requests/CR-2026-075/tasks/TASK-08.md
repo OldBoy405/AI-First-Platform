@@ -24,7 +24,8 @@ created: 2026-10-03T00:15:00+08:00
 - `agent-skill-matrix.yml`、`agents/product-planning-agent.md`、`agents/competitive-analyst-agent.md`、`agents/_index.yml`。
 - `pipeline-templates/architecture-design.pipeline.json`、`pipeline-templates/code-implementation.pipeline.json`（受控 CR 后续节点的重复 workspace 示例）。
 - `skills/requirement/requirement-register/SKILL.md`、`pipeline-templates/requirement-authoring.pipeline.json`、`README.md`（版本示例口径）。
-- `skills/shared/crctl/scripts/test/caller-contract.test.mjs`（新命令的分类登记与白名单；**新增 SDD §5.2 节点回放向量**：输入、执行步骤、同 run 调用计数与失败路由断言）。
+- `skills/shared/crctl/scripts/test/caller-contract.test.mjs`（新命令的分类登记与白名单，并随 `cmd-06` 扫描调用方合同）。
+- `change-requests/CR-2026-075/test-evidence/caller-replay/records.json`（KB 仓）：实际受控调用方节点的回放记录（schema `cr-caller-replay/v1`，见下方实现要点「FR-04 实际调用方节点回放」）。
 - `ARCHITECTURE.md` §3（绑定归一入口 + 两个业务写入子命令 + 权限/事务边界；只读引用不变量，不改不变量本身）。
 
 ## 实现要点
@@ -36,22 +37,22 @@ created: 2026-10-03T00:15:00+08:00
 - 版本口径（FR-13）：`requirement-register` SKILL 与 `requirement-authoring.pipeline.json` 的示例统一推荐 `0.16.0`，说明 v/V 兼容输入与无前缀持久化；`README.md` 只同步总览与权威链接，不复刻可执行细节；不改 `normalizeTargetVersion` 行为与持久化格式。
 - FR-14 收敛（SDD §4.9 门槛，**必须先满足**）：只有 ①A1～A8 向量有实际执行证据（TASK-01 的 `cmd-01` 与 TASK-02 的 `cmd-08` 全绿）②Pipeline 与普通 Issue 两条入口的绑定均覆盖 ③绑定冲突/不完整/异根向量零业务写入——三条全部为真后，才删除受控 CR 后续节点中逐命令重复的 `--workspace <workspace>` 示例；门槛未满足则保留原提示，**不得**借「文字已改」宣称行为已变。保留项：execution_context 传递、显式 CR-ID、业务阶段与角色职责、写入/检查/发布要求、共享权威合同短指针；bootstrap 与 daemon 预检示例保留明确根。
 - `ARCHITECTURE.md` §3 按 `dep-24` §8 补「绑定归一入口 + 两个业务写入子命令 + 权限/事务边界」，只读引用不变量。
-- FR-04 节点回放（SDD §5.2；不新建重试服务或测试框架）：在 `caller-contract.test.mjs` 内以既有测试组织实现回放表——输入 = 受控 CR 节点合同的纠正约定与 TASK-01 固定的 CLI 边界（旧显式入口缺根报 `WORKSPACE_REQUIRED`、补已确认显式根后同调用成功）；执行步骤 = 在 fixture 项目中经真实 CLI 入口按「首次缺根（预检零业务写入）→ 同 run 补参一次 → 成功」驱动，另以「第二次仍失败」变体驱动；断言 = 同 run 调用计数不超过两次且纠正至多一次、第二次失败后无第三次调用与恢复委派、失败经原异常路径上报（与合同文本逐字一致）；回放记录随 `cmd-05` 原始输出归档 `test-evidence/`。本 TASK 负责合同文本与回放断言同批落地，不把回放推给 test-report 分析段。
-- 合同一致性：改后 `cmd-05`/`cmd-06` 全绿（调用形态合法、矩阵/Agent 登记一致、提示 lint 通过）。
+- FR-04 实际调用方节点回放（SDD §5.2；不新建重试服务、执行器或测试框架）：以平台**既有节点/任务运行入口**对实际受控调用方节点执行两个受控变体，并把可归因记录归档到 KB `change-requests/CR-2026-075/test-evidence/caller-replay/records.json`（schema `cr-caller-replay/v1`）。变体 A = 首调缺根失败（预检零业务写入）→ 同节点同 run 仅补参一次成功；变体 B = 纠正后再次失败 → 停止并落回原异常路径。**输入** = 该节点实际收到的 `execution_context`（`cr_id`/`operationalWorkspace`/`resources[].worktreePath`）、task 绑定环境三值（`MULTICA_TASK_ID`/`CRCTL_OPERATIONAL_WORKSPACE`/`CRCTL_TASK_AUDIT_ROOT`）与调用方短提示（`input.promptRetention` 覆盖 CR-ID、阶段说明、职责/产出、发布合同、bootstrap 显式根示例）。**记录来源** = 该次平台运行可归因的 `source.runId`/`source.nodeId`/`source.attempt`/`source.outputNote`，加逐次调用的 `argv`/`exitCode`/`stderrCode`/`businessWrites`（零业务写入必须为 0）。**断言** = 同 run 调用计数 = 2、纠正次数 = 1、无第三次调用、`autoRetry=false`、`crossRunRestart=false`；A 的 `finalStatus=passed`，B 的 `finalStatus` 非 passed 且 `route` 落回原异常/停止路径。CLI 侧「缺根失败/补参成功」只保留为边界单测（TASK-01 的 `cmd-01`），**不得充作调用方行为验收**；本 TASK 负责受控运行、记录归档与合同文本同批落地，不把回放推给 test-report 分析段。
+- 合同一致性：改后 `cmd-06` 全绿（caller-contract/pipeline-structure 在内的六个单文件：调用形态合法、合同/矩阵/Agent 登记一致、提示 lint 通过、Pipeline 模板结构一致）。
 
 ## 验收条件
 
-1. 在 tools CR worktree 根执行证据命令 `cmd-05`（plan §6.2 原样：repo=tools、cwd=`.`、executable=`node`、args=`["--test","skills/shared/crctl/scripts/test/caller-contract.test.mjs","skills/shared/crctl/scripts/test/pipeline-structure.test.mjs"]`、timeout=300）：全绿。真实运行范围 = 两个单文件合并运行。`caller-contract.test.mjs` 观测：业务参数与阶段说明保留、`--workspace` 重复示例收敛后调用形态仍合法；**以及 FR-04 节点回放向量**——首次缺根失败后同 run 仅补参一次（调用计数至多两次、纠正至多一次），第二次失败变体无第三次调用、无恢复委派、失败经原异常路径上报；回放记录随本命令原始输出归档 `test-evidence/`。`pipeline-structure.test.mjs` 观测 Pipeline 模板受控节点结构。
-2. 在 tools CR worktree 根执行证据命令 `cmd-06`（plan §6.2 原样：`contract-scan.test.mjs`、`check-skill-matrix.test.mjs`、`check-agents-contract.test.mjs`、`lint-prompts.test.mjs` 四文件合并运行、timeout=300）全绿：合同一致性、矩阵/Agent 登记、提示 lint。真实运行范围 = 四个单文件；不声称 tools 仓全量。
+1. 在 knowledge-base（ai-first-platform-docs）CR worktree 根执行证据命令 `cmd-05`（plan §6.2 原样：repo=ai-first-platform-docs、cwd=`.`、executable=`node`、args=`["-e", <只读内联脚本>]`、timeout=300）：全绿。真实运行范围 = 只读消费 `change-requests/CR-2026-075/test-evidence/caller-replay/records.json`（**实际受控调用方节点真实运行产生**的可归因记录）并断言：①两个变体的 `source.runId`/`nodeId`/`attempt`/`outputNote` 归因完整，输入记录含 `execution_context`、绑定环境三值与短提示保留项；②首调缺根非零且 `businessWrites=0`；③同 run 调用计数 = 2、纠正 = 1、无第三次调用、`autoRetry=false`、`crossRunRestart=false`；④A 纠正后 `finalStatus=passed`，B 第二次失败 `finalStatus` 非 passed 且 `route` 落回原异常/停止路径。记录缺失、不可归因或字段不全即非零退出（CLI fixture 不可替代）。
+2. 在 tools CR worktree 根执行证据命令 `cmd-06`（plan §6.2 原样：`caller-contract.test.mjs`、`contract-scan.test.mjs`、`check-skill-matrix.test.mjs`、`check-agents-contract.test.mjs`、`lint-prompts.test.mjs`、`pipeline-structure.test.mjs` 六文件合并运行、timeout=300）全绿：调用方合同与命令示例、合同一致性、矩阵/Agent 登记、提示 lint、Pipeline 模板受控节点结构。真实运行范围 = 六个单文件；不声称 tools 仓全量。
 3. 在 tools CR worktree 根执行证据命令 `cmd-01`（plan §6.2 原样：`node --test skills/shared/crctl/scripts/test/crctl.test.mjs`、timeout=900）全绿：真实调用不在缺位置参数处 `BAD_ARGS`（AC-B11）。
 4. 覆盖矩阵断言（逐条对应 AC）：
-   - AC-B1：节点回放表断言「同 run 至多一次纠正」——首次缺根失败（预检零业务写入）后仅补参一次且第二次调用成功，调用计数恰为 2；与 A1 首次归一区分。
-   - AC-B3：回放的第二失败变体断言停止自动纠正、无第三次调用与恢复委派、失败经原异常路径（权限/绑定冲突或写入不明同路由）。
-   - AC-B11：12 处 `crctl advance` 全部含显式 `{cr_id}`；`cmd-05` 的调用形态扫描不报缺参。
+   - AC-B1：实际调用方节点回放变体 A——首次缺根失败（预检零业务写入）后仅补参一次且第二次调用成功，同 run 调用计数恰为 2、纠正次数 1；与 A1 首次归一区分。
+   - AC-B3：回放变体 B——第二次失败后停止自动纠正，无第三次调用、无自动重试与跨 run 重启、失败经原异常路径（权限/绑定冲突或写入不明同路由）。
+   - AC-B11：12 处 `crctl advance` 全部含显式 `{cr_id}`；`cmd-06` 的 caller-contract 调用形态扫描不报缺参。
    - AC-B12：版本输入规范化至无前缀值；`unassigned`/禁止值/prerelease 边界维持（`cmd-06` 的合同/提示扫描覆盖）。
    - AC-B13：grant/TTY、写入前提与现实现一致；除限定业务调用登记外不放宽授权/审批/业务范围。
    - AC-B20：两角色矩阵/Agent/Skill/必要索引一致，限定各自操作；不宣称子命令级机器授权。
-   - AC-B4：短提示仍含上下文/CR-ID/业务输入输出/职责/发布合同，显式与 bootstrap 说明未误删（`cmd-05` 静态断言；「保留项未误删」的边界核对保留为 review-code 人工检查项，静态断言不代替该检查）。
+   - AC-B4：短提示仍含上下文/CR-ID/业务输入输出/职责/发布合同，显式与 bootstrap 说明未误删（`cmd-05` 消费的调用方输入记录断言短提示保留项齐备；`cmd-06` 的 caller-contract 静态断言；「保留项未误删」的边界核对保留为 review-code 人工检查项，静态断言不代替该检查）。
 5. FR-14 门槛证据：断言收敛动作发生在 `cmd-01` 与 `cmd-08` 全绿之后（本 TASK commit 的提交说明或节点日志中记录门槛结论）；门槛未满足时，本 TASK 只登记不动文本，并在节点输出中标注「提示保留原样」。
 6. 文件集检查经受控入口（argv 固定），cwd = tools CR worktree 根；`<operational-workspace>` 取 `crctl workspace inspect CR-2026-075` 的 `operationalWorkspace` 原样值：
 
@@ -61,7 +62,7 @@ created: 2026-10-03T00:15:00+08:00
 
 ## 完成标志
 
-- `cmd-05`、`cmd-06`、`cmd-01` 全绿；12 处补参逐处可见，业务参数与阶段说明零删除；`cmd-05` 的节点回放断言（同 run 调用计数与失败路由）逐条可见且记录归档 `test-evidence/`。
+- `cmd-05`、`cmd-06`、`cmd-01` 全绿；12 处补参逐处可见，业务参数与阶段说明零删除；`cmd-05` 消费的**实际调用方节点回放记录**（变体 A/B、同 run 调用计数 = 2、纠正 = 1、无第三次调用、失败路由）逐条可见且归档 `test-evidence/`。
 - 两个业务 Skill 的实际调用形态为 `crctl planning-entry --from …` / `crctl competitive-report --from …`（消费回执字段与本 CR 契约一致）；矩阵/Agent/索引登记一致，只声明 Skill 级关系。
 - FR-14 收敛以门槛结论为前提：满足则删除重复 workspace 示例并保留全部保留项；未满足则保留原提示，两者都在节点输出中留证。
 - `ARCHITECTURE.md` §3 已补记绑定归一与两个业务入口（不改不变量）；版本示例统一 `0.16.0`。
@@ -76,6 +77,7 @@ created: 2026-10-03T00:15:00+08:00
 - TASK-04/05 的命令面与回执契约（`crctl planning-entry`/`crctl competitive-report` 的 `--from`、`identity`/`artifacts`/`commit`/`phase`），两个业务 SKILL 逐字引用，不缩写字段。
 - TASK-06 的 validate 触发条件口径（「调用方步骤规定或用户显式请求」）与 `dimensions` 语义。
 - `caller-contract.test.mjs` 既有结构：`PROJECTED = ['crctl advance','crctl review-record','crctl status','crctl workspace inspect']`、`TWO_WORD = new Set(['workspace','task','merge','kb'])`、`CR_DATA_FIRST_WORDS`（含 `'task'`、`'validate'`、`'git'`、`'kb'` 等）与 `NON_EXEC_CR_DATA_HITS` 白名单。
+- KB `change-requests/CR-2026-075/test-evidence/caller-replay/records.json` 的记录 schema（本 TASK 产出、`cmd-05` 消费）：字段与断言口径见实现要点「FR-04 实际调用方节点回放」；产出时不得省略 `source.*` 归因字段与逐次调用的四字段（`argv`/`exitCode`/`stderrCode`/`businessWrites`）。
 
 **产出**：
 

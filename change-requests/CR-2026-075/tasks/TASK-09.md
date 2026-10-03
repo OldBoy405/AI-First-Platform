@@ -36,7 +36,7 @@ created: 2026-10-03T00:15:00+08:00
   - 目标与源文件：四份 CR Agent（`multica agent list --output json` 取 id）← `cr-prompts-revised/<name>.md` 的 LF 正文；规划/竞品两个业务调用方 Agent（`product-planning-agent`、`competitive-analyst-agent`）← tools CR worktree `agents/<name>.md`（TASK-08 的登记文本）；本 CR 涉及 14 个 imported Skill（`multica skill list --output json` 取 id 与 `origin.path`）← tools CR worktree 下该 Skill 的**本 CR 改动文件**（SKILL.md 及其附带文件，如 `engineering-docs/scripts/**`、`crctl/scripts/**` 的改动面，逐条按各 TASK 文件集清单列出；`origin.path` 决定仓库根）。
   - 命令形态：Agent 用 `multica agent update <agent-id> --instructions <目标正文>`（单值字符串参数；人类 owner 按所用 shell 传入文件 LF 正文）；Skill 根正文用 `multica skill update <skill-id> --content-file <SKILL.md 路径>`，技能内其他文件用 `multica skill files upsert <skill-id> --path <技能内相对路径> --content-file <仓库文件>`。
   - 责任与边界：执行人 = 人类 owner（Ray，平台管理员，`cr.md owners.development`）；本 TASK 不代执行、不写平台配置、不伪造同步记录；清单中逐个目标附目标 sha256（由本 TASK 从源文件算出），供同步后核对。
-- **生效版本比对（FR-15 第④步，只读）**：①`cmd-10` 读取四份 CR Agent 的线上 instructions，与 `cr-prompts-revised/*.md` 逐字比对（LF 规范化后全等，不一致即非零退出并打印两侧 sha256），同时校验 14 个 imported Skill 的取用路径台账；②`cmd-11` 读取这 14 个 imported Skill 的实际 `SKILL.md` 内容与规划/竞品两个业务调用方 Agent 的线上 instructions，与仓库目标逐字比对（同上判定口径）。③两条命令的原始输出与人类同步记录一起落 `test-evidence/effective-version.md`。
+- **生效版本比对（FR-15 第④步，只读）**：①`cmd-10` 读取四份 CR Agent 的线上 instructions，与 `cr-prompts-revised/*.md` 逐字比对（LF 规范化后全等，不一致即非零退出并打印两侧 sha256），同时校验 14 个 imported Skill 的取用路径台账；②`cmd-11` 以本 CR 各 TASK 声明的发布文件集为期望，先逐个断言该文件在线上存在，再与仓库目标逐字比对（LF 全等；缺文件/不一致即红），并核对规划/竞品两个业务调用方 Agent 的线上 instructions（同上判定口径），范围外既有线上漂移单列。③两条命令的原始输出与人类同步记录一起落 `test-evidence/effective-version.md`。
 - 前置未完成或比对仍红时：本 TASK 不 done，按缺失环境前提报告所需人工动作（同步清单哪几条未执行/哪几条 sha256 仍不一致）；**不得**以 `pending-deploy`、来源路径/ref 一致或「仓库已改」充作 AC-B14 通过，也不得把该前置挂到 merge/writeback。
 - 环境边界：只做只读查询与文本修订；不启停服务、不写平台配置、不代人类执行同步。
 
@@ -44,7 +44,7 @@ created: 2026-10-03T00:15:00+08:00
 
 1. 在 multica CR worktree 根执行证据命令 `cmd-09`（plan §6.2 原样：repo=multica、cwd=`.`、executable=`node`、args=`["--test","cr-prompts-revised/test/delegation-contract.test.mjs"]`、timeout=300）：转绿 19/19（本轮基线为 18 pass / 1 fail——失败项即成功集合缺 `steered`，见 R11）。真实运行范围 = 单文件（按 `admission.go` 枚举源与 `bak/README.md` 的维护集合解析）；观测面 = 合同正文与四份提示词/维护副本的逐字一致与枚举对齐，**不声称覆盖 CR Agent 全部行为**。
 2. 在 multica CR worktree 根执行证据命令 `cmd-10`（plan §6.2 原样：repo=multica、cwd=`.`、executable=`node`、`-e` 内联只读脚本、timeout=300）：assert 全通过，即①四份部署副本存在、非空、短提示已收敛（无 `--workspace <workspace>` 示例）且未误删显式 CR-ID，并输出各副本 LF `sha256`；②14 个 imported Skill 的 `origin.repo`/`origin.ref`/`origin.path` 与声明一致；③四份 CR Agent 的**线上 instructions 与部署副本逐字一致（LF 规范化后全等）**。任一不一致即非零退出。该命令只读，不写平台、不写仓库。
-3. 在 tools CR worktree 根执行证据命令 `cmd-11`（plan §6.2 原样：repo=tools、cwd=`.`、executable=`node`、`-e` 内联只读脚本、timeout=600）：assert 全通过，即①本 CR 涉及 14 个 imported Skill 的**全部实际内容**（`content` 即 SKILL.md 正文 + `files[]` 各附带文件正文）逐文件与仓库目标逐字一致（LF 规范化后全等，任一不一致或仓库目标缺失即红）；②规划/竞品两个业务调用方 Agent（`product-planning-agent`、`competitive-analyst-agent`）的线上 instructions 与 `agents/*.md` 逐字一致（LF 规范化后全等）。该命令只读，不写平台、不写仓库。
+3. 在 tools CR worktree 根执行证据命令 `cmd-11`（plan §6.2 原样：repo=tools、cwd=`.`、executable=`node`、`-e` 内联只读脚本、timeout=600）：assert 全通过，即①以**本 CR 各 TASK 声明的发布文件集为期望**（`EXPECT`：crctl 的 SKILL.md + `scripts/crctl.mjs` + `scripts/lib/durable-tx.mjs` + 新增 `scripts/lib/planning-entry.mjs`/`scripts/lib/competitive-report.mjs` + `scripts/test/{crctl,durable-tx,caller-contract,pipeline-structure}.test.mjs` + 新增 `scripts/test/{planning-entry,competitive-report}.test.mjs` + `scripts/test/gate-registry.json`；engineering-docs 的 SKILL.md + `scripts/src/utils/slug.ts`/`generators/base.ts`/`validators/index-sync.ts`；其余 12 个 Skill 的 SKILL.md），**先断言每个期望文件在线上存在**（`content`/`files[]`），**再**逐文件与仓库目标 LF 全等比对，缺文件/不一致/仓库目标缺失一律非零退出；②与仓库目标不一致的**范围外既有线上文件**单列为 `out-of-scope-drift`（R8 口径，单列不计入本 CR 通过判定，也不以现存线上子集声称 AC-B14 一致）；③规划/竞品两个业务调用方 Agent（`product-planning-agent`、`competitive-analyst-agent`）的线上 instructions 与 `agents/*.md` 逐字一致（LF 规范化后全等）。该命令只读，不写平台、不写仓库。
 4. AC-B14 闭合：平台侧同步（本卡「同步清单」，人类 owner 前置）已执行并记录（执行人、时间、逐条目标 id 与同步后 sha256）到 `test-evidence/effective-version.md`；`cmd-09` + `cmd-10` + `cmd-11` 三条全绿。前置未完成时本 TASK 不 done，报告所需人工动作；不得以 `pending-deploy` 或路径/ref 一致充作通过，不得把 merge/writeback 设为该条验收的前置。
 5. 文件集检查经受控入口（argv 固定），cwd = multica CR worktree 根；`<tools-worktree>` 取 Pipeline `resources[]` 中 repo=`tools` 的 `worktreePath` 原样值，`<multica-worktree>` 同理取 repo=`multica` 的 `worktreePath`，`<operational-workspace>` 取 `crctl workspace inspect CR-2026-075` 的 `operationalWorkspace` 原样值：
 
@@ -56,7 +56,7 @@ created: 2026-10-03T00:15:00+08:00
 
 ## 完成标志
 
-- `cmd-09` 19/19 绿、`cmd-10`/`cmd-11` assert 全通过（`cmd-11` 覆盖 14 个 Skill 全文件与规划/竞品 2 个业务调用方 Agent）；`test-evidence/effective-version.md` 含同步清单、人类执行记录与比对结果（含 sha256），未闭合项按缺失环境前提报告而非标 `pending-deploy` 充作通过。
+- `cmd-09` 19/19 绿、`cmd-10`/`cmd-11` assert 全通过（`cmd-11` 对本 CR 声明发布集逐个断言线上存在 + LF 全等，含新增两个 `lib/`、两个测试与 `gate-registry.json`；范围外既有漂移按 R8 单列；规划/竞品 2 个业务调用方 Agent 与 `agents/*.md` 一致）；`test-evidence/effective-version.md` 含同步清单、人类执行记录与比对结果（含 sha256），未闭合项按缺失环境前提报告而非标 `pending-deploy` 充作通过。
 - 部署副本收敛口径与 TASK-08 一致；显式 CR-ID 与保留项未误删。
 - `CUSTOM.md` 三表一致（正文行 / 《模块索引》/ 《CR 索引》），原因追溯含 CR-2026-075 与 TASK，`AIFIRST` 计数只升不降。
 - `admission.go` 零改动；不新增平台 status；agent 不做平台侧写入；本 TASK 验收不依赖 merge/writeback。

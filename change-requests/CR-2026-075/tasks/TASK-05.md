@@ -52,6 +52,7 @@ created: 2026-10-03T00:15:00+08:00
 ## 完成标志
 
 - `cmd-03`（含 B15-b/B15-c）与 `cmd-01` 全绿；`gate-registry.json` 清单一致且 `cmd-12` 转绿。
+- 完成登记只受既有 DAG 直接前置（TASK-03、TASK-04）约束，不加其他条件：本 TASK 自身验收达成时用 `crctl task done --task CR-2026-075-TASK-05` 登记；生产者 TASK-03 按自身验收即时登记（不等待消费者），跨消费者联合向量由 TASK-04 的 B18-a 用例与本 TASK 竞品侧用例共同验证、并由 TASK-10 复跑 `cmd-02`/`cmd-03` 核对。
 - `lib/competitive-report.mjs` 为纯函数模块、零第三方依赖、不反向依赖 CLI；`cmdBusinessEntry` 骨架未被复制成第二份实现（`kind` 分支共用）。
 - 覆盖与重放分支互不代替：合法覆盖返回 `changed=true` 与新提交，已完成同意图重放返回 `changed=false` 与原提交。
 - 产物已落盘并提交，commit 自含其新增测试与 manifest 登记；`crctl.mjs` 分派面对 TASK-04 改动保持兼容（顺序编辑，R9）。

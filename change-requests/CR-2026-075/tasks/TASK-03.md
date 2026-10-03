@@ -15,7 +15,7 @@ created: 2026-10-03T00:15:00+08:00
 
 ## 任务描述
 
-扩展共享恢复原语 `lib/durable-tx.mjs#recoverLedgerTransaction`：新增可选 `expect`（锁内期望比对）与可选 `sampleCommitState`（锁内 Git 完成事实取样），并把既有唯一调用点 `recoverLedgerCommand` 接线到新语义（FR-12；SDD §4.5.4 第 2 步、SDD-CLOSE-04、§5.3）。**既有 helper 保持 `recoverLedgerCommand(ws, key)` 两参与无 `expect` 的兼容语义**：本 TASK 只把它的锁外预读（`currentHead`/`headMessage`）换成锁内取样（SDD §9 `zero_diff` 第④类唯一批准的既有 helper 改动），五个既有调用者（`crctl.mjs:1201/1871/2093/2594/2852`）保持两参、零改动；业务摘要/txId 比对（`expect`）只由新增 `recoverBusinessLedgerCommand`（TASK-04 落地、TASK-05 复用）消费。两个新入参缺省时行为与现状逐字一致；取样失败固定为保守失败。本 TASK 是 TASK-04/05 的上游生产者（`expect` 与 `sampleCommitState` 的消费者）——消费者未完成不得单独标记本 TASK done。
+扩展共享恢复原语 `lib/durable-tx.mjs#recoverLedgerTransaction`：新增可选 `expect`（锁内期望比对）与可选 `sampleCommitState`（锁内 Git 完成事实取样），并把既有唯一调用点 `recoverLedgerCommand` 接线到新语义（FR-12；SDD §4.5.4 第 2 步、SDD-CLOSE-04、§5.3）。**既有 helper 保持 `recoverLedgerCommand(ws, key)` 两参与无 `expect` 的兼容语义**：本 TASK 只把它的锁外预读（`currentHead`/`headMessage`）换成锁内取样（SDD §9 `zero_diff` 第④类唯一批准的既有 helper 改动），五个既有调用者（`crctl.mjs:1201/1871/2093/2594/2852`）保持两参、零改动；业务摘要/txId 比对（`expect`）只由新增 `recoverBusinessLedgerCommand`（TASK-04 落地、TASK-05 复用）消费。两个新入参缺省时行为与现状逐字一致；取样失败固定为保守失败。本 TASK 是 TASK-04/05 的上游生产者（`expect` 与 `sampleCommitState` 的消费者）：按本 TASK 自身验收（原语 + 缺省兼容）完成后即由 `crctl task done --task CR-2026-075-TASK-03` 即时登记，**不把 TASK-04/05 或任何下游的完成状态作为本 TASK done 的前置**（`guardDependsOn` 只要求直接前置 done，禁止隐性完成门循环）；跨消费者联合向量由 TASK-04/05 在真实业务入口用例内验证、TASK-10 复跑核对。
 
 ## 涉及文件 / 模块
 
@@ -65,6 +65,7 @@ created: 2026-10-03T00:15:00+08:00
 
 - `cmd-04` 全绿且 B17-a/B17-b、B18-b/B18-c/B18-d 与既有调用兼容回归断言逐条可见。
 - `durable-tx.mjs` 模块头不变量保持（业务 phase/Git/状态机零感知、零标准库以外依赖）；`recoverLedgerTransaction` 在全仓仍只有 `recoverLedgerCommand` 一个调用点（新增业务 helper `recoverBusinessLedgerCommand` 属 TASK-04 改动面，本 TASK 不落地），且该调用点是本 TASK 唯一改动的既有调用点；`recoverLedgerCommand` 保持两参、不传 `expect`，五个既有调用者零改动。
+- 完成登记不受下游完成状态影响：`cmd-04` 全绿且缺省兼容回归通过（本 TASK 自身验收达成）即用 `crctl task done --task CR-2026-075-TASK-03` 即时登记，不等待 TASK-04/05 完成。
 - 产物已落盘并提交，commit 自含其新增测试；不夹带 TASK-04/05 的业务入口改动（R9 顺序编辑：`crctl.mjs` 由 TASK-01/03/04/06 共享，本 TASK 只改 `recoverLedgerCommand` 一处）。
 
 ## 接口契约
@@ -92,4 +93,4 @@ sampleCommitState?: (ctx: { targetRoot: string, headBefore: string })
 
 - 错误码：只新增三个**既有**码的使用点——`TX_INPUT_CONFLICT`（锁内摘要不符）、`TX_LEDGER_RECOVERY_REQUIRED`（锁内 txId 不符）、`TX_GIT_FAILED`（取样失败/形态被拒）；不新增错误码。
 - 既有 helper 签名不变：`recoverLedgerCommand(ws, key)`（零参数增删、不传 `expect`；只把判据取值来源换成锁内取样，`syncLedgerIndex` 触发条件保留）。
-- 下游消费者：TASK-04 的新增 `recoverBusinessLedgerCommand`（TASK-05 复用）引用同一份签名与取样器形态，必须同传 `expect` 与 `sampleCommitState`，不得另立第二套取样或比对实现；既有 `recoverLedgerCommand(ws, key)` 只传 `sampleCommitState`、保持两参无 `expect` 的兼容语义。
+- 下游消费者：TASK-04 的新增 `recoverBusinessLedgerCommand`（TASK-05 复用）引用同一份签名与取样器形态，必须同传 `expect` 与 `sampleCommitState`，不得另立第二套取样或比对实现；既有 `recoverLedgerCommand(ws, key)` 只传 `sampleCommitState`、保持两参无 `expect` 的兼容语义。生产者完成即登记 done，不等待下游完成；跨消费者联合向量（共享 `_index.yml` 的 B18-a 类向量）由 TASK-04/05 各自用例验证、TASK-10 复跑核对。

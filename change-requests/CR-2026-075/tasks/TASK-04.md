@@ -54,6 +54,7 @@ created: 2026-10-03T00:15:00+08:00
 ## 完成标志
 
 - `cmd-02`（含 B15-a/B15-c/B18-a）与 `cmd-01` 全绿；`gate-registry.json` 清单一致且 `cmd-12` 转绿。
+- 完成登记只受既有 DAG 直接前置（TASK-03）约束，不加其他条件：本 TASK 自身验收达成且 TASK-03 已按自身验收即时 done 时，用 `crctl task done --task CR-2026-075-TASK-04` 登记；不把 TASK-05 等下游完成作为本 TASK done 的前置；跨消费者联合向量（B18-a：规划 A 完成 → 规划 B 更新共享 `_index.yml` → 重放 A）在本 TASK 真实业务入口用例内验证，并由 TASK-10 复跑 `cmd-02`/`cmd-03` 核对。
 - `lib/planning-entry.mjs` 为纯函数模块、零第三方依赖、不反向依赖 CLI（`dep-24` §3）；`crctl.mjs` 只承担参数/范围校验、事务与回执。
 - 提交形态未新增：只用既有 `[cr] ` 前缀与 `AI-First-Tx`/`AI-First-Intent` trailer；`rules.json#protectedPaths`/commit 白名单零改动。
 - 产物已落盘并提交，commit 自含其新增测试与 manifest 登记；不夹带 TASK-05 的竞品分支（`crctl.mjs` 分派面顺序编辑，R9）。
