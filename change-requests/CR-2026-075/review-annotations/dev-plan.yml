@@ -1,27 +1,28 @@
 cr-id: CR-2026-075
 review-type: dev-plan
 reviewer: "OldBoy405"
-reviewed-at: "2026-10-03T00:21:05+08:00"
+reviewed-at: "2026-10-03T11:55:47+08:00"
 verdict: block
 repair-target: write-dev-plan
 blockers:
-  - "本轮新增：B-01 FR-12/AC-B17～B18（cmd-04、cmd-01）：TASK-03 实现要点把既有 recoverLedgerCommand(ws,key) 改为 recoverLedgerCommand(ws,key,inputDigest) 并无条件传 expect.inputDigest，但目标 tools crctl.mjs:1201/1871/2093/2594/2852 的五个既有调用者全部仍只传两参，且 TASK-03 不允许改这些处理器；因此恢复既有 journal 时 inputDigest 来源未定义，会落入 TX_INPUT_CONFLICT 或迫使扩大既有算法修改。SDD §9 zero_diff 第④类仅批准该 helper 的 sampleCommitState 接线，业务意图比对属于新增 recoverBusinessLedgerCommand。修订 plan M3/R3 与 TASK-03：既有 helper 保持两参与无 expect 的兼容语义，业务摘要/txId 比对落到 TASK-04/05 的新增业务 helper，并用 cmd-04/cmd-01 验证既有调用的恢复兼容。"
-  - "本轮新增：B-02 FR-09/FR-11（cmd-03、cmd-01）：TASK-05 明确消费 TASK-04 产出的 cmdBusinessEntry(wsRoot,flags,kind) 骨架，但其 depends-on 与 _index.yml 仅列 TASK-03，plan §2 又称两任务互不依赖；按当前 DAG，TASK-05 可在 TASK-04 前执行，唯一骨架尚不存在且禁止复制，任务不可独立执行。业务意图互不依赖不等于实现产出无依赖。修订 plan §2、TASK-05 及经 crctl task init 重建的索引，加入 TASK-04 的实现依赖并核对共享 crctl.mjs 的顺序编辑与验收先后。"
-  - "本轮新增：B-03 FR-01/FR-15 的任务可执行性：TASK-02 验收条件3 与 TASK-09 验收条件4 将受控 git status 的 --workspace 设为 multica-worktree，而不是传入的 KB operational workspace；实测该 multica worktree 不含 change-requests/，目标 crctl.mjs:146 的 detectWorkspace 不向上探测，故现有入口必报 WORKSPACE_NOT_FOUND；绑定生效后显式异根又会先报 WORKSPACE_CONTEXT_MISMATCH。修订这两张卡的 argv：--cwd 仍取 multica resource，--workspace 原样使用本节点传入的 KB workspace；不得另设回退或修改 detectWorkspace。"
-  - "本轮新增：B-04 FR-04/FR-16、AC-B1/B3（cmd-01）：SDD §5.2 要求以节点日志/回放证明同节点同 run 最多一次纠正及第二次失败进入异常路径。plan §6.1/§7 只映射 CLI 单文件测试 cmd-01，TASK-01 仅证明 CLI 缺参/补参边界，TASK-10 将调用方回放向量列入 uncovered-risks，十条命令均不执行该回放，缺少实际产出回放证据的 TASK owner。记录未覆盖不能替代关键 AC 验收。修订 plan 证据映射、TASK-01/08/10：落实既有节点回放的输入、执行步骤、同 run 调用计数/失败路由断言及归档责任，让稳定证据 ID 的观测面真正覆盖 AC-B1/B3；不新增重试服务或测试框架。"
-  - "本轮新增：B-05 FR-15/FR-16、AC-B14（cmd-09、cmd-10）：plan R8/§5 与 TASK-09/10 将实际同步和生效核对移到未落实的交付期，并以 pending-deploy 作为开发 TASK 完成出口；但已审批 SDD §4.8/§5.2 明确要求实际生效版本一致。cmd-10 仅校验 imported Skill 的 origin 路径/ref 并打印四个 CR Agent 的 instructions 摘要，不读取/比对实际 Skill 内容，也不比较线上 instructions 与目标正文，且遗漏规划/竞品两个调用方 Agent；部署后原样复跑仍不能证明版本一致。修订 plan FR-15 与 TASK-09/10，落实有权限者同步及实际内容/版本比对的步骤、责任和证据，覆盖两个业务调用方；必要人工授权须明确列为前置，不得越权写线上配置，不得把 pending-deploy 或路径一致当作 AC-B14 通过，也不得把 merge/writeback 设为开发 TASK done 前置。"
-  - "本轮新增：B-06 FR-16（cmd-01～cmd-10）：已审批 SDD §5.2 与 SDD-CLOSE-09 指定新增测试登记 manifest，且全量门禁执行口径为 node suite-gate.mjs --run；plan §6.2 与 TASK-10 完全没有该门禁，现有十条定向命令不执行 suite-gate 的逐文件加载/manifest 集合与 case 基线判定，因此不能证明新增文件已进入既有门禁。修订 plan 覆盖/证据命令表与 TASK-04/05/10，保留并绑定 SDD 已批准的 suite-gate 执行及结果，或以既有支持的 --report 形态闭合相同门禁判定；不以未经批准的其他全仓命令替代。"
+  - "部分解决：上轮原文【本轮新增：B-04 FR-04/FR-16、AC-B1/B3（cmd-01）：SDD §5.2 要求以节点日志/回放证明同节点同 run 最多一次纠正及第二次失败进入异常路径。plan §6.1/§7 只映射 CLI 单文件测试 cmd-01，TASK-01 仅证明 CLI 缺参/补参边界，TASK-10 将调用方回放向量列入 uncovered-risks，十条命令均不执行该回放，缺少实际产出回放证据的 TASK owner。记录未覆盖不能替代关键 AC 验收。修订 plan 证据映射、TASK-01/08/10：落实既有节点回放的输入、执行步骤、同 run 调用计数/失败路由断言及归档责任，让稳定证据 ID 的观测面真正覆盖 AC-B1/B3；不新增重试服务或测试框架。】本轮 plan §6.1/§6.2、TASK-08 与 TASK-10 已加入 cmd-05 和归档责任，但回放被定义为测试 fixture 自己按既定顺序调用真实 CLI 两次并断言自己不发第三次调用；未执行实际 Pipeline/Issue 调用方节点，也未消费可归因的实际节点/run 调用记录。CLI 不负责决定调用方重试/异常委派，合同文本加测试自身计数不能证明 SDD §5.2 明定的 Pipeline 提示词行为、同节点同 run 一次纠正和第二次失败异常路由，观测面仍小于 AC-B1/B3 声称面。修订 plan FR-04/AC-B1/B3 的 cmd-05、TASK-08 与 TASK-10：明确实际受控调用方节点的输入、可归因 run/node 记录来源与回放执行入口，以该调用方产生的记录断言纠正次数、停止和异常路由；CLI fixture 仅保留为边界单测，不得充作调用方行为验收；不新增重试服务或框架。"
+  - "部分解决：上轮原文【本轮新增：B-05 FR-15/FR-16、AC-B14（cmd-09、cmd-10）：plan R8/§5 与 TASK-09/10 将实际同步和生效核对移到未落实的交付期，并以 pending-deploy 作为开发 TASK 完成出口；但已审批 SDD §4.8/§5.2 明确要求实际生效版本一致。cmd-10 仅校验 imported Skill 的 origin 路径/ref 并打印四个 CR Agent 的 instructions 摘要，不读取/比对实际 Skill 内容，也不比较线上 instructions 与目标正文，且遗漏规划/竞品两个调用方 Agent；部署后原样复跑仍不能证明版本一致。修订 plan FR-15 与 TASK-09/10，落实有权限者同步及实际内容/版本比对的步骤、责任和证据，覆盖两个业务调用方；必要人工授权须明确列为前置，不得越权写线上配置，不得把 pending-deploy 或路径一致当作 AC-B14 通过，也不得把 merge/writeback 设为开发 TASK done 前置。】本轮已落实人类 owner 同步前置、六个 Agent 正文比对与 cmd-11 的 Skill 内容读取，并删除 pending-deploy 通过出口；CLI 实查 agent list 含 instructions、skill get --with-content 含 content/files[].content，读取字段有效。但 plan §6.2 cmd-11 只遍历线上返回的 SKILL.md 与 g.files，再向仓库逐文件比对，未核对仓库应发布文件集到线上文件集的反向包含，缺失的新文件永不进入循环。只读执行该表行原样算法的隔离反例（模拟 CLI 返回，非线上部署实测）：14 个 Skill 全部只有与仓库匹配的 SKILL.md、files=[]，两个业务 Agent 正文匹配时，仍打印 cmd-11 ok；即 crctl 的 scripts/crctl.mjs、lib/planning-entry.mjs、lib/competitive-report.mjs 等执行文件均未发布也能假绿。修订 cmd-11 与 TASK-09/10：以本 CR 各 TASK 声明的完整发布文件集为期望，先断言每个必需根正文/附带文件在线上存在，再逐文件比对 LF 内容；明确新增两个 lib/测试/manifest 与所有本次改动文件的集合，缺文件必须非零退出。范围外既有漂移按 PRD/plan R8 单列，不用现存线上子集声称 AC-B14 生效版本一致。"
+  - "本轮新增：B-07 FR-12/FR-16、AC-B17/B18（cmd-04、cmd-02、cmd-03）：plan §2 与 TASK-03 任务描述明确要求消费者 TASK-04/05 未完成不得单独标记 TASK-03 done，而 TASK-04/05 的 depends-on 和 _index.yml 又以 TASK-03 为直接前置。目标 tools crctl.mjs:754 guardDependsOn 与 :1831 cmdTaskDone 要求直接前置全部 done，故 TASK-03 等待 04/05 完成、04/05 又无法合法 done，形成完成门隐性循环；只读运行权威 guard 对当前索引分别返回 DEPENDS_ON_NOT_DONE，不曾调用 task done 或写账本。修订 plan §2 与 TASK-03/04/05/10：生产者以原语及缺省兼容验收完成后即时登记 done，消费者按既有 DAG 实现并完成；要求真实业务入口的跨消费者联合向量由各消费者及 TASK-10 验证，不把下游完成作为上游 task done 的前置，不削减 SDD 验收范围、不绕过 guard、不改门禁。"
 dimensions:
   sdd-to-plan: "block"
   plan-to-tasks: "block"
   task-executability: "block"
   dependency-topology: "block"
-  interface-contracts: "block"
+  interface-contracts: "pass"
   acceptance-verifiability: "block"
-  scope-and-simplicity: "block"
-  risk-and-rollback: "block"
-  reviewer-model: "OpenAI/gpt-6.1-sol (pi, independent quality-reviewer-agent task)"
-suggestions: []
+  scope-and-simplicity: "pass"
+  risk-and-rollback: "pass"
+  reviewer-model: "OpenAI/gpt-6.1-sol (pi; independent quality-reviewer-agent task 01a0ffdf-430c-7c34-80c2-a226e06ad71f)"
+suggestions:
+  - "已解决：上轮原文【本轮新增：B-01 FR-12/AC-B17～B18（cmd-04、cmd-01）：TASK-03 实现要点把既有 recoverLedgerCommand(ws,key) 改为 recoverLedgerCommand(ws,key,inputDigest) 并无条件传 expect.inputDigest，但目标 tools crctl.mjs:1201/1871/2093/2594/2852 的五个既有调用者全部仍只传两参，且 TASK-03 不允许改这些处理器；因此恢复既有 journal 时 inputDigest 来源未定义，会落入 TX_INPUT_CONFLICT 或迫使扩大既有算法修改。SDD §9 zero_diff 第④类仅批准该 helper 的 sampleCommitState 接线，业务意图比对属于新增 recoverBusinessLedgerCommand。修订 plan M3/R3 与 TASK-03：既有 helper 保持两参与无 expect 的兼容语义，业务摘要/txId 比对落到 TASK-04/05 的新增业务 helper，并用 cmd-04/cmd-01 验证既有调用的恢复兼容。】本轮 plan M3/R3、TASK-03/04/05 均明确既有 helper 保持两参且不传 expect，五位既有调用者不改；新增业务 helper 同传 expect/sampleCommitState，兼容验收已映射 cmd-04/cmd-01。关闭的是计划翻译缺口，非实施验收已通过。"
+  - "已解决：上轮原文【本轮新增：B-02 FR-09/FR-11（cmd-03、cmd-01）：TASK-05 明确消费 TASK-04 产出的 cmdBusinessEntry(wsRoot,flags,kind) 骨架，但其 depends-on 与 _index.yml 仅列 TASK-03，plan §2 又称两任务互不依赖；按当前 DAG，TASK-05 可在 TASK-04 前执行，唯一骨架尚不存在且禁止复制，任务不可独立执行。业务意图互不依赖不等于实现产出无依赖。修订 plan §2、TASK-05 及经 crctl task init 重建的索引，加入 TASK-04 的实现依赖并核对共享 crctl.mjs 的顺序编辑与验收先后。】本轮 TASK-05 与索引均依赖 TASK-03/04，plan 明确唯一骨架由 04 先落地、05 顺序消费；10 张卡与索引 id/依赖集合一致、显式 DAG 无悬空/无环。隐性完成门循环另列本轮 B-07，不重复计入 B-02。"
+  - "已解决：上轮原文【本轮新增：B-03 FR-01/FR-15 的任务可执行性：TASK-02 验收条件3 与 TASK-09 验收条件4 将受控 git status 的 --workspace 设为 multica-worktree，而不是传入的 KB operational workspace；实测该 multica worktree 不含 change-requests/，目标 crctl.mjs:146 的 detectWorkspace 不向上探测，故现有入口必报 WORKSPACE_NOT_FOUND；绑定生效后显式异根又会先报 WORKSPACE_CONTEXT_MISMATCH。修订这两张卡的 argv：--cwd 仍取 multica resource，--workspace 原样使用本节点传入的 KB workspace；不得另设回退或修改 detectWorkspace。】本轮 TASK-02 验收3 与 TASK-09 验收5 均使用 multica resource 作为 --cwd、传入的 KB operational workspace 作为 --workspace，并明确不改 detectWorkspace、不回退主工作区。"
+  - "已解决：上轮原文【本轮新增：B-06 FR-16（cmd-01～cmd-10）：已审批 SDD §5.2 与 SDD-CLOSE-09 指定新增测试登记 manifest，且全量门禁执行口径为 node suite-gate.mjs --run；plan §6.2 与 TASK-10 完全没有该门禁，现有十条定向命令不执行 suite-gate 的逐文件加载/manifest 集合与 case 基线判定，因此不能证明新增文件已进入既有门禁。修订 plan 覆盖/证据命令表与 TASK-04/05/10，保留并绑定 SDD 已批准的 suite-gate 执行及结果，或以既有支持的 --report 形态闭合相同门禁判定；不以未经批准的其他全仓命令替代。】本轮新增稳定 cmd-12 原样执行 suite-gate.mjs --run，FR-16/TASK-04/05/10 明确新增文件 manifest/cases 登记与逐文件集合/基线判定；未改为无批准的多仓全量命令。提前到单 TASK done 的执行时序另列 B-07，不重复计入 B-06。"
 review-loop:
-  current-attempt: 1
-subject-sha256: e0cab03430c2bd8521b8f2f38a35025f51b1ae73ca546b7abe64f6c2df64fe23
+  current-attempt: 2
+subject-sha256: b7274fb591b8565432b23182f83cd923ad3314883c468b544a929801afaa43af
