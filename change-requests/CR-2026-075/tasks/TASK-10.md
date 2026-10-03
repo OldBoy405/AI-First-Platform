@@ -31,23 +31,23 @@ created: 2026-10-03T00:15:00+08:00
   - `cmd-01`（tools，`.`，`node --test skills/shared/crctl/scripts/test/crctl.test.mjs`）→ A 段 CLI 归一/失败关闭 + validate 维度层 + 业务入口域用例。
   - `cmd-02`/`cmd-03`（tools，`.`，新增单文件 `planning-entry.test.mjs`/`competitive-report.test.mjs`）→ 两个业务入口与 B15-a/B15-b/B15-c/B18-a。
   - `cmd-04`（tools，`.`，`durable-tx.test.mjs`）→ 原语 `expect` 锁内比对与 `sampleCommitState` 锁内取样（B17-a/B17-b、B18-b/B18-c/B18-d）。
-  - `cmd-05`（ai-first-platform-docs，`.`，内联只读脚本）→ 实际受控调用方节点回放记录（`test-evidence/caller-replay/records.json`，TASK-08 产出）的归因与断言：同 run 调用计数 = 2、纠正 = 1、无第三次调用、第二次失败落回原异常路径。
+  - `cmd-05`（ai-first-platform-docs，`.`，内联只读脚本）→ 实际受控调用方节点回放（`test-evidence/caller-replay/{A,B}.node-record.json` 原始记录 + 索引 `records.json`，TASK-08 产出）的逐字段归因与断言：归因字段/`execution_context`/绑定环境三值与短提示/首调缺根/恰一处 `--workspace` 补参差异/同 run 调用计数 = 2、纠正 = 1、无第三次调用、停止结果非空、第二次失败落回原异常路径。
   - `cmd-06`（tools，`.`，`caller-contract.test.mjs` + `contract-scan.test.mjs` + `check-skill-matrix.test.mjs` + `check-agents-contract.test.mjs` + `lint-prompts.test.mjs` + `pipeline-structure.test.mjs` 六文件合并运行）→ 调用方合同/登记一致性与 Pipeline 模板结构。
   - `cmd-07`（tools，`skills/shared/engineering-docs/scripts`，`node node_modules/vitest/vitest.mjs run`）→ 工程文档侧北京时间。
   - `cmd-08`（multica，`server`，`go test ./internal/daemon/ -count=1 -v -run "…"`）→ daemon 绑定解析与发布。
   - `cmd-09`（multica，`.`，`delegation-contract.test.mjs`）→ 合同与维护副本一致性。
   - `cmd-10`（multica，`.`，内联只读脚本）→ 部署副本收敛、imported Skills 取用路径、四份 CR Agent 线上 instructions 与部署副本逐字比对。
-  - `cmd-11`（tools，`.`，内联只读脚本）→ 以本 CR 声明发布文件集为期望，先逐个断言线上存在再逐文件 LF 全等比对（含新增两个 `lib/`、两个测试与 `gate-registry.json`），缺文件即红；范围外既有漂移单列（R8）；并比对规划/竞品两个业务调用方 Agent 线上 instructions 与仓库目标。
+  - `cmd-11`（tools，`.`，内联只读脚本）→ 以本 CR 声明发布文件集为期望（30 项：crctl 12、engineering-docs 6、其余 12 个各 SKILL.md），先逐个断言线上存在再逐文件 LF 全等比对（含新增两个 `lib/`、新增两个 crctl 测试、engineering-docs 的两个 in-scope TS 测试与 `gate-registry.json`），缺文件即红；仅本 CR 未声明改动的既有漂移单列（R8）；并比对规划/竞品两个业务调用方 Agent 线上 instructions 与仓库目标。
   - `cmd-12`（tools，`.`，`node skills/shared/crctl/scripts/test/suite-gate.mjs --run`）→ SDD §5.2/SDD-CLOSE-09 批准的聚合门禁：逐文件加载、磁盘集合 ≡ manifest 文件集、每文件用例数 ≥ 基线。
 - 记录口径（CR-2026-073 FR-6/FR-8）：每个 `cmd-NN` 写明真实运行范围（单文件 / 单包定向名集 / 单目录）；范围小于全仓的命令**不得**在任何产物中表述为「全量通过」；不使用 `go test ./...`、`make test` 等全仓命令，不新增 plan 未列的命令行。
 - 文档面：`test-report` 由 `owners.test` 责任执行（`write-test-report` Skill），其输入是本 TASK 归档的真实运行结果；本 TASK 不代替 test-report、不写 pass/fail 结论，只提供原样结果与范围说明。
-- 未覆盖风险至少逐条记录：R10（multica `./internal/daemon/` 包内 `TestRegisterTaskReposAllowsProjectOnlyURL` 在本机 Windows 因临时仓路径超 MAX_PATH 失败，与本 CR 无关，`cmd-08` 使用定向 `-run` 名集故声明面不覆盖该用例）、R11 的复跑结论（`cmd-09` 收敛后应转绿；若仍红，逐字记录失败项）、§5.2 中不属本 CR `cmd-*` 机器断言的边界（B4 保留项人工检查边界；B1/B3 的调用方一次本地纠正已由 `cmd-05` 消费的**实际调用方节点回放记录**覆盖，不再列为未覆盖）、FR-15/AC-B14 平台侧同步前置的复跑结论（见 `effective-version-rerun.md`；未完成时报告缺失前置，不标 `pending-deploy` 充作通过）。
+- 未覆盖风险至少逐条记录：R10（multica `./internal/daemon/` 包内 `TestRegisterTaskReposAllowsProjectOnlyURL` 在本机 Windows 因临时仓路径超 MAX_PATH 失败，与本 CR 无关，`cmd-08` 使用定向 `-run` 名集故声明面不覆盖该用例）、R11 的复跑结论（`cmd-09` 收敛后应转绿；若仍红，逐字记录失败项）、§5.2 中不属本 CR `cmd-*` 机器断言的边界（B4 保留项人工检查边界；B1/B3 的调用方一次本地纠正已由 `cmd-05` 消费的**实际调用方节点原始记录**覆盖，不再列为未覆盖）、FR-15/AC-B14 平台侧同步前置的复跑结论（见 `effective-version-rerun.md`；未完成时报告缺失前置，不标 `pending-deploy` 充作通过）。
 
 ## 验收条件
 
 1. 在 tools CR worktree 根按顺序执行 `cmd-01`～`cmd-04`、`cmd-06`～`cmd-07` 与 `cmd-11`/`cmd-12`，在 knowledge-base CR worktree 根执行 `cmd-05`（cwd=`.`），在 multica CR worktree 根（`cmd-08` 的 cwd 为 `server`）执行 `cmd-08`～`cmd-10`；十二条命令的 executable / args / cwd / timeout 与 plan §6.2 表逐字一致，全部返回可判定结果（全绿为预期；任一红则如实记录原始输出与失败项，不在本 TASK 内修实现）。
-2. `test-evidence/` 归档完整：十二条命令各有一份原始输出与命令记录；每份记录含 cwd、退出码、真实运行范围说明；`cmd-05` 附实际调用方节点回放记录（`caller-replay/records.json`）的归因字段与断言结果汇总；`cmd-08` 附 `-v` 的 `--- PASS` 行摘要与九个名集分支命中情况；`cmd-10` 附 imported Skills 取用路径列表与四份 CR Agent 的 in-sync/不一致比对结果及两侧 `sha256`；`cmd-11` 附本 CR 声明发布集的逐个存在性 + LF 比对结果与 `sha256`（含新增两个 `lib/`、两个测试与 `gate-registry.json`）、`out-of-scope-drift` 单列清单、以及规划/竞品两个业务调用方 Agent 的比对结果；`cmd-12` 附逐文件顶层用例数与 `gate-registry.json#manifest` 核对结论。
-3. `uncovered-risks.md` 覆盖 R10、R11 与 §5.2 中非 `cmd-*` 的边界，并逐条写明「观测面 < 声称面」的边界；B1/B3 已由 `cmd-05` 消费的实际调用方节点回放记录覆盖（不列为未覆盖）；`cmd-12` 的范围只写 tools `skills/shared/crctl/scripts/test/` 测试文件集合，不把定向运行或该集合表述为多仓全量。
+2. `test-evidence/` 归档完整：十二条命令各有一份原始输出与命令记录；每份记录含 cwd、退出码、真实运行范围说明；`cmd-05` 附实际调用方节点原始记录（`caller-replay/{A,B}.node-record.json`）与索引 `records.json` 的归因字段、补参差异与断言结果汇总；`cmd-08` 附 `-v` 的 `--- PASS` 行摘要与九个名集分支命中情况；`cmd-10` 附 imported Skills 取用路径列表与四份 CR Agent 的 in-sync/不一致比对结果及两侧 `sha256`；`cmd-11` 附本 CR 声明发布集（30 项）的逐个存在性 + LF 比对结果与 `sha256`（含 crctl 侧新增两个 `lib/` 与两个测试、engineering-docs 侧两个 in-scope TS 测试、`gate-registry.json`）、`out-of-scope-drift` 单列清单、以及规划/竞品两个业务调用方 Agent 的比对结果；`cmd-12` 附逐文件顶层用例数与 `gate-registry.json#manifest` 核对结论。
+3. `uncovered-risks.md` 覆盖 R10、R11 与 §5.2 中非 `cmd-*` 的边界，并逐条写明「观测面 < 声称面」的边界；B1/B3 已由 `cmd-05` 消费的实际调用方节点原始记录（`{A,B}.node-record.json`）覆盖（不列为未覆盖）；`cmd-12` 的范围只写 tools `skills/shared/crctl/scripts/test/` 测试文件集合，不把定向运行或该集合表述为多仓全量。
 4. `effective-version-rerun.md` 与 TASK-09 台账口径一致：`cmd-09`/`cmd-10`/`cmd-11` 全绿时记「实际生效版本一致（覆盖规划/竞品调用方）」；任一红时逐条记录目标与两侧 sha256 并报告缺失前置，不标 `pending-deploy` 充作通过、不表述为已生效。
 5. 文件集检查经受控入口（argv 固定）：KB worktree 根执行 `node <tools-worktree>/skills/shared/crctl/scripts/crctl.mjs git status --porcelain --cwd <knowledge-base-worktree> --workspace <knowledge-base-worktree>`，断言新增文件仅在 `change-requests/CR-2026-075/test-evidence/` 下（外加 `tasks/_index.yml` 的 `crctl task done` 受控更新）；实现仓（tools、multica）worktree 的 `git status --porcelain` 为空（本 TASK 零实现改动）。
 
@@ -63,7 +63,7 @@ created: 2026-10-03T00:15:00+08:00
 **消费**（逐字对齐 SDD 与目标仓现状）：
 
 - plan §6.2 证据命令表：`cmd-01`～`cmd-12` 的 `repo`/`cwd`/`executable`/`args`/`timeout` 五列是唯一事实源，本 TASK 不另写第二套命令形态。
-- 各前置 TASK 的产物：TASK-01 的 A 段 CLI 用例与 `cmd-01`；TASK-02 的 daemon 用例与 `cmd-08`；TASK-03 的原语向量与 `cmd-04`；TASK-04/05 的业务入口用例与 `cmd-02`/`cmd-03`、`gate-registry.json` 登记与 `cmd-12`（含跨消费者联合向量 B18-a 的复跑核对）；TASK-06 的 validate 向量；TASK-07 的 vitest 向量与 `cmd-07`；TASK-08 的 `cmd-05`（实际调用方节点回放记录）/`cmd-06`（六文件扫描）；TASK-09 的 `cmd-09`/`cmd-10`/`cmd-11` 与生效版本台账。
+- 各前置 TASK 的产物：TASK-01 的 A 段 CLI 用例与 `cmd-01`；TASK-02 的 daemon 用例与 `cmd-08`；TASK-03 的原语向量与 `cmd-04`；TASK-04/05 的业务入口用例与 `cmd-02`/`cmd-03`、`gate-registry.json` 登记与 `cmd-12`（含跨消费者联合向量 B18-a 的复跑核对）；TASK-06 的 validate 向量；TASK-07 的 vitest 向量与 `cmd-07`；TASK-08 的 `cmd-05`（实际调用方节点原始记录 `{A,B}.node-record.json` + 索引 `records.json`）/`cmd-06`（六文件扫描）；TASK-09 的 `cmd-09`/`cmd-10`/`cmd-11` 与生效版本台账。
 - `multica` CLI 只读查询（`skill list`/`agent list`）与三仓 CR worktree（Pipeline `resources[].worktreePath`、`classification=healthy`、`dirty=false`）。
 
 **产出**：

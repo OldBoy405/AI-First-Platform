@@ -22,7 +22,7 @@ created: 2026-10-03T00:15:00+08:00
 - `skills/shared/engineering-docs/scripts/src/utils/slug.ts` — `today()` 签名与实现。
 - `skills/shared/engineering-docs/scripts/src/generators/base.ts` — 两个消费点（`:134`、`:196`）。
 - `skills/shared/engineering-docs/scripts/src/validators/index-sync.ts` — 消费点（`:49`）。
-- `skills/shared/engineering-docs/scripts/src/__tests__/generators.test.ts`、`src/__tests__/validators.test.ts` — 北京时间跨日与宿主时区向量。
+- `skills/shared/engineering-docs/scripts/src/__tests__/generators.test.ts`、`skills/shared/engineering-docs/scripts/src/__tests__/validators.test.ts` — 北京时间跨日与宿主时区向量（两者均为本 CR 声明发布的 in-scope 测试文件，属 `cmd-11` 期望集）。
 - `skills/shared/engineering-docs/SKILL.md` — 合同文本（触发描述 `:3`、步骤 3 模板节、步骤 5 `owClient.writeFile` 表述）。
 
 ## 实现要点
