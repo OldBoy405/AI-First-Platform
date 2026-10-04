@@ -43,8 +43,8 @@ created: 2026-10-03T00:15:00+08:00
    - AC-A5：同真实目录与合法别名接受；异根 `WORKSPACE_CONTEXT_MISMATCH` 且绑定不被覆盖。
    - AC-A6：无绑定声明时缺根 `WORKSPACE_REQUIRED`；仅 task ID 不误绑定；旧 `CRCTL_WORKSPACE` 不作 fallback；`help` 可用。
    - AC-A8：Windows 空格/中文路径的 argv 完整性。
-   - AC-B1：旧显式入口缺根报 `WORKSPACE_REQUIRED`、补已确认显式根后同调用成功（**仅 CLI 侧边界单测**，构成本 TASK 提供给 TASK-08 实际调用方节点回放的输入）；「同节点同 run 恰一次纠正」的调用方行为由 TASK-08 以平台既有节点运行入口实际执行调用方节点、归因记录到 `test-evidence/caller-replay/`（索引 `records.json` + 两个变体各自的 `{A,B}.node-record.json` 原始记录）并由 `cmd-05` 断言（输入、记录来源、回放入口与调用计数/失败路由见 plan §6.1 FR-04 观测面说明），本 TASK 不产出回放记录、不另立第二套回放。
-   - AC-B3：第二次失败不自动重试；`BAD_ARGS`、空串、裸旗标不在本地纠正集合（**调用方侧**的同 run 调用计数与失败路由由 TASK-08 的实际节点回放记录 + `cmd-05` 断言覆盖；本 TASK 只保证 CLI 边界行为）。
+   - AC-B1：旧显式入口缺根报 `WORKSPACE_REQUIRED`、补已确认显式根后同调用成功（**仅 CLI 侧边界单测**，构成本 TASK 提供给 TASK-08 实际调用方节点回放的输入）；「同节点同 run 恰一次纠正」的调用方行为由 TASK-08 以平台既有节点运行入口实际执行调用方节点、归因记录到 `test-evidence/caller-replay/`（索引 `records.json` + 两个变体各自的 `{A,B}.node-record.json` 原始记录）并由 `cmd-05` 断言（回放执行环境 = 显式 CLI 模式 + 逐次 `invocations[].env`/`envMode` 归因；有效绑定首次归一 A1 不在回放内；见 plan §6.1 FR-04 观测面说明），本 TASK 不产出回放记录、不另立第二套回放。
+   - AC-B3：第二次失败不自动重试；`BAD_ARGS`、空串、裸旗标不在本地纠正集合（**调用方侧**的同 run 调用计数与失败路由由 TASK-08 在显式 CLI 模式环境产生的实际节点回放记录 + `cmd-05` 断言覆盖；本 TASK 只保证 CLI 边界行为）。
 2. 失败关闭顺序：绑定冲突/不完整/异根向量断言「非零 + 零业务写入」（调用前后 CR 数据文件与 HEAD 逐字相同），并以「不存在的 workspace + 缺 `change-requests/` 的 fixture」组合证明失败先于 `detectWorkspace`/`loadGates`。
 3. 文件集检查经受控入口（本运行时禁止原生 Git；argv 固定于本卡）。cwd 与验收条件 1 同为 tools CR worktree 根；占位绑定：`<tools-worktree>` 取 Pipeline `resources[]` 中 repo=`tools` 的 `worktreePath` 原样值，`<operational-workspace>` 取 `crctl workspace inspect CR-2026-075` 的 `operationalWorkspace` 原样值，不拼接、不回退主工作区：
 
