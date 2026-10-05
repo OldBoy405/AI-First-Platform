@@ -1,26 +1,25 @@
 cr-id: CR-2026-075
 review-type: tech-design
 reviewer: "OldBoy405"
-reviewed-at: "2026-10-05T08:09:24+08:00"
-verdict: block
-blockers:
-  - "本轮新增：B-10（承接 dev-plan upstream 疑点，在 tech-design 阶段独立重判）FR-04/FR-16、AC-B1/B3 的真实调用方验收不可达。SDD §2.1/§4.1/§4.2 定义有效绑定缺参直接归一、无绑定才进入旧显式缺根纠正；§5.2 将 B1/B3 指定为 Pipeline 提示词行为的节点日志/回放，§6.2 又以无绑定声明作为 B1 可达条件，但 §9 未定义可信节点合法取得显式子进程环境的受控入口、调用契约、授权来源及审计保留边界。当前资源代码证明 Pipeline、带 execution_context 的普通委派，以及本项目无声明普通任务均可获得可信绑定：multica 9d1c10d267fe97a9a2232293796a0ef51d284eea，server/internal/daemon/pipeline_task.go#resolveTaskWorkspaceBinding（201-237）、daemon.go#injectTaskCRWorkspaceEnv（10731-10748）在 custom_env 后成对发布绑定；tools 27a4300a0aa1793a442b543ddb8328cb0d3ce562，skills/shared/crctl/scripts/crctl.mjs#bindTaskWorkspace（3407-3420）对真缺参直接归一。本 run task=01a1095e-56a1-7b8b-a3ea-8645aaf1aec4 的 op/audit 亦完整、同根，三仓初始 classification=healthy。仅有显式 CLI 的语义、旧环境快照、replay 标签或逐次 env 日志不产生执行授权；不能以清除可信绑定、切旧 CLI、伪造 WORKSPACE_REQUIRED 或以独立测试冒充真实节点来关闭 B1/B3。请在 SDD 层明确与已批准 PRD 一致的合法执行来源及安全边界，同步 §2/§3/§4/§5/§6/§8/§9 的验收可达性与批准范围，保留有效绑定首次归一、同 run 恰一次纠正、第二次失败停止与无新授权约束；不得留给 PLAN/TASK 盲补或 follow_up。此为设计授权边界缺口，不是缺 cmd/cwd/timeout 的任务粒度问题；不修改 SDD，不声称回放已通过。"
-  - "本轮新增：B-11 本次重评的显式既有实现依赖未与当前资源事实闭合。SDD §1.2 仍声称 dep-1～37 是本次在 resources HEAD 核验的事实、待核实依赖无，全部 SHA 却指向起草快照：KB e125917b7d8a136cf665611dc30db7db1251fc97、tools 061a12ff0a40028b7aba979108c2977313e1fb11、multica 56bdc70db62f4fe2473b238f0ed36b05712af3a9；本 run 受控 rev-parse 实测为 KB 01396ba38f56b800f757637a1a18c83c234896fb、tools 27a4300a0aa1793a442b543ddb8328cb0d3ce562、multica 9d1c10d267fe97a9a2232293796a0ef51d284eea，且不仅提交号变化，依赖结论也已改变：dep-2 的全部命令要求显式根已被 crctl.mjs#bindTaskWorkspace/main 的前置归一改变；dep-28 的 launcher/Git 配置仅 Pipeline 已被可信普通委派接线改变；dep-35 的恢复原语不接收期望摘要/实例与 dep-37 的唯一既有调用点传锁外快照，已不符 durable-tx.mjs#recoverLedgerTransaction（480-512）的 expect 锁内比对/取样和 crctl.mjs#recoverLedgerCommand（731-737）的取样器接线。37 项定义及 40 位 SHA 形状齐备、引用无未定义 dep、显式路径存在，不等于本轮行为核验通过。起草前基线可明确保留为历史依据，但不能把已被本 CR 实施改变的旧结论继续作为本次 HEAD 事实，须在 write-tech-design 回修中区分历史基线与当前设计成立所依赖事实，按 resources 重核相关 stable symbol/行为并更新当前依赖 SHA、结论和正文引用，注明对设计结论的影响；不得只机械替换 SHA 或将本问题降为表达建议。"
+reviewed-at: "2026-10-05T09:46:47+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  PRD↔SDD 对齐: "BLOCK（B-10）；PRD FR-01～16 均有文本技术落点（16/16），A1～A8/B1～B20 均有映射（28/28），但 AC-B1/B3 的真实节点合法显式环境来源缺失，不能宣称 28/28 闭环。已区分历史实现基线与 PRD 目标契约，不把实施完成作为设计通过的替代。"
-  架构合理性: "BLOCK（B-10/B-11）；重读 tools 与 multica ARCHITECTURE 的分层/硬不变量/否决项，daemon 预检与任务环境、CLI 受控执行、纯转换模块、Git 无关事务原语的目标分层合理，DEC-1～6 有真实取舍；但当前真实节点的显式模式授权缺口不能靠第二执行器、清绑定或 PLAN/TASK 绕过，旧依赖结论也不能代替当前分层事实。"
-  数据模型完整性: "快速复核通过（设计模型）；绑定三元组、唯一 execution_context、两类限定 payload、确认身份/推导路径、canonical intentDigest、workspace+身份 key、时间继承、现场分类、期望摘要/实例与回执字段完整；不新增 DB/共享可覆写 context。B-10 需补合法模式来源而非暗增模型授权。"
-  接口契约: "BLOCK（B-10）；HTTP 条件基线 N/A（无新增/修改 HTTP API）。§3.1 两个业务 CLI 的输入范围/确认/错误/成功回执及 §4.5 的恢复分支清晰；绑定归一与显式模式语义清晰，但在可信真实调用方内取得旧显式环境的受控调用契约缺失，描述语义不等于合法可调用入口。"
-  多仓架构约束: "快速复核通过（路径与责任）；首动作 workspace inspect 的 operationalWorkspace 与委派原样一致，KB/multica/tools 三资源均 classification=healthy、dirty=false、changed=false，均 requirement/CR-2026-075。过程文档取 operationalWorkspace、代码只取 resources.worktreePath；KB 不承载业务代码；HEAD 为 01396ba38f56b800f757637a1a18c83c234896fb / 9d1c10d267fe97a9a2232293796a0ef51d284eea / 27a4300a0aa1793a442b543ddb8328cb0d3ce562。依赖旧 SHA 与当前事实不符另由 B-11 登记。"
-  性能与安全: "BLOCK（B-10）；真实路径/同安装根、custom_env 后成对发布、唯一触发评论、一次只读预检、固定两/三文件、审批与白名单不扩等设计仍明确；同 key 锁内期望比对/取样/恢复、CAS 第三值失败与取样失败保留现场仍有设计落点。不能为节点回放清除可信绑定或丢 audit 归因；合法显式子进程的权限来源与保留边界待 SDD 关闭。"
-  可测试性: "BLOCK（B-10）；§5.2 A/B 全量向量、Windows 实跑、业务接口/节点回放、同 txId 交错与取样失败出口均明确，但 B1/B3 的真实节点前置被可信绑定归一过滤，测试场景有描述不等于可达。其余场景按相应算法/错误出口快速复核，无证据声称实施通过；本评审未运行 lint/build/test，未制造缺根回放。"
-  Prompt 采纳影响: "适用并快速复核通过（清单与顺序）；dispatch 受触及，§8 列明两业务调用方、shared 合同、七 Skill/矩阵/Agent/索引/部署同步，§4.9 要求 A 全量证据后才收敛提示，保留 bootstrap/显式入口/execution_context/职责/检查/发布。B-10 回修后须同步合法调用边界，不能以旧现状表充当当前实施事实（B-11）。"
-  批准范围: "BLOCK（B-10）；§9 scope_in/scope_out/zero_diff/follow_up 四字段齐备，durable 的可选锁内比对/取样及 recover helper、multica CUSTOM 登记已纳入，原 B-09 设计结论仍存在且未恢复旧误回滚方案。但当前 B1/B3 的必要合法显式入口未获设计范围和授权定义，不能以 scope_out 的不新增执行器/权限框架掩盖当前 AC 必需条件，不能移至 follow_up；须在 SDD 内给出与 PRD 一致的已有合法出口或按流程裁决范围。"
-  AC闭环与SDD-CLOSE: "BLOCK（B-10）；逐项复读 28 条 AC 与 SDD-CLOSE-01～10，命令/模块/摘要/事务/错误/校验/索引/示例/日期/提示关闭项均有文字结论，未回退 B-01～09 已关闭的设计修订；B1/B3 仍缺真实节点合法环境来源，余 26 项具备文本落点/可观察结果/前置说明（设计判断，非测试通过）。关闭表不能替代当前 AC 可达性。"
-  既有实现依赖与事实: "BLOCK（B-11）；37 项定义、40 位 SHA 形状、dep 引用关系和显式路径已核查，未扫描全仓另猜依赖。以当前三仓受控 HEAD 重读关键绑定/发布、CLI 归一、锁内期望/取样及既有 recover helper，发现起草 SHA 与本轮证据及部分依赖结论不符；历史基线与当前依赖须明确分层重核。未据裁剪 complete=false 输出作最终判断，相关正文另用有界切片补取。"
-  reviewer-model: "quality-reviewer-agent / independent task 01a1095e-56a1-7b8b-a3ea-8645aaf1aec4 / normal review-tech-design contract；临时例外一/二均未使用；技术设计原 cycle 2 attempt 1，实际记账仅由 review-record --bump-attempt 决定。"
-suggestions: []
+  PRD↔SDD 对齐: "PASS（B-10 关闭后复核）：PRD FR-01～FR-16 均有文本技术落点，AC-A1～A8/B1～B20 共 28 项均有设计落点与可观察结果；本轮判据是设计结论与 PRD 契约不冲突且验收可达，未以文本覆盖率作为通过依据（沿上一轮已声明口径）；已区分 PRD 现有实现基线与目标契约。"
+  架构合理性: "PASS：daemon 预检与绑定发布、CLI 受控执行、纯转换模块、Git 无关事务原语的目标分层与既有 ARCHITECTURE 约束一致；DEC-1～DEC-7 均有真实替代与取舍，未新增执行器或权限框架；§4.2.1 把纠正入口收敛为既有代码的既有分支（机器面零改动），未以设计之名扩授权。"
+  数据模型完整性: "PASS（快速复核）：绑定三元组、唯一 execution_context、两类受控 payload、确认身份与推导路径、canonical intentDigest、workspace 加身份 key、期望摘要与实例及回执字段完整；本轮未新增数据模型字段，明确不引入持久化纠正计数、纠正台账或重试服务。"
+  接口契约: "PASS：HTTP 条件基线 N/A（无新增或修改 HTTP API）；§2.1 四模式判定表、§3.2 纠正受控调用契约、§4.2.1 授权来源与审计保留齐备；本 run 独立实测 M1 exit=0、M2（空串与纯空白）WORKSPACE_REQUIRED exit=1、M4 WORKSPACE_CONTEXT_MISMATCH exit=1，与四模式表逐行相符。"
+  多仓架构约束: "PASS：过程文档只取 operationalWorkspace，代码事实只取 resources[].worktreePath（无目录名拼接、无主工作区回退）；本 run 受控 rev-parse 实测 KB 32c6c1ba、tools 27a4300a、multica 9d1c10d2，与三仓 HEAD 一致且 tools/multica 与 §1.2 当前依赖 SHA 相符；三仓 classification=healthy、dirty=false、同分支 requirement/CR-2026-075。"
+  性能与安全: "PASS：路径语义用 realpathOrSelf 与 sameRealPath 及真实目录包含检查；§7 明确本地纠正不取得新授权（纠正值须与 CRCTL_OPERATIONAL_WORKSPACE 同一真实目录或合法别名，异根 M4 拒绝）、给出负面授权清单与不宣称跨 run 机器硬保证；绑定复用一次只读预检，无轮询、无重试服务、无持久化 attempt 账本。"
+  可测试性: "PASS：§5.2 把 B1 拆为 S1/M2 真实节点回放、B1-b 只作 S2 字面来源登记且禁止造无绑定环境冒充证据、B3 覆盖第二次失败与 M4 异根；M2 的机器语义由本 run 独立实测确认（接口级证据，不冒充节点回放）；A 段向量改为在既有用例上补断言，行尾规范化与跨行匹配硬失败纪律已写明。"
+  Prompt 采纳影响: "PASS（适用）：本 CR 触及 crctl.mjs dispatch 且 rules.json 不改，§8 列出应改调用方清单（两个业务 Skill、validate-doc、engineering-docs 已实施项、12 处 crctl advance 缺 CR-ID、crctl SKILL 增补含不构成授权来源负面清单、两个 Agent 文档与矩阵台账、首词登记、pipeline 模板示例收敛、ARCHITECTURE.md）。"
+  批准范围: "PASS：§9 四字段齐备且自洽；scope_in 已把 §4.2.1 调用方约定与 §8 的 Skill 文本落点纳入，follow_up 明文禁止把 FR-04 的合法来源、授权边界与审计保留下沉；zero_diff 只声明 FR-04 纠正机器面零改动与既有分支零改动，与 scope_in 中 A 段既有实现不矛盾，CUSTOM.md 登记与部署副本同步仍在 scope_in。"
+  AC闭环与SDD-CLOSE: "PASS：28 条 AC 与 SDD-CLOSE-01～10 结论齐备且未回退既有已关闭项；AC-B1 依 §2.1 M2 与 §4.2.1 S1 真实可达（本 run 已实测其机器语义），AC-B3 依 M4 与第二次失败即停可达；其余 26 项保持文本落点与可观察结果判定（设计判断，非测试通过）。"
+  既有实现依赖与事实: "PASS（B-11 关闭）：§1.2 三层口径；38 项五要素齐备、40 位 SHA 形状完整、无未定义 dep 引用、正文当前实现事实由 dep-N 承载；本 run 抽验 dep-2/15/23/25/26/27/28/35/36/37/38 与源码逐项相符；历史基线明确降为历史依据、不得再作当前事实，未做无界全仓扫描。"
+suggestions:
+  - "已解决：B-10（承接 dev-plan upstream 疑点，在 tech-design 阶段独立重判）——§4.2.1 给出两个机器既有分支构成的合法执行来源（S1=M2 有效绑定+显式不可用 --workspace；S2=M3 无绑定声明且缺参）、§2.1 四模式表（M1 归一/M2 纠正触发/M3 显式根/M4 拒绝）、§3.2 纠正受控调用契约（第 2 次只许换 --workspace 一个参数、其余 argv 逐字不变）、授权边界（授权来源只限同一 task 的既有可信绑定三元组与调用方 FR-04 约定，纠正值必须通过同一真实目录检查，异根即 WORKSPACE_CONTEXT_MISMATCH 停止，故不产生新授权）与审计保留（只以节点日志/回放验收、按每条适用节点回放计 ≤1、不宣称跨 run 机器硬保证、不引入持久化纠正计数）；负面授权清单（不清绑定、不切 CLI 版本、不伪造错误码、不以独立测试冒充节点、不新增第二执行器）在 §7/§4.2.1 明文，§9 follow_up 明文禁止把该项下沉。本 run 以本 CR 的 tools worktree HEAD 27a4300a 的 crctl 独立实测四模式：M1 真缺参 exit=0 首次归一；M2 空串与纯空白均 WORKSPACE_REQUIRED exit=1；M4 显式传主 checkout 得 WORKSPACE_CONTEXT_MISMATCH exit=1；对照显式正确根 exit=0，未清绑定、未切版本、未伪造错误码、机器面零改动；有效绑定首次归一、同 run 恰一次纠正、第二次失败停止、无新授权四条约束均保留。"
+  - "已解决：B-11 本次重评的显式既有实现依赖未与当前资源事实闭合——§1.2 改为三层口径（当前依赖 38 项/起草快照基线 §1.2.1/待核实依赖无），当前依赖按本轮受控 rev-parse HEAD 加源码实读重核并新增 dep-38；§1.2.1 记录起草基线（KB e125917b、tools 061a12ff、multica 56bdc70d）与被本 CR 实施改变的结论及对设计结论的影响，dep-2/28/35/37 的旧结论已按当前代码更正（不再是全部命令要求显式根、launcher 仅 Pipeline、原语不接收期望摘要、唯一调用点传锁外快照），§4.6/§4.7/§5.2/§8 同步区分已实施与待实施；未仅机械替换 SHA，未降级为表达建议。本 run 复核实测 tools 27a4300a、multica 9d1c10d2 与 §1.2 当前依赖 SHA 逐一相符，并抽验 dep-2（main 4170 归一先于 4172 显式根校验、3421 行显式不可用不归一、authorityWorkspace 的 OPERATIONAL_WORKSPACE_MISMATCH）、dep-15（today 固定 UTC+8 偏移）、dep-23（七个 Skill 共 14 处 crctl advance = 12 处命令形态逐处缺 CR-ID 加 2 处散文）、dep-25（CR_DATA_FIRST_WORDS 未登记 planning-entry）、dep-26（planning-entry.test.mjs 已登记、competitive-report.test.mjs 缺）、dep-27/28（resolveTaskWorkspaceBinding 与 taskBinding.bound() 两接线点）、dep-35/37（expect 与 sampleCommitState 已入签名、锁内比对在 486-491）、dep-36（CUSTOM.md 无 CR-2026-075 行，登记仍在 scope_in）、dep-38（sampleCommitStateReader 714）均与源码逐项相符。附注（不影响结论）：§1.2 表头记 ai-first-platform-docs 本轮 HEAD 为 1ac7852c（即本 CR 回修轮起点），当前 KB HEAD 已因本 CR 自身 sdd.md 与两次状态提交前进到 32c6c1ba；dep-1 结论（status=tech-design-review-pending）在两者上均成立，建议后续轮次在 §1.2 口径句显式写明该 SHA 不含本 CR 自身文档提交。"
 review-loop:
-  current-attempt: 2
+  current-attempt: 3
 subject-file: change-requests/CR-2026-075/sdd.md
-subject-sha256: 86179d81c2c3a70c57ee1cfef178752429e20f80c45e5e82d59979d88973f9d6
+subject-sha256: f716a98ba67bab420c9d4a098a8b6101e16be98db7e287ad7e178003818ed6be
