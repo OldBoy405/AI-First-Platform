@@ -1,11 +1,11 @@
 cr-id: CR-2026-075
 review-type: dev-plan
 reviewer: "OldBoy405"
-reviewed-at: "2026-10-05T01:13:48+08:00"
+reviewed-at: "2026-10-05T07:35:43+08:00"
 verdict: block
-repair-target: write-dev-plan
+repair-target: write-tech-design
 blockers:
-  - "部分解决：B-10 FR-04/FR-16、AC-B1/B3（cmd-05）：plan.md:132/141 与 TASK-08.md:40/45、TASK-10.md:34/49 已正确区分有效绑定首次归一（A1）与显式 CLI 模式缺根纠正，并增加 invocations[].env/envMode 的逐次归因，关闭了旧稿要求完整绑定同时首调 WORKSPACE_REQUIRED 的直接矛盾。但 TASK-08:40 仍只指定候选载体为本 CR Pipeline 节点或平台普通 Issue 委派任务，又要求节点实际收到含 CR-ID、operational_workspace、resources 的 execution_context，同时每次受控调用环境不声明 CRCTL_OPERATIONAL_WORKSPACE/CRCTL_TASK_AUDIT_ROOT，并禁止关闭 task 绑定、切旧 CLI 或修改实现。没有给出这些候选节点中已经存在且可合法获得该显式子进程环境的具体受控入口、调用方式或环境来源；引用 SDD §1.1 的旧环境快照与给记录新增 replay.mode=explicit 不能提供该入口。目标 worktree 的 daemon pipeline_task.go:201-237 对 Pipeline 使用预检绑定、对含声明的普通委派执行同一预检；无声明普通任务在本项目的 local_directory CR 根也有绑定。daemon.go:10732-10748 在 custom_env 之后清除旧 CRCTL_WORKSPACE 并发布 op/audit 对；crctl.mjs:3407-3420 则在有效绑定真缺参时归一，不能产生要求的首调错误。本 run 实测 MULTICA_TASK_ID=01a107df-92c2-750f-af99-efb01f86fc2d、op=权威 KB worktree、audit=项目根、CRCTL_WORKSPACE 不存在；三仓 healthy/dirty=false。计划也未定义既有受控调用接口如何在不清除或覆盖可信绑定的前提下，把该节点调用合法送入指定的显式 CLI 模式。因此 B-10 的真实调用方场景可达性残留仍影响 TASK-08 的 cmd-05 全绿完成前置与 TASK-10 下游覆盖，不能把环境标签或未来记录格式当成已存在的执行入口。仅回修 plan §6.1/§6.2/§7 与 TASK-01/08/10 的翻译：明确符合已批准 SDD 的现存受控调用方入口及其可达环境来源、两变体的实际调用步骤和逐次原始归因；不得清绑定、换旧 CLI、造错误、补造平台原始导出或新增执行器来迎合断言。保持同 run 恰一次纠正、第二次失败停止、入口来源与短提示原文交叉核对。仅审查翻译与可达性，未执行回放、未复审已批准 SDD 决策。取证 HEAD：KB bb1ba6af93f2c06e2de66898afdf31e53fb77883（含 86732207 回修），tools 27a4300a0aa1793a442b543ddb8328cb0d3ce562，multica 9d1c10d267fe97a9a2232293796a0ef51d284eea。repair-target=write-dev-plan；本次为 human-authorized exception，非机器路由保证。"
+  - "未解决：B-10 FR-04/FR-16、AC-B1/B3（cmd-05）的真实调用方场景可达性仍未闭合，独立重判为上游设计授权边界缺口。plan.md:117/129/141 与 TASK-08.md:40/45、TASK-10.md:34 仍要求本 CR Pipeline 节点或本项目普通 Issue 委派任务实际收到 execution_context，并使用登记 tools worktree 的 crctl status CR-2026-075，在逐次调用中不声明 CRCTL_OPERATIONAL_WORKSPACE/CRCTL_TASK_AUDIT_ROOT、首调缺根返回 WORKSPACE_REQUIRED、同 run 仅补参一次；但不得关闭 task 绑定、切旧 CLI、改实现或补造平台原始导出。资源实读：multica daemon/pipeline_task.go:201-237 对 Pipeline 及含声明委派使用可信绑定；无声明普通任务也从本项目 local_directory 获取根。daemon/daemon.go:10732-10748 在 custom_env 后清旧值并成对发布 op/audit；tools crctl.mjs:3407-3420 在有效绑定真缺参时直接归一。本 run task=01a1093f-60fd-7eed-83ee-71691c4b5072，op=权威 KB worktree、audit=项目根、CRCTL_WORKSPACE 未声明，三仓 classification=healthy/dirty=false。已批准 SDD §2.1/§4.2 定义无绑定的显式 CLI 语义，§5.2/§6.2 AC-B1/B3 又要求真实节点回放，§9 禁止新增执行器/权限框架；却没有定义在这两类可信节点中合法获得所需显式子进程环境的受控入口、调用契约或授权来源。旧环境快照、replay.mode/envMode 标签和逐次 env 记录只是描述或取证，不产生执行权限；单独改 plan/TASK 无法在不违背已批准绑定边界的前提下实现 cmd-05。故需 write-tech-design 修订 SDD 的调用入口、可信绑定与显式模式授权边界及对应验收可达性，再经独立技术评审和人类正式重新审批后重建 plan/TASK；不得先在 plan/TASK 清绑定、伪造错误或新增执行器。保留有效绑定首次归一与旧显式缺根纠正的区分、同 run 恰一次纠正和第二次失败停止。取证 HEAD：KB b7707800b16dd4bf5b249b65a5b015136d4e3eb9、tools 27a4300a0aa1793a442b543ddb8328cb0d3ce562、multica 9d1c10d267fe97a9a2232293796a0ef51d284eea。此次仅为临时例外二授权的上游路由重判（human-authorized exception），不是 attempt 3，不声称 B-10 已解决或回放通过；cycle 3/attempt 2 和 attempt 1/2 历史保持不变。"
 dimensions:
   sdd-to-plan: "pass"
   plan-to-tasks: "pass"
@@ -15,7 +15,7 @@ dimensions:
   acceptance-verifiability: "block"
   scope-and-simplicity: "pass"
   risk-and-rollback: "pass"
-  reviewer-model: "pi / quality-reviewer-agent / independent task 01a107df-92c2-750f-af99-efb01f86fc2d"
+  reviewer-model: "pi / quality-reviewer-agent / independent task 01a1093f-60fd-7eed-83ee-71691c4b5072 / human-authorized exception / B-10 upstream routing only"
 suggestions: []
 review-loop:
   current-attempt: 2
