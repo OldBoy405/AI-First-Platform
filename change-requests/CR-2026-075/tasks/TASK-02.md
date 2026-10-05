@@ -40,7 +40,7 @@ created: 2026-10-03T00:15:00+08:00
 
 ## 验收条件
 
-1. 在 multica CR worktree 的 `server` 目录执行证据命令 `cmd-08`（plan §6.2 原样：repo=multica、cwd=`server`、executable=`go`、args=`["test","./internal/daemon/","-count=1","-v","-run","Test(InjectTaskCRWorkspaceEnv|DaemonEnvBuildHasNoConfigFirstRootFallback|PreparePipelineTaskHydratesMachineLocalPaths|ConfigurePipelineGitEnvironment|ConfigureTaskGitEnvironment|InstallPipelineCrctlLauncher|InstallCrctlLauncher|ResolveTaskWorkspaceBinding|ParseExecutionContext|TaskWorkspaceBinding)"]`、timeout=900）：全绿，且 `-v` 输出的 `--- PASS` 行中下列名集**每个分支至少命中一条**（用例名由本验收条件固定，改名即视为证据失效）：
+1. 在 multica CR worktree 的 `server` 目录执行证据命令 `cmd-07`（plan §6.2 原样：repo=multica、cwd=`server`、executable=`go`、args=`["test","./internal/daemon/","-count=1","-v","-run","Test(InjectTaskCRWorkspaceEnv|DaemonEnvBuildHasNoConfigFirstRootFallback|PreparePipelineTaskHydratesMachineLocalPaths|ConfigurePipelineGitEnvironment|ConfigureTaskGitEnvironment|InstallPipelineCrctlLauncher|InstallCrctlLauncher|ResolveTaskWorkspaceBinding|ParseExecutionContext|TaskWorkspaceBinding)"]`、timeout=900）：全绿，且 `-v` 输出的 `--- PASS` 行中下列名集**每个分支至少命中一条**（用例名由本验收条件固定，改名即视为证据失效）：
    - 既有锚点：`TestInjectTaskCRWorkspaceEnv*`、`TestDaemonEnvBuildHasNoConfigFirstRootFallback`、`TestPreparePipelineTaskHydratesMachineLocalPaths`、`TestConfigurePipelineGitEnvironment`、`TestInstallPipelineCrctlLauncher`（`pipeline_task_test.go:46/75/105`、`cr_workspace_binding_test.go:74/92/115/137/150/183` 既有组织，表驱动、无新框架）。
    - 新增前缀：`TestResolveTaskWorkspaceBinding*`、`TestParseExecutionContext*`、`TestTaskWorkspaceBinding*`、`TestConfigureTaskGitEnvironment*`、`TestInstallCrctlLauncher*`。
    真实运行范围 = `./internal/daemon/` 单包定向名集；**不声称该包全量通过**（R10：`TestRegisterTaskReposAllowsProjectOnlyURL` 在本机 Windows 因临时仓路径超 MAX_PATH 失败，与本 CR 无关），不使用 `go test ./...`、不使用 `make test`。
@@ -59,7 +59,7 @@ created: 2026-10-03T00:15:00+08:00
 
 ## 完成标志
 
-- `cmd-08` 全绿且上述九个名集分支各自命中；`-v` 输出作为证据留存。
+- `cmd-07` 全绿且上述九个名集分支各自命中；`-v` 输出作为证据留存。
 - 解析/发布/泛化三处语义与 SDD §4.1 逐条对应；`taskWorkspaceBinding` 不持久化、不序列化回服务端。
 - `CUSTOM.md` 零改动（TASK-09 登记）、`cmd_gitguard.go` 零改动、`go.mod` 零改动。
 - 产物已落盘并提交，commit 自含其新增/调整测试；本 TASK 不改 tools 仓文件。
@@ -101,4 +101,4 @@ func installCrctlLauncher(binDir string) error
 ```
 
 - 绑定三元组定义（`MULTICA_TASK_ID`/`CRCTL_OPERATIONAL_WORKSPACE`/`CRCTL_TASK_AUDIT_ROOT` 的语义与有效性条件）是本 CR 的共享契约，与 TASK-01 的 CLI 归一判据逐字一致；两侧都不得缩写、改名或另立第二份定义。
-- 下游引用：TASK-09 的部署副本与生效版本台账消费本 TASK 的绑定发布面（`cmd-10` 的部署基线）；TASK-10 复跑 `cmd-08` 作为 A 段证据。
+- 下游引用：TASK-09 的部署副本与生效版本台账消费本 TASK 的绑定发布面（`cmd-09` 的部署基线）；TASK-10 复跑 `cmd-07` 作为 A 段证据。

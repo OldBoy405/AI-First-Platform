@@ -44,7 +44,7 @@ created: 2026-10-03T00:15:00+08:00
    - B18-a（B-04 完成提交定位与第三值）：规划 A 完成 → 规划 B 完成并更新共享 `_index.yml` → 重放 A 不得返回 B 的提交，按 §4.5 第 3.c/3.d 步归入 `TX_RECOVERY_CONFLICT`；A 的完成提交仍由 `AI-First-Intent` 唯一命中；另测「A 提交后另有提交时恢复」返回 `committed` 而非回滚。
    - 业务域 B9/B10/B15/B16 的规划侧：已确认落盘字段/章节/索引唯一、无合同不创建索引、未确认零写入、越界与任意文件清单在业务写入前拒绝。
 2. 在 tools CR worktree 根执行证据命令 `cmd-01`（plan §6.2 原样：`node --test skills/shared/crctl/scripts/test/crctl.test.mjs`、timeout=900）全绿，其中业务入口域用例覆盖命令面/旗标袋/投影面（新命令不在 `PROJECTED`）与 `intentDigest` 的跨日不变性。**不声称覆盖 crctl 全部子命令行为。**
-3. `gate-registry.json`：`manifest.files` 含 `planning-entry.test.mjs`（与磁盘集合逐一一致），`manifest.cases` 给该文件正整数基线（`dep-26`）；登记后执行证据命令 `cmd-12`（plan §6.2 原样：repo=tools、cwd=`.`、executable=`node`、args=`["skills/shared/crctl/scripts/test/suite-gate.mjs","--run"]`、timeout=3600）全绿：逐文件加载成功、磁盘集合 ≡ manifest 文件集、每文件顶层用例数 ≥ 基线（SDD §5.2/SDD-CLOSE-09 的聚合门禁口径）。真实运行范围 = tools `skills/shared/crctl/scripts/test/` 测试文件集合，不扩展为多仓全量。
+3. `gate-registry.json`：`manifest.files` 含 `planning-entry.test.mjs`（与磁盘集合逐一一致），`manifest.cases` 给该文件正整数基线（`dep-26`）；登记后执行证据命令 `cmd-11`（plan §6.2 原样：repo=tools、cwd=`.`、executable=`node`、args=`["skills/shared/crctl/scripts/test/suite-gate.mjs","--run"]`、timeout=3600）全绿：逐文件加载成功、磁盘集合 ≡ manifest 文件集、每文件顶层用例数 ≥ 基线（SDD §5.2/SDD-CLOSE-09 的聚合门禁口径）。真实运行范围 = tools `skills/shared/crctl/scripts/test/` 测试文件集合，不扩展为多仓全量。
 4. 文件集检查经受控入口（argv 固定），cwd = tools CR worktree 根；`<operational-workspace>` 取 `crctl workspace inspect CR-2026-075` 的 `operationalWorkspace` 原样值：
 
    `node skills/shared/crctl/scripts/crctl.mjs git status --porcelain --cwd <tools-worktree> --workspace <operational-workspace>`
@@ -53,7 +53,7 @@ created: 2026-10-03T00:15:00+08:00
 
 ## 完成标志
 
-- `cmd-02`（含 B15-a/B15-c/B18-a）与 `cmd-01` 全绿；`gate-registry.json` 清单一致且 `cmd-12` 转绿。
+- `cmd-02`（含 B15-a/B15-c/B18-a）与 `cmd-01` 全绿；`gate-registry.json` 清单一致且 `cmd-11` 转绿。
 - 完成登记只受既有 DAG 直接前置（TASK-03）约束，不加其他条件：本 TASK 自身验收达成且 TASK-03 已按自身验收即时 done 时，用 `crctl task done --task CR-2026-075-TASK-04` 登记；不把 TASK-05 等下游完成作为本 TASK done 的前置；跨消费者联合向量（B18-a：规划 A 完成 → 规划 B 更新共享 `_index.yml` → 重放 A）在本 TASK 真实业务入口用例内验证，并由 TASK-10 复跑 `cmd-02`/`cmd-03` 核对。
 - `lib/planning-entry.mjs` 为纯函数模块、零第三方依赖、不反向依赖 CLI（`dep-24` §3）；`crctl.mjs` 只承担参数/范围校验、事务与回执。
 - 提交形态未新增：只用既有 `[cr] ` 前缀与 `AI-First-Tx`/`AI-First-Intent` trailer；`rules.json#protectedPaths`/commit 白名单零改动。

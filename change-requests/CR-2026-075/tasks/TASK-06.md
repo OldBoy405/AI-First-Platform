@@ -42,8 +42,8 @@ created: 2026-10-03T00:15:00+08:00
 1. 在 tools CR worktree 根执行证据命令 `cmd-01`（plan §6.2 原样：repo=tools、cwd=`.`、executable=`node`、args=`["--test","skills/shared/crctl/scripts/test/crctl.test.mjs"]`、timeout=900）全绿。真实运行范围 = 单文件 `crctl.test.mjs`；**不声称覆盖 crctl 全部子命令行为**。新增/调整用例覆盖：
    - AC-B5/B7：合法既有评审 YAML 分支有效；`prd.md`/`sdd.md` 仍 `UNKNOWN_ARTIFACT`；`UNKNOWN_ARTIFACT` 纠正集合未扩大。
    - AC-B6：未声明维度 → WARN + `dimensions.notChecked` 且 `valid:true`；声明存在且违反 → `errors` + 非零；声明存在但配置畸形 → `SCHEMA_INVALID` 非零。三态向量各一条。
-   - AC-B2：额外 `validate prd.md` 的 `UNKNOWN_ARTIFACT` 后仍能完成原 PRD 重读自检及后续登记/发布（CLI 侧可观测边界）；调用方一次本地纠正的同 run 计数与失败路由由 TASK-08 以实际调用方节点运行产生的回放记录 + `cmd-05` 断言覆盖（见 plan §6.1 FR-04 观测面说明），本 TASK 不另立回放、不以 CLI fixture 充当该验收。
-2. 在 tools CR worktree 根执行证据命令 `cmd-06`（plan §6.2 原样：repo=tools、cwd=`.`、executable=`node`、args=`["--test","skills/shared/crctl/scripts/test/caller-contract.test.mjs","skills/shared/crctl/scripts/test/contract-scan.test.mjs","skills/shared/crctl/scripts/test/check-skill-matrix.test.mjs","skills/shared/crctl/scripts/test/check-agents-contract.test.mjs","skills/shared/crctl/scripts/test/lint-prompts.test.mjs","skills/shared/crctl/scripts/test/pipeline-structure.test.mjs"]`、timeout=300）全绿：证明 `AGENTS.md`/`validate-doc` 文本修订未破坏合同一致性、矩阵/Agent 登记、提示 lint 与调用方合同。真实运行范围 = 六个单文件合并运行；不声称 tools 仓全量。
+   - AC-B2：额外 `validate prd.md` 的 `UNKNOWN_ARTIFACT` 后仍能完成原 PRD 重读自检及后续登记/发布（CLI 侧可观测边界）；调用方一次本地纠正的调用方行为面（节点回放）已按 plan §4 末 follow_up FU-1 整体移出本 CR 验收（未覆盖事实由 TASK-10 记入 `test-evidence/uncovered-risks.md`）；本 CR 内 FR-04 的可观测面为 `cmd-01` 的 CLI 侧边界向量与 TASK-08 的 `cmd-05` 调用方静态合同面，本 TASK 不另立回放、不以 CLI fixture 充当调用方行为验收。
+2. 在 tools CR worktree 根执行证据命令 `cmd-05`（plan §6.2 原样：repo=tools、cwd=`.`、executable=`node`、args=`["--test","skills/shared/crctl/scripts/test/caller-contract.test.mjs","skills/shared/crctl/scripts/test/contract-scan.test.mjs","skills/shared/crctl/scripts/test/check-skill-matrix.test.mjs","skills/shared/crctl/scripts/test/check-agents-contract.test.mjs","skills/shared/crctl/scripts/test/lint-prompts.test.mjs","skills/shared/crctl/scripts/test/pipeline-structure.test.mjs"]`、timeout=300）全绿：证明 `AGENTS.md`/`validate-doc` 文本修订未破坏合同一致性、矩阵/Agent 登记、提示 lint 与调用方合同。真实运行范围 = 六个单文件合并运行；不声称 tools 仓全量。
 3. 输出形状断言：新增 `dimensions` 键只在统一外壳上出现；既有 `file`/`valid`/`errors`/`warnings` 键与退出码在四种场景下逐字保持（含未声明场景 `valid:true`）。
 4. 文件集检查经受控入口（argv 固定），cwd = tools CR worktree 根；`<operational-workspace>` 取 `crctl workspace inspect CR-2026-075` 的 `operationalWorkspace` 原样值：
 
@@ -53,7 +53,7 @@ created: 2026-10-03T00:15:00+08:00
 
 ## 完成标志
 
-- `cmd-01` 与 `cmd-06` 全绿；三态向量（未声明/违反/畸形）与既有分支回归逐条可见。
+- `cmd-01` 与 `cmd-05` 全绿；三态向量（未声明/违反/畸形）与既有分支回归逐条可见。
 - 既有 artifact/schema 分支内部 diff 为零（只改统一外壳与文本）；`SCHEMA_INVALID` 复用而非新增错误码。
 - `AGENTS.md` 与 `skills/shared/validate-doc/SKILL.md` 不再出现 blanket 自动调用承诺，也没有新增通用校验闸门。
 - 产物已落盘并提交，commit 自含其新增测试；不夹带 TASK-01/03/04/05 对 `crctl.mjs` 的改动（R9 顺序编辑）。
@@ -78,4 +78,4 @@ created: 2026-10-03T00:15:00+08:00
 
 - `dimensions` 键为既有输出的**新增**字段；`checked`/`notChecked` 数组元素形状如上（`notChecked` 元素含 `dimension` 与 `reason`）。
 - 错误面：声明违反走既有 `errors` 路径（`valid:false` + 非零退出）；配置畸形复用 `SCHEMA_INVALID`；不新增错误码。
-- 下游引用同一份契约：TASK-08 的提示收敛引用本 TASK 的触发条件口径（「调用方步骤规定或用户显式请求」）；TASK-10 复跑 `cmd-01`/`cmd-06` 作为 FR-05 证据。
+- 下游引用同一份契约：TASK-08 的提示收敛引用本 TASK 的触发条件口径（「调用方步骤规定或用户显式请求」）；TASK-10 复跑 `cmd-01`/`cmd-05` 作为 FR-05 证据。

@@ -42,7 +42,7 @@ created: 2026-10-03T00:15:00+08:00
    - B15-c（B-06 首次写入出口）：`new-date` 指向尚不存在日期 → exit=0、`changed=true`、`identity`/`artifacts` 取已确认身份与推导路径（`artifacts` 恰三项）、`commit` = 本次提交；首写不要求 `conflict_strategy`。
    - 业务域 B9/B10/B15/B16 的竞品侧：已确认落盘（报告 + `updates[]` 按 `(date,title)` 去重 + reports 索引倒序 `status: new`）、未确认零写入、越界与任意文件清单在业务写入前拒绝、索引唯一。
 2. 在 tools CR worktree 根执行证据命令 `cmd-01`（plan §6.2 原样：`node --test skills/shared/crctl/scripts/test/crctl.test.mjs`、timeout=900）全绿，其中业务入口域用例覆盖竞品命令面/旗标袋/投影面（新命令不在 `PROJECTED`）与 `(competitor-id, report-date)` 幂等作用域。**不声称覆盖 crctl 全部子命令行为。**
-3. `gate-registry.json`：`manifest.files` 含 `competitive-report.test.mjs`（与磁盘集合逐一一致），`manifest.cases` 给正整数基线（`dep-26`）；登记后执行证据命令 `cmd-12`（plan §6.2 原样：repo=tools、cwd=`.`、executable=`node`、args=`["skills/shared/crctl/scripts/test/suite-gate.mjs","--run"]`、timeout=3600）全绿：逐文件加载成功、磁盘集合 ≡ manifest 文件集、每文件顶层用例数 ≥ 基线（SDD §5.2/SDD-CLOSE-09 的聚合门禁口径）。真实运行范围 = tools `skills/shared/crctl/scripts/test/` 测试文件集合，不扩展为多仓全量。
+3. `gate-registry.json`：`manifest.files` 含 `competitive-report.test.mjs`（与磁盘集合逐一一致），`manifest.cases` 给正整数基线（`dep-26`）；登记后执行证据命令 `cmd-11`（plan §6.2 原样：repo=tools、cwd=`.`、executable=`node`、args=`["skills/shared/crctl/scripts/test/suite-gate.mjs","--run"]`、timeout=3600）全绿：逐文件加载成功、磁盘集合 ≡ manifest 文件集、每文件顶层用例数 ≥ 基线（SDD §5.2/SDD-CLOSE-09 的聚合门禁口径）。真实运行范围 = tools `skills/shared/crctl/scripts/test/` 测试文件集合，不扩展为多仓全量。
 4. 文件集检查经受控入口（argv 固定），cwd = tools CR worktree 根；`<operational-workspace>` 取 `crctl workspace inspect CR-2026-075` 的 `operationalWorkspace` 原样值：
 
    `node skills/shared/crctl/scripts/crctl.mjs git status --porcelain --cwd <tools-worktree> --workspace <operational-workspace>`
@@ -51,7 +51,7 @@ created: 2026-10-03T00:15:00+08:00
 
 ## 完成标志
 
-- `cmd-03`（含 B15-b/B15-c）与 `cmd-01` 全绿；`gate-registry.json` 清单一致且 `cmd-12` 转绿。
+- `cmd-03`（含 B15-b/B15-c）与 `cmd-01` 全绿；`gate-registry.json` 清单一致且 `cmd-11` 转绿。
 - 完成登记只受既有 DAG 直接前置（TASK-03、TASK-04）约束，不加其他条件：本 TASK 自身验收达成时用 `crctl task done --task CR-2026-075-TASK-05` 登记；生产者 TASK-03 按自身验收即时登记（不等待消费者），跨消费者联合向量由 TASK-04 的 B18-a 用例与本 TASK 竞品侧用例共同验证、并由 TASK-10 复跑 `cmd-02`/`cmd-03` 核对。
 - `lib/competitive-report.mjs` 为纯函数模块、零第三方依赖、不反向依赖 CLI；`cmdBusinessEntry` 骨架未被复制成第二份实现（`kind` 分支共用）。
 - 覆盖与重放分支互不代替：合法覆盖返回 `changed=true` 与新提交，已完成同意图重放返回 `changed=false` 与原提交。

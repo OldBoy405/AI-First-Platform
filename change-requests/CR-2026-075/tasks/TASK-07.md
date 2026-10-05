@@ -22,7 +22,7 @@ created: 2026-10-03T00:15:00+08:00
 - `skills/shared/engineering-docs/scripts/src/utils/slug.ts` — `today()` 签名与实现。
 - `skills/shared/engineering-docs/scripts/src/generators/base.ts` — 两个消费点（`:134`、`:196`）。
 - `skills/shared/engineering-docs/scripts/src/validators/index-sync.ts` — 消费点（`:49`）。
-- `skills/shared/engineering-docs/scripts/src/__tests__/generators.test.ts`、`skills/shared/engineering-docs/scripts/src/__tests__/validators.test.ts` — 北京时间跨日与宿主时区向量（两者均为本 CR 声明发布的 in-scope 测试文件，属 `cmd-11` 期望集）。
+- `skills/shared/engineering-docs/scripts/src/__tests__/generators.test.ts`、`skills/shared/engineering-docs/scripts/src/__tests__/validators.test.ts` — 北京时间跨日与宿主时区向量（两者均为本 CR 声明发布的 in-scope 测试文件，属 `cmd-10` 期望集）。
 - `skills/shared/engineering-docs/SKILL.md` — 合同文本（触发描述 `:3`、步骤 3 模板节、步骤 5 `owClient.writeFile` 表述）。
 
 ## 实现要点
@@ -36,11 +36,11 @@ created: 2026-10-03T00:15:00+08:00
 
 ## 验收条件
 
-1. 在 `skills/shared/engineering-docs/scripts` 目录执行证据命令 `cmd-07`（plan §6.2 原样：repo=tools、cwd=`skills/shared/engineering-docs/scripts`、executable=`node`、args=`["node_modules/vitest/vitest.mjs","run","src/__tests__/generators.test.ts","src/__tests__/validators.test.ts"]`、timeout=600）：全绿。真实运行范围 = 本 TASK 声明改动的两个测试文件（plan 0.7 起 `cmd-07` 观测面收窄；R12 记录该包 `chain.test.ts` 的 2 例 trunk 自带失败及其另开 CR 处置），**不声称该 TS 包全量绿，更不声称 tools 仓全量**。新增/调整向量覆盖：
+1. 在 `skills/shared/engineering-docs/scripts` 目录执行证据命令 `cmd-06`（plan §6.2 原样：repo=tools、cwd=`skills/shared/engineering-docs/scripts`、executable=`node`、args=`["node_modules/vitest/vitest.mjs","run","src/__tests__/generators.test.ts","src/__tests__/validators.test.ts"]`、timeout=600）：全绿。真实运行范围 = 本 TASK 声明改动的两个测试文件（plan 0.7 起 `cmd-06` 观测面收窄；R12 记录该包 `chain.test.ts` 的 2 例 trunk 自带失败及其另开 CR 处置），**不声称该 TS 包全量绿，更不声称 tools 仓全量**。新增/调整向量覆盖：
    - AC-B8（日期面）：北京时间跨日边界两侧渲染匹配既有 `isoDate` schema；宿主时区差异下结果一致（含非 UTC+8 宿主的固定时钟向量）。
    - 默认参数兼容：不传 `now` 时 `today()` 仍返回当日北京时间日期。
 2. 业务 timestamp 侧的同规则由 TASK-04/05 产出的 `beijingDate(now)`/`beijingIso(now)` 实现，证据命令 `cmd-02`（`node --test skills/shared/crctl/scripts/test/planning-entry.test.mjs`）与 `cmd-03`（`node --test skills/shared/crctl/scripts/test/competitive-report.test.mjs`）在各自 TASK 内断言；本 TASK 只声明同一规则、不重复实现、不在本 TASK 内运行这两个命令。FR-07 的联合证据（cmd-07 + cmd-02 + cmd-03）由 TASK-10 汇总复跑并在 test-report 的 FR-07 行记录。
-3. 合同文本断言（静态）：`skills/shared/engineering-docs/SKILL.md` 不再出现「frontmatter 必须通用委派」与固定 `owClient.writeFile` 落盘表述；`cmd-06`（`node --test skills/shared/crctl/scripts/test/caller-contract.test.mjs skills/shared/crctl/scripts/test/contract-scan.test.mjs skills/shared/crctl/scripts/test/check-skill-matrix.test.mjs skills/shared/crctl/scripts/test/check-agents-contract.test.mjs skills/shared/crctl/scripts/test/lint-prompts.test.mjs skills/shared/crctl/scripts/test/pipeline-structure.test.mjs`，timeout=300，cwd=tools CR worktree 根）保持全绿。本 TASK 不新增命令行。
+3. 合同文本断言（静态）：`skills/shared/engineering-docs/SKILL.md` 不再出现「frontmatter 必须通用委派」与固定 `owClient.writeFile` 落盘表述；`cmd-05`（`node --test skills/shared/crctl/scripts/test/caller-contract.test.mjs skills/shared/crctl/scripts/test/contract-scan.test.mjs skills/shared/crctl/scripts/test/check-skill-matrix.test.mjs skills/shared/crctl/scripts/test/check-agents-contract.test.mjs skills/shared/crctl/scripts/test/lint-prompts.test.mjs skills/shared/crctl/scripts/test/pipeline-structure.test.mjs`，timeout=300，cwd=tools CR worktree 根）保持全绿。本 TASK 不新增命令行。
 4. 文件集检查经受控入口（argv 固定），cwd = tools CR worktree 根；`<operational-workspace>` 取 `crctl workspace inspect CR-2026-075` 的 `operationalWorkspace` 原样值：
 
    `node skills/shared/crctl/scripts/crctl.mjs git status --porcelain --cwd <tools-worktree> --workspace <operational-workspace>`
@@ -49,9 +49,9 @@ created: 2026-10-03T00:15:00+08:00
 
 ## 完成标志
 
-- `cmd-07` 全绿且跨日/时区向量逐条可见；`isoDate` pattern 未改。
+- `cmd-06` 全绿且跨日/时区向量逐条可见；`isoDate` pattern 未改。
 - `today(now = new Date())` 在工程文档侧与 crctl lib 侧使用同一 UTC+8 固定偏移规则；两处实现各为其包内唯一来源，不互相依赖包（DEC-6）。
-- 合同文本修订完成且 `cmd-06` 全绿；未新增 DESIGN-DOC/COMPETITIVE 通用类型、未批量重写存量文档。
+- 合同文本修订完成且 `cmd-05` 全绿；未新增 DESIGN-DOC/COMPETITIVE 通用类型、未批量重写存量文档。
 - 产物已落盘并提交，commit 自含其新增测试；不改 `crctl.mjs`（与 TASK-01/03/04/06 无文件重叠）。
 
 ## 接口契约
