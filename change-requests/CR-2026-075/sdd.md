@@ -8,7 +8,7 @@ owner: a0e71a32-509d-4ee9-aea4-d086a5b1ff93
 owner-role: development
 status: draft
 created: "2026-10-02T21:49:29+08:00"
-updated: "2026-10-02T22:16:00+08:00"
+updated: "2026-10-05T08:31:22+08:00"
 ---
 
 # CR-2026-075 — CR 执行入口与声明一致性修订方案 技术设计
@@ -18,6 +18,8 @@ updated: "2026-10-02T22:16:00+08:00"
 本设计承接已审批 `prd.md` 的 FR-01～FR-16 与 AC-A1～A8、AC-B1～B20，目标版本继承 `cr.md` 的 `0.48`。交付面为三仓：tools 承载公共 CLI 归一、两个业务受控写入入口与确定性转换模块、合同/提示对齐；multica 承载 task 级 operational 绑定与普通 Issue 委派接线；knowledge-base（ai-first-platform-docs）只承载本 CR 文档与（若有）部署记录，不承载业务代码。代码与文档路径一律取 `crctl workspace inspect CR-2026-075 --workspace <workspace>` 的 `resources[].worktreePath` 与 `operationalWorkspace` 原样值（`dep-1`、`dep-7`），不按目录命名拼接、不用主 checkout 的陈旧 CR 快照。
 
 PRD 的内部任务分解对应两段设计：**A 段**（FR-01～04、14）把一个已验证的 operational 绑定从 daemon 预检发布到 task 环境，并让公共 CLI 在入口处消费它；**B 段**（FR-05～13、15、16）补齐两个业务受控写入入口、确定性转换与合同/部署对齐。B 段在第 4.9 节的 A 段验证门槛满足后才启用 FR-14 的提示收敛。
+
+**实施状态口径**：本 CR 已在三个 CR worktree 上实施了一部分（见 §1.2.1 的逐条差异）。本 SDD 描述的是**目标设计**；凡某项在当前 `resources` HEAD 上已实现，本文档在对应条目上标注「已实施」并把其测试落点降级为回归护栏，**不以「已改代码」冒充「已验收」**——所有 `AC-*` 的通过判定仍以 §5.2 的证据与独立评审、人工审批为准。
 
 ```mermaid
 flowchart TB
@@ -50,6 +52,7 @@ flowchart TB
 | 「可信绑定」（FR-02「无可信绑定时清除旧 CRCTL 绑定值」） | 扩展 `taskCRWorkspaceRoot` 的既有定义：Pipeline 预检根，或任务自身唯一 `local_directory` 项目根且该根真实携带 CR 账本（`dep-28`） | 无 `execution_context` 的普通任务若其项目根带 `change-requests/`，仍是有可信绑定的任务（否则会静默丢掉 `dep-29` 的 gitguard 归因） |
 | 「旧 `CRCTL_WORKSPACE` 不参与判断」 | 该变量仍是既有环境变量（`dep-28` 写入），但**不是**绑定声明、不作根来源、不参与完整性判定 | 只设 `CRCTL_WORKSPACE` + `MULTICA_TASK_ID` 的环境仍是显式根模式，缺根报 `WORKSPACE_REQUIRED` |
 | 「遗漏 workspace」（FR-03 第 2 条） | 仅 `flags.workspace === undefined`（真缺参）；空串、纯空白、裸 `--workspace`（布尔）均**不是**遗漏，走原 `WORKSPACE_REQUIRED` | `crctl advance CR-2026-075 --to X --trigger Y --workspace ""` 在绑定环境仍报 `WORKSPACE_REQUIRED` |
+| 「本地纠正」（FR-04 第一类） | 机器侧**两个被刻意保留的触发点**（DEC-7）：`bindTaskWorkspace` 在 `flags.workspace` 存在但不是可用字符串时**故意不归一**（`dep-2` 实测 3421 行直接 return），随后 `requireExplicitWorkspace` 返回 `WORKSPACE_REQUIRED`；以及无绑定声明时缺 `--workspace` 返回同一码 | 本 run 实测（有效绑定、绑定未被改动）：`crctl next CR-2026-075 --workspace ""` 与 `--workspace "   "` 均返回 `WORKSPACE_REQUIRED` 非零、零业务写入；同一 run 补入与绑定同一真实目录的显式根即首次成功；补入异根（项目主 checkout）→ `WORKSPACE_CONTEXT_MISMATCH`（证明纠正不能扩权） |
 | 「合法别名」（FR-03 第 2 条） | 同真实目录的路径别名：符号链接/junction、Windows 大小写、尾分隔符、`\\?\` 前缀；**不**包含「同一 installation 的主 checkout 与 CR worktree」 | 绑定=worktree 时显式传 KB 主 checkout → `WORKSPACE_CONTEXT_MISMATCH`；传 worktree 的大小写变体 → 接受 |
 | 「互相冲突」（FR-03 第 3 条） | 绑定两值不属于同一 installation root（`deriveInstallRoot` 不同，`dep-7`） | operational 指向 A 项目 worktree、audit root 指向 B 项目根 → 拒绝 |
 | 「索引路径及责任唯一」（FR-08） | 解析顺序：目标项目根 `dir-graph.yaml#knowledge-docs.subdirs.<kind>.path|index`（存在时）→ 调用方合同固定默认路径；任一时刻只维护解析出的单一索引 | 项目根未声明 `knowledge-docs` 时不得因此新建第二份索引；同一目录下 `_index.yml` 与 `_index.yaml` 同时存在 → `BUSINESS_WRITE_SCOPE_DENIED` |
@@ -63,51 +66,82 @@ flowchart TB
 
 ### 1.2 既有实现依赖与事实
 
-以下为本次在 resources HEAD 核验的事实，正文只按 `dep-N` 引用；相对路径以各自 repo 根为基准。编号按正文首次出现顺序分配、只增不改。核验覆盖「行为成立」，不以「文件或符号存在」代替。
+本节按**三层口径**记录，正文只按 `dep-N` 引用；相对路径以各自 repo 根为基准。编号按正文首次出现顺序分配、只增不改（`dep-33`～`dep-34` 为 B-03/B-04 回修追加，`dep-38` 为本轮追加，均不复用已删编号）。核验覆盖「行为成立」，不以「文件或符号存在」代替。
 
-`dep-33`～`dep-34` 为 2026-10-02 回修（B-03/B-04）**追加**的编号（只增不改、不复用）：`dep-1`～`dep-32` 的路径、SHA 与核验结论不变，新行只补本轮新依赖的两个既有原语事实。
+- **(a) 当前依赖**（下表）：设计成立所依赖的事实。SHA 与结论均以**本轮**在 `resources[].worktreePath` 的受控 `rev-parse HEAD` + 源码实读重新核验。
+- **(b) 起草快照基线**（§1.2.1）：2026-10-02 首版起草时核验的 SHA 与结论。**本 CR 自身的实施已改变其中若干条**，故该层只作历史依据（说明「当时是什么样、为什么这样设计」），**不得**再作为本轮 HEAD 事实、方案前提或验收依据。
+- **(c) 待核实依赖**：无（见本节末）。
+
+本轮受控 `rev-parse HEAD` 实测（2026-10-05，operational workspace = KB CR worktree）：
+
+| repo | 本轮 HEAD |
+| --- | --- |
+| ai-first-platform-docs | `1ac7852c6631b85dfdbef1c05b5d1eef48c70499` |
+| tools | `27a4300a0aa1793a442b543ddb8328cb0d3ce562` |
+| multica | `9d1c10d267fe97a9a2232293796a0ef51d284eea` |
 
 | 标识 | repo | commit SHA | relative path | stable symbol/对象 | 依赖结论 |
 | --- | --- | --- | --- | --- | --- |
-| dep-1 | ai-first-platform-docs | e125917b7d8a136cf665611dc30db7db1251fc97 | change-requests/CR-2026-075/cr.md | status / owners / target-version / target-spec-id | 本 CR 当前 status=`tech-designing`、三 owner 同一人、目标版本 `0.48`、目标 spec `ai-first-platform`；设计只消费不回写这些字段 |
-| dep-2 | tools | 061a12ff0a40028b7aba979108c2977313e1fb11 | skills/shared/crctl/scripts/crctl.mjs | main / parseArgs / requireExplicitWorkspace / detectWorkspace / authorityWorkspace / realpathOrSelf / sameRealPath | 全部非 help 子命令在 `loadGates` 与任何 CR 读写之前要求显式非空 `--workspace`；`CRCTL_OPERATIONAL_WORKSPACE` 存在时必须与 authority realpath 相等，否则 `OPERATIONAL_WORKSPACE_MISMATCH`；`CRCTL_WORKSPACE` 与 cwd 已不作根来源 |
-| dep-3 | tools | 061a12ff0a40028b7aba979108c2977313e1fb11 | skills/shared/crctl/scripts/crctl.mjs | main 的分派 switch / `cmdKbInit` 特判 | 新增子命令必须在此登记；已存在「在显式根校验之后、`detectWorkspace`/`loadGates` 之前特判派发」的先例，可用于不要求 `change-requests/` 的入口 |
-| dep-4 | tools | 061a12ff0a40028b7aba979108c2977313e1fb11 | skills/shared/crctl/scripts/crctl.mjs | fail / ok / auditLog / controlledGit / loadShellRules | 失败固定走 `fail(code,…)`→stderr 单一 JSON + 非零退出；成功固定走 `ok(obj)`→stdout 单一 JSON；`controlledGit` 对 join 后的参数逐条匹配 `rules.json` 形态，`git commit` 仅接受 `^-m (wip: |[cr] |merge().*$` |
-| dep-5 | tools | 061a12ff0a40028b7aba979108c2977313e1fb11 | skills/shared/crctl/scripts/lib/durable-tx.mjs | beginLedgerTransaction / abortLedgerTransaction / finishLedgerTransaction / recoverLedgerTransaction / hasLedgerTransaction / journalDir | 锁 + journal + recoverable write-set + before/after 双哈希 CAS 复用面；`finishLedgerTransaction` 在标记 complete 后删除 tx 目录，故已完成事务不留下可查询的持久事实 |
-| dep-6 | tools | 061a12ff0a40028b7aba979108c2977313e1fb11 | skills/shared/crctl/scripts/lib/durable-tx.mjs | loadExistingJournal / loadOrCreateJournal / TX_INPUT_CONFLICT | 同 key 不同 `inputDigest` 硬失败；journal 目录按 `{op}/{cr-or-key}` 分桶，key 即幂等作用域，可在无 CR 场景以业务身份作 key |
-| dep-7 | tools | 061a12ff0a40028b7aba979108c2977313e1fb11 | skills/shared/crctl/scripts/lib/workspace-transactions.mjs | deriveInstallRoot / resolveRepositories / getRepository / crWorktreePath | installation root 由 `git rev-parse --git-common-dir` 解析，CR worktree 与主 checkout 得到同一 install root；repositories 只读 install root 的 `dir-graph.yaml` |
-| dep-8 | tools | 061a12ff0a40028b7aba979108c2977313e1fb11 | skills/shared/crctl/scripts/lib/workspace-transactions.mjs | gitRun / gitMust / matchFrontmatter / refreshCrMdUpdated | 固定 argv、`shell:false`；`gitRun` 返回 status/stdout/stderr 供只读查询，`gitMust` 非零抛 `TX_GIT_FAILED` |
-| dep-9 | tools | 061a12ff0a40028b7aba979108c2977313e1fb11 | skills/shared/crctl/scripts/lib/yaml-subset.mjs | parseYaml / matchEntryBlock | 零依赖行级 YAML 子集解析与块定位；解析/匹配失败必须硬失败，禁止静默降级为空结果（工程纪律 #1） |
-| dep-10 | tools | 061a12ff0a40028b7aba979108c2977313e1fb11 | skills/shared/crctl/scripts/crctl.mjs | cmdVersionSet 步骤 1～10 / ledgerTxKey / beginLedgerCommand / recoverLedgerCommand / queryTrackedChanges / gitHeadSha | 既有「受控多文件写入」模板：可恢复优先 → tracked-clean 前置 → 行级纯函数编辑 → `beginLedgerTransaction`(expectedHash 取调用前 SHA) → `controlledGit add` 受限路径 → staged 集合恒等复核 → 带 `AI-First-Tx:` trailer 的 commit → `finishLedgerTransaction` → `auditLog` → `ok({changed, files, commit})`；add/commit 失败走既有回滚 |
-| dep-11 | tools | 061a12ff0a40028b7aba979108c2977313e1fb11 | skills/shared/crctl/scripts/crctl.mjs | cmdValidate 的 artifact 分支 / UNKNOWN_ARTIFACT | 现支持 `cr.md`、`_backlog.yml`、`review-annotations/*.yml`（及同名 basename）、`test-report.md`、`approval.yml`、`traceability.yml`；其余一律 `UNKNOWN_ARTIFACT` 非零退出，`prd.md`/`sdd.md` 在此列 |
-| dep-12 | tools | 061a12ff0a40028b7aba979108c2977313e1fb11 | skills/shared/validate-doc/SKILL.md | 触发条件 / 校验维度 / 执行时机 | 现文本承诺「任何文档写入/修订完成后」与「所有写入型 Skill 在写入后自动调用」，并把 naming/locations 描述为读 `dir-graph.yaml`；是 FR-05 要消除的失实自动调用承诺 |
-| dep-13 | tools | 061a12ff0a40028b7aba979108c2977313e1fb11 | skills/shared/engineering-docs/SKILL.md | 支持类型表 / 委派约定 | 只承诺 PRD/SDD/MODULE/PLAN/TASK/RELEASE/FORM（及 OpenAPI/ARCHITECTURE 模板）范围；无 DESIGN-DOC/COMPETITIVE 类型体系，是 FR-06 要删除的通用委派来源 |
-| dep-14 | tools | 061a12ff0a40028b7aba979108c2977313e1fb11 | skills/shared/engineering-docs/schemas/common-defs.schema.json | definitions.isoDate / baseFrontmatter.created|updated | `isoDate` pattern 固定 `^\d{4}-\d{2}-\d{2}$`；`created`/`updated` 引用它，故渲染值必须是纯日期，不得放宽 pattern |
-| dep-15 | tools | 061a12ff0a40028b7aba979108c2977313e1fb11 | skills/shared/engineering-docs/scripts/src/utils/slug.ts | today() | 用 `new Date()` 的宿主本地日历字段拼 `YYYY-MM-DD`，宿主时区（本机为 UTC）与北京日历跨日时会产生错日期；另有 base.ts 的 `vars.today` 与 index-sync.ts 的 `updated` 两处消费 |
-| dep-16 | tools | 061a12ff0a40028b7aba979108c2977313e1fb11 | skills/planning/write-planning-entry/SKILL.md | 参数 / 执行步骤 / 禁止事项 | 规划落盘合同：DESIGN-DOC frontmatter、`docs/product-planning/{YYYY-MM-DD}-{slug}.md`、`_index.yml` 追加（id/title/status/target-version/source/owner/created-at）、须经人工确认、禁止覆盖同名（slug 冲突追加短 hash）、禁止改 specs/ 与 change-requests/；步骤 1 读 `dir-graph.yaml#knowledge-docs.subdirs.product-planning.path` |
-| dep-17 | tools | 061a12ff0a40028b7aba979108c2977313e1fb11 | skills/planning/planning-draft/SKILL.md | 输出文档格式（DESIGN-DOC） / 落盘责任说明 | 草稿只入对话上下文、不落盘，frontmatter id 留 `<待分配>`，落盘与正式 id 分配由调用方在确认后执行；是 FR-10「未确认零业务写入」的上游事实 |
-| dep-18 | tools | 061a12ff0a40028b7aba979108c2977313e1fb11 | skills/competitive/write-competitive-report/SKILL.md | 阶段 A / 阶段 B / 读写清单 / 注意事项 | 竞品落盘合同：报告 `docs/competitive/reports/{id}-{YYYY-MM-DD}.md`、frontmatter（id/competitorId/reportDate/addedAt/docRole/sources，addedAt 为 `YYYY-MM-DDTHH:mm:ss+08:00`）、`updates[]` 按 `(date,title)` 去重追加、`reports/_index.yml` 按 reportDate 倒序且 `status: new`、竞品主文件 body 不变、`confirmed=true` 前零写入、报告已存在时由用户选择覆盖或改日期 |
-| dep-19 | tools | 061a12ff0a40028b7aba979108c2977313e1fb11 | agent-skill-matrix.yml | actors.product-planning-agent / actors.competitive-analyst-agent / pipeline-owners | 两个业务 Agent 目前只有 owns/can-call（Skill 级）声明，未登记 `crctl` 调用关系；矩阵不解析子命令权限 |
-| dep-20 | tools | 061a12ff0a40028b7aba979108c2977313e1fb11 | agents/product-planning-agent.md / agents/competitive-analyst-agent.md | 职责与可调用能力小节 | 两 Agent 文档未声明 crctl 关系；落盘步骤以「调用 engineering-docs/write-*」描述，是 FR-13 的定点登记对象 |
-| dep-21 | tools | 061a12ff0a40028b7aba979108c2977313e1fb11 | skills/shared/controlled-shell/rules.json | git[sub=commit].shapes / protectedPaths.deny|ask | commit 形态仅三种前缀；`protectedPaths` 只覆盖 change-requests 账本、specs/delivery 与 test-report.md，**不含** `docs/` 下的规划/竞品索引 |
-| dep-22 | tools | 061a12ff0a40028b7aba979108c2977313e1fb11 | pipeline-templates/architecture-design.pipeline.json / code-implementation.pipeline.json | 各节点 prompt 中的 `--workspace` 示例 | 受控 CR 后续节点逐命令重复手填 workspace；绑定生效后按 FR-14 收敛，bootstrap 与 daemon 预检示例保留明确根 |
-| dep-23 | tools | 061a12ff0a40028b7aba979108c2977313e1fb11 | skills/cr/cr-review-record/SKILL.md 等七个 Skill | 12 处 `crctl advance` 调用/说明文本 | cr-review-record(2)、review-code(2)、review-dev-plan(2)、review-tech-design(1)、write-dev-tasks(1)、write-tech-design(2)、review-requirement(2) 共 12 处缺显式 `{cr_id}` 位置参数；是 FR-13 的机械清单 |
-| dep-24 | tools | 061a12ff0a40028b7aba979108c2977313e1fb11 | ARCHITECTURE.md | §3 crctl.mjs / §4 分层 / §5 不变量 / §6 刻意不做 / §8 维护规则 | 零第三方依赖、状态与账本单一写者、行尾与硬失败纪律、Skill 通用约束归仓；「crctl 新增写入子命令」属触发本文档修订的变更，须先过设计评审；§6 否决第二套事务框架与账本脚本库 |
-| dep-25 | tools | 061a12ff0a40028b7aba979108c2977313e1fb11 | skills/shared/crctl/scripts/test/caller-contract.test.mjs | CR_DATA_FIRST_WORDS / PROJECTED / NON_EXEC_CR_DATA_HITS | 扫描面覆盖 skills/pipeline/agents/README，按首词集合判定「必须显式 `--workspace`」，并对投影命令强制 `--detail`；新增子命令须同步分类，否则红 |
-| dep-26 | tools | 061a12ff0a40028b7aba979108c2977313e1fb11 | skills/shared/crctl/scripts/test/gate-registry.json / suite-gate.mjs | manifest.files / `--run` | 套件事实源为磁盘测试文件集合与 manifest 的逐文件用例数比对；新增测试文件必须登记进 manifest，否则 `SUITE_MANIFEST_FILE_DRIFT` 硬失败 |
-| dep-27 | multica | 56bdc70db62f4fe2473b238f0ed36b05712af3a9 | server/internal/daemon/pipeline_task.go | preparePipelineTask / findPipelineCRRoot / inspectPipelineWorkspace / installPipelineCrctlLauncher / configurePipelineGitEnvironment / pipelineCRIDPattern | 已有预检链：CR 根唯一性 → `crctl workspace inspect` 全仓 healthy → operational 路径在 CR 根内 → 写 Git trust config、注入 `GIT_CONFIG_GLOBAL` 与 `CRCTL_OPERATIONAL_WORKSPACE`、返回 auditDir；launcher 生成 `crctl`/`crctl.cmd` shim |
-| dep-28 | multica | 56bdc70db62f4fe2473b238f0ed36b05712af3a9 | server/internal/daemon/daemon.go | injectTaskCRWorkspaceEnv / taskCRWorkspaceRoot / layerCustomEnvAndHermesHome / 装配顺序（custom_env → 绑定 → pipeline Git 环境）/ installPipelineCrctlLauncher 调用点 / pipelineAuditDir | 绑定恒在 `custom_env` 之后写入；无绑定时删除三个 CRCTL 值；`taskCRWorkspaceRoot` 只认 Pipeline 预检根或任务自身唯一 `local_directory` 项目根（且该根真实带 `change-requests/`），无主机根列表回退；`installPipelineCrctlLauncher` 与 Git 环境配置当前仅在 `PipelinePrompt != ""` 时执行 |
-| dep-29 | multica | 56bdc70db62f4fe2473b238f0ed36b05712af3a9 | server/cmd/multica/cmd_gitguard.go | taskAuditRootEnv / spoolTaskDenial | gitguard 拒绝事件只写 `CRCTL_TASK_AUDIT_ROOT` 下的 `.crctl/outbox`；无该变量则「本任务无诚实落点」而跳过审计，故该变量不可为满足成对规则而被静默清除 |
-| dep-30 | multica | 56bdc70db62f4fe2473b238f0ed36b05712af3a9 | server/internal/daemon/types.go | Task.PipelinePrompt|PipelineCrID|PipelineWorkspace|PipelineLocalWorkDir|TriggerCommentContent|ProjectResources / ProjectResourceData | 设计所需输入均在 claim 载荷中可得：触发评论文本、项目资源、预检结果字段 |
-| dep-31 | multica | 56bdc70db62f4fe2473b238f0ed36b05712af3a9 | server/internal/daemon/cr_workspace_binding_test.go / pipeline_task_test.go | 既有绑定与预检用例 | 既有测试组织（同包、表驱动、无框架）可直接扩展 A 段向量；`TestInjectTaskCRWorkspaceEnvPipelineTask` 等断言需按成对写入语义同步 |
-| dep-32 | multica | 56bdc70db62f4fe2473b238f0ed36b05712af3a9 | server/go.mod | gopkg.in/yaml.v3 v3.0.1 | `execution_context` 的 YAML 解析可在 server 模块内用既有依赖完成，不新增第三方依赖 |
-| dep-33 | tools | 061a12ff0a40028b7aba979108c2977313e1fb11 | skills/shared/controlled-shell/rules.json | `git[sub=log].shapes` / `git[sub=rev-parse].shapes` / `forbiddenFlags` | 只读 Git 形态受限且本 CR 不改白名单（FR-15、DEC-5）：`log` 仅 `--oneline …`、`--format=%B -1`、`--reverse --format=<fmt> <rev>`；`rev-parse` 仅 `HEAD`、`--verify <rev>` 等；**没有**任意 blob 读取形态（`show <sha>:<path>` 只对评审 YAML 放行）。故完成提交的定位与核对只能用「提交消息匹配 + 路径范围遍历 + 短 SHA 规范化」，不能读历史 blob 内容 |
-| dep-34 | tools | 061a12ff0a40028b7aba979108c2977313e1fb11 | skills/shared/crctl/scripts/lib/durable-tx.mjs | `recoverLedgerTransaction({root,key,currentHead,headMessage})` 的 committed 判据 / `rollbackLedgerPayload` / `latestLedger` | committed 判定 = `payload.commitRequired && currentHead !== payload.headBefore && headMessage.includes('AI-First-Tx: <txId>')`，其中 `headMessage` 由**调用方**给出（既有私有 helper `recoverLedgerCommand` 只传当前 HEAD 的 `%B`），故「提交已落地但随后又有提交」会落进回滚分支；回滚按 before/after 双哈希判第三值，遇第三值抛 `TX_RECOVERY_CONFLICT` 且不改文件；同一 key 至多存在一个 journal（`beginLedgerTransaction` 见既有 journal 即 `TX_LEDGER_RECOVERY_REQUIRED`） |
-| dep-35 | tools | 061a12ff0a40028b7aba979108c2977313e1fb11 | skills/shared/crctl/scripts/lib/durable-tx.mjs | `acquireLock({scope:'ledger-<key>'})` 的互斥语义 / `recoverLedgerTransaction` 的锁内重读 / `recoverLedgerCommand` 的 `headMessage` 取法 | 锁为独占 mkdir、无重入、无 TTL（同机活 PID 一律 `TX_LOCK_HELD`，仅 ESRCH 接管陈旧锁）；`recoverLedgerTransaction` 取得 `ledger-<key>` 锁后才 `latestLedger` 重读最新 journal，且既不接收期望摘要也不接收原 txId——故「锁外核对 + 锁内恢复」存在现场被替换的交错窗口，期望值必须传入锁内路径（SDD §4.5.4 第 2 步）；`git log --reverse --format=%B <rev>` 在 `dep-33` 白名单内，可在提交非 HEAD 时取到 `AI-First-Tx` trailer |
-| dep-36 | multica | 56bdc70db62f4fe2473b238f0ed36b05712af3a9 | CUSTOM.md | 文件头核对口径 / 《模块索引》/《CR 索引》/《代码改动明细》/《台账行模板》 | 台账按「正文《代码改动明细》（按功能模块分组，行号 `#N` 只增不改）+《模块索引》+《CR 索引》」三表一致组织；新增行照《台账行模板》逐列填写（位置 / 改动 / 原因追溯含 CR 与 TASK / 日期 / 合并注意）；文件头同步 `AIFIRST` 实测计数基线（只升不降）。本轮 daemon 改动须按此结构登记（SDD §9 `scope_in`、PRD NFR-04） |
-| dep-37 | tools | 061a12ff0a40028b7aba979108c2977313e1fb11 | skills/shared/crctl/scripts/lib/durable-tx.mjs / skills/shared/crctl/scripts/crctl.mjs | 模块头不变量（`durable-tx.mjs` 不理解业务 phase/Git/状态机、仅 Node 标准库）/ `recoverLedgerTransaction` 的调用点 / `acquireLock` 持有期与释放点 | `recoverLedgerTransaction` 在全仓仅有一个既有调用点 `crctl.mjs#recoverLedgerCommand`（锁外预读后传入 `currentHead`/`headMessage`）；原语不含 Git 依赖，故锁内取样只能由调用方以回调注入；`beginLedgerTransaction` 返回的锁由写入者持有至 `finishLedgerTransaction`/`abortLedgerTransaction`，`recoverLedgerTransaction` 在 `acquireLock` 与 `finally` 中 `lock.release()` 之间执行全部判定，取样器在该区间内执行即处于锁内（SDD §4.5.4 第 2.c 步、B-09） |
+| dep-1 | ai-first-platform-docs | 1ac7852c6631b85dfdbef1c05b5d1eef48c70499 | change-requests/CR-2026-075/cr.md | status / owners / target-version / target-spec-id | 本 CR 当前 status=`tech-design-review-pending`（§10 记 0.5 轮状态口径）、三 owner 同为 `a0e71a32-…`、目标版本 `0.48`、目标 spec `ai-first-platform`；设计只消费不回写这些字段 |
+| dep-2 | tools | 27a4300a0aa1793a442b543ddb8328cb0d3ce562 | skills/shared/crctl/scripts/crctl.mjs | main(4162) / parseArgs / bindTaskWorkspace(3407-3427) / requireExplicitWorkspace(3435-3440) / detectWorkspace(151) / authorityWorkspace / realpathOrSelf / sameRealPath | `main()` 实际顺序为 `bindTaskWorkspace`(4170) → `requireExplicitWorkspace`(4172) → `kb` 特判(4176) → `planning-entry` 特判(4179) → `detectWorkspace`/`loadGates`(4183-4184)。全部非 help 子命令仍要求显式非空 `--workspace`、失败关闭先于 `loadGates` 与任何 CR 读写；但**存在绑定声明时该要求先经 `bindTaskWorkspace` 归一**（仅 `flags.workspace === undefined` 才取 `CRCTL_OPERATIONAL_WORKSPACE` 的 realpath），归一值仍须与 authority realpath 相等否则 `OPERATIONAL_WORKSPACE_MISMATCH`；`CRCTL_WORKSPACE` 与 cwd 不作根来源。⇒ 起草结论「全部命令硬性要求调用方自带显式根」**已不成立**，须按 §2.1 的四模式判定与 §4.2.1 的纠正入口读 |
+| dep-3 | tools | 27a4300a0aa1793a442b543ddb8328cb0d3ce562 | skills/shared/crctl/scripts/crctl.mjs | main 的分派 switch / `cmdKbInit` 特判 / `cmdBusinessEntry` 特判 | 新增子命令必须在此登记；当前已有**两处**「显式根校验之后、`detectWorkspace`/`loadGates` 之前特判派发」先例（`kb`@4176、`planning-entry`@4179），可用于不要求 `change-requests/` 存在的入口 |
+| dep-4 | tools | 27a4300a0aa1793a442b543ddb8328cb0d3ce562 | skills/shared/crctl/scripts/crctl.mjs | fail(52) / ok(60) / auditLog(280) / auditLogOnce(288) / controlledGit(403) / loadShellRules(385) | 失败固定走 `fail(code,…)`→stderr 单一 JSON + 非零退出；成功固定走 `ok(obj)`→stdout 单一 JSON；`controlledGit` 对 join 后的参数逐条匹配 `rules.json` 形态，`git commit` 仅接受 `^-m (wip: |\[cr\] |merge\().*$` |
+| dep-5 | tools | 27a4300a0aa1793a442b543ddb8328cb0d3ce562 | skills/shared/crctl/scripts/lib/durable-tx.mjs | beginLedgerTransaction(515) / abortLedgerTransaction(546) / finishLedgerTransaction(551) / recoverLedgerTransaction(480) / hasLedgerTransaction(458) / journalDir(186) | 锁 + journal + recoverable write-set + before/after 双哈希 CAS 复用面；`finishLedgerTransaction` 在标记 complete 后删除 tx 目录，故已完成事务不留下可查询的持久事实；`beginLedgerTransaction` 的 write-set 下限已被 CR-2026-063 原位放宽为「至少一个文件」(519) |
+| dep-6 | tools | 27a4300a0aa1793a442b543ddb8328cb0d3ce562 | skills/shared/crctl/scripts/lib/durable-tx.mjs | loadExistingJournal(212) / loadOrCreateJournal(241) / `CR_OR_KEY_RE`(184) / TX_INPUT_CONFLICT | `CR_OR_KEY_RE = ^[A-Za-z0-9._-]{1,128}$`(184) 是 key 合法性判据；journal 目录按 `{op}/{cr-or-key}` 分桶，key 即幂等作用域，可在无 CR 场景以业务身份作 key；同 key 不同 `inputDigest` 硬失败 |
+| dep-7 | tools | 27a4300a0aa1793a442b543ddb8328cb0d3ce562 | skills/shared/crctl/scripts/lib/workspace-transactions.mjs | deriveInstallRoot(47) / resolveRepositories(81) / getRepository(152) / crWorktreePath(66) | installation root 由 `git rev-parse --git-common-dir`(48) 解析，CR worktree 与主 checkout 得到同一 install root；repositories 只读 install root 的 `dir-graph.yaml` |
+| dep-8 | tools | 27a4300a0aa1793a442b543ddb8328cb0d3ce562 | skills/shared/crctl/scripts/lib/workspace-transactions.mjs | gitRun(378) / gitMust(385) / matchFrontmatter(394) / refreshCrMdUpdated(403) | 固定 argv、`shell:false`；`gitRun` 返回 status/stdout/stderr 供只读查询，`gitMust` 非零抛 `TX_GIT_FAILED` |
+| dep-9 | tools | 27a4300a0aa1793a442b543ddb8328cb0d3ce562 | skills/shared/crctl/scripts/lib/yaml-subset.mjs | parseYaml / matchEntryBlock / strictDiag | 零依赖行级 YAML 子集解析与块定位；解析/匹配失败必须硬失败（`unconsumed-line` / `invalid-shape` / `invalid-indentation`），禁止静默降级为空结果（工程纪律 #1） |
+| dep-10 | tools | 27a4300a0aa1793a442b543ddb8328cb0d3ce562 | skills/shared/crctl/scripts/crctl.mjs | cmdVersionSet(2940) 步骤 1～10 / ledgerTxKey(698) / beginLedgerCommand(744) / recoverLedgerCommand(731) / queryTrackedChanges(2550) / gitHeadSha(370) | 既有「受控多文件写入」模板：可恢复优先 → tracked-clean 前置 → 行级纯函数编辑 → `beginLedgerTransaction`(expectedHash 取调用前 SHA) → `controlledGit add` 受限路径 → staged 集合恒等复核 → 带 `AI-First-Tx:` trailer 的 commit → `finishLedgerTransaction` → `auditLog` → `ok({changed, files, commit})`；`recoverLedgerCommand` 已改为传锁内取样器（`dep-34`/`dep-38`），不再传锁外 `currentHead`/`headMessage` |
+| dep-11 | tools | 27a4300a0aa1793a442b543ddb8328cb0d3ce562 | skills/shared/crctl/scripts/crctl.mjs | `cmdValidate`(1616) 的 artifact 分支 / `cmdValidateDimensions`(1562) / `UNKNOWN_ARTIFACT`(1708) | 既有 artifact 分支仍只覆盖 `cr.md`、`_backlog.yml`、评审 YAML 及同名 basename、`test-report.md`、`approval.yml`、`traceability.yml`；未命中且 `dims.kind` 为空者一律 `UNKNOWN_ARTIFACT` 非零退出，`prd.md`/`sdd.md` 在此列（`test/crctl.test.mjs` 的 `CR-2026-075 B5/B7` 用例把这条钉成回归断言）。本轮新增的只是并列的维度报告层 `cmdValidateDimensions`，既有分支判据未改 |
+| dep-12 | tools | 27a4300a0aa1793a442b543ddb8328cb0d3ce562 | skills/shared/validate-doc/SKILL.md | 触发条件 / 校验维度 / 执行时机 | **已按 FR-05 改写**：文件头明确「由调用方步骤规定或用户显式请求触发，不再保留写后自动调用的 blanket 承诺」，blanket 文本已不存在。故 §4.6 的对应项在本 CR worktree HEAD 上**已实施**，剩余工作是按 `dir-graph.yaml#knowledge-docs` 声明面补维度报告（`dep-11`）与矩阵/Agent 侧一致性核对 |
+| dep-13 | tools | 27a4300a0aa1793a442b543ddb8328cb0d3ce562 | skills/shared/engineering-docs/SKILL.md | 支持类型表 / 委派约定 | **已按 FR-06 改写**：通用委派（frontmatter 必须通用委派 / 固定 `owClient.writeFile`）表述已删除，规划与竞品不再请求不存在的 `DESIGN-DOC` / `COMPETITIVE` 通用类型，改为指向 `crctl planning-entry` / `crctl competitive-report`。故 §4.6 的对应项在本 CR worktree HEAD 上**已实施**，剩余工作是两个业务 Skill/Agent 的定点登记（`dep-16`/`dep-18`/`dep-19`/`dep-20`） |
+| dep-14 | tools | 27a4300a0aa1793a442b543ddb8328cb0d3ce562 | skills/shared/engineering-docs/schemas/common-defs.schema.json | definitions.isoDate(10) / baseFrontmatter.created(52)\|updated(53) | `isoDate` pattern 固定 `^\d{4}-\d{2}-\d{2}$`；`created`/`updated` 引用它，故渲染值必须是纯日期，不得放宽 pattern |
+| dep-15 | tools | 27a4300a0aa1793a442b543ddb8328cb0d3ce562 | skills/shared/engineering-docs/scripts/src/utils/slug.ts | `today(now: Date = new Date())`(11-12) 及其消费点 `generators/base.ts` / `validators/index-sync.ts` | **已按 FR-07 改写**：`today()` 接受可注入 `now`，函数体为 `new Date(now.getTime() + 8 * 3600 * 1000)` 取 UTC 日历字段，已不依赖宿主本地时区。起草结论（「用宿主本地日历字段、会跨日错日期」）已不成立——见 §1.2.1。⇒ §4.7 的工程文档侧在本 CR worktree HEAD 上**已实施**，其测试落点由「新实现」降为「跨时区回归护栏」（§5.2 B8） |
+| dep-16 | tools | 27a4300a0aa1793a442b543ddb8328cb0d3ce562 | skills/planning/write-planning-entry/SKILL.md | 参数 / 执行步骤 / 禁止事项 | 规划落盘合同**仍是 Agent 直接写文件**：步骤 1 读 `dir-graph.yaml#knowledge-docs.subdirs.product-planning.path`，步骤 5 追加 `docs/product-planning/_index.yml`；当前文本**尚无** `crctl planning-entry` 调用 ⇒ §8 第 1 行的「应改为」仍是待实施项（FR-06/FR-09 的 Skill 侧接管未完成），且是 `AC-B15` 的调用侧前提 |
+| dep-17 | tools | 27a4300a0aa1793a442b543ddb8328cb0d3ce562 | skills/planning/planning-draft/SKILL.md | 输出文档格式（DESIGN-DOC） / 落盘责任说明 | 草稿只入对话上下文、不落盘，frontmatter `id: <待分配>`，落盘与正式 id 分配由调用方在确认后执行；是 FR-10「未确认零业务写入」的上游事实 |
+| dep-18 | tools | 27a4300a0aa1793a442b543ddb8328cb0d3ce562 | skills/competitive/write-competitive-report/SKILL.md | 阶段 A / 阶段 B / 读写清单 / 注意事项 | 竞品落盘合同**仍是 Agent 直接写报告、改 `updates[]`、改 reports 索引**；当前文本**尚无** `crctl competitive-report` 调用 ⇒ §8 第 2 行的「应改为」仍是待实施项 |
+| dep-19 | tools | 27a4300a0aa1793a442b543ddb8328cb0d3ce562 | agent-skill-matrix.yml | actors.product-planning-agent / actors.competitive-analyst-agent / pipeline-owners | 两个业务 Agent 的 `owns` 与 `can-call` 均**只有 Skill 级条目、均无 `crctl`**；矩阵不解析子命令权限。故 FR-13 的定点登记**尚未实施**，`AC-B20` 的机器侧前提未建立 |
+| dep-20 | tools | 27a4300a0aa1793a442b543ddb8328cb0d3ce562 | agents/product-planning-agent.md / agents/competitive-analyst-agent.md | 职责与可调用能力小节 | 两 Agent 文档**未声明** crctl 调用关系（`product-planning-agent.md` 只出现「不得用 `crctl` 修改账本」这类禁止式表述）；是 FR-13 的定点登记对象 |
+| dep-21 | tools | 27a4300a0aa1793a442b543ddb8328cb0d3ce562 | skills/shared/controlled-shell/rules.json | git[sub=commit].shapes / protectedPaths.deny\|ask | commit 形态仍仅三种前缀 `^-m (wip: |\[cr\] |merge\().*$`；`protectedPaths.deny` 仍只覆盖 `change-requests/` 的四本账本与 `review-annotations/`，`ask` 覆盖 `specs/`、`delivery/` 等，**不含** `docs/` 下的规划/竞品索引 ⇒ `AC-B10`/`AC-B13` 的机器侧前提未变 |
+| dep-22 | tools | 27a4300a0aa1793a442b543ddb8328cb0d3ce562 | pipeline-templates/architecture-design.pipeline.json / code-implementation.pipeline.json | 各节点 prompt 中的 `--workspace` 示例 | 逐命令重复手填 workspace 仍在：`architecture-design` 4 处、`code-implementation` 3 处；绑定生效后按 FR-14 收敛，bootstrap 与 daemon 预检示例保留明确根 |
+| dep-23 | tools | 27a4300a0aa1793a442b543ddb8328cb0d3ce562 | skills/cr/cr-review-record/SKILL.md 等七个 Skill | `crctl advance` 调用/说明文本 | 本轮实测：七个 Skill 内 `crctl advance` 文本共 **14 处**，其中**命令形态调用点 12 处**（cr-review-record 2、review-code 2、review-dev-plan 2、review-tech-design 1、write-dev-tasks 1、write-tech-design 2、review-requirement 2）**逐处仍缺显式 `{cr_id}` 位置参数**，另 2 处为纯散文提及（`write-tech-design`/`review-requirement` 各 1，无参数形态、由 `caller-contract.test.mjs` 的 `NON_EXEC_CR_DATA_HITS`/无参数形态排除在可执行扫描外）。是 FR-13 的机械清单；`AC-B11` 未达成 |
+| dep-24 | tools | 27a4300a0aa1793a442b543ddb8328cb0d3ce562 | ARCHITECTURE.md | §3 Code Map / §4 分层 / §5 硬不变量 / §6 刻意不做 / §8 维护规则 | 零第三方依赖、状态与账本单一写者、行尾与硬失败纪律；§6 仍否决第二套事务框架（`durable-tx.mjs` 的 WAL/事务框架）、独立账本脚本库、通用 YAML 序列化库；§8 要求「crctl 新增写入子命令/新增依赖」触发本文档修订。**实测 §3 尚未记录绑定归一入口与两个业务入口** ⇒ §8 末行的「实施期补」仍是待实施项 |
+| dep-25 | tools | 27a4300a0aa1793a442b543ddb8328cb0d3ce562 | skills/shared/crctl/scripts/test/caller-contract.test.mjs | CR_DATA_FIRST_WORDS(31-37) / PROJECTED(23) / TWO_WORD(24) / NON_EXEC_CR_DATA_HITS(40-) | 扫描面覆盖 skills/pipeline/agents/README，按首词集合判定「必须显式 `--workspace`」，并对投影命令强制 `--detail`；`PROJECTED` 仍为 advance/review-record/status/workspace inspect 四个；**`CR_DATA_FIRST_WORDS` 当前尚未登记 `planning-entry`**（`kb` 已由 CR-2026-074 登记）⇒ §5.1/DEC-3 要求的「新首词登记」是待实施项，未登记前新增子命令会被该扫描判红 |
+| dep-26 | tools | 27a4300a0aa1793a442b543ddb8328cb0d3ce562 | skills/shared/crctl/scripts/test/gate-registry.json / suite-gate.mjs | manifest.files / `--run` | 套件事实源为磁盘测试文件集合与 manifest 的逐文件用例数比对；新增测试文件必须登记进 manifest，否则 `SUITE_MANIFEST_FILE_DRIFT` 硬失败。**实测 `planning-entry.test.mjs`（10 例）已登记**，`competitive-report.test.mjs` 尚不存在 |
+| dep-27 | multica | 9d1c10d267fe97a9a2232293796a0ef51d284eea | server/internal/daemon/pipeline_task.go | `resolveTaskWorkspaceBinding`(201-239) / `parseExecutionContext`(111) / `preparePipelineTask`(252) / `findPipelineCRRoot`(269) / `installCrctlLauncher`(307) / `configureTaskGitEnvironment`(335) / `inspectPipelineWorkspace`(367) / `pipelineCRIDPattern` | **绑定解析已按本设计实现为唯一入口** `resolveTaskWorkspaceBinding`：Pipeline 分支复用 `preparePipelineTask` 已填的 `PipelineWorkspace`/`PipelineLocalWorkDir`；否则解析本次触发评论的唯一 `execution_context`（`parseExecutionContext`）并对项目 `local_directory` 根做 `findPipelineCRRoot` + `inspectPipelineWorkspace` 只读复检，声明与预检不同真实目录即拒；两者皆无则回落到任务自身 `local_directory` 根。原 `installPipelineCrctlLauncher`/`configurePipelineGitEnvironment` 已分别更名为 `installCrctlLauncher`/`configureTaskGitEnvironment` |
+| dep-28 | multica | 9d1c10d267fe97a9a2232293796a0ef51d284eea | server/internal/daemon/daemon.go | `injectTaskCRWorkspaceEnv`(10732-10748) / `taskCRWorkspaceRoot`(10771-10795) / `layerCustomEnvAndHermesHome` / 装配顺序（custom_env@8645 → 绑定@8651 → task Git 环境@8652-8658）/ `installCrctlLauncher` 调用点@8319-8322 / `pipelineAuditDir` | 绑定恒在 `custom_env` 之后写入；无绑定（或缺 `MULTICA_TASK_ID`）时先删除三个 CRCTL 值再返回，绝不留半绑定；`taskCRWorkspaceRoot` 仍只认 Pipeline 预检根或任务自身唯一 `local_directory` 项目根（且该根真实带 `change-requests/`），无主机根列表回退。**起草结论「launcher 与 Git 环境配置当前仅在 `PipelinePrompt != ""` 时执行」已被本设计实现改变**：两个调用点现由 `taskBinding.bound()` 把关（launcher@8319、Git 环境@8652），即**可信普通委派同样获得 launcher 与 Git trust 配置** |
+| dep-29 | multica | 9d1c10d267fe97a9a2232293796a0ef51d284eea | server/cmd/multica/cmd_gitguard.go | taskAuditRootEnv(90) / spoolTaskDenial(92) | gitguard 拒绝事件只写 `CRCTL_TASK_AUDIT_ROOT`(90) 下的 `.crctl/outbox`；无该变量则「本任务无诚实落点」而跳过审计，故该变量不可为满足成对规则而被静默清除 |
+| dep-30 | multica | 9d1c10d267fe97a9a2232293796a0ef51d284eea | server/internal/daemon/types.go | Task.PipelinePrompt(149)\|PipelineCrID(150)\|PipelineWorkspace(154)\|PipelineLocalWorkDir(155)\|TriggerCommentContent(118)\|ProjectResources(108) / ProjectResourceData(47) | 设计所需输入均在 claim 载荷中可得：触发评论文本、项目资源、预检结果字段 |
+| dep-31 | multica | 9d1c10d267fe97a9a2232293796a0ef51d284eea | server/internal/daemon/cr_workspace_binding_test.go / pipeline_task_test.go | 既有绑定与预检用例 | 既有测试组织（同包、表驱动、无框架）可直接扩展 A 段向量；**A 段向量已有用例**：`TestParseExecutionContext`、`TestResolveTaskWorkspaceBinding`、`TestTaskWorkspaceBinding`、`TestConfigureTaskGitEnvironment`、`TestInstallCrctlLauncher`，以及 `cr_workspace_binding_test.go` 的 10 个 `TestInjectTaskCRWorkspaceEnv*`（含半绑定不发布 / 需 task 身份 / 胜出 custom_env / 并发隔离 / 无绑定清旧值）。`TestConfigurePipelineGitEnvironment`/`TestInstallPipelineCrctlLauncher` 为改名前的同义用例 |
+| dep-32 | multica | 9d1c10d267fe97a9a2232293796a0ef51d284eea | server/go.mod | gopkg.in/yaml.v3 v3.0.1 | `execution_context` 的 YAML 解析在 server 模块内用既有依赖完成（`parseExecutionContext` 已用 `yaml.Node` 实现重复键检测），不新增第三方依赖 |
+| dep-33 | tools | 27a4300a0aa1793a442b543ddb8328cb0d3ce562 | skills/shared/controlled-shell/rules.json | `git[sub=log].shapes` / `git[sub=rev-parse].shapes` / `forbiddenFlags` | 只读 Git 形态受限且本 CR 不改白名单（FR-15、DEC-5）：`log` 仅 `^--oneline .+$`、`^--format=%B -1$`、`^--reverse --format=\S+ \S+$`；`rev-parse` 仅 `^(HEAD\|origin/\S+)$`、`--show-toplevel`、`--is-bare-repository`、`--verify \S+$`、`--verify -q \S+$`、`--git-dir`；**没有**任意 blob 读取形态。故完成提交的定位与核对只能用「提交消息匹配 + 路径范围遍历 + 短 SHA 规范化」，不能读历史 blob 内容 |
+| dep-34 | tools | 27a4300a0aa1793a442b543ddb8328cb0d3ce562 | skills/shared/crctl/scripts/lib/durable-tx.mjs | `recoverLedgerTransaction` 的 committed 判据(499-510) / `rollbackLedgerPayload`(429) / `latestLedger`(411) | committed 判定 = `payload.phase === 'complete'` 直接删 tx 目录，或经 `sampleLockedCommitState`(465) 得到「消息集含 `AI-First-Tx: <该 journal 的 txId>` 且 `commitRequired` 且 `headSha !== payload.headBefore`」；未提供取样器时才回落到调用方 `currentHead`/`headMessage` 快照（`dep-38` 已把既有调用点切到取样器）。回滚按 before/after 双哈希判第三值，遇第三值抛 `TX_RECOVERY_CONFLICT` 且不改文件；同一 key 至多存在一个 journal（`beginLedgerTransaction` 见既有 journal 即 `TX_LEDGER_RECOVERY_REQUIRED`） |
+| dep-35 | tools | 27a4300a0aa1793a442b543ddb8328cb0d3ce562 | skills/shared/crctl/scripts/lib/durable-tx.mjs | `acquireLock({scope:'ledger-<key>'})`(127) 的互斥语义 / `latestLedger` 重读(483) / `expect` 锁内比对(486-493) / `sampleLockedCommitState`(465-478) | 锁为独占 mkdir、无重入、无 TTL（同机活 PID 一律 `TX_LOCK_HELD`，仅 ESRCH 接管陈旧锁）；`recoverLedgerTransaction` 取得 `ledger-<key>` 锁后才 `latestLedger` 重读最新 journal。**起草结论「既不接收期望摘要也不接收原 txId」已被本设计实现改变**：签名现为 `{root,key,currentHead,headMessage,expect,sampleCommitState}`，`expect={inputDigest,txId}` 的比对就发生在同一把锁、同一 `latestLedger` 现场上（摘要不符 `TX_INPUT_CONFLICT`、txId 不符 `TX_LEDGER_RECOVERY_REQUIRED`，均零写入）；取样亦在该临界区内完成 |
+| dep-36 | multica | 9d1c10d267fe97a9a2232293796a0ef51d284eea | CUSTOM.md | 文件头核对口径 / 《当前状态》/《合并兼容性》/《模块索引》/《CR 索引》/《代码改动明细（按功能模块分组）》M1～M13 / 《台账行模板》 | 台账按「正文《代码改动明细》（按功能模块分组 M1～M13，行号 `#N` 只增不改）+《模块索引》+《CR 索引》」三表一致组织；新增行照《台账行模板》逐列填写（位置 / 改动 / 原因追溯含 CR 与 TASK / 日期 / 合并注意）；文件头同步 `AIFIRST` 实测计数基线（只升不降）。**实测当前尚无 CR-2026-075 行、无 `bindTaskWorkspace`/`taskWorkspaceBinding` 登记** ⇒ 本轮 daemon 改动的台账登记是**未完成**项（§9 `scope_in`、PRD NFR-04） |
+| dep-37 | tools | 27a4300a0aa1793a442b543ddb8328cb0d3ce562 | skills/shared/crctl/scripts/lib/durable-tx.mjs / skills/shared/crctl/scripts/crctl.mjs | 模块头不变量（`durable-tx.mjs` 不理解业务 phase/Git/状态机、仅 Node 标准库）/ `recoverLedgerTransaction` 的调用点 / `acquireLock` 持有期与释放点 | `recoverLedgerTransaction` 在全仓仍只有一个既有调用点 `crctl.mjs#recoverLedgerCommand`(731)，但**起草结论「锁外预读后传入 `currentHead`/`headMessage`」已被本设计实现改变**：现调用为 `recoverLedgerTransaction({root, key, sampleCommitState: sampleCommitStateReader(ws)})`(735)，锁外 `gitHeadSha` 只保留给 `syncLedgerIndex` 的触发条件。原语保持 Git 无关，锁内取样由调用方以回调注入；`beginLedgerTransaction` 返回的锁由写入者持有至 `finishLedgerTransaction`/`abortLedgerTransaction`，`recoverLedgerTransaction` 在 `acquireLock` 与 `finally` 的 `lock.release()` 之间执行全部判定，取样器在该区间内执行即处于锁内（SDD §4.5.4 第 2.c 步、B-09） |
+| dep-38 | tools | 27a4300a0aa1793a442b543ddb8328cb0d3ce562 | skills/shared/crctl/scripts/crctl.mjs | `sampleCommitStateReader(ws)`(714-729) | §4.5.4 第 2.c 步的锁内取样器**已存在**：一律经 `controlledGit(ws,'rev-parse',['HEAD'])` 与 `controlledGit(ws,'log',…)`（`headBefore` 为 40 位十六进制且 ≠ headSha 时取 `--reverse --format=%B <headBefore>..<headSha>`，否则取 `--format=%B -1`）；HEAD 非 40 位十六进制、任一 git 非零或消息非数组即抛既有 `TX_GIT_FAILED`，**不回退到锁外快照**。本条为本轮新增编号（B-11 重核后补记的实现事实） |
 
-待核实依赖：无。历史 CR 的 SDD/测试只作为格式与组织参照，不作为本次功能已通过证据。
+**待核实依赖**：无。历史 CR 的 SDD/测试只作为格式与组织参照，不作为本次功能已通过证据。
+
+#### 1.2.1 起草快照基线与被本 CR 实施改变的结论（历史依据，非当前事实）
+
+下表记录 2026-10-02 首版起草时核验的 SHA 与结论，以及本轮实测到的差异。**该层不得作为本轮 HEAD 事实、方案前提或验收依据**；列出的目的是让评审能判断「哪些设计结论的前提已被自己的实施改掉、哪些仍成立」。
+
+| 标识 | 起草快照 SHA（历史） | 起草时结论（历史依据） | 本轮实测差异 | 对设计结论的影响 |
+| --- | --- | --- | --- | --- |
+| dep-1 | KB `e125917b7d8a136cf665611dc30db7db1251fc97` | CR status=`tech-designing` | 现为 `tech-design-review-pending` | 无（设计只消费不回写）；状态口径改记 §10 的 0.5 轮 |
+| dep-2 | tools `061a12ff0a40028b7aba979108c2977313e1fb11` | 全部非 help 子命令硬性要求显式非空 `--workspace` | `bindTaskWorkspace` 已在 `requireExplicitWorkspace` 之前归一真缺参 | **有影响**：入口判定必须写成四模式（§2.1），并据此界定 FR-04 纠正的合法触发点（§4.2.1）；原「全部命令要求显式根」的表述已删 |
+| dep-12 / dep-13 | tools `061a12ff…` | validate-doc 仍有 blanket 自动调用承诺；engineering-docs 仍有通用委派与 DESIGN-DOC/COMPETITIVE 请求 | 两处文本已按 FR-05/FR-06 改写 | **有影响**：§4.6/§8 对应项从「待改写」改为「已实施，剩余为声明面补齐与一致性核对」；不再把「删除 blanket 文本」计入剩余工作量 |
+| dep-15 | tools `061a12ff…` | `today()` 用宿主本地日历字段，跨时区错日期 | `today(now = new Date())` 已按 UTC+8 固定偏移实现 | **有影响**：FR-07 的工程文档侧已实施；§4.7 的剩余面只在 crctl lib 侧，§5.2 的 B8 降级为跨时区回归护栏 |
+| dep-16 / dep-18 / dep-19 / dep-20 | tools `061a12ff…` | 业务 Skill 与 Agent 文档未接 crctl | 实测**仍未接**（无 `crctl planning-entry`/`competitive-report` 调用；矩阵与 Agent 文档无 crctl 关系） | 无（结论仍成立）；但 `AC-B15`/`AC-B20` 的机器侧前提仍未建立，§8 第 1/2 行与 §9 `scope_in` 保留为待实施 |
+| dep-23 | tools `061a12ff…` | 12 处 `crctl advance` 缺 `{cr_id}` | 实测文本 14 处 = 命令形态 12 处（逐处仍缺 `{cr_id}`）+ 散文 2 处 | **有影响**：`AC-B11` 的机械清单口径须写明「12 处命令形态调用点」并排除 2 处散文提及，防止按 14 处误改 |
+| dep-25 / dep-26 | tools `061a12ff…` | 新增子命令须同步分类与登记 | `planning-entry.test.mjs` 已登记 manifest；`CR_DATA_FIRST_WORDS` **尚未**登记 `planning-entry` | **有影响**：`AC-B11`/门禁红绿的前置是首词登记，§5.2 明确其为 TASK 内必做项，未登记会红 |
+| dep-27 / dep-28 | multica `56bdc70db62f4fe2473b238f0ed36b05712af3a9` | 预检链仅 Pipeline；launcher 与 Git 环境配置仅 `PipelinePrompt != ""` | 绑定解析已实现为 `resolveTaskWorkspaceBinding` 唯一入口；两个接线点改由 `taskBinding.bound()` 把关 | **有影响**：`AC-A2`/FR-02 的「普通 CR 委派接入既有 launcher 与 Git 环境配置」已实施；剩余是 B 段与提示收敛，不再把 A 段接线列为待实施 |
+| dep-31 | multica `56bdc70d…` | 既有测试可扩展 A 段向量 | A 段向量已有 5 个新用例 + 既有 10 个 `TestInjectTaskCRWorkspaceEnv*` | **有影响**：A 段验收从「新写用例」降为「在既有用例上补断言」，§5.2 A 组落点据此改写 |
+| dep-35 / dep-37 | tools `061a12ff…` | 恢复原语不接收期望摘要/实例；唯一调用点传锁外快照 | `expect` 与 `sampleCommitState` 已入签名；调用点已改传取样器 | **有影响**：B-03/B-09 的设计已在 HEAD 落地，§4.5.4 第 2 步与 `dep-34`/`dep-38` 一致；剩余是 `competitive-report` 侧接线与故障注入用例 |
+| dep-36 | multica `56bdc70d…` | 台账结构（表述） | 结构不变，但**无 CR-2026-075 行** | **有影响**：台账登记仍未完成，保留在 §9 `scope_in`，不得以「已改代码」声称已登记 |
+
+历史基线 SHA 仅为「当时核验的是哪个提交」的指针，本轮按 `dep-33` 的白名单限制**未**读取其历史 blob 内容，故不对历史结论的原文逐字做再核验，只声明「该结论在本轮已不成立/仍成立」。
 
 ### 1.3 决策记录
 
@@ -119,6 +153,7 @@ flowchart TB
 | DEC-4 | 确定性转换模块落 `skills/shared/crctl/scripts/lib/planning-entry.mjs` 与 `.../competitive-report.mjs`，纯函数 + 复用 `yaml-subset.mjs`（`dep-9`），由 `crctl.mjs` 独占调用 | 方案 §1.2 把「版本化脚本/模块」与 crctl 的职责分开：转换归模块、受控执行归 crctl；`dep-24` §3 规定 lib 不反向依赖 CLI、不形成第二入口 | ①放进 `skills/writeback/scripts/`（writeback 专属，跨语义域）；②直接写进 `crctl.mjs`（把业务转换与治理 CLI 混层，违反 §1.2 职责表）；③新增 npm 依赖做 YAML/日期处理（违反零依赖不变量） | 转换可单测、可回放；`crctl.mjs` 只做参数/范围校验、事务与回执 |
 | DEC-5 | 两个业务入口的隔离提交沿用既有 commit 形态（`[cr] planning-entry …` / `[cr] competitive-report …`），不新增 `rules.json` 形态 | `dep-4`/`dep-21` 的交集只留下非 `wip:` 前缀的既有形态；FR-15 明文「不改 controlled-shell 白名单」 | ①新增 `docs(` 形态（越界改白名单）；②用 `wip: `（语义误导，且会让恢复判定把业务提交误读为临时提交） | 提交可被既有审计与恢复语义识别；`[cr] ` 前缀同时满足 KB `repositories[].commit_prefixes` 现有声明 |
 | DEC-6 | 北京时间日历的唯一规则 = UTC+8 固定偏移（`Asia/Shanghai` 自 1991 年起无夏令时），工程文档侧在 `slug.ts` 实现、业务 timestamp 侧在 crctl lib 实现，两处用同一组边界向量做一致性测试 | FR-07 要求「不依赖宿主机默认时区」并保持 schema；`dep-14` 固定 `isoDate` pattern，`dep-15` 是宿主时区依赖的根因，而 engineering-docs 是独立 TS 包（带第三方依赖），crctl 侧必须零依赖，无法共享实现 | ①只在调用方提示词里写「用北京时间」（无机器证据，违反 FR-16）；②把 engineering-docs 改成零依赖 JS（超范围重构） | 两处实现必须同时通过同一向量集（§5.2），任一处漂移即红 |
+| DEC-7 | FR-04 第一类本地纠正的**合法执行来源**取机器上两个已被本设计刻意保留的分支，纠正**不产生新授权**：①有效绑定 + 显式传入不可用 `--workspace`（空串/纯空白/裸旗标）→ `bindTaskWorkspace` 故意不归一 → `requireExplicitWorkspace` 返回 `WORKSPACE_REQUIRED`；②无绑定声明（FR-03 第 3 条显式 CLI 模式）+ 缺 `--workspace` → 同一码。纠正值必须通过 `bindTaskWorkspace` 的同一真实目录检查，异根即 `WORKSPACE_CONTEXT_MISMATCH` 停止 | FR-03 第 2 条让「真缺参」在有效绑定下**首次即成功**，故 FR-04 字面形态「旧显式入口完全不带 `--workspace` 且返回 `WORKSPACE_REQUIRED`」在绑定节点里按设计不可达；若不给出合法来源，`AC-B1`/`AC-B3` 与 FR-04/FR-16 的节点回放验收就永远不可达（B-10）。而 `dep-2` 的实测代码显示 `bindTaskWorkspace` 恰好对「显式但不可用」的值**不归一**（3421 行直接 return），这就是机器侧唯一为纠正保留的入口 | ①清除/覆盖 task 的可信绑定来制造「无绑定」——需 daemon 侧改行为或伪造环境，超 FR-03 且与 NFR-01 冲突；②切回旧 CLI 版本或绕过 launcher——违反 FR-04「不扫描或切换 CLI 版本」；③用独立测试或在测试里直接调内部函数冒充真实节点——违反 FR-16「以实际调用记录验收」；④新增第二执行器/权限框架来制造显式环境——违反 §7 排除项与 `dep-24` §6；⑤把 FR-04 的验收降为「只做一次合法调用」——回避 AC-B1 要求的纠正语义 | B1/B3 有了不清绑定、不切版本、不伪造错误码即可达的真实节点向量（§5.2 B1/B1-b/B3）；纠正的授权来源收敛为「既有可信绑定 + 调用方 FR-04 约定」，审计保留落在节点日志/回放与 `test-evidence/`（§4.2.1），不新增子命令、错误码或白名单形态；已批准 PRD 的「有效绑定首次归一、同 run 恰一次纠正、第二次失败停止、无新授权」四条约束全部保留 |
 
 ## 2. 数据模型
 
@@ -145,6 +180,28 @@ present(op|audit)   = 变量存在且去空白后非空
 ```
 
 跨字段一致性：`deriveInstallRoot(op)` 必须等于 `deriveInstallRoot(audit)`（`dep-7`）；不相等即「互相冲突」。
+
+**入口模式判定（`bindTaskWorkspace` + `requireExplicitWorkspace` 的完整四模式，FR-03 与 FR-04 的判定面）**
+
+绑定判据只回答「有没有可信绑定」，入口最终行为由**绑定有效性 × 调用方 `--workspace` 取值形态**两个维度共同决定。下表是本设计的唯一模式表；`AC-A1`/`AC-A5`/`AC-A6`/`AC-B1`/`AC-B3` 全部落在这四行，不再有第五种入口行为。
+
+| 模式 | 绑定 | `--workspace` 形态 | 机器行为（实测依据 `dep-2`） | 是否产生业务写入 | 归属 |
+| --- | --- | --- | --- | --- | --- |
+| M1 归一 | 有效 | 真缺参（`undefined`） | 取 `CRCTL_OPERATIONAL_WORKSPACE` 的 realpath，**首次即成功**，不产生 `WORKSPACE_REQUIRED` | 是（正常业务） | `AC-A1`/`AC-A3`（FR-03 第 2 条第 1 句） |
+| M2 纠正触发 | 有效 | 显式但不可用（空串/纯空白/裸旗标） | **不归一**（`dep-2` 3421 行直接 return）→ `requireExplicitWorkspace` 返回 `WORKSPACE_REQUIRED` | 否 | `AC-B1`（FR-04 第一类纠正的合法触发点，DEC-7） |
+| M3 显式根 | 无绑定声明（两变量均不存在） | 真缺参 | 显式 CLI 模式，缺根返回 `WORKSPACE_REQUIRED` | 否 | `AC-A6`（FR-03 第 3 条） |
+| M4 拒绝 | 有效 | 显式且是另一真实目录 | `WORKSPACE_CONTEXT_MISMATCH`，绑定不被覆盖 | 否 | `AC-A5`/`AC-B3`（FR-03 第 2 条第 2 句、FR-04 第二次失败/上下文冲突） |
+
+M2 与 M4 的实测（本 run，有效绑定未被清除、未切 CLI、未伪造错误码）：
+
+```text
+crctl next CR-2026-075                          → exit 0（= M1 归一，next=write-tech-design）
+crctl next CR-2026-075 --workspace ""           → WORKSPACE_REQUIRED, exit 1（= M2）
+crctl next CR-2026-075 --workspace "   "        → WORKSPACE_REQUIRED, exit 1（= M2）
+crctl next CR-2026-075 --workspace <主 checkout> → WORKSPACE_CONTEXT_MISMATCH, exit 1（= M4）
+```
+
+M2 是 FR-04 字面「旧显式入口缺根 → `WORKSPACE_REQUIRED`」在绑定已生效后的**唯一合法实例**：它由 `bindTaskWorkspace` 的「显式不可用不归一」分支与 `requireExplicitWorkspace` 的原语义共同产生，不依赖清除绑定、切换 CLI 版本、伪造错误码或以独立测试冒充节点。M3 则是无绑定 task 的字面实例。两条来源的授权边界、调用契约与审计保留见 §4.2.1。
 
 ### 2.2 `execution_context` 输入（FR-01）
 
@@ -251,10 +308,25 @@ crctl competitive-report --from <confirmed-payload.json> [--workspace <project-r
 crctl <任何非 help 子命令> [--workspace <path>]
 ```
 
-- 有完整有效绑定且未传 `--workspace` → 使用 `CRCTL_OPERATIONAL_WORKSPACE` 的真实路径。
+- 有完整有效绑定且**真缺参** → 使用 `CRCTL_OPERATIONAL_WORKSPACE` 的真实路径（M1，`dep-2` 3420 行）。
 - 显式 `--workspace` 与绑定为同一真实目录或合法别名（§1.1）→ 接受。
-- 显式路径不同、绑定不完整或互相冲突 → `WORKSPACE_CONTEXT_MISMATCH`（非零、零业务写入、先于 `detectWorkspace`）。
-- 无绑定声明 → 原显式 CLI 模式；缺 `--workspace` 仍 `WORKSPACE_REQUIRED`；`help` 等不受影响。
+- 显式路径不同、绑定不完整或互相冲突 → `WORKSPACE_CONTEXT_MISMATCH`（非零、零业务写入、先于 `detectWorkspace`；M4）。
+- 显式但**不可用**（空串/纯空白/裸旗标）→ **不归一**，交 `requireExplicitWorkspace` 返回 `WORKSPACE_REQUIRED`（M2，`dep-2` 3421 行）。
+- 无绑定声明 → 原显式 CLI 模式（M3）；缺 `--workspace` 仍 `WORKSPACE_REQUIRED`；`help` 等不受影响。
+
+**FR-04 本地纠正的受控调用契约**（只约束调用方 Skill 的第二次调用形态，不新增 CLI 能力）：
+
+```text
+第 1 次调用（节点原始形态）  → 机器按 §2.1 模式表判定；若得 WORKSPACE_REQUIRED 且满足 §4.2.1 的五项前置
+第 2 次调用（同节点、同 run）  → 仅允许把 --workspace 换成「已确认的显式根」这一个变化：
+                                · M2：值必须与 CRCTL_OPERATIONAL_WORKSPACE 同一真实目录或合法别名（§1.1）
+                                · M3：值必须是调用方本节点已确认的项目根
+                              其余 argv、业务参数、CR-ID、触发 trigger、--from/--plan 一律逐字不变；
+                              不得换子命令、不得换入口（不切 CLI 版本、不绕过 launcher）、不得新增授权旗标
+第 2 次仍非零            → 停止自动纠正（AC-B3），进入既有异常或结构化事务恢复路径
+```
+
+契约的机器侧落点已存在且零改动：`bindTaskWorkspace` 的同一真实目录检查（`dep-2` 3424-3426）对纠正值同样生效，故纠正**无法**把根授权扩到绑定之外（M4）。本节不新增子命令、错误码、白名单形态或权限框架。
 
 ### 3.3 daemon 侧接口（multica）
 
@@ -346,9 +418,36 @@ bindTaskWorkspace(cmd, flags, env):
       fail("WORKSPACE_CONTEXT_MISMATCH", "显式 workspace 与任务绑定不同根；绑定不可被覆盖")
 ```
 
-调用位置：`main()` 内 `requireExplicitWorkspace(cmd, flags)` 之前（DEC-1）。失败面与业务处理器零改动；`kb` 特判分支不受影响（bootstrap 无绑定）。
+调用位置：`main()` 内 `requireExplicitWorkspace(cmd, flags)` 之前（DEC-1，`dep-2` 4170-4172）。失败面与业务处理器零改动；`kb` 特判分支不受影响（bootstrap 无绑定）。
 
-**本地纠正约定（FR-04）**：`crctl` 代码不做业务纠正、不自动重试、不切 CLI 版本；两种允许的一次纠正（旧显式入口缺根、额外 `validate prd.md`）由调用方 Skill 在节点日志可证明「预检零业务写入」时执行一次，第二次失败或权限/绑定/写入不明一律走既有停止或事务恢复路径。`BAD_ARGS` 不在纠正集合内。
+#### 4.2.1 FR-04 本地纠正：受控入口、授权来源与审计保留（B-10 关闭项）
+
+FR-04 第一类纠正（「旧显式入口缺根 → `WORKSPACE_REQUIRED` → 补已确认显式根后同节点同 run 调用一次」）在 FR-03 生效后必须有一个**机器上真实可达、无需清除可信绑定**的合法来源，否则 `AC-B1`/`AC-B3` 不可达。本节给出该来源、授权边界与审计保留（B-10）。
+
+**合法执行来源（两个，均为机器既有分支，`dep-2`）**
+
+| 来源 | 触发条件（机器事实） | 典型可达节点 | 本 run 实测 |
+| --- | --- | --- | --- |
+| S1（M2） | 有效绑定 + 显式传入不可用 `--workspace`（空串/纯空白/裸旗标）→ `bindTaskWorkspace` 不归一 → `requireExplicitWorkspace` 返回 `WORKSPACE_REQUIRED` | Pipeline 节点、带 `execution_context` 的普通委派、本项目普通任务（`dep-27`/`dep-28` 三类都有可信绑定） | `--workspace ""` 与 `--workspace "   "` 均 `WORKSPACE_REQUIRED`、exit 1、零业务写入 |
+| S2（M3） | 无绑定声明（两个 CRCTL 变量都不存在）且缺 `--workspace` → 显式 CLI 模式返回 `WORKSPACE_REQUIRED` | 无可信绑定的 task（`taskCRWorkspaceRoot` 返回空，如项目根不带 `change-requests/` 的非 CR 项目 task） | 不在本 CR 节点内产生；本 CR 三类节点均为有绑定场景（见 §1.2.1 `dep-27`/`dep-28` 行），故 S2 只作字面来源登记，不作本 CR 的主证据向量 |
+
+**明确不构成授权来源**（写入 SDD 作为负面约束，评审与人工审批可逐条核对）：清除或覆盖 task 的可信绑定、切回旧 CLI 版本 / 绕过 launcher 直接换可执行体、伪造 `WORKSPACE_REQUIRED` 或任何错误码、以独立测试或在测试内直接调内部函数冒充真实节点回放、把旧环境快照 / replay 标签 / 逐次 env 日志当作执行授权、新增第二执行器或权限框架来制造显式环境。
+
+**授权边界（纠正不产生新授权）**
+
+1. 纠正的授权来源 = **同一 task 的既有可信绑定三元组**（daemon 在 `custom_env` 之后成对发布，`dep-28`）+ 调用方 Skill 的 FR-04 约定；纠正动作本身不新增任何授权。
+2. 纠正值必须通过 `bindTaskWorkspace` 的同一真实目录检查：与 `CRCTL_OPERATIONAL_WORKSPACE` 不同根 → `WORKSPACE_CONTEXT_MISMATCH`，立即停止（`AC-B3`）。故纠正只能在既有可信根之内取别名，不能把根授权扩到绑定之外（M4 实测：显式传项目主 checkout 被拒）。
+3. 五项前置（FR-04 明文，缺一不可）：①可信入口（S1 的有效绑定 / S2 的调用方自带已确认显式根）；②明确原意与合法输入（第 2 次调用只允许换 `--workspace` 一个参数）；③已有可信上下文；④节点日志可证明业务写入前失败；⑤无新授权需求。
+4. 同节点同 run **恰一次**：第 2 次仍非零即停止自动纠正；`BAD_ARGS`、权限/路径拒绝、上下文冲突、审批问题、`CONTRACT_DRIFT`、注册指纹冲突、写入/提交结果不明一律不进纠正集合。
+5. `crctl` 代码不做业务纠正、不自动重试、不切 CLI 版本；不跨 run 自动重启、不重置 review attempt；Pipeline 保持 `onFail: abort`。
+
+**审计保留边界**
+
+- 纠正**只以节点日志/回放验收**（FR-04/FR-16 明文），不宣称机器级计数。证据落 `change-requests/CR-2026-075/test-evidence/`，每条至少含：第 1 次的 `code=WORKSPACE_REQUIRED` 与 stderr 单一 JSON、零业务写入的证明（该 key 下无 journal、受控路径 `git status` 无变化、无 `auditLog` 成功记录）、第 2 次的实际命令与 exit/回执、以及「纠正次数 ≤1」的本节点回放计数。
+- 计数口径按 PRD 成功指标：按**每条适用节点回放**衡量，**不**报告为跨 run 机器硬保证。
+- 不引入持久化 attempt 计数、纠正台账或重试服务（§7 排除项）；`review-loop.yml` 的 attempt 记账只由 `crctl attempt`/`review-record` 维护，与纠正无关。
+
+**本节的实现代价：零。** S1/S2 的两个分支、`WORKSPACE_REQUIRED` 码与 M4 的拒绝面在当前 `resources` HEAD 上已全部存在（`dep-2`），本 CR 不为此新增子命令、错误码、白名单形态、权限框架或第二执行器；本节只把「已存在的机器语义」写成 FR-04/FR-16 的可达验收口径。
 
 ### 4.3 B 段：两个业务入口的执行骨架（FR-09、FR-12）
 
@@ -446,8 +545,9 @@ businessTxKey(kind, 项目根, 身份) = 'biz-' + kind + '-' + sha256('v1|' + re
              commitRequired 为真 → 先按 2.c 在锁内现取 Git 完成事实，再判 committed；取样失败即保守失败，不进入回滚
              否则 → rolledBack（既有 write-set 语义把本意图未收敛写入还原为 before）→ 转 3
              第三值 → 既有 TX_RECOVERY_CONFLICT（原样抛出，不改文件）
-   c 锁内 Git 完成事实取样（dep-33 形态，均经 controlledGit；与 2.b 同一临界区、同一 journal 现场，原语在该步
-       调用调用方提供的取样器 sampleCommitState({targetRoot: payload.targetRoot, headBefore: payload.headBefore})，
+c 锁内 Git 完成事实取样（dep-33 形态，均经 controlledGit；取样器实现见 dep-38、签名与锁内比对见 dep-35/dep-37；
+        与 2.b 同一临界区、同一 journal 现场，原语在该步
+        调用调用方提供的取样器 sampleCommitState({targetRoot: payload.targetRoot, headBefore: payload.headBefore})，
        回调在原语持锁期间执行、原语 await 其返回后再释放锁；原语自身保持 Git 无关，取样只在此一处发生）：
        headSha = git rev-parse HEAD（payload.targetRoot 项目根）
        messages = headBefore 为 40 位十六进制且 ≠ headSha 时取 git log --reverse --format=%B <headBefore>..<headSha>；
@@ -512,18 +612,19 @@ businessTxKey(kind, 项目根, 身份) = 'biz-' + kind + '-' + sha256('v1|' + re
 
 ### 4.6 B 段：合同与提示对齐（FR-05～08、13～14）
 
-- `validate-doc`：§3.4 的维度报告 + 触发条件改写；`AGENTS.md` 改写为「validate-doc 或调用方规定的等价检查」，不新增通用校验闸门。
-- `engineering-docs`：删除「frontmatter 必须通用委派」与固定 `owClient.writeFile` 表述；明确参考模板与完整执行的区别；规划/竞品不再请求不存在的 DESIGN-DOC/COMPETITIVE 通用类型（`dep-13`）。
-- 日期：§4.7。
+- `validate-doc`：§3.4 的维度报告 + 触发条件改写（**触发条件已实施**，见 `dep-12`）；`AGENTS.md` 改写为「validate-doc 或调用方规定的等价检查」，不新增通用校验闸门。
+- `engineering-docs`：删除「frontmatter 必须通用委派」与固定 `owClient.writeFile` 表述、规划/竞品不再请求不存在的 DESIGN-DOC/COMPETITIVE 通用类型（**已实施**，见 `dep-13`）；剩余为参考模板与完整执行之别的说明补齐。
+- 日期：§4.7（**工程文档侧已实施**，见 `dep-15`）。
 - 索引：§2.4 的单一解析顺序；`engineering-docs` 只维护调用方声明路径的索引。
-- 12 处 `crctl advance` 补 `{cr_id}`（`dep-23`）；矩阵/Agent 定点登记两个业务 Agent 的 `crctl` 调用关系（`dep-19`/`dep-20`），只声明各自业务操作。
+- 12 处**命令形态** `crctl advance` 补 `{cr_id}`（`dep-23`：实测命令形态 12 处逐处仍缺，另 2 处为散文提及不得按 14 处误改）；矩阵/Agent 定点登记两个业务 Agent 的 `crctl` 调用关系（`dep-19`/`dep-20`，实测**尚未**登记），只声明各自业务操作；新子命令首词必须登记进 `caller-contract.test.mjs` 的 `CR_DATA_FIRST_WORDS`（`dep-25`，实测 `planning-entry` 尚未登记，不登记则门禁红）。
+- FR-04 的调用方纠正约定按 §4.2.1 落到 Skill 文本：只允许换 `--workspace` 一个参数的同节点同 run 一次纠正，并明确列出「不构成授权来源」的负面清单。
 - FR-14 的提示收敛在 §4.9 的门槛满足后执行：删除受控 CR 后续节点中重复手填 workspace 的示例（`dep-22`），保留 execution_context 传递、显式 CR-ID、业务阶段与角色职责、写入/检查/发布要求、共享权威合同短指针；bootstrap 与 daemon 预检示例保留明确根。
 
 ### 4.7 日期渲染（FR-07）
 
 唯一规则：`beijingDate(now) = new Date(now.getTime() + 8h)` 取 UTC 日历字段拼 `YYYY-MM-DD`；`beijingIso(now)` 同法拼 `YYYY-MM-DDTHH:mm:ss+08:00`。
 
-- 工程文档侧（`dep-15`）：`today()` 改为 `today(now = new Date())` 走同一规则，`isoDate` pattern 不动（`dep-14`）；`base.ts` 与 `index-sync.ts` 的消费点随之修正。
+- 工程文档侧（`dep-15`）：`today(now = new Date())` 走同一规则，**该实现已在本 CR worktree HEAD 落地并逐字核对为 `new Date(now.getTime() + 8 * 3600 * 1000)` 取 UTC 日历字段**，`isoDate` pattern 不动（`dep-14`）；`base.ts` 与 `index-sync.ts` 的消费点随之已修正。剩余面只有 crctl lib 侧（`beijingDate`/`beijingIso`）与跨宿主时区的同向量回归。
 - 业务 timestamp 侧：crctl lib 生成 `addedAt`/`created-at`；竞品 `reportDate` 仍是纯日期；CR/角色/审计的既有完整 timestamp 不动。
 - 身份日期与执行时钟分离：正式 id 的 `{YYYY-MM-DD}` 与竞品 `report_date` 来自已确认 payload（§2.3），**不**由 `beijingDate(now)` 重算；`beijingDate(now)`/`beijingIso(now)` 只用于目标文件不存在时首次写入的自动审计时间，目标已存在时逐字继承（§4.5.3）。
 - 不批量重写存量文档，不调整前端 UTC 显示行为。
@@ -556,12 +657,15 @@ FR-14 的提示收敛只在 A 段以下全部为真后执行：①A1～A8 向量
 
 | 向量 | 落点（复用既有组织，不新建框架） | 可观测结果 |
 | --- | --- | --- |
-| A1、A2、A6、A8 | tools `crctl.test.mjs`（绑定归一/显式模式/冲突/直接 node 调用/Windows 动态路径） | 首次缺参归一成功；异根与非完整绑定非零且零写入；help 不受影响 |
+| A1、A2、A6、A8 | tools `crctl.test.mjs`（绑定归一/显式模式/冲突/直接 node 调用/Windows 动态路径）+ multica `pipeline_task_test.go`/`cr_workspace_binding_test.go` **在既有用例上补断言**（`dep-31`：A 段向量已有 `TestParseExecutionContext`/`TestResolveTaskWorkspaceBinding`/`TestTaskWorkspaceBinding`/`TestConfigureTaskGitEnvironment`/`TestInstallCrctlLauncher` 与 10 个 `TestInjectTaskCRWorkspaceEnv*`） | 首次缺参归一成功（M1，零 `WORKSPACE_REQUIRED`）；异根与非完整绑定非零且零写入（M4）；help 不受影响 |
 | A3、A4、A5、A7 | multica `pipeline_task_test.go`、`cr_workspace_binding_test.go`（同包表驱动） | 普通 Issue 预检/绑定；缺失/重复/冲突上下文与坏 worktree 停止节点准备；并发 task 隔离、`custom_env` 不可覆写、无绑定清旧值 |
-| B1、B3、B4 | 节点日志/回放（Pipeline 提示词行为，以实际调用记录验收） | 一次本地纠正后业务 gate 正常；第二次失败走异常路径；短提示保留必要项 |
-| B2、B5～B7 | tools `crctl.test.mjs`（validate 分支） | 额外 `validate prd.md` → `UNKNOWN_ARTIFACT`；维度 WARN 与未检查声明；`prd.md`/`sdd.md` 仍未知类型 |
-| B8 | tools `engineering-docs/scripts`（vitest，跨宿主时区向量）+ crctl 侧同日向量 | 北京时间跨日边界两侧渲染匹配 `isoDate`；业务 timestamp 保持 |
-| B9～B13、B16 | tools `crctl.test.mjs` + 新增 `planning-entry.test.mjs` / `competitive-report.test.mjs`（同目录、`node --test`） | 已确认落盘、未确认零写入、越界拒绝、索引唯一、CR-ID 补全、版本口径、审批前提 |
+| B1 | **真实节点日志/回放**（Pipeline 提示词行为，以实际调用记录验收）：在有效绑定的真实节点里按 S1 触发 M2——显式传入空串/纯空白 `--workspace`，取得 `WORKSPACE_REQUIRED`；同节点同 run 只补一次已确认显式根 | 第 1 次 `WORKSPACE_REQUIRED` 非零且零业务写入；第 2 次同节点同 run 首次成功；节点日志显示纠正次数 = 1、无恢复委派、无版本扫描；与 A1 的区分点是「A1 全程无错误码、B1 先出现 `WORKSPACE_REQUIRED`」（§2.1 M1 vs M2） |
+| B1-b（S2 字面来源） | 真实节点日志/回放：**无绑定声明**的 task（S2/M3）缺 `--workspace` → 补调用方已确认项目根一次 | 同上；本 CR 三类节点均有绑定（`dep-27`/`dep-28`），故 S2 在本 CR 内**只作字面来源登记**，其机器行为由 A6 向量覆盖，不得用「造一个无绑定环境」当作本 CR 的 B1-b 证据 |
+| B3 | 节点日志/回放 + `crctl.test.mjs` 入口向量：第 2 次纠正后仍非零、`--workspace` 补成异根（M4）、`BAD_ARGS`、权限/路径拒绝、上下文冲突 | 第 2 次非零即停止自动纠正并进入既有异常/事务恢复路径；异根补参得 `WORKSPACE_CONTEXT_MISMATCH` 且绑定未被覆盖；stdout 无成功回执 |
+| B4 | 节点日志/回放 + `pipeline-structure.test.mjs` 提示结构用例（`dep-22`：现存重复 `--workspace` 示例 4+3 处） | 短提示仍含上下文/CR-ID/业务输入输出/职责/发布合同；显式与 bootstrap 说明未误删；收敛只在 §4.9 门槛满足后发生 |
+| B2、B5～B7 | tools `crctl.test.mjs`（validate 分支；B5/B7 已有回归用例钉住 `prd.md`/`sdd.md` 仍 `UNKNOWN_ARTIFACT`，`dep-11`） | 额外 `validate prd.md` → `UNKNOWN_ARTIFACT`；维度 WARN 与未检查声明；`prd.md`/`sdd.md` 仍未知类型 |
+| B8 | tools `engineering-docs/scripts`（vitest，跨宿主时区向量）+ crctl 侧同日向量。**工程文档侧已实施（`dep-15`），本向量降级为跨时区回归护栏**：断言 `today(now)` 在非北京宿主时区下仍渲染同一 `YYYY-MM-DD`，并与 crctl 侧 `beijingDate` 同向量一致 | 北京时间跨日边界两侧渲染匹配 `isoDate`；业务 timestamp 保持 |
+| B9～B13、B16 | tools `crctl.test.mjs` + `planning-entry.test.mjs`（已登记 manifest，10 例，`dep-26`）/ 待新增 `competitive-report.test.mjs`（同目录、`node --test`）。B11 的机械清单口径 = `dep-23` 实测的 **12 处命令形态调用点**（另 2 处散文提及不得改），且新子命令首词必须先登记进 `CR_DATA_FIRST_WORDS`（`dep-25`） | 已确认落盘、未确认零写入、越界拒绝、索引唯一、CR-ID 补全、版本口径、审批前提；真实调用不在缺位置参数处 `BAD_ARGS` |
 | B14 | 部署副本与实际 imported Skills 的版本比对（命令 + 结果入 `test-evidence/`） | 生效版本与仓库一致 |
 | B15、B17～B18 | `crctl.test.mjs` 业务入口用例 + 新增 `planning-entry.test.mjs`/`competitive-report.test.mjs` + `fault-harness.test.mjs`/`durable-tx.test.mjs` 既有故障注入 | 首次成功回执字段齐全；重放 `changed=false` 同提交；CAS 冲突不覆盖；中断按同意图原事务恢复；首次写入直达新提交；提交落地后先收敛再回执（完成事实按锁内取样判定，B-09）；返回成功前无残留 journal |
 | B15-a（B-01 跨日身份） | `planning-entry.test.mjs`（注入固定执行时钟，同一 payload 在 D/D+1/D+2 三个日历日各跑一次） | 三次 `identity.id/docPath/artifacts` 与 `intentDigest` 逐字相同；D+1 首次落盘后 D+2 重放 `changed=false` 且 `commit` 等于 D+1 的提交 |
@@ -628,9 +732,9 @@ B 段：
 
 | AC | 设计落点 | 可观测结果 | 可达性说明 |
 | --- | --- | --- | --- |
-| AC-B1 | §4.2 纠正约定 | 旧显式入口缺根、日志证明零写入 → 同节点同 run 补参一次成功 | 纠正由 Skill 执行；绑定模式下缺根已直接归一，两者可区分（前者无绑定声明） |
-| AC-B2 | §4.6 | 额外 `validate prd.md` 得 `UNKNOWN_ARTIFACT` 后继续原 PRD 自检与登记/发布 | `dep-11` 保持 PRD/SDD 未知类型，纠正集合不扩大 |
-| AC-B3 | §4.2、§4.3 | 第二次失败/权限/路径/绑定冲突/写入不明 → 既有异常或合法事务恢复 | 纠正上限是调用方约定，crctl 侧不做重试 |
+| AC-B1 | §4.2.1（合法来源 S1/S2 + 授权与审计边界）、§3.2 纠正调用契约、§2.1 模式表 M1/M2/M3 | 真实节点里第 1 次调用得 `WORKSPACE_REQUIRED`（M2：显式传入空串/纯空白；或 M3：无绑定声明且缺参）+ 日志证明零业务写入 → 同节点同 run 只补一次已确认显式根即首次成功；纠正次数 = 1、无恢复委派、无版本扫描 | **可达性**：S1 由 `bindTaskWorkspace` 3421 行「显式不可用不归一」与 `requireExplicitWorkspace` 的原语义共同产生，本 run 在有效绑定、绑定未被改动的前提下已实测（`--workspace ""` 与 `"   "` 均 `WORKSPACE_REQUIRED`、exit 1、零业务写入）；不需要清除可信绑定、切 CLI 版本、伪造错误码或以独立测试冒充节点。**与 A1 首次归一的区分**：A1 走 M1（真缺参直接归一、全程不出现错误码），B1 必须先实际出现 `WORKSPACE_REQUIRED` 才允许纠正。**授权边界**：纠正值须通过 `bindTaskWorkspace` 的同一真实目录检查，补异根即 M4 被拒，故纠正不产生新授权 |
+| AC-B2 | §4.6 | 额外 `validate prd.md` 得 `UNKNOWN_ARTIFACT` 后继续原 PRD 自检与登记/发布 | `dep-11` 保持 PRD/SDD 未知类型（已有回归用例钉住），纠正集合不扩大 |
+| AC-B3 | §4.2.1（第二次失败即停）、§2.1 M4、§4.3 | 第 2 次纠正仍非零 / 补成异根（`WORKSPACE_CONTEXT_MISMATCH`）/ `BAD_ARGS` / 权限或路径拒绝 / 上下文冲突 / 写入不明 → 停止自动纠正并进入既有异常或合法事务恢复，stdout 无成功回执 | 纠正上限是调用方约定，crctl 侧不做重试；M4 的拒绝面在 `bindTaskWorkspace` 内先于 `detectWorkspace`，本 run 实测显式传项目主 checkout 被拒且绑定未被覆盖 |
 | AC-B4 | §4.6 | 短提示仍含上下文/CR-ID/业务输入输出/职责/发布合同；显式与 bootstrap 说明未误删 | 收敛只删重复的 `--workspace` 示例，保留项逐条列出 |
 | AC-B5 | §3.4、§4.6 | 无 blanket 自动调用承诺、无新增通用校验闸门；原必需自检与评审保留 | 触发条件改写 + AGENTS 措辞对齐 |
 | AC-B6 | §3.4 | 未声明维度 WARN 且明确未检查；必需配置无效/违反规则仍失败 | WARN 只出现在声明缺失分支；畸形声明走 FAIL |
@@ -664,12 +768,14 @@ B 段：
 | SDD-CLOSE-09 | §5.1 证据组织「具体新增测试位置及可执行计划由开发期 SDD/PLAN/TASK 确认」 | 新增 `test/planning-entry.test.mjs`、`test/competitive-report.test.mjs`，扩展 `crctl.test.mjs`、`durable-tx.test.mjs`、`caller-contract.test.mjs`、`pipeline-structure.test.mjs`，登记 `gate-registry.json`；执行口径 `node suite-gate.mjs --run`（§5.2） |
 | SDD-CLOSE-10 | FR-15「核对实际生效版本」 | 生效版本核对的最小证据 = 部署副本与仓库文件的逐字节比对结果 + 实际 imported Skills 的取用路径列表，落 `test-evidence/`（§4.8） |
 
+**本轮（0.5）关闭状态复核**：`SDD-CLOSE-01`～`10` 的关闭结论逐条不变（未受 B-10/B-11 根因影响的设计不重写）。两项复核声明：①「命令面新增两个子命令」的关闭（01/02）**以 §8 第 1/2 行的 Skill 侧接管仍未完成为前提**——`dep-16`/`dep-18` 实测两个业务 Skill 尚未调用新入口，故 `AC-B9`/`AC-B15` 的机器侧前提未建立，关闭的是**命名与落点决策**而非实施完成；②「AC 闭环」的成立**不等于可达性已证**——`AC-B1`/`AC-B3` 的可达性由 §4.2.1 + §6.2 承担（合法来源 S1/S2、授权边界、审计保留），本关闭表不替代该判定；`AC-B11` 的口径以 §1.2 `dep-23` 实测的「12 处命令形态调用点」为准（`dep-38` 为 B-11 重核新增的锁内取样器事实，不改变任一关闭项）。
+
 错误枚举与优先级（两个业务入口，`SDD-CLOSE-05`）：`BAD_ARGS`（解析/缺 `--from`）→ `WORKSPACE_REQUIRED`/`WORKSPACE_CONTEXT_MISMATCH`（入口）→ `BUSINESS_INPUT_INVALID` → `BUSINESS_WRITE_SCOPE_DENIED` → `BUSINESS_CONFIRMATION_REQUIRED`（4.3 第 5 步）→ 幂等/恢复阶段（4.5.4 第 2～4 步，顺序按 FR-10/FR-11 明文「先未完成同意图事务恢复、再已完成重放、再身份漂移冲突」）：`TX_INPUT_CONFLICT`（2.b 锁内摘要比对，在途异意图，零写入）→ `TX_LEDGER_RECOVERY_REQUIRED`（2.b 锁内 txId 比对，现场事务实例已被替换，零写入）→ `BUSINESS_INTENT_CONFLICT`（4.b/4.d）→ `TX_RECOVERY_CONFLICT`（2.b 第三值/3.b/3.c/3.d）→ `REGISTRATION_INPUT_MISMATCH`（仅引用注册边界）→ `TX_LOCK_HELD`/`CAS_CONFLICT` → `TX_GIT_FAILED`（含第 2.c 步锁内 Git 完成事实取样失败：零写入、journal 保留、不回滚）/写入中断。同一阶段内取首失败；PRD 表列四类固定码的语义不变。全部非零、零业务写入或按既有结构化恢复收敛；stdout 不出现成功回执。
 
 ## 7. 安全与性能考量
 
 - **路径语义**：绑定与业务路径全部用 `realpathOrSelf` + `sameRealPath`（Windows 大小写不敏感）与真实目录包含检查，不用字符串前缀；`local_directory` 拒绝主机/用户根名单（`dep-28` 既有规则，不改）。
-- **授权边界**：`custom_env`、主机遗留变量与历史评论都不能取得根授权：绑定写入点固定在 `custom_env` 之后；历史评论不参与解析；无绑定时清除三值（A7）。
+- **授权边界**：`custom_env`、主机遗留变量与历史评论都不能取得根授权：绑定写入点固定在 `custom_env` 之后（`dep-28`）；历史评论不参与解析；无绑定时清除三值（A7）。**本地纠正同样不取得新授权**（§4.2.1）：授权来源只有同一 task 的既有可信绑定与调用方 FR-04 约定；纠正值必须与 `CRCTL_OPERATIONAL_WORKSPACE` 同一真实目录或合法别名，否则 `WORKSPACE_CONTEXT_MISMATCH` 停止；清除绑定、切 CLI 版本、伪造错误码、旧环境快照/replay 标签/逐次 env 日志、独立测试冒充节点、第二执行器或权限框架**均不构成授权来源**。纠正只以节点日志/回放验收，按每条适用节点回放计 ≤1，不宣称跨 run 机器硬保证，不引入持久化纠正计数。
 - **审计**：`CRCTL_TASK_AUDIT_ROOT` 保持 gitguard 拒绝事件的唯一落点（`dep-29`）；两个业务入口的写入走 `auditLog` + `AI-First-Tx` trailer；`.crctl` 自忽略。
 - **不宣称机器级强保证**：矩阵与提示词只声明 Skill 级调用关系；`docs/` 下的规划/竞品索引不在 `protectedPaths` 内（`dep-21`），本 CR 不新增 guard 覆盖面，也不把提示词约定说成机器约束（记入 follow_up）。
 - **性能**：绑定复用一次只读预检（`workspace inspect`），不在每条命令重复根探索；无轮询、无重试服务、无持久化 attempt 账本；业务写入固定 ≤3 个文件，行级改写避免全量重排。
@@ -684,14 +790,15 @@ B 段：
 | --- | --- | --- |
 | `skills/planning/write-planning-entry/SKILL.md` | 步骤 4/5 由 Agent 直接写文件与 `_index.yml`，步骤 6 调 validate-doc | 调 `crctl planning-entry --from <confirmed-payload.json>`；消费 §2.3 回执（`exit=0` + 合法 JSON + `phase=complete` + 正确 `changed` + 匹配 `identity/artifacts` + 非空 `commit`）；校验按调用方步骤触发 |
 | `skills/competitive/write-competitive-report/SKILL.md` | 阶段 B 步骤 1～3 由 Agent 写报告、改 `updates[]`、改 reports 索引 | 调 `crctl competitive-report --from …`；冲突策略（覆盖/新日期）在 payload 显式给出；正文与 `(date,title)` 去重由模块负责 |
-| `skills/shared/validate-doc/SKILL.md` | 「任何文档写入/修订完成后」自动触发 | 「调用方步骤规定或用户显式请求」；说明 WARN/未检查维度语义 |
-| `skills/shared/engineering-docs/SKILL.md` | frontmatter 通用委派 + 固定 `owClient.writeFile` 表述 | 删除通用委派与 `writeFile` 表述；明确参考模板与完整执行区别；类型面保持 `dep-13` |
-| `skills/cr/cr-review-record`、`skills/develop/{review-code,review-dev-plan,review-tech-design,write-dev-tasks,write-tech-design}`、`skills/requirement/review-requirement` | 12 处 `crctl advance` 缺 `{cr_id}` | 全部补显式 `{cr_id}`；`--workspace` 在绑定环境可省，但业务参数与阶段说明不得删（`dep-23`） |
-| `skills/shared/crctl/SKILL.md` | 能力表无绑定归一、无两个业务入口；IDE 用法仍含隐式根描述 | 增补绑定归一、两个业务入口、调用方本地纠正约定；修订 workspace 说明与本设计一致 |
-| `agents/product-planning-agent.md`、`agents/competitive-analyst-agent.md`、`agent-skill-matrix.yml`、`agents/_index.yml` | 无 crctl 关系 | 定点登记各自业务操作；只声明 Skill 级关系，不宣称子命令级授权（`dep-19`/`dep-20`） |
-| `pipeline-templates/architecture-design.pipeline.json`、`code-design`/`code-implementation.pipeline.json` 的受控 CR 后续节点 | 逐命令 `--workspace <workspace>` | 按 §4.9 门槛删重复示例，保留 execution_context/CR-ID/阶段/职责/发布合同（`dep-22`） |
+| `skills/shared/validate-doc/SKILL.md` | 「任何文档写入/修订完成后」自动触发 —— **已按 FR-05 改写**（`dep-12`） | 剩余：补 WARN/未检查维度语义说明；触发条件文本不再重复改 |
+| `skills/shared/engineering-docs/SKILL.md` | frontmatter 通用委派 + 固定 `owClient.writeFile` 表述 —— **已按 FR-06 改写**（`dep-13`） | 剩余：明确参考模板与完整执行的区别；类型面保持 `dep-13` |
+| `skills/cr/cr-review-record`、`skills/develop/{review-code,review-dev-plan,review-tech-design,write-dev-tasks,write-tech-design}`、`skills/requirement/review-requirement` | **12 处命令形态** `crctl advance` 缺 `{cr_id}`（`dep-23`；另 2 处散文提及不改） | 全部补显式 `{cr_id}`；`--workspace` 在绑定环境可省，但业务参数与阶段说明不得删 |
+| `skills/shared/crctl/SKILL.md` | 能力表无绑定归一、无两个业务入口；IDE 用法仍含隐式根描述 | 增补绑定归一、两个业务入口、§4.2.1 的调用方本地纠正约定（**含「不构成授权来源」负面清单**：不得清绑定、切 CLI 版本、伪造错误码、以独立测试冒充节点）；修订 workspace 说明与本设计一致 |
+| `agents/product-planning-agent.md`、`agents/competitive-analyst-agent.md`、`agent-skill-matrix.yml`、`agents/_index.yml` | 无 crctl 关系（`dep-19`/`dep-20` 实测确认） | 定点登记各自业务操作；只声明 Skill 级关系，不宣称子命令级授权 |
+| `skills/shared/crctl/scripts/test/caller-contract.test.mjs` | `CR_DATA_FIRST_WORDS` 未登记 `planning-entry`（`dep-25`），不登记则门禁红 | 登记两个新子命令首词（只加分类集合，不扩扫描面/投影口径） |
+| `pipeline-templates/architecture-design.pipeline.json`、`code-design`/`code-implementation.pipeline.json` 的受控 CR 后续节点 | 逐命令 `--workspace <workspace>`（实测 4+3 处，`dep-22`） | 按 §4.9 门槛删重复示例，保留 execution_context/CR-ID/阶段/职责/发布合同 |
 | `skills/requirement/requirement-register/SKILL.md`、`pipeline-templates/requirement-authoring.pipeline.json`、`README.md` | 版本示例口径不一；README 为人读总览 | 示例统一推荐 `0.16.0` 并说明 v/V 兼容输入/无前缀持久化；README 只同步总览与权威链接，不复刻可执行细节 |
-| `tools/ARCHITECTURE.md` | §3 未记录绑定归一与两个业务入口 | 按 `dep-24` §8 在实施期补「绑定归一入口 + 两个业务写入子命令 + 权限/事务边界」；只读引用不变量，不改不变量本身 |
+| `tools/ARCHITECTURE.md` | §3 仍未记录绑定归一与两个业务入口（`dep-24` 实测确认） | 按 `dep-24` §8 在实施期补「绑定归一入口 + 两个业务写入子命令 + 权限/事务边界」；只读引用不变量，不改不变量本身 |
 
 ## 9. 批准范围
 
@@ -700,6 +807,7 @@ B 段：
 - tools：`skills/shared/crctl/scripts/crctl.mjs`（新增私有 `bindTaskWorkspace`、`intentDigest`、`businessTxKey`、`recoverBusinessLedgerCommand` 与两个业务入口的命令面、事务接线、提交定型；`cmdValidate` 的新增维度层）；新增 `skills/shared/crctl/scripts/lib/planning-entry.mjs`、`lib/competitive-report.mjs`；`skills/shared/crctl/scripts/lib/durable-tx.mjs`（`recoverLedgerTransaction` 新增可选 `expect={inputDigest,txId}` 锁内比对与可选 `sampleCommitState({targetRoot,headBefore})` 取样器：committed 判据的 Git 完成事实改为**锁内现场取样**，取样失败复用 `TX_GIT_FAILED` 保守失败、不回滚；原语保持 Git 无关，锁内比对/取样只在提供对应入参时生效；`phase=complete`、第三值、CAS、锁与 `begin`/`abort`/`finish` 语义逐字不变，错误码零新增）；`skills/shared/engineering-docs/scripts/src/utils/slug.ts` 与其两处消费点（`generators/base.ts`、`validators/index-sync.ts`）；测试 `crctl.test.mjs`、新增 `planning-entry.test.mjs`、`competitive-report.test.mjs`、`caller-contract.test.mjs`、`pipeline-structure.test.mjs`、`durable-tx.test.mjs`、`gate-registry.json`；合同与提示：`skills/shared/{crctl,validate-doc,engineering-docs}/SKILL.md`、`skills/planning/{planning-draft,write-planning-entry}/SKILL.md`、`skills/competitive/write-competitive-report/SKILL.md`、`skills/cr/cr-review-record/SKILL.md`、`skills/develop/{review-code,review-dev-plan,review-tech-design,write-dev-tasks,write-tech-design}/SKILL.md`、`skills/requirement/{review-requirement,requirement-register}/SKILL.md`、`agents/{product-planning-agent,competitive-analyst-agent}.md`、`agent-skill-matrix.yml`、`agents/_index.yml`、`pipeline-templates/{architecture-design,code-implementation}.pipeline.json`、`AGENTS.md`、`README.md`、`ARCHITECTURE.md`。
 - multica：`server/internal/daemon/pipeline_task.go`、`server/internal/daemon/daemon.go`、同包测试 `pipeline_task_test.go`、`cr_workspace_binding_test.go`；`cr-prompts-revised/{requirement-writer,dev-agent,quality-reviewer-agent,cr-coordinator-agent}.md`、`cr-prompts-revised/delegation-contract.md` 及其维护的部署副本与 delegation-contract 测试；`CUSTOM.md`（按实施时台账现行结构登记本轮 daemon 改动：正文《代码改动明细》新增行、编号顺延取当时最大 `#N`+1、`// AIFIRST:` 挂钩点与「原因/追溯」含 CR-2026-075 与 TASK 编号，并同步《模块索引》《CR 索引》两表与正文行号一致；PRD NFR-04、`dep-36`）。
 - ai-first-platform-docs：本 CR 的 `change-requests/CR-2026-075/*`（含 `test-evidence/`）。
+- 批准范围层面的调用契约（不新增机器能力）：`skills/shared/crctl/SKILL.md` 内的**调用方本地纠正约定**（§4.2.1）与「不构成授权来源」负面清单属本 CR 的批准范围——它承载 FR-04 的可达性口径（`AC-B1`/`AC-B3`），**不得**移入 `follow_up`，也**不得**以 `scope_out` 的「不新增执行器/权限框架」为由省略：后者约束机器能力，本项是 Skill 文本的调用契约，两者不冲突。机器侧不需要任何新代码（§4.2.1 末段）。
 
 **scope_out**
 
@@ -715,13 +823,15 @@ B 段：
 - `skills/shared/engineering-docs/schemas/*.json`、`templates/*`：零改动。
 - multica `gitguard` 的 `Check` 语义、`SpoolDenial` 路径规则、`isBlacklistedRealPath`/`findLocalDirectoryAssignment` 判据：零改动。
 - `approval.yml`/`review-annotations`/`traceability.yml`/`tasks/_index.yml` 结构：零改动。
+- **FR-04 本地纠正的机器面：零改动。** 本 CR 不为 `AC-B1`/`AC-B3` 修改 `bindTaskWorkspace`/`requireExplicitWorkspace` 的任何分支、不新增子命令/错误码/白名单形态/权限框架/第二执行器；§4.2.1 的合法来源全部落在既有代码的既有分支上（`dep-2`）。也不引入持久化纠正计数、纠正台账或重试服务。
 
 **follow_up**
 
-- `docs/` 下规划/竞品索引未纳入 gitguard `protectedPaths`：受控写入只能靠新入口与提示词约束，机器级 guard 覆盖留给后续 CR（对应 FR-13「不宣称矩阵实现子命令级授权」的同一类缺口）。
+- `docs/` 下规划/竞品索引未纳入 gitguard `protectedPaths`：受控写入只能靠新入口与提示词约束，机器级 guard 覆盖留给后续 CR（对应 FR-13「不宣称矩阵实现子命令级授权」的同类缺口）。
 - 目标项目根未声明 `knowledge-docs.subdirs.*`（`naming`/`locations`），使 validate-doc 的命名/路径维度只能 WARN：是否补声明属各使用方仓库的目录图治理，本 CR 不代改。
 - PRD/SDD validator（`UNKNOWN_ARTIFACT` 之外）与 source 默认值修复（AIFI-40）不在本 CR。
 - 若日后需要「已完成意图」的持久事实（而非 Git 可解析性），需另行设计；本设计不引入注册式幂等键。
+- **不得下沉到 follow_up 的项（显式声明，B-10）**：FR-04 纠正的合法执行来源、授权边界与审计保留已在 §4.2.1 关闭，其 Skill 文本落点已在 §8 与 `scope_in` 登记；把它移入 `follow_up` 或交给 PLAN/TASK 盲补即视为 B-10 未关闭。
 
 ## 10. 变更记录
 
@@ -731,3 +841,4 @@ B 段：
 | 2026-10-02 | 0.2 | 技术评审 attempt 1 BLOCK 回修（B-01～B-05）：①规划身份与目标路径改由已确认 payload 给出（`id`/`path` 必填），`intentDigest` 只含已确认业务字段，跨日执行/恢复/重放不依赖执行时钟（§1.1、§2.3、§4.4、§4.5.1/§4.5.3）；②明确合法覆盖出口与判定顺序，合法覆盖走正常写入而非成功重放（§4.5.4 第 4.b 步）；③引入 `intentDigest` 作为 journal `inputDigest` 与「安装根共享 journal 下的 workspace+身份 key」，恢复前先核对意图，异意图 `TX_INPUT_CONFLICT` 零写入，恢复后按 `committed`/`rolledBack` 决定回执（§4.5.2、§4.5.4 第 2 步、§4.3）；④完成提交改由提交消息 `AI-First-Intent` 唯一定位，并用 `C..HEAD` 路径范围证明未被后续提交改动，第三值 `TX_RECOVERY_CONFLICT`（§4.5.4 第 3 步、§2.3）；⑤统一 §3.4/§6.3/§9 的 validate 修改边界，明确既有分支零改动与新增维度层（B-05）；补 §5.2 回修向量与 `dep-33`/`dep-34` |
 | 2026-10-02 | 0.4 | 技术评审 cycle 2 首次回修（B-09）：committed 判据的 Git 完成事实改为**锁内现场取样**——`recoverLedgerTransaction` 在取得 `ledger-<key>` 锁、`latestLedger` 重读、`expect` 比对通过后，用 `sampleCommitState({targetRoot,headBefore})` 现取 HEAD 与 `headBefore..headSha` 消息集；锁外预读只保留 `expect.txId`，不再充当判据（同 txId 未被替换、提交后 `finish` 前中断的交错不再误回滚已提交文件）；取样失败固定为 `TX_GIT_FAILED` 保守失败（零写入、journal 保留、不回滚）；§4.3 第 6 步、§4.5.4 第 2 步与判定要点、§5.1/§5.3、§6.3 SDD-CLOSE-04、§7、§9 与 §5.2 向量（B18-c/B18-d）同步；既有调用点 `recoverLedgerCommand` 随之改传取样器，错误码零新增 |
 | 2026-10-02 | 0.3 | 技术评审 attempt 2 BLOCK 回修（B-03 部分解决 + B-06/B-07/B-08）：①恢复前的意图核对移入 `ledger-<key>` 锁内——`recoverLedgerTransaction` 新增可选 `expect={inputDigest,txId}` 入参并对同一 `latestLedger` 现场比对（锁外预读只提供期望值与 `headBefore..HEAD` 消息范围），异意图 `TX_INPUT_CONFLICT`、实例被替换 `TX_LEDGER_RECOVERY_REQUIRED`，均零写入；②`§4.5.4` 重排为「锁内恢复 → 现场分类 → 完成提交定位 → 首次写入/合法冲突决定 → 写入提交」，`firstWrite` 成为直达第 5 步的独立出口（规划与 `new-date` 竞品均不再落入冲突分支）；③成功回执前置 = 该 key 无残留 journal，`committed` 收敛后才回 `changed=false` + 原提交 C，修掉「提交已落地但 finish 前中断阻断随后合法覆盖」（B-07）；④`§9 scope_in` 补 `durable-tx.mjs` 可选入参与 multica `CUSTOM.md` 登记，`zero_diff` 同步收窄（B-08）；补 `dep-35`/`dep-36` 与 B15-c/B17-b/B18-b 向量 |
+| 2026-10-05 | 0.5 | 技术评审 cycle 2 attempt 2 BLOCK 回修（B-10 + B-11）。**B-10（FR-04 纠正的授权边界缺口）**：①新增 §4.2.1，给出 FR-04 第一类本地纠正的两个**合法执行来源**——S1 = 有效绑定 + 显式传入不可用 `--workspace`（`bindTaskWorkspace` 3421 行不归一 → `requireExplicitWorkspace` 返回 `WORKSPACE_REQUIRED`）、S2 = 无绑定声明时缺参（原显式 CLI 模式）；两者都不需要清除可信绑定、切 CLI 版本、伪造错误码或以独立测试冒充真实节点；本 run 已在有效绑定、绑定未被改动的前提下实测四种入口形态（`--workspace ""`/`"   "` → `WORKSPACE_REQUIRED` exit 1；真缺参 → 归一成功；显式异根 → `WORKSPACE_CONTEXT_MISMATCH`）；②新增 §2.1 **四模式判定表**（M1 归一 / M2 纠正触发 / M3 显式根 / M4 拒绝）与 §1.1「本地纠正」术语行；③新增 DEC-7 与 §3.2 的纠正受控调用契约（第 2 次调用只允许换 `--workspace` 一个参数、其余 argv 逐字不变）；④明确授权边界（授权来源只有既有可信绑定 + 调用方 FR-04 约定；纠正值须过同一真实目录检查故不扩权）与审计保留（只以节点日志/回放验收、落 `test-evidence/`、按每条适用节点回放计 ≤1、不宣称跨 run 机器硬保证、不引入持久化纠正计数）；⑤同步 §5.2（B1/B1-b/B3 拆为三个具体向量）、§6.2（AC-B1/AC-B3 可达性说明重写）、§7、§8、§9（`scope_in` 登记 Skill 侧调用契约、`zero_diff` 声明机器面零改动、`follow_up` 显式禁止下沉）；机器侧**不需要任何新代码**。**B-11（依赖事实未与当前 HEAD 闭合）**：①§1.2 改为三层口径，(a) 当前依赖在本轮受控 `rev-parse HEAD`（KB `1ac7852c…`／tools `27a4300a…`／multica `9d1c10d2…`）+ 源码实读上重核 `dep-1`～`dep-38`，新增 `dep-38`（`sampleCommitStateReader`）；②新增 §1.2.1 记录起草快照基线（KB `e125917b…`／tools `061a12ff…`／multica `56bdc70d…`）与被本 CR 实施改变的结论及**对设计结论的影响**——`dep-2`（入口不再一律要求显式根）、`dep-12`/`dep-13`（validate-doc/engineering-docs 已改写）、`dep-15`（`today(now)` 已按 UTC+8 实现）、`dep-23`（实测 14 处文本 = 12 处命令形态 + 2 处散文）、`dep-25`（`planning-entry` 首词未登记）、`dep-27`/`dep-28`（绑定解析与 launcher/Git 接线已实施）、`dep-31`（A 段用例已有）、`dep-35`/`dep-37`（`expect`/取样器已入签名、唯一调用点已改传取样器）、`dep-36`（CUSTOM.md 无 CR-2026-075 行，登记未完成）；③据此改写 §4.6/§4.7（区分已实施与待实施）、§5.2（B8 降级为跨时区回归护栏、B11 口径改为 12 处命令形态、B4 独立成行）、§8（逐行标注已实施/待实施与实测证据）；④`dep-2`/`dep-28`/`dep-35`/`dep-37` 的起草结论已按当前代码更正（不再是「全部命令要求显式根」「launcher 仅 Pipeline」「原语不接收期望摘要」「唯一调用点传锁外快照」）。未受两条 blocker 根因影响的设计（A 段发布链、B 段字段/摘要/事务/冲突判定、`SDD-CLOSE-01～10` 的其余项、FR-05～FR-13 的判定面）未重写；`SDD-CLOSE-01～10` 结论不变，错误码与白名单仍零新增 |
