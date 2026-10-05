@@ -43,8 +43,8 @@ created: 2026-10-03T00:15:00+08:00
    - AC-A5：同真实目录与合法别名接受；异根 `WORKSPACE_CONTEXT_MISMATCH` 且绑定不被覆盖。
    - AC-A6：无绑定声明时缺根 `WORKSPACE_REQUIRED`；仅 task ID 不误绑定；旧 `CRCTL_WORKSPACE` 不作 fallback；`help` 可用。
    - AC-A8：Windows 空格/中文路径的 argv 完整性。
-   - AC-B1：旧显式入口缺根报 `WORKSPACE_REQUIRED`、补已确认显式根后同调用成功（**仅 CLI 侧边界单测**，构成本 TASK 提供给 TASK-08 实际调用方节点回放的输入）；「同节点同 run 恰一次纠正」的调用方行为由 TASK-08 以平台既有节点运行入口实际执行调用方节点、归因记录到 `test-evidence/caller-replay/`（索引 `records.json` + 两个变体各自的 `{A,B}.node-record.json` 原始记录）并由 `cmd-05` 断言（回放执行环境 = 显式 CLI 模式 + 逐次 `invocations[].env`/`envMode` 归因；有效绑定首次归一 A1 不在回放内；见 plan §6.1 FR-04 观测面说明），本 TASK 不产出回放记录、不另立第二套回放。
-   - AC-B3：第二次失败不自动重试；`BAD_ARGS`、空串、裸旗标不在本地纠正集合（**调用方侧**的同 run 调用计数与失败路由由 TASK-08 在显式 CLI 模式环境产生的实际节点回放记录 + `cmd-05` 断言覆盖；本 TASK 只保证 CLI 边界行为）。
+   - AC-B1：**M2 面**——有效绑定下显式传入不可用 `--workspace`（空串/纯空白/裸旗标）时 `bindTaskWorkspace` **不归一**、`requireExplicitWorkspace` 返回 `WORKSPACE_REQUIRED`；补已确认显式根（与 `CRCTL_OPERATIONAL_WORKSPACE` 同一真实目录或合法别名）后同调用成功（**仅 CLI 侧边界单测**，构成本 TASK 提供给 TASK-08 实际调用方节点回放的输入）；「同节点同 run 恰一次纠正」的调用方行为由 TASK-08 以平台既有节点运行入口实际执行调用方节点、归因记录到 `test-evidence/caller-replay/`（索引 `records.json` + 两个变体各自的 `{A,B}.node-record.json` 原始记录）并由 `cmd-05` 断言（**回放执行环境 = S1/M2：有效绑定 + 显式传入不可用 `--workspace`**——逐次 `envMode=bound`、两次 `invocations[].env` 逐字相等、绑定三项（`CRCTL_OPERATIONAL_WORKSPACE`/`CRCTL_TASK_AUDIT_ROOT`/`MULTICA_TASK_ID`）均 present 且为本机存在的目录；S2/M3（无绑定声明 + 缺参）只作字面来源登记，其机器行为由本卡 AC-A6 向量（`cmd-01`）覆盖；有效绑定首次归一 A1（M1 真缺参直接归一、全程不出现错误码）不在回放内，其证据为 `cmd-01`/`cmd-08`；见 plan §6.1 FR-04 观测面说明与 SDD §2.1 四模式判定表/§4.2.1），本 TASK 不产出回放记录、不另立第二套回放。
+   - AC-B3：第二次失败不自动重试；`BAD_ARGS`、空串、裸旗标不在本地纠正集合（**调用方侧**的同 run 调用计数与失败路由由 TASK-08 在 **S1/M2 有效绑定**环境产生的实际节点回放记录 + `cmd-05` 断言覆盖，B 变体固定取 SDD §2.1 **M4 面**——第二次把 `--workspace` 补成另一真实目录得 `stderrCode=WORKSPACE_CONTEXT_MISMATCH`、补入值与绑定不同真实目录、两次逐次 `env` 逐字相等以证明绑定未被覆盖；AC-B3 的其余子面（第二次仍非零、`BAD_ARGS`、权限或路径拒绝、其它上下文冲突、写入或提交结果不明）按 SDD §5.2 由本卡的 `cmd-01` 入口向量覆盖，不在回放断言面；本 TASK 只保证 CLI 边界行为）。
 2. 失败关闭顺序：绑定冲突/不完整/异根向量断言「非零 + 零业务写入」（调用前后 CR 数据文件与 HEAD 逐字相同），并以「不存在的 workspace + 缺 `change-requests/` 的 fixture」组合证明失败先于 `detectWorkspace`/`loadGates`。
 3. 文件集检查经受控入口（本运行时禁止原生 Git；argv 固定于本卡）。cwd 与验收条件 1 同为 tools CR worktree 根；占位绑定：`<tools-worktree>` 取 Pipeline `resources[]` 中 repo=`tools` 的 `worktreePath` 原样值，`<operational-workspace>` 取 `crctl workspace inspect CR-2026-075` 的 `operationalWorkspace` 原样值，不拼接、不回退主工作区：
 
@@ -54,7 +54,7 @@ created: 2026-10-03T00:15:00+08:00
 
 ## 完成标志
 
-- `cmd-01` 全绿，且 AC-A5/A6/A8、AC-B1/B3 的 CLI 侧断言在用例中逐条可见；本 TASK 为 TASK-08 的实际调用方节点回放提供 CLI 侧固定边界（缺根失败与补参成功），回放记录与调用方断言不在本 TASK 内重复（CLI fixture 仅边界单测）。
+- `cmd-01` 全绿，且 AC-A5/A6/A8、AC-B1/B3 的 CLI 侧断言在用例中逐条可见；本 TASK 为 TASK-08 的实际调用方节点回放提供 CLI 侧固定边界（M2 面：显式不可用 `--workspace` → `WORKSPACE_REQUIRED`，与补已确认显式根后成功），回放记录与调用方断言不在本 TASK 内重复（CLI fixture 仅边界单测）。
 - `bindTaskWorkspace` 为 crctl.mjs 私有函数，无新增导出、无新增模块；除 `main()` 调用点与新增测试外与其他命令处理器 diff 为零。
 - `WORKSPACE_CONTEXT_MISMATCH` 只在 SDD §4.2 的两处判定点触发；`WORKSPACE_REQUIRED`/`BAD_ARGS` 语义与优先级逐字不变。
 - 产物已落盘并提交，commit 自含其新增测试；不夹带 TASK-03/04/06 对同一文件的改动（R9 顺序编辑），不改任何提示/模板文本（FR-14 门槛见 TASK-08）。
