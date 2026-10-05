@@ -1,21 +1,23 @@
 cr-id: CR-2026-075
 review-type: dev-plan
 reviewer: "OldBoy405"
-reviewed-at: "2026-10-05T13:01:22+08:00"
-verdict: pass
-blockers: []
+reviewed-at: "2026-10-06T01:43:02+08:00"
+verdict: block
+repair-target: write-dev-plan
+blockers:
+  - "本轮新增：B-C4-01 FR-04/FR-16、AC-B1/B3（并连带 B4）的批准验收被 plan 0.11 的 FU-1 非批准下沉。已批准 SDD §4.2.1:427-450 明确 S1 包含带 execution_context 的普通委派，纠正只以实际节点日志/回放验收；§5.2:662-665 要求 B1/B3/B4 的真实调用方行为证据，§9 未把这些验证列为 follow_up。plan.md:98-110、:148、:193-196 与 TASK-08.md:38-49、TASK-10.md:43-50 却禁止本 CR 生成回放并用 cmd-01/cmd-05 替代。FU-1 的关键依据也与本次 resources 的源码及运行环境冲突：multica HEAD 9d1c10d267fe97a9a2232293796a0ef51d284eea 的 pipeline_task.go:201-238 已在 PipelinePrompt 为空时解析 TriggerCommentContent 并预检 operational_workspace，daemon.go:8650 消费该绑定；本 reviewer task 01a10d1f-0e85-74bb-84df-c9402ab19a90 的 CRCTL_OPERATIONAL_WORKSPACE 实际就是传入 KB CR worktree，未改环境的同一 run 只读 status 探针显式空白根得到 WORKSPACE_REQUIRED/exit 1，仅替换为该可信根得到 exit 0，反证前者恒为主 checkout、与声明恒互斥的依据。本探针仅用于接口及现状反证，不冒充实现节点回放，也不证明全部 B1/B3 已验收。SDD 当前的 S1 设计无需因这一陈旧前提重开，repair-target=write-dev-plan：按当前可信绑定事实回修 FU-1、批准范围翻译、FR/AC 覆盖与 TASK-01/06/08/10，使实际调用方日志证明面重新对应已批准验收；不得清绑定、换 CLI、造无绑定环境、增执行器或把静态断言当回放。若回修仍发现真实且不可消除的 SDD 设计断裂，必须提交具体新证据，不能仅复用本轮已被反证的旧依据。"
+  - "本轮新增：B-C4-02 FR-04、AC-B1/B3 的 cmd-01/cmd-05 观测面仍窄于 plan/TASK 的声称面。plan.md:116、:148 及 TASK-01.md:46-47、TASK-08.md:38-49、TASK-10.md:31-34 声称 cmd-01 固定有效绑定 M2 与补可信根成功、第二次失败停止，并声称 cmd-05 中 caller-contract.test.mjs 逐条断言本地纠正约定与六条不构成授权来源。tools HEAD 48ad150dd7019802d003e54d27a6ef7c751af12f 的 crctl.test.mjs:628-648 实际用 runCrctl(argv) 无绑定场景，fixed 只断言错误码不等 WORKSPACE_REQUIRED、没有 status=0 断言，空串/空白/裸旗标用例也未传 bind3，更未执行调用方第二次失败后的路由/调用计数；caller-contract.test.mjs:349-382 检查 complete=false、--detail 和显式 workspace，六个 cmd-05 文件未检索到 FR-04、本地纠正、六条负面清单或第二次失败的专项断言。故单测绿或合同扫描绿不能证明这些声称，已 done 的 TASK-01 及已落地的 TASK-08 文本不能静默被当作具备未实现断言。repair-target=write-dev-plan：逐条将声称映射到实际可观测断言/日志与唯一 TASK owner，明确仍需实现或补验的 in-scope 工作及 developing 内完成条件；补齐有效绑定 M2/补同根成功等真正缺失的边界断言，真实调用方次数/失败路由继续由批准的节点日志证明，不扩大 cmd-05 或 CLI 单测的证明范围、不以删 AC 或移入 FU-1 消除缺口。"
 dimensions:
-  sdd-to-plan: "pass"
+  sdd-to-plan: "block"
   plan-to-tasks: "pass"
-  task-executability: "pass"
+  task-executability: "block"
   dependency-topology: "pass"
   interface-contracts: "pass"
-  acceptance-verifiability: "pass"
-  scope-and-simplicity: "pass"
+  acceptance-verifiability: "block"
+  scope-and-simplicity: "block"
   risk-and-rollback: "pass"
-  reviewer-model: "pi / quality-reviewer-agent / independent task 01a10a60-41c1-76fe-819b-666686d8c266 / standing exception CR-2026-075 review-dev-plan remaining rounds (updated_at 2026-10-05T04:44:02Z) / cycle 3 attempt 3"
-suggestions:
-  - "已解决：上轮原文【未解决：B-10 FR-04/FR-16、AC-B1/B3（cmd-05）的真实调用方场景可达性仍未闭合，独立重判为上游设计授权边界缺口。plan.md:117/129/141 与 TASK-08.md:40/45、TASK-10.md:34 仍要求本 CR Pipeline 节点或本项目普通 Issue 委派任务实际收到 execution_context，并使用登记 tools worktree 的 crctl status CR-2026-075，在逐次调用中不声明 CRCTL_OPERATIONAL_WORKSPACE/CRCTL_TASK_AUDIT_ROOT、首调缺根返回 WORKSPACE_REQUIRED、同 run 仅补参一次；但不得关闭 task 绑定、切旧 CLI、改实现或补造平台原始导出。资源实读：multica daemon/pipeline_task.go:201-237 对 Pipeline 及含声明委派使用可信绑定；无声明普通任务也从本项目 local_directory 获取根。daemon/daemon.go:10732-10748 在 custom_env 后清旧值并成对发布 op/audit；tools crctl.mjs:3407-3420 在有效绑定真缺参时直接归一。本 run task=01a1093f-60fd-7eed-83ee-71691c4b5072，op=权威 KB worktree、audit=项目根、CRCTL_WORKSPACE 未声明，三仓 classification=healthy/dirty=false。已批准 SDD §2.1/§4.2 定义无绑定的显式 CLI 语义，§5.2/§6.2 AC-B1/B3 又要求真实节点回放，§9 禁止新增执行器/权限框架；却没有定义在这两类可信节点中合法获得所需显式子进程环境的受控入口、调用契约或授权来源。旧环境快照、replay.mode/envMode 标签和逐次 env 记录只是描述或取证，不产生执行权限；单独改 plan/TASK 无法在不违背已批准绑定边界的前提下实现 cmd-05。故需 write-tech-design 修订 SDD 的调用入口、可信绑定与显式模式授权边界及对应验收可达性，再经独立技术评审和人类正式重新审批后重建 plan/TASK；不得先在 plan/TASK 清绑定、伪造错误或新增执行器。保留有效绑定首次归一与旧显式缺根纠正的区分、同 run 恰一次纠正和第二次失败停止。取证 HEAD：KB b7707800b16dd4bf5b249b65a5b015136d4e3eb9、tools 27a4300a0aa1793a442b543ddb8328cb0d3ce562、multica 9d1c10d267fe97a9a2232293796a0ef51d284eea。此次仅为临时例外二授权的上游路由重判（human-authorized exception），不是 attempt 3，不声称 B-10 已解决或回放通过；cycle 3/attempt 2 和 attempt 1/2 历史保持不变。】——恢复条件四项已在本 run 逐项独立取证落盘（不以自报值替代）：①SDD 修订：KB 提交 9a62d394（2026-10-05T08:47+08:00，write tech design cycle 2 attempt 2 repair: B-10 correction authorization boundary + B-11 dependency fact closure）产出 SDD v0.5；②独立技术评审：8544bc5e（09:47:04+08:00，review-tech-design cycle 2 attempt 3 PASS），review-annotations/sdd.yml verdict=pass/blockers=[]，其 subject-sha256 f716a98ba67bab420c9d4a098a8b6101e16be98db7e287ad7e178003818ed6be 与本 run 实算 sdd.md LF sha256 全等（被评审 SDD 即当前 SDD）；③人类正式重新审批：approval.yml#tech-design approved-at 2026-10-05T10:12:27+08:00、via=crctl-approve，evidence-digest 873e73401a508c3216080f057210d04e51d932984ce65c6cc7ddc0b9d3565fd8 与本 run 按 gates.json#tech-design evidence 定义（仅 review-annotations/sdd.yml）重算的 canonicalEvidenceDigest 逐字全等，且 sdd.md 审批后逐字未变（7561675a^:sdd.md 与工作树同哈希）；④重建 plan/TASK：5846ef09（10:46:39+08:00，plan 0.9→0.10）与 9217bbb3（11:22:28+08:00，重算 TASK-01/08/10）均在审批之后，100d8c27（11:22:40+08:00）推进 status→task-breakdown。实质层面：SDD §4.2.1 给出两个机器既有分支构成的合法执行来源（S1=M2 有效绑定+显式传入不可用 --workspace；S2=M3 无绑定声明且缺参）、§2.1 四模式判定表、§3.2 纠正受控调用契约（第 2 次仅允许把 --workspace 换成已确认显式根、其余 argv 逐字不变）、授权边界（授权来源仅限同一 task 既有可信绑定三元组与调用方 FR-04 约定，纠正值须过 bindTaskWorkspace 同一真实目录检查，异根即 WORKSPACE_CONTEXT_MISMATCH 停止，故不产生新授权）与审计保留（只以节点日志/回放验收、按每条适用节点回放计纠正次数 ≤1、不宣称跨 run 机器硬保证、不引入持久化纠正计数/台账/重试服务），§4.2.1 与 §7 负面清单（不清绑定、不切 CLI 版本/绕过 launcher、不伪造错误码、不以独立测试或测试内直调内部函数冒充真实节点回放、不把旧环境快照/replay 标签/逐次 env 日志当执行授权、不新增第二执行器或权限框架）齐备——正对原 blocker 所指未定义合法受控入口、调用契约或授权来源。本 run 以 tools 仓 HEAD 27a4300a（= SDD §1.2 声明的当前依赖）的 crctl 在真实绑定任务环境下独立实测四模式：M1 真缺参 exit=0；M2 --workspace 空串/纯空白/裸旗标均 WORKSPACE_REQUIRED exit=1；M4 显式异根 WORKSPACE_CONTEXT_MISMATCH exit=1；显式同真实目录 exit=0——FR-04 第一类纠正的合法触发点在当前机器面真实可达，无需清绑定、切版本或伪造错误码（接口级证据，不冒充节点回放）。plan 0.10 与 TASK-01/08/10 已按 S1/M2 口径一致重算：§6.1 FR-04 观测面说明、§6.2 cmd-05 表行与观测面说明、§7 AC-B1/B3 行、TASK-08 实现要点/验收条件/完成标志/接口契约、TASK-10 cmd-05 转述与未覆盖风险段、TASK-01 AC-B1/B3 边界转述全部同指；cmd-05 的 args 单元格 JSON 反解成功、node --check 通过、缺索引实测 exit=1（fail-closed）。残余记录（表达层，不构成 blocker）：TASK-01 卡面引用调用点 crctl.mjs:3786-3788，当前 HEAD 实际在 4170（成卡时准确，其后被 CR-2026-074 kb 派发与本 CR TASK-04/05/06 增量推移；parseArgs 之后、requireExplicitWorkspace 之前的相对位置断言仍逐字成立）；plan/TASK 正文若干基线用例计数（如 237 用例）早于 TASK-04/06 增量，证据命令 args 与全绿判据不受影响。另记：真实节点回放记录属实现期证据（由 TASK-08 产生、cmd-05 断言），本轮为编码前合并评审，只判规格正确性与可达性、不判已执行证据；gateBlockers.developing=EVIDENCE_DRIFT（approval.yml#development-start 旧摘要 2e5924ba… 与重算 a7213e9d… 不一致）本 turn 仅登记、不处置。"
+  reviewer-model: "quality-reviewer-agent / pi; model-id unavailable, not inferred"
+suggestions: []
 review-loop:
-  current-attempt: 3
-subject-sha256: e5a6a97da50b4135fc403023b160621fcea67f636cd39d73a6de5688494d06a8
+  current-attempt: 1
+subject-sha256: 1dd069bd6cd87bf4c2c0f96dc9309af6bd3bc42c4a2a23f83eea9affac7b0523
