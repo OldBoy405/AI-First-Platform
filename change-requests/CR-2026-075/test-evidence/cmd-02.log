@@ -1,0 +1,23 @@
+$ node --test skills/shared/crctl/scripts/test/planning-entry.test.mjs
+(exit=0)
+--- stdout ---
+✔ B15-c：首次写入独立出口——exit 0、changed=true、身份与推导路径一致、恰一个新 commit (608.4043ms)
+✔ B15-c/AC-B15：同意图重放 changed=false 且 commit 等于首写提交，零新 commit、stdout 形态不变 (725.5272ms)
+✔ B15-a：身份与摘要与执行时钟无关——D 日落盘、D+1/D+2 重放同为原提交 (867.8277ms)
+✔ AC-B9：confirmed=false → BUSINESS_CONFIRMATION_REQUIRED，零写入零 commit (257.9585ms)
+✔ AC-B16：path 与路径权威推导结果不一致 → BUSINESS_WRITE_SCOPE_DENIED，且在业务写入前拒绝 (269.077ms)
+✔ AC-B16：任意文件清单被拒——额外旗标、位置参数与缺参各自 BAD_ARGS (423.8646ms)
+✔ AC-B9/B10：同身份不同已确认内容 → BUSINESS_INTENT_CONFLICT（规划无覆盖策略），现场不变 (702.3461ms)
+✔ AC-B10：有文档无索引条目 → inconsistent → TX_RECOVERY_CONFLICT，不补账 (778.3249ms)
+✔ B18-a：完成提交只认 AI-First-Intent——另一规划改共享索引后重放 A 归入第三值，不返回 B 的提交 (1107.2711ms)
+✔ B18-a/AC-B18：提交后另有提交时恢复按 committed 收敛，不回滚已落地结果 (1284.6396ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7096.0479
+
+--- stderr ---

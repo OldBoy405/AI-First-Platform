@@ -1,0 +1,91 @@
+$ go test ./internal/daemon/ -count=1 -v -run Test(InjectTaskCRWorkspaceEnv|DaemonEnvBuildHasNoConfigFirstRootFallback|PreparePipelineTaskHydratesMachineLocalPaths|ConfigurePipelineGitEnvironment|ConfigureTaskGitEnvironment|InstallPipelineCrctlLauncher|InstallCrctlLauncher|ResolveTaskWorkspaceBinding|ParseExecutionContext|TaskWorkspaceBinding)
+(exit=0)
+--- stdout ---
+=== RUN   TestInjectTaskCRWorkspaceEnvWithoutBinding
+--- PASS: TestInjectTaskCRWorkspaceEnvWithoutBinding (0.00s)
+=== RUN   TestInjectTaskCRWorkspaceEnvHalfBindingIsNotPublished
+--- PASS: TestInjectTaskCRWorkspaceEnvHalfBindingIsNotPublished (0.00s)
+=== RUN   TestInjectTaskCRWorkspaceEnvRequiresTaskIdentity
+--- PASS: TestInjectTaskCRWorkspaceEnvRequiresTaskIdentity (0.00s)
+=== RUN   TestInjectTaskCRWorkspaceEnvUsesTaskLocalDirectory
+=== RUN   TestInjectTaskCRWorkspaceEnvUsesTaskLocalDirectory/in_place
+=== RUN   TestInjectTaskCRWorkspaceEnvUsesTaskLocalDirectory/worktree
+--- PASS: TestInjectTaskCRWorkspaceEnvUsesTaskLocalDirectory (0.01s)
+    --- PASS: TestInjectTaskCRWorkspaceEnvUsesTaskLocalDirectory/in_place (0.00s)
+    --- PASS: TestInjectTaskCRWorkspaceEnvUsesTaskLocalDirectory/worktree (0.00s)
+=== RUN   TestInjectTaskCRWorkspaceEnvRejectsAmbiguousLocalDirectory
+--- PASS: TestInjectTaskCRWorkspaceEnvRejectsAmbiguousLocalDirectory (0.00s)
+=== RUN   TestInjectTaskCRWorkspaceEnvRequiresCRLedger
+--- PASS: TestInjectTaskCRWorkspaceEnvRequiresCRLedger (0.00s)
+=== RUN   TestInjectTaskCRWorkspaceEnvPipelineTask
+--- PASS: TestInjectTaskCRWorkspaceEnvPipelineTask (0.00s)
+=== RUN   TestInjectTaskCRWorkspaceEnvWinsOverCustomEnv
+--- PASS: TestInjectTaskCRWorkspaceEnvWinsOverCustomEnv (0.00s)
+=== RUN   TestInjectTaskCRWorkspaceEnvIsolatesConcurrentTasks
+--- PASS: TestInjectTaskCRWorkspaceEnvIsolatesConcurrentTasks (0.00s)
+=== RUN   TestDaemonEnvBuildHasNoConfigFirstRootFallback
+--- PASS: TestDaemonEnvBuildHasNoConfigFirstRootFallback (0.00s)
+=== RUN   TestPreparePipelineTaskHydratesMachineLocalPaths
+--- PASS: TestPreparePipelineTaskHydratesMachineLocalPaths (0.00s)
+=== RUN   TestConfigurePipelineGitEnvironment
+--- PASS: TestConfigurePipelineGitEnvironment (0.00s)
+=== RUN   TestInstallPipelineCrctlLauncher
+--- PASS: TestInstallPipelineCrctlLauncher (0.06s)
+=== RUN   TestConfigureTaskGitEnvironment
+--- PASS: TestConfigureTaskGitEnvironment (0.00s)
+=== RUN   TestInstallCrctlLauncher
+--- PASS: TestInstallCrctlLauncher (0.00s)
+=== RUN   TestParseExecutionContext
+=== RUN   TestParseExecutionContext/no_mention_at_all_is_an_ordinary_task
+=== RUN   TestParseExecutionContext/prose_mention_outside_a_fence_is_not_a_declaration
+=== RUN   TestParseExecutionContext/yaml_fence
+=== RUN   TestParseExecutionContext/yml_fence
+=== RUN   TestParseExecutionContext/unlabelled_fence
+=== RUN   TestParseExecutionContext/json_fence_is_not_yaml
+=== RUN   TestParseExecutionContext/extra_keys_are_ignored
+=== RUN   TestParseExecutionContext/duplicate_key
+=== RUN   TestParseExecutionContext/two_declarations
+=== RUN   TestParseExecutionContext/invalid_cr_id
+=== RUN   TestParseExecutionContext/empty_operational
+=== RUN   TestParseExecutionContext/missing_cr_id
+=== RUN   TestParseExecutionContext/non-string_cr_id
+--- PASS: TestParseExecutionContext (0.00s)
+    --- PASS: TestParseExecutionContext/no_mention_at_all_is_an_ordinary_task (0.00s)
+    --- PASS: TestParseExecutionContext/prose_mention_outside_a_fence_is_not_a_declaration (0.00s)
+    --- PASS: TestParseExecutionContext/yaml_fence (0.00s)
+    --- PASS: TestParseExecutionContext/yml_fence (0.00s)
+    --- PASS: TestParseExecutionContext/unlabelled_fence (0.00s)
+    --- PASS: TestParseExecutionContext/json_fence_is_not_yaml (0.00s)
+    --- PASS: TestParseExecutionContext/extra_keys_are_ignored (0.00s)
+    --- PASS: TestParseExecutionContext/duplicate_key (0.00s)
+    --- PASS: TestParseExecutionContext/two_declarations (0.00s)
+    --- PASS: TestParseExecutionContext/invalid_cr_id (0.00s)
+    --- PASS: TestParseExecutionContext/empty_operational (0.00s)
+    --- PASS: TestParseExecutionContext/missing_cr_id (0.00s)
+    --- PASS: TestParseExecutionContext/non-string_cr_id (0.00s)
+=== RUN   TestResolveTaskWorkspaceBinding
+=== RUN   TestResolveTaskWorkspaceBinding/pipeline_keeps_the_preflighted_pair
+=== RUN   TestResolveTaskWorkspaceBinding/pipeline_half_binding_is_empty,_not_an_error
+=== RUN   TestResolveTaskWorkspaceBinding/ordinary_task_without_a_declaration_binds_its_own_project
+=== RUN   TestResolveTaskWorkspaceBinding/delegation_is_preflighted_against_its_own_project_root
+=== RUN   TestResolveTaskWorkspaceBinding/declared_root_is_not_the_preflighted_one
+=== RUN   TestResolveTaskWorkspaceBinding/unhealthy_workspace_stops
+=== RUN   TestResolveTaskWorkspaceBinding/project_root_without_the_CR_ledger_stops
+=== RUN   TestResolveTaskWorkspaceBinding/delegation_without_a_project_root_stops
+=== RUN   TestResolveTaskWorkspaceBinding/malformed_declaration_stops
+--- PASS: TestResolveTaskWorkspaceBinding (0.02s)
+    --- PASS: TestResolveTaskWorkspaceBinding/pipeline_keeps_the_preflighted_pair (0.00s)
+    --- PASS: TestResolveTaskWorkspaceBinding/pipeline_half_binding_is_empty,_not_an_error (0.00s)
+    --- PASS: TestResolveTaskWorkspaceBinding/ordinary_task_without_a_declaration_binds_its_own_project (0.00s)
+    --- PASS: TestResolveTaskWorkspaceBinding/delegation_is_preflighted_against_its_own_project_root (0.01s)
+    --- PASS: TestResolveTaskWorkspaceBinding/declared_root_is_not_the_preflighted_one (0.01s)
+    --- PASS: TestResolveTaskWorkspaceBinding/unhealthy_workspace_stops (0.00s)
+    --- PASS: TestResolveTaskWorkspaceBinding/project_root_without_the_CR_ledger_stops (0.00s)
+    --- PASS: TestResolveTaskWorkspaceBinding/delegation_without_a_project_root_stops (0.00s)
+    --- PASS: TestResolveTaskWorkspaceBinding/malformed_declaration_stops (0.00s)
+=== RUN   TestTaskWorkspaceBinding
+--- PASS: TestTaskWorkspaceBinding (0.00s)
+PASS
+ok  	github.com/multica-ai/multica/server/internal/daemon	0.198s
+
+--- stderr ---
