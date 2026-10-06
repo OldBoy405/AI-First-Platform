@@ -4,7 +4,7 @@ type: EVIDENCE
 cr-ref: CR-2026-075
 source-task: CR-2026-075-TASK-09
 target-version: 0.48
-updated: 2026-10-06T01:52:20.968+00:00
+updated: 2026-10-06T01:54:27.980+00:00
 ---
 
 # CR-2026-075 生效版本台账（部署副本收敛 / 合同对齐 / 平台同步清单）
@@ -13,7 +13,7 @@ updated: 2026-10-06T01:52:20.968+00:00
 
 | 项 | 事实 | 判定 |
 |---|---|---|
-| 仓库侧收敛（四份部署副本 + 两份维护副本 + 合同对齐） | 已完成（见 §2） | ✅ |
+| 仓库侧收敛（四份部署副本 + 两份维护副本 + 合同对齐 + CHANGES.md） | 已完成（见 §2）；CUSTOM.md 登记为剩余项 | ⚠️ |
 | `cmd-08`（合同与副本无漂移） | 19/19 pass（修正前基线 18 pass / 1 fail） | ✅ |
 | `cmd-09` ① 部署副本收敛 + 显式 CR-ID 保留 | 四份 `--workspace <workspace>` 出现次数全为 0；`CR-ID`/`cr_id` 均在 | ✅ |
 | `cmd-09` ② 14 个 imported Skill 取用路径台账 | 14 行 `imported-skill` 与声明一致（`AI-First-tools@main/skills/...`） | ✅ |
@@ -33,7 +33,8 @@ updated: 2026-10-06T01:52:20.968+00:00
 | `cr-prompts-revised/cr-coordinator-agent.md` | 4 处收敛（事实源表「CR 当前状态与下一步」/ 每 turn 读取纪律 / 人工门禁承接 / 禁止行为条） | 出现次数 0；显式 CR-ID 在 |
 | `cr-prompts-revised/delegation-contract.md` | 成功集合补 `steered`（对齐 `server/internal/handler/admission.go` 的 `DispatchStatus`） | `cmd-08` 19/19 绿 |
 | `cr-prompts-revised/bak/{cr-coordinator-agent,quality-reviewer-agent}.md` | 内联合同同等修正（`bak/README.md` 的 `maintainedBak()` 口径，两份均在「维护」集合内） | `cmd-08` 的同源断言绿 |
-| `CUSTOM.md` | TASK-02 的 daemon 改动登记（见 §2.1） | 台账三表与文件头计数一致 |
+| `cr-prompts-revised/CHANGES.md` | 新增「2026-10-06 第 4 版」章节（按现有小节结构顺延：起因/基线/修订原则/落点/校验/落地/未纳入本次） | 与四份副本实际字符数逐行对账；未纳入项给出实测次数 |
+| `CUSTOM.md` | **未登记（剩余项）**：TASK-02 的 daemon 改动（`pipeline_task.go` / `daemon.go` / `pipeline_task_test.go` / `cr_workspace_binding_test.go`，4 文件 +632/−64，基线 `ae90689fa`）待按三表结构登记为行号 `#114` 并同步《模块索引》M10 行、`CR 索引` 与本文件头计数基线 | ❌ 见 §6 第 2 条 |
 
 收敛口径与 CR-2026-075-TASK-08 的 tools 侧一致（不引入第二套写法）：删除逐命令 workspace 示例，改为「绑定环境可省根；确需显式传时取 `execution_context.operational_workspace`」；保留项（显式 CR-ID、业务阶段、职责/产出、写入/检查/发布要求）逐项仍在。
 
@@ -222,8 +223,11 @@ skill-in-sync planning-draft expected=1 online=1 sha256=3a375992069a882126e38a2f
 | `cmd-05` | tools | 0 | 125/125 pass（含 `caller-14`/`caller-15` 的 FR-04 逐条断言） |
 | `cmd-07` | multica | 0 | 18 PASS（`--- PASS` 行数），`ok .../internal/daemon` |
 
-## 6. 结论与所需人类动作
+## 6. 结论与所需人类/后续动作
 
-1. **所需人类动作（唯一 blocker）**：Ray 在交互式终端按 §3 + §3.1 的命令形态，对 §3.2 列出的 4 个 Agent、2 个业务 Agent 与 28 个 Skill 文件执行 `multica agent update` / `multica skill update` / `multica skill files upsert`，并把执行人/时间/同步后 sha256 记入 §4。
-2. **同步后的收口**：重跑 `cmd-09` 与 `cmd-10`（`plan.md` §6.2 原样）应全绿；届时 `CR-2026-075-TASK-09` 方可由 `crctl task done` 登记（`depends-on` 已满足：TASK-07、TASK-08 均 done）。
-3. **不得**把本台账的「仓库侧已完成」读作 AC-B14 通过；AC-B14 的通过条件是 §5 两条命令转绿 + §4 的人类同步记录。
+1. **所需人类动作（AC-B14 的硬前置）**：Ray 在交互式终端按 §3 + §3.1 的命令形态，对 §3.2 列出的 4 个 Agent、2 个业务 Agent 与 28 个 Skill 文件执行 `multica agent update` / `multica skill update` / `multica skill files upsert`，并把执行人/时间/同步后 sha256 记入 §4。
+2. **剩余仓库侧项（不需人工，需下一轮本 TASK 完成）**：`CUSTOM.md` 登记 TASK-02 的 daemon 改动（行号 `#114`，M10 daemon 模块；同步《模块索引》M10 行与《CR 索引》）。本轮**未**写入该台账：文件头「`AIFIRST` 计数只升不降」要求同口径实测，而本 run 按 §CUSTOM.md 文件头的口径命令在 `server/ packages/` 实测得 **420 文件 / 443 处 `AIFIRST` / `packages/` 282 处**（三个可比数较第七次同步基线 407 / 420 / 277 均只升不降），但同一命令下「命中处数」实测 2575 与台账记录的 1116 不可比（口径不一致），故本轮不写不可复现的计数行，留给下一轮同口径复测后再登记。
+3. **同步后的收口**：重跑 `cmd-09` 与 `cmd-10`（`plan.md` §6.2 原样）应全绿；届时 `CR-2026-075-TASK-09` 方可由 `crctl task done` 登记（`depends-on` 已满足：TASK-07、TASK-08 均 done）。
+4. **不得**把本台账的「仓库侧已收敛」读作 AC-B14 通过；AC-B14 的通过条件是 §5 两条命令转绿 + §4 的人类同步记录。
+5. **范围外残余登记（不自行扩大范围）**：`cr-prompts-revised/delivery-agent.md`（实测 3 处）与 `squad-CR协调小组.md`（实测 2 处）仍含逐命令 `--workspace <workspace>` 示例，但不在本 CR 的声明文件集内，作为后续 CR 的收敛面登记。
+6. **`TASK-09` 与 `TASK-10` 本轮均不 done**：`TASK-10` 的 `depends-on` 含 `TASK-09`，即本 TASK 的登记是 `TASK-10` 完成的前置。
