@@ -1,0 +1,23 @@
+✔ B15-c：首次写入独立出口——exit 0、changed=true、artifacts 恰三项、commit=本次提交，且不要求 conflict_strategy (634.334ms)
+✔ AC-B9：已确认 payload 落盘三项产物——报告 frontmatter、updates[] 去重回写、reports 索引 status: new (610.9209ms)
+✔ B15-b：合法覆盖——overwrite 返回 changed=true 与新提交；同 payload 再调 changed=false 且同一提交 (1276.7571ms)
+✔ B15-b：报告已存在但缺 conflict_strategy → BUSINESS_CONFIRMATION_REQUIRED，零写入 (712.1364ms)
+✔ B15-b：new-date 指向已存在日期 → BUSINESS_INTENT_CONFLICT，零写入 (712.1061ms)
+✔ AC-B9：confirmed=false → BUSINESS_CONFIRMATION_REQUIRED，零写入零 commit (246.546ms)
+✔ AC-B16：path/index_path 与推导路径不一致 → BUSINESS_WRITE_SCOPE_DENIED，且在业务写入前拒绝 (293.3262ms)
+✔ AC-B16：任意文件清单被拒——额外旗标、位置参数与缺参各自 BAD_ARGS，缺根 WORKSPACE_REQUIRED (377.3733ms)
+✔ AC-B10：同目录并存 _index.yaml → BUSINESS_WRITE_SCOPE_DENIED，不双写也不改名 (292.4538ms)
+✔ dep-18：竞品未在竞品索引登记 / 主文件缺失 → BUSINESS_INPUT_INVALID，零写入 (561.9714ms)
+✔ AC-B15/B-01：身份与摘要与执行时钟无关——D 日首写、D+1/D+2 重放同为原提交；reports 索引按 reportDate 倒序 (1126.0793ms)
+✔ B18-a：完成提交只认 AI-First-Intent——另一日期报告改共享索引后重放 A 归入第三值，不返回 B 的提交 (1250.7738ms)
+✔ AC-B18：中断后按 committed 收敛——回落到原提交、updates[] 不回滚、journal 清空 (734.7864ms)
+✔ 转换模块：(date,title) 已存在则跳过且不因 source/summary 变化替换既有条目 (566.9769ms)
+✔ 转换模块：竞品主文件缺 updates: 块即硬失败（工程纪律 #1，不静默降级为空列表） (642.3908ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 10105.1752

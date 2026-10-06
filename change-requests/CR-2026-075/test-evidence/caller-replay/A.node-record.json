@@ -1,0 +1,2979 @@
+{
+  "schema": "cr-2026-075/caller-replay/v1",
+  "cr": "CR-2026-075",
+  "variant": "A",
+  "node": {
+    "agent": "dev-agent",
+    "agentId": "ff6fcbb6-6bb6-42fb-9d88-03493c771411",
+    "taskId": "01a10ed7-2091-7d60-908f-62d08ffa01e8",
+    "issue": "AIFI-41",
+    "sessionFile": "C:\\Users\\GOBAO\\.multica\\pi-sessions\\20261006T013245.578467200.jsonl",
+    "node": "implement-code",
+    "pipeline": "code-implementation",
+    "recordedAt": "2026-10-06T01:51:06.464Z"
+  },
+  "cli": {
+    "entry": "node C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform\\.rayai-worktrees\\tools\\requirement\\CR-2026-075\\skills\\shared\\crctl\\scripts\\crctl.mjs",
+    "path": "C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform\\.rayai-worktrees\\tools\\requirement\\CR-2026-075\\skills\\shared\\crctl\\scripts\\crctl.mjs",
+    "repo": "tools",
+    "worktree": "C:/Users/GOBAO/Downloads/AI/AI First Platform/.rayai-worktrees/tools/requirement/CR-2026-075",
+    "sha256Lf": "d6c12c3748cac38e6c42469276e58d3e67745773950d88a5db43b7333d99eec6",
+    "note": "CR 的 A 段实现本体（tools CR worktree 产物）；TASK-02 明文认定同环境下 `node crctl.mjs` 与 launcher 同结果、都不能绕过绑定。launcher 由 daemon 从工作区 tools 包安装，指向合并前的 trunk CLI，不含本 CR 的 A 段实现，故段③按 TASK-02 的等价直接入口执行。"
+  },
+  "binding": {
+    "source": "task 环境三元组（daemon 在 custom_env 之后成对发布；本次只读继承，未改写/未清除/未覆盖）",
+    "vars": {
+      "MULTICA_TASK_ID": "01a10ed7-2091-7d60-908f-62d08ffa01e8",
+      "CRCTL_OPERATIONAL_WORKSPACE": "C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform\\.rayai-worktrees\\knowledge-base\\requirement\\CR-2026-075",
+      "CRCTL_TASK_AUDIT_ROOT": "C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform"
+    },
+    "operationalWorkspace": "C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform\\.rayai-worktrees\\knowledge-base\\requirement\\CR-2026-075",
+    "auditRoot": "C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform",
+    "otherRootUsedAsMismatch": null
+  },
+  "calls": [
+    {
+      "seq": 1,
+      "argv": [
+        "status",
+        "CR-2026-075",
+        "--workspace",
+        ""
+      ],
+      "exitCode": 1,
+      "durationMs": 88,
+      "stdoutRaw": "",
+      "stdoutJson": null,
+      "stdoutParseOk": false,
+      "stdoutIsSuccessReceipt": false,
+      "stderrRaw": "{\n  \"error\": {\n    \"code\": \"WORKSPACE_REQUIRED\",\n    \"message\": \"子命令 status 需要显式非空 --workspace <path>（CR-2026-072 起不再接受 CRCTL_WORKSPACE 环境变量或 cwd 隐式根选择）\"\n  }\n}\n",
+      "stderrSingleJson": true,
+      "stderrJson": {
+        "error": {
+          "code": "WORKSPACE_REQUIRED",
+          "message": "子命令 status 需要显式非空 --workspace <path>（CR-2026-072 起不再接受 CRCTL_WORKSPACE 环境变量或 cwd 隐式根选择）"
+        }
+      },
+      "errorCode": "WORKSPACE_REQUIRED",
+      "bindingTripleUsed": {
+        "MULTICA_TASK_ID": "01a10ed7-2091-7d60-908f-62d08ffa01e8",
+        "CRCTL_OPERATIONAL_WORKSPACE": "C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform\\.rayai-worktrees\\knowledge-base\\requirement\\CR-2026-075",
+        "CRCTL_TASK_AUDIT_ROOT": "C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform"
+      }
+    },
+    {
+      "seq": 2,
+      "argv": [
+        "status",
+        "CR-2026-075",
+        "--workspace",
+        "C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform\\.rayai-worktrees\\knowledge-base\\requirement\\CR-2026-075"
+      ],
+      "exitCode": 0,
+      "durationMs": 154,
+      "stdoutRaw": "{\n  \"cr\": \"CR-2026-075\",\n  \"status\": \"developing\",\n  \"source\": {\n    \"backlog\": \"C:\\\\Users\\\\GOBAO\\\\Downloads\\\\AI\\\\AI First Platform\\\\.rayai-worktrees\\\\knowledge-base\\\\requirement\\\\CR-2026-075\\\\change-requests\\\\_backlog.yml\",\n    \"backlogSha256\": \"00bb63466603\",\n    \"crMd\": \"C:\\\\Users\\\\GOBAO\\\\Downloads\\\\AI\\\\AI First Platform\\\\.rayai-worktrees\\\\knowledge-base\\\\requirement\\\\CR-2026-075\\\\change-requests\\\\CR-2026-075\\\\cr.md\",\n    \"stateMachine\": \"C:\\\\Users\\\\GOBAO\\\\Downloads\\\\AI\\\\tools\\\\dir-graph.yaml\"\n  },\n  \"legalNext\": [\n    {\n      \"to\": \"developing\",\n      \"trigger\": \"write-test-report:block -> implement-code\"\n    },\n    {\n      \"to\": \"developing\",\n      \"trigger\": \"review-code:block -> implement-code\"\n    },\n    {\n      \"to\": \"tech-design-reviewed\",\n      \"trigger\": \"review-code:plan-blocker -> write-dev-plan\"\n    },\n    {\n      \"to\": \"code-reviewing\",\n      \"trigger\": \"review-code\"\n    },\n    {\n      \"to\": \"rejected\",\n      \"trigger\": \"cr-review-record:reject\"\n    },\n    {\n      \"to\": \"withdrawn\",\n      \"trigger\": \"cr-review-record:withdraw\"\n    }\n  ],\n  \"reviewLoops\": {\n    \"review-requirement\": {\n      \"current\": 2,\n      \"max\": 3\n    },\n    \"review-tech-design\": {\n      \"current\": 3,\n      \"max\": 3\n    },\n    \"review-dev-plan\": {\n      \"current\": 2,\n      \"max\": 3\n    }\n  },\n  \"gateBlockers\": {\n    \"code-reviewing\": [\n      \"code\"\n    ]\n  }\n}\n",
+      "stdoutJson": {
+        "cr": "CR-2026-075",
+        "status": "developing",
+        "source": {
+          "backlog": "C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform\\.rayai-worktrees\\knowledge-base\\requirement\\CR-2026-075\\change-requests\\_backlog.yml",
+          "backlogSha256": "00bb63466603",
+          "crMd": "C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform\\.rayai-worktrees\\knowledge-base\\requirement\\CR-2026-075\\change-requests\\CR-2026-075\\cr.md",
+          "stateMachine": "C:\\Users\\GOBAO\\Downloads\\AI\\tools\\dir-graph.yaml"
+        },
+        "legalNext": [
+          {
+            "to": "developing",
+            "trigger": "write-test-report:block -> implement-code"
+          },
+          {
+            "to": "developing",
+            "trigger": "review-code:block -> implement-code"
+          },
+          {
+            "to": "tech-design-reviewed",
+            "trigger": "review-code:plan-blocker -> write-dev-plan"
+          },
+          {
+            "to": "code-reviewing",
+            "trigger": "review-code"
+          },
+          {
+            "to": "rejected",
+            "trigger": "cr-review-record:reject"
+          },
+          {
+            "to": "withdrawn",
+            "trigger": "cr-review-record:withdraw"
+          }
+        ],
+        "reviewLoops": {
+          "review-requirement": {
+            "current": 2,
+            "max": 3
+          },
+          "review-tech-design": {
+            "current": 3,
+            "max": 3
+          },
+          "review-dev-plan": {
+            "current": 2,
+            "max": 3
+          }
+        },
+        "gateBlockers": {
+          "code-reviewing": [
+            "code"
+          ]
+        }
+      },
+      "stdoutParseOk": true,
+      "stdoutIsSuccessReceipt": true,
+      "stderrRaw": "",
+      "stderrSingleJson": false,
+      "stderrJson": null,
+      "errorCode": null,
+      "bindingTripleUsed": {
+        "MULTICA_TASK_ID": "01a10ed7-2091-7d60-908f-62d08ffa01e8",
+        "CRCTL_OPERATIONAL_WORKSPACE": "C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform\\.rayai-worktrees\\knowledge-base\\requirement\\CR-2026-075",
+        "CRCTL_TASK_AUDIT_ROOT": "C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform"
+      }
+    }
+  ],
+  "correctionCount": 1,
+  "correctionSet": {
+    "allowed": "仅把 --workspace 换成同一绑定根的已确认显式根（本 run = CRCTL_OPERATIONAL_WORKSPACE）",
+    "attempts": 1
+  },
+  "thirdCallOccurred": false,
+  "recoveryDelegation": false,
+  "versionScan": false,
+  "bindingNotOverwritten": true,
+  "stoppedAutoCorrection": "纠正后一次成功，无需再次纠正（无第三次调用）",
+  "stdoutHasSuccessReceipt": true,
+  "zeroWriteProof": {
+    "before": {
+      "gitStatus": {
+        "exitCode": 0,
+        "porcelain": ""
+      },
+      "journals": [
+        {
+          "rel": "transactions/archive/CR-2026-013/544c68a0bc2a4d03b9262e7ed077ebd0/journal.json",
+          "bytes": 996,
+          "mtime": "2026-08-14T11:16:52.522Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-014/667d404e764e43cc94d7a9bd77cb826c/journal.json",
+          "bytes": 996,
+          "mtime": "2026-08-14T11:17:48.843Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-015/b3c9a65d10b5476187c8971c3ac101c1/journal.json",
+          "bytes": 996,
+          "mtime": "2026-08-14T11:18:20.588Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-016/8898386dbdb84a149b9a3eb06a54d28f/journal.json",
+          "bytes": 996,
+          "mtime": "2026-08-14T11:18:52.780Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-017/a4ee1461f06749469f9296e70bc1c2e0/journal.json",
+          "bytes": 996,
+          "mtime": "2026-08-14T11:19:27.036Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-031/ea735b63d2164fb4b0a62889032a8a8e/journal.json",
+          "bytes": 928,
+          "mtime": "2026-08-12T09:02:33.621Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-032/5a951517bf404636ae9acf4b7874ceee/journal.json",
+          "bytes": 955,
+          "mtime": "2026-08-13T06:39:32.776Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-033/94dfa8ca74dc49ea901e4cf2a9f8551a/journal.json",
+          "bytes": 977,
+          "mtime": "2026-08-13T15:39:23.982Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-034/3700044ecf5a4880a3df817f0cfe942e/journal.json",
+          "bytes": 996,
+          "mtime": "2026-08-14T11:20:14.317Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-035/1652f86cc1584e5885653dbfdf5ac59f/journal.json",
+          "bytes": 996,
+          "mtime": "2026-08-14T11:20:47.008Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-036/1bc31a93ba844c55b115bf4e349bc1dd/journal.json",
+          "bytes": 996,
+          "mtime": "2026-08-14T11:22:03.506Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-037/642e9e20e53d434f985414b1d5e7dc63/journal.json",
+          "bytes": 928,
+          "mtime": "2026-08-13T03:51:41.230Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-038/d64022f4286a46ef88d14a2e7dbd3e4b/journal.json",
+          "bytes": 977,
+          "mtime": "2026-08-14T16:11:23.131Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-039/e9bee13bc7104d7691ab3d828bb2b95f/journal.json",
+          "bytes": 1178,
+          "mtime": "2026-08-15T02:31:58.366Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-040/abc18d98516c483b935d0ac1219ac0a8/journal.json",
+          "bytes": 993,
+          "mtime": "2026-08-15T07:41:47.681Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-041/0dcca6bb729c4da7942cbab512d1dae3/journal.json",
+          "bytes": 993,
+          "mtime": "2026-08-15T15:55:40.955Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-042/fb347cc63fae4551a22f4eb09c91d771/journal.json",
+          "bytes": 993,
+          "mtime": "2026-08-16T13:20:51.627Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-043/4f3b4e7e357c415d865de307e8624378/journal.json",
+          "bytes": 993,
+          "mtime": "2026-08-16T01:23:25.441Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-044/d4078c004660499ab6ad0bbaaf147bf8/journal.json",
+          "bytes": 993,
+          "mtime": "2026-08-17T03:01:57.074Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-045/49afff9455e94ba5b54a0725747cf24f/journal.json",
+          "bytes": 1479,
+          "mtime": "2026-08-18T12:02:22.738Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-046/3f4abec2046340659590475cc52935f5/journal.json",
+          "bytes": 993,
+          "mtime": "2026-08-18T14:26:39.484Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-047/034bc37b65f54a06ac2acf9563695d67/journal.json",
+          "bytes": 993,
+          "mtime": "2026-08-20T03:30:01.921Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-048/22ab3795a3634a13921a9bfa2948340d/journal.json",
+          "bytes": 1244,
+          "mtime": "2026-08-20T11:22:21.871Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-049/87e3b6c8492e48db8a12dde105cbec79/journal.json",
+          "bytes": 993,
+          "mtime": "2026-08-21T01:27:58.884Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-050/44118e814c184d28b2868795e3a437af/journal.json",
+          "bytes": 993,
+          "mtime": "2026-08-21T06:19:37.353Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-051/713291bc8d2547c8b831127192545786/journal.json",
+          "bytes": 993,
+          "mtime": "2026-08-26T09:06:23.925Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-052/ceb6550be398481fa54a2d2d20e1d12c/journal.json",
+          "bytes": 993,
+          "mtime": "2026-08-27T08:32:30.238Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-053/24adaa9def9348bb81b6683ab9166af0/journal.json",
+          "bytes": 993,
+          "mtime": "2026-08-28T19:32:54.744Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-054/9e923ed96df9404ea2c003e640ee8571/journal.json",
+          "bytes": 993,
+          "mtime": "2026-08-29T13:48:00.290Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-055/3954e73a79fd4907b85e843e4406f29a/journal.json",
+          "bytes": 993,
+          "mtime": "2026-08-29T23:30:18.005Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-056/ce6e999a11004178967b665c47be0f1e/journal.json",
+          "bytes": 993,
+          "mtime": "2026-08-30T23:47:32.343Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-057/d283e86b4ddf48278fe749eebe6693c4/journal.json",
+          "bytes": 993,
+          "mtime": "2026-09-01T13:59:51.850Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-058/c59b713027e8430e84df69de17569c95/journal.json",
+          "bytes": 993,
+          "mtime": "2026-09-01T13:03:34.328Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-059/3c982fda3a054729bedfe9f27e031858/journal.json",
+          "bytes": 1076,
+          "mtime": "2026-09-06T09:17:24.017Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-060/a0800e98e01542c7a1b912a34eddfb58/journal.json",
+          "bytes": 1076,
+          "mtime": "2026-09-03T03:18:06.637Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-061/5ab5a51c585843609376d56860f0dc72/journal.json",
+          "bytes": 1088,
+          "mtime": "2026-09-09T03:22:32.426Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-062/1945efdb90c34eee90d188bfd22283c4/journal.json",
+          "bytes": 1088,
+          "mtime": "2026-09-10T05:48:35.989Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-063/36cbdae05b5e4d60bd136107ae29bb25/journal.json",
+          "bytes": 1088,
+          "mtime": "2026-09-12T00:46:59.638Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-064/1b6bc45ab3b246da8d2559842aeec54d/journal.json",
+          "bytes": 1088,
+          "mtime": "2026-09-14T01:35:34.141Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-065/6ef9320f3dbb470abff85e4a0b387748/journal.json",
+          "bytes": 1088,
+          "mtime": "2026-09-13T12:16:06.472Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-066/15aa3f6e811b4aed96da36219987c3ce/journal.json",
+          "bytes": 1088,
+          "mtime": "2026-09-14T11:13:54.497Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-067/2d9f8a63386f49f6b6bc7203b66201dc/journal.json",
+          "bytes": 1088,
+          "mtime": "2026-09-15T06:57:49.155Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-068/602e61aa89e443beabc25b7cd7bd1b7f/journal.json",
+          "bytes": 1088,
+          "mtime": "2026-09-15T23:55:23.083Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-069/e914d288e1bd472babe64079efabb3b7/journal.json",
+          "bytes": 1088,
+          "mtime": "2026-09-17T14:08:12.505Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-070/51e029d5460e47f799212f5fcac8c183/journal.json",
+          "bytes": 1088,
+          "mtime": "2026-09-18T09:52:01.749Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-071/2e13097b68dd4dcdbc90537fb218393d/journal.json",
+          "bytes": 1121,
+          "mtime": "2026-09-28T10:33:46.430Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-072/d26d24d931fb4a0a8a5678fe082bb3cb/journal.json",
+          "bytes": 1121,
+          "mtime": "2026-09-29T06:33:00.777Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-073/5297a806e1524548a45d73eec9fafa61/journal.json",
+          "bytes": 1121,
+          "mtime": "2026-09-30T12:22:17.899Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-074/2b4a04cde80142c3b7ae055cae8ea716/journal.json",
+          "bytes": 1121,
+          "mtime": "2026-10-02T12:07:35.379Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-031/cf2caac7d657430d94c02dd3a357ed41/journal.json",
+          "bytes": 1838,
+          "mtime": "2026-08-12T08:55:38.066Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-032/ce4b640464ea44cf98a4ce8de0d68ab4/journal.json",
+          "bytes": 1838,
+          "mtime": "2026-08-13T06:33:37.780Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-033/be33381756094f29a6d3c17507a7bf05/journal.json",
+          "bytes": 1860,
+          "mtime": "2026-08-13T15:30:35.682Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-037/f6599e2d1d21461d8cd6268c48b53d67/journal.json",
+          "bytes": 1838,
+          "mtime": "2026-08-13T03:38:53.202Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-038/b89a30f7747d4075bfcd369ad702e89b/journal.json",
+          "bytes": 1838,
+          "mtime": "2026-08-14T16:03:48.085Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-039/9d64468747c5427195b107bc611389f1/journal.json",
+          "bytes": 1860,
+          "mtime": "2026-08-15T02:27:45.793Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-040/73d2e9fc579e4ca4b433e3e371486512/journal.json",
+          "bytes": 1860,
+          "mtime": "2026-08-15T07:38:31.720Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-041/746e3f3f598440588c5c855feeac5ceb/journal.json",
+          "bytes": 1860,
+          "mtime": "2026-08-15T15:50:58.209Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-042/aea252c3ec1743e59cd4014c8c8639f6/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-08-16T13:17:49.897Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-043/d008939081a24df3a3da70c9164c5168/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-08-16T01:21:04.704Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-044/d440c8f2c55244e5a853ef9a773c261c/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-08-17T02:57:49.642Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-045/834cbf81f3734b419ea47cc119316514/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-08-18T11:57:44.474Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-046/1cd87102e6554a8bb9870663ecd7d4bd/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-08-18T14:22:18.472Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-047/bddb9358b61e48e998a46e1e8ad2e5a5/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-08-20T03:21:24.029Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-048/817f3648d4dc4af0bcd588d11cf3fc9c/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-08-20T11:19:11.424Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-049/8fe49e6c4e2542078c131f34e2727ff3/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-08-21T01:12:43.416Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-050/0b70e1f6518f44b8bf24fcb0cece3acc/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-08-21T06:16:05.360Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-051/7d824b90d56d44d89e67f19ed20b3b28/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-08-26T09:01:34.226Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-052/6d290b858fdb4651b56044ced9d11dbb/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-08-27T08:20:09.838Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-053/ddc91cbd2d4545d2a7ebf23b39a8f0eb/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-08-28T19:17:40.451Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-054/9f50480219a54e38b2df2a8d724d6172/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-08-29T13:38:29.328Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-055/29d92087820249c29b2dee2debeb84d3/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-08-29T23:24:39.181Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-056/abbdd9a70a2342d99b024623a30894c4/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-08-30T22:26:57.416Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-057/c8474f0732944eb5a54789d915c895ea/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-09-01T13:55:10.575Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-058/f849d33c790d4f9aaa2a4e66a7027438/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-09-01T12:56:33.965Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-059/6384cc1ab6764f4c8f976a3c1f3266d2/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-09-06T08:33:13.686Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-060/60383e7de4c5486299e3d0b31ec77fcb/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-09-02T23:39:28.490Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-061/3b643cab897d4e1aa376b19aadc87a6e/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-09-09T03:20:06.718Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-062/fa106288670e491c9a69bc9cb571917e/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-09-10T04:03:05.478Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-063/d0a689b8fc904c2d893ee48e1d8435df/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-09-12T00:44:19.343Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-064/929bff3b76714bf5b62a398f72b3896c/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-09-14T01:33:29.393Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-065/000a875e16bd41e582a8987ba800c13f/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-09-13T12:13:37.873Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-066/51a722b3b0734213a0ecb4d2e88aae71/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-09-14T11:11:10.031Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-067/f0c95e0bd09b45bd9a41df8c962f26c6/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-09-15T06:54:49.951Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-068/edf230512044472cb769d4e8e68a3f50/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-09-15T23:52:32.450Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-069/cb1ea7af1c374de8877a7ce793626b11/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-09-17T14:06:30.358Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-070/5fd6619904ee4019924308e506b586a9/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-09-18T09:50:37.063Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-071/157aa102d0b64762a34cf03c817e174b/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-09-28T10:11:54.894Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-072/92b2df17553946ff9cbb99338353ffb0/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-09-29T06:04:35.651Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-073/abfa4f0666d145dc828b8f52571d1eb4/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-09-30T12:18:57.746Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-074/3a1e8004df194e3495893b21fca9ae30/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-10-02T12:06:08.272Z"
+        },
+        {
+          "rel": "transactions/register/00801a7eabd3ab031933d7c3617aaec791ce5641d24fb3f83d1be4975f286307/31e38578f7e544afa7d8ee6c6fb64f3d/journal.json",
+          "bytes": 1025,
+          "mtime": "2026-08-14T11:45:03.083Z"
+        },
+        {
+          "rel": "transactions/register/2200dbff198055f7645323fc547274cee4b97b1a0e0dd5c385cd100980be233d/28c33989beee4710a8adf9b0465601fd/journal.json",
+          "bytes": 1025,
+          "mtime": "2026-08-13T02:15:37.447Z"
+        },
+        {
+          "rel": "transactions/register/27515bd230c0046c6c55704bbb6db24a8d199ffd5de03fa9d520812530ae96f9/4b23f49bb6914cb8b429e5ab9927487b/journal.json",
+          "bytes": 1114,
+          "mtime": "2026-09-12T18:31:35.084Z"
+        },
+        {
+          "rel": "transactions/register/2de305b7ab716deaba01c61edf0841fb9597bdb4c145246474eae3ad37f85328/8bf9ed5c0e58419bafd260697d6fb584/journal.json",
+          "bytes": 1025,
+          "mtime": "2026-08-13T00:36:33.787Z"
+        },
+        {
+          "rel": "transactions/register/2dfe4e1e48e9003c270f50e01679f8fab08b29478be573e67f2eeea90cf5c56d/734ebc18579e4b7186c7867e5b5de80f/journal.json",
+          "bytes": 1025,
+          "mtime": "2026-08-14T11:47:29.152Z"
+        },
+        {
+          "rel": "transactions/register/351b54a7de9039be1e5850c69b5020ae6ef89f2fc6ed06bad278d0534e16ae18/b95e5de589a44a8bad7ffb8944aa5808/journal.json",
+          "bytes": 1063,
+          "mtime": "2026-08-18T12:16:51.544Z"
+        },
+        {
+          "rel": "transactions/register/37e29172d4e2109dd32d74b820e9c79e227e69cf8a2a43d366ac51a89f0d5a0b/127d24559d1e495a9637c805c1e08507/journal.json",
+          "bytes": 1114,
+          "mtime": "2026-09-14T23:32:48.459Z"
+        },
+        {
+          "rel": "transactions/register/3ba3f320267ac5e5cd458433c4c103f30e6ca152ca2a6389a032d32bb0040e7c/a38ae1df37514535b3287bbe25958dcb/journal.json",
+          "bytes": 1063,
+          "mtime": "2026-08-17T10:28:28.930Z"
+        },
+        {
+          "rel": "transactions/register/3d9299d584a0d3717f23428b5b1de9e0fad50ba09b1ba64d84e06a3b86caf887/bfc3e4abb5634c10aaef71e94a1024fe/journal.json",
+          "bytes": 1114,
+          "mtime": "2026-10-02T13:07:24.551Z"
+        },
+        {
+          "rel": "transactions/register/3f56fcd0c91bf9c263d4bfc17cace599bac83199ea60a530a43b08fc55ac1eca/d50f452fa7ba464ca0ca606a02dfd903/journal.json",
+          "bytes": 1114,
+          "mtime": "2026-09-09T07:11:26.820Z"
+        },
+        {
+          "rel": "transactions/register/4235cfd3622a66204ea5842090f5bc9e453355494c6c6c039bb9bd822e2e8650/eb502b59f44e4f30896ed12b4be9f355/journal.json",
+          "bytes": 1025,
+          "mtime": "2026-08-14T11:46:41.662Z"
+        },
+        {
+          "rel": "transactions/register/43ac3c9523b1e5d98bccb7396f873eaebf2c22a5ad5c172c73e64cf11e1ffa0a/d98a7ff5e1274e18bec52285b4f3b5a8/journal.json",
+          "bytes": 1063,
+          "mtime": "2026-08-19T16:10:47.632Z"
+        },
+        {
+          "rel": "transactions/register/4a70f12c923f1e1a6c3adbd2d1d79c60dcb159a1560e28d5594a22b4b0e96bc0/a4c86ae076e744189fed32ea5de1b4d4/journal.json",
+          "bytes": 1063,
+          "mtime": "2026-08-29T04:13:24.086Z"
+        },
+        {
+          "rel": "transactions/register/5734bf80b31e2b8ced8588f14b9f6df53a30ae57f3c3f6acebfa12a714fc97e1/47fb0a8bb28f4b19942b11dfdfb80d0b/journal.json",
+          "bytes": 1114,
+          "mtime": "2026-09-30T04:22:31.845Z"
+        },
+        {
+          "rel": "transactions/register/5c635449a4d08f53efc235ad2026dd66d1623333e1d3aefebc87814dd746b09e/1cee4d60658e4ad7be7955add8118705/journal.json",
+          "bytes": 1063,
+          "mtime": "2026-08-26T16:17:41.576Z"
+        },
+        {
+          "rel": "transactions/register/674181de71b5f083aed3d89030856a4d9eb85334714aa35989cd9852abd31d84/0dc1925f4a314cafb12bfd9fecd0fc5f/journal.json",
+          "bytes": 1063,
+          "mtime": "2026-08-31T09:13:27.438Z"
+        },
+        {
+          "rel": "transactions/register/7ac36ec0a83b72fd623a99671863b6648213b27a35065091676ceeee48b9201f/9e087a17d9564992bb5c56280fe04761/journal.json",
+          "bytes": 1114,
+          "mtime": "2026-09-27T05:19:53.661Z"
+        },
+        {
+          "rel": "transactions/register/7dd3a41b9728932d5594f776b0a3b6fc2307cdfe6086127bbafbaf6b3dd30e35/6b2fc638341745a2bff21341b699d8be/journal.json",
+          "bytes": 1025,
+          "mtime": "2026-08-13T00:34:59.929Z"
+        },
+        {
+          "rel": "transactions/register/7e452bbb404ec2eb609cc630141152d274ef8303abd614e281b1c319844ec295/25160359623748c5bdae03a8e32e5178/journal.json",
+          "bytes": 1114,
+          "mtime": "2026-09-07T03:57:32.935Z"
+        },
+        {
+          "rel": "transactions/register/876cb89446181c2d46f8251720867468676bd7501ba5306d965b99a221ff301d/01e35b630b0f4dfc972643a31933a0f7/journal.json",
+          "bytes": 1114,
+          "mtime": "2026-09-14T02:51:11.277Z"
+        },
+        {
+          "rel": "transactions/register/8b4561aa455f6aeb16905b06011186d8a024a19b1113f126948d935537c0eda7/099b58e873014391a6055301ea6aefe1/journal.json",
+          "bytes": 1025,
+          "mtime": "2026-08-14T11:45:53.716Z"
+        },
+        {
+          "rel": "transactions/register/8e1fb4a4b767df36a0cad5f4670fb1360f972c0116120c6d960a7906f2c92dc5/f12818e2935948f695112352721892d7/journal.json",
+          "bytes": 1114,
+          "mtime": "2026-09-12T14:07:23.079Z"
+        },
+        {
+          "rel": "transactions/register/8f0c8ef60a7843e0388afdd20ac8833abd9748e950e78ac2b1dead7e7e419a28/c87d2853f8c547a5ae6f969d0293824b/journal.json",
+          "bytes": 1063,
+          "mtime": "2026-08-25T10:04:21.258Z"
+        },
+        {
+          "rel": "transactions/register/93a45a8d6fb2087e807452ca4b6b7cb06e74b968f9b60b02071e09f57abe3bc1/54644c3b63e84512993bd12955791a14/journal.json",
+          "bytes": 1114,
+          "mtime": "2026-09-17T06:33:57.304Z"
+        },
+        {
+          "rel": "transactions/register/9584f219144cccfa9ffdeb554018b5924c94cd5b8f886bebc806b569663d0177/ad2b1cf7abed4ad9bf16882d4f7d6276/journal.json",
+          "bytes": 1114,
+          "mtime": "2026-09-30T13:33:35.099Z"
+        },
+        {
+          "rel": "transactions/register/970c7f8d5e2b76fce3cb4cba694bf766b2050592eb8342f3aa4b04ac3ef2e879/ec595f8042574b479edb56a4c514e1ca/journal.json",
+          "bytes": 1114,
+          "mtime": "2026-09-11T09:23:53.339Z"
+        },
+        {
+          "rel": "transactions/register/9a545733b82789b28df9790b6842259657b5fe01b5575d4411d263c121465ddd/408e0981813e47ce8dd75ec8d76d9045/journal.json",
+          "bytes": 1063,
+          "mtime": "2026-09-01T14:50:17.428Z"
+        },
+        {
+          "rel": "transactions/register/9e57645f391f0dff6008093e5f772604ef9edb98a6135c7dbd0bad0cf9a56666/f087d361c1f648d8970fd44b6051c4b8/journal.json",
+          "bytes": 1063,
+          "mtime": "2026-09-01T05:01:05.387Z"
+        },
+        {
+          "rel": "transactions/register/ac11b09ee699e36232dd51beeba596b32b609ce3aa58ccb4724e64a30648bec1/b512902fc5344e4fb1afe7762c5499ce/journal.json",
+          "bytes": 1025,
+          "mtime": "2026-08-13T00:35:21.033Z"
+        },
+        {
+          "rel": "transactions/register/af40db4ecf2dbda9d8643f52de34e4d2c441aca0eb5f4a8b724f096650305215/74086e2dfc24467c8d9ff7554330a2d3/journal.json",
+          "bytes": 1114,
+          "mtime": "2026-09-18T01:05:42.812Z"
+        },
+        {
+          "rel": "transactions/register/af414a42892facc42c9a5241f086d948a5cf4e107550aa349534a53d97029f7f/de94b8027b534eef8018ca2e851a2eb1/journal.json",
+          "bytes": 1063,
+          "mtime": "2026-08-15T15:59:47.081Z"
+        },
+        {
+          "rel": "transactions/register/b3e95bfbe1da654569f19430fe257344df588eefff9cd0633eea86976b0a7f2d/269237cdd9f84e02aee78e9d6f197c25/journal.json",
+          "bytes": 583,
+          "mtime": "2026-09-02T07:48:19.629Z"
+        },
+        {
+          "rel": "transactions/register/b50ed5ba7c43ff3ca7efe4943637668a72be233aa3ac1db5e88af96b509db924/45990344712d4867a28d7f87b0382669/journal.json",
+          "bytes": 1063,
+          "mtime": "2026-08-20T03:42:51.324Z"
+        },
+        {
+          "rel": "transactions/register/b68c2b7ea4808376e4278adaeba6727004c609b4f998e9bd08bd02a6b0fa6e13/3d637fa97a464fe0a6fcec48214bfcb4/journal.json",
+          "bytes": 1063,
+          "mtime": "2026-08-21T01:31:50.413Z"
+        },
+        {
+          "rel": "transactions/register/c28ae1eda429d4c88873ec8f0f34ea247fb92a8e23643e09e1e21ea79e689551/559fdc7fbc8b4bf0ab84a6d18a6915a7/journal.json",
+          "bytes": 1063,
+          "mtime": "2026-08-30T08:34:29.639Z"
+        },
+        {
+          "rel": "transactions/register/c856c19319996bbcc2e1015e18e60c4007e5a496c332c0f676c51a6bbe486bc1/70498ea48a004b12814bd8154d30fb02/journal.json",
+          "bytes": 1063,
+          "mtime": "2026-08-16T15:32:48.141Z"
+        },
+        {
+          "rel": "transactions/register/da0fbea6471d94ea36fc67b15060f3e426ca0d1680b3f99965e36268ff930f35/0534dfe3d7734d78941efb342b1e198f/journal.json",
+          "bytes": 1063,
+          "mtime": "2026-08-20T11:27:13.749Z"
+        },
+        {
+          "rel": "transactions/register/db07bafdb13958a396fe15d8bc8724f2ec1ede2779e5fc93b8b5c3818fe6e740/77e2d1fde42a4ed3a2a959ee6b95f12e/journal.json",
+          "bytes": 1063,
+          "mtime": "2026-09-02T08:39:48.684Z"
+        },
+        {
+          "rel": "transactions/register/db496042f705137c1ff90c4bde2ee4f96a9fe520d72833e8f90bd1e139097792/36f79ef87df44752b51d196e33931b85/journal.json",
+          "bytes": 1079,
+          "mtime": "2026-08-27T09:30:28.469Z"
+        },
+        {
+          "rel": "transactions/register/e34608a832af0e795265d6a5fc5610e2985cb3a474325292c7d737f8b6f354f5/f23d28934318408789fc4ddaf41388c4/journal.json",
+          "bytes": 1025,
+          "mtime": "2026-08-13T00:35:46.183Z"
+        },
+        {
+          "rel": "transactions/register/eb148e37b4d6b91302134ac823e1549724a95baf0792548fe0a4853c0fecba51/2f51506c0d024982bf5b18f34980969d/journal.json",
+          "bytes": 1114,
+          "mtime": "2026-09-28T14:45:01.126Z"
+        },
+        {
+          "rel": "transactions/register/f097bee91d1f5f59ee60fc220162ac6862c7e4aa0cbbac63c60f2806af279e69/71e5ad961eb344d9b040e3df75f2d6bc/journal.json",
+          "bytes": 1114,
+          "mtime": "2026-09-15T11:58:58.451Z"
+        },
+        {
+          "rel": "transactions/register/f417e069fed8956dd2e4af890715a78421762b5bfe3ef7771f9eb0b6c189b267/8326caaa725940269934d82c3616978b/journal.json",
+          "bytes": 1025,
+          "mtime": "2026-08-14T11:44:19.177Z"
+        },
+        {
+          "rel": "transactions/register/f66670c5b40c11b97e6765144b5a196593778d6cc161d78615cb3d9b1d808c26/2530b8939ee64ad6bc4b651d70ac2978/journal.json",
+          "bytes": 1025,
+          "mtime": "2026-08-13T00:36:10.305Z"
+        },
+        {
+          "rel": "transactions/register/ff1b9f61b1dc0ec8d867429b04d608f9c23399380c91e33420dd00dadc9527fc/a559eebafa7345b8b660dc03b295719e/journal.json",
+          "bytes": 1063,
+          "mtime": "2026-08-29T13:59:06.617Z"
+        },
+        {
+          "rel": "transactions/workspace/CR-2026-042/d0bb0530fe244f208c9d578bd247059f/journal.json",
+          "bytes": 1490,
+          "mtime": "2026-08-16T03:49:56.762Z"
+        },
+        {
+          "rel": "transactions/workspace/CR-2026-043/8826a92a1fd94ba1a4d5ce783efb7ac1/journal.json",
+          "bytes": 1404,
+          "mtime": "2026-08-15T23:46:25.909Z"
+        },
+        {
+          "rel": "transactions/workspace/CR-2026-045/3f051fa234c044648541e045c5fda7ed/journal.json",
+          "bytes": 1404,
+          "mtime": "2026-08-17T10:48:40.464Z"
+        },
+        {
+          "rel": "transactions/workspace/CR-2026-059/5a1a83fbdcd948d5addd87a90cfd5e01/journal.json",
+          "bytes": 1447,
+          "mtime": "2026-09-03T12:49:40.032Z"
+        },
+        {
+          "rel": "transactions/workspace/CR-2026-061/0b3a9c9162444d349915ed1d9bf903a8/journal.json",
+          "bytes": 1404,
+          "mtime": "2026-09-08T03:34:40.750Z"
+        },
+        {
+          "rel": "transactions/workspace/CR-2026-061/c27ff388d97a4115a3e5415c245a05c6/journal.json",
+          "bytes": 1404,
+          "mtime": "2026-09-07T16:15:25.641Z"
+        },
+        {
+          "rel": "transactions/workspace/CR-2026-061/ccbc3b8cf0cd4967a3edfbfe1eea7bf8/journal.json",
+          "bytes": 1404,
+          "mtime": "2026-09-07T14:25:22.628Z"
+        },
+        {
+          "rel": "transactions/workspace/CR-2026-061/dc5397408e6f446c8b423141b029df8e/journal.json",
+          "bytes": 1447,
+          "mtime": "2026-09-07T13:58:51.244Z"
+        },
+        {
+          "rel": "transactions/workspace/CR-2026-064/163c8d30d86948ffb4f068dc0ef055b9/journal.json",
+          "bytes": 1447,
+          "mtime": "2026-09-13T12:44:50.709Z"
+        },
+        {
+          "rel": "transactions/workspace/CR-2026-074/8cdf3dd4b4e742d9b8b8526f40679d7d/journal.json",
+          "bytes": 1404,
+          "mtime": "2026-10-02T09:59:26.122Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-031-baseline/535051f0513849869f78d8e2eec12948/journal.json",
+          "bytes": 1574,
+          "mtime": "2026-08-12T08:57:43.356Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-031-tasks/326148ca9ba94ff2808c64102530ee30/journal.json",
+          "bytes": 3762,
+          "mtime": "2026-08-12T08:58:09.800Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-031-traceability/3a9124ffd0e34b3dbf45a6e96828e9f4/journal.json",
+          "bytes": 1104,
+          "mtime": "2026-08-12T08:59:20.884Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-032-baseline/e1ed4b51aad144e1968b09c364d05ad4/journal.json",
+          "bytes": 1574,
+          "mtime": "2026-08-13T06:34:25.944Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-032-tasks/33d150a8174e4a7fa10b84a5f37deb68/journal.json",
+          "bytes": 1965,
+          "mtime": "2026-08-13T06:34:55.467Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-032-traceability/37dd03b822694c72a2dc063ef22971d9/journal.json",
+          "bytes": 1104,
+          "mtime": "2026-08-13T06:35:51.096Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-033-baseline/d41e6862bb644dd5910fd0817c9c7e2e/journal.json",
+          "bytes": 1596,
+          "mtime": "2026-08-13T15:34:50.386Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-033-tasks/e3587bee0c274f739eb65000cebdc0e9/journal.json",
+          "bytes": 2248,
+          "mtime": "2026-08-13T15:37:07.488Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-033-traceability/d020da76207c4e47a47c1b5b26cd81fb/journal.json",
+          "bytes": 1126,
+          "mtime": "2026-08-13T15:38:08.045Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-037-baseline/88c8f5c30eb549a9a20c7f9e12192227/journal.json",
+          "bytes": 1574,
+          "mtime": "2026-08-13T03:44:41.774Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-037-tasks/da6903a2c2584487a7dbb85af185eddb/journal.json",
+          "bytes": 1697,
+          "mtime": "2026-08-13T03:47:59.948Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-037-traceability/cac8d7ea58c7416e90631431380bb622/journal.json",
+          "bytes": 1104,
+          "mtime": "2026-08-13T03:48:56.769Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-038-baseline/17db0cc9cf754137b21c2dd101655eee/journal.json",
+          "bytes": 3880,
+          "mtime": "2026-08-14T16:07:38.905Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-038-tasks/858cc88f7d5d4806911fa6802d6a9bd2/journal.json",
+          "bytes": 2520,
+          "mtime": "2026-08-14T16:07:59.962Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-038-traceability/7327c93776ad4167a713fb226698f119/journal.json",
+          "bytes": 1424,
+          "mtime": "2026-08-14T16:09:45.530Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-039-baseline/510476b4b0f14ef8a682560d37d37cee/journal.json",
+          "bytes": 3889,
+          "mtime": "2026-08-15T02:29:13.731Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-039-tasks/e8a2d287f1db400bb884522038bfd361/journal.json",
+          "bytes": 2782,
+          "mtime": "2026-08-15T02:29:41.728Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-039-traceability/f8791b8534914a7a8f638981bc098499/journal.json",
+          "bytes": 1424,
+          "mtime": "2026-08-15T02:31:11.118Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-040-baseline/37d5cb235cff4b52ba2205ced14a42a8/journal.json",
+          "bytes": 3847,
+          "mtime": "2026-08-15T07:39:15.444Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-040-tasks/96cda0c5bfb04b0f9ff920cd7532d7a2/journal.json",
+          "bytes": 2791,
+          "mtime": "2026-08-15T07:39:33.267Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-040-traceability/67ba30a658fd4cb580376cae42917599/journal.json",
+          "bytes": 1443,
+          "mtime": "2026-08-15T07:41:16.622Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-041-baseline/4f85e86faa974bacb73eedbadbfc060d/journal.json",
+          "bytes": 3897,
+          "mtime": "2026-08-15T15:51:57.118Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-041-tasks/622cd2cc8ff04f9699d79f68a440125b/journal.json",
+          "bytes": 3253,
+          "mtime": "2026-08-15T15:52:17.005Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-041-traceability/f355ca35b84047b5a1b1ea262625fd30/journal.json",
+          "bytes": 1443,
+          "mtime": "2026-08-15T15:53:06.896Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-042-baseline/776697b0076e4f7291b365fcbf4081bd/journal.json",
+          "bytes": 3862,
+          "mtime": "2026-08-16T13:18:33.104Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-042-tasks/ecfbb254c37e4e13816008b9d730e155/journal.json",
+          "bytes": 2106,
+          "mtime": "2026-08-16T13:18:55.185Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-042-traceability/bc740e9e6a094384a1c4bd55542e2a29/journal.json",
+          "bytes": 1440,
+          "mtime": "2026-08-16T13:19:57.249Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-043-baseline/75297cc2161646bdab18fda114ec3e82/journal.json",
+          "bytes": 4032,
+          "mtime": "2026-08-16T01:22:11.534Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-043-tasks/e20874ca87f740bfa20849d878f18243/journal.json",
+          "bytes": 2557,
+          "mtime": "2026-08-16T01:22:24.054Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-043-traceability/d3a51c3d630348e9ae8406df568184d2/journal.json",
+          "bytes": 1443,
+          "mtime": "2026-08-16T01:23:01.551Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-044-baseline/b05182cb818b42b7881a2c1b693ea9a1/journal.json",
+          "bytes": 4057,
+          "mtime": "2026-08-17T02:59:06.476Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-044-tasks/01e195081e284c9789d10991f30a5cad/journal.json",
+          "bytes": 2779,
+          "mtime": "2026-08-17T02:59:39.020Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-044-traceability/64be37b5bf26441a855efc09eed3dde6/journal.json",
+          "bytes": 1443,
+          "mtime": "2026-08-17T03:00:45.850Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-045-baseline/6c469cf0978d4bcba70f6a663feadeff/journal.json",
+          "bytes": 3812,
+          "mtime": "2026-08-18T11:59:27.525Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-045-tasks/e8ec84de10064885b8864d071e792d6c/journal.json",
+          "bytes": 4946,
+          "mtime": "2026-08-18T11:59:50.037Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-045-traceability/2747c23329b44ed29955e7786139c861/journal.json",
+          "bytes": 1443,
+          "mtime": "2026-08-18T12:01:32.747Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-046-baseline/a8b844bcf13b46d497209b48baa71437/journal.json",
+          "bytes": 3814,
+          "mtime": "2026-08-18T14:24:26.962Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-046-tasks/6fbda2320bae4014947b425188179872/journal.json",
+          "bytes": 1877,
+          "mtime": "2026-08-18T14:24:48.332Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-046-traceability/ed01e6ca65b1483fbdf1550f1b6e7833/journal.json",
+          "bytes": 1443,
+          "mtime": "2026-08-18T14:25:21.445Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-047-baseline/aca301bc043f4644865fd442c61028d9/journal.json",
+          "bytes": 4086,
+          "mtime": "2026-08-20T03:23:53.449Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-047-tasks/610312d4ba834666b185f33b48e8b995/journal.json",
+          "bytes": 3895,
+          "mtime": "2026-08-20T03:24:42.779Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-047-traceability/255453c3eda343cab2fd84423557acc1/journal.json",
+          "bytes": 1441,
+          "mtime": "2026-08-20T03:26:50.566Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-048-baseline/4f1af67e25a14fd2a6bc25434a0cd649/journal.json",
+          "bytes": 4025,
+          "mtime": "2026-08-20T11:19:55.906Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-048-tasks/345b12fd28944d84bb35430b006eba51/journal.json",
+          "bytes": 3602,
+          "mtime": "2026-08-20T11:20:19.094Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-048-traceability/cc315a414cec4957a47a993e84735a9f/journal.json",
+          "bytes": 1441,
+          "mtime": "2026-08-20T11:21:31.291Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-049-baseline/5d4c998af8354f388bd2628ad7f3347d/journal.json",
+          "bytes": 4662,
+          "mtime": "2026-08-21T01:13:58.413Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-049-tasks/d60a3220e98a419cb7f053952d76c6f9/journal.json",
+          "bytes": 4429,
+          "mtime": "2026-08-21T01:14:26.654Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-049-traceability/194e2d46a86542f5be9ca8b885ab4caa/journal.json",
+          "bytes": 295248,
+          "mtime": "2026-08-21T01:15:49.523Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-050-baseline/56d59e8ca7854748a9f74988f98c1bf8/journal.json",
+          "bytes": 4524,
+          "mtime": "2026-08-21T06:16:40.158Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-050-tasks/436b3c54716e4681b9cbc36c265956c0/journal.json",
+          "bytes": 4673,
+          "mtime": "2026-08-21T06:17:42.462Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-050-traceability/b8c3df14f0574c1d90730769404e75c4/journal.json",
+          "bytes": 303951,
+          "mtime": "2026-08-21T06:19:02.520Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-051-baseline/ef8a21dc4ea0432ea3f4f18368293388/journal.json",
+          "bytes": 3909,
+          "mtime": "2026-08-26T09:02:56.297Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-051-tasks/c71f8113be614b50bbc8cf721a639e72/journal.json",
+          "bytes": 3303,
+          "mtime": "2026-08-26T09:03:16.168Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-051-traceability/fd5d76d189b1489f8c4df8d516c71f6b/journal.json",
+          "bytes": 312483,
+          "mtime": "2026-08-26T09:05:17.917Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-052-baseline/cbd6055ccb2b4810bd0b90ce8f8367fc/journal.json",
+          "bytes": 4652,
+          "mtime": "2026-08-27T08:25:21.558Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-052-tasks/ce79be6785934d14b3eb0b8a6dc2a2c7/journal.json",
+          "bytes": 3521,
+          "mtime": "2026-08-27T08:27:59.379Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-052-traceability/9671dfa9788b447cb38b31a119650218/journal.json",
+          "bytes": 321998,
+          "mtime": "2026-08-27T08:30:44.375Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-053-baseline/380d9c03b5a141028ce8d3ffb74ed001/journal.json",
+          "bytes": 4873,
+          "mtime": "2026-08-28T19:23:09.217Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-053-tasks/d4dc2c5f3e994abbbbd207bb5809a93e/journal.json",
+          "bytes": 3880,
+          "mtime": "2026-08-28T19:23:27.869Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-053-traceability/2aa92aa47a764a78ac24d4f6eda6de9a/journal.json",
+          "bytes": 330273,
+          "mtime": "2026-08-28T19:24:23.060Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-054-baseline/10c674caed974b37b551f289aec8f782/journal.json",
+          "bytes": 4881,
+          "mtime": "2026-08-29T13:44:40.588Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-054-tasks/72839823bc2d4247b3d5e2fcfb2072ba/journal.json",
+          "bytes": 3223,
+          "mtime": "2026-08-29T13:45:09.485Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-054-traceability/10ae1e83d0d04a4ebea15bf0acb8d316/journal.json",
+          "bytes": 335970,
+          "mtime": "2026-08-29T13:46:41.809Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-055-baseline/c55b75514f6043169387221bb6bf7a36/journal.json",
+          "bytes": 4841,
+          "mtime": "2026-08-29T23:27:01.346Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-055-tasks/ef663d2f545f4bfaa3d6fad11a8d0923/journal.json",
+          "bytes": 3024,
+          "mtime": "2026-08-29T23:27:23.861Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-055-traceability/92376c7a48fa4a03bab2f20d41512f47/journal.json",
+          "bytes": 340127,
+          "mtime": "2026-08-29T23:29:41.263Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-056-baseline/1d5db1b45de74b3b98631570a881db99/journal.json",
+          "bytes": 3917,
+          "mtime": "2026-08-30T22:34:35.618Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-056-tasks.bak-20260831/405b3daece134c659bf7dfe3d2da8383/journal.json",
+          "bytes": 4155,
+          "mtime": "2026-08-30T23:22:07.827Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-056-tasks/46eb344d7b0845c59e06cddc76091c95/journal.json",
+          "bytes": 1664,
+          "mtime": "2026-08-30T23:42:27.419Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-056-traceability/b73326cec47d44429ea3f76ced11dc4b/journal.json",
+          "bytes": 346010,
+          "mtime": "2026-08-30T22:56:30.160Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-057-baseline/a1e58bcbf1e84ec5a97717794924c658/journal.json",
+          "bytes": 6774,
+          "mtime": "2026-09-01T13:55:49.682Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-057-tasks/67db66d9cc2a452082fee12e9c292ec2/journal.json",
+          "bytes": 3959,
+          "mtime": "2026-09-01T13:56:56.083Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-057-traceability/0a01a7ae7d5b4f3183b0fd2eacdbe5e7/journal.json",
+          "bytes": 355021,
+          "mtime": "2026-09-01T13:59:10.420Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-058-baseline/6dcedc4344c34bcdae9ec0992a85d800/journal.json",
+          "bytes": 4268,
+          "mtime": "2026-09-01T13:00:05.751Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-058-tasks/4dc73baa6b17458498b90a4649ce40ca/journal.json",
+          "bytes": 3026,
+          "mtime": "2026-09-01T13:00:52.922Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-058-traceability/3a76fbe8f42648df831929aceb10a3b7/journal.json",
+          "bytes": 349800,
+          "mtime": "2026-09-01T13:02:44.065Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-059-baseline/ff7ba184592e49ffb8e96f1c3f0d1073/journal.json",
+          "bytes": 3907,
+          "mtime": "2026-09-06T08:34:00.075Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-059-tasks/184ea45afd2049c4a452c2cadcf793e9/journal.json",
+          "bytes": 2347,
+          "mtime": "2026-09-06T08:34:19.882Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-059-traceability/448aa482c0da4aba848c64efcad1e657/journal.json",
+          "bytes": 21307,
+          "mtime": "2026-09-06T08:46:47.701Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-060-baseline/100f08fc17994bc8a5a02fc6c2771645/journal.json",
+          "bytes": 3476,
+          "mtime": "2026-09-03T02:47:12.378Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-060-tasks/7256254a1a1d4ad2bec0ec529349aed2/journal.json",
+          "bytes": 2361,
+          "mtime": "2026-09-03T02:48:28.860Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-060-traceability/832490605a65491b9d175b6af7f960e6/journal.json",
+          "bytes": 7071,
+          "mtime": "2026-09-03T03:16:44.939Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-061-baseline/981b585db8ff4073b7580e6b397f1af8/journal.json",
+          "bytes": 3982,
+          "mtime": "2026-09-09T03:21:05.239Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-061-tasks/9b6bd2e30b91494fa698eb098d972223/journal.json",
+          "bytes": 2386,
+          "mtime": "2026-09-09T03:21:34.273Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-061-traceability/cbf6a9c2ff744cb58e0adc981a120616/journal.json",
+          "bytes": 32429,
+          "mtime": "2026-09-09T03:21:51.826Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-062-baseline/ccf30f855de94e6687544b98b89a37ed/journal.json",
+          "bytes": 4096,
+          "mtime": "2026-09-10T04:04:32.118Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-062-tasks/24ac230896bc4b12b102d8679ea93acf/journal.json",
+          "bytes": 2381,
+          "mtime": "2026-09-10T04:05:09.649Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-062-traceability/96deb1c9cdb24158b116a7a4bbdbb200/journal.json",
+          "bytes": 42283,
+          "mtime": "2026-09-10T04:05:29.180Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-063-baseline/f702186f630448a4b21f56031d42766d/journal.json",
+          "bytes": 4262,
+          "mtime": "2026-09-12T00:45:10.702Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-063-tasks/e4cf54182ae34d809fff25d413bc7e99/journal.json",
+          "bytes": 2387,
+          "mtime": "2026-09-12T00:45:46.066Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-063-traceability/abcdfa888df8463d89a4a9c9ad3f5836/journal.json",
+          "bytes": 53146,
+          "mtime": "2026-09-12T00:46:03.856Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-064-baseline/0c63da29b20a414180f813b5a93e57f2/journal.json",
+          "bytes": 4919,
+          "mtime": "2026-09-14T01:34:09.792Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-064-tasks/2b05a33c26cd4007bc5f680ccdeaa2c4/journal.json",
+          "bytes": 2395,
+          "mtime": "2026-09-14T01:34:27.877Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-064-traceability/ee64ba63923442659827eb4954a123d5/journal.json",
+          "bytes": 81782,
+          "mtime": "2026-09-14T01:34:44.443Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-065-baseline/7ccf4b20679844e8bd43b465657605b5/journal.json",
+          "bytes": 4458,
+          "mtime": "2026-09-13T12:14:29.714Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-065-tasks/5a673d73ade6409bafeeb8f3dd1bb409/journal.json",
+          "bytes": 2378,
+          "mtime": "2026-09-13T12:14:52.128Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-065-traceability/a9e56c6c1db84ef8962fc0256c4fbb20/journal.json",
+          "bytes": 67092,
+          "mtime": "2026-09-13T12:15:26.024Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-066-baseline/b8cf8b46ff9b46b38cdf09b45b1cd731/journal.json",
+          "bytes": 4377,
+          "mtime": "2026-09-14T11:12:18.718Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-066-tasks/a7e3af02acc5404396fc310a19ca44b3/journal.json",
+          "bytes": 2361,
+          "mtime": "2026-09-14T11:12:35.182Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-066-traceability/5ee3fb4b0a2f478a9b81a5d2bcb6a37b/journal.json",
+          "bytes": 92668,
+          "mtime": "2026-09-14T11:12:51.209Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-067-baseline/f7c554a520f74da68b0198de518e82bb/journal.json",
+          "bytes": 4071,
+          "mtime": "2026-09-15T06:56:40.135Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-067-tasks/e450b88d8b1f416fbf1c2b6f92025d87/journal.json",
+          "bytes": 2345,
+          "mtime": "2026-09-15T06:56:57.518Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-067-traceability/17aa79380d134507a71a4003a691bb2d/journal.json",
+          "bytes": 100354,
+          "mtime": "2026-09-15T06:57:13.492Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-068-baseline/0066c09b439d49168be6c9fa49afc4b0/journal.json",
+          "bytes": 4483,
+          "mtime": "2026-09-15T23:53:52.674Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-068-tasks/166f36ec9bfd45d1970fcc8ea72f8b8d/journal.json",
+          "bytes": 2353,
+          "mtime": "2026-09-15T23:54:14.155Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-068-traceability/84dc2640bd804d129f2ba82b896f3776/journal.json",
+          "bytes": 107800,
+          "mtime": "2026-09-15T23:54:31.836Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-069-baseline/cc6f2d5206f645ac8bb78540e34798d7/journal.json",
+          "bytes": 5986,
+          "mtime": "2026-09-17T14:07:06.401Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-069-tasks/51c716950a764e17bcacbd5ff80a990b/journal.json",
+          "bytes": 3620,
+          "mtime": "2026-09-17T14:07:21.625Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-069-traceability/14d325d873fe4f6a936561e5986ebbf3/journal.json",
+          "bytes": 113960,
+          "mtime": "2026-09-17T14:07:35.910Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-070-baseline/bdf27c06e7e24e86a50bb109122d2afb/journal.json",
+          "bytes": 4243,
+          "mtime": "2026-09-18T09:51:01.284Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-070-tasks/cd24d714b6a4485da26c9ad67562c4b0/journal.json",
+          "bytes": 2363,
+          "mtime": "2026-09-18T09:51:26.792Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-070-traceability/8b4c972a2dba478ea1bd2bf923e88c1d/journal.json",
+          "bytes": 119646,
+          "mtime": "2026-09-18T09:51:37.811Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-071-baseline/ac5154bd16174922aa8dc7d9450d97c6/journal.json",
+          "bytes": 4141,
+          "mtime": "2026-09-28T10:16:30.543Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-071-tasks/0eeff8b18aeb457abe2920c35cd25604/journal.json",
+          "bytes": 2590,
+          "mtime": "2026-09-28T10:20:41.862Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-071-traceability/c12e6ed6b45840ac97d6a0e8499a1b7f/journal.json",
+          "bytes": 125197,
+          "mtime": "2026-09-28T10:21:22.448Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-072-baseline/560ac95e557c4de7910ae28019fee9da/journal.json",
+          "bytes": 4100,
+          "mtime": "2026-09-29T06:05:23.674Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-072-tasks/c4a508774bc5449d8464f81716770280/journal.json",
+          "bytes": 2583,
+          "mtime": "2026-09-29T06:05:43.601Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-072-traceability/680a141d899f4615bbc1bd52654094c0/journal.json",
+          "bytes": 130891,
+          "mtime": "2026-09-29T06:05:58.203Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-073-baseline/a89ba814b62442d7b139a8bc446f1170/journal.json",
+          "bytes": 4196,
+          "mtime": "2026-09-30T12:19:58.509Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-073-tasks/a8048418878e40f58341a6f7a1166868/journal.json",
+          "bytes": 2331,
+          "mtime": "2026-09-30T12:20:25.088Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-073-traceability/4fb7de93570a49ff90f4516f1b174be5/journal.json",
+          "bytes": 138425,
+          "mtime": "2026-09-30T12:21:11.391Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-074-baseline/ac33819335d74c358e6dfca682a4014b/journal.json",
+          "bytes": 4211,
+          "mtime": "2026-10-02T12:06:32.914Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-074-tasks/03f708a555e04ad9986e84f54593fc56/journal.json",
+          "bytes": 3710,
+          "mtime": "2026-10-02T12:06:50.110Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-074-traceability/ec7316d6581e4c8b91cb6ee087d3f5ed/journal.json",
+          "bytes": 146663,
+          "mtime": "2026-10-02T12:07:03.703Z"
+        }
+      ],
+      "audit": {
+        "exists": true,
+        "lines": 10065,
+        "sha16": "54613e92baebb2e5"
+      },
+      "measuredAt": "两变体各自的两次调用前后、归档写入前"
+    },
+    "after": {
+      "gitStatus": {
+        "exitCode": 0,
+        "porcelain": ""
+      },
+      "journals": [
+        {
+          "rel": "transactions/archive/CR-2026-013/544c68a0bc2a4d03b9262e7ed077ebd0/journal.json",
+          "bytes": 996,
+          "mtime": "2026-08-14T11:16:52.522Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-014/667d404e764e43cc94d7a9bd77cb826c/journal.json",
+          "bytes": 996,
+          "mtime": "2026-08-14T11:17:48.843Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-015/b3c9a65d10b5476187c8971c3ac101c1/journal.json",
+          "bytes": 996,
+          "mtime": "2026-08-14T11:18:20.588Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-016/8898386dbdb84a149b9a3eb06a54d28f/journal.json",
+          "bytes": 996,
+          "mtime": "2026-08-14T11:18:52.780Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-017/a4ee1461f06749469f9296e70bc1c2e0/journal.json",
+          "bytes": 996,
+          "mtime": "2026-08-14T11:19:27.036Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-031/ea735b63d2164fb4b0a62889032a8a8e/journal.json",
+          "bytes": 928,
+          "mtime": "2026-08-12T09:02:33.621Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-032/5a951517bf404636ae9acf4b7874ceee/journal.json",
+          "bytes": 955,
+          "mtime": "2026-08-13T06:39:32.776Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-033/94dfa8ca74dc49ea901e4cf2a9f8551a/journal.json",
+          "bytes": 977,
+          "mtime": "2026-08-13T15:39:23.982Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-034/3700044ecf5a4880a3df817f0cfe942e/journal.json",
+          "bytes": 996,
+          "mtime": "2026-08-14T11:20:14.317Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-035/1652f86cc1584e5885653dbfdf5ac59f/journal.json",
+          "bytes": 996,
+          "mtime": "2026-08-14T11:20:47.008Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-036/1bc31a93ba844c55b115bf4e349bc1dd/journal.json",
+          "bytes": 996,
+          "mtime": "2026-08-14T11:22:03.506Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-037/642e9e20e53d434f985414b1d5e7dc63/journal.json",
+          "bytes": 928,
+          "mtime": "2026-08-13T03:51:41.230Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-038/d64022f4286a46ef88d14a2e7dbd3e4b/journal.json",
+          "bytes": 977,
+          "mtime": "2026-08-14T16:11:23.131Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-039/e9bee13bc7104d7691ab3d828bb2b95f/journal.json",
+          "bytes": 1178,
+          "mtime": "2026-08-15T02:31:58.366Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-040/abc18d98516c483b935d0ac1219ac0a8/journal.json",
+          "bytes": 993,
+          "mtime": "2026-08-15T07:41:47.681Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-041/0dcca6bb729c4da7942cbab512d1dae3/journal.json",
+          "bytes": 993,
+          "mtime": "2026-08-15T15:55:40.955Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-042/fb347cc63fae4551a22f4eb09c91d771/journal.json",
+          "bytes": 993,
+          "mtime": "2026-08-16T13:20:51.627Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-043/4f3b4e7e357c415d865de307e8624378/journal.json",
+          "bytes": 993,
+          "mtime": "2026-08-16T01:23:25.441Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-044/d4078c004660499ab6ad0bbaaf147bf8/journal.json",
+          "bytes": 993,
+          "mtime": "2026-08-17T03:01:57.074Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-045/49afff9455e94ba5b54a0725747cf24f/journal.json",
+          "bytes": 1479,
+          "mtime": "2026-08-18T12:02:22.738Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-046/3f4abec2046340659590475cc52935f5/journal.json",
+          "bytes": 993,
+          "mtime": "2026-08-18T14:26:39.484Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-047/034bc37b65f54a06ac2acf9563695d67/journal.json",
+          "bytes": 993,
+          "mtime": "2026-08-20T03:30:01.921Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-048/22ab3795a3634a13921a9bfa2948340d/journal.json",
+          "bytes": 1244,
+          "mtime": "2026-08-20T11:22:21.871Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-049/87e3b6c8492e48db8a12dde105cbec79/journal.json",
+          "bytes": 993,
+          "mtime": "2026-08-21T01:27:58.884Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-050/44118e814c184d28b2868795e3a437af/journal.json",
+          "bytes": 993,
+          "mtime": "2026-08-21T06:19:37.353Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-051/713291bc8d2547c8b831127192545786/journal.json",
+          "bytes": 993,
+          "mtime": "2026-08-26T09:06:23.925Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-052/ceb6550be398481fa54a2d2d20e1d12c/journal.json",
+          "bytes": 993,
+          "mtime": "2026-08-27T08:32:30.238Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-053/24adaa9def9348bb81b6683ab9166af0/journal.json",
+          "bytes": 993,
+          "mtime": "2026-08-28T19:32:54.744Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-054/9e923ed96df9404ea2c003e640ee8571/journal.json",
+          "bytes": 993,
+          "mtime": "2026-08-29T13:48:00.290Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-055/3954e73a79fd4907b85e843e4406f29a/journal.json",
+          "bytes": 993,
+          "mtime": "2026-08-29T23:30:18.005Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-056/ce6e999a11004178967b665c47be0f1e/journal.json",
+          "bytes": 993,
+          "mtime": "2026-08-30T23:47:32.343Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-057/d283e86b4ddf48278fe749eebe6693c4/journal.json",
+          "bytes": 993,
+          "mtime": "2026-09-01T13:59:51.850Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-058/c59b713027e8430e84df69de17569c95/journal.json",
+          "bytes": 993,
+          "mtime": "2026-09-01T13:03:34.328Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-059/3c982fda3a054729bedfe9f27e031858/journal.json",
+          "bytes": 1076,
+          "mtime": "2026-09-06T09:17:24.017Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-060/a0800e98e01542c7a1b912a34eddfb58/journal.json",
+          "bytes": 1076,
+          "mtime": "2026-09-03T03:18:06.637Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-061/5ab5a51c585843609376d56860f0dc72/journal.json",
+          "bytes": 1088,
+          "mtime": "2026-09-09T03:22:32.426Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-062/1945efdb90c34eee90d188bfd22283c4/journal.json",
+          "bytes": 1088,
+          "mtime": "2026-09-10T05:48:35.989Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-063/36cbdae05b5e4d60bd136107ae29bb25/journal.json",
+          "bytes": 1088,
+          "mtime": "2026-09-12T00:46:59.638Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-064/1b6bc45ab3b246da8d2559842aeec54d/journal.json",
+          "bytes": 1088,
+          "mtime": "2026-09-14T01:35:34.141Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-065/6ef9320f3dbb470abff85e4a0b387748/journal.json",
+          "bytes": 1088,
+          "mtime": "2026-09-13T12:16:06.472Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-066/15aa3f6e811b4aed96da36219987c3ce/journal.json",
+          "bytes": 1088,
+          "mtime": "2026-09-14T11:13:54.497Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-067/2d9f8a63386f49f6b6bc7203b66201dc/journal.json",
+          "bytes": 1088,
+          "mtime": "2026-09-15T06:57:49.155Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-068/602e61aa89e443beabc25b7cd7bd1b7f/journal.json",
+          "bytes": 1088,
+          "mtime": "2026-09-15T23:55:23.083Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-069/e914d288e1bd472babe64079efabb3b7/journal.json",
+          "bytes": 1088,
+          "mtime": "2026-09-17T14:08:12.505Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-070/51e029d5460e47f799212f5fcac8c183/journal.json",
+          "bytes": 1088,
+          "mtime": "2026-09-18T09:52:01.749Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-071/2e13097b68dd4dcdbc90537fb218393d/journal.json",
+          "bytes": 1121,
+          "mtime": "2026-09-28T10:33:46.430Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-072/d26d24d931fb4a0a8a5678fe082bb3cb/journal.json",
+          "bytes": 1121,
+          "mtime": "2026-09-29T06:33:00.777Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-073/5297a806e1524548a45d73eec9fafa61/journal.json",
+          "bytes": 1121,
+          "mtime": "2026-09-30T12:22:17.899Z"
+        },
+        {
+          "rel": "transactions/archive/CR-2026-074/2b4a04cde80142c3b7ae055cae8ea716/journal.json",
+          "bytes": 1121,
+          "mtime": "2026-10-02T12:07:35.379Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-031/cf2caac7d657430d94c02dd3a357ed41/journal.json",
+          "bytes": 1838,
+          "mtime": "2026-08-12T08:55:38.066Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-032/ce4b640464ea44cf98a4ce8de0d68ab4/journal.json",
+          "bytes": 1838,
+          "mtime": "2026-08-13T06:33:37.780Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-033/be33381756094f29a6d3c17507a7bf05/journal.json",
+          "bytes": 1860,
+          "mtime": "2026-08-13T15:30:35.682Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-037/f6599e2d1d21461d8cd6268c48b53d67/journal.json",
+          "bytes": 1838,
+          "mtime": "2026-08-13T03:38:53.202Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-038/b89a30f7747d4075bfcd369ad702e89b/journal.json",
+          "bytes": 1838,
+          "mtime": "2026-08-14T16:03:48.085Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-039/9d64468747c5427195b107bc611389f1/journal.json",
+          "bytes": 1860,
+          "mtime": "2026-08-15T02:27:45.793Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-040/73d2e9fc579e4ca4b433e3e371486512/journal.json",
+          "bytes": 1860,
+          "mtime": "2026-08-15T07:38:31.720Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-041/746e3f3f598440588c5c855feeac5ceb/journal.json",
+          "bytes": 1860,
+          "mtime": "2026-08-15T15:50:58.209Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-042/aea252c3ec1743e59cd4014c8c8639f6/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-08-16T13:17:49.897Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-043/d008939081a24df3a3da70c9164c5168/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-08-16T01:21:04.704Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-044/d440c8f2c55244e5a853ef9a773c261c/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-08-17T02:57:49.642Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-045/834cbf81f3734b419ea47cc119316514/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-08-18T11:57:44.474Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-046/1cd87102e6554a8bb9870663ecd7d4bd/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-08-18T14:22:18.472Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-047/bddb9358b61e48e998a46e1e8ad2e5a5/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-08-20T03:21:24.029Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-048/817f3648d4dc4af0bcd588d11cf3fc9c/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-08-20T11:19:11.424Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-049/8fe49e6c4e2542078c131f34e2727ff3/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-08-21T01:12:43.416Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-050/0b70e1f6518f44b8bf24fcb0cece3acc/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-08-21T06:16:05.360Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-051/7d824b90d56d44d89e67f19ed20b3b28/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-08-26T09:01:34.226Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-052/6d290b858fdb4651b56044ced9d11dbb/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-08-27T08:20:09.838Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-053/ddc91cbd2d4545d2a7ebf23b39a8f0eb/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-08-28T19:17:40.451Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-054/9f50480219a54e38b2df2a8d724d6172/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-08-29T13:38:29.328Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-055/29d92087820249c29b2dee2debeb84d3/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-08-29T23:24:39.181Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-056/abbdd9a70a2342d99b024623a30894c4/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-08-30T22:26:57.416Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-057/c8474f0732944eb5a54789d915c895ea/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-09-01T13:55:10.575Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-058/f849d33c790d4f9aaa2a4e66a7027438/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-09-01T12:56:33.965Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-059/6384cc1ab6764f4c8f976a3c1f3266d2/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-09-06T08:33:13.686Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-060/60383e7de4c5486299e3d0b31ec77fcb/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-09-02T23:39:28.490Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-061/3b643cab897d4e1aa376b19aadc87a6e/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-09-09T03:20:06.718Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-062/fa106288670e491c9a69bc9cb571917e/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-09-10T04:03:05.478Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-063/d0a689b8fc904c2d893ee48e1d8435df/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-09-12T00:44:19.343Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-064/929bff3b76714bf5b62a398f72b3896c/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-09-14T01:33:29.393Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-065/000a875e16bd41e582a8987ba800c13f/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-09-13T12:13:37.873Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-066/51a722b3b0734213a0ecb4d2e88aae71/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-09-14T11:11:10.031Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-067/f0c95e0bd09b45bd9a41df8c962f26c6/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-09-15T06:54:49.951Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-068/edf230512044472cb769d4e8e68a3f50/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-09-15T23:52:32.450Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-069/cb1ea7af1c374de8877a7ce793626b11/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-09-17T14:06:30.358Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-070/5fd6619904ee4019924308e506b586a9/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-09-18T09:50:37.063Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-071/157aa102d0b64762a34cf03c817e174b/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-09-28T10:11:54.894Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-072/92b2df17553946ff9cbb99338353ffb0/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-09-29T06:04:35.651Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-073/abfa4f0666d145dc828b8f52571d1eb4/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-09-30T12:18:57.746Z"
+        },
+        {
+          "rel": "transactions/merge/CR-2026-074/3a1e8004df194e3495893b21fca9ae30/journal.json",
+          "bytes": 1876,
+          "mtime": "2026-10-02T12:06:08.272Z"
+        },
+        {
+          "rel": "transactions/register/00801a7eabd3ab031933d7c3617aaec791ce5641d24fb3f83d1be4975f286307/31e38578f7e544afa7d8ee6c6fb64f3d/journal.json",
+          "bytes": 1025,
+          "mtime": "2026-08-14T11:45:03.083Z"
+        },
+        {
+          "rel": "transactions/register/2200dbff198055f7645323fc547274cee4b97b1a0e0dd5c385cd100980be233d/28c33989beee4710a8adf9b0465601fd/journal.json",
+          "bytes": 1025,
+          "mtime": "2026-08-13T02:15:37.447Z"
+        },
+        {
+          "rel": "transactions/register/27515bd230c0046c6c55704bbb6db24a8d199ffd5de03fa9d520812530ae96f9/4b23f49bb6914cb8b429e5ab9927487b/journal.json",
+          "bytes": 1114,
+          "mtime": "2026-09-12T18:31:35.084Z"
+        },
+        {
+          "rel": "transactions/register/2de305b7ab716deaba01c61edf0841fb9597bdb4c145246474eae3ad37f85328/8bf9ed5c0e58419bafd260697d6fb584/journal.json",
+          "bytes": 1025,
+          "mtime": "2026-08-13T00:36:33.787Z"
+        },
+        {
+          "rel": "transactions/register/2dfe4e1e48e9003c270f50e01679f8fab08b29478be573e67f2eeea90cf5c56d/734ebc18579e4b7186c7867e5b5de80f/journal.json",
+          "bytes": 1025,
+          "mtime": "2026-08-14T11:47:29.152Z"
+        },
+        {
+          "rel": "transactions/register/351b54a7de9039be1e5850c69b5020ae6ef89f2fc6ed06bad278d0534e16ae18/b95e5de589a44a8bad7ffb8944aa5808/journal.json",
+          "bytes": 1063,
+          "mtime": "2026-08-18T12:16:51.544Z"
+        },
+        {
+          "rel": "transactions/register/37e29172d4e2109dd32d74b820e9c79e227e69cf8a2a43d366ac51a89f0d5a0b/127d24559d1e495a9637c805c1e08507/journal.json",
+          "bytes": 1114,
+          "mtime": "2026-09-14T23:32:48.459Z"
+        },
+        {
+          "rel": "transactions/register/3ba3f320267ac5e5cd458433c4c103f30e6ca152ca2a6389a032d32bb0040e7c/a38ae1df37514535b3287bbe25958dcb/journal.json",
+          "bytes": 1063,
+          "mtime": "2026-08-17T10:28:28.930Z"
+        },
+        {
+          "rel": "transactions/register/3d9299d584a0d3717f23428b5b1de9e0fad50ba09b1ba64d84e06a3b86caf887/bfc3e4abb5634c10aaef71e94a1024fe/journal.json",
+          "bytes": 1114,
+          "mtime": "2026-10-02T13:07:24.551Z"
+        },
+        {
+          "rel": "transactions/register/3f56fcd0c91bf9c263d4bfc17cace599bac83199ea60a530a43b08fc55ac1eca/d50f452fa7ba464ca0ca606a02dfd903/journal.json",
+          "bytes": 1114,
+          "mtime": "2026-09-09T07:11:26.820Z"
+        },
+        {
+          "rel": "transactions/register/4235cfd3622a66204ea5842090f5bc9e453355494c6c6c039bb9bd822e2e8650/eb502b59f44e4f30896ed12b4be9f355/journal.json",
+          "bytes": 1025,
+          "mtime": "2026-08-14T11:46:41.662Z"
+        },
+        {
+          "rel": "transactions/register/43ac3c9523b1e5d98bccb7396f873eaebf2c22a5ad5c172c73e64cf11e1ffa0a/d98a7ff5e1274e18bec52285b4f3b5a8/journal.json",
+          "bytes": 1063,
+          "mtime": "2026-08-19T16:10:47.632Z"
+        },
+        {
+          "rel": "transactions/register/4a70f12c923f1e1a6c3adbd2d1d79c60dcb159a1560e28d5594a22b4b0e96bc0/a4c86ae076e744189fed32ea5de1b4d4/journal.json",
+          "bytes": 1063,
+          "mtime": "2026-08-29T04:13:24.086Z"
+        },
+        {
+          "rel": "transactions/register/5734bf80b31e2b8ced8588f14b9f6df53a30ae57f3c3f6acebfa12a714fc97e1/47fb0a8bb28f4b19942b11dfdfb80d0b/journal.json",
+          "bytes": 1114,
+          "mtime": "2026-09-30T04:22:31.845Z"
+        },
+        {
+          "rel": "transactions/register/5c635449a4d08f53efc235ad2026dd66d1623333e1d3aefebc87814dd746b09e/1cee4d60658e4ad7be7955add8118705/journal.json",
+          "bytes": 1063,
+          "mtime": "2026-08-26T16:17:41.576Z"
+        },
+        {
+          "rel": "transactions/register/674181de71b5f083aed3d89030856a4d9eb85334714aa35989cd9852abd31d84/0dc1925f4a314cafb12bfd9fecd0fc5f/journal.json",
+          "bytes": 1063,
+          "mtime": "2026-08-31T09:13:27.438Z"
+        },
+        {
+          "rel": "transactions/register/7ac36ec0a83b72fd623a99671863b6648213b27a35065091676ceeee48b9201f/9e087a17d9564992bb5c56280fe04761/journal.json",
+          "bytes": 1114,
+          "mtime": "2026-09-27T05:19:53.661Z"
+        },
+        {
+          "rel": "transactions/register/7dd3a41b9728932d5594f776b0a3b6fc2307cdfe6086127bbafbaf6b3dd30e35/6b2fc638341745a2bff21341b699d8be/journal.json",
+          "bytes": 1025,
+          "mtime": "2026-08-13T00:34:59.929Z"
+        },
+        {
+          "rel": "transactions/register/7e452bbb404ec2eb609cc630141152d274ef8303abd614e281b1c319844ec295/25160359623748c5bdae03a8e32e5178/journal.json",
+          "bytes": 1114,
+          "mtime": "2026-09-07T03:57:32.935Z"
+        },
+        {
+          "rel": "transactions/register/876cb89446181c2d46f8251720867468676bd7501ba5306d965b99a221ff301d/01e35b630b0f4dfc972643a31933a0f7/journal.json",
+          "bytes": 1114,
+          "mtime": "2026-09-14T02:51:11.277Z"
+        },
+        {
+          "rel": "transactions/register/8b4561aa455f6aeb16905b06011186d8a024a19b1113f126948d935537c0eda7/099b58e873014391a6055301ea6aefe1/journal.json",
+          "bytes": 1025,
+          "mtime": "2026-08-14T11:45:53.716Z"
+        },
+        {
+          "rel": "transactions/register/8e1fb4a4b767df36a0cad5f4670fb1360f972c0116120c6d960a7906f2c92dc5/f12818e2935948f695112352721892d7/journal.json",
+          "bytes": 1114,
+          "mtime": "2026-09-12T14:07:23.079Z"
+        },
+        {
+          "rel": "transactions/register/8f0c8ef60a7843e0388afdd20ac8833abd9748e950e78ac2b1dead7e7e419a28/c87d2853f8c547a5ae6f969d0293824b/journal.json",
+          "bytes": 1063,
+          "mtime": "2026-08-25T10:04:21.258Z"
+        },
+        {
+          "rel": "transactions/register/93a45a8d6fb2087e807452ca4b6b7cb06e74b968f9b60b02071e09f57abe3bc1/54644c3b63e84512993bd12955791a14/journal.json",
+          "bytes": 1114,
+          "mtime": "2026-09-17T06:33:57.304Z"
+        },
+        {
+          "rel": "transactions/register/9584f219144cccfa9ffdeb554018b5924c94cd5b8f886bebc806b569663d0177/ad2b1cf7abed4ad9bf16882d4f7d6276/journal.json",
+          "bytes": 1114,
+          "mtime": "2026-09-30T13:33:35.099Z"
+        },
+        {
+          "rel": "transactions/register/970c7f8d5e2b76fce3cb4cba694bf766b2050592eb8342f3aa4b04ac3ef2e879/ec595f8042574b479edb56a4c514e1ca/journal.json",
+          "bytes": 1114,
+          "mtime": "2026-09-11T09:23:53.339Z"
+        },
+        {
+          "rel": "transactions/register/9a545733b82789b28df9790b6842259657b5fe01b5575d4411d263c121465ddd/408e0981813e47ce8dd75ec8d76d9045/journal.json",
+          "bytes": 1063,
+          "mtime": "2026-09-01T14:50:17.428Z"
+        },
+        {
+          "rel": "transactions/register/9e57645f391f0dff6008093e5f772604ef9edb98a6135c7dbd0bad0cf9a56666/f087d361c1f648d8970fd44b6051c4b8/journal.json",
+          "bytes": 1063,
+          "mtime": "2026-09-01T05:01:05.387Z"
+        },
+        {
+          "rel": "transactions/register/ac11b09ee699e36232dd51beeba596b32b609ce3aa58ccb4724e64a30648bec1/b512902fc5344e4fb1afe7762c5499ce/journal.json",
+          "bytes": 1025,
+          "mtime": "2026-08-13T00:35:21.033Z"
+        },
+        {
+          "rel": "transactions/register/af40db4ecf2dbda9d8643f52de34e4d2c441aca0eb5f4a8b724f096650305215/74086e2dfc24467c8d9ff7554330a2d3/journal.json",
+          "bytes": 1114,
+          "mtime": "2026-09-18T01:05:42.812Z"
+        },
+        {
+          "rel": "transactions/register/af414a42892facc42c9a5241f086d948a5cf4e107550aa349534a53d97029f7f/de94b8027b534eef8018ca2e851a2eb1/journal.json",
+          "bytes": 1063,
+          "mtime": "2026-08-15T15:59:47.081Z"
+        },
+        {
+          "rel": "transactions/register/b3e95bfbe1da654569f19430fe257344df588eefff9cd0633eea86976b0a7f2d/269237cdd9f84e02aee78e9d6f197c25/journal.json",
+          "bytes": 583,
+          "mtime": "2026-09-02T07:48:19.629Z"
+        },
+        {
+          "rel": "transactions/register/b50ed5ba7c43ff3ca7efe4943637668a72be233aa3ac1db5e88af96b509db924/45990344712d4867a28d7f87b0382669/journal.json",
+          "bytes": 1063,
+          "mtime": "2026-08-20T03:42:51.324Z"
+        },
+        {
+          "rel": "transactions/register/b68c2b7ea4808376e4278adaeba6727004c609b4f998e9bd08bd02a6b0fa6e13/3d637fa97a464fe0a6fcec48214bfcb4/journal.json",
+          "bytes": 1063,
+          "mtime": "2026-08-21T01:31:50.413Z"
+        },
+        {
+          "rel": "transactions/register/c28ae1eda429d4c88873ec8f0f34ea247fb92a8e23643e09e1e21ea79e689551/559fdc7fbc8b4bf0ab84a6d18a6915a7/journal.json",
+          "bytes": 1063,
+          "mtime": "2026-08-30T08:34:29.639Z"
+        },
+        {
+          "rel": "transactions/register/c856c19319996bbcc2e1015e18e60c4007e5a496c332c0f676c51a6bbe486bc1/70498ea48a004b12814bd8154d30fb02/journal.json",
+          "bytes": 1063,
+          "mtime": "2026-08-16T15:32:48.141Z"
+        },
+        {
+          "rel": "transactions/register/da0fbea6471d94ea36fc67b15060f3e426ca0d1680b3f99965e36268ff930f35/0534dfe3d7734d78941efb342b1e198f/journal.json",
+          "bytes": 1063,
+          "mtime": "2026-08-20T11:27:13.749Z"
+        },
+        {
+          "rel": "transactions/register/db07bafdb13958a396fe15d8bc8724f2ec1ede2779e5fc93b8b5c3818fe6e740/77e2d1fde42a4ed3a2a959ee6b95f12e/journal.json",
+          "bytes": 1063,
+          "mtime": "2026-09-02T08:39:48.684Z"
+        },
+        {
+          "rel": "transactions/register/db496042f705137c1ff90c4bde2ee4f96a9fe520d72833e8f90bd1e139097792/36f79ef87df44752b51d196e33931b85/journal.json",
+          "bytes": 1079,
+          "mtime": "2026-08-27T09:30:28.469Z"
+        },
+        {
+          "rel": "transactions/register/e34608a832af0e795265d6a5fc5610e2985cb3a474325292c7d737f8b6f354f5/f23d28934318408789fc4ddaf41388c4/journal.json",
+          "bytes": 1025,
+          "mtime": "2026-08-13T00:35:46.183Z"
+        },
+        {
+          "rel": "transactions/register/eb148e37b4d6b91302134ac823e1549724a95baf0792548fe0a4853c0fecba51/2f51506c0d024982bf5b18f34980969d/journal.json",
+          "bytes": 1114,
+          "mtime": "2026-09-28T14:45:01.126Z"
+        },
+        {
+          "rel": "transactions/register/f097bee91d1f5f59ee60fc220162ac6862c7e4aa0cbbac63c60f2806af279e69/71e5ad961eb344d9b040e3df75f2d6bc/journal.json",
+          "bytes": 1114,
+          "mtime": "2026-09-15T11:58:58.451Z"
+        },
+        {
+          "rel": "transactions/register/f417e069fed8956dd2e4af890715a78421762b5bfe3ef7771f9eb0b6c189b267/8326caaa725940269934d82c3616978b/journal.json",
+          "bytes": 1025,
+          "mtime": "2026-08-14T11:44:19.177Z"
+        },
+        {
+          "rel": "transactions/register/f66670c5b40c11b97e6765144b5a196593778d6cc161d78615cb3d9b1d808c26/2530b8939ee64ad6bc4b651d70ac2978/journal.json",
+          "bytes": 1025,
+          "mtime": "2026-08-13T00:36:10.305Z"
+        },
+        {
+          "rel": "transactions/register/ff1b9f61b1dc0ec8d867429b04d608f9c23399380c91e33420dd00dadc9527fc/a559eebafa7345b8b660dc03b295719e/journal.json",
+          "bytes": 1063,
+          "mtime": "2026-08-29T13:59:06.617Z"
+        },
+        {
+          "rel": "transactions/workspace/CR-2026-042/d0bb0530fe244f208c9d578bd247059f/journal.json",
+          "bytes": 1490,
+          "mtime": "2026-08-16T03:49:56.762Z"
+        },
+        {
+          "rel": "transactions/workspace/CR-2026-043/8826a92a1fd94ba1a4d5ce783efb7ac1/journal.json",
+          "bytes": 1404,
+          "mtime": "2026-08-15T23:46:25.909Z"
+        },
+        {
+          "rel": "transactions/workspace/CR-2026-045/3f051fa234c044648541e045c5fda7ed/journal.json",
+          "bytes": 1404,
+          "mtime": "2026-08-17T10:48:40.464Z"
+        },
+        {
+          "rel": "transactions/workspace/CR-2026-059/5a1a83fbdcd948d5addd87a90cfd5e01/journal.json",
+          "bytes": 1447,
+          "mtime": "2026-09-03T12:49:40.032Z"
+        },
+        {
+          "rel": "transactions/workspace/CR-2026-061/0b3a9c9162444d349915ed1d9bf903a8/journal.json",
+          "bytes": 1404,
+          "mtime": "2026-09-08T03:34:40.750Z"
+        },
+        {
+          "rel": "transactions/workspace/CR-2026-061/c27ff388d97a4115a3e5415c245a05c6/journal.json",
+          "bytes": 1404,
+          "mtime": "2026-09-07T16:15:25.641Z"
+        },
+        {
+          "rel": "transactions/workspace/CR-2026-061/ccbc3b8cf0cd4967a3edfbfe1eea7bf8/journal.json",
+          "bytes": 1404,
+          "mtime": "2026-09-07T14:25:22.628Z"
+        },
+        {
+          "rel": "transactions/workspace/CR-2026-061/dc5397408e6f446c8b423141b029df8e/journal.json",
+          "bytes": 1447,
+          "mtime": "2026-09-07T13:58:51.244Z"
+        },
+        {
+          "rel": "transactions/workspace/CR-2026-064/163c8d30d86948ffb4f068dc0ef055b9/journal.json",
+          "bytes": 1447,
+          "mtime": "2026-09-13T12:44:50.709Z"
+        },
+        {
+          "rel": "transactions/workspace/CR-2026-074/8cdf3dd4b4e742d9b8b8526f40679d7d/journal.json",
+          "bytes": 1404,
+          "mtime": "2026-10-02T09:59:26.122Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-031-baseline/535051f0513849869f78d8e2eec12948/journal.json",
+          "bytes": 1574,
+          "mtime": "2026-08-12T08:57:43.356Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-031-tasks/326148ca9ba94ff2808c64102530ee30/journal.json",
+          "bytes": 3762,
+          "mtime": "2026-08-12T08:58:09.800Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-031-traceability/3a9124ffd0e34b3dbf45a6e96828e9f4/journal.json",
+          "bytes": 1104,
+          "mtime": "2026-08-12T08:59:20.884Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-032-baseline/e1ed4b51aad144e1968b09c364d05ad4/journal.json",
+          "bytes": 1574,
+          "mtime": "2026-08-13T06:34:25.944Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-032-tasks/33d150a8174e4a7fa10b84a5f37deb68/journal.json",
+          "bytes": 1965,
+          "mtime": "2026-08-13T06:34:55.467Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-032-traceability/37dd03b822694c72a2dc063ef22971d9/journal.json",
+          "bytes": 1104,
+          "mtime": "2026-08-13T06:35:51.096Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-033-baseline/d41e6862bb644dd5910fd0817c9c7e2e/journal.json",
+          "bytes": 1596,
+          "mtime": "2026-08-13T15:34:50.386Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-033-tasks/e3587bee0c274f739eb65000cebdc0e9/journal.json",
+          "bytes": 2248,
+          "mtime": "2026-08-13T15:37:07.488Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-033-traceability/d020da76207c4e47a47c1b5b26cd81fb/journal.json",
+          "bytes": 1126,
+          "mtime": "2026-08-13T15:38:08.045Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-037-baseline/88c8f5c30eb549a9a20c7f9e12192227/journal.json",
+          "bytes": 1574,
+          "mtime": "2026-08-13T03:44:41.774Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-037-tasks/da6903a2c2584487a7dbb85af185eddb/journal.json",
+          "bytes": 1697,
+          "mtime": "2026-08-13T03:47:59.948Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-037-traceability/cac8d7ea58c7416e90631431380bb622/journal.json",
+          "bytes": 1104,
+          "mtime": "2026-08-13T03:48:56.769Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-038-baseline/17db0cc9cf754137b21c2dd101655eee/journal.json",
+          "bytes": 3880,
+          "mtime": "2026-08-14T16:07:38.905Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-038-tasks/858cc88f7d5d4806911fa6802d6a9bd2/journal.json",
+          "bytes": 2520,
+          "mtime": "2026-08-14T16:07:59.962Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-038-traceability/7327c93776ad4167a713fb226698f119/journal.json",
+          "bytes": 1424,
+          "mtime": "2026-08-14T16:09:45.530Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-039-baseline/510476b4b0f14ef8a682560d37d37cee/journal.json",
+          "bytes": 3889,
+          "mtime": "2026-08-15T02:29:13.731Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-039-tasks/e8a2d287f1db400bb884522038bfd361/journal.json",
+          "bytes": 2782,
+          "mtime": "2026-08-15T02:29:41.728Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-039-traceability/f8791b8534914a7a8f638981bc098499/journal.json",
+          "bytes": 1424,
+          "mtime": "2026-08-15T02:31:11.118Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-040-baseline/37d5cb235cff4b52ba2205ced14a42a8/journal.json",
+          "bytes": 3847,
+          "mtime": "2026-08-15T07:39:15.444Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-040-tasks/96cda0c5bfb04b0f9ff920cd7532d7a2/journal.json",
+          "bytes": 2791,
+          "mtime": "2026-08-15T07:39:33.267Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-040-traceability/67ba30a658fd4cb580376cae42917599/journal.json",
+          "bytes": 1443,
+          "mtime": "2026-08-15T07:41:16.622Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-041-baseline/4f85e86faa974bacb73eedbadbfc060d/journal.json",
+          "bytes": 3897,
+          "mtime": "2026-08-15T15:51:57.118Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-041-tasks/622cd2cc8ff04f9699d79f68a440125b/journal.json",
+          "bytes": 3253,
+          "mtime": "2026-08-15T15:52:17.005Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-041-traceability/f355ca35b84047b5a1b1ea262625fd30/journal.json",
+          "bytes": 1443,
+          "mtime": "2026-08-15T15:53:06.896Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-042-baseline/776697b0076e4f7291b365fcbf4081bd/journal.json",
+          "bytes": 3862,
+          "mtime": "2026-08-16T13:18:33.104Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-042-tasks/ecfbb254c37e4e13816008b9d730e155/journal.json",
+          "bytes": 2106,
+          "mtime": "2026-08-16T13:18:55.185Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-042-traceability/bc740e9e6a094384a1c4bd55542e2a29/journal.json",
+          "bytes": 1440,
+          "mtime": "2026-08-16T13:19:57.249Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-043-baseline/75297cc2161646bdab18fda114ec3e82/journal.json",
+          "bytes": 4032,
+          "mtime": "2026-08-16T01:22:11.534Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-043-tasks/e20874ca87f740bfa20849d878f18243/journal.json",
+          "bytes": 2557,
+          "mtime": "2026-08-16T01:22:24.054Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-043-traceability/d3a51c3d630348e9ae8406df568184d2/journal.json",
+          "bytes": 1443,
+          "mtime": "2026-08-16T01:23:01.551Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-044-baseline/b05182cb818b42b7881a2c1b693ea9a1/journal.json",
+          "bytes": 4057,
+          "mtime": "2026-08-17T02:59:06.476Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-044-tasks/01e195081e284c9789d10991f30a5cad/journal.json",
+          "bytes": 2779,
+          "mtime": "2026-08-17T02:59:39.020Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-044-traceability/64be37b5bf26441a855efc09eed3dde6/journal.json",
+          "bytes": 1443,
+          "mtime": "2026-08-17T03:00:45.850Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-045-baseline/6c469cf0978d4bcba70f6a663feadeff/journal.json",
+          "bytes": 3812,
+          "mtime": "2026-08-18T11:59:27.525Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-045-tasks/e8ec84de10064885b8864d071e792d6c/journal.json",
+          "bytes": 4946,
+          "mtime": "2026-08-18T11:59:50.037Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-045-traceability/2747c23329b44ed29955e7786139c861/journal.json",
+          "bytes": 1443,
+          "mtime": "2026-08-18T12:01:32.747Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-046-baseline/a8b844bcf13b46d497209b48baa71437/journal.json",
+          "bytes": 3814,
+          "mtime": "2026-08-18T14:24:26.962Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-046-tasks/6fbda2320bae4014947b425188179872/journal.json",
+          "bytes": 1877,
+          "mtime": "2026-08-18T14:24:48.332Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-046-traceability/ed01e6ca65b1483fbdf1550f1b6e7833/journal.json",
+          "bytes": 1443,
+          "mtime": "2026-08-18T14:25:21.445Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-047-baseline/aca301bc043f4644865fd442c61028d9/journal.json",
+          "bytes": 4086,
+          "mtime": "2026-08-20T03:23:53.449Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-047-tasks/610312d4ba834666b185f33b48e8b995/journal.json",
+          "bytes": 3895,
+          "mtime": "2026-08-20T03:24:42.779Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-047-traceability/255453c3eda343cab2fd84423557acc1/journal.json",
+          "bytes": 1441,
+          "mtime": "2026-08-20T03:26:50.566Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-048-baseline/4f1af67e25a14fd2a6bc25434a0cd649/journal.json",
+          "bytes": 4025,
+          "mtime": "2026-08-20T11:19:55.906Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-048-tasks/345b12fd28944d84bb35430b006eba51/journal.json",
+          "bytes": 3602,
+          "mtime": "2026-08-20T11:20:19.094Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-048-traceability/cc315a414cec4957a47a993e84735a9f/journal.json",
+          "bytes": 1441,
+          "mtime": "2026-08-20T11:21:31.291Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-049-baseline/5d4c998af8354f388bd2628ad7f3347d/journal.json",
+          "bytes": 4662,
+          "mtime": "2026-08-21T01:13:58.413Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-049-tasks/d60a3220e98a419cb7f053952d76c6f9/journal.json",
+          "bytes": 4429,
+          "mtime": "2026-08-21T01:14:26.654Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-049-traceability/194e2d46a86542f5be9ca8b885ab4caa/journal.json",
+          "bytes": 295248,
+          "mtime": "2026-08-21T01:15:49.523Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-050-baseline/56d59e8ca7854748a9f74988f98c1bf8/journal.json",
+          "bytes": 4524,
+          "mtime": "2026-08-21T06:16:40.158Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-050-tasks/436b3c54716e4681b9cbc36c265956c0/journal.json",
+          "bytes": 4673,
+          "mtime": "2026-08-21T06:17:42.462Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-050-traceability/b8c3df14f0574c1d90730769404e75c4/journal.json",
+          "bytes": 303951,
+          "mtime": "2026-08-21T06:19:02.520Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-051-baseline/ef8a21dc4ea0432ea3f4f18368293388/journal.json",
+          "bytes": 3909,
+          "mtime": "2026-08-26T09:02:56.297Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-051-tasks/c71f8113be614b50bbc8cf721a639e72/journal.json",
+          "bytes": 3303,
+          "mtime": "2026-08-26T09:03:16.168Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-051-traceability/fd5d76d189b1489f8c4df8d516c71f6b/journal.json",
+          "bytes": 312483,
+          "mtime": "2026-08-26T09:05:17.917Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-052-baseline/cbd6055ccb2b4810bd0b90ce8f8367fc/journal.json",
+          "bytes": 4652,
+          "mtime": "2026-08-27T08:25:21.558Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-052-tasks/ce79be6785934d14b3eb0b8a6dc2a2c7/journal.json",
+          "bytes": 3521,
+          "mtime": "2026-08-27T08:27:59.379Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-052-traceability/9671dfa9788b447cb38b31a119650218/journal.json",
+          "bytes": 321998,
+          "mtime": "2026-08-27T08:30:44.375Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-053-baseline/380d9c03b5a141028ce8d3ffb74ed001/journal.json",
+          "bytes": 4873,
+          "mtime": "2026-08-28T19:23:09.217Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-053-tasks/d4dc2c5f3e994abbbbd207bb5809a93e/journal.json",
+          "bytes": 3880,
+          "mtime": "2026-08-28T19:23:27.869Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-053-traceability/2aa92aa47a764a78ac24d4f6eda6de9a/journal.json",
+          "bytes": 330273,
+          "mtime": "2026-08-28T19:24:23.060Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-054-baseline/10c674caed974b37b551f289aec8f782/journal.json",
+          "bytes": 4881,
+          "mtime": "2026-08-29T13:44:40.588Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-054-tasks/72839823bc2d4247b3d5e2fcfb2072ba/journal.json",
+          "bytes": 3223,
+          "mtime": "2026-08-29T13:45:09.485Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-054-traceability/10ae1e83d0d04a4ebea15bf0acb8d316/journal.json",
+          "bytes": 335970,
+          "mtime": "2026-08-29T13:46:41.809Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-055-baseline/c55b75514f6043169387221bb6bf7a36/journal.json",
+          "bytes": 4841,
+          "mtime": "2026-08-29T23:27:01.346Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-055-tasks/ef663d2f545f4bfaa3d6fad11a8d0923/journal.json",
+          "bytes": 3024,
+          "mtime": "2026-08-29T23:27:23.861Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-055-traceability/92376c7a48fa4a03bab2f20d41512f47/journal.json",
+          "bytes": 340127,
+          "mtime": "2026-08-29T23:29:41.263Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-056-baseline/1d5db1b45de74b3b98631570a881db99/journal.json",
+          "bytes": 3917,
+          "mtime": "2026-08-30T22:34:35.618Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-056-tasks.bak-20260831/405b3daece134c659bf7dfe3d2da8383/journal.json",
+          "bytes": 4155,
+          "mtime": "2026-08-30T23:22:07.827Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-056-tasks/46eb344d7b0845c59e06cddc76091c95/journal.json",
+          "bytes": 1664,
+          "mtime": "2026-08-30T23:42:27.419Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-056-traceability/b73326cec47d44429ea3f76ced11dc4b/journal.json",
+          "bytes": 346010,
+          "mtime": "2026-08-30T22:56:30.160Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-057-baseline/a1e58bcbf1e84ec5a97717794924c658/journal.json",
+          "bytes": 6774,
+          "mtime": "2026-09-01T13:55:49.682Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-057-tasks/67db66d9cc2a452082fee12e9c292ec2/journal.json",
+          "bytes": 3959,
+          "mtime": "2026-09-01T13:56:56.083Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-057-traceability/0a01a7ae7d5b4f3183b0fd2eacdbe5e7/journal.json",
+          "bytes": 355021,
+          "mtime": "2026-09-01T13:59:10.420Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-058-baseline/6dcedc4344c34bcdae9ec0992a85d800/journal.json",
+          "bytes": 4268,
+          "mtime": "2026-09-01T13:00:05.751Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-058-tasks/4dc73baa6b17458498b90a4649ce40ca/journal.json",
+          "bytes": 3026,
+          "mtime": "2026-09-01T13:00:52.922Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-058-traceability/3a76fbe8f42648df831929aceb10a3b7/journal.json",
+          "bytes": 349800,
+          "mtime": "2026-09-01T13:02:44.065Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-059-baseline/ff7ba184592e49ffb8e96f1c3f0d1073/journal.json",
+          "bytes": 3907,
+          "mtime": "2026-09-06T08:34:00.075Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-059-tasks/184ea45afd2049c4a452c2cadcf793e9/journal.json",
+          "bytes": 2347,
+          "mtime": "2026-09-06T08:34:19.882Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-059-traceability/448aa482c0da4aba848c64efcad1e657/journal.json",
+          "bytes": 21307,
+          "mtime": "2026-09-06T08:46:47.701Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-060-baseline/100f08fc17994bc8a5a02fc6c2771645/journal.json",
+          "bytes": 3476,
+          "mtime": "2026-09-03T02:47:12.378Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-060-tasks/7256254a1a1d4ad2bec0ec529349aed2/journal.json",
+          "bytes": 2361,
+          "mtime": "2026-09-03T02:48:28.860Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-060-traceability/832490605a65491b9d175b6af7f960e6/journal.json",
+          "bytes": 7071,
+          "mtime": "2026-09-03T03:16:44.939Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-061-baseline/981b585db8ff4073b7580e6b397f1af8/journal.json",
+          "bytes": 3982,
+          "mtime": "2026-09-09T03:21:05.239Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-061-tasks/9b6bd2e30b91494fa698eb098d972223/journal.json",
+          "bytes": 2386,
+          "mtime": "2026-09-09T03:21:34.273Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-061-traceability/cbf6a9c2ff744cb58e0adc981a120616/journal.json",
+          "bytes": 32429,
+          "mtime": "2026-09-09T03:21:51.826Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-062-baseline/ccf30f855de94e6687544b98b89a37ed/journal.json",
+          "bytes": 4096,
+          "mtime": "2026-09-10T04:04:32.118Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-062-tasks/24ac230896bc4b12b102d8679ea93acf/journal.json",
+          "bytes": 2381,
+          "mtime": "2026-09-10T04:05:09.649Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-062-traceability/96deb1c9cdb24158b116a7a4bbdbb200/journal.json",
+          "bytes": 42283,
+          "mtime": "2026-09-10T04:05:29.180Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-063-baseline/f702186f630448a4b21f56031d42766d/journal.json",
+          "bytes": 4262,
+          "mtime": "2026-09-12T00:45:10.702Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-063-tasks/e4cf54182ae34d809fff25d413bc7e99/journal.json",
+          "bytes": 2387,
+          "mtime": "2026-09-12T00:45:46.066Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-063-traceability/abcdfa888df8463d89a4a9c9ad3f5836/journal.json",
+          "bytes": 53146,
+          "mtime": "2026-09-12T00:46:03.856Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-064-baseline/0c63da29b20a414180f813b5a93e57f2/journal.json",
+          "bytes": 4919,
+          "mtime": "2026-09-14T01:34:09.792Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-064-tasks/2b05a33c26cd4007bc5f680ccdeaa2c4/journal.json",
+          "bytes": 2395,
+          "mtime": "2026-09-14T01:34:27.877Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-064-traceability/ee64ba63923442659827eb4954a123d5/journal.json",
+          "bytes": 81782,
+          "mtime": "2026-09-14T01:34:44.443Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-065-baseline/7ccf4b20679844e8bd43b465657605b5/journal.json",
+          "bytes": 4458,
+          "mtime": "2026-09-13T12:14:29.714Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-065-tasks/5a673d73ade6409bafeeb8f3dd1bb409/journal.json",
+          "bytes": 2378,
+          "mtime": "2026-09-13T12:14:52.128Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-065-traceability/a9e56c6c1db84ef8962fc0256c4fbb20/journal.json",
+          "bytes": 67092,
+          "mtime": "2026-09-13T12:15:26.024Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-066-baseline/b8cf8b46ff9b46b38cdf09b45b1cd731/journal.json",
+          "bytes": 4377,
+          "mtime": "2026-09-14T11:12:18.718Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-066-tasks/a7e3af02acc5404396fc310a19ca44b3/journal.json",
+          "bytes": 2361,
+          "mtime": "2026-09-14T11:12:35.182Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-066-traceability/5ee3fb4b0a2f478a9b81a5d2bcb6a37b/journal.json",
+          "bytes": 92668,
+          "mtime": "2026-09-14T11:12:51.209Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-067-baseline/f7c554a520f74da68b0198de518e82bb/journal.json",
+          "bytes": 4071,
+          "mtime": "2026-09-15T06:56:40.135Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-067-tasks/e450b88d8b1f416fbf1c2b6f92025d87/journal.json",
+          "bytes": 2345,
+          "mtime": "2026-09-15T06:56:57.518Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-067-traceability/17aa79380d134507a71a4003a691bb2d/journal.json",
+          "bytes": 100354,
+          "mtime": "2026-09-15T06:57:13.492Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-068-baseline/0066c09b439d49168be6c9fa49afc4b0/journal.json",
+          "bytes": 4483,
+          "mtime": "2026-09-15T23:53:52.674Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-068-tasks/166f36ec9bfd45d1970fcc8ea72f8b8d/journal.json",
+          "bytes": 2353,
+          "mtime": "2026-09-15T23:54:14.155Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-068-traceability/84dc2640bd804d129f2ba82b896f3776/journal.json",
+          "bytes": 107800,
+          "mtime": "2026-09-15T23:54:31.836Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-069-baseline/cc6f2d5206f645ac8bb78540e34798d7/journal.json",
+          "bytes": 5986,
+          "mtime": "2026-09-17T14:07:06.401Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-069-tasks/51c716950a764e17bcacbd5ff80a990b/journal.json",
+          "bytes": 3620,
+          "mtime": "2026-09-17T14:07:21.625Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-069-traceability/14d325d873fe4f6a936561e5986ebbf3/journal.json",
+          "bytes": 113960,
+          "mtime": "2026-09-17T14:07:35.910Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-070-baseline/bdf27c06e7e24e86a50bb109122d2afb/journal.json",
+          "bytes": 4243,
+          "mtime": "2026-09-18T09:51:01.284Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-070-tasks/cd24d714b6a4485da26c9ad67562c4b0/journal.json",
+          "bytes": 2363,
+          "mtime": "2026-09-18T09:51:26.792Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-070-traceability/8b4c972a2dba478ea1bd2bf923e88c1d/journal.json",
+          "bytes": 119646,
+          "mtime": "2026-09-18T09:51:37.811Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-071-baseline/ac5154bd16174922aa8dc7d9450d97c6/journal.json",
+          "bytes": 4141,
+          "mtime": "2026-09-28T10:16:30.543Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-071-tasks/0eeff8b18aeb457abe2920c35cd25604/journal.json",
+          "bytes": 2590,
+          "mtime": "2026-09-28T10:20:41.862Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-071-traceability/c12e6ed6b45840ac97d6a0e8499a1b7f/journal.json",
+          "bytes": 125197,
+          "mtime": "2026-09-28T10:21:22.448Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-072-baseline/560ac95e557c4de7910ae28019fee9da/journal.json",
+          "bytes": 4100,
+          "mtime": "2026-09-29T06:05:23.674Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-072-tasks/c4a508774bc5449d8464f81716770280/journal.json",
+          "bytes": 2583,
+          "mtime": "2026-09-29T06:05:43.601Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-072-traceability/680a141d899f4615bbc1bd52654094c0/journal.json",
+          "bytes": 130891,
+          "mtime": "2026-09-29T06:05:58.203Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-073-baseline/a89ba814b62442d7b139a8bc446f1170/journal.json",
+          "bytes": 4196,
+          "mtime": "2026-09-30T12:19:58.509Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-073-tasks/a8048418878e40f58341a6f7a1166868/journal.json",
+          "bytes": 2331,
+          "mtime": "2026-09-30T12:20:25.088Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-073-traceability/4fb7de93570a49ff90f4516f1b174be5/journal.json",
+          "bytes": 138425,
+          "mtime": "2026-09-30T12:21:11.391Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-074-baseline/ac33819335d74c358e6dfca682a4014b/journal.json",
+          "bytes": 4211,
+          "mtime": "2026-10-02T12:06:32.914Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-074-tasks/03f708a555e04ad9986e84f54593fc56/journal.json",
+          "bytes": 3710,
+          "mtime": "2026-10-02T12:06:50.110Z"
+        },
+        {
+          "rel": "transactions/writeback/CR-2026-074-traceability/ec7316d6581e4c8b91cb6ee087d3f5ed/journal.json",
+          "bytes": 146663,
+          "mtime": "2026-10-02T12:07:03.703Z"
+        }
+      ],
+      "audit": {
+        "exists": true,
+        "lines": 10065,
+        "sha16": "54613e92baebb2e5"
+      },
+      "measuredAt": "两变体各自的两次调用前后、归档写入前"
+    },
+    "delta": {
+      "gitStatusUnchanged": true,
+      "journalUnchanged": true,
+      "auditUnchanged": true,
+      "auditSuccessRecordAppended": false,
+      "writesUnderKey": []
+    }
+  },
+  "shortPrompt": {
+    "note": "AC-B4：本节点短提示原文逐字投影 + 五项保留片段存在性核对。provider: 本 TASK 未修改 multica 部署副本（TASK-09 收敛），只投影原文。",
+    "projections": [
+      {
+        "id": "tools-pipeline-node-prompt",
+        "repo": "tools",
+        "source": "pipeline-templates/code-implementation.pipeline.json",
+        "sha256Lf": "2386fa69b24101c02d2150451c72ab4a2e75456507a7cb0230e87394ffcd57f0",
+        "bytes": 440,
+        "lineCount": 8,
+        "retainedFragments": [
+          {
+            "label": "显式 CR-ID",
+            "present": true,
+            "excerpt": "alse,⏎  \"inputs\": [⏎    {⏎      \"key\": \"cr_id\",⏎      \"label\": \"CR ID\",⏎      \"type\": \"text\",⏎      \"required\": true,⏎  "
+          },
+          {
+            "label": "阶段说明",
+            "present": true,
+            "excerpt": "当前运行环境不支持创建独立 reviewer task：停在当前 review 节点，提示用户另开独立会话以 quality-reviewer-agent 身份运行同一 review Skill，不得退化为作者自评。\\n\\n读取 node-"
+          },
+          {
+            "label": "职责·产出",
+            "present": true,
+            "excerpt": "碑、总估算与结构化 execution_context。在 node-1.md 输出结构化结果，并在末尾原样传递：\\n```yaml\\nexecution_context:\\n  cr_id: {{inputs.cr_id}}\\n  ope"
+          },
+          {
+            "label": "写入·检查·发布要求",
+            "present": true,
+            "excerpt": " \"代码编写\",⏎  \"description\": \"代码编写流水线：在架构设计审批通过后，根据技术设计文档 sdd.md 生成 plan.md，拆分可执行 TASK，人工确认任务拆分后推进到 developing，并根据配置选择 code"
+          },
+          {
+            "label": "bootstrap/daemon 预检显式根示例",
+            "present": true,
+            "excerpt": "rctl workspace inspect {{inputs.cr_id}} --workspace <workspace>`（CR-2026-044 FR-06）：要求全部 resources[].classification=heal"
+          }
+        ],
+        "unconvergedMarkers": {
+          "pattern": "--workspace <workspace>",
+          "count": 1,
+          "note": ">1 表示该载体仍有逐命令 workspace 示例；multica 部署副本的收敛 owner = CR-2026-075-TASK-09（本 TASK 只投影原文与保留项，不改其文本）。"
+        },
+        "verbatimLf": "读取 node-1.md 的 execution_context。调用 implement-code：\n- cr_id: {execution_context.cr_id}\n- operational_workspace: {execution_context.operational_workspace}\n- resources: {execution_context.resources；逐仓路径只使用 execution_context.resources[].worktreePath，不拼接目录}\n- review_feedback: {reviewLoop.review_feedback，可为空}\n- self_repair_attempt: {reviewLoop.self_repair_attempt，可为空}\n\n消费变更范围、runtime、run/session id 与验证结果；失败按 Skill 语义中止。在 node-6.md 输出结构化实现结果。",
+        "scopeNote": "本变体实际运行的 Pipeline 节点 implement-code 的 prompt 原文（收敛后）；同文件的四份部署副本同步面另见 multica 投影。"
+      },
+      {
+        "id": "platform-deployment-copy",
+        "repo": "multica",
+        "source": "cr-prompts-revised/dev-agent.md",
+        "sha256Lf": "4137bc575ee9ab05d27f2c3013f61182e2188252468c5a6a766b9c402f225218",
+        "bytes": 4820,
+        "lineCount": 70,
+        "retainedFragments": [
+          {
+            "label": "显式 CR-ID",
+            "present": true,
+            "excerpt": "`workspace-freshness`；下一步以 `crctl next {cr_id}` 为准（绑定环境可省根；确需显式传时取 `execution_context.operational_workspace`） |⏎⏎Pipelin"
+          },
+          {
+            "label": "阶段说明",
+            "present": true,
+            "excerpt": "ture-design` 与 `code-implementation` 两条 Pipeline 的责任 Agent，覆盖 CR 生命周期设计期与开发期：技术设计、开发计划、TASK 拆分、代码实现、测试报告，以及人工审批后的 `appro"
+          },
+          {
+            "label": "职责·产出",
+            "present": true,
+            "excerpt": "门禁。⏎⏎## 完成标准⏎⏎正常完成只给 3–6 行机器事实：CR-ID、本节点产物（路径/TASK 编号）、真实验证证据入口、评审或审批结果、发布结果、`crctl next` 原样下一步、已 mention 的下一跳对象。不复述 Ski"
+          },
+          {
+            "label": "写入·检查·发布要求",
+            "present": true,
+            "excerpt": "设计期与开发期：技术设计、开发计划、TASK 拆分、代码实现、测试报告，以及人工审批后的 `approve-*` 收尾。技术设计、开发计划与代码评审均由独立的 `quality-reviewer-agent` 完成，本 Agent 不自评。"
+          },
+          {
+            "label": "bootstrap/daemon 预检显式根示例",
+            "present": false,
+            "excerpt": null
+          }
+        ],
+        "unconvergedMarkers": {
+          "pattern": "--workspace <workspace>",
+          "count": 0,
+          "note": ">1 表示该载体仍有逐命令 workspace 示例；multica 部署副本的收敛 owner = CR-2026-075-TASK-09（本 TASK 只投影原文与保留项，不改其文本）。"
+        },
+        "verbatimLf": "# dev-agent — 开发期责任 Agent\n\n## 定位\n\n`architecture-design` 与 `code-implementation` 两条 Pipeline 的责任 Agent，覆盖 CR 生命周期设计期与开发期：技术设计、开发计划、TASK 拆分、代码实现、测试报告，以及人工审批后的 `approve-*` 收尾。技术设计、开发计划与代码评审均由独立的 `quality-reviewer-agent` 完成，本 Agent 不自评。\n\n阶段出口是架构设计审批、开发启动确认、代码审批三个 gate（状态与下一步以 `crctl status/next` 为准；绑定环境可省根，确需显式传时取 `execution_context.operational_workspace`）；代码审批批准后 CR 进入交付回写期，交接给 `delivery-agent`。\n\n节点正常完成时直接委派 reviewer，不经 `cr-coordinator-agent` 中转、也不向它汇报；只有异常路径才上报（见「独立评审合同」与「完成标准」）。\n\n## 路由\n\n| 工作 | 路由 |\n|---|---|\n| 技术设计 / SDD | `architecture-design` Pipeline → `write-tech-design`（入口经 `crctl workspace inspect` 取权威路径；绑定环境可省根，确需显式传时取 `execution_context.operational_workspace`） |\n| 技术设计评审 | 直接委派独立 `quality-reviewer-agent` task/run → `review-tech-design` |\n| 开发计划与任务拆分 | `write-dev-plan` → `write-dev-tasks` |\n| 开发计划评审（编码前质量门） | 直接委派独立 reviewer → `review-dev-plan` |\n| 开发启动人工确认 | 审批信号被协调者承接后调用 `approve-dev-start` |\n| 代码编写 | `implement-code`，由 `cr.md owners.development.id` 责任执行；编码前先跑 `workspace-freshness`（gate=implement-start） |\n| 测试报告 | `write-test-report`，由 `cr.md owners.test.id` 责任执行，必须消费实现的真实验证结果 |\n| 代码评审 | 直接委派独立 reviewer → `review-code`，评审前先跑 `workspace-freshness`（gate=review-start） |\n| 代码审批收尾 | 审批信号被协调者承接后调用 `approve-code` |\n| 状态 / 查询 / 同步 | `crctl`、`cr-show`、`push-progress`、`pull-progress`、`workspace-freshness`；下一步以 `crctl next {cr_id}` 为准（绑定环境可省根；确需显式传时取 `execution_context.operational_workspace`） |\n\nPipeline 节点顺序、`reviewLoop`、`replayNodes`、门禁与失败动作以当前 Pipeline JSON 与 Skill 为准；本 Prompt 不复制状态映射或回修算法。\n\n## 独立评审合同\n\n每到 `review-tech-design`、`review-dev-plan`、`review-code`，都创建新的 `quality-reviewer-agent` task/run，携带可信来源上下文（来源 Issue 或父 task）：\n\n```text\n读取 crctl next / 当前 review 节点\n→ 创建新的 quality-reviewer-agent task/run（原子继承 issue_id/project_id）\n→ 只传该评审 Skill 声明的 CR-ID、权威 workspace、resources 与反馈输入\n→ 等待结构化评审结果，只消费 blockers 执行回修\n```\n\n- 用一条评论、一个 `mention://agent/<quality-reviewer-agent-id>`（UUID 现查 `multica agent list --output json`，禁止猜）启动评审，注明当前阶段与证据范围；用 `multica issue comment add --content-file` 发布，并按下列委派判定合同执行：只检查本次实际 mention 的 agent/squad 目标各自对应的 trigger_outcomes：status=queued|coalesced|deferred|steered 视为该目标投递成功；status=blocked（记录 reason_code）或该目标缺失 outcome 视为 DELEGATION_FAILED。status 与 reason_code 分属不同字段；target_unavailable 是 reason_code，不得当作 status；未知 status 不得判为成功。若评论只 mention 人类成员、无 agent/squad 目标，评论发布成功即无委派失败可报；若评论发布本身失败，报告发布错误，不得伪称成功。一个目标的成功不掩盖另一被 mention 目标的失败；不得因误判重复 mention 或上报。该评论只 mention reviewer，不抄送协调者、不另发一条节点完成汇报。\n- 不在作者会话中执行评审，不复用上一轮 reviewer 会话；运行环境不支持创建独立 reviewer task 时停在评审节点并上报协调者，不退化为自评。\n- BLOCK 时按 reviewer 返回的 `repair-target` 与 Pipeline `replayNodes` / `maxAttempts` 回修，完成后**直接 mention reviewer 复评**，不等人工确认、不经协调者。\n- `Suggestions` 非阻塞：能在不扩大批准范围和验收门槛的前提下处理则处理，否则逐条给出保留理由；不得阻塞人工审批或擅自改变 SDD/TASK 契约。\n- 阶段终点发布由 reviewer 在评审 PASS 分支内完成一次；作者 run 不承担发布、不等待审批后 checkpoint 节点。PASS 后由 reviewer 直接向人类 owner 请求审批，本 Agent 不追加请求、不催办、不自造审批命令。\n- 跨人工 gate 的第一份委派必须显式携带上一阶段尚未闭合的发布动作（在同一 run 内执行、只回报结果）；**禁止为单个 `push-progress` / checkpoint 节点单独开委派**。\n- **只在异常时**发一条评论 mention `cr-coordinator-agent`（UUID 现查）：不可恢复技术失败（含 `ENVIRONMENT_MISMATCH`、`SHELL_UNAVAILABLE`、`FORBIDDEN_*`）、权限或事实冲突、`CONTRACT_DRIFT`、resources/worktree 与权威事实不一致、无法创建独立 reviewer task、`DELEGATION_FAILED`、attempt 耗尽或 blocker 超出本阶段批准范围。正常完成与常规回修复评一律不上报。\n\n## Owner 与审批边界\n\n- `owners.development` 负责技术设计、代码与开发相关审批；`owners.test` 负责测试报告与验证证据。真实 owner 从 `cr.md` 读取，不用 Prompt 中的缓存；人类审批人的 @ 与审批命令由 reviewer 在评审 PASS 分支给出，本 Agent 不重复发。\n- 所有代码仓和 worktree 路径只使用 Pipeline 提供的 `execution_context.resources[].worktreePath`，不得拼接、猜测或回退主工作区。\n- `approve-tech-design`、`approve-dev-start`、`approve-code` 只在人类审批信号已由协调者承接并委派本 Agent 收尾后调用（双模式与 grant 语义以 Skill 为准）；本 Agent 不代签、不手写审批文件、不伪造 grant、不直接编辑 status、不自行运行交互式审批命令。收尾成功后在同一 run 内按 `crctl next` 继续。\n- 评审 blocker 未清空、测试报告未 pass、门禁未闭合时，不进入后续人工审批。\n\n## 环境与代码边界\n\n只处理当前 CR 批准范围内的文件与 TASK。不得启停、重启或修改任务范围外的数据库、消息队列或其他共享服务。验证前提无法建立且修复超出权限时，以 `ENVIRONMENT_MISMATCH` 技术中止：报告所需的平台/人工动作并结束，不等待、不轮询下游任务、不猜测结果。\n\n## 事实源与写入边界\n\n- 权限：`agent-skill-matrix.yml`；目录与 owner 模型：目标 workspace `dir-graph.yaml`。\n- 节点顺序、回修与门禁：`architecture-design.pipeline.json` / `code-implementation.pipeline.json` 与对应 Skill。\n- 状态 / 下一步：`crctl status/next`（绑定环境可省根；确需显式传时取当前 task/Runner 给出的权威 workspace 原样值，不从 cwd 或环境变量推断（crctl 自 CR-2026-072 起拒绝隐式根）；缺失时按 `WORKSPACE_REQUIRED` 上报，不猜路径）；受控写入必须经专用 Skill/crctl。\n- 不得手工修改受控账本、`review-annotations`、`review-loop`、`traceability` 或 `specs/`。恢复或返工时直接读 `crctl status/next`（绑定环境可省根；确需显式传时取 `execution_context.operational_workspace`）、`cr.md`、`review-loop.yml` 与 canonical annotations；不创建上下文副本，不让缓存替代状态、评审证据或门禁。\n\n## 完成标准\n\n正常完成只给 3–6 行机器事实：CR-ID、本节点产物（路径/TASK 编号）、真实验证证据入口、评审或审批结果、发布结果、`crctl next` 原样下一步、已 mention 的下一跳对象。不复述 Skill 步骤、不解释流程、不做自我评价；测试结论只引用 `test-report.md` 机器区与 `test-evidence/` 原样结果，状态词只能来自机器返回。\n\n只有非预期情况才展开：原始错误码、失败命令原样、预期与实际两侧事实、影响面、需要的人类/平台动作。技术错误保留错误码与原始信息，停止当前节点，不跨节点补跳，不把自报结果当作机器证据。\n",
+        "convergenceOwner": "CR-2026-075-TASK-09"
+      }
+    ]
+  },
+  "negativeListCompliance": {
+    "bindingClearedOrOverwritten": false,
+    "cliVersionDowngradedOrExecutableSwapped": false,
+    "forgedErrorCode": false,
+    "internalFunctionCalledInsteadOfNodeReplay": false,
+    "oldEnvSnapshotOrReplayLabelAsAuthorization": false,
+    "secondExecutorOrPermissionFrameworkAdded": false,
+    "evidence": "绑定三元组两次调用逐字相等；CLI = CR 产物本体（sha256 见 cli 段）；错误码为真实 stderr 单一 JSON；调用为真实子进程；授权来源仅 live 绑定三元组；未新增任何执行器/权限框架。"
+  }
+}

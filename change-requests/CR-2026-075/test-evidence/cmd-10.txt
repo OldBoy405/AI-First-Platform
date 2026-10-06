@@ -1,0 +1,18 @@
+out-of-scope-drift crctl N=4（R8 范围外既有漂移，单列、不参与本 CR 通过判定）: scripts/test/fault-harness.test.mjs,scripts/test/merge-fixture.mjs,scripts/test/register-tx.test.mjs,scripts/test/test-cr.test.mjs
+skill-in-sync crctl expected=12 online=65 sha256=32b64ffe4d52f4c46226ed0a41e6a87eb19583b0502325b0e77654ef67019ed7
+skill-in-sync validate-doc expected=1 online=1 sha256=81fe35097c7183358287279d5591469e0480f99dc3a7255c38478bcbf5af23ac
+skill-in-sync engineering-docs expected=6 online=46 sha256=786931349b65656121ecd7ace84710d5eb5f4b0993bfd57af0a02cdad5c83c5b
+skill-in-sync cr-review-record expected=1 online=1 sha256=85efa748526d46e30928246786bfe93db74a94ba5af4f2989ef98a349af9615b
+skill-in-sync review-code expected=1 online=1 sha256=b376a8fbceaa6c836ddb85e5690800999a51b7127159257a1bd69359032e6ca4
+skill-in-sync review-dev-plan expected=1 online=1 sha256=21c3ce2a62409f6ab668c62a441507d22f863310a28e42f353df7172c118b264
+skill-in-sync review-tech-design expected=1 online=1 sha256=ad232d7bae285ab1c2603aa0fae35275d341e6cec5f385cabaa5d1c471658129
+skill-in-sync write-dev-tasks expected=1 online=1 sha256=5988d3907a49ad2e0247d3c23007a87e0e716df20b8fa2563b3eb373810420fa
+skill-in-sync write-tech-design expected=1 online=1 sha256=a35d5cb3ccc464421bd306de99efac4e53ded0a5a09b5b38a5ac96fec922adf4
+skill-in-sync review-requirement expected=1 online=1 sha256=d1da5aae30b98ca2fe72eb3db19d0163723ae19bac4c71216d226f781926848b
+skill-in-sync write-planning-entry expected=1 online=1 sha256=5926803104836c1dcb08dd7b2b0b22a0ac62fc0545bbd62bf79a6b6e58550e8c
+skill-in-sync planning-draft expected=1 online=1 sha256=3a375992069a882126e38a2f90bfaaf68c3098c1626a013fa062ede71435885f
+skill-in-sync write-competitive-report expected=1 online=1 sha256=48a5a66f7ed9c9f5389c8f29a085c213ff9ccb14b5d601371e61c2631e7b33bc
+skill-in-sync requirement-register expected=1 online=3 sha256=1c955be7799b69cbd4400edb1bbe6a4bcf0bf8789a031e8f2c0863053f8a7fe7
+agent-in-sync product-planning-agent sha256=317d5e31d9eb91277b8c3e9bac7ee0de49d25c2113820073696779ad52c9adfb
+agent-in-sync competitive-analyst-agent sha256=d899dbe978db7ac2394af5ec0fa568c5984d8353196f1226515abef7bbcce366
+cmd-10 ok: 本 CR 声明发布集全覆盖（expected=30 个文件线上存在且与仓库目标逐字一致，LF）；范围外既有漂移单列 4 项不计入通过判定（R8）；规划/竞品两个业务调用方 Agent instructions 与仓库目标逐字一致

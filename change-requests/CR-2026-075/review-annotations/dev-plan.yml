@@ -1,0 +1,22 @@
+cr-id: CR-2026-075
+review-type: dev-plan
+reviewer: "OldBoy405"
+reviewed-at: "2026-10-06T09:17:18+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  sdd-to-plan: "pass"
+  plan-to-tasks: "pass"
+  task-executability: "pass"
+  dependency-topology: "pass"
+  interface-contracts: "pass"
+  acceptance-verifiability: "pass"
+  scope-and-simplicity: "pass"
+  risk-and-rollback: "pass"
+  reviewer-model: "quality-reviewer-agent on Qoder; model-id 未暴露，未推断"
+suggestions:
+  - "已解决：B-C4-01 plan 0.12 §4 末「0.12 前提更正与 FR-04 批准验收恢复记录」(:99-148) 已撤销 FU-1 并恢复已批准 SDD 的三段验收面。本 run 第一手核到：SDD §4.2.1:427-450 的 S1 典型节点明列带 execution_context 的普通委派、§5.2:662-665 的 B1/B3/B4 落点为真实节点日志/回放、§9 follow_up:834 显式声明该项不得下沉（B-10）；multica HEAD 9d1c10d267fe97a9a2232293796a0ef51d284eea 的 pipeline_task.go:201-239 在 task.PipelinePrompt 为空时解析 parseExecutionContext(task.TriggerCommentContent)、daemon.go:8650 的 injectTaskCRWorkspaceEnv 无 Pipeline 条件；本 reviewer task 01a10eb7-f6b3-7995-a14c-5ca899df633a 的 CRCTL_OPERATIONAL_WORKSPACE 实测等于委派声明的 KB CR worktree，FU-1 的「两类载体互斥」前提不成立。plan §5:155、§6.1:173 与 :187-193、§7:238/:240/:241 及 TASK-01.md:46-47、TASK-06.md:45、TASK-08.md:40-44、TASK-10.md:24-50 已按三段口径改写；全部 TASK 卡 FU-1 检索计数为 0，无「禁止本 CR 生成回放」残留，未新增执行器或权限框架、未以静态断言冒充回放、未重开已批准 SDD 设计。"
+  - "已解决：B-C4-02 plan 0.12 §4 末第四条（:140-145）把每条声称逐条映射到实际可观测断言、唯一 TASK owner 与 developing 内完成条件。本 run 第一手核到：tools HEAD 48ad150dd7019802d003e54d27a6ef7c751af12f 的 crctl.test.mjs:628-648 确为 runCrctl(argv) 无绑定场景，fixed 分支只断言错误码不等于 WORKSPACE_REQUIRED 且无 status===0 断言，:641-645 的空串/纯空白/裸旗标三例未传 bind3，bind3 与 snapshot 分别在 :490/:495；caller-contract.test.mjs:349-382 实为 complete=false、--detail、显式 workspace 三项检查，六个 cmd-05 文件对 FR-04、本地纠正、不构成授权来源、第二次的专项断言检索计数全为 0。§6.2:213 与 :216 已把 cmd-01 证明范围收窄为 CLI 机器语义、cmd-05 收窄为文本合同存在性，段③ 明确不由任何 cmd-NN 断言；补验唯一 owner 归 TASK-08（crctl.test.mjs 与 caller-contract.test.mjs 同列其「涉及文件」:27-28），已 done 的 TASK-01/TASK-06 显式声明其落地用例未含该断言且不承担段③，TASK-10 只核对不生产。本 run 复跑 cmd-01（246 例 / 0 fail / exit 0）与 cmd-05（123 例 / 0 fail / exit 0）证明基线绿不等于声称面已被断言，缺口以 in-scope 补验登记，未删 AC、未移入 FU-1、未扩大 cmd-05 或 CLI 单测证明范围。"
+review-loop:
+  current-attempt: 2
+subject-sha256: 1a5cad6b08e3ce5a318e95a46ed09c034e04a6dc32204f629388ee6dc6b42bd1

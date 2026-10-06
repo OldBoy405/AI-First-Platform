@@ -1,0 +1,391 @@
+$ node skills/shared/crctl/scripts/test/suite-gate.mjs --run
+(exit=0)
+--- stdout ---
+{
+  "schema": "crctl-suite-gate-report/v1",
+  "command": "node --test --test-reporter=tap <28 files> (pool=15, availableParallelism=16)",
+  "observer": "tap-per-file",
+  "duration_ms": 621327,
+  "converged": true,
+  "exit_code": 1,
+  "files_executed": 28,
+  "cases_executed": 695,
+  "skipped_file_level": 0,
+  "files": [
+    {
+      "file": "archive-tx.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 30,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 621323
+    },
+    {
+      "file": "caller-contract.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 15,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 678
+    },
+    {
+      "file": "check-agents-contract.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 1,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 161
+    },
+    {
+      "file": "check-skill-matrix.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 8,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 1296
+    },
+    {
+      "file": "checkpoint-tx.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 23,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 266166
+    },
+    {
+      "file": "competitive-report.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 15,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 35782
+    },
+    {
+      "file": "contract-scan.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 28,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 4330
+    },
+    {
+      "file": "crctl-summary.test.mjs",
+      "state": "failed",
+      "exit_code": 1,
+      "cases": 8,
+      "failures": [
+        "summary-03 逐命令：--detail 输出与金样本三层等价（① 字段集合 ② 稳定值 ③ 易变形态）",
+        "summary-04 注册命令默认面 = compact summary（为 --detail 面的真子集且严格更少字段）",
+        "summary-05 未注册命令收到 --detail 与未收到 --detail 均与现状等价（D-9 代价项）",
+        "summary-06 --detail 是布尔开关，不消费后随 token（位置参数不被吃掉）"
+      ],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 3915
+    },
+    {
+      "file": "crctl.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 247,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 309136
+    },
+    {
+      "file": "durable-tx.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 16,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 1337
+    },
+    {
+      "file": "fault-harness.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 8,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 11862
+    },
+    {
+      "file": "guard-protected-paths.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 5,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 891
+    },
+    {
+      "file": "lint-prompts.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 39,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 3993
+    },
+    {
+      "file": "merge-tx.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 17,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 240973
+    },
+    {
+      "file": "pipeline-structure.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 36,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 561
+    },
+    {
+      "file": "planning-entry.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 10,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 27146
+    },
+    {
+      "file": "register-tx.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 30,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 284249
+    },
+    {
+      "file": "skill-scope.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 3,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 183
+    },
+    {
+      "file": "terminal-audit.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 3,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 91533
+    },
+    {
+      "file": "test-cr.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 30,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 51986
+    },
+    {
+      "file": "trace-outbox.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 12,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 190819
+    },
+    {
+      "file": "trace-semantic.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 5,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 978
+    },
+    {
+      "file": "upgrade-check.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 2,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 23818
+    },
+    {
+      "file": "version-set.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 12,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 169005
+    },
+    {
+      "file": "workspace-freshness.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 32,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 243568
+    },
+    {
+      "file": "workspace-resolver.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 7,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 2275
+    },
+    {
+      "file": "writeback-tx.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 36,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 583276
+    },
+    {
+      "file": "yaml-subset.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 17,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 202
+    }
+  ],
+  "failures": [
+    "summary-03 逐命令：--detail 输出与金样本三层等价（① 字段集合 ② 稳定值 ③ 易变形态）",
+    "summary-04 注册命令默认面 = compact summary（为 --detail 面的真子集且严格更少字段）",
+    "summary-05 未注册命令收到 --detail 与未收到 --detail 均与现状等价（D-9 代价项）",
+    "summary-06 --detail 是布尔开关，不消费后随 token（位置参数不被吃掉）"
+  ],
+  "checks": [
+    {
+      "code": "SUITE_REGISTRY_MISSING",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "SUITE_REGISTRY_SCHEMA_INVALID",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "SUITE_REPORT_UNPARSEABLE",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "SUITE_FILE_LOAD_FAILURE",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "SUITE_MANIFEST_FILE_DRIFT",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "SUITE_MANIFEST_CASE_DROP",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "EXCEPTION_FIELD_MISSING",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "EXCEPTION_SCHEMA_INVALID",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "EXCEPTION_DUPLICATE",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "EXCEPTION_EXPIRED",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "EXCEPTION_NOT_OBSERVED",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "SUITE_FAILURES_UNREGISTERED",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "SUITE_NONCONVERGENCE",
+      "ok": true,
+      "detail": "ok"
+    }
+  ],
+  "registry": {
+    "sha256": "09cffda81d0dc3b343167318e4d37dc4d90ed0c3234f6c946a8abcdca1a77f2f",
+    "exceptions_count": 4
+  },
+  "platform": {
+    "platform": "win32",
+    "node": "24.15.0"
+  },
+  "verdict": "pass"
+}
+suite-gate: command=node --test --test-reporter=tap <28 files> (pool=15, availableParallelism=16)
+suite-gate: observer=tap-per-file duration_ms=621327 converged=true exit_code=1
+suite-gate: files_executed=28 cases_executed=695 skipped_file_level=0
+suite-gate: failures=4 [summary-03 逐命令：--detail 输出与金样本三层等价（① 字段集合 ② 稳定值 ③ 易变形态） | summary-04 注册命令默认面 = compact summary（为 --detail 面的真子集且严格更少字段） | summary-05 未注册命令收到 --detail 与未收到 --detail 均与现状等价（D-9 代价项） | summary-06 --detail 是布尔开关，不消费后随 token（位置参数不被吃掉）]
+suite-gate: registry_sha256=09cffda81d0dc3b343167318e4d37dc4d90ed0c3234f6c946a8abcdca1a77f2f exceptions_count=4
+suite-gate: verdict=pass
+
+--- stderr ---

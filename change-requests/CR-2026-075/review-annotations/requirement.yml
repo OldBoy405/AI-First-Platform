@@ -1,0 +1,21 @@
+cr-id: CR-2026-075
+review-type: requirement
+reviewer: "OldBoy405"
+reviewed-at: "2026-10-02T21:33:41+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  structure-completeness: "pass：完整读取权威 PRD 与来源 Issue 原始 v4 附件；概述、6 条用户故事、16 项 FR、28 项 AC、NFR、成功指标与排除项齐全；目标版本 0.48、spec ai-first-platform、三角色 Ray、source/origin 空串与 cr.md 一致。"
+  testability: "pass：16 项 FR 全量映射 A1～A8/B1～B20；FR-12 明确成功与已完成重放的单一 stdout JSON、phase/changed/identity/artifacts/commit、stderr 边界及未完成禁止成功，AC-B15/B18 增加接口回执及调用方负向消费断言；Windows、事务与节点回放证据种类清楚，需求期不伪称实施验收通过。"
+  scope-control: "pass：一个 CR、内部任务 A/B，不创建开发任务账本；两项业务专用入口复用既有确定性转换/事务/CAS/审计/隔离提交，排除任意写入、通用框架、PRD/SDD validator、source 修复及其他 CR 关联；命令命名、模块位置与事务算法保留给 SDD。"
+  planning-alignment: "pass：source 为空，仓库规划报告不适用；逐节对照通过 authenticated CLI 下载的原始 v4 附件（01a0f837-a3ce-7567-b005-de7e1a77f921），两入口绑定、一次本地纠正、生成/日期/索引/校验合同、A/B 全部 28 向量、发布顺序及安全回退均保留。"
+  dependency-identification: "pass：明确复用 daemon 预检/launcher/Git 环境与既有锁/journal/CAS/write-set/恢复/审计/隔离提交，A 验证后收敛提示；在本 CR 资源 worktree 只读核实四个 daemon helper 与所列事务/YAML 模块及测试文件存在；既有业务 Skill 作为确认/冲突/索引先例，origin 为空，不关联其他 CR。"
+  cli-contract: "pass：复核命令/参数语义、输入约束、JSON/stdout、固定错误码及优先级、调用者与真实路径边界、幂等/恢复、状态副作用与观察点。FR-12 复用 checkpoint phase/changed 先例并区分本地单意图提交与远端发布；首次/重放/中断闭包完整，绑定只补 workspace、不补 CR-ID，不新增 HTTP 合同。"
+  skill-contract: "pass：不新增 Skill；调用方参数/确认、所属文档路径及索引责任、确定性转换和 crctl 唯一受控写入边界明确；两业务操作不得推进状态/审批，本地纠正只限同节点同 run 一次且非机器计数，保留必需自检、独立 reviewer、人工审批及原失败中止/结构化恢复。"
+  http-contract: "N/A：本 CR 不新增或修改 HTTP endpoint/request/response；范围为既有 daemon 本地 task 准备与 CLI/Skill 合同，FR-12 明确无新 HTTP 状态。"
+suggestions:
+  - "已解决：B-01 新增规划/竞品公开 CLI 的成功输出契约已闭合。FR-12（prd.md:143～157）规定 exit=0 的单一可解析 stdout JSON、诊断仅 stderr、phase=complete、布尔 changed、已确认业务身份、实际两/三项产物及本地隔离提交 SHA；同意图已完成重放 changed=false 且返回原身份/产物/提交，先核实当前结果，无新写入/提交；部分落盘、待提交/失败及未完成事务非零且无成功回执。AC-B15/B18（prd.md:233、236）覆盖首次/重放、第三值/漂移、中断恢复及调用方不得凭 exit=0、自然语言或缺失/矛盾回执报完成。引用既有 checkpoint 消费合同并说明本地单意图差异，命令命名/模块/序列化及事务算法仍由 SDD 决定，无新增 blocker。"
+review-loop:
+  current-attempt: 2
+subject-file: change-requests/CR-2026-075/prd.md
+subject-sha256: 246a011a7669df9c579f4dec5eba2bb67248cd3f1d510aa20d672baa14ef8322

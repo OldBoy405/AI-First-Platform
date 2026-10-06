@@ -1,0 +1,23 @@
+deployment-copy requirement-writer sha256=9cdae83a96bf030bf34c9b251a8e90526923df332fba69236c88257e73007f08
+deployment-copy dev-agent sha256=4137bc575ee9ab05d27f2c3013f61182e2188252468c5a6a766b9c402f225218
+deployment-copy quality-reviewer-agent sha256=daf87cb1b9046e3b1b576187d131ba5b1f120c650a6616cd76b4037a6a19b15c
+deployment-copy cr-coordinator-agent sha256=b383a2f294cef4a6c0ec6f03a2249affb8ed9735a959db16590436474acab1f3
+imported-skill crctl AI-First-tools@main/skills/shared/crctl
+imported-skill validate-doc AI-First-tools@main/skills/shared/validate-doc
+imported-skill engineering-docs AI-First-tools@main/skills/shared/engineering-docs
+imported-skill cr-review-record AI-First-tools@main/skills/cr/cr-review-record
+imported-skill review-code AI-First-tools@main/skills/develop/review-code
+imported-skill review-dev-plan AI-First-tools@main/skills/develop/review-dev-plan
+imported-skill review-tech-design AI-First-tools@main/skills/develop/review-tech-design
+imported-skill write-dev-tasks AI-First-tools@main/skills/develop/write-dev-tasks
+imported-skill write-tech-design AI-First-tools@main/skills/develop/write-tech-design
+imported-skill review-requirement AI-First-tools@main/skills/requirement/review-requirement
+imported-skill write-planning-entry AI-First-tools@main/skills/planning/write-planning-entry
+imported-skill planning-draft AI-First-tools@main/skills/planning/planning-draft
+imported-skill write-competitive-report AI-First-tools@main/skills/competitive/write-competitive-report
+imported-skill requirement-register AI-First-tools@main/skills/requirement/requirement-register
+agent-in-sync requirement-writer sha256=9cdae83a96bf030bf34c9b251a8e90526923df332fba69236c88257e73007f08
+agent-in-sync dev-agent sha256=4137bc575ee9ab05d27f2c3013f61182e2188252468c5a6a766b9c402f225218
+agent-in-sync quality-reviewer-agent sha256=daf87cb1b9046e3b1b576187d131ba5b1f120c650a6616cd76b4037a6a19b15c
+agent-in-sync cr-coordinator-agent sha256=b383a2f294cef4a6c0ec6f03a2249affb8ed9735a959db16590436474acab1f3
+cmd-09 ok: 部署副本收敛与 imported Skills 取用路径零漂移；四份 CR Agent 线上 instructions 与部署副本逐字一致（LF）

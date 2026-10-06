@@ -1,0 +1,139 @@
+{
+  "schema": "cr-2026-075/caller-replay/v1",
+  "cr": "CR-2026-075",
+  "producedBy": {
+    "task": "CR-2026-075-TASK-08",
+    "skill": "implement-code",
+    "agent": "dev-agent",
+    "at": "2026-10-06T01:51:06.465Z",
+    "node": {
+      "agent": "dev-agent",
+      "agentId": "ff6fcbb6-6bb6-42fb-9d88-03493c771411",
+      "taskId": "01a10ed7-2091-7d60-908f-62d08ffa01e8",
+      "issue": "AIFI-41",
+      "sessionFile": "C:\\Users\\GOBAO\\.multica\\pi-sessions\\20261006T013245.578467200.jsonl",
+      "node": "implement-code",
+      "pipeline": "code-implementation",
+      "recordedAt": "2026-10-06T01:51:06.464Z"
+    }
+  },
+  "cli": {
+    "entry": "node C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform\\.rayai-worktrees\\tools\\requirement\\CR-2026-075\\skills\\shared\\crctl\\scripts\\crctl.mjs",
+    "path": "C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform\\.rayai-worktrees\\tools\\requirement\\CR-2026-075\\skills\\shared\\crctl\\scripts\\crctl.mjs",
+    "repo": "tools",
+    "worktree": "C:/Users/GOBAO/Downloads/AI/AI First Platform/.rayai-worktrees/tools/requirement/CR-2026-075",
+    "sha256Lf": "d6c12c3748cac38e6c42469276e58d3e67745773950d88a5db43b7333d99eec6",
+    "note": "CR 的 A 段实现本体（tools CR worktree 产物）；TASK-02 明文认定同环境下 `node crctl.mjs` 与 launcher 同结果、都不能绕过绑定。launcher 由 daemon 从工作区 tools 包安装，指向合并前的 trunk CLI，不含本 CR 的 A 段实现，故段③按 TASK-02 的等价直接入口执行。"
+  },
+  "binding": {
+    "source": "task 环境三元组（只读继承）",
+    "vars": {
+      "MULTICA_TASK_ID": "01a10ed7-2091-7d60-908f-62d08ffa01e8",
+      "CRCTL_OPERATIONAL_WORKSPACE": "C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform\\.rayai-worktrees\\knowledge-base\\requirement\\CR-2026-075",
+      "CRCTL_TASK_AUDIT_ROOT": "C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform"
+    },
+    "operationalWorkspace": "C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform\\.rayai-worktrees\\knowledge-base\\requirement\\CR-2026-075",
+    "auditRoot": "C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform"
+  },
+  "fieldList": [
+    "两次调用的 argv",
+    "两次调用的 exitCode",
+    "两次调用的 stderr 单一 JSON",
+    "两次逐次绑定三值",
+    "纠正次数",
+    "是否发生第三次调用",
+    "有无恢复委派/版本扫描",
+    "stdout 是否含成功回执",
+    "零业务写入证明"
+  ],
+  "variants": {
+    "A": {
+      "source": {
+        "recordPath": "A.node-record.json"
+      },
+      "variantGoal": "S1/M2：首调不可用 --workspace → WORKSPACE_REQUIRED + 零业务写入 → 同节点同 run 仅换该参数为该 run 已确认显式根 → 一次成功",
+      "summary": {
+        "exitCodes": [
+          1,
+          0
+        ],
+        "errorCodes": [
+          "WORKSPACE_REQUIRED",
+          null
+        ],
+        "argv": [
+          [
+            "status",
+            "CR-2026-075",
+            "--workspace",
+            ""
+          ],
+          [
+            "status",
+            "CR-2026-075",
+            "--workspace",
+            "C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform\\.rayai-worktrees\\knowledge-base\\requirement\\CR-2026-075"
+          ]
+        ],
+        "stdoutHasSuccessReceipt": [
+          false,
+          true
+        ],
+        "stderrSingleJson": [
+          true,
+          false
+        ],
+        "bindingNotOverwritten": true,
+        "correctionCount": 1,
+        "thirdCallOccurred": false,
+        "zeroWriteProofOk": true
+      }
+    },
+    "B": {
+      "source": {
+        "recordPath": "B.node-record.json"
+      },
+      "variantGoal": "M4：有效绑定下补成异根 → WORKSPACE_CONTEXT_MISMATCH + 绑定未被覆盖 + 停止自动纠正 + stdout 无成功回执",
+      "summary": {
+        "exitCodes": [
+          1,
+          1
+        ],
+        "errorCodes": [
+          "WORKSPACE_REQUIRED",
+          "WORKSPACE_CONTEXT_MISMATCH"
+        ],
+        "argv": [
+          [
+            "status",
+            "CR-2026-075",
+            "--workspace",
+            "   "
+          ],
+          [
+            "status",
+            "CR-2026-075",
+            "--workspace",
+            "C:/Users/GOBAO/Downloads/AI/AI First Platform/.rayai-worktrees/multica/requirement/CR-2026-075"
+          ]
+        ],
+        "stdoutHasSuccessReceipt": [
+          false,
+          false
+        ],
+        "stderrSingleJson": [
+          true,
+          true
+        ],
+        "bindingNotOverwritten": true,
+        "correctionCount": 1,
+        "thirdCallOccurred": false,
+        "zeroWriteProofOk": true
+      }
+    }
+  },
+  "shortPromptIndex": {
+    "a": "A.node-record.json#shortPrompt",
+    "b": "B.node-record.json#shortPrompt"
+  }
+}
