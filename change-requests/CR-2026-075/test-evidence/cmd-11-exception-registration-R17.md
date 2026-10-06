@@ -3,6 +3,8 @@
 **CR**: CR-2026-075 · **节点**: `implement-code`（自修复轮，`test-report.status=block` 回修）
 **写入者**: dev-agent（本文件为 **additive 留档**；`cmd-11.log` / `cmd-11.txt` / `uncovered-risks.md` 的既有内容逐字未改）
 
+**相关提交**: tools CR worktree `dd909e2`（登记提交）；KB CR worktree 本文件与同目录 `cmd-11-rerun-after-R17-registration.txt` 的提交见本 Issue 本轮回报与 `git log -1`。
+
 ## 1. 授权与登记面
 
 - **授权原文**（人类 owner Ray，Issue 评论 `01a10fb1-9ff3-7e56-8a64-5216fa98ceb5`，2026-10-06T05:31:01Z，逐字）：
@@ -11,6 +13,7 @@
 
 - **登记文件**: `skills/shared/crctl/scripts/test/gate-registry.json`（repo=tools，worktree = `resources[tools].worktreePath`，分支 `requirement/CR-2026-075`，登记前 HEAD `08cae73c`）。
 - **登记面**: 仅 `exceptions`。`manifest`（28 files / 28 cases）与 `stateMachine`（31 transitions / 15 具名态 / 1 wildcard）逐字未动。
+- **本文件的定位**: `uncovered-risks.md#R17` 行内「`gate-registry.json#exceptions` 项数 = 0」是该行写入时刻（2026-10-06T12:54+08:00）的**时点快照**，其留档逐字未改；当前登记面项数已因本裁决变为 **4**，据此**不得**再把 R17 读作「未登记例外」（但也**不得**读作已修复——见 §2）。
 - **sha256（LF 规范化，含尾换行，即 `suite-gate` 的 `registry.sha256` 口径）**:
 
   | 状态 | sha256 |
