@@ -1,0 +1,56 @@
+cr-id: CR-2026-075
+review-type: code
+reviewer: "OldBoy405"
+reviewed-at: "2026-10-06T17:44:44+08:00"
+verdict: pass
+blockers: []
+dimensions:
+  代码↔TASK↔SDD 对齐: "pass（11/11 TASK done 且逐条映射到 plan §6.2 证据命令；FR-04 三段载体经第一手核对互不冒充——段①为 crctl.test.mjs:654-705 的 bind3 有效绑定 M2/M1/M4 断言（含补同根 status=0 与异根 snapshot 逐字不变），段②为 caller-contract.test.mjs caller-14/15 的 18 项条款加六条负面清单逐条断言且切片失败硬失败，段③为 test-evidence/caller-replay/records.json 与 A/B.node-record.json 的逐次 argv、exitCode、stderr 单一 JSON、绑定三值逐字相等、纠正次数=1、无第三次调用、零业务写入 before/after 对照；durable-tx 的 expect 与 sampleCommitState 均为可选入参且缺省路径逐字不变，crctl.mjs 的 bindTaskWorkspace 四模式判定与 SDD §2.1 一致）"
+  工程质量: "pass（工程质量结论取自 test-report.md 机器区与 test-evidence/cmd-NN.log 原文，未重跑；11 条命令 exit-code=0、signal=null、timed-out=false；cmd-11 报告经第一手解析为 verdict=pass、13 项 checks 全 ok、唯一非零文件 crctl-summary.test.mjs 的 4 例失败逐条被未到期例外覆盖；engineering-docs 的 today(now) 用 UTC+8 固定偏移与 UTC getter，不依赖宿主时区）"
+  关键路径可读性: "pass（业务入口骨架与 kind 适配层分离，竞品只追加 kind 分支不复制骨架；multica 侧 resolveTaskWorkspaceBinding 为绑定唯一解析点、injectTaskCRWorkspaceEnv 为唯一发布点，注释为英文且说明 WHY；multica CUSTOM.md 已按现行三表结构登记"
+  安全性: "pass（写入路径只接受 dir-graph 权威推导并经 realpath 包含检查，不用字符串前缀；payload 在信任边界逐字段校验（schema 恰等、slug 与 id 正则、updates 去重、conflict_strategy 枚举、confirmed 必须为 true）；额外旗标即 BAD_ARGS 拒绝；cr_id 经 pipelineCRIDPattern 白名单正则，评论声明的 YAML 非法、多块、重复键一律停止任务；受控 Git 只经 controlledGit 白名单形态；staged 集合恒等复核加提交后 AI-First-Intent 唯一定位，歧义即 TX_RECOVERY_CONFLICT 零写入）"
+  测试覆盖: "pass（新增 planning-entry.test.mjs 10 例与 competitive-report.test.mjs 15 例已登记进 gate-registry manifest.files 与 cases 基线；caller-contract 增 caller-14/15；contract-scan 增 TASK-11 安全网红绿两条回归；crctl.test.mjs 增 FR-04 段①用例；multica 侧同包表驱动测试覆盖绑定解析、成对发布/清除、launcher 与 Git 环境泛化）"
+  测试证据可信度: "pass（test-report.md status=pass、command-digest 4e29e60e… 与 traceability.yml#tests 逐字一致且与 attempt 1 相等；11 条被引用日志全部存在；未覆盖风险逐条单列（R10/R11/R12/R13/R14/R17 与 FR-04 段③不受 cmd 断言），cmd-11 报告体内 exit_code=1 与门禁 verdict=pass 的两种读法在 §2 第 161 行同时写明并以门禁判据为权威口径，未把 exit 0 叙述成基线红已修复）"
+  批准范围核对: "pass（实际 diff 与 SDD §9 scope_in 逐仓比对，未触碰 scope_out 与 zero_diff 调用点——rules.json、multica admission.go 与 gitguard、五个既有 recoverLedgerCommand(ws,key) 两参调用语义、normalizeTargetVersion、engineering-docs schemas/templates 均零改动；requirement-authoring.pipeline.json 的改动是 §8 第 479 行登记的目标版本示例口径，属批准范围；suite-gate.mjs 与 contract-scan.test.mjs 不在 scope_in 枚举内，但经人类 owner 逐字授权最小扩范围修复并以 crctl task append 登记为 developing 期 hardening TASK-11，判据改后未登记失败、异常退出与不可解析报告仍阻断，第一手读码确认不放宽红线）"
+  skip 语义核对: "pass（只读机器区 skipped=false、exit-code=0、timed-out=false 共 11 条，无关键测试被跳过，故无因 skip 产生的 blocker；cmd-07 为定向 -run 名集、cmd-06 为定向两文件、cmd-11 为 28 文件集合门禁，观测面与声称面在报告与 plan §6.2 逐行对齐，未把定向绿读作全量绿）"
+  前端质量: "不适用（本 CR 实际 diff 不含 *.tsx、*.vue、*.css、*.html，a11y 对比度、组件状态覆盖与构建体积三项均无对象）"
+suggestions:
+  - "范围外：R17 的 4 例既有基线红（crctl-summary.test.mjs 的 summary-03～06，夹具以 os.tmpdir() 造异根 --workspace 被已批准的异根拒绝语义拦下）只被 gate-registry exceptions 豁免到 2026-12-31T23:59:59+08:00，到期 cmd-11 自动回红；该 4 例本体不属于本 CR 的 scope_in 文件集，应由后续独立 CR 修夹具（改用与绑定同根的临时目录），不与本 CR 混淆。"
+  - "范围外：dev-plan composite subject 漂移（annotation 记录 1a5cad6b08e3ce5a…、当前重算 4233f7d830b66304…）源于 TASK-11 经 crctl task append 追加，属已登记的已知副作用；实测 code-reviewing 门禁判据仅为 passCondition(stage=code) 与 attemptsWithinLimit(review-code)，不含 dev-plan digest，故不阻断本节点。是否为其补一次 review-dev-plan 复评以刷新证据，留给 approve-code 的人类 owner 决定。"
+  - "范围外：cmd-09 与 cmd-10 的约 10KB 单行内联 JS 长期嵌在 plan.md 与 test-report.md 表格单元格里，改一次观测口径就要改一次计划产物且难以为其写单测；建议后续 CR 把这类观测脚本沉淀为 tools 仓入库的版本化脚本（与 AGENTS.md 纪律"
+  - "范围外：validate 维度层把 dir-graph 声明的 naming 直接交给 new RegExp 且不加锚定，声明写 .*\.md 这类宽正则时 naming 维度实际形同放行；建议后续 CR 在 SDD 层面约定 naming 必须自带 ^ 与 $ 或声明时校验，本 CR 的 §9 zero_diff 不允许改动该判据。"
+  - "范围外：test-report.md §2 第 164 行如实记录 write-test-report 的 SKILL 文本声称机器区含 sourceRevision 与日志哈希，而 renderTestMachineReport 实测不输出这两项（基线 061a12f 同一函数逐字相同，非本 CR 回归）；建议后续 CR 统一 SKILL 文本与该实现的字段口径，避免调用方按文本预期取证。"
+review-loop:
+  current-attempt: 1
+release-subjects:
+  version: 1
+  repositories:
+    - repo: ai-first-platform-docs
+      remote-ref: refs/heads/requirement/CR-2026-075
+      reviewed-source-sha: bbfc6f7342032594341bf039db2765eb897b81e9
+    - repo: multica
+      remote-ref: refs/heads/requirement/CR-2026-075
+      reviewed-source-sha: 941f35ebb68e08a0be793464bf36b855f71c2ab6
+    - repo: tools
+      remote-ref: refs/heads/requirement/CR-2026-075
+      reviewed-source-sha: 915bfb33bb2a96053f704037310fd0a948ffa460
+  artifacts:
+    algorithm: sha256
+    canonicalization: crlf-to-lf+path-sort
+    files:
+      - { path: change-requests/CR-2026-075/plan.md, sha256: 905fa0a9c755fa6b3b63479fdd143bfcb3c02aecd86b6c433f63907900ee170d }
+      - { path: change-requests/CR-2026-075/prd.md, sha256: 246a011a7669df9c579f4dec5eba2bb67248cd3f1d510aa20d672baa14ef8322 }
+      - { path: change-requests/CR-2026-075/sdd.md, sha256: f716a98ba67bab420c9d4a098a8b6101e16be98db7e287ad7e178003818ed6be }
+      - { path: change-requests/CR-2026-075/tasks/TASK-01.md, sha256: a2b0b089864159fb893ce672cd196908c2c303029e9c457b4db249d1699be44c }
+      - { path: change-requests/CR-2026-075/tasks/TASK-02.md, sha256: 41ae47284500ba150d429e04a7db8751ce86562ab0d1993b327be2aee6ad281b }
+      - { path: change-requests/CR-2026-075/tasks/TASK-03.md, sha256: 80f78011e615de0a69f38bec95fed99b7c17ec73650e5e963b03d35bc78b20db }
+      - { path: change-requests/CR-2026-075/tasks/TASK-04.md, sha256: 3df527c8861da34b022a527759176718996858ab44d4467131b2af76209a4d25 }
+      - { path: change-requests/CR-2026-075/tasks/TASK-05.md, sha256: 4b9a5f906ba99f061ea497de338b36bd3de797f83cc57a3e6ccf9e47a9cf14db }
+      - { path: change-requests/CR-2026-075/tasks/TASK-06.md, sha256: 1defe335b806afa247e1f490144cb5c189ec528cd6b378fe8619a915466c328b }
+      - { path: change-requests/CR-2026-075/tasks/TASK-07.md, sha256: b278ce8a0754a1ef8818d62f82571ef4d6df5ef048e761971c8679d1758d3912 }
+      - { path: change-requests/CR-2026-075/tasks/TASK-08.md, sha256: 41104f05efb17256e8e46a2c3a4b576a0ec0ccdf74def7ea008f20e08fb69218 }
+      - { path: change-requests/CR-2026-075/tasks/TASK-09.md, sha256: 15dcd79a2170d8510c513c5997d8b3f1c33d175e1fafe50a9c635d1e5897e994 }
+      - { path: change-requests/CR-2026-075/tasks/TASK-10.md, sha256: 8e58caada6cabc30304a034acc4594f8c9ec90064edc634339ffeaa7929c1a25 }
+      - { path: change-requests/CR-2026-075/tasks/TASK-11.md, sha256: f9d6eb68f9933d66b949656dfdc130bebdf12d8b717d4700dc7fe7bc1fcffec0 }
+      - { path: change-requests/CR-2026-075/tasks/_index.yml, sha256: 50b1222bea25c8829af9b8906987e7b7633ad2d6eb716b43d74d1233f9ea8a43 }
+    digest: 705aaf4a3ff936767ca905a6a1d4668e0fed10c3ce3964925b7f02fe8d087d90
