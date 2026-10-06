@@ -1,0 +1,39 @@
+# CR-2026-075 TASK-11 回归红侧（修复前，git HEAD dd909e2）
+# 命令：node --test --test-name-pattern 'TASK-11 覆盖自测' skills/shared/crctl/scripts/test/contract-scan.test.mjs
+# cwd：tools CR worktree（requirement/CR-2026-075）
+# 起于 2026-10-06T06:45:06Z
+
+✖ CR-2026-075 TASK-11 覆盖自测：失败被未到期例外全部覆盖 → 判绿（不得误判为报告不可解析） (60.7413ms)
+✔ CR-2026-075 TASK-11 覆盖自测：非零退出但该文件 TAP 未暴露失败 → 仍落 SUITE_REPORT_UNPARSEABLE (52.8559ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 1
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1331.796
+
+✖ failing tests:
+
+test at skills\shared\crctl\scripts\test\contract-scan.test.mjs:404:1
+✖ CR-2026-075 TASK-11 覆盖自测：失败被未到期例外全部覆盖 → 判绿（不得误判为报告不可解析） (60.7413ms)
+  AssertionError [ERR_ASSERTION]: 全部失败被有效例外覆盖时必须退出 0（全量豁免不得比部分豁免更红）
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///C:/Users/GOBAO/Downloads/AI/AI%20First%20Platform/.rayai-worktrees/tools/requirement/CR-2026-075/skills/shared/crctl/scripts/test/contract-scan.test.mjs:416:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1201:25)
+      at Test.start (node:internal/test_runner/test:1096:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+# 退出码：1
+# 止于 2026-10-06T06:45:07Z
