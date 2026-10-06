@@ -1,25 +1,25 @@
 $ node --test cr-prompts-revised/test/delegation-contract.test.mjs
 (exit=0)
 --- stdout ---
-✔ 枚举对齐：合同成功集合 = 平台 DispatchStatus - blocked，失败集合含 blocked (1.2527ms)
-✔ 枚举对齐：target_unavailable 只在 reason_code 语境出现，合同内不作 status (0.5693ms)
-✔ 场景向量：AC-1 AIFI-35 回执重放：status=queued / reason_code=queued 判成功且零误报 (0.1511ms)
-✔ 场景向量：coalesced 判成功 (0.0637ms)
-✔ 场景向量：deferred 判成功（含 suppress_run / backlog parked） (0.0618ms)
-✔ 场景向量：AC-2 blocked + reason_code=target_unavailable 判失败 (0.1051ms)
-✔ 场景向量：blocked + 其他 reason_code（runtime_offline）判失败 (0.0659ms)
-✔ 场景向量：被 mention 目标缺失 outcome 判失败 (0.0532ms)
-✔ 场景向量：AC-2 仅 mention 人类成员（如 PASS 后 @owner）且评论发布成功：不失败 (0.5846ms)
-✔ 场景向量：否定 1：未知 status 不判成功（fail-closed） (0.1165ms)
-✔ 场景向量：否定 2：评论写入失败不得伪称投递成功 (0.055ms)
-✔ 场景向量：多目标互不掩盖：一成功一 blocked 整体判失败 (0.0566ms)
-✔ 无漂移：需维护集合已解析（四份提示词 + 至少一份 bak 副本） (0.3243ms)
-✔ 无漂移：requirement-writer.md 内联合同全文且零 enqueued (0.4515ms)
-✔ 无漂移：dev-agent.md 内联合同全文且零 enqueued (0.2986ms)
-✔ 无漂移：quality-reviewer-agent.md 内联合同全文且零 enqueued (0.2575ms)
-✔ 无漂移：cr-coordinator-agent.md 内联合同全文且零 enqueued (0.291ms)
-✔ 无漂移：bak\cr-coordinator-agent.md 内联合同全文且零 enqueued (0.2778ms)
-✔ 无漂移：bak\quality-reviewer-agent.md 内联合同全文且零 enqueued (0.2652ms)
+✔ 枚举对齐：合同成功集合 = 平台 DispatchStatus - blocked，失败集合含 blocked (1.2574ms)
+✔ 枚举对齐：target_unavailable 只在 reason_code 语境出现，合同内不作 status (0.5696ms)
+✔ 场景向量：AC-1 AIFI-35 回执重放：status=queued / reason_code=queued 判成功且零误报 (0.1465ms)
+✔ 场景向量：coalesced 判成功 (0.0652ms)
+✔ 场景向量：deferred 判成功（含 suppress_run / backlog parked） (0.0708ms)
+✔ 场景向量：AC-2 blocked + reason_code=target_unavailable 判失败 (0.0973ms)
+✔ 场景向量：blocked + 其他 reason_code（runtime_offline）判失败 (0.0888ms)
+✔ 场景向量：被 mention 目标缺失 outcome 判失败 (0.551ms)
+✔ 场景向量：AC-2 仅 mention 人类成员（如 PASS 后 @owner）且评论发布成功：不失败 (0.0733ms)
+✔ 场景向量：否定 1：未知 status 不判成功（fail-closed） (0.1295ms)
+✔ 场景向量：否定 2：评论写入失败不得伪称投递成功 (0.061ms)
+✔ 场景向量：多目标互不掩盖：一成功一 blocked 整体判失败 (0.0678ms)
+✔ 无漂移：需维护集合已解析（四份提示词 + 至少一份 bak 副本） (0.3195ms)
+✔ 无漂移：requirement-writer.md 内联合同全文且零 enqueued (0.3831ms)
+✔ 无漂移：dev-agent.md 内联合同全文且零 enqueued (0.3098ms)
+✔ 无漂移：quality-reviewer-agent.md 内联合同全文且零 enqueued (0.2464ms)
+✔ 无漂移：cr-coordinator-agent.md 内联合同全文且零 enqueued (0.3135ms)
+✔ 无漂移：bak\cr-coordinator-agent.md 内联合同全文且零 enqueued (0.2605ms)
+✔ 无漂移：bak\quality-reviewer-agent.md 内联合同全文且零 enqueued (0.244ms)
 ℹ tests 19
 ℹ suites 0
 ℹ pass 19
@@ -27,6 +27,6 @@ $ node --test cr-prompts-revised/test/delegation-contract.test.mjs
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 68.4724
+ℹ duration_ms 62.2943
 
 --- stderr ---

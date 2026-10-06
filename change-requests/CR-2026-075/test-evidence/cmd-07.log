@@ -10,7 +10,7 @@ $ go test ./internal/daemon/ -count=1 -v -run Test(InjectTaskCRWorkspaceEnv|Daem
 === RUN   TestInjectTaskCRWorkspaceEnvUsesTaskLocalDirectory
 === RUN   TestInjectTaskCRWorkspaceEnvUsesTaskLocalDirectory/in_place
 === RUN   TestInjectTaskCRWorkspaceEnvUsesTaskLocalDirectory/worktree
---- PASS: TestInjectTaskCRWorkspaceEnvUsesTaskLocalDirectory (0.01s)
+--- PASS: TestInjectTaskCRWorkspaceEnvUsesTaskLocalDirectory (0.00s)
     --- PASS: TestInjectTaskCRWorkspaceEnvUsesTaskLocalDirectory/in_place (0.00s)
     --- PASS: TestInjectTaskCRWorkspaceEnvUsesTaskLocalDirectory/worktree (0.00s)
 === RUN   TestInjectTaskCRWorkspaceEnvRejectsAmbiguousLocalDirectory
@@ -26,11 +26,11 @@ $ go test ./internal/daemon/ -count=1 -v -run Test(InjectTaskCRWorkspaceEnv|Daem
 === RUN   TestDaemonEnvBuildHasNoConfigFirstRootFallback
 --- PASS: TestDaemonEnvBuildHasNoConfigFirstRootFallback (0.00s)
 === RUN   TestPreparePipelineTaskHydratesMachineLocalPaths
---- PASS: TestPreparePipelineTaskHydratesMachineLocalPaths (0.00s)
+--- PASS: TestPreparePipelineTaskHydratesMachineLocalPaths (0.03s)
 === RUN   TestConfigurePipelineGitEnvironment
 --- PASS: TestConfigurePipelineGitEnvironment (0.00s)
 === RUN   TestInstallPipelineCrctlLauncher
---- PASS: TestInstallPipelineCrctlLauncher (0.06s)
+--- PASS: TestInstallPipelineCrctlLauncher (0.05s)
 === RUN   TestConfigureTaskGitEnvironment
 --- PASS: TestConfigureTaskGitEnvironment (0.00s)
 === RUN   TestInstallCrctlLauncher
@@ -77,8 +77,8 @@ $ go test ./internal/daemon/ -count=1 -v -run Test(InjectTaskCRWorkspaceEnv|Daem
     --- PASS: TestResolveTaskWorkspaceBinding/pipeline_keeps_the_preflighted_pair (0.00s)
     --- PASS: TestResolveTaskWorkspaceBinding/pipeline_half_binding_is_empty,_not_an_error (0.00s)
     --- PASS: TestResolveTaskWorkspaceBinding/ordinary_task_without_a_declaration_binds_its_own_project (0.00s)
-    --- PASS: TestResolveTaskWorkspaceBinding/delegation_is_preflighted_against_its_own_project_root (0.01s)
-    --- PASS: TestResolveTaskWorkspaceBinding/declared_root_is_not_the_preflighted_one (0.01s)
+    --- PASS: TestResolveTaskWorkspaceBinding/delegation_is_preflighted_against_its_own_project_root (0.00s)
+    --- PASS: TestResolveTaskWorkspaceBinding/declared_root_is_not_the_preflighted_one (0.00s)
     --- PASS: TestResolveTaskWorkspaceBinding/unhealthy_workspace_stops (0.00s)
     --- PASS: TestResolveTaskWorkspaceBinding/project_root_without_the_CR_ledger_stops (0.00s)
     --- PASS: TestResolveTaskWorkspaceBinding/delegation_without_a_project_root_stops (0.00s)
@@ -86,6 +86,6 @@ $ go test ./internal/daemon/ -count=1 -v -run Test(InjectTaskCRWorkspaceEnv|Daem
 === RUN   TestTaskWorkspaceBinding
 --- PASS: TestTaskWorkspaceBinding (0.00s)
 PASS
-ok  	github.com/multica-ai/multica/server/internal/daemon	0.198s
+ok  	github.com/multica-ai/multica/server/internal/daemon	0.200s
 
 --- stderr ---
