@@ -8,8 +8,8 @@ owners:
     id: a0e71a32-509d-4ee9-aea4-d086a5b1ff93
     assigned-at: "2026-10-08T21:06:20+08:00"
   development:
-    id: Ray
-    assigned-at: "2026-10-07T00:06:29+08:00"
+    id: a0e71a32-509d-4ee9-aea4-d086a5b1ff93
+    assigned-at: "2026-10-08T21:06:20+08:00"
   test:
     id: Ray
     assigned-at: "2026-10-07T00:06:29+08:00"
@@ -28,5 +28,6 @@ owner-history:
   - { role: development, from: "", to: Ray, at: "2026-10-07T00:06:29+08:00", reason: initial-assignment }
   - { role: test, from: "", to: Ray, at: "2026-10-07T00:06:29+08:00", reason: initial-assignment }
   - { role: requirement, from: Ray, to: a0e71a32-509d-4ee9-aea4-d086a5b1ff93, at: "2026-10-08T21:06:20+08:00", reason: formal-handover }
+  - { role: development, from: Ray, to: a0e71a32-509d-4ee9-aea4-d086a5b1ff93, at: "2026-10-08T21:06:20+08:00", reason: formal-handover }
 handover-history: []
 ---
