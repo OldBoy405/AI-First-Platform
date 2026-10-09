@@ -4,11 +4,11 @@ type: PRD
 cr-ref: CR-2026-076
 title: CR 执行闭环与门禁减负修订
 target-version: "0.49"
-owner: Ray
+owner: a0e71a32-509d-4ee9-aea4-d086a5b1ff93
 owner-role: requirement
 status: draft
 created: "2026-10-07T00:15:00+08:00"
-updated: "2026-10-08T19:38:00+08:00"
+updated: "2026-10-08T21:36:09+08:00"
 ---
 
 # CR 执行闭环与门禁减负修订
@@ -32,8 +32,8 @@ updated: "2026-10-08T19:38:00+08:00"
 
 ### 1.2 权威输入与范围
 
-- `title`、`target-version=0.49`、`target-spec-id=ai-first-platform` 继承注册事实；需求、开发、测试三角色 owner 均为 Ray，责任时间以 `cr.md` 为准。
-- 三角色 owner 的目标取值口径按补充修订方案为当前 workspace 成员的 `user_id`：本轮查得本 workspace 唯一成员 Ray 的 `user_id` 为 `a0e71a32-509d-4ee9-aea4-d086a5b1ff93`（membership ID `5338f063-8c4b-4028-9928-6fb8aa19533f` 与之同为 UUID 形状但不构成合法取值，见 FR-SUP-01）。`cr.md`／`_backlog.yml` 中三角色的同值修正属受控账本写入，只能经既有 `handover-cr`／`owner-set` 入口在正确权威工作区执行（FR-SUP-08）；本 PRD 不代该入口宣告修正已完成。
+- `title`、`target-version=0.49`、`target-spec-id=ai-first-platform` 继承注册事实；需求、开发、测试三角色 owner 现均为 `user_id` 口径的 `a0e71a32-509d-4ee9-aea4-d086a5b1ff93`，责任时间以 `cr.md` 为准。
+- 三角色 owner 的目标取值口径按补充修订方案为当前 workspace 成员的 `user_id`：本轮查得本 workspace 唯一成员 Ray 的 `user_id` 为 `a0e71a32-509d-4ee9-aea4-d086a5b1ff93`（membership ID `5338f063-8c4b-4028-9928-6fb8aa19533f` 与之同为 UUID 形状但不构成合法取值，见 FR-SUP-01）。`cr.md`／`_backlog.yml` 中三角色的同值修正属受控账本写入，只能经既有 `handover-cr`／`owner-set` 入口在正确权威工作区执行（FR-SUP-08）。该定点修正已由受控入口在本 CR 权威工作区实际执行：`cr.md#owner-history` 记录三条 `formal-handover`（`Ray` → `a0e71a32-509d-4ee9-aea4-d086a5b1ff93`，2026-10-08T21:06:20+08:00／21:06:21+08:00），`cr.md` 与 `_backlog.yml` 的 `owners.*.id` 已同值；本 PRD 的 frontmatter `owner` 与本节取值均继承该结果，不代受控入口宣告。
 - `registration_key=aifi-54-tools-unified-cr-optimization-plan-v3` 不变；`cr.md` 的 `source`、`origin` 均为空，不将附件名或 Issue 标识回填为规划路径。
 - 本 CR 不关联其他 CR。历史问题和修复先例只作设计背景，不构成依赖、重复注册或复用旧审批。
 - 参与仓由安装工作区 `dir-graph.yaml#repositories` 解析，当前声明包括知识库、multica、tools；实际分支、路径、健康及阶段 authority 以当前 `workspace inspect` 为准，不把安装根、在途 worktree 和归档后根混为同一概念。
