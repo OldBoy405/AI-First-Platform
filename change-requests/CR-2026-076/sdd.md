@@ -6,7 +6,7 @@ title: CR 执行闭环与门禁减负修订 技术设计
 target-version: "0.49"
 status: draft
 created: "2026-10-10T15:11:00+08:00"
-updated: "2026-10-10T15:11:00+08:00"
+updated: "2026-10-10T15:29:00+08:00"
 ---
 
 # CR 执行闭环与门禁减负修订 技术设计（SDD）
@@ -14,6 +14,7 @@ updated: "2026-10-10T15:11:00+08:00"
 > 输入：`change-requests/CR-2026-076/prd.md`（status=requirement-approved，需求评审 PASS，`review-annotations/requirement.yml`）。
 > 本文只做技术设计，不回写 `specs/`、不改注册事实、不推进任何未由本合同授权的状态。
 > 既有实现事实一律以 `§10 既有实现依赖与事实` 的 `dep-N` 承载，正文不复述实现细节。
+> 修订 r2（2026-10-10，按 `review-annotations/sdd.yml` attempt 1 的 3 条 blocker 定点回修，结论面未变）：B1 → §3.5／§4.15／`AC-SUP-03` 改为「入库通道待核实」两分支；B2 → `ledgerTxKey` 移出 `dep-13`、另立 `dep-34`，`SDD-CLOSE-01`／§4.3 改指；B3 → §8 补齐 `write-dev-tasks`／`inbox-emit` 两行并补 `review-dev-plan` 的 dev-start 交接删除。
 
 ## 1. 架构概览
 
@@ -41,6 +42,7 @@ updated: "2026-10-10T15:11:00+08:00"
 | FR-SUP-06 的「reviewer 可信绑定与启动预检／平台直接派发单层独立 reviewer」 | 保留编号与需求描述，不重复实现 | AIFI-60（步骤 3，复用 AIFI-58/59） |
 | FR-SUP-07 的「写入边界安全校验与诊断口径」（`workspace inspect`／`status`／`next` 只读核对、`WORKSPACE_CONTEXT_MISMATCH` 失败关闭） | **本 CR 交付** | — |
 | FR-SUP-07 的「删除逐节点手抄根、普通评论代调度及重复派发说明」与相关生效合同最小同步 | 保留编号，不重复实施 | AIFI-60（步骤 3） |
+| PRD §1.5 澄清行：普通执行日志不制造业务 dirty；真正被消费的正式节点产物仍由生产节点按既有合同收尾和提交；不删除审计、不放松 clean | 保留编号与需求描述，不重复实现（本 CR 不新增该平台行为的实现承诺，也不放松既有 clean／审计口径） | AIFI-60（步骤 3）；实质约束由 §7.1「不放宽项」承载 |
 | FR-SUP-09／AC-SUP-10 的「评审 Task 正常结束后仍以正式交付证据判定节点成功、证据缺失可见失败、原卡死形态受控恢复」 | 保留编号，不作为本 CR 验收前置 | AIFI-60（步骤 1／2） |
 | 平台 CR 投影 reconcile 权威源根治（在途 CR 读自身 worktree 分支） | 不在本 CR，**也不作为本节点成败依据** | 独立 CR |
 
@@ -209,10 +211,10 @@ warnings:
 
 | 对象 | 变更 |
 |---|---|
-| `pipeline-templates/code-implementation.pipeline.json` | 移除 `human_approval`（确认进入代码开发）与 `approve-dev-start` 节点；`review-dev-plan` PASS 后由 `write-dev-tasks` 收尾并经既有 `advance` 进入 `developing`（`dep-25`） |
+| `pipeline-templates/code-implementation.pipeline.json` | 移除 `human_approval`（确认进入代码开发）与 `approve-dev-start` 节点；`review-dev-plan` PASS 后重连到 `write-dev-tasks` 的收尾节点（`mode=finalize`，不改该 Skill 的 TASK 拆分职责），由该节点在同一 run 内执行收尾 `advance` 进入 `developing`，再接续 `workspace-freshness`（`dep-25`、§4.6） |
 | `gates.json#statusGates.developing` | 去掉 `passCondition: dev-start` 与 `approval: development-start`；保留 plan/tasks 存在性与 globNonEmpty（`dep-24`） |
 | `gates.json#approvalStages.dev-start` | 保留（旧调用兼容），不再是默认必经 |
-| `dir-graph.yaml#change-request-track.state_machine` | `task-breakdown → developing` 的触发改为「review-dev-plan PASS 后收尾」，保留 `approve-dev-start` 兼容转换；状态集合与转移统计口径按 `dep-26` 记录（`SDD-CLOSE-07`） |
+| `dir-graph.yaml#change-request-track.state_machine` | 新增一条合法转换 `{ from: task-breakdown, to: developing, trigger: "write-dev-tasks:finalize" }`（触发条件：`review-dev-plan` PASS 且 blockers 空，由收尾节点执行）；既有 `{ from: task-breakdown, to: developing, trigger: "approve-dev-start" }` 保留为兼容路径；状态集合不变，转移统计口径按 `dep-26` 并在实现期据实更新（`SDD-CLOSE-07`） |
 | `pipeline-templates/requirement-authoring.pipeline.json` | `source` 取消 `required: true`，与空值语义一致；owner 输入示例改为 `user_id`（`dep-29`） |
 | Skill 同步清单 | 见 §8 |
 
@@ -228,7 +230,7 @@ warnings:
 
 ### 3.5 HTTP / REST 契约
 
-**N/A**：本 CR 不新增或修改 HTTP endpoint、request/response；NFR-01 明示不定义新 HTTP API、通用授权框架或第二执行入口。平台侧的上传入库 source 桥接与创建入口交互复用既有通道（`dep-31`），不新增状态码。
+**N/A**：本 CR 不新增或修改 HTTP endpoint、request/response；NFR-01 明示不定义新 HTTP API、通用授权框架或第二执行入口。平台侧「创建入口上传 → 知识库 source 入库」这一桥接**待核实**（§10 待核实依赖条目「上传附件 → 知识库 source 桥接（平台侧）」）：本 SDD 不把它断言为既有能力；实施期先定点核实其实际入口与可读性保证，再按核实结论二选一——复用既有通道，或新增最小接线。两条分支均不新增或修改 HTTP 状态码，也不改创建入口的对外契约面。
 
 ---
 
@@ -274,6 +276,7 @@ warnings:
 
 - 禁止：改写用户全局姓名/邮箱、把身份替换为机器人兜底、设置非 Git 原生的 trust 旁路。
 - 身份不可用（原全局配置中 `user.name`/`user.email` 均缺失，身份加载链见 `dep-6`）时，正常新操作必须在账本写入前报环境问题；已有未完成事务按原恢复合同处理，**不得**把环境错误记成业务 BLOCK。
+- 是否存在第二处 Git 配置环境写入点（repocache 身份加载）尚未证实，见 §10 待核实依赖条目「repocache 身份加载与 `GIT_CONFIG_GLOBAL` 的交互（平台侧）」；核实前本条不得假设「只此一处」。
 - 原全局配置路径解析：`git config --get` 既有白名单形态不可读全局路径时，回退读取进程启动前的 `HOME`/`USERPROFILE` 下标准位置；两者皆不可判 → 技术失败（不猜、不写死）。
 
 ### 4.3 review-record 原子闭环（FR-03）
@@ -287,7 +290,7 @@ warnings:
 - `PASS` 无 bump：write-set = annotation + traceability；`PASS` 有 bump：额外纳入 `review-loop.yml`。
 - 失败：非零返回，回滚本次账本写入与**本次暂存影响**（不夹带、不丢弃作者或其他任务的变更），保留原 payload；不发成功事件、不推进下一节点。
 - commit 后崩溃：按已提交事实恢复；**不重新评审、不再 bump**；事件引用真正包含评审账本的 SHA。
-- 恢复固定原 CR、loop／cycle／attempt、被评审对象、verdict/blockers、payload、bump 意图与本次 write-set；输入或对象被替换不得当作同一次操作的新执行。幂等识别复用既有事务键与意图摘要（`dep-13`），**不引入第二幂等账本**（`SDD-CLOSE-01`）。
+- 恢复固定原 CR、loop／cycle／attempt、被评审对象、verdict/blockers、payload、bump 意图与本次 write-set；输入或对象被替换不得当作同一次操作的新执行。幂等识别复用既有事务原语与意图摘要（`dep-13`），事务键取自 `ledgerTxKey`（`dep-34`），**不引入第二幂等账本**（`SDD-CLOSE-01`）。
 - 本地提交不等于远端发布：远端仍由 `checkpoint`／`push-progress` 完成；`advance` 保持状态职责，不自动 add 整个 CR、不代提交作者代码。
 
 ### 4.4 `next` 判定优先级与普通 BLOCK 回修（FR-04）
@@ -324,7 +327,7 @@ warnings:
 
 ### 4.6 默认 coding 取消重复开发启动确认（FR-06）
 
-- 默认编码路径的必经节点变为：设计批准 → PLAN/TASK 完整 → `review-dev-plan` PASS 且 blockers 空 → 资源与实际 readiness → 经既有 `advance` 进入 `developing`。不再插入独立 `human_approval`／`approve-dev-start`。
+- 默认编码路径的必经节点变为：设计批准 → PLAN/TASK 完整 → `review-dev-plan` PASS 且 blockers 空 → `write-dev-tasks` 收尾节点（`mode=finalize`）→ 资源与实际 readiness → 经既有 `advance`（trigger `write-dev-tasks:finalize`）进入 `developing`。不再插入独立 `human_approval`／`approve-dev-start`（节点顺序与 trigger 标识符见 §3.3，全文唯一）。
 - `developing` 门禁保留 plan/tasks/globNonEmpty 与 readiness；**不伪造** development-start 批准，不写入 `approval.yml#development-start`。
 - 旧审批调用与历史记录兼容；`approve-dev-start` Skill 保留但不在默认路径上必经。
 - 本 CR **自身**按其执行时合法有效的旧合同运行，不自我减负、不预先使用未发布的新门禁授权。
@@ -400,6 +403,7 @@ dirty / 分叉 / 冲突 / 同步失败 / 环境不匹配 → 既有失败合同�
 - 复用维护来源的导入/发布流程，核对 CLI、daemon、Skill/instructions 与必要平台消费者的**实际取用版本**；生产者先兼容新合同、再切消费者（`dep-8`、`dep-30`）。
 - 源码合入、构建成功或仓库镜像更新**不单独**算实际交付完成；`plan.md` 必须提前列明所需人类动作、责任方、窗口与可达入口。
 - 接受一次明确合法且有边界的人工启动前置；不接受逐节点人肉代跑。正式治理只用已发布、已验证入口；候选 CLI 仅用于隔离 fixture 或明确受控测试。稳定入口不可用则技术中止，不盲目重投。
+- 该人工启动的验收证据口径固定为：执行者的启动回执（实际使用的入口与其版本输出）＋ 该次 run 在安装环境留下的目标行为证据原样结果（`test-evidence/` 内产物）；二者均须为可核验产物，「已人工启动」的自述不构成证据。所需人类动作、责任方与窗口按 `SDD-CLOSE-06` 在 `plan.md` 列明。
 - 技术中止只修同一环境/事务且不重复 bump；真实 BLOCK 按正常回修；证据 ID 稳定、不机械重编号。
 
 ### 4.14 owner 值域校验与契约同步（FR-SUP-01、FR-SUP-02）
@@ -422,7 +426,7 @@ dirty / 分叉 / 冲突 / 同步失败 / 环境不匹配 → 既有失败合同�
 
 | 创建需求时 | 行为 |
 |---|---|
-| 成功上传一个主来源文档 | 复用既有附件读取/入库能力保存到知识库，自动把相对路径传给 `register.source`；确保随后派生的 CR worktree 实际可读 |
+| 成功上传一个主来源文档 | 保存到知识库并把相对路径自动传给 `register.source`。**入库通道待核实**（§10 待核实依赖条目「上传附件 → 知识库 source 桥接（平台侧）」）：实施期定点核实后按结论二选一——复用既有附件读取／入库通道，或新增最小接线；无论哪条分支，均须在注册持久化前完成入库，并确保随后派生的 CR worktree 实际可读 |
 | 未上传，或注册前移除 | `source` 缺省或空串统一持久化为 `""`；writer 使用标题、摘要与已确认上下文 |
 | 上传、读取或保存失败 | 明确失败并停止注册，不静默降级为无文档 |
 
@@ -577,7 +581,7 @@ dirty / 分叉 / 冲突 / 同步失败 / 环境不匹配 → 既有失败合同�
 
 **AC-14**（FR-06）
 - 设计落点：§4.6；Pipeline 模板、`gates.json`、状态机（`dep-24`～`dep-26`），§8 同步清单。
-- 可观测结果：新合同下 `task-breakdown → developing` 无需 `approval.yml#development-start`；`approval.yml` 不出现伪造段；旧审批记录仍可读；本 CR 自身仍按旧合同运行。
+- 可观测结果：新合同下 `task-breakdown → developing` 由 `write-dev-tasks:finalize` 收尾触发、无需 `approval.yml#development-start`；`approval.yml` 不出现伪造段；旧审批记录仍可读；本 CR 自身仍按旧合同运行。
 - 可达性说明：`developing` 门禁保留 plan/tasks/readiness 判定，移除的只是额外人工确认，不引入新前置。
 
 **AC-15**（FR-07）
@@ -641,9 +645,9 @@ dirty / 分叉 / 冲突 / 同步失败 / 环境不匹配 → 既有失败合同�
 - 可达性说明：错误分类由查询结果可得性决定，不依赖对 ID 的猜测。
 
 **AC-SUP-03**（FR-SUP-03）
-- 设计落点：§4.15 上传分支。
+- 设计落点：§4.15 上传分支；入库通道的落地分支（复用既有通道／新增最小接线）按 §10 待核实依赖条目「上传附件 → 知识库 source 桥接（平台侧）」在实施期定点核实后确定，本条判定不依赖「该通道已存在」这一前提。
 - 可观测结果：`cr.md#source` 为知识库内相对路径，CR worktree 内该文件可读，创建界面显示已绑定文件名。
-- 可达性说明：绑定在注册持久化前完成，故 worktree 派生后必可读。
+- 可达性说明：绑定完成判据是「注册持久化前入库完成、注册后该 worktree 内路径可读」这一可观测事实（FR-SUP-04 的注册前校验），与入库由既有通道还是新增接线实现无关。
 
 **AC-SUP-04**（FR-SUP-03）
 - 设计落点：§4.15 空值与失败分支。
@@ -683,7 +687,7 @@ dirty / 分叉 / 冲突 / 同步失败 / 环境不匹配 → 既有失败合同�
 ### 6.3 SDD-CLOSE 关闭项
 
 **SDD-CLOSE-01（幂等指纹与事务键，关闭 FR-03 延后项）**
-- 结论：复用 `dep-13` 的 `ledgerTxKey(op, cr, stage)` + `inputDigest`（意图摘要）作为唯一幂等识别；review-record 的幂等事实集合为 {CR, loop, cycle, attempt, 被评审对象摘要, verdict/blockers, payload 摘要, bump 意图, write-set 路径集合}。不新增第二幂等账本、不新增指纹文件；字段键序与编码沿用既有渲染器（YAML 行级改写，LF 归一）。
+- 结论：复用 `dep-13` 的账本事务原语（write-set／CAS／回滚／恢复）与 `dep-34` 的 `ledgerTxKey(op, cr, stage)`，配 `inputDigest`（意图摘要）作为唯一幂等识别；review-record 的幂等事实集合为 {CR, loop, cycle, attempt, 被评审对象摘要, verdict/blockers, payload 摘要, bump 意图, write-set 路径集合}。不新增第二幂等账本、不新增指纹文件；字段键序与编码沿用既有渲染器（YAML 行级改写，LF 归一）。
 - 覆盖层：数据生产（payload 组装）→ 存储/传输（journal + 账本）→ 响应（回执 `changed`）→ 消费（重投分支）→ 兼容降级（legacy 无摘要按既有兼容分支）五层均已给出口。
 
 **SDD-CLOSE-02（错误码闭包，关闭 NFR-02 延后项）**
@@ -702,7 +706,7 @@ dirty / 分叉 / 冲突 / 同步失败 / 环境不匹配 → 既有失败合同�
 - 结论：`plan.md`（`write-dev-plan` 产物）承载所需人类动作、责任方、窗口与可达入口，SDD 只固定该承载义务（FR-14）；不新增台账文件。
 
 **SDD-CLOSE-07（状态数口径）**
-- 结论：本 CR 引用的状态机口径以 `dep-26` 为准——**15 个具名状态 + 注册前 `(new)`**（口语「16 态」含 `(new)`）；转移**28 条声明，wildcard 展开后 50 条**。本 CR 只改 `task-breakdown → developing` 的触发语义与保留 `approve-dev-start` 兼容转换，**不新增状态**；若新增/调整转移条数，须在实现期以 `dep-26` 的实际内容为准更新本节与 plan，并写明所用口径。
+- 结论：本 CR 引用的状态机口径以 `dep-26` 为准——**15 个具名状态 + 注册前 `(new)`**（口语「16 态」含 `(new)`）；转移**28 条声明，wildcard 展开后 50 条**（`dep-26` 记录的实现前现状）。本 CR **不新增状态**，但需在 `task-breakdown → developing` 上**新增 1 条转移声明**（trigger `write-dev-tasks:finalize`，§3.3），既有 `approve-dev-start` 转移保留为兼容路径；实现后声明数应为 **29 条**（wildcard 展开数按实现期实际内容据实更新，不沿用本条预估）。实现期须以 `dep-26` 的实际内容为准回填本节与 plan，并写明所用口径。
 
 **SDD-CLOSE-08（发布生效核对口径）**
 - 结论：交付完成的判据为「安装后新 run 的目标行为证据 + 实际取用版本记录」（CLI、daemon、Skill/instructions、必要平台消费者），源码合入/构建/镜像更新不构成完成；证据 ID 稳定、不机械重编号（§4.13）。
@@ -742,18 +746,20 @@ dirty / 分叉 / 冲突 / 同步失败 / 环境不匹配 → 既有失败合同�
 | Skill / 合同路径 | 现状 | 应改为 |
 |---|---|---|
 | `skills/develop/approve-dev-start/SKILL.md` | 默认 coding 路径的必经启动确认 | 保留为旧调用兼容入口；默认路径不再必经，说明改为「仅历史/显式调用」 |
+| `skills/develop/write-dev-tasks/SKILL.md` | 仅执行 `advance --to task-breakdown`（Step 5），不承载向 `developing` 的收尾推进 | 增补收尾职责（`mode=finalize`）：`review-dev-plan` PASS 且 blockers 空后，由该节点在同一 run 内执行 `advance --to developing --trigger write-dev-tasks:finalize`；TASK 拆分职责不变（§3.3、§4.6） |
 | `skills/develop/implement-code/SKILL.md` | 编码前等待 development-start 批准 | 消费 `crctl next` 的 developing 判定与 readiness，不再要求 `approval.yml#development-start` |
 | `skills/sync/workspace-freshness/SKILL.md` | 仅输出 fresh/behind-clean/diverged/unknown 路由 | 增补消费 `workspace inspect` 的 tree 等价结论，按 §4.9 的三段路由（接续/最小复评/技术失败） |
 | `skills/develop/review-code/SKILL.md` | 漂移即视为阻断 | 按 §4.5 消费 `warnings[]`，仅硬条件失败才 BLOCK |
-| `skills/develop/review-dev-plan/SKILL.md` | 同上 | 同上；并让出 `next` 的 upstream/耗尽优先级判定给 crctl |
+| `skills/develop/review-dev-plan/SKILL.md` | 漂移即视为阻断；PASS 后仍进入开发启动人工审批（`SKILL.md:155` 写「再进入开发启动人工审批（`approve-dev-start`）」、`:167` 据 `next` 的 `humanApproval` 请求人工审批） | 按 §4.5 消费 `warnings[]`，仅硬条件失败才 BLOCK；并让出 `next` 的 upstream/耗尽优先级判定给 crctl；**删除 dev-start 人工审批交接**：PASS 后保持 `task-breakdown`、不再请求 `approve-dev-start`、不再据 `humanApproval` 请人工审批，改由收尾节点 `advance` 到 `developing`（§3.3） |
 | `skills/develop/write-test-report/SKILL.md` | 同上 | 同上；测试数量下降改为 warning 观测点 |
 | `skills/shared/crctl/SKILL.md` | 子命令与绑定归一说明 | 增补 `review-loop reset --continue-reason`、`validate` 只读维度 `owner-source-anomalies`、`warnings[]` 语义；声明无新增子命令 |
 | `skills/requirement/requirement-register/SKILL.md` | owner 输入为角色名示例、`source` 为必填 | owner 改为 `user_id` 口径示例；`source` 允许空值并与自动绑定/失败停止语义一致 |
 | `skills/sync/handover-cr/SKILL.md` | owner-set 调用说明 | 增补写入前校验与「owner-set 失败不命名为注册失败」的错误语义 |
 | `skills/sync/push-progress/SKILL.md` | checkpoint 调用说明 | 增补发布 source 固定与实际生效核对（§4.10、§4.13） |
 | `skills/cr/cr-review-record/SKILL.md` | review-record 调用说明 | 增补原子闭环/恢复语义与「不重评、不再 bump」约束 |
+| `skills/cr/inbox-emit/SKILL.md` | `approve-dev-start` 完成 → `event=developing`（`SKILL.md:26`）是 developing 事件的唯一映射来源 | 增补新的映射来源：`write-dev-tasks:finalize` 收尾 `advance` → `event=developing`；`approve-dev-start` 的映射作为兼容路径保留，不再是默认路径的唯一来源（§3.3） |
 | `skills/shared/controlled-shell/SKILL.md` | 白名单与 deny 面说明 | 无改动（deny 面不变），确认不新增命令面 |
-| `agent-skill-matrix.yml`、`AGENT-SKILL-MATRIX.md`、`agents/dev-agent.md`、`agents/quality-reviewer-agent.md`、`agents/requirement-writer.md` | 阶段节点/权限/评审合同 | 按 FR-06（去 dev-start）、FR-SUP-07（诊断与失败关闭口径）同步；评审独立性不变 |
+| `agent-skill-matrix.yml`、`AGENT-SKILL-MATRIX.md`、`agents/_index.yml`、`agents/dev-agent.md`、`agents/quality-reviewer-agent.md`、`agents/requirement-writer.md` | 阶段节点/权限/评审合同 | 按 FR-06（去 dev-start：默认路径不再内含 `approve-dev-start` 节点与 `dev-start-approve` 必经环节）、FR-SUP-07（诊断与失败关闭口径）同步；评审独立性不变 |
 
 同步完成的判定：上述文件与 §3.3 的 Pipeline/门禁/状态机变更一致，且 FR-04 要求的「按 CR-ID/cycle 写死的临时例外」已关闭。
 
@@ -857,7 +863,7 @@ dep-15
 dep-13
   repo: tools
   relative path: skills/shared/crctl/scripts/lib/durable-tx.mjs
-  stable symbol/对象: beginLedgerTransaction、finishLedgerTransaction、abortLedgerTransaction、recoverLedgerTransaction、applyWriteSet、ledgerTxKey
+  stable symbol/对象: beginLedgerTransaction、finishLedgerTransaction、abortLedgerTransaction、recoverLedgerTransaction、applyWriteSet
   commit SHA: 0f5690f845dcf1e0dd9fdc37797b7e4294335266
   依赖结论: 账本写入已具备事务键、输入意图摘要、CAS、写集回滚与恢复能力，可直接承载 review-record 的原子闭环与幂等，无需第二幂等账本。
 
@@ -1008,12 +1014,19 @@ dep-33
   commit SHA: 0f5690f845dcf1e0dd9fdc37797b7e4294335266
   依赖结论: Skill 文档与权限矩阵是生效合同的事实源；FR-04/FR-06/FR-SUP-02/FR-SUP-07 的合同同步必须落在这些文件上，否则会出现「crctl 已改、合同未改」漂移。
 
+dep-34
+  repo: tools
+  relative path: skills/shared/crctl/scripts/crctl.mjs
+  stable symbol/对象: ledgerTxKey（模块内私有函数，crctl.mjs:702，`function ledgerTxKey(op, cr, stage = '')`；只由同文件的 `beginLedgerCommand`／`recoverLedgerCommand` 调用点消费）
+  commit SHA: 0f5690f845dcf1e0dd9fdc37797b7e4294335266
+  依赖结论: 事务键由 `(op, cr, stage)` 派生并做 `[A-Za-z0-9._-]` 归一，与 `inputDigest`（意图摘要）共同构成同一操作的幂等识别；crctl.mjs 无导出面，该键不可跨文件导入，故「复用该键」只能落在同文件内的命令实现（`cmdReviewRecord`）上，设计不得假设它由 `durable-tx.mjs` 提供。
+
 ### 待核实依赖
 
-无法在本轮绑定五要素（repo/path/symbol/SHA/结论）的引用，列为此类，不得当作既有能力断言：
+无法在本轮绑定五要素（repo/path/symbol/SHA/结论）的引用，列为此类，不得当作既有能力断言，也不计入 `dep-N` 序列；正文按下列条目标题引用它们。实施期一旦核实取到五要素，须按「只增不改」另立 `dep-N` 并把正文引用改指该编号，不得把下列条目当作既有能力依据。
 
-- **上传附件 → 知识库 source 桥接（平台侧）**：FR-SUP-03/AC-SUP-03 要求「复用现有附件上传/读取能力」。本轮只在 multica 仓定位到候选承载文件（`server/internal/governance/runner_requirement.go`、`runner_requirement_entry.go`、`runner_requirement_registry.go`），未取到稳定符号与行为结论。实施期须先定点核实该桥接的实际入口与可读性保证，再决定是复用还是新增最小接线；核实前不得在 plan/TASK 中按既有能力排期。
-- **repocache 身份加载与 GIT_CONFIG_GLOBAL 的交互（平台侧）**：FR-02/AC-04 要求任务内提交身份来自原全局配置。本轮未确认 `server/internal/daemon/repocache/cache.go` / `identity_test.go` 是否也写入或覆盖 Git 配置环境。实施期须先核实，若存在第二处写入点，需与 `dep-6` 的叠加式配置在同一变更内收口。
+- **上传附件 → 知识库 source 桥接（平台侧）**（被 §3.5、§4.15、`AC-SUP-03` 引用）：FR-SUP-03/AC-SUP-03 要求把上传的主来源文档入库到知识库。本轮在 multica worktree HEAD `a2046ce34449aaed67df000a1320d73d9976e987` 只读检索，检索面为 `server/internal/governance/runner_requirement.go`／`runner_requirement_entry.go`／`runner_requirement_registry.go` 与 `server/internal/handler/` 的附件相关文件：需求期 Runner 侧无附件处理代码，`StartRequirementInput.Source` 只是显式传入的注册派生输入；附件能力集中在 `server/internal/handler/`（上传、下载与下载 capability），未定位到「附件 → 知识库文件」写入缝的稳定符号。故**未取到稳定符号与行为结论**，本 SDD 不把它断言为既有能力。实施期须先定点核实该桥接的实际入口与可读性保证，再决定复用既有通道或新增最小接线；核实前不得在 plan/TASK 中按既有能力排期，`AC-SUP-03` 也不以「通道已存在」为前提。
+- **repocache 身份加载与 GIT_CONFIG_GLOBAL 的交互（平台侧）**（被 §4.2 引用）：FR-02/AC-04 要求任务内提交身份来自原全局配置。本轮未确认 `server/internal/daemon/repocache/cache.go` / `identity_test.go` 是否也写入或覆盖 Git 配置环境。实施期须先核实，若存在第二处写入点，需与 `dep-6` 的叠加式配置在同一变更内收口。
 
 ---
 
