@@ -1,0 +1,131 @@
+=== RUN   TestInjectTaskCRWorkspaceEnvWithoutBinding
+--- PASS: TestInjectTaskCRWorkspaceEnvWithoutBinding (0.00s)
+=== RUN   TestInjectTaskCRWorkspaceEnvHalfBindingIsNotPublished
+--- PASS: TestInjectTaskCRWorkspaceEnvHalfBindingIsNotPublished (0.00s)
+=== RUN   TestInjectTaskCRWorkspaceEnvRequiresTaskIdentity
+--- PASS: TestInjectTaskCRWorkspaceEnvRequiresTaskIdentity (0.00s)
+=== RUN   TestInjectTaskCRWorkspaceEnvUsesTaskLocalDirectory
+=== RUN   TestInjectTaskCRWorkspaceEnvUsesTaskLocalDirectory/in_place
+=== RUN   TestInjectTaskCRWorkspaceEnvUsesTaskLocalDirectory/worktree
+--- PASS: TestInjectTaskCRWorkspaceEnvUsesTaskLocalDirectory (0.01s)
+    --- PASS: TestInjectTaskCRWorkspaceEnvUsesTaskLocalDirectory/in_place (0.00s)
+    --- PASS: TestInjectTaskCRWorkspaceEnvUsesTaskLocalDirectory/worktree (0.00s)
+=== RUN   TestInjectTaskCRWorkspaceEnvRejectsAmbiguousLocalDirectory
+--- PASS: TestInjectTaskCRWorkspaceEnvRejectsAmbiguousLocalDirectory (0.00s)
+=== RUN   TestInjectTaskCRWorkspaceEnvRequiresCRLedger
+--- PASS: TestInjectTaskCRWorkspaceEnvRequiresCRLedger (0.00s)
+=== RUN   TestInjectTaskCRWorkspaceEnvPipelineTask
+--- PASS: TestInjectTaskCRWorkspaceEnvPipelineTask (0.00s)
+=== RUN   TestInjectTaskCRWorkspaceEnvWinsOverCustomEnv
+--- PASS: TestInjectTaskCRWorkspaceEnvWinsOverCustomEnv (0.00s)
+=== RUN   TestInjectTaskCRWorkspaceEnvIsolatesConcurrentTasks
+--- PASS: TestInjectTaskCRWorkspaceEnvIsolatesConcurrentTasks (0.00s)
+=== RUN   TestDaemonEnvBuildHasNoConfigFirstRootFallback
+--- PASS: TestDaemonEnvBuildHasNoConfigFirstRootFallback (0.00s)
+=== RUN   TestFindPipelineCRRootCardinality
+--- PASS: TestFindPipelineCRRootCardinality (0.00s)
+=== RUN   TestPreparePipelineTaskHydratesMachineLocalPaths
+--- PASS: TestPreparePipelineTaskHydratesMachineLocalPaths (0.00s)
+=== RUN   TestPipelinePromptCarriesTheVerifiedExecutionContext
+--- PASS: TestPipelinePromptCarriesTheVerifiedExecutionContext (0.00s)
+=== RUN   TestParseExecutionContext
+=== RUN   TestParseExecutionContext/no_mention_at_all_is_an_ordinary_task
+=== RUN   TestParseExecutionContext/prose_mention_outside_a_fence_is_not_a_declaration
+=== RUN   TestParseExecutionContext/yaml_fence
+=== RUN   TestParseExecutionContext/yml_fence
+=== RUN   TestParseExecutionContext/unlabelled_fence
+=== RUN   TestParseExecutionContext/json_fence_is_not_yaml
+=== RUN   TestParseExecutionContext/extra_keys_are_ignored
+=== RUN   TestParseExecutionContext/duplicate_key
+=== RUN   TestParseExecutionContext/two_declarations
+=== RUN   TestParseExecutionContext/invalid_cr_id
+=== RUN   TestParseExecutionContext/empty_operational
+=== RUN   TestParseExecutionContext/missing_cr_id
+=== RUN   TestParseExecutionContext/non-string_cr_id
+--- PASS: TestParseExecutionContext (0.00s)
+    --- PASS: TestParseExecutionContext/no_mention_at_all_is_an_ordinary_task (0.00s)
+    --- PASS: TestParseExecutionContext/prose_mention_outside_a_fence_is_not_a_declaration (0.00s)
+    --- PASS: TestParseExecutionContext/yaml_fence (0.00s)
+    --- PASS: TestParseExecutionContext/yml_fence (0.00s)
+    --- PASS: TestParseExecutionContext/unlabelled_fence (0.00s)
+    --- PASS: TestParseExecutionContext/json_fence_is_not_yaml (0.00s)
+    --- PASS: TestParseExecutionContext/extra_keys_are_ignored (0.00s)
+    --- PASS: TestParseExecutionContext/duplicate_key (0.00s)
+    --- PASS: TestParseExecutionContext/two_declarations (0.00s)
+    --- PASS: TestParseExecutionContext/invalid_cr_id (0.00s)
+    --- PASS: TestParseExecutionContext/empty_operational (0.00s)
+    --- PASS: TestParseExecutionContext/missing_cr_id (0.00s)
+    --- PASS: TestParseExecutionContext/non-string_cr_id (0.00s)
+=== RUN   TestResolveTaskWorkspaceBinding
+=== RUN   TestResolveTaskWorkspaceBinding/pipeline_keeps_the_preflighted_pair
+=== RUN   TestResolveTaskWorkspaceBinding/pipeline_half_binding_is_empty,_not_an_error
+=== RUN   TestResolveTaskWorkspaceBinding/ordinary_task_without_a_declaration_binds_its_own_project
+=== RUN   TestResolveTaskWorkspaceBinding/delegation_is_preflighted_against_its_own_project_root
+=== RUN   TestResolveTaskWorkspaceBinding/declared_root_is_not_the_preflighted_one
+=== RUN   TestResolveTaskWorkspaceBinding/unhealthy_workspace_stops
+=== RUN   TestResolveTaskWorkspaceBinding/project_root_without_the_CR_ledger_stops
+=== RUN   TestResolveTaskWorkspaceBinding/delegation_without_a_project_root_stops
+=== RUN   TestResolveTaskWorkspaceBinding/malformed_declaration_stops
+=== RUN   TestResolveTaskWorkspaceBinding/task_association_binds_without_a_declaration
+=== RUN   TestResolveTaskWorkspaceBinding/source_issue_association_binds_and_reports_the_inherited_warning
+=== RUN   TestResolveTaskWorkspaceBinding/the_task's_own_association_wins_over_the_source_issue's
+=== RUN   TestResolveTaskWorkspaceBinding/several_source_issue_associations_are_refused,_not_guessed
+=== RUN   TestResolveTaskWorkspaceBinding/an_association_with_no_verified_project_root_is_refused
+=== RUN   TestResolveTaskWorkspaceBinding/an_association_whose_CR_is_absent_from_the_project_root_is_refused
+=== RUN   TestResolveTaskWorkspaceBinding/a_declared_cr_id_that_disagrees_with_the_association_is_refused
+=== RUN   TestResolveTaskWorkspaceBinding/a_declared_cr_id_that_agrees_with_the_association_proceeds
+=== RUN   TestResolveTaskWorkspaceBinding/a_delegation_on_a_task_without_associations_still_stands_on_its_declaration
+=== RUN   TestResolveTaskWorkspaceBinding/the_payload's_projected_association_is_what_the_daemon_decodes
+--- PASS: TestResolveTaskWorkspaceBinding (0.04s)
+    --- PASS: TestResolveTaskWorkspaceBinding/pipeline_keeps_the_preflighted_pair (0.00s)
+    --- PASS: TestResolveTaskWorkspaceBinding/pipeline_half_binding_is_empty,_not_an_error (0.00s)
+    --- PASS: TestResolveTaskWorkspaceBinding/ordinary_task_without_a_declaration_binds_its_own_project (0.00s)
+    --- PASS: TestResolveTaskWorkspaceBinding/delegation_is_preflighted_against_its_own_project_root (0.00s)
+    --- PASS: TestResolveTaskWorkspaceBinding/declared_root_is_not_the_preflighted_one (0.00s)
+    --- PASS: TestResolveTaskWorkspaceBinding/unhealthy_workspace_stops (0.00s)
+    --- PASS: TestResolveTaskWorkspaceBinding/project_root_without_the_CR_ledger_stops (0.00s)
+    --- PASS: TestResolveTaskWorkspaceBinding/delegation_without_a_project_root_stops (0.00s)
+    --- PASS: TestResolveTaskWorkspaceBinding/malformed_declaration_stops (0.00s)
+    --- PASS: TestResolveTaskWorkspaceBinding/task_association_binds_without_a_declaration (0.00s)
+    --- PASS: TestResolveTaskWorkspaceBinding/source_issue_association_binds_and_reports_the_inherited_warning (0.00s)
+    --- PASS: TestResolveTaskWorkspaceBinding/the_task's_own_association_wins_over_the_source_issue's (0.00s)
+    --- PASS: TestResolveTaskWorkspaceBinding/several_source_issue_associations_are_refused,_not_guessed (0.00s)
+    --- PASS: TestResolveTaskWorkspaceBinding/an_association_with_no_verified_project_root_is_refused (0.00s)
+    --- PASS: TestResolveTaskWorkspaceBinding/an_association_whose_CR_is_absent_from_the_project_root_is_refused (0.00s)
+    --- PASS: TestResolveTaskWorkspaceBinding/a_declared_cr_id_that_disagrees_with_the_association_is_refused (0.00s)
+    --- PASS: TestResolveTaskWorkspaceBinding/a_declared_cr_id_that_agrees_with_the_association_proceeds (0.00s)
+    --- PASS: TestResolveTaskWorkspaceBinding/a_delegation_on_a_task_without_associations_still_stands_on_its_declaration (0.00s)
+    --- PASS: TestResolveTaskWorkspaceBinding/the_payload's_projected_association_is_what_the_daemon_decodes (0.00s)
+=== RUN   TestInspectPipelineWorkspaceDirtyInput
+=== RUN   TestInspectPipelineWorkspaceDirtyInput/healthy_passes
+=== RUN   TestInspectPipelineWorkspaceDirtyInput/healthy_still_passes_the_checkpoint_node
+=== RUN   TestInspectPipelineWorkspaceDirtyInput/cleanly_bound_dirty_passes_the_checkpoint_node
+=== RUN   TestInspectPipelineWorkspaceDirtyInput/dirty_is_still_refused_for_every_other_node
+=== RUN   TestInspectPipelineWorkspaceDirtyInput/dirty_on_the_wrong_branch_is_refused
+=== RUN   TestInspectPipelineWorkspaceDirtyInput/dirty_with_a_detached_head_is_refused
+=== RUN   TestInspectPipelineWorkspaceDirtyInput/unregistered_worktree_is_refused
+=== RUN   TestInspectPipelineWorkspaceDirtyInput/missing_worktree_is_refused
+=== RUN   TestInspectPipelineWorkspaceDirtyInput/wrong_branch_is_refused
+--- PASS: TestInspectPipelineWorkspaceDirtyInput (0.48s)
+    --- PASS: TestInspectPipelineWorkspaceDirtyInput/healthy_passes (0.06s)
+    --- PASS: TestInspectPipelineWorkspaceDirtyInput/healthy_still_passes_the_checkpoint_node (0.06s)
+    --- PASS: TestInspectPipelineWorkspaceDirtyInput/cleanly_bound_dirty_passes_the_checkpoint_node (0.06s)
+    --- PASS: TestInspectPipelineWorkspaceDirtyInput/dirty_is_still_refused_for_every_other_node (0.05s)
+    --- PASS: TestInspectPipelineWorkspaceDirtyInput/dirty_on_the_wrong_branch_is_refused (0.05s)
+    --- PASS: TestInspectPipelineWorkspaceDirtyInput/dirty_with_a_detached_head_is_refused (0.05s)
+    --- PASS: TestInspectPipelineWorkspaceDirtyInput/unregistered_worktree_is_refused (0.05s)
+    --- PASS: TestInspectPipelineWorkspaceDirtyInput/missing_worktree_is_refused (0.05s)
+    --- PASS: TestInspectPipelineWorkspaceDirtyInput/wrong_branch_is_refused (0.05s)
+=== RUN   TestInspectPipelineWorkspaceDetailContract
+=== RUN   TestInspectPipelineWorkspaceDetailContract/the_checkpoint_node_asks_for_the_projection_carrying_the_branch_fact
+=== RUN   TestInspectPipelineWorkspaceDetailContract/the_same_handoff_is_refused_when_only_the_summary_is_served
+--- PASS: TestInspectPipelineWorkspaceDetailContract (0.11s)
+    --- PASS: TestInspectPipelineWorkspaceDetailContract/the_checkpoint_node_asks_for_the_projection_carrying_the_branch_fact (0.05s)
+    --- PASS: TestInspectPipelineWorkspaceDetailContract/the_same_handoff_is_refused_when_only_the_summary_is_served (0.05s)
+=== RUN   TestPreparePipelineTaskDirtyGate
+--- PASS: TestPreparePipelineTaskDirtyGate (0.92s)
+=== RUN   TestTaskWorkspaceBinding
+--- PASS: TestTaskWorkspaceBinding (0.00s)
+PASS
+ok  	github.com/multica-ai/multica/server/internal/daemon	1.652s
+exit=0

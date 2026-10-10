@@ -6,10 +6,12 @@ sdd-ref: "change-requests/CR-2026-076/sdd.md"
 target-version: 0.49
 status: draft
 created: 2026-10-10T16:15:00+08:00
-updated: 2026-10-10T16:15:00+08:00
+updated: 2026-10-10T18:10:00+08:00
 ---
 
 # CR-2026-076 开发计划
+
+> 修订 r2（2026-10-10，TASK-01 载体裁定同步；裁定原文 = Issue AIFI-62 评论 `01a1253d-ccdf-7112-947b-33f17dc212da`）：SDD r4 已按 §4.1 的 2a／2b 关联事实来源（既有认领载荷附加投影，`dep-35`）同步；本计划只同步 §5.5 的 cmd-01 观测面与静态前提（仍为 DB-free），TASK 集、依赖图、里程碑与验收口径不变。
 
 承接已审批 `sdd.md`（`review-annotations/sdd.yml` attempt 3/3 PASS、`traceability.yml#reviews.tech-design` 3 次尝试末次 pass、`approval.yml#tech-design` 由 `crctl approve` 于 `2026-10-10T16:00:11+08:00` 以 `evidence-digest=aa94a012da350d702cd90ae41a7d0942d20f2809dac30e01e8acde859ac4af15` 落盘）。本计划的范围 = SDD §9 `scope_in` 的 **FR-01～FR-14、FR-SUP-01～FR-SUP-05、FR-SUP-06（错误根防线部分）、FR-SUP-07（写入边界安全校验与诊断口径部分）、FR-SUP-08、FR-SUP-09（本 CR 部分）** 与 **AC-01～AC-24、AC-SUP-01～AC-SUP-10（本 CR 侧）**；`scope_out`、`zero_diff`、`follow_up` 一律不做（尤其：不建影子账本、不新增 crctl 子命令、不改签名算法与 `rules.json` 白名单、不做平台 CR 投影 reconcile 根治、不把 AIFI-60 承接项做成本 CR 交付）。
 
@@ -137,7 +139,7 @@ M7  TASK-17（平台消费者取用版本 + 已安装入口 + 真实 run 证据�
 
 命令算法唯一事实源 = §6.2 证据命令表行。以下逐条写明真实运行范围与观测面，**均不声称全量**（唯一例外是 `cmd-11`，见其条目）：
 
-- **cmd-01**：`multica/server` 包内 `./internal/daemon/` 单包的定向子集（`-run` 正则名集，命中 11 个测试函数），观测「绑定三元组解析与拒绝面、绑定发布到任务环境、preflight 投影注入、CR 根基数与 workspace 健康预检」；不声称 multica 仓全量通过。**形态说明**：该行的 `args` 值内含正则交替符（同一字符也是 Markdown 表格分隔符），本表按 CR-2026-075 既有证据行形态原样写入，读取时须把 `args` 单元格内全部 `|` 视为 JSON 字符串内容；实现期新增用例必须落在该 `-run` 名集已命中的函数名下（或写成既有函数内的子测试），使本命令的观测面随实现同步扩大，不得另行新增未出现在本表的命令。
+- **cmd-01**：`multica/server` 包内 `./internal/daemon/` 单包的定向子集（`-run` 正则名集，命中 11 个测试函数），观测「绑定三元组解析与拒绝面、认领载荷 CR 关联投影的消费（task 正式关联／来源 Issue 唯一关联／多值拒绝／无信号不变）、绑定发布到任务环境、preflight 投影注入、CR 根基数与 workspace 健康预检」；不声称 multica 仓全量通过。**形态说明**：该行的 `args` 值内含正则交替符（同一字符也是 Markdown 表格分隔符），本表按 CR-2026-075 既有证据行形态原样写入，读取时须把 `args` 单元格内全部 `|` 视为 JSON 字符串内容；实现期新增用例必须落在该 `-run` 名集已命中的函数名下（或写成既有函数内的子测试），使本命令的观测面随实现同步扩大，不得另行新增未出现在本表的命令。
 - **cmd-02**：同上单包的定向名集（4 个测试函数），观测「任务 Git 环境的叠加式配置、`GIT_CONFIG_GLOBAL` 指向与失败关闭」；形态说明同 cmd-01；不覆盖 `repocache` 包（由 cmd-03 承担）。
 - **cmd-03**：`multica/server` 的 `./internal/daemon/repocache/` 单包全文件，观测「身份加载与共享缓存隔离、外键 worktree 拒绝、锁失败可重试」——用于 FR-02 的「第二处 Git 配置写入点」核实结论；不声称 `internal/daemon` 全包通过。
 - **cmd-04**：tools 仓单文件 `skills/shared/crctl/scripts/test/crctl.test.mjs`（`node --test`，同目录；当前登记 237 顶层用例；凡改动该文件顶层用例数的 TASK 必须在其变更内据实更新 `gate-registry.json#manifest.cases` 的对应条目，本 CR 由 TASK-11 在其变更内对 `manifest.cases` 全部条目做一次据实收口——见本节末「登记面所有权」），观测 crctl CLI 层的绑定归一只读诊断与失败关闭（`WORKSPACE_CONTEXT_MISMATCH`／`WORKSPACE_REQUIRED`）、`next` 判定优先级、`approve`／`gate`／`validate` 的本地信任告警分流、`review-record` 的 CLI 出口、`review-loop reset`、owner／source 写入前校验缝、状态机 32 条声明的「推导 ≡ 登记」不变量；**不声称覆盖 crctl 全部子命令行为**，也不声称覆盖 `lib/` 模块内部语义（由 cmd-05～cmd-08 承担）。

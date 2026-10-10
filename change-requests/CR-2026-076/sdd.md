@@ -6,7 +6,7 @@ title: CR 执行闭环与门禁减负修订 技术设计
 target-version: "0.49"
 status: draft
 created: "2026-10-10T15:11:00+08:00"
-updated: "2026-10-10T15:43:00+08:00"
+updated: "2026-10-10T18:10:00+08:00"
 ---
 
 # CR 执行闭环与门禁减负修订 技术设计（SDD）
@@ -15,6 +15,7 @@ updated: "2026-10-10T15:43:00+08:00"
 > 本文只做技术设计，不回写 `specs/`、不改注册事实、不推进任何未由本合同授权的状态。
 > 既有实现事实一律以 `§10 既有实现依赖与事实` 的 `dep-N` 承载，正文不复述实现细节。
 > 修订 r2（2026-10-10，按 `review-annotations/sdd.yml` attempt 1 的 3 条 blocker 定点回修，结论面未变）：B1 → §3.5／§4.15／`AC-SUP-03` 改为「入库通道待核实」两分支；B2 → `ledgerTxKey` 移出 `dep-13`、另立 `dep-34`，`SDD-CLOSE-01`／§4.3 改指；B3 → §8 补齐 `write-dev-tasks`／`inbox-emit` 两行并补 `review-dev-plan` 的 dev-start 交接删除。
+> 修订 r4（2026-10-10，TASK-01 载体裁定同步；裁定原文 = Issue AIFI-62 评论 `01a1253d-ccdf-7112-947b-33f17dc212da`，裁定请求原文 = `01a1253e-4517-750a-9a58-bf445600f136`）：§4.1 判定顺序 2a／2b 所需的「task／来源 Issue 正式 CR 关联」由**既有认领载荷的新增投影**承载——服务端在既有 claim 路径上把两条**既有**关系（`agent_task_queue.cr_id`、`cr.shell_issue_id`）附加到既有载荷，daemon 侧判定顺序与结论面不变；**不新增关联存储、不新增独立查询机制、不新增 endpoint**。同步面：§1.5、§2.1（E11）、§3.4、§3.5、§6.2（AC-01／AC-02）、§10（`dep-35`）。
 > 修订 r3（2026-10-10，按 `review-annotations/sdd.yml` attempt 2 的 1 条 blocker 定点回修，结论面未变）：`dep-26` 依赖结论改为同 SHA 实测值（31 条声明／展开 53 条，附取证命令与行号）、`SDD-CLOSE-07` 现状与实现后数字随之改为 31／53 与 32、§3.3 口径指向同步；文档侧旧口径（`ARCHITECTURE.md` 硬不变量 5、workspace `AGENTS.md` 工程纪律 2）的滞后登记与不同步理由写入 §9 `follow_up`；另采纳上轮 `suggestions` 第 4 条，在 §4.6 明确 `mode=finalize` 入口不重跑拆分与 TASK 计数校验。
 
 ## 1. 架构概览
@@ -100,7 +101,9 @@ updated: "2026-10-10T15:43:00+08:00"
 
 | 仓 | 变更对象 | FR 落点 |
 |---|---|---|
-| multica | `server/internal/daemon/pipeline_task.go`（绑定解析新增 task/来源 Issue 关联段；Git trust 改为叠加） | FR-01、FR-02、FR-SUP-05、FR-SUP-06、FR-SUP-07 |
+| multica | `server/internal/daemon/pipeline_task.go`（绑定解析消费认领载荷的 CR 关联投影；Git trust 改为叠加） | FR-01、FR-02、FR-SUP-05、FR-SUP-06、FR-SUP-07 |
+| multica | `server/internal/handler/agent.go` + `server/internal/handler/daemon.go` + `server/pkg/db/queries/agent.sql`（既有认领载荷附加「task／来源 Issue 正式 CR 关联」两个可省略字段；见 §3.5） | FR-01、FR-SUP-05、FR-SUP-06 |
+| multica | `server/internal/daemon/types.go`（认领载荷消费侧同名字段镜像） | FR-01 |
 | multica | `server/internal/daemon/repocache/*`（身份加载核对，仅在叠加式 trust 需要时改） | FR-02 |
 | tools | `skills/shared/crctl/scripts/crctl.mjs`（review-record、next、gate/approve、review-loop、owner-set、register、merge、workspace、checkpoint） | FR-03～FR-11、FR-SUP-01～09 |
 | tools | `skills/shared/crctl/scripts/lib/workspace-transactions.mjs`（新增单一 tree 比较缝；发布 source 固定） | FR-08、FR-09、FR-11 |
@@ -129,6 +132,7 @@ updated: "2026-10-10T15:43:00+08:00"
 | E8 测试登记 | `skills/shared/crctl/scripts/test/gate-registry.json`（manifest／exceptions） | 数量下降由失败改为 warning；四个 summary 例外在根因转绿后撤销 |
 | E9 发布事务与 journal | `.crctl/transactions/`、`.crctl/outbox/`（durable-tx） | 复用；发布对象 source 固定规则（`dep-14`、`dep-21`） |
 | E10 release-subjects | `review-annotations/code.yml#release-subjects` → `approval.yml#code.release-subjects` | 复用既有构造/重核缝（`dep-14`）；等价 tree 允许以空提交等内容等价源推进 |
+| E11 认领载荷 CR 关联投影 | daemon 认领载荷（`AgentTaskResponse.cr_id`／`issue_cr_ids`，值取自既有 `agent_task_queue.cr_id` 与 `cr.shell_issue_id`），daemon 侧镜像为 `Task.CRID`／`Task.IssueCRIDs` | 新增两个**可省略**字段（既有载荷的附加投影）：不新增表/列、不新增 endpoint、不新增查询机制；服务端只投影事实、不判唯一性，唯一性判定仍在 daemon 侧 §4.1 |
 
 **写路径鉴权完整性（条件触发判定）**：本 CR 不涉及 DB schema、DDL 或新写路径鉴权面，故 PRD/Skill 要求的「每个变更的回滚（down）与约束缺失窗口」条款不触发；判定依据为 §3.5「无新增 HTTP API」与 `SDD-CLOSE-03`（无 schema 变更）。CR 账本写路径鉴权仍走既有 author/owner 判定与 CAS/事务（`dep-13`），本 CR 不新增授权模型（`scope_out`）。
 
@@ -224,14 +228,17 @@ warnings:
 | 接口 | 变更 |
 |---|---|
 | `parseExecutionContext` | 不变：仍只认触发评论中唯一 `execution_context` fenced YAML 块；多块/重复键/非法值 → `CR_WORKSPACE_BINDING_UNAVAILABLE`（`dep-4`） |
-| `resolveTaskWorkspaceBinding` | 新增解析段：无 `execution_context` 时先取 task 的正式 CR 关联，唯一则用；否则取当前来源 Issue 的唯一正式 CR 关联，唯一则用；多关联或冲突 → 显式要求合法输入（`dep-5`、§4.1） |
+| `resolveTaskWorkspaceBinding` | 新增解析段：无 `execution_context` 时先取 task 的正式 CR 关联（消费 `Task.CRID`），唯一则用；否则取当前来源 Issue 的正式 CR 关联（消费 `Task.IssueCRIDs`），唯一则用并输出 `BINDING_INHERITED_WARN`；多关联或冲突 → 显式要求合法输入（`dep-5`、§4.1）。关联事实的来源见下一行（`dep-35`） |
+| `AgentTaskResponse`（认领载荷） | 新增两个可省略字段 `cr_id`（`agent_task_queue.cr_id`）与 `issue_cr_ids`（`cr.shell_issue_id` 反查，工作区内、按 `cr_id` 字典序）：既有载荷的附加投影，只承载事实不承载判定；旧 daemon 忽略未知字段，行为不变（`dep-35`、§3.5） |
 | `configureTaskGitEnvironment` | 生成叠加式 trust 配置（safe.directory + include 原全局配置），不替换用户身份（`dep-6`、§4.2） |
 | `findPipelineCRRoot` / `inspectPipelineWorkspace` | 不变：仍做 CR 根唯一性与 `healthy` 预检；错误根一律拒绝（`dep-7`） |
 | `CRCTL_TASK_AUDIT_ROOT` 消费 | 不变：审计根与操作根可不同（`dep-30`） |
 
 ### 3.5 HTTP / REST 契约
 
-**N/A**：本 CR 不新增或修改 HTTP endpoint、request/response；NFR-01 明示不定义新 HTTP API、通用授权框架或第二执行入口。平台侧「创建入口上传 → 知识库 source 入库」这一桥接**待核实**（§10 待核实依赖条目「上传附件 → 知识库 source 桥接（平台侧）」）：本 SDD 不把它断言为既有能力；实施期先定点核实其实际入口与可读性保证，再按核实结论二选一——复用既有通道，或新增最小接线。两条分支均不新增或修改 HTTP 状态码，也不改创建入口的对外契约面。
+**不新增 endpoint，不修改既有 endpoint 的 request 形状与状态码语义**：NFR-01 明示不定义新 HTTP API、通用授权框架或第二执行入口。本 CR 在**既有** daemon 认领响应（`AgentTaskResponse`，由 `buildClaimedTaskResponse` 组装）上**附加两个可省略字段**——`cr_id`（task 的正式 CR 关联，取自既有 `agent_task_queue.cr_id`）与 `issue_cr_ids`（来源 Issue 的正式 CR 关联，由既有 `cr.shell_issue_id` 在同一工作区内反查）——均带 `omitempty`，是对既有载荷的**附加投影**：不新增关联存储、不新增独立查询机制、不新增或改名 endpoint、不改请求形状、不改状态码；服务端只投影既有事实，**唯一性判定仍在 daemon 侧 §4.1**；旧 daemon 忽略未知字段，行为不变（`dep-35`）。投影读取失败按既有 transient 失败语义处理（`claimBuildFailure` 不 settled，认领可重试），不得静默降级为「无关联」。
+
+**N/A（其余）**：除此之外本 CR 不新增或修改 HTTP endpoint、request/response；平台侧「创建入口上传 → 知识库 source 入库」这一桥接**待核实**（§10 待核实依赖条目「上传附件 → 知识库 source 桥接（平台侧）」）：本 SDD 不把它断言为既有能力；实施期先定点核实其实际入口与可读性保证，再按核实结论二选一——复用既有通道，或新增最小接线。两条分支均不新增或修改 HTTP 状态码，也不改创建入口的对外契约面。
 
 ---
 
@@ -261,6 +268,7 @@ warnings:
 边界：
 
 - 只接受「真实目录」判定（`realpath` 后仍为目录）；`\\?\` 前缀与尾分隔符按同一目录的合法别名各剥一层（`dep-1`）。
+- 2a／2b 的关联事实来自既有认领载荷的两个附加字段（`Task.CRID`＝task 正式关联，`Task.IssueCRIDs`＝来源 Issue 的正式关联集合，`dep-35`）：字段缺省等价于「无该关联」（落到下一分支，不报错）；服务端只投影事实、不判唯一性，多值一律由 daemon 侧 2c 拒绝；投影读取失败在服务端按既有 transient 语义处理（认领可重试），不在 daemon 侧降级为「无关联」。
 - 错误根防线（FR-SUP-06 本 CR 部分）：路径存在、同安装根均**不构成**通过理由；必须同时满足项目归属、CR、阶段 authority、资源健康。
 - 注册阶段（尚无 CR worktree）：只绑定 knowledge-base 主 checkout，不猜 CR-ID、不拿旧 CR worktree 充当注册根；CR 创建后只消费 `register` 返回的 `cr_id` 与 `operational_workspace`，并经 `workspace inspect` 复核。
 - 作者/评审者开工检查（FR-SUP-07）：业务写入前消费 `workspace inspect`／`status`／`next`，不以「命令成功」或「next 能看到 PRD」单独证明绑定正确；失败即停止写入。
@@ -517,12 +525,12 @@ dirty / 分叉 / 冲突 / 同步失败 / 环境不匹配 → 既有失败合同�
 ### 6.2 AC 逐项设计与验收映射
 
 **AC-01**（FR-01）
-- 设计落点：§4.1 判定顺序 2a；`resolveTaskWorkspaceBinding`（`dep-5`）+ `CRCTL_OPERATIONAL_WORKSPACE` 注入（`dep-6`）。
+- 设计落点：§4.1 判定顺序 2a；`resolveTaskWorkspaceBinding`（`dep-5`）消费认领载荷投影的 task 正式 CR 关联（`Task.CRID`，`dep-35`）+ `CRCTL_OPERATIONAL_WORKSPACE` 注入（`dep-6`）。
 - 可观测结果：无手工根声明的评论触发的任务，其环境出现三元组，且 `crctl workspace inspect` 的 `operationalWorkspace` 与该根同根。
 - 可达性说明：task 的正式 CR 关联存在时先于来源 Issue 分支命中，不被 `execution_context` 缺失提前过滤。
 
 **AC-02**（FR-01）
-- 设计落点：§4.1 判定顺序 2b/2c/2d。
+- 设计落点：§4.1 判定顺序 2b/2c/2d；来源 Issue 的关联事实来自认领载荷投影的 `Task.IssueCRIDs`（`dep-35`，唯一性判定仍在 daemon 侧）。
 - 可观测结果：仅来源 Issue 有唯一正式 CR 关联时绑定成功并带 `BINDING_INHERITED_WARN`；多关联时非零退出要求合法输入；无 CR 信号任务绑定为空且行为不变。
 - 可达性说明：三条分支互斥且覆盖「唯一/多/无」，不存在被前置条件吞掉的中间态。
 
@@ -1023,6 +1031,13 @@ dep-34
   stable symbol/对象: ledgerTxKey（模块内私有函数，crctl.mjs:702，`function ledgerTxKey(op, cr, stage = '')`；只由同文件的 `beginLedgerCommand`／`recoverLedgerCommand` 调用点消费）
   commit SHA: 0f5690f845dcf1e0dd9fdc37797b7e4294335266
   依赖结论: 事务键由 `(op, cr, stage)` 派生并做 `[A-Za-z0-9._-]` 归一，与 `inputDigest`（意图摘要）共同构成同一操作的幂等识别；crctl.mjs 无导出面，该键不可跨文件导入，故「复用该键」只能落在同文件内的命令实现（`cmdReviewRecord`）上，设计不得假设它由 `durable-tx.mjs` 提供。
+
+dep-35
+  repo: multica
+  relative path: server/internal/handler/daemon.go、server/internal/handler/agent.go、server/pkg/db/queries/agent.sql
+  stable symbol/对象: buildClaimedTaskResponse（认领载荷组装点，daemon.go:2409）、AgentTaskResponse（既有认领载荷字段集，agent.go，含 pipeline 载体的 PipelineCrID）、agent_task_queue.cr_id（可空 TEXT）与 cr.shell_issue_id（可空 UUID）
+  commit SHA: a2046ce34449aaed67df000a1320d73d9976e987
+  依赖结论: daemon 认领载荷由 buildClaimedTaskResponse 组装并由 client.ClaimTask／ClaimTasks 直接解码为 daemon `Task`（同名 json tag 镜像）；既有载荷只携带 `pipeline_cr_id`（pipeline-node 载体，CR-2026-045），普通任务无任何 CR 关联字段。而两条「正式 CR 关联」关系在服务端**已存在**：`agent_task_queue.cr_id`（归属写入 + 绑定事务 CAS 写）与 `cr.shell_issue_id`（绑定事务 CAS 写，唯一性由 TASK_CR_CONFLICT／CR_ISSUE_CONFLICT 保证）——但从未向 daemon 投影。故 §4.1 的 2a／2b 只能落在「在既有认领载荷上附加这两个既有事实的投影」上：不新增关联存储、不新增独立查询机制、不新增 endpoint；服务端不判唯一性，唯一性判定仍由 daemon 侧 §4.1 顺序承担。
 
 ### 待核实依赖
 
