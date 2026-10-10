@@ -6,7 +6,7 @@ title: CR 执行闭环与门禁减负修订 技术设计
 target-version: "0.49"
 status: draft
 created: "2026-10-10T15:11:00+08:00"
-updated: "2026-10-10T18:25:00+08:00"
+updated: "2026-10-11T07:30:00+08:00"
 ---
 
 # CR 执行闭环与门禁减负修订 技术设计（SDD）
@@ -18,6 +18,7 @@ updated: "2026-10-10T18:25:00+08:00"
 > 修订 r5（2026-10-10，TASK-02 实施期核实与 Git trust 叠加落盘）：§4.2 「第二处写入点」条改为已核实（结论 = ①，见新增 `dep-36`），§10 待核实条目按「已核实取到五要素」转指 `dep-36` 并保留原叙述作追溯。另：`dep-36` 同时记录 repocache 包在本机（Windows）的平台性测试失败事实，`plan.md` §6.2 `cmd-03` 的「单包全文件通过」前提在本机不成立——该行处置待裁定，见 TASK-02 上报。
 > 修订 r4（2026-10-10，TASK-01 载体裁定同步；裁定原文 = Issue AIFI-62 评论 `01a1253d-ccdf-7112-947b-33f17dc212da`，裁定请求原文 = `01a1253e-4517-750a-9a58-bf445600f136`）：§4.1 判定顺序 2a／2b 所需的「task／来源 Issue 正式 CR 关联」由**既有认领载荷的新增投影**承载——服务端在既有 claim 路径上把两条**既有**关系（`agent_task_queue.cr_id`、`cr.shell_issue_id`）附加到既有载荷，daemon 侧判定顺序与结论面不变；**不新增关联存储、不新增独立查询机制、不新增 endpoint**。同步面：§1.5、§2.1（E11）、§3.4、§3.5、§6.2（AC-01／AC-02）、§10（`dep-35`）。
 > 修订 r3（2026-10-10，按 `review-annotations/sdd.yml` attempt 2 的 1 条 blocker 定点回修，结论面未变）：`dep-26` 依赖结论改为同 SHA 实测值（31 条声明／展开 53 条，附取证命令与行号）、`SDD-CLOSE-07` 现状与实现后数字随之改为 31／53 与 32、§3.3 口径指向同步；文档侧旧口径（`ARCHITECTURE.md` 硬不变量 5、workspace `AGENTS.md` 工程纪律 2）的滞后登记与不同步理由写入 §9 `follow_up`；另采纳上轮 `suggestions` 第 4 条，在 §4.6 明确 `mode=finalize` 入口不重跑拆分与 TASK 计数校验。
+> 修订 r6（2026-10-11，`implement-code` 期按 owner 对 §1／§3 的最新裁定最小登记；裁定原文 = Issue AIFI-62 评论 `01a1281a-7702-72fe-97bd-8a88965acaa9`）：**§3 收口 = 保留现状**——`developing` 门禁的 `passCondition: dev-start` 与 `crctl.mjs` 内该 dev-start 判定块均**保留**（不删除、不迁移、不新增审批或门禁机制；该判定由 `next` 与门禁双消费，见 §6.2 AC-14 附块与 `dep-26`）；**§1 收口 = 在 §6.2 AC-14 项下新增「与 CR-2026-039 的验收替代关系登记」块**（旧 CR 产物与评审记录零改动，不另立 CR、不重置评审次数）。摘要差异事实（供本轮 `review-code` 核对）：`review-annotations/sdd.yml` 记录 `subject-sha256: 9b416fd51a2ac5e6…`；该次 tech-design PASS 之后 `sdd.md` 共 4 处增量（r4、r5、裁定 §4 的 §3.1／§4.6／§4.9 同步、本 r6），本 r6 落笔前按同一算法（LF 归一后 SHA-256）重算为 `99fd7fc6af815005…`，本 r6 落笔后值再次前移——按裁定由本轮 `review-code` 明确核对增量与摘要差异，**不重跑 `review-tech-design`**。
 
 ## 1. 架构概览
 
@@ -597,6 +598,18 @@ dirty / 分叉 / 冲突 / 同步失败 / 环境不匹配 → 既有失败合同�
 - 设计落点：§4.6；Pipeline 模板、`gates.json`、状态机（`dep-24`～`dep-26`），§8 同步清单。
 - 可观测结果：新合同下 `task-breakdown → developing` 由 `write-dev-tasks:finalize` 收尾触发、无需 `approval.yml#development-start`；`approval.yml` 不出现伪造段；旧审批记录仍可读；本 CR 自身仍按旧合同运行。
 - 可达性说明：`developing` 门禁保留 plan/tasks/readiness 判定，移除的只是额外人工确认，不引入新前置。
+
+**AC-14 附：与 CR-2026-039 的验收替代关系（本 CR 执行裁定 §1 最小登记，2026-10-11）**
+
+| 旧断言（CR-2026-039 TASK-02） | 原观测面 | 现观测面（本 CR） |
+|---|---|---|
+| AC-1（PASS + fresh） | 兼容路径 `approve --grant dev-start` 放行到 `developing` | 不变：`next` 建议 `write-dev-tasks` 收尾（`mode=finalize`）；兼容审批路径仍放行 |
+| AC-2（plan/TASK 内容或集合漂移） | 漂移时由 `developing` 门禁拦截上述兼容路径 | 同一共享判定 `devPlanFreshness` 由两个消费点共用：`next` 先判 freshness 并按合法本地信任分流（合法 → 降级 `warnings[]` 后给真实下一步；否则 → 建议 `review-dev-plan`）；`developing` 门禁（既有 `passCondition: dev-start`）在合法本地信任下同降级 `LOCAL_TRUST_DOC_DRIFT_WARN` 并放行，非合法本地信任或产物缺失／不可判 → `GATE_BLOCKED` 且零写入 |
+| AC-3（legacy PASS 无 `subject-sha256`） | 同上，兼容路径被拦截 | 同上：legacy 属可降级漂移，两消费点口径一致（合法本地信任 → warning；否则 → 硬阻断／原修复路由） |
+| AC-4（TASK 集为空） | 由 dev-start 证据链承载硬阻断 | 由保留下来的 `globNonEmpty` 承载（仍 `GATE_BLOCKED` ＋零写入） |
+
+- 登记范围：替代关系只登记在**本 CR** 的 SDD（本块）与 tools 侧测试用例标识（用例名逐条以 `CR-2026-039 TASK-02 AC-N（CR-2026-076 TASK-07／TASK-10 改写）` 形式携带两个 CR 标识）；**CR-2026-039 的 `cr.md`／`sdd.md`／`tasks/`／`review-annotations/`／`traceability.yml`／`review-loop.yml` 零改动**，旧 CR 历史事实与原评审记录原样保留。
+- 不新增机制：`traceability.yml#reviews` 与 `#tests` 仍只由 `crctl review-record`／`crctl test` 生成，本文不手写该账本；`reviewLoops`（requirement 1/3、tech-design 3/3、dev-plan 2/3）不重置。
 
 **AC-15**（FR-07）
 - 设计落点：§4.7 + D-03；`cmdReviewLoopReset` 五步判定（`dep-20`）。
