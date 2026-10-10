@@ -1,0 +1,24 @@
+cr-id: CR-2026-076
+review-type: dev-plan
+reviewer: "OldBoy405"
+reviewed-at: "2026-10-10T16:40:58+08:00"
+verdict: block
+repair-target: write-dev-plan
+blockers:
+  - "本轮新增：B-1 AC-23 的「文件集合一致性」在最终状态不可成立——TASK-15 新建 `skills/shared/crctl/scripts/test/owner-source-scan.test.mjs`（TASK-15 第 64 行）、TASK-17 新建 `skills/shared/crctl/scripts/test/publish-effectiveness.test.mjs`（TASK-17 第 26 行），两文件均落在 suite-gate 的登记目录内，但 17 张 TASK 卡中没有任何一张负责把这两个新文件登记进 `gate-registry.json` 的 `manifest.files`（全仓唯一的「登记面同步」条目在 TASK-11 第 37 行，其绑定范围只是「manifest 改动与夹具改动同批」）。本轮实测判据：`suite-gate.mjs` 第 437／531 行用 `readTestFileSet(toolsRoot)`（`assertion-sources.mjs` 第 88-97 行，取登记目录内全部 `*.test.mjs`）与 `manifest.files` 做严格集合相等比较，不等即触发 `SUITE_MANIFEST_FILE_DRIFT`（第 442／532 行）；TASK-11 第 46 行明确把「少跑／未登记文件、文件集合不一致」保留为仍须非零退出的面；且 `suite-gate.mjs` 第 536 行只 spawn `declared` 列表，未登记文件不会被全仓门禁真实执行。后果：TASK-11（M5）先跑时 `cmd-11` 记录为绿，TASK-15／TASK-17（M6／M7）落盘后最终状态必为红，且这两个新文件从未被 `cmd-11` 执行——AC-23（SDD §6.2、证据 `cmd-11`）在最终状态不可达，plan §5.1 第 2 条「每条 `cmd-NN` 真实执行、退出码落盘」也不能据实际状态成立。修订入口：plan §6.2／§5.5 的交付项与 TASK-11／TASK-15／TASK-17 的「涉及文件」与「完成标志」，须指定登记 owner 并写明「新建测试文件与 `gate-registry.json` 登记同批落盘」。"
+dimensions:
+  sdd-to-plan: "pass"
+  plan-to-tasks: "block"
+  task-executability: "pass"
+  dependency-topology: "pass"
+  interface-contracts: "pass"
+  acceptance-verifiability: "block"
+  scope-and-simplicity: "pass"
+  risk-and-rollback: "pass"
+  reviewer-model: "Gobao/deepseek-flash（pi runner，PI_PROVIDER=Gobao）"
+suggestions:
+  - "本轮新增：plan §1 里程碑表 M3 行的「预估（人天当量）5.0」与其 TASK-06／TASK-07／TASK-08 的 1.5＋2.5＋1.5＝5.5 不一致，且「合计约 28 人天当量」与 `tasks/_index.yml` 实测 228h（28.5 人天）差 0.5 人天；属普通工时口径差异，未揭示任务拆分／依赖／验收结构问题，建议随本轮回修把 M3 行改为 5.5 并据实写合计。"
+  - "本轮新增：plan §5.5 的 `cmd-04` 条目与 TASK-03 第 29 行提到「本 TASK 追加用例后按 `cmd-11` 的登记面据实更新」`crctl.test.mjs` 的用例基线，但 `manifest.cases` 的刷新同样没有 TASK owner（与 B-1 同源）；因 FR-12 把数量下降降为 warning，这一项不构成硬失败，建议与 B-1 的登记 owner 一并落定。"
+review-loop:
+  current-attempt: 1
+subject-sha256: f8b6f5362f48fda2185e07bc10a1d741a5e996461d8805f2900c1b244283500d
