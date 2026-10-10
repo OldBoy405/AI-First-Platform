@@ -187,7 +187,8 @@ warnings:
 
 | 子命令 | 参数变更 | 行为变更 |
 |---|---|---|
-| `workspace inspect` | 无 | 输出新增 `freshness` 块（各仓 tree 结论与比较输入），保持既有字段类型 |
+| `workspace inspect` | 无 | 输出新增 `freshness` 块（各仓 tree 结论与比较输入），保持既有字段类型；summary 出口同字段可见（CR-2026-076 TASK-10） |
+| `workspace freshness` | 新增可选 `--gate <implement-start\|review-start>` | 带 `--gate` 时在同一次四态判定上追加三段路由 `route`（`{route, why, nextNodes, blockers, facts, realFailureNode, comparison?, allEqual?}`）；不带 `--gate` 时输出与既有四态字段、语义不变 |
 | `gate` / `validate` | 无 | 漂移类失败按 §4.5 降级为 `warnings[]`；硬阻断不变；`validate` 新增只读维度 `owner-source-anomalies`（FR-SUP-08，仅报告） |
 | `next` | 无 | 判定优先级与理由文本（§4.4）；新增可选 `nextReason` 与 `warnings[]` |
 | `review-record` | 无 | 原子闭环与恢复（§4.3）；`--bump-attempt` 语义不变 |
@@ -338,7 +339,7 @@ warnings:
 ### 4.6 默认 coding 取消重复开发启动确认（FR-06）
 
 - 默认编码路径的必经节点变为：设计批准 → PLAN/TASK 完整 → `review-dev-plan` PASS 且 blockers 空 → `write-dev-tasks` 收尾节点（`mode=finalize`）→ 资源与实际 readiness → 经既有 `advance`（trigger `write-dev-tasks:finalize`）进入 `developing`。不再插入独立 `human_approval`／`approve-dev-start`（节点顺序与 trigger 标识符见 §3.3，全文唯一）。
-- `developing` 门禁保留 plan/tasks/globNonEmpty 与 readiness；**不伪造** development-start 批准，不写入 `approval.yml#development-start`。
+- `developing` 门禁保留 plan/tasks/globNonEmpty 与 readiness，并在 finalize 实际推进前**最小复用既有 dev-plan 有效性／freshness 判定**（`passCondition: dev-start`，不新增门禁类型、不新增前置人工确认）——失效证据（缺件／非 pass／digest 漂移／legacy 无摘要）一律阻断且零写入，不得进入代码执行；不写入、不伪造 `approval.yml#development-start`（本 CR 执行裁定 §4，由 TASK-10 收口）。
 - `write-dev-tasks` 的 `mode=finalize` 是同一 Skill 的第二个入口（节点序中拆分入口在前），两个入口语义分界固定：`mode=finalize` **不重跑** TASK 拆分，也**不重跑** `crctl task init --count-hint` 的 TASK 集计数校验（TASK 集已由拆分入口落定），只做收尾 `advance --to developing --trigger write-dev-tasks:finalize` 与 readiness 接续；`review-dev-plan` PASS 本身不触发任何重新拆分或重新计数。
 - 旧审批调用与历史记录兼容；`approve-dev-start` Skill 保留但不在默认路径上必经。
 - 本 CR **自身**按其执行时合法有效的旧合同运行，不自我减负、不预先使用未发布的新门禁授权。
@@ -388,6 +389,8 @@ dirty / 分叉 / 冲突 / 同步失败 / 环境不匹配 → 既有失败合同�
 ```
 
 等价比较**不替代**有效报告、日志、真实退出码与 verdict；不把未执行验证宣称已测。不新增 CR 状态、不建完整执行器、不加后台重试。
+
+路由与 tree 结论由 `crctl workspace freshness {cr_id} --gate <gate>` 单次调用给出（复用既有 `classifyWorkspaceFreshness` 与唯一比较缝 `compareTree(purpose=g06)`，零写入、不 fetch）；`workspace inspect` 的 `freshness` 块供同一结论的明细面消费。显式同步仍由既有 `workspace sync`／pull-progress 承担，本能力不自动合并、不自动重试、不新增错误码。
 
 ### 4.10 发布事务与发布意图固定（FR-09）
 

@@ -1,0 +1,47 @@
+✔ TASK-01：HEAD==trunk → 全仓 fresh，allFresh=true，syncable=false（AC-1） (2062.5264ms)
+✔ TASK-01：ahead-only（分支有独有提交、trunk 未动）→ fresh，不误报 behind/diverged（AC-1） (2192.8606ms)
+✔ TASK-01：trunk 前进 → behind-clean，canFastForward=true，syncable=true（AC-1） (2513.8072ms)
+✔ TASK-01：双方独有提交 → diverged，syncable=false（AC-1） (3009.0146ms)
+✔ TASK-01：非 healthy 基础分类透传 → unknown 且 reason=分类值（AC-1） (1873.444ms)
+✔ TASK-01：wrong-branch → unknown 且 reason=wrong-branch（AC-1） (2126.0713ms)
+✔ TASK-01：origin/{trunk} 不可确认 → WORKSPACE_TRUNK_UNAVAILABLE 硬失败（AC-2） (1787.7513ms)
+✔ TASK-01：merge-base 退出码 >1 → TX_GIT_FAILED，不得降级为 diverged/unknown（AC-2） (2814.8502ms)
+✔ TASK-01 CLI：allFresh → exit 0 且不写 audit（AC-2） (2212.7069ms)
+✔ TASK-01 CLI：behind-clean → exit 0、syncable=true、写一条业务阻断 audit（AC-2） (2796.881ms)
+✔ TASK-01 CLI：diverged 是可比较的正常结构化结果 → exit 0 + audit，由 Skill 路由 manual（AC-2） (2807.2043ms)
+✔ TASK-01 CLI：trunk 不可确认 → 非零退出、失败 audit 先写入（AC-2） (1857.9137ms)
+✔ TASK-01 CLI：额外 flag → BAD_ARGS（AC-2） (1491.0387ms)
+✔ TASK-02：behind-clean ff-only 成功，afterSha==捕获 trunk SHA，journal complete（AC-1） (3029.2524ms)
+✔ TASK-02：全 fresh no-op → changed=false、txId=null、零 journal（AC-1/AC-2） (2261.0082ms)
+✔ TASK-02：dirty/diverged/unknown 阻断 → 零写入零 journal（AC-2） (4131.9194ms)
+✔ TASK-02：ws-sync-after-repo 故障注入后续跑只使用 journal 原始 intent（AC-2） (4623.6131ms)
+✔ 代码评审 B1：单 pending 仓 crash-after-ff 重跑保持 changed=true，并重核已完成仓（回归） (7800.7565ms)
+✔ 代码评审 B2：intentDigest 绑定全仓；在途 unchanged 仓 HEAD 漂移硬阻断（回归） (3085.7301ms)
+✔ 代码评审 B3：ff-only 执行失败精确映射 WORKSPACE_SYNC_CONFLICT（回归） (3050.3362ms)
+✔ 代码评审 B4：status --porcelain 技术失败不得被误判 clean/fresh（回归） (1582.0115ms)
+✔ TASK-02：latest complete 后 trunk 再前进 → 新事务（createAfterComplete），旧 journal 保留（AC-2） (4695.7777ms)
+✔ TASK-02：外部回退到旧 beforeSha → WORKSPACE_FRESHNESS_CHANGED（不复用旧 complete）（AC-2） (3900.6181ms)
+✔ TASK-02：在途事务期间 trunk 漂移 → 恢复时 WORKSPACE_FRESHNESS_CHANGED（AC-2） (3575.2813ms)
+✔ TASK-02：在途事务期间 HEAD 漂移（分支新增提交）→ WORKSPACE_FRESHNESS_CHANGED（AC-2） (3085.9972ms)
+✔ TASK-02：并发锁 → TX_LOCK_HELD（AC-2） (1962.6222ms)
+✔ TASK-02：重跑幂等不重复提交（AC-2） (3890.8225ms)
+✔ TASK-05 集成：implement gate——behind-clean → sync → 重核 allFresh → 允许进入实施（AC-2） (4766.5778ms)
+✔ TASK-05 集成：implement gate——diverged → abort 且零写入（AC-2） (3814.9522ms)
+✔ TASK-05 集成：review gate 可同步轨——分支无独有提交且 trunk 前进 → sync 后重核 allFresh（AC-2） (4831.2862ms)
+✔ TASK-05 集成：review gate 人工轨——实施后独有提交 + trunk 前进 → diverged/manual 零自动写入；人工恢复后重入（AC-2） (4554.5123ms)
+✔ TASK-02 CLI：成功与失败均在输出前写 workspace-sync audit（AC-3） (4284.691ms)
+✔ TASK-10 route：implement-start——fresh → continue；behind-clean → synced-continue（AC-19） (3608.3552ms)
+✔ TASK-10 route：implement-start——dirty／diverged → manual（既有技术失败出口，不计业务失败）（AC-19） (4872.631ms)
+✔ TASK-10 route：review-start——同步后 tree 相同（HEAD 变）→ continue 接续既有评审，不重复实现/测试（AC-19） (4254.5374ms)
+✔ TASK-10 route：review-start——tree 改变 → replay（write-test-report → review-code），漂移不回 implement-code（AC-18） (4377.529ms)
+✔ TASK-10 route：review-start——记录源不可判 → replay，不默认等价（AC-20 口径） (2446.4439ms)
+✔ TASK-10 CLI：workspace freshness --gate 输出三段路由；非法 gate → BAD_ARGS；workspace inspect 新增 freshness 块（E7） (3819.9676ms)
+ℹ tests 38
+ℹ suites 0
+ℹ pass 38
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 125942.7391
+exit=0
