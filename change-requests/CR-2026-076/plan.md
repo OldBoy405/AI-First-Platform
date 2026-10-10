@@ -23,13 +23,13 @@ updated: 2026-10-10T16:15:00+08:00
 |---|---|---|---|
 | M1 multica 平台侧：可信绑定与 Git 身份 | 绑定解析新增「task／来源 Issue 唯一正式 CR 关联」段与错误项目根／阶段根写前拒绝；Git trust 由「替换全局配置」改为原生 `include` 叠加；核实 `repocache` 是否存在第二处 Git 配置写入点并同批收口 | TASK-01、TASK-02 | 3.5 |
 | M2 绑定诊断与评审落盘闭环 | tools 侧绑定归一与只读诊断口径（`workspace inspect`／`status`／`next`）＋ crctl 合同文本同步；`review-record` 隔离提交、幂等与中断恢复；`next` 判定优先级与普通 BLOCK 回修 | TASK-03、TASK-04、TASK-05 | 5.0 |
-| M3 门禁减负与流程 | 合法本地信任贯通（`warnings[]` 不参与通过判定，硬条件仍阻断）；默认 coding 去 dev-start（状态机 +1 声明、门禁组合、Pipeline 模板、Skill／矩阵同步）；认证人类「继续」一次一 cycle 与幂等 | TASK-06、TASK-07、TASK-08 | 5.0 |
+| M3 门禁减负与流程 | 合法本地信任贯通（`warnings[]` 不参与通过判定，硬条件仍阻断）；默认 coding 去 dev-start（状态机 +1 声明、门禁组合、Pipeline 模板、Skill／矩阵同步）；认证人类「继续」一次一 cycle 与幂等 | TASK-06、TASK-07、TASK-08 | 5.5 |
 | M4 tree 等价与最小重验 | `compareTree` 单一比较缝、合入等价推进、发布 source 固定与恢复分支、freshness 三段路由 | TASK-09、TASK-10 | 4.0 |
 | M5 CI 收敛与文档链 | `suite-gate` 数量下降降为 warning 与四个 summary 宿主例外根因收敛（转绿后撤销登记）；Windows 文档链文件名提取与 `docCount` 断言 | TASK-11、TASK-12 | 3.0 |
 | M6 owner／source 与交接核对 | owner `user_id` 值域校验与契约同步；`source` 自动绑定与注册前／使用前双防线；历史事实只读扫描与 `validate` 维度；PRD 交接完整性核对 | TASK-13、TASK-14、TASK-15、TASK-16 | 5.5 |
 | M7 实际发布生效 | 平台消费者实际取用版本核对、已安装入口与真实 run 行为证据、人类动作与窗口落盘 | TASK-17 | 2.0 |
 
-合计约 28 人天当量（含人类 owner 在 M7 执行的两次平台侧动作；TASK 粒度按 1～3 天切分，见各 TASK 卡）。
+合计 28.5 人天当量（228h = 各 TASK 卡 `estimate` 之和，与 `tasks/_index.yml` 的 `taskCount=17`／`totalEstimateHours=228` 一致；含人类 owner 在 M7 执行的两次平台侧动作；TASK 粒度按 1～3 天切分，见各 TASK 卡）。
 
 ## 2. 任务依赖图
 
@@ -140,18 +140,24 @@ M7  TASK-17（平台消费者取用版本 + 已安装入口 + 真实 run 证据�
 - **cmd-01**：`multica/server` 包内 `./internal/daemon/` 单包的定向子集（`-run` 正则名集，命中 11 个测试函数），观测「绑定三元组解析与拒绝面、绑定发布到任务环境、preflight 投影注入、CR 根基数与 workspace 健康预检」；不声称 multica 仓全量通过。**形态说明**：该行的 `args` 值内含正则交替符（同一字符也是 Markdown 表格分隔符），本表按 CR-2026-075 既有证据行形态原样写入，读取时须把 `args` 单元格内全部 `|` 视为 JSON 字符串内容；实现期新增用例必须落在该 `-run` 名集已命中的函数名下（或写成既有函数内的子测试），使本命令的观测面随实现同步扩大，不得另行新增未出现在本表的命令。
 - **cmd-02**：同上单包的定向名集（4 个测试函数），观测「任务 Git 环境的叠加式配置、`GIT_CONFIG_GLOBAL` 指向与失败关闭」；形态说明同 cmd-01；不覆盖 `repocache` 包（由 cmd-03 承担）。
 - **cmd-03**：`multica/server` 的 `./internal/daemon/repocache/` 单包全文件，观测「身份加载与共享缓存隔离、外键 worktree 拒绝、锁失败可重试」——用于 FR-02 的「第二处 Git 配置写入点」核实结论；不声称 `internal/daemon` 全包通过。
-- **cmd-04**：tools 仓单文件 `skills/shared/crctl/scripts/test/crctl.test.mjs`（`node --test`，同目录；当前登记 237 顶层用例，本 CR 追加用例后按 `cmd-11` 的登记面据实更新），观测 crctl CLI 层的绑定归一只读诊断与失败关闭（`WORKSPACE_CONTEXT_MISMATCH`／`WORKSPACE_REQUIRED`）、`next` 判定优先级、`approve`／`gate`／`validate` 的本地信任告警分流、`review-record` 的 CLI 出口、`review-loop reset`、owner／source 写入前校验缝、状态机 32 条声明的「推导 ≡ 登记」不变量；**不声称覆盖 crctl 全部子命令行为**，也不声称覆盖 `lib/` 模块内部语义（由 cmd-05～cmd-08 承担）。
+- **cmd-04**：tools 仓单文件 `skills/shared/crctl/scripts/test/crctl.test.mjs`（`node --test`，同目录；当前登记 237 顶层用例；凡改动该文件顶层用例数的 TASK 必须在其变更内据实更新 `gate-registry.json#manifest.cases` 的对应条目，本 CR 由 TASK-11 在其变更内对 `manifest.cases` 全部条目做一次据实收口——见本节末「登记面所有权」），观测 crctl CLI 层的绑定归一只读诊断与失败关闭（`WORKSPACE_CONTEXT_MISMATCH`／`WORKSPACE_REQUIRED`）、`next` 判定优先级、`approve`／`gate`／`validate` 的本地信任告警分流、`review-record` 的 CLI 出口、`review-loop reset`、owner／source 写入前校验缝、状态机 32 条声明的「推导 ≡ 登记」不变量；**不声称覆盖 crctl 全部子命令行为**，也不声称覆盖 `lib/` 模块内部语义（由 cmd-05～cmd-08 承担）。
 - **cmd-05**：tools 仓三文件 `caller-contract.test.mjs` + `fault-harness.test.mjs` + `durable-tx.test.mjs`，观测 `review-record` 的调用方契约、故障注入下的恢复分支与共享事务原语（write-set／CAS／回滚／`ledgerTxKey` 幂等）；不声称覆盖 `workspace-transactions.mjs` 的其他命令面。
-- **cmd-06**：tools 仓两文件 `register-tx.test.mjs` + `owner-source-scan.test.mjs`（后者由 TASK-15 新建的同目录单文件），观测注册事务的 owner／`source` 校验与零写入、`validate` 只读维度 `owner-source-anomalies` 与版本化只读扫描的只报告语义；不声称扫描覆盖全量历史之外的运行时状态。
+- **cmd-06**：tools 仓两文件 `register-tx.test.mjs` + `owner-source-scan.test.mjs`（后者由 TASK-15 新建的同目录单文件），观测注册事务的 owner／`source` 校验与零写入、`validate` 只读维度 `owner-source-anomalies` 与版本化只读扫描的只报告语义；不声称扫描覆盖全量历史之外的运行时状态。本 TASK 新建的 `owner-source-scan.test.mjs` 与 `gate-registry.json#manifest.files`／`manifest.cases` 的登记**由 TASK-15 在同一变更内落盘**（见本节末「登记面所有权」）。
 - **cmd-07**：tools 仓三文件 `merge-tx.test.mjs` + `checkpoint-tx.test.mjs` + `workspace-resolver.test.mjs`，观测单一 `compareTree` 缝的等价／不等价判定、合入等价推进、发布 source 固定与恢复分支、参与仓解析；真正涉及 Git 的调用一律走 `rules.json` 已允许的受控入口（不新开裸面、不改 `rules.json`）。
 - **cmd-08**：tools 仓单文件 `workspace-freshness.test.mjs`，观测 fresh／behind-clean／diverged／unknown 四态与三段路由（接续／最小复评／技术失败）；不声称覆盖 `workspace inspect` 的其他输出面。
 - **cmd-09**：tools 仓六文件 `pipeline-structure.test.mjs` + `contract-scan.test.mjs` + `check-skill-matrix.test.mjs` + `check-agents-contract.test.mjs` + `lint-prompts.test.mjs` + `skill-scope.test.mjs`，观测 Pipeline 模板结构、Skill／Agent 合同文本与权限矩阵的一致性（FR-06 去 dev-start 同步、FR-SUP-02 owner 示例口径、FR-SUP-07 诊断与失败关闭口径）；不声称覆盖业务逻辑行为（由 cmd-04～cmd-08 承担）。
 - **cmd-10**：tools 仓单文件 `crctl-summary.test.mjs`，观测四个 summary 宿主例外（`summary-03`～`summary-06`）根因修复后的转绿；这是撤销 `gate-registry.json#exceptions` 条目的直接判据，不声称覆盖其他文件。
-- **cmd-11**：`node skills/shared/crctl/scripts/test/suite-gate.mjs --run`（**本 CR 唯一的全仓命令**）。依据：AC-23 明确要求「少跑、未登记／不一致文件集合、零有效执行、加载／TAP／真实失败、非法例外」仍被拒绝，并要求四个宿主例外逐项复现／根因回归后**转绿并撤销对应例外**——这三个判定面（文件集合一致性、零有效执行、例外登记面）只在登记表完整范围内可观测，属已批准 AC 明确要求的全量命令，满足 CR-2026-073 FR-6 的例外条件。不声称覆盖未登记在 `manifest.files` 的文件，也不把上游同步（`CUSTOM.md` 全量 + Windows 已知失败原文）口径混入本 CR 的绿色判据。
+- **cmd-11**：`node skills/shared/crctl/scripts/test/suite-gate.mjs --run`（**本 CR 唯一的全仓命令**）。依据：AC-23 明确要求「少跑、未登记／不一致文件集合、零有效执行、加载／TAP／真实失败、非法例外」仍被拒绝，并要求四个宿主例外逐项复现／根因回归后**转绿并撤销对应例外**——这三个判定面（文件集合一致性、零有效执行、例外登记面）只在登记表完整范围内可观测，属已批准 AC 明确要求的全量命令，满足 CR-2026-073 FR-6 的例外条件。不声称覆盖未登记在 `manifest.files` 的文件，也不把上游同步（`CUSTOM.md` 全量 + Windows 已知失败原文）口径混入本 CR 的绿色判据。该命令的登记面判据是**严格集合相等**（`suite-gate.mjs:441`／`:531` 比较、`:442`／`:532` 触发 `SUITE_MANIFEST_FILE_DRIFT`；磁盘集合事实源 `assertion-sources.mjs:88-97` 取登记目录内非递归全量 `*.test.mjs`），且 `:536` 只 spawn `declared` 列表——故本 CR 新建的两个测试文件必须登记，登记同批生效后即进入本命令的真实执行面（登记 owner 见本节末「登记面所有权」）。
 - **cmd-12**：tools 仓 `skills/shared/engineering-docs/scripts` 目录内单文件 `src/__tests__/chain.test.ts`（vitest 单文件），观测 Windows 反斜杠与原生嵌套目录下 `docCount > 0` 的真实扫描；前置为该目录内依赖已按 `pnpm-lock.yaml` 安装（§5.2）。不声称 engineering-docs 全部测试通过（generators／validators 不在本 CR 声称面内）。
 - **cmd-13**：knowledge-base CR worktree 根目录内的只读脚本（`repo=ai-first-platform-docs`、`cwd=.`，即 `operationalWorkspace` 自身），观测 `_backlog.yml#prd-path` 指向的文件在分支内实际存在、PRD 保留 FR-SUP-01…09 与 AC-SUP-01…10 编号（逐号存在并打印次数）、需求评审 `verdict=pass`；**不声称**以字符串计数证明实质覆盖——实质覆盖由独立需求评审（`review-annotations/requirement.yml`）判定，本命令只做交接完整性核对（不与 AC-SUP-10 的「不能只检查字符串数量」冲突：本命令不产生正确性结论，只记录机械事实）。
-- **cmd-14**：tools 仓 CR worktree 内的只读单文件测试（`skills/shared/crctl/scripts/test/publish-effectiveness.test.mjs`，由 TASK-17 新建），观测平台 imported Skill 的**实际取用版本**：对 SDD §8 变更的 Skill 集合，逐项取 `multica skill get --with-content` 的线上内容与 tools CR worktree 目标文件逐字比较（`\r\n → \n` 归一、尾空行归一），并打印每项的 origin（repo／ref／path）与内容 sha256；对三份 CR Agent instructions 只**打印**线上版本 sha256（记录型观测，不做相等断言，理由见 §5.4 说明③）。不声称覆盖未在 §8 声明变更的 Skill。
+- **cmd-14**：tools 仓 CR worktree 内的只读单文件测试（`skills/shared/crctl/scripts/test/publish-effectiveness.test.mjs`，由 TASK-17 新建），观测平台 imported Skill 的**实际取用版本**：对 SDD §8 变更的 Skill 集合，逐项取 `multica skill get --with-content` 的线上内容与 tools CR worktree 目标文件逐字比较（`\r\n → \n` 归一、尾空行归一），并打印每项的 origin（repo／ref／path）与内容 sha256；对三份 CR Agent instructions 只**打印**线上版本 sha256（记录型观测，不做相等断言，理由见 §5.4 说明③）。不声称覆盖未在 §8 声明变更的 Skill。本 TASK 新建的 `publish-effectiveness.test.mjs` 与 `gate-registry.json#manifest.files`／`manifest.cases` 的登记**由 TASK-17 在同一变更内落盘**（见本节末「登记面所有权」）。
 - **cmd-15**：knowledge-base CR worktree 根目录内的只读脚本，观测「已安装入口的实际版本」与「真实 run 证据」：spawn `multica --version` 与 `multica daemon status --output json` 打印现场版本并断言两者同版本；断言 `test-evidence/fr14-launch-receipt.md` 非空且载明现场入口版本；断言 `test-evidence/fr14-run-behavior.md` 非空。不声称覆盖被启动 run 的业务结果正确性（该事实由行为证据原样文本承载，由人工与评审消费）。
+
+**登记面所有权（`gate-registry.json`：`manifest.files` 与 `manifest.cases`）**：`skills/shared/crctl/scripts/test/` 是本 CR 全部 `suite-gate` 判定的登记目录，其集结合同是**严格集合相等**，因此登记不是收尾动作而是产物本身：
+
+1. **谁新建文件，谁同批登记**：新建／改名／删除该目录内 `*.test.mjs` 的 TASK，必须在**同一变更**内同步 `gate-registry.json#manifest.files`，并为新文件写入整数型 `manifest.cases` 基线（该文件真实顶层用例数）。缺项与非整数基线由 `SUITE_MANIFEST_CASE_DROP` 判定（`suite-gate.mjs:452`）；低于基线经 FR-12 后仅是 warning（`:453`）。本 CR 的登记 owner 恰两张卡：**TASK-15**（`owner-source-scan.test.mjs`，cmd-06 的第二个文件）与 **TASK-17**（`publish-effectiveness.test.mjs`，cmd-14）。
+2. **登记面 owner = TASK-11**：它拥有 `gate-registry.json` 与 `suite-gate.mjs`，负责 (a) 保持「文件集合不一致」（`SUITE_MANIFEST_FILE_DRIFT`）与「零有效执行」仍为**硬失败**，不随 FR-12 的数量下降 warning 一并放宽；(b) 在其变更内对 `manifest.cases` 全部条目（含 `crctl.test.mjs`）据实收口一次并留证；(c) 回滚单位为「登记面与夹具同批」（§4 风险表）。
+3. **基线是下界**：`manifest.cases` 的判据是「实际顶层用例数 `<` 基线」，故其后 TASK 追加用例不会使 M5 收口的基线失真（TASK-13／TASK-14 在 M6 追加 `crctl.test.mjs` 用例属此情形）；反之，任何**净减少**某文件顶层用例数的 TASK 必须在其同批内据实下调该基线并在结果中写明原因，不得让 warning 掩盖真实减少。
 
 ## 6. 两张稳定表（契约必填节）
 
@@ -170,7 +176,7 @@ M7  TASK-17（平台消费者取用版本 + 已安装入口 + 真实 run 证据�
 | FR-09 G05 合入对象与发布意图核验 | §4.8、§4.10（`cmdMerge` 等价推进与发布 source 固定；`dep-15`、`dep-21`） | CR-2026-076-TASK-09 | cmd-07 | 同 FR-08（先 revert TASK-10，再 revert TASK-09） |
 | FR-10 G06 同步后的最小重验 | §4.9（freshness 三段路由输出；`dep-7`） | CR-2026-076-TASK-10 | cmd-08 | revert TASK-10（含其 Skill 文本）；TASK-09 是其上游生产者，须最后回退 |
 | FR-11 代码源不可判时恢复或建立新证据 | §4.8 恢复分支（先复原对象、否则新建测试／评审事实；不以当前 HEAD 补历史） | CR-2026-076-TASK-09 | cmd-05 + cmd-07 | 同 FR-08（先 revert TASK-10，再 revert TASK-09） |
-| FR-12 G07 数量下降告警与既有红例收敛 | §4.11（`suite-gate` 数量下降 warning 与仍拒绝面、四个 summary 例外根因收敛与撤销；`dep-22`） | CR-2026-076-TASK-11 | cmd-10 + cmd-11 | revert TASK-11（登记面与夹具同批回退）；TASK-03 是其上游，须最后回退 |
+| FR-12 G07 数量下降告警与既有红例收敛 | §4.11（`suite-gate` 数量下降 warning 与仍拒绝面、四个 summary 例外根因收敛与撤销；`dep-22`） | CR-2026-076-TASK-11（登记面 owner；关联 TASK-15／TASK-17 各自新文件的同批登记） | cmd-10 + cmd-11 | revert TASK-11（登记面与夹具同批回退）；TASK-03 是其上游，须最后回退 |
 | FR-13 Windows chainCheck 真实扫描 | §4.12 + D-05（`node:path.basename` + `docCount` 断言；`dep-23`） | CR-2026-076-TASK-12 | cmd-12 | revert TASK-12（单文件与用例，无下游代码消费者） |
 | FR-14 实际发布生效与合法执行边界 | §4.13 + SDD-CLOSE-08（消费者实际取用版本核对、计划承载人类动作与窗口、判据不采源码合入／构建；`dep-8`、`dep-30`） | CR-2026-076-TASK-17 | cmd-14 + cmd-15 | revert TASK-17（证据与同步清单）；平台侧消费者切换由人类 owner 按同一清单以仓库目标文本回退 |
 | FR-SUP-01 三角色 owner 使用成员 user_id 且写入前校验 | §4.14（`cmdRegister`／`cmdOwnerSet` 共用校验缝；`dep-31`、`dep-32`） | CR-2026-076-TASK-13 | cmd-06 + cmd-04 | 逆拓扑：先 revert TASK-15、TASK-14（消费者），再 revert TASK-13 |
@@ -231,7 +237,7 @@ M7  TASK-17（平台消费者取用版本 + 已安装入口 + 真实 run 证据�
 | AC-20（关键）原代码源不可取得先恢复；不可判则建立新证据，不以当前 HEAD 补历史 | §4.8 恢复分支、§6.2 AC-20 | CR-2026-076-TASK-09 | cmd-05 + cmd-07 |
 | AC-21（关键）知识仓其他 CR 的变化不计为当前代码资源变化 | §4.5、§4.8、§6.2 AC-21 | CR-2026-076-TASK-09 | cmd-07 |
 | AC-22（关键）部分 publish 后恢复仍使用原 journal 固定 source | §4.10、§6.2 AC-22 | CR-2026-076-TASK-09 | cmd-07 |
-| AC-23（关键）数量下降仅提示；少跑／未登记／集合不一致／零执行／真实失败／非法例外仍拒绝；四例外复现转绿后撤销 | §4.11、§6.2 AC-23 | CR-2026-076-TASK-11 | cmd-10 + cmd-11 |
+| AC-23（关键）数量下降仅提示；少跑／未登记／集合不一致／零执行／真实失败／非法例外仍拒绝；四例外复现转绿后撤销 | §4.11、§6.2 AC-23 | CR-2026-076-TASK-11（关联 TASK-15／TASK-17：其新文件须同批登记进 `manifest.files`，否则 `cmd-11` 在最终状态必红，见 §5.5「登记面所有权」） | cmd-10 + cmd-11 |
 | AC-24（关键）Windows 文档链非零准确 `docCount`；实际部署后新 run 使用已验证版本并记录版本与行为证据 | §4.12、§4.13、SDD-CLOSE-08、§6.2 AC-24 | CR-2026-076-TASK-17（关联 TASK-12） | cmd-12 + cmd-14 + cmd-15 |
 | AC-SUP-01（关键）owner 合法性：接受成员 `user_id`，拒绝显示名／membership ID／异 workspace UUID | §4.14、§6.2 AC-SUP-01 | CR-2026-076-TASK-13 | cmd-06 + cmd-04 |
 | AC-SUP-02（关键）身份查询失败按技术失败停止，不报为成员不存在、不猜 ID | §4.14、§6.2 AC-SUP-02 | CR-2026-076-TASK-13 | cmd-06 |
