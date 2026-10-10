@@ -6,7 +6,7 @@ title: CR 执行闭环与门禁减负修订 技术设计
 target-version: "0.49"
 status: draft
 created: "2026-10-10T15:11:00+08:00"
-updated: "2026-10-10T18:10:00+08:00"
+updated: "2026-10-10T18:25:00+08:00"
 ---
 
 # CR 执行闭环与门禁减负修订 技术设计（SDD）
@@ -15,6 +15,7 @@ updated: "2026-10-10T18:10:00+08:00"
 > 本文只做技术设计，不回写 `specs/`、不改注册事实、不推进任何未由本合同授权的状态。
 > 既有实现事实一律以 `§10 既有实现依赖与事实` 的 `dep-N` 承载，正文不复述实现细节。
 > 修订 r2（2026-10-10，按 `review-annotations/sdd.yml` attempt 1 的 3 条 blocker 定点回修，结论面未变）：B1 → §3.5／§4.15／`AC-SUP-03` 改为「入库通道待核实」两分支；B2 → `ledgerTxKey` 移出 `dep-13`、另立 `dep-34`，`SDD-CLOSE-01`／§4.3 改指；B3 → §8 补齐 `write-dev-tasks`／`inbox-emit` 两行并补 `review-dev-plan` 的 dev-start 交接删除。
+> 修订 r5（2026-10-10，TASK-02 实施期核实与 Git trust 叠加落盘）：§4.2 「第二处写入点」条改为已核实（结论 = ①，见新增 `dep-36`），§10 待核实条目按「已核实取到五要素」转指 `dep-36` 并保留原叙述作追溯。另：`dep-36` 同时记录 repocache 包在本机（Windows）的平台性测试失败事实，`plan.md` §6.2 `cmd-03` 的「单包全文件通过」前提在本机不成立——该行处置待裁定，见 TASK-02 上报。
 > 修订 r4（2026-10-10，TASK-01 载体裁定同步；裁定原文 = Issue AIFI-62 评论 `01a1253d-ccdf-7112-947b-33f17dc212da`，裁定请求原文 = `01a1253e-4517-750a-9a58-bf445600f136`）：§4.1 判定顺序 2a／2b 所需的「task／来源 Issue 正式 CR 关联」由**既有认领载荷的新增投影**承载——服务端在既有 claim 路径上把两条**既有**关系（`agent_task_queue.cr_id`、`cr.shell_issue_id`）附加到既有载荷，daemon 侧判定顺序与结论面不变；**不新增关联存储、不新增独立查询机制、不新增 endpoint**。同步面：§1.5、§2.1（E11）、§3.4、§3.5、§6.2（AC-01／AC-02）、§10（`dep-35`）。
 > 修订 r3（2026-10-10，按 `review-annotations/sdd.yml` attempt 2 的 1 条 blocker 定点回修，结论面未变）：`dep-26` 依赖结论改为同 SHA 实测值（31 条声明／展开 53 条，附取证命令与行号）、`SDD-CLOSE-07` 现状与实现后数字随之改为 31／53 与 32、§3.3 口径指向同步；文档侧旧口径（`ARCHITECTURE.md` 硬不变量 5、workspace `AGENTS.md` 工程纪律 2）的滞后登记与不同步理由写入 §9 `follow_up`；另采纳上轮 `suggestions` 第 4 条，在 §4.6 明确 `mode=finalize` 入口不重跑拆分与 TASK 计数校验。
 
@@ -285,7 +286,7 @@ warnings:
 
 - 禁止：改写用户全局姓名/邮箱、把身份替换为机器人兜底、设置非 Git 原生的 trust 旁路。
 - 身份不可用（原全局配置中 `user.name`/`user.email` 均缺失，身份加载链见 `dep-6`）时，正常新操作必须在账本写入前报环境问题；已有未完成事务按原恢复合同处理，**不得**把环境错误记成业务 BLOCK。
-- 是否存在第二处 Git 配置环境写入点（repocache 身份加载）尚未证实，见 §10 待核实依赖条目「repocache 身份加载与 `GIT_CONFIG_GLOBAL` 的交互（平台侧）」；核实前本条不得假设「只此一处」。
+- 是否存在第二处 Git 配置环境写入点（repocache 身份加载）：**已核实，结论 = ① 不存在**，见 `dep-36`（核实符号、依据与两个相邻但不同剖面的写入点一并记录）。
 - 原全局配置路径解析：`git config --get` 既有白名单形态不可读全局路径时，回退读取进程启动前的 `HOME`/`USERPROFILE` 下标准位置；两者皆不可判 → 技术失败（不猜、不写死）。
 
 ### 4.3 review-record 原子闭环（FR-03）
@@ -1039,12 +1040,19 @@ dep-35
   commit SHA: a2046ce34449aaed67df000a1320d73d9976e987
   依赖结论: daemon 认领载荷由 buildClaimedTaskResponse 组装并由 client.ClaimTask／ClaimTasks 直接解码为 daemon `Task`（同名 json tag 镜像）；既有载荷只携带 `pipeline_cr_id`（pipeline-node 载体，CR-2026-045），普通任务无任何 CR 关联字段。而两条「正式 CR 关联」关系在服务端**已存在**：`agent_task_queue.cr_id`（归属写入 + 绑定事务 CAS 写）与 `cr.shell_issue_id`（绑定事务 CAS 写，唯一性由 TASK_CR_CONFLICT／CR_ISSUE_CONFLICT 保证）——但从未向 daemon 投影。故 §4.1 的 2a／2b 只能落在「在既有认领载荷上附加这两个既有事实的投影」上：不新增关联存储、不新增独立查询机制、不新增 endpoint；服务端不判唯一性，唯一性判定仍由 daemon 侧 §4.1 顺序承担。
 
+dep-36
+  repo: multica
+  relative path: server/internal/daemon/repocache/cache.go、server/internal/daemon/repocache/identity.go、server/internal/daemon/repocache/identity_test.go
+  stable symbol/对象: gitEnv（cache.go:29-55，经 `GIT_CONFIG_COUNT/KEY_n/VALUE_n` 追加 `safe.directory=*`）、isolateWorktreeIdentityContext（identity.go:25-84，写 checkout 私有的 `multica-identity.config` 与 `config.worktree`，并经 `git config --null --show-scope --includes --get-regexp` 读 global／system 身份）
+  commit SHA: a2046ce34449aaed67df000a1320d73d9976e987
+  依赖结论: **核实结论 = ① 不存在第二处「任务 env 的 Git trust 写入点」**。两处 repocache 触点与 `dep-6` 的 `GIT_CONFIG_GLOBAL` 不同剖面：① `gitEnv()` 用 `GIT_CONFIG_COUNT/KEY/VALUE` 为 **daemon 自己** 的 git 子进程追加 `safe.directory=*`，产物是命令行级 env，不写入任务 env 映射，也不覆盖 `GIT_CONFIG_GLOBAL`；② `isolateWorktreeIdentityContext` 只写 **checkout 私有** 的 `config.worktree`／`multica-identity.config`（仓库作用域），并以 `--show-scope --includes` **读取** global／system 身份后才写副本——即它消费（而非替换）叠加式 trust 配置带来的身份链，两者方向一致、无双写入点；无身份时它用空值屏蔽，使提交在 commit 时失败，与 §4.2「身份不可用在账本写入前报环境问题」同向。故按 TASK-02 核实项二选一取 ①，无需同批收口。**附带环境事实**：`go test ./internal/daemon/repocache/ -count=1 -v` 在本机（Windows）非零退出——默认临时根（多层嵌套）下 55 项失败，改用短临时根（`TMP/TEMP=C:\ctmp`）后降至 8 项，剩余均为平台假设失败（`partial_clone_test.go` 的 `file+<盘符:>` 形 cache 目录在 Windows 不可创建、`cache_test.go` 的 Unix 钩子升级用例、`existing_checkout_test.go` 的 CRLF 断言、“无法删除进程工作目录”），与 `GIT_CONFIG_GLOBAL`／身份写点无关；短临时根下 `TestCheckoutIdentity*` 全部转绿。该包不依赖 `internal/daemon`（`go list -deps` 零命中），故与本 CR 的 TASK-01/TASK-02 改动无因果关系。
+
 ### 待核实依赖
 
 无法在本轮绑定五要素（repo/path/symbol/SHA/结论）的引用，列为此类，不得当作既有能力断言，也不计入 `dep-N` 序列；正文按下列条目标题引用它们。实施期一旦核实取到五要素，须按「只增不改」另立 `dep-N` 并把正文引用改指该编号，不得把下列条目当作既有能力依据。
 
 - **上传附件 → 知识库 source 桥接（平台侧）**（被 §3.5、§4.15、`AC-SUP-03` 引用）：FR-SUP-03/AC-SUP-03 要求把上传的主来源文档入库到知识库。本轮在 multica worktree HEAD `a2046ce34449aaed67df000a1320d73d9976e987` 只读检索，检索面为 `server/internal/governance/runner_requirement.go`／`runner_requirement_entry.go`／`runner_requirement_registry.go` 与 `server/internal/handler/` 的附件相关文件：需求期 Runner 侧无附件处理代码，`StartRequirementInput.Source` 只是显式传入的注册派生输入；附件能力集中在 `server/internal/handler/`（上传、下载与下载 capability），未定位到「附件 → 知识库文件」写入缝的稳定符号。故**未取到稳定符号与行为结论**，本 SDD 不把它断言为既有能力。实施期须先定点核实该桥接的实际入口与可读性保证，再决定复用既有通道或新增最小接线；核实前不得在 plan/TASK 中按既有能力排期，`AC-SUP-03` 也不以「通道已存在」为前提。
-- **repocache 身份加载与 GIT_CONFIG_GLOBAL 的交互（平台侧）**（被 §4.2 引用）：FR-02/AC-04 要求任务内提交身份来自原全局配置。本轮未确认 `server/internal/daemon/repocache/cache.go` / `identity_test.go` 是否也写入或覆盖 Git 配置环境。实施期须先核实，若存在第二处写入点，需与 `dep-6` 的叠加式配置在同一变更内收口。
+- **repocache 身份加载与 GIT_CONFIG_GLOBAL 的交互（平台侧）**（被 §4.2 引用；**2026-10-10 已核实取到五要素，见 `dep-36`，结论 = ① 不存在第二处写入点**）：FR-02/AC-04 要求任务内提交身份来自原全局配置。原待核实叙述（保留作追溯）：本轮未确认 `server/internal/daemon/repocache/cache.go` / `identity_test.go` 是否也写入或覆盖 Git 配置环境。
 
 ---
 

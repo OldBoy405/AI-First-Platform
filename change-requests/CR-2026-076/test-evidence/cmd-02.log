@@ -1,0 +1,35 @@
+=== RUN   TestInjectTaskCRWorkspaceEnvWithoutBinding
+--- PASS: TestInjectTaskCRWorkspaceEnvWithoutBinding (0.00s)
+=== RUN   TestInjectTaskCRWorkspaceEnvHalfBindingIsNotPublished
+--- PASS: TestInjectTaskCRWorkspaceEnvHalfBindingIsNotPublished (0.00s)
+=== RUN   TestInjectTaskCRWorkspaceEnvRequiresTaskIdentity
+--- PASS: TestInjectTaskCRWorkspaceEnvRequiresTaskIdentity (0.00s)
+=== RUN   TestInjectTaskCRWorkspaceEnvUsesTaskLocalDirectory
+=== RUN   TestInjectTaskCRWorkspaceEnvUsesTaskLocalDirectory/in_place
+=== RUN   TestInjectTaskCRWorkspaceEnvUsesTaskLocalDirectory/worktree
+--- PASS: TestInjectTaskCRWorkspaceEnvUsesTaskLocalDirectory (0.01s)
+    --- PASS: TestInjectTaskCRWorkspaceEnvUsesTaskLocalDirectory/in_place (0.00s)
+    --- PASS: TestInjectTaskCRWorkspaceEnvUsesTaskLocalDirectory/worktree (0.00s)
+=== RUN   TestInjectTaskCRWorkspaceEnvRejectsAmbiguousLocalDirectory
+--- PASS: TestInjectTaskCRWorkspaceEnvRejectsAmbiguousLocalDirectory (0.00s)
+=== RUN   TestInjectTaskCRWorkspaceEnvRequiresCRLedger
+--- PASS: TestInjectTaskCRWorkspaceEnvRequiresCRLedger (0.00s)
+=== RUN   TestInjectTaskCRWorkspaceEnvPipelineTask
+--- PASS: TestInjectTaskCRWorkspaceEnvPipelineTask (0.04s)
+=== RUN   TestInjectTaskCRWorkspaceEnvWinsOverCustomEnv
+--- PASS: TestInjectTaskCRWorkspaceEnvWinsOverCustomEnv (0.00s)
+=== RUN   TestInjectTaskCRWorkspaceEnvIsolatesConcurrentTasks
+--- PASS: TestInjectTaskCRWorkspaceEnvIsolatesConcurrentTasks (0.00s)
+=== RUN   TestPreparePipelineTaskHydratesMachineLocalPaths
+--- PASS: TestPreparePipelineTaskHydratesMachineLocalPaths (0.00s)
+=== RUN   TestConfigurePipelineGitEnvironment
+--- PASS: TestConfigurePipelineGitEnvironment (0.06s)
+=== RUN   TestConfigureTaskGitEnvironment
+=== RUN   TestConfigureTaskGitEnvironment/a_global_config_without_an_identity_stops_before_any_ledger_write
+=== RUN   TestConfigureTaskGitEnvironment/an_unresolvable_global_config_stops_the_task
+--- PASS: TestConfigureTaskGitEnvironment (0.07s)
+    --- PASS: TestConfigureTaskGitEnvironment/a_global_config_without_an_identity_stops_before_any_ledger_write (0.02s)
+    --- PASS: TestConfigureTaskGitEnvironment/an_unresolvable_global_config_stops_the_task (0.00s)
+PASS
+ok  	github.com/multica-ai/multica/server/internal/daemon	0.270s
+exit=0
