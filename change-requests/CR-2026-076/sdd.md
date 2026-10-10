@@ -6,7 +6,7 @@ title: CR 执行闭环与门禁减负修订 技术设计
 target-version: "0.49"
 status: draft
 created: "2026-10-10T15:11:00+08:00"
-updated: "2026-10-10T15:29:00+08:00"
+updated: "2026-10-10T15:43:00+08:00"
 ---
 
 # CR 执行闭环与门禁减负修订 技术设计（SDD）
@@ -15,6 +15,7 @@ updated: "2026-10-10T15:29:00+08:00"
 > 本文只做技术设计，不回写 `specs/`、不改注册事实、不推进任何未由本合同授权的状态。
 > 既有实现事实一律以 `§10 既有实现依赖与事实` 的 `dep-N` 承载，正文不复述实现细节。
 > 修订 r2（2026-10-10，按 `review-annotations/sdd.yml` attempt 1 的 3 条 blocker 定点回修，结论面未变）：B1 → §3.5／§4.15／`AC-SUP-03` 改为「入库通道待核实」两分支；B2 → `ledgerTxKey` 移出 `dep-13`、另立 `dep-34`，`SDD-CLOSE-01`／§4.3 改指；B3 → §8 补齐 `write-dev-tasks`／`inbox-emit` 两行并补 `review-dev-plan` 的 dev-start 交接删除。
+> 修订 r3（2026-10-10，按 `review-annotations/sdd.yml` attempt 2 的 1 条 blocker 定点回修，结论面未变）：`dep-26` 依赖结论改为同 SHA 实测值（31 条声明／展开 53 条，附取证命令与行号）、`SDD-CLOSE-07` 现状与实现后数字随之改为 31／53 与 32、§3.3 口径指向同步；文档侧旧口径（`ARCHITECTURE.md` 硬不变量 5、workspace `AGENTS.md` 工程纪律 2）的滞后登记与不同步理由写入 §9 `follow_up`；另采纳上轮 `suggestions` 第 4 条，在 §4.6 明确 `mode=finalize` 入口不重跑拆分与 TASK 计数校验。
 
 ## 1. 架构概览
 
@@ -214,7 +215,7 @@ warnings:
 | `pipeline-templates/code-implementation.pipeline.json` | 移除 `human_approval`（确认进入代码开发）与 `approve-dev-start` 节点；`review-dev-plan` PASS 后重连到 `write-dev-tasks` 的收尾节点（`mode=finalize`，不改该 Skill 的 TASK 拆分职责），由该节点在同一 run 内执行收尾 `advance` 进入 `developing`，再接续 `workspace-freshness`（`dep-25`、§4.6） |
 | `gates.json#statusGates.developing` | 去掉 `passCondition: dev-start` 与 `approval: development-start`；保留 plan/tasks 存在性与 globNonEmpty（`dep-24`） |
 | `gates.json#approvalStages.dev-start` | 保留（旧调用兼容），不再是默认必经 |
-| `dir-graph.yaml#change-request-track.state_machine` | 新增一条合法转换 `{ from: task-breakdown, to: developing, trigger: "write-dev-tasks:finalize" }`（触发条件：`review-dev-plan` PASS 且 blockers 空，由收尾节点执行）；既有 `{ from: task-breakdown, to: developing, trigger: "approve-dev-start" }` 保留为兼容路径；状态集合不变，转移统计口径按 `dep-26` 并在实现期据实更新（`SDD-CLOSE-07`） |
+| `dir-graph.yaml#change-request-track.state_machine` | 新增一条合法转换 `{ from: task-breakdown, to: developing, trigger: "write-dev-tasks:finalize" }`（触发条件：`review-dev-plan` PASS 且 blockers 空，由收尾节点执行）；既有 `{ from: task-breakdown, to: developing, trigger: "approve-dev-start" }` 保留为兼容路径；状态集合不变，转移统计口径以 `dep-26` 的实测现状（31 条声明／wildcard 展开 53 条）为基准、本 CR 新增 1 条后为 32 条声明（展开数按实现期实际内容据实更新），见 `SDD-CLOSE-07`；文档侧旧口径（`ARCHITECTURE.md` 硬不变量 5、workspace `AGENTS.md` 工程纪律 2）本 CR 不同步，滞后登记见 §9 `follow_up` |
 | `pipeline-templates/requirement-authoring.pipeline.json` | `source` 取消 `required: true`，与空值语义一致；owner 输入示例改为 `user_id`（`dep-29`） |
 | Skill 同步清单 | 见 §8 |
 
@@ -329,6 +330,7 @@ warnings:
 
 - 默认编码路径的必经节点变为：设计批准 → PLAN/TASK 完整 → `review-dev-plan` PASS 且 blockers 空 → `write-dev-tasks` 收尾节点（`mode=finalize`）→ 资源与实际 readiness → 经既有 `advance`（trigger `write-dev-tasks:finalize`）进入 `developing`。不再插入独立 `human_approval`／`approve-dev-start`（节点顺序与 trigger 标识符见 §3.3，全文唯一）。
 - `developing` 门禁保留 plan/tasks/globNonEmpty 与 readiness；**不伪造** development-start 批准，不写入 `approval.yml#development-start`。
+- `write-dev-tasks` 的 `mode=finalize` 是同一 Skill 的第二个入口（节点序中拆分入口在前），两个入口语义分界固定：`mode=finalize` **不重跑** TASK 拆分，也**不重跑** `crctl task init --count-hint` 的 TASK 集计数校验（TASK 集已由拆分入口落定），只做收尾 `advance --to developing --trigger write-dev-tasks:finalize` 与 readiness 接续；`review-dev-plan` PASS 本身不触发任何重新拆分或重新计数。
 - 旧审批调用与历史记录兼容；`approve-dev-start` Skill 保留但不在默认路径上必经。
 - 本 CR **自身**按其执行时合法有效的旧合同运行，不自我减负、不预先使用未发布的新门禁授权。
 
@@ -706,7 +708,7 @@ dirty / 分叉 / 冲突 / 同步失败 / 环境不匹配 → 既有失败合同�
 - 结论：`plan.md`（`write-dev-plan` 产物）承载所需人类动作、责任方、窗口与可达入口，SDD 只固定该承载义务（FR-14）；不新增台账文件。
 
 **SDD-CLOSE-07（状态数口径）**
-- 结论：本 CR 引用的状态机口径以 `dep-26` 为准——**15 个具名状态 + 注册前 `(new)`**（口语「16 态」含 `(new)`）；转移**28 条声明，wildcard 展开后 50 条**（`dep-26` 记录的实现前现状）。本 CR **不新增状态**，但需在 `task-breakdown → developing` 上**新增 1 条转移声明**（trigger `write-dev-tasks:finalize`，§3.3），既有 `approve-dev-start` 转移保留为兼容路径；实现后声明数应为 **29 条**（wildcard 展开数按实现期实际内容据实更新，不沿用本条预估）。实现期须以 `dep-26` 的实际内容为准回填本节与 plan，并写明所用口径。
+- 结论：本 CR 引用的状态机口径以 `dep-26` 的实测事实为准——**15 个具名状态 + 注册前 `(new)`**（口语「16 态」含 `(new)`）；转移**31 条声明，wildcard 展开后 53 条**（`dep-26` 记录的实现前现状，取证命令、行号与独立登记见该条）。本 CR **不新增状态**，但需在 `task-breakdown → developing` 上**新增 1 条转移声明**（trigger `write-dev-tasks:finalize`，§3.3），既有 `approve-dev-start` 转移保留为兼容路径；实现后声明数应为 **32 条**（wildcard 展开数按实现期实际内容据实更新，不沿用本条预估）。实现期须以 `dep-26` 的实际内容为准回填本节与 plan，并写明所用口径；文档侧旧口径（`ARCHITECTURE.md` 硬不变量 5、workspace `AGENTS.md` 工程纪律 2 的「28 条声明／展开 50 条」）本 CR 不同步，滞后登记与理由见 §9 `follow_up`。
 
 **SDD-CLOSE-08（发布生效核对口径）**
 - 结论：交付完成的判据为「安装后新 run 的目标行为证据 + 实际取用版本记录」（CLI、daemon、Skill/instructions、必要平台消费者），源码合入/构建/镜像更新不构成完成；证据 ID 稳定、不机械重编号（§4.13）。
@@ -799,6 +801,7 @@ dirty / 分叉 / 冲突 / 同步失败 / 环境不匹配 → 既有失败合同�
 - 校验发现的历史 `source` 异常与 owner 异常：本 CR 只提供只读扫描；批量修复留待人工裁决后的后续动作，不入本 CR 范围。
 - `origin` 字段（与 `source` 同为空串）的语义与校验：本 CR 不展开。
 - reviewer/Agent/评论 mention 的身份模型统一：PRD 明确留待后续。
+- 文档侧状态机规模口径滞后（本 CR 登记、不同步）：`tools/ARCHITECTURE.md:62`／`:112`（硬不变量 5）与 workspace `AGENTS.md` 工程纪律 2 仍写「28 条声明／wildcard 展开 50 条」，而 `dir-graph.yaml#change-request-track.state_machine` 现为 31 条声明／展开 53 条（本 CR 新增 1 条后为 32 条，见 `SDD-CLOSE-07` 与 `dep-26`）。本 CR 不改这两处文本，理由有三：① 二者不在 §1.5 变更面、也不在 §8 同步清单内，改动会扩大批准范围；② workspace `AGENTS.md` 工程纪律 2 自身已规定「正式断言以 `../tools/dir-graph.yaml#change-request-track.state_machine` 当前内容为准（CR-2026-027 Phase 0 统一）」，故以 `dep-26` 实测值为唯一口径即符合其规定，改写历史文档数字不属于功能交付；③ 硬不变量 5 属 tools 包文档层，其口径统一宜与状态机实现改动同批（本 CR 的 32 条落定后）一次性完成，避免第二次过期。后续文档同步动作（或另立 CR）按实现后的实测值更新这两处。
 
 ## 10. 既有实现依赖与事实
 
@@ -900,7 +903,7 @@ dep-26
   relative path: dir-graph.yaml
   stable symbol/对象: change-request-track.state_machine.transitions
   commit SHA: 0f5690f845dcf1e0dd9fdc37797b7e4294335266
-  依赖结论: 状态与合法转换的单一事实源；当前为 15 个具名状态 + 注册前 (new)，转移 28 条声明、wildcard 展开 50 条，含 task-breakdown→developing(approve-dev-start) 与 task-breakdown→tech-design-reviewed 的回退转换。
+  依赖结论: 状态与合法转换的单一事实源；当前（本 SHA 实测，非文档转抄）为 15 个具名状态 + 注册前 (new)，转移 31 条声明、wildcard 展开 53 条——取证：同 SHA `dir-graph.yaml` 的 transitions 块在第 211 行起（首条第 212 行、末条第 242 行），`grep -c '^      - { from:' dir-graph.yaml` = 31，其中 `from: any-active` 2 条（第 241／242 行）而 `wildcards.any-active`（第 244 行起）12 个目标，故展开数 = 31 − 2 + 12×2 = 53；同仓 `skills/shared/crctl/scripts/test/gate-registry.json#stateMachine` 独立登记 transitions=31／namedStates=15／wildcards.any-active=12，`skills/shared/crctl/scripts/test/crctl.test.mjs` 的「推导 ≡ 登记」断言（J-3，CR-2026-065）把该规模固定为仓库不变量。含 task-breakdown→developing(approve-dev-start) 与 task-breakdown→tech-design-reviewed 的回退转换。文档侧 `ARCHITECTURE.md:62`／`:112`（硬不变量 5）与 workspace `AGENTS.md` 工程纪律 2 仍写 28 条声明／展开 50 条，为未同步的历史口径（该数字成形于 d4fff14=28，其后 49c46dd→29、bef1f4d→30、2e4442d→31 各自新增合法转换而未同步文档）；本 SDD 不以旧数字作「当前」事实，滞后登记与处置见 §9 `follow_up`。
 
 dep-29
   repo: tools
