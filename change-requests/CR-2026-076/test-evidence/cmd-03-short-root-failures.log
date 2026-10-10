@@ -1,0 +1,107 @@
+=== RUN   TestCreateWorktreeDoesNotExcludeReasonixProjectConfig
+=== PAUSE TestCreateWorktreeDoesNotExcludeReasonixProjectConfig
+=== RUN   TestReconcileCoAuthoredByHooksMigratesReleasedHook
+=== PAUSE TestReconcileCoAuthoredByHooksMigratesReleasedHook
+=== RUN   TestReconcileCoAuthoredByHooksUpgradesReleasedHookInPlace
+=== PAUSE TestReconcileCoAuthoredByHooksUpgradesReleasedHookInPlace
+=== RUN   TestFreshCheckoutDiscardsLocalWork
+=== PAUSE TestFreshCheckoutDiscardsLocalWork
+=== RUN   TestCreateIsolatedCheckoutFromPartialCacheHasFileContents
+=== PAUSE TestCreateIsolatedCheckoutFromPartialCacheHasFileContents
+=== RUN   TestReusedIsolatedCheckoutRepairsPromisorConfig
+=== PAUSE TestReusedIsolatedCheckoutRepairsPromisorConfig
+=== RUN   TestCreateWorktreeFromPartialCacheHasFileContents
+=== PAUSE TestCreateWorktreeFromPartialCacheHasFileContents
+=== RUN   TestIsPartialClone
+=== PAUSE TestIsPartialClone
+=== CONT  TestCreateWorktreeDoesNotExcludeReasonixProjectConfig
+=== CONT  TestCreateIsolatedCheckoutFromPartialCacheHasFileContents
+=== CONT  TestCreateWorktreeFromPartialCacheHasFileContents
+=== CONT  TestReusedIsolatedCheckoutRepairsPromisorConfig
+=== CONT  TestIsPartialClone
+=== CONT  TestReconcileCoAuthoredByHooksUpgradesReleasedHookInPlace
+=== CONT  TestFreshCheckoutDiscardsLocalWork
+=== RUN   TestFreshCheckoutDiscardsLocalWork/linked
+=== PAUSE TestFreshCheckoutDiscardsLocalWork/linked
+=== RUN   TestFreshCheckoutDiscardsLocalWork/isolated
+=== PAUSE TestFreshCheckoutDiscardsLocalWork/isolated
+=== CONT  TestFreshCheckoutDiscardsLocalWork/linked
+=== CONT  TestReconcileCoAuthoredByHooksMigratesReleasedHook
+=== CONT  TestFreshCheckoutDiscardsLocalWork/isolated
+2026/10/10 19:57:16 INFO repo cache: cloning url=C:\ctmp\TestCreateWorktreeDoesNotExcludeReasonixProjectConfig2060969160\001 path=C:\ctmp\TestCreateWorktreeDoesNotExcludeReasonixProjectConfig2060969160\002\ws-1\c+\ctmp\TestCreateWorktreeDoesNotExcludeReasonixProjectConfig2060969160\001.git
+2026/10/10 19:57:16 INFO repo cache: cloning url=C:\ctmp\TestReconcileCoAuthoredByHooksUpgradesReleasedHookInPlace1691227467\001 path=C:\ctmp\TestReconcileCoAuthoredByHooksUpgradesReleasedHookInPlace1691227467\002\ws-1\c+\ctmp\TestReconcileCoAuthoredByHooksUpgradesReleasedHookInPlace1691227467\001.git
+2026/10/10 19:57:16 INFO repo cache: cloning url=C:\ctmp\TestReconcileCoAuthoredByHooksMigratesReleasedHook2183985193\001 path=C:\ctmp\TestReconcileCoAuthoredByHooksMigratesReleasedHook2183985193\002\ws-1\c+\ctmp\TestReconcileCoAuthoredByHooksMigratesReleasedHook2183985193\001.git
+2026/10/10 19:57:16 INFO repo cache: cloning url=C:\ctmp\TestFreshCheckoutDiscardsLocalWorklinked3527600487\001 path=C:\ctmp\TestFreshCheckoutDiscardsLocalWorklinked3527600487\002\ws-1\c+\ctmp\TestFreshCheckoutDiscardsLocalWorklinked3527600487\001.git
+2026/10/10 19:57:16 INFO repo cache: cloning url=C:\ctmp\TestFreshCheckoutDiscardsLocalWorkisolated3698628162\001 path=C:\ctmp\TestFreshCheckoutDiscardsLocalWorkisolated3698628162\002\ws-1\c+\ctmp\TestFreshCheckoutDiscardsLocalWorkisolated3698628162\001.git
+=== NAME  TestCreateWorktreeFromPartialCacheHasFileContents
+    partial_clone_test.go:177: create workspace cache dir: mkdir C:\ctmp\TestCreateWorktreeFromPartialCacheHasFileContents408759024\002\ws-1\file+C:: The filename, directory name, or volume label syntax is incorrect.
+2026/10/10 19:57:16 INFO repo cache: cloning url=file://C:\ctmp\TestIsPartialClone713633187\001 path=C:\ctmp\TestIsPartialClone713633187\002\ws-1\file+C:\ctmp\TestIsPartialClone713633187\001.git
+--- FAIL: TestCreateWorktreeFromPartialCacheHasFileContents (0.44s)
+=== NAME  TestReusedIsolatedCheckoutRepairsPromisorConfig
+    partial_clone_test.go:141: create workspace cache dir: mkdir C:\ctmp\TestReusedIsolatedCheckoutRepairsPromisorConfig2372879564\002\ws-1\file+C:: The filename, directory name, or volume label syntax is incorrect.
+=== NAME  TestCreateIsolatedCheckoutFromPartialCacheHasFileContents
+    partial_clone_test.go:104: create workspace cache dir: mkdir C:\ctmp\TestCreateIsolatedCheckoutFromPartialCacheHasFileContents3544769265\002\ws-1\file+C:: The filename, directory name, or volume label syntax is incorrect.
+--- FAIL: TestReusedIsolatedCheckoutRepairsPromisorConfig (0.48s)
+2026/10/10 19:57:16 ERROR repo cache: clone failed url=file://C:\ctmp\TestIsPartialClone713633187\001 error="git clone --bare: fatal: could not create leading directories of 'C:\\ctmp\\TestIsPartialClone713633187\\002\\ws-1\\file+C:\\ctmp\\TestIsPartialClone713633187\\001.git': exit status 128"
+=== NAME  TestIsPartialClone
+    partial_clone_test.go:198: sync failed: git clone --bare: fatal: could not create leading directories of 'C:\ctmp\TestIsPartialClone713633187\002\ws-1\file+C:\ctmp\TestIsPartialClone713633187\001.git': exit status 128
+--- FAIL: TestCreateIsolatedCheckoutFromPartialCacheHasFileContents (0.48s)
+--- FAIL: TestIsPartialClone (0.49s)
+2026/10/10 19:57:18 INFO repo checkout: worktree created url=C:\ctmp\TestCreateWorktreeDoesNotExcludeReasonixProjectConfig2060969160\001 path=C:\ctmp\TestCreateWorktreeDoesNotExcludeReasonixProjectConfig2060969160\003\ctmp\TestCreateWorktreeDoesNotExcludeReasonixProjectConfig2060969160\001 branch=agent/reasonix/xexcludetest base=refs/remotes/origin/master
+=== NAME  TestCreateWorktreeDoesNotExcludeReasonixProjectConfig
+    cache_test.go:1289: checkout "C:\\ctmp\\TestCreateWorktreeDoesNotExcludeReasonixProjectConfig2060969160\\003\\ctmp\\TestCreateWorktreeDoesNotExcludeReasonixProjectConfig2060969160\\001" is not a child of the work dir "C:\\ctmp\\TestCreateWorktreeDoesNotExcludeReasonixProjectConfig2060969160\\003"
+2026/10/10 19:57:18 INFO repo checkout: worktree created url=C:\ctmp\TestReconcileCoAuthoredByHooksUpgradesReleasedHookInPlace1691227467\001 path=C:\ctmp\TestReconcileCoAuthoredByHooksUpgradesReleasedHookInPlace1691227467\003\ctmp\TestReconcileCoAuthoredByHooksUpgradesReleasedHookInPlace1691227467\001 branch=agent/test-agent/000000000000 base=refs/remotes/origin/master
+=== NAME  TestReconcileCoAuthoredByHooksUpgradesReleasedHookInPlace
+    cache_test.go:2625: hook was not upgraded to read the state file.
+        got:
+        #!/bin/sh
+        # multica:prepare-commit-msg:co-authored-by
+        # Multica: add Co-authored-by trailer for the Multica Agent.
+        # Installed by the Multica daemon. Do not edit — it will be overwritten.
+        
+        COMMIT_MSG_FILE="$1"
+        COMMIT_SOURCE="$2"
+        
+        # Skip merge and squash commits.
+        case "$COMMIT_SOURCE" in
+          merge|squash) exit 0 ;;
+        esac
+        
+        TRAILER="Co-authored-by: multica-agent <github@multica.ai>"
+        
+        # Don't add if already present.
+        if grep -qF "$TRAILER" "$COMMIT_MSG_FILE"; then
+          exit 0
+        fi
+        
+        # Use git interpret-trailers for proper formatting.
+        git interpret-trailers --in-place --trailer "$TRAILER" "$COMMIT_MSG_FILE"
+--- FAIL: TestCreateWorktreeDoesNotExcludeReasonixProjectConfig (1.75s)
+--- FAIL: TestReconcileCoAuthoredByHooksUpgradesReleasedHookInPlace (1.76s)
+2026/10/10 19:57:18 INFO repo checkout: worktree created url=C:\ctmp\TestReconcileCoAuthoredByHooksMigratesReleasedHook2183985193\001 path=C:\ctmp\TestReconcileCoAuthoredByHooksMigratesReleasedHook2183985193\003\ctmp\TestReconcileCoAuthoredByHooksMigratesReleasedHook2183985193\001 branch=agent/test-agent/000000000000 base=refs/remotes/origin/master
+2026/10/10 19:57:18 INFO repo checkout: worktree created url=C:\ctmp\TestFreshCheckoutDiscardsLocalWorklinked3527600487\001 path=C:\ctmp\TestFreshCheckoutDiscardsLocalWorklinked3527600487\003\ctmp\TestFreshCheckoutDiscardsLocalWorklinked3527600487\001 branch=agent/agent/111111111111 base=refs/remotes/origin/master
+=== NAME  TestReconcileCoAuthoredByHooksMigratesReleasedHook
+    cache_test.go:2599: expected the previous release's hook to be removed at C:\ctmp\TestReconcileCoAuthoredByHooksMigratesReleasedHook2183985193\002\ws-1\c+\ctmp\TestReconcileCoAuthoredByHooksMigratesReleasedHook2183985193\001.git\hooks\prepare-commit-msg, stat err=<nil>
+2026/10/10 19:57:18 INFO repo cache: fetching url=C:\ctmp\TestFreshCheckoutDiscardsLocalWorklinked3527600487\001 path=C:\ctmp\TestFreshCheckoutDiscardsLocalWorklinked3527600487\002\ws-1\c+\ctmp\TestFreshCheckoutDiscardsLocalWorklinked3527600487\001.git
+    cache_test.go:2602: upgraded host still adds the trailer after the toggle was turned off.
+        got:
+        after the toggle
+        
+        Co-authored-by: multica-agent <github@multica.ai>
+        
+--- FAIL: TestReconcileCoAuthoredByHooksMigratesReleasedHook (2.15s)
+2026/10/10 19:57:18 INFO repo checkout: isolated checkout ready url=C:\ctmp\TestFreshCheckoutDiscardsLocalWorkisolated3698628162\001 path=C:\ctmp\TestFreshCheckoutDiscardsLocalWorkisolated3698628162\003\ctmp\TestFreshCheckoutDiscardsLocalWorkisolated3698628162\001 branch=agent/agent/111111111111 base=refs/remotes/origin/master
+2026/10/10 19:57:18 INFO repo cache: fetching url=C:\ctmp\TestFreshCheckoutDiscardsLocalWorkisolated3698628162\001 path=C:\ctmp\TestFreshCheckoutDiscardsLocalWorkisolated3698628162\002\ws-1\c+\ctmp\TestFreshCheckoutDiscardsLocalWorkisolated3698628162\001.git
+2026/10/10 19:57:19 INFO repo checkout: existing worktree updated url=C:\ctmp\TestFreshCheckoutDiscardsLocalWorklinked3527600487\001 path=C:\ctmp\TestFreshCheckoutDiscardsLocalWorklinked3527600487\003\ctmp\TestFreshCheckoutDiscardsLocalWorklinked3527600487\001 branch=agent/agent/222222222222 base=refs/remotes/origin/master
+=== NAME  TestFreshCheckoutDiscardsLocalWork/linked
+    existing_checkout_test.go:307: tracked.txt = "base\r\n", want the uncommitted edit discarded
+2026/10/10 19:57:19 INFO repo checkout: isolated checkout ready url=C:\ctmp\TestFreshCheckoutDiscardsLocalWorkisolated3698628162\001 path=C:\ctmp\TestFreshCheckoutDiscardsLocalWorkisolated3698628162\003\ctmp\TestFreshCheckoutDiscardsLocalWorkisolated3698628162\001 branch=agent/agent/222222222222 base=refs/remotes/origin/master
+=== NAME  TestFreshCheckoutDiscardsLocalWork/isolated
+    existing_checkout_test.go:307: tracked.txt = "base\r\n", want the uncommitted edit discarded
+--- FAIL: TestFreshCheckoutDiscardsLocalWork (0.00s)
+    --- FAIL: TestFreshCheckoutDiscardsLocalWork/linked (2.99s)
+    --- FAIL: TestFreshCheckoutDiscardsLocalWork/isolated (3.47s)
+FAIL
+FAIL	github.com/multica-ai/multica/server/internal/daemon/repocache	3.519s
+FAIL
+exit=1
