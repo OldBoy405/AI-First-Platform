@@ -24,7 +24,7 @@ created: 2026-10-10T16:30:15+08:00
 ## 涉及文件 / 模块
 
 - `skills/shared/crctl/scripts/test/suite-gate.mjs`：`parseFileTap`、`validateExceptions`、`EXCEPTION_KINDS`、`CODES`、`registry.manifest`、`registry.exceptions`（`dep-22`）
-- `skills/shared/crctl/scripts/test/gate-registry.json`：四个 summary 例外条目（`summary-03`～`summary-06`）的根因收敛与撤销
+- `skills/shared/crctl/scripts/test/gate-registry.json`：四个 summary 例外条目（`summary-03`～`summary-06`）的根因收敛与撤销；同时作为**登记面 owner** 维护 `manifest.files`／`manifest.cases` 的登记面自洽（含在本变更内把 `manifest.cases` 全部条目据实收口一次）
 - `skills/shared/crctl/scripts/test/fixtures/`：夹具改为**同安装根内**的临时根（或经绑定归一提供操作根），在隔离子进程内复用既有 `baseEnv`
 - `skills/shared/crctl/scripts/test/crctl-summary.test.mjs`
 
@@ -34,7 +34,7 @@ created: 2026-10-10T16:30:15+08:00
 2. 仍失败面（一条都不能放宽）：必需文件零有效执行、少跑／未登记文件、文件集合不一致、加载失败、TAP 不可判／未收敛、真实未豁免失败、登记 schema／基线字段／例外结构或期限非法。
 3. 摘要口径：不得把有效例外中的实际失败说成「所有测试通过」（§4.11）。
 4. 四个 summary 例外的定点修法：夹具改为**同安装根内**的临时根（或经绑定归一提供操作根），在隔离子进程内复用既有 `baseEnv`；根因转绿后撤销对应例外条目（到期即清、不得静默续期）；修法与撤销同批完成，不留「已转绿但条目仍在」的中间态。
-5. 登记面同步：`manifest`／`exceptions` 的改动必须在同一变更内与夹具改动一致（回滚单位 = 登记面与夹具同批，plan §4 风险表）。
+5. 登记面同步（plan §5.5「登记面所有权」）：`manifest`／`exceptions` 的改动必须在同一变更内与夹具改动一致（回滚单位 = 登记面与夹具同批，plan §4 风险表）；本 TASK 是**登记面 owner**——(a) 保持 `SUITE_MANIFEST_FILE_DRIFT`（磁盘集合 ≠ `manifest.files`）与「零有效执行」仍为**硬失败**，不随 FR-12 的数量下降 warning 一并放宽；(b) 在其变更内把 `manifest.cases` 全部条目（含 `crctl.test.mjs`）据实收口为该文件真实顶层用例数并留证；(c) 新建测试文件的登记责任不在本 TASK，由产生文件的那张卡同批落盘（本 CR：TASK-15／TASK-17——`manifest.cases` 缺项是非零退出，见 `suite-gate.mjs:452`）。
 
 ## 验收条件
 
@@ -48,7 +48,7 @@ created: 2026-10-10T16:30:15+08:00
 ## 完成标志
 
 - 数量下降降级为 warning 且全部仍拒绝面有用例覆盖；四个 summary 宿主例外根因收敛、条目撤销，`cmd-10` 与 `cmd-11` 真实执行退出码 0 并留证；
-- `gate-registry.json` 的 manifest／exceptions 与夹具改动同批落盘（回滚单位一致）；
+- `gate-registry.json` 的 manifest／exceptions 与夹具改动同批落盘（回滚单位一致）；登记面自洽：`manifest.files` 与本 TASK 完成时刻磁盘测试文件集合严格相等、`manifest.cases` 每条目均为该文件真实顶层用例数且无缺项（收口事实与实测值写入结果）；
 - 本 TASK 在 `tasks/_index.yml` 即时标记 `done`。
 
 ## 接口契约
@@ -59,5 +59,5 @@ created: 2026-10-10T16:30:15+08:00
 
 产出（供 TASK-17 与后续 CR 消费，消费方不得缩写）：
 - `skills/shared/crctl/scripts/test/suite-gate.mjs` 新增 warning code `SUITE_COUNT_BELOW_BASELINE_WARN`（SDD §2.2 code 枚举，`{code,message,ref?}` 形状）并保留既有 `CODES`／`EXCEPTION_KINDS` 语义；
-- `gate-registry.json`：`exceptions` 中四个 summary 宿主条目撤销后的空集（或按实际收敛结论据实登记，并写明未收敛原因）；`manifest` 与 `stateMachine`（由 TASK-07 更新为 transitions=32）互不影响；
+- `gate-registry.json`：`exceptions` 中四个 summary 宿主条目撤销后的空集（或按实际收敛结论据实登记，并写明未收敛原因）；`manifest` 与 `stateMachine`（由 TASK-07 更新为 transitions=32）互不影响；登记面契约（供 TASK-15／TASK-17 消费，不得缩写）：`manifest.files`／`manifest.cases` 是「磁盘集合 ≡ 登记集合」的严格相等面，新建测试文件的卡必须与文件同批登记，本 TASK 负责该面的硬失败语义与基线收口；
 - 夹具契约：临时根位于同一安装根内、复用既有 `baseEnv`、隔离子进程内执行——TASK-17 的实际发布生效核对不得复用旧「系统临时目录」夹具形态。

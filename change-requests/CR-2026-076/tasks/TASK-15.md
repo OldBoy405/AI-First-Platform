@@ -26,6 +26,7 @@ created: 2026-10-10T16:30:15+08:00
 - `skills/shared/crctl/scripts/lib/owner-source-scan.mjs`：**新建**版本化只读扫描模块（结构参照既有 `lib/*.mjs` 模块形态）
 - `skills/shared/crctl/scripts/crctl.mjs`：`function cmdValidateDimensions(ws, target)`（:1566）与 `function cmdValidate(ws, target, gates)`（:1620）新增只读维度 `owner-source-anomalies`
 - `skills/shared/crctl/scripts/test/owner-source-scan.test.mjs`：**新建**单文件测试（plan §6.2 cmd-06 的第二个文件）
+- `skills/shared/crctl/scripts/test/gate-registry.json`：**同批登记**面——`manifest.files` 追加 `owner-source-scan.test.mjs`，`manifest.cases` 追加该文件的整数基线（实测顶层用例数）；与上面新建的测试文件**同一变更内落盘**（plan §5.5「登记面所有权」第 1 条）
 - `skills/shared/crctl/SKILL.md`：`validate` 维度与「只报告不修复」语义说明（与 TASK-03 的合同文本同步同批口径）
 
 ## 实现要点
@@ -36,6 +37,7 @@ created: 2026-10-10T16:30:15+08:00
 4. 版本化：扫描逻辑落入库内模块文件（可测试、可复用），**不得**做成会话内现写的一次性脚本。
 5. 不建巡检：无定时、无后台、无缓存；一次性调用即得结论。
 6. 与 TASK-06 口径一致：新维度不参与 `evaluatePassCondition`，不引入阻断。
+7. **登记同批（B-1 判据）**：`skills/shared/crctl/scripts/test/` 是 `suite-gate` 的登记目录，磁盘集合与 `manifest.files` 是**严格集合相等**（`suite-gate.mjs:441`／`:531` 比较、`:442`／`:532` 触发 `SUITE_MANIFEST_FILE_DRIFT`；`assertion-sources.mjs:88-97` 非递归取该目录内全部 `*.test.mjs`）。因此新建文件与 `gate-registry.json#manifest.files`／`manifest.cases` 的登记必须在**同一变更**内完成；`manifest.cases` 缺项是非零退出（`suite-gate.mjs:452`），登记同批生效后该文件即进入 `cmd-11` 的 spawn 列表真实执行。
 
 ## 验收条件
 
@@ -47,7 +49,7 @@ created: 2026-10-10T16:30:15+08:00
 
 ## 完成标志
 
-- 版本化只读扫描模块与 `validate` 维度 `owner-source-anomalies` 落地，新测试文件建立；`cmd-06`、`cmd-09` 真实执行退出码 0 并留证；
+- 版本化只读扫描模块与 `validate` 维度 `owner-source-anomalies` 落地，新测试文件建立；`cmd-06`、`cmd-09` 真实执行退出码 0 并留证；新测试文件与 `gate-registry.json` 的 `manifest.files`／`manifest.cases` 登记**同批落盘**（本 TASK 是 `owner-source-scan.test.mjs` 的登记 owner），且该批落盘后 `cmd-11` 的磁盘集合与登记集合仍严格相等；
 - 零写入断言与「状态从 `cr.md` 读取」口径均有用例覆盖，仓库内无巡检／定时／缓存设施新增；
 - 本 TASK 在 `tasks/_index.yml` 即时标记 `done`。
 
@@ -62,4 +64,5 @@ created: 2026-10-10T16:30:15+08:00
 - 新模块导出（逐字）：`skills/shared/crctl/scripts/lib/owner-source-scan.mjs` 的扫描入口（入参 = 知识库操作根；出参 = 异常项数组，每项含 `crId`、`field`／`role`、`value`、`reason`）；
 - `function cmdValidateDimensions(ws, target)`（:1566）新增维度名（逐字）`owner-source-anomalies`；维度结果为只读报告，不产生非零退出（除非既有 `validate` 对结构非法的既有判定触发）；
 - 测试文件 `skills/shared/crctl/scripts/test/owner-source-scan.test.mjs`（plan §6.2 cmd-06 声明的新文件，命名与路径为硬契约，不得改名）；
+- 登记面产出：`gate-registry.json#manifest.files` 含 `owner-source-scan.test.mjs` 且 `manifest.cases` 含其整数基线——两处与文件创建**同批**，供 TASK-11（登记面 owner）与 `cmd-11` 消费（不得拆到其它卡或后续变更）；
 - 「只报告不修复」是跨 TASK 契约：TASK-17 的实际发布生效核对与后续任何 TASK 都不得把该扫描改造成自动修复。

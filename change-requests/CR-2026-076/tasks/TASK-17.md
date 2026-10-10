@@ -24,6 +24,7 @@ created: 2026-10-10T16:30:15+08:00
 ## 涉及文件 / 模块
 
 - `skills/shared/crctl/scripts/test/publish-effectiveness.test.mjs`：**新建**只读单文件测试（tools 仓 CR worktree，`cwd=.`；plan §6.2 cmd-14 声明的新文件，路径与命名为硬契约）
+- `skills/shared/crctl/scripts/test/gate-registry.json`：**同批登记**面——`manifest.files` 追加 `publish-effectiveness.test.mjs`，`manifest.cases` 追加该文件的整数基线（实测顶层用例数）；与上面新建的测试文件**同一变更内落盘**（plan §5.5「登记面所有权」第 1 条）
 - `change-requests/CR-2026-076/test-evidence/effective-version.md`：**新建**平台 Skill／instructions **实际取用版本**记录（含每项 origin `repo／ref／path` 与内容 `sha256`）
 - `change-requests/CR-2026-076/test-evidence/fr14-launch-receipt.md`：由人类 owner（Ray）提供原样启动回执，本 TASK 原样落盘（不加工、不改写）
 - `change-requests/CR-2026-076/test-evidence/fr14-run-behavior.md`：同上，该次 run 在安装环境留下的目标行为证据原样结果
@@ -37,6 +38,7 @@ created: 2026-10-10T16:30:15+08:00
 4. 人类动作与窗口（plan §5.4，责任方 = 人类 owner）：① 按维护来源既有导入／发布流程把本 CR §8 变更的 Skill 目标文本同步到平台；② 构建并安装 multica CLI／daemon 的 CR 版本到安装根；③ 重启桌面监督（daemon）一次；④ 以更新后的**已发布**入口启动一次真实 run（受控任务）；⑤ 提供该次 run 的目标行为证据原样结果。窗口 = M7、本 TASK 执行窗口内、**早于代码审批**，不依赖 merge／writeback。
 5. 证据纪律：①「已人工启动」的自述**不构成证据**，只有可核验产物计入；②平台侧写入动作全部由有权限的人类 owner 执行，agent 不写平台配置；③`test-evidence/` 内不出现未执行却声称通过的行。
 6. 技术中止只修同一环境／事务且不重复 bump；真实 BLOCK 按正常回修；证据 ID 稳定、不机械重编号。
+7. **登记同批（B-1 判据）**：`skills/shared/crctl/scripts/test/` 是 `suite-gate` 的登记目录，磁盘集合与 `manifest.files` 是**严格集合相等**（`suite-gate.mjs:441`／`:531` 比较、`:442`／`:532` 触发 `SUITE_MANIFEST_FILE_DRIFT`；`assertion-sources.mjs:88-97` 非递归取该目录内全部 `*.test.mjs`）。因此新建文件与 `gate-registry.json#manifest.files`／`manifest.cases` 的登记必须在**同一变更**内完成；`manifest.cases` 缺项是非零退出（`suite-gate.mjs:452`），登记同批生效后该文件即进入 `cmd-11` 的 spawn 列表真实执行。
 
 ## 验收条件
 
@@ -48,7 +50,7 @@ created: 2026-10-10T16:30:15+08:00
 
 ## 完成标志
 
-- `publish-effectiveness.test.mjs` 落地，`cmd-14`、`cmd-15` 真实执行退出码 0 并留证；`effective-version.md`、`fr14-launch-receipt.md`、`fr14-run-behavior.md` 三份证据原样在位；
+- `publish-effectiveness.test.mjs` 落地，`cmd-14`、`cmd-15` 真实执行退出码 0 并留证；`effective-version.md`、`fr14-launch-receipt.md`、`fr14-run-behavior.md` 三份证据原样在位；新测试文件与 `gate-registry.json` 的 `manifest.files`／`manifest.cases` 登记**同批落盘**（本 TASK 是 `publish-effectiveness.test.mjs` 的登记 owner），且该批落盘后 `cmd-11` 的磁盘集合与登记集合仍严格相等；
 - 平台同步清单（SDD §8 集合 → 实际取用版本 → origin）完整，且清单可被人类 owner 按同一目标文本回退；
 - 未由 agent 执行任何平台配置写入；本 TASK 在 `tasks/_index.yml` 即时标记 `done`。
 
@@ -63,5 +65,6 @@ created: 2026-10-10T16:30:15+08:00
 产出（供人类代码审批与回写期消费，消费方不得缩写）：
 - 证据文件（路径为硬契约）：`change-requests/CR-2026-076/test-evidence/{effective-version.md, fr14-launch-receipt.md, fr14-run-behavior.md, cmd-14.log, cmd-15.log}`；
 - `publish-effectiveness.test.mjs` 的比较结论形状：逐项 `{ skill, origin: {repo, ref, path}, sha256Repository, sha256Remote, equal }`（Skill）与 `{ instruction, sha256Remote }`（三份 instructions，仅打印）；
+- 登记面产出：`gate-registry.json#manifest.files` 含 `publish-effectiveness.test.mjs` 且 `manifest.cases` 含其整数基线——两处与文件创建**同批**，供 TASK-11（登记面 owner）与 `cmd-11` 消费（不得拆到其它卡或后续变更）；
 - 判据契约（SDD-CLOSE-08，逐字口径）：交付完成 = 「安装后新 run 的目标行为证据 + 实际取用版本记录」；源码合入／构建成功／镜像更新**不构成**完成；
 - 回退契约（plan §4 风险表）：本 TASK 证据与同步清单同批 revert；平台侧消费者切换由人类 owner 按同一清单以仓库目标文本回退。
