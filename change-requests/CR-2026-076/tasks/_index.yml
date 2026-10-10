@@ -1,0 +1,87 @@
+cr-id: CR-2026-076
+tasks:
+  - id: CR-2026-076-TASK-01
+    title: "平台可信绑定：task／来源 Issue 唯一 CR 关联与错误根写前拒绝"
+    status: pending
+    estimate: 16h
+    depends-on: []
+  - id: CR-2026-076-TASK-02
+    title: "任务 Git trust 叠加式 include 与身份保留"
+    status: pending
+    estimate: 12h
+    depends-on: [CR-2026-076-TASK-01]
+  - id: CR-2026-076-TASK-03
+    title: "crctl 绑定归一只读诊断与失败关闭口径 + 合同文本同步"
+    status: pending
+    estimate: 12h
+    depends-on: [CR-2026-076-TASK-01]
+  - id: CR-2026-076-TASK-04
+    title: "review-record 写入与隔离提交原子闭环"
+    status: pending
+    estimate: 16h
+    depends-on: [CR-2026-076-TASK-03]
+  - id: CR-2026-076-TASK-05
+    title: "next 判定优先级与普通 BLOCK 回修"
+    status: pending
+    estimate: 12h
+    depends-on: [CR-2026-076-TASK-04]
+  - id: CR-2026-076-TASK-06
+    title: "合法本地信任贯通与漂移降级 warning 分流"
+    status: pending
+    estimate: 12h
+    depends-on: [CR-2026-076-TASK-03]
+  - id: CR-2026-076-TASK-07
+    title: "默认 coding 取消重复开发启动确认（状态机／门禁／模板／合同同步）"
+    status: pending
+    estimate: 20h
+    depends-on: [CR-2026-076-TASK-05, CR-2026-076-TASK-06]
+  - id: CR-2026-076-TASK-08
+    title: "认证人类「继续」一次一 cycle：review-loop reset 判定与幂等"
+    status: pending
+    estimate: 12h
+    depends-on: [CR-2026-076-TASK-04]
+  - id: CR-2026-076-TASK-09
+    title: "单一 Git tree 比较缝、合入等价推进与发布 source 固定"
+    status: pending
+    estimate: 20h
+    depends-on: [CR-2026-076-TASK-06]
+  - id: CR-2026-076-TASK-10
+    title: "freshness 三段路由与 workspace inspect 等价结论输出"
+    status: pending
+    estimate: 12h
+    depends-on: [CR-2026-076-TASK-09]
+  - id: CR-2026-076-TASK-11
+    title: "suite-gate 数量下降降为 warning 与四个 summary 宿主例外根因收敛"
+    status: pending
+    estimate: 16h
+    depends-on: [CR-2026-076-TASK-03]
+  - id: CR-2026-076-TASK-12
+    title: "Windows 文档链真实扫描：node:path.basename 与 docCount 断言"
+    status: pending
+    estimate: 8h
+    depends-on: []
+  - id: CR-2026-076-TASK-13
+    title: "owner 值域校验（user_id）与 register／owner-set 契约同步"
+    status: pending
+    estimate: 12h
+    depends-on: []
+  - id: CR-2026-076-TASK-14
+    title: "source 自动绑定、空值语义与注册前／使用前双防线"
+    status: pending
+    estimate: 12h
+    depends-on: [CR-2026-076-TASK-13]
+  - id: CR-2026-076-TASK-15
+    title: "历史事实只读扫描与 validate 只读维度 owner-source-anomalies"
+    status: pending
+    estimate: 12h
+    depends-on: [CR-2026-076-TASK-13, CR-2026-076-TASK-14]
+  - id: CR-2026-076-TASK-16
+    title: "PRD 交接完整性核对记录"
+    status: pending
+    estimate: 8h
+    depends-on: []
+  - id: CR-2026-076-TASK-17
+    title: "实际发布生效核对：平台取用版本、已安装入口与真实 run 行为证据"
+    status: pending
+    estimate: 16h
+    depends-on: [CR-2026-076-TASK-01, CR-2026-076-TASK-02, CR-2026-076-TASK-03, CR-2026-076-TASK-04, CR-2026-076-TASK-05, CR-2026-076-TASK-06, CR-2026-076-TASK-07, CR-2026-076-TASK-08, CR-2026-076-TASK-09, CR-2026-076-TASK-10, CR-2026-076-TASK-11, CR-2026-076-TASK-12, CR-2026-076-TASK-13, CR-2026-076-TASK-14, CR-2026-076-TASK-15, CR-2026-076-TASK-16]
