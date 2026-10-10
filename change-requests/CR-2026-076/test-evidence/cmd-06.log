@@ -1,0 +1,43 @@
+# cmd-06 = register-tx.test.mjs + owner-source-scan.test.mjs（后者由 TASK-15 新建）；本行为本 TASK 真实执行的 register-tx.test.mjs 单文件输出
+✔ TASK-05 AC-1：happy path 三账本+trailer commit+lease push+三仓 worktree (3139.2927ms)
+✔ origin 归因字段：origin 缺省落空串、合法值入 cr.md+_backlog、非法值硬失败零写入 (7460.3805ms)
+✔ TASK-05 AC-1：同 key 同输入重跑复用 CR-ID/txId，零重复副作用 (3277.2637ms)
+✔ TASK-05 AC-1：同 key 不同输入返回 REGISTRATION_INPUT_MISMATCH 且零写入 (3074.1297ms)
+✔ TASK-05 AC-1：change-requests dirty 返回 REGISTRATION_TRUNK_DIRTY 且仓库零写入 (1335.7487ms)
+✔ P2：docs dirty 但 change-requests clean 时允许注册 (3075.9109ms)
+✔ TASK-05 AC-1：register-after-commit fault 重跑同 CR-ID/txId 续完 push (3215.8372ms)
+✔ TASK-05 AC-2：第一仓 worktree 成功后 fault，重跑只补后续仓 (3100.3767ms)
+✔ TASK-05 AC-1/5.1：push 竞争（remote 被他人推进）时 rebuild 到新 origin base (3915.8179ms)
+✔ review repair：register remote stale 后用户改动出现时拒绝 reset --hard (2190.9965ms)
+✔ TASK-05 AC-1：副作用出现后 graph 变化返回 GRAPH_CHANGED_DURING_TRANSACTION (1730.1451ms)
+✔ TASK-05 AC-2：inspect 七分类 + ensure resume 只补缺 + cleanup 零风险删除 (4416.0706ms)
+✔ TASK-10：register 成功 → outbox 发 status+owners 事件（同真实 commit SHA、owners changes 恰 3 项）；幂等重跑零事件 (3194.4516ms)
+✔ CR-2026-044 TASK-05: workspace inspect 输出 authority operationalWorkspace；missing 时结构化错误不猜路径 (3527.5237ms)
+✔ CR-2026-046 TASK-01 AC-1：stale local trunk 时新 CR 分支基于 fetch 后的远端 trunk (2073.4071ms)
+✔ CR-2026-046 TASK-01 AC-2：仅远端有 CR 分支时 fetch 后恢复，不另建历史 (1961.4464ms)
+✔ CR-2026-046 TASK-01 AC-3a：fetch 失败抛 WORKSPACE_TRUNK_UNAVAILABLE 且零 CR 资源 (1278.4966ms)
+✔ CR-2026-046 TASK-01 AC-3b：远端 trunk 已删除且本地有 stale tracking ref，fetch --prune 后结构化失败 (1473.9852ms)
+✔ CR-2026-046 TASK-01 AC-4：healthy / branch-only 分类不触发 fetch（bogus origin 下仍成功） (1994.7326ms)
+✔ CR-2026-057 FR-12/AC-12：缺 flag 与 6 类非法输入 → REGISTER_VERSION_INVALID 且零写入 (8474.481ms)
+✔ CR-2026-060 AC-01：缺/空 --target-spec-id → REGISTER_TARGET_SPEC_ID_REQUIRED 且零写入（先于 BAD_ARGS） (3588.807ms)
+✔ CR-2026-060 AC-01：非法 --target-spec-id → REGISTER_TARGET_SPEC_ID_INVALID 且零写入 (8295.2714ms)
+✔ CR-2026-057 FR-12/AC-12：unassigned / 0.30 / v0.30 → 成功且 cr.md 与 JSON targetVersion 为规范化值 (12212.0019ms)
+✔ CR-2026-057 FR-12/AC-12：同 key 规范化同值续跑；规范化异值 → REGISTRATION_INPUT_MISMATCH (3196.0757ms)
+✔ CR-2026-060 AC-01：成功注册写入双账本 target-spec-id 全等 + snake_case 同构 JSON + registrationAt 三处相等 + 单投影 recovery 含 --target-spec-id (3166.3733ms)
+✔ CR-2026-060 AC-02：mode 唯一裁决——单侧缺失 → pre-review GATE_BLOCKED/TARGET_SPEC_AUTHORITY_MISSING 零写入 (3117.1082ms)
+✔ CR-2026-074 TASK-02 AC-04：init 后首 CR——三仓 worktree 建立、主 KB clean、runtime ignore=*、根 .gitignore 不变；重入无重复 CR (4093.8326ms)
+✔ CR-2026-074 TASK-03 AC-11：历史指纹矩阵——manual×省略→MISMATCH 零账本重写；manual×manual→续跑；显式路径同值→noop；空串×省略/显式空串→指纹匹配 (12653.2595ms)
+✔ CR-2026-074 TASK-03 验收 2：省略与显式空串产出的 cr.md/backlog source 均为空串，且同 key 重放互为 noop (5099.9878ms)
+✔ CR-2026-074 TASK-03 验收 3：非空 source 的 register CLI 不新增校验，产物值原样持久化（dep-14 writer 合同不变，CLI 不代执行 writer） (6822.1048ms)
+✔ CR-2026-076 TASK-13 AC-SUP-01：register 三角色均接受成员 user_id（可指向同一成员），写入值为 user_id (2950.5845ms)
+✔ CR-2026-076 TASK-13 AC-SUP-01：register 拒绝显示名 / membership ID / 非本 workspace user_id / 非 UUID 形状（四类，均零写入） (4909.0717ms)
+✔ CR-2026-076 TASK-13 AC-SUP-02／AC-SUP-07：register 成员查询失败 → ENVIRONMENT_MISMATCH 技术失败，零写入（不占 registration_key） (1164.8703ms)
+ℹ tests 33
+ℹ suites 0
+ℹ pass 33
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 135252.7146
+exit=0
