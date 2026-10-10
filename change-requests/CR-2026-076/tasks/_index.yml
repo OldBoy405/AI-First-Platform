@@ -13,12 +13,14 @@ tasks:
     depends-on: [CR-2026-076-TASK-01]
   - id: CR-2026-076-TASK-03
     title: "crctl 绑定归一只读诊断与失败关闭口径 + 合同文本同步"
-    status: pending
+    status: done
+    done-at: "2026-10-10T19:33:10+08:00"
     estimate: 12h
     depends-on: [CR-2026-076-TASK-01]
   - id: CR-2026-076-TASK-04
     title: "review-record 写入与隔离提交原子闭环"
-    status: pending
+    status: done
+    done-at: "2026-10-10T19:33:10+08:00"
     estimate: 16h
     depends-on: [CR-2026-076-TASK-03]
   - id: CR-2026-076-TASK-05
@@ -38,7 +40,8 @@ tasks:
     depends-on: [CR-2026-076-TASK-05, CR-2026-076-TASK-06]
   - id: CR-2026-076-TASK-08
     title: "认证人类「继续」一次一 cycle：review-loop reset 判定与幂等"
-    status: pending
+    status: done
+    done-at: "2026-10-10T19:33:11+08:00"
     estimate: 12h
     depends-on: [CR-2026-076-TASK-04]
   - id: CR-2026-076-TASK-09
@@ -53,7 +56,8 @@ tasks:
     depends-on: [CR-2026-076-TASK-09]
   - id: CR-2026-076-TASK-11
     title: "suite-gate 数量下降降为 warning 与四个 summary 宿主例外根因收敛"
-    status: pending
+    status: done
+    done-at: "2026-10-10T19:33:11+08:00"
     estimate: 16h
     depends-on: [CR-2026-076-TASK-03]
   - id: CR-2026-076-TASK-12
