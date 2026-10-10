@@ -1,24 +1,23 @@
 cr-id: CR-2026-076
 review-type: dev-plan
 reviewer: "OldBoy405"
-reviewed-at: "2026-10-10T16:40:58+08:00"
-verdict: block
-repair-target: write-dev-plan
-blockers:
-  - "本轮新增：B-1 AC-23 的「文件集合一致性」在最终状态不可成立——TASK-15 新建 `skills/shared/crctl/scripts/test/owner-source-scan.test.mjs`（TASK-15 第 64 行）、TASK-17 新建 `skills/shared/crctl/scripts/test/publish-effectiveness.test.mjs`（TASK-17 第 26 行），两文件均落在 suite-gate 的登记目录内，但 17 张 TASK 卡中没有任何一张负责把这两个新文件登记进 `gate-registry.json` 的 `manifest.files`（全仓唯一的「登记面同步」条目在 TASK-11 第 37 行，其绑定范围只是「manifest 改动与夹具改动同批」）。本轮实测判据：`suite-gate.mjs` 第 437／531 行用 `readTestFileSet(toolsRoot)`（`assertion-sources.mjs` 第 88-97 行，取登记目录内全部 `*.test.mjs`）与 `manifest.files` 做严格集合相等比较，不等即触发 `SUITE_MANIFEST_FILE_DRIFT`（第 442／532 行）；TASK-11 第 46 行明确把「少跑／未登记文件、文件集合不一致」保留为仍须非零退出的面；且 `suite-gate.mjs` 第 536 行只 spawn `declared` 列表，未登记文件不会被全仓门禁真实执行。后果：TASK-11（M5）先跑时 `cmd-11` 记录为绿，TASK-15／TASK-17（M6／M7）落盘后最终状态必为红，且这两个新文件从未被 `cmd-11` 执行——AC-23（SDD §6.2、证据 `cmd-11`）在最终状态不可达，plan §5.1 第 2 条「每条 `cmd-NN` 真实执行、退出码落盘」也不能据实际状态成立。修订入口：plan §6.2／§5.5 的交付项与 TASK-11／TASK-15／TASK-17 的「涉及文件」与「完成标志」，须指定登记 owner 并写明「新建测试文件与 `gate-registry.json` 登记同批落盘」。"
+reviewed-at: "2026-10-10T16:59:46+08:00"
+verdict: pass
+blockers: []
 dimensions:
   sdd-to-plan: "pass"
-  plan-to-tasks: "block"
+  plan-to-tasks: "pass"
   task-executability: "pass"
   dependency-topology: "pass"
   interface-contracts: "pass"
-  acceptance-verifiability: "block"
+  acceptance-verifiability: "pass"
   scope-and-simplicity: "pass"
   risk-and-rollback: "pass"
   reviewer-model: "Gobao/deepseek-flash（pi runner，PI_PROVIDER=Gobao）"
 suggestions:
-  - "本轮新增：plan §1 里程碑表 M3 行的「预估（人天当量）5.0」与其 TASK-06／TASK-07／TASK-08 的 1.5＋2.5＋1.5＝5.5 不一致，且「合计约 28 人天当量」与 `tasks/_index.yml` 实测 228h（28.5 人天）差 0.5 人天；属普通工时口径差异，未揭示任务拆分／依赖／验收结构问题，建议随本轮回修把 M3 行改为 5.5 并据实写合计。"
-  - "本轮新增：plan §5.5 的 `cmd-04` 条目与 TASK-03 第 29 行提到「本 TASK 追加用例后按 `cmd-11` 的登记面据实更新」`crctl.test.mjs` 的用例基线，但 `manifest.cases` 的刷新同样没有 TASK owner（与 B-1 同源）；因 FR-12 把数量下降降为 warning，这一项不构成硬失败，建议与 B-1 的登记 owner 一并落定。"
+  - "已解决：B-1（AC-23 文件集合一致性在最终状态不可成立）——plan §5.5 末尾新增「登记面所有权」契约块三项：① 谁新建文件谁同批登记：`manifest.files` 追加 ＋ 新文件 `manifest.cases` 整数基线，本 CR 的登记 owner 为此前缺失的两张卡 TASK-15（`owner-source-scan.test.mjs`，cmd-06）与 TASK-17（`publish-effectiveness.test.mjs`，cmd-14），并已分别写进两卡「涉及文件／实现要点 7／完成标志／接口契约产出」；② 登记面 owner = TASK-11，保持 `SUITE_MANIFEST_FILE_DRIFT`（磁盘集合 ≠ `manifest.files`）与「零有效执行」仍为硬失败、不随 FR-12 数量下降 warning 放宽，并在其变更内收口 `manifest.cases` 全部条目；③ 基线为下界，任何净减少须同批下调并写明原因。plan §6.2 的 cmd-04／cmd-06／cmd-11／cmd-14 行、§6.1 FR-12 行与 §7 AC-23 行均已同步标注登记面。本轮逐项复核判据（tools CR worktree 只读）：`suite-gate.mjs:441`／`:531` 为严格集合相等比较、`:442`／`:532` 触发 `SUITE_MANIFEST_FILE_DRIFT`、`:536` 只 spawn `declared` 列表；`assertion-sources.mjs:88-97` 非递归取登记目录内全部 `*.test.mjs`；`:452` 缺 `manifest.cases` 基线为 `SUITE_MANIFEST_CASE_DROP`（TASK-11 的仍拒绝面保留该条）；现状 `manifest.files` 28 条 ≡ 磁盘 28 个 `*.test.mjs`（双向排序相等、`manifest.cases` 28 条全为整数）。M5→M6→M7 顺序下每次落盘均同批，`cmd-11` 在最终状态可达且两个新文件进入真实执行面，残余 0 条。"
+  - "已解决：上一轮 suggestion-1（工时口径）——plan §1 M3 行由 5.0 改为 5.5，合计行改为「28.5 人天当量（228h = 各 TASK 卡 `estimate` 之和，与 `tasks/_index.yml` 的 `taskCount=17`／`totalEstimateHours=228` 一致）」。本轮复算：七个里程碑行（3.5／5.0／5.5／4.0／3.0／5.5／2.0）与 §3 逐 TASK 之列、17 张卡 `estimate` 之和 228h（28.5 人天）三者同值，无残余口径差。"
+  - "已解决：上一轮 suggestion-2（`manifest.cases` 刷新 owner）——已由 §5.5「登记面所有权」第 2／3 条落定：`manifest.cases` 的全部条目（含 `crctl.test.mjs`）由 TASK-11 在其变更内据实收口一次并留证，基线为下界、净减少须同批下调；cmd-04 行同步改写为「凡改动顶层用例数的 TASK 必须同批更新」＋「本 CR 由 TASK-11 统一收口」。残余观察（不构成 blocker、无需回修）：TASK-03 第 29 行旧措辞「本 TASK 追加后按 cmd-11 登记面据实更新」仍在，与下界语义相容（追加不会使基线失真），不产生双 owner 冲突。"
 review-loop:
-  current-attempt: 1
-subject-sha256: f8b6f5362f48fda2185e07bc10a1d741a5e996461d8805f2900c1b244283500d
+  current-attempt: 2
+subject-sha256: 0d865cb612add41f5f50dce7db0493ba285328f6a7cff4b50a38e926d25952a6
