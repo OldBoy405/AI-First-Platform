@@ -3,13 +3,13 @@ $ node skills/shared/crctl/scripts/test/suite-gate.mjs --run
 --- stdout ---
 {
   "schema": "crctl-suite-gate-report/v1",
-  "command": "node --test --test-reporter=tap <30 files> (pool=15, availableParallelism=16)",
+  "command": "node --test --test-reporter=tap <31 files> (pool=15, availableParallelism=16)",
   "observer": "tap-per-file",
-  "duration_ms": 909338,
+  "duration_ms": 951779,
   "converged": true,
   "exit_code": 0,
-  "files_executed": 30,
-  "cases_executed": 753,
+  "files_executed": 31,
+  "cases_executed": 756,
   "skipped_file_level": 0,
   "files": [
     {
@@ -20,7 +20,7 @@ $ node skills/shared/crctl/scripts/test/suite-gate.mjs --run
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 909334
+      "duration_ms": 951252
     },
     {
       "file": "caller-contract.test.mjs",
@@ -30,7 +30,7 @@ $ node skills/shared/crctl/scripts/test/suite-gate.mjs --run
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 731
+      "duration_ms": 739
     },
     {
       "file": "check-agents-contract.test.mjs",
@@ -40,7 +40,7 @@ $ node skills/shared/crctl/scripts/test/suite-gate.mjs --run
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 200
+      "duration_ms": 213
     },
     {
       "file": "check-skill-matrix.test.mjs",
@@ -50,7 +50,7 @@ $ node skills/shared/crctl/scripts/test/suite-gate.mjs --run
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 1305
+      "duration_ms": 1372
     },
     {
       "file": "checkpoint-tx.test.mjs",
@@ -60,7 +60,7 @@ $ node skills/shared/crctl/scripts/test/suite-gate.mjs --run
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 448527
+      "duration_ms": 459066
     },
     {
       "file": "competitive-report.test.mjs",
@@ -70,7 +70,7 @@ $ node skills/shared/crctl/scripts/test/suite-gate.mjs --run
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 37909
+      "duration_ms": 38280
     },
     {
       "file": "contract-scan.test.mjs",
@@ -80,7 +80,7 @@ $ node skills/shared/crctl/scripts/test/suite-gate.mjs --run
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 4560
+      "duration_ms": 5069
     },
     {
       "file": "crctl-summary.test.mjs",
@@ -90,7 +90,7 @@ $ node skills/shared/crctl/scripts/test/suite-gate.mjs --run
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 20621
+      "duration_ms": 20580
     },
     {
       "file": "crctl.test.mjs",
@@ -100,7 +100,7 @@ $ node skills/shared/crctl/scripts/test/suite-gate.mjs --run
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 510275
+      "duration_ms": 526207
     },
     {
       "file": "durable-tx.test.mjs",
@@ -110,7 +110,7 @@ $ node skills/shared/crctl/scripts/test/suite-gate.mjs --run
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 1386
+      "duration_ms": 1381
     },
     {
       "file": "fault-harness.test.mjs",
@@ -120,7 +120,7 @@ $ node skills/shared/crctl/scripts/test/suite-gate.mjs --run
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 19145
+      "duration_ms": 19171
     },
     {
       "file": "guard-protected-paths.test.mjs",
@@ -130,7 +130,7 @@ $ node skills/shared/crctl/scripts/test/suite-gate.mjs --run
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 934
+      "duration_ms": 936
     },
     {
       "file": "lint-prompts.test.mjs",
@@ -140,7 +140,7 @@ $ node skills/shared/crctl/scripts/test/suite-gate.mjs --run
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 4280
+      "duration_ms": 4397
     },
     {
       "file": "merge-tx.test.mjs",
@@ -150,7 +150,7 @@ $ node skills/shared/crctl/scripts/test/suite-gate.mjs --run
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 441531
+      "duration_ms": 453186
     },
     {
       "file": "owner-source-scan.test.mjs",
@@ -160,7 +160,7 @@ $ node skills/shared/crctl/scripts/test/suite-gate.mjs --run
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 16153
+      "duration_ms": 16165
     },
     {
       "file": "pipeline-structure.test.mjs",
@@ -170,7 +170,7 @@ $ node skills/shared/crctl/scripts/test/suite-gate.mjs --run
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 556
+      "duration_ms": 545
     },
     {
       "file": "planning-entry.test.mjs",
@@ -180,7 +180,17 @@ $ node skills/shared/crctl/scripts/test/suite-gate.mjs --run
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 27977
+      "duration_ms": 28101
+    },
+    {
+      "file": "publish-effectiveness.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 3,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 1848
     },
     {
       "file": "register-tx.test.mjs",
@@ -190,7 +200,7 @@ $ node skills/shared/crctl/scripts/test/suite-gate.mjs --run
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 510435
+      "duration_ms": 524471
     },
     {
       "file": "skill-scope.test.mjs",
@@ -200,7 +210,7 @@ $ node skills/shared/crctl/scripts/test/suite-gate.mjs --run
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 200
+      "duration_ms": 203
     },
     {
       "file": "suite-gate-count.test.mjs",
@@ -210,7 +220,7 @@ $ node skills/shared/crctl/scripts/test/suite-gate.mjs --run
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 1477
+      "duration_ms": 1495
     },
     {
       "file": "terminal-audit.test.mjs",
@@ -220,7 +230,7 @@ $ node skills/shared/crctl/scripts/test/suite-gate.mjs --run
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 145733
+      "duration_ms": 144795
     },
     {
       "file": "test-cr.test.mjs",
@@ -230,7 +240,7 @@ $ node skills/shared/crctl/scripts/test/suite-gate.mjs --run
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 78547
+      "duration_ms": 78130
     },
     {
       "file": "trace-outbox.test.mjs",
@@ -240,7 +250,7 @@ $ node skills/shared/crctl/scripts/test/suite-gate.mjs --run
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 285423
+      "duration_ms": 285455
     },
     {
       "file": "trace-semantic.test.mjs",
@@ -250,7 +260,7 @@ $ node skills/shared/crctl/scripts/test/suite-gate.mjs --run
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 1068
+      "duration_ms": 977
     },
     {
       "file": "upgrade-check.test.mjs",
@@ -260,7 +270,7 @@ $ node skills/shared/crctl/scripts/test/suite-gate.mjs --run
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 42496
+      "duration_ms": 42461
     },
     {
       "file": "version-set.test.mjs",
@@ -270,7 +280,7 @@ $ node skills/shared/crctl/scripts/test/suite-gate.mjs --run
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 256840
+      "duration_ms": 258017
     },
     {
       "file": "workspace-freshness.test.mjs",
@@ -280,7 +290,7 @@ $ node skills/shared/crctl/scripts/test/suite-gate.mjs --run
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 442694
+      "duration_ms": 455406
     },
     {
       "file": "workspace-resolver.test.mjs",
@@ -290,7 +300,7 @@ $ node skills/shared/crctl/scripts/test/suite-gate.mjs --run
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 3994
+      "duration_ms": 3951
     },
     {
       "file": "writeback-tx.test.mjs",
@@ -300,7 +310,7 @@ $ node skills/shared/crctl/scripts/test/suite-gate.mjs --run
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 887399
+      "duration_ms": 931168
     },
     {
       "file": "yaml-subset.test.mjs",
@@ -310,7 +320,7 @@ $ node skills/shared/crctl/scripts/test/suite-gate.mjs --run
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 236
+      "duration_ms": 196
     }
   ],
   "failures": [],
@@ -383,7 +393,7 @@ $ node skills/shared/crctl/scripts/test/suite-gate.mjs --run
     }
   ],
   "registry": {
-    "sha256": "4cdf2e03d58d1e8b2cf1324a2a391f53359b9e9068fffcdf9120c4045ee44af3",
+    "sha256": "9caf3e248e5a6a361335c83eead4b710484880a4cefc0402b4fcec277674850b",
     "exceptions_count": 0
   },
   "platform": {
@@ -392,11 +402,11 @@ $ node skills/shared/crctl/scripts/test/suite-gate.mjs --run
   },
   "verdict": "pass"
 }
-suite-gate: command=node --test --test-reporter=tap <30 files> (pool=15, availableParallelism=16)
-suite-gate: observer=tap-per-file duration_ms=909338 converged=true exit_code=0
-suite-gate: files_executed=30 cases_executed=753 skipped_file_level=0
+suite-gate: command=node --test --test-reporter=tap <31 files> (pool=15, availableParallelism=16)
+suite-gate: observer=tap-per-file duration_ms=951779 converged=true exit_code=0
+suite-gate: files_executed=31 cases_executed=756 skipped_file_level=0
 suite-gate: failures=0
-suite-gate: registry_sha256=4cdf2e03d58d1e8b2cf1324a2a391f53359b9e9068fffcdf9120c4045ee44af3 exceptions_count=0
+suite-gate: registry_sha256=9caf3e248e5a6a361335c83eead4b710484880a4cefc0402b4fcec277674850b exceptions_count=0
 suite-gate: verdict=pass
 
 --- stderr ---
