@@ -6,12 +6,14 @@ sdd-ref: "change-requests/CR-2026-076/sdd.md"
 target-version: 0.49
 status: draft
 created: 2026-10-10T16:15:00+08:00
-updated: 2026-10-10T18:10:00+08:00
+updated: 2026-10-11T22:30:00+08:00
 ---
 
 # CR-2026-076 开发计划
 
 > 修订 r2（2026-10-10，TASK-01 载体裁定同步；裁定原文 = Issue AIFI-62 评论 `01a1253d-ccdf-7112-947b-33f17dc212da`）：SDD r4 已按 §4.1 的 2a／2b 关联事实来源（既有认领载荷附加投影，`dep-35`）同步；本计划只同步 §5.5 的 cmd-01 观测面与静态前提（仍为 DB-free），TASK 集、依赖图、里程碑与验收口径不变。
+
+> 修订 r3（2026-10-11，计划／TASK 回修接续；授权原文 = Issue AIFI-62 评论 `01a12aff-3eae-74c4-829d-c8f8d5d7d6dc`，两轮裁定原文 = `01a1253d-ccdf-7112-947b-33f17dc212da`／`01a12960-0a7c-72ef-9d02-24d48280f35e`）：把两轮已裁定、已落盘但尚未写进本计划的两项交付面据实补齐——① §3 TASK-01 行与 §6.1 FR-01 行补「关联载体 = 既有认领载荷的附加投影」（SDD §3.4／§3.5，`dep-35`）；② §5.5／§6.2／§7 的 `cmd-03` 已按裁定改为只读符号核实口径（`dep-36`），此处逐字保留。TASK 集、依赖图、里程碑、`cmd-01`～`cmd-15` 命令集合与验收门槛均不变：无新增／删除 TASK、无新增命令、不扩大范围。
 
 承接已审批 `sdd.md`（`review-annotations/sdd.yml` attempt 3/3 PASS、`traceability.yml#reviews.tech-design` 3 次尝试末次 pass、`approval.yml#tech-design` 由 `crctl approve` 于 `2026-10-10T16:00:11+08:00` 以 `evidence-digest=aa94a012da350d702cd90ae41a7d0942d20f2809dac30e01e8acde859ac4af15` 落盘）。本计划的范围 = SDD §9 `scope_in` 的 **FR-01～FR-14、FR-SUP-01～FR-SUP-05、FR-SUP-06（错误根防线部分）、FR-SUP-07（写入边界安全校验与诊断口径部分）、FR-SUP-08、FR-SUP-09（本 CR 部分）** 与 **AC-01～AC-24、AC-SUP-01～AC-SUP-10（本 CR 侧）**；`scope_out`、`zero_diff`、`follow_up` 一律不做（尤其：不建影子账本、不新增 crctl 子命令、不改签名算法与 `rules.json` 白名单、不做平台 CR 投影 reconcile 根治、不把 AIFI-60 承接项做成本 CR 交付）。
 
@@ -62,7 +64,7 @@ M7  TASK-17（平台消费者取用版本 + 已安装入口 + 真实 run 证据�
 
 | TASK | 主责仓 | 依赖 | 主要产出 | 预估 |
 |---|---|---|---|---|
-| CR-2026-076-TASK-01 | multica | — | `server/internal/daemon/pipeline_task.go`（`resolveTaskWorkspaceBinding` 新增唯一正式 CR 关联段 + 写前拒绝）与其包内测试 | 2.0 |
+| CR-2026-076-TASK-01 | multica | — | `server/internal/daemon/pipeline_task.go`（`resolveTaskWorkspaceBinding` 新增唯一正式 CR 关联段 + 写前拒绝）与其包内测试；关联载体 = 既有认领载荷的附加投影（`AgentTaskResponse.cr_id`／`issue_cr_ids` 由 `server/internal/handler/daemon.go#buildClaimedTaskResponse` 投影，来源 Issue 关联经 `server/pkg/db/queries/agent.sql` 只读查询反查；不新增关联存储、不新增查询机制、不新增 endpoint，SDD §3.4／§3.5，`dep-35`） | 2.0 |
 | CR-2026-076-TASK-02 | multica | TASK-01 | `configureTaskGitEnvironment` 叠加式 `include` 配置；`repocache` 第二写入点核实结论与必要收口（核实形式 = `cmd-03` 只读符号观测；该包全文件测试的既有平台失败另作留证、不进本 CR 阻断命令集）；英文注释 | 1.5 |
 | CR-2026-076-TASK-03 | tools | TASK-01 | `crctl` 诊断面（只读核对与失败关闭）用例补齐；`skills/shared/crctl/SKILL.md` 合同文本同步 | 1.5 |
 | CR-2026-076-TASK-04 | tools | TASK-03 | `cmdReviewRecord` 的 write-set／隔离提交／恢复／幂等（复用 `durable-tx` 与 `ledgerTxKey`；不新增幂等账本） | 2.0 |
@@ -167,7 +169,7 @@ M7  TASK-17（平台消费者取用版本 + 已安装入口 + 真实 run 证据�
 
 | FR/关键AC | SDD交付项 | 主责/关联TASK | 验收证据 | 回滚 |
 |---|---|---|---|---|
-| FR-01 机器保证启动前可信绑定 | §4.1 判定顺序 2a、§6.1（`resolveTaskWorkspaceBinding` 新增 task／来源 Issue 唯一正式 CR 关联段，`dep-5`；crctl `bindTaskWorkspace` 保持失败关闭，`dep-1`／`dep-2`） | CR-2026-076-TASK-01（关联 TASK-03） | cmd-01 + cmd-04 | revert TASK-01；TASK-03 消费绑定对发布面，按逆拓扑先回退 TASK-03 |
+| FR-01 机器保证启动前可信绑定 | §4.1 判定顺序 2a、§6.1（`resolveTaskWorkspaceBinding` 新增 task／来源 Issue 唯一正式 CR 关联段，`dep-5`；关联事实载体 = 既有认领载荷的附加投影 `AgentTaskResponse.cr_id`／`issue_cr_ids`，SDD §3.4／§3.5，`dep-35`；crctl `bindTaskWorkspace` 保持失败关闭，`dep-1`／`dep-2`） | CR-2026-076-TASK-01（关联 TASK-03） | cmd-01 + cmd-04 | revert TASK-01；TASK-03 消费绑定对发布面，按逆拓扑先回退 TASK-03 |
 | FR-02 任务 Git trust 保留用户身份 | §4.2 + D-01、§2.2 E6（`GIT_CONFIG_GLOBAL` 叠加式 `include`，`dep-6`；`repocache` 第二写入点核实） | CR-2026-076-TASK-02 | cmd-02 + cmd-03 | revert TASK-02；TASK-01 是其上游生产者，须最后回退 |
 | FR-03 review-record 写入与隔离提交原子闭环 | §4.3 + SDD-CLOSE-01（write-set／隔离提交／恢复／幂等；复用 `dep-12`、`dep-13`、`dep-34`，不新增第二幂等账本） | CR-2026-076-TASK-04 | cmd-04 + cmd-05 | 逆拓扑：先 revert TASK-05、TASK-08（消费者），再 revert TASK-04 |
 | FR-04 普通 BLOCK 回修与 next 收尾一致 | §4.4（`cmdNext` 判定优先级与对象变化分支；`dep-16`、`dep-17`） | CR-2026-076-TASK-05 | cmd-04 | revert TASK-05；TASK-07 消费其 `next` 判定，按逆拓扑先回退 TASK-07 |
