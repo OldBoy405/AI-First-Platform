@@ -1,22 +1,21 @@
 cr-id: CR-2026-076
 review-type: dev-plan
 reviewer: "OldBoy405"
-reviewed-at: "2026-10-11T23:11:50+08:00"
-verdict: block
-repair-target: write-dev-plan
-blockers:
-  - "本轮新增：DP-01 [major] FR-14／AC-24／cmd-15：plan.md §5.5／§6.2（第214行）与 TASK-17 验收第2／3条声称已安装 CLI、daemon 与启动回执版本一致，但该证据命令不检查 daemon status 的退出码，且仅在 cli 与 tok 均非空时比较版本；daemon 返回 exit=1 且 JSON={error:UNAVAILABLE}，或 exit=0 且 JSON={} 时，cli 为空，命令仍 exit=0 并打印版本一致。对本行未改算法（sha256=6f5a1805f6f00a433aeb41ff3255bf2426757b1016ea75e890fe846db59e5d1f）的隔离 fixture 已复现两例；这是命令算法证明力缺口，不是真实 daemon 故障，不是对 code.yml 的复评。repair-target=write-dev-plan：在现有 cmd-15 行断言两次查询均成功、两个版本均非空且可解析并严格相等，再校验启动回执版本；同步 §5.5 与 TASK-17，并补对应失败反例。不得新增命令、放宽 AC 或改已审批 SDD。"
+reviewed-at: "2026-10-11T23:58:14+08:00"
+verdict: pass
+blockers: []
 dimensions:
   sdd-to-plan: "pass"
   plan-to-tasks: "pass"
   task-executability: "pass"
   dependency-topology: "pass"
   interface-contracts: "pass"
-  acceptance-verifiability: "block"
+  acceptance-verifiability: "pass"
   scope-and-simplicity: "pass"
   risk-and-rollback: "pass"
   reviewer-model: "OpenAI/gpt-6.1-sol（pi runner；PI_MODEL／PI_PROVIDER 本 turn 实测）"
-suggestions: []
+suggestions:
+  - "已解决：DP-01 [major] FR-14／AC-24／cmd-15：plan.md §5.5／§6.2 与 TASK-17 已同步两次查询各自 exit=0、CLI 版本 token 与 daemon cli_version 非空可提取、无条件严格相等及启动回执版本检查；独立 PATH 前置 stub multica.exe 复跑表行原始算法（LF sha256=5023ff63324257882813ca392e27c4b36ee123b74f7b2e46e55a4f8db4819360），daemon exit=1 且 JSON={error:UNAVAILABLE} 与 exit=0 且 JSON={} 均 exit=1 且不打印通过；空 CLI token、非 JSON、版本不等、CLI 查询非零均 exit=1，正对照与真实已安装入口均 exit=0。未新增 cmd-NN、未放宽 AC、未修改已审批 SDD；此项仅为关闭记录，不是新增改进建议。"
 review-loop:
-  current-attempt: 3
-subject-sha256: 8aa743a44cab86fc078d3baa3cf1832f3bb075b32e271f4420e51eaef48275a9
+  current-attempt: 1
+subject-sha256: 8b73be81c2567c4232ebae7b789cf7b0efb6d1fa369842771873a73f17b8e6a5
