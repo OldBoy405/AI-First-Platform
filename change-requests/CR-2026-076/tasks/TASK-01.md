@@ -54,7 +54,7 @@ created: 2026-10-10T16:30:15+08:00
 ## 完成标志
 
 - 代码与英文注释落盘，`cmd-01` 真实执行退出码 0，原样输出落 `change-requests/CR-2026-076/test-evidence/cmd-01.log`；
-- plan §5.5 cmd-01 声明的观测面（绑定三元组解析与拒绝面、绑定发布到任务环境、preflight 投影注入、CR 根基数与 workspace 健康预检）逐项有用例覆盖；
+- plan §5.5 cmd-01 声明的观测面（绑定三元组解析与拒绝面、认领载荷 CR 关联投影的消费（task 正式关联／来源 Issue 唯一关联／多值拒绝／无信号不变）、绑定发布到任务环境、preflight 投影注入、CR 根基数与 workspace 健康预检）逐项有用例覆盖；
 - 本 TASK 在 `tasks/_index.yml` 即时标记 `done`（`crctl task done`，不积压到回写期）。
 
 ## 接口契约
