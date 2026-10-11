@@ -1,0 +1,66 @@
+cr-id: CR-2026-076
+review-type: code
+reviewer: "OldBoy405"
+reviewed-at: "2026-10-11T16:42:57+08:00"
+verdict: block
+blockers:
+  - "本轮新增：B-01 [critical] TASK-08／FR-07／AC-15：crctl.mjs:2219-2231 只把非空 --continue-reason 当作非 TTY 授权，不校验平台已认证的人类触发事实、来源 actor 或既有角色权限；传任意文字就能越过 NOT_TTY，随后被审计成 authenticated-continue。现有 crctl.test.mjs 的正例也只是传入自由文本，没有认证事实。必须先核实真实来源与权限，伪造或 Agent 自报来源须零写入拒绝，再执行既有 cycle 转换；补相应正反例，不新增权限系统。"
+  - "本轮新增：B-02 [major] TASK-08／AC-16：crctl.mjs:2309-2323 在提交后 ledger-after-commit 故障点及 finishLedgerTransaction 之后才写继续指令的 dedup_key；恢复入口两次 recoverLedgerCommand 均丢弃 committed 回执。若提交后、审计前中断，新 cycle 已提交但授权消费事实缺失，同指令重投得到 LOOP_NOT_EXHAUSTED 而非恢复成功；该 cycle 再耗尽后，同旧指令还可再开 cycle。需让授权消费事实与原事务恢复闭合，并补提交后／审计前崩溃及后续再耗尽重投断言。"
+  - "本轮新增：B-03 [major] TASK-09／TASK-10／AC-18／AC-19：workspace-transactions.mjs:1167-1184 的 G06 消费 test-report.commands[].source-revision，但 runTestPlan 的 sourceRevision 仅进入 resultMetadata，renderTestMachineReport:4484-4506 没有持久化该字段。本 CR 15 条真实 crctl-test 命令均无 source-revision，workspace inspect 已实测两代码仓 unknown:refA-not-recorded；即使测试成功且 tree 未变，review-start 也恒走 replay，重跑测试不能补齐。需贯通既有真实测试源事实与 G06，拒绝同仓矛盾源／无效报告，并用真实 testCr 产物验证接续路径，不再只手写带 source-revision 的报告夹具。"
+  - "本轮新增：B-04 [major] TASK-02／FR-02／AC-04：pipeline_task.go:486-510 的 originalGlobalGitConfigPath 取第一个存在的 XDG／HOME/.config/git/config／HOME/.gitconfig，随后 GIT_CONFIG_GLOBAL overlay 只 include 这一个文件。Git 原本会依序读取 XDG 配置和 HOME/.gitconfig；两文件并存时后者的身份或覆盖配置被丢失，XDG 无身份会错误中止，XDG 有旧身份则可能用错作者。需保留原有效全局配置加载链及优先级，并在现有 Git environment 名集内补两文件并存的正反例；不得修改用户配置或用机器人身份兜底。"
+  - "本轮新增：B-05 [major] TASK-06／FR-05／AC-12／AC-13：crctl.mjs:2502-2523 的 legalLocalTrust 只验证 via、时间、approver 的 UUID 形状与可选 target-status；不接收 workspace／CR，不能证明责任角色匹配，也不排除 section 残留 server-approve 签名事实。任意 UUID 或不属该责任角色的批准人可被作为合法本地信任并把漂移降为 warning，违反 SDD §4.5 的先判归属再降级。需共用既有 CR／阶段／责任归属事实校验，未知或非法来源维持硬失败，补角色不匹配与签名事实残留反例。"
+  - "本轮新增：B-06 [major] TASK-06／TASK-09／AC-10／AC-13／AC-17：verifyReleaseSubjects:1528-1606 未消费批准来源／本地信任模式。合法本地 PRD／SDD／TASK 正文漂移仍被 artifact hash-drift 无条件拒绝，使 gate 的 warning 在 approve／merge 又变硬阻断；反向地，新增 HEAD 不同但 tree 相等放行也同时用于 approveAndAdvance 的 TTY 与 grant 路径，以及 merge 的 server-approve 路径，放宽了签名路径的源绑定。需把同一合法信任判据贯通消费者，分别证明本地允许的正文漂移只警告、server-approve 的摘要／源绑定仍严格拒绝，不修改签名算法或白名单。"
+  - "本轮新增：B-07 [major] TASK-04／FR-03／AC-08：crctl.mjs:2635-2643 的恢复对象校验只看 subject-sha256，而 code annotation 只有机器注入的 release-subjects，故 code 恢复恒跳过对象校验。代码评审提交后中断，再替换代码仓源或受控 artifact，2679-2685 仍可 emitReviewRecordRecovered 成功确认旧 verdict。需在 code 恢复分支重核原 release-subjects 与实际对象，漂移零改写技术中止，补 code stage 的故障恢复反例；不能推迟到 approve-code 才发现。"
+  - "本轮新增：B-08 [major] TASK-04／FR-03／AC-07：正常成功后 finishLedgerTransaction 删除 journal，review-record 又删除 payload；同操作成功重投没有可消费的完成意图，原命令返回 PAYLOAD_NOT_FOUND。若调用方按 Skill 补回相同 payload，recordedAt 被重新生成，changedRels 不为空，有 --bump-attempt 时再次提交并再增 attempt；所谓 changedRels=0 分支不能识别这种重投。需用既有事务／Git 完成事实识别原操作，返回幂等成功而非重新评审，补正常成功后原命令重投及同 payload 补回重投断言，不建第二账本。"
+  - "本轮新增：B-09 [major] TASK-05／FR-04／AC-09：crctl.mjs:3867-3875 的 developing 分支对 code.yml=block 无条件建议 implement-code，既不检查 review-code 耗尽，也不消费回修后对象变化与作者已收尾事实。即使对象已变、已提交且新测试 pass，仍回实现；已耗尽也不给 humanApproval=true 的合法人类继续出口。新增优先级与对象变化路由只覆盖 dev-plan，未覆盖 SDD §4.4 明列的 review-code 接续。需补代码 BLOCK 的对应分流及未变／已变／耗尽正反例，保留真实测试失败回实现。"
+dimensions:
+  task-traceability: "已核对全部 17 张 TASK；TASK-02／04／05／06／08／09／10 的当前验收仍有上述缺口。"
+  implementation-coverage: "block：认证来源、恢复幂等、真实测试源接线、本地与签名信任隔离、Git 身份链和代码 BLOCK 路由未完整闭合。"
+  diff-reviewability: "pass：三仓 116 个 changed-files 全覆盖，105 份 stdout diff 成功且小于 20,000 字符，11 份超限段由 E 在三仓之外直接落盘；全部实际 diff 的 hunk 计数完整，取证前后 HEAD 一致；详见本次附件 manifest 与逐文件原件。"
+  verification-evidence: "现有 crctl-test 机器区 pass；15/15 exit-code=0、started=true、skipped=false、timed-out=false，引用日志齐全，traceability tests 的 status／command-digest 一致；不重跑测试，不把保留的 repocache 既有失败说成通过。现有夹具遗漏上述真实集成与关键失败路径。"
+  scope-control: "本轮未发现 scope_out／zero_diff 新代码越界；不改批准范围、不另开 issue、不重置轮次。两条 LOCAL_TRUST_DOC_DRIFT_WARN 仅记录，不作为 BLOCK 理由。"
+  security: "block：B-01 非 TTY 来源授权、B-05／B-06 本地信任与签名源绑定边界。"
+  readability: "核心修改可读，multica 新注释为英文；主要风险是消费者和恢复分支的合同未闭合，不是表达问题。"
+  frontend-quality: "不适用：本次 diff 未触及 tsx／vue／css／html；chain.ts 的 Windows 路径修正使用 node:path.basename，无新增依赖。"
+suggestions:
+  - "范围外：受控 Git 的 20,000 字符 stdout 截断与输出合同系统性修复继续按人类裁定暂缓、在合并后承接既有 AIFI-60 范围；本轮使用 E 直接落盘取得完整 diff，不扩白名单、不改截断、不把工具限制计为业务 blocker。"
+review-loop:
+  current-attempt: 1
+release-subjects:
+  version: 1
+  repositories:
+    - repo: ai-first-platform-docs
+      remote-ref: refs/heads/requirement/CR-2026-076
+      reviewed-source-sha: 3c9ae0c5fc92f2ab2b12ea90335bbd7d4ed920de
+    - repo: multica
+      remote-ref: refs/heads/requirement/CR-2026-076
+      reviewed-source-sha: e5f0fc089ee93517482f57f4b6332ff70dd25218
+    - repo: tools
+      remote-ref: refs/heads/requirement/CR-2026-076
+      reviewed-source-sha: a95941eef8d71dcfed62b2d330de1c2ef17a543a
+  artifacts:
+    algorithm: sha256
+    canonicalization: crlf-to-lf+path-sort
+    files:
+      - { path: change-requests/CR-2026-076/plan.md, sha256: 8de7a6e7def0cb8d56de1b6adb49cec05b2e99169f9d8cd5c3be1d9564599718 }
+      - { path: change-requests/CR-2026-076/prd.md, sha256: 521746b36e53aab0bfc6419e8ee1c4b83292d16a342b00618a064948dbd574c6 }
+      - { path: change-requests/CR-2026-076/sdd.md, sha256: 4f49ed6b4b80f1c2719b0ababd89ab0aab54eb688323854f2d477cca69292bc0 }
+      - { path: change-requests/CR-2026-076/tasks/TASK-01.md, sha256: 25a25017065837a31d2adff08c1594a81b359362c0be7261c71d6fe70038e592 }
+      - { path: change-requests/CR-2026-076/tasks/TASK-02.md, sha256: 26181e299fd36bbd63c1c9400020c0d8b95ff95bd7fe6d4b5449c310c8b1d341 }
+      - { path: change-requests/CR-2026-076/tasks/TASK-03.md, sha256: 30b4e3c80e4656d10dad6196dc96e28ac05d75f1c75820fd1eef24a1a5f27a5f }
+      - { path: change-requests/CR-2026-076/tasks/TASK-04.md, sha256: 92228d0dae89c6cdea0914c92d635263ad9fc9c1d9f6e17b1360abc0c0ed63cd }
+      - { path: change-requests/CR-2026-076/tasks/TASK-05.md, sha256: 097606467fe95102b53272d0338bdf9af8a76778d05467009076b2078d2fe3f5 }
+      - { path: change-requests/CR-2026-076/tasks/TASK-06.md, sha256: de9f33f7111c4cdc6a72162c6d5fc230868445c9eb58518d022090f5dcdc5df2 }
+      - { path: change-requests/CR-2026-076/tasks/TASK-07.md, sha256: e4952ef482a8e53c8211e59a809f334c8785a89cafba282c3894e42412763cea }
+      - { path: change-requests/CR-2026-076/tasks/TASK-08.md, sha256: 92a6147d04f06417fcf7db23dd3e933137e8cb1359c3f12c6e59b21ff7d1b82e }
+      - { path: change-requests/CR-2026-076/tasks/TASK-09.md, sha256: bc8a0a883b8fdd0e89b682278e7c15b7da2b54c821bccf8881c015f706aa0069 }
+      - { path: change-requests/CR-2026-076/tasks/TASK-10.md, sha256: 688a871e045ff85c6cf9a3d9a89b7aca846b22464d365bc533be1f1f6577f1a6 }
+      - { path: change-requests/CR-2026-076/tasks/TASK-11.md, sha256: f577bc639f3f9a7ffcde2cafcfa869da23537d36f4c84cfca05d54c0822dcb46 }
+      - { path: change-requests/CR-2026-076/tasks/TASK-12.md, sha256: db22851b2335d005249e37983145302bd21b45d08f8099ba914e230e0f50abed }
+      - { path: change-requests/CR-2026-076/tasks/TASK-13.md, sha256: 5fbdec9537ef99734444e41a00e4c66c4b0d9ee6e31374bc18012f16bddd70cc }
+      - { path: change-requests/CR-2026-076/tasks/TASK-14.md, sha256: 74c7d32e670641d7fa2d6c0387c63364ec2b2c9348de6ab39c145b9b8afa1e7d }
+      - { path: change-requests/CR-2026-076/tasks/TASK-15.md, sha256: c047f28d44b70cafaf5ffb292d4ad14445422f3732655cf886528221637645f3 }
+      - { path: change-requests/CR-2026-076/tasks/TASK-16.md, sha256: 0134c67d3027ac5772d4b36ba92ba953c48d4d4c21fd7291eb7fee5315f5d461 }
+      - { path: change-requests/CR-2026-076/tasks/TASK-17.md, sha256: ea0c053461a32a53258f3b400a8a9e5636c72f06d5717588feb0a1c77c2ec6d6 }
+      - { path: change-requests/CR-2026-076/tasks/_index.yml, sha256: e6c4ba64e46e78f7ac252f4b637fbfed290b08b6ab3a77cec212bb38857ab43f }
+    digest: ea9f33ddd135a77309ea73979061a7646c83ae678814a7760cacad79c7d723ba
