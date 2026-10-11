@@ -3,7 +3,7 @@ cr: CR-2026-076
 status: pass
 tester: a0e71a32-509d-4ee9-aea4-d086a5b1ff93
 generated-by: crctl-test
-generated-at: "2026-10-11T13:56:30+08:00"
+generated-at: "2026-10-11T19:43:24+08:00"
 command-digest: abf0f64ae5ede35876ad13b1a84e3585515816e25c78cdad6c6c718c83bebeb1
 commands:
   - repo: multica
@@ -17,6 +17,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-01.log
+    source-revision: e5f0fc089ee93517482f57f4b6332ff70dd25218
   - repo: multica
     cwd: server
     executable: go
@@ -28,6 +29,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-02.log
+    source-revision: e5f0fc089ee93517482f57f4b6332ff70dd25218
   - repo: multica
     cwd: server
     executable: node
@@ -39,6 +41,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-03.log
+    source-revision: e5f0fc089ee93517482f57f4b6332ff70dd25218
   - repo: tools
     cwd: .
     executable: node
@@ -50,6 +53,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-04.log
+    source-revision: a95941eef8d71dcfed62b2d330de1c2ef17a543a
   - repo: tools
     cwd: .
     executable: node
@@ -61,6 +65,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-05.log
+    source-revision: a95941eef8d71dcfed62b2d330de1c2ef17a543a
   - repo: tools
     cwd: .
     executable: node
@@ -72,6 +77,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-06.log
+    source-revision: a95941eef8d71dcfed62b2d330de1c2ef17a543a
   - repo: tools
     cwd: .
     executable: node
@@ -83,6 +89,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-07.log
+    source-revision: a95941eef8d71dcfed62b2d330de1c2ef17a543a
   - repo: tools
     cwd: .
     executable: node
@@ -94,6 +101,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-08.log
+    source-revision: a95941eef8d71dcfed62b2d330de1c2ef17a543a
   - repo: tools
     cwd: .
     executable: node
@@ -105,6 +113,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-09.log
+    source-revision: a95941eef8d71dcfed62b2d330de1c2ef17a543a
   - repo: tools
     cwd: .
     executable: node
@@ -116,6 +125,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-10.log
+    source-revision: a95941eef8d71dcfed62b2d330de1c2ef17a543a
   - repo: tools
     cwd: .
     executable: node
@@ -127,6 +137,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-11.log
+    source-revision: a95941eef8d71dcfed62b2d330de1c2ef17a543a
   - repo: tools
     cwd: skills/shared/engineering-docs/scripts
     executable: node
@@ -138,6 +149,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-12.log
+    source-revision: a95941eef8d71dcfed62b2d330de1c2ef17a543a
   - repo: ai-first-platform-docs
     cwd: .
     executable: node
@@ -149,6 +161,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-13.log
+    source-revision: 098d81d99488ad5f966d40ac038e65d87f182856
   - repo: tools
     cwd: .
     executable: node
@@ -160,6 +173,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-14.log
+    source-revision: a95941eef8d71dcfed62b2d330de1c2ef17a543a
   - repo: ai-first-platform-docs
     cwd: .
     executable: node
@@ -171,6 +185,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-15.log
+    source-revision: 098d81d99488ad5f966d40ac038e65d87f182856
 ---
 
 # 测试报告 · CR-2026-076
@@ -295,3 +310,37 @@ commands:
 
 - 本轮同批产物：`plan.md` §2 依赖图 TASK-02 行／§5.5／§6.2（`cmd-03` 行）、`tasks/TASK-02.md` AC-04（含修订说明）、`sdd.md` 修订 r7、`test-evidence/cmd-03-analysis.md`（补「六、裁定与处置」）与四份留证日志更名；实现面 0 改动（两仓 `git status --porcelain` 空）。
 - 未触发：`review-code` 与后续节点未由本节点启动；未请求人工审批；未改动 `tasks/_index.yml`（17/17 `done`，本轮未变）；未 `review-loop reset`（`write-test-report` 现为 3/3，是消耗而非重置）。
+
+## 八、B-01…B-09 回修补跑记录（本节点第 4 次重跑；机器区以上为准）
+
+> 触发：`review-code` attempt 1/3 **BLOCK**（9 条 blocker，`repair-target=implement-code`，canonical 原文见 `review-annotations/code.yml`）。本次按 `replayNodes` 在同一 plan 上重跑 `crctl test`——**命令集合与 `command-digest` 逐字节未变**（`abf0f64ae5ede35876ad13b1a84e3585515816e25c78cdad6c6c718c83bebeb1`），故 §一～§三 的命令形态与处置结论继续有效，以下只登记本轮**计数与改动面**的现查值，并声明其取代 §一／§二 中对应行的旧计数。
+
+### 8.1 机器事实（本轮现查，与机器区同源）
+
+- 报告：`status=pass`，`generated-at: 2026-10-11T19:43:24+08:00`，15/15 命令 `exit-code=0`、`started=true`、`timed-out=false`、`skipped=false`。
+- 逐命令用例数（取代 §二 表内旧值）：`cmd-01` 顶层 `--- PASS` 20；`cmd-02` 13；`cmd-03` 现形态 `exit=0`（两处 `ok:` 观测）；`cmd-04` 272/272；`cmd-05` 40/40；`cmd-06` 49/49；`cmd-07` 55/55；`cmd-08` 40/40；`cmd-09` 116/116；`cmd-10` 8/8；`cmd-11` `files_executed=31`／`cases_executed=765`／`failures=0`／`verdict=pass`／`registry_sha256=9caf3e24…`；`cmd-12` vitest 6/6（1 file）；`cmd-13`／`cmd-15` 各 1 条 `ok`；`cmd-14` 3/3（13 项 Skill `equal=true`）。
+- 记账：`traceability.yml#tests status=pass`、`command-digest=abf0f64a…`（未变）；`review-loop.yml#write-test-report` 本轮**未重置**（`current-attempt=3`、`cycle=1`、`max-attempts=3`，本节点是被消费而非重置）。
+
+### 8.2 本轮改动面（三仓 CR worktree 现查）
+
+- `tools`：`skills/shared/crctl/scripts/crctl.mjs`、`lib/durable-tx.mjs`、`lib/workspace-transactions.mjs`；测试 `test/crctl.test.mjs`、`merge-tx.test.mjs`、`merge-fixture.mjs`、`workspace-freshness.test.mjs`。
+- `multica`：`server/internal/daemon/daemon.go`（触发事实随绑定注入）、`pipeline_task.go`（两全局配置叠加）、`cr_workspace_binding_test.go`、`pipeline_task_test.go`、`CUSTOM.md`（#129／#130 + 计数基线行）。
+- 未改任何 SDD §8 声明的 `SKILL.md`（13 项发布面逐字不变 → `cmd-14` 继续 `equal=true`）；契约文本的细化说明属 `plan.md` §5.4 第 1 项由人类执行的平台导入步，不在本轮实现面内。
+
+### 8.3 新增用例与 blocker 的对应（均落在本轮 `cmd-04`／`cmd-05`／`cmd-07`／`cmd-08`／`cmd-11` 实跑内）
+
+| blocker | 新增/改写的用例（文件 → 用例名关键片段） | 断言要点（机器可判） |
+|---|---|---|
+| B-01 | `crctl.test.mjs` → `TASK-08 AC-15（B-01 回修）` | 自由文本／Agent 触发／非责任角色／actor 缺失四类负例均 `NOT_TTY` 且零写入零提交零授权审计；平台注入事实齐备时 cycle 1→2 |
+| B-02 | `crctl.test.mjs` → `TASK-08 AC-16（B-02 回修）` | `ledger-after-commit` 崩溃后同指令重投返回幂等成功（`recovered=true`）、不新增 cycle／提交；该 cycle 再耗尽后同旧指令 `TX_INPUT_CONFLICT`；提交前回滚后同指令仍可正常开启一个 cycle |
+| B-03 | `workspace-freshness.test.mjs` → 真实 `testCr` 产物 + 矛盾源/无效报告 | 真实 `crctl test` 生成的 `test-report.md` 含逐命令 `source-revision`（两仓），G06 判 `tree-equal`／`route=continue`；同仓矛盾源 `TX_INPUT_CONFLICT`、无机器区报告 `TEST_REPORT_INVALID` |
+| B-04 | `pipeline_task_test.go` → `TestConfigureTaskGitEnvironment` 三个子测试 | 两文件按 Git 顺序 include 且身份跨文件可解析；XDG 无身份 + `~/.gitconfig` 有身份仍成功；同键时 `~/.gitconfig` 胜出 |
+| B-05 | `crctl.test.mjs` → `B-05` | 责任角色不匹配、段内残留 `signature`／`key-id`／`grant-approved-at` 均维持硬阻断（`status` 面 blocker 仍在） |
+| B-06 | `crctl.test.mjs` → `B-06`、`merge-tx.test.mjs` → `B-06` | 同一 `verifyReleaseSubjects` 缝：本地允许正文本漂移只给 `LOCAL_TRUST_DOC_DRIFT_WARN`（approve 面 warnings、merge 面继续合入）；`--grant`／非责任角色批准仍 `RELEASE_SUBJECT_DRIFT`／`APPROVED_ARTIFACT_DRIFT` 零写入 |
+| B-07 | `crctl.test.mjs` → `B-07` | code 评审提交后替换受控 artifact → 恢复期 `TX_RECOVERY_CONFLICT`，annotation 与 HEAD 零改写 |
+| B-08 | `crctl.test.mjs` → `B-08` | 成功后原命令重投（payload 缺失）与同 payload 补回重投均 `idempotent=true`、`changed=false`、单次提交、attempts 不变、review 事件仍 1 条 |
+| B-09 | `crctl.test.mjs` → `B-09` | 对象未变 → `SUBJECT_UNCHANGED`/implement-code；已变且已收尾 → `SUBJECT_CHANGED_REVIEW`/review-code；dirty → 回修；`review-code` 耗尽 → `humanApproval=true`／`LOOP_EXHAUSTED`；`test-report=block` 仍回 implement-code |
+
+### 8.4 未触发项
+
+未请求人工审批、未 `review-loop reset`、未改任何审批／状态／发布事实；`cmd-03` 的存量平台失败仍按既有裁定留证、不判为通过（§五.1）。
