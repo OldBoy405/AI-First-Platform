@@ -1,17 +1,18 @@
-# cmd-03 证据补齐与同环境改前基线对照（TASK-02）
+# cmd-03 既有平台失败留证与同环境改前基线对照（TASK-02）
 
-> 用途：补齐 TASK-02 的 `cmd-03` 证据缺口（短根日志、8 项失败明细、同环境改前基线对照），供 `write-test-report`／`review-code` 消费。
+> 用途：保留 `cmd-03` **原命令形态**（`./internal/daemon/repocache/` 单包全文件测试）的既有平台失败原文、短根失败明细与同环境改前基线对照，作为**留证**（不判为通过、不进入本 CR 的阻断命令集），供 `write-test-report`／`review-code`／`approve-code` 消费。
 > 授权依据：Ray 2026-10-10T10:44:30（`01a1256a-1287-742e-87fc-18b2d8eb8c97`）「先补短根日志、8项失败明细及同环境改前基线对照；本 CR 相关验证通过后，可将确认的既有平台失败单独记录，不顺带扩大 repocache 修复范围，不将全量失败报告为通过」。
-> 本文件与三份日志同属 `cmd-03` 的证据面，不新增 plan §6.2 未列的命令；`run` 定向日志是同一命令的失败明细派生物。
+> 处置依据（2026-10-11）：人类裁定 `01a12960-0a7c-72ef-9d02-24d48280f35e`（「同意将 cmd-03 作为既有平台失败保留证据，移出本 CR 的阻断命令集，并按既有受控流程同步修订 TASK-02 AC-04。不将失败报告为通过，不新增豁免机制，不扩大 repocache 修复范围，不重置评审次数」）；裁定请求原文 `01a12957-4600-770a-b97d-b2bc83f38f10`。
+> 本文件与四份日志是 `cmd-03` **原命令形态**的既有失败留证面（本文件原名不变，四份日志按裁定更名以区分机器槽位：`cmd-03.log` → `cmd-03-existing-failure-full-package.log`，`cmd-03-short-root.log` → `cmd-03-existing-failure-short-root.log`，`cmd-03-baseline.log` → `cmd-03-existing-failure-baseline.log`，`cmd-03-short-root-failures.log` → `cmd-03-existing-failure-short-root-failures.log`）；`plan.md` §6.2 的 `cmd-03` 现为只读符号核实观测（形态以该行为唯一事实源），两者不混用：机器槽位 `test-evidence/cmd-03.log` 只由现形态命令的实跑写入。`run` 定向日志是原命令的失败明细派生物。
 
 ## 一、命令与环境（四份证据同一环境）
 
 | 证据文件 | 命令 | 工作副本 HEAD | `TMP`／`TEMP` |
 |---|---|---|---|
-| `cmd-03.log` | `go test ./internal/daemon/repocache/ -count=1 -v` | 默认临时根（本 runtime 多层嵌套路径） | 未设置 |
-| `cmd-03-short-root.log` | 同上 | `e5f0fc089`（TASK-01＋TASK-02 已落盘） | `C:\ctmp` |
-| `cmd-03-baseline.log` | 同上 | `a2046ce34`（本 CR 在 multica 仓的 merge-base／改前基线） | `C:\ctmp` |
-| `cmd-03-short-root-failures.log` | `go test ./internal/daemon/repocache/ -count=1 -v -run '^(8 个失败名集)$'` | `e5f0fc089` | `C:\ctmp` |
+| `cmd-03-existing-failure-full-package.log` | `go test ./internal/daemon/repocache/ -count=1 -v` | 默认临时根（本 runtime 多层嵌套路径） | 未设置 |
+| `cmd-03-existing-failure-short-root.log` | 同上 | `e5f0fc089`（TASK-01＋TASK-02 已落盘） | `C:\ctmp` |
+| `cmd-03-existing-failure-baseline.log` | 同上 | `a2046ce34`（本 CR 在 multica 仓的 merge-base／改前基线） | `C:\ctmp` |
+| `cmd-03-existing-failure-short-root-failures.log` | `go test ./internal/daemon/repocache/ -count=1 -v -run '^(8 个失败名集)$'` | `e5f0fc089` | `C:\ctmp` |
 
 执行目录一律为对应工作副本的 `server/`；`go version go1.27.1 windows/amd64`。
 
@@ -57,3 +58,9 @@
 1. `cmd-03` **不报告为通过**：改后仍 `exit=1`，8 项失败按 Ray 的裁定**单独记录**为既有平台失败（本 CR 不修复、不顺带扩大 repocache 范围）。
 2. 8 项失败在**同环境改前基线**上逐名复现，且该包不依赖本 CR 改动的包 → 与本 CR 无因果。
 3. 本 CR 相关验证（身份／配置环境子集）在短临时根下全绿，改前改后一致。
+
+## 六、裁定与处置（2026-10-11）
+
+1. 人类裁定：`cmd-03`（原单包全文件测试）作为既有平台失败**保留证据**，**移出本 CR 的阻断命令集**，同步修订 `tasks/TASK-02.md` AC-04；**不将失败报告为通过、不新增豁免机制、不扩大 `repocache` 修复范围、不重置评审次数**。
+2. 机制落地（无新豁免参数、不改 `crctl test`）：原命令不再进入 `cr-test-plan`，故其退出码不再推导 `test-report.status`；`cmd-03` 槽位改由**只读符号核实观测**承担（`GIT_CONFIG_GLOBAL` 生产面 0 命中 ＋ 写入点集合断言 ＋ `go list -deps` 命中 `internal/daemon` = 0），观测面 = `sdd.md` §4.2／`dep-36` 的核实结论（① 不存在第二处写入点），即 AC-04 第 3 条「给出核对符号与依据」的机械形态。命令形态唯一事实源 = `plan.md` §6.2 该行。
+3. 本文件的失败原文与基线对照**不因处置而改写**：`exit=1`、默认根 55 项、短根 8 项、基线逐名一致 —— 均原文保留，只补处置记录。

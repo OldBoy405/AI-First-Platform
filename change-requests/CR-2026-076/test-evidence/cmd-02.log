@@ -30,10 +30,10 @@ $ go test ./internal/daemon/ -count=1 -v -run Test(ConfigurePipelineGitEnvironme
 === RUN   TestConfigureTaskGitEnvironment
 === RUN   TestConfigureTaskGitEnvironment/a_global_config_without_an_identity_stops_before_any_ledger_write
 === RUN   TestConfigureTaskGitEnvironment/an_unresolvable_global_config_stops_the_task
---- PASS: TestConfigureTaskGitEnvironment (0.07s)
-    --- PASS: TestConfigureTaskGitEnvironment/a_global_config_without_an_identity_stops_before_any_ledger_write (0.03s)
+--- PASS: TestConfigureTaskGitEnvironment (0.06s)
+    --- PASS: TestConfigureTaskGitEnvironment/a_global_config_without_an_identity_stops_before_any_ledger_write (0.02s)
     --- PASS: TestConfigureTaskGitEnvironment/an_unresolvable_global_config_stops_the_task (0.00s)
 PASS
-ok  	github.com/multica-ai/multica/server/internal/daemon	0.246s
+ok  	github.com/multica-ai/multica/server/internal/daemon	0.236s
 
 --- stderr ---

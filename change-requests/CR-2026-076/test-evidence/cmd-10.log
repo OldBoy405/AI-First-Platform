@@ -1,14 +1,14 @@
 $ node --test skills/shared/crctl/scripts/test/crctl-summary.test.mjs
 (exit=0)
 --- stdout ---
-✔ summary-01 金样本存在且是改造前 CLI 采集的（含 fieldPaths / stable / volatile） (0.6837ms)
-✔ summary-02 注册表键集 = 金样本命令集（注册与金样本一一对应） (1.2527ms)
-✔ summary-03 逐命令：--detail 输出与金样本三层等价（① 字段集合 ② 稳定值 ③ 易变形态） (1758.7872ms)
-✔ summary-04 注册命令默认面 = compact summary（为 --detail 面的真子集且严格更少字段） (3337.3975ms)
-✔ summary-05 未注册命令收到 --detail 与未收到 --detail 均与现状等价（D-9 代价项） (376.7607ms)
-✔ summary-06 --detail 是布尔开关，不消费后随 token（位置参数不被吃掉） (326.5815ms)
-✔ summary-07 错误面零改动：退出码与错误码在 --detail 前后一致，且不进投影 (373.1365ms)
-✔ summary-08 不新增平行开关（只允许 --detail） (2.0054ms)
+✔ summary-01 金样本存在且是改造前 CLI 采集的（含 fieldPaths / stable / volatile） (0.5352ms)
+✔ summary-02 注册表键集 = 金样本命令集（注册与金样本一一对应） (1.138ms)
+✔ summary-03 逐命令：--detail 输出与金样本三层等价（① 字段集合 ② 稳定值 ③ 易变形态） (1803.5213ms)
+✔ summary-04 注册命令默认面 = compact summary（为 --detail 面的真子集且严格更少字段） (3344.6734ms)
+✔ summary-05 未注册命令收到 --detail 与未收到 --detail 均与现状等价（D-9 代价项） (371.4978ms)
+✔ summary-06 --detail 是布尔开关，不消费后随 token（位置参数不被吃掉） (383.7813ms)
+✔ summary-07 错误面零改动：退出码与错误码在 --detail 前后一致，且不进投影 (462.1901ms)
+✔ summary-08 不新增平行开关（只允许 --detail） (2.3799ms)
 ℹ tests 8
 ℹ suites 0
 ℹ pass 8
@@ -16,6 +16,6 @@ $ node --test skills/shared/crctl/scripts/test/crctl-summary.test.mjs
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 6238.3259
+ℹ duration_ms 6432.1159
 
 --- stderr ---
