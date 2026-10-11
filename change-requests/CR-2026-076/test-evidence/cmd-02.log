@@ -1,3 +1,6 @@
+$ go test ./internal/daemon/ -count=1 -v -run Test(ConfigurePipelineGitEnvironment|ConfigureTaskGitEnvironment|PreparePipelineTaskHydratesMachineLocalPaths|InjectTaskCRWorkspaceEnv)
+(exit=0)
+--- stdout ---
 === RUN   TestInjectTaskCRWorkspaceEnvWithoutBinding
 --- PASS: TestInjectTaskCRWorkspaceEnvWithoutBinding (0.00s)
 === RUN   TestInjectTaskCRWorkspaceEnvHalfBindingIsNotPublished
@@ -15,7 +18,7 @@
 === RUN   TestInjectTaskCRWorkspaceEnvRequiresCRLedger
 --- PASS: TestInjectTaskCRWorkspaceEnvRequiresCRLedger (0.00s)
 === RUN   TestInjectTaskCRWorkspaceEnvPipelineTask
---- PASS: TestInjectTaskCRWorkspaceEnvPipelineTask (0.04s)
+--- PASS: TestInjectTaskCRWorkspaceEnvPipelineTask (0.05s)
 === RUN   TestInjectTaskCRWorkspaceEnvWinsOverCustomEnv
 --- PASS: TestInjectTaskCRWorkspaceEnvWinsOverCustomEnv (0.00s)
 === RUN   TestInjectTaskCRWorkspaceEnvIsolatesConcurrentTasks
@@ -23,13 +26,14 @@
 === RUN   TestPreparePipelineTaskHydratesMachineLocalPaths
 --- PASS: TestPreparePipelineTaskHydratesMachineLocalPaths (0.00s)
 === RUN   TestConfigurePipelineGitEnvironment
---- PASS: TestConfigurePipelineGitEnvironment (0.06s)
+--- PASS: TestConfigurePipelineGitEnvironment (0.04s)
 === RUN   TestConfigureTaskGitEnvironment
 === RUN   TestConfigureTaskGitEnvironment/a_global_config_without_an_identity_stops_before_any_ledger_write
 === RUN   TestConfigureTaskGitEnvironment/an_unresolvable_global_config_stops_the_task
---- PASS: TestConfigureTaskGitEnvironment (0.07s)
+--- PASS: TestConfigureTaskGitEnvironment (0.06s)
     --- PASS: TestConfigureTaskGitEnvironment/a_global_config_without_an_identity_stops_before_any_ledger_write (0.02s)
     --- PASS: TestConfigureTaskGitEnvironment/an_unresolvable_global_config_stops_the_task (0.00s)
 PASS
-ok  	github.com/multica-ai/multica/server/internal/daemon	0.270s
-exit=0
+ok  	github.com/multica-ai/multica/server/internal/daemon	0.239s
+
+--- stderr ---

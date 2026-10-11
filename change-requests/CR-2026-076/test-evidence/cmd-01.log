@@ -1,3 +1,6 @@
+$ go test ./internal/daemon/ -count=1 -v -run Test(ResolveTaskWorkspaceBinding|InjectTaskCRWorkspaceEnv|ParseExecutionContext|TaskWorkspaceBinding|PipelinePromptCarriesTheVerifiedExecutionContext|FindPipelineCRRootCardinality|PreparePipelineTaskHydratesMachineLocalPaths|PreparePipelineTaskDirtyGate|InspectPipelineWorkspaceDirtyInput|InspectPipelineWorkspaceDetailContract|DaemonEnvBuildHasNoConfigFirstRootFallback)
+(exit=0)
+--- stdout ---
 === RUN   TestInjectTaskCRWorkspaceEnvWithoutBinding
 --- PASS: TestInjectTaskCRWorkspaceEnvWithoutBinding (0.00s)
 === RUN   TestInjectTaskCRWorkspaceEnvHalfBindingIsNotPublished
@@ -11,11 +14,11 @@
     --- PASS: TestInjectTaskCRWorkspaceEnvUsesTaskLocalDirectory/in_place (0.00s)
     --- PASS: TestInjectTaskCRWorkspaceEnvUsesTaskLocalDirectory/worktree (0.00s)
 === RUN   TestInjectTaskCRWorkspaceEnvRejectsAmbiguousLocalDirectory
---- PASS: TestInjectTaskCRWorkspaceEnvRejectsAmbiguousLocalDirectory (0.00s)
+--- PASS: TestInjectTaskCRWorkspaceEnvRejectsAmbiguousLocalDirectory (0.18s)
 === RUN   TestInjectTaskCRWorkspaceEnvRequiresCRLedger
 --- PASS: TestInjectTaskCRWorkspaceEnvRequiresCRLedger (0.00s)
 === RUN   TestInjectTaskCRWorkspaceEnvPipelineTask
---- PASS: TestInjectTaskCRWorkspaceEnvPipelineTask (0.00s)
+--- PASS: TestInjectTaskCRWorkspaceEnvPipelineTask (0.04s)
 === RUN   TestInjectTaskCRWorkspaceEnvWinsOverCustomEnv
 --- PASS: TestInjectTaskCRWorkspaceEnvWinsOverCustomEnv (0.00s)
 === RUN   TestInjectTaskCRWorkspaceEnvIsolatesConcurrentTasks
@@ -106,10 +109,10 @@
 === RUN   TestInspectPipelineWorkspaceDirtyInput/unregistered_worktree_is_refused
 === RUN   TestInspectPipelineWorkspaceDirtyInput/missing_worktree_is_refused
 === RUN   TestInspectPipelineWorkspaceDirtyInput/wrong_branch_is_refused
---- PASS: TestInspectPipelineWorkspaceDirtyInput (0.48s)
-    --- PASS: TestInspectPipelineWorkspaceDirtyInput/healthy_passes (0.06s)
-    --- PASS: TestInspectPipelineWorkspaceDirtyInput/healthy_still_passes_the_checkpoint_node (0.06s)
-    --- PASS: TestInspectPipelineWorkspaceDirtyInput/cleanly_bound_dirty_passes_the_checkpoint_node (0.06s)
+--- PASS: TestInspectPipelineWorkspaceDirtyInput (0.47s)
+    --- PASS: TestInspectPipelineWorkspaceDirtyInput/healthy_passes (0.05s)
+    --- PASS: TestInspectPipelineWorkspaceDirtyInput/healthy_still_passes_the_checkpoint_node (0.05s)
+    --- PASS: TestInspectPipelineWorkspaceDirtyInput/cleanly_bound_dirty_passes_the_checkpoint_node (0.05s)
     --- PASS: TestInspectPipelineWorkspaceDirtyInput/dirty_is_still_refused_for_every_other_node (0.05s)
     --- PASS: TestInspectPipelineWorkspaceDirtyInput/dirty_on_the_wrong_branch_is_refused (0.05s)
     --- PASS: TestInspectPipelineWorkspaceDirtyInput/dirty_with_a_detached_head_is_refused (0.05s)
@@ -123,9 +126,10 @@
     --- PASS: TestInspectPipelineWorkspaceDetailContract/the_checkpoint_node_asks_for_the_projection_carrying_the_branch_fact (0.05s)
     --- PASS: TestInspectPipelineWorkspaceDetailContract/the_same_handoff_is_refused_when_only_the_summary_is_served (0.05s)
 === RUN   TestPreparePipelineTaskDirtyGate
---- PASS: TestPreparePipelineTaskDirtyGate (0.92s)
+--- PASS: TestPreparePipelineTaskDirtyGate (0.91s)
 === RUN   TestTaskWorkspaceBinding
 --- PASS: TestTaskWorkspaceBinding (0.00s)
 PASS
-ok  	github.com/multica-ai/multica/server/internal/daemon	1.652s
-exit=0
+ok  	github.com/multica-ai/multica/server/internal/daemon	1.847s
+
+--- stderr ---

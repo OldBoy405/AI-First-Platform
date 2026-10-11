@@ -1,12 +1,15 @@
+$ node skills/shared/crctl/scripts/test/suite-gate.mjs --run
+(exit=0)
+--- stdout ---
 {
   "schema": "crctl-suite-gate-report/v1",
   "command": "node --test --test-reporter=tap <30 files> (pool=15, availableParallelism=16)",
   "observer": "tap-per-file",
-  "duration_ms": 562183,
+  "duration_ms": 909338,
   "converged": true,
   "exit_code": 0,
   "files_executed": 30,
-  "cases_executed": 738,
+  "cases_executed": 753,
   "skipped_file_level": 0,
   "files": [
     {
@@ -17,7 +20,7 @@
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 562178
+      "duration_ms": 909334
     },
     {
       "file": "caller-contract.test.mjs",
@@ -27,7 +30,7 @@
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 746
+      "duration_ms": 731
     },
     {
       "file": "check-agents-contract.test.mjs",
@@ -37,7 +40,7 @@
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 175
+      "duration_ms": 200
     },
     {
       "file": "check-skill-matrix.test.mjs",
@@ -47,17 +50,17 @@
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 1317
+      "duration_ms": 1305
     },
     {
       "file": "checkpoint-tx.test.mjs",
       "state": "ok",
       "exit_code": 0,
-      "cases": 23,
+      "cases": 25,
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 248313
+      "duration_ms": 448527
     },
     {
       "file": "competitive-report.test.mjs",
@@ -67,7 +70,7 @@
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 33658
+      "duration_ms": 37909
     },
     {
       "file": "contract-scan.test.mjs",
@@ -77,7 +80,7 @@
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 4813
+      "duration_ms": 4560
     },
     {
       "file": "crctl-summary.test.mjs",
@@ -87,17 +90,17 @@
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 18169
+      "duration_ms": 20621
     },
     {
       "file": "crctl.test.mjs",
       "state": "ok",
       "exit_code": 0,
-      "cases": 264,
+      "cases": 266,
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 370826
+      "duration_ms": 510275
     },
     {
       "file": "durable-tx.test.mjs",
@@ -107,7 +110,7 @@
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 1397
+      "duration_ms": 1386
     },
     {
       "file": "fault-harness.test.mjs",
@@ -117,7 +120,7 @@
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 15896
+      "duration_ms": 19145
     },
     {
       "file": "guard-protected-paths.test.mjs",
@@ -127,7 +130,7 @@
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 887
+      "duration_ms": 934
     },
     {
       "file": "lint-prompts.test.mjs",
@@ -137,17 +140,17 @@
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 4414
+      "duration_ms": 4280
     },
     {
       "file": "merge-tx.test.mjs",
       "state": "ok",
       "exit_code": 0,
-      "cases": 17,
+      "cases": 21,
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 225639
+      "duration_ms": 441531
     },
     {
       "file": "owner-source-scan.test.mjs",
@@ -157,7 +160,7 @@
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 7802
+      "duration_ms": 16153
     },
     {
       "file": "pipeline-structure.test.mjs",
@@ -167,7 +170,7 @@
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 560
+      "duration_ms": 556
     },
     {
       "file": "planning-entry.test.mjs",
@@ -177,7 +180,7 @@
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 25446
+      "duration_ms": 27977
     },
     {
       "file": "register-tx.test.mjs",
@@ -187,7 +190,7 @@
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 289310
+      "duration_ms": 510435
     },
     {
       "file": "skill-scope.test.mjs",
@@ -197,7 +200,7 @@
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 182
+      "duration_ms": 200
     },
     {
       "file": "suite-gate-count.test.mjs",
@@ -207,7 +210,7 @@
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 1473
+      "duration_ms": 1477
     },
     {
       "file": "terminal-audit.test.mjs",
@@ -217,7 +220,7 @@
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 88464
+      "duration_ms": 145733
     },
     {
       "file": "test-cr.test.mjs",
@@ -227,7 +230,7 @@
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 50284
+      "duration_ms": 78547
     },
     {
       "file": "trace-outbox.test.mjs",
@@ -237,7 +240,7 @@
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 179002
+      "duration_ms": 285423
     },
     {
       "file": "trace-semantic.test.mjs",
@@ -247,7 +250,7 @@
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 1069
+      "duration_ms": 1068
     },
     {
       "file": "upgrade-check.test.mjs",
@@ -257,7 +260,7 @@
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 23459
+      "duration_ms": 42496
     },
     {
       "file": "version-set.test.mjs",
@@ -267,27 +270,27 @@
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 157959
+      "duration_ms": 256840
     },
     {
       "file": "workspace-freshness.test.mjs",
       "state": "ok",
       "exit_code": 0,
-      "cases": 32,
+      "cases": 38,
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 222222
+      "duration_ms": 442694
     },
     {
       "file": "workspace-resolver.test.mjs",
       "state": "ok",
       "exit_code": 0,
-      "cases": 7,
+      "cases": 8,
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 2147
+      "duration_ms": 3994
     },
     {
       "file": "writeback-tx.test.mjs",
@@ -297,7 +300,7 @@
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 521355
+      "duration_ms": 887399
     },
     {
       "file": "yaml-subset.test.mjs",
@@ -307,7 +310,7 @@
       "failures": [],
       "skipped_cases": 0,
       "todo": 0,
-      "duration_ms": 219
+      "duration_ms": 236
     }
   ],
   "failures": [],
@@ -380,7 +383,7 @@
     }
   ],
   "registry": {
-    "sha256": "d50bd7a44e3b8ac59845b101351f2a44ca226f9d20a81e3a1cb06b982b37e848",
+    "sha256": "4cdf2e03d58d1e8b2cf1324a2a391f53359b9e9068fffcdf9120c4045ee44af3",
     "exceptions_count": 0
   },
   "platform": {
@@ -390,9 +393,10 @@
   "verdict": "pass"
 }
 suite-gate: command=node --test --test-reporter=tap <30 files> (pool=15, availableParallelism=16)
-suite-gate: observer=tap-per-file duration_ms=562183 converged=true exit_code=0
-suite-gate: files_executed=30 cases_executed=738 skipped_file_level=0
+suite-gate: observer=tap-per-file duration_ms=909338 converged=true exit_code=0
+suite-gate: files_executed=30 cases_executed=753 skipped_file_level=0
 suite-gate: failures=0
-suite-gate: registry_sha256=d50bd7a44e3b8ac59845b101351f2a44ca226f9d20a81e3a1cb06b982b37e848 exceptions_count=0
+suite-gate: registry_sha256=4cdf2e03d58d1e8b2cf1324a2a391f53359b9e9068fffcdf9120c4045ee44af3 exceptions_count=0
 suite-gate: verdict=pass
-exit=0
+
+--- stderr ---

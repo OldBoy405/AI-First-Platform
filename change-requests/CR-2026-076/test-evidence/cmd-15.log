@@ -1,0 +1,9 @@
+$ node -e const fs=require('fs'),cp=require('child_process'),cr=require('crypto');const NL=String.fromCharCode(10),CR=String.fromCharCode(13);const LD=p=>fs.readFileSync(p,'utf8').split(CR+NL).join(NL);const RD=p=>fs.existsSync(p)?LD(p):'';const bad=[];const S=x=>x?String(x):'';const run=(c,a)=>{const r=cp.spawnSync(c,a,{encoding:'utf8'});return {code:r.status,out:S(r.stdout),err:S(r.stderr)};};const v=run('multica',['--version']);const vline=S(v.out.trim().split(NL)[0]);console.log('installed-entry: '+vline);if(v.code!==0){bad.push('multica --version 非零退出: '+v.err.trim());}const tok=S(vline.split(' ')[1]);const d=run('multica',['daemon','status','--output','json']);let cli='';try{cli=S(JSON.parse(d.out).cli_version);}catch(e){bad.push('daemon status 非 JSON: '+d.out.slice(0,200));}console.log('daemon-cli-version: '+cli);if(cli&&tok&&cli!==tok){bad.push('daemon 与已安装 CLI 版本不一致: '+cli+' vs '+tok);}const R='change-requests/CR-2026-076/test-evidence/';const rh=RD(R+'fr14-launch-receipt.md');const rb=RD(R+'fr14-run-behavior.md');if(!rh.trim()){bad.push('缺少启动回执原样证据: '+R+'fr14-launch-receipt.md');}else{console.log('launch-receipt sha256='+cr.createHash('sha256').update(rh).digest('hex'));if(tok&&rh.indexOf(tok)<0){bad.push('启动回执未载明现场入口版本: '+tok);}}if(!rb.trim()){bad.push('缺少 run 目标行为证据: '+R+'fr14-run-behavior.md');}else{console.log('run-behavior sha256='+cr.createHash('sha256').update(rb).digest('hex'));}if(bad.length){console.error(bad.join(NL));process.exit(1);}console.log('cmd-15 ok: 已安装 CLI／daemon 版本一致且与启动回执一致、run 目标行为证据原样在位');
+(exit=1)
+--- stdout ---
+installed-entry: multica v0.6.1-429-ge5f0fc089 (commit: e5f0fc089, built: 2026-10-10T23:58:07Z)
+daemon-cli-version: v0.6.1-429-ge5f0fc089
+
+--- stderr ---
+缺少启动回执原样证据: change-requests/CR-2026-076/test-evidence/fr14-launch-receipt.md
+缺少 run 目标行为证据: change-requests/CR-2026-076/test-evidence/fr14-run-behavior.md
