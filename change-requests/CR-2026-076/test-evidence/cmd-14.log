@@ -1,6 +1,32 @@
 $ node --test skills/shared/crctl/scripts/test/publish-effectiveness.test.mjs
-(exit=1)
+(exit=0)
 --- stdout ---
+[publish-effectiveness] {"skill":"approve-dev-start","origin":{"repo":"AI-First-tools","ref":"main","path":"skills/develop/approve-dev-start"},"sha256Repository":"4c285c4cc8d1709bc2ad007516291be14e2f1aa96c2a52fb2288c0ddc7660ec6","sha256Remote":"4c285c4cc8d1709bc2ad007516291be14e2f1aa96c2a52fb2288c0ddc7660ec6","equal":true}
+[publish-effectiveness] {"skill":"write-dev-tasks","origin":{"repo":"AI-First-tools","ref":"main","path":"skills/develop/write-dev-tasks"},"sha256Repository":"726db600408c34bf3a3bdb5b616937436871050a13fed21b11b28e56e2210858","sha256Remote":"726db600408c34bf3a3bdb5b616937436871050a13fed21b11b28e56e2210858","equal":true}
+[publish-effectiveness] {"skill":"implement-code","origin":{"repo":"AI-First-tools","ref":"main","path":"skills/develop/implement-code"},"sha256Repository":"d80b00269899b67971af9e7a3e2314d21fc3e9b6d6fb24a83dcbde65ec775a2d","sha256Remote":"d80b00269899b67971af9e7a3e2314d21fc3e9b6d6fb24a83dcbde65ec775a2d","equal":true}
+[publish-effectiveness] {"skill":"workspace-freshness","origin":{"repo":"AI-First-tools","ref":"main","path":"skills/sync/workspace-freshness"},"sha256Repository":"8e385a4e36b22fec58435a22a00ea790e68d131734a912700d8f7ee4006d9d23","sha256Remote":"8e385a4e36b22fec58435a22a00ea790e68d131734a912700d8f7ee4006d9d23","equal":true}
+[publish-effectiveness] {"skill":"review-code","origin":{"repo":"AI-First-tools","ref":"main","path":"skills/develop/review-code"},"sha256Repository":"2aa82a4993e46f9d9e5cde9ee8f8d8c0b8b6fe4b7bd2768347f55af85f73799f","sha256Remote":"2aa82a4993e46f9d9e5cde9ee8f8d8c0b8b6fe4b7bd2768347f55af85f73799f","equal":true}
+[publish-effectiveness] {"skill":"review-dev-plan","origin":{"repo":"AI-First-tools","ref":"main","path":"skills/develop/review-dev-plan"},"sha256Repository":"385f72de55da58b969cfc4858887366b212eca34dd5675d7224c71b9f3efc1c7","sha256Remote":"385f72de55da58b969cfc4858887366b212eca34dd5675d7224c71b9f3efc1c7","equal":true}
+[publish-effectiveness] {"skill":"write-test-report","origin":{"repo":"AI-First-tools","ref":"main","path":"skills/develop/write-test-report"},"sha256Repository":"3ce02a1920adbac8761958e88e7b4c0e8a2013a394d0611427d99be17efb4906","sha256Remote":"3ce02a1920adbac8761958e88e7b4c0e8a2013a394d0611427d99be17efb4906","equal":true}
+[publish-effectiveness] {"skill":"crctl","origin":{"repo":"AI-First-tools","ref":"main","path":"skills/shared/crctl"},"sha256Repository":"4bf63565efdb8573cfe6633518eb6971b23c05563020715acce5fc959e75b0ab","sha256Remote":"4bf63565efdb8573cfe6633518eb6971b23c05563020715acce5fc959e75b0ab","equal":true}
+[publish-effectiveness] {"skill":"requirement-register","origin":{"repo":"AI-First-tools","ref":"main","path":"skills/requirement/requirement-register"},"sha256Repository":"c9f3805b1ec76e3cb4e4e6bc5a97c69448d2422b543b24302f72e6a7d90948ff","sha256Remote":"c9f3805b1ec76e3cb4e4e6bc5a97c69448d2422b543b24302f72e6a7d90948ff","equal":true}
+[publish-effectiveness] {"skill":"handover-cr","origin":{"repo":"AI-First-tools","ref":"main","path":"skills/sync/handover-cr"},"sha256Repository":"72b4ce1290de83ecde6732428bc168188da3b393a9a718d26eedfb21c86fe29f","sha256Remote":"72b4ce1290de83ecde6732428bc168188da3b393a9a718d26eedfb21c86fe29f","equal":true}
+[publish-effectiveness] {"skill":"push-progress","origin":{"repo":"AI-First-tools","ref":"main","path":"skills/sync/push-progress"},"sha256Repository":"7ad5ec4c599414d3a0dd96ccf1e81dcf51bc2d71d010efce2cf11490d7c5b8ea","sha256Remote":"7ad5ec4c599414d3a0dd96ccf1e81dcf51bc2d71d010efce2cf11490d7c5b8ea","equal":true}
+[publish-effectiveness] {"skill":"cr-review-record","origin":{"repo":"AI-First-tools","ref":"main","path":"skills/cr/cr-review-record"},"sha256Repository":"e5b5c9c055d74b9142bf47969c1d9df9f55567aacfc66faa72a63d8c4143284a","sha256Remote":"e5b5c9c055d74b9142bf47969c1d9df9f55567aacfc66faa72a63d8c4143284a","equal":true}
+[publish-effectiveness] {"skill":"inbox-emit","origin":{"repo":"AI-First-tools","ref":"main","path":"skills/cr/inbox-emit"},"sha256Repository":"6bd783f61a7cbd9065c395af6ba287a380083cafe7376674d098ff669e583087","sha256Remote":"6bd783f61a7cbd9065c395af6ba287a380083cafe7376674d098ff669e583087","equal":true}
+[publish-effectiveness] {"instruction":"dev-agent","sha256Remote":"c116f0ebe273c1c92b7c22ad67e91b7af7466c4023c75697aafe868d4b76c73b"}
+[publish-effectiveness] {"instruction":"quality-reviewer-agent","sha256Remote":"daf87cb1b9046e3b1b576187d131ba5b1f120c650a6616cd76b4037a6a19b15c"}
+[publish-effectiveness] {"instruction":"requirement-writer","sha256Remote":"dd88b8fd39ee4c6deea348d81e0a625106fd4239f84c5e5ae5eb9be55b0e7ada"}
+✔ publish-effectiveness: SDD §8 变更 Skill 集合的线上 origin 与声明路径一致 (0.8642ms)
+✔ publish-effectiveness: 平台实际取用版本与仓库目标逐字一致（13 项，无豁免） (554.4593ms)
+✔ publish-effectiveness: 三份 CR Agent instructions 线上版本 sha256（记录型观测，无相等断言） (42.3529ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 694.8231
 
 --- stderr ---
-Could not find 'skills/shared/crctl/scripts/test/publish-effectiveness.test.mjs'
