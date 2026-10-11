@@ -63,7 +63,7 @@ M7  TASK-17（平台消费者取用版本 + 已安装入口 + 真实 run 证据�
 | TASK | 主责仓 | 依赖 | 主要产出 | 预估 |
 |---|---|---|---|---|
 | CR-2026-076-TASK-01 | multica | — | `server/internal/daemon/pipeline_task.go`（`resolveTaskWorkspaceBinding` 新增唯一正式 CR 关联段 + 写前拒绝）与其包内测试 | 2.0 |
-| CR-2026-076-TASK-02 | multica | TASK-01 | `configureTaskGitEnvironment` 叠加式 `include` 配置；`repocache` 第二写入点核实结论与必要收口；英文注释与包内测试 | 1.5 |
+| CR-2026-076-TASK-02 | multica | TASK-01 | `configureTaskGitEnvironment` 叠加式 `include` 配置；`repocache` 第二写入点核实结论与必要收口（核实形式 = `cmd-03` 只读符号观测；该包全文件测试的既有平台失败另作留证、不进本 CR 阻断命令集）；英文注释 | 1.5 |
 | CR-2026-076-TASK-03 | tools | TASK-01 | `crctl` 诊断面（只读核对与失败关闭）用例补齐；`skills/shared/crctl/SKILL.md` 合同文本同步 | 1.5 |
 | CR-2026-076-TASK-04 | tools | TASK-03 | `cmdReviewRecord` 的 write-set／隔离提交／恢复／幂等（复用 `durable-tx` 与 `ledgerTxKey`；不新增幂等账本） | 2.0 |
 | CR-2026-076-TASK-05 | tools | TASK-04 | `cmdNext` 判定优先级与「对象已变／未变」分支；`skills/cr/cr-review-record/SKILL.md`、`skills/develop/*` 相关合同文本 | 1.5 |

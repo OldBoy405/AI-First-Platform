@@ -276,9 +276,9 @@ commands:
 
 | 项 | 本轮现查值 |
 |---|---|
-| warning-1（dev-plan 正文漂移） | `crctl status` 本轮原样：annotation 记录 `0d865cb612add41f…`，当前重算 `5f1903e9272900b7…`（attempt 2 时为 `53cd27f0…`，本轮受控同步后再次前移）；annotation 现读 `review-annotations/dev-plan.yml:23 subject-sha256: 0d865cb612add41f5f50dce7db0493ba285328f6a7cff4b50a38e926d25952a6`，`verdict: pass`、`reviewed-at: 2026-10-10T16:59:46+08:00`（未变） |
-| warning-2（approval 证据漂移） | `crctl status` 本轮原样：`514d530cb2ec31a8…`（记录）vs `12d9292c65afc958…`（重算；attempt 2 时为 `d5824a5420b0c10a…`）；`approval.yml:16-18` 现读 `approval#development-start`、`approved-at: 2026-10-10T17:10:10+08:00`、`via: crctl-approve`、`evidence-digest: 514d530cb2ec31a882b7d53a197a921d7f67241484278be1d4fa8546a495d669`（未变） |
-| 本轮前移的成因 | 本轮受控同步本身：`plan.md` §5.5／§6.2（`cmd-03` 行）、`tasks/TASK-02.md` AC-04、`sdd.md` 修订 r7 —— 三份文件均属 warning-1／warning-2 的摘要面 |
+| warning-1（dev-plan 正文漂移） | `crctl status` 本轮终值原样：annotation 记录 `0d865cb612add41f…`，当前重算 `c87c9912bdd4f779…`（attempt 2 时为 `53cd27f0…`，本轮受控同步后两次前移）；annotation 现读 `review-annotations/dev-plan.yml:23 subject-sha256: 0d865cb612add41f5f50dce7db0493ba285328f6a7cff4b50a38e926d25952a6`，`verdict: pass`、`reviewed-at: 2026-10-10T16:59:46+08:00`（未变） |
+| warning-2（approval 证据漂移） | `crctl status` 本轮终值原样：`514d530cb2ec31a8…`（记录）vs `9fb45ae3096ecd1a…`（重算；attempt 2 时为 `d5824a5420b0c10a…`）；`approval.yml:16-18` 现读 `approval#development-start`、`approved-at: 2026-10-10T17:10:10+08:00`、`via: crctl-approve`、`evidence-digest: 514d530cb2ec31a882b7d53a197a921d7f67241484278be1d4fa8546a495d669`（未变） |
+| 本轮前移的成因 | 本轮受控同步本身：`plan.md` §2 依赖图 TASK-02 行／§5.5／§6.2（`cmd-03` 行）、`tasks/TASK-02.md` AC-04、`sdd.md` 修订 r7 —— 三份文件均属 warning-1／warning-2 的摘要面 |
 | 处置 | 保留为**记录型漂移**，由 `review-code` 消费；本轮不重签、不改写 annotation／approval、不以 warning 判 `block`、不重置任何评审次数（人类裁定原文见本节开头引用） |
 
 （完整归因推导见 `01a128ee-1e94-7364-8a7b-c3e4d7ea9435` §三.1–§三.4；本节只登记复核后的机器值。）
@@ -293,5 +293,5 @@ commands:
     "humanApproval": false, "why": "测试证据 pass，推送 checkpoint 后进入代码评审" }
   ```
 
-- 本轮同批产物：`plan.md` §5.5／§6.2（`cmd-03` 行）、`tasks/TASK-02.md` AC-04（含修订说明）、`sdd.md` 修订 r7、`test-evidence/cmd-03-analysis.md`（补「六、裁定与处置」）与四份留证日志更名；实现面 0 改动（两仓 `git status --porcelain` 空）。
+- 本轮同批产物：`plan.md` §2 依赖图 TASK-02 行／§5.5／§6.2（`cmd-03` 行）、`tasks/TASK-02.md` AC-04（含修订说明）、`sdd.md` 修订 r7、`test-evidence/cmd-03-analysis.md`（补「六、裁定与处置」）与四份留证日志更名；实现面 0 改动（两仓 `git status --porcelain` 空）。
 - 未触发：`review-code` 与后续节点未由本节点启动；未请求人工审批；未改动 `tasks/_index.yml`（17/17 `done`，本轮未变）；未 `review-loop reset`（`write-test-report` 现为 3/3，是消耗而非重置）。
