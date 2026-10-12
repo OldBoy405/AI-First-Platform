@@ -1,52 +1,46 @@
 cr-id: CR-2026-076
 review-type: code
 reviewer: "OldBoy405"
-reviewed-at: "2026-10-11T20:20:50+08:00"
-verdict: block
-blockers:
-  - "部分解决：B-02 [major] TASK-08／FR-07／AC-16：提交后崩溃恢复已补 intent／authorized 审计，但 crctl.mjs:2305-2306 的 continueKey 仍只取 cr、loop 与调用方自由文本 continueReason 的 hash，不绑定平台已有的 TriggerCommentID／原来源指令。静态可达反例：同一已认证触发 run 在下一次耗尽时仅换 --continue-reason 即得新 key，原评论又可开 cycle；反向地，新人类评论若仍只说同一段继续文本则与旧 key 冲突。现有测试把 comment ID 人工拼进自由文本，不能证明来源指令身份。必须消费既有平台来源事实固定原指令，补同来源改说明不再授权及新来源同说明可授权的正反例，不建第二账本、不重置本 CR 次数。"
-  - "部分解决：B-06 [major] TASK-06／FR-05／AC-10：合法本地正文漂移与严格 server-approve 分流已接通，但 workspace-transactions.mjs:1629-1633 对新增 TASK 给 warning 后，:1664 只把 snapshot.artifacts.files 加入 KB 允许面；合法新增且已登记的新 TASK 不在旧 snapshot 集合，随后 :1667-1669 仍返回 post-review-path-drift。因此同一合法 TASK 集合增量在 gate 为 warning，在 approve／merge 又硬阻断。删除旧 TASK 也在 :1615-1620 先返回 missing，未进入 TASK 集合分流。需区分仍必需产物与合法 TASK 集合变化，并贯通当前集合与 KB 源核验；保持缺必需件、非法索引及 server-approve 严格拒绝，补新增／删除各消费者反例。"
-  - "部分解决：B-08 [major] TASK-04／FR-03／AC-07：正常成功后原 payload 的重投已幂等，但 crctl.mjs:2802-2810 的 payloadMatchesAnnotation 不核对 bump 意图，:2827-2837 的早退也不核对当前 loop／cycle／attempt 与原操作。相同对象／五字段不代表相同操作：先无 bump 成功、再带 --bump-attempt，或经合法人类继续进入新 cycle 后提交相同评审结论，均可被旧 annotation 吞成 idempotent 并返回旧 attempt。原事务意图被替换不应静默当原操作成功。需复用既有 Git／事务意图事实核对 bump 及 loop 范围，补不同 bump 与新 cycle 同 payload 的反例；不要求作者为消费 attempt 人工改写 verdict／dimensions。"
-  - "本轮新增：B-10 [major] 测试证据可信度／TASK-02／04／05／06／08／09／10：test-report.md 的机器区虽为 crctl-test/pass，15/15 exit-code=0、started=true、skipped=false、timed-out=false，plan／traceability command-digest 也全等，但 cmd-01～03 的 source-revision=e5f0fc089ee93517482f57f4b6332ff70dd25218，与当前 multica HEAD=1d91d21004163e61298f5f1277677ac6f887a456 的内容不同（5 个 changed-files，含 daemon.go、pipeline_task.go）；tools 命令的 source-revision=a95941eef8d71dcfed62b2d330de1c2ef17a543a，与当前 tools HEAD=3c1ccfc2b80232ef83f6c5f515009899d191918a 的内容不同（7 个 changed-files，含 crctl.mjs、durable-tx.mjs、workspace-transactions.mjs）。已由安装态受控 Git 取得源到当前 HEAD 的完整差异，不是等价空提交；本轮回修未有可归因当前已提交主体的测试源证据。按 review-code 固定源码漂移合同 BLOCK；由作者按既有测试入口在正确已提交源上重建证据，禁止改填历史 source 或 reviewer 重跑测试。"
+reviewed-at: "2026-10-12T15:11:29+08:00"
+verdict: pass
+blockers: []
 dimensions:
-  task-traceability: "已核对 17 张 TASK 的验收映射及索引 17/17 done；TASK-04／06／08 仍有上述同契约域缺口，测试源证据不能覆盖当前回修主体。"
-  implementation-coverage: "block：B-02／B-06／B-08 部分解决，B-01／B-03／B-04／B-05／B-07／B-09 的原缺口已在源码接线关闭；静态反例不冒充已运行测试。"
-  diff-reviewability: "pass：全部使用安装态已发布 crctl 重新逐仓逐文件采集 120 个 changed-files（KB 57、multica 11、tools 52），120 份完整差异在三仓 worktree 之外直接落盘；每次 stdout payload=0，小于 20000，exit=0 且成功信封有效，全部 hunk 行数校验完整，取证前后 HEAD 一致。"
-  verification-evidence: "block：机器区与 traceability status／command-digest 全等，plan 规范命令摘要亦全等；15 份引用日志存在且 stdout／stderr 标记结构有效；两个代码仓测试记录源与当前已提交内容不同。未重跑 lint／test／build；repocache 既有平台失败按裁定留证，不说成通过。"
-  scope-control: "已核对 SDD 批准范围、r6／r7 增量与 CR-2026-039 验收替代登记；旧 CR 历史与原评审记录不动，dev-start 有效性／freshness 判定保留。本轮正式治理只用安装态已发布入口，不把候选 warning／新门禁用于本 CR 自我授权，不扩白名单、不改截断、不 reset。"
-  security: "block：B-02 的来源指令去重仍可被改变说明文字绕过；本地信任角色匹配／签名残留校验以及 server-approve 严格源绑定的原缺口已接通。"
-  readability: "关键逻辑可读，multica 新增代码注释为英文；本轮阻断是来源意图、消费者一致性和可归因测试证据，不是表达或未来优化问题。"
-  frontend-quality: "不适用：代码差异未触及 tsx／vue／css／html；Windows chain.ts 修正使用 node:path.basename，无新增依赖。"
+  task-traceability: "pass：17 张 TASK 验收映射与 tasks/_index.yml 17/17 done 未变；本轮三处回修分别落在 TASK-08（B-02）、TASK-04（B-08）、TASK-06（B-06）的验收面上，验收条件逐条可机械核对。"
+  implementation-coverage: "pass：三条原缺口都在其唯一缝上关闭——来源指令身份走平台既有事实注入（daemon 一处注入 + crctl 一处消费，非各调用点分别补丁）；TASK 集合分流贯通 gate／approve／merge 三个消费者；重投识别改取原操作 write-set 的 Git 事实，根因一处修完。"
+  diff-reviewability: "pass：只读 crctl git 逐仓采集本轮增量完整 diff（tools 6 文件 +463 行、multica 3 文件 +37 行、KB 记账路径若干），逐 hunk 阅读；未以 --stat 或 commit log 代替实际差异，未在评审中重跑测试。"
+  verification-evidence: "pass：机器区由 crctl-test 生成、status=pass、generated-at 2026-10-12T14:55:24+08:00、command-digest a942aa737f46df71554b7c42de63b0b50d9e3b443781f7ada2434d620a8bf71a，与 traceability.yml#tests 的 status／generated-at／command-digest 全等；15/15 条 cmd-NN.log 均在位且 exit-code=0、started=true、skipped=false、timed-out=false；multica 与 tools 的逐命令 source-revision 与当前 HEAD 全等（B-10 关闭）。登记一处非阻断的表达漂移：test-report.md 分析节（§二／§八）的逐命令计数是旧轮次残留，cmd-04 记 266 与 272 实测 276、cmd-07 记 54 与 55 实测 56、cmd-11 记 756 与 765 实测 770、registry_sha256 记 9caf3e24 实测 866d4284；该节自述为「本次 run 现查」与事实不符，属 FR-2 表达类，门禁消费的机器区不受影响，记入本轮交接评论、不构成 blocker。未重跑 lint／test／build。"
+  scope-control: "pass：本轮 diff 未触碰 SDD 批准范围的 scope_out 与 zero_diff 调用点；未新增豁免开关（crctl test 仍只接受 --plan）、未改 maxAttempts、未 reset 任何循环计数、未扩白名单、未改截断；测试命令集合本轮未变，只重跑取证。"
+  security: "pass：来源指令身份取自平台既有记录 task.TriggerCommentID，缺失或非 UUID 形状即与「无认证来源」同一出口（NOT_TTY，零写入、零授权审计、不新增同义错误码）；授权仍要求触发人为人类成员且是本 CR 该 loop 责任角色 owner。改说明文本不再能换取新授权格。"
+  readability: "pass：新增注释交代了为何必须取 Git 提交事实而非秒级时间相等、以及为何 dev-plan upstream 轨按自身 repair-target 判期望值；早退条件与不可判定分支的保守回退方向清晰。"
+  frontend-quality: "不适用：本轮与累计 diff 均未触及 tsx／vue／css／html。"
 suggestions:
-  - "已解决：B-01：非 TTY 自由文本不再单独授权；assertAuthenticatedContinue 核对平台 task 绑定、人类触发类型与责任角色 owner，daemon 在可信绑定发布缝注入并清除残留触发事实。原来源／权限缺口关闭；来源指令身份与重复消费残留归入本轮 B-02，不重复计数。"
-  - "已解决：B-03：runTestPlan 的 sourceRevision 已经 renderTestMachineReport 持久化为 source-revision，G06 读取同一字段，矛盾源与无效机器区硬失败，新增真实 testCr 接续夹具。原缺接线已关闭；当前 CR 实际报告源漂移另列 B-10，不把有字段说成已归因当前主体。"
-  - "已解决：B-04：originalGlobalGitConfigPaths 与 renderTaskGitConfig 保留 XDG／HOME 的全部原配置并依 Git 顺序 include；两文件并存、拆分身份及覆盖优先级有定向断言，原选首文件导致身份链丢失缺口关闭。"
-  - "已解决：B-05：legalLocalApprovalTrust 共用 CR／阶段责任角色事实，核对 owner 归属并排除 signature／key-id／grant-approved-at 残留，gate 与 lib 消费者复用该缝，原任意 UUID 即合法信任的缺口关闭。"
-  - "已解决：B-07：code stage 的 subjectMatchesAnnotation 在恢复成功回执之前严格重核原 release-subjects 的代码源与受控 artifacts；对象漂移返回 TX_RECOVERY_CONFLICT，原 code 恢复恒跳过对象核验的缺口关闭。"
-  - "已解决：B-09：developing 的 code BLOCK 分支已补耗尽优先与 nextCodeBlockRoute，代码 tree 已变且 healthy 后建议独立复评；未变／不可判仍回修，真实测试失败保留原路径。候选修正只作为被评审代码，不用于本轮正式路由授权。"
-  - "范围外：受控 Git stdout 20000 字符输出合同的系统性修复继续按人类裁定暂缓；本轮用既有 E 直接落盘，不扩白名单、不改截断、不把输出限制登记为业务 BLOCK，合并后承接既有 AIFI-60 范围。"
+  - "已解决：B-02 [major] TASK-08／FR-07／AC-16：来源指令身份改取平台既有事实。daemon 侧 injectTaskCRWorkspaceEnv 随绑定发布 CRCTL_TRIGGER_COMMENT_ID（取自 task.TriggerCommentID；on-assign 运行不发布占位值、未绑定任务照旧清除该键），crctl 侧 assertAuthenticatedContinue 要求其为 UUID 形状并把它作为继续指令身份，dedup_key 由 cr｜loop｜triggerCommentId 构成。由此改 --continue-reason 说明文本换不到新的授权格，新评论即使复述同一段说明也是新指令。正反例已落 cmd-04——缺或非 UUID 形状 → NOT_TTY 且零写入零授权审计；来源 X 授权 cycle 1 到 2；同来源仅改说明 → TX_INPUT_CONFLICT、零提交、cycle 未推进；新来源复述同说明 → 授权 cycle 2 到 3；同来源重投 → 幂等不增 cycle；授权审计的 dedup_key 逐条按评论 ID 断言（不再把评论 ID 拼进自由文本）。未新增第二账本、未重置本 CR 次数。"
+  - "已解决：B-06 [major] TASK-06／FR-05／AC-10：合法 TASK 集合增删已在 gate／approve／merge 三处同判。逐文件重核阶段被删除的 TASK 不再先返回 missing，改由集合判定分流；集合判定要求差异全部落在 tasks/TASK-NN.md 且每个新增 TASK 均已在 tasks/_index.yml 登记（索引缺失或形状非法即不降级），合法即降级为 warning，缺必需件、非法索引与 server-approve 严格路径仍硬阻断；KB 源绑定的允许面同时纳入当前受控集合，不再只收旧快照集合，因此同一合法增量不再出现「gate 为 warning、approve 或 merge 又 post-review-path-drift」。cmd-04 覆盖新增已登记（含 TTY approve 面承载同一 warning 且不阻断）、删除旧 TASK、删 prd.md 仍硬阻断、未登记 TASK 硬阻断且拒绝路径零写入；cmd-07 覆盖 merge 面同款三条（合法增与删继续合入、未登记不得合入且零远端副作用）。"
+  - "已解决：B-08 [major] TASK-04／FR-03／AC-07：重投识别不再只看对象与 payload 五字段，改核原操作范围。新增 recordedOperationScope 逐项核对 loop 范围（traceability 该 stage 的 review-loop 投影与 review-loop.yml 当前 cycle／attempt 相等）与 bump 意图（annotationCommitWroteLoop 取原操作 write-set 的既有 Git 事实——写出该 annotation 的那次提交是否同时写了 review-loop.yml），任一不可判定即落回正常新记录路径，不静默当原操作成功；--bump-attempt 的期望值按 dev-plan upstream 轨自身 repair-target 判定，不依赖本次 payload 是否在场。原「以秒级 reviewed-at 与 entry.at 相等推断 bump」的时间推断已删除。cmd-04 三条反例：无 bump 成功后带 --bump-attempt → 真实新增 attempt 并产生新提交、不被吞成 idempotent；人类继续进新 cycle 后同 payload → 按新 cycle 落盘而非返回旧 attempt；同秒 non-bump 刷新后带 --bump-attempt → 真实新增 attempt，其后的真重投仍幂等。未要求作者为消费 attempt 改写 verdict／dimensions。"
+  - "已解决：B-10 [major] 测试证据可信度／TASK-02／04／05／06／08／09／10：本轮机器区逐命令 source-revision 与当前已提交主体全等——multica 三条均为 d0b8fef9da5364719d4a8c04bb89175c6c291b9f（等于当前 multica HEAD），tools 九条均为 2c5585eab86102828ca8abe7eac3e2b3645d2e6a（等于当前 tools HEAD），本轮新增的三条回修回归用例正是在该源上实跑通过（cmd-04 与 cmd-07 日志逐条可见）；docs 两条记录的 48ae3f92 是当前 KB HEAD ec3514f2 的祖先，其间两个提交只改本 CR 记账路径（review-loop／traceability／test-report／test-evidence／_backlog），不涉被评审源码，符合 KB 的祖先语义。原「报告源与当前已提交内容不同」的事实已不存在；未改填历史 source，未由本次评审重跑测试。"
+  - "范围外：受控 Git stdout 20000 字符输出合同的系统性修复继续按人类裁定暂缓；本轮用既有出口直接落盘，不扩白名单、不改截断、不把输出限制登记为业务 BLOCK，合并后承接既有 AIFI-60 范围。"
 review-loop:
-  current-attempt: 2
+  current-attempt: 3
 release-subjects:
   version: 1
   repositories:
     - repo: ai-first-platform-docs
       remote-ref: refs/heads/requirement/CR-2026-076
-      reviewed-source-sha: 14ecdaa2c946709128b6ff0c2797dc0ff0ef2968
+      reviewed-source-sha: ec3514f2811afa10502fde326b8517b2b7639c5c
     - repo: multica
       remote-ref: refs/heads/requirement/CR-2026-076
-      reviewed-source-sha: 1d91d21004163e61298f5f1277677ac6f887a456
+      reviewed-source-sha: d0b8fef9da5364719d4a8c04bb89175c6c291b9f
     - repo: tools
       remote-ref: refs/heads/requirement/CR-2026-076
-      reviewed-source-sha: 3c1ccfc2b80232ef83f6c5f515009899d191918a
+      reviewed-source-sha: 2c5585eab86102828ca8abe7eac3e2b3645d2e6a
   artifacts:
     algorithm: sha256
     canonicalization: crlf-to-lf+path-sort
     files:
-      - { path: change-requests/CR-2026-076/plan.md, sha256: 8de7a6e7def0cb8d56de1b6adb49cec05b2e99169f9d8cd5c3be1d9564599718 }
+      - { path: change-requests/CR-2026-076/plan.md, sha256: 61ab4796375ad153c94745ef5ead11037dda68b09b63738c6d2baa6ec37ce1fd }
       - { path: change-requests/CR-2026-076/prd.md, sha256: 521746b36e53aab0bfc6419e8ee1c4b83292d16a342b00618a064948dbd574c6 }
       - { path: change-requests/CR-2026-076/sdd.md, sha256: 4f49ed6b4b80f1c2719b0ababd89ab0aab54eb688323854f2d477cca69292bc0 }
-      - { path: change-requests/CR-2026-076/tasks/TASK-01.md, sha256: 25a25017065837a31d2adff08c1594a81b359362c0be7261c71d6fe70038e592 }
+      - { path: change-requests/CR-2026-076/tasks/TASK-01.md, sha256: b070838238e3e2aff22c04ddb25a894a6e42728228ff616dad8cc325387b31bd }
       - { path: change-requests/CR-2026-076/tasks/TASK-02.md, sha256: 26181e299fd36bbd63c1c9400020c0d8b95ff95bd7fe6d4b5449c310c8b1d341 }
       - { path: change-requests/CR-2026-076/tasks/TASK-03.md, sha256: 30b4e3c80e4656d10dad6196dc96e28ac05d75f1c75820fd1eef24a1a5f27a5f }
       - { path: change-requests/CR-2026-076/tasks/TASK-04.md, sha256: 92228d0dae89c6cdea0914c92d635263ad9fc9c1d9f6e17b1360abc0c0ed63cd }
@@ -62,6 +56,6 @@ release-subjects:
       - { path: change-requests/CR-2026-076/tasks/TASK-14.md, sha256: 74c7d32e670641d7fa2d6c0387c63364ec2b2c9348de6ab39c145b9b8afa1e7d }
       - { path: change-requests/CR-2026-076/tasks/TASK-15.md, sha256: c047f28d44b70cafaf5ffb292d4ad14445422f3732655cf886528221637645f3 }
       - { path: change-requests/CR-2026-076/tasks/TASK-16.md, sha256: 0134c67d3027ac5772d4b36ba92ba953c48d4d4c21fd7291eb7fee5315f5d461 }
-      - { path: change-requests/CR-2026-076/tasks/TASK-17.md, sha256: ea0c053461a32a53258f3b400a8a9e5636c72f06d5717588feb0a1c77c2ec6d6 }
+      - { path: change-requests/CR-2026-076/tasks/TASK-17.md, sha256: c77be5e55c976a752d9308f59462b0e8c57591e21866c01727141bb32433e084 }
       - { path: change-requests/CR-2026-076/tasks/_index.yml, sha256: e6c4ba64e46e78f7ac252f4b637fbfed290b08b6ab3a77cec212bb38857ab43f }
-    digest: ea9f33ddd135a77309ea73979061a7646c83ae678814a7760cacad79c7d723ba
+    digest: 3e332b1193b2da9d1cccee3d6dddf64f1ef45a3de8805fb504125fcbf765bf61
