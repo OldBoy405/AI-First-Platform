@@ -1,10 +1,10 @@
 ---
 cr: CR-2026-076
-status: pass
+status: block
 tester: a0e71a32-509d-4ee9-aea4-d086a5b1ff93
 generated-by: crctl-test
-generated-at: "2026-10-11T19:43:24+08:00"
-command-digest: abf0f64ae5ede35876ad13b1a84e3585515816e25c78cdad6c6c718c83bebeb1
+generated-at: "2026-10-12T11:41:49+08:00"
+command-digest: a942aa737f46df71554b7c42de63b0b50d9e3b443781f7ada2434d620a8bf71a
 commands:
   - repo: multica
     cwd: server
@@ -17,7 +17,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-01.log
-    source-revision: e5f0fc089ee93517482f57f4b6332ff70dd25218
+    source-revision: d0b8fef9da5364719d4a8c04bb89175c6c291b9f
   - repo: multica
     cwd: server
     executable: go
@@ -29,7 +29,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-02.log
-    source-revision: e5f0fc089ee93517482f57f4b6332ff70dd25218
+    source-revision: d0b8fef9da5364719d4a8c04bb89175c6c291b9f
   - repo: multica
     cwd: server
     executable: node
@@ -41,7 +41,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-03.log
-    source-revision: e5f0fc089ee93517482f57f4b6332ff70dd25218
+    source-revision: d0b8fef9da5364719d4a8c04bb89175c6c291b9f
   - repo: tools
     cwd: .
     executable: node
@@ -53,7 +53,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-04.log
-    source-revision: a95941eef8d71dcfed62b2d330de1c2ef17a543a
+    source-revision: 909dfee3de96ce96aae752d9bef6d9784e3351e2
   - repo: tools
     cwd: .
     executable: node
@@ -65,7 +65,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-05.log
-    source-revision: a95941eef8d71dcfed62b2d330de1c2ef17a543a
+    source-revision: 909dfee3de96ce96aae752d9bef6d9784e3351e2
   - repo: tools
     cwd: .
     executable: node
@@ -77,7 +77,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-06.log
-    source-revision: a95941eef8d71dcfed62b2d330de1c2ef17a543a
+    source-revision: 909dfee3de96ce96aae752d9bef6d9784e3351e2
   - repo: tools
     cwd: .
     executable: node
@@ -89,19 +89,19 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-07.log
-    source-revision: a95941eef8d71dcfed62b2d330de1c2ef17a543a
+    source-revision: 909dfee3de96ce96aae752d9bef6d9784e3351e2
   - repo: tools
     cwd: .
     executable: node
     args: [--test, skills/shared/crctl/scripts/test/workspace-freshness.test.mjs]
     timeout-seconds: 600
-    exit-code: 0
+    exit-code: 1
     signal: null
     timed-out: false
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-08.log
-    source-revision: a95941eef8d71dcfed62b2d330de1c2ef17a543a
+    source-revision: 909dfee3de96ce96aae752d9bef6d9784e3351e2
   - repo: tools
     cwd: .
     executable: node
@@ -113,7 +113,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-09.log
-    source-revision: a95941eef8d71dcfed62b2d330de1c2ef17a543a
+    source-revision: 909dfee3de96ce96aae752d9bef6d9784e3351e2
   - repo: tools
     cwd: .
     executable: node
@@ -125,7 +125,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-10.log
-    source-revision: a95941eef8d71dcfed62b2d330de1c2ef17a543a
+    source-revision: 909dfee3de96ce96aae752d9bef6d9784e3351e2
   - repo: tools
     cwd: .
     executable: node
@@ -137,7 +137,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-11.log
-    source-revision: a95941eef8d71dcfed62b2d330de1c2ef17a543a
+    source-revision: 909dfee3de96ce96aae752d9bef6d9784e3351e2
   - repo: tools
     cwd: skills/shared/engineering-docs/scripts
     executable: node
@@ -149,7 +149,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-12.log
-    source-revision: a95941eef8d71dcfed62b2d330de1c2ef17a543a
+    source-revision: 909dfee3de96ce96aae752d9bef6d9784e3351e2
   - repo: ai-first-platform-docs
     cwd: .
     executable: node
@@ -161,7 +161,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-13.log
-    source-revision: 098d81d99488ad5f966d40ac038e65d87f182856
+    source-revision: 1ceb7af3c28c34e9387a7bf848f0f92a24a72dc5
   - repo: tools
     cwd: .
     executable: node
@@ -173,11 +173,11 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-14.log
-    source-revision: a95941eef8d71dcfed62b2d330de1c2ef17a543a
+    source-revision: 909dfee3de96ce96aae752d9bef6d9784e3351e2
   - repo: ai-first-platform-docs
     cwd: .
     executable: node
-    args: [-e, "const fs=require('fs'),cp=require('child_process'),cr=require('crypto');const NL=String.fromCharCode(10),CR=String.fromCharCode(13);const LD=p=>fs.readFileSync(p,'utf8').split(CR+NL).join(NL);const RD=p=>fs.existsSync(p)?LD(p):'';const bad=[];const S=x=>x?String(x):'';const run=(c,a)=>{const r=cp.spawnSync(c,a,{encoding:'utf8'});return {code:r.status,out:S(r.stdout),err:S(r.stderr)};};const v=run('multica',['--version']);const vline=S(v.out.trim().split(NL)[0]);console.log('installed-entry: '+vline);if(v.code!==0){bad.push('multica --version 非零退出: '+v.err.trim());}const tok=S(vline.split(' ')[1]);const d=run('multica',['daemon','status','--output','json']);let cli='';try{cli=S(JSON.parse(d.out).cli_version);}catch(e){bad.push('daemon status 非 JSON: '+d.out.slice(0,200));}console.log('daemon-cli-version: '+cli);if(cli&&tok&&cli!==tok){bad.push('daemon 与已安装 CLI 版本不一致: '+cli+' vs '+tok);}const R='change-requests/CR-2026-076/test-evidence/';const rh=RD(R+'fr14-launch-receipt.md');const rb=RD(R+'fr14-run-behavior.md');if(!rh.trim()){bad.push('缺少启动回执原样证据: '+R+'fr14-launch-receipt.md');}else{console.log('launch-receipt sha256='+cr.createHash('sha256').update(rh).digest('hex'));if(tok&&rh.indexOf(tok)<0){bad.push('启动回执未载明现场入口版本: '+tok);}}if(!rb.trim()){bad.push('缺少 run 目标行为证据: '+R+'fr14-run-behavior.md');}else{console.log('run-behavior sha256='+cr.createHash('sha256').update(rb).digest('hex'));}if(bad.length){console.error(bad.join(NL));process.exit(1);}console.log('cmd-15 ok: 已安装 CLI／daemon 版本一致且与启动回执一致、run 目标行为证据原样在位');"]
+    args: [-e, "const fs=require('fs'),cp=require('child_process'),cr=require('crypto');const NL=String.fromCharCode(10),CR=String.fromCharCode(13);const LD=p=>fs.readFileSync(p,'utf8').split(CR+NL).join(NL);const RD=p=>fs.existsSync(p)?LD(p):'';const bad=[];const S=x=>x?String(x):'';const run=(c,a)=>{const r=cp.spawnSync(c,a,{encoding:'utf8'});return {code:r.status,out:S(r.stdout),err:S(r.stderr)};};const v=run('multica',['--version']);const vline=S(v.out.trim().split(NL)[0]);console.log('installed-entry: '+vline);const tok=S(vline.split(' ')[1]);if(v.code!==0){bad.push('multica --version 非零退出: '+v.err.trim());}if(!tok){bad.push('multica --version 版本 token 为空或不可解析: '+JSON.stringify(vline.slice(0,200)));}const d=run('multica',['daemon','status','--output','json']);if(d.code!==0){bad.push('multica daemon status 非零退出: '+d.err.trim()+' stdout='+d.out.slice(0,200));}let cli='';try{cli=S(JSON.parse(d.out).cli_version);}catch(e){bad.push('daemon status 非 JSON: '+d.out.slice(0,200));}console.log('daemon-cli-version: '+cli);if(!cli){bad.push('daemon status 未给出版本 cli_version（空或不可解析）: '+d.out.slice(0,200));}if(cli!==tok){bad.push('daemon 与已安装 CLI 版本不一致: '+cli+' vs '+tok);}const R='change-requests/CR-2026-076/test-evidence/';const rh=RD(R+'fr14-launch-receipt.md');const rb=RD(R+'fr14-run-behavior.md');if(!rh.trim()){bad.push('缺少启动回执原样证据: '+R+'fr14-launch-receipt.md');}else{console.log('launch-receipt sha256='+cr.createHash('sha256').update(rh).digest('hex'));if(rh.indexOf(tok)<0){bad.push('启动回执未载明现场入口版本: '+tok);}}if(!rb.trim()){bad.push('缺少 run 目标行为证据: '+R+'fr14-run-behavior.md');}else{console.log('run-behavior sha256='+cr.createHash('sha256').update(rb).digest('hex'));}if(bad.length){console.error(bad.join(NL));process.exit(1);}console.log('cmd-15 ok: 已安装 CLI／daemon 版本一致且与启动回执一致、run 目标行为证据原样在位');"]
     timeout-seconds: 600
     exit-code: 0
     signal: null
@@ -185,7 +185,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-15.log
-    source-revision: 098d81d99488ad5f966d40ac038e65d87f182856
+    source-revision: 1ceb7af3c28c34e9387a7bf848f0f92a24a72dc5
 ---
 
 # 测试报告 · CR-2026-076
