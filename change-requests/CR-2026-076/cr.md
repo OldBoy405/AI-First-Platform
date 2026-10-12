@@ -17,9 +17,9 @@ target-version: 0.49
 target-spec-id: ai-first-platform
 source: ""
 origin: ""
-status: code-approved
+status: merging
 created: "2026-10-07T00:06:29+08:00"
-updated: "2026-10-12T15:21:21+08:00"
+updated: "2026-10-12T16:10:40+08:00"
 remote-ref: ""
 last-push-at: ""
 last-push-by: ""
