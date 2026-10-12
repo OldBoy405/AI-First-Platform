@@ -3,7 +3,7 @@ cr: CR-2026-076
 status: pass
 tester: a0e71a32-509d-4ee9-aea4-d086a5b1ff93
 generated-by: crctl-test
-generated-at: "2026-10-12T12:52:34+08:00"
+generated-at: "2026-10-12T14:55:24+08:00"
 command-digest: a942aa737f46df71554b7c42de63b0b50d9e3b443781f7ada2434d620a8bf71a
 commands:
   - repo: multica
@@ -53,7 +53,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-04.log
-    source-revision: 6bd35a3f4235f3e879799cee4f01743a4ac847b1
+    source-revision: 2c5585eab86102828ca8abe7eac3e2b3645d2e6a
   - repo: tools
     cwd: .
     executable: node
@@ -65,7 +65,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-05.log
-    source-revision: 6bd35a3f4235f3e879799cee4f01743a4ac847b1
+    source-revision: 2c5585eab86102828ca8abe7eac3e2b3645d2e6a
   - repo: tools
     cwd: .
     executable: node
@@ -77,7 +77,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-06.log
-    source-revision: 6bd35a3f4235f3e879799cee4f01743a4ac847b1
+    source-revision: 2c5585eab86102828ca8abe7eac3e2b3645d2e6a
   - repo: tools
     cwd: .
     executable: node
@@ -89,7 +89,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-07.log
-    source-revision: 6bd35a3f4235f3e879799cee4f01743a4ac847b1
+    source-revision: 2c5585eab86102828ca8abe7eac3e2b3645d2e6a
   - repo: tools
     cwd: .
     executable: node
@@ -101,7 +101,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-08.log
-    source-revision: 6bd35a3f4235f3e879799cee4f01743a4ac847b1
+    source-revision: 2c5585eab86102828ca8abe7eac3e2b3645d2e6a
   - repo: tools
     cwd: .
     executable: node
@@ -113,7 +113,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-09.log
-    source-revision: 6bd35a3f4235f3e879799cee4f01743a4ac847b1
+    source-revision: 2c5585eab86102828ca8abe7eac3e2b3645d2e6a
   - repo: tools
     cwd: .
     executable: node
@@ -125,7 +125,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-10.log
-    source-revision: 6bd35a3f4235f3e879799cee4f01743a4ac847b1
+    source-revision: 2c5585eab86102828ca8abe7eac3e2b3645d2e6a
   - repo: tools
     cwd: .
     executable: node
@@ -137,7 +137,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-11.log
-    source-revision: 6bd35a3f4235f3e879799cee4f01743a4ac847b1
+    source-revision: 2c5585eab86102828ca8abe7eac3e2b3645d2e6a
   - repo: tools
     cwd: skills/shared/engineering-docs/scripts
     executable: node
@@ -149,7 +149,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-12.log
-    source-revision: 6bd35a3f4235f3e879799cee4f01743a4ac847b1
+    source-revision: 2c5585eab86102828ca8abe7eac3e2b3645d2e6a
   - repo: ai-first-platform-docs
     cwd: .
     executable: node
@@ -161,7 +161,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-13.log
-    source-revision: 1204b21eca22a89b6ee1a05d703f3d147e69e5da
+    source-revision: 48ae3f9285a6c2d41363777287ebde802cd46ce0
   - repo: tools
     cwd: .
     executable: node
@@ -173,7 +173,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-14.log
-    source-revision: 6bd35a3f4235f3e879799cee4f01743a4ac847b1
+    source-revision: 2c5585eab86102828ca8abe7eac3e2b3645d2e6a
   - repo: ai-first-platform-docs
     cwd: .
     executable: node
@@ -185,7 +185,7 @@ commands:
     started: true
     skipped: false
     log: change-requests/CR-2026-076/test-evidence/cmd-15.log
-    source-revision: 1204b21eca22a89b6ee1a05d703f3d147e69e5da
+    source-revision: 48ae3f9285a6c2d41363777287ebde802cd46ce0
 ---
 
 # 测试报告 · CR-2026-076

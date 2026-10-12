@@ -35,13 +35,13 @@ $ go test ./internal/daemon/ -count=1 -v -run Test(ConfigurePipelineGitEnvironme
 === RUN   TestConfigureTaskGitEnvironment/a_co-existing_XDG_identity_does_not_outrank_~/.gitconfig
 === RUN   TestConfigureTaskGitEnvironment/a_global_config_without_an_identity_stops_before_any_ledger_write
 === RUN   TestConfigureTaskGitEnvironment/an_unresolvable_global_config_stops_the_task
---- PASS: TestConfigureTaskGitEnvironment (0.28s)
+--- PASS: TestConfigureTaskGitEnvironment (0.29s)
     --- PASS: TestConfigureTaskGitEnvironment/a_split_global_config_keeps_both_files_in_Git's_order (0.07s)
     --- PASS: TestConfigureTaskGitEnvironment/an_XDG_config_without_an_identity_keeps_working_when_~/.gitconfig_carries_it (0.06s)
     --- PASS: TestConfigureTaskGitEnvironment/a_co-existing_XDG_identity_does_not_outrank_~/.gitconfig (0.08s)
     --- PASS: TestConfigureTaskGitEnvironment/a_global_config_without_an_identity_stops_before_any_ledger_write (0.02s)
     --- PASS: TestConfigureTaskGitEnvironment/an_unresolvable_global_config_stops_the_task (0.00s)
 PASS
-ok  	github.com/multica-ai/multica/server/internal/daemon	1.744s
+ok  	github.com/multica-ai/multica/server/internal/daemon	1.779s
 
 --- stderr ---
