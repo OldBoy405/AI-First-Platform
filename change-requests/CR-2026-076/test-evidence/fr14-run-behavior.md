@@ -368,7 +368,7 @@ exec "D:/Program Files (x86)/nodejs/node.exe" "C:/Users/GOBAO/Downloads/AI/tools
 | 该文件中 `--continue-reason` | 命中 0（不存在） | 存在 |
 | `dir-graph.yaml` sha256 | `d93ee4e3895f76d15f1bd5518fb78297276d935a65ef0b2a06b7da6c9f8bc1d3` | `a3bc77efe433086b1256318faaf52417b57592c73eccc8ec58964cdc6b74f392` |
 | `dir-graph.yaml` 中 `write-dev-tasks:finalize` | 不存在 | 存在 |
-| 工作区状态 | clean 之外：另有 4 个文件被就地修改（`agent-skill-matrix.yml`、`pipeline-templates/code-implementation.pipeline.json`、`skills/_index.yml`、`skills/develop/review-code/SKILL.md`；`git diff --stat` = 33 insertions(+), 7 deletions(-)；四者内容与 tools CR worktree 现有版本**均不相等**，也不等于触碰 `skills/develop/review-code/SKILL.md` 的 28 个 CR 分支历史版本中的任何一个） | clean |
+| 工作区状态 | `git status --porcelain`：仅 4 个文件被就地修改（`agent-skill-matrix.yml`、`pipeline-templates/code-implementation.pipeline.json`、`skills/_index.yml`、`skills/develop/review-code/SKILL.md`；`git diff --stat` = 33 insertions(+), 7 deletions(-)），HEAD 仍为 `0f5690f`；四者内容与 tools CR worktree 现有版本**均不相等**；其中 `skills/develop/review-code/SKILL.md` 的内容也不等于触碰该文件的 28 个 CR 分支历史版本中的任何一个（其余三个文件未逐版本比对） | clean（`dirty=false`） |
 
 两份 `dir-graph.yaml` 的全量 `diff` 只差 1 行（`- { from: task-breakdown, to: developing, trigger: "write-dev-tasks:finalize" }`）；本次 `crctl status` 报 `source.stateMachine` = 安装态根 `dir-graph.yaml`，而 CR-2026-076 当前 `status=developing`（已在该转换之后）——**同窗口用两份 `crctl.mjs`（安装态副本与 tools CR worktree 副本）分别执行 `status`，`status`／`legalNext`／`reviewLoops`／`gateBlockers` 四段逐字相同**（两条原样输出已分别核对），故该行差异对本窗口的 `next`／门禁读数无可见影响。
 
