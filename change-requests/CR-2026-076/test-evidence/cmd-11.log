@@ -1,0 +1,412 @@
+$ node skills/shared/crctl/scripts/test/suite-gate.mjs --run
+(exit=0)
+--- stdout ---
+{
+  "schema": "crctl-suite-gate-report/v1",
+  "command": "node --test --test-reporter=tap <31 files> (pool=15, availableParallelism=16)",
+  "observer": "tap-per-file",
+  "duration_ms": 1442123,
+  "converged": true,
+  "exit_code": 0,
+  "files_executed": 31,
+  "cases_executed": 770,
+  "skipped_file_level": 0,
+  "files": [
+    {
+      "file": "archive-tx.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 30,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 1433348
+    },
+    {
+      "file": "caller-contract.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 15,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 1352
+    },
+    {
+      "file": "check-agents-contract.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 1,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 328
+    },
+    {
+      "file": "check-skill-matrix.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 8,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 3021
+    },
+    {
+      "file": "checkpoint-tx.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 25,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 647392
+    },
+    {
+      "file": "competitive-report.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 15,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 46111
+    },
+    {
+      "file": "contract-scan.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 29,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 11312
+    },
+    {
+      "file": "crctl-summary.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 8,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 26754
+    },
+    {
+      "file": "crctl.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 276,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 776554
+    },
+    {
+      "file": "durable-tx.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 16,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 3938
+    },
+    {
+      "file": "fault-harness.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 9,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 24435
+    },
+    {
+      "file": "guard-protected-paths.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 5,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 1696
+    },
+    {
+      "file": "lint-prompts.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 39,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 8556
+    },
+    {
+      "file": "merge-tx.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 23,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 767968
+    },
+    {
+      "file": "owner-source-scan.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 10,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 24840
+    },
+    {
+      "file": "pipeline-structure.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 36,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 1507
+    },
+    {
+      "file": "planning-entry.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 10,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 33449
+    },
+    {
+      "file": "publish-effectiveness.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 3,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 5822
+    },
+    {
+      "file": "register-tx.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 39,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 742287
+    },
+    {
+      "file": "skill-scope.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 3,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 368
+    },
+    {
+      "file": "suite-gate-count.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 5,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 3220
+    },
+    {
+      "file": "terminal-audit.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 3,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 199253
+    },
+    {
+      "file": "test-cr.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 30,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 107764
+    },
+    {
+      "file": "trace-outbox.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 12,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 399115
+    },
+    {
+      "file": "trace-semantic.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 5,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 1675
+    },
+    {
+      "file": "upgrade-check.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 2,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 58015
+    },
+    {
+      "file": "version-set.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 12,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 357481
+    },
+    {
+      "file": "workspace-freshness.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 40,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 657544
+    },
+    {
+      "file": "workspace-resolver.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 8,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 4899
+    },
+    {
+      "file": "writeback-tx.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 36,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 1415294
+    },
+    {
+      "file": "yaml-subset.test.mjs",
+      "state": "ok",
+      "exit_code": 0,
+      "cases": 17,
+      "failures": [],
+      "skipped_cases": 0,
+      "todo": 0,
+      "duration_ms": 329
+    }
+  ],
+  "failures": [],
+  "warnings": [],
+  "checks": [
+    {
+      "code": "SUITE_REGISTRY_MISSING",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "SUITE_REGISTRY_SCHEMA_INVALID",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "SUITE_REPORT_UNPARSEABLE",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "SUITE_FILE_LOAD_FAILURE",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "SUITE_MANIFEST_FILE_DRIFT",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "SUITE_MANIFEST_CASE_DROP",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "EXCEPTION_FIELD_MISSING",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "EXCEPTION_SCHEMA_INVALID",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "EXCEPTION_DUPLICATE",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "EXCEPTION_EXPIRED",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "EXCEPTION_NOT_OBSERVED",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "SUITE_FAILURES_UNREGISTERED",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "code": "SUITE_NONCONVERGENCE",
+      "ok": true,
+      "detail": "ok"
+    }
+  ],
+  "registry": {
+    "sha256": "866d428460e1d2ec053ea81d39372e60b3efab2db48f499da471900f83ad51ed",
+    "exceptions_count": 0
+  },
+  "platform": {
+    "platform": "win32",
+    "node": "24.15.0"
+  },
+  "verdict": "pass"
+}
+suite-gate: command=node --test --test-reporter=tap <31 files> (pool=15, availableParallelism=16)
+suite-gate: observer=tap-per-file duration_ms=1442123 converged=true exit_code=0
+suite-gate: files_executed=31 cases_executed=770 skipped_file_level=0
+suite-gate: failures=0
+suite-gate: registry_sha256=866d428460e1d2ec053ea81d39372e60b3efab2db48f499da471900f83ad51ed exceptions_count=0
+suite-gate: verdict=pass
+
+--- stderr ---

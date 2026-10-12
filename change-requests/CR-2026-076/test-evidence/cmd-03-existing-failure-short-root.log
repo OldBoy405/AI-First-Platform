@@ -1,0 +1,624 @@
+=== RUN   TestGitEnv
+=== PAUSE TestGitEnv
+=== RUN   TestGitEnvPreservesExistingConfig
+--- PASS: TestGitEnvPreservesExistingConfig (0.00s)
+=== RUN   TestRunGitOutputTimesOut
+--- PASS: TestRunGitOutputTimesOut (0.00s)
+=== RUN   TestNewGitCommandUsesStableWorkingDirectory
+--- PASS: TestNewGitCommandUsesStableWorkingDirectory (0.00s)
+=== RUN   TestSyncSurvivesDeletedProcessWorkingDirectory
+    cache_test.go:159: platform does not allow removing the process working directory: unlinkat C:\ctmp\TestSyncSurvivesDeletedProcessWorkingDirectory254731719\003\worktree: The process cannot access the file because it is being used by another process.
+--- SKIP: TestSyncSurvivesDeletedProcessWorkingDirectory (0.09s)
+=== RUN   TestRepoMaintenanceYieldsToForeground
+=== PAUSE TestRepoMaintenanceYieldsToForeground
+=== RUN   TestCancelMaintenanceStopsMaintenanceWithoutARepoCheckout
+=== PAUSE TestCancelMaintenanceStopsMaintenanceWithoutARepoCheckout
+=== RUN   TestCancelMaintenanceWaitsForCleanupBarrier
+=== PAUSE TestCancelMaintenanceWaitsForCleanupBarrier
+=== RUN   TestCreateWorktreeContextReturnsBusyAfterBoundedLockWait
+=== PAUSE TestCreateWorktreeContextReturnsBusyAfterBoundedLockWait
+=== RUN   TestCreateWorktreeContextCancelsRunningGitProcessTree
+2026/10/10 19:55:08 WARN repo checkout: fetch failed, agent will see possibly stale code url=https://github.com/org/repo.git error="ensure refspec: set remote.origin.fetch: fatal: not in a git directory: exit status 128"
+--- PASS: TestCreateWorktreeContextCancelsRunningGitProcessTree (0.65s)
+=== RUN   TestBareDirName
+=== PAUSE TestBareDirName
+=== RUN   TestBareDirNameDistinctsSegmentBoundaryColliders
+=== PAUSE TestBareDirNameDistinctsSegmentBoundaryColliders
+=== RUN   TestBareDirNameDistinctsSameRepoNameAcrossHosts
+=== PAUSE TestBareDirNameDistinctsSameRepoNameAcrossHosts
+=== RUN   TestBareDirNameDistinctsHostPortFromDashedHostname
+=== PAUSE TestBareDirNameDistinctsHostPortFromDashedHostname
+=== RUN   TestIsBareRepo
+=== PAUSE TestIsBareRepo
+=== RUN   TestSyncAndLookup
+=== PAUSE TestSyncAndLookup
+=== RUN   TestSyncKeepsDistinctCachesForSegmentBoundaryColliders
+=== PAUSE TestSyncKeepsDistinctCachesForSegmentBoundaryColliders
+=== RUN   TestSyncFetchesExisting
+=== PAUSE TestSyncFetchesExisting
+=== RUN   TestWorktreeFromCache
+=== PAUSE TestWorktreeFromCache
+=== RUN   TestCreateWorktree
+=== PAUSE TestCreateWorktree
+=== RUN   TestCreateWorktreeWithIsolatedGitMetadata
+=== PAUSE TestCreateWorktreeWithIsolatedGitMetadata
+=== RUN   TestCreateIsolatedCheckoutImportsFetchedTipFromShallowCache
+=== PAUSE TestCreateIsolatedCheckoutImportsFetchedTipFromShallowCache
+=== RUN   TestCreateWorktreeReusesIsolatedGitMetadata
+=== PAUSE TestCreateWorktreeReusesIsolatedGitMetadata
+=== RUN   TestCreateWorktreeMigratesLinkedWorktreeToIsolatedMetadata
+=== PAUSE TestCreateWorktreeMigratesLinkedWorktreeToIsolatedMetadata
+=== RUN   TestLocalCloneArgsOnlyDisablesHardlinksOnWindows
+=== PAUSE TestLocalCloneArgsOnlyDisablesHardlinksOnWindows
+=== RUN   TestIsolatedCheckoutCloneWithoutHardlinksIsIndependent
+=== PAUSE TestIsolatedCheckoutCloneWithoutHardlinksIsIndependent
+=== RUN   TestCreateWorktreeExcludesOpenCodeSkills
+=== PAUSE TestCreateWorktreeExcludesOpenCodeSkills
+=== RUN   TestCreateWorktreeExcludesAgentSidecars
+=== PAUSE TestCreateWorktreeExcludesAgentSidecars
+=== RUN   TestCreateWorktreeDoesNotExcludeReasonixProjectConfig
+=== PAUSE TestCreateWorktreeDoesNotExcludeReasonixProjectConfig
+=== RUN   TestCreateWorktreeNotCached
+=== PAUSE TestCreateWorktreeNotCached
+=== RUN   TestCreateWorktreeWithRequestedBranchRef
+=== PAUSE TestCreateWorktreeWithRequestedBranchRef
+=== RUN   TestCreateWorktreeWithRequestedCommitRef
+=== PAUSE TestCreateWorktreeWithRequestedCommitRef
+=== RUN   TestCreateWorktreeWithRequestedTagRef
+=== PAUSE TestCreateWorktreeWithRequestedTagRef
+=== RUN   TestCreateWorktreeWithUnknownRequestedRef
+=== PAUSE TestCreateWorktreeWithUnknownRequestedRef
+=== RUN   TestCreateWorktreeFetchesDespiteAgentBranchOnRemote
+=== PAUSE TestCreateWorktreeFetchesDespiteAgentBranchOnRemote
+=== RUN   TestEnsureRemoteTrackingLayoutMigratesLegacyCache
+=== PAUSE TestEnsureRemoteTrackingLayoutMigratesLegacyCache
+=== RUN   TestCreateWorktreePathCollisionDoesNotLeakBranch
+=== PAUSE TestCreateWorktreePathCollisionDoesNotLeakBranch
+=== RUN   TestGetRemoteDefaultBranchScansForCustomDefault
+=== PAUSE TestGetRemoteDefaultBranchScansForCustomDefault
+=== RUN   TestGetRemoteDefaultBranchFallsBackToBareHead
+=== PAUSE TestGetRemoteDefaultBranchFallsBackToBareHead
+=== RUN   TestGitFetchRefreshesOriginHeadAfterDefaultChange
+=== PAUSE TestGitFetchRefreshesOriginHeadAfterDefaultChange
+=== RUN   TestGetRemoteDefaultBranchUsesBareHeadHintForCustomDefault
+=== PAUSE TestGetRemoteDefaultBranchUsesBareHeadHintForCustomDefault
+=== RUN   TestCreateWorktreeInstallsCoAuthoredByHook
+=== PAUSE TestCreateWorktreeInstallsCoAuthoredByHook
+=== RUN   TestCoAuthoredByHookIdempotent
+=== PAUSE TestCoAuthoredByHookIdempotent
+=== RUN   TestCreateWorktreeRemovesCoAuthoredByHookWhenDisabled
+=== PAUSE TestCreateWorktreeRemovesCoAuthoredByHookWhenDisabled
+=== RUN   TestCreateWorktreeRemovesLegacyCoAuthoredByHook
+=== PAUSE TestCreateWorktreeRemovesLegacyCoAuthoredByHook
+=== RUN   TestRemoveCoAuthoredByHookPreservesUserHook
+=== PAUSE TestRemoveCoAuthoredByHookPreservesUserHook
+=== RUN   TestGetRemoteDefaultBranchAmbiguousOriginReturnsEmpty
+=== PAUSE TestGetRemoteDefaultBranchAmbiguousOriginReturnsEmpty
+=== RUN   TestLastUsedMissingIsUnknownNotAncient
+=== PAUSE TestLastUsedMissingIsUnknownNotAncient
+=== RUN   TestMarkUsedRoundTrip
+=== PAUSE TestMarkUsedRoundTrip
+=== RUN   TestMarkUsedIgnoresUnwritableRepo
+=== PAUSE TestMarkUsedIgnoresUnwritableRepo
+=== RUN   TestCreateWorktreeStampsLastUsed
+=== PAUSE TestCreateWorktreeStampsLastUsed
+=== RUN   TestBarePathIsIndependentOfExistence
+=== PAUSE TestBarePathIsIndependentOfExistence
+=== RUN   TestTaskKeyMatchesExecenvContract
+=== PAUSE TestTaskKeyMatchesExecenvContract
+=== RUN   TestBranchNameDistinctForSharedUUIDv7Prefix
+=== PAUSE TestBranchNameDistinctForSharedUUIDv7Prefix
+=== RUN   TestCoAuthoredByStateStopsTrailerInExistingCheckout
+=== PAUSE TestCoAuthoredByStateStopsTrailerInExistingCheckout
+=== RUN   TestCreateWorktreeInstallsGatedHook
+=== PAUSE TestCreateWorktreeInstallsGatedHook
+=== RUN   TestWriteCoAuthoredByStateIsAtomic
+=== PAUSE TestWriteCoAuthoredByStateIsAtomic
+=== RUN   TestReconcileCoAuthoredByHooksMigratesReleasedHook
+=== PAUSE TestReconcileCoAuthoredByHooksMigratesReleasedHook
+=== RUN   TestReconcileCoAuthoredByHooksUpgradesReleasedHookInPlace
+=== PAUSE TestReconcileCoAuthoredByHooksUpgradesReleasedHookInPlace
+=== RUN   TestReconcileCoAuthoredByHooksPreservesUserHook
+=== PAUSE TestReconcileCoAuthoredByHooksPreservesUserHook
+=== RUN   TestCreateWorktreeDoesNotResurrectDisabledState
+=== PAUSE TestCreateWorktreeDoesNotResurrectDisabledState
+=== RUN   TestReconcileCoAuthoredByHookInCheckoutMigratesReleasedHook
+=== PAUSE TestReconcileCoAuthoredByHookInCheckoutMigratesReleasedHook
+=== RUN   TestReconcileCoAuthoredByHookInCheckoutIgnoresLinkedWorktree
+=== PAUSE TestReconcileCoAuthoredByHookInCheckoutIgnoresLinkedWorktree
+=== RUN   TestIsolatedCheckoutIsCommittableOnWindows
+=== PAUSE TestIsolatedCheckoutIsCommittableOnWindows
+=== RUN   TestIsolatedCheckoutAcrossVolumesOnWindows
+=== PAUSE TestIsolatedCheckoutAcrossVolumesOnWindows
+=== RUN   TestRepeatedCheckoutKeepsLocalWork
+=== PAUSE TestRepeatedCheckoutKeepsLocalWork
+=== RUN   TestRepeatedCheckoutOnTaskBranchIsNoop
+=== PAUSE TestRepeatedCheckoutOnTaskBranchIsNoop
+=== RUN   TestRepeatedCheckoutMovesCleanCheckoutToNewBranch
+=== PAUSE TestRepeatedCheckoutMovesCleanCheckoutToNewBranch
+=== RUN   TestFreshCheckoutDiscardsLocalWork
+=== PAUSE TestFreshCheckoutDiscardsLocalWork
+=== RUN   TestIsolatedCheckoutKeepsLinkedWorktreeHoldingWork
+=== PAUSE TestIsolatedCheckoutKeepsLinkedWorktreeHoldingWork
+=== RUN   TestFreshMigrationCarriesUnpushedBranch
+=== PAUSE TestFreshMigrationCarriesUnpushedBranch
+=== RUN   TestIsTaskBranch
+=== PAUSE TestIsTaskBranch
+=== RUN   TestCheckoutIdentityIgnoresSharedCache
+=== RUN   TestCheckoutIdentityIgnoresSharedCache/linked
+2026/10/10 19:55:09 INFO repo cache: cloning url=C:\ctmp\TestCheckoutIdentityIgnoresSharedCachelinked2905420936\001 path=C:\ctmp\TestCheckoutIdentityIgnoresSharedCachelinked2905420936\002\ws-1\c+\ctmp\TestCheckoutIdentityIgnoresSharedCachelinked2905420936\001.git
+2026/10/10 19:55:10 INFO repo checkout: worktree created url=C:\ctmp\TestCheckoutIdentityIgnoresSharedCachelinked2905420936\001 path=C:\ctmp\TestCheckoutIdentityIgnoresSharedCachelinked2905420936\003\ctmp\TestCheckoutIdentityIgnoresSharedCachelinked2905420936\001 branch=agent/agent/111111111111 base=refs/remotes/origin/master
+2026/10/10 19:55:11 INFO repo checkout: existing checkout kept url=C:\ctmp\TestCheckoutIdentityIgnoresSharedCachelinked2905420936\001 path=C:\ctmp\TestCheckoutIdentityIgnoresSharedCachelinked2905420936\003\ctmp\TestCheckoutIdentityIgnoresSharedCachelinked2905420936\001 branch=agent/agent/111111111111 reason=local_work uncommitted_files=0 unpushed_commits=1
+=== RUN   TestCheckoutIdentityIgnoresSharedCache/isolated
+2026/10/10 19:55:11 INFO repo cache: cloning url=C:\ctmp\TestCheckoutIdentityIgnoresSharedCacheisolated2993497924\001 path=C:\ctmp\TestCheckoutIdentityIgnoresSharedCacheisolated2993497924\002\ws-1\c+\ctmp\TestCheckoutIdentityIgnoresSharedCacheisolated2993497924\001.git
+2026/10/10 19:55:13 INFO repo checkout: isolated checkout ready url=C:\ctmp\TestCheckoutIdentityIgnoresSharedCacheisolated2993497924\001 path=C:\ctmp\TestCheckoutIdentityIgnoresSharedCacheisolated2993497924\003\ctmp\TestCheckoutIdentityIgnoresSharedCacheisolated2993497924\001 branch=agent/agent/111111111111 base=refs/remotes/origin/master
+2026/10/10 19:55:14 INFO repo checkout: existing checkout kept url=C:\ctmp\TestCheckoutIdentityIgnoresSharedCacheisolated2993497924\001 path=C:\ctmp\TestCheckoutIdentityIgnoresSharedCacheisolated2993497924\003\ctmp\TestCheckoutIdentityIgnoresSharedCacheisolated2993497924\001 branch=agent/agent/111111111111 reason=local_work uncommitted_files=0 unpushed_commits=1
+--- PASS: TestCheckoutIdentityIgnoresSharedCache (4.96s)
+    --- PASS: TestCheckoutIdentityIgnoresSharedCache/linked (2.33s)
+    --- PASS: TestCheckoutIdentityIgnoresSharedCache/isolated (2.59s)
+=== RUN   TestCheckoutIdentityConcurrentTasksAndOverrides
+2026/10/10 19:55:14 INFO repo cache: cloning url=C:\ctmp\TestCheckoutIdentityConcurrentTasksAndOverrides2170421207\002 path=C:\ctmp\TestCheckoutIdentityConcurrentTasksAndOverrides2170421207\003\ws-1\c+\ctmp\TestCheckoutIdentityConcurrentTasksAndOverrides2170421207\002.git
+2026/10/10 19:55:15 INFO repo checkout: worktree created url=C:\ctmp\TestCheckoutIdentityConcurrentTasksAndOverrides2170421207\002 path=C:\ctmp\TestCheckoutIdentityConcurrentTasksAndOverrides2170421207\005\ctmp\TestCheckoutIdentityConcurrentTasksAndOverrides2170421207\002 branch=agent/agent/task0 base=refs/remotes/origin/master
+2026/10/10 19:55:16 INFO repo checkout: worktree created url=C:\ctmp\TestCheckoutIdentityConcurrentTasksAndOverrides2170421207\002 path=C:\ctmp\TestCheckoutIdentityConcurrentTasksAndOverrides2170421207\006\ctmp\TestCheckoutIdentityConcurrentTasksAndOverrides2170421207\002 branch=agent/agent/task1 base=refs/remotes/origin/master
+2026/10/10 19:55:17 INFO repo checkout: existing checkout kept url=C:\ctmp\TestCheckoutIdentityConcurrentTasksAndOverrides2170421207\002 path=C:\ctmp\TestCheckoutIdentityConcurrentTasksAndOverrides2170421207\005\ctmp\TestCheckoutIdentityConcurrentTasksAndOverrides2170421207\002 branch=agent/agent/task0 reason=task_branch uncommitted_files=0 unpushed_commits=1
+2026/10/10 19:55:17 INFO repo checkout: existing checkout kept url=C:\ctmp\TestCheckoutIdentityConcurrentTasksAndOverrides2170421207\002 path=C:\ctmp\TestCheckoutIdentityConcurrentTasksAndOverrides2170421207\006\ctmp\TestCheckoutIdentityConcurrentTasksAndOverrides2170421207\002 branch=agent/agent/task1 reason=task_branch uncommitted_files=0 unpushed_commits=1
+--- PASS: TestCheckoutIdentityConcurrentTasksAndOverrides (3.45s)
+=== RUN   TestCheckoutIdentityMigratesExistingWorktree
+=== RUN   TestCheckoutIdentityMigratesExistingWorktree/worktreeConfig=false
+2026/10/10 19:55:17 INFO repo cache: cloning url="C:\\ctmp\\TestCheckoutIdentityMigratesExistingWorktreeworktreeConfig=fals4080494436\\001" path="C:\\ctmp\\TestCheckoutIdentityMigratesExistingWorktreeworktreeConfig=fals4080494436\\002\\ws-1\\c+\\ctmp\\TestCheckoutIdentityMigratesExistingWorktreeworktreeConfig=fals4080494436\\001.git"
+2026/10/10 19:55:19 INFO repo checkout: existing checkout kept url="C:\\ctmp\\TestCheckoutIdentityMigratesExistingWorktreeworktreeConfig=fals4080494436\\001" path="C:\\ctmp\\TestCheckoutIdentityMigratesExistingWorktreeworktreeConfig=fals4080494436\\003\\ctmp\\TestCheckoutIdentityMigratesExistingWorktreeworktreeConfig=fals4080494436\\001" branch=agent/agent/111111111111 reason=task_branch uncommitted_files=0 unpushed_commits=0
+=== RUN   TestCheckoutIdentityMigratesExistingWorktree/worktreeConfig=true
+2026/10/10 19:55:19 INFO repo cache: cloning url="C:\\ctmp\\TestCheckoutIdentityMigratesExistingWorktreeworktreeConfig=true3596050359\\001" path="C:\\ctmp\\TestCheckoutIdentityMigratesExistingWorktreeworktreeConfig=true3596050359\\002\\ws-1\\c+\\ctmp\\TestCheckoutIdentityMigratesExistingWorktreeworktreeConfig=true3596050359\\001.git"
+2026/10/10 19:55:20 INFO repo checkout: existing checkout kept url="C:\\ctmp\\TestCheckoutIdentityMigratesExistingWorktreeworktreeConfig=true3596050359\\001" path="C:\\ctmp\\TestCheckoutIdentityMigratesExistingWorktreeworktreeConfig=true3596050359\\003\\ctmp\\TestCheckoutIdentityMigratesExistingWorktreeworktreeConfig=true3596050359\\001" branch=agent/agent/111111111111 reason=task_branch uncommitted_files=0 unpushed_commits=0
+--- PASS: TestCheckoutIdentityMigratesExistingWorktree (3.04s)
+    --- PASS: TestCheckoutIdentityMigratesExistingWorktree/worktreeConfig=false (1.52s)
+    --- PASS: TestCheckoutIdentityMigratesExistingWorktree/worktreeConfig=true (1.49s)
+=== RUN   TestCheckoutIdentityUserConfigAndCoauthor
+2026/10/10 19:55:20 INFO repo cache: cloning url=C:\ctmp\TestCheckoutIdentityUserConfigAndCoauthor1356320707\002 path=C:\ctmp\TestCheckoutIdentityUserConfigAndCoauthor1356320707\003\ws-1\c+\ctmp\TestCheckoutIdentityUserConfigAndCoauthor1356320707\002.git
+2026/10/10 19:55:22 INFO repo checkout: worktree created url=C:\ctmp\TestCheckoutIdentityUserConfigAndCoauthor1356320707\002 path=C:\ctmp\TestCheckoutIdentityUserConfigAndCoauthor1356320707\004\ctmp\TestCheckoutIdentityUserConfigAndCoauthor1356320707\002 branch=agent/agent/111111111111 base=refs/remotes/origin/master
+2026/10/10 19:55:22 INFO repo checkout: existing checkout kept url=C:\ctmp\TestCheckoutIdentityUserConfigAndCoauthor1356320707\002 path=C:\ctmp\TestCheckoutIdentityUserConfigAndCoauthor1356320707\004\ctmp\TestCheckoutIdentityUserConfigAndCoauthor1356320707\002 branch=agent/agent/111111111111 reason=task_branch uncommitted_files=0 unpushed_commits=1
+--- PASS: TestCheckoutIdentityUserConfigAndCoauthor (2.33s)
+=== RUN   TestCheckoutIdentityWithoutUserFailsClosed
+2026/10/10 19:55:23 INFO repo cache: cloning url=C:\ctmp\TestCheckoutIdentityWithoutUserFailsClosed180603205\002 path=C:\ctmp\TestCheckoutIdentityWithoutUserFailsClosed180603205\003\ws-1\c+\ctmp\TestCheckoutIdentityWithoutUserFailsClosed180603205\002.git
+2026/10/10 19:55:24 INFO repo checkout: worktree created url=C:\ctmp\TestCheckoutIdentityWithoutUserFailsClosed180603205\002 path=C:\ctmp\TestCheckoutIdentityWithoutUserFailsClosed180603205\004\ctmp\TestCheckoutIdentityWithoutUserFailsClosed180603205\002 branch=agent/agent/111111111111 base=refs/remotes/origin/master
+--- PASS: TestCheckoutIdentityWithoutUserFailsClosed (1.44s)
+=== RUN   TestIsolatedCheckoutPreservesIntentionalIdentity
+2026/10/10 19:55:24 INFO repo cache: cloning url=C:\ctmp\TestIsolatedCheckoutPreservesIntentionalIdentity3781234167\002 path=C:\ctmp\TestIsolatedCheckoutPreservesIntentionalIdentity3781234167\003\ws-1\c+\ctmp\TestIsolatedCheckoutPreservesIntentionalIdentity3781234167\002.git
+2026/10/10 19:55:25 INFO repo checkout: isolated checkout ready url=C:\ctmp\TestIsolatedCheckoutPreservesIntentionalIdentity3781234167\002 path=C:\ctmp\TestIsolatedCheckoutPreservesIntentionalIdentity3781234167\004\ctmp\TestIsolatedCheckoutPreservesIntentionalIdentity3781234167\002 branch=agent/agent/111111111111 base=refs/remotes/origin/master
+2026/10/10 19:55:26 INFO repo checkout: existing checkout kept url=C:\ctmp\TestIsolatedCheckoutPreservesIntentionalIdentity3781234167\002 path=C:\ctmp\TestIsolatedCheckoutPreservesIntentionalIdentity3781234167\004\ctmp\TestIsolatedCheckoutPreservesIntentionalIdentity3781234167\002 branch=agent/agent/111111111111 reason=task_branch uncommitted_files=0 unpushed_commits=0
+--- PASS: TestIsolatedCheckoutPreservesIntentionalIdentity (2.29s)
+=== RUN   TestCheckoutIdentityConfigLockFailureIsRetryable
+2026/10/10 19:55:27 INFO repo cache: cloning url=C:\ctmp\TestCheckoutIdentityConfigLockFailureIsRetryable782523648\002 path=C:\ctmp\TestCheckoutIdentityConfigLockFailureIsRetryable782523648\003\ws-1\c+\ctmp\TestCheckoutIdentityConfigLockFailureIsRetryable782523648\002.git
+2026/10/10 19:55:28 INFO repo checkout: worktree created url=C:\ctmp\TestCheckoutIdentityConfigLockFailureIsRetryable782523648\002 path=C:\ctmp\TestCheckoutIdentityConfigLockFailureIsRetryable782523648\004\ctmp\TestCheckoutIdentityConfigLockFailureIsRetryable782523648\002 branch=agent/agent/111111111111 base=refs/remotes/origin/master
+2026/10/10 19:55:29 INFO repo checkout: existing checkout kept url=C:\ctmp\TestCheckoutIdentityConfigLockFailureIsRetryable782523648\002 path=C:\ctmp\TestCheckoutIdentityConfigLockFailureIsRetryable782523648\004\ctmp\TestCheckoutIdentityConfigLockFailureIsRetryable782523648\002 branch=agent/agent/111111111111 reason=task_branch uncommitted_files=0 unpushed_commits=1
+--- PASS: TestCheckoutIdentityConfigLockFailureIsRetryable (2.59s)
+=== RUN   TestCheckoutIdentityRejectsForeignWorktree
+2026/10/10 19:55:29 INFO repo cache: cloning url=C:\ctmp\TestCheckoutIdentityRejectsForeignWorktree538172428\002 path=C:\ctmp\TestCheckoutIdentityRejectsForeignWorktree538172428\003\ws-1\c+\ctmp\TestCheckoutIdentityRejectsForeignWorktree538172428\002.git
+--- PASS: TestCheckoutIdentityRejectsForeignWorktree (0.58s)
+=== RUN   TestCheckoutIdentityEnabledWithSharedConfigLocked
+2026/10/10 19:55:30 INFO repo cache: cloning url=C:\ctmp\TestCheckoutIdentityEnabledWithSharedConfigLocked3755117624\002 path=C:\ctmp\TestCheckoutIdentityEnabledWithSharedConfigLocked3755117624\003\ws-1\c+\ctmp\TestCheckoutIdentityEnabledWithSharedConfigLocked3755117624\002.git
+2026/10/10 19:55:31 INFO repo checkout: worktree created url=C:\ctmp\TestCheckoutIdentityEnabledWithSharedConfigLocked3755117624\002 path=C:\ctmp\TestCheckoutIdentityEnabledWithSharedConfigLocked3755117624\004\ctmp\TestCheckoutIdentityEnabledWithSharedConfigLocked3755117624\002 branch=agent/agent/111111111111 base=refs/remotes/origin/master
+2026/10/10 19:55:31 INFO repo checkout: worktree created url=C:\ctmp\TestCheckoutIdentityEnabledWithSharedConfigLocked3755117624\002 path=C:\ctmp\TestCheckoutIdentityEnabledWithSharedConfigLocked3755117624\005\ctmp\TestCheckoutIdentityEnabledWithSharedConfigLocked3755117624\002 branch=agent/agent/222222222222 base=refs/remotes/origin/master
+2026/10/10 19:55:32 INFO repo checkout: existing checkout kept url=C:\ctmp\TestCheckoutIdentityEnabledWithSharedConfigLocked3755117624\002 path=C:\ctmp\TestCheckoutIdentityEnabledWithSharedConfigLocked3755117624\004\ctmp\TestCheckoutIdentityEnabledWithSharedConfigLocked3755117624\002 branch=agent/agent/111111111111 reason=task_branch uncommitted_files=0 unpushed_commits=0
+2026/10/10 19:55:32 INFO repo checkout: existing checkout kept url=C:\ctmp\TestCheckoutIdentityEnabledWithSharedConfigLocked3755117624\002 path=C:\ctmp\TestCheckoutIdentityEnabledWithSharedConfigLocked3755117624\005\ctmp\TestCheckoutIdentityEnabledWithSharedConfigLocked3755117624\002 branch=agent/agent/222222222222 reason=task_branch uncommitted_files=0 unpushed_commits=0
+--- PASS: TestCheckoutIdentityEnabledWithSharedConfigLocked (3.07s)
+=== RUN   TestEditGitConfigFilePreservesNextWriterLock
+--- PASS: TestEditGitConfigFilePreservesNextWriterLock (0.00s)
+=== RUN   TestEditGitConfigFileRollback
+=== RUN   TestEditGitConfigFileRollback/unchanged
+=== RUN   TestEditGitConfigFileRollback/edit_error
+=== RUN   TestEditGitConfigFileRollback/rename_error
+--- PASS: TestEditGitConfigFileRollback (0.00s)
+    --- PASS: TestEditGitConfigFileRollback/unchanged (0.00s)
+    --- PASS: TestEditGitConfigFileRollback/edit_error (0.00s)
+    --- PASS: TestEditGitConfigFileRollback/rename_error (0.00s)
+=== RUN   TestCreateIsolatedCheckoutFromPartialCacheHasFileContents
+=== PAUSE TestCreateIsolatedCheckoutFromPartialCacheHasFileContents
+=== RUN   TestReusedIsolatedCheckoutRepairsPromisorConfig
+=== PAUSE TestReusedIsolatedCheckoutRepairsPromisorConfig
+=== RUN   TestCreateWorktreeFromPartialCacheHasFileContents
+=== PAUSE TestCreateWorktreeFromPartialCacheHasFileContents
+=== RUN   TestIsPartialClone
+=== PAUSE TestIsPartialClone
+=== CONT  TestGitEnv
+=== CONT  TestCreateWorktreeDoesNotResurrectDisabledState
+=== CONT  TestReconcileCoAuthoredByHooksMigratesReleasedHook
+=== CONT  TestCreateWorktreeWithUnknownRequestedRef
+--- PASS: TestGitEnv (0.00s)
+=== CONT  TestReconcileCoAuthoredByHooksPreservesUserHook
+=== CONT  TestReconcileCoAuthoredByHooksUpgradesReleasedHookInPlace
+=== CONT  TestCreateWorktreeWithRequestedTagRef
+=== CONT  TestCreateWorktreeWithRequestedCommitRef
+=== CONT  TestCreateWorktreeWithRequestedBranchRef
+=== CONT  TestCreateWorktreeNotCached
+=== CONT  TestCreateWorktreeDoesNotExcludeReasonixProjectConfig
+=== CONT  TestCreateWorktreeExcludesAgentSidecars
+=== CONT  TestCreateWorktreeExcludesOpenCodeSkills
+=== CONT  TestIsolatedCheckoutCloneWithoutHardlinksIsIndependent
+=== CONT  TestIsBareRepo
+=== CONT  TestBareDirNameDistinctsHostPortFromDashedHostname
+--- PASS: TestBareDirNameDistinctsHostPortFromDashedHostname (0.00s)
+=== CONT  TestBareDirNameDistinctsSameRepoNameAcrossHosts
+--- PASS: TestBareDirNameDistinctsSameRepoNameAcrossHosts (0.00s)
+=== CONT  TestBareDirName
+=== CONT  TestBareDirNameDistinctsSegmentBoundaryColliders
+=== CONT  TestCancelMaintenanceWaitsForCleanupBarrier
+--- PASS: TestBareDirName (0.00s)
+--- PASS: TestBareDirNameDistinctsSegmentBoundaryColliders (0.00s)
+=== CONT  TestCreateWorktreeContextReturnsBusyAfterBoundedLockWait
+--- PASS: TestCreateWorktreeNotCached (0.01s)
+=== CONT  TestCancelMaintenanceStopsMaintenanceWithoutARepoCheckout
+--- PASS: TestIsBareRepo (0.01s)
+=== CONT  TestRepoMaintenanceYieldsToForeground
+--- PASS: TestCancelMaintenanceStopsMaintenanceWithoutARepoCheckout (0.01s)
+=== CONT  TestRemoveCoAuthoredByHookPreservesUserHook
+--- PASS: TestRepoMaintenanceYieldsToForeground (0.00s)
+=== CONT  TestWriteCoAuthoredByStateIsAtomic
+--- PASS: TestCancelMaintenanceWaitsForCleanupBarrier (0.07s)
+=== CONT  TestCreateWorktreeInstallsGatedHook
+--- PASS: TestCreateWorktreeContextReturnsBusyAfterBoundedLockWait (0.08s)
+=== CONT  TestCoAuthoredByStateStopsTrailerInExistingCheckout
+--- PASS: TestWriteCoAuthoredByStateIsAtomic (0.12s)
+=== CONT  TestBranchNameDistinctForSharedUUIDv7Prefix
+--- PASS: TestBranchNameDistinctForSharedUUIDv7Prefix (0.00s)
+=== CONT  TestTaskKeyMatchesExecenvContract
+--- PASS: TestTaskKeyMatchesExecenvContract (0.00s)
+=== CONT  TestBarePathIsIndependentOfExistence
+--- PASS: TestBarePathIsIndependentOfExistence (0.00s)
+=== CONT  TestCreateWorktreeStampsLastUsed
+2026/10/10 19:55:33 INFO repo cache: cloning url=C:\ctmp\TestCreateWorktreeWithUnknownRequestedRef1878464303\001 path=C:\ctmp\TestCreateWorktreeWithUnknownRequestedRef1878464303\002\ws-1\c+\ctmp\TestCreateWorktreeWithUnknownRequestedRef1878464303\001.git
+2026/10/10 19:55:33 INFO repo cache: cloning url=C:\ctmp\TestReconcileCoAuthoredByHooksMigratesReleasedHook496066577\001 path=C:\ctmp\TestReconcileCoAuthoredByHooksMigratesReleasedHook496066577\002\ws-1\c+\ctmp\TestReconcileCoAuthoredByHooksMigratesReleasedHook496066577\001.git
+2026/10/10 19:55:33 INFO repo cache: cloning url=C:\ctmp\TestCreateWorktreeDoesNotExcludeReasonixProjectConfig3259718592\001 path=C:\ctmp\TestCreateWorktreeDoesNotExcludeReasonixProjectConfig3259718592\002\ws-1\c+\ctmp\TestCreateWorktreeDoesNotExcludeReasonixProjectConfig3259718592\001.git
+2026/10/10 19:55:33 INFO repo cache: cloning url=C:\ctmp\TestCreateWorktreeExcludesAgentSidecars2824855181\001 path=C:\ctmp\TestCreateWorktreeExcludesAgentSidecars2824855181\002\ws-1\c+\ctmp\TestCreateWorktreeExcludesAgentSidecars2824855181\001.git
+2026/10/10 19:55:33 INFO repo cache: cloning url=C:\ctmp\TestCreateWorktreeDoesNotResurrectDisabledState100294210\001 path=C:\ctmp\TestCreateWorktreeDoesNotResurrectDisabledState100294210\002\ws-1\c+\ctmp\TestCreateWorktreeDoesNotResurrectDisabledState100294210\001.git
+2026/10/10 19:55:33 INFO repo cache: cloning url=C:\ctmp\TestReconcileCoAuthoredByHooksPreservesUserHook2851656592\001 path=C:\ctmp\TestReconcileCoAuthoredByHooksPreservesUserHook2851656592\002\ws-1\c+\ctmp\TestReconcileCoAuthoredByHooksPreservesUserHook2851656592\001.git
+2026/10/10 19:55:33 INFO repo cache: cloning url=C:\ctmp\TestReconcileCoAuthoredByHooksUpgradesReleasedHookInPlace1901289411\001 path=C:\ctmp\TestReconcileCoAuthoredByHooksUpgradesReleasedHookInPlace1901289411\002\ws-1\c+\ctmp\TestReconcileCoAuthoredByHooksUpgradesReleasedHookInPlace1901289411\001.git
+2026/10/10 19:55:33 INFO repo cache: cloning url=C:\ctmp\TestRemoveCoAuthoredByHookPreservesUserHook3286483202\001 path=C:\ctmp\TestRemoveCoAuthoredByHookPreservesUserHook3286483202\002\ws-1\c+\ctmp\TestRemoveCoAuthoredByHookPreservesUserHook3286483202\001.git
+2026/10/10 19:55:33 INFO repo cache: cloning url=C:\ctmp\TestCreateWorktreeExcludesOpenCodeSkills3541309302\001 path=C:\ctmp\TestCreateWorktreeExcludesOpenCodeSkills3541309302\002\ws-1\c+\ctmp\TestCreateWorktreeExcludesOpenCodeSkills3541309302\001.git
+2026/10/10 19:55:33 INFO repo cache: cloning url=C:\ctmp\TestCoAuthoredByStateStopsTrailerInExistingCheckout3767647200\001 path=C:\ctmp\TestCoAuthoredByStateStopsTrailerInExistingCheckout3767647200\002\ws-1\c+\ctmp\TestCoAuthoredByStateStopsTrailerInExistingCheckout3767647200\001.git
+2026/10/10 19:55:33 INFO repo cache: cloning url=C:\ctmp\TestIsolatedCheckoutCloneWithoutHardlinksIsIndependent2419268732\001 path=C:\ctmp\TestIsolatedCheckoutCloneWithoutHardlinksIsIndependent2419268732\002\ws-1\c+\ctmp\TestIsolatedCheckoutCloneWithoutHardlinksIsIndependent2419268732\001.git
+2026/10/10 19:55:33 INFO repo cache: cloning url=C:\ctmp\TestCreateWorktreeInstallsGatedHook3843872665\001 path=C:\ctmp\TestCreateWorktreeInstallsGatedHook3843872665\002\ws-1\c+\ctmp\TestCreateWorktreeInstallsGatedHook3843872665\001.git
+2026/10/10 19:55:33 INFO repo cache: cloning url=C:\ctmp\TestCreateWorktreeStampsLastUsed1491777351\001 path=C:\ctmp\TestCreateWorktreeStampsLastUsed1491777351\002\ws-1\c+\ctmp\TestCreateWorktreeStampsLastUsed1491777351\001.git
+2026/10/10 19:55:33 INFO repo cache: cloning url=C:\ctmp\TestCreateWorktreeWithRequestedCommitRef1019369149\001 path=C:\ctmp\TestCreateWorktreeWithRequestedCommitRef1019369149\002\ws-1\c+\ctmp\TestCreateWorktreeWithRequestedCommitRef1019369149\001.git
+2026/10/10 19:55:33 INFO repo cache: cloning url=C:\ctmp\TestCreateWorktreeWithRequestedTagRef1786178055\001 path=C:\ctmp\TestCreateWorktreeWithRequestedTagRef1786178055\002\ws-1\c+\ctmp\TestCreateWorktreeWithRequestedTagRef1786178055\001.git
+2026/10/10 19:55:34 INFO repo cache: cloning url=C:\ctmp\TestCreateWorktreeWithRequestedBranchRef4078896542\001 path=C:\ctmp\TestCreateWorktreeWithRequestedBranchRef4078896542\002\ws-1\c+\ctmp\TestCreateWorktreeWithRequestedBranchRef4078896542\001.git
+--- PASS: TestReconcileCoAuthoredByHooksPreservesUserHook (1.68s)
+=== CONT  TestMarkUsedIgnoresUnwritableRepo
+2026/10/10 19:55:34 WARN repo cache: write last-used stamp failed repo=C:\ctmp\TestMarkUsedIgnoresUnwritableRepo4142116576\001\does-not-exist error="open C:\\ctmp\\TestMarkUsedIgnoresUnwritableRepo4142116576\\001\\does-not-exist\\.multica_last_used: The system cannot find the path specified."
+--- PASS: TestMarkUsedIgnoresUnwritableRepo (0.00s)
+=== CONT  TestMarkUsedRoundTrip
+--- PASS: TestMarkUsedRoundTrip (0.00s)
+=== CONT  TestLastUsedMissingIsUnknownNotAncient
+--- PASS: TestLastUsedMissingIsUnknownNotAncient (0.00s)
+=== CONT  TestGetRemoteDefaultBranchAmbiguousOriginReturnsEmpty
+2026/10/10 19:55:35 INFO repo cache: cloning url=C:\ctmp\TestGetRemoteDefaultBranchAmbiguousOriginReturnsEmpty4067913958\001 path=C:\ctmp\TestGetRemoteDefaultBranchAmbiguousOriginReturnsEmpty4067913958\002\ws-1\c+\ctmp\TestGetRemoteDefaultBranchAmbiguousOriginReturnsEmpty4067913958\001.git
+--- PASS: TestCreateWorktreeWithUnknownRequestedRef (2.79s)
+=== CONT  TestGitFetchRefreshesOriginHeadAfterDefaultChange
+--- PASS: TestIsolatedCheckoutCloneWithoutHardlinksIsIndependent (2.85s)
+=== CONT  TestCreateWorktreeRemovesLegacyCoAuthoredByHook
+2026/10/10 19:55:36 INFO repo cache: cloning url=C:\ctmp\TestCreateWorktreeRemovesLegacyCoAuthoredByHook544265348\001 path=C:\ctmp\TestCreateWorktreeRemovesLegacyCoAuthoredByHook544265348\002\ws-1\c+\ctmp\TestCreateWorktreeRemovesLegacyCoAuthoredByHook544265348\001.git
+2026/10/10 19:55:36 INFO repo cache: cloning url=C:\ctmp\TestGitFetchRefreshesOriginHeadAfterDefaultChange4181895355\001 path=C:\ctmp\TestGitFetchRefreshesOriginHeadAfterDefaultChange4181895355\002\ws-1\c+\ctmp\TestGitFetchRefreshesOriginHeadAfterDefaultChange4181895355\001.git
+--- PASS: TestGetRemoteDefaultBranchAmbiguousOriginReturnsEmpty (3.78s)
+=== CONT  TestCreateWorktreeRemovesCoAuthoredByHookWhenDisabled
+2026/10/10 19:55:38 INFO repo checkout: worktree created url=C:\ctmp\TestCreateWorktreeDoesNotResurrectDisabledState100294210\001 path=C:\ctmp\TestCreateWorktreeDoesNotResurrectDisabledState100294210\003\ctmp\TestCreateWorktreeDoesNotResurrectDisabledState100294210\001 branch=agent/test-agent/000000000000 base=refs/remotes/origin/master
+2026/10/10 19:55:38 INFO repo checkout: worktree created url=C:\ctmp\TestReconcileCoAuthoredByHooksMigratesReleasedHook496066577\001 path=C:\ctmp\TestReconcileCoAuthoredByHooksMigratesReleasedHook496066577\003\ctmp\TestReconcileCoAuthoredByHooksMigratesReleasedHook496066577\001 branch=agent/test-agent/000000000000 base=refs/remotes/origin/master
+2026/10/10 19:55:38 INFO repo checkout: worktree created url=C:\ctmp\TestCreateWorktreeExcludesOpenCodeSkills3541309302\001 path=C:\ctmp\TestCreateWorktreeExcludesOpenCodeSkills3541309302\003\ctmp\TestCreateWorktreeExcludesOpenCodeSkills3541309302\001 branch=agent/opencode/eexcludetest base=refs/remotes/origin/master
+2026/10/10 19:55:38 INFO repo checkout: worktree created url=C:\ctmp\TestCreateWorktreeExcludesAgentSidecars2824855181\001 path=C:\ctmp\TestCreateWorktreeExcludesAgentSidecars2824855181\003\ctmp\TestCreateWorktreeExcludesAgentSidecars2824855181\001 branch=agent/codebuddy/yexcludetest base=refs/remotes/origin/master
+2026/10/10 19:55:38 INFO repo checkout: worktree created url=C:\ctmp\TestCoAuthoredByStateStopsTrailerInExistingCheckout3767647200\001 path=C:\ctmp\TestCoAuthoredByStateStopsTrailerInExistingCheckout3767647200\003\ctmp\TestCoAuthoredByStateStopsTrailerInExistingCheckout3767647200\001 branch=agent/test-agent/000000000000 base=refs/remotes/origin/master
+2026/10/10 19:55:38 INFO repo cache: cloning url=C:\ctmp\TestCreateWorktreeRemovesCoAuthoredByHookWhenDisabled1322223489\001 path=C:\ctmp\TestCreateWorktreeRemovesCoAuthoredByHookWhenDisabled1322223489\002\ws-1\c+\ctmp\TestCreateWorktreeRemovesCoAuthoredByHookWhenDisabled1322223489\001.git
+2026/10/10 19:55:38 INFO repo checkout: worktree created url=C:\ctmp\TestRemoveCoAuthoredByHookPreservesUserHook3286483202\001 path=C:\ctmp\TestRemoveCoAuthoredByHookPreservesUserHook3286483202\003\ctmp\TestRemoveCoAuthoredByHookPreservesUserHook3286483202\001 branch=agent/test-agent/000000000000 base=refs/remotes/origin/master
+2026/10/10 19:55:38 INFO repo checkout: worktree created url=C:\ctmp\TestCreateWorktreeDoesNotExcludeReasonixProjectConfig3259718592\001 path=C:\ctmp\TestCreateWorktreeDoesNotExcludeReasonixProjectConfig3259718592\003\ctmp\TestCreateWorktreeDoesNotExcludeReasonixProjectConfig3259718592\001 branch=agent/reasonix/xexcludetest base=refs/remotes/origin/master
+=== NAME  TestCreateWorktreeDoesNotExcludeReasonixProjectConfig
+    cache_test.go:1289: checkout "C:\\ctmp\\TestCreateWorktreeDoesNotExcludeReasonixProjectConfig3259718592\\003\\ctmp\\TestCreateWorktreeDoesNotExcludeReasonixProjectConfig3259718592\\001" is not a child of the work dir "C:\\ctmp\\TestCreateWorktreeDoesNotExcludeReasonixProjectConfig3259718592\\003"
+--- PASS: TestCreateWorktreeExcludesOpenCodeSkills (5.81s)
+=== CONT  TestCoAuthoredByHookIdempotent
+2026/10/10 19:55:38 INFO repo checkout: worktree created url=C:\ctmp\TestCreateWorktreeStampsLastUsed1491777351\001 path=C:\ctmp\TestCreateWorktreeStampsLastUsed1491777351\003\ctmp\TestCreateWorktreeStampsLastUsed1491777351\001 branch=agent/code-reviewer/ef1234567890 base=refs/remotes/origin/master
+--- PASS: TestCreateWorktreeExcludesAgentSidecars (5.84s)
+=== CONT  TestCreateWorktreeInstallsCoAuthoredByHook
+--- PASS: TestRemoveCoAuthoredByHookPreservesUserHook (5.84s)
+=== CONT  TestGetRemoteDefaultBranchUsesBareHeadHintForCustomDefault
+--- FAIL: TestCreateWorktreeDoesNotExcludeReasonixProjectConfig (5.89s)
+=== CONT  TestCreateWorktreePathCollisionDoesNotLeakBranch
+--- PASS: TestCreateWorktreeStampsLastUsed (5.75s)
+=== CONT  TestGetRemoteDefaultBranchFallsBackToBareHead
+2026/10/10 19:55:39 INFO repo checkout: worktree created url=C:\ctmp\TestReconcileCoAuthoredByHooksUpgradesReleasedHookInPlace1901289411\001 path=C:\ctmp\TestReconcileCoAuthoredByHooksUpgradesReleasedHookInPlace1901289411\003\ctmp\TestReconcileCoAuthoredByHooksUpgradesReleasedHookInPlace1901289411\001 branch=agent/test-agent/000000000000 base=refs/remotes/origin/master
+2026/10/10 19:55:39 INFO repo checkout: worktree created url=C:\ctmp\TestCreateWorktreeInstallsGatedHook3843872665\001 path=C:\ctmp\TestCreateWorktreeInstallsGatedHook3843872665\003\ctmp\TestCreateWorktreeInstallsGatedHook3843872665\001 branch=agent/test-agent/000000000000 base=refs/remotes/origin/master
+=== NAME  TestReconcileCoAuthoredByHooksUpgradesReleasedHookInPlace
+    cache_test.go:2625: hook was not upgraded to read the state file.
+        got:
+        #!/bin/sh
+        # multica:prepare-commit-msg:co-authored-by
+        # Multica: add Co-authored-by trailer for the Multica Agent.
+        # Installed by the Multica daemon. Do not edit — it will be overwritten.
+        
+        COMMIT_MSG_FILE="$1"
+        COMMIT_SOURCE="$2"
+        
+        # Skip merge and squash commits.
+        case "$COMMIT_SOURCE" in
+          merge|squash) exit 0 ;;
+        esac
+        
+        TRAILER="Co-authored-by: multica-agent <github@multica.ai>"
+        
+        # Don't add if already present.
+        if grep -qF "$TRAILER" "$COMMIT_MSG_FILE"; then
+          exit 0
+        fi
+        
+        # Use git interpret-trailers for proper formatting.
+        git interpret-trailers --in-place --trailer "$TRAILER" "$COMMIT_MSG_FILE"
+--- PASS: TestCreateWorktreeInstallsGatedHook (5.97s)
+=== CONT  TestGetRemoteDefaultBranchScansForCustomDefault
+--- FAIL: TestReconcileCoAuthoredByHooksUpgradesReleasedHookInPlace (6.05s)
+=== CONT  TestFreshCheckoutDiscardsLocalWork
+=== RUN   TestFreshCheckoutDiscardsLocalWork/linked
+=== PAUSE TestFreshCheckoutDiscardsLocalWork/linked
+=== RUN   TestFreshCheckoutDiscardsLocalWork/isolated
+=== PAUSE TestFreshCheckoutDiscardsLocalWork/isolated
+=== CONT  TestIsPartialClone
+--- PASS: TestCreateWorktreeDoesNotResurrectDisabledState (6.05s)
+=== CONT  TestCreateWorktreeFromPartialCacheHasFileContents
+2026/10/10 19:55:39 INFO repo cache: cloning url=C:\ctmp\TestCoAuthoredByHookIdempotent2734041146\001 path=C:\ctmp\TestCoAuthoredByHookIdempotent2734041146\002\ws-1\c+\ctmp\TestCoAuthoredByHookIdempotent2734041146\001.git
+2026/10/10 19:55:39 INFO repo checkout: worktree created url=C:\ctmp\TestCreateWorktreeWithRequestedTagRef1786178055\001 path=C:\ctmp\TestCreateWorktreeWithRequestedTagRef1786178055\003\ctmp\TestCreateWorktreeWithRequestedTagRef1786178055\001 branch=agent/reviewer/tagtaskid base=refs/tags/v1
+2026/10/10 19:55:39 INFO repo cache: cloning url=C:\ctmp\TestCreateWorktreeInstallsCoAuthoredByHook631425331\001 path=C:\ctmp\TestCreateWorktreeInstallsCoAuthoredByHook631425331\002\ws-1\c+\ctmp\TestCreateWorktreeInstallsCoAuthoredByHook631425331\001.git
+2026/10/10 19:55:39 INFO repo checkout: worktree created url=C:\ctmp\TestCreateWorktreeWithRequestedCommitRef1019369149\001 path=C:\ctmp\TestCreateWorktreeWithRequestedCommitRef1019369149\003\ctmp\TestCreateWorktreeWithRequestedCommitRef1019369149\001 branch=agent/reviewer/committaskid base=cfb098f93416f82c2da01ef63187107b7c12d453
+2026/10/10 19:55:39 INFO repo cache: cloning url=C:\ctmp\TestCreateWorktreePathCollisionDoesNotLeakBranch3162573296\001 path=C:\ctmp\TestCreateWorktreePathCollisionDoesNotLeakBranch3162573296\002\ws-1\c+\ctmp\TestCreateWorktreePathCollisionDoesNotLeakBranch3162573296\001.git
+2026/10/10 19:55:39 INFO repo cache: cloning url=C:\ctmp\TestGetRemoteDefaultBranchUsesBareHeadHintForCustomDefault2415346479\001 path=C:\ctmp\TestGetRemoteDefaultBranchUsesBareHeadHintForCustomDefault2415346479\002\ws-1\c+\ctmp\TestGetRemoteDefaultBranchUsesBareHeadHintForCustomDefault2415346479\001.git
+2026/10/10 19:55:39 INFO repo cache: cloning url=C:\ctmp\TestGetRemoteDefaultBranchFallsBackToBareHead1591199672\001 path=C:\ctmp\TestGetRemoteDefaultBranchFallsBackToBareHead1591199672\002\ws-1\c+\ctmp\TestGetRemoteDefaultBranchFallsBackToBareHead1591199672\001.git
+--- PASS: TestCreateWorktreeWithRequestedTagRef (6.27s)
+=== CONT  TestReusedIsolatedCheckoutRepairsPromisorConfig
+=== NAME  TestReconcileCoAuthoredByHooksMigratesReleasedHook
+    cache_test.go:2599: expected the previous release's hook to be removed at C:\ctmp\TestReconcileCoAuthoredByHooksMigratesReleasedHook496066577\002\ws-1\c+\ctmp\TestReconcileCoAuthoredByHooksMigratesReleasedHook496066577\001.git\hooks\prepare-commit-msg, stat err=<nil>
+--- PASS: TestCreateWorktreeWithRequestedCommitRef (6.29s)
+=== CONT  TestCreateIsolatedCheckoutFromPartialCacheHasFileContents
+2026/10/10 19:55:39 INFO repo checkout: worktree created url=C:\ctmp\TestCreateWorktreeWithRequestedBranchRef4078896542\001 path=C:\ctmp\TestCreateWorktreeWithRequestedBranchRef4078896542\003\ctmp\TestCreateWorktreeWithRequestedBranchRef4078896542\001 branch=agent/reviewer/reviewtaskid base=refs/remotes/origin/review-branch
+2026/10/10 19:55:39 INFO repo cache: cloning url=C:\ctmp\TestGetRemoteDefaultBranchScansForCustomDefault1952401391\001 path=C:\ctmp\TestGetRemoteDefaultBranchScansForCustomDefault1952401391\002\ws-1\c+\ctmp\TestGetRemoteDefaultBranchScansForCustomDefault1952401391\001.git
+--- PASS: TestGitFetchRefreshesOriginHeadAfterDefaultChange (3.66s)
+=== CONT  TestIsTaskBranch
+--- PASS: TestIsTaskBranch (0.00s)
+=== CONT  TestFreshMigrationCarriesUnpushedBranch
+=== RUN   TestFreshMigrationCarriesUnpushedBranch/another_task
+=== PAUSE TestFreshMigrationCarriesUnpushedBranch/another_task
+=== RUN   TestFreshMigrationCarriesUnpushedBranch/same_task
+=== PAUSE TestFreshMigrationCarriesUnpushedBranch/same_task
+=== CONT  TestIsolatedCheckoutKeepsLinkedWorktreeHoldingWork
+--- PASS: TestCreateWorktreeWithRequestedBranchRef (6.59s)
+=== CONT  TestSyncAndLookup
+=== NAME  TestCreateWorktreeFromPartialCacheHasFileContents
+    partial_clone_test.go:177: create workspace cache dir: mkdir C:\ctmp\TestCreateWorktreeFromPartialCacheHasFileContents2314081182\002\ws-1\file+C:: The filename, directory name, or volume label syntax is incorrect.
+2026/10/10 19:55:40 INFO repo cache: cloning url=C:\ctmp\TestSyncAndLookup1210261702\001 path=C:\ctmp\TestSyncAndLookup1210261702\002\ws-123\c+\ctmp\TestSyncAndLookup1210261702\001.git
+--- FAIL: TestCreateWorktreeFromPartialCacheHasFileContents (0.86s)
+=== CONT  TestIsolatedCheckoutAcrossVolumesOnWindows
+=== NAME  TestReconcileCoAuthoredByHooksMigratesReleasedHook
+    cache_test.go:2602: upgraded host still adds the trailer after the toggle was turned off.
+        got:
+        after the toggle
+        
+        Co-authored-by: multica-agent <github@multica.ai>
+        
+2026/10/10 19:55:40 INFO repo cache: cloning url=file://C:\ctmp\TestIsPartialClone2992204012\001 path=C:\ctmp\TestIsPartialClone2992204012\002\ws-1\file+C:\ctmp\TestIsPartialClone2992204012\001.git
+--- FAIL: TestReconcileCoAuthoredByHooksMigratesReleasedHook (6.98s)
+=== CONT  TestLocalCloneArgsOnlyDisablesHardlinksOnWindows
+=== RUN   TestLocalCloneArgsOnlyDisablesHardlinksOnWindows/windows
+=== PAUSE TestLocalCloneArgsOnlyDisablesHardlinksOnWindows/windows
+=== RUN   TestLocalCloneArgsOnlyDisablesHardlinksOnWindows/linux
+=== PAUSE TestLocalCloneArgsOnlyDisablesHardlinksOnWindows/linux
+=== RUN   TestLocalCloneArgsOnlyDisablesHardlinksOnWindows/darwin
+=== PAUSE TestLocalCloneArgsOnlyDisablesHardlinksOnWindows/darwin
+=== CONT  TestRepeatedCheckoutMovesCleanCheckoutToNewBranch
+=== RUN   TestRepeatedCheckoutMovesCleanCheckoutToNewBranch/linked
+=== PAUSE TestRepeatedCheckoutMovesCleanCheckoutToNewBranch/linked
+=== RUN   TestRepeatedCheckoutMovesCleanCheckoutToNewBranch/isolated
+=== PAUSE TestRepeatedCheckoutMovesCleanCheckoutToNewBranch/isolated
+=== CONT  TestCreateWorktreeMigratesLinkedWorktreeToIsolatedMetadata
+2026/10/10 19:55:40 INFO repo cache: cloning url=C:\ctmp\TestIsolatedCheckoutKeepsLinkedWorktreeHoldingWork3023255883\001 path=C:\ctmp\TestIsolatedCheckoutKeepsLinkedWorktreeHoldingWork3023255883\002\ws-1\c+\ctmp\TestIsolatedCheckoutKeepsLinkedWorktreeHoldingWork3023255883\001.git
+2026/10/10 19:55:40 ERROR repo cache: clone failed url=file://C:\ctmp\TestIsPartialClone2992204012\001 error="git clone --bare: fatal: could not create leading directories of 'C:\\ctmp\\TestIsPartialClone2992204012\\002\\ws-1\\file+C:\\ctmp\\TestIsPartialClone2992204012\\001.git': exit status 128"
+=== NAME  TestIsPartialClone
+    partial_clone_test.go:198: sync failed: git clone --bare: fatal: could not create leading directories of 'C:\ctmp\TestIsPartialClone2992204012\002\ws-1\file+C:\ctmp\TestIsPartialClone2992204012\001.git': exit status 128
+--- FAIL: TestIsPartialClone (1.03s)
+=== CONT  TestCreateWorktreeReusesIsolatedGitMetadata
+=== NAME  TestReusedIsolatedCheckoutRepairsPromisorConfig
+    partial_clone_test.go:141: create workspace cache dir: mkdir C:\ctmp\TestReusedIsolatedCheckoutRepairsPromisorConfig1877354940\002\ws-1\file+C:: The filename, directory name, or volume label syntax is incorrect.
+--- FAIL: TestReusedIsolatedCheckoutRepairsPromisorConfig (0.87s)
+=== CONT  TestCreateIsolatedCheckoutImportsFetchedTipFromShallowCache
+=== NAME  TestCreateIsolatedCheckoutFromPartialCacheHasFileContents
+    partial_clone_test.go:104: create workspace cache dir: mkdir C:\ctmp\TestCreateIsolatedCheckoutFromPartialCacheHasFileContents1909202625\002\ws-1\file+C:: The filename, directory name, or volume label syntax is incorrect.
+--- FAIL: TestCreateIsolatedCheckoutFromPartialCacheHasFileContents (0.92s)
+=== CONT  TestCreateWorktreeWithIsolatedGitMetadata
+2026/10/10 19:55:40 INFO repo cache: cloning url=C:\ctmp\TestCreateWorktreeMigratesLinkedWorktreeToIsolatedMetadata261608381\001 path=C:\ctmp\TestCreateWorktreeMigratesLinkedWorktreeToIsolatedMetadata261608381\002\ws-1\c+\ctmp\TestCreateWorktreeMigratesLinkedWorktreeToIsolatedMetadata261608381\001.git
+2026/10/10 19:55:40 INFO repo cache: cloning url=C:\ctmp\TestIsolatedCheckoutAcrossVolumesOnWindows2960221012\002 path=C:\ctmp\TestIsolatedCheckoutAcrossVolumesOnWindows2960221012\001\ws-1\c+\ctmp\TestIsolatedCheckoutAcrossVolumesOnWindows2960221012\002.git
+2026/10/10 19:55:40 INFO repo cache: cloning url=C:\ctmp\TestCreateWorktreeReusesIsolatedGitMetadata515679202\001 path=C:\ctmp\TestCreateWorktreeReusesIsolatedGitMetadata515679202\002\ws-1\c+\ctmp\TestCreateWorktreeReusesIsolatedGitMetadata515679202\001.git
+2026/10/10 19:55:40 INFO repo cache: cloning url=C:\ctmp\TestCreateWorktreeWithIsolatedGitMetadata2176523764\001 path=C:\ctmp\TestCreateWorktreeWithIsolatedGitMetadata2176523764\002\ws-1\c+\ctmp\TestCreateWorktreeWithIsolatedGitMetadata2176523764\001.git
+2026/10/10 19:55:41 INFO repo checkout: worktree created url=C:\ctmp\TestCreateWorktreeRemovesLegacyCoAuthoredByHook544265348\001 path=C:\ctmp\TestCreateWorktreeRemovesLegacyCoAuthoredByHook544265348\003\ctmp\TestCreateWorktreeRemovesLegacyCoAuthoredByHook544265348\001 branch=agent/test-agent/000000000000 base=refs/remotes/origin/master
+--- PASS: TestSyncAndLookup (1.67s)
+=== CONT  TestCreateWorktree
+--- PASS: TestCoAuthoredByStateStopsTrailerInExistingCheckout (8.26s)
+=== CONT  TestRepeatedCheckoutOnTaskBranchIsNoop
+=== RUN   TestRepeatedCheckoutOnTaskBranchIsNoop/linked
+=== PAUSE TestRepeatedCheckoutOnTaskBranchIsNoop/linked
+=== RUN   TestRepeatedCheckoutOnTaskBranchIsNoop/isolated
+=== PAUSE TestRepeatedCheckoutOnTaskBranchIsNoop/isolated
+=== CONT  TestRepeatedCheckoutKeepsLocalWork
+=== RUN   TestRepeatedCheckoutKeepsLocalWork/linked/uncommitted_change
+=== PAUSE TestRepeatedCheckoutKeepsLocalWork/linked/uncommitted_change
+=== RUN   TestRepeatedCheckoutKeepsLocalWork/linked/untracked_file
+=== PAUSE TestRepeatedCheckoutKeepsLocalWork/linked/untracked_file
+=== RUN   TestRepeatedCheckoutKeepsLocalWork/linked/unpushed_commit
+=== PAUSE TestRepeatedCheckoutKeepsLocalWork/linked/unpushed_commit
+=== RUN   TestRepeatedCheckoutKeepsLocalWork/isolated/uncommitted_change
+=== PAUSE TestRepeatedCheckoutKeepsLocalWork/isolated/uncommitted_change
+=== RUN   TestRepeatedCheckoutKeepsLocalWork/isolated/untracked_file
+=== PAUSE TestRepeatedCheckoutKeepsLocalWork/isolated/untracked_file
+=== RUN   TestRepeatedCheckoutKeepsLocalWork/isolated/unpushed_commit
+=== PAUSE TestRepeatedCheckoutKeepsLocalWork/isolated/unpushed_commit
+=== CONT  TestReconcileCoAuthoredByHookInCheckoutIgnoresLinkedWorktree
+--- PASS: TestGetRemoteDefaultBranchFallsBackToBareHead (2.64s)
+=== CONT  TestIsolatedCheckoutIsCommittableOnWindows
+2026/10/10 19:55:41 INFO repo cache: cloning url=C:\ctmp\TestCreateWorktree552057465\001 path=C:\ctmp\TestCreateWorktree552057465\002\ws-1\c+\ctmp\TestCreateWorktree552057465\001.git
+2026/10/10 19:55:41 INFO repo cache: cloning url=C:\ctmp\TestReconcileCoAuthoredByHookInCheckoutIgnoresLinkedWorktree1349640586\001 path=C:\ctmp\TestReconcileCoAuthoredByHookInCheckoutIgnoresLinkedWorktree1349640586\002\ws-1\c+\ctmp\TestReconcileCoAuthoredByHookInCheckoutIgnoresLinkedWorktree1349640586\001.git
+--- PASS: TestCreateWorktreeRemovesLegacyCoAuthoredByHook (5.83s)
+=== CONT  TestWorktreeFromCache
+--- PASS: TestCreateWorktreePathCollisionDoesNotLeakBranch (2.88s)
+=== CONT  TestSyncFetchesExisting
+2026/10/10 19:55:41 INFO repo cache: cloning url=C:\ctmp\TestIsolatedCheckoutIsCommittableOnWindows3384571748\001 path=C:\ctmp\TestIsolatedCheckoutIsCommittableOnWindows3384571748\002\ws-1\c+\ctmp\TestIsolatedCheckoutIsCommittableOnWindows3384571748\001.git
+2026/10/10 19:55:42 INFO repo cache: cloning url=C:\ctmp\TestWorktreeFromCache7821676\001 path=C:\ctmp\TestWorktreeFromCache7821676\002\ws-1\c+\ctmp\TestWorktreeFromCache7821676\001.git
+2026/10/10 19:55:42 INFO repo cache: cloning url=C:\ctmp\TestSyncFetchesExisting175171775\001 path=C:\ctmp\TestSyncFetchesExisting175171775\002\ws-1\c+\ctmp\TestSyncFetchesExisting175171775\001.git
+--- PASS: TestGetRemoteDefaultBranchUsesBareHeadHintForCustomDefault (3.40s)
+=== CONT  TestSyncKeepsDistinctCachesForSegmentBoundaryColliders
+--- PASS: TestGetRemoteDefaultBranchScansForCustomDefault (3.33s)
+=== CONT  TestEnsureRemoteTrackingLayoutMigratesLegacyCache
+2026/10/10 19:55:42 INFO repo cache: cloning url=C:\ctmp\TestEnsureRemoteTrackingLayoutMigratesLegacyCache189403776\001 path=C:\ctmp\TestEnsureRemoteTrackingLayoutMigratesLegacyCache189403776\002\ws-1\c+\ctmp\TestEnsureRemoteTrackingLayoutMigratesLegacyCache189403776\001.git
+2026/10/10 19:55:43 INFO repo cache: cloning url=C:\ctmp\TestSyncKeepsDistinctCachesForSegmentBoundaryColliders3452582904\001\foo\bar-baz path=C:\ctmp\TestSyncKeepsDistinctCachesForSegmentBoundaryColliders3452582904\002\ws-1\c+\ctmp\TestSyncKeepsDistinctCachesForSegmentBoundaryColliders3452582904\001\foo\bar-baz.git
+2026/10/10 19:55:43 INFO repo checkout: worktree created url=C:\ctmp\TestCreateWorktreeRemovesCoAuthoredByHookWhenDisabled1322223489\001 path=C:\ctmp\TestCreateWorktreeRemovesCoAuthoredByHookWhenDisabled1322223489\003\ctmp\TestCreateWorktreeRemovesCoAuthoredByHookWhenDisabled1322223489\001 branch=agent/test-agent/000000000000 base=refs/remotes/origin/master
+2026/10/10 19:55:44 INFO repo checkout: worktree created url=C:\ctmp\TestCoAuthoredByHookIdempotent2734041146\001 path=C:\ctmp\TestCoAuthoredByHookIdempotent2734041146\003\ctmp\TestCoAuthoredByHookIdempotent2734041146\001 branch=agent/test-agent/000000000000 base=refs/remotes/origin/master
+--- PASS: TestWorktreeFromCache (2.32s)
+=== CONT  TestReconcileCoAuthoredByHookInCheckoutMigratesReleasedHook
+2026/10/10 19:55:44 INFO repo cache: fetching url=C:\ctmp\TestSyncFetchesExisting175171775\001 path=C:\ctmp\TestSyncFetchesExisting175171775\002\ws-1\c+\ctmp\TestSyncFetchesExisting175171775\001.git
+2026/10/10 19:55:44 INFO repo checkout: worktree created url=C:\ctmp\TestCreateWorktreeInstallsCoAuthoredByHook631425331\001 path=C:\ctmp\TestCreateWorktreeInstallsCoAuthoredByHook631425331\003\ctmp\TestCreateWorktreeInstallsCoAuthoredByHook631425331\001 branch=agent/test-agent/000000000000 base=refs/remotes/origin/master
+2026/10/10 19:55:44 INFO repo cache: cloning url=C:\ctmp\TestReconcileCoAuthoredByHookInCheckoutMigratesReleasedHook991310810\001 path=C:\ctmp\TestReconcileCoAuthoredByHookInCheckoutMigratesReleasedHook991310810\002\ws-1\c+\ctmp\TestReconcileCoAuthoredByHookInCheckoutMigratesReleasedHook991310810\001.git
+--- PASS: TestCoAuthoredByHookIdempotent (5.94s)
+=== CONT  TestCreateWorktreeFetchesDespiteAgentBranchOnRemote
+2026/10/10 19:55:45 INFO repo cache: cloning url=C:\ctmp\TestSyncKeepsDistinctCachesForSegmentBoundaryColliders3452582904\001\foo-bar\baz path=C:\ctmp\TestSyncKeepsDistinctCachesForSegmentBoundaryColliders3452582904\002\ws-1\c+\ctmp\TestSyncKeepsDistinctCachesForSegmentBoundaryColliders3452582904\001\foo-bar\baz.git
+--- PASS: TestCreateWorktreeInstallsCoAuthoredByHook (6.21s)
+=== CONT  TestFreshCheckoutDiscardsLocalWork/linked
+2026/10/10 19:55:45 INFO repo cache: cloning url=C:\ctmp\TestCreateWorktreeFetchesDespiteAgentBranchOnRemote3407821680\001 path=C:\ctmp\TestCreateWorktreeFetchesDespiteAgentBranchOnRemote3407821680\002\ws-1\c+\ctmp\TestCreateWorktreeFetchesDespiteAgentBranchOnRemote3407821680\001.git
+2026/10/10 19:55:45 INFO repo checkout: worktree created url=C:\ctmp\TestIsolatedCheckoutKeepsLinkedWorktreeHoldingWork3023255883\001 path=C:\ctmp\TestIsolatedCheckoutKeepsLinkedWorktreeHoldingWork3023255883\003\ctmp\TestIsolatedCheckoutKeepsLinkedWorktreeHoldingWork3023255883\001 branch=agent/agent/111111111111 base=refs/remotes/origin/master
+2026/10/10 19:55:45 INFO repo checkout: worktree created url=C:\ctmp\TestCreateWorktreeMigratesLinkedWorktreeToIsolatedMetadata261608381\001 path=C:\ctmp\TestCreateWorktreeMigratesLinkedWorktreeToIsolatedMetadata261608381\003\ctmp\TestCreateWorktreeMigratesLinkedWorktreeToIsolatedMetadata261608381\001 branch=agent/linux-codex/111111111111 base=refs/remotes/origin/master
+--- PASS: TestSyncFetchesExisting (3.76s)
+=== CONT  TestFreshCheckoutDiscardsLocalWork/isolated
+2026/10/10 19:55:45 INFO repo cache: cloning url=C:\ctmp\TestFreshCheckoutDiscardsLocalWorklinked466943205\001 path=C:\ctmp\TestFreshCheckoutDiscardsLocalWorklinked466943205\002\ws-1\c+\ctmp\TestFreshCheckoutDiscardsLocalWorklinked466943205\001.git
+--- PASS: TestEnsureRemoteTrackingLayoutMigratesLegacyCache (3.51s)
+=== CONT  TestFreshMigrationCarriesUnpushedBranch/another_task
+2026/10/10 19:55:46 INFO repo cache: cloning url=C:\ctmp\TestFreshCheckoutDiscardsLocalWorkisolated3779598239\001 path=C:\ctmp\TestFreshCheckoutDiscardsLocalWorkisolated3779598239\002\ws-1\c+\ctmp\TestFreshCheckoutDiscardsLocalWorkisolated3779598239\001.git
+2026/10/10 19:55:46 INFO repo cache: cloning url=C:\ctmp\TestFreshMigrationCarriesUnpushedBranchanother_task3416439430\001 path=C:\ctmp\TestFreshMigrationCarriesUnpushedBranchanother_task3416439430\002\ws-1\c+\ctmp\TestFreshMigrationCarriesUnpushedBranchanother_task3416439430\001.git
+2026/10/10 19:55:46 INFO repo checkout: isolated checkout ready url=C:\ctmp\TestCreateWorktreeReusesIsolatedGitMetadata515679202\001 path=C:\ctmp\TestCreateWorktreeReusesIsolatedGitMetadata515679202\003\ctmp\TestCreateWorktreeReusesIsolatedGitMetadata515679202\001 branch=agent/linux-codex/111111111111 base=refs/remotes/origin/master
+2026/10/10 19:55:47 INFO repo checkout: isolated checkout ready url=C:\ctmp\TestIsolatedCheckoutAcrossVolumesOnWindows2960221012\002 path=D:\multica-repocache-4096580952\ctmp\TestIsolatedCheckoutAcrossVolumesOnWindows2960221012\002 branch=agent/windows-codex/f12345678901 base=refs/remotes/origin/master
+2026/10/10 19:55:47 INFO repo checkout: worktree created url=C:\ctmp\TestCreateWorktree552057465\001 path=C:\ctmp\TestCreateWorktree552057465\003\ctmp\TestCreateWorktree552057465\001 branch=agent/code-reviewer/ef1234567890 base=refs/remotes/origin/master
+2026/10/10 19:55:47 INFO repo checkout: worktree created url=C:\ctmp\TestReconcileCoAuthoredByHookInCheckoutIgnoresLinkedWorktree1349640586\001 path=C:\ctmp\TestReconcileCoAuthoredByHookInCheckoutIgnoresLinkedWorktree1349640586\003\ctmp\TestReconcileCoAuthoredByHookInCheckoutIgnoresLinkedWorktree1349640586\001 branch=agent/test-agent/000000000000 base=refs/remotes/origin/master
+--- PASS: TestReconcileCoAuthoredByHookInCheckoutIgnoresLinkedWorktree (5.81s)
+=== CONT  TestFreshMigrationCarriesUnpushedBranch/same_task
+--- PASS: TestCreateIsolatedCheckoutImportsFetchedTipFromShallowCache (7.03s)
+=== CONT  TestLocalCloneArgsOnlyDisablesHardlinksOnWindows/windows
+=== CONT  TestRepeatedCheckoutMovesCleanCheckoutToNewBranch/linked
+--- PASS: TestCreateWorktree (5.95s)
+=== CONT  TestLocalCloneArgsOnlyDisablesHardlinksOnWindows/darwin
+=== CONT  TestLocalCloneArgsOnlyDisablesHardlinksOnWindows/linux
+--- PASS: TestLocalCloneArgsOnlyDisablesHardlinksOnWindows (0.00s)
+    --- PASS: TestLocalCloneArgsOnlyDisablesHardlinksOnWindows/windows (0.00s)
+    --- PASS: TestLocalCloneArgsOnlyDisablesHardlinksOnWindows/darwin (0.00s)
+    --- PASS: TestLocalCloneArgsOnlyDisablesHardlinksOnWindows/linux (0.00s)
+=== CONT  TestRepeatedCheckoutMovesCleanCheckoutToNewBranch/isolated
+2026/10/10 19:55:47 INFO repo checkout: isolated checkout ready url=C:\ctmp\TestCreateWorktreeWithIsolatedGitMetadata2176523764\001 path=C:\ctmp\TestCreateWorktreeWithIsolatedGitMetadata2176523764\003\ctmp\TestCreateWorktreeWithIsolatedGitMetadata2176523764\001 branch=agent/linux-codex/ef1234567890 base=refs/remotes/origin/master
+2026/10/10 19:55:47 INFO repo checkout: worktree created url=C:\ctmp\TestCreateWorktreeRemovesCoAuthoredByHookWhenDisabled1322223489\001 path=C:\ctmp\TestCreateWorktreeRemovesCoAuthoredByHookWhenDisabled1322223489\004\ctmp\TestCreateWorktreeRemovesCoAuthoredByHookWhenDisabled1322223489\001 branch=agent/test-agent/000000000000-1791633345 base=refs/remotes/origin/master
+--- PASS: TestSyncKeepsDistinctCachesForSegmentBoundaryColliders (5.03s)
+=== CONT  TestRepeatedCheckoutOnTaskBranchIsNoop/linked
+--- PASS: TestIsolatedCheckoutAcrossVolumesOnWindows (7.46s)
+=== CONT  TestRepeatedCheckoutKeepsLocalWork/linked/uncommitted_change
+2026/10/10 19:55:47 INFO repo cache: fetching url=C:\ctmp\TestCreateWorktreeReusesIsolatedGitMetadata515679202\001 path=C:\ctmp\TestCreateWorktreeReusesIsolatedGitMetadata515679202\002\ws-1\c+\ctmp\TestCreateWorktreeReusesIsolatedGitMetadata515679202\001.git
+2026/10/10 19:55:47 INFO repo cache: cloning url=C:\ctmp\TestFreshMigrationCarriesUnpushedBranchsame_task1730750233\001 path=C:\ctmp\TestFreshMigrationCarriesUnpushedBranchsame_task1730750233\002\ws-1\c+\ctmp\TestFreshMigrationCarriesUnpushedBranchsame_task1730750233\001.git
+--- PASS: TestCreateWorktreeRemovesCoAuthoredByHookWhenDisabled (9.31s)
+=== CONT  TestRepeatedCheckoutOnTaskBranchIsNoop/isolated
+2026/10/10 19:55:47 INFO repo cache: cloning url=C:\ctmp\TestRepeatedCheckoutMovesCleanCheckoutToNewBranchisolated1317278312\001 path=C:\ctmp\TestRepeatedCheckoutMovesCleanCheckoutToNewBranchisolated1317278312\002\ws-1\c+\ctmp\TestRepeatedCheckoutMovesCleanCheckoutToNewBranchisolated1317278312\001.git
+2026/10/10 19:55:47 INFO repo cache: cloning url=C:\ctmp\TestRepeatedCheckoutMovesCleanCheckoutToNewBranchlinked4052848478\001 path=C:\ctmp\TestRepeatedCheckoutMovesCleanCheckoutToNewBranchlinked4052848478\002\ws-1\c+\ctmp\TestRepeatedCheckoutMovesCleanCheckoutToNewBranchlinked4052848478\001.git
+2026/10/10 19:55:48 INFO repo cache: cloning url=C:\ctmp\TestRepeatedCheckoutOnTaskBranchIsNooplinked1282920759\001 path=C:\ctmp\TestRepeatedCheckoutOnTaskBranchIsNooplinked1282920759\002\ws-1\c+\ctmp\TestRepeatedCheckoutOnTaskBranchIsNooplinked1282920759\001.git
+2026/10/10 19:55:48 INFO repo cache: cloning url=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorklinkeduncommitted_change4162633240\001 path=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorklinkeduncommitted_change4162633240\002\ws-1\c+\ctmp\TestRepeatedCheckoutKeepsLocalWorklinkeduncommitted_change4162633240\001.git
+2026/10/10 19:55:48 INFO repo cache: cloning url=C:\ctmp\TestRepeatedCheckoutOnTaskBranchIsNoopisolated2755590132\001 path=C:\ctmp\TestRepeatedCheckoutOnTaskBranchIsNoopisolated2755590132\002\ws-1\c+\ctmp\TestRepeatedCheckoutOnTaskBranchIsNoopisolated2755590132\001.git
+2026/10/10 19:55:48 INFO repo checkout: isolated checkout ready url=C:\ctmp\TestIsolatedCheckoutIsCommittableOnWindows3384571748\001 path=C:\ctmp\mw\workspacewo-a548b2390cb2\issueissuei-d08cc771a3fa\workdir\ctmp\TestIsolatedCheckoutIsCommittableOnWindows3384571748\001 branch=agent/windows-codex/d08cc771a3fa base=refs/remotes/origin/master
+--- PASS: TestCreateWorktreeWithIsolatedGitMetadata (8.21s)
+=== CONT  TestRepeatedCheckoutKeepsLocalWork/isolated/uncommitted_change
+2026/10/10 19:55:48 INFO repo checkout: existing checkout kept url=C:\ctmp\TestIsolatedCheckoutKeepsLinkedWorktreeHoldingWork3023255883\001 path=C:\ctmp\TestIsolatedCheckoutKeepsLinkedWorktreeHoldingWork3023255883\003\ctmp\TestIsolatedCheckoutKeepsLinkedWorktreeHoldingWork3023255883\001 branch=agent/agent/111111111111 reason=local_work uncommitted_files=1 unpushed_commits=0
+2026/10/10 19:55:49 INFO repo cache: cloning url=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorkisolateduncommitted_change309423863\001 path=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorkisolateduncommitted_change309423863\002\ws-1\c+\ctmp\TestRepeatedCheckoutKeepsLocalWorkisolateduncommitted_change309423863\001.git
+--- PASS: TestIsolatedCheckoutIsCommittableOnWindows (7.75s)
+=== CONT  TestRepeatedCheckoutKeepsLocalWork/isolated/unpushed_commit
+2026/10/10 19:55:50 INFO repo cache: cloning url=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorkisolatedunpushed_commit3375453760\001 path=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorkisolatedunpushed_commit3375453760\002\ws-1\c+\ctmp\TestRepeatedCheckoutKeepsLocalWorkisolatedunpushed_commit3375453760\001.git
+2026/10/10 19:55:50 INFO repo checkout: worktree created url=C:\ctmp\TestCreateWorktreeFetchesDespiteAgentBranchOnRemote3407821680\001 path=C:\ctmp\TestCreateWorktreeFetchesDespiteAgentBranchOnRemote3407821680\003\ctmp\TestCreateWorktreeFetchesDespiteAgentBranchOnRemote3407821680\001 branch=agent/agent/000000000000 base=refs/remotes/origin/master
+2026/10/10 19:55:50 INFO repo checkout: isolated checkout ready url=C:\ctmp\TestReconcileCoAuthoredByHookInCheckoutMigratesReleasedHook991310810\001 path=C:\ctmp\TestReconcileCoAuthoredByHookInCheckoutMigratesReleasedHook991310810\003\ctmp\TestReconcileCoAuthoredByHookInCheckoutMigratesReleasedHook991310810\001 branch=agent/test-agent/000000000000 base=refs/remotes/origin/master
+2026/10/10 19:55:51 INFO repo checkout: worktree created url=C:\ctmp\TestFreshCheckoutDiscardsLocalWorklinked466943205\001 path=C:\ctmp\TestFreshCheckoutDiscardsLocalWorklinked466943205\003\ctmp\TestFreshCheckoutDiscardsLocalWorklinked466943205\001 branch=agent/agent/111111111111 base=refs/remotes/origin/master
+2026/10/10 19:55:51 INFO repo checkout: isolated checkout ready url=C:\ctmp\TestCreateWorktreeMigratesLinkedWorktreeToIsolatedMetadata261608381\001 path=C:\ctmp\TestCreateWorktreeMigratesLinkedWorktreeToIsolatedMetadata261608381\003\ctmp\TestCreateWorktreeMigratesLinkedWorktreeToIsolatedMetadata261608381\001 branch=agent/linux-codex/222222222222 base=refs/remotes/origin/master
+--- PASS: TestCreateWorktreeMigratesLinkedWorktreeToIsolatedMetadata (11.57s)
+=== CONT  TestRepeatedCheckoutKeepsLocalWork/isolated/untracked_file
+2026/10/10 19:55:51 INFO repo cache: fetching url=C:\ctmp\TestFreshCheckoutDiscardsLocalWorklinked466943205\001 path=C:\ctmp\TestFreshCheckoutDiscardsLocalWorklinked466943205\002\ws-1\c+\ctmp\TestFreshCheckoutDiscardsLocalWorklinked466943205\001.git
+--- PASS: TestReconcileCoAuthoredByHookInCheckoutMigratesReleasedHook (7.80s)
+=== CONT  TestRepeatedCheckoutKeepsLocalWork/linked/unpushed_commit
+2026/10/10 19:55:52 INFO repo checkout: worktree created url=C:\ctmp\TestFreshMigrationCarriesUnpushedBranchanother_task3416439430\001 path=C:\ctmp\TestFreshMigrationCarriesUnpushedBranchanother_task3416439430\004\ctmp\TestFreshMigrationCarriesUnpushedBranchanother_task3416439430\001 branch=agent/agent/333333333333 base=refs/remotes/origin/master
+2026/10/10 19:55:52 INFO repo cache: cloning url=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorkisolateduntracked_file726990139\001 path=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorkisolateduntracked_file726990139\002\ws-1\c+\ctmp\TestRepeatedCheckoutKeepsLocalWorkisolateduntracked_file726990139\001.git
+2026/10/10 19:55:52 INFO repo cache: cloning url=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorklinkedunpushed_commit280454295\001 path=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorklinkedunpushed_commit280454295\002\ws-1\c+\ctmp\TestRepeatedCheckoutKeepsLocalWorklinkedunpushed_commit280454295\001.git
+2026/10/10 19:55:52 INFO repo checkout: isolated checkout ready url=C:\ctmp\TestFreshCheckoutDiscardsLocalWorkisolated3779598239\001 path=C:\ctmp\TestFreshCheckoutDiscardsLocalWorkisolated3779598239\003\ctmp\TestFreshCheckoutDiscardsLocalWorkisolated3779598239\001 branch=agent/agent/111111111111 base=refs/remotes/origin/master
+2026/10/10 19:55:52 INFO repo checkout: existing checkout kept url=C:\ctmp\TestCreateWorktreeReusesIsolatedGitMetadata515679202\001 path=C:\ctmp\TestCreateWorktreeReusesIsolatedGitMetadata515679202\003\ctmp\TestCreateWorktreeReusesIsolatedGitMetadata515679202\001 branch=feature/keep-me reason=local_work uncommitted_files=0 unpushed_commits=2
+2026/10/10 19:55:53 INFO repo checkout: worktree created url=C:\ctmp\TestRepeatedCheckoutOnTaskBranchIsNooplinked1282920759\001 path=C:\ctmp\TestRepeatedCheckoutOnTaskBranchIsNooplinked1282920759\003\ctmp\TestRepeatedCheckoutOnTaskBranchIsNooplinked1282920759\001 branch=agent/agent/111111111111 base=refs/remotes/origin/master
+2026/10/10 19:55:53 INFO repo checkout: worktree created url=C:\ctmp\TestRepeatedCheckoutMovesCleanCheckoutToNewBranchlinked4052848478\001 path=C:\ctmp\TestRepeatedCheckoutMovesCleanCheckoutToNewBranchlinked4052848478\003\ctmp\TestRepeatedCheckoutMovesCleanCheckoutToNewBranchlinked4052848478\001 branch=agent/agent/111111111111 base=refs/remotes/origin/master
+2026/10/10 19:55:53 INFO repo cache: fetching url=C:\ctmp\TestFreshCheckoutDiscardsLocalWorkisolated3779598239\001 path=C:\ctmp\TestFreshCheckoutDiscardsLocalWorkisolated3779598239\002\ws-1\c+\ctmp\TestFreshCheckoutDiscardsLocalWorkisolated3779598239\001.git
+2026/10/10 19:55:53 INFO repo checkout: worktree created url=C:\ctmp\TestFreshMigrationCarriesUnpushedBranchsame_task1730750233\001 path=C:\ctmp\TestFreshMigrationCarriesUnpushedBranchsame_task1730750233\004\ctmp\TestFreshMigrationCarriesUnpushedBranchsame_task1730750233\001 branch=agent/agent/333333333333 base=refs/remotes/origin/master
+2026/10/10 19:55:53 INFO repo checkout: worktree created url=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorklinkeduncommitted_change4162633240\001 path=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorklinkeduncommitted_change4162633240\003\ctmp\TestRepeatedCheckoutKeepsLocalWorklinkeduncommitted_change4162633240\001 branch=agent/agent/111111111111 base=refs/remotes/origin/master
+2026/10/10 19:55:53 INFO repo cache: fetching url=C:\ctmp\TestRepeatedCheckoutOnTaskBranchIsNooplinked1282920759\001 path=C:\ctmp\TestRepeatedCheckoutOnTaskBranchIsNooplinked1282920759\002\ws-1\c+\ctmp\TestRepeatedCheckoutOnTaskBranchIsNooplinked1282920759\001.git
+2026/10/10 19:55:53 INFO repo cache: fetching url=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorklinkeduncommitted_change4162633240\001 path=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorklinkeduncommitted_change4162633240\002\ws-1\c+\ctmp\TestRepeatedCheckoutKeepsLocalWorklinkeduncommitted_change4162633240\001.git
+2026/10/10 19:55:54 INFO repo checkout: isolated checkout ready url=C:\ctmp\TestRepeatedCheckoutMovesCleanCheckoutToNewBranchisolated1317278312\001 path=C:\ctmp\TestRepeatedCheckoutMovesCleanCheckoutToNewBranchisolated1317278312\003\ctmp\TestRepeatedCheckoutMovesCleanCheckoutToNewBranchisolated1317278312\001 branch=agent/agent/111111111111 base=refs/remotes/origin/master
+2026/10/10 19:55:54 INFO repo cache: fetching url=C:\ctmp\TestRepeatedCheckoutMovesCleanCheckoutToNewBranchlinked4052848478\001 path=C:\ctmp\TestRepeatedCheckoutMovesCleanCheckoutToNewBranchlinked4052848478\002\ws-1\c+\ctmp\TestRepeatedCheckoutMovesCleanCheckoutToNewBranchlinked4052848478\001.git
+2026/10/10 19:55:54 INFO repo checkout: isolated checkout ready url=C:\ctmp\TestIsolatedCheckoutKeepsLinkedWorktreeHoldingWork3023255883\001 path=C:\ctmp\TestIsolatedCheckoutKeepsLinkedWorktreeHoldingWork3023255883\003\ctmp\TestIsolatedCheckoutKeepsLinkedWorktreeHoldingWork3023255883\001 branch=agent/agent/222222222222 base=refs/remotes/origin/master
+--- PASS: TestIsolatedCheckoutKeepsLinkedWorktreeHoldingWork (15.06s)
+=== CONT  TestRepeatedCheckoutKeepsLocalWork/linked/untracked_file
+2026/10/10 19:55:54 INFO repo checkout: isolated checkout ready url=C:\ctmp\TestRepeatedCheckoutOnTaskBranchIsNoopisolated2755590132\001 path=C:\ctmp\TestRepeatedCheckoutOnTaskBranchIsNoopisolated2755590132\003\ctmp\TestRepeatedCheckoutOnTaskBranchIsNoopisolated2755590132\001 branch=agent/agent/111111111111 base=refs/remotes/origin/master
+2026/10/10 19:55:55 INFO repo cache: fetching url=C:\ctmp\TestRepeatedCheckoutOnTaskBranchIsNoopisolated2755590132\001 path=C:\ctmp\TestRepeatedCheckoutOnTaskBranchIsNoopisolated2755590132\002\ws-1\c+\ctmp\TestRepeatedCheckoutOnTaskBranchIsNoopisolated2755590132\001.git
+2026/10/10 19:55:55 INFO repo cache: cloning url=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorklinkeduntracked_file2439897819\001 path=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorklinkeduntracked_file2439897819\002\ws-1\c+\ctmp\TestRepeatedCheckoutKeepsLocalWorklinkeduntracked_file2439897819\001.git
+2026/10/10 19:55:55 INFO repo checkout: worktree created url=C:\ctmp\TestFreshMigrationCarriesUnpushedBranchanother_task3416439430\001 path=C:\ctmp\TestFreshMigrationCarriesUnpushedBranchanother_task3416439430\003\ctmp\TestFreshMigrationCarriesUnpushedBranchanother_task3416439430\001 branch=agent/agent/111111111111 base=refs/remotes/origin/master
+2026/10/10 19:55:55 INFO repo cache: fetching url=C:\ctmp\TestRepeatedCheckoutMovesCleanCheckoutToNewBranchisolated1317278312\001 path=C:\ctmp\TestRepeatedCheckoutMovesCleanCheckoutToNewBranchisolated1317278312\002\ws-1\c+\ctmp\TestRepeatedCheckoutMovesCleanCheckoutToNewBranchisolated1317278312\001.git
+2026/10/10 19:55:55 INFO repo checkout: isolated checkout ready url=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorkisolateduncommitted_change309423863\001 path=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorkisolateduncommitted_change309423863\003\ctmp\TestRepeatedCheckoutKeepsLocalWorkisolateduncommitted_change309423863\001 branch=agent/agent/111111111111 base=refs/remotes/origin/master
+2026/10/10 19:55:55 INFO repo checkout: worktree created url=C:\ctmp\TestCreateWorktreeFetchesDespiteAgentBranchOnRemote3407821680\001 path=C:\ctmp\TestCreateWorktreeFetchesDespiteAgentBranchOnRemote3407821680\004\ctmp\TestCreateWorktreeFetchesDespiteAgentBranchOnRemote3407821680\001 branch=agent/agent/000000000000-1791633353 base=refs/remotes/origin/master
+--- PASS: TestCreateWorktreeFetchesDespiteAgentBranchOnRemote (10.86s)
+2026/10/10 19:55:55 INFO repo cache: fetching url=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorkisolateduncommitted_change309423863\001 path=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorkisolateduncommitted_change309423863\002\ws-1\c+\ctmp\TestRepeatedCheckoutKeepsLocalWorkisolateduncommitted_change309423863\001.git
+2026/10/10 19:55:55 INFO repo cache: fetching url=C:\ctmp\TestFreshMigrationCarriesUnpushedBranchanother_task3416439430\001 path=C:\ctmp\TestFreshMigrationCarriesUnpushedBranchanother_task3416439430\002\ws-1\c+\ctmp\TestFreshMigrationCarriesUnpushedBranchanother_task3416439430\001.git
+2026/10/10 19:55:56 INFO repo checkout: existing worktree updated url=C:\ctmp\TestFreshCheckoutDiscardsLocalWorklinked466943205\001 path=C:\ctmp\TestFreshCheckoutDiscardsLocalWorklinked466943205\003\ctmp\TestFreshCheckoutDiscardsLocalWorklinked466943205\001 branch=agent/agent/222222222222 base=refs/remotes/origin/master
+=== NAME  TestFreshCheckoutDiscardsLocalWork/linked
+    existing_checkout_test.go:307: tracked.txt = "base\r\n", want the uncommitted edit discarded
+2026/10/10 19:55:56 INFO repo checkout: worktree created url=C:\ctmp\TestFreshMigrationCarriesUnpushedBranchsame_task1730750233\001 path=C:\ctmp\TestFreshMigrationCarriesUnpushedBranchsame_task1730750233\003\ctmp\TestFreshMigrationCarriesUnpushedBranchsame_task1730750233\001 branch=agent/agent/111111111111 base=refs/remotes/origin/master
+2026/10/10 19:55:56 INFO repo checkout: isolated checkout ready url=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorkisolatedunpushed_commit3375453760\001 path=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorkisolatedunpushed_commit3375453760\003\ctmp\TestRepeatedCheckoutKeepsLocalWorkisolatedunpushed_commit3375453760\001 branch=agent/agent/111111111111 base=refs/remotes/origin/master
+2026/10/10 19:55:56 INFO repo cache: fetching url=C:\ctmp\TestFreshMigrationCarriesUnpushedBranchsame_task1730750233\001 path=C:\ctmp\TestFreshMigrationCarriesUnpushedBranchsame_task1730750233\002\ws-1\c+\ctmp\TestFreshMigrationCarriesUnpushedBranchsame_task1730750233\001.git
+2026/10/10 19:55:56 INFO repo cache: fetching url=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorkisolatedunpushed_commit3375453760\001 path=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorkisolatedunpushed_commit3375453760\002\ws-1\c+\ctmp\TestRepeatedCheckoutKeepsLocalWorkisolatedunpushed_commit3375453760\001.git
+2026/10/10 19:55:57 INFO repo checkout: isolated checkout ready url=C:\ctmp\TestCreateWorktreeReusesIsolatedGitMetadata515679202\001 path=C:\ctmp\TestCreateWorktreeReusesIsolatedGitMetadata515679202\003\ctmp\TestCreateWorktreeReusesIsolatedGitMetadata515679202\001 branch=agent/linux-codex/222222222222 base=refs/remotes/origin/master
+2026/10/10 19:55:57 INFO repo checkout: existing checkout kept url=C:\ctmp\TestRepeatedCheckoutOnTaskBranchIsNooplinked1282920759\001 path=C:\ctmp\TestRepeatedCheckoutOnTaskBranchIsNooplinked1282920759\003\ctmp\TestRepeatedCheckoutOnTaskBranchIsNooplinked1282920759\001 branch=agent/agent/111111111111 reason=task_branch uncommitted_files=0 unpushed_commits=0
+2026/10/10 19:55:57 INFO repo checkout: worktree created url=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorklinkedunpushed_commit280454295\001 path=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorklinkedunpushed_commit280454295\003\ctmp\TestRepeatedCheckoutKeepsLocalWorklinkedunpushed_commit280454295\001 branch=agent/agent/111111111111 base=refs/remotes/origin/master
+2026/10/10 19:55:57 INFO repo checkout: existing checkout kept url=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorklinkeduncommitted_change4162633240\001 path=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorklinkeduncommitted_change4162633240\003\ctmp\TestRepeatedCheckoutKeepsLocalWorklinkeduncommitted_change4162633240\001 branch=agent/agent/111111111111 reason=local_work uncommitted_files=1 unpushed_commits=0
+2026/10/10 19:55:58 INFO repo cache: fetching url=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorklinkedunpushed_commit280454295\001 path=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorklinkedunpushed_commit280454295\002\ws-1\c+\ctmp\TestRepeatedCheckoutKeepsLocalWorklinkedunpushed_commit280454295\001.git
+2026/10/10 19:55:58 INFO repo checkout: isolated checkout ready url=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorkisolateduntracked_file726990139\001 path=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorkisolateduntracked_file726990139\003\ctmp\TestRepeatedCheckoutKeepsLocalWorkisolateduntracked_file726990139\001 branch=agent/agent/111111111111 base=refs/remotes/origin/master
+2026/10/10 19:55:58 INFO repo checkout: isolated checkout ready url=C:\ctmp\TestFreshCheckoutDiscardsLocalWorkisolated3779598239\001 path=C:\ctmp\TestFreshCheckoutDiscardsLocalWorkisolated3779598239\003\ctmp\TestFreshCheckoutDiscardsLocalWorkisolated3779598239\001 branch=agent/agent/222222222222 base=refs/remotes/origin/master
+=== NAME  TestFreshCheckoutDiscardsLocalWork/isolated
+    existing_checkout_test.go:307: tracked.txt = "base\r\n", want the uncommitted edit discarded
+--- FAIL: TestFreshCheckoutDiscardsLocalWork (0.00s)
+    --- FAIL: TestFreshCheckoutDiscardsLocalWork/linked (11.12s)
+    --- FAIL: TestFreshCheckoutDiscardsLocalWork/isolated (12.82s)
+2026/10/10 19:55:58 INFO repo checkout: existing worktree updated url=C:\ctmp\TestRepeatedCheckoutMovesCleanCheckoutToNewBranchlinked4052848478\001 path=C:\ctmp\TestRepeatedCheckoutMovesCleanCheckoutToNewBranchlinked4052848478\003\ctmp\TestRepeatedCheckoutMovesCleanCheckoutToNewBranchlinked4052848478\001 branch=agent/agent/222222222222 base=refs/remotes/origin/master
+2026/10/10 19:55:58 INFO repo cache: fetching url=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorkisolateduntracked_file726990139\001 path=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorkisolateduntracked_file726990139\002\ws-1\c+\ctmp\TestRepeatedCheckoutKeepsLocalWorkisolateduntracked_file726990139\001.git
+2026/10/10 19:55:59 INFO repo checkout: existing checkout kept url=C:\ctmp\TestRepeatedCheckoutOnTaskBranchIsNoopisolated2755590132\001 path=C:\ctmp\TestRepeatedCheckoutOnTaskBranchIsNoopisolated2755590132\003\ctmp\TestRepeatedCheckoutOnTaskBranchIsNoopisolated2755590132\001 branch=agent/agent/111111111111 reason=task_branch uncommitted_files=0 unpushed_commits=0
+2026/10/10 19:55:59 INFO repo checkout: worktree created url=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorklinkeduntracked_file2439897819\001 path=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorklinkeduntracked_file2439897819\003\ctmp\TestRepeatedCheckoutKeepsLocalWorklinkeduntracked_file2439897819\001 branch=agent/agent/111111111111 base=refs/remotes/origin/master
+--- PASS: TestRepeatedCheckoutOnTaskBranchIsNoop (0.00s)
+    --- PASS: TestRepeatedCheckoutOnTaskBranchIsNoop/linked (10.36s)
+    --- PASS: TestRepeatedCheckoutOnTaskBranchIsNoop/isolated (11.56s)
+2026/10/10 19:55:59 INFO repo cache: fetching url=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorklinkeduntracked_file2439897819\001 path=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorklinkeduntracked_file2439897819\002\ws-1\c+\ctmp\TestRepeatedCheckoutKeepsLocalWorklinkeduntracked_file2439897819\001.git
+2026/10/10 19:55:59 INFO repo checkout: existing checkout kept url=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorkisolateduncommitted_change309423863\001 path=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorkisolateduncommitted_change309423863\003\ctmp\TestRepeatedCheckoutKeepsLocalWorkisolateduncommitted_change309423863\001 branch=agent/agent/111111111111 reason=local_work uncommitted_files=1 unpushed_commits=0
+2026/10/10 19:55:59 INFO repo checkout: isolated checkout ready url=C:\ctmp\TestRepeatedCheckoutMovesCleanCheckoutToNewBranchisolated1317278312\001 path=C:\ctmp\TestRepeatedCheckoutMovesCleanCheckoutToNewBranchisolated1317278312\003\ctmp\TestRepeatedCheckoutMovesCleanCheckoutToNewBranchisolated1317278312\001 branch=agent/agent/222222222222 base=refs/remotes/origin/master
+--- PASS: TestRepeatedCheckoutMovesCleanCheckoutToNewBranch (0.00s)
+    --- PASS: TestRepeatedCheckoutMovesCleanCheckoutToNewBranch/linked (11.30s)
+    --- PASS: TestRepeatedCheckoutMovesCleanCheckoutToNewBranch/isolated (12.76s)
+2026/10/10 19:56:00 INFO repo checkout: existing checkout kept url=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorkisolatedunpushed_commit3375453760\001 path=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorkisolatedunpushed_commit3375453760\003\ctmp\TestRepeatedCheckoutKeepsLocalWorkisolatedunpushed_commit3375453760\001 branch=agent/agent/111111111111 reason=local_work uncommitted_files=0 unpushed_commits=1
+2026/10/10 19:56:00 INFO repo checkout: isolated checkout ready url=C:\ctmp\TestFreshMigrationCarriesUnpushedBranchanother_task3416439430\001 path=C:\ctmp\TestFreshMigrationCarriesUnpushedBranchanother_task3416439430\003\ctmp\TestFreshMigrationCarriesUnpushedBranchanother_task3416439430\001 branch=agent/agent/222222222222 base=refs/remotes/origin/master
+2026/10/10 19:56:00 INFO repo checkout: existing checkout kept url=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorklinkedunpushed_commit280454295\001 path=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorklinkedunpushed_commit280454295\003\ctmp\TestRepeatedCheckoutKeepsLocalWorklinkedunpushed_commit280454295\001 branch=agent/agent/111111111111 reason=local_work uncommitted_files=0 unpushed_commits=1
+2026/10/10 19:56:00 INFO repo checkout: isolated checkout ready url=C:\ctmp\TestCreateWorktreeReusesIsolatedGitMetadata515679202\001 path=C:\ctmp\TestCreateWorktreeReusesIsolatedGitMetadata515679202\003\ctmp\TestCreateWorktreeReusesIsolatedGitMetadata515679202\001 branch=agent/linux-codex/333333333333 base=refs/remotes/origin/master
+--- PASS: TestCreateWorktreeReusesIsolatedGitMetadata (20.56s)
+2026/10/10 19:56:00 INFO repo checkout: isolated checkout ready url=C:\ctmp\TestFreshMigrationCarriesUnpushedBranchsame_task1730750233\001 path=C:\ctmp\TestFreshMigrationCarriesUnpushedBranchsame_task1730750233\003\ctmp\TestFreshMigrationCarriesUnpushedBranchsame_task1730750233\001 branch=agent/agent/111111111111-1791633360 base=refs/remotes/origin/master
+2026/10/10 19:56:00 INFO repo checkout: existing checkout kept url=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorkisolateduntracked_file726990139\001 path=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorkisolateduntracked_file726990139\003\ctmp\TestRepeatedCheckoutKeepsLocalWorkisolateduntracked_file726990139\001 branch=agent/agent/111111111111 reason=local_work uncommitted_files=1 unpushed_commits=0
+--- PASS: TestFreshMigrationCarriesUnpushedBranch (0.00s)
+    --- PASS: TestFreshMigrationCarriesUnpushedBranch/another_task (14.67s)
+    --- PASS: TestFreshMigrationCarriesUnpushedBranch/same_task (13.77s)
+2026/10/10 19:56:01 INFO repo checkout: existing checkout kept url=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorklinkeduntracked_file2439897819\001 path=C:\ctmp\TestRepeatedCheckoutKeepsLocalWorklinkeduntracked_file2439897819\003\ctmp\TestRepeatedCheckoutKeepsLocalWorklinkeduntracked_file2439897819\001 branch=agent/agent/111111111111 reason=local_work uncommitted_files=1 unpushed_commits=0
+--- PASS: TestRepeatedCheckoutKeepsLocalWork (0.00s)
+    --- PASS: TestRepeatedCheckoutKeepsLocalWork/linked/uncommitted_change (10.74s)
+    --- PASS: TestRepeatedCheckoutKeepsLocalWork/isolated/uncommitted_change (11.37s)
+    --- PASS: TestRepeatedCheckoutKeepsLocalWork/isolated/unpushed_commit (11.11s)
+    --- PASS: TestRepeatedCheckoutKeepsLocalWork/linked/unpushed_commit (8.76s)
+    --- PASS: TestRepeatedCheckoutKeepsLocalWork/isolated/untracked_file (9.38s)
+    --- PASS: TestRepeatedCheckoutKeepsLocalWork/linked/untracked_file (6.55s)
+FAIL
+FAIL	github.com/multica-ai/multica/server/internal/daemon/repocache	52.628s
+FAIL
+exit=1

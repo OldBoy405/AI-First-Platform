@@ -1,0 +1,14 @@
+$ node -e const fs=require('fs'),cp=require('child_process'),cr=require('crypto');const NL=String.fromCharCode(10),CR=String.fromCharCode(13);const D='internal/daemon/repocache/';const LD=p=>fs.readFileSync(p,'utf8').split(CR+NL).join(NL);const prod=fs.readdirSync(D).filter(f=>f.endsWith('.go')&&!f.endsWith('_test.go')).sort();console.log('prod-files: '+prod.join(' '));const bad=[];const pats=['GIT_CONFIG_GLOBAL','GIT_CONFIG_COUNT','GIT_CONFIG_KEY_','GIT_CONFIG_VALUE_','multica-identity.config','config.worktree'];const hits={};for(const p of pats){hits[p]=[];for(const f of prod){const ls=LD(D+f).split(NL);for(let i=0;i<ls.length;i++){if(ls[i].indexOf(p)>=0){hits[p].push(f+':'+(i+1));}}}console.log('sites '+p+' = '+hits[p].length+' ['+hits[p].join(', ')+']');}if(hits['GIT_CONFIG_GLOBAL'].length!==0){bad.push('repocache 生产文件出现 GIT_CONFIG_GLOBAL: '+hits['GIT_CONFIG_GLOBAL'].join(','));}const gc=hits['GIT_CONFIG_COUNT'].concat(hits['GIT_CONFIG_KEY_'],hits['GIT_CONFIG_VALUE_']);if(gc.length===0){bad.push('未观测到 daemon 子进程 Git 配置追加点（cache.go gitEnv）');}for(const h of gc){if(h.slice(0,h.indexOf(':'))!=='cache.go'){bad.push('GIT_CONFIG_* 追加点不在 cache.go: '+h);}}const cw=hits['multica-identity.config'].concat(hits['config.worktree']);if(cw.length===0){bad.push('未观测到 checkout 私有 Git 配置写入点（identity.go）');}for(const h of cw){if(h.slice(0,h.indexOf(':'))!=='identity.go'){bad.push('checkout 私有配置写入点不在 identity.go: '+h);}}const dep=cp.spawnSync('go',['list','-deps','./internal/daemon/repocache/'],{encoding:'utf8'});const dl=String(dep.stdout?dep.stdout:'').split(NL).map(s=>s.trim()).filter(s=>s.length>0);const dh=dl.filter(s=>s.endsWith('/internal/daemon'));console.log('go-list-deps: status='+dep.status+' pkgs='+dl.length+' internal-daemon-hits='+dh.length);if(dep.status!==0){bad.push('go list -deps 非零退出: '+String(dep.stderr?dep.stderr:'').slice(0,300));}if(dh.length!==0){bad.push('repocache 依赖 internal/daemon: '+dh.join(','));}if(bad.length!==0){console.error(bad.join(NL));process.exit(1);}console.log('cmd-03 ok: repocache 生产面 GIT_CONFIG_GLOBAL 命中 0；GIT_CONFIG_* 追加点仅 cache.go；checkout 私有配置写入点仅 identity.go；go list -deps 命中 internal/daemon = 0（观测面 = FR-02 第二处写入点核实结论；该包全文件测试的既有平台失败另行留证，不判为通过）');
+(exit=0)
+--- stdout ---
+prod-files: cache.go identity.go
+sites GIT_CONFIG_GLOBAL = 0 []
+sites GIT_CONFIG_COUNT = 4 [cache.go:37, cache.go:42, cache.go:43, cache.go:52]
+sites GIT_CONFIG_KEY_ = 1 [cache.go:53]
+sites GIT_CONFIG_VALUE_ = 1 [cache.go:54]
+sites multica-identity.config = 2 [identity.go:13, identity.go:73]
+sites config.worktree = 2 [identity.go:78, identity.go:117]
+go-list-deps: status=0 pkgs=100 internal-daemon-hits=0
+cmd-03 ok: repocache 生产面 GIT_CONFIG_GLOBAL 命中 0；GIT_CONFIG_* 追加点仅 cache.go；checkout 私有配置写入点仅 identity.go；go list -deps 命中 internal/daemon = 0（观测面 = FR-02 第二处写入点核实结论；该包全文件测试的既有平台失败另行留证，不判为通过）
+
+--- stderr ---
