@@ -1,10 +1,10 @@
 # specs/ai-first-platform/traceability.yml — 累积追溯基线（每个 CR 一段）
 spec-id: ai-first-platform
-cr-ref: CR-2026-075
-cr-history: [CR-2026-060, CR-2026-059, CR-2026-061, CR-2026-062, CR-2026-063, CR-2026-065, CR-2026-064, CR-2026-066, CR-2026-067, CR-2026-068, CR-2026-069, CR-2026-070, CR-2026-071, CR-2026-072, CR-2026-073, CR-2026-074, CR-2026-075]
-target-version: "0.48"
+cr-ref: CR-2026-076
+cr-history: [CR-2026-060, CR-2026-059, CR-2026-061, CR-2026-062, CR-2026-063, CR-2026-065, CR-2026-064, CR-2026-066, CR-2026-067, CR-2026-068, CR-2026-069, CR-2026-070, CR-2026-071, CR-2026-072, CR-2026-073, CR-2026-074, CR-2026-075, CR-2026-076]
+target-version: "0.49"
 baseline-since: "0.33"
-generated-at: "2026-10-06T18:34:31+08:00"
+generated-at: "2026-10-13T19:27:03+08:00"
 
 milestones:
   - cr: CR-2026-060
@@ -1433,3 +1433,167 @@ milestones:
         code: { verdict: pass, path: change-requests/CR-2026-075/review-annotations/code.yml, sha256: 3a3b7bfa4e81105de6a5dc50f7799a54b89f262348c3f552066286929334ec13 }
       approval: { status: approved, path: change-requests/CR-2026-075/approval.yml, sha256: 1e5fbf2e5ab290aebc6c0230ce5c8aea0cf2148be669463201b5f461e0ebec7d }
       merge: { status: merged, path: change-requests/CR-2026-075/merge-commits.yml, sha256: 137c9dac007489cfe333d7c6ece68670a4e811d9770f0bc8578ee1453f97ed09 }
+  - cr: CR-2026-076
+    milestone: "0.49"
+    target-version: "0.49"
+    merge-commits:
+      - repo: ai-first-platform-docs
+        trunk: master
+        sha: 226d4d8e24f9da0a780cc5eb70b28cd18ea3ab42
+        branch: requirement/CR-2026-076
+      - repo: multica
+        trunk: main
+        sha: c47381ae72d4a274cf55208ea45bc105bb0bfc77
+        branch: requirement/CR-2026-076
+      - repo: tools
+        trunk: main
+        sha: c69336475d01c4de5a42efc0dc087a5e605b5c82
+        branch: requirement/CR-2026-076
+    frs:
+      - fr: FR-01
+        title: 机器保证启动前可信绑定
+        sdd: §4.1 判定顺序 2a、§6.1（`resolveTaskWorkspaceBinding` 新增 task／来源 Issue 唯一正式 CR 关联段，`dep-5`；关联事实载体 = 既有认领载荷的附加投影 `AgentTaskResponse.cr_id`／`issue_cr_ids`，SDD §3.4／§3.5，`dep-35`；crctl `bindTaskWorkspace` 保持失败关闭，`dep-1`／`dep-2`）
+        tasks: [CR-2026-076-TASK-01]
+        code: [ai-first-platform-docs@226d4d8e24f9, multica@c47381ae72d4, tools@c69336475d01]
+        evidence: [cmd-01, cmd-04]
+      - fr: FR-02
+        title: 任务 Git trust 保留用户身份
+        sdd: §4.2 + D-01、§2.2 E6（`GIT_CONFIG_GLOBAL` 叠加式 `include`，`dep-6`；`repocache` 第二写入点核实）
+        tasks: [CR-2026-076-TASK-02]
+        code: [ai-first-platform-docs@226d4d8e24f9, multica@c47381ae72d4, tools@c69336475d01]
+        evidence: [cmd-02, cmd-03]
+      - fr: FR-03
+        title: review-record 写入与隔离提交原子闭环
+        sdd: §4.3 + SDD-CLOSE-01（write-set／隔离提交／恢复／幂等；复用 `dep-12`、`dep-13`、`dep-34`，不新增第二幂等账本）
+        tasks: [CR-2026-076-TASK-04]
+        code: [ai-first-platform-docs@226d4d8e24f9, multica@c47381ae72d4, tools@c69336475d01]
+        evidence: [cmd-04, cmd-05]
+      - fr: FR-04
+        title: 普通 BLOCK 回修与 next 收尾一致
+        sdd: §4.4（`cmdNext` 判定优先级与对象变化分支；`dep-16`、`dep-17`）
+        tasks: [CR-2026-076-TASK-05]
+        code: [ai-first-platform-docs@226d4d8e24f9, multica@c47381ae72d4, tools@c69336475d01]
+        evidence: [cmd-04]
+      - fr: FR-05
+        title: G01/G02 合法本地信任贯通
+        sdd: §4.5 + D-04 + SDD-CLOSE-05（`warnings[]` 扩展形式；`runGateChecks`／`cmdApprove`／`cmdValidate`／`cmdMerge` 同判；`dep-18`、`dep-19`、`dep-20`）
+        tasks: [CR-2026-076-TASK-06]
+        code: [ai-first-platform-docs@226d4d8e24f9, multica@c47381ae72d4, tools@c69336475d01]
+        evidence: [cmd-04, cmd-07]
+      - fr: FR-06
+        title: G03 默认 coding 取消重复开发启动确认
+        sdd: §4.6、§3.3、§8（状态机 +1 声明、`gates.json` `developing` 判定组合、Pipeline 模板去必经节点、Skill／矩阵／Agent 合同同步；`dep-24`～`dep-26`）
+        tasks: [CR-2026-076-TASK-07]
+        code: [ai-first-platform-docs@226d4d8e24f9, multica@c47381ae72d4, tools@c69336475d01]
+        evidence: [cmd-09, cmd-04]
+      - fr: FR-07
+        title: G04 人类继续一次一 cycle
+        sdd: §4.7 + D-03（认证触发事实为输入，不以 `--confirm`／TTY 作唯一通路；幂等与失败只恢复原操作；`dep-20`）
+        tasks: [CR-2026-076-TASK-08]
+        code: [ai-first-platform-docs@226d4d8e24f9, multica@c47381ae72d4, tools@c69336475d01]
+        evidence: [cmd-04]
+      - fr: FR-08
+        title: G05/G06 共用整个 Git tree 内容比较
+        sdd: §4.8 + D-02（`compareTree` 单一缝落在 `workspace-transactions.mjs`，不在 crctl 内双实现；`dep-14`）
+        tasks: [CR-2026-076-TASK-09]
+        code: [ai-first-platform-docs@226d4d8e24f9, multica@c47381ae72d4, tools@c69336475d01]
+        evidence: [cmd-07]
+      - fr: FR-09
+        title: G05 合入对象与发布意图核验
+        sdd: §4.8、§4.10（`cmdMerge` 等价推进与发布 source 固定；`dep-15`、`dep-21`）
+        tasks: [CR-2026-076-TASK-09]
+        code: [ai-first-platform-docs@226d4d8e24f9, multica@c47381ae72d4, tools@c69336475d01]
+        evidence: [cmd-07]
+      - fr: FR-10
+        title: G06 同步后的最小重验
+        sdd: §4.9（freshness 三段路由输出；`dep-7`）
+        tasks: [CR-2026-076-TASK-10]
+        code: [ai-first-platform-docs@226d4d8e24f9, multica@c47381ae72d4, tools@c69336475d01]
+        evidence: [cmd-08]
+      - fr: FR-11
+        title: 代码源不可判时恢复或建立新证据
+        sdd: §4.8 恢复分支（先复原对象、否则新建测试／评审事实；不以当前 HEAD 补历史）
+        tasks: [CR-2026-076-TASK-09]
+        code: [ai-first-platform-docs@226d4d8e24f9, multica@c47381ae72d4, tools@c69336475d01]
+        evidence: [cmd-05, cmd-07]
+      - fr: FR-12
+        title: G07 数量下降告警与既有红例收敛
+        sdd: §4.11（`suite-gate` 数量下降 warning 与仍拒绝面、四个 summary 例外根因收敛与撤销；`dep-22`）
+        tasks: [CR-2026-076-TASK-11]
+        code: [ai-first-platform-docs@226d4d8e24f9, multica@c47381ae72d4, tools@c69336475d01]
+        evidence: [cmd-10, cmd-11]
+      - fr: FR-13
+        title: Windows chainCheck 真实扫描
+        sdd: §4.12 + D-05（`node:path.basename` + `docCount` 断言；`dep-23`）
+        tasks: [CR-2026-076-TASK-12]
+        code: [ai-first-platform-docs@226d4d8e24f9, multica@c47381ae72d4, tools@c69336475d01]
+        evidence: [cmd-12]
+      - fr: FR-14
+        title: 实际发布生效与合法执行边界
+        sdd: §4.13 + SDD-CLOSE-08（消费者实际取用版本核对、计划承载人类动作与窗口、判据不采源码合入／构建；`dep-8`、`dep-30`）
+        tasks: [CR-2026-076-TASK-17]
+        code: [ai-first-platform-docs@226d4d8e24f9, multica@c47381ae72d4, tools@c69336475d01]
+        evidence: [cmd-14, cmd-15]
+      - fr: FR-SUP-01
+        title: 三角色 owner 使用成员 user_id 且写入前校验
+        sdd: §4.14（`cmdRegister`／`cmdOwnerSet` 共用校验缝；`dep-31`、`dep-32`）
+        tasks: [CR-2026-076-TASK-13]
+        code: [ai-first-platform-docs@226d4d8e24f9, multica@c47381ae72d4, tools@c69336475d01]
+        evidence: [cmd-06, cmd-04]
+      - fr: FR-SUP-02
+        title: owner 契约与示例同步
+        sdd: §4.14、§8（register Skill + Pipeline 输入示例；`dep-29`、`dep-33`）
+        tasks: [CR-2026-076-TASK-13]
+        code: [ai-first-platform-docs@226d4d8e24f9, multica@c47381ae72d4, tools@c69336475d01]
+        evidence: [cmd-09, cmd-06]
+      - fr: FR-SUP-03
+        title: source 自动绑定与空值语义
+        sdd: §4.15（创建入口 + `register.source` 持久化语义；含「入库通道待核实」二选一分支）
+        tasks: [CR-2026-076-TASK-14]
+        code: [ai-first-platform-docs@226d4d8e24f9, multica@c47381ae72d4, tools@c69336475d01]
+        evidence: [cmd-06, cmd-04]
+      - fr: FR-SUP-04
+        title: source 的注册前与使用前校验
+        sdd: §4.15（containment + 可读性双防线，使用前防线不因入口已校验而删除）
+        tasks: [CR-2026-076-TASK-14]
+        code: [ai-first-platform-docs@226d4d8e24f9, multica@c47381ae72d4, tools@c69336475d01]
+        evidence: [cmd-06, cmd-04]
+      - fr: FR-SUP-05
+        title: 注册阶段与阶段根的可信交接
+        sdd: §4.1、§4.14（注册节点绑定 KB 主 checkout，返回后经 `workspace inspect` 复核；`dep-7`、`dep-26`）
+        tasks: [CR-2026-076-TASK-01]
+        code: [ai-first-platform-docs@226d4d8e24f9, multica@c47381ae72d4, tools@c69336475d01]
+        evidence: [cmd-01]
+      - fr: FR-SUP-06
+        title: 错误根防线（本 CR 部分）
+        sdd: §4.1（启动前失败关闭与错误项目根／阶段根写前拒绝；`dep-5`、`dep-7`；reviewer 派发部分按 §1.2 移交 AIFI-60）
+        tasks: [CR-2026-076-TASK-01]
+        code: [ai-first-platform-docs@226d4d8e24f9, multica@c47381ae72d4, tools@c69336475d01]
+        evidence: [cmd-01]
+      - fr: FR-SUP-07
+        title: 作者／评审者开工检查与诊断安全合同（本 CR 部分）
+        sdd: §4.1（`workspace inspect`／`status`／`next` 只读核对 + `WORKSPACE_CONTEXT_MISMATCH` 失败关闭；`dep-1`、`dep-2`）
+        tasks: [CR-2026-076-TASK-03]
+        code: [ai-first-platform-docs@226d4d8e24f9, multica@c47381ae72d4, tools@c69336475d01]
+        evidence: [cmd-04, cmd-09]
+      - fr: FR-SUP-08
+        title: 历史事实的一次性检查与受控定点修复
+        sdd: §4.16（版本化只读扫描 + `validate` 只读维度；只报告不修复、不建巡检；`dep-19`）
+        tasks: [CR-2026-076-TASK-15]
+        code: [ai-first-platform-docs@226d4d8e24f9, multica@c47381ae72d4, tools@c69336475d01]
+        evidence: [cmd-06, cmd-04]
+      - fr: FR-SUP-09
+        title: PRD 交接完整性与节点完成判定（本 CR 部分）
+        sdd: §4.17（`prd-path` 与实际文件一致、checkpoint 据实报告；节点完成判定移交 AIFI-60）
+        tasks: [CR-2026-076-TASK-16]
+        code: [ai-first-platform-docs@226d4d8e24f9, multica@c47381ae72d4, tools@c69336475d01]
+        evidence: [cmd-13]
+    evidence:
+      test: { status: pass, path: change-requests/CR-2026-076/test-report.md, sha256: 899cb921a436ce44d12da7255c4c6561cd44d457d27a83db371d7b91888235d6 }
+      reviews:
+        requirement: { verdict: pass, path: change-requests/CR-2026-076/review-annotations/requirement.yml, sha256: dee11239da2243c58ceb8453c98eb194fa3fed209f9804a6d2656aaa67d86322 }
+        tech-design: { verdict: pass, path: change-requests/CR-2026-076/review-annotations/sdd.yml, sha256: 6c42d5aa11f6752708fce418d107cf1f0a6f60429097f3f377517c4f51c34e1f }
+        dev-plan: { verdict: pass, path: change-requests/CR-2026-076/review-annotations/dev-plan.yml, sha256: 8b37aa7a3d98a8f93e0a2f853c8e20daf453cbdf1c4794513b29bfd37b6efe85 }
+        code: { verdict: pass, path: change-requests/CR-2026-076/review-annotations/code.yml, sha256: c3006c2143345f31276065d39c67e723ae8850f6374b175a648af6d418bea258 }
+      approval: { status: approved, path: change-requests/CR-2026-076/approval.yml, sha256: b78d76c4c66d5f229abddc7006b5b630a48b57104ae289f2876ec73230851fc3 }
+      merge: { status: merged, path: change-requests/CR-2026-076/merge-commits.yml, sha256: add5032efa4ebb727056d12a35150c09abafd83f5f495fd1674b06b453821750 }
