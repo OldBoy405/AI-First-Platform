@@ -1,0 +1,29 @@
+# STDD V3.0 — 知识图谱配置
+
+knowledge:
+  # 图谱存储路径（相对于项目根目录）
+  dir: ".stdd/knowledge"
+  graph_file: "knowledge-graph.yaml"
+
+  # 合并策略
+  merge:
+    # pattern 文本相似度阈值（超过此值视为同一 node）
+    similarity_threshold: 0.7
+    # 合并时优先保留的字段来源：community | local
+    priority: "community"
+
+  # 社区源配置
+  community:
+    # 社区 git 库
+    repo: "leonai42/stdd-experiences"
+    # 图谱文件在库中的路径
+    graph_path: "knowledge-graph.yaml"
+    # 拉取超时（秒）
+    timeout: 30
+
+  # 预测配置
+  predict:
+    # 最少匹配 change 数（低于此值输出数据不足警告）
+    min_matches: 3
+    # 返回结果数
+    top_k: 5

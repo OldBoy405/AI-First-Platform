@@ -1,0 +1,65 @@
+meta:
+  task_id: M-TASK-TICK
+  capability: periodic-runner-resume
+  change_id: 2026-10-19-aifi-45-four-phase-runner
+  task_type: code
+  system: S cmd/server 既有 sweeper 与 Runner 周期回调
+  status: 待实现/待验证
+  preconditions:
+    - 仅计划，不执行；TestMTick 名称待新增，未来 S go test -count=1 -v ./cmd/server -run 精确名称
+    - 使用可控时钟与隔离 Runner 夹具，不真实等待30秒，不创建新扫描器或恢复真实 CR
+    - 需要 DB 时显式隔离已迁移库并核对实际 case，不计 TestMain 空跑
+steps:
+  - id: M-CP-TICK-001
+    scenario_id: M-SC-TICK-001
+    test_case: TC-MTICK-001
+    confidence: high
+    evidence: 'canonical/specs/code/periodic-runner-resume.yaml#/requirements/0/scenarios/0'
+    description: 四阶段丢唤醒/提交后未派发仅由原30秒 tick 即恢复
+    action: '待新增 ^TestMTick001$；屏蔽事件与手动入口，以可控时钟推进原 sweeper'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMTick001'}
+  - id: M-CP-TICK-002
+    scenario_id: M-SC-TICK-002
+    test_case: TC-MTICK-002
+    confidence: medium
+    evidence: 'canonical/specs/code/periodic-runner-resume.yaml#/requirements/0/scenarios/1'
+    description: batch/timeout、单run失败隔离、公平遍历、不阻塞liveness
+    action: '待新增 ^TestMTick002$；超一批run含阻塞者，多周期和liveness屏障；数值先隔离实测'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMTick002'}
+  - id: M-CP-TICK-003
+    scenario_id: M-SC-TICK-003
+    test_case: TC-MTICK-003
+    confidence: high
+    evidence: 'canonical/specs/code/periodic-runner-resume.yaml#/requirements/0/scenarios/2'
+    description: 事件/启动/tick 竞争最多一有效任务，不加预算/轮次
+    action: '待新增 ^TestMTick003$；并发屏障复用原锁和活跃去重'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMTick003'}
+  - id: M-CP-TICK-004
+    scenario_id: M-SC-TICK-004
+    test_case: TC-MTICK-004
+    confidence: high
+    evidence: 'canonical/specs/code/periodic-runner-resume.yaml#/requirements/1/scenarios/0'
+    description: DB/网络暂态不立即 failRun，后续周期恢复唯一执行
+    action: '待新增 ^TestMTick004$；协调层短暂故障注入/恢复，不笼统重试platform错误'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMTick004'}
+  - id: M-CP-TICK-005
+    scenario_id: M-SC-TICK-005
+    test_case: TC-MTICK-005
+    confidence: high
+    evidence: 'canonical/specs/code/periodic-runner-resume.yaml#/requirements/1/scenarios/1'
+    description: 终态不复活、人工/版本等待不耗预算、耗尽不接加预算resume
+    action: '待新增 ^TestMTick005$；终态/等待/预算矩阵与 ResumePipelineNodeTask 不可调用探针'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMTick005'}
+rollback:
+  steps:
+    - 未来只取消测试 context 和临时回调/夹具，不停真实 sweeper 或运行中任务

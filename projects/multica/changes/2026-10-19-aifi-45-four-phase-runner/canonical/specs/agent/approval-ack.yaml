@@ -1,0 +1,76 @@
+meta:
+  task_id: M-TASK-ACK
+  capability: approval-ack
+  change_id: 2026-10-19-aifi-45-four-phase-runner
+  task_type: code
+  system: S approval.HandleGrantsAck/WakeGrant/SQL
+  status: 待实现/待验证
+  preconditions:
+    - 仅计划不执行；TestMAck 均待新增，未来 S go test -count=1 -v ./internal/governance -run 精确名称
+    - 仅显式隔离已迁移库；核对实际 case，不能拿 TestMain DB不可达退出0作证据
+    - ack 去续接最后切片完成，不在四阶段未闭环时启用或删除唯一推进者
+steps:
+  - id: M-CP-ACK-001
+    scenario_id: M-SC-ACK-001
+    test_case: TC-MACK-001
+    confidence: high
+    evidence: 'canonical/specs/code/approval-ack.yaml#/requirements/0/scenarios/0'
+    description: 无 Leader/缺 run 不撤同批ack，delivered_at仅送达，正常路径不解析Leader/派续接
+    action: '待新增 ^TestMAck001$；旧 continuation 调用探针必须为0，DB核对真实提交'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMAck001'}
+  - id: M-CP-ACK-002
+    scenario_id: M-SC-ACK-002
+    test_case: TC-MACK-002
+    confidence: high
+    evidence: 'canonical/specs/code/approval-ack.yaml#/requirements/0/scenarios/1'
+    description: 认证、workspace+IDs批量幂等，跨workspace不更新，不重跑业务前置
+    action: '待新增 ^TestMAck002$；有效/重复/跨workspace/未认证输入矩阵，复用daemon_workspace测试资产'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMAck002'}
+  - id: M-CP-ACK-003
+    scenario_id: M-SC-ACK-003
+    test_case: TC-MACK-003
+    confidence: high
+    evidence: 'canonical/specs/code/approval-ack.yaml#/requirements/1/scenarios/0'
+    description: commit后按实际四阶段WakeGrant，单run失败不撤ack/阻断其他，后续tick恢复
+    action: '待新增 ^TestMAck003$；四阶段同批、一个唤醒错误，记录commit/回调时序与全部唤醒计数'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMAck003'}
+  - id: M-CP-ACK-004
+    scenario_id: M-SC-ACK-004
+    test_case: TC-MACK-004
+    confidence: high
+    evidence: 'canonical/specs/code/approval-ack.yaml#/requirements/1/scenarios/1'
+    description: 真DB提交失败不假ack、不提前唤醒，pending幂等重投
+    action: '待新增 ^TestMAck004$；提交故障及已落盘key/grant再投递夹具'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMAck004'}
+  - id: M-CP-ACK-005
+    scenario_id: M-SC-ACK-005
+    test_case: TC-MACK-005
+    confidence: high
+    evidence: 'canonical/specs/code/approval-ack.yaml#/requirements/2/scenarios/0'
+    description: 终态/缺run/旧subject或cycle均不建执行，不Leader兜底、不假推进
+    action: '待新增 ^TestMAck005$；断言新task/run为0且delivered_at与业务消费分离'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMAck005'}
+  - id: M-CP-ACK-006
+    scenario_id: M-SC-ACK-006
+    test_case: TC-MACK-006
+    confidence: high
+    evidence: 'canonical/specs/code/approval-ack.yaml#/requirements/2/scenarios/1'
+    description: 旧续接受控收尾再调度，历史dev-start仅读取，不恢复默认卡/Leader
+    action: '未来仅发布快照桌面演练并审查旧continuation存量处置顺序；不操作真实task或审批'
+    assertions:
+      - {type: stdout_contains, expected: '真实旧续接处置未执行'}
+    manual_assertions:
+      - 未确认旧running退出时禁止模拟恢复正常调度；历史审批仍可兼容读取
+rollback:
+  steps:
+    - 未来只清理隔离grant/run/task夹具，真实续接处置与发布/回滚另行授权

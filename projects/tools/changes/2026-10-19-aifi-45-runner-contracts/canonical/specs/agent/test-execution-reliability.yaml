@@ -1,0 +1,65 @@
+meta:
+  task_id: test-execution-reliability
+  change_id: 2026-10-19-aifi-45-runner-contracts
+  task_type: code
+  system: tools既有Node测试执行、authority夹具和TxError分类
+  preconditions:
+    - Gate 2后才修改业务/测试代码；当前诊断已证明慢套件与6个独立失败，不称全部挂死。
+    - 真实case大于0且无意外skip；日志统计不是文件存在检查，不以stdout关键词单独作为成功。
+steps:
+  - id: CP-T-TEST-001
+    description: SC-T-TEST-001，保留全部35文件及新增回归；记录实际发现数/exit/耗时。
+    action: node --test --test-reporter=tap "skills/shared/crctl/scripts/test/*.test.mjs" "output-guard/test/*.test.mjs" "pipeline-templates/*.test.mjs"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: '# fail 0'
+  - id: CP-T-TEST-002
+    description: SC-T-TEST-002，最小真实case反馈环；修复前已exit1，修复后应exit0，不是挂死。
+    action: >-
+      node --test --test-reporter=tap --test-name-pattern="^TASK-06 ①: payload 伪造 release-subjects -> RELEASE_SUBJECTS_FORGED，annotation 零写入（AC-1）$" skills/shared/crctl/scripts/test/crctl.test.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: '# pass 1'
+  - id: CP-T-TEST-003
+    description: SC-T-TEST-003，根因回归RED→GREEN保留原断言和未知异常边界，复用既有S0 authority真实测试名称。
+    action: node --test --test-reporter=tap --test-name-pattern="^S0 authority" skills/shared/crctl/scripts/test/crctl.test.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: S0 authority
+  - id: CP-T-TEST-004
+    description: SC-T-TEST-004，全量运行自然完成，真实计数与原日志一致；原crctl基线294case(288pass/6fail)须改善，未知未跑明确标出。
+    action: node --test --test-reporter=tap "skills/shared/crctl/scripts/test/*.test.mjs" "output-guard/test/*.test.mjs" "pipeline-templates/*.test.mjs"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: '# fail 0'
+      - type: stdout_contains
+        expected: '# cancelled 0'
+  - id: CP-T-TEST-005
+    description: SC-T-TEST-005，原forged payload测试从PAYLOAD_NOT_FOUND恢复到原安全断言；其余四个原失败也必须单独复测及全量包含。
+    action: >-
+      node --test --test-reporter=tap --test-name-pattern="^TASK-06 ①: payload 伪造 release-subjects -> RELEASE_SUBJECTS_FORGED，annotation 零写入（AC-1）$" skills/shared/crctl/scripts/test/crctl.test.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: '# pass 1'
+  - id: CP-T-TEST-006
+    description: SC-T-TEST-006，R1在共享authority出口保留已知TxError原code与零业务写入；同源caller/合法容忍/未知异常仍INTERNAL_ERROR的回归同时纳入全量。
+    action: node --test --test-reporter=tap --test-name-pattern="^AIFI-69 B1/R1：显式 --operational-workspace 仍按传入值；authority 解析失败时零业务写入$" skills/shared/crctl/scripts/test/crctl.test.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: '# pass 1'
+rollback:
+  steps:
+    - 未完成/意外skip不计通过，不用局部name过滤替代最终完整运行。
+    - 失败时仅清理本次归属已核实的子进程，保留原始日志，不禁用全局hook、不杀其他会话、不改真实账本。

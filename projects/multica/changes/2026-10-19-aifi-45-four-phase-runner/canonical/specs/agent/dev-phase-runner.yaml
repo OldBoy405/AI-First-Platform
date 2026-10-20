@@ -1,0 +1,85 @@
+meta:
+  task_id: M-TASK-DEV
+  capability: dev-phase-runner
+  change_id: 2026-10-19-aifi-45-four-phase-runner
+  task_type: code
+  system: S 开发节点、gate projection、crevents、合法上游设计回修
+  status: 待实现/待验证
+  preconditions:
+    - 仅计划，不执行；TestMDev 名称均待新增，未来 S go test -count=1 -v 所列包 -run 精确名称
+    - governance 只连显式隔离已迁移库并核对实际case；真实testCr仅在未来临时业务夹具运行
+    - 三类人工审批和独立reviewer不由Agent代签；测试签名只用隔离测试身份
+steps:
+  - id: M-CP-DEV-001
+    scenario_id: M-SC-DEV-001
+    test_case: TC-MDEV-001
+    confidence: high
+    evidence: 'canonical/specs/code/dev-phase-runner.yaml#/requirements/0/scenarios/0'
+    description: 模板全部开发节点实际派发，真实testCr/账本而非文件存在或task completed
+    action: '待新增 ./internal/governance ^TestMDev001$；联合T临时testCr夹具，注入仅报告存在的负例'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMDev001'}
+  - id: M-CP-DEV-002
+    scenario_id: M-SC-DEV-002
+    test_case: TC-MDEV-002
+    confidence: high
+    evidence: 'canonical/specs/code/dev-phase-runner.yaml#/requirements/0/scenarios/1'
+    description: dev-plan/test/upstream往返投影，错归属/过期拒绝，测试失败/BLOCK不吞
+    action: '待新增 ./internal/governance ^TestMDev002$ 并补daemon crevents payload配套断言'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMDev002'}
+  - id: M-CP-DEV-003
+    scenario_id: M-SC-DEV-003
+    test_case: TC-MDEV-003
+    confidence: high
+    evidence: 'canonical/specs/code/dev-phase-runner.yaml#/requirements/0/scenarios/2'
+    description: release-subjects匹配/漂移决定代码评审有效性，设计单hash不替代
+    action: '待新增 ./internal/governance ^TestMDev003$；相同subject_sha256但release-subjects改变的反例'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMDev003'}
+  - id: M-CP-DEV-004
+    scenario_id: M-SC-DEV-004
+    test_case: TC-MDEV-004
+    confidence: high
+    evidence: 'canonical/specs/code/dev-phase-runner.yaml#/requirements/1/scenarios/0'
+    description: 计划/测试/代码普通BLOCK各自loop/replay，不技术重试或重置轮次
+    action: '待新增 ./internal/governance ^TestMDev004$；三种BLOCK及剩余轮次边界夹具'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMDev004'}
+  - id: M-CP-DEV-005
+    scenario_id: M-SC-DEV-005
+    test_case: TC-MDEV-005
+    confidence: high
+    evidence: 'canonical/specs/code/dev-phase-runner.yaml#/requirements/1/scenarios/1'
+    description: upstream blocker→review-pending先复评，BLOCK后才设计编写，repair-target不丢
+    action: '待新增 ./internal/governance ^TestMDev005$；复用transitions/gate_review测试，断言不直接跳tech-designing'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMDev005'}
+  - id: M-CP-DEV-006
+    scenario_id: M-SC-DEV-006
+    test_case: TC-MDEV-006
+    confidence: high
+    evidence: 'canonical/specs/code/dev-phase-runner.yaml#/requirements/1/scenarios/2'
+    description: 同CR设计修订/重审/批准后增量PLAN/TASK与开发续接，不复活旧终态/沿旧证据
+    action: '待新增 ./internal/governance ^TestMDev006$；合法新cycle和开发等待恢复集成夹具'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMDev006'}
+  - id: M-CP-DEV-007
+    scenario_id: M-SC-DEV-007
+    test_case: TC-MDEV-007
+    confidence: high
+    evidence: 'canonical/specs/code/dev-phase-runner.yaml#/requirements/2/scenarios/0'
+    description: unassigned可注册，评审前version-set确认，等待不耗预算，晚改不沿旧grant
+    action: '待新增 ./internal/governance ^TestMDev007$；工具authority输出夹具及版本改变摘要的负例'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMDev007'}
+rollback:
+  steps:
+    - 未来只清理隔离评审/审批/任务与临时Git夹具，不对真实CR状态或证据执行回滚

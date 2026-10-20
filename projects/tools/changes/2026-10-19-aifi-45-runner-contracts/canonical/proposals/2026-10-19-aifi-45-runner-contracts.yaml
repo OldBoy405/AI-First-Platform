@@ -1,0 +1,141 @@
+# 2026-10-19-aifi-45-runner-contracts.yaml — Canonical Proposal (YAML-first, V2.9)
+# 来源需求：docs/AIFI-45-CR流程减负方案.md（tools 侧，M1 合同半 + M8 提示词对齐）
+# 范围修订：用户确认将 tools 测试超时诊断与根因修复纳入本次（C7），不另开 change。
+
+meta:
+  change_id: "2026-10-19-aifi-45-runner-contracts"
+  title: "AIFI-45 四阶段 Registry 合同与提示词对齐（tools 侧）"
+  created: "2026-10-19T14:45:16.221391"
+  status: draft
+  version: "2.9"
+
+why:
+  problem: |
+    registry 导出与节点合同只覆盖需求、技术设计两段；节点 owner 虽已生成到 gate_nodes_gen，
+    派发仍把调用者当全部节点的执行者（设计期 RUNNER_SKILL_MISSING 的直接原因）；coding 与
+    writeback 模板的输入、canonical 结果、reviewLoop 与实际深原语（crctl 的 spec_id/
+    target_version、release-subjects、testCr）存在漂移；agents 与 Skill 提示词里仍保留评论委派、
+    审批后自行 start、跨阶段"按 next 继续"等重复编排。
+  motivation: |
+    平台侧（multica）计划按同一方案接管四阶段，尚未实施；tools 侧必须同时给出唯一派发合同与
+    对齐后的模板/提示词，否则平台无法只消费声明、也无法删掉 approve Skill 尾部启动与协调者接力。
+    核查基线 tools a5ecb57，实施期按符号重新定位。
+    前次限时运行有 12 个测试文件未在预算内结束，根因未知；用户已确认本次一起诊断和修复，
+    不以排除文件、缩减断言或仅提高超时来宣称质量通过。
+
+what_changes:
+  - id: C1
+    description: |
+      M1 合同半：扩展 pipeline-templates/emit-registry.mjs 的导出、编译与 digest，覆盖
+      requirement-authoring、architecture-design、code-implementation、feature-writeback 四个模板；
+      生成物与平台 registry 生成器保持同一份声明（不新增第二份节点事实源）。
+    type: modified
+  - id: C2
+    description: |
+      节点执行绑定声明：用既有 pipelineOwner、owns/can-call 与独立评审规则，在既有模板里生成按
+      node_id 的执行绑定（共享 Skill 交给已授权阶段 Agent，评审交给独立 reviewer），并把绑定与
+      授权纳入 digest；不给逻辑 system 身份新建执行 Agent，不新建路由配置。
+    type: new
+  - id: C3
+    description: |
+      coding/writeback 模板输入对齐：dev-plan、测试结果、upstream 路由的投影合同与 canonical 结果
+      字段补齐；模板入参与深原语一致（spec_id/target_version 来自 crctl authority 与既有机器输出，
+      不从 Issue 标题猜、不在交付阶段重复填写）；缺 spec 或真实版本不静默降级、不生成同义占位值。
+    type: modified
+  - id: C4
+    description: |
+      agents 提示词去接力：requirement-writer、dev-agent、quality-reviewer-agent、delivery-agent、
+      cr-coordinator-agent 只执行当前节点，删除评论委派、审批后自行 start、跨阶段"按 next 继续"；
+      协调者只处理入口、异常汇总与必要人类输入，状态/门禁/下一步仍引用 crctl status/next，
+      不复制路由表；失败回执只展示 CR-ID/registration key、错误与影响摘要。
+    type: modified
+  - id: C5
+    description: |
+      审批 Skill 合同保持与回归：approve-requirement / approve-tech-design / approve-code /
+      approve-dev-start 当前已只做审批收尾与 next 查询，没有 start/resume 尾命令（Phase 2 核查
+      更正，目标结论不受影响）；保留此边界并补负向回归，实际删除对象是 Agent/模板中的跨节点
+      接力职责。保留人工授权、TTY/grant、幂等与驳回结果，不为制造 diff 改写已正确的 Skill。
+    type: modified
+  - id: C6
+    description: |
+      文档与索引对齐：README、skills/_index.yml、agents/_index.yml、agent-skill-matrix.yml、
+      dir-graph.yaml 的相应条目与新增/变更 Skill 保持一致（不改业务节点与产物的必要性、不新增 lint）。
+    type: modified
+  - id: C7
+    description: |
+      本次一并诊断与修复 tools 测试超时：从最小命令、真实退出码、子进程与 Git/环境边界核实
+      是正常慢测试、输出缓冲还是阻塞；比较可完成用例，定位共同根因后先写回归再修复。
+      保留 crctl 全部 31 个测试文件、output-guard 3 个、registry 1 个及新增回归的发现范围；
+      不因超时排除文件、不削弱断言、不用未完成/跳过代替通过。若属正常耗时，按实测预算运行
+      并报告证据，不编造代码缺陷或制造不必要修补。
+    type: modified
+
+capabilities:
+  new:
+    - name: node-execution-binding-contract
+      description: "registry 导出四阶段节点的执行绑定（owner/actor/独立评审），平台按绑定派发"
+  modified:
+    - name: pipeline-registry-export
+      description: "导出/编译/digest 覆盖四个阶段模板，生成物与平台共用同一声明"
+    - name: four-phase-templates
+      description: "coding 与 writeback 模板入参、canonical 结果与 reviewLoop 对齐深原语"
+    - name: agent-prompts
+      description: "五个 Agent 提示词只做当前节点，删除评论委派与阶段自启"
+    - name: approve-skills
+      description: "保持四个 approve Skill 当前仅收尾审批的边界，回归防止跨阶段启动，不无故改写"
+    - name: test-execution-reliability
+      description: "测试超时根因可复现可验证，完整测试发现范围保留，未完成与跳过不计作通过"
+
+constraints:
+  - "registry 是唯一派发合同；Skill 的 owns 不等于每次派发的执行者"
+  - "不新增节点事实源、路由配置、lint 或检查命令；必要声明放在既有模板"
+  - "不改业务节点与产物的必要性，不重构方法论；不新增审批节点"
+  - "JSON 模板与生成物必须能被既有 emit-registry / 一致性检查通过"
+  - "本次维护沿用普通 Issue + PR，不另注册 CR；仓内不新增运行时门禁或账本。STDD 过程记录只存现有集中记录根 projects/tools，交付证据摘要仍留在既有 PR/Issue"
+  - "测试诊断不得操作真实 CR、共享生产数据库或全局禁用安全 Hook；最小复现用隔离夹具并清理本次子进程"
+
+stakeholders:
+  - "tools 维护者：C1-C3、C6"
+  - "prompt/agent 维护者：C4、C5"
+  - "平台维护者（multica）：消费 C1/C2 的导出合同"
+  - "评审者：lint-prompts / agent 合同 / skill 矩阵校验"
+
+risk_areas:
+  - capability: node-execution-binding-contract
+    risk: "把绑定写成第二套路由配置，或让平台在运行时从 Skill owner 临时回退"
+    mitigation: "绑定只从既有 pipelineOwner/owns/can-call/独立评审派生并进 digest；平台只消费声明"
+  - capability: four-phase-templates
+    risk: "模板入参与深原语漂移（例如继续要求 legacy milestone 输入），导致交付节点静默降级"
+    mitigation: "逐项对照 crctl 实际参数与机器输出；缺 spec/版本时硬失败不占位"
+  - capability: agent-prompts
+    risk: "删掉接力语句后节点无人接管（平台未上线前出现空档）"
+    mitigation: "与 multica 侧同一发布窗口落地；线上 instructions 与源同步后再启用 Runner"
+
+non_goals:
+  - "不改 pipeline 的业务节点集合、评审轮次语义与产物必要性"
+  - "不新增命令、flag、健康检查或独立扫描/重试系统"
+  - "不引入第二份节点事实源或跨仓复制模板"
+  - "不做生产部署与线上 instructions 发布动作（发布属 multica 侧同一窗口）"
+
+critical:
+  is_critical: true
+  risk_assessment:
+    safety_critical: false
+    financial: false
+    cross_system: true
+
+anchoring:
+  level: L2
+  reference_changes: []
+  anchor_implementations: []
+
+success_criteria:
+  - "emit-registry 对四个 pipeline 模板导出可在平台消费的合同，每节点含确定执行绑定，生成物与 digest 一致"
+  - "代码中不再存在把调用者当全部节点执行者的路径；无评审的交付阶段不硬造 reviewLoop"
+  - "code-implementation 与 feature-writeback 模板入参与 crctl 深原语逐项一致（spec_id/target_version 来源、release-subjects、testCr 结果消费）"
+  - "五个 Agent 提示词中不含评论委派、审批后自行 start、跨阶段按 next 继续的表述"
+  - "四个 approve Skill 只描述当前审批收尾，不含下一阶段启动命令"
+  - "node skills/shared/crctl/scripts/check-agents-contract.mjs、check-skill-matrix.mjs、lint-prompts.mjs 全部通过（lint-prompts 既有 OUTDATED 项按现状记录，不新增）"
+  - "registry 导出/编译产物与模板 JSON 通过既有一致性检查，无新增检查命令"
+  - "12 个限时未结束文件得到证据支持的分类；真实缺陷有最小失败复现与修复后回归，不以先验假说判定挂死"
+  - "Gate 3 完整发现并执行 crctl/output-guard/registry 测试与新增回归，记录命令、实际退出码、耗时、测试与 skipped 数；未完成或意外跳过明确阻塞交付，不能仅凭管道 tail 的退出码报告成功"

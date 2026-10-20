@@ -1,0 +1,75 @@
+meta:
+  task_id: M-TASK-BINDING
+  capability: node-execution-binding
+  change_id: 2026-10-19-aifi-45-four-phase-runner
+  task_type: code
+  system: S internal/governance 与 PipelineTaskSpec 节点绑定
+  status: 待实现/待验证
+  preconditions:
+    - 仅计划，Gate2 未批准，本次不执行；以下 TestM 名称为拟新增测试
+    - 未来 governance 必须使用显式隔离已迁移库并核对实际 case，不接受 TestMain 退出0空跑
+    - 每个 checkpoint 在 S 未来执行 go test -count=1 -v ./internal/governance -run 所列精确测试名
+steps:
+  - id: M-CP-BINDING-001
+    scenario_id: M-SC-BINDING-001
+    test_case: TC-MBINDING-001
+    confidence: high
+    evidence: 'canonical/specs/code/node-execution-binding.yaml#/requirements/0/scenarios/0'
+    description: 重复ref按JSON nodeId独立绑定，DB/Go内部node_id不另导出；每非human节点一条nodePermissions {nodeId,ref,owner,pipelineOwnerCanCall,executor}，executor为actor key，原声明派生并进digest
+    action: '待新增并运行 ^TestMBinding001$；两个同ref不同JSON nodeId的coding夹具，核对五字段/默认pipelineOwner与独立review原节点声明、同workspace agentByName解析，不生成第二绑定源' 
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMBinding001'}
+  - id: M-CP-BINDING-002
+    scenario_id: M-SC-BINDING-002
+    test_case: TC-MBINDING-002
+    confidence: high
+    evidence: 'canonical/specs/code/node-execution-binding.yaml#/requirements/0/scenarios/1'
+    description: 共享Skill由授权阶段Agent执行，review独立、作者不自评，owner非executor actor；human保留gate但不派Agent/task，无system执行Agent
+    action: '待新增并运行 ^TestMBinding002$；checkpoint/freshness、独立reviewer及human gate夹具，核对active Skill/唯一owns、executor真实kind=agent、owns/can-call/forbidden和human执行task为0' 
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMBinding002'}
+  - id: M-CP-BINDING-003
+    scenario_id: M-SC-BINDING-003
+    test_case: TC-MBINDING-003
+    confidence: high
+    evidence: 'canonical/specs/code/node-execution-binding.yaml#/requirements/1/scenarios/0'
+    description: 历史executor_agent_id和调用者不影响选择，registry executor actor绑定仍消费；删除checkExecutorSkills，不改派旧活跃task
+    action: '待新增并运行 ^TestMBinding003$，并只读检查checkExecutorSkills及历史executor_agent_id决策路径已移除，不能误删registry executor消费'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMBinding003'}
+  - id: M-CP-BINDING-004
+    scenario_id: M-SC-BINDING-004
+    test_case: TC-MBINDING-004
+    confidence: high
+    evidence: 'canonical/specs/code/node-execution-binding.yaml#/requirements/1/scenarios/1'
+    description: workspace/归档/runtime/能力/授权逐项非法均失败关闭而不回退
+    action: '待新增并运行 ^TestMBinding004$，表驱动五类非法绑定及合法对照'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMBinding004'}
+  - id: M-CP-BINDING-005
+    scenario_id: M-SC-BINDING-005
+    test_case: TC-MBINDING-005
+    confidence: high
+    evidence: 'canonical/specs/code/node-execution-binding.yaml#/requirements/2/scenarios/0'
+    description: 已完成 source 可用，SourceTaskID/ExecutorAgentID 分离并保留完整 provenance
+    action: '待新增并运行 ^TestMBinding005$；断言 agent/workspace/issue/project/originator/accountable/started_by'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMBinding005'}
+  - id: M-CP-BINDING-006
+    scenario_id: M-SC-BINDING-006
+    test_case: TC-MBINDING-006
+    confidence: high
+    evidence: 'canonical/specs/code/node-execution-binding.yaml#/requirements/2/scenarios/1'
+    description: source 缺身份或跨边界拒绝，不以合法 executor 掩盖
+    action: '待新增并运行 ^TestMBinding006$；伪造/跨 workspace/错 project 来源夹具'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMBinding006'}
+rollback:
+  steps:
+    - 仅未来清理隔离夹具；不触碰真实 agent/task/审批/配置，真实恢复另行授权

@@ -1,0 +1,36 @@
+meta:
+  task_id: node-execution-binding-contract
+  change_id: 2026-10-19-aifi-45-runner-contracts
+  task_type: code
+  system: tools registry emitter
+  preconditions:
+    - Gate 2已确认并完成对应RED→GREEN切片；这些CP不是当前通过证据。
+    - 测试名称含TC-ID，实际执行数大于0，未匹配或跳过不计通过。
+steps:
+  - id: CP-T-BIND-001
+    description: SC-T-BIND-001，共享Skill owner与executor分离。
+    action: node --test --test-name-pattern TC-T-BIND-001 pipeline-templates/emit-registry.test.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: TC-T-BIND-001
+  - id: CP-T-BIND-002
+    description: SC-T-BIND-002，独立reviewer及授权拒绝。
+    action: node --test --test-name-pattern TC-T-BIND-002 pipeline-templates/emit-registry.test.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: TC-T-BIND-002
+  - id: CP-T-BIND-003
+    description: SC-T-BIND-003，重复ref保留且重复nodeId拒绝；平台parser另见multica验证。
+    action: node --test --test-name-pattern TC-T-BIND-003 pipeline-templates/emit-registry.test.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: TC-T-BIND-003
+rollback:
+  steps:
+    - 失败时保留夹具和日志，停止本切片；回退仅限本次授权改动，需人工确认，不改真实CR或全局hook。

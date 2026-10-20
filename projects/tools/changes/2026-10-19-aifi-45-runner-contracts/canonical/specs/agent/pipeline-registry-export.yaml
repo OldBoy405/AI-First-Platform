@@ -1,0 +1,35 @@
+meta:
+  task_id: pipeline-registry-export
+  change_id: 2026-10-19-aifi-45-runner-contracts
+  task_type: code
+  system: tools四阶段registry和multica编译合同
+  preconditions:
+    - Gate 2已确认；TC-ID实际执行且无意外skip；跨仓编译另需multica验证。
+steps:
+  - id: CP-T-REG-001
+    description: SC-T-REG-001，四schema及原节点稳定性。
+    action: node --test --test-name-pattern TC-T-REG-001 pipeline-templates/emit-registry.test.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: TC-T-REG-001
+  - id: CP-T-REG-002
+    description: SC-T-REG-002，CRLF确定性和执行声明digest覆盖。
+    action: node --test --test-name-pattern TC-T-REG-002 pipeline-templates/emit-registry.test.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: TC-T-REG-002
+  - id: CP-T-REG-003
+    description: SC-T-REG-003，coding多loop与writeback无loop。
+    action: node --test --test-name-pattern TC-T-REG-003 pipeline-templates/emit-registry.test.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: TC-T-REG-003
+rollback:
+  steps:
+    - 编译/digest不一致即停止，不覆盖旧run摘要，不手改生成物或增加第二份合同。

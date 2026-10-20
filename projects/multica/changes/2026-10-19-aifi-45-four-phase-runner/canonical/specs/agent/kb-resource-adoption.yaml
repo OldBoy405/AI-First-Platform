@@ -1,0 +1,95 @@
+meta:
+  task_id: M-TASK-KB
+  capability: kb-resource-adoption
+  change_id: 2026-10-19-aifi-45-four-phase-runner
+  task_type: code
+  system: S handler/daemon/daemonws 资源快照同源接线
+  status: 待实现/待验证
+  preconditions:
+    - 仅计划，不执行；TestMKb 名称待新增，使用假 runtime、HTTP/WS、临时目录及可控时钟
+    - 未来 S go test -count=1 -v 所列包 -run 精确名称；若测试需要 DB 只用显式隔离已迁移库
+    - 两传输必须使用相同输入矩阵；实际 case 未运行或 skip 不计通过
+steps:
+  - id: M-CP-KB-001
+    scenario_id: M-SC-KB-001
+    test_case: TC-MKB-001
+    confidence: medium
+    evidence: 'canonical/specs/code/kb-resource-adoption.yaml#/requirements/0/scenarios/0'
+    description: HTTP 手动响应与 WS 同资源，RuntimeLease 保留鉴权 daemon_id，双传输均消费
+    action: '待新增 ./internal/handler ^TestMKb001$；补 daemon heartbeat/actions 与 daemonws lease 配套断言'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMKb001'}
+  - id: M-CP-KB-002
+    scenario_id: M-SC-KB-002
+    test_case: TC-MKB-002
+    confidence: high
+    evidence: 'canonical/specs/code/kb-resource-adoption.yaml#/requirements/0/scenarios/1'
+    description: 资源按 runtime/workspace/daemon/项目限定，无 N+1、越权或新 endpoint
+    action: '待新增 ./internal/handler ^TestMKb002$；表驱动非法身份与查询计数'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMKb002'}
+  - id: M-CP-KB-003
+    scenario_id: M-SC-KB-003
+    test_case: TC-MKB-003
+    confidence: high
+    evidence: 'canonical/specs/code/kb-resource-adoption.yaml#/requirements/1/scenarios/0'
+    description: 新路径替换、成功空清除、生命周期退出清除且不影响其他身份
+    action: '待新增 ./internal/daemon ^TestMKb003$；依次消费旧/新/空快照及退出事件'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMKb003'}
+  - id: M-CP-KB-004
+    scenario_id: M-SC-KB-004
+    test_case: TC-MKB-004
+    confidence: high
+    evidence: 'canonical/specs/code/kb-resource-adoption.yaml#/requirements/1/scenarios/1'
+    description: 缺字段/查询失败保留投影，已领取 actions 不丢，后续成功收敛
+    action: '待新增 ./internal/handler ^TestMKb004$；HTTP/WS 错误与 actions 夹具，并补 daemon 消费断言'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMKb004'}
+  - id: M-CP-KB-005
+    scenario_id: M-SC-KB-005
+    test_case: TC-MKB-005
+    confidence: high
+    evidence: 'canonical/specs/code/kb-resource-adoption.yaml#/requirements/1/scenarios/2'
+    description: 无 env/无 task 冷启动，目录/账本稍后出现及断网恢复无需重启
+    action: '待新增 ./internal/daemon ^TestMKb005$；可控 heartbeat/collector 节拍和临时 kb init 夹具'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMKb005'}
+  - id: M-CP-KB-006
+    scenario_id: M-SC-KB-006
+    test_case: TC-MKB-006
+    confidence: high
+    evidence: 'canonical/specs/code/kb-resource-adoption.yaml#/requirements/2/scenarios/0'
+    description: 五类消费者同源根，请求级 workspace 不变全局 client，不串 ack 批次
+    action: '待新增 ./internal/daemon ^TestMKb006$；并发两个 workspace 的采集/定位/settle/pending/ack 假服务'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMKb006'}
+  - id: M-CP-KB-007
+    scenario_id: M-SC-KB-007
+    test_case: TC-MKB-007
+    confidence: high
+    evidence: 'canonical/specs/code/kb-resource-adoption.yaml#/requirements/2/scenarios/1'
+    description: 旧 env 不补根，非法/非KB/未知嵌套不猜，不新增持久根账本
+    action: '待新增 ./internal/daemon ^TestMKb007$；设置仅本测试进程 env 对照成功空快照'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMKb007'}
+  - id: M-CP-KB-008
+    scenario_id: M-SC-KB-008
+    test_case: TC-MKB-008
+    confidence: medium
+    evidence: 'canonical/specs/code/kb-resource-adoption.yaml#/requirements/2/scenarios/2'
+    description: 两处 CR not found 均有身份/资源/投影线索，不新增运行时报告
+    action: '待新增 ./internal/daemon ^TestMKb008$；采集和 Pipeline 定位错误输出夹具'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMKb008'}
+rollback:
+  steps:
+    - 仅未来清理本测试临时根/假服务/进程内 env；不改真实配置、项目资源、runtime 或 KB

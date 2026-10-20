@@ -1,0 +1,35 @@
+meta:
+  task_id: agent-prompts
+  change_id: 2026-10-19-aifi-45-runner-contracts
+  task_type: code
+  system: tools Agent与模板职责合同
+  preconditions:
+    - Gate 2已确认；测试名称含TC-ID且实际执行；不把grep文本等同平台运行证据。
+steps:
+  - id: CP-T-PROMPT-001
+    description: SC-T-PROMPT-001，无评论委派与跨阶段自启。
+    action: node --test --test-name-pattern TC-T-PROMPT-001 skills/shared/crctl/scripts/test/contract-scan.test.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: TC-T-PROMPT-001
+  - id: CP-T-PROMPT-002
+    description: SC-T-PROMPT-002，索引/权限/源部署区分。
+    action: node --test --test-name-pattern TC-T-PROMPT-002 skills/shared/crctl/scripts/test/contract-scan.test.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: TC-T-PROMPT-002
+  - id: CP-T-PROMPT-003
+    description: SC-T-PROMPT-003，必要人类输入和精简失败回执。
+    action: node --test --test-name-pattern TC-T-PROMPT-003 skills/shared/crctl/scripts/test/contract-scan.test.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: TC-T-PROMPT-003
+rollback:
+  steps:
+    - 当前只起草文档，不操作线上instructions。部署失败回退需明确授权，不能用恢复旧Leader兜底混跑。

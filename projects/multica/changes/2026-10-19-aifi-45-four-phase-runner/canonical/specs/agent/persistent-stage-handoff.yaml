@@ -1,0 +1,108 @@
+meta:
+  task_id: M-TASK-HANDOFF
+  capability: persistent-stage-handoff
+  change_id: 2026-10-19-aifi-45-four-phase-runner
+  task_type: code
+  system: S Runner 同事务交接与非生产发布/O2 演练
+  status: 待实现/待验证
+  preconditions:
+    - 仅计划，Gate2 未批准，不执行真实部署/停服/恢复/数据库连接
+    - TestMHandoff 名称均待新增；未来 S go test -count=1 -v ./internal/governance -run 精确名称
+    - 显式隔离已迁移数据库，故障注入/可控事件，不使用共享实例；TestMain 空跑不计证据
+steps:
+  - id: M-CP-HANDOFF-001
+    scenario_id: M-SC-HANDOFF-001
+    test_case: TC-MHANDOFF-001
+    confidence: high
+    evidence: 'canonical/specs/code/persistent-stage-handoff.yaml#/requirements/0/scenarios/0'
+    description: 三批准分配下一阶段；真实同 pgx.Tx context/upsert/上游结果，无 r.pool 逃逸
+    action: '待新增 ^TestMHandoff001$；逐操作追踪事务身份并从独立连接验证原子可见性'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMHandoff001'}
+  - id: M-CP-HANDOFF-002
+    scenario_id: M-SC-HANDOFF-002
+    test_case: TC-MHANDOFF-002
+    confidence: high
+    evidence: 'canonical/specs/code/persistent-stage-handoff.yaml#/requirements/0/scenarios/1'
+    description: commit 前逐写入点失败，无半交接，无提前派发且批准不撤销
+    action: '待新增 ^TestMHandoff002$；下游 upsert/context/上游完成结果注入失败再重入'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMHandoff002'}
+  - id: M-CP-HANDOFF-003
+    scenario_id: M-SC-HANDOFF-003
+    test_case: TC-MHANDOFF-003
+    confidence: high
+    evidence: 'canonical/specs/code/persistent-stage-handoff.yaml#/requirements/0/scenarios/2'
+    description: commit/unlock 后 Reconcile 和同步事件，竞态单下游无递归锁
+    action: '待新增 ^TestMHandoff003$；同步 Bus 回调屏障及事件/扫描/tick 并发，断言锁顺序和任务计数'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMHandoff003'}
+  - id: M-CP-HANDOFF-004
+    scenario_id: M-SC-HANDOFF-004
+    test_case: TC-MHANDOFF-004
+    confidence: high
+    evidence: 'canonical/specs/code/persistent-stage-handoff.yaml#/requirements/1/scenarios/0'
+    description: commit 后协调前中断，四阶段 context 恢复唯一派发
+    action: '待新增 ^TestMHandoff004$；销毁 Runner 内存后重建，以持久 context 与 tick 恢复'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMHandoff004'}
+  - id: M-CP-HANDOFF-005
+    scenario_id: M-SC-HANDOFF-005
+    test_case: TC-MHANDOFF-005
+    confidence: medium
+    evidence: 'canonical/specs/code/persistent-stage-handoff.yaml#/requirements/1/scenarios/1'
+    description: 上游复评与 drift 的合法入口/new cycle，完成历史不复活，不重置 loop
+    action: '待新增 ^TestMHandoff005$；原阶段 completed 及合法回修两类夹具'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMHandoff005'}
+  - id: M-CP-HANDOFF-006
+    scenario_id: M-SC-HANDOFF-006
+    test_case: TC-MHANDOFF-006
+    confidence: high
+    evidence: 'canonical/specs/code/persistent-stage-handoff.yaml#/requirements/1/scenarios/2'
+    description: 无活动 run 不自动重开终态/覆盖 digest，矛盾受控恢复
+    action: '待新增 ^TestMHandoff006$；失败/取消/完成及 digest/context 矛盾表驱动'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMHandoff006'}
+  - id: M-CP-HANDOFF-007
+    scenario_id: M-SC-HANDOFF-007
+    test_case: TC-MHANDOFF-007
+    confidence: medium
+    evidence: 'canonical/specs/code/persistent-stage-handoff.yaml#/requirements/2/scenarios/0'
+    description: 注册已提交接入未完成，用原 source/start-resume 幂等重入，无新命令或人工待办
+    action: '待新增 ^TestMHandoff007$；注册与平台非原子窗口夹具，只重放既有入口'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMHandoff007'}
+  - id: M-CP-HANDOFF-008
+    scenario_id: M-SC-HANDOFF-008
+    test_case: TC-MHANDOFF-008
+    confidence: high
+    evidence: 'canonical/specs/code/persistent-stage-handoff.yaml#/requirements/2/scenarios/1'
+    description: 人工驳回停止正向链，原 abort/输入合同，无技术重试或统一自动重写
+    action: '待新增 ^TestMHandoff008$；注入 APPROVAL_DECLINED_ROLLED_BACK'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMHandoff008'}
+  - id: M-CP-HANDOFF-009
+    scenario_id: M-SC-HANDOFF-009
+    test_case: TC-MHANDOFF-009
+    confidence: medium
+    evidence: 'canonical/specs/code/persistent-stage-handoff.yaml#/requirements/3/scenarios/0'
+    description: 发布/O2 仅在快照演练，权威状态与有无设计执行分流，不重批/改库/覆盖 digest
+    action: '未来仅桌面审查 design 的发布/O2 顺序和隔离夹具状态；不运行真实 pipeline start/status/next，不改 Issue，不将本计划当授权'
+    assertions:
+      - {type: stdout_contains, expected: '真实部署/停服/存量恢复未执行'}
+    manual_assertions:
+      - 模拟旧执行退出、配套版本一致、新 daemon 根/key 有效后才恢复领取
+      - 无设计执行模拟一次补接，有执行用扩展受控入口，所有主线验收前不结束维护
+rollback:
+  steps:
+    - 未来仅清理临时 Tx/隔离数据库和快照，不对真实系统执行回滚
+    - 真实发布/停服/存量恢复及回滚均另获授权

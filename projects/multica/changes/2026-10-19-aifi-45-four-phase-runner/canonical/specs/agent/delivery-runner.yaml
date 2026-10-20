@@ -1,0 +1,85 @@
+meta:
+  task_id: M-TASK-DELIVERY
+  capability: delivery-runner
+  change_id: 2026-10-19-aifi-45-four-phase-runner
+  task_type: code
+  system: S feature-writeback派发、daemon工作根与归档ownership
+  status: 待实现/待验证
+  preconditions:
+    - 仅计划不执行；TestMDelivery名称待新增，未来 S go test -count=1 -v 所列包 -run 精确名称
+    - 临时Git/txws/安装根与测试authority，禁止真实merge/archive/部署/发布
+    - governance仅显式隔离已迁移库；实际case输出与DB前置均需确认
+steps:
+  - id: M-CP-DELIVERY-001
+    scenario_id: M-SC-DELIVERY-001
+    test_case: TC-MDELIVERY-001
+    confidence: high
+    evidence: 'canonical/specs/code/delivery-runner.yaml#/requirements/0/scenarios/0'
+    description: 代码批准后完整既有交付链，不新增发布审批且不含生产部署
+    action: '待新增 ./internal/governance ^TestMDelivery001$；断言merge/回写/traceability/archive节点与无部署副作用'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMDelivery001'}
+  - id: M-CP-DELIVERY-002
+    scenario_id: M-SC-DELIVERY-002
+    test_case: TC-MDELIVERY-002
+    confidence: high
+    evidence: 'canonical/specs/code/delivery-runner.yaml#/requirements/0/scenarios/1'
+    description: authority元数据继承，缺spec/真实版本阻断，不猜标题或强填legacy milestone
+    action: '待新增 ./internal/daemon ^TestMDelivery002$；完整/缺值新模式输入和Skill参数一致性夹具'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMDelivery002'}
+  - id: M-CP-DELIVERY-003
+    scenario_id: M-SC-DELIVERY-003
+    test_case: TC-MDELIVERY-003
+    confidence: high
+    evidence: 'canonical/specs/code/delivery-runner.yaml#/requirements/1/scenarios/0'
+    description: release-drift即使退出0仍停交付回开发并重批；部分发布后漂移保留阻断
+    action: '待新增 ./internal/governance ^TestMDelivery003$；两类机器结果，断言无merge技术重试/旧grant沿用'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMDelivery003'}
+  - id: M-CP-DELIVERY-004
+    scenario_id: M-SC-DELIVERY-004
+    test_case: TC-MDELIVERY-004
+    confidence: high
+    evidence: 'canonical/specs/code/delivery-runner.yaml#/requirements/1/scenarios/1'
+    description: merge旧task结束，新task本机重绑operational根，不改运行env/server猜路径
+    action: '待新增 ./internal/daemon ^TestMDelivery004$；prepare/inspect与task生命周期探针'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMDelivery004'}
+  - id: M-CP-DELIVERY-005
+    scenario_id: M-SC-DELIVERY-005
+    test_case: TC-MDELIVERY-005
+    confidence: high
+    evidence: 'canonical/specs/code/delivery-runner.yaml#/requirements/2/scenarios/0'
+    description: 安装根archive、txws清理后恢复，authority与audit/outbox/settle保留
+    action: '待新增 ./internal/daemon ^TestMDelivery005$；临时txws删除后重入，不触及真实安装根'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMDelivery005'}
+  - id: M-CP-DELIVERY-006
+    scenario_id: M-SC-DELIVERY-006
+    test_case: TC-MDELIVERY-006
+    confidence: high
+    evidence: 'canonical/specs/code/delivery-runner.yaml#/requirements/2/scenarios/1'
+    description: cleanup-pending业务成功但settle失败仍技术恢复，不重归档或提前假完成
+    action: '待新增 ./internal/daemon ^TestMDelivery006$；settle失败/恢复与业务canonical汇合夹具'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMDelivery006'}
+  - id: M-CP-DELIVERY-007
+    scenario_id: M-SC-DELIVERY-007
+    test_case: TC-MDELIVERY-007
+    confidence: high
+    evidence: 'canonical/specs/code/delivery-runner.yaml#/requirements/2/scenarios/2'
+    description: archived及跨阶段投影不抢关Runner run，最终结果仅完成自己，投影自有run正常
+    action: '待新增 ./internal/governance ^TestMDelivery007$；事件乱序与两类run ownership矩阵'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMDelivery007'}
+rollback:
+  steps:
+    - 未来只销毁临时仓/txws/隔离run，真实合入/归档不可由本草稿授权或回滚

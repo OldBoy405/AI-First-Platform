@@ -1,0 +1,42 @@
+meta:
+  capability: pipeline-registry-export
+  change_id: 2026-10-19-aifi-45-runner-contracts
+  created: '2026-10-19'
+  confidence: high
+requirements:
+  - id: REQ-T-REG-001
+    description: 既有emitter确定性导出四阶段的真实执行声明与完整digest。
+    scenarios:
+      - id: SC-T-REG-001
+        confidence: high
+        evidence: canonical/proposals/2026-10-19-aifi-45-runner-contracts.yaml#what_changes.C1
+        given: 四个active模板及已登记matrix/Skill索引，业务节点数分别6/4/11/5。
+        when: 对四个pipeline运行现有emit-registry入口，并由既有multica生成器编译。
+        then: SHALL 保留模板稳定nodeId、节点kind和顺序，导出四份执行registry，不用四个PipelineIDs冒充执行接通。
+        and:
+          - 不新增业务节点或独立导出检查命令。
+          - 既有schema名称保留，新code/writeback schema见design的L2接口约定。
+          - 生成物由既有生成器生成与check，不手改常量。
+      - id: SC-T-REG-002
+        confidence: high
+        evidence: canonical/proposals/2026-10-19-aifi-45-runner-contracts.yaml#success_criteria
+        given: 同一声明有CRLF/LF两种检出内容，及分别修改executor、输入required、reviewLoop的夹具。
+        when: 导出canonical body并计算digest。
+        then: SHALL 先规范行尾；相同声明得到相同digest，改变任一执行相关声明或授权绑定会改变digest。
+        and:
+          - 输入完整声明纳入pipeline body，顶层兼容key列表只能同源派生。
+          - 非法输入、未登记Skill或授权不符非零失败，不输出空registry或保留旧digest掩盖漂移。
+          - 已有在途run不能通过覆盖存量digest绕过受控接管。
+  - id: REQ-T-REG-002
+    description: 多评审闭环与无评审阶段不被统一四节点假设损坏。
+    scenarios:
+      - id: SC-T-REG-003
+        confidence: high
+        evidence: canonical/proposals/2026-10-19-aifi-45-runner-contracts.yaml#what_changes.C3
+        given: coding三个既有reviewLoop、code_generation节点，writeback无reviewLoop。
+        when: 导出节点执行字段并由平台解析回修与人工gate。
+        then: SHALL 保留各自passCondition、replayNodes、replayPolicy、maxAttempts和timeout声明；writeback不硬造reviewLoop。
+        and:
+          - 业务评审轮次按nodeId对应loop，不按整条pipeline单一上限覆盖。
+          - onFail和approvalPrompt不因过滤kind而丢失。
+          - 技术task retry不改变或消耗业务reviewLoop计数。

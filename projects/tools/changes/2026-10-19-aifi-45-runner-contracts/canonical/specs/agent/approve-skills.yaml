@@ -1,0 +1,28 @@
+meta:
+  task_id: approve-skills
+  change_id: 2026-10-19-aifi-45-runner-contracts
+  task_type: code
+  system: tools现有审批Skill与授权合同
+  preconditions:
+    - Gate 2已确认；仅隔离夹具；不运行真实审批。
+    - TC-ID须实际执行，未匹配或skip不得当作成功。
+steps:
+  - id: CP-T-APP-001
+    description: SC-T-APP-001，保持四审批Skill当前仅收尾。
+    action: node --test --test-name-pattern TC-T-APP-001 skills/shared/crctl/scripts/test/contract-scan.test.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: TC-T-APP-001
+  - id: CP-T-APP-002
+    description: SC-T-APP-002，幂等/驳回不误当技术retry或继续旧grant。
+    action: node --test --test-name-pattern TC-T-APP-002 skills/shared/crctl/scripts/test/crctl.test.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: TC-T-APP-002
+rollback:
+  steps:
+    - 不存在授权或证据冲突时停止，不代签、不放宽TTY/签名、不改真实CR状态。

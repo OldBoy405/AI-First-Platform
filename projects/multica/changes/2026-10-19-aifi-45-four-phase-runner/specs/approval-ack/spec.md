@@ -1,0 +1,53 @@
+# Spec: approval-ack
+
+> Change: 2026-10-19-aifi-45-four-phase-runner | Auto-generated Human View
+
+## Requirements
+
+### Requirement: ack 是认证与 workspace 限定的纯送达确认
+
+#### Scenario: M-SC-ACK-001
+
+- **GIVEN** 同批多个 grant 已实际投递，其中一个 CR 无 Leader 或缺活动 run
+- **WHEN** HandleGrantsAck 提交 workspace+record IDs 的确认
+- **THEN** SHALL 只批量幂等更新 delivered_at，不调用 resolveContinuationTarget 或 EnqueueApprovalContinuation，不因 Leader 缺失整批回滚
+- **AND** SHALL delivered_at 不表示 crctl 已消费、审批收尾完成或下一阶段已开始
+
+#### Scenario: M-SC-ACK-002
+
+- **GIVEN** 有效、重复、其他 workspace 的 record IDs 和未认证请求的参数化夹具
+- **WHEN** 执行 ack
+- **THEN** SHALL 保留接入认证及 workspace 限定，跨 workspace 不更新，重复 IDs 幂等且不建立逐条事务系统
+- **AND** SHALL 不在 ack 重跑业务阶段前置或新增审批已消费状态
+
+### Requirement: 提交后按实际阶段隔离唤醒，数据库失败由原 pending 重投
+
+#### Scenario: M-SC-ACK-003
+
+- **GIVEN** 同批 grant 分属四阶段活动 run，其中一个 WakeGrant 返回错误
+- **WHEN** ack 已提交后逐 CR 唤醒
+- **THEN** SHALL 按实际阶段唤醒对应 Runner，一条失败不撤销任何已提交 ack 且不阻断其他唤醒
+- **AND** SHALL 失败由持久 run 的周期续接恢复，不增续接队列/去重表
+
+#### Scenario: M-SC-ACK-004
+
+- **GIVEN** key/grant 已落盘但 ack 的真实 DB 提交失败
+- **WHEN** 返回失败后原 pending 再次投递并重 ack
+- **THEN** SHALL 不假称已提交、不在 commit 前唤醒，允许原 pending 幂等重投后完成确认
+- **AND** SHALL 不为消除数据库错误绕过 workspace/认证验证
+
+### Requirement: 唤醒不是新建执行授权，旧事实和存量续接不得形成双编排
+
+#### Scenario: M-SC-ACK-005
+
+- **GIVEN** 终态 CR、无活动 run 或 grant subject/cycle 已过期的夹具
+- **WHEN** 收到有效送达 ack 并尝试唤醒
+- **THEN** SHALL 不新建执行、不回退 Leader、不把旧 ack 当推进指令，无活动 run 不谎报阶段推进
+- **AND** SHALL 当前 Runner 只消费匹配当前阶段和权威证据的 grant
+
+#### Scenario: M-SC-ACK-006
+
+- **GIVEN** 非生产发布夹具含旧 queued/running 审批续接与历史显式 dev-start 审批事实
+- **WHEN** 演练切换到四阶段 Runner 的顺序
+- **THEN** SHALL 先受控收尾旧续接再恢复正常调度，保留历史事实兼容读取但不恢复默认 dev-start 卡或正常 Leader 路径
+- **AND** SHALL 不抢改真实运行 task，本次仅设计演练，真实操作另获授权

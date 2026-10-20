@@ -1,0 +1,46 @@
+meta:
+  change_id: 2026-10-19-aifi-45-runner-contracts
+  created: '2026-10-19'
+  updated: '2026-10-19'
+adjustments:
+  - id: ADJ-T-001
+    original_design_ref: design.md#诊断结论与已锁定的最小修复；SC-T-TEST-006
+    actual_change: 共享authority解析在原容忍判定之后仅私有标记真TxError并重抛；先展开事务finally释放锁，再由既有适配器或仅识别该私有标记的CLI末端格式化，不在深层helper调用process.exit。
+    reason: 独立审查发现baseline-writeback持锁恢复回调会再次调用preflightAdvance；深层直接exit跳过finally。真实journal恢复回归先RED于锁残留，修复后GREEN且可继续原事务恢复。
+    impact_scope: test-execution-reliability内的错误输出时机与恢复回归；不改CLI/JSON接口、原错误code/message/extra、权限、签名、隔离、无绑定容忍或未知错误边界。
+    severity: minor
+    affected_capabilities:
+      - test-execution-reliability
+    exp_id: ''
+    resolved: true
+  - id: ADJ-T-002
+    original_design_ref: test-plan.md#三、执行矩阵与命令；TC-T-TEST-001/004
+    actual_change: 全量验收改为5个前台顺序批次（同35文件、前四批并发2且最后单文件批并发1、同TAP reporter、无name过滤与排除），逐批保存原始日志后汇总计数，替代单次后台长调用。
+    reason: 单次后台托管的长调用在209.5738s被外部终止（0xC000013A，无TAP最终统计），用户确认非主动停止；无法在无人值守后台稳定承载约35分钟的前台测试墙钟。分批保持发现范围、断言和真实退出码不变，只是执行承载方式。
+    impact_scope: 测试执行方式与证据组织；不减少文件、不skip、不改断言、不放宽timeout语义，也不改任何产品行为。
+    severity: minor
+    affected_capabilities:
+      - test-execution-reliability
+    exp_id: ''
+    resolved: true
+  - id: ADJ-T-003
+    original_design_ref: canonical/specs/agent/four-phase-templates.yaml#CP-T-TPL-001/002/003；canonical/specs/agent/test-execution-reliability.yaml#CP-T-TEST-003
+    actual_change: 三项TPL CP指向实际承载8项模板正负回归的既有contract-scan.test.mjs；S0 CP003改按真实S0 authority标题定位4项既有回归并对齐stdout断言。深原语邻接仍独立实跑，不改源码测试名或削弱原断言。
+    reason: 原路径或标题不存在匹配case，会空跑并无法满足原stdout断言；修正验证落点，不改Scenario或产品语义。10项T01–T03 CP及S0 CP003均已实际执行且正数case通过，独立Spec复核认可无实质弱化。
+    impact_scope: 仅Canonical Agent验证命令与收据；保留全部21个SC/TC/CP、T03深回归11例和version/testCr42例，最终全35及新增回归要求不变。原生canon generate虽接受type spec却实际只渲染proposal，本次未声称Agent HumanView已更新、未手改HumanView或canon索引，不扩大范围修STDD。
+    severity: minor
+    affected_capabilities:
+      - four-phase-templates
+      - test-execution-reliability
+    exp_id: ''
+    resolved: true
+  - id: ADJ-T-004
+    original_design_ref: canonical/specs/code/four-phase-templates.yaml；multica M-SC-DISPATCH-005/006 与既有 requirement recorded-source 恢复合同
+    actual_change: 恢复 writer prompt 中既有 inputs.source 机器可渲染绑定，但只作为与本次 cr.md source 原样核对的恢复记录；Skill source 参数仍取 cr.md 权威值，漂移或读取失败停止，不赋值覆盖或把失败降级为空。经原生成链重建并重新冻结新候选，保留旧 digest/manifest 为历史。
+    reason: M10 同源编译后原三条 source 渲染/采纳/恢复测试真实 RED；数据库已正确保存 source，producer 将机器 token 改成说明性文本使唯一 renderer 不再消费该值。不能把中文占位符静默解释成数据库权威，也不能删除既有 source 断言求绿。
+    impact_scope: 单个 requirement writer prompt 叶值、既有合同测试新增回归及原链派生生成物；不改 schema/输入 key/renderer/事务/权限/签名/审批/真实版本确认或 source 路径安全语义，不新增 Requirement/Scenario/CP。真实新回归 RED→GREEN、原3Go及31父+9子邻接通过；主会话当前候选073c…整包195父+108子PASS/1原有LiveGitHubSKIP/无DBskip，tools8文件213/213，生成check与后端build通过；两路delta独立复审无硬问题。中间caller-09对静态regex提及误报已保留RED，只增强该assert的完整workspace正则（普通 \s+ 空白转义），不改scanner/白名单，独立窄复核与重跑关闭；bodydigest不变，历史身份保留。
+    severity: minor
+    affected_capabilities:
+      - four-phase-templates
+    exp_id: ''
+    resolved: true

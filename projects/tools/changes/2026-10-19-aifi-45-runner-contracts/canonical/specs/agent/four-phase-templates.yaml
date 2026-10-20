@@ -1,0 +1,43 @@
+meta:
+  task_id: four-phase-templates
+  change_id: 2026-10-19-aifi-45-runner-contracts
+  task_type: code
+  system: tools模板与crctl现有深原语
+  preconditions:
+    - Gate 2已确认；仅临时隔离Git/workspace夹具；TC实际执行数大于0。
+steps:
+  - id: CP-T-TPL-001
+    description: SC-T-TPL-001，authority输入继承与new无milestone。
+    action: node --test --test-name-pattern TC-T-TPL-001 skills/shared/crctl/scripts/test/contract-scan.test.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: TC-T-TPL-001
+  - id: CP-T-TPL-002
+    description: SC-T-TPL-002，merge exit0 drift与test exit0 block。
+    action: node --test --test-name-pattern TC-T-TPL-002 skills/shared/crctl/scripts/test/contract-scan.test.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: TC-T-TPL-002
+  - id: CP-T-TPL-003
+    description: SC-T-TPL-003，operationalWorkspace和归档清理后重入。
+    action: node --test --test-name-pattern TC-T-TPL-003 skills/shared/crctl/scripts/test/contract-scan.test.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: TC-T-TPL-003
+  - id: CP-T-TPL-004
+    description: SC-T-TPL-004，上游复评和原权限结构化恢复，平台另测实际carrier。
+    action: node --test --test-name-pattern TC-T-TPL-004 skills/shared/crctl/scripts/test/contract-scan.test.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: TC-T-TPL-004
+rollback:
+  steps:
+    - 停止跨仓启用，保留原始业务结果和夹具；不手改状态、不沿旧grant继续、不改运行中任务env。

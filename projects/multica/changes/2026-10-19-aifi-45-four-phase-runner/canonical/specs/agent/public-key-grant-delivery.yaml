@@ -1,0 +1,75 @@
+meta:
+  task_id: M-TASK-KEY
+  capability: public-key-grant-delivery
+  change_id: 2026-10-19-aifi-45-four-phase-runner
+  task_type: code
+  system: S pending 公钥响应与 daemon 唯一目标投递
+  status: 待实现/待验证
+  preconditions:
+    - 仅计划，不执行；TestMKey 均待新增，未来 S go test -count=1 -v 所列包 -run 精确名称
+    - 临时 KB/测试密钥/假服务连接，不碰真实 key/grant/CR，不更改验签算法
+    - 如需 DB 只用显式隔离已迁移库，核对实际 PASS 与 skipped
+steps:
+  - id: M-CP-KEY-001
+    scenario_id: M-SC-KEY-001
+    test_case: TC-MKEY-001
+    confidence: high
+    evidence: 'canonical/specs/code/public-key-grant-delivery.yaml#/requirements/0/scenarios/0'
+    description: 当前 key 经 pending 输出，执行顺序严格 key→完整grant→ack IDs
+    action: '待新增 ./internal/daemon ^TestMKey001$；handler 响应配套测试与文件/ack 顺序探针'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMKey001'}
+  - id: M-CP-KEY-002
+    scenario_id: M-SC-KEY-002
+    test_case: TC-MKEY-002
+    confidence: high
+    evidence: 'canonical/specs/code/public-key-grant-delivery.yaml#/requirements/0/scenarios/1'
+    description: TLS/本地回环边界与不可信明文拒绝，仍验证签名来源
+    action: '待新增 ./internal/daemon ^TestMKey002$；测试 TLS 服务和明文远程假地址，不放宽真实证书设置'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMKey002'}
+  - id: M-CP-KEY-003
+    scenario_id: M-SC-KEY-003
+    test_case: TC-MKEY-003
+    confidence: high
+    evidence: 'canonical/specs/code/public-key-grant-delivery.yaml#/requirements/1/scenarios/0'
+    description: 唯一/零/歧义/跨 workspace 同号 CR，各自正确定位或保持 pending
+    action: '待新增 ./internal/daemon ^TestMKey003$；多根临时 CR 定位矩阵，断言非目标无写入'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMKey003'}
+  - id: M-CP-KEY-004
+    scenario_id: M-SC-KEY-004
+    test_case: TC-MKEY-004
+    confidence: high
+    evidence: 'canonical/specs/code/public-key-grant-delivery.yaml#/requirements/1/scenarios/1'
+    description: 冲突/缺key/写失败/两次写间中断均不 ack、不半文件、不覆盖，可幂等重投
+    action: '待新增 ./internal/daemon ^TestMKey004$；注入每个落盘故障点再重放 pending'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMKey004'}
+  - id: M-CP-KEY-005
+    scenario_id: M-SC-KEY-005
+    test_case: TC-MKEY-005
+    confidence: high
+    evidence: 'canonical/specs/code/public-key-grant-delivery.yaml#/requirements/2/scenarios/0'
+    description: 旧可信 key 保留，有 key 可消费，缺旧 key 不以当前 key 替代
+    action: '待新增 ./internal/daemon ^TestMKey005$；当前/旧 key 与 grant 组合矩阵'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMKey005'}
+  - id: M-CP-KEY-006
+    scenario_id: M-SC-KEY-006
+    test_case: TC-MKEY-006
+    confidence: high
+    evidence: 'canonical/specs/code/public-key-grant-delivery.yaml#/requirements/2/scenarios/1'
+    description: 临时 Git KB 默认忽略与例外演练，无新增 dirty、不删除已跟踪锚
+    action: '待新增 ./internal/daemon ^TestMKey006$；仅临时仓演练 !keys/** 例外收敛，核对 Git status 和信任锚字节'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMKey006'}
+rollback:
+  steps:
+    - 未来只销毁测试密钥/临时 KB 和假服务，不覆盖或删除真实信任锚；真实配置更改另行授权

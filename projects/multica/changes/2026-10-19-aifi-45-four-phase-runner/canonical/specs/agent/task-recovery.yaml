@@ -1,0 +1,85 @@
+meta:
+  task_id: M-TASK-RECOVERY
+  capability: task-recovery
+  change_id: 2026-10-19-aifi-45-four-phase-runner
+  task_type: code
+  system: S Runner failed-task分类、TaskService与daemon终态队列
+  status: 待实现/待验证
+  preconditions:
+    - 仅计划不执行；TestMRecovery为拟新增测试，未来 S go test -count=1 -v 所列包 -run 精确名称
+    - 技术故障/重试/结构化recovery全部用隔离夹具，不提高真实任务预算，不恢复真实CR
+    - governance只连显式隔离已迁移库并核对case；原failure分类与授权边界保持
+steps:
+  - id: M-CP-RECOVERY-001
+    scenario_id: M-SC-RECOVERY-001
+    test_case: TC-MRECOVERY-001
+    confidence: high
+    evidence: 'canonical/specs/code/task-recovery.yaml#/requirements/0/scenarios/0'
+    description: failed parent先跟随已有child queued/running/completed，不failRun或重复child
+    action: '待新增 ./internal/governance ^TestMRecovery001$；skill与requirement两入口，完成child仍核canonical'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMRecovery001'}
+  - id: M-CP-RECOVERY-002
+    scenario_id: M-SC-RECOVERY-002
+    test_case: TC-MRECOVERY-002
+    confidence: high
+    evidence: 'canonical/specs/code/task-recovery.yaml#/requirements/0/scenarios/1'
+    description: 待补报/安全技术中断先分类，原TaskService重试/退避，不重复已完成评审
+    action: '待新增 ./internal/service ^TestMRecovery002$；复用retry_deferred并补Runner调用次序断言'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMRecovery002'}
+  - id: M-CP-RECOVERY-003
+    scenario_id: M-SC-RECOVERY-003
+    test_case: TC-MRECOVERY-003
+    confidence: high
+    evidence: 'canonical/specs/code/task-recovery.yaml#/requirements/1/scenarios/0'
+    description: settle失败队列保留failure_reason/code/recovery，重启消费crctl recovery不只HTTP
+    action: '待新增 ./internal/daemon ^TestMRecovery003$；持久队列重新打开与幂等重放探针，禁止伪报已settle'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMRecovery003'}
+  - id: M-CP-RECOVERY-004
+    scenario_id: M-SC-RECOVERY-004
+    test_case: TC-MRECOVERY-004
+    confidence: high
+    evidence: 'canonical/specs/code/task-recovery.yaml#/requirements/1/scenarios/1'
+    description: 仅原权限内安全结构化argv，拒绝文字猜测/身份参数篡改，不增运行时报告
+    action: '待新增 ./internal/daemon ^TestMRecovery004$；合法/篡改/仅文字恢复矩阵'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMRecovery004'}
+  - id: M-CP-RECOVERY-005
+    scenario_id: M-SC-RECOVERY-005
+    test_case: TC-MRECOVERY-005
+    confidence: high
+    evidence: 'canonical/specs/code/task-recovery.yaml#/requirements/2/scenarios/0'
+    description: 技术attempt/业务loop独立，耗尽停止，不自动加预算/挂人工resume
+    action: '待新增 ./internal/service ^TestMRecovery005$；原预算和退避边界，配套Runner loop断言'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMRecovery005'}
+  - id: M-CP-RECOVERY-006
+    scenario_id: M-SC-RECOVERY-006
+    test_case: TC-MRECOVERY-006
+    confidence: high
+    evidence: 'canonical/specs/code/task-recovery.yaml#/requirements/2/scenarios/1'
+    description: 混合TX_GIT_FAILED/process_failure不整体重试，权限/余额/签名等冲突不盲试
+    action: '待新增 ./pkg/taskfailure ^TestMRecovery006$；明确安全暂态子类与混合/禁止类表驱动'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMRecovery006'}
+  - id: M-CP-RECOVERY-007
+    scenario_id: M-SC-RECOVERY-007
+    test_case: TC-MRECOVERY-007
+    confidence: high
+    evidence: 'canonical/specs/code/task-recovery.yaml#/requirements/2/scenarios/2'
+    description: BLOCK/驳回/drift走业务路由，等待不耗，取消/失败不复活，人工gate不越过
+    action: '待新增 ./internal/governance ^TestMRecovery007$；业务结果/输入等待/终态矩阵，断言技术重试0'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMRecovery007'}
+rollback:
+  steps:
+    - 未来只清理本用例隔离队列/child/临时journal，不删除真实恢复事实，不提高真实预算

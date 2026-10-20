@@ -1,0 +1,100 @@
+meta:
+  task_id: M-TASK-DISPATCH
+  capability: four-phase-runner-dispatch
+  change_id: 2026-10-19-aifi-45-four-phase-runner
+  task_type: code
+  system: multica/server 与 tools registry 联合合同验证
+  status: 待实现/待验证
+  preconditions:
+    - 仅计划；Gate2未批准，不执行命令/DB/gate；TestM名称均拟新增，不声称现有覆盖
+    - 未来Go用例使用-count=1 -v及实际case PASS；governance显式隔离已迁移测试库，不接受TestMain退出0空跑
+    - 用户已确认纳入诊断修复范围；主会话只读诊断Agent实测358.14s自然exit1、294=288pass+6fail/0skip，非挂死，非人类批准6失败结论；6项仅tools修，本回合不改代码
+    - 保持crctl31/output-guard3/registry1及新增发现范围，不以延超时/缩范围伪绿
+steps:
+  - id: M-CP-DISPATCH-001
+    scenario_id: M-SC-DISPATCH-001
+    test_case: TC-MDISPATCH-001
+    confidence: high
+    evidence: 'canonical/specs/code/four-phase-runner-dispatch.yaml#/requirements/0/scenarios/0'
+    description: 四阶段分别断言claim/task/canonical/恢复归属，JSON nodeId与DB/Go内部node_id对应而非同义双字段，不把投影run当执行
+    action: '待新增；未来在隔离S执行 go test -count=1 -v ./internal/governance -run ^TestMDispatch001$，含四pipeline子夹具'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMDispatch001'}
+  - id: M-CP-DISPATCH-002
+    scenario_id: M-SC-DISPATCH-002
+    test_case: TC-MDISPATCH-002
+    confidence: high
+    evidence: 'canonical/specs/code/four-phase-runner-dispatch.yaml#/requirements/0/scenarios/1'
+    description: task/退出码/模型PASS缺权威证据时不推进
+    action: '待新增；未来 go test -count=1 -v ./internal/governance -run ^TestMDispatch002$，逐项注入缺证据'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMDispatch002'}
+  - id: M-CP-DISPATCH-003
+    scenario_id: M-SC-DISPATCH-003
+    test_case: TC-MDISPATCH-003
+    confidence: high
+    evidence: 'canonical/specs/code/four-phase-runner-dispatch.yaml#/requirements/1/scenarios/0'
+    description: 声明驱动节点/gate/loop，交付不硬造loop
+    action: '待新增；未来 go test -count=1 -v ./internal/governance -run ^TestMDispatch003$，覆盖原四/六节点限制负例'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMDispatch003'}
+  - id: M-CP-DISPATCH-004
+    scenario_id: M-SC-DISPATCH-004
+    test_case: TC-MDISPATCH-004
+    confidence: high
+    evidence: 'canonical/specs/code/four-phase-runner-dispatch.yaml#/requirements/1/scenarios/1'
+    description: dirty-start按节点及轮次允许，clean仍阻断
+    action: '待新增；未来 go test -count=1 -v ./internal/daemon -run ^TestMDispatch004$，临时Git/workspace夹具'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMDispatch004'}
+  - id: M-CP-DISPATCH-005
+    scenario_id: M-SC-DISPATCH-005
+    test_case: TC-MDISPATCH-005
+    confidence: medium
+    evidence: 'canonical/specs/code/four-phase-runner-dispatch.yaml#/requirements/2/scenarios/0'
+    description: 目标四schema/原生成链/parser一致；完整pipeline.inputs、节点执行声明及nodePermissions绑定/授权/executor影响digest；顶层inputs仅同源兼容列表，不一致拒绝，现状输入缺口不当目标
+    action: '待新增；未来 go test -count=1 -v ./internal/governance -run ^TestMDispatch005$；分别变更inputs类型/required、绑定/授权/执行字段验证digest变化，验证JSON字段顺序/CRLF和顶层inputs不一致拒绝；核对保留architecture-core-v1/requirement-core-v1、新增code-core-v1/writeback-core-v1（ai-first.pipeline-registry）；配合T原emit/一致性测试，不新增生成器、不覆盖存量digest'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMDispatch005'}
+  - id: M-CP-DISPATCH-006
+    scenario_id: M-SC-DISPATCH-006
+    test_case: TC-MDISPATCH-006
+    confidence: high
+    evidence: 'canonical/specs/code/four-phase-runner-dispatch.yaml#/requirements/2/scenarios/1'
+    description: claim/carrier完整往返与错workspace/digest/node拒绝
+    action: '待新增；未来 go test -count=1 -v ./internal/handler -run ^TestMDispatch006$；补daemon carrier回归'
+    assertions:
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: '--- PASS: TestMDispatch006'}
+  - id: M-CP-DISPATCH-007
+    scenario_id: M-SC-DISPATCH-007
+    test_case: TC-MDISPATCH-007
+    confidence: high
+    evidence: 'canonical/specs/code/four-phase-runner-dispatch.yaml#/requirements/3/scenarios/0'
+    description: TestMain退出0整包空跑判未验证；隔离库实际case才算执行
+    action: '未来仅隔离环境对照不可达负例与已迁移测试库 go test -count=1 -v ./internal/governance 的实际case输出；本次不连接DB'
+    assertions:
+      - {type: stdout_contains, expected: '--- PASS: TestMDispatch001'}
+      - {type: stdout_contains, expected: '--- PASS: TestMDispatch005'}
+    negative_expectation: DB不可达即便退出0也判未验证；PASS要求仅适用隔离库正例
+  - id: M-CP-DISPATCH-008
+    scenario_id: M-SC-DISPATCH-008
+    test_case: TC-MDISPATCH-008
+    confidence: high
+    evidence: 'canonical/specs/code/four-phase-runner-dispatch.yaml#/requirements/3/scenarios/1'
+    description: 已诊断非挂死，6fail仅tools修；完整基线及修复回归仍待通过，不半套启用
+    action: '未来在同次tools C7对5项payload fixture根错位和1项cmdTaskDone已知TxError被总catch改INTERNAL_ERROR分别先红再修；复用完整现有测试入口核对真实退出码/耗时/case/skipped，本回合不执行或改代码'
+    assertions:
+      - {type: exit_code, expected: 0}
+    manual_assertions:
+      - 主会话只读诊断Agent实测358.14s自然exit1、294=288pass+6fail/0skip，用户只确认纳入范围；记录为诊断结果而非整套通过，不冒称人类提供/批准结论或本multica文档回合重跑
+      - 保留31+3+1及新增发现范围；未完成/意外skip阻塞，不延超时掩盖失败、不在multica补丁兜底
+rollback:
+  steps:
+    - 未来只清理本用例隔离数据/临时目录/子进程；本次不执行回滚
+    - 真实部署、停服、恢复、配置更改或回滚另获明确授权

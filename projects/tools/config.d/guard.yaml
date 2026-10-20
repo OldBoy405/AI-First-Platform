@@ -1,0 +1,35 @@
+# STDD V3.0 — Guard 智能模式配置
+
+guard:
+  # 智能模式（V3.0 阶段2：分级提醒）
+  smart_mode:
+    enabled: true
+
+    # 分级阈值
+    thresholds:
+      small:
+        max_files: 1
+        max_lines: 10
+        action: "allow"        # allow | warn | block
+        message: "💡 小改动已放行，建议记录到下次 STDD change"
+      medium:
+        max_files: 3
+        max_lines: 50
+        action: "warn"         # allow | warn | block
+        message: "⚠️ 检测到中等规模修改（{files}文件/{lines}行），建议 /stdd-understand 启动流程"
+      large:
+        action: "warn"
+        message: "🔒 检测到重大修改（{files}文件/{lines}行），请先 /stdd-understand <需求描述>"
+
+    # 核心模块路径（命中则升级为拦截）
+    critical_paths: []
+
+    # 排除目录（变更不触发 guard）
+    exclude_dirs:
+      - ".stdd/backup/"
+      - ".git/"
+      - "__pycache__/"
+      - "node_modules/"
+
+    # 同一 session 去重（秒，0=不去重）
+    dedup_seconds: 300
