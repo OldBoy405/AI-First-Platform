@@ -140,14 +140,11 @@ feature-writeback      6a63a222146eb018564cd0487e8b1ab5352f832fd3d972f6c065ff701
 | 测试断言中写字面量 `crctl status` 被 caller-contract 扫描器判为未登记调用点 | 改用 `const CRCTL = 'crctl'` 拆开字面量（扫描器对引号内命中直接跳过），断言语义不变 |
 | TC-T-PROMPT-003 遗留 `void forbidden` 空循环 | 删除（R4） |
 
-### 6.3 未解决、转跟进项
+### 6.3 跟进项（2026-10-20 更正）
 
-1. **multica CI 的 `generate-gate-nodes.mjs --check` 在 multica HEAD 即为红**（详见 `T04b-cross-repo-checkpoint.md` §3）：
-   - CI pin `9d0a6a7` 无法复现已提交的 registry（四阶段 raw pipeline fields 已随 `2bfa3ad` 漂移，exit=2）。
-   - 四个 `*_gen.go` 的 BASE 记录为 `2bfa3ad`，与 pin 不一致（`--check` 比对整行含 provenance）。
-   - 处置：tools 提交取得新 SHA 后，同步更新 `ci.yml` 的 `ref:` 并重新生成四个 `*_gen.go`。
-2. `generate-gate-nodes.mjs` 默认 `toolsDir` 解析到 multica 仓内的**空壳 `tools/`**，不显式传 `--tools` 时会读到空目录。建议后续对空壳做 fail-fast。
-3. `--check` 把 provenance SHA 纳入比对，导致**每次 tools 任何提交都必须同步 bump multica pin**。建议后续把「合同内容一致性」与「provenance 记录」解耦（内容不一致才红，provenance 仅记录）。此为治理变更，需另立 CR。
+1. **历史事实保留**：CI pin `9d0a6a7` 无法复现已提交的 registry（四阶段 raw pipeline fields 已随 `2bfa3ad` 漂移，exit=2）；四个 `*_gen.go` 的 BASE 记录为 `2bfa3ad`，与 pin 不一致。该内容漂移已由 `5a913605b` 前移 pin 至 `9e41ad7` 并再生生成物修复。
+2. ~~`generate-gate-nodes.mjs` 默认 `toolsDir` 解析到 multica 仓内的**空壳 `tools/`**，不显式传 `--tools` 时会读到空目录；建议后续对空壳做 fail-fast。~~ → **撤销（原结论有误）**：默认路径上跳 5 层正确指向 sibling `AI/tools`，显式 `--tools` 仍可用，不额外改路径逻辑、不加 fail-fast；文件缺失时既有读取会失败。详见 T04b §3.1 更正。
+3. ~~`--check` 把 provenance SHA 纳入比对，导致每次 tools 任何提交都必须 bump pin；建议另立 CR 解耦内容一致性与 provenance。~~ → **撤销/已更正**：CI 使用固定 tools pin，不因 tools 新提交自动变红，仅在合同升级时前移；真实误报仅发生在「内容相同、Git HEAD 不同」的本地 checkout，仅 BASE SHA 不同造成失败。已由 Main 做最小修补：`--check` 前归一化 CRLF/LF，仅忽略来源注释 BASE 的 40 位 SHA/`unavailable`，保留 pipeline digest 与全部生成正文比较，生成时仍记录真实 BASE；不新增 flag/config/模块，不另开 CR/STDD。详见 T04b §6.1、§7。
 
 ---
 
@@ -189,7 +186,7 @@ node --test --test-reporter=tap --test-concurrency=2 \
 | 任务 | 状态 |
 |---|---|
 | 5.1 完整测试与 JSON/Agent/matrix/lint 校验；真实证据、独立技术评审、diff 审查、失败模式检查 | ✅ 完成 |
-| 5.2 汇总设计调整及 test-report，未完成/意外 skip 明确阻塞 | ✅ 完成（未完成项见 §6.3 三项跟进，均不阻塞本切片） |
+| 5.2 汇总设计调整及 test-report，未完成/意外 skip 明确阻塞 | ✅ 完成（跟进项见 §6.3，含 2026-10-20 更正，均不阻塞本切片） |
 
 **失败模式检查**（S5.1 要求）覆盖：
 

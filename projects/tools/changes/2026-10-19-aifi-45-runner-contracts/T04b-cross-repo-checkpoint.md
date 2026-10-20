@@ -47,23 +47,17 @@ done
 
 ## 3. C2：multica 侧解析重建核对
 
-### 3.1 实测发现的运行陷阱（必须记录）
+### 3.1 toolsDir 解析（2026-10-20 更正）
 
-```bash
-cd multica
-node server/internal/governance/gen/generate-gate-nodes.mjs --check
-# → exit 1: requirement_registry_gen.go differs ...
-```
+**原记录有误，此处更正**：曾记「默认 toolsDir 解析到 multica 仓内的空壳 `tools/`」，系层数算错。实际脚本位于
+`multica/server/internal/governance/gen`，默认
+`path.resolve(__dirname,'..','..','..','..','..','tools')` 上跳 5 层后**正确指向 sibling `AI/tools`**，不是 `multica/tools`。
 
-**根因不是合同漂移**，而是两件事叠加：
+- 默认路径正确，**不强制** `--tools`；显式 `--tools` 仍可用（本次核对沿用它固定 revision）。
+- **不**额外修改路径逻辑，**不**新增空壳 fail-fast：目标文件缺失时，既有读取路径本身就会失败。
+- 原「不显式传 `--tools` 会读到空目录、结论不可信」的结论随之**撤销**。
 
-1. **默认 toolsDir 解析到 multica 仓内的空壳 `tools/`**。脚本默认值为
-   `path.resolve(__dirname, '..','..','..','..','..','tools')`，即
-   `multica/tools/`——该目录是早前 Windows 文件锁导致删不掉的残留（已 `.gitignore`，AGENTS.md 有记载），**当前为空**。
-   不显式传 `--tools` 时脚本读到的是空目录，结论不可信。
-2. **provenance 注释里的 BASE SHA 已随 tools HEAD 前进**。
-
-正确调用必须显式指向 sibling tools 仓：
+本次实测（`--check`）仍报 exit 1，但**根因不是合同漂移，也不是路径**，而是 provenance 注释里的 BASE SHA 已随 tools HEAD 前进（见 §3.2）。当时使用显式 `--tools` 仅用于明确来源目录：
 
 ```bash
 node server/internal/governance/gen/generate-gate-nodes.mjs --check \
@@ -87,7 +81,7 @@ node server/internal/governance/gen/generate-gate-nodes.mjs --check \
   # → 仅 lint-prompts.mjs 与 lint-prompts.test.mjs
   ```
 
-**结论**：C2 的「内容同源」成立；BASE 指针对齐属**既定延期项**（tools CI pin 在提交后对齐），不是本次引入的漂移。
+**结论**：C2 的「内容同源」成立（digest 相同）。BASE 行不同只是 provenance 记录差异，**不是内容漂移**；`--check` 对 BASE 敏感的行为已按 §7 归一化处理。
 
 ### 3.3 核对过程的副作用与还原
 
@@ -137,10 +131,10 @@ multica 仓当前干净，HEAD 仍为 `0d6b4e9f9`。
 | 判据 | 结果 |
 |---|---|
 | C1 四阶段 digest 一致 | ✅ 通过（4/4） |
-| C2 multica 解析可重建 | ✅ 内容同源通过；BASE 指针对齐为既定延期项 |
+| C2 multica 解析可重建 | ✅ 内容同源通过；provenance BASE 差异按 §7 归一化，不属内容漂移 |
 | C3 不把 checkout 当线上生效 | ✅ 由 TC-T-PROMPT-002 固化 |
 
-**T04b 通过。** 遗留两项跟进——**项 1 已于本次完成，项 2 仍开放**：
+**T04b 通过。** 两项跟进：**项 1 已完成；项 2 已撤销（原结论有误）**：
 
 1. ~~tools 提交后对齐 multica 四个 `*_gen.go` 的 BASE provenance 指针~~ → **已完成**。
    - tools 提交 `9e41ad7`（T04a/T04b/T04c + T05）；multica 提交 `5a913605b`。
@@ -153,12 +147,30 @@ multica 仓当前干净，HEAD 仍为 `0d6b4e9f9`。
      go build ./...                                  → exit 0
      ```
    - 已按 AGENTS.md #10 在 `CUSTOM.md` 登记为 **#153**（M3 节头由「7 行」改为「8 行」）。
-2. `generate-gate-nodes.mjs` 默认 `toolsDir` 解析到 multica 仓内的**空壳 `tools/`**，不显式传 `--tools` 时会读到空目录而结论不可信。**仍开放**：建议后续对空壳做 fail-fast。
+2. ~~`generate-gate-nodes.mjs` 默认 `toolsDir` 解析到 multica 仓内的**空壳 `tools/`**，不显式传 `--tools` 时会读到空目录而结论不可信；建议后续对空壳做 fail-fast。~~ → **撤销（原结论有误）**：默认路径上跳 5 层正确指向 sibling `AI/tools`，无需强制 `--tools`，不额外改路径逻辑、不加 fail-fast；文件缺失时既有读取会失败。详见 §3.1 更正。
 
-### 6.1 本次核对附带发现的 CI 设计摩擦（建议另立 CR）
+### 6.1 关于「`--check` 与 provenance」的更正
 
-`--check` 把 provenance SHA 纳入**整文件比对**，因此**tools 任何提交都必须同步 bump multica pin 并重新生成**，否则 CI 红。这把「合同内容一致性」与「provenance 记录」耦合在一起。
+原记「tools 任何提交都必须 bump multica pin，否则 CI 红」为**过度断言**，撤销。核实后：
 
-- 实际影响：tools 的 `1fa6059`（仅改 lint 脚本文本）也足以让 multica CI 红——尽管编译合同一字未变。
-- 对照：`generate-transitions.mjs --check` **不**比对 provenance，故在两种 pin 下都绿，反而掩盖了 gate-nodes 侧的失配。两个生成器的口径不一致本身就是风险。
-- 建议（需另立 CR，本切片不做）：内容不一致才红，provenance 仅作记录（或单独校验“pin 是否等于 BASE”）。
+- multica CI 使用**固定 tools pin**（`ci.yml` 的 `ref:`），**不因** tools 仓出现新提交而自动变红；pin 只在合同升级时前移。
+- 真实误报场景：本地用**内容相同但 Git HEAD 不同**的 tools checkout 跑 `--check`，生成物 provenance 的 BASE 行不同，仅 BASE SHA 差异即导致失败。这不是内容漂移，更不是 CI 必然变红。
+- 历史事实保留：`9d0a6a7`（旧 pin）确实无法复现新 registry 的**内容漂移**（raw pipeline fields 随 `2bfa3ad` 变化，exit=2）；`5a913605b` 的 pin 修复（前移至 `9e41ad7` 并再生生成物）仍为真。
+- 旁证：`generate-transitions.mjs --check` 本就不比对 provenance。
+- 原建议「另立 CR 解耦内容一致性与 provenance」**撤销**：不另开 CR/STDD，改由下述最小修补处理（§7）。
+
+---
+
+## 7. 更正的落地方式（最小代码修补）
+
+本次按普通维护完成生成器、回归测试及历史记录纠错，**未**新增 flag/config/模块，**未**另开 CR/STDD：
+
+- `--check` 比较前归一化行尾（CRLF/LF）。
+- 仅忽略来源注释中的 BASE：40 位 SHA 或 `unavailable`。
+- **保留**来源行的 pipeline digest 与全部生成正文的比较——内容漂移仍会报红。
+- 生成（非 `--check`）时仍记录真实 BASE，provenance 不丢失。
+- multica CI 的 tools pin 保持不变，仅在合同升级时前移。
+
+验证：新增 BASE-only 回归在修补前真实失败；修补后 `TestMDispatch005Generator` 与 `TestMDispatch005` 共 38 RUN / 38 PASS / 0 FAIL / 0 SKIP，native exit 0。默认路径与显式 `--tools` 的 gate `--check`、默认路径的 transitions `--check` 均 exit 0；CI pin 和生成物未改。证据位于 OS Temp 的 `aifi45-generator-base-check/`。
+
+本项属普通维护与历史记录纠错，不构成 STDD 切片。
