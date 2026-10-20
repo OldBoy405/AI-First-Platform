@@ -1,7 +1,7 @@
 # AIFI-45 四阶段统一 Runner（multica 平台侧）
 
 <!-- source_hash: ba84881d2bf241f2 -->
-<!-- generated_at: 2026-10-19T16:04:03.430640 -->
+<!-- generated_at: 2026-10-20T15:56:41.443206 -->
 <!-- canonical: canonical/proposals/2026-10-19-aifi-45-four-phase-runner.yaml -->
 
 ## Why

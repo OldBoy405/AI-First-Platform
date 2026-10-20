@@ -1,7 +1,7 @@
 # AIFI-45 四阶段 Registry 合同与提示词对齐（tools 侧）
 
 <!-- source_hash: 9430aa9032887dff -->
-<!-- generated_at: 2026-10-19T19:27:50.380039 -->
+<!-- generated_at: 2026-10-20T15:56:43.804345 -->
 <!-- canonical: canonical/proposals/2026-10-19-aifi-45-runner-contracts.yaml -->
 
 ## Why
