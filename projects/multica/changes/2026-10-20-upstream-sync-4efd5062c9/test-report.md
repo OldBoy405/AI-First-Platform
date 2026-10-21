@@ -80,4 +80,4 @@
 
 ## 5. Gate 3 结论
 
-**已确认。** Gate 3 confirmed 2026-10-21T11:30:10（dialog / user / 证据“确认 Gate 3”）。原 38 个 Windows/环境新增失败已清零；2 个上游新增 timing 测试记为已知并行 flake（单跑通过）；CUSTOM 台账提交 `1dc9ffeb7`；未 push。
+**已确认。** Gate 3 confirmed 2026-10-21T11:30:10（dialog / user / 证据“确认 Gate 3”）。原 38 个 Windows/环境新增失败已清零；2 个上游新增 timing 测试记为已知并行 flake（单跑通过）；CUSTOM 台账 `1dc9ffeb7`/`f6e90ab80`；origin/main `f6e90ab80`；upstream issue https://github.com/multica-ai/multica/issues/9379；临时测试库/worktree 已清理。

@@ -1,6 +1,6 @@
 # CUSTOM.md 第九次同步更新草稿
 
-> 已应用：CUSTOM.md commit `1dc9ffeb7`（2026-10-21，Gate 3 后）。
+> 已应用：CUSTOM.md `1dc9ffeb7`（记录）与 `f6e90ab80`（push 状态修正）；origin/main 已推送。
 > 本文件保留为变更记录；CUSTOM.md 是唯一事实源。
 
 ## 1. 《当前状态》更新

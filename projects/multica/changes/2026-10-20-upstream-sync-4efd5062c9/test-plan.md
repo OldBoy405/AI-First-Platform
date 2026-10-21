@@ -25,5 +25,5 @@
 - Baseline 2026-10-20：`go build` / `go vet` 绿；`pnpm typecheck` 10/10；`pnpm test` core/web/docs/ui-lab 绿、views 491/491、desktop 仅 `scripts/package.test.mjs` 已知基线失败。
 - Gate 2：confirmed at 2026-10-21T08:44:25（dialog / user）
 - Gate 3：confirmed at 2026-10-21T11:30:10
-- merge：committed locally (`a3af2341f`; CUSTOM `1dc9ffeb7`)
+- merge：origin/main `f6e90ab80` (`a3af2341f` + CUSTOM `1dc9ffeb7`/`f6e90ab80`)
 - push / deploy：not executed

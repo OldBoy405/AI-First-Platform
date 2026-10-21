@@ -4,7 +4,7 @@
 
 - 窗口 `e0f84dda4..4efd5062c9`，101 个上游提交，978 个上游改动文件。
 - 两边都改的文件 119 个；其中 server 64、packages 53、.github 1、scripts 1。
-- Gate 1/2/3 已确认（Gate 3 2026-10-21T11:30:10）；merge `a3af2341f` + 测试修复至 `874ea9621`；CUSTOM 台账 `1dc9ffeb7`；未 push。
+- Gate 1/2/3 已确认（Gate 3 2026-10-21T11:30:10）；merge `a3af2341f` + 测试修复至 `874ea9621`；origin/main `f6e90ab80`；CUSTOM `1dc9ffeb7`/`f6e90ab80`；upstream issue #9379。
 
 ## Decisions（草案）
 

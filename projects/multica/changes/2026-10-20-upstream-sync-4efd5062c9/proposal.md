@@ -1,7 +1,7 @@
 # 上游同步提案：e0f84dda4..4efd5062c9
 
 > 变更 ID：`2026-10-20-upstream-sync-4efd5062c9`
-> 阶段：Gate 1/2/3 已确认（Gate 3 2026-10-21T11:30:10）；merge `a3af2341f` + 测试修复至 `874ea9621`；CUSTOM 台账 `1dc9ffeb7`；未 push
+> 阶段：Gate 1/2/3 已确认（Gate 3 2026-10-21T11:30:10）；merge `a3af2341f` + 测试修复至 `874ea9621`；CUSTOM 台账 `1dc9ffeb7`/`f6e90ab80`；origin/main 已推送
 > 模板：[gate1-template-v2.md](gate1-template-v2.md)
 > 本变更只做上游合并；CUSTOM.md 仍是唯一事实源，不另写 capability spec。
 
@@ -181,7 +181,9 @@ CUSTOM 2026-10-20 行已按 HEAD 重取；HEAD^ 为 430 / 1320 / 519 / 278，仅
 
 - merge commit：`a3af2341f`（第一父 `d5f58a70`，第二父 `4efd5062c9`）
 - 测试/Windows 后修：`599114cb1` … `874ea9621`（详见 test-report）
-- CUSTOM 台账提交：`1dc9ffeb7`
-- 验收报告：[test-report.md](test-report.md)
-- CUSTOM 更新草稿已应用：[custom-update-draft.md](custom-update-draft.md)
-- Gate 3 confirmed 2026-10-21T11:30:10；未 push。
+- CUSTOM 台账提交：`1dc9ffeb7`；push 状态修正 `f6e90ab80`
+- origin/main：`f6e90ab80`（已推送）
+- 记录仓提交：`c3705744`（同步 change）、`955dac88`（template-only）
+- upstream issue：https://github.com/multica-ai/multica/issues/9379
+- 临时测试库与 baseline worktree：已清理
+- Gate 3 confirmed 2026-10-21T11:30:10
