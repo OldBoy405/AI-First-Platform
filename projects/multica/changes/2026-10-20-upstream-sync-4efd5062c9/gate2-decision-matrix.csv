@@ -1,0 +1,120 @@
+﻿file,upstream,fork,aifirst,cr,aifi63,area,primary,note,verify
+.github/workflows/ci.yml,M,M,7,1,0,CI/脚本,取并集,fork jobs + 上游 jobs 取并集,pnpm typecheck；相关脚本测试
+packages/core/api/client.test.ts,M,M,0,10,0,前端 core,取并集,前端定制清单核对；无标记也逐文件,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/core/api/client.ts,M,M,3,22,0,前端 core,取并集,前端定制清单核对；无标记也逐文件,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/core/api/schemas.ts,M,M,2,16,0,前端 core,取并集,前端定制清单核对；无标记也逐文件,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/core/package.json,M,M,0,0,0,前端 core,取并集,前端定制清单核对；无标记也逐文件,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/core/realtime/use-realtime-sync.ts,M,M,0,3,0,前端 core,分半,fork queueStatusAll 取并集；working-agent 投影上游胜出,pnpm --filter @multica/core test；重点 use-realtime-sync
+packages/core/types/agent.ts,M,M,3,4,0,前端 core,取并集,skill org 三列 + 上游 labels 取并集,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/core/types/events.ts,M,M,0,1,0,前端 core,取并集,前端定制清单核对；无标记也逐文件,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/core/types/index.ts,M,M,0,0,0,前端 core,取并集,前端定制清单核对；无标记也逐文件,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/core/types/project.ts,M,M,0,3,0,前端 core,取并集,前端定制清单核对；无标记也逐文件,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/chat/components/chat-input.test.tsx,M,M,0,3,0,前端 views,取并集,前端定制清单核对；无标记也逐文件,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/chat/components/chat-input.tsx,M,M,4,9,0,前端 views,取并集,前端定制清单核对；无标记也逐文件,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/chat/components/chat-message-list.tsx,M,M,0,1,0,前端 views,取并集,前端定制清单核对；无标记也逐文件,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/chat/components/chat-window.tsx,M,M,0,0,0,前端 views,取并集,前端定制清单核对；无标记也逐文件,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/chat/components/use-chat-controller.ts,M,M,0,0,0,前端 views,取并集,前端定制清单核对；无标记也逐文件,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/editor/content-editor.tsx,M,M,0,1,0,前端 views,取并集,前端定制清单核对；无标记也逐文件,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/editor/extensions/index.ts,M,M,0,1,0,前端 views,取并集,前端定制清单核对；无标记也逐文件,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/editor/extensions/mention-suggestion.tsx,M,M,0,2,0,前端 views,取并集,前端定制清单核对；无标记也逐文件,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/editor/utils/link-handler.ts,M,M,0,0,0,前端 views,取并集,前端定制清单核对；无标记也逐文件,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/inbox/components/inbox-page.test.tsx,M,M,1,1,0,前端 views,取并集,前端定制清单核对；无标记也逐文件,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/inbox/components/inbox-page.tsx,M,M,0,2,0,前端 views,取并集,presenter 路由 + 上游列表常量取并集,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/issues/components/issue-detail.test.tsx,M,M,0,0,0,前端 views,取并集,前端定制清单核对；无标记也逐文件,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/issues/components/issue-detail.tsx,M,M,0,1,0,前端 views,取并集,presenter 六项 + 上游 chronological/CommentRun 取并集,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/locales/en/chat.json,M,M,0,0,0,前端 locales,取并集,四语言同步；新增键取并集,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/locales/en/inbox.json,M,M,0,0,0,前端 locales,取并集,四语言同步；新增键取并集,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/locales/en/issues.json,M,M,0,0,0,前端 locales,取并集,四语言同步；新增键取并集,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/locales/en/modals.json,M,M,0,0,0,前端 locales,取并集,四语言同步；新增键取并集,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/locales/en/search.json,M,M,0,0,0,前端 locales,取并集,四语言同步；新增键取并集,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/locales/fr/chat.json,M,M,0,0,0,前端 locales,取并集,四语言同步；新增键取并集,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/locales/fr/inbox.json,M,M,0,0,0,前端 locales,取并集,四语言同步；新增键取并集,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/locales/fr/issues.json,M,M,0,0,0,前端 locales,取并集,四语言同步；新增键取并集,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/locales/fr/modals.json,M,M,0,0,0,前端 locales,取并集,四语言同步；新增键取并集,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/locales/fr/search.json,M,M,0,0,0,前端 locales,取并集,四语言同步；新增键取并集,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/locales/ja/chat.json,M,M,0,0,0,前端 locales,取并集,四语言同步；新增键取并集,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/locales/ja/inbox.json,M,M,0,0,0,前端 locales,取并集,四语言同步；新增键取并集,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/locales/ja/issues.json,M,M,0,0,0,前端 locales,取并集,四语言同步；新增键取并集,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/locales/ja/modals.json,M,M,0,0,0,前端 locales,取并集,四语言同步；新增键取并集,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/locales/ja/search.json,M,M,0,0,0,前端 locales,取并集,四语言同步；新增键取并集,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/locales/ko/chat.json,M,M,0,0,0,前端 locales,取并集,四语言同步；新增键取并集,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/locales/ko/inbox.json,M,M,0,0,0,前端 locales,取并集,四语言同步；新增键取并集,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/locales/ko/issues.json,M,M,0,0,0,前端 locales,取并集,四语言同步；新增键取并集,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/locales/ko/modals.json,M,M,0,0,0,前端 locales,取并集,四语言同步；新增键取并集,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/locales/ko/search.json,M,M,0,0,0,前端 locales,取并集,四语言同步；新增键取并集,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/locales/zh-Hans/chat.json,M,M,0,0,0,前端 locales,取并集,四语言同步；新增键取并集,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/locales/zh-Hans/inbox.json,M,M,0,0,0,前端 locales,取并集,四语言同步；新增键取并集,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/locales/zh-Hans/issues.json,M,M,0,0,0,前端 locales,取并集,四语言同步；新增键取并集,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/locales/zh-Hans/modals.json,M,M,0,0,0,前端 locales,取并集,四语言同步；新增键取并集,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/locales/zh-Hans/search.json,M,M,0,0,0,前端 locales,取并集,四语言同步；新增键取并集,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/package.json,M,M,0,0,0,前端 views,取并集,前端定制清单核对；无标记也逐文件,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/projects/components/project-detail.test.tsx,M,M,0,0,0,前端 views,取并集,前端定制清单核对；无标记也逐文件,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/projects/components/project-detail.tsx,M,M,0,1,0,前端 views,取并集,前端定制清单核对；无标记也逐文件,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/search/search-command.test.tsx,M,M,1,2,0,前端 views,取并集,前端定制清单核对；无标记也逐文件,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/search/search-command.tsx,M,M,4,4,0,前端 views,取并集,上游本地索引 + fork spec 搜索取并集,pnpm typecheck；对应包 vitest；locales 跑 parity
+packages/views/skills/components/skill-detail-page.tsx,M,M,1,1,0,前端 views,取并集,前端定制清单核对；无标记也逐文件,pnpm typecheck；对应包 vitest；locales 跑 parity
+scripts/ci-scope.test.mjs,M,M,1,0,0,CI/脚本,取并集,fork CI scope 测试贴回,pnpm typecheck；相关脚本测试
+server/cmd/migrate/main.go,M,M,10,11,0,迁移,取并集,cleanup map 取并集；fork 迁移 +20 → 585–641,空库 migrate up，末位 641
+server/cmd/multica/main.go,M,M,0,0,0,server 其他,按内容核对,无标记；按内容核对，若发现未登记改动先补台账,人工对照上游新结构 + grep；对应包定向 go test
+server/cmd/server/main.go,M,M,4,6,0,M1 路由/main,贴回挂钩,按 CUSTOM 对应 #N 行贴回；含已上游化项要退役,go build/vet；对应包定向 go test；合并后 hooks 四数对账
+server/cmd/server/router.go,M,M,23,25,0,M1 路由/main,重新摘除,#1 重新摘除 Stripe/cloud-billing；其余 AIFIRST 挂钩贴回,curl -i .../api/webhooks/stripe 与 /api/cloud-billing 均须 404
+server/internal/daemon/client.go,M,M,0,0,0,M10 daemon,按内容核对,无标记；按内容核对，若发现未登记改动先补台账,人工对照上游新结构 + grep；对应包定向 go test
+server/internal/daemon/config.go,M,M,1,0,0,M10 daemon,贴回挂钩,按 CUSTOM 对应 #N 行贴回；含已上游化项要退役,go build/vet；对应包定向 go test；合并后 hooks 四数对账
+server/internal/daemon/config_test.go,M,M,0,0,0,M10 daemon,按内容核对,无标记；按内容核对，若发现未登记改动先补台账,人工对照上游新结构 + grep；对应包定向 go test
+server/internal/daemon/daemon.go,M,M,15,17,0,M10 daemon,贴回挂钩,含 #58 terminal report 已上游化，勿贴回；其余挂钩贴回,go build/vet；对应包定向 go test；合并后 hooks 四数对账
+server/internal/daemon/daemon_test.go,M,M,0,1,0,M10 daemon,贴回挂钩,按 CUSTOM 对应 #N 行贴回；含已上游化项要退役,go build/vet；对应包定向 go test；合并后 hooks 四数对账
+server/internal/daemon/execenv/context.go,M,M,2,0,0,M10 daemon,贴回挂钩,按 CUSTOM 对应 #N 行贴回；含已上游化项要退役,go build/vet；对应包定向 go test；合并后 hooks 四数对账
+server/internal/daemon/execenv/execenv_test.go,M,M,0,0,0,M10 daemon,按内容核对,无标记；按内容核对，若发现未登记改动先补台账,人工对照上游新结构 + grep；对应包定向 go test
+server/internal/daemon/execenv/runtime_config_sections.go,M,M,1,3,0,M10 daemon,贴回挂钩,按 CUSTOM 对应 #N 行贴回；含已上游化项要退役,go build/vet；对应包定向 go test；合并后 hooks 四数对账
+server/internal/daemon/execenv/runtime_config_test.go,M,M,0,0,0,M10 daemon,按内容核对,无标记；按内容核对，若发现未登记改动先补台账,人工对照上游新结构 + grep；对应包定向 go test
+server/internal/daemon/execenv/sidecar_manifest.go,M,M,1,0,0,M10 daemon,贴回挂钩,按 CUSTOM 对应 #N 行贴回；含已上游化项要退役,go build/vet；对应包定向 go test；合并后 hooks 四数对账
+server/internal/daemon/health.go,M,M,1,3,0,M10 daemon,贴回挂钩,按 CUSTOM 对应 #N 行贴回；含已上游化项要退役,go build/vet；对应包定向 go test；合并后 hooks 四数对账
+server/internal/daemon/health_test.go,M,M,2,3,0,M10 daemon,贴回挂钩,按 CUSTOM 对应 #N 行贴回；含已上游化项要退役,go build/vet；对应包定向 go test；合并后 hooks 四数对账
+server/internal/daemon/prompt.go,M,M,1,2,0,M10 daemon,贴回挂钩,按 CUSTOM 对应 #N 行贴回；含已上游化项要退役,go build/vet；对应包定向 go test；合并后 hooks 四数对账
+server/internal/daemon/types.go,M,M,2,3,0,M10 daemon,贴回挂钩,按 CUSTOM 对应 #N 行贴回；含已上游化项要退役,go build/vet；对应包定向 go test；合并后 hooks 四数对账
+server/internal/daemonws/hub.go,M,M,0,0,0,M10 daemon,按内容核对,无标记；按内容核对，若发现未登记改动先补台账,人工对照上游新结构 + grep；对应包定向 go test
+server/internal/events/bus.go,M,M,0,2,0,realtime/events,贴回挂钩,按 CUSTOM 对应 #N 行贴回；含已上游化项要退役,go build/vet；对应包定向 go test；合并后 hooks 四数对账
+server/internal/handler/agent.go,M,M,2,5,0,handler,贴回挂钩,#19 originator 语义 + fork OriginatorUserID 取并集,go build/vet；对应包定向 go test；合并后 hooks 四数对账
+server/internal/handler/chat.go,M,M,0,11,0,handler,贴回挂钩,按 CUSTOM 对应 #N 行贴回；含已上游化项要退役,go build/vet；对应包定向 go test；合并后 hooks 四数对账
+server/internal/handler/chat_title.go,M,M,0,0,0,handler,按内容核对,无标记；按内容核对，若发现未登记改动先补台账,人工对照上游新结构 + grep；对应包定向 go test
+server/internal/handler/comment.go,M,M,0,4,0,handler,贴回挂钩,按 CUSTOM 对应 #N 行贴回；含已上游化项要退役,go build/vet；对应包定向 go test；合并后 hooks 四数对账
+server/internal/handler/daemon.go,M,M,10,16,2,handler,贴回挂钩,按 CUSTOM 对应 #N 行贴回；含已上游化项要退役,go build/vet；对应包定向 go test；合并后 hooks 四数对账
+server/internal/handler/file.go,M,M,0,3,0,handler,贴回挂钩,按 CUSTOM 对应 #N 行贴回；含已上游化项要退役,go build/vet；对应包定向 go test；合并后 hooks 四数对账
+server/internal/handler/handler.go,M,M,0,5,0,handler,贴回挂钩,按 CUSTOM 对应 #N 行贴回；含已上游化项要退役,go build/vet；对应包定向 go test；合并后 hooks 四数对账
+server/internal/handler/issue.go,M,M,0,6,0,handler,贴回挂钩,按 CUSTOM 对应 #N 行贴回；含已上游化项要退役,go build/vet；对应包定向 go test；合并后 hooks 四数对账
+server/internal/handler/mika_onboarding.go,M,M,0,0,0,handler,按内容核对,无标记；按内容核对，若发现未登记改动先补台账,人工对照上游新结构 + grep；对应包定向 go test
+server/internal/handler/project.go,M,M,0,12,0,handler,贴回挂钩,按 CUSTOM 对应 #N 行贴回；含已上游化项要退役,go build/vet；对应包定向 go test；合并后 hooks 四数对账
+server/internal/handler/runtime_local_skills.go,M,M,0,0,0,handler,按内容核对,无标记；按内容核对，若发现未登记改动先补台账,人工对照上游新结构 + grep；对应包定向 go test
+server/internal/handler/runtime_models.go,M,M,0,1,0,handler,贴回挂钩,按 CUSTOM 对应 #N 行贴回；含已上游化项要退役,go build/vet；对应包定向 go test；合并后 hooks 四数对账
+server/internal/handler/skill.go,M,M,1,1,0,handler,贴回挂钩,按 CUSTOM 对应 #N 行贴回；含已上游化项要退役,go build/vet；对应包定向 go test；合并后 hooks 四数对账
+server/internal/handler/workspace_delete_manifest_test.go,M,M,0,0,0,handler,按内容核对,口径盲区 #87；无标记，按内容核对,人工对照上游新结构 + grep；对应包定向 go test
+server/internal/integrations/ghsnapshot/client.go,M,M,0,1,0,integrations,贴回挂钩,按 CUSTOM 对应 #N 行贴回；含已上游化项要退役,go build/vet；对应包定向 go test；合并后 hooks 四数对账
+server/internal/integrations/lark/client.go,M,M,1,1,0,integrations,贴回挂钩,按 CUSTOM 对应 #N 行贴回；含已上游化项要退役,go build/vet；对应包定向 go test；合并后 hooks 四数对账
+server/internal/integrations/lark/http_client.go,M,M,2,2,0,integrations,贴回挂钩,fork 动态 op 保留；上游 APIError 结构适配,go build/vet；对应包定向 go test；合并后 hooks 四数对账
+server/internal/integrations/lark/outbound_test.go,M,M,1,1,0,integrations,贴回挂钩,按 CUSTOM 对应 #N 行贴回；含已上游化项要退役,go build/vet；对应包定向 go test；合并后 hooks 四数对账
+server/internal/integrations/lark/typing_indicator_test.go,M,M,1,1,0,integrations,贴回挂钩,按 CUSTOM 对应 #N 行贴回；含已上游化项要退役,go build/vet；对应包定向 go test；合并后 hooks 四数对账
+server/internal/realtime/hub.go,M,M,0,4,0,realtime/events,贴回挂钩,按 CUSTOM 对应 #N 行贴回；含已上游化项要退役,go build/vet；对应包定向 go test；合并后 hooks 四数对账
+server/internal/service/autopilot.go,M,M,2,1,0,service,贴回挂钩,按 CUSTOM 对应 #N 行贴回；含已上游化项要退役,go build/vet；对应包定向 go test；合并后 hooks 四数对账
+server/internal/service/issue.go,M,M,0,6,0,service,贴回挂钩,createInTx 与上游 properties 校验取并集,go build/vet；对应包定向 go test；合并后 hooks 四数对账
+server/internal/service/task.go,M,M,9,29,4,service,贴回挂钩,按 CUSTOM 对应 #N 行贴回；含已上游化项要退役,go build/vet；对应包定向 go test；合并后 hooks 四数对账
+server/internal/service/task_agent_skills_test.go,M,M,0,0,0,service,按内容核对,无标记；按内容核对，若发现未登记改动先补台账,人工对照上游新结构 + grep；对应包定向 go test
+server/pkg/agent/agent.go,M,M,2,0,0,M1 Agent,贴回挂钩,按 CUSTOM 对应 #N 行贴回；含已上游化项要退役,go build/vet；对应包定向 go test；合并后 hooks 四数对账
+server/pkg/agent/claude.go,M,M,1,0,0,M1 Agent,贴回挂钩,按 CUSTOM 对应 #N 行贴回；含已上游化项要退役,go build/vet；对应包定向 go test；合并后 hooks 四数对账
+server/pkg/agent/models.go,M,M,1,0,0,M1 Agent,贴回挂钩,按 CUSTOM 对应 #N 行贴回；含已上游化项要退役,go build/vet；对应包定向 go test；合并后 hooks 四数对账
+server/pkg/agent/pi.go,M,M,4,0,0,M1 Agent,贴回挂钩,#102 自持管道三件套必须保留；上游 closePiReadPipe 可用于读端中断,go build/vet；对应包定向 go test；合并后 hooks 四数对账
+server/pkg/agent/pi_test.go,M,M,0,0,0,M1 Agent,按内容核对,无标记；按内容核对，若发现未登记改动先补台账,人工对照上游新结构 + grep；对应包定向 go test
+server/pkg/agent/thinking.go,M,M,1,1,0,M1 Agent,贴回挂钩,按 CUSTOM 对应 #N 行贴回；含已上游化项要退役,go build/vet；对应包定向 go test；合并后 hooks 四数对账
+server/pkg/db/generated/agent.sql.go,M,M,13,20,0,DB 生成物,生成物重跑,丢弃冲突块，重跑 make sqlc；不手改,make sqlc；git diff -- server/pkg/db/generated 无意外差异
+server/pkg/db/generated/autopilot.sql.go,M,M,1,1,0,DB 生成物,生成物重跑,丢弃冲突块，重跑 make sqlc；不手改,make sqlc；git diff -- server/pkg/db/generated 无意外差异
+server/pkg/db/generated/chat.sql.go,M,M,1,12,0,DB 生成物,生成物重跑,丢弃冲突块，重跑 make sqlc；不手改,make sqlc；git diff -- server/pkg/db/generated 无意外差异
+server/pkg/db/generated/models.go,M,M,0,0,0,DB 生成物,生成物重跑,丢弃冲突块，重跑 make sqlc；不手改,make sqlc；git diff -- server/pkg/db/generated 无意外差异
+server/pkg/db/generated/project.sql.go,M,M,0,2,0,DB 生成物,生成物重跑,丢弃冲突块，重跑 make sqlc；不手改,make sqlc；git diff -- server/pkg/db/generated 无意外差异
+server/pkg/db/generated/runtime.sql.go,M,M,0,0,0,DB 生成物,生成物重跑,丢弃冲突块，重跑 make sqlc；不手改,make sqlc；git diff -- server/pkg/db/generated 无意外差异
+server/pkg/db/generated/search_index.sql.go,M,M,0,0,0,DB 生成物,生成物重跑,丢弃冲突块，重跑 make sqlc；不手改,make sqlc；git diff -- server/pkg/db/generated 无意外差异
+server/pkg/db/generated/supplement.sql.go,M,M,0,0,0,DB 生成物,生成物重跑,丢弃冲突块，重跑 make sqlc；不手改,make sqlc；git diff -- server/pkg/db/generated 无意外差异
+server/pkg/db/generated/wakeup.sql.go,M,M,0,0,0,DB 生成物,生成物重跑,丢弃冲突块，重跑 make sqlc；不手改,make sqlc；git diff -- server/pkg/db/generated 无意外差异
+server/pkg/db/queries/agent.sql,M,M,13,20,0,DB 真源,取并集,SQL 真源取并集；重跑 make sqlc,make sqlc
+server/pkg/db/queries/autopilot.sql,M,M,1,1,0,DB 真源,取并集,SQL 真源取并集；重跑 make sqlc,make sqlc
+server/pkg/db/queries/project.sql,M,M,0,2,0,DB 真源,取并集,SQL 真源取并集；重跑 make sqlc,make sqlc
+server/pkg/protocol/events.go,M,M,3,4,0,protocol,贴回挂钩,按 CUSTOM 对应 #N 行贴回；含已上游化项要退役,go build/vet；对应包定向 go test；合并后 hooks 四数对账
+server/pkg/protocol/messages.go,M,M,0,1,1,protocol,贴回挂钩,按 CUSTOM 对应 #N 行贴回；含已上游化项要退役,go build/vet；对应包定向 go test；合并后 hooks 四数对账
