@@ -1,0 +1,52 @@
+# upstream window 2895edb3c65be1e873deda3aafe54b450e4b0171..2568d32ac8
+fork master HEAD: 709c16b4a9  VERSION: 0.60.176.0
+upstream/master: 2568d32ac8  VERSION: 0.60.461.0
+commits: 5333
+files changed: 4804
+
+## diff --stat tail
+ vendor/postgres/types/index.d.ts                   |   44 +-
+ vendor/update-postgres.sh                          |   21 +-
+ 4804 files changed, 454258 insertions(+), 32351 deletions(-)
+
+## upstream commits mentioning breaking/refactor (sample by release stamps)
+2568d32ac8 Merge pull request #7592 from garrytan/capy/gbra135-wave-15
+b4e3c8fbbe v0.60.461.0 chore(release): restamp onto master v0.60.460.0
+773a83bfd2 Merge commit '35def6bff2b381ab077ea3a8aed36f8f47ebfb43' into capy/gbra135-wave-15
+35def6bff2 Merge pull request #7504 from garrytan/capy/gbra190-g4-fact-fences
+e672caab15 v0.60.460.0 chore(release): restamp onto master v0.60.459.0
+42e814eba1 docs(changelog): 0.60.460.0 CI stability wave 15
+e5e5c5ceee Merge commit '08b9781b' into capy/gbra135-wave-15
+70b81842c3 test(write-gate): fence-fact-append.ts is exempt; remember gates in memory-prepare before calling it (G4b)
+3132deb2b0 Merge remote-tracking branch 'origin/master' into capy/gbra190-g4-fact-fences
+da4ba275de test(goldens): export surface gains the fence_row_changed error code (G4b)
+08b9781ba7 Merge pull request #7582 from garrytan/capy/gbra191-g7b2-hosted
+c067156916 v0.60.460.0 chore(release): restamp onto master v0.60.459.0
+76ad4d6085 docs(changelog): 0.60.460.0 entry for G4 + G4b
+97c8a8ed66 Merge commit 'f8bc749ec3e251206f5bf41dc62fd64401c43f5c' into capy/gbra190-g4-fact-fences
+0bdee6f368 Merge remote-tracking branch 'origin/capy/gbra190-g4b-fence-append' into capy/gbra190-g4-fact-fences
+f8bc749ec3 fix(g7b-2): hook text names only real commands; regenerate the export type golden for the two new error codes
+c12a41a331 v0.60.459.0 chore(release): restamp onto master v0.60.458.0
+b9fc915e7f docs(changelog): G7b-2 entry and behavior-change row
+69ae4b0d1b Merge commit '8648552faf6d182a324930f49f78bc5de56a842b' into capy/gbra191-g7b2-hosted
+8648552faf Merge pull request #7597 from garrytan/capy/git-canonical-g8a
+f6edd5e661 test(#6143): the replay's sessions check for deadlock at 5 s and the reader's at 60 s, so a reader delayed past the default 1 s no longer becomes the victim (#7597 arms 4/12). Forced probe, reader delayed 1.5 s: 3 of 3 red before (reader 40P01), 3 of 3 green after; 4 s delay green
+5f45bcacb8 test(g8a): canonical writer inventory row for git-conversion.ts; export golden gains the two conversion error codes
+7c102f860e Merge remote-tracking branch 'origin/master' into capy/gbra191-g7b2-hosted
+4f8349442f Merge remote-tracking branch 'origin/master' into g8a-ship
+3b927bd7da Merge pull request #7521 from garrytan/capy/gbra191-g7b-remote-writes
+11f75c4b89 v0.60.458.0 chore(release): restamp onto master v0.60.457.0
+e7777d618c docs(g8a): CHANGELOG entry
+56eadbc582 Merge commit '01769b42c81db33e1f066796057965db5ae6d6f3' into g8a-gate-ahead
+3154a38355 G8a: unknown-side drift with a differing row is a discard; reclassify is one transaction
+01769b42c8 v0.60.457.0 chore(release): restamp onto master v0.60.456.0
+ff2799da46 G8a git-canonical: gbrain sources canonical <id> --to git|mixed
+43866c94f2 docs(changelog): G7b-1 entry and behavior-change row
+32e22ce1d0 Merge commit 'cd9da1ce170ecae739fa28855e9133b6c60b78c2' into capy/gbra191-g7b-remote-writes
+cd9da1ce17 Merge pull request #7508 from garrytan/gbra187-heartbeat-render
+d75e96be19 test: refresh the engine-free CLI golden for the bootstrap render --host help line
+a8798cd091 v0.60.456.0 chore(release): restamp onto master v0.60.455.0
+07e7b9ce92 Merge commit 'ff6c759babdb631b9750e3d92a4ad8753deec3fa' into gbra187-heartbeat-render
+ff6c759bab Merge pull request #7589 from garrytan/gbra133-safe-directory
+e56617b01b test(spawn-seam): pin the hardened call's cached safe.directory read (#7584)
+dfecadf641 test(g6): enable the uncovered world concept republish test now that #7586 records the withheld path (GBRA-60)

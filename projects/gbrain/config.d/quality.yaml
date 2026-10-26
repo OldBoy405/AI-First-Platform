@@ -1,0 +1,52 @@
+# STDD 质量检查配置 — AI First tools 包（Node ESM，无 package.json）
+#
+# 验证范围：crctl 31 个测试文件 + output-guard 3 个 + registry 1 个，不因超时排除。
+# 先前的 15s/200s 限时结果只能证明未在预算内结束，不能判定全部挂死或既有缺陷。
+# 用户已确认将诊断与根因修复纳入 AIFI-45；Gate 3 须报告实际退出码、耗时、
+# 文件/测试计数及 skipped，未完成的运行不得报告通过。新增回归也须包含在发现范围内。
+
+verify:
+  max_iterations: 5
+  auto_fix: true
+
+review:
+  enabled: true
+  max_rounds: 3
+  agents:
+    - name: code
+      scope: "代码质量：Bug风险、死代码、一致性、错误处理、安全"
+    - name: test_config
+      scope: "测试/配置：测试覆盖、Fixture质量、配置完整性、测试隔离"
+    - name: docs_skills
+      scope: "文档/Skills：版本一致性、引用正确性、模板完整性、Skill正确性"
+  severity_thresholds:
+    critical: 0
+    high: 3
+    medium: 10
+
+test:
+  framework: node-test
+  unit_dir: skills/shared/crctl/scripts/test
+  integration_dir: pipeline-templates
+  coverage_target: 0
+
+quality:
+  test: 'node --test "skills/shared/crctl/scripts/test/*.test.mjs" "output-guard/test/*.test.mjs" "pipeline-templates/*.test.mjs"'
+  lint: "node skills/shared/crctl/scripts/lint-prompts.mjs"
+  # tools 没有类型检查器；typecheck 位放仓自身的契约校验（agent/skill 矩阵）
+  typecheck: "node skills/shared/crctl/scripts/check-agents-contract.mjs && node skills/shared/crctl/scripts/check-skill-matrix.mjs"
+  e2e:
+    enabled: false
+    runner: playwright
+    command: null
+    scope: critical_only
+    critical_paths: []
+  coverage:
+    enabled: false
+    tool: node-test
+    fail_under: 0
+    scope: changed_files_only
+
+tc_id:
+  pattern: "TC-{CAPABILITY}-{NNN}"
+  example: "TC-CRCTL-001"
