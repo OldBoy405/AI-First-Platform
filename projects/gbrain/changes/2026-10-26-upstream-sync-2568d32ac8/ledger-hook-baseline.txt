@@ -1,0 +1,34 @@
+# §0 挂钩基线现场四数（HEAD 709c16b4a9 @ 2026-10-26T09:32:22+08:00）
+
+## hook1 CUSTOM ADMIN ROUTES
+src/commands/serve-http.ts:836:  // === CUSTOM ADMIN ROUTES (BEGIN) — cookie-auth MCP op proxy, see serve-http-admin-op.ts ===
+src/commands/serve-http.ts:838:  // === CUSTOM ADMIN ROUTES (END) ===
+hits=2  files=1
+
+## hook2 CUSTOM (Qoder) fences
+7:<!-- === CUSTOM (Qoder) BEGIN — fork-only developer orientation; see CUSTOM.md 台账 === -->
+15:<!-- === CUSTOM (Qoder) END === -->
+287:<!-- === CUSTOM (Qoder) BEGIN — duplicated from ./CLAUDE.md so Qoder gets it; see CUSTOM.md 台账 === -->
+439:<!-- === CUSTOM (Qoder) END === -->
+hits=4
+
+## fork-only backend files
+9
+
+## fork ops in 3 generated places
+list_inbox       manifest=1 loaders=1 load=1
+get_inbox_item   manifest=1 loaders=1 load=1
+find_conflicts   manifest=2 loaders=1 load=1
+compile_truth    manifest=1 loaders=1 load=1
+graph_overview   manifest=1 loaders=1 load=1
+
+## git tracked file count
+11250
+
+## working tree status
+?? .gbrain/
+?? .qoder/better-harness/
+?? .stdd/
+
+## bun version
+1.3.14
