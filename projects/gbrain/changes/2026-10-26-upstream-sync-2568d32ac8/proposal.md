@@ -2,7 +2,7 @@
 
 > 模板：Gate 1 v2（2026-10-20 定稿，见 multica 归档 `2026-10-20-upstream-sync-gate1-v2`）
 > 事实源：`gbrain/CUSTOM.md`《合并守则》。本提案不复制台账，只登记本次窗口的范围、基线与准入条件。
-> 状态：**§0 判定 BLOCK，未进 Gate 1**。§1–§8 已按现场实测填好备用，待台账修复提交后重跑 §0 转 PASS 才正式提请确认。
+> 状态：**§0 判定 PASS**（修复提交 `1b8e921983`）。Gate 1 待你确认。
 
 ## 0. 台账新鲜度检查（硬前置）
 
@@ -10,19 +10,18 @@
 
 | 维度 | 现场证据 | 判定 |
 |---|---|---|
-| 条目新鲜 | `git diff --name-only 2895edb3c6..HEAD` = 509 文件；fork-only 代码文件 33 个逐个 `grep -F <basename> CUSTOM.md`。**3 个完全未登记**（`src/core/eval-shared/json-repair.ts`、`tsconfig.json`、`test/doctor-categories.test.ts`）+ **7 个测试文件只能靠推断归属**（《回归》行写「相关 tests」不写文件名） | **STALE-ENTRIES** |
+| 条目新鲜 | `git diff --name-only 2895edb3c6..HEAD` = 509 文件；fork-only 代码文件 33 个逐个 `grep -F <basename> CUSTOM.md`。首轮 3 个未登记（`json-repair.ts`、`tsconfig.json`、`test/doctor-categories.test.ts`）+ 7 个测试文件只能靠推断归属；**修复提交 `1b8e921983` 后 33/33 全部可核对**（2 个 `docs/operations/*.zh.md` 由 glob 行覆盖） | FRESH（修复后） |
 | 基线新鲜 | 挂钩两类现场值与台账口径一致：`CUSTOM ADMIN ROUTES` 2 hits / 1 file（`serve-http.ts:836,838`）、`CUSTOM (Qoder)` 4 hits（`AGENTS.md:7,15,287,439`）；fork-only 后端文件 9 个齐全；5 个二开 op 在 manifest/loaders/load 三处均登记。见 `ledger-hook-baseline.txt` | FRESH |
-| 状态新鲜 | 《基本信息》「当前对齐上游 v0.60.176.0」＝ git 事实（merge-base `2895edb3c6`）。**3 处内容失真**：C1《已上游化》称 `embedding-dim-check.ts` 与上游一致，实际 `test/embedding-dim-check.test.ts` 有 +51 行 fork 用例；C2 迁移行括号「上游本次占了 160」与 239 轮事实（上游占 160..238）不符；C3《迁移号顺延》「当前 239」已被上游 `v239-extract-rollup-halt-reasons.ts` 占用 | STALE-STATUS |
+| 状态新鲜 | 首轮 3 处失真已修：C1 `embedding-dim-check` 行补「测试侧仍有 fork 用例」；C2 迁移行括号改为「v0.60.176 轮上游占至 238」；C3 迁移守则补「上游已占 239..274，本轮顺延 275」。另登记 `.stdd/` 勿提交 | FRESH（修复后） |
 | 格式可解析 | 四张明细表列语义一致（能力/位置/说明），基线表 3 列可按行读取；无列错位 | FRESH |
 
 ### 0.2 结论
 
-**BLOCK**（命中 STALE-ENTRIES）。按守则「先补台账，再合并」，修复项与提交纪律见 `ledger-repair-plan.md`（A 类 3 项补登、B 类 7 项改精确文件清单、C 类 3 项事实修正）。
-修复须独立提交在同步分支，不动代码、不回填历史《阶段记录》；重跑 §0 得 PASS 才进 Gate 1。
+首轮 **BLOCK**（STALE-ENTRIES + STALE-STATUS）→ 按守则「先补台账、再合并」完成修复提交 **`1b8e921983`**（只改 `CUSTOM.md`，不动代码、不回填历史《阶段记录》）→ 复跑四维全部 FRESH。修复明细见 `ledger-repair-plan.md`。
 
 ### 0.3 Gate 1 准入结论
 
-`BLOCK` → 待修复提交后复跑。复核人／时间／结论：待填。
+`PASS`（复核：2026-10-26，复跑命令与首轮相同；修复提交 `1b8e921983`，分支 `sync/upstream-2026-10-26-2568d32ac8`）。
 
 ## 1. 窗口与策略
 
@@ -48,14 +47,15 @@
 
 ## 2. 前置检查
 
-- [ ] **§0 转 PASS**（前置：台账修复独立提交）
-- [ ] **本机 Bun ≥ 1.4.0** —— 现场 `bun --version` = **1.3.14**，低于 `src/core/runtime-version.ts` 的 `MINIMUM_BUN_VERSION`。未升级则合并后 `check:conversation-parser`、`check:resolver`、`skill-refs` 的 cli-refs lane、`test/cli-goldens` 必红，且并行 `bun run test` 拿不到信号。`bun upgrade` 是全局工具链变更，**须你决定**，我不代跑
+- [x] **§0 转 PASS**（修复提交 `1b8e921983`，只改 CUSTOM.md）
+- [x] **本机 Bun ≥ 1.4.0** —— 已 `bun upgrade`：1.3.14 → **1.4.4**（2026-10-26，用户授权）
 - [x] 非浅克隆
 - [x] `git fetch upstream --tags` 完成，upstream/master = `2568d32ac8`
-- [ ] `git status` 干净 —— 当前 3 个未跟踪项：`.gbrain/`、`.qoder/better-harness/`（台账已登记勿提交）、`.stdd/`（本次新增，归属见 `ledger-repair-plan.md` §6，需你裁定 `.gitignore` 或台账登记）
-- [ ] 同步分支 + `pre-sync/2026-10-26` 标签（Gate 1 后创建）
+- [x] 上轮未推送结果已推 `origin/master`（`f9e2a9966c` → **`709c16b4a9`**，0/0 同步）。副作用实测：push 触碰 `VERSION` 触发了 fork 的 `Release` / `Test` / `E2E Tests` / `Actionlint`；其中 `Release` 的 `version` job **未启动**——GitHub Actions 计费受限（"recent account payments have failed or your spending limit needs to be increased"），未产生 tag 与 release，`Test`/`E2E` 同样卡在排队。**结论：fork 无推送级 CI 信号（既有状态），本轮验证只能靠本地**
+- [x] 同步分支 `sync/upstream-2026-10-26-2568d32ac8` 已建，基线标签 `pre-sync/2026-10-26` = `709c16b4a9`
+- [ ] `git status` 仅剩 3 个已登记勿提交的未跟踪项（`.gbrain/`、`.qoder/better-harness/`、`.stdd/`），无未提交改动
 - [ ] 停写窗口确认：无其他 agent/PR 正向 `master` 合入
-- [ ] 本次不 push、不部署、不改生产库；本机 brain 的 `gbrain apply-migrations`（239→275 含上游 240..274 DDL）只提命令，不代跑
+- [ ] 本轮合并结果不 push、不部署、不改生产库（Gate 3 后再议）；本机 brain 的 `gbrain apply-migrations`（239→275 含上游 240..274 DDL）只提命令，不代跑
 
 ## 3. 基线快照（现场重取，见 `ledger-hook-baseline.txt`）
 
@@ -80,7 +80,7 @@
 | 顺延方案 | **239 → 275**（守则：永远取上游最新号 +1）。改号需同时动四处：文件名 `v275-inbox-workflow-frontmatter.ts`、导出名 `v275`、`version` 字段、`registry.generated.ts`/`latest.generated.ts` 注册行，然后 `bun run build:schema-migrations` |
 | 探针 | `GBRAIN_MIGRATION_BASE_REF=upstream/master bun run check:schema-migration-order`（默认 base ref 是 `origin/master`＝合并前旧树，未推送期间必假阳性） |
 
-### 3.3 测试基线（合并前现场，Gate 1 确认前我只取只读信号；Bun 1.3.14 限制见 §2）
+### 3.3 测试基线（合并前现场；Bun 已升到 1.4.4，环境门槛解除）
 
 | 检查 | 合并前结果 | 备注 |
 |---|---|---|
@@ -130,7 +130,7 @@
 
 | 项 | 状态 |
 |---|---|
-| 未推送的大合并 | 上轮 2026-10-12 合并结果**只在本地**：`master` = `709c16b4a9`，`origin/master` = `f9e2a9966c`，本地领先 **4490 提交**（`git rev-list --count origin/master..master`）。本轮开始前需你决定是否先把上轮结果推 origin——不推则 §3.2 探针与 `check:function-size` 的两条 base-ref 假阳性会叠加两轮，且台账《阶段记录》2026-10-12「状态」行仍为未推送 |
+| 未推送的大合并 | 上轮的 4490 提交已于 2026-10-26 推送到 `origin/master`（`709c16b4a9`），两条 base-ref 假阳性（`check:function-size`、`check:schema-migration-order`）随之自愈；本轮合并结果仍只在同步分支，Gate 3 前不推 |
 | 活跃 STDD change | 本 change（gbrain 首个，`projects/gbrain/` 骨架 2026-10-26 新建） |
 | 本机 brain | 未迁移到 239（台账记录：上轮留给你执行 `gbrain apply-migrations --yes`）。本轮顺延到 275，命令同样只提不代跑 |
 | 台账待办 | 《待办》7 项均为功能项，与本次合并无阻塞关系 |
@@ -153,14 +153,14 @@
 
 ## 8. Gate 1 确认项（待 §0 转 PASS 后正式提请）
 
-请你就以下 6 项逐条给结论：
+请你就以下各项给结论（③④ 已按你的授权执行完毕，只需确认结果）：
 
-0. 台账修复方案 `ledger-repair-plan.md` 是否批准（A 类 3 项补登、B 类 7 项改精确清单、C 类 3 项事实修正；附带项 `.stdd/` 归属选 A 或 B）
-1. 窗口与冻结点：`2895edb3c6..2568d32ac8`（5333 提交 / 4804 文件），merge 策略，同步分支名
-2. 迁移顺延：239 → **275**
-3. 执行模式 thorough ＋ 预测冲突面 19/28 的分类口径
-4. **Bun 1.3.14 是否升级**（不升级则接受合并后验证面残缺）
-5. §5 第一项：上轮未推送的合并结果是否先推 `origin`
+0. §0 台账修复：已完成，提交 `1b8e921983`（A 类 3 项补登、B 类 7 项改精确清单、C 类 3 项事实修正、`.stdd/` 登记为勿提交）
+1. 窗口与冻结点：`2895edb3c6..2568d32ac8`（5333 提交 / 4804 文件），merge 策略，同步分支 `sync/upstream-2026-10-26-2568d32ac8`
+2. 迁移顺延：**239 → 275**（文件名/导出名/version/registry 四处同改）
+3. 执行模式 thorough ＋ 预测冲突面 19（真实冲突）/ 28（干净合并但需核挂钩）的分类口径
+4. ~~Bun 升级~~ 已完成：1.3.14 → **1.4.4**
+5. ~~上轮结果推 origin~~ 已完成：`origin/master` = `709c16b4a9`（注意已触发 fork 的 release workflow）
 6. 是否授权进入 Phase 2 编 Gate 2 裁决矩阵
 
 | 项 | 值 |
