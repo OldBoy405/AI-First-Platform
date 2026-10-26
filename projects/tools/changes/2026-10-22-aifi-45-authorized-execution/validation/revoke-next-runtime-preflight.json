@@ -1,0 +1,36 @@
+{
+  "at": "2026-10-24T13:59:37.775Z",
+  "mode": "read-only engine metadata; no container/image/VM/permission/credential change; stdout filtered in sandbox, no secrets stored",
+  "observations": [
+    {
+      "engine": "podman",
+      "argv": [
+        "podman",
+        "info",
+        "--format",
+        "json"
+      ],
+      "exit": 0,
+      "wall_ms": 323,
+      "os": "linux",
+      "arch": "amd64",
+      "rootless": true,
+      "cgroup_version": "v2",
+      "cgroup_manager": "cgroupfs",
+      "cgroup_controllers": [],
+      "resource_controllers_available": false
+    },
+    {
+      "engine": "docker",
+      "argv": [
+        "docker",
+        "info",
+        "--format",
+        "{{json .}}"
+      ],
+      "exit": 0,
+      "wall_ms": 301,
+      "security_options": []
+    }
+  ]
+}

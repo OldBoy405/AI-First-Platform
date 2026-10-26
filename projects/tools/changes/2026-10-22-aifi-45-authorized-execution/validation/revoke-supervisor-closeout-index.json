@@ -1,0 +1,170 @@
+{
+  "schema": "aifi45-revoke-supervisor-closeout/v1",
+  "recorded_at": "2026-10-24T14:09:41.233Z",
+  "component_scope": "signed initial→revoke + record-ID predecessor CAS + strict T source/purpose/integer tokens; no admission",
+  "source_ref": "revoke-main-static-source-check.json",
+  "source_matches": {
+    "multica": 29,
+    "tools": 5
+  },
+  "protected_files_matched": 4,
+  "reviews": [
+    {
+      "role": "T independent code",
+      "session": "01a16e02-2ae3-77b9-a3c5-0eb53a155075",
+      "result": "PASS; F1 closed after supervisor fix",
+      "requested": "OpenAIPersonal/gpt-6.1-sol:high",
+      "actual": "unknown"
+    },
+    {
+      "role": "M independent static code",
+      "session": "01a16e14-6c7f-77b9-a3c5-0ebd23d9b646",
+      "result": "bounded static PASS",
+      "requested": "OpenAIPersonal/gpt-6.1-sol:high",
+      "actual": "unknown"
+    },
+    {
+      "role": "independent tests",
+      "session": "01a16def-4de5-77b9-a3c5-0ead91183bc1",
+      "result_ref": "revoke-independent2-index.json",
+      "requested": "Gobao/deepseek-flash:max",
+      "actual": "unknown"
+    },
+    {
+      "role": "independent docs",
+      "session": "01a16def-90ee-77b9-a3c5-0eae81150c33",
+      "result": "PASS for revoke/profile/source/test/CUSTOM records; subsequent runtime-preflight notes supervisor verified",
+      "requested": "GB-JP/deepseek-flash:high",
+      "actual": "unknown"
+    }
+  ],
+  "test_results": {
+    "T": {
+      "total": 218,
+      "pass": 217,
+      "fail": 0,
+      "skip": 1,
+      "reason": "Windows file symlink EPERM",
+      "exit": 0
+    },
+    "M": {
+      "governance_events": 550,
+      "router_events": 14,
+      "consumption_refusal_events": 2,
+      "HTTP_to_current_Node_events": 3,
+      "all_exit": 0,
+      "fail": 0,
+      "skip": 0
+    },
+    "scope": "Overlapping/count2/parent+child component events; not independent business TC"
+  },
+  "database": {
+    "release_ref": "../../../../multica/changes/2026-10-22-aifi-45-authorized-execution/validation/revoke-independent2-release.md",
+    "last_release_at": "2026-10-24T13:28:09Z",
+    "history_before": 83,
+    "history_after": 83,
+    "missing": 0,
+    "added": 0,
+    "changed": 0,
+    "locks": 0,
+    "other_sessions": 0,
+    "no_DB_access_after_release_by_supervisor": true
+  },
+  "native": [
+    {
+      "repo": "tools",
+      "argv": [
+        "python",
+        "-B",
+        "C:/Users/GOBAO/Downloads/AI/stdd/bin/stdd",
+        "validate",
+        "2026-10-22-aifi-45-authorized-execution"
+      ],
+      "cwd": "C:/Users/GOBAO/Downloads/AI/tools",
+      "exit": 0,
+      "signal": null,
+      "stdout_sha256": "8f0db6fe541e8f4f18f08ce3b8dcbdf0611aa08920234a176f43c6eb5c9e4bff",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "repo": "tools",
+      "argv": [
+        "python",
+        "-B",
+        "C:/Users/GOBAO/Downloads/AI/stdd/bin/stdd",
+        "canon",
+        "verify",
+        "2026-10-22-aifi-45-authorized-execution"
+      ],
+      "cwd": "C:/Users/GOBAO/Downloads/AI/tools",
+      "exit": 0,
+      "signal": null,
+      "stdout_sha256": "c88f45849a4c84d24fdf59322b550904bea73210bda2eb66523ba67093e3374a",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "repo": "multica",
+      "argv": [
+        "python",
+        "-B",
+        "C:/Users/GOBAO/Downloads/AI/stdd/bin/stdd",
+        "validate",
+        "2026-10-22-aifi-45-authorized-execution"
+      ],
+      "cwd": "C:/Users/GOBAO/Downloads/AI/multica",
+      "exit": 0,
+      "signal": null,
+      "stdout_sha256": "95cb8f17f194253a800c04df8a3f14064345b88d3d7cfe0e3b9bd5d18c678804",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "repo": "multica",
+      "argv": [
+        "python",
+        "-B",
+        "C:/Users/GOBAO/Downloads/AI/stdd/bin/stdd",
+        "canon",
+        "verify",
+        "2026-10-22-aifi-45-authorized-execution"
+      ],
+      "cwd": "C:/Users/GOBAO/Downloads/AI/multica",
+      "exit": 0,
+      "signal": null,
+      "stdout_sha256": "c88f45849a4c84d24fdf59322b550904bea73210bda2eb66523ba67093e3374a",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "repositories": {
+    "tools": {
+      "branch": "main",
+      "head": "9e41ad74ce631459bc007a29c3d0cdaaa1e49e75",
+      "staged_paths": 0
+    },
+    "multica": {
+      "branch": "main",
+      "head": "f6e90ab8090c8a712c7fe2a324e977f10a39499c",
+      "staged_paths": 0
+    }
+  },
+  "poC_cleanup": {
+    "name": "aifi45-cgroup-preflight-3d5edc84df57643a",
+    "previous_exact_owned_rm_exit": 0,
+    "current_exists_exit": 1,
+    "absent": true
+  },
+  "runtime_blocker": {
+    "scope": "physical resource-isolation validation, not all code work",
+    "resource_controllers_delegated": [],
+    "create_exit": 0,
+    "start_exit": 125,
+    "error": "memory.max missing",
+    "human_authorization_needed": "host Podman/WSL cgroup delegation/manager changes or alternate compliant environment; no silent rootful switch/restart"
+  },
+  "full_business_TC_completed": 0,
+  "full_business_TC_total": 49,
+  "major_resolved": 0,
+  "major_unresolved": 5,
+  "Gate3": false,
+  "commit": false,
+  "push": false
+}

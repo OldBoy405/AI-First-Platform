@@ -1,0 +1,104 @@
+{
+  "schema": "aifi45-review2-run/v1",
+  "label": "cmdserver-current-head",
+  "package": "./cmd/server",
+  "run_regex": "^TestExecutionAuthorizationHeadRouter",
+  "extra_args": [
+    "-shuffle=on"
+  ],
+  "final_argv": [
+    "go",
+    "test",
+    "./cmd/server",
+    "-run",
+    "^TestExecutionAuthorizationHeadRouter",
+    "-count=1",
+    "-json",
+    "-shuffle=on"
+  ],
+  "final_argv_verification": "Captured executable and argument array before invoking the unchanged runner spawnSync; metadata now includes the go executable.",
+  "started_at": "2026-10-24T12:17:17.596Z",
+  "finished_at": "2026-10-24T12:17:22.303Z",
+  "duration_ms": 4706,
+  "exit": 0,
+  "signal": null,
+  "error": null,
+  "counts_all": {
+    "run": 5,
+    "pass": 5,
+    "fail": 0,
+    "skip": 0
+  },
+  "counts_top": {
+    "run": 2,
+    "pass": 2,
+    "fail": 0,
+    "skip": 0
+  },
+  "counts_sub": {
+    "run": 3,
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "unique_top": {
+    "run": [
+      "TestExecutionAuthorizationHeadRouterConfigured",
+      "TestExecutionAuthorizationHeadRouterDefaultOff"
+    ],
+    "pass": [
+      "TestExecutionAuthorizationHeadRouterConfigured",
+      "TestExecutionAuthorizationHeadRouterDefaultOff"
+    ],
+    "fail": [],
+    "skip": []
+  },
+  "unique_sub": {
+    "count_run": 3,
+    "count_pass": 3,
+    "count_fail": 0,
+    "count_skip": 0,
+    "fail": [],
+    "skip": []
+  },
+  "package_events": [
+    {
+      "action": "pass",
+      "package": "github.com/multica-ai/multica/server/cmd/server",
+      "elapsed": 1.879
+    }
+  ],
+  "package_elapsed_seconds": 1.879,
+  "shuffle_lines": [
+    "-test.shuffle 1792844242141441700"
+  ],
+  "raw_files": {
+    "stdout": "C:/Users/GOBAO/Downloads/AI/AI First Platform/projects/multica/changes/2026-10-22-aifi-45-authorized-execution/validation/20261024T121609Z-aifi45-review2-cmdserver-current-head.go.jsonl",
+    "stderr": "C:/Users/GOBAO/Downloads/AI/AI First Platform/projects/multica/changes/2026-10-22-aifi-45-authorized-execution/validation/20261024T121609Z-aifi45-review2-cmdserver-current-head.stderr.log"
+  },
+  "raw_sha256": {
+    "stdout": "6b9bacc278bd13147998bace3989274c4cb43ef7889a6e6f42a2d79c99dde1e1",
+    "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "raw_line_count": 81,
+  "source_sha256_lf": {
+    "server/internal/governance/execution_authorization_head.go": "4d5ab17a7010b8d96112f5c6645a7f46eec4cedb6f371b9f1faee97968658556",
+    "server/internal/governance/execution_authorization_head_test.go": "2c2dd8aef9eedf12f7123e017b844a56b9a23bea38afd3b671ea62bc219831f1",
+    "server/cmd/server/execution_authorization_head_test.go": "1a4ef311fdf185c8bf98c9546d93485ddc689775e3c879df7cbb6f3c0d02009e"
+  },
+  "runner_sha256": "b876a3835fbe835fd15f73d8ddf81db9adee340f7f17308d6f2cb78ed61ad4b6",
+  "db_identity": "stdd_aifi45_20261022|stdd|671|642_cr_execution_authorization_head",
+  "container_id": "666bfec52ac3c3d13b43389891f50c4105833198eab7e4167b76f014a774e823",
+  "preflight": "label=2026-10-22-aifi-45-authorized-execution;port=127.0.0.1:55432;running=true;advisory_lock=0;other_sessions=0;history38_before=b25a957283bc9e9cb7c30999bad87f0560f4b338328d1811e6c2a0b7edc06733",
+  "harness": {
+    "PI_PROVIDER": "Gobao",
+    "PI_MODEL": "deepseek-flash",
+    "PI_REASONING_LEVEL": "max"
+  },
+  "sanitization": [
+    "postgres URL userinfo redacted",
+    "GitHub token patterns redacted"
+  ],
+  "note": "Raw Go JSON captured directly; metadata generated from actual spawn result and raw events.",
+  "spawn_executable": "go"
+}

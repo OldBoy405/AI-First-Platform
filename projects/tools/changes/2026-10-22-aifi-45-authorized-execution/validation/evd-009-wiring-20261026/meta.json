@@ -1,0 +1,51 @@
+{
+  "kind": "dynamic_tools_only_evidence",
+  "cr": "2026-10-22-aifi-45-authorized-execution",
+  "tc": [
+    "SC-EVD-009",
+    "TC-EVD-009"
+  ],
+  "date": "2026-10-26",
+  "runner": "node --test --test-reporter=tap (no DB, no multica, no deploy)",
+  "unit_under_test": "skills/shared/crctl/scripts/lib/workspace-transactions.mjs::mergeCr",
+  "mutation": {
+    "anchor": "if (payload.releaseReceipt) {",
+    "applied": "if (false && payload.releaseReceipt) {"
+  },
+  "restore": {
+    "verified_identical": true
+  },
+  "source": {
+    "lib/workspace-transactions.mjs": "ae5ad1c876735f0e0853da90e3dd2ea4708c3e8a08cc70e9de6410de4f04886a",
+    "test/merge-release-recovery.test.mjs": "9a4186b272d876b543e2e942eee463109e1262183add57b4544428da6f23023e"
+  },
+  "regression": {
+    "tests": 23,
+    "pass": 23,
+    "fail": 0,
+    "skipped": 0,
+    "todo": 0,
+    "exit": 0
+  },
+  "evidence_files": {
+    "cp-evd009.tap": "cfb1db578fc786211e0579c95f73e8eba2b57dce9706fc4b799cbb51edec3a53",
+    "green.tap": "5f8fd7e1d2aa56204d5594b8e8bbec4a0edcf74a2e6e00e0ace15e27f02f1ace",
+    "red.tap": "8c9e4d10753fd039624f5a4bf1260a7103a694c6916d4d631605fef4a7a00763",
+    "regression-merge-tx.tap": "17de722795e13a490ccb79d95e9a71c684623bb0e724adb76877ad36f43d3cef"
+  },
+  "not_verified": [
+    "EVD-009 的 checkpoint / writeback 两条恢复路径未接线，本条只覆盖 merge",
+    "未在真实 CR/tools-multica 双仓环境执行",
+    "未变更 TC 台账计数（CP 口径原已 PRESENT）"
+  ],
+  "regression_neighbours": {
+    "tests": 69,
+    "pass": 69,
+    "fail": 0,
+    "skipped": 0,
+    "exit": 0,
+    "evidence_files": {
+      "regression-tx-neighbours.tap": "0b969928566e26f2cfcb49946a5908e183a2f539954afebcc07d9d5f17f03678"
+    }
+  }
+}

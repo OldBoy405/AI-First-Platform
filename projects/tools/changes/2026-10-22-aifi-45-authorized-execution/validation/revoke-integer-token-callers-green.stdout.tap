@@ -1,0 +1,76 @@
+TAP version 13
+# Subtest: TC-AUTH-008 signed binding rejects a rounded fractional process_id
+ok 1 - TC-AUTH-008 signed binding rejects a rounded fractional process_id
+  ---
+  duration_ms: 413.6144
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 signed binding rejects a rounded fractional authorization_revision
+ok 2 - TC-AUTH-008 signed binding rejects a rounded fractional authorization_revision
+  ---
+  duration_ms: 383.7137
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 raw integer validation preserves maximum-safe scope and numeric-looking text
+ok 3 - TC-AUTH-010 raw integer validation preserves maximum-safe scope and numeric-looking text
+  ---
+  duration_ms: 427.3014
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 raw number rejects rounded signed revision 2.0000000000000001
+ok 4 - TC-AUTH-010 raw number rejects rounded signed revision 2.0000000000000001
+  ---
+  duration_ms: 324.7433
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 raw number rejects rounded source revision 2.0000000000000001
+ok 5 - TC-AUTH-010 raw number rejects rounded source revision 2.0000000000000001
+  ---
+  duration_ms: 320.4572
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 raw number rejects rounded signed revision 1.99999999999999999
+ok 6 - TC-AUTH-010 raw number rejects rounded signed revision 1.99999999999999999
+  ---
+  duration_ms: 333.3634
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 raw number rejects rounded source revision 1.99999999999999999
+ok 7 - TC-AUTH-010 raw number rejects rounded source revision 1.99999999999999999
+  ---
+  duration_ms: 321.358
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 raw number rejects nonzero underflow in repair_limit
+ok 8 - TC-AUTH-010 raw number rejects nonzero underflow in repair_limit
+  ---
+  duration_ms: 320.3628
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 raw number rejects nonzero underflow in sensitive_action_limit
+ok 9 - TC-AUTH-010 raw number rejects nonzero underflow in sensitive_action_limit
+  ---
+  duration_ms: 328.2777
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 source check accepts signed zero with original negative-zero repair_limit
+ok 10 - TC-AUTH-010 source check accepts signed zero with original negative-zero repair_limit
+  ---
+  duration_ms: 327.2329
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 source check accepts signed zero with original negative-zero sensitive_action_limit
+ok 11 - TC-AUTH-010 source check accepts signed zero with original negative-zero sensitive_action_limit
+  ---
+  duration_ms: 330.4253
+  type: 'test'
+  ...
+1..11
+# tests 11
+# suites 0
+# pass 11
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3904.093

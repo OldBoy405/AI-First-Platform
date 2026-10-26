@@ -1,0 +1,14 @@
+{
+  "at": "2026-10-24T14:04:05.430Z",
+  "argv": [
+    "podman",
+    "machine",
+    "ssh",
+    "podman-machine-default",
+    "sh -c 'printf \"pid1=\"; IFS= read -r p < /proc/1/comm; printf \"%s\\n\" \"$p\"; printf \"uid=\"; id -u; printf \"root_controllers=\"; IFS= read -r p < /sys/fs/cgroup/cgroup.controllers; printf \"%s\\n\" \"$p\"; printf \"process_cgroup=\"; while IFS= read -r p; do printf \"%s\\n\" \"$p\"; done < /proc/self/cgroup; if [ -d /run/systemd/system ]; then printf \"systemd_running=yes\\n\"; else printf \"systemd_running=no\\n\"; fi'"
+  ],
+  "exit": 0,
+  "stdout": "pid1=systemd\nuid=1000\nroot_controllers=cpuset cpu io memory hugetlb pids rdma\nprocess_cgroup=0::/non-systemd/user.slice/user-1000.slice/session-c219.scope\nsystemd_running=yes\n",
+  "stderr": "",
+  "scope": "Read-only PID1/uid/cgroup facts; no sudo/write/restart/permission mutation; no credentials inspected"
+}

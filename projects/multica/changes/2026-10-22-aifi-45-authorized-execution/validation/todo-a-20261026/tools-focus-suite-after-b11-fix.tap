@@ -1,0 +1,2076 @@
+TAP version 13
+# Subtest: caller-01 扫描面内每处投影命令调用都在已审表内（无未登记调用点）
+ok 1 - caller-01 扫描面内每处投影命令调用都在已审表内（无未登记调用点）
+  ---
+  duration_ms: 1.5018
+  type: 'test'
+  ...
+# Subtest: caller-02 已审表无陈旧行（每条都真的出现在扫描面内）
+ok 2 - caller-02 已审表无陈旧行（每条都真的出现在扫描面内）
+  ---
+  duration_ms: 0.2754
+  type: 'test'
+  ...
+# Subtest: caller-03 判为 detail-required 的调用点必须显式带 --detail
+ok 3 - caller-03 判为 detail-required 的调用点必须显式带 --detail
+  ---
+  duration_ms: 0.2826
+  type: 'test'
+  ...
+# Subtest: caller-04 判为 no-action 的调用点不需要 --detail（summary 覆盖其消费字段）
+ok 4 - caller-04 判为 no-action 的调用点不需要 --detail（summary 覆盖其消费字段）
+  ---
+  duration_ms: 0.3966
+  type: 'test'
+  ...
+# Subtest: caller-05 扫描面之外的真实调用方逐条登记并按字段消费判定
+ok 5 - caller-05 扫描面之外的真实调用方逐条登记并按字段消费判定
+  ---
+  duration_ms: 0.1978
+  type: 'test'
+  ...
+# Subtest: caller-06 投影注册表是投影实现本体：其命中一律登记为 doc-only（不构成运行时调用点）
+ok 6 - caller-06 投影注册表是投影实现本体：其命中一律登记为 doc-only（不构成运行时调用点）
+  ---
+  duration_ms: 0.5403
+  type: 'test'
+  ...
+# Subtest: caller-07 四个 review Skill 已采纳 AC-16 取证完整性条款
+ok 7 - caller-07 四个 review Skill 已采纳 AC-16 取证完整性条款
+  ---
+  duration_ms: 1.1691
+  type: 'test'
+  ...
+# Subtest: caller-08 权威 Skill 文档已记录 --detail 的默认面语义
+ok 8 - caller-08 权威 Skill 文档已记录 --detail 的默认面语义
+  ---
+  duration_ms: 0.3465
+  type: 'test'
+  ...
+# Subtest: caller-09 扫描面内每处 CR 数据命令调用都携带非空 --workspace（或在白名单登记为非可执行提及）
+ok 9 - caller-09 扫描面内每处 CR 数据命令调用都携带非空 --workspace（或在白名单登记为非可执行提及）
+  ---
+  duration_ms: 0.7947
+  type: 'test'
+  ...
+# Subtest: caller-09a 非可执行豁免锚定原文，不放行同文件真实缺根调用
+ok 10 - caller-09a 非可执行豁免锚定原文，不放行同文件真实缺根调用
+  ---
+  duration_ms: 0.5646
+  type: 'test'
+  ...
+# Subtest: caller-10 非可执行命中白名单无陈旧行（每条都真实出现在扫描面内）
+ok 11 - caller-10 非可执行命中白名单无陈旧行（每条都真实出现在扫描面内）
+  ---
+  duration_ms: 3.2135
+  type: 'test'
+  ...
+# Subtest: caller-11 已登记扫描面外调用方文件内的 CR 数据命令同规则核对（文件可定位时）
+ok 12 - caller-11 已登记扫描面外调用方文件内的 CR 数据命令同规则核对（文件可定位时）
+  ---
+  duration_ms: 100.6426
+  type: 'test'
+  ...
+# 本次运行未核验外仓 ai-first-platform-docs：C:\\Users\\GOBAO\\Downloads\\AI\\tools 起逐级向上没有任何 dir-graph.yaml 声明该 repo，无法定位 .github/workflows/cr-guard.yml。登记行结构断言（caller-05）已通过；该文件的逐命令命中与非空 --workspace核对须由能检出该外仓的运行人工完成。
+# 本次运行未核验任何扫描面外调用方（无外仓声明，单仓检出）：结构断言通过不等于外仓已核验。
+# Subtest: caller-12 inject-cr-status.mjs：无可信路径不输出 crctl 命令建议；有可信路径建议显式 --workspace（CR-2026-072 TASK-01）
+ok 13 - caller-12 inject-cr-status.mjs：无可信路径不输出 crctl 命令建议；有可信路径建议显式 --workspace（CR-2026-072 TASK-01）
+  ---
+  duration_ms: 209.5408
+  type: 'test'
+  ...
+# Subtest: caller-13 kb init 入口契约：缺根/空根 WORKSPACE_REQUIRED；两集合含 kb；文档/HELP 与代码入口一致
+ok 14 - caller-13 kb init 入口契约：缺根/空根 WORKSPACE_REQUIRED；两集合含 kb；文档/HELP 与代码入口一致
+  ---
+  duration_ms: 206.1357
+  type: 'test'
+  ...
+# Subtest: caller-14 FR-04 本地纠正约定：五项前置 + 同 run 恰一次 + 只改一个参数 + 机器侧零改动 + 审计保留逐条可见
+ok 15 - caller-14 FR-04 本地纠正约定：五项前置 + 同 run 恰一次 + 只改一个参数 + 机器侧零改动 + 审计保留逐条可见
+  ---
+  duration_ms: 0.4107
+  type: 'test'
+  ...
+# Subtest: caller-15 FR-04 负面清单六条逐条可见且恰为六条
+ok 16 - caller-15 FR-04 负面清单六条逐条可见且恰为六条
+  ---
+  duration_ms: 0.3213
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 a change inside the granted repository and path is allowed
+ok 17 - SC-AUTH-004 a change inside the granted repository and path is allowed
+  ---
+  duration_ms: 2.7773
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 an unlisted repository is refused
+ok 18 - SC-AUTH-004 an unlisted repository is refused
+  ---
+  duration_ms: 0.3929
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 a path outside every granted prefix is refused
+ok 19 - SC-AUTH-004 a path outside every granted prefix is refused
+  ---
+  duration_ms: 0.2439
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 a prefix boundary is not a prefix match
+ok 20 - SC-AUTH-004 a prefix boundary is not a prefix match
+  ---
+  duration_ms: 0.4285
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 relative-path and absolute escapes are named separately
+ok 21 - SC-AUTH-004 relative-path and absolute escapes are named separately
+  ---
+  duration_ms: 0.2796
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 a symlink that leaves the repository is refused even under a granted prefix
+ok 22 - SC-AUTH-004 a symlink that leaves the repository is refused even under a granted prefix
+  ---
+  duration_ms: 0.1433
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 the changed-path collector sees committed, modified and untracked files
+ok 23 - SC-AUTH-004 the changed-path collector sees committed, modified and untracked files
+  ---
+  duration_ms: 718.4327
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 wiring: an in-scope change in the CR worktree of a matching repository passes
+ok 24 - SC-AUTH-004 wiring: an in-scope change in the CR worktree of a matching repository passes
+  ---
+  duration_ms: 1508.4169
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 wiring: a change in a repository the grant does not list is seen and refused
+ok 25 - SC-AUTH-004 wiring: a change in a repository the grant does not list is seen and refused
+  ---
+  duration_ms: 1470.244
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 wiring: the candidate is read from the CR worktree, not the main checkout
+ok 26 - SC-AUTH-004 wiring: the candidate is read from the CR worktree, not the main checkout
+  ---
+  duration_ms: 1250.6792
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 wiring: a collection failure is not an empty diff
+ok 27 - SC-AUTH-004 wiring: a collection failure is not an empty diff
+  ---
+  duration_ms: 1024.213
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 wiring: a missing CR worktree or an unlocated granted repository is unverifiable
+ok 28 - SC-AUTH-004 wiring: a missing CR worktree or an unlocated granted repository is unverifiable
+  ---
+  duration_ms: 903.6235
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 wiring: graph only locates; the frozen identity must match the located repository
+ok 29 - SC-AUTH-004 wiring: graph only locates; the frozen identity must match the located repository
+  ---
+  duration_ms: 1368.3341
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 wiring: a git resource identity matches the origin URL exactly
+ok 30 - SC-AUTH-004 wiring: a git resource identity matches the origin URL exactly
+  ---
+  duration_ms: 1688.1673
+  type: 'test'
+  ...
+# Subtest: checkpoint happy path：三仓 source commit + KB metadata commit + latest-checkpoint + no-op
+ok 31 - checkpoint happy path：三仓 source commit + KB metadata commit + latest-checkpoint + no-op
+  ---
+  duration_ms: 13031.4372
+  type: 'test'
+  ...
+# Subtest: checkpoint 敏感路径：.env 命中全仓零 add/commit/push
+ok 32 - checkpoint 敏感路径：.env 命中全仓零 add/commit/push
+  ---
+  duration_ms: 4889.2792
+  type: 'test'
+  ...
+# Subtest: checkpoint tracked+untracked+ignored：source commit 含前两类、排除 ignored
+ok 33 - checkpoint tracked+untracked+ignored：source commit 含前两类、排除 ignored
+  ---
+  duration_ms: 8775.1607
+  type: 'test'
+  ...
+# Subtest: checkpoint source commit 后 fault + 新增变化：重跑更新 sourceSha 并完成
+ok 34 - checkpoint source commit 后 fault + 新增变化：重跑更新 sourceSha 并完成
+  ---
+  duration_ms: 9985.6506
+  type: 'test'
+  ...
+# Subtest: checkpoint 首次推送：remote requirement ref 不存在时创建三仓分支
+ok 35 - checkpoint 首次推送：remote requirement ref 不存在时创建三仓分支
+  ---
+  duration_ms: 8898.8258
+  type: 'test'
+  ...
+# Subtest: checkpoint classifier：已发布 source 仍是 remote 祖先时为 advanced，不误报 history rewrite
+ok 36 - checkpoint classifier：已发布 source 仍是 remote 祖先时为 advanced，不误报 history rewrite
+  ---
+  duration_ms: 0.3702
+  type: 'test'
+  ...
+# Subtest: checkpoint malformed latest-checkpoint：零 commit/push并返回 CHECKPOINT_SNAPSHOT_INVALID
+ok 37 - checkpoint malformed latest-checkpoint：零 commit/push并返回 CHECKPOINT_SNAPSHOT_INVALID
+  ---
+  duration_ms: 7994.9573
+  type: 'test'
+  ...
+# Subtest: checkpoint 敏感预检查询失败：损坏 index 后 TX_GIT_FAILED 且零 push
+ok 38 - checkpoint 敏感预检查询失败：损坏 index 后 TX_GIT_FAILED 且零 push
+  ---
+  duration_ms: 4472.3581
+  type: 'test'
+  ...
+# Subtest: checkpoint journal 后错误：固定返回 txId/phase/sideEffects/recovery
+ok 39 - checkpoint journal 后错误：固定返回 txId/phase/sideEffects/recovery
+  ---
+  duration_ms: 4665.7982
+  type: 'test'
+  ...
+# Subtest: checkpoint residual complete journal：authority 确认后清理并允许下一批
+ok 40 - checkpoint residual complete journal：authority 确认后清理并允许下一批
+  ---
+  duration_ms: 11700.4308
+  type: 'test'
+  ...
+# Subtest: checkpoint metadata commit/save 窗口：由 trailer 恢复而非 TX_RECOVERY_CONFLICT
+ok 41 - checkpoint metadata commit/save 窗口：由 trailer 恢复而非 TX_RECOVERY_CONFLICT
+  ---
+  duration_ms: 8412.9938
+  type: 'test'
+  ...
+# Subtest: checkpoint metadata write-set/commit 窗口：撤回账本候选后重扫，不把 snapshot 吞入 KB source
+ok 42 - checkpoint metadata write-set/commit 窗口：撤回账本候选后重扫，不把 snapshot 吞入 KB source
+  ---
+  duration_ms: 10235.198
+  type: 'test'
+  ...
+# Subtest: checkpoint confirmed 仓新增变化：source save 前先降 phase，重跑必须重新 publish
+ok 43 - checkpoint confirmed 仓新增变化：source save 前先降 phase，重跑必须重新 publish
+  ---
+  duration_ms: 9145.8867
+  type: 'test'
+  ...
+# Subtest: checkpoint push 响应丢失：after-push 重跑观察 exact head，不重复 source commit
+ok 44 - checkpoint push 响应丢失：after-push 重跑观察 exact head，不重复 source commit
+  ---
+  duration_ms: 7762.7638
+  type: 'test'
+  ...
+# Subtest: checkpoint metadata push 后故障：重跑确认既有 metadata，不造第二提交
+ok 45 - checkpoint metadata push 后故障：重跑确认既有 metadata，不造第二提交
+  ---
+  duration_ms: 8092.844
+  type: 'test'
+  ...
+# Subtest: checkpoint 仅非 KB 变化：KB source 沿用上一 metadata HEAD，只新增 metadata commit
+ok 46 - checkpoint 仅非 KB 变化：KB source 沿用上一 metadata HEAD，只新增 metadata commit
+  ---
+  duration_ms: 9647.6101
+  type: 'test'
+  ...
+# Subtest: checkpoint 敏感矩阵：例外/普通 pem/空格路径放行，私钥头硬阻断
+ok 47 - checkpoint 敏感矩阵：例外/普通 pem/空格路径放行，私钥头硬阻断
+  ---
+  duration_ms: 7386.4189
+  type: 'test'
+  ...
+# Subtest: checkpoint CRLF backlog 正常规范化并完成
+ok 48 - checkpoint CRLF backlog 正常规范化并完成
+  ---
+  duration_ms: 6144.9815
+  type: 'test'
+  ...
+# Subtest: checkpoint worktree 前置：missing 与 wrong-branch 使用冻结错误码
+ok 49 - checkpoint worktree 前置：missing 与 wrong-branch 使用冻结错误码
+  ---
+  duration_ms: 10883.6407
+  type: 'test'
+  ...
+# Subtest: checkpoint remote 关系矩阵：advanced/diverged/history-rewritten 精确分类
+ok 50 - checkpoint remote 关系矩阵：advanced/diverged/history-rewritten 精确分类
+  ---
+  duration_ms: 17365.345
+  type: 'test'
+  ...
+# Subtest: checkpoint editLatestCheckpoint：条目后仍有其他条目时不粘行（CR-2026-033 merge 实测 bug）
+ok 51 - checkpoint editLatestCheckpoint：条目后仍有其他条目时不粘行（CR-2026-033 merge 实测 bug）
+  ---
+  duration_ms: 1.0785
+  type: 'test'
+  ...
+# Subtest: checkpoint T05 contract：Pipeline 只编排 Skill，active alignment reader 不读旧 checkpoints[]
+ok 52 - checkpoint T05 contract：Pipeline 只编排 Skill，active alignment reader 不读旧 checkpoints[]
+  ---
+  duration_ms: 2.0184
+  type: 'test'
+  ...
+# Subtest: checkpoint 业务 payload 恢复冲突：损坏 journal（重复 repo）→ TX_RECOVERY_CONFLICT
+ok 53 - checkpoint 业务 payload 恢复冲突：损坏 journal（重复 repo）→ TX_RECOVERY_CONFLICT
+  ---
+  duration_ms: 6506.9926
+  type: 'test'
+  ...
+# Subtest: TASK-09 AC-22：部分 publish 后出现等价 HEAD，恢复仍使用原 journal source，不追随新对象
+ok 54 - TASK-09 AC-22：部分 publish 后出现等价 HEAD，恢复仍使用原 journal source，不追随新对象
+  ---
+  duration_ms: 7868.0159
+  type: 'test'
+  ...
+# Subtest: TASK-09 AC-22 负向控制：部分 publish 后 HEAD 树变化 → 仍按第三方修改硬阻断（零写入）
+ok 55 - TASK-09 AC-22 负向控制：部分 publish 后 HEAD 树变化 → 仍按第三方修改硬阻断（零写入）
+  ---
+  duration_ms: 5720.6678
+  type: 'test'
+  ...
+# Subtest: AIFI-70 T3：checkpoint 发布对账 —— PASS 证据与被评审对象不一致 → TX_RECOVERY_CONFLICT 零发布；一致则正常发布
+ok 56 - AIFI-70 T3：checkpoint 发布对账 —— PASS 证据与被评审对象不一致 → TX_RECOVERY_CONFLICT 零发布；一致则正常发布
+  ---
+  duration_ms: 6577.5289
+  type: 'test'
+  ...
+# Subtest: AIFI-70 T3 回修 B1：requirement 合法回退后作者回修，旧 PASS 不阻断 checkpoint（approve-requirement:reject → drafting）
+ok 57 - AIFI-70 T3 回修 B1：requirement 合法回退后作者回修，旧 PASS 不阻断 checkpoint（approve-requirement:reject → drafting）
+  ---
+  duration_ms: 9644.9113
+  type: 'test'
+  ...
+# Subtest: AIFI-70 T3 回修 B1：tech-design 合法回退后作者回修，旧 PASS 不阻断 checkpoint（upstream-design-blocker → tech-design-review-pending）
+ok 58 - AIFI-70 T3 回修 B1：tech-design 合法回退后作者回修，旧 PASS 不阻断 checkpoint（upstream-design-blocker → tech-design-review-pending）
+  ---
+  duration_ms: 9673.5175
+  type: 'test'
+  ...
+# Subtest: AIFI-70 T3 回修 B1：requirement 旧 PASS 仅本地提交未发布，合法回退后作者回修不被阻断
+ok 59 - AIFI-70 T3 回修 B1：requirement 旧 PASS 仅本地提交未发布，合法回退后作者回修不被阻断
+  ---
+  duration_ms: 6759.1564
+  type: 'test'
+  ...
+# Subtest: AIFI-70 T3 回修 B1：tech-design 旧 PASS 仅本地提交未发布，upstream-design-blocker 回退后作者回修不被阻断
+ok 60 - AIFI-70 T3 回修 B1：tech-design 旧 PASS 仅本地提交未发布，upstream-design-blocker 回退后作者回修不被阻断
+  ---
+  duration_ms: 6670.3884
+  type: 'test'
+  ...
+# Subtest: AIFI-70 T3 回修 B1：tech-design 本轮新 PASS 遇上对象漂移 → 仍零写入拒绝发布
+ok 61 - AIFI-70 T3 回修 B1：tech-design 本轮新 PASS 遇上对象漂移 → 仍零写入拒绝发布
+  ---
+  duration_ms: 6569.8152
+  type: 'test'
+  ...
+# Subtest: AIFI-70 T3 B2: owner-set must not exempt a new SDD PASS from checkpoint reconciliation
+ok 62 - AIFI-70 T3 B2: owner-set must not exempt a new SDD PASS from checkpoint reconciliation
+  ---
+  duration_ms: 8390.8363
+  type: 'test'
+  ...
+# Subtest: TC-EVD-003
+ok 63 - TC-EVD-003
+  ---
+  duration_ms: 337.3238
+  type: 'test'
+  ...
+# Subtest: TC-EVD-010
+ok 64 - TC-EVD-010
+  ---
+  duration_ms: 324.5363
+  type: 'test'
+  ...
+# Subtest: TC-EVD-006
+ok 65 - TC-EVD-006
+  ---
+  duration_ms: 178.6815
+  type: 'test'
+  ...
+# Subtest: TC-EVD-001
+ok 66 - TC-EVD-001
+  ---
+  duration_ms: 141.1412
+  type: 'test'
+  ...
+# Subtest: TC-EVD-002
+ok 67 - TC-EVD-002
+  ---
+  duration_ms: 494.8108
+  type: 'test'
+  ...
+# Subtest: TC-EVD-007
+ok 68 - TC-EVD-007
+  ---
+  duration_ms: 53.6929
+  type: 'test'
+  ...
+# Subtest: TC-EVD-004
+ok 69 - TC-EVD-004
+  ---
+  duration_ms: 175.3511
+  type: 'test'
+  ...
+# Subtest: TC-EVD-005
+ok 70 - TC-EVD-005
+  ---
+  duration_ms: 1.0058
+  type: 'test'
+  ...
+# Subtest: TC-EVD-008
+ok 71 - TC-EVD-008
+  ---
+  duration_ms: 0.5058
+  type: 'test'
+  ...
+# Subtest: TC-EVD-009
+ok 72 - TC-EVD-009
+  ---
+  duration_ms: 0.6396
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 code bindings alone cannot authorize a replaceable CR control root
+ok 73 - TC-AUTH-008 code bindings alone cannot authorize a replaceable CR control root
+  ---
+  duration_ms: 620.6475
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-004 signed logical names alone are not a repository identity binding
+ok 74 - TC-AUTH-004 signed logical names alone are not a repository identity binding
+  ---
+  duration_ms: 624.4826
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict static schema rejects C1 prefix control
+ok 75 - TC-AUTH-010 strict static schema rejects C1 prefix control
+  ---
+  duration_ms: 577.7068
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict static schema rejects C1 resource path control
+ok 76 - TC-AUTH-010 strict static schema rejects C1 resource path control
+  ---
+  duration_ms: 603.7737
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict static schema rejects duplicate sensitive scope id
+ok 77 - TC-AUTH-010 strict static schema rejects duplicate sensitive scope id
+  ---
+  duration_ms: 642.901
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-003 strict JSON rejects duplicate signed scope keys
+ok 78 - TC-AUTH-003 strict JSON rejects duplicate signed scope keys
+  ---
+  duration_ms: 510.54
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-001 binding requires the independently checkable immutable source
+ok 79 - TC-AUTH-001 binding requires the independently checkable immutable source
+  ---
+  duration_ms: 587.7794
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-001 source boundary rejects different extracted goal despite a matching signed raw digest
+ok 80 - TC-AUTH-001 source boundary rejects different extracted goal despite a matching signed raw digest
+  ---
+  duration_ms: 582.2422
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-001 source boundary rejects a self-reported actor despite a matching signed raw digest
+ok 81 - TC-AUTH-001 source boundary rejects a self-reported actor despite a matching signed raw digest
+  ---
+  duration_ms: 625.2544
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-001 source boundary rejects duplicate raw key despite a matching signed raw digest
+ok 82 - TC-AUTH-001 source boundary rejects duplicate raw key despite a matching signed raw digest
+  ---
+  duration_ms: 564.3031
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-001 source boundary rejects duplicate nested raw key despite a matching signed raw digest
+ok 83 - TC-AUTH-001 source boundary rejects duplicate nested raw key despite a matching signed raw digest
+  ---
+  duration_ms: 577.4549
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-001 source boundary rejects escaped duplicate raw key despite a matching signed raw digest
+ok 84 - TC-AUTH-001 source boundary rejects escaped duplicate raw key despite a matching signed raw digest
+  ---
+  duration_ms: 608.782
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-001 source boundary rejects missing coordinator selection despite a matching signed raw digest
+ok 85 - TC-AUTH-001 source boundary rejects missing coordinator selection despite a matching signed raw digest
+  ---
+  duration_ms: 593.2624
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-001 source boundary rejects another coordinator resource despite a matching signed raw digest
+ok 86 - TC-AUTH-001 source boundary rejects another coordinator resource despite a matching signed raw digest
+  ---
+  duration_ms: 654.1406
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-001 source boundary rejects another coordinator version despite a matching signed raw digest
+ok 87 - TC-AUTH-001 source boundary rejects another coordinator version despite a matching signed raw digest
+  ---
+  duration_ms: 681.2549
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-001 source boundary rejects missing repository selection despite a matching signed raw digest
+ok 88 - TC-AUTH-001 source boundary rejects missing repository selection despite a matching signed raw digest
+  ---
+  duration_ms: 629.3946
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-001 source boundary rejects another repository resource despite a matching signed raw digest
+ok 89 - TC-AUTH-001 source boundary rejects another repository resource despite a matching signed raw digest
+  ---
+  duration_ms: 616.1925
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-001 source boundary rejects another repository version despite a matching signed raw digest
+ok 90 - TC-AUTH-001 source boundary rejects another repository version despite a matching signed raw digest
+  ---
+  duration_ms: 595.7912
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-001 source boundary rejects extra repository root claim despite a matching signed raw digest
+ok 91 - TC-AUTH-001 source boundary rejects extra repository root claim despite a matching signed raw digest
+  ---
+  duration_ms: 677.6666
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-001 source boundary rejects duplicate repository selection despite a matching signed raw digest
+ok 92 - TC-AUTH-001 source boundary rejects duplicate repository selection despite a matching signed raw digest
+  ---
+  duration_ms: 540.2212
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-001 source boundary preserves CRLF and Chinese original bytes
+ok 93 - TC-AUTH-001 source boundary preserves CRLF and Chinese original bytes
+  ---
+  duration_ms: 773.6723
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 a preexisting consumption receipt cannot activate business admission
+ok 94 - TC-AUTH-008 a preexisting consumption receipt cannot activate business admission
+  ---
+  duration_ms: 538.4687
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-001 source boundary rejects reserialized original bytes
+ok 95 - TC-AUTH-001 source boundary rejects reserialized original bytes
+  ---
+  duration_ms: 549.9297
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-001 source boundary rejects different field mapping
+ok 96 - TC-AUTH-001 source boundary rejects different field mapping
+  ---
+  duration_ms: 590.3674
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-001 source boundary rejects unknown source format
+ok 97 - TC-AUTH-001 source boundary rejects unknown source format
+  ---
+  duration_ms: 575.0428
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 authorization-bind --check validates a complete packet without consuming it
+ok 98 - TC-AUTH-010 authorization-bind --check validates a complete packet without consuming it
+  ---
+  duration_ms: 468.6826
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects unknown schema even with a valid signature
+ok 99 - TC-AUTH-010 --check rejects unknown schema even with a valid signature
+  ---
+  duration_ms: 504.0329
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects envelope/payload key mismatch even with a valid signature
+ok 100 - TC-AUTH-010 --check rejects envelope/payload key mismatch even with a valid signature
+  ---
+  duration_ms: 479.5412
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects missing human identity even with a valid signature
+ok 101 - TC-AUTH-010 --check rejects missing human identity even with a valid signature
+  ---
+  duration_ms: 532.4788
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects noncanonical workspace UUID even with a valid signature
+ok 102 - TC-AUTH-010 --check rejects noncanonical workspace UUID even with a valid signature
+  ---
+  duration_ms: 449.0516
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects negative repair limit even with a valid signature
+ok 103 - TC-AUTH-010 --check rejects negative repair limit even with a valid signature
+  ---
+  duration_ms: 438.1168
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects unsafe repair integer even with a valid signature
+ok 104 - TC-AUTH-010 --check rejects unsafe repair integer even with a valid signature
+  ---
+  duration_ms: 466.8705
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects fractional repair limit even with a valid signature
+ok 105 - TC-AUTH-010 --check rejects fractional repair limit even with a valid signature
+  ---
+  duration_ms: 459.1987
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects zero scope revision even with a valid signature
+ok 106 - TC-AUTH-010 --check rejects zero scope revision even with a valid signature
+  ---
+  duration_ms: 479.5536
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects unimplemented purpose cannot fall through even with a valid signature
+ok 107 - TC-AUTH-010 --check rejects unimplemented purpose cannot fall through even with a valid signature
+  ---
+  duration_ms: 474.1998
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects duplicate repository even with a valid signature
+ok 108 - TC-AUTH-010 --check rejects duplicate repository even with a valid signature
+  ---
+  duration_ms: 489.133
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects unknown repository paths even with a valid signature
+ok 109 - TC-AUTH-010 --check rejects unknown repository paths even with a valid signature
+  ---
+  duration_ms: 480.2196
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects parent traversal even with a valid signature
+ok 110 - TC-AUTH-010 --check rejects parent traversal even with a valid signature
+  ---
+  duration_ms: 471.9771
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects absolute POSIX path even with a valid signature
+ok 111 - TC-AUTH-010 --check rejects absolute POSIX path even with a valid signature
+  ---
+  duration_ms: 527.4894
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects Windows path even with a valid signature
+ok 112 - TC-AUTH-010 --check rejects Windows path even with a valid signature
+  ---
+  duration_ms: 522.6915
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects ambiguous wildcard even with a valid signature
+ok 113 - TC-AUTH-010 --check rejects ambiguous wildcard even with a valid signature
+  ---
+  duration_ms: 515.6265
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects noncanonical prefix even with a valid signature
+ok 114 - TC-AUTH-010 --check rejects noncanonical prefix even with a valid signature
+  ---
+  duration_ms: 505.5804
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects control byte in path even with a valid signature
+ok 115 - TC-AUTH-010 --check rejects control byte in path even with a valid signature
+  ---
+  duration_ms: 503.623
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects empty acceptance even with a valid signature
+ok 116 - TC-AUTH-010 --check rejects empty acceptance even with a valid signature
+  ---
+  duration_ms: 499.2289
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects source mappings omitted even with a valid signature
+ok 117 - TC-AUTH-010 --check rejects source mappings omitted even with a valid signature
+  ---
+  duration_ms: 503.4231
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects self-reported extra actor even with a valid signature
+ok 118 - TC-AUTH-010 --check rejects self-reported extra actor even with a valid signature
+  ---
+  duration_ms: 521.3533
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects unsafe sensitive limit even with a valid signature
+ok 119 - TC-AUTH-010 --check rejects unsafe sensitive limit even with a valid signature
+  ---
+  duration_ms: 515.0998
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 --check rejects a packet installed under a different project scope filename
+ok 120 - TC-AUTH-008 --check rejects a packet installed under a different project scope filename
+  ---
+  duration_ms: 522.4866
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 a valid signed packet alone cannot consume authorization
+ok 121 - TC-AUTH-008 a valid signed packet alone cannot consume authorization
+  ---
+  duration_ms: 519.5873
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 live binding rejects a replayed challenge before any receipt
+ok 122 - TC-AUTH-008 live binding rejects a replayed challenge before any receipt
+  ---
+  duration_ms: 559.2894
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 binding component rejects another workspace even with a valid signature
+ok 123 - TC-AUTH-008 binding component rejects another workspace even with a valid signature
+  ---
+  duration_ms: 507.3028
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 binding component rejects another project even with a valid signature
+ok 124 - TC-AUTH-008 binding component rejects another project even with a valid signature
+  ---
+  duration_ms: 550.2112
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 binding component rejects copied installation even with a valid signature
+ok 125 - TC-AUTH-008 binding component rejects copied installation even with a valid signature
+  ---
+  duration_ms: 523.799
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 binding component rejects another worktree even with a valid signature
+ok 126 - TC-AUTH-008 binding component rejects another worktree even with a valid signature
+  ---
+  duration_ms: 521.8159
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 binding component rejects another process even with a valid signature
+ok 127 - TC-AUTH-008 binding component rejects another process even with a valid signature
+  ---
+  duration_ms: 514.9834
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 binding component rejects another daemon parent even with a valid signature
+ok 128 - TC-AUTH-008 binding component rejects another daemon parent even with a valid signature
+  ---
+  duration_ms: 561.1599
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 binding component rejects another operation even with a valid signature
+ok 129 - TC-AUTH-008 binding component rejects another operation even with a valid signature
+  ---
+  duration_ms: 557.4399
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 binding component rejects old head even with a valid signature
+ok 130 - TC-AUTH-008 binding component rejects old head even with a valid signature
+  ---
+  duration_ms: 591.8729
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 binding component rejects old revision even with a valid signature
+ok 131 - TC-AUTH-008 binding component rejects old revision even with a valid signature
+  ---
+  duration_ms: 632.7183
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 binding component rejects another deployed policy even with a valid signature
+ok 132 - TC-AUTH-008 binding component rejects another deployed policy even with a valid signature
+  ---
+  duration_ms: 660.6847
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 binding component rejects another template even with a valid signature
+ok 133 - TC-AUTH-008 binding component rejects another template even with a valid signature
+  ---
+  duration_ms: 577.6909
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 binding component rejects another tools package even with a valid signature
+ok 134 - TC-AUTH-008 binding component rejects another tools package even with a valid signature
+  ---
+  duration_ms: 769.1016
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 binding component rejects missing resource even with a valid signature
+ok 135 - TC-AUTH-008 binding component rejects missing resource even with a valid signature
+  ---
+  duration_ms: 861.4873
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 binding component rejects untyped runtime even with a valid signature
+ok 136 - TC-AUTH-008 binding component rejects untyped runtime even with a valid signature
+  ---
+  duration_ms: 705.3317
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 binding component rejects unknown fields even with a valid signature
+ok 137 - TC-AUTH-008 binding component rejects unknown fields even with a valid signature
+  ---
+  duration_ms: 660.0174
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 binding component rejects an authorization-domain signature
+ok 138 - TC-AUTH-008 binding component rejects an authorization-domain signature
+  ---
+  duration_ms: 576.8972
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 fresh signature for another daemon cannot replace the selected local coordinator
+ok 139 - TC-AUTH-008 fresh signature for another daemon cannot replace the selected local coordinator
+  ---
+  duration_ms: 776.6656
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire URL "buildhost:repo.git" is accepted
+ok 140 - TC-AUTH-010 repo wire URL "buildhost:repo.git" is accepted
+  ---
+  duration_ms: 531.6453
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire URL "my+user@buildhost:repo.git" is accepted
+ok 141 - TC-AUTH-010 repo wire URL "my+user@buildhost:repo.git" is accepted
+  ---
+  duration_ms: 510.1133
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire URL "git@host:repo.git" is accepted
+ok 142 - TC-AUTH-010 repo wire URL "git@host:repo.git" is accepted
+  ---
+  duration_ms: 640.9718
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire URL "ssh://git:@host/repo" is rejected
+ok 143 - TC-AUTH-010 repo wire URL "ssh://git:@host/repo" is rejected
+  ---
+  duration_ms: 498.8283
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire URL "https://@host/repo" is rejected
+ok 144 - TC-AUTH-010 repo wire URL "https://@host/repo" is rejected
+  ---
+  duration_ms: 636.9317
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire URL " https://host/repo" is rejected
+ok 145 - TC-AUTH-010 repo wire URL " https://host/repo" is rejected
+  ---
+  duration_ms: 495.8012
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire URL "https://host/repo?" is rejected
+ok 146 - TC-AUTH-010 repo wire URL "https://host/repo?" is rejected
+  ---
+  duration_ms: 594.8813
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire URL "https://host/repo\#" is rejected
+ok 147 - TC-AUTH-010 repo wire URL "https://host/repo\#" is rejected
+  ---
+  duration_ms: 510.8461
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire URL "https://host\\\\evil/repo" is rejected
+ok 148 - TC-AUTH-010 repo wire URL "https://host\\\\evil/repo" is rejected
+  ---
+  duration_ms: 524.2859
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire URL "https:///host/repo.git" is rejected
+ok 149 - TC-AUTH-010 repo wire URL "https:///host/repo.git" is rejected
+  ---
+  duration_ms: 552.0355
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire URL "ssh://git@[fe80::1%25eth0]/repo.git" is rejected
+ok 150 - TC-AUTH-010 repo wire URL "ssh://git@[fe80::1%25eth0]/repo.git" is rejected
+  ---
+  duration_ms: 590.0604
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire URL "ssh://git@[2001:db8::1]/repo.git" is accepted
+ok 151 - TC-AUTH-010 repo wire URL "ssh://git@[2001:db8::1]/repo.git" is accepted
+  ---
+  duration_ms: 610.6028
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire URL "http:repo.git" is rejected
+ok 152 - TC-AUTH-010 repo wire URL "http:repo.git" is rejected
+  ---
+  duration_ms: 562.648
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire URL "buildhost:repo name.git" is accepted
+ok 153 - TC-AUTH-010 repo wire URL "buildhost:repo name.git" is accepted
+  ---
+  duration_ms: 577.3382
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire URL "buildhost:repo@name.git" is rejected
+ok 154 - TC-AUTH-010 repo wire URL "buildhost:repo@name.git" is rejected
+  ---
+  duration_ms: 482.9619
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire URL "@host:repo.git" is rejected
+ok 155 - TC-AUTH-010 repo wire URL "@host:repo.git" is rejected
+  ---
+  duration_ms: 474.368
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire absolute path "\\\\\\\\repo" is rejected
+ok 156 - TC-AUTH-010 repo wire absolute path "\\\\\\\\repo" is rejected
+  ---
+  duration_ms: 418.7537
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire absolute path "\\\\\\\\server\\\\" is rejected
+ok 157 - TC-AUTH-010 repo wire absolute path "\\\\\\\\server\\\\" is rejected
+  ---
+  duration_ms: 457.4085
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire absolute path "\\\\\\\\server/share" is rejected
+ok 158 - TC-AUTH-010 repo wire absolute path "\\\\\\\\server/share" is rejected
+  ---
+  duration_ms: 451.4708
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire absolute path "C:repo" is rejected
+ok 159 - TC-AUTH-010 repo wire absolute path "C:repo" is rejected
+  ---
+  duration_ms: 456.9456
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire absolute path "\\\\\\\\server\\\\share" is accepted
+ok 160 - TC-AUTH-010 repo wire absolute path "\\\\\\\\server\\\\share" is accepted
+  ---
+  duration_ms: 407.9454
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire absolute path "C:\\\\repo" is accepted
+ok 161 - TC-AUTH-010 repo wire absolute path "C:\\\\repo" is accepted
+  ---
+  duration_ms: 394.6698
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire absolute path "/tmp/repo" is accepted
+ok 162 - TC-AUTH-010 repo wire absolute path "/tmp/repo" is accepted
+  ---
+  duration_ms: 458.4513
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire absolute path "\\\\\\\\server\\\\share\\\\\\\\dir" is rejected
+ok 163 - TC-AUTH-010 repo wire absolute path "\\\\\\\\server\\\\share\\\\\\\\dir" is rejected
+  ---
+  duration_ms: 448.8819
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire absolute path "\\\\\\\\server\\\\share\\\\" is accepted
+ok 164 - TC-AUTH-010 repo wire absolute path "\\\\\\\\server\\\\share\\\\" is accepted
+  ---
+  duration_ms: 409.9877
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 repo wire native operational root uses common-dir for linked worktree
+ok 165 - TC-AUTH-008 repo wire native operational root uses common-dir for linked worktree
+  ---
+  duration_ms: 647.3231
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 repo wire native operational root rejects C1 before challenge
+ok 166 - TC-AUTH-008 repo wire native operational root rejects C1 before challenge
+  ---
+  duration_ms: 528.9484
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 copied grant and source cannot relocate the frozen local installation
+ok 167 - TC-AUTH-008 copied grant and source cannot relocate the frozen local installation
+  ---
+  duration_ms: 770.7304
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 matching opaque daemon identity remains a proof subset, not business admission
+ok 168 - TC-AUTH-008 matching opaque daemon identity remains a proof subset, not business admission
+  ---
+  duration_ms: 515.8589
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 fresh signature for another resource cannot replace the frozen control root
+ok 169 - TC-AUTH-008 fresh signature for another resource cannot replace the frozen control root
+  ---
+  duration_ms: 445.1527
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 binding component accepts a fresh proof but still denies unimplemented consumption
+ok 170 - TC-AUTH-008 binding component accepts a fresh proof but still denies unimplemented consumption
+  ---
+  duration_ms: 521.2235
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-003 authorization-bind rejects a tampered signature without changing CR facts
+ok 171 - TC-AUTH-003 authorization-bind rejects a tampered signature without changing CR facts
+  ---
+  duration_ms: 428.5799
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-003 authorization-bind rejects old signing domain
+ok 172 - TC-AUTH-003 authorization-bind rejects old signing domain
+  ---
+  duration_ms: 506.0322
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-003 authorization-bind rejects unknown installed key
+ok 173 - TC-AUTH-003 authorization-bind rejects unknown installed key
+  ---
+  duration_ms: 560.87
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 authorization-bind rejects payload bytes changed by CRLF
+ok 174 - TC-AUTH-010 authorization-bind rejects payload bytes changed by CRLF
+  ---
+  duration_ms: 600.7002
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 authorization-bind rejects noncanonical signature base64
+ok 175 - TC-AUTH-010 authorization-bind rejects noncanonical signature base64
+  ---
+  duration_ms: 512.4443
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-004 authorization-bind rejects an installed key directory escaping the workspace
+ok 176 - TC-AUTH-004 authorization-bind rejects an installed key directory escaping the workspace
+  ---
+  duration_ms: 463.8272
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-TRUST-ROOT agent-writable copies cannot outrank the declared daemon trust root
+ok 177 - TC-AUTH-TRUST-ROOT agent-writable copies cannot outrank the declared daemon trust root
+  ---
+  duration_ms: 730.8094
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-TRUST-ROOT a trust root inside the agent-writable install root is refused
+ok 178 - TC-AUTH-TRUST-ROOT a trust root inside the agent-writable install root is refused
+  ---
+  duration_ms: 452.6796
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-001 explicit read-only source check verifies frozen bytes without binding
+ok 179 - TC-AUTH-001 explicit read-only source check verifies frozen bytes without binding
+  ---
+  duration_ms: 430.5884
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-009 strict revoke is independently readable without restoring authorization
+ok 180 - TC-AUTH-009 strict revoke is independently readable without restoring authorization
+  ---
+  duration_ms: 461.8637
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-009 revoke cannot enter binding or admission
+ok 181 - TC-AUTH-009 revoke cannot enter binding or admission
+  ---
+  duration_ms: 561.9696
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects budget reset
+ok 182 - TC-AUTH-010 strict revoke rejects budget reset
+  ---
+  duration_ms: 436.4671
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects replacement scope
+ok 183 - TC-AUTH-010 strict revoke rejects replacement scope
+  ---
+  duration_ms: 433.3884
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects purpose extend
+ok 184 - TC-AUTH-010 strict revoke rejects purpose extend
+  ---
+  duration_ms: 447.4821
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects purpose migrate
+ok 185 - TC-AUTH-010 strict revoke rejects purpose migrate
+  ---
+  duration_ms: 451.4301
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects purpose sensitive
+ok 186 - TC-AUTH-010 strict revoke rejects purpose sensitive
+  ---
+  duration_ms: 433.9797
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects purpose repair-resume
+ok 187 - TC-AUTH-010 strict revoke rejects purpose repair-resume
+  ---
+  duration_ms: 434.2388
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects purpose initial
+ok 188 - TC-AUTH-010 strict revoke rejects purpose initial
+  ---
+  duration_ms: 445.0352
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects missing lineage
+ok 189 - TC-AUTH-010 strict revoke rejects missing lineage
+  ---
+  duration_ms: 451.2293
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects uppercase lineage
+ok 190 - TC-AUTH-010 strict revoke rejects uppercase lineage
+  ---
+  duration_ms: 451.1726
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects new grant is lineage
+ok 191 - TC-AUTH-010 strict revoke rejects new grant is lineage
+  ---
+  duration_ms: 468.6323
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects wrong predecessor
+ok 192 - TC-AUTH-010 strict revoke rejects wrong predecessor
+  ---
+  duration_ms: 461.8503
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects wrong predecessor digest
+ok 193 - TC-AUTH-010 strict revoke rejects wrong predecessor digest
+  ---
+  duration_ms: 439.8274
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects revision 0
+ok 194 - TC-AUTH-010 strict revoke rejects revision 0
+  ---
+  duration_ms: 405.83
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects revision 1
+ok 195 - TC-AUTH-010 strict revoke rejects revision 1
+  ---
+  duration_ms: 415.34
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects revision 3
+ok 196 - TC-AUTH-010 strict revoke rejects revision 3
+  ---
+  duration_ms: 446.9285
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects revision 2.5
+ok 197 - TC-AUTH-010 strict revoke rejects revision 2.5
+  ---
+  duration_ms: 435.9604
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects revision 9007199254740992
+ok 198 - TC-AUTH-010 strict revoke rejects revision 9007199254740992
+  ---
+  duration_ms: 500.5771
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects revision 2
+ok 199 - TC-AUTH-010 strict revoke rejects revision 2
+  ---
+  duration_ms: 513.2195
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects revision null
+ok 200 - TC-AUTH-010 strict revoke rejects revision null
+  ---
+  duration_ms: 439.0279
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects reason 0
+ok 201 - TC-AUTH-010 strict revoke rejects reason 0
+  ---
+  duration_ms: 443.2094
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects reason 1
+ok 202 - TC-AUTH-010 strict revoke rejects reason 1
+  ---
+  duration_ms: 466.8908
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects reason 2
+ok 203 - TC-AUTH-010 strict revoke rejects reason 2
+  ---
+  duration_ms: 451.2194
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects reason 3
+ok 204 - TC-AUTH-010 strict revoke rejects reason 3
+  ---
+  duration_ms: 438.4011
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects reason 4
+ok 205 - TC-AUTH-010 strict revoke rejects reason 4
+  ---
+  duration_ms: 412.9867
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects reason 5
+ok 206 - TC-AUTH-010 strict revoke rejects reason 5
+  ---
+  duration_ms: 433.6135
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects reason 6
+ok 207 - TC-AUTH-010 strict revoke rejects reason 6
+  ---
+  duration_ms: 422.9919
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects reason 7
+ok 208 - TC-AUTH-010 strict revoke rejects reason 7
+  ---
+  duration_ms: 454.9184
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects unknown policy
+ok 209 - TC-AUTH-010 strict revoke rejects unknown policy
+  ---
+  duration_ms: 450.1759
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects non-string digest
+ok 210 - TC-AUTH-010 strict revoke rejects non-string digest
+  ---
+  duration_ms: 433.9899
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects unexpected mapping
+ok 211 - TC-AUTH-010 strict revoke rejects unexpected mapping
+  ---
+  duration_ms: 509.6392
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-009 revoke source rejects unknown actor
+ok 212 - TC-AUTH-009 revoke source rejects unknown actor
+  ---
+  duration_ms: 419.4558
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-009 revoke source rejects changed reason
+ok 213 - TC-AUTH-009 revoke source rejects changed reason
+  ---
+  duration_ms: 414.3538
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-009 revoke source rejects changed predecessor
+ok 214 - TC-AUTH-009 revoke source rejects changed predecessor
+  ---
+  duration_ms: 401.6349
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-009 revoke source rejects string revision
+ok 215 - TC-AUTH-009 revoke source rejects string revision
+  ---
+  duration_ms: 446.2188
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-009 revoke source rejects duplicate reason
+ok 216 - TC-AUTH-009 revoke source rejects duplicate reason
+  ---
+  duration_ms: 441.8018
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-009 revoke source rejects escaped duplicate reason
+ok 217 - TC-AUTH-009 revoke source rejects escaped duplicate reason
+  ---
+  duration_ms: 419.3993
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 revoke accepts reason at byte limit
+ok 218 - TC-AUTH-010 revoke accepts reason at byte limit
+  ---
+  duration_ms: 410.3876
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 revoke accepts reason at Unicode White_Space does not include BOM
+ok 219 - TC-AUTH-010 revoke accepts reason at Unicode White_Space does not include BOM
+  ---
+  duration_ms: 442.8113
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-009 source checking is explicit and never claims current head or admission
+ok 220 - TC-AUTH-009 source checking is explicit and never claims current head or admission
+  ---
+  duration_ms: 797.9792
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 revoke purpose dispatch rejects a signed non-object
+ok 221 - TC-AUTH-010 revoke purpose dispatch rejects a signed non-object
+  ---
+  duration_ms: 857.7931
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 signed binding rejects a rounded fractional process_id
+ok 222 - TC-AUTH-008 signed binding rejects a rounded fractional process_id
+  ---
+  duration_ms: 613.1047
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 signed binding rejects a rounded fractional authorization_revision
+ok 223 - TC-AUTH-008 signed binding rejects a rounded fractional authorization_revision
+  ---
+  duration_ms: 587.5981
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 raw integer validation preserves maximum-safe scope and numeric-looking text
+ok 224 - TC-AUTH-010 raw integer validation preserves maximum-safe scope and numeric-looking text
+  ---
+  duration_ms: 661.3746
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 raw number rejects rounded signed revision 2.0000000000000001
+ok 225 - TC-AUTH-010 raw number rejects rounded signed revision 2.0000000000000001
+  ---
+  duration_ms: 457.5602
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 raw number rejects rounded source revision 2.0000000000000001
+ok 226 - TC-AUTH-010 raw number rejects rounded source revision 2.0000000000000001
+  ---
+  duration_ms: 456.9047
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 raw number rejects rounded signed revision 1.99999999999999999
+ok 227 - TC-AUTH-010 raw number rejects rounded signed revision 1.99999999999999999
+  ---
+  duration_ms: 429.5264
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 raw number rejects rounded source revision 1.99999999999999999
+ok 228 - TC-AUTH-010 raw number rejects rounded source revision 1.99999999999999999
+  ---
+  duration_ms: 425.2959
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 raw number rejects nonzero underflow in repair_limit
+ok 229 - TC-AUTH-010 raw number rejects nonzero underflow in repair_limit
+  ---
+  duration_ms: 476.3081
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 raw number rejects nonzero underflow in sensitive_action_limit
+ok 230 - TC-AUTH-010 raw number rejects nonzero underflow in sensitive_action_limit
+  ---
+  duration_ms: 549.8364
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 source check accepts signed zero with original negative-zero repair_limit
+ok 231 - TC-AUTH-010 source check accepts signed zero with original negative-zero repair_limit
+  ---
+  duration_ms: 441.1349
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 source check accepts signed zero with original negative-zero sensitive_action_limit
+ok 232 - TC-AUTH-010 source check accepts signed zero with original negative-zero sensitive_action_limit
+  ---
+  duration_ms: 465.5126
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-005
+ok 233 - TC-AUTH-005
+  ---
+  duration_ms: 1123.9147
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-006
+ok 234 - TC-AUTH-006
+  ---
+  duration_ms: 1207.0627
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-007
+ok 235 - TC-AUTH-007
+  ---
+  duration_ms: 486.266
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-002
+ok 236 - TC-AUTH-002
+  ---
+  duration_ms: 864.0366
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 CLI: an in-scope candidate passes with a signed grant
+ok 237 - SC-AUTH-004 CLI: an in-scope candidate passes with a signed grant
+  ---
+  duration_ms: 1388.5649
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 CLI: an out-of-scope candidate fails closed
+ok 238 - SC-AUTH-004 CLI: an out-of-scope candidate fails closed
+  ---
+  duration_ms: 1593.7782
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 CLI: a grant frozen to another directory is an identity mismatch
+ok 239 - SC-AUTH-004 CLI: a grant frozen to another directory is an identity mismatch
+  ---
+  duration_ms: 1494.8384
+  type: 'test'
+  ...
+# Subtest: R1：手写 guard-deny 文件且同段无 crctl → CONTRADICTS
+ok 240 - R1：手写 guard-deny 文件且同段无 crctl → CONTRADICTS
+  ---
+  duration_ms: 106.299
+  type: 'test'
+  ...
+# Subtest: R1 豁免：同段含 crctl 调用（正确示范）不误报
+ok 241 - R1 豁免：同段含 crctl 调用（正确示范）不误报
+  ---
+  duration_ms: 76.0854
+  type: 'test'
+  ...
+# Subtest: R1 豁免：<!-- lint-prompts:ignore --> 跳过该段
+ok 242 - R1 豁免：<!-- lint-prompts:ignore --> 跳过该段
+  ---
+  duration_ms: 84.4791
+  type: 'test'
+  ...
+# Subtest: R1 判据 CR 域锚定（AIFI-36）：change-requests 域手写命中；planning 域自有记录路径不误报
+ok 243 - R1 判据 CR 域锚定（AIFI-36）：change-requests 域手写命中；planning 域自有记录路径不误报
+  ---
+  duration_ms: 91.7947
+  type: 'test'
+  ...
+# Subtest: R2：裸 git 命令 → CONTRADICTS；crctl git 形态不报
+ok 244 - R2：裸 git 命令 → CONTRADICTS；crctl git 形态不报
+  ---
+  duration_ms: 80.6982
+  type: 'test'
+  ...
+# Subtest: R3/R4：cr-status-set / 六字段口径 → STALE-REF / CONTRADICTS
+ok 245 - R3/R4：cr-status-set / 六字段口径 → STALE-REF / CONTRADICTS
+  ---
+  duration_ms: 88.0403
+  type: 'test'
+  ...
+# Subtest: R5：手写 review-loop 记账（配合写动词）→ OUTDATED
+ok 246 - R5：手写 review-loop 记账（配合写动词）→ OUTDATED
+  ---
+  duration_ms: 88.8203
+  type: 'test'
+  ...
+# Subtest: R5 不误报：passCondition 读取声明（无写动词）
+ok 247 - R5 不误报：passCondition 读取声明（无写动词）
+  ---
+  duration_ms: 83.8799
+  type: 'test'
+  ...
+# Subtest: R5 不误报：同段别处写 audit.log + 本句否定式写动词
+ok 248 - R5 不误报：同段别处写 audit.log + 本句否定式写动词
+  ---
+  duration_ms: 77.9649
+  type: 'test'
+  ...
+# Subtest: R5 仍命中：同句内非否定写动词
+ok 249 - R5 仍命中：同句内非否定写动词
+  ---
+  duration_ms: 116.9553
+  type: 'test'
+  ...
+# Subtest: R6：test-report.md 手写 frontmatter → CONTRADICTS
+ok 250 - R6：test-report.md 手写 frontmatter → CONTRADICTS
+  ---
+  duration_ms: 80.3551
+  type: 'test'
+  ...
+# Subtest: enforce 模式：有 CONTRADICTS/STALE-REF → exit 1 + LINT_DRIFT
+ok 251 - enforce 模式：有 CONTRADICTS/STALE-REF → exit 1 + LINT_DRIFT
+  ---
+  duration_ms: 76.0394
+  type: 'test'
+  ...
+# Subtest: enforce 模式：零漂移 → exit 0
+ok 252 - enforce 模式：零漂移 → exit 0
+  ---
+  duration_ms: 113.3812
+  type: 'test'
+  ...
+# Subtest: R7：crctl advance 全角分隔符/伪旗标 → CONTRADICTS
+ok 253 - R7：crctl advance 全角分隔符/伪旗标 → CONTRADICTS
+  ---
+  duration_ms: 91.8387
+  type: 'test'
+  ...
+# Subtest: R7：advance 缺 --trigger → CONTRADICTS；完整形态不报
+ok 254 - R7：advance 缺 --trigger → CONTRADICTS；完整形态不报
+  ---
+  duration_ms: 78.0963
+  type: 'test'
+  ...
+# Subtest: R7：backlog-set 字段越白名单 + --template subject 缺 CR 编号 → CONTRADICTS
+ok 255 - R7：backlog-set 字段越白名单 + --template subject 缺 CR 编号 → CONTRADICTS
+  ---
+  duration_ms: 92.3003
+  type: 'test'
+  ...
+# Subtest: CR-2026-063 AC-8：R7 配对——gate 与 --mode pre-review 同现但缺 --for requirement-reviewing → CONTRADICTS；两者同现不报
+ok 256 - CR-2026-063 AC-8：R7 配对——gate 与 --mode pre-review 同现但缺 --for requirement-reviewing → CONTRADICTS；两者同现不报
+  ---
+  duration_ms: 160.1892
+  type: 'test'
+  ...
+# Subtest: R8：函数式 inbox-emit + 枚举外 event → CONTRADICTS；合法 event 不报
+ok 257 - R8：函数式 inbox-emit + 枚举外 event → CONTRADICTS；合法 event 不报
+  ---
+  duration_ms: 86.4096
+  type: 'test'
+  ...
+# Subtest: 豁免收窄：注释与违规行隔 3+ 行 → 仍命中；±1 行内 → 豁免（FR-25 契约）
+ok 258 - 豁免收窄：注释与违规行隔 3+ 行 → 仍命中；±1 行内 → 豁免（FR-25 契约）
+  ---
+  duration_ms: 84.6704
+  type: 'test'
+  ...
+# Subtest: R9：CR 上下文「下一步」手写 skill 副本 → CONTRADICTS；crctl next 形态不报
+ok 259 - R9：CR 上下文「下一步」手写 skill 副本 → CONTRADICTS；crctl next 形态不报
+  ---
+  duration_ms: 99.5996
+  type: 'test'
+  ...
+# Subtest: R9：域外 SKILL.md 的「下一步」不受约束（含真实 skill id 也不报）
+ok 260 - R9：域外 SKILL.md 的「下一步」不受约束（含真实 skill id 也不报）
+  ---
+  duration_ms: 83.2777
+  type: 'test'
+  ...
+# Subtest: R9：pipeline 名副本（下一步指向 pipeline 而非 skill）→ CONTRADICTS
+ok 261 - R9：pipeline 名副本（下一步指向 pipeline 而非 skill）→ CONTRADICTS
+  ---
+  duration_ms: 83.7858
+  type: 'test'
+  ...
+# Subtest: R9 记述性豁免：CR 上下文域内无 skill id 的「下一步」行（标题/描述性）→ 不报
+ok 262 - R9 记述性豁免：CR 上下文域内无 skill id 的「下一步」行（标题/描述性）→ 不报
+  ---
+  duration_ms: 81.9713
+  type: 'test'
+  ...
+# Subtest: R7 权威字面量：完整 NORMAL pair 通过；短 trigger → CONTRADICTS（AC-27）
+ok 263 - R7 权威字面量：完整 NORMAL pair 通过；短 trigger → CONTRADICTS（AC-27）
+  ---
+  duration_ms: 107.5028
+  type: 'test'
+  ...
+# Subtest: R7：trigger 存在但 to 不匹配 → CONTRADICTS（AC-27）
+ok 264 - R7：trigger 存在但 to 不匹配 → CONTRADICTS（AC-27）
+  ---
+  duration_ms: 83.809
+  type: 'test'
+  ...
+# Subtest: R7：to/trigger 含模板变量 → 跳过 literal 校验（AC-29）
+ok 265 - R7：to/trigger 含模板变量 → 跳过 literal 校验（AC-29）
+  ---
+  duration_ms: 85.19
+  type: 'test'
+  ...
+# Subtest: R7：LF/CRLF 输入等价（AC-28）
+ok 266 - R7：LF/CRLF 输入等价（AC-28）
+  ---
+  duration_ms: 167.1465
+  type: 'test'
+  ...
+# Subtest: R7 transitions 错层 → STATE_MACHINE_PARSE_FAILED 非零退出（AC-28）
+ok 267 - R7 transitions 错层 → STATE_MACHINE_PARSE_FAILED 非零退出（AC-28）
+  ---
+  duration_ms: 80.906
+  type: 'test'
+  ...
+# Subtest: R7 transitions duplicate → STATE_MACHINE_PARSE_FAILED 非零退出（AC-28）
+ok 268 - R7 transitions duplicate → STATE_MACHINE_PARSE_FAILED 非零退出（AC-28）
+  ---
+  duration_ms: 68.8352
+  type: 'test'
+  ...
+# Subtest: R7 transitions missing → STATE_MACHINE_PARSE_FAILED 非零退出（AC-28）
+ok 269 - R7 transitions missing → STATE_MACHINE_PARSE_FAILED 非零退出（AC-28）
+  ---
+  duration_ms: 74.7793
+  type: 'test'
+  ...
+# Subtest: R7 transitions empty → STATE_MACHINE_PARSE_FAILED 非零退出（AC-28）
+ok 270 - R7 transitions empty → STATE_MACHINE_PARSE_FAILED 非零退出（AC-28）
+  ---
+  duration_ms: 70.0799
+  type: 'test'
+  ...
+# Subtest: R7 transitions malformed → STATE_MACHINE_PARSE_FAILED 非零退出（AC-28）
+ok 271 - R7 transitions malformed → STATE_MACHINE_PARSE_FAILED 非零退出（AC-28）
+  ---
+  duration_ms: 75.9653
+  type: 'test'
+  ...
+# Subtest: R7 transitions truncated → STATE_MACHINE_PARSE_FAILED 非零退出（AC-28）
+ok 272 - R7 transitions truncated → STATE_MACHINE_PARSE_FAILED 非零退出（AC-28）
+  ---
+  duration_ms: 94.59
+  type: 'test'
+  ...
+# Subtest: R10：cr-init / crctl test 旧旗标 / review_llm → CONTRADICTS
+ok 273 - R10：cr-init / crctl test 旧旗标 / review_llm → CONTRADICTS
+  ---
+  duration_ms: 92.8585
+  type: 'test'
+  ...
+# Subtest: R10 不误报：crctl test --plan 与 crctl register 不报
+ok 274 - R10 不误报：crctl test --plan 与 crctl register 不报
+  ---
+  duration_ms: 78.4153
+  type: 'test'
+  ...
+# Subtest: R11：已退役 Skill active 引用 → STALE-REF
+ok 275 - R11：已退役 Skill active 引用 → STALE-REF
+  ---
+  duration_ms: 77.3752
+  type: 'test'
+  ...
+# Subtest: R12：Agent/README 同段 3+ 具名状态 → CONTRADICTS；2 个状态不误报
+ok 276 - R12：Agent/README 同段 3+ 具名状态 → CONTRADICTS；2 个状态不误报
+  ---
+  duration_ms: 78.9517
+  type: 'test'
+  ...
+# Subtest: R12 不适用：Skill 同段 3+ 状态不报（只约束 Agent/README）
+ok 277 - R12 不适用：Skill 同段 3+ 状态不报（只约束 Agent/README）
+  ---
+  duration_ms: 73.1614
+  type: 'test'
+  ...
+# Subtest: R13：Agent 从 _backlog.yml 推断 status/状态 → CONTRADICTS；只读上下文不误报
+ok 278 - R13：Agent 从 _backlog.yml 推断 status/状态 → CONTRADICTS；只读上下文不误报
+  ---
+  duration_ms: 80.9576
+  type: 'test'
+  ...
+# Subtest: R12/R13：LF 与 CRLF 输入结果一致
+ok 279 - R12/R13：LF 与 CRLF 输入结果一致
+  ---
+  duration_ms: 161.473
+  type: 'test'
+  ...
+# Subtest: R13 豁免：<!-- lint-prompts:ignore --> ±1 行内豁免
+ok 280 - R13 豁免：<!-- lint-prompts:ignore --> ±1 行内豁免
+  ---
+  duration_ms: 82.5516
+  type: 'test'
+  ...
+# Subtest: SC-EVD-009：恢复同一发布操作时审批被重做 → 拒绝重放
+ok 281 - SC-EVD-009：恢复同一发布操作时审批被重做 → 拒绝重放
+  ---
+  duration_ms: 10476.0902
+  type: 'test'
+  ...
+# Subtest: SC-EVD-009：不可逆发布之前重跑时，重做的审批仍可被采纳（不卡死）
+ok 282 - SC-EVD-009：不可逆发布之前重跑时，重做的审批仍可被采纳（不卡死）
+  ---
+  duration_ms: 14043.1934
+  type: 'test'
+  ...
+# Subtest: SC-EVD-009：push 成功但 journal 未落盘时，不得刷新 receipt 后按新审批续发
+ok 283 - SC-EVD-009：push 成功但 journal 未落盘时，不得刷新 receipt 后按新审批续发
+  ---
+  duration_ms: 9033.1839
+  type: 'test'
+  ...
+# Subtest: SC-EVD-009 正对照：receipt 未变的恢复仍然续跑完成
+ok 284 - SC-EVD-009 正对照：receipt 未变的恢复仍然续跑完成
+  ---
+  duration_ms: 15384.1919
+  type: 'test'
+  ...
+# Subtest: CR-2026-038 TASK-03：backlog 只替换目标完整条目并逐字保留 trunk 其余内容
+ok 285 - CR-2026-038 TASK-03：backlog 只替换目标完整条目并逐字保留 trunk 其余内容
+  ---
+  duration_ms: 2.6955
+  type: 'test'
+  ...
+# Subtest: CR-2026-038 TASK-03：semantic tree 保留 trunk 并发条目且最终 parents 仍为 base + 原 source
+ok 286 - CR-2026-038 TASK-03：semantic tree 保留 trunk 并发条目且最终 parents 仍为 base + 原 source
+  ---
+  duration_ms: 3797.2234
+  type: 'test'
+  ...
+# Subtest: TASK-07 AC-1/3：happy path 三仓 lease publish + detached txws 单 finalize commit，authority 切换
+ok 287 - TASK-07 AC-1/3：happy path 三仓 lease publish + detached txws 单 finalize commit，authority 切换
+  ---
+  duration_ms: 13358.793
+  type: 'test'
+  ...
+# Subtest: TASK-07 AC-1：prepare conflict 返回 MERGE_PREPARE_CONFLICT 且零远端副作用
+ok 288 - TASK-07 AC-1：prepare conflict 返回 MERGE_PREPARE_CONFLICT 且零远端副作用
+  ---
+  duration_ms: 7967.1592
+  type: 'test'
+  ...
+# Subtest: TASK-07 AC-1/2：第二仓 push 后 fault，重跑不重复已 confirmed push，部分发布保持 code-approved
+ok 289 - TASK-07 AC-1/2：第二仓 push 后 fault，重跑不重复已 confirmed push，部分发布保持 code-approved
+  ---
+  duration_ms: 14420.6561
+  type: 'test'
+  ...
+# Subtest: TASK-07 AC-1：push 成功响应丢失（observation 前 fault）→ 重放 classify confirmed 跳过
+ok 290 - TASK-07 AC-1：push 成功响应丢失（observation 前 fault）→ 重放 classify confirmed 跳过
+  ---
+  duration_ms: 13393.3236
+  type: 'test'
+  ...
+# Subtest: TASK-07 AC-1：remote stale → rebuild 到新 origin base 续跑
+ok 291 - TASK-07 AC-1：remote stale → rebuild 到新 origin base 续跑
+  ---
+  duration_ms: 13474.4035
+  type: 'test'
+  ...
+# Subtest: TASK-07 AC-1：finalize stale → detached txws 从新 base 重建 finalize commit
+ok 292 - TASK-07 AC-1：finalize stale → detached txws 从新 base 重建 finalize commit
+  ---
+  duration_ms: 13429.5045
+  type: 'test'
+  ...
+# Subtest: TASK-07 AC-1：history rewrite 硬阻断 MERGE_REMOTE_HISTORY_REWRITTEN
+ok 293 - TASK-07 AC-1：history rewrite 硬阻断 MERGE_REMOTE_HISTORY_REWRITTEN
+  ---
+  duration_ms: 9884.1486
+  type: 'test'
+  ...
+# Subtest: TASK-07 AC-2：零 publish 的 code drift → release-drift 回退 code-approved -> developing
+ok 294 - TASK-07 AC-2：零 publish 的 code drift → release-drift 回退 code-approved -> developing
+  ---
+  duration_ms: 5088.9244
+  type: 'test'
+  ...
+# Subtest: TASK-07 AC-1：PRD 漂移零 publish → APPROVED_ARTIFACT_DRIFT 硬阻断
+ok 295 - TASK-07 AC-1：PRD 漂移零 publish → APPROVED_ARTIFACT_DRIFT 硬阻断
+  ---
+  duration_ms: 4125.264
+  type: 'test'
+  ...
+# Subtest: CR-2026-076 B-06：合法本地信任下受控 artifact 正文漂移只警告并继续合入；非合法本地信任（旧夹具）仍硬阻断
+ok 296 - CR-2026-076 B-06：合法本地信任下受控 artifact 正文漂移只警告并继续合入；非合法本地信任（旧夹具）仍硬阻断
+  ---
+  duration_ms: 17630.3496
+  type: 'test'
+  ...
+# Subtest: CR-2026-076 B-06（回修）：合法 TASK 集合增删在 merge 面同判为 warning 并继续合入；未登记 TASK（非法索引）仍不得合入
+ok 297 - CR-2026-076 B-06（回修）：合法 TASK 集合增删在 merge 面同判为 warning 并继续合入；未登记 TASK（非法索引）仍不得合入
+  ---
+  duration_ms: 33739.8221
+  type: 'test'
+  ...
+# Subtest: CR-2026-044 TASK-01 ③: merge publication preflight — 远端 source 缺失/滞后在首次 prepare 前阻断且 recovery 指向 checkpoint（红测试）
+ok 298 - CR-2026-044 TASK-01 ③: merge publication preflight — 远端 source 缺失/滞后在首次 prepare 前阻断且 recovery 指向 checkpoint（红测试）
+  ---
+  duration_ms: 10736.8798
+  type: 'test'
+  ...
+# Subtest: CR-2026-044 TASK-04 AC-2: publication lag 阻断后先 checkpoint（模拟 push）再重跑 merge 成功进入 prepare/publish/finalize
+ok 299 - CR-2026-044 TASK-04 AC-2: publication lag 阻断后先 checkpoint（模拟 push）再重跑 merge 成功进入 prepare/publish/finalize
+  ---
+  duration_ms: 10963.6583
+  type: 'test'
+  ...
+# Subtest: CR-2026-044 TASK-04 AC-5: 已有 prepare journal 的 trunk rebuild 使用冻结 sourceSha，不采纳移动的 requirement ref
+ok 300 - CR-2026-044 TASK-04 AC-5: 已有 prepare journal 的 trunk rebuild 使用冻结 sourceSha，不采纳移动的 requirement ref
+  ---
+  duration_ms: 11914.3144
+  type: 'test'
+  ...
+# Subtest: CR-2026-046 TASK-02 AC-6/7：happy path 三仓 localTrunkSync=synced 且主 checkout 快进
+ok 301 - CR-2026-046 TASK-02 AC-6/7：happy path 三仓 localTrunkSync=synced 且主 checkout 快进
+  ---
+  duration_ms: 9622.2124
+  type: 'test'
+  ...
+# Subtest: CR-2026-046 TASK-02 AC-6：reconcileLocalTrunks 表驱动六场景
+ok 302 - CR-2026-046 TASK-02 AC-6：reconcileLocalTrunks 表驱动六场景
+  ---
+  duration_ms: 6279.0675
+  type: 'test'
+  ...
+# Subtest: CR-2026-046 TASK-02 AC-7：local-sync-ff-only-failed 注入下 merge 仍 phase=complete 且远端成功
+ok 303 - CR-2026-046 TASK-02 AC-7：local-sync-ff-only-failed 注入下 merge 仍 phase=complete 且远端成功
+  ---
+  duration_ms: 9357.363
+  type: 'test'
+  ...
+# Subtest: TASK-09 AC-17：code 仓 HEAD 变但 tree 相同 → merge 以等价源继续，SHA 保留在追溯与发布记录
+ok 304 - TASK-09 AC-17：code 仓 HEAD 变但 tree 相同 → merge 以等价源继续，SHA 保留在追溯与发布记录
+  ---
+  duration_ms: 13755.9118
+  type: 'test'
+  ...
+# Subtest: TASK-09 AC-20：批准源不可解析 → 不判等价、不补造历史 source（零 publish）
+ok 305 - TASK-09 AC-20：批准源不可解析 → 不判等价、不补造历史 source（零 publish）
+  ---
+  duration_ms: 5389.1568
+  type: 'test'
+  ...
+# Subtest: TASK-09 AC-21：知识仓其他 CR 账本变化不计为当前代码资源变化；code 仓 tree 变化使结论不等价
+ok 306 - TASK-09 AC-21：知识仓其他 CR 账本变化不计为当前代码资源变化；code 仓 tree 变化使结论不等价
+  ---
+  duration_ms: 4800.9999
+  type: 'test'
+  ...
+# Subtest: TASK-09 单缝约束：tree 比较实现只有 lib/workspace-transactions.mjs 一处，crctl 只调用不复制
+ok 307 - TASK-09 单缝约束：tree 比较实现只有 lib/workspace-transactions.mjs 一处，crctl 只调用不复制
+  ---
+  duration_ms: 17.8948
+  type: 'test'
+  ...
+# Subtest: TASK-01：writeback 业务输入使用固定键序 canonical digest
+ok 308 - TASK-01：writeback 业务输入使用固定键序 canonical digest
+  ---
+  duration_ms: 1.7287
+  type: 'test'
+  ...
+# Subtest: TASK-01：固定 generator 只在 ignored candidate 目录生成单次 snapshot
+ok 309 - TASK-01：固定 generator 只在 ignored candidate 目录生成单次 snapshot
+  ---
+  duration_ms: 13699.667
+  type: 'test'
+  ...
+# Subtest: AIFI-28：固定 generator 解析走 declared Tools Root，而非 4 层相对锚点
+ok 310 - AIFI-28：固定 generator 解析走 declared Tools Root，而非 4 层相对锚点
+  ---
+  duration_ms: 12177.0133
+  type: 'test'
+  ...
+# Subtest: TASK-02：内部 baseline 路径同一 commit 发布状态并在 origin-confirmed 后投影
+ok 311 - TASK-02：内部 baseline 路径同一 commit 发布状态并在 origin-confirmed 后投影
+  ---
+  duration_ms: 15475.5021
+  type: 'test'
+  ...
+# Subtest: TASK-02：journal-created 恢复冻结 transitionAt，业务参数漂移硬阻断
+ok 312 - TASK-02：journal-created 恢复冻结 transitionAt，业务参数漂移硬阻断
+  ---
+  duration_ms: 14207.4971
+  type: 'test'
+  ...
+# Subtest: S0 authority cleanup：baseline journal 恢复回调失败保留分类、零业务写入并释放锁
+ok 313 - S0 authority cleanup：baseline journal 恢复回调失败保留分类、零业务写入并释放锁
+  ---
+  duration_ms: 14267.5806
+  type: 'test'
+  ...
+# Subtest: TASK-02：投影失败不反转 Git，重放只补缺项
+ok 314 - TASK-02：投影失败不反转 Git，重放只补缺项
+  ---
+  duration_ms: 13348.0652
+  type: 'test'
+  ...
+# Subtest: TASK-04：公共 CLI 只收业务输入，baseline 同 commit 且幂等；旧/错 stage 参数拒绝
+ok 315 - TASK-04：公共 CLI 只收业务输入，baseline 同 commit 且幂等；旧/错 stage 参数拒绝
+  ---
+  duration_ms: 13575.8934
+  type: 'test'
+  ...
+# Subtest: TASK-04：writeback-after-commit fault 经同一业务命令续跑不重复 commit
+ok 316 - TASK-04：writeback-after-commit fault 经同一业务命令续跑不重复 commit
+  ---
+  duration_ms: 11664.2637
+  type: 'test'
+  ...
+# Subtest: review repair：commit 后 origin 前进先清除未发布事务，再以同一业务命令重建
+ok 317 - review repair：commit 后 origin 前进先清除未发布事务，再以同一业务命令重建
+  ---
+  duration_ms: 14492.6773
+  type: 'test'
+  ...
+# Subtest: review repair：commit 后 graphDigest 漂移硬阻断旧事务
+ok 318 - review repair：commit 后 graphDigest 漂移硬阻断旧事务
+  ---
+  duration_ms: 10847.1354
+  type: 'test'
+  ...
+# Subtest: TASK-04：traceability 公共业务参数全链路
+ok 319 - TASK-04：traceability 公共业务参数全链路
+  ---
+  duration_ms: 13587.2654
+  type: 'test'
+  ...
+# Subtest: CR-2026-057 FR-14/AC-14：三 stage × 两错误码零观察点 + 同参重试同码无增量（unassigned 向量并入 AC-1.2/AC-1.3 冻结负向向量，CR-2026-058 B-DP-03）
+ok 320 - CR-2026-057 FR-14/AC-14：三 stage × 两错误码零观察点 + 同参重试同码无增量（unassigned 向量并入 AC-1.2/AC-1.3 冻结负向向量，CR-2026-058 B-DP-03）
+  ---
+  duration_ms: 58453.6094
+  type: 'test'
+  ...
+# Subtest: CR-2026-057 FR-14/AC-14.6：版本错误优先于 WRITEBACK_STATE_MISMATCH（status=code-approved 未 merge 夹具）
+ok 321 - CR-2026-057 FR-14/AC-14.6：版本错误优先于 WRITEBACK_STATE_MISMATCH（status=code-approved 未 merge 夹具）
+  ---
+  duration_ms: 4455.3801
+  type: 'test'
+  ...
+# Subtest: CR-2026-057 FR-14/B-SDD-003：缺 flag → BAD_ARGS；显式空串 → WRITEBACK_VERSION_INVALID
+ok 322 - CR-2026-057 FR-14/B-SDD-003：缺 flag → BAD_ARGS；显式空串 → WRITEBACK_VERSION_INVALID
+  ---
+  duration_ms: 4380.5349
+  type: 'test'
+  ...
+# Subtest: CR-2026-057 FR-14/B-SDD-002：v0.2 输入回灌规范化值——journal businessInputDigest/manifest targetVersion 为 0.2
+ok 323 - CR-2026-057 FR-14/B-SDD-002：v0.2 输入回灌规范化值——journal businessInputDigest/manifest targetVersion 为 0.2
+  ---
+  duration_ms: 11337.4268
+  type: 'test'
+  ...
+# Subtest: CR-2026-058 AC-1.1：merged 夹具 cr.md=unassigned + 0.30 → 放行回灌两账本（含 v0.30 规范化等价）
+ok 324 - CR-2026-058 AC-1.1：merged 夹具 cr.md=unassigned + 0.30 → 放行回灌两账本（含 v0.30 规范化等价）
+  ---
+  duration_ms: 21228.2314
+  type: 'test'
+  ...
+# Subtest: CR-2026-058 AC-1.2：cr.md 真实 + 输入 unassigned → WRITEBACK_VERSION_UNASSIGNED 零观察点（三 stage）
+ok 325 - CR-2026-058 AC-1.2：cr.md 真实 + 输入 unassigned → WRITEBACK_VERSION_UNASSIGNED 零观察点（三 stage）
+  ---
+  duration_ms: 24794.7719
+  type: 'test'
+  ...
+# Subtest: CR-2026-058 AC-1.3：两侧 unassigned → WRITEBACK_VERSION_UNASSIGNED 零观察点
+ok 326 - CR-2026-058 AC-1.3：两侧 unassigned → WRITEBACK_VERSION_UNASSIGNED 零观察点
+  ---
+  duration_ms: 7961.469
+  type: 'test'
+  ...
+# Subtest: CR-2026-058 AC-2.1：成功回灌原子性——两账本同 commit、冻结产物哈希全等、后续 stage 版本行无新 diff
+ok 327 - CR-2026-058 AC-2.1：成功回灌原子性——两账本同 commit、冻结产物哈希全等、后续 stage 版本行无新 diff
+  ---
+  duration_ms: 12906.8394
+  type: 'test'
+  ...
+# Subtest: CR-2026-058 AC-2.2：backlog 预检五向量——冲突/缺失/重复/非法/幂等
+ok 328 - CR-2026-058 AC-2.2：backlog 预检五向量——冲突/缺失/重复/非法/幂等
+  ---
+  duration_ms: 50418.7052
+  type: 'test'
+  ...
+# Subtest: CR-2026-058 AC-2.3.1：writeback-after-apply 中断重试——direct tasks 回灌由 payload 重建（B-SDD-01）
+ok 329 - CR-2026-058 AC-2.3.1：writeback-after-apply 中断重试——direct tasks 回灌由 payload 重建（B-SDD-01）
+  ---
+  duration_ms: 10018.5459
+  type: 'test'
+  ...
+# Subtest: CR-2026-058 AC-2.3.1b：tx-apply-between-rename 部分 apply 冻结回归（B-SDD-01）
+ok 330 - CR-2026-058 AC-2.3.1b：tx-apply-between-rename 部分 apply 冻结回归（B-SDD-01）
+  ---
+  duration_ms: 9834.5319
+  type: 'test'
+  ...
+# Subtest: CR-2026-058 AC-2.3.2：writeback-after-commit 中断重试——不新增 commit、两账本版本行在唯一 commit 内
+ok 331 - CR-2026-058 AC-2.3.2：writeback-after-commit 中断重试——不新增 commit、两账本版本行在唯一 commit 内
+  ---
+  duration_ms: 9893.3561
+  type: 'test'
+  ...
+# Subtest: CR-2026-058 AC-2.3.3：writeback-after-push 中断重试——commit 不变、origin 不新增、两账本保持映像
+ok 332 - CR-2026-058 AC-2.3.3：writeback-after-push 中断重试——commit 不变、origin 不新增、两账本保持映像
+  ---
+  duration_ms: 10245.9303
+  type: 'test'
+  ...
+# Subtest: CR-2026-058 AC-3.1：worktree cr.md 版本漂移不影响守卫——以 txws 为准放行回灌、worktree 内容不变
+ok 333 - CR-2026-058 AC-3.1：worktree cr.md 版本漂移不影响守卫——以 txws 为准放行回灌、worktree 内容不变
+  ---
+  duration_ms: 9740.0405
+  type: 'test'
+  ...
+# Subtest: CR-2026-058 AC-3.2：窄解析器回退（source=cr-worktree）refill=false → WRITEBACK_STATE_MISMATCH 零写入
+ok 334 - CR-2026-058 AC-3.2：窄解析器回退（source=cr-worktree）refill=false → WRITEBACK_STATE_MISMATCH 零写入
+  ---
+  duration_ms: 3500.6616
+  type: 'test'
+  ...
+# Subtest: CR-2026-058 AC-6.1：回灌首次成功信封——phase=complete、changed=true、files 含两账本、recovery 规范化版本
+ok 335 - CR-2026-058 AC-6.1：回灌首次成功信封——phase=complete、changed=true、files 含两账本、recovery 规范化版本
+  ---
+  duration_ms: 9765.302
+  type: 'test'
+  ...
+# Subtest: CR-2026-058 AC-6.2：回灌失败信封——exit 1、stdout 无成功对象、error.backlog/error.input 扁平并入
+ok 336 - CR-2026-058 AC-6.2：回灌失败信封——exit 1、stdout 无成功对象、error.backlog/error.input 扁平并入
+  ---
+  duration_ms: 7871.2476
+  type: 'test'
+  ...
+# Subtest: CR-2026-060 AC-11：preflightTasksAllDone 三类 reason + 未知 status 硬失败 index-invalid
+ok 337 - CR-2026-060 AC-11：preflightTasksAllDone 三类 reason + 未知 status 硬失败 index-invalid
+  ---
+  duration_ms: 18.7911
+  type: 'test'
+  ...
+# Subtest: CR-2026-060 AC-02：resolveWritebackAuthorityStrict 返回 txws 快照；txws 缺失 → WRITEBACK_SPEC_REQUIRED
+ok 338 - CR-2026-060 AC-02：resolveWritebackAuthorityStrict 返回 txws 快照；txws 缺失 → WRITEBACK_SPEC_REQUIRED
+  ---
+  duration_ms: 7806.323
+  type: 'test'
+  ...
+# Subtest: CR-2026-060 AC-11：new mode baseline 省略 --spec-id/--target-version 从 strict authority 补全并发布 writing-back
+ok 339 - CR-2026-060 AC-11：new mode baseline 省略 --spec-id/--target-version 从 strict authority 补全并发布 writing-back
+  ---
+  duration_ms: 9436.8288
+  type: 'test'
+  ...
+# Subtest: CR-2026-060 AC-11：new mode txws 缺失 → WRITEBACK_SPEC_REQUIRED 零写入（不回退 cr-worktree）
+ok 340 - CR-2026-060 AC-11：new mode txws 缺失 → WRITEBACK_SPEC_REQUIRED 零写入（不回退 cr-worktree）
+  ---
+  duration_ms: 7931.4936
+  type: 'test'
+  ...
+# Subtest: CR-2026-060 AC-11：new mode stage=tasks 的 pending preflight → WRITEBACK_TASKS_PENDING（pending）零发布
+ok 341 - CR-2026-060 AC-11：new mode stage=tasks 的 pending preflight → WRITEBACK_TASKS_PENDING（pending）零发布
+  ---
+  duration_ms: 10077.5359
+  type: 'test'
+  ...
+# Subtest: CR-2026-060 AC-12：new mode traceability 无 milestone-file 确定性生成 FR→SDD→TASK→code→evidence
+ok 342 - CR-2026-060 AC-12：new mode traceability 无 milestone-file 确定性生成 FR→SDD→TASK→code→evidence
+  ---
+  duration_ms: 11262.6031
+  type: 'test'
+  ...
+# Subtest: CR-2026-074 TASK-08 AC-12：无索引 merge→baseline 首写→tasks→traceability 三阶段真实执行→archive；签字源与 baseline/tasks 事务事实在 trace 前冻结，首次 trace 与重放后均不变
+ok 343 - CR-2026-074 TASK-08 AC-12：无索引 merge→baseline 首写→tasks→traceability 三阶段真实执行→archive；签字源与 baseline/tasks 事务事实在 trace 前冻结，首次 trace 与重放后均不变
+  ---
+  duration_ms: 16305.1137
+  type: 'test'
+  ...
+# Subtest: CR-2026-074 TASK-08 AC-05 apply 侧：candidate 后并发创建索引 → apply 拒绝且并发内容保留、不写 authority；恢复后续跑完成且幂等
+ok 344 - CR-2026-074 TASK-08 AC-05 apply 侧：candidate 后并发创建索引 → apply 拒绝且并发内容保留、不写 authority；恢复后续跑完成且幂等
+  ---
+  duration_ms: 10525.8945
+  type: 'test'
+  ...
+1..344
+# tests 344
+# suites 0
+# pass 344
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 487720.4064

@@ -1,0 +1,11 @@
+{"at":"2026-10-25T07:37:46.418Z","kind":"plan","container":"666bfec52ac3c3d13b43389891f50c4105833198eab7e4167b76f014a774e823","original":"stdd_aifi45_20261022","target":{"nonce":"4139efd438af1dbc","database":"aifi45_tmp_4139efd438af1dbc","role":"aifi45_role_4139efd438af1dbc"},"package":"./internal/governance","pattern":"^Test","extra":["-timeout=280s"]}
+{"at":"2026-10-25T07:37:48.979Z","kind":"source-preserved","approval_rows":82,"original_tables":137,"schema_sha256":"379ca02840d682b93b45a47bb017d5e5ca5c8cc3ce1f7134a57d0a8b3c29881c","audit_dump_sha256":"8f1b3fa115d31f3cb200497e5a751fad4dc735067fc4f0b0b79cd3d64a3a2528"}
+{"at":"2026-10-25T07:37:48.979Z","kind":"create-role-intent","role":"aifi45_role_4139efd438af1dbc"}
+{"at":"2026-10-25T07:37:50.344Z","kind":"create-database-intent","database":"aifi45_tmp_4139efd438af1dbc","owner":"aifi45_role_4139efd438af1dbc"}
+{"at":"2026-10-25T07:37:52.075Z","kind":"created","target":{"nonce":"4139efd438af1dbc","database":"aifi45_tmp_4139efd438af1dbc","role":"aifi45_role_4139efd438af1dbc","role_oid":"251314","database_oid":"251315"}}
+{"at":"2026-10-25T07:37:54.798Z","kind":"isolation-verified","identity":{"database":"aifi45_tmp_4139efd438af1dbc","role":"aifi45_role_4139efd438af1dbc","superuser":false,"create_db":false,"create_role":false,"bypass_rls":false,"audit_rows":0,"workspace_rows":0},"original_audit_table_read_denied":true}
+{"at":"2026-10-25T07:39:00.507Z","kind":"test-finished","argv":["go","test","./internal/governance","-run","^Test","-count=1","-json","-timeout=180s","-timeout=280s"],"cwd":"C:\\Users\\GOBAO\\Downloads\\AI\\multica\\server\\","exit":0,"signal":null,"counts":{"run":879,"pass":878,"fail":0,"skip":1},"leaf_pass":795,"package_failures":0,"output_redacted":false}
+{"at":"2026-10-25T07:39:02.233Z","kind":"original-compared","unchanged":true,"release":{"sessions":0,"locks":0}}
+{"at":"2026-10-25T07:39:03.652Z","kind":"database-dropped","database":"aifi45_tmp_4139efd438af1dbc","oid":"251315"}
+{"at":"2026-10-25T07:39:05.049Z","kind":"role-dropped","role":"aifi45_role_4139efd438af1dbc","oid":"251314"}
+{"at":"2026-10-25T07:39:05.665Z","kind":"resources-absence-verified","database_present":false,"role_present":false}

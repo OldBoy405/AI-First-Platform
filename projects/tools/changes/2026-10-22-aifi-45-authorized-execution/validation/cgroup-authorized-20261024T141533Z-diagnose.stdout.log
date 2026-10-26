@@ -1,0 +1,80 @@
+
+=== identity ===
+1000
+[exit=0]
+1000
+[exit=0]
+pid1=systemd
+cgroup=0::/non-systemd/user.slice/user-1000.slice/session-c228.scope
+XDG_RUNTIME_DIR=present
+DBUS_SESSION_BUS_ADDRESS=present
+
+=== user-manager ===
+RuntimePath=/run/user/1000
+State=active
+Sessions=c228 c1
+Linger=yes
+[exit=0]
+ActiveState=active
+SubState=running
+FragmentPath=/usr/lib/systemd/system/user@.service
+DropInPaths=/usr/lib/systemd/system/user@.service.d/10-login-barrier.conf /usr/lib/systemd/system/service.d/10-timeout-abort.conf /etc/systemd/system/user@.service.d/delegate.conf
+MainPID=219
+ControlGroup=/non-systemd/user.slice/user-1000.slice/user@1000.service
+Delegate=yes
+DelegateControllers=cpu io memory pids
+[exit=0]
+ActiveState=active
+SubState=active
+[exit=0]
+
+=== podman-api-units ===
+ActiveState=inactive
+SubState=dead
+FragmentPath=/usr/lib/systemd/user/podman.service
+DropInPaths=/usr/lib/systemd/user/service.d/10-timeout-abort.conf
+MainPID=0
+ControlGroup=/non-systemd/user.slice/user-1000.slice/user@1000.service/app.slice/podman.service
+KillMode=process
+[exit=0]
+ActiveState=active
+SubState=listening
+FragmentPath=/usr/lib/systemd/user/podman.socket
+DropInPaths=
+Listen=/run/user/1000/podman/podman.sock (Stream)
+[exit=0]
+
+=== podman-processes ===
+[exit=1]
+
+=== cgroup-ancestors ===
+/sys/fs/cgroup
+mode=755 uid=0 gid=0
+[exit=0]
+cgroup.controllers=cpuset cpu io memory hugetlb pids rdma
+cgroup.subtree_control=
+/sys/fs/cgroup/non-systemd
+mode=755 uid=0 gid=0
+[exit=0]
+cgroup.controllers=
+cgroup.subtree_control=
+/sys/fs/cgroup/non-systemd/user.slice/user-1000.slice/user@1000.service
+mode=755 uid=1000 gid=1000
+[exit=0]
+cgroup.controllers=
+cgroup.subtree_control=
+
+=== configuration-sources ===
+config=/usr/share/containers/containers.conf
+config=/etc/containers/containers.conf
+cgroup_manager=cgroupfs
+
+=== native-current-manager ===
+cgroupfs []
+[exit=0]
+
+=== native-systemd-parameter-only ===
+systemd []
+[exit=0]
+
+=== wsl-boot-config ===

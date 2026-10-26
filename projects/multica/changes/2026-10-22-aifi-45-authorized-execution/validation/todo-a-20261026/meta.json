@@ -1,0 +1,37 @@
+{
+  "generated_at": "2026-10-26T11:40:17.733Z",
+  "scope": "AIFI-45 待办 A 增量 21：run.mjs skip 判定 + crsync_test TestMain",
+  "source": {
+    "scripts/aifi45-db/run.mjs": "c45fb01fad38fecca1222e157e9521ba0690a35d90ce962202a50f7b0d969d3a",
+    "scripts/aifi45-db/run.test.mjs": "08c1064d529f97ad5ae0f2e06a4de83ffe9248691990bd5e4ad051a77b78ff6f",
+    "server/internal/governance/crsync_test.go": "cdc344a7849fc6f67ff44e74260d70d5afde6bb822488af1156c76ba423b3f58"
+  },
+  "mutation": {
+    "description": "删除 assertVerifiedTests 的 counts.skip 拒绝行",
+    "restored_sha256": "c45fb01fad38fecca1222e157e9521ba0690a35d90ce962202a50f7b0d969d3a",
+    "restored_identical": true
+  },
+  "red": {
+    "exit": 1,
+    "tests": "9",
+    "pass": "8",
+    "fail": "1",
+    "skipped": "0",
+    "notok": [
+      "not ok 8 - all skipped leaves are unverified even if their parent passes"
+    ]
+  },
+  "green": {
+    "exit": 0,
+    "tests": "9",
+    "pass": "9",
+    "fail": "0",
+    "skipped": "0",
+    "notok": []
+  },
+  "vet_tail": [
+    "EXIT=0",
+    "GOFMT_DONE"
+  ],
+  "note": "TestMain 改为硬失败无 DB 单测可跑（无 DB 时退出码 1 本身是新行为）；未运行 governance DB 用例。"
+}

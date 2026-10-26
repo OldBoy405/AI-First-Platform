@@ -1,0 +1,9 @@
+root_controllers=cpuset cpu io memory hugetlb pids rdma
+root_subtree=ns_controllers=ns_subtree=ns_procs=13
+root_enable=ok
+root_subtree_after=cpu memory pids
+ns_controllers_after=cpu memory pids
+ns_enable=fail
+sh: line 12: printf: write error: Device or resource busy
+ns_subtree_after=revert=ok
+root_subtree_final=

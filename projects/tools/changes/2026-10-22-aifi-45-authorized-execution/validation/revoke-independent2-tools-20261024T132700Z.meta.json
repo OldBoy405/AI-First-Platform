@@ -1,0 +1,169 @@
+{
+  "schema": "aifi45-independent2-tools-run/v1",
+  "change_id": "2026-10-22-aifi-45-authorized-execution",
+  "cwd": "C:/Users/GOBAO/Downloads/AI/tools",
+  "argv": [
+    "node",
+    "--test",
+    "--test-reporter=tap",
+    "skills/shared/crctl/scripts/test/execution-authorization.test.mjs",
+    "skills/shared/crctl/scripts/test/execution-transaction.test.mjs",
+    "skills/shared/crctl/scripts/test/durable-tx.test.mjs"
+  ],
+  "timeout_seconds": 600,
+  "timeout_wrapper": "timeout 600s",
+  "timed_out": false,
+  "exit": 0,
+  "signal": null,
+  "wall_ms": 59143,
+  "stdout_file": "revoke-independent2-tools-20261024T132700Z.stdout.tap",
+  "stdout_bytes": 49125,
+  "stdout_sha256": "d52a384dfdf6b4b45a2daf8ccc68f1db303e23b1bddd60a450d661e854bff373",
+  "stderr_file": "revoke-independent2-tools-20261024T132700Z.stderr.log",
+  "stderr_bytes": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "tap": {
+    "tests": 218,
+    "pass": 217,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 1,
+    "todo": 0,
+    "duration_ms": 59041.8784,
+    "skip_detail": "ok 188 - EXEC-12 受控文件自身为 symlink：拒绝写入 # SKIP 当前环境无法创建 symlink: EPERM",
+    "skip_counts_as_pass": false
+  },
+  "t3_source_before_after": {
+    "files": [
+      {
+        "path": "skills/shared/crctl/scripts/crctl.mjs",
+        "role": "production",
+        "raw_before": "d064100fc82d07f5ab63d0bd40e824f56cac57699b512f0cd1cf86f1ebca1557",
+        "raw_after": "d064100fc82d07f5ab63d0bd40e824f56cac57699b512f0cd1cf86f1ebca1557",
+        "lf_before": "0b8faa403504a0abbabd42495dfefdee908adcab111f9f20a9a807ef64fccf2c",
+        "lf_after": "0b8faa403504a0abbabd42495dfefdee908adcab111f9f20a9a807ef64fccf2c",
+        "unchanged": true
+      },
+      {
+        "path": "skills/shared/crctl/scripts/lib/execution-authorization.mjs",
+        "role": "production",
+        "raw_before": "71437e20ddfdf33b74d3490c7129359562443555d1abc0a44886b27f32c34abc",
+        "raw_after": "71437e20ddfdf33b74d3490c7129359562443555d1abc0a44886b27f32c34abc",
+        "lf_before": "71437e20ddfdf33b74d3490c7129359562443555d1abc0a44886b27f32c34abc",
+        "lf_after": "71437e20ddfdf33b74d3490c7129359562443555d1abc0a44886b27f32c34abc",
+        "unchanged": true
+      },
+      {
+        "path": "skills/shared/crctl/scripts/test/execution-authorization.test.mjs",
+        "role": "test",
+        "raw_before": "909c8759723429d854e61d569e12451e90d5c91cab8c2a082f5e4ebec1db1c9d",
+        "raw_after": "909c8759723429d854e61d569e12451e90d5c91cab8c2a082f5e4ebec1db1c9d",
+        "lf_before": "909c8759723429d854e61d569e12451e90d5c91cab8c2a082f5e4ebec1db1c9d",
+        "lf_after": "909c8759723429d854e61d569e12451e90d5c91cab8c2a082f5e4ebec1db1c9d",
+        "unchanged": true
+      },
+      {
+        "path": "skills/shared/crctl/scripts/test/execution-transaction.test.mjs",
+        "role": "test",
+        "raw_before": "c82c88140bd0d67c3f98a7dfa72a1b103ef752a882852f2c3d4bdc29a43e7cd2",
+        "raw_after": "c82c88140bd0d67c3f98a7dfa72a1b103ef752a882852f2c3d4bdc29a43e7cd2",
+        "lf_before": "c82c88140bd0d67c3f98a7dfa72a1b103ef752a882852f2c3d4bdc29a43e7cd2",
+        "lf_after": "c82c88140bd0d67c3f98a7dfa72a1b103ef752a882852f2c3d4bdc29a43e7cd2",
+        "unchanged": true
+      },
+      {
+        "path": "skills/shared/crctl/scripts/test/durable-tx.test.mjs",
+        "role": "test",
+        "raw_before": "7e1d82c336d422af42a2f6d093e67c6dec6421438a2ef4ede3a683ae68b0fef8",
+        "raw_after": "7e1d82c336d422af42a2f6d093e67c6dec6421438a2ef4ede3a683ae68b0fef8",
+        "lf_before": "774a5db79acd9d5252a4f840d541ee0cdf4233bd85ee93a9576bd652869dce44",
+        "lf_after": "774a5db79acd9d5252a4f840d541ee0cdf4233bd85ee93a9576bd652869dce44",
+        "unchanged": true
+      }
+    ],
+    "all_unchanged": true
+  },
+  "protected_raw_sha256": {
+    "files": [
+      {
+        "path": "AI First Platform/projects/tools/config.d/quality.yaml",
+        "before": "25380eed278e254dbfb64c9af82f2e5d0bba09bc288dde2e76e3a3b985a6fcf2",
+        "after": "25380eed278e254dbfb64c9af82f2e5d0bba09bc288dde2e76e3a3b985a6fcf2",
+        "unchanged": true
+      },
+      {
+        "path": "tools/.stdd/binding.yaml",
+        "before": "31546e1a36022d955c789a377f0398508fad3da3f9271991f51dea777868cf7b",
+        "after": "31546e1a36022d955c789a377f0398508fad3da3f9271991f51dea777868cf7b",
+        "unchanged": true
+      },
+      {
+        "path": "AI First Platform/projects/multica/config.d/quality.yaml",
+        "before": "05a0e3eb7a800962eb957c2edd5e90e0934432276d82416e09e88f8acf0909af",
+        "after": "05a0e3eb7a800962eb957c2edd5e90e0934432276d82416e09e88f8acf0909af",
+        "unchanged": true
+      },
+      {
+        "path": "multica/.stdd/binding.yaml",
+        "before": "ae676b9aef73b3274c997a9d47630e50164eb25dd04ae701650d5f4c97186d89",
+        "after": "ae676b9aef73b3274c997a9d47630e50164eb25dd04ae701650d5f4c97186d89",
+        "unchanged": true
+      }
+    ],
+    "all_unchanged": true
+  },
+  "git": {
+    "tools": {
+      "branch_before": "main",
+      "branch_after": "main",
+      "head_before": "9e41ad74ce631459bc007a29c3d0cdaaa1e49e75",
+      "head_after": "9e41ad74ce631459bc007a29c3d0cdaaa1e49e75",
+      "staged_before": [],
+      "staged_after": [],
+      "status_unchanged": true
+    },
+    "multica": {
+      "branch_before": "main",
+      "branch_after": "main",
+      "head_before": "f6e90ab8090c8a712c7fe2a324e977f10a39499c",
+      "head_after": "f6e90ab8090c8a712c7fe2a324e977f10a39499c",
+      "staged_before": [],
+      "staged_after": [],
+      "source_manifest_all_29_match": true
+    }
+  },
+  "model_evidence": {
+    "tools": {
+      "file": "revoke-independent2-tools-models.json",
+      "sha256": "4cb00fa53108e0b640b43bf37c3292e53eb88865e58a5970c7a2668e60f70a57",
+      "exit": 0,
+      "schema_version": 1,
+      "kind": "configured",
+      "balanced": "Gobao/deepseek-flash",
+      "effort": "max",
+      "user_defaults_present": true
+    },
+    "multica": {
+      "file": "revoke-independent2-multica-models.json",
+      "sha256": "c18180dc9ca8e0454101857e87ac53355074934d94a21d9bd454d024cb1130fe",
+      "exit": 0,
+      "schema_version": 1,
+      "kind": "configured",
+      "balanced": "Gobao/deepseek-flash",
+      "effort": "max",
+      "user_defaults_present": true
+    }
+  },
+  "harness": {
+    "PI_PROVIDER": "Gobao",
+    "PI_MODEL": "deepseek-flash",
+    "PI_REASONING_LEVEL": "max",
+    "actual": "unknown"
+  },
+  "scope": {
+    "db_accessed": false,
+    "m_go_or_migration_run": false,
+    "source_mutated": false,
+    "older_logs_overwritten": false
+  }
+}

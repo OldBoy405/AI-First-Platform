@@ -1,0 +1,71 @@
+{
+  "schema": "aifi45-revoke-run/v1",
+  "label": "independent2-router",
+  "started_utc": "2026-10-24T13:27:25.300Z",
+  "completed_utc": "2026-10-24T13:27:30.157Z",
+  "process_elapsed_ms": 4611,
+  "final_argv": [
+    "go",
+    "test",
+    "./cmd/server",
+    "-run",
+    "^TestExecutionAuthorizationHeadRouter",
+    "-count=1",
+    "-json",
+    "-shuffle=on",
+    "-count=2"
+  ],
+  "cwd": "C:/Users/GOBAO/Downloads/AI/multica/server",
+  "exit": 0,
+  "signal": null,
+  "spawn_error": null,
+  "counts_all": {
+    "run": 14,
+    "pass": 14,
+    "fail": 0,
+    "skip": 0
+  },
+  "counts_top": {
+    "run": 4,
+    "pass": 4,
+    "fail": 0,
+    "skip": 0
+  },
+  "package_results": [
+    {
+      "Time": "2026-10-24T21:27:30.0576653+08:00",
+      "Action": "pass",
+      "Package": "github.com/multica-ai/multica/server/cmd/server",
+      "Elapsed": 2.016
+    }
+  ],
+  "failed_tests": [],
+  "source_sha256_lf": {
+    "server/internal/governance/execution_authorization_revoke.go": "d6e547d33e1215be45d5a0768bcdce5f24973aec90da665a874f129ae2442293",
+    "server/internal/governance/execution_authorization_revoke_auth_test.go": "d4dee8745c5aa884833b57139aca6f3d0b106c9e93dbe7c0829b3361d3c0ae96",
+    "server/internal/governance/execution_authorization_revoke_history_test.go": "0efeec70576ab9219761c43e0d0640f6ae4b6dae7bfdb09f588bc00f3f241eeb",
+    "server/internal/governance/execution_authorization_revoke_interop_test.go": "815ab049c004d75f8d87726bdd9fc6ff82a7dcbfd6076ed8596f195d8153b2ab",
+    "server/internal/governance/execution_authorization_revoke_test.go": "4e5aba45e0816812aa727fccd30c0acb8cd0287c751eca60c372bc663e63096f",
+    "server/internal/governance/execution_authorization_revoke_transaction_test.go": "413e6d36b4b75522599638afe511e2e36247096a3e2143912564bb325a98a555",
+    "server/internal/governance/execution_fixture_ownership_test.go": "79689d605a38fdfca52e2e52a0f1ce2ac67d3db330bb3427c07b00e1e404d965",
+    "server/internal/governance/execution_authorization_routes.go": "af30185bb89ebefbec264e408441a0ef49ef777e12643ad25af8d10ff9f56580",
+    "server/pkg/db/queries/approval.sql": "cadbb21e00285626b0b2064eb36fbe2441a5077f785f98cc9a23dc1d37f10747",
+    "server/pkg/db/generated/approval.sql.go": "f122f2194fe6a511d9c47d6c26ca1c0e3381c1b0bd1ba6ded3df636bbaef7894",
+    "server/internal/governance/execution_authorization_head.go": "710a709793df4cb1079f95db517f3eeb5d0f724f6764a3df551a3ec9e3260512",
+    "server/internal/governance/execution_authorization_head_test.go": "26204e4ff64303744b4975285b566b07322dbf39c01231f9401db3be5d769d27",
+    "server/cmd/server/execution_authorization_head_test.go": "5dac113aef25a571f9512b941ba25fa6b81e405a58f7156af97b496600ab8a92"
+  },
+  "runner_sha256_lf": "b876a3835fbe835fd15f73d8ddf81db9adee340f7f17308d6f2cb78ed61ad4b6",
+  "database": {
+    "container": "stdd-aifi45-20261022-pg",
+    "container_id_prefix": "666bfec52ac3",
+    "loopback_port": 55432,
+    "database": "stdd_aifi45_20261022",
+    "user": "stdd"
+  },
+  "harness": {
+    "PI_PROVIDER": "Gobao",
+    "PI_MODEL": "deepseek-flash",
+    "PI_REASONING_LEVEL": "max"
+  }
+}

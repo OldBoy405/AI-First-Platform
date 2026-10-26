@@ -1,0 +1,146 @@
+{
+  "schema": "aifi45-independent-tools-run/v1",
+  "change_id": "2026-10-22-aifi-45-authorized-execution",
+  "cwd": "C:/Users/GOBAO/Downloads/AI/tools",
+  "argv": [
+    "node",
+    "--test",
+    "--test-reporter=tap",
+    "skills/shared/crctl/scripts/test/execution-authorization.test.mjs",
+    "skills/shared/crctl/scripts/test/execution-transaction.test.mjs",
+    "skills/shared/crctl/scripts/test/durable-tx.test.mjs"
+  ],
+  "timeout_seconds": 600,
+  "timeout_wrapper": "timeout 600s",
+  "timed_out": false,
+  "exit": 0,
+  "signal": null,
+  "wall_ms": 57344,
+  "start_ms": 1792847171437,
+  "end_ms": 1792847228781,
+  "stdout_file": "revoke-independent-tools-20261024T130604Z.stdout.tap",
+  "stdout_bytes": 47141,
+  "stdout_sha256": "0df2d85abddf93a5db7fb53fbf304839703f47b1a24d5e48ce117672e366b316",
+  "stderr_file": "revoke-independent-tools-20261024T130604Z.stderr.log",
+  "stderr_bytes": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "tap": {
+    "tests": 209,
+    "pass": 208,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 1,
+    "todo": 0,
+    "duration_ms": 57245.0095,
+    "skip_detail": "ok 179 - EXEC-12 受控文件自身为 symlink：拒绝写入 # SKIP 当前环境无法创建 symlink: EPERM",
+    "skip_counts_as_pass": false
+  },
+  "t3_source": {
+    "files": [
+      {
+        "path": "skills/shared/crctl/scripts/test/execution-authorization.test.mjs",
+        "raw_sha256_before": "91ee1596c74e08069f89d87d9dca462eb55767e89031f6342dc81ee2a43fa048",
+        "raw_sha256_after": "91ee1596c74e08069f89d87d9dca462eb55767e89031f6342dc81ee2a43fa048",
+        "lf_sha256_before": "91ee1596c74e08069f89d87d9dca462eb55767e89031f6342dc81ee2a43fa048",
+        "lf_sha256_after": "91ee1596c74e08069f89d87d9dca462eb55767e89031f6342dc81ee2a43fa048",
+        "unchanged": true
+      },
+      {
+        "path": "skills/shared/crctl/scripts/test/execution-transaction.test.mjs",
+        "raw_sha256_before": "c82c88140bd0d67c3f98a7dfa72a1b103ef752a882852f2c3d4bdc29a43e7cd2",
+        "raw_sha256_after": "c82c88140bd0d67c3f98a7dfa72a1b103ef752a882852f2c3d4bdc29a43e7cd2",
+        "lf_sha256_before": "c82c88140bd0d67c3f98a7dfa72a1b103ef752a882852f2c3d4bdc29a43e7cd2",
+        "lf_sha256_after": "c82c88140bd0d67c3f98a7dfa72a1b103ef752a882852f2c3d4bdc29a43e7cd2",
+        "unchanged": true
+      },
+      {
+        "path": "skills/shared/crctl/scripts/test/durable-tx.test.mjs",
+        "raw_sha256_before": "7e1d82c336d422af42a2f6d093e67c6dec6421438a2ef4ede3a683ae68b0fef8",
+        "raw_sha256_after": "7e1d82c336d422af42a2f6d093e67c6dec6421438a2ef4ede3a683ae68b0fef8",
+        "lf_sha256_before": "774a5db79acd9d5252a4f840d541ee0cdf4233bd85ee93a9576bd652869dce44",
+        "lf_sha256_after": "774a5db79acd9d5252a4f840d541ee0cdf4233bd85ee93a9576bd652869dce44",
+        "unchanged": true
+      }
+    ],
+    "all_unchanged": true
+  },
+  "quality_binding_raw_sha256": {
+    "files": [
+      {
+        "path": "AI First Platform/projects/tools/config.d/quality.yaml",
+        "before": "25380eed278e254dbfb64c9af82f2e5d0bba09bc288dde2e76e3a3b985a6fcf2",
+        "after": "25380eed278e254dbfb64c9af82f2e5d0bba09bc288dde2e76e3a3b985a6fcf2",
+        "unchanged": true
+      },
+      {
+        "path": "tools/.stdd/binding.yaml",
+        "before": "31546e1a36022d955c789a377f0398508fad3da3f9271991f51dea777868cf7b",
+        "after": "31546e1a36022d955c789a377f0398508fad3da3f9271991f51dea777868cf7b",
+        "unchanged": true
+      },
+      {
+        "path": "AI First Platform/projects/multica/config.d/quality.yaml",
+        "before": "05a0e3eb7a800962eb957c2edd5e90e0934432276d82416e09e88f8acf0909af",
+        "after": "05a0e3eb7a800962eb957c2edd5e90e0934432276d82416e09e88f8acf0909af",
+        "unchanged": true
+      },
+      {
+        "path": "multica/.stdd/binding.yaml",
+        "before": "ae676b9aef73b3274c997a9d47630e50164eb25dd04ae701650d5f4c97186d89",
+        "after": "ae676b9aef73b3274c997a9d47630e50164eb25dd04ae701650d5f4c97186d89",
+        "unchanged": true
+      }
+    ],
+    "all_unchanged": true
+  },
+  "git": {
+    "repo": "C:/Users/GOBAO/Downloads/AI/tools",
+    "branch_before": "main",
+    "branch_after": "main",
+    "head_before": "9e41ad74ce631459bc007a29c3d0cdaaa1e49e75",
+    "head_after": "9e41ad74ce631459bc007a29c3d0cdaaa1e49e75",
+    "staged_paths_before": [],
+    "staged_paths_after": [],
+    "status_before": [
+      " M skills/shared/crctl/scripts/crctl.mjs",
+      " M skills/shared/crctl/scripts/lib/durable-tx.mjs",
+      " M skills/shared/crctl/scripts/test/durable-tx.test.mjs",
+      "?? .crctl/",
+      "?? skills/shared/crctl/scripts/lib/execution-authorization.mjs",
+      "?? skills/shared/crctl/scripts/lib/execution-binding.mjs",
+      "?? skills/shared/crctl/scripts/lib/execution-transaction.mjs",
+      "?? skills/shared/crctl/scripts/test/execution-authorization.test.mjs",
+      "?? skills/shared/crctl/scripts/test/execution-transaction.test.mjs"
+    ],
+    "status_after": [
+      " M skills/shared/crctl/scripts/crctl.mjs",
+      " M skills/shared/crctl/scripts/lib/durable-tx.mjs",
+      " M skills/shared/crctl/scripts/test/durable-tx.test.mjs",
+      "?? .crctl/",
+      "?? skills/shared/crctl/scripts/lib/execution-authorization.mjs",
+      "?? skills/shared/crctl/scripts/lib/execution-binding.mjs",
+      "?? skills/shared/crctl/scripts/lib/execution-transaction.mjs",
+      "?? skills/shared/crctl/scripts/test/execution-authorization.test.mjs",
+      "?? skills/shared/crctl/scripts/test/execution-transaction.test.mjs"
+    ],
+    "status_unchanged": true,
+    "head_branch_staged_unchanged": true
+  },
+  "model_evidence": {
+    "file": "revoke-test-models.json",
+    "sha256": "1ff947b547739f690a1ff18f8e5cde54f71de22245356abe39173765c6836bb3",
+    "not_modified_by_this_run": true
+  },
+  "harness": {
+    "PI_PROVIDER": "Gobao",
+    "PI_MODEL": "deepseek-flash",
+    "PI_REASONING_LEVEL": "max",
+    "actual": "unknown"
+  },
+  "scope": {
+    "source_mutated": false,
+    "db_accessed": false,
+    "m_go_or_migration_run": false,
+    "older_logs_overwritten": false
+  }
+}

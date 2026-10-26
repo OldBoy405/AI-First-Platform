@@ -1,0 +1,85 @@
+meta:
+  capability: evidence-delivery-contract
+  change_id: 2026-10-22-aifi-45-authorized-execution
+  created: '2026-10-22'
+  confidence: high
+requirements:
+  - id: REQ-EVD-001
+    confidence: high
+    description: 按内容充分性和长期规则归属验收，不按固定文件套餐或复制机器账本验收。
+    scenarios:
+      - id: SC-EVD-001
+        confidence: high
+        evidence: canonical/proposals/2026-10-22-aifi-45-authorized-execution.yaml#C4,C5,AC-11
+        given: 新policy变更具有目标、范围、可信授权、结果与证据的最小记录及应有长期规则更新，但没有PRD/SDD/plan固定套餐。
+        when: 执行适用gates和回写。
+        then: SHALL 按内容放行，不强制复制文件套餐，不覆写累积基线或搬移平台级文档。
+      - id: SC-EVD-002
+        confidence: high
+        evidence: canonical/proposals/2026-10-22-aifi-45-authorized-execution.yaml#C5,AC-9,AC-11
+        given: 文件数量齐全，但缺当前授权/验证证据，或长期规则变化未更新其权威源。
+        when: 请求交付。
+        then: SHALL 阻断并指出缺失内容，不能以文件存在或报告全文复制替代证据。
+  - id: REQ-EVD-002
+    confidence: high
+    description: 实质变更必须独立核验；机械例外不得涵盖语义变化。
+    scenarios:
+      - id: SC-EVD-003
+        confidence: high
+        evidence: canonical/proposals/2026-10-22-aifi-45-authorized-execution.yaml#C4,C5,AC-9
+        given: 实质变更只有作者自报PASS或同一真实UUID的review。
+        when: 请求完成交付。
+        then: SHALL 拒绝，要求独立身份核验实际diff和当前可运行证据。
+      - id: SC-EVD-004
+        confidence: medium
+        evidence: canonical/proposals/2026-10-22-aifi-45-authorized-execution.yaml#C5,AC-9
+        given: 可证明同输入与工具下无语义变化，独立执行者已产生确定性检查证据。
+        when: 申请机械变更例外。
+        then: SHALL 仅在该证明完整且匹配当前subject时允许替代Agent评审，并保留证明链。
+      - id: SC-EVD-005
+        confidence: high
+        evidence: canonical/proposals/2026-10-22-aifi-45-authorized-execution.yaml#C5,AC-9
+        given: 生成结果可复现，但生成规则/输入/工具、业务规则、授权或验收发生语义变化。
+        when: 以机械生成为由免审。
+        then: SHALL 拒绝例外，仍要求独立评审与适用测试。
+  - id: REQ-EVD-003
+    confidence: high
+    description: 新旧合同显式版本化，迁移保留授权、历史消耗与旧证据。
+    scenarios:
+      - id: SC-EVD-006
+        confidence: high
+        evidence: canonical/proposals/2026-10-22-aifi-45-authorized-execution.yaml#C4,C6,AC-12
+        given: 在途legacy CR未显式选择新合同。
+        when: 安装新版本tools或校准新policy默认。
+        then: SHALL 保持原gates/pin/证据，不被新必需字段追溯阻断，也不自动获得新预算。
+        and:
+          - 对新policy CR，所有旧写入口同样执行新合同；TTY或旧grant不能绕过新规则。
+          - 删除本地合同字段不能降级legacy；合同归属从权威已提交注册与迁移历史验证。
+      - id: SC-EVD-007
+        confidence: high
+        evidence: canonical/proposals/2026-10-22-aifi-45-authorized-execution.yaml#C6,AC-12
+        given: tools、生成物、安装Agent/Skill、实际Runner版本或恢复能力有一项未知或不一致。
+        when: 尝试启用新policy或删除旧接力。
+        then: SHALL 标记未就绪并保留旧安全恢复路径，不凭本地SHA声称上线完成。
+      - id: SC-EVD-008
+        confidence: medium
+        evidence: canonical/proposals/2026-10-22-aifi-45-authorized-execution.yaml#C6,AC-4,AC-12
+        given: 有权者明确迁移且旧授权、历史消耗和未决任务可核实；另有历史不可核实反例。
+        when: 请求显式迁移。
+        then: SHALL 对可核实分支保留历史并计算剩余，对不可核实分支拒绝静默迁移或清零。
+  - id: REQ-EVD-004
+    confidence: high
+    description: 发布与证据适用性独立于范围授权，恢复不重复消费。
+    scenarios:
+      - id: SC-EVD-009
+        confidence: high
+        evidence: canonical/proposals/2026-10-22-aifi-45-authorized-execution.yaml#C6,AC-6
+        given: 验收已通过但checkpoint/merge/writeback在既有发布事务边界失败。
+        when: 恢复同一发布操作。
+        then: SHALL 复用原事务和业务receipt，不重复审批、修复扣额或cycle reset。
+      - id: SC-EVD-010
+        confidence: high
+        evidence: canonical/proposals/2026-10-22-aifi-45-authorized-execution.yaml#C4,C6,AC-7,AC-9
+        given: scope授权未变，但review后的实际subject/release tree或cycle已变化。
+        when: 使用旧测试/评审证据请求当前交付。
+        then: SHALL 拒绝不适用证据并走最小必要重验，保留旧记录而不伪称当前PASS。

@@ -1,0 +1,63 @@
+{
+  "schema": "aifi45-revoke-run/v1",
+  "label": "http-node-interop-fixed",
+  "started_utc": "2026-10-24T13:06:00.659Z",
+  "completed_utc": "2026-10-24T13:06:06.868Z",
+  "process_elapsed_ms": 5907,
+  "final_argv": [
+    "go",
+    "test",
+    "./internal/governance",
+    "-run",
+    "^TestExecutionAuthorizationRevokeHTTPToRealNodeCLI$",
+    "-count=1",
+    "-json"
+  ],
+  "cwd": "C:/Users/GOBAO/Downloads/AI/multica/server",
+  "exit": 0,
+  "signal": null,
+  "spawn_error": null,
+  "counts_all": {
+    "run": 3,
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "counts_top": {
+    "run": 1,
+    "pass": 1,
+    "fail": 0,
+    "skip": 0
+  },
+  "package_results": [
+    {
+      "Time": "2026-10-24T21:06:06.7692369+08:00",
+      "Action": "pass",
+      "Package": "github.com/multica-ai/multica/server/internal/governance",
+      "Elapsed": 2.184
+    }
+  ],
+  "failed_tests": [],
+  "source_sha256_lf": {
+    "server/internal/governance/execution_authorization_revoke_test.go": "4e5aba45e0816812aa727fccd30c0acb8cd0287c751eca60c372bc663e63096f",
+    "server/internal/governance/execution_authorization_revoke.go": "634a27dc4f5284cad41536c9f1c058644b507d655bf9a8df1df31697378e3617",
+    "server/internal/governance/execution_authorization_routes.go": "af30185bb89ebefbec264e408441a0ef49ef777e12643ad25af8d10ff9f56580",
+    "server/pkg/db/queries/approval.sql": "cadbb21e00285626b0b2064eb36fbe2441a5077f785f98cc9a23dc1d37f10747",
+    "server/internal/governance/execution_authorization_head.go": "710a709793df4cb1079f95db517f3eeb5d0f724f6764a3df551a3ec9e3260512",
+    "server/internal/governance/execution_authorization_head_test.go": "26204e4ff64303744b4975285b566b07322dbf39c01231f9401db3be5d769d27",
+    "server/cmd/server/execution_authorization_head_test.go": "5dac113aef25a571f9512b941ba25fa6b81e405a58f7156af97b496600ab8a92"
+  },
+  "runner_sha256_lf": "b876a3835fbe835fd15f73d8ddf81db9adee340f7f17308d6f2cb78ed61ad4b6",
+  "database": {
+    "container": "stdd-aifi45-20261022-pg",
+    "container_id_prefix": "666bfec52ac3",
+    "loopback_port": 55432,
+    "database": "stdd_aifi45_20261022",
+    "user": "stdd"
+  },
+  "harness": {
+    "PI_PROVIDER": "OpenAIPersonal",
+    "PI_MODEL": "gpt-6.1-sol",
+    "PI_REASONING_LEVEL": "high"
+  }
+}

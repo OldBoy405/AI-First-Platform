@@ -1,0 +1,46 @@
+TAP version 13
+# Subtest: only the generated database and role are eligible for cleanup
+ok 1 - only the generated database and role are eligible for cleanup
+  ---
+  duration_ms: 0.844
+  type: 'test'
+  ...
+# Subtest: cleanup requires the same OIDs, owner, markers and restricted role
+ok 2 - cleanup requires the same OIDs, owner, markers and restricted role
+  ---
+  duration_ms: 0.1833
+  type: 'test'
+  ...
+# Subtest: the child receives only the new DB identity, not inherited DB credentials
+ok 3 - the child receives only the new DB identity, not inherited DB credentials
+  ---
+  duration_ms: 0.2681
+  type: 'test'
+  ...
+# Subtest: unsupported packages and process-redirection flags fail before DB access
+ok 4 - unsupported packages and process-redirection flags fail before DB access
+  ---
+  duration_ms: 0.5586
+  type: 'test'
+  ...
+# Subtest: all skipped leaves are unverified even if their parent passes
+ok 5 - all skipped leaves are unverified even if their parent passes
+  ---
+  duration_ms: 0.2159
+  type: 'test'
+  ...
+# Subtest: lost CREATE ROLE acknowledgement must not claim resources were cleaned
+ok 6 - lost CREATE ROLE acknowledgement must not claim resources were cleaned
+  ---
+  duration_ms: 11.4051
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 76.3027

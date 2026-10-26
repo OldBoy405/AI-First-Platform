@@ -1,0 +1,74 @@
+TAP version 13
+# Subtest: SC-EVD-009：恢复同一发布操作时审批被重做 → 拒绝重放
+ok 1 - SC-EVD-009：恢复同一发布操作时审批被重做 → 拒绝重放
+  ---
+  duration_ms: 5682.0135
+  type: 'test'
+  ...
+# Subtest: SC-EVD-009：不可逆发布之前重跑时，重做的审批仍可被采纳（不卡死）
+not ok 2 - SC-EVD-009：不可逆发布之前重跑时，重做的审批仍可被采纳（不卡死）
+  ---
+  duration_ms: 5400.7687
+  type: 'test'
+  location: 'C:\\Users\\GOBAO\\Downloads\\AI\\tools\\skills\\shared\\crctl\\scripts\\test\\merge-release-recovery.test.mjs:58:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    零发布时不应被 receipt 守卫卡死：{
+      "error": {
+        "code": "EVIDENCE_RELEASE_REAPPROVED",
+        "message": "恢复同一发布操作时发现重新决策（恢复时审批发生变化（原 ab1d80e23ce6e906630eeb1d96c19dd8a405ced185b9b22c15099dccf2ebdb91 / 现 2b20887b91bdca8acdce8449499b103868d696dbbd549896d6e1abcce52a2a96）），拒绝把它当作重放",
+        "cr": "CR-2026-042",
+        "findings": [
+          {
+            "code": "EVIDENCE_RELEASE_REAPPROVED",
+            "detail": "恢复时审批发生变化（原 ab1d80e23ce6e906630eeb1d96c19dd8a405ced185b9b22c15099dccf2ebdb91 / 现 2b20887b91bdca8acdce8449499b103868d696dbbd549896d6e1abcce52a2a96）"
+          }
+        ],
+        "recorded": {
+          "receipt_digest": "f25d4fd2918853a21fd96f17fc30383fa424424de3e48b7121804265bba0c020",
+          "approval_id": "ab1d80e23ce6e906630eeb1d96c19dd8a405ced185b9b22c15099dccf2ebdb91",
+          "business_facts_digest": "cc1ae0b07848eff5f5bc7a7f237e0e28b96bb4cb2c4ad4d7efede9d6ad3da992"
+        },
+        "current": {
+          "receipt_digest": "dcf93d83344682ec4a35267ce27b8ac3654ab39d7bc1d394a883e07cea278553",
+          "approval_id": "2b20887b91bdca8acdce8449499b103868d696dbbd549896d6e1abcce52a2a96",
+          "business_facts_digest": "cc1ae0b07848eff5f5bc7a7f237e0e28b96bb4cb2c4ad4d7efede9d6ad3da992"
+        }
+      }
+    }
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/GOBAO/Downloads/AI/tools/skills/shared/crctl/scripts/test/merge-release-recovery.test.mjs:77:12)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1201:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+    Test.postRun (node:internal/test_runner/test:1330:19)
+    Test.run (node:internal/test_runner/test:1258:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)
+  ...
+# Subtest: SC-EVD-009：push 成功但 journal 未落盘时，不得刷新 receipt 后按新审批续发
+ok 3 - SC-EVD-009：push 成功但 journal 未落盘时，不得刷新 receipt 后按新审批续发
+  ---
+  duration_ms: 5863.6122
+  type: 'test'
+  ...
+# Subtest: SC-EVD-009 正对照：receipt 未变的恢复仍然续跑完成
+ok 4 - SC-EVD-009 正对照：receipt 未变的恢复仍然续跑完成
+  ---
+  duration_ms: 8559.5503
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 3
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 25583.7448

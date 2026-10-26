@@ -1,0 +1,96 @@
+{
+  "at": "2026-10-24T14:50:48.838Z",
+  "step": "pre-maintenance snapshot",
+  "containers": [
+    {
+      "id": "96211305e92b4ec8a686b5f774cac92e960b86ce14acaa40eb8c1201e993e01f",
+      "name": "multica-postgres",
+      "running": true,
+      "started": "2026-10-23T13:40:44.584673435+08:00",
+      "image": "docker.io/pgvector/pgvector:pg17",
+      "volume_mounts": [
+        {
+          "type": "volume",
+          "name": "pgdata",
+          "dest": "/var/lib/postgresql/data",
+          "rw": true
+        }
+      ]
+    },
+    {
+      "id": "666bfec52ac3c3d13b43389891f50c4105833198eab7e4167b76f014a774e823",
+      "name": "stdd-aifi45-20261022-pg",
+      "running": true,
+      "started": "2026-10-23T13:40:44.94487774+08:00",
+      "image": "docker.io/pgvector/pgvector:pg17",
+      "volume_mounts": [
+        {
+          "type": "volume",
+          "name": "fd88f63510d031749990f09207de55598bad8b6afe6690f72c24120686374467",
+          "dest": "/var/lib/postgresql/data",
+          "rw": true
+        }
+      ]
+    },
+    {
+      "id": "01050b2499847e72b06cb5d84b8ec2945dc75045842544a65caf550ef573a762",
+      "name": "multica-backend",
+      "running": true,
+      "started": "2026-10-23T13:40:45.320518545+08:00",
+      "image": "localhost/multica-backend:f6e90ab809",
+      "volume_mounts": [
+        {
+          "type": "volume",
+          "name": "multica-backend-uploads",
+          "dest": "/app/data/uploads",
+          "rw": true
+        }
+      ]
+    }
+  ],
+  "db": {
+    "identity": {
+      "database": "stdd_aifi45_20261022",
+      "user": "stdd",
+      "schema_migrations_latest": "642_cr_execution_authorization_head"
+    },
+    "row_count": 83,
+    "aggregate_md5": "ced5ac216bcc912979a222221d15ffd0",
+    "history_file": "cgroup-authorized-20261024T141533Z-db-before-history.txt",
+    "history_file_sha256": "e39534a286a508509285d31b6b7423fb9ff066cddcdbf463949f2ac13217488a",
+    "advisory_locks": 0,
+    "other_sessions": 0
+  },
+  "volumes": [
+    {
+      "name": "pgdata",
+      "mountpoint": "/home/user/.local/share/containers/storage/volumes/pgdata/_data",
+      "driver": "local"
+    },
+    {
+      "name": "multica-backend-uploads",
+      "mountpoint": "/home/user/.local/share/containers/storage/volumes/multica-backend-uploads/_data",
+      "driver": "local"
+    },
+    {
+      "name": "d940d2d5057537a3661cfa0032429b21e1f797c12da1df712e1a02c5c20d73ea",
+      "mountpoint": "/home/user/.local/share/containers/storage/volumes/d940d2d5057537a3661cfa0032429b21e1f797c12da1df712e1a02c5c20d73ea/_data",
+      "driver": "local"
+    },
+    {
+      "name": "aifi45-m10-repair-e4o5e8vm-data",
+      "mountpoint": "/home/user/.local/share/containers/storage/volumes/aifi45-m10-repair-e4o5e8vm-data/_data",
+      "driver": "local"
+    },
+    {
+      "name": "fd88f63510d031749990f09207de55598bad8b6afe6690f72c24120686374467",
+      "mountpoint": "/home/user/.local/share/containers/storage/volumes/fd88f63510d031749990f09207de55598bad8b6afe6690f72c24120686374467/_data",
+      "driver": "local"
+    }
+  ],
+  "runtime_probe": {
+    "exit": 0,
+    "stdout": "root_controllers=cpuset cpu io memory hugetlb pids rdma\nroot_subtree=ns_controllers=ns_subtree=ns_procs=13\nroot_enable=ok\nroot_subtree_after=cpu memory pids\nns_controllers_after=cpu memory pids\nns_enable=fail\nsh: line 12: printf: write error: Device or resource busy\nns_subtree_after=revert=ok\nroot_subtree_final=",
+    "stderr": ""
+  }
+}

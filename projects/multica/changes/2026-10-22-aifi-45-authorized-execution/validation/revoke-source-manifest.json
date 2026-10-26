@@ -1,0 +1,157 @@
+{
+  "schema": "aifi45-revoke-source/v1",
+  "at": "2026-10-24T13:14:55.224Z",
+  "git_head": "f6e90ab8090c8a712c7fe2a324e977f10a39499c",
+  "normalization": "CRLF=>LF for ordinary source files only; signed payloads, source bytes and raw evidence never normalized",
+  "previous_manifests": [
+    {
+      "name": "initial-head-p2-source-manifest.json",
+      "sha256_lf": "b54a937939aa56699334004d990e49ba32964d77122f9985fc603d726fbb4346"
+    },
+    {
+      "name": "20261024T122543Z-aifi45-review3-source-delta-manifest.json",
+      "sha256_lf": "c5e4c699a1949d5bf347f394da50709f607d54b7d0af69a4b1a83b848b22e9bd"
+    }
+  ],
+  "previous_file_count": 23,
+  "changed_from_previous": [
+    {
+      "file": "server/internal/governance/execution_authorization_head.go",
+      "before": "4d5ab17a7010b8d96112f5c6645a7f46eec4cedb6f371b9f1faee97968658556",
+      "after": "710a709793df4cb1079f95db517f3eeb5d0f724f6764a3df551a3ec9e3260512"
+    },
+    {
+      "file": "server/internal/governance/execution_authorization_routes.go",
+      "before": "610f25671491218389313de2a308af68bcc6b596e856fe5b9bee2b71a012d1ba",
+      "after": "af30185bb89ebefbec264e408441a0ef49ef777e12643ad25af8d10ff9f56580"
+    },
+    {
+      "file": "server/pkg/db/queries/approval.sql",
+      "before": "dd0e7596d671b6ff364293725a6b5ca8f694746bad013c39b4613ba006455b6e",
+      "after": "cadbb21e00285626b0b2064eb36fbe2441a5077f785f98cc9a23dc1d37f10747"
+    },
+    {
+      "file": "server/internal/governance/execution_authorization_head_test.go",
+      "before": "2c2dd8aef9eedf12f7123e017b844a56b9a23bea38afd3b671ea62bc219831f1",
+      "after": "26204e4ff64303744b4975285b566b07322dbf39c01231f9401db3be5d769d27"
+    },
+    {
+      "file": "server/cmd/server/execution_authorization_head_test.go",
+      "before": "1a4ef311fdf185c8bf98c9546d93485ddc689775e3c879df7cbb6f3c0d02009e",
+      "after": "5dac113aef25a571f9512b941ba25fa6b81e405a58f7156af97b496600ab8a92"
+    },
+    {
+      "file": "server/pkg/db/generated/approval.sql.go",
+      "before": "3137dc6455ae7e8ecf2d8254c7e1d9ada74a1e819a31b207d117d8ba8460b14b",
+      "after": "f122f2194fe6a511d9c47d6c26ca1c0e3381c1b0bd1ba6ded3df636bbaef7894"
+    },
+    {
+      "file": "server/internal/governance/execution_fixture_ownership_test.go",
+      "before": "c940797952fe9cac3f5a334b4f21aaed9759c100a2951efa32961ac6866dde74",
+      "after": "79689d605a38fdfca52e2e52a0f1ce2ac67d3db330bb3427c07b00e1e404d965"
+    }
+  ],
+  "unchanged_from_previous": [
+    "server/internal/governance/execution_authorization_http.go",
+    "server/cmd/server/router.go",
+    "server/migrations/642_cr_execution_authorization_head.up.sql",
+    "server/migrations/642_cr_execution_authorization_head.down.sql",
+    "server/pkg/db/generated/agent.sql.go",
+    "server/pkg/db/generated/autopilot.sql.go",
+    "server/pkg/db/generated/chat.sql.go",
+    "server/pkg/db/generated/models.go",
+    "server/pkg/db/generated/runtime.sql.go",
+    "server/pkg/db/generated/supplement.sql.go",
+    "server/pkg/db/generated/wakeup.sql.go",
+    "server/internal/governance/execution_authorization_http_test.go",
+    "server/internal/governance/execution_authorization_routes_test.go",
+    "server/internal/governance/execution_fixture_export_test.go",
+    "server/internal/governance/execution_trust_install_test.go",
+    "server/internal/governance/execution_verifier_test.go"
+  ],
+  "new_files": [
+    "server/internal/governance/execution_authorization_revoke.go",
+    "server/internal/governance/execution_authorization_revoke_auth_test.go",
+    "server/internal/governance/execution_authorization_revoke_history_test.go",
+    "server/internal/governance/execution_authorization_revoke_interop_test.go",
+    "server/internal/governance/execution_authorization_revoke_test.go",
+    "server/internal/governance/execution_authorization_revoke_transaction_test.go"
+  ],
+  "owned_files": {
+    "server/cmd/server/execution_authorization_head_test.go": "5dac113aef25a571f9512b941ba25fa6b81e405a58f7156af97b496600ab8a92",
+    "server/internal/governance/execution_authorization_head.go": "710a709793df4cb1079f95db517f3eeb5d0f724f6764a3df551a3ec9e3260512",
+    "server/internal/governance/execution_authorization_head_test.go": "26204e4ff64303744b4975285b566b07322dbf39c01231f9401db3be5d769d27",
+    "server/internal/governance/execution_authorization_revoke.go": "d6e547d33e1215be45d5a0768bcdce5f24973aec90da665a874f129ae2442293",
+    "server/internal/governance/execution_authorization_revoke_auth_test.go": "d4dee8745c5aa884833b57139aca6f3d0b106c9e93dbe7c0829b3361d3c0ae96",
+    "server/internal/governance/execution_authorization_revoke_history_test.go": "0efeec70576ab9219761c43e0d0640f6ae4b6dae7bfdb09f588bc00f3f241eeb",
+    "server/internal/governance/execution_authorization_revoke_interop_test.go": "815ab049c004d75f8d87726bdd9fc6ff82a7dcbfd6076ed8596f195d8153b2ab",
+    "server/internal/governance/execution_authorization_revoke_test.go": "4e5aba45e0816812aa727fccd30c0acb8cd0287c751eca60c372bc663e63096f",
+    "server/internal/governance/execution_authorization_revoke_transaction_test.go": "413e6d36b4b75522599638afe511e2e36247096a3e2143912564bb325a98a555",
+    "server/internal/governance/execution_authorization_routes.go": "af30185bb89ebefbec264e408441a0ef49ef777e12643ad25af8d10ff9f56580",
+    "server/internal/governance/execution_fixture_ownership_test.go": "79689d605a38fdfca52e2e52a0f1ce2ac67d3db330bb3427c07b00e1e404d965",
+    "server/pkg/db/generated/approval.sql.go": "f122f2194fe6a511d9c47d6c26ca1c0e3381c1b0bd1ba6ded3df636bbaef7894",
+    "server/pkg/db/queries/approval.sql": "cadbb21e00285626b0b2064eb36fbe2441a5077f785f98cc9a23dc1d37f10747"
+  },
+  "all_previous_and_new_files": {
+    "server/cmd/server/execution_authorization_head_test.go": "5dac113aef25a571f9512b941ba25fa6b81e405a58f7156af97b496600ab8a92",
+    "server/cmd/server/router.go": "13a91f02cb65d7570db7da291ce785b2ec619a27d2427b57d9326c3f59664e20",
+    "server/internal/governance/execution_authorization_head.go": "710a709793df4cb1079f95db517f3eeb5d0f724f6764a3df551a3ec9e3260512",
+    "server/internal/governance/execution_authorization_head_test.go": "26204e4ff64303744b4975285b566b07322dbf39c01231f9401db3be5d769d27",
+    "server/internal/governance/execution_authorization_http.go": "8e301cf3d8e7ccbcde539a7bf0fc80fbca19b1fac62e7d1de67b5c61b9d62083",
+    "server/internal/governance/execution_authorization_http_test.go": "820a650f19efea194c882fa2272a18a7f85806eb79521949f85092a0f3d495c6",
+    "server/internal/governance/execution_authorization_revoke.go": "d6e547d33e1215be45d5a0768bcdce5f24973aec90da665a874f129ae2442293",
+    "server/internal/governance/execution_authorization_revoke_auth_test.go": "d4dee8745c5aa884833b57139aca6f3d0b106c9e93dbe7c0829b3361d3c0ae96",
+    "server/internal/governance/execution_authorization_revoke_history_test.go": "0efeec70576ab9219761c43e0d0640f6ae4b6dae7bfdb09f588bc00f3f241eeb",
+    "server/internal/governance/execution_authorization_revoke_interop_test.go": "815ab049c004d75f8d87726bdd9fc6ff82a7dcbfd6076ed8596f195d8153b2ab",
+    "server/internal/governance/execution_authorization_revoke_test.go": "4e5aba45e0816812aa727fccd30c0acb8cd0287c751eca60c372bc663e63096f",
+    "server/internal/governance/execution_authorization_revoke_transaction_test.go": "413e6d36b4b75522599638afe511e2e36247096a3e2143912564bb325a98a555",
+    "server/internal/governance/execution_authorization_routes.go": "af30185bb89ebefbec264e408441a0ef49ef777e12643ad25af8d10ff9f56580",
+    "server/internal/governance/execution_authorization_routes_test.go": "101a2cb35f9cf9c87609e2cf0b5f1409cda4098a336bea108396dba156f7b8d8",
+    "server/internal/governance/execution_fixture_export_test.go": "01719df13fa33540ce87de00f22a11a198cf427ac31170f5c7a1567ccf402976",
+    "server/internal/governance/execution_fixture_ownership_test.go": "79689d605a38fdfca52e2e52a0f1ce2ac67d3db330bb3427c07b00e1e404d965",
+    "server/internal/governance/execution_trust_install_test.go": "a98c2a82232aad47fc9da259f05da93381c0aa7e495586eb1968b70f11014a6d",
+    "server/internal/governance/execution_verifier_test.go": "6c7e4f50b8c74e496f17e806e858b664cc9b65f94e1ad43101082b281943f398",
+    "server/migrations/642_cr_execution_authorization_head.down.sql": "7f3acee0c61c301acb7f242e7fa044ed2b075f26c69b2ae62488a91c16675ab4",
+    "server/migrations/642_cr_execution_authorization_head.up.sql": "a1195e11f493b26396d7cb1d904e8b14dc33324b4bed3ce7f1cccf0ae53129db",
+    "server/pkg/db/generated/agent.sql.go": "ae50ee616fbe510a5d0c1204b2636e6eb1dd29f7e1301e411130863f4669188c",
+    "server/pkg/db/generated/approval.sql.go": "f122f2194fe6a511d9c47d6c26ca1c0e3381c1b0bd1ba6ded3df636bbaef7894",
+    "server/pkg/db/generated/autopilot.sql.go": "077a2d2cdf21ed6261b50b116916cffc018d12266261e9f00f352a7ff42f976a",
+    "server/pkg/db/generated/chat.sql.go": "4c81c84326732bc2ce772da7b3c695945cce70a74365a67513f7bc5f70a7b25a",
+    "server/pkg/db/generated/models.go": "7cd56fa3c94de9ab9266b62baaa0da635ffcf30e3e2b350047329dce2dc50a88",
+    "server/pkg/db/generated/runtime.sql.go": "5709b51a64a00eb370e1de10833625a5eebc7a2df20e14749e4e3cb7ef1de8c6",
+    "server/pkg/db/generated/supplement.sql.go": "d14fb76702a1468aa22ea40fbcd9d4099979d6202f9daf36ed100eafd7339e81",
+    "server/pkg/db/generated/wakeup.sql.go": "6a4d8669aa6cd292b77a2b7c26d3fca84f27b69def6e9b4ab5819cb30c603fb7",
+    "server/pkg/db/queries/approval.sql": "cadbb21e00285626b0b2064eb36fbe2441a5077f785f98cc9a23dc1d37f10747"
+  },
+  "harness": {
+    "PI_PROVIDER": "OpenAIPersonal",
+    "PI_MODEL": "gpt-6.1-sol",
+    "PI_REASONING_LEVEL": "high"
+  },
+  "actual_backend_identity": "unknown",
+  "stopped_by_user": true,
+  "static_checks_pending": [
+    "go vet",
+    "final git diff --check",
+    "repeat sqlc generation determinism check"
+  ],
+  "notes": [
+    "sqlc v1.31.1 generate ran once offline successfully during implementation; no new migration",
+    "No new tests/static checks are run by this closeout",
+    "T interoperability is only the recorded T snapshot; numeric P2 remains for main thread"
+  ],
+  "final_run_source_match": [
+    {
+      "file": "revoke-consumption-final-20261024T131206Z.meta.json",
+      "matches": true
+    },
+    {
+      "file": "revoke-governance-final-20261024T131116Z.meta.json",
+      "matches": true
+    },
+    {
+      "file": "revoke-router-final-20261024T131156Z.meta.json",
+      "matches": true
+    }
+  ]
+}

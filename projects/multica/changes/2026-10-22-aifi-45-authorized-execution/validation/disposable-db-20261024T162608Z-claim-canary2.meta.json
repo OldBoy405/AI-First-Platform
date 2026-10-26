@@ -1,0 +1,38 @@
+{
+  "at": "2026-10-24T16:34:17.519Z",
+  "container": "666bfec52ac3c3d13b43389891f50c4105833198eab7e4167b76f014a774e823",
+  "preserved_database": "stdd_aifi45_20261022",
+  "target": {
+    "nonce": "da0abf7e6a48d00c",
+    "database": "aifi45_tmp_da0abf7e6a48d00c",
+    "role": "aifi45_role_da0abf7e6a48d00c",
+    "role_oid": "30120",
+    "database_oid": "30121"
+  },
+  "test": {
+    "argv": [
+      "go",
+      "test",
+      "./internal/governance",
+      "-run",
+      "^TestExecutionStartClaimDaemonOwnership$",
+      "-count=1",
+      "-json",
+      "-timeout=180s"
+    ],
+    "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\multica\\server\\",
+    "exit": 0,
+    "signal": null,
+    "counts": {
+      "run": 3,
+      "pass": 3,
+      "fail": 0,
+      "skip": 0
+    },
+    "package_failures": 0,
+    "output_redacted": false
+  },
+  "original_unchanged": true,
+  "owned_resources_cleaned": true,
+  "error": null
+}

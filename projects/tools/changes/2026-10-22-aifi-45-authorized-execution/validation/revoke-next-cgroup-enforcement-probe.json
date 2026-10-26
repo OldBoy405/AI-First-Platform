@@ -1,0 +1,58 @@
+{
+  "at": "2026-10-24T14:06:14.454Z",
+  "mode": "isolated synthetic resource-cap preflight; no model request/DB/network/host mount/credential/VM changes",
+  "name": "aifi45-cgroup-preflight-3d5edc84df57643a",
+  "nonce": "3d5edc84df57643a",
+  "steps": [
+    {
+      "argv": [
+        "podman",
+        "create",
+        "--name",
+        "aifi45-cgroup-preflight-3d5edc84df57643a",
+        "--label",
+        "aifi45.cgroup.preflight=3d5edc84df57643a",
+        "--pull=never",
+        "--http-proxy=false",
+        "--network=none",
+        "--read-only",
+        "--cap-drop=ALL",
+        "--security-opt=no-new-privileges",
+        "--user=1000:1000",
+        "--pids-limit=16",
+        "--memory=64m",
+        "--cpus=0.25",
+        "--entrypoint=/bin/sh",
+        "docker.io/library/alpine@sha256:bbfcd601d7cd20d35bb0b8b866ad1a8a0d107ca3e1c20870c75c5ce2c1186d30",
+        "-c",
+        "for f in cpu.max memory.max pids.max; do printf \"%s=\" \"$f\"; while IFS= read -r line; do printf \"%s\\n\" \"$line\"; done < \"/sys/fs/cgroup/$f\"; done"
+      ],
+      "exit": 0,
+      "stdout": "47b784f598ff7a61689df714c7e9e0ef242af94782c76f353a0b1426405fa34c\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "podman",
+        "start",
+        "--attach",
+        "aifi45-cgroup-preflight-3d5edc84df57643a"
+      ],
+      "exit": 125,
+      "stdout": "",
+      "stderr": "Error: unable to start container 47b784f598ff7a61689df714c7e9e0ef242af94782c76f353a0b1426405fa34c: preparing container 47b784f598ff7a61689df714c7e9e0ef242af94782c76f353a0b1426405fa34c for attach: crun: open `memory.max` for writing: No such file or directory: OCI runtime attempted to invoke a command that was not found\n"
+    }
+  ],
+  "base_image_verified": true,
+  "requested_host_config": {
+    "memory": 67108864,
+    "nano_cpus": 250000000,
+    "pids_limit": 16
+  },
+  "kernel_limits_observed": null,
+  "cleanup": {
+    "exact_owned_name": "aifi45-cgroup-preflight-3d5edc84df57643a",
+    "exit": 0,
+    "stderr": ""
+  }
+}

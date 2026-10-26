@@ -1,0 +1,33 @@
+{
+  "acceptance":["go test ./internal/governance"],
+  "allowed_paths":{
+  "multica":["server/internal/governance",
+  "."]
+}
+,
+  "allowed_repositories":["multica"],
+  "coordinator_selection":{
+  "binding_digest":"cbfe3d832a3620fbf924dc720c0833a5edae56a01fc15179cfc3b9058f4682da",
+  "resource_id":"dc5951d1-ca5a-4b63-a315-fe0a0803584b"
+}
+,
+  "delivery_targets":["gitea CR branch"],
+  "goal":"修复登录在 CRLF 边界下的中文提示",
+  "policy_digest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "policy_version":"authorized-execution/v1",
+  "prohibitions":["不部署生产环境"],
+  "repair_limit":-0,
+  "repository_selections":{
+  "multica":{
+  "binding_digest":"cbfe3d832a3620fbf924dc720c0833a5edae56a01fc15179cfc3b9058f4682da",
+  "resource_id":"dc5951d1-ca5a-4b63-a315-fe0a0803584b"
+}
+
+}
+,
+  "scope_revision":1,
+  "sensitive_actions":[],
+  "target_spec_id":"authorized-runner",
+  "target_version":"v1.2.3",
+  "template_digest":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+}

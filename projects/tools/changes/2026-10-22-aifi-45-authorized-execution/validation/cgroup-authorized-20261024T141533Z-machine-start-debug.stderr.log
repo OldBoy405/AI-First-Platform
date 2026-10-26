@@ -1,0 +1,22 @@
+time="2026-10-24T23:17:31+08:00" level=info msg="podman filtering at log level debug"
+time="2026-10-24T23:17:31+08:00" level=debug msg="Using Podman machine with `wsl` virtualization provider"
+time="2026-10-24T23:17:31+08:00" level=debug msg="socket length for C:\\Users\\GOBAO\\.config\\containers\\podman\\machine\\wsl is 52"
+time="2026-10-24T23:17:31+08:00" level=debug msg="socket length for C:\\Users\\GOBAO\\.local\\share\\containers\\podman\\machine\\wsl is 57"
+time="2026-10-24T23:17:31+08:00" level=debug msg="socket length for C:\\Users\\GOBAO\\.local\\share\\containers\\podman\\machine\\wsl\\cache is 63"
+time="2026-10-24T23:17:31+08:00" level=debug msg="socket length for C:\\Users\\GOBAO\\AppData\\Local\\Temp\\podman is 40"
+time="2026-10-24T23:17:31+08:00" level=debug msg="socket length for C:\\Users\\GOBAO\\.config\\containers\\podman\\machine\\wsl\\podman-machine-default.json is 80"
+time="2026-10-24T23:17:31+08:00" level=debug msg="writing configuration file \"C:\\\\Users\\\\GOBAO\\\\.config\\\\containers\\\\podman\\\\machine\\\\wsl\\\\podman-machine-default.json\""
+time="2026-10-24T23:17:31+08:00" level=debug msg="socket length for C:\\Users\\GOBAO\\AppData\\Local\\Temp\\podman\\gvproxy.pid is 52"
+time="2026-10-24T23:17:31+08:00" level=warning msg="detected port conflict on machine ssh port [52723], reassigning"
+time="2026-10-24T23:17:31+08:00" level=debug msg="writing configuration file \"C:\\\\Users\\\\GOBAO\\\\.config\\\\containers\\\\podman\\\\machine\\\\wsl\\\\podman-machine-default.json\""
+time="2026-10-24T23:17:31+08:00" level=debug msg="Running command: C:\\Windows\\system32\\wsl.exe [wsl -u root -d podman-machine-default sh -c sed -E -i 's/^Port[[:space:]]+[0-9]+/Port 59669/' /etc/ssh/sshd_config]"
+time="2026-10-24T23:17:31+08:00" level=debug msg="writing configuration file \"C:\\\\Users\\\\GOBAO\\\\.config\\\\containers\\\\podman\\\\machine\\\\wsl\\\\podman-machine-default.json\""
+time="2026-10-24T23:17:31+08:00" level=debug msg="Running command: C:\\Windows\\system32\\wsl.exe [wsl -u root -d podman-machine-default /root/bootstrap]"
+time="2026-10-24T23:17:31+08:00" level=debug msg="socket length for C:\\Users\\GOBAO\\AppData\\Local\\Temp\\podman\\podman-machine-default-api.sock is 72"
+API forwarding for Docker API clients is not available due to the following startup failures.
+	could not start api proxy since expected pipe is not available: podman-machine-default
+
+Podman clients are still able to connect.
+time="2026-10-24T23:17:53+08:00" level=debug msg="writing configuration file \"C:\\\\Users\\\\GOBAO\\\\.config\\\\containers\\\\podman\\\\machine\\\\wsl\\\\podman-machine-default.json\""
+Error: machine did not transition into running state: ssh error: machine not in running state
+time="2026-10-24T23:17:53+08:00" level=debug msg="Shutting down engines"

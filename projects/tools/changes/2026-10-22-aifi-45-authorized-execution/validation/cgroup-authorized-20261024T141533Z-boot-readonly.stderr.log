@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "<stdin>", line 18, in <module>
+  File "/usr/lib64/python3.14/pathlib/__init__.py", line 975, in readlink
+    return self.with_segments(os.readlink(self))
+                              ~~~~~~~~~~~^^^^^^
+PermissionError: [Errno 13] Permission denied: '/proc/1/ns/cgroup'

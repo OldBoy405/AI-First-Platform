@@ -1,0 +1,102 @@
+TAP version 13
+# Subtest: EVD-001/002 交付 gate 消费同一个判定：作者自审被拒
+not ok 1 - EVD-001/002 交付 gate 消费同一个判定：作者自审被拒
+  ---
+  duration_ms: 137.5321
+  type: 'test'
+  location: 'C:\\Users\\GOBAO\\Downloads\\AI\\tools\\skills\\shared\\crctl\\scripts\\test\\evidence-delivery-gate.test.mjs:91:1'
+  failureType: 'testCodeFailure'
+  error: 'gate code-approved 没有 evidenceDelivery 检查：["passCondition","approval"]'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: '=='
+  stack: |-
+    gateCheck (file:///C:/Users/GOBAO/Downloads/AI/tools/skills/shared/crctl/scripts/test/evidence-delivery-gate.test.mjs:87:10)
+    TestContext.<anonymous> (file:///C:/Users/GOBAO/Downloads/AI/tools/skills/shared/crctl/scripts/test/evidence-delivery-gate.test.mjs:93:17)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1201:25)
+    Test.start (node:internal/test_runner/test:1096:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17)
+  ...
+# Subtest: EVD-001/002 交付 gate 放行独立评审的合同 CR
+not ok 2 - EVD-001/002 交付 gate 放行独立评审的合同 CR
+  ---
+  duration_ms: 141.5505
+  type: 'test'
+  location: 'C:\\Users\\GOBAO\\Downloads\\AI\\tools\\skills\\shared\\crctl\\scripts\\test\\evidence-delivery-gate.test.mjs:102:1'
+  failureType: 'testCodeFailure'
+  error: 'gate code-approved 没有 evidenceDelivery 检查：["passCondition","approval"]'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: '=='
+  stack: |-
+    gateCheck (file:///C:/Users/GOBAO/Downloads/AI/tools/skills/shared/crctl/scripts/test/evidence-delivery-gate.test.mjs:87:10)
+    TestContext.<anonymous> (file:///C:/Users/GOBAO/Downloads/AI/tools/skills/shared/crctl/scripts/test/evidence-delivery-gate.test.mjs:104:17)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1201:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+    Test.postRun (node:internal/test_runner/test:1330:19)
+    Test.run (node:internal/test_runner/test:1258:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)
+  ...
+# Subtest: EVD-001/002 回写入口同样消费该判定
+ok 3 - EVD-001/002 回写入口同样消费该判定
+  ---
+  duration_ms: 128.1604
+  type: 'test'
+  ...
+# Subtest: EVD-006 legacy CR 不被追溯阻断
+not ok 4 - EVD-006 legacy CR 不被追溯阻断
+  ---
+  duration_ms: 126.0634
+  type: 'test'
+  location: 'C:\\Users\\GOBAO\\Downloads\\AI\\tools\\skills\\shared\\crctl\\scripts\\test\\evidence-delivery-gate.test.mjs:116:1'
+  failureType: 'testCodeFailure'
+  error: 'gate code-approved 没有 evidenceDelivery 检查：["passCondition","approval"]'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: '=='
+  stack: |-
+    gateCheck (file:///C:/Users/GOBAO/Downloads/AI/tools/skills/shared/crctl/scripts/test/evidence-delivery-gate.test.mjs:87:10)
+    TestContext.<anonymous> (file:///C:/Users/GOBAO/Downloads/AI/tools/skills/shared/crctl/scripts/test/evidence-delivery-gate.test.mjs:118:17)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1201:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+    Test.postRun (node:internal/test_runner/test:1330:19)
+    Test.run (node:internal/test_runner/test:1258:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:831:7)
+  ...
+# Subtest: EVD-002 缺 test-report 时交付 gate 指出缺失内容
+not ok 5 - EVD-002 缺 test-report 时交付 gate 指出缺失内容
+  ---
+  duration_ms: 129.4447
+  type: 'test'
+  location: 'C:\\Users\\GOBAO\\Downloads\\AI\\tools\\skills\\shared\\crctl\\scripts\\test\\evidence-delivery-gate.test.mjs:123:1'
+  failureType: 'testCodeFailure'
+  error: 'gate code-approved 没有 evidenceDelivery 检查：["passCondition","approval"]'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: '=='
+  stack: |-
+    gateCheck (file:///C:/Users/GOBAO/Downloads/AI/tools/skills/shared/crctl/scripts/test/evidence-delivery-gate.test.mjs:87:10)
+    TestContext.<anonymous> (file:///C:/Users/GOBAO/Downloads/AI/tools/skills/shared/crctl/scripts/test/evidence-delivery-gate.test.mjs:126:17)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1201:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+    Test.postRun (node:internal/test_runner/test:1330:19)
+    Test.run (node:internal/test_runner/test:1258:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:831:7)
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 1
+# fail 4
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 728.3184

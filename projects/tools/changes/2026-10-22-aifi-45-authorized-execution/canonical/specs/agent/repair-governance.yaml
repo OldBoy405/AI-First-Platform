@@ -1,0 +1,63 @@
+meta:
+  task_id: repair-governance
+  change_id: 2026-10-22-aifi-45-authorized-execution
+  task_type: code
+  system: tools公开repair CLI与隔离Git事务恢复
+  preconditions:
+    - Gate2后实施；所有CP当前待实现。
+    - 仅临时workspace、已提交夹具和平台测试身份；验证选中TC且无意外skip。
+    - MUST精确选中顶层完整TC；带后缀的组件子断言不得登记整TC完成。
+    - MUST核真实子进程TAP成功行及fail/skip/todo为0；零测试、ctx代码回显或skip不得算通过。
+    - 静态check或单元helper不代证真实crctl CLI链；当前完整TC与片均未完成。
+steps:
+  - id: CP-RPR-001
+    description: SC-RPR-001 / 正常实施不扣额，阻断后新run不能冒充首次。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-RPR-001$" skills/shared/crctl/scripts/test/repair-governance.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-RPR-001'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+  - id: CP-RPR-002
+    description: SC-RPR-002 / 第6次可验证交付，第7次拒绝。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-RPR-002$" skills/shared/crctl/scripts/test/repair-governance.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-RPR-002'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+  - id: CP-RPR-003
+    description: SC-RPR-003 / 失败仍计1次，技术重试不另扣且有界。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-RPR-003$" skills/shared/crctl/scripts/test/repair-governance.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-RPR-003'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+  - id: CP-RPR-004
+    description: SC-RPR-004 / 跨阶段cycle及supersede累计不归零。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-RPR-004$" skills/shared/crctl/scripts/test/repair-governance.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-RPR-004'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+  - id: CP-RPR-005
+    description: SC-RPR-005 / 并发、换ID和重放同origin只准入一次。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-RPR-005$" skills/shared/crctl/scripts/test/repair-governance.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-RPR-005'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+  - id: CP-RPR-006
+    description: SC-RPR-006 / 各提交边界恢复、CAS冲突与无关index隔离。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-RPR-006$" skills/shared/crctl/scripts/test/repair-governance.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-RPR-006'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+  - id: CP-RPR-007
+    description: SC-RPR-007 / 6次消费后追加2次总额8且历史不变，重放不再加。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-RPR-007$" skills/shared/crctl/scripts/test/repair-governance.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-RPR-007'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+  - id: CP-RPR-008
+    description: SC-RPR-008 / 无授权继续、非法整数和本地改默认不能扩额。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-RPR-008$" skills/shared/crctl/scripts/test/repair-governance.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-RPR-008'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+  - id: CP-RPR-009
+    description: SC-RPR-009 / 两次无进展有余额也停止，升级附证据。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-RPR-009$" skills/shared/crctl/scripts/test/repair-governance.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-RPR-009'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+  - id: CP-RPR-010
+    description: SC-RPR-010 / blocker同名但真实测试改善可继续。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-RPR-010$" skills/shared/crctl/scripts/test/repair-governance.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-RPR-010'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+  - id: CP-RPR-011
+    description: SC-RPR-011 / 独立核验的有效假设排除可算进展。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-RPR-011$" skills/shared/crctl/scripts/test/repair-governance.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-RPR-011'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+  - id: CP-RPR-012
+    description: SC-RPR-012 / 作者自报、旧证据、根因改名或缺评估不能放行。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-RPR-012$" skills/shared/crctl/scripts/test/repair-governance.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-RPR-012'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+rollback:
+  steps:
+    - 仅销毁本测试夹具；事务恢复不得修改夹具write-set之外的文件或真实账本。

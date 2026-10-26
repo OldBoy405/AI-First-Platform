@@ -1,0 +1,113 @@
+{
+  "at": "2026-10-24T16:52:38.141Z",
+  "purpose": "AIFI-45 balanced3 frozen-source manifest for three authorized disposable-DB supplemental runs",
+  "cwd": "C:/Users/GOBAO/Downloads/AI/multica",
+  "container": "666bfec52ac3c3d13b43389891f50c4105833198eab7e4167b76f014a774e823",
+  "preserved_database": "stdd_aifi45_20261022",
+  "hashing": "raw bytes (including LF as stored); sha256",
+  "runs": [
+    {
+      "package": "./internal/governance",
+      "pattern": "^Test",
+      "evidence_prefix": "disposable-db-20261024T162608Z-balanced3-governance",
+      "nonce": "e31515b4dd2f6c71",
+      "database": "aifi45_tmp_e31515b4dd2f6c71",
+      "role": "aifi45_role_e31515b4dd2f6c71",
+      "counts": {
+        "run": 817,
+        "pass": 817,
+        "fail": 0,
+        "skip": 0
+      },
+      "leaf_pass": 739,
+      "original_unchanged": true,
+      "original_release": {
+        "sessions": 0,
+        "locks": 0
+      },
+      "owned_resources_cleaned": true,
+      "error": null,
+      "skipped": {}
+    },
+    {
+      "package": "./internal/handler",
+      "pattern": "^TestStartClaim",
+      "evidence_prefix": "disposable-db-20261024T162608Z-balanced3-handler",
+      "nonce": "b442ae178ea98084",
+      "database": "aifi45_tmp_b442ae178ea98084",
+      "role": "aifi45_role_b442ae178ea98084",
+      "counts": {
+        "run": 13,
+        "pass": 13,
+        "fail": 0,
+        "skip": 0
+      },
+      "leaf_pass": 10,
+      "original_unchanged": true,
+      "original_release": {
+        "sessions": 0,
+        "locks": 0
+      },
+      "owned_resources_cleaned": true,
+      "error": null,
+      "skipped": {}
+    },
+    {
+      "package": "./internal/daemon",
+      "pattern": "Test.*Execution",
+      "evidence_prefix": "disposable-db-20261024T162608Z-balanced3-daemon",
+      "nonce": "6734151f137ea2d5",
+      "database": "aifi45_tmp_6734151f137ea2d5",
+      "role": "aifi45_role_6734151f137ea2d5",
+      "counts": {
+        "run": 48,
+        "pass": 47,
+        "fail": 0,
+        "skip": 1
+      },
+      "leaf_pass": 44,
+      "original_unchanged": true,
+      "original_release": {
+        "sessions": 0,
+        "locks": 0
+      },
+      "owned_resources_cleaned": true,
+      "error": null,
+      "skipped": {
+        "TestExecutionTrustRefusesLinkedRootInsideWorkspace": "=== RUN   TestExecutionTrustRefusesLinkedRootInsideWorkspace | execution_trust_test.go:133: directory link unsupported: symlink C:\\Users\\GOBAO\\AppData\\Local\\Temp\\TestExecutionTrustRefusesLinkedRootInsideWorkspace1538949672\\001\\workspace\\execution-trust C:\\Users\\GOBAO\\AppData\\Local\\Temp\\TestExecutionTrustRefusesLinkedRootInsideWorkspace1538949672\\002\\home\\.multica\\execution-trust: A required privilege is not held by the client. | --- SKIP: TestExecutionTrustRefusesLinkedRootInsideWorkspace (0.00s)"
+      }
+    }
+  ],
+  "files": [
+    {
+      "path": "scripts/aifi45-db/run.mjs",
+      "bytes": 14051,
+      "sha256": "b4d70ae10ee5c0eabc51fc3cb897410ebfcee2816bdf097e93c147fc09a9df00"
+    },
+    {
+      "path": "scripts/aifi45-db/run.test.mjs",
+      "bytes": 5498,
+      "sha256": "0c6b605388421acfbae73584b34f687d0221d2622e5c3e36ba11ef7de9ee8a79"
+    },
+    {
+      "path": "server/internal/service/task.go",
+      "bytes": 410251,
+      "sha256": "c5e543f880b907059ac1a02f6fda60b1e6e200703a0c70cc9efd967d0b57f118"
+    },
+    {
+      "path": "server/internal/handler/daemon.go",
+      "bytes": 286826,
+      "sha256": "3f7a3444b3c8aaca9728b01d179ff3ad138c780a25639f6ceb5023c46102d24f"
+    },
+    {
+      "path": "server/internal/handler/handler_test.go",
+      "bytes": 136659,
+      "sha256": "e910e128f94f0ea5a0783754133ad5333a6bc85a5d697cca3338801d1167c91b"
+    },
+    {
+      "path": "server/internal/governance/execution_start_claim_test.go",
+      "bytes": 5900,
+      "sha256": "44e9291b033eb754430f45faf8767c7af2446907e41ad646b9793997267be619"
+    }
+  ]
+}

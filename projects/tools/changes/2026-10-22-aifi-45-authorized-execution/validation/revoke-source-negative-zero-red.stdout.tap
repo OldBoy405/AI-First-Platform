@@ -1,0 +1,60 @@
+TAP version 13
+# Subtest: TC-AUTH-010 source check accepts signed zero with original negative-zero repair_limit
+not ok 1 - TC-AUTH-010 source check accepts signed zero with original negative-zero repair_limit
+  ---
+  duration_ms: 331.6204
+  type: 'test'
+  location: 'C:\\Users\\GOBAO\\Downloads\\AI\\tools\\skills\\shared\\crctl\\scripts\\test\\execution-authorization.test.mjs:677:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":{"code":"EXECUTION_SOURCE_INVALID","message":"独立读取的原始请求、资源选择与签名scope不一致或含未定义字段"}}
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/GOBAO/Downloads/AI/tools/skills/shared/crctl/scripts/test/execution-authorization.test.mjs:689:12)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1201:25)
+    Test.start (node:internal/test_runner/test:1096:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17)
+  ...
+# Subtest: TC-AUTH-010 source check accepts signed zero with original negative-zero sensitive_action_limit
+not ok 2 - TC-AUTH-010 source check accepts signed zero with original negative-zero sensitive_action_limit
+  ---
+  duration_ms: 333.9888
+  type: 'test'
+  location: 'C:\\Users\\GOBAO\\Downloads\\AI\\tools\\skills\\shared\\crctl\\scripts\\test\\execution-authorization.test.mjs:677:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":{"code":"EXECUTION_SOURCE_INVALID","message":"独立读取的原始请求、资源选择与签名scope不一致或含未定义字段"}}
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/GOBAO/Downloads/AI/tools/skills/shared/crctl/scripts/test/execution-authorization.test.mjs:689:12)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1201:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+    Test.postRun (node:internal/test_runner/test:1330:19)
+    Test.run (node:internal/test_runner/test:1258:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 0
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 737.8635

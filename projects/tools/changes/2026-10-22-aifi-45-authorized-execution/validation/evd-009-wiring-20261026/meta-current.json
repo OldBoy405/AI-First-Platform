@@ -1,0 +1,69 @@
+{
+  "kind": "dynamic_tools_only_evidence",
+  "cr": "2026-10-22-aifi-45-authorized-execution",
+  "tc": [
+    "SC-EVD-009",
+    "TC-EVD-009"
+  ],
+  "date": "2026-10-26",
+  "runner": "node --test --test-reporter=tap (tools only; no DB, no multica, no deploy)",
+  "unit_under_test": "skills/shared/crctl/scripts/lib/workspace-transactions.mjs::mergeCr",
+  "guard": {
+    "condition": "payload.releaseReceipt && remotePublished",
+    "remote_truth": "git merge-base --is-ancestor <mergeSha> origin/<trunk> per recorded repo",
+    "pins_receipt_only_after_remote_publish": true,
+    "note": "pre-publish attempts refresh the receipt; post-publish attempts must reuse it"
+  },
+  "source": {
+    "lib/workspace-transactions.mjs": "37d3818a74e05c3b200c10204dffa220d96eb70b98924faa810eac10b928c013",
+    "test/merge-release-recovery.test.mjs": "495b962d32a245c2eca65bad322db2cdf0741a52b88f00976e634fbf4309f623"
+  },
+  "restored_identical": true,
+  "mutations": [
+    {
+      "mutation": "drop-remote-published",
+      "anchor": "if (payload.releaseReceipt && remotePublished) {",
+      "red": {
+        "exit": 1,
+        "tests": 4,
+        "pass": 3,
+        "fail": 1,
+        "skipped": 0
+      }
+    },
+    {
+      "mutation": "drop-pinned-guard",
+      "anchor": "    if (payload.releaseReceipt && remotePublished) {",
+      "red": {
+        "exit": 1,
+        "tests": 4,
+        "pass": 3,
+        "fail": 1,
+        "skipped": 0
+      }
+    }
+  ],
+  "green": {
+    "exit": 0,
+    "tests": 4,
+    "pass": 4,
+    "fail": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "regression": {
+    "regression-merge-tx-v3.tap": "23 pass / 0 fail",
+    "regression-tx-neighbours-v3.tap": "69 pass / 0 fail"
+  },
+  "stale_evidence_note": "green.tap / red.tap / meta 的旧版本（2 例、锚点 if (payload.releaseReceipt) {）对应 ae5ad1c8…，已被本文件取代；保留作历史。",
+  "review_findings_addressed_in_this_revision": [
+    "零发布死锁（自证 + 安全轴 major）",
+    "push 成功/journal 未落盘窗口（安全轴 major）",
+    "证据与当前字节不符（测试轴 blocker）"
+  ],
+  "not_verified": [
+    "checkpoint / writeback 未接判定函数（按构造复用冻结快照）",
+    "未在真实双仓 CR、真实 DB、真实部署上验证",
+    "未跑 multica 侧用例"
+  ]
+}

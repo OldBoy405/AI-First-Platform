@@ -1,0 +1,67 @@
+{
+  "at": "2026-10-24T14:51:34.539Z",
+  "step": "boot config + unit enablement + graceful container stop",
+  "log": [
+    {
+      "tag": "wslconf-apply",
+      "exit": 0,
+      "stdout": "new_sha=97fa04e3363292d358627c1295ad1fa9b28a8ec6f853a4262b2bcdf5256e7805\ncontent_begin\n[user]\ndefault=user\n\n[boot]\nsystemd=true\ncontent_end",
+      "stderr": ""
+    },
+    {
+      "tag": "unit-state",
+      "exit": 0,
+      "stdout": "is_enabled_socket=is_enabled_service=Failed to get unit file state for podman.service: Transport endpoint is not connected\nlinger=yes",
+      "stderr": "Failed to get unit file state for podman.socket: Transport endpoint is not connected"
+    },
+    {
+      "tag": "unit-enable",
+      "exit": 0,
+      "stdout": "printf \"enable=\"; systemctl --user enable podman.socket 2>&1 | tail -1; printf \"is_enabled_socket=\"; is_enabled_service=Failed to get unit file state for podman.service: Transport endpoint is not connected\nlinger=yes",
+      "stderr": "Failed to get unit file state for podman.socket: Transport endpoint is not connected"
+    },
+    {
+      "tag": "stop-backend",
+      "exit": 0,
+      "stdout": "01050b2499847e72b06cb5d84b8ec2945dc75045842544a65caf550ef573a762",
+      "stderr": ""
+    },
+    {
+      "tag": "stop-pg1",
+      "exit": 0,
+      "stdout": "96211305e92b4ec8a686b5f774cac92e960b86ce14acaa40eb8c1201e993e01f",
+      "stderr": ""
+    },
+    {
+      "tag": "stop-pg2",
+      "exit": 0,
+      "stdout": "666bfec52ac3c3d13b43389891f50c4105833198eab7e4167b76f014a774e823",
+      "stderr": ""
+    }
+  ],
+  "containers_after_stop": [
+    {
+      "id": "96211305e92b4ec8a686b5f774cac92e960b86ce14acaa40eb8c1201e993e01f",
+      "name": "multica-postgres",
+      "state": "exited"
+    },
+    {
+      "id": "666bfec52ac3c3d13b43389891f50c4105833198eab7e4167b76f014a774e823",
+      "name": "stdd-aifi45-20261022-pg",
+      "state": "exited"
+    },
+    {
+      "id": "01050b2499847e72b06cb5d84b8ec2945dc75045842544a65caf550ef573a762",
+      "name": "multica-backend",
+      "state": "exited"
+    }
+  ],
+  "volumes": [
+    "pgdata",
+    "multica-backend-uploads",
+    "d940d2d5057537a3661cfa0032429b21e1f797c12da1df712e1a02c5c20d73ea",
+    "aifi45-m10-repair-e4o5e8vm-data",
+    "fd88f63510d031749990f09207de55598bad8b6afe6690f72c24120686374467"
+  ],
+  "containers_not_removed": true
+}

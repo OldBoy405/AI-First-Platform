@@ -1,0 +1,5 @@
+printf "enable="; systemctl --user enable podman.socket 2>&1 | tail -1; printf "is_enabled_socket="; is_enabled_service=Failed to get unit file state for podman.service: Transport endpoint is not connected
+linger=yes
+
+---stderr---
+Failed to get unit file state for podman.socket: Transport endpoint is not connected

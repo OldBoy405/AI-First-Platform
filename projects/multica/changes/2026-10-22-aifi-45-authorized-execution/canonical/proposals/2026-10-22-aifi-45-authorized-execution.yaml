@@ -1,0 +1,90 @@
+meta:
+  change_id: 2026-10-22-aifi-45-authorized-execution
+  title: AIFI-45 授权内自治执行与有界修复（multica Runner）
+  created: '2026-10-22T15:45:00+08:00'
+  status: confirmed
+  version: '3.0'
+why:
+  problem: >-
+    现有 Runner、可信阶段审批、任务幂等与独立 reviewer 可复用，
+    但完整授权包、跨阶段累计修复、无进展停止、全阶段恢复派发和最小通知尚需配套合同。
+    已有代码 walker 或本地 registry 不等于部署运行时已接通，不能只改 prompt 宣称减负完成。
+  motivation: >-
+    与 tools 同轮落地 docs/AIFI-45-CR流程减负目标方案.md，普通授权内执行无需人类机械推进，
+    扩围和敏感动作仍受控。开发使用原生 STDD，不注册或推进实际 CR。
+what_changes:
+  - id: C1
+    type: modified
+    description: 复用平台认证、审批记录与 Ed25519 传输，记录并绑定执行授权包，维护送达、crctl消费和实际执行的不同事实。
+  - id: C2
+    type: modified
+    description: Runner 唯一自动派发；以既有 run/node/task lineage 关联 tools 裁决的逻辑修复，恢复、并发与发布失败不双派或重复消费。
+  - id: C3
+    type: modified
+    description: 完成目标阶段的实际启动、wake、发现和恢复接线，联合校验 run/node/attempt/cycle/subject/模板版本及独立 reviewer。
+  - id: C4
+    type: modified
+    description: 按业务授权者或维护责任人分流异常，仅主动通知授权、需处置阻断及交付，未变化阻断重放不重复提醒。
+  - id: C5
+    type: modified
+    description: 与 tools 配套版本启用，新 CR 显式试点；旧 CR 保持 pin 与证据，显式迁移保留授权及历史消耗。
+capabilities:
+  new: []
+  modified:
+    - name: authorized-runner
+      description: 可信授权绑定、crctl裁决消费、唯一全阶段派发与恢复、证据身份和版本隔离。
+    - name: attention-routing
+      description: 最小主动通知、阻断重放抑制、业务/维护分流及可查询运行记录。
+constraints:
+  - 需求源为本工作区 docs/AIFI-45-CR流程减负目标方案.md；保留 AC-1 至 AC-12。
+  - Gate 1 用户原文为“确认这份 Gate 1”；本轮采用 STDD 而非附件原述正式 CR 实施方法，不取消运行时门禁。
+  - 采用 thorough 模式；Gate 2 前只写设计与规格，不改业务代码，不继承旧 change 审批。
+  - 授权、累计额度、进展与业务门禁以 tools/crctl 权威裁决为准，Runner 只保存执行身份与结果引用，不新建第二套额度裁决。
+  - 默认修复累计 6 次、连续两次无进展停止；同一逻辑修复跨恢复/阶段/cycle不重新获得额度。
+  - 保留 Ed25519、认证身份、真实任务归因、独立 reviewer、事务、锁、digest与旧 run 兼容性。
+  - 修改 multica 代码时使用英文注释并同步 CUSTOM.md；本轮 SPEC 尚不改代码或该台账。
+  - 不执行真实 CR 操作、生产部署、破坏性数据、权限扩大、Git commit/push、新增支出或全局权限修改。
+  - 与同 ID 的 tools STDD change 配套设计和独立验收，旧源码/测试/批准不当作本轮验证。
+stakeholders:
+  - 业务授权者与决策者
+  - 项目维护及运维责任人
+  - 平台 Runner、daemon、执行 Agent 与独立 reviewer
+risk_areas:
+  - capability: authorized-runner
+    risk: ACK、迟到证据或 task-token 自报被误当作当前业务授权；重放或恢复重复派发。
+    mitigation: 可信认证、签名版本绑定、crctl锁内裁决，复用任务身份和数据库唯一性，覆盖真实wake链。
+  - capability: attention-routing
+    risk: 通知去重吞掉重要变化，或维护故障被转嫁业务方。
+    mitigation: 复用现有执行上下文区分原因、证据和接收者；状态持久化独立于触达，不新增全局账本。
+non_goals:
+  - 不新增工作流引擎、中央总账、全局通知去重库或纯转交 Agent。
+  - 不引入费用/token/运行级耗时预算系统，不将修复次数伪称费用保证。
+  - 不凭源代码 SHA 宣称线上版本已一致，不自动迁移在途 CR 或清零历史。
+  - 不重做已完成的四阶段编译 registry、executor 或 Agent 去接力。
+  - 不修改 STDD 产品、用户工具权限或本次实施范围外的功能。
+critical:
+  is_critical: true
+  risk_assessment:
+    safety_critical: true
+    financial: false
+    cross_system: true
+anchoring:
+  level: L3
+  reference_changes:
+    - 2026-10-19-aifi-45-runner-contracts
+    - 2026-10-19-aifi-45-four-phase-runner
+  anchor_implementations:
+    - server/internal/governance/runner.go
+    - server/internal/governance/approval.go
+    - server/internal/service/task.go
+success_criteria:
+  - AC-1/2/8：充分授权普通请求自动推进；缺失、扩围或敏感动作缺专项授权时停止，作者和task-token不能自授权。
+  - AC-3/4/5：Runner遵守crctl额度与进展裁决，默认第7次不派发，连续两次无进展升级。
+  - AC-6：重复事件、恢复、崩溃、并发wake和发布重试不产生第二次逻辑修复或重复消费。
+  - AC-7：旧cycle/run/subject/模板证据只留历史，不推进当前执行。
+  - AC-9：交付必须有独立差异与可运行证据；真实UUID隔离及机械例外合同受验证。
+  - AC-10：维护异常有界恢复后通知维护者；授权变化通知有权者，不让业务方搬命令。
+  - AC-11：只主动通知授权、需处置阻断、交付；未变化阻断重放不重复提醒，新失败与重要变化不被吞。
+  - AC-12：新旧run按原合同隔离；新版本配套与恢复验收完成前不删旧路径，显式迁移保留历史。
+  - 普通授权、高风险、失败恢复三条路径通过真实认证入口和实际wake链的隔离集成测试；不以直接调用walker或假队列代证。
+  - 线上部署、开关、存量任务与实际新流程试点未核实时明确未验证，不报告全部上线完成。

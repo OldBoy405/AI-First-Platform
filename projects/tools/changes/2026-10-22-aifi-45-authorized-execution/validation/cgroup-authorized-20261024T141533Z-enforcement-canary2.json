@@ -1,0 +1,87 @@
+{
+  "at": "2026-10-24T14:53:54.396Z",
+  "scope": "controlled enforcement probe: pids cap, memory cap negative case, memory cap positive control; ephemeral exact-owned, no network/host mount/credential",
+  "results": [
+    {
+      "label": "pids",
+      "name": "aifi45-pids-90a3672360adb8ef",
+      "nonce": "90a3672360adb8ef",
+      "steps": [
+        {
+          "kernel": "create",
+          "exit": 0,
+          "stderr": ""
+        },
+        {
+          "kernel": "start",
+          "exit": 2,
+          "stdout": "",
+          "stderr": ""
+        }
+      ],
+      "host_config": {
+        "memory": 0,
+        "pids_limit": 16,
+        "nano_cpus": 0
+      },
+      "cleanup": {
+        "rm_exit": 0,
+        "exists_exit": 1
+      }
+    },
+    {
+      "label": "mem32",
+      "name": "aifi45-mem32-e610ef21d39ef51d",
+      "nonce": "e610ef21d39ef51d",
+      "steps": [
+        {
+          "kernel": "create",
+          "exit": 0,
+          "stderr": ""
+        },
+        {
+          "kernel": "start",
+          "exit": 137,
+          "stdout": "",
+          "stderr": ""
+        }
+      ],
+      "host_config": {
+        "memory": 33554432,
+        "pids_limit": 0,
+        "nano_cpus": 0
+      },
+      "cleanup": {
+        "rm_exit": 0,
+        "exists_exit": 1
+      }
+    },
+    {
+      "label": "mem512",
+      "name": "aifi45-mem512-e8872071797a159b",
+      "nonce": "e8872071797a159b",
+      "steps": [
+        {
+          "kernel": "create",
+          "exit": 0,
+          "stderr": ""
+        },
+        {
+          "kernel": "start",
+          "exit": 0,
+          "stdout": "head_exit=0\n536870912\nlow 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0",
+          "stderr": ""
+        }
+      ],
+      "host_config": {
+        "memory": 536870912,
+        "pids_limit": 0,
+        "nano_cpus": 0
+      },
+      "cleanup": {
+        "rm_exit": 0,
+        "exists_exit": 1
+      }
+    }
+  ]
+}

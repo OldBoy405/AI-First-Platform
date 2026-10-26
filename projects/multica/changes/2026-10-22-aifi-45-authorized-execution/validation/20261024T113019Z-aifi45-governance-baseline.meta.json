@@ -1,0 +1,84 @@
+{
+  "schema": "aifi45-governance-test-baseline/v1",
+  "change": "2026-10-22-aifi-45-authorized-execution",
+  "timestamp_utc": "20261024T113019Z",
+  "package": "./internal/governance",
+  "run_regex": "^(TestExecutionAuthorize|TestExecutionAuthorizationRoute|TestDaemonFetchesAndInstallsExecutionAuthorization)",
+  "command_equivalent": [
+    "go",
+    "test",
+    "./internal/governance",
+    "-run",
+    "^(TestExecutionAuthorize|TestExecutionAuthorizationRoute|TestDaemonFetchesAndInstallsExecutionAuthorization)",
+    "-count=1",
+    "-json"
+  ],
+  "runner": "C:/Users/GOBAO/AppData/Local/Temp/aifi45-gotest.cjs",
+  "runner_wrapper": "inline node preload capturing spawnSync go stdout/stderr; runner file unchanged",
+  "started_at": "2026-10-24T11:30:19.280Z",
+  "finished_at": "2026-10-24T11:30:35.162Z",
+  "duration_ms": 15881,
+  "package_elapsed_seconds": 2.427,
+  "exit": 0,
+  "signal": null,
+  "error": null,
+  "counts": {
+    "run": 10,
+    "pass": 10,
+    "fail": 0,
+    "skip": 0
+  },
+  "top_level_counts": {
+    "run": 8,
+    "pass": 8,
+    "fail": 0,
+    "skip": 0
+  },
+  "top_level_names": {
+    "run": [
+      "TestDaemonFetchesAndInstallsExecutionAuthorization",
+      "TestExecutionAuthorizationRouteDisabledAndTaskToken",
+      "TestExecutionAuthorizationRouteUsesRealAuthAndWorkspace",
+      "TestExecutionAuthorizePersistsAndReplaysSource",
+      "TestExecutionAuthorizeRejectsCrossWorkspaceAndProjectMismatch",
+      "TestExecutionAuthorizeRejectsStaleOrForeignResource",
+      "TestExecutionAuthorizeRejectsUntrustedCallers",
+      "TestExecutionAuthorizeRequiresFrozenCoordinatorRoot"
+    ],
+    "pass": [
+      "TestDaemonFetchesAndInstallsExecutionAuthorization",
+      "TestExecutionAuthorizationRouteDisabledAndTaskToken",
+      "TestExecutionAuthorizationRouteUsesRealAuthAndWorkspace",
+      "TestExecutionAuthorizePersistsAndReplaysSource",
+      "TestExecutionAuthorizeRejectsCrossWorkspaceAndProjectMismatch",
+      "TestExecutionAuthorizeRejectsStaleOrForeignResource",
+      "TestExecutionAuthorizeRejectsUntrustedCallers",
+      "TestExecutionAuthorizeRequiresFrozenCoordinatorRoot"
+    ],
+    "fail": [],
+    "skip": []
+  },
+  "elapsed_seconds_top_level": {
+    "TestExecutionAuthorizeRejectsUntrustedCallers": 0.06,
+    "TestExecutionAuthorizePersistsAndReplaysSource": 0.06,
+    "TestExecutionAuthorizeRejectsCrossWorkspaceAndProjectMismatch": 0.04,
+    "TestExecutionAuthorizeRejectsStaleOrForeignResource": 0.06,
+    "TestExecutionAuthorizeRequiresFrozenCoordinatorRoot": 0.05,
+    "TestExecutionAuthorizationRouteUsesRealAuthAndWorkspace": 0.03,
+    "TestExecutionAuthorizationRouteDisabledAndTaskToken": 0.04,
+    "TestDaemonFetchesAndInstallsExecutionAuthorization": 0.56
+  },
+  "raw_files": {
+    "stdout": "C:/Users/GOBAO/Downloads/AI/AI First Platform/projects/multica/changes/2026-10-22-aifi-45-authorized-execution/validation/20261024T113019Z-aifi45-governance-baseline.go.jsonl",
+    "stderr": "C:/Users/GOBAO/Downloads/AI/AI First Platform/projects/multica/changes/2026-10-22-aifi-45-authorized-execution/validation/20261024T113019Z-aifi45-governance-baseline.stderr.log"
+  },
+  "raw_sha256": {
+    "stdout": "447597c374ed3d81159b4d75658eb0be348b1fdb3899ff5b77c37dda87bf1072",
+    "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "sanitization": [
+    "postgres URL userinfo redacted",
+    "GitHub token patterns redacted"
+  ],
+  "note": "Raw Go JSON lines preserved; only secret-pattern redaction applied. exit/counts are from actual execution."
+}

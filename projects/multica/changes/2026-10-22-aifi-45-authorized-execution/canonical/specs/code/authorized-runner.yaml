@@ -1,0 +1,95 @@
+meta:
+  capability: authorized-runner
+  change_id: 2026-10-22-aifi-45-authorized-execution
+  created: '2026-10-22'
+  confidence: high
+requirements:
+  - id: REQ-RUN-001
+    confidence: high
+    description: 实际认证入口绑定充分授权，ACK与已提交业务消费分离。
+    scenarios:
+      - id: SC-RUN-001
+        confidence: high
+        evidence: canonical/proposals/2026-10-22-aifi-45-authorized-execution.yaml#C1,AC-1/2/8
+        given: 认证owner/admin原请求包含完整授权包，且新policy配套已就绪。
+        when: 通过真实project入口启动普通变更并进入后续阶段。
+        then: SHALL 绑定原授权并经crctl适用裁决自动执行，不要求重复阶段人类确认。
+        and:
+          - 完整原请求bytes与资源选择冻结；已认证workspace/CR/issue/project与所选资源由实际DB校验，不从body替代。
+          - 初始已签repository_bindings和coordinator_binding固定目标仓/CR控制根UUID及身份版本；同原请求返回原包，不按可变资源行重新签发。
+      - id: SC-RUN-002
+        confidence: high
+        evidence: canonical/proposals/2026-10-22-aifi-45-authorized-execution.yaml#C1,AC-1/2/8
+        given: 请求仅为task-token、伪header、自报actor、Agent补写候选包或越权成员。
+        when: 调用授权入口。
+        then: SHALL 不签发有效execution授权，不创建执行任务，不把转述视为人类批准。
+      - id: SC-RUN-003
+        confidence: high
+        evidence: canonical/proposals/2026-10-22-aifi-45-authorized-execution.yaml#C1,AC-6
+        given: grant送达落盘并ACK，但T尚未提交适用消费receipt。
+        when: ACK回调及periodic wake发生。
+        then: SHALL 只唤醒核验，不完成业务gate或直接派旧continuation；T提交后才依实际状态推进。
+        and:
+          - 新控制链须真实daemon_token、DB当前claim与本机实际子进程/资源匹配；普通PAT/JWT兼容认证不自动获得新控制签发能力。
+          - project/resource投影仅保留身份不等于fresh证明；旧快照、graph换根或复制sidecar不能开放消费。
+  - id: REQ-RUN-002
+    confidence: medium
+    description: 修复准入后以持久化逻辑步骤身份入队，跨run恢复不重复消费或根派发。
+    scenarios:
+      - id: SC-RUN-004
+        confidence: medium
+        evidence: canonical/proposals/2026-10-22-aifi-45-authorized-execution.yaml#C2,AC-6
+        given: 同一repair receipt经并发wake、跨cycle或supersede反复返回。
+        when: 实际TaskService创建纠正性根任务。
+        then: SHALL 按永久logical_dispatch_key只保留一个根任务并返回赢家，终态后也不能重新创建同逻辑根。
+        and:
+          - tenant/project归因由可信run与task绑定校验。
+          - receipt引用保存在现有execution_context/detail/context且不被upsert覆盖。
+          - 跨run必须有可信adoption映射和当前subject/版本重验才接收原结果；不改原根归因。
+      - id: SC-RUN-005
+        confidence: medium
+        evidence: canonical/proposals/2026-10-22-aifi-45-authorized-execution.yaml#C2,AC-6
+        given: T准入提交后入队前、DB入队提交后响应前分别崩溃，随后出现技术重试。
+        when: 启动恢复及查询原任务lineage。
+        then: SHALL 恢复原根及有界子链，不重复准入或消费，不复活终态根来规避上限。
+      - id: SC-RUN-006
+        confidence: high
+        evidence: canonical/proposals/2026-10-22-aifi-45-authorized-execution.yaml#C2,AC-3/4/5
+        given: T拒绝新准入或查询故障；另有已花完最后名额的有效receipt、撤销revision及签名resume分支。
+        when: Runner处理新修复、原修复验证恢复或继续请求。
+        then: SHALL 拒绝新的未准入修复但允许最后已准入修复的测试、独立验证和PASS交付，不能自算预算或伪装首次实施。
+        and:
+          - 撤销时未启动任务停止，已运行只允许有界安全收尾且不返还消耗。
+          - 无进展后仅适用T已提交resume receipt可恢复，不以ACK或模糊继续代替。
+  - id: REQ-RUN-003
+    confidence: high
+    description: 唯一Runner必须接通实际四阶段入口、事件、启动发现和失败恢复。
+    scenarios:
+      - id: SC-RUN-007
+        confidence: high
+        evidence: canonical/proposals/2026-10-22-aifi-45-authorized-execution.yaml#C3,AC-1/2/8,AC-12
+        given: 新policy普通已授权变更依次进入需求、设计、开发及回写，服务在阶段交接处重启。
+        when: 经真实认证入口、统一Reconcile、periodic发现和真实TaskService驱动。
+        then: SHALL 在每阶段按当前模板与权限完成唯一派发和恢复，不依赖人工命令或直接调用walker。
+      - id: SC-RUN-008
+        confidence: high
+        evidence: canonical/proposals/2026-10-22-aifi-45-authorized-execution.yaml#C3,C5,AC-12
+        given: 旧run仍存活，或新policy任一入口/恢复/安装版本尚未配套。
+        when: 尝试切换、迁移或回退。
+        then: SHALL 保留旧合同和历史，拒绝未就绪切换；回退仅停新准入，不能清历史或双派发。
+  - id: REQ-RUN-004
+    confidence: high
+    description: 独立评审与证据以联合执行身份适用，敏感动作不可借正常授权执行。
+    scenarios:
+      - id: SC-RUN-009
+        confidence: high
+        evidence: canonical/proposals/2026-10-22-aifi-45-authorized-execution.yaml#C3,AC-7,AC-9
+        given: 证据在run、node、attempt、cycle、subject、template/policy、receipt或reviewer真实UUID任一项不适用。
+        when: 投影迟到评审、进展assessment或请求交付。
+        then: SHALL 仅保留历史而不推进当前节点，作者不能自评PASS，缺实际差异和测试不能交付。
+      - id: SC-RUN-010
+        confidence: high
+        evidence: canonical/proposals/2026-10-22-aifi-45-authorized-execution.yaml#C1,AC-1/2/8
+        given: 已授权普通实施，但当前生产/数据/权限/支出动作缺对应专项授权，另有精确专项授权正例。
+        when: Runner请求具体action/target/environment/operation_id的裁决。
+        then: SHALL 在缺授权分支不执行，在精确正例中只应用授权边界并幂等消费，不再重复确认同一事实。

@@ -1,0 +1,12 @@
+{"at":"2026-10-25T09:15:55.051Z","kind":"plan","container":"666bfec52ac3c3d13b43389891f50c4105833198eab7e4167b76f014a774e823","original":"stdd_aifi45_20261022","target":{"nonce":"1fab42482505f3a2","database":"aifi45_tmp_1fab42482505f3a2","role":"aifi45_role_1fab42482505f3a2"},"package":"./internal/daemon","pattern":"^TestRequestExecutionBinding","extra":["-timeout=280s"]}
+{"at":"2026-10-25T09:15:57.553Z","kind":"source-preserved","approval_rows":82,"original_tables":137,"schema_sha256":"98741bd851139ceea4b6055acfd336a491364e8bee94bf7ce5ffbebf9b737adf","audit_dump_sha256":"c56edc3ef0a51db538b30e45f07d968b1f5ab0213f069db169a7641286e534e3"}
+{"at":"2026-10-25T09:15:57.553Z","kind":"create-role-intent","role":"aifi45_role_1fab42482505f3a2"}
+{"at":"2026-10-25T09:15:58.804Z","kind":"create-database-intent","database":"aifi45_tmp_1fab42482505f3a2","owner":"aifi45_role_1fab42482505f3a2"}
+{"at":"2026-10-25T09:16:00.549Z","kind":"created","target":{"nonce":"1fab42482505f3a2","database":"aifi45_tmp_1fab42482505f3a2","role":"aifi45_role_1fab42482505f3a2","role_oid":"357123","database_oid":"357124"}}
+{"at":"2026-10-25T09:16:03.200Z","kind":"isolation-verified","identity":{"database":"aifi45_tmp_1fab42482505f3a2","role":"aifi45_role_1fab42482505f3a2","superuser":false,"create_db":false,"create_role":false,"bypass_rls":false,"audit_rows":0,"workspace_rows":0},"original_audit_table_read_denied":true}
+{"at":"2026-10-25T09:16:10.081Z","kind":"test-finished","argv":["go","test","./internal/daemon","-run","^TestRequestExecutionBinding","-count=1","-json","-timeout=180s","-timeout=280s"],"cwd":"C:\\Users\\GOBAO\\Downloads\\AI\\multica\\server\\","exit":1,"signal":null,"counts":{"run":7,"pass":6,"fail":1,"skip":0},"leaf_pass":5,"migrations":[],"package_failures":1,"output_redacted":false}
+{"at":"2026-10-25T09:16:10.081Z","kind":"failure","error":"test failed, matched no tests, or exposed credentials; inspect evidence"}
+{"at":"2026-10-25T09:16:11.477Z","kind":"original-compared","unchanged":true,"release":{"sessions":0,"locks":0}}
+{"at":"2026-10-25T09:16:12.418Z","kind":"database-dropped","database":"aifi45_tmp_1fab42482505f3a2","oid":"357124"}
+{"at":"2026-10-25T09:16:13.298Z","kind":"role-dropped","role":"aifi45_role_1fab42482505f3a2","oid":"357123"}
+{"at":"2026-10-25T09:16:13.779Z","kind":"resources-absence-verified","database_present":false,"role_present":false}

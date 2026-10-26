@@ -1,0 +1,57 @@
+meta:
+  task_id: authorized-runner
+  change_id: 2026-10-22-aifi-45-authorized-execution
+  task_type: code
+  system: multica真实认证入口、统一wake、TaskService与隔离Postgres
+  preconditions:
+    - Gate2后新增集成测试，当前CP未实施未运行。
+    - 从multica/server执行；DATABASE_URL必须指向显式创建的隔离测试库，禁止默认共享multica库。
+    - CRCTL_PATH指向本轮tools，测试签名密钥和临时Git/workspace隔离；缺依赖或skip视为未验证。
+    - 真路由、统一wake和真实TaskService，不以fake enqueuer或直接walker代证；检查目标测试确实选中。
+    - MUST精确选中顶层完整TC；组件子断言或单包内子测试不得登记整TC完成。
+    - 当前handler/Root组件的单元断言不代替真实Auth/router/wake/TaskService整链路TC。
+    - MUST核真实子进程PASS行；零匹配、skip、ctx代码回显或组件测试包装成整TC均不得算通过；当前完整TC与片均未完成。
+steps:
+  - id: CP-RUN-001
+    description: SC-RUN-001 / 原始充分授权真实入口无重复阶段确认。
+    action: go test ./cmd/server -run ^TestTC_RUN_001$ -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'PASS: TestTC_RUN_001'}]
+  - id: CP-RUN-002
+    description: SC-RUN-002 / 不可信或越权主体不签授权不创建任务。
+    action: go test ./cmd/server -run ^TestTC_RUN_002$ -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'PASS: TestTC_RUN_002'}]
+  - id: CP-RUN-003
+    description: SC-RUN-003 / pending落盘ACK仅wake，消费后才推进。
+    action: go test ./cmd/server -run ^TestTC_RUN_003$ -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'PASS: TestTC_RUN_003'}]
+  - id: CP-RUN-004
+    description: SC-RUN-004 / 并发跨run及终态后的根派发永久幂等。
+    action: go test ./cmd/server -run ^TestTC_RUN_004$ -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'PASS: TestTC_RUN_004'}]
+  - id: CP-RUN-005
+    description: SC-RUN-005 / Git与DB窗口故障恢复原任务与技术子链。
+    action: go test ./cmd/server -run ^TestTC_RUN_005$ -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'PASS: TestTC_RUN_005'}]
+  - id: CP-RUN-006
+    description: SC-RUN-006 / T拒绝或不可达不能派发或重算额度。
+    action: go test ./cmd/server -run ^TestTC_RUN_006$ -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'PASS: TestTC_RUN_006'}]
+  - id: CP-RUN-007
+    description: SC-RUN-007 / 四阶段真实入口wake扫描恢复完整闭环。
+    action: go test ./cmd/server -run ^TestTC_RUN_007$ -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'PASS: TestTC_RUN_007'}]
+  - id: CP-RUN-008
+    description: SC-RUN-008 / 旧run及未就绪切换恢复边界不双派不清历史。
+    action: go test ./cmd/server -run ^TestTC_RUN_008$ -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'PASS: TestTC_RUN_008'}]
+  - id: CP-RUN-009
+    description: SC-RUN-009 / 联合身份任一漂移或作者自评不推进当前。
+    action: go test ./cmd/server -run ^TestTC_RUN_009$ -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'PASS: TestTC_RUN_009'}]
+  - id: CP-RUN-010
+    description: SC-RUN-010 / 精确专项授权正反例及操作幂等。
+    action: go test ./cmd/server -run ^TestTC_RUN_010$ -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'PASS: TestTC_RUN_010'}]
+rollback:
+  steps:
+    - 只销毁本轮明确创建的隔离DB和临时workspace；不执行共享库cleanup或真实CR reset。

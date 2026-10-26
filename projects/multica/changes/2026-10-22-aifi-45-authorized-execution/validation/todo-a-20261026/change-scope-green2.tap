@@ -1,0 +1,52 @@
+TAP version 13
+# Subtest: SC-AUTH-004 a change inside the granted repository and path is allowed
+ok 1 - SC-AUTH-004 a change inside the granted repository and path is allowed
+  ---
+  duration_ms: 1.5619
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 an unlisted repository is refused
+ok 2 - SC-AUTH-004 an unlisted repository is refused
+  ---
+  duration_ms: 0.1853
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 a path outside every granted prefix is refused
+ok 3 - SC-AUTH-004 a path outside every granted prefix is refused
+  ---
+  duration_ms: 0.1137
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 a prefix boundary is not a prefix match
+ok 4 - SC-AUTH-004 a prefix boundary is not a prefix match
+  ---
+  duration_ms: 0.1205
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 relative-path and absolute escapes are named separately
+ok 5 - SC-AUTH-004 relative-path and absolute escapes are named separately
+  ---
+  duration_ms: 0.1764
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 a symlink that leaves the repository is refused even under a granted prefix
+ok 6 - SC-AUTH-004 a symlink that leaves the repository is refused even under a granted prefix
+  ---
+  duration_ms: 0.1029
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 the changed-path collector sees committed, modified and untracked files
+ok 7 - SC-AUTH-004 the changed-path collector sees committed, modified and untracked files
+  ---
+  duration_ms: 393.6864
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 462.9785

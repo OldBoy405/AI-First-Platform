@@ -1,0 +1,94 @@
+TAP version 13
+# Subtest: TC-EVD-003
+ok 1 - TC-EVD-003
+  ---
+  duration_ms: 205.1657
+  type: 'test'
+  ...
+# Subtest: TC-EVD-010
+ok 2 - TC-EVD-010
+  ---
+  duration_ms: 193.2166
+  type: 'test'
+  ...
+# Subtest: TC-EVD-006
+ok 3 - TC-EVD-006
+  ---
+  duration_ms: 102.7898
+  type: 'test'
+  ...
+# Subtest: TC-EVD-001
+ok 4 - TC-EVD-001
+  ---
+  duration_ms: 115.1053
+  type: 'test'
+  ...
+# Subtest: TC-EVD-002
+ok 5 - TC-EVD-002
+  ---
+  duration_ms: 311.3861
+  type: 'test'
+  ...
+# Subtest: TC-EVD-007
+ok 6 - TC-EVD-007
+  ---
+  duration_ms: 24.2924
+  type: 'test'
+  ...
+# Subtest: TC-EVD-004
+ok 7 - TC-EVD-004
+  ---
+  duration_ms: 117.7114
+  type: 'test'
+  ...
+# Subtest: TC-EVD-005
+ok 8 - TC-EVD-005
+  ---
+  duration_ms: 0.9299
+  type: 'test'
+  ...
+# Subtest: TC-EVD-008
+ok 9 - TC-EVD-008
+  ---
+  duration_ms: 0.5419
+  type: 'test'
+  ...
+# Subtest: TC-EVD-009
+ok 10 - TC-EVD-009
+  ---
+  duration_ms: 0.5477
+  type: 'test'
+  ...
+# Subtest: SC-EVD-009：恢复同一发布操作时审批被重做 → 拒绝重放
+ok 11 - SC-EVD-009：恢复同一发布操作时审批被重做 → 拒绝重放
+  ---
+  duration_ms: 6243.0982
+  type: 'test'
+  ...
+# Subtest: SC-EVD-009：不可逆发布之前重跑时，重做的审批仍可被采纳（不卡死）
+ok 12 - SC-EVD-009：不可逆发布之前重跑时，重做的审批仍可被采纳（不卡死）
+  ---
+  duration_ms: 9771.4244
+  type: 'test'
+  ...
+# Subtest: SC-EVD-009：push 成功但 journal 未落盘时，不得刷新 receipt 后按新审批续发
+ok 13 - SC-EVD-009：push 成功但 journal 未落盘时，不得刷新 receipt 后按新审批续发
+  ---
+  duration_ms: 6379.609
+  type: 'test'
+  ...
+# Subtest: SC-EVD-009 正对照：receipt 未变的恢复仍然续跑完成
+ok 14 - SC-EVD-009 正对照：receipt 未变的恢复仍然续跑完成
+  ---
+  duration_ms: 8941.6515
+  type: 'test'
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 14
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 31408.949

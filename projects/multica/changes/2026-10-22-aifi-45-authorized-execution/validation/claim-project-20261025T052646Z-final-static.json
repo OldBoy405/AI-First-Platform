@@ -1,0 +1,169 @@
+{
+  "at": "2026-10-25T06:02:43.240Z",
+  "source": [
+    {
+      "file": "server/internal/handler/daemon.go",
+      "raw": true,
+      "lf": true
+    },
+    {
+      "file": "server/internal/daemon/client.go",
+      "raw": true,
+      "lf": true
+    },
+    {
+      "file": "server/internal/governance/execution_current_resource_binding_test.go",
+      "raw": true,
+      "lf": true
+    },
+    {
+      "file": "server/internal/daemon/execution_current_resource_binding_test.go",
+      "raw": true,
+      "lf": true
+    },
+    {
+      "file": "server/internal/service/task.go",
+      "raw": true,
+      "lf": true
+    },
+    {
+      "file": "server/internal/handler/daemon_start_claim_test.go",
+      "raw": true,
+      "lf": true
+    },
+    {
+      "file": "server/internal/handler/handler_test.go",
+      "raw": true,
+      "lf": true
+    },
+    {
+      "file": "server/internal/governance/execution_start_claim_test.go",
+      "raw": true,
+      "lf": true
+    },
+    {
+      "file": "server/pkg/protocol/project_resource_binding.go",
+      "raw": true,
+      "lf": true
+    },
+    {
+      "file": "scripts/aifi45-db/run.mjs",
+      "raw": true,
+      "lf": true
+    },
+    {
+      "file": "scripts/aifi45-db/run.test.mjs",
+      "raw": true,
+      "lf": true
+    },
+    {
+      "file": "server/internal/governance/execution_task_claim_project_test.go",
+      "raw": true,
+      "lf": true
+    },
+    {
+      "file": "server/internal/handler/daemon_execution_claim.go",
+      "raw": true,
+      "lf": true
+    },
+    {
+      "file": "server/pkg/protocol/execution_task_claim.go",
+      "raw": true,
+      "lf": true
+    },
+    {
+      "file": "server/internal/daemon/execution_task_claim.go",
+      "raw": true,
+      "lf": true
+    },
+    {
+      "file": "server/internal/daemon/execution_task_claim_client_test.go",
+      "raw": true,
+      "lf": true
+    },
+    {
+      "file": "server/internal/daemon/execution_claim_preflight_test.go",
+      "raw": true,
+      "lf": true
+    },
+    {
+      "file": "server/internal/daemon/execution_verifier.go",
+      "raw": true,
+      "lf": true
+    },
+    {
+      "file": "server/internal/daemon/daemon.go",
+      "raw": true,
+      "lf": true
+    }
+  ],
+  "protected": [
+    {
+      "file": "tools/.stdd/binding.yaml",
+      "match": true
+    },
+    {
+      "file": "multica/.stdd/binding.yaml",
+      "match": true
+    },
+    {
+      "file": "AI First Platform/projects/tools/config.d/quality.yaml",
+      "match": true
+    },
+    {
+      "file": "AI First Platform/projects/multica/config.d/quality.yaml",
+      "match": true
+    }
+  ],
+  "badLinks": [],
+  "stale": [],
+  "git": [
+    {
+      "repo": "multica",
+      "branch": "main",
+      "head": "f6e90ab8090c8a712c7fe2a324e977f10a39499c",
+      "staged": ""
+    },
+    {
+      "repo": "tools",
+      "branch": "main",
+      "head": "9e41ad74ce631459bc007a29c3d0cdaaa1e49e75",
+      "staged": ""
+    }
+  ],
+  "m11_rows": 22,
+  "custom169": true,
+  "gofmt_exit": 0,
+  "gofmt_output": "",
+  "vet": {
+    "at": "2026-10-25T06:00:53.551Z",
+    "exit": 0,
+    "argv": [
+      "go",
+      "vet",
+      "./internal/handler",
+      "./internal/service",
+      "./internal/governance",
+      "./internal/daemon"
+    ]
+  },
+  "source_freeze_scope": "component before next terminal-fence changes",
+  "reports": [
+    {
+      "file": "claim-project-20261025T052646Z-report.md",
+      "sha256": "434bae56ae4d5956c634120f02e595f5bc89d2c3dec677eb7ed6e741f17aac81"
+    },
+    {
+      "file": "claim-project-20261025T052646Z-independent-report.md",
+      "sha256": "c266985a6d67dfa9d8c902d815c511eabddd47805c39fb5b3e4c8871f6b33378"
+    },
+    {
+      "file": "claim-project-20261025T052646Z-server-sdk-strong.md",
+      "sha256": "27ef5843bcafea244ac89580685eaa83becefeb06669438c29ed2f177d1e7ab1"
+    },
+    {
+      "file": "claim-project-20261025T052646Z-caller-strong.md",
+      "sha256": "a71ca7531e3fbb28ce95558a81bf7d8ba7738011e8dc5f52e9385d3b6908f2fd"
+    }
+  ]
+}

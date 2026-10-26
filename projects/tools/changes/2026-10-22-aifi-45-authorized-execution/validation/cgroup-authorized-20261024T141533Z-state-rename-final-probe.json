@@ -1,0 +1,51 @@
+{
+  "at": "2026-10-24T15:24:40.127Z",
+  "exact_pattern_rename": {
+    "iterations": 20,
+    "failures": 0,
+    "codes": [],
+    "state_intact": true
+  },
+  "stray": [
+    "61264|win-sshproxy",
+    "92476|wslrelay"
+  ],
+  "probe": {
+    "lines": 223,
+    "needs": [
+      "download",
+      "https://",
+      "curl",
+      "tarball",
+      "sha256",
+      "codex"
+    ],
+    "flags": [
+      "--pids-limit",
+      "--memory",
+      "--cpus",
+      "--pull",
+      "--http-proxy",
+      "--network",
+      "--read-only",
+      "--cap-drop",
+      "--security-opt",
+      "--tmpfs",
+      "--env",
+      "--mount",
+      "--workdir",
+      "--name",
+      "--label",
+      "--entrypoint",
+      "--version",
+      "--attach",
+      "--format",
+      "--parallel",
+      "--parallel-max",
+      "--fail-early",
+      "--config",
+      "--tag",
+      "--force"
+    ]
+  }
+}

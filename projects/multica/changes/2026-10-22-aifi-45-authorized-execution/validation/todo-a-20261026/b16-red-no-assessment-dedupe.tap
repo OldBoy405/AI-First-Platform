@@ -1,0 +1,55 @@
+TAP version 13
+# Subtest: B16/SC-RPR-006 同一 origin 换 subject 是冲突，不是重放
+ok 1 - B16/SC-RPR-006 同一 origin 换 subject 是冲突，不是重放
+  ---
+  duration_ms: 223.205
+  type: 'test'
+  ...
+# Subtest: B16/SC-RPR-009 同一次评估重投只记一次
+not ok 2 - B16/SC-RPR-009 同一次评估重投只记一次
+  ---
+  duration_ms: 307.4409
+  type: 'test'
+  location: 'C:\\Users\\GOBAO\\Downloads\\AI\\tools\\skills\\shared\\crctl\\scripts\\test\\repair-governance.test.mjs:576:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"op":"repair-assess","cr":"CR-2026-903","lineage_id":"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb","origin":"label-dup","at":"2026-10-27T01:21:59+08:00","reviewer_id":"ind-reviewer","verdict":"no-progress","basis":null,"evidence_digest":"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff","subject_sha256":"768373716edda34373c019df8eaae2d96ca663906687e896e9a0f443efde7708","note":"tried reindex","progress_epoch":0,"no_progress_streak":2,"stopped":true,"stop":{"at":"2026-10-27T01:21:59+08:00","subject_sha256":"768373716edda34373c019df8eaae2d96ca663906687e896e9a0f443efde7708","root_cause":"tried reindex","attempted":["tried reindex","tried reindex"],"assessed_by":["ind-reviewer","ind-reviewer"],"evidence_digest":"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff","remaining":5,"required_action":"提供独立新证据后显式 resume，或重新签授权；空喊继续不解除","progress_epoch":0}}
+    + actual - expected
+    
+    + undefined
+    - true
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/GOBAO/Downloads/AI/tools/skills/shared/crctl/scripts/test/repair-governance.test.mjs:592:10)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1201:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+    Test.postRun (node:internal/test_runner/test:1330:19)
+    Test.run (node:internal/test_runner/test:1258:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)
+  ...
+# Subtest: B16/SC-RPR-011 判为进展必须带证据
+ok 3 - B16/SC-RPR-011 判为进展必须带证据
+  ---
+  duration_ms: 306.7676
+  type: 'test'
+  ...
+# Subtest: B16/SC-RPR-012 恢复后 streak 按新 epoch 计，旧记录保留
+ok 4 - B16/SC-RPR-012 恢复后 streak 按新 epoch 计，旧记录保留
+  ---
+  duration_ms: 524.4121
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 3
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1422.7802

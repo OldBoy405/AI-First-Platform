@@ -1,0 +1,96 @@
+{
+  "at": "2026-10-24T16:48:21.384Z",
+  "purpose": "AIFI-45 balanced2 frozen-source manifest for the three authorized disposable-DB reruns",
+  "cwd": "C:/Users/GOBAO/Downloads/AI/multica",
+  "container": "666bfec52ac3c3d13b43389891f50c4105833198eab7e4167b76f014a774e823",
+  "preserved_database": "stdd_aifi45_20261022",
+  "hashing": "raw bytes (including LF as stored); sha256",
+  "runs": [
+    {
+      "package": "./internal/governance",
+      "pattern": "^Test",
+      "evidence_prefix": "disposable-db-20261024T162608Z-balanced2-governance",
+      "nonce": "35fbfe726b26cbf4",
+      "database": "aifi45_tmp_35fbfe726b26cbf4",
+      "role": "aifi45_role_35fbfe726b26cbf4",
+      "counts": {
+        "run": 817,
+        "pass": 817,
+        "fail": 0,
+        "skip": 0
+      },
+      "leaf_pass": 739,
+      "original_unchanged": true,
+      "owned_resources_cleaned": true,
+      "error": null
+    },
+    {
+      "package": "./internal/handler",
+      "pattern": "^TestStartClaim",
+      "evidence_prefix": "disposable-db-20261024T162608Z-balanced2-handler",
+      "nonce": "9dd86b9aec38842c",
+      "database": "aifi45_tmp_9dd86b9aec38842c",
+      "role": "aifi45_role_9dd86b9aec38842c",
+      "counts": {
+        "run": 13,
+        "pass": 13,
+        "fail": 0,
+        "skip": 0
+      },
+      "leaf_pass": 10,
+      "original_unchanged": true,
+      "owned_resources_cleaned": true,
+      "error": null
+    },
+    {
+      "package": "./internal/daemon",
+      "pattern": "Test.*Execution",
+      "evidence_prefix": "disposable-db-20261024T162608Z-balanced2-daemon",
+      "nonce": "e15036af089776c0",
+      "database": "aifi45_tmp_e15036af089776c0",
+      "role": "aifi45_role_e15036af089776c0",
+      "counts": {
+        "run": 48,
+        "pass": 47,
+        "fail": 0,
+        "skip": 1
+      },
+      "leaf_pass": 44,
+      "original_unchanged": true,
+      "owned_resources_cleaned": true,
+      "error": null
+    }
+  ],
+  "files": [
+    {
+      "path": "scripts/aifi45-db/run.mjs",
+      "bytes": 13599,
+      "sha256": "a08c20a9b78144f453f4c7e8745c49f96bc02903b3d34597301ca3ddedc3fdce"
+    },
+    {
+      "path": "scripts/aifi45-db/run.test.mjs",
+      "bytes": 5426,
+      "sha256": "53c39bc581463f762e593e128ef309c54e406732e2923ccabbb0543848a8c7c6"
+    },
+    {
+      "path": "server/internal/service/task.go",
+      "bytes": 410251,
+      "sha256": "c5e543f880b907059ac1a02f6fda60b1e6e200703a0c70cc9efd967d0b57f118"
+    },
+    {
+      "path": "server/internal/handler/daemon.go",
+      "bytes": 286826,
+      "sha256": "3f7a3444b3c8aaca9728b01d179ff3ad138c780a25639f6ceb5023c46102d24f"
+    },
+    {
+      "path": "server/internal/handler/handler_test.go",
+      "bytes": 136659,
+      "sha256": "e910e128f94f0ea5a0783754133ad5333a6bc85a5d697cca3338801d1167c91b"
+    },
+    {
+      "path": "server/internal/governance/execution_start_claim_test.go",
+      "bytes": 5900,
+      "sha256": "44e9291b033eb754430f45faf8767c7af2446907e41ad646b9793997267be619"
+    }
+  ]
+}

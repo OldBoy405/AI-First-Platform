@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: EVD-001/002 交付 gate 消费同一个判定：作者自审被拒
+ok 1 - EVD-001/002 交付 gate 消费同一个判定：作者自审被拒
+  ---
+  duration_ms: 247.7331
+  type: 'test'
+  ...
+# Subtest: EVD-001/002 交付 gate 放行独立评审的合同 CR
+ok 2 - EVD-001/002 交付 gate 放行独立评审的合同 CR
+  ---
+  duration_ms: 132.5448
+  type: 'test'
+  ...
+# Subtest: EVD-001/002 回写入口同样消费该判定
+ok 3 - EVD-001/002 回写入口同样消费该判定
+  ---
+  duration_ms: 136.2587
+  type: 'test'
+  ...
+# Subtest: EVD-006 legacy CR 不被追溯阻断
+ok 4 - EVD-006 legacy CR 不被追溯阻断
+  ---
+  duration_ms: 137.7152
+  type: 'test'
+  ...
+# Subtest: EVD-002 缺 test-report 时交付 gate 指出缺失内容
+ok 5 - EVD-002 缺 test-report 时交付 gate 指出缺失内容
+  ---
+  duration_ms: 131.8521
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 852.5809

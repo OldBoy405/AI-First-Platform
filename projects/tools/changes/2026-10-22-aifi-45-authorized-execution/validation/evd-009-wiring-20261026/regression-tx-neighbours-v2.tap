@@ -1,0 +1,424 @@
+TAP version 13
+# Subtest: checkpoint happy path：三仓 source commit + KB metadata commit + latest-checkpoint + no-op
+ok 1 - checkpoint happy path：三仓 source commit + KB metadata commit + latest-checkpoint + no-op
+  ---
+  duration_ms: 8198.8722
+  type: 'test'
+  ...
+# Subtest: checkpoint 敏感路径：.env 命中全仓零 add/commit/push
+ok 2 - checkpoint 敏感路径：.env 命中全仓零 add/commit/push
+  ---
+  duration_ms: 3552.1089
+  type: 'test'
+  ...
+# Subtest: checkpoint tracked+untracked+ignored：source commit 含前两类、排除 ignored
+ok 3 - checkpoint tracked+untracked+ignored：source commit 含前两类、排除 ignored
+  ---
+  duration_ms: 6311.03
+  type: 'test'
+  ...
+# Subtest: checkpoint source commit 后 fault + 新增变化：重跑更新 sourceSha 并完成
+ok 4 - checkpoint source commit 后 fault + 新增变化：重跑更新 sourceSha 并完成
+  ---
+  duration_ms: 6650.7911
+  type: 'test'
+  ...
+# Subtest: checkpoint 首次推送：remote requirement ref 不存在时创建三仓分支
+ok 5 - checkpoint 首次推送：remote requirement ref 不存在时创建三仓分支
+  ---
+  duration_ms: 5471.8325
+  type: 'test'
+  ...
+# Subtest: checkpoint classifier：已发布 source 仍是 remote 祖先时为 advanced，不误报 history rewrite
+ok 6 - checkpoint classifier：已发布 source 仍是 remote 祖先时为 advanced，不误报 history rewrite
+  ---
+  duration_ms: 0.2891
+  type: 'test'
+  ...
+# Subtest: checkpoint malformed latest-checkpoint：零 commit/push并返回 CHECKPOINT_SNAPSHOT_INVALID
+ok 7 - checkpoint malformed latest-checkpoint：零 commit/push并返回 CHECKPOINT_SNAPSHOT_INVALID
+  ---
+  duration_ms: 6223.7161
+  type: 'test'
+  ...
+# Subtest: checkpoint 敏感预检查询失败：损坏 index 后 TX_GIT_FAILED 且零 push
+ok 8 - checkpoint 敏感预检查询失败：损坏 index 后 TX_GIT_FAILED 且零 push
+  ---
+  duration_ms: 3487.0858
+  type: 'test'
+  ...
+# Subtest: checkpoint journal 后错误：固定返回 txId/phase/sideEffects/recovery
+ok 9 - checkpoint journal 后错误：固定返回 txId/phase/sideEffects/recovery
+  ---
+  duration_ms: 3693.825
+  type: 'test'
+  ...
+# Subtest: checkpoint residual complete journal：authority 确认后清理并允许下一批
+ok 10 - checkpoint residual complete journal：authority 确认后清理并允许下一批
+  ---
+  duration_ms: 9913.6797
+  type: 'test'
+  ...
+# Subtest: checkpoint metadata commit/save 窗口：由 trailer 恢复而非 TX_RECOVERY_CONFLICT
+ok 11 - checkpoint metadata commit/save 窗口：由 trailer 恢复而非 TX_RECOVERY_CONFLICT
+  ---
+  duration_ms: 6529.5933
+  type: 'test'
+  ...
+# Subtest: checkpoint metadata write-set/commit 窗口：撤回账本候选后重扫，不把 snapshot 吞入 KB source
+ok 12 - checkpoint metadata write-set/commit 窗口：撤回账本候选后重扫，不把 snapshot 吞入 KB source
+  ---
+  duration_ms: 8019.2151
+  type: 'test'
+  ...
+# Subtest: checkpoint confirmed 仓新增变化：source save 前先降 phase，重跑必须重新 publish
+ok 13 - checkpoint confirmed 仓新增变化：source save 前先降 phase，重跑必须重新 publish
+  ---
+  duration_ms: 8294.848
+  type: 'test'
+  ...
+# Subtest: checkpoint push 响应丢失：after-push 重跑观察 exact head，不重复 source commit
+ok 14 - checkpoint push 响应丢失：after-push 重跑观察 exact head，不重复 source commit
+  ---
+  duration_ms: 7296.5304
+  type: 'test'
+  ...
+# Subtest: checkpoint metadata push 后故障：重跑确认既有 metadata，不造第二提交
+ok 15 - checkpoint metadata push 后故障：重跑确认既有 metadata，不造第二提交
+  ---
+  duration_ms: 6692.7518
+  type: 'test'
+  ...
+# Subtest: checkpoint 仅非 KB 变化：KB source 沿用上一 metadata HEAD，只新增 metadata commit
+ok 16 - checkpoint 仅非 KB 变化：KB source 沿用上一 metadata HEAD，只新增 metadata commit
+  ---
+  duration_ms: 8813.0766
+  type: 'test'
+  ...
+# Subtest: checkpoint 敏感矩阵：例外/普通 pem/空格路径放行，私钥头硬阻断
+ok 17 - checkpoint 敏感矩阵：例外/普通 pem/空格路径放行，私钥头硬阻断
+  ---
+  duration_ms: 6696.8446
+  type: 'test'
+  ...
+# Subtest: checkpoint CRLF backlog 正常规范化并完成
+ok 18 - checkpoint CRLF backlog 正常规范化并完成
+  ---
+  duration_ms: 5545.9468
+  type: 'test'
+  ...
+# Subtest: checkpoint worktree 前置：missing 与 wrong-branch 使用冻结错误码
+ok 19 - checkpoint worktree 前置：missing 与 wrong-branch 使用冻结错误码
+  ---
+  duration_ms: 9648.8644
+  type: 'test'
+  ...
+# Subtest: checkpoint remote 关系矩阵：advanced/diverged/history-rewritten 精确分类
+ok 20 - checkpoint remote 关系矩阵：advanced/diverged/history-rewritten 精确分类
+  ---
+  duration_ms: 15972.0514
+  type: 'test'
+  ...
+# Subtest: checkpoint editLatestCheckpoint：条目后仍有其他条目时不粘行（CR-2026-033 merge 实测 bug）
+ok 21 - checkpoint editLatestCheckpoint：条目后仍有其他条目时不粘行（CR-2026-033 merge 实测 bug）
+  ---
+  duration_ms: 1.252
+  type: 'test'
+  ...
+# Subtest: checkpoint T05 contract：Pipeline 只编排 Skill，active alignment reader 不读旧 checkpoints[]
+ok 22 - checkpoint T05 contract：Pipeline 只编排 Skill，active alignment reader 不读旧 checkpoints[]
+  ---
+  duration_ms: 2.2056
+  type: 'test'
+  ...
+# Subtest: checkpoint 业务 payload 恢复冲突：损坏 journal（重复 repo）→ TX_RECOVERY_CONFLICT
+ok 23 - checkpoint 业务 payload 恢复冲突：损坏 journal（重复 repo）→ TX_RECOVERY_CONFLICT
+  ---
+  duration_ms: 5834.9871
+  type: 'test'
+  ...
+# Subtest: TASK-09 AC-22：部分 publish 后出现等价 HEAD，恢复仍使用原 journal source，不追随新对象
+ok 24 - TASK-09 AC-22：部分 publish 后出现等价 HEAD，恢复仍使用原 journal source，不追随新对象
+  ---
+  duration_ms: 7132.7364
+  type: 'test'
+  ...
+# Subtest: TASK-09 AC-22 负向控制：部分 publish 后 HEAD 树变化 → 仍按第三方修改硬阻断（零写入）
+ok 25 - TASK-09 AC-22 负向控制：部分 publish 后 HEAD 树变化 → 仍按第三方修改硬阻断（零写入）
+  ---
+  duration_ms: 5483.4134
+  type: 'test'
+  ...
+# Subtest: AIFI-70 T3：checkpoint 发布对账 —— PASS 证据与被评审对象不一致 → TX_RECOVERY_CONFLICT 零发布；一致则正常发布
+ok 26 - AIFI-70 T3：checkpoint 发布对账 —— PASS 证据与被评审对象不一致 → TX_RECOVERY_CONFLICT 零发布；一致则正常发布
+  ---
+  duration_ms: 6007.6753
+  type: 'test'
+  ...
+# Subtest: AIFI-70 T3 回修 B1：requirement 合法回退后作者回修，旧 PASS 不阻断 checkpoint（approve-requirement:reject → drafting）
+ok 27 - AIFI-70 T3 回修 B1：requirement 合法回退后作者回修，旧 PASS 不阻断 checkpoint（approve-requirement:reject → drafting）
+  ---
+  duration_ms: 8590.3607
+  type: 'test'
+  ...
+# Subtest: AIFI-70 T3 回修 B1：tech-design 合法回退后作者回修，旧 PASS 不阻断 checkpoint（upstream-design-blocker → tech-design-review-pending）
+ok 28 - AIFI-70 T3 回修 B1：tech-design 合法回退后作者回修，旧 PASS 不阻断 checkpoint（upstream-design-blocker → tech-design-review-pending）
+  ---
+  duration_ms: 8684.8873
+  type: 'test'
+  ...
+# Subtest: AIFI-70 T3 回修 B1：requirement 旧 PASS 仅本地提交未发布，合法回退后作者回修不被阻断
+ok 29 - AIFI-70 T3 回修 B1：requirement 旧 PASS 仅本地提交未发布，合法回退后作者回修不被阻断
+  ---
+  duration_ms: 6034.5467
+  type: 'test'
+  ...
+# Subtest: AIFI-70 T3 回修 B1：tech-design 旧 PASS 仅本地提交未发布，upstream-design-blocker 回退后作者回修不被阻断
+ok 30 - AIFI-70 T3 回修 B1：tech-design 旧 PASS 仅本地提交未发布，upstream-design-blocker 回退后作者回修不被阻断
+  ---
+  duration_ms: 6039.3475
+  type: 'test'
+  ...
+# Subtest: AIFI-70 T3 回修 B1：tech-design 本轮新 PASS 遇上对象漂移 → 仍零写入拒绝发布
+ok 31 - AIFI-70 T3 回修 B1：tech-design 本轮新 PASS 遇上对象漂移 → 仍零写入拒绝发布
+  ---
+  duration_ms: 6434.7576
+  type: 'test'
+  ...
+# Subtest: AIFI-70 T3 B2: owner-set must not exempt a new SDD PASS from checkpoint reconciliation
+ok 32 - AIFI-70 T3 B2: owner-set must not exempt a new SDD PASS from checkpoint reconciliation
+  ---
+  duration_ms: 8291.2901
+  type: 'test'
+  ...
+# Subtest: TASK-01：writeback 业务输入使用固定键序 canonical digest
+ok 33 - TASK-01：writeback 业务输入使用固定键序 canonical digest
+  ---
+  duration_ms: 1.0819
+  type: 'test'
+  ...
+# Subtest: TASK-01：固定 generator 只在 ignored candidate 目录生成单次 snapshot
+ok 34 - TASK-01：固定 generator 只在 ignored candidate 目录生成单次 snapshot
+  ---
+  duration_ms: 8721.3035
+  type: 'test'
+  ...
+# Subtest: AIFI-28：固定 generator 解析走 declared Tools Root，而非 4 层相对锚点
+ok 35 - AIFI-28：固定 generator 解析走 declared Tools Root，而非 4 层相对锚点
+  ---
+  duration_ms: 8905.9424
+  type: 'test'
+  ...
+# Subtest: TASK-02：内部 baseline 路径同一 commit 发布状态并在 origin-confirmed 后投影
+ok 36 - TASK-02：内部 baseline 路径同一 commit 发布状态并在 origin-confirmed 后投影
+  ---
+  duration_ms: 10447.5943
+  type: 'test'
+  ...
+# Subtest: TASK-02：journal-created 恢复冻结 transitionAt，业务参数漂移硬阻断
+ok 37 - TASK-02：journal-created 恢复冻结 transitionAt，业务参数漂移硬阻断
+  ---
+  duration_ms: 10321.859
+  type: 'test'
+  ...
+# Subtest: S0 authority cleanup：baseline journal 恢复回调失败保留分类、零业务写入并释放锁
+ok 38 - S0 authority cleanup：baseline journal 恢复回调失败保留分类、零业务写入并释放锁
+  ---
+  duration_ms: 11828.347
+  type: 'test'
+  ...
+# Subtest: TASK-02：投影失败不反转 Git，重放只补缺项
+ok 39 - TASK-02：投影失败不反转 Git，重放只补缺项
+  ---
+  duration_ms: 10402.5111
+  type: 'test'
+  ...
+# Subtest: TASK-04：公共 CLI 只收业务输入，baseline 同 commit 且幂等；旧/错 stage 参数拒绝
+ok 40 - TASK-04：公共 CLI 只收业务输入，baseline 同 commit 且幂等；旧/错 stage 参数拒绝
+  ---
+  duration_ms: 11285.2663
+  type: 'test'
+  ...
+# Subtest: TASK-04：writeback-after-commit fault 经同一业务命令续跑不重复 commit
+ok 41 - TASK-04：writeback-after-commit fault 经同一业务命令续跑不重复 commit
+  ---
+  duration_ms: 10759.5259
+  type: 'test'
+  ...
+# Subtest: review repair：commit 后 origin 前进先清除未发布事务，再以同一业务命令重建
+ok 42 - review repair：commit 后 origin 前进先清除未发布事务，再以同一业务命令重建
+  ---
+  duration_ms: 12712.3937
+  type: 'test'
+  ...
+# Subtest: review repair：commit 后 graphDigest 漂移硬阻断旧事务
+ok 43 - review repair：commit 后 graphDigest 漂移硬阻断旧事务
+  ---
+  duration_ms: 9763.2417
+  type: 'test'
+  ...
+# Subtest: TASK-04：traceability 公共业务参数全链路
+ok 44 - TASK-04：traceability 公共业务参数全链路
+  ---
+  duration_ms: 12245.8832
+  type: 'test'
+  ...
+# Subtest: CR-2026-057 FR-14/AC-14：三 stage × 两错误码零观察点 + 同参重试同码无增量（unassigned 向量并入 AC-1.2/AC-1.3 冻结负向向量，CR-2026-058 B-DP-03）
+ok 45 - CR-2026-057 FR-14/AC-14：三 stage × 两错误码零观察点 + 同参重试同码无增量（unassigned 向量并入 AC-1.2/AC-1.3 冻结负向向量，CR-2026-058 B-DP-03）
+  ---
+  duration_ms: 53580.6626
+  type: 'test'
+  ...
+# Subtest: CR-2026-057 FR-14/AC-14.6：版本错误优先于 WRITEBACK_STATE_MISMATCH（status=code-approved 未 merge 夹具）
+ok 46 - CR-2026-057 FR-14/AC-14.6：版本错误优先于 WRITEBACK_STATE_MISMATCH（status=code-approved 未 merge 夹具）
+  ---
+  duration_ms: 4025.0979
+  type: 'test'
+  ...
+# Subtest: CR-2026-057 FR-14/B-SDD-003：缺 flag → BAD_ARGS；显式空串 → WRITEBACK_VERSION_INVALID
+ok 47 - CR-2026-057 FR-14/B-SDD-003：缺 flag → BAD_ARGS；显式空串 → WRITEBACK_VERSION_INVALID
+  ---
+  duration_ms: 3899.1846
+  type: 'test'
+  ...
+# Subtest: CR-2026-057 FR-14/B-SDD-002：v0.2 输入回灌规范化值——journal businessInputDigest/manifest targetVersion 为 0.2
+ok 48 - CR-2026-057 FR-14/B-SDD-002：v0.2 输入回灌规范化值——journal businessInputDigest/manifest targetVersion 为 0.2
+  ---
+  duration_ms: 10217.4808
+  type: 'test'
+  ...
+# Subtest: CR-2026-058 AC-1.1：merged 夹具 cr.md=unassigned + 0.30 → 放行回灌两账本（含 v0.30 规范化等价）
+ok 49 - CR-2026-058 AC-1.1：merged 夹具 cr.md=unassigned + 0.30 → 放行回灌两账本（含 v0.30 规范化等价）
+  ---
+  duration_ms: 20538.0647
+  type: 'test'
+  ...
+# Subtest: CR-2026-058 AC-1.2：cr.md 真实 + 输入 unassigned → WRITEBACK_VERSION_UNASSIGNED 零观察点（三 stage）
+ok 50 - CR-2026-058 AC-1.2：cr.md 真实 + 输入 unassigned → WRITEBACK_VERSION_UNASSIGNED 零观察点（三 stage）
+  ---
+  duration_ms: 24199.8771
+  type: 'test'
+  ...
+# Subtest: CR-2026-058 AC-1.3：两侧 unassigned → WRITEBACK_VERSION_UNASSIGNED 零观察点
+ok 51 - CR-2026-058 AC-1.3：两侧 unassigned → WRITEBACK_VERSION_UNASSIGNED 零观察点
+  ---
+  duration_ms: 7917.0263
+  type: 'test'
+  ...
+# Subtest: CR-2026-058 AC-2.1：成功回灌原子性——两账本同 commit、冻结产物哈希全等、后续 stage 版本行无新 diff
+ok 52 - CR-2026-058 AC-2.1：成功回灌原子性——两账本同 commit、冻结产物哈希全等、后续 stage 版本行无新 diff
+  ---
+  duration_ms: 12713.6452
+  type: 'test'
+  ...
+# Subtest: CR-2026-058 AC-2.2：backlog 预检五向量——冲突/缺失/重复/非法/幂等
+ok 53 - CR-2026-058 AC-2.2：backlog 预检五向量——冲突/缺失/重复/非法/幂等
+  ---
+  duration_ms: 48633.1726
+  type: 'test'
+  ...
+# Subtest: CR-2026-058 AC-2.3.1：writeback-after-apply 中断重试——direct tasks 回灌由 payload 重建（B-SDD-01）
+ok 54 - CR-2026-058 AC-2.3.1：writeback-after-apply 中断重试——direct tasks 回灌由 payload 重建（B-SDD-01）
+  ---
+  duration_ms: 9729.163
+  type: 'test'
+  ...
+# Subtest: CR-2026-058 AC-2.3.1b：tx-apply-between-rename 部分 apply 冻结回归（B-SDD-01）
+ok 55 - CR-2026-058 AC-2.3.1b：tx-apply-between-rename 部分 apply 冻结回归（B-SDD-01）
+  ---
+  duration_ms: 9854.5165
+  type: 'test'
+  ...
+# Subtest: CR-2026-058 AC-2.3.2：writeback-after-commit 中断重试——不新增 commit、两账本版本行在唯一 commit 内
+ok 56 - CR-2026-058 AC-2.3.2：writeback-after-commit 中断重试——不新增 commit、两账本版本行在唯一 commit 内
+  ---
+  duration_ms: 9779.438
+  type: 'test'
+  ...
+# Subtest: CR-2026-058 AC-2.3.3：writeback-after-push 中断重试——commit 不变、origin 不新增、两账本保持映像
+ok 57 - CR-2026-058 AC-2.3.3：writeback-after-push 中断重试——commit 不变、origin 不新增、两账本保持映像
+  ---
+  duration_ms: 10088.4085
+  type: 'test'
+  ...
+# Subtest: CR-2026-058 AC-3.1：worktree cr.md 版本漂移不影响守卫——以 txws 为准放行回灌、worktree 内容不变
+ok 58 - CR-2026-058 AC-3.1：worktree cr.md 版本漂移不影响守卫——以 txws 为准放行回灌、worktree 内容不变
+  ---
+  duration_ms: 9741.4207
+  type: 'test'
+  ...
+# Subtest: CR-2026-058 AC-3.2：窄解析器回退（source=cr-worktree）refill=false → WRITEBACK_STATE_MISMATCH 零写入
+ok 59 - CR-2026-058 AC-3.2：窄解析器回退（source=cr-worktree）refill=false → WRITEBACK_STATE_MISMATCH 零写入
+  ---
+  duration_ms: 3341.0041
+  type: 'test'
+  ...
+# Subtest: CR-2026-058 AC-6.1：回灌首次成功信封——phase=complete、changed=true、files 含两账本、recovery 规范化版本
+ok 60 - CR-2026-058 AC-6.1：回灌首次成功信封——phase=complete、changed=true、files 含两账本、recovery 规范化版本
+  ---
+  duration_ms: 9594.6827
+  type: 'test'
+  ...
+# Subtest: CR-2026-058 AC-6.2：回灌失败信封——exit 1、stdout 无成功对象、error.backlog/error.input 扁平并入
+ok 61 - CR-2026-058 AC-6.2：回灌失败信封——exit 1、stdout 无成功对象、error.backlog/error.input 扁平并入
+  ---
+  duration_ms: 7742.3433
+  type: 'test'
+  ...
+# Subtest: CR-2026-060 AC-11：preflightTasksAllDone 三类 reason + 未知 status 硬失败 index-invalid
+ok 62 - CR-2026-060 AC-11：preflightTasksAllDone 三类 reason + 未知 status 硬失败 index-invalid
+  ---
+  duration_ms: 25.1699
+  type: 'test'
+  ...
+# Subtest: CR-2026-060 AC-02：resolveWritebackAuthorityStrict 返回 txws 快照；txws 缺失 → WRITEBACK_SPEC_REQUIRED
+ok 63 - CR-2026-060 AC-02：resolveWritebackAuthorityStrict 返回 txws 快照；txws 缺失 → WRITEBACK_SPEC_REQUIRED
+  ---
+  duration_ms: 7938.4422
+  type: 'test'
+  ...
+# Subtest: CR-2026-060 AC-11：new mode baseline 省略 --spec-id/--target-version 从 strict authority 补全并发布 writing-back
+ok 64 - CR-2026-060 AC-11：new mode baseline 省略 --spec-id/--target-version 从 strict authority 补全并发布 writing-back
+  ---
+  duration_ms: 9138.1997
+  type: 'test'
+  ...
+# Subtest: CR-2026-060 AC-11：new mode txws 缺失 → WRITEBACK_SPEC_REQUIRED 零写入（不回退 cr-worktree）
+ok 65 - CR-2026-060 AC-11：new mode txws 缺失 → WRITEBACK_SPEC_REQUIRED 零写入（不回退 cr-worktree）
+  ---
+  duration_ms: 7857.3666
+  type: 'test'
+  ...
+# Subtest: CR-2026-060 AC-11：new mode stage=tasks 的 pending preflight → WRITEBACK_TASKS_PENDING（pending）零发布
+ok 66 - CR-2026-060 AC-11：new mode stage=tasks 的 pending preflight → WRITEBACK_TASKS_PENDING（pending）零发布
+  ---
+  duration_ms: 9634.1278
+  type: 'test'
+  ...
+# Subtest: CR-2026-060 AC-12：new mode traceability 无 milestone-file 确定性生成 FR→SDD→TASK→code→evidence
+ok 67 - CR-2026-060 AC-12：new mode traceability 无 milestone-file 确定性生成 FR→SDD→TASK→code→evidence
+  ---
+  duration_ms: 10943.1681
+  type: 'test'
+  ...
+# Subtest: CR-2026-074 TASK-08 AC-12：无索引 merge→baseline 首写→tasks→traceability 三阶段真实执行→archive；签字源与 baseline/tasks 事务事实在 trace 前冻结，首次 trace 与重放后均不变
+ok 68 - CR-2026-074 TASK-08 AC-12：无索引 merge→baseline 首写→tasks→traceability 三阶段真实执行→archive；签字源与 baseline/tasks 事务事实在 trace 前冻结，首次 trace 与重放后均不变
+  ---
+  duration_ms: 15941.2509
+  type: 'test'
+  ...
+# Subtest: CR-2026-074 TASK-08 AC-05 apply 侧：candidate 后并发创建索引 → apply 拒绝且并发内容保留、不写 authority；恢复后续跑完成且幂等
+ok 69 - CR-2026-074 TASK-08 AC-05 apply 侧：candidate 后并发创建索引 → apply 拒绝且并发内容保留、不写 authority；恢复后续跑完成且幂等
+  ---
+  duration_ms: 10499.2618
+  type: 'test'
+  ...
+1..69
+# tests 69
+# suites 0
+# pass 69
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 445062.6059

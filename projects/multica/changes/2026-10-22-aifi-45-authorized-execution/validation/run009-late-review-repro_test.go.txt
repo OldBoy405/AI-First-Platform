@@ -1,0 +1,80 @@
+// AIFIRST: AIFI-45 (SC-RUN-009, run dimension only) — a review that lands after
+// its stage's run has ended is history, not a reason to reopen the stage.
+//
+// Deliberately not named TestTC_RUN_009: TC-RUN-009 spans nine drift dimensions
+// plus self-review and missing-diff rules. This covers one of them, and a TC-named
+// test would let `-run TestTC_RUN_009` count it as the whole TC.
+package governance
+
+import (
+	"context"
+	"testing"
+)
+
+func TestLateReviewAfterTerminalRunKeepsHistoryWithoutReopening(t *testing.T) {
+	if testPool == nil {
+		t.Skip("no database connection")
+	}
+	ctx := context.Background()
+	crID := "CR-9004-091"
+	resetGateProjection(t, crID)
+	svc := NewSyncService(testPool, nil)
+	node := ReviewGateNodes["requirement"]
+
+	// The first review of a stage still creates its run: unchanged behaviour.
+	postEvents(t, svc, testWorkspaceID, []OutboxEvent{
+		reviewEvent(crID, "requirement", "block", 1, `["x"]`, "late1", "late1.json"),
+	})
+	runs := func(live bool) int {
+		t.Helper()
+		q := `SELECT count(*) FROM pipeline_run WHERE workspace_id = $1::uuid AND cr_id = $2 AND pipeline_id = $3`
+		if live {
+			q += ` AND status IN ('running', 'waiting_approval')`
+		}
+		var n int
+		if err := testPool.QueryRow(ctx, q, testWorkspaceID, crID, node.PipelineID).Scan(&n); err != nil {
+			t.Fatalf("count runs: %v", err)
+		}
+		return n
+	}
+	if got := runs(true); got != 1 {
+		t.Fatalf("first review: live runs = %d, want 1", got)
+	}
+
+	// The run ends.
+	if _, err := testPool.Exec(ctx, `
+		UPDATE pipeline_run SET status = 'failed'
+		WHERE workspace_id = $1::uuid AND cr_id = $2 AND pipeline_id = $3`,
+		testWorkspaceID, crID, node.PipelineID); err != nil {
+		t.Fatalf("end run: %v", err)
+	}
+
+	// A passing review for that stage arrives late.
+	postEvents(t, svc, testWorkspaceID, []OutboxEvent{
+		reviewEvent(crID, "requirement", "pass", 2, `[]`, "late2", "late2.json"),
+	})
+
+	if got := runs(false); got != 1 {
+		t.Fatalf("late review: total runs = %d, want 1 (a new run was opened)", got)
+	}
+	if got := runs(true); got != 0 {
+		t.Fatalf("late review: live runs = %d, want 0 (the ended stage was reopened)", got)
+	}
+	var projected int
+	if err := testPool.QueryRow(ctx, `
+		SELECT count(*) FROM pipeline_node_run n JOIN pipeline_run r ON r.id = n.run_id
+		WHERE r.workspace_id = $1::uuid AND r.cr_id = $2 AND n.node_id = $3::uuid AND n.attempt = 2`,
+		testWorkspaceID, crID, node.NodeID).Scan(&projected); err != nil {
+		t.Fatalf("count projected rows: %v", err)
+	}
+	if projected != 0 {
+		t.Fatalf("late review was projected onto a node row (%d rows), want history only", projected)
+	}
+	// History: the event itself stays in the ledger.
+	var kept bool
+	if err := testPool.QueryRow(ctx, `
+		SELECT EXISTS (SELECT 1 FROM cr_sync_event WHERE cr_id = $1 AND commit_sha = 'late2')`,
+		crID).Scan(&kept); err != nil || !kept {
+		t.Fatalf("late review event not kept as history: kept=%v err=%v", kept, err)
+	}
+}

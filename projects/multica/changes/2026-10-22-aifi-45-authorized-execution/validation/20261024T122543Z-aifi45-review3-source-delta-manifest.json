@@ -1,0 +1,25 @@
+{
+  "schema": "aifi45-review3-source-delta/v1",
+  "timestamp_utc": "2026-10-24T12:25:43Z",
+  "git_head": "f6e90ab8090c8a712c7fe2a324e977f10a39499c",
+  "production_files_changed": false,
+  "protocol_or_config_changed": false,
+  "previous_p2_manifest": "initial-head-p2-source-manifest.json",
+  "previous_p2_files_match": "17/17",
+  "changed_or_new_test_files": {
+    "server/internal/governance/execution_fixture_ownership_test.go": "c940797952fe9cac3f5a334b4f21aaed9759c100a2951efa32961ac6866dde74",
+    "server/internal/governance/execution_authorization_http_test.go": "820a650f19efea194c882fa2272a18a7f85806eb79521949f85092a0f3d495c6",
+    "server/internal/governance/execution_authorization_routes_test.go": "101a2cb35f9cf9c87609e2cf0b5f1409cda4098a336bea108396dba156f7b8d8",
+    "server/internal/governance/execution_fixture_export_test.go": "01719df13fa33540ce87de00f22a11a198cf427ac31170f5c7a1567ccf402976",
+    "server/internal/governance/execution_trust_install_test.go": "a98c2a82232aad47fc9da259f05da93381c0aa7e495586eb1968b70f11014a6d",
+    "server/internal/governance/execution_verifier_test.go": "6c7e4f50b8c74e496f17e806e858b664cc9b65f94e1ad43101082b281943f398"
+  },
+  "new_test_files": [
+    "server/internal/governance/execution_fixture_ownership_test.go"
+  ],
+  "notes": [
+    "Only test helpers/tests changed.",
+    "No production, protocol, migration, generated, or quality-config file changed.",
+    "The new helper registers exact owned-record cleanup only for a 201 response."
+  ]
+}

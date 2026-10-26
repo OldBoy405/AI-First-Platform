@@ -1,0 +1,30 @@
+meta:
+  change_id: 2026-10-22-aifi-45-authorized-execution
+  created: '2026-10-22'
+  updated: '2026-10-26'
+
+adjustments:
+  - id: ADJ-AIFI45-M001
+    original_design_ref: 'design.md：真实认证来源、verified workspace/project绑定、dispatch attestation；tools同change的ADJ-AIFI45-001/002'
+    actual_change: '用户原文“采纳你的建议，继续别停下来等指令”已采纳补正并要求继续BUILD；普通模式保持，不重问同一方向。已落Go来源/签名组件与前端Inbox缓存幂等，真实HTTP冻结/重投及daemon资源根严选继续中。共享合同以tools wire-contract.md为源；完整认证/当前绑定/消费/调度链尚未验收，仍unresolved。'
+    reason: '平台认证/DB关联与daemon路径投影是可复用事实，但当前投影不保留完整project/resource身份；本地crctl无可独立验证当前安装根归属的凭证。原始人类事件digest/附件/字段映射也缺完整合同。'
+    impact_scope: 'authorized-runner及AUTH/RUN联合验证；NTF客户端已实现部分并发现异步显示失败漏洞，正在修复，不能冒充整个切片完成。CUSTOM #154/#155登记实际代码；真实链/自由文本来源仍待补，不减少原TC。细节以tools同change的wire-contract.md和pending-adjustments.yaml为源。'
+    severity: major
+    affected_capabilities: [authorized-runner]
+    resolved: false
+  - id: ADJ-AIFI45-M002
+    original_design_ref: 'design.md：执行位置/隔离能力与 grant+公钥落地；authorized-runner'
+    actual_change: '部分实现（本轮）：新增 `server/internal/daemon/execution_trust.go` daemon 自有安装根 `<home>/.multica/execution-trust/<workspace-uuid>`（0700目录/0600文件、临时文件+rename发布、同内容幂等、异内容 EXECUTION_TRUST_CONFLICT 拒写、拒工作区内或目录链接根/越界名称/未知kind/空内容）；T 同 change 新增 `--trust-root` 只从声明目录读 grant/公钥/来源sidecar/绑定证明，位于或包含工作区安装根时 EXECUTION_TRUST_ROOT_INVALID。历史：早期只读核查未发现现成OS隔离executor，legacy grant/公钥仍写可能被agent写入的 {root}/.crctl；Podman PoC 在 systemd 尝试不可用并完整回退后以无资源限额跑通（resourceLimitsEnforced:false），不接daemon任务/claim。第二轮：M 新增 daemon 拉取接口 `GET /api/daemon/crs/{crID}/execution-authorization`（DaemonAuth 组，仅返回该 workspace 冻结初始记录+服务公钥，不标 delivered、不含 current-head/撤销/claim）与 `Client.InstallExecutionAuthorization`→`ExecutionTrustStore.InstallAuthorizationRecord`（安装前以下发公钥验签，校验 workspace/CR/key_id/grant UUID，写 keys→source→grant，同记录幂等、异内容冲突；Link 发布不覆盖）。真实 RED：记录属另一 CR 时旧安装器返回 nil；修复后组件链 真实授权HTTP→隔离DB→daemon GET→安装→真实 crctl `--check --trust-root` digest 一致，legacy 路径看不到该 grant，跨 workspace 404、无绑定 403、缺记录 404 且不落文件。governance 扩大回归 598/598。执行授权记录不再有落入工作区的路径；legacy stage grant 仍写 {root}/.crctl（不追溯）。第三轮已接生产 handleTask→prepareClaimedPipelineTask→安装→真实 crctl --check --trust-root，新增真实 Auth/DB-backed mdt/DaemonAuth 投递测试。source/hash/HTTP 限额/根身份实际 RED 后修复；Windows Stat 惰性 ID 根因修复后换根20/20；governance606/606、daemon36=35P/1S，逐测试事件见 preflight-regression.json；缺显式否定事实真实 RED 后已修。POST/JSONB GET 重投误冲突与重复包装键联合3FAIL后修复为7PASS；仅固定运输包装、保持原签名/人类请求bytes，复用JSON scanner，未宣称新一轮独立代码审查。STDD 三路缺模型映射按规则默认回退，未猜档位。仍缺：可信 current-head/撤销/DB claim、隔离控制通道、不可删 activation、消费事务；静态成功仍 EXECUTION_CONSUMPTION_REQUIRED。'
+    reason: '尚未取得已落地不可伪造隔离/安装根的证据，配置声明与同UID目录不能独立作为证明；公钥若可被被管进程替换，验签即失效。'
+    impact_scope: '执行位置选择、grant/公钥trust root、daemon与agent凭据边界；RUN-001/002/009及AUTH-004/006需补公钥与授权文件不落agent可写集的正负向验证。不减少原TC。'
+    severity: major
+    affected_capabilities: [authorized-runner]
+    resolved: false
+  - id: ADJ-AIFI45-M003
+    original_design_ref: 'design.md / slices：RUN 切片 R2（TC-RUN-002/003/006/010）在本 change 内由准入判定消费 tools 已提交裁决'
+    actual_change: '用户 2026-10-26 决定：可信 T 裁决通道另开 change，且本 change **暂不实施**，由用户自行开 change。同日已确认 D8=A 不迁移legacy、D7就绪控制面挂通道change并要求独立解决方案原位修订；原方案已升v0.3（Spec §5/§7/S8），仍仅存档备查（validation/trusted-verdict-channel-implementation-plan-20261026.md，顶已标搁置），不属 AIFI-45 待办，不据此建 change/目录/源码；建议 ID 2026-10-26-aifi-trusted-tools-verdict-channel 未注册。历史评审仅计划级：v0.1 BLOCK、v0.2 APPROVABLE-AS-PLAN，不直接覆盖v0.3新增设计。v0.3独立复核补正后为strong APPROVABLE-AS-PLAN / balanced SUFFICIENT-AS-PLAN / economy PASS（仅计划；见validation/trusted-verdict-channel-v03-review-20261026.md），未运行产品测试、未部署、不关闭本major。AIFI-45 内准入草案仅作历史资料（dispatch-admission-design-20261026.md），其 §4 的 F4 已实施并补强探针（CUSTOM #199/#200）。'
+    reason: '准入正向路径需要可信 T 已提交裁决；现有 crctl.mjs ~1892 仍返回 EXECUTION_CONSUMPTION_REQUIRED，repair CLI 只解码 payload，agent stdout/磁盘 JSON/平台收据都不能作为证据。该通道跨 tools/multica 两仓、安全面大，挤在本 change 尾部会压缩评审质量。'
+    impact_scope: 'TC-RUN-002/003/006/010 不删除、不改写，当前保持 MISSING 并标注对新 change 的依赖；只测拒绝侧是 vacuous，不计 PRESENT。总数仍 49，本轮 41/49；通道组件通过不能自动回填或跨 change 双计，其后的业务验收与计数由 AIFI-45 自行更新。RUN-004/005 已落地，RUN-009 run 维度补丁被审核 BLOCK 后撤回，缺陷仍待修，正确修法须稳定轮次/代次绑定和共享终态同步。001/007/008 的端到端/legacy 缺口未冒称已解。D7涉及EVD-007/RUN-008的共享部署就绪模块交由后续Channel，业务TC仍各自验收；D8只解决本期不迁移的范围，既有EVD-008正分支/无生产入口保留，不以拒绝侧宣称完整功能。禁止换grant/lineage/store清旧债。'
+    severity: major
+    affected_capabilities: [authorized-runner]
+    resolved: false

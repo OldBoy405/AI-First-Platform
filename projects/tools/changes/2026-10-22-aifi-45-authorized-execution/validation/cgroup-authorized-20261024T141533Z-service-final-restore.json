@@ -1,0 +1,45 @@
+{
+  "at": "2026-10-24T15:22:51.772Z",
+  "steps": {
+    "start_pg1": 0,
+    "start_pg2": 0,
+    "db_ready": true,
+    "start_backend": 0
+  },
+  "db": {
+    "rows": 83,
+    "advisory_locks": 0,
+    "other_sessions": 0,
+    "in_recovery": "false",
+    "schema_latest": "642_cr_execution_authorization_head",
+    "history_sha256": "e39534a286a508509285d31b6b7423fb9ff066cddcdbf463949f2ac13217488a",
+    "history_matches": true
+  },
+  "containers": [
+    "multica-postgres|running",
+    "stdd-aifi45-20261022-pg|running",
+    "multica-backend|running"
+  ],
+  "restart_policy": [
+    {
+      "k": "pg1",
+      "exit": 0,
+      "err": ""
+    },
+    {
+      "k": "pg2",
+      "exit": 0,
+      "err": ""
+    },
+    {
+      "k": "backend",
+      "exit": 0,
+      "err": ""
+    }
+  ],
+  "restart_unit": {
+    "exit": 0,
+    "out": "restart_unit=disabled",
+    "err": ""
+  }
+}

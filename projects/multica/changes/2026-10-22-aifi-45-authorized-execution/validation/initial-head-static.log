@@ -1,0 +1,6 @@
+$ go vet ./internal/governance ./cmd/server
+exit=0
+$ gofmt -l internal/governance/execution_authorization_head.go internal/governance/execution_authorization_head_test.go internal/governance/execution_authorization_http.go internal/governance/execution_authorization_routes.go cmd/server/router.go cmd/server/execution_authorization_head_test.go
+exit=0
+$ git -c core.safecrlf=false diff --check -- pkg/db/generated pkg/db/queries/approval.sql cmd/server/router.go
+exit=0

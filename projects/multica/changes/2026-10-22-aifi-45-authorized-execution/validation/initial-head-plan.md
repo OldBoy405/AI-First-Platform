@@ -1,0 +1,13 @@
+# Initial current-head validation plan
+
+Scope: M source `C:/Users/GOBAO/Downloads/AI/multica`; this sub-slice has one writer. No T/CUSTOM/state changes, revoke, binding signer, claim proof, consumption, commit or push.
+
+- Reuse nullable UUID `cr.execution_authorization_head_id` and existing `approval_record` history; no FK/cascade or budget table. New initial insertion and head update share the existing CR `FOR UPDATE` transaction. Existing initial replay never backfills/reconstructs a missing head.
+- Add daemon GET `/crs/{crID}/execution-authorization/head` on the production mount behind real DaemonAuth. Require the DB-backed daemon workspace binding. Read the persisted pointer with exact workspace/CR/stage/history linkage and current CR/issue/project ownership; validate original signed payload identities, signature, source and deployment contract. No timestamp ordering, file presence or ACK inference.
+- Return original record/public key and explicit head digest/revision/lineage/purpose only. The response is a current read snapshot, not a signed freshness/claim proof or admission. Historical GET remains historical and read-only.
+- First test uses actual human Auth/membership POST and actual DB-backed daemon token GET. Execute old implementation first: expected HTTP 404 versus 200, before any new migration is needed by the test. Compilation/migration failure, zero selection and skip are not RED evidence.
+- After minimal GREEN, add missing-head, cross-workspace, missing DB daemon binding, project drift, nil/unconfigured service, exact replay without head reconstruction, tamper and invalid pointer cases. Verify no queue/ACK/consumption side effects.
+- Baseline completion confirmed from `20261024T113019Z-aifi45-governance-baseline.meta.json` (exit0, 10/10) and no running Go test process. Before each DB execution use the existing dedicated runner, which checks container ID `666bfec52ac3`, change label, loopback port 55432, DB `stdd_aifi45_20261022`, user `stdd`; password/URL remain in memory. Only this DB may be used. GOPROXY=off, no global dependency installation.
+- Current source migration maximum is 641; inspect generator/migration conventions before adding 642. Run repository-pinned sqlc generation, never hand-edit generated columns. Save raw JSON/stderr, actual counts and exit under this validation directory; sanitize secrets without normalizing signed bytes.
+
+This is component evidence only: revocation chain, claim, isolation, activation and consumption remain absent. Five majors remain unresolved; complete business TC remains 0/49. Ordinary text parsing/hashing normalizes CRLF; signed payload/source and pinned manifest bytes do not.

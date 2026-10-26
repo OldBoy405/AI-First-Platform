@@ -1,0 +1,273 @@
+{
+  "observed_at": "2026-10-24T13:08:43.991Z",
+  "source": [
+    {
+      "file": "skills/shared/crctl/scripts/crctl.mjs",
+      "sha256_lf": "0b8faa403504a0abbabd42495dfefdee908adcab111f9f20a9a807ef64fccf2c",
+      "sha256_raw": "d064100fc82d07f5ab63d0bd40e824f56cac57699b512f0cd1cf86f1ebca1557"
+    },
+    {
+      "file": "skills/shared/crctl/scripts/lib/execution-authorization.mjs",
+      "sha256_lf": "fce9c8bb85f0ce625e52a4c49a24425794b85db3bdb2f87586a946fefc021ee8",
+      "sha256_raw": "fce9c8bb85f0ce625e52a4c49a24425794b85db3bdb2f87586a946fefc021ee8"
+    },
+    {
+      "file": "skills/shared/crctl/scripts/test/execution-authorization.test.mjs",
+      "sha256_lf": "91ee1596c74e08069f89d87d9dca462eb55767e89031f6342dc81ee2a43fa048",
+      "sha256_raw": "91ee1596c74e08069f89d87d9dca462eb55767e89031f6342dc81ee2a43fa048"
+    }
+  ],
+  "protected_files": [
+    {
+      "file": "AI First Platform/projects/tools/config.d/quality.yaml",
+      "sha256_raw": "25380eed278e254dbfb64c9af82f2e5d0bba09bc288dde2e76e3a3b985a6fcf2",
+      "matched_previous_observation": true
+    },
+    {
+      "file": "tools/.stdd/binding.yaml",
+      "sha256_raw": "31546e1a36022d955c789a377f0398508fad3da3f9271991f51dea777868cf7b",
+      "matched_previous_observation": true
+    },
+    {
+      "file": "AI First Platform/projects/multica/config.d/quality.yaml",
+      "sha256_raw": "05a0e3eb7a800962eb957c2edd5e90e0934432276d82416e09e88f8acf0909af",
+      "matched_previous_observation": true
+    },
+    {
+      "file": "multica/.stdd/binding.yaml",
+      "sha256_raw": "ae676b9aef73b3274c997a9d47630e50164eb25dd04ae701650d5f4c97186d89",
+      "matched_previous_observation": true
+    }
+  ],
+  "git": {
+    "tools": {
+      "branch": "main",
+      "head": "9e41ad74ce631459bc007a29c3d0cdaaa1e49e75",
+      "staged_paths": 0
+    },
+    "multica": {
+      "branch": "main",
+      "head": "f6e90ab8090c8a712c7fe2a324e977f10a39499c",
+      "staged_paths": 0
+    }
+  },
+  "evidence": [
+    {
+      "id": "revoke-source-check-red",
+      "argv": [
+        "node",
+        "--test",
+        "--test-reporter=tap",
+        "--test-name-pattern=^TC-AUTH-001 explicit read-only",
+        "skills/shared/crctl/scripts/test/execution-authorization.test.mjs"
+      ],
+      "cwd": "C:/Users/GOBAO/Downloads/AI/tools",
+      "observed_exit": 1,
+      "exit_provenance": "supervisor tool return, captured after run; not inferred from TAP",
+      "tap": {
+        "tests": 1,
+        "pass": 0,
+        "fail": 1,
+        "skipped": 0,
+        "todo": 0
+      },
+      "stdout_sha256": "783a7ee1f75d82f39668df0e6f9e48205255d53e56e678020f073fb73d966596",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "transcript_sha256": "6c30ef3601a4244bbf940239c453b6d9096452a65e934c8fadca09a4afe2df09",
+      "raw_note": "Lossless byte split at supervisor-added final delimiter; original transcript retained; no LF normalization."
+    },
+    {
+      "id": "revoke-source-check-green",
+      "argv": [
+        "node",
+        "--test",
+        "--test-reporter=tap",
+        "--test-name-pattern=^TC-AUTH-001 explicit read-only",
+        "skills/shared/crctl/scripts/test/execution-authorization.test.mjs"
+      ],
+      "cwd": "C:/Users/GOBAO/Downloads/AI/tools",
+      "observed_exit": 0,
+      "exit_provenance": "supervisor tool return, captured after run; not inferred from TAP",
+      "tap": {
+        "tests": 1,
+        "pass": 1,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "stdout_sha256": "1673291ff3f7b82058710a85df77a37ac42a84762a7e001d08ea12a1ac21a0fa",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "transcript_sha256": "9419a433fecf13165bcd5896257cefee2ae715b8aa4227136c8012eedb7aa8ec",
+      "raw_note": "Lossless byte split at supervisor-added final delimiter; original transcript retained; no LF normalization."
+    },
+    {
+      "id": "revoke-source-negative-zero-red",
+      "argv": [
+        "node",
+        "--test",
+        "--test-reporter=tap",
+        "--test-name-pattern=^TC-AUTH-010 source check accepts signed zero",
+        "skills/shared/crctl/scripts/test/execution-authorization.test.mjs"
+      ],
+      "cwd": "C:/Users/GOBAO/Downloads/AI/tools",
+      "observed_exit": 1,
+      "exit_provenance": "supervisor tool return, captured after run; not inferred from TAP",
+      "tap": {
+        "tests": 2,
+        "pass": 0,
+        "fail": 2,
+        "skipped": 0,
+        "todo": 0
+      },
+      "stdout_sha256": "cbc46a76d98ca4d6c0a1013c8b3ab31269dabf19f1605dee4a52a665c06f5e34",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "transcript_sha256": "29afa24ad68d52bed7bb0ab4cf63a022ce272d28c4b5aebf0ce8e4caaf27728f",
+      "raw_note": "Lossless byte split at supervisor-added final delimiter; original transcript retained; no LF normalization."
+    },
+    {
+      "id": "revoke-source-negative-zero-green",
+      "argv": [
+        "node",
+        "--test",
+        "--test-reporter=tap",
+        "--test-name-pattern=^TC-AUTH-010 source check accepts signed zero",
+        "skills/shared/crctl/scripts/test/execution-authorization.test.mjs"
+      ],
+      "cwd": "C:/Users/GOBAO/Downloads/AI/tools",
+      "observed_exit": 0,
+      "exit_provenance": "supervisor tool return, captured after run; not inferred from TAP",
+      "tap": {
+        "tests": 2,
+        "pass": 2,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "stdout_sha256": "8cbed1afb98644e37e2a821298dccb4b4874bbe82d89240a4ac549726c46e14c",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "transcript_sha256": "2007bcf51f1d56ce514b331d32bd60e37a9007913d3217f4e197c4ee6492074b",
+      "raw_note": "Lossless byte split at supervisor-added final delimiter; original transcript retained; no LF normalization."
+    },
+    {
+      "id": "revoke-static-red",
+      "argv": [
+        "node",
+        "--test",
+        "--test-reporter=tap",
+        "--test-name-pattern=^TC-AUTH-009 strict revoke",
+        "skills/shared/crctl/scripts/test/execution-authorization.test.mjs"
+      ],
+      "cwd": "C:/Users/GOBAO/Downloads/AI/tools",
+      "observed_exit": 1,
+      "exit_provenance": "supervisor tool return, captured after run; not inferred from TAP",
+      "tap": {
+        "tests": 1,
+        "pass": 0,
+        "fail": 1,
+        "skipped": 0,
+        "todo": 0
+      },
+      "stdout_sha256": "e0a77aad2afaff411f4a9e948df7ae3a4f7748c5c7e848ef4d4744869324ad1d",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "transcript_sha256": "f3b0d8c79db4ced0c08f8b9b628da78fe461ba0dadc1fd52db15efd73b402681",
+      "raw_note": "Lossless byte split at supervisor-added final delimiter; original transcript retained; no LF normalization."
+    },
+    {
+      "id": "revoke-static-green",
+      "argv": [
+        "node",
+        "--test",
+        "--test-reporter=tap",
+        "--test-name-pattern=^TC-AUTH-009 strict revoke",
+        "skills/shared/crctl/scripts/test/execution-authorization.test.mjs"
+      ],
+      "cwd": "C:/Users/GOBAO/Downloads/AI/tools",
+      "observed_exit": 0,
+      "exit_provenance": "supervisor tool return, captured after run; not inferred from TAP",
+      "tap": {
+        "tests": 1,
+        "pass": 1,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "stdout_sha256": "9cddc2dbb7b22f19b7c341b527d951c84c21876a3522b5ac3dddbcfc577d8da3",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "transcript_sha256": "1dcc67dc0995bf64ed95d37029be4defa15a15c507c7cb6411bfc5673ca68118",
+      "raw_note": "Lossless byte split at supervisor-added final delimiter; original transcript retained; no LF normalization."
+    },
+    {
+      "id": "revoke-admission-reject-red",
+      "argv": [
+        "node",
+        "--test",
+        "--test-reporter=tap",
+        "--test-name-pattern=^TC-AUTH-009 revoke cannot enter",
+        "skills/shared/crctl/scripts/test/execution-authorization.test.mjs"
+      ],
+      "cwd": "C:/Users/GOBAO/Downloads/AI/tools",
+      "observed_exit": 1,
+      "exit_provenance": "supervisor tool return, captured after run; not inferred from TAP",
+      "tap": {
+        "tests": 1,
+        "pass": 0,
+        "fail": 1,
+        "skipped": 0,
+        "todo": 0
+      },
+      "stdout_sha256": "28fe7f44937813a34260dc471e13d2c9e18000f5eab9d447b192e78d22398276",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "transcript_sha256": "3b7c9e075677167c4edeabb978485bddf30c946ebcd0cf9e166f8b5143583220",
+      "raw_note": "Lossless byte split at supervisor-added final delimiter; original transcript retained; no LF normalization."
+    },
+    {
+      "id": "revoke-admission-reject-green",
+      "argv": [
+        "node",
+        "--test",
+        "--test-reporter=tap",
+        "--test-name-pattern=^TC-AUTH-009 revoke cannot enter",
+        "skills/shared/crctl/scripts/test/execution-authorization.test.mjs"
+      ],
+      "cwd": "C:/Users/GOBAO/Downloads/AI/tools",
+      "observed_exit": 0,
+      "exit_provenance": "supervisor tool return, captured after run; not inferred from TAP",
+      "tap": {
+        "tests": 1,
+        "pass": 1,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "stdout_sha256": "2a3455f4a66205f4739d379c50d4e12a77ae5dfcc5aae36aa4c130686d0cef3c",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "transcript_sha256": "c8903f40dfe0bfaafe2d93d80b6b2b518ab65b8fda7277286ad1e8478222d841",
+      "raw_note": "Lossless byte split at supervisor-added final delimiter; original transcript retained; no LF normalization."
+    },
+    {
+      "id": "revoke-tools-author-auth",
+      "argv": [
+        "node",
+        "--test",
+        "--test-reporter=tap",
+        "skills/shared/crctl/scripts/test/execution-authorization.test.mjs"
+      ],
+      "cwd": "C:/Users/GOBAO/Downloads/AI/tools",
+      "observed_exit": 0,
+      "exit_provenance": "supervisor tool return, captured after run; not inferred from TAP",
+      "tap": {
+        "tests": 151,
+        "pass": 151,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "stdout_sha256": "724a7099ef89cd6bc225610e35ae81463a1e8dc05c87bbfa736710cd49dafefe",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "transcript_sha256": "c36ab560b6fd97b362706675e041a1bbb669cb95f2986afe25b9df64b1efead7",
+      "raw_note": "Lossless byte split at supervisor-added final delimiter; original transcript retained; no LF normalization."
+    }
+  ],
+  "instrumentation_note": "First evidence-index attempt failed ENOENT by locating quality.yaml at source root instead of STDD data root, after lossless raw copies. Original logs/copies preserved and verified identical here; failed collection is not RED/GREEN/test success.",
+  "scope": "T component only; full TC0/49, five unresolved major; M writer still active; no commit/push/Gate3"
+}

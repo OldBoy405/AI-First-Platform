@@ -1,0 +1,103 @@
+meta:
+  change_id: 2026-10-22-aifi-45-authorized-execution
+  title: AIFI-45 授权内自治执行与有界修复（tools 合同）
+  created: '2026-10-22T15:45:00+08:00'
+  status: confirmed
+  version: '3.0'
+why:
+  problem: >-
+    现有流程仍围绕阶段审批、各 loop/cycle 的评审次数及固定文件套餐组织执行，
+    尚不能保证充分授权后无需机械续杯、跨阶段累计修复受限及连续无进展停止。
+    单改提示词不能改变门禁与运行时行为。此前四阶段 registry 和去 Agent 接力成果应复用而非重做。
+  motivation: >-
+    按 docs/AIFI-45-CR流程减负目标方案.md 节省人类注意力，同时不降低可信授权、
+    独立验证、可追溯证据及正确版本交付的安全性质。本轮以原生 STDD 管理开发，不注册真实 CR。
+what_changes:
+  - id: C1
+    type: new
+    description: 扩展既有审批与 CR 权威记录，绑定有版本的可信目标、范围、交付位置、验收、禁止项及执行上限；未授权敏感动作与扩围拒绝。
+  - id: C2
+    type: new
+    description: 建立 CR 累计逻辑修复消费合同，默认 6 次，跨阶段和 cycle 保留，失败也计次，重放幂等，追加授权保留历史。
+  - id: C3
+    type: new
+    description: 连续两次同根因且无可验证进展停止；由独立评审核验证据并给出明确升级原因。
+  - id: C4
+    type: modified
+    description: 配套调整 gates、状态声明、模板和权限合同，使授权内普通执行无需重复阶段人工确认，交付前独立验证不可省略。
+  - id: C5
+    type: modified
+    description: 按长期有效信息和最小变更验证记录组织文档，机械例外须独立证明无语义变化，长期规则更新现有权威源。
+  - id: C6
+    type: modified
+    description: 与 multica 的唯一 Runner 派发、异常分流及版本合同协同切换，新 CR 显式试点，旧 CR 保持原合同，发布重试不得再次消费授权。
+capabilities:
+  new:
+    - name: execution-authorization
+      description: 可信授权包、敏感动作约束、适用版本与 scope 校验及授权消费。
+    - name: repair-governance
+      description: 跨阶段累计修复额度、逻辑修复幂等、显式追加和连续无进展停止。
+  modified:
+    - name: evidence-delivery-contract
+      description: 授权驱动门禁、内容型产物合同、独立验证及版本化新旧流程共存。
+constraints:
+  - 需求源为本工作区 docs/AIFI-45-CR流程减负目标方案.md；AC-1 至 AC-12 全部保持，不以本提案放宽验收。
+  - 用户明确本次采用 STDD 而非 CR 工作流；附件第 9.1、11.2 节的实施方法仅作此项调整，不代表产品运行时门禁可绕过。
+  - Gate 1 确认原文为“确认这份 Gate 1”；Gate 2 之前只写规格与设计，不写业务代码或运行真实 CR。
+  - 原生 STDD thorough 模式；三个 Gate 分别确认，不继承此前 change 的批准。
+  - crctl 保持业务裁决权威，平台保持可信授权与执行记录，Runner 不独立裁决第二套业务额度。
+  - 默认累计最多 6 次修复，连续两次同根因无实质进展停止；具体次数不是费用保证。
+  - 复用既有 Ed25519、CR 锁、事务、Git/checkpoint、outbox 和权限边界，不另建引擎或中央总账。
+  - 所有测试使用隔离夹具；真实敏感动作、生产发布、破坏性数据、权限扩大及新增支出不在本轮默认授权内。
+  - 在途 CR 默认不迁移；不静默清零历史，不把本地 SHA 当部署证据。
+  - 保留已有未提交修改；本轮不执行 Git commit、push 或部署。
+stakeholders:
+  - 业务决策者及可信授权者
+  - 流程维护者与运维责任人
+  - tools 执行 Agent、独立 reviewer 及 multica Runner
+risk_areas:
+  - capability: execution-authorization
+    risk: 模糊请求、转述、旧版本凭据或 ACK 被误认为已授权或已消费。
+    mitigation: 复用认证与签名来源，锁内校验 scope/version/subject；送达与业务消费分离。
+  - capability: repair-governance
+    risk: cycle 重置绕过累计上限，或恢复/并发导致重复消费与派发。
+    mitigation: 逻辑修复身份与事务幂等，独立进展证据，保留历史并用跨仓失效测试验证。
+  - capability: evidence-delivery-contract
+    risk: 先删审批/固定产物而运行时配套未完成，或旧 CR 被新合同追溯阻断。
+    mitigation: 显式版本合同、旧路径保留、生成一致性与恢复验证作为启用前置。
+non_goals:
+  - 不注册、推进、迁移或重放实际 CR；历史 AIFI-45 只读回放与隔离回归。
+  - 不新建通用工作流引擎、中央流程总账、全局通知去重账本或纯转交 Agent。
+  - 不引入 token、费用或运行级耗时预算系统。
+  - 不把所有 Git 操作集中到新入口，不修改 STDD 产品或扩大工具权限。
+  - 不重复实现此前已完成的四阶段 registry、node executor、digest 或 Agent 去接力。
+critical:
+  is_critical: true
+  risk_assessment:
+    safety_critical: true
+    financial: false
+    cross_system: true
+anchoring:
+  level: L3
+  reference_changes:
+    - 2026-10-19-aifi-45-runner-contracts
+    - 2026-10-19-aifi-45-four-phase-runner
+  anchor_implementations:
+    - skills/shared/crctl/scripts/crctl.mjs
+    - skills/shared/crctl/gates.json
+    - pipeline-templates/emit-registry.mjs
+success_criteria:
+  - AC-1：充分授权的普通变更无需重复阶段确认或人工搬运，仍必须通过适用门禁。
+  - AC-2：授权不足或扩围只补问必要取舍，未授权部分不先执行。
+  - AC-3：额度内且有可核验证据进展的修复自动继续。
+  - AC-4：默认累计第 6 次已消费后拒绝第 7 次，跨阶段/cycle 不重置。
+  - AC-5：连续两次同根因无进展停止，升级附证据、尝试路径及所需动作。
+  - AC-6：同一逻辑修复的重投、恢复和发布重试不重复扣额、不产生第二次逻辑派发。
+  - AC-7：旧版本、旧 cycle 或不适用 subject 的证据不能推进当前执行，历史可追溯。
+  - AC-8：未授权敏感动作无法通过作者自报、模糊实施授权或转述放行。
+  - AC-9：交付前独立核验实际差异和可运行证据；机械例外不能掩盖规则变化。
+  - AC-10：维护故障先有界恢复，再找维护责任人，业务方不承担技术搬运。
+  - AC-11：主动通知仅授权、需处置阻断、交付；文档与长期规则归属正确，无全文复制。
+  - AC-12：旧 CR 不静默迁移、新旧派发不双写、配套恢复未就绪不提前删除旧路径。
+  - 三条代表路径及失效用例通过隔离接口测试与独立评审；真实部署或试点未执行必须明确未验证。
+  - 每个 Scenario 具有对应 TC 与明确断言，业务代码仅在 Gate 2 确认后按 RED→GREEN 实施。

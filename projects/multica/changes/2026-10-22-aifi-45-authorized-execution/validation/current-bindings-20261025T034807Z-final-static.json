@@ -1,0 +1,224 @@
+{
+  "at": "2026-10-25T04:56:46.111Z",
+  "source": [
+    {
+      "file": "server/internal/handler/daemon.go",
+      "raw_match": true,
+      "lf_match": true
+    },
+    {
+      "file": "server/internal/daemon/client.go",
+      "raw_match": true,
+      "lf_match": true
+    },
+    {
+      "file": "server/internal/governance/execution_current_resource_binding_test.go",
+      "raw_match": true,
+      "lf_match": true
+    },
+    {
+      "file": "server/internal/daemon/execution_current_resource_binding_test.go",
+      "raw_match": true,
+      "lf_match": true
+    },
+    {
+      "file": "server/internal/service/task.go",
+      "raw_match": true,
+      "lf_match": true
+    },
+    {
+      "file": "server/internal/handler/daemon_start_claim_test.go",
+      "raw_match": true,
+      "lf_match": true
+    },
+    {
+      "file": "server/internal/handler/handler_test.go",
+      "raw_match": true,
+      "lf_match": true
+    },
+    {
+      "file": "server/internal/governance/execution_start_claim_test.go",
+      "raw_match": true,
+      "lf_match": true
+    },
+    {
+      "file": "server/pkg/protocol/project_resource_binding.go",
+      "raw_match": true,
+      "lf_match": true
+    },
+    {
+      "file": "scripts/aifi45-db/run.mjs",
+      "raw_match": true,
+      "lf_match": true
+    },
+    {
+      "file": "scripts/aifi45-db/run.test.mjs",
+      "raw_match": true,
+      "lf_match": true
+    }
+  ],
+  "finalTests": [
+    {
+      "label": "governance",
+      "exit": 0,
+      "counts": {
+        "run": 828,
+        "pass": 828,
+        "fail": 0,
+        "skip": 0
+      },
+      "leaf": 749,
+      "manifest_keys": [
+        "at",
+        "scope",
+        "source_root",
+        "frozen_manifest",
+        "frozen_manifest_sha256",
+        "files",
+        "all_11_match_frozen",
+        "note"
+      ],
+      "manifest_sha256": "09a6d1fbc176b18b46794b6bfe385c2622c1076afd52e9fe5f96e79b5d8338c4"
+    },
+    {
+      "label": "handler",
+      "exit": 0,
+      "counts": {
+        "run": 13,
+        "pass": 13,
+        "fail": 0,
+        "skip": 0
+      },
+      "leaf": 10,
+      "manifest_keys": [
+        "at",
+        "scope",
+        "source_root",
+        "frozen_manifest",
+        "frozen_manifest_sha256",
+        "files",
+        "all_11_match_frozen",
+        "note"
+      ],
+      "manifest_sha256": "e4492da6bdededcfd666974ebb1488d63a533207d628141101a8fb98215968ca"
+    },
+    {
+      "label": "daemon",
+      "exit": 0,
+      "counts": {
+        "run": 73,
+        "pass": 72,
+        "fail": 0,
+        "skip": 1
+      },
+      "leaf": 67,
+      "manifest_keys": [
+        "at",
+        "scope",
+        "source_root",
+        "frozen_manifest",
+        "frozen_manifest_sha256",
+        "files",
+        "all_11_match_frozen",
+        "note"
+      ],
+      "manifest_sha256": "c9382ebe837301e105316aa9c6be3a48d9c32b51a927bd1dbcb9d0a274a30d46"
+    }
+  ],
+  "protected": [
+    {
+      "file": "tools/.stdd/binding.yaml",
+      "match": true
+    },
+    {
+      "file": "multica/.stdd/binding.yaml",
+      "match": true
+    },
+    {
+      "file": "AI First Platform/projects/tools/config.d/quality.yaml",
+      "match": true
+    },
+    {
+      "file": "AI First Platform/projects/multica/config.d/quality.yaml",
+      "match": true
+    }
+  ],
+  "badLinks": [],
+  "stale": [],
+  "git": [
+    {
+      "repo": "multica",
+      "branch": "main",
+      "head": "f6e90ab8090c8a712c7fe2a324e977f10a39499c",
+      "staged": ""
+    },
+    {
+      "repo": "tools",
+      "branch": "main",
+      "head": "9e41ad74ce631459bc007a29c3d0cdaaa1e49e75",
+      "staged": ""
+    }
+  ],
+  "state": [
+    {
+      "repo": "multica",
+      "sha256": "68e4b271962195d60a546b569aa9e72435c8d667c6673e5f62d56e9b4a98dab4",
+      "phase_status_mode_lines": [
+        "current_phase: build",
+        "  mode: normal",
+        "mode: thorough",
+        "    status: in_progress",
+        "    status: pending",
+        "    status: completed",
+        "    status: completed",
+        "status: active"
+      ]
+    },
+    {
+      "repo": "tools",
+      "sha256": "abfe19e29461415de19a253102e483fe7a76457af2ee139cb137a9a719e248a9",
+      "phase_status_mode_lines": [
+        "current_phase: build",
+        "  mode: normal",
+        "mode: thorough",
+        "    status: in_progress",
+        "    status: pending",
+        "    status: completed",
+        "    status: completed",
+        "status: active"
+      ]
+    }
+  ],
+  "reports": [
+    {
+      "file": "current-bindings-20261025T034807Z-report.md",
+      "raw_sha256": "ca2b94532473d429b41310192e6ac60750ad078d58e33940df76b8f54aaeb009"
+    },
+    {
+      "file": "current-bindings-20261025T034807Z-independent2-report.md",
+      "raw_sha256": "0531236d5359b97b4d3f62dc0e9d9761cbfb5d78a5594c7b494eb8627d15752c"
+    },
+    {
+      "file": "strong-report-p2.md",
+      "raw_sha256": "727aa438011aaaaa90f7b764962c59a5f4785c02ab691a6a257d6605bc450683"
+    },
+    {
+      "file": "current-bindings-20261025T034807Z-old-claim-strong-report.md",
+      "raw_sha256": "8796f15d03855a1f7d7c2c6a79a17fc7cbe99c4e7ba75afc756ce0c581889288"
+    }
+  ],
+  "db_activity_after_final_readonly": "none",
+  "vet": {
+    "at": "2026-10-25T04:53:33.298Z",
+    "argv": [
+      "go",
+      "vet",
+      "./internal/handler",
+      "./internal/service",
+      "./internal/governance",
+      "./internal/daemon"
+    ],
+    "exit": 0,
+    "signal": null
+  }
+}

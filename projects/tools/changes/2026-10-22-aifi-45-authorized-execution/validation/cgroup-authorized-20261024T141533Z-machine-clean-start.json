@@ -1,0 +1,65 @@
+{
+  "at": "2026-10-24T15:19:09.358Z",
+  "log": [
+    {
+      "k": "pre_api",
+      "v": "Cannot connect to Podman. Please verify your connection to the Linux system using `podman system connection list`, or try `podman machine init` and `podman machine start` to manage a new Linux VM\nError: unable to connect to Podman socket: failed to connect: dial tcp 127.0.0.1:59669: connectex: No connection could be made because the target machine actively refused it."
+    },
+    {
+      "k": "sshd_config_port_lines",
+      "v": "21:#Port 22\n133:Port 59669"
+    },
+    {
+      "k": "stop_backend",
+      "v": "125 Cannot connect to Podman. Please verify your connection to the Linux system usin"
+    },
+    {
+      "k": "stop_pg1",
+      "v": "125 Cannot connect to Podman. Please verify your connection to the Linux system usin"
+    },
+    {
+      "k": "stop_pg2",
+      "v": "125 Cannot connect to Podman. Please verify your connection to the Linux system usin"
+    },
+    {
+      "k": "proxy",
+      "v": "killed"
+    },
+    {
+      "k": "pipe",
+      "v": "gone after 1s"
+    },
+    {
+      "k": "terminate",
+      "v": 0
+    },
+    {
+      "k": "machine_start",
+      "v": "125 sing the following command:\n\n\tpodman machine set --rootful\n\nAPI forwarding listening on: npipe:////./pipe/docker_engine\n\nDocker API clients default to this address. You do not need to set DOCKER_HOST. |ERR ers\\\\GOBAO\\\\.config\\\\containers\\\\podman\\\\machine\\\\wsl\\\\.tmp-podman-machine-default.json1458765723 C:\\\\Users\\\\GOBAO\\\\.config\\\\containers\\\\podman\\\\machine\\\\wsl\\\\podman-machine-default.json: Access is denied.\"\nError: machine did not transition into running state: ssh error: machine not in running state"
+    },
+    {
+      "k": "machine_list",
+      "v": "podman-machine-default*|false|false"
+    },
+    {
+      "k": "machine_state",
+      "v": "stopped"
+    },
+    {
+      "k": "conns",
+      "v": "podman-machine-default|ssh://user@127.0.0.1:59669/run/user/1000/podman/podman.sock\npodman-machine-default-root|ssh://root@127.0.0.1:59669/run/podman/podman.sock"
+    },
+    {
+      "k": "pipe_present",
+      "v": ""
+    },
+    {
+      "k": "sshd_listen",
+      "v": "0.0.0.0:59669\n[::]:59669"
+    },
+    {
+      "k": "api_after",
+      "v": "multica-postgres|exited\nstdd-aifi45-20261022-pg|exited\nmultica-backend|exited"
+    }
+  ]
+}

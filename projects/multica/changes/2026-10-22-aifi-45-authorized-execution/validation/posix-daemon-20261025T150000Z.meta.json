@@ -1,0 +1,19 @@
+{
+  "platform": "linux/amd64 (podman, non-root uid 1000)",
+  "package": "./internal/daemon",
+  "counts": {
+    "run": 2188,
+    "pass": 2183,
+    "fail": 0,
+    "skip": 5
+  },
+  "fails": [],
+  "skips": [
+    "TestDshPluginPathDirs_FindsBothLayouts/generational",
+    "TestDshPluginPathDirs_FindsBothLayouts/flat",
+    "TestExecutionBindingRelayHelperProcess",
+    "TestValidateLocalPath/rejects_canonical_macOS_/private/{tmp,etc,var}",
+    "TestIsDriveRoot"
+  ],
+  "verified": true
+}

@@ -1,0 +1,93 @@
+{
+  "schema": "aifi45-review-run/v1",
+  "label": "cmd-server-defaultoff",
+  "timestamp_utc": "20261024T115444Z",
+  "package": "./cmd/server",
+  "run_regex": "^TestExecutionAuthorizationHeadRouterDefaultOff$",
+  "extra_args": [],
+  "final_argv_derived": [
+    "go",
+    "test",
+    "./cmd/server",
+    "-run",
+    "^TestExecutionAuthorizationHeadRouterDefaultOff$",
+    "-count=1",
+    "-json"
+  ],
+  "argv_verification": "Runner source appends extra=[]; raw JSON shows each selected top-level name ran once.",
+  "wrapper_error": "TypeError: Cannot read properties of undefined (reading '0') at captured.args after raw capture; raw stdout/stderr were already written. No test rerun performed.",
+  "exit": 0,
+  "exit_source": "raw package pass event plus runner console summary exit=0",
+  "runner_summary": "exit=0 RUN=4 PASS=4 FAIL=0 SKIP=0",
+  "counts_all": {
+    "run": 4,
+    "pass": 4,
+    "fail": 0,
+    "skip": 0
+  },
+  "counts_top": {
+    "run": 1,
+    "pass": 1,
+    "fail": 0,
+    "skip": 0
+  },
+  "counts_sub": {
+    "run": 3,
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "unique_top": {
+    "run": [
+      "TestExecutionAuthorizationHeadRouterDefaultOff"
+    ],
+    "pass": [
+      "TestExecutionAuthorizationHeadRouterDefaultOff"
+    ],
+    "fail": [],
+    "skip": []
+  },
+  "top_run_count_distribution": {
+    "TestExecutionAuthorizationHeadRouterDefaultOff": 1
+  },
+  "unique_sub": {
+    "count_run": 3,
+    "count_pass": 3,
+    "count_fail": 0,
+    "count_skip": 0,
+    "fail": [],
+    "skip": []
+  },
+  "package_events": [
+    {
+      "action": "pass",
+      "package": "github.com/multica-ai/multica/server/cmd/server",
+      "elapsed": 2.096
+    }
+  ],
+  "package_elapsed_seconds": 2.096,
+  "raw_time_span_seconds": 2.096,
+  "shuffle_lines": [],
+  "raw_files": {
+    "stdout": "20261024T115444Z-aifi45-review-cmd-server-defaultoff.go.jsonl",
+    "stderr": "20261024T115444Z-aifi45-review-cmd-server-defaultoff.stderr.log"
+  },
+  "raw_sha256": {
+    "stdout": "475e97e2a6efa0e40e27326844da4a16570e4e9a01dff892bc98eac801f3b0f2",
+    "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "raw_line_count": 57,
+  "db_identity": "stdd_aifi45_20261022|stdd|671|642_cr_execution_authorization_head",
+  "container_id": "666bfec52ac3c3d13b43389891f50c4105833198eab7e4167b76f014a774e823",
+  "preflight": "label=2026-10-22-aifi-45-authorized-execution;port=127.0.0.1:55432;running=true;advisory_lock=0;other_sessions=0",
+  "harness": {
+    "PI_PROVIDER": "Gobao",
+    "PI_MODEL": "deepseek-flash",
+    "PI_REASONING_LEVEL": "max"
+  },
+  "sanitization": [
+    "postgres URL userinfo redacted",
+    "GitHub token patterns redacted"
+  ],
+  "note": "Meta reconstructed from the actual raw Go JSON after the inline wrapper crashed on an unavailable captured.args field; test execution was not repeated."
+}

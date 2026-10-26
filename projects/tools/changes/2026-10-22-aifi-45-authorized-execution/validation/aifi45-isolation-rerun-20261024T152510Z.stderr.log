@@ -1,0 +1,45 @@
+file:///C:/Users/GOBAO/Downloads/AI/multica/scripts/aifi45-isolation/probe.mjs:221
+if (failures.length) throw new AggregateError(failures, 'Isolation experiment or owned-resource cleanup failed');
+                           ^
+
+AggregateError: Isolation experiment or owned-resource cleanup failed
+    at file:///C:/Users/GOBAO/Downloads/AI/multica/scripts/aifi45-isolation/probe.mjs:221:28
+    at ModuleJob.run (node:internal/modules/esm/module_job:437:25)
+    at async node:internal/modules/esm/loader:639:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  [errors]: [
+    Error: podman info failed (exit=125, error=none)
+        at command (file:///C:/Users/GOBAO/Downloads/AI/multica/scripts/aifi45-isolation/probe.mjs:29:11)
+        at pod (file:///C:/Users/GOBAO/Downloads/AI/multica/scripts/aifi45-isolation/probe.mjs:33:21)
+        at file:///C:/Users/GOBAO/Downloads/AI/multica/scripts/aifi45-isolation/probe.mjs:91:27
+        at ModuleJob.run (node:internal/modules/esm/module_job:437:25)
+        at async node:internal/modules/esm/loader:639:26
+        at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5),
+    AssertionError [ERR_ASSERTION]: volume: ownership existence check failed
+        at file:///C:/Users/GOBAO/Downloads/AI/multica/scripts/aifi45-isolation/probe.mjs:213:12
+        at ModuleJob.run (node:internal/modules/esm/module_job:437:25)
+        at async node:internal/modules/esm/loader:639:26
+        at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+      generatedMessage: false,
+      code: 'ERR_ASSERTION',
+      actual: false,
+      expected: true,
+      operator: '==',
+      diff: 'simple'
+    },
+    AssertionError [ERR_ASSERTION]: image: ownership existence check failed
+        at file:///C:/Users/GOBAO/Downloads/AI/multica/scripts/aifi45-isolation/probe.mjs:213:12
+        at ModuleJob.run (node:internal/modules/esm/module_job:437:25)
+        at async node:internal/modules/esm/loader:639:26
+        at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+      generatedMessage: false,
+      code: 'ERR_ASSERTION',
+      actual: false,
+      expected: true,
+      operator: '==',
+      diff: 'simple'
+    }
+  ]
+}
+
+Node.js v24.15.0

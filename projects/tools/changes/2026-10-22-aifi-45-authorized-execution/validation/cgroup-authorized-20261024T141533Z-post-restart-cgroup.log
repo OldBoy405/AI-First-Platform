@@ -1,0 +1,19 @@
+pid1=systemd
+self_cgroup=0::/non-systemd
+root_subtree=cpuset cpu io memory pids
+root_controllers=cpuset cpu io memory hugetlb pids rdma
+/sys/fs/cgroup/init.scope|controllers=cpuset cpu io memory pids
+/sys/fs/cgroup/init.scope|subtree=/sys/fs/cgroup/user.slice|controllers=cpuset cpu io memory pids
+/sys/fs/cgroup/user.slice|subtree=cpu io memory pids
+/sys/fs/cgroup/user.slice/user-1000.slice|controllers=cpu io memory pids
+/sys/fs/cgroup/user.slice/user-1000.slice|subtree=cpu io memory pids
+/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service|controllers=cpu io memory pids
+/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service|subtree=cpu io memory pids
+/sys/fs/cgroup/non-systemd|controllers=cpuset cpu io memory pids
+/sys/fs/cgroup/non-systemd|subtree=wslconf_sha=97fa04e3363292d358627c1295ad1fa9b28a8ec6f853a4262b2bcdf5256e7805
+podman_socket=present
+user_session=active
+delegate=yes cpu io memory pids 
+effective_controllers=cpu io memory pids
+
+---stderr---

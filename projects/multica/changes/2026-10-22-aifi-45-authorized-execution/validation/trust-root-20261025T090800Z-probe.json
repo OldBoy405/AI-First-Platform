@@ -1,0 +1,37 @@
+{
+  "schema": "aifi45-trust-root-probe/v1",
+  "generated_at": "2026-10-25T09:10:51.771Z",
+  "image": "docker.io/library/alpine@sha256:bbfcd601d7cd20d35bb0b8b866ad1a8a0d107ca3e1c20870c75c5ce2c1186d30",
+  "nonce": "ca64d08492461a01",
+  "checks": [
+    "container mount is the only host bind and is read-only",
+    "container script exited cleanly",
+    "container can read the installed public key",
+    "every container write attempt was denied by the filesystem",
+    "a fresh create fails with a read-only filesystem error",
+    "the key content is unchanged after every attempt",
+    "no control channel or engine socket is visible",
+    "no workspace volume or host directory is exposed",
+    "host key survived the container"
+  ],
+  "same_uid_rewrite_possible": true,
+  "container_rewrite_denied": true,
+  "denied_vectors": [
+    "append_key",
+    "chmod_key",
+    "create_in_keys",
+    "move_key",
+    "overwrite_key",
+    "replace_key",
+    "symlink_key",
+    "unlink_grant",
+    "unlink_key"
+  ],
+  "erofs_create_error": "touch: /control-ro/keys/brand-new: Read-only file system",
+  "key_digest_unchanged": true,
+  "control_channel_visible": false,
+  "host_workspace_mounted": false,
+  "admission_enabled": false,
+  "consumption_enabled": false,
+  "claim": "same-UID execution cannot protect the verification key; a read-only container bind does, and it exposes no control channel"
+}

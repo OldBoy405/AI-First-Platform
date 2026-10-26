@@ -1,0 +1,58 @@
+meta:
+  task_id: execution-authorization
+  change_id: 2026-10-22-aifi-45-authorized-execution
+  task_type: code
+  system: tools公开CLI与Go/Node签名联合夹具
+  preconditions:
+    - Gate2后才创建对应测试与实现；当前所有CP为待实施而非已通过。
+    - 从tools仓执行，测试只用临时Git/workspace及测试密钥。
+    - MUST精确选中顶层完整TC；带后缀的组件子断言不得登记整TC完成。
+    - MUST核真实子进程TAP成功行及fail/skip/todo为0；零测试、ctx代码回显或skip不得算通过。
+    - 来源/资源/current-binding精确规则以wire-contract.md为源；静态check或fixture signer不代证真实daemon链。
+steps:
+  - id: CP-AUTH-001
+    description: SC-AUTH-001 / 充分原请求授权推进，无伪造阶段人类批准。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-AUTH-001$" skills/shared/crctl/scripts/test/execution-authorization.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-AUTH-001'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+  - id: CP-AUTH-002
+    description: >-
+      SC-AUTH-002 / 不足授权仅补问关键取舍，未授权无副作用。空 `acceptance`/`delivery_targets`
+      视为授权不足而非格式错误（D1）；只读前置返回 `EXECUTION_AUTHORIZATION_INSUFFICIENT`，
+      缺口区分业务决定与环境事实，未授权部分无状态变化、无执行任务。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-AUTH-002$" skills/shared/crctl/scripts/test/execution-authorization.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-AUTH-002'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+  - id: CP-AUTH-003
+    description: SC-AUTH-003 / 拒绝不可信来源、篡改与旧签名域。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-AUTH-003$" skills/shared/crctl/scripts/test/execution-authorization.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-AUTH-003'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+  - id: CP-AUTH-004
+    description: SC-AUTH-004 / 扩围、验收放宽与路径逃逸无副作用。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-AUTH-004$" skills/shared/crctl/scripts/test/execution-authorization.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-AUTH-004'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+  - id: CP-AUTH-005
+    description: SC-AUTH-005 / 四类未授权敏感动作分别拒绝。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-AUTH-005$" skills/shared/crctl/scripts/test/execution-authorization.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-AUTH-005'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+  - id: CP-AUTH-006
+    description: SC-AUTH-006 / 专项授权精确适用且操作重试仅消费一次。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-AUTH-006$" skills/shared/crctl/scripts/test/execution-authorization.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-AUTH-006'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+  - id: CP-AUTH-007
+    description: SC-AUTH-007 / 送达ACK不等于业务消费。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-AUTH-007$" skills/shared/crctl/scripts/test/execution-authorization.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-AUTH-007'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+  - id: CP-AUTH-008
+    description: SC-AUTH-008 / 跨租户项目与版本不适用拒绝。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-AUTH-008$" skills/shared/crctl/scripts/test/execution-authorization.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-AUTH-008'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+  - id: CP-AUTH-009
+    description: SC-AUTH-009 / 已提交同语义重放同receipt，异义冲突。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-AUTH-009$" skills/shared/crctl/scripts/test/execution-authorization.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-AUTH-009'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+  - id: CP-AUTH-010
+    description: SC-AUTH-010 / Go原始字节golden跨Node验签及全部负例。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-AUTH-010$" skills/shared/crctl/scripts/test/execution-authorization.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-AUTH-010'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+rollback:
+  steps:
+    - 仅清理本测试创建的临时workspace与测试密钥；不得修改真实CR或安装根公钥。

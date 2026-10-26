@@ -1,0 +1,88 @@
+{
+  "at": "2026-10-24T14:52:42.751Z",
+  "step": "machine restart to activate WSL systemd boot integration",
+  "steps": [
+    {
+      "argv": [
+        "podman",
+        "machine",
+        "stop"
+      ],
+      "exit": 0,
+      "signal": null,
+      "stdout": "Machine \"podman-machine-default\" stopped successfully",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "podman",
+        "machine",
+        "start"
+      ],
+      "exit": 125,
+      "signal": null,
+      "stdout": "Starting machine \"podman-machine-default\"\n\nThis machine is currently configured in rootless mode. If your containers\nrequire root permissions (e.g. ports < 1024), or if you run into compatibility\nissues with non-podman clients, you can switch using the following command:\n\n\tpodman machine set --rootful\n\nAPI forwarding listening on: npipe:////./pipe/docker_engine\n\nDocker API clients default to this address. You do not need to set DOCKER_HOST.",
+      "stderr": "Error: machine did not transition into running state: ssh error: machine not in running state"
+    },
+    {
+      "argv": [
+        "wsl.exe",
+        "--terminate",
+        "podman-machine-default"
+      ],
+      "exit": 0,
+      "signal": null,
+      "stdout": "�d\\O\u0010b�R�[\u0010b\u00020 \u0000\r\u0000\n\u0000",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "podman",
+        "machine",
+        "start"
+      ],
+      "exit": 125,
+      "signal": null,
+      "stdout": "Starting machine \"podman-machine-default\"\n\nThis machine is currently configured in rootless mode. If your containers\nrequire root permissions (e.g. ports < 1024), or if you run into compatibility\nissues with non-podman clients, you can switch using the following command:\n\n\tpodman machine set --rootful",
+      "stderr": "time=\"2026-10-24T22:52:18+08:00\" level=error msg=\"rename C:\\\\Users\\\\GOBAO\\\\.config\\\\containers\\\\podman\\\\machine\\\\wsl\\\\.tmp-podman-machine-default.json3507194871 C:\\\\Users\\\\GOBAO\\\\.config\\\\containers\\\\podman\\\\machine\\\\wsl\\\\podman-machine-default.json: Access is denied.\"\nAPI forwarding for Docker API clients is not available due to the following startup failures.\n\tcould not start api proxy since expected pipe is not available: podman-machine-default\n\nPodman clients are still able to connect.\nError: machine did not transition into running state: ssh error: machine not in running state"
+    },
+    {
+      "argv": [
+        "podman",
+        "info",
+        "--format",
+        "json"
+      ],
+      "exit": 0,
+      "signal": null,
+      "stdout": "ainers/storage\",\n    \"graphRootAllocated\": 1081101176832,\n    \"graphRootUsed\": 9584558080,\n    \"graphStatus\": {\n      \"Backing Filesystem\": \"extfs\",\n      \"Native Overlay Diff\": \"true\",\n      \"Supports d_type\": \"true\",\n      \"Supports shifting\": \"false\",\n      \"Supports volatile\": \"true\",\n      \"Using metacopy\": \"false\"\n    },\n    \"imageCopyTmpDir\": \"/var/tmp\",\n    \"imageStore\": {\n      \"number\": 45\n    },\n    \"runRoot\": \"/run/user/1000/containers\",\n    \"volumePath\": \"/home/user/.local/share/containers/storage/volumes\",\n    \"transientStore\": false\n  },\n  \"registries\": {\n    \"search\": [\n  \"docker.io\"\n]\n  },\n  \"plugins\": {\n    \"volume\": [\n      \"local\"\n    ],\n    \"network\": [\n      \"bridge\",\n      \"macvlan\",\n      \"ipvlan\"\n    ],\n    \"log\": [\n      \"k8s-file\",\n      \"none\",\n      \"passthrough\",\n      \"journald\"\n    ],\n    \"authorization\": null\n  },\n  \"version\": {\n    \"APIVersion\": \"5.8.5\",\n    \"Version\": \"5.8.5\",\n    \"GoVersion\": \"go1.26.4-X:nodwarf5\",\n    \"GitCommit\": \"6d48b6f12f793176f3f6bc808b5a440984c14eb2\",\n    \"BuiltTime\": \"Wed Jul  8 08:00:00 2026\",\n    \"Built\": 1783468800,\n    \"BuildOrigin\": \"Copr: packit/podman-container-tools-podman-29150\",\n    \"OsArch\": \"linux/amd64\",\n    \"Os\": \"linux\"\n  },\n  \"Client\": {\n    \"APIVersion\": \"5.8.3\",\n    \"Version\": \"5.8.3\",\n    \"GoVersion\": \"go1.26.4\",\n    \"GitCommit\": \"93dbfd0d86ee57f8f91801f61ce57dd880a4725f\",\n    \"BuiltTime\": \"Sat Jun 13 01:52:07 2026\",\n    \"Built\": 1781286727,\n    \"OsArch\": \"windows/amd64\",\n    \"Os\": \"windows\"\n  }\n}",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "podman",
+        "machine",
+        "list",
+        "--format",
+        "json"
+      ],
+      "exit": 0,
+      "signal": null,
+      "stdout": "[\n    {\n        \"Name\": \"podman-machine-default\",\n        \"Default\": true,\n        \"Created\": \"2026-08-11T12:23:32.2691082+08:00\",\n        \"Running\": false,\n        \"Starting\": false,\n        \"LastUp\": \"2026-10-24T22:51:49.1300229+08:00\",\n        \"Stream\": \"default\",\n        \"VMType\": \"wsl\",\n        \"CPUs\": 8,\n        \"Memory\": \"2147483648\",\n        \"Swap\": \"0\",\n        \"DiskSize\": \"107374182400\",\n        \"Port\": 52723,\n        \"RemoteUsername\": \"user\",\n        \"IdentityPath\": \"C:\\\\Users\\\\GOBAO\\\\.local\\\\share\\\\containers\\\\podman\\\\machine\\\\machine\",\n        \"UserModeNetworking\": false\n    }\n]",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "podman",
+        "ps",
+        "-a",
+        "--format",
+        "json"
+      ],
+      "exit": 0,
+      "signal": null,
+      "stdout": ",\n    \"Networks\": [],\n    \"Pid\": 0,\n    \"Pod\": \"\",\n    \"PodName\": \"\",\n    \"Ports\": [\n      {\n        \"host_ip\": \"127.0.0.1\",\n        \"container_port\": 5432,\n        \"host_port\": 55432,\n        \"range\": 1,\n        \"protocol\": \"tcp\"\n      }\n    ],\n    \"Restarts\": 0,\n    \"Size\": null,\n    \"StartedAt\": 1792734044,\n    \"State\": \"exited\",\n    \"Status\": \"Exited (0) About a minute ago\",\n    \"Created\": 1792671003\n  },\n  {\n    \"AutoRemove\": false,\n    \"Command\": null,\n    \"CreatedAt\": \"2 days ago\",\n    \"CIDFile\": \"\",\n    \"Exited\": true,\n    \"ExitedAt\": 1792853492,\n    \"ExitCode\": 0,\n    \"ExposedPorts\": {\n      \"8080\": [\n  \"tcp\"\n]\n    },\n    \"Id\": \"01050b2499847e72b06cb5d84b8ec2945dc75045842544a65caf550ef573a762\",\n    \"Image\": \"localhost/multica-backend:f6e90ab809\",\n    \"ImageID\": \"6f4bd2df71ccc2065070b6986f015b576af51379be2f6bb3cc140047c36a3eb5\",\n    \"IsInfra\": false,\n    \"Labels\": {\n      \"io.buildah.version\": \"1.43.2\"\n    },\n    \"Mounts\": [\n      \"/app/data/uploads\"\n    ],\n    \"Names\": [\n      \"multica-backend\"\n    ],\n    \"Namespaces\": {\n      \n    },\n    \"Networks\": [\n      \"multica-internal\"\n    ],\n    \"Pid\": 0,\n    \"Pod\": \"\",\n    \"PodName\": \"\",\n    \"Ports\": [\n      {\n        \"host_ip\": \"127.0.0.1\",\n        \"container_port\": 8080,\n        \"host_port\": 8080,\n        \"range\": 1,\n        \"protocol\": \"tcp\"\n      }\n    ],\n    \"Restarts\": 0,\n    \"Size\": null,\n    \"StartedAt\": 1792734045,\n    \"State\": \"exited\",\n    \"Status\": \"Exited (0) About a minute ago\",\n    \"Created\": 1792672602\n  }\n]",
+      "stderr": ""
+    }
+  ]
+}

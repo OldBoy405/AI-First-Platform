@@ -1,0 +1,120 @@
+{
+  "cwd": "C:/Users/GOBAO/Downloads/AI/multica",
+  "exit": 0,
+  "output": {
+    "schema_version": 1,
+    "kind": "configured",
+    "context": {
+      "project_root": "C:\\Users\\GOBAO\\Downloads\\AI\\multica",
+      "data_root": "C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform\\projects\\multica",
+      "user_defaults_file": "C:\\Users\\GOBAO\\.stdd\\config.d\\model-tiers.yaml",
+      "user_defaults_present": true
+    },
+    "values": {
+      "model_tiers": {
+        "models": {
+          "strong": {
+            "model": "OpenAIPersonal/gpt-6.1-sol",
+            "effort": "high"
+          },
+          "balanced": {
+            "model": "Gobao/deepseek-flash",
+            "effort": "max"
+          },
+          "economy": {
+            "model": "GB-JP/deepseek-flash",
+            "effort": "high"
+          }
+        },
+        "design": "strong",
+        "retry": "strong"
+      },
+      "review": {
+        "enabled": true,
+        "agents": [
+          {
+            "name": "code",
+            "scope": "代码质量：Bug风险、死代码、一致性、错误处理、安全",
+            "tier": "strong"
+          },
+          {
+            "name": "test_config",
+            "scope": "测试/配置：测试覆盖、Fixture质量、配置完整性、测试隔离",
+            "tier": "balanced"
+          },
+          {
+            "name": "docs_skills",
+            "scope": "文档/Skills：版本一致性、引用正确性、模板完整性、Skill正确性",
+            "tier": "economy"
+          }
+        ]
+      }
+    },
+    "provenance": {
+      "model_tiers": {
+        "models": {
+          "strong": {
+            "model": {
+              "source": "user",
+              "explicit_clear": false
+            },
+            "effort": {
+              "source": "user",
+              "explicit_clear": false
+            }
+          },
+          "balanced": {
+            "model": {
+              "source": "user",
+              "explicit_clear": false
+            },
+            "effort": {
+              "source": "user",
+              "explicit_clear": false
+            }
+          },
+          "economy": {
+            "model": {
+              "source": "user",
+              "explicit_clear": false
+            },
+            "effort": {
+              "source": "user",
+              "explicit_clear": false
+            }
+          }
+        },
+        "design": {
+          "source": "builtin",
+          "explicit_clear": false
+        },
+        "retry": {
+          "source": "builtin",
+          "explicit_clear": false
+        }
+      },
+      "review": {
+        "agents": [
+          {
+            "tier": {
+              "source": "builtin",
+              "explicit_clear": false
+            }
+          },
+          {
+            "tier": {
+              "source": "builtin",
+              "explicit_clear": false
+            }
+          },
+          {
+            "tier": {
+              "source": "builtin",
+              "explicit_clear": false
+            }
+          }
+        ]
+      }
+    }
+  }
+}

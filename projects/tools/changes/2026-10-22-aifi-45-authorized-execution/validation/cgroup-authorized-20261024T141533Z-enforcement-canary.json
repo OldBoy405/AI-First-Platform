@@ -1,0 +1,116 @@
+{
+  "at": "2026-10-24T14:53:36.824Z",
+  "scope": "real kernel cpu/memory/pids enforcement probe on the restored rootless delegation; ephemeral exact-owned containers; no network/mount/credential",
+  "results": [
+    {
+      "label": "limitfiles",
+      "name": "aifi45-limitfiles-194e33241dd2b15c",
+      "nonce": "194e33241dd2b15c",
+      "steps": [
+        {
+          "argv": [
+            "podman",
+            "create",
+            "--name",
+            "aifi45-limitfiles-194e33241dd2b15c",
+            "--label",
+            "aifi45.cgroup.canary=194e33241dd2b15c",
+            "--pull=never",
+            "--http-proxy=false",
+            "--network=none",
+            "--cap-drop=ALL",
+            "--security-opt=no-new-privileges",
+            "--user=1000:1000",
+            "--entrypoint=/bin/sh",
+            "--pids-limit=16",
+            "--memory=64m",
+            "--cpus=0.25",
+            "--read-only",
+            "docker.io/library/alpine@sha256:bbfcd601d7cd20d35bb0b8b866ad1a8a0d107ca3e1c20870c75c5ce2c1186d30",
+            "-c",
+            "for f in cpu.max memory.max pids.max memory.current; do printf \"%s=\" \"$f\"; cat \"/sys/fs/cgroup/$f\"; done; n=0; while [ $n -lt 40 ]; do sleep 60 & n=$((n+1)); done 2>/dev/null; echo forked=$n; printf \"live_procs=\"; ls /proc | grep -c \"^[0-9]*$\""
+          ],
+          "exit": 0,
+          "stdout": "ec356f4b9082553434db74eed25b1f632a8d80e3444053be476f19bf6c5857a8",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "podman",
+            "start",
+            "--attach",
+            "aifi45-limitfiles-194e33241dd2b15c"
+          ],
+          "exit": 2,
+          "stdout": "cpu.max=25000 100000\nmemory.max=67108864\npids.max=16\nmemory.current=1662976",
+          "stderr": ""
+        }
+      ],
+      "host_config": {
+        "memory": 67108864,
+        "nano_cpus": 250000000,
+        "pids_limit": 16,
+        "cgroup_manager": "cgroupfs"
+      },
+      "cleanup": {
+        "rm_exit": 0,
+        "exists_exit": 1
+      }
+    },
+    {
+      "label": "memcap",
+      "name": "aifi45-memcap-3051a9ed56af19e6",
+      "nonce": "3051a9ed56af19e6",
+      "steps": [
+        {
+          "argv": [
+            "podman",
+            "create",
+            "--name",
+            "aifi45-memcap-3051a9ed56af19e6",
+            "--label",
+            "aifi45.cgroup.canary=3051a9ed56af19e6",
+            "--pull=never",
+            "--http-proxy=false",
+            "--network=none",
+            "--cap-drop=ALL",
+            "--security-opt=no-new-privileges",
+            "--user=1000:1000",
+            "--entrypoint=/bin/sh",
+            "--memory=32m",
+            "--read-only",
+            "--tmpfs",
+            "/tmp",
+            "docker.io/library/alpine@sha256:bbfcd601d7cd20d35bb0b8b866ad1a8a0d107ca3e1c20870c75c5ce2c1186d30",
+            "-c",
+            "head -c 200m /dev/zero > /tmp/x; echo wrote_ok; exit 0"
+          ],
+          "exit": 0,
+          "stdout": "e5ee3bbc7cb96989890d9d29386064c0d2b104e2e0c6b46adebcfc7d8cdfc785",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "podman",
+            "start",
+            "--attach",
+            "aifi45-memcap-3051a9ed56af19e6"
+          ],
+          "exit": 0,
+          "stdout": "wrote_ok",
+          "stderr": "Killed"
+        }
+      ],
+      "host_config": {
+        "memory": 33554432,
+        "nano_cpus": 0,
+        "pids_limit": 0,
+        "cgroup_manager": "cgroupfs"
+      },
+      "cleanup": {
+        "rm_exit": 0,
+        "exists_exit": 1
+      }
+    }
+  ]
+}

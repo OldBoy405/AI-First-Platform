@@ -1,0 +1,41 @@
+meta:
+  task_id: attention-routing
+  change_id: 2026-10-22-aifi-45-authorized-execution
+  task_type: code
+  system: multica事件通知入口与原Inbox持久化
+  preconditions:
+    - Gate2后实施；当前CP未运行。
+    - 从multica/server执行，隔离DB和测试受众；禁止真实第三方触达。
+    - 通过实际通知入口观察Inbox与inbox:new，检查目标测试确实选中且无skip。
+steps:
+  - id: CP-NTF-001
+    description: SC-NTF-001 / 正常节点与ACK不机械通知，运行事实可查。
+    action: go test ./cmd/server -run ^TestTC_NTF_001$ -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'PASS: TestTC_NTF_001'}]
+  - id: CP-NTF-002
+    description: SC-NTF-002 / 三类必要通知字段完整且无全文复制。
+    action: go test ./cmd/server -run ^TestTC_NTF_002$ -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'PASS: TestTC_NTF_002'}]
+  - id: CP-NTF-003
+    description: SC-NTF-003 / 维护故障有界恢复后找维护者。
+    action: go test ./cmd/server -run ^TestTC_NTF_003$ -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'PASS: TestTC_NTF_003'}]
+  - id: CP-NTF-004
+    description: SC-NTF-004 / 额度和无进展授权决定找有权者。
+    action: go test ./cmd/server -run ^TestTC_NTF_004$ -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'PASS: TestTC_NTF_004'}]
+  - id: CP-NTF-005
+    description: SC-NTF-005 / 同阻断跨commit重放与并发只一条Inbox及可见事件。
+    action: go test ./cmd/server -run ^TestTC_NTF_005$ -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'PASS: TestTC_NTF_005'}]
+  - id: CP-NTF-006
+    description: SC-NTF-006 / 新失败、证据变化、受众变化和交付不被吞。
+    action: go test ./cmd/server -run ^TestTC_NTF_006$ -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'PASS: TestTC_NTF_006'}]
+  - id: CP-NTF-007
+    description: SC-NTF-007 / 通知故障只恢复原通知，不重复业务副作用。
+    action: go test ./cmd/server -run ^TestTC_NTF_007$ -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'PASS: TestTC_NTF_007'}]
+rollback:
+  steps:
+    - 仅清理隔离DB内本轮测试数据和本地测试投递器，不触达真实用户或重放真实通知。

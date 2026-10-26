@@ -1,0 +1,5280 @@
+{
+  "schema": "aifi45-component-regression/v1",
+  "change": "2026-10-22-aifi-45-authorized-execution",
+  "complete_business_tc": 0,
+  "model_routing": "model_tiers absent; no model/effort override; actual model unverified",
+  "runs": [
+    {
+      "package": "./internal/governance",
+      "command": [
+        "go",
+        "test",
+        "./internal/governance",
+        "-run",
+        ".",
+        "-skip",
+        "^TestReconcileLiveGitHub$",
+        "-shuffle=45045",
+        "-count=1",
+        "-json"
+      ],
+      "exit": 0,
+      "counts": {
+        "run": 606,
+        "pass": 606,
+        "fail": 0,
+        "skip": 0
+      },
+      "events": [
+        {
+          "action": "run",
+          "test": "TestReviewFeedbackOutcomeNamesWhyFeedbackWasNotAttached"
+        },
+        {
+          "action": "pass",
+          "test": "TestReviewFeedbackOutcomeNamesWhyFeedbackWasNotAttached"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementResumeRefusesAfterACancellation"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementResumeRefusesAfterACancellation"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/task_token_actor"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/task_token_actor"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/cloud_pat_actor"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/cloud_pat_actor"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/unknown_actor_source"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/unknown_actor_source"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/missing_actor_user"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/missing_actor_user"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/actor_workspace_mismatch"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/actor_workspace_mismatch"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/forged_body_identity_field"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/forged_body_identity_field"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/body_project_mismatch"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/body_project_mismatch"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/contract_not_configured"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/contract_not_configured"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/contract_policy_digest_mismatch"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/contract_policy_digest_mismatch"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/body_policy_version_unsupported"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/body_policy_version_unsupported"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/unsafe_scope_revision"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/unsafe_scope_revision"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/negative_repair_limit"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/negative_repair_limit"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/repair_limit_as_string"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/repair_limit_as_string"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/repair_limit_omitted"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/repair_limit_omitted"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/path_escape"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/path_escape"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/absolute_path"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/absolute_path"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/glob_path"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/glob_path"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/backslash_path"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/backslash_path"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/duplicate_path"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/duplicate_path"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/path_repo_not_listed"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/path_repo_not_listed"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/duplicate_repository"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/duplicate_repository"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/empty_delivery_targets"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/empty_delivery_targets"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/c1_control_in_path"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/c1_control_in_path"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/duplicate_action_scope_id"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/duplicate_action_scope_id"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/bad_sensitive_action_kind"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/bad_sensitive_action_kind"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/bad_target_spec_id"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/bad_target_spec_id"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/two_json_documents"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/two_json_documents"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/invalid_utf8"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/invalid_utf8"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/missing_goal"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/missing_goal"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/oversized_raw_request"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/oversized_raw_request"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/non_canonical_grant_uuid"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/non_canonical_grant_uuid"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/bad_cr_id"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/bad_cr_id"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/missing_trusted_coordinator"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/missing_trusted_coordinator"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/coordinator_other_project"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/coordinator_other_project"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/coordinator_digest_mismatch"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/coordinator_digest_mismatch"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/coordinator_selection_digest_mismatch"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/coordinator_selection_digest_mismatch"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/legacy_body_without_coordinator"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/legacy_body_without_coordinator"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/legacy_body_without_selection"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/legacy_body_without_selection"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/missing_trusted_bindings"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/missing_trusted_bindings"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/binding_digest_mismatch"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/binding_digest_mismatch"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/binding_other_project"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/binding_other_project"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/extra_trusted_binding"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/extra_trusted_binding"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/forged_selection_resource"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/forged_selection_resource"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/selection_digest_mismatch"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/selection_digest_mismatch"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/extra_selection_key"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources/extra_selection_key"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsUntrustedSources"
+        },
+        {
+          "action": "run",
+          "test": "TestCheckpointFillsProjectedCommitForEmbedded"
+        },
+        {
+          "action": "pass",
+          "test": "TestCheckpointFillsProjectedCommitForEmbedded"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementStartRejectsNonRequirementStatuses"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementStartRejectsNonRequirementStatuses/requirement-approved"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementStartRejectsNonRequirementStatuses/requirement-approved"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementStartRejectsNonRequirementStatuses/tech-designing"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementStartRejectsNonRequirementStatuses/tech-designing"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementStartRejectsNonRequirementStatuses/rejected"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementStartRejectsNonRequirementStatuses/rejected"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementStartRejectsNonRequirementStatuses/withdrawn"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementStartRejectsNonRequirementStatuses/withdrawn"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementStartRejectsNonRequirementStatuses/archived"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementStartRejectsNonRequirementStatuses/archived"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementStartRejectsNonRequirementStatuses"
+        },
+        {
+          "action": "run",
+          "test": "TestFetchGitHubSnapshotBranchDocMissingAborts"
+        },
+        {
+          "action": "pass",
+          "test": "TestFetchGitHubSnapshotBranchDocMissingAborts"
+        },
+        {
+          "action": "run",
+          "test": "TestMAck004"
+        },
+        {
+          "action": "pass",
+          "test": "TestMAck004"
+        },
+        {
+          "action": "run",
+          "test": "TestMDev001"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDev001"
+        },
+        {
+          "action": "run",
+          "test": "TestM24TestBlockIsNotPassed"
+        },
+        {
+          "action": "pass",
+          "test": "TestM24TestBlockIsNotPassed"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementResumeOpensAFreshRunWhenTheFailedRecordNeverDispatched"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementResumeOpensAFreshRunWhenTheFailedRecordNeverDispatched"
+        },
+        {
+          "action": "run",
+          "test": "TestApprovalCardDoesNotLeakEvidenceAcrossWorkspaces"
+        },
+        {
+          "action": "pass",
+          "test": "TestApprovalCardDoesNotLeakEvidenceAcrossWorkspaces"
+        },
+        {
+          "action": "run",
+          "test": "TestFetchGitHubSnapshotInflightFromCRDoc"
+        },
+        {
+          "action": "pass",
+          "test": "TestFetchGitHubSnapshotInflightFromCRDoc"
+        },
+        {
+          "action": "run",
+          "test": "TestM26B3FactsOnlyDetailDoesNotPass"
+        },
+        {
+          "action": "pass",
+          "test": "TestM26B3FactsOnlyDetailDoesNotPass"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementWriteNodeRendersOnlyWithARecordedSource"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementWriteNodeRendersOnlyWithARecordedSource"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementResumeRefusesACancelledNodeTask"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementResumeRefusesACancelledNodeTask"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementRepairTaskCarriesTheBlockers"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementRepairTaskCarriesTheBlockers"
+        },
+        {
+          "action": "run",
+          "test": "TestMAck003WakeGrantRoutesBothRunners"
+        },
+        {
+          "action": "pass",
+          "test": "TestMAck003WakeGrantRoutesBothRunners"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementDigestDriftKeepsRunResumable"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementDigestDriftKeepsRunResumable"
+        },
+        {
+          "action": "run",
+          "test": "TestApprovalCardHidesUnattributableEvidence"
+        },
+        {
+          "action": "pass",
+          "test": "TestApprovalCardHidesUnattributableEvidence"
+        },
+        {
+          "action": "run",
+          "test": "TestApplySnapshotUsesPerCRSourceSHA"
+        },
+        {
+          "action": "pass",
+          "test": "TestApplySnapshotUsesPerCRSourceSHA"
+        },
+        {
+          "action": "run",
+          "test": "TestMBinding005"
+        },
+        {
+          "action": "pass",
+          "test": "TestMBinding005"
+        },
+        {
+          "action": "run",
+          "test": "TestAC6_FailClosedReasons"
+        },
+        {
+          "action": "run",
+          "test": "TestAC6_FailClosedReasons/no_shell_issue"
+        },
+        {
+          "action": "pass",
+          "test": "TestAC6_FailClosedReasons/no_shell_issue"
+        },
+        {
+          "action": "run",
+          "test": "TestAC6_FailClosedReasons/no_leader"
+        },
+        {
+          "action": "pass",
+          "test": "TestAC6_FailClosedReasons/no_leader"
+        },
+        {
+          "action": "pass",
+          "test": "TestAC6_FailClosedReasons"
+        },
+        {
+          "action": "run",
+          "test": "TestApproveAfterIngestReviewEvent"
+        },
+        {
+          "action": "pass",
+          "test": "TestApproveAfterIngestReviewEvent"
+        },
+        {
+          "action": "run",
+          "test": "TestMDev004CodeReviewReplay"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDev004CodeReviewReplay"
+        },
+        {
+          "action": "run",
+          "test": "TestGateProjectionPipelineHandoff"
+        },
+        {
+          "action": "pass",
+          "test": "TestGateProjectionPipelineHandoff"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementResumeRefusesAStaleTemplateDigestBeforeDispatching"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementResumeRefusesAStaleTemplateDigestBeforeDispatching"
+        },
+        {
+          "action": "run",
+          "test": "TestApplySnapshotSameStatusSourceUpdate"
+        },
+        {
+          "action": "pass",
+          "test": "TestApplySnapshotSameStatusSourceUpdate"
+        },
+        {
+          "action": "run",
+          "test": "TestAIFI60ReviewLateDeliveryResumeIsIdempotent"
+        },
+        {
+          "action": "pass",
+          "test": "TestAIFI60ReviewLateDeliveryResumeIsIdempotent"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementCanonicalPassParksAtTheHumanGate"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementCanonicalPassParksAtTheHumanGate"
+        },
+        {
+          "action": "run",
+          "test": "TestApproveRefusesOtherStageEvidence"
+        },
+        {
+          "action": "pass",
+          "test": "TestApproveRefusesOtherStageEvidence"
+        },
+        {
+          "action": "run",
+          "test": "TestReviewEventPersistsEvidence"
+        },
+        {
+          "action": "pass",
+          "test": "TestReviewEventPersistsEvidence"
+        },
+        {
+          "action": "run",
+          "test": "TestMDelivery003"
+        },
+        {
+          "action": "run",
+          "test": "TestMDelivery003/release_drift"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDelivery003/release_drift"
+        },
+        {
+          "action": "run",
+          "test": "TestMDelivery003/approved_drift"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDelivery003/approved_drift"
+        },
+        {
+          "action": "run",
+          "test": "TestMDelivery003/subject_drift"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDelivery003/subject_drift"
+        },
+        {
+          "action": "run",
+          "test": "TestMDelivery003/unavailable"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDelivery003/unavailable"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDelivery003"
+        },
+        {
+          "action": "run",
+          "test": "TestM22BusWakeAfterCommitDispatchesOnce"
+        },
+        {
+          "action": "pass",
+          "test": "TestM22BusWakeAfterCommitDispatchesOnce"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/four_compiled_registries_parse_from_expected_pair"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/four_compiled_registries_parse_from_expected_pair/requirement-authoring"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/four_compiled_registries_parse_from_expected_pair/requirement-authoring"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/four_compiled_registries_parse_from_expected_pair/architecture-design"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/four_compiled_registries_parse_from_expected_pair/architecture-design"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/four_compiled_registries_parse_from_expected_pair/code-implementation"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/four_compiled_registries_parse_from_expected_pair/code-implementation"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/four_compiled_registries_parse_from_expected_pair/feature-writeback"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/four_compiled_registries_parse_from_expected_pair/feature-writeback"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/four_compiled_registries_parse_from_expected_pair"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/declared_loops_permissions_and_duplicate_refs_survive"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/declared_loops_permissions_and_duplicate_refs_survive/requirement-authoring"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/declared_loops_permissions_and_duplicate_refs_survive/requirement-authoring"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/declared_loops_permissions_and_duplicate_refs_survive/architecture-design"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/declared_loops_permissions_and_duplicate_refs_survive/architecture-design"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/declared_loops_permissions_and_duplicate_refs_survive/code-implementation"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/declared_loops_permissions_and_duplicate_refs_survive/code-implementation"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/declared_loops_permissions_and_duplicate_refs_survive/feature-writeback"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/declared_loops_permissions_and_duplicate_refs_survive/feature-writeback"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/declared_loops_permissions_and_duplicate_refs_survive"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/typed_views_keep_inputs_execution_fields_and_loops"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/typed_views_keep_inputs_execution_fields_and_loops/requirement-authoring"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/typed_views_keep_inputs_execution_fields_and_loops/requirement-authoring"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/typed_views_keep_inputs_execution_fields_and_loops/architecture-design"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/typed_views_keep_inputs_execution_fields_and_loops/architecture-design"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/typed_views_keep_inputs_execution_fields_and_loops/code-implementation"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/typed_views_keep_inputs_execution_fields_and_loops/code-implementation"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/typed_views_keep_inputs_execution_fields_and_loops/feature-writeback"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/typed_views_keep_inputs_execution_fields_and_loops/feature-writeback"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/typed_views_keep_inputs_execution_fields_and_loops"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/raw_envelope_keeps_unknown_execution_fields"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/raw_envelope_keeps_unknown_execution_fields"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/explicit_repair_id_disambiguates_duplicate_ref"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/explicit_repair_id_disambiguates_duplicate_ref"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/requirement_entry_reuses_the_shared_validator"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/requirement_entry_reuses_the_shared_validator/shared"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/requirement_entry_reuses_the_shared_validator/shared"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/requirement_entry_reuses_the_shared_validator/requirement"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/requirement_entry_reuses_the_shared_validator/requirement"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/requirement_entry_reuses_the_shared_validator"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/malformed_envelope"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/malformed_envelope"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/missing_schema"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/missing_schema"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/unknown_schema"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/unknown_schema"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/unknown_pipeline"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/unknown_pipeline"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/missing_digest"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/missing_digest"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/body_digest_mismatch"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/body_digest_mismatch"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/expected_digest_mismatch"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/expected_digest_mismatch"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/incomplete_input_type"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/incomplete_input_type"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/missing_input_required"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/missing_input_required"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/duplicate_input_key"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/duplicate_input_key"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/top_inputs_mismatch"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/top_inputs_mismatch"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/missing_node_id"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/missing_node_id"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/duplicate_node_id"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/duplicate_node_id"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/missing_permission"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/missing_permission"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/duplicate_permission"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/duplicate_permission"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/permission_unknown_node"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/permission_unknown_node"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/permission_wrong_ref"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/permission_wrong_ref"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/permission_wrong_executor"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/permission_wrong_executor"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/permission_missing_executor"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/permission_missing_executor"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/permission_not_authorized"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/permission_not_authorized"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/human_permission"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/human_permission"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/unknown_node_kind"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/unknown_node_kind"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/loop_missing_pass_condition"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/loop_missing_pass_condition"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/loop_unknown_repair_id"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/loop_unknown_repair_id"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/loop_ambiguous_repair_ref"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/loop_ambiguous_repair_ref"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/loop_replay_target_mismatch"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/loop_replay_target_mismatch"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/loop_explicit_repair_id_missing_ref"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/loop_explicit_repair_id_missing_ref"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/loop_pass_condition_empty_object"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/loop_pass_condition_empty_object"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/loop_pass_condition_array"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/loop_pass_condition_array"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/loop_pass_condition_scalar"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/loop_pass_condition_scalar"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/loop_pass_condition_null"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/loop_pass_condition_null"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/independent_review_missing_review_loop"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/independent_review_missing_review_loop"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/independent_review_null_review_loop"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/independent_review_null_review_loop"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/self_test_null_review_loop"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/self_test_null_review_loop"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/loop_replay_nodes_empty_array_without_policy"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/loop_replay_nodes_empty_array_without_policy"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/loop_replay_nodes_null_without_policy"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/loop_replay_nodes_null_without_policy"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/loop_replay_policy_present_empty_without_nodes"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/loop_replay_policy_present_empty_without_nodes"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/loop_replay_policy_present_null_without_nodes"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/loop_replay_policy_present_null_without_nodes"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/loop_repair_node_id_present_null"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/loop_repair_node_id_present_null"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/fail_closed/loop_repair_node_id_present_empty"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed/loop_repair_node_id_present_empty"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/fail_closed"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/crlf_is_normalized_before_the_raw_envelope_is_kept"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/crlf_is_normalized_before_the_raw_envelope_is_kept"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/bound_reader_binds_snapshot_to_requested_pipeline"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/bound_reader_binds_snapshot_to_requested_pipeline"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/duplicate_push_progress_legacy_selectors_fail_closed"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/duplicate_push_progress_legacy_selectors_fail_closed"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/duplicate_human_approval_legacy_helper_fails_closed"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/duplicate_human_approval_legacy_helper_fails_closed"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/pass_condition_preserves_unknown_object_keys"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/pass_condition_preserves_unknown_object_keys"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/non_review_loop_absence_is_legal"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/non_review_loop_absence_is_legal"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/replay_policy_without_nodes_matches_emitter"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/replay_policy_without_nodes_matches_emitter"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch003/replay_policy_value_is_not_enumerated_by_emitter"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003/replay_policy_value_is_not_enumerated_by_emitter"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch003"
+        },
+        {
+          "action": "run",
+          "test": "TestAC1_SameRecordTwiceIdempotent"
+        },
+        {
+          "action": "pass",
+          "test": "TestAC1_SameRecordTwiceIdempotent"
+        },
+        {
+          "action": "run",
+          "test": "TestGrantCrossVerifiesWithCrctl"
+        },
+        {
+          "action": "run",
+          "test": "TestGrantCrossVerifiesWithCrctl/requirement_approve_and_adjacent_replay"
+        },
+        {
+          "action": "pass",
+          "test": "TestGrantCrossVerifiesWithCrctl/requirement_approve_and_adjacent_replay"
+        },
+        {
+          "action": "run",
+          "test": "TestGrantCrossVerifiesWithCrctl/requirement_reject_rollback_and_adjacent_replay"
+        },
+        {
+          "action": "pass",
+          "test": "TestGrantCrossVerifiesWithCrctl/requirement_reject_rollback_and_adjacent_replay"
+        },
+        {
+          "action": "run",
+          "test": "TestGrantCrossVerifiesWithCrctl/tech-design_approve_and_adjacent_replay"
+        },
+        {
+          "action": "pass",
+          "test": "TestGrantCrossVerifiesWithCrctl/tech-design_approve_and_adjacent_replay"
+        },
+        {
+          "action": "run",
+          "test": "TestGrantCrossVerifiesWithCrctl/tech-design_reject_rollback_and_adjacent_replay"
+        },
+        {
+          "action": "pass",
+          "test": "TestGrantCrossVerifiesWithCrctl/tech-design_reject_rollback_and_adjacent_replay"
+        },
+        {
+          "action": "run",
+          "test": "TestGrantCrossVerifiesWithCrctl/dev-start_approve_and_adjacent_replay"
+        },
+        {
+          "action": "pass",
+          "test": "TestGrantCrossVerifiesWithCrctl/dev-start_approve_and_adjacent_replay"
+        },
+        {
+          "action": "run",
+          "test": "TestGrantCrossVerifiesWithCrctl/dev-start_reject_rollback_and_adjacent_replay"
+        },
+        {
+          "action": "pass",
+          "test": "TestGrantCrossVerifiesWithCrctl/dev-start_reject_rollback_and_adjacent_replay"
+        },
+        {
+          "action": "pass",
+          "test": "TestGrantCrossVerifiesWithCrctl"
+        },
+        {
+          "action": "run",
+          "test": "TestMDevTestFactsGate"
+        },
+        {
+          "action": "run",
+          "test": "TestMDevTestFactsGate/status_fail"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDevTestFactsGate/status_fail"
+        },
+        {
+          "action": "run",
+          "test": "TestMDevTestFactsGate/no_commands"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDevTestFactsGate/no_commands"
+        },
+        {
+          "action": "run",
+          "test": "TestMDevTestFactsGate/exit_nonzero"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDevTestFactsGate/exit_nonzero"
+        },
+        {
+          "action": "run",
+          "test": "TestMDevTestFactsGate/timed_out"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDevTestFactsGate/timed_out"
+        },
+        {
+          "action": "run",
+          "test": "TestMDevTestFactsGate/revision_mismatch"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDevTestFactsGate/revision_mismatch"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDevTestFactsGate"
+        },
+        {
+          "action": "run",
+          "test": "TestCRIDPattern"
+        },
+        {
+          "action": "pass",
+          "test": "TestCRIDPattern"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionGrantCheckAgainstRealCrctlCLI"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionGrantCheckAgainstRealCrctlCLI"
+        },
+        {
+          "action": "run",
+          "test": "TestCRIDFragmentEmbeddingKeepsGroups"
+        },
+        {
+          "action": "pass",
+          "test": "TestCRIDFragmentEmbeddingKeepsGroups"
+        },
+        {
+          "action": "run",
+          "test": "TestSnapshotOverLimitRejected"
+        },
+        {
+          "action": "pass",
+          "test": "TestSnapshotOverLimitRejected"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementFailedWriterStopsTheRun"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementFailedWriterStopsTheRun"
+        },
+        {
+          "action": "run",
+          "test": "TestApproveRefusesOtherGate"
+        },
+        {
+          "action": "pass",
+          "test": "TestApproveRefusesOtherGate"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementIncompletePassBlockEvidenceIsADeliveryGap"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementIncompletePassBlockEvidenceIsADeliveryGap/pass_without_subject_digest_or_timestamp"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementIncompletePassBlockEvidenceIsADeliveryGap/pass_without_subject_digest_or_timestamp"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementIncompletePassBlockEvidenceIsADeliveryGap/pass_carrying_blockers"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementIncompletePassBlockEvidenceIsADeliveryGap/pass_carrying_blockers"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementIncompletePassBlockEvidenceIsADeliveryGap/block_without_blockers"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementIncompletePassBlockEvidenceIsADeliveryGap/block_without_blockers"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementIncompletePassBlockEvidenceIsADeliveryGap/verdict_recorded_for_the_wrong_attempt"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementIncompletePassBlockEvidenceIsADeliveryGap/verdict_recorded_for_the_wrong_attempt"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementIncompletePassBlockEvidenceIsADeliveryGap/unsettled_projection_still_waits"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementIncompletePassBlockEvidenceIsADeliveryGap/unsettled_projection_still_waits"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementIncompletePassBlockEvidenceIsADeliveryGap"
+        },
+        {
+          "action": "run",
+          "test": "TestApplyReviewUnknownStageIsNoOp"
+        },
+        {
+          "action": "pass",
+          "test": "TestApplyReviewUnknownStageIsNoOp"
+        },
+        {
+          "action": "run",
+          "test": "TestFetchGitHubSnapshotMissingCRDocAborts"
+        },
+        {
+          "action": "pass",
+          "test": "TestFetchGitHubSnapshotMissingCRDocAborts"
+        },
+        {
+          "action": "run",
+          "test": "TestMHandoff005"
+        },
+        {
+          "action": "pass",
+          "test": "TestMHandoff005"
+        },
+        {
+          "action": "run",
+          "test": "TestSnapshotEventCarriesPerCRSourceSHAs"
+        },
+        {
+          "action": "pass",
+          "test": "TestSnapshotEventCarriesPerCRSourceSHAs"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizeRejectsCrossWorkspaceAndProjectMismatch"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizeRejectsCrossWorkspaceAndProjectMismatch"
+        },
+        {
+          "action": "run",
+          "test": "TestCRSyncEventConflictAndProcessedAreWorkspaceScoped"
+        },
+        {
+          "action": "pass",
+          "test": "TestCRSyncEventConflictAndProcessedAreWorkspaceScoped"
+        },
+        {
+          "action": "run",
+          "test": "TestMHandoff008"
+        },
+        {
+          "action": "pass",
+          "test": "TestMHandoff008"
+        },
+        {
+          "action": "run",
+          "test": "TestMDev004PlanLoopExhaustion"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDev004PlanLoopExhaustion"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch005Generator"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch005Generator/four_exports_full_fields_and_check"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch005Generator/four_exports_full_fields_and_check"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch005Generator/BASE_revision_only_is_ignored"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch005Generator/BASE_revision_only_is_ignored"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch005Generator/source_digest_and_generated_content_are_checked"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch005Generator/source_digest_and_generated_content_are_checked"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch005Generator/missing_source_fails_closed"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch005Generator/missing_source_fails_closed"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch005Generator/CRLF_normalized_before_read_and_recursive_digest"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch005Generator/CRLF_normalized_before_read_and_recursive_digest"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch005Generator/full_body_digest_mutations"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch005Generator/full_body_digest_mutations/type"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch005Generator/full_body_digest_mutations/type"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch005Generator/full_body_digest_mutations/required"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch005Generator/full_body_digest_mutations/required"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch005Generator/full_body_digest_mutations/executor"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch005Generator/full_body_digest_mutations/executor"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch005Generator/full_body_digest_mutations/prompt"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch005Generator/full_body_digest_mutations/prompt"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch005Generator/full_body_digest_mutations/approvalPrompt"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch005Generator/full_body_digest_mutations/approvalPrompt"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch005Generator/full_body_digest_mutations/timeoutMinutes"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch005Generator/full_body_digest_mutations/timeoutMinutes"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch005Generator/full_body_digest_mutations/onFail"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch005Generator/full_body_digest_mutations/onFail"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch005Generator/full_body_digest_mutations/reviewLoop"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch005Generator/full_body_digest_mutations/reviewLoop"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch005Generator/full_body_digest_mutations/node-order"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch005Generator/full_body_digest_mutations/node-order"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch005Generator/full_body_digest_mutations/input-order"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch005Generator/full_body_digest_mutations/input-order"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch005Generator/full_body_digest_mutations/owner-mutation"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch005Generator/full_body_digest_mutations/owner-mutation"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch005Generator/full_body_digest_mutations/authorization-mutation"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch005Generator/full_body_digest_mutations/authorization-mutation"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch005Generator/full_body_digest_mutations"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch005Generator/fail_closed"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch005Generator/fail_closed/schema"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch005Generator/fail_closed/schema"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch005Generator/fail_closed/pipeline"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch005Generator/fail_closed/pipeline"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch005Generator/fail_closed/topkeys"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch005Generator/fail_closed/topkeys"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch005Generator/fail_closed/missing-inputs"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch005Generator/fail_closed/missing-inputs"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch005Generator/fail_closed/raw-node-drift"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch005Generator/fail_closed/raw-node-drift"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch005Generator/fail_closed/missing-nodeId"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch005Generator/fail_closed/missing-nodeId"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch005Generator/fail_closed/missing-executor"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch005Generator/fail_closed/missing-executor"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch005Generator/fail_closed/duplicate-nodeId"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch005Generator/fail_closed/duplicate-nodeId"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch005Generator/fail_closed/extra-permission"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch005Generator/fail_closed/extra-permission"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch005Generator/fail_closed/executor-drift"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch005Generator/fail_closed/executor-drift"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch005Generator/fail_closed/stale-digest"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch005Generator/fail_closed/stale-digest"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch005Generator/fail_closed/malformed"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch005Generator/fail_closed/malformed"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch005Generator/fail_closed/emitter-failure"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch005Generator/fail_closed/emitter-failure"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch005Generator/fail_closed"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch005Generator"
+        },
+        {
+          "action": "run",
+          "test": "TestOutOfOrderFlagsReconcileWithoutCorruptingProjection"
+        },
+        {
+          "action": "pass",
+          "test": "TestOutOfOrderFlagsReconcileWithoutCorruptingProjection"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementStartupScanFindsItsOwnRunsOnly"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementStartupScanFindsItsOwnRunsOnly"
+        },
+        {
+          "action": "run",
+          "test": "TestAIFI60RereviewSecondHandoverPreservesOriginalDigest"
+        },
+        {
+          "action": "pass",
+          "test": "TestAIFI60RereviewSecondHandoverPreservesOriginalDigest"
+        },
+        {
+          "action": "run",
+          "test": "TestCRSyncEventEveryInsertIsWorkspaceScoped"
+        },
+        {
+          "action": "pass",
+          "test": "TestCRSyncEventEveryInsertIsWorkspaceScoped"
+        },
+        {
+          "action": "run",
+          "test": "TestAuditUnknownActionRejected"
+        },
+        {
+          "action": "pass",
+          "test": "TestAuditUnknownActionRejected"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementRegistryIsTheCompiledContract"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementRegistryIsTheCompiledContract"
+        },
+        {
+          "action": "run",
+          "test": "TestTraceServiceSpecSearchFilterAndCursor"
+        },
+        {
+          "action": "pass",
+          "test": "TestTraceServiceSpecSearchFilterAndCursor"
+        },
+        {
+          "action": "run",
+          "test": "TestMDevPlanLoopA"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDevPlanLoopA"
+        },
+        {
+          "action": "run",
+          "test": "TestAuditEvidenceDrift"
+        },
+        {
+          "action": "pass",
+          "test": "TestAuditEvidenceDrift"
+        },
+        {
+          "action": "run",
+          "test": "TestTraceIngestIdempotentReplayAndConflictReject"
+        },
+        {
+          "action": "pass",
+          "test": "TestTraceIngestIdempotentReplayAndConflictReject"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRouteDisabledAndTaskToken"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRouteDisabledAndTaskToken"
+        },
+        {
+          "action": "run",
+          "test": "TestParseCRStatus"
+        },
+        {
+          "action": "pass",
+          "test": "TestParseCRStatus"
+        },
+        {
+          "action": "run",
+          "test": "TestActionConstants"
+        },
+        {
+          "action": "pass",
+          "test": "TestActionConstants"
+        },
+        {
+          "action": "run",
+          "test": "TestProjectTimelineLatestSnapshotOwnsDisplaySet"
+        },
+        {
+          "action": "pass",
+          "test": "TestProjectTimelineLatestSnapshotOwnsDisplaySet"
+        },
+        {
+          "action": "run",
+          "test": "TestMRecovery007"
+        },
+        {
+          "action": "run",
+          "test": "TestMRecovery007/late_review_record_beats_task_failure"
+        },
+        {
+          "action": "pass",
+          "test": "TestMRecovery007/late_review_record_beats_task_failure"
+        },
+        {
+          "action": "run",
+          "test": "TestMRecovery007/approval_reject_stays_business"
+        },
+        {
+          "action": "pass",
+          "test": "TestMRecovery007/approval_reject_stays_business"
+        },
+        {
+          "action": "run",
+          "test": "TestMRecovery007/terminal_run_does_not_move_back"
+        },
+        {
+          "action": "pass",
+          "test": "TestMRecovery007/terminal_run_does_not_move_back"
+        },
+        {
+          "action": "run",
+          "test": "TestMRecovery007/failure_does_not_bump_the_business_attempt"
+        },
+        {
+          "action": "pass",
+          "test": "TestMRecovery007/failure_does_not_bump_the_business_attempt"
+        },
+        {
+          "action": "pass",
+          "test": "TestMRecovery007"
+        },
+        {
+          "action": "run",
+          "test": "TestAC9_DoubleHookContract"
+        },
+        {
+          "action": "run",
+          "test": "TestAC9_DoubleHookContract/9a_precommit_error_rolls_back"
+        },
+        {
+          "action": "pass",
+          "test": "TestAC9_DoubleHookContract/9a_precommit_error_rolls_back"
+        },
+        {
+          "action": "run",
+          "test": "TestAC9_DoubleHookContract/9b_precommit_replayable"
+        },
+        {
+          "action": "pass",
+          "test": "TestAC9_DoubleHookContract/9b_precommit_replayable"
+        },
+        {
+          "action": "run",
+          "test": "TestAC9_DoubleHookContract/9c_committed_error_keeps_2xx"
+        },
+        {
+          "action": "pass",
+          "test": "TestAC9_DoubleHookContract/9c_committed_error_keeps_2xx"
+        },
+        {
+          "action": "pass",
+          "test": "TestAC9_DoubleHookContract"
+        },
+        {
+          "action": "run",
+          "test": "TestFetchGitHubSnapshotMalformedIDRequestsNothing"
+        },
+        {
+          "action": "pass",
+          "test": "TestFetchGitHubSnapshotMalformedIDRequestsNothing"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementExistingPassEvidenceGoesStraightToTheGate"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementExistingPassEvidenceGoesStraightToTheGate"
+        },
+        {
+          "action": "run",
+          "test": "TestMTick003"
+        },
+        {
+          "action": "pass",
+          "test": "TestMTick003"
+        },
+        {
+          "action": "run",
+          "test": "TestProjectGatesNodeStageIsIndependentOfPendingStage"
+        },
+        {
+          "action": "pass",
+          "test": "TestProjectGatesNodeStageIsIndependentOfPendingStage"
+        },
+        {
+          "action": "run",
+          "test": "TestProjectTimelineEvidenceMissingIsExplicitNull"
+        },
+        {
+          "action": "pass",
+          "test": "TestProjectTimelineEvidenceMissingIsExplicitNull"
+        },
+        {
+          "action": "run",
+          "test": "TestMRecovery001"
+        },
+        {
+          "action": "run",
+          "test": "TestMRecovery001/architecture_waits_for_existing_child"
+        },
+        {
+          "action": "pass",
+          "test": "TestMRecovery001/architecture_waits_for_existing_child"
+        },
+        {
+          "action": "run",
+          "test": "TestMRecovery001/requirement_waits_for_existing_child"
+        },
+        {
+          "action": "pass",
+          "test": "TestMRecovery001/requirement_waits_for_existing_child"
+        },
+        {
+          "action": "pass",
+          "test": "TestMRecovery001"
+        },
+        {
+          "action": "run",
+          "test": "TestDaemonInstallRefusesForeignOrForgedRecord"
+        },
+        {
+          "action": "run",
+          "test": "TestDaemonInstallRefusesForeignOrForgedRecord/record_for_another_workspace"
+        },
+        {
+          "action": "pass",
+          "test": "TestDaemonInstallRefusesForeignOrForgedRecord/record_for_another_workspace"
+        },
+        {
+          "action": "run",
+          "test": "TestDaemonInstallRefusesForeignOrForgedRecord/signature_does_not_match_delivered_key"
+        },
+        {
+          "action": "pass",
+          "test": "TestDaemonInstallRefusesForeignOrForgedRecord/signature_does_not_match_delivered_key"
+        },
+        {
+          "action": "run",
+          "test": "TestDaemonInstallRefusesForeignOrForgedRecord/tampered_source_sidecar"
+        },
+        {
+          "action": "pass",
+          "test": "TestDaemonInstallRefusesForeignOrForgedRecord/tampered_source_sidecar"
+        },
+        {
+          "action": "run",
+          "test": "TestDaemonInstallRefusesForeignOrForgedRecord/unknown_schema_or_extra_field"
+        },
+        {
+          "action": "pass",
+          "test": "TestDaemonInstallRefusesForeignOrForgedRecord/unknown_schema_or_extra_field"
+        },
+        {
+          "action": "run",
+          "test": "TestDaemonInstallRefusesForeignOrForgedRecord/record_for_another_CR"
+        },
+        {
+          "action": "pass",
+          "test": "TestDaemonInstallRefusesForeignOrForgedRecord/record_for_another_CR"
+        },
+        {
+          "action": "run",
+          "test": "TestDaemonInstallRefusesForeignOrForgedRecord/same_grant_id_with_different_signed_content"
+        },
+        {
+          "action": "pass",
+          "test": "TestDaemonInstallRefusesForeignOrForgedRecord/same_grant_id_with_different_signed_content"
+        },
+        {
+          "action": "pass",
+          "test": "TestDaemonInstallRefusesForeignOrForgedRecord"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementResumeContinuesAFailedRunInPlace"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementResumeContinuesAFailedRunInPlace"
+        },
+        {
+          "action": "run",
+          "test": "TestGateProjectionReusesBoundPromotionRun"
+        },
+        {
+          "action": "pass",
+          "test": "TestGateProjectionReusesBoundPromotionRun"
+        },
+        {
+          "action": "run",
+          "test": "TestAIFI60TemplateHandoverMakesASupersededRunRecoverable"
+        },
+        {
+          "action": "pass",
+          "test": "TestAIFI60TemplateHandoverMakesASupersededRunRecoverable"
+        },
+        {
+          "action": "run",
+          "test": "TestGateNodeApprovalLinkIgnoresOtherWorkspacesRecords"
+        },
+        {
+          "action": "pass",
+          "test": "TestGateNodeApprovalLinkIgnoresOtherWorkspacesRecords"
+        },
+        {
+          "action": "run",
+          "test": "TestUnsupportedPipelineErrorNamesTheStageWithoutAnExecutor"
+        },
+        {
+          "action": "run",
+          "test": "TestUnsupportedPipelineErrorNamesTheStageWithoutAnExecutor/crc_in_requirement_stage_asked_for_architecture"
+        },
+        {
+          "action": "pass",
+          "test": "TestUnsupportedPipelineErrorNamesTheStageWithoutAnExecutor/crc_in_requirement_stage_asked_for_architecture"
+        },
+        {
+          "action": "run",
+          "test": "TestUnsupportedPipelineErrorNamesTheStageWithoutAnExecutor/crc_in_code_stage_asked_for_requirement"
+        },
+        {
+          "action": "pass",
+          "test": "TestUnsupportedPipelineErrorNamesTheStageWithoutAnExecutor/crc_in_code_stage_asked_for_requirement"
+        },
+        {
+          "action": "run",
+          "test": "TestUnsupportedPipelineErrorNamesTheStageWithoutAnExecutor/no_stage_could_be_established_keeps_the_original_code"
+        },
+        {
+          "action": "pass",
+          "test": "TestUnsupportedPipelineErrorNamesTheStageWithoutAnExecutor/no_stage_could_be_established_keeps_the_original_code"
+        },
+        {
+          "action": "run",
+          "test": "TestUnsupportedPipelineErrorNamesTheStageWithoutAnExecutor/asked_for_the_stage_it_is_already_in"
+        },
+        {
+          "action": "pass",
+          "test": "TestUnsupportedPipelineErrorNamesTheStageWithoutAnExecutor/asked_for_the_stage_it_is_already_in"
+        },
+        {
+          "action": "pass",
+          "test": "TestUnsupportedPipelineErrorNamesTheStageWithoutAnExecutor"
+        },
+        {
+          "action": "run",
+          "test": "TestMAck002"
+        },
+        {
+          "action": "run",
+          "test": "TestMAck002/unauthenticated_is_403"
+        },
+        {
+          "action": "pass",
+          "test": "TestMAck002/unauthenticated_is_403"
+        },
+        {
+          "action": "run",
+          "test": "TestMAck002/valid_and_duplicate_ids_are_idempotent"
+        },
+        {
+          "action": "pass",
+          "test": "TestMAck002/valid_and_duplicate_ids_are_idempotent"
+        },
+        {
+          "action": "run",
+          "test": "TestMAck002/cross_workspace_ids_are_not_updated"
+        },
+        {
+          "action": "pass",
+          "test": "TestMAck002/cross_workspace_ids_are_not_updated"
+        },
+        {
+          "action": "pass",
+          "test": "TestMAck002"
+        },
+        {
+          "action": "run",
+          "test": "TestLoadExecutionContractManifestRequiresExactFieldCase"
+        },
+        {
+          "action": "run",
+          "test": "TestLoadExecutionContractManifestRequiresExactFieldCase/uppercase_field"
+        },
+        {
+          "action": "pass",
+          "test": "TestLoadExecutionContractManifestRequiresExactFieldCase/uppercase_field"
+        },
+        {
+          "action": "run",
+          "test": "TestLoadExecutionContractManifestRequiresExactFieldCase/case_alias_fifth_field"
+        },
+        {
+          "action": "pass",
+          "test": "TestLoadExecutionContractManifestRequiresExactFieldCase/case_alias_fifth_field"
+        },
+        {
+          "action": "pass",
+          "test": "TestLoadExecutionContractManifestRequiresExactFieldCase"
+        },
+        {
+          "action": "run",
+          "test": "TestSnapshotHealsFlaggedInFlightCR"
+        },
+        {
+          "action": "pass",
+          "test": "TestSnapshotHealsFlaggedInFlightCR"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizeRejectsStaleOrForeignResource"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizeRejectsStaleOrForeignResource"
+        },
+        {
+          "action": "run",
+          "test": "TestSelectCRSourceStage"
+        },
+        {
+          "action": "run",
+          "test": "TestRunnerArchitectureHappyPathWaitsForAuthority"
+        },
+        {
+          "action": "pass",
+          "test": "TestRunnerArchitectureHappyPathWaitsForAuthority"
+        },
+        {
+          "action": "run",
+          "test": "TestFetchGitHubSnapshotSelectsSourcePerStage"
+        },
+        {
+          "action": "pass",
+          "test": "TestFetchGitHubSnapshotSelectsSourcePerStage"
+        },
+        {
+          "action": "run",
+          "test": "TestLoadExecutionContractManifestRejectsIncompleteUNC"
+        },
+        {
+          "action": "pass",
+          "test": "TestLoadExecutionContractManifestRejectsIncompleteUNC"
+        },
+        {
+          "action": "run",
+          "test": "TestAIFI60ReviewInconclusiveLateEvidenceStillRefuses"
+        },
+        {
+          "action": "pass",
+          "test": "TestAIFI60ReviewInconclusiveLateEvidenceStillRefuses"
+        },
+        {
+          "action": "run",
+          "test": "TestMDelivery001"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDelivery001"
+        },
+        {
+          "action": "run",
+          "test": "TestTraceIngestRejectsBadAndOversizedPayload"
+        },
+        {
+          "action": "pass",
+          "test": "TestTraceIngestRejectsBadAndOversizedPayload"
+        },
+        {
+          "action": "run",
+          "test": "TestApplySnapshotSkipsActiveRequirementPipeline"
+        },
+        {
+          "action": "pass",
+          "test": "TestApplySnapshotSkipsActiveRequirementPipeline"
+        },
+        {
+          "action": "run",
+          "test": "TestArchitectureRunnerFeatureFlag"
+        },
+        {
+          "action": "run",
+          "test": "TestArchitectureRunnerFeatureFlag/1"
+        },
+        {
+          "action": "pass",
+          "test": "TestArchitectureRunnerFeatureFlag/1"
+        },
+        {
+          "action": "run",
+          "test": "TestArchitectureRunnerFeatureFlag/true"
+        },
+        {
+          "action": "pass",
+          "test": "TestArchitectureRunnerFeatureFlag/true"
+        },
+        {
+          "action": "run",
+          "test": "TestArchitectureRunnerFeatureFlag/yes"
+        },
+        {
+          "action": "pass",
+          "test": "TestArchitectureRunnerFeatureFlag/yes"
+        },
+        {
+          "action": "run",
+          "test": "TestArchitectureRunnerFeatureFlag/on"
+        },
+        {
+          "action": "pass",
+          "test": "TestArchitectureRunnerFeatureFlag/on"
+        },
+        {
+          "action": "pass",
+          "test": "TestArchitectureRunnerFeatureFlag"
+        },
+        {
+          "action": "run",
+          "test": "TestMBinding006"
+        },
+        {
+          "action": "pass",
+          "test": "TestMBinding006"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementReviewFailsVisiblyOverAnUnprojectableEvent"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementReviewFailsVisiblyOverAnUnprojectableEvent"
+        },
+        {
+          "action": "run",
+          "test": "TestAC7_HistoricalDeliveredNoTask"
+        },
+        {
+          "action": "pass",
+          "test": "TestAC7_HistoricalDeliveredNoTask"
+        },
+        {
+          "action": "run",
+          "test": "TestApplySnapshotOldFormatFallsBackToHeadSHA"
+        },
+        {
+          "action": "pass",
+          "test": "TestApplySnapshotOldFormatFallsBackToHeadSHA"
+        },
+        {
+          "action": "run",
+          "test": "TestRunnerStartupAndEventWakeSourcesConvergeOnReconcile"
+        },
+        {
+          "action": "pass",
+          "test": "TestRunnerStartupAndEventWakeSourcesConvergeOnReconcile"
+        },
+        {
+          "action": "run",
+          "test": "TestMDev006"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDev006"
+        },
+        {
+          "action": "run",
+          "test": "TestMergeRecoveryInputsRejectsUndecodableSides"
+        },
+        {
+          "action": "run",
+          "test": "TestMergeRecoveryInputsRejectsUndecodableSides/stored_is_a_JSON_array"
+        },
+        {
+          "action": "pass",
+          "test": "TestMergeRecoveryInputsRejectsUndecodableSides/stored_is_a_JSON_array"
+        },
+        {
+          "action": "run",
+          "test": "TestMergeRecoveryInputsRejectsUndecodableSides/stored_is_a_JSON_string"
+        },
+        {
+          "action": "pass",
+          "test": "TestMergeRecoveryInputsRejectsUndecodableSides/stored_is_a_JSON_string"
+        },
+        {
+          "action": "run",
+          "test": "TestMergeRecoveryInputsRejectsUndecodableSides/stored_is_malformed_JSON"
+        },
+        {
+          "action": "pass",
+          "test": "TestMergeRecoveryInputsRejectsUndecodableSides/stored_is_malformed_JSON"
+        },
+        {
+          "action": "run",
+          "test": "TestMergeRecoveryInputsRejectsUndecodableSides/incoming_is_a_JSON_array"
+        },
+        {
+          "action": "pass",
+          "test": "TestMergeRecoveryInputsRejectsUndecodableSides/incoming_is_a_JSON_array"
+        },
+        {
+          "action": "run",
+          "test": "TestMergeRecoveryInputsRejectsUndecodableSides/incoming_is_a_JSON_number"
+        },
+        {
+          "action": "pass",
+          "test": "TestMergeRecoveryInputsRejectsUndecodableSides/incoming_is_a_JSON_number"
+        },
+        {
+          "action": "run",
+          "test": "TestMergeRecoveryInputsRejectsUndecodableSides/incoming_is_malformed_JSON"
+        },
+        {
+          "action": "pass",
+          "test": "TestMergeRecoveryInputsRejectsUndecodableSides/incoming_is_malformed_JSON"
+        },
+        {
+          "action": "pass",
+          "test": "TestMergeRecoveryInputsRejectsUndecodableSides"
+        },
+        {
+          "action": "run",
+          "test": "TestInflightStatuses"
+        },
+        {
+          "action": "pass",
+          "test": "TestInflightStatuses"
+        },
+        {
+          "action": "run",
+          "test": "TestM21bUpsertRunTxVisibilityAndRollback"
+        },
+        {
+          "action": "pass",
+          "test": "TestM21bUpsertRunTxVisibilityAndRollback"
+        },
+        {
+          "action": "run",
+          "test": "TestAC8_RunnerOffContinuationStillEnqueues"
+        },
+        {
+          "action": "pass",
+          "test": "TestAC8_RunnerOffContinuationStillEnqueues"
+        },
+        {
+          "action": "run",
+          "test": "TestPATFallbackBindsSingleMembership"
+        },
+        {
+          "action": "pass",
+          "test": "TestPATFallbackBindsSingleMembership"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationBuildsSignedStructuredSource"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationBuildsSignedStructuredSource"
+        },
+        {
+          "action": "run",
+          "test": "TestLegalFlowProjectsAndBroadcasts"
+        },
+        {
+          "action": "pass",
+          "test": "TestLegalFlowProjectsAndBroadcasts"
+        },
+        {
+          "action": "run",
+          "test": "TestMReleaseWindowFixtures"
+        },
+        {
+          "action": "run",
+          "test": "TestMReleaseWindowFixtures/window_is_declared_and_non-production"
+        },
+        {
+          "action": "pass",
+          "test": "TestMReleaseWindowFixtures/window_is_declared_and_non-production"
+        },
+        {
+          "action": "run",
+          "test": "TestMReleaseWindowFixtures/interruption_and_O2_fixtures_are_temporary"
+        },
+        {
+          "action": "pass",
+          "test": "TestMReleaseWindowFixtures/interruption_and_O2_fixtures_are_temporary"
+        },
+        {
+          "action": "run",
+          "test": "TestMReleaseWindowFixtures/old_continuation_disposal_was_not_executed"
+        },
+        {
+          "action": "pass",
+          "test": "TestMReleaseWindowFixtures/old_continuation_disposal_was_not_executed"
+        },
+        {
+          "action": "pass",
+          "test": "TestMReleaseWindowFixtures"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementResumeIsIdempotentAfterContinuation"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementResumeIsIdempotentAfterContinuation"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementBlockSchedulesTheWriterRepairOnTheNextAttempt"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementBlockSchedulesTheWriterRepairOnTheNextAttempt"
+        },
+        {
+          "action": "run",
+          "test": "TestFetchGitHubSnapshotBranch404FallsBackToTrunk"
+        },
+        {
+          "action": "pass",
+          "test": "TestFetchGitHubSnapshotBranch404FallsBackToTrunk"
+        },
+        {
+          "action": "run",
+          "test": "TestLoadExecutionContractManifestNeverEchoesContent"
+        },
+        {
+          "action": "run",
+          "test": "TestLoadExecutionContractManifestNeverEchoesContent/duplicate_key"
+        },
+        {
+          "action": "pass",
+          "test": "TestLoadExecutionContractManifestNeverEchoesContent/duplicate_key"
+        },
+        {
+          "action": "run",
+          "test": "TestLoadExecutionContractManifestNeverEchoesContent/schema"
+        },
+        {
+          "action": "pass",
+          "test": "TestLoadExecutionContractManifestNeverEchoesContent/schema"
+        },
+        {
+          "action": "run",
+          "test": "TestLoadExecutionContractManifestNeverEchoesContent/unknown_key"
+        },
+        {
+          "action": "pass",
+          "test": "TestLoadExecutionContractManifestNeverEchoesContent/unknown_key"
+        },
+        {
+          "action": "pass",
+          "test": "TestLoadExecutionContractManifestNeverEchoesContent"
+        },
+        {
+          "action": "run",
+          "test": "TestMTick004"
+        },
+        {
+          "action": "pass",
+          "test": "TestMTick004"
+        },
+        {
+          "action": "run",
+          "test": "TestGateProjectionSkipsUntrustedFirstSighting"
+        },
+        {
+          "action": "pass",
+          "test": "TestGateProjectionSkipsUntrustedFirstSighting"
+        },
+        {
+          "action": "run",
+          "test": "TestNoSpecTraceProjectionTable"
+        },
+        {
+          "action": "pass",
+          "test": "TestNoSpecTraceProjectionTable"
+        },
+        {
+          "action": "run",
+          "test": "TestMergeAuthorityBacklogWins"
+        },
+        {
+          "action": "pass",
+          "test": "TestMergeAuthorityBacklogWins"
+        },
+        {
+          "action": "run",
+          "test": "TestM22CommitCrashRebuildStartupScanRequirement"
+        },
+        {
+          "action": "pass",
+          "test": "TestM22CommitCrashRebuildStartupScanRequirement"
+        },
+        {
+          "action": "run",
+          "test": "TestMBinding004"
+        },
+        {
+          "action": "run",
+          "test": "TestMBinding004/missing"
+        },
+        {
+          "action": "pass",
+          "test": "TestMBinding004/missing"
+        },
+        {
+          "action": "run",
+          "test": "TestMBinding004/cross-workspace"
+        },
+        {
+          "action": "pass",
+          "test": "TestMBinding004/cross-workspace"
+        },
+        {
+          "action": "pass",
+          "test": "TestMBinding004"
+        },
+        {
+          "action": "run",
+          "test": "TestIllegalTransitionFlagsReconcile"
+        },
+        {
+          "action": "pass",
+          "test": "TestIllegalTransitionFlagsReconcile"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementReviewCompletedWithoutDeliveryFailsVisibly"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementReviewCompletedWithoutDeliveryFailsVisibly"
+        },
+        {
+          "action": "run",
+          "test": "TestEmbeddedPlaceholderEventsDoNotCollide"
+        },
+        {
+          "action": "pass",
+          "test": "TestEmbeddedPlaceholderEventsDoNotCollide"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementReviewWaitsWhileProjectionIsBehind"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementReviewWaitsWhileProjectionIsBehind"
+        },
+        {
+          "action": "run",
+          "test": "TestSummarizeToolCallsCap"
+        },
+        {
+          "action": "pass",
+          "test": "TestSummarizeToolCallsCap"
+        },
+        {
+          "action": "run",
+          "test": "TestSummarizeToolCalls"
+        },
+        {
+          "action": "pass",
+          "test": "TestSummarizeToolCalls"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementApprovalNodeRecordsTheDeliveredApproval"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementApprovalNodeRecordsTheDeliveredApproval"
+        },
+        {
+          "action": "run",
+          "test": "TestMDev007"
+        },
+        {
+          "action": "run",
+          "test": "TestMDev007/missing"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDev007/missing"
+        },
+        {
+          "action": "run",
+          "test": "TestMDev007/unassigned"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDev007/unassigned"
+        },
+        {
+          "action": "run",
+          "test": "TestMDev007/invalid"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDev007/invalid"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDev007"
+        },
+        {
+          "action": "run",
+          "test": "TestAuditCRIDRelaxationScoped"
+        },
+        {
+          "action": "pass",
+          "test": "TestAuditCRIDRelaxationScoped"
+        },
+        {
+          "action": "run",
+          "test": "TestApplySnapshotSkipsActiveCodingAndWritebackPipelines"
+        },
+        {
+          "action": "pass",
+          "test": "TestApplySnapshotSkipsActiveCodingAndWritebackPipelines"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementInFlightWriterWaitsBeforeTheCheckpoint"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementInFlightWriterWaitsBeforeTheCheckpoint"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementConcurrentResumeCreatesOneContinuation"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementConcurrentResumeCreatesOneContinuation"
+        },
+        {
+          "action": "run",
+          "test": "TestM24ReleaseSubjectsDoNotRequireSingleSubject"
+        },
+        {
+          "action": "pass",
+          "test": "TestM24ReleaseSubjectsDoNotRequireSingleSubject"
+        },
+        {
+          "action": "run",
+          "test": "TestIsLegalTransition"
+        },
+        {
+          "action": "pass",
+          "test": "TestIsLegalTransition"
+        },
+        {
+          "action": "run",
+          "test": "TestRenderCorePromptOnlyDeclaredTokens"
+        },
+        {
+          "action": "pass",
+          "test": "TestRenderCorePromptOnlyDeclaredTokens"
+        },
+        {
+          "action": "run",
+          "test": "TestM20RequirementStaleProjectionWaits"
+        },
+        {
+          "action": "pass",
+          "test": "TestM20RequirementStaleProjectionWaits"
+        },
+        {
+          "action": "run",
+          "test": "TestMDev005"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDev005"
+        },
+        {
+          "action": "run",
+          "test": "TestApproveRejectsTaskTokens"
+        },
+        {
+          "action": "pass",
+          "test": "TestApproveRejectsTaskTokens"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizeRejectsUntrustedCallers"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizeRejectsUntrustedCallers"
+        },
+        {
+          "action": "run",
+          "test": "TestM24DevPlanUpstreamBlockProjectsWithoutRoundBump"
+        },
+        {
+          "action": "pass",
+          "test": "TestM24DevPlanUpstreamBlockProjectsWithoutRoundBump"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementResumeFreshRunKeepsTheRecordedSource"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementResumeFreshRunKeepsTheRecordedSource"
+        },
+        {
+          "action": "run",
+          "test": "TestAIFI60TemplateHandoverRefusals"
+        },
+        {
+          "action": "run",
+          "test": "TestAIFI60TemplateHandoverRefusals/names_this_deployment's_own_digest"
+        },
+        {
+          "action": "pass",
+          "test": "TestAIFI60TemplateHandoverRefusals/names_this_deployment's_own_digest"
+        },
+        {
+          "action": "run",
+          "test": "TestAIFI60TemplateHandoverRefusals/names_a_digest_the_run_does_not_carry"
+        },
+        {
+          "action": "pass",
+          "test": "TestAIFI60TemplateHandoverRefusals/names_a_digest_the_run_does_not_carry"
+        },
+        {
+          "action": "run",
+          "test": "TestAIFI60TemplateHandoverRefusals/a_task_of_the_run_is_still_in_flight"
+        },
+        {
+          "action": "pass",
+          "test": "TestAIFI60TemplateHandoverRefusals/a_task_of_the_run_is_still_in_flight"
+        },
+        {
+          "action": "run",
+          "test": "TestAIFI60TemplateHandoverRefusals/the_run_was_cancelled_by_a_human"
+        },
+        {
+          "action": "pass",
+          "test": "TestAIFI60TemplateHandoverRefusals/the_run_was_cancelled_by_a_human"
+        },
+        {
+          "action": "pass",
+          "test": "TestAIFI60TemplateHandoverRefusals"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementInFlightCheckpointWaitsBeforeTheReview"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementInFlightCheckpointWaitsBeforeTheReview"
+        },
+        {
+          "action": "run",
+          "test": "TestAC5_MergeAndSlotDeferred"
+        },
+        {
+          "action": "pass",
+          "test": "TestAC5_MergeAndSlotDeferred"
+        },
+        {
+          "action": "run",
+          "test": "TestProjectGatesCrossWorkspace404"
+        },
+        {
+          "action": "pass",
+          "test": "TestProjectGatesCrossWorkspace404"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementDirtyStartNodeIdentities"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementDirtyStartNodeIdentities"
+        },
+        {
+          "action": "run",
+          "test": "TestMKey001"
+        },
+        {
+          "action": "pass",
+          "test": "TestMKey001"
+        },
+        {
+          "action": "run",
+          "test": "TestSnapshotIncompleteAuthorityIsRejected"
+        },
+        {
+          "action": "pass",
+          "test": "TestSnapshotIncompleteAuthorityIsRejected"
+        },
+        {
+          "action": "run",
+          "test": "TestDaemonInstalledRecordVerifiesThroughTrustRoot"
+        },
+        {
+          "action": "pass",
+          "test": "TestDaemonInstalledRecordVerifiesThroughTrustRoot"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementBlockRoutesBackToTheDeclaredRepairNode"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementBlockRoutesBackToTheDeclaredRepairNode"
+        },
+        {
+          "action": "run",
+          "test": "TestMDev001MissingTestFactsWaits"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDev001MissingTestFactsWaits"
+        },
+        {
+          "action": "run",
+          "test": "TestStageOfCRUsesTheProjectorStatusMapAndIsWorkspaceFenced"
+        },
+        {
+          "action": "pass",
+          "test": "TestStageOfCRUsesTheProjectorStatusMapAndIsWorkspaceFenced"
+        },
+        {
+          "action": "run",
+          "test": "TestSnapshotOldDaemonCarriesNoInFlightAuthority"
+        },
+        {
+          "action": "pass",
+          "test": "TestSnapshotOldDaemonCarriesNoInFlightAuthority"
+        },
+        {
+          "action": "run",
+          "test": "TestReviewMaxAttemptsRefusesInvalidDeclarations"
+        },
+        {
+          "action": "run",
+          "test": "TestReviewMaxAttemptsRefusesInvalidDeclarations/N=0"
+        },
+        {
+          "action": "pass",
+          "test": "TestReviewMaxAttemptsRefusesInvalidDeclarations/N=0"
+        },
+        {
+          "action": "run",
+          "test": "TestReviewMaxAttemptsRefusesInvalidDeclarations/N=-1"
+        },
+        {
+          "action": "pass",
+          "test": "TestReviewMaxAttemptsRefusesInvalidDeclarations/N=-1"
+        },
+        {
+          "action": "run",
+          "test": "TestReviewMaxAttemptsRefusesInvalidDeclarations/N_not_an_integer"
+        },
+        {
+          "action": "pass",
+          "test": "TestReviewMaxAttemptsRefusesInvalidDeclarations/N_not_an_integer"
+        },
+        {
+          "action": "run",
+          "test": "TestReviewMaxAttemptsRefusesInvalidDeclarations/N_missing"
+        },
+        {
+          "action": "pass",
+          "test": "TestReviewMaxAttemptsRefusesInvalidDeclarations/N_missing"
+        },
+        {
+          "action": "run",
+          "test": "TestReviewMaxAttemptsRefusesInvalidDeclarations/body_truncated"
+        },
+        {
+          "action": "pass",
+          "test": "TestReviewMaxAttemptsRefusesInvalidDeclarations/body_truncated"
+        },
+        {
+          "action": "run",
+          "test": "TestReviewMaxAttemptsRefusesInvalidDeclarations/digest_mismatch"
+        },
+        {
+          "action": "pass",
+          "test": "TestReviewMaxAttemptsRefusesInvalidDeclarations/digest_mismatch"
+        },
+        {
+          "action": "pass",
+          "test": "TestReviewMaxAttemptsRefusesInvalidDeclarations"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementStartNeverRunsRegistration"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementStartNeverRunsRegistration"
+        },
+        {
+          "action": "run",
+          "test": "TestAuditGitguardDenied"
+        },
+        {
+          "action": "pass",
+          "test": "TestAuditGitguardDenied"
+        },
+        {
+          "action": "run",
+          "test": "TestRunnerLoopExhaustionFailsAfterThirdCanonicalBlock"
+        },
+        {
+          "action": "pass",
+          "test": "TestRunnerLoopExhaustionFailsAfterThirdCanonicalBlock"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementResumeRefusesContradictingSource"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementResumeRefusesContradictingSource"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementResumeRedispatchesAReviewRoundThatDeliveredNothing"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementResumeRedispatchesAReviewRoundThatDeliveredNothing"
+        },
+        {
+          "action": "run",
+          "test": "TestMBinding003"
+        },
+        {
+          "action": "pass",
+          "test": "TestMBinding003"
+        },
+        {
+          "action": "run",
+          "test": "TestProjectGatesPendingAdvance"
+        },
+        {
+          "action": "pass",
+          "test": "TestProjectGatesPendingAdvance"
+        },
+        {
+          "action": "run",
+          "test": "TestMHandoff007"
+        },
+        {
+          "action": "pass",
+          "test": "TestMHandoff007"
+        },
+        {
+          "action": "run",
+          "test": "TestAIFI60RereviewRejectedHandoverDoesNotMutateDigest"
+        },
+        {
+          "action": "pass",
+          "test": "TestAIFI60RereviewRejectedHandoverDoesNotMutateDigest"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementResumeFreshRunRefusesAContradictingSource"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementResumeFreshRunRefusesAContradictingSource"
+        },
+        {
+          "action": "run",
+          "test": "TestCrossLanguageTraceabilityGolden"
+        },
+        {
+          "action": "pass",
+          "test": "TestCrossLanguageTraceabilityGolden"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementResumeIsIdempotent"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementResumeIsIdempotent"
+        },
+        {
+          "action": "run",
+          "test": "TestHandleStartArchitectureRejectsPathAuthorityMismatch"
+        },
+        {
+          "action": "pass",
+          "test": "TestHandleStartArchitectureRejectsPathAuthorityMismatch"
+        },
+        {
+          "action": "run",
+          "test": "TestDaemonFetchesAndInstallsExecutionAuthorization"
+        },
+        {
+          "action": "run",
+          "test": "TestDaemonFetchesAndInstallsExecutionAuthorization/record_is_invisible_to_another_workspace_binding"
+        },
+        {
+          "action": "pass",
+          "test": "TestDaemonFetchesAndInstallsExecutionAuthorization/record_is_invisible_to_another_workspace_binding"
+        },
+        {
+          "action": "run",
+          "test": "TestDaemonFetchesAndInstallsExecutionAuthorization/missing_record_and_missing_daemon_binding_fail_closed"
+        },
+        {
+          "action": "pass",
+          "test": "TestDaemonFetchesAndInstallsExecutionAuthorization/missing_record_and_missing_daemon_binding_fail_closed"
+        },
+        {
+          "action": "pass",
+          "test": "TestDaemonFetchesAndInstallsExecutionAuthorization"
+        },
+        {
+          "action": "run",
+          "test": "TestHandleStartArchitectureRejectsTrailingJSON"
+        },
+        {
+          "action": "pass",
+          "test": "TestHandleStartArchitectureRejectsTrailingJSON"
+        },
+        {
+          "action": "run",
+          "test": "TestApproveWhenCommitScanDeliveredTheStatusFirst"
+        },
+        {
+          "action": "pass",
+          "test": "TestApproveWhenCommitScanDeliveredTheStatusFirst"
+        },
+        {
+          "action": "run",
+          "test": "TestApproveRejectsNonOwnerAdmin"
+        },
+        {
+          "action": "pass",
+          "test": "TestApproveRejectsNonOwnerAdmin"
+        },
+        {
+          "action": "run",
+          "test": "TestParseHistory"
+        },
+        {
+          "action": "pass",
+          "test": "TestParseHistory"
+        },
+        {
+          "action": "run",
+          "test": "TestMDev004TestReplay"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDev004TestReplay"
+        },
+        {
+          "action": "run",
+          "test": "TestGrantDeliveryQueue"
+        },
+        {
+          "action": "pass",
+          "test": "TestGrantDeliveryQueue"
+        },
+        {
+          "action": "run",
+          "test": "TestApprovalGateAC1FourGatesPlusReEntry"
+        },
+        {
+          "action": "run",
+          "test": "TestApprovalGateAC1FourGatesPlusReEntry/requirement_gate"
+        },
+        {
+          "action": "pass",
+          "test": "TestApprovalGateAC1FourGatesPlusReEntry/requirement_gate"
+        },
+        {
+          "action": "run",
+          "test": "TestApprovalGateAC1FourGatesPlusReEntry/tech-design_gate"
+        },
+        {
+          "action": "pass",
+          "test": "TestApprovalGateAC1FourGatesPlusReEntry/tech-design_gate"
+        },
+        {
+          "action": "run",
+          "test": "TestApprovalGateAC1FourGatesPlusReEntry/dev-start_gate"
+        },
+        {
+          "action": "pass",
+          "test": "TestApprovalGateAC1FourGatesPlusReEntry/dev-start_gate"
+        },
+        {
+          "action": "run",
+          "test": "TestApprovalGateAC1FourGatesPlusReEntry/code_gate"
+        },
+        {
+          "action": "pass",
+          "test": "TestApprovalGateAC1FourGatesPlusReEntry/code_gate"
+        },
+        {
+          "action": "run",
+          "test": "TestApprovalGateAC1FourGatesPlusReEntry/gate_re-entry"
+        },
+        {
+          "action": "pass",
+          "test": "TestApprovalGateAC1FourGatesPlusReEntry/gate_re-entry"
+        },
+        {
+          "action": "pass",
+          "test": "TestApprovalGateAC1FourGatesPlusReEntry"
+        },
+        {
+          "action": "run",
+          "test": "TestDaemonInstallRequiresRealCrctlContractCheck"
+        },
+        {
+          "action": "pass",
+          "test": "TestDaemonInstallRequiresRealCrctlContractCheck"
+        },
+        {
+          "action": "run",
+          "test": "TestMAck003"
+        },
+        {
+          "action": "pass",
+          "test": "TestMAck003"
+        },
+        {
+          "action": "run",
+          "test": "TestPATFallbackRejectsOutsiders"
+        },
+        {
+          "action": "pass",
+          "test": "TestPATFallbackRejectsOutsiders"
+        },
+        {
+          "action": "run",
+          "test": "TestMDev004PlanReplay"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDev004PlanReplay"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementCompletedClosingTaskWithoutCRAdvanceDoesNotComplete"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementCompletedClosingTaskWithoutCRAdvanceDoesNotComplete"
+        },
+        {
+          "action": "run",
+          "test": "TestTraceServiceTimelineCrossWorkspaceIsolation"
+        },
+        {
+          "action": "pass",
+          "test": "TestTraceServiceTimelineCrossWorkspaceIsolation"
+        },
+        {
+          "action": "run",
+          "test": "TestTransitionTableShape"
+        },
+        {
+          "action": "pass",
+          "test": "TestTransitionTableShape"
+        },
+        {
+          "action": "run",
+          "test": "TestRejectionPaths"
+        },
+        {
+          "action": "pass",
+          "test": "TestRejectionPaths"
+        },
+        {
+          "action": "run",
+          "test": "TestReviewMaxAttemptsFollowsTheDeclaredRegistry"
+        },
+        {
+          "action": "run",
+          "test": "TestReviewMaxAttemptsFollowsTheDeclaredRegistry/requirement_N=1"
+        },
+        {
+          "action": "pass",
+          "test": "TestReviewMaxAttemptsFollowsTheDeclaredRegistry/requirement_N=1"
+        },
+        {
+          "action": "run",
+          "test": "TestReviewMaxAttemptsFollowsTheDeclaredRegistry/requirement_N=2"
+        },
+        {
+          "action": "pass",
+          "test": "TestReviewMaxAttemptsFollowsTheDeclaredRegistry/requirement_N=2"
+        },
+        {
+          "action": "run",
+          "test": "TestReviewMaxAttemptsFollowsTheDeclaredRegistry/requirement_N=4"
+        },
+        {
+          "action": "pass",
+          "test": "TestReviewMaxAttemptsFollowsTheDeclaredRegistry/requirement_N=4"
+        },
+        {
+          "action": "pass",
+          "test": "TestReviewMaxAttemptsFollowsTheDeclaredRegistry"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch001"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch001/requirement-authoring"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch001/requirement-authoring"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch001/architecture-design"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch001/architecture-design"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch001/code-implementation"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch001/code-implementation"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch001/feature-writeback"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch001/feature-writeback"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch001/projection_run_is_not_an_execution"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch001/projection_run_is_not_an_execution"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch001"
+        },
+        {
+          "action": "run",
+          "test": "TestMergeRecoveryInputsRules"
+        },
+        {
+          "action": "pass",
+          "test": "TestMergeRecoveryInputsRules"
+        },
+        {
+          "action": "run",
+          "test": "TestSummarizeToolCallsEmpty"
+        },
+        {
+          "action": "pass",
+          "test": "TestSummarizeToolCallsEmpty"
+        },
+        {
+          "action": "run",
+          "test": "TestApproveDevStartSignsTheCardDigest"
+        },
+        {
+          "action": "pass",
+          "test": "TestApproveDevStartSignsTheCardDigest"
+        },
+        {
+          "action": "run",
+          "test": "TestMHandoff006"
+        },
+        {
+          "action": "run",
+          "test": "TestMHandoff006/completed_cannot_reopen_without_drafting"
+        },
+        {
+          "action": "pass",
+          "test": "TestMHandoff006/completed_cannot_reopen_without_drafting"
+        },
+        {
+          "action": "run",
+          "test": "TestMHandoff006/cancelled_cannot_reopen"
+        },
+        {
+          "action": "pass",
+          "test": "TestMHandoff006/cancelled_cannot_reopen"
+        },
+        {
+          "action": "pass",
+          "test": "TestMHandoff006"
+        },
+        {
+          "action": "run",
+          "test": "TestSnapshotEventHeals"
+        },
+        {
+          "action": "pass",
+          "test": "TestSnapshotEventHeals"
+        },
+        {
+          "action": "run",
+          "test": "TestProjectGatesPendingApprovalAndCanApprove"
+        },
+        {
+          "action": "pass",
+          "test": "TestProjectGatesPendingApprovalAndCanApprove"
+        },
+        {
+          "action": "run",
+          "test": "TestLoadExecutionContractManifestRejectsWhitespaceInputs"
+        },
+        {
+          "action": "pass",
+          "test": "TestLoadExecutionContractManifestRejectsWhitespaceInputs"
+        },
+        {
+          "action": "run",
+          "test": "TestRegistrationNewSentinel"
+        },
+        {
+          "action": "pass",
+          "test": "TestRegistrationNewSentinel"
+        },
+        {
+          "action": "run",
+          "test": "TestDaemonAuthenticatedDeliveryRunsCrctl"
+        },
+        {
+          "action": "run",
+          "test": "TestDaemonAuthenticatedDeliveryRunsCrctl/missing_control_tool_refuses_authenticated_delivery"
+        },
+        {
+          "action": "pass",
+          "test": "TestDaemonAuthenticatedDeliveryRunsCrctl/missing_control_tool_refuses_authenticated_delivery"
+        },
+        {
+          "action": "run",
+          "test": "TestDaemonAuthenticatedDeliveryRunsCrctl/missing_credentials_and_forged_identity_headers"
+        },
+        {
+          "action": "pass",
+          "test": "TestDaemonAuthenticatedDeliveryRunsCrctl/missing_credentials_and_forged_identity_headers"
+        },
+        {
+          "action": "run",
+          "test": "TestDaemonAuthenticatedDeliveryRunsCrctl/unknown_daemon_token"
+        },
+        {
+          "action": "pass",
+          "test": "TestDaemonAuthenticatedDeliveryRunsCrctl/unknown_daemon_token"
+        },
+        {
+          "action": "run",
+          "test": "TestDaemonAuthenticatedDeliveryRunsCrctl/real_daemon_token_from_another_workspace"
+        },
+        {
+          "action": "pass",
+          "test": "TestDaemonAuthenticatedDeliveryRunsCrctl/real_daemon_token_from_another_workspace"
+        },
+        {
+          "action": "pass",
+          "test": "TestDaemonAuthenticatedDeliveryRunsCrctl"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementAdoptsProjectorRunAndRecordsInputs"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementAdoptsProjectorRunAndRecordsInputs"
+        },
+        {
+          "action": "run",
+          "test": "TestRenderRequirementPromptRefusesRegistrationInputs"
+        },
+        {
+          "action": "pass",
+          "test": "TestRenderRequirementPromptRefusesRegistrationInputs"
+        },
+        {
+          "action": "run",
+          "test": "TestApproveIssuesVerifiableGrantAndPersistsRecord"
+        },
+        {
+          "action": "pass",
+          "test": "TestApproveIssuesVerifiableGrantAndPersistsRecord"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch005"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch005/requirement-authoring"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch005/requirement-authoring"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch005/architecture-design"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch005/architecture-design"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch005/code-implementation"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch005/code-implementation"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch005/feature-writeback"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch005/feature-writeback"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch005"
+        },
+        {
+          "action": "run",
+          "test": "TestAuditActionConstantsAligned"
+        },
+        {
+          "action": "pass",
+          "test": "TestAuditActionConstantsAligned"
+        },
+        {
+          "action": "run",
+          "test": "TestLoadExecutionContractManifestRejectsUnsafeInputs"
+        },
+        {
+          "action": "run",
+          "test": "TestLoadExecutionContractManifestRejectsUnsafeInputs/path_without_digest"
+        },
+        {
+          "action": "pass",
+          "test": "TestLoadExecutionContractManifestRejectsUnsafeInputs/path_without_digest"
+        },
+        {
+          "action": "run",
+          "test": "TestLoadExecutionContractManifestRejectsUnsafeInputs/digest_without_path"
+        },
+        {
+          "action": "pass",
+          "test": "TestLoadExecutionContractManifestRejectsUnsafeInputs/digest_without_path"
+        },
+        {
+          "action": "run",
+          "test": "TestLoadExecutionContractManifestRejectsUnsafeInputs/relative_path"
+        },
+        {
+          "action": "pass",
+          "test": "TestLoadExecutionContractManifestRejectsUnsafeInputs/relative_path"
+        },
+        {
+          "action": "run",
+          "test": "TestLoadExecutionContractManifestRejectsUnsafeInputs/missing_file"
+        },
+        {
+          "action": "pass",
+          "test": "TestLoadExecutionContractManifestRejectsUnsafeInputs/missing_file"
+        },
+        {
+          "action": "run",
+          "test": "TestLoadExecutionContractManifestRejectsUnsafeInputs/non_canonical_digest"
+        },
+        {
+          "action": "pass",
+          "test": "TestLoadExecutionContractManifestRejectsUnsafeInputs/non_canonical_digest"
+        },
+        {
+          "action": "run",
+          "test": "TestLoadExecutionContractManifestRejectsUnsafeInputs/short_digest"
+        },
+        {
+          "action": "pass",
+          "test": "TestLoadExecutionContractManifestRejectsUnsafeInputs/short_digest"
+        },
+        {
+          "action": "run",
+          "test": "TestLoadExecutionContractManifestRejectsUnsafeInputs/oversize"
+        },
+        {
+          "action": "pass",
+          "test": "TestLoadExecutionContractManifestRejectsUnsafeInputs/oversize"
+        },
+        {
+          "action": "run",
+          "test": "TestLoadExecutionContractManifestRejectsUnsafeInputs/digest_mismatch"
+        },
+        {
+          "action": "pass",
+          "test": "TestLoadExecutionContractManifestRejectsUnsafeInputs/digest_mismatch"
+        },
+        {
+          "action": "run",
+          "test": "TestLoadExecutionContractManifestRejectsUnsafeInputs/duplicate_key"
+        },
+        {
+          "action": "pass",
+          "test": "TestLoadExecutionContractManifestRejectsUnsafeInputs/duplicate_key"
+        },
+        {
+          "action": "run",
+          "test": "TestLoadExecutionContractManifestRejectsUnsafeInputs/unknown_field"
+        },
+        {
+          "action": "pass",
+          "test": "TestLoadExecutionContractManifestRejectsUnsafeInputs/unknown_field"
+        },
+        {
+          "action": "run",
+          "test": "TestLoadExecutionContractManifestRejectsUnsafeInputs/two_documents"
+        },
+        {
+          "action": "pass",
+          "test": "TestLoadExecutionContractManifestRejectsUnsafeInputs/two_documents"
+        },
+        {
+          "action": "run",
+          "test": "TestLoadExecutionContractManifestRejectsUnsafeInputs/bad_schema"
+        },
+        {
+          "action": "pass",
+          "test": "TestLoadExecutionContractManifestRejectsUnsafeInputs/bad_schema"
+        },
+        {
+          "action": "run",
+          "test": "TestLoadExecutionContractManifestRejectsUnsafeInputs/bad_policy_version"
+        },
+        {
+          "action": "pass",
+          "test": "TestLoadExecutionContractManifestRejectsUnsafeInputs/bad_policy_version"
+        },
+        {
+          "action": "run",
+          "test": "TestLoadExecutionContractManifestRejectsUnsafeInputs/bad_digest_field"
+        },
+        {
+          "action": "pass",
+          "test": "TestLoadExecutionContractManifestRejectsUnsafeInputs/bad_digest_field"
+        },
+        {
+          "action": "pass",
+          "test": "TestLoadExecutionContractManifestRejectsUnsafeInputs"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementResumeRefusesAStaleNodeWhenTheStatusMoved"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementResumeRefusesAStaleNodeWhenTheStatusMoved"
+        },
+        {
+          "action": "run",
+          "test": "TestCanonicalDigestParityWithSharedVectors"
+        },
+        {
+          "action": "pass",
+          "test": "TestCanonicalDigestParityWithSharedVectors"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementSameAgentForBothRolesIsRefused"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementSameAgentForBothRolesIsRefused"
+        },
+        {
+          "action": "run",
+          "test": "TestApplyReviewBlockedThenPassedKeepsBothAttempts"
+        },
+        {
+          "action": "pass",
+          "test": "TestApplyReviewBlockedThenPassedKeepsBothAttempts"
+        },
+        {
+          "action": "run",
+          "test": "TestMDelivery007"
+        },
+        {
+          "action": "run",
+          "test": "TestMDelivery007/archived_completes_only_projection_owned_run"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDelivery007/archived_completes_only_projection_owned_run"
+        },
+        {
+          "action": "run",
+          "test": "TestMDelivery007/cross_stage_archived_does_not_steal_runner_runs"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDelivery007/cross_stage_archived_does_not_steal_runner_runs"
+        },
+        {
+          "action": "run",
+          "test": "TestMDelivery007/projection_owned_run_completes_normally"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDelivery007/projection_owned_run_completes_normally"
+        },
+        {
+          "action": "run",
+          "test": "TestMDelivery007/late_writingback_after_archived_is_flagged_not_reopened"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDelivery007/late_writingback_after_archived_is_flagged_not_reopened"
+        },
+        {
+          "action": "run",
+          "test": "TestMDelivery007/duplicate_out_of_order_events_are_idempotent"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDelivery007/duplicate_out_of_order_events_are_idempotent"
+        },
+        {
+          "action": "run",
+          "test": "TestMDelivery007/runner_close_waits_for_fact_convergence"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDelivery007/runner_close_waits_for_fact_convergence"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDelivery007"
+        },
+        {
+          "action": "run",
+          "test": "TestProjectGatesReturnsOnlyLatestRunPerPipeline"
+        },
+        {
+          "action": "pass",
+          "test": "TestProjectGatesReturnsOnlyLatestRunPerPipeline"
+        },
+        {
+          "action": "run",
+          "test": "TestProjectGatesDetailIsEmbeddedJSONNotBase64"
+        },
+        {
+          "action": "pass",
+          "test": "TestProjectGatesDetailIsEmbeddedJSONNotBase64"
+        },
+        {
+          "action": "run",
+          "test": "TestApprovalGateAC2ZeroPublishMatrix"
+        },
+        {
+          "action": "run",
+          "test": "TestApprovalGateAC2ZeroPublishMatrix/non-gate_target"
+        },
+        {
+          "action": "pass",
+          "test": "TestApprovalGateAC2ZeroPublishMatrix/non-gate_target"
+        },
+        {
+          "action": "run",
+          "test": "TestApprovalGateAC2ZeroPublishMatrix/self-loop_task-breakdown"
+        },
+        {
+          "action": "pass",
+          "test": "TestApprovalGateAC2ZeroPublishMatrix/self-loop_task-breakdown"
+        },
+        {
+          "action": "run",
+          "test": "TestApprovalGateAC2ZeroPublishMatrix/self-loop_requirement-reviewing"
+        },
+        {
+          "action": "pass",
+          "test": "TestApprovalGateAC2ZeroPublishMatrix/self-loop_requirement-reviewing"
+        },
+        {
+          "action": "run",
+          "test": "TestApprovalGateAC2ZeroPublishMatrix/first-sight_fresh_registration"
+        },
+        {
+          "action": "pass",
+          "test": "TestApprovalGateAC2ZeroPublishMatrix/first-sight_fresh_registration"
+        },
+        {
+          "action": "run",
+          "test": "TestApprovalGateAC2ZeroPublishMatrix/first-sight_mid-flight_best-effort"
+        },
+        {
+          "action": "pass",
+          "test": "TestApprovalGateAC2ZeroPublishMatrix/first-sight_mid-flight_best-effort"
+        },
+        {
+          "action": "run",
+          "test": "TestApprovalGateAC2ZeroPublishMatrix/out-of-order_illegal_towards_gate"
+        },
+        {
+          "action": "pass",
+          "test": "TestApprovalGateAC2ZeroPublishMatrix/out-of-order_illegal_towards_gate"
+        },
+        {
+          "action": "run",
+          "test": "TestApprovalGateAC2ZeroPublishMatrix/checkpoint_event"
+        },
+        {
+          "action": "pass",
+          "test": "TestApprovalGateAC2ZeroPublishMatrix/checkpoint_event"
+        },
+        {
+          "action": "run",
+          "test": "TestApprovalGateAC2ZeroPublishMatrix/review_event_with_gate_stage"
+        },
+        {
+          "action": "pass",
+          "test": "TestApprovalGateAC2ZeroPublishMatrix/review_event_with_gate_stage"
+        },
+        {
+          "action": "run",
+          "test": "TestApprovalGateAC2ZeroPublishMatrix/review_event_non-gate_stage"
+        },
+        {
+          "action": "pass",
+          "test": "TestApprovalGateAC2ZeroPublishMatrix/review_event_non-gate_stage"
+        },
+        {
+          "action": "run",
+          "test": "TestApprovalGateAC2ZeroPublishMatrix/trace_event_ledger-only"
+        },
+        {
+          "action": "pass",
+          "test": "TestApprovalGateAC2ZeroPublishMatrix/trace_event_ledger-only"
+        },
+        {
+          "action": "run",
+          "test": "TestApprovalGateAC2ZeroPublishMatrix/reconcile_heals_to_gate_status"
+        },
+        {
+          "action": "pass",
+          "test": "TestApprovalGateAC2ZeroPublishMatrix/reconcile_heals_to_gate_status"
+        },
+        {
+          "action": "run",
+          "test": "TestApprovalGateAC2ZeroPublishMatrix/gate_projection"
+        },
+        {
+          "action": "pass",
+          "test": "TestApprovalGateAC2ZeroPublishMatrix/gate_projection"
+        },
+        {
+          "action": "pass",
+          "test": "TestApprovalGateAC2ZeroPublishMatrix"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementResumeRefusesAFailedTaskThatAlreadyStarted"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementResumeRefusesAFailedTaskThatAlreadyStarted"
+        },
+        {
+          "action": "run",
+          "test": "TestFetchGitHubSnapshotTrunkIsTheDeclaredDefaultBranch"
+        },
+        {
+          "action": "pass",
+          "test": "TestFetchGitHubSnapshotTrunkIsTheDeclaredDefaultBranch"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch001AfterArchitectureFixture"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch001AfterArchitectureFixture/four-phase-dispatch"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch001AfterArchitectureFixture/four-phase-dispatch/requirement-authoring"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch001AfterArchitectureFixture/four-phase-dispatch/requirement-authoring"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch001AfterArchitectureFixture/four-phase-dispatch/architecture-design"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch001AfterArchitectureFixture/four-phase-dispatch/architecture-design"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch001AfterArchitectureFixture/four-phase-dispatch/code-implementation"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch001AfterArchitectureFixture/four-phase-dispatch/code-implementation"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch001AfterArchitectureFixture/four-phase-dispatch/feature-writeback"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch001AfterArchitectureFixture/four-phase-dispatch/feature-writeback"
+        },
+        {
+          "action": "run",
+          "test": "TestMDispatch001AfterArchitectureFixture/four-phase-dispatch/projection_run_is_not_an_execution"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch001AfterArchitectureFixture/four-phase-dispatch/projection_run_is_not_an_execution"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch001AfterArchitectureFixture/four-phase-dispatch"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDispatch001AfterArchitectureFixture"
+        },
+        {
+          "action": "run",
+          "test": "TestMAck001"
+        },
+        {
+          "action": "run",
+          "test": "TestMAck001/batch_with_unresolvable_targets_still_delivers"
+        },
+        {
+          "action": "pass",
+          "test": "TestMAck001/batch_with_unresolvable_targets_still_delivers"
+        },
+        {
+          "action": "run",
+          "test": "TestMAck001/ack_path_has_no_legacy_continuation_calls"
+        },
+        {
+          "action": "pass",
+          "test": "TestMAck001/ack_path_has_no_legacy_continuation_calls"
+        },
+        {
+          "action": "run",
+          "test": "TestMAck001/delivered_at_is_not_consumption"
+        },
+        {
+          "action": "pass",
+          "test": "TestMAck001/delivered_at_is_not_consumption"
+        },
+        {
+          "action": "pass",
+          "test": "TestMAck001"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementLoopRunsEveryDeclaredRoundAndExhaustsOnTheLast"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementLoopRunsEveryDeclaredRoundAndExhaustsOnTheLast/N=1"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementLoopRunsEveryDeclaredRoundAndExhaustsOnTheLast/N=1"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementLoopRunsEveryDeclaredRoundAndExhaustsOnTheLast/N=2"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementLoopRunsEveryDeclaredRoundAndExhaustsOnTheLast/N=2"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementLoopRunsEveryDeclaredRoundAndExhaustsOnTheLast/N=4"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementLoopRunsEveryDeclaredRoundAndExhaustsOnTheLast/N=4"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementLoopRunsEveryDeclaredRoundAndExhaustsOnTheLast"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementResumeContinuesAFailedWriterRoundWithoutSpecialCasing"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementResumeContinuesAFailedWriterRoundWithoutSpecialCasing"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementResumeFreshRunIsIdempotentOnTheNextCall"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementResumeFreshRunIsIdempotentOnTheNextCall"
+        },
+        {
+          "action": "run",
+          "test": "TestMDev004"
+        },
+        {
+          "action": "run",
+          "test": "TestMDev004/plan"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDev004/plan"
+        },
+        {
+          "action": "run",
+          "test": "TestMDev004/test"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDev004/test"
+        },
+        {
+          "action": "run",
+          "test": "TestMDev004/code_review"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDev004/code_review"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDev004"
+        },
+        {
+          "action": "run",
+          "test": "TestMAck005"
+        },
+        {
+          "action": "run",
+          "test": "TestMAck005/archived_cr_with_stale_grant"
+        },
+        {
+          "action": "pass",
+          "test": "TestMAck005/archived_cr_with_stale_grant"
+        },
+        {
+          "action": "run",
+          "test": "TestMAck005/no_active_run_no_fake_progress"
+        },
+        {
+          "action": "pass",
+          "test": "TestMAck005/no_active_run_no_fake_progress"
+        },
+        {
+          "action": "pass",
+          "test": "TestMAck005"
+        },
+        {
+          "action": "run",
+          "test": "TestMDev004TestLoopExhaustion"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDev004TestLoopExhaustion"
+        },
+        {
+          "action": "run",
+          "test": "TestAIFI60RereviewSuccessfulHandoverKeepsAuditWhenInputsAreFilled"
+        },
+        {
+          "action": "pass",
+          "test": "TestAIFI60RereviewSuccessfulHandoverKeepsAuditWhenInputsAreFilled"
+        },
+        {
+          "action": "run",
+          "test": "TestApprovalGateSubscriptionSurface"
+        },
+        {
+          "action": "pass",
+          "test": "TestApprovalGateSubscriptionSurface"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementResumeRefusesAContradictingSourceBeforeDispatching"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementResumeRefusesAContradictingSourceBeforeDispatching"
+        },
+        {
+          "action": "run",
+          "test": "TestAC2_FourStagesApproveAndReject"
+        },
+        {
+          "action": "pass",
+          "test": "TestAC2_FourStagesApproveAndReject"
+        },
+        {
+          "action": "run",
+          "test": "TestGateProjectionRejectedCancelsActiveRun"
+        },
+        {
+          "action": "pass",
+          "test": "TestGateProjectionRejectedCancelsActiveRun"
+        },
+        {
+          "action": "run",
+          "test": "TestSigningKeyLoading"
+        },
+        {
+          "action": "pass",
+          "test": "TestSigningKeyLoading"
+        },
+        {
+          "action": "run",
+          "test": "TestMBinding002"
+        },
+        {
+          "action": "run",
+          "test": "TestMBinding002/human_node_has_no_executor"
+        },
+        {
+          "action": "pass",
+          "test": "TestMBinding002/human_node_has_no_executor"
+        },
+        {
+          "action": "run",
+          "test": "TestMBinding002/owner_is_not_the_executor"
+        },
+        {
+          "action": "pass",
+          "test": "TestMBinding002/owner_is_not_the_executor"
+        },
+        {
+          "action": "run",
+          "test": "TestMBinding002/invalid_node_bindings_fail_closed"
+        },
+        {
+          "action": "pass",
+          "test": "TestMBinding002/invalid_node_bindings_fail_closed"
+        },
+        {
+          "action": "run",
+          "test": "TestMBinding002/review_refuses_the_author's_actual_UUID"
+        },
+        {
+          "action": "pass",
+          "test": "TestMBinding002/review_refuses_the_author's_actual_UUID"
+        },
+        {
+          "action": "run",
+          "test": "TestMBinding002/architecture_review_refuses_same_UUID"
+        },
+        {
+          "action": "pass",
+          "test": "TestMBinding002/architecture_review_refuses_same_UUID"
+        },
+        {
+          "action": "run",
+          "test": "TestMBinding002/historical_author_UUID_refuses_renamed_reviewer"
+        },
+        {
+          "action": "pass",
+          "test": "TestMBinding002/historical_author_UUID_refuses_renamed_reviewer"
+        },
+        {
+          "action": "run",
+          "test": "TestMBinding002/different_historical_author_UUID_enqueues"
+        },
+        {
+          "action": "pass",
+          "test": "TestMBinding002/different_historical_author_UUID_enqueues"
+        },
+        {
+          "action": "run",
+          "test": "TestMBinding002/legacy_review_task_by_the_author_is_not_consumed"
+        },
+        {
+          "action": "pass",
+          "test": "TestMBinding002/legacy_review_task_by_the_author_is_not_consumed"
+        },
+        {
+          "action": "run",
+          "test": "TestMBinding002/human_gate_enqueues_no_task"
+        },
+        {
+          "action": "pass",
+          "test": "TestMBinding002/human_gate_enqueues_no_task"
+        },
+        {
+          "action": "pass",
+          "test": "TestMBinding002"
+        },
+        {
+          "action": "run",
+          "test": "TestApproveRefusesUnattributableEvidence"
+        },
+        {
+          "action": "pass",
+          "test": "TestApproveRefusesUnattributableEvidence"
+        },
+        {
+          "action": "run",
+          "test": "TestApproveEvidenceDrift409"
+        },
+        {
+          "action": "pass",
+          "test": "TestApproveEvidenceDrift409"
+        },
+        {
+          "action": "run",
+          "test": "TestApproveRequiresEvidenceDigest"
+        },
+        {
+          "action": "pass",
+          "test": "TestApproveRequiresEvidenceDigest"
+        },
+        {
+          "action": "run",
+          "test": "TestApproveAfterIngestCrctlStatusEvent"
+        },
+        {
+          "action": "pass",
+          "test": "TestApproveAfterIngestCrctlStatusEvent"
+        },
+        {
+          "action": "run",
+          "test": "TestApplySnapshotHeals"
+        },
+        {
+          "action": "pass",
+          "test": "TestApplySnapshotHeals"
+        },
+        {
+          "action": "run",
+          "test": "TestGovernanceFixtureLeaseExcludesOtherSessions"
+        },
+        {
+          "action": "pass",
+          "test": "TestGovernanceFixtureLeaseExcludesOtherSessions"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementReviewingResumesAtTheReviewNode"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementReviewingResumesAtTheReviewNode"
+        },
+        {
+          "action": "run",
+          "test": "TestDuplicateOfAnUnprojectedEventIsProjected"
+        },
+        {
+          "action": "pass",
+          "test": "TestDuplicateOfAnUnprojectedEventIsProjected"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizePersistsAndReplaysSource"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizePersistsAndReplaysSource"
+        },
+        {
+          "action": "run",
+          "test": "TestArchivedCRHealsFromHistorySnapshot"
+        },
+        {
+          "action": "pass",
+          "test": "TestArchivedCRHealsFromHistorySnapshot"
+        },
+        {
+          "action": "run",
+          "test": "TestProjectGatesIgnoresOtherWorkspacesApprovals"
+        },
+        {
+          "action": "pass",
+          "test": "TestProjectGatesIgnoresOtherWorkspacesApprovals"
+        },
+        {
+          "action": "run",
+          "test": "TestRunnerSignedRejectTerminatesAfterCanonicalRollback"
+        },
+        {
+          "action": "pass",
+          "test": "TestRunnerSignedRejectTerminatesAfterCanonicalRollback"
+        },
+        {
+          "action": "run",
+          "test": "TestGateProjectionRequirementApprovalFlow"
+        },
+        {
+          "action": "pass",
+          "test": "TestGateProjectionRequirementApprovalFlow"
+        },
+        {
+          "action": "run",
+          "test": "TestLoadExecutionContractManifestAcceptsPinnedValidFile"
+        },
+        {
+          "action": "pass",
+          "test": "TestLoadExecutionContractManifestAcceptsPinnedValidFile"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRouteUsesRealAuthAndWorkspace"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRouteUsesRealAuthAndWorkspace"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementReviewRunsOnASeparateAgent"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementReviewRunsOnASeparateAgent"
+        },
+        {
+          "action": "run",
+          "test": "TestTraceIngestAcceptedProcessedAndLedgerOnly"
+        },
+        {
+          "action": "pass",
+          "test": "TestTraceIngestAcceptedProcessedAndLedgerOnly"
+        },
+        {
+          "action": "run",
+          "test": "TestArchiveEventCompletesWritebackRun"
+        },
+        {
+          "action": "pass",
+          "test": "TestArchiveEventCompletesWritebackRun"
+        },
+        {
+          "action": "run",
+          "test": "TestMDev003"
+        },
+        {
+          "action": "run",
+          "test": "TestMDev003/matching_release_subjects_advance_code_review"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDev003/matching_release_subjects_advance_code_review"
+        },
+        {
+          "action": "run",
+          "test": "TestMDev003/artifact_drift_after_review_is_refused"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDev003/artifact_drift_after_review_is_refused"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDev003"
+        },
+        {
+          "action": "run",
+          "test": "TestStartArchitectureAdoptsProjectorRunAndDeduplicatesConcurrentStart"
+        },
+        {
+          "action": "pass",
+          "test": "TestStartArchitectureAdoptsProjectorRunAndDeduplicatesConcurrentStart"
+        },
+        {
+          "action": "run",
+          "test": "TestCRSyncEventEveryJoinIsWorkspaceScoped"
+        },
+        {
+          "action": "pass",
+          "test": "TestCRSyncEventEveryJoinIsWorkspaceScoped"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementFailRunRecordsTheFailureWithoutARunnerObject"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementFailRunRecordsTheFailureWithoutARunnerObject/column_default_detail"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementFailRunRecordsTheFailureWithoutARunnerObject/column_default_detail"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementFailRunRecordsTheFailureWithoutARunnerObject/root_fields_are_preserved"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementFailRunRecordsTheFailureWithoutARunnerObject/root_fields_are_preserved"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementFailRunRecordsTheFailureWithoutARunnerObject/existing_runner_fields_are_preserved"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementFailRunRecordsTheFailureWithoutARunnerObject/existing_runner_fields_are_preserved"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementFailRunRecordsTheFailureWithoutARunnerObject"
+        },
+        {
+          "action": "run",
+          "test": "TestProjectTimelineConflictAndMalformed"
+        },
+        {
+          "action": "pass",
+          "test": "TestProjectTimelineConflictAndMalformed"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementRepairWithVerdictRecordsDelivery"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementRepairWithVerdictRecordsDelivery"
+        },
+        {
+          "action": "run",
+          "test": "TestLoadExecutionContractManifestEmptyIsDisabled"
+        },
+        {
+          "action": "pass",
+          "test": "TestLoadExecutionContractManifestEmptyIsDisabled"
+        },
+        {
+          "action": "run",
+          "test": "TestMDev002"
+        },
+        {
+          "action": "run",
+          "test": "TestMDev002/dev_plan_upstream_projects_to_its_own_node"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDev002/dev_plan_upstream_projects_to_its_own_node"
+        },
+        {
+          "action": "run",
+          "test": "TestMDev002/test_block_is_stored_not_swallowed"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDev002/test_block_is_stored_not_swallowed"
+        },
+        {
+          "action": "run",
+          "test": "TestMDev002/expired_round_is_hard_rejected"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDev002/expired_round_is_hard_rejected"
+        },
+        {
+          "action": "run",
+          "test": "TestMDev002/upstream_attempt_zero_is_not_expired"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDev002/upstream_attempt_zero_is_not_expired"
+        },
+        {
+          "action": "run",
+          "test": "TestMDev002/wrong_attribution_is_not_honored"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDev002/wrong_attribution_is_not_honored"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDev002"
+        },
+        {
+          "action": "run",
+          "test": "TestEnqueuePipelineTaskCopiesAttributionAndDeduplicates"
+        },
+        {
+          "action": "pass",
+          "test": "TestEnqueuePipelineTaskCopiesAttributionAndDeduplicates"
+        },
+        {
+          "action": "run",
+          "test": "TestRunnerReviewBlockReplaysWriteAtNextAttempt"
+        },
+        {
+          "action": "pass",
+          "test": "TestRunnerReviewBlockReplaysWriteAtNextAttempt"
+        },
+        {
+          "action": "run",
+          "test": "TestStageOfCRWithoutAPoolReportsNoStage"
+        },
+        {
+          "action": "pass",
+          "test": "TestStageOfCRWithoutAPoolReportsNoStage"
+        },
+        {
+          "action": "run",
+          "test": "TestRequirementDeliveredApprovalClosesTheRun"
+        },
+        {
+          "action": "pass",
+          "test": "TestRequirementDeliveredApprovalClosesTheRun"
+        },
+        {
+          "action": "run",
+          "test": "TestAC6d_CrossWorkspaceIsolation"
+        },
+        {
+          "action": "pass",
+          "test": "TestAC6d_CrossWorkspaceIsolation"
+        },
+        {
+          "action": "run",
+          "test": "TestProjectTimelineMalformedRowDoesNotHideValidEventAndEventsStayOrdered"
+        },
+        {
+          "action": "pass",
+          "test": "TestProjectTimelineMalformedRowDoesNotHideValidEventAndEventsStayOrdered"
+        },
+        {
+          "action": "run",
+          "test": "TestDualChannelSameEventLandsOnce"
+        },
+        {
+          "action": "pass",
+          "test": "TestDualChannelSameEventLandsOnce"
+        },
+        {
+          "action": "run",
+          "test": "TestMBinding001"
+        },
+        {
+          "action": "pass",
+          "test": "TestMBinding001"
+        },
+        {
+          "action": "run",
+          "test": "TestM21aPersistSeamDoesNotDispatch"
+        },
+        {
+          "action": "pass",
+          "test": "TestM21aPersistSeamDoesNotDispatch"
+        },
+        {
+          "action": "run",
+          "test": "TestAIFI60ReviewLateProjectionMustResumeWithoutReReview"
+        },
+        {
+          "action": "pass",
+          "test": "TestAIFI60ReviewLateProjectionMustResumeWithoutReReview"
+        },
+        {
+          "action": "run",
+          "test": "TestMDev004CodeLoopExhaustion"
+        },
+        {
+          "action": "pass",
+          "test": "TestMDev004CodeLoopExhaustion"
+        },
+        {
+          "action": "run",
+          "test": "TestAIFI60ReviewLateBlockRoutesToRepairWithoutSecondReviewer"
+        },
+        {
+          "action": "pass",
+          "test": "TestAIFI60ReviewLateBlockRoutesToRepairWithoutSecondReviewer"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsDuplicateJSONKeys"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsDuplicateJSONKeys/root_duplicate"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsDuplicateJSONKeys/root_duplicate"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsDuplicateJSONKeys/nested_allowed_paths_duplicate"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsDuplicateJSONKeys/nested_allowed_paths_duplicate"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsDuplicateJSONKeys"
+        },
+        {
+          "action": "run",
+          "test": "TestMTick005"
+        },
+        {
+          "action": "run",
+          "test": "TestMTick005/terminal_runs_are_not_resurrected"
+        },
+        {
+          "action": "pass",
+          "test": "TestMTick005/terminal_runs_are_not_resurrected"
+        },
+        {
+          "action": "run",
+          "test": "TestMTick005/human_approval_gate_is_not_crossed"
+        },
+        {
+          "action": "pass",
+          "test": "TestMTick005/human_approval_gate_is_not_crossed"
+        },
+        {
+          "action": "run",
+          "test": "TestMTick005/exhausted_loop_stops_without_raising_the_budget"
+        },
+        {
+          "action": "pass",
+          "test": "TestMTick005/exhausted_loop_stops_without_raising_the_budget"
+        },
+        {
+          "action": "run",
+          "test": "TestMTick005/resume_path_never_calls_the_budget-raising_resume"
+        },
+        {
+          "action": "pass",
+          "test": "TestMTick005/resume_path_never_calls_the_budget-raising_resume"
+        },
+        {
+          "action": "pass",
+          "test": "TestMTick005"
+        },
+        {
+          "action": "run",
+          "test": "TestGrantCrossVerifiesWithCrctlCodeStage"
+        },
+        {
+          "action": "run",
+          "test": "TestGrantCrossVerifiesWithCrctlCodeStage/code_approve_with_release-subjects_and_adjacent_replay"
+        },
+        {
+          "action": "pass",
+          "test": "TestGrantCrossVerifiesWithCrctlCodeStage/code_approve_with_release-subjects_and_adjacent_replay"
+        },
+        {
+          "action": "run",
+          "test": "TestGrantCrossVerifiesWithCrctlCodeStage/code_reject_rollback_and_adjacent_replay"
+        },
+        {
+          "action": "pass",
+          "test": "TestGrantCrossVerifiesWithCrctlCodeStage/code_reject_rollback_and_adjacent_replay"
+        },
+        {
+          "action": "pass",
+          "test": "TestGrantCrossVerifiesWithCrctlCodeStage"
+        },
+        {
+          "action": "run",
+          "test": "TestApplySnapshotLeavesAbsentRows"
+        },
+        {
+          "action": "pass",
+          "test": "TestApplySnapshotLeavesAbsentRows"
+        },
+        {
+          "action": "run",
+          "test": "TestApprovalGateShellIssueIDTwoStates"
+        },
+        {
+          "action": "run",
+          "test": "TestApprovalGateShellIssueIDTwoStates/with_shell_issue_id"
+        },
+        {
+          "action": "pass",
+          "test": "TestApprovalGateShellIssueIDTwoStates/with_shell_issue_id"
+        },
+        {
+          "action": "run",
+          "test": "TestApprovalGateShellIssueIDTwoStates/null_shell_issue_id"
+        },
+        {
+          "action": "pass",
+          "test": "TestApprovalGateShellIssueIDTwoStates/null_shell_issue_id"
+        },
+        {
+          "action": "pass",
+          "test": "TestApprovalGateShellIssueIDTwoStates"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizeRequiresFrozenCoordinatorRoot"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizeRequiresFrozenCoordinatorRoot"
+        },
+        {
+          "action": "run",
+          "test": "TestDaemonExecutionDeliveryRejectsOversizedResponse"
+        },
+        {
+          "action": "pass",
+          "test": "TestDaemonExecutionDeliveryRejectsOversizedResponse"
+        },
+        {
+          "action": "run",
+          "test": "TestApplySnapshotSkipsActiveArchitecturePipeline"
+        },
+        {
+          "action": "pass",
+          "test": "TestApplySnapshotSkipsActiveArchitecturePipeline"
+        },
+        {
+          "action": "run",
+          "test": "TestApproveRefusesWhenNoGateIsPending"
+        },
+        {
+          "action": "pass",
+          "test": "TestApproveRefusesWhenNoGateIsPending"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionAuthorizationRejectsOversizedGrantEnvelope"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionAuthorizationRejectsOversizedGrantEnvelope"
+        },
+        {
+          "action": "run",
+          "test": "TestApplySnapshotHistoryTerminalHasNoGuardBypass"
+        },
+        {
+          "action": "pass",
+          "test": "TestApplySnapshotHistoryTerminalHasNoGuardBypass"
+        },
+        {
+          "action": "run",
+          "test": "TestParseBacklogIDs"
+        },
+        {
+          "action": "pass",
+          "test": "TestParseBacklogIDs"
+        },
+        {
+          "action": "run",
+          "test": "TestRunnerDigestMismatchIsRecoverableOnSameRun"
+        },
+        {
+          "action": "pass",
+          "test": "TestRunnerDigestMismatchIsRecoverableOnSameRun"
+        },
+        {
+          "action": "run",
+          "test": "TestParseCoreRegistryFixedContract"
+        },
+        {
+          "action": "pass",
+          "test": "TestParseCoreRegistryFixedContract"
+        },
+        {
+          "action": "pass",
+          "test": "TestSelectCRSourceStage"
+        }
+      ]
+    },
+    {
+      "package": "./cmd/server",
+      "command": [
+        "go",
+        "test",
+        "./cmd/server",
+        "-run",
+        "^TestMaintenanceRoutesAreAbsentFromPublicServer$|Execution",
+        "-count=1",
+        "-json"
+      ],
+      "exit": 0,
+      "counts": {
+        "run": 6,
+        "pass": 6,
+        "fail": 0,
+        "skip": 0
+      },
+      "events": [
+        {
+          "action": "run",
+          "test": "TestMaintenanceRoutesAreAbsentFromPublicServer"
+        },
+        {
+          "action": "pass",
+          "test": "TestMaintenanceRoutesAreAbsentFromPublicServer"
+        },
+        {
+          "action": "run",
+          "test": "TestGetLastTaskSessionKeepsExecutionSessionBesideTriage"
+        },
+        {
+          "action": "pass",
+          "test": "TestGetLastTaskSessionKeepsExecutionSessionBesideTriage"
+        },
+        {
+          "action": "run",
+          "test": "TestTriageRunsCannotInvalidateAnExecutionSession"
+        },
+        {
+          "action": "run",
+          "test": "TestTriageRunsCannotInvalidateAnExecutionSession/retired_sessions"
+        },
+        {
+          "action": "pass",
+          "test": "TestTriageRunsCannotInvalidateAnExecutionSession/retired_sessions"
+        },
+        {
+          "action": "run",
+          "test": "TestTriageRunsCannotInvalidateAnExecutionSession/resume_overflow_at"
+        },
+        {
+          "action": "pass",
+          "test": "TestTriageRunsCannotInvalidateAnExecutionSession/resume_overflow_at"
+        },
+        {
+          "action": "run",
+          "test": "TestTriageRunsCannotInvalidateAnExecutionSession/latest_per_session"
+        },
+        {
+          "action": "pass",
+          "test": "TestTriageRunsCannotInvalidateAnExecutionSession/latest_per_session"
+        },
+        {
+          "action": "pass",
+          "test": "TestTriageRunsCannotInvalidateAnExecutionSession"
+        }
+      ]
+    },
+    {
+      "package": "./internal/daemon",
+      "command": [
+        "go",
+        "test",
+        "./internal/daemon",
+        "-run",
+        "^(TestExecution|TestClaimedExecution|TestMKey|TestGrant)",
+        "-count=1",
+        "-json"
+      ],
+      "exit": 0,
+      "counts": {
+        "run": 36,
+        "pass": 35,
+        "fail": 0,
+        "skip": 1
+      },
+      "events": [
+        {
+          "action": "run",
+          "test": "TestMKey003"
+        },
+        {
+          "action": "run",
+          "test": "TestMKey003/unique_root_writes_and_acks"
+        },
+        {
+          "action": "pass",
+          "test": "TestMKey003/unique_root_writes_and_acks"
+        },
+        {
+          "action": "run",
+          "test": "TestMKey003/zero_root_rejected"
+        },
+        {
+          "action": "pass",
+          "test": "TestMKey003/zero_root_rejected"
+        },
+        {
+          "action": "run",
+          "test": "TestMKey003/ambiguous_roots_rejected"
+        },
+        {
+          "action": "pass",
+          "test": "TestMKey003/ambiguous_roots_rejected"
+        },
+        {
+          "action": "run",
+          "test": "TestMKey003/cross_workspace_rejected"
+        },
+        {
+          "action": "pass",
+          "test": "TestMKey003/cross_workspace_rejected"
+        },
+        {
+          "action": "run",
+          "test": "TestMKey003/remote_plaintext_rejected"
+        },
+        {
+          "action": "pass",
+          "test": "TestMKey003/remote_plaintext_rejected"
+        },
+        {
+          "action": "run",
+          "test": "TestMKey003/remote_plaintext_wakeup_url_rejected"
+        },
+        {
+          "action": "pass",
+          "test": "TestMKey003/remote_plaintext_wakeup_url_rejected"
+        },
+        {
+          "action": "run",
+          "test": "TestMKey003/loopback_http_allowed"
+        },
+        {
+          "action": "pass",
+          "test": "TestMKey003/loopback_http_allowed"
+        },
+        {
+          "action": "run",
+          "test": "TestMKey003/missing_key_withholds_whole_batch"
+        },
+        {
+          "action": "pass",
+          "test": "TestMKey003/missing_key_withholds_whole_batch"
+        },
+        {
+          "action": "pass",
+          "test": "TestMKey003"
+        },
+        {
+          "action": "run",
+          "test": "TestMKey004"
+        },
+        {
+          "action": "run",
+          "test": "TestMKey004/interrupt_after_key_replays"
+        },
+        {
+          "action": "pass",
+          "test": "TestMKey004/interrupt_after_key_replays"
+        },
+        {
+          "action": "run",
+          "test": "TestMKey004/interrupt_after_grant_replays_without_corruption"
+        },
+        {
+          "action": "pass",
+          "test": "TestMKey004/interrupt_after_grant_replays_without_corruption"
+        },
+        {
+          "action": "pass",
+          "test": "TestMKey004"
+        },
+        {
+          "action": "run",
+          "test": "TestMKey005"
+        },
+        {
+          "action": "run",
+          "test": "TestMKey005/other_key_untouched_and_same_key_idempotent"
+        },
+        {
+          "action": "pass",
+          "test": "TestMKey005/other_key_untouched_and_same_key_idempotent"
+        },
+        {
+          "action": "run",
+          "test": "TestMKey005/same_key_id_conflict_fails_closed"
+        },
+        {
+          "action": "pass",
+          "test": "TestMKey005/same_key_id_conflict_fails_closed"
+        },
+        {
+          "action": "run",
+          "test": "TestMKey005/old_key_and_old_grant_preserved"
+        },
+        {
+          "action": "pass",
+          "test": "TestMKey005/old_key_and_old_grant_preserved"
+        },
+        {
+          "action": "pass",
+          "test": "TestMKey005"
+        },
+        {
+          "action": "run",
+          "test": "TestMKey006"
+        },
+        {
+          "action": "pass",
+          "test": "TestMKey006"
+        },
+        {
+          "action": "run",
+          "test": "TestMKey001"
+        },
+        {
+          "action": "pass",
+          "test": "TestMKey001"
+        },
+        {
+          "action": "run",
+          "test": "TestMKey002"
+        },
+        {
+          "action": "pass",
+          "test": "TestMKey002"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionVerifierRequiresExplicitNegativeFacts"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionVerifierRequiresExplicitNegativeFacts"
+        },
+        {
+          "action": "run",
+          "test": "TestClaimedExecutionTaskCannotStartOnRootAttributionAlone"
+        },
+        {
+          "action": "pass",
+          "test": "TestClaimedExecutionTaskCannotStartOnRootAttributionAlone"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionRootBindingRequiresTrustedProject"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionRootBindingRequiresTrustedProject/task_project_selects_its_own_root_among_same-named_CRs"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionRootBindingRequiresTrustedProject/task_project_selects_its_own_root_among_same-named_CRs"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionRootBindingRequiresTrustedProject/missing_task_project_identity_fails_closed"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionRootBindingRequiresTrustedProject/missing_task_project_identity_fails_closed"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionRootBindingRequiresTrustedProject/caller_context_project_id_cannot_redirect_the_root"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionRootBindingRequiresTrustedProject/caller_context_project_id_cannot_redirect_the_root"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionRootBindingRequiresTrustedProject/resource_without_project_or_resource_identity_fails_closed"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionRootBindingRequiresTrustedProject/resource_without_project_or_resource_identity_fails_closed"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionRootBindingRequiresTrustedProject/config_fixture_projection_is_not_a_server_snapshot"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionRootBindingRequiresTrustedProject/config_fixture_projection_is_not_a_server_snapshot"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionRootBindingRequiresTrustedProject/legacy_task_keeps_the_prior_search"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionRootBindingRequiresTrustedProject/legacy_task_keeps_the_prior_search"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionRootBindingRequiresTrustedProject"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionRootSnapshotKeepsProvenance"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionRootSnapshotKeepsProvenance"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionTrustInstallsOutsideWorkspace"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionTrustInstallsOutsideWorkspace"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionTrustRefusesReplacedRoot"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionTrustRefusesReplacedRoot"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionTrustRefusesReplacementOfInstalledKey"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionTrustRefusesReplacementOfInstalledKey"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionTrustRefusesRootInsideWorkspace"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionTrustRefusesRootInsideWorkspace"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionTrustRefusesLinkedRootInsideWorkspace"
+        },
+        {
+          "action": "skip",
+          "test": "TestExecutionTrustRefusesLinkedRootInsideWorkspace"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionTrustRejectsUnsafeNames"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionTrustRejectsUnsafeNames"
+        },
+        {
+          "action": "run",
+          "test": "TestExecutionTrustRequiresWorkspaceUUIDAndAbsoluteHome"
+        },
+        {
+          "action": "pass",
+          "test": "TestExecutionTrustRequiresWorkspaceUUIDAndAbsoluteHome"
+        }
+      ]
+    }
+  ],
+  "recorded_at": "2026-10-23T08:15:21.001Z",
+  "build_checks": [
+    {
+      "command": [
+        "go",
+        "vet",
+        "./internal/daemon",
+        "./internal/governance",
+        "./cmd/server"
+      ],
+      "exit": 0
+    },
+    {
+      "command": [
+        "go",
+        "build",
+        "./cmd/server",
+        "./internal/daemon"
+      ],
+      "exit": 0
+    }
+  ]
+}

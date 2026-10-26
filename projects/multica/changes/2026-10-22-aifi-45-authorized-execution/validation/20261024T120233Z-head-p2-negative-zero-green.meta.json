@@ -1,0 +1,59 @@
+{
+  "schema": "aifi45-head-p2-run/v1",
+  "label": "negative-zero-green",
+  "started_utc": "2026-10-24T12:02:33.252Z",
+  "completed_utc": "2026-10-24T12:02:38.324Z",
+  "process_elapsed_ms": 4760,
+  "final_argv": [
+    "go",
+    "test",
+    "./internal/governance",
+    "-run",
+    "^TestExecutionAuthorizationHeadHTTPPreservesNegativeZeroSource$",
+    "-count=1",
+    "-json"
+  ],
+  "cwd": "C:/Users/GOBAO/Downloads/AI/multica/server",
+  "exit": 0,
+  "signal": null,
+  "spawn_error": null,
+  "counts_all": {
+    "run": 3,
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "counts_top": {
+    "run": 1,
+    "pass": 1,
+    "fail": 0,
+    "skip": 0
+  },
+  "package_results": [
+    {
+      "Time": "2026-10-24T20:02:38.2171539+08:00",
+      "Action": "pass",
+      "Package": "github.com/multica-ai/multica/server/internal/governance",
+      "Elapsed": 1.48
+    }
+  ],
+  "failed_tests": [],
+  "source_sha256_lf": {
+    "server/internal/governance/execution_authorization_head.go": "4d5ab17a7010b8d96112f5c6645a7f46eec4cedb6f371b9f1faee97968658556",
+    "server/internal/governance/execution_authorization_head_test.go": "6f6af2aea6a99cf1b600b0f086093c584742bd5cbf402ca6e5747c7954bedbf9",
+    "server/cmd/server/execution_authorization_head_test.go": "3499794ed5c382c9caee5269cbe8ab8f9b92b08f58b5be7be375b7e000769d59"
+  },
+  "runner_sha256_lf": "b876a3835fbe835fd15f73d8ddf81db9adee340f7f17308d6f2cb78ed61ad4b6",
+  "database": {
+    "container": "stdd-aifi45-20261022-pg",
+    "container_id_prefix": "666bfec52ac3",
+    "loopback_port": 55432,
+    "database": "stdd_aifi45_20261022",
+    "user": "stdd"
+  },
+  "harness": {
+    "PI_PROVIDER": "OpenAIPersonal",
+    "PI_MODEL": "gpt-6.1-sol",
+    "PI_REASONING_LEVEL": "high"
+  }
+}

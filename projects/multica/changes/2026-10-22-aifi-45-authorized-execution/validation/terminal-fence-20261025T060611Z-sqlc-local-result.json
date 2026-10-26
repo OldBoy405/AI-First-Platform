@@ -1,0 +1,403 @@
+{
+  "at": "2026-10-25T06:12:22.857Z",
+  "why": "make sqlc exact module runner failed offline deprecation lookup; use installed identical pinned v1.31.1 without network",
+  "binary": "C:/Users/GOBAO/go/bin/sqlc.exe",
+  "binary_sha256": "9668d6e9615694b943e5a8beeb80517d590edfeb83a28478f5f11186a0142307",
+  "version": "v1.31.1",
+  "exit": 1,
+  "stdout": "",
+  "stderr": "# package db\npkg\\db\\queries\\agent.sql:1245:7: column reference \"id\" is ambiguous\npkg\\db\\queries\\agent.sql:1418:5: column reference \"id\" is ambiguous\n",
+  "changed": [],
+  "after": [
+    {
+      "file": "activity.sql.go",
+      "raw_sha256": "534e260fffa628582e32e1b703ee7e47ca74bece5cd5fd342b692583ef61fec3",
+      "lf_sha256": "534e260fffa628582e32e1b703ee7e47ca74bece5cd5fd342b692583ef61fec3"
+    },
+    {
+      "file": "agent.sql.go",
+      "raw_sha256": "ae50ee616fbe510a5d0c1204b2636e6eb1dd29f7e1301e411130863f4669188c",
+      "lf_sha256": "ae50ee616fbe510a5d0c1204b2636e6eb1dd29f7e1301e411130863f4669188c"
+    },
+    {
+      "file": "agent_builder.sql.go",
+      "raw_sha256": "6b1a235200b4a5176aee9b61387ccbae7b57c13b6acf6dfb9fa299e0237df8cf",
+      "lf_sha256": "6b1a235200b4a5176aee9b61387ccbae7b57c13b6acf6dfb9fa299e0237df8cf"
+    },
+    {
+      "file": "agent_invocation_target.sql.go",
+      "raw_sha256": "9d1d2600db0695d510f8378990b8f6348ec504d5b9375ae73dad95699366801e",
+      "lf_sha256": "9d1d2600db0695d510f8378990b8f6348ec504d5b9375ae73dad95699366801e"
+    },
+    {
+      "file": "approval.sql.go",
+      "raw_sha256": "f122f2194fe6a511d9c47d6c26ca1c0e3381c1b0bd1ba6ded3df636bbaef7894",
+      "lf_sha256": "f122f2194fe6a511d9c47d6c26ca1c0e3381c1b0bd1ba6ded3df636bbaef7894"
+    },
+    {
+      "file": "attachment.sql.go",
+      "raw_sha256": "e76bd3257fd1bb0d091049046a7a1e88f6a236c0e0e343901c6cdc8b60575701",
+      "lf_sha256": "e76bd3257fd1bb0d091049046a7a1e88f6a236c0e0e343901c6cdc8b60575701"
+    },
+    {
+      "file": "attachment_row.go",
+      "raw_sha256": "da0fa9a3eb362aae88d3ff71babd40b0b8d7d36a8f5120a6aabeb24a263292f9",
+      "lf_sha256": "8811a2c3283f357438ebdeb217e00335b31058bb9ff0394b35d462ca273edd94"
+    },
+    {
+      "file": "autopilot.sql.go",
+      "raw_sha256": "077a2d2cdf21ed6261b50b116916cffc018d12266261e9f00f352a7ff42f976a",
+      "lf_sha256": "077a2d2cdf21ed6261b50b116916cffc018d12266261e9f00f352a7ff42f976a"
+    },
+    {
+      "file": "autopilot_quota.sql.go",
+      "raw_sha256": "663558c58b2a8dd890b7b0a5d72e7eef9106972ae78bfdeb3e02e4a528279b8c",
+      "lf_sha256": "663558c58b2a8dd890b7b0a5d72e7eef9106972ae78bfdeb3e02e4a528279b8c"
+    },
+    {
+      "file": "channel.sql.go",
+      "raw_sha256": "2cd455ffeeb3c65b2df2ed66f78a9945beb75861c84310cd5d8705236e20a388",
+      "lf_sha256": "2cd455ffeeb3c65b2df2ed66f78a9945beb75861c84310cd5d8705236e20a388"
+    },
+    {
+      "file": "channel_typing.sql.go",
+      "raw_sha256": "4eb2f48ee107fffa0f08c1f9ac41fe624fcb4b16c72084163595412aba6882eb",
+      "lf_sha256": "4eb2f48ee107fffa0f08c1f9ac41fe624fcb4b16c72084163595412aba6882eb"
+    },
+    {
+      "file": "chat.sql.go",
+      "raw_sha256": "4c81c84326732bc2ce772da7b3c695945cce70a74365a67513f7bc5f70a7b25a",
+      "lf_sha256": "4c81c84326732bc2ce772da7b3c695945cce70a74365a67513f7bc5f70a7b25a"
+    },
+    {
+      "file": "chat_cancel.sql.go",
+      "raw_sha256": "2e0ab989bc91c514e116b4f1d683974b33b296382a246c11ae5b22ca51d7d34a",
+      "lf_sha256": "2e0ab989bc91c514e116b4f1d683974b33b296382a246c11ae5b22ca51d7d34a"
+    },
+    {
+      "file": "chat_pinned_agent.sql.go",
+      "raw_sha256": "72c4c1b6041295b62c0a48af7dcd77ef86a69900d17552872d65583dd6bdcb57",
+      "lf_sha256": "72c4c1b6041295b62c0a48af7dcd77ef86a69900d17552872d65583dd6bdcb57"
+    },
+    {
+      "file": "client_usage.sql.go",
+      "raw_sha256": "a34d05d3113d44c9c494120fb3fa968d27437026e71aa7ca90cea5c5a82708d4",
+      "lf_sha256": "a34d05d3113d44c9c494120fb3fa968d27437026e71aa7ca90cea5c5a82708d4"
+    },
+    {
+      "file": "comment.sql.go",
+      "raw_sha256": "f178af2d063cac02288bf670de854cda5493e870a7ac1289abc405e6884d6026",
+      "lf_sha256": "f178af2d063cac02288bf670de854cda5493e870a7ac1289abc405e6884d6026"
+    },
+    {
+      "file": "comment_row.go",
+      "raw_sha256": "404e6b63aa3c66caa245e7f1843dd898c5bd29e3c566974770f268dc75eaf515",
+      "lf_sha256": "97d12d6e4d263c4a4ae7a1e7b74abdb2d6162426fe85f2678f3a88ae57fb48b3"
+    },
+    {
+      "file": "composio.sql.go",
+      "raw_sha256": "28791622f98ddf2e6c9a951d5d2a2405bd27747d34554f500fc13c2771724e18",
+      "lf_sha256": "28791622f98ddf2e6c9a951d5d2a2405bd27747d34554f500fc13c2771724e18"
+    },
+    {
+      "file": "contact_sales.sql.go",
+      "raw_sha256": "f01d46ba25948d2ca349014a018b04945a7241678a436d77bd80992752ddc54e",
+      "lf_sha256": "f01d46ba25948d2ca349014a018b04945a7241678a436d77bd80992752ddc54e"
+    },
+    {
+      "file": "conversation_root.sql.go",
+      "raw_sha256": "8ca088eff018911e18d264b8b344b1760759712efa26569fdda3b9e523efb67f",
+      "lf_sha256": "8ca088eff018911e18d264b8b344b1760759712efa26569fdda3b9e523efb67f"
+    },
+    {
+      "file": "daemon_token.sql.go",
+      "raw_sha256": "30c9bb38c3e8fbe03d714c8c7f7b8ac1de8996d5ce2e7316246ded4ede50f4f0",
+      "lf_sha256": "30c9bb38c3e8fbe03d714c8c7f7b8ac1de8996d5ce2e7316246ded4ede50f4f0"
+    },
+    {
+      "file": "db.go",
+      "raw_sha256": "0c9302e79a855e76de414411e9c730a96b56c46782e65d19f7f4b919a7771799",
+      "lf_sha256": "0c9302e79a855e76de414411e9c730a96b56c46782e65d19f7f4b919a7771799"
+    },
+    {
+      "file": "dingtalk.sql.go",
+      "raw_sha256": "74199a2453ea71df0007876b93a8963a28b401384e40542f122428338d78d46d",
+      "lf_sha256": "74199a2453ea71df0007876b93a8963a28b401384e40542f122428338d78d46d"
+    },
+    {
+      "file": "feedback.sql.go",
+      "raw_sha256": "3c254e7f3359071bc226bdad983e811a929c1ea038773e5e67a95df610475122",
+      "lf_sha256": "3c254e7f3359071bc226bdad983e811a929c1ea038773e5e67a95df610475122"
+    },
+    {
+      "file": "github.sql.go",
+      "raw_sha256": "571fcf142dab6392f72524c2cba75a9ab9cadd1219f3b420236e98cbedde5375",
+      "lf_sha256": "571fcf142dab6392f72524c2cba75a9ab9cadd1219f3b420236e98cbedde5375"
+    },
+    {
+      "file": "github_snapshot.sql.go",
+      "raw_sha256": "02b0b51f72a548bc2187ce17ad6282578de5da36a87234e292af1a1ea302ab51",
+      "lf_sha256": "02b0b51f72a548bc2187ce17ad6282578de5da36a87234e292af1a1ea302ab51"
+    },
+    {
+      "file": "idempotency.sql.go",
+      "raw_sha256": "7121ad924e7e22f64ee2d71d7e6aa7ffc90dd62427954af985fe1d7535efd6b7",
+      "lf_sha256": "7121ad924e7e22f64ee2d71d7e6aa7ffc90dd62427954af985fe1d7535efd6b7"
+    },
+    {
+      "file": "inbox.sql.go",
+      "raw_sha256": "764ab128b95b5089e1d5f7bbfa6eaf87a21a04fc15d64233c7f8fadda5cddf3b",
+      "lf_sha256": "764ab128b95b5089e1d5f7bbfa6eaf87a21a04fc15d64233c7f8fadda5cddf3b"
+    },
+    {
+      "file": "inbox_archive.sql.go",
+      "raw_sha256": "abb2dfac96b7012b0519996fab6f9208b6964d4bb387567854436a4263752e49",
+      "lf_sha256": "abb2dfac96b7012b0519996fab6f9208b6964d4bb387567854436a4263752e49"
+    },
+    {
+      "file": "invitation.sql.go",
+      "raw_sha256": "083e35aa6f913ce5335c7408e8c61f33d062bb28b07a1eb9196189a56f6e628b",
+      "lf_sha256": "083e35aa6f913ce5335c7408e8c61f33d062bb28b07a1eb9196189a56f6e628b"
+    },
+    {
+      "file": "issue.sql.go",
+      "raw_sha256": "8fb39f91634d7addc718f337fba3eb3990581ee800b9b739e2a631d259183aa0",
+      "lf_sha256": "8fb39f91634d7addc718f337fba3eb3990581ee800b9b739e2a631d259183aa0"
+    },
+    {
+      "file": "issue_label.sql.go",
+      "raw_sha256": "c2f90e771f8a8e60d662e0a4e615eb36246c35216cc2a30988568109d866abb6",
+      "lf_sha256": "c2f90e771f8a8e60d662e0a4e615eb36246c35216cc2a30988568109d866abb6"
+    },
+    {
+      "file": "issue_property.sql.go",
+      "raw_sha256": "27c5d9450f6e802ce5394ec1e0ca9121ae6a9377ef5a34146ee6840d3fdea97e",
+      "lf_sha256": "27c5d9450f6e802ce5394ec1e0ca9121ae6a9377ef5a34146ee6840d3fdea97e"
+    },
+    {
+      "file": "issue_reaction.sql.go",
+      "raw_sha256": "d52f6b683060a1233f68580da19aacaa571cda8e142b22d9aafc2406068ab220",
+      "lf_sha256": "d52f6b683060a1233f68580da19aacaa571cda8e142b22d9aafc2406068ab220"
+    },
+    {
+      "file": "issue_status.sql.go",
+      "raw_sha256": "921088b79780b2ee8709664196aa19b0bf79be6caf13e168fa3d967cd6a36ab9",
+      "lf_sha256": "921088b79780b2ee8709664196aa19b0bf79be6caf13e168fa3d967cd6a36ab9"
+    },
+    {
+      "file": "issue_view.sql.go",
+      "raw_sha256": "f183c1461dc5ea39f19125121244436e9438250257c7022a85ba605dadf86c98",
+      "lf_sha256": "f183c1461dc5ea39f19125121244436e9438250257c7022a85ba605dadf86c98"
+    },
+    {
+      "file": "issue_view_preference.sql.go",
+      "raw_sha256": "e033050b54ffc790111dc5317bc72891868aba8dd411e2468edd47316db8d29f",
+      "lf_sha256": "e033050b54ffc790111dc5317bc72891868aba8dd411e2468edd47316db8d29f"
+    },
+    {
+      "file": "issue_workflow.sql.go",
+      "raw_sha256": "381e8cbcc1d40eb3b4b1e61e4fbc53c24cf0dd458a233c3d7dbb8c93a7ddb341",
+      "lf_sha256": "381e8cbcc1d40eb3b4b1e61e4fbc53c24cf0dd458a233c3d7dbb8c93a7ddb341"
+    },
+    {
+      "file": "maturity.sql.go",
+      "raw_sha256": "d0897b954b3ae0aa70b6d9102bef73177fbddb01d50e84a5b6581fd39c0476f8",
+      "lf_sha256": "d0897b954b3ae0aa70b6d9102bef73177fbddb01d50e84a5b6581fd39c0476f8"
+    },
+    {
+      "file": "member.sql.go",
+      "raw_sha256": "7e1a0e6b9369745a4f4c6bd90dbf6d626b924f0d60d76014996b0f16423a84ba",
+      "lf_sha256": "7e1a0e6b9369745a4f4c6bd90dbf6d626b924f0d60d76014996b0f16423a84ba"
+    },
+    {
+      "file": "models.go",
+      "raw_sha256": "7cd56fa3c94de9ab9266b62baaa0da635ffcf30e3e2b350047329dce2dc50a88",
+      "lf_sha256": "7cd56fa3c94de9ab9266b62baaa0da635ffcf30e3e2b350047329dce2dc50a88"
+    },
+    {
+      "file": "notification_preference.sql.go",
+      "raw_sha256": "593f5e65b120f81ba6ae3b5c58cb18128383e1254a8b63f8c1fc3619baa9197d",
+      "lf_sha256": "593f5e65b120f81ba6ae3b5c58cb18128383e1254a8b63f8c1fc3619baa9197d"
+    },
+    {
+      "file": "personal_access_token.sql.go",
+      "raw_sha256": "de36b73c9aeadc07e179a6c7883adb4bd7b5d5d29b13a601981a1a790746b2a9",
+      "lf_sha256": "de36b73c9aeadc07e179a6c7883adb4bd7b5d5d29b13a601981a1a790746b2a9"
+    },
+    {
+      "file": "pinned_item.sql.go",
+      "raw_sha256": "613db1b87371883214d8cc276966ffecc07ce4852b8b4745e8bf1719fdbc36e2",
+      "lf_sha256": "613db1b87371883214d8cc276966ffecc07ce4852b8b4745e8bf1719fdbc36e2"
+    },
+    {
+      "file": "plugin.sql.go",
+      "raw_sha256": "48ad17dbfac2096fb6555ba397688ca7b7edb97e3877b736ff52b80883e9d19a",
+      "lf_sha256": "48ad17dbfac2096fb6555ba397688ca7b7edb97e3877b736ff52b80883e9d19a"
+    },
+    {
+      "file": "pr_automation.sql.go",
+      "raw_sha256": "24598ac3bdb824f75b44e3ddc46a50289f835be0b3d6b468f91ab3cad96a4a7d",
+      "lf_sha256": "24598ac3bdb824f75b44e3ddc46a50289f835be0b3d6b468f91ab3cad96a4a7d"
+    },
+    {
+      "file": "project.sql.go",
+      "raw_sha256": "d9c2d48ea25af70edaba78ae8f5d40424d95f0ec581b4af2eb76cd0ca2a74a70",
+      "lf_sha256": "d9c2d48ea25af70edaba78ae8f5d40424d95f0ec581b4af2eb76cd0ca2a74a70"
+    },
+    {
+      "file": "project_chat_session.sql.go",
+      "raw_sha256": "e78363cfcd0f18904988078bd0ced8e129e47523c064776c0588d49100552b26",
+      "lf_sha256": "e78363cfcd0f18904988078bd0ced8e129e47523c064776c0588d49100552b26"
+    },
+    {
+      "file": "project_presenter.sql.go",
+      "raw_sha256": "49ad2487e7d69e3d4d8755ba447376fc7dda880f7b84ffa4e5882af4b51a974c",
+      "lf_sha256": "49ad2487e7d69e3d4d8755ba447376fc7dda880f7b84ffa4e5882af4b51a974c"
+    },
+    {
+      "file": "project_resource.sql.go",
+      "raw_sha256": "6d41c1ca971847d45ce9ff6f26afb6e7df5e8b8073861a7f74d54dcc6521a7a6",
+      "lf_sha256": "6d41c1ca971847d45ce9ff6f26afb6e7df5e8b8073861a7f74d54dcc6521a7a6"
+    },
+    {
+      "file": "promotion.sql.go",
+      "raw_sha256": "55cc0182c077b40c7319a990d620d0db87d0cb4081f41cac496d7cd69c865ee9",
+      "lf_sha256": "55cc0182c077b40c7319a990d620d0db87d0cb4081f41cac496d7cd69c865ee9"
+    },
+    {
+      "file": "quick_action.sql.go",
+      "raw_sha256": "8b16e6c14ee32c35f24cc0fe66c94d29c558d6f5ea48469ee638f94bfbd72143",
+      "lf_sha256": "8b16e6c14ee32c35f24cc0fe66c94d29c558d6f5ea48469ee638f94bfbd72143"
+    },
+    {
+      "file": "reaction.sql.go",
+      "raw_sha256": "db9211cb8bc64a3e2d24cb2efbece827e44975f5e72e956d70e20de359c51b2a",
+      "lf_sha256": "db9211cb8bc64a3e2d24cb2efbece827e44975f5e72e956d70e20de359c51b2a"
+    },
+    {
+      "file": "runtime.sql.go",
+      "raw_sha256": "5709b51a64a00eb370e1de10833625a5eebc7a2df20e14749e4e3cb7ef1de8c6",
+      "lf_sha256": "5709b51a64a00eb370e1de10833625a5eebc7a2df20e14749e4e3cb7ef1de8c6"
+    },
+    {
+      "file": "runtime_profile.sql.go",
+      "raw_sha256": "225b8e5af1ecd1d3da555bdaecb4bc8bba2411673488c4a6abdcfd6332906773",
+      "lf_sha256": "225b8e5af1ecd1d3da555bdaecb4bc8bba2411673488c4a6abdcfd6332906773"
+    },
+    {
+      "file": "runtime_usage.sql.go",
+      "raw_sha256": "4fc06e0125929716e1a69b54431ad5632ef3f99efa3b0c63d21f705ba6e4979e",
+      "lf_sha256": "4fc06e0125929716e1a69b54431ad5632ef3f99efa3b0c63d21f705ba6e4979e"
+    },
+    {
+      "file": "search_index.sql.go",
+      "raw_sha256": "e2bfa7ef663035f71d702b7e14b8da29cd859af2c7ced0a8adbb932db28c90af",
+      "lf_sha256": "e2bfa7ef663035f71d702b7e14b8da29cd859af2c7ced0a8adbb932db28c90af"
+    },
+    {
+      "file": "seat_capacity.sql.go",
+      "raw_sha256": "43c8848074b12952bc0eccddd9c3fdd4b083c6357a2dbe475158f12a09ee3fc4",
+      "lf_sha256": "43c8848074b12952bc0eccddd9c3fdd4b083c6357a2dbe475158f12a09ee3fc4"
+    },
+    {
+      "file": "share_link.sql.go",
+      "raw_sha256": "10a109ed44ec7f6ec0bc90d15102414d7e97b058354fca219c3e0e670e222523",
+      "lf_sha256": "10a109ed44ec7f6ec0bc90d15102414d7e97b058354fca219c3e0e670e222523"
+    },
+    {
+      "file": "skill.sql.go",
+      "raw_sha256": "ab5d581bbfd5aa653fb4362d53869c28c4703d3d9e59ba42aa322700883a63c5",
+      "lf_sha256": "ab5d581bbfd5aa653fb4362d53869c28c4703d3d9e59ba42aa322700883a63c5"
+    },
+    {
+      "file": "skill_market.sql.go",
+      "raw_sha256": "173de2a7e3d7c6c75d0fbf43c5daf2bf30e18c3fdef8374b21add4ac3a7f295a",
+      "lf_sha256": "173de2a7e3d7c6c75d0fbf43c5daf2bf30e18c3fdef8374b21add4ac3a7f295a"
+    },
+    {
+      "file": "source_context.sql.go",
+      "raw_sha256": "e6b226cb43a58154d2e6b2913f4fb3327a5ff2e74e00c3a4064b490a689cf818",
+      "lf_sha256": "e6b226cb43a58154d2e6b2913f4fb3327a5ff2e74e00c3a4064b490a689cf818"
+    },
+    {
+      "file": "squad.sql.go",
+      "raw_sha256": "93f9b58a91c7c8f32b5ea337151e5f4f8d11455e20e5e3d23077a620c14e7525",
+      "lf_sha256": "93f9b58a91c7c8f32b5ea337151e5f4f8d11455e20e5e3d23077a620c14e7525"
+    },
+    {
+      "file": "subscriber.sql.go",
+      "raw_sha256": "ffa7c15bb1fde9211aa965c9a37d0c2b0316838ed556849f0399766922a0b8cb",
+      "lf_sha256": "ffa7c15bb1fde9211aa965c9a37d0c2b0316838ed556849f0399766922a0b8cb"
+    },
+    {
+      "file": "supplement.sql.go",
+      "raw_sha256": "d14fb76702a1468aa22ea40fbcd9d4099979d6202f9daf36ed100eafd7339e81",
+      "lf_sha256": "d14fb76702a1468aa22ea40fbcd9d4099979d6202f9daf36ed100eafd7339e81"
+    },
+    {
+      "file": "system_wakeup.sql.go",
+      "raw_sha256": "f50beba15e325581877671b016a1c990fbad35a9b343fbba490f9229850270b0",
+      "lf_sha256": "f50beba15e325581877671b016a1c990fbad35a9b343fbba490f9229850270b0"
+    },
+    {
+      "file": "task_message.sql.go",
+      "raw_sha256": "283e06fe374ddaaf0176074076899308e743d629847926e3e140a2c3cc7ded12",
+      "lf_sha256": "283e06fe374ddaaf0176074076899308e743d629847926e3e140a2c3cc7ded12"
+    },
+    {
+      "file": "task_token.sql.go",
+      "raw_sha256": "09d27c1c430b83314b043b4b3be9db5a029c49170c633592b30de7202a1fc25a",
+      "lf_sha256": "09d27c1c430b83314b043b4b3be9db5a029c49170c633592b30de7202a1fc25a"
+    },
+    {
+      "file": "task_usage.sql.go",
+      "raw_sha256": "19ad6f13d85b8512c17290bb3497babb844ec6b17311c88677a73dbb90890399",
+      "lf_sha256": "19ad6f13d85b8512c17290bb3497babb844ec6b17311c88677a73dbb90890399"
+    },
+    {
+      "file": "user.sql.go",
+      "raw_sha256": "6d41d9cdfd4671c6c90ecb130eecdcd1b08cdd81805bd23507654ff52e59db65",
+      "lf_sha256": "6d41d9cdfd4671c6c90ecb130eecdcd1b08cdd81805bd23507654ff52e59db65"
+    },
+    {
+      "file": "vcs.sql.go",
+      "raw_sha256": "5b09ce637ba859f847aca0f1f99f7be8be87e3a848df54046e5f15c21b891a4b",
+      "lf_sha256": "5b09ce637ba859f847aca0f1f99f7be8be87e3a848df54046e5f15c21b891a4b"
+    },
+    {
+      "file": "verification_code.sql.go",
+      "raw_sha256": "886593d098e095c27953186d20aa67019bd35e314ee70350e9cb10fa837aa202",
+      "lf_sha256": "886593d098e095c27953186d20aa67019bd35e314ee70350e9cb10fa837aa202"
+    },
+    {
+      "file": "wakeup.sql.go",
+      "raw_sha256": "6a4d8669aa6cd292b77a2b7c26d3fca84f27b69def6e9b4ab5819cb30c603fb7",
+      "lf_sha256": "6a4d8669aa6cd292b77a2b7c26d3fca84f27b69def6e9b4ab5819cb30c603fb7"
+    },
+    {
+      "file": "webhook_delivery.sql.go",
+      "raw_sha256": "660dfc214089cb2aac97ab0eece32c6460cf9d2b3eefbfb0d6352016d65a0e18",
+      "lf_sha256": "660dfc214089cb2aac97ab0eece32c6460cf9d2b3eefbfb0d6352016d65a0e18"
+    },
+    {
+      "file": "workspace.sql.go",
+      "raw_sha256": "a6bc2cf71e61165348a7201c43e90a2f518dc67fed988c533cd77f1e2b4311ff",
+      "lf_sha256": "a6bc2cf71e61165348a7201c43e90a2f518dc67fed988c533cd77f1e2b4311ff"
+    },
+    {
+      "file": "workspace_delete.sql.go",
+      "raw_sha256": "c0ea6cad9a88a9af812f5f404211109591aa3e7b23b0489c96143531961c6939",
+      "lf_sha256": "c0ea6cad9a88a9af812f5f404211109591aa3e7b23b0489c96143531961c6939"
+    },
+    {
+      "file": "workspace_mcp.sql.go",
+      "raw_sha256": "6e02e230a4e42501c1e8b35c9538f2761459c27d688259760bca96c7dc639033",
+      "lf_sha256": "6e02e230a4e42501c1e8b35c9538f2761459c27d688259760bca96c7dc639033"
+    },
+    {
+      "file": "workspace_wakeup.sql.go",
+      "raw_sha256": "23c70cdbb77084d0371bea655e8feda996aac391786050739fdb98032e4c4447",
+      "lf_sha256": "23c70cdbb77084d0371bea655e8feda996aac391786050739fdb98032e4c4447"
+    }
+  ]
+}

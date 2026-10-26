@@ -1,0 +1,49 @@
+{
+  "at": "2026-10-24T15:23:53.101Z",
+  "log": [
+    {
+      "k": "podman_restart_unit",
+      "v": "Failed to enable unit: Access denied ; disabled"
+    },
+    {
+      "k": "stop_backend",
+      "v": 0
+    },
+    {
+      "k": "stop_pg1",
+      "v": 0
+    },
+    {
+      "k": "stop_pg2",
+      "v": 0
+    },
+    {
+      "k": "podman_desktop",
+      "v": "stopped"
+    },
+    {
+      "k": "terminate",
+      "v": 0
+    },
+    {
+      "k": "machine_start",
+      "v": {
+        "exit": 125,
+        "out": "hine set --rootful\n\nAPI forwarding listening on: npipe:////./pipe/docker_engine\n\nDocker API clients default to this address. You do not need to set DOCKER_HOST.",
+        "err": "Error: machine did not transition into running state: ssh error: machine not in running state"
+      }
+    },
+    {
+      "k": "running",
+      "v": "false|false"
+    },
+    {
+      "k": "state",
+      "v": "stopped"
+    },
+    {
+      "k": "conns",
+      "v": "podman-machine-default|ssh://user@127.0.0.1:59669/run/user/1000/podman/podman.sock ; podman-machine-default-root|ssh://root@127.0.0.1:59669/run/podman/podman.sock"
+    }
+  ]
+}

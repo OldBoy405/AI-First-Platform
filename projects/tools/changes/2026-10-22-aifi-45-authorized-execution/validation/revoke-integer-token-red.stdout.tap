@@ -1,0 +1,164 @@
+TAP version 13
+# Subtest: TC-AUTH-010 raw number rejects rounded signed revision 2.0000000000000001
+not ok 1 - TC-AUTH-010 raw number rejects rounded signed revision 2.0000000000000001
+  ---
+  duration_ms: 340.8742
+  type: 'test'
+  location: 'C:\\Users\\GOBAO\\Downloads\\AI\\tools\\skills\\shared\\crctl\\scripts\\test\\execution-authorization.test.mjs:809:5'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"op":"authorization-bind","cr":"CR-2026-901","check_only":true,"bound":false,"current_head_verified":false,"source_verified":true,"grant_digest":"0d4c084db60141b00480af14c976fe0b836bea1914bb3bfe5eda293a10f33e5a","grant_id":"11111111-1111-4111-8111-111111111111","scope_hash":"cff1994d55fb93b8791983868119add24b252323d8bd9502e57cd9161417125b","purpose":"revoke"}
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/GOBAO/Downloads/AI/tools/skills/shared/crctl/scripts/test/execution-authorization.test.mjs:816:14)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1201:25)
+    Test.start (node:internal/test_runner/test:1096:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17)
+  ...
+# Subtest: TC-AUTH-010 raw number rejects rounded source revision 2.0000000000000001
+not ok 2 - TC-AUTH-010 raw number rejects rounded source revision 2.0000000000000001
+  ---
+  duration_ms: 297.6404
+  type: 'test'
+  location: 'C:\\Users\\GOBAO\\Downloads\\AI\\tools\\skills\\shared\\crctl\\scripts\\test\\execution-authorization.test.mjs:809:5'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"op":"authorization-bind","cr":"CR-2026-901","check_only":true,"bound":false,"current_head_verified":false,"source_verified":true,"grant_digest":"e5e8673f8e804b875ded37c870fd741cbf6b5b219938900074632908efc4ed72","grant_id":"11111111-1111-4111-8111-111111111111","scope_hash":"cff1994d55fb93b8791983868119add24b252323d8bd9502e57cd9161417125b","purpose":"revoke"}
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/GOBAO/Downloads/AI/tools/skills/shared/crctl/scripts/test/execution-authorization.test.mjs:816:14)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1201:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+    Test.postRun (node:internal/test_runner/test:1330:19)
+    Test.run (node:internal/test_runner/test:1258:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)
+  ...
+# Subtest: TC-AUTH-010 raw number rejects rounded signed revision 1.99999999999999999
+not ok 3 - TC-AUTH-010 raw number rejects rounded signed revision 1.99999999999999999
+  ---
+  duration_ms: 301.6362
+  type: 'test'
+  location: 'C:\\Users\\GOBAO\\Downloads\\AI\\tools\\skills\\shared\\crctl\\scripts\\test\\execution-authorization.test.mjs:809:5'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"op":"authorization-bind","cr":"CR-2026-901","check_only":true,"bound":false,"current_head_verified":false,"source_verified":true,"grant_digest":"ac1cf5d20d63ab71f82fd025fe6f2348e65e66a9f50f55530f10a64205ab593f","grant_id":"11111111-1111-4111-8111-111111111111","scope_hash":"cff1994d55fb93b8791983868119add24b252323d8bd9502e57cd9161417125b","purpose":"revoke"}
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/GOBAO/Downloads/AI/tools/skills/shared/crctl/scripts/test/execution-authorization.test.mjs:816:14)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1201:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+    Test.postRun (node:internal/test_runner/test:1330:19)
+    Test.run (node:internal/test_runner/test:1258:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:831:7)
+  ...
+# Subtest: TC-AUTH-010 raw number rejects rounded source revision 1.99999999999999999
+not ok 4 - TC-AUTH-010 raw number rejects rounded source revision 1.99999999999999999
+  ---
+  duration_ms: 306.5693
+  type: 'test'
+  location: 'C:\\Users\\GOBAO\\Downloads\\AI\\tools\\skills\\shared\\crctl\\scripts\\test\\execution-authorization.test.mjs:809:5'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"op":"authorization-bind","cr":"CR-2026-901","check_only":true,"bound":false,"current_head_verified":false,"source_verified":true,"grant_digest":"f6f3d2a1f4fc02b86790b1c19fac26ec297b935bd9d15533e002d1cced105b19","grant_id":"11111111-1111-4111-8111-111111111111","scope_hash":"cff1994d55fb93b8791983868119add24b252323d8bd9502e57cd9161417125b","purpose":"revoke"}
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/GOBAO/Downloads/AI/tools/skills/shared/crctl/scripts/test/execution-authorization.test.mjs:816:14)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1201:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+    Test.postRun (node:internal/test_runner/test:1330:19)
+    Test.run (node:internal/test_runner/test:1258:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:831:7)
+  ...
+# Subtest: TC-AUTH-010 raw number rejects nonzero underflow in repair_limit
+not ok 5 - TC-AUTH-010 raw number rejects nonzero underflow in repair_limit
+  ---
+  duration_ms: 301.1498
+  type: 'test'
+  location: 'C:\\Users\\GOBAO\\Downloads\\AI\\tools\\skills\\shared\\crctl\\scripts\\test\\execution-authorization.test.mjs:825:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"op":"authorization-bind","cr":"CR-2026-901","check_only":true,"bound":false,"current_head_verified":false,"source_verified":true,"grant_digest":"b8a06983e9e43299a1eb8a20046a32d7db955fd14e7f064fc7e82201c1263275","grant_id":"11111111-1111-4111-8111-111111111111","scope_hash":"cff1994d55fb93b8791983868119add24b252323d8bd9502e57cd9161417125b","purpose":"initial"}
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/GOBAO/Downloads/AI/tools/skills/shared/crctl/scripts/test/execution-authorization.test.mjs:836:12)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1201:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+    Test.postRun (node:internal/test_runner/test:1330:19)
+    Test.run (node:internal/test_runner/test:1258:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:831:7)
+  ...
+# Subtest: TC-AUTH-010 raw number rejects nonzero underflow in sensitive_action_limit
+not ok 6 - TC-AUTH-010 raw number rejects nonzero underflow in sensitive_action_limit
+  ---
+  duration_ms: 310.6966
+  type: 'test'
+  location: 'C:\\Users\\GOBAO\\Downloads\\AI\\tools\\skills\\shared\\crctl\\scripts\\test\\execution-authorization.test.mjs:825:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"op":"authorization-bind","cr":"CR-2026-901","check_only":true,"bound":false,"current_head_verified":false,"source_verified":true,"grant_digest":"9dbd3ed400a56bbee4803f9400251cbec55c7efa5230753894e7ffcd7f1d6d51","grant_id":"11111111-1111-4111-8111-111111111111","scope_hash":"cff1994d55fb93b8791983868119add24b252323d8bd9502e57cd9161417125b","purpose":"initial"}
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/GOBAO/Downloads/AI/tools/skills/shared/crctl/scripts/test/execution-authorization.test.mjs:836:12)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1201:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+    Test.postRun (node:internal/test_runner/test:1330:19)
+    Test.run (node:internal/test_runner/test:1258:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:831:7)
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 0
+# fail 6
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1930.0038

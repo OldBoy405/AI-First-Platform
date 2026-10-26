@@ -1,0 +1,106 @@
+meta:
+  capability: repair-governance
+  change_id: 2026-10-22-aifi-45-authorized-execution
+  created: '2026-10-22'
+  confidence: high
+requirements:
+  - id: REQ-RPR-001
+    confidence: high
+    description: 以纠正性执行准入计次，默认CR累计最多6次，正常实施与技术重试不误计。
+    scenarios:
+      - id: SC-RPR-001
+        confidence: high
+        evidence: canonical/proposals/2026-10-22-aifi-45-authorized-execution.yaml#C2,AC-3
+        given: 当前由crctl裁决为首次正常实施，自测含多条失败，但尚未启动因阻断触发的纠正性执行。
+        when: 正常实施及自测运行。
+        then: SHALL 不按测试条数、提交或命令扣修复额度，不能把未解决阻断的新run伪装首次实施。
+      - id: SC-RPR-002
+        confidence: high
+        evidence: canonical/proposals/2026-10-22-aifi-45-authorized-execution.yaml#C2,AC-4
+        given: 当前授权总额6，已有5个不同origin的已提交修复准入。
+        when: 准入第6次修复并验证，之后请求第7次。
+        then: SHALL 允许第6次完成验证与PASS交付，拒绝第7次新修复且不派发任务。
+      - id: SC-RPR-003
+        confidence: high
+        evidence: canonical/proposals/2026-10-22-aifi-45-authorized-execution.yaml#C2,AC-3,AC-6
+        given: 一次修复已准入，执行失败后发生同次有界命令或技术重试。
+        when: 记录失败、重试及最终验证。
+        then: SHALL 已失败的修复仍消费1次，内部有界重试不另扣，不返还名额也不无限重试。
+      - id: SC-RPR-004
+        confidence: high
+        evidence: canonical/proposals/2026-10-22-aifi-45-authorized-execution.yaml#C2,AC-4
+        given: 修复消耗分布在多个阶段与cycle，当前额度已耗尽。
+        when: 阶段切换、reset cycle或supersede后再次请求修复。
+        then: SHALL 继承累计历史并拒绝新准入，不因局部attempt归零获得新额度。
+  - id: REQ-RPR-002
+    confidence: medium
+    description: 同逻辑修复幂等、跨操作锁内裁决，失败与崩溃不产生重复消费。
+    scenarios:
+      - id: SC-RPR-005
+        confidence: medium
+        evidence: canonical/proposals/2026-10-22-aifi-45-authorized-execution.yaml#C2,C6,AC-6
+        given: 同一已接受阻断origin被并发投递、换ID重投或跨cycle恢复。
+        when: 多次请求repair-admit。
+        then: SHALL 只提交一条消费记录并返回原repair_id/receipt，换ID不能制造第二次逻辑准入。
+        and:
+          - 跨run采纳原结果必须有可信adoption映射与当前适用性重验；无映射旧证据不推进。
+          - 映射保留原根任务和origin，不新增消费或覆盖原任务归因。
+      - id: SC-RPR-006
+        confidence: medium
+        evidence: canonical/proposals/2026-10-22-aifi-45-authorized-execution.yaml#C2,C6,AC-6
+        given: 准入写入、commit、返回响应三个边界分别注入失败，另有授权更新和无关已暂存改动。
+        when: 重启并恢复原操作，或同键提交不同origin/subject。
+        then: SHALL 按已提交事实恢复或回滚本次write-set，冲突明确停止，不夹带或覆盖无关改动。
+        and:
+          - 提交前在同一CR锁复验CAS和授权；未提交receipt不能触发派发。
+          - 同键不同语义拒绝，不新增消费；提交结果未知不自行再开一次修复。
+  - id: REQ-RPR-003
+    confidence: high
+    description: 额度追加必须明确授权且保留历史，不能由继续口令或篡改默认替代。
+    scenarios:
+      - id: SC-RPR-007
+        confidence: high
+        evidence: canonical/proposals/2026-10-22-aifi-45-authorized-execution.yaml#C2,AC-4
+        given: 已消费6次，有权者签发引用原授权的追加2次凭据。
+        when: 绑定并重放追加授权。
+        then: SHALL 总额成为8、已消费仍6，追加仅生效一次，完整旧授权与消耗历史保留。
+        and:
+          - 同一前驱head并发追加最多一份CAS成功，另一份须重新明确授权。
+          - 总额由初始额加唯一已接受增量推导，旧包重绑不恢复旧scope或重复加额。
+      - id: SC-RPR-008
+        confidence: high
+        evidence: canonical/proposals/2026-10-22-aifi-45-authorized-execution.yaml#C2,AC-2,AC-4
+        given: 已耗尽或已停止，只有模糊继续、无签名增量、负数/溢出整数或改写本地默认规则。
+        when: 请求扩额或解除停止。
+        then: SHALL 拒绝新增额度和修复派发，不清零累计历史。
+  - id: REQ-RPR-004
+    confidence: high
+    description: 连续两次同根因无实质进展停止，只有适用独立证据才支持继续。
+    scenarios:
+      - id: SC-RPR-009
+        confidence: high
+        evidence: canonical/proposals/2026-10-22-aifi-45-authorized-execution.yaml#C3,AC-5
+        given: 剩余额度仍有，两次纠正性尝试后同根因持续阻断，独立评估均无验证改善或有效假设排除。
+        when: 请求第三次该阻断修复。
+        then: SHALL 停止并升级，通知包含根因、已试路径、证据、剩余额度和所需动作，不只要求回复继续。
+      - id: SC-RPR-010
+        confidence: high
+        evidence: canonical/proposals/2026-10-22-aifi-45-authorized-execution.yaml#C3,AC-3
+        given: 同一blocker仍在，但独立评审核验了当前subject的测试结果实质改善，且额度未耗尽。
+        when: 评估后续修复。
+        then: SHALL 允许授权内下一次准入，不能仅因blocker同名或数量未减判无进展。
+      - id: SC-RPR-011
+        confidence: medium
+        evidence: canonical/proposals/2026-10-22-aifi-45-authorized-execution.yaml#C3,AC-3,AC-5
+        given: 尚无测试改善，但诊断有效排除相关假设且独立评审指出新证据如何改变后续判断。
+        when: 核验assessment及证据适用性。
+        then: SHALL 将该证据作为实质进展，不要求只用blocker数量下降证明。
+      - id: SC-RPR-012
+        confidence: high
+        evidence: canonical/proposals/2026-10-22-aifi-45-authorized-execution.yaml#C3,AC-5,AC-7
+        given: 无效进展反例为作者自报、日志扩写、旧subject、同输入、根因改名或缺assessment；另有绑定stop version的明确恢复授权与独立新证据正例。
+        when: 通过继续口令或repair-resume请求恢复，并重投同一请求。
+        then: SHALL 拒绝全部无效分支；仅对适用正例在CR锁内CAS解除精确stop并新建progress_epoch，同恢复只生效一次。
+        and:
+          - 旧streak、stop与累计消耗完整保留，恢复不跳过预算准入。
+          - 停机只读取证有界，需要纠正性执行或副作用仍需恢复授权与额度，不能另开无限诊断。

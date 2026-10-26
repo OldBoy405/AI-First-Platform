@@ -1,0 +1,33 @@
+{
+  "at": "2026-10-24T14:54:09.452Z",
+  "scope": "pids cap with explicit fork-failure count",
+  "rec": {
+    "name": "aifi45-pids2-e9a8e363e6f26662",
+    "steps": [
+      {
+        "kernel": "create",
+        "exit": 0
+      },
+      {
+        "kernel": "start",
+        "exit": 2,
+        "last_lines": [
+          "try=13",
+          "try=14",
+          "try=15",
+          "/bin/sh: can't fork: Resource temporarily unavailable"
+        ],
+        "tries": 16,
+        "fork_failed": null,
+        "stderr": ""
+      }
+    ],
+    "host_config": {
+      "pids_limit": 16
+    },
+    "cleanup": {
+      "rm_exit": 0,
+      "exists_exit": 1
+    }
+  }
+}

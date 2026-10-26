@@ -1,0 +1,55 @@
+meta:
+  task_id: evidence-delivery-contract
+  change_id: 2026-10-22-aifi-45-authorized-execution
+  task_type: code
+  system: tools公开gate/next/writeback及registry合同边界
+  preconditions:
+    - Gate2后实施；所有CP当前待实现。
+    - 使用独立临时Git与新旧policy夹具，不向真实CR派发；确实选中TC且无skip。
+    - MUST精确选中顶层完整TC；带后缀的组件子断言不得登记整TC完成。
+    - MUST核真实子进程TAP成功行及fail/skip/todo为0；零测试、ctx代码回显或skip不得算通过。
+    - 静态check或单元helper不代证真实gate/next/writeback链；当前完整TC与片均未完成。
+steps:
+  - id: CP-EVD-001
+    description: SC-EVD-001 / 最小内容完整无固定套餐也能gate及累积回写。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-EVD-001$" skills/shared/crctl/scripts/test/delivery-contract.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-EVD-001'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+  - id: CP-EVD-002
+    description: SC-EVD-002 / 文件齐全但关键内容或长期源缺失必须阻断。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-EVD-002$" skills/shared/crctl/scripts/test/delivery-contract.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-EVD-002'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+  - id: CP-EVD-003
+    description: SC-EVD-003 / 作者自评不能交付。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-EVD-003$" skills/shared/crctl/scripts/test/delivery-contract.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-EVD-003'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+  - id: CP-EVD-004
+    description: SC-EVD-004 / 独立确定性无语义证明适用的机械例外正例。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-EVD-004$" skills/shared/crctl/scripts/test/delivery-contract.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-EVD-004'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+  - id: CP-EVD-005
+    description: SC-EVD-005 / 规则输入工具授权验收改变不可机械免审。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-EVD-005$" skills/shared/crctl/scripts/test/delivery-contract.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-EVD-005'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+  - id: CP-EVD-006
+    description: SC-EVD-006 / legacy不追溯阻断不自动获新额度。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-EVD-006$" skills/shared/crctl/scripts/test/delivery-contract.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-EVD-006'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+  - id: CP-EVD-007
+    description: SC-EVD-007 / 配套及部署未知拒启用、不删旧恢复。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-EVD-007$" skills/shared/crctl/scripts/test/delivery-contract.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-EVD-007'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+  - id: CP-EVD-008
+    description: SC-EVD-008 / 显式迁移保留历史，不可核实时拒绝。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-EVD-008$" skills/shared/crctl/scripts/test/delivery-contract.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-EVD-008'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+  - id: CP-EVD-009
+    description: SC-EVD-009 / 发布事务恢复不再消费授权或修复。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-EVD-009$" skills/shared/crctl/scripts/test/delivery-contract.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-EVD-009'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+  - id: CP-EVD-010
+    description: SC-EVD-010 / scope不变也拒绝旧tree/cycle证据并最小重验。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-EVD-010$" skills/shared/crctl/scripts/test/delivery-contract.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-EVD-010'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+rollback:
+  steps:
+    - 清理临时仓库；保留实际平台文档归属、用户未提交修改及累积基线。

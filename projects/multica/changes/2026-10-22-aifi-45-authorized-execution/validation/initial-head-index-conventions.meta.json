@@ -1,0 +1,37 @@
+{
+  "command": [
+    "go",
+    "test",
+    "./cmd/migrate",
+    "-run",
+    "^(TestConcurrentIndexCleanupsMatchTheirMigrations|TestEveryConcurrentDownBuildHasCleanup|TestEveryConcurrentUpBuildHasCleanup)$",
+    "-count=1",
+    "-json"
+  ],
+  "cwd": "C:/Users/GOBAO/Downloads/AI/multica/server",
+  "started_at": "2026-10-24T11:47:56.563Z",
+  "finished_at": "2026-10-24T11:47:58.843Z",
+  "exit": 0,
+  "signal": null,
+  "counts": {
+    "run": 3,
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "top_level_counts": {
+    "run": 3,
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "db_identity": [
+    "stdd_aifi45_20261022|stdd",
+    "671|642_cr_execution_authorization_head"
+  ],
+  "harness": {
+    "PI_PROVIDER": "OpenAIPersonal",
+    "PI_MODEL": "gpt-6.1-sol",
+    "PI_REASONING_LEVEL": "high"
+  }
+}

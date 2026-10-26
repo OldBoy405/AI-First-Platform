@@ -1,0 +1,918 @@
+TAP version 13
+# Subtest: TC-AUTH-008 code bindings alone cannot authorize a replaceable CR control root
+ok 1 - TC-AUTH-008 code bindings alone cannot authorize a replaceable CR control root
+  ---
+  duration_ms: 325.7257
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-004 signed logical names alone are not a repository identity binding
+ok 2 - TC-AUTH-004 signed logical names alone are not a repository identity binding
+  ---
+  duration_ms: 296.4399
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict static schema rejects C1 prefix control
+ok 3 - TC-AUTH-010 strict static schema rejects C1 prefix control
+  ---
+  duration_ms: 350.6526
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict static schema rejects C1 resource path control
+ok 4 - TC-AUTH-010 strict static schema rejects C1 resource path control
+  ---
+  duration_ms: 397.9407
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict static schema rejects duplicate sensitive scope id
+ok 5 - TC-AUTH-010 strict static schema rejects duplicate sensitive scope id
+  ---
+  duration_ms: 297.5148
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-003 strict JSON rejects duplicate signed scope keys
+ok 6 - TC-AUTH-003 strict JSON rejects duplicate signed scope keys
+  ---
+  duration_ms: 453.1354
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-001 binding requires the independently checkable immutable source
+ok 7 - TC-AUTH-001 binding requires the independently checkable immutable source
+  ---
+  duration_ms: 381.5832
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-001 source boundary rejects different extracted goal despite a matching signed raw digest
+ok 8 - TC-AUTH-001 source boundary rejects different extracted goal despite a matching signed raw digest
+  ---
+  duration_ms: 441.3954
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-001 source boundary rejects a self-reported actor despite a matching signed raw digest
+ok 9 - TC-AUTH-001 source boundary rejects a self-reported actor despite a matching signed raw digest
+  ---
+  duration_ms: 413.3076
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-001 source boundary rejects duplicate raw key despite a matching signed raw digest
+ok 10 - TC-AUTH-001 source boundary rejects duplicate raw key despite a matching signed raw digest
+  ---
+  duration_ms: 363.6782
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-001 source boundary rejects duplicate nested raw key despite a matching signed raw digest
+ok 11 - TC-AUTH-001 source boundary rejects duplicate nested raw key despite a matching signed raw digest
+  ---
+  duration_ms: 369.4019
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-001 source boundary rejects escaped duplicate raw key despite a matching signed raw digest
+ok 12 - TC-AUTH-001 source boundary rejects escaped duplicate raw key despite a matching signed raw digest
+  ---
+  duration_ms: 370.5564
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-001 source boundary rejects missing coordinator selection despite a matching signed raw digest
+ok 13 - TC-AUTH-001 source boundary rejects missing coordinator selection despite a matching signed raw digest
+  ---
+  duration_ms: 376.4364
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-001 source boundary rejects another coordinator resource despite a matching signed raw digest
+ok 14 - TC-AUTH-001 source boundary rejects another coordinator resource despite a matching signed raw digest
+  ---
+  duration_ms: 385.7119
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-001 source boundary rejects another coordinator version despite a matching signed raw digest
+ok 15 - TC-AUTH-001 source boundary rejects another coordinator version despite a matching signed raw digest
+  ---
+  duration_ms: 364.312
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-001 source boundary rejects missing repository selection despite a matching signed raw digest
+ok 16 - TC-AUTH-001 source boundary rejects missing repository selection despite a matching signed raw digest
+  ---
+  duration_ms: 408.0205
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-001 source boundary rejects another repository resource despite a matching signed raw digest
+ok 17 - TC-AUTH-001 source boundary rejects another repository resource despite a matching signed raw digest
+  ---
+  duration_ms: 388.5492
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-001 source boundary rejects another repository version despite a matching signed raw digest
+ok 18 - TC-AUTH-001 source boundary rejects another repository version despite a matching signed raw digest
+  ---
+  duration_ms: 368.4128
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-001 source boundary rejects extra repository root claim despite a matching signed raw digest
+ok 19 - TC-AUTH-001 source boundary rejects extra repository root claim despite a matching signed raw digest
+  ---
+  duration_ms: 350.2519
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-001 source boundary rejects duplicate repository selection despite a matching signed raw digest
+ok 20 - TC-AUTH-001 source boundary rejects duplicate repository selection despite a matching signed raw digest
+  ---
+  duration_ms: 335.1842
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-001 source boundary preserves CRLF and Chinese original bytes
+ok 21 - TC-AUTH-001 source boundary preserves CRLF and Chinese original bytes
+  ---
+  duration_ms: 506.1857
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 a preexisting consumption receipt cannot activate business admission
+ok 22 - TC-AUTH-008 a preexisting consumption receipt cannot activate business admission
+  ---
+  duration_ms: 351.0809
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-001 source boundary rejects reserialized original bytes
+ok 23 - TC-AUTH-001 source boundary rejects reserialized original bytes
+  ---
+  duration_ms: 353.1225
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-001 source boundary rejects different field mapping
+ok 24 - TC-AUTH-001 source boundary rejects different field mapping
+  ---
+  duration_ms: 352.2025
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-001 source boundary rejects unknown source format
+ok 25 - TC-AUTH-001 source boundary rejects unknown source format
+  ---
+  duration_ms: 351.4318
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 authorization-bind --check validates a complete packet without consuming it
+ok 26 - TC-AUTH-010 authorization-bind --check validates a complete packet without consuming it
+  ---
+  duration_ms: 305.525
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects unknown schema even with a valid signature
+ok 27 - TC-AUTH-010 --check rejects unknown schema even with a valid signature
+  ---
+  duration_ms: 300.6766
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects envelope/payload key mismatch even with a valid signature
+ok 28 - TC-AUTH-010 --check rejects envelope/payload key mismatch even with a valid signature
+  ---
+  duration_ms: 305.0236
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects missing human identity even with a valid signature
+ok 29 - TC-AUTH-010 --check rejects missing human identity even with a valid signature
+  ---
+  duration_ms: 298.494
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects noncanonical workspace UUID even with a valid signature
+ok 30 - TC-AUTH-010 --check rejects noncanonical workspace UUID even with a valid signature
+  ---
+  duration_ms: 298.5135
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects negative repair limit even with a valid signature
+ok 31 - TC-AUTH-010 --check rejects negative repair limit even with a valid signature
+  ---
+  duration_ms: 308.1631
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects unsafe repair integer even with a valid signature
+ok 32 - TC-AUTH-010 --check rejects unsafe repair integer even with a valid signature
+  ---
+  duration_ms: 325.4807
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects fractional repair limit even with a valid signature
+ok 33 - TC-AUTH-010 --check rejects fractional repair limit even with a valid signature
+  ---
+  duration_ms: 327.5188
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects zero scope revision even with a valid signature
+ok 34 - TC-AUTH-010 --check rejects zero scope revision even with a valid signature
+  ---
+  duration_ms: 307.5434
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects unimplemented purpose cannot fall through even with a valid signature
+ok 35 - TC-AUTH-010 --check rejects unimplemented purpose cannot fall through even with a valid signature
+  ---
+  duration_ms: 353.9547
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects duplicate repository even with a valid signature
+ok 36 - TC-AUTH-010 --check rejects duplicate repository even with a valid signature
+  ---
+  duration_ms: 333.21
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects unknown repository paths even with a valid signature
+ok 37 - TC-AUTH-010 --check rejects unknown repository paths even with a valid signature
+  ---
+  duration_ms: 319.6156
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects parent traversal even with a valid signature
+ok 38 - TC-AUTH-010 --check rejects parent traversal even with a valid signature
+  ---
+  duration_ms: 327.8005
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects absolute POSIX path even with a valid signature
+ok 39 - TC-AUTH-010 --check rejects absolute POSIX path even with a valid signature
+  ---
+  duration_ms: 303.6915
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects Windows path even with a valid signature
+ok 40 - TC-AUTH-010 --check rejects Windows path even with a valid signature
+  ---
+  duration_ms: 302.2247
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects ambiguous wildcard even with a valid signature
+ok 41 - TC-AUTH-010 --check rejects ambiguous wildcard even with a valid signature
+  ---
+  duration_ms: 318.4135
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects noncanonical prefix even with a valid signature
+ok 42 - TC-AUTH-010 --check rejects noncanonical prefix even with a valid signature
+  ---
+  duration_ms: 325.7494
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects control byte in path even with a valid signature
+ok 43 - TC-AUTH-010 --check rejects control byte in path even with a valid signature
+  ---
+  duration_ms: 305.6784
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects empty acceptance even with a valid signature
+ok 44 - TC-AUTH-010 --check rejects empty acceptance even with a valid signature
+  ---
+  duration_ms: 302.4425
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects source mappings omitted even with a valid signature
+ok 45 - TC-AUTH-010 --check rejects source mappings omitted even with a valid signature
+  ---
+  duration_ms: 320.309
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects self-reported extra actor even with a valid signature
+ok 46 - TC-AUTH-010 --check rejects self-reported extra actor even with a valid signature
+  ---
+  duration_ms: 323.187
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 --check rejects unsafe sensitive limit even with a valid signature
+ok 47 - TC-AUTH-010 --check rejects unsafe sensitive limit even with a valid signature
+  ---
+  duration_ms: 326.2382
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 --check rejects a packet installed under a different project scope filename
+ok 48 - TC-AUTH-008 --check rejects a packet installed under a different project scope filename
+  ---
+  duration_ms: 305.0867
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 a valid signed packet alone cannot consume authorization
+ok 49 - TC-AUTH-008 a valid signed packet alone cannot consume authorization
+  ---
+  duration_ms: 330.5727
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 live binding rejects a replayed challenge before any receipt
+ok 50 - TC-AUTH-008 live binding rejects a replayed challenge before any receipt
+  ---
+  duration_ms: 366.7977
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 binding component rejects another workspace even with a valid signature
+ok 51 - TC-AUTH-008 binding component rejects another workspace even with a valid signature
+  ---
+  duration_ms: 385.9052
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 binding component rejects another project even with a valid signature
+ok 52 - TC-AUTH-008 binding component rejects another project even with a valid signature
+  ---
+  duration_ms: 394.6128
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 binding component rejects copied installation even with a valid signature
+ok 53 - TC-AUTH-008 binding component rejects copied installation even with a valid signature
+  ---
+  duration_ms: 386.8277
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 binding component rejects another worktree even with a valid signature
+ok 54 - TC-AUTH-008 binding component rejects another worktree even with a valid signature
+  ---
+  duration_ms: 435.6086
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 binding component rejects another process even with a valid signature
+ok 55 - TC-AUTH-008 binding component rejects another process even with a valid signature
+  ---
+  duration_ms: 381.147
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 binding component rejects another daemon parent even with a valid signature
+ok 56 - TC-AUTH-008 binding component rejects another daemon parent even with a valid signature
+  ---
+  duration_ms: 380.3392
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 binding component rejects another operation even with a valid signature
+ok 57 - TC-AUTH-008 binding component rejects another operation even with a valid signature
+  ---
+  duration_ms: 381.0523
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 binding component rejects old head even with a valid signature
+ok 58 - TC-AUTH-008 binding component rejects old head even with a valid signature
+  ---
+  duration_ms: 351.429
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 binding component rejects old revision even with a valid signature
+ok 59 - TC-AUTH-008 binding component rejects old revision even with a valid signature
+  ---
+  duration_ms: 352.3421
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 binding component rejects another deployed policy even with a valid signature
+ok 60 - TC-AUTH-008 binding component rejects another deployed policy even with a valid signature
+  ---
+  duration_ms: 356.4379
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 binding component rejects another template even with a valid signature
+ok 61 - TC-AUTH-008 binding component rejects another template even with a valid signature
+  ---
+  duration_ms: 372.029
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 binding component rejects another tools package even with a valid signature
+ok 62 - TC-AUTH-008 binding component rejects another tools package even with a valid signature
+  ---
+  duration_ms: 364.4317
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 binding component rejects missing resource even with a valid signature
+ok 63 - TC-AUTH-008 binding component rejects missing resource even with a valid signature
+  ---
+  duration_ms: 356.1455
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 binding component rejects untyped runtime even with a valid signature
+ok 64 - TC-AUTH-008 binding component rejects untyped runtime even with a valid signature
+  ---
+  duration_ms: 347.0365
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 binding component rejects unknown fields even with a valid signature
+ok 65 - TC-AUTH-008 binding component rejects unknown fields even with a valid signature
+  ---
+  duration_ms: 380.545
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 binding component rejects an authorization-domain signature
+ok 66 - TC-AUTH-008 binding component rejects an authorization-domain signature
+  ---
+  duration_ms: 375.8644
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 fresh signature for another daemon cannot replace the selected local coordinator
+ok 67 - TC-AUTH-008 fresh signature for another daemon cannot replace the selected local coordinator
+  ---
+  duration_ms: 356.982
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire URL "buildhost:repo.git" is accepted
+ok 68 - TC-AUTH-010 repo wire URL "buildhost:repo.git" is accepted
+  ---
+  duration_ms: 318.0698
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire URL "my+user@buildhost:repo.git" is accepted
+ok 69 - TC-AUTH-010 repo wire URL "my+user@buildhost:repo.git" is accepted
+  ---
+  duration_ms: 347.3123
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire URL "git@host:repo.git" is accepted
+ok 70 - TC-AUTH-010 repo wire URL "git@host:repo.git" is accepted
+  ---
+  duration_ms: 353.833
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire URL "ssh://git:@host/repo" is rejected
+ok 71 - TC-AUTH-010 repo wire URL "ssh://git:@host/repo" is rejected
+  ---
+  duration_ms: 342.7814
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire URL "https://@host/repo" is rejected
+ok 72 - TC-AUTH-010 repo wire URL "https://@host/repo" is rejected
+  ---
+  duration_ms: 362.9987
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire URL " https://host/repo" is rejected
+ok 73 - TC-AUTH-010 repo wire URL " https://host/repo" is rejected
+  ---
+  duration_ms: 338.5643
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire URL "https://host/repo?" is rejected
+ok 74 - TC-AUTH-010 repo wire URL "https://host/repo?" is rejected
+  ---
+  duration_ms: 330.3577
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire URL "https://host/repo\#" is rejected
+ok 75 - TC-AUTH-010 repo wire URL "https://host/repo\#" is rejected
+  ---
+  duration_ms: 322.1561
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire URL "https://host\\\\evil/repo" is rejected
+ok 76 - TC-AUTH-010 repo wire URL "https://host\\\\evil/repo" is rejected
+  ---
+  duration_ms: 304.2839
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire URL "https:///host/repo.git" is rejected
+ok 77 - TC-AUTH-010 repo wire URL "https:///host/repo.git" is rejected
+  ---
+  duration_ms: 337.0019
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire URL "ssh://git@[fe80::1%25eth0]/repo.git" is rejected
+ok 78 - TC-AUTH-010 repo wire URL "ssh://git@[fe80::1%25eth0]/repo.git" is rejected
+  ---
+  duration_ms: 338.6149
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire URL "ssh://git@[2001:db8::1]/repo.git" is accepted
+ok 79 - TC-AUTH-010 repo wire URL "ssh://git@[2001:db8::1]/repo.git" is accepted
+  ---
+  duration_ms: 341.0695
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire URL "http:repo.git" is rejected
+ok 80 - TC-AUTH-010 repo wire URL "http:repo.git" is rejected
+  ---
+  duration_ms: 345.2621
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire URL "buildhost:repo name.git" is accepted
+ok 81 - TC-AUTH-010 repo wire URL "buildhost:repo name.git" is accepted
+  ---
+  duration_ms: 395.5847
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire URL "buildhost:repo@name.git" is rejected
+ok 82 - TC-AUTH-010 repo wire URL "buildhost:repo@name.git" is rejected
+  ---
+  duration_ms: 342.8238
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire URL "@host:repo.git" is rejected
+ok 83 - TC-AUTH-010 repo wire URL "@host:repo.git" is rejected
+  ---
+  duration_ms: 337.8886
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire absolute path "\\\\\\\\repo" is rejected
+ok 84 - TC-AUTH-010 repo wire absolute path "\\\\\\\\repo" is rejected
+  ---
+  duration_ms: 330.5243
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire absolute path "\\\\\\\\server\\\\" is rejected
+ok 85 - TC-AUTH-010 repo wire absolute path "\\\\\\\\server\\\\" is rejected
+  ---
+  duration_ms: 320.0104
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire absolute path "\\\\\\\\server/share" is rejected
+ok 86 - TC-AUTH-010 repo wire absolute path "\\\\\\\\server/share" is rejected
+  ---
+  duration_ms: 317.6659
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire absolute path "C:repo" is rejected
+ok 87 - TC-AUTH-010 repo wire absolute path "C:repo" is rejected
+  ---
+  duration_ms: 334.4478
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire absolute path "\\\\\\\\server\\\\share" is accepted
+ok 88 - TC-AUTH-010 repo wire absolute path "\\\\\\\\server\\\\share" is accepted
+  ---
+  duration_ms: 339.7479
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire absolute path "C:\\\\repo" is accepted
+ok 89 - TC-AUTH-010 repo wire absolute path "C:\\\\repo" is accepted
+  ---
+  duration_ms: 320.4952
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire absolute path "/tmp/repo" is accepted
+ok 90 - TC-AUTH-010 repo wire absolute path "/tmp/repo" is accepted
+  ---
+  duration_ms: 336.5062
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire absolute path "\\\\\\\\server\\\\share\\\\\\\\dir" is rejected
+ok 91 - TC-AUTH-010 repo wire absolute path "\\\\\\\\server\\\\share\\\\\\\\dir" is rejected
+  ---
+  duration_ms: 330.7431
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 repo wire absolute path "\\\\\\\\server\\\\share\\\\" is accepted
+ok 92 - TC-AUTH-010 repo wire absolute path "\\\\\\\\server\\\\share\\\\" is accepted
+  ---
+  duration_ms: 313.5974
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 repo wire native operational root uses common-dir for linked worktree
+ok 93 - TC-AUTH-008 repo wire native operational root uses common-dir for linked worktree
+  ---
+  duration_ms: 419.0468
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 repo wire native operational root rejects C1 before challenge
+ok 94 - TC-AUTH-008 repo wire native operational root rejects C1 before challenge
+  ---
+  duration_ms: 385.8375
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 copied grant and source cannot relocate the frozen local installation
+ok 95 - TC-AUTH-008 copied grant and source cannot relocate the frozen local installation
+  ---
+  duration_ms: 575.5797
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 matching opaque daemon identity remains a proof subset, not business admission
+ok 96 - TC-AUTH-008 matching opaque daemon identity remains a proof subset, not business admission
+  ---
+  duration_ms: 357.2091
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 fresh signature for another resource cannot replace the frozen control root
+ok 97 - TC-AUTH-008 fresh signature for another resource cannot replace the frozen control root
+  ---
+  duration_ms: 384.2032
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-008 binding component accepts a fresh proof but still denies unimplemented consumption
+ok 98 - TC-AUTH-008 binding component accepts a fresh proof but still denies unimplemented consumption
+  ---
+  duration_ms: 357.4466
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-003 authorization-bind rejects a tampered signature without changing CR facts
+ok 99 - TC-AUTH-003 authorization-bind rejects a tampered signature without changing CR facts
+  ---
+  duration_ms: 325.3859
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-003 authorization-bind rejects old signing domain
+ok 100 - TC-AUTH-003 authorization-bind rejects old signing domain
+  ---
+  duration_ms: 355.6597
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-003 authorization-bind rejects unknown installed key
+ok 101 - TC-AUTH-003 authorization-bind rejects unknown installed key
+  ---
+  duration_ms: 325.2846
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 authorization-bind rejects payload bytes changed by CRLF
+ok 102 - TC-AUTH-010 authorization-bind rejects payload bytes changed by CRLF
+  ---
+  duration_ms: 330.6712
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 authorization-bind rejects noncanonical signature base64
+ok 103 - TC-AUTH-010 authorization-bind rejects noncanonical signature base64
+  ---
+  duration_ms: 344.2744
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-004 authorization-bind rejects an installed key directory escaping the workspace
+ok 104 - TC-AUTH-004 authorization-bind rejects an installed key directory escaping the workspace
+  ---
+  duration_ms: 331.0104
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-TRUST-ROOT agent-writable copies cannot outrank the declared daemon trust root
+ok 105 - TC-AUTH-TRUST-ROOT agent-writable copies cannot outrank the declared daemon trust root
+  ---
+  duration_ms: 575.0391
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-TRUST-ROOT a trust root inside the agent-writable install root is refused
+ok 106 - TC-AUTH-TRUST-ROOT a trust root inside the agent-writable install root is refused
+  ---
+  duration_ms: 315.8762
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-001 explicit read-only source check verifies frozen bytes without binding
+ok 107 - TC-AUTH-001 explicit read-only source check verifies frozen bytes without binding
+  ---
+  duration_ms: 361.1664
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-009 strict revoke is independently readable without restoring authorization
+ok 108 - TC-AUTH-009 strict revoke is independently readable without restoring authorization
+  ---
+  duration_ms: 347.8087
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-009 revoke cannot enter binding or admission
+ok 109 - TC-AUTH-009 revoke cannot enter binding or admission
+  ---
+  duration_ms: 448.1815
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects budget reset
+ok 110 - TC-AUTH-010 strict revoke rejects budget reset
+  ---
+  duration_ms: 330.1848
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects replacement scope
+ok 111 - TC-AUTH-010 strict revoke rejects replacement scope
+  ---
+  duration_ms: 328.8281
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects purpose extend
+ok 112 - TC-AUTH-010 strict revoke rejects purpose extend
+  ---
+  duration_ms: 309.0804
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects purpose migrate
+ok 113 - TC-AUTH-010 strict revoke rejects purpose migrate
+  ---
+  duration_ms: 306.5922
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects purpose sensitive
+ok 114 - TC-AUTH-010 strict revoke rejects purpose sensitive
+  ---
+  duration_ms: 309.6177
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects purpose repair-resume
+ok 115 - TC-AUTH-010 strict revoke rejects purpose repair-resume
+  ---
+  duration_ms: 300.9333
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects purpose initial
+ok 116 - TC-AUTH-010 strict revoke rejects purpose initial
+  ---
+  duration_ms: 307.4601
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects missing lineage
+ok 117 - TC-AUTH-010 strict revoke rejects missing lineage
+  ---
+  duration_ms: 300.7799
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects uppercase lineage
+ok 118 - TC-AUTH-010 strict revoke rejects uppercase lineage
+  ---
+  duration_ms: 296.9916
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects new grant is lineage
+ok 119 - TC-AUTH-010 strict revoke rejects new grant is lineage
+  ---
+  duration_ms: 302.8699
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects wrong predecessor
+ok 120 - TC-AUTH-010 strict revoke rejects wrong predecessor
+  ---
+  duration_ms: 301.7103
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects wrong predecessor digest
+ok 121 - TC-AUTH-010 strict revoke rejects wrong predecessor digest
+  ---
+  duration_ms: 306.6544
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects revision 0
+ok 122 - TC-AUTH-010 strict revoke rejects revision 0
+  ---
+  duration_ms: 302.213
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects revision 1
+ok 123 - TC-AUTH-010 strict revoke rejects revision 1
+  ---
+  duration_ms: 303.0652
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects revision 3
+ok 124 - TC-AUTH-010 strict revoke rejects revision 3
+  ---
+  duration_ms: 306.4174
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects revision 2.5
+ok 125 - TC-AUTH-010 strict revoke rejects revision 2.5
+  ---
+  duration_ms: 329.1001
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects revision 9007199254740992
+ok 126 - TC-AUTH-010 strict revoke rejects revision 9007199254740992
+  ---
+  duration_ms: 337.2214
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects revision 2
+ok 127 - TC-AUTH-010 strict revoke rejects revision 2
+  ---
+  duration_ms: 349.3162
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects revision null
+ok 128 - TC-AUTH-010 strict revoke rejects revision null
+  ---
+  duration_ms: 335.5531
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects reason 0
+ok 129 - TC-AUTH-010 strict revoke rejects reason 0
+  ---
+  duration_ms: 325.4245
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects reason 1
+ok 130 - TC-AUTH-010 strict revoke rejects reason 1
+  ---
+  duration_ms: 329.7579
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects reason 2
+ok 131 - TC-AUTH-010 strict revoke rejects reason 2
+  ---
+  duration_ms: 310.7964
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects reason 3
+ok 132 - TC-AUTH-010 strict revoke rejects reason 3
+  ---
+  duration_ms: 531.6899
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects reason 4
+ok 133 - TC-AUTH-010 strict revoke rejects reason 4
+  ---
+  duration_ms: 314.2173
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects reason 5
+ok 134 - TC-AUTH-010 strict revoke rejects reason 5
+  ---
+  duration_ms: 306.1501
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects reason 6
+ok 135 - TC-AUTH-010 strict revoke rejects reason 6
+  ---
+  duration_ms: 365.2592
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects reason 7
+ok 136 - TC-AUTH-010 strict revoke rejects reason 7
+  ---
+  duration_ms: 321.9977
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects unknown policy
+ok 137 - TC-AUTH-010 strict revoke rejects unknown policy
+  ---
+  duration_ms: 312.5666
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects non-string digest
+ok 138 - TC-AUTH-010 strict revoke rejects non-string digest
+  ---
+  duration_ms: 319.304
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 strict revoke rejects unexpected mapping
+ok 139 - TC-AUTH-010 strict revoke rejects unexpected mapping
+  ---
+  duration_ms: 352.1654
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-009 revoke source rejects unknown actor
+ok 140 - TC-AUTH-009 revoke source rejects unknown actor
+  ---
+  duration_ms: 310.3098
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-009 revoke source rejects changed reason
+ok 141 - TC-AUTH-009 revoke source rejects changed reason
+  ---
+  duration_ms: 306.1994
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-009 revoke source rejects changed predecessor
+ok 142 - TC-AUTH-009 revoke source rejects changed predecessor
+  ---
+  duration_ms: 328.3906
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-009 revoke source rejects string revision
+ok 143 - TC-AUTH-009 revoke source rejects string revision
+  ---
+  duration_ms: 321.2672
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-009 revoke source rejects duplicate reason
+ok 144 - TC-AUTH-009 revoke source rejects duplicate reason
+  ---
+  duration_ms: 345.6091
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-009 revoke source rejects escaped duplicate reason
+ok 145 - TC-AUTH-009 revoke source rejects escaped duplicate reason
+  ---
+  duration_ms: 341.5702
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 revoke accepts reason at byte limit
+ok 146 - TC-AUTH-010 revoke accepts reason at byte limit
+  ---
+  duration_ms: 337.1257
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 revoke accepts reason at Unicode White_Space does not include BOM
+ok 147 - TC-AUTH-010 revoke accepts reason at Unicode White_Space does not include BOM
+  ---
+  duration_ms: 325.698
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-009 source checking is explicit and never claims current head or admission
+ok 148 - TC-AUTH-009 source checking is explicit and never claims current head or admission
+  ---
+  duration_ms: 614.4786
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 revoke purpose dispatch rejects a signed non-object
+ok 149 - TC-AUTH-010 revoke purpose dispatch rejects a signed non-object
+  ---
+  duration_ms: 650.2427
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 source check accepts signed zero with original negative-zero repair_limit
+ok 150 - TC-AUTH-010 source check accepts signed zero with original negative-zero repair_limit
+  ---
+  duration_ms: 339.454
+  type: 'test'
+  ...
+# Subtest: TC-AUTH-010 source check accepts signed zero with original negative-zero sensitive_action_limit
+ok 151 - TC-AUTH-010 source check accepts signed zero with original negative-zero sensitive_action_limit
+  ---
+  duration_ms: 337.2865
+  type: 'test'
+  ...
+1..151
+# tests 151
+# suites 0
+# pass 151
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 52994.1179
+
+STDERR:

@@ -1,0 +1,39 @@
+TAP version 13
+# Subtest: TC-AUTH-009 revoke cannot enter binding or admission
+not ok 1 - TC-AUTH-009 revoke cannot enter binding or admission
+  ---
+  duration_ms: 297.0452
+  type: 'test'
+  location: 'C:\\Users\\GOBAO\\Downloads\\AI\\tools\\skills\\shared\\crctl\\scripts\\test\\execution-authorization.test.mjs:714:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'EXECUTION_BINDING_REQUIRED'
+    - 'EXECUTION_AUTHORIZATION_REVOKED'
+                 ^
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'EXECUTION_AUTHORIZATION_REVOKED'
+  actual: 'EXECUTION_BINDING_REQUIRED'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/GOBAO/Downloads/AI/tools/skills/shared/crctl/scripts/test/execution-authorization.test.mjs:719:10)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1201:25)
+    Test.start (node:internal/test_runner/test:1096:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 362.2434
+
+STDERR:

@@ -1,0 +1,43 @@
+{
+  "at": "2026-10-25T06:33:47.714Z",
+  "container": "666bfec52ac3c3d13b43389891f50c4105833198eab7e4167b76f014a774e823",
+  "preserved_database": "stdd_aifi45_20261022",
+  "target": {
+    "nonce": "a9b41ff1533a9dc1",
+    "database": "aifi45_tmp_a9b41ff1533a9dc1",
+    "role": "aifi45_role_a9b41ff1533a9dc1",
+    "role_oid": "151006",
+    "database_oid": "151007"
+  },
+  "test": {
+    "argv": [
+      "go",
+      "test",
+      "./internal/governance",
+      "-run",
+      "^TestExecutionTerminalClaimRejectsForeignTerminalReplay$",
+      "-count=1",
+      "-json",
+      "-timeout=180s"
+    ],
+    "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\multica\\server\\",
+    "exit": 1,
+    "signal": null,
+    "counts": {
+      "run": 1,
+      "pass": 0,
+      "fail": 1,
+      "skip": 0
+    },
+    "leaf_pass": 0,
+    "package_failures": 1,
+    "output_redacted": false
+  },
+  "original_unchanged": true,
+  "original_release": {
+    "sessions": 0,
+    "locks": 0
+  },
+  "owned_resources_cleaned": true,
+  "error": "test failed, matched no tests, or exposed credentials; inspect evidence"
+}

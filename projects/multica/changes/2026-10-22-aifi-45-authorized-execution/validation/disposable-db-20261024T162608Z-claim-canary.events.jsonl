@@ -1,0 +1,9 @@
+{"at":"2026-10-24T16:32:25.455Z","kind":"plan","container":"666bfec52ac3c3d13b43389891f50c4105833198eab7e4167b76f014a774e823","original":"stdd_aifi45_20261022","target":{"nonce":"438551423d12bbf7","database":"aifi45_tmp_438551423d12bbf7","role":"aifi45_role_438551423d12bbf7"},"package":"./internal/governance","pattern":"^TestExecutionStartClaimDaemonOwnership$","extra":[]}
+{"at":"2026-10-24T16:32:28.047Z","kind":"source-preserved","approval_rows":82,"original_tables":137,"schema_sha256":"c788143babffceb283050488ff4e1b890fad41d5d8e2cd90a23e20113384e4e4","audit_dump_sha256":"bc0f3c0ad419d2650c7663b671ea928caa13ceafee917c13c4004c206229f404"}
+{"at":"2026-10-24T16:32:31.108Z","kind":"created","target":{"nonce":"438551423d12bbf7","database":"aifi45_tmp_438551423d12bbf7","role":"aifi45_role_438551423d12bbf7","role_oid":"27281","database_oid":"27282"}}
+{"at":"2026-10-24T16:32:33.770Z","kind":"isolation-verified","identity":{"database":"aifi45_tmp_438551423d12bbf7","role":"aifi45_role_438551423d12bbf7","superuser":false,"create_db":false,"create_role":false,"bypass_rls":false,"audit_rows":0,"workspace_rows":0},"original_audit_table_read_denied":true}
+{"at":"2026-10-24T16:32:37.660Z","kind":"test-finished","argv":["go","test","./internal/governance","-run","^TestExecutionStartClaimDaemonOwnership$","-count=1","-json","-timeout=180s"],"cwd":"C:\\Users\\GOBAO\\Downloads\\AI\\multica\\server\\","exit":1,"signal":null,"counts":{"run":1,"pass":0,"fail":1,"skip":0},"package_failures":1,"output_redacted":false}
+{"at":"2026-10-24T16:32:37.660Z","kind":"failure","error":"test failed, matched no tests, or exposed credentials; inspect evidence"}
+{"at":"2026-10-24T16:32:38.596Z","kind":"original-compared","unchanged":true}
+{"at":"2026-10-24T16:32:39.511Z","kind":"database-dropped","database":"aifi45_tmp_438551423d12bbf7","oid":"27282"}
+{"at":"2026-10-24T16:32:40.363Z","kind":"role-dropped","role":"aifi45_role_438551423d12bbf7","oid":"27281"}

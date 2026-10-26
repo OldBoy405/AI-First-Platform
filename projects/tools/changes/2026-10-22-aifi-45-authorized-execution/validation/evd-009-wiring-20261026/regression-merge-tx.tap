@@ -1,0 +1,148 @@
+TAP version 13
+# Subtest: CR-2026-038 TASK-03：backlog 只替换目标完整条目并逐字保留 trunk 其余内容
+ok 1 - CR-2026-038 TASK-03：backlog 只替换目标完整条目并逐字保留 trunk 其余内容
+  ---
+  duration_ms: 1.4154
+  type: 'test'
+  ...
+# Subtest: CR-2026-038 TASK-03：semantic tree 保留 trunk 并发条目且最终 parents 仍为 base + 原 source
+ok 2 - CR-2026-038 TASK-03：semantic tree 保留 trunk 并发条目且最终 parents 仍为 base + 原 source
+  ---
+  duration_ms: 2293.5812
+  type: 'test'
+  ...
+# Subtest: TASK-07 AC-1/3：happy path 三仓 lease publish + detached txws 单 finalize commit，authority 切换
+ok 3 - TASK-07 AC-1/3：happy path 三仓 lease publish + detached txws 单 finalize commit，authority 切换
+  ---
+  duration_ms: 10096.3347
+  type: 'test'
+  ...
+# Subtest: TASK-07 AC-1：prepare conflict 返回 MERGE_PREPARE_CONFLICT 且零远端副作用
+ok 4 - TASK-07 AC-1：prepare conflict 返回 MERGE_PREPARE_CONFLICT 且零远端副作用
+  ---
+  duration_ms: 6517.6346
+  type: 'test'
+  ...
+# Subtest: TASK-07 AC-1/2：第二仓 push 后 fault，重跑不重复已 confirmed push，部分发布保持 code-approved
+ok 5 - TASK-07 AC-1/2：第二仓 push 后 fault，重跑不重复已 confirmed push，部分发布保持 code-approved
+  ---
+  duration_ms: 12098.3292
+  type: 'test'
+  ...
+# Subtest: TASK-07 AC-1：push 成功响应丢失（observation 前 fault）→ 重放 classify confirmed 跳过
+ok 6 - TASK-07 AC-1：push 成功响应丢失（observation 前 fault）→ 重放 classify confirmed 跳过
+  ---
+  duration_ms: 10691.2087
+  type: 'test'
+  ...
+# Subtest: TASK-07 AC-1：remote stale → rebuild 到新 origin base 续跑
+ok 7 - TASK-07 AC-1：remote stale → rebuild 到新 origin base 续跑
+  ---
+  duration_ms: 14578.5693
+  type: 'test'
+  ...
+# Subtest: TASK-07 AC-1：finalize stale → detached txws 从新 base 重建 finalize commit
+ok 8 - TASK-07 AC-1：finalize stale → detached txws 从新 base 重建 finalize commit
+  ---
+  duration_ms: 14538.0247
+  type: 'test'
+  ...
+# Subtest: TASK-07 AC-1：history rewrite 硬阻断 MERGE_REMOTE_HISTORY_REWRITTEN
+ok 9 - TASK-07 AC-1：history rewrite 硬阻断 MERGE_REMOTE_HISTORY_REWRITTEN
+  ---
+  duration_ms: 8475.7542
+  type: 'test'
+  ...
+# Subtest: TASK-07 AC-2：零 publish 的 code drift → release-drift 回退 code-approved -> developing
+ok 10 - TASK-07 AC-2：零 publish 的 code drift → release-drift 回退 code-approved -> developing
+  ---
+  duration_ms: 5445.9461
+  type: 'test'
+  ...
+# Subtest: TASK-07 AC-1：PRD 漂移零 publish → APPROVED_ARTIFACT_DRIFT 硬阻断
+ok 11 - TASK-07 AC-1：PRD 漂移零 publish → APPROVED_ARTIFACT_DRIFT 硬阻断
+  ---
+  duration_ms: 4492.4291
+  type: 'test'
+  ...
+# Subtest: CR-2026-076 B-06：合法本地信任下受控 artifact 正文漂移只警告并继续合入；非合法本地信任（旧夹具）仍硬阻断
+ok 12 - CR-2026-076 B-06：合法本地信任下受控 artifact 正文漂移只警告并继续合入；非合法本地信任（旧夹具）仍硬阻断
+  ---
+  duration_ms: 17392.843
+  type: 'test'
+  ...
+# Subtest: CR-2026-076 B-06（回修）：合法 TASK 集合增删在 merge 面同判为 warning 并继续合入；未登记 TASK（非法索引）仍不得合入
+ok 13 - CR-2026-076 B-06（回修）：合法 TASK 集合增删在 merge 面同判为 warning 并继续合入；未登记 TASK（非法索引）仍不得合入
+  ---
+  duration_ms: 38603.7177
+  type: 'test'
+  ...
+# Subtest: CR-2026-044 TASK-01 ③: merge publication preflight — 远端 source 缺失/滞后在首次 prepare 前阻断且 recovery 指向 checkpoint（红测试）
+ok 14 - CR-2026-044 TASK-01 ③: merge publication preflight — 远端 source 缺失/滞后在首次 prepare 前阻断且 recovery 指向 checkpoint（红测试）
+  ---
+  duration_ms: 13271.9714
+  type: 'test'
+  ...
+# Subtest: CR-2026-044 TASK-04 AC-2: publication lag 阻断后先 checkpoint（模拟 push）再重跑 merge 成功进入 prepare/publish/finalize
+ok 15 - CR-2026-044 TASK-04 AC-2: publication lag 阻断后先 checkpoint（模拟 push）再重跑 merge 成功进入 prepare/publish/finalize
+  ---
+  duration_ms: 11676.8239
+  type: 'test'
+  ...
+# Subtest: CR-2026-044 TASK-04 AC-5: 已有 prepare journal 的 trunk rebuild 使用冻结 sourceSha，不采纳移动的 requirement ref
+ok 16 - CR-2026-044 TASK-04 AC-5: 已有 prepare journal 的 trunk rebuild 使用冻结 sourceSha，不采纳移动的 requirement ref
+  ---
+  duration_ms: 11379.0549
+  type: 'test'
+  ...
+# Subtest: CR-2026-046 TASK-02 AC-6/7：happy path 三仓 localTrunkSync=synced 且主 checkout 快进
+ok 17 - CR-2026-046 TASK-02 AC-6/7：happy path 三仓 localTrunkSync=synced 且主 checkout 快进
+  ---
+  duration_ms: 11019.8481
+  type: 'test'
+  ...
+# Subtest: CR-2026-046 TASK-02 AC-6：reconcileLocalTrunks 表驱动六场景
+ok 18 - CR-2026-046 TASK-02 AC-6：reconcileLocalTrunks 表驱动六场景
+  ---
+  duration_ms: 7286.0797
+  type: 'test'
+  ...
+# Subtest: CR-2026-046 TASK-02 AC-7：local-sync-ff-only-failed 注入下 merge 仍 phase=complete 且远端成功
+ok 19 - CR-2026-046 TASK-02 AC-7：local-sync-ff-only-failed 注入下 merge 仍 phase=complete 且远端成功
+  ---
+  duration_ms: 11095.8968
+  type: 'test'
+  ...
+# Subtest: TASK-09 AC-17：code 仓 HEAD 变但 tree 相同 → merge 以等价源继续，SHA 保留在追溯与发布记录
+ok 20 - TASK-09 AC-17：code 仓 HEAD 变但 tree 相同 → merge 以等价源继续，SHA 保留在追溯与发布记录
+  ---
+  duration_ms: 17115.3207
+  type: 'test'
+  ...
+# Subtest: TASK-09 AC-20：批准源不可解析 → 不判等价、不补造历史 source（零 publish）
+ok 21 - TASK-09 AC-20：批准源不可解析 → 不判等价、不补造历史 source（零 publish）
+  ---
+  duration_ms: 6557.7987
+  type: 'test'
+  ...
+# Subtest: TASK-09 AC-21：知识仓其他 CR 账本变化不计为当前代码资源变化；code 仓 tree 变化使结论不等价
+ok 22 - TASK-09 AC-21：知识仓其他 CR 账本变化不计为当前代码资源变化；code 仓 tree 变化使结论不等价
+  ---
+  duration_ms: 6717.8503
+  type: 'test'
+  ...
+# Subtest: TASK-09 单缝约束：tree 比较实现只有 lib/workspace-transactions.mjs 一处，crctl 只调用不复制
+ok 23 - TASK-09 单缝约束：tree 比较实现只有 lib/workspace-transactions.mjs 一处，crctl 只调用不复制
+  ---
+  duration_ms: 22.2004
+  type: 'test'
+  ...
+1..23
+# tests 23
+# suites 0
+# pass 23
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 241480.2315

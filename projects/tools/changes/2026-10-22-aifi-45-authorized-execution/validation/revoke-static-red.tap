@@ -1,0 +1,36 @@
+TAP version 13
+# Subtest: TC-AUTH-009 strict revoke is independently readable without restoring authorization
+not ok 1 - TC-AUTH-009 strict revoke is independently readable without restoring authorization
+  ---
+  duration_ms: 295.9765
+  type: 'test'
+  location: 'C:\\Users\\GOBAO\\Downloads\\AI\\tools\\skills\\shared\\crctl\\scripts\\test\\execution-authorization.test.mjs:700:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":{"code":"EXECUTION_GRANT_PAYLOAD_INVALID","message":"初始授权字段缺失、未知或purpose尚未支持"}}
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/GOBAO/Downloads/AI/tools/skills/shared/crctl/scripts/test/execution-authorization.test.mjs:704:10)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1201:25)
+    Test.start (node:internal/test_runner/test:1096:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 359.576
+
+STDERR:

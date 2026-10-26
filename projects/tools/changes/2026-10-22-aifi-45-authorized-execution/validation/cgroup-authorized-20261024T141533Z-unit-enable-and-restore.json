@@ -1,0 +1,32 @@
+{
+  "at": "2026-10-24T15:24:08.460Z",
+  "unit_paths": [
+    "/home/user/.config user:user 755",
+    "/home/user/.config/systemd root:root 755",
+    "/home/user/.config/systemd/user root:root 755",
+    "/home/user/.config/systemd/user/default.target.wants root:root 755"
+  ],
+  "unit_enable": "Created symlink '/home/user/.config/systemd/user/default.target.wants/podman-restart.service' → '/usr/lib/systemd/user/podman-restart.service'. ; is_enabled=enabled",
+  "steps": {
+    "pg1": 0,
+    "pg2": 0,
+    "ready": true,
+    "backend": 0
+  },
+  "db": {
+    "rows": 83,
+    "advisory_locks": 0,
+    "other_sessions": 0,
+    "history_matches": true
+  },
+  "containers": [
+    "multica-postgres|running|<no value>",
+    "stdd-aifi45-20261022-pg|running|<no value>",
+    "multica-backend|running|<no value>"
+  ],
+  "restartPolicies": [
+    "multica-postgres|always",
+    "stdd-aifi45-20261022-pg|always",
+    "multica-backend|always"
+  ]
+}

@@ -1,0 +1,101 @@
+{
+  "schema": "aifi45-review3-run/v1",
+  "label": "postfix-daemon",
+  "package": "./internal/daemon",
+  "run_regex": "^(TestExecutionVerifierRequiresExplicitNegativeFacts|TestClaimedExecutionTaskCannotStartOnRootAttributionAlone)$",
+  "extra_args": [],
+  "final_argv": [
+    "go",
+    "test",
+    "./internal/daemon",
+    "-run",
+    "^(TestExecutionVerifierRequiresExplicitNegativeFacts|TestClaimedExecutionTaskCannotStartOnRootAttributionAlone)$",
+    "-count=1",
+    "-json"
+  ],
+  "spawn_executable": "go",
+  "final_argv_verification": "Captured executable and argument array before invoking the unchanged runner spawnSync.",
+  "started_at": "2026-10-24T12:27:06.905Z",
+  "finished_at": "2026-10-24T12:27:10.996Z",
+  "duration_ms": 4090,
+  "exit": 0,
+  "signal": null,
+  "error": null,
+  "counts_all": {
+    "run": 2,
+    "pass": 2,
+    "fail": 0,
+    "skip": 0
+  },
+  "counts_top": {
+    "run": 2,
+    "pass": 2,
+    "fail": 0,
+    "skip": 0
+  },
+  "counts_sub": {
+    "run": 0,
+    "pass": 0,
+    "fail": 0,
+    "skip": 0
+  },
+  "unique_top": {
+    "run": [
+      "TestClaimedExecutionTaskCannotStartOnRootAttributionAlone",
+      "TestExecutionVerifierRequiresExplicitNegativeFacts"
+    ],
+    "pass": [
+      "TestClaimedExecutionTaskCannotStartOnRootAttributionAlone",
+      "TestExecutionVerifierRequiresExplicitNegativeFacts"
+    ],
+    "fail": [],
+    "skip": []
+  },
+  "unique_sub": {
+    "count_run": 0,
+    "count_pass": 0,
+    "count_fail": 0,
+    "count_skip": 0,
+    "fail": [],
+    "skip": []
+  },
+  "package_events": [
+    {
+      "action": "pass",
+      "package": "github.com/multica-ai/multica/server/internal/daemon",
+      "elapsed": 1.6560000000000001
+    }
+  ],
+  "package_elapsed_seconds": 1.6560000000000001,
+  "raw_files": {
+    "stdout": "C:/Users/GOBAO/Downloads/AI/AI First Platform/projects/multica/changes/2026-10-22-aifi-45-authorized-execution/validation/20261024T122543Z-aifi45-review3-postfix-daemon.go.jsonl",
+    "stderr": "C:/Users/GOBAO/Downloads/AI/AI First Platform/projects/multica/changes/2026-10-22-aifi-45-authorized-execution/validation/20261024T122543Z-aifi45-review3-postfix-daemon.stderr.log"
+  },
+  "raw_sha256": {
+    "stdout": "167745dcec10f1ed3da4757cb582c699380dcd3cc136e107a1803f248f11dd9f",
+    "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "raw_line_count": 12,
+  "source_sha256_lf": {
+    "server/internal/governance/execution_fixture_ownership_test.go": "c940797952fe9cac3f5a334b4f21aaed9759c100a2951efa32961ac6866dde74",
+    "server/internal/governance/execution_authorization_http_test.go": "820a650f19efea194c882fa2272a18a7f85806eb79521949f85092a0f3d495c6",
+    "server/internal/governance/execution_authorization_routes_test.go": "101a2cb35f9cf9c87609e2cf0b5f1409cda4098a336bea108396dba156f7b8d8",
+    "server/internal/governance/execution_fixture_export_test.go": "01719df13fa33540ce87de00f22a11a198cf427ac31170f5c7a1567ccf402976",
+    "server/internal/governance/execution_trust_install_test.go": "a98c2a82232aad47fc9da259f05da93381c0aa7e495586eb1968b70f11014a6d",
+    "server/internal/governance/execution_verifier_test.go": "6c7e4f50b8c74e496f17e806e858b664cc9b65f94e1ad43101082b281943f398"
+  },
+  "runner_sha256": "b876a3835fbe835fd15f73d8ddf81db9adee340f7f17308d6f2cb78ed61ad4b6",
+  "db_identity": "stdd_aifi45_20261022|stdd|671|642_cr_execution_authorization_head",
+  "container_id": "666bfec52ac3c3d13b43389891f50c4105833198eab7e4167b76f014a774e823",
+  "preflight": "label=2026-10-22-aifi-45-authorized-execution;port=127.0.0.1:55432;running=true;advisory_lock=0;other_sessions=0;protected42_before=a3c26e5cb2927a88b01e74c2b07a0837ceef44daada4e18448db8097f2346f19",
+  "harness": {
+    "PI_PROVIDER": "Gobao",
+    "PI_MODEL": "deepseek-flash",
+    "PI_REASONING_LEVEL": "max"
+  },
+  "sanitization": [
+    "postgres URL userinfo redacted",
+    "GitHub token patterns redacted"
+  ],
+  "note": "Post-fix daemon consume-refusal pair."
+}

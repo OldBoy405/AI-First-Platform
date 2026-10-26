@@ -1,0 +1,157 @@
+{
+  "at": "2026-10-24T17:03:01.638Z",
+  "purpose": "File and non-DB command checks only; no SQL in this audit",
+  "checks": {
+    "source6_matches_independent_raw": true,
+    "protected4_unchanged": true,
+    "repos_head_branch_staged_unchanged": true,
+    "custom_m11_rows": 20,
+    "custom_167_registered": true,
+    "missing_links": [],
+    "gofmt_clean": true,
+    "scoped_diff_check": true,
+    "original_current_unchanged": true,
+    "all9_resources_absent": true,
+    "original_release": {
+      "sessions": 0,
+      "locks": 0,
+      "transaction_read_only": "on"
+    },
+    "old_runner_still_blocked": true
+  },
+  "source": [
+    {
+      "file": "scripts/aifi45-db/run.mjs",
+      "raw_sha256": "b4d70ae10ee5c0eabc51fc3cb897410ebfcee2816bdf097e93c147fc09a9df00",
+      "lf_sha256": "b4d70ae10ee5c0eabc51fc3cb897410ebfcee2816bdf097e93c147fc09a9df00"
+    },
+    {
+      "file": "scripts/aifi45-db/run.test.mjs",
+      "raw_sha256": "0c6b605388421acfbae73584b34f687d0221d2622e5c3e36ba11ef7de9ee8a79",
+      "lf_sha256": "0c6b605388421acfbae73584b34f687d0221d2622e5c3e36ba11ef7de9ee8a79"
+    },
+    {
+      "file": "server/internal/service/task.go",
+      "raw_sha256": "c5e543f880b907059ac1a02f6fda60b1e6e200703a0c70cc9efd967d0b57f118",
+      "lf_sha256": "c5e543f880b907059ac1a02f6fda60b1e6e200703a0c70cc9efd967d0b57f118"
+    },
+    {
+      "file": "server/internal/handler/daemon.go",
+      "raw_sha256": "3f7a3444b3c8aaca9728b01d179ff3ad138c780a25639f6ceb5023c46102d24f",
+      "lf_sha256": "3f7a3444b3c8aaca9728b01d179ff3ad138c780a25639f6ceb5023c46102d24f"
+    },
+    {
+      "file": "server/internal/handler/handler_test.go",
+      "raw_sha256": "e910e128f94f0ea5a0783754133ad5333a6bc85a5d697cca3338801d1167c91b",
+      "lf_sha256": "e910e128f94f0ea5a0783754133ad5333a6bc85a5d697cca3338801d1167c91b"
+    },
+    {
+      "file": "server/internal/governance/execution_start_claim_test.go",
+      "raw_sha256": "44e9291b033eb754430f45faf8767c7af2446907e41ad646b9793997267be619",
+      "lf_sha256": "44e9291b033eb754430f45faf8767c7af2446907e41ad646b9793997267be619"
+    },
+    {
+      "file": "server/internal/handler/daemon_start_claim_test.go",
+      "raw_sha256": "12f1061c455b923a1928f5c4d59e583d6723a93c4505f2f4d7f193fdda549a23",
+      "lf_sha256": "12f1061c455b923a1928f5c4d59e583d6723a93c4505f2f4d7f193fdda549a23"
+    },
+    {
+      "file": "scripts/aifi45-db/README.md",
+      "raw_sha256": "2d12e283108541202b219e2f3c04ced9742cd0c9aa2ced079a4a5cb518c48056",
+      "lf_sha256": "2d12e283108541202b219e2f3c04ced9742cd0c9aa2ced079a4a5cb518c48056"
+    },
+    {
+      "file": "CUSTOM.md",
+      "raw_sha256": "7b911ae2f2028e142efb39119b9131620e3ebb7a49b27d65cb5dcd8690c0a1e6",
+      "lf_sha256": "3dd6eb3b658154c2013d36e855d1c2eecb4bcee2d6298d03b45f9addc18dc61a"
+    }
+  ],
+  "protected4": [
+    {
+      "file": "tools/.stdd/binding.yaml",
+      "unchanged": true
+    },
+    {
+      "file": "multica/.stdd/binding.yaml",
+      "unchanged": true
+    },
+    {
+      "file": "AI First Platform/projects/tools/config.d/quality.yaml",
+      "unchanged": true
+    },
+    {
+      "file": "AI First Platform/projects/multica/config.d/quality.yaml",
+      "unchanged": true
+    }
+  ],
+  "claim_original5": [
+    {
+      "file": "server/internal/service/task.go",
+      "unchanged": true
+    },
+    {
+      "file": "server/internal/handler/daemon.go",
+      "unchanged": true
+    },
+    {
+      "file": "server/internal/handler/daemon_start_claim_test.go",
+      "unchanged": true
+    },
+    {
+      "file": "server/internal/handler/handler_test.go",
+      "unchanged": true
+    },
+    {
+      "file": "server/internal/governance/execution_start_claim_test.go",
+      "unchanged": false
+    }
+  ],
+  "expected_test_fixture_only_delta": [
+    "server/internal/governance/execution_start_claim_test.go"
+  ],
+  "repos": {
+    "tools": {
+      "branch": "main",
+      "head": "9e41ad74ce631459bc007a29c3d0cdaaa1e49e75",
+      "staged": 0
+    },
+    "multica": {
+      "branch": "main",
+      "head": "f6e90ab8090c8a712c7fe2a324e977f10a39499c",
+      "staged": 0
+    }
+  },
+  "data_state_hashes": [
+    {
+      "repo": "tools",
+      "sha256": "abfe19e29461415de19a253102e483fe7a76457af2ee139cb137a9a719e248a9"
+    },
+    {
+      "repo": "multica",
+      "sha256": "68e4b271962195d60a546b569aa9e72435c8d667c6673e5f62d56e9b4a98dab4"
+    }
+  ],
+  "docs": [
+    {
+      "file": "projects\\multica\\changes\\2026-10-22-aifi-45-authorized-execution\\phase-context.md",
+      "raw_sha256": "786eab5370690da270015fcd82e8fb2a5742c8d34b7c50fdc130602568033a29"
+    },
+    {
+      "file": "projects\\multica\\changes\\2026-10-22-aifi-45-authorized-execution\\tasks.md",
+      "raw_sha256": "3f697644f8e93807cbfc90cb9a1e83f2014edc459db089d16fc8d3a45678a372"
+    },
+    {
+      "file": "projects\\tools\\changes\\2026-10-22-aifi-45-authorized-execution\\phase-context.md",
+      "raw_sha256": "31e7bde045d3b8ba756670483d6175be8568bb7dbe8d89ca4435d915fdcbfe99"
+    },
+    {
+      "file": "projects\\tools\\changes\\2026-10-22-aifi-45-authorized-execution\\tasks.md",
+      "raw_sha256": "c87993001fb40f86ccad7e6a00ce230ff932f6a46606f27135a68d5b91cd379b"
+    },
+    {
+      "file": "projects\\multica\\changes\\2026-10-22-aifi-45-authorized-execution\\validation\\disposable-db-20261024T162608Z-report.md",
+      "raw_sha256": "14394fdac9b932e973dc8b23be631dcfdfe2827f951dc082ead65396f9177f04"
+    }
+  ],
+  "review_scope": "Strong static PASS is only disposable runner; old claim review remains INCOMPLETE; business TC0/49 and 5 majors unchanged"
+}

@@ -1,0 +1,102 @@
+{
+  "schema": "aifi45-head-p2-run/v1",
+  "label": "head-boundaries",
+  "started_utc": "2026-10-24T12:05:05.977Z",
+  "completed_utc": "2026-10-24T12:05:11.675Z",
+  "process_elapsed_ms": 5417,
+  "final_argv": [
+    "go",
+    "test",
+    "./internal/governance",
+    "-run",
+    "^TestExecutionAuthorizationHead",
+    "-count=1",
+    "-json"
+  ],
+  "cwd": "C:/Users/GOBAO/Downloads/AI/multica/server",
+  "exit": 1,
+  "signal": null,
+  "spawn_error": null,
+  "counts_all": {
+    "run": 80,
+    "pass": 38,
+    "fail": 42,
+    "skip": 0
+  },
+  "counts_top": {
+    "run": 14,
+    "pass": 4,
+    "fail": 10,
+    "skip": 0
+  },
+  "package_results": [
+    {
+      "Time": "2026-10-24T20:05:11.5841564+08:00",
+      "Action": "fail",
+      "Package": "github.com/multica-ai/multica/server/internal/governance",
+      "Elapsed": 1.8239999999999998
+    }
+  ],
+  "failed_tests": [
+    "TestExecutionAuthorizationHeadHTTPPersistsInitial",
+    "TestExecutionAuthorizationHeadHTTPRejectsMissingAndDriftedAuthority/missing_pointer",
+    "TestExecutionAuthorizationHeadHTTPRejectsMissingAndDriftedAuthority/dangling_pointer",
+    "TestExecutionAuthorizationHeadHTTPRejectsMissingAndDriftedAuthority/wrong_stage",
+    "TestExecutionAuthorizationHeadHTTPRejectsMissingAndDriftedAuthority/rejected_record",
+    "TestExecutionAuthorizationHeadHTTPRejectsMissingAndDriftedAuthority/current_CR_project_changed",
+    "TestExecutionAuthorizationHeadHTTPRejectsMissingAndDriftedAuthority/missing_shell_issue_link",
+    "TestExecutionAuthorizationHeadHTTPRejectsMissingAndDriftedAuthority/record_key_differs",
+    "TestExecutionAuthorizationHeadHTTPRejectsMissingAndDriftedAuthority/record_signature_differs",
+    "TestExecutionAuthorizationHeadHTTPRejectsMissingAndDriftedAuthority/record_source_digest_differs",
+    "TestExecutionAuthorizationHeadHTTPRejectsMissingAndDriftedAuthority/unsigned_payload_tamper",
+    "TestExecutionAuthorizationHeadHTTPRejectsMissingAndDriftedAuthority/source_raw_tamper",
+    "TestExecutionAuthorizationHeadHTTPRejectsMissingAndDriftedAuthority",
+    "TestExecutionAuthorizationHeadHTTPReplayNeverRebuildsAuthority/cleared_pointer",
+    "TestExecutionAuthorizationHeadHTTPReplayNeverRebuildsAuthority/recreated_CR_projection",
+    "TestExecutionAuthorizationHeadHTTPReplayNeverRebuildsAuthority",
+    "TestExecutionAuthorizationHeadHTTPAuthAndConfiguration",
+    "TestExecutionAuthorizationHeadHTTPPreservesNegativeZeroSource/repair_limit",
+    "TestExecutionAuthorizationHeadHTTPPreservesNegativeZeroSource/sensitive_action_limit",
+    "TestExecutionAuthorizationHeadHTTPPreservesNegativeZeroSource",
+    "TestExecutionAuthorizationHeadHTTPPreservesOriginalCRLFBytes",
+    "TestExecutionAuthorizationHeadHTTPPointerIsTheOnlySelector",
+    "TestExecutionAuthorizationHeadHTTPRejectsForeignHistoryAndProject/project_workspace",
+    "TestExecutionAuthorizationHeadHTTPRejectsForeignHistoryAndProject",
+    "TestExecutionAuthorizationHeadHTTPRollsBackHistoryWhenHeadWriteFails",
+    "TestExecutionAuthorizationHeadHTTPRejectsSignedInvalidPayload/workspace",
+    "TestExecutionAuthorizationHeadHTTPRejectsSignedInvalidPayload/project",
+    "TestExecutionAuthorizationHeadHTTPRejectsSignedInvalidPayload/CR",
+    "TestExecutionAuthorizationHeadHTTPRejectsSignedInvalidPayload/schema",
+    "TestExecutionAuthorizationHeadHTTPRejectsSignedInvalidPayload/issuer",
+    "TestExecutionAuthorizationHeadHTTPRejectsSignedInvalidPayload/grant_ID",
+    "TestExecutionAuthorizationHeadHTTPRejectsSignedInvalidPayload/lineage",
+    "TestExecutionAuthorizationHeadHTTPRejectsSignedInvalidPayload/revision",
+    "TestExecutionAuthorizationHeadHTTPRejectsSignedInvalidPayload/unsupported_purpose",
+    "TestExecutionAuthorizationHeadHTTPRejectsSignedInvalidPayload/key_ID",
+    "TestExecutionAuthorizationHeadHTTPRejectsSignedInvalidPayload/source_event",
+    "TestExecutionAuthorizationHeadHTTPRejectsSignedInvalidPayload/authorizer",
+    "TestExecutionAuthorizationHeadHTTPRejectsSignedInvalidPayload/policy",
+    "TestExecutionAuthorizationHeadHTTPRejectsSignedInvalidPayload/template",
+    "TestExecutionAuthorizationHeadHTTPRejectsSignedInvalidPayload/scope_differs_from_source",
+    "TestExecutionAuthorizationHeadHTTPRejectsSignedInvalidPayload/unknown_field",
+    "TestExecutionAuthorizationHeadHTTPRejectsSignedInvalidPayload"
+  ],
+  "source_sha256_lf": {
+    "server/internal/governance/execution_authorization_head.go": "4d5ab17a7010b8d96112f5c6645a7f46eec4cedb6f371b9f1faee97968658556",
+    "server/internal/governance/execution_authorization_head_test.go": "93a696b54cccb24cecefbc51ad9b141fc47167b1525bf8f65d3435f2cbb8148d",
+    "server/cmd/server/execution_authorization_head_test.go": "3499794ed5c382c9caee5269cbe8ab8f9b92b08f58b5be7be375b7e000769d59"
+  },
+  "runner_sha256_lf": "b876a3835fbe835fd15f73d8ddf81db9adee340f7f17308d6f2cb78ed61ad4b6",
+  "database": {
+    "container": "stdd-aifi45-20261022-pg",
+    "container_id_prefix": "666bfec52ac3",
+    "loopback_port": 55432,
+    "database": "stdd_aifi45_20261022",
+    "user": "stdd"
+  },
+  "harness": {
+    "PI_PROVIDER": "OpenAIPersonal",
+    "PI_MODEL": "gpt-6.1-sol",
+    "PI_REASONING_LEVEL": "high"
+  }
+}

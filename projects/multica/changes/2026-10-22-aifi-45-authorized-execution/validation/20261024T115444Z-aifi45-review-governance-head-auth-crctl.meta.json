@@ -1,0 +1,169 @@
+{
+  "schema": "aifi45-review-run/v1",
+  "label": "governance-head-auth-crctl",
+  "timestamp_utc": "20261024T115444Z",
+  "package": "./internal/governance",
+  "run_regex": "^(TestExecutionAuthoriz|TestExecutionGrantCheckAgainstRealCrctlCLI|TestDaemonAuthenticatedDeliveryRunsCrctl|TestDaemonFetchesAndInstallsExecutionAuthorization)",
+  "extra_args": [
+    "-shuffle=on",
+    "-count=2"
+  ],
+  "final_argv_derived": [
+    "go",
+    "test",
+    "./internal/governance",
+    "-run",
+    "^(TestExecutionAuthoriz|TestExecutionGrantCheckAgainstRealCrctlCLI|TestDaemonAuthenticatedDeliveryRunsCrctl|TestDaemonFetchesAndInstallsExecutionAuthorization)",
+    "-count=1",
+    "-json",
+    "-shuffle=on",
+    "-count=2"
+  ],
+  "argv_verification": "Runner source appends fixed -count=1 then extra -shuffle=on -count=2; raw JSON shows shuffle seed and each of 24 top-level names ran exactly 2 times, so effective count=2.",
+  "wrapper_error": "TypeError: Cannot read properties of undefined (reading '0') at captured.args after raw capture; raw stdout/stderr were already written. No test rerun performed.",
+  "exit": 0,
+  "exit_source": "raw package pass event plus runner console summary exit=0",
+  "runner_summary": "exit=0 RUN=236 PASS=236 FAIL=0 SKIP=0",
+  "counts_all": {
+    "run": 236,
+    "pass": 236,
+    "fail": 0,
+    "skip": 0
+  },
+  "counts_top": {
+    "run": 48,
+    "pass": 48,
+    "fail": 0,
+    "skip": 0
+  },
+  "counts_sub": {
+    "run": 188,
+    "pass": 188,
+    "fail": 0,
+    "skip": 0
+  },
+  "unique_top": {
+    "run": [
+      "TestDaemonAuthenticatedDeliveryRunsCrctl",
+      "TestDaemonFetchesAndInstallsExecutionAuthorization",
+      "TestExecutionAuthorizationBuildsSignedStructuredSource",
+      "TestExecutionAuthorizationHeadHTTPAuthAndConfiguration",
+      "TestExecutionAuthorizationHeadHTTPPersistsInitial",
+      "TestExecutionAuthorizationHeadHTTPPointerIsTheOnlySelector",
+      "TestExecutionAuthorizationHeadHTTPPreservesOriginalCRLFBytes",
+      "TestExecutionAuthorizationHeadHTTPRejectsForeignHistoryAndProject",
+      "TestExecutionAuthorizationHeadHTTPRejectsMissingAndDriftedAuthority",
+      "TestExecutionAuthorizationHeadHTTPRejectsSignedInvalidPayload",
+      "TestExecutionAuthorizationHeadHTTPReplayNeverRebuildsAuthority",
+      "TestExecutionAuthorizationHeadHTTPRollsBackHistoryWhenHeadWriteFails",
+      "TestExecutionAuthorizationHeadMigrationDoesNotBackfill",
+      "TestExecutionAuthorizationRejectsDuplicateJSONKeys",
+      "TestExecutionAuthorizationRejectsOversizedGrantEnvelope",
+      "TestExecutionAuthorizationRejectsUntrustedSources",
+      "TestExecutionAuthorizationRouteDisabledAndTaskToken",
+      "TestExecutionAuthorizationRouteUsesRealAuthAndWorkspace",
+      "TestExecutionAuthorizePersistsAndReplaysSource",
+      "TestExecutionAuthorizeRejectsCrossWorkspaceAndProjectMismatch",
+      "TestExecutionAuthorizeRejectsStaleOrForeignResource",
+      "TestExecutionAuthorizeRejectsUntrustedCallers",
+      "TestExecutionAuthorizeRequiresFrozenCoordinatorRoot",
+      "TestExecutionGrantCheckAgainstRealCrctlCLI"
+    ],
+    "pass": [
+      "TestDaemonAuthenticatedDeliveryRunsCrctl",
+      "TestDaemonFetchesAndInstallsExecutionAuthorization",
+      "TestExecutionAuthorizationBuildsSignedStructuredSource",
+      "TestExecutionAuthorizationHeadHTTPAuthAndConfiguration",
+      "TestExecutionAuthorizationHeadHTTPPersistsInitial",
+      "TestExecutionAuthorizationHeadHTTPPointerIsTheOnlySelector",
+      "TestExecutionAuthorizationHeadHTTPPreservesOriginalCRLFBytes",
+      "TestExecutionAuthorizationHeadHTTPRejectsForeignHistoryAndProject",
+      "TestExecutionAuthorizationHeadHTTPRejectsMissingAndDriftedAuthority",
+      "TestExecutionAuthorizationHeadHTTPRejectsSignedInvalidPayload",
+      "TestExecutionAuthorizationHeadHTTPReplayNeverRebuildsAuthority",
+      "TestExecutionAuthorizationHeadHTTPRollsBackHistoryWhenHeadWriteFails",
+      "TestExecutionAuthorizationHeadMigrationDoesNotBackfill",
+      "TestExecutionAuthorizationRejectsDuplicateJSONKeys",
+      "TestExecutionAuthorizationRejectsOversizedGrantEnvelope",
+      "TestExecutionAuthorizationRejectsUntrustedSources",
+      "TestExecutionAuthorizationRouteDisabledAndTaskToken",
+      "TestExecutionAuthorizationRouteUsesRealAuthAndWorkspace",
+      "TestExecutionAuthorizePersistsAndReplaysSource",
+      "TestExecutionAuthorizeRejectsCrossWorkspaceAndProjectMismatch",
+      "TestExecutionAuthorizeRejectsStaleOrForeignResource",
+      "TestExecutionAuthorizeRejectsUntrustedCallers",
+      "TestExecutionAuthorizeRequiresFrozenCoordinatorRoot",
+      "TestExecutionGrantCheckAgainstRealCrctlCLI"
+    ],
+    "fail": [],
+    "skip": []
+  },
+  "top_run_count_distribution": {
+    "TestExecutionAuthorizationHeadHTTPPersistsInitial": 2,
+    "TestExecutionAuthorizationRouteUsesRealAuthAndWorkspace": 2,
+    "TestExecutionAuthorizePersistsAndReplaysSource": 2,
+    "TestExecutionAuthorizationRejectsOversizedGrantEnvelope": 2,
+    "TestExecutionAuthorizationHeadHTTPRejectsSignedInvalidPayload": 2,
+    "TestExecutionAuthorizationHeadMigrationDoesNotBackfill": 2,
+    "TestDaemonAuthenticatedDeliveryRunsCrctl": 2,
+    "TestExecutionAuthorizationHeadHTTPRollsBackHistoryWhenHeadWriteFails": 2,
+    "TestDaemonFetchesAndInstallsExecutionAuthorization": 2,
+    "TestExecutionAuthorizationHeadHTTPPreservesOriginalCRLFBytes": 2,
+    "TestExecutionAuthorizeRequiresFrozenCoordinatorRoot": 2,
+    "TestExecutionAuthorizationHeadHTTPPointerIsTheOnlySelector": 2,
+    "TestExecutionAuthorizationHeadHTTPRejectsMissingAndDriftedAuthority": 2,
+    "TestExecutionAuthorizeRejectsCrossWorkspaceAndProjectMismatch": 2,
+    "TestExecutionAuthorizeRejectsUntrustedCallers": 2,
+    "TestExecutionAuthorizationBuildsSignedStructuredSource": 2,
+    "TestExecutionAuthorizationRejectsDuplicateJSONKeys": 2,
+    "TestExecutionAuthorizationHeadHTTPRejectsForeignHistoryAndProject": 2,
+    "TestExecutionAuthorizeRejectsStaleOrForeignResource": 2,
+    "TestExecutionAuthorizationHeadHTTPAuthAndConfiguration": 2,
+    "TestExecutionGrantCheckAgainstRealCrctlCLI": 2,
+    "TestExecutionAuthorizationHeadHTTPReplayNeverRebuildsAuthority": 2,
+    "TestExecutionAuthorizationRouteDisabledAndTaskToken": 2,
+    "TestExecutionAuthorizationRejectsUntrustedSources": 2
+  },
+  "unique_sub": {
+    "count_run": 94,
+    "count_pass": 94,
+    "count_fail": 0,
+    "count_skip": 0,
+    "fail": [],
+    "skip": []
+  },
+  "package_events": [
+    {
+      "action": "pass",
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "elapsed": 6.537
+    }
+  ],
+  "package_elapsed_seconds": 6.537,
+  "raw_time_span_seconds": 6.537,
+  "shuffle_lines": [
+    "-test.shuffle 1792842887735739800"
+  ],
+  "raw_files": {
+    "stdout": "20261024T115444Z-aifi45-review-governance-head-auth-crctl.go.jsonl",
+    "stderr": "20261024T115444Z-aifi45-review-governance-head-auth-crctl.stderr.log"
+  },
+  "raw_sha256": {
+    "stdout": "5c70cd70667dcfc4288488f88fa6d59d0f73b3752786a1921d4099eda8a5cea3",
+    "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "raw_line_count": 953,
+  "db_identity": "stdd_aifi45_20261022|stdd|671|642_cr_execution_authorization_head",
+  "container_id": "666bfec52ac3c3d13b43389891f50c4105833198eab7e4167b76f014a774e823",
+  "preflight": "label=2026-10-22-aifi-45-authorized-execution;port=127.0.0.1:55432;running=true;advisory_lock=0;other_sessions=0",
+  "harness": {
+    "PI_PROVIDER": "Gobao",
+    "PI_MODEL": "deepseek-flash",
+    "PI_REASONING_LEVEL": "max"
+  },
+  "sanitization": [
+    "postgres URL userinfo redacted",
+    "GitHub token patterns redacted"
+  ],
+  "note": "Meta reconstructed from the actual raw Go JSON after the inline wrapper crashed on an unavailable captured.args field; test execution was not repeated."
+}

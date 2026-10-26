@@ -1,0 +1,83 @@
+TAP version 13
+# Subtest: B12a 生产者：测试报告记录运行时的授权摘要
+not ok 1 - B12a 生产者：测试报告记录运行时的授权摘要
+  ---
+  duration_ms: 554.6271
+  type: 'test'
+  location: 'C:\\Users\\GOBAO\\Downloads\\AI\\tools\\skills\\shared\\crctl\\scripts\\test\\test-cr.test.mjs:178:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /^authorization-digest: d00546daa045aa7f76ce849d285941e250c3c78ce56ba97efa3bb4547f31b471$/m. Input:
+    
+    '---\n' +
+      'cr: CR-TEST-1\n' +
+      'status: pass\n' +
+      'tester: Ray\n' +
+      'generated-by: crctl-test\n' +
+      'generated-at: "2026-10-26T23:10:40+08:00"\n' +
+      'command-digest: 30c82c0a1694c1fea90f7a608c85ff779dde03ab92a195729ca9c3e6a61931a9\n' +
+      'commands:\n' +
+      '  - repo: ai-first-platform-docs\n' +
+      '    cwd: .\n' +
+      '    executable: node\n' +
+      '    args: [-e, "console.log(1)"]\n' +
+      '    timeout-seconds: 30\n' +
+      '    exit-code: 0\n' +
+      '    signal: null\n' +
+      '    timed-out: false\n' +
+      '    started: true\n' +
+      '    skipped: false\n' +
+      '    log: change-requests/CR-TEST-1/test-evidence/cmd-01.log\n' +
+      '    source-revision: 58ce20e8cea01e78a08bcba4014a01d4f334c3b1\n' +
+      '---\n' +
+      '\n' +
+      '# 测试报告 · CR-TEST-1\n' +
+      '\n' +
+      '<!-- crctl:analysis-below -->'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: |-
+    ---
+    cr: CR-TEST-1
+    status: pass
+    tester: Ray
+    generated-by: crctl-test
+    generated-at: "2026-10-26T23:10:40+08:00"
+    command-digest: 30c82c0a1694c1fea90f7a608c85ff779dde03ab92a195729ca9c3e6a61931a9
+    commands:
+      - repo: ai-first-platform-docs
+        cwd: .
+        executable: node
+        args: [-e, "console.log(1)"]
+        timeout-seconds: 30
+        exit-code: 0
+        signal: null
+        timed-out: false
+        started: true
+        skipped: false
+        log: change-requests/CR-TEST-1/test-evidence/cmd-01.log
+        source-revision: 58ce20e8cea01e78a08bcba4014a01d4f334c3b1
+    ---
+    
+    # 测试报告 · CR-TEST-1
+    
+    <!-- crctl:analysis-below -->
+  operator: 'match'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/GOBAO/Downloads/AI/tools/skills/shared/crctl/scripts/test/test-cr.test.mjs:194:12)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1201:25)
+    Test.start (node:internal/test_runner/test:1096:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 629.9891

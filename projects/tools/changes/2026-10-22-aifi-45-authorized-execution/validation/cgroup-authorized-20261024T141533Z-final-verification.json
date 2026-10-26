@@ -1,0 +1,56 @@
+{
+  "at": "2026-10-24T14:54:57.346Z",
+  "protected_files_unchanged": true,
+  "product_source_unchanged_vs_manifest": true,
+  "repositories": {
+    "tools": {
+      "branch": "main",
+      "head": "9e41ad74ce631459bc007a29c3d0cdaaa1e49e75",
+      "staged": 0
+    },
+    "multica": {
+      "branch": "main",
+      "head": "f6e90ab8090c8a712c7fe2a324e977f10a39499c",
+      "staged": 0
+    }
+  },
+  "dedicated_db": {
+    "rows_and_aggregate": "83|ced5ac216bcc912979a222221d15ffd0",
+    "advisory_locks": "0",
+    "other_sessions": "0"
+  },
+  "containers": [
+    {
+      "name": "multica-postgres",
+      "state": "running"
+    },
+    {
+      "name": "stdd-aifi45-20261022-pg",
+      "state": "running"
+    },
+    {
+      "name": "multica-backend",
+      "state": "running"
+    }
+  ],
+  "runtime": {
+    "rootless": true,
+    "cgroup_manager": "cgroupfs",
+    "controllers": [
+      "cpu",
+      "io",
+      "memory",
+      "pids"
+    ]
+  },
+  "wsl_conf_sha256": "97fa04e3363292d358627c1295ad1fa9b28a8ec6f853a4262b2bcdf5256e7805",
+  "maintenance_closed": "kernel cpu/memory/pids enforcement proven; machine CLI state tracking still reports Running:false",
+  "business_TC": {
+    "completed": 0,
+    "total": 49
+  },
+  "major_unresolved": 5,
+  "gate3": false,
+  "commit": false,
+  "push": false
+}

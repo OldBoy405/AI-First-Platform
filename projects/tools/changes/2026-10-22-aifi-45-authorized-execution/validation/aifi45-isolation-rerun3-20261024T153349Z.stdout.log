@@ -1,0 +1,24 @@
+cgroup controllers: ["cpu","io","memory","pids"]; resource limits enforced: true
+Verified local base image and Linux/amd64 runtime; fetching pinned public CLI artifact.
+Reused SHA256-verified public CLI cache (not a trust root).
+{
+  "schema": "aifi45-isolation-result/v1",
+  "cliVersion": "codex-cli 0.163.0",
+  "releaseTag": "rust-v0.163.0",
+  "artifactSha256": "beb339e8ecd9ba057a6bb2dc81ad8ca474812edfbf0fc5056ca818797648dde4",
+  "imageId": "b260697ea35d1c833fb38eaf27a02c9745c54009e133bc80afdd5f11a63b5bac",
+  "checks": [
+    "version: runtime configuration",
+    "real CLI bootstrap (not an LLM task)",
+    "positive: runtime configuration",
+    "positive control can read synthetic credential",
+    "negative: runtime configuration",
+    "isolated writes, runtime caps, absent host secrets/socket, link targets, readonly root, no route"
+  ],
+  "resourceLimitsEnforced": true,
+  "modelRequests": 0,
+  "hostWorkspaceMounted": false,
+  "admissionEnabled": false,
+  "boundary": "CLI bootstrap and synthetic shell adversary only; daemon task/claim/receipt integration is NOT verified",
+  "ownedResourcesCleaned": true
+}

@@ -1,0 +1,30 @@
+meta:
+  change_id: 2026-10-22-aifi-45-authorized-execution
+  created: '2026-10-22'
+  updated: '2026-10-22'
+
+adjustments:
+  - id: ADJ-AIFI45-001
+    original_design_ref: 'design.md：workspace_id/project_id/cr_id当前验证绑定、dispatch attestation；SC-AUTH-008、SC-AUTH-010'
+    actual_change: '用户原文“采纳你的建议，继续别停下来等指令”已采纳补正并授权继续BUILD，普通模式保持。wire-contract.md明确每进程challenge、实际根/进程/scope/head/部署绑定及独立签名域；T已实现只读包检查和绑定证明负例边界（48/48，0跳过），真实消费仍拒绝。M资源链/可信签发与共同入口锁接线继续中，完整真实链未验收，故仍unresolved；不再停等同一方向确认。'
+    reason: '现有deriveInstallRoot只定位Git根；bindTaskWorkspace环境变量无来源认证；daemon根投影丢失project/resource身份。已安装公钥能验包，但不能独立证明当前安装根的workspace/project，复制可编辑sidecar不构成新信任锚。'
+    impact_scope: 'T授权绑定/准入/敏感操作/恢复与M认证、资源投影、dispatch及统一wake接口；AUTH-001/008/009/010、RPR-005/006及RUN-001～010相关路径须重审，不减少原TC。详见authorization-trust-gap.md。'
+    severity: major
+    affected_capabilities: [execution-authorization, repair-governance, authorized-runner]
+    resolved: false
+  - id: ADJ-AIFI45-002
+    original_design_ref: 'design.md：source_event_id/source_digest/source_bindings及独立提取核验；SC-AUTH-001、SC-AUTH-003'
+    actual_change: '用户已明确采纳并要求继续。wire-contract.md定义第一条structured-human-request/v1：完整原bytes冻结、server生成身份/14字段映射、独立域签名与默认关闭；Go构造组件和真实Node静态验签互通曾33/33通过（作者回报）。HTTP真实认证/持久化/重投与严格JSON补正进行中；T独立来源核对、自由文本/附件/已接受规则路径未完成，仍unresolved，禁止历史归因冒充授权。'
+    reason: '现有issue_source_context明确为read_only_historical_background，捕获人不等于授权人；comment可编辑且trigger_summary截断。设计未定义上述来源数据合同。旧governance human guard也不足以排除全部已标记机器凭据，新入口必须复用严格可信actor判据。'
+    impact_scope: 'T来源/签名payload与M真实认证授权入口、来源存储和传输；AUTH-001/002/003/010及RUN-001/002/003/010需要对应边界和失效测试。'
+    severity: major
+    affected_capabilities: [execution-authorization, authorized-runner]
+    resolved: false
+  - id: ADJ-AIFI45-003
+    original_design_ref: 'design.md/wire-contract.md：执行授权文件与验签公钥的落地位置（独立验证前提）；SC-AUTH-004/006'
+    actual_change: '历史：早期零源码隔离可行性实证发现(1)执行授权文件磁盘安装步骤不存在、(2)legacy grant/公钥落 {root}/.crctl 可被agent换key自签；后授权Podman PoC，systemd尝试不可用已完整回退，最终无限额PoC exit0（`resourceLimitsEnforced:false`）。本轮部分实现：T 新增 `--trust-root <绝对目录>`，声明后 grant/公钥/来源sidecar/绑定证明只从该目录 `grants/`、`keys/` 读取；该目录位于或包含工作区安装根（realpath）→ `EXECUTION_TRUST_ROOT_INVALID`；未声明时保持 legacy。实测旧码 2 例 FAIL（trust root 被忽略、工作区内 trust root 反被接受），修复后授权文件 106/106。M 新增 daemon 自有安装器 `internal/daemon/execution_trust.go`：`<daemonHome>/.multica/execution-trust/<workspace-uuid>`、0700/0600、临时文件+rename、同内容幂等、异内容冲突拒写（公钥不被静默替换）、拒绝工作区内/链接的根与越界名称；4 新断言 PASS，1 例 Win 目录链接 SKIP。第二轮：M 新增 daemon 拉取接口 `GET /api/daemon/crs/{crID}/execution-authorization`（DaemonAuth 组，仅返回该 workspace 冻结初始记录+服务公钥，不标 delivered、不含 current-head/撤销/claim）与 `Client.InstallExecutionAuthorization`→`ExecutionTrustStore.InstallAuthorizationRecord`（安装前以下发公钥验签，校验 workspace/CR/key_id/grant UUID，写 keys→source→grant，同记录幂等、异内容冲突；Link 发布不覆盖）。真实 RED：记录属另一 CR 时旧安装器返回 nil；修复后组件链 真实授权HTTP→隔离DB→daemon GET→安装→真实 crctl `--check --trust-root` digest 一致，legacy 路径看不到该 grant，跨 workspace 404、无绑定 403、缺记录 404 且不落文件。governance 扩大回归 598/598。执行授权记录不再有落入工作区的路径；legacy stage grant 仍写 {root}/.crctl（不追溯）。第三轮已接 handleTask→prepareClaimedPipelineTask→安装→真实 crctl --check --trust-root；真实 Auth/DB-backed mdt/DaemonAuth 投递验证无 context/cache 注入。source/hash/HTTP 限额/根身份实际 RED 后修复，Windows Stat 惰性 ID 根因修复后换根20/20；本轮 governance606/606、daemon36=35P/1S，事件见 M preflight-regression.json；verifier 缺显式否定事实用例实际 RED 后修复。另有 POST/JSONB GET 同包误冲突与重复包装键联合真实3FAIL，修复后7PASS；仅固定运输包装，不改签名/来源原bytes，复用现有JSON scanner。STDD 三路独立评审因项目缺模型映射按规则默认回退，未宣称档位生效。仍未完成：不可删 activation、可信 current-head/撤销/DB claim、隔离控制通道与消费事务；静态成功仍拒消费。'
+    reason: '验签公钥若落在被管进程可写集合内，独立验证即失效；技能与文件均可被替换时，签名只证明"谁签过"而非"当前读到的是谁的键"。虽然文件安装器和真实静态核验已经接线，但实际产品隔离边界、当前授权与可信 claim 仍缺，不能以同 UID 目录权限或路径 pin 声称已隔离。'
+    impact_scope: 'T 授权文件读取根/公钥信任根、M grant 下发路径及执行位置选择；AUTH-004/006/008、RUN-001/002/009 需补"公钥/授权文件不落agent可写集"的正负向验证。不减少原 TC。'
+    severity: major
+    affected_capabilities: [execution-authorization, authorized-runner]
+    resolved: false
