@@ -1,16 +1,92 @@
 # spec.yaml — 行为规格（Canonical YAML）
 
 meta:
-  capability: "TODO: 能力名称"
+  capability: "upstream-sync-merge"
   change_id: "2026-10-26-upstream-sync-2568d32ac8"
   created: "2026-10-26T09:29:57.957550"
-  confidence: medium
+  confidence: high
 
 requirements:
   - id: "REQ-001"
-    description: "TODO: 需求描述"
+    description: "二开能力在合并后保持可编译、可注册、可回归"
     scenarios:
       - id: "SC-001"
-        given: "TODO: 前置条件"
-        when: "TODO: 触发动作"
-        then: "TODO: 预期结果 — 使用 SHALL 声明"
+        given: "在 sync/upstream-2026-10-26-2568d32ac8 上完成 merge upstream/master"
+        when: "执行 bun run typecheck"
+        then: "SHALL 输出 0 个类型错误"
+        and:
+          - "inbox / truth / graph_overview 的 op 在 operation-manifest、operation-loaders、operation-load 三处均有登记"
+      - id: "SC-002"
+        given: "合并完成且生成物已重跑"
+        when: "执行定向回归 test/inbox-workflow.test.ts、conflicts.test.ts、compile-truth.test.ts、graph-overview.test.ts、traverse-paths-metadata.test.ts"
+        then: "SHALL 全部通过，0 fail"
+        and:
+          - "test/ingestion/ingest-capture.test.ts 的 inbox 分支用例 SHALL 通过"
+      - id: "SC-003"
+        given: "合并完成"
+        when: "执行 grep -rn \"CUSTOM ADMIN ROUTES\" src/ 与 grep -c \"CUSTOM (Qoder)\" AGENTS.md"
+        then: "SHALL 分别命中 2 行（均在 src/commands/serve-http.ts）与 4 行"
+        and:
+          - "test/serve-http-admin-route-guard.test.ts SHALL 通过"
+
+  - id: "REQ-002"
+    description: "迁移编号不冲突，DDL 不被静默跳过"
+    scenarios:
+      - id: "SC-004"
+        given: "inbox_workflow_frontmatter 已从 239 顺延到 275"
+        when: "执行 GBRAIN_MIGRATION_BASE_REF=upstream/master bun run check:schema-migration-order"
+        then: "SHALL 输出 above upstream/master's latest v274 (275)"
+        and:
+          - "src/core/schema-migrations 下 SHALL 不存在重复的 version 值"
+      - id: "SC-005"
+        given: "迁移已应用到一个空库"
+        when: "用 information_schema 查询 inbox_workflow_frontmatter 的 DDL 目标列"
+        then: "SHALL 查到该列存在，且证据不来自迁移日志"
+      - id: "SC-006"
+        given: "合并后的工作树"
+        when: "执行 bun run build:schema-migrations && bun run check:schema-migrations"
+        then: "SHALL 绿，registry.generated.ts 与 latest.generated.ts 含 v275 且为生成器输出"
+
+  - id: "REQ-003"
+    description: "生成产物由生成器重建，freshness 门保持绿"
+    scenarios:
+      - id: "SC-007"
+        given: "冲突中涉及 7 个生成物文件"
+        when: "按顺序执行 build:schema-migrations → regen:all → regen:all --goldens → build:admin → build:llms"
+        then: "SHALL 无手工 resolve 痕迹（生成物改动均来自生成器）"
+        and:
+          - "bun run check:regen-all SHALL 绿"
+      - id: "SC-008"
+        given: "生成物已重建"
+        when: "执行 bun run check:tool-catalog、check:skills-manifest、check:plugin-tree、check:structural-manifest、check:module-size"
+        then: "SHALL 全部绿"
+        and:
+          - "scripts/module-size-limits.tsv 中 fork 上调的 9 行 SHALL 保留 GBrain Custom 标注"
+
+  - id: "REQ-004"
+    description: "失败项逐条定性，不把环境问题当合并事故"
+    scenarios:
+      - id: "SC-009"
+        given: "bun run verify 出现失败项"
+        when: "在 pre-sync/2026-10-26 worktree 上实测同一检查"
+        then: "既有失败 SHALL 命中《已知测试失败基线》；非既有失败 SHALL 当场解释并修复"
+        and:
+          - "test-report.md SHALL 列出每条失败的命令、输出与定性"
+      - id: "SC-010"
+        given: "全量 bun run test 在 Windows 下出现 shard 统计异常或挂死"
+        when: "改用定向 bun test <paths> 取信号"
+        then: "SHALL 记录为环境基线，不据此判定合并失败"
+
+  - id: "REQ-005"
+    description: "台账与本轮记录反映合并事实"
+    scenarios:
+      - id: "SC-011"
+        given: "合并与验证完成"
+        when: "阅读 CUSTOM.md《阶段记录》"
+        then: "SHALL 出现 2026-10-26 本轮记录（窗口、迁移顺延、尺寸棘轮、基线变化、欠债登记）"
+        and:
+          - "SHALL NOT 修改任何历史阶段行"
+      - id: "SC-012"
+        given: "合并后的工作树"
+        when: "按台账明细表逐行 grep 文件与符号"
+        then: "SHALL 全部命中；未命中的 SHALL 进《已上游化》或从台账删除"
