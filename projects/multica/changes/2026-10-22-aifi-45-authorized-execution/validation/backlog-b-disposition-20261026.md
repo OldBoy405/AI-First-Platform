@@ -97,6 +97,7 @@ B6 **不再**在 AIFI-45 做过渡。tools 在 agent 本机运行，没有 agent
 3. **B2 锁图**（阻塞 B3）：先列出消费/CR 绑定/claim/终态/runtime access 的取锁顺序，统一后再加锁并断言两态。
 4. **B3 ✅（24）、B11 ✅（25/26）、B12a ✅（27）、EVD-001/002/004 ✅（28）、B16 ✅ 已复核并修 4/5（29）**。台账 41/49 未变（这些增量修的是 Gate3 待办，不新增台账行）。
 5. **X7/X8 已决**（用户要求实施）：X7 不在 tools 侧豁免、签发侧须同时给 repo id 与路径前缀；X8 不改 `inputDigest`、触发器用已接线的交付 gate。v0.5 经 balanced/economy 复核后已按结论修订（③ 输入来源、核对区间=发布区间、失败码闭集、零写入外延、复用边界、leaf/mutation 10:10）；**修订版尚未复核**（strong 仍在跑）。M001/M002 缺口已盘成 `m001-m002-evidence-gap-ledger-20261026.md`（G1–G8，A/B/C 分类），**两者仍 major/unresolved**。
+6. **v0.5 strong 复核 BLOCK**（三路记录 `trusted-verdict-channel-v05-review-20261026.md`）：已按结论做第二轮修订（核对对象=实际发布对象、插入点前移到现有 gate 之前、授权线性化与部分发布处置、空集合四证明、SHA 采集适配、X7 恢复流程、归属划分、S5 leaf/mutation 再补）。**修订版仍未复核**；其中“采集器通用缺陷归 AIFI-45 就地修”尚未实施。
 5. 之后决定是否注册 M003（从 v0.4 起草，X1 的 Windows 要求已进 P0）。
 
 ## 4. 不得冒称
