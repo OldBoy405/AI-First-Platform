@@ -70,7 +70,7 @@
 | **B2 锁图（先做）** | 先把所有相关路径的取锁顺序列成锁图：消费、CR 绑定（`BindCurrentTaskToCR`：task→CR）、claim/reclaim、终态、runtime access。统一顺序后再加锁：建议消费改成 **task→CR→approval_record**，与 CR 绑定一致；锁 `FOR SHARE OF t, r`，或在锁内重新校验 JOIN 进来的事实。重新生成 sqlc 产物 | 两态分别断言：修复前，读 claim 之后把任务改为终态，消费仍会写入；修复后，终态 UPDATE 被 `55P03` 挡住（`lock_timeout` 探针，超时不算 RED） | 不出锁图就加锁，等于引入死锁 |
 | B1 | 把完整 generation（task、runtime、dispatched_at）写进签发记录和签名，消费精确引用签发记录；签发重放遇到绑定不一致时拒绝；Node 侧 verifier schema 同步修改 | task A 的 challenge 被 task B 使用；同 task/runtime、不同 `dispatched_at`；同 nonce、不同证明内容 | **已落地 2026-10-26**（原位改 643 + 签发/重放绑定 + 消费谓词，见 tc-coverage 增量 22）。残余：签名 payload 仍不含 generation，M 的追加式记录是消费权威 |
 | B3 过渡 | **已落地 2026-10-26**：`fence_required` = 该 task **任一 generation** 已有 644 消费行。终态 CAS 之后、同事务内判定（CAS 已持行写锁，未提交消费会挡住它），命中即 409；`to_regclass` 探测保证未套用迁移的部署走旧路径。证据见 tc-coverage 增量 24 | 已消费 run 两个字段都缺 → 409；重领为 B 后仍 409；无消费行的旧任务行为不变（handler 50/50 无迁移在跑） | 历史“已消费+无 claim”终态的重放由 200 变 409（有意） |
-| B11 | **已落地 2026-10-26（增量 25，接线于增量 26 更正）**：只读自检 `crctl authorization-scope` 遍历全部仓的 CR worktree，按 grant 冻结身份核对（graph 仅定位），越界 `AUTH_SCOPE_VIOLATION`、无法核实 `AUTH_SCOPE_UNVERIFIABLE`；implement-code Step 4.6 自检 | 规则 14 条 + CLI 端到端 3 条（真实签名 grant） | **merge 强制核对归 M003**（用户采纳，方案 v0.5）；当前平台绑定确认需可信 daemon 链；**待决 X7** |
+| B11 | **已落地 2026-10-26（增量 25，接线于增量 26 更正）**：只读自检 `crctl authorization-scope` 遍历全部仓的 CR worktree，按 grant 冻结身份核对（graph 仅定位），越界 `AUTH_SCOPE_VIOLATION`、无法核实 `AUTH_SCOPE_UNVERIFIABLE`；implement-code Step 4.6 自检 | 规则 14 条 + CLI 端到端 3 条（真实签名 grant） | **merge 强制核对归 M003**（用户采纳，方案 v0.5）；当前平台绑定确认需可信 daemon 链；**X7 已决（不设豁免，签发侧须同时给 repo id 与路径前缀）** |
 | B12a | **已落地 2026-10-26（增量 27）**：`testCr` 写入 `authorization-digest`（sha256(签名域+payload)，与 `grantDigest` 同算法，叶子模块共用）；`evidence-check` 对合同 CR 强制要求并比对；机械例外比对同一摘要 → `EVIDENCE_MECHANICAL_AUTHORIZATION_DRIFT` | 生产者/收集端/机械例外各有用例，三处变异各自精确打红；全量 1107 tests / 1106 pass / 1 pre-existing skip | **可信采集（验签）归 M003**；**待决 X8**（换授权后同 plan 重放保留旧摘要） |
 | B16 | **已复核并部分落地 2026-10-26（增量 29）**：strong 五条断言逐条核实**全部成立**。已修 4 条（SC-RPR-006 subject 绑定、009 评估幂等、011 progress 须带证据、012 epoch 隔离 + stop 内容），各配行为 RED 与变异。**SC-RPR-001（kind 自报）未修**：判“未解决阻断”需要 tools 不拥有的可信事实，按 v0.4 S5 的既有归属留给 M003。 | 4 条 B16 用例（先红后绿）+ 4 处变异各自精确打红；全量 1116/1115/1 pre-existing skip | repair 账本仍 agent 可写；kind 归属 M003 |
 | EVD-001/002/004 | **已落地 2026-10-26（增量 28）**：新 gate 检查类型 `evidenceDelivery`，在 `code-approved`（merge 消费）与 `writing-back` 声明；gate 与 `evidence-check` 共用唯一收集器与纯函数；为同步 gate 链把 `verifyReleaseSubjects`/`subjectMatchesAnnotation` 拆为同步实体 + 异步薄包装 | 5 条 gate 用例（含 legacy 不追溯、缺 report 报缺失内容）；两处变异各精确打红；全量 1112/1111/1 pre-existing skip | `gate-registry.json` 早已滞后、未重设基线；回写侧只覆盖进入 `writing-back` 的门禁 |
@@ -87,8 +87,8 @@ B6 **不再**在 AIFI-45 做过渡。tools 在 agent 本机运行，没有 agent
 | X4 | **A：runner 固定映射产出通知**（我的建议，已采纳） | 理由：`BuildNotice` 要求人类可读 cause/conclusion/action，而唯一候选入口 `SyncService.ingest` 只有机读 `OutboxEvent`；crctl 侧没有通知模型（选 B 会把业务文案塞进 tools）；选 C 只交付投放与恢复，缺口仍在。runner 掌握每个节点的权威终局事实，用固定模板表映射，closed enum + 表驱动测试防漂移 |
 | X5 | **a：维持现状**（我的建议，已采纳） | 未发生不可逆发布时可刷新 receipt（当前实现与测试保持）。**残余**：SC-EVD-009 的 `given` 需加“已发生不可逆发布”前置才算完全对齐，那是规范调整，另走流程 |
 | X6 | **改 646 迁移** | 去重键含 recipient/project，原位改未上线的 646；生效受 X4 制约（产出方落地才有意义） |
-| X7 | **待决**（2026-10-26 新增） | 控制根（knowledge-base）里的 CR 账本与文档改动是否须列入 grant 的 `allowed_repositories`。现按字面执行、不设豁免；签发侧若不列 KB，带合同 CR 的自检会因 KB 改动报 `AUTH_SCOPE_REPOSITORY_UNKNOWN`。我的倾向：不在 tools 侧豁免（“先改文档事后追认”正是 KB 文档的风险），由签发侧把本 CR 的控制根路径写进授权。 |
-| X8 | **待决**（2026-10-26 新增） | 换授权后同 plan 重跑 `crctl test` 会幂等重放（`inputDigest` 不含授权摘要），报告保留旧摘要 → 交付持续 blocked。恢复需改 plan/results 以产生新 attempt。我的倾向：保持 fail-closed 不动 `inputDigest`（其注释明确不得改，会让历史 journal 指纹漂移、破坏在途事务恢复），另开一个小决策：由谁触发「授权变更后的强制重测」（例如 `repair-admit` 或 gate 侧提示）。 |
+| X7 | **已决 2026-10-26：不在 tools 侧设豁免** | 控制根（knowledge-base）里的 CR 账本与文档改动，不列入豁免。理由：①「先改文档事后追认」正是 KB 文档的主要风险面，豁免等于把该风险面整块放出；② 可豁免清单只能由"crctl 写了什么"推导，而 agent 也能写同一路径；③ 后果可接受：签发侧把本 CR 的控制根路径写进 `allowed_repositories` 即可，`authorization-scope` 与 merge 强制核对（v0.5 §3）都只认 grant。已落地影响：带 `execution-contract` 的 CR 在签发侧列出 KB 前，自检会因 KB 改动报 `AUTH_SCOPE_REPOSITORY_UNKNOWN`——这是 fail-closed，不是 bug。 |
+| X8 | **已决 2026-10-26：不改 `inputDigest`，触发器即交付 gate** | 不改的理由：`inputDigest` 注释明确"字段集合与顺序即语义，改动会让历史 journal 指纹全部漂移"，且会让在途未完成事务被判 `TX_INPUT_CONFLICT`，破坏恢复路径。触发"授权变更后强制重测"的机制已经存在且已接线：`evidenceDelivery` gate 在 `code-approved`/`writing-back` 比对报告里的授权摘要与当前授权，不符即 `EVIDENCE_AUTHORIZATION_STALE` 阻断（B12a）。恢复路径：产生新 attempt（plan/results 任一变化）。不再新增专门触发器，也不新增错误码。 |
 
 ## 3. 建议顺序
 
@@ -96,6 +96,7 @@ B6 **不再**在 AIFI-45 做过渡。tools 在 agent 本机运行，没有 agent
 2. 待办 A 剩 4 项：643–647 的 down 往返、10 处 `t.Skip`→`t.Fatal`、TC-EVD-009 CP 端到端、`execution-sensitive-action.mjs` 登记。
 3. **B2 锁图**（阻塞 B3）：先列出消费/CR 绑定/claim/终态/runtime access 的取锁顺序，统一后再加锁并断言两态。
 4. **B3 ✅（24）、B11 ✅（25/26）、B12a ✅（27）、EVD-001/002/004 ✅（28）、B16 ✅ 已复核并修 4/5（29）**。台账 41/49 未变（这些增量修的是 Gate3 待办，不新增台账行）。
+5. **X7/X8 已决**（用户要求实施）：X7 不在 tools 侧豁免、签发侧须同时给 repo id 与路径前缀；X8 不改 `inputDigest`、触发器用已接线的交付 gate。v0.5 经 balanced/economy 复核后已按结论修订（③ 输入来源、核对区间=发布区间、失败码闭集、零写入外延、复用边界、leaf/mutation 10:10）；**修订版尚未复核**（strong 仍在跑）。M001/M002 缺口已盘成 `m001-m002-evidence-gap-ledger-20261026.md`（G1–G8，A/B/C 分类），**两者仍 major/unresolved**。
 5. 之后决定是否注册 M003（从 v0.4 起草，X1 的 Windows 要求已进 P0）。
 
 ## 4. 不得冒称
