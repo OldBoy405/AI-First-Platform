@@ -29,7 +29,7 @@
 
 - [x] 2.1 `execution_contract_selection.go`：`ResolveSelectionTx` 只读持久选择；strict+投影缺失/空/不同 → `T_VERDICT_BINDING_MISMATCH`（不降级）；无选择且目录未证明 → `EXECUTION_SELECTION_UNKNOWN`。legacy 只认 `deployment_head.legacy_catalog_ref` **钉住**的那份目录（不取最新行）、校验 gate/kind/scope/`catalog_version`，且整份目录先验重后才采信单条（重复条目=不可解事实）。缺行→目录的竞态由 `pg_advisory_xact_lock` 关掉。`TestChannelFoundationSelection` 真跑 6/6（leaf 5），含「未钉住的新目录不得改变裁决」「持久 legacy 行仍需证明」两条反例。证据 `validation/i-selection-*`、`j-selection-*`。
 - [x] 2.2 `execution_control_reservation.go`：`CreateReservationTx` 只接受 strict 选择、候选 bytes 冻结为 digest、proposed task id 固定；表内无任何 dispatch 列（结构上不可 claim/执行），且不写 `agent_task_queue`。**同一 Tx 内回读** selection 行校验 mode/lineage/scope，伪造的 `Selection` 结构体不被信任。`TestChannelFoundationReservation` 真跑 4/4（leaf 3），含伪造 selection id、跨 CR、跨 lineage、跨 scope 四条反例。证据 `validation/i-reservation-*`。注：green 首跑因测试自身事务中止写法失败，改 savepoint 后通过。
-- [ ] 2.3 `execution_dispatch_root.go` + `service/task.go` + `queries/agent.sql`（固定 sqlc 版本生成）：同 Tx root/task/settlement、固定 ID 冲突逐字段等同、commit 后通知；`fixed_id_conflict_and_rollback`。
+- [ ] 2.3 `execution_dispatch_root.go` + `service/task.go` + `queries/agent.sql`（固定 sqlc 版本生成）：同 Tx root/task/settlement、固定 ID 冲突逐字段等同、commit 后通知；`fixed_id_conflict_and_rollback`、`TestChannelTaskTx/commit_then_notify|rollback_no_notify`。**注意**：预约侧有个同名旧 subtest 已改名 `reservation_fixed_id_conflict_and_rollback`，它只验预约表唯一性，**不构成 SC-VC-003 证据**；`foundation-reservation` 因此当前被 checker 判 FAIL（缺 3 条必达 leaf），这是如实状态。
 - [ ] 2.4 adoption/terminal 并发探针（`55P03`）与顺序语义：`root_adoption_terminal_race`（green 前置：AIFI-45 G5 已修）。
 - [ ] 2.5 `execution_fresh_work.go`：`RegisterFreshWorkTx`、origin/fresh-work/legacy-catalog 三型 fact、partial unique；`TestChannelFoundationFreshWork`。
 - [ ] 2.6 `service/execution_channel_task_tx_test.go`：`TestChannelTaskTx` 承接 `task-tx` 模板。
@@ -42,6 +42,7 @@
 - [x] 2A.4 `origin-registration` 必须带 origin（CHECK + `(scope,origin_id)` 部分唯一）（M5）；readiness 请求字段冻结、observation slots 只追加、verdict 写一次（M10）。
 - [x] 2A.5 `TestChannelStoreGuards` 9 leaf 真跑 10/10（leaf 9）；m1–m4 四个变异各自只打红目标 leaf（m1 打红 selection+reservation 两行不可变，因其共享同一个 append-only 函数），恢复后 up.sql sha 与基线一致（`89f0c3f0…`）。
 - [x] 2A.6 冻结清单按复核结论扩充 +4 条 leaf（`store-guards` 新增 label、selection 2 条、reservation 1 条），改动记入 `validation/channel-test-expectations.json#revisions`。
+- [x] 2A.7 证据链闭环：`scripts/aifi45-verify/channel-evidence.mjs`（verify/record）+ 9 条自测；green 跑次记录 10 个源文件 sha256；一次真实变异证明「改过的树」会被判 FAIL、恢复后同一前缀回到 OK。`validation/evidence-index.md` 为唯一证据入口，旧前缀作废。
 
 ## 3. S2–S4 协议、store 与恢复（P0）
 

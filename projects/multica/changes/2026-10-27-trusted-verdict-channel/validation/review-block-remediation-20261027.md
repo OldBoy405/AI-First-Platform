@@ -45,9 +45,25 @@
 
 恢复后 `648_cr_execution_control.up.sql` sha256 = `89f0c3f061c73dae188f99ada0accd13ab770e72e7a96130eb70c3c8c07b5b61`（与基线一致）。
 
+## 第二轮（balanced 复核）新增处置
+
+| 复核项 | 处置 |
+|---|---|
+| M-1「回滚后 sha 一致」无机器证据 | 新增 `scripts/aifi45-verify/channel-evidence.mjs record`：green 跑次记录 10 个源文件 sha256；一次真实变异跑后 checker 报 `changed since the run`，恢复后同一前缀回到 OK（见 `evidence-index.md`） |
+| M-2 名单校验器缺失 | 新增 `channel-evidence.mjs verify` + 9 条自测，按 label 比对必达 leaf，拒绝缺失/改名/SKIP/仅父 PASS/重复 leaf；`foundation-reservation` 现被正确判 FAIL |
+| M-3/M-4 旧产物与旧报告计数口径 | `evidence-index.md` 声明旧前缀失效、以 `meta.json#test.counts` 为准 |
+| M-5 同名 leaf 复用 | 预约侧 subtest 改名 `reservation_fixed_id_conflict_and_rollback`（记入 expectations `revisions`）；`fixed_id_conflict_and_rollback` 归还 SC-VC-003，当前如实缺失 |
+| M-6 vacuous 断言 | 预约补：候选 digest 必须等于 sha256(冻结字节) 且等于行内值；队列按**全表计数**判零（不只按 proposed id）；selection 补 scope 隔离、畸形 digest、目录 kind/scope、钉住行被删、`legacy_gate=RETIRED` 五类反例；实现侧补 RETIRED 拒判 |
+| m-1 清单只做下界 | up 后新增全集清扫：`channelUnexpectedObjects` 以「既有 642–647 + 14 张新表及其索引」为允许集，多一个对象即红 |
+| m-2 夹具名不副实 | 645 activation、646 notice 补真实夹具并纳入摘要比对 |
+| m-4 `pg_proc` 未限 schema | 加 `pronamespace = 'public'::regnamespace` |
+| n-1 死代码 | 删除 `var _ = fmt.Sprintf` 与 `fmt` import |
+
 ## 仍未关闭（诚实披露）
 
 - `foundation-reservation` 声明 5 条 leaf，其中 `fixed_id_conflict_and_rollback`（SC-VC-003）、`root_adoption_terminal_race`、`root_terminal_not_adopted`（SC-VC-004）**未实现**，该 label 目前必然 unverified；`TestChannelFoundationReservation` 现有 4/4 只覆盖 SC-VC-002 与 M8 反例。
 - SC-VC-003、SC-VC-010–013 的真实事务/签名/撤销实现证据仍缺（本次修的是这些表**允许**什么，不是端点**做到**什么）。
+- tools store 的 SC-TR-003「并发三请求 / rename 前后 kill」未测，SC-TR-001 的 Go 侧 `cross_language_vectors` 不存在；`store` label 目前不应按名单判 PASS。
+- 旧前缀证据（`foundation-*`、`migration-*`）对应的是重写前的源码，不得再引用。
 - P0 隔离证明仍 UNVERIFIED（Windows 无两个真实受限身份，方案 C 无批准 profile）。
 - Windows 目录 fsync 的 EPERM/EINVAL 容忍分支仍待在 Gate 3 披露。

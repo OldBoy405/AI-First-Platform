@@ -1758,6 +1758,19 @@
           "to": "TestChannelMigrationProtectedData/fixtures_643_647_unchanged"
         }
       ]
+    },
+    {
+      "at_phase": "BUILD",
+      "reason": "reservation subtest 与 SC-VC-003 的必达 leaf 同名但断言不同（预约表唯一性 vs root+task+settlement 同 Tx），同名会让 SC-VC-003 假装有证据",
+      "added_leaves": [],
+      "removed_leaves": [],
+      "renamed_leaves": [
+        {
+          "from": "TestChannelFoundationReservation/fixed_id_conflict_and_rollback",
+          "to": "TestChannelFoundationReservation/reservation_fixed_id_conflict_and_rollback"
+        }
+      ],
+      "note": "必达 leaf TestChannelFoundationReservation/fixed_id_conflict_and_rollback 归还 SC-VC-003，实现前保持缺失并判 FAIL"
     }
   ]
 }
