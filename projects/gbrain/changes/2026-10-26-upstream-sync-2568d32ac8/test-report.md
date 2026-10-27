@@ -100,7 +100,18 @@ OS 级问题，与本次合并无关；Linux CI 不受影响。**注意**：这�
 
 另：本机有一个 **2026-10-12 启动的遗留 `bun test` 进程**（PID 95792，41s CPU，`--reporter=junit`，工作目录是本仓），与本轮无关，我没有动它。
 
-## 六、Gate 3 结论
+## 七、交付（Gate 3 之后）
 
-- 合并、迁移改号、生成物重跑、台账外的代码修复全部完成；**无未解释失败**。
-- 待办：Gate 3 确认后追加 CUSTOM 台账（草案已备）并跑 TC-SYNC-011/012；push 需要你的单独授权。
+| 项 | 结果 |
+|----|------|
+| 合入 `master` | fast-forward：`709c16b4a9` → `61dffc7613`（5341 提交） |
+| 推送 `origin` | `61dffc7613` → 台账推送状态记录 `68977a6781`；`origin/master` 与本地 0/0 |
+| base-ref 假阳性 | **自愈**：`check:schema-migration-order` 无需 env 覆盖即绿（`0 new migration(s) above origin/master's latest v275`） |
+| 推送后 verify | **73 pass / 16 fail**（较推送前 72/17 少的就是 `check:schema-migration-order`）；16 项全部为已登记基线或 Windows 路径分隔符假阳性 |
+| legacy jobs | 取消 `#67 autopilot-cycle`、`#34 unify-types`（均 2026-07-18 排队至今）；`legacy_job_authority` 转 ok，worker 解锁 |
+| 源同步 | `gbrain sync --source default`：20 文件全部 unchanged、0 chunk、0 embed 错误、checkpoint `391f61d4`；`sync_freshness` 转 ok |
+| 维护周期 | `gbrain dream --source default` 5.8s：`cycle_freshness` 转 ok；**`propose_takes` 阶段 provider auth 错误中止**（1 页后），其余 phase 全过。单独重跑 `gbrain dream --phase propose_takes` 前先检查模型凭据 |
+| v0.53.0 host 动作 | 按建议**暂不认领**（单机个人库收益低），保持 doctor warn |
+| 遗留 `bun test` 进程 | **未能终止**：PID 95792 在另一个 Windows 会话（`RDP-Tcp#44`），非提权杀不掉；34 MB / 1 线程，无害。需要提权的任务管理器或管理员 shell |
+
+**上游已到 v0.60.472.0**（`gbrain jobs` 输出 `UPGRADE_AVAILABLE 0.60.461.0 0.60.472.0`）。下一轮请按「每个 release 合并一次」跟进，别再攒成大窗口。
