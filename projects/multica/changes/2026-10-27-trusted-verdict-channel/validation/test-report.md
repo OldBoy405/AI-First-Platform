@@ -13,8 +13,10 @@
 | `migration-protected` | 2 | OK |
 | `store-guards` | 9 | OK（`audit` 已确认 37 个冻结 label 全部有 CP 引用） |
 | `foundation-selection` | 5 | OK |
+| `foundation-reservation` | 5 | OK（SC-VC-003 root+task+settlement 同 Tx / 固定 ID 逐字段等同；SC-VC-004 55P03） |
+| `task-tx` | 2 | OK（commit 后通知一次；rollback 零持久零通知） |
 
-合并跑次：62 pass / 0 fail / 0 skip，leaf_pass=55，`original_unchanged=true`、`owned_resources_cleaned=true`；`migration-down` 单独 22/22（leaf 21）。两个跑次前缀见 `evidence-index.md`。
+合并跑次：65 pass / 0 fail / 0 skip，leaf_pass=58，`original_unchanged=true`、`owned_resources_cleaned=true`；`migration-down` 单独 22/22（leaf 21），`TestChannelTaskTx` 3/3（leaf 2）。跑次前缀见 `evidence-index.md`。
 
 Node 侧（tools `test/execution-control-{protocol,store}.test.mjs`）：各 2/2 PASS，共 4 个必达 leaf；mutation m1/m2 各自只打红自己的 leaf。**注意**：TAP 产物共用时间戳前缀，跑次顺序不可从产物判定；结论仅依据「文件 sha256 与 green 跑次一致」这一条（由 checker 判，不靠报告文字）。
 
@@ -22,9 +24,7 @@ Node 侧（tools `test/execution-control-{protocol,store}.test.mjs`）：各 2/2
 
 | 项 | 状态 |
 |---|---|
-| `foundation-reservation` | **FAIL**：缺 `fixed_id_conflict_and_rollback`（SC-VC-003）、`root_adoption_terminal_race`、`root_terminal_not_adopted`（SC-VC-004） |
 | `foundation-fresh-work` | 未实现（SC-VC-005 主体） |
-| `task-tx`（commit 后通知 / rollback 零通知） | 未实现 |
 | `protocol` / `store-state` / `policy-*` / `settlement` / `binding` / `reader` / `worker` / `client` / `composition` / `d8-recovery` / `revoked-permit` / `readiness-*` / `merge-*` / `isolation` | 未实现 |
 | tools SC-TR-003 并发三请求、rename 前后 kill | 未测（报告未声称） |
 | tools SC-TR-001 Go 侧 `cross_language_vectors` | 不存在 |
@@ -42,8 +42,12 @@ Node 侧（tools `test/execution-control-{protocol,store}.test.mjs`）：各 2/2
 | m2 | 648 up | `RAISE EXCEPTION 'illegal control command transition …'` → `RAISE NOTICE …` | `command_transition_rejects_skips` | `dd410bdf75bb0842…` |
 | m3 | 648 up | `RAISE EXCEPTION 'readiness verdict is write-once';` → `RAISE NOTICE …` | `readiness_verdict_write_once` | `8a7af21b085d289c…` |
 | m4 | 648 up | `RAISE EXCEPTION 'deployment head scope is immutable';` → `RAISE NOTICE …` | `deployment_head_scope_immutable` | `5286b3f675d4d181…` |
+| m5 | `execution_channel_admission.go` | 固定 ID 的逐字段比较 → `if false` | `fixed_id_conflict_and_rollback` | 见跑次 `x-m5_task_identity-*` |
+| m6 | `execution_dispatch_root.go` | 采纳读的 `FOR UPDATE` 删除 | `root_adoption_terminal_race`（断言 55P03 失败） | 见跑次 `x-m6_no_row_lock-*` |
 
-**缺口**：patch sha256 是按「去掉缩进的行替换 + 手写 unified diff」重建的，不是当时落盘的原始 patch；原始落盘只有失败 leaf、argv、跑次前后源文件 sha256。要彻底满足 long-range-auth §C1，需在下一次变异时由脚本 `diff -u` 落盘。
+**缺口**：m1–m4 的 patch sha256 是按「去掉缩进的行替换 + 手写 unified diff」重建的，不是当时落盘的原始 patch；m5/m6 未重建 patch hash。原始落盘只有失败 leaf、argv、跑次前后源文件 sha256。要彻底满足 long-range-auth §C1，需在下一次变异时由脚本 `diff -u` 落盘。
+
+**m5/m6 的追加证据**：两次变异后 checker 对 green 前缀（`z-combined-*`）均报 `changed since the run`（rc=1），恢复后 sha 与基线一致（`restored=true`）。
 
 ## 4. 回滚证明（机器判据，不靠文字）
 

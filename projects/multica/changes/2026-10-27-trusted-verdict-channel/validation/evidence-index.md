@@ -3,16 +3,19 @@
 旧前缀（`foundation-*`、`migration-*`、`*-mutations-*`）产生于 648/selection/reservation 重写之前，**不再可认证当前树**，只保留作历史。当前权威证据前缀：
 
 ```text
-p-final-20261027T163801Z          # 合并跑次（6 个 Go 套件）
+z-combined-20261027T165412Z      # 合并跑次（6 个 Go 套件，含 SC-VC-003/004）
+v-tasktx-20261027T165049Z        # TestChannelTaskTx（commit/rollback 边界）
 q-down-20261027T163826Z          # migration-down（需 648 up + down，不能与 after-up 同库混跑）
 ```
+
+（`p-final-*`、`n-green-*`、`y-combined-*` 为同代码演进途中的前序跑次，已被 `z-combined-*` 取代；源码摘要随每次改动重录。）
 
 ## 当前跑次
 
 | 项 | 值 |
 |---|---|
 | 测试 | `^TestChannel(MigrationAfterUp|MigrationAfterReapply|MigrationProtectedData|StoreGuards|FoundationSelection|FoundationReservation)$` |
-| 结果 | 62 pass / 0 fail / 0 skip，leaf_pass=55（down 另计 22/22，leaf 21） |
+| 结果 | 65 pass / 0 fail / 0 skip，leaf_pass=58（down 另计 22/22 leaf 21；task-tx 3/3 leaf 2） |
 | `original_unchanged` / `owned_resources_cleaned` | true / true |
 | 源码摘要 | `*.source.json`：合并跑次 10 个文件（648 up/down、两个实现、四个测试、checker），down 跑次 5 个 |
 | 迁移前置 | 643–647 up + 648 up（保留库 schema-only 克隆不含 643–647，且已含 642 列） |
@@ -31,7 +34,8 @@ node multica/scripts/aifi45-verify/channel-evidence.mjs verify <label> <prefix> 
 | migration-protected | OK（2） |
 | store-guards | OK（9） |
 | foundation-selection | OK（5） |
-| foundation-reservation | **FAIL**：`fixed_id_conflict_and_rollback`、`root_adoption_terminal_race`、`root_terminal_not_adopted` 未实现（SC-VC-003/004 未做） |
+| foundation-reservation | OK（5）：含 SC-VC-003 同 Tx/固定 ID 与 SC-VC-004 55P03 探针 |
+| task-tx | OK（2）：commit 后通知一次、rollback 零持久零通知 |
 
 checker 自测 9/9（`node --test scripts/aifi45-verify/channel-evidence.test.mjs`），含反例：summary 全绿但必达 leaf 缺失、改名、SKIP、仅父测试 PASS、重复 leaf、源摘要漂移、CLI 入口失效。
 
