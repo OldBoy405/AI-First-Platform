@@ -29,6 +29,12 @@
         "merge 范围无法核实即拒"
       ],
       "shared_mutation": "treat missing input as an empty change set and allow"
+    },
+    {
+      "leaf": "TestChannelPolicyActivation/nonce_replay_rejected",
+      "enforced_by": "DB unique constraint cr_execution_policy_readiness_nonce_once (migration 648)",
+      "mutation": "drop that constraint from the migration; no Go-only edit can break it",
+      "go_level_near_miss": "activating with the same verdict twice is the Go-level guard (m63), which turns concurrent_activation_cas red"
     }
   ],
   "go": {

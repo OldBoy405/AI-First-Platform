@@ -1,0 +1,11 @@
+--- server/internal/governance/execution_deployment.go
++++ m68_revision_drift_allowed
+@@ -394,7 +394,7 @@
+ 	if gate != "DRAINING" {
+ 		return ActivationRef{}, fmt.Errorf("%w: gate 是 %s，不是 DRAINING", ErrDeploymentConflict, gate)
+ 	}
+-	if expectedWorkRevision != revision {
++	if false && expectedWorkRevision != revision {
+ 		return ActivationRef{}, fmt.Errorf("%w: 观测后旧工作 revision 从 %d 漂到 %d", ErrDeploymentStale, expectedWorkRevision, revision)
+ 	}
+ 	if expectedGeneration > 0 && expectedGeneration != generation {

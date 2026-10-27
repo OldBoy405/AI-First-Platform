@@ -1,0 +1,12 @@
+--- server/internal/governance/execution_policy_readiness.go
++++ m59_reopen_request
+@@ -118,7 +118,8 @@
+ 		in.RequestID).Scan(&existing)
+ 	switch {
+ 	case err == nil:
+-		return ReadinessRequest{}, fmt.Errorf("%w: request 已冻结，不能重写 slot", ErrReadinessConflict)
++		_, _ = tx.Exec(ctx, `UPDATE cr_execution_policy_readiness SET command_bytes=$2 WHERE request_id=$1::uuid`, in.RequestID, in.CommandBytes)
++		return LoadReadinessRequestTx(ctx, tx, in.RequestID)
+ 	case !errors.Is(err, pgx.ErrNoRows):
+ 		return ReadinessRequest{}, fmt.Errorf("readiness request lookup: %w", err)
+ 	}

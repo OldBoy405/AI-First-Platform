@@ -34,7 +34,11 @@ Node 侧（tools `test/execution-control-{protocol,store}.test.mjs`）：各 2/2
 | `client` | 1 | OK：重发逐字节原样，服务端与客户端都不重编码。跑次 `cm-20261027T124626Z` |
 | `composition` | 2 | OK：真 router + 真 permit 建出唯一候选且两次读取字节相同；strict 缺 T 零派发、零 root。跑次 `cs-20261027T124942Z` |
 | `d8-recovery` | 2 | OK：同 lineage 重启后 command/verdict/effect 三份字节与游标都不变；regrant 开新链但旧链、累计消费、原结算都在。跑次 `dg-20261027T125558Z` |
-| `readiness-*` / `binding`（4 条按规格 RED） | 未实现或按规格不得登记完成 |
+| `readiness-protocol` | 3 | OK：request 冻结后不可重写且空 slot 拒绝、每 slot 只收一份观测、签名结果写一次。跑次 `rq-20261027T131611Z`；m59–m61 |
+| `readiness-activation` | 4 | OK：同裁决只能启用一次（先证 55P03 串行，再证冲突）、签后换代即 stale、nonce 由 648 唯一约束保证、STOP_NEW 不动历史与计数。跑次 `s3-20261027T135434Z`；m62–m65 |
+| `readiness-retirement` | 3 | OK：活旧 run 与未知未决都挡住 drain、revision 漂移挡住 RETIRED（正对照可收尾）。跑次 `s4-20261027T135458Z`；m66–m68 |
+| `readiness-access` | 3 | OK：截止前 issued 的原请求可精确恢复、停新准入后新候选一律拒、换 origin/摘要/未 issued 都拒。跑次 `s5-20261027T135518Z`；m69–m70 |
+| `binding`（4 条按规格 RED） | 按规格不得登记完成 |
 | `isolation`（linux） | 5 | OK：root + `AIFI45_ISOLATION_PROFILE=wsl2-aifi45-v1`（uid 995/gid 994）真跑；pidfd 钉身份并检测死进程、SO_PEERCRED 取真身份、`ReadMsgUnix` 拒 SCM_RIGHTS。m12/m13/m14 各只红一条。跑次 `iso-20261027T101534Z` |
 | `isolation`（windows） | 3 | **UNVERIFIED**：无受限 Windows 身份，`_unsupported.go` 对所有原语返回 `EXECUTION_CHANNEL_ISOLATION_UNSUPPORTED`，缺 profile 直接 `t.Fatalf` |
 | tools SC-TR-003 并发三请求、rename 前后 kill | 未测（报告未声称） |

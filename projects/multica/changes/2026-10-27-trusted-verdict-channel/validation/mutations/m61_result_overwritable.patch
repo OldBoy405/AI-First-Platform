@@ -1,0 +1,16 @@
+--- server/internal/governance/execution_policy_readiness.go
++++ m61_result_overwritable
+@@ -251,11 +251,8 @@
+ 	}
+ 	sum := sha256.Sum256(verdictBytes)
+ 	digestHex := hex.EncodeToString(sum[:])
+-	if len(stored) > 0 {
+-		if string(stored) == string(verdictBytes) {
+-			return ReadinessApplied{RequestID: requestID, Digest: digestHex, Replayed: true}, nil
+-		}
+-		return ReadinessApplied{}, fmt.Errorf("%w: signed result 已落地且不可改", ErrReadinessConflict)
++	if len(stored) > 0 && string(stored) == string(verdictBytes) {
++		return ReadinessApplied{RequestID: requestID, Digest: digestHex, Replayed: true}, nil
+ 	}
+ 	request, err := LoadReadinessRequestTx(ctx, tx, requestID)
+ 	if err != nil {

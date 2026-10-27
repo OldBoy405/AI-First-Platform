@@ -1,0 +1,11 @@
+--- server/internal/governance/execution_deployment.go
++++ m66_live_run_allowed
+@@ -340,7 +340,7 @@
+ 	if expectedGeneration > 0 && expectedGeneration != generation {
+ 		return DrainResult{}, fmt.Errorf("%w: 观测时的 generation %d 已不是当前 %d", ErrDeploymentStale, expectedGeneration, generation)
+ 	}
+-	if workset.LiveRuns > 0 {
++	if false && workset.LiveRuns > 0 {
+ 		return DrainResult{}, fmt.Errorf("%w: 还有 %d 个存活的旧 run", ErrDeploymentNotReady, workset.LiveRuns)
+ 	}
+ 	if workset.UnknownPending > 0 {

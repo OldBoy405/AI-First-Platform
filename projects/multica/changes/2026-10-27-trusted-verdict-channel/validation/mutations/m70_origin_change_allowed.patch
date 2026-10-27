@@ -1,0 +1,11 @@
+--- server/internal/governance/execution_deployment.go
++++ m70_origin_change_allowed
+@@ -528,7 +528,7 @@
+ 	switch in.Op {
+ 	case "complete_unsettled_request", "bind_existing_mapping":
+ 		// 恢复须逐字段相等：换 origin、换摘要、换 generation 都不是恢复。
+-		if in.PersistedOriginRef != in.OriginRef || in.PersistedDigest != in.Digest {
++		if false {
+ 			return AccessDenied, nil
+ 		}
+ 		if in.PersistedGeneration != 0 && in.Generation != 0 && in.PersistedGeneration != in.Generation {

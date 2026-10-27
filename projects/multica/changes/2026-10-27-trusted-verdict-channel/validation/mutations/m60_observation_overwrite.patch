@@ -1,0 +1,16 @@
+--- server/internal/governance/execution_policy_readiness.go
++++ m60_observation_overwrite
+@@ -211,12 +211,7 @@
+ 	}
+ 	sum := sha256.Sum256(payloadBytes)
+ 	digestHex := hex.EncodeToString(sum[:])
+-	if existing, ok := request.Frames[slotID]; ok {
+-		if existing.Digest == digestHex {
+-			return ObservationApplied{SlotID: slotID, Digest: digestHex, Replayed: true}, nil
+-		}
+-		return ObservationApplied{}, fmt.Errorf("%w: slot %s 已登记另一份观测", ErrReadinessConflict, slotID)
+-	}
++	_ = request.Frames
+ 	request.Frames[slotID] = ReadinessFrame{Digest: digestHex, Bytes: base64.StdEncoding.EncodeToString(payloadBytes)}
+ 	encoded, err := json.Marshal(request.Frames)
+ 	if err != nil {

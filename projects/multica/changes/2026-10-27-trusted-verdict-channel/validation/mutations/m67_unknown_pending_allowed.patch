@@ -1,0 +1,11 @@
+--- server/internal/governance/execution_deployment.go
++++ m67_unknown_pending_allowed
+@@ -343,7 +343,7 @@
+ 	if workset.LiveRuns > 0 {
+ 		return DrainResult{}, fmt.Errorf("%w: 还有 %d 个存活的旧 run", ErrDeploymentNotReady, workset.LiveRuns)
+ 	}
+-	if workset.UnknownPending > 0 {
++	if false && workset.UnknownPending > 0 {
+ 		return DrainResult{}, fmt.Errorf("%w: 有 %d 个无法核实的未决结果", ErrDeploymentNotReady, workset.UnknownPending)
+ 	}
+ 	var revision int64
