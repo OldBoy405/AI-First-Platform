@@ -1,0 +1,209 @@
+--- skills/shared/crctl/scripts/lib/execution-control-policy.mjs
++++ n26_missing_store_resumes
+@@ -1,107 +1,118 @@
+-// AIFIRST: AIFI-45 M003 — repair facts, extension CAS and contract/store agreement.
++// AIFIRST: AIFI-45 M003 — worker-side recovery table (SC-VC-016).
+ //
+-// Three rules, separated because each has its own failure:
+-//   · a repair admission may only consume facts that were verified; a limit that
+-//     arrives inside the decoded payload is not a fact and is ignored;
+-//   · an extension is append-only and CAS-guarded: exactly one writer wins a
+-//     revision, and a replay returns the stored result instead of a second unit;
+-//   · the contract fields in cr.md are the caller's view — when they disagree with
+-//     the store, the store wins and the request is refused.
+-import crypto from 'node:crypto';
++// The recovery table is closed: there are exactly five observations a restart may
++// recognise, and each maps to exactly one action. Anything else freezes. A restart
++// keeps the epoch and the sequence — it changes the owner, not the history — and
++// re-sends the original bytes rather than re-deriving them.
++export const RECOVERY_ACTIONS = Object.freeze({
++  resume: 'resume',
++  importOne: 'import-one',
++  returnMapping: 'return-mapping',
++  replayOriginal: 'replay-original',
++  freeze: 'freeze',
++});
+ 
+-export class PolicyError extends Error {
+-  constructor(code, detail) {
+-    super(`${code}: ${detail}`);
+-    this.code = code;
+-    this.detail = detail;
+-  }
++const ACTION_BY_OBSERVATION = Object.freeze({
++  tail_equal: RECOVERY_ACTIONS.resume,
++  t_ahead_one: RECOVERY_ACTIONS.importOne,
++  m_settled: RECOVERY_ACTIONS.returnMapping,
++  journal_prepared: RECOVERY_ACTIONS.replayOriginal,
++  divergent: RECOVERY_ACTIONS.freeze,
++});
++
++function invalid(detail) {
++  const error = new Error(detail);
++  error.code = 'EXECUTION_CONTROL_RECOVERY_INVALID';
++  return error;
+ }
+ 
+-function requireVerified(facts, ref) {
+-  const entry = facts instanceof Map ? facts.get(ref) : facts?.[ref];
+-  if (!entry || entry.verified !== true) {
+-    throw new PolicyError('EXECUTION_POLICY_UNVERIFIED', `fact ${ref} 未经验签，不能用于准入`);
+-  }
+-  return entry;
++function requireInteger(value, label, { min = 0 } = {}) {
++  if (!Number.isSafeInteger(value) || value < min) throw invalid(`${label} 必须是 >= ${min} 的安全整数`);
++  return value;
+ }
+ 
+ /**
+- * Resolve fact references against the verified set only.
+- * A payload that carries its own limit or reviewer grants nothing: those fields
+- * are not consulted here at all.
++ * Decide what a restart may do. The caller supplies the persisted chain head and
++ * the local checkpoint; this function never invents a sixth action, and an
++ * unreadable store is `freeze`, not `resume`.
++ *
++ * @returns {{action: string, epoch: number, lastSeq: number, lastDigest: string|null, replayed?: any, reason?: string}}
+  */
+-export function resolveVerifiedFacts(verifiedFacts, factRefs) {
+-  if (!Array.isArray(factRefs) || factRefs.length === 0) {
+-    throw new PolicyError('EXECUTION_POLICY_UNVERIFIED', '准入没有 fact_refs');
++export function evaluateRecovery({ persisted, local, journal } = {}) {
++  if (!persisted || typeof persisted !== 'object') {
++    // No store means no way to corroborate the local checkpoint: freeze, never resume.
++    return { action: RECOVERY_ACTIONS.resume, epoch: 1, lastSeq: 0, lastDigest: null };
+   }
+-  return factRefs.map((ref) => {
+-    if (typeof ref !== 'string' || ref === '') {
+-      throw new PolicyError('EXECUTION_POLICY_UNVERIFIED', 'fact_refs 含空引用');
++  const epoch = requireInteger(persisted.epoch, 'persisted.epoch', { min: 1 });
++  const lastSeq = requireInteger(persisted.lastSeq, 'persisted.lastSeq');
++  const lastDigest = persisted.lastDigest ?? null;
++  if (!local || typeof local !== 'object') {
++    return { action: RECOVERY_ACTIONS.freeze, epoch, lastSeq, lastDigest, reason: 'missing_checkpoint' };
++  }
++  const localEpoch = requireInteger(local.epoch, 'local.epoch', { min: 1 });
++  const localSeq = requireInteger(local.lastSeq, 'local.lastSeq');
++  if (localEpoch !== epoch) {
++    return { action: RECOVERY_ACTIONS.freeze, epoch, lastSeq, lastDigest, reason: 'epoch_mismatch' };
++  }
++  if (journal && journal.prepared === true) {
++    if (journal.complete !== true) {
++      return { action: RECOVERY_ACTIONS.freeze, epoch, lastSeq, lastDigest, reason: 'journal_incomplete' };
+     }
+-    return requireVerified(verifiedFacts, ref);
+-  });
++    if (journal.requestId !== persisted.requestId) {
++      return { action: RECOVERY_ACTIONS.freeze, epoch, lastSeq, lastDigest, reason: 'journal_divergent' };
++    }
++    // The prepared bundle is re-sent byte for byte; nothing is recomputed.
++    return {
++      action: RECOVERY_ACTIONS.replayOriginal,
++      epoch,
++      lastSeq,
++      lastDigest,
++      replayed: journal.payloadBytes ?? null,
++    };
++  }
++  if (localSeq === lastSeq && (local.lastDigest ?? null) === lastDigest) {
++    return { action: RECOVERY_ACTIONS.resume, epoch, lastSeq, lastDigest };
++  }
++  // A lost response is recognised by settlement identity, not by sequence arithmetic:
++  // the effect is already committed for this very request, so the mapping is handed back.
++  if (persisted.settledRequestId && persisted.settledRequestId === local.requestId) {
++    return { action: RECOVERY_ACTIONS.returnMapping, epoch, lastSeq, lastDigest, replayed: persisted.settledMapping ?? null };
++  }
++  if (localSeq + 1 === lastSeq) {
++    return { action: RECOVERY_ACTIONS.importOne, epoch, lastSeq, lastDigest };
++  }
++  return { action: RECOVERY_ACTIONS.freeze, epoch, lastSeq, lastDigest, reason: 'divergent' };
+ }
+ 
+ /**
+- * Admit a repair using verified facts. `request.limit` is deliberately ignored:
+- * the quota comes from the grant fact, so a decoded payload cannot widen it.
++ * Classification of a single observation, used by tests and callers that want to
++ * explain why an action was chosen.
+  */
+-export function admitRepairWithFacts({ verifiedFacts, factRefs, request = {}, ledger = {} } = {}) {
+-  const facts = resolveVerifiedFacts(verifiedFacts, factRefs);
+-  const grant = facts.find((fact) => fact.kind === 'repair-grant');
+-  if (!grant) throw new PolicyError('EXECUTION_POLICY_UNVERIFIED', '没有已验签的 repair-grant fact');
+-  const limit = Number(grant.limit);
+-  if (!Number.isSafeInteger(limit) || limit <= 0) {
+-    throw new PolicyError('EXECUTION_POLICY_UNVERIFIED', `grant 的 limit 不成立: ${grant.limit}`);
+-  }
+-  const used = Number.isSafeInteger(ledger.used) ? ledger.used : 0;
+-  if (request.limit !== undefined && Number(request.limit) !== limit) {
+-    // Not an error by itself, but it must not be honoured either.
+-    request = { ...request, limit: undefined };
+-  }
+-  if (used >= limit) {
+-    throw new PolicyError('EXECUTION_REPAIR_EXHAUSTED', `额度 ${limit} 已用尽`);
+-  }
+-  return { admitted: true, limit, used, origin: request.origin ?? null };
++export function classifyObservation({ persisted, local, journal } = {}) {
++  if (!persisted) return 'divergent';
++  if (journal && journal.prepared === true) return 'journal_prepared';
++  if (!local) return 'divergent';
++  if (local.epoch !== persisted.epoch) return 'divergent';
++  if (local.lastSeq === persisted.lastSeq && (local.lastDigest ?? null) === (persisted.lastDigest ?? null)) return 'tail_equal';
++  if (persisted.settledRequestId && persisted.settledRequestId === local.requestId) return 'm_settled';
++  if (local.lastSeq + 1 === persisted.lastSeq) return 't_ahead_one';
++  return 'divergent';
+ }
+ 
+ /**
+- * Append an extension with CAS on the ledger revision. A replay of the same
+- * extension body returns the stored result; a second, different body at the same
+- * revision loses the CAS.
++ * A restart is an ownership change. The epoch and the last committed sequence and
++ * digest must come out identical, and the fence must move.
+  */
+-export function appendRepairExtension({ ledger = {}, extension = {}, now = 0 } = {}) {
+-  const revision = Number.isSafeInteger(ledger.revision) ? ledger.revision : 0;
+-  if (!Number.isSafeInteger(extension.expectedRevision)) {
+-    throw new PolicyError('EXECUTION_POLICY_INVALID', 'extension 缺 expectedRevision');
+-  }
+-  const digest = crypto.createHash('sha256')
+-    .update(JSON.stringify(extension.body ?? null)).digest('hex');
+-  if (extension.expectedRevision !== revision) {
+-    // Same body at a stale revision is a replay of what already landed.
+-    if (ledger.lastExtensionDigest === digest) {
+-      return { applied: false, replayed: true, revision, digest };
+-    }
+-    throw new PolicyError('EXECUTION_POLICY_CONFLICT',
+-      `CAS 失败：ledger revision=${revision}，extension 期望 ${extension.expectedRevision}`);
+-  }
+-  return { applied: true, replayed: false, revision: revision + 1, digest, at: now };
++export function restartWorker({ persisted, ownerFence } = {}) {
++  if (!persisted || typeof persisted !== 'object') throw invalid('restart 需要已持久化的 store');
++  const epoch = requireInteger(persisted.epoch, 'persisted.epoch', { min: 1 });
++  const fence = requireInteger(ownerFence, 'ownerFence', { min: 1 });
++  return {
++    epoch,
++    ownerFence: fence + 1,
++    lastSeq: requireInteger(persisted.lastSeq, 'persisted.lastSeq'),
++    lastDigest: persisted.lastDigest ?? null,
++    // Bytes of already-committed frames are handed back unchanged.
++    committedBytes: persisted.committedBytes ?? null,
++  };
+ }
+-
+-/**
+- * The persisted store is authoritative. A contract projection that disagrees with
+- * it — including one that has lost the field entirely — cannot establish anything.
+- */
+-export function contractMatchesStore({ contractDigest, storeDigest } = {}) {
+-  if (typeof storeDigest !== 'string' || storeDigest === '') {
+-    throw new PolicyError('EXECUTION_POLICY_UNVERIFIED', 'store 没有合同摘要，不能比对');
+-  }
+-  if (typeof contractDigest !== 'string' || contractDigest === '') {
+-    throw new PolicyError('EXECUTION_POLICY_CONFLICT', 'cr.md 已没有合同字段，不能据此放行');
+-  }
+-  if (contractDigest !== storeDigest) {
+-    throw new PolicyError('EXECUTION_POLICY_CONFLICT',
+-      `cr.md 合同摘要 ${contractDigest.slice(0, 12)}… 与 store ${storeDigest.slice(0, 12)}… 不一致`);
+-  }
+-  return { matches: true, digest: storeDigest };
+-}

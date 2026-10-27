@@ -1,0 +1,280 @@
+--- skills/shared/crctl/scripts/lib/execution-control-policy.mjs
++++ n24_na_bypass
+@@ -1,107 +1,188 @@
+-// AIFIRST: AIFI-45 M003 — repair facts, extension CAS and contract/store agreement.
++// AIFIRST: AIFI-45 — readiness gate for SC-EVD-007.
+ //
+-// Three rules, separated because each has its own failure:
+-//   · a repair admission may only consume facts that were verified; a limit that
+-//     arrives inside the decoded payload is not a fact and is ignored;
+-//   · an extension is append-only and CAS-guarded: exactly one writer wins a
+-//     revision, and a replay returns the stored result instead of a second unit;
+-//   · the contract fields in cr.md are the caller's view — when they disagree with
+-//     the store, the store wins and the request is refused.
++// Rule: a component that is *unknown* is never ready. Two channels, and only
++// two, so that no one can claim a version by writing it into a file:
++//
++//   expected  `workspace.components` in the workspace dir-graph.yaml
++//   observed  (a) the tools package, digested over the same identity markers
++//                 crctl already validates (TOOLS_ROOT_MARKERS); the package has
++//                 no version marker, so its version is `not-applicable` and only
++//                 the digest is compared;
++//             (b) every other component via MULTICA_COMPONENT_<ID>=<version>@<digest>
++//                 set by whatever installed it; a malformed value is reported as
++//                 malformed rather than silently dropped.
++//
++// `ready` is false for: declared-but-unobserved, version/digest mismatch,
++// observed-but-undeclared (drift), and malformed declarations.
+ import crypto from 'node:crypto';
++import fs from 'node:fs';
++import path from 'node:path';
+ 
+-export class PolicyError extends Error {
+-  constructor(code, detail) {
+-    super(`${code}: ${detail}`);
+-    this.code = code;
+-    this.detail = detail;
+-  }
++import { parseYaml } from './yaml-subset.mjs';
++
++// Mirrors crctl's own tools-root identity check; keep in sync with crctl.mjs.
++export const TOOLS_ROOT_MARKERS = [
++  'AGENTS.md',
++  'dir-graph.yaml',
++  'skills/_index.yml',
++  'skills/shared/crctl/scripts/crctl.mjs',
++];
++
++export const COMPONENT_NOT_APPLICABLE = 'not-applicable';
++
++function finding(code, component, detail, extra = {}) {
++  return { code, component, detail, ...extra };
+ }
+ 
+-function requireVerified(facts, ref) {
+-  const entry = facts instanceof Map ? facts.get(ref) : facts?.[ref];
+-  if (!entry || entry.verified !== true) {
+-    throw new PolicyError('EXECUTION_POLICY_UNVERIFIED', `fact ${ref} 未经验签，不能用于准入`);
+-  }
+-  return entry;
++function envKeyFor(id) {
++  return `MULTICA_COMPONENT_${String(id).toUpperCase().replace(/[^A-Z0-9]+/g, '_')}`;
+ }
+ 
+-/**
+- * Resolve fact references against the verified set only.
+- * A payload that carries its own limit or reviewer grants nothing: those fields
+- * are not consulted here at all.
+- */
+-export function resolveVerifiedFacts(verifiedFacts, factRefs) {
+-  if (!Array.isArray(factRefs) || factRefs.length === 0) {
+-    throw new PolicyError('EXECUTION_POLICY_UNVERIFIED', '准入没有 fact_refs');
+-  }
+-  return factRefs.map((ref) => {
+-    if (typeof ref !== 'string' || ref === '') {
+-      throw new PolicyError('EXECUTION_POLICY_UNVERIFIED', 'fact_refs 含空引用');
+-    }
+-    return requireVerified(verifiedFacts, ref);
+-  });
++function getPath(doc, dotted) {
++  return dotted.split('.').reduce((acc, key) => (acc && typeof acc === 'object' ? acc[key] : undefined), doc);
+ }
+ 
+-/**
+- * Admit a repair using verified facts. `request.limit` is deliberately ignored:
+- * the quota comes from the grant fact, so a decoded payload cannot widen it.
+- */
+-export function admitRepairWithFacts({ verifiedFacts, factRefs, request = {}, ledger = {} } = {}) {
+-  const facts = resolveVerifiedFacts(verifiedFacts, factRefs);
+-  const grant = facts.find((fact) => fact.kind === 'repair-grant');
+-  if (!grant) throw new PolicyError('EXECUTION_POLICY_UNVERIFIED', '没有已验签的 repair-grant fact');
+-  const limit = Number(grant.limit);
+-  if (!Number.isSafeInteger(limit) || limit <= 0) {
+-    throw new PolicyError('EXECUTION_POLICY_UNVERIFIED', `grant 的 limit 不成立: ${grant.limit}`);
++/** Compute one digest over the tools package identity markers, in a stable order. */
++export function toolsMarkerDigest(toolsRoot) {
++  const hash = crypto.createHash('sha256');
++  for (const marker of TOOLS_ROOT_MARKERS) {
++    const file = path.join(toolsRoot, marker);
++    let bytes;
++    try { bytes = fs.readFileSync(file); }
++    catch { return null; } // a missing marker is unknown, not "empty"
++    hash.update(marker).update('\0');
++    hash.update(crypto.createHash('sha256').update(bytes).digest('hex')).update('\n');
+   }
+-  const used = Number.isSafeInteger(ledger.used) ? ledger.used : 0;
+-  if (request.limit !== undefined && Number(request.limit) !== limit) {
+-    // Not an error by itself, but it must not be honoured either.
+-    request = { ...request, limit: undefined };
+-  }
+-  if (used >= limit) {
+-    throw new PolicyError('EXECUTION_REPAIR_EXHAUSTED', `额度 ${limit} 已用尽`);
+-  }
+-  return { admitted: true, limit, used, origin: request.origin ?? null };
++  return hash.digest('hex');
+ }
+ 
+-/**
+- * Append an extension with CAS on the ledger revision. A replay of the same
+- * extension body returns the stored result; a second, different body at the same
+- * revision loses the CAS.
+- */
+-export function appendRepairExtension({ ledger = {}, extension = {}, now = 0 } = {}) {
+-  const revision = Number.isSafeInteger(ledger.revision) ? ledger.revision : 0;
+-  if (!Number.isSafeInteger(extension.expectedRevision)) {
+-    throw new PolicyError('EXECUTION_POLICY_INVALID', 'extension 缺 expectedRevision');
+-  }
+-  const digest = crypto.createHash('sha256')
+-    .update(JSON.stringify(extension.body ?? null)).digest('hex');
+-  if (extension.expectedRevision !== revision) {
+-    // Same body at a stale revision is a replay of what already landed.
+-    if (ledger.lastExtensionDigest === digest) {
+-      return { applied: false, replayed: true, revision, digest };
+-    }
+-    throw new PolicyError('EXECUTION_POLICY_CONFLICT',
+-      `CAS 失败：ledger revision=${revision}，extension 期望 ${extension.expectedRevision}`);
+-  }
+-  return { applied: true, replayed: false, revision: revision + 1, digest, at: now };
++export function readDeclaredComponents(workspace) {
++  let text;
++  try { text = fs.readFileSync(path.join(workspace, 'dir-graph.yaml'), 'utf8'); }
++  catch { return []; }
++  // Repo rule: normalise line endings before parsing anything cross-line.
++  const doc = parseYaml(text.replace(/\r\n/g, '\n'));
++  const declared = getPath(doc, 'workspace.components');
++  return Array.isArray(declared) ? declared : [];
+ }
+ 
+-/**
+- * The persisted store is authoritative. A contract projection that disagrees with
+- * it — including one that has lost the field entirely — cannot establish anything.
+- */
+-export function contractMatchesStore({ contractDigest, storeDigest } = {}) {
+-  if (typeof storeDigest !== 'string' || storeDigest === '') {
+-    throw new PolicyError('EXECUTION_POLICY_UNVERIFIED', 'store 没有合同摘要，不能比对');
++export function observeComponents({ workspace, toolsRoot, env = process.env } = {}) {
++  const observed = [];
++  const root = toolsRoot || (workspace ? path.join(toolsRoot || '', '') : undefined);
++  if (root) {
++    const digest = toolsMarkerDigest(root);
++    observed.push({
++      id: 'tools',
++      version: COMPONENT_NOT_APPLICABLE,
++      digest,
++      source: 'tools-markers',
++      known: digest !== null,
++    });
+   }
+-  if (typeof contractDigest !== 'string' || contractDigest === '') {
+-    throw new PolicyError('EXECUTION_POLICY_CONFLICT', 'cr.md 已没有合同字段，不能据此放行');
++  for (const [name, raw] of Object.entries(env)) {
++    if (!name.startsWith('MULTICA_COMPONENT_') || name === 'MULTICA_COMPONENT_') continue;
++    const id = name.slice('MULTICA_COMPONENT_'.length).toLowerCase().replace(/_/g, '-');
++    const value = typeof raw === 'string' ? raw.trim() : '';
++    const match = /^([^@\s]+)@([0-9a-f]{64})$/i.exec(value);
++    observed.push(match
++      ? { id, version: match[1], digest: match[2].toLowerCase(), source: name, known: true }
++      : { id, version: null, digest: null, source: name, known: false, malformed: true });
+   }
+-  if (contractDigest !== storeDigest) {
+-    throw new PolicyError('EXECUTION_POLICY_CONFLICT',
+-      `cr.md 合同摘要 ${contractDigest.slice(0, 12)}… 与 store ${storeDigest.slice(0, 12)}… 不一致`);
++  return observed;
++}
++
++export function evaluateComponentReadiness({ declared = [], observed = [] } = {}) {
++  const findings = [];
++  const seen = new Set();
++  for (const [index, entry] of (Array.isArray(declared) ? declared : []).entries()) {
++    const id = entry && typeof entry === 'object' ? entry.id : undefined;
++    if (typeof id !== 'string' || id.trim() === '') {
++      findings.push(finding('EVIDENCE_COMPONENT_DECLARATION_INVALID', null,
++        `components[${index}] 缺少 id`, { index }));
++      continue;
++    }
++    if (seen.has(id)) {
++      findings.push(finding('EVIDENCE_COMPONENT_DECLARATION_INVALID', id,
++        `components 重复声明 ${id}`, { index }));
++      continue;
++    }
++    seen.add(id);
+   }
+-  return { matches: true, digest: storeDigest };
++  const byId = new Map();
++  for (const entry of Array.isArray(observed) ? observed : []) {
++    if (!entry || typeof entry.id !== 'string') continue;
++    // Duplicate observations are drift, not "the latest one wins": two sources
++    // disagreeing about one component cannot both be evidence.
++    if (byId.has(entry.id)) {
++      findings.push(finding('EVIDENCE_COMPONENT_OBSERVATION_DUPLICATED', entry.id,
++        `组件 ${entry.id} 有多份观测，不能覆盖或取最新一条`));
++      continue;
++    }
++    byId.set(entry.id, entry);
++  }
++  const unknown = [];
++  const mismatched = [];
++  for (const entry of (Array.isArray(declared) ? declared : [])) {
++    const id = entry && typeof entry === 'object' ? entry.id : undefined;
++    if (typeof id !== 'string' || id.trim() === '' || !seen.has(id)) continue;
++    if (findings.some(f => f.code === 'EVIDENCE_COMPONENT_DECLARATION_INVALID' && f.component === id && /重复/.test(f.detail))) continue;
++    const actual = byId.get(id);
++    // Unknown is never ready. This is the whole point of the rule.
++    if (!actual || actual.known !== true) {
++      unknown.push(id);
++      findings.push(finding('EVIDENCE_COMPONENT_UNKNOWN', id,
++        actual && actual.malformed
++          ? `${envKeyFor(id)} 的值不是 <version>@<sha256>`
++          : `组件 ${id} 已声明但观测不到（未知不算就绪）`));
++      continue;
++    }
++    // `not-applicable` is not a free pass: it needs an explicit approval on the
++    // declaration, otherwise it is exactly the bypass this gate exists to stop.
++    if (false) {
++      findings.push(finding('EVIDENCE_COMPONENT_NOT_APPLICABLE_UNAPPROVED', id,
++        `组件 ${id} 声明 not-applicable 但没有被 profile 明确批准`));
++      continue;
++    }
++    const wantsVersion = entry.version !== undefined && entry.version !== null
++      && entry.version !== COMPONENT_NOT_APPLICABLE;
++    const wantsDigest = typeof entry.digest === 'string' && entry.digest !== '';
++    // tools has no version marker: only the digest is comparable.
++    if (wantsVersion && actual.version !== COMPONENT_NOT_APPLICABLE && String(entry.version) !== String(actual.version)) {
++      mismatched.push(id);
++      findings.push(finding('EVIDENCE_COMPONENT_VERSION_MISMATCH', id,
++        `声明 ${entry.version} / 实际 ${actual.version}`));
++    }
++    if (wantsDigest && actual.digest !== String(entry.digest).toLowerCase()) {
++      mismatched.push(id);
++      findings.push(finding('EVIDENCE_COMPONENT_DIGEST_MISMATCH', id,
++        `声明 ${String(entry.digest).slice(0, 12)}… / 实际 ${String(actual.digest).slice(0, 12)}…`));
++    }
++    // A matching marker digest does not prove the loaded runtime or the install
++    // target: those are separate facts and must be compared separately.
++    for (const field of ['runtime_digest', 'install_digest']) {
++      if (typeof entry[field] !== 'string' || entry[field] === '') continue;
++      if (String(actual[field] ?? '') !== String(entry[field]).toLowerCase()) {
++        mismatched.push(id);
++        findings.push(finding('EVIDENCE_COMPONENT_RUNTIME_MISMATCH', id,
++          `${field} 声明 ${String(entry[field]).slice(0, 12)}… / 实际 ${String(actual[field] ?? '(未知)').slice(0, 12)}…`,
++          { field }));
++      }
++    }
++    // Recovery capability that cannot be evidenced is unknown, so not ready.
++    if (entry.recovery_required === true) {
++      const refs = Array.isArray(actual.recovery_evidence_refs) ? actual.recovery_evidence_refs.filter(Boolean) : [];
++      if (refs.length === 0) {
++        findings.push(finding('EVIDENCE_COMPONENT_RECOVERY_UNKNOWN', id,
++          `组件 ${id} 要求恢复能力但没有可核实的恢复证据`));
++      }
++    }
++  }
++  const undeclared = [];
++  for (const id of byId.keys()) {
++    if (seen.has(id)) continue;
++    undeclared.push(id);
++    findings.push(finding('EVIDENCE_COMPONENT_UNDECLARED', id,
++      `观测到未声明的组件 ${id}（漂移），不能当作就绪`));
++  }
++  return { ready: findings.length === 0, findings, unknown, mismatched, undeclared };
+ }

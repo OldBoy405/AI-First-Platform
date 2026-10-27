@@ -1,0 +1,148 @@
+TAP version 13
+# Subtest: repair-admit 拒绝未验签 payload
+ok 1 - repair-admit 拒绝未验签 payload
+  ---
+  duration_ms: 0.9341
+  type: 'test'
+  ...
+# Subtest: repair 追加 CAS 只接受一份
+ok 2 - repair 追加 CAS 只接受一份
+  ---
+  duration_ms: 0.4298
+  type: 'test'
+  ...
+# Subtest: cr.md 合同字段与 store 不一致即拒
+ok 3 - cr.md 合同字段与 store 不一致即拒
+  ---
+  duration_ms: 0.171
+  type: 'test'
+  ...
+# Subtest: sensitive action 只接受原 operation
+ok 4 - sensitive action 只接受原 operation
+  ---
+  duration_ms: 29.9385
+  type: 'test'
+  ...
+# Subtest: merge 范围只看已批准 source sha
+ok 5 - merge 范围只看已批准 source sha
+  ---
+  duration_ms: 0.5673
+  type: 'test'
+  ...
+# Subtest: merge 范围核对覆盖发布集合
+ok 6 - merge 范围核对覆盖发布集合
+  ---
+  duration_ms: 0.2348
+  type: 'test'
+  ...
+# Subtest: merge 范围 rename 源与目标都查
+ok 7 - merge 范围 rename 源与目标都查
+  ---
+  duration_ms: 0.5758
+  type: 'test'
+  ...
+# Subtest: merge 范围 symlink 取自发布候选树
+ok 8 - merge 范围 symlink 取自发布候选树
+  ---
+  duration_ms: 471.9506
+  type: 'test'
+  ...
+# Subtest: merge 范围空集合不可放行
+ok 9 - merge 范围空集合不可放行
+  ---
+  duration_ms: 0.2029
+  type: 'test'
+  ...
+# Subtest: merge 范围 release-subject 缺失即拒
+ok 10 - merge 范围 release-subject 缺失即拒
+  ---
+  duration_ms: 0.1864
+  type: 'test'
+  ...
+# Subtest: merge 范围无法核实即拒
+ok 11 - merge 范围无法核实即拒
+  ---
+  duration_ms: 0.1204
+  type: 'test'
+  ...
+# Subtest: merge 范围 Unknown selection 即拒
+ok 12 - merge 范围 Unknown selection 即拒
+  ---
+  duration_ms: 0.0917
+  type: 'test'
+  ...
+# Subtest: legacy merge 不核对范围
+ok 13 - legacy merge 不核对范围
+  ---
+  duration_ms: 0.0568
+  type: 'test'
+  ...
+# Subtest: merge 范围删合同字段仍 strict
+ok 14 - merge 范围删合同字段仍 strict
+  ---
+  duration_ms: 0.0811
+  type: 'test'
+  ...
+# Subtest: merge 范围恢复沿用原冻结输入
+ok 15 - merge 范围恢复沿用原冻结输入
+  ---
+  duration_ms: 0.059
+  type: 'test'
+  ...
+# Subtest: merge 范围撤销发生在部分发布后
+ok 16 - merge 范围撤销发生在部分发布后
+  ---
+  duration_ms: 0.0838
+  type: 'test'
+  ...
+# Subtest: merge 范围核对越界零写入
+ok 17 - merge 范围核对越界零写入
+  ---
+  duration_ms: 0.106
+  type: 'test'
+  ...
+# Subtest: merge 范围不受 grants 目录旧文件影响
+ok 18 - merge 范围不受 grants 目录旧文件影响
+  ---
+  duration_ms: 0.0779
+  type: 'test'
+  ...
+# Subtest: merge 范围 head 撤销即拒
+ok 19 - merge 范围 head 撤销即拒
+  ---
+  duration_ms: 0.0412
+  type: 'test'
+  ...
+# Subtest: merge 范围 head 前移即拒
+ok 20 - merge 范围 head 前移即拒
+  ---
+  duration_ms: 0.0446
+  type: 'test'
+  ...
+# Subtest: merge 范围越界不推进状态
+ok 21 - merge 范围越界不推进状态
+  ---
+  duration_ms: 0.0465
+  type: 'test'
+  ...
+# Subtest: merge 范围 finalize 写集逐项授权
+ok 22 - merge 范围 finalize 写集逐项授权
+  ---
+  duration_ms: 0.0851
+  type: 'test'
+  ...
+# Subtest: merge 范围核对含 KB 审批后写入
+ok 23 - merge 范围核对含 KB 审批后写入
+  ---
+  duration_ms: 0.0544
+  type: 'test'
+  ...
+1..23
+# tests 23
+# suites 0
+# pass 23
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 572.2033

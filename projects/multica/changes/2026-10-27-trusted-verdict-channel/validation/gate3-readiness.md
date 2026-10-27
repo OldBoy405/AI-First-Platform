@@ -47,6 +47,9 @@ Gate 3 只能在 §2、§3 有明确处置（实现 / 划出范围 / 随上游�
 | `readiness-composition` | 1 | `rd-20261027T140645Z` |
 | `readiness-fresh-work` | 1 | `g0-20261027T141710Z` |
 | `foundation-fresh-work` | 4 | `fz-20261027T141650Z` |
+| `policy`（node） | 23 | `n3-policy-20261027T142326Z` |
+| `readiness`（node） | 2 | `n3-readiness-20261027T142327Z` |
+| `recovery`（node） | 2 | `n3-recovery-20261027T142327Z` |
 | `protocol`（go） | 3 | `ai-proto4-20261027T175236Z` |
 | `merge-facts`（go） | 6 | `mk-20261027T104452Z` |
 | `merge-effects`（go） | 4 | `mz-20261027T105320Z` |
@@ -56,7 +59,7 @@ Gate 3 只能在 §2、§3 有明确处置（实现 / 划出范围 / 随上游�
 | `merge-facts`（node） | 11 | `mf-20261027T103357Z` |
 | `merge-effects`（node） | 16 | `me-20261027T104637Z` |
 
-变异（m1–m84）全部落在 `validation/mutations/`，每条带 `.patch` 与 `.sha256`，且各自只打红对应 leaf（例外：m26/m35/m37/m39 各打红两条，m41/m48 连带同一只桶/同一入口的第二条，均为语义相关）。
+变异（Go m1–m84 / Node n1–n28）全部落在 `validation/mutations/`，每条带 `.patch` 与 `.sha256`，且各自只打红对应 leaf（例外：m26/m35/m37/m39 各打红两条，m41/m48 连带同一只桶/同一入口的第二条，均为语义相关）。
 
 ## 2. 未实现（0 label）
 

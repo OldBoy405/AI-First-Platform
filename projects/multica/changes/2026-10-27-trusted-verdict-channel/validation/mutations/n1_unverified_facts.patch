@@ -1,0 +1,11 @@
+--- skills/shared/crctl/scripts/lib/execution-control-policy.mjs
++++ n1_unverified_facts
+@@ -19,7 +19,7 @@
+ 
+ function requireVerified(facts, ref) {
+   const entry = facts instanceof Map ? facts.get(ref) : facts?.[ref];
+-  if (!entry || entry.verified !== true) {
++  if (!entry) {
+     throw new PolicyError('EXECUTION_POLICY_UNVERIFIED', `fact ${ref} 未经验签，不能用于准入`);
+   }
+   return entry;

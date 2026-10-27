@@ -1,0 +1,11 @@
+--- skills/shared/crctl/scripts/lib/execution-control-policy.mjs
++++ n3_contract_ignores_store
+@@ -99,7 +99,7 @@
+   if (typeof contractDigest !== 'string' || contractDigest === '') {
+     throw new PolicyError('EXECUTION_POLICY_CONFLICT', 'cr.md 已没有合同字段，不能据此放行');
+   }
+-  if (contractDigest !== storeDigest) {
++  if (false) {
+     throw new PolicyError('EXECUTION_POLICY_CONFLICT',
+       `cr.md 合同摘要 ${contractDigest.slice(0, 12)}… 与 store ${storeDigest.slice(0, 12)}… 不一致`);
+   }

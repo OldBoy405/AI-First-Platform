@@ -44,6 +44,9 @@ Node 侧（tools `test/execution-control-{protocol,store}.test.mjs`）：各 2/2
 | `readiness-composition` | 1 | OK：真 manifest + 真签名 + 两份观测 → READY_COMPONENT 落库；再用它启用生产 policy 必须失败且 activation head/event 为零。跑次 `rd-20261027T140645Z`；m78（先修掉了「因过期而绿」的假绿） |
 | `foundation-fresh-work` | 4 | OK：新 origin 只凭 operator 钉住的源记录建立 strict selection；同 origin 换 CR 被拒且只有一条 selection；源记录缺失只能 UNKNOWN、非 NEW 或带未决引用不建 selection；新 proof 只追加 revision 且历史字节与摘要不变。跑次 `fz-20261027T141650Z`；m80–m84 |
 | `readiness-fresh-work` | 1 | OK：同 origin 换 lineage 被拒且原归属原样交回；同 lineage 重放不新增行；历史覆盖未知不建立新 origin。跑次 `fx-20261027T140828Z`；m79 |
+| `policy`（node） | 23 | OK：未验签 fact 拒、CAS 只收一份、合同与 store 不一致拒、敏感动作只认原 operation；merge 范围 19 条（只认已批准 sha、覆盖发布集合、rename 双端、候选树 symlink、空集合/缺 release-subject/采集失败一律 UNVERIFIABLE、Unknown 不降 legacy、legacy 不核对、删字段仍 strict、恢复用冻结输入、中途撤销保 journal、越界零写入且不推进状态、不受 grants 目录影响、head 撤销/前移即拒、finalize 写集逐项授权、KB 审批后写入纳入核对）。跑次 `n3-policy-20261027T142326Z`；n1–n23 |
+| `readiness`（node） | 2 | OK：空/缺 components、重复观测、未批 NA、runtime/安装漂移、恢复未知均 NOT_READY；action×purpose 矩阵外一律拒，verify-channel 只出 READY_COMPONENT。跑次 `n3-readiness-20261027T142327Z`；n24–n25 |
+| `recovery`（node） | 2 | OK：五个观察各对应唯一动作、缺 store/checkpoint 冻结；restart 只动 owner fence。跑次 `n3-recovery-20261027T142327Z`；n26–n27 |
 | `binding`（4 条按规格 RED） | 按规格不得登记完成 |
 | `isolation`（linux） | 5 | OK：root + `AIFI45_ISOLATION_PROFILE=wsl2-aifi45-v1`（uid 995/gid 994）真跑；pidfd 钉身份并检测死进程、SO_PEERCRED 取真身份、`ReadMsgUnix` 拒 SCM_RIGHTS。m12/m13/m14 各只红一条。跑次 `iso-20261027T101534Z` |
 | `isolation`（windows） | 3 | **UNVERIFIED**：无受限 Windows 身份，`_unsupported.go` 对所有原语返回 `EXECUTION_CHANNEL_ISOLATION_UNSUPPORTED`，缺 profile 直接 `t.Fatalf` |

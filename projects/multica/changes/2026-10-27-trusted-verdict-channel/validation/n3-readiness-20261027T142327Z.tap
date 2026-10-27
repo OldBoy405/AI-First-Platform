@@ -1,0 +1,65 @@
+TAP version 13
+# Subtest: readiness 拒绝宽松输入
+    # Subtest: 合法非空 profile 是正例
+    ok 1 - 合法非空 profile 是正例
+      ---
+      duration_ms: 0.7253
+      type: 'test'
+      ...
+    # Subtest: 空或缺失 components 一律 NOT_READY
+    ok 2 - 空或缺失 components 一律 NOT_READY
+      ---
+      duration_ms: 0.1232
+      type: 'test'
+      ...
+    # Subtest: 重复观测不能取最新一条
+    ok 3 - 重复观测不能取最新一条
+      ---
+      duration_ms: 0.1828
+      type: 'test'
+      ...
+    # Subtest: not-applicable 不能被当成免检
+    ok 4 - not-applicable 不能被当成免检
+      ---
+      duration_ms: 0.1645
+      type: 'test'
+      ...
+    # Subtest: marker 一致但 runtime/安装变了仍 NOT_READY
+    ok 5 - marker 一致但 runtime/安装变了仍 NOT_READY
+      ---
+      duration_ms: 0.1716
+      type: 'test'
+      ...
+    # Subtest: 恢复能力未知即 NOT_READY
+    ok 6 - 恢复能力未知即 NOT_READY
+      ---
+      duration_ms: 0.7594
+      type: 'test'
+      ...
+    # Subtest: 未知组件与漂移都不算就绪
+    ok 7 - 未知组件与漂移都不算就绪
+      ---
+      duration_ms: 0.1422
+      type: 'test'
+      ...
+    1..7
+ok 1 - readiness 拒绝宽松输入
+  ---
+  duration_ms: 3.3685
+  type: 'test'
+  ...
+# Subtest: verify-channel 只出 READY_COMPONENT
+ok 2 - verify-channel 只出 READY_COMPONENT
+  ---
+  duration_ms: 0.2627
+  type: 'test'
+  ...
+1..2
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 70.342
