@@ -124,3 +124,4 @@ B6 **不再**在 AIFI-45 做过渡。tools 在 agent 本机运行，没有 agent
 23. **M003 交接文件（增量 49）**：`validation/m003-handover-20261027.md`——供另开 change 落地 M003 的新会话说用；写清注册方式（原生 STDD 两仓）、边界与已决事项、纪律、以及回来后"通道通过不自动回填"的回填口径。
 24. **M003 注册完成（增量 50）**：`2026-10-27-trusted-verdict-channel` 两仓成对注册，工作区 `2f5d1966`（未 push）；两源码仓无提交。未触达 AIFI-45 文件。下一步由新会话读交接文件、过 Gate 1。
 25. **EVD-007 接交付 gate（增量 51）**：readiness 接入 `crctl gate --for code-approved|writing-back` 与 `evidence-check`（同源判定、按声明 opt-in）。TC-EVD-007 → PRESENT，台账 **42/49**；EVD-008 仍缺（需可信 lineage，M003；且 D8=A 不迁移）。全量门禁 1132 用例 pass。
+26. **交接文件补 EVD 归属（增量 52）**：§4 把 `TC-EVD-008` 的显式迁移事实源（可信 lineage + 已核实消耗 + 未决任务）划给新 change；§6 标 EVD-007 已完成、EVD-008 待新 change 提供事实；§8 基线同步为 42/49、门禁 1132 用例。
