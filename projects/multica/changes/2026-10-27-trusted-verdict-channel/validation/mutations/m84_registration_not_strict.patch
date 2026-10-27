@@ -1,0 +1,13 @@
+--- server/internal/governance/execution_fresh_work.go
++++ m84_registration_not_strict
+@@ -156,8 +156,8 @@
+ 		INSERT INTO cr_execution_contract_selection (
+ 			id, workspace_id, project_id, cr_id, lineage_id, mode, policy_ref,
+ 			contract_digests, source_ref, origin_id, fresh_work_ref
+-		) VALUES (gen_random_uuid(), $1::uuid, $2::uuid, $3, $4::uuid, 'strict', 'policy',
+-		          '{}'::jsonb, $5, $6, gen_random_uuid())`,
++		) VALUES (gen_random_uuid(), $1::uuid, $2::uuid, $3, $4::uuid, 'legacy', 'policy',
++		          '{}'::jsonb, '', $6, gen_random_uuid())`,
+ 		in.WorkspaceID, in.ProjectID, in.CRID, in.LineageID, source.SourceRecordID, in.OriginID); err != nil {
+ 		if isUniqueViolation(err) {
+ 			return FreshWorkResult{}, fmt.Errorf("%w: origin %s 已被并发注册", ErrFreshWorkAlreadyRegistered, in.OriginID)

@@ -1,0 +1,14 @@
+--- server/internal/governance/execution_fresh_work.go
++++ m81_second_cr_allowed
+@@ -136,7 +136,10 @@
+ 		FOR UPDATE`, in.WorkspaceID, in.OriginID).Scan(&existingLineage, &existingCR)
+ 	switch {
+ 	case err == nil:
+-		if existingLineage == in.LineageID && existingCR == in.CRID {
++		if existingCR != in.CRID {
++			return FreshWorkResult{OriginID: in.OriginID, LineageID: in.LineageID, Created: true}, nil
++		}
++		if existingLineage == in.LineageID {
+ 			return FreshWorkResult{OriginID: in.OriginID, LineageID: existingLineage}, nil
+ 		}
+ 		return FreshWorkResult{OriginID: in.OriginID, LineageID: existingLineage}, fmt.Errorf(

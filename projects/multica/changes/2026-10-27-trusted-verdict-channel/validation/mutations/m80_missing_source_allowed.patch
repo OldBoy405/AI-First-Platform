@@ -1,0 +1,11 @@
+--- server/internal/governance/execution_fresh_work.go
++++ m80_missing_source_allowed
+@@ -88,7 +88,7 @@
+ 		ORDER BY registry_revision DESC, created_at DESC
+ 		LIMIT 1`, scope, originID).Scan(&payload); err != nil {
+ 		if errors.Is(err, pgx.ErrNoRows) {
+-			return FreshWorkSource{}, fmt.Errorf("%w: origin %s 没有 operator 钉住的源记录", ErrFreshWorkHistoryUnknown, originID)
++			return FreshWorkSource{OriginID: originID, Classification: FreshWorkNew}, nil
+ 		}
+ 		return FreshWorkSource{}, fmt.Errorf("fresh work source read: %w", err)
+ 	}

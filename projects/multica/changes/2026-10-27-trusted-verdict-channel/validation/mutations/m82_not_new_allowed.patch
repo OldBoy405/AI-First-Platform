@@ -1,0 +1,16 @@
+--- server/internal/governance/execution_fresh_work.go
++++ m82_not_new_allowed
+@@ -146,12 +146,7 @@
+ 		return FreshWorkResult{}, fmt.Errorf("fresh work lookup: %w", err)
+ 	}
+ 	// 只有 NEW 且没有未决引用的 proof 才能支撑首次 selection。
+-	if source.Classification != FreshWorkNew {
+-		return FreshWorkResult{}, fmt.Errorf("%w: classification=%s 不能建立首次 selection", ErrFreshWorkNotNew, source.Classification)
+-	}
+-	if len(source.UnresolvedRefs) > 0 {
+-		return FreshWorkResult{}, fmt.Errorf("%w: 还有 %d 个未决引用", ErrFreshWorkNotNew, len(source.UnresolvedRefs))
+-	}
++	_ = source.Classification
+ 	if _, err := tx.Exec(ctx, `
+ 		INSERT INTO cr_execution_contract_selection (
+ 			id, workspace_id, project_id, cr_id, lineage_id, mode, policy_ref,

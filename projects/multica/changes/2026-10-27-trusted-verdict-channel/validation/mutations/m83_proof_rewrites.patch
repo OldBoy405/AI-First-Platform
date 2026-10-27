@@ -1,0 +1,18 @@
+--- server/internal/governance/execution_fresh_work.go
++++ m83_proof_rewrites
+@@ -178,11 +178,10 @@
+ 	if scope == "" || originID == "" || len(proof) == 0 {
+ 		return FreshWorkProof{}, fmt.Errorf("%w: scope/origin/proof 都必须有值", ErrFreshWorkInvalid)
+ 	}
+-	var revision int64
+-	if err := tx.QueryRow(ctx, `
+-		SELECT COALESCE(MAX(registry_revision), 0) + 1 FROM cr_execution_control_fact
+-		WHERE scope = $1 AND kind = 'fresh-work-proof' AND origin_id = $2`,
+-		scope, originID).Scan(&revision); err != nil {
++	revision := int64(1)
++	if _, err := tx.Exec(ctx, `
++		DELETE FROM cr_execution_control_fact
++		WHERE scope = $1 AND kind = 'fresh-work-proof' AND origin_id = $2`, scope, originID); err != nil {
+ 		return FreshWorkProof{}, fmt.Errorf("fresh work revision: %w", err)
+ 	}
+ 	sum := sha256.Sum256(proof)

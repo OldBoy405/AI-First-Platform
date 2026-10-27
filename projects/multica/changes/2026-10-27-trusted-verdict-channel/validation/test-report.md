@@ -42,6 +42,7 @@ Node 侧（tools `test/execution-control-{protocol,store}.test.mjs`）：各 2/2
 | `deployment-observer` | 4 | OK：未登记键/未列实例/agent 可写来源一律拒；受保护测量为完整正例；少一个实例或重复观测 NOT_READY；换代/换 trust revision/换 nonce 即 stale。跑次 `od-20261027T140233Z`；m73–m76 |
 | `deployment-launch` | 1 | OK：预检钉住 generation 与冻结安装根，同代提交拿到身份；中间换代即拒且快照未被改写。跑次 `lu-20261027T140438Z`；m77 |
 | `readiness-composition` | 1 | OK：真 manifest + 真签名 + 两份观测 → READY_COMPONENT 落库；再用它启用生产 policy 必须失败且 activation head/event 为零。跑次 `rd-20261027T140645Z`；m78（先修掉了「因过期而绿」的假绿） |
+| `foundation-fresh-work` | 4 | OK：新 origin 只凭 operator 钉住的源记录建立 strict selection；同 origin 换 CR 被拒且只有一条 selection；源记录缺失只能 UNKNOWN、非 NEW 或带未决引用不建 selection；新 proof 只追加 revision 且历史字节与摘要不变。跑次 `fz-20261027T141650Z`；m80–m84 |
 | `readiness-fresh-work` | 1 | OK：同 origin 换 lineage 被拒且原归属原样交回；同 lineage 重放不新增行；历史覆盖未知不建立新 origin。跑次 `fx-20261027T140828Z`；m79 |
 | `binding`（4 条按规格 RED） | 按规格不得登记完成 |
 | `isolation`（linux） | 5 | OK：root + `AIFI45_ISOLATION_PROFILE=wsl2-aifi45-v1`（uid 995/gid 994）真跑；pidfd 钉身份并检测死进程、SO_PEERCRED 取真身份、`ReadMsgUnix` 拒 SCM_RIGHTS。m12/m13/m14 各只红一条。跑次 `iso-20261027T101534Z` |
