@@ -18,3 +18,7 @@ Windows 平台隔离 2 leaf（ADJ-13 延后，需受限 Windows 令牌 + 令牌�
 ## 提交状态
 
 未提交（用户决定 a）。未跟踪的 `.crctl/keys/aifirst-approval-2026-07.pub` 早于本 change（2026-10-20），被既有 fixture 引用，不属于本次改动，已排除在 `fork-changed-files.txt` 之外。
+
+## 归档
+
+2026-10-27 归档至 `projects/tools/archive/2026-10-27-trusted-verdict-channel`，`status: archived`。归档时使用 `--skip-specs`（不合并到 `projects/tools/specs/`），原因见主 change 的 delivery/summary.md §8。

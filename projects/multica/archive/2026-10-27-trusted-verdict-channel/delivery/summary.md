@@ -68,7 +68,23 @@ AIFI45_ISOLATION_PROFILE=995:994 AIFI45_ISOLATION_AGENT=994:993 \
 
 结论：**误报，不改规格**。本规格有 35 个场景、每个 1 条 AND，属正常形态；为消除提示去合并或删除 AND 子句会改动 Gate 2 冻结的规格文本，代价高于收益。
 
-## 7. 交付提交状态
+## 8. 归档（2026-10-27）
+
+| 项 | 值 |
+|---|---|
+| 命令 | `stdd archive --yes --skip-specs 2026-10-27-trusted-verdict-channel`（从**源码仓**运行：`Downloads/AI/multica`、`Downloads/AI/tools`） |
+| 落点 | `AI First Platform/projects/{multica,tools}/archive/2026-10-27-trusted-verdict-channel` |
+| 结果 | 两侧 `.stdd.yaml`：`current_phase: deliver`、`status: archived`；`changes/` 下已不再有本 change |
+| 为何 `--skip-specs` | 不加该标志时会把 `specs/*.md` 合并进 `projects/<repo>/specs/`，而该目录在本工作区**从未存在**（工作区级 `specs/` 才是 CR 回写基线）。为避免造出第二个基线位置，选择跳过；规格文件保留在归档的 change 内，不丢内容 |
+
+归档后仍挂着的外部事项（不因归档而消失）：
+
+1. 独立 Linux 主机重跑 P0 → 结 ADJ-10 与 auditd 替代；
+2. Windows 平台隔离（ADJ-13）另开 change；
+3. `strict-production` 等 AIFI-45 的 AdmissionDecider；
+4. AIFI-45 的 41/49 未回填，由 AIFI-45 按 `validation/aifi45-run-tc-rerun-prerequisites.md` 自行决定重跑。
+
+## 9. 交付提交状态
 
 - 记录仓（本工作区）：Gate 3 记录、本交付文档、交付清单均在提交内。
 - 源码仓：**未提交**（用户决定 a）。multica 侧 `CUSTOM.md`、`server/cmd/server/router.go`、`server/internal/governance/execution_dispatch_root.go` 为改动文件，其余为新增；`server/pkg/db/generated/*.sql.go` 12 个生成物按约定不提交。

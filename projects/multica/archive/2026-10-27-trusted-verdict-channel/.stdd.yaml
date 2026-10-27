@@ -2,19 +2,19 @@ change_id: 2026-10-27-trusted-verdict-channel
 complexity_score: 17
 current_phase: deliver
 design_adjustments:
-  count: 2
-# long-range: 用户 2026-10-27 授权（见 long-range-auth.md）
+  count: 13
+last_modified: '2026-10-27T23:21:03'
 long_range:
   enabled: true
   mode: full_auto
-last_modified: '2026-10-27T23:21:03'
 mode: thorough
 phases:
   build:
     confirmed_actor: ai
     confirmed_at: '2026-10-27T23:15:55'
     confirmed_by: dialog
-    confirmed_evidence: 确认Gate 3（用户 2026-10-27 原话「确认Gate 3」；声称/不声称口径见 validation/gate3-readiness.md §7）
+    confirmed_evidence: 确认Gate 3（用户 2026-10-27 原话「确认Gate 3」；声称/不声称口径见 validation/gate3-readiness.md
+      §7）
     status: completed
   deliver:
     confirmed_actor: ai
@@ -24,18 +24,18 @@ phases:
     status: completed
   spec:
     confirmed_actor: ai
-    confirmed_at: '2026-10-27T15:48:49'
+    confirmed_at: '2026-10-27T15:48:46'
     confirmed_by: dialog
     confirmed_evidence: 确认这份 Gate 2（multica + tools 两条）
     status: completed
   understand:
     confirmed_actor: ai
-    confirmed_at: '2026-10-27T15:23:58'
+    confirmed_at: '2026-10-27T15:23:55'
     confirmed_by: dialog
     confirmed_evidence: 确认这份 Gate 1（multica + tools 两条）
     status: completed
 score_confidence: preliminary
-status: active
+status: archived
 task_type: code
 traceability:
   spec_scenarios: 0
