@@ -105,7 +105,7 @@
 
 ### 5A. 由冻结 label 反查补齐的归属（原 tasks 遗漏）
 
-- [ ] 5A.1 `TestChannelIngestRevokedPermit`（label `revoked-permit`，SC-VC-013）：撤销 permit 生效后不再改动任何 control 行，未受影响行保持原字节。
+- [x] 5A.1 `TestChannelIngestRevokedPermit`（label `revoked-permit`）：撤销先于 settlement 提交时，即使调用方拿着 T 的 permit，也结算为 `no_effect`（SC-VC-020）。失败断言才输出 `CONTROL_REVOKED_PERMIT_EFFECT`。`unmutated_control` 正对照：未撤销路径仍产生 effect，其它 command 行数与本 command 冻结字节不变。跑次 `rr-20261027T112634Z`，checker OK。m40（去掉结算时的授权头重读）只红 `revoked_permit_effect`。
 - [ ] 5A.2 `TestChannelRecoveryD8`（label `d8-recovery`，SC-VC-016/005）：同 lineage 重启保留原字节；regrant 不得把 origin 计数清零。
 - [ ] 5A.3 `TestChannelReadinessFreshWork`（label `readiness-fresh-work`，SC-VC-005）：部署就绪侧同 origin 不被 D8 重置。
 

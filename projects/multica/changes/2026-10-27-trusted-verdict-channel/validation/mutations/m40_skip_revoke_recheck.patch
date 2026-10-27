@@ -1,0 +1,22 @@
+--- server/internal/governance/execution_control_settlement.go
++++ m40_skip_revoke_recheck
+@@ -106,19 +106,6 @@
+ 	}
+ 	// 撤销先于本次 settlement 提交：即使调用方拿着 T 已提交的 permit，也只能结算为 no_effect。
+ 	// 找不到 selection→CR 这条链时不猜（不能把「查不到」当成「没撤销」之外的另一种放行）。
+-	revoked, err := controlAuthorizationRevoked(ctx, tx, in.RequestID)
+-	if err != nil {
+-		return ControlSettlement{}, err
+-	}
+-	if revoked && in.Kind == ControlSettlementEffect {
+-		in.Kind = ControlSettlementNoEffect
+-		in.EffectKind = ""
+-		in.EffectRef = nil
+-		if in.Reason == "" {
+-			in.Reason = "authorization revoked before settlement"
+-		}
+-	}
+-
+ 	// 只有 issued / result_ready 能被结算；created 还没发出去，settled_* 已经结了。
+ 	if state != controlCommandIssued && state != controlCommandResultReady {
+ 		return ControlSettlement{}, fmt.Errorf("%w: command 处于 %s，不能结算", ErrControlSettlementInvalid, state)

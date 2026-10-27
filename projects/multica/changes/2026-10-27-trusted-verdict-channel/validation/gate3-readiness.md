@@ -15,7 +15,7 @@ Gate 3 只能在 §2、§3 有明确处置（实现 / 划出范围 / 随上游�
 
 ## 1. 已实现且证据当前有效（19 个 label）
 
-全部在本轮用**当前源码**重跑并 `verify` 通过（早期证据因 ADJ-11 改过协议源码而失效，已刷新）：
+19 个里，早期 8 个因 ADJ-11 改源码而失效，已用当前源码重跑；`revoked-permit` 为本轮新增。全部 `verify` 通过（早期证据因 ADJ-11 改过协议源码而失效，已刷新）：
 
 | label | leaves | 跑次前缀 |
 |---|---|---|
@@ -29,6 +29,7 @@ Gate 3 只能在 §2、§3 有明确处置（实现 / 划出范围 / 随上游�
 | `task-tx` | 2 | `r-task-tx-20261027T111322Z` |
 | `store-state` | 7 | `sx-20261027T110226Z` |
 | `settlement` | 4 | `sh-20261027T110932Z` |
+| `revoked-permit` | 2 | `rr-20261027T112634Z` |
 | `protocol`（go） | 3 | `ai-proto4-20261027T175236Z` |
 | `merge-facts`（go） | 6 | `mk-20261027T104452Z` |
 | `merge-effects`（go） | 4 | `mz-20261027T105320Z` |
@@ -44,7 +45,6 @@ Gate 3 只能在 §2、§3 有明确处置（实现 / 划出范围 / 随上游�
 
 | label | leaves | 缺什么 | 影响 |
 |---|---|---|---|
-| `revoked-permit` | 2 | 撤销后 permit 零 effect + 控制表不变 | 撤销线性化的调用侧证据 |
 | `policy-facts` | 5 | `ResolveFactsTx` 只消费已验签事实 | repair/sensitive 的准入 |
 | `policy-resume` | 5 | signed resume 只消耗一次 epoch | resume 语义 |
 | `reader` | 10 | 严格模式只由已提交可信事实驱动 | projection fence |
