@@ -1,0 +1,21 @@
+{
+  "test": {
+    "exit": 0,
+    "counts": {
+      "run": 5,
+      "pass": 5,
+      "fail": 0,
+      "skip": 0
+    },
+    "leaf_pass": 5
+  },
+  "platform": "linux",
+  "runner": "wsl2 sudo (root) + AIFI45_ISOLATION_PROFILE=wsl2-aifi45-v1",
+  "profile": {
+    "uid": 995,
+    "gid": 994,
+    "root": "/var/lib/aifi45/daemon-iso"
+  },
+  "toolchain": "go1.26.10 linux/amd64",
+  "kernel": "6.18.54.1-microsoft-standard-WSL2"
+}

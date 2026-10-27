@@ -26,7 +26,9 @@ Node 侧（tools `test/execution-control-{protocol,store}.test.mjs`）：各 2/2
 | 项 | 状态 |
 |---|---|
 | `foundation-fresh-work` | 未实现（SC-VC-005 主体） |
-| `store-state` / `policy-*` / `settlement` / `binding` / `reader` / `worker` / `client` / `composition` / `d8-recovery` / `revoked-permit` / `readiness-*` / `merge-*` / `isolation` | 未实现 |
+| `store-state` / `policy-*` / `settlement` / `binding` / `reader` / `worker` / `client` / `composition` / `d8-recovery` / `revoked-permit` / `readiness-*` / `merge-*` | 未实现 |
+| `isolation`（linux） | 5 | OK：root + `AIFI45_ISOLATION_PROFILE=wsl2-aifi45-v1`（uid 995/gid 994）真跑；pidfd 钉身份并检测死进程、SO_PEERCRED 取真身份、`ReadMsgUnix` 拒 SCM_RIGHTS。m12/m13/m14 各只红一条。跑次 `iso-20261027T101534Z` |
+| `isolation`（windows） | 3 | **UNVERIFIED**：无受限 Windows 身份，`_unsupported.go` 对所有原语返回 `EXECUTION_CHANNEL_ISOLATION_UNSUPPORTED`，缺 profile 直接 `t.Fatalf` |
 | tools SC-TR-003 并发三请求、rename 前后 kill | 未测（报告未声称） |
 | tools SC-TR-001 Go 侧 `cross_language_vectors` | 不存在 |
 | P0 隔离证明（两真实受限身份 + 批准 profile） | UNVERIFIED（Windows 无第二受限身份；WSL podman 无批准 profile） |
@@ -75,4 +77,4 @@ FAIL source server/migrations/648_cr_execution_control.up.sql changed since the 
 
 - 环境前提：经 launcher 的 24 条探针全 PASS，bpftrace execve trace clean 窗口 0 旁路、control 窗口能抓到旁路；证据 `validation/p0-isolation-evidence.md`、原始产物 `validation/p0-run-20261027/`。
 - **残余风险 ADJ-10**：agent（Windows 用户 GOBAO）可 `wsl -u root` 免密，对 agent 的隔离不成立。C 路径片只按 `channel-component` 组件级验收，**不得声称 `strict-production`**。
-- 仍 UNVERIFIED：`isolation` label 本身（代码侧 5 条 Linux 探针未实现）、win32 分支、容器路径。
+- 仍 UNVERIFIED：`isolation` 的 Windows 3 leaf（`win32` 分支）、容器路径。Linux 5 leaf 已实现并真跑通过。

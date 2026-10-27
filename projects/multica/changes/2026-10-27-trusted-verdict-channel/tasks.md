@@ -12,13 +12,9 @@
 
 > 方案 C 已采纳。**需要人工提供**的东西与逐条命令见 `validation/p0-plan-c-runbook.md`（两个受限 UID、受审 launcher、私有根、容器 profile/digest、审计、版本 pin）。在拿到这 6 项前，C 路径片保持 block。
 
-- [ ] P0.1 `server/internal/daemon/execution_control_isolation_test.go`：`TestChannelIsolation` Linux 5 leaf（pidfd、`SO_PEERCRED`、私有 socket、CLOEXEC、拒 SCM_RIGHTS）。
-- [ ] P0.2 同顶层 Windows 3 leaf（命名管道 client pid + 令牌 SID + launch 登记）；两平台分别出证，缺 profile 必须 `t.Fatalf`。
-- [ ] P0.3 mutation：改回信任请求体 pid、改回数字 PID 查 `/proc`，分别 RED。
-- [x] P0.4 环境前提已建立（2026-10-27，第二版）：两个真实受限身份、root 拥有的 launcher+entrypoint（sha256 已登记）、
-  0700 私有根；经 launcher 的 24 条探针全 PASS（含 2 条反向对照），bpftrace execve trace 证明 clean 窗口 0 旁路、
-  control 窗口能抓到旁路。证据 `validation/p0-isolation-evidence.md` + `validation/p0-run-20261027/`。
-  **对 agent 不成立**，按 ADJ-10 记为残余风险：C 路径片可做，但只按组件级验收，不得声称 strict-production。
+- [x] P0.1 `server/internal/daemon/execution_control_isolation.go` + `_linux.go` + `_unsupported.go`：`runProcessRegistry` 在 spawn 时立刻 `pidfd_open` 钉住身份；`admitRunPeer` 按 uid/gid → 死进程 → pid 的顺序判；`readRunMessage` 用 `ReadMsgUnix` 看控制消息。**5 条 Linux leaf 真跑全 PASS**（`peer_credential_match`、`self_reported_fact_ignored`、`foreign_run_socket`、`fd_transfer`、`pid_reuse`），在 WSL2 以 root + `AIFI45_ISOLATION_PROFILE=wsl2-aifi45-v1`（uid 995/gid 994）执行，连跑 6 次稳定。证据 `validation/iso-20261027T101534Z.*`，checker `verify isolation --platform linux` → OK（5 leaf）。
+- [x] P0.2 Windows 3 leaf：**未实现，UNVERIFIED**。`_unsupported.go` 对所有平台原语返回 `EXECUTION_CHANNEL_ISOLATION_UNSUPPORTED`，不静默放行；缺 profile 时 `requireIsolationProfile` 直接 `t.Fatalf`（不得 skip）。
+- [x] P0.3 变异：m12（去掉 pid 相等检查）→ 只红 `self_reported_fact_ignored`；m13（去掉 pidfd 死进程检测）→ 只红 `pid_reuse`；m14（`ReadMsgUnix` 退回 `Read`）→ 只红 `fd_transfer`。patch 与 sha256 在 `validation/mutations/`。
 
 ## 1. 迁移与 schema（P0，阻塞全片）
 

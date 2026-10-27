@@ -1,0 +1,13 @@
+--- internal/daemon/execution_control_isolation_linux.go
++++ m14_plain_read_accepts_fd
+@@ -76,7 +76,9 @@
+ // passed descriptors silently, so an fd-transfer attempt would look like a normal message.
+ func readRunMessage(conn *net.UnixConn, buf []byte) (int, error) {
+ 	oob := make([]byte, unix.CmsgSpace(4))
+-	n, oobn, _, _, err := conn.ReadMsgUnix(buf, oob)
++	n, err := conn.Read(buf)
++	oobn := 0
++	_ = oob
+ 	if oobn > 0 {
+ 		if messages, parseErr := unix.ParseSocketControlMessage(oob[:oobn]); parseErr == nil {
+ 			for _, message := range messages {

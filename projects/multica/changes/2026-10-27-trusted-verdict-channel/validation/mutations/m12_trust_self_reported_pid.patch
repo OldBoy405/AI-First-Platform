@@ -1,0 +1,11 @@
+--- internal/daemon/execution_control_isolation.go
++++ m12_trust_self_reported_pid
+@@ -102,8 +102,5 @@
+ 		// whoever holds it now.
+ 		return PeerCredentials{}, ErrChannelPeerDead
+ 	}
+-	if peer.PID != entry.pid {
+-		return PeerCredentials{}, ErrChannelPeerUntrusted
+-	}
+ 	return peer, nil
+ }
