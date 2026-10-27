@@ -38,6 +38,9 @@ Node 侧（tools `test/execution-control-{protocol,store}.test.mjs`）：各 2/2
 | `readiness-activation` | 4 | OK：同裁决只能启用一次（先证 55P03 串行，再证冲突）、签后换代即 stale、nonce 由 648 唯一约束保证、STOP_NEW 不动历史与计数。跑次 `s3-20261027T135434Z`；m62–m65 |
 | `readiness-retirement` | 3 | OK：活旧 run 与未知未决都挡住 drain、revision 漂移挡住 RETIRED（正对照可收尾）。跑次 `s4-20261027T135458Z`；m66–m68 |
 | `readiness-access` | 3 | OK：截止前 issued 的原请求可精确恢复、停新准入后新候选一律拒、换 origin/摘要/未 issued 都拒。跑次 `s5-20261027T135518Z`；m69–m70 |
+| `readiness-component` | 2 | OK：READY_COMPONENT 只能入账（activation head/event 均不变）；strict 缺 decider 的 NOT_READY 不启用。跑次 `cc-20261027T135756Z`；m71–m72 |
+| `deployment-observer` | 4 | OK：未登记键/未列实例/agent 可写来源一律拒；受保护测量为完整正例；少一个实例或重复观测 NOT_READY；换代/换 trust revision/换 nonce 即 stale。跑次 `od-20261027T140233Z`；m73–m76 |
+| `deployment-launch` | 1 | OK：预检钉住 generation 与冻结安装根，同代提交拿到身份；中间换代即拒且快照未被改写。跑次 `lu-20261027T140438Z`；m77 |
 | `binding`（4 条按规格 RED） | 按规格不得登记完成 |
 | `isolation`（linux） | 5 | OK：root + `AIFI45_ISOLATION_PROFILE=wsl2-aifi45-v1`（uid 995/gid 994）真跑；pidfd 钉身份并检测死进程、SO_PEERCRED 取真身份、`ReadMsgUnix` 拒 SCM_RIGHTS。m12/m13/m14 各只红一条。跑次 `iso-20261027T101534Z` |
 | `isolation`（windows） | 3 | **UNVERIFIED**：无受限 Windows 身份，`_unsupported.go` 对所有原语返回 `EXECUTION_CHANNEL_ISOLATION_UNSUPPORTED`，缺 profile 直接 `t.Fatalf` |

@@ -1,0 +1,11 @@
+--- server/internal/governance/execution_deployment_observer.go
++++ m75_missing_instance_ok
+@@ -142,7 +142,7 @@
+ 	for _, instance := range inventory.Instances {
+ 		switch seen[instance.InstanceID] {
+ 		case 0:
+-			findings = append(findings, fmt.Sprintf("instance %s (%s) 没有观测", instance.InstanceID, instance.Role))
++			_ = instance
+ 		case 1:
+ 			// 恰好一份
+ 		default:

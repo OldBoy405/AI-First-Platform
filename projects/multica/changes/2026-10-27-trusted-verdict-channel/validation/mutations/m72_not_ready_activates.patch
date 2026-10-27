@@ -1,0 +1,13 @@
+--- server/internal/governance/execution_deployment.go
++++ m72_not_ready_activates
+@@ -123,9 +123,7 @@
+ 	if verdict.Action != "enable-policy" || verdict.ProfilePurpose != "strict-production" {
+ 		return ActivationRef{}, fmt.Errorf("%w: %s × %s 不能启用", ErrDeploymentNotReady, verdict.Action, verdict.ProfilePurpose)
+ 	}
+-	if !verdict.Ready || verdict.Code != ReadinessActions["enable-policy"] {
+-		return ActivationRef{}, fmt.Errorf("%w: code=%s ready=%v", ErrDeploymentNotReady, verdict.Code, verdict.Ready)
+-	}
++	_ = verdict.Code
+ 	if in.TargetPolicyDigest != "" && verdict.TargetPolicyDigest != in.TargetPolicyDigest {
+ 		return ActivationRef{}, fmt.Errorf("%w: 裁决绑定的 policy 摘要不是这次要启用的", ErrDeploymentNotReady)
+ 	}

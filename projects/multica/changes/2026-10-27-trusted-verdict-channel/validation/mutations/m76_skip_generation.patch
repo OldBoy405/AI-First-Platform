@@ -1,0 +1,11 @@
+--- server/internal/governance/execution_deployment_observer.go
++++ m76_skip_generation
+@@ -81,7 +81,7 @@
+ 	if parsed.ObservationID == "" || parsed.InstanceID == "" || parsed.Role == "" {
+ 		return DeploymentObservation{}, fmt.Errorf("%w: 观测缺 id/instance/role", ErrObservationInvalid)
+ 	}
+-	if parsed.Generation != inventory.Generation {
++	if false {
+ 		return DeploymentObservation{}, fmt.Errorf("%w: 观测 generation %d 不是 inventory 的 %d", ErrObservationStale, parsed.Generation, inventory.Generation)
+ 	}
+ 	if parsed.TrustRevision != inventory.TrustRevision {

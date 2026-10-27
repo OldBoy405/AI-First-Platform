@@ -1,0 +1,11 @@
+--- server/internal/daemon/execution_launch_snapshot.go
++++ m77_launch_ignores_generation
+@@ -101,7 +101,7 @@
+ 		return LaunchSnapshot{}, fmt.Errorf("%w: 复核不到 deployment head", ErrLaunchInvalid)
+ 	}
+ 	// 换代即拒：不加载新安装、不换候选、不重签。
+-	if generation != snapshot.Generation {
++	if false && generation != snapshot.Generation {
+ 		return LaunchSnapshot{}, fmt.Errorf("%w: 快照属于 generation %d，当前 %d", ErrLaunchStale, snapshot.Generation, generation)
+ 	}
+ 	snapshot.LaunchDigest = launchDigest(snapshot)

@@ -1,0 +1,11 @@
+--- server/internal/governance/execution_deployment_observer.go
++++ m73_skip_instance_membership
+@@ -106,7 +106,7 @@
+ 			break
+ 		}
+ 	}
+-	if !matched {
++	if false && !matched {
+ 		return DeploymentObservation{}, fmt.Errorf("%w: 实例 %s 不在 inventory 里", ErrObservationForged, parsed.InstanceID)
+ 	}
+ 	if len(parsed.Measurements) == 0 {
