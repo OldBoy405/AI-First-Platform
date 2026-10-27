@@ -28,7 +28,9 @@ Node 侧（tools `test/execution-control-{protocol,store}.test.mjs`）：各 2/2
 | `foundation-fresh-work` | 未实现（SC-VC-005 主体） |
 | `merge-facts`（go） | 6 | OK：认证主体解析 workspace、回退凭据 403、冻结行 append+supersede+撤销打戳、闭集响应与摘要自洽、绑定三态、失败码分层。跑次 `mk-20261027T104452Z` |
 | `merge-facts`（node） | 11 | OK：`lib/merge-facts.mjs`（认证主体解析 workspace、回退凭据拒绝、仓库集合精确相等、祖先下界、current_binding 三态、legacy 目录比对、失败码优先级、404 分层）。跑次 `mf-20261027T103357Z`，`--side node` 验过 |
-| `store-state` / `policy-*` / `settlement` / `binding` / `reader` / `worker` / `client` / `composition` / `d8-recovery` / `readiness-*` / `merge-effects` | 未实现 |
+| `reader` | 10 | OK：无 T 零派发、原 mapping 重放、未结算不换候选、删字段仍 strict、Unknown 不降级、legacy 不变、终态 fence 并集。跑次 `rg-20261027T121500Z` |
+| `policy-facts` / `policy-resume` | 5 / 5 | OK，跑次 `pj-20261027T115443Z` |
+| `worker` / `client` / `composition` / `d8-recovery` / `readiness-*` / `binding`（4 条按规格 RED） | 未实现或按规格不得登记完成 |
 | `isolation`（linux） | 5 | OK：root + `AIFI45_ISOLATION_PROFILE=wsl2-aifi45-v1`（uid 995/gid 994）真跑；pidfd 钉身份并检测死进程、SO_PEERCRED 取真身份、`ReadMsgUnix` 拒 SCM_RIGHTS。m12/m13/m14 各只红一条。跑次 `iso-20261027T101534Z` |
 | `isolation`（windows） | 3 | **UNVERIFIED**：无受限 Windows 身份，`_unsupported.go` 对所有原语返回 `EXECUTION_CHANNEL_ISOLATION_UNSUPPORTED`，缺 profile 直接 `t.Fatalf` |
 | tools SC-TR-003 并发三请求、rename 前后 kill | 未测（报告未声称） |

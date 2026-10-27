@@ -1,0 +1,11 @@
+--- server/internal/governance/execution_channel_reader.go
++++ m49_unknown_as_legacy
+@@ -94,7 +94,7 @@
+ 	case string(SelectionLegacy):
+ 		return nil
+ 	case SelectionUnknown:
+-		return fmt.Errorf("%w: selection 缺失或不可读，不能按 legacy 放行", ErrReaderUnknown)
++		return nil
+ 	}
+ 	n, err := DispatchCount(ctx, tx, requestID)
+ 	if err != nil {

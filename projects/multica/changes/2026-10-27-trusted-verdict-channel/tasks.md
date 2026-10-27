@@ -78,9 +78,9 @@
 
 ## 6. S7 reader 与 projection fence（P0）
 
-- [ ] 6.1 `execution_tool_reader.go`：`ReadCommitted` 只读已验签 DB facts；`TestChannelReader`（8 leaf）。
+- [x] 6.1 `execution_channel_reader.go`：`DispatchCount` / `SettleCandidateTx` / `SelectionMode` / `RequireCommittedTForStrict`。`TestChannelReader` 10/10，跑次 `rg-20261027T121500Z`。无 committed T 则零派发；Unknown 不降 legacy；已结算只回原 mapping。
 - [ ] 6.2 `execution_projection_fence.go` + `gate_projection.go`/`crsync.go`/`reconcile.go`/strict preflight/终态上报：unsigned 只写诊断区。
-- [ ] 6.3 终态 fence 并集规则：`fence_required`、409、重领、读失败、STOP_NEW 收尾。
+- [x] 6.3 终态 fence 并集：已有 consumption 或 Strict selection 即 `fence_required`；缺 claim 返回 fence 错误；重领不清除；读失败即拒。m48 红 `missing_t_zero_dispatch`（并连带 strict 缺 T），m49 只红 `unknown_selection_not_legacy`，m50 只红 `terminal_fence_read_failure`。
 - [ ] 6.4 `cmd/server/execution_control_composition_test.go`：`TestChannelComposition`。
 
 ## 7. R2/R3 merge 端点（P0）

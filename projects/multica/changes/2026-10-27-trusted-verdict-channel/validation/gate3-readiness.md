@@ -32,6 +32,7 @@ Gate 3 只能在 §2、§3 有明确处置（实现 / 划出范围 / 随上游�
 | `revoked-permit` | 2 | `rr-20261027T112634Z` |
 | `policy-facts` | 5 | `pj-20261027T115443Z` |
 | `policy-resume` | 5 | `pj-20261027T115443Z` |
+| `reader` | 10 | `rg-20261027T121500Z` |
 | `protocol`（go） | 3 | `ai-proto4-20261027T175236Z` |
 | `merge-facts`（go） | 6 | `mk-20261027T104452Z` |
 | `merge-effects`（go） | 4 | `mz-20261027T105320Z` |
@@ -41,13 +42,12 @@ Gate 3 只能在 §2、§3 有明确处置（实现 / 划出范围 / 随上游�
 | `merge-facts`（node） | 11 | `mf-20261027T103357Z` |
 | `merge-effects`（node） | 16 | `me-20261027T104637Z` |
 
-变异（m1–m39）全部落在 `validation/mutations/`，每条带 `.patch` 与 `.sha256`，且各自只打红对应 leaf（例外：m26/m35/m37/m39 各打红两条，均为语义相关的两条）。
+变异（m1–m50）全部落在 `validation/mutations/`，每条带 `.patch` 与 `.sha256`，且各自只打红对应 leaf（例外：m26/m35/m37/m39 各打红两条，m41/m48 连带同一只桶/同一入口的第二条，均为语义相关）。
 
-## 2. 未实现（6 label）
+## 2. 未实现（4 label）
 
 | label | leaves | 缺什么 | 影响 |
 |---|---|---|---|
-| `reader` | 10 | 严格模式只由已提交可信事实驱动 | projection fence |
 | `worker` / `d8-recovery` / `client` | 7 / 2 / 1 | daemon 侧 worker、恢复表、客户端 | C 路径运行时 |
 | `composition` / `readiness-composition` | 2 / 1 | **路由挂载**（`merge-facts` 端点至今未接进 `cmd/server/router.go`） | 端点不挂上去，CLI 无法真实调用 |
 
@@ -99,8 +99,7 @@ node 侧未实现：`worker` 1、`recovery` 2、`policy` 23、`readiness` 2、`i
 
 ## 7. 进 Gate 3 前的最小收尾清单
 
-1. 实现 `revoked-permit`、`policy-facts`、`policy-resume`、`reader`（4 label / 22 leaf），各自带变异。
-2. 把 `MountDaemonMergeFactsRoute` 真正接进 `cmd/server/router.go`，并补 `composition` / `readiness-composition`。
-3. 为 §3 的 4 条 leaf 在 tasks/报告中标注 `blocked-on-upstream(AIFI-45 G1/G2-G4)`，并说明它们不影响其余 label 的验收。
-4. 为 §2 的 daemon 侧（worker/recovery/client/observer/launch）决定：本期实现，或正式划出本 change 范围并写理由（不得静默留空）。
-5. 报告 §4 的 5 项按现状写入 Gate 3 材料，禁止改写成「已验证」。
+1. 把 `MountDaemonMergeFactsRoute` 真正接进 `cmd/server/router.go`，并补 `composition` / `readiness-composition`。
+2. 为 §3 的 4 条 leaf 在 tasks/报告中标注 `blocked-on-upstream(AIFI-45 G1/G2-G4)`，并说明它们不影响其余 label 的验收。
+3. 为 §2 的 daemon 侧（worker/recovery/client/observer/launch）决定：本期实现，或正式划出本 change 范围并写理由（不得静默留空）。
+4. 报告 §4 的 5 项按现状写入 Gate 3 材料，禁止改写成「已验证」。

@@ -1,0 +1,11 @@
+--- server/internal/governance/execution_channel_reader.go
++++ m50_fence_read_allows
+@@ -112,7 +112,7 @@
+ 	if err := tx.QueryRow(ctx, `
+ 		SELECT count(*) FROM cr_execution_consumption
+ 		WHERE workspace_id = $1::uuid AND cr_id = $2`, workspaceID, crID).Scan(&consumed); err != nil {
+-		return false, fmt.Errorf("reader fence consumption: %w", err)
++		return false, nil
+ 	}
+ 	if consumed > 0 {
+ 		return true, nil
