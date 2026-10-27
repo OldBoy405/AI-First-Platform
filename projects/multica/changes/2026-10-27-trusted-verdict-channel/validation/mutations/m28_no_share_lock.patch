@@ -1,0 +1,11 @@
+--- server/internal/governance/execution_merge_effect.go
++++ m28_no_share_lock
+@@ -113,7 +113,7 @@
+ 	// 1. 共享行锁：撤销要 UPDATE 同一行，于是两个动作靠行锁串行，而不是靠应用层约定。
+ 	var locked int
+ 	if err := tx.QueryRow(ctx, `
+-		SELECT 1 FROM cr WHERE workspace_id = $1::uuid AND cr_id = $2 FOR SHARE`,
++		SELECT 1 FROM cr WHERE workspace_id = $1::uuid AND cr_id = $2`,
+ 		req.WorkspaceID, req.CRID).Scan(&locked); err != nil {
+ 		if err == pgx.ErrNoRows {
+ 			return MergeReserveResult{Code: MergeEffectReserveNotFound}, nil

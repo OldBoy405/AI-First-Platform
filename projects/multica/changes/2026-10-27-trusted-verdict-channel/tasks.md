@@ -90,7 +90,7 @@
     Node 16/16，跑次 `me-20261027T104637Z`，checker `merge-effects --side node` OK。变异 m24（先 push 后写 unknown）只红 leaf 1、
     m25（NOT_FOUND 写 halted）只红 leaf 15、m26（复用已 settled 的 attempt 号）红 leaf 12/13、m27（confirmed 后回退当 noop）只红 leaf 11。
 - [x] 7.2 `code_source_freeze` 追加写与撤销同事务置位（与 1.1 的索引配套）；`source_freeze_append_only` —— 已在 7.1 一并交付（`AppendCodeSourceFreezeTx`/`RevokeCodeSourceFreezeTx`），同上跑次与变异 m23。
-- [ ] 7.3 `POST /api/daemon/crs/{crID}/merge-effects`：`op=reserve|report`、CR 行 `FOR SHARE`、`input_digest` 重验、attempt 四支、码序；`TestChannelMergeEffects`（4 leaf）。
+- [x] 7.3 `execution_merge_effect.go`：`ReserveMergeEffectTx` 取 CR 行 `FOR SHARE`、先判 head 再比摘要、attempt 单调（同输入未终结 409、已终结原结果重放、换输入 attempt+1）；`ReportMergeEffectTx` 写 `control_settlement(effect_kind=merge_publish)`。复用 reservation/settlement，**未新增表**（ADJ-5）。`TestChannelMergeEffects` 真跑 5/5（leaf 4）：m28（去掉 FOR SHARE）只红 `reserve_shared_lock`、m29（先比摘要）只红 `code_order`、m30（未终结也放行）只红 `attempt_semantics`、m31（越界写结算）只红 `non_auth_failure_no_halt`。跑次 `mz-20261027T105320Z`。HTTP 端点与 attempt 持久字段留给 S6/S7。
 - [ ] 7.4 与 tools 侧 `merge-facts`/`merge-effects` 客户端的跨语言联调（契约以 R2.4/R3.1 为准）。
 
 ### 5A. 由冻结 label 反查补齐的归属（原 tasks 遗漏）

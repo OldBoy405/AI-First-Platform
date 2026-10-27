@@ -1,0 +1,10 @@
+--- server/internal/governance/execution_merge_effect.go
++++ m31_head_moved_writes_halt
+@@ -135,6 +135,7 @@
+ 	}
+ 	// 2. 先判 head，再比摘要。
+ 	if req.HeadRecordID != "" && headID != req.HeadRecordID {
++		_, _ = tx.Exec(ctx, `INSERT INTO cr_execution_control_settlement (request_id, verdict_id, kind, fixed_candidate_digest, head_ref) VALUES (gen_random_uuid(), $1::uuid, 'no_effect', $2, $3)`, req.HeadRecordID, MergeInputDigest(req.MergeEffectInput), "halted")
+ 		return MergeReserveResult{Code: MergeEffectReserveHeadMoved}, nil
+ 	}
+ 	digest := MergeInputDigest(req.MergeEffectInput)
