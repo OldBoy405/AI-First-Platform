@@ -1,63 +1,67 @@
-# 证据索引（M003，以本文件为唯一入口）
+# 证据索引（M003）
 
-旧前缀（`foundation-*`、`migration-*`、`*-mutations-*`）产生于 648/selection/reservation 重写之前，**不再可认证当前树**，只保留作历史。当前权威证据前缀：
+> 本文件是 `gate3-readiness.md` §1 的**生成视图**，不独立维护：两处不一致时以 §1 为准。
+> 复核方式：`node scripts/aifi45-verify/channel-evidence.mjs verify <label> <prefix> --expectations <change>/validation/channel-test-expectations.json --side <go|node> [--platform linux]`。
+> 跑次前缀是相对本目录的目录名；同名前缀下还有 `.meta.json`、`.stdout.jsonl`/`.tap`、`.source.json`（源文件摘要）。
 
-```text
-ac-proto-20261027T165916Z        # TestChannelProtocol（SC-VC-006/007/008，含跨语言向量）
-z-combined-20261027T165412Z      # 合并跑次（6 个 Go 套件，含 SC-VC-003/004）
-v-tasktx-20261027T165049Z        # TestChannelTaskTx（commit/rollback 边界）
-q-down-20261027T163826Z          # migration-down（需 648 up + down，不能与 after-up 同库混跑）
-```
+## 1. 权威证据（42 条）
 
-（`p-final-*`、`n-green-*`、`y-combined-*` 为同代码演进途中的前序跑次，已被 `z-combined-*` 取代；源码摘要随每次改动重录。）
+| # | label | 侧 | leaves | 跑次前缀 |
+|---|---|---|---|---|
+| 1 | `foundation-selection` | go | 5 | `r-foundation-selection-20261027T111158Z` |
+| 2 | `foundation-reservation` | go | 5 | `r-foundation-reservation-20261027T111158Z` |
+| 3 | `store-guards` | go | 9 | `r-store-guards-20261027T111158Z` |
+| 4 | `migration-up` | go | 14 | `r-migration-up-20261027T111158Z` |
+| 5 | `migration-down` | go | 14 | `r-migration-down-20261027T111322Z` |
+| 6 | `migration-reapply` | go | 14 | `r-migration-reapply-20261027T111322Z` |
+| 7 | `migration-protected` | go | 2 | `r-migration-protected-20261027T111322Z` |
+| 8 | `task-tx` | go | 2 | `r-task-tx-20261027T111322Z` |
+| 9 | `store-state` | go | 7 | `sx-20261027T110226Z` |
+| 10 | `settlement` | go | 4 | `st2-20261027T142417Z` |
+| 11 | `revoked-permit` | go | 2 | `rr-20261027T112634Z` |
+| 12 | `policy-facts` | go | 5 | `pj-20261027T115443Z` |
+| 13 | `policy-resume` | go | 5 | `pj-20261027T115443Z` |
+| 14 | `reader` | go | 11 | `rg2-20261027T143755Z` |
+| 15 | `binding` | go | 6 | `bi4-20261027T144831Z` |
+| 16 | `worker` | go | 7 | `wo-20261027T125625Z` |
+| 17 | `client` | go | 1 | `cm-20261027T124626Z` |
+| 18 | `composition` | go | 2 | `cs-20261027T124942Z` |
+| 19 | `d8-recovery` | go | 2 | `dg-20261027T125558Z` |
+| 20 | `readiness-protocol` | go | 3 | `rq-20261027T131611Z` |
+| 21 | `readiness-activation` | go | 4 | `s3-20261027T135434Z` |
+| 22 | `readiness-retirement` | go | 3 | `s4-20261027T135458Z` |
+| 23 | `readiness-access` | go | 3 | `s5-20261027T135518Z` |
+| 24 | `readiness-component` | go | 2 | `cc-20261027T135756Z` |
+| 25 | `deployment-observer` | go | 4 | `od-20261027T140233Z` |
+| 26 | `deployment-launch` | go | 1 | `lu-20261027T140438Z` |
+| 27 | `readiness-composition` | go | 1 | `rd-20261027T140645Z` |
+| 28 | `readiness-fresh-work` | go | 1 | `g0-20261027T141710Z` |
+| 29 | `foundation-fresh-work` | go | 4 | `fz-20261027T141650Z` |
+| 30 | `policy` | node | 23 | `n3-policy-20261027T142326Z` |
+| 31 | `readiness` | node | 2 | `n3-readiness-20261027T142327Z` |
+| 32 | `recovery` | node | 2 | `n3-recovery-20261027T142327Z` |
+| 33 | `protocol` | go | 3 | `pg2-20261027T142437Z` |
+| 34 | `merge-facts` | go | 6 | `mk-20261027T104452Z` |
+| 35 | `merge-effects` | go | 4 | `mz-20261027T105320Z` |
+| 36 | `isolation` | linux | 5 | `iso-20261027T101534Z` |
+| 37 | `worker` | node | 1 | `nw-20261027T145425Z` |
+| 38 | `isolation` | node / linux | 3 | `ni-20261027T145815Z` |
+| 39 | `protocol` | node | 2 | `np2-20261027T142510Z` |
+| 40 | `store` | node | 2 | `n-store-20261027T111459Z` |
+| 41 | `merge-facts` | node | 11 | `mf2-20261027T142500Z` |
+| 42 | `merge-effects` | node | 16 | `me-20261027T104637Z` |
 
-## 当前跑次
+## 2. 不属于 label 的证据
 
-| 项 | 值 |
+| 内容 | 位置 |
 |---|---|
-| 测试 | `^TestChannel(MigrationAfterUp|MigrationAfterReapply|MigrationProtectedData|StoreGuards|FoundationSelection|FoundationReservation)$` |
-| 结果 | 65 pass / 0 fail / 0 skip，leaf_pass=58（down 另计 22/22 leaf 21；task-tx 3/3 leaf 2） |
-| `original_unchanged` / `owned_resources_cleaned` | true / true |
-| 源码摘要 | `*.source.json`：合并跑次 10 个文件（648 up/down、两个实现、四个测试、checker），down 跑次 5 个 |
-| 迁移前置 | 643–647 up + 648 up（保留库 schema-only 克隆不含 643–647，且已含 642 列） |
+| Windows 目录同步（Gate 3 §4 #5） | `winsync-20261027T150008Z.log`（windows/amd64 原生 `go test`） |
+| 变异归档（112 patch，107 可重放） | `mutations/`，口径见 `mutations/README.md` |
+| P0 隔离与 execve 审计替代 | `p0-isolation-evidence.md`、`p0-run-20261027/` |
+| Gate 3 声称/不声称口径 | `gate3-readiness.md` §7；确认记录 §8 |
+| AIFI-45 六条 RUN TC 重跑前置 | `aifi45-run-tc-rerun-prerequisites.md` |
 
-## 名单校验（此前缺失的消费者）
+## 3. 历史前缀（不可认证当前树）
 
-```bash
-node multica/scripts/aifi45-verify/channel-evidence.mjs verify <label> <prefix> --expectations <expectations.json>
-```
-
-结果：
-
-| label | 结论 |
-|---|---|
-| migration-up / migration-reapply | OK（14 必达 leaf 全 PASS） |
-| migration-protected | OK（2） |
-| store-guards | OK（9） |
-| foundation-selection | OK（5） |
-| foundation-reservation | OK（5）：含 SC-VC-003 同 Tx/固定 ID 与 SC-VC-004 55P03 探针 |
-| task-tx | OK（2）：commit 后通知一次、rollback 零持久零通知 |
-| protocol | OK（3）：purpose/domain/scope 绑定、跨语言同字节同签名、exact keys |
-
-checker 自测 9/9（`node --test scripts/aifi45-verify/channel-evidence.test.mjs`），含反例：summary 全绿但必达 leaf 缺失、改名、SKIP、仅父测试 PASS、重复 leaf、源摘要漂移、CLI 入口失效。
-
-## 变异回滚的机器证据
-
-mutant run（m2 状态机）exit=1；**同一时刻**用 checker 校验 green 前缀 → `FAIL source server/migrations/648_cr_execution_control.up.sql changed since the run (89f0c3f061c7 -> 43a5651c3e13)`；恢复后 sha 与基线一致 → 同一前缀校验回到 `OK`。即「已回滚」不再依赖报告里的文字声明。
-
-## Gate 3 就绪（先读这个）
-
-`validation/gate3-readiness.md`：逐 label 的当前状态、按规格 RED 的 4 条 binding leaf、5 项 UNVERIFIED 残余，以及进 Gate 3 前的最小收尾清单。
-
-## P0 隔离前提（环境侧）
-
-`validation/p0-isolation-evidence.md`：两个受限身份 + root 拥有的 launcher/entrypoint + 私有根；24 条经 launcher 的探针 + execve trace（`p0-run-20261027/`）。对 agent 不成立，见 ADJ-10。
-**注意**：它证明的是环境前提，不等于 `isolation` label（那 5 条代码侧探针尚未实现）。
-
-## 命名注意
-
-`migration-up-*.schema.sql` 是**原始库**的 schema 快照（不含任何 `cr_execution_*`），不是 648 应用后的目标 schema；`original-before/after.json` 才是跑次前后状态。
-
-## 旧报告的计数口径
-
-旧的 `selection-*`、`reservation-*`、`protocol-*`、`store-*` 报告表里的 pass/fail 与 `meta.json` 字段口径不一致（green 行含父测试、RED 行剔除父测试失败），且其「恢复后 sha 一致」无产物支撑。以 `*.meta.json` 的 `test.counts` 与本索引为准。
+`r-foundation-*`、`migration-*`、`ac-proto-*`、`z-combined-*`、`v-tasktx-*`、`q-down-*`、`p-final-*`、`n-green-*`、`y-combined-*`
+产生于 648/selection/reservation 重写或 ADJ-11 改源码之前，源码摘要已失效；保留仅作历史，**审阅时不得引用为当前通过依据**。

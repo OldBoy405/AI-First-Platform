@@ -1,0 +1,8 @@
+# 本次 change 改动过的、同时被上游拥有的文件（rebase 冲突面）
+# 依据：git status 中 tracked 且 modified 的条目；新增文件不在此列（不会冲突）
+CUSTOM.md
+server/cmd/server/router.go
+server/internal/governance/execution_dispatch_root.go
+
+# 另：server/pkg/db/generated/*.sql.go 有 12 个文件被改动，按用户决定(不提交 sqlc 生成物)排除在提交之外，
+#     但 rebase 时需要重新生成而非合并。
