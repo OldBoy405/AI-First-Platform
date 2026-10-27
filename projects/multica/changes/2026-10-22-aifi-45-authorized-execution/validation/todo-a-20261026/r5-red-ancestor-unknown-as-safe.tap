@@ -1,0 +1,34 @@
+TAP version 13
+# Subtest: SC-AUTH-004 祖先目录是出仓链接时，其下路径同样判逃逸
+not ok 1 - SC-AUTH-004 祖先目录是出仓链接时，其下路径同样判逃逸
+  ---
+  duration_ms: 197.3394
+  type: 'test'
+  location: 'C:\\Users\\GOBAO\\Downloads\\AI\\tools\\skills\\shared\\crctl\\scripts\\test\\change-scope.test.mjs:399:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    false !== null
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: ~
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/GOBAO/Downloads/AI/tools/skills/shared/crctl/scripts/test/change-scope.test.mjs:413:10)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1201:25)
+    Test.start (node:internal/test_runner/test:1096:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 255.4673

@@ -7,9 +7,11 @@
 
 | 档位 | session | 结论 | 核心判定 |
 |---|---|---|---|
-| strong | `01a17797-23b8-77b9-a3c5-0f7bb49a78dc`（requested `OpenAIPersonal/gpt-6.1-sol:high`，actual unknown） | **BLOCK / INCOMPLETE**（仅针对 v0.5 增量） | 已批准 SHA 的可信来源、被核对对象与实际发布对象的一致性、零写入边界、mutation 对应关系未闭合 |
-| balanced | `01a17797-6197-77b9-a3c5-0f7c0aa2351c`（requested `Gobao/deepseek-flash:max`，actual unknown） | **INCOMPLETE** | ③ 改动集合取自 agent 可写的 `approval.yml`；零写入/复用唯一实现与已交付代码行为不一致；leaf:mutation 6:5 |
-| economy | `01a17797-91f3-77b9-a3c5-0f7f2e805ad0`（requested `GB-JP/deepseek-flash:high`，actual unknown） | **INCOMPLETE** | 同上（③ 来源），另指出 merge 端点与失败码未定义、X7 表述在字段语义上错误 |
+| strong | `01a1796a-23b8-77b9-a3c5-0f7bb49a78dc`（requested `OpenAIPersonal/gpt-6.1-sol:high`，actual unknown） | **BLOCK / INCOMPLETE**（仅针对 v0.5 增量） | 已批准 SHA 的可信来源、被核对对象与实际发布对象的一致性、零写入边界、mutation 对应关系未闭合 |
+| balanced | `01a1796a-6197-77b9-a3c5-0f7c0aa2351c`（requested `Gobao/deepseek-flash:max`，actual unknown） | **INCOMPLETE** | ③ 改动集合取自 agent 可写的 `approval.yml`；零写入/复用唯一实现与已交付代码行为不一致；leaf:mutation 6:5 |
+| economy | `01a1796a-91f3-77b9-a3c5-0f7f2e805ad0`（requested `GB-JP/deepseek-flash:high`，actual unknown） | **INCOMPLETE** | 同上（③ 来源），另指出 merge 端点与失败码未定义、X7 表述在字段语义上错误 |
+
+> **errata（2026-10-26 第二轮复核发现）**：本表三个 session id 原误写为 `01a17797-…`，实际为 `01a1796a-…`，已在此更正；`tc-coverage` 增量 30 的同名缩略引用同错。第二轮三路复核（`v05-rerun-20261026T235224Z/`）读的是**修正前**的冻结副本，其结论不变。
 
 ## 三路共同命中（已修订）
 

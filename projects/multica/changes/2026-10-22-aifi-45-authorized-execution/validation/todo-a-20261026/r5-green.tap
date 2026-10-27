@@ -1,0 +1,166 @@
+TAP version 13
+# Subtest: SC-AUTH-004 a change inside the granted repository and path is allowed
+ok 1 - SC-AUTH-004 a change inside the granted repository and path is allowed
+  ---
+  duration_ms: 1.1087
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 an unlisted repository is refused
+ok 2 - SC-AUTH-004 an unlisted repository is refused
+  ---
+  duration_ms: 0.1654
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 a path outside every granted prefix is refused
+ok 3 - SC-AUTH-004 a path outside every granted prefix is refused
+  ---
+  duration_ms: 0.1077
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 a prefix boundary is not a prefix match
+ok 4 - SC-AUTH-004 a prefix boundary is not a prefix match
+  ---
+  duration_ms: 0.1251
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 relative-path and absolute escapes are named separately
+ok 5 - SC-AUTH-004 relative-path and absolute escapes are named separately
+  ---
+  duration_ms: 0.1599
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 a symlink that leaves the repository is refused even under a granted prefix
+ok 6 - SC-AUTH-004 a symlink that leaves the repository is refused even under a granted prefix
+  ---
+  duration_ms: 0.0741
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 the changed-path collector sees committed, modified and untracked files
+ok 7 - SC-AUTH-004 the changed-path collector sees committed, modified and untracked files
+  ---
+  duration_ms: 356.6298
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 wiring: an in-scope change in the CR worktree of a matching repository passes
+ok 8 - SC-AUTH-004 wiring: an in-scope change in the CR worktree of a matching repository passes
+  ---
+  duration_ms: 726.9255
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 wiring: a change in a repository the grant does not list is seen and refused
+ok 9 - SC-AUTH-004 wiring: a change in a repository the grant does not list is seen and refused
+  ---
+  duration_ms: 716.8998
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 wiring: the candidate is read from the CR worktree, not the main checkout
+ok 10 - SC-AUTH-004 wiring: the candidate is read from the CR worktree, not the main checkout
+  ---
+  duration_ms: 733.1599
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 wiring: a collection failure is not an empty diff
+ok 11 - SC-AUTH-004 wiring: a collection failure is not an empty diff
+  ---
+  duration_ms: 577.6835
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 wiring: a missing CR worktree or an unlocated granted repository is unverifiable
+ok 12 - SC-AUTH-004 wiring: a missing CR worktree or an unlocated granted repository is unverifiable
+  ---
+  duration_ms: 580.6398
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 wiring: graph only locates; the frozen identity must match the located repository
+ok 13 - SC-AUTH-004 wiring: graph only locates; the frozen identity must match the located repository
+  ---
+  duration_ms: 794.7651
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 wiring: a git resource identity matches the origin URL exactly
+ok 14 - SC-AUTH-004 wiring: a git resource identity matches the origin URL exactly
+  ---
+  duration_ms: 886.1144
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 采集对非 ASCII 路径无损（不被 git 引号转义变形）
+ok 15 - SC-AUTH-004 采集对非 ASCII 路径无损（不被 git 引号转义变形）
+  ---
+  duration_ms: 344.3593
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 rename 的源路径与目标路径都参与判定
+ok 16 - SC-AUTH-004 rename 的源路径与目标路径都参与判定
+  ---
+  duration_ms: 327.1995
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 无法判定 symlink 是否出仓时不开后门
+ok 17 - SC-AUTH-004 无法判定 symlink 是否出仓时不开后门
+  ---
+  duration_ms: 180.2297
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 变更集缺失或类型不符时不开后门
+ok 18 - SC-AUTH-004 变更集缺失或类型不符时不开后门
+  ---
+  duration_ms: 0.1795
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 授权内普通 untracked 文件不因无索引项被判逃逸
+ok 19 - SC-AUTH-004 授权内普通 untracked 文件不因无索引项被判逃逸
+  ---
+  duration_ms: 318.8227
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 已删除的已提交文件不因无索引项被判逃逸
+ok 20 - SC-AUTH-004 已删除的已提交文件不因无索引项被判逃逸
+  ---
+  duration_ms: 436.3821
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 普通文件被替换成仓外链接会被判逃逸（索引仍报普通文件）
+ok 21 - SC-AUTH-004 普通文件被替换成仓外链接会被判逃逸（索引仍报普通文件）
+  ---
+  duration_ms: 297.6466
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 指向仓内的链接不算逃逸、不存在的路径不算逃逸
+ok 22 - SC-AUTH-004 指向仓内的链接不算逃逸、不存在的路径不算逃逸
+  ---
+  duration_ms: 198.1972
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 wiring: 授权内普通 untracked 文件通过核对
+ok 23 - SC-AUTH-004 wiring: 授权内普通 untracked 文件通过核对
+  ---
+  duration_ms: 745.7063
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 wiring: 授权路径被换成仓外链接时报 PATH_ESCAPE
+ok 24 - SC-AUTH-004 wiring: 授权路径被换成仓外链接时报 PATH_ESCAPE
+  ---
+  duration_ms: 742.399
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 wiring: 授权路径已删除时不误判逃逸
+ok 25 - SC-AUTH-004 wiring: 授权路径已删除时不误判逃逸
+  ---
+  duration_ms: 1068.1785
+  type: 'test'
+  ...
+# Subtest: SC-AUTH-004 祖先目录是出仓链接时，其下路径同样判逃逸
+ok 26 - SC-AUTH-004 祖先目录是出仓链接时，其下路径同样判逃逸
+  ---
+  duration_ms: 199.9143
+  type: 'test'
+  ...
+1..26
+# tests 26
+# suites 0
+# pass 26
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 10306.592

@@ -1,0 +1,50 @@
+{
+  "review": "v0.5 rerun after B17",
+  "input_manifest": "source-manifest.json",
+  "plan_raw_sha256": "6f98229a53e05dcffec20ad39b4ee1190b0444dcfce6e4a5505e9c2639f92a06",
+  "harness": "pi Agent tool; general-purpose profile; fresh background sessions; read-only task instructions",
+  "authority": "User requested three independent review lanes; no implementation, DB, CR, commit, push or deployment operations in this round",
+  "lanes": [
+    {
+      "lane": "strong",
+      "scope": "security and merge implementation contract",
+      "session_id": "01a17aa2-015a-77b9-a3c5-0f8663641eb4",
+      "requested_model": "OpenAIPersonal/gpt-6.1-sol",
+      "requested_effort": "high",
+      "actual_model": "unknown",
+      "actual_effort": "unknown",
+      "status": "completed",
+      "verdict": "BLOCK",
+      "report": "REVIEW-STRONG.md",
+      "continuations": 0
+    },
+    {
+      "lane": "balanced",
+      "scope": "test, configuration and mutation evidence",
+      "session_id": "01a17aa2-0142-77b9-a3c5-0f85af3e8583",
+      "requested_model": "Gobao/deepseek-flash",
+      "requested_effort": "max",
+      "actual_model": "unknown",
+      "actual_effort": "unknown",
+      "status": "completed",
+      "verdict": "BLOCK",
+      "report": "REVIEW-BALANCED.md",
+      "continuations": 2,
+      "continuation_notes": "First result only covered preparation; same session continued substantive review. Second continuation only re-emitted completed report to avoid host truncation; no new review work. Earlier metadata/path mistakes are superseded, not adopted as product findings."
+    },
+    {
+      "lane": "economy",
+      "scope": "documentation and Skill consistency",
+      "session_id": "01a17aa2-016b-77b9-a3c5-0f88b1b04e55",
+      "requested_model": "GB-JP/deepseek-flash",
+      "requested_effort": "high",
+      "actual_model": "unknown",
+      "actual_effort": "unknown",
+      "status": "completed",
+      "verdict": "BLOCK",
+      "report": "REVIEW-ECONOMY.md",
+      "continuations": 1,
+      "continuation_notes": "Same session completed missing Skill/API evidence; withdrew top-level/finding code conflation and corrected B2 vs G1/G5 attribution. No lane received another lane's result."
+    }
+  ]
+}

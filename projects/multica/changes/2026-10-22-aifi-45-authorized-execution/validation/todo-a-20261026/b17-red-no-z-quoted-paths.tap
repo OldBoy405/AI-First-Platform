@@ -1,0 +1,39 @@
+TAP version 13
+# Subtest: SC-AUTH-004 采集对非 ASCII 路径无损（不被 git 引号转义变形）
+not ok 1 - SC-AUTH-004 采集对非 ASCII 路径无损（不被 git 引号转义变形）
+  ---
+  duration_ms: 411.5734
+  type: 'test'
+  location: 'C:\\Users\\GOBAO\\Downloads\\AI\\tools\\skills\\shared\\crctl\\scripts\\test\\change-scope.test.mjs:233:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    []
+    + actual - expected
+    
+    + []
+    - [
+    -   'src/中文 名称.txt'
+    - ]
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: 'src/中文 名称.txt'
+  actual:
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/GOBAO/Downloads/AI/tools/skills/shared/crctl/scripts/test/change-scope.test.mjs:241:10)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1201:25)
+    Test.start (node:internal/test_runner/test:1096:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 479.9763

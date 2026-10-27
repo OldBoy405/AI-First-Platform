@@ -96,8 +96,10 @@ B6 **不再**在 AIFI-45 做过渡。tools 在 agent 本机运行，没有 agent
 2. 待办 A 剩 4 项：643–647 的 down 往返、10 处 `t.Skip`→`t.Fatal`、TC-EVD-009 CP 端到端、`execution-sensitive-action.mjs` 登记。
 3. **B2 锁图**（阻塞 B3）：先列出消费/CR 绑定/claim/终态/runtime access 的取锁顺序，统一后再加锁并断言两态。
 4. **B3 ✅（24）、B11 ✅（25/26）、B12a ✅（27）、EVD-001/002/004 ✅（28）、B16 ✅ 已复核并修 4/5（29）**。台账 41/49 未变（这些增量修的是 Gate3 待办，不新增台账行）。
-5. **X7/X8 已决**（用户要求实施）：X7 不在 tools 侧豁免、签发侧须同时给 repo id 与路径前缀；X8 不改 `inputDigest`、触发器用已接线的交付 gate。v0.5 经 balanced/economy 复核后已按结论修订（③ 输入来源、核对区间=发布区间、失败码闭集、零写入外延、复用边界、leaf/mutation 10:10）；**修订版尚未复核**（strong 仍在跑）。M001/M002 缺口已盘成 `m001-m002-evidence-gap-ledger-20261026.md`（G1–G8，A/B/C 分类），**两者仍 major/unresolved**。
-6. **v0.5 strong 复核 BLOCK**（三路记录 `trusted-verdict-channel-v05-review-20261026.md`）：已按结论做第二轮修订（核对对象=实际发布对象、插入点前移到现有 gate 之前、授权线性化与部分发布处置、空集合四证明、SHA 采集适配、X7 恢复流程、归属划分、S5 leaf/mutation 再补）。**修订版仍未复核**；其中“采集器通用缺陷归 AIFI-45 就地修”尚未实施。
+5. **X7/X8 已决**（用户要求实施）：X7 不在 tools 侧豁免、签发侧须同时给 repo id 与路径前缀；X8 不改 `inputDigest`、触发器用已接线的交付 gate。v0.5 经 balanced/economy 复核后已按结论修订（③ 输入来源、核对区间=发布区间、失败码闭集、零写入外延、复用边界）；**该轮修订版当时未复核**——后来的状态见步骤 8。M001/M002 缺口已盘成 `m001-m002-evidence-gap-ledger-20261026.md`（G1–G8，A/B/C 分类），**两者仍 major/unresolved**。
+6. **v0.5 strong 复核 BLOCK**（三路记录 `trusted-verdict-channel-v05-review-20261026.md`）：已按结论做第二轮修订（核对对象=实际发布对象、插入点前移到现有 gate 之前、授权线性化与部分发布处置、空集合四证明、SHA 采集适配、X7 恢复流程、归属划分、S5 leaf/mutation 再补）。**该修订版随后已复核**，结果见步骤 8。
+7. **B17 ⚠ 部分成立（增量 32，后续被增量 33 修正）**：范围核对采集器当时称修了四个可绕过缺陷（引号转义变形、rename 只报新路径、symlink 判不出时放行、变更集缺失当空集合）。其中**引号转义**与 **rename 源端**成立；**symlink 判定（当时用 git index mode）与第四条变异证据不成立**，已由增量 33 改正、并发现经链接目录穿越的新绕过（增量 34）。merge 侧 SHA/tree 采集适配仍归 M003。
+8. **第二次三路复核（B17 后）仍全 BLOCK**：三路均为新鲜非作者静态复核，记录与原文见 `v05-rerun-20261026T235224Z/`（`CLOSEOUT.md` + 三份 `REVIEW-*.md` + `REVIEW-RUNS.json` + `integrity-check.json`，22 项输入与 6 份证据零漂移）。阻断项归并为 R1 发布语义 (a)/(b) 未选、R2 可信 merge facts 存储/端点/认证未定义、R3 撤销与实际发布的线性化未闭合、R4 leaf 矩阵与零写入观测法、R5/R6 B17 状态来源与无效变异、R7 G1/G5 前置未声明。**R5/R6 已在 AIFI-45 闭合（增量 33/34，tools `3e2dd7a`、`029b762`）；R4/R7 已在方案中修正；R1/R2/R3 仍需用户决策或方案改写。**
 5. 之后决定是否注册 M003（从 v0.4 起草，X1 的 Windows 要求已进 P0）。
 
 ## 4. 不得冒称

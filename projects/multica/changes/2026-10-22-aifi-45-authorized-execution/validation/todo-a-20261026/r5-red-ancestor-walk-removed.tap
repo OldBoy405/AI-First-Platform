@@ -1,0 +1,62 @@
+TAP version 13
+# Subtest: SC-AUTH-004 wiring: 授权路径被换成仓外链接时报 PATH_ESCAPE
+not ok 1 - SC-AUTH-004 wiring: 授权路径被换成仓外链接时报 PATH_ESCAPE
+  ---
+  duration_ms: 699.7907
+  type: 'test'
+  location: 'C:\\Users\\GOBAO\\Downloads\\AI\\tools\\skills\\shared\\crctl\\scripts\\test\\change-scope.test.mjs:370:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"allowed":true,"findings":[],"problems":[],"changed":1}
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/GOBAO/Downloads/AI/tools/skills/shared/crctl/scripts/test/change-scope.test.mjs:382:10)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1201:25)
+    Test.start (node:internal/test_runner/test:1096:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17)
+  ...
+# Subtest: SC-AUTH-004 祖先目录是出仓链接时，其下路径同样判逃逸
+not ok 2 - SC-AUTH-004 祖先目录是出仓链接时，其下路径同样判逃逸
+  ---
+  duration_ms: 185.9822
+  type: 'test'
+  location: 'C:\\Users\\GOBAO\\Downloads\\AI\\tools\\skills\\shared\\crctl\\scripts\\test\\change-scope.test.mjs:399:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    false !== true
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/GOBAO/Downloads/AI/tools/skills/shared/crctl/scripts/test/change-scope.test.mjs:407:10)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1201:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+    Test.postRun (node:internal/test_runner/test:1330:19)
+    node:internal/test_runner/test:1133:31
+    node:internal/process/task_queues:150:7
+    AsyncResource.runInAsyncScope (node:async_hooks:227:14)
+    AsyncResource.runMicrotask (node:internal/process/task_queues:147:8)
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 0
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 951.0589
