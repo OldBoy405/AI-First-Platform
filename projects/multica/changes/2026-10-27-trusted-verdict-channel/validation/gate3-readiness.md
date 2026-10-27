@@ -6,15 +6,15 @@
 
 ## 0. 结论
 
-**不能进 Gate 3。** 已实现并出证的部分是稳的（见 §1，40 条证据行全过），但：
-- **2 个 label 未实现**（§2）：`worker`（node，1）、`isolation`（node，5）；
-- 4 项环境/身份类证明仍 UNVERIFIED（§4），其中 ADJ-10 决定本机的隔离声明上限。
+**不能进 Gate 3。** 已实现并出证的部分是稳的（见 §1，42 条证据行全过），但：
+- **已无未实现的 label**（§2）；node `isolation` 的 2 条 Windows leaf 属环境阻塞，不是未实现；
+- 3 项环境/身份类证明仍 UNVERIFIED（§4），其中 ADJ-10 决定本机的隔离声明上限；Windows 目录 fsync 项已收窄口径并出证。
 
 Gate 3 只能在 §2 各 label 有明确处置（实现 / 划出范围）之后进行。
 
-## 1. 已实现且证据当前有效（37 个 label / 40 条证据行）
+## 1. 已实现且证据当前有效（37 个 label / 42 条证据行）
 
-早期 8 个因 ADJ-11 改源码而失效，已用当前源码重跑；`revoked-permit`、`binding`、`reader` 的 partial-tuple leaf 为本轮新增。全部 `verify` 通过：
+早期 8 个因 ADJ-11 改源码而失效，已用当前源码重跑；`revoked-permit`、`binding`、`reader` 的 partial-tuple leaf、node `worker`、node `isolation`(linux) 为本轮新增。全部 `verify` 通过：
 
 | label | leaves | 跑次前缀 |
 |---|---|---|
@@ -54,6 +54,8 @@ Gate 3 只能在 §2 各 label 有明确处置（实现 / 划出范围）之后�
 | `merge-facts`（go） | 6 | `mk-20261027T104452Z` |
 | `merge-effects`（go） | 4 | `mz-20261027T105320Z` |
 | `isolation`（linux） | 5 | `iso-20261027T101534Z` |
+| `worker`（node） | 1 | `nw-20261027T145425Z` |
+| `isolation`（node / linux） | 3 | `ni-20261027T145815Z` |
 | `protocol`（node） | 2 | `np2-20261027T142510Z` |
 | `store`（node） | 2 | `n-store-20261027T111459Z` |
 | `merge-facts`（node） | 11 | `mf2-20261027T142500Z` |
@@ -65,8 +67,7 @@ Gate 3 只能在 §2 各 label 有明确处置（实现 / 划出范围）之后�
 
 | label | leaves | 缺什么 | 影响 |
 |---|---|---|---|
-| `worker`（node） | 1 | `./test/execution-control-worker.test.mjs` 不存在 | Node 侧 worker 语义 |
-| `isolation`（node） | 5（linux 3 + windows 2） | `./test/execution-control-isolation.test.mjs` 不存在 | C 路径隔离的 Node 侧组件验收 |
+| — | — | **Go 与 node 侧已无未实现 label** | node `isolation` 的 2 条 Windows leaf 属环境阻塞（§4 #1），不是未实现 |
 
 其余 label（含 D7 全片 `readiness-*` 13 / `deployment-observer` 4 / `deployment-launch` 1、`d8-recovery`、`foundation-fresh-work`、`binding`，以及 node `policy` 23 / `readiness` 2 / `recovery` 2）均已实现并出证，见 §1。
 
@@ -104,11 +105,11 @@ SC-VC-024 的「未修时按设计为 RED，不得登记完成」是**条件句*
 
 | # | 项 | 现状 |
 |---|---|---|
-| 1 | `isolation` 的 Windows 3 leaf | 无第二个受限 Windows 身份、无命名管道实现；`_unsupported.go` 对所有平台原语返回 `EXECUTION_CHANNEL_ISOLATION_UNSUPPORTED`，缺 profile 时 `t.Fatalf` |
+| 1 | `isolation` 的 Windows 2 leaf（node 侧）/ 3 leaf（go 侧） | **UNVERIFIED，已实现但拒绝伪造**：node 测试的 Windows leaf 仅在 `AIFI45_WINDOWS_ISOLATION_PROFILE` 存在时才声明，否则打一行 `# ... is unset (UNVERIFIED, not skipped)`；Go 侧 `_unsupported.go` 对全部平台原语返回 `EXECUTION_CHANNEL_ISOLATION_UNSUPPORTED`。本机无第二个受限 Windows 令牌（ADJ-10） |
 | 2 | `strict-production` profile | 本 change 只按 `channel-component` 验收（ADJ-4） |
 | 3 | 对 agent 的隔离（ADJ-10） | agent 以 Windows 用户 GOBAO 运行，可 `wsl -u root` 免密；能改 launcher、读任一私有根。**接受为残余风险**，不声称满足 strict-production |
 | 4 | execve 审计 | WSL 发行版在非初始 PID 命名空间，kernel 拒绝 audit 控制请求；改用 bpftrace `sched_process_*` tracepoint（已在 `p0-isolation-evidence.md` 记载替代关系） |
-| 5 | Windows 目录 fsync | 未验证（写盘语义以 Linux 为准） |
+| 5 | ~~Windows 目录 fsync~~ → **已验证（收窄口径）** | 事实修正：**EPERM/EINVAL 容忍分支从未存在**（全仓无相关处理）；Windows 走 `terminal_report_queue_sync_windows.go` 的**显式 no-op**，Unix 侧 `dir.Sync()` 错误直接上抛、不吞。新增 Windows 原生测试 `TestTerminalReportDirSyncWindowsNoop` + `TestTerminalReportQueuePublishesAtomicallyOnWindows`（`go test` 在 windows/amd64 真跑，见 `winsync-*.log`；m93 把 no-op 改报错、m94 去掉冲突检查，各自 RED）。仍不声称的：崩溃时目录项丢失/复活的**持久性**（无目录 fsync 就无法证明），由「flush + 原子 rename + 重放去重」兑付 |
 
 ## 5. 本 change 期间发现并修正的实现偏差
 

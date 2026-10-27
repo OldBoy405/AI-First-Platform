@@ -1,0 +1,11 @@
+--- a/skills/shared/crctl/scripts/lib/execution-control-worker.mjs
++++ b/skills/shared/crctl/scripts/lib/execution-control-worker.mjs
+@@ -30,7 +30,7 @@
+   if (!persisted || typeof persisted !== 'object') throw rejected('缺少已持久化的 store');
+   const current = requireFence(persisted.ownerFence, 'persisted.ownerFence');
+   const holding = requireFence(ownerFence, 'ownerFence');
+-  if (holding !== current) {
++  if (false && holding !== current) {
+     throw rejected(`fence ${holding} 不是当前 owner（当前 ${current}），拒绝写入`);
+   }
+   if (!operation || typeof operation !== 'object') throw rejected('缺少操作');

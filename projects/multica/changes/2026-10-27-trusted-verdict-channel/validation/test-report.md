@@ -49,12 +49,16 @@ Node 侧（tools `test/execution-control-{protocol,store}.test.mjs`）：各 2/2
 | `recovery`（node） | 2 | OK：五个观察各对应唯一动作、缺 store/checkpoint 冻结；restart 只动 owner fence。跑次 `n3-recovery-20261027T142327Z`；n26–n27 |
 | `binding` | 6 | OK：真 router + 真 permit + 每条前置 M003 strict selection。645 无 644 即拒、644 的 proof 必须由 643 签发、645 的 proof 须与 644 记录一致；重放读回原 receipt 不生成第二张；同 generation 的另一 task 用 A 的 challenge、重领后旧 generation、同 generation 第二份 proof 均 409；消费持锁期间终态 UPDATE 得 `55P03`。跑次 `bi4-20261027T144831Z`（7/7，skip=0）；m87–m92 各只红一条。此前记为「4 条按规格 RED」且测试并不存在，见 ADJ-12 |
 | `isolation`（linux） | 5 | OK：root + `AIFI45_ISOLATION_PROFILE=wsl2-aifi45-v1`（uid 995/gid 994）真跑；pidfd 钉身份并检测死进程、SO_PEERCRED 取真身份、`ReadMsgUnix` 拒 SCM_RIGHTS。m12/m13/m14 各只红一条。跑次 `iso-20261027T101534Z` |
+| `worker`（node） | 1 | OK：旧 fence 不得执行新操作——旧 / 未签发 fence 与操作自报 fence 不一致均拒（`EXECUTION_CONTROL_FENCE_REJECTED`），当前 fence 通过；restart 换 owner 后旧持有者仍被拒且 epoch/sequence 不变。跑次 `nw-20261027T145425Z`；n29 |
+| `isolation`（node / linux） | 3 | OK：profile 规则拒同 uid / 同 gid / root agent，且两个身份真实存在于内核；agent 身份读 key、写 store、替换模块、注入 env、连 IPC 全部由内核 `EACCES` 拒绝（真 `runuser` + 真权限，无 mock）；服务身份用受保护 Ed25519 key 签发并自验，agent 用同一 key 仍不可用。跑次 `ni-20261027T145815Z`（`--platform linux`）；n30/n31/n32 |
+| `isolation`（node / windows） | 2 | **UNVERIFIED，拒绝伪造**：无第二个受限 Windows 令牌（ADJ-10）；测试仅在 `AIFI45_WINDOWS_ISOLATION_PROFILE` 存在时才声明这两条 leaf，否则打印未声明行 —— 不 skip、不改绿 |
+| Windows 目录 fsync | 2 | OK（收窄口径）：**EPERM/EINVAL 容忍分支从未存在**；Windows 走显式 no-op，Unix 侧错误直接上抛。Windows 原生 `go test` 验 no-op 分支与「flush + 原子 rename + 重放去重 + 冲突拒绝」，见 `winsync-*.log`；m93（no-op 改报错）、m94（去冲突检查）各自 RED。不声称崩溃时目录项持久性 |
 | `isolation`（windows） | 3 | **UNVERIFIED**：无受限 Windows 身份，`_unsupported.go` 对所有原语返回 `EXECUTION_CHANNEL_ISOLATION_UNSUPPORTED`，缺 profile 直接 `t.Fatalf` |
 | tools SC-TR-003 并发三请求、rename 前后 kill | 未测（报告未声称） |
 | tools SC-TR-001 Go 侧 `cross_language_vectors` | 不存在 |
 | P0 隔离证明（两真实受限身份 + 批准 profile） | UNVERIFIED（Windows 无第二受限身份；WSL podman 无批准 profile） |
 | `strict-production` profile | UNVERIFIED（待部署授权） |
-| Windows 目录 fsync（EPERM/EINVAL 容忍分支） | 待在 Gate 3 披露 |
+| ~~Windows 目录 fsync（EPERM/EINVAL 容忍分支）~~ | 事实修正：该分支从未存在；已在上一行按收窄口径出证 |
 
 ## 3. mutation 证据（可复现条件）
 

@@ -1,0 +1,87 @@
+TAP version 13
+# \# Windows isolation leaves not declared: AIFI45_WINDOWS_ISOLATION_PROFILE is unset
+# \# (UNVERIFIED, not skipped: no second restricted Windows token on this host — ADJ-10)
+# Subtest: 同 UID profile 判不合格
+    # Subtest: 同 uid / 同 gid / root agent 都不合格
+    ok 1 - 同 uid / 同 gid / root agent 都不合格
+      ---
+      duration_ms: 0.8845
+      type: 'test'
+      ...
+    # Subtest: 真实配置的 profile 合格，且两个身份都真的存在
+    ok 2 - 真实配置的 profile 合格，且两个身份都真的存在
+      ---
+      duration_ms: 102.6044
+      type: 'test'
+      ...
+    1..2
+ok 1 - 同 UID profile 判不合格
+  ---
+  duration_ms: 104.2161
+  type: 'test'
+  ...
+# Subtest: agent 不能读 key 写 store 连 IPC 或注入 env
+    # Subtest: 读 key被内核拒绝
+    ok 1 - 读 key被内核拒绝
+      ---
+      duration_ms: 113.4652
+      type: 'test'
+      ...
+    # Subtest: 写 store被内核拒绝
+    ok 2 - 写 store被内核拒绝
+      ---
+      duration_ms: 87.2888
+      type: 'test'
+      ...
+    # Subtest: 替换模块被内核拒绝
+    ok 3 - 替换模块被内核拒绝
+      ---
+      duration_ms: 104.212
+      type: 'test'
+      ...
+    # Subtest: 注入 env被内核拒绝
+    ok 4 - 注入 env被内核拒绝
+      ---
+      duration_ms: 114.2227
+      type: 'test'
+      ...
+    # Subtest: 连 IPC 被拒
+    ok 5 - 连 IPC 被拒
+      ---
+      duration_ms: 585.446
+      type: 'test'
+      ...
+    1..5
+ok 2 - agent 不能读 key 写 store 连 IPC 或注入 env
+  ---
+  duration_ms: 1005.6119
+  type: 'test'
+  ...
+# Subtest: 受限服务身份可签发并验证
+    # Subtest: 服务身份用受保护 key 签发并自验
+    ok 1 - 服务身份用受保护 key 签发并自验
+      ---
+      duration_ms: 104.5051
+      type: 'test'
+      ...
+    # Subtest: 同一 key 对 agent 仍不可用
+    ok 2 - 同一 key 对 agent 仍不可用
+      ---
+      duration_ms: 106.2206
+      type: 'test'
+      ...
+    1..2
+ok 3 - 受限服务身份可签发并验证
+  ---
+  duration_ms: 211.1376
+  type: 'test'
+  ...
+1..3
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2887.263

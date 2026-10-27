@@ -1,0 +1,15 @@
+--- a/server/internal/daemon/terminal_report_queue.go
++++ b/server/internal/daemon/terminal_report_queue.go
+@@ -416,10 +416,8 @@
+ 		if decodeErr != nil {
+ 			return fmt.Errorf("existing terminal report %s is invalid: %w", name, decodeErr)
+ 		}
+-		if existingReport != report {
+-			return fmt.Errorf("terminal report for task %s conflicts with the original pending payload", report.taskID)
+-		}
+-		return nil
++		_ = existingReport
++		return writeTerminalReportRecord(s.dir, name, record)
+ 	} else if !errors.Is(readErr, os.ErrNotExist) {
+ 		return fmt.Errorf("read existing terminal report %s: %w", name, readErr)
+ 	}

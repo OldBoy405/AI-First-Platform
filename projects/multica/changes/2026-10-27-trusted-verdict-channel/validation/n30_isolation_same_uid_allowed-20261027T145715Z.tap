@@ -1,0 +1,107 @@
+TAP version 13
+# \# Windows isolation leaves not declared: AIFI45_WINDOWS_ISOLATION_PROFILE is unset
+# \# (UNVERIFIED, not skipped: no second restricted Windows token on this host — ADJ-10)
+# Subtest: 同 UID profile 判不合格
+    # Subtest: 同 uid / 同 gid / root agent 都不合格
+    not ok 1 - 同 uid / 同 gid / root agent 都不合格
+      ---
+      duration_ms: 0.9314
+      type: 'test'
+      location: 'C:\\Users\\GOBAO\\Downloads\\AI\\tools\\skills\\shared\\crctl\\scripts\\test\\execution-control-isolation.test.mjs:117:13'
+      failureType: 'testCodeFailure'
+      error: 'Missing expected exception.'
+      code: 'ERR_ASSERTION'
+      name: 'AssertionError'
+      stack: |-
+        TestContext.<anonymous> (file:///C:/Users/GOBAO/Downloads/AI/tools/skills/shared/crctl/scripts/test/execution-control-isolation.test.mjs:118:14)
+        Test.runInAsyncScope (node:async_hooks:227:14)
+        Test.run (node:internal/test_runner/test:1201:25)
+        Test.start (node:internal/test_runner/test:1096:17)
+        TestContext.test (node:internal/test_runner/test:377:20)
+        TestContext.<anonymous> (file:///C:/Users/GOBAO/Downloads/AI/tools/skills/shared/crctl/scripts/test/execution-control-isolation.test.mjs:117:13)
+        Test.runInAsyncScope (node:async_hooks:227:14)
+        Test.run (node:internal/test_runner/test:1201:25)
+        Test.start (node:internal/test_runner/test:1096:17)
+        startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17)
+      ...
+    # Subtest: 真实配置的 profile 合格，且两个身份都真的存在
+    ok 2 - 真实配置的 profile 合格，且两个身份都真的存在
+      ---
+      duration_ms: 105.4283
+      type: 'test'
+      ...
+    1..2
+not ok 1 - 同 UID profile 判不合格
+  ---
+  duration_ms: 107.0939
+  type: 'test'
+  location: 'C:\\Users\\GOBAO\\Downloads\\AI\\tools\\skills\\shared\\crctl\\scripts\\test\\execution-control-isolation.test.mjs:116:3'
+  failureType: 'subtestsFailed'
+  error: '1 subtest failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: agent 不能读 key 写 store 连 IPC 或注入 env
+    # Subtest: 读 key被内核拒绝
+    ok 1 - 读 key被内核拒绝
+      ---
+      duration_ms: 104.7123
+      type: 'test'
+      ...
+    # Subtest: 写 store被内核拒绝
+    ok 2 - 写 store被内核拒绝
+      ---
+      duration_ms: 114.5004
+      type: 'test'
+      ...
+    # Subtest: 替换模块被内核拒绝
+    ok 3 - 替换模块被内核拒绝
+      ---
+      duration_ms: 104.1336
+      type: 'test'
+      ...
+    # Subtest: 注入 env被内核拒绝
+    ok 4 - 注入 env被内核拒绝
+      ---
+      duration_ms: 98.7108
+      type: 'test'
+      ...
+    # Subtest: 连 IPC 被拒
+    ok 5 - 连 IPC 被拒
+      ---
+      duration_ms: 589.9278
+      type: 'test'
+      ...
+    1..5
+ok 2 - agent 不能读 key 写 store 连 IPC 或注入 env
+  ---
+  duration_ms: 1012.9104
+  type: 'test'
+  ...
+# Subtest: 受限服务身份可签发并验证
+    # Subtest: 服务身份用受保护 key 签发并自验
+    ok 1 - 服务身份用受保护 key 签发并自验
+      ---
+      duration_ms: 111.6698
+      type: 'test'
+      ...
+    # Subtest: 同一 key 对 agent 仍不可用
+    ok 2 - 同一 key 对 agent 仍不可用
+      ---
+      duration_ms: 131.725
+      type: 'test'
+      ...
+    1..2
+ok 3 - 受限服务身份可签发并验证
+  ---
+  duration_ms: 243.7835
+  type: 'test'
+  ...
+1..3
+# tests 12
+# suites 0
+# pass 10
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2877.0117

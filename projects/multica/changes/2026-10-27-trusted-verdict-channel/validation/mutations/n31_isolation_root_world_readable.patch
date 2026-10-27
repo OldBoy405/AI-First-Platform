@@ -1,0 +1,11 @@
+--- a/skills/shared/crctl/scripts/test/execution-control-isolation.test.mjs
++++ b/skills/shared/crctl/scripts/test/execution-control-isolation.test.mjs
+@@ -93,7 +93,7 @@
+     sh(`printf 'export AIFI45_PROFILE=%s\\n' '${LINUX_SERVICE}' > ${base}/env/service.env`);
+     sh(`printf 'export const marker = "trusted";\\n' > ${base}/install/mod.mjs`);
+     sh(`chown -R ${owned} ${base}/key ${base}/store ${base}/install ${base}/env ${base}/ipc`);
+-    sh(`chmod 0700 ${base}/key ${base}/store ${base}/ipc && chmod 0600 ${base}/key/service.pem ${base}/install/mod.mjs ${base}/env/service.env`);
++    sh(`chmod 0755 ${base}/key ${base}/store ${base}/ipc && chmod 0644 ${base}/key/service.pem ${base}/install/mod.mjs ${base}/env/service.env`);
+     // Probe scripts stay root-owned and world-readable: the service identity runs
+     // them, the agent identity must not be able to leave a trace in the root.
+     const staging = fs.mkdtempSync(path.join(os.tmpdir(), 'aifi45-iso-'));
