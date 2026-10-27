@@ -1,5 +1,5 @@
---- server/internal/governance/execution_control_policy.go
-+++ m46_skip_predecessor_cas
+--- a/server/internal/governance/execution_control_policy.go
++++ b/server/internal/governance/execution_control_policy.go
 @@ -261,9 +261,7 @@
  		WHERE effect_kind=$1 AND head_ref=$2`, repairEffectKind, req.CRID).Scan(&total); err != nil {
  		return RepairExtensionResult{}, err

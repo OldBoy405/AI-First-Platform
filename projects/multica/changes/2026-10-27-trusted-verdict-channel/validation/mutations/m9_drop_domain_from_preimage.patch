@@ -1,5 +1,5 @@
---- server/internal/governance/execution_control_protocol.go
-+++ m9_drop_domain_from_preimage
+--- a/server/internal/governance/execution_control_protocol.go
++++ b/server/internal/governance/execution_control_protocol.go
 @@ -592,7 +592,6 @@
  func controlPreimage(domain string, payloadBytes []byte) []byte {
  	prefix := make([]byte, 0, len(domain)+1+len(payloadBytes))

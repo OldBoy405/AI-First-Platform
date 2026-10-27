@@ -1,5 +1,5 @@
---- server/internal/governance/execution_merge_facts.go
-+++ m21_digest_includes_revoked
+--- a/server/internal/governance/execution_merge_facts.go
++++ b/server/internal/governance/execution_merge_facts.go
 @@ -73,7 +73,7 @@
  	sort.Slice(sorted, func(i, j int) bool { return sorted[i].RepoID < sorted[j].RepoID })
  	parts := make([]string, 0, len(sorted))

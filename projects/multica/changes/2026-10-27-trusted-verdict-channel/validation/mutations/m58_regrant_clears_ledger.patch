@@ -1,5 +1,5 @@
---- server/internal/daemon/execution_control_worker.go
-+++ m58_regrant_clears_ledger
+--- a/server/internal/daemon/execution_control_worker.go
++++ b/server/internal/daemon/execution_control_worker.go
 @@ -56,6 +56,8 @@
  		if scope == "" {
  			return OwnerFence{}, fmt.Errorf("%w: 冷启动必须给出 scope", ErrWorkerInvalid)

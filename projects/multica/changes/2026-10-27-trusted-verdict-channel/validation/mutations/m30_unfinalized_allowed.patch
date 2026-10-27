@@ -1,5 +1,5 @@
---- server/internal/governance/execution_merge_effect.go
-+++ m30_unfinalized_allowed
+--- a/server/internal/governance/execution_merge_effect.go
++++ b/server/internal/governance/execution_merge_effect.go
 @@ -154,8 +154,7 @@
  		// 同一 attempt 的同一份输入：返原结果，不新建。
  		return MergeReserveResult{Code: MergeEffectReserveOK, Attempt: currentMergeAttempt(ctx, tx, lineageID), ReservationID: existingID, Replayed: true}, nil

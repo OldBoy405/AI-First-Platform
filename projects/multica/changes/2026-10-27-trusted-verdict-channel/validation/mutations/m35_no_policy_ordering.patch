@@ -1,5 +1,5 @@
---- server/internal/governance/execution_control_store_state.go
-+++ m35_no_policy_ordering
+--- a/server/internal/governance/execution_control_store_state.go
++++ b/server/internal/governance/execution_control_store_state.go
 @@ -142,12 +142,7 @@
  	if err != nil {
  		return fmt.Errorf("control command stop ordering: %w", err)

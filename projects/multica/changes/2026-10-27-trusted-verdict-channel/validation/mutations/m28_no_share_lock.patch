@@ -1,5 +1,5 @@
---- server/internal/governance/execution_merge_effect.go
-+++ m28_no_share_lock
+--- a/server/internal/governance/execution_merge_effect.go
++++ b/server/internal/governance/execution_merge_effect.go
 @@ -113,7 +113,7 @@
  	// 1. 共享行锁：撤销要 UPDATE 同一行，于是两个动作靠行锁串行，而不是靠应用层约定。
  	var locked int

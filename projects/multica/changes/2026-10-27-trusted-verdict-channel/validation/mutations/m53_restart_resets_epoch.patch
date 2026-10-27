@@ -1,5 +1,5 @@
---- server/internal/daemon/execution_control_worker.go
-+++ m53_restart_resets_epoch
+--- a/server/internal/daemon/execution_control_worker.go
++++ b/server/internal/daemon/execution_control_worker.go
 @@ -70,7 +70,7 @@
  	// 接管：fence 单调加一，epoch 与链尾原样保留。
  	if err := tx.QueryRow(ctx, `

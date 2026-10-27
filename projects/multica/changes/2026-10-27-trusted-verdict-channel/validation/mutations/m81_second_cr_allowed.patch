@@ -1,5 +1,5 @@
---- server/internal/governance/execution_fresh_work.go
-+++ m81_second_cr_allowed
+--- a/server/internal/governance/execution_fresh_work.go
++++ b/server/internal/governance/execution_fresh_work.go
 @@ -136,7 +136,10 @@
  		FOR UPDATE`, in.WorkspaceID, in.OriginID).Scan(&existingLineage, &existingCR)
  	switch {

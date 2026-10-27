@@ -1,5 +1,5 @@
---- server/internal/governance/execution_deployment_observer.go
-+++ m74_allow_agent_sources
+--- a/server/internal/governance/execution_deployment_observer.go
++++ b/server/internal/governance/execution_deployment_observer.go
 @@ -116,7 +116,7 @@
  		if measurement.Name == "" || measurement.Digest == "" {
  			return DeploymentObservation{}, fmt.Errorf("%w: 测量缺 name/digest", ErrObservationInvalid)

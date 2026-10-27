@@ -1,5 +1,5 @@
---- server/internal/governance/execution_control_policy.go
-+++ m47_resume_terminal_ok
+--- a/server/internal/governance/execution_control_policy.go
++++ b/server/internal/governance/execution_control_policy.go
 @@ -327,9 +327,7 @@
  		WHERE c.workspace_id=$1::uuid AND c.cr_id=$2`, req.WorkspaceID, req.CRID).Scan(&decision); err != nil {
  		return ResumeResult{}, fmt.Errorf("resume head: %w", err)

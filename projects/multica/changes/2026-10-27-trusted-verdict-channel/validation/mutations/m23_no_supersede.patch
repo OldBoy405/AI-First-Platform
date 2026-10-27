@@ -1,5 +1,5 @@
---- server/internal/governance/execution_code_source_freeze.go
-+++ m23_no_supersede
+--- a/server/internal/governance/execution_code_source_freeze.go
++++ b/server/internal/governance/execution_code_source_freeze.go
 @@ -70,13 +70,7 @@
  	if at.IsZero() {
  		return "", fmt.Errorf("%w: 需要显式时间戳（同一事务内两次追加必须不同）", ErrCodeSourceFreezeInvalid)

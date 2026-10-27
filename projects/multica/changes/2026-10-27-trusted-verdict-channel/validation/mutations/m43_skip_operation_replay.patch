@@ -1,5 +1,5 @@
---- server/internal/governance/execution_control_policy.go
-+++ m43_skip_operation_replay
+--- a/server/internal/governance/execution_control_policy.go
++++ b/server/internal/governance/execution_control_policy.go
 @@ -155,13 +155,7 @@
  		WHERE effect_kind = $1 AND effect_ref->>'operation_id' = $2 AND effect_ref->>'quota_key' = $3
  		LIMIT 1`, sensitiveEffectKind, req.OperationID, key).Scan(&existing)

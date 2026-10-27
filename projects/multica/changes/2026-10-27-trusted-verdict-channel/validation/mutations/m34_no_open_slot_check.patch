@@ -1,5 +1,5 @@
---- server/internal/governance/execution_control_store_state.go
-+++ m34_no_open_slot_check
+--- a/server/internal/governance/execution_control_store_state.go
++++ b/server/internal/governance/execution_control_store_state.go
 @@ -109,9 +109,7 @@
  		WHERE lineage_id = $1::uuid AND state = ANY($2)`, in.LineageID, controlOpenStates).Scan(&open); err != nil {
  		return ControlCommandApplied{}, fmt.Errorf("control command open slot: %w", err)

@@ -1,5 +1,5 @@
---- server/internal/governance/execution_fresh_work.go
-+++ m83_proof_rewrites
+--- a/server/internal/governance/execution_fresh_work.go
++++ b/server/internal/governance/execution_fresh_work.go
 @@ -178,11 +178,10 @@
  	if scope == "" || originID == "" || len(proof) == 0 {
  		return FreshWorkProof{}, fmt.Errorf("%w: scope/origin/proof 都必须有值", ErrFreshWorkInvalid)

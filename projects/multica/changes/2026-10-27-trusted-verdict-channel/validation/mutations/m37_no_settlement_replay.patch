@@ -1,5 +1,5 @@
---- server/internal/governance/execution_control_settlement.go
-+++ m37_no_settlement_replay
+--- a/server/internal/governance/execution_control_settlement.go
++++ b/server/internal/governance/execution_control_settlement.go
 @@ -83,12 +83,7 @@
  		Scan(&existing.RequestID, &existing.VerdictID, &existing.Kind, &existingEffectKind, &existingRef)
  	switch {

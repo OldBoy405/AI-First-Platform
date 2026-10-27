@@ -1,5 +1,5 @@
---- server/internal/governance/execution_deployment_observer.go
-+++ m76_skip_generation
+--- a/server/internal/governance/execution_deployment_observer.go
++++ b/server/internal/governance/execution_deployment_observer.go
 @@ -81,7 +81,7 @@
  	if parsed.ObservationID == "" || parsed.InstanceID == "" || parsed.Role == "" {
  		return DeploymentObservation{}, fmt.Errorf("%w: 观测缺 id/instance/role", ErrObservationInvalid)

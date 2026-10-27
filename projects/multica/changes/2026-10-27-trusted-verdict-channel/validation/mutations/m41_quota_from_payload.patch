@@ -1,5 +1,5 @@
---- server/internal/governance/execution_control_policy.go
-+++ m41_quota_from_payload
+--- a/server/internal/governance/execution_control_policy.go
++++ b/server/internal/governance/execution_control_policy.go
 @@ -173,8 +173,12 @@
  		sensitiveEffectKind, key).Scan(&consumed); err != nil {
  		return SensitiveReceipt{}, err

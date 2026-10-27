@@ -1,5 +1,5 @@
---- server/internal/governance/execution_deployment.go
-+++ m68_revision_drift_allowed
+--- a/server/internal/governance/execution_deployment.go
++++ b/server/internal/governance/execution_deployment.go
 @@ -394,7 +394,7 @@
  	if gate != "DRAINING" {
  		return ActivationRef{}, fmt.Errorf("%w: gate 是 %s，不是 DRAINING", ErrDeploymentConflict, gate)

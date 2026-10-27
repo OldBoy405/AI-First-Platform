@@ -1,5 +1,5 @@
---- lib/merge-facts.mjs
-+++ m18_404_as_unavailable
+--- a/skills/shared/crctl/scripts/lib/merge-facts.mjs
++++ b/skills/shared/crctl/scripts/lib/merge-facts.mjs
 @@ -106,9 +106,6 @@
  export function classifyResponse({ status, body }) {
    if (status === 200) return { transport: CLIENT_CODES.OK, status, body };

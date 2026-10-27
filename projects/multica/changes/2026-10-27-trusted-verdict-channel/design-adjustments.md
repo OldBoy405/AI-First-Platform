@@ -157,3 +157,15 @@
 - **证据**：`binding` 跑次 `bi4-20261027T144831Z`（7/7，leaf 6，`skip=0`，checker 6/6）；`reader` 跑次 `rg2-20261027T143755Z`（12/12，leaf 11）。变异 m87–m92 各只红一条（m85 红 reader 新 leaf）。
 - **已知非理想**：m86（删 `required && missing` 前一支）**无可观测差异**——后一支 `missing` 已覆盖同一判定，属冗余防线，已记入 `channel-test-expectations.json#mutation_asymmetries`，不伪造变异。
 - **结论是否受影响**：Gate 3 仍不能进（还剩 node `worker` 1、node `isolation` 5 与 4 项 UNVERIFIED），但 `binding` 不再是假「blocked」。
+
+## ADJ-13（已生效，2026-10-27，用户采纳）：Windows 平台隔离延后到后续 change
+
+- **事实**：`isolation` 两个侧的 Windows leaf 都拿不到证据，且原因有两层——
+  1. **环境**：本机没有第二个受限 Windows 令牌（与 ADJ-10 同源）；
+  2. **代码**：Windows 侧驱动没写——node 测试拿到 profile 后只 `assert.fail('…令牌驱动尚未接上')`，Go 侧 `_unsupported.go` 对全部平台原语返回 `EXECUTION_CHANNEL_ISOLATION_UNSUPPORTED`，命名管道与令牌驱动都不存在。
+  所以这不是「等一台机器」就能绿的项。
+- **决定**：Windows 平台隔离（node 2 leaf / go 3 leaf）**移出本 change 的验收声称范围**，延后到后续 change 做（需建受限 Windows 账号 + 实现令牌/命名管道驱动）。
+- **不做的事**：**不删、不改冻结的 leaf 名单**。`channel-test-expectations.json` 保持原样，`verify isolation --platform windows` 继续失败——缺口必须一直可见，不得通过缩减名单把它变绿。
+- **与规格的关系**：`SC-TR-013`/`SC-VC-037` 的 AND 子句要求「Linux 与 Windows 各自出证据」。本 ADJ 是**记录的、经用户接受的偏差**，不是规格被修改；Gate 3 材料必须写明「Windows 未出证」。
+- **Linux 侧不受影响**：node 3 leaf（`ni-20261027T145815Z`）+ go 5 leaf（`iso-20261027T101534Z`）仍是有效证据。
+- **解除条件**：后续 change 建好受限 Windows 身份并实现驱动后，用同一份 `execution-control-isolation.test.mjs` 与 Go isolation 测试出证，并把本条改为已解决。

@@ -1,5 +1,5 @@
---- lib/merge-facts.mjs
-+++ m17_skip_ancestor_check
+--- a/skills/shared/crctl/scripts/lib/merge-facts.mjs
++++ b/skills/shared/crctl/scripts/lib/merge-facts.mjs
 @@ -223,10 +223,6 @@
        add(CLIENT_CODES.UNVERIFIABLE, '缺少祖先判定能力，无法核实批准下界');
      } else if (approved === candidateHead) {

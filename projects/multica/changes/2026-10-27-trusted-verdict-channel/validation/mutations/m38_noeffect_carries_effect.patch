@@ -1,5 +1,5 @@
---- server/internal/governance/execution_control_settlement.go
-+++ m38_noeffect_carries_effect
+--- a/server/internal/governance/execution_control_settlement.go
++++ b/server/internal/governance/execution_control_settlement.go
 @@ -62,8 +62,6 @@
  		if !json.Valid(in.EffectRef) {
  			return fmt.Errorf("%w: effect_ref 必须是 JSON", ErrControlSettlementInvalid)

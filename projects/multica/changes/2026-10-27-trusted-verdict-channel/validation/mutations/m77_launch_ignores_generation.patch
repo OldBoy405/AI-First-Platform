@@ -1,5 +1,5 @@
---- server/internal/daemon/execution_launch_snapshot.go
-+++ m77_launch_ignores_generation
+--- a/server/internal/daemon/execution_launch_snapshot.go
++++ b/server/internal/daemon/execution_launch_snapshot.go
 @@ -101,7 +101,7 @@
  		return LaunchSnapshot{}, fmt.Errorf("%w: 复核不到 deployment head", ErrLaunchInvalid)
  	}

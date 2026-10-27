@@ -1,5 +1,5 @@
---- internal/daemon/execution_control_isolation_linux.go
-+++ m14_plain_read_accepts_fd
+--- a/internal/daemon/execution_control_isolation_linux.go
++++ b/internal/daemon/execution_control_isolation_linux.go
 @@ -76,7 +76,9 @@
  // passed descriptors silently, so an fd-transfer attempt would look like a normal message.
  func readRunMessage(conn *net.UnixConn, buf []byte) (int, error) {

@@ -6,11 +6,12 @@
 
 ## 0. 结论
 
-**不能进 Gate 3。** 已实现并出证的部分是稳的（见 §1，42 条证据行全过），但：
-- **已无未实现的 label**（§2）；node `isolation` 的 2 条 Windows leaf 属环境阻塞，不是未实现；
-- 3 项环境/身份类证明仍 UNVERIFIED（§4），其中 ADJ-10 决定本机的隔离声明上限；Windows 目录 fsync 项已收窄口径并出证。
+**可按 `channel-component` 口径提交 Gate 3 审议**（Gate 3 强制人工确认；本文件只备料，不自我判定通过）。依据：
+- §2 **已无未实现的 label**；§1 的 37 个 label / 42 条证据行经 `verify` 全过，`audit` 37 个 label 全有 CP；
+- `binding` 从「误记为按规格 RED」改为真实 6 leaf（ADJ-12）；
+- 仍有一类缺口且**不会因本 change 继续编码而消失**：`isolation` 两侧的 Windows leaf（§4 #1）、`strict-production`（§4 #2）、ADJ-10（§4 #3）、execve 审计的 auditd 替代（§4 #4）。这些按 §7 的口径**声明为未声称**，不写成已验证。
 
-Gate 3 只能在 §2 各 label 有明确处置（实现 / 划出范围）之后进行。
+Gate 3 材料必须同时带上 §4 与 §7；把 §4 任一项写成「已验证」即违规。
 
 ## 1. 已实现且证据当前有效（37 个 label / 42 条证据行）
 
@@ -63,11 +64,9 @@ Gate 3 只能在 §2 各 label 有明确处置（实现 / 划出范围）之后�
 
 变异（Go m1–m84 / Node n1–n28）全部落在 `validation/mutations/`，每条带 `.patch` 与 `.sha256`，且各自只打红对应 leaf（例外：m26/m35/m37/m39 各打红两条，m41/m48 连带同一只桶/同一入口的第二条，均为语义相关）。
 
-## 2. 未实现（2 label）
+## 2. 未实现（0 label）
 
-| label | leaves | 缺什么 | 影响 |
-|---|---|---|---|
-| — | — | **Go 与 node 侧已无未实现 label** | node `isolation` 的 2 条 Windows leaf 属环境阻塞（§4 #1），不是未实现 |
+Go 与 node 侧均无未实现 label。node `isolation` 的 2 条 Windows leaf **不是未实现就完了**：Linux 已实现出证，**Windows 驱动确实没写**（§4 #1），叠上本机无第二个受限令牌（ADJ-10），按 ADJ-13 延后到后续 change。
 
 其余 label（含 D7 全片 `readiness-*` 13 / `deployment-observer` 4 / `deployment-launch` 1、`d8-recovery`、`foundation-fresh-work`、`binding`，以及 node `policy` 23 / `readiness` 2 / `recovery` 2）均已实现并出证，见 §1。
 
@@ -105,7 +104,7 @@ SC-VC-024 的「未修时按设计为 RED，不得登记完成」是**条件句*
 
 | # | 项 | 现状 |
 |---|---|---|
-| 1 | `isolation` 的 Windows 2 leaf（node 侧）/ 3 leaf（go 侧） | **UNVERIFIED，已实现但拒绝伪造**：node 测试的 Windows leaf 仅在 `AIFI45_WINDOWS_ISOLATION_PROFILE` 存在时才声明，否则打一行 `# ... is unset (UNVERIFIED, not skipped)`；Go 侧 `_unsupported.go` 对全部平台原语返回 `EXECUTION_CHANNEL_ISOLATION_UNSUPPORTED`。本机无第二个受限 Windows 令牌（ADJ-10） |
+| 1 | `isolation` 的 Windows leaf（node 2 / go 3） | **UNVERIFIED**。Linux 侧已实现并出证（node 5 项真实内核 `EACCES`，go 5 leaf）；**Windows 侧驱动未实现**：node 测试拿到 profile 后只是 `assert.fail('…令牌驱动尚未接上')`，Go 侧 `_unsupported.go` 对全部平台原语返回 `EXECUTION_CHANNEL_ISOLATION_UNSUPPORTED`，命名管道与令牌驱动都没写。同时本机无第二个受限 Windows 令牌（ADJ-10）。node 测试仅在 `AIFI45_WINDOWS_ISOLATION_PROFILE` 存在时才声明这两条 leaf，否则打一行 `# ... is unset (UNVERIFIED, not skipped)`。按 **ADJ-13 延后到后续 change，不删冻结 leaf、不改绿** |
 | 2 | `strict-production` profile | 本 change 只按 `channel-component` 验收（ADJ-4） |
 | 3 | 对 agent 的隔离（ADJ-10） | agent 以 Windows 用户 GOBAO 运行，可 `wsl -u root` 免密；能改 launcher、读任一私有根。**接受为残余风险**，不声称满足 strict-production |
 | 4 | execve 审计 | WSL 发行版在非初始 PID 命名空间，kernel 拒绝 audit 控制请求；改用 bpftrace `sched_process_*` tracepoint（已在 `p0-isolation-evidence.md` 记载替代关系） |
@@ -130,9 +129,31 @@ SC-VC-024 的「未修时按设计为 RED，不得登记完成」是**条件句*
 4. `isolation` 需 `AIFI45_ISOLATION_PROFILE` + `AIFI45_ISOLATION_UID/GID`（本机 995/994）与 root。
 5. 结论用 `channel-evidence.mjs verify <label> <prefix>` 判，不看报告文字。
 
-## 7. 进 Gate 3 前的最小收尾清单
+## 7. Gate 3 提交口径
 
-1. 补 `readiness-composition`（依赖 D7 的组件级 readiness）。
-2. 为 §3 的 4 条 leaf 在 tasks/报告中标注 `blocked-on-upstream(AIFI-45 G1/G2-G4)`，并说明它们不影响其余 label 的验收。
-3. 为 §2 的 daemon 侧（worker/recovery/client/observer/launch）决定：本期实现，或正式划出本 change 范围并写理由（不得静默留空）。
-4. 报告 §4 的 5 项按现状写入 Gate 3 材料，禁止改写成「已验证」。
+### 7.1 声称的
+
+- 37 个 label / 42 条证据行当前有效（源码 digest 与证据一致，`skip=0`）；
+- `audit`：37 个 label 全有 CP；
+- 变异归档于 `validation/mutations/`：**112 个 patch + sha256**，其中 **107 个可打到当前源码**（`git apply --check` 通过），
+  5 个（`m12`/`m13`/`m14`/`m17`/`m79`）是目标源码后续演进后的**历史记录**、不可重放到 HEAD——如实标注，不假装可重放，清单见 `mutations/README.md`；
+  本轮同时修掉归档自身两处缺陷：n1–n27 的基线选错（曾全部对 policy.mjs 取 diff）与 100 个 patch 的 `+++` 写成标签名；
+  从未打红过任何 leaf 的 `n24_empty_components_ok` 已剔除；m86 与 m85 的重叠分支作为 `mutation_asymmetries` 明示；
+- Gate 1/2 与 Phase 2 产物按要求入档。
+
+### 7.2 不声称的（必须随材料声明）
+
+| 项 | 口径 |
+|---|---|
+| `strict-production` | **未声称**。本 change 只按 `channel-component` 验收（ADJ-4）；`READY_STRICT` 要求 `admission_decider === 'present'`，完整 decider 属 AIFI-45 剩余工作（方案 L60/L262） |
+| Windows 平台隔离 | **未声称**（ADJ-13 延后）；Linux 侧已出证 |
+| 对 agent 的隔离 | **已接受残余风险**（ADJ-10）；解除需独立主机或非管理员 agent 账号 |
+| execve 审计 | 用 bpftrace `sched_process_*` 替代（WSL 内 auditd 不可用）；替代关系见 `p0-isolation-evidence.md` |
+| AIFI-45 41/49 | **未回填**；六条 RUN TC 的前置见 `aifi45-run-tc-rerun-prerequisites.md` |
+
+### 7.3 提交后仍待外部动作
+
+1. **独立 Linux 主机**（agent 账号无 sudo）—— 属**本 change**：重跑 `p0-run-20261027/scripts/run.sh` + Go/node isolation 的 Linux 原生路径 + 「agent 身份写 launcher 被拒」探针 → 成则 ADJ-10 可结、auditd 可替代 bpftrace。环境到位即继续。
+2. **Windows 隔离**（ADJ-13）—— 另开 change：建受限 Windows 账号 + 实现令牌/命名管道驱动后出证。
+3. **`strict-production`** —— 等 AIFI-45 的 AdmissionDecider 完成后另开 change 验收。
+4. **AIFI-45 41/49** —— 由 AIFI-45 按前置清单自行决定重跑，本 change 不写其记录。

@@ -1,5 +1,5 @@
---- server/internal/governance/execution_control_settlement.go
-+++ m40_skip_revoke_recheck
+--- a/server/internal/governance/execution_control_settlement.go
++++ b/server/internal/governance/execution_control_settlement.go
 @@ -106,19 +106,6 @@
  	}
  	// 撤销先于本次 settlement 提交：即使调用方拿着 T 已提交的 permit，也只能结算为 no_effect。

@@ -1,5 +1,5 @@
---- server/internal/governance/execution_control_protocol.go
-+++ m10_skip_key_scope_check
+--- a/server/internal/governance/execution_control_protocol.go
++++ b/server/internal/governance/execution_control_protocol.go
 @@ -368,9 +368,6 @@
  	if !allowed {
  		return controlReject(ErrControlKeyInvalid, "key %s 未被授权签发 domain %s", key.KeyID, domain)

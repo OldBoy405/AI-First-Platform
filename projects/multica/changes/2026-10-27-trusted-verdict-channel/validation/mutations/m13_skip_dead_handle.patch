@@ -1,5 +1,5 @@
---- internal/daemon/execution_control_isolation.go
-+++ m13_skip_dead_handle
+--- a/internal/daemon/execution_control_isolation.go
++++ b/internal/daemon/execution_control_isolation.go
 @@ -97,11 +97,6 @@
  	if peer.UID != entry.uid || peer.GID != entry.gid {
  		return PeerCredentials{}, ErrChannelPeerUntrusted

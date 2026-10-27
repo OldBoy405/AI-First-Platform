@@ -1,5 +1,5 @@
---- server/internal/governance/execution_deployment.go
-+++ m72_not_ready_activates
+--- a/server/internal/governance/execution_deployment.go
++++ b/server/internal/governance/execution_deployment.go
 @@ -123,9 +123,7 @@
  	if verdict.Action != "enable-policy" || verdict.ProfilePurpose != "strict-production" {
  		return ActivationRef{}, fmt.Errorf("%w: %s × %s 不能启用", ErrDeploymentNotReady, verdict.Action, verdict.ProfilePurpose)

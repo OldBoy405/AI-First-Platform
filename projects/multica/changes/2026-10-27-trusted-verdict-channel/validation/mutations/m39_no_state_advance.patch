@@ -1,5 +1,5 @@
---- server/internal/governance/execution_control_settlement.go
-+++ m39_no_state_advance
+--- a/server/internal/governance/execution_control_settlement.go
++++ b/server/internal/governance/execution_control_settlement.go
 @@ -130,9 +130,7 @@
  		hex.EncodeToString(commandDigest[:]), in.HeadRef, in.Reason, nilIfZeroTime(in.Now)); err != nil {
  		return ControlSettlement{}, fmt.Errorf("settlement insert: %w", err)

@@ -1,5 +1,5 @@
---- server/internal/governance/execution_deployment.go
-+++ m67_unknown_pending_allowed
+--- a/server/internal/governance/execution_deployment.go
++++ b/server/internal/governance/execution_deployment.go
 @@ -343,7 +343,7 @@
  	if workset.LiveRuns > 0 {
  		return DrainResult{}, fmt.Errorf("%w: 还有 %d 个存活的旧 run", ErrDeploymentNotReady, workset.LiveRuns)

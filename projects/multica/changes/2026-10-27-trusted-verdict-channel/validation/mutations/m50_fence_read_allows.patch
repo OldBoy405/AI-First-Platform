@@ -1,5 +1,5 @@
---- server/internal/governance/execution_channel_reader.go
-+++ m50_fence_read_allows
+--- a/server/internal/governance/execution_channel_reader.go
++++ b/server/internal/governance/execution_channel_reader.go
 @@ -112,7 +112,7 @@
  	if err := tx.QueryRow(ctx, `
  		SELECT count(*) FROM cr_execution_consumption

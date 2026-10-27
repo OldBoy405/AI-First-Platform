@@ -1,5 +1,5 @@
---- server/internal/governance/execution_control_protocol.go
-+++ m11_digest_payload_only
+--- a/server/internal/governance/execution_control_protocol.go
++++ b/server/internal/governance/execution_control_protocol.go
 @@ -691,7 +691,7 @@
  	if scopeErr != nil || !controlScopesEqual(payloadScope, scope) {
  		return ControlVerification{}, controlReject(ErrControlBindingMismatch, "payload scope 与期望不符")

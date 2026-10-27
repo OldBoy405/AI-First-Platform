@@ -1,5 +1,5 @@
---- skills/shared/crctl/scripts/lib/execution-control-policy.mjs
-+++ n3_contract_ignores_store
+--- a/skills/shared/crctl/scripts/lib/execution-control-policy.mjs
++++ b/skills/shared/crctl/scripts/lib/execution-control-policy.mjs
 @@ -99,7 +99,7 @@
    if (typeof contractDigest !== 'string' || contractDigest === '') {
      throw new PolicyError('EXECUTION_POLICY_CONFLICT', 'cr.md 已没有合同字段，不能据此放行');

@@ -1,5 +1,5 @@
---- server/internal/governance/execution_deployment.go
-+++ m66_live_run_allowed
+--- a/server/internal/governance/execution_deployment.go
++++ b/server/internal/governance/execution_deployment.go
 @@ -340,7 +340,7 @@
  	if expectedGeneration > 0 && expectedGeneration != generation {
  		return DrainResult{}, fmt.Errorf("%w: 观测时的 generation %d 已不是当前 %d", ErrDeploymentStale, expectedGeneration, generation)

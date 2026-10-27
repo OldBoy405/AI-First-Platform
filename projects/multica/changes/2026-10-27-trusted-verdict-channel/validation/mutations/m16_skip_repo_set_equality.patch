@@ -1,5 +1,5 @@
---- lib/merge-facts.mjs
-+++ m16_skip_repo_set_equality
+--- a/skills/shared/crctl/scripts/lib/merge-facts.mjs
++++ b/skills/shared/crctl/scripts/lib/merge-facts.mjs
 @@ -176,9 +176,6 @@
      if (new Set(ids).size !== ids.length) add(CLIENT_CODES.SCOPE, 'repo_id 重复');
      const expectedSet = sortRepositories(expected.repositories).join(',');
