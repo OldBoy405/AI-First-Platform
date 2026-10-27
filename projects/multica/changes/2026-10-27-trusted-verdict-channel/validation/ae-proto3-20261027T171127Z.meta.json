@@ -1,0 +1,49 @@
+{
+  "at": "2026-10-27T09:11:46.233Z",
+  "container": "666bfec52ac3c3d13b43389891f50c4105833198eab7e4167b76f014a774e823",
+  "preserved_database": "stdd_aifi45_20261022",
+  "target": {
+    "nonce": "64936533cfaf5bd5",
+    "database": "aifi45_tmp_64936533cfaf5bd5",
+    "role": "aifi45_role_64936533cfaf5bd5",
+    "role_oid": "1034546",
+    "database_oid": "1034547"
+  },
+  "test": {
+    "argv": [
+      "go",
+      "test",
+      "./internal/governance",
+      "-run",
+      "^TestChannelProtocol$",
+      "-count=1",
+      "-json",
+      "-timeout=180s"
+    ],
+    "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\multica\\server\\",
+    "exit": 1,
+    "signal": null,
+    "counts": {
+      "run": 8,
+      "pass": 6,
+      "fail": 2,
+      "skip": 0
+    },
+    "leaf_pass": 5,
+    "migrations": [
+      {
+        "path": "server/migrations/648_cr_execution_control.up.sql",
+        "sha256": "89f0c3f061c73dae188f99ada0accd13ab770e72e7a96130eb70c3c8c07b5b61"
+      }
+    ],
+    "package_failures": 1,
+    "output_redacted": false
+  },
+  "original_unchanged": true,
+  "original_release": {
+    "sessions": 0,
+    "locks": 0
+  },
+  "owned_resources_cleaned": true,
+  "error": "test failed, matched no tests, or exposed credentials; inspect evidence"
+}

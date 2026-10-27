@@ -10,6 +10,8 @@
 
 ## P0. 隔离证明（排第一；只阻塞依赖方案 C 的片）
 
+> 方案 C 已采纳。**需要人工提供**的东西与逐条命令见 `validation/p0-plan-c-runbook.md`（两个受限 UID、受审 launcher、私有根、容器 profile/digest、审计、版本 pin）。在拿到这 6 项前，C 路径片保持 block。
+
 - [ ] P0.1 `server/internal/daemon/execution_control_isolation_test.go`：`TestChannelIsolation` Linux 5 leaf（pidfd、`SO_PEERCRED`、私有 socket、CLOEXEC、拒 SCM_RIGHTS）。
 - [ ] P0.2 同顶层 Windows 3 leaf（命名管道 client pid + 令牌 SID + launch 登记）；两平台分别出证，缺 profile 必须 `t.Fatalf`。
 - [ ] P0.3 mutation：改回信任请求体 pid、改回数字 PID 查 `/proc`，分别 RED。

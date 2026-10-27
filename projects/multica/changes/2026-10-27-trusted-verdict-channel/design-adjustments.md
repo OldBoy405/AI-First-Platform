@@ -75,7 +75,7 @@
 - **影响范围**：`slices.md` 正文措辞；P0 仍阻塞 C 路径片（M-S2 daemon trust、S3/S4、S6、S7、S8）。
 - **结论是否受影响**：否。
 
-## ADJ-7（口径裁决，2026-10-27）：merge-facts 的两处规格冲突
+## ADJ-7（口径裁决，2026-10-27，**用户已确认**）：merge-facts 的两处规格冲突
 
 - **404 分层**：SC-MG-009 的 `AUTH_SCOPE_UNVERIFIABLE`（主体不可验证）与 `MERGE_FACTS_NOT_FOUND`（CR 不存在）**都保留**，
   均为 404；只有传输失败/5xx/超时才 `MERGE_FACTS_UNAVAILABLE`。方案 R2.4 的「非 200 一律 UNAVAILABLE」不采用。
@@ -84,21 +84,23 @@
 - **影响范围**：merge-facts 客户端与 handler 的判定分支；不影响必达 leaf 名单。
 - **结论是否受影响**：否。
 
-## ADJ-8（未决规格冲突，2026-10-27）：SC-VC-008 与 key-purpose 矩阵矛盾 —— **需规格修订，未擅自改**
+## ADJ-8（已解决，2026-10-27）：SC-VC-008 不是规格冲突，是两侧实现把 purpose 合成了两种
 
-- **事实**：SC-VC-008 的 GIVEN 明确要求「用 attestation key 签 command」被拒绝（否则不会把 command 列入反例）。
-  但 Node `OPERATIONS`（tools `lib/execution-control-protocol.mjs`）把 `command` 映到 `attestation`，且既有成功测试断言
-  attestation 可签 command；multica 侧刚落的 Go 实现为与 Node 逐字节对齐，也采用同一矩阵。manifest 的 purpose 闭集只有
-  `{attestation, human}`，若照 SC-VC-008 字面执行，`command` 将**没有任何合法签发者**。
-- **已做的**：Go 实现保留与 Node 一致的矩阵（`command→attestation`、`resume→human`），并在
-  `TestChannelProtocol/exact_keys` 中断言 human 签 command/verdict 被拒、attestation 签 resume 被拒。
-  **没有**实现「attestation 签 command 被拒」——因为那会让 command 不可签，属规格级改动。
-- **需要的裁决**（二选一，均由人确认后走规格修订）：
-  1. 给 manifest purpose 闭集与 OPERATIONS 增加 `command`（或 `attestation-command`）专用 purpose，Node/Go 同步；
-  2. 修改 SC-VC-008，把「attestation 签 command」从反例中移除，只保留 resume 越权。
-- **影响范围**：SC-VC-006/008、`protocol` label 的 `exact_keys` 语义、manifest schema、tools 与 multica 两侧实现。
-- **结论是否受影响**：**是**——在该裁决落地前，`exact_keys` 只覆盖了 resume 越权与键集/清单形态，**不覆盖** SC-VC-008 的 command 反例；
-  Gate 3 必须按「部分验证」记录，不得表述为 SC-VC-008 已闭环。
+- **核对结论**：实施方案 v0.6.5 §2 L86-L87 本来就要求三种 purpose —— `control-command` 签 command、
+  `tool-attestation` 只签 verdict/checkpoint/readiness、human-authorizer 只签 resume；L470 复述同一约束。
+  在这个矩阵下「attestation 签 command 被拒」自然成立，**SC-VC-008 无需修改**。
+- **实际偏差**：tools `execution-control-protocol.mjs` 把 purpose 收成 `{attestation, human}` 两种，
+  command 与 verdict 共用 attestation；multica 的 Go 侧为逐字节对齐又照搬了一遍。所以之前 `exact_keys`
+  只能覆盖 resume 越权。
+- **已修**：两侧 `OPERATIONS` 改为三 purpose（command→`control-command`，verdict/checkpoint/readiness→
+  `tool-attestation`，resume→`human`），manifest purpose 闭集同步为三值；Node 把原先「attestation 可签 command」
+  的成功断言改成拒绝断言，并补 SC-VC-008 的 attestation→command 反例；Go 侧补同一反例。
+- **证据**：Node `execution-control-protocol.test.mjs` 3/3；Go `TestChannelProtocol` 8/8（leaf 6），
+  跑次 `af-proto3-*`；共享夹具升到 v2（三把 key、每个 case 自带 `key_id`）。
+- **结论是否受影响**：否。规格不动，实现对齐。
+- **残留提醒**：方案 §2 L85 要求每 key 带 `domains/scope/valid_from/valid_until`、L88 写
+  digest=`SHA256(domain || payload)`，当前实现分别是「只有 pin+path」与「SHA256(payloadBytes)」。
+  这两处**尚未逐条核对**，须在 S3 帧链动工前完成比对（帧链依赖 digest 公式）。
 
 ## ADJ-9（Node 缺口，2026-10-27）：重复 JSON 属性与 target union
 
