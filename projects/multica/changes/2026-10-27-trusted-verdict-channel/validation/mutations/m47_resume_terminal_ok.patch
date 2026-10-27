@@ -1,0 +1,13 @@
+--- server/internal/governance/execution_control_policy.go
++++ m47_resume_terminal_ok
+@@ -327,9 +327,7 @@
+ 		WHERE c.workspace_id=$1::uuid AND c.cr_id=$2`, req.WorkspaceID, req.CRID).Scan(&decision); err != nil {
+ 		return ResumeResult{}, fmt.Errorf("resume head: %w", err)
+ 	}
+-	if decision == "reject" || status == "archived" || req.RootTerminal {
+-		return ResumeResult{}, fmt.Errorf("%w: 不复活已撤销或终态的 root", ErrPolicyRevoked)
+-	}
++
+ 	key := fmt.Sprintf("%s:%d", req.LineageID, req.ExpectedEpoch)
+ 	var found int
+ 	if err := tx.QueryRow(ctx, `

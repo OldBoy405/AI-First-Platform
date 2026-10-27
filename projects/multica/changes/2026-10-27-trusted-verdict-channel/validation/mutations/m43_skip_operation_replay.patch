@@ -1,0 +1,17 @@
+--- server/internal/governance/execution_control_policy.go
++++ m43_skip_operation_replay
+@@ -155,13 +155,7 @@
+ 		WHERE effect_kind = $1 AND effect_ref->>'operation_id' = $2 AND effect_ref->>'quota_key' = $3
+ 		LIMIT 1`, sensitiveEffectKind, req.OperationID, key).Scan(&existing)
+ 	if err == nil {
+-		var stored SensitiveReceipt
+-		if json.Unmarshal(existing, &stored) != nil {
+-			return SensitiveReceipt{}, fmt.Errorf("%w: 已有 receipt 损坏", ErrPolicyUnverified)
+-		}
+-		stored.Replayed = true
+-		stored.Kind = "effect"
+-		return stored, nil
++		_ = existing
+ 	}
+ 	if !errors.Is(err, pgx.ErrNoRows) {
+ 		return SensitiveReceipt{}, fmt.Errorf("sensitive action lookup: %w", err)

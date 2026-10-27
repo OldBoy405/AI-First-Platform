@@ -1,0 +1,11 @@
+--- server/internal/governance/execution_control_policy.go
++++ m42_root_changes_bucket
+@@ -115,7 +115,7 @@
+ 
+ func quotaKey(req SensitiveActionRequest) string {
+ 	// 安装根和信任根不进入额度键：复制它们之后用新 operation_id，仍是同一只桶。
+-	return req.GrantID + "|" + req.Kind + "|" + req.Target + "|" + req.Environment
++	return req.GrantID + "|" + req.Kind + "|" + req.Target + "|" + req.Environment + "|" + req.InstallRoot
+ }
+ 
+ // ApplySensitiveActionTx 消费一次专项额度。同一 operation_id 重放返回原 receipt。

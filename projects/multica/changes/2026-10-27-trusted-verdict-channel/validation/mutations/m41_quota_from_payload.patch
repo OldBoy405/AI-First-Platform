@@ -1,0 +1,17 @@
+--- server/internal/governance/execution_control_policy.go
++++ m41_quota_from_payload
+@@ -173,8 +173,12 @@
+ 		sensitiveEffectKind, key).Scan(&consumed); err != nil {
+ 		return SensitiveReceipt{}, err
+ 	}
+-	if consumed >= grant.Limit {
+-		return SensitiveReceipt{}, fmt.Errorf("%w: 额度 %d 已用尽", ErrPolicyExhausted, grant.Limit)
++	limit := req.PayloadLimit
++	if limit < 1 {
++		limit = grant.Limit
++	}
++	if consumed >= limit {
++		return SensitiveReceipt{}, fmt.Errorf("%w: 额度 %d 已用尽", ErrPolicyExhausted, limit)
+ 	}
+ 	receipt := SensitiveReceipt{
+ 		OperationID: req.OperationID,

@@ -1,0 +1,13 @@
+--- server/internal/governance/execution_control_policy.go
++++ m44_skip_revoke_on_sensitive
+@@ -144,9 +144,7 @@
+ 		WHERE c.workspace_id=$1::uuid AND c.cr_id=$2`, req.WorkspaceID, req.CRID).Scan(&decision); err != nil {
+ 		return SensitiveReceipt{}, fmt.Errorf("sensitive action head: %w", err)
+ 	}
+-	if decision == "reject" {
+-		return SensitiveReceipt{Kind: "no_effect"}, nil
+-	}
++
+ 
+ 	key := quotaKey(req)
+ 	var existing []byte

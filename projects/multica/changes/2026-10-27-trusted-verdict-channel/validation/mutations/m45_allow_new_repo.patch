@@ -1,0 +1,19 @@
+--- server/internal/governance/execution_control_policy.go
++++ m45_allow_new_repo
+@@ -226,15 +226,7 @@
+ 	if err != nil {
+ 		return RepairExtensionResult{}, err
+ 	}
+-	allowed := map[string]bool{}
+-	for _, repo := range grant.Repos {
+-		allowed[repo] = true
+-	}
+-	for _, repo := range req.Repos {
+-		if !allowed[repo] {
+-			return RepairExtensionResult{}, fmt.Errorf("%w: 追加不能新增仓库 %s", ErrPolicyScope, repo)
+-		}
+-	}
++	_ = grant.Repos
+ 	var locked string
+ 	if err := tx.QueryRow(ctx, `SELECT id::text FROM cr WHERE workspace_id=$1::uuid AND cr_id=$2 FOR UPDATE`, req.WorkspaceID, req.CRID).Scan(&locked); err != nil {
+ 		return RepairExtensionResult{}, fmt.Errorf("repair extension lock: %w", err)

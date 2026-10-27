@@ -61,9 +61,9 @@
 
 ## 4. S5 facts、repair/resume、sensitive action（P0）
 
-- [ ] 4.1 `execution_control_fact.go`：`ResolveFactsTx` typed facts，只认已验签来源；`TestChannelPolicyFacts/repair_admit_fact_refs_verified`。
-- [ ] 4.2 `execution_repair_resume.go`：追加域只扩额度、CAS 单份、replay 原结果、signed resume 一次 epoch；`TestChannelPolicyResume`（4 leaf）。
-- [ ] 4.3 sensitive action 四支：新 operation EXHAUSTED、同 operation 原 receipt、撤销交错 `no_effect`、旧账本不可核实拒（`TestChannelPolicyFacts/sensitive_*`）。
+- [x] 4.1 `ResolveVerifiedGrantTx` 只读已验签 `approval_record`。`TestChannelPolicyFacts` 5/5，跑次 `pj-20261027T115443Z`。额度键含 grant，不含安装根/信任根。
+- [x] 4.2 `AppendRepairExtensionTx` / `ConsumeResumeEpochTx`：追加不扩仓库、CAS 只收一份、重放原总额；resume 绑定 grant 且一 epoch 一次，终态/撤销 root 不复活。`TestChannelPolicyResume` 5/5，同一跑次。
+- [x] 4.3 `ApplySensitiveActionTx`：新 operation 在额度用尽时 EXHAUSTED 且原计数不变；同 operation 重放原 receipt；撤销先提交则 `no_effect` 且不写 effect 行；不可核实 grant 零写入。m41–m47 见 `validation/mutations/`。
 - [ ] 4.4 不新增 Go 预算分支；quota deny 只消费 T 裁决（代码审查项，无独立 TC）。
 
 ## 5. S6 ingest、settlement 与 binding（P0）

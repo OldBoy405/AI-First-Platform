@@ -30,6 +30,8 @@ Gate 3 只能在 §2、§3 有明确处置（实现 / 划出范围 / 随上游�
 | `store-state` | 7 | `sx-20261027T110226Z` |
 | `settlement` | 4 | `sh-20261027T110932Z` |
 | `revoked-permit` | 2 | `rr-20261027T112634Z` |
+| `policy-facts` | 5 | `pj-20261027T115443Z` |
+| `policy-resume` | 5 | `pj-20261027T115443Z` |
 | `protocol`（go） | 3 | `ai-proto4-20261027T175236Z` |
 | `merge-facts`（go） | 6 | `mk-20261027T104452Z` |
 | `merge-effects`（go） | 4 | `mz-20261027T105320Z` |
@@ -45,8 +47,6 @@ Gate 3 只能在 §2、§3 有明确处置（实现 / 划出范围 / 随上游�
 
 | label | leaves | 缺什么 | 影响 |
 |---|---|---|---|
-| `policy-facts` | 5 | `ResolveFactsTx` 只消费已验签事实 | repair/sensitive 的准入 |
-| `policy-resume` | 5 | signed resume 只消耗一次 epoch | resume 语义 |
 | `reader` | 10 | 严格模式只由已提交可信事实驱动 | projection fence |
 | `worker` / `d8-recovery` / `client` | 7 / 2 / 1 | daemon 侧 worker、恢复表、客户端 | C 路径运行时 |
 | `composition` / `readiness-composition` | 2 / 1 | **路由挂载**（`merge-facts` 端点至今未接进 `cmd/server/router.go`） | 端点不挂上去，CLI 无法真实调用 |
