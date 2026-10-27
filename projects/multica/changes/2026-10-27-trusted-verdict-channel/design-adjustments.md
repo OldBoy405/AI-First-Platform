@@ -109,6 +109,16 @@
 - **已做的**：Go 侧拒绝 envelope 与 payload 的重复属性，并有 `exact_keys` 断言；**Node 侧已补齐**顶层重复属性拒绝
   （`assertNoDuplicateTopLevelKeys`，扫描器只覆盖顶层对象，envelope/payload 都是单对象，够用），并新增两条负例断言。
 - **影响范围**：跨语言一致性（同一份含重复属性的 envelope，Go 拒、Node 可能接受）。
-- **结论是否受影响**：**已消除（顶层）**——两侧现在都拒 envelope/payload 顶层重复属性，Node 测试 3/3 绿；
-  仍未覆盖：嵌套对象内的重复属性、manifest 任意深度重复属性（Go 的 manifest 解析逐层严格，Node 的 manifest 走同一
-  `parseJSONBytes`，因此也只到顶层）。
+- **结论是否受影响**：**已消除**——Node 扫描器改为每层一个 key 集合（`assertNoDuplicateKeys`），与 Go 逐层严格解析一致；
+  envelope、payload、manifest 任意深度的重复属性两侧都拒，Node 测试 3/3 绿。
+
+## ADJ-10（残余风险，2026-10-27，用户已采纳）：本机环境下对 agent 的隔离不成立
+
+- **事实**：Windows 用户 GOBAO 执行 `wsl.exe -u root` 免密得 uid 0；WSL `user` 属 wheel，`NOPASSWD: ALL`。agent 以 GOBAO 运行。
+- **影响**：P0 两身份互隔离有证据（`validation/p0-isolation-evidence.md`，24/24 + execve trace），但 agent 能改 launcher、
+  读任一私有根、冒充任一身份。设计要防的正是 agent。
+- **处理**：接受为残余风险，不在本机强行关闭（WSL 的设计决定能启动发行版的 Windows 用户即是其 root）。
+  C 路径片按 `channel-component` 组件级验收；**不得声称满足 `strict-production`**；Gate 3 报告单列此项。
+- **解除条件**：agent 改用无法启动该发行版的 Windows 用户运行，或把 T/worker 放到另一台 VM，然后用
+  `validation/p0-run-20261027/scripts/run.sh` 重跑并补一条「agent 身份写 launcher 被拒」的探针。
+- **结论是否受影响**：影响 strict-production 声明，不影响组件级契约。

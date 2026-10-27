@@ -1,0 +1,154 @@
+{
+  "pass": 24,
+  "fail": 0,
+  "results": [
+    {
+      "claim": "worker.identity",
+      "pass": true,
+      "detail": "user=aifi45-worker uid=995 gid=994 groups=994"
+    },
+    {
+      "claim": "worker.no_caps",
+      "pass": true,
+      "detail": "0000000000000000"
+    },
+    {
+      "claim": "worker.no_new_privs",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "claim": "worker.cross_read_denied",
+      "pass": true,
+      "detail": "denied"
+    },
+    {
+      "claim": "worker.write_launcher_denied",
+      "pass": true,
+      "detail": "denied"
+    },
+    {
+      "claim": "worker.write_entrypoint_denied",
+      "pass": true,
+      "detail": "denied"
+    },
+    {
+      "claim": "worker.replace_entrypoint_denied",
+      "pass": true,
+      "detail": "denied"
+    },
+    {
+      "claim": "worker.sudo_denied",
+      "pass": true,
+      "detail": "denied"
+    },
+    {
+      "claim": "worker.setuid0_denied",
+      "pass": true,
+      "detail": "denied"
+    },
+    {
+      "claim": "worker.own_root_writable",
+      "pass": true,
+      "detail": "ok"
+    },
+    {
+      "claim": "reader.identity",
+      "pass": true,
+      "detail": "user=aifi45-reader uid=994 gid=993 groups=993"
+    },
+    {
+      "claim": "reader.no_caps",
+      "pass": true,
+      "detail": "0000000000000000"
+    },
+    {
+      "claim": "reader.no_new_privs",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "claim": "reader.cross_read_denied",
+      "pass": true,
+      "detail": "denied"
+    },
+    {
+      "claim": "reader.write_launcher_denied",
+      "pass": true,
+      "detail": "denied"
+    },
+    {
+      "claim": "reader.write_entrypoint_denied",
+      "pass": true,
+      "detail": "denied"
+    },
+    {
+      "claim": "reader.replace_entrypoint_denied",
+      "pass": true,
+      "detail": "denied"
+    },
+    {
+      "claim": "reader.sudo_denied",
+      "pass": true,
+      "detail": "denied"
+    },
+    {
+      "claim": "reader.setuid0_denied",
+      "pass": true,
+      "detail": "denied"
+    },
+    {
+      "claim": "reader.own_root_writable",
+      "pass": true,
+      "detail": "ok"
+    },
+    {
+      "claim": "launcher.allowlist",
+      "pass": true,
+      "detail": [
+        "LAUNCH denied rc=64 --role root --root /var/lib/aifi45/worker",
+        "LAUNCH denied rc=64 --role worker --root /etc",
+        "LAUNCH denied rc=64 --role worker --root /var/lib/aifi45/reader",
+        "LAUNCH denied rc=64 --role worker --root /var/lib/aifi45/worker --exec /bin/sh"
+      ]
+    },
+    {
+      "claim": "control.probes_can_turn_red",
+      "pass": true,
+      "detail": {
+        "cross_read": "ok",
+        "write_launcher": "ok",
+        "write_entrypoint": "ok",
+        "replace_entrypoint": "ok",
+        "sudo": "ok",
+        "setuid0": "ok"
+      }
+    },
+    {
+      "claim": "trace.clean_only_via_launcher",
+      "pass": true,
+      "detail": {
+        "events": 137,
+        "launches": 6,
+        "sanctioned_execs": 30,
+        "violations": []
+      }
+    },
+    {
+      "claim": "control.second_path_detected",
+      "pass": true,
+      "detail": {
+        "events": 49,
+        "launches": 0,
+        "sanctioned_execs": 0,
+        "violations": [
+          {
+            "pid": "8926",
+            "uid": "995",
+            "file": "/usr/bin/id"
+          }
+        ]
+      }
+    }
+  ]
+}

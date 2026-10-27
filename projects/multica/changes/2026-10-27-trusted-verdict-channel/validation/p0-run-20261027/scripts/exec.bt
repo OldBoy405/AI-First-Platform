@@ -1,0 +1,2 @@
+tracepoint:sched:sched_process_fork { printf("FORK %llu %d %d\n", nsecs, args->parent_pid, args->child_pid); }
+tracepoint:sched:sched_process_exec { printf("EXEC %llu %d %d %s\n", nsecs, args->pid, uid, str(args->filename)); }

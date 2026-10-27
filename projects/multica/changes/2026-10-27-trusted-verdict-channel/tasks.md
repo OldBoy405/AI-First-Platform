@@ -15,10 +15,10 @@
 - [ ] P0.1 `server/internal/daemon/execution_control_isolation_test.go`：`TestChannelIsolation` Linux 5 leaf（pidfd、`SO_PEERCRED`、私有 socket、CLOEXEC、拒 SCM_RIGHTS）。
 - [ ] P0.2 同顶层 Windows 3 leaf（命名管道 client pid + 令牌 SID + launch 登记）；两平台分别出证，缺 profile 必须 `t.Fatalf`。
 - [ ] P0.3 mutation：改回信任请求体 pid、改回数字 PID 查 `/proc`，分别 RED。
-- [ ] P0.4 **部分**：worker↔reader 两身份隔离有证据（2026-10-27），**对 agent 不成立**（GOBAO 可 `wsl -u root` 免密、wheel NOPASSWD），C 路径继续 block：两个真实受限身份（uid 995/994）、受审 launcher
-  （root 拥有 0755、白名单参数、`setpriv` 降权、sha256 已登记）、各自 0700 私有根；10 条正向证明全 PASS，
-  4 条反向对照证明探针可红。证据 `validation/p0-isolation-evidence.md`，脚本归档 `validation/p0-probe-scripts/`。
-  **仍缺**：auditd（WSL2 内核无 audit）、容器 profile（本路径用宿主进程）、Windows 侧身份。
+- [x] P0.4 环境前提已建立（2026-10-27，第二版）：两个真实受限身份、root 拥有的 launcher+entrypoint（sha256 已登记）、
+  0700 私有根；经 launcher 的 24 条探针全 PASS（含 2 条反向对照），bpftrace execve trace 证明 clean 窗口 0 旁路、
+  control 窗口能抓到旁路。证据 `validation/p0-isolation-evidence.md` + `validation/p0-run-20261027/`。
+  **对 agent 不成立**，按 ADJ-10 记为残余风险：C 路径片可做，但只按组件级验收，不得声称 strict-production。
 
 ## 1. 迁移与 schema（P0，阻塞全片）
 

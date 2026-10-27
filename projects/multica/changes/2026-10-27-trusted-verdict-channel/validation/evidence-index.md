@@ -47,7 +47,7 @@ mutant run（m2 状态机）exit=1；**同一时刻**用 checker 校验 green �
 
 ## P0 隔离前提（环境侧）
 
-`validation/p0-isolation-evidence.md`：两个受限身份 + 受审 launcher + 私有根，10 条正向 + 4 条反向对照。
+`validation/p0-isolation-evidence.md`：两个受限身份 + root 拥有的 launcher/entrypoint + 私有根；24 条经 launcher 的探针 + execve trace（`p0-run-20261027/`）。对 agent 不成立，见 ADJ-10。
 **注意**：它证明的是环境前提，不等于 `isolation` label（那 5 条代码侧探针尚未实现）。
 
 ## 命名注意

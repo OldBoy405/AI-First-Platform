@@ -1,4 +1,7 @@
-# P0 隔离证明 — 方案 C 落地步骤（需人工执行）
+# P0 隔离证明 — 方案 C 落地步骤
+
+> **2026-10-27 已执行，以实测为准**：下文 §2 的命令是最初草案，已被 `validation/p0-run-20261027/scripts/` 取代。
+> 与草案的差异：entrypoint 放在 root 拥有的 `/usr/local/lib/aifi45/`（草案放私有根，worker 可替换）；launcher 要求 role 与 root 固定配对；auditd 在 WSL 非初始 PID 命名空间里无法启用，改用 bpftrace execve trace；agent 可 `wsl -u root`，对 agent 的隔离不成立（ADJ-10）。结论见 `validation/p0-isolation-evidence.md`。
 
 > 目标：证明「两个**真实受限**身份下，worker 无法读取/改写它不该碰的东西」，并把这份证明作为
 > C 路径切片（M-S2 daemon trust、S3/S4 worker、S6 client、S7 composition、S8 observer）的前置。
