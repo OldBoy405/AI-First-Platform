@@ -1,7 +1,7 @@
 # 可信 T committed verdict channel：T runtime 与 merge 门禁（tools 侧）
 
 <!-- source_hash: 527cc945aa617dd5 -->
-<!-- generated_at: 2026-10-27T15:15:13.970035 -->
+<!-- generated_at: 2026-10-27T15:23:58.453605 -->
 <!-- canonical: canonical/proposals/2026-10-27-trusted-verdict-channel.yaml -->
 
 ## Why

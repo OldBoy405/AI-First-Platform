@@ -1,0 +1,37 @@
+meta:
+  task_id: deployment-readiness
+  change_id: 2026-10-27-trusted-verdict-channel
+  created: '2026-10-27'
+  task_type: code
+  system: multica server（governance/daemon/cmd/server）与 D7 部署就绪控制面
+  preconditions:
+    - Gate 2 之后才实现与运行；当前 CP 全部未实施、未运行。
+    - 使用本轮独占 nonce 库；部署观测用受保护 profile/实例清单，缺清单时记 UNVERIFIED，不以夹具冒充生产 READY。
+    - 真实 Tx primitives 与真实 worker→T→签名→DB 链；activation CAS/锁竞争用隔离夹具验证真实事务原语。
+    - MUST 核真实子用例 PASS 行；父测试 PASS 不能遮住子用例全 SKIP。
+    - leaf 全名以 `validation/channel-test-expectations.json` 为唯一权威。
+steps:
+  - id: CP-DR-001
+    description: SC-DR-001 / 自报值、空声明、仅 marker 一致均不得产生可信 READY；受保护观测为正对照。
+    action: go test ./server/internal/daemon -run '^TestChannelDeploymentObserver$' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelDeploymentObserver'}]
+  - id: CP-DR-002
+    description: SC-DR-002 / inventory 覆盖全部仍有资格实例，离线旧副本不可被单个合格副本掩盖，换代使旧 verdict 失效。
+    action: go test ./server/internal/daemon -run '^TestChannelDeploymentObserver$/(inventory_all_instances|generation_supersedes)' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelDeploymentObserver/inventory_all_instances'}, {type: stdout_contains, expected: '--- PASS: TestChannelDeploymentObserver/generation_supersedes'}]
+  - id: CP-DR-003
+    description: SC-DR-003 / readiness 结果持久化不可改；verify-channel 只出 READY_COMPONENT，strict 缺 decider 必 NOT_READY。
+    action: go test ./server/internal/governance -run '^TestChannelReadiness(Protocol|ComponentBoundary)$' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelReadinessProtocol'}, {type: stdout_contains, expected: '--- PASS: TestChannelReadinessComponentBoundary'}]
+  - id: CP-DR-004
+    description: SC-DR-004 / 并发启用、签后变代、重复 nonce、DB 失败均不误激活；STOP_NEW 不改历史或预算。
+    action: go test ./server/internal/governance -run '^TestChannelPolicyActivation$' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelPolicyActivation'}]
+  - id: CP-DR-005
+    description: SC-DR-005 / 旧 run 存活、未知未决任务、签发后新增 legacy 工作或 work revision 漂移时拒绝 drain/retire。
+    action: go test ./server/internal/governance -run '^TestChannelReadinessRetirement$' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelReadinessRetirement'}]
+  - id: CP-DR-006
+    description: SC-DR-006 / issued 请求在 STOP_NEW/过期后精确恢复，换代只能拒绝或加载原固定快照，不重签 ID。
+    action: go test ./server/internal/daemon -run '^TestChannelDeployment(Access|Launch)$' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelDeploymentAccess'}, {type: stdout_contains, expected: '--- PASS: TestChannelDeploymentLaunch'}]

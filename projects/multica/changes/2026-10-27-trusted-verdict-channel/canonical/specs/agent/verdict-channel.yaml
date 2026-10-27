@@ -1,0 +1,158 @@
+meta:
+  task_id: verdict-channel
+  change_id: 2026-10-27-trusted-verdict-channel
+  created: '2026-10-27'
+  task_type: code
+  system: multica server（governance/daemon/service/cmd）与隔离 Postgres nonce 库
+  preconditions:
+    - Gate 2 之后才实现与运行；当前 CP 全部未实施、未运行，不构成测试证据。
+    - 从 `multica/server` 执行；`DATABASE_URL` 必须指向本轮独占 nonce 库（`scripts/aifi45-db/run.mjs`），禁止默认共享库。
+    - governance 全包需 `AIFI45_TOOLS_ROOT=C:/Users/GOBAO/Downloads/AI/tools`，否则 TC-AUTH-010 按设计 Fatal。
+    - 真实路由/daemon/worker 与真实 Tx primitives；不以 fake enqueuer、直接 walker 或纯函数替身代证。
+    - MUST 精确选中顶层测试并核真实子用例 PASS 行；零匹配、skip、编译错、连接错均不算通过。
+    - 每条 leaf 全名以 `validation/channel-test-expectations.json` 为唯一权威，本文件只引用不另立名单。
+steps:
+  - id: CP-VC-001
+    description: SC-VC-001 / strict selection 不可降级、Unknown 拒绝、legacy 只由目录证明。
+    action: go test ./server/internal/governance -run '^TestChannelFoundationSelection$' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelFoundationSelection'}]
+  - id: CP-VC-002
+    description: SC-VC-002 / control reservation 不可执行、proposed task 固定、permit 后才 enqueue。
+    action: go test ./server/internal/governance -run '^TestChannelFoundationReservation$/control_reservation_not_runnable' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelFoundationReservation/control_reservation_not_runnable'}]
+  - id: CP-VC-003
+    description: SC-VC-003 / root+task+settlement 同 Tx、rollback 零新增零通知、固定 ID 冲突须逐字段等同。
+    action: go test ./server/internal/governance -run '^TestChannelFoundationReservation$/fixed_id_conflict_and_rollback' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelFoundationReservation/fixed_id_conflict_and_rollback'}]
+  - id: CP-VC-004
+    description: SC-VC-004 / adoption 与终态并发只认 55P03，附无锁冲突正对照。
+    action: go test ./server/internal/governance -run '^TestChannelFoundationReservation$/root_adoption_terminal_race' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelFoundationReservation/root_adoption_terminal_race'}]
+  - id: CP-VC-005
+    description: SC-VC-005 / FreshWork 权威注册、同 origin 第二次注册拒、UNKNOWN 不出 selection。
+    action: go test ./server/internal/governance -run '^TestChannelFoundationFreshWork$' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelFoundationFreshWork'}]
+  - id: CP-VC-006
+    description: SC-VC-006 / purpose/domain/scope 任一错用或缺字段即拒。
+    action: go test ./server/internal/governance -run '^TestChannelProtocol$/purpose_domain_scope' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelProtocol/purpose_domain_scope'}]
+  - id: CP-VC-007
+    description: SC-VC-007 / Go↔Node 原字节双向向量与一致 digest。
+    action: go test ./server/internal/governance -run '^TestChannelProtocol$/cross_language_vectors' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelProtocol/cross_language_vectors'}]
+  - id: CP-VC-008
+    description: SC-VC-008 / exact keys 与 key-purpose：attestation/human 越用、重复键、union 双分支均拒。
+    action: go test ./server/internal/governance -run '^TestChannelProtocol$/exact_keys' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelProtocol/exact_keys'}]
+  - id: CP-VC-009
+    description: SC-VC-009 / request 与 store-epoch-seq 唯一、原字节重放返原记录、回滚无残留。
+    action: go test ./server/internal/governance -run '^TestChannelStoreState$/request_unique_replay' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelStoreState/request_unique_replay'}]
+  - id: CP-VC-010
+    description: SC-VC-010 / 帧链 digest 断链、跳号、占位签名一律拒收。
+    action: go test ./server/internal/governance -run '^TestChannelStoreState$/frame_chain_digest' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelStoreState/frame_chain_digest'}]
+  - id: CP-VC-011
+    description: SC-VC-011 / cursor 行锁与 CAS、每 lineage 单 open、旧 fence 不写。
+    action: go test ./server/internal/governance -run '^TestChannelStoreState$/cursor_single_open' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelStoreState/cursor_single_open'}]
+  - id: CP-VC-012
+    description: SC-VC-012 / 状态受限转换、uncertain 冻结、ACK 不释 slot、created 才可取消、verdict 不可篡改。
+    action: go test ./server/internal/governance -run '^TestChannelStoreState$/(state_machine_and_ack|verdict_immutable)' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelStoreState/state_machine_and_ack'}, {type: stdout_contains, expected: '--- PASS: TestChannelStoreState/verdict_immutable'}]
+  - id: CP-VC-013
+    description: SC-VC-013 / 撤销先提交则 no_effect、effect 先提交不追溯、撤销不等待 slot。
+    action: go test ./server/internal/governance -run '^TestChannelStoreState$/revoke_ordering' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelStoreState/revoke_ordering'}]
+  - id: CP-VC-014
+    description: SC-VC-014 / stop 按 T sequence 生效，前一 effect settled 后才发后续。
+    action: go test ./server/internal/governance -run '^TestChannelStoreState$/stop_ordering' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelStoreState/stop_ordering'}]
+  - id: CP-VC-015
+    description: SC-VC-015 / 恢复表五类观察映射到固定动作，freeze 不猜未消费。
+    action: go test ./server/internal/daemon -run '^TestChannelRecovery$' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelRecovery'}]
+  - id: CP-VC-016
+    description: SC-VC-016 / 普通 restart 保 epoch/seq、旧 fence 不接单、key rotation 不改历史。
+    action: go test ./server/internal/daemon -run '^TestChannelRecovery$/restart_keeps_epoch' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelRecovery/restart_keeps_epoch'}]
+  - id: CP-VC-017
+    description: SC-VC-017 / repair admit 的 fact_refs 必须指向已验签 grant，额度不来自解码 payload。
+    action: go test ./server/internal/governance -run '^TestChannelPolicyFacts$/repair_admit_fact_refs_verified' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelPolicyFacts/repair_admit_fact_refs_verified'}]
+  - id: CP-VC-018
+    description: SC-VC-018 / repair 追加只扩额度、CAS 只接受一份、重放返回原结果。
+    action: go test ./server/internal/governance -run '^TestChannelPolicyResume$/repair_extension_' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelPolicyResume/repair_extension_append'}, {type: stdout_contains, expected: '--- PASS: TestChannelPolicyResume/repair_extension_double_append_race'}, {type: stdout_contains, expected: '--- PASS: TestChannelPolicyResume/repair_extension_replay'}]
+  - id: CP-VC-019
+    description: SC-VC-019 / signed resume 绑定 stop_ref/subject/epoch，只一次 epoch，不复活 revoked/terminal。
+    action: go test ./server/internal/governance -run '^TestChannelPolicyResume$/signed_resume' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelPolicyResume/signed_resume'}]
+  - id: CP-VC-020
+    description: SC-VC-020 / sensitive action：新 operation 必 EXHAUSTED、同 operation 重放原 receipt、撤销交错 no_effect、旧账本不可核实拒。
+    action: go test ./server/internal/governance -run '^TestChannelPolicyFacts$/sensitive_' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelPolicyFacts/sensitive_copy_root_new_operation'}, {type: stdout_contains, expected: '--- PASS: TestChannelPolicyFacts/sensitive_same_operation_replay'}, {type: stdout_contains, expected: '--- PASS: TestChannelPolicyFacts/sensitive_revoke_interleaving'}, {type: stdout_contains, expected: '--- PASS: TestChannelPolicyFacts/sensitive_legacy_ledger_unverified'}]
+  - id: CP-VC-021
+    description: SC-VC-021 / T commit+M rollback 重送原 bytes；M commit 后丢响应只返原 mapping；不退款。
+    action: go test ./server/internal/governance -run '^TestChannelIngestSettlement$' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelIngestSettlement'}]
+  - id: CP-VC-022
+    description: SC-VC-022 / ACK 只持久化、不发 task、不释 slot；pending/deny/stopped 结算 no_effect。
+    action: go test ./server/internal/governance -run '^TestChannelIngestSettlement$/ack_no_slot_release' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelIngestSettlement/ack_no_slot_release'}]
+  - id: CP-VC-023
+    description: SC-VC-023 / 启动前 643–645 与 envelope/head/challenge 全匹配，失败不启动 agent、不二次消费。
+    action: go test ./server/internal/governance -run '^TestChannelIngestBinding$' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelIngestBinding'}]
+  - id: CP-VC-024
+    description: SC-VC-024 / 跨签发 challenge、旧 dispatched_at、同 nonce 异 proof、claim 后转终态全部拒。
+    action: go test ./server/internal/governance -run '^TestChannelIngestBinding$/(cross_issuance_challenge|same_task_redispatch_challenge|same_nonce_different_proof|claim_terminated_before_consume)' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelIngestBinding/cross_issuance_challenge'}, {type: stdout_contains, expected: '--- PASS: TestChannelIngestBinding/same_task_redispatch_challenge'}, {type: stdout_contains, expected: '--- PASS: TestChannelIngestBinding/same_nonce_different_proof'}, {type: stdout_contains, expected: '--- PASS: TestChannelIngestBinding/claim_terminated_before_consume'}]
+  - id: CP-VC-025
+    description: SC-VC-025 / 无 committed T 时零 root/task，重复 settle 只返原 mapping，未 settled 不接受换候选。
+    action: go test ./server/internal/governance -run '^TestChannelReader$' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelReader'}]
+  - id: CP-VC-026
+    description: SC-VC-026 / strict fence 按持久 selection：删字段仍 strict、Unknown 不降 legacy、legacy 行为不变。
+    action: go test ./server/internal/governance -run '^TestChannelReader$/(selected_strict_field_deleted|unknown_selection_not_legacy|never_selected_legacy_unchanged)' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelReader/selected_strict_field_deleted'}, {type: stdout_contains, expected: '--- PASS: TestChannelReader/unknown_selection_not_legacy'}, {type: stdout_contains, expected: '--- PASS: TestChannelReader/never_selected_legacy_unchanged'}]
+  - id: CP-VC-027
+    description: SC-VC-027 / 终态 fence 并集规则：缺 claim 409、重领仍 409、读失败拒、收尾不被 STOP_NEW 阻断。
+    action: go test ./server/internal/governance -run '^TestChannelReader$/(terminal_report_without_claim|terminal_fence_survives_reclaim|legacy_consumed_keeps_fence|terminal_fence_read_failure)' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelReader/terminal_report_without_claim'}, {type: stdout_contains, expected: '--- PASS: TestChannelReader/terminal_fence_survives_reclaim'}, {type: stdout_contains, expected: '--- PASS: TestChannelReader/legacy_consumed_keeps_fence'}, {type: stdout_contains, expected: '--- PASS: TestChannelReader/terminal_fence_read_failure'}]
+  - id: CP-VC-028
+    description: SC-VC-028 / 648 up 建 14 表及触发器/索引/约束，down 全撤，reapply 无遗留业务行；每表至少一个 leaf。
+    action: go test ./server/internal/governance -run '^TestChannelMigrationAfter(Up|Down|Reapply)$' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelMigrationAfterUp'}, {type: stdout_contains, expected: '--- PASS: TestChannelMigrationAfterDown'}, {type: stdout_contains, expected: '--- PASS: TestChannelMigrationAfterReapply'}]
+  - id: CP-VC-029
+    description: SC-VC-029 / 643–647 夹具行与对象不变，无 648 孤儿对象。
+    action: go test ./server/internal/governance -run '^TestChannelMigrationProtectedData$' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelMigrationProtectedData'}]
+  - id: CP-VC-030
+    description: SC-VC-030 / merge-facts 只按认证主体解析 workspace，他人 crID 404，回退凭据 403。
+    action: go test ./server/internal/governance -run '^TestChannelMergeFacts$/(authn_workspace|reject_fallback_credentials)' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelMergeFacts/authn_workspace'}, {type: stdout_contains, expected: '--- PASS: TestChannelMergeFacts/reject_fallback_credentials'}]
+  - id: CP-VC-031
+    description: SC-VC-031 / code_source_freeze 追加写、部分唯一、撤销同事务置位不改历史。
+    action: go test ./server/internal/governance -run '^TestChannelMergeFacts$/source_freeze_append_only' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelMergeFacts/source_freeze_append_only'}]
+  - id: CP-VC-032
+    description: SC-VC-032 / 响应闭集、摘要自洽、集合等于 grant、绑定三态、head_revoked 唯一谓词。
+    action: go test ./server/internal/governance -run '^TestChannelMergeFacts$/(response_closed_set|current_binding_tristate)' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelMergeFacts/response_closed_set'}, {type: stdout_contains, expected: '--- PASS: TestChannelMergeFacts/current_binding_tristate'}]
+  - id: CP-VC-033
+    description: SC-VC-033 / 端点失败码闭集与 CLI 外层分层优先级。
+    action: go test ./server/internal/governance -run '^TestChannelMergeFacts$/failure_code_layering' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelMergeFacts/failure_code_layering'}]
+  - id: CP-VC-034
+    description: SC-VC-034 / reserve 持 CR 共享锁并同事务重验 head/撤销/冻结行/input_digest。
+    action: go test ./server/internal/governance -run '^TestChannelMergeEffects$/reserve_shared_lock' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelMergeEffects/reserve_shared_lock'}]
+  - id: CP-VC-035
+    description: SC-VC-035 / attempt 四支互斥：200 原结果 / 200 原 mapping / 201 新 command / 409 CONFLICT。
+    action: go test ./server/internal/governance -run '^TestChannelMergeEffects$/attempt_semantics' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelMergeEffects/attempt_semantics'}]
+  - id: CP-VC-036
+    description: SC-VC-036 / 码序先撤销/head 再比摘要，非授权失败不写 halted，finalize 亦为独立 effect。
+    action: go test ./server/internal/governance -run '^TestChannelMergeEffects$/(code_order|non_auth_failure_no_halt)' -count=1 -v
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelMergeEffects/code_order'}, {type: stdout_contains, expected: '--- PASS: TestChannelMergeEffects/non_auth_failure_no_halt'}]

@@ -1,0 +1,61 @@
+meta:
+  task_id: verdict-channel-runtime
+  change_id: 2026-10-27-trusted-verdict-channel
+  created: '2026-10-27'
+  task_type: code
+  system: tools T runtime（协议、受保护 store、worker/fence/恢复、facts 规则、readiness 求值器）
+  preconditions:
+    - Gate 2 之后才实现与运行；当前 CP 全部未实施、未运行。
+    - 从 `tools/skills/shared/crctl/scripts` 执行；隔离目录与临时密钥，不触碰真实 workspace 或保留库。
+    - 崩溃/并发用确定性 barrier 与故障注入；skip、零匹配、编译错、连接错不算通过。
+    - 与 multica 侧互操作向量由本仓生成/校验，原字节不重序列化。
+    - leaf 标题在文件内唯一，全名以 `validation/channel-test-expectations.json` 为唯一权威。
+steps:
+  - id: CP-TR-001
+    description: SC-TR-001 / purpose/domain/scope 三元组严格匹配，Go↔Node 同字节同 digest。
+    action: node --test --test-reporter=tap test/execution-control-protocol.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'verify purpose/domain/scope'}]
+  - id: CP-TR-002
+    description: SC-TR-002 / exact keys、双 key-purpose、重复键与非法路径均拒。
+    action: node --test --test-reporter=tap test/execution-control-protocol.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'exact keys 与 key-purpose'}]
+  - id: CP-TR-003
+    description: SC-TR-003 / ApplyOnce 一次提交、原字节重放、fsync 失败无 frame。
+    action: node --test --test-reporter=tap test/execution-control-store.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'apply once 与原字节重放'}]
+  - id: CP-TR-004
+    description: SC-TR-004 / 冻结帧链拒绝断链、跳号与占位签名。
+    action: node --test --test-reporter=tap test/execution-control-store.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '冻结帧链拒绝断链与占位签名'}]
+  - id: CP-TR-005
+    description: SC-TR-005 / 旧 fence 不得执行新操作。
+    action: node --test --test-reporter=tap test/execution-control-worker.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '旧 fence 不得执行新操作'}]
+  - id: CP-TR-006
+    description: SC-TR-006 / 恢复表固定动作，freeze 不建空 store、不清 slot。
+    action: node --test --test-reporter=tap test/execution-control-recovery.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '恢复表固定动作'}]
+  - id: CP-TR-007
+    description: SC-TR-007 / 普通 restart 保持 epoch/sequence 并重发原 bytes。
+    action: node --test --test-reporter=tap test/execution-control-recovery.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '普通 restart 保持 epoch 与 sequence'}]
+  - id: CP-TR-008
+    description: SC-TR-008 / repair-admit 拒绝未验签 payload，额度不来自解码内容。
+    action: node --test --test-reporter=tap test/execution-control-policy.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'repair-admit 拒绝未验签 payload'}]
+  - id: CP-TR-009
+    description: SC-TR-009 / 追加 CAS 只接受一份。
+    action: node --test --test-reporter=tap test/execution-control-policy.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'repair 追加 CAS 只接受一份'}]
+  - id: CP-TR-010
+    description: SC-TR-010 / cr.md 合同字段与 store 不一致即拒，缺字段不改判 legacy。
+    action: node --test --test-reporter=tap test/execution-control-policy.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'cr.md 合同字段与 store 不一致即拒'}]
+  - id: CP-TR-011
+    description: SC-TR-011 / sensitive action 只接受原 operation 与精确 target。
+    action: node --test --test-reporter=tap test/execution-control-policy.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'sensitive action 只接受原 operation'}]
+  - id: CP-TR-012
+    description: SC-TR-012 / readiness 拒绝宽松输入；verify-channel 只出 READY_COMPONENT。
+    action: node --test --test-reporter=tap test/execution-control-readiness.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'readiness 拒绝宽松输入'}, {type: stdout_contains, expected: 'verify-channel 只出 READY_COMPONENT'}]
