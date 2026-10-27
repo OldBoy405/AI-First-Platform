@@ -1,0 +1,12 @@
+--- lib/merge-effects.mjs
++++ m24_push_before_unknown
+@@ -190,8 +190,8 @@
+   }
+ 
+   // 先写 unknown 再 push：这是「旧 push 延迟完成不得误判零 effect」的唯一保证。
++  const pushed = await push({ effect });
+   await persistJournal({ state: 'unknown', attempt: reserved?.attempt ?? journal?.attempt ?? 1 });
+-  const pushed = await push({ effect });
+   await report({ effect, attempt: reserved?.attempt, result: pushed });
+   if (pushed?.ok === false) {
+     await persistJournal({ state: 'uncertain', halted: { at_effect: effect.id, reason: 'publish_failed' } });

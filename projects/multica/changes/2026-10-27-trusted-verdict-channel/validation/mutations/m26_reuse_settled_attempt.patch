@@ -1,0 +1,11 @@
+--- lib/merge-effects.mjs
++++ m26_reuse_settled_attempt
+@@ -140,7 +140,7 @@
+     }
+     return { action: 'conflict', attempt: open.attempt, status: SERVER_CODES.CONFLICT, reason: 'uncertain' };
+   }
+-  return { action: 'create', attempt: last.attempt + 1, status: SERVER_CODES.CREATED, replayed: false };
++  return { action: 'create', attempt: last.attempt, status: SERVER_CODES.CREATED, replayed: false };
+ }
+ 
+ // 码序：认证与归属先于 head、head 先于摘要。HEAD_MOVED 不能被 INPUT_MISMATCH 遮盖。

@@ -1,0 +1,106 @@
+TAP version 13
+# Subtest: merge-effect reserve 持 CR 共享锁
+ok 1 - merge-effect reserve 持 CR 共享锁
+  ---
+  duration_ms: 1.3321
+  type: 'test'
+  ...
+# Subtest: merge-effect 撤销先提交则零 effect
+ok 2 - merge-effect 撤销先提交则零 effect
+  ---
+  duration_ms: 0.1629
+  type: 'test'
+  ...
+# Subtest: merge-effect reserve 先提交则撤销不追溯
+ok 3 - merge-effect reserve 先提交则撤销不追溯
+  ---
+  duration_ms: 0.1797
+  type: 'test'
+  ...
+# Subtest: merge-effect 远端含 expected 不重推
+ok 4 - merge-effect 远端含 expected 不重推
+  ---
+  duration_ms: 0.198
+  type: 'test'
+  ...
+# Subtest: merge-effect intent 且远端未变须重新 reserve
+ok 5 - merge-effect intent 且远端未变须重新 reserve
+  ---
+  duration_ms: 0.6775
+  type: 'test'
+  ...
+# Subtest: merge-effect 远端分叉进入 uncertain 且禁止新 publish
+ok 6 - merge-effect 远端分叉进入 uncertain 且禁止新 publish
+  ---
+  duration_ms: 0.4313
+  type: 'test'
+  ...
+# Subtest: merge-effect 部分发布后 base 漂移即 halted
+ok 7 - merge-effect 部分发布后 base 漂移即 halted
+  ---
+  duration_ms: 0.1014
+  type: 'test'
+  ...
+# Subtest: merge-effect finalize 也须 reserve
+ok 8 - merge-effect finalize 也须 reserve
+  ---
+  duration_ms: 0.178
+  type: 'test'
+  ...
+# Subtest: merge-effect 非 base 输入变化拒绝恢复
+ok 9 - merge-effect 非 base 输入变化拒绝恢复
+  ---
+  duration_ms: 0.5816
+  type: 'test'
+  ...
+# Subtest: merge-effect 旧 push 延迟完成不得误判零 effect
+ok 10 - merge-effect 旧 push 延迟完成不得误判零 effect
+  ---
+  duration_ms: 0.2138
+  type: 'test'
+  ...
+# Subtest: merge-effect 已确认后回退至 prev 判为改写
+ok 11 - merge-effect 已确认后回退至 prev 判为改写
+  ---
+  duration_ms: 0.2106
+  type: 'test'
+  ...
+# Subtest: merge-effect 服务端 no_effect 终态后以新 attempt 恢复
+ok 12 - merge-effect 服务端 no_effect 终态后以新 attempt 恢复
+  ---
+  duration_ms: 0.1589
+  type: 'test'
+  ...
+# Subtest: merge-effect attempt 语义
+ok 13 - merge-effect attempt 语义
+  ---
+  duration_ms: 0.1339
+  type: 'test'
+  ...
+# Subtest: merge-effect 先判 head 再比摘要
+ok 14 - merge-effect 先判 head 再比摘要
+  ---
+  duration_ms: 0.1098
+  type: 'test'
+  ...
+# Subtest: merge-effect 认证与归属码序及非授权失败
+ok 15 - merge-effect 认证与归属码序及非授权失败
+  ---
+  duration_ms: 0.1852
+  type: 'test'
+  ...
+# Subtest: merge-effect 远端正常前进不判改写
+ok 16 - merge-effect 远端正常前进不判改写
+  ---
+  duration_ms: 0.0712
+  type: 'test'
+  ...
+1..16
+# tests 16
+# suites 0
+# pass 16
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 72.75

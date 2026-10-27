@@ -84,7 +84,12 @@
   m21（摘要含易变字段）只红 `response_closed_set`、m22（绑定恒 ok）只红 `current_binding_tristate`、
   m23（不 supersede）只红 `source_freeze_append_only`。跑次 `mk-20261027T104452Z`，checker `merge-facts --side go` OK。
   注：摘要口径改为 `repo_id:approved_source_sha:approved_revision`，与 tools 侧逐字节一致；路由**尚未**接进 `cmd/server/router.go`（S7 composition）。
-- [ ] 7.2 `code_source_freeze` 追加写与撤销同事务置位（与 1.1 的索引配套）；`source_freeze_append_only`。
+  - [x] 7.1c tools 侧 `merge-effects.mjs` + 16 条必达 leaf：journal 三态（intent/unknown/confirmed/uncertain）、
+    恢复矩阵只看祖先关系、`attempt` 四支、`input_digest` 覆盖项、码序 `INVALID>UNTRUSTED>NOT_FOUND>REVOKED>HEAD_MOVED>INPUT_MISMATCH>CONFLICT>UNAVAILABLE`、
+    非授权失败不写 halted，以及 **push 之前必须先把 journal 写成 unknown**（顺序断言，不是靠注释）。
+    Node 16/16，跑次 `me-20261027T104637Z`，checker `merge-effects --side node` OK。变异 m24（先 push 后写 unknown）只红 leaf 1、
+    m25（NOT_FOUND 写 halted）只红 leaf 15、m26（复用已 settled 的 attempt 号）红 leaf 12/13、m27（confirmed 后回退当 noop）只红 leaf 11。
+- [x] 7.2 `code_source_freeze` 追加写与撤销同事务置位（与 1.1 的索引配套）；`source_freeze_append_only` —— 已在 7.1 一并交付（`AppendCodeSourceFreezeTx`/`RevokeCodeSourceFreezeTx`），同上跑次与变异 m23。
 - [ ] 7.3 `POST /api/daemon/crs/{crID}/merge-effects`：`op=reserve|report`、CR 行 `FOR SHARE`、`input_digest` 重验、attempt 四支、码序；`TestChannelMergeEffects`（4 leaf）。
 - [ ] 7.4 与 tools 侧 `merge-facts`/`merge-effects` 客户端的跨语言联调（契约以 R2.4/R3.1 为准）。
 

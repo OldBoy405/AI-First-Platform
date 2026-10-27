@@ -1,0 +1,11 @@
+--- lib/merge-effects.mjs
++++ m25_not_found_writes_halted
+@@ -154,7 +154,7 @@
+ }
+ 
+ // 非授权失败不写 halted：halted 只记录「授权/事实层面走不下去」的原因。
+-export const NON_AUTHORIZING_FAILURES = Object.freeze(['INVALID', 'UNTRUSTED', 'NOT_FOUND', 'UNAVAILABLE']);
++export const NON_AUTHORIZING_FAILURES = Object.freeze(['INVALID', 'UNTRUSTED', 'UNAVAILABLE']);
+ 
+ export function shouldWriteHalted(code) {
+   return !NON_AUTHORIZING_FAILURES.includes(code);

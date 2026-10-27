@@ -1,0 +1,11 @@
+--- lib/merge-effects.mjs
++++ m27_confirmed_rewind_noop
+@@ -109,7 +109,7 @@
+     }
+     if (remote === 'at_prev' || remote === 'below_prev') {
+       // 已确认的提交被退回：这是 history rewrite，不是「零 effect」。
+-      return { action: ACTIONS.HALT, reason: 'uncertain', detail: 'confirmed 后远端退回 prev：判 history rewrite' };
++      return { action: ACTIONS.NOOP, reason: '', detail: 'treated as noop' };
+     }
+     return { action: ACTIONS.HALT, reason: 'uncertain', detail: `confirmed 后远端为 ${remote}` };
+   }
