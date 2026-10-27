@@ -161,3 +161,27 @@ steps:
     description: SC-VC-037 / P0 daemon 侧隔离：只用登记进程事实，Linux 与 Windows 各自出证（缺 profile 必须 Fatal）。
     action: rungo green isolation ./internal/daemon '^TestChannelIsolation$'   # 在获授权 Linux 测试机与 Windows 测试机上分别运行
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelIsolation/peer_credential_match'}, {type: stdout_contains, expected: '--- PASS: TestChannelIsolation/self_reported_fact_ignored'}, {type: stdout_contains, expected: '--- PASS: TestChannelIsolation/foreign_run_socket'}, {type: stdout_contains, expected: '--- PASS: TestChannelIsolation/fd_transfer'}, {type: stdout_contains, expected: '--- PASS: TestChannelIsolation/pid_reuse'}]
+  - id: CP-VC-038
+    description: SC-VC-001/002/012/013/031 + SC-DR-002/003 / 648 的 DB 不变量守卫真拒绝：行不可变与 TRUNCATE 拦截、命令状态机、head scope 冻结、freeze 戳终态、origin 必填、readiness 写一次。
+    action: rungo green store-guards ./internal/governance '^TestChannelStoreGuards$'
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelStoreGuards/selection_row_immutable'}, {type: stdout_contains, expected: '--- PASS: TestChannelStoreGuards/reservation_row_immutable'}, {type: stdout_contains, expected: '--- PASS: TestChannelStoreGuards/command_transition_rejects_skips'}, {type: stdout_contains, expected: '--- PASS: TestChannelStoreGuards/command_signed_fields_frozen'}, {type: stdout_contains, expected: '--- PASS: TestChannelStoreGuards/retained_tables_reject_truncate'}, {type: stdout_contains, expected: '--- PASS: TestChannelStoreGuards/deployment_head_scope_immutable'}, {type: stdout_contains, expected: '--- PASS: TestChannelStoreGuards/freeze_stamp_cannot_be_cleared'}, {type: stdout_contains, expected: '--- PASS: TestChannelStoreGuards/origin_registration_requires_origin'}, {type: stdout_contains, expected: '--- PASS: TestChannelStoreGuards/readiness_verdict_write_once'}]
+  - id: CP-VC-039
+    description: SC-VC-013 / 已撤销 permit 生效后不再改变任何 control 行，未受影响行保持原字节。
+    action: rungo green revoked-permit ./internal/governance '^TestChannelIngestRevokedPermit$'
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelIngestRevokedPermit/revoked_permit_effect'}, {type: stdout_contains, expected: '--- PASS: TestChannelIngestRevokedPermit/unmutated_control'}]
+  - id: CP-VC-040
+    description: SC-VC-016/005 / D8 恢复：同 lineage 重启保留原字节，regrant 不得把 origin 计数清零。
+    action: rungo green d8-recovery ./internal/daemon '^TestChannelRecoveryD8$'
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelRecoveryD8/same_lineage_restart_keeps_bytes'}, {type: stdout_contains, expected: '--- PASS: TestChannelRecoveryD8/regrant_cannot_reset'}]
+  - id: CP-VC-041
+    description: SC-VC-021 / worker 客户端重发 verdict 用原字节，不重新序列化。
+    action: rungo green client ./internal/daemon '^TestChannelWorkerClient$'
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelWorkerClient/verdict_resend_original_bytes'}]
+  - id: CP-VC-042
+    description: SC-VC-025 / 组合根真跑：真实 worker permit 产出原候选，缺 T 即拒。
+    action: rungo green composition ./cmd/server '^TestChannelComposition$'
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelComposition/real_worker_permit_creates_original_candidate'}, {type: stdout_contains, expected: '--- PASS: TestChannelComposition/missing_t_rejected'}]
+  - id: CP-VC-043
+    description: SC-VC-005 / 部署就绪侧 fresh-work：同 origin 不被 D8 重置。
+    action: rungo green readiness-fresh-work ./internal/governance '^TestChannelReadinessFreshWork$'
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelReadinessFreshWork/d8_same_origin_not_reset'}]

@@ -40,6 +40,7 @@
 - 并发/崩溃用确定性 barrier 与 `lock_timeout`/`55P03` 探针；父测试 PASS 不能遮住子用例全 SKIP。
 - 真实 `strict-production` 正例归 AIFI-45 下游；本 change 只交组件正例与 strict 反例，不声称生产就绪。
 - 任一 required profile/隔离身份未定时记 UNVERIFIED，不跑迁移、不跑 DB 用例，不伪造替代证据。
+  **例外（见 ADJ-6）**：门控表里「两条路径都适用」的片（M-0 迁移、M-S1 selection/reservation、M-R2/R3、tools 纯函数/规则/merge 三族）不受此禁，可在独占 nonce 库上真跑；结论只表述为该库该轮通过，不表述为隔离成立。
 
 ## P0 门控（Gate 2 前用户采纳）
 

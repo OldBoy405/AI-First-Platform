@@ -1,6 +1,6 @@
 # 可信 T committed verdict channel — tools 测试方案
 
-> STDD Phase 2 / Gate 2 草案。**33 个 TC 全部未实现、未运行。**
+> Gate 2 已确认，BUILD 进行中（长程模式）：已跑 TC 见 multica 侧 `validation/evidence-index.md`，其余仍未实现；未跑即未验证。
 > 设计输入：前身 change `validation/trusted-verdict-channel-implementation-plan-20261026.md`（v0.6.5）。
 > 跨仓 multica 侧见[配套测试方案](../../../multica/changes/2026-10-27-trusted-verdict-channel/test-plan.md)。
 > 必达 leaf 全名以 multica change 的 `validation/channel-test-expectations.json` 为唯一权威（SPEC 已冻结；R2.5 11 条 / R3.5 16 条 / S5 19 条）；本仓不另存副本。

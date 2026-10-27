@@ -1,6 +1,6 @@
 # 可信 T committed verdict channel — multica 测试方案
 
-> STDD Phase 2 / Gate 2 草案。**本文件不声称任何测试已运行**：43 个 TC 全部为待实现/未运行。
+> Gate 2 已确认，BUILD 进行中（长程模式）。本文件不声称「全部已跑」：已跑的 TC 在对应「当前状态」写明证据前缀，未跑的仍是 ⏳/❌。证据入口 `validation/evidence-index.md`。
 > 设计输入：前身 change `validation/trusted-verdict-channel-implementation-plan-20261026.md`（v0.6.5）。
 > 跨仓 tools 侧测试方案见[配套文档](../../../tools/changes/2026-10-27-trusted-verdict-channel/test-plan.md)。
 > 必达 leaf 全名以 `validation/channel-test-expectations.json` 为唯一权威（SPEC 已冻结：41 label / 215 leaf，每个 leaf 标注所属 SC）；本文件只引用、不另立名单。
@@ -52,7 +52,7 @@
 | **预置条件** | 隔离库已有 Strict selection；另有 legacy 目录证明夹具与缺失 selection 夹具 |
 | **输入** | 分别删除/改空/改写 trigger 合同字段与 `cr.md` 字段，再解析 selection |
 | **预期结果** | strict 得 `T_VERDICT_BINDING_MISMATCH`；Unknown/读失败拒绝新增 effect；legacy 只按目录证明 |
-| **当前状态** | ❌ 测试缺（Gate 2 草案，未实施） |
+| **当前状态** | ✅ 已实施：`foundation-selection` 6/6 PASS（5 必达 leaf），证据前缀见 `validation/evidence-index.md`；strict 四变体各为独立 subtest |
 
 #### 案例 1.2 — control reservation 不可执行
 
@@ -64,7 +64,7 @@
 | **预置条件** | 已建 selection 与 reservation，候选 task UUID 未入队 |
 | **输入** | 尝试 claim reservation；随后由 T permit 触发真实 enqueue |
 | **预期结果** | reservation 不可 claim/不可执行且不出现于任务队列；permit 后只出现固定候选 |
-| **当前状态** | ❌ 测试缺（Gate 2 草案，未实施） |
+| **当前状态** | ✅ 已实施：`foundation-reservation` 4/4 PASS（含伪造 selection/跨 CR/跨 lineage/跨 scope 反例）；SC-VC-003/004 部分未实现 |
 
 #### 案例 1.3 — 同 Tx root+task+settlement
 
@@ -390,7 +390,7 @@
 | **预置条件** | 空库、已 up、up→down、up→down→up 四种 nonce 库状态 |
 | **输入** | 执行 648 up/down/reapply |
 | **预期结果** | up 具 14 表与全部对象；down 全撤；reapply 恢复且无遗留业务行；每表至少一个 leaf |
-| **当前状态** | ❌ 测试缺（Gate 2 草案，未实施） |
+| **当前状态** | ✅ 已实施：`migration-up/reapply`（各 14 leaf）与 `migration-down`（21 leaf）PASS，逐表按 contype/谓词/事件集合断言 |
 
 #### 案例 8.2 — 受保护数据
 
@@ -402,7 +402,7 @@
 | **预置条件** | up 状态已建 643–647 夹具行与对象 |
 | **输入** | 精确 648 down/up |
 | **预期结果** | 原夹具行与对象不变；无 648 孤儿对象 |
-| **当前状态** | ❌ 测试缺（Gate 2 草案，未实施） |
+| **当前状态** | ✅ 已实施：`migration-protected` 4/4 PASS（643–647 夹具含 activation/notice，down 前向 648 写真实行；残留按归属枚举） |
 
 ### 功能 9：merge-facts 端点（REQ-VC-011）
 

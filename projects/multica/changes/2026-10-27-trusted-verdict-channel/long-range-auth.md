@@ -1,6 +1,6 @@
 # 长程模式 — 一次性交互授权
 
-> 用户 2026-10-27 原文：「继续，按照长程模式执行」（前一轮已授权：nonce DB 每轮独占库、P0 Linux+Windows 隔离环境）。
+> 用户 2026-10-27 原文：「继续，按照长程模式执行」（前一轮已授权：nonce DB 每轮独占库；**P0 隔离环境尚未获批**——两真实受限身份与裁决 profile 仍 UNVERIFIED，见 tasks P0 段）。
 > 依据：项目 `config.d/long_range.yaml`（`pre_auth` 全 allow、`gate3: mandatory`、`degradation: 3 次 / 0.95`）。
 > 生效范围：本 change 的 Phase 3 (BUILD)；**Gate 3 仍为强制人工确认**，长程模式不跳过任何流程步骤。
 

@@ -3,7 +3,8 @@
 旧前缀（`foundation-*`、`migration-*`、`*-mutations-*`）产生于 648/selection/reservation 重写之前，**不再可认证当前树**，只保留作历史。当前权威证据前缀：
 
 ```text
-n-green-20261027T163327Z
+p-final-20261027T163801Z          # 合并跑次（6 个 Go 套件）
+q-down-20261027T163826Z          # migration-down（需 648 up + down，不能与 after-up 同库混跑）
 ```
 
 ## 当前跑次
@@ -11,9 +12,9 @@ n-green-20261027T163327Z
 | 项 | 值 |
 |---|---|
 | 测试 | `^TestChannel(MigrationAfterUp|MigrationAfterReapply|MigrationProtectedData|StoreGuards|FoundationSelection|FoundationReservation)$` |
-| 结果 | 62 pass / 0 fail / 0 skip，leaf_pass=55 |
+| 结果 | 62 pass / 0 fail / 0 skip，leaf_pass=55（down 另计 22/22，leaf 21） |
 | `original_unchanged` / `owned_resources_cleaned` | true / true |
-| 源码摘要 | `<prefix>.source.json`（10 个文件，含 648 up/down、两个实现、四个测试、checker） |
+| 源码摘要 | `*.source.json`：合并跑次 10 个文件（648 up/down、两个实现、四个测试、checker），down 跑次 5 个 |
 | 迁移前置 | 643–647 up + 648 up（保留库 schema-only 克隆不含 643–647，且已含 642 列） |
 
 ## 名单校验（此前缺失的消费者）
@@ -37,6 +38,10 @@ checker 自测 9/9（`node --test scripts/aifi45-verify/channel-evidence.test.mj
 ## 变异回滚的机器证据
 
 mutant run（m2 状态机）exit=1；**同一时刻**用 checker 校验 green 前缀 → `FAIL source server/migrations/648_cr_execution_control.up.sql changed since the run (89f0c3f061c7 -> 43a5651c3e13)`；恢复后 sha 与基线一致 → 同一前缀校验回到 `OK`。即「已回滚」不再依赖报告里的文字声明。
+
+## 命名注意
+
+`migration-up-*.schema.sql` 是**原始库**的 schema 快照（不含任何 `cr_execution_*`），不是 648 应用后的目标 schema；`original-before/after.json` 才是跑次前后状态。
 
 ## 旧报告的计数口径
 

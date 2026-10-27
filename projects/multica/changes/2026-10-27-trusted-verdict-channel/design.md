@@ -1,6 +1,6 @@
 # 可信 T committed verdict channel — multica 技术设计
 
-> 阶段：STDD Phase 2 / Gate 2 草案。**本设计尚未实施，未写业务代码、未跑测试、未建库、未部署。**
+> 阶段：Gate 2 已确认，BUILD 进行中（长程模式）。已落地的实现、跑次与未验证项以 `validation/evidence-index.md` 为唯一入口；本文件仍是设计基线，实现细节以代码与证据为准。
 > Gate 1 原文「确认这份 Gate 1（multica + tools 两条）」已由原生 CLI 登记（2026-10-27T15:23:55）。
 > 设计输入：`projects/multica/changes/2026-10-22-aifi-45-authorized-execution/validation/trusted-verdict-channel-implementation-plan-20261026.md`
 > （v0.6.5，sha256 `55ee0d01…b4d8`）。该文经六轮三路复核（R2/R3 全 PASS），但那是**静态设计复核**，
@@ -42,7 +42,7 @@
   只能得 `T_VERDICT_BINDING_MISMATCH`；不得改判 Legacy，也不得经 Unknown 落回 legacy。
   Legacy 只能由可信历史目录（`control_fact(kind=legacy-origin-catalog)`）证明。
 - 冷启动：`control_reservation` 是**不可执行**占位（不进 `agent_task_queue`、不可 claim），固定 proposed task UUID；
-  T permit 后才允许真实 enqueue。`ResolveCandidateTx` 从 DB scope/source/run/node 与 compiled registry 得到真实映射。
+  T permit 后才允许真实 enqueue。`CreateReservationTx`（原设计名 `ResolveCandidateTx`，见 ADJ-3）从 DB scope/source/run/node 与 compiled registry 得到真实映射，并冻结候选字节。
 - `ExecutionTarget` 为 exact-key tagged union：`{kind:control,reservation_id,owner_fence}` 或
   `{kind:task,task_id,runtime_id,dispatched_at,daemon_id}`，不允许缺字段或双分支并存。
 
@@ -69,10 +69,12 @@
 
 ### 5. 数据模型（单个 proposed 迁移 `648_cr_execution_control`，14 张表）
 
+> merge effect 的落表方式（不新增表）见 ADJ-5：reserve 落 `control_reservation`、report 落 `control_settlement(effect_kind='merge_publish')`。
+
 | 后缀（前缀 `cr_execution_`） | 关键字段 / 约束 |
 |---|---|
-| `contract_selection` | `id,workspace_id,project_id,cr_id,lineage_id,mode,policy_ref,contract_digests,source_ref,origin_id,fresh_work_ref,created_at`；scope/lineage unique；同 workspace/project/origin 仅一归属；immutable |
-| `control_reservation` | `id,selection_id,scope,lineage_id,candidate_bytes,candidate_digest,created_at`；fixed proposed task unique；immutable；无 task/runtime 占位行 |
+| `contract_selection` | `id,workspace_id,project_id,cr_id,lineage_id,mode,policy_ref,contract_digests,source_ref,origin_id,fresh_work_ref,created_at`；scope/lineage unique；同 workspace/project/origin 仅一归属；immutable（共享 `cr_execution_reject_mutation` / `cr_execution_reject_truncate`） |
+| `control_reservation` | `id,selection_id,scope,lineage_id,candidate_bytes,candidate_digest,created_at`；fixed proposed task unique；immutable（同上两个共享函数）；无 task/runtime 占位行 |
 | `control_command` | `request_id,scope,lineage_id,reservation_id,owner_fence,effective_fence,seq,prev_digest,command_bytes,envelope,state,verdict_id,admission_event_ref,admission_seq,issued_at`；issued 时冻结准入边界，签名字段 immutable，状态受限转换 |
 | `tool_verdict` | `id,scope,lineage_id,request_id,store_id,epoch,seq,prev_digest,payload_bytes,envelope,digest,commit_ref,receipt_ref`；request unique、store/epoch/seq unique；拒绝 UPDATE/DELETE/TRUNCATE |
 | `tool_cursor` | `scope,lineage_id,store_id,epoch,last_seq,last_digest,owner_fence,owner_id,open_request_id,frozen_reason,reconcile_proof`；行锁+CAS；无预算累计器 |
@@ -118,6 +120,8 @@
 - merge-effects：`MERGE_EFFECT_{INVALID,NOT_FOUND,UNTRUSTED,REVOKED,HEAD_MOVED,INPUT_MISMATCH,CONFLICT,UNAVAILABLE}`，
   码序 `INVALID>UNTRUSTED>NOT_FOUND>REVOKED>HEAD_MOVED>INPUT_MISMATCH>CONFLICT>UNAVAILABLE`。
 - 失败码的 CLI 外层映射与优先级以方案 R2.4 为唯一权威，本仓只实现端点侧判定。
+- selection：`T_VERDICT_BINDING_MISMATCH` 见上；`EXECUTION_SELECTION_UNKNOWN` 表示「无持久选择且无受信 legacy 证明」
+  （含 retired relay、钉住目录缺失、目录未列该 CR、目录重复条目），端点映射 404 并拒绝新增 effect。
 
 ### 8. D7 部署就绪控制面
 

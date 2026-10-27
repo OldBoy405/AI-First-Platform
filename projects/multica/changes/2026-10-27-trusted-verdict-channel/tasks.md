@@ -1,6 +1,6 @@
 # 可信 T committed verdict channel — multica BUILD 任务清单
 
-> STDD Phase 2 / Gate 2 草案。**全部任务未开始**：本文件是计划，不是执行记录。
+> Gate 2 已确认，BUILD 进行中（长程模式）。`[x]` 由实跑证据支撑，证据入口 `validation/evidence-index.md`；未勾项即未实现。
 > Gate 2 确认后才进入 BUILD；每片按 RED→GREEN 推进，不横向先写全部实现。
 
 ## 0. SPEC 阶段已完成的文档交付
@@ -22,7 +22,7 @@
 - [x] 1.3 `server/internal/governance/execution_control_tables.go`：`ChannelTableNames`（14 全名，创建序）+ `ChannelTriggerFunctions`（7）。
 - [x] 1.4 `execution_control_migration_test.go`：`TestChannelMigrationAfterUp/Down/Reapply` 各表一个 `t.Run` + 逐表清单（先声明后断言，不由实测反推）。清单按**对象语义**断言而非仅名字：CHECK/UNIQUE 按 `pg_constraint.contype` 匹配，部分索引必须带谓词、普通索引必须不带，触发器按事件集合匹配（`pg_get_triggerdef` 会按字母序渲染成 `BEFORE DELETE OR UPDATE`，字面串比会假红）。真跑：up 15/15（leaf 14）、down 22/22（leaf 21）、reapply 15/15（leaf 14），均 skip=0、original_unchanged=true、owned_resources_cleaned=true。
 - [x] 1.5 `TestChannelMigrationProtectedData`：造 643/644/647 夹具并**向 648 表写入真实行** → 648 down/up → 断言夹具行摘要不变、643–647 表仍在、14 张 648 表零残留。down 侧残留枚举按**归属**排除既有台账与其自带索引/序列（按名字前缀扫会把 643–647 自己判成残留），对象差集见 `channelUnexpectedObjects`。真跑 4/4（leaf 3）。证据见 `validation/{g,h,i,l}-*`。
-- [x] 1.6 648 未被占用（当前最大仍 647），无需顺延。
+- [x] 1.6 648 号未被占用：647 是既有最大迁移，648 由本 change 新增，无需顺延。
 - [x] 1.7 破坏性探针前置 **DB 身份闸门**：连接后立即断言库名 `^aifi45_tmp_[0-9a-f]{16}$`、角色 `^aifi45_role_[0-9a-f]{16}$`、非 superuser、库注释等于 `AIFI45_DISPOSABLE:<nonce>`，任一不符即 fatal——先证这是可丢弃 nonce 库，再执行 648 down。
 
 ## 2. S1 选择、候选与派发根（P0）
@@ -30,7 +30,7 @@
 - [x] 2.1 `execution_contract_selection.go`：`ResolveSelectionTx` 只读持久选择；strict+投影缺失/空/不同 → `T_VERDICT_BINDING_MISMATCH`（不降级）；无选择且目录未证明 → `EXECUTION_SELECTION_UNKNOWN`。legacy 只认 `deployment_head.legacy_catalog_ref` **钉住**的那份目录（不取最新行）、校验 gate/kind/scope/`catalog_version`，且整份目录先验重后才采信单条（重复条目=不可解事实）。缺行→目录的竞态由 `pg_advisory_xact_lock` 关掉。`TestChannelFoundationSelection` 真跑 6/6（leaf 5），含「未钉住的新目录不得改变裁决」「持久 legacy 行仍需证明」两条反例。证据 `validation/i-selection-*`、`j-selection-*`。
 - [x] 2.2 `execution_control_reservation.go`：`CreateReservationTx` 只接受 strict 选择、候选 bytes 冻结为 digest、proposed task id 固定；表内无任何 dispatch 列（结构上不可 claim/执行），且不写 `agent_task_queue`。**同一 Tx 内回读** selection 行校验 mode/lineage/scope，伪造的 `Selection` 结构体不被信任。`TestChannelFoundationReservation` 真跑 4/4（leaf 3），含伪造 selection id、跨 CR、跨 lineage、跨 scope 四条反例。证据 `validation/i-reservation-*`。注：green 首跑因测试自身事务中止写法失败，改 savepoint 后通过。
 - [ ] 2.3 `execution_dispatch_root.go` + `service/task.go` + `queries/agent.sql`（固定 sqlc 版本生成）：同 Tx root/task/settlement、固定 ID 冲突逐字段等同、commit 后通知；`fixed_id_conflict_and_rollback`、`TestChannelTaskTx/commit_then_notify|rollback_no_notify`。**注意**：预约侧有个同名旧 subtest 已改名 `reservation_fixed_id_conflict_and_rollback`，它只验预约表唯一性，**不构成 SC-VC-003 证据**；`foundation-reservation` 因此当前被 checker 判 FAIL（缺 3 条必达 leaf），这是如实状态。
-- [ ] 2.4 adoption/terminal 并发探针（`55P03`）与顺序语义：`root_adoption_terminal_race`（green 前置：AIFI-45 G5 已修）。
+- [ ] 2.4 adoption/terminal 并发探针（`55P03`）与顺序语义：`root_adoption_terminal_race`、`root_terminal_not_adopted`（后者覆盖「已终态根不得被 adopt / 终态后不得重建同逻辑根」；green 前置：AIFI-45 G5 已修）。
 - [ ] 2.5 `execution_fresh_work.go`：`RegisterFreshWorkTx`、origin/fresh-work/legacy-catalog 三型 fact、partial unique；`TestChannelFoundationFreshWork`。
 - [ ] 2.6 `service/execution_channel_task_tx_test.go`：`TestChannelTaskTx` 承接 `task-tx` 模板。
 
@@ -47,8 +47,8 @@
 ## 3. S2–S4 协议、store 与恢复（P0）
 
 - [ ] 3.1 `execution_control_protocol.go` + `execution_control_trust.go`：`VerifyEnvelope`、trust manifest exact keys、双 key-purpose；`TestChannelProtocol`（3 leaf）。
-- [ ] 3.2 `execution_control_command.go`/`store`：状态受限转换、单 open、fence、settlement kind；`TestChannelStoreState`（5 leaf）。
-- [ ] 3.3 `execution_control_recovery.go`（daemon）：checkpoint 字段、恢复表五类动作、旧 fence 隔离；`TestChannelRecovery`（2 leaf）。
+- [ ] 3.2 `execution_control_command.go`/`store`：状态受限转换、单 open、fence、settlement kind；`TestChannelStoreState`（7 leaf）。
+- [ ] 3.3 `execution_control_recovery.go`（daemon）：checkpoint 字段、恢复表五类动作、旧 fence 隔离；`TestChannelWorker`+`TestChannelRecovery`（7 leaf，见 expectations `worker` label）。
 - [ ] 3.4 key rotation 只影响新 verdict；历史帧仍用旧 key 验证（并入 3.3 与 3.2 断言）。
 
 ## 4. S5 facts、repair/resume、sensitive action（P0）
@@ -60,8 +60,8 @@
 
 ## 5. S6 ingest、settlement 与 binding（P0）
 
-- [ ] 5.1 `execution_tool_ingest.go`/`execution_control_settlement.go`：ingest→settle、原字节重放、不退款；`TestChannelIngestSettlement`（2 leaf）。
-- [ ] 5.2 `BindDeliveredGenerationTx`：启动前 643–645 全匹配、不二次消费；`TestChannelIngestBinding`（5 leaf，含 G1/G2/G4 前置）。
+- [ ] 5.1 `execution_tool_ingest.go`/`execution_control_settlement.go`：ingest→settle、原字节重放、不退款；`TestChannelIngestSettlement`（4 leaf）。
+- [ ] 5.2 `BindDeliveredGenerationTx`：启动前 643–645 全匹配、不二次消费；`TestChannelIngestBinding`（6 leaf，含 G1/G2/G4 前置）。
 - [ ] 5.3 `execution_control_client.go`（daemon）：commands/checkpoints/verdicts 三端点 client；`TestChannelWorkerClient`。
 - [ ] 5.4 三端点 handler 与认证：只 MDT+enrolled key/owner scope；拒绝 PAT/JWT/task-token。
 
@@ -79,9 +79,15 @@
 - [ ] 7.3 `POST /api/daemon/crs/{crID}/merge-effects`：`op=reserve|report`、CR 行 `FOR SHARE`、`input_digest` 重验、attempt 四支、码序；`TestChannelMergeEffects`（4 leaf）。
 - [ ] 7.4 与 tools 侧 `merge-facts`/`merge-effects` 客户端的跨语言联调（契约以 R2.4/R3.1 为准）。
 
+### 5A. 由冻结 label 反查补齐的归属（原 tasks 遗漏）
+
+- [ ] 5A.1 `TestChannelIngestRevokedPermit`（label `revoked-permit`，SC-VC-013）：撤销 permit 生效后不再改动任何 control 行，未受影响行保持原字节。
+- [ ] 5A.2 `TestChannelRecoveryD8`（label `d8-recovery`，SC-VC-016/005）：同 lineage 重启保留原字节；regrant 不得把 origin 计数清零。
+- [ ] 5A.3 `TestChannelReadinessFreshWork`（label `readiness-fresh-work`，SC-VC-005）：部署就绪侧同 origin 不被 D8 重置。
+
 ## 8. S8 D7 部署就绪（P0/P1）
 
-- [ ] 8.1 `execution_deployment_observer.go`（daemon）：受保护观测、全实例 inventory、generation 递增；`TestChannelDeploymentObserver`（3 leaf）。
+- [ ] 8.1 `execution_deployment_observer.go`（daemon）：受保护观测、全实例 inventory、generation 递增；`TestChannelDeploymentObserver`（4 leaf）。
 - [ ] 8.2 `execution_policy_readiness_protocol.go` + readiness 路由：request/verdict exact-key、slot CAS、原字节不可改；`TestChannelReadinessProtocol`。
 - [ ] 8.3 `execution_deployment.go`/`execution_policy_activation.go`：`RecordReadinessTx`/`ActivatePolicyTx`/`StopNewAdmissionsTx`/drain/retire；`TestChannelPolicyActivation`、`TestChannelReadinessRetirement`。
 - [ ] 8.4 `execution_deployment_fence.go`（governance）+ `execution_launch_snapshot.go`（daemon）：`CheckDeploymentAccessTx`、`PrepareLaunch`/`CommitLaunch`；`TestChannelDeploymentAccess`（governance）、`TestChannelDeploymentLaunch`（daemon）。
@@ -91,9 +97,9 @@
 ## 9. 证据与收尾（P0）
 
 - [x] 9.1 已移至 0.1（SPEC 冻结）；BUILD 期只允许经规格修订改动名单。
-- [ ] 9.2 `scripts/aifi45-verify/channel-evidence.mjs` + `.test.mjs`：只读校验真实非 skip PASS leaf；含「summary 看似成功但缺 leaf」反例。
-- [ ] 9.3 每条 mutation 保存 patch hash、基线与恢复后 source hash、argv、失败 leaf 与条件断言；恢复后换 nonce 跑 green。
-- [ ] 9.4 `CUSTOM.md` 从 #219 起登记新文件与 `// AIFIRST:` 挂钩点（按当时结构）。
+- [x] 9.2 `scripts/aifi45-verify/channel-evidence.mjs` + `.test.mjs`：只读校验真实非 skip PASS leaf；含「summary 看似成功但缺 leaf」反例。另有 `audit` 子命令核对「每个冻结 label 都有 CP 引用」与 `record` 子命令固定被测源码 sha256。自测 9/9。
+- [ ] 9.3 每条 mutation 保存 patch hash、基线与恢复后 source hash、argv、失败 leaf 与条件断言；恢复后换 nonce 跑 green。已做到：源文件 sha256 前后一致（checker `record`/`verify` 判据）+ 失败 leaf；**未做**：统一 diff 的 patch sha256 落盘（见 `validation/test-report.md` 的缺口表）。
+- [x] 9.4 `CUSTOM.md` 从 **#220** 起登记新文件与 `// AIFIRST:` 挂钩点（按当时结构；#219 已被 AIFI-45 的 EVD-007 占用，见 ADJ-1）。
 - [ ] 9.5 deliver 产物写明 AIFI-45 `TC-RUN-001/002/003/006/007/010` 的重跑前置（含 M002 隔离根证据、EVD-007/008 入口选择），不写成「已回填」。
 
 ## 10. 明确不做

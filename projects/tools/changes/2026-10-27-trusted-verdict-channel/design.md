@@ -1,6 +1,6 @@
 # 可信 T committed verdict channel — tools 技术设计（T runtime 与 merge 门禁）
 
-> 阶段：STDD Phase 2 / Gate 2 草案。**未实施、未运行。**
+> 阶段：Gate 2 已确认，BUILD 进行中（长程模式：协议/store 两个库已落并真跑）。证据入口在 multica 侧 `validation/evidence-index.md`；本文件是设计基线。
 > Gate 1 原文「确认这份 Gate 1（multica + tools 两条）」已由原生 CLI 登记。
 > 设计输入：前身 change `validation/trusted-verdict-channel-implementation-plan-20261026.md`（v0.6.5，sha256 `55ee0d01…b4d8`），
 > 六轮三路复核 R2/R3 全 PASS 属**静态**结论，不是实现验证。
@@ -13,7 +13,7 @@
 - 已核实（2026-10-27，修订后）：`lib/change-scope.mjs` 的 `evaluateChangeScope` 是纯判定器，缺失/非数组 `changes`
   **已返回** `AUTH_SCOPE_INPUT_INVALID`、`allowed:false`（AIFI-45 已修，35–39 行），仅显式 `[]` 放行；内部 `gitFields`
   已用 `-z` NUL 分隔、rename 已双侧记录；`collectChangedPaths` 仍含工作区/untracked 与 `origin/trunk` 回退；`crctl.mjs` 准入在
-  1968 行仍返回 `EXECUTION_CONSUMPTION_REQUIRED`；`scripts/test/` 现有 46 个测试文件（含 `merge-tx.test.mjs`、
+  1968 行仍返回 `EXECUTION_CONSUMPTION_REQUIRED`；`scripts/test/` 现有 46 条 merge 测试 leaf（19 范围 + 11 merge-facts + 16 merge-effects；与本 change 的「测试文件数」不是同一口径）（含 `merge-tx.test.mjs`、
   `merge-release-recovery.test.mjs`、`change-scope.test.mjs`）。
 - 依赖前提（AIFI-45 已交付）：grant/verifier、`execution-authorization.mjs`、`execution-binding.mjs`、
   `execution-transaction.mjs`、643–647 的 daemon 侧安装与 binding；本 change 不重写这些。
@@ -86,7 +86,7 @@
 
 ### 7. D7 readiness 求值器（T 侧）
 
-- 加固 `component-readiness.mjs::evaluateComponentReadiness`：拒绝空/缺 components、重复 declared/observed、
+- 新增 `component-readiness.mjs::evaluateStrictComponentReadiness`（fail-closed）：拒绝空/缺 components、重复 declared/observed、
   unknown/NA 绕过、仅 marker 一致但 runtime/安装变化、恢复能力未知。
 - 新增 request/verdict exact-key schema 与 `Worker.EvaluateReadiness`：冻结 request slots → 各 observer 签发 →
   最终 verdict；同 request 丢响应/重启只返回原 bytes；无业务 lineage 也可求值。
