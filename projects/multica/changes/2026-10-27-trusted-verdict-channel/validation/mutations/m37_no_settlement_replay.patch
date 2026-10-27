@@ -1,0 +1,16 @@
+--- server/internal/governance/execution_control_settlement.go
++++ m37_no_settlement_replay
+@@ -83,12 +83,7 @@
+ 		Scan(&existing.RequestID, &existing.VerdictID, &existing.Kind, &existingEffectKind, &existingRef)
+ 	switch {
+ 	case err == nil:
+-		existing.EffectRef = existingRef
+-		if existingEffectKind != nil {
+-			existing.EffectKind = *existingEffectKind
+-		}
+-		existing.Replayed = true
+-		return existing, nil
++		return ControlSettlement{}, fmt.Errorf("already settled")
+ 	case !errors.Is(err, pgx.ErrNoRows):
+ 		return ControlSettlement{}, fmt.Errorf("settlement lookup: %w", err)
+ 	}

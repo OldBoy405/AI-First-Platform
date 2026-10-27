@@ -1,0 +1,13 @@
+--- server/internal/governance/execution_control_settlement.go
++++ m39_no_state_advance
+@@ -130,9 +130,7 @@
+ 		hex.EncodeToString(commandDigest[:]), in.HeadRef, in.Reason, nilIfZeroTime(in.Now)); err != nil {
+ 		return ControlSettlement{}, fmt.Errorf("settlement insert: %w", err)
+ 	}
+-	if err := TransitionControlCommandTx(ctx, tx, in.RequestID, state, target, in.VerdictID, "", 0); err != nil {
+-		return ControlSettlement{}, err
+-	}
++	_ = target
+ 	return ControlSettlement{
+ 		RequestID: in.RequestID, VerdictID: in.VerdictID, Kind: in.Kind,
+ 		EffectKind: in.EffectKind, EffectRef: in.EffectRef,

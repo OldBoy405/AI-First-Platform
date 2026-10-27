@@ -96,6 +96,8 @@
     m25（NOT_FOUND 写 halted）只红 leaf 15、m26（复用已 settled 的 attempt 号）红 leaf 12/13、m27（confirmed 后回退当 noop）只红 leaf 11。
 - [x] 7.2 `code_source_freeze` 追加写与撤销同事务置位（与 1.1 的索引配套）；`source_freeze_append_only` —— 已在 7.1 一并交付（`AppendCodeSourceFreezeTx`/`RevokeCodeSourceFreezeTx`），同上跑次与变异 m23。
 - [x] 7.3 `execution_merge_effect.go`：`ReserveMergeEffectTx` 取 CR 行 `FOR SHARE`、先判 head 再比摘要、attempt 单调（同输入未终结 409、已终结原结果重放、换输入 attempt+1）；`ReportMergeEffectTx` 写 `control_settlement(effect_kind=merge_publish)`。复用 reservation/settlement，**未新增表**（ADJ-5）。`TestChannelMergeEffects` 真跑 5/5（leaf 4）：m28（去掉 FOR SHARE）只红 `reserve_shared_lock`、m29（先比摘要）只红 `code_order`、m30（未终结也放行）只红 `attempt_semantics`、m31（越界写结算）只红 `non_auth_failure_no_halt`。跑次 `mz-20261027T105320Z`。HTTP 端点与 attempt 持久字段留给 S6/S7。
+- [x] 6.x `execution_control_settlement.go`：`SettleControlCommandTx`（一请求一行、重放返原 mapping、只有 issued/result_ready 能结算、结算才释放 open 槽位、no_effect 不得带 effect 字段）。`TestChannelIngestSettlement` 真跑 5/5（leaf 4）：m37（不复用原结算）红 `t_commit_m_rollback_resend`+`lost_response_returns_mapping`、m38（no_effect 带 effect）红 `nonpermit_settles_no_effect`、m39（结算不推进状态）红 `ack_no_slot_release`+`nonpermit_settles_no_effect`。跑次 `sh-20261027T110932Z`，checker `settlement` OK。
+  **发现**：数据库把 admission 边界冻结在 issuance 之后，所以 ack 只能随 `created→issued` 一起写；我先加的独立 ack 入口被触发器直接否掉，已删除（ack 不是状态转换）。
 - [ ] 7.4 与 tools 侧 `merge-facts`/`merge-effects` 客户端的跨语言联调（契约以 R2.4/R3.1 为准）。
 
 ### 5A. 由冻结 label 反查补齐的归属（原 tasks 遗漏）

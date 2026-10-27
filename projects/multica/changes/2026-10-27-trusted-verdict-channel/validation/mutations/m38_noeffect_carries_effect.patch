@@ -1,0 +1,11 @@
+--- server/internal/governance/execution_control_settlement.go
++++ m38_noeffect_carries_effect
+@@ -62,8 +62,6 @@
+ 		if !json.Valid(in.EffectRef) {
+ 			return fmt.Errorf("%w: effect_ref 必须是 JSON", ErrControlSettlementInvalid)
+ 		}
+-	} else if in.EffectKind != "" || len(in.EffectRef) != 0 {
+-		return fmt.Errorf("%w: no_effect 不得携带 effect 字段", ErrControlSettlementInvalid)
+ 	}
+ 	return nil
+ }
