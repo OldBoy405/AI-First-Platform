@@ -1,0 +1,45 @@
+{
+  "review": "v0.6.5 R2/R3 contract draft",
+  "plan_raw_sha256": "55ee0d01e3b7ff62fabbcccef3dd8a8369c47e70dd89806ca6b75dce6a88b4d8",
+  "harness": "pi Agent tool; general-purpose profile; fresh background sessions; read-only instructions",
+  "lanes": [
+    {
+      "lane": "strong",
+      "session_id": "01a17b8d-2e93-760a-b938-350859bb405a",
+      "requested": "OpenAIPersonal/gpt-6.1-sol:high",
+      "actual": "unknown",
+      "verdict": {
+        "R2": "PASS",
+        "R3": "PASS"
+      },
+      "report": "REVIEW-STRONG.md"
+    },
+    {
+      "lane": "balanced",
+      "session_id": "01a17b8d-2eaf-760a-b938-350d21167ba2",
+      "requested": "Gobao/deepseek-flash:max",
+      "actual": "unknown",
+      "verdict": {
+        "R2": "PASS",
+        "R3": "PASS"
+      },
+      "report": "REVIEW-BALANCED.md"
+    },
+    {
+      "lane": "economy",
+      "session_id": "01a17b8d-2ea3-760a-b938-350aab664500",
+      "requested": "GB-JP/deepseek-flash:high",
+      "actual": "unknown",
+      "verdict": {
+        "R2": "PASS",
+        "R3": "PASS"
+      },
+      "report": "REVIEW-ECONOMY.md"
+    }
+  ],
+  "merged_outcome": {
+    "R2": "PASS (three lanes)",
+    "R3": "PASS (three lanes)"
+  },
+  "no_interruptions": true
+}
