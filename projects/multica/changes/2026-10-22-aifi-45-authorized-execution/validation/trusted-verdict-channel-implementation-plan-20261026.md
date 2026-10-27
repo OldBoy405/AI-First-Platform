@@ -468,3 +468,38 @@ rungo green migration-reapply ./internal/governance '^TestChannelMigrationAfterR
 - 用户已定：D8=A 不迁移存量；D7 由 Channel 拥有。人类环境确认仍包括首期 Linux 身份/launcher/observer/全部实例与安装目标的操作授权、独立 keys 管理及受保护 required profile；不能把“已决定范围”理解为部署身份/能力已经核实。
 - 主要残余风险：隔离部署复杂、严格冻结降低可用性、审计增长/磁盘耗尽、review/test 内容真实性上限、外部 action 结果未知；容量不足 fail-closed，不能自动删审计或补签历史。
 - 最终验收需非作者独立复核；本文不授予 Gate、commit/push、建用户、系统权限变更或部署授权。
+
+## v0.6 修订草案（2026-10-26，回应第二轮复核 R1/R2/R3；**未复核，不得称已批准**）
+
+本轮只修 R4/R7 与记录性错误（已落盘）。以下三项是设计层：R2/R3 给出可评审合同草案，**R1 仍需人类决策**，本文不代选。
+
+### R2（原 STR-02/E07）：可信 merge facts 的存储、端点与认证
+
+现状缺口：§4 的 13 张表没有承载“M 侧持久 code 批准记录中冻结的 per-repo source sha”，§6 的三个端点也不提供 merge facts；`crctl.mjs:1878–1880` 与 `change-scope.mjs:150–153` 的注释已明确“当前平台绑定确认裸 CLI 做不到”。
+
+草案（四项，缺一不可）：
+
+1. **存储**：§4 新增 `execution_code_source_freeze`（`cr_id`、`repo_id`、`source_sha`、`trunk`、`base_sha`、`approved_at`、`approval_record_id`、`digest`；`UNIQUE(cr_id,repo_id,source_sha)`），只由 code 批准事务写入，**不承载** agent 可写来源。缺失行 = 无冻结事实 = 拒（`AUTH_SCOPE_UNVERIFIABLE`），不回退 `approval.yml`。
+2. **端点**：`GET /api/daemon/execution-control/merge-facts?cr=<id>&workspace_revision=<n>`，认证**沿用 §6 既有主体**（MDT + enrolled key/owner scope），显式**拒绝** PAT/JWT/task-token fallback 与任何 `--grant`/`--workspace` 入参决定查询目标；workspace 与 CR 由 M 依据会话/绑定解析，调用方只能声明 CR 身份。
+3. **响应闭集**：`{cr_id, selection_kind: strict|legacy_proven, head_revision, repos:[{repo_id, identity_digest, current_binding_ok, source_sha, base_sha}], grant_digest, frozen_at}`；未知字段/未知域/多余仓库一律拒绝而非忽略；`legacy_proven` 必须携带可信目录证明摘要，否则按 strict 处理。
+4. **失败码与降级**：`AUTH_SCOPE_UNVERIFIABLE`（facts 缺失/读失败/身份不符/仓库集合不全）、`EXECUTION_AUTHORIZATION_HEAD_MOVED`、`EXECUTION_AUTHORIZATION_REVOKED`；任一失败即停，**不降 legacy、不换源、不扫描 `grants/` 猜测**。CLI 侧只允许把端点结果当**输入**，不得缓存后跨调用复用（缓存即失去“当前 head”语义）。
+
+未定的仍留给人类：端点是否随本 change 交付、还是先由 M 服务内部调用（不经 CLI）——两种都可满足“不信任 agent 输入”，但交付面不同。
+
+### R3（原 STR-03）：撤销与实际发布的线性化
+
+草案：以**逐仓 effect**为线性化单位，而不是整次 merge：
+
+1. 每个 effect 的线性化点是“该仓 push 前最后一次 head/撤销重验通过”那一刻；此前失败 = 零 effect；此后失败 = 已发生的 effect 保留。
+2. 撤销与 effect 的排序由 M 事务的唯一提交点定义：M 侧撤销提交先于重验 → 拒；重验先于撤销提交 → 该 effect 视为撤销前已获授权，**不追认**后续 effect。
+3. 部分发布后撤销：停止后续 publish、保留原 journal/receipt、转人工；**不自动新建事务、不换源解除阻断**；journal 恢复只能沿原 `sourceSha`，输入（含 base）变化即拒，不得用新批准给旧源背书。
+4. 远端已成功但响应丢失：以 journal 记录的 effect 为事实，恢复时**先查远端**再决定重放或转人工；不得盲目重推。
+5. rebuild 更换 base 属**输入变化**：按 3 拒绝，要求新授权；不允许“同一次 merge 内静默换 base”。
+6. 并发声明边界（不夸大）：本方案不试图把跨网络 push 包进 DB 事务；能保证的是“effect 前重验 + 部分发布后不继续”。
+
+### R1（原 STR-01）：仍待人类决策——发布语义 (a) 还是 (b)
+
+- **(a) 覆盖真实候选写集**（推荐）：核对对象 = merge 实际将发布的 source 区间 + KB 审批后写入 + finalize 生成写集（`cr.md`/`merge-commits.yml`/`merge-verification.md`）。需要为“批准后实际 source HEAD”建立独立冻结绑定（即 R2 的第 1 项按 source 区间而非单一 sha），finalize 生成路径必须显式列入 `allowed_paths`，无暗设豁免。
+- **(b) 仅批准 SHA**：禁止 KB 审批后提交与 tree-相等放行，并须另行规定 finalize KB 路径如何受 grant 约束；语义最窄但会与现行 “KB 允许批准 SHA 为祖先” 行为冲突，实际会拒绝大量已批准 CR。
+
+**决策未下之前**：S5 的 17 个 merge leaf 夹具形态无法全部固定（尤其 `merge 范围 symlink 取自批准树` 只在 (b) 成立），因此 `channel-test-expectations.json` 不应在 R1 决定前冻结。
