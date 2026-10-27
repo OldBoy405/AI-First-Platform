@@ -3,7 +3,9 @@
 > 环境：Windows 10.0.19045 / Bun **1.4.4** / Node 24.15.0 / git 2.54.0
 > 分支：`sync/upstream-2026-10-26-2568d32ac8`
 > 合并提交：`3644cb8bb5`（merge `upstream/master` @ `2568d32ac8`）
-> 实施提交：`dd38530d5b`（迁移改号）、`71d8d9e9bf`（both 分支字段 + 棘轮 + 生成物）
+> 实施提交：`dd38530d5b`（迁移改号）、`71d8d9e9bf`（both 分支字段 + 棘轮 + 生成物）、
+> `6aace22341`（page-body 守卫登记 + 文档允许标记）、`48c9dd0db2`（admin dist 资源）、
+> `dac639c163` / `1ac314d704`（台账阶段记录与基线刷新）
 > 说明：fork 的 GitHub Actions 因计费受限无法运行，以下全部为**本地**结果。
 
 ## 一、成功标准逐条结果
@@ -20,8 +22,8 @@
 | TC-SYNC-008 | SC-008 | `check:tool-catalog` / `skills-manifest` / `plugin-tree` / `structural-manifest` / `module-size` | ✅ 全绿（module-size 首次红：11 文件超限 → 上限按现场行数上调并标 `GBrain Custom`） |
 | TC-SYNC-009 | SC-009 | `bun run verify` + 逐条定性 | ✅ **72 pass / 17 fail，17 项全部归类**（见第二节），0 项未解释 |
 | TC-SYNC-010 | SC-010 | `bun run test`（8 shard 并行） | ⚠️ 环境基线：2m56s 时 4 个 shard 全为 `0/1032f`（零进度）——与 CUSTOM 基线一致；改用定向批取信号（见第三节） |
-| TC-SYNC-011 | SC-011 | 台账《阶段记录》追加 | ⏳ 待 Gate 3 确认后追加（草案见 `custom-update-draft.md`） |
-| TC-SYNC-012 | SC-012 | 台账逐行 grep | ⏳ Gate 3 后随台账更新一并核 |
+| TC-SYNC-011 | SC-011 | 台账《阶段记录》追加 | ✅ 提交 `dac639c163`：新增 2026-10-26 记录；`git diff 709c16b4a9..HEAD -- CUSTOM.md` 中被删行只有《基本信息》的「当前对齐上游」值，历史《阶段记录》小节零改动 |
+| TC-SYNC-012 | SC-012 | 台账逐行 grep | ✅ fork-only 代码文件 31 个（`src/ test/ scripts/ tsconfig`）**全部可 grep 命中**，未登记 0 个；新登记的守卫测试已入《二开专属文件》 |
 
 ## 二、`bun run verify` 17 个失败逐条定性
 
@@ -79,15 +81,24 @@ OS 级问题，与本次合并无关；Linux CI 不受影响。**注意**：这�
 | 全量 `bun run test`（8 shard） | Windows shard 零进度（既有基线） | 需要时在 Linux CI 或 Ubicloud 跑 |
 | 全量 E2E（806 文件） | 串行设计，单机 20+ 分钟；本轮只跑 2 个高价值文件 | 需要时 `bun run ci:local` 或 `ci:ubicloud` |
 | `test/e2e/schema-catalog-golden` / `doctor-json-golden` 金标准重生成 | 需要独立 Postgres | 有 DB 时按 `regen:all` 提示执行 |
-| 本机 brain 迁移 239 → 275 | **运行中系统，只提命令不代跑** | 操作者：`gbrain apply-migrations --yes` 后核对条数 |
+| 本机 brain 迁移 | ~~运行中系统，只提命令不代跑~~ → 2026-10-26 用户授权后执行 | 已完成：postinstall 已把 schema 带到 275；`gbrain apply-migrations --yes` 把内容迁移 0.53.0 从 partial 收口为 `applied_pending_host_work`（doctor warn），v0.60.31 应用成功。迁移前备份 `~/.gbrain/brain.pglite.pre-v275-20261026`（81 MB）。剩余 host 侧动作见 report 第七节 |
 
-## 五、环境副作用（需你知悉）
+## 五、环境副作用（已处置）
 
-`bun install` 的 postinstall 对本机 `~/.gbrain` 触发了一次**内容迁移 v0.53.0**，停在
-`relation "shared_skill_members" does not exist`（status=partial），并在 `~/.gbrain/` 留下
-`brain.pglite.gbrain-migrations.lock`（空文件，16:27）。这不是本仓代码改动，但属于对在跑 brain 的写操作。
-处置建议（未执行）：先 `gbrain doctor --json` 看 schema/content 版本，再决定 `gbrain apply-migrations --yes`
-是否继续；如需回退，`.gbrain/backup-*` 与 `backup-status.json` 是现成的恢复入口。
+`bun install` 的 postinstall 对本机 `~/.gbrain` 自动跑了迁移：**schema 已到 275**（doctor `schema_version` 绿、1388 列校验、162 张表齐全），但**内容迁移 v0.53.0 半安装**
+（`relation "shared_skill_members" does not exist`，status=partial），并留下空的 `brain.pglite.gbrain-migrations.lock`
+（native 锁随进程退出释放，空文件不阻塞）。
+
+**处置（用户授权后执行）**：
+1. 文件级备份 `~/.gbrain/brain.pglite.pre-v275-20261026`（81 MB）。
+2. `gbrain apply-migrations --yes` → exit 0：v0.53.0 由 `fail` 转 **`warn`（applied_pending_host_work）**；v0.60.31 应用成功。
+3. doctor pre/post 对比：**除 `minions_migration` fail→warn 外，其余 fail/warn 一字未变**。
+
+**仍待你决定的两类事（都不是本次合并引入）**：
+- v0.53.0 的 host 侧动作：`writer_not_quiesced`——先让旧文件系统写入方静默、显式认领 canonical root；`shared-skills` 源需用审过的 content pack root 注册。预览：`gbrain apply-migrations --migration 0.53.0 --dry-run --json`，步骤见 `skills/migrations/v0.53.0.0.md`。
+- 合并前就红的 3 个运维项：`legacy_job_authority`（2 个早于 submission authority 的排队 job 卡住 worker，可先 `gbrain jobs authorize-legacy --select "status=waiting"` 预览）、`sync_freshness`（source `default` 34 天未同步）、`cycle_freshness`（1992 小时未 cycle）。
+
+另：本机有一个 **2026-10-12 启动的遗留 `bun test` 进程**（PID 95792，41s CPU，`--reporter=junit`，工作目录是本仓），与本轮无关，我没有动它。
 
 ## 六、Gate 3 结论
 

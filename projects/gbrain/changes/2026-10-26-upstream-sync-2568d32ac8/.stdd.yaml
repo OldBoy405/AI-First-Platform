@@ -1,15 +1,47 @@
 change_id: 2026-10-26-upstream-sync-2568d32ac8
 complexity_score: null
-current_phase: build
+current_phase: deliver
 design_adjustments:
-  count: 0
-last_modified: '2026-10-26T16:05:23.561251'
+  count: 6
+last_modified: '2026-10-26T19:23:49.949223'
 mode: thorough
 phases:
   build:
-    status: in_progress
+    confirmed_actor: user
+    confirmed_at: '2026-10-26T19:21:45'
+    confirmed_by: dialog
+    confirmed_evidence: 确认 Gate 3
+    slices_completed:
+      S1-merge-conflicts:
+        commits: 3644cb8bb5
+        evidence: 19 冲突按矩阵 A 裁决；挂钩 grep 2/4 命中；定向批 289 用例（首跑 1 fail → S2 修复）
+        new_tests: 0
+        tc_coverage: TC-SYNC-001,002,003
+        verified_at: '2026-10-26T17:05:00'
+      S2-migration-renumber:
+        commits: dd38530d5b
+        evidence: 239→275 四处同改；排序探针 above v274 (275)；空库 270 迁移 + UPDATE 幂等探针；新增 registry
+          守卫测试
+        new_tests: 2
+        tc_coverage: TC-SYNC-004,005,006
+        verified_at: '2026-10-26T17:10:00'
+      S3-regen-ratchet-sqlfix:
+        commits: 71d8d9e9bf
+        evidence: both 分支补 to_title/to_type + SQL 金标准重生成；regen 全链 13 产物 fresh；棘轮 11
+          行按现场上调
+        new_tests: 0
+        tc_coverage: TC-SYNC-007,008
+        verified_at: '2026-10-26T17:25:00'
+      S4-verify-triage:
+        commits: 6aace22341
+        evidence: verify 72 pass/17 fail 全部分类；定向批 600/0；E2E 子集 90/0；admin 227/0；typecheck
+          0
+        new_tests: 0
+        tc_coverage: TC-SYNC-009,010
+        verified_at: '2026-10-26T19:15:00'
+    status: completed
   deliver:
-    status: pending
+    status: in_progress
   spec:
     confirmed_actor: user
     confirmed_at: '2026-10-26T16:05:23'
