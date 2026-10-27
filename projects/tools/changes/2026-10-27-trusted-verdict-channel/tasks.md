@@ -81,3 +81,5 @@
 - [ ] 9.1 不改 AIFI-45 两个 change 目录、不动 `change-requests/`、不改 tools `dir-graph.yaml` 状态机。
 - [ ] 9.2 不修采集器通用缺陷与锁（归 AIFI-45）；不重写本地规则本身（B16）。
 - [ ] 9.3 不新增 abort 命令、CR 状态、第三个决策服务；不部署、不做真实 CR。
+- [ ] 9.4 不改 EVD-007 的 opt-in 语义与 `lib/evidence-delivery.mjs`（见 design-adjustments.md ADJ-1）；严格 readiness 只从新入口出，宽松结果不进 deployment verdict。
+- [ ] 9.5 与 AIFI-45 会话共用 `tools` 源码仓，动共享文件前先核在途改动（ADJ-2）。

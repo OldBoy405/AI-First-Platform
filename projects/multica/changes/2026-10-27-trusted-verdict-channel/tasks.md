@@ -90,3 +90,4 @@
 - [ ] 10.1 不改 AIFI-45 两个 change 目录、不动 `change-requests/`、不提交 12 个 `pkg/db/generated/*.sql.go`。
 - [ ] 10.2 不部署、不启用、不做真实 CR、不 push。
 - [ ] 10.3 不实现 AdmissionDecider、四阶段/resume 单 effect Runner、RUN-009 修复、legacy 业务迁移。
+- [ ] 10.4 不改 EVD-007 已落地的 opt-in 语义（见 design-adjustments.md ADJ-1）；`CUSTOM.md` 从 #220 起（#219 已被 AIFI-45 占用）。
