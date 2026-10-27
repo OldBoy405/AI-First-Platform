@@ -167,7 +167,8 @@ SC-VC-024 的「未修时按设计为 RED，不得登记完成」是**条件句*
 | 确认时间 | 2026-10-27 |
 | 覆盖范围 | 本 change（multica）与配对 change（tools）两条 `.stdd.yaml` 的 `phases.build` 同步置 `completed`，`current_phase` 转 `deliver` |
 | 确认依据 | §7.1 声称项全部当前有效；§7.2 五项**未声称**随材料声明 |
-| 记录方式 | `stdd gate approve` 在本机解析不到 change（从工作区根、`projects/`、`projects/multica`、change 目录逐级尝试均报 `No change found`，数据根 `projects/multica/.stdd` 不存在），故按 Gate 1/2 **完全相同的字段结构**直接写入 `.stdd.yaml`：`confirmed_actor/confirmed_at/confirmed_by/confirmed_evidence/status`。**未绕开 gate 语义，只是换了记录载体** |
+| 记录方式 | 写入两条 `.stdd.yaml` 的 `phases.build`（字段结构与 Gate 1/2 完全一致：`confirmed_actor/confirmed_at/confirmed_by/confirmed_evidence/status`）。
+**修正（2026-10-27）**：本节初稿曾写「`stdd gate approve` 解析不到 change，故手写」，**理由错误**——当时是在记录目录（`AI First Platform/projects/multica`）里运行的，而 `binding.yaml` 在**源码仓** `Downloads/AI/multica/.stdd/` 下，CLI 从 cwd 往上找因此找不到。从源码仓运行即正常：`stdd gate status` 读回 Gate 1/2/3 均 `confirmed_by=dialog`，`stdd phase status` 为 `Phase 4: DELIVER / completed`。写入内容本身与 CLI 预期一致，无需重写 |
 
 确认同时修正：`multica/.stdd.yaml` 的 `design_adjustments.count` 原为 2（实际 13 条 ADJ-1…ADJ-13）；tools 侧为 2，正确。
 
