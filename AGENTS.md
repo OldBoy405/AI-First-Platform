@@ -39,15 +39,17 @@ AI First Platform/
   AGENTS.md                 # 本文件
   dir-graph.yaml             # 本仓库目录图 + repositories 声明
   change-requests/           # 在途 CR 工作台（_backlog.yml + {CR-ID}/）
-  specs/                     # CR 回写后的 baseline 产物（当前为空，见下）
-  delivery/                  # CR 回写后的交付任务索引（当前为空，见下）
+  specs/                     # CR 回写后的 baseline 产物（_index.yml 索引 + ai-first-platform/{PRD,SDD,traceability}）
+  delivery/                  # 回写派生的交付任务（delivery/task/TASK-*.md，文件名带 CR 编号）
   docs/
     product/                 # 平台级设计文档（P0-P3、Wiki 子系统设计等），跨 CR，不进 specs/
     analysis/                # 架构评审、方案对比等分析文档
     references/               # sibling 仓库（multica/openwiki/tools）的 commit SHA 指针，不 vendor 全量 clone
 ```
 
-**`specs/`、`delivery/` 为什么现在是空的**：`docs/product/`、`docs/analysis/` 里的既有设计文档是跨 CR 的平台级资产，不是某一个 CR 的交付物，不强行套 `specs/{id}/PRD.md+SDD.md` 模型。`specs/`、`delivery/` 只承接未来真正通过 CR 流程（`requirement-authoring` → `architecture-design` → `code-implementation` → `feature-writeback`）跑完并 writeback 的产物。
+**`specs/`、`delivery/` 装什么**：两者只承接通过 CR 流程（`requirement-authoring` → `architecture-design` → `code-implementation` → `feature-writeback`）跑完并 writeback 的产物。现状：`specs/_index.yml` 索引 `ai-first-platform`（`PRD.md`/`SDD.md`/`traceability.yml`）；`delivery/task/` 已有按 CR 编号命名的 `TASK-*.md`（自 CR-2026-001 起累计）。
+
+**`docs/product/`、`docs/analysis/` 仍然不进 `specs/`**：那里的平台级设计文档是跨 CR 资产，不是某一个 CR 的交付物，不强行套 `specs/{id}/PRD.md+SDD.md` 模型。这条规则与上面两个目录已非空无关，仍然有效。
 
 ## CR 状态推进规则
 

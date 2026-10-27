@@ -60,7 +60,15 @@ AIFI45_ISOLATION_PROFILE=995:994 AIFI45_ISOLATION_AGENT=994:993 \
 | 本 change（待环境） | 独立 Linux 主机重跑 P0 隔离（agent 账号无 sudo）→ 结掉 ADJ-10 与 auditd 替代 |
 | 台账 | `multica/CUSTOM.md` M14 已登记 #221–#235（16 行），是 fork 定制与 rebase 核对的唯一清单 |
 
-## 6. 提交状态
+## 6. lint 口径（`stdd validate` 的一条警告）
+
+`stdd validate` 报 `spec.md: AND 数量 (35) 超过上限 (5)`。这是**整文件**计数的启发式（`stdd/cli/commands/validate.py` 对全文 `**AND**` 计数，阈值 5）；权威规则在 `ci.py::check_and_count`，按 `### Scenario` 切块**逐场景**计数、阈值 5。
+
+实测权威检查：`stdd ci check-failures` → `✓ (g) AND 数量正常`（6 通过 / 0 警告 / 0 错误；同时 `(d) TC-ID 唯一 45 个`、`(f) THEN 含 SHALL`、`(k) 契约一致 2 capabilities` 均通过）。
+
+结论：**误报，不改规格**。本规格有 35 个场景、每个 1 条 AND，属正常形态；为消除提示去合并或删除 AND 子句会改动 Gate 2 冻结的规格文本，代价高于收益。
+
+## 7. 交付提交状态
 
 - 记录仓（本工作区）：Gate 3 记录、本交付文档、交付清单均在提交内。
 - 源码仓：**未提交**（用户决定 a）。multica 侧 `CUSTOM.md`、`server/cmd/server/router.go`、`server/internal/governance/execution_dispatch_root.go` 为改动文件，其余为新增；`server/pkg/db/generated/*.sql.go` 12 个生成物按约定不提交。
