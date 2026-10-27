@@ -46,7 +46,7 @@
 
 ## 3. S2–S4 协议、store 与恢复（P0）
 
-- [x] 3.1 `execution_control_protocol.go`：`VerifyControlEnvelope`（与 Node 侧同错误码同判定序）、`LoadControlTrustManifest`（绝对路径/大小上限/PEM sha256 pin/agent 可写根拒绝/Ed25519/重复声明）、`SignControlEnvelope`+`SignControlPayloadBytes`；严格 base64 与**重复 JSON 键拒绝**（Go 默认保留最后一个）。`TestChannelProtocol` 真跑 6/6（leaf 4，含 `cross_language_vectors/verdict|command`）；共享夹具 `tools/.../test/fixtures/control-vectors.json` 由 Node 生成、Go 验签并复现同一签名，副本存 `validation/control-vectors.copy.json`。m7（签名域去掉 `schema `）打红 `purpose_domain_scope`+`cross_language_vectors`；m8（允许重复键）只打红 `exact_keys`。
+- [x] 3.1 `execution_control_protocol.go`：`VerifyControlEnvelope`（与 Node 侧同错误码同判定序）、`LoadControlTrustManifest`（绝对路径/大小上限/PEM sha256 pin/agent 可写根拒绝/Ed25519/重复声明）、`SignControlEnvelope`+`SignControlPayloadBytes`；严格 base64 与**重复 JSON 键拒绝**（Go 默认保留最后一个）。`TestChannelProtocol` 真跑 6/6（leaf 4，含 `cross_language_vectors/verdict|command`）；共享夹具 `tools/.../test/fixtures/control-vectors.json` 由 Node 生成、Go 验签并复现同一签名，副本存 `validation/control-vectors.copy.json`。m7（签名域去掉 `schema\0`）打红 `purpose_domain_scope`+`cross_language_vectors`；m8（允许重复键）只打红 `exact_keys`。
 - [ ] 3.2 `execution_control_command.go`/`store`：状态受限转换、单 open、fence、settlement kind；`TestChannelStoreState`（7 leaf）。
 - [ ] 3.3 `execution_control_recovery.go`（daemon）：checkpoint 字段、恢复表五类动作、旧 fence 隔离；`TestChannelWorker`+`TestChannelRecovery`（7 leaf，见 expectations `worker` label）。
 - [ ] 3.4 key rotation 只影响新 verdict；历史帧仍用旧 key 验证（并入 3.3 与 3.2 断言）。
@@ -75,6 +75,10 @@
 ## 7. R2/R3 merge 端点（P0）
 
 - [ ] 7.1 `GET /api/daemon/execution-control/merge-facts/{crID}`：认证主体解析 workspace、闭集响应、`repos_digest` 自洽、绑定三态、`head_revoked`；`TestChannelMergeFacts`（6 leaf）。
+  - [x] 7.1a tools 侧采集器 `collectCommittedPaths` 已落（`change-scope.mjs`）：committed 区间、严格 NUL 解析、rename 双侧、提交树 symlink 逃逸判定、四类证明；新增 5 条测试（shallow 拒绝、零变更证明、已提交链接指向仓外、option-like ref 拒绝、rename 双侧），`test/change-scope.test.mjs` **31/31 PASS**。
+  - [ ] 7.1b tools 侧 `merge-facts.mjs` 客户端 + 11 条必达 leaf 测试：**未实现**（子代理两次提前收尾，仅交付采集器）。
+  - [ ] 7.1c multica 侧 handler 与 `TestChannelMergeFacts`（6 leaf）：未实现。
+  - 裁决记录（待写入 ADJ-7）：404 分层（`AUTH_SCOPE_UNVERIFIABLE` vs `MERGE_FACTS_NOT_FOUND`，只有传输/5xx → `UNAVAILABLE`）；祖先判定用**严格祖先**（SC-MG-010 优先于方案 R2.1 的「含相等」）。
 - [ ] 7.2 `code_source_freeze` 追加写与撤销同事务置位（与 1.1 的索引配套）；`source_freeze_append_only`。
 - [ ] 7.3 `POST /api/daemon/crs/{crID}/merge-effects`：`op=reserve|report`、CR 行 `FOR SHARE`、`input_digest` 重验、attempt 四支、码序；`TestChannelMergeEffects`（4 leaf）。
 - [ ] 7.4 与 tools 侧 `merge-facts`/`merge-effects` 客户端的跨语言联调（契约以 R2.4/R3.1 为准）。
