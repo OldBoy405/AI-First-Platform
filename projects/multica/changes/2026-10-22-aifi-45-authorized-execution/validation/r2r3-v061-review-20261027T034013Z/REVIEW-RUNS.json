@@ -1,0 +1,12 @@
+{
+  "review": "v0.6.1 R2/R3 contract draft",
+  "plan_raw_sha256": "1b63d777aef552be2f569feea5a4e25d7c846949fd50dc6c133103c8ae842821",
+  "harness": "pi Agent tool; general-purpose profile; fresh background sessions; read-only instructions",
+  "lanes": [
+    {"lane": "strong", "session_id": "01a17b72-3cb5-760a-b938-34edcf21ca71", "requested": "OpenAIPersonal/gpt-6.1-sol:high", "actual": "unknown", "verdict": {"R2": "PASS", "R3": "BLOCK"}, "report": "REVIEW-STRONG.md"},
+    {"lane": "balanced", "session_id": "01a17b72-3cda-760a-b938-34f019a3f248", "requested": "Gobao/deepseek-flash:max", "actual": "unknown", "verdict": {"R2": "INCOMPLETE", "R3": "INCOMPLETE"}, "report": "REVIEW-BALANCED.md"},
+    {"lane": "economy", "session_id": "01a17b72-3cc9-760a-b938-34efd70a7b47", "requested": "GB-JP/deepseek-flash:high", "actual": "unknown", "verdict": {"R2": "BLOCK", "R3": "INCOMPLETE"}, "report": "REVIEW-ECONOMY.md"}
+  ],
+  "merged_outcome": {"R2": "BLOCK (economy table-name dual; balanced INCOMPLETE)", "R3": "BLOCK (strong STR61-01)"},
+  "no_interruptions": true
+}
