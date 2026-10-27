@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: apply once 与原字节重放
+not ok 1 - apply once 与原字节重放
+  ---
+  duration_ms: 26.5151
+  type: 'test'
+  location: 'C:\\Users\\GOBAO\\Downloads\\AI\\tools\\skills\\shared\\crctl\\scripts\\test\\execution-control-store.test.mjs:26:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    false !== true
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/GOBAO/Downloads/AI/tools/skills/shared/crctl/scripts/test/execution-control-store.test.mjs:50:10)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1201:25)
+    Test.start (node:internal/test_runner/test:1096:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17)
+  ...
+# Subtest: 冻结帧链拒绝断链与占位签名
+ok 2 - 冻结帧链拒绝断链与占位签名
+  ---
+  duration_ms: 34.097
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 1
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 126.7146
