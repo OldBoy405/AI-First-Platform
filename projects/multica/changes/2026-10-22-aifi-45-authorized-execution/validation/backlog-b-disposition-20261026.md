@@ -121,3 +121,4 @@ B6 **不再**在 AIFI-45 做过渡。tools 在 agent 本机运行，没有 agent
 20. **G2/G4 残余决定不做（增量 46）**：G2 签名 payload 不补 `dispatched_at`（固定 20 键跨仓合同；代次已由服务端强制并有反例证据）；G4 不引入凭 receipt 反推 strict 的新语义，移交 M003。无代码改动。
 21. **TestTC_NTF_003 修正（增量 47）**：顺序相关失败（共享 workspace 中最早 owner 不是本用例 owner），断言改为 owner/admin 角色；全包首次 0 fail（958/957/0/1 既有 skip）。另核实 tools 冻结基线只漂移 2 个本 change 记录文件。
 22. **gate-registry 补齐（增量 48）**：8 个 AIFI-45 测试文件登记进 `gate-registry.json`，`suite-gate --run` 由 `SUITE_MANIFEST_FILE_DRIFT`（39/31）转 **pass**（39 文件 / 1129 用例 / 0 fail / 0 skip）。仅补登记面，不改任何 TC 状态。
+23. **M003 交接文件（增量 49）**：`validation/m003-handover-20261027.md`——供另开 change 落地 M003 的新会话说用；写清注册方式（原生 STDD 两仓）、边界与已决事项、纪律、以及回来后"通道通过不自动回填"的回填口径。
