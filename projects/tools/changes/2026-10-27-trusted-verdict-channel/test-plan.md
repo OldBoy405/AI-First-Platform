@@ -1,15 +1,15 @@
 # 可信 T committed verdict channel — tools 测试方案
 
-> STDD Phase 2 / Gate 2 草案。**32 个 TC 全部未实现、未运行。**
+> STDD Phase 2 / Gate 2 草案。**33 个 TC 全部未实现、未运行。**
 > 设计输入：前身 change `validation/trusted-verdict-channel-implementation-plan-20261026.md`（v0.6.5）。
 > 跨仓 multica 侧见[配套测试方案](../../../multica/changes/2026-10-27-trusted-verdict-channel/test-plan.md)。
-> 必达 leaf 全名以 `validation/channel-test-expectations.json` 为唯一权威（R2.5 11 条 / R3.5 16 条 / S5 19 条）。
+> 必达 leaf 全名以 multica change 的 `validation/channel-test-expectations.json` 为唯一权威（SPEC 已冻结；R2.5 11 条 / R3.5 16 条 / S5 19 条）；本仓不另存副本。
 
 ## 一、测试策略
 
 ### 1.1 金字塔与边界
 
-合并三族：①`merge-scope`（committed 区间与写集，19 leaf）②`merge-facts`（只读事实客户端与码序，11 leaf）
+合并三族：①merge 范围（committed 区间与写集，19 leaf，按方案固定在 `test/execution-control-policy.test.mjs`）②`merge-facts`（只读事实客户端与码序，11 leaf）
 ③`merge-effects`（reserve/report、journal 三态与恢复矩阵，16 leaf）；T runtime 单独四族（protocol/store/worker+recovery/policy/readiness）。
 真实 Git 临时仓 + 注入 publish 端口；不以退出码代替副作用断言。
 
@@ -27,13 +27,13 @@
 
 | 资产（相对 `crctl/scripts`） | 当前作用及限制 | 本轮处理 |
 |---|---|---|
-| `lib/change-scope.mjs` | 纯判定器，空集合 fail-open | 保持语义；新增采集完整性校验层 |
+| `lib/change-scope.mjs` | 纯判定器：缺失/非数组 changes 已返回 `AUTH_SCOPE_INPUT_INVALID`（AIFI-45 已修），仅显式 `[]` 放行；`gitFields` 已用 `-z`、rename 双侧已查 | 判定器不改；`collectCommittedPaths` 复用 `gitFields` 与 rename 解析，新增采集完整性四证明 |
 | `lib/workspace-transactions.mjs` | `mergeCr`（1986）、`verifyReleaseSubjects` | 插入范围核对；不改既有本地信任行为 |
 | `lib/durable-tx.mjs` | best-effort fsync/recoverable write-set | 作为 store 基线，升级为冻结 envelope |
 | `test/merge-tx.test.mjs`、`test/merge-release-recovery.test.mjs` | 既有 merge 回归 | 保留并扩展；不替换 |
 | 新增 `lib/merge-facts-client.mjs`、`lib/merge-effects-client.mjs` | 无 | 端点调用、码序映射、journal 三态 |
 | 新增 `lib/execution-control-{protocol,store,worker,readiness}.mjs` | 无 | T 侧运行时 |
-| 新增 `test/merge-{scope,facts,effects}.test.mjs` | 无 | 46 条 merge leaf 的宿主（文件名 proposed） |
+| 新增 `test/execution-control-policy.test.mjs`、`test/merge-facts.test.mjs`、`test/merge-effects.test.mjs` | 无 | 46 条 merge leaf 的宿主（前者按方案固定，后两者本规格冻结） |
 
 ## 二、详细测试案例
 
@@ -429,11 +429,25 @@
 | **预期结果** | 宽松输入 NOT_READY；正例通过；verify-channel 只出 READY_COMPONENT |
 | **当前状态** | ❌ 测试缺（Gate 2 草案，未实施） |
 
+### 功能 5：P0 隔离证明（REQ-TR-006）
+
+#### 案例 5.1 — T 侧身份隔离
+
+| 字段 | 内容 |
+|------|------|
+| **ID** | TC-TR-013 |
+| **对应 Spec** | verdict-channel-runtime/spec.md → Scenario: SC-TR-013 |
+| **优先级** | P0 |
+| **预置条件** | 获授权 Linux 与 Windows 测试机、批准 profile（真实不同受限身份、actual launcher） |
+| **输入** | 同 UID/同令牌 SID profile；agent 读 key、写 store、连 IPC、替换 Node/模块、注入 env/F1 |
+| **预期结果** | 同身份 profile 不合格；攻击全不产生 accepted verdict；受限服务身份签发验证成功；两平台各自出证 |
+| **当前状态** | ❌ 测试缺（Gate 2 草案，未实施）；环境未获授权前不可执行 |
+
 ## 三、追溯矩阵
 
 | Requirement | Scenario | 测试文件 | leaf 数 |
 |---|---|---|---|
-| REQ-MG-001 | SC-MG-001..008 | `merge-scope.test.mjs` | 19（S5 全量） |
+| REQ-MG-001 | SC-MG-001..008 | `execution-control-policy.test.mjs` | 19（S5 全量） |
 | REQ-MG-002 | SC-MG-009..013 | `merge-facts.test.mjs` | 11（R2.5 全量） |
 | REQ-MG-003 | SC-MG-014..020 | `merge-effects.test.mjs` | 16（R3.5 全量） |
 | REQ-TR-001 | SC-TR-001/002 | `execution-control-protocol.test.mjs` | 2 |
@@ -441,6 +455,7 @@
 | REQ-TR-003 | SC-TR-005..007 | `execution-control-worker.test.mjs`、`-recovery.test.mjs` | 3 |
 | REQ-TR-004 | SC-TR-008..011 | `execution-control-policy.test.mjs` | 4 |
 | REQ-TR-005 | SC-TR-012 | `execution-control-readiness.test.mjs` | 2 |
+| REQ-TR-006 | SC-TR-013 | `execution-control-isolation.test.mjs`（Linux/Windows 分别） | 3 + 2 |
 
 不对称记录（清单必须显式写出，不得用「N:N 一一对应」概括）：
 - `merge 范围核对越界零写入` 需要**两条** mutation（移到 publish 之后；移到 journal 之后 prepare 之前）。
@@ -456,6 +471,6 @@
 | T runtime | store/worker/fence | 故障注入 + 跨语言向量 | 未实施 |
 | readiness | 纯求值 | 真实 DB CAS（multica 侧） | 未实施 |
 
-- 本仓 32 个 TC **全部未实现、未运行**；不提供通过率。
+- 本仓 33 个 TC **全部未实现、未运行**；不提供通过率。
 - 未做真实 merge、未触碰真实 CR、未部署；P0 隔离与 S8 profile 未定前记 UNVERIFIED。
 - 通道组件通过不自动回填 AIFI-45 的 41/49；其 6 条 RUN 类 TC 的重跑前置见 deliver 产物。

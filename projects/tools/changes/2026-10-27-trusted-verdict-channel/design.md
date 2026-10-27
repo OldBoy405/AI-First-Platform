@@ -10,8 +10,9 @@
 
 - tools 是 merge 的唯一发布方（`skills/shared/crctl/scripts/lib/workspace-transactions.mjs::mergeCr`，本仓 1986 行），
   也是 T 规则、repair/resume、sensitive action 与 component readiness 的所在处。
-- 已核实（2026-10-27）：`lib/change-scope.mjs` 的 `evaluateChangeScope` 是纯判定器，缺失/非数组 `changes`
-  当空数组返回 allowed；`collectChangedPaths` 含工作区/untracked 与 `origin/trunk` 回退；`crctl.mjs` 准入在
+- 已核实（2026-10-27，修订后）：`lib/change-scope.mjs` 的 `evaluateChangeScope` 是纯判定器，缺失/非数组 `changes`
+  **已返回** `AUTH_SCOPE_INPUT_INVALID`、`allowed:false`（AIFI-45 已修，35–39 行），仅显式 `[]` 放行；内部 `gitFields`
+  已用 `-z` NUL 分隔、rename 已双侧记录；`collectChangedPaths` 仍含工作区/untracked 与 `origin/trunk` 回退；`crctl.mjs` 准入在
   1968 行仍返回 `EXECUTION_CONSUMPTION_REQUIRED`；`scripts/test/` 现有 46 个测试文件（含 `merge-tx.test.mjs`、
   `merge-release-recovery.test.mjs`、`change-scope.test.mjs`）。
 - 依赖前提（AIFI-45 已交付）：grant/verifier、`execution-authorization.mjs`、`execution-binding.mjs`、
@@ -25,9 +26,9 @@
   release subject 之后含 `approval.yml`、`cr.md` 等写入——正是要守的面。
 - 改动集合的权威来源是 **M 侧持久 code 批准记录**；`approval.yml#code.release-subjects` 只作投影，逐字段不等即
   `AUTH_SCOPE_UNVERIFIABLE`。
-- 新写 `collectCommittedPaths(base, sha)`：committed 区间 + git tree mode `120000` 逃逸判定 + rename 源/目标双查 +
-  无损路径分隔与引号解转义（禁止按换行拆分再 `trim()`）。**不复用** `collectChangedPaths`（语义不同，含工作区）。
-- `evaluateChangeScope` 保持纯判定语义，仍是「判定器」而非「采集完整性验证器」；空集合四证明（仓集合完整、
+- 新写 `collectCommittedPaths(base, sha)`：committed 区间 + git tree mode `120000` 逃逸判定。路径编码与 rename 双侧
+  **复用**同文件既有 `gitFields`（`-z`）与 rename 解析，不另写一套；**不复用** `collectChangedPaths` 本身（语义不同，含工作区与回退）。
+- `evaluateChangeScope` 不改：它对缺失/非数组输入已 fail-closed，对显式 `[]` 放行是判定器的正确行为；空集合四证明（仓集合完整、
   每仓取到 SHA、采集成功、路径非空或显式零改动）缺一即 `AUTH_SCOPE_UNVERIFIABLE`。
 - 与既有 `verifyReleaseSubjects` 的顺序不变：先过既有校验（`allowLocalDrift: codeTrust.ok`），再做范围核对；
   越界只拒，**不走** `release-drift` 回退（回退会写状态）。
@@ -104,7 +105,9 @@
 | T-R3 | `merge-effects` 客户端与 journal 三态（16 leaf） | T-R2 |
 | T-S8 | readiness 求值器（T 侧） | T-S2 |
 
-P0（隔离证明）在 tools 侧对应 `test/execution-control-isolation.test.mjs`；Linux/Windows 双侧身份证明未定前记 UNVERIFIED。
+P0（隔离证明，SC-TR-013）在 tools 侧对应 `test/execution-control-isolation.test.mjs`，Linux/Windows 分别出证，未获环境授权前记 UNVERIFIED。
+**P0 门控（Gate 2 前用户采纳）**：P0 只阻塞依赖方案 C 的片（T-S3/T-S4 worker 与恢复、T-S8 的 worker 求值路径）；
+两条路径都适用的 T-S2 协议纯函数、T-S5a 规则接线、T-S5b/T-R2/T-R3 merge 三族可先行。P0 失败转 B 须另行提审，禁止 silent fallback。
 
 ## 残余风险与非目标
 
@@ -113,3 +116,10 @@ P0（隔离证明）在 tools 侧对应 `test/execution-control-isolation.test.m
   本 change 只定「取哪些 SHA/树」的契约。
 - 不做 legacy 迁移（D8=A）、不新增 CR 状态机状态、不部署。
 - 通道组件通过不自动回填 AIFI-45 的 41/49。
+
+## 修订记录
+
+| 日期 | 修订 | 结论是否受影响 |
+|---|---|---|
+| 2026-10-27 | 初稿（Gate 2 草案） | — |
+| 2026-10-27 | 更正事实：`evaluateChangeScope` 对缺失/非数组已 fail-closed（原文照抄方案的旧描述）；`-z` 与 rename 双侧已由 AIFI-45 修好，`collectCommittedPaths` 改为复用 `gitFields`；19 条 merge 范围 leaf 按方案固定在 `test/execution-control-policy.test.mjs`（原写 `merge-scope.test.mjs`）；补 P0 为 SC-TR-013 并按 C 路径门控；leaf 名单改由 multica change 的 `channel-test-expectations.json` 在 SPEC 冻结 | 否：判定器不改、四证明归采集层的结论不变；范围与必达 leaf 下限不变 |

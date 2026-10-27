@@ -90,3 +90,12 @@
 - **THEN** SHALL 一律 NOT_READY，且合法非空 profile 为正例。
 - **AND** `verify-channel` 只产出 `READY_COMPONENT`，不得调用生产 activation。
 - **AND** request/verdict schema 为 exact-key，同 request 丢响应或重启只返回原 bytes。
+
+### Requirement: P0 隔离证明（T 侧）：受限服务身份可签发，agent 身份不能取得 key、store、IPC 或服务环境。
+
+#### Scenario: SC-TR-013
+
+- **GIVEN** 同 UID 或同令牌 SID 的 profile；以及在真实不同受限身份下的 agent 尝试读 key、写 store、连 IPC、替换 Node/模块或注入 env/F1。
+- **WHEN** 用 actual launcher 运行隔离探针。
+- **THEN** SHALL 判同身份 profile 不合格，让 agent 侧全部攻击不能产生 accepted verdict，并以受限服务身份签发验证成功作正对照。
+- **AND** Linux 与 Windows 各自出证据；只有「全部拒绝」的 mock 不算通过。

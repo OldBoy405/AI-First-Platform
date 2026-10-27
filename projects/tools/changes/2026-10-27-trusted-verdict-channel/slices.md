@@ -14,6 +14,7 @@ multica M-R2 merge-facts 端点 ── T-S5b merge 范围(19 leaf) ── T-R2 �
 
 | # | 优先级 | 风险 | 目标 | TC 覆盖 | 依赖 |
 |---|---|---|---|---|---|
+| T-P0 | P0 | 高 | T 侧隔离证明（Linux + Windows 分别出证） | TC-TR-013 | 隔离环境与 profile 授权 |
 | T-S2 | P0 | 高 | `VerifyEnvelope`、trust manifest exact keys、跨语言向量 | TC-TR-001/002 | multica M-S2 合同 |
 | T-S3 | P0 | 高 | `ApplyOnce`、journal/原子 bundle/冻结帧链 | TC-TR-003/004 | T-S2 |
 | T-S4 | P0 | 高 | fence、checkpoint、恢复表（T 侧） | TC-TR-005..007 | T-S3 |
@@ -29,6 +30,15 @@ multica M-R2 merge-facts 端点 ── T-S5b merge 范围(19 leaf) ── T-R2 �
 - merge 范围核对必须在 `mergeCr` 的既有 gate **之前**插入，越界只拒；`merge-facts` 客户端随后提供可信事实，
   `merge-effects` 再兑现撤销线性化——顺序不可颠倒（否则会用未核实的授权去 reserve）。
 - 每片单 writer；`lib/workspace-transactions.mjs` 只在一处插入，避免并发改同一文件。
-- 46 条 merge leaf 的 mutation 不完全 1:1：`越界零写入` 需两条 mutation，`release-subject 缺失` 与「无法核实」共用一条，
+- 19 条 merge 范围 leaf 按方案固定在 `test/execution-control-policy.test.mjs`；46 条 merge leaf 的 mutation 不完全 1:1：`越界零写入` 需两条 mutation，`release-subject 缺失` 与「无法核实」共用一条，
   清单必须显式记录，不得用「N:N」概括。
 - 真实 merge 与真实 CR 一律不做；只在临时 Git 仓和注入的 publish 端口上验证副作用。
+
+## P0 门控（Gate 2 前用户采纳）
+
+| 分组 | 片 | P0 未绿时 |
+|---|---|---|
+| 两条路径都适用 | T-S2（协议纯函数）、T-S5a、T-S5b、T-R2、T-R3 | 可先行 |
+| 依赖方案 C | T-S3、T-S4、T-S8 的 worker 求值路径 | 阻塞，直到 P0 两平台证据齐 |
+
+- P0 失败：停止 C 路径，转 B 须另行提审，禁止 silent fallback。

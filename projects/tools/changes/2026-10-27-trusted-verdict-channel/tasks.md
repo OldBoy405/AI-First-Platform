@@ -2,15 +2,24 @@
 
 > STDD Phase 2 / Gate 2 草案。**全部任务未开始**；本文件是计划，不是执行记录。
 
+## 0. SPEC 阶段已完成
+
+- [x] 0.1 leaf 名单已由 multica change 的 `validation/channel-test-expectations.json` 在 SPEC 冻结（原排 BUILD 的 8.1）。
+
+## P0. 隔离证明（T 侧；只阻塞依赖方案 C 的片）
+
+- [ ] P0.1 `test/execution-control-isolation.test.mjs`：Linux 3 leaf、Windows 2 leaf，分别出证；只有「全部拒绝」的 mock 不算通过。
+- [ ] P0.2 mutation：把实际 agent launch 改回服务身份，隔离断言必须 RED。
+
 ## 1. merge 范围核对（T-S5b，19 leaf）
 
-- [ ] 1.1 新增 `lib/merge-scope.mjs`：`collectCommittedPaths(base, sha)`（committed 区间、rename 源/目标、tree mode `120000` symlink、无损路径分隔与引号解转义）。
+- [ ] 1.1 新增 `collectCommittedPaths(base, sha)`（committed 区间 + tree mode `120000` symlink）；路径编码与 rename 双侧复用 `lib/change-scope.mjs` 既有 `gitFields`/rename 解析，不另写。
 - [ ] 1.2 采集完整性四证明（仓集合完整、每仓取到 SHA、采集成功、路径非空或显式零改动），失败即 `AUTH_SCOPE_UNVERIFIABLE`。
 - [ ] 1.3 在 `mergeCr` 既有链插入：先 `verifyReleaseSubjects`，再范围核对；越界只拒，不走 `release-drift` 回退。
 - [ ] 1.4 改动集合只读 M 持久批准记录；`approval.yml` 只作投影，逐字段不等即拒。
 - [ ] 1.5 finalize 三生成路径（`cr.md`/`merge-commits.yml`/`merge-verification.md`）逐项进 `allowed_paths`，无暗设豁免。
 - [ ] 1.6 selection 判定：Unknown 即拒、legacy 只由可信目录证明、Strict 删投影仍 strict。
-- [ ] 1.7 `test/merge-scope.test.mjs`（proposed）：承载 19 条 leaf 与对应 mutation。
+- [ ] 1.7 `test/execution-control-policy.test.mjs`（方案固定文件）：承载 19 条 merge 范围 leaf 与对应 mutation。
 
 ## 2. merge-facts 客户端（T-R2，11 leaf）
 
@@ -62,7 +71,7 @@
 
 ## 8. 证据与收尾
 
-- [ ] 8.1 与 multica 共同冻结 `validation/channel-test-expectations.json`（46 条 merge leaf + T runtime leaf）。
+- [x] 8.1 已移至 0.1（SPEC 冻结）。
 - [ ] 8.2 每条 mutation 保存 patch hash、基线与恢复后 source hash、argv、失败 leaf 与条件断言。
 - [ ] 8.3 既有 `test/` 46 个文件的套件门禁在改动后仍 pass（失败码与退出码不变）。
 - [ ] 8.4 deliver 产物写明 AIFI-45 6 条 RUN 类 TC 的重跑前置，不写成「已回填」。

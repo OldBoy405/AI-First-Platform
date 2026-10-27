@@ -10,52 +10,57 @@ meta:
     - 崩溃/并发用确定性 barrier 与故障注入；skip、零匹配、编译错、连接错不算通过。
     - 与 multica 侧互操作向量由本仓生成/校验，原字节不重序列化。
     - leaf 标题在文件内唯一，全名以 `validation/channel-test-expectations.json` 为唯一权威。
+    - CP 断言只列 `validation/channel-test-expectations.json`（位于 multica change 目录）对应 node label 的子集；验收以 `channel-evidence.mjs` 按全名单判定。`runnode` 为方案「未来验证命令模板」。
 steps:
   - id: CP-TR-001
     description: SC-TR-001 / purpose/domain/scope 三元组严格匹配，Go↔Node 同字节同 digest。
-    action: node --test --test-reporter=tap test/execution-control-protocol.test.mjs
+    action: runnode green protocol ./test/execution-control-protocol.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'verify purpose/domain/scope'}]
   - id: CP-TR-002
     description: SC-TR-002 / exact keys、双 key-purpose、重复键与非法路径均拒。
-    action: node --test --test-reporter=tap test/execution-control-protocol.test.mjs
+    action: runnode green protocol ./test/execution-control-protocol.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'exact keys 与 key-purpose'}]
   - id: CP-TR-003
     description: SC-TR-003 / ApplyOnce 一次提交、原字节重放、fsync 失败无 frame。
-    action: node --test --test-reporter=tap test/execution-control-store.test.mjs
+    action: runnode green store ./test/execution-control-store.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'apply once 与原字节重放'}]
   - id: CP-TR-004
     description: SC-TR-004 / 冻结帧链拒绝断链、跳号与占位签名。
-    action: node --test --test-reporter=tap test/execution-control-store.test.mjs
+    action: runnode green store ./test/execution-control-store.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '冻结帧链拒绝断链与占位签名'}]
   - id: CP-TR-005
     description: SC-TR-005 / 旧 fence 不得执行新操作。
-    action: node --test --test-reporter=tap test/execution-control-worker.test.mjs
+    action: runnode green worker ./test/execution-control-worker.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '旧 fence 不得执行新操作'}]
   - id: CP-TR-006
     description: SC-TR-006 / 恢复表固定动作，freeze 不建空 store、不清 slot。
-    action: node --test --test-reporter=tap test/execution-control-recovery.test.mjs
+    action: runnode green recovery ./test/execution-control-recovery.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '恢复表固定动作'}]
   - id: CP-TR-007
     description: SC-TR-007 / 普通 restart 保持 epoch/sequence 并重发原 bytes。
-    action: node --test --test-reporter=tap test/execution-control-recovery.test.mjs
+    action: runnode green recovery ./test/execution-control-recovery.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '普通 restart 保持 epoch 与 sequence'}]
   - id: CP-TR-008
     description: SC-TR-008 / repair-admit 拒绝未验签 payload，额度不来自解码内容。
-    action: node --test --test-reporter=tap test/execution-control-policy.test.mjs
+    action: runnode green policy ./test/execution-control-policy.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'repair-admit 拒绝未验签 payload'}]
   - id: CP-TR-009
     description: SC-TR-009 / 追加 CAS 只接受一份。
-    action: node --test --test-reporter=tap test/execution-control-policy.test.mjs
+    action: runnode green policy ./test/execution-control-policy.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'repair 追加 CAS 只接受一份'}]
   - id: CP-TR-010
     description: SC-TR-010 / cr.md 合同字段与 store 不一致即拒，缺字段不改判 legacy。
-    action: node --test --test-reporter=tap test/execution-control-policy.test.mjs
+    action: runnode green policy ./test/execution-control-policy.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'cr.md 合同字段与 store 不一致即拒'}]
   - id: CP-TR-011
     description: SC-TR-011 / sensitive action 只接受原 operation 与精确 target。
-    action: node --test --test-reporter=tap test/execution-control-policy.test.mjs
+    action: runnode green policy ./test/execution-control-policy.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'sensitive action 只接受原 operation'}]
   - id: CP-TR-012
     description: SC-TR-012 / readiness 拒绝宽松输入；verify-channel 只出 READY_COMPONENT。
-    action: node --test --test-reporter=tap test/execution-control-readiness.test.mjs
+    action: runnode green readiness ./test/execution-control-readiness.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'readiness 拒绝宽松输入'}, {type: stdout_contains, expected: 'verify-channel 只出 READY_COMPONENT'}]
+  - id: CP-TR-013
+    description: SC-TR-013 / P0 T 侧隔离：同身份 profile 不合格、agent 攻击全拒、受限服务身份正对照；Linux 与 Windows 分别运行。
+    action: runnode green isolation ./test/execution-control-isolation.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '同 UID profile 判不合格'}, {type: stdout_contains, expected: 'agent 不能读 key 写 store 连 IPC 或注入 env'}, {type: stdout_contains, expected: '受限服务身份可签发并验证'}]

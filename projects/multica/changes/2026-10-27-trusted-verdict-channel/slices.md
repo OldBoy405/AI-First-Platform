@@ -19,6 +19,7 @@
 
 | # | 优先级 | 风险 | 目标 | TC 覆盖 | 依赖 |
 |---|---|---|---|---|---|
+| P0 | P0 | 高 | daemon 侧隔离证明（Linux + Windows 分别出证） | TC-VC-037 | 隔离环境与 profile 授权 |
 | M-0 | P0 | 高 | 648 迁移 14 表、`ChannelTableNames`、四组迁移专例 | TC-VC-028/029 | 隔离 nonce 库授权 |
 | M-S1 | P0 | 高 | 可信 selection、不可执行 reservation、同 Tx root/task、FreshWork 注册 | TC-VC-001..005 | M-0 |
 | M-S2 | P0 | 高 | `VerifyEnvelope`、trust manifest exact keys、Go↔Node 向量 | TC-VC-006..008 | M-S1 |
@@ -39,3 +40,14 @@
 - 并发/崩溃用确定性 barrier 与 `lock_timeout`/`55P03` 探针；父测试 PASS 不能遮住子用例全 SKIP。
 - 真实 `strict-production` 正例归 AIFI-45 下游；本 change 只交组件正例与 strict 反例，不声称生产就绪。
 - 任一 required profile/隔离身份未定时记 UNVERIFIED，不跑迁移、不跑 DB 用例，不伪造替代证据。
+
+## P0 门控（Gate 2 前用户采纳）
+
+| 分组 | 片 | P0 未绿时 |
+|---|---|---|
+| 两条路径都适用 | M-0、M-S1、M-R2、M-R3 | 可先行 |
+| 依赖方案 C（daemon 持 T worker） | M-S2 的 daemon trust 部分、M-S3、M-S4、M-S5、M-S6、M-S7、M-S8 | 阻塞，直到 P0 两平台证据齐 |
+
+- P0 排第一；隔离环境授权短期不可得时，只推进「两条路径都适用」组。
+- P0 失败：停止 C 路径，转 B 须另行提审；已完成的「两条路径都适用」组按 B 复核后再决定保留，不默认作废也不默认沿用。
+- leaf 级验收以 `validation/channel-test-expectations.json` 为准（SPEC 已冻结）。

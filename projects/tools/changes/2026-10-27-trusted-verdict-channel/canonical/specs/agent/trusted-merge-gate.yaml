@@ -7,88 +7,89 @@ meta:
   preconditions:
     - Gate 2 之后才实现与运行；当前 CP 全部未实施、未运行。
     - 从 `tools/skills/shared/crctl/scripts` 执行；临时 Git 仓库与 workspace 隔离，不触碰真实 CR 或保留库。
-    - 测试文件名 `test/merge-scope.test.mjs`/`merge-facts.test.mjs`/`merge-effects.test.mjs` 为 proposed，
+    - 测试文件名 `test/execution-control-policy.test.mjs`/`merge-facts.test.mjs`/`merge-effects.test.mjs` 为 proposed，
       既有 `merge-tx.test.mjs`/`merge-release-recovery.test.mjs` 保持回归。
     - MUST 用 `--test-reporter=tap` 并核真实 `ok` 行；skip、零匹配、编译/连接错均不算通过。
     - leaf 标题在文件内唯一，全名以 `validation/channel-test-expectations.json` 为唯一权威。
+    - CP 断言只列 `validation/channel-test-expectations.json`（位于 multica change 目录）对应 node label 的子集；验收以 `channel-evidence.mjs` 按全名单判定。`runnode` 为方案「未来验证命令模板」。
 steps:
   - id: CP-MG-001
     description: SC-MG-001 / 核对区间为 trunk...HEAD 并覆盖发布集合，approval.yml 与 M 记录逐字段相等。
-    action: node --test --test-reporter=tap test/merge-scope.test.mjs
+    action: runnode green policy ./test/execution-control-policy.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'merge 范围只看已批准 source sha'}, {type: stdout_contains, expected: 'merge 范围核对覆盖发布集合'}]
   - id: CP-MG-002
     description: SC-MG-002 / rename 源与目标都查；symlink 取自选定 tree/blob mode 120000。
-    action: node --test --test-reporter=tap test/merge-scope.test.mjs
+    action: runnode green policy ./test/execution-control-policy.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'merge 范围 rename 源与目标都查'}, {type: stdout_contains, expected: 'merge 范围 symlink 取自发布候选树'}]
   - id: CP-MG-003
     description: SC-MG-003 / 空集合四证明缺一即 UNVERIFIABLE；release-subject 缺失与无法核实共用路径。
-    action: node --test --test-reporter=tap test/merge-scope.test.mjs
+    action: runnode green policy ./test/execution-control-policy.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'merge 范围空集合不可放行'}, {type: stdout_contains, expected: 'merge 范围 release-subject 缺失即拒'}, {type: stdout_contains, expected: 'merge 范围无法核实即拒'}]
   - id: CP-MG-004
     description: SC-MG-004 / Unknown 即拒、已证明 legacy 行为不变、Strict 删合同字段仍 strict。
-    action: node --test --test-reporter=tap test/merge-scope.test.mjs
+    action: runnode green policy ./test/execution-control-policy.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'merge 范围 Unknown selection 即拒'}, {type: stdout_contains, expected: 'legacy merge 不核对范围'}, {type: stdout_contains, expected: 'merge 范围删合同字段仍 strict'}]
   - id: CP-MG-005
     description: SC-MG-005 / 恢复沿用原冻结输入，YAML 已变即拒。
-    action: node --test --test-reporter=tap test/merge-scope.test.mjs
+    action: runnode green policy ./test/execution-control-policy.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'merge 范围恢复沿用原冻结输入'}]
   - id: CP-MG-006
     description: SC-MG-006 / 部分发布后撤销停止后续并保留 journal；越界零写入（publish 端口零调用）。
-    action: node --test --test-reporter=tap test/merge-scope.test.mjs
+    action: runnode green policy ./test/execution-control-policy.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'merge 范围撤销发生在部分发布后'}, {type: stdout_contains, expected: 'merge 范围核对越界零写入'}]
   - id: CP-MG-007
     description: SC-MG-007 / 不从 grants 目录挑最新；head 撤销与前移按当前 head 判。
-    action: node --test --test-reporter=tap test/merge-scope.test.mjs
+    action: runnode green policy ./test/execution-control-policy.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'merge 范围不受 grants 目录旧文件影响'}, {type: stdout_contains, expected: 'merge 范围 head 撤销即拒'}, {type: stdout_contains, expected: 'merge 范围 head 前移即拒'}]
   - id: CP-MG-008
     description: SC-MG-008 / 越界不推进状态；finalize 三生成路径逐项授权；KB 审批后写入纳入核对。
-    action: node --test --test-reporter=tap test/merge-scope.test.mjs
+    action: runnode green policy ./test/execution-control-policy.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'merge 范围越界不推进状态'}, {type: stdout_contains, expected: 'merge 范围 finalize 写集逐项授权'}, {type: stdout_contains, expected: 'merge 范围核对含 KB 审批后写入'}]
   - id: CP-MG-009
     description: SC-MG-009 / 只按认证主体解析 workspace；他人 crID 404；拒绝 PAT/JWT/task-token。
-    action: node --test --test-reporter=tap test/merge-facts.test.mjs
+    action: runnode green merge-facts ./test/merge-facts.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'merge-facts 只按认证主体解析 workspace'}, {type: stdout_contains, expected: 'merge-facts 拒绝 PAT/JWT/task-token'}]
   - id: CP-MG-010
     description: SC-MG-010 / 批准下界须为候选祖先且位于区间内（严格祖先放行，非祖先/区间外拒）。
-    action: node --test --test-reporter=tap test/merge-facts.test.mjs
+    action: runnode green merge-facts ./test/merge-facts.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'merge-facts 批准下界须为候选祖先'}]
   - id: CP-MG-011
     description: SC-MG-011 / 仓库集合与 grant 精确相等、计数一致、摘要自洽。
-    action: node --test --test-reporter=tap test/merge-facts.test.mjs
+    action: runnode green merge-facts ./test/merge-facts.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'merge-facts 仓库集合与 grant 精确相等'}]
   - id: CP-MG-012
     description: SC-MG-012 / current_binding 三态与 legacy provenance 只与可信目录比对。
-    action: node --test --test-reporter=tap test/merge-facts.test.mjs
+    action: runnode green merge-facts ./test/merge-facts.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'merge-facts current_binding 三态'}, {type: stdout_contains, expected: 'merge-facts legacy 证明缺失或不符即拒'}]
   - id: CP-MG-013
     description: SC-MG-013 / 失败码优先级、不可用、撤销、head 前移、冻结行唯一。
-    action: node --test --test-reporter=tap test/merge-facts.test.mjs
+    action: runnode green merge-facts ./test/merge-facts.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'merge-facts 失败码优先级'}, {type: stdout_contains, expected: 'merge-facts 不可用即 UNAVAILABLE'}, {type: stdout_contains, expected: 'merge-facts 撤销即 REVOKED'}, {type: stdout_contains, expected: 'merge-facts head 前移即 HEAD_MOVED'}, {type: stdout_contains, expected: 'merge-facts 当前冻结行唯一'}]
   - id: CP-MG-014
     description: SC-MG-014 / reserve 持 CR 共享锁（55P03）、撤销先提交零 effect、reserve 先提交不追溯。
-    action: node --test --test-reporter=tap test/merge-effects.test.mjs
+    action: runnode green merge-effects ./test/merge-effects.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'merge-effect reserve 持 CR 共享锁'}, {type: stdout_contains, expected: 'merge-effect 撤销先提交则零 effect'}, {type: stdout_contains, expected: 'merge-effect reserve 先提交则撤销不追溯'}]
   - id: CP-MG-015
     description: SC-MG-015 / 远端含 expected 不重推、正常前进不判改写、回退 prev 判改写。
-    action: node --test --test-reporter=tap test/merge-effects.test.mjs
+    action: runnode green merge-effects ./test/merge-effects.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'merge-effect 远端含 expected 不重推'}, {type: stdout_contains, expected: 'merge-effect 远端正常前进不判改写'}, {type: stdout_contains, expected: 'merge-effect 已确认后回退至 prev 判为改写'}]
   - id: CP-MG-016
     description: SC-MG-016 / intent 且远端未变须重新 reserve；服务端 no_effect 后 attempt+1。
-    action: node --test --test-reporter=tap test/merge-effects.test.mjs
+    action: runnode green merge-effects ./test/merge-effects.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'merge-effect intent 且远端未变须重新 reserve'}, {type: stdout_contains, expected: 'merge-effect 服务端 no_effect 终态后以新 attempt 恢复'}]
   - id: CP-MG-017
     description: SC-MG-017 / 分叉进入 uncertain 且禁止新 publish；旧 push 延迟完成不误判零 effect。
-    action: node --test --test-reporter=tap test/merge-effects.test.mjs
+    action: runnode green merge-effects ./test/merge-effects.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'merge-effect 远端分叉进入 uncertain 且禁止新 publish'}, {type: stdout_contains, expected: 'merge-effect 旧 push 延迟完成不得误判零 effect'}]
   - id: CP-MG-018
     description: SC-MG-018 / 部分发布后 base 漂移 halted:base_drift；非 base 输入变化 input_mismatch。
-    action: node --test --test-reporter=tap test/merge-effects.test.mjs
+    action: runnode green merge-effects ./test/merge-effects.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'merge-effect 部分发布后 base 漂移即 halted'}, {type: stdout_contains, expected: 'merge-effect 非 base 输入变化拒绝恢复'}]
   - id: CP-MG-019
     description: SC-MG-019 / finalize 也须 reserve，撤销时不推送。
-    action: node --test --test-reporter=tap test/merge-effects.test.mjs
+    action: runnode green merge-effects ./test/merge-effects.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'merge-effect finalize 也须 reserve'}]
   - id: CP-MG-020
     description: SC-MG-020 / attempt 四支、先判 head 再比摘要、认证与归属码序且非授权失败不写 halted。
-    action: node --test --test-reporter=tap test/merge-effects.test.mjs
+    action: runnode green merge-effects ./test/merge-effects.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'merge-effect attempt 语义'}, {type: stdout_contains, expected: 'merge-effect 先判 head 再比摘要'}, {type: stdout_contains, expected: 'merge-effect 认证与归属码序及非授权失败'}]

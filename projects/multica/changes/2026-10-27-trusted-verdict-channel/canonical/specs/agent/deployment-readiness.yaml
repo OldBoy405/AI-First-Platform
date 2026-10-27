@@ -10,28 +10,29 @@ meta:
     - 真实 Tx primitives 与真实 worker→T→签名→DB 链；activation CAS/锁竞争用隔离夹具验证真实事务原语。
     - MUST 核真实子用例 PASS 行；父测试 PASS 不能遮住子用例全 SKIP。
     - leaf 全名以 `validation/channel-test-expectations.json` 为唯一权威。
+    - CP 断言只列 `validation/channel-test-expectations.json` 对应 label 的子集；验收以 `channel-evidence.mjs` 按该 label 全名单判定。`rungo`/`runnode` 为方案「未来验证命令模板」，cwd 为 multica 仓根，DB 只经 `scripts/aifi45-db/run.mjs`。
 steps:
   - id: CP-DR-001
     description: SC-DR-001 / 自报值、空声明、仅 marker 一致均不得产生可信 READY；受保护观测为正对照。
-    action: go test ./server/internal/daemon -run '^TestChannelDeploymentObserver$' -count=1 -v
-    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelDeploymentObserver'}]
+    action: rungo green deployment-observer ./internal/daemon '^TestChannelDeploymentObserver$'
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelDeploymentObserver/forged_observation_rejected'}, {type: stdout_contains, expected: '--- PASS: TestChannelDeploymentObserver/protected_measure_positive'}]
   - id: CP-DR-002
     description: SC-DR-002 / inventory 覆盖全部仍有资格实例，离线旧副本不可被单个合格副本掩盖，换代使旧 verdict 失效。
-    action: go test ./server/internal/daemon -run '^TestChannelDeploymentObserver$/(inventory_all_instances|generation_supersedes)' -count=1 -v
+    action: rungo green deployment-observer ./internal/daemon '^TestChannelDeploymentObserver$'
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelDeploymentObserver/inventory_all_instances'}, {type: stdout_contains, expected: '--- PASS: TestChannelDeploymentObserver/generation_supersedes'}]
   - id: CP-DR-003
     description: SC-DR-003 / readiness 结果持久化不可改；verify-channel 只出 READY_COMPONENT，strict 缺 decider 必 NOT_READY。
-    action: go test ./server/internal/governance -run '^TestChannelReadiness(Protocol|ComponentBoundary)$' -count=1 -v
-    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelReadinessProtocol'}, {type: stdout_contains, expected: '--- PASS: TestChannelReadinessComponentBoundary'}]
+    action: rungo green readiness-protocol ./internal/governance '^TestChannelReadinessProtocol$' ; rungo green readiness-component ./internal/governance '^TestChannelReadinessComponentBoundary$' ; rungo green readiness-composition ./cmd/server '^TestChannelCompositionReadiness$'
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelReadinessProtocol/signed_result_immutable'}, {type: stdout_contains, expected: '--- PASS: TestChannelReadinessComponentBoundary/component_ready_not_activatable'}, {type: stdout_contains, expected: '--- PASS: TestChannelReadinessComponentBoundary/strict_missing_decider_not_ready'}, {type: stdout_contains, expected: '--- PASS: TestChannelCompositionReadiness/component_profile_ready_component'}]
   - id: CP-DR-004
     description: SC-DR-004 / 并发启用、签后变代、重复 nonce、DB 失败均不误激活；STOP_NEW 不改历史或预算。
-    action: go test ./server/internal/governance -run '^TestChannelPolicyActivation$' -count=1 -v
-    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelPolicyActivation'}]
+    action: rungo green readiness-activation ./internal/governance '^TestChannelPolicyActivation$'
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelPolicyActivation/concurrent_activation_cas'}, {type: stdout_contains, expected: '--- PASS: TestChannelPolicyActivation/post_sign_generation_change'}, {type: stdout_contains, expected: '--- PASS: TestChannelPolicyActivation/nonce_replay_rejected'}, {type: stdout_contains, expected: '--- PASS: TestChannelPolicyActivation/stop_new_keeps_history'}]
   - id: CP-DR-005
     description: SC-DR-005 / 旧 run 存活、未知未决任务、签发后新增 legacy 工作或 work revision 漂移时拒绝 drain/retire。
-    action: go test ./server/internal/governance -run '^TestChannelReadinessRetirement$' -count=1 -v
-    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelReadinessRetirement'}]
+    action: rungo green readiness-retirement ./internal/governance '^TestChannelReadinessRetirement$'
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelReadinessRetirement/live_legacy_run_blocks_drain'}, {type: stdout_contains, expected: '--- PASS: TestChannelReadinessRetirement/unknown_pending_blocks_drain'}, {type: stdout_contains, expected: '--- PASS: TestChannelReadinessRetirement/work_revision_drift_blocks_retired'}]
   - id: CP-DR-006
     description: SC-DR-006 / issued 请求在 STOP_NEW/过期后精确恢复，换代只能拒绝或加载原固定快照，不重签 ID。
-    action: go test ./server/internal/daemon -run '^TestChannelDeployment(Access|Launch)$' -count=1 -v
-    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelDeploymentAccess'}, {type: stdout_contains, expected: '--- PASS: TestChannelDeploymentLaunch'}]
+    action: rungo green readiness-access ./internal/governance '^TestChannelDeploymentAccess$' ; rungo green deployment-launch ./internal/daemon '^TestChannelDeploymentLaunch$'
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelDeploymentAccess/issued_recovers_after_stop_new'}, {type: stdout_contains, expected: '--- PASS: TestChannelDeploymentAccess/new_candidate_rejected'}, {type: stdout_contains, expected: '--- PASS: TestChannelDeploymentAccess/origin_change_rejected'}, {type: stdout_contains, expected: '--- PASS: TestChannelDeploymentLaunch/generation_switch_fixed_snapshot'}]

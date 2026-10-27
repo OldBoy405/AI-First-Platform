@@ -1,7 +1,7 @@
 # 可信 T committed verdict channel：受保护裁决 store、merge facts 与撤销线性化（multica 侧）
 
 <!-- source_hash: 6657da0a3e5ae56a -->
-<!-- generated_at: 2026-10-27T15:23:55.434148 -->
+<!-- generated_at: 2026-10-27T15:47:26.449921 -->
 <!-- canonical: canonical/proposals/2026-10-27-trusted-verdict-channel.yaml -->
 
 ## Why

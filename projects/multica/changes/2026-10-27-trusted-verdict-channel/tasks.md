@@ -3,6 +3,18 @@
 > STDD Phase 2 / Gate 2 草案。**全部任务未开始**：本文件是计划，不是执行记录。
 > Gate 2 确认后才进入 BUILD；每片按 RED→GREEN 推进，不横向先写全部实现。
 
+## 0. SPEC 阶段已完成的文档交付
+
+- [x] 0.1 `validation/channel-test-expectations.json` 已在 SPEC 冻结（41 label / 215 leaf，逐 leaf 标 SC；原排 BUILD 的 9.1，按方案改回 SPEC）。
+- [x] 0.2 `channel-component` profile v1 已写入 design §8.1；`strict-production` profile 与实例清单记 UNVERIFIED。
+
+## P0. 隔离证明（排第一；只阻塞依赖方案 C 的片）
+
+- [ ] P0.1 `server/internal/daemon/execution_control_isolation_test.go`：`TestChannelIsolation` Linux 5 leaf（pidfd、`SO_PEERCRED`、私有 socket、CLOEXEC、拒 SCM_RIGHTS）。
+- [ ] P0.2 同顶层 Windows 3 leaf（命名管道 client pid + 令牌 SID + launch 登记）；两平台分别出证，缺 profile 必须 `t.Fatalf`。
+- [ ] P0.3 mutation：改回信任请求体 pid、改回数字 PID 查 `/proc`，分别 RED。
+- [ ] P0.4 获隔离环境与 profile 授权前不执行；未执行即 UNVERIFIED，不以组件 PASS 替代。
+
 ## 1. 迁移与 schema（P0，阻塞全片）
 
 - [ ] 1.1 新增 `server/migrations/648_cr_execution_control.up.sql`：14 张 `cr_execution_*` 表（业务 8 + D7 5 + `code_source_freeze`）、不可变/append-only 触发器、部分唯一索引、无新 FK/cascade。
@@ -61,13 +73,13 @@
 - [ ] 8.1 `execution_deployment_observer.go`（daemon）：受保护观测、全实例 inventory、generation 递增；`TestChannelDeploymentObserver`（3 leaf）。
 - [ ] 8.2 `execution_policy_readiness_protocol.go` + readiness 路由：request/verdict exact-key、slot CAS、原字节不可改；`TestChannelReadinessProtocol`。
 - [ ] 8.3 `execution_deployment.go`/`execution_policy_activation.go`：`RecordReadinessTx`/`ActivatePolicyTx`/`StopNewAdmissionsTx`/drain/retire；`TestChannelPolicyActivation`、`TestChannelReadinessRetirement`。
-- [ ] 8.4 `execution_deployment_fence.go` + `execution_launch_snapshot.go`：`CheckDeploymentAccessTx`、`PrepareLaunch`/`CommitLaunch`；`TestChannelDeploymentAccess`、`TestChannelDeploymentLaunch`。
+- [ ] 8.4 `execution_deployment_fence.go`（governance）+ `execution_launch_snapshot.go`（daemon）：`CheckDeploymentAccessTx`、`PrepareLaunch`/`CommitLaunch`；`TestChannelDeploymentAccess`（governance）、`TestChannelDeploymentLaunch`（daemon）。
 - [ ] 8.5 `TestChannelReadinessComponentBoundary`（READY_COMPONENT 不得启用生产）与 `TestChannelCompositionReadiness`。
 - [ ] 8.6 真实 `strict-production` 正例**不在本 change**：留 AIFI-45 下游集成，本 change 只交组件正例与 strict 反例。
 
 ## 9. 证据与收尾（P0）
 
-- [ ] 9.1 `validation/channel-test-expectations.json`：按命令 label 冻结必达 leaf 全名（含 R2.5 11 / R3.5 16 / S5 19 的跨仓归属），不由实测反推。
+- [x] 9.1 已移至 0.1（SPEC 冻结）；BUILD 期只允许经规格修订改动名单。
 - [ ] 9.2 `scripts/aifi45-verify/channel-evidence.mjs` + `.test.mjs`：只读校验真实非 skip PASS leaf；含「summary 看似成功但缺 leaf」反例。
 - [ ] 9.3 每条 mutation 保存 patch hash、基线与恢复后 source hash、argv、失败 leaf 与条件断言；恢复后换 nonce 跑 green。
 - [ ] 9.4 `CUSTOM.md` 从 #219 起登记新文件与 `// AIFIRST:` 挂钩点（按当时结构）。

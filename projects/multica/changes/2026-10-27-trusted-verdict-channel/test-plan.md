@@ -1,9 +1,9 @@
 # 可信 T committed verdict channel — multica 测试方案
 
-> STDD Phase 2 / Gate 2 草案。**本文件不声称任何测试已运行**：42 个 TC 全部为待实现/未运行。
+> STDD Phase 2 / Gate 2 草案。**本文件不声称任何测试已运行**：43 个 TC 全部为待实现/未运行。
 > 设计输入：前身 change `validation/trusted-verdict-channel-implementation-plan-20261026.md`（v0.6.5）。
 > 跨仓 tools 侧测试方案见[配套文档](../../../tools/changes/2026-10-27-trusted-verdict-channel/test-plan.md)。
-> 必达 leaf 全名以 `validation/channel-test-expectations.json` 为唯一权威；本文件只引用、不另立名单。
+> 必达 leaf 全名以 `validation/channel-test-expectations.json` 为唯一权威（SPEC 已冻结：41 label / 215 leaf，每个 leaf 标注所属 SC）；本文件只引用、不另立名单。
 
 ## 一、测试策略
 
@@ -36,6 +36,7 @@
 | 新增 `server/internal/service/execution_channel_task_tx_test.go` | 无 | `TestChannelTaskTx` 承接 `task-tx` 模板 |
 | 新增 `cmd/server/execution_control_composition_test.go` | 无 | `TestChannelComposition` 与 `TestChannelCompositionReadiness` |
 | 新增 `scripts/aifi45-verify/channel-evidence.mjs`（+ `.test.mjs`） | 目录现只有 `posix-daemon.sh` | 只读证据校验：按冻结名单核真实非 skip PASS leaf |
+| `validation/channel-test-expectations.json`（本 change） | SPEC 阶段已冻结，未运行 | 跨仓唯一 leaf 名单；tools 侧引用，不另存副本 |
 
 ## 二、详细测试案例
 
@@ -565,6 +566,20 @@
 | **预期结果** | 原 issued 精确恢复；新候选/换 origin 拒；换代只能拒绝或加载原固定快照 |
 | **当前状态** | ❌ 测试缺（Gate 2 草案，未实施） |
 
+### 功能 12：P0 隔离证明（REQ-VC-013）
+
+#### 案例 12.1 — daemon 侧登记进程身份
+
+| 字段 | 内容 |
+|------|------|
+| **ID** | TC-VC-037 |
+| **对应 Spec** | verdict-channel/spec.md → Scenario: SC-VC-037 |
+| **优先级** | P0 |
+| **预置条件** | 获授权 Linux 与 Windows 测试机、批准 profile（两个真实受限身份、受审核 launcher、私有根与 pin） |
+| **输入** | 自报 pid/root、他 run 连接、fd 转移、PID 复用；Windows 命名管道他 run 连接与自报值 |
+| **预期结果** | 只用 daemon 登记事实；自报值被忽略；树外/他 run 连接被拒；两平台各自出证，缺一 UNVERIFIED |
+| **当前状态** | ❌ 测试缺（Gate 2 草案，未实施）；环境未获授权前不可执行，不以组件 PASS 替代 |
+
 ## 三、追溯矩阵
 
 | Requirement | Scenario | 顶层测试 | 必达 leaf（摘要，权威见 expectations.json） |
@@ -585,7 +600,8 @@
 | REQ-DR-001 | SC-DR-001/002 | TestChannelDeploymentObserver | 自报值不作观测、inventory_all_instances、generation_supersedes |
 | REQ-DR-002 | SC-DR-003 | TestChannelReadinessProtocol、TestChannelReadinessComponentBoundary | READY_COMPONENT 不得启用生产 |
 | REQ-DR-003 | SC-DR-004/005 | TestChannelPolicyActivation、TestChannelReadinessRetirement | CAS 原子、drain/retire 反例 |
-| REQ-DR-004 | SC-DR-006 | TestChannelDeploymentAccess、/Launch | issued 精确恢复、换代只拒或原快照 |
+| REQ-DR-004 | SC-DR-006 | TestChannelDeploymentAccess（governance）、TestChannelDeploymentLaunch（daemon） | issued 精确恢复、换代只拒或原快照 |
+| REQ-VC-013 | SC-VC-037 | TestChannelIsolation（daemon，Linux/Windows 分别） | peer_credential_match、self_reported_fact_ignored、foreign_run_socket、fd_transfer、pid_reuse、windows_* 三条 |
 
 ## 四、执行矩阵与未验证声明
 
@@ -598,6 +614,6 @@
 | 迁移 | 否 | nonce 库 up/down/reapply | 否 | 未实施 |
 | D7 部署就绪 | 部分 | 真实 Tx + 隔离夹具 | 真实 strict 正例归 AIFI-45 下游 | 未实施 |
 
-- 本仓 42 个 TC **全部未实现、未运行**；本文件不提供任何通过率。
+- 本仓 43 个 TC **全部未实现、未运行**；本文件不提供任何通过率。
 - 部署/启用/真实 CR 均未发生；P0 与 S8 的 profile/实例清单在 Gate 2 后由实施授权确定，未定前记 UNVERIFIED。
 - 通道组件通过不自动回填 AIFI-45 的 41/49；`TC-RUN-001/002/003/006/007/010` 的重跑前置见 deliver 产物。

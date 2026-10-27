@@ -128,6 +128,23 @@
 - inventory 必须覆盖**所有仍有资格**的实例与安装目标；离线旧实例须核实或先撤销其接单/写入资格。
 - 生产默认**不装配**新 channel/reader/decider；无新增 env 启用开关；测试 composition 显式注入真实组件。
 
+#### 8.1 `channel-component` profile v1（SPEC 冻结）
+
+本 change 自己定义、自己验收的组件 profile；只能产出 `READY_COMPONENT`，不得用于生产 activation。
+
+| 组件 ID | 版本/摘要语义 | 观测来源（受保护） | 恢复能力要求 |
+|---|---|---|---|
+| `multica-server` | 构建 commit + 648 迁移后 14 表 schema 摘要（`ChannelTableNames` 顺序，SHA256） | supervisor 测量的实际进程与安装根 | 重启后 command/receipt 原字节可恢复 |
+| `multica-daemon` | 构建 commit + execution-control client 版本 | 同上，按稳定实例 ID 逐个 | 接受新 fence 后才返回 checkpoint |
+| `tools-runtime` | 既有 `toolsRuntimeDigest`（受保护实际 runtime 根，不用 marker digest） | installer 测量的 runtime 根 | 恢复表五类动作 |
+| `trust-manifest` | `execution-control-trust-manifest/v1` 原始字节 SHA256 + 绝对路径 pin | operator 受保护路径 | 不适用（静态信任根） |
+| `protected-store` | store 根身份 + `store_id`/`epoch` | worker 自行读取固定 facts | 缺失即 freeze，不建空 store |
+| `readiness-evaluator` | `component-readiness.mjs` 严格入口版本 | tools-runtime 内 | 不适用 |
+
+- `AdmissionDecider` **不在**本 profile；它是 `strict-production` 的必需项，缺失即 NOT_READY（SC-DR-003）。
+- `not-applicable` 只允许表中显式写明的两项；其余缺项、重复、unknown 一律 NOT_READY。
+- **UNVERIFIED**：`strict-production` profile 的完整内容、真实实例清单与安装目标需部署授权，不在 Gate 2 冻结；未获授权前 S8 只用隔离夹具验证事务原语，不称生产 READY。
+
 ### 9. 迁移策略
 
 - 只新增 `648_cr_execution_control.{up,down}.sql`；647 为当前最大。若实施时 648 已被占用，
@@ -150,7 +167,14 @@
 | R3 | `merge-effects` reserve/report | R2 |
 | S8 | D7 readiness/activation/launch（R0–R4） | S1、S7 |
 
-P0（隔离证明）是采用「daemon 持 T worker」方案的前置：失败即停止该路径，转 B 必须另行提审，**禁止运行时 silent fallback**。
+**P0 门控（Gate 2 前用户采纳）**：P0（隔离证明，SC-VC-037）排第一，但只阻塞依赖「daemon 持 T worker」（方案 C）的片；失败即停止 C 路径，转 B 须另行提审，**禁止运行时 silent fallback**。
+
+| 分组 | 片 | P0 未绿时 |
+|---|---|---|
+| 两条路径都适用 | M-0 迁移、M-S1 selection/reservation/root、M-R2 merge-facts、M-R3 merge-effects（复用 DB 层状态机，不触 worker） | 可先行 |
+| 依赖 C 路径 | M-S2 协议的 daemon trust 部分、M-S3/M-S4 worker 与恢复、M-S6 daemon client/binding、M-S7 composition、M-S8 observer/launch | 阻塞 |
+
+若 Linux 与 Windows 隔离环境授权短期不可得，只推进「两条路径都适用」组；P0 失败转 B 时，该组产物按 B 方案复核后保留，不默认作废也不默认沿用。
 
 ## 残余风险与非目标
 
@@ -159,3 +183,10 @@ P0（隔离证明）是采用「daemon 持 T worker」方案的前置：失败�
 - 不做 legacy 业务迁移（D8=A），不导入旧 workspace ledger，不新增迁移动词。
 - 不部署、不启用、不做真实 CR 操作；不引入第三个决策服务或新工作流引擎。
 - 通道组件通过不自动回填 AIFI-45 的 41/49，禁止跨 change 双计。
+
+## 修订记录
+
+| 日期 | 修订 | 结论是否受影响 |
+|---|---|---|
+| 2026-10-27 | 初稿（Gate 2 草案） | — |
+| 2026-10-27 | Gate 2 前采纳建议：SPEC 冻结 `validation/channel-test-expectations.json`（41 label / 215 leaf，逐 leaf 标 SC）；补 P0 为 SC-VC-037；新增 §8.1 `channel-component` profile；P0 改为只阻塞 C 路径片；agent spec 命令对齐方案 `rungo` 标签，`TestChannelDeploymentAccess` 归 governance（原误写 daemon），包路径改为 `./internal/...` | 否：范围、表、端点与必达 leaf 下限不变；P0 由遗漏补回为方案已有要求 |

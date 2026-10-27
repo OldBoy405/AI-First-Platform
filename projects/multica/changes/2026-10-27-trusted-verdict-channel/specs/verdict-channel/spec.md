@@ -276,3 +276,13 @@
 - **WHEN** 提交 reserve/report。
 - **THEN** SHALL 分别返回 400/403/404/503/HEAD_MOVED 且非授权失败不写 halted、journal 不变。
 - **AND** 码序固定 `INVALID>UNTRUSTED>NOT_FOUND>REVOKED>HEAD_MOVED>INPUT_MISMATCH>CONFLICT>UNAVAILABLE`；每次远端 push 含 finalize 都是独立 `merge_publish` effect，不新增表。
+
+### Requirement: P0 隔离证明：daemon 侧只承认登记的 run 进程身份，Linux 与 Windows 各自出证，失败即停止 C 路径。
+
+#### Scenario: SC-VC-037
+
+- **GIVEN** 获授权的受限服务身份与 agent 身份分离；请求体自报 pid/root、同 UID 其他 agent 连本 run 的 socket 或命名管道、socket fd 转给树外进程、原进程退出后 PID 复用。
+- **WHEN** daemon 为本 run 填写 challenge 进程事实并接受连接。
+- **THEN** SHALL 只使用 daemon 自 spawn 起登记的进程事实（Linux pidfd 与 SO_PEERCRED，Windows 命名管道 client pid 与令牌 SID），拒绝自报值与树外/他 run 连接。
+- **AND** Linux 与 Windows 证据各自独立，缺一即 UNVERIFIED；缺 profile 必须 t.Fatalf，不得 skip 或裸 return。
+- **AND** P0 失败即停止 C 路径；转 B 须另行提审，禁止运行时 silent fallback。

@@ -1,7 +1,7 @@
 # 可信 T committed verdict channel：T runtime 与 merge 门禁（tools 侧）
 
-<!-- source_hash: 527cc945aa617dd5 -->
-<!-- generated_at: 2026-10-27T15:23:58.453605 -->
+<!-- source_hash: 7a5b65730463a7b4 -->
+<!-- generated_at: 2026-10-27T15:47:27.435433 -->
 <!-- canonical: canonical/proposals/2026-10-27-trusted-verdict-channel.yaml -->
 
 ## Why
@@ -9,7 +9,7 @@
 tools 是 merge 的唯一发布方（`lib/workspace-transactions.mjs::mergeCr`），也是 T 验证规则的
 所在处（本地规则、repair/resume、sensitive action、component readiness）。但当前：
 merge 的「批准后改动集合」取自 agent 可写的 `approval.yml#code.release-subjects`，
-`evaluateChangeScope` 对缺失/非数组 changes 当空集合并返回 allowed，`collectChangedPaths`
+`evaluateChangeScope` 只是判定器（缺失/非数组已 fail-closed，显式空集合放行），不证明采集完整；`collectChangedPaths`
 带工作区/untracked 与 `origin/trunk` 回退，语义与「已提交发布区间」不同；
 repair CLI 只解码 payload，`crctl.mjs` 准入仍返回 `EXECUTION_CONSUMPTION_REQUIRED`；
 verdict 无受保护 store、无 owner fence、无恢复表，`durable-tx.mjs` 只是 best-effort。
