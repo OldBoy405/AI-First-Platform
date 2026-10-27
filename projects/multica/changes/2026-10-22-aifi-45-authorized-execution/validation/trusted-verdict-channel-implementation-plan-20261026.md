@@ -454,6 +454,7 @@ rungo green migration-reapply ./internal/governance '^TestChannelMigrationAfterR
 | v0.6.1（2026-10-26） | r2r3 复核（R2 三路 BLOCK、R3 strong BLOCK/balanced INCOMPLETE）后**整节改写而非追加**：用户采纳 `merge-facts` 端点随本 change 交付、删除 `workspace_revision`、残余风险入册。R2：存储改追加写 + 部分唯一索引（每仓至多一条当前行），语义固定为祖先下界；workspace 由认证主体解析；响应加 `expected_repo_count`/`repos_digest`/`current_binding` 三态/`provenance_digest`；失败码分层表成为唯一权威（§3 改为引用），优先级 UNAVAILABLE>REVOKED>HEAD_MOVED>VIOLATION>UNVERIFIABLE。R3：沿用 §4 已定 effect 语义，每次 push（含 finalize）复用 command/settlement（`effect_kind=merge_publish`），以 `merge-effects reserve` 提交为授权排序点、push 在 Tx 外、report 为远端确认点；journal 三态与远端只读核实三分支；不新增 CR 状态；恢复矩阵与 `input_digest`。§4 表 13→14，§6 端点 3→5。**仍为作者稿、未复核。** |
 | v0.6.2（2026-10-26） | v0.6.1 复核（strong R2 PASS/R3 BLOCK；balanced R2/R3 INCOMPLETE；economy R2 BLOCK/R3 INCOMPLETE）后单点修订：表名统一（DB 全名 `cr_execution_code_source_freeze`、§4 只列后缀、`ChannelTableNames` 登记全名）；撤销提交点唯一谓词＝当前冻结行 `revoked_at IS NOT NULL` 可见；`current_binding`/`head_revoked`/`provenance_digest` 判据；R2.4 补本地下界校验行、子码说明、403 归口、优先级措辞；R3 补 reserve attempt 语义与 merge-effects 码序（含 NOT_FOUND）、push 前先持久 `unknown`、状态×远端恢复表（`unknown`+prev 保持 uncertain、`confirmed`+prev 判改写）、halted reason 扩展与映射；R2.5/R3.5 各增 2 条至 11 条。仍未复核。 |
 | v0.6.3（2026-10-26） | v0.6.2 复核（strong R2 PASS/R3 BLOCK；economy R2 PASS/R3 BLOCK；balanced R2 INCOMPLETE/R3 BLOCK）后单点修订：R3.2 远端分类改按祖先关系（与 `classifyRemoteCommit` 一致，远端正常前进不判改写），补服务端 `settled_no_effect` 终态格并定“服务端终态优先”；码序补 `INVALID` 并把 `UNTRUSTED` 置于 `NOT_FOUND` 前；reserve 非授权类失败不写 halted；base_drift 由 CLI 逐项比对判定、publish_failed 排除 not_attempted；部分唯一索引写明列；R2.4 拆分 404 行并写明 grant 派生字段每次重读；R2.5 逐条给 mutation 与总则（11 条），R3.5 消除 #5/#10 互斥并补 attempt、head 先判、认证归属码序、no_effect 终态、正常前进共 16 条。仍未复核。 |
+| v0.6.4（2026-10-26） | v0.6.3 复核（strong R2/R3 PASS；economy R2/R3 PASS；balanced R2 INCOMPLETE/R3 BLOCK）后 leaf 级单点修订：R2.5 #4 补严格祖先正例与区间负例、#1 限合法 MDT 并改 mutation；R3.1 attempt 三情形互斥；R3.2 首行改为服务端 `settled_effect` 并写明 `confirmed` 无终态→uncertain；R3.5 #7 只改 base、#9 只改非 base 分量（消除互斥），#13 三支互斥，#15 补 503 支。leaf 数不变（11+16）。仍未复核。 |
 - v0.3 轮只做文档静态校验和独立计划复核，结果另记 `trusted-verdict-channel-v03-review-20261026.md`；v0.4 轮同样只做静态校验与三路非作者计划复核，结果另记 `trusted-verdict-channel-v04-review-20261026.md`。均不冒称动态测试或部署验证。
 
 ## Review Focus
@@ -525,10 +526,10 @@ rungo green migration-reapply ./internal/governance '^TestChannelMigrationAfterR
 **优先级**：`UNAVAILABLE` > `REVOKED` > `HEAD_MOVED` > `VIOLATION` > `UNVERIFIABLE`。已知越界在与 `UNVERIFIABLE` 并存时输出 `VIOLATION`，不得降级；端点不可达时 grant 不可得、本地无法计算越界，故不存在 `UNAVAILABLE` 与 `VIOLATION` 并存的情形；该前提要求 grant 派生字段（`allowed_repositories`、`allowed_paths` 等）**每次核对都从端点重读**，journal 只记其摘要供审计与 `input_digest`，不作为授权来源（与现 `crctl.mjs:1883–1884` 先 findings 后 problems 一致）。所有码退出非零、CR 状态保持 `code-approved`。
 
 **R2.5 必达 leaf（随本节冻结进入 `channel-test-expectations.json`；共 11 条）**：除另注外，leaf 5–7 只断 CLI 外层码，端点侧只断 R2.4 所列 status。
-1. `merge-facts 只按认证主体解析 workspace`：携带他人 crID → 404 NOT_FOUND。mutation：按请求参数或 CR 记录解析 workspace。
+1. `merge-facts 只按认证主体解析 workspace`：合法 MDT 凭据 + 他人 crID → 404 NOT_FOUND。mutation：按 CR 行的 workspace 返回、跳过与认证主体的比对。
 2. `merge-facts 拒绝 PAT/JWT/task-token`：三类凭据 → 403 UNTRUSTED。mutation：接受任一回退凭据。
 3. `merge-facts 当前冻结行唯一`：同仓插入 `approved_revision+1` 且不 supersede 旧行 → 被部分唯一索引拒。mutation：删除该部分唯一索引。
-4. `merge-facts 批准下界须为候选祖先`：非祖先 → UNVERIFIABLE。mutation：改为精确相等或不校验。
+4. `merge-facts 批准下界须为候选祖先`：正例——`approved_source_sha` 为候选 HEAD 的严格祖先（候选在其后又有提交）→ 放行；负例——非祖先 → UNVERIFIABLE；是祖先但不在 `trunk...<candidate HEAD>` 内（已是 trunk 的祖先）→ UNVERIFIABLE。mutation：改为精确相等（正例 RED）、不校验（负例 RED）、不校验区间（区间负例 RED）。
 5. `merge-facts 仓库集合与 grant 精确相等`：漏一仓/多一仓/摘要不符 → UNVERIFIABLE。mutation：只比计数或跳过集合比较。
 6. `merge-facts current_binding 三态`：mismatch → VIOLATION，unknown → UNVERIFIABLE。mutation：unknown 当 ok。
 7. `merge-facts legacy 证明缺失或不符即拒`：缺失、与目录记录不符各一支 → UNVERIFIABLE。mutation：以响应自报 `provenance_digest` 为准、不比对目录记录。
@@ -547,7 +548,7 @@ rungo green migration-reapply ./internal/governance '^TestChannelMigrationAfterR
 **R3.1 三个时点分离（Q9/Q13）**：
 1. **授权排序点** = `POST /api/daemon/crs/{crID}/merge-effects`（`op=reserve`）事务提交。该事务按 §4 锁序取 CR 行（`FOR SHARE`）与授权 head，**同事务**重验当前 head、`head_revoked`、当前冻结行与预检冻结的 `input_digest`，写入 issued command。撤销走既有 CR 锁路径（`FOR UPDATE`），因此撤销与 reserve 由行锁串行（不等待 command slot，只等行锁）。
 2. 事务提交、释放 DB 连接后，CLI 才执行 push（Tx 内不调用网络）。
-- **reserve 语义**：同一 `effect_id` 的每次尝试带单调 `attempt`。新 attempt → 服务端完整重验后 `201` 新 command；同 attempt 原字节重放 → `200` 返回原结果；前一 attempt 未终结（issued/uncertain）时再 reserve → `409 MERGE_EFFECT_CONFLICT`。
+- **reserve 语义**：同一 `effect_id` 的每次尝试带单调 `attempt`。三种情形互斥：同 attempt 原字节重放 → `200` 返回原结果；新 attempt 且无未终结的前 attempt → 服务端完整重验后 `201` 新 command；新 attempt 但前 attempt 未终结（issued/uncertain）→ `409 MERGE_EFFECT_CONFLICT`。
 - **merge-effects 码序**（merge-facts 的非 200 码同序）：`INVALID`（解析层先判）> `UNTRUSTED`（认证先于资源查找，故 PAT + 他人 crID 恒 403）> `NOT_FOUND`（crID 不属于主体 workspace）> `REVOKED` > `HEAD_MOVED` > `INPUT_MISMATCH` > `CONFLICT` > `UNAVAILABLE`。服务端先判撤销与 head，再比对 `input_digest`，因此 head 前移恒报 `HEAD_MOVED` 而不是被 `INPUT_MISMATCH` 遮盖。
 3. **远端确认点** = push 返回后 `op=report`：成功 → `settled_effect`；失败可判定未发布 → `settled_no_effect`；无法判定 → `uncertain`。
 - **撤销提交点的可观测标识**：只认 R2.1 唯一谓词（当前冻结行 `revoked_at IS NOT NULL` 在另一连接可见）；head 前移另以 `cr.execution_authorization_head_id` 改变判 `HEAD_MOVED`。测试夹具在 reserve 事务的 `after-head-read` 钩位持有，另一连接以 `lock_timeout` 尝试撤销，只认 `55P03`；再各跑一支“撤销先提交”“reserve 先提交”的顺序用例。
@@ -555,11 +556,11 @@ rungo green migration-reapply ./internal/governance '^TestChannelMigrationAfterR
 
 **R3.2 journal 事实分级与恢复判定（Q10）**：本地 journal 按 effect 持久三态，且**在发出 push 之前**先把状态写成 `unknown`：`intent`（reserve 已提交、push 从未发出）/`unknown`（push 已发出或可能在途、结果未记）/`confirmed`（已 report `settled_effect`）。恢复时先结合 journal 与服务端 command 终态，再只读核实远端（`git ls-remote <repo> <ref>`）：
 
-远端分类以祖先关系为准（与 `workspace-transactions.mjs::classifyRemoteCommit` 一致）：**含 expected** = `git merge-base --is-ancestor <expected_sha> <remote>` 成立（含相等）；**== prev** = 远端等于 `prev_sha` 且不含 expected；**其他** = 不含 expected 且 ≠ prev，或祖先关系因对象缺失等原因无法证明。服务端 command 终态优先于本地 journal 状态。
+远端分类以祖先关系为准（与 `workspace-transactions.mjs::classifyRemoteCommit` 一致）：**含 expected** = `git merge-base --is-ancestor <expected_sha> <remote>` 成立（含相等）；**== prev** = 远端等于 `prev_sha` 且不含 expected；**其他** = 不含 expected 且 ≠ prev，或祖先关系因对象缺失等原因无法证明。服务端 command 终态优先于本地 journal 状态；journal `confirmed` 而服务端无终态属事实不一致，一律 `uncertain`、转人工。
 
 | 服务端终态 / journal 状态 | 含 expected | == prev | 其他 |
 |---|---|---|---|
-| `settled_effect` 或 journal `confirmed` | 无动作（远端正常前进也属此格） | 证实已不含：**history rewrite**，`uncertain`、冻结、转人工，不重推 | `uncertain`、转人工（不直接称改写） |
+| 服务端 `settled_effect`（journal `confirmed`，或 report 成功后崩溃停在 `unknown`） | 无动作（远端正常前进也属此格） | 证实已不含：**history rewrite**，`uncertain`、冻结、转人工，不重推 | `uncertain`、转人工（不直接称改写） |
 | `settled_no_effect`（push 确定失败后已结算；journal 可能停在 `unknown`） | 冲突：`uncertain`、转人工 | 旧 attempt 已由服务端终结：以 `attempt+1` 重新 reserve（服务端完整重验；已撤销则 `REVOKED`，不 push） | `uncertain`、转人工 |
 | 无终态 + journal `unknown`（push 可能在途） | `report settled_effect`（幂等） | **保持 `uncertain`**：旧 push 可能延迟完成；仅观察到 prev 不构成终止证据，不得重推、不得结算 `no_effect` | `uncertain`、转人工 |
 | 无终态 + journal `intent`（push 从未发出） | 异常：`uncertain`、转人工 | 先 `report settled_no_effect(reason=not_attempted)` 终结旧 attempt，再以 `attempt+1` 重新 reserve | `uncertain`、转人工 |
@@ -582,15 +583,15 @@ rungo green migration-reapply ./internal/governance '^TestChannelMigrationAfterR
 4. `merge-effect 远端含 expected 不重推`：journal `unknown` + 远端等于 expected 或其后继 → `settled_effect`，无 push。mutation：只认精确相等或重推。
 5. `merge-effect intent 且远端未变须重新 reserve`（限 journal `intent`）：先 not_attempted 结算，再 attempt+1。mutation：直接 push 不重新 reserve。
 6. `merge-effect 远端分叉进入 uncertain 且禁止新 publish`。mutation：分叉后继续后续 effect。
-7. `merge-effect 部分发布后 base 漂移即 halted`：断言 `reason=base_drift`。mutation：换 base 续跑。
+7. `merge-effect 部分发布后 base 漂移即 halted`（夹具只改 base，其余分量不变）：断言 `INPUT_MISMATCH` 与 `reason=base_drift`。mutation：换 base 续跑，或不做逐项比对一律记 input_mismatch。
 8. `merge-effect finalize 也须 reserve`。mutation：finalize push 跳过 reserve。
-9. `merge-effect input_digest 不同拒绝恢复`：断言 `INPUT_MISMATCH` 与 `reason=input_mismatch`。mutation：不比对摘要。
+9. `merge-effect 非 base 输入变化拒绝恢复`（夹具 base 不变，只改 `approved_revision` 或候选 HEAD）：断言 `INPUT_MISMATCH` 与 `reason=input_mismatch`。mutation：不比对摘要。
 10. `merge-effect 旧 push 延迟完成不得误判零 effect`（限 journal `unknown`、无服务端终态）：远端仍为 prev → 保持 uncertain。mutation：按 prev 结算 no_effect 或重推。
 11. `merge-effect 已确认后回退至 prev 判为改写`：`confirmed` + 远端 prev → uncertain，不重推。mutation：允许重新 reserve。
 12. `merge-effect 服务端 no_effect 终态后以新 attempt 恢复`：`settled_no_effect` + journal `unknown` + 远端 prev → attempt+1 reserve。mutation：仍按无终态保持 uncertain，或复用旧 attempt。
-13. `merge-effect attempt 语义`：新 attempt → 201；原字节重放 → 200 原结果；前次未终结时再 reserve → 409 CONFLICT 且 `reason=uncertain`。mutation：重放返回 201，或允许并行 attempt。
+13. `merge-effect attempt 语义`（三支互斥）：同 attempt 原字节重放 → 200 原结果；无未终结前 attempt 的新 attempt → 201；前 attempt 未终结时的新 attempt → 409 CONFLICT 且 `reason=uncertain`。mutation：重放返回 201，或允许并行 attempt。
 14. `merge-effect 先判 head 再比摘要`：head 前移且摘要也不同 → HEAD_MOVED。mutation：先比 `input_digest`。
-15. `merge-effect 认证与归属码序`：畸形请求 → 400 INVALID；PAT + 他人 crID → 403 UNTRUSTED；合法凭据 + 他人 crID → 404 NOT_FOUND；三者均不写 halted。mutation：先查 crID 再认证。
+15. `merge-effect 认证与归属码序及非授权失败`：畸形请求 → 400 INVALID；PAT + 他人 crID → 403 UNTRUSTED；合法凭据 + 他人 crID → 404 NOT_FOUND；服务端不可用 → 503 UNAVAILABLE；四者均不写 halted、journal 不变。mutation：先查 crID 再认证，或任一支写 halted。
 16. `merge-effect 远端正常前进不判改写`：`confirmed` + 远端为 expected 的后继 → 无动作。mutation：以精确相等判定。
 - 总则：每条 mutation 使对应 leaf 断言失败；超时、连接错、编译错、夹具错、崩溃不计为 RED。
 

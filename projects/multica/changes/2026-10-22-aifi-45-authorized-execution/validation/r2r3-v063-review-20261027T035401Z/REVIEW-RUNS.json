@@ -1,0 +1,12 @@
+{
+  "review": "v0.6.3 R2/R3 contract draft",
+  "plan_raw_sha256": "ce169404a8d558179e81ca8d04a61d26bf91bb02dc58a76c2ba5256d449e6e18",
+  "harness": "pi Agent tool; general-purpose profile; fresh background sessions; read-only instructions",
+  "lanes": [
+    {"lane": "strong", "session_id": "01a17b7e-9499-760a-b938-34fdea2b0546", "requested": "OpenAIPersonal/gpt-6.1-sol:high", "actual": "unknown", "verdict": {"R2": "PASS", "R3": "PASS"}, "report": "REVIEW-STRONG.md"},
+    {"lane": "balanced", "session_id": "01a17b7e-94b6-760a-b938-350144490fbb", "requested": "Gobao/deepseek-flash:max", "actual": "unknown", "verdict": {"R2": "INCOMPLETE", "R3": "BLOCK"}, "report": "REVIEW-BALANCED.md"},
+    {"lane": "economy", "session_id": "01a17b7e-94aa-760a-b938-34fe5f29e90f", "requested": "GB-JP/deepseek-flash:high", "actual": "unknown", "verdict": {"R2": "PASS", "R3": "PASS"}, "report": "REVIEW-ECONOMY.md (closure table condensed by main session; verdicts/new findings verbatim)"}
+  ],
+  "merged_outcome": {"R2": "not passed (balanced INCOMPLETE: leaf #4/#1)", "R3": "BLOCK (balanced: #7/#9 mutual exclusion, #15 missing 503)"},
+  "no_interruptions": true
+}
