@@ -28,7 +28,7 @@ Gate 3 只能在 §2、§3 有明确处置（实现 / 划出范围 / 随上游�
 | `migration-protected` | 2 | `r-migration-protected-20261027T111322Z` |
 | `task-tx` | 2 | `r-task-tx-20261027T111322Z` |
 | `store-state` | 7 | `sx-20261027T110226Z` |
-| `settlement` | 4 | `sh-20261027T110932Z` |
+| `settlement` | 4 | `st2-20261027T142417Z` |
 | `revoked-permit` | 2 | `rr-20261027T112634Z` |
 | `policy-facts` | 5 | `pj-20261027T115443Z` |
 | `policy-resume` | 5 | `pj-20261027T115443Z` |
@@ -50,13 +50,13 @@ Gate 3 只能在 §2、§3 有明确处置（实现 / 划出范围 / 随上游�
 | `policy`（node） | 23 | `n3-policy-20261027T142326Z` |
 | `readiness`（node） | 2 | `n3-readiness-20261027T142327Z` |
 | `recovery`（node） | 2 | `n3-recovery-20261027T142327Z` |
-| `protocol`（go） | 3 | `ai-proto4-20261027T175236Z` |
+| `protocol`（go） | 3 | `pg2-20261027T142437Z` |
 | `merge-facts`（go） | 6 | `mk-20261027T104452Z` |
 | `merge-effects`（go） | 4 | `mz-20261027T105320Z` |
 | `isolation`（linux） | 5 | `iso-20261027T101534Z` |
-| `protocol`（node） | 2 | `n2-protocol-20261027T111511Z` |
+| `protocol`（node） | 2 | `np2-20261027T142510Z` |
 | `store`（node） | 2 | `n-store-20261027T111459Z` |
-| `merge-facts`（node） | 11 | `mf-20261027T103357Z` |
+| `merge-facts`（node） | 11 | `mf2-20261027T142500Z` |
 | `merge-effects`（node） | 16 | `me-20261027T104637Z` |
 
 变异（Go m1–m84 / Node n1–n28）全部落在 `validation/mutations/`，每条带 `.patch` 与 `.sha256`，且各自只打红对应 leaf（例外：m26/m35/m37/m39 各打红两条，m41/m48 连带同一只桶/同一入口的第二条，均为语义相关）。

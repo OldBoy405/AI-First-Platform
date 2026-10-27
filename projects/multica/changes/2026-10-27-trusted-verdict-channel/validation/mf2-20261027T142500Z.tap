@@ -1,0 +1,76 @@
+TAP version 13
+# Subtest: merge-facts 只按认证主体解析 workspace
+ok 1 - merge-facts 只按认证主体解析 workspace
+  ---
+  duration_ms: 1.6481
+  type: 'test'
+  ...
+# Subtest: merge-facts 拒绝 PAT/JWT/task-token
+ok 2 - merge-facts 拒绝 PAT/JWT/task-token
+  ---
+  duration_ms: 0.4744
+  type: 'test'
+  ...
+# Subtest: merge-facts 当前冻结行唯一
+ok 3 - merge-facts 当前冻结行唯一
+  ---
+  duration_ms: 8.0189
+  type: 'test'
+  ...
+# Subtest: merge-facts 批准下界须为候选祖先
+ok 4 - merge-facts 批准下界须为候选祖先
+  ---
+  duration_ms: 0.4606
+  type: 'test'
+  ...
+# Subtest: merge-facts 仓库集合与 grant 精确相等
+ok 5 - merge-facts 仓库集合与 grant 精确相等
+  ---
+  duration_ms: 0.3592
+  type: 'test'
+  ...
+# Subtest: merge-facts current_binding 三态
+ok 6 - merge-facts current_binding 三态
+  ---
+  duration_ms: 0.1891
+  type: 'test'
+  ...
+# Subtest: merge-facts legacy 证明缺失或不符即拒
+ok 7 - merge-facts legacy 证明缺失或不符即拒
+  ---
+  duration_ms: 0.2071
+  type: 'test'
+  ...
+# Subtest: merge-facts 失败码优先级
+ok 8 - merge-facts 失败码优先级
+  ---
+  duration_ms: 0.1798
+  type: 'test'
+  ...
+# Subtest: merge-facts 不可用即 UNAVAILABLE
+ok 9 - merge-facts 不可用即 UNAVAILABLE
+  ---
+  duration_ms: 22.116
+  type: 'test'
+  ...
+# Subtest: merge-facts 撤销即 REVOKED
+ok 10 - merge-facts 撤销即 REVOKED
+  ---
+  duration_ms: 0.2912
+  type: 'test'
+  ...
+# Subtest: merge-facts head 前移即 HEAD_MOVED
+ok 11 - merge-facts head 前移即 HEAD_MOVED
+  ---
+  duration_ms: 0.2357
+  type: 'test'
+  ...
+1..11
+# tests 11
+# suites 0
+# pass 11
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 98.5107

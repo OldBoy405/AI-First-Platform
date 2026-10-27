@@ -185,3 +185,19 @@ steps:
     description: SC-VC-005 / 部署就绪侧 fresh-work：同 origin 不被 D8 重置。
     action: rungo green readiness-fresh-work ./internal/governance '^TestChannelReadinessFreshWork$'
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: '--- PASS: TestChannelReadinessFreshWork/d8_same_origin_not_reset'}]
+  - id: CP-VC-044
+    description: SC-VC-009/010 / Node store：一次提交与原字节重放，帧链拒断链与占位签名。
+    action: runnode green store ./test/execution-control-store.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - apply once 与原字节重放'}]
+  - id: CP-VC-045
+    description: SC-VC-016 / Node 恢复表五个固定动作，普通 restart 只换 owner fence。
+    action: runnode green recovery ./test/execution-control-recovery.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - 恢复表固定动作'}]
+  - id: CP-VC-046
+    description: SC-AUTH-004/005/006 与 merge 范围 / Node policy：未验签 fact、CAS、合同比对、敏感动作原 operation、merge 范围核对 19 项。
+    action: runnode green policy ./test/execution-control-policy.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - repair-admit 拒绝未验签 payload'}]
+  - id: CP-VC-047
+    description: SC-EVD-007 / Node readiness：宽松输入一律 NOT_READY，verify-channel 只出 READY_COMPONENT。
+    action: runnode green readiness ./test/execution-control-readiness.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - readiness 拒绝宽松输入'}]
