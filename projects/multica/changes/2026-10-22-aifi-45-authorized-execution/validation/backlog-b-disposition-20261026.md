@@ -126,3 +126,4 @@ B6 **不再**在 AIFI-45 做过渡。tools 在 agent 本机运行，没有 agent
 25. **EVD-007 接交付 gate（增量 51）**：readiness 接入 `crctl gate --for code-approved|writing-back` 与 `evidence-check`（同源判定、按声明 opt-in）。TC-EVD-007 → PRESENT，台账 **42/49**；EVD-008 仍缺（需可信 lineage，M003；且 D8=A 不迁移）。全量门禁 1132 用例 pass。
 26. **交接文件补 EVD 归属（增量 52）**：§4 把 `TC-EVD-008` 的显式迁移事实源（可信 lineage + 已核实消耗 + 未决任务）划给新 change；§6 标 EVD-007 已完成、EVD-008 待新 change 提供事实；§8 基线同步为 42/49、门禁 1132 用例。
 27. **第 0 步对账与基线（增量 53）**：M003 归档后首次全量重跑 governance/daemon/cmd-server，并与 pre-M003 整包比对，失败集合完全相同（零回归，实测）。补登记 9 个测试文件、校正 20 个基线为顶层值，tools 门禁 48 文件 1200 用例 pass。四项决定落 `pending-adjustments`：EVD-008=(b)+另开 change、AdmissionDecider 最小实现留 AIFI-45、M001/M002 受为残余风险、路线 (I)。
+28. **TC-RUN-002 首版两路复核（增量 54）**：strong BLOCK / balanced INCOMPLETE，8 项缺陷（主体不全、daemon 侧无正向控制、"无执行任务"恒真、helper 用父 t、CP 可自证、fixture 清理、TestMain 空跑、表述过强）。不计数，台账仍 42/49；并更正作者三处自查错误（first 是迁移错、green 实为 RED、PASS 标记证据不成立）。
