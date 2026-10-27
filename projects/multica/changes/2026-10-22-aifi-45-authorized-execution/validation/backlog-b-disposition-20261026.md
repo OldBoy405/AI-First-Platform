@@ -119,3 +119,4 @@ B6 **不再**在 AIFI-45 做过渡。tools 在 agent 本机运行，没有 agent
 18. **G1 已修（增量 44）**：共享 `lockExecutionClaimRows`（task SHARE → runtime SHARE → head），三个 `55P03` 探针 RED→GREEN + 三条变异（含锁强度 `FOR KEY SHARE`）全 RED；全包 957/955/1 既有 fail/1 既有 skip，leaf_pass 864。锁图补 G1/G5 两段并登记 workspace teardown 反向对为已知可重试情形。**残余**：未动态证伪死锁；心跳延迟；归属层之外的证据仍归 M003。
 19. **G3 本地半 + G2 残余反例（增量 45）**：读不懂的合同（null/空/非字符串/execution 非映射/contract 缺字段）一律拒绝，不再降级 legacy；四条变异各命中，preflight 子集 65/65。G2 补"同 task 真实重领后旧签发不可复用"反例（行为原已成立，非 RED→GREEN；恒真变异证有牙）。全包 958/956/1 既有 fail/1 既有 skip，leaf_pass 865。**残余**：持久化合同半归 M003；签名 payload 不含 dispatched_at。
 20. **G2/G4 残余决定不做（增量 46）**：G2 签名 payload 不补 `dispatched_at`（固定 20 键跨仓合同；代次已由服务端强制并有反例证据）；G4 不引入凭 receipt 反推 strict 的新语义，移交 M003。无代码改动。
+21. **TestTC_NTF_003 修正（增量 47）**：顺序相关失败（共享 workspace 中最早 owner 不是本用例 owner），断言改为 owner/admin 角色；全包首次 0 fail（958/957/0/1 既有 skip）。另核实 tools 冻结基线只漂移 2 个本 change 记录文件。
