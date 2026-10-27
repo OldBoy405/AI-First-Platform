@@ -45,6 +45,10 @@ checker 自测 9/9（`node --test scripts/aifi45-verify/channel-evidence.test.mj
 
 mutant run（m2 状态机）exit=1；**同一时刻**用 checker 校验 green 前缀 → `FAIL source server/migrations/648_cr_execution_control.up.sql changed since the run (89f0c3f061c7 -> 43a5651c3e13)`；恢复后 sha 与基线一致 → 同一前缀校验回到 `OK`。即「已回滚」不再依赖报告里的文字声明。
 
+## Gate 3 就绪（先读这个）
+
+`validation/gate3-readiness.md`：逐 label 的当前状态、按规格 RED 的 4 条 binding leaf、5 项 UNVERIFIED 残余，以及进 Gate 3 前的最小收尾清单。
+
 ## P0 隔离前提（环境侧）
 
 `validation/p0-isolation-evidence.md`：两个受限身份 + root 拥有的 launcher/entrypoint + 私有根；24 条经 launcher 的探针 + execve trace（`p0-run-20261027/`）。对 agent 不成立，见 ADJ-10。
