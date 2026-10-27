@@ -114,3 +114,4 @@ B6 **不再**在 AIFI-45 做过渡。tools 在 agent 本机运行，没有 agent
 13. **v0.6.1 复核 → v0.6.2（增量 39）**：strong R2 PASS/R3 BLOCK（STR61-01 在途 push 误判零 effect），balanced/economy 余项均为单点修订；v0.6.2 已逐条落点，**待最终复核**。
 14. **v0.6.2 复核 → v0.6.3（增量 40）**：R2 两路 PASS、balanced 要求逐条 mutation；R3 三路 BLOCK（远端祖先分类、no_effect 终态格、leaf 互斥与码序）；v0.6.3 已逐条落点，待复核。
 15. **v0.6.3 复核 → v0.6.4（增量 41）**：strong 与 economy 对 R2/R3 均 PASS；balanced 只剩 leaf 可测性问题（R2 INCOMPLETE / R3 BLOCK）。v0.6.4 已做 leaf 级修订，待复核。
+16. **v0.6.4 复核 → v0.6.5（增量 42）**：R3 三路 PASS（针对 v0.6.4）；R2 仅剩 #5 一处实质缺口，加 nit 一并修订。v0.6.5 改动了 R3 文本，须重审。

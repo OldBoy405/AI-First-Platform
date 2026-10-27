@@ -1,0 +1,45 @@
+{
+  "review": "v0.6.4 R2/R3 contract draft",
+  "plan_raw_sha256": "4ab2b18c134f7d783146d5cd1f128b1aff66b11bbb9f4ac9d6091d93bc27080f",
+  "harness": "pi Agent tool; general-purpose profile; fresh background sessions; read-only instructions",
+  "lanes": [
+    {
+      "lane": "strong",
+      "session_id": "01a17b85-6ea7-760a-b938-3502c0bcf25e",
+      "requested": "OpenAIPersonal/gpt-6.1-sol:high",
+      "actual": "unknown",
+      "verdict": {
+        "R2": "PASS",
+        "R3": "PASS"
+      },
+      "report": "REVIEW-STRONG.md"
+    },
+    {
+      "lane": "balanced",
+      "session_id": "01a17b85-6ec3-760a-b938-3506909af969",
+      "requested": "Gobao/deepseek-flash:max",
+      "actual": "unknown",
+      "verdict": {
+        "R2": "INCOMPLETE",
+        "R3": "PASS"
+      },
+      "report": "REVIEW-BALANCED.md"
+    },
+    {
+      "lane": "economy",
+      "session_id": "01a17b85-6eb7-760a-b938-35042a07fa9a",
+      "requested": "GB-JP/deepseek-flash:high",
+      "actual": "unknown",
+      "verdict": {
+        "R2": "PASS",
+        "R3": "PASS"
+      },
+      "report": "REVIEW-ECONOMY.md"
+    }
+  ],
+  "merged_outcome": {
+    "R2": "not passed (balanced BAL64-R2-01: #5 set-substitution branch)",
+    "R3": "PASS (all three lanes)"
+  },
+  "no_interruptions": true
+}
