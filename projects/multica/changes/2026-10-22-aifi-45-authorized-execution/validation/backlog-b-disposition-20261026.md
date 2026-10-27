@@ -127,3 +127,4 @@ B6 **不再**在 AIFI-45 做过渡。tools 在 agent 本机运行，没有 agent
 26. **交接文件补 EVD 归属（增量 52）**：§4 把 `TC-EVD-008` 的显式迁移事实源（可信 lineage + 已核实消耗 + 未决任务）划给新 change；§6 标 EVD-007 已完成、EVD-008 待新 change 提供事实；§8 基线同步为 42/49、门禁 1132 用例。
 27. **第 0 步对账与基线（增量 53）**：M003 归档后首次全量重跑 governance/daemon/cmd-server，并与 pre-M003 整包比对，失败集合完全相同（零回归，实测）。补登记 9 个测试文件、校正 20 个基线为顶层值，tools 门禁 48 文件 1200 用例 pass。四项决定落 `pending-adjustments`：EVD-008=(b)+另开 change、AdmissionDecider 最小实现留 AIFI-45、M001/M002 受为残余风险、路线 (I)。
 28. **TC-RUN-002 首版两路复核（增量 54）**：strong BLOCK / balanced INCOMPLETE，8 项缺陷（主体不全、daemon 侧无正向控制、"无执行任务"恒真、helper 用父 t、CP 可自证、fixture 清理、TestMain 空跑、表述过强）。不计数，台账仍 42/49；并更正作者三处自查错误（first 是迁移错、green 实为 RED、PASS 标记证据不成立）。
+29. **TC-RUN-002 修订 rev4（增量 55）**：补齐真实 mat_/越权 member/候选包/伪 header 主体，删除无正向控制的 daemon 用例，"无执行任务"改增量+测量有效性对照，helper 与取号锁修复，CP 改事件判据。rev4 9/9 绿（sha 966f13be…）；三条变异真红（守卫关掉/ member 可批 / 不盖 actor-source 戳，mat_ 均得 201），`X-User-ID` 单改仍绿登记为冗余防线；证据组已逐组标处置。待窄口径复评后才可改计数。
