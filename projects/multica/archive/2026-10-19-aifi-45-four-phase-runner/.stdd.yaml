@@ -1,9 +1,9 @@
-change_id: 2026-10-19-aifi-45-runner-contracts
-complexity_score: 14
-current_phase: build
+change_id: 2026-10-19-aifi-45-four-phase-runner
+complexity_score: 17
+current_phase: deliver
 design_adjustments:
   count: 0
-last_modified: '2026-10-27T23:57:55'
+last_modified: '2026-10-28T01:50:09'
 long_range:
   enabled: false
   mode: normal
@@ -11,13 +11,20 @@ mode: thorough
 phases:
   build:
     confirmed_actor: ai
-    confirmed_at: '2026-10-20T15:56:43'
+    confirmed_at: '2026-10-20T15:56:41'
     confirmed_by: cli
     confirmed_evidence: （确认原文未落盘：2026-10-20 由 agent 经 CLI 记录，原文字段当时留为占位符 `<确认原文>`；2026-10-27
       收尾时改为如实标注）
     status: completed
   deliver:
-    status: pending
+    confirmed_actor: ai
+    confirmed_at: '2026-10-28T01:50:09'
+    confirmed_by: dialog
+    confirmed_evidence: 用户指令「把两侧 deliver 置为 completed 并推进到归档」。收口证据见 delivery/summary.md
+      与 validation/closeout-plan.md：35 个 CP 在当前 HEAD 全绿（daemon 43、governance 48、handler
+      3、service 8、pkg/taskfailure 1，均 skip=0）；C-4 三条断言补强（m94/m95/m96 打红）、C-5 生成器溯源修复（m97
+      打红）。不声称：恢复时限、runtime 实际 Agent UUID 隔离、五包完整套件全绿、独立 Linux 主机。
+    status: completed
   spec:
     confirmed_actor: ai
     confirmed_at: '2026-10-19T16:04:03'
@@ -31,7 +38,7 @@ phases:
     confirmed_evidence: 我的问题是：在这次修订中一起       确认
     status: completed
 score_confidence: preliminary
-status: active
+status: archived
 task_type: code
 traceability:
   spec_scenarios: 0
