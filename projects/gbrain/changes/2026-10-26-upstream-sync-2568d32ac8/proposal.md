@@ -1,7 +1,7 @@
 # 上游同步 v0.60.176.0 → v0.60.461.0（gbrain fork）
 
 <!-- source_hash: 60b47ae50d992ad8 -->
-<!-- generated_at: 2026-10-26T16:05:23.059803 -->
+<!-- generated_at: 2026-10-26T19:21:45.086414 -->
 <!-- canonical: canonical/proposals/2026-10-26-upstream-sync-2568d32ac8.yaml -->
 
 ## Why
