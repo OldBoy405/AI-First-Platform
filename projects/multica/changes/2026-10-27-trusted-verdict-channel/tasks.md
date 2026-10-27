@@ -15,7 +15,10 @@
 - [ ] P0.1 `server/internal/daemon/execution_control_isolation_test.go`：`TestChannelIsolation` Linux 5 leaf（pidfd、`SO_PEERCRED`、私有 socket、CLOEXEC、拒 SCM_RIGHTS）。
 - [ ] P0.2 同顶层 Windows 3 leaf（命名管道 client pid + 令牌 SID + launch 登记）；两平台分别出证，缺 profile 必须 `t.Fatalf`。
 - [ ] P0.3 mutation：改回信任请求体 pid、改回数字 PID 查 `/proc`，分别 RED。
-- [ ] P0.4 获隔离环境与 profile 授权前不执行；未执行即 UNVERIFIED，不以组件 PASS 替代。
+- [x] P0.4 **环境前提已建立并有证据**（2026-10-27）：两个真实受限身份（uid 995/994）、受审 launcher
+  （root 拥有 0755、白名单参数、`setpriv` 降权、sha256 已登记）、各自 0700 私有根；10 条正向证明全 PASS，
+  4 条反向对照证明探针可红。证据 `validation/p0-isolation-evidence.md`，脚本归档 `validation/p0-probe-scripts/`。
+  **仍缺**：auditd（WSL2 内核无 audit）、容器 profile（本路径用宿主进程）、Windows 侧身份。
 
 ## 1. 迁移与 schema（P0，阻塞全片）
 

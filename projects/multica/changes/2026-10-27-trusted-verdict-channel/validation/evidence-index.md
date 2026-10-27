@@ -45,6 +45,11 @@ checker 自测 9/9（`node --test scripts/aifi45-verify/channel-evidence.test.mj
 
 mutant run（m2 状态机）exit=1；**同一时刻**用 checker 校验 green 前缀 → `FAIL source server/migrations/648_cr_execution_control.up.sql changed since the run (89f0c3f061c7 -> 43a5651c3e13)`；恢复后 sha 与基线一致 → 同一前缀校验回到 `OK`。即「已回滚」不再依赖报告里的文字声明。
 
+## P0 隔离前提（环境侧）
+
+`validation/p0-isolation-evidence.md`：两个受限身份 + 受审 launcher + 私有根，10 条正向 + 4 条反向对照。
+**注意**：它证明的是环境前提，不等于 `isolation` label（那 5 条代码侧探针尚未实现）。
+
 ## 命名注意
 
 `migration-up-*.schema.sql` 是**原始库**的 schema 快照（不含任何 `cr_execution_*`），不是 648 应用后的目标 schema；`original-before/after.json` 才是跑次前后状态。
