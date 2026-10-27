@@ -1,0 +1,12 @@
+{
+  "review": "v0.6.2 R2/R3 contract draft (final-round check of v0.6.1 findings)",
+  "plan_raw_sha256": "04aacc029447a72a9f8ebb0db497d2e37bb988ff79a36d0b640f923e42523d09",
+  "harness": "pi Agent tool; general-purpose profile; fresh background sessions; read-only instructions",
+  "lanes": [
+    {"lane": "strong", "session_id": "01a17b79-e5f7-760a-b938-34f62c8cab57", "requested": "OpenAIPersonal/gpt-6.1-sol:high", "actual": "unknown", "verdict": {"R2": "PASS", "R3": "BLOCK"}, "report": "REVIEW-STRONG.md"},
+    {"lane": "balanced", "session_id": "01a17b79-e607-760a-b938-34f8313d5f12", "requested": "Gobao/deepseek-flash:max", "actual": "unknown", "verdict": {"R2": "INCOMPLETE", "R3": "BLOCK"}, "report": "REVIEW-BALANCED.md"},
+    {"lane": "economy", "session_id": "01a17b79-e613-760a-b938-34fa830012b5", "requested": "GB-JP/deepseek-flash:high", "actual": "unknown", "verdict": {"R2": "PASS", "R3": "BLOCK"}, "report": "REVIEW-ECONOMY.md"}
+  ],
+  "merged_outcome": {"R2": "not passed (balanced INCOMPLETE: leaf mutations)", "R3": "BLOCK (STR62-01/02, BAL62-R3-01..03)"},
+  "no_interruptions": true
+}
