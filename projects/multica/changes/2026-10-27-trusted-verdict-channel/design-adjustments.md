@@ -104,6 +104,9 @@
 
 - **事实**：Node 侧 `JSON.parse` 不拒重复属性；现有「重复 key」测试重复的是 `keys[]` 里的 `key_id`，不是 JSON 属性。
   「重复 JSON 属性」与「union 双分支」两条 SC-VC-008 要求，目前**只有 Go 侧实现了拒绝**（Go 用 token 级解码器），Node 侧没有。
-- **已做的**：Go 侧拒绝 envelope 与 payload 的重复属性，并有 `exact_keys` 断言；Node 侧未改。
+- **已做的**：Go 侧拒绝 envelope 与 payload 的重复属性，并有 `exact_keys` 断言；**Node 侧已补齐**顶层重复属性拒绝
+  （`assertNoDuplicateTopLevelKeys`，扫描器只覆盖顶层对象，envelope/payload 都是单对象，够用），并新增两条负例断言。
 - **影响范围**：跨语言一致性（同一份含重复属性的 envelope，Go 拒、Node 可能接受）。
-- **结论是否受影响**：是——在 Node 补齐前，不得声称「两侧同语义」；`cross_language_vectors` 只覆盖正常字节与签名域等价性。
+- **结论是否受影响**：**已消除（顶层）**——两侧现在都拒 envelope/payload 顶层重复属性，Node 测试 3/3 绿；
+  仍未覆盖：嵌套对象内的重复属性、manifest 任意深度重复属性（Go 的 manifest 解析逐层严格，Node 的 manifest 走同一
+  `parseJSONBytes`，因此也只到顶层）。
