@@ -505,9 +505,9 @@ rungo green migration-reapply ./internal/governance '^TestChannelMigrationAfterR
 5. rebuild 更换 base 属**输入变化**：按 3 拒绝，要求新授权；不允许“同一次 merge 内静默换 base”。
 6. 并发声明边界（不夸大）：本方案不试图把跨网络 push 包进 DB 事务；能保证的是“effect 前重验 + 部分发布后不继续”。
 
-### R1（原 STR-01）：仍待人类决策——发布语义 (a) 还是 (b)
+### R1（原 STR-01）：已由用户决定为 (a)（决策记录，不再重开）
 
-- **(a) 覆盖真实候选写集**（推荐）：核对对象 = merge 实际将发布的 source 区间 + KB 审批后写入 + finalize 生成写集（`cr.md`/`merge-commits.yml`/`merge-verification.md`）。需要为“批准后实际 source HEAD”建立独立冻结绑定（即 R2 的第 1 项按 source 区间而非单一 sha），finalize 生成路径必须显式列入 `allowed_paths`，无暗设豁免。
+- **(a) 覆盖真实候选写集**（推荐）：核对对象 = merge 实际将发布的 source 区间 + KB 审批后写入 + finalize 生成写集（`cr.md`/`merge-commits.yml`/`merge-verification.md`）。需要为“批准后实际 source HEAD”建立独立冻结绑定（R2 §1 只冻结“批准下界”；实际候选区间与 HEAD 由本地预检写入 journal/receipt，不写进该表），finalize 生成路径必须显式列入 `allowed_paths`，无暗设豁免。
 - **(b) 仅批准 SHA**：禁止 KB 审批后提交与 tree-相等放行，并须另行规定 finalize KB 路径如何受 grant 约束；语义最窄但会与现行 “KB 允许批准 SHA 为祖先” 行为冲突，实际会拒绝大量已批准 CR。
 
 **已决（2026-10-26，用户选择 (a)）**：本段保留为决策记录。(a) 生效后 S5 的 19 个 merge leaf 夹具形态已可全部固定——`merge 范围 symlink 取自发布候选树` 按选定提交树判定，finalize 三个生成路径必须显式在 `allowed_paths`（漏列即拒，无暗设豁免），`channel-test-expectations.json` 可按此冻结。以下两支后果仅作背景：

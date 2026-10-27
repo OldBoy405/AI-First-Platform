@@ -1,0 +1,14 @@
+{"at":"2026-10-27T02:06:03.565Z","kind":"plan","container":"666bfec52ac3c3d13b43389891f50c4105833198eab7e4167b76f014a774e823","original":"stdd_aifi45_20261022","target":{"nonce":"c2df798ab829395a","database":"aifi45_tmp_c2df798ab829395a","role":"aifi45_role_c2df798ab829395a"},"package":"./internal/governance","pattern":"^TestTC_RUN_004|^TestTC_RUN_005","extra":["-timeout=280s","-migration=server/migrations/647_cr_execution_dispatch_root.up.sql"]}
+{"at":"2026-10-27T02:06:06.034Z","kind":"source-preserved","approval_rows":82,"original_tables":137,"schema_sha256":"b311ed8ccc50c4f772b67ccd43885fdbb064a703e473c9aff105b66cd4072958","audit_dump_sha256":"f9bd3df50d62a5aff77dc36b69be6166249ef9363f8128fbe138096499718a17"}
+{"at":"2026-10-27T02:06:06.034Z","kind":"create-role-intent","role":"aifi45_role_c2df798ab829395a"}
+{"at":"2026-10-27T02:06:07.243Z","kind":"create-database-intent","database":"aifi45_tmp_c2df798ab829395a","owner":"aifi45_role_c2df798ab829395a"}
+{"at":"2026-10-27T02:06:09.066Z","kind":"created","target":{"nonce":"c2df798ab829395a","database":"aifi45_tmp_c2df798ab829395a","role":"aifi45_role_c2df798ab829395a","role_oid":"780884","database_oid":"780885"}}
+{"at":"2026-10-27T02:06:11.651Z","kind":"seed-state-copied","tables":["public.task_usage_hourly_rollup_state"]}
+{"at":"2026-10-27T02:06:12.078Z","kind":"migrations-applied","migrations":[{"path":"server/migrations/647_cr_execution_dispatch_root.up.sql","sha256":"61d4a861ebda8bef2273c8c8cc6ec0851a5e96a395e957adb6eb703a4af9e8c7"}]}
+{"at":"2026-10-27T02:06:12.947Z","kind":"isolation-verified","identity":{"database":"aifi45_tmp_c2df798ab829395a","role":"aifi45_role_c2df798ab829395a","superuser":false,"create_db":false,"create_role":false,"bypass_rls":false,"audit_rows":0,"workspace_rows":0},"original_audit_table_read_denied":true}
+{"at":"2026-10-27T02:06:22.697Z","kind":"test-finished","argv":["go","test","./internal/governance","-run","^TestTC_RUN_004|^TestTC_RUN_005","-count=1","-json","-timeout=280s"],"cwd":"C:\\Users\\GOBAO\\Downloads\\AI\\multica\\server\\","exit":1,"signal":null,"counts":{"run":6,"pass":5,"fail":1,"skip":0},"leaf_pass":4,"migrations":[{"path":"server/migrations/647_cr_execution_dispatch_root.up.sql","sha256":"61d4a861ebda8bef2273c8c8cc6ec0851a5e96a395e957adb6eb703a4af9e8c7"}],"package_failures":1,"output_redacted":false}
+{"at":"2026-10-27T02:06:22.697Z","kind":"failure","error":"test failed, matched no tests, or exposed credentials; inspect evidence"}
+{"at":"2026-10-27T02:06:24.214Z","kind":"original-compared","unchanged":true,"release":{"sessions":0,"locks":0}}
+{"at":"2026-10-27T02:06:25.223Z","kind":"database-dropped","database":"aifi45_tmp_c2df798ab829395a","oid":"780885"}
+{"at":"2026-10-27T02:06:26.115Z","kind":"role-dropped","role":"aifi45_role_c2df798ab829395a","oid":"780884"}
+{"at":"2026-10-27T02:06:26.592Z","kind":"resources-absence-verified","database_present":false,"role_present":false}

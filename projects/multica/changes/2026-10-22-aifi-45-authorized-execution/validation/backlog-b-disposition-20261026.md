@@ -101,6 +101,8 @@ B6 **不再**在 AIFI-45 做过渡。tools 在 agent 本机运行，没有 agent
 7. **B17 ⚠ 部分成立（增量 32，后续被增量 33 修正）**：范围核对采集器当时称修了四个可绕过缺陷（引号转义变形、rename 只报新路径、symlink 判不出时放行、变更集缺失当空集合）。其中**引号转义**与 **rename 源端**成立；**symlink 判定（当时用 git index mode）与第四条变异证据不成立**，已由增量 33 改正、并发现经链接目录穿越的新绕过（增量 34）。merge 侧 SHA/tree 采集适配仍归 M003。
 8. **第二次三路复核（B17 后）仍全 BLOCK**：三路均为新鲜非作者静态复核，记录与原文见 `v05-rerun-20261026T235224Z/`（`CLOSEOUT.md` + 三份 `REVIEW-*.md` + `REVIEW-RUNS.json` + `integrity-check.json`，22 项输入与 6 份证据零漂移）。阻断项归并为 R1 发布语义 (a)/(b) 未选、R2 可信 merge facts 存储/端点/认证未定义、R3 撤销与实际发布的线性化未闭合、R4 leaf 矩阵与零写入观测法、R5/R6 B17 状态来源与无效变异、R7 G1/G5 前置未声明。**R5/R6 已在 AIFI-45 闭合（增量 33/34，tools `3e2dd7a`、`029b762`）；R4/R7 已修正；R2/R3 已给合同草案。**
 9. **R1 已由用户决定为 (a)：核对对象 = merge 实际发布的候选写集（2026-10-26）**。(b) 不采纳——它与现行“KB 允许批准 SHA 为祖先”正面冲突，会大面积误拒。方案已按 (a) 补五条约束（区间取实际候选 source；批准事实来自 M、实际候选 HEAD 写入 journal/receipt 作本地审计而非授权凭据；KB 审批后写入属核对范围；finalize 三个生成路径必须逐项在 `allowed_paths`、漏列即拒无暗设豁免；rename/symlink/删除按选定提交树判定），S5 必达 leaf 由 17 增至 19（`finalize 写集逐项授权`、`核对含 KB 审批后写入`），`symlink 取自批准树`改写为`取自发布候选树`。**R1 已决 ≠ 方案通过**：R2/R3 草案未复核，其余 BLOCK 项未闭合。
+10. **G5 已修（增量 36，DB 取证）**：`AdmitDispatchRoot` 既有根读取改 `FOR UPDATE`，adoption 的 UPDATE 加 `terminal_at IS NULL` + 期望 generation + mapping 摘要条件并 `RETURNING`，0 行即拒。`^TestTC_RUN_004/005` 6/6、0 skip；去锁与“双摘要守卫同时移除”两个变异 RED，单独去 CAS/单侧摘要为 GREEN（冗余防线，已如实登记）。governance 全包 954/952，唯一 fail `TestTC_NTF_003` 经基线对照确认既有。**G1 仍未修**。
+11. **R2/R3 复核仍 BLOCK（增量 37）**：R1=(a) 后冻结 v0.6 两章三路复核——strong R2/R3 均 BLOCK、balanced R2 BLOCK/R3 INCOMPLETE、economy R2 BLOCK/R3 PASS（仅文档轴）。阻断归并为 Q1–Q13；本轮只修 EC-2 记录项。**Q8（merge-facts 交付面）需人类决策**，Q2/Q7 与 Q1/Q5 必须同批收敛，不得继续追加条目。
 5. 之后决定是否注册 M003（从 v0.4 起草，X1 的 Windows 要求已进 P0）。
 
 ## 4. 不得冒称

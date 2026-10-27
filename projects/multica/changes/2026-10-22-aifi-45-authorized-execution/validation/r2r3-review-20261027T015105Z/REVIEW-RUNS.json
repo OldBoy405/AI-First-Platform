@@ -1,0 +1,56 @@
+{
+  "review": "v0.6 R2/R3 sections (after R1=(a) decision)",
+  "input_manifest": "source-manifest.json",
+  "plan_raw_sha256": "7d688fda1faa31f1cbe5e92ad459167edb70008636ed7eaad569db9b6faa97ba",
+  "harness": "pi Agent tool; general-purpose profile; background sessions; read-only task instructions",
+  "authority": "User asked to land both R2/R3 review and G1/G5 DB evidence; no implementation, DB, CR, commit or deployment inside this review",
+  "lanes": [
+    {
+      "lane": "strong",
+      "scope": "security and implementability of R2/R3",
+      "attempts": [
+        {"session_id": "01a17b0e-3844-77b9-a3c5-0f8bb655d152", "outcome": "interrupted before completion", "result_used": false},
+        {"session_id": "01a17b21-9c2c-760a-b938-34e86e764929", "outcome": "completed", "result_used": true}
+      ],
+      "requested_model": "OpenAIPersonal/gpt-6.1-sol",
+      "requested_effort": "high",
+      "actual_model": "unknown",
+      "actual_effort": "unknown",
+      "verdict": {"R2": "BLOCK", "R3": "BLOCK"},
+      "report": "REVIEW-STRONG.md"
+    },
+    {
+      "lane": "balanced",
+      "scope": "testability of R2/R3",
+      "attempts": [
+        {"session_id": "01a17b0e-385f-77b9-a3c5-0f8c3393ee2e", "outcome": "completed", "result_used": true}
+      ],
+      "requested_model": "Gobao/deepseek-flash",
+      "requested_effort": "max",
+      "actual_model": "unknown",
+      "actual_effort": "unknown",
+      "verdict": {"R2": "BLOCK", "R3": "INCOMPLETE"},
+      "report": "REVIEW-BALANCED.md"
+    },
+    {
+      "lane": "economy",
+      "scope": "document and consistency axis",
+      "attempts": [
+        {"session_id": "01a17b0e-3871-77b9-a3c5-0f8f5247ec0c", "outcome": "interrupted before completion", "result_used": false},
+        {"session_id": "01a17b21-c484-760a-b938-34ea79d54fb2", "outcome": "completed", "result_used": true}
+      ],
+      "requested_model": "GB-JP/deepseek-flash",
+      "requested_effort": "high",
+      "actual_model": "unknown",
+      "actual_effort": "unknown",
+      "verdict": {"R2": "BLOCK", "R3": "PASS"},
+      "report": "REVIEW-ECONOMY.md",
+      "note": "R3 PASS covers the documentation-consistency axis only; strong BLOCK and balanced INCOMPLETE remain authoritative for R3"
+    }
+  ],
+  "merged_outcome": {
+    "R2": "BLOCK",
+    "R3": "BLOCK",
+    "rationale": "R2 blocked by all three lanes; R3 blocked by strong and incomplete for balanced, so the economy PASS does not carry it"
+  }
+}
