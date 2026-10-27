@@ -132,7 +132,7 @@
   - **③ 改动集合（本次修订核心）**：权威来源是 **M 侧持久 code 批准记录中冻结的 source sha**，`approval.yml#code.release-subjects` 只作投影；读取后须与 M 记录逐字段相等，不等即拒（`approval.yml` 位于 agent 可写的控制根，单独作为权威来源与 Goal 矛盾）。
   - **核对集合 = 发布集合**：核对区间为 `trunk...HEAD`（merge 实际发布的提交），而不是 `trunk...<release subject sha>`。后者会把 release subject 之后的提交（含 `approval.yml` 自身与 KB 文档）整段漏检——那正是 X7 要守的「先改文档事后追认」面。release subject sha 仅作为“该批准必须已存在且未被撤销”的下界参考。
   - **与既有 `verifyReleaseSubjects` 的关系**：merge 侧既有 release-subjects 校验（`allowLocalDrift: codeTrust.ok`）**先于**范围核对执行且必须通过；本地信任下的正文漂移不得放宽到范围核对。越界时拒（不转 `release-drift` 回退：回退会把状态写回 `developing`，属于写入）。
-  - **失败码闭集**（每条各配 leaf）：`AUTH_SCOPE_VIOLATION`（越界）、`AUTH_SCOPE_UNVERIFIABLE`（收集/定位失败、release-subjects 缺失、`approval.yml` 与 M 记录不等）、`EXECUTION_AUTHORIZATION_REVOKED`（撤销）、`EXECUTION_AUTHORIZATION_HEAD_MOVED`（head 前移）、`EXECUTION_AUTHORIZATION_UNAVAILABLE`（§6 只读端点取不到 facts）。退出码统一非零，状态保持 `code-approved` 不变。
+  - **失败码闭集**（每条各配 leaf）：`AUTH_SCOPE_VIOLATION`（越界）、`AUTH_SCOPE_UNVERIFIABLE`（收集/定位失败、release-subjects 缺失、`approval.yml` 与 M 记录不等）、`EXECUTION_AUTHORIZATION_REVOKED`（撤销）、`EXECUTION_AUTHORIZATION_HEAD_MOVED`（head 前移）、`EXECUTION_AUTHORIZATION_UNAVAILABLE`（端点不可达/超时/5xx/认证被拒）。**各码的判定条件与优先级以 v0.6.1 节 R2.4 表为唯一权威**（可达但 facts 缺失/不全/未知归 `AUTH_SCOPE_UNVERIFIABLE`，已知越界永远 `AUTH_SCOPE_VIOLATION`）。退出码统一非零，状态保持 `code-approved` 不变。
   - **symlink 逃逸**：tree-based 收集下 `escaped` 取自 git tree entry mode `120000` 并在树内解析目标；无法判定时记 problem（→ UNVERIFIABLE），不放行。
   - **复用边界（写实）**：复用 `evaluateChangeScope`（纯判定，不触 git/fs）与 `AUTH_SCOPE_*` 封闭码；**新写** `collectCommittedPaths(base, sha)`（committed 区间 + tree mode 逃逸判定），不复用 `collectChangedPaths`（它含工作区/untracked 与 `origin/trunk` 回退，语义不同）。AIFI-45 自检走工作区、merge 走已提交区间，这一差异是有意的，不是同一实现的两种用法。
   - **Legacy**（由可信历史目录证明）merge 行为不变（SC-EVD-006）：不核对范围、不要求 grant。
@@ -157,7 +157,8 @@
 | `policy_readiness` | `request_id,scope,target,nonce,generation,expiry,command_bytes,observation_frames,verdict_bytes,digest`；nonce/request unique，request 冻结后每 slot 仅可 CAS 登记一份原观测（同 bytes 重投幂等、异内容拒绝），最终 signed result 原字节不可改。 |
 | `policy_activation_head` | `scope,target_policy,revision,event_id,last_issued_admission_seq`；scope/target unique，启用及 issued/停新单共享 CAS/锁点；序号只做因果边界，不计预算。 |
 | `policy_activation_event` | `id,scope,target_policy,previous_id,mode,generation,verdict_ref,actor,reason,cutoff_admission_seq,committed_at`；append-only，mode=`ACTIVE|STOP_NEW`；停新单固化已 issued 边界。 |
-- v0.3 合计 **13 张新表**（原业务通道 8 + D7 5），均在本 change 的同一 proposed migration 中，up/down/索引/immutable 测试按此清单核对，不另开 Foundation change。
+| `code_source_freeze` | `workspace_id,cr_id,repo_id,approved_source_sha,approved_revision,approval_record_id,authorization_head_id,approved_at,superseded_at,revoked_at,digest`；`UNIQUE(workspace_id,cr_id,repo_id,approved_revision)` + 部分唯一 `WHERE superseded_at IS NULL`（每仓至多一条当前行）；只由 code 批准事务追加写，撤销置 `revoked_at`，历史行不改写（v0.6.1 R2.1） |
+- 合计 **14 张新表**（原业务通道 8 + D7 5 + v0.6.1 merge facts 1：`code_source_freeze`），均在本 change 的同一 proposed migration 中，up/down/索引/immutable 测试按此清单核对，不另开 Foundation change。
 - 无新 FK/cascade；软引用逐次验证。workspace deletion 分类：audit/selection/settlement/binding/fact 保留，command/cursor 禁新建并收敛；unknown open 不强行清空。
 - command：`created → issued → result_ready → settled_effect|settled_no_effect`；结果未知进入 `uncertain`，lineage freeze。ingest ACK 只确认持久化，**不释放 slot**。
 - `BeginOwnerTx` 持久递增 fence；`EnsureRequestTx` 锁 cursor，固定 candidate 与序号；禁止并行第二 command 或自动换 request。
@@ -190,7 +191,8 @@
 - **EVD-008 的范围与验收分开**：既有 `evaluateExplicitMigration` 正/反分支和 SC-EVD-008 原文不被本计划删除或改成“永久拒绝”；D8 解决本期 rollout 范围，不自动完成 AIFI-45 的生产迁移能力。如要调整其原交付承诺，须另行修订规格/追踪并审阅；当前保留 CP 单测口径与“无生产入口”标记，不增加 PRESENT 或解除 Gate。
 
 ### 6. API、task-start 与 reader
-- proposed `GET /api/daemon/execution-control/commands`、`POST /api/daemon/crs/{crID}/execution-verdicts`、`POST /api/daemon/execution-control/checkpoints`；仅 MDT+enrolled key/owner scope，拒绝 PAT/JWT/task-token fallback。
+- proposed `GET /api/daemon/execution-control/commands`、`POST /api/daemon/crs/{crID}/execution-verdicts`、`POST /api/daemon/execution-control/checkpoints`，以及 v0.6.1 新增 `GET /api/daemon/execution-control/merge-facts/{crID}`（R2.2）与 `POST /api/daemon/crs/{crID}/merge-effects`（`op=reserve|report`，R3.1）；仅 MDT+enrolled key/owner scope，拒绝 PAT/JWT/task-token fallback。
+- `merge-facts` 为只读 GET：200 / `400 MERGE_FACTS_INVALID` / `403 MERGE_FACTS_UNTRUSTED` / `404 MERGE_FACTS_NOT_FOUND` / `503 MERGE_FACTS_UNAVAILABLE`，未知 code 按不可用处理；到 CLI 外层码的映射见 R2.4。`merge-effects` 沿用下行 POST 规则，closed codes `MERGE_EFFECT_{INVALID,UNTRUSTED,REVOKED,HEAD_MOVED,INPUT_MISMATCH,CONFLICT,UNAVAILABLE}`。
 - POST 首次有效入账 201、exact replay 200、冲突 409；invalid 400、untrusted 403、unavailable 503。未知字段/域/绑定/序号不产生授权事实或 effect。
 - closed codes：`T_VERDICT_{UNTRUSTED,INVALID,BINDING_MISMATCH,CONFLICT,SEQUENCE_GAP,STALE,STORE_UNAVAILABLE,FENCED,RECOVERY_REQUIRED,UNAVAILABLE}`；按固定枚举映射，未知 code 拒绝。
 - 保留 `WAIT_CONSUMPTION/WAIT_EVIDENCE/DENY_STOPPED/DENY_RESUME/DENY_SPECIAL_AUTHORIZATION`；quota deny 只消费 T 裁决，不读取 consumed/limit 推理。
@@ -321,7 +323,7 @@
 - **R1 定 (a) 后新增 leaf**：`merge 范围 finalize 写集逐项授权`（`cr.md`/`merge-commits.yml`/`merge-verification.md` 三个生成路径分别出现在 `allowed_paths` 时通过；任一漏列 → `AUTH_SCOPE_PATH_NOT_ALLOWED`，不得以“系统生成”豁免）↔ mutation：给 finalize 生成路径加隐式豁免 → RED。同批：`merge 范围核对含 KB 审批后写入`（获批后新增/修改 `approval.yml`、`cr.md` 落进区间 → 必须被核对；mutation：把 KB 控制根排除出核对范围 → RED）。
 
 ### S6：真实 ingest、settlement 与 task-start binding
-- 新建：`G/execution_tool_ingest{,_test}.go`、`G/execution_control_settlement{,_test}.go`、`G/execution_control_migration_test.go`、`D/execution_control_client{,_test}.go`；修改 `D/execution_verifier.go`。迁移专例共享单一 `ChannelTableNames` 清单（精确 13 名、无重复）与本 migration 对象清单；`TestChannelMigrationAfterUp` 对完整 up 逐表/trigger/index/constraint 检查；`TestChannelMigrationAfterDown` 检查全部 13 张新表及其触发器/索引均已撤销；`TestChannelMigrationAfterReapply` 检查同名对象/约束恢复、无遗留业务行，分别在 up、up→down、up→down→up 的新库中运行，不混入普通回归。三例每表各一 `t.Run`，每例至少 13 PASS leaf。另 `TestChannelMigrationProtectedData` 在本次独占 nonce 库 up 状态先造 643–647 夹具，再由该隔离测试按精确 648 down/up 做生命周期验证，断言原夹具行/对象不变及无 648 孤儿对象；不修改 DB runner、不接触 HOLD 库。
+- 新建：`G/execution_tool_ingest{,_test}.go`、`G/execution_control_settlement{,_test}.go`、`G/execution_control_migration_test.go`、`D/execution_control_client{,_test}.go`；修改 `D/execution_verifier.go`。迁移专例共享单一 `ChannelTableNames` 清单（精确 14 名、无重复）与本 migration 对象清单；`TestChannelMigrationAfterUp` 对完整 up 逐表/trigger/index/constraint 检查；`TestChannelMigrationAfterDown` 检查全部 14 张新表及其触发器/索引均已撤销；`TestChannelMigrationAfterReapply` 检查同名对象/约束恢复、无遗留业务行，分别在 up、up→down、up→down→up 的新库中运行，不混入普通回归。三例每表各一 `t.Run`，每例至少 14 PASS leaf。另 `TestChannelMigrationProtectedData` 在本次独占 nonce 库 up 状态先造 643–647 夹具，再由该隔离测试按精确 648 down/up 做生命周期验证，断言原夹具行/对象不变及无 648 孤儿对象；不修改 DB runner、不接触 HOLD 库。
 - 本片的 settlement/binding 顶层分别命名 `TestChannelIngestSettlement`、`TestChannelIngestBinding`，daemon client 为 `TestChannelWorkerClient`，均由未来模板独立精确命中，不能凭文件名或整包 PASS 推定已跑。
 - `TestChannelIngestRevokedPermit` 的失败分支固定子例 `revoked_permit_effect`，仅在撤销先提交却仍产生 effect 的失败断言输出 `CONTROL_REVOKED_PERMIT_EFFECT`；另留 `unmutated_control` 正对照。不许无条件 t.Log marker，不把编译/连接/无匹配错误当 RED。
 - 接口：`IngestTx(envelope)->VerdictRef`、`SettleCandidateTx(...)`、`BindDeliveredGenerationTx(reservation,actualTuple)->Binding`；[ ] RED ACK 释放 slot/假 generation；[ ] 最小 GREEN auth→真实 worker→DB→固定 task；[ ] 复核 revoke/stop barriers。
@@ -358,7 +360,7 @@
 - red 除 runner 非零外，必须是名单中指定的失败 leaf，marker 位于该 leaf 的条件失败断言输出；只允许其父级因子例失败而 fail，不接受其他失败或无条件日志 marker，且有一个未受 mutation 影响的 PASS control leaf。Go 的正常包级 FAIL 汇总不当成独立错误；编译/setup/连接错均不是预期 RED。checker 自检须含“summary 看似成功但缺期望 leaf”等反例。
 - 每项 mutation 保存 patch hash、基线与恢复后 source hash、实际 argv、匹配的失败 leaf 和条件断言；恢复 hash 相同后另起 nonce 跑 green。无此证据不得把基本 wrapper 的 exit/count 屏幕判定当完整验收。
 - **v0.4 必达 leaf（进 `channel-test-expectations.json`）**：`TestChannelFoundationReservation/root_adoption_terminal_race`；`TestChannelPolicyFacts/{repair_admit_fact_refs_verified,sensitive_copy_root_new_operation,sensitive_same_operation_replay,sensitive_revoke_interleaving,sensitive_legacy_ledger_unverified}`；`TestChannelPolicyResume/{repair_extension_append,repair_extension_double_append_race,repair_extension_replay}`；`TestChannelIngestBinding/{cross_issuance_challenge,same_task_redispatch_challenge,same_nonce_different_proof,claim_terminated_before_consume}`；`TestChannelReader/{selected_strict_field_deleted,never_selected_legacy_unchanged,unknown_selection_not_legacy,terminal_report_without_claim,terminal_fence_survives_reclaim,legacy_consumed_keeps_fence,terminal_fence_read_failure}`；P0 `TestChannelIsolation/{peer_credential_match,self_reported_fact_ignored,foreign_run_socket,fd_transfer,pid_reuse}`；以及 S5 列出的三条 Node leaf。`rungo`/`runnode` 的 exit/count 只是前置；该 label 名单为空，或任一 leaf 缺失、为 SKIP、只有父级 PASS，均判未验证。
-- **v0.5 必达 leaf**：S5 “v0.5 补充（B11）”列出的 Node leaf（**逐个以其条目为准，本文件不以整数指代**；当前为 19 个（R1 定 (a) 后新增两条）：`merge 范围 rename 源与目标都查`、`merge 范围 symlink 取自发布候选树`、`merge 范围空集合不可放行`、`merge 范围 Unknown selection 即拒`、`merge 范围恢复沿用原冻结输入`、`merge 范围撤销发生在部分发布后`、`legacy merge 不核对范围`、`merge 范围不受 grants 目录旧文件影响`、`merge 范围 head 撤销即拒`、`merge 范围核对越界零写入`、`merge 范围只看已批准 source sha`、`merge 范围核对覆盖发布集合`、`merge 范围删合同字段仍 strict`、`merge 范围 head 前移即拒`、`merge 范围 release-subject 缺失即拒`、`merge 范围无法核实即拒`、`merge 范围越界不推进状态`、`merge 范围 finalize 写集逐项授权`、`merge 范围核对含 KB 审批后写入`）；判定口径同上（缺失、SKIP、只有父级 PASS 均判未验证）。**mutation 并非天然 1:1**：`merge 范围核对越界零写入` 要求**两条** mutation（移到 publish 之后；移到 journal 之后、prepare 之前），`merge 范围 release-subject 缺失即拒` 与 `merge 范围无法核实即拒` **共用**一条“缺省当空集合放行”的 mutation。任何清单必须显式写出这两处不对称，不得再用“N:N 一一对应”概括。
+- **v0.5 必达 leaf**：S5 “v0.5 补充（B11）”列出的 Node leaf（**逐个以其条目为准，本文件不以整数指代**；当前为 19 个（R1 定 (a) 后新增两条）：`merge 范围 rename 源与目标都查`、`merge 范围 symlink 取自发布候选树`、`merge 范围空集合不可放行`、`merge 范围 Unknown selection 即拒`、`merge 范围恢复沿用原冻结输入`、`merge 范围撤销发生在部分发布后`、`legacy merge 不核对范围`、`merge 范围不受 grants 目录旧文件影响`、`merge 范围 head 撤销即拒`、`merge 范围核对越界零写入`、`merge 范围只看已批准 source sha`、`merge 范围核对覆盖发布集合`、`merge 范围删合同字段仍 strict`、`merge 范围 head 前移即拒`、`merge 范围 release-subject 缺失即拒`、`merge 范围无法核实即拒`、`merge 范围越界不推进状态`、`merge 范围 finalize 写集逐项授权`、`merge 范围核对含 KB 审批后写入`）；另加 v0.6.1 节 R2.5 与 R3.5 列出的 leaf；判定口径同上（缺失、SKIP、只有父级 PASS 均判未验证）。**mutation 并非天然 1:1**：`merge 范围核对越界零写入` 要求**两条** mutation（移到 publish 之后；移到 journal 之后、prepare 之前），`merge 范围 release-subject 缺失即拒` 与 `merge 范围无法核实即拒` **共用**一条“缺省当空集合放行”的 mutation。任何清单必须显式写出这两处不对称，不得再用“N:N 一一对应”概括。
 
 ## 未来验证命令模板
 仅在新 change 已登记、测试已实现且验证资源获授权后执行；**现在不运行**。Git Bash 模板捕获真实退出码，预期 RED 不被 `set -e` 中途吞掉；每次 fresh nonce、阶段标签、绝对路径。
@@ -449,6 +451,7 @@ rungo green migration-reapply ./internal/governance '^TestChannelMigrationAfterR
 | v0.5（2026-10-26） | 用户采纳 B11 挂接建议：Spec §3 新增 merge 范围核对。初版经 balanced/economy 两路复核判 INCOMPLETE 后修订：三项输入的权威来源逐条钉死（selection 读 M 持久事实、grant 读 M 当前 head、改动集合读 M 持久 code 批准记录且 `approval.yml` 仅作投影）；核对集合改为 `trunk...HEAD`（= 发布集合）；补失败码闭集、零写入精确外延、与 `verifyReleaseSubjects` 的顺序、复用边界（规则复用/收集新写）、X7 字段语义修正（repo id + 路径前缀同时给）；S5 leaf/mutation 由 6:5 补到 **17 leaf / 16 mutation（含两处显式不对称，见“v0.5 必达 leaf”）**。AIFI-45 侧只读自检命令与 implement-code 自检步骤已交付（非强制闸门）。**第二次三路复核仍全 BLOCK**（发布语义 (a)/(b) 未选、可信 merge facts 端点未定义、撤销线性化未闭合、leaf 清单仍写“十条”），结论见 `V/v05-rerun-20261026T235224Z/CLOSEOUT.md`；本行为当时的修订记录，闭合状态以该 CLOSEOUT 为准。 |
 | v0.5 二轮（2026-10-26） | strong 复核判 BLOCK/INCOMPLETE 后修订：核对对象必须等于实际发布对象（`mergeCr` 冻结的是远端 ref==HEAD，不是批准 SHA；KB 允许批准 SHA 为 HEAD 祖先）；插入点改为 `cmdMerge` 现有 gate **之前**的独立只读预检（现有 gate 的 approval 分支会写 outbox，非零副作用；锁/journal/recoverWriteSet 也早于 release-subjects 读取）；补授权效力线性化边界与部分发布后处置；空集合不得放行 + 采集完整性四证明；SHA 采集适配（rename 双向、symlink 取自树、无损分隔）；Legacy 口径收窄为可信目录证明；X7 补合法恢复流程；归属划分（采集器通用缺陷归 AIFI-45 就地修）。S5 leaf/mutation 再扩充。**修订后仍未复核。** |
 | v0.6（2026-10-26） | **R1 由用户决定为 (a)：核对对象 = merge 实际发布的候选写集**。(b) 不采纳（与“KB 允许批准 SHA 为祖先”冲突，会大面积误拒）。据此补五条约束：核对区间取该仓实际候选 source；批准事实来自 M、**实际候选 HEAD 由预检写入 journal/receipt**，二者是“批准为区间内已存在且未撤销的下界”而非相等；KB 审批后写入属核对范围；finalize 三个生成路径（`cr.md`/`merge-commits.yml`/`merge-verification.md`）必须逐项出现在 `allowed_paths`，漏列即拒、无暗设豁免；rename/symlink/删除按选定提交树判定。S5 必达 leaf 由 17 增至 **19**（新增 `merge 范围 finalize 写集逐项授权`、`merge 范围核对含 KB 审批后写入`），`merge 范围 symlink 取自批准树` 改写为 `…取自发布候选树`（按 tree/blob 判定，两条 mutation）。同轮另修 R4（删“十条/10:10”，改逐个枚举+显式不对称）与 R7（S1 增 G5 前置、S6 前置改 B1/B2/B3+G1+G2/G4），并给出 R2/R3 合同草案。**R1 已决不等于方案通过：R2/R3 草案未经复核，三路 BLOCK 其余项未闭合。** |
+| v0.6.1（2026-10-26） | r2r3 复核（R2 三路 BLOCK、R3 strong BLOCK/balanced INCOMPLETE）后**整节改写而非追加**：用户采纳 `merge-facts` 端点随本 change 交付、删除 `workspace_revision`、残余风险入册。R2：存储改追加写 + 部分唯一索引（每仓至多一条当前行），语义固定为祖先下界；workspace 由认证主体解析；响应加 `expected_repo_count`/`repos_digest`/`current_binding` 三态/`provenance_digest`；失败码分层表成为唯一权威（§3 改为引用），优先级 UNAVAILABLE>REVOKED>HEAD_MOVED>VIOLATION>UNVERIFIABLE。R3：沿用 §4 已定 effect 语义，每次 push（含 finalize）复用 command/settlement（`effect_kind=merge_publish`），以 `merge-effects reserve` 提交为授权排序点、push 在 Tx 外、report 为远端确认点；journal 三态与远端只读核实三分支；不新增 CR 状态；恢复矩阵与 `input_digest`。§4 表 13→14，§6 端点 3→5。**仍为作者稿、未复核。** |
 - v0.3 轮只做文档静态校验和独立计划复核，结果另记 `trusted-verdict-channel-v03-review-20261026.md`；v0.4 轮同样只做静态校验与三路非作者计划复核，结果另记 `trusted-verdict-channel-v04-review-20261026.md`。均不冒称动态测试或部署验证。
 
 ## Review Focus
@@ -474,36 +477,76 @@ rungo green migration-reapply ./internal/governance '^TestChannelMigrationAfterR
 | B11 merge 范围（v0.5 修订版） | 三项输入不得由调用方参数或 agent 可写文件单独决定；改动集合的权威来源是 M 持久 code 批准记录（`approval.yml` 仅投影，逐字段相等）；核对区间 = 发布区间 `trunk...HEAD`；越界在 `mergeCr` prepare 前拒，零写入外延为“不建 journal/publish/不推状态/不写 receipt”（既有 audit/gate 不在内）；规则复用 `evaluateChangeScope`、收集新写；X7 已决：签发侧须同时给 repo id 与路径前缀，仓库集合不经 repair 追加域扩展。 |
 | 范围外但须先行 | B1 签发/消费绑定完整 generation、B2 统一锁图（CR-bind↔消费成环）、B3 终态 CAS 后同事务 fence 是 S6 green 的前置；但 S6 的 `claim_terminated_before_consume` 还需 **G1**（三写端点共用校验事务 + 锁 task/runtime 归属行）与 **G2/G4 残余**，S1 的 `root_adoption_terminal_race` 还需 **G5**（root 行锁 + generation CAS）——两者都归 AIFI-45，未修则对应 leaf 按设计 RED（v0.5 复核更正：先把 B8 一律并入本方案的旧表述作废，B8 中**不需要可信事实**的那半在 AIFI-45）。B11 只读自检命令与 implement-code 自检步骤（已交付，增量 25/26；逃逸判定已按增量 33/34 加固）、B12a EVD-005 报告/收集接线、B16 RPR 业务身份规则、EVD-001/002/004 gate 接线归 AIFI-45；B10 见 S5 既有 resume；B14/B15 见 Goal。 |
 - 用户已定：D8=A 不迁移存量；D7 由 Channel 拥有。人类环境确认仍包括首期 Linux 身份/launcher/observer/全部实例与安装目标的操作授权、独立 keys 管理及受保护 required profile；不能把“已决定范围”理解为部署身份/能力已经核实。
-- 主要残余风险：隔离部署复杂、严格冻结降低可用性、审计增长/磁盘耗尽、review/test 内容真实性上限、外部 action 结果未知；容量不足 fail-closed，不能自动删审计或补签历史。
+- 主要残余风险：merge 范围核对只保证事实可信、不保证执行强制（持 push 权限者可绕过 CLI；仓库侧强制闸门不在本 change，见 R2.6）；隔离部署复杂、严格冻结降低可用性、审计增长/磁盘耗尽、review/test 内容真实性上限、外部 action 结果未知；容量不足 fail-closed，不能自动删审计或补签历史。
 - 最终验收需非作者独立复核；本文不授予 Gate、commit/push、建用户、系统权限变更或部署授权。
 
-## v0.6 修订草案（2026-10-26，回应第二轮复核 R1/R2/R3；**未复核，不得称已批准**）
+## v0.6 修订草案（2026-10-26，回应第二轮复核 R1/R2/R3；R2/R3 已按 r2r3 复核 Q1–Q13 合并为 v0.6.1 合同稿；**未复核，不得称已批准**）
 
 本轮只修 R4/R7 与记录性错误（已落盘）。以下三项是设计层：R2/R3 给出可评审合同草案，**R1 仍需人类决策**，本文不代选。
 
-### R2（原 STR-02/E07）：可信 merge facts 的存储、端点与认证
+### R2（原 STR-02/E07）：可信 merge facts 合同（v0.6.1 合并稿：回应 r2r3 复核 Q1–Q8）
 
-现状缺口：§4 的 13 张表没有承载“M 侧持久 code 批准记录中冻结的 per-repo source sha”，§6 的三个端点也不提供 merge facts；`crctl.mjs:1878–1880` 与 `change-scope.mjs:150–153` 的注释已明确“当前平台绑定确认裸 CLI 做不到”。
+**交付面已定（2026-10-26，用户采纳）**：`merge-facts` 只读端点**随本 change 交付**；删除 `workspace_revision` 参数。理由与边界：merge 发布只在 tools 执行（`workspace-transactions.mjs::mergeCr`，multica 无对应代码），需要可信事实的一方就是 CLI，“M 内部调用”不成立。
 
-草案（四项，缺一不可）：
+**R2.1 存储（Q2/Q7）**：§4 新增第 14 张表 `cr_execution_code_source_freeze`（列 `workspace_id,cr_id,repo_id,approved_source_sha,approved_revision,approval_record_id,authorization_head_id,approved_at,superseded_at,revoked_at,digest`）。
+- **追加写**：只由 code 批准事务写入；同 `(workspace_id,cr_id,repo_id)` 再批准时，在同一事务内 `FOR UPDATE` 锁当前行、置 `superseded_at` 并插入 `approved_revision+1`。约束 `UNIQUE(workspace_id,cr_id,repo_id,approved_revision)` 加部分唯一索引 `WHERE superseded_at IS NULL`，保证**任一时刻每仓至多一条当前行**；多条或零条当前行均视为事实缺失。
+- **语义固定为“祖先下界”**（R1=(a)，不设 `bound_kind`）：合法当且仅当 `approved_source_sha` 是该仓实际候选 HEAD 的祖先（含相等），且位于 `trunk...<candidate HEAD>` 区间内。表**不存**实际候选 HEAD（它由本地预检写入 journal/receipt，仅为本地审计事实，不是授权凭据）。
+- 撤销：授权 head 撤销时同事务置当前行 `revoked_at`；不删除、不改写历史行。
 
-1. **存储**：§4 新增 `execution_code_source_freeze`（`cr_id`、`repo_id`、`approved_source_sha`、`trunk`、`approved_at`、`approval_record_id`、`digest`；`UNIQUE(cr_id,repo_id,approved_source_sha)`），只由 code 批准事务写入，**不承载** agent 可写来源。按 R1=(a)，本表只提供“批准下界”，**不存实际发布 sha**：实际候选 source 区间与 HEAD 由本地预检确定并写入 merge journal/receipt（本地审计事实，不是授权凭据）。缺失行 = 无冻结事实 = 拒（`AUTH_SCOPE_UNVERIFIABLE`），不回退 `approval.yml`。
-2. **端点**：`GET /api/daemon/execution-control/merge-facts?cr=<id>&workspace_revision=<n>`，认证**沿用 §6 既有主体**（MDT + enrolled key/owner scope），显式**拒绝** PAT/JWT/task-token fallback 与任何 `--grant`/`--workspace` 入参决定查询目标；workspace 与 CR 由 M 依据会话/绑定解析，调用方只能声明 CR 身份。
-3. **响应闭集**：`{cr_id, selection_kind: strict|legacy_proven, head_revision, repos:[{repo_id, identity_digest, current_binding_ok, approved_source_sha}], grant_digest, frozen_at}`——**只返回批准下界与当前 head，不返回也不接受调用方提供的实际候选 HEAD**（后者由本地预检产生）；未知字段/未知域/多余仓库一律拒绝而非忽略；`legacy_proven` 必须携带可信目录证明摘要，否则按 strict 处理。
-4. **失败码与降级**：`AUTH_SCOPE_UNVERIFIABLE`（facts 缺失/读失败/身份不符/仓库集合不全）、`EXECUTION_AUTHORIZATION_HEAD_MOVED`、`EXECUTION_AUTHORIZATION_REVOKED`；任一失败即停，**不降 legacy、不换源、不扫描 `grants/` 猜测**。CLI 侧只允许把端点结果当**输入**，不得缓存后跨调用复用（缓存即失去“当前 head”语义）。
+**R2.2 端点与认证（Q4/Q8）**：`GET /api/daemon/execution-control/merge-facts/{crID}`。
+- 认证沿用 §6 既有主体（MDT + enrolled key/owner scope），拒绝 PAT/JWT/task-token 回退。
+- **workspace 由服务端从已认证主体的绑定解析**；请求只携带 `crID`。`crID` 不属于该 workspace → `404 MERGE_FACTS_NOT_FOUND`。不接受 `--workspace`/`--grant`/revision 等任何调用方提供的目标或版本参数。
+- 当前授权 = `cr.execution_authorization_head_id` 指向的已验签 grant；`expected_repo_count` 与仓库集合的权威 = 该 grant 的 `allowed_repositories`。
 
-未定的仍留给人类：端点是否随本 change 交付、还是先由 M 服务内部调用（不经 CLI）——两种都可满足“不信任 agent 输入”，但交付面不同。
+**R2.3 响应闭集（Q3/Q6）**：单个 REPEATABLE READ 读事务内产出，未知字段拒收：
+`{cr_id, workspace_id, selection_kind: strict|legacy_proven, provenance_digest, authorization_head_id, grant_digest, head_revoked, read_at, expected_repo_count, repos_digest, repos:[{repo_id, identity_digest, current_binding: ok|mismatch|unknown, approved_source_sha, approved_revision, freeze_revoked}]}`
+- `provenance_digest` 在 `selection_kind=legacy_proven` 时必填，否则必须缺省；缺失或与可信目录证明不符一律按事实缺失处理（不降 legacy）。
+- `repos_digest = sha256(按 repo_id 排序后逐项 repo_id‖identity_digest‖approved_source_sha‖approved_revision)`；CLI 必须校验 `len(repos)==expected_repo_count`、repo_id 唯一且集合等于 grant 的 `allowed_repositories`、摘要自洽。
+- 只返回批准下界与当前 head，**不返回也不接受**调用方提供的实际候选 HEAD。
 
-### R3（原 STR-03）：撤销与实际发布的线性化
+**R2.4 失败码分层（Q1/Q5，唯一权威；§3 失败码闭集引用本表）**：
 
-草案：以**逐仓 effect**为线性化单位，而不是整次 merge：
+| 条件 | 端点返回 | CLI 外层码 |
+|---|---|---|
+| 连接失败/超时/5xx/`503 MERGE_FACTS_UNAVAILABLE`；`403 MERGE_FACTS_UNTRUSTED`；`400 MERGE_FACTS_INVALID`；未知 code | 非 200 | `EXECUTION_AUTHORIZATION_UNAVAILABLE` |
+| `head_revoked=true` | 200 | `EXECUTION_AUTHORIZATION_REVOKED` |
+| 预检冻结的 `authorization_head_id` 与重读值不同 | 200 | `EXECUTION_AUTHORIZATION_HEAD_MOVED` |
+| 本地 findings 非空（越界路径、`current_binding=mismatch` → `AUTH_SCOPE_REPOSITORY_IDENTITY_MISMATCH` 等） | 200 | `AUTH_SCOPE_VIOLATION` |
+| `404 MERGE_FACTS_NOT_FOUND`；任一仓无当前冻结行或 `freeze_revoked`；计数/集合/摘要不符；`current_binding=unknown`；`provenance_digest` 缺失/不符；本地采集 problems | 200 或 404 | `AUTH_SCOPE_UNVERIFIABLE` |
 
-1. 每个 effect 的线性化点是“该仓 push 前最后一次 head/撤销重验通过”那一刻；此前失败 = 零 effect；此后失败 = 已发生的 effect 保留。
-2. 撤销与 effect 的排序由 M 事务的唯一提交点定义：M 侧撤销提交先于重验 → 拒；重验先于撤销提交 → 该 effect 视为撤销前已获授权，**不追认**后续 effect。
-3. 部分发布后撤销：停止后续 publish、保留原 journal/receipt、转人工；**不自动新建事务、不换源解除阻断**；journal 恢复只能沿原 `sourceSha`，输入（含 base）变化即拒，不得用新批准给旧源背书。
-4. 远端已成功但响应丢失：以 journal 记录的 effect 为事实，恢复时**先查远端**再决定重放或转人工；不得盲目重推。
-5. rebuild 更换 base 属**输入变化**：按 3 拒绝，要求新授权；不允许“同一次 merge 内静默换 base”。
-6. 并发声明边界（不夸大）：本方案不试图把跨网络 push 包进 DB 事务；能保证的是“effect 前重验 + 部分发布后不继续”。
+**优先级**：`UNAVAILABLE` > `REVOKED` > `HEAD_MOVED` > `VIOLATION` > `UNVERIFIABLE`。已知越界永远输出 `VIOLATION`，不得因同时存在不可核实项被降为 `UNVERIFIABLE`（与现 `crctl.mjs:1883–1884` 先 findings 后 problems 一致）。所有码退出非零、CR 状态保持 `code-approved`。
+
+**R2.5 必达 leaf（随本节冻结进入 `channel-test-expectations.json`）**：`merge-facts 只按认证主体解析 workspace`（携带他人 crID → NOT_FOUND）、`merge-facts 拒绝 PAT/JWT/task-token`、`merge-facts 当前冻结行唯一`（构造两条当前行被部分唯一索引拒）、`merge-facts 批准下界须为候选祖先`（非祖先 → UNVERIFIABLE；mutation：改为精确相等或不校验）、`merge-facts 仓库集合与 grant 精确相等`（漏一仓/多一仓/摘要不符 → UNVERIFIABLE）、`merge-facts current_binding 三态`（mismatch → VIOLATION，unknown → UNVERIFIABLE；mutation：unknown 当 ok）、`merge-facts legacy 证明缺失即拒`、`merge-facts 失败码优先级`（越界 + 不可核实同时存在 → VIOLATION；mutation：先判 problems）、`merge-facts 端点不可达即 UNAVAILABLE`（mutation：不可达当 UNVERIFIABLE 或放行）。
+
+**R2.6 残余风险（不得冒称）**：端点只保证**事实可信**，不保证**执行强制**——CLI 运行在 agent 控制的主机上，持有 push 权限者可以不调用端点直接推送。真正不可绕过的闸门在仓库侧（例如分支保护要求 M 签发的状态检查），**不在本 change 范围**；端点交付后也不得表述为“merge 已强制”。
+
+### R3（原 STR-03）：撤销与实际发布的线性化（v0.6.1 合并稿：回应 Q9–Q13）
+
+**原则**：直接沿用 §4 已定语义（effect 线性化点 = caller Tx commit；revoke 先提交 → 旧 permit 只能 no_effect；effect 先提交 → revoke 不追溯；结果未知进入 `uncertain`）。每次远端 push（含 finalize push）是一个独立 effect，复用 §4 的 command/settlement 状态机，`effect_kind='merge_publish'`、`effect_ref={repo_id, ref, expected_sha, prev_sha}`，**不新增表**。
+
+**R3.1 三个时点分离（Q9/Q13）**：
+1. **授权排序点** = `POST /api/daemon/crs/{crID}/merge-effects`（`op=reserve`）事务提交。该事务按 §4 锁序取 CR 行（`FOR SHARE`）与授权 head，**同事务**重验当前 head、`head_revoked`、当前冻结行与预检冻结的 `input_digest`，写入 issued command。撤销走既有 CR 锁路径（`FOR UPDATE`），因此撤销与 reserve 由行锁串行（不等待 command slot，只等行锁）。
+2. 事务提交、释放 DB 连接后，CLI 才执行 push（Tx 内不调用网络）。
+3. **远端确认点** = push 返回后 `op=report`：成功 → `settled_effect`；失败可判定未发布 → `settled_no_effect`；无法判定 → `uncertain`。
+- **撤销提交点的可观测标识**：授权 head 的撤销事务提交（`cr.execution_authorization_head_id` 变更或 grant 撤销记录可见）。测试夹具在 reserve 事务的 `after-head-read` 钩位持有，另一连接以 `lock_timeout` 尝试撤销，只认 `55P03`；再各跑一支“撤销先提交”“reserve 先提交”的顺序用例。
+- **排序结论**：reserve 先提交 → 该 effect 已获授权，随后的撤销不追溯，push 可完成；撤销先提交 → reserve 返回 `REVOKED`，零 effect。“此前失败=零 effect”只指**当前**仓，不抹去之前已 settled 的仓。
+
+**R3.2 journal 事实分级（Q10）**：本地 journal 按 effect 持久三态 `intent`（reserve 已提交、未 push）/`unknown`（push 已发出、结果未记）/`confirmed`（已 report）。恢复时**先只读核实远端**（`git ls-remote <repo> <ref>`）：
+- 远端 == `expected_sha` → 已发布：`report settled_effect`（幂等），不重推；随后撤销不追溯。
+- 远端 == `prev_sha` → 未发布：必须重新 `reserve`（同 effect_id，服务端同事务重验）；此时已撤销则 `settled_no_effect`，**不 push**。
+- 其他（后继包含、分叉、被改写）→ `uncertain`，lineage 冻结、转人工，标 `diverged`。
+- `unknown`/`uncertain` 状态下**禁止发起任何新 publish**；确认旧 effect 不授权后续 effect。
+
+**R3.3 中止与人工出口（Q11）**：不新增 CR 状态机状态（状态机唯一事实源在 tools `dir-graph.yaml`，本方案不改）。中止时 CR 保持 `code-approved`；journal 记 `halted:{at_effect, reason ∈ revoked|head_moved|base_drift|uncertain}`；receipt 不改写；对应 command 停在原状态或 `uncertain`。唯一自动入口为既有恢复路径（`crctl merge` 重入 → `recoverWriteSet`），且 `input_digest` 不同即拒；放弃/改写历史须人类按既有恢复流程处理，本方案不新增 abort 命令。
+
+**R3.4 恢复矩阵与输入同一性（Q12）**：`input_digest = sha256(trunk ‖ 每仓 base_sha ‖ 每仓 candidate HEAD ‖ selection_kind ‖ 按 repo_id 排序的 (approved_source_sha, approved_revision) ‖ authorization_head_id ‖ grant_digest)`，预检时写入 journal，reserve 时服务端比对。
+| 状态 | base/输入变化 | 撤销 | 新授权 |
+|---|---|---|---|
+| 零发布 | 拒，journal 可按既有恢复放弃后以新事务重来（无 effect 可被洗白） | 拒 | 只能用于新事务 |
+| 部分发布 | `halted: base_drift`，转人工，**不得**换 base 续跑 | 已 settled 的仓不追溯，后续仓停 | **不得**续旧 journal |
+| 全部发布、finalize 待发 | finalize push 同样 reserve/report；finalize rebuild 导致输入变化 → `halted`，转人工 | finalize reserve 返回 REVOKED，不推 | 不得续旧 journal |
+
+**R3.5 必达 leaf（随本节冻结）**：`merge-effect reserve 持 CR 共享锁`（`55P03` 探针）、`merge-effect 撤销先提交则零 effect`、`merge-effect reserve 先提交则撤销不追溯`、`merge-effect 远端已等于 expected 不重推`、`merge-effect 远端未变须重新 reserve`、`merge-effect 远端分叉进入 uncertain 且禁止新 publish`、`merge-effect 部分发布后 base 漂移即 halted`、`merge-effect finalize 也须 reserve`、`merge-effect input_digest 不同拒绝恢复`。每条 mutation：去掉对应锁/重验/远端核实/摘要比对 → 该 leaf RED；不接受超时或连接错充当 RED。
 
 ### R1（原 STR-01）：已由用户决定为 (a)（决策记录，不再重开）
 
