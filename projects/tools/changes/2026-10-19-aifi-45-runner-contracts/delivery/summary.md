@@ -47,13 +47,49 @@ tools 侧 `2026-10-22-aifi-45-authorized-execution` 仍停在 `build`（30/59）
 
 `stdd archive --yes --skip-specs`，理由同配对 change：不新建 `projects/tools/specs/` 这第二个基线位置，规格随 change 留在归档目录内。
 
-## 7. 还原与残余项（2026-10-27）
+## 7. 还原与 V 类实况（2026-10-27）
 
-本 change 于同一天先被归档、随后**还原**到 `changes/`（`stdd rollback`），原因：归档后复查发现 BUILD 虽全勾，但报告里记着若干**未闭环的残余项**，归档会让它们失去可见性。
+本 change 于同一天先被归档、随后**还原**到 `changes/`（`stdd rollback`）。`rollback` 把 `current_phase` 重置为 `understand`，与已完成的 Gate 1/2/3 矛盾，已手工改回 `build`；`deliver` 改回 `pending`。
 
-`stdd rollback` 把 `current_phase` 重置为 `understand`，与已完成的 Gate 1/2/3 矛盾，已手工改回 `build`；`deliver` 改回 `pending`（下文残余项未闭环前不得记 completed）。Gate 3 的确认原文当时未落盘，仍是如实标注、未虚构。
+### 7.1 全量套件在当前 HEAD 的实际结果
 
-**仍待完成**（本 change 无已闭环旧残余需单列）：
-1. 最终版**全量 35 文件**套件未闭环：`design.md` 要求 crctl 31 + output-guard 3 + registry 1；`T05-s5-test-report.md` 记录的是 31 个 crctl 文件（848/848 pass），且为评审修复**之前**的基线，之后只复跑受影响面。
-2. 跨平台证据缺失：仅 Windows/Node24，Node20 与 Linux 未验证。
+原遗留项写的是「最终版全量 35 文件未闭环，且仅 Windows/Node24」。本轮已把范围补到**当前真实规模 52 个文件**（crctl 48 + output-guard 3 + registry 1），两个平台各跑一次：
 
+| 平台 | 运行时 | tests | pass | fail | skip | 证据 |
+|---|---|---|---|---|---|---|
+| Windows 11 / Node 24.15.0 | 1458s | 1280 | 1275 | **4** | 1 | `validation/win-full-20261028T040000Z.tap` |
+| WSL2 Linux 6.18 / Node 24.15.0（`/mnt/c` drvfs） | 306s | 1280 | 1270 | **9** | 1 | `validation/linux-full-20261028T050500Z.tap` |
+| WSL2 Linux 6.18 / Node 24.15.0（原生 ext4） | 154s | 1280 | 1270 | **9** | 1 | `validation/linux-native-20261028T052500Z.tap` |
+
+**结论：套件在当前 HEAD 上不是绿的。**「35 文件全绿」的旧口径不再成立，52 文件下的真实状态是上面的数字。
+
+### 7.2 失败归因
+
+四个平台共用失败项，其中三个指向 `de9bf75`（M003 trusted T verdict channel 的 Node 侧提交，即本 change 之后的工作）：
+
+| 失败项 | 归因 |
+|---|---|
+| `CR-2026-064 FR-11 结构断言③` | `de9bf75` 新增夹具 `fixtures/control-vectors.json`，未纳入该断言冻结的扫描面 |
+| `TASK-09 单缝约束` | `de9bf75` 改动的 `lib/change-scope.mjs` 命中「tree 比较只允许一处」扫描 |
+| `TC-EVD-007` | `de9bf75` 在 `lib/component-readiness.mjs` 新增 `EVIDENCE_COMPONENT_NOT_APPLICABLE_UNAPPROVED`，旧测试用例的 profile 未显式批准 `tools` 组件 |
+| `isolation 需要真实受限身份` | 环境绑定：需 `AIFI45_ISOLATION_PROFILE` / `AIFI45_ISOLATION_AGENT`；Windows 无受限身份可用 |
+| `EXEC-12 symlink 拒绝写入`（skip） | 环境绑定：Windows 无符号链接权限（EPERM） |
+
+Linux 独有 5 项（原生 ext4 同样复现，排除 drvfs 因素）：
+
+| 失败项 | 形态 |
+|---|---|
+| `SC-AUTH-004 wiring … PATH_ESCAPE` | 符号链接逃逸（Windows 侧因无法建链而不执行） |
+| `CR-2026-076 AC-SUP-08 六类路径异常` | 同上，含符号链接越界 |
+| `AIFI-63 包 C：2MiB diff 不截断` | 大输出经管道时的信封形状 |
+| `AIFI-63 包 C：64MiB 上限 → ENOBUFS` | 同上 |
+| `CR073 long output complete：>1MiB` | 同上 |
+
+即：Linux 列不是「通过」，而是 5 条只有 Linux 才暴露的差异。这些不在本 change 的实现范围内（crctl 输出/符号链接属既有契约），不得据此宣称跨平台通过。
+
+### 7.3 因此不声称
+
+- 52 文件套件任一侧全绿。
+- 「仅 Windows/Node24」已升级：Windows + Linux(WSL2) 双平台均已执行，但**两侧都有失败**，不构成跨平台通过。
+- Node 20 未执行。
+- 独立 Linux 主机（非 WSL）未执行。
