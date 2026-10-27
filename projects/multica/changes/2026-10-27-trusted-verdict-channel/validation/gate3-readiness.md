@@ -157,3 +157,18 @@ SC-VC-024 的「未修时按设计为 RED，不得登记完成」是**条件句*
 2. **Windows 隔离**（ADJ-13）—— 另开 change：建受限 Windows 账号 + 实现令牌/命名管道驱动后出证。
 3. **`strict-production`** —— 等 AIFI-45 的 AdmissionDecider 完成后另开 change 验收。
 4. **AIFI-45 41/49** —— 由 AIFI-45 按前置清单自行决定重跑，本 change 不写其记录。
+
+## 8. Gate 3 确认记录
+
+| 项 | 值 |
+|---|---|
+| 确认人 | 用户（dialog） |
+| 确认原话 | 「确认Gate 3」 |
+| 确认时间 | 2026-10-27 |
+| 覆盖范围 | 本 change（multica）与配对 change（tools）两条 `.stdd.yaml` 的 `phases.build` 同步置 `completed`，`current_phase` 转 `deliver` |
+| 确认依据 | §7.1 声称项全部当前有效；§7.2 五项**未声称**随材料声明 |
+| 记录方式 | `stdd gate approve` 在本机解析不到 change（从工作区根、`projects/`、`projects/multica`、change 目录逐级尝试均报 `No change found`，数据根 `projects/multica/.stdd` 不存在），故按 Gate 1/2 **完全相同的字段结构**直接写入 `.stdd.yaml`：`confirmed_actor/confirmed_at/confirmed_by/confirmed_evidence/status`。**未绕开 gate 语义，只是换了记录载体** |
+
+确认同时修正：`multica/.stdd.yaml` 的 `design_adjustments.count` 原为 2（实际 13 条 ADJ-1…ADJ-13）；tools 侧为 2，正确。
+
+**本条确认不改变以下事实**：Gate 3 通过 ≠ AIFI-45 的 41/49 回填；≠ `strict-production` 就绪；≠ Windows 隔离出证；≠ ADJ-10 解除。这四项仍按 §4/§7.3 处理。

@@ -1,7 +1,8 @@
 # 可信 T committed verdict channel — multica BUILD 任务清单
 
-> Gate 2 已确认，BUILD 进行中（长程模式）。`[x]` 由实跑证据支撑，证据入口 `validation/evidence-index.md`；未勾项即未实现。
-> Gate 2 确认后才进入 BUILD；每片按 RED→GREEN 推进，不横向先写全部实现。
+> **Gate 3 已确认（2026-10-27，用户口头确认）**，BUILD 收口，phase 转入 `deliver`（尚未开始）。`[x]` 由实跑证据支撑，证据入口 `validation/evidence-index.md`；未勾项即未实现。
+> Gate 3 的声称/不声称口径见 `validation/gate3-readiness.md` §7：`strict-production`、Windows 平台隔离（ADJ-13）、对 agent 的隔离（ADJ-10）、auditd 替代、AIFI-45 的 41/49 **均未声称**。
+> BUILD 期每片按 RED→GREEN 推进，不横向先写全部实现。
 
 ## 0. SPEC 阶段已完成的文档交付
 
