@@ -1,0 +1,145 @@
+# Canonical Proposal — multica 侧：可信 T committed verdict channel
+meta:
+  change_id: "2026-10-27-trusted-verdict-channel"
+  title: "可信 T committed verdict channel：受保护裁决 store、merge facts 与撤销线性化（multica 侧）"
+  created: "2026-10-27T15:13:16.225523"
+  status: draft
+  version: "3.0"
+
+why:
+  problem: |
+    准入正路径需要可信 T 已提交裁决，但平台侧当前没有可核验的落点：crctl 的准入在
+    `crctl.mjs` 仍返回 `EXECUTION_CONSUMPTION_REQUIRED`，repair CLI 只解码 payload，
+    agent stdout、磁盘 JSON、平台收据、Git 通过与否都不能作为裁决证据。merge 侧的
+    「批准后写集」也取自 agent 可写的 `approval.yml`，核对区间小于实际发布区间。
+    结果是 AIFI-45 的 6 条 RUN TC 只能测拒绝侧（vacuous），AIFI-45 台账结构性停在 41/49。
+  motivation: |
+    2026-10-26 决策 ADJ-AIFI45-M003：可信 T 裁决通道另开 change，AIFI-45 内暂不实施。
+    设计输入已完成并经六轮三路复核（最终 v0.6.5 R2/R3 全 PASS），但那只是静态设计复核，
+    不是实现验证。本 change 承接其中归口于 multica 的部分：受保护 verdict store、持久
+    selection、固定候选与 dispatch root、5 个 daemon 端点（含 merge-facts 与 merge-effects）、
+    ingest/settlement/task-start binding、DB-only reader、projection fence 与 D7 部署就绪控制面。
+
+what_changes:
+  - id: C1
+    type: new
+    description: >-
+      单个 proposed migration 648 内的 14 张 `cr_execution_*` 表（业务通道 8 + D7 5 +
+      merge facts 1 `code_source_freeze`）：不可变/append-only 约束、部分唯一索引、
+      `ChannelTableNames` 精确 14 个 DB 全名清单，以及 up/down/reapply/protected-data 四组迁移专例。
+  - id: C2
+    type: new
+    description: >-
+      可信 selection 与冷启动：operator-pinned scope policy 冻结的 `contract_selection`、
+      不可执行的 `control_reservation`、`ResolveCandidateTx` 固定候选，以及
+      `AdmitDispatchRootTx`/`EnqueuePipelineTaskTx` 的同 Tx root+task+settlement 与 commit 后通知。
+  - id: C3
+    type: new
+    description: >-
+      受保护裁决 store：`control_command`/`tool_verdict`/`tool_cursor`/`control_settlement`
+      状态机（created→issued→result_ready→settled_effect|settled_no_effect、uncertain 冻结）、
+      持久 owner fence、固定锁序、原字节重放与恢复表。
+  - id: C4
+    type: new
+    description: >-
+      5 个 daemon 端点：`GET /api/daemon/execution-control/commands`、
+      `POST /api/daemon/crs/{crID}/execution-verdicts`、
+      `POST /api/daemon/execution-control/checkpoints`、
+      `GET /api/daemon/execution-control/merge-facts/{crID}`、
+      `POST /api/daemon/crs/{crID}/merge-effects`（`op=reserve|report`）；
+      仅 MDT + enrolled key/owner scope，拒绝 PAT/JWT/task-token 回退。
+  - id: C5
+    type: modified
+    description: >-
+      可信 facts 与执行接线：`control_fact` 的权威 origin/历史覆盖、`ResolveFactsTx` typed facts、
+      `IngestTx`/`SettleCandidateTx`、真实 task 启动前的 643–645 全量匹配与 generation binding、
+      `CommittedTReader` 只读已验签 DB facts，以及 projection fence 覆盖
+      `gate_projection.go`/`crsync.go`/`ApplySnapshot`/strict task preflight 与终态上报。
+  - id: C6
+    type: new
+    description: >-
+      D7 部署就绪控制面：`deployment_head`/`deployment_snapshot`、`policy_readiness`/
+      `policy_activation_head`/`policy_activation_event`、`RecordReadinessTx`/`ActivatePolicyTx`/
+      `StopNewAdmissionsTx`/`BeginLegacyDrainTx`/`FinalizeLegacyRetirementTx`、
+      `CheckDeploymentAccessTx` 与 `PrepareLaunch`/`CommitLaunch` 固定快照。
+
+capabilities:
+  new:
+    - name: verdict-channel
+      description: >-
+        可信 T 裁决的落点与效力：持久 selection、不可执行 reservation、受保护 store 与线性化
+        settlement、merge 事实端点与撤销线性化写端点、DB-only reader 与 projection fence。
+    - name: deployment-readiness
+      description: >-
+        部署就绪控制面：唯一 T readiness 求值结果的持久化、generation fencing、原子启用与
+        停新准入、旧继电器的 drain/retire，以及 strict 启动的固定快照。
+  modified: []
+
+constraints:
+  - "设计输入为 `projects/multica/changes/2026-10-22-aifi-45-authorized-execution/validation/trusted-verdict-channel-implementation-plan-20261026.md`（v0.6.5，sha256 55ee0d01e3b7ff62fabbcccef3dd8a8369c47e70dd89806ca6b75dce6a88b4d8），只作设计输入，不当作实现验证或本 change 的批准。"
+  - "边界已定不得重开：归本 change 的是可信 T verdict、受保护 store、持久 selection、merge-facts 端点、merge-effects reserve/report；本地规则、采集器、锁留 AIFI-45（G1/G3/G5 已修完，不重复做）。"
+  - "已决事项不得重开：R1=(a) 核对实际候选写集；merge-facts 随本 change 交付并删除 `workspace_revision`；R3 用写端点兑现「撤销先提交→no_effect」；「事实可信≠执行强制」入残余风险。"
+  - "不修改 `projects/multica/changes/2026-10-22-aifi-45-authorized-execution/` 与 `projects/tools/changes/2026-10-22-aifi-45-authorized-execution/` 下任何文件（另一会话在用）；不注册 crctl CR；不动 `change-requests/`。"
+  - "前身已交付基线不重做：643–647 的 up 迁移与 plumbing、grant/verifier、G1/G3/G5 锁修复只作依赖前提并记录版本锁，不继承其审批与验证结论。"
+  - "生产默认不装配新 channel/reader/decider，不新增 env 启用开关；测试 composition 显式注入真实组件；既有 manifest wiring 不等于启用 admission。"
+  - "全部新对象放进同一个 proposed 648 迁移；647 为当前最大迁移，若 648 已被占用须先更新本规范与全部命令，不覆盖既有迁移。"
+  - "multica 仓代码注释一律英文；凡落代码须在 `CUSTOM.md` 按当时结构登记（AIFI-45 已到 #218，本 change 从 #219 起）。"
+  - "不提交 `server/pkg/db/generated/*.sql.go`（12 处既有 churn 属 sqlc 生成物）；sqlc 生成只按固定版本、不手编生成列。"
+  - "`merge-facts` 端点只保证事实可信，不保证执行强制——持 push 权限者可绕过 CLI 直接推送，仓库侧闸门不在本 change 范围，交付后不得表述为「merge 已强制」。"
+  - "Gate 1/2/3 是人类确认节点，按 `stdd gate` 走；本 change 通过不等于 AIFI-45 的 TC 变绿，禁止跨 change 双计。"
+  - "DB 只走 `multica/scripts/aifi45-db/run.mjs`，一轮一个 nonce 库，须 `original_unchanged:true`、`owned_resources_cleaned:true`、`skip=0`；不直接对保留库跑测试。"
+
+stakeholders:
+  - "人类授权者与决策者（Gate 确认、实施授权）"
+  - "平台维护者与运维（daemon、DB、部署就绪与启用）"
+  - "Runner / daemon / 执行 Agent 与独立 reviewer（消费裁决与 fence）"
+  - "tools merge CLI 使用者（merge-facts 与 merge-effects 的调用方）"
+
+risk_areas:
+  - capability: verdict-channel
+    risk: "agent 可写处的自报值（stdout、磁盘 JSON、平台收据、`cr.md` 合同字段、`approval.yml`）被当成裁决或授权事实；selection 被静默降级为 legacy；并发/重放产生第二次 effect。"
+    mitigation: "裁决只来自已验签 DB facts；selection 不可降级，Unknown/读失败一律拒绝新增 effect；固定候选 + 同 Tx 线性化 + 原字节重放 + owner fence，并用 55P03 探针与正对照证明锁而非超时。"
+  - capability: deployment-readiness
+    risk: "空 profile/环境自报/单一在线副本被当成 READY；旧副本或多实例绕过 generation fence 继续接单。"
+    mitigation: "T 侧唯一 evaluator 拒绝空声明/重复观测/unknown/NA 绕过；inventory 覆盖全部仍有资格的实例；deployment 锁内递增 generation 并使旧 verdict 失效，未登记实例无权服务 strict。"
+
+non_goals:
+  - "不重做 AIFI-45 已交付的 grant/verifier、643–647 迁移与 plumbing、G1/G3/G5 锁修复。"
+  - "不实现完整 AdmissionDecider、四阶段与 resume 单 effect Runner、RUN-009 修复、AIFI-45 的业务 TC/E2E。"
+  - "不做 legacy 业务合同/历史迁移（D8=A），不导入旧 workspace ledger，不新增迁移动词。"
+  - "不做生产部署、启用、灰度或真实 CR 操作；不引入第三个决策服务、新工作流引擎或中央总账。"
+  - "不回填 AIFI-45 的 41/49 计数，不关闭其 M001/M002/M003。"
+  - "不实现仓库侧强制闸门（分支保护要求 M 签发状态检查）。"
+
+critical:
+  is_critical: true
+  risk_assessment:
+    safety_critical: true
+    financial: false
+    cross_system: true
+
+anchoring:
+  level: L3
+  reference_changes:
+    - 2026-10-22-aifi-45-authorized-execution
+    - 2026-10-19-aifi-45-runner-contracts
+  anchor_implementations:
+    - server/internal/governance/execution_authorization.go
+    - server/internal/governance/execution_binding_issue.go
+    - server/internal/daemon/execution_binding_endpoint.go
+    - server/migrations/647_cr_execution_dispatch_root.up.sql
+
+success_criteria:
+  - "迁移：648 up 后 14 张表（8 业务 + 5 D7 + 1 merge facts）及其触发器/索引/约束齐全；down 全部撤销；reapply 无残留业务行；对 643–647 夹具零改动——四组专例各有 ≥14 PASS leaf。"
+  - "Foundation：合法 source/固定 candidate 提交得唯一真实 root/task；rollback 得零持久新增且零通知；control reservation 永不 runnable；adoption/terminal 竞争只认 55P03 且有正对照。"
+  - "协议：purpose/domain/scope 任一错用即拒；Go↔Node 原字节双向向量通过；attestation key 签 resume、human key 签 command、重复键、union 双分支均拒绝。"
+  - "Store：同请求并发/rename 前后 kill 只产生一次业务变化且原 bytes 相同；断链、跳号、占位签名一律拒绝；fsync 失败无 frame。"
+  - "恢复：恢复表每行有对应用例；普通 restart 保持 epoch/seq 并重发原 bytes；旧 fence、缺 store、落后/分叉全部 freeze，不猜「未消费」。"
+  - "Facts/repair/resume：自报 reviewer、未验签 payload、专项改 target、账本来源不可核实均拒；signature resume 只一次 epoch；追加 CAS 只接受一份。"
+  - "Ingest/Settlement：T commit/M rollback 重送原 bytes；effect commit 后响应丢失只返回既有 mapping；撤销先提交则 no_effect；ingest ACK 不释放 slot 不发 task；启动前 643–645 全匹配。"
+  - "Reader/fence：无 committed T 时零 root/task；重复 settle 只返回原 mapping；Strict 删投影字段仍 strict、Unknown 不降 legacy、`fence_required` 任务缺 claim 409、重领后仍 409。"
+  - "merge-facts：R2.5 的 11 条必达 leaf 全绿（认证主体解析、拒绝 PAT/JWT/task-token、当前冻结行唯一、批准下界须为候选祖先、仓库集合精确相等、current_binding 三态、legacy 证明、失败码优先级、不可用、撤销、head 前移），每条有对应 mutation。"
+  - "merge-effects：R3.5 的 16 条必达 leaf 全绿（共享锁探针、撤销/reserve 双向排序、journal 三态与远端分类、attempt 语义、base 漂移、finalize 也 reserve、码序、正常前进不判改写），每条有对应 mutation。"
+  - "D7：真实 component profile 只得 READY_COMPONENT 且 activation head/event 不变；strict 缺 AdmissionDecider 必 NOT_READY；STOP_NEW 后旧 issued 请求精确恢复、新候选与换 origin 不能；RETIRED 前 work revision 漂移必拒。"
+  - "证据：`validation/channel-test-expectations.json` 冻结必达 leaf 全名，`channel-evidence.mjs` 按名单校验真实非 skip PASS leaf；缺组、全 skip、只父 PASS 一律判未验证。"
+  - "残余风险写实：交付后文档与回复均不得声称「merge 已强制」或「strict 生产已启用」。"

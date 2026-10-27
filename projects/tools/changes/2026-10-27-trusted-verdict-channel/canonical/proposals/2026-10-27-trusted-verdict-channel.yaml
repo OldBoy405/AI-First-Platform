@@ -1,0 +1,139 @@
+# Canonical Proposal — tools 侧：可信 T 裁决通道的 T runtime 与 merge 门禁
+meta:
+  change_id: "2026-10-27-trusted-verdict-channel"
+  title: "可信 T committed verdict channel：T runtime 与 merge 门禁（tools 侧）"
+  created: "2026-10-27T15:13:16.225523"
+  status: draft
+  version: "3.0"
+
+why:
+  problem: |
+    tools 是 merge 的唯一发布方（`lib/workspace-transactions.mjs::mergeCr`），也是 T 验证规则的
+    所在处（本地规则、repair/resume、sensitive action、component readiness）。但当前：
+    merge 的「批准后改动集合」取自 agent 可写的 `approval.yml#code.release-subjects`，
+    `evaluateChangeScope` 对缺失/非数组 changes 当空集合并返回 allowed，`collectChangedPaths`
+    带工作区/untracked 与 `origin/trunk` 回退，语义与「已提交发布区间」不同；
+    repair CLI 只解码 payload，`crctl.mjs` 准入仍返回 `EXECUTION_CONSUMPTION_REQUIRED`；
+    verdict 无受保护 store、无 owner fence、无恢复表，`durable-tx.mjs` 只是 best-effort。
+  motivation: |
+    2026-10-26 决策 ADJ-AIFI45-M003：可信 T 裁决通道另开 change。本 change 承接归口于 tools
+    的部分：T 侧协议/key-purpose、受保护 store 与原字节重放、固定 worker 与恢复、typed facts
+    接线、readiness 求值器，以及 crctl 的 merge-facts 客户端与 merge-effects reserve/report。
+    设计输入为 v0.6.5 方案（六轮三路复核 R2/R3 全 PASS，但仅为静态设计复核，不是实现验证）。
+
+what_changes:
+  - id: C1
+    type: new
+    description: >-
+      merge 门禁：新写 `collectCommittedPaths(base, sha)`（committed 区间 + git tree mode 120000
+      逃逸判定 + rename 源/目标 + 无损路径分隔），`merge-facts` 客户端按认证主体解析结果校验
+      仓库集合/摘要/current_binding/legacy 证明，并按固定优先级映射
+      `UNAVAILABLE>REVOKED>HEAD_MOVED>VIOLATION>UNVERIFIABLE`；不改动 `evaluateChangeScope` 的判定语义。
+  - id: C2
+    type: new
+    description: >-
+      `merge-effects` 客户端：按 effect 的 `reserve`/`report` 兑现撤销线性化，`attempt` 单调，
+      journal 三态（`intent`/`unknown`/`confirmed`）在发出 push 之前先写 `unknown`，
+      恢复按 R3.2 矩阵只读核实远端祖先关系，`halted.reason` 闭集，不新增 CR 状态与 abort 命令。
+  - id: C3
+    type: new
+    description: >-
+      T 侧协议与受保护 store：独立 key-purpose 与 `execution-control-trust-manifest/v1`
+      （exact keys、禁止 agent enrollment）、`VerifyEnvelope(raw,expectedPurpose,domain,scope)`、
+      `ApplyOnce(command,fn)` 的 journal + 原子 bundle + 完整冻结 envelope，冻结帧链
+      （sequence 连续、prev digest 指向上一帧）。
+  - id: C4
+    type: new
+    description: >-
+      固定 worker、fence 与恢复：`BeginOwnerTx`/`ReconcileOwnerTx`/`Worker.Apply`、
+      checkpoint 字段与恢复表的 T 侧实现，普通 restart 保持 epoch/seq 并重发原 bytes，
+      旧 fence/缺 store/落后/分叉冻结。
+  - id: C5
+    type: modified
+    description: >-
+      facts 与规则接线：`repair-governance.mjs`、`execution-sensitive-action.mjs` 与 evidence
+      commit wrapper 只消费已验签 facts（`fact_refs` 指向已验签 grant、额度不来自解码 payload），
+      追加域只扩额度不扩仓库集合，`cr.md` 合同字段与 store 不一致即拒。
+  - id: C6
+    type: modified
+    description: >-
+      D7 readiness 求值器：加固 `component-readiness.mjs::evaluateComponentReadiness`，
+      拒绝空/缺 components、重复 observed、unknown/NA 绕过与仅 marker 一致；新增
+      `execution-control-readiness.mjs` 的 request/verdict exact-key schema 与
+      `Worker.EvaluateReadiness`，`verify-channel` 只出 `READY_COMPONENT`。
+
+capabilities:
+  new:
+    - name: trusted-merge-gate
+      description: >-
+        merge 前的可信事实核对与撤销线性化：committed 区间写集、merge-facts 客户端与失败码优先级、
+        merge-effects reserve/report、journal 三态与恢复判定。
+    - name: verdict-channel-runtime
+      description: >-
+        T 侧裁决运行时：key-purpose 与 wire 验证、受保护 store 与原字节重放、固定 worker 与 fence、
+        typed facts 接线、以及部署就绪求值器（只出 READY_COMPONENT）。
+  modified: []
+
+constraints:
+  - "设计输入为 `projects/multica/changes/2026-10-22-aifi-45-authorized-execution/validation/trusted-verdict-channel-implementation-plan-20261026.md`（v0.6.5，sha256 55ee0d01e3b7ff62fabbcccef3dd8a8369c47e70dd89806ca6b75dce6a88b4d8），只作设计输入，不当作实现验证或本 change 的批准。"
+  - "边界已定不得重开：归本 change 的是 T 侧协议/store/worker/facts/readiness 与 merge-facts/merge-effects 客户端；本地规则缺陷（B16）、采集器通用缺陷（路径编码/rename/symlink）、锁修复留在 AIFI-45 就地修，G1/G3/G5 已修完不重复做。"
+  - "已决事项不得重开：R1=(a) 核对实际候选写集（`trunk...HEAD` 而非 `trunk...<release subject sha>`，finalize 生成路径必须显式在 `allowed_paths`）；merge-facts 随本 change 交付并删除 `workspace_revision`；R3 用写端点兑现撤销语义。"
+  - "不修改 `projects/multica/changes/2026-10-22-aifi-45-authorized-execution/` 与 `projects/tools/changes/2026-10-22-aifi-45-authorized-execution/` 下任何文件；不注册 crctl CR；不动 `change-requests/`。"
+  - "既有对外行为保持：`evaluateChangeScope` 仍是纯判定器（不触 git/fs），`collectChangedPaths` 语义不变（仍含工作区/untracked），`toolsRuntimeDigest`、`ExecutionGrantDigest` 等既有摘要定义不改；新写 `collectCommittedPaths` 不复用前者。"
+  - "legacy 口径收窄：行为不变只适用于可信历史目录证明的 legacy；Unknown selection、目录读失败、Strict 删投影三类入口各有正反例，不得以「未选中」推断 legacy。"
+  - "不新增依赖；`channel-test-expectations.json` 冻结的必达 leaf 全名与 `channel-evidence.mjs` 校验口径以 multica 侧交付为准，本仓只提供被命中的 T 侧 leaf。"
+  - "行尾纪律：tools 源码与 `CUSTOM.md` 为 CRLF，新文件先定一种并核 crlf/裸 LF 计数；哈希/跨行解析前先 `\\r\\n → \\n` 规范化。"
+  - "multica 仓的 `CUSTOM.md` 台账登记从 #219 起（本仓代码若触发 multica 台账项由其登记），注释英文规则只约束 multica。"
+  - "Gate 1/2/3 是人类确认节点，按 `stdd gate` 走；本 change 通过不等于 AIFI-45 的 TC 变绿，禁止跨 change 双计。"
+
+stakeholders:
+  - "人类授权者与决策者（Gate 确认、实施授权）"
+  - "tools 维护者与 CR 流程使用者（merge、repair、resume CLI）"
+  - "平台 daemon/Runner（消费 T verdict 与 checkpoint）"
+  - "独立 reviewer（复核 merge 门禁与 T runtime 的正反证据）"
+
+risk_areas:
+  - capability: trusted-merge-gate
+    risk: "核对区间小于发布区间（漏 release subject 之后的提交）、空集合被放行、按 grants 目录挑「最新」、按批准时快照比对，导致越界写被追认；或核对写入发生在 journal/publish 之后而声称零写入。"
+    mitigation: "核对区间固定 `trunk...HEAD`；四证明缺一即 `AUTH_SCOPE_UNVERIFIABLE`；selection/grant 只从持久事实与端点重读；零写入断言注入 publish 端口并观测 journal/锁/outbox，声明精确外延。"
+  - capability: verdict-channel-runtime
+    risk: "自报值与解码 payload 被当授权事实；重投重算 `replayed` 或提前发布 frame 造成二次 effect；旧 fence 或空 store 被当作可用。"
+    mitigation: "只消费已验签 DB facts 与冻结 envelope 链；push 前先写 journal `unknown`；恢复按矩阵只读核实祖先关系，不确定即冻结转人工，不清 slot、不建空 store。"
+
+non_goals:
+  - "不重写 nodes 规则本身、不实现完整 AdmissionDecider、不做 AIFI-45 的业务 TC/E2E。"
+  - "不修改 AIFI-45 已交付的 grant/verifier、643–647 plumbing 与 G1/G3/G5 修复。"
+  - "不做 legacy 业务合同/历史迁移（D8=A），不新增迁移动词，不导入旧 workspace ledger。"
+  - "不新增 CR 状态机状态、abort 命令或第三个决策服务；不改 tools `dir-graph.yaml` 的状态机声明。"
+  - "不做生产部署、启用或真实 CR 操作；不实现仓库侧强制闸门。"
+  - "不回填 AIFI-45 的 41/49 计数，不关闭其 M001/M002/M003。"
+
+critical:
+  is_critical: true
+  risk_assessment:
+    safety_critical: true
+    financial: false
+    cross_system: true
+
+anchoring:
+  level: L3
+  reference_changes:
+    - 2026-10-22-aifi-45-authorized-execution
+    - 2026-10-19-aifi-45-runner-contracts
+  anchor_implementations:
+    - skills/shared/crctl/scripts/lib/workspace-transactions.mjs
+    - skills/shared/crctl/scripts/lib/change-scope.mjs
+    - skills/shared/crctl/scripts/lib/execution-authorization.mjs
+    - skills/shared/crctl/scripts/lib/component-readiness.mjs
+
+success_criteria:
+  - "协议：purpose/domain/scope 任一错用即拒；Go↔Node 原字节双向向量通过；attestation key 签 resume、human key 签 command、重复键与 union 双分支均拒。"
+  - "Store：同 admit/assessment/resume 请求并发与 rename 前后 kill，恢复后只一次业务变化且 bytes 相同；fsync 失败无 frame；断链/跳号/占位签名一律拒。"
+  - "Worker/恢复：普通 restart 保持 epoch/seq 并重发原 bytes；旧 fence、缺 store、落后/分叉冻结；合法一致 checkpoint 可继续。"
+  - "Facts/规则：未验签 payload、自报 reviewer、专项改 target、账本来源不可核实均拒；追加 CAS 只接受一份；`cr.md` 合同字段与 store 不一致即拒。"
+  - "merge 范围（S5 的 19 条 leaf）：rename 源/目标、symlink 取自发布候选树、空集合不放行、Unknown 即拒、恢复沿用原冻结输入、部分发布后撤销、legacy 不核对、不受 grants 目录旧文件影响、head 撤销/前移即拒、越界零写入、只看已批准 source sha、覆盖发布集合、删合同字段仍 strict、release-subject 缺失/无法核实即拒、越界不推进状态、finalize 写集逐项授权、KB 审批后写入纳入核对——全绿且 mutation 对应。"
+  - "merge-facts：R2.5 的 11 条必达 leaf 全绿，含认证主体解析、拒绝 PAT/JWT/task-token、冻结行唯一、批准下界为候选祖先、仓库集合精确相等、current_binding 三态、legacy 证明、失败码优先级、不可用、撤销、head 前移。"
+  - "merge-effects：R3.5 的 16 条必达 leaf 全绿，含共享锁 55P03 探针、撤销/reserve 双向排序、journal 三态与远端分类、attempt 四支、base 漂移、finalize 也 reserve、码序、正常前进不判改写。"
+  - "D7 求值器：空/缺 components、重复 observed、unknown/NA 绕过、仅 marker 一致均 NOT_READY；合法非空 profile 正例；`verify-channel` 只出 READY_COMPONENT。"
+  - "既有回归：crctl 既有 46 个测试文件的套件门禁在改动后仍 pass；失败码闭集与退出码不变（非零、CR 状态保持 `code-approved`）。"
+  - "残余风险写实：交付后文档与回复均不得声称「merge 已强制」或「strict 生产已启用」。"
