@@ -3,6 +3,7 @@
 旧前缀（`foundation-*`、`migration-*`、`*-mutations-*`）产生于 648/selection/reservation 重写之前，**不再可认证当前树**，只保留作历史。当前权威证据前缀：
 
 ```text
+ac-proto-20261027T165916Z        # TestChannelProtocol（SC-VC-006/007/008，含跨语言向量）
 z-combined-20261027T165412Z      # 合并跑次（6 个 Go 套件，含 SC-VC-003/004）
 v-tasktx-20261027T165049Z        # TestChannelTaskTx（commit/rollback 边界）
 q-down-20261027T163826Z          # migration-down（需 648 up + down，不能与 after-up 同库混跑）
@@ -36,6 +37,7 @@ node multica/scripts/aifi45-verify/channel-evidence.mjs verify <label> <prefix> 
 | foundation-selection | OK（5） |
 | foundation-reservation | OK（5）：含 SC-VC-003 同 Tx/固定 ID 与 SC-VC-004 55P03 探针 |
 | task-tx | OK（2）：commit 后通知一次、rollback 零持久零通知 |
+| protocol | OK（3）：purpose/domain/scope 绑定、跨语言同字节同签名、exact keys |
 
 checker 自测 9/9（`node --test scripts/aifi45-verify/channel-evidence.test.mjs`），含反例：summary 全绿但必达 leaf 缺失、改名、SKIP、仅父测试 PASS、重复 leaf、源摘要漂移、CLI 入口失效。
 

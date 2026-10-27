@@ -1,0 +1,54 @@
+{
+  "schema": "execution-control-vectors/v1",
+  "note": "produced by the Node implementation; the Go verifier must accept these bytes and reproduce the same signatures",
+  "attestation": {
+    "key_id": "k-attest",
+    "seed_hex": "b5ddea636f903975ebe7387d1bc3660597c785e9aa1999ede398b2335174bb98",
+    "public_pem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEASX2eYfLskx++P+Hhe+FAvy1j0LBfVZmb0vwCZ9ICYs0=\n-----END PUBLIC KEY-----"
+  },
+  "human": {
+    "key_id": "k-human",
+    "seed_hex": "90a50e3da391180e8e00592d03ac1454881a826939185dc064d5a27c2e923f5d",
+    "public_pem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAIVeSZ7oFBAhgNPtHYPiF3z108seYy6yZxZC9Cj42uOw=\n-----END PUBLIC KEY-----"
+  },
+  "cases": [
+    {
+      "name": "verdict",
+      "purpose": "verdict",
+      "domain": "execution-control/v1",
+      "scope": "ws-vector-1",
+      "schema": "execution-control-verdict/v1",
+      "payload_b64": "eyJzY2hlbWEiOiJleGVjdXRpb24tY29udHJvbC12ZXJkaWN0L3YxIiwicHVycG9zZSI6InZlcmRpY3QiLCJkb21haW4iOiJleGVjdXRpb24tY29udHJvbC92MSIsInNjb3BlIjoid3MtdmVjdG9yLTEiLCJ2ZXJkaWN0IjoicGVybWl0Iiwic2VxIjo3LCJyZXF1ZXN0X2lkIjoiMTExMTExMTEtMTExMS00MTExLTgxMTEtMTExMTExMTExMTExIn0=",
+      "payload_sha256": "d682a83aa35e4851a2a950cd9d8b9daf1266b60efb5c68833f5c0700ae93c2d8",
+      "signature_b64": "QRYRJ7C1VnL5NBRJpcV/gfz0csVf/+CIdbWNfNMh3ttAgUSyAibDxgoQwB8GZNK4ffhGm+gJSjSSwuWQpVJtCg=="
+    },
+    {
+      "name": "command",
+      "purpose": "command",
+      "domain": "execution-control/v1",
+      "scope": "ws-vector-2",
+      "schema": "execution-control-command/v1",
+      "payload_b64": "eyJzY2hlbWEiOiJleGVjdXRpb24tY29udHJvbC1jb21tYW5kL3YxIiwicHVycG9zZSI6ImNvbW1hbmQiLCJkb21haW4iOiJleGVjdXRpb24tY29udHJvbC92MSIsInNjb3BlIjoid3MtdmVjdG9yLTIiLCJzZXEiOjEsInJlc2VydmF0aW9uX2lkIjoiMjIyMjIyMjItMjIyMi00MjIyLTgyMjItMjIyMjIyMjIyMjIyIn0=",
+      "payload_sha256": "02a59ce94a8870b81fe55060be70d8980e900c3b220c362c492b796f1e6df02a",
+      "signature_b64": "kTUu9kyRvnLxufwmLYgRwsrIWEWLZER+zEuhsD7/M0P2BVljZQz2XZj1/rFFcEtlu57T0u3L6B9Ku+qK5jelAA=="
+    },
+    {
+      "name": "resume",
+      "purpose": "resume",
+      "domain": "execution-control/v1",
+      "scope": "ws-vector-3",
+      "schema": "execution-resume/v1",
+      "payload_b64": "eyJzY2hlbWEiOiJleGVjdXRpb24tcmVzdW1lL3YxIiwicHVycG9zZSI6InJlc3VtZSIsImRvbWFpbiI6ImV4ZWN1dGlvbi1jb250cm9sL3YxIiwic2NvcGUiOiJ3cy12ZWN0b3ItMyIsImRlY2lzaW9uIjoicmVzdW1lIn0=",
+      "payload_sha256": "8b332a278509adb3feab4132a73962bea16f9d024c992a0e077f468fd8e374cd",
+      "signature_b64": "abDciwhFE/9Yqh1/MSDDjwBTpyk3FM5a9tmFpmj5HKyrFgLzeA28GHTZiJkuVt+Tt7cvBfffOaVEGkq/5U0rBw=="
+    }
+  ],
+  "resume_case": {
+    "purpose": "resume",
+    "domain": "execution-control/v1",
+    "scope": "ws-vector-3",
+    "schema": "execution-resume/v1",
+    "payload_b64": "eyJzY2hlbWEiOiJleGVjdXRpb24tcmVzdW1lL3YxIiwicHVycG9zZSI6InJlc3VtZSIsImRvbWFpbiI6ImV4ZWN1dGlvbi1jb250cm9sL3YxIiwic2NvcGUiOiJ3cy12ZWN0b3ItMyIsImRlY2lzaW9uIjoicmVzdW1lIn0=",
+    "signature_b64": "y7+Ax6yaBrPmMbM9F4A9bXe2wZEBG+/aoDCbGDIOVG6wUJS79vknZZQJ9LuhlhWpESqhI+sn78r2XxAKsdkuDg=="
+  }
+}
