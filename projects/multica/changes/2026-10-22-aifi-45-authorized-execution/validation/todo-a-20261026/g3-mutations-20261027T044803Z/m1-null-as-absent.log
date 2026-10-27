@@ -1,0 +1,41 @@
+=== RUN   TestStrictExecutionContractTreatsLegacyAsLegacy
+=== RUN   TestStrictExecutionContractTreatsLegacyAsLegacy/no_fenced_block
+=== RUN   TestStrictExecutionContractTreatsLegacyAsLegacy/fenced_block_without_context
+=== RUN   TestStrictExecutionContractTreatsLegacyAsLegacy/context_without_execution
+--- PASS: TestStrictExecutionContractTreatsLegacyAsLegacy (0.00s)
+    --- PASS: TestStrictExecutionContractTreatsLegacyAsLegacy/no_fenced_block (0.00s)
+    --- PASS: TestStrictExecutionContractTreatsLegacyAsLegacy/fenced_block_without_context (0.00s)
+    --- PASS: TestStrictExecutionContractTreatsLegacyAsLegacy/context_without_execution (0.00s)
+=== RUN   TestStrictExecutionContractAcceptsTheSupportedVersion
+--- PASS: TestStrictExecutionContractAcceptsTheSupportedVersion (0.00s)
+=== RUN   TestStrictExecutionContractRefusesUnreadableDeclarations
+=== RUN   TestStrictExecutionContractRefusesUnreadableDeclarations/null_contract
+    execution_contract_test.go:90: declaration was accepted (strict=false); a contract this build cannot read must be refused, not downgraded
+=== RUN   TestStrictExecutionContractRefusesUnreadableDeclarations/nothing_after_colon
+    execution_contract_test.go:90: declaration was accepted (strict=false); a contract this build cannot read must be refused, not downgraded
+=== RUN   TestStrictExecutionContractRefusesUnreadableDeclarations/empty_contract
+=== RUN   TestStrictExecutionContractRefusesUnreadableDeclarations/blank_contract
+=== RUN   TestStrictExecutionContractRefusesUnreadableDeclarations/numeric_contract
+=== RUN   TestStrictExecutionContractRefusesUnreadableDeclarations/sequence_contract
+=== RUN   TestStrictExecutionContractRefusesUnreadableDeclarations/mapping_contract
+=== RUN   TestStrictExecutionContractRefusesUnreadableDeclarations/missing_contract_field
+=== RUN   TestStrictExecutionContractRefusesUnreadableDeclarations/empty_execution_block
+=== RUN   TestStrictExecutionContractRefusesUnreadableDeclarations/scalar_execution_block
+=== RUN   TestStrictExecutionContractRefusesUnreadableDeclarations/sequence_execution_block
+--- FAIL: TestStrictExecutionContractRefusesUnreadableDeclarations (0.00s)
+    --- FAIL: TestStrictExecutionContractRefusesUnreadableDeclarations/null_contract (0.00s)
+    --- FAIL: TestStrictExecutionContractRefusesUnreadableDeclarations/nothing_after_colon (0.00s)
+    --- PASS: TestStrictExecutionContractRefusesUnreadableDeclarations/empty_contract (0.00s)
+    --- PASS: TestStrictExecutionContractRefusesUnreadableDeclarations/blank_contract (0.00s)
+    --- PASS: TestStrictExecutionContractRefusesUnreadableDeclarations/numeric_contract (0.00s)
+    --- PASS: TestStrictExecutionContractRefusesUnreadableDeclarations/sequence_contract (0.00s)
+    --- PASS: TestStrictExecutionContractRefusesUnreadableDeclarations/mapping_contract (0.00s)
+    --- PASS: TestStrictExecutionContractRefusesUnreadableDeclarations/missing_contract_field (0.00s)
+    --- PASS: TestStrictExecutionContractRefusesUnreadableDeclarations/empty_execution_block (0.00s)
+    --- PASS: TestStrictExecutionContractRefusesUnreadableDeclarations/scalar_execution_block (0.00s)
+    --- PASS: TestStrictExecutionContractRefusesUnreadableDeclarations/sequence_execution_block (0.00s)
+=== RUN   TestStrictExecutionContractRefusesUnsupportedAndAmbiguous
+--- PASS: TestStrictExecutionContractRefusesUnsupportedAndAmbiguous (0.00s)
+FAIL
+FAIL	github.com/multica-ai/multica/server/internal/daemon	2.168s
+FAIL
