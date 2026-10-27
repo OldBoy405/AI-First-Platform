@@ -1,0 +1,57 @@
+{
+  "at": "2026-10-27T07:55:59.825Z",
+  "container": "666bfec52ac3c3d13b43389891f50c4105833198eab7e4167b76f014a774e823",
+  "preserved_database": "stdd_aifi45_20261022",
+  "target": {
+    "nonce": "ab8cbbc9737e48d0",
+    "database": "aifi45_tmp_ab8cbbc9737e48d0",
+    "role": "aifi45_role_ab8cbbc9737e48d0",
+    "role_oid": "849233",
+    "database_oid": "849234"
+  },
+  "test": {
+    "argv": [
+      "go",
+      "test",
+      "./internal/governance",
+      "-run",
+      "^TestChannelMigrationAfterReapply$",
+      "-count=1",
+      "-json",
+      "-timeout=180s"
+    ],
+    "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\multica\\server\\",
+    "exit": 0,
+    "signal": null,
+    "counts": {
+      "run": 15,
+      "pass": 15,
+      "fail": 0,
+      "skip": 0
+    },
+    "leaf_pass": 14,
+    "migrations": [
+      {
+        "path": "server/migrations/648_cr_execution_control.up.sql",
+        "sha256": "20b1385e263ddbfd883571578b782571b3284a94c0222e8329c2ca9a4d4642d7"
+      },
+      {
+        "path": "server/migrations/648_cr_execution_control.down.sql",
+        "sha256": "0d65283035624063404f27a7f8bc9596b292f5dcf16c17172b22f31be95b591d"
+      },
+      {
+        "path": "server/migrations/648_cr_execution_control.up.sql",
+        "sha256": "20b1385e263ddbfd883571578b782571b3284a94c0222e8329c2ca9a4d4642d7"
+      }
+    ],
+    "package_failures": 0,
+    "output_redacted": false
+  },
+  "original_unchanged": true,
+  "original_release": {
+    "sessions": 0,
+    "locks": 0
+  },
+  "owned_resources_cleaned": true,
+  "error": null
+}

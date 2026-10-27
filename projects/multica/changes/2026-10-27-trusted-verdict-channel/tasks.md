@@ -17,12 +17,12 @@
 
 ## 1. 迁移与 schema（P0，阻塞全片）
 
-- [ ] 1.1 新增 `server/migrations/648_cr_execution_control.up.sql`：14 张 `cr_execution_*` 表（业务 8 + D7 5 + `code_source_freeze`）、不可变/append-only 触发器、部分唯一索引、无新 FK/cascade。
-- [ ] 1.2 新增对应 `648_cr_execution_control.down.sql`：按依赖逆序撤销全部表/触发器/索引。
-- [ ] 1.3 定义 `ChannelTableNames`（14 个 DB 全名，无重复），迁移专例与 schema 断言只用该清单。
-- [ ] 1.4 `TestChannelMigrationAfterUp/Down/Reapply`：分别在新 nonce 库的 up、up→down、up→down→up 执行，每表一个 `t.Run`（≥14 leaf/例）。
-- [ ] 1.5 `TestChannelMigrationProtectedData`：先造 643–647 夹具，再做精确 648 down/up，断言原行/对象不变、无 648 孤儿。
-- [ ] 1.6 若实施时 648 已被占用：先改本清单与规格中的全部编号再顺延，不覆盖既有迁移。
+- [x] 1.1 新增 `server/migrations/648_cr_execution_control.up.sql`：14 张 `cr_execution_*` 表 + 10 个触发器函数（append-only/immutable/write-once/no-delete/monotonic）、部分唯一索引、无新 FK/cascade。
+- [x] 1.2 新增 `648_cr_execution_control.down.sql`：按逆序撤销 14 表并显式 DROP 10 个触发器函数。
+- [x] 1.3 `server/internal/governance/execution_control_tables.go`：`ChannelTableNames`（14 全名，创建序）+ `ChannelTriggerFunctions`（10）。
+- [x] 1.4 `execution_control_migration_test.go`：`TestChannelMigrationAfterUp/Down/Reapply` 各表一个 `t.Run` + 逐表约束/索引/触发器清单（先声明后断言，不由实测反推）。真跑：up 15/15（leaf 14）、down 25/25（leaf 24）、reapply 15/15（leaf 14），均 skip=0、original_unchanged=true。
+- [x] 1.5 `TestChannelMigrationProtectedData`：造 643 夹具 → 648 down/up → 断言夹具行未变、643–647 表仍在、14 张 648 表零残留。真跑 3/3（leaf 2）。证据见 `validation/migration-{up,down,reapply,protected}-*`。
+- [x] 1.6 648 未被占用（当前最大仍 647），无需顺延。
 
 ## 2. S1 选择、候选与派发根（P0）
 
