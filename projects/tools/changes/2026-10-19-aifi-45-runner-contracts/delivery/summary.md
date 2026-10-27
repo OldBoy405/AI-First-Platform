@@ -46,3 +46,14 @@ tools 侧 `2026-10-22-aifi-45-authorized-execution` 仍停在 `build`（30/59）
 ## 6. 归档
 
 `stdd archive --yes --skip-specs`，理由同配对 change：不新建 `projects/tools/specs/` 这第二个基线位置，规格随 change 留在归档目录内。
+
+## 7. 还原与残余项（2026-10-27）
+
+本 change 于同一天先被归档、随后**还原**到 `changes/`（`stdd rollback`），原因：归档后复查发现 BUILD 虽全勾，但报告里记着若干**未闭环的残余项**，归档会让它们失去可见性。
+
+`stdd rollback` 把 `current_phase` 重置为 `understand`，与已完成的 Gate 1/2/3 矛盾，已手工改回 `build`；`deliver` 改回 `pending`（下文残余项未闭环前不得记 completed）。Gate 3 的确认原文当时未落盘，仍是如实标注、未虚构。
+
+**仍待完成**（本 change 无已闭环旧残余需单列）：
+1. 最终版**全量 35 文件**套件未闭环：`design.md` 要求 crctl 31 + output-guard 3 + registry 1；`T05-s5-test-report.md` 记录的是 31 个 crctl 文件（848/848 pass），且为评审修复**之前**的基线，之后只复跑受影响面。
+2. 跨平台证据缺失：仅 Windows/Node24，Node20 与 Linux 未验证。
+

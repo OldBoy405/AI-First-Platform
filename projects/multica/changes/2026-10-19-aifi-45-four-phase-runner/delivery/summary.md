@@ -44,3 +44,18 @@
 ## 6. 归档
 
 按 M003 的同一口径执行 `stdd archive --yes --skip-specs`：不把 `specs/*.md` 合并进 `projects/multica/specs/`（该目录从未存在，工作区级 `specs/` 才是 CR 回写基线），规格文件随 change 留在归档目录内。
+
+## 7. 还原与残余项（2026-10-27）
+
+本 change 于同一天先被归档、随后**还原**到 `changes/`（`stdd rollback`），原因：归档后复查发现 BUILD 虽全勾，但报告里记着若干**未闭环的残余项**，归档会让它们失去可见性。
+
+`stdd rollback` 把 `current_phase` 重置为 `understand`，与已完成的 Gate 1/2/3 矛盾，已手工改回 `build`；`deliver` 改回 `pending`（下文残余项未闭环前不得记 completed）。Gate 3 的确认原文当时未落盘，仍是如实标注、未虚构。
+
+已核实**已闭环**的旧残余（不再列为待办）：`local_directory_snapshot` 行为已实现；`TestMDispatch001/005` 已存在；batch 常量已落地。
+
+**仍待完成**：
+1. `internal/handler` 精确 `TestMKb001`、`TestMKb004` **未新增**（`M35-M39-build-report.md` 自述跨包缺口；handler `TestMKb002` 覆盖了资源隔离/N+1）。
+2. 三条断言强度不足：MKey004 未单独注入“写文件失败”、MKey005 未在 daemon 模拟旧 grant 缺 key、MKey006 未断言完整 dirty 集合。
+3. 恢复时限仍不可宣称：`design.md` 要求隔离库实测，常量有了但**实测证据没有**。
+4. runtime 实际 Agent UUID 隔离仍为“待验证”（`implementation-notes.md`），源码中未见对应实现。
+
