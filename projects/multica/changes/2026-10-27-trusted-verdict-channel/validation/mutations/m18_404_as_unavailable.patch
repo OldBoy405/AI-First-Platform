@@ -1,0 +1,12 @@
+--- lib/merge-facts.mjs
++++ m18_404_as_unavailable
+@@ -106,9 +106,6 @@
+ export function classifyResponse({ status, body }) {
+   if (status === 200) return { transport: CLIENT_CODES.OK, status, body };
+   const code = body && typeof body.code === 'string' ? body.code : '';
+-  if (status === 404 && code === CLIENT_CODES.NOT_FOUND) {
+-    return { transport: CLIENT_CODES.NOT_FOUND, status, body };
+-  }
+   if (status === 403) return { transport: CLIENT_CODES.AUTH_UNAVAILABLE, status, body };
+   return { transport: CLIENT_CODES.UNAVAILABLE, status, body };
+ }

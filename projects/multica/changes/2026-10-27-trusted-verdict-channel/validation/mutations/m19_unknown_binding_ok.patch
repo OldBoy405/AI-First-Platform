@@ -1,0 +1,11 @@
+--- lib/merge-facts.mjs
++++ m19_unknown_binding_ok
+@@ -200,7 +200,7 @@
+       add(CLIENT_CODES.UNVERIFIABLE, 'current_binding=unknown：无法核实当前绑定');
+       break;
+     default:
+-      add(CLIENT_CODES.UNVERIFIABLE, `current_binding 取值不在闭集内：${body.current_binding}`);
++        break;
+   }
+ 
+   // head 已移动：端点看到的最新冻结 head 与授权头不同。

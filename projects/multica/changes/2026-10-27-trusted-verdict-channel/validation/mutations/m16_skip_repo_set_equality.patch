@@ -1,0 +1,12 @@
+--- lib/merge-facts.mjs
++++ m16_skip_repo_set_equality
+@@ -176,9 +176,6 @@
+     if (new Set(ids).size !== ids.length) add(CLIENT_CODES.SCOPE, 'repo_id 重复');
+     const expectedSet = sortRepositories(expected.repositories).join(',');
+     const actualSet = sortRepositories(ids.filter(id => typeof id === 'string')).join(',');
+-    if (expectedSet !== actualSet) {
+-      add(CLIENT_CODES.SCOPE, `repo 集合与 grant 不一致：${actualSet || '(空)'} != ${expectedSet || '(空)'}`);
+-    }
+     // 摘要自洽：按替换后集合重算，摘要对不上说明响应被改过，而不是「恰好也算得出来」。
+     if (typeof body.repos_digest !== 'string' || body.repos_digest !== mergeFactsReposDigest(repos)) {
+       add(CLIENT_CODES.SCOPE, 'repos_digest 与集合不自洽');

@@ -1,0 +1,13 @@
+--- lib/merge-facts.mjs
++++ m17_skip_ancestor_check
+@@ -223,10 +223,6 @@
+       add(CLIENT_CODES.UNVERIFIABLE, '缺少祖先判定能力，无法核实批准下界');
+     } else if (approved === candidateHead) {
+       add(CLIENT_CODES.SCOPE, 'approved_source_sha 等于候选 HEAD，不是严格祖先');
+-    } else if (!isAncestor(approved, candidateHead)) {
+-      add(CLIENT_CODES.SCOPE, 'approved_source_sha 不是候选 HEAD 的祖先');
+-    } else if (trunk && !isAncestor(trunk, approved)) {
+-      add(CLIENT_CODES.SCOPE, 'approved_source_sha 不在 trunk...candidate 区间内');
+     }
+   }
+ 
