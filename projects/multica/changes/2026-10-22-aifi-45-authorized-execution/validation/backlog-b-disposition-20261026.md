@@ -125,3 +125,4 @@ B6 **不再**在 AIFI-45 做过渡。tools 在 agent 本机运行，没有 agent
 24. **M003 注册完成（增量 50）**：`2026-10-27-trusted-verdict-channel` 两仓成对注册，工作区 `2f5d1966`（未 push）；两源码仓无提交。未触达 AIFI-45 文件。下一步由新会话读交接文件、过 Gate 1。
 25. **EVD-007 接交付 gate（增量 51）**：readiness 接入 `crctl gate --for code-approved|writing-back` 与 `evidence-check`（同源判定、按声明 opt-in）。TC-EVD-007 → PRESENT，台账 **42/49**；EVD-008 仍缺（需可信 lineage，M003；且 D8=A 不迁移）。全量门禁 1132 用例 pass。
 26. **交接文件补 EVD 归属（增量 52）**：§4 把 `TC-EVD-008` 的显式迁移事实源（可信 lineage + 已核实消耗 + 未决任务）划给新 change；§6 标 EVD-007 已完成、EVD-008 待新 change 提供事实；§8 基线同步为 42/49、门禁 1132 用例。
+27. **第 0 步对账与基线（增量 53）**：M003 归档后首次全量重跑 governance/daemon/cmd-server，并与 pre-M003 整包比对，失败集合完全相同（零回归，实测）。补登记 9 个测试文件、校正 20 个基线为顶层值，tools 门禁 48 文件 1200 用例 pass。四项决定落 `pending-adjustments`：EVD-008=(b)+另开 change、AdmissionDecider 最小实现留 AIFI-45、M001/M002 受为残余风险、路线 (I)。

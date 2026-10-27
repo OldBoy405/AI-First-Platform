@@ -1,0 +1,65 @@
+{
+  "at": "2026-10-27T18:18:26.707Z",
+  "container": "666bfec52ac3c3d13b43389891f50c4105833198eab7e4167b76f014a774e823",
+  "preserved_database": "stdd_aifi45_20261022",
+  "target": {
+    "nonce": "a03c613e6a562130",
+    "database": "aifi45_tmp_a03c613e6a562130",
+    "role": "aifi45_role_a03c613e6a562130",
+    "role_oid": "1757250",
+    "database_oid": "1757251"
+  },
+  "test": {
+    "argv": [
+      "go",
+      "test",
+      "./cmd/server",
+      "-run",
+      "^Test",
+      "-count=1",
+      "-json",
+      "-timeout=30m"
+    ],
+    "cwd": "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\multica-pre-m003\\server\\",
+    "exit": 1,
+    "signal": null,
+    "counts": {
+      "run": 636,
+      "pass": 633,
+      "fail": 3,
+      "skip": 0
+    },
+    "leaf_pass": 580,
+    "migrations": [
+      {
+        "path": "server/migrations/643_cr_execution_binding_issue.up.sql",
+        "sha256": "f0e3fa1d829b3b23e955181e0a5159802db5becbfa49284e4ffee549491c4eae"
+      },
+      {
+        "path": "server/migrations/644_cr_execution_consumption.up.sql",
+        "sha256": "92eaa0d3cd5acf8fdcdc07b693aeea41a6339020edd88d4450d3dd9ba0d81f6a"
+      },
+      {
+        "path": "server/migrations/645_cr_execution_activation.up.sql",
+        "sha256": "d5d2e20cc576ffb998ae8d5d8aa87194dcdf07f645d0db1187ac283822cce6a5"
+      },
+      {
+        "path": "server/migrations/646_cr_execution_notice.up.sql",
+        "sha256": "7d9c02a91dbd0b64540559e90c734f964489f1f6c7e27556583cc4273cf9e084"
+      },
+      {
+        "path": "server/migrations/647_cr_execution_dispatch_root.up.sql",
+        "sha256": "8664a8b760d2ff7c97a3e068c417e4e61ac243b7214dcbb687aecbedbc98b99e"
+      }
+    ],
+    "package_failures": 1,
+    "output_redacted": false
+  },
+  "original_unchanged": true,
+  "original_release": {
+    "sessions": 0,
+    "locks": 0
+  },
+  "owned_resources_cleaned": true,
+  "error": "test failed, matched no tests, or exposed credentials; inspect evidence"
+}
