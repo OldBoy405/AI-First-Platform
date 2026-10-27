@@ -74,3 +74,36 @@
   且结论只写「该库该轮通过」，不声称隔离成立。
 - **影响范围**：`slices.md` 正文措辞；P0 仍阻塞 C 路径片（M-S2 daemon trust、S3/S4、S6、S7、S8）。
 - **结论是否受影响**：否。
+
+## ADJ-7（口径裁决，2026-10-27）：merge-facts 的两处规格冲突
+
+- **404 分层**：SC-MG-009 的 `AUTH_SCOPE_UNVERIFIABLE`（主体不可验证）与 `MERGE_FACTS_NOT_FOUND`（CR 不存在）**都保留**，
+  均为 404；只有传输失败/5xx/超时才 `MERGE_FACTS_UNAVAILABLE`。方案 R2.4 的「非 200 一律 UNAVAILABLE」不采用。
+- **祖先判定**：用**严格祖先**（`approved_base` 必须是 candidate head 的祖先且不相等），以 SC-MG-010 为准；
+  方案 R2.1 的「祖先（含相等）」不采用。
+- **影响范围**：merge-facts 客户端与 handler 的判定分支；不影响必达 leaf 名单。
+- **结论是否受影响**：否。
+
+## ADJ-8（未决规格冲突，2026-10-27）：SC-VC-008 与 key-purpose 矩阵矛盾 —— **需规格修订，未擅自改**
+
+- **事实**：SC-VC-008 的 GIVEN 明确要求「用 attestation key 签 command」被拒绝（否则不会把 command 列入反例）。
+  但 Node `OPERATIONS`（tools `lib/execution-control-protocol.mjs`）把 `command` 映到 `attestation`，且既有成功测试断言
+  attestation 可签 command；multica 侧刚落的 Go 实现为与 Node 逐字节对齐，也采用同一矩阵。manifest 的 purpose 闭集只有
+  `{attestation, human}`，若照 SC-VC-008 字面执行，`command` 将**没有任何合法签发者**。
+- **已做的**：Go 实现保留与 Node 一致的矩阵（`command→attestation`、`resume→human`），并在
+  `TestChannelProtocol/exact_keys` 中断言 human 签 command/verdict 被拒、attestation 签 resume 被拒。
+  **没有**实现「attestation 签 command 被拒」——因为那会让 command 不可签，属规格级改动。
+- **需要的裁决**（二选一，均由人确认后走规格修订）：
+  1. 给 manifest purpose 闭集与 OPERATIONS 增加 `command`（或 `attestation-command`）专用 purpose，Node/Go 同步；
+  2. 修改 SC-VC-008，把「attestation 签 command」从反例中移除，只保留 resume 越权。
+- **影响范围**：SC-VC-006/008、`protocol` label 的 `exact_keys` 语义、manifest schema、tools 与 multica 两侧实现。
+- **结论是否受影响**：**是**——在该裁决落地前，`exact_keys` 只覆盖了 resume 越权与键集/清单形态，**不覆盖** SC-VC-008 的 command 反例；
+  Gate 3 必须按「部分验证」记录，不得表述为 SC-VC-008 已闭环。
+
+## ADJ-9（Node 缺口，2026-10-27）：重复 JSON 属性与 target union
+
+- **事实**：Node 侧 `JSON.parse` 不拒重复属性；现有「重复 key」测试重复的是 `keys[]` 里的 `key_id`，不是 JSON 属性。
+  「重复 JSON 属性」与「union 双分支」两条 SC-VC-008 要求，目前**只有 Go 侧实现了拒绝**（Go 用 token 级解码器），Node 侧没有。
+- **已做的**：Go 侧拒绝 envelope 与 payload 的重复属性，并有 `exact_keys` 断言；Node 侧未改。
+- **影响范围**：跨语言一致性（同一份含重复属性的 envelope，Go 拒、Node 可能接受）。
+- **结论是否受影响**：是——在 Node 补齐前，不得声称「两侧同语义」；`cross_language_vectors` 只覆盖正常字节与签名域等价性。
