@@ -47,49 +47,53 @@ tools 侧 `2026-10-22-aifi-45-authorized-execution` 仍停在 `build`（30/59）
 
 `stdd archive --yes --skip-specs`，理由同配对 change：不新建 `projects/tools/specs/` 这第二个基线位置，规格随 change 留在归档目录内。
 
-## 7. 还原与 V 类实况（2026-10-27）
+## 7. 还原、全量套件与修复（2026-10-27/28）
 
-本 change 于同一天先被归档、随后**还原**到 `changes/`（`stdd rollback`）。`rollback` 把 `current_phase` 重置为 `understand`，与已完成的 Gate 1/2/3 矛盾，已手工改回 `build`；`deliver` 改回 `pending`。
+本 change 于 2026-10-27 先被归档、随后**还原**到 `changes/`（`stdd rollback`）。`rollback` 把 `current_phase` 重置为 `understand`，与已完成的 Gate 1/2/3 矛盾，已手工改回 `build`。
 
-### 7.1 全量套件在当前 HEAD 的实际结果
+### 7.1 首轮全量（修复前，当前 HEAD）
 
-原遗留项写的是「最终版全量 35 文件未闭环，且仅 Windows/Node24」。本轮已把范围补到**当前真实规模 52 个文件**（crctl 48 + output-guard 3 + registry 1），两个平台各跑一次：
+范围补到真实规模 **52 文件**（crctl 48 + output-guard 3 + registry 1 = 1280 测试）：
+
+| 平台 | 耗时 | pass | fail | skip |
+|---|---|---|---|---|
+| Windows 11 / Node 24.15.0 | 1458s | 1275 | 4 | 1 |
+| WSL2 Linux / drvfs | 306s | 1270 | 9 | 1 |
+| WSL2 Linux / 原生 ext4 | 154s | 1270 | 9 | 1 |
+
+即：旧口径「35 文件全绿」不再成立，首轮并不绿。原生 ext4 与 drvfs 结果一致，排除了挂载因素。
+
+### 7.2 修复（8 处，含 3 条 M003 回归）
+
+| 项 | 形态 | 处置 |
+|---|---|---|
+| **POSIX 管道截断** | `crctl.mjs` 对 `--json` 信封与原生输出用 `process.stdout.write` 后立即 `process.exit`；POSIX 管道缓冲 65536 字节以上被丢弃（Windows 管道可整块接收，故只在 Linux 暴露） | 新增 `writeAllSync`（循环 `fs.writeSync`，容忍 EPIPE/EAGAIN），替换 `ok`/`fail`/信封/原生输出四处 |
+| Linux 独有：2MiB、64MiB 大输出 | 同上截断的直接后果 | 由上条修复 |
+| Linux 独有：CR073 `>1MiB` log | 测试自己的子进程 `process.stdout.write` 后 `process.exit(0)`，同样在 POSIX 丢输出 | 去掉子进程的 `process.exit(0)`，靠正常退出 flush |
+| Linux 独有：SC-AUTH-004 `PATH_ESCAPE` | git 对逃逸的报法随平台不同（POSIX 报链接条目 `src/leak`，Windows junction 下钻 `src/leak/secret.txt`） | 断言改为「恰一条 `AUTH_SCOPE_PATH_ESCAPE`，路径为二者之一」，不锁死叶子拼写 |
+| Linux 独有：AC-SUP-08 六类路径异常 | 原断言要求 `.items === []`，但同一夹具里还有 7 个已判异常，永远不可能成立（该分支仅在 POSIX 执行，故从未被发现） | 改为：先证明「新增未被引用的不可读文件不改变结论」，再让一个 CR 真正引用该文件并断言 `source-not-readable`；另加 root 守卫（root 可读 000） |
+| 回归 1：`CR-2026-064 FR-11 断言③` | M003 `de9bf75` 新增夹具 `control-vectors.json` 未进入冻结的面快照 | 加入 fixtures 期望集合 |
+| 回归 2：`TASK-09 单缝约束` | M003 改的 `lib/change-scope.mjs` 自行 `rev-parse ^{tree}` 做 zero-change 证明 | `workspace-transactions.mjs` 导出 `treeFactsFor` 作单一缝入口，`change-scope.mjs` 改为调用；全仓 `^{tree}` 仍恰一处 |
+| 回归 3：`TC-EVD-007` | M003 新增「`not-applicable` 需 profile 显式批准」（规格 §38），旧用例声明未带批准位 | 测试声明补 `not_applicable_approved: true`，规则不变 |
+
+### 7.3 修复后双平台全量
 
 | 平台 | 运行时 | tests | pass | fail | skip | 证据 |
 |---|---|---|---|---|---|---|
-| Windows 11 / Node 24.15.0 | 1458s | 1280 | 1275 | **4** | 1 | `validation/win-full-20261028T040000Z.tap` |
-| WSL2 Linux 6.18 / Node 24.15.0（`/mnt/c` drvfs） | 306s | 1280 | 1270 | **9** | 1 | `validation/linux-full-20261028T050500Z.tap` |
-| WSL2 Linux 6.18 / Node 24.15.0（原生 ext4） | 154s | 1280 | 1270 | **9** | 1 | `validation/linux-native-20261028T052500Z.tap` |
+| Windows 11 / Node 24.15.0 | 1461s | 1291 | 1290 | **0** | 1 | `validation/win-full-20261028T063000Z.tap` |
+| WSL2 Linux 6.18 / Node 24.15.0（原生 ext4，root + 受限身份） | — | 1291 | 1290 | **0** | 1 | `validation/linux-full-20261028T064500Z.tap` |
 
-**结论：套件在当前 HEAD 上不是绿的。**「35 文件全绿」的旧口径不再成立，52 文件下的真实状态是上面的数字。
+1291 比 1280 多出的 11 条来自 M003 的 isolation 测试：只有设置 `AIFI45_ISOLATION_PROFILE` / `AIFI45_ISOLATION_AGENT` 时才声明其 leaf。两轮均带 `995:994` / `994:993` 运行，即真实受限身份。
 
-### 7.2 失败归因
+**两条 skip 互补**，合起来两个 leaf 都被真实执行：
 
-四个平台共用失败项，其中三个指向 `de9bf75`（M003 trusted T verdict channel 的 Node 侧提交，即本 change 之后的工作）：
+| skip | 平台 | 原因 |
+|---|---|---|
+| `EXEC-12 受控文件自身为 symlink` | Windows | 无权限创建符号链接（EPERM）；Linux 侧执行通过 |
+| `EXEC-15 junction 指向另一 CR` | Linux | 无 junction 原语；Windows 侧执行通过 |
 
-| 失败项 | 归因 |
-|---|---|
-| `CR-2026-064 FR-11 结构断言③` | `de9bf75` 新增夹具 `fixtures/control-vectors.json`，未纳入该断言冻结的扫描面 |
-| `TASK-09 单缝约束` | `de9bf75` 改动的 `lib/change-scope.mjs` 命中「tree 比较只允许一处」扫描 |
-| `TC-EVD-007` | `de9bf75` 在 `lib/component-readiness.mjs` 新增 `EVIDENCE_COMPONENT_NOT_APPLICABLE_UNAPPROVED`，旧测试用例的 profile 未显式批准 `tools` 组件 |
-| `isolation 需要真实受限身份` | 环境绑定：需 `AIFI45_ISOLATION_PROFILE` / `AIFI45_ISOLATION_AGENT`；Windows 无受限身份可用 |
-| `EXEC-12 symlink 拒绝写入`（skip） | 环境绑定：Windows 无符号链接权限（EPERM） |
+### 7.4 仍不声称
 
-Linux 独有 5 项（原生 ext4 同样复现，排除 drvfs 因素）：
-
-| 失败项 | 形态 |
-|---|---|
-| `SC-AUTH-004 wiring … PATH_ESCAPE` | 符号链接逃逸（Windows 侧因无法建链而不执行） |
-| `CR-2026-076 AC-SUP-08 六类路径异常` | 同上，含符号链接越界 |
-| `AIFI-63 包 C：2MiB diff 不截断` | 大输出经管道时的信封形状 |
-| `AIFI-63 包 C：64MiB 上限 → ENOBUFS` | 同上 |
-| `CR073 long output complete：>1MiB` | 同上 |
-
-即：Linux 列不是「通过」，而是 5 条只有 Linux 才暴露的差异。这些不在本 change 的实现范围内（crctl 输出/符号链接属既有契约），不得据此宣称跨平台通过。
-
-### 7.3 因此不声称
-
-- 52 文件套件任一侧全绿。
-- 「仅 Windows/Node24」已升级：Windows + Linux(WSL2) 双平台均已执行，但**两侧都有失败**，不构成跨平台通过。
-- Node 20 未执行。
-- 独立 Linux 主机（非 WSL）未执行。
+- **Node 20** 未执行（仅 Node 24.15.0）。
+- **独立 Linux 主机**未执行：Linux 列为 WSL2 内核 6.18 / 原生 ext4，非独立物理机。
+- 本轮只覆盖 crctl/output-guard/registry 三处测试；`multica` 侧完整套件不在本 change 范围。
