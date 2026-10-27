@@ -47,7 +47,7 @@ Node 侧（tools `test/execution-control-{protocol,store}.test.mjs`）：各 2/2
 | `policy`（node） | 23 | OK：未验签 fact 拒、CAS 只收一份、合同与 store 不一致拒、敏感动作只认原 operation；merge 范围 19 条（只认已批准 sha、覆盖发布集合、rename 双端、候选树 symlink、空集合/缺 release-subject/采集失败一律 UNVERIFIABLE、Unknown 不降 legacy、legacy 不核对、删字段仍 strict、恢复用冻结输入、中途撤销保 journal、越界零写入且不推进状态、不受 grants 目录影响、head 撤销/前移即拒、finalize 写集逐项授权、KB 审批后写入纳入核对）。跑次 `n3-policy-20261027T142326Z`；n1–n23 |
 | `readiness`（node） | 2 | OK：空/缺 components、重复观测、未批 NA、runtime/安装漂移、恢复未知均 NOT_READY；action×purpose 矩阵外一律拒，verify-channel 只出 READY_COMPONENT。跑次 `n3-readiness-20261027T142327Z`；n24–n25 |
 | `recovery`（node） | 2 | OK：五个观察各对应唯一动作、缺 store/checkpoint 冻结；restart 只动 owner fence。跑次 `n3-recovery-20261027T142327Z`；n26–n27 |
-| `binding`（4 条按规格 RED） | 按规格不得登记完成 |
+| `binding` | 6 | OK：真 router + 真 permit + 每条前置 M003 strict selection。645 无 644 即拒、644 的 proof 必须由 643 签发、645 的 proof 须与 644 记录一致；重放读回原 receipt 不生成第二张；同 generation 的另一 task 用 A 的 challenge、重领后旧 generation、同 generation 第二份 proof 均 409；消费持锁期间终态 UPDATE 得 `55P03`。跑次 `bi4-20261027T144831Z`（7/7，skip=0）；m87–m92 各只红一条。此前记为「4 条按规格 RED」且测试并不存在，见 ADJ-12 |
 | `isolation`（linux） | 5 | OK：root + `AIFI45_ISOLATION_PROFILE=wsl2-aifi45-v1`（uid 995/gid 994）真跑；pidfd 钉身份并检测死进程、SO_PEERCRED 取真身份、`ReadMsgUnix` 拒 SCM_RIGHTS。m12/m13/m14 各只红一条。跑次 `iso-20261027T101534Z` |
 | `isolation`（windows） | 3 | **UNVERIFIED**：无受限 Windows 身份，`_unsupported.go` 对所有原语返回 `EXECUTION_CHANNEL_ISOLATION_UNSUPPORTED`，缺 profile 直接 `t.Fatalf` |
 | tools SC-TR-003 并发三请求、rename 前后 kill | 未测（报告未声称） |

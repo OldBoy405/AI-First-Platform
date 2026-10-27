@@ -68,11 +68,9 @@
 
 ## 5. S6 ingest、settlement 与 binding（P0）
 
-- [ ] 5.1 `execution_tool_ingest.go`/`execution_control_settlement.go`：ingest→settle、原字节重放、不退款；`TestChannelIngestSettlement`（4 leaf）。
-- [ ] 5.2 `BindDeliveredGenerationTx`：启动前 643–645 全匹配、不二次消费；`TestChannelIngestBinding`（6 leaf）。
-  **其中 4 条按规格设计就该 RED**：`cross_issuance_challenge`、`same_task_redispatch_challenge`、`same_nonce_different_proof`、
-  `claim_terminated_before_consume` 的真实前置是 AIFI-45 的 G1 与 G2/G4 残余（spec SC-VC-024 明写「未修时按设计为 RED，不得登记完成」）。
-  另 2 条（`start_preflight_643_645_match`、`generation_bound_once`）可独立实现。Gate 3 材料须把它们标为 blocked-on-upstream。
+- [x] 5.1 `execution_tool_ingest.go`/`execution_control_settlement.go`：ingest→settle、原字节重放、不退款；`TestChannelIngestSettlement`（4 leaf）。跑次 `st2-20261027T142417Z`。
+- [x] 5.2 `TestChannelIngestBinding`（6 leaf）：启动前 643–645 全匹配、不二次消费。跑次 `bi4-20261027T144831Z`（7/7，skip=0），checker 6/6；m87–m92 各只红一条。
+  **此前记为「4 条按规格设计就该 RED、blocked-on-upstream」是失真的**：实测 `run:0`（测试不存在），且 AIFI-45 台账已写 G1 已修（增量 44）、G2 残余决定不做、G4 移交 M003（增量 46）。处置见 `design-adjustments.md` ADJ-12：从 M003 入口做跨 change 集成验证（每条前置 strict selection），不回填 AIFI-45 的 41/49。
 - [ ] 5.3 `execution_control_client.go`（daemon）：commands/checkpoints/verdicts 三端点 client；`TestChannelWorkerClient`。
 - [ ] 5.4 三端点 handler 与认证：只 MDT+enrolled key/owner scope；拒绝 PAT/JWT/task-token。
 

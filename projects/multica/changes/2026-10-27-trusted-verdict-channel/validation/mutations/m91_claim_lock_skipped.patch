@@ -1,0 +1,11 @@
+--- a/server/internal/governance/execution_consumption.go
++++ b/server/internal/governance/execution_consumption.go
+@@ -89,7 +89,7 @@
+ 	// ownership change cannot commit between the claim check and the receipt.
+ 	// Order and lock strength: execution_claim_lock.go. A row that is gone is not
+ 	// this run's to consume.
+-	if err := lockExecutionClaimRows(r.Context(), tx, request.TaskID, request.RuntimeID); err != nil {
++	if err := error(nil); err != nil {
+ 		if errors.Is(err, pgx.ErrNoRows) {
+ 			writeJSON(w, http.StatusConflict, map[string]string{"error": "EXECUTION_BINDING_SCOPE_MISMATCH"})
+ 			return

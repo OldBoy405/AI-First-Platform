@@ -140,3 +140,20 @@
 - **未实现（有意）**：L90 的 `execution-deployment-observation/v1` 与 purpose `deployment-observer` 属 D7 观测端，本期无消费者，按 YAGNI 留给 S8；域名在规格里已固定，届时不需要改动本文件以外的任何 wire 约定。
 - **证据**：Node 3/3；Go `TestChannelProtocol` 9/9（leaf 7），跑次 `ai-proto4-*`，checker `protocol` OK；共享夹具升 v3（含 domains/scope/有效期/digest）。变异 m9（前像去域）→ 8 红、m10（跳 key scope 检查）→ 2 红、m11（digest 只用 payload）→ 8 红，patch 与 sha256 落 `validation/mutations/`。
 - **结论是否受影响**：否。规格不动，实现对齐；S3 帧链可以直接建立在 `digest=SHA256(domain||payload)` 上。
+
+## ADJ-12（已生效，2026-10-27，用户确认）：`binding` 4 条 leaf 从「等上游」改为「跨 change 集成验证」
+
+- **触发**：用户追问「授权」到底指什么。核查后发现我一直在引用两个**已失效**的前提：
+  - `plan` §S6「修复本身不属本方案」与 `spec` SC-VC-024「未修时按设计为 RED」；
+  - 而 AIFI-45 台账写明 **G1 已修**（增量 44）、**G2 残余决定不做**（增量 46）、**G4 残余移交 M003**（增量 46）。
+  且实测 `TestChannelIngestBinding` **根本不存在**（`run:0`）——「未实现」被记成了「按规格 RED」。
+- **口径（本次确认）**：
+  1. `binding` 4 条 leaf 由本 change 实现，但只从 M003 入口做跨 change 集成验证（真 router + 真 permit + 真 DB），每条前置一条 M003 的 strict selection，以区别于 AIFI-45 自己的同行为用例；
+  2. 不重测 AIFI-45 的函数、不把 G1 证据算作 M003 实现、PASS **不回填** AIFI-45 的 41/49（`pending-adjustments.yaml` 的双计禁令不变）；
+  3. 通道路径上若变红，作为发现报给 AIFI-45，不在本 change 改其代码；
+  4. 不修改 AIFI-45 记录目录，不重做 G1/G3/G5/EVD-007。
+- **G4 归属**：G4 残余（strict 强制完整 tuple / 拒绝无代次回调）落在 **reader 片**，不在 `binding`——新增 leaf `TestChannelReader/partial_claim_field_rejected`（m85）兑现 SC-VC-027 的「分别缺少两个 claim 字段」。
+- **边界声明**：M003 只验 643→644→645 链路一致；runner 的真正启动属 AIFI-45 的 `TC-RUN-002/003/006/010`，不在本 label 声称范围。
+- **证据**：`binding` 跑次 `bi4-20261027T144831Z`（7/7，leaf 6，`skip=0`，checker 6/6）；`reader` 跑次 `rg2-20261027T143755Z`（12/12，leaf 11）。变异 m87–m92 各只红一条（m85 红 reader 新 leaf）。
+- **已知非理想**：m86（删 `required && missing` 前一支）**无可观测差异**——后一支 `missing` 已覆盖同一判定，属冗余防线，已记入 `channel-test-expectations.json#mutation_asymmetries`，不伪造变异。
+- **结论是否受影响**：Gate 3 仍不能进（还剩 node `worker` 1、node `isolation` 5 与 4 项 UNVERIFIED），但 `binding` 不再是假「blocked」。

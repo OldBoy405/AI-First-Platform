@@ -1,0 +1,13 @@
+--- a/server/internal/governance/execution_consumption.go
++++ b/server/internal/governance/execution_consumption.go
+@@ -219,10 +219,6 @@
+ 		// This generation already spent a *different* proof. Answering "already
+ 		// consumed" would let a caller believe its own challenge was the one
+ 		// recorded, so refuse instead of pretending.
+-		if consumed != challenge.Challenge {
+-			writeJSON(w, http.StatusConflict, map[string]string{"error": "EXECUTION_CONSUMPTION_CONFLICT"})
+-			return
+-		}
+ 		writeJSON(w, http.StatusOK, map[string]any{
+ 			"receipt": util.UUIDToString(receiptID),
+ 			"changed": false,

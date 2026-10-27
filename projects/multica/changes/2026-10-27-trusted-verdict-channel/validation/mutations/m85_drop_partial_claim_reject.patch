@@ -1,0 +1,11 @@
+--- a/server/internal/governance/execution_channel_reader.go
++++ b/server/internal/governance/execution_channel_reader.go
+@@ -138,8 +138,5 @@
+ 	if !required && runtimeID == "" && dispatchedAt == "" {
+ 		return nil
+ 	}
+-	if missing {
+-		return fmt.Errorf("%w: claim 不完整", ErrReaderFence)
+-	}
+ 	return nil
+ }

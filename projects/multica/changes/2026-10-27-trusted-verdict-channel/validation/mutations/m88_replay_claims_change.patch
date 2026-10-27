@@ -1,0 +1,11 @@
+--- a/server/internal/governance/execution_consumption.go
++++ b/server/internal/governance/execution_consumption.go
+@@ -225,7 +225,7 @@
+ 		}
+ 		writeJSON(w, http.StatusOK, map[string]any{
+ 			"receipt": util.UUIDToString(receiptID),
+-			"changed": false,
++			"changed": true,
+ 		})
+ 		return
+ 	}

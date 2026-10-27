@@ -35,6 +35,12 @@
       "enforced_by": "DB unique constraint cr_execution_policy_readiness_nonce_once (migration 648)",
       "mutation": "drop that constraint from the migration; no Go-only edit can break it",
       "go_level_near_miss": "activating with the same verdict twice is the Go-level guard (m63), which turns concurrent_activation_cas red"
+    },
+    {
+      "leaf": "TestChannelReader/partial_claim_field_rejected",
+      "enforced_by": "two overlapping branches in AcceptTerminalReport: `required && missing`, then the following `if missing`",
+      "mutation": "deleting only the `required && missing` branch (m86) is unobservable: the following branch reaches the same sentinel error",
+      "go_level_near_miss": "deleting the `if missing` branch instead (m85) reds the new leaf, so the invariant itself is covered"
     }
   ],
   "go": {
@@ -516,6 +522,13 @@
             "sc": [
               "SC-VC-027"
             ]
+          },
+          {
+            "name": "TestChannelReader/partial_claim_field_rejected",
+            "sc": [
+              "SC-VC-027"
+            ],
+            "note": "SC-VC-027 原文为「分别缺少两个 claim 字段」；此 leaf 补 partial tuple（strict 与无 fence 两侧）"
           },
           {
             "name": "TestChannelReader/terminal_fence_survives_reclaim",
@@ -1740,6 +1753,13 @@
     "note": "tooling self-test, not a business scenario; must include a case where summary looks successful but a required leaf is missing"
   },
   "revisions": [
+    {
+      "at_phase": "BUILD",
+      "reason": "ADJ-12 / G4 residual mapping: SC-VC-027 requires each claim field missing separately to be rejected, but only the both-missing case had a leaf. Added TestChannelReader/partial_claim_field_rejected (strict partial and no-fence partial); no requirement change.",
+      "added_leaves": [
+        "TestChannelReader/partial_claim_field_rejected"
+      ]
+    },
     {
       "at_phase": "BUILD",
       "reason": "strong review BLOCK: selection/reservation immutability, command state machine, truncate bypass, head scope freeze, freeze stamp finality, origin-once, readiness write-once, pinned legacy catalog, reservation selection revalidation",

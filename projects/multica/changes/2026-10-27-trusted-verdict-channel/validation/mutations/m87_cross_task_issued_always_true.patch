@@ -1,0 +1,11 @@
+--- a/server/internal/governance/execution_consumption.go
++++ b/server/internal/governance/execution_consumption.go
+@@ -179,7 +179,7 @@
+ 		SELECT EXISTS (
+ 			SELECT 1 FROM cr_execution_binding_issue
+ 			WHERE workspace_id = $1::uuid AND cr_id = $2 AND grant_digest = $3 AND challenge = $4
+-			  AND task_id = $5::uuid AND runtime_id = $6::uuid AND dispatched_at = $7::timestamptz
++			  AND (task_id = $5::uuid OR task_id <> $5::uuid) AND runtime_id = $6::uuid AND dispatched_at = $7::timestamptz
+ 		)`, workspaceUUID, crID, head.GrantDigest, challenge.Challenge,
+ 		request.TaskID, request.RuntimeID, request.DispatchedAt).Scan(&issued); err != nil {
+ 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "execution consumption failed"})

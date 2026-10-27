@@ -1,0 +1,13 @@
+--- a/server/internal/governance/execution_activation.go
++++ b/server/internal/governance/execution_activation.go
+@@ -171,10 +171,6 @@
+ 		WHERE workspace_id = $1::uuid AND cr_id = $2 AND runtime_id = $3::uuid
+ 		  AND task_id = $4::uuid AND dispatched_at = $5::timestamptz`,
+ 		workspaceUUID, crID, request.RuntimeID, request.TaskID, request.DispatchedAt).Scan(&consumptionID, &consumedChallenge)
+-	if errors.Is(err, pgx.ErrNoRows) {
+-		writeJSON(w, http.StatusConflict, map[string]string{"error": "EXECUTION_CONSUMPTION_REQUIRED_FOR_ACTIVATION"})
+-		return
+-	}
+ 	if err != nil {
+ 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "execution activation failed"})
+ 		return
