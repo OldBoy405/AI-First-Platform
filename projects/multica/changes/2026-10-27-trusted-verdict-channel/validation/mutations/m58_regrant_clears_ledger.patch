@@ -1,0 +1,11 @@
+--- server/internal/daemon/execution_control_worker.go
++++ m58_regrant_clears_ledger
+@@ -56,6 +56,8 @@
+ 		if scope == "" {
+ 			return OwnerFence{}, fmt.Errorf("%w: 冷启动必须给出 scope", ErrWorkerInvalid)
+ 		}
++		// 变异：regrant 顺手清掉累计消费账本。
++		_, _ = tx.Exec(ctx, `DELETE FROM cr_execution_consumption WHERE true`)
+ 		if err := tx.QueryRow(ctx, `
+ 			INSERT INTO cr_execution_tool_cursor (scope, lineage_id, store_id, epoch, owner_fence, owner_id)
+ 			VALUES ($1, $2::uuid, $3, 1, 1, $4)
