@@ -44,6 +44,8 @@ Gate 3 只能在 §2、§3 有明确处置（实现 / 划出范围 / 随上游�
 | `readiness-component` | 2 | `cc-20261027T135756Z` |
 | `deployment-observer` | 4 | `od-20261027T140233Z` |
 | `deployment-launch` | 1 | `lu-20261027T140438Z` |
+| `readiness-composition` | 1 | `rd-20261027T140645Z` |
+| `readiness-fresh-work` | 1 | `fx-20261027T140828Z` |
 | `protocol`（go） | 3 | `ai-proto4-20261027T175236Z` |
 | `merge-facts`（go） | 6 | `mk-20261027T104452Z` |
 | `merge-effects`（go） | 4 | `mz-20261027T105320Z` |
@@ -53,16 +55,14 @@ Gate 3 只能在 §2、§3 有明确处置（实现 / 划出范围 / 随上游�
 | `merge-facts`（node） | 11 | `mf-20261027T103357Z` |
 | `merge-effects`（node） | 16 | `me-20261027T104637Z` |
 
-变异（m1–m77）全部落在 `validation/mutations/`，每条带 `.patch` 与 `.sha256`，且各自只打红对应 leaf（例外：m26/m35/m37/m39 各打红两条，m41/m48 连带同一只桶/同一入口的第二条，均为语义相关）。
+变异（m1–m79）全部落在 `validation/mutations/`，每条带 `.patch` 与 `.sha256`，且各自只打红对应 leaf（例外：m26/m35/m37/m39 各打红两条，m41/m48 连带同一只桶/同一入口的第二条，均为语义相关）。
 
-## 2. 未实现（3 label）
+## 2. 未实现（1 label）
 
 | label | leaves | 缺什么 | 影响 |
 |---|---|---|---|
 | `d8-recovery` | 2 | 同 lineage 重启保字节、regrant 不清零 | D8 成对断言 |
-| `readiness-composition` | 1 | 组件级 readiness 的合成（cmd/server） | D7 |
-| `readiness-fresh-work` | 1 | D8 的 governance 半边 | D8 |
-| `foundation-fresh-work` | 4 | FreshWork 注册 | S1 |
+| `foundation-fresh-work` | 4 | FreshWork 注册的 S1 其余 leaf（`readiness-fresh-work` 已覆盖 D8 半边） | S1 |
 
 `readiness-*`（protocol 3 / component 2 / activation 4 / retirement 3 / fresh-work 1 / access 3）、`deployment-observer` 4、`deployment-launch` 1 同样未实现；它们属 D7，依赖可信 observer 身份。
 node 侧未实现：`worker` 1、`recovery` 2、`policy` 23、`readiness` 2、`isolation` 3。

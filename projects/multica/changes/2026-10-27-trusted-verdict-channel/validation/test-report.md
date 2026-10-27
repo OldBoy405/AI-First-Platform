@@ -41,6 +41,8 @@ Node 侧（tools `test/execution-control-{protocol,store}.test.mjs`）：各 2/2
 | `readiness-component` | 2 | OK：READY_COMPONENT 只能入账（activation head/event 均不变）；strict 缺 decider 的 NOT_READY 不启用。跑次 `cc-20261027T135756Z`；m71–m72 |
 | `deployment-observer` | 4 | OK：未登记键/未列实例/agent 可写来源一律拒；受保护测量为完整正例；少一个实例或重复观测 NOT_READY；换代/换 trust revision/换 nonce 即 stale。跑次 `od-20261027T140233Z`；m73–m76 |
 | `deployment-launch` | 1 | OK：预检钉住 generation 与冻结安装根，同代提交拿到身份；中间换代即拒且快照未被改写。跑次 `lu-20261027T140438Z`；m77 |
+| `readiness-composition` | 1 | OK：真 manifest + 真签名 + 两份观测 → READY_COMPONENT 落库；再用它启用生产 policy 必须失败且 activation head/event 为零。跑次 `rd-20261027T140645Z`；m78（先修掉了「因过期而绿」的假绿） |
+| `readiness-fresh-work` | 1 | OK：同 origin 换 lineage 被拒且原归属原样交回；同 lineage 重放不新增行；历史覆盖未知不建立新 origin。跑次 `fx-20261027T140828Z`；m79 |
 | `binding`（4 条按规格 RED） | 按规格不得登记完成 |
 | `isolation`（linux） | 5 | OK：root + `AIFI45_ISOLATION_PROFILE=wsl2-aifi45-v1`（uid 995/gid 994）真跑；pidfd 钉身份并检测死进程、SO_PEERCRED 取真身份、`ReadMsgUnix` 拒 SCM_RIGHTS。m12/m13/m14 各只红一条。跑次 `iso-20261027T101534Z` |
 | `isolation`（windows） | 3 | **UNVERIFIED**：无受限 Windows 身份，`_unsupported.go` 对所有原语返回 `EXECUTION_CHANNEL_ISOLATION_UNSUPPORTED`，缺 profile 直接 `t.Fatalf` |

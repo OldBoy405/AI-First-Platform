@@ -1,0 +1,18 @@
+--- server/internal/governance/execution_fresh_work.go
++++ m79_regrant_resets_origin
+@@ -57,11 +57,11 @@
+ 	switch {
+ 	case err == nil:
+ 		// 已注册：同 lineage 是幂等重放；不同 lineage 是 regrant，不能清零。
+-		if existingLineage == in.LineageID {
+-			return FreshWorkResult{OriginID: in.OriginID, LineageID: existingLineage}, nil
++		// 变异：regrant 直接建立新归属（把旧计数清零）。
++		if _, err := tx.Exec(ctx, `DELETE FROM cr_execution_consumption WHERE false`); err != nil {
++			return FreshWorkResult{}, err
+ 		}
+-		return FreshWorkResult{OriginID: in.OriginID, LineageID: existingLineage}, fmt.Errorf(
+-			"%w: origin %s 已归属 lineage %s，不接受 %s", ErrFreshWorkAlreadyRegistered, in.OriginID, existingLineage, in.LineageID)
++		return FreshWorkResult{OriginID: in.OriginID, LineageID: in.LineageID, Created: true}, nil
+ 	case !errors.Is(err, pgx.ErrNoRows):
+ 		return FreshWorkResult{}, fmt.Errorf("fresh work lookup: %w", err)
+ 	}
