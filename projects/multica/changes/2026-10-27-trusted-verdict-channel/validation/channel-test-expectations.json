@@ -16,333 +16,1748 @@
     "Names must not be derived from any run output; changes after Gate 2 require a spec revision."
   ],
   "mutation_asymmetries": [
-    {"leaf": "merge 范围核对越界零写入", "mutations": ["move scope check after publish", "move scope check after journal creation and before prepare"]},
-    {"leaves": ["merge 范围 release-subject 缺失即拒", "merge 范围无法核实即拒"], "shared_mutation": "treat missing input as an empty change set and allow"}
+    {
+      "leaf": "merge 范围核对越界零写入",
+      "mutations": [
+        "move scope check after publish",
+        "move scope check after journal creation and before prepare"
+      ]
+    },
+    {
+      "leaves": [
+        "merge 范围 release-subject 缺失即拒",
+        "merge 范围无法核实即拒"
+      ],
+      "shared_mutation": "treat missing input as an empty change set and allow"
+    }
   ],
   "go": {
     "runner": "rungo <phase> <label> <pkg> <regex> (plan template; cwd = multica repo root, DB only via scripts/aifi45-db/run.mjs)",
     "labels": [
-      {"label": "foundation-selection", "pkg": "./internal/governance", "run": "^TestChannelFoundationSelection$", "leaves": [
-        {"name": "TestChannelFoundationSelection/strict_field_deleted_binding_mismatch", "sc": ["SC-VC-001"]},
-        {"name": "TestChannelFoundationSelection/unknown_selection_rejected", "sc": ["SC-VC-001"]},
-        {"name": "TestChannelFoundationSelection/legacy_requires_catalog_proof", "sc": ["SC-VC-001"]}
-      ]},
-      {"label": "foundation-reservation", "pkg": "./internal/governance", "run": "^TestChannelFoundationReservation$", "leaves": [
-        {"name": "TestChannelFoundationReservation/control_reservation_not_runnable", "sc": ["SC-VC-002"]},
-        {"name": "TestChannelFoundationReservation/fixed_id_conflict_and_rollback", "sc": ["SC-VC-003"]},
-        {"name": "TestChannelFoundationReservation/root_adoption_terminal_race", "sc": ["SC-VC-004"], "green_prerequisite": "AIFI-45 G5 fixed"},
-        {"name": "TestChannelFoundationReservation/root_terminal_not_adopted", "sc": ["SC-VC-004"]}
-      ]},
-      {"label": "foundation-fresh-work", "pkg": "./internal/governance", "run": "^TestChannelFoundationFreshWork$", "leaves": [
-        {"name": "TestChannelFoundationFreshWork/new_origin_registered", "sc": ["SC-VC-005"]},
-        {"name": "TestChannelFoundationFreshWork/same_origin_second_cr_rejected", "sc": ["SC-VC-005"]},
-        {"name": "TestChannelFoundationFreshWork/unknown_history_blocks_selection", "sc": ["SC-VC-005"]},
-        {"name": "TestChannelFoundationFreshWork/proof_revision_appends", "sc": ["SC-VC-005"]}
-      ]},
-      {"label": "task-tx", "pkg": "./internal/service", "run": "^TestChannelTaskTx$", "leaves": [
-        {"name": "TestChannelTaskTx/commit_then_notify", "sc": ["SC-VC-003"]},
-        {"name": "TestChannelTaskTx/rollback_no_notify", "sc": ["SC-VC-003"]}
-      ]},
-      {"label": "protocol", "pkg": "./internal/governance", "run": "^TestChannelProtocol$", "leaves": [
-        {"name": "TestChannelProtocol/purpose_domain_scope", "sc": ["SC-VC-006"]},
-        {"name": "TestChannelProtocol/cross_language_vectors", "sc": ["SC-VC-007"]},
-        {"name": "TestChannelProtocol/exact_keys", "sc": ["SC-VC-008"]}
-      ]},
-      {"label": "store-state", "pkg": "./internal/governance", "run": "^TestChannelStoreState$", "leaves": [
-        {"name": "TestChannelStoreState/request_unique_replay", "sc": ["SC-VC-009"]},
-        {"name": "TestChannelStoreState/frame_chain_digest", "sc": ["SC-VC-010"]},
-        {"name": "TestChannelStoreState/cursor_single_open", "sc": ["SC-VC-011"]},
-        {"name": "TestChannelStoreState/state_machine_and_ack", "sc": ["SC-VC-012"]},
-        {"name": "TestChannelStoreState/verdict_immutable", "sc": ["SC-VC-012"]},
-        {"name": "TestChannelStoreState/revoke_ordering", "sc": ["SC-VC-013"]},
-        {"name": "TestChannelStoreState/stop_ordering", "sc": ["SC-VC-014"]}
-      ]},
-      {"label": "revoked-permit", "pkg": "./internal/governance", "run": "^TestChannelIngestRevokedPermit$", "red_marker": "CONTROL_REVOKED_PERMIT_EFFECT", "leaves": [
-        {"name": "TestChannelIngestRevokedPermit/revoked_permit_effect", "sc": ["SC-VC-013"]},
-        {"name": "TestChannelIngestRevokedPermit/unmutated_control", "sc": ["SC-VC-013"]}
-      ]},
-      {"label": "policy-facts", "pkg": "./internal/governance", "run": "^TestChannelPolicyFacts$", "leaves": [
-        {"name": "TestChannelPolicyFacts/repair_admit_fact_refs_verified", "sc": ["SC-VC-017"]},
-        {"name": "TestChannelPolicyFacts/sensitive_copy_root_new_operation", "sc": ["SC-VC-020"]},
-        {"name": "TestChannelPolicyFacts/sensitive_same_operation_replay", "sc": ["SC-VC-020"]},
-        {"name": "TestChannelPolicyFacts/sensitive_revoke_interleaving", "sc": ["SC-VC-020"]},
-        {"name": "TestChannelPolicyFacts/sensitive_legacy_ledger_unverified", "sc": ["SC-VC-020"]}
-      ]},
-      {"label": "policy-resume", "pkg": "./internal/governance", "run": "^TestChannelPolicyResume$", "leaves": [
-        {"name": "TestChannelPolicyResume/repair_extension_append", "sc": ["SC-VC-018"]},
-        {"name": "TestChannelPolicyResume/repair_extension_double_append_race", "sc": ["SC-VC-018"]},
-        {"name": "TestChannelPolicyResume/repair_extension_replay", "sc": ["SC-VC-018"]},
-        {"name": "TestChannelPolicyResume/signed_resume", "sc": ["SC-VC-019"]},
-        {"name": "TestChannelPolicyResume/signed_resume_no_revive", "sc": ["SC-VC-019"]}
-      ]},
-      {"label": "settlement", "pkg": "./internal/governance", "run": "^TestChannelIngestSettlement$", "leaves": [
-        {"name": "TestChannelIngestSettlement/t_commit_m_rollback_resend", "sc": ["SC-VC-021"]},
-        {"name": "TestChannelIngestSettlement/lost_response_returns_mapping", "sc": ["SC-VC-021"]},
-        {"name": "TestChannelIngestSettlement/ack_no_slot_release", "sc": ["SC-VC-022"]},
-        {"name": "TestChannelIngestSettlement/nonpermit_settles_no_effect", "sc": ["SC-VC-022"]}
-      ]},
-      {"label": "binding", "pkg": "./internal/governance", "run": "^TestChannelIngestBinding$", "leaves": [
-        {"name": "TestChannelIngestBinding/start_preflight_643_645_match", "sc": ["SC-VC-023"]},
-        {"name": "TestChannelIngestBinding/generation_bound_once", "sc": ["SC-VC-023"]},
-        {"name": "TestChannelIngestBinding/cross_issuance_challenge", "sc": ["SC-VC-024"]},
-        {"name": "TestChannelIngestBinding/same_task_redispatch_challenge", "sc": ["SC-VC-024"], "green_prerequisite": "AIFI-45 G2 residual fixed"},
-        {"name": "TestChannelIngestBinding/same_nonce_different_proof", "sc": ["SC-VC-024"]},
-        {"name": "TestChannelIngestBinding/claim_terminated_before_consume", "sc": ["SC-VC-024"], "green_prerequisite": "AIFI-45 G1 fixed; G4 residual fixed"}
-      ]},
-      {"label": "reader", "pkg": "./internal/governance", "run": "^TestChannelReader$", "leaves": [
-        {"name": "TestChannelReader/missing_t_zero_dispatch", "sc": ["SC-VC-025"]},
-        {"name": "TestChannelReader/settle_replay_original_mapping", "sc": ["SC-VC-025"]},
-        {"name": "TestChannelReader/unsettled_candidate_not_replaced", "sc": ["SC-VC-025"]},
-        {"name": "TestChannelReader/selected_strict_field_deleted", "sc": ["SC-VC-026"]},
-        {"name": "TestChannelReader/unknown_selection_not_legacy", "sc": ["SC-VC-026"]},
-        {"name": "TestChannelReader/never_selected_legacy_unchanged", "sc": ["SC-VC-026"]},
-        {"name": "TestChannelReader/terminal_report_without_claim", "sc": ["SC-VC-027"]},
-        {"name": "TestChannelReader/terminal_fence_survives_reclaim", "sc": ["SC-VC-027"]},
-        {"name": "TestChannelReader/legacy_consumed_keeps_fence", "sc": ["SC-VC-027"]},
-        {"name": "TestChannelReader/terminal_fence_read_failure", "sc": ["SC-VC-027"]}
-      ]},
-      {"label": "merge-facts", "pkg": "./internal/governance", "run": "^TestChannelMergeFacts$", "leaves": [
-        {"name": "TestChannelMergeFacts/authn_workspace", "sc": ["SC-VC-030"]},
-        {"name": "TestChannelMergeFacts/reject_fallback_credentials", "sc": ["SC-VC-030"]},
-        {"name": "TestChannelMergeFacts/source_freeze_append_only", "sc": ["SC-VC-031"]},
-        {"name": "TestChannelMergeFacts/response_closed_set", "sc": ["SC-VC-032"]},
-        {"name": "TestChannelMergeFacts/current_binding_tristate", "sc": ["SC-VC-032"]},
-        {"name": "TestChannelMergeFacts/failure_code_layering", "sc": ["SC-VC-033"]}
-      ]},
-      {"label": "merge-effects", "pkg": "./internal/governance", "run": "^TestChannelMergeEffects$", "leaves": [
-        {"name": "TestChannelMergeEffects/reserve_shared_lock", "sc": ["SC-VC-034"]},
-        {"name": "TestChannelMergeEffects/attempt_semantics", "sc": ["SC-VC-035"]},
-        {"name": "TestChannelMergeEffects/code_order", "sc": ["SC-VC-036"]},
-        {"name": "TestChannelMergeEffects/non_auth_failure_no_halt", "sc": ["SC-VC-036"]}
-      ]},
-      {"label": "migration-up", "pkg": "./internal/governance", "run": "^TestChannelMigrationAfterUp$", "fresh_db": true, "leaves": [
-        {"name": "TestChannelMigrationAfterUp/cr_execution_contract_selection", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterUp/cr_execution_control_reservation", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterUp/cr_execution_control_command", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterUp/cr_execution_tool_verdict", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterUp/cr_execution_tool_cursor", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterUp/cr_execution_control_settlement", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterUp/cr_execution_task_binding", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterUp/cr_execution_control_fact", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterUp/cr_execution_deployment_head", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterUp/cr_execution_deployment_snapshot", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterUp/cr_execution_policy_readiness", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterUp/cr_execution_policy_activation_head", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterUp/cr_execution_policy_activation_event", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterUp/cr_execution_code_source_freeze", "sc": ["SC-VC-028"]}
-      ]},
-      {"label": "migration-down", "pkg": "./internal/governance", "run": "^TestChannelMigrationAfterDown$", "fresh_db": true, "extra_migrations": ["648_cr_execution_control.down.sql"], "leaves": [
-        {"name": "TestChannelMigrationAfterDown/cr_execution_contract_selection", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterDown/cr_execution_control_reservation", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterDown/cr_execution_control_command", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterDown/cr_execution_tool_verdict", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterDown/cr_execution_tool_cursor", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterDown/cr_execution_control_settlement", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterDown/cr_execution_task_binding", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterDown/cr_execution_control_fact", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterDown/cr_execution_deployment_head", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterDown/cr_execution_deployment_snapshot", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterDown/cr_execution_policy_readiness", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterDown/cr_execution_policy_activation_head", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterDown/cr_execution_policy_activation_event", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterDown/cr_execution_code_source_freeze", "sc": ["SC-VC-028"]}
-      ]},
-      {"label": "migration-reapply", "pkg": "./internal/governance", "run": "^TestChannelMigrationAfterReapply$", "fresh_db": true, "extra_migrations": ["648_cr_execution_control.down.sql", "648_cr_execution_control.up.sql"], "leaves": [
-        {"name": "TestChannelMigrationAfterReapply/cr_execution_contract_selection", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterReapply/cr_execution_control_reservation", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterReapply/cr_execution_control_command", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterReapply/cr_execution_tool_verdict", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterReapply/cr_execution_tool_cursor", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterReapply/cr_execution_control_settlement", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterReapply/cr_execution_task_binding", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterReapply/cr_execution_control_fact", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterReapply/cr_execution_deployment_head", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterReapply/cr_execution_deployment_snapshot", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterReapply/cr_execution_policy_readiness", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterReapply/cr_execution_policy_activation_head", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterReapply/cr_execution_policy_activation_event", "sc": ["SC-VC-028"]},
-        {"name": "TestChannelMigrationAfterReapply/cr_execution_code_source_freeze", "sc": ["SC-VC-028"]}
-      ]},
-      {"label": "migration-protected", "pkg": "./internal/governance", "run": "^TestChannelMigrationProtectedData$", "fresh_db": true, "leaves": [
-        {"name": "TestChannelMigrationProtectedData/fixtures_643_647_unchanged", "sc": ["SC-VC-029"]},
-        {"name": "TestChannelMigrationProtectedData/no_648_orphans", "sc": ["SC-VC-029"]}
-      ]},
-      {"label": "worker", "pkg": "./internal/daemon", "run": "^TestChannel(Worker|Recovery)$", "leaves": [
-        {"name": "TestChannelWorker/old_fence_rejected", "sc": ["SC-VC-011"]},
-        {"name": "TestChannelRecovery/tail_equal_resume", "sc": ["SC-VC-015"]},
-        {"name": "TestChannelRecovery/t_ahead_one_import", "sc": ["SC-VC-015"]},
-        {"name": "TestChannelRecovery/m_settled_return_mapping", "sc": ["SC-VC-015"]},
-        {"name": "TestChannelRecovery/journal_prepared_replay", "sc": ["SC-VC-015"]},
-        {"name": "TestChannelRecovery/divergent_freeze", "sc": ["SC-VC-015"]},
-        {"name": "TestChannelRecovery/restart_keeps_epoch", "sc": ["SC-VC-016"]}
-      ]},
-      {"label": "d8-recovery", "pkg": "./internal/daemon", "run": "^TestChannelRecoveryD8$", "leaves": [
-        {"name": "TestChannelRecoveryD8/same_lineage_restart_keeps_bytes", "sc": ["SC-VC-016"]},
-        {"name": "TestChannelRecoveryD8/regrant_cannot_reset", "sc": ["SC-VC-005"]}
-      ]},
-      {"label": "client", "pkg": "./internal/daemon", "run": "^TestChannelWorkerClient$", "leaves": [
-        {"name": "TestChannelWorkerClient/verdict_resend_original_bytes", "sc": ["SC-VC-021"]}
-      ]},
-      {"label": "composition", "pkg": "./cmd/server", "run": "^TestChannelComposition$", "leaves": [
-        {"name": "TestChannelComposition/real_worker_permit_creates_original_candidate", "sc": ["SC-VC-025"]},
-        {"name": "TestChannelComposition/missing_t_rejected", "sc": ["SC-VC-025"]}
-      ]},
-      {"label": "isolation", "pkg": "./internal/daemon", "run": "^TestChannelIsolation$", "gates": "C-path slices", "platforms": {
-        "linux": [
-          {"name": "TestChannelIsolation/peer_credential_match", "sc": ["SC-VC-037"]},
-          {"name": "TestChannelIsolation/self_reported_fact_ignored", "sc": ["SC-VC-037"]},
-          {"name": "TestChannelIsolation/foreign_run_socket", "sc": ["SC-VC-037"]},
-          {"name": "TestChannelIsolation/fd_transfer", "sc": ["SC-VC-037"]},
-          {"name": "TestChannelIsolation/pid_reuse", "sc": ["SC-VC-037"]}
-        ],
-        "windows": [
-          {"name": "TestChannelIsolation/windows_named_pipe_identity", "sc": ["SC-VC-037"]},
-          {"name": "TestChannelIsolation/windows_self_reported_fact_ignored", "sc": ["SC-VC-037"]},
-          {"name": "TestChannelIsolation/windows_foreign_run_pipe", "sc": ["SC-VC-037"]}
+      {
+        "label": "foundation-selection",
+        "pkg": "./internal/governance",
+        "run": "^TestChannelFoundationSelection$",
+        "leaves": [
+          {
+            "name": "TestChannelFoundationSelection/strict_field_deleted_binding_mismatch",
+            "sc": [
+              "SC-VC-001"
+            ]
+          },
+          {
+            "name": "TestChannelFoundationSelection/unknown_selection_rejected",
+            "sc": [
+              "SC-VC-001"
+            ]
+          },
+          {
+            "name": "TestChannelFoundationSelection/legacy_requires_catalog_proof",
+            "sc": [
+              "SC-VC-001"
+            ]
+          },
+          {
+            "name": "TestChannelFoundationSelection/legacy_catalog_must_be_pinned",
+            "sc": [
+              "SC-VC-001"
+            ]
+          },
+          {
+            "name": "TestChannelFoundationSelection/legacy_persistent_row_requires_proof",
+            "sc": [
+              "SC-VC-001"
+            ]
+          }
         ]
-      }},
-      {"label": "readiness-protocol", "pkg": "./internal/governance", "run": "^TestChannelReadinessProtocol$", "leaves": [
-        {"name": "TestChannelReadinessProtocol/request_slots_frozen", "sc": ["SC-DR-003"]},
-        {"name": "TestChannelReadinessProtocol/observation_slot_cas", "sc": ["SC-DR-003"]},
-        {"name": "TestChannelReadinessProtocol/signed_result_immutable", "sc": ["SC-DR-003"]}
-      ]},
-      {"label": "readiness-component", "pkg": "./internal/governance", "run": "^TestChannelReadinessComponentBoundary$", "leaves": [
-        {"name": "TestChannelReadinessComponentBoundary/component_ready_not_activatable", "sc": ["SC-DR-003"]},
-        {"name": "TestChannelReadinessComponentBoundary/strict_missing_decider_not_ready", "sc": ["SC-DR-003"]}
-      ]},
-      {"label": "readiness-activation", "pkg": "./internal/governance", "run": "^TestChannelPolicyActivation$", "leaves": [
-        {"name": "TestChannelPolicyActivation/concurrent_activation_cas", "sc": ["SC-DR-004"]},
-        {"name": "TestChannelPolicyActivation/post_sign_generation_change", "sc": ["SC-DR-004"]},
-        {"name": "TestChannelPolicyActivation/nonce_replay_rejected", "sc": ["SC-DR-004"]},
-        {"name": "TestChannelPolicyActivation/stop_new_keeps_history", "sc": ["SC-DR-004"]}
-      ]},
-      {"label": "readiness-retirement", "pkg": "./internal/governance", "run": "^TestChannelReadinessRetirement$", "leaves": [
-        {"name": "TestChannelReadinessRetirement/live_legacy_run_blocks_drain", "sc": ["SC-DR-005"]},
-        {"name": "TestChannelReadinessRetirement/unknown_pending_blocks_drain", "sc": ["SC-DR-005"]},
-        {"name": "TestChannelReadinessRetirement/work_revision_drift_blocks_retired", "sc": ["SC-DR-005"]}
-      ]},
-      {"label": "readiness-fresh-work", "pkg": "./internal/governance", "run": "^TestChannelReadinessFreshWork$", "leaves": [
-        {"name": "TestChannelReadinessFreshWork/d8_same_origin_not_reset", "sc": ["SC-VC-005"]}
-      ]},
-      {"label": "readiness-access", "pkg": "./internal/governance", "run": "^TestChannelDeploymentAccess$", "leaves": [
-        {"name": "TestChannelDeploymentAccess/issued_recovers_after_stop_new", "sc": ["SC-DR-006"]},
-        {"name": "TestChannelDeploymentAccess/new_candidate_rejected", "sc": ["SC-DR-006"]},
-        {"name": "TestChannelDeploymentAccess/origin_change_rejected", "sc": ["SC-DR-006"]}
-      ]},
-      {"label": "deployment-observer", "pkg": "./internal/daemon", "run": "^TestChannelDeploymentObserver$", "leaves": [
-        {"name": "TestChannelDeploymentObserver/forged_observation_rejected", "sc": ["SC-DR-001"]},
-        {"name": "TestChannelDeploymentObserver/protected_measure_positive", "sc": ["SC-DR-001"]},
-        {"name": "TestChannelDeploymentObserver/inventory_all_instances", "sc": ["SC-DR-002"]},
-        {"name": "TestChannelDeploymentObserver/generation_supersedes", "sc": ["SC-DR-002"]}
-      ]},
-      {"label": "deployment-launch", "pkg": "./internal/daemon", "run": "^TestChannelDeploymentLaunch$", "leaves": [
-        {"name": "TestChannelDeploymentLaunch/generation_switch_fixed_snapshot", "sc": ["SC-DR-006"]}
-      ]},
-      {"label": "readiness-composition", "pkg": "./cmd/server", "run": "^TestChannelCompositionReadiness$", "leaves": [
-        {"name": "TestChannelCompositionReadiness/component_profile_ready_component", "sc": ["SC-DR-003"]}
-      ]}
+      },
+      {
+        "label": "foundation-reservation",
+        "pkg": "./internal/governance",
+        "run": "^TestChannelFoundationReservation$",
+        "leaves": [
+          {
+            "name": "TestChannelFoundationReservation/control_reservation_not_runnable",
+            "sc": [
+              "SC-VC-002"
+            ]
+          },
+          {
+            "name": "TestChannelFoundationReservation/fixed_id_conflict_and_rollback",
+            "sc": [
+              "SC-VC-003"
+            ]
+          },
+          {
+            "name": "TestChannelFoundationReservation/root_adoption_terminal_race",
+            "sc": [
+              "SC-VC-004"
+            ],
+            "green_prerequisite": "AIFI-45 G5 fixed"
+          },
+          {
+            "name": "TestChannelFoundationReservation/root_terminal_not_adopted",
+            "sc": [
+              "SC-VC-004"
+            ]
+          },
+          {
+            "name": "TestChannelFoundationReservation/reservation_selection_reverified",
+            "sc": [
+              "SC-VC-002"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "foundation-fresh-work",
+        "pkg": "./internal/governance",
+        "run": "^TestChannelFoundationFreshWork$",
+        "leaves": [
+          {
+            "name": "TestChannelFoundationFreshWork/new_origin_registered",
+            "sc": [
+              "SC-VC-005"
+            ]
+          },
+          {
+            "name": "TestChannelFoundationFreshWork/same_origin_second_cr_rejected",
+            "sc": [
+              "SC-VC-005"
+            ]
+          },
+          {
+            "name": "TestChannelFoundationFreshWork/unknown_history_blocks_selection",
+            "sc": [
+              "SC-VC-005"
+            ]
+          },
+          {
+            "name": "TestChannelFoundationFreshWork/proof_revision_appends",
+            "sc": [
+              "SC-VC-005"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "task-tx",
+        "pkg": "./internal/service",
+        "run": "^TestChannelTaskTx$",
+        "leaves": [
+          {
+            "name": "TestChannelTaskTx/commit_then_notify",
+            "sc": [
+              "SC-VC-003"
+            ]
+          },
+          {
+            "name": "TestChannelTaskTx/rollback_no_notify",
+            "sc": [
+              "SC-VC-003"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "protocol",
+        "pkg": "./internal/governance",
+        "run": "^TestChannelProtocol$",
+        "leaves": [
+          {
+            "name": "TestChannelProtocol/purpose_domain_scope",
+            "sc": [
+              "SC-VC-006"
+            ]
+          },
+          {
+            "name": "TestChannelProtocol/cross_language_vectors",
+            "sc": [
+              "SC-VC-007"
+            ]
+          },
+          {
+            "name": "TestChannelProtocol/exact_keys",
+            "sc": [
+              "SC-VC-008"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "store-guards",
+        "pkg": "./internal/governance",
+        "run": "^TestChannelStoreGuards$",
+        "leaves": [
+          {
+            "name": "TestChannelStoreGuards/selection_row_immutable",
+            "sc": [
+              "SC-VC-001"
+            ]
+          },
+          {
+            "name": "TestChannelStoreGuards/reservation_row_immutable",
+            "sc": [
+              "SC-VC-002"
+            ]
+          },
+          {
+            "name": "TestChannelStoreGuards/command_transition_rejects_skips",
+            "sc": [
+              "SC-VC-012"
+            ]
+          },
+          {
+            "name": "TestChannelStoreGuards/command_signed_fields_frozen",
+            "sc": [
+              "SC-VC-012"
+            ]
+          },
+          {
+            "name": "TestChannelStoreGuards/retained_tables_reject_truncate",
+            "sc": [
+              "SC-VC-013"
+            ]
+          },
+          {
+            "name": "TestChannelStoreGuards/deployment_head_scope_immutable",
+            "sc": [
+              "SC-DR-002"
+            ]
+          },
+          {
+            "name": "TestChannelStoreGuards/freeze_stamp_cannot_be_cleared",
+            "sc": [
+              "SC-VC-031"
+            ]
+          },
+          {
+            "name": "TestChannelStoreGuards/origin_registration_requires_origin",
+            "sc": [
+              "SC-VC-005"
+            ]
+          },
+          {
+            "name": "TestChannelStoreGuards/readiness_verdict_write_once",
+            "sc": [
+              "SC-DR-003"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "store-state",
+        "pkg": "./internal/governance",
+        "run": "^TestChannelStoreState$",
+        "leaves": [
+          {
+            "name": "TestChannelStoreState/request_unique_replay",
+            "sc": [
+              "SC-VC-009"
+            ]
+          },
+          {
+            "name": "TestChannelStoreState/frame_chain_digest",
+            "sc": [
+              "SC-VC-010"
+            ]
+          },
+          {
+            "name": "TestChannelStoreState/cursor_single_open",
+            "sc": [
+              "SC-VC-011"
+            ]
+          },
+          {
+            "name": "TestChannelStoreState/state_machine_and_ack",
+            "sc": [
+              "SC-VC-012"
+            ]
+          },
+          {
+            "name": "TestChannelStoreState/verdict_immutable",
+            "sc": [
+              "SC-VC-012"
+            ]
+          },
+          {
+            "name": "TestChannelStoreState/revoke_ordering",
+            "sc": [
+              "SC-VC-013"
+            ]
+          },
+          {
+            "name": "TestChannelStoreState/stop_ordering",
+            "sc": [
+              "SC-VC-014"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "revoked-permit",
+        "pkg": "./internal/governance",
+        "run": "^TestChannelIngestRevokedPermit$",
+        "red_marker": "CONTROL_REVOKED_PERMIT_EFFECT",
+        "leaves": [
+          {
+            "name": "TestChannelIngestRevokedPermit/revoked_permit_effect",
+            "sc": [
+              "SC-VC-013"
+            ]
+          },
+          {
+            "name": "TestChannelIngestRevokedPermit/unmutated_control",
+            "sc": [
+              "SC-VC-013"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "policy-facts",
+        "pkg": "./internal/governance",
+        "run": "^TestChannelPolicyFacts$",
+        "leaves": [
+          {
+            "name": "TestChannelPolicyFacts/repair_admit_fact_refs_verified",
+            "sc": [
+              "SC-VC-017"
+            ]
+          },
+          {
+            "name": "TestChannelPolicyFacts/sensitive_copy_root_new_operation",
+            "sc": [
+              "SC-VC-020"
+            ]
+          },
+          {
+            "name": "TestChannelPolicyFacts/sensitive_same_operation_replay",
+            "sc": [
+              "SC-VC-020"
+            ]
+          },
+          {
+            "name": "TestChannelPolicyFacts/sensitive_revoke_interleaving",
+            "sc": [
+              "SC-VC-020"
+            ]
+          },
+          {
+            "name": "TestChannelPolicyFacts/sensitive_legacy_ledger_unverified",
+            "sc": [
+              "SC-VC-020"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "policy-resume",
+        "pkg": "./internal/governance",
+        "run": "^TestChannelPolicyResume$",
+        "leaves": [
+          {
+            "name": "TestChannelPolicyResume/repair_extension_append",
+            "sc": [
+              "SC-VC-018"
+            ]
+          },
+          {
+            "name": "TestChannelPolicyResume/repair_extension_double_append_race",
+            "sc": [
+              "SC-VC-018"
+            ]
+          },
+          {
+            "name": "TestChannelPolicyResume/repair_extension_replay",
+            "sc": [
+              "SC-VC-018"
+            ]
+          },
+          {
+            "name": "TestChannelPolicyResume/signed_resume",
+            "sc": [
+              "SC-VC-019"
+            ]
+          },
+          {
+            "name": "TestChannelPolicyResume/signed_resume_no_revive",
+            "sc": [
+              "SC-VC-019"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "settlement",
+        "pkg": "./internal/governance",
+        "run": "^TestChannelIngestSettlement$",
+        "leaves": [
+          {
+            "name": "TestChannelIngestSettlement/t_commit_m_rollback_resend",
+            "sc": [
+              "SC-VC-021"
+            ]
+          },
+          {
+            "name": "TestChannelIngestSettlement/lost_response_returns_mapping",
+            "sc": [
+              "SC-VC-021"
+            ]
+          },
+          {
+            "name": "TestChannelIngestSettlement/ack_no_slot_release",
+            "sc": [
+              "SC-VC-022"
+            ]
+          },
+          {
+            "name": "TestChannelIngestSettlement/nonpermit_settles_no_effect",
+            "sc": [
+              "SC-VC-022"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "binding",
+        "pkg": "./internal/governance",
+        "run": "^TestChannelIngestBinding$",
+        "leaves": [
+          {
+            "name": "TestChannelIngestBinding/start_preflight_643_645_match",
+            "sc": [
+              "SC-VC-023"
+            ]
+          },
+          {
+            "name": "TestChannelIngestBinding/generation_bound_once",
+            "sc": [
+              "SC-VC-023"
+            ]
+          },
+          {
+            "name": "TestChannelIngestBinding/cross_issuance_challenge",
+            "sc": [
+              "SC-VC-024"
+            ]
+          },
+          {
+            "name": "TestChannelIngestBinding/same_task_redispatch_challenge",
+            "sc": [
+              "SC-VC-024"
+            ],
+            "green_prerequisite": "AIFI-45 G2 residual fixed"
+          },
+          {
+            "name": "TestChannelIngestBinding/same_nonce_different_proof",
+            "sc": [
+              "SC-VC-024"
+            ]
+          },
+          {
+            "name": "TestChannelIngestBinding/claim_terminated_before_consume",
+            "sc": [
+              "SC-VC-024"
+            ],
+            "green_prerequisite": "AIFI-45 G1 fixed; G4 residual fixed"
+          }
+        ]
+      },
+      {
+        "label": "reader",
+        "pkg": "./internal/governance",
+        "run": "^TestChannelReader$",
+        "leaves": [
+          {
+            "name": "TestChannelReader/missing_t_zero_dispatch",
+            "sc": [
+              "SC-VC-025"
+            ]
+          },
+          {
+            "name": "TestChannelReader/settle_replay_original_mapping",
+            "sc": [
+              "SC-VC-025"
+            ]
+          },
+          {
+            "name": "TestChannelReader/unsettled_candidate_not_replaced",
+            "sc": [
+              "SC-VC-025"
+            ]
+          },
+          {
+            "name": "TestChannelReader/selected_strict_field_deleted",
+            "sc": [
+              "SC-VC-026"
+            ]
+          },
+          {
+            "name": "TestChannelReader/unknown_selection_not_legacy",
+            "sc": [
+              "SC-VC-026"
+            ]
+          },
+          {
+            "name": "TestChannelReader/never_selected_legacy_unchanged",
+            "sc": [
+              "SC-VC-026"
+            ]
+          },
+          {
+            "name": "TestChannelReader/terminal_report_without_claim",
+            "sc": [
+              "SC-VC-027"
+            ]
+          },
+          {
+            "name": "TestChannelReader/terminal_fence_survives_reclaim",
+            "sc": [
+              "SC-VC-027"
+            ]
+          },
+          {
+            "name": "TestChannelReader/legacy_consumed_keeps_fence",
+            "sc": [
+              "SC-VC-027"
+            ]
+          },
+          {
+            "name": "TestChannelReader/terminal_fence_read_failure",
+            "sc": [
+              "SC-VC-027"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "merge-facts",
+        "pkg": "./internal/governance",
+        "run": "^TestChannelMergeFacts$",
+        "leaves": [
+          {
+            "name": "TestChannelMergeFacts/authn_workspace",
+            "sc": [
+              "SC-VC-030"
+            ]
+          },
+          {
+            "name": "TestChannelMergeFacts/reject_fallback_credentials",
+            "sc": [
+              "SC-VC-030"
+            ]
+          },
+          {
+            "name": "TestChannelMergeFacts/source_freeze_append_only",
+            "sc": [
+              "SC-VC-031"
+            ]
+          },
+          {
+            "name": "TestChannelMergeFacts/response_closed_set",
+            "sc": [
+              "SC-VC-032"
+            ]
+          },
+          {
+            "name": "TestChannelMergeFacts/current_binding_tristate",
+            "sc": [
+              "SC-VC-032"
+            ]
+          },
+          {
+            "name": "TestChannelMergeFacts/failure_code_layering",
+            "sc": [
+              "SC-VC-033"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "merge-effects",
+        "pkg": "./internal/governance",
+        "run": "^TestChannelMergeEffects$",
+        "leaves": [
+          {
+            "name": "TestChannelMergeEffects/reserve_shared_lock",
+            "sc": [
+              "SC-VC-034"
+            ]
+          },
+          {
+            "name": "TestChannelMergeEffects/attempt_semantics",
+            "sc": [
+              "SC-VC-035"
+            ]
+          },
+          {
+            "name": "TestChannelMergeEffects/code_order",
+            "sc": [
+              "SC-VC-036"
+            ]
+          },
+          {
+            "name": "TestChannelMergeEffects/non_auth_failure_no_halt",
+            "sc": [
+              "SC-VC-036"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "migration-up",
+        "pkg": "./internal/governance",
+        "run": "^TestChannelMigrationAfterUp$",
+        "fresh_db": true,
+        "leaves": [
+          {
+            "name": "TestChannelMigrationAfterUp/cr_execution_contract_selection",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterUp/cr_execution_control_reservation",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterUp/cr_execution_control_command",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterUp/cr_execution_tool_verdict",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterUp/cr_execution_tool_cursor",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterUp/cr_execution_control_settlement",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterUp/cr_execution_task_binding",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterUp/cr_execution_control_fact",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterUp/cr_execution_deployment_head",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterUp/cr_execution_deployment_snapshot",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterUp/cr_execution_policy_readiness",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterUp/cr_execution_policy_activation_head",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterUp/cr_execution_policy_activation_event",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterUp/cr_execution_code_source_freeze",
+            "sc": [
+              "SC-VC-028"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "migration-down",
+        "pkg": "./internal/governance",
+        "run": "^TestChannelMigrationAfterDown$",
+        "fresh_db": true,
+        "extra_migrations": [
+          "648_cr_execution_control.down.sql"
+        ],
+        "leaves": [
+          {
+            "name": "TestChannelMigrationAfterDown/cr_execution_contract_selection",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterDown/cr_execution_control_reservation",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterDown/cr_execution_control_command",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterDown/cr_execution_tool_verdict",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterDown/cr_execution_tool_cursor",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterDown/cr_execution_control_settlement",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterDown/cr_execution_task_binding",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterDown/cr_execution_control_fact",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterDown/cr_execution_deployment_head",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterDown/cr_execution_deployment_snapshot",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterDown/cr_execution_policy_readiness",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterDown/cr_execution_policy_activation_head",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterDown/cr_execution_policy_activation_event",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterDown/cr_execution_code_source_freeze",
+            "sc": [
+              "SC-VC-028"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "migration-reapply",
+        "pkg": "./internal/governance",
+        "run": "^TestChannelMigrationAfterReapply$",
+        "fresh_db": true,
+        "extra_migrations": [
+          "648_cr_execution_control.down.sql",
+          "648_cr_execution_control.up.sql"
+        ],
+        "leaves": [
+          {
+            "name": "TestChannelMigrationAfterReapply/cr_execution_contract_selection",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterReapply/cr_execution_control_reservation",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterReapply/cr_execution_control_command",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterReapply/cr_execution_tool_verdict",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterReapply/cr_execution_tool_cursor",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterReapply/cr_execution_control_settlement",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterReapply/cr_execution_task_binding",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterReapply/cr_execution_control_fact",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterReapply/cr_execution_deployment_head",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterReapply/cr_execution_deployment_snapshot",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterReapply/cr_execution_policy_readiness",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterReapply/cr_execution_policy_activation_head",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterReapply/cr_execution_policy_activation_event",
+            "sc": [
+              "SC-VC-028"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationAfterReapply/cr_execution_code_source_freeze",
+            "sc": [
+              "SC-VC-028"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "migration-protected",
+        "pkg": "./internal/governance",
+        "run": "^TestChannelMigrationProtectedData$",
+        "fresh_db": true,
+        "leaves": [
+          {
+            "name": "TestChannelMigrationProtectedData/fixtures_643_647_unchanged",
+            "sc": [
+              "SC-VC-029"
+            ]
+          },
+          {
+            "name": "TestChannelMigrationProtectedData/no_648_orphans",
+            "sc": [
+              "SC-VC-029"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "worker",
+        "pkg": "./internal/daemon",
+        "run": "^TestChannel(Worker|Recovery)$",
+        "leaves": [
+          {
+            "name": "TestChannelWorker/old_fence_rejected",
+            "sc": [
+              "SC-VC-011"
+            ]
+          },
+          {
+            "name": "TestChannelRecovery/tail_equal_resume",
+            "sc": [
+              "SC-VC-015"
+            ]
+          },
+          {
+            "name": "TestChannelRecovery/t_ahead_one_import",
+            "sc": [
+              "SC-VC-015"
+            ]
+          },
+          {
+            "name": "TestChannelRecovery/m_settled_return_mapping",
+            "sc": [
+              "SC-VC-015"
+            ]
+          },
+          {
+            "name": "TestChannelRecovery/journal_prepared_replay",
+            "sc": [
+              "SC-VC-015"
+            ]
+          },
+          {
+            "name": "TestChannelRecovery/divergent_freeze",
+            "sc": [
+              "SC-VC-015"
+            ]
+          },
+          {
+            "name": "TestChannelRecovery/restart_keeps_epoch",
+            "sc": [
+              "SC-VC-016"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "d8-recovery",
+        "pkg": "./internal/daemon",
+        "run": "^TestChannelRecoveryD8$",
+        "leaves": [
+          {
+            "name": "TestChannelRecoveryD8/same_lineage_restart_keeps_bytes",
+            "sc": [
+              "SC-VC-016"
+            ]
+          },
+          {
+            "name": "TestChannelRecoveryD8/regrant_cannot_reset",
+            "sc": [
+              "SC-VC-005"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "client",
+        "pkg": "./internal/daemon",
+        "run": "^TestChannelWorkerClient$",
+        "leaves": [
+          {
+            "name": "TestChannelWorkerClient/verdict_resend_original_bytes",
+            "sc": [
+              "SC-VC-021"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "composition",
+        "pkg": "./cmd/server",
+        "run": "^TestChannelComposition$",
+        "leaves": [
+          {
+            "name": "TestChannelComposition/real_worker_permit_creates_original_candidate",
+            "sc": [
+              "SC-VC-025"
+            ]
+          },
+          {
+            "name": "TestChannelComposition/missing_t_rejected",
+            "sc": [
+              "SC-VC-025"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "isolation",
+        "pkg": "./internal/daemon",
+        "run": "^TestChannelIsolation$",
+        "gates": "C-path slices",
+        "platforms": {
+          "linux": [
+            {
+              "name": "TestChannelIsolation/peer_credential_match",
+              "sc": [
+                "SC-VC-037"
+              ]
+            },
+            {
+              "name": "TestChannelIsolation/self_reported_fact_ignored",
+              "sc": [
+                "SC-VC-037"
+              ]
+            },
+            {
+              "name": "TestChannelIsolation/foreign_run_socket",
+              "sc": [
+                "SC-VC-037"
+              ]
+            },
+            {
+              "name": "TestChannelIsolation/fd_transfer",
+              "sc": [
+                "SC-VC-037"
+              ]
+            },
+            {
+              "name": "TestChannelIsolation/pid_reuse",
+              "sc": [
+                "SC-VC-037"
+              ]
+            }
+          ],
+          "windows": [
+            {
+              "name": "TestChannelIsolation/windows_named_pipe_identity",
+              "sc": [
+                "SC-VC-037"
+              ]
+            },
+            {
+              "name": "TestChannelIsolation/windows_self_reported_fact_ignored",
+              "sc": [
+                "SC-VC-037"
+              ]
+            },
+            {
+              "name": "TestChannelIsolation/windows_foreign_run_pipe",
+              "sc": [
+                "SC-VC-037"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "label": "readiness-protocol",
+        "pkg": "./internal/governance",
+        "run": "^TestChannelReadinessProtocol$",
+        "leaves": [
+          {
+            "name": "TestChannelReadinessProtocol/request_slots_frozen",
+            "sc": [
+              "SC-DR-003"
+            ]
+          },
+          {
+            "name": "TestChannelReadinessProtocol/observation_slot_cas",
+            "sc": [
+              "SC-DR-003"
+            ]
+          },
+          {
+            "name": "TestChannelReadinessProtocol/signed_result_immutable",
+            "sc": [
+              "SC-DR-003"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "readiness-component",
+        "pkg": "./internal/governance",
+        "run": "^TestChannelReadinessComponentBoundary$",
+        "leaves": [
+          {
+            "name": "TestChannelReadinessComponentBoundary/component_ready_not_activatable",
+            "sc": [
+              "SC-DR-003"
+            ]
+          },
+          {
+            "name": "TestChannelReadinessComponentBoundary/strict_missing_decider_not_ready",
+            "sc": [
+              "SC-DR-003"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "readiness-activation",
+        "pkg": "./internal/governance",
+        "run": "^TestChannelPolicyActivation$",
+        "leaves": [
+          {
+            "name": "TestChannelPolicyActivation/concurrent_activation_cas",
+            "sc": [
+              "SC-DR-004"
+            ]
+          },
+          {
+            "name": "TestChannelPolicyActivation/post_sign_generation_change",
+            "sc": [
+              "SC-DR-004"
+            ]
+          },
+          {
+            "name": "TestChannelPolicyActivation/nonce_replay_rejected",
+            "sc": [
+              "SC-DR-004"
+            ]
+          },
+          {
+            "name": "TestChannelPolicyActivation/stop_new_keeps_history",
+            "sc": [
+              "SC-DR-004"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "readiness-retirement",
+        "pkg": "./internal/governance",
+        "run": "^TestChannelReadinessRetirement$",
+        "leaves": [
+          {
+            "name": "TestChannelReadinessRetirement/live_legacy_run_blocks_drain",
+            "sc": [
+              "SC-DR-005"
+            ]
+          },
+          {
+            "name": "TestChannelReadinessRetirement/unknown_pending_blocks_drain",
+            "sc": [
+              "SC-DR-005"
+            ]
+          },
+          {
+            "name": "TestChannelReadinessRetirement/work_revision_drift_blocks_retired",
+            "sc": [
+              "SC-DR-005"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "readiness-fresh-work",
+        "pkg": "./internal/governance",
+        "run": "^TestChannelReadinessFreshWork$",
+        "leaves": [
+          {
+            "name": "TestChannelReadinessFreshWork/d8_same_origin_not_reset",
+            "sc": [
+              "SC-VC-005"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "readiness-access",
+        "pkg": "./internal/governance",
+        "run": "^TestChannelDeploymentAccess$",
+        "leaves": [
+          {
+            "name": "TestChannelDeploymentAccess/issued_recovers_after_stop_new",
+            "sc": [
+              "SC-DR-006"
+            ]
+          },
+          {
+            "name": "TestChannelDeploymentAccess/new_candidate_rejected",
+            "sc": [
+              "SC-DR-006"
+            ]
+          },
+          {
+            "name": "TestChannelDeploymentAccess/origin_change_rejected",
+            "sc": [
+              "SC-DR-006"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "deployment-observer",
+        "pkg": "./internal/daemon",
+        "run": "^TestChannelDeploymentObserver$",
+        "leaves": [
+          {
+            "name": "TestChannelDeploymentObserver/forged_observation_rejected",
+            "sc": [
+              "SC-DR-001"
+            ]
+          },
+          {
+            "name": "TestChannelDeploymentObserver/protected_measure_positive",
+            "sc": [
+              "SC-DR-001"
+            ]
+          },
+          {
+            "name": "TestChannelDeploymentObserver/inventory_all_instances",
+            "sc": [
+              "SC-DR-002"
+            ]
+          },
+          {
+            "name": "TestChannelDeploymentObserver/generation_supersedes",
+            "sc": [
+              "SC-DR-002"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "deployment-launch",
+        "pkg": "./internal/daemon",
+        "run": "^TestChannelDeploymentLaunch$",
+        "leaves": [
+          {
+            "name": "TestChannelDeploymentLaunch/generation_switch_fixed_snapshot",
+            "sc": [
+              "SC-DR-006"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "readiness-composition",
+        "pkg": "./cmd/server",
+        "run": "^TestChannelCompositionReadiness$",
+        "leaves": [
+          {
+            "name": "TestChannelCompositionReadiness/component_profile_ready_component",
+            "sc": [
+              "SC-DR-003"
+            ]
+          }
+        ]
+      }
     ],
     "aggregates": [
-      {"label": "core", "pkg": "./internal/governance", "run": "^TestChannel(Foundation|Protocol|PolicyFacts|PolicyResume|Ingest|Reader)", "role": "extra regression only; never counts as acceptance"}
+      {
+        "label": "core",
+        "pkg": "./internal/governance",
+        "run": "^TestChannel(Foundation|Protocol|PolicyFacts|PolicyResume|Ingest|Reader)",
+        "role": "extra regression only; never counts as acceptance"
+      }
     ]
   },
   "node": {
     "runner": "runnode <phase> <label> <file> (plan template; cwd = tools/skills/shared/crctl/scripts, --test-reporter=tap)",
     "labels": [
-      {"label": "protocol", "file": "./test/execution-control-protocol.test.mjs", "leaves": [
-        {"name": "verify purpose/domain/scope", "sc": ["SC-TR-001"]},
-        {"name": "exact keys 与 key-purpose", "sc": ["SC-TR-002"]}
-      ]},
-      {"label": "store", "file": "./test/execution-control-store.test.mjs", "leaves": [
-        {"name": "apply once 与原字节重放", "sc": ["SC-TR-003"]},
-        {"name": "冻结帧链拒绝断链与占位签名", "sc": ["SC-TR-004"]}
-      ]},
-      {"label": "worker", "file": "./test/execution-control-worker.test.mjs", "leaves": [
-        {"name": "旧 fence 不得执行新操作", "sc": ["SC-TR-005"]}
-      ]},
-      {"label": "recovery", "file": "./test/execution-control-recovery.test.mjs", "leaves": [
-        {"name": "恢复表固定动作", "sc": ["SC-TR-006"]},
-        {"name": "普通 restart 保持 epoch 与 sequence", "sc": ["SC-TR-007"]}
-      ]},
-      {"label": "policy", "file": "./test/execution-control-policy.test.mjs", "leaves": [
-        {"name": "repair-admit 拒绝未验签 payload", "sc": ["SC-TR-008"]},
-        {"name": "repair 追加 CAS 只接受一份", "sc": ["SC-TR-009"]},
-        {"name": "cr.md 合同字段与 store 不一致即拒", "sc": ["SC-TR-010"]},
-        {"name": "sensitive action 只接受原 operation", "sc": ["SC-TR-011"]},
-        {"name": "merge 范围只看已批准 source sha", "sc": ["SC-MG-001"]},
-        {"name": "merge 范围核对覆盖发布集合", "sc": ["SC-MG-001"]},
-        {"name": "merge 范围 rename 源与目标都查", "sc": ["SC-MG-002"]},
-        {"name": "merge 范围 symlink 取自发布候选树", "sc": ["SC-MG-002"]},
-        {"name": "merge 范围空集合不可放行", "sc": ["SC-MG-003"]},
-        {"name": "merge 范围 release-subject 缺失即拒", "sc": ["SC-MG-003"]},
-        {"name": "merge 范围无法核实即拒", "sc": ["SC-MG-003"]},
-        {"name": "merge 范围 Unknown selection 即拒", "sc": ["SC-MG-004"]},
-        {"name": "legacy merge 不核对范围", "sc": ["SC-MG-004"]},
-        {"name": "merge 范围删合同字段仍 strict", "sc": ["SC-MG-004"]},
-        {"name": "merge 范围恢复沿用原冻结输入", "sc": ["SC-MG-005"]},
-        {"name": "merge 范围撤销发生在部分发布后", "sc": ["SC-MG-006"]},
-        {"name": "merge 范围核对越界零写入", "sc": ["SC-MG-006"]},
-        {"name": "merge 范围不受 grants 目录旧文件影响", "sc": ["SC-MG-007"]},
-        {"name": "merge 范围 head 撤销即拒", "sc": ["SC-MG-007"]},
-        {"name": "merge 范围 head 前移即拒", "sc": ["SC-MG-007"]},
-        {"name": "merge 范围越界不推进状态", "sc": ["SC-MG-008"]},
-        {"name": "merge 范围 finalize 写集逐项授权", "sc": ["SC-MG-008"]},
-        {"name": "merge 范围核对含 KB 审批后写入", "sc": ["SC-MG-008"]}
-      ]},
-      {"label": "merge-facts", "file": "./test/merge-facts.test.mjs", "leaves": [
-        {"name": "merge-facts 只按认证主体解析 workspace", "sc": ["SC-MG-009"]},
-        {"name": "merge-facts 拒绝 PAT/JWT/task-token", "sc": ["SC-MG-009"]},
-        {"name": "merge-facts 当前冻结行唯一", "sc": ["SC-MG-013"]},
-        {"name": "merge-facts 批准下界须为候选祖先", "sc": ["SC-MG-010"]},
-        {"name": "merge-facts 仓库集合与 grant 精确相等", "sc": ["SC-MG-011"]},
-        {"name": "merge-facts current_binding 三态", "sc": ["SC-MG-012"]},
-        {"name": "merge-facts legacy 证明缺失或不符即拒", "sc": ["SC-MG-012"]},
-        {"name": "merge-facts 失败码优先级", "sc": ["SC-MG-013"]},
-        {"name": "merge-facts 不可用即 UNAVAILABLE", "sc": ["SC-MG-013"]},
-        {"name": "merge-facts 撤销即 REVOKED", "sc": ["SC-MG-013"]},
-        {"name": "merge-facts head 前移即 HEAD_MOVED", "sc": ["SC-MG-013"]}
-      ]},
-      {"label": "merge-effects", "file": "./test/merge-effects.test.mjs", "leaves": [
-        {"name": "merge-effect reserve 持 CR 共享锁", "sc": ["SC-MG-014"]},
-        {"name": "merge-effect 撤销先提交则零 effect", "sc": ["SC-MG-014"]},
-        {"name": "merge-effect reserve 先提交则撤销不追溯", "sc": ["SC-MG-014"]},
-        {"name": "merge-effect 远端含 expected 不重推", "sc": ["SC-MG-015"]},
-        {"name": "merge-effect intent 且远端未变须重新 reserve", "sc": ["SC-MG-016"]},
-        {"name": "merge-effect 远端分叉进入 uncertain 且禁止新 publish", "sc": ["SC-MG-017"]},
-        {"name": "merge-effect 部分发布后 base 漂移即 halted", "sc": ["SC-MG-018"]},
-        {"name": "merge-effect finalize 也须 reserve", "sc": ["SC-MG-019"]},
-        {"name": "merge-effect 非 base 输入变化拒绝恢复", "sc": ["SC-MG-018"]},
-        {"name": "merge-effect 旧 push 延迟完成不得误判零 effect", "sc": ["SC-MG-017"]},
-        {"name": "merge-effect 已确认后回退至 prev 判为改写", "sc": ["SC-MG-015"]},
-        {"name": "merge-effect 服务端 no_effect 终态后以新 attempt 恢复", "sc": ["SC-MG-016"]},
-        {"name": "merge-effect attempt 语义", "sc": ["SC-MG-020"]},
-        {"name": "merge-effect 先判 head 再比摘要", "sc": ["SC-MG-020"]},
-        {"name": "merge-effect 认证与归属码序及非授权失败", "sc": ["SC-MG-020"]},
-        {"name": "merge-effect 远端正常前进不判改写", "sc": ["SC-MG-015"]}
-      ]},
-      {"label": "readiness", "file": "./test/execution-control-readiness.test.mjs", "leaves": [
-        {"name": "readiness 拒绝宽松输入", "sc": ["SC-TR-012"]},
-        {"name": "verify-channel 只出 READY_COMPONENT", "sc": ["SC-TR-012"]}
-      ]},
-      {"label": "isolation", "file": "./test/execution-control-isolation.test.mjs", "gates": "C-path slices", "platforms": {
-        "linux": [
-          {"name": "同 UID profile 判不合格", "sc": ["SC-TR-013"]},
-          {"name": "agent 不能读 key 写 store 连 IPC 或注入 env", "sc": ["SC-TR-013"]},
-          {"name": "受限服务身份可签发并验证", "sc": ["SC-TR-013"]}
-        ],
-        "windows": [
-          {"name": "Windows 同令牌 SID profile 判不合格", "sc": ["SC-TR-013"]},
-          {"name": "Windows agent 令牌不能读 key 或写 store", "sc": ["SC-TR-013"]}
+      {
+        "label": "protocol",
+        "file": "./test/execution-control-protocol.test.mjs",
+        "leaves": [
+          {
+            "name": "verify purpose/domain/scope",
+            "sc": [
+              "SC-TR-001"
+            ]
+          },
+          {
+            "name": "exact keys 与 key-purpose",
+            "sc": [
+              "SC-TR-002"
+            ]
+          }
         ]
-      }}
+      },
+      {
+        "label": "store",
+        "file": "./test/execution-control-store.test.mjs",
+        "leaves": [
+          {
+            "name": "apply once 与原字节重放",
+            "sc": [
+              "SC-TR-003"
+            ]
+          },
+          {
+            "name": "冻结帧链拒绝断链与占位签名",
+            "sc": [
+              "SC-TR-004"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "worker",
+        "file": "./test/execution-control-worker.test.mjs",
+        "leaves": [
+          {
+            "name": "旧 fence 不得执行新操作",
+            "sc": [
+              "SC-TR-005"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "recovery",
+        "file": "./test/execution-control-recovery.test.mjs",
+        "leaves": [
+          {
+            "name": "恢复表固定动作",
+            "sc": [
+              "SC-TR-006"
+            ]
+          },
+          {
+            "name": "普通 restart 保持 epoch 与 sequence",
+            "sc": [
+              "SC-TR-007"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "policy",
+        "file": "./test/execution-control-policy.test.mjs",
+        "leaves": [
+          {
+            "name": "repair-admit 拒绝未验签 payload",
+            "sc": [
+              "SC-TR-008"
+            ]
+          },
+          {
+            "name": "repair 追加 CAS 只接受一份",
+            "sc": [
+              "SC-TR-009"
+            ]
+          },
+          {
+            "name": "cr.md 合同字段与 store 不一致即拒",
+            "sc": [
+              "SC-TR-010"
+            ]
+          },
+          {
+            "name": "sensitive action 只接受原 operation",
+            "sc": [
+              "SC-TR-011"
+            ]
+          },
+          {
+            "name": "merge 范围只看已批准 source sha",
+            "sc": [
+              "SC-MG-001"
+            ]
+          },
+          {
+            "name": "merge 范围核对覆盖发布集合",
+            "sc": [
+              "SC-MG-001"
+            ]
+          },
+          {
+            "name": "merge 范围 rename 源与目标都查",
+            "sc": [
+              "SC-MG-002"
+            ]
+          },
+          {
+            "name": "merge 范围 symlink 取自发布候选树",
+            "sc": [
+              "SC-MG-002"
+            ]
+          },
+          {
+            "name": "merge 范围空集合不可放行",
+            "sc": [
+              "SC-MG-003"
+            ]
+          },
+          {
+            "name": "merge 范围 release-subject 缺失即拒",
+            "sc": [
+              "SC-MG-003"
+            ]
+          },
+          {
+            "name": "merge 范围无法核实即拒",
+            "sc": [
+              "SC-MG-003"
+            ]
+          },
+          {
+            "name": "merge 范围 Unknown selection 即拒",
+            "sc": [
+              "SC-MG-004"
+            ]
+          },
+          {
+            "name": "legacy merge 不核对范围",
+            "sc": [
+              "SC-MG-004"
+            ]
+          },
+          {
+            "name": "merge 范围删合同字段仍 strict",
+            "sc": [
+              "SC-MG-004"
+            ]
+          },
+          {
+            "name": "merge 范围恢复沿用原冻结输入",
+            "sc": [
+              "SC-MG-005"
+            ]
+          },
+          {
+            "name": "merge 范围撤销发生在部分发布后",
+            "sc": [
+              "SC-MG-006"
+            ]
+          },
+          {
+            "name": "merge 范围核对越界零写入",
+            "sc": [
+              "SC-MG-006"
+            ]
+          },
+          {
+            "name": "merge 范围不受 grants 目录旧文件影响",
+            "sc": [
+              "SC-MG-007"
+            ]
+          },
+          {
+            "name": "merge 范围 head 撤销即拒",
+            "sc": [
+              "SC-MG-007"
+            ]
+          },
+          {
+            "name": "merge 范围 head 前移即拒",
+            "sc": [
+              "SC-MG-007"
+            ]
+          },
+          {
+            "name": "merge 范围越界不推进状态",
+            "sc": [
+              "SC-MG-008"
+            ]
+          },
+          {
+            "name": "merge 范围 finalize 写集逐项授权",
+            "sc": [
+              "SC-MG-008"
+            ]
+          },
+          {
+            "name": "merge 范围核对含 KB 审批后写入",
+            "sc": [
+              "SC-MG-008"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "merge-facts",
+        "file": "./test/merge-facts.test.mjs",
+        "leaves": [
+          {
+            "name": "merge-facts 只按认证主体解析 workspace",
+            "sc": [
+              "SC-MG-009"
+            ]
+          },
+          {
+            "name": "merge-facts 拒绝 PAT/JWT/task-token",
+            "sc": [
+              "SC-MG-009"
+            ]
+          },
+          {
+            "name": "merge-facts 当前冻结行唯一",
+            "sc": [
+              "SC-MG-013"
+            ]
+          },
+          {
+            "name": "merge-facts 批准下界须为候选祖先",
+            "sc": [
+              "SC-MG-010"
+            ]
+          },
+          {
+            "name": "merge-facts 仓库集合与 grant 精确相等",
+            "sc": [
+              "SC-MG-011"
+            ]
+          },
+          {
+            "name": "merge-facts current_binding 三态",
+            "sc": [
+              "SC-MG-012"
+            ]
+          },
+          {
+            "name": "merge-facts legacy 证明缺失或不符即拒",
+            "sc": [
+              "SC-MG-012"
+            ]
+          },
+          {
+            "name": "merge-facts 失败码优先级",
+            "sc": [
+              "SC-MG-013"
+            ]
+          },
+          {
+            "name": "merge-facts 不可用即 UNAVAILABLE",
+            "sc": [
+              "SC-MG-013"
+            ]
+          },
+          {
+            "name": "merge-facts 撤销即 REVOKED",
+            "sc": [
+              "SC-MG-013"
+            ]
+          },
+          {
+            "name": "merge-facts head 前移即 HEAD_MOVED",
+            "sc": [
+              "SC-MG-013"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "merge-effects",
+        "file": "./test/merge-effects.test.mjs",
+        "leaves": [
+          {
+            "name": "merge-effect reserve 持 CR 共享锁",
+            "sc": [
+              "SC-MG-014"
+            ]
+          },
+          {
+            "name": "merge-effect 撤销先提交则零 effect",
+            "sc": [
+              "SC-MG-014"
+            ]
+          },
+          {
+            "name": "merge-effect reserve 先提交则撤销不追溯",
+            "sc": [
+              "SC-MG-014"
+            ]
+          },
+          {
+            "name": "merge-effect 远端含 expected 不重推",
+            "sc": [
+              "SC-MG-015"
+            ]
+          },
+          {
+            "name": "merge-effect intent 且远端未变须重新 reserve",
+            "sc": [
+              "SC-MG-016"
+            ]
+          },
+          {
+            "name": "merge-effect 远端分叉进入 uncertain 且禁止新 publish",
+            "sc": [
+              "SC-MG-017"
+            ]
+          },
+          {
+            "name": "merge-effect 部分发布后 base 漂移即 halted",
+            "sc": [
+              "SC-MG-018"
+            ]
+          },
+          {
+            "name": "merge-effect finalize 也须 reserve",
+            "sc": [
+              "SC-MG-019"
+            ]
+          },
+          {
+            "name": "merge-effect 非 base 输入变化拒绝恢复",
+            "sc": [
+              "SC-MG-018"
+            ]
+          },
+          {
+            "name": "merge-effect 旧 push 延迟完成不得误判零 effect",
+            "sc": [
+              "SC-MG-017"
+            ]
+          },
+          {
+            "name": "merge-effect 已确认后回退至 prev 判为改写",
+            "sc": [
+              "SC-MG-015"
+            ]
+          },
+          {
+            "name": "merge-effect 服务端 no_effect 终态后以新 attempt 恢复",
+            "sc": [
+              "SC-MG-016"
+            ]
+          },
+          {
+            "name": "merge-effect attempt 语义",
+            "sc": [
+              "SC-MG-020"
+            ]
+          },
+          {
+            "name": "merge-effect 先判 head 再比摘要",
+            "sc": [
+              "SC-MG-020"
+            ]
+          },
+          {
+            "name": "merge-effect 认证与归属码序及非授权失败",
+            "sc": [
+              "SC-MG-020"
+            ]
+          },
+          {
+            "name": "merge-effect 远端正常前进不判改写",
+            "sc": [
+              "SC-MG-015"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "readiness",
+        "file": "./test/execution-control-readiness.test.mjs",
+        "leaves": [
+          {
+            "name": "readiness 拒绝宽松输入",
+            "sc": [
+              "SC-TR-012"
+            ]
+          },
+          {
+            "name": "verify-channel 只出 READY_COMPONENT",
+            "sc": [
+              "SC-TR-012"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "isolation",
+        "file": "./test/execution-control-isolation.test.mjs",
+        "gates": "C-path slices",
+        "platforms": {
+          "linux": [
+            {
+              "name": "同 UID profile 判不合格",
+              "sc": [
+                "SC-TR-013"
+              ]
+            },
+            {
+              "name": "agent 不能读 key 写 store 连 IPC 或注入 env",
+              "sc": [
+                "SC-TR-013"
+              ]
+            },
+            {
+              "name": "受限服务身份可签发并验证",
+              "sc": [
+                "SC-TR-013"
+              ]
+            }
+          ],
+          "windows": [
+            {
+              "name": "Windows 同令牌 SID profile 判不合格",
+              "sc": [
+                "SC-TR-013"
+              ]
+            },
+            {
+              "name": "Windows agent 令牌不能读 key 或写 store",
+              "sc": [
+                "SC-TR-013"
+              ]
+            }
+          ]
+        }
+      }
     ],
     "aggregates": [
-      {"label": "repair-regression", "file": "./test/repair-governance.test.mjs", "role": "extra regression only; never counts as acceptance"}
+      {
+        "label": "repair-regression",
+        "file": "./test/repair-governance.test.mjs",
+        "role": "extra regression only; never counts as acceptance"
+      }
     ]
   },
   "evidence_checker": {
     "file": "multica scripts/aifi45-verify/channel-evidence.mjs (+ .test.mjs)",
     "sc": [],
     "note": "tooling self-test, not a business scenario; must include a case where summary looks successful but a required leaf is missing"
-  }
+  },
+  "revisions": [
+    {
+      "at_phase": "BUILD",
+      "reason": "strong review BLOCK: selection/reservation immutability, command state machine, truncate bypass, head scope freeze, freeze stamp finality, origin-once, readiness write-once, pinned legacy catalog, reservation selection revalidation",
+      "added_leaves": [
+        "TestChannelStoreGuards/selection_row_immutable",
+        "TestChannelStoreGuards/reservation_row_immutable",
+        "TestChannelStoreGuards/command_transition_rejects_skips",
+        "TestChannelStoreGuards/command_signed_fields_frozen",
+        "TestChannelStoreGuards/retained_tables_reject_truncate",
+        "TestChannelStoreGuards/deployment_head_scope_immutable",
+        "TestChannelStoreGuards/freeze_stamp_cannot_be_cleared",
+        "TestChannelStoreGuards/origin_registration_requires_origin",
+        "TestChannelStoreGuards/readiness_verdict_write_once",
+        "TestChannelFoundationSelection/legacy_catalog_must_be_pinned",
+        "TestChannelFoundationSelection/legacy_persistent_row_requires_proof",
+        "TestChannelFoundationReservation/reservation_selection_reverified"
+      ],
+      "removed_leaves": [],
+      "renamed_leaves": [
+        {
+          "from": "TestChannelMigrationProtectedData/fixtures_643_644_647_unchanged",
+          "to": "TestChannelMigrationProtectedData/fixtures_643_647_unchanged"
+        }
+      ]
+    }
+  ]
 }

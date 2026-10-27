@@ -1,0 +1,11 @@
+{"at":"2026-10-27T08:24:36.385Z","kind":"plan","container":"666bfec52ac3c3d13b43389891f50c4105833198eab7e4167b76f014a774e823","original":"stdd_aifi45_20261022","target":{"nonce":"16f92587c883078c","database":"aifi45_tmp_16f92587c883078c","role":"aifi45_role_16f92587c883078c"},"package":"./internal/governance","pattern":"^TestChannelMigrationAfterDown$","extra":["-migration=server/migrations/642_cr_execution_authorization_head.up.sql","-migration=server/migrations/643_cr_execution_binding_issue.up.sql","-migration=server/migrations/644_cr_execution_consumption.up.sql","-migration=server/migrations/645_cr_execution_activation.up.sql","-migration=server/migrations/646_cr_execution_notice.up.sql","-migration=server/migrations/647_cr_execution_dispatch_root.up.sql","-migration=server/migrations/648_cr_execution_control.up.sql","-migration=server/migrations/648_cr_execution_control.down.sql"]}
+{"at":"2026-10-27T08:24:38.946Z","kind":"source-preserved","approval_rows":82,"original_tables":137,"schema_sha256":"f651380aac194605bfbef8d8ab4118186ecd8d986d89478bc17ffc1dbfc65224","audit_dump_sha256":"29186ef6ec71172db477ed3a32b080090cac175a264acfa5fa172f269d458167"}
+{"at":"2026-10-27T08:24:38.947Z","kind":"create-role-intent","role":"aifi45_role_16f92587c883078c"}
+{"at":"2026-10-27T08:24:40.204Z","kind":"create-database-intent","database":"aifi45_tmp_16f92587c883078c","owner":"aifi45_role_16f92587c883078c"}
+{"at":"2026-10-27T08:24:41.947Z","kind":"created","target":{"nonce":"16f92587c883078c","database":"aifi45_tmp_16f92587c883078c","role":"aifi45_role_16f92587c883078c","role_oid":"916949","database_oid":"916950"}}
+{"at":"2026-10-27T08:24:44.548Z","kind":"seed-state-copied","tables":["public.task_usage_hourly_rollup_state"]}
+{"at":"2026-10-27T08:24:44.934Z","kind":"failure","error":"podman failed (3): ERROR:  column \"execution_authorization_head_id\" of relation \"cr\" already exists\n"}
+{"at":"2026-10-27T08:24:46.366Z","kind":"original-compared","unchanged":true,"release":{"sessions":0,"locks":0}}
+{"at":"2026-10-27T08:24:47.287Z","kind":"database-dropped","database":"aifi45_tmp_16f92587c883078c","oid":"916950"}
+{"at":"2026-10-27T08:24:48.162Z","kind":"role-dropped","role":"aifi45_role_16f92587c883078c","oid":"916949"}
+{"at":"2026-10-27T08:24:48.611Z","kind":"resources-absence-verified","database_present":false,"role_present":false}

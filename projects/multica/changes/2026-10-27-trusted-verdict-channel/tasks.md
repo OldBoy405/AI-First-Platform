@@ -17,21 +17,31 @@
 
 ## 1. 迁移与 schema（P0，阻塞全片）
 
-- [x] 1.1 新增 `server/migrations/648_cr_execution_control.up.sql`：14 张 `cr_execution_*` 表 + 10 个触发器函数（append-only/immutable/write-once/no-delete/monotonic）、部分唯一索引、无新 FK/cascade。
-- [x] 1.2 新增 `648_cr_execution_control.down.sql`：按逆序撤销 14 表并显式 DROP 10 个触发器函数。
-- [x] 1.3 `server/internal/governance/execution_control_tables.go`：`ChannelTableNames`（14 全名，创建序）+ `ChannelTriggerFunctions`（10）。
-- [x] 1.4 `execution_control_migration_test.go`：`TestChannelMigrationAfterUp/Down/Reapply` 各表一个 `t.Run` + 逐表约束/索引/触发器清单（先声明后断言，不由实测反推）。真跑：up 15/15（leaf 14）、down 25/25（leaf 24）、reapply 15/15（leaf 14），均 skip=0、original_unchanged=true。
-- [x] 1.5 `TestChannelMigrationProtectedData`：造 643 夹具 → 648 down/up → 断言夹具行未变、643–647 表仍在、14 张 648 表零残留。真跑 3/3（leaf 2）。证据见 `validation/migration-{up,down,reapply,protected}-*`。
+- [x] 1.1 新增 `server/migrations/648_cr_execution_control.up.sql`：14 张 `cr_execution_*` 表 + 7 个共享 guard 函数 + 30 个触发器（append-only / no-delete / no-truncate / 命令状态机 / head 单调 / freeze 终态 / readiness 写一次）、部分唯一索引、无新 FK/cascade。表级不可变由行级 + 语句级双重拦截：行级触发器对 TRUNCATE 不触发，缺语句级 guard 就是真窟窿。
+- [x] 1.2 新增 `648_cr_execution_control.down.sql`：按逆序撤销 14 表并显式 DROP 7 个 guard 函数，无 cascade。
+- [x] 1.3 `server/internal/governance/execution_control_tables.go`：`ChannelTableNames`（14 全名，创建序）+ `ChannelTriggerFunctions`（7）。
+- [x] 1.4 `execution_control_migration_test.go`：`TestChannelMigrationAfterUp/Down/Reapply` 各表一个 `t.Run` + 逐表清单（先声明后断言，不由实测反推）。清单按**对象语义**断言而非仅名字：CHECK/UNIQUE 按 `pg_constraint.contype` 匹配，部分索引必须带谓词、普通索引必须不带，触发器按事件集合匹配（`pg_get_triggerdef` 会按字母序渲染成 `BEFORE DELETE OR UPDATE`，字面串比会假红）。真跑：up 15/15（leaf 14）、down 22/22（leaf 21）、reapply 15/15（leaf 14），均 skip=0、original_unchanged=true、owned_resources_cleaned=true。
+- [x] 1.5 `TestChannelMigrationProtectedData`：造 643/644/647 夹具并**向 648 表写入真实行** → 648 down/up → 断言夹具行摘要不变、643–647 表仍在、14 张 648 表零残留。down 侧残留枚举按**归属**排除既有台账与其自带索引/序列（按名字前缀扫会把 643–647 自己判成残留），对象差集见 `channelUnexpectedObjects`。真跑 4/4（leaf 3）。证据见 `validation/{g,h,i,l}-*`。
 - [x] 1.6 648 未被占用（当前最大仍 647），无需顺延。
+- [x] 1.7 破坏性探针前置 **DB 身份闸门**：连接后立即断言库名 `^aifi45_tmp_[0-9a-f]{16}$`、角色 `^aifi45_role_[0-9a-f]{16}$`、非 superuser、库注释等于 `AIFI45_DISPOSABLE:<nonce>`，任一不符即 fatal——先证这是可丢弃 nonce 库，再执行 648 down。
 
 ## 2. S1 选择、候选与派发根（P0）
 
-- [x] 2.1 `execution_contract_selection.go`：`ResolveSelectionTx` 只读持久选择；strict+投影缺失/空/不同 → `T_VERDICT_BINDING_MISMATCH`（不降级）；无选择且目录未证明 → `EXECUTION_SELECTION_UNKNOWN`；legacy 只认 `legacy-origin-catalog` 里 `status=legacy` 的条目。`TestChannelFoundationSelection` 真跑 4/4（leaf 3），m1/m2/m3 各自只打红自己的 leaf、恢复后 sha 一致。证据 `validation/selection-20261027-report.md`。
-- [x] 2.2 `execution_control_reservation.go`：`CreateReservationTx` 只接受 strict 选择、候选 bytes 冻结为 digest、proposed task id 固定；表内无任何 dispatch 列（结构上不可 claim/执行），且不写 `agent_task_queue`。`TestChannelFoundationReservation` 真跑 3/3（leaf 2），m1/m2 各自只打红自己的 leaf、恢复后 sha 一致。证据 `validation/reservation-20261027-report.md`。注：green 首跑因测试自身事务中止写法失败，改 savepoint 后通过，已在该报告如实记录。
+- [x] 2.1 `execution_contract_selection.go`：`ResolveSelectionTx` 只读持久选择；strict+投影缺失/空/不同 → `T_VERDICT_BINDING_MISMATCH`（不降级）；无选择且目录未证明 → `EXECUTION_SELECTION_UNKNOWN`。legacy 只认 `deployment_head.legacy_catalog_ref` **钉住**的那份目录（不取最新行）、校验 gate/kind/scope/`catalog_version`，且整份目录先验重后才采信单条（重复条目=不可解事实）。缺行→目录的竞态由 `pg_advisory_xact_lock` 关掉。`TestChannelFoundationSelection` 真跑 6/6（leaf 5），含「未钉住的新目录不得改变裁决」「持久 legacy 行仍需证明」两条反例。证据 `validation/i-selection-*`、`j-selection-*`。
+- [x] 2.2 `execution_control_reservation.go`：`CreateReservationTx` 只接受 strict 选择、候选 bytes 冻结为 digest、proposed task id 固定；表内无任何 dispatch 列（结构上不可 claim/执行），且不写 `agent_task_queue`。**同一 Tx 内回读** selection 行校验 mode/lineage/scope，伪造的 `Selection` 结构体不被信任。`TestChannelFoundationReservation` 真跑 4/4（leaf 3），含伪造 selection id、跨 CR、跨 lineage、跨 scope 四条反例。证据 `validation/i-reservation-*`。注：green 首跑因测试自身事务中止写法失败，改 savepoint 后通过。
 - [ ] 2.3 `execution_dispatch_root.go` + `service/task.go` + `queries/agent.sql`（固定 sqlc 版本生成）：同 Tx root/task/settlement、固定 ID 冲突逐字段等同、commit 后通知；`fixed_id_conflict_and_rollback`。
 - [ ] 2.4 adoption/terminal 并发探针（`55P03`）与顺序语义：`root_adoption_terminal_race`（green 前置：AIFI-45 G5 已修）。
 - [ ] 2.5 `execution_fresh_work.go`：`RegisterFreshWorkTx`、origin/fresh-work/legacy-catalog 三型 fact、partial unique；`TestChannelFoundationFreshWork`。
 - [ ] 2.6 `service/execution_channel_task_tx_test.go`：`TestChannelTaskTx` 承接 `task-tx` 模板。
+
+## 2A. 数据库不变量复核修复（P0，strong 复核 BLOCK 后新增）
+
+- [x] 2A.1 选择/预约行级不可变 + 语句级 TRUNCATE 拦截（B1）；其余保活表（verdict/settlement/binding/fact/snapshot/activation_event/freeze）全部补 TRUNCATE guard（M2）。
+- [x] 2A.2 命令状态机 `created→issued→result_ready→settled_*|uncertain`、终态出不去、身份与签名字段恒冻结、admission 边界在 issued 后冻结、`verdict_id` 终态（M1）。
+- [x] 2A.3 deployment head `scope` 不可改、generation/registry/work revision 单调、RETIRED 终态（M3）；freeze 的 supersede/revoke 戳只能 NULL→值且须晚于 approved_at（M4）。
+- [x] 2A.4 `origin-registration` 必须带 origin（CHECK + `(scope,origin_id)` 部分唯一）（M5）；readiness 请求字段冻结、observation slots 只追加、verdict 写一次（M10）。
+- [x] 2A.5 `TestChannelStoreGuards` 9 leaf 真跑 10/10（leaf 9）；m1–m4 四个变异各自只打红目标 leaf（m1 打红 selection+reservation 两行不可变，因其共享同一个 append-only 函数），恢复后 up.sql sha 与基线一致（`89f0c3f0…`）。
+- [x] 2A.6 冻结清单按复核结论扩充 +4 条 leaf（`store-guards` 新增 label、selection 2 条、reservation 1 条），改动记入 `validation/channel-test-expectations.json#revisions`。
 
 ## 3. S2–S4 协议、store 与恢复（P0）
 
