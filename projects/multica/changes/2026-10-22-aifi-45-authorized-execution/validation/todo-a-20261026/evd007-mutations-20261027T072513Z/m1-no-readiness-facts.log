@@ -1,0 +1,60 @@
+✔ EVD-001/002 交付 gate 消费同一个判定：作者自审被拒 (237.6519ms)
+✔ EVD-001/002 交付 gate 放行独立评审的合同 CR (137.2717ms)
+✔ EVD-001/002 回写入口同样消费该判定 (138.7488ms)
+✔ EVD-006 legacy CR 不被追溯阻断 (143.2647ms)
+✔ EVD-002 缺 test-report 时交付 gate 指出缺失内容 (130.3798ms)
+✖ EVD-007 声明了就绪清单后，观测不到的组件阻断交付 (134.1851ms)
+✖ EVD-007 观测到的摘要与声明不一致同样阻断 (130.5148ms)
+✔ EVD-007 声明与观测一致时放行（不是一律阻断） (145.09ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 6
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1269.643
+
+✖ failing tests:
+
+test at skills\shared\crctl\scripts\test\evidence-delivery-gate.test.mjs:155:1
+✖ EVD-007 声明了就绪清单后，观测不到的组件阻断交付 (134.1851ms)
+  AssertionError [ERR_ASSERTION]: {"type":"evidenceDelivery","ok":true,"legacy":false,"findings":[],"why":null}
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///C:/Users/GOBAO/Downloads/AI/tools/skills/shared/crctl/scripts/test/evidence-delivery-gate.test.mjs:164:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1201:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+      at Test.postRun (node:internal/test_runner/test:1330:19)
+      at Test.run (node:internal/test_runner/test:1258:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at skills\shared\crctl\scripts\test\evidence-delivery-gate.test.mjs:171:1
+✖ EVD-007 观测到的摘要与声明不一致同样阻断 (130.5148ms)
+  AssertionError [ERR_ASSERTION]: {"type":"evidenceDelivery","ok":true,"legacy":false,"findings":[],"why":null}
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///C:/Users/GOBAO/Downloads/AI/tools/skills/shared/crctl/scripts/test/evidence-delivery-gate.test.mjs:174:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1201:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+      at Test.postRun (node:internal/test_runner/test:1330:19)
+      at Test.run (node:internal/test_runner/test:1258:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
