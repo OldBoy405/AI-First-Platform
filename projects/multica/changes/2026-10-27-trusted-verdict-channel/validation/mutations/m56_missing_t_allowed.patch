@@ -1,0 +1,11 @@
+--- server/internal/governance/execution_channel_reader.go
++++ m56_missing_t_allowed
+@@ -101,7 +101,7 @@
+ 		return err
+ 	}
+ 	if n == 0 {
+-		return fmt.Errorf("%w: strict selection 缺少 committed T", ErrReaderNoCommittedT)
++		return nil
+ 	}
+ 	return nil
+ }

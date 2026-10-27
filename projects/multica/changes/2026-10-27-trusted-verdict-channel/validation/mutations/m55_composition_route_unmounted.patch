@@ -1,0 +1,12 @@
+--- server/cmd/server/router.go
++++ m55_composition_route_unmounted
+@@ -1659,9 +1659,6 @@
+ 		// AIFIRST: AIFI-45 — history remains conditional on the signer; current
+ 		// head stays mounted and fails closed with 503 when unavailable.
+ 		governance.MountDaemonExecutionAuthorizationRoute(r, approvalSvc)
+-		// AIFIRST: AIFI-45 M003 — merge facts for the CLI's merge gate. Same
+-		// subject as the head route above; no workspace parameter is accepted.
+-		governance.MountDaemonMergeFactsRoute(r, approvalSvc)
+ 
+ 		r.Post("/register", h.DaemonRegister)
+ 		r.Post("/deregister", h.DaemonDeregister)

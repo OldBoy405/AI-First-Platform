@@ -1,0 +1,11 @@
+--- server/internal/daemon/execution_control_worker.go
++++ m51_accept_old_fence
+@@ -257,7 +257,7 @@
+ 		return fmt.Errorf("worker fence read: %w", err)
+ 	}
+ 	if current != w.fence.Fence {
+-		return fmt.Errorf("%w: 当前 owner_fence=%d，本 worker 持 %d", ErrWorkerFenceRejected, current, w.fence.Fence)
++		return nil
+ 	}
+ 	return nil
+ }

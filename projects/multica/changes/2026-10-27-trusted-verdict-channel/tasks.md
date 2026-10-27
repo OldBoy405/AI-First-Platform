@@ -56,7 +56,7 @@
   `TestChannelStoreState` 真跑 8/8（leaf 7）：m32（不校验帧链）红 `frame_chain_digest`、m33（不复用原记录）红 `request_unique_replay`、
   m34（不查 open 槽）红 `cursor_single_open`、m35（撤销/停止不挡后续）红 `revoke_ordering`+`stop_ordering`、m36（允许跳步）红 `state_machine_and_ack`。
   跑次 `sx-20261027T110226Z`，checker `store-state` OK。
-- [ ] 3.3 `execution_control_recovery.go`（daemon）：checkpoint 字段、恢复表五类动作、旧 fence 隔离；`TestChannelWorker`+`TestChannelRecovery`（7 leaf，见 expectations `worker` label）。
+- [x] 3.3 `execution_control_worker.go`（daemon）：`BeginOwnerTx` 接管只加 fence、`ReconcileOwnerTx` 四出口（链尾相同/T 领先一格/journal 原字节/冻结）、`ApplyTx` 旧 fence 直拒。`TestChannelWorker`+`TestChannelRecovery` 7 leaf 全绿，跑次 `wn-20261027T124441Z`；m51/m52/m53。
 - [ ] 3.4 key rotation 只影响新 verdict；历史帧仍用旧 key 验证（并入 3.3 与 3.2 断言）。
 
 ## 4. S5 facts、repair/resume、sensitive action（P0）
@@ -81,7 +81,8 @@
 - [x] 6.1 `execution_channel_reader.go`：`DispatchCount` / `SettleCandidateTx` / `SelectionMode` / `RequireCommittedTForStrict`。`TestChannelReader` 10/10，跑次 `rg-20261027T121500Z`。无 committed T 则零派发；Unknown 不降 legacy；已结算只回原 mapping。
 - [ ] 6.2 `execution_projection_fence.go` + `gate_projection.go`/`crsync.go`/`reconcile.go`/strict preflight/终态上报：unsigned 只写诊断区。
 - [x] 6.3 终态 fence 并集：已有 consumption 或 Strict selection 即 `fence_required`；缺 claim 返回 fence 错误；重领不清除；读失败即拒。m48 红 `missing_t_zero_dispatch`（并连带 strict 缺 T），m49 只红 `unknown_selection_not_legacy`，m50 只红 `terminal_fence_read_failure`。
-- [ ] 6.4 `cmd/server/execution_control_composition_test.go`：`TestChannelComposition`。
+- [x] 6.4 `cmd/server/execution_control_composition_test.go`：真 router + 真 permit + 真 reader。`merge-facts` 路由已接进 `cmd/server/router.go`。2 leaf 全绿，跑次 `cs-20261027T124942Z`；m55（摘挂载）红候选 leaf，m56（缺 T 放行）红 `missing_t_rejected`。
+- [x] 6.5 `execution_control_client.go`（daemon）：`PostControlVerdictBytes` 原样收发。`TestChannelWorkerClient` 1 leaf 绿，跑次 `cm-20261027T124626Z`；m54（重编码）红。
 
 ## 7. R2/R3 merge 端点（P0）
 

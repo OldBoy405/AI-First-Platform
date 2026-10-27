@@ -1,0 +1,11 @@
+--- server/internal/daemon/execution_control_worker.go
++++ m52_divergent_resumes
+@@ -229,7 +229,7 @@
+ 		result.Imported = &frame
+ 		return result, nil
+ 	default:
+-		return frozen("divergent")
++		return ready()
+ 	}
+ }
+ 

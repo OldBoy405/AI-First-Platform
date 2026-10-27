@@ -1,0 +1,11 @@
+--- server/internal/daemon/execution_control_worker.go
++++ m53_restart_resets_epoch
+@@ -70,7 +70,7 @@
+ 	// 接管：fence 单调加一，epoch 与链尾原样保留。
+ 	if err := tx.QueryRow(ctx, `
+ 		UPDATE cr_execution_tool_cursor
+-		SET owner_fence = owner_fence + 1, owner_id = $4, updated_at = now()
++		SET owner_fence = owner_fence + 1, epoch = epoch + 1, owner_id = $4, updated_at = now()
+ 		WHERE lineage_id = $1::uuid AND store_id = $2 AND epoch = $3
+ 		RETURNING owner_fence`, lineageID, storeID, epoch, ownerID).Scan(&fence); err != nil {
+ 		return OwnerFence{}, fmt.Errorf("worker take over: %w", err)

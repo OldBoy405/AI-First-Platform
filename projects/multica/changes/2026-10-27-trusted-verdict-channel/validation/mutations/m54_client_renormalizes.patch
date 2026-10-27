@@ -1,0 +1,23 @@
+--- server/internal/daemon/execution_control_client.go
++++ m54_client_renormalizes
+@@ -6,6 +6,7 @@
+ 
+ import (
+ 	"bytes"
++	"encoding/json"
+ 	"context"
+ 	"fmt"
+ 	"io"
+@@ -21,7 +22,11 @@
+ 	if len(raw) == 0 {
+ 		return nil, fmt.Errorf("control verdict: 空 envelope")
+ 	}
+-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+ControlVerdictPath, bytes.NewReader(raw))
++	// 变异：解成 map 再编码（会改键序/空白）。
++	var normalized any
++	_ = json.Unmarshal(raw, &normalized)
++	reencoded, _ := json.Marshal(normalized)
++	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+ControlVerdictPath, bytes.NewReader(reencoded))
+ 	if err != nil {
+ 		return nil, err
+ 	}
