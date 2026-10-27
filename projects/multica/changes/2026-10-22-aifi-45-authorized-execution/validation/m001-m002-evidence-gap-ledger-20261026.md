@@ -14,7 +14,7 @@
 
 | # | 缺口 | 来源 | 现状 | 分类 | 产出方式 |
 |---|---|---|---|---|---|
-| G1 | claim TOCTOU：读到 active generation 后暂停，另一事务取消/重领 task 或改 runtime 归属并提交，原事务仍可写 receipt/activation（共享 helper 只锁 CR/head record） | 安全轴 major（`execution_consumption.go:99,129`、`execution_activation.go:89,121`、`execution_binding.sql:7-20`） | 未修 | **A** | 三写端点共用完整校验事务；按与 claim/reclaim 兼容锁序锁 task/runtime 及归属行并持锁至提交；用 `lock_timeout` 探针（只认 `55P03`）+ 并发用例取证 |
+| G1 | claim TOCTOU：读到 active generation 后暂停，另一事务取消/重领 task 或改 runtime 归属并提交，原事务仍可写 receipt/activation（共享 helper 只锁 CR/head record） | 安全轴 major（`execution_consumption.go:99,129`、`execution_activation.go:89,121`、`execution_binding.sql:7-20`） | **2026-10-27 已修（增量 44，DB 取证）**：新增共享 helper `lockExecutionClaimRows`——task `FOR SHARE` → runtime `FOR SHARE` → CR head，三端点统一调用（head 必须最后：`BindCurrentTaskToCR` 先取 task）。消费原有内联 task 锁并入并补 runtime；签发/激活此前无 task 锁。修复前 RED 精确落在缺口上（binding→task 未挡、consumption→runtime 未挡而 task 已挡、activation→task 未挡）；变异 m1/m2/m3 各 3 fail 且锁文件已还原。锁图 `lock-graph-20261026.md` §2/§3 已补 | **A** | 三写端点共用完整校验事务；按与 claim/reclaim 兼容锁序锁 task/runtime 及归属行并持锁至提交；用 `lock_timeout` 探针（只认 `55P03`）+ 并发用例取证 |
 | G2 | 拿别次签发换本次消费：活动 B 用 A 已签的 challenge C 请求 consumption；只查 workspace/CR/head/C 存在；同 task 重领后可复用 | 安全轴 major（`execution_consumption.go:164-168`、`execution_binding_issue.go:251-255,295-299`） | **部分已修**（B1：643 加 `dispatched_at`、INSERT 带该列、`executionBindingIssueMatchesRequest` 比对 task/runtime/dispatched_at/daemon、consumption EXISTS 加三谓词） | **A** | 残余：签名 payload 仍不含 `dispatched_at`；补「同 task 重领后旧 issuance 复用」反例 |
 | G3 | strict 可降级：`context.execution.contract` 为 null/空/类型错即当「不声明合同」，`strict=false` 后跳过 claim/安装检查；无服务端持久化合同 | 安全轴 major（`pipeline_task.go:568-583`、`execution_verifier.go:27,47-51`） | 未修 | **A/B 混合** | 显式块缺字段/null/类型错一律拒绝（**A**，纯本地判定）；「strict 必须来自可信 task/run 合同」的持久化合同读（**B**，M003 受保护 store） |
 | G4 | 终态 fence 可自行退出：持 workspace daemon 凭据的旧回调省略 runtime/dispatched_at 即 `enforce_claim=false`；task 已重领后旧 `/fail`/`/complete` 仍走状态型 CAS | 安全轴 major（`daemon_terminal_claim.go:41-43`、`service/terminal_claim.go:26-28`、`agent.sql:1264,1438`） | **部分已修**（B3：`terminalFenceBlocks` + 同事务判定，`to_regclass` 探测兼容未迁移部署） | **A** | 残余：服务端读持久化合同对 strict task 强制完整 tuple、拒绝无代次回调；补「省略 runtime/dispatched_at 的旧回调」反例 |
@@ -32,9 +32,9 @@
 
 ## 3. 下一步（按依赖排序，均需 DB runner）
 
-1. 补锁图两段（task/runtime 归属、dispatch_root），确认单调性（重领、换 generation、换账本位置）。
+1. ~~补锁图两段（task/runtime 归属、dispatch_root），确认单调性~~ **已做（增量 36/44）**：`lock-graph-20261026.md` 已补 G5 与 G1 两段，并登记 workspace teardown 的反向对为已知可重试情形。
 2. G5：`execution_dispatch_root` 加锁 + `terminal_at IS NULL` + generation CAS + `RETURNING`，先 RED 后 GREEN。
-3. G1：三写端点共用校验事务，`55P03` 探针并发用例。
+3. ~~G1：三写端点共用校验事务，`55P03` 探针并发用例。~~ **已做（增量 44）**：共享 `lockExecutionClaimRows`，三个 `55P03` 探针用例 + 三条变异（含锁强度）。**残余**：未动态证伪死锁；runtime 心跳在事务期内被短暂延迟。
 4. G2 残余：签名 payload 补 `dispatched_at`；同 task 重领后旧 issuance 复用反例。
 5. G4 残余：strict task 强制完整 tuple + 拒绝无代次回调。
 6. G3 本地半：contract null/空/类型错一律拒绝（含正反例）。
