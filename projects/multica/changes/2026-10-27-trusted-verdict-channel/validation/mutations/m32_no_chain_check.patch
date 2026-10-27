@@ -1,0 +1,16 @@
+--- server/internal/governance/execution_control_store_state.go
++++ m32_no_chain_check
+@@ -282,12 +282,7 @@
+ 	if lastDigest != nil {
+ 		expectedPrev = *lastDigest
+ 	}
+-	if in.Seq != lastSeq+1 {
+-		return VerdictFrameApplied{}, fmt.Errorf("%w: 帧 seq %d 不是 cursor 的下一格 %d", ErrControlStoreInvalid, in.Seq, lastSeq+1)
+-	}
+-	if in.PrevDigest != expectedPrev {
+-		return VerdictFrameApplied{}, fmt.Errorf("%w: prev_digest 不是链上最后一条", ErrControlStoreInvalid)
+-	}
++	_ = expectedPrev
+ 
+ 	if _, err := tx.Exec(ctx, `
+ 		INSERT INTO cr_execution_tool_verdict (

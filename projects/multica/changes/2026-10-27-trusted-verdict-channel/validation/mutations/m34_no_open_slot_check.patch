@@ -1,0 +1,13 @@
+--- server/internal/governance/execution_control_store_state.go
++++ m34_no_open_slot_check
+@@ -109,9 +109,7 @@
+ 		WHERE lineage_id = $1::uuid AND state = ANY($2)`, in.LineageID, controlOpenStates).Scan(&open); err != nil {
+ 		return ControlCommandApplied{}, fmt.Errorf("control command open slot: %w", err)
+ 	}
+-	if open > 0 {
+-		return ControlCommandApplied{}, fmt.Errorf("%w: 该 lineage 已有未结算的 command", ErrControlStoreConflict)
+-	}
++	_ = open
+ 
+ 	if _, err := tx.Exec(ctx, `
+ 		INSERT INTO cr_execution_control_command (

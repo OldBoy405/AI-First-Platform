@@ -1,0 +1,13 @@
+--- server/internal/governance/execution_control_store_state.go
++++ m33_no_command_replay
+@@ -92,8 +92,8 @@
+ 		in.RequestID).Scan(&storedState)
+ 	switch {
+ 	case err == nil:
+-		// 同一 request 重投：返回原记录与原 bytes，不重算 replayed。
+-		return ControlCommandApplied{CommandID: in.RequestID, State: storedState, Replayed: true}, nil
++		storedState = ""
++		return ControlCommandApplied{CommandID: in.RequestID, State: storedState, Replayed: false}, nil
+ 	case !errors.Is(err, pgx.ErrNoRows):
+ 		return ControlCommandApplied{}, fmt.Errorf("control command replay lookup: %w", err)
+ 	}

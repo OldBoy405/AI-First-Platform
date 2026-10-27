@@ -1,0 +1,11 @@
+--- server/internal/governance/execution_control_store_state.go
++++ m36_allow_skip
+@@ -195,7 +195,7 @@
+ 		controlCommandSettledNoEffect: {},
+ 		controlCommandUncertain:       {},
+ 	}
+-	if !allowed[from][to] {
++	if false && !allowed[from][to] {
+ 		return fmt.Errorf("%w: 不允许的转换 %s -> %s", ErrControlStoreInvalid, from, to)
+ 	}
+ 	needsVerdict := to == controlCommandSettledEffect || to == controlCommandSettledNoEffect

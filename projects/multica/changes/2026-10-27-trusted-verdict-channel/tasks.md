@@ -50,7 +50,12 @@
 - [x] 3.1 `execution_control_protocol.go`：`VerifyControlEnvelope`（与 Node 侧同错误码同判定序）、`LoadControlTrustManifest`（绝对路径/大小上限/PEM sha256 pin/agent 可写根拒绝/Ed25519/重复声明）、`SignControlEnvelope`+`SignControlPayloadBytes`；严格 base64 与**任意深度重复 JSON 键拒绝**（Go 默认保留最后一个）。
   **方案 §2 L84-L90 逐条比对后修 5 处**（ADJ-11）：域名改为规格名（`execution-verdict/v1`、`execution-repair-resume/v1`、`execution-policy-readiness{-request,}/v1`）、前像与 digest 改为 `SHA256(domain\|\|payload)`（域真的进签名）、每 key 增加 `domains/scope/valid_from/valid_until` 且**签发与验签两端**都核、键材料支持 pin 文件或内联 `public_key`（互斥）、Go 侧 `validateStrictValue` 递归拒嵌套重复键。
   `TestChannelProtocol` 真跑 9/9（leaf 7，含 `cross_language_vectors/*` 五域）；夹具升 v3，副本 `validation/control-vectors.copy.json`。变异 m9（前像去域）8 红、m10（跳 key scope）2 红、m11（digest 只用 payload）8 红，patch 在 `validation/mutations/`。跑次 `ai-proto4-*`，checker `protocol` OK。
-- [ ] 3.2 `execution_control_command.go`/`store`：状态受限转换、单 open、fence、settlement kind；`TestChannelStoreState`（7 leaf）。
+- [x] 3.2 `execution_control_store_state.go`：`ApplyControlCommandTx`（request 唯一 + 重放返原记录、单 open 槽、撤销/停止按 seq 线性化）、
+  `ApplyControlPolicyEventTx`（revoke/stop 立刻终态、不占槽、只挡之后的 seq）、`TransitionControlCommandTx`（文档化转换 + ack 只记一次）、
+  `AppendVerdictFrameTx`（seq 连续 + prev 指向链尾 + 占位签名拒、cursor 同步）、`OpenControlRequestTx`（单 open）。
+  `TestChannelStoreState` 真跑 8/8（leaf 7）：m32（不校验帧链）红 `frame_chain_digest`、m33（不复用原记录）红 `request_unique_replay`、
+  m34（不查 open 槽）红 `cursor_single_open`、m35（撤销/停止不挡后续）红 `revoke_ordering`+`stop_ordering`、m36（允许跳步）红 `state_machine_and_ack`。
+  跑次 `sx-20261027T110226Z`，checker `store-state` OK。
 - [ ] 3.3 `execution_control_recovery.go`（daemon）：checkpoint 字段、恢复表五类动作、旧 fence 隔离；`TestChannelWorker`+`TestChannelRecovery`（7 leaf，见 expectations `worker` label）。
 - [ ] 3.4 key rotation 只影响新 verdict；历史帧仍用旧 key 验证（并入 3.3 与 3.2 断言）。
 
