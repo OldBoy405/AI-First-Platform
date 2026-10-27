@@ -26,7 +26,7 @@
 
 ## 2. S1 选择、候选与派发根（P0）
 
-- [ ] 2.1 `execution_contract_selection.go`：`Selection` tagged union、严格不可降级、Unknown 拒绝路径；`TestChannelFoundationSelection`。
+- [x] 2.1 `execution_contract_selection.go`：`ResolveSelectionTx` 只读持久选择；strict+投影缺失/空/不同 → `T_VERDICT_BINDING_MISMATCH`（不降级）；无选择且目录未证明 → `EXECUTION_SELECTION_UNKNOWN`；legacy 只认 `legacy-origin-catalog` 里 `status=legacy` 的条目。`TestChannelFoundationSelection` 真跑 4/4（leaf 3），m1/m2/m3 各自只打红自己的 leaf、恢复后 sha 一致。证据 `validation/selection-20261027-report.md`。
 - [ ] 2.2 `execution_control_reservation.go`：`ResolveCandidateTx`、不可执行 reservation、固定候选；`TestChannelFoundationReservation/control_reservation_not_runnable`。
 - [ ] 2.3 `execution_dispatch_root.go` + `service/task.go` + `queries/agent.sql`（固定 sqlc 版本生成）：同 Tx root/task/settlement、固定 ID 冲突逐字段等同、commit 后通知；`fixed_id_conflict_and_rollback`。
 - [ ] 2.4 adoption/terminal 并发探针（`55P03`）与顺序语义：`root_adoption_terminal_race`（green 前置：AIFI-45 G5 已修）。
