@@ -81,7 +81,7 @@ OS 级问题，与本次合并无关；Linux CI 不受影响。**注意**：这�
 | 全量 `bun run test`（8 shard） | Windows shard 零进度（既有基线） | 需要时在 Linux CI 或 Ubicloud 跑 |
 | 全量 E2E（806 文件） | 串行设计，单机 20+ 分钟；本轮只跑 2 个高价值文件 | 需要时 `bun run ci:local` 或 `ci:ubicloud` |
 | `test/e2e/schema-catalog-golden` / `doctor-json-golden` 金标准重生成 | 需要独立 Postgres | 有 DB 时按 `regen:all` 提示执行 |
-| 本机 brain 迁移 | ~~运行中系统，只提命令不代跑~~ → 2026-10-26 用户授权后执行 | 已完成：postinstall 已把 schema 带到 275；`gbrain apply-migrations --yes` 把内容迁移 0.53.0 从 partial 收口为 `applied_pending_host_work`（doctor warn），v0.60.31 应用成功。迁移前备份 `~/.gbrain/brain.pglite.pre-v275-20261026`（81 MB）。剩余 host 侧动作见 report 第七节 |
+| 本机 brain 迁移 | ~~运行中系统，只提命令不代跑~~ → 2026-10-26 用户授权后执行 | 已完成：postinstall 已把 schema 带到 275；`gbrain apply-migrations --yes` 把内容迁移 0.53.0 从 partial 收口为 `applied_pending_host_work`，v0.60.31 应用成功。迁移前备份 `~/.gbrain/brain.pglite.pre-v275-20261026`（81 MB）。**2026-10-27 host 侧亦已完成，见第八节** |
 
 ## 五、环境副作用（已处置）
 
@@ -94,9 +94,9 @@ OS 级问题，与本次合并无关；Linux CI 不受影响。**注意**：这�
 2. `gbrain apply-migrations --yes` → exit 0：v0.53.0 由 `fail` 转 **`warn`（applied_pending_host_work）**；v0.60.31 应用成功。
 3. doctor pre/post 对比：**除 `minions_migration` fail→warn 外，其余 fail/warn 一字未变**。
 
-**仍待你决定的两类事（都不是本次合并引入）**：
-- v0.53.0 的 host 侧动作：`writer_not_quiesced`——先让旧文件系统写入方静默、显式认领 canonical root；`shared-skills` 源需用审过的 content pack root 注册。预览：`gbrain apply-migrations --migration 0.53.0 --dry-run --json`，步骤见 `skills/migrations/v0.53.0.0.md`。
-- 合并前就红的 3 个运维项：`legacy_job_authority`（2 个早于 submission authority 的排队 job 卡住 worker，可先 `gbrain jobs authorize-legacy --select "status=waiting"` 预览）、`sync_freshness`（source `default` 34 天未同步）、`cycle_freshness`（1992 小时未 cycle）。
+**仍待你决定的一类事（不是本次合并引入）**：
+- ~~v0.53.0 的 host 侧动作~~ → **2026-10-27 已实施完毕**（见第八节）：writer claim/activate（协议 v2）、旧全局技能目录迁入仓外独立根并登记非联邦源、`mcp.skills_dir` 改指、迁移转 `applied`。
+- 合并前就红的 3 个运维项：`legacy_job_authority`（2 个早于 submission authority 的排队 job 卡住 worker，可先 `gbrain jobs authorize-legacy --select "status=waiting"` 预览）、`sync_freshness`（source `default` 34 天未同步）、`cycle_freshness`（1992 小时未 cycle）。**2026-10-26 已处理并转 ok**（见第七节）。
 
 另：本机有一个 **2026-10-12 启动的遗留 `bun test` 进程**（PID 95792，41s CPU，`--reporter=junit`，工作目录是本仓），与本轮无关，我没有动它。
 
@@ -111,7 +111,32 @@ OS 级问题，与本次合并无关；Linux CI 不受影响。**注意**：这�
 | legacy jobs | 取消 `#67 autopilot-cycle`、`#34 unify-types`（均 2026-07-18 排队至今）；`legacy_job_authority` 转 ok，worker 解锁 |
 | 源同步 | `gbrain sync --source default`：20 文件全部 unchanged、0 chunk、0 embed 错误、checkpoint `391f61d4`；`sync_freshness` 转 ok |
 | 维护周期 | `gbrain dream --source default` 5.8s：`cycle_freshness` 转 ok；**`propose_takes` 阶段 provider auth 错误中止**（1 页后），其余 phase 全过。单独重跑 `gbrain dream --phase propose_takes` 前先检查模型凭据 |
-| v0.53.0 host 动作 | 按建议**暂不认领**（单机个人库收益低），保持 doctor warn |
-| 遗留 `bun test` 进程 | **未能终止**：PID 95792 在另一个 Windows 会话（`RDP-Tcp#44`），非提权杀不掉；34 MB / 1 线程，无害。需要提权的任务管理器或管理员 shell |
+| v0.53.0 host 动作 | **2026-10-27 实施完毕**（此前按建议暂缓）：claim + 双阶段 activate（协议 v2）、旧技能目录迁仓外独立根、迁移转 `applied`。明细与验证见第八节 |
+| 遗留 `bun test` 进程 | **仍未终止**：PID 95792 在另一个 Windows 会话（`RDP-Tcp#44`），`taskkill /F /T` 报「没有此任务的实例在运行」而 WMI 仍枚举得到（PENDING_CANCEL 内核等待），非提权杀不掉；无持锁影响（sync/dream/迁移均正常）。需管理员终端或重启，本轮不再重试 |
 
 **上游已到 v0.60.472.0**（`gbrain jobs` 输出 `UPGRADE_AVAILABLE 0.60.461.0 0.60.472.0`）。下一轮请按「每个 release 合并一次」跟进，别再攒成大窗口。
+
+## 八、DELIVER 收口：v0.53.0 主机端实施（2026-10-27，用户授权「第 4 项」）
+
+第七节记为「暂缓」的 host 动作，2026-10-27 由本会话实施完毕。属 brain 运维动作而非仓库代码变更（tracked 文件零改动），故不新开 change，按 `skills/migrations/v0.53.0.0.md` 清单执行，每步用其自带护栏（dry-run → 审阅 → `--admin-intent` + 审过的 `--expected-state` → `--yes`）。
+
+**执行链与证据**：
+
+| 步骤 | 命令 | 结果 |
+|----|------|------|
+| 备份（DB） | `gbrain backup create --output ~/.gbrain/pre-shared-skills-20261027-1837.gbrain-backup` | 95.5 MB 归档；**隔离恢复验证通过**（`--into ~/.gbrain/verify-pre-shared-skills-20261027-1837`，new independent brain，0 jobs quarantined） |
+| 备份（内容） | PowerShell `Copy-Item -Recurse` MyBrain → `~/.gbrain/pre-shared-skills-content-20261027-1837` | 91 文件 / 23.2 MB，SHA-256 逐一比对一致 |
+| 认领 | `sources writer claim default --path …/MyBrain --admin-intent writer_claim --expected-state 06ffdb95…` | `claimed: true`；dry-run 先行预览 |
+| 基础激活 | `sources writer activate --confirm-quiesced --admin-intent writer_activate --expected-state 3827f0cb…` | `mode: managed`；仅余 git_durability 警告（涉及自动 push，**故意不启用**） |
+| 技能协议 | `sources writer activate --shared-skills --confirm-quiesced --admin-intent writer_activate --expected-state e94b88a4…` | `protocol_version: 2` |
+| 独立技能根 | 75 技能 + conventions 复制到 `~/.gbrain/shared-skills`（仓外），手写 `skillpack.json`（`brain_resident: true`，3 项 excluded） | 235 文件 SHA-256 与源一致；`loadSkillpackManifest` + `inventorySkillpack` 校验通过（75 skills / 145 files） |
+| 登记源 | `sources add shared-skills --path ~/.gbrain/shared-skills --force --no-federated` | 非联邦源，不污染检索 |
+| 目录改指 | `config set mcp.skills_dir ~/.gbrain/shared-skills/skills` | 原值指向应用仓 `skills/`（禁止登记），已切换 |
+| 补登记协议 | 新源加入后 adoption 报 `writer_not_quiesced`（owner capability 变化）→ 重跑 `activate --shared-skills --expected-state 4b14bd1d…` | 双源协议 v2 登记完成 |
+| 应用迁移 | `apply-migrations --migration 0.53.0 --yes` | `applied`；`--list` 显示 `needs_action: 0` |
+
+**验证**：`skills --schema-version 2 --source shared-skills` 实查 **75 技能 revision 齐全**，`setup`/`migrate`/`publish` 仍 `private`，`allow_follow` 全 false（未扩大任何客户端权限）；`--source default` 为 brain-router/memory-care/memory-recall 三件套；原 `skills/` 235 文件哈希未变；`sources writer status`：双源 active、queue/blockers/recovering=0；doctor `schema_version` 275、`minions_migration` 不再适用。
+
+**遗留（如实记账）**：`backup_coverage` 对 `shared-skills` 报 `not_a_git_repo`；两源 git durability 未启用（Git effect skip，不自动 commit/push）；无已登记 MCP client，`members` 阶段 action_required 属预期稳态，客户端 follow/原生激活待用户连接 harness 时再定。
+
+**收口动作**：同步分支 `sync/upstream-2026-10-26-2568d32ac8` 已删（tip `3644cb8bb5` 经 `git merge-base --is-ancestor` 证实被 master 完全包含）；回滚锚点 `pre-sync/2026-10-26` 保留（master 祖先，零成本，价值随下次同步衰减）；change 于 DELIVER 完成后归档。记录仓提交仅落本地——该仓领先 `origin/master` **59 个提交**，其中混有 multica M003 / aifi-45 的在途工作（今日 10:58 仍有未跟踪验证产物），整体推送超出本 change 授权范围，已上报待用户决定。
