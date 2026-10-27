@@ -77,15 +77,13 @@
 
 ## 7. R2/R3 merge 端点（P0）
 
-- [ ] 7.1 `GET /api/daemon/execution-control/merge-facts/{crID}`：认证主体解析 workspace、闭集响应、`repos_digest` 自洽、绑定三态、`head_revoked`；`TestChannelMergeFacts`（6 leaf）。
-  - [x] 7.1a tools 侧采集器 `collectCommittedPaths` 已落（`change-scope.mjs`）：committed 区间、严格 NUL 解析、rename 双侧、提交树 symlink 逃逸判定、四类证明；新增 5 条测试（shallow 拒绝、零变更证明、已提交链接指向仓外、option-like ref 拒绝、rename 双侧），`test/change-scope.test.mjs` **31/31 PASS**。
-  - [x] 7.1b tools 侧 `merge-facts.mjs` 客户端 + 11 条必达 leaf 测试：**已完成**。`lib/merge-facts.mjs`
-    分三层判定（传输/凭据 → 事实自洽 → 本地 git 与目录），失败码优先级 `UNAVAILABLE>REVOKED>HEAD_MOVED>VIOLATION>UNVERIFIABLE`；
-    ADJ-7 的 404 分层（`MERGE_FACTS_NOT_FOUND`→`AUTH_SCOPE_UNVERIFIABLE`）与严格祖先均落地。Node 11/11，
-    `--side node` 验过（跑次 `mf-20261027T103357Z`）；变异 m15–m19 各只红一条。期间修掉一个真问题：
-    响应缺 `head.record_id` 时曾被当作「head 没动」，现为 `UNVERIFIABLE`。
-  - [ ] 7.1c multica 侧 handler 与 `TestChannelMergeFacts`（6 leaf）：未实现。
-  - 裁决记录（待写入 ADJ-7）：404 分层（`AUTH_SCOPE_UNVERIFIABLE` vs `MERGE_FACTS_NOT_FOUND`，只有传输/5xx → `UNAVAILABLE`）；祖先判定用**严格祖先**（SC-MG-010 优先于方案 R2.1 的「含相等」）。
+- [x] 7.1 `GET /api/daemon/execution-control/merge-facts/{crID}`：`execution_merge_facts.go` 挂在 DaemonAuth 之后，
+  复用 `validateCurrentExecutionHead` 验签；认证先于资源查找（非 daemon-token 主体一律 403，不认 `X-Workspace-ID`），
+  他人的 CR 与本 workspace 不存在的 CR 都答 404；`execution_code_source_freeze.go` 做 append+supersede+撤销打戳。
+  `TestChannelMergeFacts` 真跑 7/7（leaf 6）：变异 m20（认证后反查 workspace）只红 `reject_fallback_credentials`、
+  m21（摘要含易变字段）只红 `response_closed_set`、m22（绑定恒 ok）只红 `current_binding_tristate`、
+  m23（不 supersede）只红 `source_freeze_append_only`。跑次 `mk-20261027T104452Z`，checker `merge-facts --side go` OK。
+  注：摘要口径改为 `repo_id:approved_source_sha:approved_revision`，与 tools 侧逐字节一致；路由**尚未**接进 `cmd/server/router.go`（S7 composition）。
 - [ ] 7.2 `code_source_freeze` 追加写与撤销同事务置位（与 1.1 的索引配套）；`source_freeze_append_only`。
 - [ ] 7.3 `POST /api/daemon/crs/{crID}/merge-effects`：`op=reserve|report`、CR 行 `FOR SHARE`、`input_digest` 重验、attempt 四支、码序；`TestChannelMergeEffects`（4 leaf）。
 - [ ] 7.4 与 tools 侧 `merge-facts`/`merge-effects` 客户端的跨语言联调（契约以 R2.4/R3.1 为准）。

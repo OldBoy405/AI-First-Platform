@@ -1,0 +1,17 @@
+--- server/internal/governance/execution_code_source_freeze.go
++++ m23_no_supersede
+@@ -70,13 +70,7 @@
+ 	if at.IsZero() {
+ 		return "", fmt.Errorf("%w: 需要显式时间戳（同一事务内两次追加必须不同）", ErrCodeSourceFreezeInvalid)
+ 	}
+-	if _, err := tx.Exec(ctx, `
+-		UPDATE cr_execution_code_source_freeze
+-		SET superseded_at = $4
+-		WHERE workspace_id = $1::uuid AND cr_id = $2 AND repo_id = $3
+-		  AND superseded_at IS NULL`, in.WorkspaceID, in.CRID, in.RepoID, at); err != nil {
+-		return "", fmt.Errorf("supersede current code source freeze: %w", err)
+-	}
++
+ 	var id string
+ 	if err := tx.QueryRow(ctx, `
+ 		INSERT INTO cr_execution_code_source_freeze (

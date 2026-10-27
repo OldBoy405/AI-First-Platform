@@ -1,0 +1,11 @@
+--- server/internal/governance/execution_merge_facts.go
++++ m22_binding_always_ok
+@@ -113,7 +113,7 @@
+ 	// 零行或多行（部分唯一索引下多行本不该出现）都按「核实不了」返回，让 CLI 判 UNVERIFIABLE。
+ 	switch {
+ 	case len(current) == 0 || headRecordID == "":
+-		body.CurrentBinding = mergeFactsBindingUnknown
++		body.CurrentBinding = mergeFactsBindingOK
+ 	default:
+ 		body.CurrentBinding = mergeFactsBindingOK
+ 		for _, freeze := range current {
