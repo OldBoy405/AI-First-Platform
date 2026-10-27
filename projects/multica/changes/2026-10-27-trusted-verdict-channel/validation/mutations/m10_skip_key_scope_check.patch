@@ -1,0 +1,12 @@
+--- server/internal/governance/execution_control_protocol.go
++++ m10_skip_key_scope_check
+@@ -368,9 +368,6 @@
+ 	if !allowed {
+ 		return controlReject(ErrControlKeyInvalid, "key %s 未被授权签发 domain %s", key.KeyID, domain)
+ 	}
+-	if !controlScopesEqual(key.Scope, scope) {
+-		return controlReject(ErrControlKeyInvalid, "key %s 的 scope 与请求不匹配", key.KeyID)
+-	}
+ 	if now.Before(key.ValidFrom) {
+ 		return controlReject(ErrControlKeyInvalid, "key %s 尚未生效", key.KeyID)
+ 	}

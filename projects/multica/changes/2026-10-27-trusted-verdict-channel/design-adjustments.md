@@ -122,3 +122,21 @@
 - **解除条件**：agent 改用无法启动该发行版的 Windows 用户运行，或把 T/worker 放到另一台 VM，然后用
   `validation/p0-run-20261027/scripts/run.sh` 重跑并补一条「agent 身份写 launcher 被拒」的探针。
 - **结论是否受影响**：影响 strict-production 声明，不影响组件级契约。
+
+## ADJ-11（已解决，2026-10-27）：方案 §2 L84-L90 对实现的逐条比对，5 处偏差已按规格修
+
+比对对象：实施方案 v0.6.5 §2 L83-L91（作者原文）↔ `execution-control-protocol.{mjs,go}`。
+
+| # | 规格要求 | 比对前实现 | 处理 |
+|---|---|---|---|
+| 1 | L88 域名 `execution-control-command/v1\0`、**`execution-verdict/v1\0`**、`execution-control-checkpoint/v1\0`、**`execution-repair-resume/v1\0`**；L90 `execution-policy-readiness-request/v1\0`、`execution-policy-readiness/v1\0` | verdict 用 `execution-control-verdict/v1`、resume 用 `execution-resume/v1`、readiness 用 `execution-readiness-*` —— 与规格三个名字都不同 | **已改**为规格名；域名收敛到 `OPERATIONS` 一处，删掉 exported `CONTROL_DOMAIN`/`READINESS_DOMAIN` 避免两套口径 |
+| 2 | L88 `digest=SHA256(domain \|\| 原始 payload bytes)` | 前像为 `schema\0 + payload`，**域根本没进签名**；digest 为 `SHA256(payload)` | **已改**：前像与 digest 都改为 `domain \|\| 0x00 \|\| payload`；域因此真的被绑定（拿 checkpoint 域验 verdict envelope 现在撞 `SIGNATURE_INVALID`） |
+| 3 | L85 每 key 必带 `domains`、`scope`、`valid_from`、`valid_until`，且**签发、验签两端均检查** | 只有 `key_id/purpose/path/sha256`；域与 scope 只是 payload 里的字段，key 本身不受限 | **已改**：key 条目加四字段并纳入 exact keys；`assertKeyPolicy` 在 `VerifyControlEnvelope` 与 `SignControlEnvelope` 两处调用 |
+| 4 | L85 字段表含 `public_key`；L84 要求绝对路径 + 原始 SHA256 pin | 只有 pin 文件形式 | **已改**：两种互斥键材料（`path`+`sha256` \| `public_key`），并存即拒；内联形式按其自身字节算 pin |
+| 5 | L88/L90 各域 exact-key、拒绝重复键 | Go 的 `decodeStrictObject` 只查了**顶层**重复键，嵌套对象放行（ADJ-9 里「Go 逐层严格」的说法不成立） | **已改**：新增 `validateStrictValue` 递归拒任意深度重复键；两侧各补一条嵌套重复属性负例 |
+
+- **scope 语义**：规格写「精确限制 workspace/project/CR、daemon/store 与适用 lineage」，实现取**维度集合与取值都相等**的精确匹配（不做通配），这样「声明了 workspace 就隐含全部 project」不成立。
+- **时间戳格式**：规格未规定，取 `YYYY-MM-DDTHH:MM:SSZ`（UTC，秒精度），区间左闭右开。
+- **未实现（有意）**：L90 的 `execution-deployment-observation/v1` 与 purpose `deployment-observer` 属 D7 观测端，本期无消费者，按 YAGNI 留给 S8；域名在规格里已固定，届时不需要改动本文件以外的任何 wire 约定。
+- **证据**：Node 3/3；Go `TestChannelProtocol` 9/9（leaf 7），跑次 `ai-proto4-*`，checker `protocol` OK；共享夹具升 v3（含 domains/scope/有效期/digest）。变异 m9（前像去域）→ 8 红、m10（跳 key scope 检查）→ 2 红、m11（digest 只用 payload）→ 8 红，patch 与 sha256 落 `validation/mutations/`。
+- **结论是否受影响**：否。规格不动，实现对齐；S3 帧链可以直接建立在 `digest=SHA256(domain||payload)` 上。

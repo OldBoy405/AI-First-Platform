@@ -1,24 +1,54 @@
 {
-  "schema": "execution-control-vectors/v2",
-  "note": "produced by the Node implementation; Go must accept these bytes and reproduce the same signatures. purposes follow plan §2: control-command / tool-attestation / human",
+  "schema": "execution-control-vectors/v3",
+  "note": "produced by the Node implementation. purposes follow plan §2 L86-87, domains follow L88/L90, digest = SHA256(domain || payload bytes). Go must accept these bytes and reproduce the same signatures.",
   "keys": [
     {
       "key_id": "k-attest",
       "purpose": "tool-attestation",
-      "seed_hex": "13b0ac6eada4e9ff1cb8d68b093877d504c7fc3de9c42f16085c5393e3f83559",
-      "public_pem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA9vA9PYj+TkM229rbWJyLskdaM2E/Awe01Ai3Lde7ZeQ=\n-----END PUBLIC KEY-----"
+      "domains": [
+        "execution-verdict/v1",
+        "execution-control-checkpoint/v1",
+        "execution-policy-readiness-request/v1",
+        "execution-policy-readiness/v1"
+      ],
+      "scope": {
+        "workspace_id": "ws-vector-1",
+        "cr_id": "CR-1"
+      },
+      "valid_from": "2026-01-01T00:00:00Z",
+      "valid_until": "2030-01-01T00:00:00Z",
+      "seed_hex": "b3fd5abc4661d4a754d158330c15fa40984a3b3ffe7fa5910c8bbfd3c2a43e9e",
+      "public_pem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAU3NW/D/y39iBFEJRuqgauPgzBo/wHlWkoKE3FZAD2e8=\n-----END PUBLIC KEY-----"
     },
     {
       "key_id": "k-command",
       "purpose": "control-command",
-      "seed_hex": "a4a3d46b5600eb96e19376506465eb2f49325f2c3e64f0d6cbe38100a5232ab3",
-      "public_pem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAUKCmyKrOVQbr/7KgelqLvGocWhRiZGq6KIRe3y12VVI=\n-----END PUBLIC KEY-----"
+      "domains": [
+        "execution-control-command/v1"
+      ],
+      "scope": {
+        "workspace_id": "ws-vector-1",
+        "cr_id": "CR-1"
+      },
+      "valid_from": "2026-01-01T00:00:00Z",
+      "valid_until": "2030-01-01T00:00:00Z",
+      "seed_hex": "9a49c5b61a873f09284ccba4fa50fb17b90a9a94d085c5ac4ed48a1bfcf751a3",
+      "public_pem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAnWJ6469HmrVWYWfIH29rytuU9AThuKOl+gcqq/ONIvo=\n-----END PUBLIC KEY-----"
     },
     {
       "key_id": "k-human",
       "purpose": "human",
-      "seed_hex": "90a50e3da391180e8e00592d03ac1454881a826939185dc064d5a27c2e923f5d",
-      "public_pem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAIVeSZ7oFBAhgNPtHYPiF3z108seYy6yZxZC9Cj42uOw=\n-----END PUBLIC KEY-----"
+      "domains": [
+        "execution-repair-resume/v1"
+      ],
+      "scope": {
+        "workspace_id": "ws-vector-1",
+        "cr_id": "CR-1"
+      },
+      "valid_from": "2026-01-01T00:00:00Z",
+      "valid_until": "2030-01-01T00:00:00Z",
+      "seed_hex": "7b131ab26b066b8a32e54e9bddd10a14e43fceb7afc43d0d3a2dab174219f169",
+      "public_pem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAXmW9yhKajW7EMYhhYVYRndHdCRYLvZlir+AIp0Vno7M=\n-----END PUBLIC KEY-----"
     }
   ],
   "cases": [
@@ -26,45 +56,81 @@
       "name": "verdict",
       "purpose": "verdict",
       "key_id": "k-attest",
-      "domain": "execution-control/v1",
-      "scope": "ws-vector-1",
+      "domain": "execution-verdict/v1",
       "schema": "execution-control-verdict/v1",
-      "payload_b64": "eyJzY2hlbWEiOiJleGVjdXRpb24tY29udHJvbC12ZXJkaWN0L3YxIiwicHVycG9zZSI6InZlcmRpY3QiLCJkb21haW4iOiJleGVjdXRpb24tY29udHJvbC92MSIsInNjb3BlIjoid3MtdmVjdG9yLTEiLCJ2ZXJkaWN0IjoicGVybWl0Iiwic2VxIjo3LCJyZXF1ZXN0X2lkIjoiMTExMTExMTEtMTExMS00MTExLTgxMTEtMTExMTExMTExMTExIn0=",
-      "payload_sha256": "d682a83aa35e4851a2a950cd9d8b9daf1266b60efb5c68833f5c0700ae93c2d8",
-      "signature_b64": "hghQzhd1idtqDZxaf4Jt5JfkgAXMkv8hVvcrysvOio1B5D9MkAoUUzWsYs3wMpxI5YZjbcjObuXJ46BoDokkBw=="
+      "scope": {
+        "workspace_id": "ws-vector-1",
+        "cr_id": "CR-1"
+      },
+      "now_ms": 1793059200000,
+      "payload_b64": "eyJzY2hlbWEiOiJleGVjdXRpb24tY29udHJvbC12ZXJkaWN0L3YxIiwicHVycG9zZSI6InZlcmRpY3QiLCJkb21haW4iOiJleGVjdXRpb24tdmVyZGljdC92MSIsInNjb3BlIjp7IndvcmtzcGFjZV9pZCI6IndzLXZlY3Rvci0xIiwiY3JfaWQiOiJDUi0xIn0sInZlcmRpY3QiOiJwZXJtaXQiLCJzZXEiOjcsInJlcXVlc3RfaWQiOiIxMTExMTExMS0xMTExLTQxMTEtODExMS0xMTExMTExMTExMTEifQ==",
+      "payload_sha256": "e57b457ae5606e9328a4698833a433f3bf67fdd933add55631faea2dee752eef",
+      "digest": "52ae29a594a7bb245232b8e9414c5ce0d1820c4188a8e9279380fc81d10ba903",
+      "signature_b64": "sem7kDD72VBSmN5aa1tPEc01xIlzQg2s+z3gSFnNYqLBAARN2Al0k7gzx3IzAYChLbZX3Nihr2hddXr6RpJaDQ=="
     },
     {
       "name": "checkpoint",
       "purpose": "checkpoint",
       "key_id": "k-attest",
-      "domain": "execution-control/v1",
-      "scope": "ws-vector-4",
+      "domain": "execution-control-checkpoint/v1",
       "schema": "execution-control-checkpoint/v1",
-      "payload_b64": "eyJzY2hlbWEiOiJleGVjdXRpb24tY29udHJvbC1jaGVja3BvaW50L3YxIiwicHVycG9zZSI6ImNoZWNrcG9pbnQiLCJkb21haW4iOiJleGVjdXRpb24tY29udHJvbC92MSIsInNjb3BlIjoid3MtdmVjdG9yLTQiLCJzZXEiOjh9",
-      "payload_sha256": "30db713894927fe5b88e85e03b88d9780c79100a2f99581a11a84208e8edde38",
-      "signature_b64": "BhaCyCXfZ+a3p7oK6VilXckyJoueC6ZBLWUm3Eb1ntG9XX0E75WgVpI7+ZJb+/PR5y/x5CTbQ9fF9XZa3tCcBw=="
+      "scope": {
+        "workspace_id": "ws-vector-1",
+        "cr_id": "CR-1"
+      },
+      "now_ms": 1793059200000,
+      "payload_b64": "eyJzY2hlbWEiOiJleGVjdXRpb24tY29udHJvbC1jaGVja3BvaW50L3YxIiwicHVycG9zZSI6ImNoZWNrcG9pbnQiLCJkb21haW4iOiJleGVjdXRpb24tY29udHJvbC1jaGVja3BvaW50L3YxIiwic2NvcGUiOnsid29ya3NwYWNlX2lkIjoid3MtdmVjdG9yLTEiLCJjcl9pZCI6IkNSLTEifSwic2VxIjo4fQ==",
+      "payload_sha256": "4e35944ba41c78248b7358fba82786fc096f7f3c58135a778269d80f48ce4778",
+      "digest": "d09403cebb1c3ab9ec5bec78798228555c4b3f5c18626bbeabd5e2dde4ff98ac",
+      "signature_b64": "eyR3a1bF6EDDkKKXPaD+FlW0Bl4AQxGROrxUI7ugq/2N6hdjUj+EaOHta4lpMtTyGI1LwYKGbC/j3kaNCfjrDA=="
     },
     {
       "name": "command",
       "purpose": "command",
       "key_id": "k-command",
-      "domain": "execution-control/v1",
-      "scope": "ws-vector-2",
+      "domain": "execution-control-command/v1",
       "schema": "execution-control-command/v1",
-      "payload_b64": "eyJzY2hlbWEiOiJleGVjdXRpb24tY29udHJvbC1jb21tYW5kL3YxIiwicHVycG9zZSI6ImNvbW1hbmQiLCJkb21haW4iOiJleGVjdXRpb24tY29udHJvbC92MSIsInNjb3BlIjoid3MtdmVjdG9yLTIiLCJzZXEiOjEsInJlc2VydmF0aW9uX2lkIjoiMjIyMjIyMjItMjIyMi00MjIyLTgyMjItMjIyMjIyMjIyMjIyIn0=",
-      "payload_sha256": "02a59ce94a8870b81fe55060be70d8980e900c3b220c362c492b796f1e6df02a",
-      "signature_b64": "vX0wtvpRQ4oc5y3QpL9BpT/+YRbv2MpiLRviVS4LBrEgnnre1vvozVqelbVTI1w2L+qrbJFbcF564dm8GT7jBQ=="
+      "scope": {
+        "workspace_id": "ws-vector-1",
+        "cr_id": "CR-1"
+      },
+      "now_ms": 1793059200000,
+      "payload_b64": "eyJzY2hlbWEiOiJleGVjdXRpb24tY29udHJvbC1jb21tYW5kL3YxIiwicHVycG9zZSI6ImNvbW1hbmQiLCJkb21haW4iOiJleGVjdXRpb24tY29udHJvbC1jb21tYW5kL3YxIiwic2NvcGUiOnsid29ya3NwYWNlX2lkIjoid3MtdmVjdG9yLTEiLCJjcl9pZCI6IkNSLTEifSwic2VxIjoxLCJyZXNlcnZhdGlvbl9pZCI6IjIyMjIyMjIyLTIyMjItNDIyMi04MjIyLTIyMjIyMjIyMjIyMiJ9",
+      "payload_sha256": "2fde2451aa278fe832104c16d17329eceb047522babfc049525de51c3fe18dbd",
+      "digest": "f3541960573a3524a8f3ca8448d5eec2ec7de5767c90562adc7edecff262207b",
+      "signature_b64": "vFfMQFY2x2OV4tU4KmcrRlVOVlj1JBnb2steTVXgaRKPBSGMUf1ZDtFCuf+O54oN/xiP+W3lVt1cAJGHiO+1Dg=="
     },
     {
       "name": "resume",
       "purpose": "resume",
       "key_id": "k-human",
-      "domain": "execution-control/v1",
-      "scope": "ws-vector-3",
+      "domain": "execution-repair-resume/v1",
       "schema": "execution-resume/v1",
-      "payload_b64": "eyJzY2hlbWEiOiJleGVjdXRpb24tcmVzdW1lL3YxIiwicHVycG9zZSI6InJlc3VtZSIsImRvbWFpbiI6ImV4ZWN1dGlvbi1jb250cm9sL3YxIiwic2NvcGUiOiJ3cy12ZWN0b3ItMyIsImRlY2lzaW9uIjoicmVzdW1lIn0=",
-      "payload_sha256": "8b332a278509adb3feab4132a73962bea16f9d024c992a0e077f468fd8e374cd",
-      "signature_b64": "y7+Ax6yaBrPmMbM9F4A9bXe2wZEBG+/aoDCbGDIOVG6wUJS79vknZZQJ9LuhlhWpESqhI+sn78r2XxAKsdkuDg=="
+      "scope": {
+        "workspace_id": "ws-vector-1",
+        "cr_id": "CR-1"
+      },
+      "now_ms": 1793059200000,
+      "payload_b64": "eyJzY2hlbWEiOiJleGVjdXRpb24tcmVzdW1lL3YxIiwicHVycG9zZSI6InJlc3VtZSIsImRvbWFpbiI6ImV4ZWN1dGlvbi1yZXBhaXItcmVzdW1lL3YxIiwic2NvcGUiOnsid29ya3NwYWNlX2lkIjoid3MtdmVjdG9yLTEiLCJjcl9pZCI6IkNSLTEifSwiZGVjaXNpb24iOiJyZXN1bWUifQ==",
+      "payload_sha256": "52e81e2eb37e5d9634873af5029f78741e68236fbff8781dcc848fc6b037c3d5",
+      "digest": "ef207218db221931d55d6c8f8233c48271cea552fbbe5ec04b897099fc970243",
+      "signature_b64": "V83EtQ5hfseHFOvQ3Tj2NMiWFwCZ5IshDH/kuGIzPffJGdrE0CrvXEh6fY5vgF9/6V/Fmqy36/uO+/zyCV8FDg=="
+    },
+    {
+      "name": "readiness-request",
+      "purpose": "readiness-request",
+      "key_id": "k-attest",
+      "domain": "execution-policy-readiness-request/v1",
+      "schema": "execution-readiness-request/v1",
+      "scope": {
+        "workspace_id": "ws-vector-1",
+        "cr_id": "CR-1"
+      },
+      "now_ms": 1793059200000,
+      "payload_b64": "eyJzY2hlbWEiOiJleGVjdXRpb24tcmVhZGluZXNzLXJlcXVlc3QvdjEiLCJwdXJwb3NlIjoicmVhZGluZXNzLXJlcXVlc3QiLCJkb21haW4iOiJleGVjdXRpb24tcG9saWN5LXJlYWRpbmVzcy1yZXF1ZXN0L3YxIiwic2NvcGUiOnsid29ya3NwYWNlX2lkIjoid3MtdmVjdG9yLTEiLCJjcl9pZCI6IkNSLTEifSwic2VxIjoyLCJkZXBsb3ltZW50X2lkIjoiZGVwLTEifQ==",
+      "payload_sha256": "70e661065a5c6b2e538866ceb38849d531cce1fc0395650ffc87989924d7b8eb",
+      "digest": "fe3ea96ec25380661f2af0948b0cff1e2f40be38263bc8271e3b0e3d7bf16634",
+      "signature_b64": "kcmdleqajS4y+rKRiHwpsbMMd0WGBOLVfYuhYWKq20QzEV8OiKMj6WTin1NNkM13i9yYvLteVA4KBkjDlhw7AA=="
     }
   ]
 }

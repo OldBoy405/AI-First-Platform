@@ -1,0 +1,14 @@
+{"at":"2026-10-27T09:54:31.612Z","kind":"plan","container":"666bfec52ac3c3d13b43389891f50c4105833198eab7e4167b76f014a774e823","original":"stdd_aifi45_20261022","target":{"nonce":"e949acbfcf967d89","database":"aifi45_tmp_e949acbfcf967d89","role":"aifi45_role_e949acbfcf967d89"},"package":"./internal/governance","pattern":"^TestChannelProtocol$","extra":["-migration=server/migrations/648_cr_execution_control.up.sql"]}
+{"at":"2026-10-27T09:54:34.114Z","kind":"source-preserved","approval_rows":82,"original_tables":137,"schema_sha256":"c719a98130167fb7100a4c72063b1d69d47d2eddd5404dc040e4a236f62a164a","audit_dump_sha256":"54a219f26607bd80e61e0ecb5ef939ecb5de9a4488906960184f96eb76c47f1a"}
+{"at":"2026-10-27T09:54:34.114Z","kind":"create-role-intent","role":"aifi45_role_e949acbfcf967d89"}
+{"at":"2026-10-27T09:54:35.383Z","kind":"create-database-intent","database":"aifi45_tmp_e949acbfcf967d89","owner":"aifi45_role_e949acbfcf967d89"}
+{"at":"2026-10-27T09:54:37.099Z","kind":"created","target":{"nonce":"e949acbfcf967d89","database":"aifi45_tmp_e949acbfcf967d89","role":"aifi45_role_e949acbfcf967d89","role_oid":"1056036","database_oid":"1056037"}}
+{"at":"2026-10-27T09:54:39.539Z","kind":"seed-state-copied","tables":["public.task_usage_hourly_rollup_state"]}
+{"at":"2026-10-27T09:54:40.017Z","kind":"migrations-applied","migrations":[{"path":"server/migrations/648_cr_execution_control.up.sql","sha256":"89f0c3f061c73dae188f99ada0accd13ab770e72e7a96130eb70c3c8c07b5b61"}]}
+{"at":"2026-10-27T09:54:40.879Z","kind":"isolation-verified","identity":{"database":"aifi45_tmp_e949acbfcf967d89","role":"aifi45_role_e949acbfcf967d89","superuser":false,"create_db":false,"create_role":false,"bypass_rls":false,"audit_rows":0,"workspace_rows":0},"original_audit_table_read_denied":true}
+{"at":"2026-10-27T09:54:44.920Z","kind":"test-finished","argv":["go","test","./internal/governance","-run","^TestChannelProtocol$","-count=1","-json","-timeout=180s"],"cwd":"C:\\Users\\GOBAO\\Downloads\\AI\\multica\\server\\","exit":1,"signal":null,"counts":{"run":9,"pass":1,"fail":8,"skip":0},"leaf_pass":1,"migrations":[{"path":"server/migrations/648_cr_execution_control.up.sql","sha256":"89f0c3f061c73dae188f99ada0accd13ab770e72e7a96130eb70c3c8c07b5b61"}],"package_failures":1,"output_redacted":false}
+{"at":"2026-10-27T09:54:44.921Z","kind":"failure","error":"test failed, matched no tests, or exposed credentials; inspect evidence"}
+{"at":"2026-10-27T09:54:46.356Z","kind":"original-compared","unchanged":true,"release":{"sessions":0,"locks":0}}
+{"at":"2026-10-27T09:54:47.280Z","kind":"database-dropped","database":"aifi45_tmp_e949acbfcf967d89","oid":"1056037"}
+{"at":"2026-10-27T09:54:48.123Z","kind":"role-dropped","role":"aifi45_role_e949acbfcf967d89","oid":"1056036"}
+{"at":"2026-10-27T09:54:48.566Z","kind":"resources-absence-verified","database_present":false,"role_present":false}

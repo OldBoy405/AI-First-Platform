@@ -1,0 +1,11 @@
+--- server/internal/governance/execution_control_protocol.go
++++ m11_digest_payload_only
+@@ -691,7 +691,7 @@
+ 	if scopeErr != nil || !controlScopesEqual(payloadScope, scope) {
+ 		return ControlVerification{}, controlReject(ErrControlBindingMismatch, "payload scope 与期望不符")
+ 	}
+-	digest := sha256.Sum256(preimage)
++	digest := sha256.Sum256(payloadBytes)
+ 	return ControlVerification{
+ 		Payload: payload, PayloadBytes: payloadBytes, PayloadScope: payloadScope,
+ 		KeyID: key.KeyID, KeyPurpose: key.Purpose, Schema: schema,

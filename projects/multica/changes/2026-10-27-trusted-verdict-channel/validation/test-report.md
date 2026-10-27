@@ -15,7 +15,7 @@
 | `foundation-selection` | 5 | OK |
 | `foundation-reservation` | 5 | OK（SC-VC-003 root+task+settlement 同 Tx / 固定 ID 逐字段等同；SC-VC-004 55P03） |
 | `task-tx` | 2 | OK（commit 后通知一次；rollback 零持久零通知） |
-| `protocol` | 3 | OK：三 purpose 矩阵（`control-command`/`tool-attestation`/`human`）、SC-VC-008 的 attestation→command 反例、跨语言夹具 v2（每 case 自带 key_id）、两侧全层重复键拒绝。Go 8/8（leaf 6），Node 3/3 |
+| `protocol` | 3 | OK：三 purpose 矩阵、SC-VC-008 的 attestation→command 反例、**方案 §2 域名与 digest 公式（`SHA256(domain\|\|payload)`）**、**每 key 的 domains/scope/有效期在签发与验签两端生效**、跨语言夹具 v3、两侧任意深度重复键拒绝。Go 9/9（leaf 7），Node 3/3；跑次 `ai-proto4-*` |
 
 合并跑次：65 pass / 0 fail / 0 skip，leaf_pass=58，`original_unchanged=true`、`owned_resources_cleaned=true`；`migration-down` 单独 22/22（leaf 21），`TestChannelTaskTx` 3/3（leaf 2）。跑次前缀见 `evidence-index.md`。
 

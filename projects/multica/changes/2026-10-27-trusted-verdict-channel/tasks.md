@@ -51,7 +51,9 @@
 
 ## 3. S2–S4 协议、store 与恢复（P0）
 
-- [x] 3.1 `execution_control_protocol.go`：`VerifyControlEnvelope`（与 Node 侧同错误码同判定序）、`LoadControlTrustManifest`（绝对路径/大小上限/PEM sha256 pin/agent 可写根拒绝/Ed25519/重复声明）、`SignControlEnvelope`+`SignControlPayloadBytes`；严格 base64 与**重复 JSON 键拒绝**（Go 默认保留最后一个）。`TestChannelProtocol` 真跑 6/6（leaf 4，含 `cross_language_vectors/verdict|command`）；共享夹具 `tools/.../test/fixtures/control-vectors.json` 由 Node 生成、Go 验签并复现同一签名，副本存 `validation/control-vectors.copy.json`。m7（签名域去掉 `schema\0`）打红 `purpose_domain_scope`+`cross_language_vectors`；m8（允许重复键）只打红 `exact_keys`。
+- [x] 3.1 `execution_control_protocol.go`：`VerifyControlEnvelope`（与 Node 侧同错误码同判定序）、`LoadControlTrustManifest`（绝对路径/大小上限/PEM sha256 pin/agent 可写根拒绝/Ed25519/重复声明）、`SignControlEnvelope`+`SignControlPayloadBytes`；严格 base64 与**任意深度重复 JSON 键拒绝**（Go 默认保留最后一个）。
+  **方案 §2 L84-L90 逐条比对后修 5 处**（ADJ-11）：域名改为规格名（`execution-verdict/v1`、`execution-repair-resume/v1`、`execution-policy-readiness{-request,}/v1`）、前像与 digest 改为 `SHA256(domain\|\|payload)`（域真的进签名）、每 key 增加 `domains/scope/valid_from/valid_until` 且**签发与验签两端**都核、键材料支持 pin 文件或内联 `public_key`（互斥）、Go 侧 `validateStrictValue` 递归拒嵌套重复键。
+  `TestChannelProtocol` 真跑 9/9（leaf 7，含 `cross_language_vectors/*` 五域）；夹具升 v3，副本 `validation/control-vectors.copy.json`。变异 m9（前像去域）8 红、m10（跳 key scope）2 红、m11（digest 只用 payload）8 红，patch 在 `validation/mutations/`。跑次 `ai-proto4-*`，checker `protocol` OK。
 - [ ] 3.2 `execution_control_command.go`/`store`：状态受限转换、单 open、fence、settlement kind；`TestChannelStoreState`（7 leaf）。
 - [ ] 3.3 `execution_control_recovery.go`（daemon）：checkpoint 字段、恢复表五类动作、旧 fence 隔离；`TestChannelWorker`+`TestChannelRecovery`（7 leaf，见 expectations `worker` label）。
 - [ ] 3.4 key rotation 只影响新 verdict；历史帧仍用旧 key 验证（并入 3.3 与 3.2 断言）。
