@@ -27,6 +27,7 @@
 - **THEN** SHALL 只唤醒核验，不完成业务gate或直接派旧continuation；T提交后才依实际状态推进。
 - **AND** 新控制链须真实daemon_token、DB当前claim与本机实际子进程/资源匹配；普通PAT/JWT兼容认证不自动获得新控制签发能力。
 - **AND** project/resource投影仅保留身份不等于fresh证明；旧快照、graph换根或复制sidecar不能开放消费。
+- **AND** verdict写入须核实可信签名及原始载荷字节，并将签名中的request_id、epoch、sequence、previous_verdict_digest与实际入链帧逐项绑定；首帧previous_verdict_digest为空字符串，缺失或null拒绝。新command/verdict在相关锁等待后、首次写入前须按服务端当前时钟重验密钥有效期；这不证明caller-supplied密钥根可信，也不是提交时刻保证。同request仅在通过所提供信任参数的验签且签名载荷字节和已存不可变字段一致时重放原帧，否则冲突，不得引用请求中伪造的新帧ID；过期历史key的恢复策略尚待确定。现有envelope为JSONB，仅能比较结构值，不能证明原始信封字节一致。这是最低关联要求，不替代完整B、受保护信任根、生产producer/ingest及当前代次的验证。
 
 ### Requirement: 修复准入后以持久化逻辑步骤身份入队，跨run恢复不重复消费或根派发。
 

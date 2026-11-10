@@ -4,7 +4,10 @@
 meta:
   change_id: 2026-10-22-aifi-45-authorized-execution
   created: '2026-10-22'
-  updated: '2026-11-05'
+  updated: '2026-11-10'
+  gate_2_reconfirmed_20261110: >-
+    用户原话：「为 AIFI-45 和 stdd-default-cr-opt-in 重新确认 Gate 2。」受审输入为本轮原位修订后的 design（§1/§2/§6/风险表：签发者在服务端、T 为非可信客户端；legacy 迁移移出本期范围）。
+    此前的 Gate 2（2026-10-22T20:00:01，confirmed_by=dialog）在 CLI 中标记为 historical/unfingerprinted，`gate approve --reapprove` 对无输入指纹的历史 Gate 幂等返回、不能重签；本条为人工审阅记录，不修改 `.stdd.yaml` 也不声称 CLI 已重签。
 
   carrier_rule: >-
     在途 change 的 carrier 只能指向仍在推进的载体；已交付归档的 change 只作为 note 里的合同来源出现，不再承载未完成项。
