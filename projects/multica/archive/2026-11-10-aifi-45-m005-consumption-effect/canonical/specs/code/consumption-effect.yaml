@@ -1,0 +1,52 @@
+# spec.yaml — 行为规格（Canonical YAML）
+
+meta:
+  capability: "consumption-effect"
+  change_id: "2026-11-10-aifi-45-m005-consumption-effect"
+  created: "2026-11-10"
+  confidence: high
+
+requirements:
+  - id: "REQ-CE-001"
+    confidence: high
+    description: "平台在 consumption 回执首次落库的同一事务内，经既有写入口签发该 task 的 effect；回执与 effect 同生同死，effect 只表示平台已提交 consumption。"
+    scenarios:
+      - id: "SC-CE-001"
+        confidence: medium
+        evidence: "canonical/proposals/2026-11-10-aifi-45-m005-consumption-effect.yaml#C1,C2,success_criteria[0]"
+        given: "CR 持有 approve 授权头；task T1 的认领行与已签发的绑定证明有效；该 CR 尚无 consumption，DecideAdmission 当前为 WAIT_CONSUMPTION。"
+        when: "daemon 经 POST /api/daemon/crs/{crID}/execution-authorization/consumption 为 T1 首次提交回执。"
+        then: "SHALL 在返回 201 之前、同一事务内写入 T1 的 command（终态 settled_effect）、一条 v2 verdict（effect=effect）和一条 kind=effect 的结算；此后 DecideAdmission SHALL 返回 ADMITTED。"
+        and:
+          - "command、verdict、结算的 request_id 均等于 T1 的 task id，verdict 的 command_digest 等于该 command 字节的 sha256。"
+          - "结算 effect_kind 为 consumption、effect_ref 指向该回执；该 effect 只表示平台已提交 consumption，不表示 T 的业务工作已提交。"
+          - "签名由平台已有 execution 密钥产生，写入走既有写入口的全部校验，不绕过验签、不直接写信任表。"
+      - id: "SC-CE-002"
+        confidence: high
+        evidence: "canonical/proposals/2026-11-10-aifi-45-m005-consumption-effect.yaml#C2,success_criteria[2]"
+        given: "同一 request_id 已存在内容不同的 command，签发无法完成。"
+        when: "为该 task 首次提交回执。"
+        then: "SHALL 请求失败（非 201），cr_execution_consumption 不留下该回执行。"
+        and:
+          - "链上不新增 verdict，cursor 不存在或 last_seq 仍为 0。"
+
+  - id: "REQ-CE-002"
+    confidence: high
+    description: "effect 链按 CR 独立、CR 内连续；同一 task 的回执重放与新 generation 不产生第二套链记录。"
+    scenarios:
+      - id: "SC-CE-003"
+        confidence: high
+        evidence: "canonical/proposals/2026-11-10-aifi-45-m005-consumption-effect.yaml#C1,success_criteria[1]"
+        given: "CR-A 已有 T1 的 effect（链 seq=1）；另一个 CR-B 尚无 consumption。"
+        when: "CR-A 的第二个 task T2 与 CR-B 的第一个 task T3 各自首次提交回执。"
+        then: "SHALL CR-A 的链延伸为 seq=2、prev_digest 等于 T1 verdict 的 digest、cursor.last_seq 为 2；CR-B 的链从 seq=1（空 prev_digest）开始，两者互不冲突。"
+        and:
+          - "两个 CR 的 DecideAdmission 均返回 ADMITTED。"
+      - id: "SC-CE-004"
+        confidence: high
+        evidence: "canonical/proposals/2026-11-10-aifi-45-m005-consumption-effect.yaml#C2,success_criteria[1]"
+        given: "T1 已有 effect。"
+        when: "同一回执被重放；或 T1 以新 generation（新的 dispatched_at）提交回执。"
+        then: "SHALL 重放返回 200 且 changed=false，新 generation 返回 201 并新增一行回执；两种情况下 command、verdict、settlement 的行数都 SHALL 不变。"
+        and:
+          - "回执重放路径不写任何信任表；新 generation 之后 DecideAdmission 仍返回 ADMITTED（同一 task 现有两行回执）。"

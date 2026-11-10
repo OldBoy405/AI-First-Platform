@@ -1,0 +1,48 @@
+# agent_spec.yaml — Agent 验证规格（Canonical YAML）
+
+meta:
+  task_id: consumption-effect
+  change_id: 2026-11-10-aifi-45-m005-consumption-effect
+  created: '2026-11-10'
+  task_type: code
+  system: multica governance 的 consumption 路由与 control 链，隔离 Postgres
+  preconditions:
+    - 每个 action 是子进程测试的声明；从 multica 仓根用 scripts/aifi45-disposable/run-selection.mjs 的选择 m005-consumption-effect 执行，每个选择一个一次性库；禁止默认或手动指定共享库。
+    - harness 退出 0、skip 为 0、至少一个叶子 PASS；零匹配或 skip 不算通过。
+    - 测试走真实路由（bindingIssueFixture.routes）与真实库，不以直接写表代替 consumption 路由。
+rollback:
+  steps:
+    - 只销毁本轮 harness 创建的一次性库；不执行共享库 cleanup。
+steps:
+  - id: CP-CE-001
+    description: SC-CE-001 / 首次 consumption 在同一事务内签发 effect，准入由 WAIT_CONSUMPTION 变 ADMITTED。
+    action: go test ./internal/governance -run ^TestTC_CE_001$ -count=1 -v
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'PASS: TestTC_CE_001'
+  - id: CP-CE-002
+    description: SC-CE-002 / 签发失败时回执不落库。
+    action: go test ./internal/governance -run ^TestTC_CE_002$ -count=1 -v
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'PASS: TestTC_CE_002'
+  - id: CP-CE-003
+    description: SC-CE-003 / 第二个 task 使链连续（seq=2、prev_digest 指向首条 verdict）。
+    action: go test ./internal/governance -run ^TestTC_CE_003$ -count=1 -v
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'PASS: TestTC_CE_003'
+  - id: CP-CE-004
+    description: SC-CE-004 / 重放与新 generation 不新增链记录。
+    action: go test ./internal/governance -run ^TestTC_CE_004$ -count=1 -v
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'PASS: TestTC_CE_004'

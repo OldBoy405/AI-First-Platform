@@ -1,0 +1,23 @@
+# agent_spec.yaml — Agent 验证规格（Canonical YAML）；MODIFIED 增量：只含与 SC-RUN-003 相关的检查点。
+
+meta:
+  task_id: authorized-runner
+  change_id: 2026-11-10-aifi-45-m005-consumption-effect
+  created: '2026-11-10'
+  task_type: code
+  system: multica 真实认证入口、统一 wake 与隔离 Postgres
+  preconditions:
+    - 同 consumption-effect 的执行前置：一次性库、skip 为 0、至少一个叶子 PASS。
+    - 本检查点是既有 TC-RUN-003 的回归，不新增测试；结果必须与本 change 之前相同。
+rollback:
+  steps:
+    - 只销毁本轮 harness 创建的一次性库。
+steps:
+  - id: CP-RUN-003
+    description: SC-RUN-003 / 回归：未提交 effect 前只 wake 不推进；写入口只信已验签并入链的 verdict。
+    action: go test ./cmd/server -run ^TestTC_RUN_003$ -count=1 -v
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'PASS: TestTC_RUN_003'

@@ -1,0 +1,246 @@
+approval_receipts:
+- confirmed_actor: ai
+  confirmed_at: '2026-11-10T22:50:27'
+  confirmed_by: dialog
+  confirmed_evidence: 确认 gate 2，启用长程模式继续
+  note: reapproved; prior input_fingerprint=1e87d9845e6ec78b0f6a1cf3b0c4f9deca7a8495d4a12f2780e0c431f10827e7
+  receipt_id: gate2-2026-11-10T22:50:27
+  recorded_at: '2026-11-10T23:14:09'
+  status: superseded
+change_id: 2026-11-10-aifi-45-m005-consumption-effect
+complexity_score: 12
+current_phase: deliver
+design_adjustments:
+  count: 0
+last_modified: '2026-11-10T23:15:59.598138'
+long_range:
+  mode: full_auto
+mode: thorough
+phases:
+  build:
+    confirmed_actor: ai
+    confirmed_at: '2026-11-10T23:14:21'
+    confirmed_by: dialog
+    confirmed_evidence: 重新确认 Gate 2，确认 Gate 3。完成剩余交付工作。
+    input_fingerprint: a76b109dd5e415a72a9d82fea3919a53486436b1f58cb94174d11dbffe3e4f3b
+    input_manifest:
+    - change_id: 2026-11-10-aifi-45-m005-consumption-effect
+      child_id: null
+      kind: projection
+      logical_path: .stdd.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 5b1c64c9afd53a37d1bad74e1ea5397acbe34ca85e2d9f1e370fb1248d14f004
+    - change_id: 2026-11-10-aifi-45-m005-consumption-effect
+      child_id: null
+      kind: raw
+      logical_path: canonical/.canon-index.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 75c597b26df5fb26965687d64b562072b607c9b34f594b6d3d7e87f1d28c2bf5
+    - change_id: 2026-11-10-aifi-45-m005-consumption-effect
+      child_id: null
+      kind: projection
+      logical_path: canonical/proposals/2026-11-10-aifi-45-m005-consumption-effect.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: d007d58da211abdc82535089513a2e9d16ad3ca0676de516747e3369e36fb068
+    - change_id: 2026-11-10-aifi-45-m005-consumption-effect
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/agent/authorized-runner.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 3356966f924518ff7d3d3443721678d8341511fe83f5b91c34c672da51a01b44
+    - change_id: 2026-11-10-aifi-45-m005-consumption-effect
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/agent/consumption-effect.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 9eb4033dde1f4c9bc8fcd04b09ae78028abce5f83bf8b44b6c30a4882e9256b1
+    - change_id: 2026-11-10-aifi-45-m005-consumption-effect
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/code/authorized-runner.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 264ad5e566d23a8cd570a7ce934a5d5cf8b2ab8ce0da5d9e075401d7638bbedf
+    - change_id: 2026-11-10-aifi-45-m005-consumption-effect
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/code/consumption-effect.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 2729638518a2e1ba5d588192765ea18bb3cbb3ac0abd4008856cdbf9b7e03cfa
+    - change_id: 2026-11-10-aifi-45-m005-consumption-effect
+      child_id: null
+      kind: raw
+      logical_path: design.md
+      project_id: multica
+      projection_version: v1
+      sha256: de1d260666f1eeda2eeda9163df0602784cabb7d91da45e828105427709c05df
+    - change_id: 2026-11-10-aifi-45-m005-consumption-effect
+      child_id: null
+      kind: projection
+      logical_path: proposal.md
+      project_id: multica
+      projection_version: v1
+      sha256: 970f424746a3881ab6ba2376c88b19aa9772966f06b327812911f96426dcf44f
+    - change_id: 2026-11-10-aifi-45-m005-consumption-effect
+      child_id: null
+      kind: raw
+      logical_path: specs/authorized-runner/spec.md
+      project_id: multica
+      projection_version: v1
+      sha256: 880d06b476931ce3d7ce458a484f63935ddb11e8611c01a0f74d686e2e0abac6
+    - change_id: 2026-11-10-aifi-45-m005-consumption-effect
+      child_id: null
+      kind: raw
+      logical_path: specs/consumption-effect/spec.md
+      project_id: multica
+      projection_version: v1
+      sha256: 6ad196f26a113bb49711ded25443f9fbe3eba970f44e288c9ad8bc53cc9f82ea
+    - change_id: 2026-11-10-aifi-45-m005-consumption-effect
+      child_id: null
+      kind: raw
+      logical_path: test-plan.md
+      project_id: multica
+      projection_version: v1
+      sha256: 6b2873e676148f69a61c11bb1ac1c2cbb2a45c03edbad0c7ad72ae71cbda15d6
+    - change_id: 2026-11-10-aifi-45-m005-consumption-effect
+      child_id: null
+      kind: raw
+      logical_path: test-report.md
+      project_id: multica
+      projection_version: v1
+      sha256: ec12ca456d2cec6dfe6b47b1b041a273b44e9fd7600797679696fa660d5fca5c
+    slices_completed:
+      '1':
+        new_tests: 2
+        status: done
+        tc_coverage: 2/2
+        verified_at: '2026-11-10T22:57:20'
+      '2':
+        new_tests: 2
+        status: done
+        tc_coverage: 2/2
+        verified_at: '2026-11-10T22:57:20'
+    status: completed
+  deliver:
+    status: in_progress
+  spec:
+    confirmed_actor: ai
+    confirmed_at: '2026-11-10T23:14:09'
+    confirmed_by: dialog
+    confirmed_evidence: 重新确认 Gate 2，确认 Gate 3。完成剩余交付工作。
+    input_fingerprint: a0121a356c3bee0bcef9252324324a5a3ff4700d1d357106ee34ef2dcc9faefb
+    input_manifest:
+    - change_id: 2026-11-10-aifi-45-m005-consumption-effect
+      child_id: null
+      kind: raw
+      logical_path: canonical/.canon-index.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 75c597b26df5fb26965687d64b562072b607c9b34f594b6d3d7e87f1d28c2bf5
+    - change_id: 2026-11-10-aifi-45-m005-consumption-effect
+      child_id: null
+      kind: projection
+      logical_path: canonical/proposals/2026-11-10-aifi-45-m005-consumption-effect.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: d007d58da211abdc82535089513a2e9d16ad3ca0676de516747e3369e36fb068
+    - change_id: 2026-11-10-aifi-45-m005-consumption-effect
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/agent/authorized-runner.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 3356966f924518ff7d3d3443721678d8341511fe83f5b91c34c672da51a01b44
+    - change_id: 2026-11-10-aifi-45-m005-consumption-effect
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/agent/consumption-effect.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 9eb4033dde1f4c9bc8fcd04b09ae78028abce5f83bf8b44b6c30a4882e9256b1
+    - change_id: 2026-11-10-aifi-45-m005-consumption-effect
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/code/authorized-runner.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 264ad5e566d23a8cd570a7ce934a5d5cf8b2ab8ce0da5d9e075401d7638bbedf
+    - change_id: 2026-11-10-aifi-45-m005-consumption-effect
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/code/consumption-effect.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 2729638518a2e1ba5d588192765ea18bb3cbb3ac0abd4008856cdbf9b7e03cfa
+    - change_id: 2026-11-10-aifi-45-m005-consumption-effect
+      child_id: null
+      kind: raw
+      logical_path: design.md
+      project_id: multica
+      projection_version: v1
+      sha256: de1d260666f1eeda2eeda9163df0602784cabb7d91da45e828105427709c05df
+    - change_id: 2026-11-10-aifi-45-m005-consumption-effect
+      child_id: null
+      kind: projection
+      logical_path: proposal.md
+      project_id: multica
+      projection_version: v1
+      sha256: 970f424746a3881ab6ba2376c88b19aa9772966f06b327812911f96426dcf44f
+    - change_id: 2026-11-10-aifi-45-m005-consumption-effect
+      child_id: null
+      kind: raw
+      logical_path: specs/authorized-runner/spec.md
+      project_id: multica
+      projection_version: v1
+      sha256: 880d06b476931ce3d7ce458a484f63935ddb11e8611c01a0f74d686e2e0abac6
+    - change_id: 2026-11-10-aifi-45-m005-consumption-effect
+      child_id: null
+      kind: raw
+      logical_path: specs/consumption-effect/spec.md
+      project_id: multica
+      projection_version: v1
+      sha256: 6ad196f26a113bb49711ded25443f9fbe3eba970f44e288c9ad8bc53cc9f82ea
+    - change_id: 2026-11-10-aifi-45-m005-consumption-effect
+      child_id: null
+      kind: raw
+      logical_path: test-plan.md
+      project_id: multica
+      projection_version: v1
+      sha256: 6b2873e676148f69a61c11bb1ac1c2cbb2a45c03edbad0c7ad72ae71cbda15d6
+    status: completed
+  understand:
+    confirmed_actor: ai
+    confirmed_at: '2026-11-10T22:13:59'
+    confirmed_by: dialog
+    confirmed_evidence: 确认 Gate 1，长程模式到Gate 2停下
+    input_fingerprint: 74ec97a4a49fb3b1a800d6c3609fbf1714caf74c37b592272b92c956761d39a6
+    input_manifest:
+    - change_id: 2026-11-10-aifi-45-m005-consumption-effect
+      child_id: null
+      kind: projection
+      logical_path: canonical/proposals/2026-11-10-aifi-45-m005-consumption-effect.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: d007d58da211abdc82535089513a2e9d16ad3ca0676de516747e3369e36fb068
+    - change_id: 2026-11-10-aifi-45-m005-consumption-effect
+      child_id: null
+      kind: projection
+      logical_path: proposal.md
+      project_id: multica
+      projection_version: v1
+      sha256: 970f424746a3881ab6ba2376c88b19aa9772966f06b327812911f96426dcf44f
+    status: completed
+score_confidence: preliminary
+status: archived
+task_type: code
+traceability:
+  spec_scenarios: 0
+  tc_cases: 0
+  test_functions: 0
+version: '3.0'
