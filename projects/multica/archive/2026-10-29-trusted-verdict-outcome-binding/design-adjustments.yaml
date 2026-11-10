@@ -82,3 +82,18 @@ decision:
   residual_risks:
     - 一个较旧的已认证 effect 仍可让新代次通过准入（上述缺口，AIFI-45 承接）
     - manifest 的可信来源（pin、部署角色）未建立前，写入端验签的前提取决于运维事实，属上线就绪清单
+
+ops_readiness_owners:
+  rule: 责任人默认取该 CR 的三个角色 owner（owners.requirement / owners.development / owners.test）；某角色没有唯一 id 时取该 run 的发起人（pipeline_run.started_by）。
+  source: 用户 2026-11-10 指示；与 attention-routing 的收件人规则同源（角色 owner 优先，回退发起者，仍无则不发送）
+  owners:
+    requirement: 角色 owner；无唯一 id → 发起人
+    development: 角色 owner；无唯一 id → 发起人
+    test: 角色 owner；无唯一 id → 发起人
+  applies_to:
+    - 生产 signer 与私钥持有者
+    - manifest 来源与 pin
+    - 目标环境隔离重新出证
+    - key 轮换/撤销/泄露处置与历史有效性
+    - 升级/回滚与在途请求策略
+  verification: 由 crctl 的 CR 角色投影（crsync.applyOwners → cr.owners）与 pipeline_run.started_by 解析；解析不到唯一身份时按失败关闭处理，不指定默认人。

@@ -222,3 +222,15 @@ T 只参与 S1（v2 签发 + 向量），先于 M 侧 S2。Gate 2 重审通过�
 | **预置条件** | `intent`+远端 prev、`settled_no_effect`+`unknown`+远端 prev、分叉或无明显终态。 |
 | **输入** | 请求新 attempt 或恢复。 |
 | **预期结果** | 无可信 no_effect 与旧执行者不迟到的证明时不 reserve、不 push；分叉与无终态转 uncertain 且禁止新 publish。执行证据归 AIFI-45。 |
+
+| **ID** | TC-MG-017 |
+|---|---|
+| **对应 Spec** | SC-MG-017 |
+| **优先级** | P0 |
+| **预置条件** | 链分叉，或 `unknown` 无终态且远端为 prev。 |
+| **输入** | 请求新 publish 或恢复。 |
+| **预期结果** | 转 `uncertain`，禁止新 publish，不结算 no_effect，不重推；「确认旧 effect」本身不授权后续 effect。执行证据归 AIFI-45。 |
+
+> 登记说明（2026-11-10）：SC-MG-015/016/017 三个 Scenario 原先只有 TC-MG-015/016 两个用例行，
+> `stdd validate` 因此报 21/22。本行补齐 SC-MG-017 的用例登记，不改变 AIFI-45 现有分母口径的
+> 其他部分；TC-MG-017 在 AIFI-45 与 T 侧均不得另作他用。
