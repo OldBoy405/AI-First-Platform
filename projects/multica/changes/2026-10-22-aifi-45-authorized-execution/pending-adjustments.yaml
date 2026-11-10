@@ -131,6 +131,31 @@ adjustments:
       M005 解锁顺序：先有 command 签发者与 pinned manifest（上线就绪清单项，责任人按三角色/发起人规则解析），
       再定 task→command 单一权威点，最后才谈前驱绑定。在那之前准入保持失败关闭。
     source: 2026-11-10 本机 podman 一次性实例 + scripts/aifi45-db
+  - id: ADJ-AIFI45-M005-TRUST
+    severity: major
+    status: unresolved
+    resolved: false
+    recorded_at: '2026-11-10T19:10:00'
+    what: >-
+      M005 信任根的范围收窄。防的对象只有一个：干活的 agent 自报成功、自行推进 CR；不防团队成员，也不防外部攻击。
+      据此只保留两条：(2) agent 进程的身份读不到 verdict 签名私钥；(3) agent 进程的身份拿不到能写信任表
+      （cr_execution_tool_verdict / cr_execution_tool_cursor / cr_execution_control_settlement / cr_execution_control_command）的数据库凭据。
+      不做：签 key 与批 manifest 的人员分离、双 key 轮换与演练、按 CR 发 key、manifest 变更审批。
+      一把 key、scope 取 workspace、有效期一年、公钥用 sha256 pin，均沿用现有 manifest 字段，不新增机制。
+    decision: >-
+      2026-11-10 用户采纳「只做第 2、3 条」。具体实现与部署形态未批准，见 next。
+    verdict: >-
+      核实后更正此前建议：本机上 agent 与操作者是同一 OS 用户，rootless podman 与 WSL 都归该用户所有，
+      仓库根 .env 带 DATABASE_URL，当前用户也能 podman inspect 到后端容器的连接串。所以「签发进程放在
+      podman 容器或单独 WSL 用户下」在本机不构成边界，第 2、3 条在本机都无法成立，不为此补代码。
+      两条在真实部署中由机器边界自然成立：服务端与数据库在服务器主机，agent 在 daemon 主机；daemon 代码不读
+      DATABASE_URL（2026-11-10 grep 核实，只有 cmd/server 与 cmd 下迁移/回填工具读取）。
+      本机运行时，防 agent 自证依靠人工 approve 门禁，不依靠签名链。
+    next: >-
+      M005 设计输入（推断，待 M005 设计时确认）：crctl 由 agent 在 CR 流水线内执行，若签发私钥由 crctl 持有，
+      agent 即持有私钥，第 2 条随之失效；签发者须在服务端或 agent 无法以其身份执行的组件内。
+      部署时以 agent 身份做两项检查即可关闭本条：读不到私钥文件；可用数据库登录对上述四张表无 INSERT/UPDATE。
+    source: 2026-11-10 本机核实（env / podman info / podman inspect / .env）+ multica/server grep
 
 # 2026-11-09：只做分类与归属，不改变任何 resolved。
 # class 取值固定为四类：
