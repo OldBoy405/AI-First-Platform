@@ -1,0 +1,190 @@
+// AIFIRST: AIFI-45 attention routing — authorized delivery producer (SC-NTF-001/002).
+package governance
+
+import (
+	"context"
+	"errors"
+	"fmt"
+
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jackc/pgx/v5/pgxpool"
+
+	"github.com/multica-ai/multica/server/internal/events"
+	db "github.com/multica-ai/multica/server/pkg/db/generated"
+)
+
+// DeliveryRunFacts identifies the converged writeback run whose canonical CR
+// delivery is ready to be announced.
+type DeliveryRunFacts struct {
+	WorkspaceID string
+	RunID       string
+	CRID        string
+}
+
+// DeliveryNoticeFacts is the trusted, already-persisted input to one delivery
+// notification. EvidenceDigest is the canonical CR commit projected for this
+// delivery, not the authorization grant's digest.
+type DeliveryNoticeFacts struct {
+	DeliveryRunFacts
+	EvidenceDigest string
+	EvidenceRef    string
+	RecipientID    string
+}
+
+// DeliveryNoticeSink is the production notification boundary. Implementations
+// resolve the current authorized recipient and persist through DeliverNotice.
+type DeliveryNoticeSink interface {
+	DeliverCompleted(context.Context, DeliveryRunFacts) error
+}
+
+// CompleteDeliveryRun notifies before closing the run. If recipient resolution,
+// persistence, or the post-commit broadcast fails, the active run remains
+// available to a later wake. The canonical CR delivery itself is already
+// committed and is never rolled back by this coordination step.
+func CompleteDeliveryRun(ctx context.Context, notices DeliveryNoticeSink, facts DeliveryRunFacts, complete func() error) error {
+	if notices != nil {
+		if err := notices.DeliverCompleted(ctx, facts); err != nil {
+			return err
+		}
+	}
+	return complete()
+}
+
+// DeliveryNoticeEligible reports whether the persisted projection represents
+// an authorized, fully delivered CR rather than an ordinary stage transition.
+// Lack of an execution consumption receipt identifies the legacy path, which
+// remains silent and does not acquire a new notification dependency.
+func DeliveryNoticeEligible(crStatus string, needsReconcile, authorized bool, pendingNodes int, projectedCommit string) bool {
+	return authorized && crStatus == "archived" && !needsReconcile && pendingNodes == 0 && projectableSha(projectedCommit) != ""
+}
+
+// BuildDeliveryNoticeEvent applies the approved fixed delivery mapping. The
+// evidence reference is the existing canonical CR artifact path; the projected
+// commit identifies the exact delivered version.
+func BuildDeliveryNoticeEvent(facts DeliveryNoticeFacts) NoticeEvent {
+	return NoticeEvent{
+		WorkspaceID:    facts.WorkspaceID,
+		CRID:           facts.CRID,
+		Kind:           "delivery-completed",
+		Cause:          "delivery-completed",
+		EvidenceDigest: facts.EvidenceDigest,
+		Conclusion:     "约定交付已完成",
+		EvidenceRef:    facts.EvidenceRef,
+		Action:         "查看交付结果",
+		RecipientID:    facts.RecipientID,
+	}
+}
+
+// ExecutionDeliveryNoticeProducer rebuilds a delivery notification from the
+// canonical projection, the converged run, and the verified execution head.
+// It does not accept human-readable cause, recipient, or evidence from a task.
+type ExecutionDeliveryNoticeProducer struct {
+	pool      *pgxpool.Pool
+	approvals *ApprovalService
+	broadcast func(context.Context, string, string) error
+}
+
+func NewExecutionDeliveryNoticeProducer(pool *pgxpool.Pool, bus *events.Bus, approvals *ApprovalService) *ExecutionDeliveryNoticeProducer {
+	return &ExecutionDeliveryNoticeProducer{
+		pool: pool, approvals: approvals,
+		broadcast: BusBroadcaster(bus, LoadInboxItem(pool)),
+	}
+}
+
+// DeliverCompleted delivers only an authorized archived CR. Legacy runs and
+// ordinary stage completions stay silent. All facts used to build the event are
+// read in one repeatable-read snapshot before DeliverNotice starts its own
+// transaction; notification failure never rolls back the canonical delivery.
+func (p *ExecutionDeliveryNoticeProducer) DeliverCompleted(ctx context.Context, facts DeliveryRunFacts) error {
+	if p == nil || p.pool == nil {
+		return errors.New("delivery notice producer is unavailable")
+	}
+	workspaceID, err := uuid.Parse(facts.WorkspaceID)
+	if err != nil {
+		return fmt.Errorf("delivery notice workspace id: %w", err)
+	}
+	runID, err := uuid.Parse(facts.RunID)
+	if err != nil {
+		return fmt.Errorf("delivery notice run id: %w", err)
+	}
+	tx, err := p.pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.RepeatableRead, AccessMode: pgx.ReadOnly})
+	if err != nil {
+		return err
+	}
+	defer rollbackTx(tx)
+
+	var crStatus, projectedCommit string
+	var needsReconcile, authorized bool
+	if err := tx.QueryRow(ctx, `
+		SELECT c.status, c.projected_commit, c.needs_reconcile,
+		       EXISTS(
+		           SELECT 1 FROM pipeline_run er
+		           JOIN cr_execution_consumption cc
+		             ON cc.task_id = (er.execution_context->>'source_task_id')::uuid
+		            AND cc.workspace_id = er.workspace_id AND cc.cr_id = er.cr_id
+		           WHERE er.id = $3::uuid AND er.workspace_id = c.workspace_id AND er.cr_id = c.cr_id
+		       )
+		FROM cr c WHERE c.workspace_id = $1::uuid AND c.cr_id = $2`,
+		workspaceID, facts.CRID, runID).Scan(&crStatus, &projectedCommit, &needsReconcile, &authorized); err != nil {
+		return fmt.Errorf("delivery notice projection: %w", err)
+	}
+	if !authorized {
+		return nil
+	}
+	if crStatus != "archived" {
+		return errors.New("delivery notice canonical archive is unavailable")
+	}
+	var pendingNodes int
+	var runStatus string
+	if err := tx.QueryRow(ctx, `
+		SELECT r.status, count(n.*) FILTER (WHERE n.status <> 'passed')
+		FROM pipeline_run r
+		LEFT JOIN pipeline_node_run n ON n.run_id = r.id
+		WHERE r.id = $3::uuid AND r.workspace_id = $1::uuid AND r.cr_id = $2
+		  AND r.pipeline_id = $4
+		GROUP BY r.id`, workspaceID, facts.CRID, runID, PipelineIDs.FeatureWriteback).
+		Scan(&runStatus, &pendingNodes); err != nil {
+		return fmt.Errorf("delivery notice run: %w", err)
+	}
+	if runStatus != "running" && runStatus != "waiting_approval" && runStatus != "completed" {
+		return fmt.Errorf("delivery notice run has non-deliverable status %q", runStatus)
+	}
+	if !DeliveryNoticeEligible(crStatus, needsReconcile, authorized, pendingNodes, projectedCommit) {
+		return errors.New("delivery notice facts are not converged")
+	}
+
+	contract, configured := p.approvals.ExecutionContract()
+	if !configured {
+		return errors.New("delivery notice execution contract is unavailable")
+	}
+	row, err := db.New(tx).GetExecutionAuthorizationHead(ctx, db.GetExecutionAuthorizationHeadParams{
+		WorkspaceID: pgtype.UUID{Bytes: workspaceID, Valid: true}, CrID: facts.CRID,
+	})
+	if err != nil {
+		return fmt.Errorf("delivery notice authorization head: %w", err)
+	}
+	if _, err := p.approvals.validateCurrentExecutionHead(ctx, db.New(tx), row, facts.WorkspaceID, facts.CRID, contract); err != nil {
+		return fmt.Errorf("delivery notice authorization head is invalid: %w", err)
+	}
+	event := BuildDeliveryNoticeEvent(DeliveryNoticeFacts{
+		DeliveryRunFacts: facts,
+		EvidenceDigest:   projectedCommit,
+		EvidenceRef:      "change-requests/" + facts.CRID + "/test-report.md",
+		RecipientID:      row.AuthorizerUserID,
+	})
+	if _, err := BuildNotice(event); err != nil {
+		return err
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return err
+	}
+	recipient, err := ResolveNoticeRecipient(ctx, p.pool, facts.WorkspaceID, NoticeAudienceAuthorizer, row.AuthorizerUserID)
+	if err != nil {
+		return err
+	}
+	event.RecipientID = recipient
+	_, err = DeliverNotice(ctx, p.pool, event, p.broadcast)
+	return err
+}

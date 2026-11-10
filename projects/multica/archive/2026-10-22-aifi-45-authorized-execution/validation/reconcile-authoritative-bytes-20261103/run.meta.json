@@ -1,0 +1,73 @@
+{
+  "product": "C:\\Users\\GOBAO\\Downloads\\AI\\multica\\server\\internal\\daemon\\execution_control_worker.go",
+  "product_sha256": "bb9e2ec8d93b0c285c72cd659a96253111bddb5ed1694c86fa3bb24c3a858c7a",
+  "test": "C:\\Users\\GOBAO\\Downloads\\AI\\multica\\server\\internal\\daemon\\execution_control_worker_replay_memory_test.go",
+  "test_sha256": "55cbdfa60b141dabdbc0f3e014bd675e958e3b8441f9c60482450f26dd4a7c28",
+  "overlay_source": "C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform\\projects\\multica\\changes\\2026-10-22-aifi-45-authorized-execution\\validation\\reconcile-authoritative-bytes-20261103\\red-overlay\\execution_control_worker.go",
+  "overlay_source_sha256": "f8f072a01f5ecc140769274a3437dc116da96a03e9daa994465063f5db9102fb",
+  "overlay_json": "C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform\\projects\\multica\\changes\\2026-10-22-aifi-45-authorized-execution\\validation\\reconcile-authoritative-bytes-20261103\\overlay.json",
+  "overlay_json_sha256": "075a2953a7b3fd1c1356c928c60bb0bbb827416bb1658373745ab8402eead3ee",
+  "go_version": "go version go1.27.1 windows/amd64",
+  "gofmt_l_clean": {
+    "product": true,
+    "test": true
+  },
+  "note": "overlay copy = current product file with only the journal-replay block reverted to its pre-fix shape (LF-normalized); sameVerdictID stays but becomes unused",
+  "runs": {
+    "red": {
+      "argv": [
+        "go",
+        "test",
+        "-count=1",
+        "-run",
+        "TestReconcileOwnerTx",
+        "-v",
+        "-overlay=C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform\\projects\\multica\\changes\\2026-10-22-aifi-45-authorized-execution\\validation\\reconcile-authoritative-bytes-20261103\\overlay.json",
+        "./internal/daemon/"
+      ],
+      "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\multica\\server",
+      "exit": 1,
+      "inputs_sha256_before": {
+        "C:\\Users\\GOBAO\\Downloads\\AI\\multica\\server\\internal\\daemon\\execution_control_worker.go": "bb9e2ec8d93b0c285c72cd659a96253111bddb5ed1694c86fa3bb24c3a858c7a",
+        "C:\\Users\\GOBAO\\Downloads\\AI\\multica\\server\\internal\\daemon\\execution_control_worker_replay_memory_test.go": "55cbdfa60b141dabdbc0f3e014bd675e958e3b8441f9c60482450f26dd4a7c28",
+        "C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform\\projects\\multica\\changes\\2026-10-22-aifi-45-authorized-execution\\validation\\reconcile-authoritative-bytes-20261103\\red-overlay\\execution_control_worker.go": "f8f072a01f5ecc140769274a3437dc116da96a03e9daa994465063f5db9102fb"
+      },
+      "inputs_sha256_after": {
+        "C:\\Users\\GOBAO\\Downloads\\AI\\multica\\server\\internal\\daemon\\execution_control_worker.go": "bb9e2ec8d93b0c285c72cd659a96253111bddb5ed1694c86fa3bb24c3a858c7a",
+        "C:\\Users\\GOBAO\\Downloads\\AI\\multica\\server\\internal\\daemon\\execution_control_worker_replay_memory_test.go": "55cbdfa60b141dabdbc0f3e014bd675e958e3b8441f9c60482450f26dd4a7c28",
+        "C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform\\projects\\multica\\changes\\2026-10-22-aifi-45-authorized-execution\\validation\\reconcile-authoritative-bytes-20261103\\red-overlay\\execution_control_worker.go": "f8f072a01f5ecc140769274a3437dc116da96a03e9daa994465063f5db9102fb"
+      },
+      "stdout_sha256": "f4e6f61680fbcebdf8f0df121008d4ee7a8071821c21fd84b3d743316c67fcce",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 3566,
+      "stderr_bytes": 0
+    },
+    "green": {
+      "argv": [
+        "go",
+        "test",
+        "-count=1",
+        "-run",
+        "TestReconcileOwnerTx",
+        "-v",
+        "./internal/daemon/"
+      ],
+      "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\multica\\server",
+      "exit": 0,
+      "inputs_sha256_before": {
+        "C:\\Users\\GOBAO\\Downloads\\AI\\multica\\server\\internal\\daemon\\execution_control_worker.go": "bb9e2ec8d93b0c285c72cd659a96253111bddb5ed1694c86fa3bb24c3a858c7a",
+        "C:\\Users\\GOBAO\\Downloads\\AI\\multica\\server\\internal\\daemon\\execution_control_worker_replay_memory_test.go": "55cbdfa60b141dabdbc0f3e014bd675e958e3b8441f9c60482450f26dd4a7c28",
+        "C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform\\projects\\multica\\changes\\2026-10-22-aifi-45-authorized-execution\\validation\\reconcile-authoritative-bytes-20261103\\red-overlay\\execution_control_worker.go": "f8f072a01f5ecc140769274a3437dc116da96a03e9daa994465063f5db9102fb"
+      },
+      "inputs_sha256_after": {
+        "C:\\Users\\GOBAO\\Downloads\\AI\\multica\\server\\internal\\daemon\\execution_control_worker.go": "bb9e2ec8d93b0c285c72cd659a96253111bddb5ed1694c86fa3bb24c3a858c7a",
+        "C:\\Users\\GOBAO\\Downloads\\AI\\multica\\server\\internal\\daemon\\execution_control_worker_replay_memory_test.go": "55cbdfa60b141dabdbc0f3e014bd675e958e3b8441f9c60482450f26dd4a7c28",
+        "C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform\\projects\\multica\\changes\\2026-10-22-aifi-45-authorized-execution\\validation\\reconcile-authoritative-bytes-20261103\\red-overlay\\execution_control_worker.go": "f8f072a01f5ecc140769274a3437dc116da96a03e9daa994465063f5db9102fb"
+      },
+      "stdout_sha256": "f3d8b367bc3de5bd7ac796392a094f4b298dd478c1dd8b31f42f31c5c3e08226",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 2816,
+      "stderr_bytes": 0
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "snapshot": "source-manifest.json",
+  "scope": "read-only post-replay-review recheck, not Gate3 or independent execution",
+  "reviews": [
+    {
+      "tier": "strong",
+      "session_id": "01a1818d-b389-7020-aecc-d15db24b29a7",
+      "message_id": "e734e116",
+      "reported_provider": "OpenAIPersonal",
+      "reported_model": "gpt-6.1-sol",
+      "backend_model_receipt": "not available",
+      "stop_reason": "stop",
+      "verdict": "BLOCK",
+      "report": "REVIEW-STRONG.md",
+      "report_sha256": "abba348a3e9334c9195c167eadc391ae5d97eecc5c9fdbb221f1e7fb2ad3d570"
+    },
+    {
+      "tier": "balanced",
+      "session_id": "01a1818d-b378-7020-aecc-d15bd4b2a641",
+      "message_id": "e619da0c",
+      "reported_provider": "Gobao",
+      "reported_model": "deepseek-flash",
+      "backend_model_receipt": "not available",
+      "stop_reason": "stop",
+      "verdict": "NOT VERIFIED / INCOMPLETE",
+      "report": "REVIEW-BALANCED.md",
+      "report_sha256": "296f5840995023ea0558ce3c7d0d63b85249836e343836a2178a0504835e6fac"
+    }
+  ]
+}

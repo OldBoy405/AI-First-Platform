@@ -1,0 +1,13 @@
+--- FAIL: TestM26B2TestFactsPayload (0.32s)
+    crevents_test.go:1160: expected test facts payload
+--- FAIL: TestM26B2TestFactsPreserveFailures (0.25s)
+    crevents_test.go:1220: failed facts must still be returned for Runner to reject
+--- FAIL: TestM26B4ScanEmitsIndependentTestEvent (0.36s)
+    crevents_test.go:1263: scan stages=map[code:1], want one code + one test: [{V:1 File:commit:e201b896cee6987e69d765eae053f2412b7fcb17 EventKind:review CRID:CR-9003-030 FromStatus: ToStatus: Trigger: CommitSHA:e201b896cee6987e69d765eae053f2412b7fcb17 Actor:commit-scan Evidence:map[] Payload:{"attempt":1,"blockers":null,"cr-id":"CR-9003-030","review-type":"code","reviewed_at":"","reviewer":"","stage":"code","subject_sha256":"","verdict":"pass"} OccurredAt:2026-10-30 09:07:35 +0800 CST}]
+--- FAIL: TestM26B4ScanTestOnlyAndReviewOnly (0.56s)
+    crevents_test.go:1296: test-only commit did not emit stage=test: map[code:1]
+--- FAIL: TestM26B4CollectorKeepsBothReviewStages (0.46s)
+    crevents_test.go:1332: collector merged/dropped stages: map[code:1] [{V:1 File:commit:6a2e4a8cded3bd704ccced65bccaa53b63fdb066 EventKind:review CRID:CR-9003-033 FromStatus: ToStatus: Trigger: CommitSHA:6a2e4a8cded3bd704ccced65bccaa53b63fdb066 Actor:commit-scan Evidence:map[] Payload:{"attempt":0,"blockers":null,"cr-id":"CR-9003-033","review-type":"code","reviewed_at":"","reviewer":"","stage":"code","subject_sha256":"","verdict":"pass"} OccurredAt:2026-10-30 09:07:36 +0800 CST}]
+FAIL
+FAIL	github.com/multica-ai/multica/server/internal/daemon	3.845s
+FAIL

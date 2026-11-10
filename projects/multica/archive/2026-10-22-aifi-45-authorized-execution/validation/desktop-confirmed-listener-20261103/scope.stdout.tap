@@ -1,0 +1,46 @@
+TAP version 13
+# Subtest: confirmed missing workspace is invalid and has no gate or native side effects
+ok 1 - confirmed missing workspace is invalid and has no gate or native side effects
+  ---
+  duration_ms: 2.1191
+  type: 'test'
+  ...
+# Subtest: legacy notification still accepts an unscoped payload synchronously
+ok 2 - legacy notification still accepts an unscoped payload synchronously
+  ---
+  duration_ms: 0.2311
+  type: 'test'
+  ...
+# Subtest: missing confirmed scope is invalid even when unsupported or focused
+ok 3 - missing confirmed scope is invalid even when unsupported or focused
+  ---
+  duration_ms: 1.0498
+  type: 'test'
+  ...
+# Subtest: invalid workspace values remain rejected for both delivery modes
+ok 4 - invalid workspace values remain rejected for both delivery modes
+  ---
+  duration_ms: 0.4177
+  type: 'test'
+  ...
+# Subtest: focused confirmed does not claim while focused legacy does
+ok 5 - focused confirmed does not claim while focused legacy does
+  ---
+  duration_ms: 0.2176
+  type: 'test'
+  ...
+# Subtest: confirmed workspace identities remain separate and retry dedupe stays scoped
+ok 6 - confirmed workspace identities remain separate and retry dedupe stays scoped
+  ---
+  duration_ms: 0.2341
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 11.6678

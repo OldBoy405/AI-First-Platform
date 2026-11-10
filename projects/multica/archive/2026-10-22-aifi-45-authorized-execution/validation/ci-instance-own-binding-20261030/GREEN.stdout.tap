@@ -1,0 +1,874 @@
+TAP version 13
+# Subtest: normal lifecycle validates and removes only the observed full ID
+ok 1 - normal lifecycle validates and removes only the observed full ID
+  ---
+  duration_ms: 4.1627
+  type: 'test'
+  ...
+# Subtest: intent failure performs no create
+ok 2 - intent failure performs no create
+  ---
+  duration_ms: 0.4113
+  type: 'test'
+  ...
+# Subtest: asynchronous intent acknowledgement never permits create
+ok 3 - asynchronous intent acknowledgement never permits create
+  ---
+  duration_ms: 0.3378
+  type: 'test'
+  ...
+# Subtest: false intent acknowledgement never permits create
+ok 4 - false intent acknowledgement never permits create
+  ---
+  duration_ms: 0.1847
+  type: 'test'
+  ...
+# Subtest: external target mutation cannot replace the pre-creation snapshot
+ok 5 - external target mutation cannot replace the pre-creation snapshot
+  ---
+  duration_ms: 0.4409
+  type: 'test'
+  ...
+# Subtest: invalid creation window never permits create
+ok 6 - invalid creation window never permits create
+  ---
+  duration_ms: 0.2312
+  type: 'test'
+  ...
+# Subtest: an inverted creation window is rejected before create
+ok 7 - an inverted creation window is rejected before create
+  ---
+  duration_ms: 0.1434
+  type: 'test'
+  ...
+# Subtest: a creation window over 120 seconds is rejected before create
+ok 8 - a creation window over 120 seconds is rejected before create
+  ---
+  duration_ms: 0.111
+  type: 'test'
+  ...
+# Subtest: dangerous bootstrap authentication is rejected before create
+ok 9 - dangerous bootstrap authentication is rejected before create
+  ---
+  duration_ms: 0.1708
+  type: 'test'
+  ...
+# Subtest: lost create acknowledgement remains unresolved and never retries or removes
+ok 10 - lost create acknowledgement remains unresolved and never retries or removes
+  ---
+  duration_ms: 0.3289
+  type: 'test'
+  ...
+# Subtest: malformed create ID is unresolved and never cleaned
+ok 11 - malformed create ID is unresolved and never cleaned
+  ---
+  duration_ms: 0.1715
+  type: 'test'
+  ...
+# Subtest: wrong identity before start prevents start and cleanup
+ok 12 - wrong identity before start prevents start and cleanup
+  ---
+  duration_ms: 0.2267
+  type: 'test'
+  ...
+# Subtest: inherited requested port with an extra own binding prevents start and removal
+ok 13 - inherited requested port with an extra own binding prevents start and removal
+  ---
+  duration_ms: 0.2502
+  type: 'test'
+  ...
+# Subtest: inherited tmpfs with an extra own binding prevents start and removal
+ok 14 - inherited tmpfs with an extra own binding prevents start and removal
+  ---
+  duration_ms: 0.1987
+  type: 'test'
+  ...
+# Subtest: inherited actual running port prevents probe and cleanup after start
+ok 15 - inherited actual running port prevents probe and cleanup after start
+  ---
+  duration_ms: 0.2733
+  type: 'test'
+  ...
+# Subtest: fixed host port in the created instance prevents start and removal
+ok 16 - fixed host port in the created instance prevents start and removal
+  ---
+  duration_ms: 0.1681
+  type: 'test'
+  ...
+# Subtest: a changed requested port on first running inspect prevents probe and cleanup
+ok 17 - a changed requested port on first running inspect prevents probe and cleanup
+  ---
+  duration_ms: 0.2806
+  type: 'test'
+  ...
+# Subtest: wrong identity at cleanup prevents stop and removal
+ok 18 - wrong identity at cleanup prevents stop and removal
+  ---
+  duration_ms: 0.2917
+  type: 'test'
+  ...
+# Subtest: runtime port drift before cleanup prevents stop and removal
+ok 19 - runtime port drift before cleanup prevents stop and removal
+  ---
+  duration_ms: 0.2288
+  type: 'test'
+  ...
+# Subtest: a stopped instance with a changed reported port is preserved
+ok 20 - a stopped instance with a changed reported port is preserved
+  ---
+  duration_ms: 0.2203
+  type: 'test'
+  ...
+# Subtest: a changed reported port after stop prevents removal
+ok 21 - a changed reported port after stop prevents removal
+  ---
+  duration_ms: 0.2692
+  type: 'test'
+  ...
+# Subtest: a changed requested port prevents cleanup
+ok 22 - a changed requested port prevents cleanup
+  ---
+  duration_ms: 0.2566
+  type: 'test'
+  ...
+# Subtest: wrong identity after stop prevents removal
+ok 23 - wrong identity after stop prevents removal
+  ---
+  duration_ms: 0.2538
+  type: 'test'
+  ...
+# Subtest: throwing error getters cannot escape or permit cleanup after journal failure
+ok 24 - throwing error getters cannot escape or permit cleanup after journal failure
+  ---
+  duration_ms: 0.2071
+  type: 'test'
+  ...
+# Subtest: throwing options getters cannot expose their message or create an instance
+ok 25 - throwing options getters cannot expose their message or create an instance
+  ---
+  duration_ms: 0.1097
+  type: 'test'
+  ...
+# Subtest: throwing target getters cannot expose their message or create an instance
+ok 26 - throwing target getters cannot expose their message or create an instance
+  ---
+  duration_ms: 0.0836
+  type: 'test'
+  ...
+# Subtest: an empty start error cannot produce a successful lifecycle
+ok 27 - an empty start error cannot produce a successful lifecycle
+  ---
+  duration_ms: 0.1829
+  type: 'test'
+  ...
+# Subtest: an empty cleaned-record error cannot produce a successful lifecycle
+ok 28 - an empty cleaned-record error cannot produce a successful lifecycle
+  ---
+  duration_ms: 0.2845
+  type: 'test'
+  ...
+# Subtest: a finished failing probe still cleans a correctly identified instance and fails
+ok 29 - a finished failing probe still cleans a correctly identified instance and fails
+  ---
+  duration_ms: 0.278
+  type: 'test'
+  ...
+# Subtest: a failed failure-record acknowledgement preserves the instance
+ok 30 - a failed failure-record acknowledgement preserves the instance
+  ---
+  duration_ms: 0.21
+  type: 'test'
+  ...
+# Subtest: an asynchronous failure-record acknowledgement preserves the instance
+ok 31 - an asynchronous failure-record acknowledgement preserves the instance
+  ---
+  duration_ms: 0.2242
+  type: 'test'
+  ...
+# Subtest: a throwing failure-record acknowledgement preserves the instance
+ok 32 - a throwing failure-record acknowledgement preserves the instance
+  ---
+  duration_ms: 0.2409
+  type: 'test'
+  ...
+# Subtest: a probe throwing without an exit receipt preserves the instance
+ok 33 - a probe throwing without an exit receipt preserves the instance
+  ---
+  duration_ms: 0.1945
+  type: 'test'
+  ...
+# Subtest: a thenable with forged exit fields does not prove process exit
+ok 34 - a thenable with forged exit fields does not prove process exit
+  ---
+  duration_ms: 0.1937
+  type: 'test'
+  ...
+# Subtest: a Promise proxy hiding then cannot forge a synchronous exit receipt
+ok 35 - a Promise proxy hiding then cannot forge a synchronous exit receipt
+  ---
+  duration_ms: 0.3067
+  type: 'test'
+  ...
+# Subtest: a transparent proxy exit receipt is rejected without cleanup
+ok 36 - a transparent proxy exit receipt is rejected without cleanup
+  ---
+  duration_ms: 0.7617
+  type: 'test'
+  ...
+# Subtest: a revoked proxy exit receipt is rejected without cleanup
+ok 37 - a revoked proxy exit receipt is rejected without cleanup
+  ---
+  duration_ms: 0.2298
+  type: 'test'
+  ...
+# Subtest: an exception reading an exit field preserves the instance
+ok 38 - an exception reading an exit field preserves the instance
+  ---
+  duration_ms: 0.1872
+  type: 'test'
+  ...
+# Subtest: a rejected Promise probe is consumed without reporting its secret
+ok 39 - a rejected Promise probe is consumed without reporting its secret
+  ---
+  duration_ms: 9.9569
+  type: 'test'
+  ...
+# Subtest: a child-process-like handle does not prove exit and preserves the instance
+ok 40 - a child-process-like handle does not prove exit and preserves the instance
+  ---
+  duration_ms: 0.3793
+  type: 'test'
+  ...
+# Subtest: an asynchronous start result cannot prove start or permit cleanup
+ok 41 - an asynchronous start result cannot prove start or permit cleanup
+  ---
+  duration_ms: 0.1851
+  type: 'test'
+  ...
+# Subtest: an asynchronous stop result cannot permit remove
+ok 42 - an asynchronous stop result cannot permit remove
+  ---
+  duration_ms: 0.3243
+  type: 'test'
+  ...
+# Subtest: an asynchronous remove result cannot claim successful cleanup
+ok 43 - an asynchronous remove result cannot claim successful cleanup
+  ---
+  duration_ms: 0.4748
+  type: 'test'
+  ...
+# Subtest: start false is not a synchronous confirmation
+ok 44 - start false is not a synchronous confirmation
+  ---
+  duration_ms: 0.2151
+  type: 'test'
+  ...
+# Subtest: stop false is not a synchronous confirmation
+ok 45 - stop false is not a synchronous confirmation
+  ---
+  duration_ms: 0.2988
+  type: 'test'
+  ...
+# Subtest: remove false is not a synchronous confirmation
+ok 46 - remove false is not a synchronous confirmation
+  ---
+  duration_ms: 0.3359
+  type: 'test'
+  ...
+# Subtest: start undefined is not a synchronous confirmation
+ok 47 - start undefined is not a synchronous confirmation
+  ---
+  duration_ms: 0.1884
+  type: 'test'
+  ...
+# Subtest: stop undefined is not a synchronous confirmation
+ok 48 - stop undefined is not a synchronous confirmation
+  ---
+  duration_ms: 0.2785
+  type: 'test'
+  ...
+# Subtest: remove undefined is not a synchronous confirmation
+ok 49 - remove undefined is not a synchronous confirmation
+  ---
+  duration_ms: 0.4783
+  type: 'test'
+  ...
+# Subtest: start truthy string is not a synchronous confirmation
+ok 50 - start truthy string is not a synchronous confirmation
+  ---
+  duration_ms: 0.1176
+  type: 'test'
+  ...
+# Subtest: stop truthy string is not a synchronous confirmation
+ok 51 - stop truthy string is not a synchronous confirmation
+  ---
+  duration_ms: 0.1429
+  type: 'test'
+  ...
+# Subtest: remove truthy string is not a synchronous confirmation
+ok 52 - remove truthy string is not a synchronous confirmation
+  ---
+  duration_ms: 0.1522
+  type: 'test'
+  ...
+# Subtest: start truthy number is not a synchronous confirmation
+ok 53 - start truthy number is not a synchronous confirmation
+  ---
+  duration_ms: 0.0871
+  type: 'test'
+  ...
+# Subtest: stop truthy number is not a synchronous confirmation
+ok 54 - stop truthy number is not a synchronous confirmation
+  ---
+  duration_ms: 0.1165
+  type: 'test'
+  ...
+# Subtest: remove truthy number is not a synchronous confirmation
+ok 55 - remove truthy number is not a synchronous confirmation
+  ---
+  duration_ms: 0.2241
+  type: 'test'
+  ...
+# Subtest: stop failure does not attempt remove
+ok 56 - stop failure does not attempt remove
+  ---
+  duration_ms: 0.2323
+  type: 'test'
+  ...
+# Subtest: remove failure is not treated as success
+ok 57 - remove failure is not treated as success
+  ---
+  duration_ms: 0.1809
+  type: 'test'
+  ...
+# Subtest: ID absent but name still present cannot be claimed as cleanup
+ok 58 - ID absent but name still present cannot be claimed as cleanup
+  ---
+  duration_ms: 0.4529
+  type: 'test'
+  ...
+# Subtest: name absent but ID still present cannot be claimed as cleanup
+ok 59 - name absent but ID still present cannot be claimed as cleanup
+  ---
+  duration_ms: 0.322
+  type: 'test'
+  ...
+# Subtest: indeterminate absence cannot be claimed as cleanup
+ok 60 - indeterminate absence cannot be claimed as cleanup
+  ---
+  duration_ms: 0.2142
+  type: 'test'
+  ...
+# Subtest: escaped and raw passwords never enter journal or thrown errors
+ok 61 - escaped and raw passwords never enter journal or thrown errors
+  ---
+  duration_ms: 0.3208
+  type: 'test'
+  ...
+# Subtest: matching immutable identity and isolated configuration are accepted
+ok 62 - matching immutable identity and isolated configuration are accepted
+  ---
+  duration_ms: 2.0036
+  type: 'test'
+  ...
+# Subtest: accept matching allowed optional environment key
+ok 63 - accept matching allowed optional environment key
+  ---
+  duration_ms: 0.2221
+  type: 'test'
+  ...
+# Subtest: reject non-enumerable required environment key PGDATA
+ok 64 - reject non-enumerable required environment key PGDATA
+  ---
+  duration_ms: 0.4595
+  type: 'test'
+  ...
+# Subtest: reject non-enumerable required environment key POSTGRES_DB
+ok 65 - reject non-enumerable required environment key POSTGRES_DB
+  ---
+  duration_ms: 0.1089
+  type: 'test'
+  ...
+# Subtest: reject non-enumerable required environment key POSTGRES_USER
+ok 66 - reject non-enumerable required environment key POSTGRES_USER
+  ---
+  duration_ms: 0.0994
+  type: 'test'
+  ...
+# Subtest: reject non-enumerable required environment key POSTGRES_PASSWORD
+ok 67 - reject non-enumerable required environment key POSTGRES_PASSWORD
+  ---
+  duration_ms: 0.0878
+  type: 'test'
+  ...
+# Subtest: reject inherited required PGDATA even when the inspected environment omits it
+ok 68 - reject inherited required PGDATA even when the inspected environment omits it
+  ---
+  duration_ms: 0.1718
+  type: 'test'
+  ...
+# Subtest: reject hidden unapproved environment key replacing an expected key
+ok 69 - reject hidden unapproved environment key replacing an expected key
+  ---
+  duration_ms: 0.1603
+  type: 'test'
+  ...
+# Subtest: reject different ID independently
+ok 70 - reject different ID independently
+  ---
+  duration_ms: 0.1305
+  type: 'test'
+  ...
+# Subtest: reject different name independently
+ok 71 - reject different name independently
+  ---
+  duration_ms: 0.1446
+  type: 'test'
+  ...
+# Subtest: reject different image independently
+ok 72 - reject different image independently
+  ---
+  duration_ms: 0.097
+  type: 'test'
+  ...
+# Subtest: reject different nonce independently
+ok 73 - reject different nonce independently
+  ---
+  duration_ms: 0.0781
+  type: 'test'
+  ...
+# Subtest: reject created before intent independently
+ok 74 - reject created before intent independently
+  ---
+  duration_ms: 0.0617
+  type: 'test'
+  ...
+# Subtest: reject created after allowed time independently
+ok 75 - reject created after allowed time independently
+  ---
+  duration_ms: 0.0649
+  type: 'test'
+  ...
+# Subtest: reject created one nanosecond after upper bound independently
+ok 76 - reject created one nanosecond after upper bound independently
+  ---
+  duration_ms: 0.0531
+  type: 'test'
+  ...
+# Subtest: reject missing created timestamp independently
+ok 77 - reject missing created timestamp independently
+  ---
+  duration_ms: 0.0455
+  type: 'test'
+  ...
+# Subtest: reject invalid 24th hour independently
+ok 78 - reject invalid 24th hour independently
+  ---
+  duration_ms: 0.0495
+  type: 'test'
+  ...
+# Subtest: reject privileged independently
+ok 79 - reject privileged independently
+  ---
+  duration_ms: 0.0535
+  type: 'test'
+  ...
+# Subtest: reject added capabilities independently
+ok 80 - reject added capabilities independently
+  ---
+  duration_ms: 0.0708
+  type: 'test'
+  ...
+# Subtest: reject unconfined seccomp independently
+ok 81 - reject unconfined seccomp independently
+  ---
+  duration_ms: 0.0507
+  type: 'test'
+  ...
+# Subtest: reject device requests independently
+ok 82 - reject device requests independently
+  ---
+  duration_ms: 0.0542
+  type: 'test'
+  ...
+# Subtest: reject device cgroup rules independently
+ok 83 - reject device cgroup rules independently
+  ---
+  duration_ms: 0.0479
+  type: 'test'
+  ...
+# Subtest: reject changed entrypoint independently
+ok 84 - reject changed entrypoint independently
+  ---
+  duration_ms: 0.0783
+  type: 'test'
+  ...
+# Subtest: reject changed command independently
+ok 85 - reject changed command independently
+  ---
+  duration_ms: 0.0677
+  type: 'test'
+  ...
+# Subtest: reject paused runtime independently
+ok 86 - reject paused runtime independently
+  ---
+  duration_ms: 0.0652
+  type: 'test'
+  ...
+# Subtest: reject restarting runtime independently
+ok 87 - reject restarting runtime independently
+  ---
+  duration_ms: 0.0682
+  type: 'test'
+  ...
+# Subtest: reject dead runtime independently
+ok 88 - reject dead runtime independently
+  ---
+  duration_ms: 0.0764
+  type: 'test'
+  ...
+# Subtest: reject inconsistent runtime state independently
+ok 89 - reject inconsistent runtime state independently
+  ---
+  duration_ms: 0.0884
+  type: 'test'
+  ...
+# Subtest: reject host network independently
+ok 90 - reject host network independently
+  ---
+  duration_ms: 0.0557
+  type: 'test'
+  ...
+# Subtest: reject host PID independently
+ok 91 - reject host PID independently
+  ---
+  duration_ms: 0.0525
+  type: 'test'
+  ...
+# Subtest: reject host IPC independently
+ok 92 - reject host IPC independently
+  ---
+  duration_ms: 0.0418
+  type: 'test'
+  ...
+# Subtest: reject host UTS independently
+ok 93 - reject host UTS independently
+  ---
+  duration_ms: 0.0616
+  type: 'test'
+  ...
+# Subtest: reject host user namespace independently
+ok 94 - reject host user namespace independently
+  ---
+  duration_ms: 0.0605
+  type: 'test'
+  ...
+# Subtest: reject bind mount independently
+ok 95 - reject bind mount independently
+  ---
+  duration_ms: 0.047
+  type: 'test'
+  ...
+# Subtest: reject unknown binds independently
+ok 96 - reject unknown binds independently
+  ---
+  duration_ms: 0.0523
+  type: 'test'
+  ...
+# Subtest: reject unknown devices independently
+ok 97 - reject unknown devices independently
+  ---
+  duration_ms: 0.0588
+  type: 'test'
+  ...
+# Subtest: reject unknown inherited volumes independently
+ok 98 - reject unknown inherited volumes independently
+  ---
+  duration_ms: 0.0658
+  type: 'test'
+  ...
+# Subtest: reject volumes from another container independently
+ok 99 - reject volumes from another container independently
+  ---
+  duration_ms: 0.0897
+  type: 'test'
+  ...
+# Subtest: reject device independently
+ok 100 - reject device independently
+  ---
+  duration_ms: 0.0669
+  type: 'test'
+  ...
+# Subtest: reject persistent volume independently
+ok 101 - reject persistent volume independently
+  ---
+  duration_ms: 0.0652
+  type: 'test'
+  ...
+# Subtest: reject missing tmpfs independently
+ok 102 - reject missing tmpfs independently
+  ---
+  duration_ms: 0.0684
+  type: 'test'
+  ...
+# Subtest: reject wrong PGDATA independently
+ok 103 - reject wrong PGDATA independently
+  ---
+  duration_ms: 0.0692
+  type: 'test'
+  ...
+# Subtest: reject duplicate PGDATA independently
+ok 104 - reject duplicate PGDATA independently
+  ---
+  duration_ms: 0.0543
+  type: 'test'
+  ...
+# Subtest: reject unexpected trust authentication independently
+ok 105 - reject unexpected trust authentication independently
+  ---
+  duration_ms: 0.0768
+  type: 'test'
+  ...
+# Subtest: reject changed bootstrap password independently
+ok 106 - reject changed bootstrap password independently
+  ---
+  duration_ms: 0.0999
+  type: 'test'
+  ...
+# Subtest: reject auto-remove independently
+ok 107 - reject auto-remove independently
+  ---
+  duration_ms: 0.0536
+  type: 'test'
+  ...
+# Subtest: reject restart policy independently
+ok 108 - reject restart policy independently
+  ---
+  duration_ms: 0.0431
+  type: 'test'
+  ...
+# Subtest: reject publish-all independently
+ok 109 - reject publish-all independently
+  ---
+  duration_ms: 0.0483
+  type: 'test'
+  ...
+# Subtest: reject requested wildcard host independently
+ok 110 - reject requested wildcard host independently
+  ---
+  duration_ms: 0.0523
+  type: 'test'
+  ...
+# Subtest: reject actual wildcard host independently
+ok 111 - reject actual wildcard host independently
+  ---
+  duration_ms: 0.062
+  type: 'test'
+  ...
+# Subtest: reject zero actual port independently
+ok 112 - reject zero actual port independently
+  ---
+  duration_ms: 0.058
+  type: 'test'
+  ...
+# Subtest: reject actual port newline independently
+ok 113 - reject actual port newline independently
+  ---
+  duration_ms: 0.0518
+  type: 'test'
+  ...
+# Subtest: reject actual port numeric type independently
+ok 114 - reject actual port numeric type independently
+  ---
+  duration_ms: 0.1185
+  type: 'test'
+  ...
+# Subtest: reject multiple actual bindings independently
+ok 115 - reject multiple actual bindings independently
+  ---
+  duration_ms: 0.0782
+  type: 'test'
+  ...
+# Subtest: reject extra published port independently
+ok 116 - reject extra published port independently
+  ---
+  duration_ms: 0.0658
+  type: 'test'
+  ...
+# Subtest: reject missing config independently
+ok 117 - reject missing config independently
+  ---
+  duration_ms: 0.0453
+  type: 'test'
+  ...
+# Subtest: reject missing running state independently
+ok 118 - reject missing running state independently
+  ---
+  duration_ms: 0.0487
+  type: 'test'
+  ...
+# Subtest: reject null requested binding independently
+ok 119 - reject null requested binding independently
+  ---
+  duration_ms: 0.0775
+  type: 'test'
+  ...
+# Subtest: reject null actual binding independently
+ok 120 - reject null actual binding independently
+  ---
+  duration_ms: 0.0842
+  type: 'test'
+  ...
+# Subtest: reject inherited expected requested port with an extra own binding
+ok 121 - reject inherited expected requested port with an extra own binding
+  ---
+  duration_ms: 0.1056
+  type: 'test'
+  ...
+# Subtest: reject inherited expected tmpfs with an extra own binding
+ok 122 - reject inherited expected tmpfs with an extra own binding
+  ---
+  duration_ms: 0.0634
+  type: 'test'
+  ...
+# Subtest: reject inherited expected actual running port with an extra own binding
+ok 123 - reject inherited expected actual running port with an extra own binding
+  ---
+  duration_ms: 0.0713
+  type: 'test'
+  ...
+# Subtest: reject hidden own expected requested port with an extra enumerable binding
+ok 124 - reject hidden own expected requested port with an extra enumerable binding
+  ---
+  duration_ms: 0.0838
+  type: 'test'
+  ...
+# Subtest: reject hidden own expected tmpfs with an extra enumerable binding
+ok 125 - reject hidden own expected tmpfs with an extra enumerable binding
+  ---
+  duration_ms: 0.0653
+  type: 'test'
+  ...
+# Subtest: reject hidden own expected actual port with an extra enumerable binding
+ok 126 - reject hidden own expected actual port with an extra enumerable binding
+  ---
+  duration_ms: 0.0941
+  type: 'test'
+  ...
+# Subtest: accept a valid offset timestamp representing the same instant
+ok 127 - accept a valid offset timestamp representing the same instant
+  ---
+  duration_ms: 0.0883
+  type: 'test'
+  ...
+# Subtest: accept exact sub-millisecond lower boundary
+ok 128 - accept exact sub-millisecond lower boundary
+  ---
+  duration_ms: 0.0658
+  type: 'test'
+  ...
+# Subtest: reject malformed target ID even when observed ID matches
+ok 129 - reject malformed target ID even when observed ID matches
+  ---
+  duration_ms: 0.0594
+  type: 'test'
+  ...
+# Subtest: reject target name not derived from nonce even when observed name matches
+ok 130 - reject target name not derived from nonce even when observed name matches
+  ---
+  duration_ms: 0.0629
+  type: 'test'
+  ...
+# Subtest: reject invalid nonce even when name and label match it
+ok 131 - reject invalid nonce even when name and label match it
+  ---
+  duration_ms: 0.0703
+  type: 'test'
+  ...
+# Subtest: reject invalid image even when observed image matches
+ok 132 - reject invalid image even when observed image matches
+  ---
+  duration_ms: 0.0484
+  type: 'test'
+  ...
+# Subtest: reject newline in an otherwise consistent full ID
+ok 133 - reject newline in an otherwise consistent full ID
+  ---
+  duration_ms: 0.0554
+  type: 'test'
+  ...
+# Subtest: reject a normalised invalid calendar date even when the entire window matches
+ok 134 - reject a normalised invalid calendar date even when the entire window matches
+  ---
+  duration_ms: 0.0516
+  type: 'test'
+  ...
+# Subtest: reject non-RFC3339 creation window
+ok 135 - reject non-RFC3339 creation window
+  ---
+  duration_ms: 0.0452
+  type: 'test'
+  ...
+# Subtest: reject a missing state mode
+ok 136 - reject a missing state mode
+  ---
+  duration_ms: 0.0568
+  type: 'test'
+  ...
+# Subtest: reject an unknown state mode
+ok 137 - reject an unknown state mode
+  ---
+  duration_ms: 0.0723
+  type: 'test'
+  ...
+# Subtest: requires a running instance when performing runtime work
+ok 138 - requires a running instance when performing runtime work
+  ---
+  duration_ms: 0.0949
+  type: 'test'
+  ...
+# Subtest: accepts an explicitly created instance without a published runtime port
+ok 139 - accepts an explicitly created instance without a published runtime port
+  ---
+  duration_ms: 0.0477
+  type: 'test'
+  ...
+# Subtest: does not accept a running instance when a stopped one is required
+ok 140 - does not accept a running instance when a stopped one is required
+  ---
+  duration_ms: 0.0604
+  type: 'test'
+  ...
+# Subtest: stopped instance still requires a valid requested port structure
+ok 141 - stopped instance still requires a valid requested port structure
+  ---
+  duration_ms: 0.0722
+  type: 'test'
+  ...
+# Subtest: stopped instance rejects an actual wildcard binding if still reported
+ok 142 - stopped instance rejects an actual wildcard binding if still reported
+  ---
+  duration_ms: 0.0729
+  type: 'test'
+  ...
+# Subtest: reject overbroad creation window
+ok 143 - reject overbroad creation window
+  ---
+  duration_ms: 0.0554
+  type: 'test'
+  ...
+# Subtest: reject non-string environment entries
+ok 144 - reject non-string environment entries
+  ---
+  duration_ms: 0.0576
+  type: 'test'
+  ...
+1..144
+# tests 144
+# suites 0
+# pass 144
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 99.3522

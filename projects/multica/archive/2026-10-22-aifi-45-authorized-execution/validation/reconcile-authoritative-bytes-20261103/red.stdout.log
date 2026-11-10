@@ -1,0 +1,42 @@
+=== RUN   TestReconcileOwnerTxComparesVerdictIdentityByValue
+    execution_control_worker_replay_memory_test.go:184: got "ready"/"" "local-bytes", want ready with the stored payload
+--- FAIL: TestReconcileOwnerTxComparesVerdictIdentityByValue (0.00s)
+=== RUN   TestReconcileOwnerTxRejectsUnparseableVerdictIdentity
+    execution_control_worker_replay_memory_test.go:201: got "ready"/"", want frozen/journal_divergent
+--- FAIL: TestReconcileOwnerTxRejectsUnparseableVerdictIdentity (0.00s)
+=== RUN   TestReconcileOwnerTxSurfacesLedgerLookupFailure
+--- PASS: TestReconcileOwnerTxSurfacesLedgerLookupFailure (0.00s)
+=== RUN   TestReconcileOwnerTxReplaysAuthoritativeBytes
+    execution_control_worker_replay_memory_test.go:250: replayed "local-bytes", want the stored payload
+--- FAIL: TestReconcileOwnerTxReplaysAuthoritativeBytes (0.00s)
+=== RUN   TestReconcileOwnerTxFreezesJournalCases
+=== RUN   TestReconcileOwnerTxFreezesJournalCases/incomplete_journal_never_reads_the_ledger
+=== RUN   TestReconcileOwnerTxFreezesJournalCases/journal_ahead_of_the_chain_never_reads_the_ledger
+=== RUN   TestReconcileOwnerTxFreezesJournalCases/journal_row_absent_from_the_chain_freezes_instead_of_matching_the_tail
+    execution_control_worker_replay_memory_test.go:360: got "ready"/"", want frozen/"journal_missing"
+=== RUN   TestReconcileOwnerTxFreezesJournalCases/a_wrapped_ErrNoRows_still_counts_as_a_missing_journal_row
+    execution_control_worker_replay_memory_test.go:360: got "ready"/"", want frozen/"journal_missing"
+=== RUN   TestReconcileOwnerTxFreezesJournalCases/different_verdict_identity_freezes
+    execution_control_worker_replay_memory_test.go:360: got "ready"/"", want frozen/"journal_divergent"
+=== RUN   TestReconcileOwnerTxFreezesJournalCases/journal_sequence_differing_from_the_recorded_frame_freezes
+=== RUN   TestReconcileOwnerTxFreezesJournalCases/record_one_sequence_behind_the_tail_freezes
+=== RUN   TestReconcileOwnerTxFreezesJournalCases/record_digest_differing_from_the_tail_freezes
+=== RUN   TestReconcileOwnerTxFreezesJournalCases/empty_authoritative_payload_freezes
+    execution_control_worker_replay_memory_test.go:360: got "ready"/"", want frozen/"journal_missing_payload"
+--- FAIL: TestReconcileOwnerTxFreezesJournalCases (0.00s)
+    --- PASS: TestReconcileOwnerTxFreezesJournalCases/incomplete_journal_never_reads_the_ledger (0.00s)
+    --- PASS: TestReconcileOwnerTxFreezesJournalCases/journal_ahead_of_the_chain_never_reads_the_ledger (0.00s)
+    --- FAIL: TestReconcileOwnerTxFreezesJournalCases/journal_row_absent_from_the_chain_freezes_instead_of_matching_the_tail (0.00s)
+    --- FAIL: TestReconcileOwnerTxFreezesJournalCases/a_wrapped_ErrNoRows_still_counts_as_a_missing_journal_row (0.00s)
+    --- FAIL: TestReconcileOwnerTxFreezesJournalCases/different_verdict_identity_freezes (0.00s)
+    --- PASS: TestReconcileOwnerTxFreezesJournalCases/journal_sequence_differing_from_the_recorded_frame_freezes (0.00s)
+    --- PASS: TestReconcileOwnerTxFreezesJournalCases/record_one_sequence_behind_the_tail_freezes (0.00s)
+    --- PASS: TestReconcileOwnerTxFreezesJournalCases/record_digest_differing_from_the_tail_freezes (0.00s)
+    --- FAIL: TestReconcileOwnerTxFreezesJournalCases/empty_authoritative_payload_freezes (0.00s)
+=== RUN   TestReconcileOwnerTxKeepsJournalFreeTailEqual
+--- PASS: TestReconcileOwnerTxKeepsJournalFreeTailEqual (0.00s)
+=== RUN   TestReconcileOwnerTxRejectsUnknownCheckpoint
+--- PASS: TestReconcileOwnerTxRejectsUnknownCheckpoint (0.00s)
+FAIL
+FAIL	github.com/multica-ai/multica/server/internal/daemon	0.218s
+FAIL

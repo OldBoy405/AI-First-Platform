@@ -1,0 +1,17 @@
+# STDD 设计调整汇总（C6）
+# 由 pending-adjustments.yaml 汇总；作为后续修订输入，不是批准或验收结论。
+
+meta:
+  change_id: 2026-10-22-aifi-45-authorized-execution
+  generated: '2026-11-10'
+  source: pending-adjustments.yaml（ADJ-AIFI45-M001～M010、M005-EVID、M005-TRUST、M008-TC）
+  gate_status: 'Gate 2 重新确认已记录（2026-11-10，见 pending-adjustments meta）；Gate 3 未确认'
+  note: >-
+    逐条状态与关闭条件以 pending-adjustments.yaml 的 dispositions_20261109 为准，不在此重复。
+
+summary:
+  resolved: [ADJ-AIFI45-M004, ADJ-AIFI45-M008-TC]
+  accepted_residual: [ADJ-AIFI45-M001, ADJ-AIFI45-M002]
+  accepted_residual_20261110: [ADJ-AIFI45-M009]   # 去重键兼容已裁定（不双读/回填）；客户端真实 OS/跨会话证据为已接受残余
+  successor_change: [ADJ-AIFI45-M003, ADJ-AIFI45-M005, ADJ-AIFI45-M005-EVID, ADJ-AIFI45-M005-TRUST, ADJ-AIFI45-M008, ADJ-AIFI45-M006, ADJ-AIFI45-M007, ADJ-AIFI45-M010]
+  successor_note: M003/M005/M008 及 M005-EVID/TRUST 的剩余项合并登记于 BACKLOG-M-RESIDUALS.md 的 M005 行（待开 change）；resolved 不变。

@@ -1,0 +1,49 @@
+{
+  "schema": "aifi45.notice-appcontainer-isolation/v1",
+  "startedAt": "2026-10-31T01:53:20.5949011Z",
+  "finishedAt": "2026-10-31T01:53:50.7093699Z",
+  "status": "FAILED",
+  "failure": "probe phase: owned sandbox job timed out and was terminated",
+  "mechanism": "CreateAppContainerProfile(empty capabilities) + SECURITY_CAPABILITIES + protected DACLs + owned kill-on-close Job Object",
+  "environmentKeys": [
+    "APPDATA",
+    "CGO_ENABLED",
+    "GOARCH",
+    "GOCACHE",
+    "GOENV",
+    "GOFLAGS",
+    "GOOS",
+    "GOPATH",
+    "GOPROXY",
+    "GOSUMDB",
+    "GOTELEMETRY",
+    "GOTOOLCHAIN",
+    "GOWORK",
+    "HOME",
+    "LOCALAPPDATA",
+    "PATH",
+    "SystemRoot",
+    "TEMP",
+    "TMP",
+    "USERPROFILE",
+    "WINDIR"
+  ],
+  "probe": {
+    "kind": "probe",
+    "binarySha256": "1ae0310355b98e41308eea04a8eef9e95659f9d6529159af9c0bf57348f29689",
+    "appContainerSid": "S-1-15-2-510315287-2177716843-1360499358-3709477231-3863904921-2960992872-1003607418",
+    "capabilityCount": 0,
+    "processStarted": true,
+    "processExitCode": null,
+    "jobActiveAfterExit": null,
+    "stdoutBytes": 0,
+    "stderrBytes": 0,
+    "stderrSha256": "",
+    "cleanup": {
+      "profileDeleted": true,
+      "rootRemoved": true,
+      "sentinelRemoved": true,
+      "sentinelUnchanged": true
+    }
+  }
+}

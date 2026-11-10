@@ -1,0 +1,37 @@
+--- FAIL: TestParseCRCommitMessageReviewContract (0.23s)
+    crevents_test.go:450: expected review commit to parse
+--- FAIL: TestBuildReviewPayloadTechDesignAttemptTwoParity (0.26s)
+    crevents_test.go:514: expected tech-design payload
+--- FAIL: TestBuildReviewPayloadUsesHistoricalCommitAttempt (0.35s)
+    crevents_test.go:557: expected historical review payload
+--- FAIL: TestM25ReviewPayloadRoundTripCanonicalIdentity (0.23s)
+    crevents_test.go:1040: expected canonical review payload
+--- FAIL: TestM25DevPlanUpstreamPayloadKeepsM24Facts (0.24s)
+    crevents_test.go:1125: expected dev-plan payload
+2026/10/30 09:29:42 WARN refusing ack file outside the sent batch file=foreign.json
+2026/10/30 09:29:42 INFO grant delivered cr=CR-2026-001 stage=developing root=C:\Users\GOBAO\AppData\Local\Temp\aifi45-settle-regression-v2-TRERQo\independent-final-all-backslash-tmp\TestMKb006grant_pending_ack_headers2157992094\001 workspace_id=ws-g1
+2026/10/30 09:29:42 INFO grant delivered cr=CR-2026-001 stage=developing root=C:\Users\GOBAO\AppData\Local\Temp\aifi45-settle-regression-v2-TRERQo\independent-final-all-backslash-tmp\TestMKb006grant_pending_ack_headers2157992094\002 workspace_id=ws-g2
+2026/10/30 09:29:42 INFO grant delivered cr=CR-2026-045 stage=code root=C:\Users\GOBAO\AppData\Local\Temp\aifi45-settle-regression-v2-TRERQo\independent-final-all-backslash-tmp\TestMKey003unique_root_writes_and_acks4089226977\001 workspace_id=ws-a
+2026/10/30 09:29:42 WARN grant rejected: no unique CR root in workspace workspace_id=ws-a grant=g-CR-2026-045 cr=CR-2026-045 error="PIPELINE_CRCTL_UNAVAILABLE: expected exactly one CR root for CR-2026-045, found 0; workspace_id=ws-a cr_id=CR-2026-045 candidates=[C:\\Users\\GOBAO\\AppData\\Local\\Temp\\aifi45-settle-regression-v2-TRERQo\\independent-final-all-backslash-tmp\\TestMKey003zero_root_rejected3786221826\\001] daemon_id= runtime_id= projection_source=[snapshot]"
+2026/10/30 09:29:42 WARN grant rejected: no unique CR root in workspace workspace_id=ws-a grant=g-CR-2026-045 cr=CR-2026-045 error="PIPELINE_CRCTL_UNAVAILABLE: expected exactly one CR root for CR-2026-045, found 2; workspace_id=ws-a cr_id=CR-2026-045 candidates=[C:\\Users\\GOBAO\\AppData\\Local\\Temp\\aifi45-settle-regression-v2-TRERQo\\independent-final-all-backslash-tmp\\TestMKey003ambiguous_roots_rejected311401784\\001 C:\\Users\\GOBAO\\AppData\\Local\\Temp\\aifi45-settle-regression-v2-TRERQo\\independent-final-all-backslash-tmp\\TestMKey003ambiguous_roots_rejected311401784\\002] daemon_id= runtime_id= projection_source=[snapshot]"
+2026/10/30 09:29:42 WARN grant rejected: no unique CR root in workspace workspace_id=ws-a grant=g-CR-2026-045 cr=CR-2026-045 error="PIPELINE_CRCTL_UNAVAILABLE: expected exactly one CR root for CR-2026-045, found 0; workspace_id=ws-a cr_id=CR-2026-045 candidates=[C:\\Users\\GOBAO\\AppData\\Local\\Temp\\aifi45-settle-regression-v2-TRERQo\\independent-final-all-backslash-tmp\\TestMKey003cross_workspace_rejected136254162\\001] daemon_id= runtime_id= projection_source=[snapshot]"
+2026/10/30 09:29:42 ERROR grant delivery refused by transport trust boundary source=http://203.0.113.10 error="remote plaintext http is refused"
+2026/10/30 09:29:42 INFO grant delivered cr=CR-2026-045 stage=code root=C:\Users\GOBAO\AppData\Local\Temp\aifi45-settle-regression-v2-TRERQo\independent-final-all-backslash-tmp\TestMKey003loopback_http_allowed2647278338\001 workspace_id=ws-a
+2026/10/30 09:29:42 ERROR grant delivery withheld: public key unavailable workspace_id=ws-a error="public_key is missing"
+2026/10/30 09:29:42 WARN grant delivery interrupted after key install; retry on next pass workspace_id=ws-a error="injected interruption"
+2026/10/30 09:29:42 INFO grant delivered cr=CR-2026-045 stage=code root=C:\Users\GOBAO\AppData\Local\Temp\aifi45-settle-regression-v2-TRERQo\independent-final-all-backslash-tmp\TestMKey004interrupt_after_key_replays1998623262\001 workspace_id=ws-a
+2026/10/30 09:29:42 WARN grant delivery interrupted after grant write; retry on next pass workspace_id=ws-a file=CR-2026-045-code.grant.json error="injected interruption"
+2026/10/30 09:29:42 INFO grant delivered cr=CR-2026-045 stage=code root=C:\Users\GOBAO\AppData\Local\Temp\aifi45-settle-regression-v2-TRERQo\independent-final-all-backslash-tmp\TestMKey004interrupt_after_grant_replays_without_corruption1106586677\001 workspace_id=ws-a
+2026/10/30 09:29:42 WARN cannot write grant file file=CR-2026-045-code.grant.json error="rename C:\\Users\\GOBAO\\AppData\\Local\\Temp\\aifi45-settle-regression-v2-TRERQo\\independent-final-all-backslash-tmp\\TestMKey004grant_write_failure_fails_closed_then_recovers346069915\\001\\.crctl\\grants\\.CR-2026-045-code.grant.json-3402465043.tmp C:\\Users\\GOBAO\\AppData\\Local\\Temp\\aifi45-settle-regression-v2-TRERQo\\independent-final-all-backslash-tmp\\TestMKey004grant_write_failure_fails_closed_then_recovers346069915\\001\\.crctl\\grants\\CR-2026-045-code.grant.json: Access is denied."
+2026/10/30 09:29:42 INFO grant delivered cr=CR-2026-045 stage=code root=C:\Users\GOBAO\AppData\Local\Temp\aifi45-settle-regression-v2-TRERQo\independent-final-all-backslash-tmp\TestMKey004grant_write_failure_fails_closed_then_recovers346069915\001 workspace_id=ws-a
+2026/10/30 09:29:42 INFO grant delivered cr=CR-2026-045 stage=code root=C:\Users\GOBAO\AppData\Local\Temp\aifi45-settle-regression-v2-TRERQo\independent-final-all-backslash-tmp\TestMKey005other_key_untouched_and_same_key_idempotent2491561063\001 workspace_id=ws-a
+2026/10/30 09:29:42 ERROR grant delivery withheld: public key install failed workspace_id=ws-a root=C:\Users\GOBAO\AppData\Local\Temp\aifi45-settle-regression-v2-TRERQo\independent-final-all-backslash-tmp\TestMKey005same_key_id_conflict_fails_closed2501901093\001 error="public key key-m38b already exists with different content"
+2026/10/30 09:29:42 INFO grant delivered cr=CR-2026-045 stage=code root=C:\Users\GOBAO\AppData\Local\Temp\aifi45-settle-regression-v2-TRERQo\independent-final-all-backslash-tmp\TestMKey005old_key_and_old_grant_preserved2226590752\001 workspace_id=ws-a
+2026/10/30 09:29:42 WARN grant rejected: key_id does not match server public_key workspace_id=ws-a grant=g1 cr=CR-2026-045 grant_key=some-other-key server_key=key-m38b
+2026/10/30 09:29:42 INFO grant delivered cr=CR-2026-045 stage=code root=C:\Users\GOBAO\AppData\Local\Temp\aifi45-settle-regression-v2-TRERQo\independent-final-all-backslash-tmp\TestMKey0063062637537\001 workspace_id=ws-a
+2026/10/30 09:29:43 INFO grant delivered cr=CR-2026-045 stage=code root=C:\Users\GOBAO\AppData\Local\Temp\aifi45-settle-regression-v2-TRERQo\independent-final-all-backslash-tmp\TestMKey0011359100709\001 workspace_id=ws-a
+2026/10/30 09:29:43 http: TLS handshake error from 127.0.0.1:56099: remote error: tls: bad certificate
+2026/10/30 09:29:43 INFO grant delivered cr=CR-2026-045 stage=code root=C:\Users\GOBAO\AppData\Local\Temp\aifi45-settle-regression-v2-TRERQo\independent-final-all-backslash-tmp\TestMKey0021350886130\001 workspace_id=ws-a
+FAIL
+FAIL	github.com/multica-ai/multica/server/internal/daemon	15.523s
+FAIL

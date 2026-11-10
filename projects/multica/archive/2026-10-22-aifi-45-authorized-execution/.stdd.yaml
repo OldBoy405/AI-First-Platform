@@ -1,0 +1,171 @@
+approval_receipts:
+- confirmed_actor: ai
+  confirmed_at: '2026-11-10T21:20:13'
+  confirmed_by: dialog
+  confirmed_evidence: 确认 Gate 3
+  note: reapproved; prior input_fingerprint=a55ef995cc4900c478102d43b6bcb2499ca3c3bb47a0b559f8b94971290f72e0
+  receipt_id: gate3-2026-11-10T21:20:13
+  recorded_at: '2026-11-10T21:20:21'
+  status: superseded
+change_id: 2026-10-22-aifi-45-authorized-execution
+complexity_score: 17
+current_phase: build
+design_adjustments:
+  count: 0
+last_modified: '2026-10-22T20:08:14.684192'
+long_range:
+  enabled: false
+  mode: normal
+mode: thorough
+phases:
+  build:
+    confirmed_actor: ai
+    confirmed_at: '2026-11-10T21:20:21'
+    confirmed_by: dialog
+    confirmed_evidence: 确认 Gate 3（重签原因：批准后主会话仅追加 test-report 的切片登记说明，未改任何结论或计数）
+    input_fingerprint: ca9fd4cd3b4fa395d664668a137563fec0f00c0ecfa95521eb863a7d39a012bd
+    input_manifest:
+    - change_id: 2026-10-22-aifi-45-authorized-execution
+      child_id: null
+      kind: projection
+      logical_path: .stdd.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 2b35dca26543baae2b678afdfa2a7cf67181f798fda66cdc68c3e87ddb9c0bba
+    - change_id: 2026-10-22-aifi-45-authorized-execution
+      child_id: null
+      kind: raw
+      logical_path: canonical/.canon-index.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 8c559545ea9469416a3c356f834fa379af58f4a3b92525f396f041884843091d
+    - change_id: 2026-10-22-aifi-45-authorized-execution
+      child_id: null
+      kind: projection
+      logical_path: canonical/proposals/2026-10-22-aifi-45-authorized-execution.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 4890afacf1430ed6b82366708e2b3cdc97890920f2357a69ed35f5f220c44535
+    - change_id: 2026-10-22-aifi-45-authorized-execution
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/agent/attention-routing.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: e4211ee438bc51fe66568c5d3a27ec21cbd9643f6ba6d36884af61d1e40be828
+    - change_id: 2026-10-22-aifi-45-authorized-execution
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/agent/authorized-runner.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 40be3432c18926c718af5981c132a028a24ac29b48f47b057f6155e2fdc5b164
+    - change_id: 2026-10-22-aifi-45-authorized-execution
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/code/attention-routing.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: ad774f8b830d3c0979e2d5ba065f36025559b63efabc759d6e56cd5e3939d5f7
+    - change_id: 2026-10-22-aifi-45-authorized-execution
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/code/authorized-runner.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: e864ae28baf7cfadae07ef001bc96d6ba4d2e09771b2e6d6b88a62e25d6f80f3
+    - change_id: 2026-10-22-aifi-45-authorized-execution
+      child_id: null
+      kind: raw
+      logical_path: design.md
+      project_id: multica
+      projection_version: v1
+      sha256: e2f5ded967f86e8446956dff752fa19f071135a807cd4a98e9e28bd1e0c924f2
+    - change_id: 2026-10-22-aifi-45-authorized-execution
+      child_id: null
+      kind: projection
+      logical_path: proposal.md
+      project_id: multica
+      projection_version: v1
+      sha256: ddc6389db7dfb0788947f3bb28f0b721d267ffb51571460ad3615a50a98e4884
+    - change_id: 2026-10-22-aifi-45-authorized-execution
+      child_id: null
+      kind: raw
+      logical_path: specs/attention-routing/spec.md
+      project_id: multica
+      projection_version: v1
+      sha256: b20931c9f9c1a2d3e452dbc75bffe46f2f6dea7b87e4432966eb066a3b06454b
+    - change_id: 2026-10-22-aifi-45-authorized-execution
+      child_id: null
+      kind: raw
+      logical_path: specs/authorized-runner/spec.md
+      project_id: multica
+      projection_version: v1
+      sha256: 96e926e8d31698e6ecf91ffcf2af2e753d0bc53e72f486c0bf6cd0de05c1e878
+    - change_id: 2026-10-22-aifi-45-authorized-execution
+      child_id: null
+      kind: raw
+      logical_path: test-plan.md
+      project_id: multica
+      projection_version: v1
+      sha256: a65468e3951a809d771ff658cd29527a585659e13c5a71c03ca4a3919574c1c7
+    - change_id: 2026-10-22-aifi-45-authorized-execution
+      child_id: null
+      kind: raw
+      logical_path: test-report.md
+      project_id: multica
+      projection_version: v1
+      sha256: 314b65d6135565e0f58e5d4cc9518e5a9d4b02b080433919e981f4bad210b1a3
+    slices_completed:
+      M-S0:
+        new_tests: 201
+        note: 计数范围 scripts/aifi45-db|disposable|isolation|verify 的 *.test.mjs 新增；验证入口
+          scripts/aifi45-disposable/run-selection.mjs。
+        status: done
+        tc_coverage: 环境前置（一次性库 nonce+marker 身份；整组 11 个选择 0 skip）
+        verified_at: '2026-11-10T21:20:00'
+      M-S1:
+        new_tests: 172
+        note: 计数范围 governance 的 authorization/approval/binding/consumption/verdict/contract/claim/settlement/admission
+          与 cmd/server、pkg/protocol；入口走一次性库 CP-RUN 选择。
+        status: done
+        tc_coverage: TC-RUN-002、TC-RUN-003、TC-RUN-010（真实认证路由 PASS）
+        verified_at: '2026-11-10T21:20:00'
+      M-S2:
+        new_tests: 107
+        note: 计数范围 internal/daemon 与 governance 的 dispatch/runner/terminal/claim/resume/preflight；TC-RUN-001
+          与 -006 无测试函数，见 ADJ-M005/M003。
+        status: done
+        tc_coverage: TC-RUN-004、TC-RUN-005、TC-RUN-007、TC-RUN-009（部分覆盖 PASS）；TC-RUN-008
+          经 daemon 合同 18 例
+        verified_at: '2026-11-10T21:20:00'
+      M-S3:
+        new_tests: 29
+        note: 计数范围 execution_notice* 与 noticeguard_test；M-S4 为全量回归与 Gate3，本身不是代码切片，证据见
+          test-report.md 第二节整组 11 选择，不单列 new_tests。
+        status: done
+        tc_coverage: TC-NTF-001～007（DB 层 PASS；客户端真实 OS/跨会话未验证，记已接受残余）
+        verified_at: '2026-11-10T21:20:00'
+    status: completed
+  deliver:
+    status: pending
+  spec:
+    confirmed_actor: ai
+    confirmed_at: '2026-10-22T20:00:01'
+    confirmed_by: dialog
+    confirmed_evidence: 确认 Gate 2
+    status: completed
+  understand:
+    confirmed_actor: ai
+    confirmed_at: '2026-10-22T15:44:16'
+    confirmed_by: dialog
+    confirmed_evidence: 确认这份 Gate 1
+    status: completed
+score_confidence: preliminary
+status: archived
+task_type: code
+traceability:
+  spec_scenarios: 0
+  tc_cases: 0
+  test_functions: 0
+version: '3.0'

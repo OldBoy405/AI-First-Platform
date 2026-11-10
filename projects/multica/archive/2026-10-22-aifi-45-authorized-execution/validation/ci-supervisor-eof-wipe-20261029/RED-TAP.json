@@ -1,0 +1,38 @@
+{
+  "argv": [
+    "node",
+    "--test",
+    "--test-reporter=tap",
+    "supervisor-erase.test.mjs"
+  ],
+  "exit": 1,
+  "before": {
+    "supervisor-collector.mjs": "a880d23c1ea0c05d1554dd2d4ff83fce6cbebff7e9355f8d33796288e87e1b28",
+    "supervisor-erase.test.mjs": "9133b4e95bff56d152704a465af6aae4d4c7c57e7a376264a8e60ee188ee0b13",
+    "supervisor-collector.test.mjs": "fb6d2f412799bd7b88d6b7ee7c3874973efe8e942b9e830c81966009dfea9437",
+    "supervisor-protocol.mjs": "92329bb48d9eed2b97eabd26b1b883dfb2b1684278ce91f593ecf3d95e3ea5c8"
+  },
+  "after": {
+    "supervisor-collector.mjs": "a880d23c1ea0c05d1554dd2d4ff83fce6cbebff7e9355f8d33796288e87e1b28",
+    "supervisor-erase.test.mjs": "9133b4e95bff56d152704a465af6aae4d4c7c57e7a376264a8e60ee188ee0b13",
+    "supervisor-collector.test.mjs": "fb6d2f412799bd7b88d6b7ee7c3874973efe8e942b9e830c81966009dfea9437",
+    "supervisor-protocol.mjs": "92329bb48d9eed2b97eabd26b1b883dfb2b1684278ce91f593ecf3d95e3ea5c8"
+  },
+  "counts": {
+    "tests": 6,
+    "pass": 2,
+    "fail": 4,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "failed_tests": [
+    "not ok 3 - collector clears private stdout at second EOF before result (malformed=false, reverse=false)",
+    "not ok 4 - collector clears private stdout at second EOF before result (malformed=false, reverse=true)",
+    "not ok 5 - collector clears private stdout at second EOF before result (malformed=true, reverse=false)",
+    "not ok 6 - collector clears private stdout at second EOF before result (malformed=true, reverse=true)"
+  ],
+  "failure_reason_present": 4,
+  "capture": "derived TAP counters and fixed diagnostics only",
+  "database": "not used"
+}

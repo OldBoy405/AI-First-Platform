@@ -1,0 +1,26 @@
+{
+  "scope": "test-only dynamic Node and Go verdict envelope signature interoperability; no database writer or production wiring",
+  "source": "server/internal/governance/crosslang_test/interop_test.go",
+  "source_sha256": "bcec35e7f885ca209e03d3ccc0000cc73dae95d44e467be28e8a7aeb2317bed4",
+  "author_session": "01a182c4-4107-7020-aecc-d1b32e8f059c",
+  "author_model": "agent default; not a configured tier, work began before current tier request",
+  "review_session": "01a182cd-5eab-7020-aecc-d1bd2bf171d5",
+  "message_id": null,
+  "message_id_note": "not supplied by Agent tool",
+  "requested_model": "OpenAIPersonal/gpt-6.1-terra:high",
+  "backend_model_receipt": "not available",
+  "verdict": "limited pass: 1 top-level test plus 4 subtests, independent execution; no writer, DB cursor, trusted B, or broken-chain rejection",
+  "report": "REVIEW-BALANCED.md",
+  "report_sha256": "eb3d1298c1b8399a3594ae84ec5b85363526fc656e8fdd6eb7154caf6b7090da",
+  "writer_preflight_review": {
+    "session_id": "01a182e4-934f-7020-aecc-d1d43b52b430",
+    "message_id": null,
+    "requested_model": "OpenAIPersonal/gpt-6.1-terra:high",
+    "backend_model_receipt": "not available",
+    "source_sha256": "5a0864eedbc492c74d19b67cb13a26461d061504fecf99af8aaea4ebe20cf1b5",
+    "writer_sha256": "f437aa2e2a29e26e0744d68d6da226101de6af618043e3a3d14bddafe86d684f",
+    "report": "REVIEW-WRITER-BALANCED.md",
+    "report_sha256": "7281f8bf23adaabd4b18af3ffff359f2b9ad0f4d3e01de2759f45929c2b70dff",
+    "verdict": "limited pass, actual writer preflight only; fake transaction stops at first query"
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "scope": "initial nil broadcast guard and its independent no-DB tests; later identity changes are outside these snapshots",
+  "reviewed_sha256": {
+    "execution_notice.go": "821a334fcaedf3fa4d36a946187f121708d445b91ce5b01ecb2fd3b51de71fd2",
+    "execution_notice_test.go": "8d9a72282cb77f558915b621f62111aec9e8234c77a0a1f4fff87586889faa8f",
+    "noticeguard_test/execution_notice_test.go": "e90f0f215b9c65e4173b05804f81470487d3eb6966130ce9329970214cb76966"
+  },
+  "reviews": [
+    {
+      "session_id": "01a182d4-c854-7020-aecc-d1c114d18ad6",
+      "message_id": null,
+      "requested_model": "GBClaude/claude-opus-5-5:high",
+      "backend_model_receipt": "not available",
+      "report": "REVIEW-STRONG.md",
+      "report_sha256": "d020e7a7dbceee834c0991fc1c03d0a01c438fe6af30a431203c418d8c270f24",
+      "verdict": "conditional pass for initial guard; design mismatch and remaining production risks"
+    },
+    {
+      "session_id": "01a182d5-1e2c-7020-aecc-d1c355111c0d",
+      "message_id": null,
+      "requested_model": "OpenAIPersonal/gpt-6.1-terra:high",
+      "backend_model_receipt": "not available",
+      "report": "REVIEW-BALANCED.md",
+      "report_sha256": "c8a369dcd4223a3a708842025ddeabfb884c46bcf3d45ebe947eb1f109ef081f",
+      "verdict": "5 top-level and 7 subtests passed; historical RED not independently reproduced"
+    },
+    {
+      "session_id": "01a182d4-c854-7020-aecc-d1c114d18ad6",
+      "message_id": null,
+      "requested_model": "GBClaude/claude-opus-5-5:high",
+      "backend_model_receipt": "not available",
+      "report": "REVIEW-IDENTITY-STRONG.md",
+      "report_sha256": "cf301173de576961fe8a9508e500251a43ea4d9115081c99ab74e06bb2da154d",
+      "reviewed_source_sha256": "3c523681b010b4c70f4ba96122d57851f21801c5bef4e9ea9b9c7727f819085f",
+      "reviewed_test_sha256": "184f920c7277e1684d8c2a29c139bff8eb6e5bb990b435e8874c5d990cd49def",
+      "verdict": "limited static pass on identity and recovery normalization; no DB execution"
+    },
+    {
+      "session_id": "01a182d5-1e2c-7020-aecc-d1c355111c0d",
+      "message_id": null,
+      "requested_model": "OpenAIPersonal/gpt-6.1-terra:high",
+      "backend_model_receipt": "not available",
+      "report": "REVIEW-IDENTITY-BALANCED.md",
+      "report_sha256": "93027b0c1f388f71b57a15c5a37009ce79f926198a5e5794e5b284a46e0bd0d1",
+      "reviewed_source_sha256": "3c523681b010b4c70f4ba96122d57851f21801c5bef4e9ea9b9c7727f819085f",
+      "reviewed_test_sha256": "184f920c7277e1684d8c2a29c139bff8eb6e5bb990b435e8874c5d990cd49def",
+      "verdict": "6 top-level and 16 subtests passed; no DB or production delivery"
+    }
+  ],
+  "message_id_note": "not supplied by Agent tool"
+}

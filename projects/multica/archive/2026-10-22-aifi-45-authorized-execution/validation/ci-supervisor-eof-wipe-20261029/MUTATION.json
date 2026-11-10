@@ -1,0 +1,31 @@
+{
+  "argv": [
+    "node",
+    "--test",
+    "--test-reporter=tap",
+    "supervisor-erase.test.mjs"
+  ],
+  "cwd": "<exclusive-owned-mutation-dir>",
+  "exit": 1,
+  "source_before": "9c4d561f26780a49bbf8dc09b7e35fee682732182785fcded8d38e0846c34fc3",
+  "source_after": "9c4d561f26780a49bbf8dc09b7e35fee682732182785fcded8d38e0846c34fc3",
+  "mutant": "3308049c1512152d533bdc2cb0bae490834c85571ad9ac94548f37b369fecefb",
+  "counts": {
+    "tests": 6,
+    "pass": 2,
+    "fail": 4,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "failed_tests": [
+    "not ok 3 - collector clears private stdout at second EOF before result (malformed=false, reverse=false)",
+    "not ok 4 - collector clears private stdout at second EOF before result (malformed=false, reverse=true)",
+    "not ok 5 - collector clears private stdout at second EOF before result (malformed=true, reverse=false)",
+    "not ok 6 - collector clears private stdout at second EOF before result (malformed=true, reverse=true)"
+  ],
+  "intended_diagnostic_count": 4,
+  "capture": "derived TAP counters and fixed diagnostics only",
+  "database": "not used",
+  "owned_directory_cleaned": true
+}

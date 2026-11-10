@@ -1,0 +1,8 @@
+# 复核结果与作者后续处置
+
+- strong 原结论 **BLOCK**；balanced 原结论 **NOT VERIFIED / INCOMPLETE**。两份原始消息按 session message ID 原样归档，文件 SHA 等于 session 原文；`REVIEW-RECEIPTS.json` 记录消息中报告的 provider/model，未取得后端独立模型回执。原文不因以下作者修改改判。
+- 复核针对 `source-manifest.json` 的 26 个文件，检查时无漂移；此后代码、文档及 harness 已改变，manifest 不再代表当前源码。没有对这些后续更改的独立复审。
+- strong 对锁后时效与跨 lineage request 唯一约束映射给出**限定接受**，但强调 INSERT 仍可能等待唯一索引直至 key 过期、`created_at` 不能证明复验时刻、其他唯一约束仍可能返回不同错误。F2 历史 key 重放/撤销策略及完整 B、可信配置和生产链未闭合。
+- strong 新发现 `cmd/server` TestMain 可对显式共享库先清理后测试，定为 P1 执行安全阻断。作者后续在 setup/cleanup 前对 nonce、实际库/角色/owner、两份 marker 和角色权限作失败关闭校验，harness 覆盖继承的 nonce 并注入本次值；收紧所有 cmd/server 集成测试均需本 disposable harness。`testmain-nonce-red-20261028T085719Z` 真实隔离库子进程以错误 nonce 运行零测试，旧实现删除 fixture；`testmain-nonce-green-20261028T085817Z` 2/2。绕过门禁变异 `testmain-nonce-mut-20261028T085916Z` 同样真实失败，恢复旧字节 SHA `2aa7282fb6e7f21682d7475812b6c7896a1c93d71a9136e10867cf2a1569ccb5` 后 `testmain-nonce-after-mut-20261028T085959Z` 2/2。随后新增真实同事务数据库 marker 篡改负例，`testmain-marker-green-20261028T090101Z` 3/3；去掉 marker 条件变异 `testmain-marker-mut-20261028T090215Z` 因接受错 marker 实际失败；恢复 SHA `899f8ddf7d6ef3328bc11a144295b44635bbc0e79c5e6eb838ae7e2adf83eb21` 后 `testmain-marker-after-mut-20261028T090310Z` 3/3。所有运行 skip 0，原库未变、资源已清；这是作者验证。后续 `testmain-recheck-20261028/` 的 strong 只读复审限定接受普通误连修补，但指出 CI 与 `scripts/test-go.sh` 未适配、当前不能按现状合入；复审人没有实跑。DB marker 在事务内变更并 rollback；其他权限与 role marker 的反例未单独动态测。身份 marker 只能防意外误连，不抵抗可伪造它的操作者。
+- balanced 的 human-gate、CP-E/I 和 periodic wake 过度表述已按其指出的实际测试范围收窄；两份 Markdown 中各一枚真实 NUL 改为可读 `\0` 文本，且修复不存在的台账小节锚点。保留 CP-F 未完整绑定、真实 scheduler/producer/ingest、权威 policy/fence 与未来复审为开放项；没有因文案更正宣称已实现。
+- 用户态实际 DB 操作只通过版本化 harness 所建的独立 nonce DB；测试中的子进程仅继承该临时库身份并故意使用不匹配 nonce，没连接共享库。所有文档/测试仍未提交，Gate3 保持 NO-GO。

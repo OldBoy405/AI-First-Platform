@@ -1,0 +1,72 @@
+{
+  "argv": [
+    "C:/Program Files/Go/bin/go.exe",
+    "test",
+    "-count=1",
+    "-run",
+    "^TestReconcileOwnerTx",
+    "-json",
+    "-p=2",
+    "./internal/daemon/"
+  ],
+  "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\multica\\server",
+  "environment_keys": [
+    "APPDATA",
+    "CGO_ENABLED",
+    "GOFLAGS",
+    "GOMAXPROCS",
+    "GOPROXY",
+    "GOSUMDB",
+    "GOTOOLCHAIN",
+    "HOMEDRIVE",
+    "HOMEPATH",
+    "LOCALAPPDATA",
+    "PATH",
+    "SystemDrive",
+    "SystemRoot",
+    "TEMP",
+    "TMP",
+    "USERPROFILE",
+    "WINDIR"
+  ],
+  "controls": {
+    "GOPROXY": "off",
+    "GOSUMDB": "off",
+    "GOTOOLCHAIN": "local",
+    "CGO_ENABLED": "0",
+    "GOFLAGS": "-buildvcs=false",
+    "GOMAXPROCS": "2"
+  },
+  "timeout_seconds": 600,
+  "exit": 0,
+  "before": {
+    "C:\\Users\\GOBAO\\Downloads\\AI\\multica\\server\\internal\\daemon\\execution_control_worker.go": "9f8e97f5654a48151743a6fc0429a15b200d6f57269b62be31f41ef37d5b11cd",
+    "C:\\Users\\GOBAO\\Downloads\\AI\\multica\\server\\internal\\daemon\\execution_control_worker_replay_memory_test.go": "4e20431bb1707371f5eafec80551686ee08d54c229bbcb8c5f1d5611e8825e20"
+  },
+  "after": {
+    "C:\\Users\\GOBAO\\Downloads\\AI\\multica\\server\\internal\\daemon\\execution_control_worker.go": "9f8e97f5654a48151743a6fc0429a15b200d6f57269b62be31f41ef37d5b11cd",
+    "C:\\Users\\GOBAO\\Downloads\\AI\\multica\\server\\internal\\daemon\\execution_control_worker_replay_memory_test.go": "4e20431bb1707371f5eafec80551686ee08d54c229bbcb8c5f1d5611e8825e20"
+  },
+  "passed": [
+    "TestReconcileOwnerTxComparesVerdictIdentityByValue",
+    "TestReconcileOwnerTxRejectsUnparseableVerdictIdentity",
+    "TestReconcileOwnerTxSurfacesLedgerLookupFailure",
+    "TestReconcileOwnerTxReplaysAuthoritativeBytes",
+    "TestReconcileOwnerTxFreezesJournalCases/incomplete_journal_never_reads_the_ledger",
+    "TestReconcileOwnerTxFreezesJournalCases/journal_ahead_of_the_chain_never_reads_the_ledger",
+    "TestReconcileOwnerTxFreezesJournalCases/journal_row_absent_from_the_chain_freezes_instead_of_matching_the_tail",
+    "TestReconcileOwnerTxFreezesJournalCases/a_wrapped_ErrNoRows_still_counts_as_a_missing_journal_row",
+    "TestReconcileOwnerTxFreezesJournalCases/different_verdict_identity_freezes",
+    "TestReconcileOwnerTxFreezesJournalCases/journal_sequence_differing_from_the_recorded_frame_freezes",
+    "TestReconcileOwnerTxFreezesJournalCases/record_one_sequence_behind_the_tail_freezes",
+    "TestReconcileOwnerTxFreezesJournalCases/record_digest_differing_from_the_tail_freezes",
+    "TestReconcileOwnerTxFreezesJournalCases/empty_authoritative_payload_freezes",
+    "TestReconcileOwnerTxFreezesJournalCases",
+    "TestReconcileOwnerTxKeepsJournalFreeTailEqual",
+    "TestReconcileOwnerTxRejectsUnknownCheckpoint"
+  ],
+  "failed": [],
+  "skipped": [],
+  "stdout_sha256": "19cec3285fc416887772673fc3579eceb139c4c06addd8e9a78b8536ba1a761a",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

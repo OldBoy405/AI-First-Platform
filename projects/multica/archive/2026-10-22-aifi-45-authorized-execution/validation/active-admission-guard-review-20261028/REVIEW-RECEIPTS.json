@@ -1,0 +1,12 @@
+{
+  "scope": "ACTIVE unexpired deployment access guard order; fake transaction only; not RUN-006 acceptance",
+  "backend_model_receipts": "unavailable; requested model is not backend proof",
+  "source": "multica/server/internal/governance/execution_deployment.go",
+  "source_sha256": "f1e719d9388c09eadecc9da17aa21bdafb080265237fabd8b58dc0f50b728811",
+  "test": "multica/server/internal/governance/deploymentaccess_test/execution_deployment_test.go",
+  "test_sha256": "c30f2816bd0f48359941f1993f85273feb481bc2169b6abc688d0b5f68b573f0",
+  "entries": [
+    {"session_id":"01a18317-8cdc-7020-aecc-d1ebbf753568","requested_model":"OpenAIPersonal/gpt-6.1-terra:high","role":"author","report":"AUTHOR-EXECUTION.md","report_sha256":"afa5abd68bfc9fc33d355932da2188e54d5defe9b6f96ec54270f0323c2819dc","verdict":"initial RED, GREEN, mutation RED, restored SHA GREEN; 55 leaf cases"},
+    {"session_id":"01a1830e-05ba-7020-aecc-d1e9c725ee77","requested_model":"GBClaude/claude-opus-5-5:high","role":"independent review and execution","report":"REVIEW-STRONG.md","report_sha256":"bc326de0eb15f4f2801bc1140ac26965fa4ffc03ba5032343823090bb5613416","verdict":"local PASS; 3 top-level 55 leaf tests, fail 0, skip 0; remaining risks documented"}
+  ]
+}

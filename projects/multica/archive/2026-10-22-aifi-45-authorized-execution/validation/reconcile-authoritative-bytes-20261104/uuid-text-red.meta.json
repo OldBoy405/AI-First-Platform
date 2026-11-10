@@ -1,0 +1,78 @@
+{
+  "argv": [
+    "C:/Program Files/Go/bin/go.exe",
+    "test",
+    "-count=1",
+    "-run",
+    "^TestReconcileOwnerTx",
+    "-json",
+    "-p=2",
+    "-overlay=C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform\\projects\\multica\\changes\\2026-10-22-aifi-45-authorized-execution\\validation\\reconcile-authoritative-bytes-20261104\\uuid-text-red.overlay.json",
+    "./internal/daemon/"
+  ],
+  "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\multica\\server",
+  "environment_keys": [
+    "APPDATA",
+    "CGO_ENABLED",
+    "GOFLAGS",
+    "GOMAXPROCS",
+    "GOPROXY",
+    "GOSUMDB",
+    "GOTOOLCHAIN",
+    "HOMEDRIVE",
+    "HOMEPATH",
+    "LOCALAPPDATA",
+    "PATH",
+    "SystemDrive",
+    "SystemRoot",
+    "TEMP",
+    "TMP",
+    "USERPROFILE",
+    "WINDIR"
+  ],
+  "controls": {
+    "GOPROXY": "off",
+    "GOSUMDB": "off",
+    "GOTOOLCHAIN": "local",
+    "CGO_ENABLED": "0",
+    "GOFLAGS": "-buildvcs=false",
+    "GOMAXPROCS": "2"
+  },
+  "timeout_seconds": 600,
+  "exit": 1,
+  "before": {
+    "C:\\Users\\GOBAO\\Downloads\\AI\\multica\\server\\internal\\daemon\\execution_control_worker.go": "9f8e97f5654a48151743a6fc0429a15b200d6f57269b62be31f41ef37d5b11cd",
+    "C:\\Users\\GOBAO\\Downloads\\AI\\multica\\server\\internal\\daemon\\execution_control_worker_replay_memory_test.go": "4e20431bb1707371f5eafec80551686ee08d54c229bbcb8c5f1d5611e8825e20",
+    "C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform\\projects\\multica\\changes\\2026-10-22-aifi-45-authorized-execution\\validation\\reconcile-authoritative-bytes-20261104\\uuid-text-red.overlay.json": "56ba24448254297f6927f2a08a6e7817e9d8eb9b159e272fbe1a3417e4b14e2d",
+    "C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform\\projects\\multica\\changes\\2026-10-22-aifi-45-authorized-execution\\validation\\reconcile-authoritative-bytes-20261104\\uuid-text-red.go": "551ccad01a416027eeaec7d905fb01625d235ac53a4061940639b1586a33b91c"
+  },
+  "after": {
+    "C:\\Users\\GOBAO\\Downloads\\AI\\multica\\server\\internal\\daemon\\execution_control_worker.go": "9f8e97f5654a48151743a6fc0429a15b200d6f57269b62be31f41ef37d5b11cd",
+    "C:\\Users\\GOBAO\\Downloads\\AI\\multica\\server\\internal\\daemon\\execution_control_worker_replay_memory_test.go": "4e20431bb1707371f5eafec80551686ee08d54c229bbcb8c5f1d5611e8825e20",
+    "C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform\\projects\\multica\\changes\\2026-10-22-aifi-45-authorized-execution\\validation\\reconcile-authoritative-bytes-20261104\\uuid-text-red.overlay.json": "56ba24448254297f6927f2a08a6e7817e9d8eb9b159e272fbe1a3417e4b14e2d",
+    "C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform\\projects\\multica\\changes\\2026-10-22-aifi-45-authorized-execution\\validation\\reconcile-authoritative-bytes-20261104\\uuid-text-red.go": "551ccad01a416027eeaec7d905fb01625d235ac53a4061940639b1586a33b91c"
+  },
+  "passed": [
+    "TestReconcileOwnerTxRejectsUnparseableVerdictIdentity",
+    "TestReconcileOwnerTxSurfacesLedgerLookupFailure",
+    "TestReconcileOwnerTxReplaysAuthoritativeBytes",
+    "TestReconcileOwnerTxFreezesJournalCases/incomplete_journal_never_reads_the_ledger",
+    "TestReconcileOwnerTxFreezesJournalCases/journal_ahead_of_the_chain_never_reads_the_ledger",
+    "TestReconcileOwnerTxFreezesJournalCases/journal_row_absent_from_the_chain_freezes_instead_of_matching_the_tail",
+    "TestReconcileOwnerTxFreezesJournalCases/a_wrapped_ErrNoRows_still_counts_as_a_missing_journal_row",
+    "TestReconcileOwnerTxFreezesJournalCases/different_verdict_identity_freezes",
+    "TestReconcileOwnerTxFreezesJournalCases/journal_sequence_differing_from_the_recorded_frame_freezes",
+    "TestReconcileOwnerTxFreezesJournalCases/record_one_sequence_behind_the_tail_freezes",
+    "TestReconcileOwnerTxFreezesJournalCases/record_digest_differing_from_the_tail_freezes",
+    "TestReconcileOwnerTxFreezesJournalCases/empty_authoritative_payload_freezes",
+    "TestReconcileOwnerTxFreezesJournalCases",
+    "TestReconcileOwnerTxKeepsJournalFreeTailEqual",
+    "TestReconcileOwnerTxRejectsUnknownCheckpoint"
+  ],
+  "failed": [
+    "TestReconcileOwnerTxComparesVerdictIdentityByValue"
+  ],
+  "skipped": [],
+  "stdout_sha256": "6615d0e07026c6e9bbe3f46e3b608ddd9aa3a51b56d09fedb9c74522fb3f2a1d",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

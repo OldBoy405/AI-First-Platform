@@ -1,0 +1,1352 @@
+=== RUN   TestDeliverRejectsMissingBroadcastBeforeDB
+--- PASS: TestDeliverRejectsMissingBroadcastBeforeDB (0.00s)
+=== RUN   TestRecoveryRejectsMissingBroadcastBeforeDB
+--- PASS: TestRecoveryRejectsMissingBroadcastBeforeDB (0.00s)
+=== RUN   TestSilentEventsNeedNoBroadcasterOrDB
+=== RUN   TestSilentEventsNeedNoBroadcasterOrDB/run-node-started
+=== RUN   TestSilentEventsNeedNoBroadcasterOrDB/run-node-ack
+=== RUN   TestSilentEventsNeedNoBroadcasterOrDB/run-node-completed
+=== RUN   TestSilentEventsNeedNoBroadcasterOrDB/repair-progress
+--- PASS: TestSilentEventsNeedNoBroadcasterOrDB (0.00s)
+    --- PASS: TestSilentEventsNeedNoBroadcasterOrDB/run-node-started (0.00s)
+    --- PASS: TestSilentEventsNeedNoBroadcasterOrDB/run-node-ack (0.00s)
+    --- PASS: TestSilentEventsNeedNoBroadcasterOrDB/run-node-completed (0.00s)
+    --- PASS: TestSilentEventsNeedNoBroadcasterOrDB/repair-progress (0.00s)
+=== RUN   TestBusBroadcasterRejectsMissingDependencies
+=== RUN   TestBusBroadcasterRejectsMissingDependencies/nil_bus
+=== RUN   TestBusBroadcasterRejectsMissingDependencies/nil_loader
+=== RUN   TestBusBroadcasterRejectsMissingDependencies/nil_loaded_item
+--- PASS: TestBusBroadcasterRejectsMissingDependencies (0.00s)
+    --- PASS: TestBusBroadcasterRejectsMissingDependencies/nil_bus (0.00s)
+    --- PASS: TestBusBroadcasterRejectsMissingDependencies/nil_loader (0.00s)
+    --- PASS: TestBusBroadcasterRejectsMissingDependencies/nil_loaded_item (0.00s)
+=== RUN   TestBusBroadcasterRejectsMismatchedItemIdentity
+=== RUN   TestBusBroadcasterRejectsMismatchedItemIdentity/empty_map
+=== RUN   TestBusBroadcasterRejectsMismatchedItemIdentity/missing_id
+=== RUN   TestBusBroadcasterRejectsMismatchedItemIdentity/wrong_id
+=== RUN   TestBusBroadcasterRejectsMismatchedItemIdentity/non-string_id
+=== RUN   TestBusBroadcasterRejectsMismatchedItemIdentity/different_id_case
+=== RUN   TestBusBroadcasterRejectsMismatchedItemIdentity/missing_workspace
+=== RUN   TestBusBroadcasterRejectsMismatchedItemIdentity/wrong_workspace
+=== RUN   TestBusBroadcasterRejectsMismatchedItemIdentity/non-string_workspace
+=== RUN   TestBusBroadcasterRejectsMismatchedItemIdentity/different_workspace_case
+--- PASS: TestBusBroadcasterRejectsMismatchedItemIdentity (0.00s)
+    --- PASS: TestBusBroadcasterRejectsMismatchedItemIdentity/empty_map (0.00s)
+    --- PASS: TestBusBroadcasterRejectsMismatchedItemIdentity/missing_id (0.00s)
+    --- PASS: TestBusBroadcasterRejectsMismatchedItemIdentity/wrong_id (0.00s)
+    --- PASS: TestBusBroadcasterRejectsMismatchedItemIdentity/non-string_id (0.00s)
+    --- PASS: TestBusBroadcasterRejectsMismatchedItemIdentity/different_id_case (0.00s)
+    --- PASS: TestBusBroadcasterRejectsMismatchedItemIdentity/missing_workspace (0.00s)
+    --- PASS: TestBusBroadcasterRejectsMismatchedItemIdentity/wrong_workspace (0.00s)
+    --- PASS: TestBusBroadcasterRejectsMismatchedItemIdentity/non-string_workspace (0.00s)
+    --- PASS: TestBusBroadcasterRejectsMismatchedItemIdentity/different_workspace_case (0.00s)
+=== RUN   TestBusBroadcasterPublishesLoadedItemAndPropagatesError
+--- PASS: TestBusBroadcasterPublishesLoadedItemAndPropagatesError (0.00s)
+=== RUN   TestNoticeRenderedPayloadGuard
+=== RUN   TestNoticeRenderedPayloadGuard/cr_id/json
+=== RUN   TestNoticeRenderedPayloadGuard/cr_id/json/build
+=== RUN   TestNoticeRenderedPayloadGuard/cr_id/json/deliver
+=== RUN   TestNoticeRenderedPayloadGuard/cr_id/long
+=== RUN   TestNoticeRenderedPayloadGuard/cr_id/long/build
+=== RUN   TestNoticeRenderedPayloadGuard/cr_id/long/deliver
+=== RUN   TestNoticeRenderedPayloadGuard/cause/json
+=== RUN   TestNoticeRenderedPayloadGuard/cause/json/build
+=== RUN   TestNoticeRenderedPayloadGuard/cause/json/deliver
+=== RUN   TestNoticeRenderedPayloadGuard/cause/long
+=== RUN   TestNoticeRenderedPayloadGuard/cause/long/build
+=== RUN   TestNoticeRenderedPayloadGuard/cause/long/deliver
+=== RUN   TestNoticeRenderedPayloadGuard/conclusion/json
+=== RUN   TestNoticeRenderedPayloadGuard/conclusion/json/build
+=== RUN   TestNoticeRenderedPayloadGuard/conclusion/json/deliver
+=== RUN   TestNoticeRenderedPayloadGuard/conclusion/long
+=== RUN   TestNoticeRenderedPayloadGuard/conclusion/long/build
+=== RUN   TestNoticeRenderedPayloadGuard/conclusion/long/deliver
+=== RUN   TestNoticeRenderedPayloadGuard/action/json
+=== RUN   TestNoticeRenderedPayloadGuard/action/json/build
+=== RUN   TestNoticeRenderedPayloadGuard/action/json/deliver
+=== RUN   TestNoticeRenderedPayloadGuard/action/long
+=== RUN   TestNoticeRenderedPayloadGuard/action/long/build
+=== RUN   TestNoticeRenderedPayloadGuard/action/long/deliver
+=== RUN   TestNoticeRenderedPayloadGuard/evidence/json
+=== RUN   TestNoticeRenderedPayloadGuard/evidence/json/build
+=== RUN   TestNoticeRenderedPayloadGuard/evidence/json/deliver
+=== RUN   TestNoticeRenderedPayloadGuard/evidence/long
+=== RUN   TestNoticeRenderedPayloadGuard/evidence/long/build
+=== RUN   TestNoticeRenderedPayloadGuard/evidence/long/deliver
+=== RUN   TestNoticeRenderedPayloadGuard/code_authorizer/json
+=== RUN   TestNoticeRenderedPayloadGuard/code_authorizer/json/build
+=== RUN   TestNoticeRenderedPayloadGuard/code_authorizer/json/deliver
+=== RUN   TestNoticeRenderedPayloadGuard/code_authorizer/long
+=== RUN   TestNoticeRenderedPayloadGuard/code_authorizer/long/build
+=== RUN   TestNoticeRenderedPayloadGuard/code_authorizer/long/deliver
+=== RUN   TestNoticeRenderedPayloadGuard/code_maintainer/json
+=== RUN   TestNoticeRenderedPayloadGuard/code_maintainer/json/build
+=== RUN   TestNoticeRenderedPayloadGuard/code_maintainer/json/deliver
+=== RUN   TestNoticeRenderedPayloadGuard/code_maintainer/long
+=== RUN   TestNoticeRenderedPayloadGuard/code_maintainer/long/build
+=== RUN   TestNoticeRenderedPayloadGuard/code_maintainer/long/deliver
+=== RUN   TestNoticeRenderedPayloadGuard/tried_maintainer/json
+=== RUN   TestNoticeRenderedPayloadGuard/tried_maintainer/json/build
+=== RUN   TestNoticeRenderedPayloadGuard/tried_maintainer/json/deliver
+=== RUN   TestNoticeRenderedPayloadGuard/tried_maintainer/long
+=== RUN   TestNoticeRenderedPayloadGuard/tried_maintainer/long/build
+=== RUN   TestNoticeRenderedPayloadGuard/tried_maintainer/long/deliver
+--- PASS: TestNoticeRenderedPayloadGuard (0.00s)
+    --- PASS: TestNoticeRenderedPayloadGuard/cr_id/json (0.00s)
+        --- PASS: TestNoticeRenderedPayloadGuard/cr_id/json/build (0.00s)
+        --- PASS: TestNoticeRenderedPayloadGuard/cr_id/json/deliver (0.00s)
+    --- PASS: TestNoticeRenderedPayloadGuard/cr_id/long (0.00s)
+        --- PASS: TestNoticeRenderedPayloadGuard/cr_id/long/build (0.00s)
+        --- PASS: TestNoticeRenderedPayloadGuard/cr_id/long/deliver (0.00s)
+    --- PASS: TestNoticeRenderedPayloadGuard/cause/json (0.00s)
+        --- PASS: TestNoticeRenderedPayloadGuard/cause/json/build (0.00s)
+        --- PASS: TestNoticeRenderedPayloadGuard/cause/json/deliver (0.00s)
+    --- PASS: TestNoticeRenderedPayloadGuard/cause/long (0.00s)
+        --- PASS: TestNoticeRenderedPayloadGuard/cause/long/build (0.00s)
+        --- PASS: TestNoticeRenderedPayloadGuard/cause/long/deliver (0.00s)
+    --- PASS: TestNoticeRenderedPayloadGuard/conclusion/json (0.00s)
+        --- PASS: TestNoticeRenderedPayloadGuard/conclusion/json/build (0.00s)
+        --- PASS: TestNoticeRenderedPayloadGuard/conclusion/json/deliver (0.00s)
+    --- PASS: TestNoticeRenderedPayloadGuard/conclusion/long (0.00s)
+        --- PASS: TestNoticeRenderedPayloadGuard/conclusion/long/build (0.00s)
+        --- PASS: TestNoticeRenderedPayloadGuard/conclusion/long/deliver (0.00s)
+    --- PASS: TestNoticeRenderedPayloadGuard/action/json (0.00s)
+        --- PASS: TestNoticeRenderedPayloadGuard/action/json/build (0.00s)
+        --- PASS: TestNoticeRenderedPayloadGuard/action/json/deliver (0.00s)
+    --- PASS: TestNoticeRenderedPayloadGuard/action/long (0.00s)
+        --- PASS: TestNoticeRenderedPayloadGuard/action/long/build (0.00s)
+        --- PASS: TestNoticeRenderedPayloadGuard/action/long/deliver (0.00s)
+    --- PASS: TestNoticeRenderedPayloadGuard/evidence/json (0.00s)
+        --- PASS: TestNoticeRenderedPayloadGuard/evidence/json/build (0.00s)
+        --- PASS: TestNoticeRenderedPayloadGuard/evidence/json/deliver (0.00s)
+    --- PASS: TestNoticeRenderedPayloadGuard/evidence/long (0.00s)
+        --- PASS: TestNoticeRenderedPayloadGuard/evidence/long/build (0.00s)
+        --- PASS: TestNoticeRenderedPayloadGuard/evidence/long/deliver (0.00s)
+    --- PASS: TestNoticeRenderedPayloadGuard/code_authorizer/json (0.00s)
+        --- PASS: TestNoticeRenderedPayloadGuard/code_authorizer/json/build (0.00s)
+        --- PASS: TestNoticeRenderedPayloadGuard/code_authorizer/json/deliver (0.00s)
+    --- PASS: TestNoticeRenderedPayloadGuard/code_authorizer/long (0.00s)
+        --- PASS: TestNoticeRenderedPayloadGuard/code_authorizer/long/build (0.00s)
+        --- PASS: TestNoticeRenderedPayloadGuard/code_authorizer/long/deliver (0.00s)
+    --- PASS: TestNoticeRenderedPayloadGuard/code_maintainer/json (0.00s)
+        --- PASS: TestNoticeRenderedPayloadGuard/code_maintainer/json/build (0.00s)
+        --- PASS: TestNoticeRenderedPayloadGuard/code_maintainer/json/deliver (0.00s)
+    --- PASS: TestNoticeRenderedPayloadGuard/code_maintainer/long (0.00s)
+        --- PASS: TestNoticeRenderedPayloadGuard/code_maintainer/long/build (0.00s)
+        --- PASS: TestNoticeRenderedPayloadGuard/code_maintainer/long/deliver (0.00s)
+    --- PASS: TestNoticeRenderedPayloadGuard/tried_maintainer/json (0.00s)
+        --- PASS: TestNoticeRenderedPayloadGuard/tried_maintainer/json/build (0.00s)
+        --- PASS: TestNoticeRenderedPayloadGuard/tried_maintainer/json/deliver (0.00s)
+    --- PASS: TestNoticeRenderedPayloadGuard/tried_maintainer/long (0.00s)
+        --- PASS: TestNoticeRenderedPayloadGuard/tried_maintainer/long/build (0.00s)
+        --- PASS: TestNoticeRenderedPayloadGuard/tried_maintainer/long/deliver (0.00s)
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cr_id/newline
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cr_id/newline/build
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cr_id/newline/deliver
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cr_id/carriage_return
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cr_id/carriage_return/build
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cr_id/carriage_return/deliver
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cr_id/nul
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cr_id/nul/build
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cr_id/nul/deliver
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cr_id/delete
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cr_id/delete/build
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cr_id/delete/deliver
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cr_id/c1_control
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cr_id/c1_control/build
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cr_id/c1_control/deliver
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cr_id/line_separator
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cr_id/line_separator/build
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cr_id/line_separator/deliver
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cr_id/paragraph_separator
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cr_id/paragraph_separator/build
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cr_id/paragraph_separator/deliver
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cr_id/invalid_utf8
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cr_id/invalid_utf8/build
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cr_id/invalid_utf8/deliver
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cr_id/leading_space
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cr_id/leading_space/build
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cr_id/leading_space/deliver
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cr_id/trailing_unicode_space
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cr_id/trailing_unicode_space/build
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cr_id/trailing_unicode_space/deliver
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cause/newline
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cause/newline/build
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cause/newline/deliver
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cause/carriage_return
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cause/carriage_return/build
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cause/carriage_return/deliver
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cause/nul
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cause/nul/build
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cause/nul/deliver
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cause/delete
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cause/delete/build
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cause/delete/deliver
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cause/c1_control
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cause/c1_control/build
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cause/c1_control/deliver
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cause/line_separator
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cause/line_separator/build
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cause/line_separator/deliver
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cause/paragraph_separator
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cause/paragraph_separator/build
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cause/paragraph_separator/deliver
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cause/invalid_utf8
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cause/invalid_utf8/build
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cause/invalid_utf8/deliver
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cause/leading_space
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cause/leading_space/build
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cause/leading_space/deliver
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cause/trailing_unicode_space
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cause/trailing_unicode_space/build
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/cause/trailing_unicode_space/deliver
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/preserves_valid_unicode
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/invalid_silent_event_remains_silent
+=== RUN   TestNoticeRejectsAmbiguousIdentifiers/identifier_precedes_command_error
+--- PASS: TestNoticeRejectsAmbiguousIdentifiers (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cr_id/newline (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cr_id/newline/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cr_id/newline/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cr_id/carriage_return (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cr_id/carriage_return/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cr_id/carriage_return/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cr_id/nul (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cr_id/nul/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cr_id/nul/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cr_id/delete (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cr_id/delete/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cr_id/delete/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cr_id/c1_control (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cr_id/c1_control/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cr_id/c1_control/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cr_id/line_separator (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cr_id/line_separator/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cr_id/line_separator/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cr_id/paragraph_separator (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cr_id/paragraph_separator/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cr_id/paragraph_separator/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cr_id/invalid_utf8 (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cr_id/invalid_utf8/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cr_id/invalid_utf8/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cr_id/leading_space (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cr_id/leading_space/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cr_id/leading_space/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cr_id/trailing_unicode_space (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cr_id/trailing_unicode_space/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cr_id/trailing_unicode_space/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cause/newline (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cause/newline/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cause/newline/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cause/carriage_return (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cause/carriage_return/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cause/carriage_return/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cause/nul (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cause/nul/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cause/nul/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cause/delete (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cause/delete/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cause/delete/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cause/c1_control (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cause/c1_control/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cause/c1_control/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cause/line_separator (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cause/line_separator/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cause/line_separator/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cause/paragraph_separator (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cause/paragraph_separator/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cause/paragraph_separator/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cause/invalid_utf8 (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cause/invalid_utf8/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cause/invalid_utf8/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cause/leading_space (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cause/leading_space/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cause/leading_space/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cause/trailing_unicode_space (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cause/trailing_unicode_space/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousIdentifiers/cause/trailing_unicode_space/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousIdentifiers/preserves_valid_unicode (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousIdentifiers/invalid_silent_event_remains_silent (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousIdentifiers/identifier_precedes_command_error (0.00s)
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/newline
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/newline/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/newline/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/carriage_return
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/carriage_return/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/carriage_return/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/tab
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/tab/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/tab/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/nul
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/nul/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/nul/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/leading_nul
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/leading_nul/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/leading_nul/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/trailing_nul
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/trailing_nul/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/trailing_nul/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/delete
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/delete/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/delete/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/c1_control
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/c1_control/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/c1_control/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/line_separator
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/line_separator/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/line_separator/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/paragraph_separator
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/paragraph_separator/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/paragraph_separator/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/invalid_utf8
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/invalid_utf8/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/invalid_utf8/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/newline
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/newline/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/newline/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/carriage_return
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/carriage_return/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/carriage_return/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/tab
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/tab/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/tab/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/nul
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/nul/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/nul/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/leading_nul
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/leading_nul/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/leading_nul/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/trailing_nul
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/trailing_nul/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/trailing_nul/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/delete
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/delete/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/delete/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/c1_control
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/c1_control/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/c1_control/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/line_separator
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/line_separator/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/line_separator/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/paragraph_separator
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/paragraph_separator/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/paragraph_separator/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/invalid_utf8
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/invalid_utf8/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/invalid_utf8/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/newline
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/newline/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/newline/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/carriage_return
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/carriage_return/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/carriage_return/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/tab
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/tab/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/tab/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/nul
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/nul/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/nul/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/leading_nul
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/leading_nul/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/leading_nul/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/trailing_nul
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/trailing_nul/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/trailing_nul/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/delete
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/delete/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/delete/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/c1_control
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/c1_control/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/c1_control/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/line_separator
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/line_separator/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/line_separator/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/paragraph_separator
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/paragraph_separator/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/paragraph_separator/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/invalid_utf8
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/invalid_utf8/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/invalid_utf8/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/newline
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/newline/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/newline/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/carriage_return
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/carriage_return/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/carriage_return/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/tab
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/tab/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/tab/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/nul
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/nul/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/nul/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/leading_nul
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/leading_nul/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/leading_nul/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/trailing_nul
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/trailing_nul/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/trailing_nul/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/delete
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/delete/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/delete/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/c1_control
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/c1_control/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/c1_control/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/line_separator
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/line_separator/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/line_separator/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/paragraph_separator
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/paragraph_separator/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/paragraph_separator/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/invalid_utf8
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/invalid_utf8/build
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/invalid_utf8/deliver
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/unicode_and_outer_whitespace
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/empty_evidence_ref_remains_hidden
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/json_precedes_rendered_field
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/identifier_precedes_rendered_field
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/rendered_field_precedes_command
+=== RUN   TestNoticeRejectsAmbiguousRenderedAtoms/invalid_silent_event_remains_silent
+--- PASS: TestNoticeRejectsAmbiguousRenderedAtoms (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/newline (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/newline/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/newline/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/carriage_return (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/carriage_return/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/carriage_return/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/tab (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/tab/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/tab/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/nul (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/nul/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/nul/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/leading_nul (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/leading_nul/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/leading_nul/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/trailing_nul (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/trailing_nul/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/trailing_nul/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/delete (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/delete/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/delete/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/c1_control (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/c1_control/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/c1_control/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/line_separator (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/line_separator/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/line_separator/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/paragraph_separator (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/paragraph_separator/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/paragraph_separator/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/invalid_utf8 (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/invalid_utf8/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_authorizer/invalid_utf8/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/newline (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/newline/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/newline/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/carriage_return (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/carriage_return/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/carriage_return/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/tab (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/tab/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/tab/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/nul (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/nul/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/nul/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/leading_nul (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/leading_nul/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/leading_nul/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/trailing_nul (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/trailing_nul/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/trailing_nul/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/delete (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/delete/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/delete/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/c1_control (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/c1_control/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/c1_control/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/line_separator (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/line_separator/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/line_separator/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/paragraph_separator (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/paragraph_separator/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/paragraph_separator/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/invalid_utf8 (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/invalid_utf8/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/code_maintainer/invalid_utf8/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/newline (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/newline/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/newline/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/carriage_return (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/carriage_return/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/carriage_return/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/tab (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/tab/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/tab/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/nul (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/nul/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/nul/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/leading_nul (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/leading_nul/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/leading_nul/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/trailing_nul (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/trailing_nul/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/trailing_nul/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/delete (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/delete/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/delete/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/c1_control (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/c1_control/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/c1_control/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/line_separator (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/line_separator/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/line_separator/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/paragraph_separator (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/paragraph_separator/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/paragraph_separator/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/invalid_utf8 (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/invalid_utf8/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_authorizer/invalid_utf8/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/newline (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/newline/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/newline/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/carriage_return (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/carriage_return/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/carriage_return/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/tab (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/tab/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/tab/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/nul (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/nul/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/nul/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/leading_nul (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/leading_nul/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/leading_nul/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/trailing_nul (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/trailing_nul/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/trailing_nul/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/delete (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/delete/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/delete/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/c1_control (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/c1_control/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/c1_control/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/line_separator (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/line_separator/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/line_separator/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/paragraph_separator (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/paragraph_separator/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/paragraph_separator/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/invalid_utf8 (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/invalid_utf8/build (0.00s)
+        --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/evidence_maintainer/invalid_utf8/deliver (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/unicode_and_outer_whitespace (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/empty_evidence_ref_remains_hidden (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/json_precedes_rendered_field (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/identifier_precedes_rendered_field (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/rendered_field_precedes_command (0.00s)
+    --- PASS: TestNoticeRejectsAmbiguousRenderedAtoms/invalid_silent_event_remains_silent (0.00s)
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/lf/shell
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/lf/shell/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/lf/shell/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/lf/shebang
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/lf/shebang/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/lf/shebang/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/crlf/shell
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/crlf/shell/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/crlf/shell/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/crlf/shebang
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/crlf/shebang/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/crlf/shebang/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/cr/shell
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/cr/shell/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/cr/shell/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/cr/shebang
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/cr/shebang/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/cr/shebang/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/vt/shell
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/vt/shell/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/vt/shell/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/vt/shebang
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/vt/shebang/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/vt/shebang/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/ff/shell
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/ff/shell/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/ff/shell/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/ff/shebang
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/ff/shebang/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/ff/shebang/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/nel/shell
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/nel/shell/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/nel/shell/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/nel/shebang
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/nel/shebang/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/nel/shebang/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/line/shell
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/line/shell/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/line/shell/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/line/shebang
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/line/shebang/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/line/shebang/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/paragraph/shell
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/paragraph/shell/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/paragraph/shell/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/paragraph/shebang
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/paragraph/shebang/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/action/paragraph/shebang/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/lf/shell
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/lf/shell/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/lf/shell/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/lf/shebang
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/lf/shebang/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/lf/shebang/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/crlf/shell
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/crlf/shell/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/crlf/shell/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/crlf/shebang
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/crlf/shebang/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/crlf/shebang/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/cr/shell
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/cr/shell/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/cr/shell/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/cr/shebang
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/cr/shebang/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/cr/shebang/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/vt/shell
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/vt/shell/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/vt/shell/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/vt/shebang
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/vt/shebang/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/vt/shebang/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/ff/shell
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/ff/shell/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/ff/shell/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/ff/shebang
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/ff/shebang/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/ff/shebang/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/nel/shell
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/nel/shell/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/nel/shell/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/nel/shebang
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/nel/shebang/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/nel/shebang/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/line/shell
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/line/shell/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/line/shell/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/line/shebang
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/line/shebang/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/line/shebang/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/paragraph/shell
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/paragraph/shell/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/paragraph/shell/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/paragraph/shebang
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/paragraph/shebang/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/paragraph/shebang/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/lf/shell
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/lf/shell/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/lf/shell/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/lf/shebang
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/lf/shebang/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/lf/shebang/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/crlf/shell
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/crlf/shell/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/crlf/shell/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/crlf/shebang
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/crlf/shebang/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/crlf/shebang/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/cr/shell
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/cr/shell/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/cr/shell/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/cr/shebang
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/cr/shebang/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/cr/shebang/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/vt/shell
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/vt/shell/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/vt/shell/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/vt/shebang
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/vt/shebang/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/vt/shebang/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/ff/shell
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/ff/shell/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/ff/shell/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/ff/shebang
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/ff/shebang/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/ff/shebang/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/nel/shell
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/nel/shell/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/nel/shell/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/nel/shebang
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/nel/shebang/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/nel/shebang/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/line/shell
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/line/shell/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/line/shell/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/line/shebang
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/line/shebang/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/line/shebang/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/paragraph/shell
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/paragraph/shell/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/paragraph/shell/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/paragraph/shebang
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/paragraph/shebang/build
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/paragraph/shebang/deliver
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/ordinary_multiline_preserved
+=== RUN   TestNoticeRejectsCommandsAfterLineSeparators/silent_event_remains_silent
+--- PASS: TestNoticeRejectsCommandsAfterLineSeparators (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/lf/shell (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/lf/shell/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/lf/shell/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/lf/shebang (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/lf/shebang/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/lf/shebang/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/crlf/shell (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/crlf/shell/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/crlf/shell/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/crlf/shebang (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/crlf/shebang/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/crlf/shebang/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/cr/shell (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/cr/shell/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/cr/shell/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/cr/shebang (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/cr/shebang/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/cr/shebang/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/vt/shell (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/vt/shell/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/vt/shell/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/vt/shebang (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/vt/shebang/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/vt/shebang/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/ff/shell (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/ff/shell/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/ff/shell/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/ff/shebang (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/ff/shebang/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/ff/shebang/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/nel/shell (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/nel/shell/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/nel/shell/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/nel/shebang (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/nel/shebang/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/nel/shebang/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/line/shell (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/line/shell/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/line/shell/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/line/shebang (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/line/shebang/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/line/shebang/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/paragraph/shell (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/paragraph/shell/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/paragraph/shell/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/paragraph/shebang (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/paragraph/shebang/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/action/paragraph/shebang/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/lf/shell (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/lf/shell/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/lf/shell/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/lf/shebang (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/lf/shebang/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/lf/shebang/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/crlf/shell (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/crlf/shell/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/crlf/shell/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/crlf/shebang (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/crlf/shebang/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/crlf/shebang/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/cr/shell (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/cr/shell/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/cr/shell/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/cr/shebang (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/cr/shebang/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/cr/shebang/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/vt/shell (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/vt/shell/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/vt/shell/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/vt/shebang (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/vt/shebang/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/vt/shebang/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/ff/shell (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/ff/shell/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/ff/shell/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/ff/shebang (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/ff/shebang/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/ff/shebang/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/nel/shell (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/nel/shell/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/nel/shell/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/nel/shebang (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/nel/shebang/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/nel/shebang/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/line/shell (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/line/shell/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/line/shell/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/line/shebang (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/line/shebang/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/line/shebang/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/paragraph/shell (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/paragraph/shell/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/paragraph/shell/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/paragraph/shebang (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/paragraph/shebang/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_authorizer/paragraph/shebang/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/lf/shell (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/lf/shell/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/lf/shell/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/lf/shebang (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/lf/shebang/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/lf/shebang/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/crlf/shell (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/crlf/shell/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/crlf/shell/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/crlf/shebang (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/crlf/shebang/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/crlf/shebang/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/cr/shell (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/cr/shell/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/cr/shell/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/cr/shebang (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/cr/shebang/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/cr/shebang/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/vt/shell (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/vt/shell/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/vt/shell/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/vt/shebang (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/vt/shebang/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/vt/shebang/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/ff/shell (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/ff/shell/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/ff/shell/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/ff/shebang (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/ff/shebang/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/ff/shebang/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/nel/shell (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/nel/shell/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/nel/shell/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/nel/shebang (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/nel/shebang/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/nel/shebang/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/line/shell (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/line/shell/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/line/shell/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/line/shebang (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/line/shebang/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/line/shebang/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/paragraph/shell (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/paragraph/shell/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/paragraph/shell/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/paragraph/shebang (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/paragraph/shebang/build (0.00s)
+        --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/tried_maintainer/paragraph/shebang/deliver (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/ordinary_multiline_preserved (0.00s)
+    --- PASS: TestNoticeRejectsCommandsAfterLineSeparators/silent_event_remains_silent (0.00s)
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/action/cr/and
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/action/cr/and/build
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/action/cr/and/deliver
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/action/cr/kubectl
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/action/cr/kubectl/build
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/action/cr/kubectl/deliver
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/action/vt/and
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/action/vt/and/build
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/action/vt/and/deliver
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/action/vt/kubectl
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/action/vt/kubectl/build
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/action/vt/kubectl/deliver
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/action/ff/and
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/action/ff/and/build
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/action/ff/and/deliver
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/action/ff/kubectl
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/action/ff/kubectl/build
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/action/ff/kubectl/deliver
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/action/nel/and
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/action/nel/and/build
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/action/nel/and/deliver
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/action/nel/kubectl
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/action/nel/kubectl/build
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/action/nel/kubectl/deliver
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/action/line/and
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/action/line/and/build
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/action/line/and/deliver
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/action/line/kubectl
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/action/line/kubectl/build
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/action/line/kubectl/deliver
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/action/paragraph/and
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/action/paragraph/and/build
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/action/paragraph/and/deliver
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/action/paragraph/kubectl
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/action/paragraph/kubectl/build
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/action/paragraph/kubectl/deliver
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/cr/and
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/cr/and/build
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/cr/and/deliver
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/cr/kubectl
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/cr/kubectl/build
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/cr/kubectl/deliver
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/vt/and
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/vt/and/build
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/vt/and/deliver
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/vt/kubectl
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/vt/kubectl/build
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/vt/kubectl/deliver
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/ff/and
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/ff/and/build
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/ff/and/deliver
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/ff/kubectl
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/ff/kubectl/build
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/ff/kubectl/deliver
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/nel/and
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/nel/and/build
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/nel/and/deliver
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/nel/kubectl
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/nel/kubectl/build
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/nel/kubectl/deliver
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/line/and
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/line/and/build
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/line/and/deliver
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/line/kubectl
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/line/kubectl/build
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/line/kubectl/deliver
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/paragraph/and
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/paragraph/and/build
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/paragraph/and/deliver
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/paragraph/kubectl
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/paragraph/kubectl/build
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/paragraph/kubectl/deliver
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/cr/and
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/cr/and/build
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/cr/and/deliver
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/cr/kubectl
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/cr/kubectl/build
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/cr/kubectl/deliver
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/vt/and
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/vt/and/build
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/vt/and/deliver
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/vt/kubectl
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/vt/kubectl/build
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/vt/kubectl/deliver
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/ff/and
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/ff/and/build
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/ff/and/deliver
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/ff/kubectl
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/ff/kubectl/build
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/ff/kubectl/deliver
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/nel/and
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/nel/and/build
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/nel/and/deliver
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/nel/kubectl
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/nel/kubectl/build
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/nel/kubectl/deliver
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/line/and
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/line/and/build
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/line/and/deliver
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/line/kubectl
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/line/kubectl/build
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/line/kubectl/deliver
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/paragraph/and
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/paragraph/and/build
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/paragraph/and/deliver
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/paragraph/kubectl
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/paragraph/kubectl/build
+=== RUN   TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/paragraph/kubectl/deliver
+--- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators (0.00s)
+    --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/action/cr/and (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/action/cr/and/build (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/action/cr/and/deliver (0.00s)
+    --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/action/cr/kubectl (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/action/cr/kubectl/build (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/action/cr/kubectl/deliver (0.00s)
+    --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/action/vt/and (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/action/vt/and/build (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/action/vt/and/deliver (0.00s)
+    --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/action/vt/kubectl (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/action/vt/kubectl/build (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/action/vt/kubectl/deliver (0.00s)
+    --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/action/ff/and (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/action/ff/and/build (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/action/ff/and/deliver (0.00s)
+    --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/action/ff/kubectl (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/action/ff/kubectl/build (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/action/ff/kubectl/deliver (0.00s)
+    --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/action/nel/and (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/action/nel/and/build (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/action/nel/and/deliver (0.00s)
+    --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/action/nel/kubectl (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/action/nel/kubectl/build (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/action/nel/kubectl/deliver (0.00s)
+    --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/action/line/and (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/action/line/and/build (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/action/line/and/deliver (0.00s)
+    --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/action/line/kubectl (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/action/line/kubectl/build (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/action/line/kubectl/deliver (0.00s)
+    --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/action/paragraph/and (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/action/paragraph/and/build (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/action/paragraph/and/deliver (0.00s)
+    --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/action/paragraph/kubectl (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/action/paragraph/kubectl/build (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/action/paragraph/kubectl/deliver (0.00s)
+    --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/cr/and (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/cr/and/build (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/cr/and/deliver (0.00s)
+    --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/cr/kubectl (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/cr/kubectl/build (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/cr/kubectl/deliver (0.00s)
+    --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/vt/and (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/vt/and/build (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/vt/and/deliver (0.00s)
+    --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/vt/kubectl (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/vt/kubectl/build (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/vt/kubectl/deliver (0.00s)
+    --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/ff/and (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/ff/and/build (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/ff/and/deliver (0.00s)
+    --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/ff/kubectl (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/ff/kubectl/build (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/ff/kubectl/deliver (0.00s)
+    --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/nel/and (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/nel/and/build (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/nel/and/deliver (0.00s)
+    --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/nel/kubectl (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/nel/kubectl/build (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/nel/kubectl/deliver (0.00s)
+    --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/line/and (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/line/and/build (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/line/and/deliver (0.00s)
+    --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/line/kubectl (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/line/kubectl/build (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/line/kubectl/deliver (0.00s)
+    --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/paragraph/and (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/paragraph/and/build (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/paragraph/and/deliver (0.00s)
+    --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/paragraph/kubectl (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/paragraph/kubectl/build (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_authorizer/paragraph/kubectl/deliver (0.00s)
+    --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/cr/and (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/cr/and/build (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/cr/and/deliver (0.00s)
+    --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/cr/kubectl (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/cr/kubectl/build (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/cr/kubectl/deliver (0.00s)
+    --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/vt/and (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/vt/and/build (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/vt/and/deliver (0.00s)
+    --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/vt/kubectl (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/vt/kubectl/build (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/vt/kubectl/deliver (0.00s)
+    --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/ff/and (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/ff/and/build (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/ff/and/deliver (0.00s)
+    --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/ff/kubectl (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/ff/kubectl/build (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/ff/kubectl/deliver (0.00s)
+    --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/nel/and (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/nel/and/build (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/nel/and/deliver (0.00s)
+    --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/nel/kubectl (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/nel/kubectl/build (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/nel/kubectl/deliver (0.00s)
+    --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/line/and (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/line/and/build (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/line/and/deliver (0.00s)
+    --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/line/kubectl (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/line/kubectl/build (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/line/kubectl/deliver (0.00s)
+    --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/paragraph/and (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/paragraph/and/build (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/paragraph/and/deliver (0.00s)
+    --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/paragraph/kubectl (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/paragraph/kubectl/build (0.00s)
+        --- PASS: TestNoticePreservesCommandChecksAcrossNewSeparators/tried_maintainer/paragraph/kubectl/deliver (0.00s)
+=== RUN   TestNoticeRejectsTabbedExistingCommands
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_authorizer/sudo/space
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_authorizer/sudo/space/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_authorizer/sudo/space/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_authorizer/sudo/tab
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_authorizer/sudo/tab/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_authorizer/sudo/tab/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_authorizer/psql/space
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_authorizer/psql/space/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_authorizer/psql/space/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_authorizer/psql/tab
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_authorizer/psql/tab/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_authorizer/psql/tab/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_authorizer/kubectl/space
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_authorizer/kubectl/space/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_authorizer/kubectl/space/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_authorizer/kubectl/tab
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_authorizer/kubectl/tab/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_authorizer/kubectl/tab/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_authorizer/podman/space
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_authorizer/podman/space/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_authorizer/podman/space/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_authorizer/podman/tab
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_authorizer/podman/tab/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_authorizer/podman/tab/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_authorizer/docker/space
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_authorizer/docker/space/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_authorizer/docker/space/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_authorizer/docker/tab
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_authorizer/docker/tab/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_authorizer/docker/tab/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_maintainer/sudo/space
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_maintainer/sudo/space/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_maintainer/sudo/space/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_maintainer/sudo/tab
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_maintainer/sudo/tab/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_maintainer/sudo/tab/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_maintainer/psql/space
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_maintainer/psql/space/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_maintainer/psql/space/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_maintainer/psql/tab
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_maintainer/psql/tab/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_maintainer/psql/tab/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_maintainer/kubectl/space
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_maintainer/kubectl/space/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_maintainer/kubectl/space/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_maintainer/kubectl/tab
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_maintainer/kubectl/tab/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_maintainer/kubectl/tab/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_maintainer/podman/space
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_maintainer/podman/space/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_maintainer/podman/space/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_maintainer/podman/tab
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_maintainer/podman/tab/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_maintainer/podman/tab/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_maintainer/docker/space
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_maintainer/docker/space/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_maintainer/docker/space/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_maintainer/docker/tab
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_maintainer/docker/tab/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_maintainer/docker/tab/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_authorizer/sudo/space
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_authorizer/sudo/space/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_authorizer/sudo/space/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_authorizer/sudo/tab
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_authorizer/sudo/tab/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_authorizer/sudo/tab/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_authorizer/psql/space
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_authorizer/psql/space/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_authorizer/psql/space/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_authorizer/psql/tab
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_authorizer/psql/tab/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_authorizer/psql/tab/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_authorizer/kubectl/space
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_authorizer/kubectl/space/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_authorizer/kubectl/space/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_authorizer/kubectl/tab
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_authorizer/kubectl/tab/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_authorizer/kubectl/tab/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_authorizer/podman/space
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_authorizer/podman/space/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_authorizer/podman/space/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_authorizer/podman/tab
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_authorizer/podman/tab/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_authorizer/podman/tab/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_authorizer/docker/space
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_authorizer/docker/space/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_authorizer/docker/space/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_authorizer/docker/tab
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_authorizer/docker/tab/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_authorizer/docker/tab/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_maintainer/sudo/space
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_maintainer/sudo/space/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_maintainer/sudo/space/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_maintainer/sudo/tab
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_maintainer/sudo/tab/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_maintainer/sudo/tab/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_maintainer/psql/space
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_maintainer/psql/space/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_maintainer/psql/space/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_maintainer/psql/tab
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_maintainer/psql/tab/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_maintainer/psql/tab/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_maintainer/kubectl/space
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_maintainer/kubectl/space/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_maintainer/kubectl/space/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_maintainer/kubectl/tab
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_maintainer/kubectl/tab/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_maintainer/kubectl/tab/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_maintainer/podman/space
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_maintainer/podman/space/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_maintainer/podman/space/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_maintainer/podman/tab
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_maintainer/podman/tab/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_maintainer/podman/tab/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_maintainer/docker/space
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_maintainer/docker/space/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_maintainer/docker/space/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_maintainer/docker/tab
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_maintainer/docker/tab/build
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_maintainer/docker/tab/deliver
+=== RUN   TestNoticeRejectsTabbedExistingCommands/ordinary_tabs_authorization-required
+=== RUN   TestNoticeRejectsTabbedExistingCommands/ordinary_tabs_environment-failure
+=== RUN   TestNoticeRejectsTabbedExistingCommands/non_command_delivery_stops_before_db
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_authorizer/literal_backslash_t
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_authorizer/trailing_tab_only
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_maintainer/literal_backslash_t
+=== RUN   TestNoticeRejectsTabbedExistingCommands/action_maintainer/trailing_tab_only
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_authorizer/literal_backslash_t
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_authorizer/trailing_tab_only
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_maintainer/literal_backslash_t
+=== RUN   TestNoticeRejectsTabbedExistingCommands/tried_maintainer/trailing_tab_only
+=== RUN   TestNoticeRejectsTabbedExistingCommands/identifier_precedence
+=== RUN   TestNoticeRejectsTabbedExistingCommands/length_boundary
+=== RUN   TestNoticeRejectsTabbedExistingCommands/long_tried_path_command_precedence/authorization-required
+=== RUN   TestNoticeRejectsTabbedExistingCommands/long_tried_path_command_precedence/environment-failure
+=== RUN   TestNoticeRejectsTabbedExistingCommands/multiline_and_multiple_tabs
+=== RUN   TestNoticeRejectsTabbedExistingCommands/rendered_field_precedence
+=== RUN   TestNoticeRejectsTabbedExistingCommands/silent_event
+--- PASS: TestNoticeRejectsTabbedExistingCommands (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/action_authorizer/sudo/space (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_authorizer/sudo/space/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_authorizer/sudo/space/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/action_authorizer/sudo/tab (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_authorizer/sudo/tab/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_authorizer/sudo/tab/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/action_authorizer/psql/space (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_authorizer/psql/space/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_authorizer/psql/space/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/action_authorizer/psql/tab (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_authorizer/psql/tab/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_authorizer/psql/tab/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/action_authorizer/kubectl/space (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_authorizer/kubectl/space/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_authorizer/kubectl/space/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/action_authorizer/kubectl/tab (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_authorizer/kubectl/tab/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_authorizer/kubectl/tab/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/action_authorizer/podman/space (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_authorizer/podman/space/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_authorizer/podman/space/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/action_authorizer/podman/tab (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_authorizer/podman/tab/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_authorizer/podman/tab/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/action_authorizer/docker/space (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_authorizer/docker/space/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_authorizer/docker/space/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/action_authorizer/docker/tab (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_authorizer/docker/tab/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_authorizer/docker/tab/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/action_maintainer/sudo/space (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_maintainer/sudo/space/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_maintainer/sudo/space/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/action_maintainer/sudo/tab (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_maintainer/sudo/tab/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_maintainer/sudo/tab/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/action_maintainer/psql/space (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_maintainer/psql/space/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_maintainer/psql/space/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/action_maintainer/psql/tab (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_maintainer/psql/tab/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_maintainer/psql/tab/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/action_maintainer/kubectl/space (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_maintainer/kubectl/space/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_maintainer/kubectl/space/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/action_maintainer/kubectl/tab (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_maintainer/kubectl/tab/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_maintainer/kubectl/tab/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/action_maintainer/podman/space (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_maintainer/podman/space/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_maintainer/podman/space/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/action_maintainer/podman/tab (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_maintainer/podman/tab/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_maintainer/podman/tab/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/action_maintainer/docker/space (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_maintainer/docker/space/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_maintainer/docker/space/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/action_maintainer/docker/tab (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_maintainer/docker/tab/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/action_maintainer/docker/tab/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_authorizer/sudo/space (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_authorizer/sudo/space/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_authorizer/sudo/space/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_authorizer/sudo/tab (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_authorizer/sudo/tab/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_authorizer/sudo/tab/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_authorizer/psql/space (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_authorizer/psql/space/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_authorizer/psql/space/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_authorizer/psql/tab (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_authorizer/psql/tab/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_authorizer/psql/tab/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_authorizer/kubectl/space (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_authorizer/kubectl/space/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_authorizer/kubectl/space/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_authorizer/kubectl/tab (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_authorizer/kubectl/tab/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_authorizer/kubectl/tab/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_authorizer/podman/space (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_authorizer/podman/space/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_authorizer/podman/space/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_authorizer/podman/tab (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_authorizer/podman/tab/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_authorizer/podman/tab/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_authorizer/docker/space (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_authorizer/docker/space/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_authorizer/docker/space/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_authorizer/docker/tab (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_authorizer/docker/tab/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_authorizer/docker/tab/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_maintainer/sudo/space (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_maintainer/sudo/space/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_maintainer/sudo/space/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_maintainer/sudo/tab (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_maintainer/sudo/tab/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_maintainer/sudo/tab/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_maintainer/psql/space (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_maintainer/psql/space/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_maintainer/psql/space/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_maintainer/psql/tab (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_maintainer/psql/tab/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_maintainer/psql/tab/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_maintainer/kubectl/space (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_maintainer/kubectl/space/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_maintainer/kubectl/space/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_maintainer/kubectl/tab (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_maintainer/kubectl/tab/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_maintainer/kubectl/tab/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_maintainer/podman/space (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_maintainer/podman/space/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_maintainer/podman/space/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_maintainer/podman/tab (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_maintainer/podman/tab/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_maintainer/podman/tab/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_maintainer/docker/space (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_maintainer/docker/space/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_maintainer/docker/space/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_maintainer/docker/tab (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_maintainer/docker/tab/build (0.00s)
+        --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_maintainer/docker/tab/deliver (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/ordinary_tabs_authorization-required (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/ordinary_tabs_environment-failure (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/non_command_delivery_stops_before_db (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/action_authorizer/literal_backslash_t (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/action_authorizer/trailing_tab_only (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/action_maintainer/literal_backslash_t (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/action_maintainer/trailing_tab_only (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_authorizer/literal_backslash_t (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_authorizer/trailing_tab_only (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_maintainer/literal_backslash_t (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/tried_maintainer/trailing_tab_only (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/identifier_precedence (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/length_boundary (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/long_tried_path_command_precedence/authorization-required (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/long_tried_path_command_precedence/environment-failure (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/multiline_and_multiple_tabs (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/rendered_field_precedence (0.00s)
+    --- PASS: TestNoticeRejectsTabbedExistingCommands/silent_event (0.00s)
+=== RUN   TestNoticeRenderedFieldsPositiveControls
+=== RUN   TestNoticeRenderedFieldsPositiveControls/ordinary_maintainer
+=== RUN   TestNoticeRenderedFieldsPositiveControls/unrendered_values
+=== RUN   TestNoticeRenderedFieldsPositiveControls/per_item_and_trimmed_boundaries
+=== RUN   TestNoticeRenderedFieldsPositiveControls/hidden_command_remains_rejected
+--- PASS: TestNoticeRenderedFieldsPositiveControls (0.00s)
+    --- PASS: TestNoticeRenderedFieldsPositiveControls/ordinary_maintainer (0.00s)
+    --- PASS: TestNoticeRenderedFieldsPositiveControls/unrendered_values (0.00s)
+    --- PASS: TestNoticeRenderedFieldsPositiveControls/per_item_and_trimmed_boundaries (0.00s)
+    --- PASS: TestNoticeRenderedFieldsPositiveControls/hidden_command_remains_rejected (0.00s)
+=== RUN   TestNoticeDedupeIdentityIncludesRecipient
+--- PASS: TestNoticeDedupeIdentityIncludesRecipient (0.00s)
+PASS
+ok  	github.com/multica-ai/multica/server/internal/governance/noticeguard_test	0.161s

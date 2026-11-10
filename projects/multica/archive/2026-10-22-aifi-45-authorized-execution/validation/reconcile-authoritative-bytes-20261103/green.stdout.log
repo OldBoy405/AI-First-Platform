@@ -1,0 +1,34 @@
+=== RUN   TestReconcileOwnerTxComparesVerdictIdentityByValue
+--- PASS: TestReconcileOwnerTxComparesVerdictIdentityByValue (0.00s)
+=== RUN   TestReconcileOwnerTxRejectsUnparseableVerdictIdentity
+--- PASS: TestReconcileOwnerTxRejectsUnparseableVerdictIdentity (0.00s)
+=== RUN   TestReconcileOwnerTxSurfacesLedgerLookupFailure
+--- PASS: TestReconcileOwnerTxSurfacesLedgerLookupFailure (0.00s)
+=== RUN   TestReconcileOwnerTxReplaysAuthoritativeBytes
+--- PASS: TestReconcileOwnerTxReplaysAuthoritativeBytes (0.00s)
+=== RUN   TestReconcileOwnerTxFreezesJournalCases
+=== RUN   TestReconcileOwnerTxFreezesJournalCases/incomplete_journal_never_reads_the_ledger
+=== RUN   TestReconcileOwnerTxFreezesJournalCases/journal_ahead_of_the_chain_never_reads_the_ledger
+=== RUN   TestReconcileOwnerTxFreezesJournalCases/journal_row_absent_from_the_chain_freezes_instead_of_matching_the_tail
+=== RUN   TestReconcileOwnerTxFreezesJournalCases/a_wrapped_ErrNoRows_still_counts_as_a_missing_journal_row
+=== RUN   TestReconcileOwnerTxFreezesJournalCases/different_verdict_identity_freezes
+=== RUN   TestReconcileOwnerTxFreezesJournalCases/journal_sequence_differing_from_the_recorded_frame_freezes
+=== RUN   TestReconcileOwnerTxFreezesJournalCases/record_one_sequence_behind_the_tail_freezes
+=== RUN   TestReconcileOwnerTxFreezesJournalCases/record_digest_differing_from_the_tail_freezes
+=== RUN   TestReconcileOwnerTxFreezesJournalCases/empty_authoritative_payload_freezes
+--- PASS: TestReconcileOwnerTxFreezesJournalCases (0.00s)
+    --- PASS: TestReconcileOwnerTxFreezesJournalCases/incomplete_journal_never_reads_the_ledger (0.00s)
+    --- PASS: TestReconcileOwnerTxFreezesJournalCases/journal_ahead_of_the_chain_never_reads_the_ledger (0.00s)
+    --- PASS: TestReconcileOwnerTxFreezesJournalCases/journal_row_absent_from_the_chain_freezes_instead_of_matching_the_tail (0.00s)
+    --- PASS: TestReconcileOwnerTxFreezesJournalCases/a_wrapped_ErrNoRows_still_counts_as_a_missing_journal_row (0.00s)
+    --- PASS: TestReconcileOwnerTxFreezesJournalCases/different_verdict_identity_freezes (0.00s)
+    --- PASS: TestReconcileOwnerTxFreezesJournalCases/journal_sequence_differing_from_the_recorded_frame_freezes (0.00s)
+    --- PASS: TestReconcileOwnerTxFreezesJournalCases/record_one_sequence_behind_the_tail_freezes (0.00s)
+    --- PASS: TestReconcileOwnerTxFreezesJournalCases/record_digest_differing_from_the_tail_freezes (0.00s)
+    --- PASS: TestReconcileOwnerTxFreezesJournalCases/empty_authoritative_payload_freezes (0.00s)
+=== RUN   TestReconcileOwnerTxKeepsJournalFreeTailEqual
+--- PASS: TestReconcileOwnerTxKeepsJournalFreeTailEqual (0.00s)
+=== RUN   TestReconcileOwnerTxRejectsUnknownCheckpoint
+--- PASS: TestReconcileOwnerTxRejectsUnknownCheckpoint (0.00s)
+PASS
+ok  	github.com/multica-ai/multica/server/internal/daemon	0.223s

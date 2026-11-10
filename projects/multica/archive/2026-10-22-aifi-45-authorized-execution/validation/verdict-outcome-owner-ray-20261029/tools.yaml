@@ -1,0 +1,43 @@
+# 草案：仅登记跨仓契约问题，不代表 Gate 或方案已确认。
+meta:
+  change_id: "2026-10-29-trusted-verdict-outcome-binding"
+  title: "可信 verdict 结果与命令绑定（tools 侧）"
+  created: "2026-10-29T12:48:44.171247"
+  status: draft
+  version: "2.9"
+
+why:
+  problem: |
+    AIFI-45 消费侧将 settlement.kind=effect 用作通过条件，但当前 verdict 验签检查没有核验由可信生产者认证的结果，结算 kind 由调用方输入；该断言不能直接作为可信执行结果。归档通道规定未知字段不产生授权事实，须先核实既有契约字段及语义能否表达、验证相应可信事实。静态读码不证明真实部署和历史数据状态。
+  motivation: |
+    用户要求签名契约变化与 AIFI-45 消费侧工作分流；本草案与 multica 同 ID 草案共同梳理 tools 结果来源、签发责任与互操作。用户已确认负责人为 Ray。
+
+what_changes:
+  - id: C1
+    type: modify
+    description: "区分可信裁决、实际执行结果和 effect/no_effect 结算，调研可信事实的真实来源、生产者身份和签发时机；先核实既有契约，是否改变签名契约、字段与版本均待评审。"
+  - id: C2
+    type: modify
+    description: "与 multica 验证方共同评审旧格式、恢复及跨语言测试；不提前实施或签发真实 verdict。"
+
+capabilities:
+  new: []
+  modified:
+    - name: "verdict-channel"
+      description: "为结果认证及消费方独立验证提供经批准的跨语言契约。"
+
+constraints:
+  - "当前为 understand 草案，负责人 Ray；所有 Gate 均 pending，不修改已归档变更，不部署。"
+  - "未知、旧格式或无法认证的结果不得直接支持 effect 授权；兼容策略须基于真实存量、部署与威胁模型核实。"
+  - "不得假定没有旧 verdict 或存量数据，不凭源码未找到调用方断定实际部署无风险。"
+  - "非签名契约的消费侧修复、真实入口和代次验收归 AIFI-45；跨仓测试明确单一计数归属，不能交叉重复计数。"
+
+stakeholders:
+  - "Ray（负责人）"
+
+non_goals:
+  - "本草案不确定 v2 是唯一解，不更改签名代码，不接真实生产者。"
+
+success_criteria:
+  - "经评审批准的契约方案（可确认沿用既有契约）有明确生产者和信任根，并绑定正确命令、主体及可信裁决。"
+  - "T/M 具有跨语言、未知字段、旧格式、重放和负面场景的可复核测试；Gate 和部署各自批准。"

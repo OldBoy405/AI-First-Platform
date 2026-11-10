@@ -1,0 +1,20 @@
+=== RUN   TestAdmissionDeciderPanicReleasesHeadLock
+--- PASS: TestAdmissionDeciderPanicReleasesHeadLock (0.33s)
+=== RUN   TestAdmissionGateStopsEnqueueUntilConsumptionCommits
+--- PASS: TestAdmissionGateStopsEnqueueUntilConsumptionCommits (0.02s)
+=== RUN   TestAdmissionWaitingIsNotPersistedAsRunFailure
+--- PASS: TestAdmissionWaitingIsNotPersistedAsRunFailure (0.07s)
+=== RUN   TestAdmissionGateHoldsNodeUntilConsumptionCommits
+--- PASS: TestAdmissionGateHoldsNodeUntilConsumptionCommits (0.02s)
+=== RUN   TestAdmissionWaitingIsNotAFailure
+--- PASS: TestAdmissionWaitingIsNotAFailure (0.00s)
+=== RUN   TestAdmissionGateLockBlocksRevocation
+=== RUN   TestAdmissionGateLockBlocksRevocation/pointer_update_waits
+=== RUN   TestAdmissionGateLockBlocksRevocation/referenced_record_delete_waits
+--- PASS: TestAdmissionGateLockBlocksRevocation (0.62s)
+    --- PASS: TestAdmissionGateLockBlocksRevocation/pointer_update_waits (0.31s)
+    --- PASS: TestAdmissionGateLockBlocksRevocation/referenced_record_delete_waits (0.31s)
+=== RUN   TestAdmissionDeciderWaitsForCommittedConsumption
+--- PASS: TestAdmissionDeciderWaitsForCommittedConsumption (0.02s)
+PASS
+ok  	github.com/multica-ai/multica/server/internal/governance	2.245s

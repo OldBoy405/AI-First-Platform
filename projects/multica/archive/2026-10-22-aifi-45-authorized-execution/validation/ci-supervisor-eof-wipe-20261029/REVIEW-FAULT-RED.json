@@ -1,0 +1,33 @@
+{
+  "argv": [
+    "node",
+    "--test",
+    "--test-reporter=tap",
+    "supervisor-erase.test.mjs"
+  ],
+  "exit": 1,
+  "before": {
+    "supervisor-collector.mjs": "9c4d561f26780a49bbf8dc09b7e35fee682732182785fcded8d38e0846c34fc3",
+    "supervisor-erase.test.mjs": "9fd574898a7a464319eada616333fee19cff15853861eec2014b03c50546424a",
+    "supervisor-protocol.mjs": "92329bb48d9eed2b97eabd26b1b883dfb2b1684278ce91f593ecf3d95e3ea5c8"
+  },
+  "after": {
+    "supervisor-collector.mjs": "9c4d561f26780a49bbf8dc09b7e35fee682732182785fcded8d38e0846c34fc3",
+    "supervisor-erase.test.mjs": "9fd574898a7a464319eada616333fee19cff15853861eec2014b03c50546424a",
+    "supervisor-protocol.mjs": "92329bb48d9eed2b97eabd26b1b883dfb2b1684278ce91f593ecf3d95e3ea5c8"
+  },
+  "counts": {
+    "tests": 9,
+    "pass": 8,
+    "fail": 1,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "failed_tests": [
+    "not ok 7 - failed EOF erasure cannot later publish a successful result"
+  ],
+  "intended_failure": 1,
+  "capture": "derived TAP counters and fixed diagnostics only",
+  "database": "not used"
+}

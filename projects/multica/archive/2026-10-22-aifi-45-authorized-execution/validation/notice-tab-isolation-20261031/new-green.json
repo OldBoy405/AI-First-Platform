@@ -1,0 +1,124 @@
+{
+  "schema": "aifi45.notice-appcontainer-isolation/v1",
+  "startedAt": "2026-10-31T02:01:05.4454479Z",
+  "finishedAt": "2026-10-31T02:01:06.9395469Z",
+  "status": "ISOLATION_VERIFIED_TARGETS_EXECUTED",
+  "mechanism": "CreateAppContainerProfile(empty capabilities) + SECURITY_CAPABILITIES + protected DACLs + owned kill-on-close Job Object",
+  "environmentKeys": [
+    "APPDATA",
+    "CGO_ENABLED",
+    "GOARCH",
+    "GOCACHE",
+    "GOENV",
+    "GOFLAGS",
+    "GOOS",
+    "GOPATH",
+    "GOPROXY",
+    "GOSUMDB",
+    "GOTELEMETRY",
+    "GOTOOLCHAIN",
+    "GOWORK",
+    "HOME",
+    "LOCALAPPDATA",
+    "PATH",
+    "SystemRoot",
+    "TEMP",
+    "TMP",
+    "USERPROFILE",
+    "WINDIR"
+  ],
+  "targetBinarySha256": "2121e80bb9864176648eec7d4d6c5cafb156e897d8aa3b7c56550455971f2427",
+  "probe": {
+    "kind": "probe",
+    "binarySha256": "9f289fb3c0e301fe59f136a3e740ae69d0b92c777ad9f2e92b43ffbf7fddd710",
+    "appContainerSid": "S-1-15-2-860094979-1110264811-2625785029-1527733105-2117902107-993980258-1726910807",
+    "capabilityCount": 0,
+    "processStarted": true,
+    "processExitCode": 0,
+    "jobActiveAfterExit": 0,
+    "probe": {
+      "appContainerSidMatched": true,
+      "networkCapabilitySids": [],
+      "environmentExact": true,
+      "ownFileRoundTrip": true,
+      "sentinelReadDenied": true,
+      "sentinelWriteDenied": true,
+      "loopbackRefused": true
+    },
+    "stdoutBytes": 0,
+    "stderrBytes": 0,
+    "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "cleanup": {
+      "profileDeleted": true,
+      "rootRemoved": true,
+      "sentinelRemoved": true,
+      "sentinelUnchanged": true
+    }
+  },
+  "selectedTarget": {
+    "kind": "selected",
+    "binarySha256": "2121e80bb9864176648eec7d4d6c5cafb156e897d8aa3b7c56550455971f2427",
+    "appContainerSid": "S-1-15-2-1417658419-4206001268-2311197688-3406365224-3220590421-167264479-2920146965",
+    "capabilityCount": 0,
+    "processStarted": true,
+    "processExitCode": 0,
+    "jobActiveAfterExit": 0,
+    "test": {
+      "selector": "^TestNoticeRejectsTabbedExistingCommands$",
+      "validVerboseOutput": true,
+      "packageAction": "pass",
+      "run": 139,
+      "pass": 139,
+      "fail": 0,
+      "skip": 0,
+      "selectedRun": 1,
+      "failedTests": [],
+      "eventCounts": {
+        "pass": 139,
+        "run": 139
+      }
+    },
+    "stdoutBytes": 25181,
+    "stderrBytes": 0,
+    "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "cleanup": {
+      "profileDeleted": true,
+      "rootRemoved": true,
+      "sentinelRemoved": true,
+      "sentinelUnchanged": true
+    }
+  },
+  "fullTarget": {
+    "kind": "full",
+    "binarySha256": "2121e80bb9864176648eec7d4d6c5cafb156e897d8aa3b7c56550455971f2427",
+    "appContainerSid": "S-1-15-2-3164611529-2779196105-1333806989-3253364046-570758424-1239106315-83747978",
+    "capabilityCount": 0,
+    "processStarted": true,
+    "processExitCode": 0,
+    "jobActiveAfterExit": 0,
+    "test": {
+      "selector": ".",
+      "validVerboseOutput": true,
+      "packageAction": "pass",
+      "run": 674,
+      "pass": 674,
+      "fail": 0,
+      "skip": 0,
+      "selectedRun": 0,
+      "failedTests": [],
+      "eventCounts": {
+        "pass": 674,
+        "run": 674
+      }
+    },
+    "stdoutBytes": 119557,
+    "stderrBytes": 0,
+    "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "cleanup": {
+      "profileDeleted": true,
+      "rootRemoved": true,
+      "sentinelRemoved": true,
+      "sentinelUnchanged": true
+    }
+  }
+}

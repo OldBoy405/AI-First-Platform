@@ -1,0 +1,85 @@
+{"Time":"2026-10-31T09:40:38.3745086+08:00","Action":"start","Package":"command-line-arguments"}
+{"Time":"2026-10-31T09:40:38.7133234+08:00","Action":"run","Package":"command-line-arguments","Test":"TestCommandGuardTabs"}
+{"Time":"2026-10-31T09:40:38.7138531+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardTabs","Output":"=== RUN   TestCommandGuardTabs\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7143817+08:00","Action":"run","Package":"command-line-arguments","Test":"TestCommandGuardTabs/space_sudo"}
+{"Time":"2026-10-31T09:40:38.7143817+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardTabs/space_sudo","Output":"=== RUN   TestCommandGuardTabs/space_sudo\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7143817+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardTabs/space_sudo","Output":"--- PASS: TestCommandGuardTabs/space_sudo (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7143817+08:00","Action":"pass","Package":"command-line-arguments","Test":"TestCommandGuardTabs/space_sudo","Elapsed":0}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"run","Package":"command-line-arguments","Test":"TestCommandGuardTabs/tab_sudo"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardTabs/tab_sudo","Output":"=== RUN   TestCommandGuardTabs/tab_sudo\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardTabs/tab_sudo","Output":"    guard_test.go:13: command guard missed sudo followed by tab\n","OutputType":"error"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardTabs/tab_sudo","Output":"--- FAIL: TestCommandGuardTabs/tab_sudo (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"fail","Package":"command-line-arguments","Test":"TestCommandGuardTabs/tab_sudo","Elapsed":0}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"run","Package":"command-line-arguments","Test":"TestCommandGuardTabs/space_psql"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardTabs/space_psql","Output":"=== RUN   TestCommandGuardTabs/space_psql\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardTabs/space_psql","Output":"--- PASS: TestCommandGuardTabs/space_psql (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"pass","Package":"command-line-arguments","Test":"TestCommandGuardTabs/space_psql","Elapsed":0}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"run","Package":"command-line-arguments","Test":"TestCommandGuardTabs/tab_psql"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardTabs/tab_psql","Output":"=== RUN   TestCommandGuardTabs/tab_psql\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardTabs/tab_psql","Output":"    guard_test.go:13: command guard missed psql followed by tab\n","OutputType":"error"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardTabs/tab_psql","Output":"--- FAIL: TestCommandGuardTabs/tab_psql (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"fail","Package":"command-line-arguments","Test":"TestCommandGuardTabs/tab_psql","Elapsed":0}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"run","Package":"command-line-arguments","Test":"TestCommandGuardTabs/space_kubectl"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardTabs/space_kubectl","Output":"=== RUN   TestCommandGuardTabs/space_kubectl\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardTabs/space_kubectl","Output":"--- PASS: TestCommandGuardTabs/space_kubectl (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"pass","Package":"command-line-arguments","Test":"TestCommandGuardTabs/space_kubectl","Elapsed":0}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"run","Package":"command-line-arguments","Test":"TestCommandGuardTabs/tab_kubectl"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardTabs/tab_kubectl","Output":"=== RUN   TestCommandGuardTabs/tab_kubectl\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardTabs/tab_kubectl","Output":"    guard_test.go:13: command guard missed kubectl followed by tab\n","OutputType":"error"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardTabs/tab_kubectl","Output":"--- FAIL: TestCommandGuardTabs/tab_kubectl (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"fail","Package":"command-line-arguments","Test":"TestCommandGuardTabs/tab_kubectl","Elapsed":0}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"run","Package":"command-line-arguments","Test":"TestCommandGuardTabs/space_podman"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardTabs/space_podman","Output":"=== RUN   TestCommandGuardTabs/space_podman\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardTabs/space_podman","Output":"--- PASS: TestCommandGuardTabs/space_podman (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"pass","Package":"command-line-arguments","Test":"TestCommandGuardTabs/space_podman","Elapsed":0}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"run","Package":"command-line-arguments","Test":"TestCommandGuardTabs/tab_podman"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardTabs/tab_podman","Output":"=== RUN   TestCommandGuardTabs/tab_podman\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardTabs/tab_podman","Output":"    guard_test.go:13: command guard missed podman followed by tab\n","OutputType":"error"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardTabs/tab_podman","Output":"--- FAIL: TestCommandGuardTabs/tab_podman (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"fail","Package":"command-line-arguments","Test":"TestCommandGuardTabs/tab_podman","Elapsed":0}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"run","Package":"command-line-arguments","Test":"TestCommandGuardTabs/space_docker"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardTabs/space_docker","Output":"=== RUN   TestCommandGuardTabs/space_docker\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardTabs/space_docker","Output":"--- PASS: TestCommandGuardTabs/space_docker (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"pass","Package":"command-line-arguments","Test":"TestCommandGuardTabs/space_docker","Elapsed":0}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"run","Package":"command-line-arguments","Test":"TestCommandGuardTabs/tab_docker"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardTabs/tab_docker","Output":"=== RUN   TestCommandGuardTabs/tab_docker\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardTabs/tab_docker","Output":"    guard_test.go:13: command guard missed docker followed by tab\n","OutputType":"error"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardTabs/tab_docker","Output":"--- FAIL: TestCommandGuardTabs/tab_docker (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"fail","Package":"command-line-arguments","Test":"TestCommandGuardTabs/tab_docker","Elapsed":0}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardTabs","Output":"--- FAIL: TestCommandGuardTabs (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"fail","Package":"command-line-arguments","Test":"TestCommandGuardTabs","Elapsed":0}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"run","Package":"command-line-arguments","Test":"TestCommandGuardExistingBehavior"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardExistingBehavior","Output":"=== RUN   TestCommandGuardExistingBehavior\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"run","Package":"command-line-arguments","Test":"TestCommandGuardExistingBehavior/ordinary_tab"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardExistingBehavior/ordinary_tab","Output":"=== RUN   TestCommandGuardExistingBehavior/ordinary_tab\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardExistingBehavior/ordinary_tab","Output":"--- PASS: TestCommandGuardExistingBehavior/ordinary_tab (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"pass","Package":"command-line-arguments","Test":"TestCommandGuardExistingBehavior/ordinary_tab","Elapsed":0}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"run","Package":"command-line-arguments","Test":"TestCommandGuardExistingBehavior/prefix_not_command"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardExistingBehavior/prefix_not_command","Output":"=== RUN   TestCommandGuardExistingBehavior/prefix_not_command\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardExistingBehavior/prefix_not_command","Output":"--- PASS: TestCommandGuardExistingBehavior/prefix_not_command (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"pass","Package":"command-line-arguments","Test":"TestCommandGuardExistingBehavior/prefix_not_command","Elapsed":0}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"run","Package":"command-line-arguments","Test":"TestCommandGuardExistingBehavior/literal_backslash_t"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardExistingBehavior/literal_backslash_t","Output":"=== RUN   TestCommandGuardExistingBehavior/literal_backslash_t\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardExistingBehavior/literal_backslash_t","Output":"--- PASS: TestCommandGuardExistingBehavior/literal_backslash_t (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"pass","Package":"command-line-arguments","Test":"TestCommandGuardExistingBehavior/literal_backslash_t","Elapsed":0}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"run","Package":"command-line-arguments","Test":"TestCommandGuardExistingBehavior/trailing_tab"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardExistingBehavior/trailing_tab","Output":"=== RUN   TestCommandGuardExistingBehavior/trailing_tab\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardExistingBehavior/trailing_tab","Output":"--- PASS: TestCommandGuardExistingBehavior/trailing_tab (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"pass","Package":"command-line-arguments","Test":"TestCommandGuardExistingBehavior/trailing_tab","Elapsed":0}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"run","Package":"command-line-arguments","Test":"TestCommandGuardExistingBehavior/existing_shell_chain"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardExistingBehavior/existing_shell_chain","Output":"=== RUN   TestCommandGuardExistingBehavior/existing_shell_chain\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardExistingBehavior/existing_shell_chain","Output":"--- PASS: TestCommandGuardExistingBehavior/existing_shell_chain (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"pass","Package":"command-line-arguments","Test":"TestCommandGuardExistingBehavior/existing_shell_chain","Elapsed":0}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"run","Package":"command-line-arguments","Test":"TestCommandGuardExistingBehavior/unicode_separator_dollar"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardExistingBehavior/unicode_separator_dollar","Output":"=== RUN   TestCommandGuardExistingBehavior/unicode_separator_dollar\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardExistingBehavior/unicode_separator_dollar","Output":"--- PASS: TestCommandGuardExistingBehavior/unicode_separator_dollar (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"pass","Package":"command-line-arguments","Test":"TestCommandGuardExistingBehavior/unicode_separator_dollar","Elapsed":0}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"run","Package":"command-line-arguments","Test":"TestCommandGuardExistingBehavior/unicode_separator_shebang"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardExistingBehavior/unicode_separator_shebang","Output":"=== RUN   TestCommandGuardExistingBehavior/unicode_separator_shebang\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardExistingBehavior/unicode_separator_shebang","Output":"--- PASS: TestCommandGuardExistingBehavior/unicode_separator_shebang (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"pass","Package":"command-line-arguments","Test":"TestCommandGuardExistingBehavior/unicode_separator_shebang","Elapsed":0}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Test":"TestCommandGuardExistingBehavior","Output":"--- PASS: TestCommandGuardExistingBehavior (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"pass","Package":"command-line-arguments","Test":"TestCommandGuardExistingBehavior","Elapsed":0}
+{"Time":"2026-10-31T09:40:38.7149036+08:00","Action":"output","Package":"command-line-arguments","Output":"FAIL\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7154275+08:00","Action":"output","Package":"command-line-arguments","Output":"FAIL\tcommand-line-arguments\t0.340s\n","OutputType":"frame"}
+{"Time":"2026-10-31T09:40:38.7154275+08:00","Action":"fail","Package":"command-line-arguments","Elapsed":0.341}

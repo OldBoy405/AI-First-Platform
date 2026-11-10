@@ -1,0 +1,49 @@
+{
+  "argv": [
+    "go",
+    "test",
+    "-json",
+    "-count=1",
+    "-overlay",
+    "<exclusive-owned-overlay>",
+    "./internal/governance/deploymentaccess_test",
+    "-run",
+    "^TestReadinessRequestScopeBinding$"
+  ],
+  "exit": 1,
+  "source_before": "7b9078db96c6a54b9cb87c040bedfb7b346d8c1a4a77b772367fa94063e3268a",
+  "source_after": "7b9078db96c6a54b9cb87c040bedfb7b346d8c1a4a77b772367fa94063e3268a",
+  "mutant": "f37f244df37dd80505514560ac41ff3b35fee21c03238f43420e9c66f1d67aeb",
+  "failed_leaf": [
+    "TestReadinessRequestScopeBinding/activate/other_scope",
+    "TestReadinessRequestScopeBinding/issue/other_scope",
+    "TestReadinessRequestScopeBinding/retire/other_scope",
+    "TestReadinessRequestScopeBinding/access/other_scope",
+    "TestReadinessRequestScopeBinding/access_recovery/other_scope",
+    "TestReadinessRequestScopeBinding/access_audit/other_scope"
+  ],
+  "passed_leaf": [
+    "TestReadinessRequestScopeBinding/activate/same_scope",
+    "TestReadinessRequestScopeBinding/issue/same_scope",
+    "TestReadinessRequestScopeBinding/retire/same_scope",
+    "TestReadinessRequestScopeBinding/access/same_scope",
+    "TestReadinessRequestScopeBinding/access_recovery/same_scope",
+    "TestReadinessRequestScopeBinding/access_audit/same_scope",
+    "TestReadinessRequestScopeBinding/stop_new_without_verdict"
+  ],
+  "skipped": [],
+  "assertions": [
+    "readiness_scope_test.go:139: cross-scope readiness must be rejected: outcome=\"ACTIVE\" err=<nil>",
+    "readiness_scope_test.go:142: cross-scope readiness caused 3 writes",
+    "readiness_scope_test.go:139: cross-scope readiness must be rejected: outcome=\"issued\" err=<nil>",
+    "readiness_scope_test.go:142: cross-scope readiness caused 1 writes",
+    "readiness_scope_test.go:139: cross-scope readiness must be rejected: outcome=\"RETIRED\" err=<nil>",
+    "readiness_scope_test.go:142: cross-scope readiness caused 1 writes",
+    "readiness_scope_test.go:139: cross-scope readiness must be rejected: outcome=\"NewAdmission\" err=<nil>",
+    "readiness_scope_test.go:139: cross-scope readiness must be rejected: outcome=\"ExactRecovery\" err=<nil>",
+    "readiness_scope_test.go:139: cross-scope readiness must be rejected: outcome=\"AuditOnly\" err=<nil>"
+  ],
+  "capture": "derived test events only",
+  "database": "not used",
+  "owned_overlay_cleaned": true
+}

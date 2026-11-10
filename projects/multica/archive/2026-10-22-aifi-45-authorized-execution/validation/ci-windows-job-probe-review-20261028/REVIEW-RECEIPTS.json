@@ -1,0 +1,9 @@
+{
+  "scope": "Windows anonymous Job membership probe on own fake processes; not kill-on-close, container cleanup, or CI safety acceptance",
+  "message_id_note": "message ids not supplied by Agent tool; backend model receipts unavailable",
+  "entries": [
+    {"session_id":"01a182f9-8c77-7020-aecc-d1e1f844559a","requested_model":"GBClaude/claude-opus-5-5:high","source_sha256":"ea4746d75b74ef2f064debde8856ce0099322cc05bbcb95dbdae1d5719144535","report":"REVIEW-STRONG.md","report_sha256":"62d3bce892415b70588b8567905bc3175b08fd8735e5ae264c41777d2be2f2b7","verdict":"static safety-only review; original version has result-validity issue"},
+    {"session_id":"01a182f9-8c77-7020-aecc-d1e1f844559a","requested_model":"GBClaude/claude-opus-5-5:high","source_sha256":"27bb70f91c0f05cf20ac01e472e12bb65b5ac2b2474a7d9478bf4e38aa941c3a","report":"REVIEW-RECHECK-STRONG.md","report_sha256":"61cca0b876e1b1efdc5f254f792279b4ffc50db724b0dd70548955a3ba09ffc4","verdict":"static PASS-for-safe-first-run; not capability acceptance"},
+    {"session_id":"01a18301-1b16-7020-aecc-d1e36efb8479","requested_model":"OpenAIPersonal/gpt-6.1-terra:high","source_sha256":"27bb70f91c0f05cf20ac01e472e12bb65b5ac2b2474a7d9478bf4e38aa941c3a","report":"EXECUTION-BALANCED.md","report_sha256":"985114085581979141b29bfda913a4d9d185d41c8add0803ce54742219616232","verdict":"independent 1/1 pass skip 0; self-owned processes and natural child exit only"}
+  ]
+}

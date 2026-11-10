@@ -1,0 +1,32 @@
+{
+  "argv": [
+    "go",
+    "test",
+    "-json",
+    "-count=1",
+    "./internal/governance/deploymentaccess_test"
+  ],
+  "exit": 0,
+  "before": {
+    "internal/governance/execution_deployment.go": "7b9078db96c6a54b9cb87c040bedfb7b346d8c1a4a77b772367fa94063e3268a",
+    "internal/governance/deploymentaccess_test/execution_deployment_test.go": "0fe7cbf4ca840595d11ecbc68b393fe6195ff521741ac64dd606fff4cecd4a52",
+    "internal/governance/deploymentaccess_test/readiness_scope_test.go": "2abec82fdc40f31025ab12a9343165252ad287ea3463857193887998052ce31e"
+  },
+  "after": {
+    "internal/governance/execution_deployment.go": "7b9078db96c6a54b9cb87c040bedfb7b346d8c1a4a77b772367fa94063e3268a",
+    "internal/governance/deploymentaccess_test/execution_deployment_test.go": "0fe7cbf4ca840595d11ecbc68b393fe6195ff521741ac64dd606fff4cecd4a52",
+    "internal/governance/deploymentaccess_test/readiness_scope_test.go": "2abec82fdc40f31025ab12a9343165252ad287ea3463857193887998052ce31e"
+  },
+  "top": {
+    "pass": 9,
+    "fail": 0,
+    "skip": 0
+  },
+  "leaf": {
+    "pass": 152,
+    "fail": 0,
+    "skip": 0
+  },
+  "capture": "derived JSON test-event counts only",
+  "database": "not used"
+}

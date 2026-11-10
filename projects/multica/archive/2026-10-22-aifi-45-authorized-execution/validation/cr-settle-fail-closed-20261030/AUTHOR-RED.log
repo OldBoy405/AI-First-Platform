@@ -1,0 +1,12 @@
+--- FAIL: TestSettleCREventsForTaskFiresOnlyForCRBoundTasks (0.40s)
+    crevents_test.go:188: unwatched root must fail closed: <nil>
+--- FAIL: TestSettleCREventsForTaskFailsClosedWhenDeliveryCannotBeSettled (0.11s)
+    --- FAIL: TestSettleCREventsForTaskFailsClosedWhenDeliveryCannotBeSettled/collector_unavailable (0.00s)
+        crevents_test.go:204: missing collector must fail closed: <nil>
+    --- FAIL: TestSettleCREventsForTaskFailsClosedWhenDeliveryCannotBeSettled/workspace_missing (0.00s)
+        crevents_test.go:211: missing workspace must fail closed: <nil>
+    --- FAIL: TestSettleCREventsForTaskFailsClosedWhenDeliveryCannotBeSettled/commit_scan_failed (0.11s)
+        crevents_test.go:219: commit scan failure must fail closed: <nil>
+FAIL
+FAIL	github.com/multica-ai/multica/server/internal/daemon	4.221s
+FAIL

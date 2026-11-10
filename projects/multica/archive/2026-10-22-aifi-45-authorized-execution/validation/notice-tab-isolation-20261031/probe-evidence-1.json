@@ -1,0 +1,49 @@
+{
+  "schema": "aifi45.notice-appcontainer-isolation/v1",
+  "startedAt": "2026-10-31T01:46:25.3106481Z",
+  "finishedAt": "2026-10-31T01:46:25.4764455Z",
+  "status": "FAILED",
+  "failure": "probe phase: owned job still contained child processes",
+  "mechanism": "CreateAppContainerProfile(empty capabilities) + SECURITY_CAPABILITIES + protected DACLs + owned kill-on-close Job Object",
+  "environmentKeys": [
+    "APPDATA",
+    "CGO_ENABLED",
+    "GOARCH",
+    "GOCACHE",
+    "GOENV",
+    "GOFLAGS",
+    "GOOS",
+    "GOPATH",
+    "GOPROXY",
+    "GOSUMDB",
+    "GOTELEMETRY",
+    "GOTOOLCHAIN",
+    "GOWORK",
+    "HOME",
+    "LOCALAPPDATA",
+    "PATH",
+    "SystemRoot",
+    "TEMP",
+    "TMP",
+    "USERPROFILE",
+    "WINDIR"
+  ],
+  "probe": {
+    "kind": "probe",
+    "binarySha256": "48412d4bf8560ddeb66ebc3e055e06db35013f3c696c1c6de9fe4308dc9fc130",
+    "appContainerSid": "S-1-15-2-579822153-2567446920-1924175252-3363872745-2698282067-2823168211-1187695552",
+    "capabilityCount": 0,
+    "processStarted": true,
+    "processExitCode": 1,
+    "jobActiveAfterExit": 1,
+    "stdoutBytes": 0,
+    "stderrBytes": 0,
+    "stderrSha256": "",
+    "cleanup": {
+      "profileDeleted": true,
+      "rootRemoved": true,
+      "sentinelRemoved": true,
+      "sentinelUnchanged": true
+    }
+  }
+}

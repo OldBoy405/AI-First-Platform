@@ -1,0 +1,30 @@
+{
+  "snapshot": "source-manifest.json",
+  "reviewers": [
+    {
+      "role": "strong",
+      "session_id": "01a1818d-b389-7020-aecc-d15db24b29a7",
+      "message_id": "9f5e568a",
+      "response_provider": "OpenAIPersonal",
+      "response_model": "gpt-6.1-sol",
+      "configured_effort": "high",
+      "verdict": "BLOCK",
+      "file": "REVIEW-STRONG.md",
+      "sha256": "a053ae42a1ab367b39d4a8c57268f6d383c34c269746e394a94c93952fe8411a",
+      "scope": "read-only static, not Gate3"
+    },
+    {
+      "role": "balanced",
+      "session_id": "01a1818d-b378-7020-aecc-d15bd4b2a641",
+      "message_id": "9180c44a",
+      "response_provider": "Gobao",
+      "response_model": "deepseek-flash",
+      "configured_effort": "max",
+      "verdict": "NOT VERIFIED / review incomplete",
+      "file": "REVIEW-BALANCED.md",
+      "sha256": "21e77eedb50c0db8edf81688fdf3d6bbd13e1699ae3446a4d724d1561afd414d",
+      "scope": "read-only partial evidence review; NOT a PASS"
+    }
+  ],
+  "integrity": "Original report bytes are unchanged; author independently checked 12 multica and 10 change checkout SHA values against source-manifest.json at review completion, before subsequent fixes. Reviewers did not review later fixes."
+}

@@ -1,0 +1,8 @@
+# SDDL 权限串解析检查（仅调用 ConvertStringSecurityDescriptorToSecurityDescriptorW，不创建任何对象）
+# 工具链: go version go1.27.1 windows/amd64
+# dummy SIDs: user=S-1-5-21-1111111111-2222222222-3333333333-1001 app=S-1-15-2-1
+# 程序源码即上文解析器；exit=0
+
+rights=GRGX       RESULT=ACCEPTED
+rights=GRGWGXDE   RESULT=REJECTED err=ConvertStringSecurityDescriptorToSecurityDescriptorW failed: The access control list (ACL) structure is invalid.
+rights=GRGWGXSD   RESULT=ACCEPTED

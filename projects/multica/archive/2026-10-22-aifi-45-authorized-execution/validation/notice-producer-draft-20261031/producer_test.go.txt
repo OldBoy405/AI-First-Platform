@@ -1,0 +1,122 @@
+package noticeproducer_test
+
+import (
+	"context"
+	"errors"
+	"strings"
+	"testing"
+
+	"github.com/multica-ai/multica/server/internal/governance"
+)
+
+type recordingDeliverySink struct {
+	calls []governance.DeliveryRunFacts
+	err   error
+}
+
+func (s *recordingDeliverySink) DeliverCompleted(_ context.Context, facts governance.DeliveryRunFacts) error {
+	s.calls = append(s.calls, facts)
+	return s.err
+}
+
+func deliveryFacts() governance.DeliveryRunFacts {
+	return governance.DeliveryRunFacts{
+		WorkspaceID: "11111111-1111-4111-8111-111111111111",
+		RunID:       "22222222-2222-4222-8222-222222222222",
+		CRID:        "CR-NTF-PRODUCER-001",
+	}
+}
+
+func TestDeliveryCompletionNotifiesBeforeRunCommit(t *testing.T) {
+	sink := &recordingDeliverySink{}
+	var order []string
+	err := governance.CompleteDeliveryRun(context.Background(), sink, deliveryFacts(), func() error {
+		order = append(order, "commit")
+		if len(sink.calls) != 1 {
+			t.Fatalf("run committed with %d delivery notifications, want exactly one", len(sink.calls))
+		}
+		order = append(order, "notified")
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("complete delivery: %v", err)
+	}
+	if len(sink.calls) != 1 || sink.calls[0] != deliveryFacts() {
+		t.Fatalf("notification calls = %+v, want the converged run exactly once", sink.calls)
+	}
+	if len(order) != 2 || order[0] != "commit" || order[1] != "notified" {
+		t.Fatalf("completion order = %v", order)
+	}
+}
+
+func TestDeliveryNotificationFailureKeepsRunOpen(t *testing.T) {
+	sink := &recordingDeliverySink{err: errors.New("recipient authority unavailable")}
+	committed := false
+	err := governance.CompleteDeliveryRun(context.Background(), sink, deliveryFacts(), func() error {
+		committed = true
+		return nil
+	})
+	if !errors.Is(err, sink.err) {
+		t.Fatalf("completion error = %v, want the notification failure", err)
+	}
+	if committed {
+		t.Fatal("run completed even though its required delivery notification failed")
+	}
+}
+
+func TestDeliveryNoticeEligibleOnlyForAuthorizedConvergedArchive(t *testing.T) {
+	const commit = "0123456789abcdef0123456789abcdef01234567"
+	cases := []struct {
+		name            string
+		status          string
+		dirty           bool
+		authorized      bool
+		pendingNodes    int
+		projectedCommit string
+		want            bool
+	}{
+		{name: "authorized archive", status: "archived", authorized: true, projectedCommit: commit, want: true},
+		{name: "ordinary writeback completion", status: "writing-back", authorized: true, projectedCommit: commit},
+		{name: "ordinary stage completion", status: "tech-design-reviewed", authorized: true, projectedCommit: commit},
+		{name: "legacy archive", status: "archived", projectedCommit: commit},
+		{name: "dirty projection", status: "archived", dirty: true, authorized: true, projectedCommit: commit},
+		{name: "node facts pending", status: "archived", authorized: true, pendingNodes: 1, projectedCommit: commit},
+		{name: "missing commit", status: "archived", authorized: true},
+		{name: "pending commit placeholder", status: "archived", authorized: true, projectedCommit: "pending:archive"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := governance.DeliveryNoticeEligible(tc.status, tc.dirty, tc.authorized, tc.pendingNodes, tc.projectedCommit); got != tc.want {
+				t.Fatalf("DeliveryNoticeEligible() = %v, want %v", got, tc.want)
+			}
+		})
+	}
+}
+
+func TestDeliveryNoticeEventUsesCanonicalDeliveryEvidence(t *testing.T) {
+	facts := governance.DeliveryNoticeFacts{
+		DeliveryRunFacts: deliveryFacts(),
+		EvidenceDigest:   "0123456789abcdef0123456789abcdef01234567",
+		EvidenceRef:      "change-requests/CR-NTF-PRODUCER-001/test-report.md",
+		RecipientID:      "33333333-3333-4333-8333-333333333333",
+	}
+	event := governance.BuildDeliveryNoticeEvent(facts)
+	notice, err := governance.BuildNotice(event)
+	if err != nil {
+		t.Fatalf("build delivery notice: %v", err)
+	}
+	if event.Kind != "delivery-completed" || event.Cause != "delivery-completed" || notice.Audience != governance.NoticeAudienceAuthorizer {
+		t.Fatalf("delivery routing = kind %q, cause %q, audience %q", event.Kind, event.Cause, notice.Audience)
+	}
+	if notice.DedupeKey != governance.NoticeDedupeKey(facts.CRID, "delivery-completed", facts.EvidenceDigest, governance.NoticeAudienceAuthorizer) {
+		t.Fatal("delivery notice is not keyed by the canonical delivery commit")
+	}
+	for _, want := range []string{"结论：约定交付已完成", "证据：" + facts.EvidenceRef, "所需动作：查看交付结果"} {
+		if !strings.Contains(notice.Body, want) {
+			t.Errorf("body missing %q: %s", want, notice.Body)
+		}
+	}
+	if strings.Contains(notice.Body, facts.EvidenceDigest) {
+		t.Fatal("delivery body copied the raw commit instead of linking the canonical evidence")
+	}
+}

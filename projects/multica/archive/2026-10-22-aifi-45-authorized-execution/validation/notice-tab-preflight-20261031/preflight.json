@@ -1,0 +1,92 @@
+{
+  "kind": "offline-compile-only-NOT-RED-NOT-TEST-EXECUTION",
+  "target": "./internal/governance/noticeguard_test",
+  "source": "C:\\Users\\GOBAO\\Downloads\\AI\\multica\\server",
+  "output": "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\notice-tab-compile-only-20261031T010517Z-26390",
+  "startedAt": "2026-10-31T01:05:17.166Z",
+  "environmentKeys": [
+    "APPDATA",
+    "CGO_ENABLED",
+    "GOARCH",
+    "GOCACHE",
+    "GOENV",
+    "GOFLAGS",
+    "GOMODCACHE",
+    "GOOS",
+    "GOPATH",
+    "GOPROXY",
+    "GOSUMDB",
+    "GOTELEMETRY",
+    "GOTOOLCHAIN",
+    "GOWORK",
+    "HOME",
+    "LOCALAPPDATA",
+    "PATH",
+    "SystemRoot",
+    "TEMP",
+    "TMP",
+    "USERPROFILE",
+    "WINDIR"
+  ],
+  "restrictions": {
+    "dependencyInitExecuted": false,
+    "testBinaryExecuted": false,
+    "osIsolationEstablished": false,
+    "initializationSafetyProven": false,
+    "credentialsInherited": false,
+    "engineOrDatabaseInvoked": false,
+    "moduleAndToolchainDownloadsDisabled": true
+  },
+  "commands": [
+    {
+      "name": "version",
+      "executable": "C:\\Program Files\\Go\\bin\\go.exe",
+      "argv": [
+        "version"
+      ],
+      "exit": 0,
+      "signal": null,
+      "error": null
+    },
+    {
+      "name": "deps",
+      "executable": "C:\\Program Files\\Go\\bin\\go.exe",
+      "argv": [
+        "list",
+        "-deps",
+        "-test",
+        "-json",
+        "./internal/governance/noticeguard_test"
+      ],
+      "exit": 0,
+      "signal": null,
+      "error": null
+    },
+    {
+      "name": "compile",
+      "executable": "C:\\Program Files\\Go\\bin\\go.exe",
+      "argv": [
+        "test",
+        "-c",
+        "-vet=off",
+        "-o",
+        "C:\\Users\\GOBAO\\AppData\\Local\\Temp\\notice-tab-compile-only-20261031T010517Z-26390\\noticeguard.test.exe",
+        "./internal/governance/noticeguard_test"
+      ],
+      "exit": 0,
+      "signal": null,
+      "error": null
+    }
+  ],
+  "goVersion": "go version go1.27.1 windows/amd64",
+  "packageCount": 491,
+  "nonStandardPackageCount": 251,
+  "parentGovernanceImportedWithoutTestVariant": true,
+  "noticeCanonicalLfSha256": "9be5120bef4fb80ab2b4973c44cd0c032d7c43ca6406969297f255d0843611db",
+  "testCanonicalLfSha256": "c6981fa9ba09296c174b426fae349c3b8c4bc4dec7e681167227a440f239c152",
+  "compiledBinarySha256": "a2a5917680942c4b96c39a61ac5302a1b7b1fcbd9fb011a5b1530533cf0f4ef8",
+  "noticeSourceUnchangedDuringCompile": true,
+  "testSourceUnchangedDuringCompile": true,
+  "status": "COMPILED_ONLY_EXECUTION_BLOCKED",
+  "finishedAt": "2026-10-31T01:05:51.489Z"
+}

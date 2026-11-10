@@ -1,0 +1,49 @@
+{
+  "scope": "unwired complete-buffer decoder only; not a supervisor, engine adapter, durable journal, streaming bound, or process-tree/cleanup proof",
+  "message_id_note": "message ids not supplied by Agent tool; backend model receipts unavailable",
+  "reviews": [
+    {
+      "session_id": "01a182e6-a1c1-7020-aecc-d1d658ebe670",
+      "requested_model": "GBClaude/claude-opus-5-5:high",
+      "source_sha256": "ff45456209fc0179f72180e38e807530dd7926773af2f5c524dc4d1158f88cd6",
+      "test_sha256": "58af5f1b0da50b46d711998aa84c081f1cf95133ea53991ab912db0378c77941",
+      "report": "STRONG-SESSION-NOTES.md",
+      "report_sha256": "f929ef4263dd0576c8deb757097255cd46cfd3402123309ec6284e7b76c4f1e7",
+      "report_kind": "coordinator notes only; authoring session was refused when asked to archive its output"
+    },
+    {
+      "session_id": "01a182e6-ed2e-7020-aecc-d1d98f296777",
+      "requested_model": "OpenAIPersonal/gpt-6.1-terra:high",
+      "source_sha256": "ff45456209fc0179f72180e38e807530dd7926773af2f5c524dc4d1158f88cd6",
+      "test_sha256": "58af5f1b0da50b46d711998aa84c081f1cf95133ea53991ab912db0378c77941",
+      "report": "REVIEW-BALANCED.md",
+      "report_sha256": "4d3fa81f8182768524703122b03b52bfa7806cfcd8ba44d025b6fccd6e0fa2e7"
+    },
+    {
+      "session_id": "01a182ef-cc59-7020-aecc-d1ddb5cb1cfe",
+      "requested_model": "GBClaude/claude-opus-5-5:high",
+      "source_sha256": "bed82664f2f17918b47302a94255e3061cbce9f516f578a074a997671b75452c",
+      "test_sha256": "98c1b388a6818821a3120d2953f631196872e9c35bf9344b5e2ab7f72266aa6c",
+      "report": "REVIEW-RECHECK-STRONG.md",
+      "report_sha256": "51d4891523e433d0467bb57c1b214edc9f2dae72baab5179596a6f7472c87f5e",
+      "verdict": "limited pure decoder review, test mutations identified; not the later test snapshot"
+    },
+    {
+      "session_id": "01a182e6-ed2e-7020-aecc-d1d98f296777",
+      "requested_model": "OpenAIPersonal/gpt-6.1-terra:high",
+      "source_sha256": "bed82664f2f17918b47302a94255e3061cbce9f516f578a074a997671b75452c",
+      "test_sha256": "98c1b388a6818821a3120d2953f631196872e9c35bf9344b5e2ab7f72266aa6c",
+      "report": "REVIEW-RECHECK-BALANCED.md",
+      "report_sha256": "df212304dbdc3a13a6bc2e07076c854c75de6562ae0cb901eecadeedeed9e5e6"
+    },
+    {
+      "session_id": "01a182e6-ed2e-7020-aecc-d1d98f296777",
+      "requested_model": "OpenAIPersonal/gpt-6.1-terra:high",
+      "source_sha256": "bed82664f2f17918b47302a94255e3061cbce9f516f578a074a997671b75452c",
+      "test_sha256": "360c6c4d31dd05d4691b5be1fa92ffe6fb603badcd1334cb8f46df1750fe5b96",
+      "report": "REVIEW-FINAL-BALANCED.md",
+      "report_sha256": "518796b7b3ef3fe7b95ecf620275f19608733d38681dc1c2c40e288557d615b7",
+      "verdict": "24/24 independent pass for revised test; no production runtime or crash claim"
+    }
+  ]
+}

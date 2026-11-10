@@ -1,0 +1,61 @@
+{
+  "schema": "aifi45.notice-appcontainer-isolation/v1",
+  "startedAt": "2026-10-31T01:47:02.7649739Z",
+  "finishedAt": "2026-10-31T01:47:02.891002Z",
+  "status": "FAILED",
+  "failure": "probe phase: effective-isolation probe failed",
+  "mechanism": "CreateAppContainerProfile(empty capabilities) + SECURITY_CAPABILITIES + protected DACLs + owned kill-on-close Job Object",
+  "environmentKeys": [
+    "APPDATA",
+    "CGO_ENABLED",
+    "GOARCH",
+    "GOCACHE",
+    "GOENV",
+    "GOFLAGS",
+    "GOOS",
+    "GOPATH",
+    "GOPROXY",
+    "GOSUMDB",
+    "GOTELEMETRY",
+    "GOTOOLCHAIN",
+    "GOWORK",
+    "HOME",
+    "LOCALAPPDATA",
+    "PATH",
+    "SystemRoot",
+    "TEMP",
+    "TMP",
+    "USERPROFILE",
+    "WINDIR"
+  ],
+  "probe": {
+    "kind": "probe",
+    "binarySha256": "48412d4bf8560ddeb66ebc3e055e06db35013f3c696c1c6de9fe4308dc9fc130",
+    "appContainerSid": "S-1-15-2-2599951285-2392090728-439611926-1186604041-2982041415-1271326269-884259097",
+    "capabilityCount": 0,
+    "processStarted": true,
+    "processExitCode": 1,
+    "jobActiveAfterExit": 0,
+    "probe": {
+      "appContainerSidMatched": false,
+      "networkCapabilitySids": [],
+      "environmentExact": true,
+      "ownFileRoundTrip": false,
+      "sentinelReadDenied": false,
+      "sentinelWriteDenied": false,
+      "loopbackRefused": false,
+      "grandchildEnvironmentExact": false,
+      "grandchildExitZero": false,
+      "grandchildFileRoundTrip": false
+    },
+    "stdoutBytes": 0,
+    "stderrBytes": 55,
+    "stderrSha256": "68f4dbee0d86e2a966a359a9ac9636f98344c5b2379801f07ed6c7372d9bb4ae",
+    "cleanup": {
+      "profileDeleted": true,
+      "rootRemoved": true,
+      "sentinelRemoved": true,
+      "sentinelUnchanged": true
+    }
+  }
+}

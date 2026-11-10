@@ -1,0 +1,47 @@
+{
+  "scope":"fake-I/O instance lifecycle draft; no real container authorization",
+  "source_sha256": {
+    "instance-lifecycle.mjs":"3cfdbf972151e4a63d41e4130fd5096689bbfd71a8907ba4b736a1a229b4e035",
+    "instance-lifecycle.test.mjs":"df7a912bf59aece537ceecc4ee85fb67b4460dfda2f533ee2bacf7f44be9d19e",
+    "instance-ownership.mjs":"d1f64caf5cca6891656a0cdfa875660b8e94905d473814828a1e5faf1b38f81c",
+    "instance-ownership.test.mjs":"c692885d1e81f8b41429e20c955691f1d5bc46f4174949bdf565333740a26b13"
+  },
+  "session_id":"01a18248-fb6a-7020-aecc-d18ccbe212bb",
+  "message_id":"023054bc",
+  "reported_provider":"OpenAIPersonal",
+  "reported_model":"gpt-6.1-sol",
+  "backend_model_receipt":"not available",
+  "verdict":"BLOCK",
+  "report":"REVIEW-STRONG.md",
+  "report_sha256":"f7c33a83dfaa7f854fc9fdaa190b289bb2552dcad0e1a11e9121a122d009d340",
+  "recheck": {
+    "session_id":"01a18248-fb6a-7020-aecc-d18ccbe212bb", "message_id":"18f0dd52", "verdict":"BLOCK unchanged",
+    "report":"REVIEW-RECHECK.md", "report_sha256":"f3dc061172b1933ee73f659a9276eaf8fc6bd5f94a6f15b9713a04addec971aa",
+    "source_sha256": {"instance-lifecycle.mjs":"90ede1f5801274f6623b0e5abfc2012e0b8448d5078217c7d689eda34b7b9478","instance-lifecycle.test.mjs":"f443d7eee98de22927ffdc47fc02d9270adef6c9daae894bbd4bb50468949f7b","instance-ownership.mjs":"8f2b968cd09757278efe2c54c193544bbdcbb29f288df4d386e1efd66b2038fb","instance-ownership.test.mjs":"c692885d1e81f8b41429e20c955691f1d5bc46f4174949bdf565333740a26b13"}
+  },
+  "second_recheck": {
+    "session_id":"01a1825f-174c-7020-aecc-d19252095894", "message_id":"31a2971e", "verdict":"BLOCK unchanged",
+    "reported_provider":"OpenAIPersonal", "reported_model":"gpt-6.1-sol", "backend_model_receipt":"not available",
+    "report":"REVIEW-SECOND-RECHECK.md", "report_sha256":"1a21a1e0b09d049ae26880cea5f0f402e6c22cfdc732f85da49eded2316ab3c6",
+    "source_sha256": {"instance-lifecycle.mjs":"5c66296136393ccbccfba0718cbee681e679a3deaf6de83b2970d1161efdbf25","instance-lifecycle.test.mjs":"7a9d278de1ee49e5f312ef59fc0c0491d1f923ec2d525fa556898c03a68eb706","instance-ownership.mjs":"8f2b968cd09757278efe2c54c193544bbdcbb29f288df4d386e1efd66b2038fb","instance-ownership.test.mjs":"c692885d1e81f8b41429e20c955691f1d5bc46f4174949bdf565333740a26b13"}
+  },
+  "failure_recheck": {
+    "session_id":"01a1825f-174c-7020-aecc-d19252095894", "message_id":"21e25953", "verdict":"BLOCK unchanged",
+    "reported_provider":"OpenAIPersonal", "reported_model":"gpt-6.1-sol", "backend_model_receipt":"not available",
+    "report":"REVIEW-FAILURE-RECHECK.md", "report_sha256":"754f7659281fea9bb34f23d06ea31d1fa1020ec4b7a66ebe89690599c9339e5a",
+    "source_sha256": {"instance-lifecycle.mjs":"7c42f86a5616ea8396deefa84b9119b59766f668ac18889ef0b1bd704dcf4e47","instance-lifecycle.test.mjs":"2a924f411992098f741976b77580ceafcf0cc422f03d96084c9a833467889772","instance-ownership.mjs":"5c4785ae4a03a951a00a72248528ba97b11163caf5675c8304e6a8c656e05288","instance-ownership.test.mjs":"c692885d1e81f8b41429e20c955691f1d5bc46f4174949bdf565333740a26b13"}
+  },
+  "boundary_recheck": {
+    "session_id":"01a182af-56b0-7020-aecc-d1a5ddb8acdf", "message_id":null, "message_id_note":"not supplied by Agent tool",
+    "requested_model":"OpenAIPersonal/gpt-6.1-sol:high", "backend_model_receipt":"not available", "verdict":"BLOCK",
+    "report":"REVIEW-BOUNDARY-RECHECK.md", "report_sha256":"e3e62a203f7604796ad7752d75d4248625d71e7517551ca9aff0d439b8aa1843",
+    "source_sha256":{"instance-lifecycle.mjs":"9c7bbb2308ee4533e5d68dedf0819ed22b85b67fc86934d06590e8b033ae37f8", "instance-lifecycle.test.mjs":"c58aeec9a525d6e04098b5139ad6928b7d7b00c14bf45535d12756c1372a3ff7"}
+  },
+  "guard_recheck": {
+    "session_id":"01a182bf-0e26-7020-aecc-d1ae04aaacd5", "message_id":null, "message_id_note":"not supplied by Agent tool",
+    "requested_model":"OpenAIPersonal/gpt-6.1-sol:high", "backend_model_receipt":"not available",
+    "verdict":"limited: synchronous ack, requested port continuity, and failure journal gates; overall BLOCK persists",
+    "report":"REVIEW-GUARD-RECHECK.md", "report_sha256":"4ce940aae3781e12884de9ed2f7b184581670a7b61f081ef928cec4d8f1ec4b7",
+    "source_sha256":{"instance-lifecycle.mjs":"8bf026671ffe6b57825848dafc397bdd36cf5df61892fcad0cdad6cbb0e67a88", "instance-lifecycle.test.mjs":"47a0636661fc2667df79c73aedd4f72defe6875bc3911d021b893e1b98692eb8"}
+  }
+}

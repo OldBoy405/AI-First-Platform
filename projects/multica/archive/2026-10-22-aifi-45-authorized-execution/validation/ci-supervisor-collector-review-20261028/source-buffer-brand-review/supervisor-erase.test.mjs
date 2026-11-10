@@ -1,0 +1,129 @@
+// AIFI-45: zero private snapshots on success and failure. These tests inspect
+// owned test-only allocation references, not subprocess or container output.
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { createSupervisorCollector } from './supervisor-collector.mjs';
+
+const canary = Buffer.from('erase-canary-82d7f1');
+function frame(type, sequence, payload) {
+  const h = Buffer.alloc(12);
+  h[0] = 1; h[1] = type;
+  h.writeUInt32BE(sequence, 4); h.writeUInt32BE(payload.length, 8);
+  return Buffer.concat([h, payload]);
+}
+const terminal = () => frame(3, 1, Buffer.from([0]));
+
+// Capture the allocator at import time in a separate module instance. The
+// original is restored before decoding; no output bytes are printed by tests.
+test('decoder clears its private unpooled copy on success and all parse failures', async () => {
+  const allocated = [];
+  const original = Buffer.allocUnsafeSlow;
+  const originalFrom = Buffer.from;
+  const typedArrayPrototype = Object.getPrototypeOf(Uint8Array.prototype);
+  const originalSet = typedArrayPrototype.set;
+  let decode, monitoring = false, poolCopies = 0, copiedIntoPrivate = false;
+  try {
+    Buffer.allocUnsafeSlow = function(size) {
+      const buf = original(size);
+      allocated.push(buf);
+      return buf;
+    };
+    Buffer.from = function(...args) {
+      if (monitoring) poolCopies++;
+      return Reflect.apply(originalFrom, this, args);
+    };
+    typedArrayPrototype.set = function(...args) {
+      const value = Reflect.apply(originalSet, this, args);
+      if (monitoring && allocated.includes(this)) copiedIntoPrivate = this.includes(canary);
+      return value;
+    };
+    ({ decodeSupervisorBuffer: decode } = await import('./supervisor-protocol.mjs?erase-test'));
+  } finally {
+    Buffer.allocUnsafeSlow = original;
+    Buffer.from = originalFrom;
+    typedArrayPrototype.set = originalSet;
+  }
+  for (const [wire, expected] of [
+    [Buffer.concat([frame(2, 0, canary), terminal()]), 'EXITED_ZERO'],
+    [frame(2, 0, canary), 'MISSING_TERMINAL'],
+    [Buffer.concat([frame(2, 0, canary), Buffer.from([1])]), 'TRUNCATED'],
+    [Buffer.concat([frame(2, 0, canary), terminal(), Buffer.from([1])]), 'TRAILING_DATA'],
+  ]) {
+    const before = Buffer.from(wire);
+    const count = allocated.length;
+    const copiesBefore = poolCopies;
+    copiedIntoPrivate = false;
+    let result;
+    // Catch a runtime Buffer.from as well as one captured while importing.
+    try {
+      Buffer.from = function(...args) {
+        if (monitoring) poolCopies++;
+        return Reflect.apply(originalFrom, this, args);
+      };
+      monitoring = true;
+      result = decode(wire);
+    } finally {
+      monitoring = false;
+      Buffer.from = originalFrom;
+    }
+    assert.equal(allocated.length, count + 1, 'one private allocation required');
+    assert.equal(poolCopies, copiesBefore, 'decoder must not make a pooled Buffer.from copy');
+    assert.equal(copiedIntoPrivate, true, 'decoder must copy the canary into its private allocation');
+    assert.equal(wire.equals(before), true, 'caller buffer must not be modified');
+    assert.equal(result.decoded ? result.reportedOutcome : result.error, expected);
+    assert.equal(allocated[count].every(value => value === 0), true, 'private decoder copy must be zeroed');
+  }
+});
+
+test('collector clears its private buffer after success and representative failure paths', () => {
+  for (const mode of ['success', 'parse-failure', 'abort', 'stdout-limit', 'stderr-limit',
+    'invalid-input', 'missing-eof', 'after-eof', 'duplicate-eof', 'empty-chunk', 'invalid-event', 'reentrant']) {
+    const allocated = [];
+    const original = Buffer.alloc;
+    let collector;
+    try {
+      Buffer.alloc = function(size, ...args) {
+        const buf = original(size, ...args);
+        allocated.push(buf);
+        return buf;
+      };
+      collector = createSupervisorCollector();
+    } finally {
+      Buffer.alloc = original;
+    }
+    assert.equal(allocated.length, 1, 'one private collector allocation required');
+    const wire = mode === 'parse-failure' ? frame(2, 0, canary) : Buffer.concat([frame(2, 0, canary), terminal()]);
+    assert.equal(collector.stdout(wire).ok, true);
+    assert.equal(allocated[0].includes(canary), true, 'test must exercise the copied canary');
+    if (mode === 'success' || mode === 'parse-failure') {
+      assert.equal(collector.stdoutEOF().ok, true);
+      assert.equal(collector.stderrEOF().ok, true);
+      const result = collector.result();
+      assert.equal(mode === 'success' ? result.reportedOutcome : result.error,
+        mode === 'success' ? 'EXITED_ZERO' : 'MISSING_TERMINAL');
+    } else if (mode === 'after-eof' || mode === 'duplicate-eof') {
+      assert.equal(collector.stdoutEOF().ok, true);
+      const result = mode === 'after-eof' ? collector.stdout(Buffer.from([1])) : collector.stdoutEOF();
+      assert.equal(result.error, mode === 'after-eof' ? 'DATA_AFTER_EOF' : 'DUPLICATE_EOF');
+    } else {
+      let result;
+      switch (mode) {
+        case 'abort': result = collector.abort(); break;
+        case 'stdout-limit': result = collector.stdout(Buffer.alloc(65537)); break;
+        case 'stderr-limit': result = collector.stderr(Buffer.alloc(65537)); break;
+        case 'invalid-input': result = collector.stderr({}); break;
+        case 'missing-eof': result = collector.result(); break;
+        case 'empty-chunk': result = collector.stderr(Buffer.alloc(0)); break;
+        case 'invalid-event': result = collector.stderrEOF(1); break;
+        case 'reentrant':
+          result = collector.stderr(new Proxy({}, { getPrototypeOf() { collector.abort(); throw Error('ignored'); } }));
+          break;
+      }
+      const expected = { abort: 'ABORTED', 'stdout-limit': 'STDOUT_LIMIT', 'stderr-limit': 'STDERR_LIMIT',
+        'invalid-input': 'INVALID_INPUT', 'missing-eof': 'MISSING_BOTH_EOF', 'empty-chunk': 'EMPTY_CHUNK',
+        'invalid-event': 'INVALID_EVENT', reentrant: 'REENTRANT' };
+      assert.equal(result.error, expected[mode]);
+    }
+    assert.equal(allocated[0].every(value => value === 0), true, 'private collector buffer must be zeroed');
+  }
+});

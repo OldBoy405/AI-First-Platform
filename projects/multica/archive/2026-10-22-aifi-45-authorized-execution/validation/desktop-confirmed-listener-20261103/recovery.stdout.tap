@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: controlled clock fires on deadline and cancels cleared timers
+ok 1 - controlled clock fires on deadline and cancels cleared timers
+  ---
+  duration_ms: 1.3276
+  type: 'test'
+  ...
+# Subtest: failure releases only its workspace and permits a confirmed retry
+ok 2 - failure releases only its workspace and permits a confirmed retry
+  ---
+  duration_ms: 1.4908
+  type: 'test'
+  ...
+# Subtest: timeout is pending before deadline and late events cannot release a newer attempt
+ok 3 - timeout is pending before deadline and late events cannot release a newer attempt
+  ---
+  duration_ms: 0.323
+  type: 'test'
+  ...
+# Subtest: unsettled old attempt cannot release a newer claim on failure
+ok 4 - unsettled old attempt cannot release a newer claim on failure
+  ---
+  duration_ms: 0.2471
+  type: 'test'
+  ...
+# Subtest: synchronous factory and show failures release the claim for retry
+ok 5 - synchronous factory and show failures release the claim for retry
+  ---
+  duration_ms: 0.4039
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 9.894

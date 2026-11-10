@@ -1,0 +1,44 @@
+# 草案：仅登记跨仓契约问题，不代表 Gate 或方案已确认。
+meta:
+  change_id: "2026-10-29-trusted-verdict-outcome-binding"
+  title: "可信 verdict 结果与命令绑定"
+  created: "2026-10-29T12:48:43.771125"
+  status: draft
+  version: "2.9"
+
+why:
+  problem: |
+    AIFI-45 的现有准入查询将 settlement.kind=effect 用作通过条件。现有验签检查绑定原字节、scope 和帧字段，但未验证可信裁决的结果语义或与冻结命令的对应关系；settlement.kind 由调用方输入。不能将未经核实的裁决或结算作为生产授权事实。静态读码未发现完整生产 verdict 写入接线，但不能据此推断现有部署或数据状态。
+  motivation: |
+    按用户确认的分流边界，登记待判定的可信通道契约问题；先核实既有契约能否满足要求，确需改变签名契约时在独立 change 评审。消费侧默认拒绝和 AIFI-45 的入口、代次及验收仍归 AIFI-45。负责人尚待指定。
+
+what_changes:
+  - id: C1
+    type: modify
+    description: "区分可信裁决、实际执行结果和 effect/no_effect 结算，调研可信事实如何绑定冻结命令与主体并由消费方验证；是否改变签名契约、字段、版本和信任根均待确认。"
+  - id: C2
+    type: modify
+    description: "与 tools 同 ID 的草案协同定义生产者、验证者、兼容/冻结策略和跨语言一致性；不在此草案提前实施。"
+
+capabilities:
+  new: []
+  modified:
+    - name: "verdict-channel"
+      description: "使生产准入依赖可验证的可信裁决和对应结算，而不是调用方自报的 settlement.kind。"
+
+constraints:
+  - "当前为 understand 草案，负责人未指定；所有 Gate 均 pending，不修改已归档变更，不部署。"
+  - "未知、旧格式或无法认证的结果不得直接支持 effect 授权；兼容策略须基于真实存量、部署与威胁模型核实。"
+  - "不得假定没有旧 verdict 或存量数据，不凭源码未找到调用方断定实际部署无风险。"
+  - "readiness 的验签问题先按现有契约评估消费侧修复；如需修改其签名契约，须另经变更评审，不在此预定。"
+  - "本变更不替代 AIFI-45 的代次绑定、锁、真实入口验证和 Gate3；跨仓测试各自明确单一计数归属，不双计。"
+
+stakeholders:
+  - "负责人待指定"
+
+non_goals:
+  - "本草案不确定 v2 是唯一解，不签发新 verdict，不改变生产入口。"
+
+success_criteria:
+  - "经评审批准的契约方案（可确认沿用既有契约）能认证所需可信裁决并绑定正确命令与主体，旧格式及未知结果按批准策略失败关闭。"
+  - "经批准的可信生产者与 M 验证者有跨语言、负面和重放测试，实际入口及数据库证据由各自变更独立提供。"

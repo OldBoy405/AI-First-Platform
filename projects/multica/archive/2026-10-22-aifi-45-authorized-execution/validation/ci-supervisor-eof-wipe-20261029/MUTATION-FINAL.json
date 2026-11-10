@@ -1,0 +1,49 @@
+{
+  "source_before": "fa9d4013bf5220ef63ffdc972b636c9aa096ec631eb2fabe4d37325305f122c7",
+  "source_after": "fa9d4013bf5220ef63ffdc972b636c9aa096ec631eb2fabe4d37325305f122c7",
+  "results": [
+    {
+      "name": "late_wipe",
+      "exit": 1,
+      "mutant_sha": "7afcea6b8dd7d5cc25864fa3549e0e4fd663bde3f0b431e0d0aff9f283b09384",
+      "counts": {
+        "tests": 10,
+        "pass": 5,
+        "fail": 5,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "failed_tests": [
+        "not ok 3 - collector clears private stdout at second EOF before result (malformed=false, reverse=false)",
+        "not ok 4 - collector clears private stdout at second EOF before result (malformed=false, reverse=true)",
+        "not ok 5 - collector clears private stdout at second EOF before result (malformed=true, reverse=false)",
+        "not ok 6 - collector clears private stdout at second EOF before result (malformed=true, reverse=true)",
+        "not ok 7 - failed EOF erasure cannot later publish a successful result"
+      ],
+      "target_assertion_hits": 4,
+      "owned_directory_cleaned": true
+    },
+    {
+      "name": "late_failure",
+      "exit": 1,
+      "mutant_sha": "2f4b077a4e2b5287413ffccbff949e269550c8e8523cf5e4edfffae8e33899cf",
+      "counts": {
+        "tests": 10,
+        "pass": 8,
+        "fail": 2,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "failed_tests": [
+        "not ok 7 - failed EOF erasure cannot later publish a successful result",
+        "not ok 8 - sticky failure retries an incomplete wipe but never re-wipes after success"
+      ],
+      "target_assertion_hits": 1,
+      "owned_directory_cleaned": true
+    }
+  ],
+  "capture": "derived TAP counters and fixed diagnostics only",
+  "database": "not used"
+}

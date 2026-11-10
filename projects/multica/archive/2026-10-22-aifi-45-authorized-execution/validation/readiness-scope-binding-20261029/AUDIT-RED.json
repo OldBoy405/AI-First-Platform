@@ -1,0 +1,47 @@
+{
+  "argv": [
+    "go",
+    "test",
+    "-json",
+    "-count=1",
+    "-overlay",
+    "<exclusive-owned-overlay>",
+    "./internal/governance/deploymentaccess_test",
+    "-run",
+    "^TestReadinessScopeBindingAuditOperations$"
+  ],
+  "exit": 1,
+  "before": {
+    "source": "7b9078db96c6a54b9cb87c040bedfb7b346d8c1a4a77b772367fa94063e3268a",
+    "test": "2abec82fdc40f31025ab12a9343165252ad287ea3463857193887998052ce31e"
+  },
+  "after": {
+    "source": "7b9078db96c6a54b9cb87c040bedfb7b346d8c1a4a77b772367fa94063e3268a",
+    "test": "2abec82fdc40f31025ab12a9343165252ad287ea3463857193887998052ce31e"
+  },
+  "mutant": "f37f244df37dd80505514560ac41ff3b35fee21c03238f43420e9c66f1d67aeb",
+  "pass_leaf": 15,
+  "fail_leaf": 15,
+  "skip_events": 0,
+  "target_assertion_hits": 15,
+  "failed_leaf": [
+    "TestReadinessScopeBindingAuditOperations/active/checkpoint_ingest/workspace:other",
+    "TestReadinessScopeBindingAuditOperations/active/verdict_ingest/workspace:other",
+    "TestReadinessScopeBindingAuditOperations/active/original_bytes_query/workspace:other",
+    "TestReadinessScopeBindingAuditOperations/active/no_effect_settlement/workspace:other",
+    "TestReadinessScopeBindingAuditOperations/active/resume_intent/workspace:other",
+    "TestReadinessScopeBindingAuditOperations/expired/checkpoint_ingest/workspace:other",
+    "TestReadinessScopeBindingAuditOperations/expired/verdict_ingest/workspace:other",
+    "TestReadinessScopeBindingAuditOperations/expired/original_bytes_query/workspace:other",
+    "TestReadinessScopeBindingAuditOperations/expired/no_effect_settlement/workspace:other",
+    "TestReadinessScopeBindingAuditOperations/expired/resume_intent/workspace:other",
+    "TestReadinessScopeBindingAuditOperations/stop_new_with_verdict/checkpoint_ingest/workspace:other",
+    "TestReadinessScopeBindingAuditOperations/stop_new_with_verdict/verdict_ingest/workspace:other",
+    "TestReadinessScopeBindingAuditOperations/stop_new_with_verdict/original_bytes_query/workspace:other",
+    "TestReadinessScopeBindingAuditOperations/stop_new_with_verdict/no_effect_settlement/workspace:other",
+    "TestReadinessScopeBindingAuditOperations/stop_new_with_verdict/resume_intent/workspace:other"
+  ],
+  "capture": "derived JSON test events and fixed diagnostics only",
+  "database": "not used",
+  "owned_overlay_cleaned": true
+}

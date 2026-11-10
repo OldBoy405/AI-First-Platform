@@ -1,0 +1,104 @@
+## toolchain
+$ go version
+go version go1.27.1 windows/amd64
+
+## build runner.go
+$ go build -trimpath -o <tmp> runner.go
+exit=0
+stdout=""
+stderr=""
+
+binary_bytes=5384192
+binary_sha256=38cfce66b761a9565eb13847e930c01641e54223c17e3752d49651e41588f0cc
+
+## vet runner.go
+exit=0
+stdout=""
+stderr=""
+
+## gofmt -l runner.go
+exit=0
+output=""
+
+## build probe.go
+$ go build -trimpath -o <tmp> probe.go
+exit=0
+stdout=""
+stderr=""
+
+binary_bytes=4922368
+binary_sha256=7f4ae679a617695f82b019029df3b25c987b04ee597e3c414e991978052a9ace
+
+## vet probe.go
+exit=0
+stdout=""
+stderr=""
+
+## gofmt -l probe.go
+exit=0
+output=""
+
+## source LF-normalized sha256 (compile-time pins)
+probe.go=d4d83af0ebb78dc564e8ecafbfe611dff9c1155c2b1496a06960d3792efda022
+runner.go=5d519cb8d08198a6dbb05a5a11fc204167867c1300e00113c1205dcee61f4432
+
+## pinned constants in runner.go
+reviewedProbeSourceSHA256 = "d4d83af0ebb78dc564e8ecafbfe611dff9c1155c2b1496a06960d3792efda022"
+reviewedProbeBinarySHA256 = "7f4ae679a617695f82b019029df3b25c987b04ee597e3c414e991978052a9ace"
+
+
+## 修订后（回应 runner strong 档复核）
+## toolchain
+go version go1.27.1 windows/amd64
+## runner.go
+build exit=0 stderr=""
+binary_sha256=1e5a9882f740e810cba9a3c7c80b025aa5c6742056b0503a51967ca4b62b5194
+vet exit=0 stderr=""
+gofmt -l output=""
+## probe.go
+build exit=0 stderr=""
+binary_sha256=7f4ae679a617695f82b019029df3b25c987b04ee597e3c414e991978052a9ace
+vet exit=0 stderr=""
+gofmt -l output=""
+## source LF sha256
+probe.go=d4d83af0ebb78dc564e8ecafbfe611dff9c1155c2b1496a06960d3792efda022
+runner.go=63635117ee965c9e29eef198ebfdb89a98951210e1d9a7d12fe4ecdb22d17701
+## pins
+reviewedProbeSourceSHA256 = "d4d83af0ebb78dc564e8ecafbfe611dff9c1155c2b1496a06960d3792efda022"
+reviewedProbeBinarySHA256 = "7f4ae679a617695f82b019029df3b25c987b04ee597e3c414e991978052a9ace"
+
+
+## 第 4 轮修订后（SDDL 修正 + 模板预验）
+## runner.go
+build exit=0 binary_sha256=827e1c44d7a38aa55be394d8ad22cd98e0f65cec19794a1fb6b750acd4cd288e
+vet exit=0
+gofmt -l=""
+## probe.go
+build exit=0 binary_sha256=7f4ae679a617695f82b019029df3b25c987b04ee597e3c414e991978052a9ace
+vet exit=0
+gofmt -l=""
+## source LF sha256
+probe.go=d4d83af0ebb78dc564e8ecafbfe611dff9c1155c2b1496a06960d3792efda022
+runner.go=ea1dfb9f546c67dbf5f0a1f33d69736602a17aecb769e509507306e61a6611ac
+## pins
+reviewedProbeSourceSHA256 = "d4d83af0ebb78dc564e8ecafbfe611dff9c1155c2b1496a06960d3792efda022"
+reviewedProbeBinarySHA256 = "7f4ae679a617695f82b019029df3b25c987b04ee597e3c414e991978052a9ace"
+
+
+## 第 5 轮复核 E1-E3 + F1/F2 修订后
+## runner.go
+build exit=0 stderr=""
+binary_sha256=06c78c5d5db870c7817caedaf29974eab47e1fd84cc4fd70d9e4bc79937b46ce
+vet exit=0 stderr=""
+gofmt -l=""
+## probe.go
+build exit=0 stderr=""
+binary_sha256=7f4ae679a617695f82b019029df3b25c987b04ee597e3c414e991978052a9ace
+vet exit=0 stderr=""
+gofmt -l=""
+## source LF sha256
+probe.go=d4d83af0ebb78dc564e8ecafbfe611dff9c1155c2b1496a06960d3792efda022
+runner.go=9100192d3cf12dfd22c9e9a17a6c49721182fb617a93529d4c020f61fe2b34cb
+## pins
+reviewedProbeSourceSHA256 = "d4d83af0ebb78dc564e8ecafbfe611dff9c1155c2b1496a06960d3792efda022"
+reviewedProbeBinarySHA256 = "7f4ae679a617695f82b019029df3b25c987b04ee597e3c414e991978052a9ace"

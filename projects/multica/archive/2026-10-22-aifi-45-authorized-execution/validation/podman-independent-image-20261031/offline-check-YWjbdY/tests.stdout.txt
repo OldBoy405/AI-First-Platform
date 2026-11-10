@@ -1,0 +1,28 @@
+✔ registry to CDN drops bearer and destroys redirect response (2.3977ms)
+✔ same-registry redirect retains bearer (0.7904ms)
+✔ subsequent CDN redirect still has no bearer (0.7835ms)
+✔ reject redirect: unknown host (0.8222ms)
+✔ reject redirect: CDN suffix spoof (0.7266ms)
+✔ reject redirect: registry suffix spoof (0.6262ms)
+✔ reject redirect: plaintext HTTP (1.1972ms)
+✔ reject redirect: userinfo (0.6992ms)
+✔ reject redirect: non-default port (0.7217ms)
+✔ reject redirect: fragment (0.7108ms)
+✔ reject invalid starting host before opening a response (0.7317ms)
+✔ reject return from CDN to registry before opening it (0.7211ms)
+✔ content length accepts absent and canonical safe integers (0.7049ms)
+✔ content length rejects malformed and unsafe values (0.8664ms)
+✔ descriptor accepts valid digest and size boundaries (0.7369ms)
+✔ descriptor rejects malformed digests and media types (0.7544ms)
+✔ descriptor rejects invalid sizes and external content fields (0.8047ms)
+✔ short writes complete with correct offsets and bytes (0.7358ms)
+✔ zero-progress write fails rather than looping (0.6695ms)
+✔ empty write does not call handle (0.6479ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 86.9958

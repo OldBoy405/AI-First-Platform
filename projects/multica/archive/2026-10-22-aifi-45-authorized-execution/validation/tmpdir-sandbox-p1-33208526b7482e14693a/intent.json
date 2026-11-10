@@ -1,0 +1,112 @@
+{
+  "at": "2026-10-30T03:20:45.812Z",
+  "evidenceDirectory": "C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform\\projects\\multica\\changes\\2026-10-22-aifi-45-authorized-execution\\validation\\tmpdir-sandbox-p1-33208526b7482e14693a",
+  "nonce": "8871bdc64ef539ea999c668f9c26a412",
+  "name": "multica-tmpdir-sbx-p1-8871bdc64ef539ea999c668f9c26a412",
+  "image": "e8d5705906235eb37953eaba46b51a273440dc3552fe1c8b5f2d743cfcb31350",
+  "connection": "podman-machine-default",
+  "podmanExe": "C:/Program Files/RedHat/Podman/podman.exe",
+  "tarExe": "C:/Program Files/Git/usr/bin/tar.exe",
+  "runnerHash": "673ac45c194d0770bb5be0288e48f74b511bc8930e42d1db985dae1bb5faa66f",
+  "probeHash": "89371c7a9e03a3d32bfbbd7e1c5335646ffa5125fff95911742248ee1c012d96",
+  "namesHash": "79177235ee107d5ebaa32a0143389de3e60cb48139d9b6e39280d565e365cd6a",
+  "tarHash": "e5a38a81dcebf37fa7a9de4bb26c0d695f8001d71f5a4279b0756e7247d7be1a",
+  "manifestHash": "7fac386da3a4ab1f73e7e71b09da6c62beac175496806631c04a2fd96e22ca08",
+  "podmanVersion": "{\"Client\":{\"APIVersion\":\"5.8.3\",\"Version\":\"5.8.3\",\"GoVersion\":\"go1.26.4\",\"GitCommit\":\"93dbfd0d86ee57f8f91801f61ce57dd880a4725f\",\"BuiltTime\":\"Sat Jun 13 01:52:07 2026\",\"Built\":1781286727,\"OsArch\":\"windows/amd64\",\"Os\":\"windows\"},\"Server\":{\"APIVersion\":\"5.8.5\",\"Version\":\"5.8.5\",\"GoVersion\":\"go1.26.4-X:nodwarf5\",\"GitCommit\":\"6d48b6f12f793176f3f6bc808b5a440984c14eb2\",\"BuiltTime\":\"Wed Jul  8 08:00:00 2026\",\"Built\":1783468800,\"OsArch\":\"linux/amd64\",\"Os\":\"linux\"}}\n",
+  "tarVersion": "tar (GNU tar) 1.35",
+  "createArgs": [
+    "create",
+    "-i",
+    "--name",
+    "multica-tmpdir-sbx-p1-8871bdc64ef539ea999c668f9c26a412",
+    "--label",
+    "io.multica.sbx.purpose=tmpdir-path-p1",
+    "--label",
+    "io.multica.sbx.nonce=8871bdc64ef539ea999c668f9c26a412",
+    "--pull=never",
+    "--image-volume=ignore",
+    "--read-only",
+    "--read-only-tmpfs=false",
+    "--tmpfs",
+    "/work:rw,exec,nosuid,nodev,size=16m,mode=1777",
+    "--tmpfs",
+    "/tmp:rw,exec,nosuid,nodev,size=8m,mode=1777",
+    "--network=none",
+    "--http-proxy=false",
+    "--cap-drop=all",
+    "--security-opt=no-new-privileges",
+    "--user",
+    "65534:65534",
+    "--pids-limit=64",
+    "--memory=128m",
+    "--memory-swap=128m",
+    "--cpus=0.5",
+    "--ulimit",
+    "nofile=256:256",
+    "--restart=no",
+    "--timeout=60",
+    "--stop-timeout=2",
+    "--unsetenv-all",
+    "--env",
+    "PATH=/usr/bin:/bin",
+    "--env",
+    "HOME=/work/home",
+    "--env",
+    "LANG=C",
+    "--env",
+    "SBX_MANIFEST_SHA256=7fac386da3a4ab1f73e7e71b09da6c62beac175496806631c04a2fd96e22ca08",
+    "--entrypoint=/bin/bash",
+    "e8d5705906235eb37953eaba46b51a273440dc3552fe1c8b5f2d743cfcb31350",
+    "--noprofile",
+    "--norc",
+    "-c",
+    "set -eu; mkdir /work/in; tar -x --no-same-owner --no-same-permissions -C /work/in -f -; cd /work/in; [ \"$(sha256sum manifest.sha256 | cut -d\" \" -f1)\" = \"$SBX_MANIFEST_SHA256\" ]; sha256sum -c --strict --quiet manifest.sha256; exec /bin/bash --noprofile --norc probe.sh"
+  ],
+  "pre": {
+    "containers": [
+      "01050b2499847e72b06cb5d84b8ec2945dc75045842544a65caf550ef573a762",
+      "666bfec52ac3c3d13b43389891f50c4105833198eab7e4167b76f014a774e823",
+      "96211305e92b4ec8a686b5f774cac92e960b86ce14acaa40eb8c1201e993e01f"
+    ],
+    "volumes": [
+      "aifi45-m10-repair-e4o5e8vm-data",
+      "cd438d9ebc61745283267cad9f71df6e309510beef5aa0c1a15653fd42962dd1",
+      "d940d2d5057537a3661cfa0032429b21e1f797c12da1df712e1a02c5c20d73ea",
+      "fd88f63510d031749990f09207de55598bad8b6afe6690f72c24120686374467",
+      "multica-backend-uploads",
+      "pgdata"
+    ],
+    "networks": [
+      "multica-internal",
+      "podman"
+    ],
+    "images": [
+      "25f79da741706c2c2305652549633440a09d38686f82d0e7c2a5a45e136e0e02",
+      "5075a351671c4c4dc3c8f7a4759b599c090ca120cd9a423337e0166df68d8140",
+      "6f4bd2df71ccc2065070b6986f015b576af51379be2f6bb3cc140047c36a3eb5",
+      "bbb1b87917a93f45f5903ea13c20f751af36c0a606662bb1f9aa3bd42743c55b",
+      "e8d5705906235eb37953eaba46b51a273440dc3552fe1c8b5f2d743cfcb31350",
+      "f439434f9e6739ae2f80313f260d2084bb89feaf7220a06a5398e6b90797e2e3"
+    ]
+  },
+  "protectedBefore": [
+    {
+      "id": "01050b2499847e72b06cb5d84b8ec2945dc75045842544a65caf550ef573a762",
+      "status": "running",
+      "started": "2026-10-26 11:51:45.29051959 +0800 CST",
+      "restartCount": 0
+    },
+    {
+      "id": "666bfec52ac3c3d13b43389891f50c4105833198eab7e4167b76f014a774e823",
+      "status": "running",
+      "started": "2026-10-26 11:51:45.096635482 +0800 CST",
+      "restartCount": 0
+    },
+    {
+      "id": "96211305e92b4ec8a686b5f774cac92e960b86ce14acaa40eb8c1201e993e01f",
+      "status": "running",
+      "started": "2026-10-26 11:51:44.903213273 +0800 CST",
+      "restartCount": 0
+    }
+  ]
+}

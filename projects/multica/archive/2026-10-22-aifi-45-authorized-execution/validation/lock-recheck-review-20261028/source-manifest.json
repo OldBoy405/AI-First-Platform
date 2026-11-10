@@ -1,0 +1,23 @@
+{
+  "recorded_at": "2026-10-28T08:38:00Z",
+  "base_manifest": "../replay-review-20261028/source-manifest.json",
+  "base_manifest_sha256": "78a1d5879e11c958f0ba301f12a9086b14b41868c3b13e53baf6a482731b0f42",
+  "rule": "Check every path in base manifest against its base hash unless overridden below; add review files below. Checkout bytes, not normalized content. This is an uncommitted snapshot, not a frozen commit.",
+  "multica_overrides": {
+    "CUSTOM.md": "7dec5b144f5d4f5249586fea009c135d497c1aec98d739ff577071ca88725bea",
+    "server/internal/governance/execution_control_store_state.go": "f437aa2e2a29e26e0744d68d6da226101de6af618043e3a3d14bddafe86d684f",
+    "server/internal/governance/execution_control_command_attestation_test.go": "d8f55f7993e21d598d7cd6fb5a50848b33301820bea104509b9341ccca95bb36"
+  },
+  "change_overrides": {
+    "canonical/specs/agent/authorized-runner.yaml": "045de50358499771ca3d00ffd3b105f709ca0adf9a3e61bbba64643fb3b2376d",
+    "canonical/specs/code/authorized-runner.yaml": "e864ae28baf7cfadae07ef001bc96d6ba4d2e09771b2e6d6b88a62e25d6f80f3",
+    "test-plan.md": "0ecefc148ff89f42401ede7d3806f401477aeb52a45763ba8c4d388b04fa5b5b",
+    "validation/tc-coverage-20261025T153000Z.md": "c38a15ed97a1a160498ce9b54c60e74cf09e89478b785e7bcf65cf3d05949a2c"
+  },
+  "change_additions": {
+    "validation/replay-review-20261028/REVIEW-STRONG.md": "a053ae42a1ab367b39d4a8c57268f6d383c34c269746e394a94c93952fe8411a",
+    "validation/replay-review-20261028/REVIEW-BALANCED.md": "21e77eedb50c0db8edf81688fdf3d6bbd13e1699ae3446a4d724d1561afd414d",
+    "validation/replay-review-20261028/REVIEW-RECEIPTS.json": "acae5d2cd5517e964800df637c40dc7d9182cb0a0691b885af7583cbb241493c",
+    "validation/replay-review-20261028/CLOSEOUT.md": "36fb1390b85ad5132b60816d0ac52de57168c4c9979aec5943afb88b60732bc2"
+  }
+}
