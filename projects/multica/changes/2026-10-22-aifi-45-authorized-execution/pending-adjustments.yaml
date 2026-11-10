@@ -6,6 +6,8 @@ meta:
   created: '2026-10-22'
   updated: '2026-11-05'
 
+  carrier_rule: >-
+    在途 change 的 carrier 只能指向仍在推进的载体；已交付归档的 change 只作为 note 里的合同来源出现，不再承载未完成项。
 adjustments:
   - id: ADJ-AIFI45-M001
     original_design_ref: 'design.md：真实认证来源、verified workspace/project绑定、dispatch attestation；tools同change的ADJ-AIFI45-001/002'
@@ -106,6 +108,30 @@ adjustments:
       若 M008 正式修订时决定给 SC-MG-017 换编号或并入 TC-MG-016，请按各自合同流程改，不要双写。
     source: 2026-10-29-trusted-verdict-outcome-binding 归档后复核
 
+  - id: ADJ-AIFI45-M005-EVID
+    severity: major
+    status: unresolved
+    resolved: false
+    recorded_at: '2026-11-10T17:20:00'
+    what: >-
+      M005 的剩余 half（task→command 权威关联 + 单写入者 ingress）在有真实可弃用 PostgreSQL 后做了两轮核查，
+      结论是当前无法实施，且原因不是代码而是缺失的信任根。证据三条：
+      (1) 不存在任务与 control command 的权威关联，runner enqueue 路径不产生签名命令；
+      (2) 生产侧不存在 command 签发者与 pinned control manifest（LoadControlTrustManifest 无生产调用方）；
+      (3) settlement 只存 mapping/digest，不含签名 v2 verdict 字节，从 settlement 反推等于伪造 T 的授权。
+    tried: >-
+      曾实现「准入须绑定被准入任务同 lineage 的直接前驱命令」的读侧规则。用 scripts/aifi45-db 建的一次性实例
+      跑 DB 门控用例后，该规则与既有流程结构性冲突：TestTC_RUN_003 只有一条 seq=1 命令、无 seq=0 前驱，
+      却要求可信提交后放行 1 次 dispatch，规则下变成 0。另有三条 admission gate 用例停在 WAIT_TRUSTED_T_COMMIT。
+    verdict: >-
+      撤回该读侧规则，G1 的粒度回到 CR 级 + v2 语义/冻结命令校验。TaskID 仅作为预留接缝保留、不参与判定，
+      注释已如实写明。真实可弃用实例与 DB 证据链本身是available且通过的（runner 自测 11/11、
+      governance 26/29、daemon 12/12），失败只来自这条被撤回的规则。
+    next: >-
+      M005 解锁顺序：先有 command 签发者与 pinned manifest（上线就绪清单项，责任人按三角色/发起人规则解析），
+      再定 task→command 单一权威点，最后才谈前驱绑定。在那之前准入保持失败关闭。
+    source: 2026-11-10 本机 podman 一次性实例 + scripts/aifi45-db
+
 # 2026-11-09：只做分类与归属，不改变任何 resolved。
 # class 取值固定为四类：
 #   accepted_residual          = 用户已接受为记录在案的残余风险，随 Gate3 材料原样携带；
@@ -128,7 +154,7 @@ dispositions_20261109:
   - id: ADJ-AIFI45-M003
     class: successor_change
     owner: Ray
-    carrier: 2026-10-29-trusted-verdict-outcome-binding
+    carrier: 2026-10-22-aifi-45-authorized-execution（本 change）
     closure: 通道生产入口接通，并完成 TC-RUN-002/003/006/010 的真实入口验收
     note: 通道已交付归档不等于本 major 关闭；不得用通道 label 双计。
   - id: ADJ-AIFI45-M004
@@ -140,7 +166,7 @@ dispositions_20261109:
   - id: ADJ-AIFI45-M005
     class: successor_change
     owner: multica
-    carrier: 2026-10-29-trusted-verdict-outcome-binding
+    carrier: 2026-10-22-aifi-45-authorized-execution（本 change）
     closure: verdict ingest 有生产调用方（ControlWorker.ApplyTx）；settlement/consumption 的 request_id 统一为真实 task id；ADMITTED 在生产链路可得
     note: 2026-11-09 已交付生产组合注入（main.go）+ 决策器真实 DB 阶梯（validation/2026-11-09-admission-composition/）；2026-10-29 用户授权本 change 做真实生产入口接线，剩余 ingest 边随载体。 2026-11-10 静态核查：可信 T 通道在 multica 侧无任何生产生产者——ApplyControlCommandTx / SettleControlCommandTx / ControlWorker.ApplyTx 的非测试调用方均为 0，ControlWorker 仅在测试中构造，因此生产准入稳定停在 WAIT_TRUSTED_T_COMMIT，属预期而非缺陷。身份前提（settlement.request_id = consumption.task_id）现有代码不可证：ControlCommandInput 无 task id 字段、RequestID 由调用方给。结论：本条只能在 2026-10-29-trusted-verdict-outcome-binding 的 BUILD 阶段闭合；四点约束（单一写者、身份二选一、游标原子、重放幂等）已写入该 change 的 design.md。
   - id: ADJ-AIFI45-M006
@@ -158,15 +184,15 @@ dispositions_20261109:
   - id: ADJ-AIFI45-M008
     class: deviation_approved_pending_evidence
     owner: multica
-    carrier: 2026-10-29-trusted-verdict-outcome-binding（multica 与 tools 两侧 Gate 2 均于 2026-11-10 批准：fingerprint 87c0029f… / c666c429…）
+    carrier: 2026-10-22-aifi-45-authorized-execution（本 change）
     closure: 获批方案在真实恢复入口按 attempt 绑定可信效果或 no-effect，并保持原 settlement/mapping；若允许自动再尝试，另须证明旧执行者不会迟到并完成双端验证（条款已批准；实现与证据未完成）
-    note: 草案未生效；现行条款仍把“目标状态已达成”当成“本次 attempt 的 effect 已证实”。2026-11-09：T `planRecovery` 的 `intent + at_prev` 已由 `push` 改为 `halt/uncertain`；后续未提交改动中，`unknown + at_prev + settled_no_effect` 也不再接受调用方自报 `noEffectAttested` 放行下一 attempt。定向测试 21/21；helper 无生产调用方。用户后续以“采纳你的建议”选择现有 10-29 change 承载 M/T SPEC 配对评审；不代表 proposal 修订完成或 Gate 批准。
+    note: 合同由 2026-10-29-trusted-verdict-outcome-binding 于 2026-11-10 交付归档（multica 与 tools 两侧 Gate 2 均于 2026-11-10 批准：fingerprint 87c0029f… / c666c429…）。草案未生效；现行条款仍把“目标状态已达成”当成“本次 attempt 的 effect 已证实”。2026-11-09：T `planRecovery` 的 `intent + at_prev` 已由 `push` 改为 `halt/uncertain`；后续未提交改动中，`unknown + at_prev + settled_no_effect` 也不再接受调用方自报 `noEffectAttested` 放行下一 attempt。定向测试 21/21；helper 无生产调用方。用户后续以“采纳你的建议”选择现有 10-29 change 承载 M/T SPEC 配对评审；不代表 proposal 修订完成或 Gate 批准。
   - id: ADJ-AIFI45-M009
     class: deviation_approved_pending_evidence
     owner: multica
-    carrier: 2026-10-29-trusted-verdict-outcome-binding（multica 侧 Gate 2 于 2026-11-10 批准，input_fingerprint 87c0029f…）
+    carrier: 2026-10-22-aifi-45-authorized-execution（本 change）
     closure: 新旧 dedupe key 升级兼容策略仍需裁定；客户端真实链路（真实载荷与跨会话/OS 投递）证据待补；其余关闭条件已达成
-    note: 2026-11-10 状态按实际达成更新：偏离已随载体 2026-10-29-trusted-verdict-outcome-binding 的 Gate 2 获批（含 M009 去重身份条款），生产调用方已接通（waiting_approval/failed 分支），隔离 PostgreSQL 上 NTF-001～007、owners 投影与角色 owner 路由用例全部 PASS（全包 396 PASS/11 FAIL，失败项为环境前提）；仍未完成：新旧 dedupe key 升级兼容裁定、客户端真实载荷与跨会话/OS 投递证据。未加 inbox_item.details 键与 partial UNIQUE；现有 notice 唯一键可覆盖新键冲突。2026-11-09 原记录称三类事实已接线；独立复核发现真实授权与交付路径、授权者身份、证据变化及通知写前故障恢复仍未闭合，详见 validation/notice-dedupe-and-wiring-20261109/README.md。后续未提交消费端补丁对真实载荷形状和同 QueryClient 重投提供局部覆盖（48/48），不证明真实 OS 或跨会话投递。旧记录依据零已知生产调用方提出不建双读/回填；这不是数据库普查，若发现旧行须单独裁定。用户后续以“采纳你的建议”同意：若没有既有权威责任来源，由真实生产者在既有业务记录中明确保存责任及证据快照，不从 starter 或 owner 猜测；具体字段、权力依据和可恢复性仍须核实，不新增数据库结构。用户再次以“认可”同意分别由真实授权请求、实际恢复和实际交付生产者提供事实与责任；同一人可兼任但各项权限须有依据，未指定具体人员。用户也认可把退出、登录/自动恢复和草稿读取纳入清理边界；随后对建议以“同意”确认：退出作用于同一浏览器或桌面 profile 的所有窗口，不强关窗口、不自动删除归属不明的草稿；其他窗口可能仍写入时阻止新会话，提示先保存或备份后再处理。这不是删除其他用户数据或清空整个 profile 的授权。实现、多窗口与跨重启验证尚未闭合，详见 validation/notice-dedupe-and-wiring-20261109/README.md。M009 条款草案见 validation/m009-notice-identity-amendment-draft-20261109.md，未批准。
+    note: 合同由 2026-10-29-trusted-verdict-outcome-binding 于 2026-11-10 交付归档（multica 侧 Gate 2 于 2026-11-10 批准，input_fingerprint 87c0029f…）。2026-11-10 状态按实际达成更新：偏离已随载体 2026-10-29-trusted-verdict-outcome-binding 的 Gate 2 获批（含 M009 去重身份条款），生产调用方已接通（waiting_approval/failed 分支），隔离 PostgreSQL 上 NTF-001～007、owners 投影与角色 owner 路由用例全部 PASS（全包 396 PASS/11 FAIL，失败项为环境前提）；仍未完成：新旧 dedupe key 升级兼容裁定、客户端真实载荷与跨会话/OS 投递证据。未加 inbox_item.details 键与 partial UNIQUE；现有 notice 唯一键可覆盖新键冲突。2026-11-09 原记录称三类事实已接线；独立复核发现真实授权与交付路径、授权者身份、证据变化及通知写前故障恢复仍未闭合，详见 validation/notice-dedupe-and-wiring-20261109/README.md。后续未提交消费端补丁对真实载荷形状和同 QueryClient 重投提供局部覆盖（48/48），不证明真实 OS 或跨会话投递。旧记录依据零已知生产调用方提出不建双读/回填；这不是数据库普查，若发现旧行须单独裁定。用户后续以“采纳你的建议”同意：若没有既有权威责任来源，由真实生产者在既有业务记录中明确保存责任及证据快照，不从 starter 或 owner 猜测；具体字段、权力依据和可恢复性仍须核实，不新增数据库结构。用户再次以“认可”同意分别由真实授权请求、实际恢复和实际交付生产者提供事实与责任；同一人可兼任但各项权限须有依据，未指定具体人员。用户也认可把退出、登录/自动恢复和草稿读取纳入清理边界；随后对建议以“同意”确认：退出作用于同一浏览器或桌面 profile 的所有窗口，不强关窗口、不自动删除归属不明的草稿；其他窗口可能仍写入时阻止新会话，提示先保存或备份后再处理。这不是删除其他用户数据或清空整个 profile 的授权。实现、多窗口与跨重启验证尚未闭合，详见 validation/notice-dedupe-and-wiring-20261109/README.md。M009 条款草案见 validation/m009-notice-identity-amendment-draft-20261109.md，未批准。
   - id: ADJ-AIFI45-M010
     class: successor_change
     owner: multica

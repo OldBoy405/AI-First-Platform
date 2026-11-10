@@ -1,5 +1,51 @@
 # AIFI-45 multica — BUILD任务清单
 
+## 2026-11-09 收口（当前；下方“当前实施索引”的未完成表述以此节为准）
+
+- T 侧两个 change 已归档：`2026-10-22-aifi-45-authorized-execution`（11-08，gate 94 文件 / 2217 例 / 0 失败）与 `2026-11-08-aifi45-trust-anchor-chain`（11-09，97 / 2227 / 0 失败 / 0 hold）。本仓只承载 M 侧协作责任。
+- M 侧 seam 已提交 `d427d2b68`（CUSTOM #305/#306）：绑定签发只接受六个控制写 operation；daemon 启动门四条件，缺失/撤销/漂移/relay 失败均 fail-closed。`go build ./...`、`go vet ./internal/daemon ./internal/governance` 均为 0；daemon `TestExecutionBinding` PASS。governance `TestExecutionBindingIssue` 需一次性 DB，本轮未重跑，其 11-08 PASS 见归档证据。
+- 本 change 的 `.stdd.yaml` 自 2026-10-22 未更新（`build: in_progress`、无 Gate3 回执）。这是**记录未推进**，不是阶段未开始；不手改投影，也不据旧快照宣称已闭。
+- 10 条 ADJ 仍 `resolved:false`；2026-11-09 已逐条补 `dispositions_20261109`（类别 / 载体 / 关闭条件），此后不再逐轮重估。
+- 2026-11-09 已完成的收口动作：①`main.go` 生产组合注入默认拒绝的 `AdmissionDecider`，并在 `router.go` 加启动门（HEAD 原注释把生产注入留给 Gate3；本次注入 + 强制非空一起落地）；②一次性 PG 上 `TestAdmission` 7 例有通过输出，覆盖 `HEAD_UNAVAILABLE`/`HEAD_REJECTED`/`WAIT_CONSUMPTION`/`WAIT_TRUSTED_T_COMMIT`/`ADMITTED` 阶梯；因无外网隔离未证实，不作为合规验收证据。详见 [admission-composition](validation/2026-11-09-admission-composition/README.md)。
+- D2/D3/D4 已落记录：不补 per-verb 平台级正例；`2026-10-30-aifi-45-evidence-delivery-integrity` 并入 `2026-10-29-trusted-verdict-outcome-binding`；外部 owner 不变（平台/Ray/部署）。
+- 2026-11-09：`planRecovery` 的 `intent+at_prev` 不再返回 push；通知曾按 approval-required / run-failed / delivered 三类建立候选调用及 pending 启动恢复，未加列/索引/迁移。后续复核发现三类真实生产事实、可信接收者与写前故障恢复均未闭合，不能称为三类通知已完成；`planRecovery` 也尚无生产调用方。详见 [notice-dedupe-and-wiring](validation/notice-dedupe-and-wiring-20261109/README.md)。
+- 仍未完成：`M008` 双端 SPEC 配对修订已由 `2026-10-29-trusted-verdict-outcome-binding` 交付归档（两侧 Gate 2 于 2026-11-10 批准），剩余真实恢复入口证据在本 change；`M009` 已移回本 change（[validation/m009-attention-routing-spec-20261110.md](validation/m009-attention-routing-spec-20261110.md)），去重偏离仍待评审；NTF-001～007 真实事实与 DB 故障恢复未验收，消费端对真实载荷形状的模拟重投已有局部验证，不能代替真实链路验收（均在本 change）；`M005` 剩余 ingest 边由本 change 承接，关闭判据见 [pending-adjustments.yaml](pending-adjustments.yaml) 的 `ADJ-AIFI45-M005`；`M006/M007/M010` 已登记 [BACKLOG-M-RESIDUALS.md](BACKLOG-M-RESIDUALS.md) 待开载体；`TC-EVD-008` legacy（占位 change，负责人 Ray）；Windows 身份（部署前置）；M003 记录的四条 RUN TC 真实入口。
+- 2026-11-10 通知收件人改按 CR 自身角色：`crsync.applyOwners` 投影 crctl 注册/移交事件里的 `owners.requirement|development|test`（非 `user_id` 值拒绝写入）；授权类通知→requirement owner，维护类→development owner，无 owner 时才退回启动该 run 的任务身份，仍无收件人不发送。Inbox 通知附带 `cr.shell_issue_id` 指向该 CR 的对话。两项 DB 测试已写入但未运行（隔离 PostgreSQL 未获批）；Go build/vet/gofmt 通过，不等于行为已验证。
+- 2026-11-10 非名片库复跑：按探针建立 `aifi45_tmp_*`/`aifi45_role_*` + `AIFI45_DISPOSABLE` 注释并设 `AIFI45_TOOLS_ROOT`，干净库单次全量 **403 PASS / 5 FAIL**；NTF 全绿。5 项失败为既有前提（channel 迁移用例要求 648 之前空库；WP4 两例为同 request 前序结算导致返回原映射的 fixture 隔离问题），与本轮改动无关，未扩大范围去改造测试夹具。
+- 2026-11-10 真实隔离 PG 回执：本地 `pgvector/pgvector:pg17` 起一次性容器（`--pull=never`、tmpfs 数据、仅 127.0.0.1），`go run ./cmd/migrate up` 到 648 后 `go test ./internal/governance -count=1` 得 **396 PASS / 11 FAIL**；NTF-001～007 与全部通知/owner 路由用例 PASS。11 项失败为环境前提（`aifi45_tmp_*` 非名片库 + `AIFI45_DISPOSABLE` 注释、`AIFI45_TOOLS_ROOT`、WP4 跨用例残留），非本轮改动；容器按 ID 删除并回读为 0。未证明无外网（`NetworkMode=pasta`，DNS 可解析）。
+- 2026-11-10 新入口「每选择一个一次性数据库」已落地并实测（`scripts/aifi45-disposable/{provision,run-selection}.mjs` + `selections.json`）：7 个选择里 5 个全绿（notice 9、channel-up 19、channel-down 22、channel-reapply 15、channel-protocol 46），WP4 两个选择仍因测试夹具缺陷失败；容器按 ID 删除、label 回读 0。RUN-001 核查后**未实现**：真实路由只能证明授权签发，跨阶段复用仍读 `tech-design` 审批、verdict ingest 未接线，整条 TC 无法真实通过，不新增缩水测试。CP-RUN-004/005/007/008/009 已按用户 2026-11-10 的明确批准写入 canonical（action 改指 governance/daemon 入口，description 标注部分覆盖与残留；harness 前置从已禁用的旧 runner 改为 `scripts/aifi45-disposable/run-selection.mjs`），YAML 解析通过、24 条 CP 结构不变。**五条命令已在恢复运行时后补跑并全绿**（各自一次性库、0 skip）：CP-RUN-004 `PASS 1`、005 `PASS 1`、007 `PASS 6`、008 `PASS 18`、009 `PASS 3`；期间修复了一个真实夹具缺陷（enqueuer 固定 runtime 常量 → 改取执行 Agent 自身 runtime）。四条部分覆盖的残留未消除，仍不得计为整 TC 通过。详见 [cp-run-revision-proposal-20261110](validation/cp-run-revision-proposal-20261110.md)。
+- 2026-11-10 WP4 两条失败已定为夹具缺陷并修复（重复创建同一 CR；`EffectRef` 字节比较受 JSONB 规范化影响，非 VerdictID 差异），断言强度未降。整组 7 个选择在各自一次性库上单次复跑全绿：notice 9、channel-up 19、channel-down 22、channel-reapply 15、channel-protocol 46、wp4-original 1、wp4-concurrent 1，0 skip；容器按 ID 删除、label 回读 0。
+- 不做：原生锁、`inbox` partial UNIQUE、第二本送达账、逐文件 hash 隔离（依据见已归档裁决）。
+
+## 当前实施索引：已采纳最小方案（服务端/daemon；实现未完成）
+
+按用户要求核查层层加码并继续实施；用户明确“已经存在的历史CR不迁移处理”，不回填或迁移历史 CR 实例，活动请求的权限、未知结果和现有数据保护仍独立核定。采用[唯一活动方案](../../../tools/changes/2026-10-22-aifi-45-authorized-execution/validation/root-cause-convergence-implementation-plan.md) §3.1/§3.4/§3.5 的既定路线；四项 P1/P2 在其 E2–E3 / WP1 原位收敛为“一条提交路径、一套恢复判据、一处清理责任”。本节只索引 M 的协作责任，不另建 Git 提交权威、index 恢复系统、平行计划、Gate 或验收分母；不同信任接收者保留必要核验，但不按异常名追加机制。已确认方向不重新询问，真正新增合同冲突和无法自行核定的资源身份/负责人按原流程集中处理。
+
+- [ ] **E0/E1＋D1：** 核既有 daemon/Go 承载受保护 T 的实际写入链，复用 `execenv/envlock_windows.go` / `envlock_unix.go` 原语；稳定锁对象、句柄/子进程寿命和所有 writer 同域后才替代旧接管，不照搬为 GC 设置的删除共享，也不新增锁服务。
+- [ ] **E2→E3 / WP1 协作：** daemon/Go 配合核定 CR 独立落点、writer 和锁生命周期；T 共同事务入口固定原候选并给出已提交/可信未提交/未知，M 仍按自身信任边界核验可信 T 提交与连续性，不从消息、helper 清理或用户 index 推断已提交。未知不授予新派发，原请求按既有责任对账；不复制 Git journal 或预算规则。approve/resign 迁移不改变人工审批/可信授权。具体步骤及 V2 五组验收只在活动方案维护，本次 Git 收敛不预设新增 M schema。
+- [ ] **WP2：** 当前授权、前驱/request/fence 与独立历史锚接入真实准入；T 保持唯一业务裁决，M 不复制预算算法。不足可记录但不执行，消费拒绝先于放宽签发；外部锚的真实设施/负责人尚须核定，不能用同回滚域文件代替。
+- [ ] **WP3/WP4：** 启动与撤销排序，实际启动未知不重派；按已采纳动作表保留第六次合法交付、非权威查询故障正例和有界收尾。唯一结算入口绑定原 reservation/attempt，接真实效果 producer；并发同义重放返回原结果，未知不重推、不改 settled。
+- [ ] **E4/WP5：** `crsync` 单调投影与 T 旧批补投配对；优先既有 `projected_commit`＋可信前驱/祖先关系及条件推进，所有写游标入口同规，不以时间戳排序。audit 首次落盘固定事件身份，优先评估 `activity_log.id`；同义重放/异义冲突/相同内容独立事件分别验证，不猜测回填旧事件。
+- [ ] **WP6：** 真实业务事务调用已有 `DeliverNoticeTx`，复用 646 迁移的 notice 唯一键；提交后广播、失败重投同 Inbox ID。默认不再加 Inbox partial UNIQUE，须配对处理原 design 要求、旧键兼容和既定通知白名单，不用 fixture 代替生产 caller。
+- [ ] **E5/WP7：** 仅实际必要 schema 差异走正式迁移，使用获准新 disposable PG/自建旧行验证升级、down/reapply、锁/CAS与并发；正式动作须先排除对历史 CR 实例的迁移、回填或改写，无法排除时停止；与 T 同快照完成原 TC、CUSTOM、B4/C6 和原生 STDD Gate3 前置，不运行旧库/旧 runner/HOLD。
+
+本轮只原位修订活动方案及两仓文档，未修改 M 产品/CUSTOM/迁移、`.stdd.yaml` 或 pending-adjustments，未跑 DB/产品测试、未 commit/push/部署，Gate3 仍 NO-GO；方向采纳不代表合同生效、资源就绪或实施完成。历史 `[x]` 与证据原文保留；下方“当前”、旧索引前提及未决数量均只代表该增量时点，后续派工以活动方案为准。
+
+## 2026-11-04 B 类落地（服务端；历史快照）
+
+- [x] 决定已由用户采纳并记录（tools 变更目录 `validation/b-decisions-adopted-20261104.md`）：D1 复用既有 daemon/service + Agent 低权限；D2 一个外部历史锚；D4 启动事实以 M 侧为权威、未知不重派；D5 单一结算入口、未知不重推；逐批 checkpoint。**记录不等于合同生效**。
+- [x] WP2-1 共享分类器：新增 `server/internal/governance/authorizationscope/sufficiency.go`，区分非法 / 有效但不足 / 充分，并附 Go 与跨仓共用的固定字节向量。`go build ./...` exit 0，`go vet ./...` exit 0，`TestSufficiencyGoldenBytes` 16/16 PASS。**签发与 head 仍拒绝不足授权**：Node `repair-admit` 独立解码并写额度账本，真实消费拒绝未证前不放宽。
+- [x] `CUSTOM.md` 按现有结构登记（#293）。
+- [ ] WP4-2／4-3 **完整配对与生产链未完成**：早期静态记录曾发现先读当前 HEAD、`ON CONFLICT DO NOTHING` 不比语义等问题，部分已由下述只读 mapping 与冲突比较切片修正；当前按 reservation 数量推 attempt、可信 `no_effect`/迟到排除和并发互斥等仍未证明。`SC-MG-015/016` 须先完成配对修订并获适用批准；历史静态记录见 `2026-10-29-trusted-verdict-outcome-binding/validation/aifi45-wp4-2-wp4-3-static-block.md`，不能把其旧源码观察当作当前结论。
+- [ ] 未运行 governance 包父级测试（`TestMain` 即使 `-run` 也连 DB）；DB 锁/CAS、并发重放、真实远端迟到执行、跨端兼容均未验证。
+- [x] WP4 可立即做的 5 个切片已实装（strong `Gobao/kimi-k3.1-pro:high`）：①`ReadMergeEffectMappingTx` 只读原 mapping（不看当前 HEAD、不授予发布权）；②结算零行/异义不再是静默成功（`ErrMergeEffectReservationGone` / `ErrControlSettlementConflict`，同义重放返回库存原 mapping）；③command 锁后重读 settlement 再判同义；④同一 lineage 存在任一未终结 reservation 即拒绝新开 attempt（unknown 不能靠换 digest 绕过）；⑤reader 收敛为一次冻结字节比较。实跑：`settlementguard_test` 9 顶层 + 16 子例 PASS（离屏、无 DB env）、`go build ./...` PASS、`go vet ./...` PASS、逐包 `go test -c` 98 包编译通过。`CUSTOM.md` 已登记 #294–#298。
+- [ ] 上述 5 片段的 DB 侧（并发 reserve/settlement、锁等待、JSONB 比较、撤销交错）与真实远端归属仍未验证；DB 测试仅编译未运行。完整 WP4-2/4-3 仍 BLOCK（`SC-MG-015/016` 未修订）。
+- [x] WP5 M 侧（strong `GB-JP/kimi-k3.1-pro:high`）：`crsync.go` 普通事件改为独立接收事务——唯一键 insert、evidence 补齐在 commit **之后**才 accepted；投影与 `processed_at` 失败只记日志并保留未处理记录，不再触发 daemon 重发（原语义把「接收端已持久化」和「业务投影完成」混成一个 ACK，且 insert 已提交但投影失败时返回 `INGEST_FAILED` 也掩盖了「已落盘未确认」）。`crevents.go` 收件顺序改为「**全部批次持久化 ACK → `writeFileAtomic` 持久化 cursor → 删除 accepted 源文件**」，任一阶段失败都不进入后续阶段（原实现逐批 `applyAck` 就删文件、最后才写 cursor，后批失败时前批文件已删而 cursor 未推进）。ACK 校验改为按批内 id 出现次数比对，覆盖漏项、越批、超额重复与同 `commit:<sha>` 多事件。marshal 前失败明确 `not sent`，其余保持 `unconfirmed/send outcome unknown`。新增离线回归：后批失败保前批与 cursor、cursor 写失败保留源文件、删文件失败发生在 cursor 持久化之后、ACK 完整性、not-sent/unconfirmed。`CUSTOM.md` 登记 **#299 / M20**。
+- [x] 实跑（`GOPROXY=off GOSUMDB=off GOTOOLCHAIN=local GOFLAGS=-mod=readonly`）：daemon 定向 **15 顶层 + 13 子例 PASS，0 FAIL 0 SKIP**；`go build ./...`、`go vet ./...` 均 exit 0；`internal/daemon` 与 `internal/governance` 的 `go test -c` 编译通过。
+- [ ] 未验证：接收事务在真实 PostgreSQL 上的 commit/rollback 与唯一键冲突、并发重送、真实 daemon 联调与 ACK 丢失、断电恢复、跨实例 ordering；`TestMDev002` 等 DB 用例仅编译未运行。通知与业务投影语义本轮未改动，也未验收。
+
+> 下方按时间保留各增量当时的完成/未完成状态和计数；小节标题中的“当前”指该增量时点，不能覆盖后续实现。[历史覆盖台账](validation/tc-coverage-20261025T153000Z.md)的 **44/49 不可靠**：EVD-007 重复计数，RUN-008/009 被漏列。[对账](validation/tc-ledger-reconciliation-20261029.md)分别给出历史 CP 名称去重和 EVD-008 完整能力两种重算口径，均不是当前源码的验收数；EVD-008、RUN-001/003/006/007/008/009 仍缺合格完整证据，其他条目亦未全部重新核验。Gate3 仍 NO-GO，M001–M005 仍未关闭。
+
 ## 2026-10-25 执行绑定签发（服务端；当前）
 
 - [x] 新表 `cr_execution_binding_issue`（append-only，拒绝 UPDATE/DELETE 的触发器，唯一键，无 FK）+ 迁移 `643`。
@@ -90,8 +136,8 @@
 ## 1. 可信授权与隔离环境（P0）
 
 - [x] 1.1 核实并创建仅本change的隔离Postgres/loopback端口，验证DB身份后才运行迁移和集成；不触碰共享multica实例。环境前置完成：专用55432、既有迁移exit=0、1条已有基线真实PASS/0 SKIP；不是业务TC/切片验收。
-- [ ] 1.2 与T AUTH-010联合定义原始bytes签名golden，先失败后最小实现，保留stage v1。
-- [ ] 1.3 RUN-001～003/010真实认证入口、来源映射、新grant传输与ACK/消费分离（依赖T完整授权）。
+- [ ] 1.2 与T AUTH-010联合定义原始bytes签名golden，先失败后最小实现，保留stage v1。Go initial/head 对 acceptance/delivery 空数组的非空校验与 T canonical、wire 存在冲突；用户已确认允许签名记录不足但不得执行，先证明真实消费 fail-closed 才放开签发；M ADJ-AIFI45-M007 与 T 对应 major 已登记且未解决；合同对齐、修订生命周期、具体方案决定和 C6 仍待落实，详见 [T 跨语言预检与用户确认](../../../tools/changes/2026-10-22-aifi-45-authorized-execution/validation/authorization-approved-at-20261101/CROSS-LANGUAGE-PREFLIGHT.md)。
+- [ ] 1.3 RUN-001～003/010真实认证入口、来源映射、新grant传输与ACK/消费分离（依赖T完整授权）。[settlement 授权链缺失静态分析](validation/settlement-head-chain-static-20261102.md)确认局部未知被当未撤销，但未证明生产越权或修改代码；legacy、合法收尾与未知效果须分别设计。
   - 主线程真实Auth同Mount/handler/Go→Node选择59/59、protocol全包58/58、daemon Root选择8/8，均0skip/exit0。pinned manifest接线进行中；当前head/撤销与私有daemon凭据隔离未闭环，不代证整TC/wake/TaskService。
 
 ## 2. 永久逻辑根键、实际四阶段恢复（P0）
@@ -103,9 +149,9 @@
 
 ## 3. 最小通知与故障恢复（P0/P1）
 
-- [ ] 3.1 NTF-001～004三类主动通知与业务/维护分流（依赖2）。
-- [ ] 3.2 NTF-005～007同Inbox身份、pending/delivered、并发/崩溃恢复与客户端去重（依赖3.1）。
-  - 主线程core目标25/25、desktop gate18/18，0skip/exit0；client异步失败/超时/late/mute/focus回修已有真实RED。服务器/mobile/GC/重启/OS展示未验收，不标整TC或切片done。
+- [ ] 3.1 NTF-001～004三类主动通知与业务/维护分流（依赖2）。命令分隔符守卫仅完成[局部独立复核](../../../../validation/notice-render-fields-20261029/REVIEW-COMMAND-LINES-V2.md)，正文伪行、兼容性及真实生产者未闭合，不算整项验收。
+- [ ] 3.2 NTF-005～007同Inbox身份、pending/delivered、并发/崩溃恢复与客户端去重（依赖3.1）。[X6 静态复核](validation/notice-x6-static-followup-20261029.md)：可信收件人、幂等身份与恢复链路未闭合；关联但非通知的 [Composio 事务前风险](validation/composio-pretransaction-static-20261029.md)待独立确定范围、事实绑定与验证。
+  - 主线程core目标25/25、desktop gate18/18，0skip/exit0；client异步失败/超时/late/mute/focus回修已有真实RED。confirmed scope 的[失败/重试内存组件观察](validation/desktop-confirmed-recovery-20261103/README.md)为 5/5（含1项假时钟自检）；[监听注册失败回修](validation/desktop-confirmed-listener-20261103/README.md)有 2 项 RED→GREEN，另复跑上述夹具及 scope 共 11/11。不证明真实 OS 或重启；服务器/mobile/GC/重启/OS展示未验收，不标整TC或切片done。
 
 ## 4. 验证（P0）
 
@@ -113,3 +159,21 @@
 - [ ] 4.2 隔离真实route→T CLI→wake→TaskService及数据库三路径，前端重复Inbox ID验证。
 - [ ] 4.3 全部相关测试/生成/格式/类型/独立评审与14类失败检查；报告真实耗时和未验证边界。
 - [ ] 4.4 Gate3等待用户，不自行commit/push、迁移在途CR或生产部署。
+
+### 2026-11-04 续做第七轮（WP6 通知最小切片 + 委托分层）
+
+- [x] **WP6-1 同事务投递原语**：`execution_notice.go` 拆出 `DeliverNoticeTx(ctx, tx, ev)`（在调用方事务内写 notice+inbox，不广播不标记）与 `BroadcastNotice`（提交后广播再置 delivered），`deliverNoticeWith` 降为独立路径包装。顺序刻意：静默检查先于任何接线依赖；内容校验先于接线校验（否则写不通的事件会报 "broadcast is required"）。
+- [x] **WP6-2 接收者进入通知身份**：原 `NoticeDedupeKey` 不含接收者，同一事实换人时可能被旧键去重吞掉；现将规范化接收者并入新键，投递期拒绝空接收者。组件测试覆盖键的区分与归一化，尚不证明 TC-NTF-006 的真实投递。
+- [x] **未按 design §5 加 inbox partial UNIQUE 索引**：目前采用 notice 唯一键与调用方同事务写入的候选方向，已登记 `ADJ-AIFI45-M009`（`resolved:false`，9 条全 false）；是否足以替代设计索引仍须评审及真实数据库并发验证。旧键不含接收者，升级后的新键重放可能再创建一条 notice/Inbox，兼容策略尚未确定。
+- [x] 证据：定向变异 RED 一条（`RECIPIENT_CHANGE_SWALLOWED`，恢复后 SHA 逐字节一致）→ GREEN `noticeguard_test` 顶层 14 / 子例 661 / exit 0，`go build ./...` 与 `go vet ./...` 干净。见 [wp6-notice-tx-20261104](validation/wp6-notice-tx-20261104/README.md)。
+- [x] 过程留痕：三次红都是**自己重构顺序错误**（静默检查被后置、空接收者检查抢先、内容守卫被接线检查抢先），已修；未改断言迁就实现。
+- [ ] 仍未完成：`DeliverNotice`/`DeliverNoticeTx` **生产调用数为 0**（无业务事实接线，接线点属产品语义，未猜）；DB 级 TC-NTF-001～007、客户端重投、真实广播故障恢复未运行；不保证桌面弹窗/已读。
+- [ ] 委托记录：锁释放清点（balanced `OpenAIPersonal/gpt-6.1-terra:high`）与两仓改动复核（strong `GB-JP/kimi-k3.1-pro:high`）均为只读子代理；requested 模型可核，**后端实际 effort 无法自证**。
+
+### 2026-11-04 续做第八轮（WP6 独立复核后的修正）
+
+- [x] strong 复核（`GB-JP/kimi-k3.1-pro:high`，只读）结论 **BLOCK**，三条全部为真并已修：①广播改用解析后的 canonical `wsID.String()`（原样传事件字符串会让非规范 UUID 改变广播入参）；②撤销 `BuildNotice` 的空接收者硬失败——渲染与投递是两件事，4 处只渲染的 DB 用例 fixture 本就不带接收者；改为键内区分 + 投递期拒绝，错误优先级回到原样；③键内按 `uuid.Parse(...).String()` 归一化，避免 32hex 与连字符写法把同一人拆成两条 Inbox。
+- [x] 修正后 GREEN：`noticeguard_test` 顶层 14 / 子例 661 / exit 0，`go build ./...`、`go vet ./...` 干净；定向变异仍能精确打红 `RECIPIENT_CHANGE_SWALLOWED`。
+- [x] 复核同时确认：`DeliverNoticeTx` 确不提交/不广播/不标记；`merge-effects.mjs` 未见从 expected 推导成功、attestation 旁路或 confirmed 正常路径被误 halt（A 项 PASS_WITH_NOTES）。
+- [ ] 复核指出的 A 项观察未处理：`merge-effects.test.mjs` 只钉了 `true` 与缺省，未钉 `false/1/"true"`；若日后放宽成 truthy 放行不会变红。留作待办，不因此再加断言层。
+- [ ] 仍未完成同前：旧键与新键重放兼容方案未确定、生产调用方为 0、DB 级 TC 与客户端重投未跑、不保证弹窗与已读。
