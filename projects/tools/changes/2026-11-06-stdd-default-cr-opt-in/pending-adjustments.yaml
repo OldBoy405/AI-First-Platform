@@ -1,0 +1,43 @@
+# STDD 设计偏离的人工审阅记录；记录不等于批准或执行。
+meta:
+  change_id: 2026-11-06-stdd-default-cr-opt-in
+  created: '2026-11-06'
+  updated: '2026-11-10'
+
+adjustments:
+  - id: ADJ-001
+    original_design_ref: 'design.md D5 的全局 APPEND_SYSTEM.md 第 2 行；CP-PG-003；TC-PG-003；修改前基线'
+    actual_change: >-
+      Gate 2 确认后写前核对发现全局文件第 2 行已由设计时的
+      “冲突时的优先级：用户明确要求 > 安全与数据完整性 > 正确性 > 简洁。”
+      变为“优先满足用户明确需求；涉及不可逆操作、数据丢失或敏感信息时，先明确影响并取得必要确认。正确性优先于简洁。”
+      用户原话“确认采用这段合并措辞，启用长程模式”已明确同意将第 2 行改为：
+      “安全与数据完整性是底线；在此前提下优先满足用户明确要求。涉及不可逆操作、数据丢失或敏感信息时，先明确影响并取得必要确认。正确性优先于简洁。”
+      随后用户明确要求“暂用普通模式继续”。本 change 当时已按确认措辞修改该行，独立只读替代检查通过，并以写前 LF 哈希核对其余内容不变；长程模式未启用。当时锁定的 CP-PG-003 仍断言旧措辞且实际失败；这是修订前的历史结果，不报告为当时通过，也不保留为当前并行预期。
+    reason: >-
+      实施前 LF 规范化 SHA-256 与已确认设计基线不一致；直接写入原定措辞会覆盖较新的用户内容，且可能删除当前关于不可逆操作、数据丢失和敏感信息的确认要求。
+    impact_scope: >-
+      仅涉及全局 APPEND_SYSTEM.md 第 2 行及 prompt-governance 的 D5、CP-PG-003、TC-PG-003 与 spec 预期；其他文件仍以已确认范围为准。保留原 CP 失败和合并措辞检查通过的历史事实；2026-11-10 经用户授权原位调整设计与规格后，只保留批准合并措辞这一当前预期，不把历史替代检查冒充修订后 CP 的执行证据。
+    severity: major
+    affected_capabilities:
+      - prompt-governance
+    decision: >-
+      用户于 2026-11-10 采纳 C4：将 D5、Canonical CP-PG-003、TC-PG-003 和 spec 原位统一为已批准的合并措辞，取消并行替代检查预期；保留本条历史，不修改全局文件。
+      设计层偏离已通过本次调整处理。2026-11-10 用户原话「为 AIFI-45 和 stdd-default-cr-opt-in 重新确认 Gate 2」，以修订后的 D5/D6/D7、CP-PG-003、TC-PG-003 与 spec 为受审输入；本条即该确认的人工记录。
+      原 Gate 2（2026-11-06T11:44:36，confirmed_by=dialog）在 CLI 中为 historical/unfingerprinted，`gate approve --reapprove` 对无输入指纹的历史 Gate 幂等返回、不能重签；未手改 `.stdd.yaml`，不声称 CLI 已重签。
+      resolved 保持 false，表示 BUILD 仍被 STDD 工具缺口阻断，不表示设计预期仍有两套或确认缺失。
+    resolved: false
+
+  - id: ADJ-002
+    original_design_ref: 'design.md 风险表：大量 dirty 与用户 AGENTS 修改仅通过 Edit 精准替换'
+    actual_change: >-
+      重组知识库根 AGENTS.md 时使用了完整文件写入，而非设计约定的 Edit 精准替换；这是实施方式偏离，不是扩大业务文件范围。
+      写前重读的 LF SHA-256 为 74ae121374ae682307ea69b0845ee13b77decb5a64fdc4327ff97078ad7ee2c0。写后用 HEAD 原文加当前账本条目的文字及其原编号 7 重建写前内容，得到同一哈希，证明写前已有的该条正文逐字保留且写前其他内容与 HEAD 一致；编号标记已为统一列表格式改为项目符号。不能仅凭该比较排除写前检查与写入之间的并发修改。
+    reason: >-
+      根入口整体重组时选择了完整重写，但忽略了本 change 在 dirty 风险表中额外要求只使用 Edit；后续现有文件修改均按精准 Edit 执行。
+    impact_scope: >-
+      仅为知识库 AGENTS.md 的编辑方法和并发覆盖风险；受保护的账本条款已按写前哈希核验，其他既有 dirty 不属于本次重写。保留记录供人工审阅，不将哈希检查描述为并发锁。
+    severity: minor
+    affected_capabilities:
+      - prompt-governance
+    resolved: false

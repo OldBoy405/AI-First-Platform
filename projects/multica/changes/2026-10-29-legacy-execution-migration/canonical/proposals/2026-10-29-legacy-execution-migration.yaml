@@ -1,0 +1,41 @@
+# 占位 proposal；不代表需求、方案、迁移或 Gate 已确认。
+meta:
+  change_id: "2026-10-29-legacy-execution-migration"
+  title: "Legacy 执行授权与历史消耗迁移"
+  created: "2026-10-29T11:50:45.005544"
+  status: draft
+  version: "2.9"
+
+why:
+  problem: |
+    AIFI-45 的 TC-EVD-008 要求在历史事实可核实时，显式迁移并保留授权及历史消耗、计算剩余额度。当前 D8=A：本期不迁移 legacy 业务历史；迁移判定函数没有生产入口，正向验收未完成。现独立登记后续工作，避免以拒绝路径或已有通道组件的完成替代该验收。
+  motivation: |
+    负责人 Ray。满足下列任一条件时启动本变更：D8 改为迁移 legacy 业务历史；准备对包含在途旧授权或旧消耗历史的 workspace 生产启用；拟为 evaluateExplicitMigration 接生产入口。
+
+what_changes:
+  - id: C1
+    type: new
+    description: "未来在独立需求和架构审查后，制定并验证 legacy 授权与历史消耗的显式迁移方案；本登记不实施迁移。"
+
+capabilities:
+  new:
+    - name: "legacy-execution-migration"
+      description: "在可信事实充分且迁移获批准的前提下，保留原授权和已核实消耗并计算剩余额度。"
+  modified: []
+
+constraints:
+  - "本文件仅登记占位；当前不推进 SPEC/BUILD，不执行迁移，不接生产入口。"
+  - "必须明确并核实授权 lineage、历史消耗、未决任务三类可信事实源及其完整性。"
+  - "未知、不完整或相互矛盾的历史事实应冻结或拒绝，不能通过替换 lineage、grant 或 store 掩盖缺口。"
+  - "D8=A 继续有效；2026-11-10 用户范围裁定：TC-EVD-008 移出 AIFI-45 本期分母，记 OUT_OF_SCOPE（不是 PASS），其迁移正例由本变更在启动条件发生时验收；占位不自动通过任何验收。"
+
+stakeholders:
+  - "Ray（负责人）"
+
+non_goals:
+  - "本占位不创建生产迁移入口，不移动或重写旧授权、旧消耗与在途任务。"
+  - "本占位不替代 AIFI-45 的运行准入接线及独立验收。"
+
+success_criteria:
+  - "未来变更须以可复核事实证明历史授权和消耗得以保留、剩余额度计算正确，并覆盖未知和冲突事实的拒绝。"
+  - "未来变更须经实际评审及批准后实施；验证与部署证据由该变更各自记录。"

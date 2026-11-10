@@ -1,0 +1,92 @@
+# Canonical proposal；批准事实以本 change 的 STDD Gate 审计为准。
+meta:
+  change_id: "2026-11-06-stdd-default-cr-opt-in"
+  title: "工作区入口精简与 STDD／CR 流程隔离"
+  created: "2026-11-06T11:07:30+08:00"
+  status: confirmed
+
+why:
+  problem: >-
+    知识库根 AGENTS.md 仍将 tools CR 设为默认入口并无条件要求读取整套 CR 资料，
+    与当前使用 STDD 的实际情况不一致；部分 CR 说明已落后于现行契约，
+    可能导致额外上下文开销、流程误路由、错误操作工作区或审批语义混淆。
+  motivation: >-
+    以通用底线常驻、STDD 默认、CR 按变更显式启用的入口组织方式，
+    降低常驻负担，同时保留既有 CR 的完整生命周期与人工授权要求。
+
+what_changes:
+  - id: C1
+    type: modified
+    description: "精简知识库根 AGENTS.md：保留安全、数据完整性与工程底线，按任务和流程加载专项资料。"
+  - id: C2
+    type: new
+    description: "明确按变更选择流程：新开发默认 STDD，已有变更沿用原流程，只读问题不注册，归属不明时先确认。"
+  - id: C3
+    type: modified
+    description: "修正根入口中的 CR 注册、审批、操作工作区、解析回退和固定计数等陈旧说明，引用现行权威契约而非复制路由表。"
+  - id: C4
+    type: modified
+    description: "更新根 README.md、dir-graph.yaml 的相关说明，必要时只限定 CONTEXT.md 的适用范围；明确 STDD 三根、业务仓绑定及技能加载入口。"
+  - id: C5
+    type: modified
+    description: "分离 ../tools/AGENTS.md 的工具包维护工程约束与执行 CR 的流程约束，不以使用 tools 能力等同于进入 CR。"
+  - id: C6
+    type: modified
+    description: "仅修正全局 ~/.pi/agent/APPEND_SYSTEM.md 的优先级歧义：安全与数据完整性是底线，其内优先满足用户要求。"
+
+capabilities:
+  new:
+    - name: workflow-routing
+      description: "按变更身份、用户选择和目标项目绑定决定应加载的工作流；不执行状态映射、任务双写或审批互认。"
+  modified:
+    - name: prompt-governance
+      description: "常驻底线与流程资料分层，修正陈旧 CR 说明，保留数据、授权、工程规范与既有改动。"
+
+constraints:
+  - "复用 tools 的现有 STDD 绑定；RESOURCE_ROOT=../stdd，PROJECT_ROOT=../tools，记录根为本仓库 projects/tools。"
+  - "执行模式为用户明确确认的 standard；初步复杂度评分约 6/17，评分不构成任何额外执行或操作授权。"
+  - "不手改既有 CR／STDD 状态、审批、索引、任务或其他执行账本；无合法写入口时停止相应写入。"
+  - "不覆盖既有发布基线，不搬迁或改写历史变更；不修改状态机、gates、pipeline、权限矩阵或在途变更。"
+  - "根 AGENTS.md 已有用户未提交修改，必须保留其账本／人工设计记录区分、扩展字段保护与记录不等于批准等保证。"
+  - "仅在明确范围内定点修改；不清理、覆盖、暂存或提交其他工作区改动。"
+  - "本次 Gate 1 不是 Gate 2、BUILD、真实 CR 审批或 Git 提交、推送、部署授权。"
+
+stakeholders:
+  - "工作区维护者与变更提出者。"
+  - "从知识库、tools 或 multica 入口承接 STDD／CR 工作的 Agent。"
+
+risk_areas:
+  - capability: workflow-routing
+    risk: "默认值改变后误接管旧 CR，或从无绑定目录进入 STDD 旧模式。"
+    mitigation: "已有变更优先于默认值；先确认目标业务仓与绑定；身份不明不猜测、不双写。"
+  - capability: prompt-governance
+    risk: "精简时丢失审批隔离、账本写入、累积基线或用户已有修改的保护。"
+    mitigation: "逐项保留共同底线，引用原生权威入口；使用场景检查、定点差异和基线核对。"
+
+non_goals:
+  - "不新增双流程引擎、统一状态机、状态映射、跨流程任务双写或审批互认。"
+  - "不实现或部署在途 AIFI-45 等其他变更，不扩展实际鉴权或 CR Runtime 行为。"
+  - "不修改第三方 Skill、Pi 扩展、工具注册、STDD CLI 或其他项目配置。"
+  - "不自动为旧变更迁移流程，不为 STDD 编造 CR 身份。"
+
+critical:
+  is_critical: false
+  risk_assessment:
+    safety_critical: false
+    financial: false
+    cross_system: false
+
+anchoring:
+  level: L2
+  reference_changes: []
+  anchor_implementations: []
+
+success_criteria:
+  - "新开发未指定流程时入口明确选 STDD；用户显式选择 CR 时仍指向合法注册与流程入口。"
+  - "已有 CR 沿用原合同，不因默认 STDD 被转换；流程切换须单独确认，不映射或伪造完成状态。"
+  - "只读分析不自动注册 STDD 或 CR；归属、绑定或授权不明时不执行受控写入。"
+  - "STDD Gate 与 CR 审批不互认；流程确认不自动授权 Git 提交、推送或部署。"
+  - "根入口不再无条件要求读取完整 CR 手册，并能说明 STDD 的实际绑定及按阶段读取路径。"
+  - "陈旧的注册、审批、工作位置、回退和固定计数说明已修正，权威状态、参数和权限不在根入口复刻。"
+  - "既有受控账本、发布基线、历史产物和用户未提交改动保持完整；全局文件仅修正已确认的优先级歧义。"
+  - "提供可复核的静态检查与场景评审结果，并明确它们不证明运行时路由、实际部署或最终请求 token 占比。"

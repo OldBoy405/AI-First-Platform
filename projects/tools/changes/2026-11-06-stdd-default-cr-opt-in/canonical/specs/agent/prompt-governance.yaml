@@ -1,0 +1,65 @@
+# prompt-governance 的 Canonical CP；静态 action 不代替人工语义与差异评审。
+meta:
+  task_id: prompt-governance
+  change_id: "2026-11-06-stdd-default-cr-opt-in"
+  created: "2026-11-06T03:13:23.482Z"
+  task_type: documentation
+  system: "知识库、tools 和全局偏好的分层提示词约束"
+  preconditions:
+    - "仅在 Gate 2 及 BUILD 模式确认后执行；cwd 为 tools 业务根。"
+    - "先检查 design.md 的当前工作副本基线；发现后来修改时先重读核对，不覆盖。"
+    - "全局文件只改优先级一行，不改模型、工具、权限或其他偏好。"
+
+steps:
+  - id: CP-PG-001
+    description: >-
+      REQ-PG-001 / SC-PG-001 / TC-PG-001；confidence=high；evidence=proposal C1、C5、success_criteria[4]。
+      GIVEN 分析、STDD 开发或 tools 包维护；WHEN 读取常驻入口；THEN SHALL 按任务和阶段加载；AND 不无条件读取完整 CR 手册，根入口字符量低于 6287，tools 工程约束不被流程选择豁免。README 应给出当前 STDD、projects 记录和业务绑定入口；CONTEXT 仅新增适用范围说明，原领域定义不变。
+    action: >-
+      ../stdd/.venv/Scripts/python.exe -B -c "from pathlib import Path; s=Path('../AI First Platform/AGENTS.md').read_text(encoding='utf-8').replace('\r\n','\n'); t=Path('AGENTS.md').read_text(encoding='utf-8').replace('\r\n','\n'); assert '按任务和阶段加载' in s and len(s)<6287 and 'CR' in t; print('CP-PG-001 STATIC PASS')"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "CP-PG-001 STATIC PASS"
+
+  - id: CP-PG-002
+    description: >-
+      REQ-PG-002 / SC-PG-002 / TC-PG-002；confidence=high；evidence=proposal C3、C4、success_criteria[5]。
+      GIVEN 阅读 CR 兼容说明；WHEN 定位注册、审批和操作位置；THEN SHALL 引用现行权威合同；AND 不出现旧注册／TTY 绝对限制、固定状态计数或本地回退副本。graph 顶部回退注释必须修正为 workspace.tools_package_path 的权威入口；仅允许约定注释及 description 变化，其余业务配置不变。
+    action: >-
+      ../stdd/.venv/Scripts/python.exe -B -c "from pathlib import Path; s=Path('../AI First Platform/AGENTS.md').read_text(encoding='utf-8').replace('\r\n','\n'); assert 'CR 操作根以 crctl 返回为准' in s and '不是 crctl 的子命令' not in s and '非 TTY 调用一律拒绝' not in s; print('CP-PG-002 STATIC PASS')"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "CP-PG-002 STATIC PASS"
+
+  - id: CP-PG-003
+    description: >-
+      REQ-PG-003 / SC-PG-003 / TC-PG-003；confidence=high；evidence=proposal C6、constraints、success_criteria[6]。
+      GIVEN 入口精简和全局优先级修正；WHEN 比较实施前工作副本及实施差异；THEN SHALL 保留账本合法入口及入库、可测试的版本化脚本要求，禁止会话内现写脚本处理执行账本，归属不明的其他 YAML 按执行账本处理。可精准编辑的例外仅为记录设计偏离、供人工审阅的 STDD pending-adjustments.yaml；保留原记录／扩展字段，依据原话或可靠来源区分方向、具体决定、执行授权和未决事项，核对所属 change、YAML 解析与类型、必需字段、编号唯一、冲突标记与差异；失败或归属不明时停止，resolved 如实。AND 保留行尾／解析硬失败、累积基线、CUSTOM、权限／唯一入口／CAS／审计／门禁及独立授权；全局第 2 行唯一预期为“安全与数据完整性是底线；在此前提下优先满足用户明确要求。涉及不可逆操作、数据丢失或敏感信息时，先明确影响并取得必要确认。正确性优先于简洁。”；其他行与既有账本、历史、在途变更不因本次被改。
+    action: >-
+      ../stdd/.venv/Scripts/python.exe -B -c "from pathlib import Path; s=Path('../AI First Platform/AGENTS.md').read_text(encoding='utf-8').replace('\r\n','\n'); g=(Path.home()/'.pi/agent/APPEND_SYSTEM.md').read_text(encoding='utf-8').replace('\r\n','\n'); assert '记录不等于批准或执行' in s and '无合法入口时停止' in s; assert g.splitlines()[1]=='安全与数据完整性是底线；在此前提下优先满足用户明确要求。涉及不可逆操作、数据丢失或敏感信息时，先明确影响并取得必要确认。正确性优先于简洁。'; print('CP-PG-003 STATIC PASS')"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "CP-PG-003 STATIC PASS"
+
+  - id: CP-PG-004
+    description: >-
+      REQ-PG-004 / SC-PG-004 / TC-PG-004；confidence=high；evidence=proposal success_criteria[7]、non_goals。
+      GIVEN 静态条款、原生 lint、CP 人工视图和场景评审结果；WHEN 汇报验收；THEN SHALL 分别说明实际覆盖及未覆盖；AND 不把静态结果、configured 模型、人工视图或在途代码说成实际路由、CLI 自动验证、已部署或 token 比例实测。
+    action: >-
+      ../stdd/.venv/Scripts/python.exe -B -c "from pathlib import Path; s=Path('../AI First Platform/projects/tools/changes/2026-11-06-stdd-default-cr-opt-in/test-plan.md').read_text(encoding='utf-8').replace('\r\n','\n'); assert '静态检查不证明运行时路由' in s and '人工评审副本' in s and '未运行不等于通过' in s; print('CP-PG-004 STATIC PASS')"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "CP-PG-004 STATIC PASS"
+
+rollback:
+  steps:
+    - "失败只报告，不自动修改原生检查、权限或质量配置，不降级既有 CR 合同。"
+    - "经授权后仅逆向本次实际差异；不覆盖用户在 SPEC／BUILD 期间后来修改的内容。"

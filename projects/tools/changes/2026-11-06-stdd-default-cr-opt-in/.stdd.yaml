@@ -1,0 +1,34 @@
+change_id: 2026-11-06-stdd-default-cr-opt-in
+complexity_score: null
+current_phase: build
+design_adjustments:
+  count: 0
+last_modified: '2026-11-06T12:28:11'
+mode: standard
+phases:
+  build:
+    status: in_progress
+  deliver:
+    status: pending
+  spec:
+    confirmed_actor: ai
+    confirmed_at: '2026-11-06T11:44:36'
+    confirmed_by: dialog
+    confirmed_evidence: “确认 Gate 2，采用 A，普通模式
+    status: completed
+  understand:
+    confirmed_actor: ai
+    confirmed_at: '2026-11-06T11:08:58'
+    confirmed_by: dialog
+    confirmed_evidence: 确认 Gate 1，standard
+    status: completed
+resume_context: 用户选择普通模式。六个入口文案已实施；ADJ-001新句核对通过但原CP-PG-003失败，ADJ-002记录完整重写及并发风险。原CP静态9/10；quality全量因WSL/root/宿主隔离不明未运行。ci
+  check-failures exit1：原生TC覆盖0/10、缺coverage.json、切片无记录。详见test-report.md和phase-context.md。不得伪造证据、手改状态、批准Gate3或提交推送部署。
+score_confidence: null
+status: active
+task_type: documentation
+traceability:
+  spec_scenarios: 0
+  tc_cases: 0
+  test_functions: 0
+version: '3.0'

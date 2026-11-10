@@ -1,0 +1,90 @@
+# workflow-routing 的 Canonical CP；文件位置沿用 CLI 脚手架，避免手改受控索引。
+# action 仅验证条款存在，不证明运行时路由；语义场景另按 test-plan 评审。
+meta:
+  task_id: workflow-routing
+  change_id: "2026-11-06-stdd-default-cr-opt-in"
+  created: "2026-11-06T03:07:30.589Z"
+  task_type: documentation
+  system: "知识库工作区的 STDD 默认／CR 显式选择入口"
+  preconditions:
+    - "仅在 Gate 2 及 BUILD 执行模式确认后执行本组检查；本文件当前是待评审规格。"
+    - "cwd 为 tools 业务根；使用已核实的 ../stdd/.venv/Scripts/python.exe，不安装依赖。"
+    - "CP 与 TC 均只读，不调用 register、approve、advance、init、install 或其他流程写入口。"
+
+steps:
+  - id: CP-WFR-001
+    description: >-
+      REQ-WFR-001 / SC-WFR-001 / TC-WFR-001；confidence=high；evidence=proposal C2、success_criteria[2]。
+      GIVEN 请求仅分析或问答；WHEN 读取根入口；THEN SHALL 不创建 STDD change 或 CR；AND 仍遵守数据与权限底线。
+    action: >-
+      ../stdd/.venv/Scripts/python.exe -B -c "from pathlib import Path; s=Path('../AI First Platform/AGENTS.md').read_text(encoding='utf-8').replace('\r\n','\n'); assert '只读分析不创建变更' in s; print('CP-WFR-001 STATIC PASS')"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "CP-WFR-001 STATIC PASS"
+
+  - id: CP-WFR-002
+    description: >-
+      REQ-WFR-002 / SC-WFR-002 / TC-WFR-002；confidence=high；evidence=proposal C2、C4。
+      GIVEN 新开发变更且未指定流程；WHEN 选择入口；THEN SHALL 默认 STDD；AND 先定位目标业务仓、绑定、资源根与记录根，不假称尚未注册的 slash command 已可用。
+    action: >-
+      ../stdd/.venv/Scripts/python.exe -B -c "from pathlib import Path; s=Path('../AI First Platform/AGENTS.md').read_text(encoding='utf-8').replace('\r\n','\n'); assert '新开发变更默认使用 STDD' in s and '.stdd/binding.yaml' in s; print('CP-WFR-002 STATIC PASS')"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "CP-WFR-002 STATIC PASS"
+
+  - id: CP-WFR-003
+    description: >-
+      REQ-WFR-002 / SC-WFR-003 / TC-WFR-003；confidence=high；evidence=proposal C2、C3。
+      GIVEN 新变更明确选择 tools CR；WHEN 选择入口；THEN SHALL 加载现行 CR 合同并走合法注册；AND 不凭 STDD 默认值拒绝 CR 或手写账本。
+    action: >-
+      ../stdd/.venv/Scripts/python.exe -B -c "from pathlib import Path; s=Path('../AI First Platform/AGENTS.md').read_text(encoding='utf-8').replace('\r\n','\n'); assert '显式选择 tools CR' in s and 'requirement-register' in s; print('CP-WFR-003 STATIC PASS')"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "CP-WFR-003 STATIC PASS"
+
+  - id: CP-WFR-004
+    description: >-
+      REQ-WFR-003 / SC-WFR-004 / TC-WFR-004；confidence=high；evidence=proposal C2、constraints、success_criteria[1]。
+      GIVEN 已有可识别的 CR 或 STDD change；WHEN 默认值或新请求与原流程冲突；THEN SHALL 沿用原流程并暂停冲突操作；AND 切换需独立确认，不映射状态、不双写任务、不伪造完成。
+    action: >-
+      ../stdd/.venv/Scripts/python.exe -B -c "from pathlib import Path; s=Path('../AI First Platform/AGENTS.md').read_text(encoding='utf-8').replace('\r\n','\n'); assert '已有变更沿用原流程' in s and '不双写' in s; print('CP-WFR-004 STATIC PASS')"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "CP-WFR-004 STATIC PASS"
+
+  - id: CP-WFR-005
+    description: >-
+      REQ-WFR-004 / SC-WFR-005 / TC-WFR-005；confidence=high；evidence=proposal C4、risk_areas、success_criteria[2]。
+      GIVEN 目标业务仓、其绑定或变更归属无法确认；WHEN 请求进入 STDD；THEN SHALL 停止并询问；AND 不自动初始化、猜 sibling、回退旧模式或触碰其他在途变更。若仅知识库 cwd 无绑定但明确目标仓绑定有效，应先核实三根并从该业务根执行，而不是直接停止或回退。
+    action: >-
+      ../stdd/.venv/Scripts/python.exe -B -c "from pathlib import Path; s=Path('../AI First Platform/AGENTS.md').read_text(encoding='utf-8').replace('\r\n','\n'); assert '绑定或归属不明时停止并询问' in s; print('CP-WFR-005 STATIC PASS')"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "CP-WFR-005 STATIC PASS"
+
+  - id: CP-WFR-006
+    description: >-
+      REQ-WFR-005 / SC-WFR-006 / TC-WFR-006；confidence=high；evidence=proposal constraints、success_criteria[3]。
+      GIVEN 仅有 STDD Gate 或另一流程批准；WHEN 准备推进真实 CR、提交、推送或部署；THEN SHALL 独立核对相应合法授权；AND 两流程不互认审批，当前 Gate 1 不批准 Gate 2／BUILD。
+    action: >-
+      ../stdd/.venv/Scripts/python.exe -B -c "from pathlib import Path; s=Path('../AI First Platform/AGENTS.md').read_text(encoding='utf-8').replace('\r\n','\n'); assert 'STDD Gate 不替代 CR 审批' in s and '提交' in s and '部署' in s; print('CP-WFR-006 STATIC PASS')"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "CP-WFR-006 STATIC PASS"
+
+rollback:
+  steps:
+    - "检查失败时只报告，不自动恢复文件、状态或账本。"
+    - "若需撤销本次修改，先取得授权，再依据本 change 的实际差异定点逆向编辑；保留用户原有修改，禁止 reset／checkout／stash。"

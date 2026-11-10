@@ -1,0 +1,22 @@
+# agent_spec.yaml — Agent 验证规格（Canonical YAML）
+
+meta:
+  task_id: "TODO: 任务标识"
+  change_id: "2026-10-30-aifi-45-ci-disposable-db-supervisor"
+  created: "2026-10-30T10:15:07.406938"
+  task_type: code
+  system: "TODO: 目标系统描述"
+  preconditions:
+    - "TODO: 前置条件 1"
+
+steps:
+  - id: CP-1
+    description: "TODO: 检查点描述"
+    action: "TODO: 执行的操作"
+    assertions:
+      - type: exit_code
+        expected: 0
+
+rollback:
+  steps:
+    - "TODO: 回滚步骤（失败后由人工确认执行）"
