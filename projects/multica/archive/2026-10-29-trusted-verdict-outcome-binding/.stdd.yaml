@@ -1,0 +1,218 @@
+approval_receipts:
+- confirmed_actor: ai
+  confirmed_at: '2026-11-10T08:46:02'
+  confirmed_by: cli
+  confirmed_evidence: 用户 2026-11-10 明确授权『按这个顺序执行 Gate 2』，批准承接 AIFI-45 的 M008 配对修订（SC-MG-015/016）与
+    M009 通知身份条款；真实隔离 PostgreSQL 已有回执。
+  note: reapproved; prior input_fingerprint=87c0029f01502c279dbc4399df22d53f0e0a2a3b6a19fad31c5618c2c2d39d43
+  receipt_id: gate2-2026-11-10T08:46:02
+  recorded_at: '2026-11-10T14:39:35'
+  status: superseded
+- confirmed_actor: ai
+  confirmed_at: '2026-11-10T14:39:35'
+  confirmed_by: cli
+  confirmed_evidence: 用户 2026-11-10 采纳收窄方案（G1-G3/C1-C4/K1-K5）并要求『继续完成所有未完成的项』『启用长程模式』；据现状重记
+    Gate 2 输入绑定。
+  note: reapproved; prior input_fingerprint=30d8912a20707b3f62fde74e574e758c4f410d3490cdfeacecb27c4d8e04ebd8
+  receipt_id: gate2-2026-11-10T14:39:35
+  recorded_at: '2026-11-10T16:04:31'
+  status: superseded
+change_id: 2026-10-29-trusted-verdict-outcome-binding
+complexity_score: null
+current_phase: deliver
+design_adjustments:
+  count: 3
+last_modified: '2026-11-10T16:21:01.833985'
+long_range:
+  enabled: true
+  mode: full_auto
+  pre_auth_completed: true
+  pre_auth_evidence: 用户 2026-11-10 指令「启用长程模式」「继续完成 change:2026-10-29-trusted-verdict-outcome-binding
+    所有未完成的项」「中途非必要不要中断汇报」「不要扩大范围」「不要过度设计」。据此确认模板 A1–A3、B1–B7；A1 大偏离按用户「不扩大范围」要求降级暂停；C1（Gate
+    3）保留人工确认。
+  pre_auth_timestamp: '2026-11-10T14:39:17'
+mode: thorough
+phases:
+  build:
+    confirmed_actor: ai
+    confirmed_at: '2026-11-10T16:20:58'
+    confirmed_by: cli
+    confirmed_evidence: 确认 Gate 3
+    input_fingerprint: f5caa2a0324dc7f0ff65f5105f5e80df4f50775c4600b002e732fe481961c1c7
+    input_manifest:
+    - change_id: 2026-10-29-trusted-verdict-outcome-binding
+      child_id: null
+      kind: projection
+      logical_path: .stdd.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: dc8fe475f8731ca33ef90b2d8a1de1d0f820ed5df885b78d7248774e83c060b0
+    - change_id: 2026-10-29-trusted-verdict-outcome-binding
+      child_id: null
+      kind: raw
+      logical_path: canonical/.canon-index.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 30a5009b862f6fad3751dbd55c767bfe65edc7430d971f2424e7a9188dbf06ae
+    - change_id: 2026-10-29-trusted-verdict-outcome-binding
+      child_id: null
+      kind: projection
+      logical_path: canonical/proposals/2026-10-29-trusted-verdict-outcome-binding.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 948ec5bcc7179d3c5b67eed236d2962455c3a57be58eb146d6b3664343a264cb
+    - change_id: 2026-10-29-trusted-verdict-outcome-binding
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/agent/2026-10-29-trusted-verdict-outcome-binding.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: fbdf34fbd72798ca7c7feef2f0fa032b895a3c33261d41e433b9258c9785f8b5
+    - change_id: 2026-10-29-trusted-verdict-outcome-binding
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/code/2026-10-29-trusted-verdict-outcome-binding.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 47fdd9aec010b290996d0a226be806307f5e3f1e84f229ee21b81e1ae6365a35
+    - change_id: 2026-10-29-trusted-verdict-outcome-binding
+      child_id: null
+      kind: raw
+      logical_path: design.md
+      project_id: multica
+      projection_version: v1
+      sha256: 70d45238b16f9e179aa88a734858bc63e31f468aeb1b2e6c1597d58502c6de2d
+    - change_id: 2026-10-29-trusted-verdict-outcome-binding
+      child_id: null
+      kind: projection
+      logical_path: proposal.md
+      project_id: multica
+      projection_version: v1
+      sha256: 20bb76f9d99b98b778ea54d8f1b3b0be0f5517cb097c935e599602759616a714
+    - change_id: 2026-10-29-trusted-verdict-outcome-binding
+      child_id: null
+      kind: raw
+      logical_path: specs/trusted-merge-gate/spec.md
+      project_id: multica
+      projection_version: v1
+      sha256: 947744c25b911ea541591a473ad023ef286321a7af4522342dc4f4a165b1c066
+    - change_id: 2026-10-29-trusted-verdict-outcome-binding
+      child_id: null
+      kind: raw
+      logical_path: specs/verdict-channel/spec.md
+      project_id: multica
+      projection_version: v1
+      sha256: e17ec9420fd984a5da3e992c345298ccbef87a781a393e82f2a883c0d65b3904
+    - change_id: 2026-10-29-trusted-verdict-outcome-binding
+      child_id: null
+      kind: raw
+      logical_path: test-plan.md
+      project_id: multica
+      projection_version: v1
+      sha256: 4dd5db215489a4222de9361190a5529b37f9f41818faeec21c9b98cab6089f1f
+    - change_id: 2026-10-29-trusted-verdict-outcome-binding
+      child_id: null
+      kind: raw
+      logical_path: test-report.md
+      project_id: multica
+      projection_version: v1
+      sha256: fb990d466f439916f798b74fd678360990b829a28e0f221b1c04b701cc7002d6
+    slices_completed:
+      S1:
+        new_tests: 2
+        status: done
+        tc_coverage: 1/1
+        verified_at: '2026-11-10T16:08:00'
+      S2:
+        new_tests: 3
+        status: done
+        tc_coverage: 4/4
+        verified_at: '2026-11-10T16:08:00'
+    status: completed
+  deliver:
+    status: in_progress
+  spec:
+    confirmed_actor: ai
+    confirmed_at: '2026-11-10T16:04:31'
+    confirmed_by: cli
+    confirmed_evidence: 确认Gate 2
+    input_fingerprint: e015c3e26d287ba1471d714962519a57e3390334551dc663351236765c245e77
+    input_manifest:
+    - change_id: 2026-10-29-trusted-verdict-outcome-binding
+      child_id: null
+      kind: raw
+      logical_path: canonical/.canon-index.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 30a5009b862f6fad3751dbd55c767bfe65edc7430d971f2424e7a9188dbf06ae
+    - change_id: 2026-10-29-trusted-verdict-outcome-binding
+      child_id: null
+      kind: projection
+      logical_path: canonical/proposals/2026-10-29-trusted-verdict-outcome-binding.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 948ec5bcc7179d3c5b67eed236d2962455c3a57be58eb146d6b3664343a264cb
+    - change_id: 2026-10-29-trusted-verdict-outcome-binding
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/agent/2026-10-29-trusted-verdict-outcome-binding.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: fbdf34fbd72798ca7c7feef2f0fa032b895a3c33261d41e433b9258c9785f8b5
+    - change_id: 2026-10-29-trusted-verdict-outcome-binding
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/code/2026-10-29-trusted-verdict-outcome-binding.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 47fdd9aec010b290996d0a226be806307f5e3f1e84f229ee21b81e1ae6365a35
+    - change_id: 2026-10-29-trusted-verdict-outcome-binding
+      child_id: null
+      kind: raw
+      logical_path: design.md
+      project_id: multica
+      projection_version: v1
+      sha256: 70d45238b16f9e179aa88a734858bc63e31f468aeb1b2e6c1597d58502c6de2d
+    - change_id: 2026-10-29-trusted-verdict-outcome-binding
+      child_id: null
+      kind: projection
+      logical_path: proposal.md
+      project_id: multica
+      projection_version: v1
+      sha256: 20bb76f9d99b98b778ea54d8f1b3b0be0f5517cb097c935e599602759616a714
+    - change_id: 2026-10-29-trusted-verdict-outcome-binding
+      child_id: null
+      kind: raw
+      logical_path: specs/trusted-merge-gate/spec.md
+      project_id: multica
+      projection_version: v1
+      sha256: 947744c25b911ea541591a473ad023ef286321a7af4522342dc4f4a165b1c066
+    - change_id: 2026-10-29-trusted-verdict-outcome-binding
+      child_id: null
+      kind: raw
+      logical_path: specs/verdict-channel/spec.md
+      project_id: multica
+      projection_version: v1
+      sha256: e17ec9420fd984a5da3e992c345298ccbef87a781a393e82f2a883c0d65b3904
+    - change_id: 2026-10-29-trusted-verdict-outcome-binding
+      child_id: null
+      kind: raw
+      logical_path: test-plan.md
+      project_id: multica
+      projection_version: v1
+      sha256: 4dd5db215489a4222de9361190a5529b37f9f41818faeec21c9b98cab6089f1f
+    status: completed
+  understand:
+    confirmed_actor: ai
+    confirmed_at: '2026-10-30T13:40:03'
+    confirmed_by: dialog
+    confirmed_evidence: 审阅确认
+    status: completed
+score_confidence: null
+status: archived
+task_type: code
+traceability:
+  spec_scenarios: 19
+  tc_cases: 19
+  test_functions: 5
+version: '3.0'

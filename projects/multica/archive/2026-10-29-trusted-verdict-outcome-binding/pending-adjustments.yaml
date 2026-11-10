@@ -1,0 +1,75 @@
+# 只记录设计偏离供人工审阅；本文件不是批准、执行授权或验收结论。
+meta:
+  change_id: 2026-10-29-trusted-verdict-outcome-binding
+  created: '2026-11-10T15:20:00'
+  updated: '2026-11-10T15:20:00'
+  note: >-
+    BUILD（长程模式）期间发现的三处偏离。前两条为实施层简化，第三条是规格被实现事实纠正；
+    三条都不扩大 proposal 范围，也不改变 G1–G3 的对外保证。每条 resolved: false，待人工审阅。
+
+adjustments:
+  - id: ADJ-TVOB-001
+    accepted_at: '2026-11-10T16:20:00'
+    accepted_evidence: 用户 2026-11-10 采纳建议（接受 G1 的 CR 级粒度）并指示落地
+    severity: minor
+    status: unresolved
+    resolved: true
+    original_design_ref: design.md#检查（C1 单一验证点：「准入处唯一入口：闭集解析 → 验签 → 绑定字段比对」）
+    actual_change: >-
+      C1 拆为两层：写入端验签沿用既有 AppendVerdictFrameTx → verifyVerdictAttestation（对 manifest、
+      schema、签名、入链 payload 原字节做校验，payload_bytes 入表后不可变）；准入端 DecideAdmission
+      只对已入表的 payload_bytes 做语义与绑定校验（effect 闭集、command_digest 与冻结命令字节相等、
+      scope 一致），失败回落 WAIT_TRUSTED_T_COMMIT。准入端不再自行装载 trust manifest 复验签名。
+    reason: >-
+      DecideAdmission 的签名是 (ctx, tx, req)，没有 manifest 来源；要在准入端复验签名就必须新增一条
+      manifest 配置面并把它接进生产启动链，属于扩大范围。既有写入端已经在同一批字节上验过签名，
+      复验不增加保证，只增加配置面和失败模式。
+    impact_scope: >-
+      C1 的措辞与实现位置；G1 不变。风险：写入端验签与准入端语义校验之间若有人直接改表，
+      准入端无法发现——该风险在当前状态（M005 未接线、生产无 producer）下尚未有抵消机制；
+      准入仍为 CR 级判定，generation 绑定属 AIFI-45 范围。
+    affected_capabilities: [verdict-channel]
+    evidence: server/internal/governance/execution_verdict_trust.go（函数注释已写明不复验签名的理由）
+
+  - id: ADJ-TVOB-002
+    accepted_at: '2026-11-10T16:20:00'
+    accepted_evidence: 用户 2026-11-10 采纳建议（接受 G1 的 CR 级粒度）并指示落地
+    severity: minor
+    status: unresolved
+    resolved: true
+    original_design_ref: design.md#决定（K1「签名内容即 G1 所列字段」；G1 含 generation）
+    actual_change: >-
+      v2 payload 不新增 generation 字段。代次由既有 epoch + sequence 表达；v2 相对既有 payload
+      只新增 effect 与 command_digest 两个字段。
+    reason: >-
+      既有 payload 已有 epoch/sequence/previous_verdict_digest，M 侧 verifyVerdictSubject 也正是
+      用它们把签名绑定到入链帧；再加一个 generation 会形成第二套代次口径。既不需要新列或迁移。
+    impact_scope: >-
+      G1 的 generation 绑定改由 epoch/sequence 承担；语义等价，字段名与 design 措辞不同。
+    affected_capabilities: [verdict-channel]
+
+  - id: ADJ-TVOB-003
+    accepted_at: '2026-11-10T16:20:00'
+    accepted_evidence: 用户 2026-11-10 采纳建议（接受 G1 的 CR 级粒度）并指示落地
+    severity: major
+    status: unresolved
+    resolved: true
+    original_design_ref: design.md#决定（K1）与本 change 首版实施规格（verdict v2 = 8 键）
+    actual_change: >-
+      首版实施把 v2 定成 8 键（schema/purpose/domain/scope/result/command_digest/request_id/seq）。
+      核对 M 侧既有代码后改为 12 键：
+      schema/purpose/domain/scope/frame/request_id/epoch/sequence/previous_verdict_digest/result/effect/command_digest。
+    reason: >-
+      server/internal/governance/execution_control_store_state.go#verifyVerdictSubject 要求签名载荷
+      必须含 request_id/epoch/sequence/previous_verdict_digest 才能入链；8 键规格会让 v2 帧永远写不进
+      链，等于把「可信裁决」变成不可达。既有产出方（Go 的 verdictSigner.payload 与 interop Node 脚本）
+      还带 frame 与自由文本 result，故一并纳入闭集以保持既有夹具可用。其中 result 仍为既有自由文本字段，
+      闭集枚举由 effect 承担。
+    impact_scope: >-
+      K1 的字段清单被实现事实纠正；两侧向量、Go 夹具与 Node 互操作脚本需同步。未改变 G1 的
+      「result 语义 + 冻结命令 + 主体」三要素：effect 承担执行结果语义，command_digest 承担冻结命令绑定，
+      request_id/epoch/sequence/previous_verdict_digest 承担主体与链位置。
+    affected_capabilities: [verdict-channel, trusted-merge-gate]
+    followup: >-
+      该偏离属「先按未核实的字段表写规格」这一类问题：design 的 K1 应直接引用既有 subject 绑定字段，
+      而不是另拟一份 key 表。已按 revision 在实施中修正，建议 Gate 3 审阅时确认 12 键是否即为目标 wire。

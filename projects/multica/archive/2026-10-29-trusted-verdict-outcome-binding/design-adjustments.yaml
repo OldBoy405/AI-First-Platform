@@ -1,0 +1,84 @@
+# STDD 设计调整汇总（C6）
+# 由 pending-adjustments.yaml 汇总；作为后续修订输入，不是批准或验收结论。
+
+meta:
+  change_id: 2026-10-29-trusted-verdict-outcome-binding
+  generated: '2026-11-10T16:00:00'
+  source: pending-adjustments.yaml（ADJ-TVOB-001/002/003）
+  gate_status: 'Gate 2 confirmed 2026-11-10T14:39（M/T 两侧）；Gate 3 未确认'
+  scope_note: >-
+    三条调整均不扩大已确认的 proposal 范围，也不改变对外保证 G1–G3 的语义；
+    它们改变的是「在哪一层实现」和「wire 字段表」。design.md 的 C1 与代次措辞已按调整同步；
+    specs/canonical 的字段枚举尚未逐字改写，属 Gate 3 之后的人工决定。
+
+revisions:
+  - id: REV-1
+    from: ADJ-TVOB-001
+    severity: minor
+    design_section: 检查 C1
+    current_text: 准入处唯一入口：闭集解析 → 对固定信任集验签 → 绑定字段比对
+    proposed_text: >-
+      两层：写入端 AppendVerdictFrameTx 验签（既有）；准入端 DecideAdmission 对已入表的
+      payload 复核 effect 闭集、command_digest 与冻结命令字节一致、scope 包含关系。
+    rationale: >-
+      DecideAdmission 的入参没有 trust manifest 来源；在准入端复验签名需新增一条配置面并接进
+      生产启动链，属扩大范围且不增加保证（写入端已在同一批不可变字节上验签）。
+    user_decision_required: 是否接受「签名验证集中在写入端」这一分层。
+
+  - id: REV-2
+    from: ADJ-TVOB-002
+    severity: minor
+    design_section: 保证 G1 / 决定 K1
+    current_text: 签名覆盖「版本、结果、冻结命令摘要、主体、生成代次（generation）」
+    proposed_text: >-
+      代次由既有 epoch / sequence / previous_verdict_digest 表达，不新增 generation 字段。
+    rationale: M 侧 verifyVerdictSubject 已用这三个字段把签名绑定到入链帧；再加 generation 会形成第二套代次口径。
+    user_decision_required: 确认 epoch/sequence 足以代表「代次」。
+
+  - id: REV-3
+    from: ADJ-TVOB-003
+    severity: major
+    design_section: 决定 K1（字段表）
+    current_text: （实施首版）verdict v2 = 8 键
+    proposed_text: >-
+      verdict v2 = 12 键：schema, purpose, domain, scope, frame, request_id, epoch, sequence,
+      previous_verdict_digest, result, effect, command_digest。effect ∈ {effect,no_effect} 为闭集；
+      result 保留为旧有的自由文本字段；command_digest = sha256(冻结命令 payload 字节)。
+    rationale: >-
+      8 键规格与既有 verifyVerdictSubject 冲突（缺 epoch/sequence/previous_verdict_digest 就写不进链），
+      会让「可信裁决」不可达。12 键是在既有 subject 绑定字段之上只加 G1 需要的两个字段。
+    user_decision_required: 确认 12 键即为目标 wire，并决定是否同步修订 design 与 specs 的字段表。
+
+summary:
+  accepted_into_code: [REV-1, REV-2, REV-3]
+  reflected_in:
+    - design.md 两侧（C1 职责分隔与 generation→epoch/sequence 已按 REV-1/REV-2 改写；字段表仍以 12 键描述见 tasks.md）
+    - tasks.md 两侧（12 键字段表）
+  not_yet_reflected_in:
+    - specs/verdict-channel/ 与 canonical/specs/code/*.yaml 的 verdict 字段枚举（scenario 正文未逐字改写）
+  followup_owner: 人工（Gate 3 审阅）
+  lesson: >-
+    规格阶段的字段表必须引用代码中既有的 subject 绑定字段，而不是另拟一份 key 表；
+    否则会出现「按规格实现则写入端必然拒绝」的死路。
+
+decision:
+  status: 已按行业惯例裁决，写入本文件供 Gate 3 复核
+  accepted: [REV-1, REV-2, REV-3]
+  user_accepted: '2026-11-10T16:20:00'
+  user_decision: 采纳建议——接受 G1 的 CR 级粒度；代次绑定随 AIFI-45 M005 承接，不在本 change 重启 Gate 1
+  rationale: >-
+    三条修订都朝同一个方向收敛：把「不可变的已签名字节」作为唯一信任锚，认证一次，之后只做语义与绑定比对。
+    两条独立的验签实现（写入端 + 准入端）会引入第二套 manifest 来源与两套失败模式，却不多证明任何事实。
+  g1_granularity:
+    statement: >-
+      G1 成立的范围：新增 effect 必须由一份 v2 裁决放行，该裁决的签名覆盖执行结果（effect 闭集）与冻结命令字节摘要；
+      放行判定按 CR 级的可信事实（存在已入链、已结算、被 cursor 覆盖的 effect 裁决）进行。
+    not_covered: 被放行的那一代任务与裁决主体之间的代次绑定（generation binding）
+    why_not_closed_here: >-
+      AdmissionRequest 只有 workspace/CR/intent。若改为「必须绑定最新一次 consumption」，
+      该 consumption 自身的命令尚未结算，trusted 计数恒为 0，准入会永久停在 WAIT_TRUSTED_T_COMMIT；
+      因此本地无法闭合，只能改接口（把 task/代次传进准入）+ 配套的写入端接线，属 AIFI-45 的 M005。
+      本 change 相对改动前只收紧不放松：原来只看 settlement.kind='effect'，现在还要裁决存在、被 cursor 覆盖、effect 闭集、命令摘要相符。
+  residual_risks:
+    - 一个较旧的已认证 effect 仍可让新代次通过准入（上述缺口，AIFI-45 承接）
+    - manifest 的可信来源（pin、部署角色）未建立前，写入端验签的前提取决于运维事实，属上线就绪清单
