@@ -1,6 +1,6 @@
-# 各 adjustment 和旧台账是历史叙述；原 44/49 与「缺 5」不可靠：EVD-007 曾重复计数，RUN-008/009 被漏列；两处 41/49 的条目分解亦互斥。
-# 按历史声明去重的 CP 数为 43/49，缺 RUN-001/003/006/007/008/009；纳入 EVD-008 完整能力约束则为 42/49，另缺 EVD-008。
-# 以上仅是历史账目重算，并非当前源码的合格验收统计；最终统一口径与当前证据仍待负责人核定。详见 validation/tc-ledger-reconciliation-20261029.md。
+# 统一口径（2026-11-10 用户范围裁定，见 ADJ-AIFI45-M004）：TC-EVD-008 移出本期分母，记 OUT_OF_SCOPE（不是 PASS），本期分母 48。
+# 按历史声明去重为 42/48，缺 RUN-001/003/006/007/008/009。这是历史账目重算，不是当前源码的合格验收统计：Gate3 前逐项按当前源码重验，组件证据与整链证据分开记。
+# 旧口径（44/49、41/49、43/49、42/49）的来源与算术见 validation/tc-ledger-reconciliation-20261029.md，保留不改。
 meta:
   change_id: 2026-10-22-aifi-45-authorized-execution
   created: '2026-10-22'
@@ -40,7 +40,11 @@ adjustments:
     impact_scope: '历史增量 51 原称 42/49，来自 41 加已在原 CP 口径中计入的 EVD-007；此数不同于本文件顶部以 43 扣 EVD-008 完整能力得出的 42/49。计数口径对账见 validation/tc-ledger-reconciliation-20261029.md，两种历史重算均非当前验收。Gate3 材料须写明 EVD-008 为已知缺口，不得以拒绝侧宣称完整功能；最终偏差须经实际 Gate3 审批。2026-10-29 用户授权登记独立占位 change 2026-10-29-legacy-execution-migration（负责人 Ray），其 canonical proposal 含三个启动触发条件，当前 understand pending、未进入 SPEC/BUILD。本偏差不改变 D8=A，TC-EVD-008 保持 MISSING。'
     severity: major
     affected_capabilities: [evidence-delivery-contract]
-    resolved: false
+    decision: >-
+      2026-11-10 用户范围裁定：TC-EVD-008 移出本期分母，记 OUT_OF_SCOPE（不是 PASS，不改写 TC），
+      本期只验证旧 CR 不迁移、新旧不串用；迁移正例由 2026-10-29-legacy-execution-migration 在其启动条件发生时验收。
+      两种计数口径据此合并为 42/48（见文件头）。Gate3 材料据此列为范围外，Gate3 本身仍按流程确认。
+    resolved: true
   - id: ADJ-AIFI45-M005
     original_design_ref: 'design.md / test-plan.md：AIFI-45 在可信已提交 verdict 基础上完成真实准入和端到端 RUN 验收'
     actual_change: '用户 2026-10-29 授权本 change 做默认拒绝的真实生产入口接线，并同意消费侧修复留在本 change；签名契约变化另立 change。现已在 ACTIVE、精确恢复、readiness 读取的跨 scope 复用和 router 缺失 decider 处实施局部默认拒绝；fake-Tx 与 no-DB 检查不代表生产接线完成。对 verdict 结果认证的跨仓契约问题已登记 2026-10-29-trusted-verdict-outcome-binding 草案，用户已确认负责人为 Ray、Gate pending；字段与方案尚未批准。真实入口、可信事实绑定、闭合生产判定仍未完成。用户本轮对可信历史与有界收尾建议明确“采纳你的建议，实施。委派遵循llm分层”：优先评估 M 受保护控制面核验并锚定 T 已提交 repair 历史，M 不接管 T 裁决；receipt 重放与新派发分开，撤销后原执行仅按可信启动事实做有界安全收尾。现有 verdict store、cursor 和 proof 消费不能直接证明完整 repair 历史或实际已启动；具体跨仓签名、存储、防回退、启动事实、切换与现行合同冲突仍须适用 B4/合同决定并验证，候选及正反例见 projects/tools/changes/2026-10-22-aifi-45-authorized-execution/validation/repair-history-anchor-b4-draft-20261103.md。用户授权不等于部署、真实 CR 操作或 Gate3 批准。后续原始用户消息经历史会话核对为“请按照刚刚的方案实施，子代理委派使用LLM分层”；现按 tools 的 root-cause-convergence-implementation-plan.md 从 WP0 准备，M 在 T 裁决前提供受保护前驱/在途约束并核验提交，启动许可与撤销排序、实际启动事实及有界收尾各自证明；这些均为计划方向而非已实现或双端协议已批准。用户随后明确：“允许 daemon／受控 T 与 Agent 使用不同 OS 身份及权限，可以部署在 Linux 上，并支持 Windows 本机执行。数据库整体回档：同意。”据此前提案，整体回档后冻结新增准入，直至以独立可信事实核验历史，不自动重建 genesis 或清零；Linux 与 Windows 均须证明权限隔离与等价代签不可用，具体账号、存储防回退、恢复证据及资源操作仍须分别确定和验证，未批准 Gate3 或实际部署。针对“无法证明效果归属时保留原 attempt 并等待对账；不重推、不编造结果，也不改写已 settled 记录”的具体提问，用户本轮原话为“第二条同意”；该取舍已确认，无需重复询问。双端身份映射、证明来源、016 的 attempt+1、uncertain 的后续转换、混跑与回滚等具体合同仍须按适用流程决定及配对修订；用户未因此批准草案全部候选、数据迁移、真实资源测试、部署或 Gate，登记不表示合同已生效。对端登记 ADJ-AIFI45-006。'
@@ -143,7 +147,8 @@ adjustments:
       不做：签 key 与批 manifest 的人员分离、双 key 轮换与演练、按 CR 发 key、manifest 变更审批。
       一把 key、scope 取 workspace、有效期一年、公钥用 sha256 pin，均沿用现有 manifest 字段，不新增机制。
     decision: >-
-      2026-11-10 用户采纳「只做第 2、3 条」。具体实现与部署形态未批准，见 next。
+      2026-11-10 用户采纳「只做第 2、3 条」，并批准信任模型：签发者在服务端，T 是非可信客户端。
+      已原位写入 design.md §2；design 变更按 STDD 须重新确认 Gate 2。部署形态未实施，见 next。
     verdict: >-
       核实后更正此前建议：本机上 agent 与操作者是同一 OS 用户，rootless podman 与 WSL 都归该用户所有，
       仓库根 .env 带 DATABASE_URL，当前用户也能 podman inspect 到后端容器的连接串。所以「签发进程放在
@@ -152,8 +157,8 @@ adjustments:
       DATABASE_URL（2026-11-10 grep 核实，只有 cmd/server 与 cmd 下迁移/回填工具读取）。
       本机运行时，防 agent 自证依靠人工 approve 门禁，不依靠签名链。
     next: >-
-      M005 设计输入（推断，待 M005 设计时确认）：crctl 由 agent 在 CR 流水线内执行，若签发私钥由 crctl 持有，
-      agent 即持有私钥，第 2 条随之失效；签发者须在服务端或 agent 无法以其身份执行的组件内。
+      签发者在服务端（已批准）：crctl 由 agent 在 CR 流水线内执行，不持有签发私钥；服务端只对自身可核实的
+      事实签发（命令由服务端冻结、effect 由服务端执行或观察到）。仍待 M005 实施：服务端签发入口、task→command 权威关联、生产 ingest。
       部署时以 agent 身份做两项检查即可关闭本条：读不到私钥文件；可用数据库登录对上述四张表无 INSERT/UPDATE。
     source: 2026-11-10 本机核实（env / podman info / podman inspect / .env）+ multica/server grep
 
@@ -177,7 +182,7 @@ dispositions_20261109:
     closure: 真实第二身份主机上的安装根/公钥不可写证据（Linux uid 已由 e2-linux-key-isolation 覆盖；Windows 为部署前置）
     note: 同 UID 部署由支持部署信封排除；不引入原生依赖。
   - id: ADJ-AIFI45-M003
-    class: successor_change
+    class: open_in_change
     owner: Ray
     carrier: 2026-10-22-aifi-45-authorized-execution（本 change）
     closure: 通道生产入口接通，并完成 TC-RUN-002/003/006/010 的真实入口验收
@@ -186,10 +191,10 @@ dispositions_20261109:
     class: successor_change
     owner: Ray
     carrier: 2026-10-29-legacy-execution-migration
-    closure: 三个启动触发条件之一发生，并完成迁移正例；本期 TC-EVD-008 保持 MISSING
-    note: D8=A（本期不迁移 legacy）不变；本偏差须经实际 Gate3 审批。
+    closure: 三个启动触发条件之一发生，并完成迁移正例；本期 TC-EVD-008 记 OUT_OF_SCOPE（不是 PASS）
+    note: D8=A（本期不迁移 legacy）不变；2026-11-10 用户范围裁定已将其移出本期分母，Gate3 材料列为范围外。
   - id: ADJ-AIFI45-M005
-    class: successor_change
+    class: open_in_change
     owner: multica
     carrier: 2026-10-22-aifi-45-authorized-execution（本 change）
     closure: verdict ingest 有生产调用方（ControlWorker.ApplyTx）；settlement/consumption 的 request_id 统一为真实 task id；ADMITTED 在生产链路可得

@@ -118,6 +118,7 @@
 | `server/internal/governance/execution_notice.go#ResolveNoticeRecipient` | **具体偏差**：授权类回退会验证传入 starter 的成员身份；维护类却忽略 starter，按创建顺序挑 workspace owner/admin。因此「维护类无 CR owner→starter→仍无不发」尚不能宣称与当前源码一致；本轮只写规定与差距，不改代码，也不把旧分支纳为合同例外 |
 | `server/internal/governance/execution_notice.go#DeliverNoticeTx`、`server/migrations/646_cr_execution_notice.up.sql` | 已用 `(workspace_id,dedupe_key)` 冲突取原 notice/Inbox，notice 与 Inbox 同事务；Inbox `issue_id` 已取 `cr.shell_issue_id`，没有依赖新 details 键或新 partial UNIQUE 的必要 |
 | `server/internal/governance/execution_notice.go#NoticeDedupeKey`、`runner.go#failRun` | 当前 key 含 CR/cause/证据摘要/audience/规范 recipient，workspace 由唯一约束覆盖；尚未证明可信 project 覆盖。失败接线对错误码求摘要，不能据此声称同码新失败／重要证据变化已不互吞 |
+| `server/internal/governance/execution_notice.go#looksLikeCommandShipping` | SC-NTF-003「不把命令搬运交给业务方」当前靠正文词表实现：`&&`、`sudo`/`psql`/`kubectl`/`podman`/`docker` 的空格和 tab 两种写法逐一枚举，另行处理 Unicode 行分隔符。这是逐例封堵，词表无法穷尽。2026-11-10 用户采纳的收窄方向随本评审一并定：由生产者提交结构化处置类型、按固定模板渲染，正文不承载执行语义；之后只核允许的通知类型、收件人和长度，词表退役。实施前不删现有过滤 |
 | `server/internal/governance/execution_notice_wiring.go#notifyFact/#recoverPendingNotices` | 业务事实与 notice 事务分离，恢复扫描仅覆盖已有 pending；notice 写前故障的逐事件重建仍未证明。保留 SC-NTF-007，不把缺口降为可接受的不丢通知保证 |
 
 `execution_notice_wiring_test.go#TestNoticeGoesToTheRecordedRoleOwnerAndItsConversation` 已有 development owner 优先与会话链接的测试源码，但不覆盖无 owner 的维护回退；本轮未执行，不能据测试存在宣称其通过或全链完成。

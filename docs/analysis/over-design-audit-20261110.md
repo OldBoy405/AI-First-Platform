@@ -119,14 +119,14 @@ C1 只有这两项，说明多数「重」不是防错了对象，而是下面�
 
 | 批次 | 落点 | 条目 | 触发 |
 |---|---|---|---|
-| A 现在 | mA 内 revision | M005 信任模型：签发者在服务端、T 是非可信客户端（前置项） | 用户批准；design 变更按 STDD 重新确认 Gate 2 |
-| A 现在 | mA 内 revision | 覆盖台账收窄为一份「保证 → 当前证据」索引；删除 design 中 Inbox 第二唯一键的表述 | 无，纯文档 |
-| A 现在 | mL / mA | 正式范围裁定：把迁移移出本期分母，保留占位和启动条件，不改记 PASS | 用户裁定 |
-| A 现在 | mD 内 revision | 一次性批准一个资源信封；run.mjs 身份校验不动 | 无 |
-| A 现在 | tT 内 revision | 通过任务契约声明仅文档验收；删除人工 spec 副本；只保留一份当前措辞预期 | 无 |
-| A 随附 | mA，随 M009 去重评审 | 通知正文的命令词过滤改为结构化处置类型 | M009 评审时（同一块代码） |
-| B 新开 | tools 新 change | crctl 的机械免审名单（evidence-mechanical，仍在 crctl.mjs 中运行） | 先确认该免审路径在现行 CR 流程中是否可达；可达才开 |
-| C 延后 | 清理 change（双载体） | 删除 M005 落地后仍未接线的 D7、tools store、readiness、第二套语义提取 | AIFI-45 的 M005 关闭 |
+| A 已修订 | mA design §1/§2/§6/风险表 | M005 信任模型：签发者在服务端、T 是非可信客户端（2026-11-10 用户批准） | design 变更待用户重新确认 Gate 2 |
+| A 已修订 | mA pending-adjustments 文件头、test-plan | 覆盖台账合并为单一口径 42/48；逐项「保证 → 当前证据」需按当前源码重验，归 Gate 3 准备 | — |
+| A 已修订 | mL proposal / mA M004 | 范围裁定：TC-EVD-008 记 OUT_OF_SCOPE（不是 PASS），由 legacy-migration 在启动条件发生时验收 | — |
+| A 已修订 | mD canonical proposal | 可弃用数据库按资源信封一次批准；信封内替换入口只登记、不走 Gate 2；run.mjs 身份校验不动 | — |
+| A 修订中 | tT | 仅文档验收、人工 spec 副本、单一措辞预期 | 见 tT 记录 |
+| A 随 M009 评审 | mA M009 规格 §3 | 通知正文词表收窄为结构化处置类型；删除 design §5 的 Inbox 第二唯一键。后者即 M009 偏差（deviation_approved_pending_evidence），提前改 design 等于绕过其证据门槛 | M009 评审 |
+| B 不开 | — | crctl 机械免审。核实：`evidence-mechanical(-admit)` 可调用，但没有任何 gate、review、approve、Skill 或 pipeline 读取其结果；写入 test-report 的证明标记只被自身幂等检查读取；记录仓无 CR 使用过。无法借此跳过评审，是休眠能力 | 并入 C |
+| C 延后 | 清理 change（双载体） | 删除 M005 落地后仍未接线的 D7、tools store、readiness、第二套语义提取，以及机械免审命令 | AIFI-45 的 M005 关闭 |
 | D 不动 | — | mS2 的三次 Gate、gS2 的 BLOCK、tTA 的逐 TC 运行、tAE/tOB 的同意记录、mV 的 leaf 计数、TC-MG-017 | 已发生，无运行时成本 |
 | D 下次用时 | 下一次上游同步 change | 同步模板 v3：标记计数只作诊断；生成物按真源加命令登记；固定平台适用边界 | 下一次同步（模板只存在于归档 change 中，未安装） |
 

@@ -1,6 +1,6 @@
 # AIFI-45 授权内自治执行与有界修复 — multica 技术设计
 
-> BUILD当前边界：T独立receipt试作已撤回，current-head/revoke/claim/消费事务未接通时拒绝消费；HTTP生产配置仍默认503。MDispatch的顺序fixture缺陷在本change按真实RED→公共setup修复，并加DB测试进程lease，不改生产Runner。真实CLI/临时镜像PoC已获依赖授权，仅离线实验；受保护trust root/安装器、真实daemon任务与永久派发仍未完成，major保持unresolved。
+> BUILD当前边界：T独立receipt试作已撤回，current-head/revoke/claim/消费事务未接通时拒绝消费；HTTP生产配置仍默认503。MDispatch的顺序fixture缺陷在本change按真实RED→公共setup修复，并加DB测试进程lease，不改生产Runner。真实CLI/临时镜像PoC已获依赖授权，仅离线实验；服务端签发者与受保护trust root（信任模型见§2）、真实daemon任务与永久派发仍未完成，major保持unresolved。
 
 > Gate2已真实登记；BUILD可信绑定/来源补正方向获用户采纳并要求继续。普通模式保持，不是Gate3/上线批准；真实实现/验证以phase-context/tasks记录为准。
 > Gate 1 原文“确认这份 Gate 1”已由原生CLI登记；开发用STDD，不操作实际CR。
@@ -26,17 +26,19 @@
 - 若原始认证请求已明确目标、范围/交付位置、验收、禁止项和已接受执行上限，直接绑定，无第二次阶段确认。Agent后补包只可作为候选；不能据候选签发更宽授权。敏感动作需原请求或后续明确专项授权。
 - 原事件与结构化字段可以同一可信请求提交；已有可信自由文本也允许按T设计§2的逐字段原文提取路径受理，不要求字段同时提交。每个字段须可验证地关联原事件/已明确接受的引用附件snapshot或默认规则版本，独立验证只确认提取未新增语义；平台核验source_digest与source_bindings，不把候选者的自然语言解释当新授权。不能证明充分则只询问欠缺内容，不能默认“已同意6次及任意发布”。
 - 扩展原pending/ACK传输，不另建私钥分发渠道。签名记录采用明确grant kind/purpose；不得用原stage批准唯一码吞掉新授权，不可为方便去重而覆盖历史grant。新增签名域不重用v1阶段签名。
-- delivered与consumed严格分开。只有T已提交且经既有可信daemon/CR事件通道验证的授权receipt可投影为已消费；平台收到HTTP200、ACK或Agent回复不算。
+- delivered与consumed严格分开。只有服务端签发、并经既有verdict通道写入端验签的授权receipt可投影为已消费；T自报已提交、平台收到HTTP200、ACK或Agent回复都不算。
 
 **为什么**：保留可信来源且避免每阶段机械确认。**排除**：另建审批组织、Agent自签、用ACK代消费或为同一事实重复要求人确认。
 
-### 2. T先裁决与提交准入，Runner后以原身份幂等派发
+### 2. T给出裁决候选，服务端核实签发后准入，Runner以原身份幂等派发
 
-**方案**：Runner只解释T的`status/next/gate`及committed receipt，保存执行身份/结果引用，不另算六次额度或两次停止。
+**方案**：Runner只解释T的`status/next/gate`及服务端签发的receipt，保存执行身份/结果引用，不另算六次额度或两次停止。
+
+- **信任模型（2026-11-10 用户批准，ADJ-AIFI45-M005-TRUST）**：要防的只有干活的Agent自报成功、自行推进CR。T由Agent在CR流水线内执行，是非可信客户端，其裁决只是候选；签名私钥只在服务端，Agent身份读不到，Agent可用的数据库登录也不能写信任表。服务端只对自己能核实的事实签发：命令由服务端冻结，effect由服务端执行或观察到；服务端核实不了的结论不签为effect，准入保持`WAIT_TRUSTED_T_COMMIT`。真实部署中服务端与数据库在服务器主机、Agent在daemon主机，上述两条由机器边界满足；本机Agent与操作者是同一OS身份，签名链不构成边界，此时靠人工approve防止Agent自证。一把key、scope取workspace、公钥sha256 pin，沿用现有manifest字段，不建轮换、吊销或人员分离流程。
 
 ```text
-可信人类请求 → approval service → daemon送达 → T绑定/准入事务
-    → committed receipt → Runner锁内协调 → 真实TaskService幂等入队
+可信人类请求 → approval service → daemon送达 → T绑定/准入（候选）
+    → 服务端核实并签发receipt → Runner锁内协调 → 真实TaskService幂等入队
     → 执行/测试 → 独立reviewer → T评估/状态事实 → wake同一Runner
 ```
 
@@ -50,9 +52,9 @@
 - 技术重试保持同一repair_id和lineage，沿用既有有界重试；技术attempt变化不新增T准入。任务是否创建未知时暂停查询，不发送新identity。
 - T事务未提交、不适用scope、缺当前授权head或停止时禁止**新纠正性准入**。额度恰用完不阻断已admitted修复的测试、独立reviewer、安全恢复或PASS交付；它们复用原receipt，不新增消费。T查询/传输故障不能降级旧路径。
 - 首版不新增时钟到期协议，不宣称过期grant支持；撤销使用T设计的签名revoke revision，平台入队/实际启动前重查当前head。失联不能启动新准入/敏感动作；未启动的撤销任务取消且已消费保留，运行中只允许既有有界安全收尾/只读核验，不承诺回滚已发生的不可逆副作用。
-- 无进展恢复只接受T的repair-resume已提交receipt（精确stop version、签名恢复授权和独立新证据），不靠ACK、reset或本地streak放行。
+- 无进展恢复只接受服务端签发的repair-resume receipt（精确stop version、签名恢复授权和独立新证据），不靠ACK、reset或本地streak放行。
 
-**排除**：Runner内另设remaining counter会双裁决；只靠run_id,node_id,attempt无法覆盖跨run重复；不可能将Git事务和DB写入伪装为单个原子提交。
+**排除**：T（含crctl）持有签发私钥——Agent执行T即等于持有私钥，可自签；Runner内另设remaining counter会双裁决；只靠run_id,node_id,attempt无法覆盖跨run重复；不可能将Git事务和DB写入伪装为单个原子提交。
 
 ### 3. 四阶段必须接到真正的入口、wake、发现与恢复
 
@@ -86,7 +88,7 @@
 ### 6. 新CR试点、迁移、回退和交付边界
 
 - `authorized-execution/v1`默认不启用；新CR明确opt-in，校验T源/policy/registry、Go生成物、平台实际二进制、Agent/Skill安装和运行开关一致。任何未知标未就绪。
-- 旧CR与旧run保留原pin与历史；显式迁移需要新授权、历史消耗/剩余、原未决任务/副作用处置和新旧合同绑定。历史无法核实不清零、不静默迁移。
+- 旧CR与旧run保留原pin与历史。本期不迁移（D8=A；2026-11-10 用户范围裁定：TC-EVD-008移出本期分母，记OUT_OF_SCOPE而非PASS），本期只验证旧CR不迁移、新旧不串用；显式迁移由`2026-10-29-legacy-execution-migration`在其启动条件发生时承接，届时需要新授权、历史消耗/剩余、原未决任务/副作用处置和新旧合同绑定。历史无法核实不清零、不静默迁移。
 - 回退停止新准入，不抹掉已admitted任务、已消费额度或证据，不降级成legacy来绕过门禁。
 - 本轮交付是经验证的代码/合同与本地证据；实际生产发布、真实CR试点或存量接管需要专项授权，未执行必须清楚标注。不能把三条隔离回放当通用可靠性或上线证明。
 
@@ -120,7 +122,8 @@ T签名/授权golden → M可信入口/传输消费 → T修复准入与assessme
 | 风险 | 缓解 |
 |---|---|
 | task-token或候选包伪装人类原请求 | 原middleware身份、owner/admin、可信事件与签名域；失败无授权记录、无任务 |
-| ACK、HTTP成功与实际消费混淆 | delivered与committed receipt分开；最终仍核T状态/subject |
+| ACK、HTTP成功与实际消费混淆 | delivered与服务端签发的receipt分开；最终仍核状态/subject |
+| Agent自签verdict推进CR | 私钥只在服务端，T为非可信客户端；Agent身份读不到私钥、写不了信任表；本机无身份边界时靠人工approve |
 | 跨run重复或双派发 | 原identity+持久化唯一约束+真实TaskService测试；新旧路径互斥 |
 | migration影响存量/共享DB | 新列可空、旧行legacy、隔离DB先验、生成query和回滚计划；不直接对共享DB跑测试 |
 | 没有完整原生授权入口却先删人工路径 | 新policy显式opt-in、充分性缺口停止；旧恢复保持 |
