@@ -1,0 +1,273 @@
+approval_receipts:
+- confirmed_actor: ai
+  confirmed_at: '2026-11-11T13:51:45'
+  confirmed_by: dialog
+  confirmed_evidence: 同意。确认 Gate 2，长程模式。
+  note: reapproved; prior input_fingerprint=dd56486da34ef84f0f8075ed0b486d29ca0c1ca65ec36ecf53b9a6566b62b1d0
+  receipt_id: gate2-2026-11-11T13:51:45
+  recorded_at: '2026-11-11T16:20:19'
+  status: superseded
+- confirmed_actor: ai
+  confirmed_at: '2026-11-11T12:39:00'
+  confirmed_by: dialog
+  confirmed_evidence: 确认 Gate 1，启用长程模式
+  note: reapproved; prior input_fingerprint=7ee81c8ffd421ffcc703fed10db7ced9211185bb257b3af82b744303c8e925b3
+  receipt_id: gate1-2026-11-11T12:39:00
+  recorded_at: '2026-11-11T19:11:30'
+  status: superseded
+- confirmed_actor: ai
+  confirmed_at: '2026-11-11T16:20:19'
+  confirmed_by: dialog
+  confirmed_evidence: 确认 Gate 2
+  note: reapproved; prior input_fingerprint=1179b1b1ae5253253ca7821cd21a6707e2a93002bfc5eaf460b3fc30a4e1bdcc
+  receipt_id: gate2-2026-11-11T16:20:19
+  recorded_at: '2026-11-11T19:14:13'
+  status: superseded
+- confirmed_actor: ai
+  confirmed_at: '2026-11-11T17:54:02'
+  confirmed_by: dialog
+  confirmed_evidence: 确认 Gate 3，完成剩余工作，合并、提交、推送、归档。
+  note: reapproved; prior input_fingerprint=add276f3a8f41fd6cb1b01e2895d50f9e7d5df800f9882b04ad4f52d2c1d8f05
+  receipt_id: gate3-2026-11-11T17:54:02
+  recorded_at: '2026-11-11T19:42:19'
+  status: superseded
+change_id: 2026-11-11-aifi-45-admission-task-binding
+complexity_score: 9
+current_phase: deliver
+design_adjustments:
+  count: 0
+last_modified: '2026-11-11T19:42:19.421706'
+long_range:
+  enabled: true
+  mode: full_auto
+  pre_auth_completed: true
+  pre_auth_timestamp: '2026-11-11T15:22:57+08:00'
+mode: thorough
+phases:
+  build:
+    confirmed_actor: ai
+    confirmed_at: '2026-11-11T19:42:19'
+    confirmed_by: dialog
+    confirmed_evidence: 重新确认 Gate 3，完成剩余工作，合并、提交、推送、归档。
+    input_fingerprint: fc46c23fe498dca6482b646460844203d521ba9fe6593d0fab2566626bd364c2
+    input_manifest:
+    - change_id: 2026-11-11-aifi-45-admission-task-binding
+      child_id: null
+      kind: projection
+      logical_path: .stdd.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 4b8bd0a72542b3419998fb66b05c371318a07fbc8a9f5ebe55759128ad00379c
+    - change_id: 2026-11-11-aifi-45-admission-task-binding
+      child_id: null
+      kind: raw
+      logical_path: canonical/.canon-index.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 6e664c743891c68ab05557efc9057bf7c2f22f1e5fac1ec1b8dba47560137a51
+    - change_id: 2026-11-11-aifi-45-admission-task-binding
+      child_id: null
+      kind: projection
+      logical_path: canonical/proposals/2026-11-11-aifi-45-admission-task-binding.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 729f01930304de81f4a8ea2407654753413108770395b7cdffeac2e14913116b
+    - change_id: 2026-11-11-aifi-45-admission-task-binding
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/agent/admission-task-binding.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 2a62a12f872c9850dcb4f3d276cb8e9eeefec59c41e4c2d0cac812bd55104904
+    - change_id: 2026-11-11-aifi-45-admission-task-binding
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/agent/authorized-runner.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 08ea7a24d3a53abe20da3630ea1cfd877a8201ae2b125caf9d3d1254848a2ae4
+    - change_id: 2026-11-11-aifi-45-admission-task-binding
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/code/admission-task-binding.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 9d4c25c26b467cfc10de1196dc22f8d4a6f1153f613c042f71f46979703426bd
+    - change_id: 2026-11-11-aifi-45-admission-task-binding
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/code/authorized-runner.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 4f214d0b9f3fcc04e55734c4ceed7f810dcb591f6ee6a9ba962dd171803888b4
+    - change_id: 2026-11-11-aifi-45-admission-task-binding
+      child_id: null
+      kind: raw
+      logical_path: design.md
+      project_id: multica
+      projection_version: v1
+      sha256: 3d4b2c8fcfd40a2814277315b72c61349ef0477f70b69dd93f2e78e11967650e
+    - change_id: 2026-11-11-aifi-45-admission-task-binding
+      child_id: null
+      kind: projection
+      logical_path: proposal.md
+      project_id: multica
+      projection_version: v1
+      sha256: 3e05254361dc899316360328ab577f86a897cdcd32b1010717dac58c2112ddda
+    - change_id: 2026-11-11-aifi-45-admission-task-binding
+      child_id: null
+      kind: raw
+      logical_path: specs/admission-task-binding/spec.md
+      project_id: multica
+      projection_version: v1
+      sha256: d244fe0189c95085be9af0f15826d76b3958fb452b284a352ff2b9bea4eae990
+    - change_id: 2026-11-11-aifi-45-admission-task-binding
+      child_id: null
+      kind: raw
+      logical_path: specs/authorized-runner/spec.md
+      project_id: multica
+      projection_version: v1
+      sha256: 9ae8e408c8151f03cd63028880d7319006c344b094607f6c0c583c01d196b721
+    - change_id: 2026-11-11-aifi-45-admission-task-binding
+      child_id: null
+      kind: raw
+      logical_path: test-plan.md
+      project_id: multica
+      projection_version: v1
+      sha256: 3192e57da4be8c8ebdd8a2a7576e543cf348374d6bc7654991961a122f0740ec
+    - change_id: 2026-11-11-aifi-45-admission-task-binding
+      child_id: null
+      kind: raw
+      logical_path: test-report.md
+      project_id: multica
+      projection_version: v1
+      sha256: 8423ecc942fbdc39e6aabba899f33a6cf51db1c11bf6d93faef7e4aeff05cb6d
+    slices_completed:
+      '1':
+        new_tests: 50
+        status: done
+        tc_coverage: 8/8
+        verified_at: '2026-11-11T16:50:42'
+      '2':
+        new_tests: 7
+        status: done
+        tc_coverage: 3/3
+        verified_at: '2026-11-11T16:50:42'
+    status: completed
+  deliver:
+    status: in_progress
+  spec:
+    confirmed_actor: ai
+    confirmed_at: '2026-11-11T19:14:13'
+    confirmed_by: dialog
+    confirmed_evidence: 重新确认 Gate 2
+    input_fingerprint: 79887e220276593781a2e73f53b48aec23956ab303b3f0e4a6945778869f9380
+    input_manifest:
+    - change_id: 2026-11-11-aifi-45-admission-task-binding
+      child_id: null
+      kind: raw
+      logical_path: canonical/.canon-index.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 6e664c743891c68ab05557efc9057bf7c2f22f1e5fac1ec1b8dba47560137a51
+    - change_id: 2026-11-11-aifi-45-admission-task-binding
+      child_id: null
+      kind: projection
+      logical_path: canonical/proposals/2026-11-11-aifi-45-admission-task-binding.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 729f01930304de81f4a8ea2407654753413108770395b7cdffeac2e14913116b
+    - change_id: 2026-11-11-aifi-45-admission-task-binding
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/agent/admission-task-binding.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 2a62a12f872c9850dcb4f3d276cb8e9eeefec59c41e4c2d0cac812bd55104904
+    - change_id: 2026-11-11-aifi-45-admission-task-binding
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/agent/authorized-runner.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 08ea7a24d3a53abe20da3630ea1cfd877a8201ae2b125caf9d3d1254848a2ae4
+    - change_id: 2026-11-11-aifi-45-admission-task-binding
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/code/admission-task-binding.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 9d4c25c26b467cfc10de1196dc22f8d4a6f1153f613c042f71f46979703426bd
+    - change_id: 2026-11-11-aifi-45-admission-task-binding
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/code/authorized-runner.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 4f214d0b9f3fcc04e55734c4ceed7f810dcb591f6ee6a9ba962dd171803888b4
+    - change_id: 2026-11-11-aifi-45-admission-task-binding
+      child_id: null
+      kind: raw
+      logical_path: design.md
+      project_id: multica
+      projection_version: v1
+      sha256: 3d4b2c8fcfd40a2814277315b72c61349ef0477f70b69dd93f2e78e11967650e
+    - change_id: 2026-11-11-aifi-45-admission-task-binding
+      child_id: null
+      kind: projection
+      logical_path: proposal.md
+      project_id: multica
+      projection_version: v1
+      sha256: 3e05254361dc899316360328ab577f86a897cdcd32b1010717dac58c2112ddda
+    - change_id: 2026-11-11-aifi-45-admission-task-binding
+      child_id: null
+      kind: raw
+      logical_path: specs/admission-task-binding/spec.md
+      project_id: multica
+      projection_version: v1
+      sha256: d244fe0189c95085be9af0f15826d76b3958fb452b284a352ff2b9bea4eae990
+    - change_id: 2026-11-11-aifi-45-admission-task-binding
+      child_id: null
+      kind: raw
+      logical_path: specs/authorized-runner/spec.md
+      project_id: multica
+      projection_version: v1
+      sha256: 9ae8e408c8151f03cd63028880d7319006c344b094607f6c0c583c01d196b721
+    - change_id: 2026-11-11-aifi-45-admission-task-binding
+      child_id: null
+      kind: raw
+      logical_path: test-plan.md
+      project_id: multica
+      projection_version: v1
+      sha256: 3192e57da4be8c8ebdd8a2a7576e543cf348374d6bc7654991961a122f0740ec
+    status: completed
+  understand:
+    confirmed_actor: ai
+    confirmed_at: '2026-11-11T19:11:30'
+    confirmed_by: dialog
+    confirmed_evidence: 重新确认 Gate 1
+    input_fingerprint: f914c6ecec0c4a2d9a1cc587a24ca6ad186ad06b7dcdf359f44495083cd0ced4
+    input_manifest:
+    - change_id: 2026-11-11-aifi-45-admission-task-binding
+      child_id: null
+      kind: projection
+      logical_path: canonical/proposals/2026-11-11-aifi-45-admission-task-binding.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 729f01930304de81f4a8ea2407654753413108770395b7cdffeac2e14913116b
+    - change_id: 2026-11-11-aifi-45-admission-task-binding
+      child_id: null
+      kind: projection
+      logical_path: proposal.md
+      project_id: multica
+      projection_version: v1
+      sha256: 3e05254361dc899316360328ab577f86a897cdcd32b1010717dac58c2112ddda
+    status: completed
+score_confidence: preliminary
+status: archived
+task_type: code
+traceability:
+  spec_scenarios: 0
+  tc_cases: 0
+  test_functions: 0
+version: '3.0'

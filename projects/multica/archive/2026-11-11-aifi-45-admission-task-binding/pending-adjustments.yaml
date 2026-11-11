@@ -1,0 +1,42 @@
+# pending-adjustments.yaml — BUILD 中发现的未决设计问题
+meta:
+  change_id: '2026-11-11-aifi-45-admission-task-binding'
+  created: '2026-11-11T15:40:03+08:00'
+  updated: '2026-11-11T16:20:19+08:00'
+adjustments:
+  - id: ADJ-001
+    original_design_ref: 'design.md 决策 2 fixedAnchor / TOCTOU；canonical/specs/code/admission-task-binding.yaml#REQ-ATB-002、SC-ATB-009'
+    actual_change: '登记时：尚未选择或实施设计调整；因涉及授权锚点竞态，按长程预授权降级暂停。 最终处理见 resolution。'
+    accepted_at: '2026-11-11T16:20:19'
+    accepted_evidence: 用户 2026-11-11 确认 Gate 2（原话「确认 Gate 2」）
+    reason: 'design.md 假设 run 接管后 source 不变，但 requirement 重入通过 runner_requirement_entry.go 的 recordRequirementRunContext 调用，runner_requirement_resume.go 合并新 execution_context 时可覆盖 source_task_id；重入和 reconcile 使用不同 advisory lock。等待 head 锁期间 source 可变，锁前 fixedAnchor 不足以证明当前 source。锁后读取也未证明读取后直至受保护动作完成期间 source、节点最新任务及 generation 不变；现有 task→runtime→head 锁序必须保留或重新论证，不能简单反向加锁。'
+    impact_scope: '需求派发与其他共享动作的 task/generation 锚定保证；需要先评估最小序列化方案和新增并发测试。'
+    severity: major
+    affected_capabilities: [admission-task-binding, authorized-runner]
+    exp_id: EXP-2026-0002
+    resolved: true
+    resolution: '已修订并经 Gate 2 重新确认（2026-11-11T16:20:19，用户原话「确认 Gate 2」）：design.md 决策 2 改为调用方快照给出锚点、decider 在头锁内读取 head/回执/generation/effect；删除锚点解析器与锁后重读，不新增锁，不写 S1→S2 交错测试。理由：头锁只串行化 head、回执与 effect，任务行不受其保护，旧快照等价于决策先于变更发生；保持准入锚点与入队归因取同一值，作为非原子边界接受。'
+  - id: ADJ-002
+    original_design_ref: 'canonical/specs/code/admission-task-binding.yaml#SC-ATB-011；design.md 决策 6；test-plan.md TC-ATB-011'
+    actual_change: '登记时：尚未修改已确认规格或测试；等待用户确认修订。 最终处理见 resolution。'
+    accepted_at: '2026-11-11T16:20:19'
+    accepted_evidence: 用户 2026-11-11 确认 Gate 2（原话「确认 Gate 2」）
+    reason: 'SC-ATB-011 要求节点 task completed 后经真实路由消费，但 binding 和 consumption 均调用 GetExecutionBindingClaim，该查询只接受 dispatched、running、waiting_local_directory。已 completed 的 task 不符合 claim；生产 daemon 正常顺序是 agent 退出时 defer 消费，然后报告 task 完成。不能以状态回改或伪造回执冒充真实流程。'
+    impact_scope: '真实路由验证场景与测试计划；可讨论将 completed 且无回执的等待负例与 active 时真实消费、随后完成并发现的正例分开。'
+    severity: major
+    affected_capabilities: [admission-task-binding]
+    exp_id: ''
+    resolved: true
+    resolution: '已修订并经 Gate 2 重新确认（2026-11-11T16:20:19，用户原话「确认 Gate 2」）：原 SC-ATB-011 改为现 SC-ATB-009：节点任务运行中经真实路由消费、完成后经发现才推进；『无自身回执不放行』由 SC-ATB-005 承担；不在真实路由层构造已完成任务补消费。'
+  - id: ADJ-003
+    original_design_ref: 'canonical/specs/code/admission-task-binding.yaml#SC-ATB-009；test-plan.md TC-ATB-009'
+    actual_change: '登记时：尚未修改已确认规格或测试；等待用户确认修订。 最终处理见 resolution。'
+    accepted_at: '2026-11-11T16:20:19'
+    accepted_evidence: 用户 2026-11-11 确认 Gate 2（原话「确认 Gate 2」）
+    reason: '若用排他授权头锁阻塞 gate，真实 consumption 路由也须取得该头锁，不能同时声称回执通过该真实路由在释放锁前提交。需区分可在锁等待期间提交的任务选择事实和同锁保护的回执事实，另以适当并发顺序验证。'
+    impact_scope: '锁交错测试的可执行时序，不放宽锁后读和撤销互斥断言。'
+    severity: major
+    affected_capabilities: [admission-task-binding]
+    exp_id: EXP-2026-0002
+    resolved: true
+    resolution: '已修订并经 Gate 2 重新确认（2026-11-11T16:20:19，用户原话「确认 Gate 2」）：删除原 SC/TC-ATB-009（锁交错）；撤销互斥沿用既有 TestAdmissionGateLockBlocksRevocation 与 TestAdmissionDeciderPanicReleasesHeadLock，二者已加入 run-admission-support 回归选择；本 change 不改锁序。原 SC-ATB-008（retry）并入 SC-ATB-005，原 010～012 顺延为 008～010。'

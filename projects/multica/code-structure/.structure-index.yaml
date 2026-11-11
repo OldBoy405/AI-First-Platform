@@ -1,7 +1,7 @@
 meta:
-  last_updated: '2026-11-11T10:24:45.144493'
+  last_updated: '2026-11-11T20:05:56.265308'
   modules: {}
-  total_changes: 2
+  total_changes: 3
 modules:
   apps/desktop/src/main/auth-session-coordinator.test.ts:
     changes:
@@ -184,9 +184,11 @@ modules:
     changes:
     - 2026-10-29-trusted-verdict-outcome-binding
     - 2026-10-30-aifi-45-ci-disposable-db-supervisor
+    - 2026-11-11-aifi-45-admission-task-binding
   scripts/aifi45-disposable/run-selection.test.mjs:
     changes:
     - 2026-10-30-aifi-45-ci-disposable-db-supervisor
+    - 2026-11-11-aifi-45-admission-task-binding
   scripts/aifi45-disposable/selection.mjs:
     changes:
     - 2026-10-29-trusted-verdict-outcome-binding
@@ -206,6 +208,7 @@ modules:
   server/cmd/server/execution_run_003_test.go:
     changes:
     - 2026-10-29-trusted-verdict-outcome-binding
+    - 2026-11-11-aifi-45-admission-task-binding
   server/cmd/server/integration_test.go:
     changes:
     - 2026-10-29-trusted-verdict-outcome-binding
@@ -267,6 +270,40 @@ modules:
   server/internal/governance/execution_admission.go:
     changes:
     - 2026-10-29-trusted-verdict-outcome-binding
+    - 2026-11-11-aifi-45-admission-task-binding
+  server/internal/governance/execution_admission_cleanup_test.go:
+    changes:
+    - 2026-11-11-aifi-45-admission-task-binding
+  server/internal/governance/execution_admission_enqueue_test.go:
+    changes:
+    - 2026-11-11-aifi-45-admission-task-binding
+  server/internal/governance/execution_admission_gate.go:
+    changes:
+    - 2026-11-11-aifi-45-admission-task-binding
+  server/internal/governance/execution_admission_gate_test.go:
+    changes:
+    - 2026-11-11-aifi-45-admission-task-binding
+  server/internal/governance/execution_admission_human_gate_test.go:
+    changes:
+    - 2026-11-11-aifi-45-admission-task-binding
+  server/internal/governance/execution_admission_lock_test.go:
+    changes:
+    - 2026-11-11-aifi-45-admission-task-binding
+  server/internal/governance/execution_admission_requirement_enqueue_test.go:
+    changes:
+    - 2026-11-11-aifi-45-admission-task-binding
+  server/internal/governance/execution_admission_task_binding_test.go:
+    changes:
+    - 2026-11-11-aifi-45-admission-task-binding
+  server/internal/governance/execution_admission_task_decider_test.go:
+    changes:
+    - 2026-11-11-aifi-45-admission-task-binding
+  server/internal/governance/execution_admission_task_discovery_test.go:
+    changes:
+    - 2026-11-11-aifi-45-admission-task-binding
+  server/internal/governance/execution_admission_test.go:
+    changes:
+    - 2026-11-11-aifi-45-admission-task-binding
   server/internal/governance/execution_authorization.go:
     changes:
     - 2026-10-29-trusted-verdict-outcome-binding
@@ -279,6 +316,9 @@ modules:
   server/internal/governance/execution_channel_reader.go:
     changes:
     - 2026-10-29-trusted-verdict-outcome-binding
+  server/internal/governance/execution_consumption_effect_test.go:
+    changes:
+    - 2026-11-11-aifi-45-admission-task-binding
   server/internal/governance/execution_control_command_attestation_test.go:
     changes:
     - 2026-10-29-trusted-verdict-outcome-binding
@@ -354,9 +394,13 @@ modules:
   server/internal/governance/runner.go:
     changes:
     - 2026-10-29-trusted-verdict-outcome-binding
+    - 2026-11-11-aifi-45-admission-task-binding
   server/internal/governance/runner_integration_test.go:
     changes:
     - 2026-10-29-trusted-verdict-outcome-binding
+  server/internal/governance/runner_requirement.go:
+    changes:
+    - 2026-11-11-aifi-45-admission-task-binding
   server/internal/governance/runnerquery_test/active_query_test.go:
     changes:
     - 2026-10-29-trusted-verdict-outcome-binding

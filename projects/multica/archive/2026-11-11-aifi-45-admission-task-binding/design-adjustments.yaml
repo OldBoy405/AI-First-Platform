@@ -1,0 +1,71 @@
+# design-adjustments.yaml — 设计调整汇总（C6）
+# 由 pending-adjustments.yaml（ADJ-001/002/003）汇总，另加 BUILD 中发现的 ADJ-004。
+# 只供人工审阅与后续修订输入；不是批准、执行授权或验收结论。
+
+meta:
+  change_id: 2026-11-11-aifi-45-admission-task-binding
+  created: '2026-11-11T17:20:00'
+  total_adjustments: 4
+  requires_re_spec: false
+  requires_re_build: false
+  note: >-
+    ADJ-001～003 已在 Gate 2 重新确认（2026-11-11T16:20:19，用户原话「确认 Gate 2」）时落入 design.md 与两份 canonical spec。
+    返修前记录的待决勘误包括 test-plan.md 的函数名、解析器和测试顺序，以及 design.md 的设计期未验证措辞。
+    用户后续原话「请确认是否按上述方案返修，并一并修正索引及文档勘误，不要扩大范围，不要过度设计。」；现已完成
+    上述勘误及 canonical 索引路径修正。受审输入已变化，待重新确认 Gate 2；这段授权不是 Gate 2 确认。
+    返修复核发现原 proposal 的锁内解析约束与已确认的调用方快照设计不一致。用户后续原话
+    「采纳，授权实施，不过度设计，不要扩大范围」；现按 ADJ-001 同步 proposal 的两处表述，原文保留在下方。
+    这段授权不是 Gate 确认；用户后续分别原话「重新确认 Gate 1」「重新确认 Gate 2」，已登记为 Gate 1（19:11:30）
+    与 Gate 2（19:14:13）的重新确认；Gate 3 仍待用户确认。
+
+adjustments:
+  - id: ADJ-001
+    category: design_change
+    original: >-
+      design.md 决策 2：run 接管后 source_task_id 不变，持头锁后重新解析锚点；另有锁交错测试（原 SC/TC-ATB-009）。
+      原 proposal 约束原文：准入仍在持有授权头锁的事务内重读全部输入；调用方只传标识符，不传结论。
+      原 proposal 风险缓解原文：锚点由 run／节点行在持锁事务内按固定规则解析，每个动作都有「借用他任务被拒」用例；重放与重试任务各有用例。
+    adjusted: >-
+      去掉锚点解析器与锁后重读，不做 task 行锁；decideUnderHeadLock(ctx, workspaceID, crID, taskID) 签名与锁序不变，
+      调用方快照给出锚点，decider 在头锁内读头、回执与 effect。保留唯一不变量：准入锚点与入队归因取同一个 sourceTaskID。
+      SC/TC 由 12 个减为 10 个（原 008 并入 005，原 009 删除，010～012 顺延为 008～010）。
+      用户授权后，同步 proposal 的约束与风险缓解：调用方按快照选锚点，头锁内检查所选任务的当前 generation、回执与 effect；
+      头锁不保护 task 行，快照可能略旧。proposal 修订后的 Gate 1、Gate 2 已分别重新确认。
+    reason: >-
+      头锁只保护授权头、回执和 effect 链，任务行不在其中，锁后重读不增加保证；反向加 task 行锁会违反既有
+      task → runtime → CR head 锁序。撤销互斥沿用既有 TestAdmissionGateLockBlocksRevocation 与
+      TestAdmissionDeciderPanicReleasesHeadLock。
+    affected_capabilities: [admission-task-binding, authorized-runner]
+    resolved_in_phase: spec（Gate 2 重新确认）
+
+  - id: ADJ-002
+    category: spec_change
+    original: 原 SC-ATB-011：节点任务 completed 之后经真实路由消费。
+    adjusted: >-
+      现 SC-ATB-009：节点任务运行中经真实路由消费，随后置 completed，再经发现推进；「completed 且无回执」只在
+      TC-ATB-005 与 TC-ATB-009 的对照用例中验证。
+    reason: >-
+      GetExecutionBindingClaim 只接受 dispatched/running/waiting_local_directory，真实 daemon 先在 defer 里消费、
+      再回报完成，completed 之后不可能再走真实路由。
+    affected_capabilities: [admission-task-binding]
+    resolved_in_phase: spec（Gate 2 重新确认）
+
+  - id: ADJ-003
+    category: test_change
+    original: 排他头锁阻塞 gate 期间，由真实 consumption 路由在锁释放前提交回执（原 SC/TC-ATB-009）。
+    adjusted: 删除该场景；撤销互斥由既有锁测试覆盖，不放宽锁序或撤销互斥断言。
+    reason: 真实 consumption 路由同样要取得排他头锁，二者不可能在同一把锁上同时成立。
+    affected_capabilities: [admission-task-binding]
+    resolved_in_phase: spec（Gate 2 重新确认）
+
+  - id: ADJ-004
+    category: test_change
+    original: >-
+      原汇总误称此断言来自 test-plan.md TC-ATB-008；实际是主会话委派测试时额外要求「首节点不再等待 admission」。
+    adjusted: >-
+      不断言派发成功后 wait_reason 被清除；只断言任务数、run 状态与派发前的 wait_reason=admission / WAIT_CONSUMPTION。
+    reason: >-
+      派发成功路径不清除 wait_reason 是既有行为（HEAD 的 gate 同样），spec 和 test-plan.md 未要求清除；
+      这条是委派步骤多出的断言。未改生产代码，BUILD 期间已向用户说明（见 test-report.md 第九节）。
+    affected_capabilities: [admission-task-binding]
+    resolved_in_phase: build

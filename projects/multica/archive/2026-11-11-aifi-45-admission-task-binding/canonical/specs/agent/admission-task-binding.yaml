@@ -1,0 +1,96 @@
+# agent_spec.yaml — Agent 验证规格（Canonical YAML）
+
+meta:
+  task_id: admission-task-binding
+  change_id: 2026-11-11-aifi-45-admission-task-binding
+  created: '2026-11-11'
+  task_type: code
+  system: multica governance 的准入判定、Runner 受保护动作与真实 consumption 路由，隔离 Postgres
+  preconditions:
+    - 每个 action 经 scripts/aifi45-disposable/run-selection.mjs 的 --only 运行 selections.json 中名称对应的一条选择；每次运行由 supervisor 自建并释放一次性实例，禁止外部 admin 连接、共享库与 multica-postgres、multica-backend、aifi45-disposable 等非本次创建的资源。
+    - 选择的 harness 要求退出 0、skip 为 0、fail 为 0、至少一个叶子 PASS；零匹配、skip 或名称不存在均不算通过。
+    - 执行前须启动 Podman 虚拟机并在整个 run 内独占；真实路由测试走 bindingIssueFixture.routes 与真实 TaskService，不以直接写表代替 consumption 路由或发现路径。
+rollback:
+  steps:
+    - 只释放本轮 supervisor 创建的一次性实例（按完整 ID 与标签读回），不执行共享库 cleanup。
+steps:
+  - id: CP-ATB-001
+    description: SC-ATB-001 / TaskID 空或畸形返回 ErrAdmissionInvalid；锚点行缺失、他 workspace、无 generation 均 WAIT_CONSUMPTION。
+    action: node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only atb-001
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'PASS atb-001 '
+  - id: CP-ATB-002
+    description: SC-ATB-002 / 他 task、旧 generation、他 CR 的回执都不放行（WAIT_CONSUMPTION）。
+    action: node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only atb-002
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'PASS atb-002 '
+  - id: CP-ATB-003
+    description: SC-ATB-003 / 当前回执在但 settlement、verdict、cursor、command 任一缺失 → WAIT_TRUSTED_T_COMMIT，不借他 task 的链。
+    action: node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only atb-003
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'PASS atb-003 '
+  - id: CP-ATB-004
+    description: SC-ATB-004 / 完整可信 effect → ADMITTED；载荷四种破坏各自 WAIT_TRUSTED_T_COMMIT；head 原因不变。
+    action: node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only atb-004
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'PASS atb-004 '
+  - id: CP-ATB-005
+    description: SC-ATB-005 / 完成有 own-task 的节点锚定其任务；source 或他 task 的消费不放行。
+    action: node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only atb-005
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'PASS atb-005 '
+  - id: CP-ATB-006
+    description: SC-ATB-006 / 无 own-task 的完成与人工门锚定 source；他 task 的消费不放行。
+    action: node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only atb-006
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'PASS atb-006 '
+  - id: CP-ATB-007
+    description: SC-ATB-007 / 首次派发锚定 source，不要求节点任务预先消费；他 task 的消费不放行。
+    action: node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only atb-007
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'PASS atb-007 '
+  - id: CP-ATB-008
+    description: SC-ATB-008 / 真实路由提交后无节点任务；两次真实发现后恰一个首节点任务且计数不变。
+    action: node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only atb-008
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'PASS atb-008 '
+  - id: CP-ATB-009
+    description: SC-ATB-009 / 节点任务运行中经真实路由消费、完成后经发现才推进，并派发后续节点。
+    action: node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only atb-009
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'PASS atb-009 '
+  - id: CP-ATB-010
+    description: SC-ATB-010 / 同 generation 重放 200 changed=false；新 generation 回执 +1、链记录 +0、准入恢复。
+    action: node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only atb-010
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'PASS atb-010 '

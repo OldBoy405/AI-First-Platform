@@ -1,0 +1,23 @@
+# agent_spec.yaml — Agent 验证规格（Canonical YAML）；MODIFIED 增量：只含与 SC-RUN-003 相关的检查点。
+
+meta:
+  task_id: authorized-runner
+  change_id: 2026-11-11-aifi-45-admission-task-binding
+  created: '2026-11-11'
+  task_type: code
+  system: multica 真实认证入口、统一 wake 与隔离 Postgres
+  preconditions:
+    - 同 admission-task-binding：一次性实例由 supervisor 自建并释放；skip 为 0、至少一个叶子 PASS。
+    - 本检查点是既有 TC-RUN-003 的回归；其 fixture 在本 change 中改为命名 source 锚点，断言不削弱。
+rollback:
+  steps:
+    - 只释放本轮 supervisor 创建的一次性实例。
+steps:
+  - id: CP-RUN-003
+    description: SC-RUN-003 / 回归：锚点 task 的 effect 未提交前只 wake 不推进；写入口只信已验签并入链的 verdict。
+    action: node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only run-routes
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'PASS run-routes '

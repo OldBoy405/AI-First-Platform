@@ -1,0 +1,126 @@
+# 2026-11-11-aifi-45-admission-task-binding.yaml — Canonical Proposal (YAML-first, V2.9)
+# AI 起草、AI 修改、AI 消费。Human View 由 `stdd canon generate` 生成。
+
+meta:
+  change_id: "2026-11-11-aifi-45-admission-task-binding"
+  title: "AIFI-45：准入按任务／generation 绑定消费事实，并以真实 consumption 路由与发现路径验证推进"
+  created: "2026-11-11T12:02:16"
+  status: draft
+  version: "2.9"
+
+why:
+  problem: |
+    准入决策器 DecideAdmission 是 CR 级判定：只要该 CR 下有任意一条 consumption 回执，且任意一个 task 的
+    effect 结算通过校验，所有受保护动作（节点 markNode(passed)、人工门 passHumanApprovalNode、
+    enqueueNodeFor / enqueueRequirementNode 派发）都被放行。AdmissionRequest.TaskID 是预留接缝，
+    不参与任何判定。后果是消费事实可被借用：
+    - TC-RUN-003 用一个随机 UUID 的"消费 task"（既不是 run 的 source 任务，也不是任何节点任务）的回执、
+      结算和 verdict，在最后一个阶段开放了派发；
+    - 回执按 (workspace, cr, runtime, task, dispatched_at) 即 generation 记录，effect 按 task 只签一次
+      （M005 已批准），但准入既不比较 generation，也不要求回执对应受保护动作所涉任务；
+    - 取"CR 内最近一条 effect"验证，被验证的 verdict 与被计数的回执不一定是同一个 task。
+    M005 起平台按 task 签发 effect（request_id = task id），任务级绑定第一次有了可依赖的事实载体。
+    SC-RUN-003 原文即为"对应 task 的平台 consumption effect 提交后才推进"，现实现只做到"CR 内有某个"。
+
+    只读核查得到的、决定设计边界的事实（读代码得出，未运行）：
+    1) 首个任务不是 Runner 创建的。run 由 StartArchitecture / StartRequirement 在一个已存在的 source 任务
+       （task-token 的 X-Task-ID）下登记，随即首次 Reconcile；checkSourceTask 允许 source 的 cr_id 为 NULL。
+    2) 只有触发评论里声明 context.execution.contract 的任务才走 daemon 的 strict preflight，在 agent 启动前
+       消费；这是授权入口任务（即典型的 source 任务）。Runner 入队的节点任务触发内容为空、不走 strict，其
+       consumption 只有在 agent 经 binding endpoint 取得证明后由 daemon 在运行结束时延迟写入。
+       因此：a) 派发前不可能存在 run 内节点任务的消费——首次派发若要求节点任务的消费就是循环依赖；
+       b) 节点任务在生产中是否都会产生 consumption，本次核查没有证据（取舍见 risk_areas 第一项）。
+    3) consumption 提交不发布任何事件或 wake；执行 ACK 与 binding 签发同样不唤醒。等待→推进只能依赖既有
+       事件（CR 更新、节点任务完成／失败、非执行类 ACK）或周期发现 ResumeActiveRuns（启动扫描 + 30s sweeper）。
+       该发现路径只覆盖 architecture 与 requirement 两类 run，不覆盖 code 类 run，且未找到 code run 的生产启动入口。
+    4) 任务 generation = (task id, runtime_id, dispatched_at)：同一 task id 被重新认领会刷新 dispatched_at；
+       技术重试则新建 task 行（retry_of / parent 保留），不是同 id。
+  motivation: |
+    M005 报告把"真实 consumption → 发现 → 推进未串测""generation 绑定未定"列为未完成项。不收紧，则准入
+    名义上按"对应 task"放行，实际可被任一 task 的消费事实打开；不先核实首任务路径就加绑定，又会把
+    首次派发锁死。本变更只做"每个受保护动作依赖哪个任务的哪一代消费"以及对它的真实验证。
+
+what_changes:
+  - id: C1
+    description: "准入请求用 TaskID 命名它所依赖的锚点任务；DecideAdmission 只认该 task：(a) 回执 CR 等于请求 CR 且 task 等于锚点；(b) 回执的 runtime_id + dispatched_at 等于锚点 task 行当前的 generation；(c) 以该 task 自己的 effect 结算及其 verdict 走既有链校验，不再取 CR 内「最近一条」。锚点缺失、无当前 generation 的回执一律等待（WAIT_CONSUMPTION），无 effect／verdict 校验不过等待（WAIT_TRUSTED_T_COMMIT）；TaskID 为空是调用方缺陷（ErrAdmissionInvalid）。判定原因的稳定字符串集合不扩大。"
+    type: modified
+  - id: C2
+    description: "确定受保护动作到锚点任务的映射并落到调用点：完成一个有自有任务的节点（markNode(passed)）→ 该节点当前选中的任务；无自有任务的动作（两条派发路径、人工门、被跳过而无任务的节点）→ 该 run 的授权入口 source 任务（execution_context.source_task_id）。不使用「CR 内任意／最近任务」。映射表写入 design，并有逐动作用例。"
+    type: modified
+  - id: C3
+    description: "首次派发锚在 run 的 source 任务：不要求任何 run 内节点任务的消费，避免循环依赖；source 无当前 generation 回执时只等待、不放行（失败关闭）。"
+    type: modified
+  - id: C4
+    description: "不新增 wake。等待→推进的验证走真实 consumption 路由提交回执，再由系统实际的发现路径（ResumeActiveRuns）推进；断言提交后、发现前没有任务入队，重复发现不重复派发。"
+    type: new
+  - id: C5
+    description: "测试：把依赖「CR 内任意 task 的消费事实」的既有 fixture（TC-RUN-003 的随机消费 task 等）改成命名锚点任务；新增任务／generation 错配、合法重放、真实路由到发现推进的串联用例，在获授权的一次性库上跑 selections 全组回归。"
+    type: modified
+  - id: C6
+    description: "校正 execution_admission.go 里「TaskID 预留接缝」「按 CR 计数」的陈旧注释；按 CUSTOM.md 现行结构登记定制。"
+    type: modified
+
+capabilities:
+  new:
+    - name: "admission-task-binding"
+      description: "每个受保护动作的准入只依赖一个明确的锚点任务及其当前 generation 的消费回执和该任务自己的 effect；错配拒绝，合法重放不改变结论。"
+  modified:
+    - name: "authorized-runner"
+      description: "SC-RUN-003 的「对应 task 的 consumption effect」落实为锚点任务规则；首次派发的锚点为 source 任务；其余场景不变。"
+
+constraints:
+  - "不改 schema、不加路由、不改 T(crctl) 与 daemon；不改 consumption 路由与 effect 签发（M005 的 SC-CE-* 不变）：同 task 新 generation 仍新增回执、不新增第二套 effect 链。"
+  - "调用方按动作的 run／节点快照传入锚点 task 标识，不传准入结论；decider 在持授权头锁的事务内读取该 task 的当前 generation、回执及自身 effect 并验证。头锁不保护 task 行，不承诺锚点选取与准入是原子操作。"
+  - "不绕过既有链校验：verdict 验签、scope、command_digest 校验沿用 VerifyTrustedVerdictEffect。"
+  - "真实数据库验证只用获授权的一次性环境（scripts/aifi45-disposable 自建、自释放的实例），不操作 multica-postgres、multica-backend 或任何未核实归属的容器与旧库。"
+  - "multica 代码注释用英文；按 CUSTOM.md 现行结构登记；追溯用 STDD change id，不编造 CR 编号。"
+
+stakeholders:
+  - "multica 服务端维护者"
+  - "AIFI-45 授权执行链的使用者与审批人"
+
+risk_areas:
+  - capability: "admission-task-binding"
+    risk: "过紧：完成类动作绑定节点自有任务，若生产中节点任务不产生 consumption，run 会在首个节点完成处永久等待。"
+    mitigation: "失败关闭且有稳定的等待原因；真实路由验证给出实际行为；取舍结论（Q1，待 Gate 1 确认）：采纳严格方案，完成类动作锚在节点自有任务，不改为统一锚在 source（那会让一次入口消费成为整条 run 的环境授权，节点工作不再有各自的消费证据）。若真实验证显示节点任务在生产中不产生 consumption，处置放在证据生产者一侧（让 daemon／T 为节点任务取证明，另立 change），不放宽验证方。"
+  - capability: "admission-task-binding"
+    risk: "过松：锚点选错（例如 walker 每次 wake 会重放已通过节点的 markNode(passed)，重试子任务会成为节点的最新任务）。"
+    mitigation: "调用方按 run／节点快照选择锚点，decider 在持授权头锁的事务内检查所选 task 的当前 generation、回执及自身 effect；头锁不保护 task 行，快照可能略旧。准入锚点与派发归因使用同一 sourceTaskID；借用他任务、重放与重试均有用例。"
+  - capability: "authorized-runner"
+    risk: "既有 fixture（TC-RUN-002/003、准入与 consumption 用例）隐含「CR 级」语义，改 fixture 时可能顺手削弱断言。"
+    mitigation: "只改被消费的 task 身份，不改断言强度；全组回归 0 FAIL、0 skip，且 diff 复核断言未减少。"
+  - capability: "admission-task-binding"
+    risk: "真实库验证需要 Podman 虚拟机；此前记录显示它未运行。"
+    mitigation: "仅启动／使用 supervisor 自建的一次性实例；真实步骤独占 podman；按完整 ID 与标签回读释放。"
+
+non_goals:
+  - "不含 fork CI 修复（后端任务与 nonce 门禁等另有登记）。"
+  - "不含 RUN-006 完整额度／停止／resume 与 M008 完整恢复入口。"
+  - "不接 T 的 verdict、不建 selection/reservation 生产者。"
+  - "不迁移、不回填历史 consumption 或历史 CR 实例；旧 CR 继续失败关闭。"
+  - "不让 daemon／T 为节点任务主动取证明；不给 consumption、execution ACK 增加 wake。"
+  - "不为 code 类 run 补周期发现入口；code 路径的门禁只经共用 gate 函数获得同一锚点规则，端到端串联只覆盖 architecture 与 requirement。"
+  - "不动 daemon 的 recordConsumptionAfterDelivery 开关与 strict preflight。"
+
+critical:
+  is_critical: false
+  risk_assessment:
+    safety_critical: false
+    financial: false
+    cross_system: false
+
+anchoring:
+  level: L1
+  reference_changes:
+    - "2026-11-10-aifi-45-m005-consumption-effect"
+    - "2026-10-22-aifi-45-authorized-execution"
+  anchor_implementations: []
+
+success_criteria:
+  - "同一 CR 里，仅有另一个 task（含与该 run 无关的 task）的回执与 effect 时，四类受保护动作均不放行：节点不置 passed、不入队、人工门不通过，原因为 WAIT_CONSUMPTION；TC-RUN-003 对应阶段改为命名锚点后仍成立。"
+  - "锚点任务有其当前 generation 的回执、自己的 effect 与通过校验的 verdict 时，该动作放行；锚点任务只有旧 generation 回执（任务被重新认领，dispatched_at 已变）时为 WAIT_CONSUMPTION；同 task 新 generation 经真实路由提交回执后放行，且该 task 的 command／verdict／settlement 仍各为 1 条。"
+  - "design 给出受保护动作到锚点的映射表，测试对每个动作至少覆盖一个「借用他任务的消费事实被拒」和一个「用对任务放行」用例。"
+  - "首次派发：run 的 source 任务有当前 generation 回执与 effect 时成功派发，不需要任何节点任务的回执；source 无回执时只等待。"
+  - "真实串联（一次性库）：经真实 consumption 路由提交 source 回执（201）后，在发现路径运行前没有任务入队；ResumeActiveRuns 一次后恰有 1 个首节点任务；再运行一次 ResumeActiveRuns，任务行与节点行数量不变。"
+  - "合法重放：同 generation 回执重放（200，changed=false）后准入结论不变，且不新增回执、command、verdict、settlement。"
+  - "既有 selections.json 全部选择在一次性库上 0 FAIL、0 skip；diff 内无迁移文件、无新路由、无 daemon 或 T 文件改动。"
