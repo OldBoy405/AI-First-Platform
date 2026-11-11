@@ -1,0 +1,89 @@
+# agent_spec.yaml — Agent 验证规格（Canonical YAML）
+
+meta:
+  task_id: disposable-test-instance
+  change_id: 2026-10-30-aifi-45-ci-disposable-db-supervisor
+  created: '2026-11-11'
+  task_type: code
+  system: multica 的 scripts/aifi45-disposable 与 server/internal/governance，本机 podman 的一次性 Postgres 实例
+  preconditions:
+    - 每个 action 从 multica 仓根执行；Windows 下 bash 须解析到 Git Bash。
+    - 单元步骤不依赖 podman；真实步骤文件 instance.real.mjs 不含 .test.，默认通配不执行，只在显式指定文件名时运行，不存在 skip 状态。
+    - CP-DTI-005/006/007 需要 Podman 虚拟机已启动且本机已有 docker.io/pgvector/pgvector:pg17；真实步骤比较运行前后的容器与卷集合，执行期间不得有其他容器或卷被创建或删除（独占假设）。
+    - action 采用程序加参数写法，cmd.exe 与 /bin/sh 均可执行；node --test 命令用 TAP reporter，使成功输出为 ASCII。失败输出中的非 ASCII 字节若无法按执行器的系统 locale 解码（中文 Windows 为 cp936），执行器会崩溃，这是响亮失败，不会变成通过。
+    - TAP 的 '# pass N' 钉住所选 TC 在各 CP 中的测试数；所选测试零匹配、skip 或缺测试都会使其失败，增删该 TC 的测试须重签 Gate 2。
+    - 不访问 multica-postgres、multica-backend 及任何非本次创建的容器和卷；不访问历史 HOLD 库与生产。
+rollback:
+  steps:
+    - 只按完整容器 ID 删除本轮创建的实例（核对名称与标签后）；其他资源不动。
+steps:
+  - id: CP-DTI-001
+    description: SC-DTI-001 / 创建参数的固定信封。
+    action: node --test --test-reporter=tap --test-name-pattern=TC-DTI-001 scripts/aifi45-disposable/instance.test.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'TC-DTI-001'
+      - type: stdout_contains
+        expected: '# pass 7'
+  - id: CP-DTI-002
+    description: SC-DTI-002 / --admin-url 在创建容器之前被拒绝。
+    action: node --test --test-reporter=tap scripts/aifi45-disposable/run-selection.test.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'TC-DTI-002'
+      - type: stdout_contains
+        expected: '# pass 2'
+  - id: CP-DTI-003
+    description: SC-DTI-003 / 归属匹配时按 ID 释放并读回为零。
+    action: node --test --test-reporter=tap --test-name-pattern=TC-DTI-003 scripts/aifi45-disposable/instance.test.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'TC-DTI-003'
+      - type: stdout_contains
+        expected: '# pass 2'
+  - id: CP-DTI-004
+    description: SC-DTI-004 / 归属不匹配时不发出删除命令。
+    action: node --test --test-reporter=tap --test-name-pattern=TC-DTI-004 scripts/aifi45-disposable/instance.test.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'TC-DTI-004'
+      - type: stdout_contains
+        expected: '# pass 2'
+  - id: CP-DTI-005
+    description: SC-DTI-005 / 强杀入口后实例在上限加宽限内自毁（真实 podman）。
+    action: node --test --test-reporter=tap --test-name-pattern=TC-DTI-005 scripts/aifi45-disposable/instance.real.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'TC-DTI-005'
+      - type: stdout_contains
+        expected: '# pass 1'
+  - id: CP-DTI-006
+    description: SC-DTI-006 / 真实入口运行（一个通过、一个失败的选择）后释放并读回为零，其他容器与卷不变。
+    action: node --test --test-reporter=tap --test-name-pattern=TC-DTI-006 scripts/aifi45-disposable/instance.real.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'TC-DTI-006'
+      - type: stdout_contains
+        expected: '# pass 1'
+  - id: CP-DTI-007
+    description: SC-DTI-007 / governance 在错误 nonce 下于写 fixture 之前非零退出，且身份校验拒绝非一次性库（两个各自只含一个测试的选择；零匹配即失败）。
+    action: node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.identity.json
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'PASS governance-nonce-gate '
+      - type: stdout_contains
+        expected: 'PASS governance-identity-check '

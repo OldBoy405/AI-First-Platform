@@ -1,0 +1,264 @@
+approval_receipts:
+- confirmed_actor: ai
+  confirmed_at: '2026-11-11T00:18:55'
+  confirmed_by: dialog
+  confirmed_evidence: 确认 Gate 2，确认全部
+  note: reapproved; prior input_fingerprint=0b53af041858d85805148a2f1dc2e67f12864d527bf3626c2a1345b217990e48
+  receipt_id: gate2-2026-11-11T00:18:55
+  recorded_at: '2026-11-11T10:16:17'
+  status: superseded
+change_id: 2026-10-30-aifi-45-ci-disposable-db-supervisor
+complexity_score: 6
+current_phase: deliver
+design_adjustments:
+  count: 0
+last_modified: '2026-11-11T10:24:41.776457'
+long_range:
+  enabled: true
+  mode: full_auto
+  pre_auth_completed: true
+  pre_auth_timestamp: '2026-11-11T00:19:01'
+mode: standard
+phases:
+  build:
+    confirmed_actor: ai
+    confirmed_at: '2026-11-11T10:24:25'
+    confirmed_by: dialog
+    confirmed_evidence: 确认 Gate 3，提交、合并、推送、归档。
+    input_fingerprint: 8bc0a715b6047379d376f6600ef328695a9ef231b3e7a16e95e66c23c5656800
+    input_manifest:
+    - change_id: 2026-10-30-aifi-45-ci-disposable-db-supervisor
+      child_id: null
+      kind: projection
+      logical_path: .stdd.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: bd1c6f0b2fe636bc89c191cf4cfbd20324fe2081ed9827837a258777de870667
+    - change_id: 2026-10-30-aifi-45-ci-disposable-db-supervisor
+      child_id: null
+      kind: raw
+      logical_path: canonical/.canon-index.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 085bf43c8a7f0a7dd4a9107af042957954caa24dfceb208260371659b564c6c8
+    - change_id: 2026-10-30-aifi-45-ci-disposable-db-supervisor
+      child_id: null
+      kind: projection
+      logical_path: canonical/proposals/2026-10-30-aifi-45-ci-disposable-db-supervisor.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 368f7551ebe9d6fc8593f4ea08e9ac23f3e66566b18970439e6704f8f878d768
+    - change_id: 2026-10-30-aifi-45-ci-disposable-db-supervisor
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/agent/disposable-test-instance.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 6515abfcdec0beb3143b24e14841988dab2f0e09878068403ff4564ac30c0f77
+    - change_id: 2026-10-30-aifi-45-ci-disposable-db-supervisor
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/agent/test-wrapper-path-guard.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 676709d20363ecc60a51153787cf71166ff4644979bbd9ba752ac3570406d08d
+    - change_id: 2026-10-30-aifi-45-ci-disposable-db-supervisor
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/code/disposable-test-instance.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 1bd8439731164a881e895e6e5e1c9d835c8e259e44c3bedf3da6d3c2577924d9
+    - change_id: 2026-10-30-aifi-45-ci-disposable-db-supervisor
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/code/test-wrapper-path-guard.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: e7b6a19db98cea7e2286fb9210b2f752e6ae24c5311d9254efb2ba3999ac363b
+    - change_id: 2026-10-30-aifi-45-ci-disposable-db-supervisor
+      child_id: null
+      kind: raw
+      logical_path: design.md
+      project_id: multica
+      projection_version: v1
+      sha256: 548d5a8dc7801a513774229e7e36b0ebf887f37935774643a47856452d150709
+    - change_id: 2026-10-30-aifi-45-ci-disposable-db-supervisor
+      child_id: null
+      kind: projection
+      logical_path: proposal.md
+      project_id: multica
+      projection_version: v1
+      sha256: 5f7cdc4cdb462f6d829f7e24c647b45602e49ea648fbf8b68a39ca8992f26e86
+    - change_id: 2026-10-30-aifi-45-ci-disposable-db-supervisor
+      child_id: null
+      kind: raw
+      logical_path: specs/disposable-test-instance/spec.md
+      project_id: multica
+      projection_version: v1
+      sha256: 5d2ddc738c82e31650543db188627c38be39bb46f0a96b3c6d56e296e3843a05
+    - change_id: 2026-10-30-aifi-45-ci-disposable-db-supervisor
+      child_id: null
+      kind: raw
+      logical_path: specs/test-wrapper-path-guard/spec.md
+      project_id: multica
+      projection_version: v1
+      sha256: 9c26d8dd944a24fda9a3d48c454edd24484b20bd02c5139a4c47301da37619b5
+    - change_id: 2026-10-30-aifi-45-ci-disposable-db-supervisor
+      child_id: null
+      kind: raw
+      logical_path: test-plan.md
+      project_id: multica
+      projection_version: v1
+      sha256: ab21ba64682d63fd851380fffd657a14a8953b5aacdf7c689f451be933818fee
+    - change_id: 2026-10-30-aifi-45-ci-disposable-db-supervisor
+      child_id: null
+      kind: raw
+      logical_path: test-report.md
+      project_id: multica
+      projection_version: v1
+      sha256: a3382a58099e7db9d2df923d0d5fd6e13aa0d0d111a26126198d58d692dd74a6
+    slices_completed:
+      '1':
+        new_tests: 3
+        status: done
+        tc_coverage: 3/3
+        verified_at: '2026-11-11T00:27:00'
+      '2':
+        new_tests: 11
+        status: done
+        tc_coverage: 3/3
+        verified_at: '2026-11-11T00:36:00'
+      '3':
+        new_tests: 1
+        status: done
+        tc_coverage: 1/1
+        verified_at: '2026-11-11T00:40:00'
+      '4':
+        new_tests: 3
+        status: done
+        tc_coverage: 2/2
+        verified_at: '2026-11-11T00:46:00'
+      '5':
+        new_tests: 2
+        status: done
+        tc_coverage: 1/1
+        verified_at: '2026-11-11T00:52:00'
+    status: completed
+  deliver:
+    status: in_progress
+  spec:
+    confirmed_actor: ai
+    confirmed_at: '2026-11-11T10:16:17'
+    confirmed_by: dialog
+    confirmed_evidence: 重新确认 Gate 2；授权你启动 Podman 虚拟机
+    input_fingerprint: bdabc804ff4b75db56ebb07146b422e9630deb704acebf71207f48d5cce2f9d2
+    input_manifest:
+    - change_id: 2026-10-30-aifi-45-ci-disposable-db-supervisor
+      child_id: null
+      kind: raw
+      logical_path: canonical/.canon-index.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 085bf43c8a7f0a7dd4a9107af042957954caa24dfceb208260371659b564c6c8
+    - change_id: 2026-10-30-aifi-45-ci-disposable-db-supervisor
+      child_id: null
+      kind: projection
+      logical_path: canonical/proposals/2026-10-30-aifi-45-ci-disposable-db-supervisor.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 368f7551ebe9d6fc8593f4ea08e9ac23f3e66566b18970439e6704f8f878d768
+    - change_id: 2026-10-30-aifi-45-ci-disposable-db-supervisor
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/agent/disposable-test-instance.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 6515abfcdec0beb3143b24e14841988dab2f0e09878068403ff4564ac30c0f77
+    - change_id: 2026-10-30-aifi-45-ci-disposable-db-supervisor
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/agent/test-wrapper-path-guard.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 676709d20363ecc60a51153787cf71166ff4644979bbd9ba752ac3570406d08d
+    - change_id: 2026-10-30-aifi-45-ci-disposable-db-supervisor
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/code/disposable-test-instance.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 1bd8439731164a881e895e6e5e1c9d835c8e259e44c3bedf3da6d3c2577924d9
+    - change_id: 2026-10-30-aifi-45-ci-disposable-db-supervisor
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/code/test-wrapper-path-guard.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: e7b6a19db98cea7e2286fb9210b2f752e6ae24c5311d9254efb2ba3999ac363b
+    - change_id: 2026-10-30-aifi-45-ci-disposable-db-supervisor
+      child_id: null
+      kind: raw
+      logical_path: design.md
+      project_id: multica
+      projection_version: v1
+      sha256: 548d5a8dc7801a513774229e7e36b0ebf887f37935774643a47856452d150709
+    - change_id: 2026-10-30-aifi-45-ci-disposable-db-supervisor
+      child_id: null
+      kind: projection
+      logical_path: proposal.md
+      project_id: multica
+      projection_version: v1
+      sha256: 5f7cdc4cdb462f6d829f7e24c647b45602e49ea648fbf8b68a39ca8992f26e86
+    - change_id: 2026-10-30-aifi-45-ci-disposable-db-supervisor
+      child_id: null
+      kind: raw
+      logical_path: specs/disposable-test-instance/spec.md
+      project_id: multica
+      projection_version: v1
+      sha256: 5d2ddc738c82e31650543db188627c38be39bb46f0a96b3c6d56e296e3843a05
+    - change_id: 2026-10-30-aifi-45-ci-disposable-db-supervisor
+      child_id: null
+      kind: raw
+      logical_path: specs/test-wrapper-path-guard/spec.md
+      project_id: multica
+      projection_version: v1
+      sha256: 9c26d8dd944a24fda9a3d48c454edd24484b20bd02c5139a4c47301da37619b5
+    - change_id: 2026-10-30-aifi-45-ci-disposable-db-supervisor
+      child_id: null
+      kind: raw
+      logical_path: test-plan.md
+      project_id: multica
+      projection_version: v1
+      sha256: ab21ba64682d63fd851380fffd657a14a8953b5aacdf7c689f451be933818fee
+    status: completed
+  understand:
+    confirmed_actor: ai
+    confirmed_at: '2026-11-11T00:11:44'
+    confirmed_by: dialog
+    confirmed_evidence: 确认 gate1，启用长程模式。委派遵循stdd模型分层
+    input_fingerprint: 123778a2d0d0a9ab46613897f47be2634c84398dbd8a431fdab66f1b9295c2d6
+    input_manifest:
+    - change_id: 2026-10-30-aifi-45-ci-disposable-db-supervisor
+      child_id: null
+      kind: projection
+      logical_path: canonical/proposals/2026-10-30-aifi-45-ci-disposable-db-supervisor.yaml
+      project_id: multica
+      projection_version: v1
+      sha256: 368f7551ebe9d6fc8593f4ea08e9ac23f3e66566b18970439e6704f8f878d768
+    - change_id: 2026-10-30-aifi-45-ci-disposable-db-supervisor
+      child_id: null
+      kind: projection
+      logical_path: proposal.md
+      project_id: multica
+      projection_version: v1
+      sha256: 5f7cdc4cdb462f6d829f7e24c647b45602e49ea648fbf8b68a39ca8992f26e86
+    status: completed
+score_confidence: preliminary
+status: archived
+task_type: code
+traceability:
+  spec_scenarios: 0
+  tc_cases: 0
+  test_functions: 0
+version: '3.0'

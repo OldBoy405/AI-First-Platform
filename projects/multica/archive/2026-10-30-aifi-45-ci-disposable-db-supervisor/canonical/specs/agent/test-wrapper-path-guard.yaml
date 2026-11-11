@@ -1,0 +1,39 @@
+# agent_spec.yaml — Agent 验证规格（Canonical YAML）
+
+meta:
+  task_id: test-wrapper-path-guard
+  change_id: 2026-10-30-aifi-45-ci-disposable-db-supervisor
+  created: '2026-11-11'
+  task_type: code
+  system: multica 的 scripts/go-test-with-agent-cli-guard.sh 与 scripts/test-go.test.sh
+  preconditions:
+    - 每个 action 从 multica 仓根用 bash 执行；用例只在测试自建的私有临时目录内用假命令，不调用真实 Go、agent CLI、数据库、网络或容器。Windows 下 bash 须解析到 Git Bash。
+    - test-go.test.sh 的修复前行为不运行（可能解析到真实 go）。
+rollback:
+  steps:
+    - 私有临时目录由用例自身的 trap 清理；无其他回滚。
+steps:
+  - id: CP-TWG-001
+    description: SC-TWG-001 / guard 拒绝含 ':' 的 TMPDIR，假命令不被执行。
+    action: bash scripts/test-go.test.sh
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'TC-TWG-001: PASS'
+  - id: CP-TWG-002
+    description: SC-TWG-002 / test-go.test.sh 在 mktemp 之前拒绝含 ':' 的 TMPDIR。
+    action: bash scripts/test-go.test.sh
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'TC-TWG-002: PASS'
+  - id: CP-TWG-003
+    description: SC-TWG-003 / 空 TMPDIR 回退 /tmp，命令被执行且退出码透传。
+    action: bash scripts/test-go.test.sh
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'TC-TWG-003: PASS'

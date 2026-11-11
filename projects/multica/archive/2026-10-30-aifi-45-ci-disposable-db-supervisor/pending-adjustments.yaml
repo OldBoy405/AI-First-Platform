@@ -1,0 +1,66 @@
+# pending-adjustments.yaml — 设计偏离记录（Canonical YAML）
+
+meta:
+  change_id: "2026-10-30-aifi-45-ci-disposable-db-supervisor"
+  created: "2026-11-11T00:50:00"
+  updated: "2026-11-11T01:20:00"
+
+adjustments:
+  - id: ADJ-001
+    original_design_ref: "canonical/specs/agent/disposable-test-instance.yaml#CP-DTI-007 与 preconditions"
+    actual_change: "CP-DTI-007 的完整入口运行需要环境变量 AIFI45_TOOLS_ROOT 指向同级 tools 仓库（本机为 C:/Users/GOBAO/Downloads/AI/tools），否则既有选择 channel-protocol 的 cross_language_vectors 子测试失败，整体退出码非零。agent spec 的 preconditions 未写明这一前置。"
+    reason: "这是 channel-protocol 选择本来就有的前置（execution_control_protocol_test.go 读取 tools 仓库的 control-vectors.json），不是本 change 引入；首次完整运行时未设置该变量而暴露。已用该变量复跑，13 个选择全部通过。"
+    impact_scope: "只影响 CP-DTI-007 的运行前置说明；不改行为、接口或 TC。Gate 2 已锁定 spec，不回改 spec，在 test-report 里记录运行命令。"
+    severity: minor
+    affected_capabilities:
+      - disposable-test-instance
+    exp_id: ""
+    resolved: true
+    resolution: "CP-DTI-007 已收窄为 selections.identity.json 的两个单测试选择，证据 run 不再需要 AIFI45_TOOLS_ROOT；13 选择完整入口作为 C2 回归仍需该变量，记录于 test-report。"
+
+  - id: ADJ-002
+    original_design_ref: "design.md 释放步骤（回读用 '{{.Names}}|{{.Labels}}'）与 governance 身份条件枚举"
+    actual_change: "实现的释放回读为 '{{.ID}}|{{.Names}}|{{.Labels}}'，并要求恰好一行且首列 ID 等于入参；启动后 podman port 必须恰好一行且为回环。governance 身份检查同时核对角色注释（AIFI45_DISPOSABLE:<nonce>）。design.md 的步骤与条件枚举未写这几项。"
+    reason: "C1 评审（docs_skills）发现文字落后于实现。实现比设计更严，不放宽任何保证；Gate 2 已锁定 design.md，不回改，留待 design-adjustments 汇总。"
+    impact_scope: "只影响 design.md 的措辞；行为与 TC 不变。"
+    severity: minor
+    affected_capabilities:
+      - disposable-test-instance
+    exp_id: ""
+    resolved: true
+    resolution: "design.md 已同步释放回读格式和单行 ID 校验、端口单行回环要求及角色注释核验。"
+
+  - id: ADJ-003
+    original_design_ref: "test-plan.md TC-DTI-002 方法（PATH 里放会写标记的假 podman）"
+    actual_change: "run-selection.test.mjs 用空 PATH 运行入口：若入口尝试启动 podman 会得到 spawn ENOENT 并出现在 stderr，测试断言 stderr 不含 podman 且拒绝信息明确。"
+    reason: "Windows 下 spawnSync 不带 shell 时只解析 .exe，写脚本型假 podman 不可移植；空 PATH 下“尝试启动”必然以 ENOENT 暴露，目标等价。"
+    impact_scope: "TC-DTI-002 的实现方式；断言目标不变。"
+    severity: minor
+    affected_capabilities:
+      - disposable-test-instance
+    exp_id: ""
+    resolved: true
+    resolution: "test-plan.md 的 TC-DTI-002 已改为空 PATH 与 stderr 断言的可移植方法。"
+
+  - id: ADJ-004
+    original_design_ref: "canonical/specs/agent/disposable-test-instance.yaml CP-DTI-005/006 的 stdout_contains"
+    actual_change: "CP-DTI-005/006 以输出含 TC 名断言，而 node:test 的 skip 行也含该名且退出码 0。CP 的 action 自带 AIFI45_REAL_PODMAN=1 因而正常不会 skip；本次证据取自实际输出中的“✔ TC-DTI-005/006”行。"
+    reason: "C1 评审（test_config）指出断言可被 skip 满足。spec 已锁定，不回改；风险限于 action 的环境变量未被执行器传递时。"
+    impact_scope: "CP 断言强度；不影响代码行为。后续如重签 spec，应改为匹配“✔ TC-DTI-005”。"
+    severity: minor
+    affected_capabilities:
+      - disposable-test-instance
+    exp_id: ""
+    resolved: true
+    resolution: "disposable-test-instance.yaml 与 test-plan.md 已同步去掉环境开关、改名后 skip 状态消除，并将命令断言改为匹配 TAP 输出；断言现含 TAP # pass N，覆盖零匹配、skip 与缺测试。"
+
+  - id: ADJ-005
+    original_design_ref: "test-plan.md TC-DTI-007（governance 错 nonce 拒绝）"
+    actual_change: "在 TC-DTI-007 之外新增 TestVerifyDisposableTestDatabaseRejectsMismatch（自身身份通过，畸形/他人 nonce 与库注释不符被拒），并并入 governance-identity 选择。"
+    reason: "身份检查是 cmd/server 的复制品，只测错误 nonce 时其他条件退化测试仍绿；C1 评审（test_config）指出，补一条与 cmd/server 的 TestDisposableDatabaseRejectsWrongMarker 同口径的用例。"
+    impact_scope: "governance 包多 1 个测试；入口选择 governance-identity 的 run 正则改为两项。"
+    severity: minor
+    affected_capabilities:
+      - disposable-test-instance
+    exp_id: ""
+    resolved: true

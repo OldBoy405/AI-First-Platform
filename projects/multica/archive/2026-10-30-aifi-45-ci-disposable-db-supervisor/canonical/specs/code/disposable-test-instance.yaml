@@ -1,0 +1,84 @@
+# spec.yaml — 行为规格（Canonical YAML）
+
+meta:
+  capability: "disposable-test-instance"
+  change_id: "2026-10-30-aifi-45-ci-disposable-db-supervisor"
+  created: "2026-11-11"
+  confidence: medium
+
+requirements:
+  - id: "REQ-DTI-001"
+    confidence: high
+    description: "一次性库测试入口只使用自己按固定资源信封创建的实例，不接受外部给定的 admin 连接。"
+    scenarios:
+      - id: "SC-DTI-001"
+        confidence: high
+        evidence: "canonical/proposals/2026-10-30-aifi-45-ci-disposable-db-supervisor.yaml#C1,success_criteria[0]"
+        given: "入口需要创建一个一次性库实例，实例 nonce 为 N，生命周期上限为 T 秒。"
+        when: "构造 `podman run` 的参数。"
+        then: "参数 SHALL 包含 `--pull=never`、`--rm`、`--timeout=T`、仅绑定 127.0.0.1 的随机宿主端口映射、覆盖 `/var/lib/postgresql/data` 的 tmpfs、名称 `aifi45-disposable-N` 与标签 `aifi45.disposable=N`、镜像 `docker.io/pgvector/pgvector:pg17`。"
+        and:
+          - "参数 SHALL NOT 含 `-v`、`--volume`、`--mount`、`--privileged`、host 网络或 `--publish-all`。"
+          - "随机密码 SHALL NOT 出现在参数数组里，只经子进程环境传入。"
+          - "T 大于 3600 或不是正整数时 SHALL 拒绝构造。"
+      - id: "SC-DTI-002"
+        confidence: high
+        evidence: "canonical/proposals/2026-10-30-aifi-45-ci-disposable-db-supervisor.yaml#C1,success_criteria[0]"
+        given: "调用方传入 `--admin-url`，不论是否同时设置了环境变量 `AIFI45_ADMIN_URL`。"
+        when: "运行 `run-selection.mjs`。"
+        then: "入口 SHALL 在创建任何容器或连接任何数据库之前以非零退出，并说明不接受外部 admin 连接。"
+  - id: "REQ-DTI-002"
+    confidence: high
+    description: "释放实例只按创建时返回的完整容器 ID，且回读名称与标签都匹配才删除；释放后读回为零。"
+    scenarios:
+      - id: "SC-DTI-003"
+        confidence: high
+        evidence: "canonical/proposals/2026-10-30-aifi-45-ci-disposable-db-supervisor.yaml#C1,constraints[3],risk_areas[0]"
+        given: "完整 ID 为 ID 的容器，名称为 `aifi45-disposable-N`，标签集合含 `aifi45.disposable=N`（可含其他标签）。"
+        when: "调用 `releaseInstance({id: ID, nonce: N})`。"
+        then: "SHALL 对 ID 发出 `podman rm -f -v`，随后按 ID 和按标签读回，二者都为空才返回成功。"
+        and:
+          - "读回仍有容器时 SHALL 抛错，不报告成功。"
+      - id: "SC-DTI-004"
+        confidence: high
+        evidence: "canonical/proposals/2026-10-30-aifi-45-ci-disposable-db-supervisor.yaml#constraints[3],risk_areas[0]"
+        given: "按 ID 读回的名称不等于 `aifi45-disposable-N`，或标签集合不含精确的 `aifi45.disposable=N`（含仅子串相同的情形），或按 ID 查不到容器。"
+        when: "调用 `releaseInstance({id: ID, nonce: N})`。"
+        then: "SHALL 抛错并说明保留实例，且 SHALL NOT 发出任何 `podman rm` 命令。"
+  - id: "REQ-DTI-003"
+    confidence: medium
+    description: "实例有生命周期上限：入口被强杀、没有机会释放时，实例在上限内自毁。"
+    scenarios:
+      - id: "SC-DTI-005"
+        confidence: medium
+        evidence: "canonical/proposals/2026-10-30-aifi-45-ci-disposable-db-supervisor.yaml#C1,success_criteria[1]"
+        given: "用上限 T（短值）真实创建了一个 detached 实例，持有它的入口进程尚未释放。"
+        when: "强杀该入口进程，不执行释放。"
+        then: "按完整 ID 读回 SHALL 在 T 加宽限时间内为零。"
+        and:
+          - "实例已创建且入口被强杀时，除该实例及其匿名资源外，其他容器与卷的集合 SHALL 不变。"
+  - id: "REQ-DTI-004"
+    confidence: medium
+    description: "入口在成功和失败的选择之后都释放自己创建的实例，并输出可核对的读回证据。"
+    scenarios:
+      - id: "SC-DTI-006"
+        confidence: medium
+        evidence: "canonical/proposals/2026-10-30-aifi-45-ci-disposable-db-supervisor.yaml#C1,success_criteria[0]"
+        given: "podman 与本机镜像可用；清单里有一个会真实通过的选择和一个会失败的选择。"
+        when: "运行 `run-selection.mjs`。"
+        then: "入口 SHALL 逐个选择在其库上跑完，整体退出码非零（因为有失败的选择），并在退出前释放实例，输出该实例容器 ID 前 12 位与读回为零的证据。"
+        and:
+          - "运行前后其他容器与卷的集合 SHALL 不变。"
+          - "至少一个选择 SHALL 真实通过（skip 不算通过）。"
+  - id: "REQ-DTI-005"
+    confidence: high
+    description: "governance 的 Go 集成测试在写任何 fixture 之前核验一次性库身份。"
+    scenarios:
+      - id: "SC-DTI-007"
+        confidence: high
+        evidence: "canonical/proposals/2026-10-30-aifi-45-ci-disposable-db-supervisor.yaml#C2,success_criteria[2]"
+        given: "governance 包的 TestMain 连上的库带有一次性身份（nonce、库名、角色名、库与角色标记、属主、无特权位）。"
+        when: "用错误或缺失的 `AIFI45_DISPOSABLE_NONCE` 重新执行该测试二进制。"
+        then: "进程 SHALL 在 15 秒内以非零退出，输出含 `governance integration test disposable identity mismatch`，且 fixture workspace 的 `updated_at` SHALL 保持不变。"
+        and:
+          - "用正确 nonce 时 TestMain SHALL 照常继续，既有 governance 选择不受影响。"

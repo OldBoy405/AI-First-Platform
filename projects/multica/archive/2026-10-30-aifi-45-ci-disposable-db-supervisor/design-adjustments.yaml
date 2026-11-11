@@ -1,0 +1,45 @@
+# design-adjustments.yaml — 设计调整汇总（由 pending-adjustments.yaml 汇总，BUILD C6）
+
+meta:
+  change_id: "2026-10-30-aifi-45-ci-disposable-db-supervisor"
+  created: "2026-11-11T01:35:00"
+  total_adjustments: 5
+  requires_re_spec: false     # 五项都不改变保证；设计措辞、测试方法与 CP 断言强度的差异留待下次触碰这些文档时顺带校正
+  requires_re_build: false
+
+adjustments:
+  - id: ADJ-001
+    category: boundary_discovery
+    original: "agent spec 的 preconditions 未写完整入口 C2 回归所需的 AIFI45_TOOLS_ROOT"
+    adjusted: "CP-DTI-007 已收窄为 selections.identity.json 的两个单测试选择，证据 run 不再需要 AIFI45_TOOLS_ROOT；13 选择完整入口作为 C2 回归仍需该变量，记录于 test-report"
+    reason: "首次完整运行暴露；已设置后 13 个选择全部通过"
+    affected_capabilities: [disposable-test-instance]
+    resolved_in_phase: "Phase 3"
+  - id: ADJ-002
+    category: design_change
+    original: "design.md 释放回读用 '{{.Names}}|{{.Labels}}'；身份条件未列角色注释"
+    adjusted: "design.md 已同步回读格式 '{{.ID}}|{{.Names}}|{{.Labels}}'、单行 ID 校验、podman port 单行回环要求及 governance 角色注释核验；Gate 2 重签批已处理"
+    reason: "实现比设计更严；评审发现文字落后"
+    affected_capabilities: [disposable-test-instance]
+    resolved_in_phase: "Phase 3"
+  - id: ADJ-003
+    category: test_change
+    original: "TC-DTI-002 用 PATH 里的假 podman 写标记文件"
+    adjusted: "test-plan.md 的 TC-DTI-002 已改为空 PATH 与 stderr 断言；尝试启动 podman 会以 ENOENT 暴露，Gate 2 重签批已处理"
+    reason: "Windows 下脚本型假命令不可移植，目标等价"
+    affected_capabilities: [disposable-test-instance]
+    resolved_in_phase: "Phase 3"
+  - id: ADJ-004
+    category: spec_change
+    original: "CP-DTI-005/006 以输出含 TC 名断言"
+    adjusted: "disposable-test-instance.yaml 与 test-plan.md 已同步去掉环境开关、改名后 skip 状态消除；断言匹配 TAP 输出并含 # pass N，覆盖零匹配、skip 与缺测试，Gate 2 重签批已处理"
+    reason: "node:test 的 skip 行也含 TC 名"
+    affected_capabilities: [disposable-test-instance]
+    resolved_in_phase: "Phase 3（Gate 2 重签批已处理）"
+  - id: ADJ-005
+    category: test_change
+    original: "TC-DTI-007 只有错误 nonce 的子进程拒绝测试"
+    adjusted: "新增 TestVerifyDisposableTestDatabaseRejectsMismatch，并入 governance-identity 选择"
+    reason: "身份检查是复制品，需与原件同口径的拒绝用例"
+    affected_capabilities: [disposable-test-instance]
+    resolved_in_phase: "Phase 3"

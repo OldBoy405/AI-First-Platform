@@ -1,0 +1,94 @@
+# 2026-10-30-aifi-45-ci-disposable-db-supervisor.yaml — Canonical Proposal (YAML-first, V2.9)
+# AI 起草、AI 修改、AI 消费。Human View 由 `stdd canon generate` 生成。
+
+meta:
+  change_id: "2026-10-30-aifi-45-ci-disposable-db-supervisor"
+  title: "AIFI-45 一次性库实例生命周期与测试守卫边界"
+  created: "2026-10-30T10:15:07.406938"
+  status: draft
+  version: "2.9"
+
+why:
+  problem: |
+    AIFI-45 与 M005 的真实库回归已经在一次性库上取得证据（数据库级隔离与标记校验已有测试和真实运行支撑），本 change 不再重做。仍然缺的是实例这一层：
+    1. 容器由各会话手工创建和删除，没有版本化入口。一个标签属于 `2026-10-22-aifi-45-authorized-execution` 的容器（`aifi45-disposable`，127.0.0.1:55432）在该 change 归档后仍运行约两小时，M005 会话因归属未核实而未动，直到本次凭标签、代码里的固定 ID 和创建时间核对后才释放。
+    2. `run-selection` 接受任意 admin URL，入口本身不能保证测试只触及自己创建的实例。
+    3. governance 的 TestMain 只要求 `DATABASE_URL` 非空，不像 cmd/server 那样核验一次性库身份，普通 `go test` 带着误指的 DATABASE_URL 就会向该库写 fixture。
+    4. test-go 的 CLI guard 及其测试把 `${TMPDIR:-/tmp}` 下的目录直接拼进以 `:` 分隔的 PATH；TMPDIR 含冒号时 PATH 被拆分，sentinel 或假 go 找不到。静态推导成立，未实测。
+  motivation: |
+    用户同意将隔离测试基础设施拆为独立 change；拆分只改变工作归属。AIFI-45 与 M005 已归档，本 change 的证据只证明本 change 的保证，不重开它们的验收结论。2026-11-10 行业方案复核：容器本身就是最小处置单位，入口自己创建、自己释放、并给实例设生命周期上限，比引入 journal、恢复协议或清扫器更小也更可验证。
+
+what_changes:
+  - id: C1
+    type: new
+    description: |
+      新增一次性库实例生命周期（`scripts/aifi45-disposable/` 下一个小模块），并让 `run-selection` 只使用它创建的实例：
+      入口自行创建容器，按完整容器 ID 取回环端口并派生连接地址（有界重试等待就绪，无回退），子进程沿用现有的 DATABASE_URL 与 nonce 覆盖；`--admin-url` 参数被拒绝，环境变量 `AIFI45_ADMIN_URL` 不再读取；在自己控制的退出路径（成功、失败）上按完整容器 ID 释放，释放前回读名称与标签确认归属，释放后回读为零并输出；强杀或崩溃由实例生命周期上限兜底。
+      资源信封即下列固定内容，写在代码中，改动任一项即扩大信封、须重新审批：本机已有镜像 `docker.io/pgvector/pgvector:pg17`（`--pull=never`）；仅 `127.0.0.1` 随机宿主端口；数据目录 tmpfs、无 bind mount 和 volume；容器名 `aifi45-disposable-<nonce>` 与标签 `aifi45.disposable=<nonce>`；每次随机密码、不落盘不入日志；`--rm` 加 `--timeout`（上限值在设计阶段定，不超过 1 小时）。
+      数据库级逻辑（`provision.mjs` 的 nonce 库、角色、标记、drop 前回读）保持不动。
+  - id: C2
+    type: modify
+    description: "governance 的 TestMain 在写任何 fixture 之前核验一次性库身份，口径与 cmd/server 的 `verifyDisposableTestDatabase` 一致，不匹配即以非零退出；同时修正其注释中指向旧 `run.mjs` 的陈旧说明。"
+  - id: C3
+    type: modify
+    description: "test-go 的 CLI guard 与 `test-go.test.sh` 在创建临时目录和改写 PATH 之前，拒绝含 `:` 的临时根并给出明确报错；`${TMPDIR:-/tmp}` 的空值回退和既有正常路径行为不变。"
+
+capabilities:
+  new:
+    - name: "disposable-test-instance"
+      description: "AIFI-45 真实库测试只运行在入口自己创建、可证明归属、有生命周期上限的一次性实例上，并在受控退出路径上被释放；Go 集成测试拒绝非一次性库。"
+    - name: "test-wrapper-path-guard"
+      description: "测试包装器不把含 `:` 的临时根拼进 PATH，避免 sentinel 与假工具因 PATH 被拆分而失效。"
+  modified: []
+
+constraints:
+  - "本文件是 understand 草案，不是 Gate1、Gate2 或运行真实环境的授权。"
+  - "历史事故库及证据继续 HOLD，新实例拿不到其凭据与连接路径，不为验收主动扫描旧库。"
+  - "资源信封一次批准：Gate1/Gate2 确认的是 C1 所列固定信封；信封内的创建、连接、释放不再逐次审批，只有触及旧库、生产、其他容器或扩大信封时重新审批。"
+  - "只释放可证明属于本次执行的资源：仅按创建时返回的完整容器 ID，且回读名称与标签均匹配才删除；任何不匹配、未知或状态不确定的资源保留并报错，不操作其他容器、卷、网络。"
+  - "入口不拉取镜像、不降级到外部数据库；podman 或本地镜像缺失即失败。"
+  - "PATH 输入校验不等于 OS 隔离，也不证明防御恶意 PATH、符号链接竞态或绝对路径调用。"
+  - "C3 的复现与验证只在测试自建的私有临时目录内用假命令进行，不调用真实 Go、agent CLI、数据库、网络或容器；该复现条件须经独立评审认可后才执行。"
+
+stakeholders: []
+
+risk_areas:
+  - capability: "disposable-test-instance"
+    risk: "释放逻辑误删其他容器"
+    mitigation: "只按创建时返回的完整 ID 删除，删除前回读名称与标签；单元测试断言不匹配时不发出删除命令"
+  - capability: "disposable-test-instance"
+    risk: "入口被强杀、崩溃或 Ctrl-C 后实例残留"
+    mitigation: "`--rm` 加 `--timeout` 使实例到期自毁；用短上限做一次真实验证。残留最长为该上限，不另设清扫器"
+  - capability: "disposable-test-instance"
+    risk: "governance 新增身份校验后，无 nonce 的环境（含 fork CI）运行该包会被拒绝"
+    mitigation: "这是预期的 fail-closed，与 cmd/server 既有行为一致。fork CI 后端任务另有多个独立失败（run 42828365938 已核实），本 change 不改 CI；已登记于 docs/analysis/fork-ci-failure-register-20261111.md，待负责人取舍后另立 change"
+  - capability: "test-wrapper-path-guard"
+    risk: "Windows 形式的 TMPDIR（如 `C:\\...`）被拒绝"
+    mitigation: "该形式本来就会拆分 PATH；报错说明使用 POSIX 形式；空 TMPDIR 的 `/tmp` 回退不变"
+
+non_goals:
+  - "不恢复、修改或清理历史事故库；不访问真实 CR 或生产服务。"
+  - "不把 fake engine、父测试 PASS 或全 skip 当成真实隔离和业务用例通过。"
+  - "不做持久 journal、lost-ack 恢复、进程树退出证明、孤儿清扫器；实例是处置单位，残留由生命周期上限兜底。"
+  - "不改 `provision.mjs` 的库级逻辑，不为库级部分失败另加回滚；实例整体释放即回收其中全部库和角色。"
+  - "不接线、不删除 `scripts/aifi45-db/` 下的 instance-* / supervisor-* 草稿和旧 `run.mjs`。"
+  - "不改 CI 工作流，也不负责让 CI 变绿：fork CI 的失败是多因的，已登记于 docs/analysis/fork-ci-failure-register-20261111.md，由后继 change 承接。不做网络隔离或 OS 级沙箱；不处理其他上游脚本里同样的 `PATH=\"$X:$PATH\"` 写法。"
+  - "不重开 AIFI-45、M005 的验收结论。"
+
+critical:
+  is_critical: false
+  risk_assessment:
+    safety_critical: false
+    financial: false
+    cross_system: false
+
+anchoring:
+  level: L1
+  reference_changes: []
+  anchor_implementations: []
+
+success_criteria:
+  - "一次真实运行（至少一个选择真实通过、一个选择失败）后，入口输出实例的容器 ID 与标签读回均为 0，且运行前后其他容器与卷的集合不变；传入 `--admin-url` 被入口拒绝。创建参数（`--pull=never`、仅回环随机端口、tmpfs 且无 bind/volume、`--rm`、`--timeout`、固定名称与标签）由单元测试断言；释放逻辑在名称或标签不匹配时不发出删除命令（单元测试）。"
+  - "用短上限创建 detached 实例后强杀持有它的入口进程且不执行释放，按完整容器 ID 在上限加宽限时间内读回为零（真实 podman 一次）。"
+  - "governance 测试在缺失或错误 nonce 的库上于写 fixture 前以非零退出（与 cmd/server 同类测试）。"
+  - "`go-test-with-agent-cli-guard.sh` 与 `test-go.test.sh` 均在 mktemp 和 PATH 改写之前拒绝含 `:` 的 TMPDIR。guard 的修复前后对照用私有目录内以绝对路径调用的假命令加标记文件：修复前标记出现（用例失败）、修复后标记不出现；`test-go.test.sh` 只验证修复后的拒绝，不运行其修复前行为（该行为可能解析到真实 go）。空 TMPDIR 仍回退 `/tmp`，既有 `test-go.test.sh` 用例保持通过。"
