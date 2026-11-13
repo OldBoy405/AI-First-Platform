@@ -1,0 +1,219 @@
+{
+  "original": "e997d65a2df2ff508da3ddaff9c063395f1fd801c925ad7f2c6620ae14b31745",
+  "rows": [
+    {
+      "id": "M01-missing-short-circuit",
+      "detected": true,
+      "exit": 1,
+      "tests": 15,
+      "pass": 14,
+      "fail": 1,
+      "skipped": 0,
+      "failed": [
+        "TC-CCF-001 an empty credential maps to missing, exits non-zero and never calls fetch"
+      ],
+      "restored": "e997d65a2df2ff508da3ddaff9c063395f1fd801c925ad7f2c6620ae14b31745"
+    },
+    {
+      "id": "M02-whitespace-trim",
+      "detected": true,
+      "exit": 1,
+      "tests": 15,
+      "pass": 14,
+      "fail": 1,
+      "skipped": 0,
+      "failed": [
+        "TC-CCF-001 an empty credential maps to missing, exits non-zero and never calls fetch"
+      ],
+      "restored": "e997d65a2df2ff508da3ddaff9c063395f1fd801c925ad7f2c6620ae14b31745"
+    },
+    {
+      "id": "M03-401-mapping",
+      "detected": true,
+      "exit": 1,
+      "tests": 15,
+      "pass": 13,
+      "fail": 2,
+      "skipped": 0,
+      "failed": [
+        "TC-CCF-001 401 maps to rejected and exits non-zero",
+        "TC-CCF-001 the cli reads the pin file, validates arguments and maps every branch to an exit code"
+      ],
+      "restored": "e997d65a2df2ff508da3ddaff9c063395f1fd801c925ad7f2c6620ae14b31745"
+    },
+    {
+      "id": "M04-404-mapping",
+      "detected": true,
+      "exit": 1,
+      "tests": 15,
+      "pass": 13,
+      "fail": 2,
+      "skipped": 0,
+      "failed": [
+        "TC-CCF-001 403 and 404 both map to no-access-or-pin-not-found",
+        "TC-CCF-001 the cli reads the pin file, validates arguments and maps every branch to an exit code"
+      ],
+      "restored": "e997d65a2df2ff508da3ddaff9c063395f1fd801c925ad7f2c6620ae14b31745"
+    },
+    {
+      "id": "M05-ok-exit-zero",
+      "detected": true,
+      "exit": 1,
+      "tests": 15,
+      "pass": 13,
+      "fail": 2,
+      "skipped": 0,
+      "failed": [
+        "TC-CCF-001 200 maps to ok and exits zero",
+        "TC-CCF-001 the cli reads the pin file, validates arguments and maps every branch to an exit code"
+      ],
+      "restored": "e997d65a2df2ff508da3ddaff9c063395f1fd801c925ad7f2c6620ae14b31745"
+    },
+    {
+      "id": "M06-network-catch",
+      "detected": true,
+      "exit": 1,
+      "tests": 15,
+      "pass": 13,
+      "fail": 2,
+      "skipped": 0,
+      "failed": [
+        "TC-CCF-001 a network failure maps to inconclusive and exits non-zero",
+        "TC-CCF-001 a failure message that embeds the credential is not echoed"
+      ],
+      "restored": "e997d65a2df2ff508da3ddaff9c063395f1fd801c925ad7f2c6620ae14b31745"
+    },
+    {
+      "id": "M07-other-status-fallback",
+      "detected": true,
+      "exit": 1,
+      "tests": 15,
+      "pass": 13,
+      "fail": 2,
+      "skipped": 0,
+      "failed": [
+        "TC-CCF-001 any other status maps to inconclusive and exits non-zero",
+        "TC-CCF-001 the cli reads the pin file, validates arguments and maps every branch to an exit code"
+      ],
+      "restored": "e997d65a2df2ff508da3ddaff9c063395f1fd801c925ad7f2c6620ae14b31745"
+    },
+    {
+      "id": "M08-authorization-header",
+      "detected": true,
+      "exit": 1,
+      "tests": 15,
+      "pass": 14,
+      "fail": 1,
+      "skipped": 0,
+      "failed": [
+        "TC-CCF-001 the request goes to the pinned commit of the tools repo with the credential in a header"
+      ],
+      "restored": "e997d65a2df2ff508da3ddaff9c063395f1fd801c925ad7f2c6620ae14b31745"
+    },
+    {
+      "id": "M09-token-in-url",
+      "detected": true,
+      "exit": 1,
+      "tests": 15,
+      "pass": 13,
+      "fail": 2,
+      "skipped": 0,
+      "failed": [
+        "TC-CCF-001 the request goes to the pinned commit of the tools repo with the credential in a header",
+        "TC-CCF-001 the credential never appears in the result, the url or any logged line"
+      ],
+      "restored": "e997d65a2df2ff508da3ddaff9c063395f1fd801c925ad7f2c6620ae14b31745"
+    },
+    {
+      "id": "M10-echo-error-message",
+      "detected": true,
+      "exit": 1,
+      "tests": 15,
+      "pass": 14,
+      "fail": 1,
+      "skipped": 0,
+      "failed": [
+        "TC-CCF-001 a failure message that embeds the credential is not echoed"
+      ],
+      "restored": "e997d65a2df2ff508da3ddaff9c063395f1fd801c925ad7f2c6620ae14b31745"
+    },
+    {
+      "id": "M11-pin-before-request",
+      "detected": true,
+      "exit": 1,
+      "tests": 15,
+      "pass": 14,
+      "fail": 1,
+      "skipped": 0,
+      "failed": [
+        "TC-CCF-001 an unusable pin fails before any request and without leaking the credential"
+      ],
+      "restored": "e997d65a2df2ff508da3ddaff9c063395f1fd801c925ad7f2c6620ae14b31745"
+    },
+    {
+      "id": "M12-cli-credential-order",
+      "detected": true,
+      "exit": 1,
+      "tests": 15,
+      "pass": 14,
+      "fail": 1,
+      "skipped": 0,
+      "failed": [
+        "TC-CCF-001 a missing credential is reported before the pin file is even read"
+      ],
+      "restored": "e997d65a2df2ff508da3ddaff9c063395f1fd801c925ad7f2c6620ae14b31745"
+    },
+    {
+      "id": "M13-unknown-argument",
+      "detected": true,
+      "exit": 1,
+      "tests": 15,
+      "pass": 14,
+      "fail": 1,
+      "skipped": 0,
+      "failed": [
+        "TC-CCF-001 the cli rejects unknown arguments and flags without a value"
+      ],
+      "restored": "e997d65a2df2ff508da3ddaff9c063395f1fd801c925ad7f2c6620ae14b31745"
+    },
+    {
+      "id": "M14-valueless-flag",
+      "detected": true,
+      "exit": 1,
+      "tests": 15,
+      "pass": 14,
+      "fail": 1,
+      "skipped": 0,
+      "failed": [
+        "TC-CCF-001 the cli rejects unknown arguments and flags without a value"
+      ],
+      "restored": "e997d65a2df2ff508da3ddaff9c063395f1fd801c925ad7f2c6620ae14b31745"
+    },
+    {
+      "id": "M15-result-exposes-token",
+      "detected": true,
+      "exit": 1,
+      "tests": 15,
+      "pass": 14,
+      "fail": 1,
+      "skipped": 0,
+      "failed": [
+        "TC-CCF-001 the credential never appears in the result, the url or any logged line"
+      ],
+      "restored": "e997d65a2df2ff508da3ddaff9c063395f1fd801c925ad7f2c6620ae14b31745"
+    },
+    {
+      "id": "M16-main-module-guard",
+      "detected": true,
+      "exit": 1,
+      "tests": 16,
+      "pass": 15,
+      "fail": 1,
+      "skipped": 0,
+      "failed": [
+        "scripts\\\\aifi45-disposable\\\\tools-access.test.mjs"
+      ],
+      "restored": "e997d65a2df2ff508da3ddaff9c063395f1fd801c925ad7f2c6620ae14b31745"
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+TAP version 13
+# Subtest: TC-CBE-004 the scope is governance and crosslang_test
+ok 1 - TC-CBE-004 the scope is governance and crosslang_test
+  ---
+  duration_ms: 0.9237
+  type: 'test'
+  ...
+# Subtest: TC-CBE-004 a dev-machine absolute path default is a violation
+ok 2 - TC-CBE-004 a dev-machine absolute path default is a violation
+  ---
+  duration_ms: 0.5301
+  type: 'test'
+  ...
+# Subtest: TC-CBE-004 an env-guarded skip is a violation for both named variables
+ok 3 - TC-CBE-004 an env-guarded skip is a violation for both named variables
+  ---
+  duration_ms: 0.1787
+  type: 'test'
+  ...
+# Subtest: TC-CBE-004 both violations together are reported with line numbers
+ok 4 - TC-CBE-004 both violations together are reported with line numbers
+  ---
+  duration_ms: 0.2154
+  type: 'test'
+  ...
+# Subtest: TC-CBE-004 Fatal on a missing variable is the accepted writing
+ok 5 - TC-CBE-004 Fatal on a missing variable is the accepted writing
+  ---
+  duration_ms: 0.1716
+  type: 'test'
+  ...
+# Subtest: TC-CBE-004 skips guarded by other conditions are not flagged
+ok 6 - TC-CBE-004 skips guarded by other conditions are not flagged
+  ---
+  duration_ms: 0.1164
+  type: 'test'
+  ...
+# Subtest: TC-CBE-004 CRLF input is parsed line by line, not as one blob
+ok 7 - TC-CBE-004 CRLF input is parsed line by line, not as one blob
+  ---
+  duration_ms: 0.1148
+  type: 'test'
+  ...
+# Subtest: TC-CBE-004 unusable input hard-fails instead of reporting no violations
+ok 8 - TC-CBE-004 unusable input hard-fails instead of reporting no violations
+  ---
+  duration_ms: 0.3655
+  type: 'test'
+  ...
+# Subtest: TC-CBE-004 the CLI exits non-zero and names the file when a sample tree violates
+ok 9 - TC-CBE-004 the CLI exits non-zero and names the file when a sample tree violates
+  ---
+  duration_ms: 43.1599
+  type: 'test'
+  ...
+# Subtest: TC-CBE-004 the CLI exits 0 on a clean sample tree
+ok 10 - TC-CBE-004 the CLI exits 0 on a clean sample tree
+  ---
+  duration_ms: 42.4428
+  type: 'test'
+  ...
+# Subtest: TC-CBE-004 the real repository satisfies the contract
+ok 11 - TC-CBE-004 the real repository satisfies the contract
+  ---
+  duration_ms: 79.6079
+  type: 'test'
+  ...
+# Subtest: TC-CBE-004 no governance test binds the unmanaged CRCTL_PATH alias
+ok 12 - TC-CBE-004 no governance test binds the unmanaged CRCTL_PATH alias
+  ---
+  duration_ms: 12.912
+  type: 'test'
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 241.9744

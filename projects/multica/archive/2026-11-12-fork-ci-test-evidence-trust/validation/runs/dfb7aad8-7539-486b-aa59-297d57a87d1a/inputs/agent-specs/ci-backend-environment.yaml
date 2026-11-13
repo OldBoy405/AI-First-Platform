@@ -1,0 +1,46 @@
+# agent_spec.yaml — Agent 验证规格（Canonical YAML）；CI 真实 run 与人工项见 test-plan 的 manual 检查。
+
+meta:
+  task_id: ci-backend-environment
+  change_id: 2026-11-12-fork-ci-test-evidence-trust
+  created: '2026-11-12'
+  task_type: code
+  system: multica fork CI、scripts/aifi45-disposable 与一次性 Postgres
+  preconditions:
+  - Go 与 Node 可用；数据库类检查只经 run-selection 自建的一次性实例，不连 localhost:5432 与旧容器；skip 为 0 且至少一个叶子 PASS。
+rollback:
+  steps:
+  - 只释放本轮 run-selection 创建的一次性实例；本地提交可 revert，未授权不推送。
+steps:
+- id: CP-CBE-001
+  description: SC-CBE-001 up 建出符合 TestMain 身份检查的 nonce 库并先 mask 口令再写 GITHUB_ENV；down 按 marker 删除，handle 缺失时 0 退出；日志与 handle 不含明文口令。
+  action: node --test --test-reporter=tap scripts/aifi45-disposable/ci-provision.test.mjs
+  assertions:
+  - type: exit_code
+    expected: 0
+  - type: stdout_contains
+    expected: '# fail 0'
+- id: CP-CBE-002
+  description: SC-CBE-002 SHALL 每一条单独退化都被拒绝，且该条件由独立命名的子测试逐条归因；合法的 nonce 库 SHALL 通过。
+  action: node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only ci-gate-identity
+  assertions:
+  - type: exit_code
+    expected: 0
+  - type: stdout_contains
+    expected: 'PASS ci-gate-identity '
+- id: CP-CBE-003
+  description: SC-CBE-003 SHALL read 对非 40 位 hex 或多行文件硬失败；SHALL check 在任一必需文
+  action: node --test --test-reporter=tap scripts/aifi45-disposable/tools-pin.test.mjs
+  assertions:
+  - type: exit_code
+    expected: 0
+  - type: stdout_contains
+    expected: '# fail 0'
+- id: CP-CBE-004
+  description: SC-CBE-004 SHALL 源码中不含开发机绝对路径默认值；SHALL 缺失 CRCTL_MJS 或 AIFI45_
+  action: node --test --test-reporter=tap scripts/aifi45-disposable/go-test-env-contract.test.mjs
+  assertions:
+  - type: exit_code
+    expected: 0
+  - type: stdout_contains
+    expected: '# fail 0'

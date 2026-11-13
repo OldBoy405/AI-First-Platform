@@ -1,0 +1,24 @@
+{
+  "name": "governance-migration-roundtrip",
+  "package": "./internal/governance",
+  "run": "^TestExecutionMigrationDownRoundTrip$",
+  "ok": false,
+  "reasons": [
+    "exit=1",
+    "fail=1",
+    "pass=0"
+  ],
+  "reconciliationLine": "",
+  "stage": "test",
+  "totals": {
+    "pass": 0,
+    "fail": 1,
+    "skip": 0,
+    "packages": 0
+  },
+  "reconciliation": null,
+  "failures": [
+    "execution_migration_roundtrip_test.go:128: apply migration 649_cr_execution_truncate_guard.down.sql: ERROR: trigger \"cr_execution_consumption_no_truncate\" for table \"cr_execution_binding_issue\" does not exist (SQLSTATE 42704)",
+    "--- FAIL: TestExecutionMigrationDownRoundTrip (0.01s)"
+  ]
+}

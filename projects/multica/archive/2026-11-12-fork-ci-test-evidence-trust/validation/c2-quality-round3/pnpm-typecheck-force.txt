@@ -1,0 +1,77 @@
+[WARN] The "pnpm" field in package.json is no longer read by pnpm. The following keys were ignored: "pnpm.onlyBuiltDependencies", "pnpm.overrides", "pnpm.patchedDependencies". See https://pnpm.io/settings for the new home of each setting.
+
+> multica@0.2.0 typecheck C:\Users\GOBAO\Downloads\AI\multica
+> turbo typecheck --filter=!@multica/mobile "--force"
+
+• turbo 2.9.5
+
+   • Packages in scope: @multica/core, @multica/desktop, @multica/docs, @multica/eslint-config, @multica/plugin-sdk, @multica/tsconfig, @multica/ui, @multica/ui-lab, @multica/views, @multica/web
+   • Running typecheck in 10 packages
+   • Remote caching disabled
+
+@multica/docs:mdx: cache bypass, force executing ae97bfa561d28107
+@multica/web:mdx: cache bypass, force executing 4bf0084cd2dcc3e5
+@multica/ui:typecheck: cache bypass, force executing d13bab18c36320a7
+@multica/core:typecheck: cache bypass, force executing 15cc4562548301ec
+@multica/plugin-sdk:typecheck: cache bypass, force executing 9a5a1b797781e1e5
+@multica/docs:mdx: 
+@multica/docs:mdx: > @multica/docs@0.2.0 mdx C:\Users\GOBAO\Downloads\AI\multica\apps\docs
+@multica/docs:mdx: > fumadocs-mdx
+@multica/docs:mdx: 
+@multica/web:mdx: 
+@multica/web:mdx: > @multica/web@0.6.3 mdx C:\Users\GOBAO\Downloads\AI\multica\apps\web
+@multica/web:mdx: > fumadocs-mdx
+@multica/web:mdx: 
+@multica/plugin-sdk:typecheck: 
+@multica/plugin-sdk:typecheck: > @multica/plugin-sdk@0.1.0 typecheck C:\Users\GOBAO\Downloads\AI\multica\packages\plugin-sdk
+@multica/plugin-sdk:typecheck: > tsc --noEmit
+@multica/plugin-sdk:typecheck: 
+@multica/ui:typecheck: 
+@multica/ui:typecheck: > @multica/ui@0.0.0 typecheck C:\Users\GOBAO\Downloads\AI\multica\packages\ui
+@multica/ui:typecheck: > tsc --noEmit
+@multica/ui:typecheck: 
+@multica/core:typecheck: 
+@multica/core:typecheck: > @multica/core@0.0.0 typecheck C:\Users\GOBAO\Downloads\AI\multica\packages\core
+@multica/core:typecheck: > tsc --noEmit
+@multica/core:typecheck: 
+@multica/web:mdx: [MDX] types generated
+@multica/docs:mdx: [MDX] types generated
+@multica/docs:typecheck: cache bypass, force executing bdbc9d66b49eb579
+@multica/docs:typecheck: 
+@multica/docs:typecheck: > @multica/docs@0.2.0 typecheck C:\Users\GOBAO\Downloads\AI\multica\apps\docs
+@multica/docs:typecheck: > tsc --noEmit
+@multica/docs:typecheck: 
+@multica/views:typecheck: cache bypass, force executing f1ec559ea45e2aa6
+@multica/views:typecheck: 
+@multica/views:typecheck: > @multica/views@0.0.0 typecheck C:\Users\GOBAO\Downloads\AI\multica\packages\views
+@multica/views:typecheck: > tsc --noEmit
+@multica/views:typecheck: 
+@multica/ui-lab:typecheck: cache bypass, force executing 4df4304367fc4e84
+@multica/web:typecheck: cache bypass, force executing 07bb5f7241dca757
+@multica/desktop:typecheck: cache bypass, force executing cf60c48938fbba88
+@multica/ui-lab:typecheck: 
+@multica/ui-lab:typecheck: > @multica/ui-lab@0.0.0 typecheck C:\Users\GOBAO\Downloads\AI\multica\apps\ui-lab
+@multica/ui-lab:typecheck: > tsc --noEmit
+@multica/ui-lab:typecheck: 
+@multica/web:typecheck: 
+@multica/web:typecheck: > @multica/web@0.6.3 typecheck C:\Users\GOBAO\Downloads\AI\multica\apps\web
+@multica/web:typecheck: > tsc --noEmit
+@multica/web:typecheck: 
+@multica/desktop:typecheck: 
+@multica/desktop:typecheck: > @multica/desktop@0.6.3 typecheck C:\Users\GOBAO\Downloads\AI\multica\apps\desktop
+@multica/desktop:typecheck: > pnpm run typecheck:node && pnpm run typecheck:web
+@multica/desktop:typecheck: 
+@multica/desktop:typecheck: 
+@multica/desktop:typecheck: > @multica/desktop@0.6.3 typecheck:node C:\Users\GOBAO\Downloads\AI\multica\apps\desktop
+@multica/desktop:typecheck: > tsc --noEmit -p tsconfig.node.json --composite false
+@multica/desktop:typecheck: 
+@multica/desktop:typecheck: 
+@multica/desktop:typecheck: > @multica/desktop@0.6.3 typecheck:web C:\Users\GOBAO\Downloads\AI\multica\apps\desktop
+@multica/desktop:typecheck: > tsc --noEmit -p tsconfig.web.json --composite false
+@multica/desktop:typecheck: 
+
+ Tasks:    10 successful, 10 total
+Cached:    0 cached, 10 total
+  Time:    1m20.851s 
+
+TYPECHECK_FORCE_EXIT=0

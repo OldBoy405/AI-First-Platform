@@ -1,0 +1,10 @@
+--- anchor
+  } catch {
+    // Proxy, TLS and DNS failures can echo the request headers into error.message, so the
+    // rejection is deliberately not reported verbatim.
+    return verdict("inconclusive", "the request to api.github.com did not complete");
+  }
+--- replacement
+  } catch (failure) {
+    return verdict("inconclusive", String(failure?.message ?? failure));
+  }

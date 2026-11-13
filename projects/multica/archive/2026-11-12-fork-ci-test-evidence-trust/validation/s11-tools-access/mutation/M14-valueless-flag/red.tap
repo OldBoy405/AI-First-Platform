@@ -1,0 +1,112 @@
+TAP version 13
+# Subtest: TC-CCF-001 an empty credential maps to missing, exits non-zero and never calls fetch
+ok 1 - TC-CCF-001 an empty credential maps to missing, exits non-zero and never calls fetch
+  ---
+  duration_ms: 0.934
+  type: 'test'
+  ...
+# Subtest: TC-CCF-001 401 maps to rejected and exits non-zero
+ok 2 - TC-CCF-001 401 maps to rejected and exits non-zero
+  ---
+  duration_ms: 0.2594
+  type: 'test'
+  ...
+# Subtest: TC-CCF-001 403 and 404 both map to no-access-or-pin-not-found
+ok 3 - TC-CCF-001 403 and 404 both map to no-access-or-pin-not-found
+  ---
+  duration_ms: 0.2139
+  type: 'test'
+  ...
+# Subtest: TC-CCF-001 200 maps to ok and exits zero
+ok 4 - TC-CCF-001 200 maps to ok and exits zero
+  ---
+  duration_ms: 0.1105
+  type: 'test'
+  ...
+# Subtest: TC-CCF-001 a network failure maps to inconclusive and exits non-zero
+ok 5 - TC-CCF-001 a network failure maps to inconclusive and exits non-zero
+  ---
+  duration_ms: 0.1681
+  type: 'test'
+  ...
+# Subtest: TC-CCF-001 any other status maps to inconclusive and exits non-zero
+ok 6 - TC-CCF-001 any other status maps to inconclusive and exits non-zero
+  ---
+  duration_ms: 0.2509
+  type: 'test'
+  ...
+# Subtest: TC-CCF-001 the request goes to the pinned commit of the tools repo with the credential in a header
+ok 7 - TC-CCF-001 the request goes to the pinned commit of the tools repo with the credential in a header
+  ---
+  duration_ms: 0.1072
+  type: 'test'
+  ...
+# Subtest: TC-CCF-001 the credential never appears in the result, the url or any logged line
+ok 8 - TC-CCF-001 the credential never appears in the result, the url or any logged line
+  ---
+  duration_ms: 0.4723
+  type: 'test'
+  ...
+# Subtest: TC-CCF-001 a failure message that embeds the credential is not echoed
+ok 9 - TC-CCF-001 a failure message that embeds the credential is not echoed
+  ---
+  duration_ms: 0.2135
+  type: 'test'
+  ...
+# Subtest: TC-CCF-001 an unusable pin fails before any request and without leaking the credential
+ok 10 - TC-CCF-001 an unusable pin fails before any request and without leaking the credential
+  ---
+  duration_ms: 1.3491
+  type: 'test'
+  ...
+# Subtest: TC-CCF-001 the cli reads the pin file, validates arguments and maps every branch to an exit code
+ok 11 - TC-CCF-001 the cli reads the pin file, validates arguments and maps every branch to an exit code
+  ---
+  duration_ms: 2.5737
+  type: 'test'
+  ...
+# Subtest: TC-CCF-001 the cli rejects unknown arguments and flags without a value
+not ok 12 - TC-CCF-001 the cli rejects unknown arguments and flags without a value
+  ---
+  duration_ms: 0.6316
+  type: 'test'
+  location: 'C:\\Users\\GOBAO\\Downloads\\AI\\multica\\scripts\\aifi45-disposable\\tools-access.test.mjs:223:1'
+  failureType: 'testCodeFailure'
+  error: 'argv ["--pin"] must be refused'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 0
+  operator: 'notStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/GOBAO/Downloads/AI/multica/scripts/aifi45-disposable/tools-access.test.mjs:232:12)
+    async Test.run (node:internal/test_runner/test:1208:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:831:7)
+  ...
+# Subtest: TC-CCF-001 a missing credential is reported before the pin file is even read
+ok 13 - TC-CCF-001 a missing credential is reported before the pin file is even read
+  ---
+  duration_ms: 0.1176
+  type: 'test'
+  ...
+# Subtest: TC-CCF-001 the real cli process exits non-zero for a missing credential and for an unreadable pin, without leaking
+ok 14 - TC-CCF-001 the real cli process exits non-zero for a missing credential and for an unreadable pin, without leaking
+  ---
+  duration_ms: 92.4452
+  type: 'test'
+  ...
+# Subtest: TC-CCF-001 importing the module does not run the cli
+ok 15 - TC-CCF-001 importing the module does not run the cli
+  ---
+  duration_ms: 0.1172
+  type: 'test'
+  ...
+1..15
+# tests 15
+# suites 0
+# pass 14
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 167.5993

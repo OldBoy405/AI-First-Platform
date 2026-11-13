@@ -1,0 +1,4 @@
+--- anchor
+return verdict("inconclusive", `${status} from api.github.com; unexpected status`);
+--- replacement
+return verdict("ok", `${status} from api.github.com; unexpected status`, 0);

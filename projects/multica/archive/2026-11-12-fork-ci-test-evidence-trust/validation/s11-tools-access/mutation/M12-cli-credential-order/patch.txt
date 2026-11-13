@@ -1,0 +1,19 @@
+--- anchor
+  if (!hasCredential(token)) {
+    const result = missingCredential();
+    error(result.message);
+    return result.exitCode;
+  }
+  try {
+    const { pin, pinFile } = parseArgs(argv);
+    const result = await checkToolsAccess({ token, pin: pin ?? readPinFile(pinFile), fetchImpl });
+--- replacement
+  try {
+    const { pin, pinFile } = parseArgs(argv);
+    const resolved = pin ?? readPinFile(pinFile);
+    if (!hasCredential(token)) {
+      const result = missingCredential();
+      error(result.message);
+      return result.exitCode;
+    }
+    const result = await checkToolsAccess({ token, pin: resolved, fetchImpl });

@@ -1,0 +1,13 @@
+RED (registrations removed, retain constant kept): exit=1
+FAIL handler-wsd-manifest pass=0 fail=2 skip=0
+  workspace_delete_manifest_test.go:211: workspace deletion manifest drift: unclassified=[cr_execution_activation cr_execution_binding_issue cr_execution_code_source_freeze cr_execution_consumption cr_execution_contract_selection cr_execution_control_command cr_execution_control_fact cr_execution_control_reservation cr_execution_control_settlement cr_execution_deployment_head cr_execution_deployment_snapshot cr_execution_dispatch_root cr_execution_notice cr_execution_policy_activation_event cr_execution_policy_activation_head cr_execution_policy_readiness cr_execution_task_binding cr_execution_tool_cursor cr_execution_tool_verdict] missing=[]
+  --- FAIL: TestWorkspaceDeletionManifestCoversPublicSchema (0.00s)
+  workspace_delete_retention_test.go:158: cr_execution_activation is classified "" in the manifest, decision 7 says "retain"
+  workspace_delete_retention_test.go:158: cr_execution_binding_issue is classified "" in the manifest, decision 7 says "retain"
+  workspace_delete_retention_test.go:158: cr_execution_code_source_freeze is classified "" in the manifest, decision 7 says "retain"
+released instance 4d25e39238f4 remaining=0
+manifest restored=true sha256=e71ecfb152ba71081523946e153489ff4f9bc4e2374d4de28ffb87d7e8e28a99
+
+GREEN: exit=0
+PASS handler-wsd-manifest pass=2 fail=0 skip=0
+released instance 292534b3ebff remaining=0

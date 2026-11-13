@@ -1,0 +1,6 @@
+m1-drop-notice-delete: DETECTED runner_exit=1 restored_sha256=eaf5ce61cf9dcfb8133b9b74e7d64a0b32cc4a6c33d8c114b0a794cd303fe841
+
+FAIL handler-wsd-delete pass=0 fail=1 skip=0
+  workspace_delete_execution_test.go:374: cr_execution_notice: delete row for workspace A survived the teardown: (24127815-f671-4451-a67c-9ec04b097f00,c5f8bfa9-1183-4aac-850c-689318b73abf,CR-A-3e2e0e3f-f9da-412a-8092-7bb26e146f06,execution-control,authorizer,dedupe-46397eb8-6502-4905-8bda-029bcd4e0140,4de1677a-a176-4cca-abac-5b66124a1c76,pending,,"2026-11-12 14:02:48.02899+00")
+  --- FAIL: TestWorkspaceDeletionSweepsOnlyOperationalExecutionRows (0.11s)
+released instance 0b385225f407 remaining=0

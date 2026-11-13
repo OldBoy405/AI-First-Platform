@@ -1,0 +1,24 @@
+{
+  "name": "handler-wsd-no-recreate",
+  "package": "./internal/handler",
+  "run": "^TestWorkspaceDeletionRefusesNewReservation$",
+  "ok": false,
+  "reasons": [
+    "exit=1",
+    "fail=2"
+  ],
+  "reconciliationLine": "",
+  "stage": "test",
+  "totals": {
+    "pass": 1,
+    "fail": 2,
+    "skip": 0,
+    "packages": 0
+  },
+  "reconciliation": null,
+  "failures": [
+    "workspace_delete_no_recreate_test.go:171: SC-WSD-005 violated: CreateReservationTx accepted reservation cba346e2-2ce8-453f-92dc-f80126013f2a for deleted workspace 43c1c6f2-cc2a-423a-bcb4-e51a34cec624 through retained selection 174e3ca9-c33b-43d0-a0ca-3a6b259a935c",
+    "--- FAIL: TestWorkspaceDeletionRefusesNewReservation/reservation_for_deleted_workspace (0.00s)",
+    "--- FAIL: TestWorkspaceDeletionRefusesNewReservation (0.09s)"
+  ]
+}

@@ -1,0 +1,94 @@
+
+  Agent Verify: ci-backend-environment
+  System: multica fork CI、scripts/aifi45-disposable 与一次性 Postgres
+  Spec: change changes/2026-11-12-fork-ci-test-evidence-trust/canonical/specs/agent/ci-backend-environment.yaml
+  Checkpoints: 4
+
+  Evidence run: 7cd120df-d9d1-4f31-a9b5-e26b5a13606a
+  [CP-CBE-001] SC-CBE-001 up 建出符合 TestMain 身份检查的 nonce 库并先 mask 口令再写 GITHUB_ENV；down 按 marker 删除，handle 缺失时 0 退出；日志与 handle 不含明文口令。
+    PASS: exit_code (expected: 0, got: 0)
+    PASS: stdout_contains (expected: # fail 0, got: TAP version 13
+# Subtest: TC-CBE-001 up builds the nonce identity TestMain check)
+  [CP-CBE-002] SC-CBE-002 SHALL 每一条单独退化都被拒绝，且该条件由独立命名的子测试逐条归因；合法的 nonce 库 SHALL 通过。
+    PASS: exit_code (expected: 0, got: 0)
+    PASS: stdout_contains (expected: PASS ci-gate-identity , got: PASS ci-gate-identity pass=16 fail=0 skip=0
+released instance a6ca1bfe63e3 remai)
+  [CP-CBE-003] SC-CBE-003 SHALL read 对非 40 位 hex 或多行文件硬失败；SHALL check 在任一必需文
+    PASS: exit_code (expected: 0, got: 0)
+    PASS: stdout_contains (expected: # fail 0, got: TAP version 13
+# Subtest: TC-CBE-003 the required file list is the one the consu)
+  [CP-CBE-004] SC-CBE-004 SHALL 源码中不含开发机绝对路径默认值；SHALL 缺失 CRCTL_MJS 或 AIFI45_
+    PASS: exit_code (expected: 0, got: 0)
+    PASS: stdout_contains (expected: # fail 0, got: TAP version 13
+# Subtest: TC-CBE-004 the scope is governance and crosslang_test
+)
+  [CP-TOR-001] SC-TOR-001 SHALL check 对不存在、缺 reason、重复的条目非 0 退出并指名；通过时 SHALL
+    PASS: exit_code (expected: 0, got: 0)
+    PASS: stdout_contains (expected: # fail 0, got: TAP version 13
+# Subtest: TC-TOR-001 check accepts a table whose every entry is )
+  [CP-TOR-002] SC-TOR-002 SHALL --skip-regex 原样传给 go test -skip；SHALL --json
+    PASS: exit_code (expected: 0, got: 0)
+    PASS: stdout_contains (expected: PASS, got: TC-TWG-001: PASS
+TC-TWG-003: PASS
+TC-TWG-002: PASS
+TC-TOR-002: PASS
+test-go.test)
+  [CP-TOR-003] SC-TOR-003 SHALL 前五种每一种单独非 0 退出并指明包或测试；合规流 SHALL 退出 0；SHALL 逐
+    PASS: exit_code (expected: 0, got: 0)
+    PASS: stdout_contains (expected: # fail 0, got: TAP version 13
+# Subtest: TC-TOR-003 a compliant stream reconciles and the exclu)
+  [CP-SEL-001] SC-SEL-001 SHALL status 不是 matched 时 ok 为 false，reasons 含该 re
+    PASS: exit_code (expected: 0, got: 0)
+    PASS: stdout_contains (expected: # fail 0, got: TAP version 13
+# Subtest: TC-SEL-001 a matched reconciliation with passing total)
+  [CP-SEL-002] SC-SEL-002 SHALL 沿用旧判定：test.code 为 0 且 fail 为 0 且 skip 为 0 且 
+    PASS: exit_code (expected: 0, got: 0)
+    PASS: stdout_contains (expected: # fail 0, got: TAP version 13
+# Subtest: TC-DTI-002 --admin-url is rejected before any instance)
+  [CP-SEL-003] SC-SEL-003 SHALL ok 为 false 且 reasons 含 EXPECTED_INVALID；SHAL
+    PASS: exit_code (expected: 0, got: 0)
+    PASS: stdout_contains (expected: # fail 0, got: TAP version 13
+# Subtest: TC-SEL-003 EXPECTED_INVALID for an empty declared mani)
+    PASS: stdout_contains (expected: EXPECTED_INVALID, got: TAP version 13
+# Subtest: TC-SEL-003 EXPECTED_INVALID for an empty declared mani)
+  [CP-SEL-004] SC-SEL-004 SHALL 该变更命中 scripts 与 backend scope；script-checks 
+    PASS: exit_code (expected: 0, got: 0)
+    PASS: stdout_contains (expected: # fail 0, got: TAP version 13
+# Subtest: PR and main select only affected scopes: readme only
+o)
+  [CP-WSD-001] SC-WSD-001 SHALL 公共 schema 中每张表有且仅有一个分类，19 张 cr_execution_* 表
+    PASS: exit_code (expected: 0, got: 0)
+    PASS: stdout_contains (expected: PASS handler-wsd-manifest , got: PASS handler-wsd-manifest pass=2 fail=0 skip=0
+released instance aceca72d5168 re)
+  [CP-WSD-002] SC-WSD-002 SHALL A 的 cr_execution_notice 与 cr_execution_dispa
+    PASS: exit_code (expected: 0, got: 0)
+    PASS: stdout_contains (expected: PASS handler-wsd-delete , got: PASS handler-wsd-delete pass=1 fail=0 skip=0
+released instance b0862cfe7f63 rema)
+  [CP-WSD-003] SC-WSD-003 SHALL retain 类 A 行逐字节不变（含 digest 列）；keep 类行 SHALL 
+    PASS: exit_code (expected: 0, got: 0)
+    PASS: stdout_contains (expected: PASS handler-wsd-retain , got: PASS handler-wsd-retain pass=23 fail=0 skip=0
+released instance 51ece5434176 rem)
+  [CP-WSD-004] SC-WSD-004 SHALL A 的 notice 与 dispatch_root 行恢复，且 A 的其他行未被半删。
+    PASS: exit_code (expected: 0, got: 0)
+    PASS: stdout_contains (expected: PASS handler-wsd-atomic , got: PASS handler-wsd-atomic pass=1 fail=0 skip=0
+released instance 710bf387b253 rema)
+  [CP-WSD-005] SC-WSD-005 reservation 半句 SHALL 被拒绝（本 change 在 CreateReservationTx 加 workspace 存在性检查）；command 半句按 R5 裁定不在本 change 内修复，断言原样保留并登记为已知失败
+    PASS: exit_code (expected: 0, got: 0)
+    PASS: stdout_contains (expected: PASS handler-wsd-no-recreate , got: PASS handler-wsd-no-recreate pass=3 fail=0 skip=0
+released instance aa1c4a219cd4)
+  [CP-CCF-001] SC-CCF-001 SHALL 映射为 missing、rejected、no-access-or-pin-not-fo
+    PASS: exit_code (expected: 0, got: 0)
+    PASS: stdout_contains (expected: # fail 0, got: TAP version 13
+# Subtest: TC-CCF-001 an empty credential maps to missing, exits )
+  [CP-CCF-002] SC-CCF-002 SHALL typecheck 0 条 TS6059；use-logout.test.ts SHAL
+    PASS: exit_code (expected: 0, got: 0)
+
+  Results: 18 passed, 0 failed
+  Report: C:\Users\GOBAO\Downloads\AI\AI First Platform\projects\multica\changes\2026-11-12-fork-ci-test-evidence-trust\validation\runs\7cd120df-d9d1-4f31-a9b5-e26b5a13606a\agent-verification-report.md
+  REVIEW_PENDING: 需人工审阅后提交本次 run 的确认原文
+    - TC-CBE-005/main
+    - TC-TOR-004/main
+    - TC-TOR-005/main
+    - TC-CCF-003/main
+    stdd agent confirm ci-backend-environment --change 2026-11-12-fork-ci-test-evidence-trust --run 7cd120df-d9d1-4f31-a9b5-e26b5a13606a --statement "<审阅结论原文>"
+EXIT_CODE=1

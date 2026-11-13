@@ -1,0 +1,3 @@
+# 容器清单比对（before 捕获时未排序，按排序后集合比对）
+diff <(sort containers-before.txt) <(sort containers-after.txt) -> 无差异
+运行前后均只有两个既有旧容器，状态 Exited，未新建残留、未操作 multica-postgres

@@ -1,0 +1,67 @@
+S4 baseline: pass=4507 fail=3 skip=47 events=18819
+  failing names:
+    TestPresenterMemberRemovalLinkage
+    TestSearchIndexChangesScopeToWorkspace
+    TestWorkspaceDeletionManifestCoversPublicSchema
+S8 regression: pass=4506 fail=5 skip=47 events=18824
+  failing names:
+    TestPresenterIllegalTransitions
+    TestPresenterIllegalTransitions/approve_while_a_presenter_is_already_active
+    TestPresenterIllegalTransitions/non-presenter_cannot_transfer
+    TestPresenterTransferFlow
+    TestSearchIndexChangesScopeToWorkspace
+S9 regression: pass=4529 fail=7 skip=47 events=18925
+  failing names:
+    TestGetPresenterStateVisibility
+    TestPresenterIllegalTransitions
+    TestPresenterIllegalTransitions/non-presenter_cannot_transfer
+    TestSearchIndexChangesScopeToWorkspace
+    TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte
+    TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte/truncate_cr_execution_binding_issue
+    TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte/truncate_cr_execution_consumption
+
+S8 -> S9 failing-set delta (by name):
+  NEW (4):
+    TestGetPresenterStateVisibility
+    TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte
+    TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte/truncate_cr_execution_binding_issue
+    TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte/truncate_cr_execution_consumption
+  NO LONGER FAILING (2):
+    TestPresenterIllegalTransitions/approve_while_a_presenter_is_already_active
+    TestPresenterTransferFlow
+
+test names present in S9 but absent from S8: 31
+    TestPluginRoutesRequireWorkspaceAdmin/DELETE_/api/workspaces/c093471e-8f0d-43da-9dea-6d0a84f252c3/plugins/11111111-1111-1111-1111-111111111111
+    TestPluginRoutesRequireWorkspaceAdmin/POST_/api/workspaces/c093471e-8f0d-43da-9dea-6d0a84f252c3/plugins
+    TestPluginRoutesRequireWorkspaceAdmin/POST_/api/workspaces/c093471e-8f0d-43da-9dea-6d0a84f252c3/plugins/11111111-1111-1111-1111-111111111111/disable
+    TestPluginRoutesRequireWorkspaceAdmin/POST_/api/workspaces/c093471e-8f0d-43da-9dea-6d0a84f252c3/plugins/11111111-1111-1111-1111-111111111111/enable
+    TestPluginRoutesRequireWorkspaceAdmin/POST_/api/workspaces/c093471e-8f0d-43da-9dea-6d0a84f252c3/plugins/preview
+    TestPluginRoutesRequireWorkspaceAdmin/PUT_/api/workspaces/c093471e-8f0d-43da-9dea-6d0a84f252c3/plugins/11111111-1111-1111-1111-111111111111/config
+    TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte
+    TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte/plain_delete_cr_execution_activation
+    TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte/plain_delete_cr_execution_binding_issue
+    TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte/plain_delete_cr_execution_code_source_freeze
+    TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte/plain_delete_cr_execution_consumption
+    TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte/plain_delete_cr_execution_contract_selection
+    TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte/plain_delete_cr_execution_control_command
+    TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte/plain_delete_cr_execution_control_fact
+    TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte/plain_delete_cr_execution_control_reservation
+    TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte/plain_delete_cr_execution_control_settlement
+    TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte/plain_delete_cr_execution_task_binding
+    TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte/plain_delete_cr_execution_tool_verdict
+    TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte/truncate_cr_execution_activation
+    TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte/truncate_cr_execution_binding_issue
+    TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte/truncate_cr_execution_code_source_freeze
+    TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte/truncate_cr_execution_consumption
+    TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte/truncate_cr_execution_contract_selection
+    TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte/truncate_cr_execution_control_command
+    TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte/truncate_cr_execution_control_fact
+    TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte/truncate_cr_execution_control_reservation
+    TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte/truncate_cr_execution_control_settlement
+    TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte/truncate_cr_execution_task_binding
+    TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte/truncate_cr_execution_tool_verdict
+    TestWorkspaceDeletionRollsBackExecutionRowsWithTransaction
+    TestWorkspaceDeletionSweepsOnlyOperationalExecutionRows
+
+event-count delta S8 -> S9: 101
+pass delta: 23; fail delta: 2; skip delta: 0

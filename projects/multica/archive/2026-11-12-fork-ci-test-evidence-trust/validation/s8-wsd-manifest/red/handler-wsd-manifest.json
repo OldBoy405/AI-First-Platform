@@ -1,0 +1,44 @@
+{
+  "name": "handler-wsd-manifest",
+  "package": "./internal/handler",
+  "run": "^(TestWorkspaceDeletionManifestCoversPublicSchema|TestWorkspaceDeletionRetention.*)$",
+  "ok": false,
+  "reasons": [
+    "exit=1",
+    "fail=2",
+    "pass=0"
+  ],
+  "reconciliationLine": "",
+  "stage": "test",
+  "totals": {
+    "pass": 0,
+    "fail": 2,
+    "skip": 0,
+    "packages": 0
+  },
+  "reconciliation": null,
+  "failures": [
+    "workspace_delete_manifest_test.go:211: workspace deletion manifest drift: unclassified=[cr_execution_activation cr_execution_binding_issue cr_execution_code_source_freeze cr_execution_consumption cr_execution_contract_selection cr_execution_control_command cr_execution_control_fact cr_execution_control_reservation cr_execution_control_settlement cr_execution_deployment_head cr_execution_deployment_snapshot cr_execution_dispatch_root cr_execution_notice cr_execution_policy_activation_event cr_execution_policy_activation_head cr_execution_policy_readiness cr_execution_task_binding cr_execution_tool_cursor cr_execution_tool_verdict] missing=[]",
+    "--- FAIL: TestWorkspaceDeletionManifestCoversPublicSchema (0.00s)",
+    "workspace_delete_retention_test.go:158: cr_execution_activation is classified \"\" in the manifest, decision 7 says \"retain\"",
+    "workspace_delete_retention_test.go:158: cr_execution_binding_issue is classified \"\" in the manifest, decision 7 says \"retain\"",
+    "workspace_delete_retention_test.go:158: cr_execution_code_source_freeze is classified \"\" in the manifest, decision 7 says \"retain\"",
+    "workspace_delete_retention_test.go:158: cr_execution_consumption is classified \"\" in the manifest, decision 7 says \"retain\"",
+    "workspace_delete_retention_test.go:158: cr_execution_contract_selection is classified \"\" in the manifest, decision 7 says \"retain\"",
+    "workspace_delete_retention_test.go:158: cr_execution_control_command is classified \"\" in the manifest, decision 7 says \"retain\"",
+    "workspace_delete_retention_test.go:158: cr_execution_control_fact is classified \"\" in the manifest, decision 7 says \"retain\"",
+    "workspace_delete_retention_test.go:158: cr_execution_control_reservation is classified \"\" in the manifest, decision 7 says \"retain\"",
+    "workspace_delete_retention_test.go:158: cr_execution_control_settlement is classified \"\" in the manifest, decision 7 says \"retain\"",
+    "workspace_delete_retention_test.go:158: cr_execution_deployment_head is classified \"\" in the manifest, decision 7 says \"keep\"",
+    "workspace_delete_retention_test.go:158: cr_execution_deployment_snapshot is classified \"\" in the manifest, decision 7 says \"keep\"",
+    "workspace_delete_retention_test.go:158: cr_execution_dispatch_root is classified \"\" in the manifest, decision 7 says \"delete\"",
+    "workspace_delete_retention_test.go:158: cr_execution_notice is classified \"\" in the manifest, decision 7 says \"delete\"",
+    "workspace_delete_retention_test.go:158: cr_execution_policy_activation_event is classified \"\" in the manifest, decision 7 says \"keep\"",
+    "workspace_delete_retention_test.go:158: cr_execution_policy_activation_head is classified \"\" in the manifest, decision 7 says \"keep\"",
+    "workspace_delete_retention_test.go:158: cr_execution_policy_readiness is classified \"\" in the manifest, decision 7 says \"keep\"",
+    "workspace_delete_retention_test.go:158: cr_execution_task_binding is classified \"\" in the manifest, decision 7 says \"retain\"",
+    "workspace_delete_retention_test.go:158: cr_execution_tool_cursor is classified \"\" in the manifest, decision 7 says \"keep\"",
+    "workspace_delete_retention_test.go:158: cr_execution_tool_verdict is classified \"\" in the manifest, decision 7 says \"retain\"",
+    "--- FAIL: TestWorkspaceDeletionRetentionGuards (0.00s)"
+  ]
+}

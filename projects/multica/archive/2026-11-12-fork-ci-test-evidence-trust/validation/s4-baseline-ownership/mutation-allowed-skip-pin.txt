@@ -1,0 +1,50 @@
+mutation: drop allowed-skip ./internal/daemon TestExecutionBindingRelayHelperProcess
+exit=1
+TAP version 13
+# Subtest: TC-TOR-001 the committed allowed-skips stay declared, justified and resolvable
+not ok 1 - TC-TOR-001 the committed allowed-skips stay declared, justified and resolvable
+  ---
+  duration_ms: 1.8845
+  type: 'test'
+  location: 'C:\\Users\\GOBAO\\Downloads\\AI\\multica\\scripts\\aifi45-disposable\\test-ownership.test.mjs:203:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+      [
+        'TestReconcileLiveGitHub',
+        'TestFetchFromSkillsSh_AnthropicPptxIntegration',
+        'TestChannelIsolationChild',
+    -   'TestExecutionBindingRelayHelperProcess'
+      ]
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: 'TestReconcileLiveGitHub'
+    1: 'TestFetchFromSkillsSh_AnthropicPptxIntegration'
+    2: 'TestChannelIsolationChild'
+    3: 'TestExecutionBindingRelayHelperProcess'
+  actual:
+    0: 'TestReconcileLiveGitHub'
+    1: 'TestFetchFromSkillsSh_AnthropicPptxIntegration'
+    2: 'TestChannelIsolationChild'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/GOBAO/Downloads/AI/multica/scripts/aifi45-disposable/test-ownership.test.mjs:206:10)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1201:25)
+    Test.start (node:internal/test_runner/test:1096:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 64.3552
+restored sha256 before=8a3da0046b2dd24c06b7204024a46f1e1b34f2aff238da09dc45efe4d9bea1ae after=8a3da0046b2dd24c06b7204024a46f1e1b34f2aff238da09dc45efe4d9bea1ae identical=true

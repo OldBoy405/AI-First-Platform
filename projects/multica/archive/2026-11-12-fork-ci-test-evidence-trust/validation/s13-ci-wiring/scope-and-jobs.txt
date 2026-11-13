@@ -1,0 +1,33 @@
+warning: in the working copy of 'scripts/aifi45-disposable/selections.identity.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'server/internal/governance/execution_authorization_revoke_interop_test.go', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'server/internal/governance/execution_authorization_test.go', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'server/internal/governance/execution_binding_issue_test.go', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'server/internal/governance/execution_contract_selection_test.go', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'server/internal/governance/execution_control_reservation.go', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'server/internal/governance/execution_migration_roundtrip_test.go', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'server/internal/governance/execution_trust_install_test.go', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'server/internal/handler/workspace.go', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'server/internal/handler/workspace_delete_manifest_test.go', LF will be replaced by CRLF the next time Git touches it
+changed files: 48
+selected scopes: frontend, backend, sqlc, runtime, quality, scripts, installer, images
+quality_only: false full: false
+
+harness-only hypothetical: backend, scripts
+
+changes | ubuntu-latest | (always)
+sqlc-check | ubuntu-latest | ${{ needs.changes.outputs.sqlc == 'true' }}
+transitions-contract-check | ubuntu-latest | ${{ needs.changes.outputs.backend == 'true' }}
+frontend-build | ubuntu-latest | ${{ needs.changes.outputs.frontend == 'true' }}
+frontend-test | ubuntu-latest | ${{ needs.changes.outputs.frontend == 'true' }}
+frontend-views-test | ubuntu-latest | ${{ needs.changes.outputs.frontend == 'true' }}
+frontend | ubuntu-latest | ${{ !cancelled() }}
+backend-tests | ubuntu-latest | ${{ needs.changes.outputs.backend == 'true' }}
+backend-agent-tests | ubuntu-latest | ${{ needs.changes.outputs.backend == 'true' }}
+go-vulnerability-scan | ubuntu-latest | ${{ needs.changes.outputs.backend == 'true' }}
+backend | ubuntu-latest | ${{ !cancelled() }}
+windows-execenv | windows-latest | ${{ needs.changes.outputs.full == 'true' }}
+macos-runtime | macos-latest | ${{ needs.changes.outputs.full == 'true' }}
+image-budget | ubuntu-latest | ${{ github.event_name == 'pull_request' && needs.changes.outputs.images == 'true' }}
+installer | ${{ matrix.os }} | ${{ needs.changes.outputs.installer == 'true' }}
+script-checks | ubuntu-latest | ${{ needs.changes.outputs.scripts == 'true' }}
+frontend-quality | ubuntu-latest | ${{ needs.changes.outputs.quality_only == 'true' }}

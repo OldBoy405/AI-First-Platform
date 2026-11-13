@@ -1,0 +1,81 @@
+TestResolveAgentEntry_SelfHealsAfterInPlaceUpgrade | agent_path_selfheal_test.go:79 | if runtime.GOOS == "windows" {
+TestResolveAgentEntry_RejectsBelowMinVersionAfterUpgrade | agent_path_selfheal_test.go:147 | if runtime.GOOS == "windows" {
+TestResolveAgentEntry_ReturnsVersionPairedWithCachedPath | agent_path_selfheal_test.go:197 | if runtime.GOOS == "windows" {
+TestResolveAgentEntry_HealedPathWinsOverReappearingPinnedPath | agent_path_selfheal_test.go:245 | if runtime.GOOS == "windows" {
+TestResolveAgentEntry_UninstalledLeavesEntryUnchanged | agent_path_selfheal_test.go:291 | if runtime.GOOS == "windows" {
+TestProbeDshMulticaProfile | agents_probe_dsh_test.go:55 | if runtime.GOOS == "windows" {
+TestProbeBuiltinRuntime_DshFailureWithProfileInstalledIsNotCondemned | agents_probe_dsh_test.go:220 | if runtime.GOOS == "windows" {
+TestProbeAgentCLIsDiscoversDshWithoutMulticaProfile | agents_probe_dsh_test.go:283 | if runtime.GOOS == "windows" {
+TestProbeBuiltinRuntime_DshWithoutMulticaProfile | agents_probe_dsh_test.go:318 | if runtime.GOOS == "windows" {
+TestProbeAgentCLIsUsesDshDesktopAppBundleFallback | agents_probe_dsh_test.go:410 | if runtime.GOOS == "windows" {
+TestProbeAgentCLIsIgnoresNonExecutableDshBundle | agents_probe_dsh_test.go:433 | if runtime.GOOS == "windows" {
+TestProbeBuiltinRuntime_DshThatCannotRunIsNotAProfileVerdict | agents_probe_dsh_test.go:455 | if runtime.GOOS == "windows" {
+TestProbeAgentCLIs_DiscoversPiAndOmpSeparately | agents_probe_omp_test.go:22 | if runtime.GOOS == "windows" {
+TestRegisterRuntimes_PiAndOmpBothReachTheServer | agents_probe_omp_test.go:101 | if runtime.GOOS == "windows" {
+TestResolveAgentExecutablePath_PreservesDispatchShimName | config_test.go:23 | if runtime.GOOS == "windows" {
+TestResolveAgentExecutablePath_CanonicalizesOrdinaryVersionTarget | config_test.go:66 | if runtime.GOOS == "windows" {
+TestLoadConfig_CompletedTaskTTLDefaultsDisabledOnSelfHostAndReadsEnv | config_test.go:113 | (guard not in preceding 3 lines)
+TestLoadConfig_WSClaimPollIntervalPrecedence | config_test.go:146 | (guard not in preceding 3 lines)
+TestLoadConfig_CompletedTaskTTLDefaultsBoundedOnOfficialCloud | config_test.go:186 | (guard not in preceding 3 lines)
+TestResolveAgentsViaLoginShell_ResolvesViaInteractiveShell | config_test.go:341 | if runtime.GOOS == "windows" {
+TestLoadConfig_DiscoversQwenCode | config_test.go:479 | if runtime.GOOS == "windows" {
+TestLoadConfig_SkipsMulticaHooksShadowingAgentBinaries | config_test.go:517 | if runtime.GOOS == "windows" {
+TestLoadConfig_SkipsMulticaHooksFromLoginShellFallback | config_test.go:573 | if runtime.GOOS == "windows" {
+TestLoadConfig_AutoUpdateDefault_SelfHostOff | config_test.go:638 | (guard not in preceding 3 lines)
+TestLoadConfig_CodexHandshakeTimeout | config_test.go:652 | (guard not in preceding 3 lines)
+TestLoadConfig_CodexTurnInterruptTimeout | config_test.go:732 | (guard not in preceding 3 lines)
+TestLoadConfig_CodexFirstTurnNoProgressTimeout | config_test.go:765 | (guard not in preceding 3 lines)
+TestLoadConfig_CodexFirstTurnTimeoutEqualToSemanticWarns | config_test.go:811 | (guard not in preceding 3 lines)
+TestLoadConfig_ToolWatchdogDefaultsToIdleWatchdog | config_test.go:857 | (guard not in preceding 3 lines)
+TestLoadConfig_CodexSemanticInactivityDerivesFromWatchdog | config_test.go:922 | (guard not in preceding 3 lines)
+TestLoadConfig_OpenCodeIdleWatchdog | config_test.go:987 | (guard not in preceding 3 lines)
+TestLoadConfig_AutoUpdateDefault_CloudOn | config_test.go:1034 | (guard not in preceding 3 lines)
+TestLoadConfig_AutoUpdateEnv_ForcesOnForSelfHost | config_test.go:1050 | (guard not in preceding 3 lines)
+TestLoadConfig_AutoUpdateEnv_ForcesOffForCloud | config_test.go:1067 | (guard not in preceding 3 lines)
+TestLoadConfig_AutoUpdate_NoFlagWinsOverCloudDefault | config_test.go:1085 | (guard not in preceding 3 lines)
+TestLoadConfig_AutoReload_DefaultsOnEvenForSelfHost | config_test.go:1107 | (guard not in preceding 3 lines)
+TestLoadConfig_AutoReload_NotGatedOnAutoUpdateEnv | config_test.go:1129 | (guard not in preceding 3 lines)
+TestLoadConfig_AutoReload_OffSwitches/env_false | config_test.go:1162 | (guard not in preceding 3 lines)
+TestResolveAgentsViaLoginShell_StripsAliasShadowing | config_test.go:1186 | if runtime.GOOS == "windows" {
+TestResolveAgentsViaLoginShell_HardTimeoutOnBackgroundedStdout | config_test.go:1255 | if runtime.GOOS == "windows" {
+TestLoadConfig_SkipsLoginShellWhenLookPathSucceeds | config_test.go:1306 | if runtime.GOOS == "windows" {
+TestProbeAgentCLIsIgnoresNonExecutableCodexBundle | config_test.go:1489 | if runtime.GOOS == "windows" {
+TestLoadConfig_AppliesBackendOverridesFromConfigFile | config_test.go:1782 | (guard not in preceding 3 lines)
+TestLoadConfig_BackendOverrides_BackwardCompat_NoConfigFile | config_test.go:1842 | (guard not in preceding 3 lines)
+TestLoadConfig_BackendOverrides_MalformedConfigFileNonFatal | config_test.go:1872 | (guard not in preceding 3 lines)
+TestCursorSupplementHookCommandRequiresInstallableHooks | cursor_supplement_gate_test.go:52 | if runtime.GOOS == "windows" {
+TestExecuteAndDrain_PiTurnErrorOutranksIdleWatchdogCancellation | daemon_test.go:4233 | if runtime.GOOS == "windows" {
+TestExecuteAndDrain_PiWithoutTurnErrorKeepsIdleWatchdogResult | daemon_test.go:4284 | if runtime.GOOS == "windows" {
+TestExecuteAndDrain_PiTurnErrorOutranksUpstreamCancellation | daemon_test.go:4324 | if runtime.GOOS == "windows" {
+TestExecuteAndDrain_PiWithoutTurnErrorKeepsUpstreamCancellation | daemon_test.go:4396 | if runtime.GOOS == "windows" {
+TestProvisionDshMulticaProfile_UnconfiguredIsANoOp | dsh_profile_test.go:129 | if runtime.GOOS == "windows" {
+TestProvisionDshMulticaProfile_InstallsTheFirstWorkingCandidate | dsh_profile_test.go:145 | if runtime.GOOS == "windows" {
+TestProvisionDshMulticaProfile_ForwardsTheSpecVerbatim | dsh_profile_test.go:189 | if runtime.GOOS == "windows" {
+TestProvisionDshMulticaProfile_ReportsEveryCandidateFailure | dsh_profile_test.go:207 | if runtime.GOOS == "windows" {
+TestProvisionDshMulticaProfile_ExitZeroWithoutAProfileIsAFailedCandidate | dsh_profile_test.go:236 | if runtime.GOOS == "windows" {
+TestProvisionDshMulticaProfile_FailedInstallLeavesTheProfileDirectory | dsh_profile_test.go:265 | if runtime.GOOS == "windows" {
+TestProvisionDshMulticaProfile_PreservesPreexistingProfileOnFailure | dsh_profile_test.go:311 | if runtime.GOOS == "windows" {
+TestProvisionDshMulticaProfile_FailedInstallKeepsNonSkeletonProfiles | dsh_profile_test.go:351 | if runtime.GOOS == "windows" {
+TestStartDshProfileProvision_RunsAtMostOnce | dsh_profile_test.go:385 | if runtime.GOOS == "windows" {
+TestStartDshProfileProvision_KicksDiscoveryWhenTheInstallFinishes | dsh_profile_test.go:434 | if runtime.GOOS == "windows" {
+TestStartDshProfileProvision_SuccessWithoutAProfileWithdrawsTheWait | dsh_profile_test.go:465 | if runtime.GOOS == "windows" {
+TestProvisionDshMulticaProfile_CancellationKillsTheWholeTree | dsh_profile_test.go:733 | if runtime.GOOS == "windows" {
+TestExecutionBindingRelayHelperProcess | execution_binding_relay_test.go:26 | mode := os.Getenv(relayHelperMode) if mode == "" {
+TestPruneWorktreePreemptionCleansLocksBeforeTaskStarts | gc_test.go:2068 | if _, err := os.Stat("/bin/sh"); err != nil {
+TestValidateLocalPath | local_directory_test.go:220 | if runtime.GOOS == "windows" {
+TestHandleModelList_CustomOmpCompatibilityTarget | model_list_binary_test.go:315 | if runtime.GOOS == "windows" {
+TestResolveTaskModelSelectionKeepsLiveOnlyCodexOverridesOnFallback | model_qualify_test.go:308 | if runtime.GOOS == "windows" {
+TestMuseDetectedThroughLoginShell | muse_test.go:41 | if runtime.GOOS == "windows" {
+TestOpenCodeV2RefusesSynthesizedMCPWithoutAgentConfig | opencode_v2_mcp_wiring_test.go:34 | if runtime.GOOS == "windows" {
+TestDetectBuiltinRuntimes_DoesNotRetryWhenSelfHealBurnsTheWindow | runtime_probe_batch_test.go:785 | if runtime.GOOS == "windows" {
+TestDetectBuiltinRuntimes_SelfHealRejectionIsABelowMinimumVerdict | runtime_probe_batch_test.go:822 | if runtime.GOOS == "windows" {
+TestTaskTempDirSurvivesGCWhileTheRunHoldsIt | task_temp_gc_test.go:29 | if runtime.GOOS == "windows" {
+TestRunTaskPreservesProviderCostWithoutTokens | task_usage_test.go:39 | if runtime.GOOS == "windows" {
+TestRunTask_InjectsPrivateTaskTempDir | workdir_race_test.go:165 | if runtime.GOOS == "windows" {
+TestRunTask_TaskTempBaseOverride | workdir_race_test.go:405 | if runtime.GOOS == "windows" {
+TestRunTask_TaskTempBaseInvalidFailsStartup | workdir_race_test.go:509 | if runtime.GOOS == "windows" {
+TestAgentCLIGuardDetectsSwallowedFailure | agent_command_names_test.go:16 | if runtime.GOOS == "windows" {
+TestCleanTaskArtifacts_UsesLiteralTrackedPaths/:(top)fixture | gc_artifact_tracking_test.go:79 | if runtime.GOOS == "windows" && strings.ContainsAny(prefix, ":*") {
+TestScanDiskUsage_DoesNotFollowSymlinks | diskusage_test.go:435 | if runtime.GOOS == "windows" {
+TestExecuteAndDrain_CodexInactivityReportsMCPToolResultTranscript | daemon_test.go:3918 | if runtime.GOOS == "windows" {
+TestAgentCLIGuardFailsClosedWhenSetupFails | agent_command_names_test.go:36 | if runtime.GOOS == "windows" {

@@ -1,0 +1,121 @@
+# 每条门禁变异在两个包里的真实失败事件（原始流留在临时目录，未写入记录仓）
+
+## bypassrls
+  ci-gate-identity: pass=14 fail=2 skip=0
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone/bypassrls
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone
+    disposable_identity_conditions_test.go:198: [BypassRLS] alone was not refused as "database, role, marker, owner or privilege mismatch": <nil>
+  ci-gate-identity-server: pass=14 fail=2 skip=0
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone/bypassrls
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone
+    disposable_identity_conditions_test.go:198: [BypassRLS] alone was not refused as "database, role, marker, owner or privilege mismatch": <nil>
+
+## createdb
+  ci-gate-identity: pass=14 fail=2 skip=0
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone/createdb
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone
+    disposable_identity_conditions_test.go:198: [CreateDB] alone was not refused as "database, role, marker, owner or privilege mismatch": <nil>
+  ci-gate-identity-server: pass=14 fail=2 skip=0
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone/createdb
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone
+    disposable_identity_conditions_test.go:198: [CreateDB] alone was not refused as "database, role, marker, owner or privilege mismatch": <nil>
+
+## createrole
+  ci-gate-identity: pass=14 fail=2 skip=0
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone/createrole
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone
+    disposable_identity_conditions_test.go:198: [CreateRole] alone was not refused as "database, role, marker, owner or privilege mismatch": <nil>
+  ci-gate-identity-server: pass=14 fail=2 skip=0
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone/createrole
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone
+    disposable_identity_conditions_test.go:198: [CreateRole] alone was not refused as "database, role, marker, owner or privilege mismatch": <nil>
+
+## database-marker
+  ci-gate-identity: pass=14 fail=2 skip=0
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone/database-marker
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone
+    disposable_identity_conditions_test.go:198: [DatabaseMarker] alone was not refused as "database, role, marker, owner or privilege mismatch": <nil>
+  ci-gate-identity-server: pass=14 fail=2 skip=0
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone/database-marker
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone
+    disposable_identity_conditions_test.go:198: [DatabaseMarker] alone was not refused as "database, role, marker, owner or privilege mismatch": <nil>
+
+## database-name
+  ci-gate-identity: pass=14 fail=2 skip=0
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone/database-name
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone
+    disposable_identity_conditions_test.go:198: [Database] alone was not refused as "database, role, marker, owner or privilege mismatch": <nil>
+  ci-gate-identity-server: pass=14 fail=2 skip=0
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone/database-name
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone
+    disposable_identity_conditions_test.go:198: [Database] alone was not refused as "database, role, marker, owner or privilege mismatch": <nil>
+
+## database-owner
+  ci-gate-identity: pass=14 fail=2 skip=0
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone/database-owner
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone
+    disposable_identity_conditions_test.go:198: [IsOwner] alone was not refused as "database, role, marker, owner or privilege mismatch": <nil>
+  ci-gate-identity-server: pass=14 fail=2 skip=0
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone/database-owner
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone
+    disposable_identity_conditions_test.go:198: [IsOwner] alone was not refused as "database, role, marker, owner or privilege mismatch": <nil>
+
+## nonce-format
+  ci-gate-identity: pass=11 fail=5 skip=0
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone/nonce-format/nonce="2dc77ab96fcf1f8"
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone/nonce-format/nonce="2DC77AB96FCF1F8D"
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone/nonce-format/nonce=""
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone/nonce-format
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone
+    disposable_identity_conditions_test.go:179: nonce "2dc77ab96fcf1f8" was not refused as "invalid disposable nonce": database, role, marker, owner or privilege mismatch
+    disposable_identity_conditions_test.go:179: nonce "2DC77AB96FCF1F8D" was not refused as "invalid disposable nonce": database, role, marker, owner or privilege mismatch
+    disposable_identity_conditions_test.go:179: nonce "" was not refused as "invalid disposable nonce": database, role, marker, owner or privilege mismatch
+  ci-gate-identity-server: pass=11 fail=5 skip=0
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone/nonce-format/nonce="2bbaff7252ad327"
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone/nonce-format/nonce="2BBAFF7252AD3279"
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone/nonce-format/nonce=""
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone/nonce-format
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone
+    disposable_identity_conditions_test.go:179: nonce "2bbaff7252ad327" was not refused as "invalid disposable nonce": database, role, marker, owner or privilege mismatch
+    disposable_identity_conditions_test.go:179: nonce "2BBAFF7252AD3279" was not refused as "invalid disposable nonce": database, role, marker, owner or privilege mismatch
+    disposable_identity_conditions_test.go:179: nonce "" was not refused as "invalid disposable nonce": database, role, marker, owner or privilege mismatch
+
+## role-marker
+  ci-gate-identity: pass=14 fail=2 skip=0
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone/role-marker
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone
+    disposable_identity_conditions_test.go:198: [RoleMarker] alone was not refused as "database, role, marker, owner or privilege mismatch": <nil>
+  ci-gate-identity-server: pass=14 fail=2 skip=0
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone/role-marker
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone
+    disposable_identity_conditions_test.go:198: [RoleMarker] alone was not refused as "database, role, marker, owner or privilege mismatch": <nil>
+
+## role-name
+  ci-gate-identity: pass=14 fail=2 skip=0
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone/role-name
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone
+    disposable_identity_conditions_test.go:198: [Role SessionRole] alone was not refused as "database, role, marker, owner or privilege mismatch": <nil>
+  ci-gate-identity-server: pass=14 fail=2 skip=0
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone/role-name
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone
+    disposable_identity_conditions_test.go:198: [Role SessionRole] alone was not refused as "database, role, marker, owner or privilege mismatch": <nil>
+
+## session-user
+  ci-gate-identity: pass=14 fail=2 skip=0
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone/session-user
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone
+    disposable_identity_conditions_test.go:198: [SessionRole] alone was not refused as "database, role, marker, owner or privilege mismatch": <nil>
+  ci-gate-identity-server: pass=14 fail=2 skip=0
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone/session-user
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone
+    disposable_identity_conditions_test.go:198: [SessionRole] alone was not refused as "database, role, marker, owner or privilege mismatch": <nil>
+
+## superuser
+  ci-gate-identity: pass=14 fail=2 skip=0
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone/superuser
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone
+    disposable_identity_conditions_test.go:198: [Superuser] alone was not refused as "database, role, marker, owner or privilege mismatch": <nil>
+  ci-gate-identity-server: pass=14 fail=2 skip=0
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone/superuser
+    FAIL TestDisposableIdentityGateRefusesEachConditionAlone
+    disposable_identity_conditions_test.go:198: [Superuser] alone was not refused as "database, role, marker, owner or privilege mismatch": <nil>

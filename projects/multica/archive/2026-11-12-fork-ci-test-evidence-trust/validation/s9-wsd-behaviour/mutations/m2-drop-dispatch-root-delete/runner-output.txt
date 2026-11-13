@@ -1,0 +1,6 @@
+m2-drop-dispatch-root-delete: DETECTED runner_exit=1 restored_sha256=eaf5ce61cf9dcfb8133b9b74e7d64a0b32cc4a6c33d8c114b0a794cd303fe841
+
+FAIL handler-wsd-delete pass=0 fail=1 skip=0
+  workspace_delete_execution_test.go:374: cr_execution_dispatch_root: delete row for workspace A survived the teardown: (904e39c8-232c-4276-b18d-a4a834c78561,d58dcadb-071d-4181-8a42-3288ad9ebdb5,dispatch-0cdc56b0-88d1-45ac-b98c-cde484fa6be5,CR-A-de4bae8f-1a8c-4ada-ac6a-5295c63d7f02,build,4e63690a-e731-4bb2-bfb3-c39010fa02bb,1,0,,,,,"2026-11-12 14:03:03.762794+00","2026-11-12 14:03:03.762794+00")
+  --- FAIL: TestWorkspaceDeletionSweepsOnlyOperationalExecutionRows (0.10s)
+released instance 50cf829b9ad2 remaining=0

@@ -1,0 +1,24 @@
+instance fb10525d9426 (self-built disposable podman)
+migrated aifi45_tmp_394e2d7c8fd202bd
+
+baseline: exit=0 fail=0
+
+manifest-entry-removed: DETECTED (exit=1) restored=true
+    workspace_delete_manifest_test.go:236: workspace deletion manifest drift: unclassified=[cr_execution_notice] missing=[]
+
+classification-reverted: DETECTED (exit=1) restored=true
+    workspace_delete_retention_test.go:158: cr_execution_binding_issue is classified "keep" in the manifest, decision 7 says "retain"
+
+retain-trigger-dropped: DETECTED (exit=1)
+    workspace_delete_retention_test.go:167: retained table cr_execution_binding_issue has no BEFORE DELETE row trigger; its rows are no longer protected
+  trigger restored=true
+
+retain-fk-added: DETECTED (exit=1)
+    workspace_delete_retention_test.go:170: retained table cr_execution_binding_issue references workspace via [aifi45_probe_workspace_fk]; deleting the workspace would cascade into it
+  probe constraint removed=true
+
+after restore: exit=0 fail=0
+
+released instance fb10525d9426 remaining=0
+sha256 manifest before=e71ecfb152ba71081523946e153489ff4f9bc4e2374d4de28ffb87d7e8e28a99 after=e71ecfb152ba71081523946e153489ff4f9bc4e2374d4de28ffb87d7e8e28a99
+mutation probe: registrations and catalog assertions all have teeth

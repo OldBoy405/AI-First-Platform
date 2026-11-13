@@ -1,0 +1,29 @@
+
+  STDD 失败模式检查结果 (CLI 确定性子集)
+  ──────────────────────────────────────────────────
+  ✅ 通过: 8
+  ⚠ 警告: 1
+  ⏭ 跳过: 0
+  ❌ 错误: 1
+
+  通过项:
+    ✓ (a) 所有必需文件存在 + Spec 文件存在
+    ✓ (d) TC-ID 唯一 (19 个)
+    ✓ (f) 所有 THEN 含 SHALL
+    ✓ (g) AND 数量正常
+    ✓ (j) 已声明无覆盖义务: 被测对象为 Go、Node、CI 配置与前端类型检查，覆盖率采集目前只支持 pytest-cov；项目配置 quality.coverage.enabled=false
+    ✓ (k) 契约一致 (5 capabilities)
+    ✓ (l) Anchoring: L4 >= L4
+    ✓ 13 个切片均有验证证据
+
+  警告项:
+    ⚠ (b) 范围蔓延: 47 个文件可能超出声明范围 (CUSTOM.md, packages/core/package.json, packages/views/auth/use-logout.test.ts...)
+
+  错误项:
+    ✗ TC 当前执行覆盖不足: 0/19。缺失: TC-CBE-001, TC-CBE-002, TC-CBE-003, TC-CBE-004, TC-CCF-001...；证据问题: 当前执行证据无效: 'cp'
+
+  ──────────────────────────────────────
+  自动化检查覆盖: 10/10 项
+  完整 14 类检查（含语义分析）请在 BUILD 质量验证阶段执行
+
+CHECKFAILURES_EXIT=1

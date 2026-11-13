@@ -1,0 +1,4 @@
+--- anchor
+if (status === 200) return verdict("ok", `${target} is readable with ${TOKEN_ENV}`, 0);
+--- replacement
+if (status === 200) return { ...verdict("ok", `${target} is readable with ${TOKEN_ENV}`, 0), token };

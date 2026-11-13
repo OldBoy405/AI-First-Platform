@@ -1,0 +1,20 @@
+Traceback (most recent call last):
+  File "C:\Users\GOBAO\Downloads\AI\stdd\stdd\cli\__init__.py", line 724, in main
+    _dispatch_command(args, commands)(args)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\GOBAO\Downloads\AI\stdd\stdd\cli\commands\agent.py", line 433, in _dispatch
+    cmd_agent_verify(args)
+    ~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\GOBAO\Downloads\AI\stdd\stdd\cli\commands\agent.py", line 206, in cmd_agent_verify
+    planned_here = [item for item in planned if item["cp"] == step["id"]]
+                                                ~~~~^^^^^^
+KeyError: 'cp'
+
+  Agent Verify: ci-backend-environment
+  System: multica fork CI、scripts/aifi45-disposable 与一次性 Postgres
+  Spec: change changes/2026-11-12-fork-ci-test-evidence-trust/canonical/specs/agent/ci-backend-environment.yaml
+  Checkpoints: 4
+
+  Evidence run: 97da35cc-fdac-4d9d-bbaa-60960538d76e
+  [CP-CBE-001] SC-CBE-001 up 建出符合 TestMain 身份检查的 nonce 库并先 mask 口令再写 GITHUB_ENV；down 按 marker 删除，handle 缺失时 0 退出；日志与 handle 不含明文口令。
+EXIT_CODE=1

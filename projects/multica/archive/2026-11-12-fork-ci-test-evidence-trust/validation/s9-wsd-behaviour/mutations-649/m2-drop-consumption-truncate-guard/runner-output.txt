@@ -1,0 +1,8 @@
+m2-drop-consumption-truncate-guard: DETECTED runner_exit=1 restored_sha256=95507243e32b003dd650b3469df2164bf5239418ef7967b2a93bfbdcffc51129
+  fail events (2): TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte, TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte/truncate_cr_execution_consumption
+
+FAIL handler-wsd-retain pass=21 fail=2 skip=0
+  workspace_delete_execution_test.go:420: cr_execution_consumption accepted TRUNCATE; a row-level guard does not fire on TRUNCATE
+  --- FAIL: TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte/truncate_cr_execution_consumption (0.00s)
+  --- FAIL: TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte (0.11s)
+released instance 1e10beabdba1 remaining=0

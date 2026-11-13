@@ -1,0 +1,22 @@
+baseline (S10, spec reporter) = 156 names
+current  (S11, TAP reporter)  = 171 names
+added = 15   removed = 0
+
+--- added ---
+TC-CCF-001 200 maps to ok and exits zero
+TC-CCF-001 401 maps to rejected and exits non-zero
+TC-CCF-001 403 and 404 both map to no-access-or-pin-not-found
+TC-CCF-001 a failure message that embeds the credential is not echoed
+TC-CCF-001 a missing credential is reported before the pin file is even read
+TC-CCF-001 a network failure maps to inconclusive and exits non-zero
+TC-CCF-001 an empty credential maps to missing, exits non-zero and never calls fetch
+TC-CCF-001 an unusable pin fails before any request and without leaking the credential
+TC-CCF-001 any other status maps to inconclusive and exits non-zero
+TC-CCF-001 importing the module does not run the cli
+TC-CCF-001 the cli reads the pin file, validates arguments and maps every branch to an exit code
+TC-CCF-001 the cli rejects unknown arguments and flags without a value
+TC-CCF-001 the credential never appears in the result, the url or any logged line
+TC-CCF-001 the real cli process exits non-zero for a missing credential and for an unreadable pin, without leaking
+TC-CCF-001 the request goes to the pinned commit of the tools repo with the credential in a header
+
+--- removed ---

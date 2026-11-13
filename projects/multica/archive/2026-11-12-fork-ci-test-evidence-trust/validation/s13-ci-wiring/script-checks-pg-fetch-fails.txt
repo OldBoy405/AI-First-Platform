@@ -1,0 +1,11 @@
+# bash -e, RUNNER_TEMP=/tmp/tmp.IuwBFfB22h
+# script body:
+pg_version="999.999.999"
+npm install --prefix "$RUNNER_TEMP/aifi45-node" "pg@$pg_version"
+NODE_PATH="$RUNNER_TEMP/aifi45-node/node_modules" node --test scripts/aifi45-disposable/*.test.mjs
+# --- output ---
+npm error code ETARGET
+npm error notarget No matching version found for pg@999.999.999.
+npm error notarget In most cases you or one of your dependencies are requesting a package version that doesn't exist.
+npm error A complete log of this run can be found in: C:\Users\GOBAO\AppData\Local\npm-cache\_logs\2026-11-12T18_02_05_020Z-debug-0.log
+# exit=1

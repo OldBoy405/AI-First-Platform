@@ -1,0 +1,28 @@
+{
+  "name": "crosscheck-crctl",
+  "package": "./internal/governance",
+  "run": "^(TestGrantCrossVerifiesWithCrctl|TestGrantCrossVerifiesWithCrctlCodeStage|TestMDev003)$",
+  "ok": false,
+  "reasons": [
+    "exit=1",
+    "fail=3",
+    "pass=0"
+  ],
+  "reconciliationLine": "",
+  "stage": "test",
+  "totals": {
+    "pass": 0,
+    "fail": 3,
+    "skip": 0,
+    "packages": 0
+  },
+  "reconciliation": null,
+  "failures": [
+    "approval_crosscheck_test.go:213: CRCTL_MJS is required: the cross-tool approve seam needs the real crctl verifier, so a dev-machine default is not evidence",
+    "--- FAIL: TestGrantCrossVerifiesWithCrctl (0.00s)",
+    "approval_crosscheck_test.go:384: CRCTL_MJS is required: the cross-tool approve seam needs the real crctl verifier, so a dev-machine default is not evidence",
+    "--- FAIL: TestGrantCrossVerifiesWithCrctlCodeStage (0.00s)",
+    "dev_phase_cp_test.go:176: CRCTL_MJS is required: the cross-tool approve seam needs the real crctl verifier, so a dev-machine default is not evidence",
+    "--- FAIL: TestMDev003 (0.00s)"
+  ]
+}

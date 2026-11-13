@@ -1,0 +1,43 @@
+# spec.yaml — 行为规格（Canonical YAML）；MODIFIED 能力的完整规格。
+
+meta:
+  capability: selection-reconciliation
+  change_id: 2026-11-12-fork-ci-test-evidence-trust
+  created: '2026-11-12'
+  confidence: medium
+requirements:
+- id: REQ-SEL-001
+  confidence: high
+  description: run-selection 的对账失败使 selection 失败；未配置 expected 的既有行为保持不变；node 单测进入 CI。
+  scenarios:
+  - id: SC-SEL-001
+    confidence: high
+    evidence: canonical/proposals/2026-11-12-fork-ci-test-evidence-trust.yaml#capabilities.modified
+    given: 一个配置了非空 expected 数组的 selection，go test -json 流缺少某个预期测试或含多余、重复事件，
+    when: decideSelection 以 verifyGoTestSelection 的真实返回值判定。
+    then: SHALL status 不是 matched 时 ok 为 false，reasons 含该 reason 原文并输出 blocked=<reason>；status 为 matched 且其余判定通过时 SHALL ok 为 true。
+    and:
+    - 单测 SHALL 使用 verifyGoTestSelection 的真实输出而不是手写 {matched, blocked} 形状；把决策函数改回读取 .matched 与 .blocked 的旧写法 SHALL 使该单测变红（变异验证记入证据）。
+  - id: SC-SEL-002
+    confidence: high
+    evidence: canonical/proposals/2026-11-12-fork-ci-test-evidence-trust.yaml#capabilities.modified
+    given: selections.json 中未设置 expected 的 selection（当前全部条目），
+    when: decideSelection 与 run-selection 运行。
+    then: SHALL 沿用旧判定：test.code 为 0 且 fail 为 0 且 skip 为 0 且 pass 大于 0；PASS 与 FAIL 输出行 SHALL 逐字不变。
+    and:
+    - run-selection.test.mjs 既有断言 SHALL 全部保持通过且不被改弱。
+  - id: SC-SEL-003
+    confidence: high
+    evidence: canonical/proposals/2026-11-12-fork-ci-test-evidence-trust.yaml#capabilities.modified
+    given: selection 的 expected 字段已存在但为空数组、非数组或元素非法，
+    when: decideSelection 判定。
+    then: SHALL ok 为 false 且 reasons 含 EXPECTED_INVALID；SHALL NOT 静默当作未配置。
+    and: []
+  - id: SC-SEL-004
+    confidence: medium
+    evidence: canonical/proposals/2026-11-12-fork-ci-test-evidence-trust.yaml#capabilities.modified
+    given: scripts/aifi45-disposable 下的 node 单测与 ci-paths.json 的 scope 映射，
+    when: ci-scope 对「仅改 scripts/aifi45-disposable/**」的变更判定；检查 ci.yml 的 script-checks。
+    then: SHALL 该变更命中 scripts 与 backend scope；script-checks SHALL 含 node --test scripts/aifi45-disposable 的步骤，且 pg 依赖获取失败时步骤失败。
+    and:
+    - 改 run-selection 不触发任何 CI job 的现状 SHALL 不再成立。

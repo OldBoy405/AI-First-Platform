@@ -1,0 +1,29 @@
+rule1 zero passing tests: DETECTED (exit=1 pass=20 fail=2) restored=true
+    red: TC-TOR-003 rule 1: a required package with zero passing tests is red, not green
+    red: TC-TOR-003 each of the five failure modes is red on its own, not only in combination
+rule1 package conclusion must be pass: DETECTED (exit=1 pass=21 fail=1) restored=true
+    red: TC-TOR-003 rule 1: a required package whose conclusion is fail is red
+rule1 required package absent from the stream: DETECTED (exit=1 pass=21 fail=1) restored=true
+    red: TC-TOR-003 rule 1: a required package with no events at all is red
+rule1 ambiguous required package name: DETECTED (exit=1 pass=21 fail=1) restored=true
+    red: TC-TOR-003 a required package name that matches two packages is ambiguous, not silently picked
+rule2 undeclared skip: DETECTED (exit=1 pass=18 fail=4) restored=true
+    red: TC-TOR-003 rule 2: a skip outside the allow-list is red and names the test
+    red: TC-TOR-003 rule 2: a declared skip is scoped to its package, not global
+    red: TC-TOR-003 rule 2: a subtest of a declared skip is still declared, an undeclared parent is not
+    red: TC-TOR-003 each of the five failure modes is red on its own, not only in combination
+rule3 excluded test present in the stream: DETECTED (exit=1 pass=19 fail=3) restored=true
+    red: TC-TOR-003 rule 3: an excluded test appearing in the stream is red
+    red: TC-TOR-003 rule 3: a subtest of an excluded test also proves the exclusion did not take effect
+    red: TC-TOR-003 each of the five failure modes is red on its own, not only in combination
+rule4 last event must be a package conclusion: DETECTED (exit=1 pass=21 fail=1) restored=true
+    red: TC-TOR-003 rule 4: the stream must end with a package-level conclusion
+rule4 every package must conclude: DETECTED (exit=1 pass=21 fail=1) restored=true
+    red: TC-TOR-003 rule 4: a package outside required-packages that never concludes is still red
+rule4 parse failure hard-fails (not skipped over): DETECTED (exit=1 pass=19 fail=3) restored=true
+    red: TC-TOR-003 rule 4: a half-written JSON line is a hard failure naming the line
+    red: TC-TOR-003 rule 4: a bad line in the middle is not skipped over (no first-line-only parsing)
+    red: TC-TOR-003 each of the five failure modes is red on its own, not only in combination
+sha256 before=ebcb1b4bc2dcbd26fc3ba954e93aedcb1daa50dc46226a48cebff702ea4d5cd2
+sha256 after =ebcb1b4bc2dcbd26fc3ba954e93aedcb1daa50dc46226a48cebff702ea4d5cd2
+mutation probe: all guards have teeth, file restored byte-exact

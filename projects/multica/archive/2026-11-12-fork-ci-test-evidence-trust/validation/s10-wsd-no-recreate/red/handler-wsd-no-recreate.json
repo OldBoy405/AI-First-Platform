@@ -1,0 +1,26 @@
+{
+  "name": "handler-wsd-no-recreate",
+  "package": "./internal/handler",
+  "run": "^TestWorkspaceDeletionRefusesNewReservationAndCommand$",
+  "ok": false,
+  "reasons": [
+    "exit=1",
+    "fail=3"
+  ],
+  "reconciliationLine": "",
+  "stage": "test",
+  "totals": {
+    "pass": 2,
+    "fail": 3,
+    "skip": 0,
+    "packages": 0
+  },
+  "reconciliation": null,
+  "failures": [
+    "workspace_delete_no_recreate_test.go:154: SC-WSD-005 violated: CreateReservationTx accepted reservation 3ca4e09f-c344-447b-98b2-651c889468a3 for deleted workspace 2e166b92-9db4-4a51-9d02-a7b02251fca0 through retained selection 6d43b155-9f1a-433f-8ca4-ac0168bc706b",
+    "--- FAIL: TestWorkspaceDeletionRefusesNewReservationAndCommand/reservation_for_deleted_workspace (0.00s)",
+    "workspace_delete_no_recreate_test.go:185: SC-WSD-005 violated: ApplyControlCommandTx accepted command b97cc2e3-2aec-4e3a-bc07-d4f47a6e588b (state created) on lineage db196f50-4283-4561-933e-b93469bebda6 of deleted workspace 2e166b92-9db4-4a51-9d02-a7b02251fca0",
+    "--- FAIL: TestWorkspaceDeletionRefusesNewReservationAndCommand/command_for_deleted_workspace (0.01s)",
+    "--- FAIL: TestWorkspaceDeletionRefusesNewReservationAndCommand (0.10s)"
+  ]
+}

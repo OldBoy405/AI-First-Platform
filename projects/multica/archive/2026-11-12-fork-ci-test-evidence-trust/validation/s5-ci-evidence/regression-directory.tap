@@ -1,0 +1,778 @@
+TAP version 13
+# Subtest: TC-TOR-003 a compliant stream reconciles and the exclusion list is printed with its count
+ok 1 - TC-TOR-003 a compliant stream reconciles and the exclusion list is printed with its count
+  ---
+  duration_ms: 75.2277
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 rule 1: a required package with zero passing tests is red, not green
+ok 2 - TC-TOR-003 rule 1: a required package with zero passing tests is red, not green
+  ---
+  duration_ms: 54.0534
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 rule 1: a required package with no events at all is red
+ok 3 - TC-TOR-003 rule 1: a required package with no events at all is red
+  ---
+  duration_ms: 0.3394
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 rule 1: a required package whose conclusion is fail is red
+ok 4 - TC-TOR-003 rule 1: a required package whose conclusion is fail is red
+  ---
+  duration_ms: 0.3863
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 rule 2: a skip outside the allow-list is red and names the test
+ok 5 - TC-TOR-003 rule 2: a skip outside the allow-list is red and names the test
+  ---
+  duration_ms: 0.3928
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 rule 2: a declared skip is scoped to its package, not global
+ok 6 - TC-TOR-003 rule 2: a declared skip is scoped to its package, not global
+  ---
+  duration_ms: 0.211
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 rule 2: a subtest of a declared skip is still declared, an undeclared parent is not
+ok 7 - TC-TOR-003 rule 2: a subtest of a declared skip is still declared, an undeclared parent is not
+  ---
+  duration_ms: 0.2145
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 rule 3: an excluded test appearing in the stream is red
+ok 8 - TC-TOR-003 rule 3: an excluded test appearing in the stream is red
+  ---
+  duration_ms: 0.2019
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 rule 3: a subtest of an excluded test also proves the exclusion did not take effect
+ok 9 - TC-TOR-003 rule 3: a subtest of an excluded test also proves the exclusion did not take effect
+  ---
+  duration_ms: 0.1708
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 rule 3: an excluded test in another package is not a false positive
+ok 10 - TC-TOR-003 rule 3: an excluded test in another package is not a false positive
+  ---
+  duration_ms: 0.1791
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 rule 4: a half-written JSON line is a hard failure naming the line
+ok 11 - TC-TOR-003 rule 4: a half-written JSON line is a hard failure naming the line
+  ---
+  duration_ms: 0.2006
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 rule 4: a bad line in the middle is not skipped over (no first-line-only parsing)
+ok 12 - TC-TOR-003 rule 4: a bad line in the middle is not skipped over (no first-line-only parsing)
+  ---
+  duration_ms: 0.1391
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 rule 4: a missing package-level conclusion is red
+ok 13 - TC-TOR-003 rule 4: a missing package-level conclusion is red
+  ---
+  duration_ms: 0.2436
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 rule 4: a package outside required-packages that never concludes is still red
+ok 14 - TC-TOR-003 rule 4: a package outside required-packages that never concludes is still red
+  ---
+  duration_ms: 0.6887
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 rule 4: the stream must end with a package-level conclusion
+ok 15 - TC-TOR-003 rule 4: the stream must end with a package-level conclusion
+  ---
+  duration_ms: 0.2354
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 rule 4: an empty stream is red, never a vacuous pass
+ok 16 - TC-TOR-003 rule 4: an empty stream is red, never a vacuous pass
+  ---
+  duration_ms: 0.1032
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 a required package name that matches two packages is ambiguous, not silently picked
+ok 17 - TC-TOR-003 a required package name that matches two packages is ambiguous, not silently picked
+  ---
+  duration_ms: 0.1273
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 CRLF streams reconcile identically (normalize before splitting)
+ok 18 - TC-TOR-003 CRLF streams reconcile identically (normalize before splitting)
+  ---
+  duration_ms: 0.1006
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 the declaration itself is validated: empty or malformed input hard-fails
+ok 19 - TC-TOR-003 the declaration itself is validated: empty or malformed input hard-fails
+  ---
+  duration_ms: 0.6306
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 the CLI rejects a missing stream or table argument before reading anything
+ok 20 - TC-TOR-003 the CLI rejects a missing stream or table argument before reading anything
+  ---
+  duration_ms: 243.4237
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 the CLI hard-fails on an unreadable stream and on a malformed table
+ok 21 - TC-TOR-003 the CLI hard-fails on an unreadable stream and on a malformed table
+  ---
+  duration_ms: 138.7759
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 each of the five failure modes is red on its own, not only in combination
+ok 22 - TC-TOR-003 each of the five failure modes is red on its own, not only in combination
+  ---
+  duration_ms: 229.498
+  type: 'test'
+  ...
+# Subtest: TC-CBE-004 the scope is governance and crosslang_test
+ok 23 - TC-CBE-004 the scope is governance and crosslang_test
+  ---
+  duration_ms: 1.6232
+  type: 'test'
+  ...
+# Subtest: TC-CBE-004 a dev-machine absolute path default is a violation
+ok 24 - TC-CBE-004 a dev-machine absolute path default is a violation
+  ---
+  duration_ms: 0.8404
+  type: 'test'
+  ...
+# Subtest: TC-CBE-004 an env-guarded skip is a violation for both named variables
+ok 25 - TC-CBE-004 an env-guarded skip is a violation for both named variables
+  ---
+  duration_ms: 0.3253
+  type: 'test'
+  ...
+# Subtest: TC-CBE-004 both violations together are reported with line numbers
+ok 26 - TC-CBE-004 both violations together are reported with line numbers
+  ---
+  duration_ms: 0.3654
+  type: 'test'
+  ...
+# Subtest: TC-CBE-004 Fatal on a missing variable is the accepted writing
+ok 27 - TC-CBE-004 Fatal on a missing variable is the accepted writing
+  ---
+  duration_ms: 0.282
+  type: 'test'
+  ...
+# Subtest: TC-CBE-004 skips guarded by other conditions are not flagged
+ok 28 - TC-CBE-004 skips guarded by other conditions are not flagged
+  ---
+  duration_ms: 0.222
+  type: 'test'
+  ...
+# Subtest: TC-CBE-004 CRLF input is parsed line by line, not as one blob
+ok 29 - TC-CBE-004 CRLF input is parsed line by line, not as one blob
+  ---
+  duration_ms: 0.2323
+  type: 'test'
+  ...
+# Subtest: TC-CBE-004 unusable input hard-fails instead of reporting no violations
+ok 30 - TC-CBE-004 unusable input hard-fails instead of reporting no violations
+  ---
+  duration_ms: 0.9106
+  type: 'test'
+  ...
+# Subtest: TC-CBE-004 the CLI exits non-zero and names the file when a sample tree violates
+ok 31 - TC-CBE-004 the CLI exits non-zero and names the file when a sample tree violates
+  ---
+  duration_ms: 69.1684
+  type: 'test'
+  ...
+# Subtest: TC-CBE-004 the CLI exits 0 on a clean sample tree
+ok 32 - TC-CBE-004 the CLI exits 0 on a clean sample tree
+  ---
+  duration_ms: 53.7565
+  type: 'test'
+  ...
+# Subtest: TC-CBE-004 the real repository satisfies the contract
+ok 33 - TC-CBE-004 the real repository satisfies the contract
+  ---
+  duration_ms: 99.1505
+  type: 'test'
+  ...
+# Subtest: TC-DTI-001 creation args pin the resource envelope
+ok 34 - TC-DTI-001 creation args pin the resource envelope
+  ---
+  duration_ms: 1.1128
+  type: 'test'
+  ...
+# Subtest: TC-DTI-001 creation args refuse an out-of-range lifetime or a malformed nonce
+ok 35 - TC-DTI-001 creation args refuse an out-of-range lifetime or a malformed nonce
+  ---
+  duration_ms: 0.5702
+  type: 'test'
+  ...
+# Subtest: TC-DTI-001 start passes the password only through the environment and returns a loopback url
+ok 36 - TC-DTI-001 start passes the password only through the environment and returns a loopback url
+  ---
+  duration_ms: 1.3978
+  type: 'test'
+  ...
+# Subtest: TC-DTI-001 start refuses a port bound outside loopback and releases the instance
+ok 37 - TC-DTI-001 start refuses a port bound outside loopback and releases the instance
+  ---
+  duration_ms: 0.8169
+  type: 'test'
+  ...
+# Subtest: TC-DTI-001 start refuses any additional binding that is not loopback
+ok 38 - TC-DTI-001 start refuses any additional binding that is not loopback
+  ---
+  duration_ms: 0.3475
+  type: 'test'
+  ...
+# Subtest: TC-DTI-001 start releases the instance when it never becomes ready
+ok 39 - TC-DTI-001 start releases the instance when it never becomes ready
+  ---
+  duration_ms: 0.4334
+  type: 'test'
+  ...
+# Subtest: TC-DTI-001 start rejects output that is not a full container id without removing anything
+ok 40 - TC-DTI-001 start rejects output that is not a full container id without removing anything
+  ---
+  duration_ms: 0.2805
+  type: 'test'
+  ...
+# Subtest: TC-DTI-003 release removes by full id after the ownership check, then reads back zero
+ok 41 - TC-DTI-003 release removes by full id after the ownership check, then reads back zero
+  ---
+  duration_ms: 0.2676
+  type: 'test'
+  ...
+# Subtest: TC-DTI-003 release fails when the read-back still finds the instance
+ok 42 - TC-DTI-003 release fails when the read-back still finds the instance
+  ---
+  duration_ms: 0.4569
+  type: 'test'
+  ...
+# Subtest: TC-DTI-004 release refuses without issuing rm when the instance is not provably ours
+ok 43 - TC-DTI-004 release refuses without issuing rm when the instance is not provably ours
+  ---
+  duration_ms: 0.442
+  type: 'test'
+  ...
+# Subtest: TC-DTI-004 release rejects a malformed id or nonce before calling podman
+ok 44 - TC-DTI-004 release rejects a malformed id or nonce before calling podman
+  ---
+  duration_ms: 0.154
+  type: 'test'
+  ...
+# Subtest: creation names the database and role after the nonce and marks it
+ok 45 - creation names the database and role after the nonce and marks it
+  ---
+  duration_ms: 2.2423
+  type: 'test'
+  ...
+# Subtest: a fresh nonce is 16 hex characters
+ok 46 - a fresh nonce is 16 hex characters
+  ---
+  duration_ms: 0.3334
+  type: 'test'
+  ...
+# Subtest: drop refuses a database whose marker is not our own
+ok 47 - drop refuses a database whose marker is not our own
+  ---
+  duration_ms: 0.8511
+  type: 'test'
+  ...
+# Subtest: drop removes the database and role only after the marker matches
+ok 48 - drop removes the database and role only after the marker matches
+  ---
+  duration_ms: 1.0977
+  type: 'test'
+  ...
+# Subtest: drop is a no-op when the database is already gone
+ok 49 - drop is a no-op when the database is already gone
+  ---
+  duration_ms: 0.2829
+  type: 'test'
+  ...
+# Subtest: TC-DTI-002 --admin-url is rejected before any instance is created
+ok 50 - TC-DTI-002 --admin-url is rejected before any instance is created
+  ---
+  duration_ms: 106.0837
+  type: 'test'
+  ...
+# Subtest: TC-DTI-002 AIFI45_ADMIN_URL is no longer read
+ok 51 - TC-DTI-002 AIFI45_ADMIN_URL is no longer read
+  ---
+  duration_ms: 95.7579
+  type: 'test'
+  ...
+# Subtest: --only rejects a missing or unmatched name before creating an instance
+ok 52 - --only rejects a missing or unmatched name before creating an instance
+  ---
+  duration_ms: 261.1885
+  type: 'test'
+  ...
+# Subtest: --only rejects duplicate names before creating an instance
+ok 53 - --only rejects duplicate names before creating an instance
+  ---
+  duration_ms: 90.4459
+  type: 'test'
+  ...
+# Subtest: --only accepts an exact name and proceeds to the instance boundary
+ok 54 - --only accepts an exact name and proceeds to the instance boundary
+  ---
+  duration_ms: 82.9874
+  type: 'test'
+  ...
+# Subtest: TC-SEL-002 an unconfigured selection keeps the historical PASS line
+ok 55 - TC-SEL-002 an unconfigured selection keeps the historical PASS line
+  ---
+  duration_ms: 0.3278
+  type: 'test'
+  ...
+# Subtest: TC-SEL-002 an unconfigured selection keeps the historical FAIL lines
+ok 56 - TC-SEL-002 an unconfigured selection keeps the historical FAIL lines
+  ---
+  duration_ms: 0.1249
+  type: 'test'
+  ...
+# Subtest: TC-SEL-002 the unconfigured rule is exactly code/fail/skip/pass
+ok 57 - TC-SEL-002 the unconfigured rule is exactly code/fail/skip/pass
+  ---
+  duration_ms: 0.2759
+  type: 'test'
+  ...
+# Subtest: TC-SEL-002 an explicitly undefined expected is still unconfigured
+ok 58 - TC-SEL-002 an explicitly undefined expected is still unconfigured
+  ---
+  duration_ms: 0.1117
+  type: 'test'
+  ...
+# Subtest: TC-SEL-002 a migrate-stage failure keeps the trimmed line without totals
+ok 59 - TC-SEL-002 a migrate-stage failure keeps the trimmed line without totals
+  ---
+  duration_ms: 0.1593
+  type: 'test'
+  ...
+# Subtest: TC-SEL-002 the printer appends the reconciliation suffix verbatim
+ok 60 - TC-SEL-002 the printer appends the reconciliation suffix verbatim
+  ---
+  duration_ms: 0.0962
+  type: 'test'
+  ...
+# Subtest: --evidence-dir requires a value and is rejected before any instance is created
+ok 61 - --evidence-dir requires a value and is rejected before any instance is created
+  ---
+  duration_ms: 161.5797
+  type: 'test'
+  ...
+# Subtest: --evidence-dir with a value is accepted and reaches the instance boundary
+ok 62 - --evidence-dir with a value is accepted and reaches the instance boundary
+  ---
+  duration_ms: 82.4982
+  type: 'test'
+  ...
+# Subtest: TC-SEL-001 a matched reconciliation with passing totals is a pass
+ok 63 - TC-SEL-001 a matched reconciliation with passing totals is a pass
+  ---
+  duration_ms: 2.9166
+  type: 'test'
+  ...
+# Subtest: TC-SEL-001 the real result carries status/reason, not matched/blocked
+ok 64 - TC-SEL-001 the real result carries status/reason, not matched/blocked
+  ---
+  duration_ms: 0.1777
+  type: 'test'
+  ...
+# Subtest: TC-SEL-001 missing declared child fails with blocked=SELECTION_MISMATCH
+ok 65 - TC-SEL-001 missing declared child fails with blocked=SELECTION_MISMATCH
+  ---
+  duration_ms: 0.1819
+  type: 'test'
+  ...
+# Subtest: TC-SEL-001 extra passing test fails with blocked=SELECTION_MISMATCH
+ok 66 - TC-SEL-001 extra passing test fails with blocked=SELECTION_MISMATCH
+  ---
+  duration_ms: 0.1377
+  type: 'test'
+  ...
+# Subtest: TC-SEL-001 duplicate child pass fails with blocked=EVENT_ORDER
+ok 67 - TC-SEL-001 duplicate child pass fails with blocked=EVENT_ORDER
+  ---
+  duration_ms: 0.1165
+  type: 'test'
+  ...
+# Subtest: TC-SEL-001 skipped child fails with blocked=TEST_NOT_PASSED
+ok 68 - TC-SEL-001 skipped child fails with blocked=TEST_NOT_PASSED
+  ---
+  duration_ms: 0.0967
+  type: 'test'
+  ...
+# Subtest: TC-SEL-001 an unconfirmed process is reported with its own reason
+ok 69 - TC-SEL-001 an unconfirmed process is reported with its own reason
+  ---
+  duration_ms: 0.104
+  type: 'test'
+  ...
+# Subtest: TC-SEL-003 EXPECTED_INVALID for an empty declared manifest
+ok 70 - TC-SEL-003 EXPECTED_INVALID for an empty declared manifest
+  ---
+  duration_ms: 0.0826
+  type: 'test'
+  ...
+# Subtest: TC-SEL-003 EXPECTED_INVALID for a non-array declared manifest
+ok 71 - TC-SEL-003 EXPECTED_INVALID for a non-array declared manifest
+  ---
+  duration_ms: 0.1997
+  type: 'test'
+  ...
+# Subtest: TC-SEL-003 EXPECTED_INVALID for illegal manifest elements
+ok 72 - TC-SEL-003 EXPECTED_INVALID for illegal manifest elements
+  ---
+  duration_ms: 0.2539
+  type: 'test'
+  ...
+# Subtest: TC-SEL-003 EXPECTED_INVALID is not silently treated as unconfigured
+ok 73 - TC-SEL-003 EXPECTED_INVALID is not silently treated as unconfigured
+  ---
+  duration_ms: 0.2219
+  type: 'test'
+  ...
+# Subtest: TC-SEL-003 a failing process does not hide an unusable declared manifest
+ok 74 - TC-SEL-003 a failing process does not hide an unusable declared manifest
+  ---
+  duration_ms: 0.0963
+  type: 'test'
+  ...
+# Subtest: the stream is kept verbatim and the decision is kept as JSON, in a directory that did not exist
+ok 75 - the stream is kept verbatim and the decision is kept as JSON, in a directory that did not exist
+  ---
+  duration_ms: 9.5199
+  type: 'test'
+  ...
+# Subtest: a migrate-stage failure with no stream still leaves both files
+ok 76 - a migrate-stage failure with no stream still leaves both files
+  ---
+  duration_ms: 10.1332
+  type: 'test'
+  ...
+# Subtest: matches the complete declared event set with a passing declared leaf
+ok 77 - matches the complete declared event set with a passing declared leaf
+  ---
+  duration_ms: 1.4357
+  type: 'test'
+  ...
+# Subtest: matches multiple packages and CRLF without conflating package identities
+ok 78 - matches multiple packages and CRLF without conflating package identities
+  ---
+  duration_ms: 0.3058
+  type: 'test'
+  ...
+# Subtest: matches interleaved events from distinct packages
+ok 79 - matches interleaved events from distinct packages
+  ---
+  duration_ms: 0.2342
+  type: 'test'
+  ...
+# Subtest: does not infer parentage from slash prefixes in sibling names
+ok 80 - does not infer parentage from slash prefixes in sibling names
+  ---
+  duration_ms: 0.1766
+  type: 'test'
+  ...
+# Subtest: rejects an empty, duplicated or leafless expected set
+ok 81 - rejects an empty, duplicated or leafless expected set
+  ---
+  duration_ms: 0.2974
+  type: 'test'
+  ...
+# Subtest: rejects a malformed manifest without coercing identity or leaf flags
+ok 82 - rejects a malformed manifest without coercing identity or leaf flags
+  ---
+  duration_ms: 0.2306
+  type: 'test'
+  ...
+# Subtest: rejects zero selected tests even if the package reports pass
+ok 83 - rejects zero selected tests even if the package reports pass
+  ---
+  duration_ms: 0.1805
+  type: 'test'
+  ...
+# Subtest: rejects a missing declared child and a missing declared package
+ok 84 - rejects a missing declared child and a missing declared package
+  ---
+  duration_ms: 0.2122
+  type: 'test'
+  ...
+# Subtest: rejects an extra passing test rather than silently narrowing the run
+ok 85 - rejects an extra passing test rather than silently narrowing the run
+  ---
+  duration_ms: 0.23
+  type: 'test'
+  ...
+# Subtest: rejects a child skip even when its parent and package claim pass
+ok 86 - rejects a child skip even when its parent and package claim pass
+  ---
+  duration_ms: 0.2566
+  type: 'test'
+  ...
+# Subtest: rejects test or package failure and package skip even before an otherwise valid ending
+ok 87 - rejects test or package failure and package skip even before an otherwise valid ending
+  ---
+  duration_ms: 1.0023
+  type: 'test'
+  ...
+# Subtest: rejects a pass without a run, duplicate terminal or duplicate run
+ok 88 - rejects a pass without a run, duplicate terminal or duplicate run
+  ---
+  duration_ms: 0.2315
+  type: 'test'
+  ...
+# Subtest: rejects a duplicate or missing package terminal and events after termination
+ok 89 - rejects a duplicate or missing package terminal and events after termination
+  ---
+  duration_ms: 0.199
+  type: 'test'
+  ...
+# Subtest: rejects unknown packages, event kinds and illegal transitions
+ok 90 - rejects unknown packages, event kinds and illegal transitions
+  ---
+  duration_ms: 0.197
+  type: 'test'
+  ...
+# Subtest: rejects an invalid, empty or unterminated NDJSON stream
+ok 91 - rejects an invalid, empty or unterminated NDJSON stream
+  ---
+  duration_ms: 0.1682
+  type: 'test'
+  ...
+# Subtest: rejects duplicate JSON keys even when the final Action says pass
+ok 92 - rejects duplicate JSON keys even when the final Action says pass
+  ---
+  duration_ms: 0.1442
+  type: 'test'
+  ...
+# Subtest: rejects incomplete stream, signal and nonzero or unknown exit
+ok 93 - rejects incomplete stream, signal and nonzero or unknown exit
+  ---
+  duration_ms: 0.1462
+  type: 'test'
+  ...
+# Subtest: treats Go output as data and does not include it in a matching result
+ok 94 - treats Go output as data and does not include it in a matching result
+  ---
+  duration_ms: 0.2668
+  type: 'test'
+  ...
+# Subtest: does not return untrusted event output or exception text
+ok 95 - does not return untrusted event output or exception text
+  ---
+  duration_ms: 0.1649
+  type: 'test'
+  ...
+# Subtest: does not return an exception message from a throwing input getter
+ok 96 - does not return an exception message from a throwing input getter
+  ---
+  duration_ms: 0.1167
+  type: 'test'
+  ...
+# Subtest: rejects extra event fields rather than ignoring possible protocol changes
+ok 97 - rejects extra event fields rather than ignoring possible protocol changes
+  ---
+  duration_ms: 0.0685
+  type: 'test'
+  ...
+# Subtest: TC-TOR-001 check accepts a table whose every entry is a real func and prints the list and count
+ok 98 - TC-TOR-001 check accepts a table whose every entry is a real func and prints the list and count
+  ---
+  duration_ms: 58.0324
+  type: 'test'
+  ...
+# Subtest: TC-TOR-001 check names a misspelled test instead of silently accepting the exclusion
+ok 99 - TC-TOR-001 check names a misspelled test instead of silently accepting the exclusion
+  ---
+  duration_ms: 51.8093
+  type: 'test'
+  ...
+# Subtest: TC-TOR-001 check names an entry with no reason
+ok 100 - TC-TOR-001 check names an entry with no reason
+  ---
+  duration_ms: 161.261
+  type: 'test'
+  ...
+# Subtest: TC-TOR-001 check names a duplicate entry
+ok 101 - TC-TOR-001 check names a duplicate entry
+  ---
+  duration_ms: 50.1352
+  type: 'test'
+  ...
+# Subtest: TC-TOR-001 a missing package directory is a failure, not an empty pass
+ok 102 - TC-TOR-001 a missing package directory is a failure, not an empty pass
+  ---
+  duration_ms: 46.2624
+  type: 'test'
+  ...
+# Subtest: TC-TOR-001 a package with no test files is a failure, not an empty pass
+ok 103 - TC-TOR-001 a package with no test files is a failure, not an empty pass
+  ---
+  duration_ms: 45.9987
+  type: 'test'
+  ...
+# Subtest: TC-TOR-001 a longer func name does not satisfy a shorter entry
+ok 104 - TC-TOR-001 a longer func name does not satisfy a shorter entry
+  ---
+  duration_ms: 49.5118
+  type: 'test'
+  ...
+# Subtest: TC-TOR-001 malformed or empty table JSON hard-fails instead of reading as no entries
+ok 105 - TC-TOR-001 malformed or empty table JSON hard-fails instead of reading as no entries
+  ---
+  duration_ms: 357.4467
+  type: 'test'
+  ...
+# Subtest: TC-TOR-001 skip-regex emits one anchored alternation in table order
+ok 106 - TC-TOR-001 skip-regex emits one anchored alternation in table order
+  ---
+  duration_ms: 47.4773
+  type: 'test'
+  ...
+# Subtest: TC-TOR-001 skip-regex escapes regex metacharacters in a test name
+ok 107 - TC-TOR-001 skip-regex escapes regex metacharacters in a test name
+  ---
+  duration_ms: 0.2978
+  type: 'test'
+  ...
+# Subtest: hasTestFunc matches the whole func name and tolerates CRLF
+ok 108 - hasTestFunc matches the whole func name and tolerates CRLF
+  ---
+  duration_ms: 0.3292
+  type: 'test'
+  ...
+# Subtest: hasTestFunc refuses empty or non-string source instead of reporting absence
+ok 109 - hasTestFunc refuses empty or non-string source instead of reporting absence
+  ---
+  duration_ms: 0.3575
+  type: 'test'
+  ...
+# Subtest: TC-TOR-001 the committed table starts with the known independent entries and checks out
+ok 110 - TC-TOR-001 the committed table starts with the known independent entries and checks out
+  ---
+  duration_ms: 169.6465
+  type: 'test'
+  ...
+# Subtest: TC-TOR-001 the committed allowed-skips stay declared, justified and resolvable
+ok 111 - TC-TOR-001 the committed allowed-skips stay declared, justified and resolvable
+  ---
+  duration_ms: 117.4641
+  type: 'test'
+  ...
+# Subtest: TC-TOR-001 an allowed skip needs a reason and a real func, just like an exclusion
+ok 112 - TC-TOR-001 an allowed skip needs a reason and a real func, just like an exclusion
+  ---
+  duration_ms: 130.7526
+  type: 'test'
+  ...
+# Subtest: TC-TOR-001 check prints the allowed-skip list and its count
+ok 113 - TC-TOR-001 check prints the allowed-skip list and its count
+  ---
+  duration_ms: 42.5508
+  type: 'test'
+  ...
+# Subtest: TC-CBE-003 the required file list is the one the consumers read
+ok 114 - TC-CBE-003 the required file list is the one the consumers read
+  ---
+  duration_ms: 1.1074
+  type: 'test'
+  ...
+# Subtest: TC-CBE-003 read accepts a single-line 40 hex pin
+ok 115 - TC-CBE-003 read accepts a single-line 40 hex pin
+  ---
+  duration_ms: 0.2612
+  type: 'test'
+  ...
+# Subtest: TC-CBE-003 read hard-fails on anything that is not one 40 hex line
+ok 116 - TC-CBE-003 read hard-fails on anything that is not one 40 hex line
+  ---
+  duration_ms: 0.5577
+  type: 'test'
+  ...
+# Subtest: TC-CBE-003 read prints the pin and exits 0 for a valid file
+ok 117 - TC-CBE-003 read prints the pin and exits 0 for a valid file
+  ---
+  duration_ms: 56.4604
+  type: 'test'
+  ...
+# Subtest: TC-CBE-003 read exits non-zero for an invalid file
+ok 118 - TC-CBE-003 read exits non-zero for an invalid file
+  ---
+  duration_ms: 149.2552
+  type: 'test'
+  ...
+# Subtest: TC-CBE-003 read exits non-zero when the pin file is absent
+ok 119 - TC-CBE-003 read exits non-zero when the pin file is absent
+  ---
+  duration_ms: 47.5123
+  type: 'test'
+  ...
+# Subtest: TC-CBE-003 check exits 0 and prints the pin when every required file exists
+ok 120 - TC-CBE-003 check exits 0 and prints the pin when every required file exists
+  ---
+  duration_ms: 52.6585
+  type: 'test'
+  ...
+# Subtest: TC-CBE-003 check fails and names the pin and the missing skills/shared/crctl/scripts/lib/execution-control-protocol.mjs
+ok 121 - TC-CBE-003 check fails and names the pin and the missing skills/shared/crctl/scripts/lib/execution-control-protocol.mjs
+  ---
+  duration_ms: 49.8573
+  type: 'test'
+  ...
+# Subtest: TC-CBE-003 check fails and names the pin and the missing skills/shared/crctl/scripts/test/fixtures/control-vectors.json
+ok 122 - TC-CBE-003 check fails and names the pin and the missing skills/shared/crctl/scripts/test/fixtures/control-vectors.json
+  ---
+  duration_ms: 49.8853
+  type: 'test'
+  ...
+# Subtest: TC-CBE-003 check fails and names the pin and the missing skills/shared/crctl/scripts/crctl.mjs
+ok 123 - TC-CBE-003 check fails and names the pin and the missing skills/shared/crctl/scripts/crctl.mjs
+  ---
+  duration_ms: 50.9823
+  type: 'test'
+  ...
+# Subtest: TC-CBE-003 check names every missing file when the checkout is empty
+ok 124 - TC-CBE-003 check names every missing file when the checkout is empty
+  ---
+  duration_ms: 45.5346
+  type: 'test'
+  ...
+# Subtest: TC-CBE-003 check does not inspect a checkout when the pin is invalid
+ok 125 - TC-CBE-003 check does not inspect a checkout when the pin is invalid
+  ---
+  duration_ms: 48.1703
+  type: 'test'
+  ...
+# Subtest: TC-CBE-003 the committed pin file is a single 40 hex line
+ok 126 - TC-CBE-003 the committed pin file is a single 40 hex line
+  ---
+  duration_ms: 0.348
+  type: 'test'
+  ...
+# Subtest: TC-CBE-003 ci.yml carries no literal tools commit
+ok 127 - TC-CBE-003 ci.yml carries no literal tools commit
+  ---
+  duration_ms: 0.9651
+  type: 'test'
+  ...
+# Subtest: TC-CBE-003 ci.yml takes the tools ref from the pin file
+ok 128 - TC-CBE-003 ci.yml takes the tools ref from the pin file
+  ---
+  duration_ms: 0.8819
+  type: 'test'
+  ...
+1..128
+# tests 128
+# suites 0
+# pass 128
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1461.0992

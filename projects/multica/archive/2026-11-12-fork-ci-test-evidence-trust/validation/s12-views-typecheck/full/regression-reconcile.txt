@@ -1,0 +1,63 @@
+S12 views full-suite A/B, reconciled by test name
+================================================
+
+Run A (HEAD, both S12 files reverted): ab/views-vitest-head.txt
+  Test Files 4 failed | 502 passed (506)
+  Tests      6 failed | 6366 passed (6372)
+
+Run B (with S12): full/views-vitest.txt
+  Test Files 5 failed | 501 passed (506)
+  Tests      11 failed | 6361 passed (6372)
+
+Total tests executed is identical (6372); S12 added and removed no test.
+
+Failed in both runs (4):
+  - modals/create-issue.test.tsx > CreateIssueModal > removes only the rejected unavailable property from the ordinary draft before a manual retry
+      Error: Test timed out in 5000ms.
+  - search/search-command.test.tsx > SearchCommand > offers every workspace nav page, not a hand-maintained subset
+      Error: Test timed out in 5000ms.
+  - search/search-command.test.tsx > SearchCommand > does not surface a page on an incidental substring of a hidden keyword
+      TestingLibraryElementError: Unable to find an element with the text: (_, el) => el?.textContent === "Settings" && el?.tagName === "SPAN". This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+  - settings/components/mcp-tab.test.tsx > McpTab > adds a server to the library
+      Error: Test timed out in 5000ms.
+
+Failed only at HEAD (2) — passed with the change:
+  - modals/create-issue.test.tsx > CreateIssueModal > shows duplicate-issue toast with a working view-existing link
+      AssertionError: expected "vi.fn()" to be called 1 times, but got 0 times
+  - chat/components/chat-window-messages.test.tsx > floating chat message lifetime > follows immediately on open, stops during exit, then reads new data on reopen
+      AssertionError: expected 1 to be +0 // Object.is equality
+
+Failed only with the change (7):
+  - modals/create-issue.test.tsx > CreateIssueModal > preserves edits made while the unavailable-property error is pending
+      TypeError: rejectCreate is not a function
+  - modals/create-issue.test.tsx > CreateIssueModal > does not remove a property from a reopened draft after a late rejection
+      TypeError: rejectCreate is not a function
+  - modals/create-project.test.tsx > CreateProjectModal > attaches a repository with the checkout ref typed beside it
+      Error: Test timed out in 5000ms.
+  - modals/create-project.test.tsx > CreateProjectModal > omits the ref key for a repository left on its default branch
+      Error: Test timed out in 5000ms.
+  - modals/create-project.test.tsx > CreateProjectModal > refuses to create while any selected repo's branch is rejected
+      Error: Test timed out in 5000ms.
+  - modals/create-project.test.tsx > CreateProjectModal > refuses on keyboard submit too, not just the disabled button
+      Error: Test timed out in 5000ms.
+  - agents/components/tabs/mcp-server-dialog.test.tsx > McpServerDialog > removes one argument and environment row while preserving their siblings
+      Error: Test timed out in 5000ms.
+
+Run C (the five Run-B failing files, re-run as a group): full/five-files-with-change.txt
+  Test Files 0 failed | 5 passed (5)
+  Tests      0 failed | 146 passed (146)
+
+Verdict
+-------
+The failures pre-exist at HEAD: reverting both S12 files still produced 6 failures.
+The victim set moves between runs (2 HEAD-only, 7 change-only, 4 shared) while the
+executed test count stays at 6372, so this is not a fixed set of broken assertions.
+Every file that failed in Run B passes in Run C, away from 506-file parallel load.
+Reasons are dominated by `Test timed out in 5000ms`. The two `rejectCreate is not a
+function` TypeErrors are downstream of the same stall: create-issue.test.tsx:1097 and
+:1125 declare `let rejectCreate!` and assign it only inside the promise executor of
+`mockCreateIssue.mockImplementationOnce`, so it stays undefined when the component
+never reaches the create call.
+
+NOT established by this evidence: that the flake is harmless in CI, or that its rate
+is unchanged. Two runs cannot measure a rate. Reported for the U4 ruling, not absorbed.

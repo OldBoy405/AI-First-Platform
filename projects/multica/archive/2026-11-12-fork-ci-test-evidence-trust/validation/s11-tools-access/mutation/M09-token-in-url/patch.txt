@@ -1,0 +1,4 @@
+--- anchor
+const url = `https://api.github.com/repos/${TOOLS_REPO}/commits/${revision}`;
+--- replacement
+const url = `https://api.github.com/repos/${TOOLS_REPO}/commits/${revision}?access_token=${token}`;

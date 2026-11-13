@@ -1,0 +1,23 @@
+mask must precede every env write: DETECTED (exit=1 pass=25 fail=1) restored=true
+    red: TC-CBE-001 the mask is emitted before any env write, not after
+handle stores the credential-stripped admin URL: DETECTED (exit=1 pass=23 fail=3) restored=true
+    red: TC-CBE-001 the handle carries no password, only the credential-stripped admin URL
+    red: TC-CBE-001 no log line except the mask command carries either password
+    red: TC-CBE-001 up writes through to a real env file, one line per variable
+down redacts the admin password from driver errors: DETECTED (exit=1 pass=25 fail=1) restored=true
+    red: TC-CBE-001 a driver error carrying the admin password is redacted before it is printed
+a malformed handle hard-fails instead of becoming a no-op: DETECTED (exit=1 pass=24 fail=2) restored=true
+    red: TC-CBE-001 down hard-fails on a malformed handle instead of silently doing nothing
+    red: TC-CBE-001 the CLI down hard-fails on a malformed handle and on a missing admin URL
+down requires the job admin URL: DETECTED (exit=1 pass=24 fail=2) restored=true
+    red: TC-CBE-001 down with a handle but no admin URL is a failure, not a silent no-op
+    red: TC-CBE-001 the CLI down hard-fails on a malformed handle and on a missing admin URL
+a quoted CREATE ROLE password is redacted: DETECTED (exit=1 pass=25 fail=1) restored=true
+    red: TC-CBE-001 a driver error quoting the CREATE ROLE password is redacted too
+the handle must carry database, role and marker: DETECTED (exit=1 pass=25 fail=1) restored=true
+    red: TC-CBE-001 down hard-fails on a handle missing database, role or marker
+pg loads through the CJS resolver (NODE_PATH): DETECTED (exit=1 pass=25 fail=1) restored=true
+    red: TC-CBE-001 the driver loads through the CJS resolver, the only one that reads NODE_PATH
+sha256 before=2718a61f7cb6f98febb782cf3f9358ea0b3adf17974383bf6d9ab319d22fef51
+sha256 after =2718a61f7cb6f98febb782cf3f9358ea0b3adf17974383bf6d9ab319d22fef51
+mutation probe: all guards have teeth, file restored byte-exact

@@ -1,0 +1,21 @@
+PASS ci-gate-identity pass=16 fail=0 skip=0
+released instance 4f3f92bc42d2 remaining=0
+runner exit=0 (run-selection.mjs --only ci-gate-identity, self-built disposable podman instance)
+
+# 16 passing test events (parents included), 11 named conditions
+  PASS TestDisposableIdentityGateRefusesEachConditionAlone/nonce-format/nonce="72a8641c806f59f"
+  PASS TestDisposableIdentityGateRefusesEachConditionAlone/nonce-format/nonce="72A8641C806F59FA"
+  PASS TestDisposableIdentityGateRefusesEachConditionAlone/nonce-format/nonce=""
+  PASS TestDisposableIdentityGateRefusesEachConditionAlone/nonce-format
+  PASS TestDisposableIdentityGateRefusesEachConditionAlone/database-name
+  PASS TestDisposableIdentityGateRefusesEachConditionAlone/role-name
+  PASS TestDisposableIdentityGateRefusesEachConditionAlone/session-user
+  PASS TestDisposableIdentityGateRefusesEachConditionAlone/database-owner
+  PASS TestDisposableIdentityGateRefusesEachConditionAlone/database-marker
+  PASS TestDisposableIdentityGateRefusesEachConditionAlone/role-marker
+  PASS TestDisposableIdentityGateRefusesEachConditionAlone/superuser
+  PASS TestDisposableIdentityGateRefusesEachConditionAlone/createdb
+  PASS TestDisposableIdentityGateRefusesEachConditionAlone/createrole
+  PASS TestDisposableIdentityGateRefusesEachConditionAlone/bypassrls
+  PASS TestDisposableIdentityGateRefusesEachConditionAlone
+  PASS TestDisposableIdentityGateRefusesUnreadableIdentity

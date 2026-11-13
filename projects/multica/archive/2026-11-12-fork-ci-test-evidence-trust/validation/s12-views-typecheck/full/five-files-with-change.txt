@@ -1,0 +1,95 @@
+[WARN] The "pnpm" field in package.json is no longer read by pnpm. The following keys were ignored: "pnpm.onlyBuiltDependencies", "pnpm.overrides", "pnpm.patchedDependencies". See https://pnpm.io/settings for the new home of each setting.
+
+[1m[46m RUN [49m[22m [36mv4.1.0 [39m[90mC:/Users/GOBAO/Downloads/AI/multica/packages/views[39m
+
+[90mstderr[2m | modals/create-project.test.tsx[2m > [22m[2mCreateProjectModal[2m > [22m[2mexposes full repository URLs in the repository picker
+[22m[39mreact-i18next:: useTranslation: You will need to pass in an i18next instance by using initReactI18next { code: [32m'NO_I18NEXT_INSTANCE'[39m }
+
+ [32m✓[39m agents/components/tabs/mcp-server-dialog.test.tsx [2m([22m[2m14 tests[22m[2m)[22m[33m 7777[2mms[22m[39m
+     [33m[2m✓[22m[39m edits configuration while preserving the historical name context7.dev exactly [33m 741[2mms[22m[39m
+     [33m[2m✓[22m[39m edits configuration while preserving the historical name legacy server exactly [33m 472[2mms[22m[39m
+     [33m[2m✓[22m[39m edits configuration while preserving the historical name  padded  exactly [33m 477[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects a newly entered historical-style name during create [33m 534[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects a newly entered historical-style name during rename [33m 402[2mms[22m[39m
+     [33m[2m✓[22m[39m replaces a sse server through the visual editor using STDIO [33m 376[2mms[22m[39m
+     [33m[2m✓[22m[39m replaces a websocket server through the visual editor using Streamable HTTP [33m 625[2mms[22m[39m
+     [33m[2m✓[22m[39m clears submitted JSON errors when returning to the visual editor [33m 588[2mms[22m[39m
+     [33m[2m✓[22m[39m removes one argument and environment row while preserving their siblings [33m 1536[2mms[22m[39m
+     [33m[2m✓[22m[39m removes one HTTP header while preserving and editing its siblings [33m 1008[2mms[22m[39m
+ [32m✓[39m modals/create-project.test.tsx [2m([22m[2m9 tests[22m[2m)[22m[33m 8934[2mms[22m[39m
+     [33m[2m✓[22m[39m shows a workspace repository description without copying it to the resource label [33m 538[2mms[22m[39m
+     [33m[2m✓[22m[39m reveals the start/due date pickers from the ⋯ overflow menu [33m 313[2mms[22m[39m
+     [33m[2m✓[22m[39m attaches a repository with the checkout ref typed beside it [33m 1444[2mms[22m[39m
+     [33m[2m✓[22m[39m omits the ref key for a repository left on its default branch [33m 1069[2mms[22m[39m
+     [33m[2m✓[22m[39m refuses to create while any selected repo's branch is rejected [33m 2128[2mms[22m[39m
+     [33m[2m✓[22m[39m refuses on keyboard submit too, not just the disabled button [33m 1904[2mms[22m[39m
+     [33m[2m✓[22m[39m normalises a pasted browse URL even when a branch is already filled in [33m 831[2mms[22m[39m
+     [33m[2m✓[22m[39m filters workspace repositories by search text [33m 565[2mms[22m[39m
+ [32m✓[39m settings/components/mcp-tab.test.tsx [2m([22m[2m29 tests[22m[2m)[22m[33m 15077[2mms[22m[39m
+     [33m[2m✓[22m[39m shows each transport as visible text beside its labeled icon [33m 881[2mms[22m[39m
+     [33m[2m✓[22m[39m adds a server to the library [33m 1632[2mms[22m[39m
+     [33m[2m✓[22m[39m waits for an explicit save attempt before showing inline validation [33m 338[2mms[22m[39m
+     [33m[2m✓[22m[39m focuses the missing connection field after a save attempt [33m 418[2mms[22m[39m
+     [33m[2m✓[22m[39m focuses a missing URL and clears the error when transport changes [33m 648[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects the server name invalid name with its precise inline error [33m 586[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects the server name linear with its precise inline error [33m 639[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects semantic JSON error for [] [33m 724[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects semantic JSON error for {} [33m 760[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the footer outside the scroll area and caps the dialog to the viewport [33m 662[2mms[22m[39m
+     [33m[2m✓[22m[39m renames a library server inline without replacing its config [33m 622[2mms[22m[39m
+     [33m[2m✓[22m[39m validates every inline rename branch and cancels a no-op [33m 1422[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps inline rename open after 'an API error' [33m 591[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps inline rename open after 'an empty error' [33m 566[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps inline rename open after 'a non-Error rejection' [33m 533[2mms[22m[39m
+     [33m[2m✓[22m[39m blocks competing library actions while an inline rename is pending [33m 605[2mms[22m[39m
+     [33m[2m✓[22m[39m replaces the full config without sending a name change [33m 1015[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps an in-progress replacement when the settings page rerenders [33m 778[2mms[22m[39m
+     [33m[2m✓[22m[39m opens the replacement form on the server's own transport [33m 305[2mms[22m[39m
+ [32m✓[39m modals/create-issue.test.tsx [2m([22m[2m57 tests[22m[2m)[22m[33m 15429[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps manual mode open and clears content when create another is enabled [33m 865[2mms[22m[39m
+     [33m[2m✓[22m[39m includes configured custom properties in the atomic create request [33m 658[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the draft open and highlights the rejected custom property [33m 417[2mms[22m[39m
+     [33m[2m✓[22m[39m removes only the rejected unavailable property from the ordinary draft before a manual retry [33m 897[2mms[22m[39m
+     [33m[2m✓[22m[39m removes only the rejected unavailable property from the comment-source draft before a manual retry [33m 320[2mms[22m[39m
+     [33m[2m✓[22m[39m preserves edits made while the unavailable-property error is pending [33m 568[2mms[22m[39m
+     [33m[2m✓[22m[39m seeds the agent actor from the picked squad when switching to agent mode [33m 454[2mms[22m[39m
+     [33m[2m✓[22m[39m shows duplicate-issue toast with a working view-existing link [33m 412[2mms[22m[39m
+     [33m[2m✓[22m[39m falls back to a normal error toast when a 409 body does not match the duplicate schema [33m 433[2mms[22m[39m
+     [33m[2m✓[22m[39m offers the Cloud-authorized upgrade recovery when manual create reaches the issue limit [33m 421[2mms[22m[39m
+     [33m[2m✓[22m[39m falls back to the generic toast when the thrown value is not an Error [33m 321[2mms[22m[39m
+     [33m[2m✓[22m[39m commits the picked project to the shared draft when switching to agent mode [33m 350[2mms[22m[39m
+     [33m[2m✓[22m[39m forwards parent_issue_id and falls back to seeded identifier when switching to agent mode [33m 374[2mms[22m[39m
+     [33m[2m✓[22m[39m submits source-context manual create through the dedicated endpoint [33m 694[2mms[22m[39m
+     [33m[2m✓[22m[39m assist-inits the agent prompt from title and description without clearing the manual draft [33m 466[2mms[22m[39m
+       [33m[2m✓[22m[39m disables Create and shows Uploading… while an upload is in flight [33m 548[2mms[22m[39m
+       [33m[2m✓[22m[39m never submits manual create from plain Enter in the title [33m 358[2mms[22m[39m
+       [33m[2m✓[22m[39m blocks the title send chord while an upload is in flight [33m 350[2mms[22m[39m
+       [33m[2m✓[22m[39m blocks Switch to Agent while an upload is in flight [33m 381[2mms[22m[39m
+       [33m[2m✓[22m[39m creates from the send chord in the title [33m 413[2mms[22m[39m
+       [33m[2m✓[22m[39m creates from the send chord in the description [33m 577[2mms[22m[39m
+       [33m[2m✓[22m[39m focuses the title instead of silently doing nothing when it is empty [33m 331[2mms[22m[39m
+ [32m✓[39m search/search-command.test.tsx [2m([22m[2m37 tests[22m[2m)[22m[33m 13579[2mms[22m[39m
+     [33m[2m✓[22m[39m closes on a single Escape press from the search input [33m 401[2mms[22m[39m
+     [33m[2m✓[22m[39m offers every workspace nav page, not a hand-maintained subset [33m 3078[2mms[22m[39m
+     [33m[2m✓[22m[39m navigates to a page whose label differs from its route segment [33m 344[2mms[22m[39m
+     [33m[2m✓[22m[39m navigates to page on selection [33m 344[2mms[22m[39m
+     [33m[2m✓[22m[39m cmd-click on a result opens it in a new tab instead of navigating in place [33m 308[2mms[22m[39m
+     [33m[2m✓[22m[39m a plain selection after an abandoned cmd-click does not inherit the stale intent [33m 316[2mms[22m[39m
+       [33m[2m✓[22m[39m matches a workspace by name and switches to it by slug on Enter [33m 429[2mms[22m[39m
+     [33m[2m✓[22m[39m copies issue link and identifier when on an issue detail route [33m 491[2mms[22m[39m
+     [33m[2m✓[22m[39m shows the assignee avatar instead of status text for issue search results [33m 519[2mms[22m[39m
+     [33m[2m✓[22m[39m renders description and comment snippets regardless of match_source [33m 434[2mms[22m[39m
+     [33m[2m✓[22m[39m lets Home/End edit the query caret instead of hijacking result navigation [33m 318[2mms[22m[39m
+       [33m[2m✓[22m[39m renders project status in the selected UI language [33m 507[2mms[22m[39m
+       [33m[2m✓[22m[39m keeps a cancelled project below a live issue instead of first [33m 504[2mms[22m[39m
+       [33m[2m✓[22m[39m keeps live rows of both types above every cancelled row [33m 480[2mms[22m[39m
+       [33m[2m✓[22m[39m exempts a cancelled issue the query targets by identifier [33m 442[2mms[22m[39m
+       [33m[2m✓[22m[39m does not open the previous query's result on Enter [33m 559[2mms[22m[39m
+       [33m[2m✓[22m[39m does not open the previous query's result on click [33m 532[2mms[22m[39m
+     [33m[2m✓[22m[39m renders the Specs group and navigates to the spec trace page [33m 512[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m5 passed[39m[22m[90m (5)[39m
+[2m      Tests [22m [1m[32m146 passed[39m[22m[90m (146)[39m
+[2m   Start at [22m 01:11:00
+[2m   Duration [22m 28.41s[2m (transform 8.55s, setup 504ms, import 21.70s, tests 60.80s, environment 4.33s)[22m
+

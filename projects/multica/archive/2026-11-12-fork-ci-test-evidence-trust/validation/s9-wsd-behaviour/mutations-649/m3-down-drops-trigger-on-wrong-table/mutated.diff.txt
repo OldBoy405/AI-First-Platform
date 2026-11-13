@@ -1,0 +1,10 @@
+--- m3-down-drops-trigger-on-wrong-table
+expect: the lifecycle test really applies 649.down: a bad DROP must fail the run
+file: C:\Users\GOBAO\Downloads\AI\multica\server\migrations\649_cr_execution_truncate_guard.down.sql
+
+-- AIFIRST: rollback of the 649 TRUNCATE guards (STDD
+-- 2026-11-12-fork-ci-test-evidence-trust). The ledgers, their row-level
+-- append-only guards and their functions (643/644) are left alone; only the two
+-- statement guards added by 649 are removed.
+DROP TRIGGER cr_execution_consumption_no_truncate ON cr_execution_binding_issue;
+DROP TRIGGER IF EXISTS cr_execution_consumption_no_truncate ON cr_execution_consumption;

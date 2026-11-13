@@ -1,0 +1,6 @@
+m4-sweep-commits-outside-teardown-tx: DETECTED runner_exit=1 restored_sha256=61006566ab1f8d59c139791167a1255a47739fd56053218cecce30c3062b7a4e
+
+FAIL handler-wsd-atomic pass=0 fail=1 skip=0
+  workspace_delete_execution_test.go:474: cr_execution_notice (delete) row for workspace A changed
+  --- FAIL: TestWorkspaceDeletionRollsBackExecutionRowsWithTransaction (0.20s)
+released instance 402184f09319 remaining=0

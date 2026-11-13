@@ -1,0 +1,17 @@
+--- m2-drop-consumption-truncate-guard
+expect: truncate_cr_execution_consumption accepted again; the binding guard still refuses
+file: C:\Users\GOBAO\Downloads\AI\multica\server\migrations\649_cr_execution_truncate_guard.up.sql
+
+-- AIFIRST: TRUNCATE guards for the two retained ledgers created by 643/644.
+-- STDD 2026-11-12-fork-ci-test-evidence-trust, REQ-WSD-001 / SC-WSD-003.
+--
+-- 643 and 644 guard UPDATE/DELETE FOR EACH ROW only. TRUNCATE never fires row
+-- triggers, so a writer with TRUNCATE rights could empty the issuance ledger and
+-- the consumption receipts while every other retained table (645, 648) refuses
+-- it. This adds the missing statement guard and reuses each table's own
+-- append_only function, so the refusal stays the message the row guard already
+-- raises. Nothing is opened up: both triggers only ever reject.
+CREATE TRIGGER cr_execution_binding_issue_no_truncate
+    BEFORE TRUNCATE ON cr_execution_binding_issue
+    FOR EACH STATEMENT EXECUTE FUNCTION cr_execution_binding_issue_append_only();
+

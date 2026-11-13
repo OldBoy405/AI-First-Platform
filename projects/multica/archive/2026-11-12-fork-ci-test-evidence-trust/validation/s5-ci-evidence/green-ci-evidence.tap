@@ -1,0 +1,142 @@
+TAP version 13
+# Subtest: TC-TOR-003 a compliant stream reconciles and the exclusion list is printed with its count
+ok 1 - TC-TOR-003 a compliant stream reconciles and the exclusion list is printed with its count
+  ---
+  duration_ms: 47.8339
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 rule 1: a required package with zero passing tests is red, not green
+ok 2 - TC-TOR-003 rule 1: a required package with zero passing tests is red, not green
+  ---
+  duration_ms: 43.908
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 rule 1: a required package with no events at all is red
+ok 3 - TC-TOR-003 rule 1: a required package with no events at all is red
+  ---
+  duration_ms: 0.2971
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 rule 1: a required package whose conclusion is fail is red
+ok 4 - TC-TOR-003 rule 1: a required package whose conclusion is fail is red
+  ---
+  duration_ms: 0.2193
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 rule 2: a skip outside the allow-list is red and names the test
+ok 5 - TC-TOR-003 rule 2: a skip outside the allow-list is red and names the test
+  ---
+  duration_ms: 0.2282
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 rule 2: a declared skip is scoped to its package, not global
+ok 6 - TC-TOR-003 rule 2: a declared skip is scoped to its package, not global
+  ---
+  duration_ms: 0.15
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 rule 2: a subtest of a declared skip is still declared, an undeclared parent is not
+ok 7 - TC-TOR-003 rule 2: a subtest of a declared skip is still declared, an undeclared parent is not
+  ---
+  duration_ms: 0.1558
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 rule 3: an excluded test appearing in the stream is red
+ok 8 - TC-TOR-003 rule 3: an excluded test appearing in the stream is red
+  ---
+  duration_ms: 0.1373
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 rule 3: a subtest of an excluded test also proves the exclusion did not take effect
+ok 9 - TC-TOR-003 rule 3: a subtest of an excluded test also proves the exclusion did not take effect
+  ---
+  duration_ms: 0.1422
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 rule 3: an excluded test in another package is not a false positive
+ok 10 - TC-TOR-003 rule 3: an excluded test in another package is not a false positive
+  ---
+  duration_ms: 0.1729
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 rule 4: a half-written JSON line is a hard failure naming the line
+ok 11 - TC-TOR-003 rule 4: a half-written JSON line is a hard failure naming the line
+  ---
+  duration_ms: 0.1768
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 rule 4: a bad line in the middle is not skipped over (no first-line-only parsing)
+ok 12 - TC-TOR-003 rule 4: a bad line in the middle is not skipped over (no first-line-only parsing)
+  ---
+  duration_ms: 0.1038
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 rule 4: a missing package-level conclusion is red
+ok 13 - TC-TOR-003 rule 4: a missing package-level conclusion is red
+  ---
+  duration_ms: 0.1028
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 rule 4: a package outside required-packages that never concludes is still red
+ok 14 - TC-TOR-003 rule 4: a package outside required-packages that never concludes is still red
+  ---
+  duration_ms: 0.7354
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 rule 4: the stream must end with a package-level conclusion
+ok 15 - TC-TOR-003 rule 4: the stream must end with a package-level conclusion
+  ---
+  duration_ms: 0.2111
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 rule 4: an empty stream is red, never a vacuous pass
+ok 16 - TC-TOR-003 rule 4: an empty stream is red, never a vacuous pass
+  ---
+  duration_ms: 0.1029
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 a required package name that matches two packages is ambiguous, not silently picked
+ok 17 - TC-TOR-003 a required package name that matches two packages is ambiguous, not silently picked
+  ---
+  duration_ms: 0.2194
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 CRLF streams reconcile identically (normalize before splitting)
+ok 18 - TC-TOR-003 CRLF streams reconcile identically (normalize before splitting)
+  ---
+  duration_ms: 0.0751
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 the declaration itself is validated: empty or malformed input hard-fails
+ok 19 - TC-TOR-003 the declaration itself is validated: empty or malformed input hard-fails
+  ---
+  duration_ms: 0.4083
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 the CLI rejects a missing stream or table argument before reading anything
+ok 20 - TC-TOR-003 the CLI rejects a missing stream or table argument before reading anything
+  ---
+  duration_ms: 207.6982
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 the CLI hard-fails on an unreadable stream and on a malformed table
+ok 21 - TC-TOR-003 the CLI hard-fails on an unreadable stream and on a malformed table
+  ---
+  duration_ms: 120.3048
+  type: 'test'
+  ...
+# Subtest: TC-TOR-003 each of the five failure modes is red on its own, not only in combination
+ok 22 - TC-TOR-003 each of the five failure modes is red on its own, not only in combination
+  ---
+  duration_ms: 204.2083
+  type: 'test'
+  ...
+1..22
+# tests 22
+# suites 0
+# pass 22
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 690.3725

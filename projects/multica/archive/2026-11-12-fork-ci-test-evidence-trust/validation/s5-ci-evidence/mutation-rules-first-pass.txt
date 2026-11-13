@@ -1,0 +1,37 @@
+# 第一轮变异探针（22 号用例补入之前）——发现一处真实覆盖缺口
+# 命令：node C:/Users/GOBAO/AppData/Local/Temp/aifi45-s5-mutate.mjs
+# 当时 ci-evidence.test.mjs 为 21 项；本文件是那次运行的原始输出，逐字保留。
+# 结论：rule4「每个出现过的包都必须有包级结论」这条守卫 NOT DETECTED，
+#       因为原用例只删掉必需包 handler 的结论，rule 1 已经先判红，守卫本身未被任何用例单独压住。
+# 处置：新增第 22 项用例（非必需包 ./internal/daemon 有 start/run/pass 但无包级结论，
+#       且最后一个事件仍是 handler 的包级 pass），断言 problems 恰好等于该一条。
+#       补入后重跑本探针 → 9/9 DETECTED，见 mutation-rules.txt。
+
+rule1 zero passing tests: DETECTED (exit=1 pass=19 fail=2) restored=true
+    red: TC-TOR-003 rule 1: a required package with zero passing tests is red, not green
+    red: TC-TOR-003 each of the five failure modes is red on its own, not only in combination
+rule1 package conclusion must be pass: DETECTED (exit=1 pass=20 fail=1) restored=true
+    red: TC-TOR-003 rule 1: a required package whose conclusion is fail is red
+rule1 required package absent from the stream: DETECTED (exit=1 pass=20 fail=1) restored=true
+    red: TC-TOR-003 rule 1: a required package with no events at all is red
+rule1 ambiguous required package name: DETECTED (exit=1 pass=20 fail=1) restored=true
+    red: TC-TOR-003 a required package name that matches two packages is ambiguous, not silently picked
+rule2 undeclared skip: DETECTED (exit=1 pass=17 fail=4) restored=true
+    red: TC-TOR-003 rule 2: a skip outside the allow-list is red and names the test
+    red: TC-TOR-003 rule 2: a declared skip is scoped to its package, not global
+    red: TC-TOR-003 rule 2: a subtest of a declared skip is still declared, an undeclared parent is not
+    red: TC-TOR-003 each of the five failure modes is red on its own, not only in combination
+rule3 excluded test present in the stream: DETECTED (exit=1 pass=18 fail=3) restored=true
+    red: TC-TOR-003 rule 3: an excluded test appearing in the stream is red
+    red: TC-TOR-003 rule 3: a subtest of an excluded test also proves the exclusion did not take effect
+    red: TC-TOR-003 each of the five failure modes is red on its own, not only in combination
+rule4 last event must be a package conclusion: DETECTED (exit=1 pass=20 fail=1) restored=true
+    red: TC-TOR-003 rule 4: the stream must end with a package-level conclusion
+rule4 every package must conclude: NOT DETECTED (exit=0 pass=21 fail=0) restored=true
+rule4 parse failure hard-fails (not skipped over): DETECTED (exit=1 pass=18 fail=3) restored=true
+    red: TC-TOR-003 rule 4: a half-written JSON line is a hard failure naming the line
+    red: TC-TOR-003 rule 4: a bad line in the middle is not skipped over (no first-line-only parsing)
+    red: TC-TOR-003 each of the five failure modes is red on its own, not only in combination
+sha256 before=ebcb1b4bc2dcbd26fc3ba954e93aedcb1daa50dc46226a48cebff702ea4d5cd2
+sha256 after =ebcb1b4bc2dcbd26fc3ba954e93aedcb1daa50dc46226a48cebff702ea4d5cd2
+mutation probe: 1 problem(s)

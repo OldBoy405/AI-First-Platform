@@ -1,0 +1,30 @@
+diff --git a/packages/views/auth/use-logout.test.ts b/packages/views/auth/use-logout.test.ts
+index 63521df64..cf03529b4 100644
+--- a/packages/views/auth/use-logout.test.ts
++++ b/packages/views/auth/use-logout.test.ts
+@@ -2,10 +2,9 @@
+ import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+ import { renderHook } from "@testing-library/react";
+ import { useLogout } from "./use-logout";
+-import { createAuthStore } from "../../core/auth/store";
+-import { SESSION_BARRIER_KEY } from "../../core/platform/storage";
+-import type { ApiClient } from "../../core/api/client";
+-import type { User } from "../../core/types";
++import { SESSION_BARRIER_KEY } from "@multica/core/platform/storage";
++import type { ApiClient } from "@multica/core/api";
++import type { User } from "@multica/core/types";
+ 
+ vi.mock("../../core/analytics", () => ({ identify: vi.fn(), resetAnalytics: vi.fn() }));
+ vi.mock("../../core/platform/workspace-storage", () => ({ setCurrentWorkspace: vi.fn() }));
+@@ -60,7 +59,10 @@ describe("useLogout", () => {
+     vi.unstubAllGlobals();
+   });
+ 
+-  it("still records the barrier, invalidates auth and navigates when client session cleanup throws", () => {
++  it("still records the barrier, invalidates auth and navigates when client session cleanup throws", async () => {
++    // The hook's `@multica/core/auth` is mocked below, so the fixture store must come
++    // from the real module rather than the mock.
++    const { createAuthStore } = await vi.importActual<typeof import("@multica/core/auth")>("@multica/core/auth");
+     const data = new Map([[SESSION_BARRIER_KEY, "clean"], ["multica_token", "old-token"]]);
+     const api = { setToken: vi.fn() } as unknown as ApiClient;
+     const store = createAuthStore({

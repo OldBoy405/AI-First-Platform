@@ -1,0 +1,54 @@
+# agent_spec.yaml — Agent 验证规格（Canonical YAML）；CI 真实 run 与人工项见 test-plan 的 manual 检查。
+
+meta:
+  task_id: workspace-delete-execution-tables
+  change_id: 2026-11-12-fork-ci-test-evidence-trust
+  created: '2026-11-12'
+  task_type: code
+  system: multica fork CI、scripts/aifi45-disposable 与一次性 Postgres
+  preconditions:
+  - Go 与 Node 可用；数据库类检查只经 run-selection 自建的一次性实例，不连 localhost:5432 与旧容器；skip 为 0 且至少一个叶子 PASS。
+rollback:
+  steps:
+  - 只释放本轮 run-selection 创建的一次性实例；本地提交可 revert，未授权不推送。
+steps:
+- id: CP-WSD-001
+  description: SC-WSD-001 SHALL 公共 schema 中每张表有且仅有一个分类，19 张 cr_execution_* 表
+  action: node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only handler-wsd-manifest
+  assertions:
+  - type: exit_code
+    expected: 0
+  - type: stdout_contains
+    expected: 'PASS handler-wsd-manifest '
+- id: CP-WSD-002
+  description: SC-WSD-002 SHALL A 的 cr_execution_notice 与 cr_execution_dispa
+  action: node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only handler-wsd-delete
+  assertions:
+  - type: exit_code
+    expected: 0
+  - type: stdout_contains
+    expected: 'PASS handler-wsd-delete '
+- id: CP-WSD-003
+  description: 'SC-WSD-003 SHALL retain 类 A 行逐字节不变（含 digest 列）；keep 类行 SHALL '
+  action: node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only handler-wsd-retain
+  assertions:
+  - type: exit_code
+    expected: 0
+  - type: stdout_contains
+    expected: 'PASS handler-wsd-retain '
+- id: CP-WSD-004
+  description: SC-WSD-004 SHALL A 的 notice 与 dispatch_root 行恢复，且 A 的其他行未被半删。
+  action: node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only handler-wsd-atomic
+  assertions:
+  - type: exit_code
+    expected: 0
+  - type: stdout_contains
+    expected: 'PASS handler-wsd-atomic '
+- id: CP-WSD-005
+  description: SC-WSD-005 reservation 半句 SHALL 被拒绝（本 change 在 CreateReservationTx 加 workspace 存在性检查）；command 半句按 R5 裁定不在本 change 内修复，断言原样保留并登记为已知失败
+  action: node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only handler-wsd-no-recreate
+  assertions:
+  - type: exit_code
+    expected: 0
+  - type: stdout_contains
+    expected: 'PASS handler-wsd-no-recreate '

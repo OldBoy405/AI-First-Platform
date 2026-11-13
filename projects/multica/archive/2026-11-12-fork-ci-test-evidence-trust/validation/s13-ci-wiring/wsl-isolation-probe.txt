@@ -1,0 +1,39 @@
+# TC-TOR-004 second entry: TestChannelIsolation via WSL AIFI-ISO
+# Probed 2026-11-13T02:19:23+0800. Read-only probes; nothing was installed, created or modified.
+
+## probe 1: identity, kernel, toolchain, profile root, repo
+uid=0(root) gid=0(root) groups=0(root)
+6.18.58.1-microsoft-standard-WSL2
+getent passwd 995:
+getent group 994:
+command -v go:
+go version:
+bash: line 1: go: command not found
+ls: cannot access '/var/lib/aifi45/daemon-iso': No such file or directory
+ls: cannot access '/root/multica': No such file or directory
+ls: cannot access '/home/*/multica': No such file or directory
+
+## probe 2: toolchain search, identities actually present, distro
+ls: cannot access '/usr/local/go': No such file or directory
+ls: cannot access '/usr/lib/go*': No such file or directory
+ls: cannot access '/opt/go': No such file or directory
+find go binary (maxdepth 4):
+identities:
+/etc/passwd:aifi-svc:x:1500:1500::/home/aifi-svc:/bin/sh
+/etc/passwd:aifi-agent:x:1501:1501::/home/aifi-agent:/bin/sh
+/etc/group:aifi-svc:x:1500:
+/etc/group:aifi-agent:x:1501:
+os:
+PRETTY_NAME="Ubuntu 24.04.3 LTS"
+NAME="Ubuntu"
+VERSION_ID="24.04"
+/var/lib/aifi45:
+drwxr-xr-x 2 root root 4096 Nov  9 14:01 /var/lib/aifi45
+.
+..
+
+## WSL state after the probes
+  NAME                      STATE           VERSION
+* AIFI-ISO                  Running         2
+  podman-machine-default    Running         2
+  Ubuntu                    Stopped         2

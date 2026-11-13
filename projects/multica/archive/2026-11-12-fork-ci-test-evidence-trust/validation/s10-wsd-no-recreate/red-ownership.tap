@@ -1,0 +1,165 @@
+TAP version 13
+# Subtest: TC-TOR-001 check accepts a table whose every entry is a real func and prints the list and count
+ok 1 - TC-TOR-001 check accepts a table whose every entry is a real func and prints the list and count
+  ---
+  duration_ms: 48.8177
+  type: 'test'
+  ...
+# Subtest: TC-TOR-001 check names a misspelled test instead of silently accepting the exclusion
+ok 2 - TC-TOR-001 check names a misspelled test instead of silently accepting the exclusion
+  ---
+  duration_ms: 47.0271
+  type: 'test'
+  ...
+# Subtest: TC-TOR-001 check names an entry with no reason
+ok 3 - TC-TOR-001 check names an entry with no reason
+  ---
+  duration_ms: 142.1869
+  type: 'test'
+  ...
+# Subtest: TC-TOR-001 check names a duplicate entry
+ok 4 - TC-TOR-001 check names a duplicate entry
+  ---
+  duration_ms: 48.3308
+  type: 'test'
+  ...
+# Subtest: TC-TOR-001 a missing package directory is a failure, not an empty pass
+ok 5 - TC-TOR-001 a missing package directory is a failure, not an empty pass
+  ---
+  duration_ms: 44.8805
+  type: 'test'
+  ...
+# Subtest: TC-TOR-001 a package with no test files is a failure, not an empty pass
+ok 6 - TC-TOR-001 a package with no test files is a failure, not an empty pass
+  ---
+  duration_ms: 46.3533
+  type: 'test'
+  ...
+# Subtest: TC-TOR-001 a longer func name does not satisfy a shorter entry
+ok 7 - TC-TOR-001 a longer func name does not satisfy a shorter entry
+  ---
+  duration_ms: 46.8
+  type: 'test'
+  ...
+# Subtest: TC-TOR-001 malformed or empty table JSON hard-fails instead of reading as no entries
+ok 8 - TC-TOR-001 malformed or empty table JSON hard-fails instead of reading as no entries
+  ---
+  duration_ms: 355.1707
+  type: 'test'
+  ...
+# Subtest: TC-TOR-001 skip-regex emits one anchored alternation in table order
+ok 9 - TC-TOR-001 skip-regex emits one anchored alternation in table order
+  ---
+  duration_ms: 46.0032
+  type: 'test'
+  ...
+# Subtest: TC-TOR-001 skip-regex escapes regex metacharacters in a test name
+ok 10 - TC-TOR-001 skip-regex escapes regex metacharacters in a test name
+  ---
+  duration_ms: 0.3463
+  type: 'test'
+  ...
+# Subtest: hasTestFunc matches the whole func name and tolerates CRLF
+ok 11 - hasTestFunc matches the whole func name and tolerates CRLF
+  ---
+  duration_ms: 0.3271
+  type: 'test'
+  ...
+# Subtest: hasTestFunc refuses empty or non-string source instead of reporting absence
+ok 12 - hasTestFunc refuses empty or non-string source instead of reporting absence
+  ---
+  duration_ms: 0.3875
+  type: 'test'
+  ...
+# Subtest: TC-TOR-001 the committed table starts with the known independent entries and checks out
+not ok 13 - TC-TOR-001 the committed table starts with the known independent entries and checks out
+  ---
+  duration_ms: 178.8519
+  type: 'test'
+  location: 'C:\\Users\\GOBAO\\Downloads\\AI\\multica\\scripts\\aifi45-disposable\\test-ownership.test.mjs:189:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + '^(TestChannelIsolation|TestChannelMigrationAfterUp|TestChannelMigrationAfterDown|TestChannelMigrationAfterReapply)$'
+    - '^(TestChannelIsolation|TestChannelMigrationAfterUp|TestChannelMigrationAfterDown|TestChannelMigrationAfterReapply|TestWorkspaceDeletionRefusesNewCommand)$'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: '^(TestChannelIsolation|TestChannelMigrationAfterUp|TestChannelMigrationAfterDown|TestChannelMigrationAfterReapply|TestWorkspaceDeletionRefusesNewCommand)$'
+  actual: '^(TestChannelIsolation|TestChannelMigrationAfterUp|TestChannelMigrationAfterDown|TestChannelMigrationAfterReapply)$'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/GOBAO/Downloads/AI/multica/scripts/aifi45-disposable/test-ownership.test.mjs:197:10)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1201:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+    Test.postRun (node:internal/test_runner/test:1330:19)
+    Test.run (node:internal/test_runner/test:1258:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:831:7)
+  ...
+# Subtest: TC-TOR-001 the committed known-finding stays declared, justified, resolvable and excluded
+not ok 14 - TC-TOR-001 the committed known-finding stays declared, justified, resolvable and excluded
+  ---
+  duration_ms: 0.946
+  type: 'test'
+  location: 'C:\\Users\\GOBAO\\Downloads\\AI\\multica\\scripts\\aifi45-disposable\\test-ownership.test.mjs:205:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+    + []
+    - [
+    -   'TestWorkspaceDeletionRefusesNewCommand'
+    - ]
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: 'TestWorkspaceDeletionRefusesNewCommand'
+  actual:
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/GOBAO/Downloads/AI/multica/scripts/aifi45-disposable/test-ownership.test.mjs:208:10)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1201:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+    Test.postRun (node:internal/test_runner/test:1330:19)
+    Test.run (node:internal/test_runner/test:1258:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:831:7)
+  ...
+# Subtest: TC-TOR-001 a known-finding entry needs a real func and a reason like any exclusion
+ok 15 - TC-TOR-001 a known-finding entry needs a real func and a reason like any exclusion
+  ---
+  duration_ms: 140.2179
+  type: 'test'
+  ...
+# Subtest: TC-TOR-001 the committed allowed-skips stay declared, justified and resolvable
+ok 16 - TC-TOR-001 the committed allowed-skips stay declared, justified and resolvable
+  ---
+  duration_ms: 124.4965
+  type: 'test'
+  ...
+# Subtest: TC-TOR-001 an allowed skip needs a reason and a real func, just like an exclusion
+ok 17 - TC-TOR-001 an allowed skip needs a reason and a real func, just like an exclusion
+  ---
+  duration_ms: 142.8294
+  type: 'test'
+  ...
+# Subtest: TC-TOR-001 check prints the allowed-skip list and its count
+ok 18 - TC-TOR-001 check prints the allowed-skip list and its count
+  ---
+  duration_ms: 48.7566
+  type: 'test'
+  ...
+1..18
+# tests 18
+# suites 0
+# pass 16
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1536.9762

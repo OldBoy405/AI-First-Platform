@@ -1,0 +1,180 @@
+# 2026-11-12-fork-ci-test-evidence-trust.yaml — Canonical Proposal (YAML-first, V2.9)
+# AI 起草、AI 修改、AI 消费。Human View 由 `stdd canon generate` 生成。
+
+meta:
+  change_id: "2026-11-12-fork-ci-test-evidence-trust"
+  title: "fork CI 与测试证据可信性修复"
+  created: "2026-11-12T14:02:02"
+  status: draft
+  version: "2.9"
+
+why:
+  problem: |
+    fork（OldBoy405/AI-First-multica）main 的 CI 持续为红，且红灯背后既有环境缺口，也有真实缺陷，还有让"绿"或"红"不可信的测试证据问题。
+    核实时点 2026-11-12，multica main = origin/main = 903a46c5a（上一 change 2026-11-11-aifi-45-admission-task-binding 已归档并推送），
+    该 push 的 CI run 43021822604 为 failure：backend-tests（Test 步骤）与 transitions-contract-check 失败，backend 汇总 job 随之失败；
+    frontend-build 因 paths 过滤在最近几次 push 被 skipped，红灯被掩盖。最近 45 个 CI run 中 backend-tests 没有成功过，
+    2026-11-02 起所有跑完的 run 均失败（另有若干被取消）。已核实的具体事实（逐项来自 CI 日志、源码与本地复现）：
+    1. backend-tests 失败的包与原因（run 43021822604）：cmd/server 与 governance 的 TestMain 因没有一次性库 nonce 而退出，
+       governance 整包因此一个测试都没跑；governance/crosslang_test 3 项因 CI 没有同级 tools 检出；
+       daemon TestChannelIsolation 因没有隔离 profile（需 root + 异于 daemon 的 worker uid/gid）；
+       handler TestWorkspaceDeletionManifestCoversPublicSchema 报 19 张表 unclassified。
+       另有 2026-11-02 的失败（早于 nonce 门禁）已查明：TestChannelIsolation、两项 crctl 测试
+       （execution_authorization_test.go 默认路径写死开发机 C:/Users/GOBAO/...，CI 上不存在）、
+       governance 整包 10 分钟超时 panic（挂住原因仍未查）、handler 清单漂移。
+       所以 nonce 不是 CI 变红的起因，也不是唯一原因。
+    2. transitions-contract-check：此前登记写"secret 未配置"，核实后不成立——仓库 secret AIFIRST_TOOLS_READ_TOKEN 存在
+       （updatedAt 2026-10-07），"Require the tools read credential" 步骤通过，失败在检出 pinned tools 的 git 认证
+       （could not read Username，即凭据被 GitHub 拒绝，多半是 PAT 失效、过期或权限不足）；
+       该 job 自 2026-11-02 首次真实执行起就没有成功过，无法判断该凭据是否曾经有效。凭据值不可读取，需管理员处理。
+    3. frontend-build：@multica/views#typecheck 报 60 条 TS6059，本地同样复现（60 条）。根因已定位：
+       提交 26f6c5b0a（11-10，AIFI-45 的 114 文件大提交）改写 packages/views/auth/use-logout.test.ts，
+       引入 "../../core/..." 相对导入（上游用包导入），核心文件被当作 views 的源文件而越出 rootDir。
+       frontend-build 在 11-09 全量 run 通过、11-10 首次因该提交变红。
+    4. scripts/aifi45-disposable/run-selection.mjs 与 selection.mjs 对账结果不一致：selection.mjs 返回
+       { status: 'matched' | 'blocked', reason }，run-selection.mjs 读的是 reconciliation.matched / reconciliation.blocked。
+       于是 `matched !== false` 恒为真，对账失败从不使 selection 失败，失败原因也无法打印。目前 selections.json 没有任何条目配置 expected，
+       缺陷尚处潜伏。同一处还有：expected 配置为空数组或非数组时被静默当作"未配置"。
+    5. 19 张 cr_execution_* 表（迁移 643–648）不在 workspace 删除清单里。已读迁移：全部没有指向 workspace 的外键/级联；
+       其中 7 张带 workspace_id，12 张按 scope/lineage 键控、无 workspace_id；其中 16 张表带禁止 DELETE 的 append-only 或 guard 触发器（部分还禁 TRUNCATE），仅 notice、dispatch_root、tool_cursor 没有。
+       因此删除 workspace 时这些行不会被级联删除，其中 16 张还不能被普通 DELETE 删除——这是事实上的保留，不是经过决定的保留。
+       上游清单测试只校验分类覆盖，不校验删除行为，且规定 KEEP 类表不得带 workspace_id，所以这 7 张表目前无法被合规地登记为保留。
+       旧设计（2026-10-27-trusted-verdict-channel §5）只对 14 张表写了一句"audit/selection/settlement/binding/fact 保留，command/cursor 禁新建并收敛"，
+       643–647 的表没有任何删除决定。
+    6. 测试证据的其他缺口：scripts/aifi45-disposable 下 42 个 node 单测不在任何 CI job 里执行；
+       handler 的 TestMain 在数据库不可达时打印 "Skipping tests" 并 exit 0，go test 会报 ok 而一个测试没跑；
+       handler 测试未设 DATABASE_URL 时默认连 localhost:5432，本机有旧的 multica-postgres 容器（当前已停止），一旦它运行，直接跑会连到旧库。
+  motivation: |
+    上一 change 已把 AIFI-45 的专项测试体制（一次性库 nonce 门禁、real-entry selections）落进主线，但 CI 没有同步提供前置条件，
+    之后每次 push 都触发一次必然失败的后端 run（governance 超时一次占 10 分钟，私有库额度每月 2000 分钟）。
+    红灯长期存在会掩盖真正的新回归；对账缺陷则会让"专项测试通过"这一结论在配置 expected 的第一天就失真。
+    现在需要把每类测试的验收归属说清楚（在 CI 真跑，或经可靠的独立入口真跑），并修掉能修的真实缺陷。
+
+what_changes:
+  - id: C1
+    description: "CI backend-tests 前置条件：为受 nonce 门禁保护的包（cmd/server、governance）在 CI 的服务容器里按 provision.mjs 的现行规则开出一次性库并注入 DATABASE_URL 与 AIFI45_DISPOSABLE_NONCE；门禁本身不放宽。"
+    type: modified
+  - id: C2
+    description: "CI 检出 tools 并注入 AIFI45_TOOLS_ROOT / CRCTL_MJS，使 crosslang_test 与 crctl CLI 测试在 CI 真跑；去掉 execution_authorization_test.go 中写死的开发机路径默认值，缺失时报出所需环境变量名。pinned 修订与 transitions 检查共用一处声明。"
+    type: modified
+  - id: C3
+    description: "专项测试验收归属表：每类专项测试（nonce 库、tools 依赖、特权隔离 profile 等）明确归属 CI 或独立入口；归属独立入口的测试在 CI 中被显式排除并输出名单，由独立入口真实执行并留证据；归属表与实际排除项由机器核对，二者不一致时失败。"
+    type: new
+  - id: C4
+    description: "CI 测试证据对账：nonce 库、DB 依赖包（cmd/server、governance、handler）及 crosslang_test 在 CI 中必须有真实通过的测试；整包 0 测试、被静默跳过或 DB 前置失败时 CI 失败（含 handler TestMain 的 exit 0 路径），不依赖修改上游测试文件。"
+    type: new
+  - id: C5
+    description: "修复 run-selection.mjs 与 selection.mjs 的对账契约：预期测试缺失、对账 blocked、expected 已配置但为空或非数组，均使 selection 失败并打印原因；未配置 expected 的条目行为与修改前逐项一致；对账决策抽成可单测的小函数。"
+    type: modified
+  - id: C6
+    description: "scripts/aifi45-disposable 的 node 单测纳入 CI（script-checks 或等价 job），使 C5 的修复受 CI 保护。"
+    type: modified
+  - id: C7
+    description: "workspace 删除：在 runner 自建的一次性库内复现 19 张 cr_execution_* 表漂移；确认每表保留/删除策略（见 Gate 1 待裁定 D2）后，实现删除路径（如需）、更新清单、补 workspace 删除的行为测试（创建带这些数据的 workspace → 删除 → 断言每类数据按策略处置）。不仅改清单。"
+    type: modified
+  - id: C8
+    description: "transitions-contract-check：只做诊断与失败信息改进——检出前以不输出凭据的方式区分「secret 缺失」与「secret 被拒绝或无权限」；凭据由仓库管理员按最小权限（仅 OldBoy405/AI-First-tools、Contents: Read-only）更新；不读取、不输出、不创建凭据。"
+    type: modified
+  - id: C9
+    description: "frontend-build：把 packages/views/auth/use-logout.test.ts 的相对导入改回包导入，恢复 views typecheck；在本地跑 views 的 typecheck 与该测试，并核实 frontend-build 其余任务无同类问题。"
+    type: modified
+  - id: C10
+    description: "验收报告：列出实际执行的 CI run 与本地检查（命令、退出码、通过/失败/跳过数）、测试范围与未覆盖项；失败与跳过如实记录。"
+    type: new
+
+capabilities:
+  new:
+    - name: "专项测试验收归属与 CI 对账"
+      description: "每类专项测试有唯一明确的验收归属；CI 对 DB 依赖与专项包做真实执行对账，缺跑或静默跳过即失败。"
+  modified:
+    - name: "fork CI 后端测试环境"
+      description: "为 nonce 门禁包提供一次性库，检出 pinned tools，并让 crctl 与 crosslang 测试在 CI 真跑。"
+    - name: "一次性库 selection 对账（run-selection）"
+      description: "对账失败与预期缺失使 selection 失败；未配置 expected 的行为不变。"
+    - name: "workspace 删除清单与删除路径"
+      description: "AIFI-45 执行控制表的保留/删除策略落地为清单与行为测试。"
+    - name: "CI 凭据诊断与前端 typecheck 回归"
+      description: "transitions 检查的凭据失败原因可区分；views typecheck 恢复。"
+
+constraints:
+  - "只经 runner 自建的一次性库（scripts/aifi45-disposable，pgvector pg17 容器、生存期 ≤ 3600 秒、nonce 标记与所有权校验）复现和验证数据库相关问题；不连接、不清理、不依赖 localhost:5432 的旧库、共享库或本机 multica-postgres 容器；运行前后核对容器与库清单。"
+  - "不读取、不打印、不创建任何凭据值；凭据只由仓库管理员处理。可只读核对 secret 名称与更新时间。"
+  - "不放宽一次性库 nonce 门禁；不改变 AIFI-45 的信任模型、签名与准入语义。"
+  - "multica 规则：自研逻辑放新文件或 scripts/aifi45-disposable 下；改上游文件（.github/workflows/ci.yml、scripts/test-go.sh、handler 清单测试、packages/views 测试等）只做挂钩点并标 // AIFIRST: 或 YAML 同等标记，改动收敛到最少行；代码注释用英文；在 CUSTOM.md 登记，追溯标识用本 STDD change id（格式不接受时停止并确认，不编造 CR 身份）。"
+  - "不得为让测试通过而仅修改清单、放宽断言、跳过用例或以 build tag/-skip 隐藏失败；任何排除必须显式、可见、有归属。"
+  - "不混入上一 change（2026-11-11-aifi-45-admission-task-binding）与知识库工作区中其他未提交改动；提交只含本 change 的文件。"
+  - "提交、推送、部署、修改仓库 secret 各自单独授权；CI 真实验证需要推送并消耗私有库 Actions 额度，推送前单独征得同意。"
+  - "遇到需要额外业务裁定或范围明显扩大的情况先向用户说明。"
+  - "Gate 1 裁定 D1（用户采纳推荐）：nonce 库与 tools 依赖的测试在 CI 真跑；需 root + uid/gid profile 的 TestChannelIsolation 归独立入口，CI 显式排除并输出名单；备选方案（全部专项走独立入口、暂时接受红）未采用。"
+  - "Gate 1 裁定 D2（用户采纳推荐）：19 张 cr_execution_* 表沿用 2026-10-27-trusted-verdict-channel 的方向——audit/selection/settlement/binding/fact 类保留并在清单中新增显式“保留”分类；notice、dispatch_root 随 workspace 删除；command、cursor 收敛；deployment 与 policy 类全局表保持 KEEP。逐表映射与“保留”分类的断言由 SPEC 阶段给出；若需对 append-only 触发器开删除例外，则不属本裁定，须另行向用户说明。"
+  - "未在 Gate 1 单独答复的事项：创建一次性 podman 实例前、推送触发 CI 前、凭据由管理员更新，均在需要时再向用户确认或请示。"
+
+stakeholders:
+  - "仓库与 CI 管理员（OldBoy405）：secret、推送、Actions 额度"
+  - "AIFI-45 执行控制的维护者：专项测试体制与删除策略"
+  - "上游同步（双周 rebase）：上游文件改动面"
+
+risk_areas:
+  - capability: "workspace 删除清单与删除路径"
+    risk: "这些表是 append-only 的审计证据；若策略选择删除，需要对触发器开例外，可能削弱防篡改保证；若选择保留，则 workspace 删除后留下无主行，且与清单规则（KEEP 不得带 workspace_id）冲突，需改上游测试文件。"
+    mitigation: "策略先由用户裁定；删除例外只限 workspace 删除路径且有行为测试，一般 DELETE 仍被拒；上游文件改动最小并登记。"
+  - capability: "fork CI 后端测试环境"
+    risk: "governance 整包在 CI 上有过 10 分钟超时（TestMTick003 9m7s），挂住原因未查；接入 nonce 库后可能重现，CI 耗时与额度上升。"
+    mitigation: "先在一次性库本地完整跑 governance 并定位；若是环境因素则修，若需拆分或调整超时则作为显式决定写入设计。"
+  - capability: "fork CI 后端测试环境"
+    risk: "tools 的 pinned 修订与测试所需修订可能不是同一个：transitions 检查固定在 9e41ad74，而当前测试针对本地 tools 工作树（该工作树本身也有未提交改动）。"
+    mitigation: "设计阶段以实际跑通的 tools 提交确定唯一 pin，并核对 transitions 的 --check 仍然通过。"
+  - capability: "专项测试验收归属与 CI 对账"
+    risk: "TestChannelIsolation 需要 Linux root 与 uid/gid profile，托管 runner 上提供特权 profile 代价大；独立入口在本机（Windows + podman）能否真实执行未验证。"
+    mitigation: "归属独立入口并显式排除；独立入口须真实执行一次并留证据，做不到则在报告里列为未覆盖，不报绿。"
+  - capability: "fork CI 后端测试环境"
+    risk: "CI 验证需要推送触发真实 run，消耗额度，且推送本身需单独授权。"
+    mitigation: "未获授权时只做本地等价验证，并在报告里标注“CI 工作流改动未经真实 CI 验证”。"
+
+non_goals:
+  - "不重新设计 AIFI-45 信任模型、nonce 门禁或 selection 清单内容。"
+  - "不为 transitions 检查创建或轮换凭据，不改 tools 仓库。"
+  - "不处理与本次失败无关的上游同步、依赖升级或其他 CI job 的优化。"
+  - "不承诺让 CI 一次变绿以外的更多目标：凡因范围或授权做不到的项，如实列为未覆盖。"
+
+critical:
+  is_critical: true
+  risk_assessment:
+    safety_critical: false
+    financial: true       # 私有库 Actions 额度
+    cross_system: true    # fork CI、tools 仓库、podman 一次性库
+
+anchoring:
+  # L4 基准锚定（2026-11-13 由 L3 升级，用户裁定「补真实 L4 基准锚定并重签」）。
+  # 风险分类不变：financial=true 要求最低 L4，原 L3 不足，ci 检查 (l) 判 FAIL。
+  # 下列路径逐条核实为 multica tracked 文件，每条是相应 capability 必须沿用的现行实现：
+  # 不得另造一套规则，不得为让测试通过而放宽其断言。
+  level: L4
+  reference_changes:
+    - "2026-10-30-aifi-45-ci-disposable-db-supervisor"
+    - "2026-11-11-aifi-45-admission-task-binding"
+  anchor_implementations:
+    - "scripts/aifi45-disposable/provision.mjs"                              # C1 一次性库开出与口令/nonce 注入的现行规则
+    - "scripts/aifi45-disposable/instance.mjs"                               # C1/C4 实例所有权、nonce 校验与生存期上限
+    - "server/cmd/server/integration_test.go"                                # C1/C4 cmd/server nonce 门禁 TestMain，门禁不放宽
+    - "server/internal/governance/crsync_test.go"                            # C1/C4 governance 侧 nonce 门禁
+    - ".github/workflows/ci.yml"                                             # C2/C8 现有 pinned tools 检出与凭据步骤，单一 pin 声明的挂钩点
+    - "scripts/test-go.sh"                                                   # C4/C6 现有 go test 调用方式与 job 接线基准
+    - "scripts/aifi45-disposable/selection.mjs"                              # C5 对账契约唯一权威生产者 {status, reason}
+    - "scripts/aifi45-disposable/selections.json"                            # C5 未配置 expected 条目的真实输入，行为须逐项不变
+    - "server/internal/handler/workspace_delete_manifest_test.go"            # C7 上游清单分类规则（KEEP 不得带 workspace_id）
+    - "server/migrations/648_cr_execution_control.up.sql"                    # C7 append-only/guard 触发器定义，删除例外不得擅开
+    - "packages/views/agents/components/agent-batch-toolbar.test.tsx"        # C9 上游包导入风格基准（对照 use-logout.test.ts 的相对导入回归）
+
+success_criteria:
+  - "SC1 基线与复现：在 runner 自建的一次性库中复现 handler 清单漂移，unclassified 列表恰为 CI 日志中的 19 张 cr_execution_* 表；复现与修复全程 DATABASE_URL 只指向一次性库，前后容器清单一致（旧库 multica-postgres 未被启动或访问）。"
+  - "SC2 nonce 包真跑：CI 中 cmd/server 与 governance 不再因 nonce 退出，各自 go test -json 里通过测试数大于 0；governance-identity selection（错误 nonce 必须被拒）仍通过，证明门禁未放宽。"
+  - "SC3 tools 真跑：CI 以单一声明的 pin 检出 tools；crosslang_test 3 项与 TestExecutionGrantCheckAgainstRealCrctlCLI、TestExecutionAuthorizationRevokeHTTPToRealNodeCLI 在 CI 通过；测试源码中不再有开发机绝对路径默认值，缺环境时的错误信息含所需变量名。"
+  - "SC4 归属表：每个专项测试组都有“CI”或“独立入口”归属；归属独立入口的测试在 CI 中被显式排除并输出名单与数量；机器核对归属表与排除项，故意制造不一致时 CI 步骤失败；独立入口至少真实执行一次，结果入验收报告，无法执行的列为未覆盖。"
+  - "SC5 CI 对账：故意让 handler/governance 连不上库、或让必需包 0 测试通过时，CI 对账步骤失败（本地用等价输入证明）；该机制不修改上游测试文件，或对其改动给出必要性说明并登记。"
+  - "SC6 run-selection：expected 中的测试在流里缺失、对账返回 blocked、expected 为空数组或非数组，均使该 selection 为 FAIL 且整体退出码非 0，并打印 blocked 原因；未配置 expected 的条目，用修改前后相同输入比对，输出与退出码一致；以上均有自动测试，其中缺失与 blocked 用真实 go test -json 输出或忠实夹具；把旧判断恢复回去时相应测试必红。"
+  - "SC7 node 单测入 CI：scripts/aifi45-disposable 的 node 单测在 CI 某个 job 中真实执行，日志可见测试数。"
+  - "SC8 workspace 删除：19 张表的保留/删除策略经用户确认后记录在案；清单按策略登记；对每类策略有行为测试（建数据 → 删 workspace → 断言处置结果；保留类断言行完整未被改写，删除类断言行已删且一般 DELETE 仍被触发器拒绝）；TestWorkspaceDeletionManifestCoversPublicSchema 与新增行为测试在一次性库真实执行通过（无 skip）。"
+  - "SC9 transitions：给出凭据失败的诊断结论与证据（不含凭据值）；CI 失败信息能区分 secret 缺失与被拒绝；凭据更新由管理员完成后该 job 通过（该项依赖管理员动作，未完成则如实列为未闭合）。"
+  - "SC10 frontend：packages/views 的 typecheck 本地 0 条 TS6059；use-logout.test.ts 通过；frontend-build 在 CI 通过（需推送授权，未授权则列为本地验证）。"
+  - "SC11 验收报告：列出每项实际执行的 CI run 与本地命令、退出码、通过/失败/跳过数，测试范围与未覆盖项；任何 skip 数大于 0 的包有说明；失败与跳过如实报告，不出现“未执行却报绿”的项。"

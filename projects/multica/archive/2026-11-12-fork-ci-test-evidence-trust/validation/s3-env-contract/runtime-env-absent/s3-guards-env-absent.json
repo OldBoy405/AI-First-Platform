@@ -1,0 +1,38 @@
+{
+  "name": "s3-guards-env-absent",
+  "package": "./internal/governance",
+  "run": "^(TestExecutionGrantCheckAgainstRealCrctlCLI|TestExecutionAuthorizationRevokeHTTPToRealNodeCLI|TestDaemonInstalledRecordVerifiesThroughTrustRoot|TestDaemonFetchesAndInstallsExecutionAuthorization|TestDaemonAuthenticatedDeliveryRunsCrctl|TestDaemonExecutionDeliveryRejectsOversizedResponse|TestDaemonInstallRequiresRealCrctlContractCheck|TestExecutionBindingEnvelopeInteropWithToolsVerifier)$",
+  "ok": false,
+  "reasons": [
+    "exit=1",
+    "fail=8",
+    "pass=0"
+  ],
+  "reconciliationLine": "",
+  "stage": "test",
+  "totals": {
+    "pass": 0,
+    "fail": 8,
+    "skip": 0,
+    "packages": 0
+  },
+  "reconciliation": null,
+  "failures": [
+    "execution_authorization_revoke_interop_test.go:100: CRCTL_MJS is required: the revoke interop check needs the real crctl verifier, so a dev-machine default is not evidence",
+    "--- FAIL: TestExecutionAuthorizationRevokeHTTPToRealNodeCLI (0.04s)",
+    "execution_authorization_test.go:614: CRCTL_MJS is required: the byte contract needs the real crctl verifier, so a dev-machine default is not evidence",
+    "--- FAIL: TestExecutionGrantCheckAgainstRealCrctlCLI (0.00s)",
+    "execution_binding_issue_test.go:856: AIFI45_TOOLS_ROOT is required: the real crctl execution-binding verifier interop is evidence, so a skip is not acceptable",
+    "--- FAIL: TestExecutionBindingEnvelopeInteropWithToolsVerifier (0.00s)",
+    "execution_trust_install_test.go:105: CRCTL_MJS is required: the trust install check needs the real crctl verifier, so a dev-machine default is not evidence",
+    "--- FAIL: TestDaemonInstalledRecordVerifiesThroughTrustRoot (0.00s)",
+    "execution_trust_install_test.go:277: CRCTL_MJS is required: the trust install check needs the real crctl verifier, so a dev-machine default is not evidence",
+    "--- FAIL: TestDaemonFetchesAndInstallsExecutionAuthorization (0.02s)",
+    "execution_verifier_test.go:49: CRCTL_MJS is required: the trust install check needs the real crctl verifier, so a dev-machine default is not evidence",
+    "--- FAIL: TestDaemonAuthenticatedDeliveryRunsCrctl (0.01s)",
+    "execution_verifier_test.go:125: CRCTL_MJS is required: the trust install check needs the real crctl verifier, so a dev-machine default is not evidence",
+    "--- FAIL: TestDaemonExecutionDeliveryRejectsOversizedResponse (0.00s)",
+    "execution_verifier_test.go:170: CRCTL_MJS is required: the trust install check needs the real crctl verifier, so a dev-machine default is not evidence",
+    "--- FAIL: TestDaemonInstallRequiresRealCrctlContractCheck (0.00s)"
+  ]
+}

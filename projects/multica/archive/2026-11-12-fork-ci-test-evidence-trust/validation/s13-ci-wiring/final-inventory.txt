@@ -1,0 +1,17 @@
+### FINAL state after all S13 work (selections + WSL probe + CUSTOM.md registration)
+### podman ps -a
+multica-postgres	docker.io/pgvector/pgvector:pg17	Exited (0) 292 years ago
+multica-backend	localhost/multica-backend:81e5293adc	Exited (0) 292 years ago
+exit=0
+
+### podman volume ls (names only, untouched)
+multica-pgdata
+
+### wsl -l -v
+  NAME                      STATE           VERSION
+* AIFI-ISO                  Stopped         2
+  podman-machine-default    Running         2
+  Ubuntu                    Stopped         2
+
+### note: AIFI-ISO was started read-only for the TC-TOR-004 probe (U5) and has since
+### auto-stopped on WSL idle timeout; final state equals inventory-before.txt.

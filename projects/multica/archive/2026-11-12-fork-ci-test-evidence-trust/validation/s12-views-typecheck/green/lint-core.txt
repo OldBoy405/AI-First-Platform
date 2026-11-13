@@ -1,0 +1,13 @@
+[WARN] The "pnpm" field in package.json is no longer read by pnpm. The following keys were ignored: "pnpm.onlyBuiltDependencies", "pnpm.overrides", "pnpm.patchedDependencies". See https://pnpm.io/settings for the new home of each setting.
+
+> @multica/core@0.0.0 lint C:\Users\GOBAO\Downloads\AI\multica\packages\core
+> eslint .
+
+
+C:\Users\GOBAO\Downloads\AI\multica\packages\core\platform\core-provider.tsx
+  166:3  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+  178:5  warning  React Hook useMemo has missing dependencies: 'apiBaseUrl', 'cookieAuth', 'identity', 'onLogin', 'onLogout', 'onSessionExpired', and 'storage'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+✖ 2 problems (0 errors, 2 warnings)
+  0 errors and 1 warning potentially fixable with the `--fix` option.
+

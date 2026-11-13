@@ -1,0 +1,99 @@
+=== handler whole package: S9 pre-649 -> post-649 ===
+before events: pass=4529 fail=7 skip=47
+after  events: pass=4533 fail=3 skip=47
+delta:         pass=4 fail=-4 skip=0
+NEW failing names (0):
+NO LONGER failing names (4):
+  TestGetPresenterStateVisibility
+  TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte
+  TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte/truncate_cr_execution_binding_issue
+  TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte/truncate_cr_execution_consumption
+skip set: new=0 gone=0
+UUID-normalised terminal names: before=4583 after=4583 new=0 removed=0
+
+=== governance whole package: S4 baseline -> post-649 (tools env UNSET in this shell) ===
+before events: pass=1328 fail=48 skip=1
+after  events: pass=1312 fail=59 skip=1
+delta:         pass=-16 fail=11 skip=0
+NEW failing names (11):
+  TestChannelProtocol
+  TestChannelProtocol/cross_language_vectors
+  TestDaemonAuthenticatedDeliveryRunsCrctl
+  TestDaemonExecutionDeliveryRejectsOversizedResponse
+  TestDaemonFetchesAndInstallsExecutionAuthorization
+  TestDaemonInstallRequiresRealCrctlContractCheck
+  TestDaemonInstalledRecordVerifiesThroughTrustRoot
+  TestExecutionAuthorizationRevokeHTTPToRealNodeCLI
+  TestExecutionBindingEnvelopeInteropWithToolsVerifier
+  TestExecutionGrantCheckAgainstRealCrctlCLI
+  TestTCAuth010GoSignedBytesWithNonASCIIAndCRLFVerifyInNode
+NO LONGER failing names (0):
+skip set: new=0 gone=0
+UUID-normalised terminal names: before=1377 after=1372 new=16 removed=21
+  +name TestDisposableIdentityGateRefusesEachConditionAlone
+  +name TestDisposableIdentityGateRefusesEachConditionAlone/bypassrls
+  +name TestDisposableIdentityGateRefusesEachConditionAlone/createdb
+  +name TestDisposableIdentityGateRefusesEachConditionAlone/createrole
+  +name TestDisposableIdentityGateRefusesEachConditionAlone/database-marker
+  +name TestDisposableIdentityGateRefusesEachConditionAlone/database-name
+  +name TestDisposableIdentityGateRefusesEachConditionAlone/database-owner
+  +name TestDisposableIdentityGateRefusesEachConditionAlone/nonce-format
+  +name TestDisposableIdentityGateRefusesEachConditionAlone/nonce-format/nonce=""
+  +name TestDisposableIdentityGateRefusesEachConditionAlone/nonce-format/nonce="8B63A4D815A47E51"
+  +name TestDisposableIdentityGateRefusesEachConditionAlone/nonce-format/nonce="8b63a4d815a47e5"
+  +name TestDisposableIdentityGateRefusesEachConditionAlone/role-marker
+  +name TestDisposableIdentityGateRefusesEachConditionAlone/role-name
+  +name TestDisposableIdentityGateRefusesEachConditionAlone/session-user
+  +name TestDisposableIdentityGateRefusesEachConditionAlone/superuser
+  +name TestDisposableIdentityGateRefusesUnreadableIdentity
+  -name TestChannelProtocol/cross_language_vectors/checkpoint
+  -name TestChannelProtocol/cross_language_vectors/command
+  -name TestChannelProtocol/cross_language_vectors/readiness-request
+  -name TestChannelProtocol/cross_language_vectors/resume
+  -name TestChannelProtocol/cross_language_vectors/verdict
+  -name TestDaemonAuthenticatedDeliveryRunsCrctl/missing_control_tool_refuses_authenticated_delivery
+  -name TestDaemonAuthenticatedDeliveryRunsCrctl/missing_credentials_and_forged_identity_headers
+  -name TestDaemonAuthenticatedDeliveryRunsCrctl/real_daemon_token_from_another_workspace
+  -name TestDaemonAuthenticatedDeliveryRunsCrctl/unknown_daemon_token
+  -name TestDaemonFetchesAndInstallsExecutionAuthorization/missing_record_and_missing_daemon_binding_fail_closed
+  -name TestDaemonFetchesAndInstallsExecutionAuthorization/record_is_invisible_to_another_workspace_binding
+  -name TestExecutionAuthorizationRevokeHTTPToRealNodeCLI/initial
+  -name TestExecutionAuthorizationRevokeHTTPToRealNodeCLI/revoke
+  -name TestExecutionBindingEnvelopeInteropWithToolsVerifier/real_tools_verifier_accepts_server_envelope
+  -name TestExecutionBindingEnvelopeInteropWithToolsVerifier/real_tools_verifier_rejects_tampered_payload
+  -name TestTCAuth010GoSignedBytesWithNonASCIIAndCRLFVerifyInNode/a_foreign_key_signature_is_rejected
+  -name TestTCAuth010GoSignedBytesWithNonASCIIAndCRLFVerifyInNode/a_single_flipped_byte_is_rejected
+  -name TestTCAuth010GoSignedBytesWithNonASCIIAndCRLFVerifyInNode/an_unknown_version_is_refused_before_any_crypto
+  -name TestTCAuth010GoSignedBytesWithNonASCIIAndCRLFVerifyInNode/another_domain_cannot_verify_these_bytes
+  -name TestTCAuth010GoSignedBytesWithNonASCIIAndCRLFVerifyInNode/the_exact_bytes_verify
+  -name TestTCAuth010GoSignedBytesWithNonASCIIAndCRLFVerifyInNode/the_private_key_never_leaves_the_process
+
+=== governance whole package: S4 baseline -> post-649 (AIFI45_TOOLS_ROOT + CRCTL_MJS set to the verified tools checkout e52b8081f1) ===
+before events: pass=1328 fail=48 skip=1
+after  events: pass=1344 fail=48 skip=1
+delta:         pass=16 fail=0 skip=0
+NEW failing names (0):
+NO LONGER failing names (0):
+skip set: new=0 gone=0
+UUID-normalised terminal names: before=1377 after=1393 new=16 removed=0
+  +name TestDisposableIdentityGateRefusesEachConditionAlone
+  +name TestDisposableIdentityGateRefusesEachConditionAlone/bypassrls
+  +name TestDisposableIdentityGateRefusesEachConditionAlone/createdb
+  +name TestDisposableIdentityGateRefusesEachConditionAlone/createrole
+  +name TestDisposableIdentityGateRefusesEachConditionAlone/database-marker
+  +name TestDisposableIdentityGateRefusesEachConditionAlone/database-name
+  +name TestDisposableIdentityGateRefusesEachConditionAlone/database-owner
+  +name TestDisposableIdentityGateRefusesEachConditionAlone/nonce-format
+  +name TestDisposableIdentityGateRefusesEachConditionAlone/nonce-format/nonce=""
+  +name TestDisposableIdentityGateRefusesEachConditionAlone/nonce-format/nonce="2ADE9CE2269724F3"
+  +name TestDisposableIdentityGateRefusesEachConditionAlone/nonce-format/nonce="2ade9ce2269724f"
+  +name TestDisposableIdentityGateRefusesEachConditionAlone/role-marker
+  +name TestDisposableIdentityGateRefusesEachConditionAlone/role-name
+  +name TestDisposableIdentityGateRefusesEachConditionAlone/session-user
+  +name TestDisposableIdentityGateRefusesEachConditionAlone/superuser
+  +name TestDisposableIdentityGateRefusesUnreadableIdentity
+
+=== verdict inputs ===
+handler: newFail=0 goneFail=4 normalisedRemoved=0
+governance (tools env unset): newFail=11 goneFail=0 normalisedRemoved=21
+governance (tools env set):   newFail=0 goneFail=0 normalisedRemoved=0

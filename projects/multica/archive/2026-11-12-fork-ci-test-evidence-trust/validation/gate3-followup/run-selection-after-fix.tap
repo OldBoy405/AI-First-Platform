@@ -1,0 +1,94 @@
+TAP version 13
+# Subtest: TC-DTI-002 --admin-url is rejected before any instance is created
+ok 1 - TC-DTI-002 --admin-url is rejected before any instance is created
+  ---
+  duration_ms: 90.908
+  type: 'test'
+  ...
+# Subtest: TC-DTI-002 AIFI45_ADMIN_URL is no longer read
+ok 2 - TC-DTI-002 AIFI45_ADMIN_URL is no longer read
+  ---
+  duration_ms: 93.3981
+  type: 'test'
+  ...
+# Subtest: --only rejects a missing or unmatched name before creating an instance
+ok 3 - --only rejects a missing or unmatched name before creating an instance
+  ---
+  duration_ms: 279.6355
+  type: 'test'
+  ...
+# Subtest: --only rejects duplicate names before creating an instance
+ok 4 - --only rejects duplicate names before creating an instance
+  ---
+  duration_ms: 92.7369
+  type: 'test'
+  ...
+# Subtest: --only accepts an exact name and proceeds to the instance boundary
+ok 5 - --only accepts an exact name and proceeds to the instance boundary
+  ---
+  duration_ms: 97.519
+  type: 'test'
+  ...
+# Subtest: TC-SEL-002 an unconfigured selection keeps the historical PASS line
+ok 6 - TC-SEL-002 an unconfigured selection keeps the historical PASS line
+  ---
+  duration_ms: 0.3165
+  type: 'test'
+  ...
+# Subtest: TC-SEL-002 an unconfigured selection keeps the historical FAIL lines
+ok 7 - TC-SEL-002 an unconfigured selection keeps the historical FAIL lines
+  ---
+  duration_ms: 0.1218
+  type: 'test'
+  ...
+# Subtest: TC-SEL-002 the unconfigured rule is exactly code/fail/skip/pass
+ok 8 - TC-SEL-002 the unconfigured rule is exactly code/fail/skip/pass
+  ---
+  duration_ms: 0.2706
+  type: 'test'
+  ...
+# Subtest: TC-SEL-002 an explicitly undefined expected is still unconfigured
+ok 9 - TC-SEL-002 an explicitly undefined expected is still unconfigured
+  ---
+  duration_ms: 0.1252
+  type: 'test'
+  ...
+# Subtest: TC-SEL-002 a migrate-stage failure keeps the trimmed line without totals
+ok 10 - TC-SEL-002 a migrate-stage failure keeps the trimmed line without totals
+  ---
+  duration_ms: 0.1266
+  type: 'test'
+  ...
+# Subtest: TC-SEL-002 the printer appends the reconciliation suffix verbatim
+ok 11 - TC-SEL-002 the printer appends the reconciliation suffix verbatim
+  ---
+  duration_ms: 0.0792
+  type: 'test'
+  ...
+# Subtest: --evidence-dir requires a value and is rejected before any instance is created
+ok 12 - --evidence-dir requires a value and is rejected before any instance is created
+  ---
+  duration_ms: 186.9049
+  type: 'test'
+  ...
+# Subtest: --evidence-dir with a value is accepted and reaches the instance boundary
+ok 13 - --evidence-dir with a value is accepted and reaches the instance boundary
+  ---
+  duration_ms: 100.5917
+  type: 'test'
+  ...
+# Subtest: an unknown flag is rejected by name before any instance is created
+ok 14 - an unknown flag is rejected by name before any instance is created
+  ---
+  duration_ms: 106.9416
+  type: 'test'
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 14
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1125.0259

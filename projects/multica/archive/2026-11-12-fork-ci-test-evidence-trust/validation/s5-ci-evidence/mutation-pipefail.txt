@@ -1,0 +1,9 @@
+mutation: remove `set -o pipefail` from the --json-out branch
+exit=1
+TC-TWG-001: PASS
+TC-TWG-003: PASS
+TC-TWG-002: PASS
+
+--json-out returned 0, want go test's 3
+{"Action":"pass","Package":"github.com/multica-ai/multica/server","Test":"TestA"}
+restored sha256 before=fcf6d3253e6e291557aef6f1f6231abd916158ef5d0b65d4a826800f4be87ebd after=fcf6d3253e6e291557aef6f1f6231abd916158ef5d0b65d4a826800f4be87ebd identical=true

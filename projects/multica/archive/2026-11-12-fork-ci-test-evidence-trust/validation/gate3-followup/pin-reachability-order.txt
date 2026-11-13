@@ -1,0 +1,35 @@
+transitions-contract-check:
+   1. Checkout
+   2. Setup Node.js
+   3. Diagnose the tools read credential
+   4. Read the single tools pin
+   5. Checkout the pinned tools contract revision
+   6. Check the tools pin integrity
+   7. Verify the generated transition table matches the contract
+   8. Verify the generated gate nodes match the contract
+  => reachability step index 3 < tools checkout index 5 : true
+backend-tests:
+   1. Checkout
+   2. Setup Node.js
+   3. Setup Go
+   4. Restore Go module cache
+   5. Resolve Go build cache key
+   6. Restore Go build cache
+   7. Mark Go build cache epoch
+   8. Build
+   9. Vet tag-gated agent integration tests
+  10. Diagnose the tools read credential
+  11. Read the single tools pin
+  12. Checkout the pinned tools contract revision
+  13. Check the tools pin integrity
+  14. Fetch the pg driver for provisioning
+  15. Provision the one-time test database
+  16. Run migrations
+  17. Verify Go test wrapper
+  18. Test
+  19. Reconcile the Go test evidence
+  20. Check the test ownership table
+  21. Drop the one-time test database
+  22. Prune Go build cache to this run's entries
+  23. Save Go build cache
+  => reachability step index 10 < tools checkout index 12 : true

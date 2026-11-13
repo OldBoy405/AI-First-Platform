@@ -1,0 +1,24 @@
+{
+  "name": "channel-protocol",
+  "package": "./internal/governance",
+  "run": "^(TestChannelProtocol|TestChannelStoreGuards|TestChannelFoundationSelection|TestChannelFoundationReservation|TestChannelPolicyResume)$",
+  "ok": false,
+  "reasons": [
+    "exit=1",
+    "fail=2"
+  ],
+  "reconciliationLine": "",
+  "stage": "test",
+  "totals": {
+    "pass": 39,
+    "fail": 2,
+    "skip": 0,
+    "packages": 0
+  },
+  "reconciliation": null,
+  "failures": [
+    "execution_control_protocol_test.go:334: AIFI45_TOOLS_ROOT is required; the shared vector fixture lives in the tools repo",
+    "--- FAIL: TestChannelProtocol/cross_language_vectors (0.00s)",
+    "--- FAIL: TestChannelProtocol (0.11s)"
+  ]
+}

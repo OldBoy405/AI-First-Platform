@@ -1,0 +1,130 @@
+[WARN] The "pnpm" field in package.json is no longer read by pnpm. The following keys were ignored: "pnpm.onlyBuiltDependencies", "pnpm.overrides", "pnpm.patchedDependencies". See https://pnpm.io/settings for the new home of each setting.
+
+> multica@0.2.0 typecheck C:\Users\GOBAO\Downloads\AI\multica
+> turbo typecheck --filter=!@multica/mobile
+
+• turbo 2.9.5
+
+   • Packages in scope: @multica/core, @multica/desktop, @multica/docs, @multica/eslint-config, @multica/plugin-sdk, @multica/tsconfig, @multica/ui, @multica/ui-lab, @multica/views, @multica/web
+   • Running typecheck in 10 packages
+   • Remote caching disabled
+
+@multica/web:mdx: cache miss, executing 4bf0084cd2dcc3e5
+@multica/docs:mdx: cache miss, executing ae97bfa561d28107
+@multica/core:typecheck: cache miss, executing 15cc4562548301ec
+@multica/plugin-sdk:typecheck: cache miss, executing 9a5a1b797781e1e5
+@multica/ui:typecheck: cache miss, executing d13bab18c36320a7
+@multica/ui:typecheck: 
+@multica/ui:typecheck: > @multica/ui@0.0.0 typecheck C:\Users\GOBAO\Downloads\AI\multica\packages\ui
+@multica/ui:typecheck: > tsc --noEmit
+@multica/ui:typecheck: 
+@multica/plugin-sdk:typecheck: 
+@multica/plugin-sdk:typecheck: > @multica/plugin-sdk@0.1.0 typecheck C:\Users\GOBAO\Downloads\AI\multica\packages\plugin-sdk
+@multica/plugin-sdk:typecheck: > tsc --noEmit
+@multica/plugin-sdk:typecheck: 
+@multica/docs:mdx: 
+@multica/docs:mdx: > @multica/docs@0.2.0 mdx C:\Users\GOBAO\Downloads\AI\multica\apps\docs
+@multica/core:typecheck: 
+@multica/core:typecheck: > @multica/core@0.0.0 typecheck C:\Users\GOBAO\Downloads\AI\multica\packages\core
+@multica/core:typecheck: > tsc --noEmit
+@multica/core:typecheck: 
+@multica/docs:mdx: > fumadocs-mdx
+@multica/docs:mdx: 
+@multica/web:mdx: 
+@multica/web:mdx: > @multica/web@0.6.3 mdx C:\Users\GOBAO\Downloads\AI\multica\apps\web
+@multica/web:mdx: > fumadocs-mdx
+@multica/web:mdx: 
+@multica/web:mdx: C:\Users\GOBAO\Downloads\AI\multica\node_modules\.pnpm\esbuild@0.25.12\node_modules\esbuild\lib\main.js:1739
+@multica/web:mdx:           throw new Error(`
+@multica/web:mdx:                 ^
+@multica/web:mdx: 
+@multica/web:mdx: Error: 
+@multica/web:mdx: You installed esbuild for another platform than the one you're currently using.
+@multica/web:mdx: This won't work because esbuild is written with native code and needs to
+@multica/web:mdx: install a platform-specific binary executable.
+@multica/web:mdx: 
+@multica/web:mdx: Specifically the "@esbuild/win32-x64" package is present but this platform
+@multica/web:mdx: needs the "@esbuild/win32-x64" package instead. People often get into this
+@multica/web:mdx: situation by installing esbuild on Windows or macOS and copying "node_modules"
+@multica/web:mdx: into a Docker image that runs Linux, or by copying "node_modules" between
+@multica/web:mdx: Windows and WSL environments.
+@multica/web:mdx: 
+@multica/web:mdx: If you are installing with npm, you can try not copying the "node_modules"
+@multica/web:mdx: directory when you copy the files over, and running "npm ci" or "npm install"
+@multica/web:mdx: on the destination platform after the copy. Or you could consider using yarn
+@multica/web:mdx: instead of npm which has built-in support for installing a package on multiple
+@multica/web:mdx: platforms simultaneously.
+@multica/web:mdx: 
+@multica/web:mdx: If you are installing with yarn, you can try listing both this platform and the
+@multica/web:mdx: other platform in your ".yarnrc.yml" file using the "supportedArchitectures"
+@multica/web:mdx: feature: https://yarnpkg.com/configuration/yarnrc/#supportedArchitectures
+@multica/web:mdx: Keep in mind that this means multiple copies of esbuild will be present.
+@multica/web:mdx: 
+@multica/web:mdx: Another alternative is to use the "esbuild-wasm" package instead, which works
+@multica/web:mdx: the same way on all platforms. But it comes with a heavy performance cost and
+@multica/web:mdx: can sometimes be 10x slower than the "esbuild" package, so you may also not
+@multica/web:mdx: want to do that.
+@multica/web:mdx: 
+@multica/web:mdx:     at generateBinPath (C:\Users\GOBAO\Downloads\AI\multica\node_modules\.pnpm\esbuild@0.25.12\node_modules\esbuild\lib\main.js:1739:17)
+@multica/web:mdx:     at esbuildCommandAndArgs (C:\Users\GOBAO\Downloads\AI\multica\node_modules\.pnpm\esbuild@0.25.12\node_modules\esbuild\lib\main.js:1820:33)
+@multica/web:mdx:     at ensureServiceIsRunning (C:\Users\GOBAO\Downloads\AI\multica\node_modules\.pnpm\esbuild@0.25.12\node_modules\esbuild\lib\main.js:1977:25)
+@multica/web:mdx:     at build (C:\Users\GOBAO\Downloads\AI\multica\node_modules\.pnpm\esbuild@0.25.12\node_modules\esbuild\lib\main.js:1876:26)
+@multica/web:mdx:     at compileConfig (file:///C:/Users/GOBAO/Downloads/AI/multica/node_modules/.pnpm/fumadocs-mdx@12.0.3_fumadoc_1aabaf29b7003ad9581a0e88a7c15e58/node_modules/fumadocs-mdx/dist/chunk-LGYVNESJ.js:12:29)
+@multica/web:mdx:     at async loadConfig (file:///C:/Users/GOBAO/Downloads/AI/multica/node_modules/.pnpm/fumadocs-mdx@12.0.3_fumadoc_1aabaf29b7003ad9581a0e88a7c15e58/node_modules/fumadocs-mdx/dist/chunk-LGYVNESJ.js:34:14)
+@multica/web:mdx:     at async postInstall (file:///C:/Users/GOBAO/Downloads/AI/multica/node_modules/.pnpm/fumadocs-mdx@12.0.3_fumadoc_1aabaf29b7003ad9581a0e88a7c15e58/node_modules/fumadocs-mdx/dist/next/index.js:329:18)
+@multica/web:mdx:     at async start (file:///C:/Users/GOBAO/Downloads/AI/multica/node_modules/.pnpm/fumadocs-mdx@12.0.3_fumadoc_1aabaf29b7003ad9581a0e88a7c15e58/node_modules/fumadocs-mdx/dist/bin.js:10:5)
+@multica/web:mdx: 
+@multica/web:mdx: Node.js v24.15.0
+@multica/docs:mdx: C:\Users\GOBAO\Downloads\AI\multica\node_modules\.pnpm\esbuild@0.25.12\node_modules\esbuild\lib\main.js:1739
+@multica/docs:mdx:           throw new Error(`
+@multica/docs:mdx:                 ^
+@multica/docs:mdx: 
+@multica/docs:mdx: Error: 
+@multica/docs:mdx: You installed esbuild for another platform than the one you're currently using.
+@multica/docs:mdx: This won't work because esbuild is written with native code and needs to
+@multica/docs:mdx: install a platform-specific binary executable.
+@multica/docs:mdx: 
+@multica/docs:mdx: Specifically the "@esbuild/win32-x64" package is present but this platform
+@multica/docs:mdx: needs the "@esbuild/win32-x64" package instead. People often get into this
+@multica/docs:mdx: situation by installing esbuild on Windows or macOS and copying "node_modules"
+@multica/docs:mdx: into a Docker image that runs Linux, or by copying "node_modules" between
+@multica/docs:mdx: Windows and WSL environments.
+@multica/docs:mdx: 
+@multica/docs:mdx: If you are installing with npm, you can try not copying the "node_modules"
+@multica/docs:mdx: directory when you copy the files over, and running "npm ci" or "npm install"
+@multica/docs:mdx: on the destination platform after the copy. Or you could consider using yarn
+@multica/docs:mdx: instead of npm which has built-in support for installing a package on multiple
+@multica/docs:mdx: platforms simultaneously.
+@multica/docs:mdx: 
+@multica/docs:mdx: If you are installing with yarn, you can try listing both this platform and the
+@multica/docs:mdx: other platform in your ".yarnrc.yml" file using the "supportedArchitectures"
+@multica/docs:mdx: feature: https://yarnpkg.com/configuration/yarnrc/#supportedArchitectures
+@multica/docs:mdx: Keep in mind that this means multiple copies of esbuild will be present.
+@multica/docs:mdx: 
+@multica/docs:mdx: Another alternative is to use the "esbuild-wasm" package instead, which works
+@multica/docs:mdx: the same way on all platforms. But it comes with a heavy performance cost and
+@multica/docs:mdx: can sometimes be 10x slower than the "esbuild" package, so you may also not
+@multica/docs:mdx: want to do that.
+@multica/docs:mdx: 
+@multica/docs:mdx:     at generateBinPath (C:\Users\GOBAO\Downloads\AI\multica\node_modules\.pnpm\esbuild@0.25.12\node_modules\esbuild\lib\main.js:1739:17)
+@multica/docs:mdx:     at esbuildCommandAndArgs (C:\Users\GOBAO\Downloads\AI\multica\node_modules\.pnpm\esbuild@0.25.12\node_modules\esbuild\lib\main.js:1820:33)
+@multica/docs:mdx:     at ensureServiceIsRunning (C:\Users\GOBAO\Downloads\AI\multica\node_modules\.pnpm\esbuild@0.25.12\node_modules\esbuild\lib\main.js:1977:25)
+@multica/docs:mdx:     at build (C:\Users\GOBAO\Downloads\AI\multica\node_modules\.pnpm\esbuild@0.25.12\node_modules\esbuild\lib\main.js:1876:26)
+@multica/docs:mdx:     at compileConfig (file:///C:/Users/GOBAO/Downloads/AI/multica/node_modules/.pnpm/fumadocs-mdx@12.0.3_fumadoc_66fd048bf424cf8b65f47612bdfa192a/node_modules/fumadocs-mdx/dist/chunk-LGYVNESJ.js:12:29)
+@multica/docs:mdx:     at async loadConfig (file:///C:/Users/GOBAO/Downloads/AI/multica/node_modules/.pnpm/fumadocs-mdx@12.0.3_fumadoc_66fd048bf424cf8b65f47612bdfa192a/node_modules/fumadocs-mdx/dist/chunk-LGYVNESJ.js:34:14)
+@multica/docs:mdx:     at async postInstall (file:///C:/Users/GOBAO/Downloads/AI/multica/node_modules/.pnpm/fumadocs-mdx@12.0.3_fumadoc_66fd048bf424cf8b65f47612bdfa192a/node_modules/fumadocs-mdx/dist/next/index.js:329:18)
+@multica/docs:mdx:     at async start (file:///C:/Users/GOBAO/Downloads/AI/multica/node_modules/.pnpm/fumadocs-mdx@12.0.3_fumadoc_66fd048bf424cf8b65f47612bdfa192a/node_modules/fumadocs-mdx/dist/bin.js:10:5)
+@multica/docs:mdx: 
+@multica/docs:mdx: Node.js v24.15.0
+@multica/web:mdx:  ELIFECYCLE  Command failed with exit code 1.
+@multica/docs:mdx:  ELIFECYCLE  Command failed with exit code 1.
+ ERROR  @multica/web#mdx: command (C:\Users\GOBAO\Downloads\AI\multica\apps\web) C:\Users\GOBAO\AppData\Local\pnpm\store\v11\links\@\pnpm\10.28.2\4672a4045a0e92a988bb9ab85429db54451e32edb7597625dee7cb5a55073089\bin\pnpm.CMD run mdx exited (1)
+
+ Tasks:    0 successful, 5 total
+Cached:    0 cached, 5 total
+  Time:    752ms 
+Failed:    @multica/web#mdx
+
+ ERROR  run failed: command  exited (1)
+ ELIFECYCLE  Command failed with exit code 1.
+EXIT_CODE=1

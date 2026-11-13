@@ -1,0 +1,24 @@
+{
+  "name": "handler-wsd-atomic",
+  "package": "./internal/handler",
+  "run": "^TestWorkspaceDeletionRollsBackExecutionRowsWithTransaction$",
+  "ok": false,
+  "reasons": [
+    "exit=1",
+    "fail=1",
+    "pass=0"
+  ],
+  "reconciliationLine": "",
+  "stage": "test",
+  "totals": {
+    "pass": 0,
+    "fail": 1,
+    "skip": 0,
+    "packages": 0
+  },
+  "reconciliation": null,
+  "failures": [
+    "workspace_delete_execution_test.go:491: cr_execution_notice: delete row for workspace A survived the teardown: (3b14cdda-2de3-43d4-be30-8795408edb9d,68cbbe1f-7f64-43f0-b303-0dac93c55a5c,CR-A-edd852ec-e391-4ca3-8764-4a6339f5ab80,execution-control,authorizer,dedupe-c50f0463-796a-4f26-9779-4a38fb343e6b,683c5612-a161-4417-aa70-3fc4941a5e30,pending,,\"2026-11-12 13:56:44.183063+00\")",
+    "--- FAIL: TestWorkspaceDeletionRollsBackExecutionRowsWithTransaction (0.21s)"
+  ]
+}

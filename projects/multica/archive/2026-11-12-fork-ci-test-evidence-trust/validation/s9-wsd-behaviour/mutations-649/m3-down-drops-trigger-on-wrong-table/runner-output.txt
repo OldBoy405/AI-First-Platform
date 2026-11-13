@@ -1,0 +1,7 @@
+m3-down-drops-trigger-on-wrong-table: DETECTED runner_exit=1 restored_sha256=5b29747463f695a7055bf45b20380bf3e8bee73c7030fa126237bf5adcbe74f6
+  fail events (1): TestExecutionMigrationDownRoundTrip
+
+FAIL governance-migration-roundtrip pass=0 fail=1 skip=0
+  execution_migration_roundtrip_test.go:128: apply migration 649_cr_execution_truncate_guard.down.sql: ERROR: trigger "cr_execution_consumption_no_truncate" for table "cr_execution_binding_issue" does not exist (SQLSTATE 42704)
+  --- FAIL: TestExecutionMigrationDownRoundTrip (0.01s)
+released instance 6edcf27b5723 remaining=0

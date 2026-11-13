@@ -1,0 +1,7 @@
+FAIL baseline-handler pass=4535 fail=7 skip=47
+  chat_pending_tasks_test.go:380: PAGING FIXTURE: endpoint=GET /api/chat/sessions/{id}/messages/page settled=4 head=1 follow_ups=2 limit=3
+  chat_pending_tasks_test.go:381: REQUEST page=1: limit=3 before=<none>
+  chat_pending_tasks_test.go:390: RESPONSE page=1: messages=["settled 3", "settled 4", "queued prompt A"] has_more=true
+  chat_pending_tasks_test.go:391: CURSOR page=1: created_at=2026-07-29T09:00:02+08:00 id=2110fd2f-57a4-4b8b-a02a-77f8fee54814
+  chat_pending_tasks_test.go:398: REQUEST page=2: limit=3 before_created_at=2026-07-29T09:00:02+08:00 before_id=2110fd2f-57a4-4b8b-a02a-77f8fee54814
+released instance 56f0b58fb181 remaining=0

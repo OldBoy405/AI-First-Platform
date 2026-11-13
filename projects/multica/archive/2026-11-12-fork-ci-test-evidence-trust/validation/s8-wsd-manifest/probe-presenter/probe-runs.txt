@@ -1,0 +1,18 @@
+=== run1 ===
+FAIL probe-presenter-flake pass=11 fail=3 skip=0
+  project_presenter_test.go:395: create member user: ERROR: duplicate key value violates unique constraint "user_email_key" (SQLSTATE 23505)
+  --- FAIL: TestPresenterIllegalTransitions/approve_while_a_presenter_is_already_active (0.00s)
+  --- FAIL: TestPresenterIllegalTransitions (0.05s)
+  project_presenter_test.go:450: create member user: ERROR: duplicate key value violates unique constraint "user_email_key" (SQLSTATE 23505)
+  --- FAIL: TestPresenterMemberRemovalLinkage (0.00s)
+released instance a6e2f613acd4 remaining=0
+run1-exit=1
+=== run2 ===
+FAIL probe-presenter-flake pass=11 fail=3 skip=0
+  project_presenter_test.go:317: create member user: ERROR: duplicate key value violates unique constraint "user_email_key" (SQLSTATE 23505)
+  --- FAIL: TestPresenterIllegalTransitions/non-presenter_cannot_transfer (0.00s)
+  --- FAIL: TestPresenterIllegalTransitions (0.04s)
+  project_presenter_test.go:451: create member user: ERROR: duplicate key value violates unique constraint "user_email_key" (SQLSTATE 23505)
+  --- FAIL: TestPresenterMemberRemovalLinkage (0.01s)
+released instance 0438a11152a7 remaining=0
+run2-exit=1

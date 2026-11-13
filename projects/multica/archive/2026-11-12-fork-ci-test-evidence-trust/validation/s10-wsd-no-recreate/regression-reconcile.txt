@@ -1,0 +1,51 @@
+S10 regression reconciliation. Test names taken from the raw go test -json streams,
+embedded UUIDs normalized to <uuid> (S9 established that some subtest names carry a
+random workspace UUID or the disposable nonce, so raw name sets are not comparable).
+Both runs used AIFI45_TOOLS_ROOT + CRCTL_MJS pointing at tools e52b8081f159.
+
+=== handler whole package: S9 post-649 -> S10 ===
+before: pass=4533 fail=3 skip=47
+after:  pass=4535 fail=7 skip=47
+FAIL added (4):
+  TestGetPresenterStateVisibility
+  TestPresenterMemberRemovalLinkage
+  TestWorkspaceDeletionRefusesNewCommand
+  TestWorkspaceDeletionRefusesNewCommand/command_for_deleted_workspace
+FAIL removed (0):
+PASS added (4):
+  TestWorkspaceDeletionRefusesNewCommand/command_for_live_workspace
+  TestWorkspaceDeletionRefusesNewReservation
+  TestWorkspaceDeletionRefusesNewReservation/reservation_for_deleted_workspace
+  TestWorkspaceDeletionRefusesNewReservation/reservation_for_live_workspace
+PASS removed (2):
+  TestGetPresenterStateVisibility
+  TestPresenterMemberRemovalLinkage
+SKIP added (0):
+SKIP removed (0):
+
+=== governance whole package: S9 post-649 (toolsenv) -> S10 (toolsenv) ===
+before: pass=1344 fail=48 skip=1
+after:  pass=1344 fail=48 skip=1
+FAIL added (0):
+FAIL removed (0):
+PASS added (2):
+  TestDisposableIdentityGateRefusesEachConditionAlone/nonce-format/nonce="3045F4708815F843"
+  TestDisposableIdentityGateRefusesEachConditionAlone/nonce-format/nonce="3045f4708815f84"
+PASS removed (2):
+  TestDisposableIdentityGateRefusesEachConditionAlone/nonce-format/nonce="2ADE9CE2269724F3"
+  TestDisposableIdentityGateRefusesEachConditionAlone/nonce-format/nonce="2ade9ce2269724f"
+SKIP added (0):
+SKIP removed (0):
+
+Reading:
+handler PASS added = exactly the 4 S10 probe passes (3 reservation + 1 command live-workspace
+positive control). FAIL added = 2 command known-finding names (declared, expected RED) plus
+2 presenter names that moved out of PASS. FAIL removed = 0. SKIP set unchanged (47 names).
+The 2 presenter victims (TestGetPresenterStateVisibility, TestPresenterMemberRemovalLinkage)
+fail with project_presenter_test.go create member user: duplicate key user_email_key, the
+same Windows clock-granularity flake already adjudicated out of scope as ADJ-006 (S4/S8/S9).
+No upstream presenter test was modified.
+governance FAIL added = 0, FAIL removed = 0, SKIP unchanged (TestReconcileLiveGitHub, declared
+in allowed-skips). The only PASS name differences are 2 nonce-format subtests whose names
+embed the random disposable nonce. The insertSelectionWithMode workspace-row fixture fix
+therefore caused zero governance regression.

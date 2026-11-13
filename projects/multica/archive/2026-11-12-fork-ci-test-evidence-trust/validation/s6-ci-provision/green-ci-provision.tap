@@ -1,0 +1,166 @@
+TAP version 13
+# Subtest: TC-CBE-001 up builds the nonce identity TestMain checks, through provision.mjs
+ok 1 - TC-CBE-001 up builds the nonce identity TestMain checks, through provision.mjs
+  ---
+  duration_ms: 2.1576
+  type: 'test'
+  ...
+# Subtest: TC-CBE-001 up writes DATABASE_URL, the nonce and the handle to the env file
+ok 2 - TC-CBE-001 up writes DATABASE_URL, the nonce and the handle to the env file
+  ---
+  duration_ms: 0.8498
+  type: 'test'
+  ...
+# Subtest: TC-CBE-001 the mask is emitted before any env write, not after
+ok 3 - TC-CBE-001 the mask is emitted before any env write, not after
+  ---
+  duration_ms: 0.2811
+  type: 'test'
+  ...
+# Subtest: TC-CBE-001 the handle carries no password, only the credential-stripped admin URL
+ok 4 - TC-CBE-001 the handle carries no password, only the credential-stripped admin URL
+  ---
+  duration_ms: 0.2449
+  type: 'test'
+  ...
+# Subtest: TC-CBE-001 no log line except the mask command carries either password
+ok 5 - TC-CBE-001 no log line except the mask command carries either password
+  ---
+  duration_ms: 0.2915
+  type: 'test'
+  ...
+# Subtest: TC-CBE-001 the handle is a single line: a multi-line value would break GITHUB_ENV
+ok 6 - TC-CBE-001 the handle is a single line: a multi-line value would break GITHUB_ENV
+  ---
+  duration_ms: 0.2427
+  type: 'test'
+  ...
+# Subtest: TC-CBE-001 up generates a fresh 16-hex nonce when none is supplied
+ok 7 - TC-CBE-001 up generates a fresh 16-hex nonce when none is supplied
+  ---
+  duration_ms: 0.2863
+  type: 'test'
+  ...
+# Subtest: TC-CBE-001 up writes through to a real env file, one line per variable
+ok 8 - TC-CBE-001 up writes through to a real env file, one line per variable
+  ---
+  duration_ms: 11.1603
+  type: 'test'
+  ...
+# Subtest: TC-CBE-001 up refuses to run without an admin URL
+ok 9 - TC-CBE-001 up refuses to run without an admin URL
+  ---
+  duration_ms: 0.6295
+  type: 'test'
+  ...
+# Subtest: TC-CBE-001 down drops the database and role when the marker matches
+ok 10 - TC-CBE-001 down drops the database and role when the marker matches
+  ---
+  duration_ms: 0.4649
+  type: 'test'
+  ...
+# Subtest: TC-CBE-001 down refuses a foreign marker and issues no DROP
+ok 11 - TC-CBE-001 down refuses a foreign marker and issues no DROP
+  ---
+  duration_ms: 0.3355
+  type: 'test'
+  ...
+# Subtest: TC-CBE-001 down connects with the job admin URL, not the stripped one in the handle
+ok 12 - TC-CBE-001 down connects with the job admin URL, not the stripped one in the handle
+  ---
+  duration_ms: 0.1635
+  type: 'test'
+  ...
+# Subtest: TC-CBE-001 down with no handle succeeds and says there is nothing to clean up
+ok 13 - TC-CBE-001 down with no handle succeeds and says there is nothing to clean up
+  ---
+  duration_ms: 0.1951
+  type: 'test'
+  ...
+# Subtest: TC-CBE-001 down hard-fails on a malformed handle instead of silently doing nothing
+ok 14 - TC-CBE-001 down hard-fails on a malformed handle instead of silently doing nothing
+  ---
+  duration_ms: 0.1394
+  type: 'test'
+  ...
+# Subtest: TC-CBE-001 down hard-fails on a handle missing database, role or marker
+ok 15 - TC-CBE-001 down hard-fails on a handle missing database, role or marker
+  ---
+  duration_ms: 0.2372
+  type: 'test'
+  ...
+# Subtest: TC-CBE-001 down with a handle but no admin URL is a failure, not a silent no-op
+ok 16 - TC-CBE-001 down with a handle but no admin URL is a failure, not a silent no-op
+  ---
+  duration_ms: 0.1451
+  type: 'test'
+  ...
+# Subtest: TC-CBE-001 down reports an already-gone database without failing the cleanup step
+ok 17 - TC-CBE-001 down reports an already-gone database without failing the cleanup step
+  ---
+  duration_ms: 0.1056
+  type: 'test'
+  ...
+# Subtest: TC-CBE-001 a driver error carrying the admin password is redacted before it is printed
+ok 18 - TC-CBE-001 a driver error carrying the admin password is redacted before it is printed
+  ---
+  duration_ms: 0.178
+  type: 'test'
+  ...
+# Subtest: TC-CBE-001 a driver error quoting the CREATE ROLE password is redacted too
+ok 19 - TC-CBE-001 a driver error quoting the CREATE ROLE password is redacted too
+  ---
+  duration_ms: 0.201
+  type: 'test'
+  ...
+# Subtest: TC-CBE-001 stripPassword removes only the password, keeping the rest of the URL
+ok 20 - TC-CBE-001 stripPassword removes only the password, keeping the rest of the URL
+  ---
+  duration_ms: 0.1321
+  type: 'test'
+  ...
+# Subtest: TC-CBE-001 the CLI rejects an unknown or missing subcommand
+ok 21 - TC-CBE-001 the CLI rejects an unknown or missing subcommand
+  ---
+  duration_ms: 138.3282
+  type: 'test'
+  ...
+# Subtest: TC-CBE-001 the CLI refuses up without an admin URL or an env file
+ok 22 - TC-CBE-001 the CLI refuses up without an admin URL or an env file
+  ---
+  duration_ms: 90.0953
+  type: 'test'
+  ...
+# Subtest: TC-CBE-001 the CLI down with no handle exits 0 and explains itself
+ok 23 - TC-CBE-001 the CLI down with no handle exits 0 and explains itself
+  ---
+  duration_ms: 44.8418
+  type: 'test'
+  ...
+# Subtest: TC-CBE-001 the CLI down hard-fails on a malformed handle and on a missing admin URL
+ok 24 - TC-CBE-001 the CLI down hard-fails on a malformed handle and on a missing admin URL
+  ---
+  duration_ms: 82.1315
+  type: 'test'
+  ...
+# Subtest: TC-CBE-001 the driver loads through the CJS resolver, the only one that reads NODE_PATH
+ok 25 - TC-CBE-001 the driver loads through the CJS resolver, the only one that reads NODE_PATH
+  ---
+  duration_ms: 0.3363
+  type: 'test'
+  ...
+# Subtest: TC-CBE-001 the CLI --env-file is honored and a value that looks like a flag is rejected
+ok 26 - TC-CBE-001 the CLI --env-file is honored and a value that looks like a flag is rejected
+  ---
+  duration_ms: 78.7677
+  type: 'test'
+  ...
+1..26
+# tests 26
+# suites 0
+# pass 26
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 526.0265

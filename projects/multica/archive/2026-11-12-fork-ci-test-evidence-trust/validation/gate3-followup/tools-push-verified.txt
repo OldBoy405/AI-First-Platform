@@ -1,0 +1,19 @@
+# ADJ-025 推送后状态核实（只读命令，本轮实测）
+# 授权原话：ADJ-025 授权执行推送 e52b808
+# cwd: /c/Users/GOBAO/Downloads/AI/tools
+
+$ git rev-parse HEAD
+e52b8081f159d581bf62f82447c76f818fc52426
+$ git rev-parse origin/main
+e52b8081f159d581bf62f82447c76f818fc52426
+$ git ls-remote origin refs/heads/main
+e52b8081f159d581bf62f82447c76f818fc52426	refs/heads/main
+LSREMOTE_EXIT=0
+$ git merge-base --is-ancestor e52b8081f159d581bf62f82447c76f818fc52426 origin/main
+ANCESTOR_EXIT=0
+$ git log --oneline -1
+e52b808 feat(trusted-verdict): sign the effect and the frozen command digest in verdict v2
+$ git status --porcelain | wc -l  (他人未提交改动，未夹带)
+6
+$ git remote get-url origin
+https://github.com/OldBoy405/AI-First-tools.git

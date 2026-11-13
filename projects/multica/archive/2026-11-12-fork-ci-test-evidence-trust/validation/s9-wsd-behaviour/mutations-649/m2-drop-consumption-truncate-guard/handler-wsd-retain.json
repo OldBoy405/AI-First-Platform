@@ -1,0 +1,24 @@
+{
+  "name": "handler-wsd-retain",
+  "package": "./internal/handler",
+  "run": "^TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte$",
+  "ok": false,
+  "reasons": [
+    "exit=1",
+    "fail=2"
+  ],
+  "reconciliationLine": "",
+  "stage": "test",
+  "totals": {
+    "pass": 21,
+    "fail": 2,
+    "skip": 0,
+    "packages": 0
+  },
+  "reconciliation": null,
+  "failures": [
+    "workspace_delete_execution_test.go:420: cr_execution_consumption accepted TRUNCATE; a row-level guard does not fire on TRUNCATE",
+    "--- FAIL: TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte/truncate_cr_execution_consumption (0.00s)",
+    "--- FAIL: TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte (0.11s)"
+  ]
+}

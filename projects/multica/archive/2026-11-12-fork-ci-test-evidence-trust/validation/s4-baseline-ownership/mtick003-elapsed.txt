@@ -1,0 +1,4 @@
+# design 未验证事实 #2：TestMTick003 是否挂住
+# 来源：events/baseline-governance.ndjson（一次性 podman 数据库，整包 ./internal/governance）
+pass TestMTick003 elapsed=0.06
+# 结论：0.06s 通过，无挂住、无超时；不需要改超时，也不属于环境失败。

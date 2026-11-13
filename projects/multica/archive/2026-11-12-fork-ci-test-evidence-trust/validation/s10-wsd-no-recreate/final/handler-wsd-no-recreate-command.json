@@ -1,0 +1,24 @@
+{
+  "name": "handler-wsd-no-recreate-command",
+  "package": "./internal/handler",
+  "run": "^TestWorkspaceDeletionRefusesNewCommand$",
+  "ok": false,
+  "reasons": [
+    "exit=1",
+    "fail=2"
+  ],
+  "reconciliationLine": "",
+  "stage": "test",
+  "totals": {
+    "pass": 1,
+    "fail": 2,
+    "skip": 0,
+    "packages": 0
+  },
+  "reconciliation": null,
+  "failures": [
+    "workspace_delete_no_recreate_test.go:222: SC-WSD-005 violated: ApplyControlCommandTx accepted command 0cfe0ba6-6179-454a-9efa-45b82af86f81 (state created) on lineage 5562d80b-cfba-493d-87cd-8544bc641874 of deleted workspace 4a230dc8-1798-4e4d-b5a0-9ff50be254ae",
+    "--- FAIL: TestWorkspaceDeletionRefusesNewCommand/command_for_deleted_workspace (0.01s)",
+    "--- FAIL: TestWorkspaceDeletionRefusesNewCommand (0.09s)"
+  ]
+}

@@ -1,0 +1,20 @@
+# Mutation verification of the S13 ci.yml wiring assertions
+baseline sha256=72c16f6b9302bb976402a57ddbf8c557e2444881aa8b5b390e9ac26725e1c43e
+
+MUTATION: skip-regex captured inline (the bash -e trap)
+  exit=1 (expected non-zero)
+  failing tests: ["not ok 46 - backend-tests provisions a one-time database, reconciles the evidence and tears it down"]
+  restored sha256=72c16f6b9302bb976402a57ddbf8c557e2444881aa8b5b390e9ac26725e1c43e identical=true
+
+MUTATION: teardown no longer always()
+  exit=1 (expected non-zero)
+  failing tests: ["not ok 46 - backend-tests provisions a one-time database, reconciles the evidence and tears it down"]
+  restored sha256=72c16f6b9302bb976402a57ddbf8c557e2444881aa8b5b390e9ac26725e1c43e identical=true
+
+MUTATION: job-level DATABASE_URL default restored
+  exit=1 (expected non-zero)
+  failing tests: ["not ok 46 - backend-tests provisions a one-time database, reconciles the evidence and tears it down"]
+  restored sha256=72c16f6b9302bb976402a57ddbf8c557e2444881aa8b5b390e9ac26725e1c43e identical=true
+
+after all restores: exit=0 # tests 49 | # pass 49 | # fail 0
+final sha256=72c16f6b9302bb976402a57ddbf8c557e2444881aa8b5b390e9ac26725e1c43e identical=true

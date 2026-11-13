@@ -1,0 +1,8 @@
+m1-drop-binding-issue-truncate-guard: DETECTED runner_exit=1 restored_sha256=95507243e32b003dd650b3469df2164bf5239418ef7967b2a93bfbdcffc51129
+  fail events (2): TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte, TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte/truncate_cr_execution_binding_issue
+
+FAIL handler-wsd-retain pass=21 fail=2 skip=0
+  workspace_delete_execution_test.go:420: cr_execution_binding_issue accepted TRUNCATE; a row-level guard does not fire on TRUNCATE
+  --- FAIL: TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte/truncate_cr_execution_binding_issue (0.00s)
+  --- FAIL: TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte (0.12s)
+released instance 6f702184dc87 remaining=0

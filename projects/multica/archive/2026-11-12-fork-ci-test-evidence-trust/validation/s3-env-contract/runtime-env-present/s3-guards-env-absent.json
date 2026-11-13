@@ -1,0 +1,25 @@
+{
+  "name": "s3-guards-env-absent",
+  "package": "./internal/governance",
+  "run": "^(TestExecutionGrantCheckAgainstRealCrctlCLI|TestExecutionAuthorizationRevokeHTTPToRealNodeCLI|TestDaemonInstalledRecordVerifiesThroughTrustRoot|TestDaemonFetchesAndInstallsExecutionAuthorization|TestDaemonAuthenticatedDeliveryRunsCrctl|TestDaemonExecutionDeliveryRejectsOversizedResponse|TestDaemonInstallRequiresRealCrctlContractCheck|TestExecutionBindingEnvelopeInteropWithToolsVerifier)$",
+  "ok": true,
+  "reasons": [],
+  "reconciliationLine": "",
+  "stage": "test",
+  "totals": {
+    "pass": 18,
+    "fail": 0,
+    "skip": 0,
+    "packages": 1
+  },
+  "reconciliation": null,
+  "failures": [
+    "execution_authorization_revoke_interop_test.go:112: T source SHA256 LF C:/Users/GOBAO/Downloads/AI/tools/skills/shared/crctl/scripts/crctl.mjs d99ff820065c78860ae4f7d85a3471aac9fc9a74931e5d7f57917842baaac7c6",
+    "execution_authorization_revoke_interop_test.go:112: T source SHA256 LF C:\\Users\\GOBAO\\Downloads\\AI\\tools\\skills\\shared\\crctl\\scripts\\lib\\execution-authorization.mjs e9aa2868b499f8e73e9e6500555a6f339236df1459ac8321d26d19b519cf680b",
+    "execution_authorization_revoke_interop_test.go:217: node argv=[\"D:\\\\Program Files (x86)\\\\nodejs\\\\node.exe\" \"C:/Users/GOBAO/Downloads/AI/tools/skills/shared/crctl/scripts/crctl.mjs\" \"authorization-bind\" \"CR-9071-00124383639720780184555315851676660848601\" \"--grant\" \"8178ce795be53294864a01f148cd38420d89bd6af167b69b5c958225a367f118-57723954-e894-43fd-8aa0-685cc58ad761.execution-grant.json\" \"--workspace\" \"C:\\\\Users\\\\GOBAO\\\\AppData\\\\Local\\\\Temp\\\\TestExecutionAuthorizationRevokeHTTPToRealNodeCLI3508356242\\\\001\" \"--trust-root\" \"C:\\\\Users\\\\GOBAO\\\\AppData\\\\Local\\\\Temp\\\\TestExecutionAuthorizationRevokeHTTPToRealNodeCLI3508356242\\\\002\" \"--check\"] exit=0 stdout={",
+    "execution_authorization_revoke_interop_test.go:217: node argv=[\"D:\\\\Program Files (x86)\\\\nodejs\\\\node.exe\" \"C:/Users/GOBAO/Downloads/AI/tools/skills/shared/crctl/scripts/crctl.mjs\" \"authorization-bind\" \"CR-9071-00124383639720780184555315851676660848601\" \"--grant\" \"8178ce795be53294864a01f148cd38420d89bd6af167b69b5c958225a367f118-57723954-e894-43fd-8aa0-685cc58ad761.execution-grant.json\" \"--workspace\" \"C:\\\\Users\\\\GOBAO\\\\AppData\\\\Local\\\\Temp\\\\TestExecutionAuthorizationRevokeHTTPToRealNodeCLI3508356242\\\\001\" \"--trust-root\" \"C:\\\\Users\\\\GOBAO\\\\AppData\\\\Local\\\\Temp\\\\TestExecutionAuthorizationRevokeHTTPToRealNodeCLI3508356242\\\\002\" \"--check\" \"--check-source\"] exit=0 stdout={",
+    "execution_authorization_revoke_interop_test.go:217: node argv=[\"D:\\\\Program Files (x86)\\\\nodejs\\\\node.exe\" \"C:/Users/GOBAO/Downloads/AI/tools/skills/shared/crctl/scripts/crctl.mjs\" \"authorization-bind\" \"CR-9071-00124383639720780184555315851676660848601\" \"--grant\" \"8178ce795be53294864a01f148cd38420d89bd6af167b69b5c958225a367f118-a100a7bb-8e36-4909-9ceb-06124dedadae.execution-grant.json\" \"--workspace\" \"C:\\\\Users\\\\GOBAO\\\\AppData\\\\Local\\\\Temp\\\\TestExecutionAuthorizationRevokeHTTPToRealNodeCLI3508356242\\\\001\" \"--trust-root\" \"C:\\\\Users\\\\GOBAO\\\\AppData\\\\Local\\\\Temp\\\\TestExecutionAuthorizationRevokeHTTPToRealNodeCLI3508356242\\\\002\" \"--check\"] exit=0 stdout={",
+    "execution_authorization_revoke_interop_test.go:217: node argv=[\"D:\\\\Program Files (x86)\\\\nodejs\\\\node.exe\" \"C:/Users/GOBAO/Downloads/AI/tools/skills/shared/crctl/scripts/crctl.mjs\" \"authorization-bind\" \"CR-9071-00124383639720780184555315851676660848601\" \"--grant\" \"8178ce795be53294864a01f148cd38420d89bd6af167b69b5c958225a367f118-a100a7bb-8e36-4909-9ceb-06124dedadae.execution-grant.json\" \"--workspace\" \"C:\\\\Users\\\\GOBAO\\\\AppData\\\\Local\\\\Temp\\\\TestExecutionAuthorizationRevokeHTTPToRealNodeCLI3508356242\\\\001\" \"--trust-root\" \"C:\\\\Users\\\\GOBAO\\\\AppData\\\\Local\\\\Temp\\\\TestExecutionAuthorizationRevokeHTTPToRealNodeCLI3508356242\\\\002\" \"--check\" \"--check-source\"] exit=0 stdout={",
+    "execution_authorization_revoke_interop_test.go:227: node argv=[\"D:\\\\Program Files (x86)\\\\nodejs\\\\node.exe\" \"C:/Users/GOBAO/Downloads/AI/tools/skills/shared/crctl/scripts/crctl.mjs\" \"authorization-bind\" \"CR-9071-00124383639720780184555315851676660848601\" \"--grant\" \"8178ce795be53294864a01f148cd38420d89bd6af167b69b5c958225a367f118-a100a7bb-8e36-4909-9ceb-06124dedadae.execution-grant.json\" \"--workspace\" \"C:\\\\Users\\\\GOBAO\\\\AppData\\\\Local\\\\Temp\\\\TestExecutionAuthorizationRevokeHTTPToRealNodeCLI3508356242\\\\001\" \"--trust-root\" \"C:\\\\Users\\\\GOBAO\\\\AppData\\\\Local\\\\Temp\\\\TestExecutionAuthorizationRevokeHTTPToRealNodeCLI3508356242\\\\002\" \"--binding-stdio\"] exit=1 stdout= stderr={"
+  ]
+}

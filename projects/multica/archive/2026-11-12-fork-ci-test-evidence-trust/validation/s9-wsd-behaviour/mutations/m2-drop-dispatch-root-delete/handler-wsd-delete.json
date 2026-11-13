@@ -1,0 +1,24 @@
+{
+  "name": "handler-wsd-delete",
+  "package": "./internal/handler",
+  "run": "^TestWorkspaceDeletionSweepsOnlyOperationalExecutionRows$",
+  "ok": false,
+  "reasons": [
+    "exit=1",
+    "fail=1",
+    "pass=0"
+  ],
+  "reconciliationLine": "",
+  "stage": "test",
+  "totals": {
+    "pass": 0,
+    "fail": 1,
+    "skip": 0,
+    "packages": 0
+  },
+  "reconciliation": null,
+  "failures": [
+    "workspace_delete_execution_test.go:374: cr_execution_dispatch_root: delete row for workspace A survived the teardown: (904e39c8-232c-4276-b18d-a4a834c78561,d58dcadb-071d-4181-8a42-3288ad9ebdb5,dispatch-0cdc56b0-88d1-45ac-b98c-cde484fa6be5,CR-A-de4bae8f-1a8c-4ada-ac6a-5295c63d7f02,build,4e63690a-e731-4bb2-bfb3-c39010fa02bb,1,0,,,,,\"2026-11-12 14:03:03.762794+00\",\"2026-11-12 14:03:03.762794+00\")",
+    "--- FAIL: TestWorkspaceDeletionSweepsOnlyOperationalExecutionRows (0.10s)"
+  ]
+}

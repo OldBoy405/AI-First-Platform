@@ -1,0 +1,21 @@
+FAIL baseline-governance pass=1328 fail=48 skip=1
+  execution_authorization_head_test.go:453: scoped fixture cleanup: owned cr/history=0, same-CR foreign cr/history preserved=2
+  execution_authorization_head_test.go:581: before replay: initial POST=201, head GET=200
+  execution_authorization_head_test.go:591: after exact replay: initial POST=201, head GET=200
+  execution_authorization_head_test.go:581: before replay: initial POST=201, head GET=200
+  execution_authorization_head_test.go:591: after exact replay: initial POST=201, head GET=200
+PASS baseline-crosslang pass=19 fail=0 skip=0
+PASS baseline-cmd-server pass=659 fail=0 skip=0
+FAIL baseline-handler pass=4507 fail=3 skip=47
+  chat_pending_tasks_test.go:380: PAGING FIXTURE: endpoint=GET /api/chat/sessions/{id}/messages/page settled=4 head=1 follow_ups=2 limit=3
+  chat_pending_tasks_test.go:381: REQUEST page=1: limit=3 before=<none>
+  chat_pending_tasks_test.go:390: RESPONSE page=1: messages=["settled 3", "settled 4", "queued prompt A"] has_more=true
+  chat_pending_tasks_test.go:391: CURSOR page=1: created_at=2026-07-29T09:00:02+08:00 id=e59dda96-5e43-47c0-8581-c508aafbd0e6
+  chat_pending_tasks_test.go:398: REQUEST page=2: limit=3 before_created_at=2026-07-29T09:00:02+08:00 before_id=e59dda96-5e43-47c0-8581-c508aafbd0e6
+FAIL baseline-daemon pass=2132 fail=24 skip=87
+  agent_path_selfheal_test.go:79: symlink/exec-bit layout is POSIX-specific
+  agent_path_selfheal_test.go:147: symlink/exec-bit layout is POSIX-specific
+  agent_path_selfheal_test.go:197: symlink/exec-bit layout is POSIX-specific
+  agent_path_selfheal_test.go:245: symlink/exec-bit layout is POSIX-specific
+  agent_path_selfheal_test.go:291: POSIX-specific layout
+released instance 48d027ce582a remaining=0

@@ -1,0 +1,140 @@
+TAP version 13
+# Subtest: TC-DTI-002 --admin-url is rejected before any instance is created
+ok 1 - TC-DTI-002 --admin-url is rejected before any instance is created
+  ---
+  duration_ms: 75.2452
+  type: 'test'
+  ...
+# Subtest: TC-DTI-002 AIFI45_ADMIN_URL is no longer read
+ok 2 - TC-DTI-002 AIFI45_ADMIN_URL is no longer read
+  ---
+  duration_ms: 74.3868
+  type: 'test'
+  ...
+# Subtest: --only rejects a missing or unmatched name before creating an instance
+ok 3 - --only rejects a missing or unmatched name before creating an instance
+  ---
+  duration_ms: 220.4965
+  type: 'test'
+  ...
+# Subtest: --only rejects duplicate names before creating an instance
+ok 4 - --only rejects duplicate names before creating an instance
+  ---
+  duration_ms: 77.5565
+  type: 'test'
+  ...
+# Subtest: --only accepts an exact name and proceeds to the instance boundary
+ok 5 - --only accepts an exact name and proceeds to the instance boundary
+  ---
+  duration_ms: 76.6853
+  type: 'test'
+  ...
+# Subtest: TC-SEL-002 an unconfigured selection keeps the historical PASS line
+ok 6 - TC-SEL-002 an unconfigured selection keeps the historical PASS line
+  ---
+  duration_ms: 0.264
+  type: 'test'
+  ...
+# Subtest: TC-SEL-002 an unconfigured selection keeps the historical FAIL lines
+ok 7 - TC-SEL-002 an unconfigured selection keeps the historical FAIL lines
+  ---
+  duration_ms: 0.1029
+  type: 'test'
+  ...
+# Subtest: TC-SEL-002 the unconfigured rule is exactly code/fail/skip/pass
+ok 8 - TC-SEL-002 the unconfigured rule is exactly code/fail/skip/pass
+  ---
+  duration_ms: 0.246
+  type: 'test'
+  ...
+# Subtest: TC-SEL-002 an explicitly undefined expected is still unconfigured
+ok 9 - TC-SEL-002 an explicitly undefined expected is still unconfigured
+  ---
+  duration_ms: 0.1097
+  type: 'test'
+  ...
+# Subtest: TC-SEL-002 a migrate-stage failure keeps the trimmed line without totals
+ok 10 - TC-SEL-002 a migrate-stage failure keeps the trimmed line without totals
+  ---
+  duration_ms: 0.1167
+  type: 'test'
+  ...
+# Subtest: TC-SEL-002 the printer appends the reconciliation suffix verbatim
+ok 11 - TC-SEL-002 the printer appends the reconciliation suffix verbatim
+  ---
+  duration_ms: 0.1168
+  type: 'test'
+  ...
+# Subtest: --evidence-dir requires a value and is rejected before any instance is created
+not ok 12 - --evidence-dir requires a value and is rejected before any instance is created
+  ---
+  duration_ms: 76.4826
+  type: 'test'
+  location: 'C:\\Users\\GOBAO\\Downloads\\AI\\multica\\scripts\\aifi45-disposable\\run-selection.test.mjs:131:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /--evidence-dir/. Input:
+    
+    'disposable runner failed: spawnSync podman ENOENT\n'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: |-
+    disposable runner failed: spawnSync podman ENOENT
+    
+  operator: 'match'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/GOBAO/Downloads/AI/multica/scripts/aifi45-disposable/run-selection.test.mjs:135:12)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1201:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+    Test.postRun (node:internal/test_runner/test:1330:19)
+    Test.run (node:internal/test_runner/test:1258:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:831:7)
+  ...
+# Subtest: --evidence-dir with a value is accepted and reaches the instance boundary
+ok 13 - --evidence-dir with a value is accepted and reaches the instance boundary
+  ---
+  duration_ms: 77.5334
+  type: 'test'
+  ...
+# node:internal/modules/esm/resolve:271
+#     throw new ERR_MODULE_NOT_FOUND(
+#           ^
+# Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'C:\\Users\\GOBAO\\Downloads\\AI\\multica\\scripts\\aifi45-disposable\\selection-evidence.mjs' imported from C:\\Users\\GOBAO\\Downloads\\AI\\multica\\scripts\\aifi45-disposable\\selection-evidence.test.mjs
+#     at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+#     at moduleResolve (node:internal/modules/esm/resolve:861:10)
+#     at defaultResolve (node:internal/modules/esm/resolve:988:11)
+#     at \#cachedDefaultResolve (node:internal/modules/esm/loader:697:20)
+#     at \#resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:714:38)
+#     at ModuleLoader.resolveSync (node:internal/modules/esm/loader:746:52)
+#     at \#resolve (node:internal/modules/esm/loader:679:17)
+#     at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:599:35)
+#     at ModuleJob.syncLink (node:internal/modules/esm/module_job:162:33)
+#     at ModuleJob.link (node:internal/modules/esm/module_job:252:17) {
+#   code: 'ERR_MODULE_NOT_FOUND',
+#   url: 'file:///C:/Users/GOBAO/Downloads/AI/multica/scripts/aifi45-disposable/selection-evidence.mjs'
+# }
+# Node.js v24.15.0
+# Subtest: scripts\\aifi45-disposable\\selection-evidence.test.mjs
+not ok 2 - scripts\\aifi45-disposable\\selection-evidence.test.mjs
+  ---
+  duration_ms: 47.6242
+  type: 'test'
+  location: 'C:\\Users\\GOBAO\\Downloads\\AI\\multica\\scripts\\aifi45-disposable\\selection-evidence.test.mjs:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 12
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 745.3404

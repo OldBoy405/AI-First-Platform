@@ -1,0 +1,234 @@
+=== baseline-governance.ndjson (1478424 bytes) exit=1
+exclusion ./internal/daemon TestChannelIsolation owner=independent entry=wsl -d AIFI-ISO, root, AIFI45_ISOLATION_PROFILE + AIFI45_ISOLATION_UID/GID/ROOT
+exclusion ./internal/governance TestChannelMigrationAfterUp owner=independent entry=run-selection.mjs --selections selections.json --only channel-migration-up
+exclusion ./internal/governance TestChannelMigrationAfterDown owner=independent entry=run-selection.mjs --selections selections.json --only channel-migration-down
+exclusion ./internal/governance TestChannelMigrationAfterReapply owner=independent entry=run-selection.mjs --selections selections.json --only channel-migration-reapply
+exclusions: 4
+./cmd/server: no events in the stream
+./internal/governance: package conclusion is fail, want pass
+./internal/governance/crosslang_test: no events in the stream
+./internal/handler: no events in the stream
+./internal/daemon: no events in the stream
+./internal/governance TestChannelMigrationAfterUp: excluded test appeared in the stream; the exclusion did not take effect
+./internal/governance TestChannelMigrationAfterDown: excluded test appeared in the stream; the exclusion did not take effect
+./internal/governance TestChannelMigrationAfterReapply: excluded test appeared in the stream; the exclusion did not take effect
+ci evidence: 8 problem(s)
+
+=== baseline-crosslang.ndjson (22438 bytes) exit=1
+exclusion ./internal/daemon TestChannelIsolation owner=independent entry=wsl -d AIFI-ISO, root, AIFI45_ISOLATION_PROFILE + AIFI45_ISOLATION_UID/GID/ROOT
+exclusion ./internal/governance TestChannelMigrationAfterUp owner=independent entry=run-selection.mjs --selections selections.json --only channel-migration-up
+exclusion ./internal/governance TestChannelMigrationAfterDown owner=independent entry=run-selection.mjs --selections selections.json --only channel-migration-down
+exclusion ./internal/governance TestChannelMigrationAfterReapply owner=independent entry=run-selection.mjs --selections selections.json --only channel-migration-reapply
+exclusions: 4
+./cmd/server: no events in the stream
+./internal/governance: no events in the stream
+./internal/handler: no events in the stream
+./internal/daemon: no events in the stream
+ci evidence: 4 problem(s)
+
+=== baseline-cmd-server.ndjson (981059 bytes) exit=1
+exclusion ./internal/daemon TestChannelIsolation owner=independent entry=wsl -d AIFI-ISO, root, AIFI45_ISOLATION_PROFILE + AIFI45_ISOLATION_UID/GID/ROOT
+exclusion ./internal/governance TestChannelMigrationAfterUp owner=independent entry=run-selection.mjs --selections selections.json --only channel-migration-up
+exclusion ./internal/governance TestChannelMigrationAfterDown owner=independent entry=run-selection.mjs --selections selections.json --only channel-migration-down
+exclusion ./internal/governance TestChannelMigrationAfterReapply owner=independent entry=run-selection.mjs --selections selections.json --only channel-migration-reapply
+exclusions: 4
+./internal/governance: no events in the stream
+./internal/governance/crosslang_test: no events in the stream
+./internal/handler: no events in the stream
+./internal/daemon: no events in the stream
+ci evidence: 4 problem(s)
+
+=== baseline-handler.ndjson (4718132 bytes) exit=1
+exclusion ./internal/daemon TestChannelIsolation owner=independent entry=wsl -d AIFI-ISO, root, AIFI45_ISOLATION_PROFILE + AIFI45_ISOLATION_UID/GID/ROOT
+exclusion ./internal/governance TestChannelMigrationAfterUp owner=independent entry=run-selection.mjs --selections selections.json --only channel-migration-up
+exclusion ./internal/governance TestChannelMigrationAfterDown owner=independent entry=run-selection.mjs --selections selections.json --only channel-migration-down
+exclusion ./internal/governance TestChannelMigrationAfterReapply owner=independent entry=run-selection.mjs --selections selections.json --only channel-migration-reapply
+exclusions: 4
+./cmd/server: no events in the stream
+./internal/governance: no events in the stream
+./internal/governance/crosslang_test: no events in the stream
+./internal/handler: package conclusion is fail, want pass
+./internal/daemon: no events in the stream
+./internal/handler TestRequireDaemonWorkspaceAccess_CacheHit: skip is not declared in allowed-skips
+./internal/handler TestRequireDaemonWorkspaceAccess_CacheMissBackfills: skip is not declared in allowed-skips
+./internal/handler TestMembershipCache_InvalidatedOnDeleteMember: skip is not declared in allowed-skips
+./internal/handler TestMembershipCache_InvalidatedOnUpdateMember: skip is not declared in allowed-skips
+./internal/handler TestMembershipCache_InvalidatedOnLeaveWorkspace: skip is not declared in allowed-skips
+./internal/handler TestMembershipCache_InvalidatedOnDeleteWorkspace: skip is not declared in allowed-skips
+./internal/handler TestRedisLivenessStore_TouchAndIsAlive: skip is not declared in allowed-skips
+./internal/handler TestRedisLivenessStore_TTLExpiry: skip is not declared in allowed-skips
+./internal/handler TestRedisLivenessStore_Forget: skip is not declared in allowed-skips
+./internal/handler TestRedisLivenessStore_BatchEmptyInput: skip is not declared in allowed-skips
+./internal/handler TestRedisLocalSkillListStore_CreateGetComplete: skip is not declared in allowed-skips
+./internal/handler TestRedisLocalSkillListStore_CreateWithoutMultiPermission: skip is not declared in allowed-skips
+./internal/handler TestRedisLocalSkillListStore_PopPendingAcrossInstances: skip is not declared in allowed-skips
+./internal/handler TestRedisLocalSkillListStore_PopPendingConcurrent: skip is not declared in allowed-skips
+./internal/handler TestRedisLocalSkillListStore_PendingTimeout: skip is not declared in allowed-skips
+./internal/handler TestRedisLocalSkillImportStore_PreservesCreatorID: skip is not declared in allowed-skips
+./internal/handler TestRedisLocalSkillImportStore_CreateWithoutMultiPermission: skip is not declared in allowed-skips
+./internal/handler TestRedisLocalSkillImportStore_CompletePreservesFiles: skip is not declared in allowed-skips
+./internal/handler TestRedisLocalSkillImportStore_PreservesConflict: skip is not declared in allowed-skips
+./internal/handler TestRedisLocalSkillImportStore_PopPendingAcrossInstances: skip is not declared in allowed-skips
+./internal/handler TestRedisLocalSkillListStore_PerRuntimeIsolation: skip is not declared in allowed-skips
+./internal/handler TestRedisLocalSkillListStore_PopPendingAtomicClaim: skip is not declared in allowed-skips
+./internal/handler TestRedisLocalSkillImportStore_PopPendingBatch: skip is not declared in allowed-skips
+./internal/handler TestRedisModelCatalogCache_RoundTrip: skip is not declared in allowed-skips
+./internal/handler TestRedisModelCatalogCache_SkipsUncacheableResults: skip is not declared in allowed-skips
+./internal/handler TestRedisModelCatalogCache_InvalidateAndExpiry: skip is not declared in allowed-skips
+./internal/handler TestRedisModelCatalogCache_DropsUndecodableSnapshot: skip is not declared in allowed-skips
+./internal/handler TestRedisModelListStore_CreateGetComplete: skip is not declared in allowed-skips
+./internal/handler TestRedisModelListStore_CreateWithoutMultiPermission: skip is not declared in allowed-skips
+./internal/handler TestRedisModelListStore_PopPendingAcrossInstances: skip is not declared in allowed-skips
+./internal/handler TestRedisModelListStore_PopPendingConcurrent: skip is not declared in allowed-skips
+./internal/handler TestRedisModelListStore_PendingTimeout: skip is not declared in allowed-skips
+./internal/handler TestRedisModelListStore_RunningTimeout: skip is not declared in allowed-skips
+./internal/handler TestRedisModelListStore_HasPending: skip is not declared in allowed-skips
+./internal/handler TestRedisUpdateStore_CreateGetComplete: skip is not declared in allowed-skips
+./internal/handler TestRedisUpdateStore_CreateWithoutMultiPermission: skip is not declared in allowed-skips
+./internal/handler TestRedisUpdateStore_PopPendingAcrossInstances: skip is not declared in allowed-skips
+./internal/handler TestRedisUpdateStore_ReportAndPollAcrossInstances: skip is not declared in allowed-skips
+./internal/handler TestRedisUpdateStore_FailAcrossInstances: skip is not declared in allowed-skips
+./internal/handler TestRedisUpdateStore_RejectsConcurrentActive: skip is not declared in allowed-skips
+./internal/handler TestRedisUpdateStore_RunningTimeoutClearsActive: skip is not declared in allowed-skips
+./internal/handler TestRedisUpdateStore_PopPendingConcurrent: skip is not declared in allowed-skips
+./internal/handler TestRedisWebhookRateLimiter_RejectsAboveLimit: skip is not declared in allowed-skips
+./internal/handler TestRedisWebhookIPRateLimiter_HasSeparateBudgetFromTokenLimiter: skip is not declared in allowed-skips
+./internal/handler TestRedisSlidingWindowRateLimiter_SeparatesInvitationNamespaces: skip is not declared in allowed-skips
+./internal/handler TestRedisSlidingWindowRateLimiter_PreservesWebhookFailOpenAndExposesErrors: skip is not declared in allowed-skips
+ci evidence: 51 problem(s)
+
+=== baseline-daemon.ndjson (3054661 bytes) exit=1
+exclusion ./internal/daemon TestChannelIsolation owner=independent entry=wsl -d AIFI-ISO, root, AIFI45_ISOLATION_PROFILE + AIFI45_ISOLATION_UID/GID/ROOT
+exclusion ./internal/governance TestChannelMigrationAfterUp owner=independent entry=run-selection.mjs --selections selections.json --only channel-migration-up
+exclusion ./internal/governance TestChannelMigrationAfterDown owner=independent entry=run-selection.mjs --selections selections.json --only channel-migration-down
+exclusion ./internal/governance TestChannelMigrationAfterReapply owner=independent entry=run-selection.mjs --selections selections.json --only channel-migration-reapply
+exclusions: 4
+./cmd/server: no events in the stream
+./internal/governance: no events in the stream
+./internal/governance/crosslang_test: no events in the stream
+./internal/handler: no events in the stream
+./internal/daemon: package conclusion is fail, want pass
+./internal/daemon TestResolveAgentEntry_SelfHealsAfterInPlaceUpgrade: skip is not declared in allowed-skips
+./internal/daemon TestResolveAgentEntry_RejectsBelowMinVersionAfterUpgrade: skip is not declared in allowed-skips
+./internal/daemon TestResolveAgentEntry_ReturnsVersionPairedWithCachedPath: skip is not declared in allowed-skips
+./internal/daemon TestResolveAgentEntry_HealedPathWinsOverReappearingPinnedPath: skip is not declared in allowed-skips
+./internal/daemon TestResolveAgentEntry_UninstalledLeavesEntryUnchanged: skip is not declared in allowed-skips
+./internal/daemon TestProbeDshMulticaProfile: skip is not declared in allowed-skips
+./internal/daemon TestProbeBuiltinRuntime_DshFailureWithProfileInstalledIsNotCondemned: skip is not declared in allowed-skips
+./internal/daemon TestProbeAgentCLIsDiscoversDshWithoutMulticaProfile: skip is not declared in allowed-skips
+./internal/daemon TestProbeBuiltinRuntime_DshWithoutMulticaProfile: skip is not declared in allowed-skips
+./internal/daemon TestProbeAgentCLIsUsesDshDesktopAppBundleFallback: skip is not declared in allowed-skips
+./internal/daemon TestProbeAgentCLIsIgnoresNonExecutableDshBundle: skip is not declared in allowed-skips
+./internal/daemon TestProbeBuiltinRuntime_DshThatCannotRunIsNotAProfileVerdict: skip is not declared in allowed-skips
+./internal/daemon TestProbeAgentCLIs_DiscoversPiAndOmpSeparately: skip is not declared in allowed-skips
+./internal/daemon TestRegisterRuntimes_PiAndOmpBothReachTheServer: skip is not declared in allowed-skips
+./internal/daemon TestResolveAgentExecutablePath_PreservesDispatchShimName: skip is not declared in allowed-skips
+./internal/daemon TestResolveAgentExecutablePath_CanonicalizesOrdinaryVersionTarget: skip is not declared in allowed-skips
+./internal/daemon TestLoadConfig_CompletedTaskTTLDefaultsDisabledOnSelfHostAndReadsEnv: skip is not declared in allowed-skips
+./internal/daemon TestLoadConfig_WSClaimPollIntervalPrecedence: skip is not declared in allowed-skips
+./internal/daemon TestLoadConfig_CompletedTaskTTLDefaultsBoundedOnOfficialCloud: skip is not declared in allowed-skips
+./internal/daemon TestResolveAgentsViaLoginShell_ResolvesViaInteractiveShell: skip is not declared in allowed-skips
+./internal/daemon TestLoadConfig_DiscoversQwenCode: skip is not declared in allowed-skips
+./internal/daemon TestLoadConfig_SkipsMulticaHooksShadowingAgentBinaries: skip is not declared in allowed-skips
+./internal/daemon TestLoadConfig_SkipsMulticaHooksFromLoginShellFallback: skip is not declared in allowed-skips
+./internal/daemon TestLoadConfig_AutoUpdateDefault_SelfHostOff: skip is not declared in allowed-skips
+./internal/daemon TestLoadConfig_CodexHandshakeTimeout: skip is not declared in allowed-skips
+./internal/daemon TestLoadConfig_CodexTurnInterruptTimeout: skip is not declared in allowed-skips
+./internal/daemon TestLoadConfig_CodexFirstTurnNoProgressTimeout: skip is not declared in allowed-skips
+./internal/daemon TestLoadConfig_CodexFirstTurnTimeoutEqualToSemanticWarns: skip is not declared in allowed-skips
+./internal/daemon TestLoadConfig_ToolWatchdogDefaultsToIdleWatchdog: skip is not declared in allowed-skips
+./internal/daemon TestLoadConfig_CodexSemanticInactivityDerivesFromWatchdog: skip is not declared in allowed-skips
+./internal/daemon TestLoadConfig_OpenCodeIdleWatchdog: skip is not declared in allowed-skips
+./internal/daemon TestLoadConfig_AutoUpdateDefault_CloudOn: skip is not declared in allowed-skips
+./internal/daemon TestLoadConfig_AutoUpdateEnv_ForcesOnForSelfHost: skip is not declared in allowed-skips
+./internal/daemon TestLoadConfig_AutoUpdateEnv_ForcesOffForCloud: skip is not declared in allowed-skips
+./internal/daemon TestLoadConfig_AutoUpdate_NoFlagWinsOverCloudDefault: skip is not declared in allowed-skips
+./internal/daemon TestLoadConfig_AutoReload_DefaultsOnEvenForSelfHost: skip is not declared in allowed-skips
+./internal/daemon TestLoadConfig_AutoReload_NotGatedOnAutoUpdateEnv: skip is not declared in allowed-skips
+./internal/daemon TestLoadConfig_AutoReload_OffSwitches: skip is not declared in allowed-skips
+./internal/daemon TestLoadConfig_AutoReload_OffSwitches: skip is not declared in allowed-skips
+./internal/daemon TestLoadConfig_AutoReload_OffSwitches: skip is not declared in allowed-skips
+./internal/daemon TestLoadConfig_AutoReload_OffSwitches: skip is not declared in allowed-skips
+./internal/daemon TestLoadConfig_AutoReload_OffSwitches: skip is not declared in allowed-skips
+./internal/daemon TestResolveAgentsViaLoginShell_StripsAliasShadowing: skip is not declared in allowed-skips
+./internal/daemon TestResolveAgentsViaLoginShell_HardTimeoutOnBackgroundedStdout: skip is not declared in allowed-skips
+./internal/daemon TestLoadConfig_SkipsLoginShellWhenLookPathSucceeds: skip is not declared in allowed-skips
+./internal/daemon TestProbeAgentCLIsIgnoresNonExecutableCodexBundle: skip is not declared in allowed-skips
+./internal/daemon TestLoadConfig_AppliesBackendOverridesFromConfigFile: skip is not declared in allowed-skips
+./internal/daemon TestLoadConfig_BackendOverrides_BackwardCompat_NoConfigFile: skip is not declared in allowed-skips
+./internal/daemon TestLoadConfig_BackendOverrides_MalformedConfigFileNonFatal: skip is not declared in allowed-skips
+./internal/daemon TestCursorSupplementHookCommandRequiresInstallableHooks: skip is not declared in allowed-skips
+./internal/daemon TestExecuteAndDrain_PiTurnErrorOutranksIdleWatchdogCancellation: skip is not declared in allowed-skips
+./internal/daemon TestExecuteAndDrain_PiWithoutTurnErrorKeepsIdleWatchdogResult: skip is not declared in allowed-skips
+./internal/daemon TestExecuteAndDrain_PiTurnErrorOutranksUpstreamCancellation: skip is not declared in allowed-skips
+./internal/daemon TestExecuteAndDrain_PiWithoutTurnErrorKeepsUpstreamCancellation: skip is not declared in allowed-skips
+./internal/daemon TestProvisionDshMulticaProfile_UnconfiguredIsANoOp: skip is not declared in allowed-skips
+./internal/daemon TestProvisionDshMulticaProfile_InstallsTheFirstWorkingCandidate: skip is not declared in allowed-skips
+./internal/daemon TestProvisionDshMulticaProfile_ForwardsTheSpecVerbatim: skip is not declared in allowed-skips
+./internal/daemon TestProvisionDshMulticaProfile_ReportsEveryCandidateFailure: skip is not declared in allowed-skips
+./internal/daemon TestProvisionDshMulticaProfile_ExitZeroWithoutAProfileIsAFailedCandidate: skip is not declared in allowed-skips
+./internal/daemon TestProvisionDshMulticaProfile_FailedInstallLeavesTheProfileDirectory: skip is not declared in allowed-skips
+./internal/daemon TestProvisionDshMulticaProfile_PreservesPreexistingProfileOnFailure: skip is not declared in allowed-skips
+./internal/daemon TestProvisionDshMulticaProfile_FailedInstallKeepsNonSkeletonProfiles: skip is not declared in allowed-skips
+./internal/daemon TestStartDshProfileProvision_RunsAtMostOnce: skip is not declared in allowed-skips
+./internal/daemon TestStartDshProfileProvision_KicksDiscoveryWhenTheInstallFinishes: skip is not declared in allowed-skips
+./internal/daemon TestStartDshProfileProvision_SuccessWithoutAProfileWithdrawsTheWait: skip is not declared in allowed-skips
+./internal/daemon TestProvisionDshMulticaProfile_CancellationKillsTheWholeTree: skip is not declared in allowed-skips
+./internal/daemon TestPruneWorktreePreemptionCleansLocksBeforeTaskStarts: skip is not declared in allowed-skips
+./internal/daemon TestValidateLocalPath: skip is not declared in allowed-skips
+./internal/daemon TestHandleModelList_CustomOmpCompatibilityTarget: skip is not declared in allowed-skips
+./internal/daemon TestResolveTaskModelSelectionKeepsLiveOnlyCodexOverridesOnFallback: skip is not declared in allowed-skips
+./internal/daemon TestMuseDetectedThroughLoginShell: skip is not declared in allowed-skips
+./internal/daemon TestOpenCodeV2RefusesSynthesizedMCPWithoutAgentConfig: skip is not declared in allowed-skips
+./internal/daemon TestDetectBuiltinRuntimes_DoesNotRetryWhenSelfHealBurnsTheWindow: skip is not declared in allowed-skips
+./internal/daemon TestDetectBuiltinRuntimes_SelfHealRejectionIsABelowMinimumVerdict: skip is not declared in allowed-skips
+./internal/daemon TestTaskTempDirSurvivesGCWhileTheRunHoldsIt: skip is not declared in allowed-skips
+./internal/daemon TestRunTaskPreservesProviderCostWithoutTokens: skip is not declared in allowed-skips
+./internal/daemon TestRunTask_InjectsPrivateTaskTempDir: skip is not declared in allowed-skips
+./internal/daemon TestRunTask_TaskTempBaseOverride: skip is not declared in allowed-skips
+./internal/daemon TestRunTask_TaskTempBaseInvalidFailsStartup: skip is not declared in allowed-skips
+./internal/daemon TestAgentCLIGuardDetectsSwallowedFailure: skip is not declared in allowed-skips
+./internal/daemon TestCleanTaskArtifacts_UsesLiteralTrackedPaths: skip is not declared in allowed-skips
+./internal/daemon TestCleanTaskArtifacts_UsesLiteralTrackedPaths: skip is not declared in allowed-skips
+./internal/daemon TestScanDiskUsage_DoesNotFollowSymlinks: skip is not declared in allowed-skips
+./internal/daemon TestCleanTaskArtifacts_UsesLiteralTrackedPaths: skip is not declared in allowed-skips
+./internal/daemon TestExecuteAndDrain_CodexInactivityReportsMCPToolResultTranscript: skip is not declared in allowed-skips
+./internal/daemon TestAgentCLIGuardFailsClosedWhenSetupFails: skip is not declared in allowed-skips
+ci evidence: 91 problem(s)
+
+=== combined (10254714 bytes, 40390 events) exit=1
+exclusion ./internal/daemon TestChannelIsolation owner=independent entry=wsl -d AIFI-ISO, root, AIFI45_ISOLATION_PROFILE + AIFI45_ISOLATION_UID/GID/ROOT
+exclusion ./internal/governance TestChannelMigrationAfterUp owner=independent entry=run-selection.mjs --selections selections.json --only channel-migration-up
+exclusion ./internal/governance TestChannelMigrationAfterDown owner=independent entry=run-selection.mjs --selections selections.json --only channel-migration-down
+exclusion ./internal/governance TestChannelMigrationAfterReapply owner=independent entry=run-selection.mjs --selections selections.json --only channel-migration-reapply
+exclusions: 4
+--- stderr: 139 line(s); first 12 and last 3 ---
+./internal/governance: package conclusion is fail, want pass
+./internal/handler: package conclusion is fail, want pass
+./internal/daemon: package conclusion is fail, want pass
+./internal/handler TestRequireDaemonWorkspaceAccess_CacheHit: skip is not declared in allowed-skips
+./internal/handler TestRequireDaemonWorkspaceAccess_CacheMissBackfills: skip is not declared in allowed-skips
+./internal/handler TestMembershipCache_InvalidatedOnDeleteMember: skip is not declared in allowed-skips
+./internal/handler TestMembershipCache_InvalidatedOnUpdateMember: skip is not declared in allowed-skips
+./internal/handler TestMembershipCache_InvalidatedOnLeaveWorkspace: skip is not declared in allowed-skips
+./internal/handler TestMembershipCache_InvalidatedOnDeleteWorkspace: skip is not declared in allowed-skips
+./internal/handler TestRedisLivenessStore_TouchAndIsAlive: skip is not declared in allowed-skips
+./internal/handler TestRedisLivenessStore_TTLExpiry: skip is not declared in allowed-skips
+./internal/handler TestRedisLivenessStore_Forget: skip is not declared in allowed-skips
+... 124 more ...
+./internal/governance TestChannelMigrationAfterDown: excluded test appeared in the stream; the exclusion did not take effect
+./internal/governance TestChannelMigrationAfterReapply: excluded test appeared in the stream; the exclusion did not take effect
+ci evidence: 138 problem(s)
+--- problem kinds ---
+package conclusion not pass: 3
+undeclared skip: 132
+exclusion did not take effect: 3
+summary: 1
+
+=== positive control baseline-crosslang required-packages=[./internal/governance/crosslang_test] exit=0
+ci evidence OK: 1 required package(s), 4 declared skip(s)
+(no stderr)
+
+=== positive control baseline-cmd-server required-packages=[./cmd/server] exit=0
+ci evidence OK: 1 required package(s), 4 declared skip(s)
+(no stderr)

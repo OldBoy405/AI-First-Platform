@@ -1,0 +1,5 @@
+# bash -e: a failing command substitution in an assignment must abort
+pg_version="$(node -e "process.exit(3)")"
+echo REACHED_INSTALL
+# --- output ---
+# exit=3

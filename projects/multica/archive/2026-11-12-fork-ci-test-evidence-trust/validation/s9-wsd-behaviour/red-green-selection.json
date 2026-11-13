@@ -1,0 +1,19 @@
+{
+  "selections": [
+    {
+      "name": "handler-wsd-delete",
+      "package": "./internal/handler",
+      "run": "^TestWorkspaceDeletionSweepsOnlyOperationalExecutionRows$"
+    },
+    {
+      "name": "handler-wsd-retain",
+      "package": "./internal/handler",
+      "run": "^TestWorkspaceDeletionKeepsRetainedEvidenceByteForByte$"
+    },
+    {
+      "name": "handler-wsd-atomic",
+      "package": "./internal/handler",
+      "run": "^TestWorkspaceDeletionRollsBackExecutionRowsWithTransaction$"
+    }
+  ]
+}

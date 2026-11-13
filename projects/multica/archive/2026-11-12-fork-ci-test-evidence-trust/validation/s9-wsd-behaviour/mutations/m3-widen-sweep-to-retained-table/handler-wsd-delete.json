@@ -1,0 +1,24 @@
+{
+  "name": "handler-wsd-delete",
+  "package": "./internal/handler",
+  "run": "^TestWorkspaceDeletionSweepsOnlyOperationalExecutionRows$",
+  "ok": false,
+  "reasons": [
+    "exit=1",
+    "fail=1",
+    "pass=0"
+  ],
+  "reconciliationLine": "",
+  "stage": "test",
+  "totals": {
+    "pass": 0,
+    "fail": 1,
+    "skip": 0,
+    "packages": 0
+  },
+  "reconciliation": null,
+  "failures": [
+    "workspace_delete_execution_test.go:369: expected 204 from DeleteWorkspace(A), got 500: {\"error\":\"failed to delete workspace\"}",
+    "--- FAIL: TestWorkspaceDeletionSweepsOnlyOperationalExecutionRows (0.06s)"
+  ]
+}

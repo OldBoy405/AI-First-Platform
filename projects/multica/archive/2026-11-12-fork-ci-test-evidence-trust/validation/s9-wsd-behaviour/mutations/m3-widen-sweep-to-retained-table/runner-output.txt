@@ -1,0 +1,6 @@
+m3-widen-sweep-to-retained-table: DETECTED runner_exit=1 restored_sha256=eaf5ce61cf9dcfb8133b9b74e7d64a0b32cc4a6c33d8c114b0a794cd303fe841
+
+FAIL handler-wsd-delete pass=0 fail=1 skip=0
+  workspace_delete_execution_test.go:369: expected 204 from DeleteWorkspace(A), got 500: {"error":"failed to delete workspace"}
+  --- FAIL: TestWorkspaceDeletionSweepsOnlyOperationalExecutionRows (0.06s)
+released instance dd74e91defd1 remaining=0

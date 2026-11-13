@@ -1,0 +1,4 @@
+--- anchor
+if (flag !== "--pin" && flag !== "--pin-file") throw new Error(`unknown argument ${flag}`);
+--- replacement
+if (flag !== "--pin" && flag !== "--pin-file") continue;

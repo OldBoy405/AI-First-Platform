@@ -1,0 +1,23 @@
+### 1. tools-access, credential absent from the environment (no credential is read or printed)
+missing: AIFIRST_TOOLS_READ_TOKEN is not set; the tools repository cannot be read without it
+exit=1
+
+### 2. tools-pin read (the real committed pin)
+e52b8081f159d581bf62f82447c76f818fc52426
+exit=0
+
+### 3. tools-pin check against the local tools checkout
+tools pin e52b8081f159d581bf62f82447c76f818fc52426 complete (3 required files present)
+exit=0
+
+### 4. test-ownership skip-regex
+^(TestChannelIsolation|TestChannelMigrationAfterUp|TestChannelMigrationAfterDown|TestChannelMigrationAfterReapply|TestWorkspaceDeletionRefusesNewCommand)$
+exit=0
+
+### 5. ci-provision down with no handle (the always() teardown path when up never ran)
+no disposable handle; nothing to clean up
+exit=0
+
+### 6. ci-evidence with a missing stream (must hard-fail, not report green)
+ENOENT: no such file or directory, open 'C:\Users\GOBAO\Downloads\AI\AI First Platform\projects\multica\changes\2026-11-12-fork-ci-test-evidence-trust\validation\s13-ci-wiring\does-not-exist.json'
+exit=1

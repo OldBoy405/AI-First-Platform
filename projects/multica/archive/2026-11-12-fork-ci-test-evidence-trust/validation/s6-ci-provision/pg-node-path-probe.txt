@@ -1,0 +1,15 @@
+# pg 取得与解析实测（Node v24.15.0，npm 11.12.1，Windows）
+# 命令：npm install --prefix <tmp>/aifi45-s6-pg 'pg@^8.20.0' --no-audit --no-fund
+# 根 package.json 声明：pg = ^8.20.0；实际安装 8.23.1，14 packages，15s；未跑全仓 pnpm install
+# 探针目录 <tmp>/aifi45-s6-probe 无 node_modules，祖先链上也没有 pg
+
+--- without NODE_PATH ---
+ESM import FAILED ERR_MODULE_NOT_FOUND
+createRequire FAILED MODULE_NOT_FOUND
+--- with NODE_PATH=<tmp>/aifi45-s6-pg/node_modules ---
+ESM import FAILED ERR_MODULE_NOT_FOUND
+createRequire OK function
+
+结论：NODE_PATH 只被 CJS 解析器读取。ESM await import("pg") 在 CI 的 --prefix 安装下会
+ERR_MODULE_NOT_FOUND，而开发机因仓库 node_modules 里有 pg 而通过——正是会静默漂移的那类差异。
+因此 ci-provision.mjs 用 createRequire(import.meta.url)("pg")，并由静态契约用例钉住。
