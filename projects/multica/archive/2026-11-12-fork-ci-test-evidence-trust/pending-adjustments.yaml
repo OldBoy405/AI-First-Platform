@@ -493,5 +493,5 @@ adjustments:
     severity: major
     affected_capabilities: [ci-backend-environment, ci-credential-and-frontend-typecheck, selection-reconciliation, test-ownership-and-ci-reconciliation, workspace-delete-execution-tables]
     exp_id: ''
-    resolved: false
-    resolution: ''
+    resolved: true
+    resolution: '用户已在 stdd 侧修好比对端（2026-11-13）：`_commit_input_problems` 现在先比 `git cat-file blob` 的存储字节，不等时再比 `git cat-file --filters` 的检出字节，任一与 run 快照 sha256 相等即视为承载（代码注释写明两种形态都由 git 自身定义）。随后执行 `stdd bind-commit 2026-11-12-fork-ci-test-evidence-trust --commit 8eac1460e2f0870eab6e3e19c7332322e57ce1cf` → **`BIND_EXIT=0`**，生成 `projects/multica/delivery-receipts/2026-11-12-fork-ci-test-evidence-trust.yaml`（schema 1、823 个 project 输入、run `add97e96-1676-4191-ae65-2ebd6524d585`）。`stdd status` 交付状态变为「已绑定业务提交 8eac1460e…」。**无需重跑 18 条 CP、无需重新 confirm、无需重签 Gate 3、无需重新归档**，Gate 1/2/3 仍为当前批准。显式指定原提交是必要的：后续 CI 修复会前移 HEAD，而 `ci.yml`/`scripts/*` 属冻结输入。'
