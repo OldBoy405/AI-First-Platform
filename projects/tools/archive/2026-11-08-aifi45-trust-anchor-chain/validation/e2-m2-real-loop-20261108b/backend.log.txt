@@ -1,0 +1,244 @@
+01:32:45.329 INF self-host telemetry enabled
+01:32:45.329 WRN no email backend configured (RESEND_API_KEY and SMTP_HOST both empty) — verification codes will be printed to the log instead of emailed.
+01:32:45.329 INF feature flags initialised file="" rules=0 env_prefix=FF_
+01:32:45.337 INF connected to database
+01:32:45.337 INF db pool config role=primary max_conns=25 min_conns=5 max_conn_lifetime=1h0m0s max_conn_idle_time=30m0s health_check_period=1m0s
+01:32:45.338 INF realtime: REDIS_URL is unset — using in-memory hub (single-node mode)
+01:32:45.338 INF analytics: POSTHOG_API_KEY not set, using noop client
+EmailService: DEV mode — codes printed to stdout (set MULTICA_DEV_VERIFICATION_CODE in .env for a fixed local code)
+01:32:45.338 INF S3_BUCKET not set, cloud upload disabled
+01:32:45.338 INF local storage initialized dir=./data/uploads baseURL=""
+01:32:45.338 INF CLOUDFRONT_KEY_PAIR_ID not set, signed cookies disabled
+01:32:45.338 INF llm retry policy max_retries=2 source=default request_timeout=1m0s enabled=false disable_thinking=false
+01:32:45.338 INF channel engine: lease backend configured backend=postgres ttl=3m0s renew_interval=1m0s poll_interval=30s
+01:32:45.338 INF lark integration disabled (MULTICA_LARK_SECRET_KEY not set)
+01:32:45.338 ERR approval reminder: dependency missing phase=construct missing=client,credentials
+01:32:45.338 INF slack integration disabled (MULTICA_SLACK_SECRET_KEY not set)
+01:32:45.338 INF dingtalk integration disabled (MULTICA_DINGTALK_SECRET_KEY not set)
+01:32:45.338 INF wecom integration disabled (MULTICA_WECOM_SECRET_KEY not set)
+01:32:45.338 INF telegram integration disabled (MULTICA_TELEGRAM_SECRET_KEY not set)
+01:32:45.338 INF composio integration disabled (COMPOSIO_API_KEY not set)
+01:32:45.338 INF vcs integration disabled (MULTICA_VCS_SECRET_KEY not set)
+01:32:45.338 INF Plugin secrets disabled (MULTICA_PLUGIN_SECRET_KEY not set)
+01:32:45.338 WRN plugins: MULTICA_PLUGIN_API_URL and MULTICA_PUBLIC_URL are not set; hook callbacks will carry no callback_url
+01:32:45.340 WRN auth rate limiting disabled: REDIS_URL not configured
+01:32:45.342 INF commit_prefix_scan job registered
+01:32:45.342 INF scheduler starting component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a tick_interval=30s jobs=8
+01:32:45.342 INF server starting port=8080
+01:32:45.342 INF pprof server starting addr=127.0.0.1:6060
+01:32:45.342 INF autopilot failure monitor: starting interval=24h0m0s lookback=168h0m0s min_runs=50 fail_ratio=0.9
+01:32:45.347 INF scheduler claimed plan component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=maturity_snapshot scope=global/global plan_time=2026-11-08T16:30:00Z attempt=1 execution_id=01a1bdef-b3a2-75e5-aeef-ed030915e3ab
+01:32:45.368 INF scheduler: handler succeeded component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=maturity_snapshot scope=global/global plan_time=2026-11-08T16:30:00Z attempt=1 execution_id=01a1bdef-b3a2-75e5-aeef-ed030915e3ab duration_ms=20 rows_affected=2
+01:32:45.369 INF scheduler claimed plan component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=rollup_task_usage_hourly scope=global/global plan_time=2026-11-09T01:25:00Z attempt=1 execution_id=01a1bdef-b3b9-701b-8d8f-792c2911f0cf
+01:32:45.376 INF scheduler: handler succeeded component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=rollup_task_usage_hourly scope=global/global plan_time=2026-11-09T01:25:00Z attempt=1 execution_id=01a1bdef-b3b9-701b-8d8f-792c2911f0cf duration_ms=6 rows_affected=0
+01:32:45.376 INF scheduler claimed plan component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=prune_search_index_changes scope=global/global plan_time=2026-11-09T01:00:00Z attempt=1 execution_id=01a1bdef-b3c0-77e2-91ae-e76bfef6b8b9
+01:32:45.378 INF scheduler: handler succeeded component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=prune_search_index_changes scope=global/global plan_time=2026-11-09T01:00:00Z attempt=1 execution_id=01a1bdef-b3c0-77e2-91ae-e76bfef6b8b9 duration_ms=0 rows_affected=0
+01:32:45.378 INF scheduler claimed plan component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=issue_wakeup_dispatch scope=global/global plan_time=2026-11-09T01:32:30Z attempt=1 execution_id=01a1bdef-b3c2-75d1-bb50-1d083518c93f
+01:32:45.382 INF issue wakeup dispatch pass input_rules=0 due_rules=0 duration_ms=2 stopped=drained failures=0 held_inputs=0 pending_scan=complete
+01:32:45.383 INF scheduler: handler succeeded component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=issue_wakeup_dispatch scope=global/global plan_time=2026-11-09T01:32:30Z attempt=1 execution_id=01a1bdef-b3c2-75d1-bb50-1d083518c93f duration_ms=3 rows_affected=0
+01:32:45.383 INF scheduler claimed plan component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=issue_child_event_sweep scope=global/global plan_time=2026-11-09T01:32:30Z attempt=1 execution_id=01a1bdef-b3c7-756e-9100-a6272bd6bba6
+01:32:45.386 INF scheduler: handler succeeded component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=issue_child_event_sweep scope=global/global plan_time=2026-11-09T01:32:30Z attempt=1 execution_id=01a1bdef-b3c7-756e-9100-a6272bd6bba6 duration_ms=1 rows_affected=0
+01:32:47.496 INF http request method=GET path=/readyz status=200 duration=1.374ms request_id=e28481452904/7UOZXp1W8Z-000004
+01:32:49.258 INF http request method=POST path=/api/workspaces/d708a6ab-f784-4d45-841b-346adfd2690e/crs/CR-2026-992/execution-authorization status=201 duration=6.539ms request_id=e28481452904/7UOZXp1W8Z-000005 user_id=fef14d31-da1b-4b7b-8176-ca1c846e1424
+01:33:00.343 WRN db pool pressure role=primary max_conns=25 total_conns=7 acquired_conns=3 idle_conns=4 constructing_conns=0 acquire_count_delta=113 empty_acquire_delta=2 canceled_acquire_delta=0 avg_acquire_ms=0
+01:33:15.342 INF db pool stats role=primary max_conns=25 total_conns=7 acquired_conns=3 idle_conns=4 constructing_conns=0 acquire_count_delta=60 empty_acquire_delta=0 canceled_acquire_delta=0 avg_acquire_ms=0
+01:33:15.391 INF scheduler claimed plan component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=issue_wakeup_dispatch scope=global/global plan_time=2026-11-09T01:33:00Z attempt=1 execution_id=01a1bdf0-28ff-72c5-a4a2-3dbdc3e41841
+01:33:15.395 INF issue wakeup dispatch pass input_rules=0 due_rules=0 duration_ms=2 stopped=drained failures=0 held_inputs=0 pending_scan=complete
+01:33:15.396 INF scheduler: handler succeeded component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=issue_wakeup_dispatch scope=global/global plan_time=2026-11-09T01:33:00Z attempt=1 execution_id=01a1bdf0-28ff-72c5-a4a2-3dbdc3e41841 duration_ms=4 rows_affected=0
+01:33:15.397 INF scheduler claimed plan component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=issue_child_event_sweep scope=global/global plan_time=2026-11-09T01:33:00Z attempt=1 execution_id=01a1bdf0-2904-7c1a-aa39-609b3294c279
+01:33:15.398 INF scheduler: handler succeeded component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=issue_child_event_sweep scope=global/global plan_time=2026-11-09T01:33:00Z attempt=1 execution_id=01a1bdf0-2904-7c1a-aa39-609b3294c279 duration_ms=0 rows_affected=0
+01:33:30.343 INF db pool stats role=primary max_conns=25 total_conns=7 acquired_conns=1 idle_conns=6 constructing_conns=0 acquire_count_delta=94 empty_acquire_delta=0 canceled_acquire_delta=0 avg_acquire_ms=0
+01:33:45.343 INF db pool stats role=primary max_conns=25 total_conns=8 acquired_conns=7 idle_conns=0 constructing_conns=1 acquire_count_delta=66 empty_acquire_delta=0 canceled_acquire_delta=0 avg_acquire_ms=0
+01:33:45.391 INF scheduler claimed plan component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=issue_wakeup_dispatch scope=global/global plan_time=2026-11-09T01:33:30Z attempt=1 execution_id=01a1bdf0-9e2f-71c2-ac2e-178143666e23
+01:33:45.394 INF issue wakeup dispatch pass input_rules=0 due_rules=0 duration_ms=1 stopped=drained failures=0 held_inputs=0 pending_scan=complete
+01:33:45.395 INF scheduler: handler succeeded component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=issue_wakeup_dispatch scope=global/global plan_time=2026-11-09T01:33:30Z attempt=1 execution_id=01a1bdf0-9e2f-71c2-ac2e-178143666e23 duration_ms=3 rows_affected=0
+01:33:45.396 INF scheduler claimed plan component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=issue_child_event_sweep scope=global/global plan_time=2026-11-09T01:33:30Z attempt=1 execution_id=01a1bdf0-9e33-7b73-a445-0d4278b874d6
+01:33:45.397 INF scheduler: handler succeeded component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=issue_child_event_sweep scope=global/global plan_time=2026-11-09T01:33:30Z attempt=1 execution_id=01a1bdf0-9e33-7b73-a445-0d4278b874d6 duration_ms=0 rows_affected=0
+01:34:00.343 WRN db pool pressure role=primary max_conns=25 total_conns=8 acquired_conns=4 idle_conns=4 constructing_conns=0 acquire_count_delta=98 empty_acquire_delta=1 canceled_acquire_delta=0 avg_acquire_ms=0
+01:34:15.342 INF db pool stats role=primary max_conns=25 total_conns=8 acquired_conns=4 idle_conns=4 constructing_conns=0 acquire_count_delta=60 empty_acquire_delta=0 canceled_acquire_delta=0 avg_acquire_ms=0
+01:34:15.389 INF scheduler claimed plan component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=issue_wakeup_dispatch scope=global/global plan_time=2026-11-09T01:34:00Z attempt=1 execution_id=01a1bdf1-135d-70a3-985d-cc50db6a90fe
+01:34:15.393 INF issue wakeup dispatch pass input_rules=0 due_rules=0 duration_ms=2 stopped=drained failures=0 held_inputs=0 pending_scan=complete
+01:34:15.393 INF scheduler: handler succeeded component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=issue_wakeup_dispatch scope=global/global plan_time=2026-11-09T01:34:00Z attempt=1 execution_id=01a1bdf1-135d-70a3-985d-cc50db6a90fe duration_ms=3 rows_affected=0
+01:34:15.394 INF scheduler claimed plan component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=issue_child_event_sweep scope=global/global plan_time=2026-11-09T01:34:00Z attempt=1 execution_id=01a1bdf1-1362-70bb-80cb-d83ad0a4a74b
+01:34:15.395 INF scheduler: handler succeeded component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=issue_child_event_sweep scope=global/global plan_time=2026-11-09T01:34:00Z attempt=1 execution_id=01a1bdf1-1362-70bb-80cb-d83ad0a4a74b duration_ms=0 rows_affected=0
+01:34:30.343 INF db pool stats role=primary max_conns=25 total_conns=8 acquired_conns=4 idle_conns=4 constructing_conns=0 acquire_count_delta=96 empty_acquire_delta=0 canceled_acquire_delta=0 avg_acquire_ms=0
+01:34:45.343 INF db pool stats role=primary max_conns=25 total_conns=8 acquired_conns=4 idle_conns=4 constructing_conns=0 acquire_count_delta=60 empty_acquire_delta=0 canceled_acquire_delta=0 avg_acquire_ms=0
+01:34:45.390 INF scheduler claimed plan component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=issue_wakeup_dispatch scope=global/global plan_time=2026-11-09T01:34:30Z attempt=1 execution_id=01a1bdf1-888e-715b-acdb-d3efb27ec2c6
+01:34:45.394 INF issue wakeup dispatch pass input_rules=0 due_rules=0 duration_ms=2 stopped=drained failures=0 held_inputs=0 pending_scan=complete
+01:34:45.395 INF scheduler: handler succeeded component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=issue_wakeup_dispatch scope=global/global plan_time=2026-11-09T01:34:30Z attempt=1 execution_id=01a1bdf1-888e-715b-acdb-d3efb27ec2c6 duration_ms=4 rows_affected=0
+01:34:45.396 INF scheduler claimed plan component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=issue_child_event_sweep scope=global/global plan_time=2026-11-09T01:34:30Z attempt=1 execution_id=01a1bdf1-8893-7dbb-9317-c0eec24bc879
+01:34:45.398 INF scheduler: handler succeeded component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=issue_child_event_sweep scope=global/global plan_time=2026-11-09T01:34:30Z attempt=1 execution_id=01a1bdf1-8893-7dbb-9317-c0eec24bc879 duration_ms=1 rows_affected=0
+01:35:00.342 INF db pool stats role=primary max_conns=25 total_conns=8 acquired_conns=0 idle_conns=8 constructing_conns=0 acquire_count_delta=96 empty_acquire_delta=0 canceled_acquire_delta=0 avg_acquire_ms=0
+01:35:15.342 INF db pool stats role=primary max_conns=25 total_conns=8 acquired_conns=5 idle_conns=3 constructing_conns=0 acquire_count_delta=65 empty_acquire_delta=0 canceled_acquire_delta=0 avg_acquire_ms=0
+01:35:15.389 INF scheduler claimed plan component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=rollup_task_usage_hourly scope=global/global plan_time=2026-11-09T01:30:00Z attempt=1 execution_id=01a1bdf1-fdbd-75f5-8763-634762263c9a
+01:35:15.397 INF scheduler: handler succeeded component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=rollup_task_usage_hourly scope=global/global plan_time=2026-11-09T01:30:00Z attempt=1 execution_id=01a1bdf1-fdbd-75f5-8763-634762263c9a duration_ms=7 rows_affected=0
+01:35:15.398 INF scheduler claimed plan component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=issue_wakeup_dispatch scope=global/global plan_time=2026-11-09T01:35:00Z attempt=1 execution_id=01a1bdf1-fdc6-735c-954b-84aefb27b929
+01:35:15.400 INF issue wakeup dispatch pass input_rules=0 due_rules=0 duration_ms=1 stopped=drained failures=0 held_inputs=0 pending_scan=complete
+01:35:15.401 INF scheduler: handler succeeded component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=issue_wakeup_dispatch scope=global/global plan_time=2026-11-09T01:35:00Z attempt=1 execution_id=01a1bdf1-fdc6-735c-954b-84aefb27b929 duration_ms=2 rows_affected=0
+01:35:15.401 INF scheduler claimed plan component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=issue_child_event_sweep scope=global/global plan_time=2026-11-09T01:35:00Z attempt=1 execution_id=01a1bdf1-fdc9-79f5-b550-9c967c623a3e
+01:35:15.402 INF scheduler: handler succeeded component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=issue_child_event_sweep scope=global/global plan_time=2026-11-09T01:35:00Z attempt=1 execution_id=01a1bdf1-fdc9-79f5-b550-9c967c623a3e duration_ms=0 rows_affected=0
+01:35:30.342 INF db pool stats role=primary max_conns=25 total_conns=8 acquired_conns=4 idle_conns=4 constructing_conns=0 acquire_count_delta=100 empty_acquire_delta=0 canceled_acquire_delta=0 avg_acquire_ms=0
+01:35:45.342 INF db pool stats role=primary max_conns=25 total_conns=8 acquired_conns=3 idle_conns=5 constructing_conns=0 acquire_count_delta=59 empty_acquire_delta=0 canceled_acquire_delta=0 avg_acquire_ms=0
+01:35:45.389 INF scheduler claimed plan component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=issue_wakeup_dispatch scope=global/global plan_time=2026-11-09T01:35:30Z attempt=1 execution_id=01a1bdf2-72ed-7bca-b4d2-46b05948358a
+01:35:45.392 INF issue wakeup dispatch pass input_rules=0 due_rules=0 duration_ms=1 stopped=drained failures=0 held_inputs=0 pending_scan=complete
+01:35:45.392 INF scheduler: handler succeeded component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=issue_wakeup_dispatch scope=global/global plan_time=2026-11-09T01:35:30Z attempt=1 execution_id=01a1bdf2-72ed-7bca-b4d2-46b05948358a duration_ms=2 rows_affected=0
+01:35:45.393 INF scheduler claimed plan component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=issue_child_event_sweep scope=global/global plan_time=2026-11-09T01:35:30Z attempt=1 execution_id=01a1bdf2-72f1-705a-aef4-d4e083f2ec54
+01:35:45.393 INF scheduler: handler succeeded component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=issue_child_event_sweep scope=global/global plan_time=2026-11-09T01:35:30Z attempt=1 execution_id=01a1bdf2-72f1-705a-aef4-d4e083f2ec54 duration_ms=0 rows_affected=0
+01:35:52.833 WRN auth: invalid token path=/api/tokens/current/renew error="token is malformed: token contains an invalid number of segments"
+01:35:52.833 WRN http request method=POST path=/api/tokens/current/renew status=401 duration=96µs request_id=e28481452904/7UOZXp1W8Z-000006 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:35:52.836 INF http request method=GET path=/api/daemon/workspaces status=200 duration=863µs request_id=e28481452904/7UOZXp1W8Z-000007 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:35:53.080 INF http request method=GET path=/api/daemon/workspaces/d708a6ab-f784-4d45-841b-346adfd2690e/runtime-profiles status=200 duration=941µs request_id=e28481452904/7UOZXp1W8Z-000008 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:35:53.083 INF daemon registered workspace_id=d708a6ab-f784-4d45-841b-346adfd2690e daemon_id=d432124a-55c6-488b-a7bc-3f793e9a1e2f runtimes_count=1
+01:35:53.083 INF http request method=POST path=/api/daemon/register status=200 duration=2.636ms request_id=e28481452904/7UOZXp1W8Z-000009 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:35:53.087 INF http request method=POST path=/api/daemon/runtimes/23a6a7cf-6788-43f0-87f2-aeb79e64b9bf/recover-orphans status=200 duration=1.714ms request_id=e28481452904/7UOZXp1W8Z-000010 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:35:53.094 INF daemon websocket connected daemon_id=d432124a-55c6-488b-a7bc-3f793e9a1e2f user_id="" workspace_id=d708a6ab-f784-4d45-841b-346adfd2690e workspace_ids=[d708a6ab-f784-4d45-841b-346adfd2690e] runtimes=1 client_version=m2-4b65a9c3b41c7da8 total_clients=1
+01:35:53.094 INF http request method=GET path=/api/daemon/ws status=0 duration=1.004ms request_id=e28481452904/7UOZXp1W8Z-000012 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:35:53.096 DBG daemon heartbeat runtime_id=23a6a7cf-6788-43f0-87f2-aeb79e64b9bf
+01:35:53.097 INF http request method=GET path=/api/daemon/workspaces/d708a6ab-f784-4d45-841b-346adfd2690e/repos status=200 duration=1.182ms request_id=e28481452904/7UOZXp1W8Z-000013 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:35:53.097 INF http request method=POST path=/api/daemon/tasks/claim status=200 duration=6.701ms request_id=e28481452904/7UOZXp1W8Z-000011 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:35:53.099 INF http request method=GET path=/api/daemon/workspaces status=304 duration=646µs request_id=e28481452904/7UOZXp1W8Z-000014 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:35:53.101 INF http request method=GET path=/api/daemon/workspaces/d708a6ab-f784-4d45-841b-346adfd2690e/runtime-profiles status=200 duration=785µs request_id=e28481452904/7UOZXp1W8Z-000015 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:35:53.102 INF http request method=GET path=/api/daemon/workspaces/d708a6ab-f784-4d45-841b-346adfd2690e/repos status=200 duration=499µs request_id=e28481452904/7UOZXp1W8Z-000016 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:35:53.103 INF http request method=GET path=/api/daemon/workspaces status=304 duration=314µs request_id=e28481452904/7UOZXp1W8Z-000017 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:35:53.105 INF http request method=GET path=/api/daemon/workspaces/d708a6ab-f784-4d45-841b-346adfd2690e/runtime-profiles status=200 duration=439µs request_id=e28481452904/7UOZXp1W8Z-000018 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:35:53.997 INF agent created request_id=e28481452904/7UOZXp1W8Z-000019 user_id=fef14d31-da1b-4b7b-8176-ca1c846e1424 agent_id=83ca689e-a562-4fc4-960a-d1120d0729ea name="M2 real executor" workspace_id=d708a6ab-f784-4d45-841b-346adfd2690e
+01:35:53.998 DBG agent status reconciled agent_id=83ca689e-a562-4fc4-960a-d1120d0729ea status=idle
+01:35:53.999 INF http request method=POST path=/api/agents status=201 duration=5.162ms request_id=e28481452904/7UOZXp1W8Z-000019 user_id=fef14d31-da1b-4b7b-8176-ca1c846e1424
+01:35:54.877 DBG daemon websocket read error error="websocket: close 1006 (abnormal closure): unexpected EOF" daemon_id=d432124a-55c6-488b-a7bc-3f793e9a1e2f
+01:35:54.877 INF daemon websocket disconnected daemon_id=d432124a-55c6-488b-a7bc-3f793e9a1e2f user_id="" workspace_id=d708a6ab-f784-4d45-841b-346adfd2690e workspace_ids=[d708a6ab-f784-4d45-841b-346adfd2690e] runtimes=1 total_clients=0
+01:36:00.343 INF db pool stats role=primary max_conns=25 total_conns=8 acquired_conns=2 idle_conns=6 constructing_conns=0 acquire_count_delta=148 empty_acquire_delta=0 canceled_acquire_delta=0 avg_acquire_ms=0
+01:36:15.343 INF db pool stats role=primary max_conns=25 total_conns=8 acquired_conns=0 idle_conns=8 constructing_conns=0 acquire_count_delta=58 empty_acquire_delta=0 canceled_acquire_delta=0 avg_acquire_ms=0
+01:36:15.393 INF scheduler claimed plan component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=issue_wakeup_dispatch scope=global/global plan_time=2026-11-09T01:36:00Z attempt=1 execution_id=01a1bdf2-e820-7be4-acdf-107c2a36b5ce
+01:36:15.397 INF issue wakeup dispatch pass input_rules=0 due_rules=0 duration_ms=2 stopped=drained failures=0 held_inputs=0 pending_scan=complete
+01:36:15.398 INF scheduler: handler succeeded component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=issue_wakeup_dispatch scope=global/global plan_time=2026-11-09T01:36:00Z attempt=1 execution_id=01a1bdf2-e820-7be4-acdf-107c2a36b5ce duration_ms=4 rows_affected=0
+01:36:15.399 INF scheduler claimed plan component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=issue_child_event_sweep scope=global/global plan_time=2026-11-09T01:36:00Z attempt=1 execution_id=01a1bdf2-e826-7d32-918d-c566a36286d8
+01:36:15.400 INF scheduler: handler succeeded component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=issue_child_event_sweep scope=global/global plan_time=2026-11-09T01:36:00Z attempt=1 execution_id=01a1bdf2-e826-7d32-918d-c566a36286d8 duration_ms=1 rows_affected=0
+01:36:17.065 WRN auth: invalid token path=/api/tokens/current/renew error="token is malformed: token contains an invalid number of segments"
+01:36:17.065 WRN http request method=POST path=/api/tokens/current/renew status=401 duration=57µs request_id=e28481452904/7UOZXp1W8Z-000020 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:17.068 INF http request method=GET path=/api/daemon/workspaces status=200 duration=1.178ms request_id=e28481452904/7UOZXp1W8Z-000021 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:17.299 INF http request method=GET path=/api/daemon/workspaces/d708a6ab-f784-4d45-841b-346adfd2690e/runtime-profiles status=200 duration=1.037ms request_id=e28481452904/7UOZXp1W8Z-000022 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:17.301 INF daemon registered workspace_id=d708a6ab-f784-4d45-841b-346adfd2690e daemon_id=d432124a-55c6-488b-a7bc-3f793e9a1e2f runtimes_count=1
+01:36:17.301 INF http request method=POST path=/api/daemon/register status=200 duration=1.94ms request_id=e28481452904/7UOZXp1W8Z-000023 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:17.307 INF http request method=POST path=/api/daemon/runtimes/23a6a7cf-6788-43f0-87f2-aeb79e64b9bf/recover-orphans status=200 duration=3.02ms request_id=e28481452904/7UOZXp1W8Z-000024 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:17.314 INF daemon websocket connected daemon_id=d432124a-55c6-488b-a7bc-3f793e9a1e2f user_id="" workspace_id=d708a6ab-f784-4d45-841b-346adfd2690e workspace_ids=[d708a6ab-f784-4d45-841b-346adfd2690e] runtimes=1 client_version=m2-4b65a9c3b41c7da8 total_clients=1
+01:36:17.314 INF http request method=GET path=/api/daemon/ws status=0 duration=781µs request_id=e28481452904/7UOZXp1W8Z-000026 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:17.315 DBG daemon heartbeat runtime_id=23a6a7cf-6788-43f0-87f2-aeb79e64b9bf
+01:36:17.316 INF http request method=GET path=/api/daemon/workspaces/d708a6ab-f784-4d45-841b-346adfd2690e/repos status=200 duration=529µs request_id=e28481452904/7UOZXp1W8Z-000027 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:17.318 INF http request method=GET path=/api/daemon/workspaces status=304 duration=954µs request_id=e28481452904/7UOZXp1W8Z-000028 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:17.320 INF http request method=GET path=/api/daemon/workspaces/d708a6ab-f784-4d45-841b-346adfd2690e/runtime-profiles status=200 duration=801µs request_id=e28481452904/7UOZXp1W8Z-000029 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:17.321 INF http request method=GET path=/api/daemon/workspaces/d708a6ab-f784-4d45-841b-346adfd2690e/repos status=200 duration=588µs request_id=e28481452904/7UOZXp1W8Z-000030 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:17.323 INF http request method=GET path=/api/daemon/workspaces status=304 duration=405µs request_id=e28481452904/7UOZXp1W8Z-000031 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:17.324 INF http request method=GET path=/api/daemon/workspaces/d708a6ab-f784-4d45-841b-346adfd2690e/runtime-profiles status=200 duration=492µs request_id=e28481452904/7UOZXp1W8Z-000032 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:17.325 INF task claimed task_id=7416de18-19f9-4dc8-88e5-fb91530d1c96 agent_id=83ca689e-a562-4fc4-960a-d1120d0729ea
+01:36:17.326 DBG agent status reconciled agent_id=83ca689e-a562-4fc4-960a-d1120d0729ea status=working
+01:36:17.345 INF tasks claimed by runtime batch runtimes=1 requested_max=1 claimed=1 total_ms=34
+01:36:17.345 INF http request method=POST path=/api/daemon/tasks/claim status=200 duration=35.294ms request_id=e28481452904/7UOZXp1W8Z-000025 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:17.351 INF http request method=GET path=/api/daemon/tasks/7416de18-19f9-4dc8-88e5-fb91530d1c96/status status=200 duration=2.11ms request_id=e28481452904/7UOZXp1W8Z-000033 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:17.360 INF http request method=GET path=/api/daemon/crs/CR-2026-992/execution-authorization status=200 duration=1.142ms request_id=e28481452904/7UOZXp1W8Z-000034 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:17.806 INF http request method=GET path=/api/daemon/crs/CR-2026-992/execution-authorization/head status=200 duration=3.022ms request_id=e28481452904/7UOZXp1W8Z-000035 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:19.316 DBG daemon heartbeat runtime_id=23a6a7cf-6788-43f0-87f2-aeb79e64b9bf
+01:36:19.319 INF http request method=GET path=/api/daemon/approvals/pending status=200 duration=1.001ms request_id=e28481452904/7UOZXp1W8Z-000036 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:19.336 INF http request method=POST path=/api/daemon/crs/CR-2026-992/execution-authorization/binding status=200 duration=8.192ms request_id=e28481452904/7UOZXp1W8Z-000037 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:19.451 INF http request method=POST path=/api/daemon/crs/CR-2026-992/execution-authorization/consumption status=201 duration=6.642ms request_id=e28481452904/7UOZXp1W8Z-000038 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:19.462 INF http request method=POST path=/api/daemon/runtimes/23a6a7cf-6788-43f0-87f2-aeb79e64b9bf/tasks/7416de18-19f9-4dc8-88e5-fb91530d1c96/skill-bundles/resolve status=200 duration=2.344ms request_id=e28481452904/7UOZXp1W8Z-000039 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:19.466 INF http request method=POST path=/api/daemon/runtimes/23a6a7cf-6788-43f0-87f2-aeb79e64b9bf/tasks/7416de18-19f9-4dc8-88e5-fb91530d1c96/skill-bundles/resolve status=200 duration=1.748ms request_id=e28481452904/7UOZXp1W8Z-000040 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:19.529 INF task started task_id=7416de18-19f9-4dc8-88e5-fb91530d1c96 issue_id=189482f5-3ba6-4480-94cc-6c09a3277b93
+01:36:19.530 INF task started task_id=7416de18-19f9-4dc8-88e5-fb91530d1c96 agent_id=83ca689e-a562-4fc4-960a-d1120d0729ea
+01:36:19.530 INF http request method=POST path=/api/daemon/tasks/7416de18-19f9-4dc8-88e5-fb91530d1c96/start status=200 duration=6.225ms request_id=e28481452904/7UOZXp1W8Z-000041 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:19.532 INF http request method=POST path=/api/daemon/tasks/7416de18-19f9-4dc8-88e5-fb91530d1c96/progress status=200 duration=918µs request_id=e28481452904/7UOZXp1W8Z-000042 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:19.949 INF http request method=POST path=/api/daemon/tasks/7416de18-19f9-4dc8-88e5-fb91530d1c96/progress status=200 duration=803µs request_id=e28481452904/7UOZXp1W8Z-000043 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:19.951 INF http request method=GET path=/api/daemon/tasks/7416de18-19f9-4dc8-88e5-fb91530d1c96/status status=200 duration=644µs request_id=e28481452904/7UOZXp1W8Z-000044 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:20.006 WRN task failed task_id=7416de18-19f9-4dc8-88e5-fb91530d1c96 issue_id=189482f5-3ba6-4480-94cc-6c09a3277b93 error="pi exited with error: exit status 1" failure_reason=agent_error.process_failure
+01:36:20.012 DBG agent status reconciled agent_id=83ca689e-a562-4fc4-960a-d1120d0729ea status=idle
+01:36:20.015 INF task failed task_id=7416de18-19f9-4dc8-88e5-fb91530d1c96 agent_id=83ca689e-a562-4fc4-960a-d1120d0729ea task_error="pi exited with error: exit status 1" failure_reason=agent_error.process_failure
+01:36:20.015 INF http request method=POST path=/api/daemon/tasks/7416de18-19f9-4dc8-88e5-fb91530d1c96/fail status=200 duration=14.748ms request_id=e28481452904/7UOZXp1W8Z-000045 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:21.315 DBG daemon heartbeat runtime_id=23a6a7cf-6788-43f0-87f2-aeb79e64b9bf
+01:36:21.317 INF http request method=GET path=/api/daemon/approvals/pending status=200 duration=534µs request_id=e28481452904/7UOZXp1W8Z-000046 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:23.315 DBG daemon heartbeat runtime_id=23a6a7cf-6788-43f0-87f2-aeb79e64b9bf
+01:36:23.321 INF http request method=GET path=/api/daemon/approvals/pending status=200 duration=822µs request_id=e28481452904/7UOZXp1W8Z-000047 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:25.315 DBG daemon heartbeat runtime_id=23a6a7cf-6788-43f0-87f2-aeb79e64b9bf
+01:36:25.322 INF http request method=GET path=/api/daemon/approvals/pending status=200 duration=668µs request_id=e28481452904/7UOZXp1W8Z-000048 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:27.316 DBG daemon heartbeat runtime_id=23a6a7cf-6788-43f0-87f2-aeb79e64b9bf
+01:36:27.320 INF http request method=GET path=/api/daemon/approvals/pending status=200 duration=774µs request_id=e28481452904/7UOZXp1W8Z-000049 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:29.315 DBG daemon heartbeat runtime_id=23a6a7cf-6788-43f0-87f2-aeb79e64b9bf
+01:36:29.322 INF http request method=GET path=/api/daemon/approvals/pending status=200 duration=661µs request_id=e28481452904/7UOZXp1W8Z-000050 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:30.343 INF db pool stats role=primary max_conns=25 total_conns=8 acquired_conns=2 idle_conns=6 constructing_conns=0 acquire_count_delta=276 empty_acquire_delta=0 canceled_acquire_delta=0 avg_acquire_ms=0
+01:36:31.316 DBG daemon heartbeat runtime_id=23a6a7cf-6788-43f0-87f2-aeb79e64b9bf
+01:36:31.318 INF http request method=GET path=/api/daemon/approvals/pending status=200 duration=348µs request_id=e28481452904/7UOZXp1W8Z-000051 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:32.494 INF task claimed task_id=b709f3c2-7e5a-4373-85d6-5d69c1b37e38 agent_id=83ca689e-a562-4fc4-960a-d1120d0729ea
+01:36:32.495 DBG agent status reconciled agent_id=83ca689e-a562-4fc4-960a-d1120d0729ea status=working
+01:36:32.508 INF tasks claimed by runtime batch runtimes=1 requested_max=1 claimed=1 total_ms=24
+01:36:32.511 INF http request method=GET path=/api/daemon/tasks/b709f3c2-7e5a-4373-85d6-5d69c1b37e38/status status=200 duration=1.569ms request_id=e28481452904/7UOZXp1W8Z-000052 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:32.516 INF http request method=GET path=/api/daemon/crs/CR-2026-992/execution-authorization status=200 duration=572µs request_id=e28481452904/7UOZXp1W8Z-000053 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:32.861 INF http request method=GET path=/api/daemon/crs/CR-2026-992/execution-authorization/head status=200 duration=3.434ms request_id=e28481452904/7UOZXp1W8Z-000054 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:33.316 DBG daemon heartbeat runtime_id=23a6a7cf-6788-43f0-87f2-aeb79e64b9bf
+01:36:33.320 INF http request method=GET path=/api/daemon/approvals/pending status=200 duration=574µs request_id=e28481452904/7UOZXp1W8Z-000055 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:34.400 INF http request method=POST path=/api/daemon/crs/CR-2026-992/execution-authorization/binding status=200 duration=8.545ms request_id=e28481452904/7UOZXp1W8Z-000056 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:34.495 WRN task failed task_id=b709f3c2-7e5a-4373-85d6-5d69c1b37e38 issue_id=189482f5-3ba6-4480-94cc-6c09a3277b93 error="EXECUTION_CONSUMPTION_REQUIRED: non-read-only bind did not return a receipt (exit=1): {\n  \"error\": {\n    \"code\": \"EXECUTION_SOURCE_INVALID\",\n    \"message\": \"原始来源bytes过大或digest不匹配\"\n  }\n}\n" failure_reason=agent_error.unknown
+01:36:34.501 DBG agent status reconciled agent_id=83ca689e-a562-4fc4-960a-d1120d0729ea status=idle
+01:36:34.504 INF task failed task_id=b709f3c2-7e5a-4373-85d6-5d69c1b37e38 agent_id=83ca689e-a562-4fc4-960a-d1120d0729ea task_error="EXECUTION_CONSUMPTION_REQUIRED: non-read-only bind did not return a receipt (exit=1): {\n  \"error\": {\n    \"code\": \"EXECUTION_SOURCE_INVALID\",\n    \"message\": \"原始来源bytes过大或digest不匹配\"\n  }\n}\n" failure_reason=agent_error.unknown
+01:36:34.504 INF http request method=POST path=/api/daemon/tasks/b709f3c2-7e5a-4373-85d6-5d69c1b37e38/fail status=200 duration=16.448ms request_id=e28481452904/7UOZXp1W8Z-000057 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:35.315 DBG daemon heartbeat runtime_id=23a6a7cf-6788-43f0-87f2-aeb79e64b9bf
+01:36:35.317 INF http request method=GET path=/api/daemon/approvals/pending status=200 duration=355µs request_id=e28481452904/7UOZXp1W8Z-000058 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:37.316 DBG daemon heartbeat runtime_id=23a6a7cf-6788-43f0-87f2-aeb79e64b9bf
+01:36:37.318 INF http request method=GET path=/api/daemon/approvals/pending status=200 duration=418µs request_id=e28481452904/7UOZXp1W8Z-000059 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:39.316 DBG daemon heartbeat runtime_id=23a6a7cf-6788-43f0-87f2-aeb79e64b9bf
+01:36:39.320 INF http request method=GET path=/api/daemon/approvals/pending status=200 duration=491µs request_id=e28481452904/7UOZXp1W8Z-000060 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:40.047 INF http request method=POST path=/api/workspaces/d708a6ab-f784-4d45-841b-346adfd2690e/crs/CR-2026-993/execution-authorization status=201 duration=3.966ms request_id=e28481452904/7UOZXp1W8Z-000061 user_id=fef14d31-da1b-4b7b-8176-ca1c846e1424
+01:36:41.315 DBG daemon heartbeat runtime_id=23a6a7cf-6788-43f0-87f2-aeb79e64b9bf
+01:36:41.318 INF http request method=GET path=/api/daemon/approvals/pending status=200 duration=400µs request_id=e28481452904/7UOZXp1W8Z-000062 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:41.424 INF task claimed task_id=2eea9470-4a6a-41a9-ba4e-457b58c33b73 agent_id=83ca689e-a562-4fc4-960a-d1120d0729ea
+01:36:41.425 DBG agent status reconciled agent_id=83ca689e-a562-4fc4-960a-d1120d0729ea status=working
+01:36:41.434 INF tasks claimed by runtime batch runtimes=1 requested_max=1 claimed=1 total_ms=18
+01:36:41.438 INF http request method=GET path=/api/daemon/tasks/2eea9470-4a6a-41a9-ba4e-457b58c33b73/status status=200 duration=1.641ms request_id=e28481452904/7UOZXp1W8Z-000063 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:41.446 INF http request method=GET path=/api/daemon/crs/CR-2026-993/execution-authorization status=200 duration=680µs request_id=e28481452904/7UOZXp1W8Z-000064 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:41.820 INF http request method=GET path=/api/daemon/crs/CR-2026-993/execution-authorization/head status=200 duration=3.76ms request_id=e28481452904/7UOZXp1W8Z-000065 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:43.130 INF http request method=POST path=/api/daemon/crs/CR-2026-993/execution-authorization/binding status=200 duration=5.367ms request_id=e28481452904/7UOZXp1W8Z-000066 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:43.235 INF http request method=POST path=/api/daemon/crs/CR-2026-993/execution-authorization/consumption status=201 duration=4.932ms request_id=e28481452904/7UOZXp1W8Z-000067 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:43.287 INF task started task_id=2eea9470-4a6a-41a9-ba4e-457b58c33b73 issue_id=dfb46aba-81cd-4709-9d17-ae194da498c2
+01:36:43.288 INF task started task_id=2eea9470-4a6a-41a9-ba4e-457b58c33b73 agent_id=83ca689e-a562-4fc4-960a-d1120d0729ea
+01:36:43.288 INF http request method=POST path=/api/daemon/tasks/2eea9470-4a6a-41a9-ba4e-457b58c33b73/start status=200 duration=3.424ms request_id=e28481452904/7UOZXp1W8Z-000068 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:43.289 INF http request method=POST path=/api/daemon/tasks/2eea9470-4a6a-41a9-ba4e-457b58c33b73/progress status=200 duration=488µs request_id=e28481452904/7UOZXp1W8Z-000069 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:43.315 DBG daemon heartbeat runtime_id=23a6a7cf-6788-43f0-87f2-aeb79e64b9bf
+01:36:43.324 INF http request method=GET path=/api/daemon/approvals/pending status=200 duration=601µs request_id=e28481452904/7UOZXp1W8Z-000070 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:43.713 INF http request method=POST path=/api/daemon/tasks/2eea9470-4a6a-41a9-ba4e-457b58c33b73/progress status=200 duration=937µs request_id=e28481452904/7UOZXp1W8Z-000071 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:43.714 INF http request method=GET path=/api/daemon/tasks/2eea9470-4a6a-41a9-ba4e-457b58c33b73/status status=200 duration=548µs request_id=e28481452904/7UOZXp1W8Z-000072 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:43.754 WRN task failed task_id=2eea9470-4a6a-41a9-ba4e-457b58c33b73 issue_id=dfb46aba-81cd-4709-9d17-ae194da498c2 error="pi exited with error: exit status 1" failure_reason=agent_error.process_failure
+01:36:43.756 DBG agent status reconciled agent_id=83ca689e-a562-4fc4-960a-d1120d0729ea status=idle
+01:36:43.757 INF task failed task_id=2eea9470-4a6a-41a9-ba4e-457b58c33b73 agent_id=83ca689e-a562-4fc4-960a-d1120d0729ea task_error="pi exited with error: exit status 1" failure_reason=agent_error.process_failure
+01:36:43.757 INF http request method=POST path=/api/daemon/tasks/2eea9470-4a6a-41a9-ba4e-457b58c33b73/fail status=200 duration=6.954ms request_id=e28481452904/7UOZXp1W8Z-000073 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:45.315 DBG daemon heartbeat runtime_id=23a6a7cf-6788-43f0-87f2-aeb79e64b9bf
+01:36:45.318 INF http request method=GET path=/api/daemon/approvals/pending status=200 duration=371µs request_id=e28481452904/7UOZXp1W8Z-000074 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:45.342 INF db pool stats role=primary max_conns=25 total_conns=8 acquired_conns=5 idle_conns=3 constructing_conns=0 acquire_count_delta=281 empty_acquire_delta=0 canceled_acquire_delta=0 avg_acquire_ms=0
+01:36:45.392 INF scheduler claimed plan component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=issue_wakeup_dispatch scope=global/global plan_time=2026-11-09T01:36:30Z attempt=1 execution_id=01a1bdf3-5d50-7a8c-883b-08352524c606
+01:36:45.396 INF issue wakeup dispatch pass input_rules=0 due_rules=0 duration_ms=1 stopped=drained failures=0 held_inputs=0 pending_scan=complete
+01:36:45.397 INF scheduler: handler succeeded component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=issue_wakeup_dispatch scope=global/global plan_time=2026-11-09T01:36:30Z attempt=1 execution_id=01a1bdf3-5d50-7a8c-883b-08352524c606 duration_ms=3 rows_affected=0
+01:36:45.397 INF scheduler claimed plan component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=issue_child_event_sweep scope=global/global plan_time=2026-11-09T01:36:30Z attempt=1 execution_id=01a1bdf3-5d55-7580-b25a-9f4765b9e12d
+01:36:45.399 INF scheduler: handler succeeded component=scheduler runner_id=306ed23b-2712-4fda-91ad-cad146c5375a job=issue_child_event_sweep scope=global/global plan_time=2026-11-09T01:36:30Z attempt=1 execution_id=01a1bdf3-5d55-7580-b25a-9f4765b9e12d duration_ms=1 rows_affected=0
+01:36:47.313 INF http request method=POST path=/api/daemon/workspaces/d708a6ab-f784-4d45-841b-346adfd2690e/issues/gc-check status=200 duration=856µs request_id=e28481452904/7UOZXp1W8Z-000075 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:47.315 DBG daemon heartbeat runtime_id=23a6a7cf-6788-43f0-87f2-aeb79e64b9bf
+01:36:47.319 INF http request method=GET path=/api/daemon/approvals/pending status=200 duration=457µs request_id=e28481452904/7UOZXp1W8Z-000076 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:49.022 INF task claimed task_id=e27ef983-5a5e-40a4-8d56-92cd93b29f76 agent_id=83ca689e-a562-4fc4-960a-d1120d0729ea
+01:36:49.023 DBG agent status reconciled agent_id=83ca689e-a562-4fc4-960a-d1120d0729ea status=working
+01:36:49.033 INF tasks claimed by runtime batch runtimes=1 requested_max=1 claimed=1 total_ms=21
+01:36:49.038 INF http request method=GET path=/api/daemon/tasks/e27ef983-5a5e-40a4-8d56-92cd93b29f76/status status=200 duration=2.032ms request_id=e28481452904/7UOZXp1W8Z-000077 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:49.045 INF http request method=GET path=/api/daemon/crs/CR-2026-992/execution-authorization status=200 duration=593µs request_id=e28481452904/7UOZXp1W8Z-000078 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:49.315 DBG daemon heartbeat runtime_id=23a6a7cf-6788-43f0-87f2-aeb79e64b9bf
+01:36:49.319 INF http request method=GET path=/api/daemon/approvals/pending status=200 duration=537µs request_id=e28481452904/7UOZXp1W8Z-000079 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:49.422 INF http request method=GET path=/api/daemon/crs/CR-2026-992/execution-authorization/head status=200 duration=2.842ms request_id=e28481452904/7UOZXp1W8Z-000080 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:50.914 INF http request method=POST path=/api/daemon/crs/CR-2026-992/execution-authorization/binding status=200 duration=7.116ms request_id=e28481452904/7UOZXp1W8Z-000081 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:51.315 DBG daemon heartbeat runtime_id=23a6a7cf-6788-43f0-87f2-aeb79e64b9bf
+01:36:51.318 INF http request method=GET path=/api/daemon/approvals/pending status=200 duration=442µs request_id=e28481452904/7UOZXp1W8Z-000082 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:51.751 WRN task failed task_id=e27ef983-5a5e-40a4-8d56-92cd93b29f76 issue_id=189482f5-3ba6-4480-94cc-6c09a3277b93 error="EXECUTION_CONSUMPTION_REQUIRED: non-read-only bind did not return a receipt (exit=1): {\n  \"error\": {\n    \"code\": \"EXECUTION_GRANT_SCOPE_MISMATCH\",\n    \"message\": \"执行授权文件/CR与签名scope不匹配\"\n  }\n}\n" failure_reason=agent_error.unknown
+01:36:51.754 DBG agent status reconciled agent_id=83ca689e-a562-4fc4-960a-d1120d0729ea status=idle
+01:36:51.755 INF task failed task_id=e27ef983-5a5e-40a4-8d56-92cd93b29f76 agent_id=83ca689e-a562-4fc4-960a-d1120d0729ea task_error="EXECUTION_CONSUMPTION_REQUIRED: non-read-only bind did not return a receipt (exit=1): {\n  \"error\": {\n    \"code\": \"EXECUTION_GRANT_SCOPE_MISMATCH\",\n    \"message\": \"执行授权文件/CR与签名scope不匹配\"\n  }\n}\n" failure_reason=agent_error.unknown
+01:36:51.756 INF http request method=POST path=/api/daemon/tasks/e27ef983-5a5e-40a4-8d56-92cd93b29f76/fail status=200 duration=7.864ms request_id=e28481452904/7UOZXp1W8Z-000083 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:53.316 DBG daemon heartbeat runtime_id=23a6a7cf-6788-43f0-87f2-aeb79e64b9bf
+01:36:53.318 INF http request method=GET path=/api/daemon/approvals/pending status=200 duration=457µs request_id=e28481452904/7UOZXp1W8Z-000084 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:55.315 DBG daemon heartbeat runtime_id=23a6a7cf-6788-43f0-87f2-aeb79e64b9bf
+01:36:55.318 INF http request method=GET path=/api/daemon/approvals/pending status=200 duration=435µs request_id=e28481452904/7UOZXp1W8Z-000085 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:57.316 DBG daemon heartbeat runtime_id=23a6a7cf-6788-43f0-87f2-aeb79e64b9bf
+01:36:57.319 INF http request method=GET path=/api/daemon/approvals/pending status=200 duration=486µs request_id=e28481452904/7UOZXp1W8Z-000086 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:36:59.316 DBG daemon heartbeat runtime_id=23a6a7cf-6788-43f0-87f2-aeb79e64b9bf
+01:36:59.321 INF http request method=GET path=/api/daemon/approvals/pending status=200 duration=590µs request_id=e28481452904/7UOZXp1W8Z-000087 client_platform=daemon client_version=m2-4b65a9c3b41c7da8 client_os=linux
+01:37:00.342 INF db pool stats role=primary max_conns=25 total_conns=8 acquired_conns=2 idle_conns=6 constructing_conns=0 acquire_count_delta=231 empty_acquire_delta=0 canceled_acquire_delta=0 avg_acquire_ms=0

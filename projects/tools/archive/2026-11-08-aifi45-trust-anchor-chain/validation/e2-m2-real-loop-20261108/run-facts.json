@@ -1,0 +1,35 @@
+{
+  "schema": "aifi45-m2-real-loop-facts/v1",
+  "measured_at": "2026-11-08T15:46:32.067Z",
+  "result": "blocked-before-control-admission",
+  "blocker": "daemon prepareClaimedPipelineTask returned EXECUTION_CONSUMPTION_REQUIRED after trust installation and crctl --check; no binding challenge or business write was reached",
+  "image": {
+    "tag": "localhost/multica-backend:m2-20261108T154054Z-3a89e7d39bae6c5f",
+    "id": "3ef1bd77e84f7fe1349412cf9b02340226d4e58853c9ffae5db7ff5c89990426"
+  },
+  "authorization": {
+    "source_event_id": "e2ac071b-9390-4710-8a91-14b6a30ee2d7",
+    "source_digest": "09bfb6d313dd765978d1c39e638e29455126096ccc353d713cff26c47d145cb1",
+    "source_digest_prefix": "09bfb6d313dd7659",
+    "source_bindings_count": 14,
+    "workspace_id": "899654dd-6d37-48ad-83ee-3596d5f8aafe",
+    "project_id": "f64b551a-7bac-40eb-ab43-458b8673817a",
+    "cr_id": "CR-2026-992"
+  },
+  "daemon": {
+    "trust_root": "/root/.multica/execution-trust/899654dd-6d37-48ad-83ee-3596d5f8aafe",
+    "runtime_id": "6cfbb7e9-366e-43ba-95bf-f1023829973e",
+    "task_id": "9d8834db-daef-48df-be69-5b8dbe32c3bb",
+    "task_status": "failed"
+  },
+  "control_admission": {
+    "reached": false,
+    "binding_challenge_observed": false,
+    "business_consumption_observed": false
+  },
+  "negatives": {
+    "tampered": "not-run: positive prerequisite blocked",
+    "cross_project": "not-run: positive prerequisite blocked"
+  },
+  "initial_data_boundary": "workspace/project/CR and one pipeline queue carrier were seeded in the disposable real DB; daemon claim, claim revalidation, delivery, install, crctl --check and terminal callback used real routes"
+}

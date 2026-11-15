@@ -1,0 +1,23 @@
+REAL NEGATIVE: one acceptance character changed after real daemon delivery; grant/signature/source digest retained.
+task_id=b709f3c2-7e5a-4373-85d6-5d69c1b37e38 status=failed
+
+$ exact tamper facts
+{"changed":"accepted_rules: allow-a -> accepted_rules: allow-b","signed_digest_retained":"ea2c309aa5e8d5ecd9f3d220995d5a5f9c5b0ce7ae7cb583c196ed37496f018b","actual_tampered_sha256":"94a9dcd4a98184cee9cc5e0cb073eaee778995097c358adb2659be7b75ac637e","signature_modified":false}
+
+$ real queue error (T refusal propagated by daemon)
+b709f3c2-7e5a-4373-85d6-5d69c1b37e38|failed|EXECUTION_CONSUMPTION_REQUIRED: non-read-only bind did not return a receipt (exit=1): {
+  "error": {
+    "code": "EXECUTION_SOURCE_INVALID",
+    "message": "原始来源bytes过大或digest不匹配"
+  }
+}
+|agent_error.unknown
+
+$ real daemon/T original log lines
+01:36:19.452 INF picked task component=daemon task=7416de18-19f9-4dc8-88e5-fb91530d1c96 issue=189482f5-3ba6-4480-94cc-6c09a3277b93 agent="M2 real executor" provider=pi
+01:36:34.448 ERR pipeline task preparation failed component=daemon task=b709f3c2-7e5a-4373-85d6-5d69c1b37e38 error="EXECUTION_CONSUMPTION_REQUIRED: non-read-only bind did not return a receipt (exit=1): {\n  \"error\": {\n    \"code\": \"EXECUTION_SOURCE_INVALID\",\n    \"message\": \"原始来源bytes过大或digest不匹配\"\n  }\n}\n"
+
+$ negative side effects: platform consumption and T receipts for this run
+0
+binding_issue_count_for_tampered_task=1
+receipt_files_now=1

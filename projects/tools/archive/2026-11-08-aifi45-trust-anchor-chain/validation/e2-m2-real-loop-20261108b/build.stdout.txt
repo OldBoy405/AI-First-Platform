@@ -1,0 +1,81 @@
+$ podman build --rm --pull=never -t localhost/multica-backend:m2-20261109T013134Z-4b65a9c3b41c7da8 -f Dockerfile .
+source_HEAD=81e5293adc758e392a045026cf81ec5cc1bac72d
+source_dirty_entries=79
+[1/2] STEP 1/15: FROM golang:1.26.9-alpine AS builder
+[1/2] STEP 2/15: RUN apk add --no-cache git
+--> Using cache 9c281a0dcf61f4b3d15aa2daf1cb399a3ee17bccccbf862d001e5dab7cacb3af
+--> 9c281a0dcf61
+[1/2] STEP 3/15: WORKDIR /src
+--> Using cache 70def6317adadd58e929d68da060dba8ec76f148d08bcb9434506072f67ea2ac
+--> 70def6317ada
+[1/2] STEP 4/15: COPY server/go.mod server/go.sum ./server/
+--> Using cache 862c752b89d8d3eaa603c99281635edd9becb898f47641d233070e6252325593
+--> 862c752b89d8
+[1/2] STEP 5/15: RUN cd server && go mod download
+--> Using cache 90366ad36dd546350e7e4ec690374440d394226f68d3af6bb04bcfad67f12563
+--> 90366ad36dd5
+[1/2] STEP 6/15: COPY server/ ./server/
+--> Using cache c17ae7cbf8304a0484f2db6e8260415a8e051f7352278a75f812a8542f138a21
+--> c17ae7cbf830
+[1/2] STEP 7/15: ARG VERSION=dev
+--> Using cache 59c189705da4a2d25e31a05a8cb724cce408590df00e3d0d8ebcf2f38da45360
+--> 59c189705da4
+[1/2] STEP 8/15: ARG COMMIT=unknown
+--> Using cache dcaa7b06dfead7908574eca0d3d3edcaa6242c133228294386ed9b1e184b5bab
+--> dcaa7b06dfea
+[1/2] STEP 9/15: ARG DATE=unknown
+--> Using cache 003e38d5d5719edcb9ab5fb20239662b6ca1c0aeb9c4099ddae0a16650828673
+--> 003e38d5d571
+[1/2] STEP 10/15: RUN cd server && CGO_ENABLED=0 go build -ldflags "-s -w -X main.version=${VERSION} -X main.commit=${COMMIT}" -o bin/server ./cmd/server
+--> df8307dade76
+[1/2] STEP 11/15: RUN cd server && CGO_ENABLED=0 go build -ldflags "-s -w -X main.version=${VERSION} -X main.commit=${COMMIT} -X main.date=${DATE}" -o bin/multica ./cmd/multica
+--> 01ef0261a0e1
+[1/2] STEP 12/15: RUN cd server && CGO_ENABLED=0 go build -ldflags "-s -w" -o bin/migrate ./cmd/migrate
+--> e3c2108cf6c0
+[1/2] STEP 13/15: RUN cd server && CGO_ENABLED=0 go build -ldflags "-s -w" -o bin/maintenance ./cmd/maintenance
+--> 9db67f6d71f3
+[1/2] STEP 14/15: RUN cd server && CGO_ENABLED=0 go build -ldflags "-s -w" -o bin/backfill_task_usage_hourly ./cmd/backfill_task_usage_hourly
+--> c08d0db5b3a7
+[1/2] STEP 15/15: RUN cd server && CGO_ENABLED=0 go build -ldflags "-s -w" -o bin/backfill_codex_usage_cache ./cmd/backfill_codex_usage_cache
+--> 701e69d356ec
+[2/2] STEP 1/15: FROM alpine:3.21
+[2/2] STEP 2/15: RUN apk add --no-cache ca-certificates tzdata
+--> Using cache 6c11085face72f5a127a023bdaf636e0633c8923556e33907ea202a70801861e
+--> 6c11085face7
+[2/2] STEP 3/15: WORKDIR /app
+--> Using cache 945d726ee6f79704e47a5d7555f71e791af259d28ec5775933e0c3e365731983
+--> 945d726ee6f7
+[2/2] STEP 4/15: COPY --from=builder /src/server/bin/server .
+--> 2a37cbea5c67
+[2/2] STEP 5/15: COPY --from=builder /src/server/bin/multica .
+--> 036823e31474
+[2/2] STEP 6/15: COPY --from=builder /src/server/bin/migrate .
+--> 4b31a3674b71
+[2/2] STEP 7/15: COPY --from=builder /src/server/bin/maintenance .
+--> 101e5010fcd0
+[2/2] STEP 8/15: COPY --from=builder /src/server/bin/backfill_task_usage_hourly .
+--> dec958bd9e6a
+[2/2] STEP 9/15: COPY --from=builder /src/server/bin/backfill_codex_usage_cache .
+--> 8c30b110ef71
+[2/2] STEP 10/15: COPY server/migrations/ ./migrations/
+--> 78b818c3a62a
+[2/2] STEP 11/15: COPY LICENSE NOTICE ./
+--> fdcf69cbe131
+[2/2] STEP 12/15: COPY docker/entrypoint.sh .
+--> 1be44a759a8e
+[2/2] STEP 13/15: RUN sed -i 's/\r$//' entrypoint.sh && chmod +x entrypoint.sh
+--> 9bac92a40fe2
+[2/2] STEP 14/15: EXPOSE 8080
+--> de3172612a48
+[2/2] STEP 15/15: ENTRYPOINT ["./entrypoint.sh"]
+[2/2] COMMIT localhost/multica-backend:m2-20261109T013134Z-4b65a9c3b41c7da8
+--> 771d0aedc2e9
+Successfully tagged localhost/multica-backend:m2-20261109T013134Z-4b65a9c3b41c7da8
+771d0aedc2e944f96a5e1421d8aa727519b7e8b686dc8af0dba6a77ed0b16d25
+build_exit=0
+
+$ podman image inspect localhost/multica-backend:m2-20261109T013134Z-4b65a9c3b41c7da8 --format {{.Id}}
+771d0aedc2e944f96a5e1421d8aa727519b7e8b686dc8af0dba6a77ed0b16d25
+
+$ podman images (exact tag)
+localhost/multica-backend:m2-20261109T013134Z-4b65a9c3b41c7da8	771d0aedc2e9	sha256:d94d1a27034d920e52f3a36f7423a2931fe766e41d6ce4398e85964a5b1c9a01

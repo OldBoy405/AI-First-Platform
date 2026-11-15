@@ -1,0 +1,77 @@
+$ approval_record + authoritative CR/shell issue/project + current head
+a704a9cc-b087-45ef-be64-198e33dee069|d708a6ab-f784-4d45-841b-346adfd2690e|CR-2026-992|execution|approve|fef14d31-da1b-4b7b-8176-ca1c846e1424|ea2c309aa5e8d5ecd9f3d220995d5a5f9c5b0ce7ae7cb583c196ed37496f018b|m2-4b65a9c3b41c7da8|2026-11-09 01:32:49.253155+00|a704a9cc-b087-45ef-be64-198e33dee069|de2511d6-1c70-4507-b555-a824b69d8b2e
+
+$ computed facts from the actual HTTP response and exact source bytes
+{
+  "http_reused": false,
+  "source_event_id": "fb9321da-65ab-45e7-8145-b42e660f7153",
+  "source_digest": "ea2c309aa5e8d5ecd9f3d220995d5a5f9c5b0ce7ae7cb583c196ed37496f018b",
+  "source_digest_prefix": "ea2c309aa5e8d5ec",
+  "actual_source_sha256": "ea2c309aa5e8d5ecd9f3d220995d5a5f9c5b0ce7ae7cb583c196ed37496f018b",
+  "exact_source_bytes_equal": true,
+  "source_format": "structured-human-request/v1",
+  "source_bindings_count": 14,
+  "source_bindings": {
+    "acceptance": {
+      "kind": "json-pointer",
+      "pointer": "/acceptance"
+    },
+    "allowed_paths": {
+      "kind": "json-pointer",
+      "pointer": "/allowed_paths"
+    },
+    "allowed_repositories": {
+      "kind": "json-pointer",
+      "pointer": "/allowed_repositories",
+      "resolution_pointer": "/repository_selections"
+    },
+    "delivery_targets": {
+      "kind": "json-pointer",
+      "pointer": "/delivery_targets"
+    },
+    "goal": {
+      "kind": "json-pointer",
+      "pointer": "/goal"
+    },
+    "policy_digest": {
+      "kind": "json-pointer",
+      "pointer": "/policy_digest"
+    },
+    "policy_version": {
+      "kind": "json-pointer",
+      "pointer": "/policy_version"
+    },
+    "prohibitions": {
+      "kind": "json-pointer",
+      "pointer": "/prohibitions"
+    },
+    "repair_limit": {
+      "kind": "json-pointer",
+      "pointer": "/repair_limit"
+    },
+    "scope_revision": {
+      "kind": "json-pointer",
+      "pointer": "/scope_revision"
+    },
+    "sensitive_actions": {
+      "kind": "json-pointer",
+      "pointer": "/sensitive_actions"
+    },
+    "target_spec_id": {
+      "kind": "json-pointer",
+      "pointer": "/target_spec_id"
+    },
+    "target_version": {
+      "kind": "json-pointer",
+      "pointer": "/target_version"
+    },
+    "template_digest": {
+      "kind": "json-pointer",
+      "pointer": "/template_digest"
+    }
+  },
+  "workspace_id": "d708a6ab-f784-4d45-841b-346adfd2690e",
+  "project_id": "de2511d6-1c70-4507-b555-a824b69d8b2e",
+  "cr_id": "CR-2026-992",
+  "grant_id": "f44ad7cb-1c0b-4fdc-a397-851aeef2c378"
+}

@@ -1,0 +1,38 @@
+{
+  "goal": "M2 real cross-end trust delivery",
+  "scope_revision": 1,
+  "allowed_repositories": [
+    "kb"
+  ],
+  "allowed_paths": {
+    "kb": [
+      "change-requests"
+    ]
+  },
+  "delivery_targets": [
+    "review branch"
+  ],
+  "acceptance": [
+    "accepted_rules: allow-a"
+  ],
+  "prohibitions": [
+    "no production"
+  ],
+  "sensitive_actions": [],
+  "policy_version": "authorized-execution/v1",
+  "policy_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "template_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "target_version": "v1.0.0",
+  "target_spec_id": "m2-real-loop",
+  "repair_limit": 1,
+  "repository_selections": {
+    "kb": {
+      "resource_id": "c109b0eb-9f27-48a2-bbee-b28c1dee0a5e",
+      "binding_digest": "b232564bdd1f7ce351950389b8e9281b60bbb7376e80fbd6eb85450ef8013c44"
+    }
+  },
+  "coordinator_selection": {
+    "resource_id": "c109b0eb-9f27-48a2-bbee-b28c1dee0a5e",
+    "binding_digest": "b232564bdd1f7ce351950389b8e9281b60bbb7376e80fbd6eb85450ef8013c44"
+  }
+}

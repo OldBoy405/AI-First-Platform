@@ -1,0 +1,27 @@
+meta:
+  capability: evidence-delivery-contract
+  change_id: 2026-11-08-aifi45-trust-anchor-chain
+  created: '2026-11-08'
+  confidence: high
+requirements:
+  - id: REQ-TAC-003
+    confidence: high
+    description: 注册与归档只能把交付事实写入已验证归属的当前项目。
+    scenarios:
+      - id: SC-TAC-009
+        confidence: high
+        evidence: canonical/proposals/2026-11-08-aifi45-trust-anchor-chain.yaml#what_changes[C1,C2],capabilities.modified[evidence-delivery-contract]
+        given: 平台当前claim已给出CR/project及对应注册或归档授权，daemon证明、原bytes来源、key_id、当前scope/head与实际安装根均匹配；register的registration key与本地候选CR也一致。
+        when: daemon请求register或archive首次业务写入。
+        then: SHALL 在任何registry、CR、归档journal或交付事实写入前通过同一控制准入信任缝，再沿既有workspace事务完成注册或归档。
+        and:
+          - register若无法在任何持久化前证明平台CR/claim与本地候选CR一致，SHALL失败关闭而非先注册后补证明。
+          - 已提交register/archive重放SHALL只恢复原journal/receipt，不重复准入或生成第二条交付事实。
+      - id: SC-TAC-010
+        confidence: high
+        evidence: canonical/proposals/2026-11-08-aifi45-trust-anchor-chain.yaml#what_changes[C2,C3],risk_areas[evidence-delivery-contract],success_criteria[ADJ-001,ADJ-002,ADJ-003]
+        given: register或archive使用缺失/跨project/跨安装根复制的证明、改一字的来源、不可信公钥、错误scope、旧head或已撤销授权。
+        when: 逐项请求首次注册或归档写入。
+        then: SHALL 全部失败关闭，不占用registration key，不创建CR/worktree/registry记录，不写归档journal、交付记录、Git/index或平台任务。
+        and:
+          - 环境变量、sidecar、同名CR、图路径或有效但属于其他project的签名SHALL不得使交付事实获得当前project归属。

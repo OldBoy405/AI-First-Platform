@@ -1,0 +1,64 @@
+15:45:45.166 INF starting daemon component=daemon version=m2-3a89e7d39bae6c5f agents=[pi] server=https://tls:8443
+15:45:45.170 DBG daemon config resolved component=daemon daemon_id=8efab215-ef83-4206-8532-ef06460588bf device_name=m2-3a89e7d39bae6c5f workspaces_root=/root/multica_workspaces health_port=19514 poll_interval=1s ws_claim_poll_interval=2s heartbeat_interval=2s agent_timeout=2m0s idle_watchdog=2h0m0s tool_watchdog=2h0m0s opencode_idle_watchdog=10m0s codex_semantic_inactivity=2h0m0s max_concurrent_tasks=1 gc_enabled=true auto_update=false launched_by=""
+15:45:45.173 INF authenticated component=daemon
+15:45:45.173 DBG auth token loaded component=daemon profile="" token_len=44
+15:45:45.175 INF health server listening component=daemon addr=127.0.0.1:19514
+15:45:45.193 WRN auth token rejected by server — run 'multica login' to re-authenticate, then restart the daemon component=daemon error="POST /api/tokens/current/renew returned 401: {\"error\":\"invalid token\"}"
+15:45:45.196 DBG workspace sync: fetched workspaces component=daemon count=1
+15:45:45.424 DBG agent version detected component=daemon name=pi version=1.5.0 path=/usr/local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/cli.js
+15:45:45.425 DBG registering runtimes for workspace component=daemon workspace_id=899654dd-6d37-48ad-83ee-3596d5f8aafe agent_count=1
+15:45:45.431 DBG register response component=daemon workspace_id=899654dd-6d37-48ad-83ee-3596d5f8aafe runtimes=1 repos=0 repos_version=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+15:45:45.431 INF registered runtime component=daemon workspace_id=899654dd-6d37-48ad-83ee-3596d5f8aafe runtime_id=6cfbb7e9-366e-43ba-95bf-f1023829973e provider=pi
+15:45:45.434 INF watching workspace component=daemon workspace_id=899654dd-6d37-48ad-83ee-3596d5f8aafe name="M2 disposable" runtimes=1 repos=0
+15:45:45.434 DBG workspace sync done component=daemon registered=1 removed=0 tracked=1
+15:45:45.435 DBG background loops launched (workspace-sync, terminal-report-replay, task-wakeup, heartbeat, gc, auto-update, token-renewal); health now reporting ready component=daemon
+15:45:45.435 INF cr event collector started component=daemon roots=[] interval=2s
+15:45:45.435 INF auto-update: disabled component=daemon
+15:45:45.436 INF auto-reload: disabled component=daemon
+15:45:45.435 INF gc: started component=daemon interval=2h0m0s ttl=24h0m0s completed_task_ttl=0s orphan_ttl=72h0m0s artifact_ttl=12h0m0s repo_ttl=720h0m0s repo_maintenance_enabled=true artifact_patterns="[node_modules .next .turbo]" managed_artifact_subpaths=[codex-home/.sandbox-bin]
+15:45:45.439 INF task wakeup websocket connected component=daemon runtimes=1
+15:45:45.441 INF local_directory snapshot updated collector roots component=daemon runtime_id=6cfbb7e9-366e-43ba-95bf-f1023829973e roots=[/workspace]
+15:45:45.444 DBG workspace sync: fetched workspaces component=daemon count=1
+15:45:45.447 DBG workspace sync: fetched workspaces component=daemon count=1
+15:45:45.451 DBG cr commit scan skipped component=daemon root=/workspace error="exit status 128"
+15:45:45.455 WRN cr reconcile snapshot skipped component=daemon root=/workspace reason="published trunk: local HEAD (no origin remote): exit status 128"
+15:45:46.630 DBG heartbeat: skipping HTTP tick, WS recently acked component=daemon runtime_id=6cfbb7e9-366e-43ba-95bf-f1023829973e
+15:46:24.121 INF starting daemon component=daemon version=m2-3a89e7d39bae6c5f agents=[pi] server=https://tls:8443
+15:46:24.123 DBG daemon config resolved component=daemon daemon_id=8efab215-ef83-4206-8532-ef06460588bf device_name=m2-3a89e7d39bae6c5f workspaces_root=/root/multica_workspaces health_port=19514 poll_interval=1s ws_claim_poll_interval=2s heartbeat_interval=2s agent_timeout=2m0s idle_watchdog=2h0m0s tool_watchdog=2h0m0s opencode_idle_watchdog=10m0s codex_semantic_inactivity=2h0m0s max_concurrent_tasks=1 gc_enabled=true auto_update=false launched_by=""
+15:46:24.131 INF authenticated component=daemon
+15:46:24.132 DBG auth token loaded component=daemon profile="" token_len=44
+15:46:24.134 INF health server listening component=daemon addr=127.0.0.1:19514
+15:46:24.150 WRN auth token rejected by server — run 'multica login' to re-authenticate, then restart the daemon component=daemon error="POST /api/tokens/current/renew returned 401: {\"error\":\"invalid token\"}"
+15:46:24.152 DBG workspace sync: fetched workspaces component=daemon count=1
+15:46:24.378 DBG agent version detected component=daemon name=pi version=1.5.0 path=/usr/local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/cli.js
+15:46:24.378 DBG registering runtimes for workspace component=daemon workspace_id=899654dd-6d37-48ad-83ee-3596d5f8aafe agent_count=1
+15:46:24.383 DBG register response component=daemon workspace_id=899654dd-6d37-48ad-83ee-3596d5f8aafe runtimes=1 repos=0 repos_version=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+15:46:24.384 INF registered runtime component=daemon workspace_id=899654dd-6d37-48ad-83ee-3596d5f8aafe runtime_id=6cfbb7e9-366e-43ba-95bf-f1023829973e provider=pi
+15:46:24.386 INF watching workspace component=daemon workspace_id=899654dd-6d37-48ad-83ee-3596d5f8aafe name="M2 disposable" runtimes=1 repos=0
+15:46:24.386 DBG workspace sync done component=daemon registered=1 removed=0 tracked=1
+15:46:24.386 DBG background loops launched (workspace-sync, terminal-report-replay, task-wakeup, heartbeat, gc, auto-update, token-renewal); health now reporting ready component=daemon
+15:46:24.387 INF cr event collector started component=daemon roots=[] interval=2s
+15:46:24.387 INF auto-update: disabled component=daemon
+15:46:24.388 INF auto-reload: disabled component=daemon
+15:46:24.387 INF gc: started component=daemon interval=2h0m0s ttl=24h0m0s completed_task_ttl=0s orphan_ttl=72h0m0s artifact_ttl=12h0m0s repo_ttl=720h0m0s repo_maintenance_enabled=true artifact_patterns="[node_modules .next .turbo]" managed_artifact_subpaths=[codex-home/.sandbox-bin]
+15:46:24.392 INF task wakeup websocket connected component=daemon runtimes=1
+15:46:24.394 INF local_directory snapshot updated collector roots component=daemon runtime_id=6cfbb7e9-366e-43ba-95bf-f1023829973e roots=[/workspace]
+15:46:24.396 DBG workspace sync: fetched workspaces component=daemon count=1
+15:46:24.400 DBG workspace sync: fetched workspaces component=daemon count=1
+15:46:24.404 DBG cr commit scan skipped component=daemon root=/workspace error="exit status 128"
+15:46:24.408 WRN cr reconcile snapshot skipped component=daemon root=/workspace reason="published trunk: local HEAD (no origin remote): exit status 128"
+15:46:24.421 INF task received component=daemon task=9d8834db-daef-48df-be69-5b8dbe32c3bb target=87553fd1-9443-4ccf-bc8d-4478a016d9a8
+15:46:24.421 INF task phase recorded component=daemon task=9d8834db-daef-48df-be69-5b8dbe32c3bb task_id=9d8834db-daef-48df-be69-5b8dbe32c3bb runtime_id=6cfbb7e9-366e-43ba-95bf-f1023829973e task_phase=claimed phase_elapsed_ms=0 total_elapsed_ms=0
+15:46:24.738 ERR pipeline task preparation failed component=daemon task=9d8834db-daef-48df-be69-5b8dbe32c3bb error="EXECUTION_CONSUMPTION_REQUIRED: static contract checked; current head, revocation, claim and trusted consumption are not connected"
+15:46:24.777 DBG task wakeup received component=daemon runtime_id=6cfbb7e9-366e-43ba-95bf-f1023829973e task_id=""
+15:46:24.781 INF task phase recorded component=daemon task=9d8834db-daef-48df-be69-5b8dbe32c3bb task_id=9d8834db-daef-48df-be69-5b8dbe32c3bb runtime_id=6cfbb7e9-366e-43ba-95bf-f1023829973e task_phase=finished phase_elapsed_ms=359 total_elapsed_ms=359
+15:46:25.569 DBG heartbeat: skipping HTTP tick, WS recently acked component=daemon runtime_id=6cfbb7e9-366e-43ba-95bf-f1023829973e
+15:46:26.397 DBG cr commit scan skipped component=daemon root=/workspace error="exit status 128"
+15:46:26.404 WRN cr reconcile snapshot skipped component=daemon root=/workspace reason="published trunk: local HEAD (no origin remote): exit status 128"
+15:46:27.571 DBG heartbeat: skipping HTTP tick, WS recently acked component=daemon runtime_id=6cfbb7e9-366e-43ba-95bf-f1023829973e
+15:46:28.393 DBG cr commit scan skipped component=daemon root=/workspace error="exit status 128"
+15:46:28.397 WRN cr reconcile snapshot skipped component=daemon root=/workspace reason="published trunk: local HEAD (no origin remote): exit status 128"
+15:46:29.571 DBG heartbeat: skipping HTTP tick, WS recently acked component=daemon runtime_id=6cfbb7e9-366e-43ba-95bf-f1023829973e
+15:46:30.391 DBG cr commit scan skipped component=daemon root=/workspace error="exit status 128"
+15:46:30.394 WRN cr reconcile snapshot skipped component=daemon root=/workspace reason="published trunk: local HEAD (no origin remote): exit status 128"
+15:46:31.571 DBG heartbeat: skipping HTTP tick, WS recently acked component=daemon runtime_id=6cfbb7e9-366e-43ba-95bf-f1023829973e

@@ -1,0 +1,38 @@
+schema_version: legacy-delivery-note/1
+kind: legacy-delivery-note
+is_receipt: false
+contains_cp_evidence: false
+project_id: tools
+change: 2026-11-08-aifi45-trust-anchor-chain
+archived: true
+archived_phase: deliver
+state_schema_generation: v1
+
+why_unbound: |
+  与 2026-10-22 同代问题：.stdd.yaml 为 v1 结构，没有 phases.build.selected_evidence，
+  也没有 validation/runs/<run-id>/tc-evidence.json（该归档的 validation/ 是旧式目录，
+  没有 runs 子层），因此 v2 的 bind-commit 无法绑定，命令会报「未找到选定 run」。
+  同样不补造 v2 run：事后计算哈希不能证明数周前的执行结果。
+
+referenced_business_commits:
+  note: 没有提交信息提到本 change id；未发现可追溯的业务提交。不据此声称该 change 未进入主线。
+  commits: []
+
+evidence_in_repo:
+  note: 人工评审记录，不是机器可验证证据。
+  paths:
+    - projects/tools/archive/2026-11-08-aifi45-trust-anchor-chain/test-report.md
+    - projects/tools/archive/2026-11-08-aifi45-trust-anchor-chain/spec-review.md
+    - projects/tools/archive/2026-11-08-aifi45-trust-anchor-chain/validation/
+
+known_gaps:
+  - "整个归档（87 个文件）此前从未被 Git 跟踪，2026-11-15 之前只在本地检出中；本次随记录提交入库。"
+  - "该 change 的 canonical YAML 覆盖 evidence-delivery-contract、execution-authorization、repair-governance 三个 capability，但项目级 canonical/specs/{code,agent}/ 均无对应 YAML；项目级只有 Human View（specs/<capability>/spec.md 已存在）。"
+  - "该 change 与 2026-10-22、2026-11-13 两代 AIFI-45 工作范围重叠；哪一份 canonical 应成为项目基线尚未裁定，本次不擅自合并。"
+
+checked_at: "2026-11-15"
+checked_by: "AI (pi session)，只读核对"
+checked:
+  - "归档目录存在、.stdd.yaml status=archived、current_phase=deliver"
+  - "无 validation/runs/ 目录、无 selected_evidence"
+  - "git log --grep 该 change id 无结果；git status 显示归档全部未跟踪"

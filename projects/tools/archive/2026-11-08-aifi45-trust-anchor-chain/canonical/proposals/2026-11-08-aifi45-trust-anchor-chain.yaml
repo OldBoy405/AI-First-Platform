@@ -1,0 +1,100 @@
+# 2026-11-08-aifi45-trust-anchor-chain.yaml — Canonical Proposal (YAML-first)
+# AI 起草、AI 修改、AI 消费。Human View 由 `stdd canon generate` 生成。
+
+meta:
+  change_id: "2026-11-08-aifi45-trust-anchor-chain"
+  title: "AIFI-45 控制准入信任锚链"
+  created: "2026-11-08T18:56:37.275088"
+  status: draft
+  version: "3.0"
+
+why:
+  problem: >-
+    验证者读到的安装根归属、授权来源与验签公钥事实在本层没有独立可信来源，三处证据最终都依赖本层自己写的文件或同 UID 能改的路径。
+  motivation: >-
+    归档 change 2026-10-22-aifi-45-authorized-execution 的 ADJ-AIFI45-001、002、003 已转入 backlog，且各自只有满足具体判据才能关闭：换成另一 project 的安装根证明必须准入失败；修改 accepted_rules 而不改签名必须被 T 侧拒绝；agent 身份覆盖验签公钥必须被内核拒绝。现有 readExecutionSource、execution-binding 与 trustRoot 已提供可复用校验，但尚未形成覆盖控制准入的同一条信任链，因此现在补齐这一处缝，而不是把三条 backlog 做成三套仍不能独立成立的机制。
+
+what_changes:
+  - id: C1
+    type: modified
+    description: >-
+      复用 execution-authorization 的 trustRoot、execution-binding 与 readExecutionSource，把受保护控制面认证并签发的 workspace/project/cr 与实际安装根绑定、structured-human-request/v1 原始来源及 key_id 组成同一条准入信任链；平台须在签发前独立提取并核对结构化来源，T 须从认证 daemon 安装且 agent 身份不可写的 trust root 读取与 key_id 匹配的公钥，环境变量、sidecar 与路径只用于定位。
+  - id: C2
+    type: modified
+    description: >-
+      将 authorization-bind 的非只读准入、advance、repair/resume、register、archive 这五个控制类写入口统一接到该缝，在共用准入点复核签名、来源 digest 与 json-pointer 绑定、当前 scope 和安装根 dev/ino；证明缺失、跨 project、从其他安装根复制证明或公钥不可信时失败关闭，普通读路径不变。
+  - id: C3
+    type: modified
+    description: >-
+      增加跨端篡改、替换、复制负例，并按目标部署平台取得 Linux agent UID 或 Windows 上与 daemon 不同的 agent 身份的真实内核拒绝证据，三条 ADJ 分别由 success_criteria 的对应场景关闭；测试不得将组件校验、路径 pin 或同 UID 权限位记作隔离证明。
+
+capabilities:
+  new: []
+  modified:
+    - name: "execution-authorization"
+      description: "以同一条外部可信链验证授权来源、安装根归属与验签公钥，并作为控制准入的唯一信任缝。"
+    - name: "repair-governance"
+      description: "repair/resume 复用同一控制准入信任缝，保留既有额度、历史与停止语义，不另建信任或预算机制。"
+    - name: "evidence-delivery-contract"
+      description: "register/archive 控制写复用同一安装根与授权证明，防止把交付记录写入未被证明归属的 project。"
+
+impact:
+  code: "预计修改 8–20 个现有文件，范围包括 tools 的 execution-authorization、execution-binding、crctl 控制入口及测试，以及 multica 的认证 daemon 绑定、trust-root 安装与读取和跨端测试；不重写既有签发流程。"
+  configuration: "部署必须显式配置由认证 daemon 安装且 agent 身份不可写的 trust root；配置缺失或身份隔离未证明时，新合同不得启用。"
+  infrastructure: "目标部署平台必须提供身份隔离前置：Linux 使用不同 UID，Windows 使用与 daemon 不同的 agent 身份；不新增服务、数据库总账、证书系统或原生测试依赖。"
+  compatibility: "仅所列控制写入口接入新信任链，普通读路径不变；无法取得独立事实时失败关闭，不把旧 sidecar、环境变量或路径 pin 升级为证明。"
+
+constraints:
+  - "不建第二本账：复用平台现有认证、DB 归属、签名与执行记录，T 仍是既有业务裁决权威，不新增送达账、预算账或归属总账。"
+  - "不为通过测试引入原生依赖；身份级验证使用操作系统已有身份与权限机制。"
+  - "不制造伪信任锚：可编辑 sidecar、环境变量、自报路径、路径 pin、同 UID 权限位或本层自写文件均不构成独立证明。"
+  - "不改归档 change 2026-10-22-aifi-45-authorized-execution 的冻结产物，包括其 input_manifest、Canonical specs 与已归档证据。"
+  - "缺少独立来源、当前绑定或真实身份隔离证据时失败关闭；legacy 兼容不得获得新的信任语义。"
+  - "签名与 structured-human-request/v1 的原始 bytes 不做 CRLF 归一化或重序列化。"
+
+stakeholders:
+  - "tools 的 crctl 与 execution-authorization 维护者"
+  - "multica 平台、认证 daemon 与 Runner 维护者"
+  - "执行 Agent、独立安全 reviewer 与测试维护者"
+  - "负责不同 OS 身份及 trust-root 部署的运维责任人"
+  - "提交结构化授权请求的人类授权者"
+
+risk_areas:
+  - capability: "execution-authorization"
+    risk: "如果公钥隔离、签发前独立验源或安装根绑定任一项漏接，agent 就能换钥自签、利用自指来源映射或复制另一 project 的证明，使伪造授权通过控制准入。"
+    mitigation: "在同一准入缝组合验签、独立来源复核和当前根归属检查，并以改字段不换签名、跨 project 替换证明和身份级写拒绝作为必需负例。"
+  - capability: "repair-governance"
+    risk: "如果 repair/resume 绕过同一信任缝，伪造或错 project 的授权可能驱动恢复与修复消费，破坏既有额度、历史和停止边界。"
+    mitigation: "repair/resume 只调用共用准入，不复制信任规则；保留现有消费账本，并覆盖错误 scope、复制证明与无副作用拒绝。"
+  - capability: "evidence-delivery-contract"
+    risk: "如果 register/archive 未使用已证明的安装根归属，交付事实可能写入另一 project 或形成绕过权威记录的旁路。"
+    mitigation: "将这两个控制写入口接入同一缝并验证跨 project 拒绝；普通读路径不改，不新增第二本交付账。"
+
+non_goals:
+  - "不重写 multica 侧签发流程；只在其现有认证、归属、签名与投递链上补齐本信任缝所需的合同和接线。"
+  - "不引入 CA、证书体系、新的密钥管理系统或通用 PKI。"
+  - "不把普通读路径及非控制类调用纳入本次准入改造。"
+  - "不支持自由文本、comment、附件或 issue_source_context 作为本期授权来源；本期只闭合 structured-human-request/v1。"
+  - "不处理归档 change 的其他未决 ADJ，不重定修复额度、停止规则或交付业务语义。"
+  - "不以测试结果宣称已完成真实部署；生产启用、真实 CR 与部署仍需各自授权。"
+
+critical:
+  is_critical: true
+  risk_assessment:
+    safety_critical: true
+    financial: false
+    cross_system: true
+
+anchoring:
+  level: L4
+  reference_changes:
+    - "2026-10-22-aifi-45-authorized-execution"
+  anchor_implementations:
+    - "skills/shared/crctl/scripts/lib/execution-binding.mjs — requestExecutionBinding 将安装根 realpath 与签名 coordinator_binding.local_path 做 dev/ino 比对，并验证 execution-binding/v1 签名。"
+    - "skills/shared/crctl/scripts/lib/execution-authorization.mjs — installDirectory(workspace, trustRoot) 提供工作区外 trustRoot 缝，readExecutionSource 复核 structured-human-request/v1 原 bytes、source_digest 与 source_bindings。"
+    - "skills/shared/crctl/scripts/lib/workspace-transactions.mjs — deriveInstallRoot 仅作 Git 安装根定位，不能替代平台归属证明。"
+
+success_criteria:
+  - "ADJ-001：安装根归属事实是否由受保护控制面独立提供、获取路径不依赖被管进程可写文件，并且在替换成签名有效但属于另一 project 的证明时真实控制准入失败且不产生副作用？（预期：是）"
+  - "ADJ-002：平台是否在签发前独立核验 structured-human-request/v1、生成 source_event_id、按原 bytes 计算 source_digest 并提取每个字段的 json-pointer 来源绑定，T 侧是否从原 bytes 重新提取核对，且在 accepted_rules 改一个字符而签名不变时拒绝真实控制准入且不产生副作用？（预期：是）"
+  - "ADJ-003：在每个拟启用平台上，验签公钥是否位于 agent 身份无写权限的位置，且以 agent 身份尝试覆盖已安装公钥时被操作系统内核拒绝（Linux 以不同 UID 验证，Windows 以与 daemon 不同的身份验证）？（预期：是；任何拟启用平台未取得真实拒绝证据即不满足）"

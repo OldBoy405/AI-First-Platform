@@ -1,0 +1,20 @@
+$ trust root and installed file metadata (no key/source/grant contents printed)
+trust_root=/root/.multica/execution-trust/899654dd-6d37-48ad-83ee-3596d5f8aafe
+/root/.multica/execution-trust/899654dd-6d37-48ad-83ee-3596d5f8aafe/grants/0e75beb3bce9680164cc6ad971b9310fd314161c99948a75a61007763aad3d53-a6bfcde2-dc16-46db-81b3-d6262194a017.execution-grant.json
+/root/.multica/execution-trust/899654dd-6d37-48ad-83ee-3596d5f8aafe/grants/0e75beb3bce9680164cc6ad971b9310fd314161c99948a75a61007763aad3d53-a6bfcde2-dc16-46db-81b3-d6262194a017.execution-source.json
+/root/.multica/execution-trust/899654dd-6d37-48ad-83ee-3596d5f8aafe/keys/m2-3a89e7d39bae6c5f.pub
+8d0739b7a63d731f0bf6973c0cff97ca19edb39b6027a3bab1f95d35b4dd763f  /root/.multica/execution-trust/899654dd-6d37-48ad-83ee-3596d5f8aafe/grants/0e75beb3bce9680164cc6ad971b9310fd314161c99948a75a61007763aad3d53-a6bfcde2-dc16-46db-81b3-d6262194a017.execution-grant.json
+a9e59b3217d41a4cc01593ed56b6ee3f301939e23071469ddc5747858e902b61  /root/.multica/execution-trust/899654dd-6d37-48ad-83ee-3596d5f8aafe/grants/0e75beb3bce9680164cc6ad971b9310fd314161c99948a75a61007763aad3d53-a6bfcde2-dc16-46db-81b3-d6262194a017.execution-source.json
+c8ed29d144a34c8896b3da63b33245239ac942567eca51c528d5cef3c2bc5364  /root/.multica/execution-trust/899654dd-6d37-48ad-83ee-3596d5f8aafe/keys/m2-3a89e7d39bae6c5f.pub
+
+$ workspace must not contain execution-trust material
+
+$ real daemon log: claim / preparation / consumption gate
+15:45:45.170 DBG daemon config resolved component=daemon daemon_id=8efab215-ef83-4206-8532-ef06460588bf device_name=m2-3a89e7d39bae6c5f workspaces_root=/root/multica_workspaces health_port=19514 poll_interval=1s ws_claim_poll_interval=2s heartbeat_interval=2s agent_timeout=2m0s idle_watchdog=2h0m0s tool_watchdog=2h0m0s opencode_idle_watchdog=10m0s codex_semantic_inactivity=2h0m0s max_concurrent_tasks=1 gc_enabled=true auto_update=false launched_by=""
+15:46:24.123 DBG daemon config resolved component=daemon daemon_id=8efab215-ef83-4206-8532-ef06460588bf device_name=m2-3a89e7d39bae6c5f workspaces_root=/root/multica_workspaces health_port=19514 poll_interval=1s ws_claim_poll_interval=2s heartbeat_interval=2s agent_timeout=2m0s idle_watchdog=2h0m0s tool_watchdog=2h0m0s opencode_idle_watchdog=10m0s codex_semantic_inactivity=2h0m0s max_concurrent_tasks=1 gc_enabled=true auto_update=false launched_by=""
+15:46:24.421 INF task phase recorded component=daemon task=9d8834db-daef-48df-be69-5b8dbe32c3bb task_id=9d8834db-daef-48df-be69-5b8dbe32c3bb runtime_id=6cfbb7e9-366e-43ba-95bf-f1023829973e task_phase=claimed phase_elapsed_ms=0 total_elapsed_ms=0
+15:46:24.738 ERR pipeline task preparation failed component=daemon task=9d8834db-daef-48df-be69-5b8dbe32c3bb error="EXECUTION_CONSUMPTION_REQUIRED: static contract checked; current head, revocation, claim and trusted consumption are not connected"
+
+$ real backend/proxy authorization delivery route
+2026/11/08 15:42:01 proxy POST /api/workspaces/899654dd-6d37-48ad-83ee-3596d5f8aafe/crs/CR-2026-992/execution-authorization -> 201 err=<nil>
+2026/11/08 15:46:24 proxy GET /api/daemon/crs/CR-2026-992/execution-authorization -> 200 err=<nil>

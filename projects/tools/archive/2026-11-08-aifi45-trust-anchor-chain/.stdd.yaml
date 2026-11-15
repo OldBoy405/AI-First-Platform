@@ -1,0 +1,303 @@
+approval_receipts:
+- confirmed_actor: ai
+  confirmed_at: '2026-11-08T20:30:39'
+  confirmed_by: dialog
+  confirmed_evidence: 确认 Gate 2，启用全自动长程模式
+  note: reapproved; prior input_fingerprint=14fb1b16d8326ff74c92daddc698c1913afafb20ff4b546e77c72f4ff219d70d
+  receipt_id: gate2-2026-11-08T20:30:39
+  recorded_at: '2026-11-09T09:41:45'
+  status: superseded
+change_id: 2026-11-08-aifi45-trust-anchor-chain
+complexity_score: 14
+current_phase: deliver
+design_adjustments:
+  count: 0
+last_modified: '2026-11-09T09:42:04.737902'
+long_range:
+  enabled: true
+  mode: full_auto
+  pre_auth_completed: true
+  pre_auth_timestamp: '2026-11-08T19:22:43'
+mode: thorough
+phases:
+  build:
+    confirmed_actor: ai
+    confirmed_at: '2026-11-09T09:41:49'
+    confirmed_by: dialog
+    confirmed_evidence: 确认 Gate 3
+    input_fingerprint: 2e3a03b97c1b5752ca581e7894b59faca716a30ffbad4a5688c6a67ccc2e3327
+    input_manifest:
+    - change_id: 2026-11-08-aifi45-trust-anchor-chain
+      child_id: null
+      kind: projection
+      logical_path: .stdd.yaml
+      project_id: tools
+      projection_version: v1
+      sha256: 6cf83cd5157626130b93e0b9cac82226feb23877450294e7b68a721eb9833a38
+    - change_id: 2026-11-08-aifi45-trust-anchor-chain
+      child_id: null
+      kind: raw
+      logical_path: canonical/.canon-index.yaml
+      project_id: tools
+      projection_version: v1
+      sha256: 035060ca9003a74a2bce877e4fa2890bc1a8095bf4f5141dbcbaa4edde5045d7
+    - change_id: 2026-11-08-aifi45-trust-anchor-chain
+      child_id: null
+      kind: projection
+      logical_path: canonical/proposals/2026-11-08-aifi45-trust-anchor-chain.yaml
+      project_id: tools
+      projection_version: v1
+      sha256: 2b6943293cb6cc3e1c48866c938bf94d676185f133b3bfb1dc4d4823b5f37aac
+    - change_id: 2026-11-08-aifi45-trust-anchor-chain
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/agent/evidence-delivery-contract.yaml
+      project_id: tools
+      projection_version: v1
+      sha256: 90b977447c6afa83d69030ae59f356b37ef820eb0394a0913b7a405f4775b5c3
+    - change_id: 2026-11-08-aifi45-trust-anchor-chain
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/agent/execution-authorization.yaml
+      project_id: tools
+      projection_version: v1
+      sha256: ffafcfbd0ec2c0d9709f9b8f1bb330c64ba3edb53cbca794ad0682cd352b9f74
+    - change_id: 2026-11-08-aifi45-trust-anchor-chain
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/agent/repair-governance.yaml
+      project_id: tools
+      projection_version: v1
+      sha256: 4a85a9f88bd2b47435ed2f28d10ae75eb4dd212cca02d58103a4375e8b2988fb
+    - change_id: 2026-11-08-aifi45-trust-anchor-chain
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/code/evidence-delivery-contract.yaml
+      project_id: tools
+      projection_version: v1
+      sha256: 53cd7eb58ea369562641d3b9e2623d3209a0ba32914dc40cd7b8d652d514a329
+    - change_id: 2026-11-08-aifi45-trust-anchor-chain
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/code/execution-authorization.yaml
+      project_id: tools
+      projection_version: v1
+      sha256: 9d5e009efa1c243cd78d4cac33a16f4216ae2e5f12c5db0fc94e91602368ee8d
+    - change_id: 2026-11-08-aifi45-trust-anchor-chain
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/code/repair-governance.yaml
+      project_id: tools
+      projection_version: v1
+      sha256: b4c10c339aeb45c8b43f56e0ef95af34759408d4d5a136f75eb4f5fe82d295dd
+    - change_id: 2026-11-08-aifi45-trust-anchor-chain
+      child_id: null
+      kind: raw
+      logical_path: design.md
+      project_id: tools
+      projection_version: v1
+      sha256: 62144bbd2dafef4e6111b0e2b34747d0abc3ca6efab1362f50409d4f451a13d1
+    - change_id: 2026-11-08-aifi45-trust-anchor-chain
+      child_id: null
+      kind: projection
+      logical_path: proposal.md
+      project_id: tools
+      projection_version: v1
+      sha256: ff733deda84da491a3bbf8375588b9fe76d0d6f42176f245f99221842804b330
+    - change_id: 2026-11-08-aifi45-trust-anchor-chain
+      child_id: null
+      kind: raw
+      logical_path: specs/evidence-delivery-contract/spec.md
+      project_id: tools
+      projection_version: v1
+      sha256: 17c1cd2c6094913dbac18986422184e17e71b102c0cb4efcdde4c21a08af0137
+    - change_id: 2026-11-08-aifi45-trust-anchor-chain
+      child_id: null
+      kind: raw
+      logical_path: specs/execution-authorization/spec.md
+      project_id: tools
+      projection_version: v1
+      sha256: 3058bc2d48f64e2ca8f1fe059d7eb64dea77ead927ec3b597bac4b38d347f4e8
+    - change_id: 2026-11-08-aifi45-trust-anchor-chain
+      child_id: null
+      kind: raw
+      logical_path: specs/repair-governance/spec.md
+      project_id: tools
+      projection_version: v1
+      sha256: 2b548f6b72482205a72d3a79991af36fdef62714a26ce2a116b83883f7a57edd
+    - change_id: 2026-11-08-aifi45-trust-anchor-chain
+      child_id: null
+      kind: raw
+      logical_path: test-plan.md
+      project_id: tools
+      projection_version: v1
+      sha256: f9ca0006db56123b041e1897ee50093f0197be918da83363b0bb308747285c9b
+    - change_id: 2026-11-08-aifi45-trust-anchor-chain
+      child_id: null
+      kind: raw
+      logical_path: test-report.md
+      project_id: tools
+      projection_version: v1
+      sha256: dc2121ebc6c4758fdba72a0fd6c42ae7b9ebace06b71ffcb90b53853daf33fb4
+    slices_completed:
+      '1':
+        new_tests: 6
+        note: execution-authorization：TC-TAC-001..006 各恰 1 条顶层 TC 函数，CP action 实测
+          1..1 全绿。 new_tests 口径为「本切片 TC 对应的顶层测试函数数」。证据等级：6 条均为条款级——真实 M route/DB/
+          daemon 与不同 OS 身份的内核拒绝证据未取得（见 test-report.md §4）。
+        status: done
+        tc_coverage: 6/6
+        verified_at: '2026-11-08T22:18:23'
+      '2':
+        new_tests: 2
+        note: repair-governance：TC-TAC-007..008 各恰 1 条顶层 TC 函数，CP 全绿。已提交重放返回原 receipt、
+          不新增信任账；证据等级条款级——缺真实 M claim/head 与 DB 归属证据。
+        status: done
+        tc_coverage: 2/2
+        verified_at: '2026-11-08T22:18:23'
+      '3':
+        new_tests: 2
+        note: evidence-delivery-contract：TC-TAC-009..010 各恰 1 条顶层 TC 函数，CP 全绿。register
+          缺平台预分配 即失败关闭（首个 write-set 前）；证据等级条款级——缺真实 M 预分配 route/DB 证据。
+        status: done
+        tc_coverage: 2/2
+        verified_at: '2026-11-08T22:18:23'
+    status: completed
+  deliver:
+    status: in_progress
+  spec:
+    confirmed_actor: ai
+    confirmed_at: '2026-11-09T09:41:45'
+    confirmed_by: dialog
+    confirmed_evidence: 确认按链级取证口径重签 Gate 2
+    input_fingerprint: 395aec7fea2d6526f9eb7fe0d202b176855cb598123a7128b9e5098829808532
+    input_manifest:
+    - change_id: 2026-11-08-aifi45-trust-anchor-chain
+      child_id: null
+      kind: raw
+      logical_path: canonical/.canon-index.yaml
+      project_id: tools
+      projection_version: v1
+      sha256: 035060ca9003a74a2bce877e4fa2890bc1a8095bf4f5141dbcbaa4edde5045d7
+    - change_id: 2026-11-08-aifi45-trust-anchor-chain
+      child_id: null
+      kind: projection
+      logical_path: canonical/proposals/2026-11-08-aifi45-trust-anchor-chain.yaml
+      project_id: tools
+      projection_version: v1
+      sha256: 2b6943293cb6cc3e1c48866c938bf94d676185f133b3bfb1dc4d4823b5f37aac
+    - change_id: 2026-11-08-aifi45-trust-anchor-chain
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/agent/evidence-delivery-contract.yaml
+      project_id: tools
+      projection_version: v1
+      sha256: 90b977447c6afa83d69030ae59f356b37ef820eb0394a0913b7a405f4775b5c3
+    - change_id: 2026-11-08-aifi45-trust-anchor-chain
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/agent/execution-authorization.yaml
+      project_id: tools
+      projection_version: v1
+      sha256: ffafcfbd0ec2c0d9709f9b8f1bb330c64ba3edb53cbca794ad0682cd352b9f74
+    - change_id: 2026-11-08-aifi45-trust-anchor-chain
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/agent/repair-governance.yaml
+      project_id: tools
+      projection_version: v1
+      sha256: 4a85a9f88bd2b47435ed2f28d10ae75eb4dd212cca02d58103a4375e8b2988fb
+    - change_id: 2026-11-08-aifi45-trust-anchor-chain
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/code/evidence-delivery-contract.yaml
+      project_id: tools
+      projection_version: v1
+      sha256: 53cd7eb58ea369562641d3b9e2623d3209a0ba32914dc40cd7b8d652d514a329
+    - change_id: 2026-11-08-aifi45-trust-anchor-chain
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/code/execution-authorization.yaml
+      project_id: tools
+      projection_version: v1
+      sha256: 9d5e009efa1c243cd78d4cac33a16f4216ae2e5f12c5db0fc94e91602368ee8d
+    - change_id: 2026-11-08-aifi45-trust-anchor-chain
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/code/repair-governance.yaml
+      project_id: tools
+      projection_version: v1
+      sha256: b4c10c339aeb45c8b43f56e0ef95af34759408d4d5a136f75eb4f5fe82d295dd
+    - change_id: 2026-11-08-aifi45-trust-anchor-chain
+      child_id: null
+      kind: raw
+      logical_path: design.md
+      project_id: tools
+      projection_version: v1
+      sha256: 62144bbd2dafef4e6111b0e2b34747d0abc3ca6efab1362f50409d4f451a13d1
+    - change_id: 2026-11-08-aifi45-trust-anchor-chain
+      child_id: null
+      kind: projection
+      logical_path: proposal.md
+      project_id: tools
+      projection_version: v1
+      sha256: ff733deda84da491a3bbf8375588b9fe76d0d6f42176f245f99221842804b330
+    - change_id: 2026-11-08-aifi45-trust-anchor-chain
+      child_id: null
+      kind: raw
+      logical_path: specs/evidence-delivery-contract/spec.md
+      project_id: tools
+      projection_version: v1
+      sha256: 17c1cd2c6094913dbac18986422184e17e71b102c0cb4efcdde4c21a08af0137
+    - change_id: 2026-11-08-aifi45-trust-anchor-chain
+      child_id: null
+      kind: raw
+      logical_path: specs/execution-authorization/spec.md
+      project_id: tools
+      projection_version: v1
+      sha256: 3058bc2d48f64e2ca8f1fe059d7eb64dea77ead927ec3b597bac4b38d347f4e8
+    - change_id: 2026-11-08-aifi45-trust-anchor-chain
+      child_id: null
+      kind: raw
+      logical_path: specs/repair-governance/spec.md
+      project_id: tools
+      projection_version: v1
+      sha256: 2b548f6b72482205a72d3a79991af36fdef62714a26ce2a116b83883f7a57edd
+    - change_id: 2026-11-08-aifi45-trust-anchor-chain
+      child_id: null
+      kind: raw
+      logical_path: test-plan.md
+      project_id: tools
+      projection_version: v1
+      sha256: f9ca0006db56123b041e1897ee50093f0197be918da83363b0bb308747285c9b
+    status: completed
+  understand:
+    confirmed_actor: ai
+    confirmed_at: '2026-11-08T19:22:45'
+    confirmed_by: dialog
+    confirmed_evidence: 确认 Gate 1，模式用 thorough。全自动长程模式
+    input_fingerprint: f85f17d42d73470a2b219c5c5f454f73c54291ec9a9c47d4a80c5cd89819d4ee
+    input_manifest:
+    - change_id: 2026-11-08-aifi45-trust-anchor-chain
+      child_id: null
+      kind: projection
+      logical_path: canonical/proposals/2026-11-08-aifi45-trust-anchor-chain.yaml
+      project_id: tools
+      projection_version: v1
+      sha256: 2b6943293cb6cc3e1c48866c938bf94d676185f133b3bfb1dc4d4823b5f37aac
+    - change_id: 2026-11-08-aifi45-trust-anchor-chain
+      child_id: null
+      kind: projection
+      logical_path: proposal.md
+      project_id: tools
+      projection_version: v1
+      sha256: ff733deda84da491a3bbf8375588b9fe76d0d6f42176f245f99221842804b330
+    status: completed
+score_confidence: preliminary
+status: archived
+task_type: code
+traceability:
+  spec_scenarios: 0
+  tc_cases: 0
+  test_functions: 0
+version: '3.0'

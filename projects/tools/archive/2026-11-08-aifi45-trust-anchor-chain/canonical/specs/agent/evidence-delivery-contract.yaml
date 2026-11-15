@@ -1,0 +1,30 @@
+meta:
+  task_id: evidence-delivery-contract
+  change_id: 2026-11-08-aifi45-trust-anchor-chain
+  task_type: code
+  system: tools公开register/archive CLI与既有workspace事务、registry和归档journal
+  preconditions:
+    - Gate2后才创建对应测试与实现；当前所有CP均为待实施而非已通过。
+    - 从tools仓执行action；每个TC必须是唯一选中的顶层完整测试，测试文件在BUILD阶段创建。
+    - 使用临时Git/workspace、两个测试project、预分配测试CR/claim与一次性平台资源；不操作真实registry或归档。
+    - register必须在任何本地持久化前核平台CR/claim、registration key与本地候选CR；archive只保护首次新业务写入。
+    - MUST核真实TAP成功行及fail/skip/todo为0；匹配0条、名称回显、skip或仅组件子断言不得算通过。
+steps:
+  - id: CP-TAC-009
+    description: SC-TAC-009 / register/archive有效归属链在首个write-set前闭合，已提交重放不重复。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-TAC-009$" skills/shared/crctl/scripts/test/delivery-trust-anchor-chain.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-TAC-009'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+    supplementary_evidence:
+      - requires: 真实M预分配CR/claim、认证daemon与T公开register/archive；临时registry与journal。
+        asserts: 平台CR/claim、registration key、本地候选CR、project与根在首写前一致；已提交重放恢复原记录且不新增交付事实。
+        not_counted_as_cp_pass: true
+    unmet_requirements:
+      - description: >-
+          本 CP 的机械 PASS 覆盖 SC-TAC-009 的 THEN/AND（首写前闭合、缺预分配即失败关闭、已提交重放不重复）在真实 T 实现上的执行。跨端 arrange 的真实性不再按 TC 逐条重复取证，而由 change 级补充证据 `validation/e2-m2-real-loop-20261108b/` 统一承担：真实签发 route（HTTP 201）、平台生成的 source_event_id、等于原始 bytes 的 source_digest、14 个 json-pointer 绑定、真实 DB 归属、daemon-owned trust root 安装、stdio relay 的非只读 authorization-bind、T 侧真实消费与平台 cr_execution_consumption 行，以及两条真实负例（改一个字符保留旧签名 → EXECUTION_SOURCE_INVALID；跨 project 材料 → EXECUTION_GRANT_SCOPE_MISMATCH，均 0 行消费）。该补充证据缺席或被推翻时，本 SC 只记条款级，不得登记整条。
+  - id: CP-TAC-010
+    description: SC-TAC-010 / 不可信或错project的注册/归档证明零注册、零归档副作用。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-TAC-010$" skills/shared/crctl/scripts/test/delivery-trust-anchor-chain.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-TAC-010'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+rollback:
+  steps:
+    - 仅清理本测试创建的临时仓库、一次性平台资源与测试身份；保留真实registry、归档journal、用户修改和累积基线。

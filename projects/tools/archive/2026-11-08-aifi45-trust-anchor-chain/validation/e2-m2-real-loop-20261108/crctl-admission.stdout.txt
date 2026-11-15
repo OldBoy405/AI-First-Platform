@@ -1,0 +1,15 @@
+OBSERVED BLOCKER: daemon prepareClaimedPipelineTask returned EXECUTION_CONSUMPTION_REQUIRED after trust installation and crctl --check; no binding challenge or business write was reached
+
+$ daemon log excerpt (original lines)
+15:46:24.738 ERR pipeline task preparation failed component=daemon task=9d8834db-daef-48df-be69-5b8dbe32c3bb error="EXECUTION_CONSUMPTION_REQUIRED: static contract checked; current head, revocation, claim and trusted consumption are not connected"
+
+$ real queue terminal row
+9d8834db-daef-48df-be69-5b8dbe32c3bb|failed|2026-11-08 15:46:24.39374+00||2026-11-08 15:46:24.768403+00|EXECUTION_CONSUMPTION_REQUIRED: static contract checked; current head, revocation, claim and trusted consumption are not connected|agent_error.unknown
+
+$ binding/consumption/business facts after the stop
+binding_issue|0
+platform_consumption|0
+
+$ CR file bytes / Git and receipts after the stop
+6d2e118777b5070e57ca57256870a83296fb0a021b074230be538f50f9c29dec  /workspace/change-requests/CR-2026-992/cr.md
+NO_GIT_REPOSITORY_SEEDED

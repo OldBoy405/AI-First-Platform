@@ -1,0 +1,31 @@
+REAL NEGATIVE: valid same-key project B grant replaced A grant after real A binding issuance and before T consumption CAS.
+task_id=e27ef983-5a5e-40a4-8d56-92cd93b29f76 status=failed project_a=de2511d6-1c70-4507-b555-a824b69d8b2e project_b=fbeedc58-c6e3-42e0-ad1b-e6a8101dbb53 cr_a=CR-2026-992 cr_b=CR-2026-993 key_b=m2-4b65a9c3b41c7da8
+cross_swap_observed=true
+
+$ real queue error (T refusal propagated by daemon)
+e27ef983-5a5e-40a4-8d56-92cd93b29f76|failed|EXECUTION_CONSUMPTION_REQUIRED: non-read-only bind did not return a receipt (exit=1): {
+  "error": {
+    "code": "EXECUTION_GRANT_SCOPE_MISMATCH",
+    "message": "执行授权文件/CR与签名scope不匹配"
+  }
+}
+|agent_error.unknown
+
+$ real daemon/T original log lines
+01:36:19.452 INF picked task component=daemon task=7416de18-19f9-4dc8-88e5-fb91530d1c96 issue=189482f5-3ba6-4480-94cc-6c09a3277b93 agent="M2 real executor" provider=pi
+01:36:34.448 ERR pipeline task preparation failed component=daemon task=b709f3c2-7e5a-4373-85d6-5d69c1b37e38 error="EXECUTION_CONSUMPTION_REQUIRED: non-read-only bind did not return a receipt (exit=1): {\n  \"error\": {\n    \"code\": \"EXECUTION_SOURCE_INVALID\",\n    \"message\": \"原始来源bytes过大或digest不匹配\"\n  }\n}\n"
+01:36:43.236 INF picked task component=daemon task=2eea9470-4a6a-41a9-ba4e-457b58c33b73 issue=dfb46aba-81cd-4709-9d17-ae194da498c2 agent="M2 real executor" provider=pi
+01:36:51.740 ERR pipeline task preparation failed component=daemon task=e27ef983-5a5e-40a4-8d56-92cd93b29f76 error="EXECUTION_CONSUMPTION_REQUIRED: non-read-only bind did not return a receipt (exit=1): {\n  \"error\": {\n    \"code\": \"EXECUTION_GRANT_SCOPE_MISMATCH\",\n    \"message\": \"执行授权文件/CR与签名scope不匹配\"\n  }\n}\n"
+
+$ proxy proves unchanged real binding response was delayed, not replaced
+2026/11/09 01:36:19 proxy POST /api/daemon/crs/CR-2026-992/execution-authorization/binding -> 200 err=<nil>
+2026/11/09 01:36:19 proxy POST /api/daemon/crs/CR-2026-992/execution-authorization/consumption -> 201 err=<nil>
+2026/11/09 01:36:34 proxy POST /api/daemon/crs/CR-2026-992/execution-authorization/binding -> 200 err=<nil>
+2026/11/09 01:36:43 proxy POST /api/daemon/crs/CR-2026-993/execution-authorization/binding -> 200 err=<nil>
+2026/11/09 01:36:43 proxy POST /api/daemon/crs/CR-2026-993/execution-authorization/consumption -> 201 err=<nil>
+2026/11/09 01:36:50 proxy POST /api/daemon/crs/CR-2026-992/execution-authorization/binding -> 200 err=<nil>
+
+$ negative side effects
+0
+binding_issue_count_for_cross_project_task=1
+receipt_files_now=2

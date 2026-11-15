@@ -1,0 +1,67 @@
+$ T-side receipt produced by requireControlAdmission/consumeExecutionAuthorization
+receipt_path=/root/.multica/execution-trust/d708a6ab-f784-4d45-841b-346adfd2690e/execution-consumptions/24fc886d93025f2b4b8f822abf4c98ad2117fd35d1365e8f16b979edb3db0415-f44ad7cb-1c0b-4fdc-a397-851aeef2c378-authorization-bind.execution-receipt.json
+{
+  "schema": "execution-consumption-receipt/v1",
+  "scope_hash": "24fc886d93025f2b4b8f822abf4c98ad2117fd35d1365e8f16b979edb3db0415",
+  "grant_id": "f44ad7cb-1c0b-4fdc-a397-851aeef2c378",
+  "grant_digest": "0f364f3ad0744c313d894b9697681119da4a73f4a391f60bdf6dba1b63811490",
+  "authorization_revision": 1,
+  "operation": "authorization-bind",
+  "operation_id": "authorization-bind:authorization-bind",
+  "stage": "authorization-bind",
+  "subject_digest": "0f364f3ad0744c313d894b9697681119da4a73f4a391f60bdf6dba1b63811490",
+  "challenge": "cd315a513ccedbad2bde121f92b435ee7d2c8c9d948f17f8f03a46559ca52d53",
+  "runtime_id": "23a6a7cf-6788-43f0-87f2-aeb79e64b9bf",
+  "task_id": "7416de18-19f9-4dc8-88e5-fb91530d1c96",
+  "daemon_id": "d432124a-55c6-488b-a7bc-3f793e9a1e2f",
+  "receipt_id": "df0f1d76dfd13c914e1e297d9a6452e002a09812c7157c81b36af8b6dd5021e5",
+  "basis": {
+    "grant_head": "0f364f3ad0744c313d894b9697681119da4a73f4a391f60bdf6dba1b63811490",
+    "operation_id": "authorization-bind:authorization-bind",
+    "consumption_id": "df0f1d76dfd13c914e1e297d9a6452e002a09812c7157c81b36af8b6dd5021e5"
+  }
+}
+
+$ queue row after startup admission (agent may subsequently fail for provider reasons)
+7416de18-19f9-4dc8-88e5-fb91530d1c96|failed|2026-11-09 01:36:17.316849+00|2026-11-09 01:36:19.525725+00|2026-11-09 01:36:20.002464+00|pi exited with error: exit status 1|agent_error.process_failure
+
+$ daemon log after the consumption gate
+01:35:52.810 INF starting daemon component=daemon version=m2-4b65a9c3b41c7da8 agents=[pi] server=https://tls:8443
+01:35:52.812 DBG daemon config resolved component=daemon daemon_id=d432124a-55c6-488b-a7bc-3f793e9a1e2f device_name=m2-4b65a9c3b41c7da8 workspaces_root=/root/multica_workspaces health_port=19514 poll_interval=1s ws_claim_poll_interval=2s heartbeat_interval=2s agent_timeout=2m0s idle_watchdog=2h0m0s tool_watchdog=2h0m0s opencode_idle_watchdog=10m0s codex_semantic_inactivity=2h0m0s max_concurrent_tasks=1 gc_enabled=true auto_update=false launched_by=""
+01:35:52.834 WRN auth token rejected by server — run 'multica login' to re-authenticate, then restart the daemon component=daemon error="POST /api/tokens/current/renew returned 401: {\"error\":\"invalid token\"}"
+01:35:53.078 DBG agent version detected component=daemon name=pi version=1.5.0 path=/usr/local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/cli.js
+01:35:53.078 DBG registering runtimes for workspace component=daemon workspace_id=d708a6ab-f784-4d45-841b-346adfd2690e agent_count=1
+01:35:53.084 INF registered runtime component=daemon workspace_id=d708a6ab-f784-4d45-841b-346adfd2690e runtime_id=23a6a7cf-6788-43f0-87f2-aeb79e64b9bf provider=pi
+01:35:54.528 DBG heartbeat: skipping HTTP tick, WS recently acked component=daemon runtime_id=23a6a7cf-6788-43f0-87f2-aeb79e64b9bf
+01:36:17.043 INF starting daemon component=daemon version=m2-4b65a9c3b41c7da8 agents=[pi] server=https://tls:8443
+01:36:17.046 DBG daemon config resolved component=daemon daemon_id=d432124a-55c6-488b-a7bc-3f793e9a1e2f device_name=m2-4b65a9c3b41c7da8 workspaces_root=/root/multica_workspaces health_port=19514 poll_interval=1s ws_claim_poll_interval=2s heartbeat_interval=2s agent_timeout=2m0s idle_watchdog=2h0m0s tool_watchdog=2h0m0s opencode_idle_watchdog=10m0s codex_semantic_inactivity=2h0m0s max_concurrent_tasks=1 gc_enabled=true auto_update=false launched_by=""
+01:36:17.066 WRN auth token rejected by server — run 'multica login' to re-authenticate, then restart the daemon component=daemon error="POST /api/tokens/current/renew returned 401: {\"error\":\"invalid token\"}"
+01:36:17.296 DBG agent version detected component=daemon name=pi version=1.5.0 path=/usr/local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/cli.js
+01:36:17.297 DBG registering runtimes for workspace component=daemon workspace_id=d708a6ab-f784-4d45-841b-346adfd2690e agent_count=1
+01:36:17.303 INF registered runtime component=daemon workspace_id=d708a6ab-f784-4d45-841b-346adfd2690e runtime_id=23a6a7cf-6788-43f0-87f2-aeb79e64b9bf provider=pi
+01:36:18.587 DBG heartbeat: skipping HTTP tick, WS recently acked component=daemon runtime_id=23a6a7cf-6788-43f0-87f2-aeb79e64b9bf
+01:36:19.452 INF picked task component=daemon task=7416de18-19f9-4dc8-88e5-fb91530d1c96 issue=189482f5-3ba6-4480-94cc-6c09a3277b93 agent="M2 real executor" provider=pi
+01:36:19.452 DBG task context component=daemon task=7416de18-19f9-4dc8-88e5-fb91530d1c96 workspace_id=d708a6ab-f784-4d45-841b-346adfd2690e runtime_id=23a6a7cf-6788-43f0-87f2-aeb79e64b9bf agent_id=83ca689e-a562-4fc4-960a-d1120d0729ea repos=0 project_id=de2511d6-1c70-4507-b555-a824b69d8b2e autopilot_run_id="" trigger_comment_id=14858c49-062b-4348-982d-6e228017faf7 resume_session=false reuse_workdir=false
+01:36:19.550 INF starting agent component=daemon task=7416de18-19f9-4dc8-88e5-fb91530d1c96 provider=pi workdir=/workspace model=Gobao/deepseek-v4.1-flash resume_reachable=false
+01:36:19.550 DBG invoking backend component=daemon task=7416de18-19f9-4dc8-88e5-fb91530d1c96 provider=pi model=Gobao/deepseek-v4.1-flash prompt_bytes=915 custom_args=0 extra_args=0 mcp_config=false inline_system_prompt=false resume_session=false timeout=2m0s idle_watchdog=0s
+01:36:19.554 INF agent command component=daemon provider=pi exec=/usr/local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/cli.js args="[-p --mode <redacted> --session <redacted> --model <redacted>]" arg_count=7
+01:36:19.555 INF pi started component=daemon pid=102 cwd=/workspace model=Gobao/deepseek-v4.1-flash
+01:36:19.938 DBG [pi:stderr] Error: Model "Gobao/deepseek-v4.1-flash" not found. Use --list-models to see available models. component=daemon
+01:36:19.945 INF pi finished component=daemon pid=102 status=failed duration=389ms
+01:36:19.947 INF agent finished component=daemon task=7416de18-19f9-4dc8-88e5-fb91530d1c96 status=failed duration=0s tools=0
+01:36:19.947 DBG agent result detail component=daemon task=7416de18-19f9-4dc8-88e5-fb91530d1c96 status=failed output_bytes=0 session_id=/root/.multica/pi-sessions/20261109T013619.551017427.jsonl models_with_usage=0 agent_error="pi exited with error: exit status 1"
+01:36:19.959 INF task did not complete, reporting failure component=daemon task=7416de18-19f9-4dc8-88e5-fb91530d1c96 status=blocked failure_reason=agent_error.process_failure
+01:36:20.588 DBG heartbeat: skipping HTTP tick, WS recently acked component=daemon runtime_id=23a6a7cf-6788-43f0-87f2-aeb79e64b9bf
+01:36:22.588 DBG heartbeat: skipping HTTP tick, WS recently acked component=daemon runtime_id=23a6a7cf-6788-43f0-87f2-aeb79e64b9bf
+01:36:24.588 DBG heartbeat: skipping HTTP tick, WS recently acked component=daemon runtime_id=23a6a7cf-6788-43f0-87f2-aeb79e64b9bf
+{
+  "receipt_verified": true,
+  "operation": "authorization-bind",
+  "stage": "authorization-bind",
+  "task_id": "7416de18-19f9-4dc8-88e5-fb91530d1c96",
+  "challenge": "cd315a513ccedbad2bde121f92b435ee7d2c8c9d948f17f8f03a46559ca52d53",
+  "receipt_id": "df0f1d76dfd13c914e1e297d9a6452e002a09812c7157c81b36af8b6dd5021e5",
+  "changed_fact": "wx-created T receipt observed"
+}
+
+positive_terminal_status=failed (post-admission agent outcome is separate)

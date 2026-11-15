@@ -1,0 +1,25 @@
+$ trust root and installed file metadata (no private key/token printed)
+trust_root=/root/.multica/execution-trust/d708a6ab-f784-4d45-841b-346adfd2690e
+/root/.multica/execution-trust/d708a6ab-f784-4d45-841b-346adfd2690e/execution-consumptions/24fc886d93025f2b4b8f822abf4c98ad2117fd35d1365e8f16b979edb3db0415-f44ad7cb-1c0b-4fdc-a397-851aeef2c378-authorization-bind.execution-receipt.json
+/root/.multica/execution-trust/d708a6ab-f784-4d45-841b-346adfd2690e/grants/24fc886d93025f2b4b8f822abf4c98ad2117fd35d1365e8f16b979edb3db0415-f44ad7cb-1c0b-4fdc-a397-851aeef2c378.execution-grant.json
+/root/.multica/execution-trust/d708a6ab-f784-4d45-841b-346adfd2690e/grants/24fc886d93025f2b4b8f822abf4c98ad2117fd35d1365e8f16b979edb3db0415-f44ad7cb-1c0b-4fdc-a397-851aeef2c378.execution-source.json
+/root/.multica/execution-trust/d708a6ab-f784-4d45-841b-346adfd2690e/keys/m2-4b65a9c3b41c7da8.pub
+595e102775ae76c989ad95a78753110402877edaeb7ffdfbae66c4a533b85d88  /root/.multica/execution-trust/d708a6ab-f784-4d45-841b-346adfd2690e/execution-consumptions/24fc886d93025f2b4b8f822abf4c98ad2117fd35d1365e8f16b979edb3db0415-f44ad7cb-1c0b-4fdc-a397-851aeef2c378-authorization-bind.execution-receipt.json
+af0148f8156da28372a4c18011083444095127892c0b5f00b5b0d97ab54feb63  /root/.multica/execution-trust/d708a6ab-f784-4d45-841b-346adfd2690e/grants/24fc886d93025f2b4b8f822abf4c98ad2117fd35d1365e8f16b979edb3db0415-f44ad7cb-1c0b-4fdc-a397-851aeef2c378.execution-grant.json
+bb49d7cd91f3075e176747c0d1811a180ed92cc8fdfc353a9163cf99929c7e1b  /root/.multica/execution-trust/d708a6ab-f784-4d45-841b-346adfd2690e/grants/24fc886d93025f2b4b8f822abf4c98ad2117fd35d1365e8f16b979edb3db0415-f44ad7cb-1c0b-4fdc-a397-851aeef2c378.execution-source.json
+aa2bd8de0495a97e084651634a43403fff2704abaa38d6fa41594dd734481000  /root/.multica/execution-trust/d708a6ab-f784-4d45-841b-346adfd2690e/keys/m2-4b65a9c3b41c7da8.pub
+
+$ workspace must not contain execution-trust material
+
+$ real daemon log: claim / preparation / authorization / consumption
+01:35:52.812 DBG daemon config resolved component=daemon daemon_id=d432124a-55c6-488b-a7bc-3f793e9a1e2f device_name=m2-4b65a9c3b41c7da8 workspaces_root=/root/multica_workspaces health_port=19514 poll_interval=1s ws_claim_poll_interval=2s heartbeat_interval=2s agent_timeout=2m0s idle_watchdog=2h0m0s tool_watchdog=2h0m0s opencode_idle_watchdog=10m0s codex_semantic_inactivity=2h0m0s max_concurrent_tasks=1 gc_enabled=true auto_update=false launched_by=""
+01:36:17.046 DBG daemon config resolved component=daemon daemon_id=d432124a-55c6-488b-a7bc-3f793e9a1e2f device_name=m2-4b65a9c3b41c7da8 workspaces_root=/root/multica_workspaces health_port=19514 poll_interval=1s ws_claim_poll_interval=2s heartbeat_interval=2s agent_timeout=2m0s idle_watchdog=2h0m0s tool_watchdog=2h0m0s opencode_idle_watchdog=10m0s codex_semantic_inactivity=2h0m0s max_concurrent_tasks=1 gc_enabled=true auto_update=false launched_by=""
+01:36:17.347 INF task phase recorded component=daemon task=7416de18-19f9-4dc8-88e5-fb91530d1c96 task_id=7416de18-19f9-4dc8-88e5-fb91530d1c96 runtime_id=23a6a7cf-6788-43f0-87f2-aeb79e64b9bf task_phase=claimed phase_elapsed_ms=0 total_elapsed_ms=0
+01:36:19.452 INF picked task component=daemon task=7416de18-19f9-4dc8-88e5-fb91530d1c96 issue=189482f5-3ba6-4480-94cc-6c09a3277b93 agent="M2 real executor" provider=pi
+
+$ real backend/proxy authorization delivery route
+2026/11/09 01:32:49 proxy POST /api/workspaces/d708a6ab-f784-4d45-841b-346adfd2690e/crs/CR-2026-992/execution-authorization -> 201 err=<nil>
+2026/11/09 01:36:17 proxy GET /api/daemon/crs/CR-2026-992/execution-authorization -> 200 err=<nil>
+2026/11/09 01:36:17 proxy GET /api/daemon/crs/CR-2026-992/execution-authorization/head -> 200 err=<nil>
+2026/11/09 01:36:19 proxy POST /api/daemon/crs/CR-2026-992/execution-authorization/binding -> 200 err=<nil>
+2026/11/09 01:36:19 proxy POST /api/daemon/crs/CR-2026-992/execution-authorization/consumption -> 201 err=<nil>

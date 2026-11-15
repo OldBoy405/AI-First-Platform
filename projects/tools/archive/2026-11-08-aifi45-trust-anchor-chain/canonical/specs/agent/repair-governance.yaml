@@ -1,0 +1,30 @@
+meta:
+  task_id: repair-governance
+  change_id: 2026-11-08-aifi45-trust-anchor-chain
+  task_type: code
+  system: tools公开repair-admit/repair-resume CLI与既有修复历史、额度和停止事务
+  preconditions:
+    - Gate2后才创建对应测试与实现；当前所有CP均为待实施而非已通过。
+    - 从tools仓执行action；每个TC必须是唯一选中的顶层完整测试，测试文件在BUILD阶段创建。
+    - 使用隔离Git、临时origin/stop/额度历史、真实测试daemon与授权；不派发真实CR任务。
+    - 共用信任缝之外不得新增修复预算或恢复账；既有幂等、历史与停止语义须同时回归。
+    - MUST核真实TAP成功行及fail/skip/todo为0；匹配0条、名称回显、skip或仅组件子断言不得算通过。
+steps:
+  - id: CP-TAC-007
+    description: SC-TAC-007 / 有效信任链之后才执行原修复准入与恢复，历史不重置。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-TAC-007$" skills/shared/crctl/scripts/test/repair-trust-anchor-chain.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-TAC-007'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+    supplementary_evidence:
+      - requires: 真实M当前claim/head与认证daemon控制通道，隔离repair ledger夹具。
+        asserts: repair-admit与repair-resume先过同一缝再走原业务裁决；origin、消耗、streak、stop保留，不新增信任/凭据账；已提交重放返回原repair_id/receipt且不重复消费，崩溃恢复按已提交事实恢复或回滚未提交写入。
+        not_counted_as_cp_pass: true
+    unmet_requirements:
+      - description: >-
+          本 CP 的机械 PASS 覆盖 SC-TAC-007 的 THEN/AND（含已提交重放返回原 receipt、不新增信任账）在真实 T 实现上的执行。跨端 arrange 的真实性不再按 TC 逐条重复取证，而由 change 级补充证据 `validation/e2-m2-real-loop-20261108b/` 统一承担：真实签发 route（HTTP 201）、平台生成的 source_event_id、等于原始 bytes 的 source_digest、14 个 json-pointer 绑定、真实 DB 归属、daemon-owned trust root 安装、stdio relay 的非只读 authorization-bind、T 侧真实消费与平台 cr_execution_consumption 行，以及两条真实负例（改一个字符保留旧签名 → EXECUTION_SOURCE_INVALID；跨 project 材料 → EXECUTION_GRANT_SCOPE_MISMATCH，均 0 行消费）。该补充证据缺席或被推翻时，本 SC 只记条款级，不得登记整条。
+  - id: CP-TAC-008
+    description: SC-TAC-008 / 尚未提交的新修复写入遇到跨project、复制、篡改、坏key、错scope与旧head时全拒绝。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-TAC-008$" skills/shared/crctl/scripts/test/repair-trust-anchor-chain.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-TAC-008'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+rollback:
+  steps:
+    - 仅销毁本测试夹具与一次性平台资源；不得修改真实repair历史、授权、stop状态或工作区write-set。

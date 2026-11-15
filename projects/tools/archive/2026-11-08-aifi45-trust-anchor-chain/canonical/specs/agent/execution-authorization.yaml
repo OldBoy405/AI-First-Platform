@@ -1,0 +1,72 @@
+meta:
+  task_id: execution-authorization
+  change_id: 2026-11-08-aifi45-trust-anchor-chain
+  task_type: code
+  system: tools公开控制CLI、真实multica认证/DB/daemon链与目标OS身份边界
+  preconditions:
+    - Gate2后才创建对应测试与实现；当前所有CP均为待实施而非已通过。
+    - 从tools仓执行action；每个TC必须是唯一选中的顶层完整测试，测试文件在BUILD阶段创建。
+    - 使用临时Git/workspace、两个真实测试project、一次性平台DB和测试密钥；不得操作真实CR、共享DB或生产trust root。
+    - 真实路由/DB/daemon证据是ADJ-001/002闭环的必要部分；fixture signer、静态检查或helper结果不得替代。
+    - 每个拟启用OS必须提供不同daemon/agent身份；缺真实内核覆盖拒绝证据不得关闭ADJ-003或启用新合同。
+    - MUST核真实TAP成功行及fail/skip/todo为0；匹配0条、名称回显、skip或仅组件子断言不得算通过。
+steps:
+  - id: CP-TAC-001
+    description: SC-TAC-001 / 外部根归属、独立来源与受保护公钥组成同一正例准入链。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-TAC-001$" skills/shared/crctl/scripts/test/trust-anchor-chain.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-TAC-001'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+    supplementary_evidence:
+      - requires: 一次性真实M服务/DB、认证人类请求、认证daemon与T公开CLI；平台独立验源和DB归属开启。
+        asserts: 真实authorization-bind非只读与advance均走完整链后才进入既有事务；平台签发记录含独立source_event_id/digest/json-pointer bindings，原bytes未规范化。
+        not_counted_as_cp_pass: true
+    unmet_requirements:
+      - description: >-
+          本 CP 的机械 PASS 覆盖 SC-TAC-001 的 THEN/AND 在真实 T 实现上的执行与零副作用。跨端 arrange 的真实性不再按 TC 逐条重复取证，而由 change 级补充证据 `validation/e2-m2-real-loop-20261108b/` 统一承担：真实签发 route（HTTP 201）、平台生成的 source_event_id、等于原始 bytes 的 source_digest、14 个 json-pointer 绑定、真实 DB 归属、daemon-owned trust root 安装、stdio relay 的非只读 authorization-bind、T 侧真实消费与平台 cr_execution_consumption 行，以及两条真实负例（改一个字符保留旧签名 → EXECUTION_SOURCE_INVALID；跨 project 材料 → EXECUTION_GRANT_SCOPE_MISMATCH，均 0 行消费）。该补充证据缺席或被推翻时，本 SC 只记条款级，不得登记整条。
+  - id: CP-TAC-002
+    description: SC-TAC-002 / 同签名key的跨project证明与跨根复制均真实拒绝且零副作用。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-TAC-002$" skills/shared/crctl/scripts/test/trust-anchor-chain.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-TAC-002'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+    supplementary_evidence:
+      - requires: 同一真实M签名服务下两个project、两个安装根及真实daemon控制入口。
+        asserts: 替换签名有效但属于另一project的证明、复制整套材料到另一根后，真实控制准入拒绝；CR/Git/receipt/task/trust-root前后digest不变。
+        not_counted_as_cp_pass: true
+    unmet_requirements:
+      - description: >-
+          本 CP 的机械 PASS 覆盖 SC-TAC-002 的 THEN/AND 在真实 T 实现上的执行与零副作用。跨端 arrange 的真实性不再按 TC 逐条重复取证，而由 change 级补充证据 `validation/e2-m2-real-loop-20261108b/` 统一承担：真实签发 route（HTTP 201）、平台生成的 source_event_id、等于原始 bytes 的 source_digest、14 个 json-pointer 绑定、真实 DB 归属、daemon-owned trust root 安装、stdio relay 的非只读 authorization-bind、T 侧真实消费与平台 cr_execution_consumption 行，以及两条真实负例（改一个字符保留旧签名 → EXECUTION_SOURCE_INVALID；跨 project 材料 → EXECUTION_GRANT_SCOPE_MISMATCH，均 0 行消费）。该补充证据缺席或被推翻时，本 SC 只记条款级，不得登记整条。
+  - id: CP-TAC-003
+    description: SC-TAC-003 / env、sidecar、endpoint、路径pin与不可信trustRoot/key不构成准入。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-TAC-003$" skills/shared/crctl/scripts/test/trust-anchor-chain.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-TAC-003'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+  - id: CP-TAC-004
+    description: SC-TAC-004 / accepted_rules改一个字符而签名不变时真实准入拒绝。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-TAC-004$" skills/shared/crctl/scripts/test/trust-anchor-chain.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-TAC-004'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+    supplementary_evidence:
+      - requires: 真实M签发route/DB、独立来源提取、认证daemon及T公开CLI。
+        asserts: 平台在签发前拒绝不一致结构/映射、机器凭据/错误actor与跨DB project归属；已签记录仅改accepted_rules原bytes一字后，真实控制准入拒绝且所有业务write-set/消费/任务为零。
+        not_counted_as_cp_pass: true
+    unmet_requirements:
+      - description: >-
+          本 CP 的机械 PASS 覆盖 SC-TAC-004 的 THEN/AND 在真实 T 实现上的执行；真实篡改拒绝已由补充证据实测（EXECUTION_SOURCE_INVALID）。跨端 arrange 的真实性不再按 TC 逐条重复取证，而由 change 级补充证据 `validation/e2-m2-real-loop-20261108b/` 统一承担：真实签发 route（HTTP 201）、平台生成的 source_event_id、等于原始 bytes 的 source_digest、14 个 json-pointer 绑定、真实 DB 归属、daemon-owned trust root 安装、stdio relay 的非只读 authorization-bind、T 侧真实消费与平台 cr_execution_consumption 行，以及两条真实负例（改一个字符保留旧签名 → EXECUTION_SOURCE_INVALID；跨 project 材料 → EXECUTION_GRANT_SCOPE_MISMATCH，均 0 行消费）。该补充证据缺席或被推翻时，本 SC 只记条款级，不得登记整条。
+  - id: CP-TAC-005
+    description: SC-TAC-005 / 每个目标OS的真实agent身份覆盖公钥均被内核拒绝。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-TAC-005$" skills/shared/crctl/scripts/test/trust-anchor-chain.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-TAC-005'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+    supplementary_evidence:
+      - requires: 每个拟启用Linux/Windows部署面；daemon/agent为不同UID或不同Windows身份，agent可读但不可写公钥。
+        asserts: 记录OS/身份/路径/实际覆盖命令/exit code/EACCES或EPERM或Access Denied/前后SHA-256；每次写均被内核拒绝且key digest不变。
+        not_asserted: 同UID chmod、路径pin、组件校验与只读检查不算内核隔离；未列明或未实测的平台仍未验证。
+        not_counted_as_cp_pass: true
+    unmet_requirements:
+      - description: >-
+          本CP的机械PASS只覆盖本地公钥写尝试编排、拒绝结果与写前后digest的组件子句。
+          SC-TAC-005整条通过另需每个拟启用平台的真实部署证据：不同daemon/agent身份实际执行覆盖、替换、追加，
+          操作系统内核返回EACCES/EPERM或Access Denied，且每次写前后公钥SHA-256不变。
+          任一拟启用平台证据缺席时该SC视为条款级，不得登记整条通过或启用新合同，也不得以模拟权限错误或skip代替。
+  - id: CP-TAC-006
+    description: SC-TAC-006 / 旧scope/head/撤销失败关闭，普通读与已提交恢复保持兼容。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-TAC-006$" skills/shared/crctl/scripts/test/trust-anchor-chain.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-TAC-006'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+rollback:
+  steps:
+    - 仅清理由测试创建的临时workspace、一次性平台资源和测试身份；保留真实CR、部署公钥、共享DB及用户未提交修改。

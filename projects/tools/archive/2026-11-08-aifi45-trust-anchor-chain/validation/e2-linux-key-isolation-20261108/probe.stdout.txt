@@ -1,0 +1,98 @@
+=== E2 Linux key isolation probe ===
+date_utc: 2026-11-08T14:30:50Z
+kernel: Linux 6.18.54.1-microsoft-standard-WSL2 x86_64
+distro: Ubuntu 24.04.3 LTS
+root_uid: 0
+service_identity: aifi-svc uid=1500
+agent_identity:   aifi-agent uid=1501
+service_full_id:  uid=1500(aifi-svc) gid=1500(aifi-svc) groups=1500(aifi-svc)
+agent_full_id:    uid=1501(aifi-agent) gid=1501(aifi-agent) groups=1501(aifi-agent)
+
+=== [setup] service identity generates Ed25519 keypair (private key stays in memory) ===
+keygen_exit_code=0
+
+=== [setup] service identity installs public key into trust root ===
+exit_code=0
+--- stdout ---
+1500
+--- stderr ---
+--- end ---
+
+=== [state] installed trust anchor ===
+mode=755 owner=root:root uid=0 gid=0 inode=903 size=4096 path=/var/lib/aifi-e2-probe.tuyQ4Z
+mode=755 owner=aifi-svc:aifi-svc uid=1500 gid=1500 inode=3440 size=4096 path=/var/lib/aifi-e2-probe.tuyQ4Z/trustroot
+mode=644 owner=aifi-svc:aifi-svc uid=1500 gid=1500 inode=5189 size=113 path=/var/lib/aifi-e2-probe.tuyQ4Z/trustroot/aifi-release.ed25519.pub
+
+=== [control] agent reads the same anchor (expected: success) ===
+exit_code=0
+--- stdout ---
+1501
+a981a58dd1fc2d7080efb1289e8a1a05a6380deb74d61f8f39c05ccaea331b92  /var/lib/aifi-e2-probe.tuyQ4Z/trustroot/aifi-release.ed25519.pub
+--- stderr ---
+--- end ---
+
+=== [state] before attempts ===
+a981a58dd1fc2d7080efb1289e8a1a05a6380deb74d61f8f39c05ccaea331b92  /var/lib/aifi-e2-probe.tuyQ4Z/trustroot/aifi-release.ed25519.pub
+inode=5189 size=113 mode=644 owner=aifi-svc:aifi-svc
+
+=== [overwrite] overwrite in place via shell redirection (O_WRONLY|O_CREAT|O_TRUNC) ===
+runner: aifi-agent (uid 1501)
+exit_code=2
+--- stdout ---
+1501
+--- stderr ---
+sh: 1: cannot create /var/lib/aifi-e2-probe.tuyQ4Z/trustroot/aifi-release.ed25519.pub: Permission denied
+--- end ---
+
+=== [replace] agent creates its own Ed25519 pubkey in its own staging dir ===
+attacker_keygen_exit_code=0
+--- stdout ---
+uid=1501
+--- stderr ---
+--- end ---
+attacker_key_sha256: db66e62e626e06c66c5f7f439a4160fa00fea5a2306735b51658ab11423ed9ce
+replace_fs_device: source=2112 target=2112
+
+=== [replace] replace inode via rename (mv -f attacker.pub over trust anchor) ===
+runner: aifi-agent (uid 1501)
+exit_code=1
+--- stdout ---
+1501
+--- stderr ---
+mv: cannot move '/var/tmp/aifi-e2-agent.5bQIao/attacker.ed25519.pub' to '/var/lib/aifi-e2-probe.tuyQ4Z/trustroot/aifi-release.ed25519.pub': Permission denied
+--- end ---
+
+=== [append] append via shell redirection (O_WRONLY|O_APPEND) ===
+runner: aifi-agent (uid 1501)
+exit_code=2
+--- stdout ---
+1501
+--- stderr ---
+sh: 1: cannot create /var/lib/aifi-e2-probe.tuyQ4Z/trustroot/aifi-release.ed25519.pub: Permission denied
+--- end ---
+
+=== [state] after attempts ===
+a981a58dd1fc2d7080efb1289e8a1a05a6380deb74d61f8f39c05ccaea331b92  /var/lib/aifi-e2-probe.tuyQ4Z/trustroot/aifi-release.ed25519.pub
+inode=5189 size=113 mode=644 owner=aifi-svc:aifi-svc
+
+=== summary ===
+kernel: Linux 6.18.54.1-microsoft-standard-WSL2 x86_64
+uid_service=1500
+uid_agent=1501
+uids_distinct=yes
+read_control=OK (exit=0)
+overwrite: exit=2 verdict=DENIED
+replace:   exit=1 verdict=DENIED
+append:    exit=2 verdict=DENIED
+sha256_before=a981a58dd1fc2d7080efb1289e8a1a05a6380deb74d61f8f39c05ccaea331b92
+sha256_after=a981a58dd1fc2d7080efb1289e8a1a05a6380deb74d61f8f39c05ccaea331b92
+sha256_equal=yes
+inode_before=5189 inode_after=5189 inode_equal=yes
+metadata_equal=yes
+
+=== cleanup ===
+removed: /var/lib/aifi-e2-probe.tuyQ4Z
+removed: /var/tmp/aifi-e2-agent.5bQIao
+cleanup_check: both paths absent
+
+RESULT: PASS -- all three write attempts were denied by the kernel; anchor SHA-256 unchanged; service/agent uids differ.

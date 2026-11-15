@@ -1,0 +1,32 @@
+$ platform consumption row (actual table: cr_execution_consumption)
+bbe29a02-e986-437a-998b-5d0e2dc7c970|d708a6ab-f784-4d45-841b-346adfd2690e|CR-2026-992|de2511d6-1c70-4507-b555-a824b69d8b2e|d432124a-55c6-488b-a7bc-3f793e9a1e2f|23a6a7cf-6788-43f0-87f2-aeb79e64b9bf|7416de18-19f9-4dc8-88e5-fb91530d1c96|2026-11-09 01:36:17.316849+00|0f364f3ad0744c313d894b9697681119da4a73f4a391f60bdf6dba1b63811490|cd315a513ccedbad2bde121f92b435ee7d2c8c9d948f17f8f03a46559ca52d53|2026-11-09 01:36:19.445462+00
+
+$ positive consumption row count
+1
+
+$ exact T receipt content
+{
+  "schema": "execution-consumption-receipt/v1",
+  "scope_hash": "24fc886d93025f2b4b8f822abf4c98ad2117fd35d1365e8f16b979edb3db0415",
+  "grant_id": "f44ad7cb-1c0b-4fdc-a397-851aeef2c378",
+  "grant_digest": "0f364f3ad0744c313d894b9697681119da4a73f4a391f60bdf6dba1b63811490",
+  "authorization_revision": 1,
+  "operation": "authorization-bind",
+  "operation_id": "authorization-bind:authorization-bind",
+  "stage": "authorization-bind",
+  "subject_digest": "0f364f3ad0744c313d894b9697681119da4a73f4a391f60bdf6dba1b63811490",
+  "challenge": "cd315a513ccedbad2bde121f92b435ee7d2c8c9d948f17f8f03a46559ca52d53",
+  "runtime_id": "23a6a7cf-6788-43f0-87f2-aeb79e64b9bf",
+  "task_id": "7416de18-19f9-4dc8-88e5-fb91530d1c96",
+  "daemon_id": "d432124a-55c6-488b-a7bc-3f793e9a1e2f",
+  "receipt_id": "df0f1d76dfd13c914e1e297d9a6452e002a09812c7157c81b36af8b6dd5021e5",
+  "basis": {
+    "grant_head": "0f364f3ad0744c313d894b9697681119da4a73f4a391f60bdf6dba1b63811490",
+    "operation_id": "authorization-bind:authorization-bind",
+    "consumption_id": "df0f1d76dfd13c914e1e297d9a6452e002a09812c7157c81b36af8b6dd5021e5"
+  }
+}
+
+$ project B donor was really signed/delivered/consumed (cross-project setup)
+project_b=fbeedc58-c6e3-42e0-ad1b-e6a8101dbb53 cr_b=CR-2026-993 grant_b=4d6fa6fac8983c9c4dc2f16be491fddd7b794d416f558d91343469cf1315c63c-f3240a48-c062-4e6e-9a26-39ea372bd21b.execution-grant.json donor_status=failed
+1c640a79-f3fc-43b2-b998-08eaf8c8f519|CR-2026-993|fbeedc58-c6e3-42e0-ad1b-e6a8101dbb53|2eea9470-4a6a-41a9-ba4e-457b58c33b73|d5421bd7a3f01c1c01be47a1c8affc0c5e2611ec7d912b211e9224712fcf8ad0|2ca95b1e50c50fb71479aa9c53554887400af2f909134358d33070c220bed0e6

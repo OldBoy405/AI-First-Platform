@@ -1,0 +1,81 @@
+$ podman build --pull=never -t localhost/multica-backend:m2-20261108T154054Z-3a89e7d39bae6c5f -f Dockerfile .
+source_HEAD=81e5293adc758e392a045026cf81ec5cc1bac72d
+source_dirty_entries=77
+[1/2] STEP 1/15: FROM golang:1.26.9-alpine AS builder
+[1/2] STEP 2/15: RUN apk add --no-cache git
+--> Using cache 21ed466bf47240423da531160b8b526992a189d1846a2656fe3ab756c239ec18
+--> 21ed466bf472
+[1/2] STEP 3/15: WORKDIR /src
+--> Using cache 9960e39d83ef5ad179cb8a9212ebddde4a952d462846da5722cfae693a12c1cd
+--> 9960e39d83ef
+[1/2] STEP 4/15: COPY server/go.mod server/go.sum ./server/
+--> Using cache df5f2f3738fe32337631ff71aa5e210e9326f1bc68def56d20dae71794fdc592
+--> df5f2f3738fe
+[1/2] STEP 5/15: RUN cd server && go mod download
+--> Using cache 96174c85e7bfbe7c001b00e7905a8c93e5ff649d7132fcc6e2ec4206e0a4c751
+--> 96174c85e7bf
+[1/2] STEP 6/15: COPY server/ ./server/
+--> Using cache 6bf8edf1581153888390fef1176ae396564f7efc240820763f238e3f8259e29a
+--> 6bf8edf15811
+[1/2] STEP 7/15: ARG VERSION=dev
+--> Using cache 78346ccd98a403562d664572f1d7a04e27ac8cbc438d3f850ca00e567fe0c0fe
+--> 78346ccd98a4
+[1/2] STEP 8/15: ARG COMMIT=unknown
+--> Using cache d379d0f2db7281bab196c47a1dc832f15279bdc8a0f05798af0de866a9cbc0fc
+--> d379d0f2db72
+[1/2] STEP 9/15: ARG DATE=unknown
+--> Using cache f6de9b35d643517b845578d1305bbcf8b56d603e3725000ea287f3d931715b5e
+--> f6de9b35d643
+[1/2] STEP 10/15: RUN cd server && CGO_ENABLED=0 go build -ldflags "-s -w -X main.version=${VERSION} -X main.commit=${COMMIT}" -o bin/server ./cmd/server
+--> 7594223f0ef6
+[1/2] STEP 11/15: RUN cd server && CGO_ENABLED=0 go build -ldflags "-s -w -X main.version=${VERSION} -X main.commit=${COMMIT} -X main.date=${DATE}" -o bin/multica ./cmd/multica
+--> 9442bcd17155
+[1/2] STEP 12/15: RUN cd server && CGO_ENABLED=0 go build -ldflags "-s -w" -o bin/migrate ./cmd/migrate
+--> b3365abccacc
+[1/2] STEP 13/15: RUN cd server && CGO_ENABLED=0 go build -ldflags "-s -w" -o bin/maintenance ./cmd/maintenance
+--> 39df78f92186
+[1/2] STEP 14/15: RUN cd server && CGO_ENABLED=0 go build -ldflags "-s -w" -o bin/backfill_task_usage_hourly ./cmd/backfill_task_usage_hourly
+--> 738a9cdc481e
+[1/2] STEP 15/15: RUN cd server && CGO_ENABLED=0 go build -ldflags "-s -w" -o bin/backfill_codex_usage_cache ./cmd/backfill_codex_usage_cache
+--> 3107de68605e
+[2/2] STEP 1/15: FROM alpine:3.21
+[2/2] STEP 2/15: RUN apk add --no-cache ca-certificates tzdata
+--> Using cache 6c11085face72f5a127a023bdaf636e0633c8923556e33907ea202a70801861e
+--> 6c11085face7
+[2/2] STEP 3/15: WORKDIR /app
+--> Using cache 945d726ee6f79704e47a5d7555f71e791af259d28ec5775933e0c3e365731983
+--> 945d726ee6f7
+[2/2] STEP 4/15: COPY --from=builder /src/server/bin/server .
+--> 4e01afb7f992
+[2/2] STEP 5/15: COPY --from=builder /src/server/bin/multica .
+--> e67fe460ca98
+[2/2] STEP 6/15: COPY --from=builder /src/server/bin/migrate .
+--> d9b21d410cf2
+[2/2] STEP 7/15: COPY --from=builder /src/server/bin/maintenance .
+--> 71d74149120c
+[2/2] STEP 8/15: COPY --from=builder /src/server/bin/backfill_task_usage_hourly .
+--> 8d7ba8428ecf
+[2/2] STEP 9/15: COPY --from=builder /src/server/bin/backfill_codex_usage_cache .
+--> a30f06ba4dd0
+[2/2] STEP 10/15: COPY server/migrations/ ./migrations/
+--> fae7f915dbd2
+[2/2] STEP 11/15: COPY LICENSE NOTICE ./
+--> 77256db0d1a9
+[2/2] STEP 12/15: COPY docker/entrypoint.sh .
+--> 1be1567e1767
+[2/2] STEP 13/15: RUN sed -i 's/\r$//' entrypoint.sh && chmod +x entrypoint.sh
+--> 476ffd317962
+[2/2] STEP 14/15: EXPOSE 8080
+--> 14f5cc6fb676
+[2/2] STEP 15/15: ENTRYPOINT ["./entrypoint.sh"]
+[2/2] COMMIT localhost/multica-backend:m2-20261108T154054Z-3a89e7d39bae6c5f
+--> 3ef1bd77e84f
+Successfully tagged localhost/multica-backend:m2-20261108T154054Z-3a89e7d39bae6c5f
+3ef1bd77e84f7fe1349412cf9b02340226d4e58853c9ffae5db7ff5c89990426
+build_exit=0
+
+$ podman image inspect localhost/multica-backend:m2-20261108T154054Z-3a89e7d39bae6c5f --format {{.Id}}
+3ef1bd77e84f7fe1349412cf9b02340226d4e58853c9ffae5db7ff5c89990426
+
+$ podman images (exact tag)
+localhost/multica-backend:m2-20261108T154054Z-3a89e7d39bae6c5f	3ef1bd77e84f	sha256:8d930b20ee40bfdd4622f8d59b213c1ee4e9ef287e13b75d063e629cb6d6cbeb

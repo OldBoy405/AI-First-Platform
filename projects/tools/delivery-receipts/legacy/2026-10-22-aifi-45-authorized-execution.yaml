@@ -1,0 +1,47 @@
+schema_version: legacy-delivery-note/1
+kind: legacy-delivery-note
+is_receipt: false
+contains_cp_evidence: false
+project_id: tools
+change: 2026-10-22-aifi-45-authorized-execution
+archived: true
+archived_phase: deliver
+state_schema_generation: v1
+
+why_unbound: |
+  v2 的 bind-commit 要求该 change 的 .stdd.yaml 里有 phases.build.selected_evidence，
+  且 validation/runs/<run-id>/tc-evidence.json 存在。本 change 的 .stdd.yaml 是 v1 结构，
+  两者都没有；命令原文拒绝：
+    「未找到选定 run: phases.build.selected_evidence 为空，Gate 3 未绑定 run」
+  不为它补造 v2 run 的理由：v2 回执的语义是「这些输入字节被实际执行并通过」。
+  v1 没有冻结输入清单，事后对今天的树计算哈希，只会把数周前的人工评审绑到当前代码上，
+  制造回执本应防止的虚假保证。该 change 涉及的控制面代码后来又被 2026-11-13 的
+  aifi-45-node-trust-root 改写，重跑也不再是同一交付。
+
+referenced_business_commits:
+  note: 仅收录提交信息中出现本 change id 的提交；不声称穷尽，也不声称被绑定。
+  commits:
+    - sha: f774ffb
+      date: "2026-11-09"
+      subject: "fix(merge-recovery): never re-push an intent whose push may still be in flight"
+    - sha: cb75af4
+      date: "2026-10-27"
+      subject: "feat(crctl): AIFI-45 Gate3 待办 B 就地修（B11/B12a/EVD gate/B16）+ lint 扫描面修正"
+
+evidence_in_repo:
+  note: 人工评审记录与取证日志，不是机器可验证证据。
+  paths:
+    - projects/tools/archive/2026-10-22-aifi-45-authorized-execution/test-report.md
+    - projects/tools/archive/2026-10-22-aifi-45-authorized-execution/validation/
+
+known_gaps:
+  - "该归档下 validation/ 的证据文件从未被 Git 跟踪（约 2128 个，36 MB），只在本地检出中存在。"
+  - "该 change 的 canonical YAML（evidence-delivery-contract、execution-authorization、repair-governance）只在归档内，项目级 canonical/specs/{code,agent}/ 没有对应 YAML；项目级只有 Human View。"
+  - "Gate 3 批准回执在 .stdd.yaml 中标记为 superseded（receipt_id gate3-2026-11-08T16:11:36）。"
+
+checked_at: "2026-11-15"
+checked_by: "AI (pi session)，只读核对"
+checked:
+  - "归档目录存在、.stdd.yaml status=archived、current_phase=deliver"
+  - "无 validation/runs/ 目录、无 selected_evidence"
+  - "git log --grep 该 change id 的提交清单"

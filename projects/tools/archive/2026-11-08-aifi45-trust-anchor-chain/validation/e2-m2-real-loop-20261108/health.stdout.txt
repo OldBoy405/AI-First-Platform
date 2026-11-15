@@ -1,0 +1,23 @@
+$ curl --cacert <temporary-ca> https://127.0.0.1:44729/health
+HTTP/1.1 200 OK
+Content-Length: 112
+Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; connect-src 'self' wss:; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'
+Content-Type: application/json
+Date: Sun, 08 Nov 2026 15:42:00 GMT
+Vary: Origin
+
+{"status":"ok","pid":1,"commit":"81e5293adc758e392a045026cf81ec5cc1bac72d","started_at":"2026-11-08T15:41:58Z"}
+
+$ curl --cacert <temporary-ca> https://127.0.0.1:44729/readyz
+HTTP/1.1 200 OK
+Content-Length: 55
+Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; connect-src 'self' wss:; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'
+Content-Type: application/json
+Date: Sun, 08 Nov 2026 15:42:00 GMT
+Vary: Origin
+
+{"status":"ok","checks":{"db":"ok","migrations":"ok"}}
+
+$ /app/multica version
+multica m2-3a89e7d39bae6c5f (commit: 81e5293adc758e392a045026cf81ec5cc1bac72d, built: unknown)
+go: go1.26.9, os/arch: linux/amd64
