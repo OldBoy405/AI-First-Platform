@@ -1,6 +1,6 @@
 # Spec: evidence-delivery-contract
 
-> Change: 2026-10-22-aifi-45-authorized-execution | Auto-generated Human View
+> Change: 2026-10-22-aifi-45-authorized-execution + 2026-11-08-aifi45-trust-anchor-chain (merged) | Auto-generated Human View
 
 ## Requirements
 
@@ -73,14 +73,6 @@
 - **GIVEN** scope授权未变，但review后的实际subject/release tree或cycle已变化。
 - **WHEN** 使用旧测试/评审证据请求当前交付。
 - **THEN** SHALL 拒绝不适用证据并走最小必要重验，保留旧记录而不伪称当前PASS。
-
-
-<!-- 合并自 2026-11-08-aifi45-trust-anchor-chain -->
-# Spec: evidence-delivery-contract
-
-> Change: 2026-11-08-aifi45-trust-anchor-chain | Auto-generated Human View
-
-## Requirements
 
 ### Requirement: 注册与归档只能把交付事实写入已验证归属的当前项目。
 

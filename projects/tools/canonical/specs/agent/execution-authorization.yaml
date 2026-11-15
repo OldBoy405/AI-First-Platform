@@ -1,0 +1,179 @@
+# 合并基线：2026-10-22-aifi-45-authorized-execution（完整规格）
+# 已并入：2026-11-08-aifi45-trust-anchor-chain 的增量条目（REQ-TAC / CP-TAC）
+# 合并日期：2026-11-15；来源文件仍在各自 archive 内
+meta:
+  task_id: execution-authorization
+  change_id: 2026-10-22-aifi-45-authorized-execution
+  task_type: code
+  system: tools公开CLI与Go/Node签名联合夹具
+  preconditions:
+    - Gate2后才创建对应测试与实现；当前所有CP为待实施而非已通过。
+    - 从tools仓执行，测试只用临时Git/workspace及测试密钥。
+    - MUST精确选中顶层完整TC；带后缀的组件子断言不得登记整TC完成。
+    - MUST核真实子进程TAP成功行及fail/skip/todo为0；零测试、ctx代码回显或skip不得算通过。
+    - 来源/资源/current-binding精确规则以wire-contract.md为源；静态check或fixture signer不代证真实daemon链。
+steps:
+  - id: CP-AUTH-001
+    description: SC-AUTH-001 / 充分原请求授权推进，无伪造阶段人类批准。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-AUTH-001$" skills/shared/crctl/scripts/test/execution-authorization.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-AUTH-001'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+  - id: CP-AUTH-002
+    description: >-
+      SC-AUTH-002 / 不足授权仅补问关键取舍，未授权无副作用。空 `acceptance`/`delivery_targets`
+      视为授权不足而非格式错误（D1）；只读前置返回 `EXECUTION_AUTHORIZATION_INSUFFICIENT`，
+      缺口区分业务决定与环境事实，未授权部分无状态变化、无执行任务。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-AUTH-002$" skills/shared/crctl/scripts/test/execution-authorization.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-AUTH-002'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+  - id: CP-AUTH-003
+    description: SC-AUTH-003 / 拒绝不可信来源、篡改与旧签名域。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-AUTH-003$" skills/shared/crctl/scripts/test/execution-authorization.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-AUTH-003'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+  - id: CP-AUTH-004
+    description: SC-AUTH-004 / 扩围、验收放宽与路径逃逸无副作用。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-AUTH-004$" skills/shared/crctl/scripts/test/execution-authorization.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-AUTH-004'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+  - id: CP-AUTH-005
+    description: SC-AUTH-005 / 四类未授权敏感动作分别拒绝。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-AUTH-005$" skills/shared/crctl/scripts/test/execution-authorization.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-AUTH-005'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+    supplementary_evidence:
+      - requires: >-
+          一次性 PostgreSQL、仓库自身 go run ./cmd/migrate up、localhost/multica-backend:main 真实后端，
+          并设置 AIFI45_REAL_PLATFORM_URL 与 AIFI45_REAL_DAEMON_TOKEN；缺 env 时该测试明确 SKIP，不得计为 CP PASS。
+        action: node --test --test-reporter=tap skills/shared/crctl/scripts/integration/tc-auth-005-006-real-platform.mjs
+        asserts: >-
+          既有真实平台证据中 T 侧 real-platform 2/2 PASS；普通授权下 production、data-destructive、permission、
+          commitment-spend 四类动作均由真实 HTTP 返回 403/EXECUTION_SENSITIVE_ACTION_UNAUTHORIZED，
+          本地 HEAD/.crctl 不变且普通 CR 无平台回执。
+        evidence: validation/e5-real-platform-20261107/README.md
+        not_counted_as_cp_pass: true
+  - id: CP-AUTH-006
+    description: SC-AUTH-006 / 专项授权精确适用且操作重试仅消费一次。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-AUTH-006$" skills/shared/crctl/scripts/test/execution-authorization.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-AUTH-006'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+    supplementary_evidence:
+      - requires: >-
+          一次性 PostgreSQL、仓库自身 go run ./cmd/migrate up、localhost/multica-backend:main 真实后端，
+          并设置 AIFI45_REAL_PLATFORM_URL 与 AIFI45_REAL_DAEMON_TOKEN；缺 env 时该测试明确 SKIP，不得计为 CP PASS。
+        action: node --test --test-reporter=tap skills/shared/crctl/scripts/integration/tc-auth-005-006-real-platform.mjs
+        asserts: >-
+          既有真实平台证据中 T 侧 real-platform 2/2 PASS；同 operation_id 重放返回同一 receipt 且 replayed=true，
+          换 operation_id 返回 409/EXECUTION_SENSITIVE_ACTION_EXHAUSTED，改 target/environment/kind 均返回 403，
+          本地 HEAD/.crctl 不变；真实 DB 对列出 CR 仅保留 1 条回执。
+        evidence: validation/e5-real-platform-20261107/README.md
+        not_counted_as_cp_pass: true
+  - id: CP-AUTH-007
+    description: SC-AUTH-007 / 送达ACK不等于业务消费。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-AUTH-007$" skills/shared/crctl/scripts/test/execution-authorization.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-AUTH-007'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+    supplementary_evidence:
+      - requires: >-
+          从 multica/server 执行；专用一次性 PostgreSQL、DATABASE_URL、仓库自身 go run ./cmd/migrate up，
+          且沿用 e5 证据所固定的 M 脏工作树快照。
+        action: go test ./internal/governance -run '^TestTCAuth007DeliveredWithoutConsumptionDoesNotAdvance$' -count=1 -v
+        asserts: >-
+          既有 M 侧真实路由/DB 测试 PASS：未消费时 activation=409、consumption/activation 均 0 行、
+          binding issuance 保留 1 行；只计这些 M 侧子句，不登记 T 侧整条通过。
+        not_asserted: >-
+          未覆盖 delivered/ACK 回调、T 侧 status/gate/next、公开 CLI 状态/Git 副作用；
+          送达历史仅由 DB 行数证明，不是 history API 端到端查询。
+        evidence: projects/tools/changes/2026-10-22-aifi-45-authorized-execution/validation/e5-go-tc-disposable-db-20261107/go-test-20261107T131337Z.stdout.txt
+        not_counted_as_cp_pass: true
+  - id: CP-AUTH-008
+    description: SC-AUTH-008 / 跨租户项目与版本不适用拒绝。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-AUTH-008$" skills/shared/crctl/scripts/test/execution-authorization.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-AUTH-008'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+  - id: CP-AUTH-009
+    description: SC-AUTH-009 / 已提交同语义重放同receipt，异义冲突。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-AUTH-009$" skills/shared/crctl/scripts/test/execution-authorization.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-AUTH-009'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+    supplementary_evidence:
+      - requires: >-
+          从 multica/server 执行；专用一次性 PostgreSQL、DATABASE_URL、仓库自身 go run ./cmd/migrate up，
+          且沿用 e5 证据所固定的 M 脏工作树快照。
+        action: go test ./internal/governance -run '^TestTCAuth009ConsumptionReplayIsIdempotentAndConflictIsExplicit$' -count=1 -v
+        asserts: >-
+          既有 M 侧真实 consumption route/DB 测试 PASS：同 generation 重放返回同一 receipt、changed=false，
+          不同 challenge 返回 409/EXECUTION_CONSUMPTION_CONFLICT，最终 consumption 恰 1 行。
+        not_asserted: >-
+          未注入响应/发布故障，未测同键不同 subject，未断言不生成伪审批；
+          未逐字段比较冲突前后旧记录，故不覆盖完整故障恢复与全部异义冲突子句。
+        evidence: projects/tools/changes/2026-10-22-aifi-45-authorized-execution/validation/e5-go-tc-disposable-db-20261107/go-test-20261107T131337Z.stdout.txt
+        not_counted_as_cp_pass: true
+  - id: CP-AUTH-010
+    description: SC-AUTH-010 / Go原始字节golden跨Node验签及全部负例。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-AUTH-010$" skills/shared/crctl/scripts/test/execution-authorization.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-AUTH-010'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+    supplementary_evidence:
+      - requires: >-
+          从 multica/server 执行；专用一次性 PostgreSQL、DATABASE_URL、仓库自身 go run ./cmd/migrate up，
+          AIFI45_TOOLS_ROOT 指向 tools-aifi45、真实 node 可用，且沿用 e5 证据所固定的 M 脏工作树快照。
+        action: go test ./internal/governance -run '^TestTCAuth010GoSignedBytesWithNonASCIIAndCRLFVerifyInNode$' -count=1 -v
+        asserts: >-
+          既有 M 侧 Go→真实 Node 子进程测试 6/6 子断言 PASS：生产 verifyExecutionEnvelope 接受原始字节，
+          拒绝翻位、跨签名域、未知版本和外来 key 签名，安装公钥目录只含 .pub 文件。
+        not_asserted: >-
+          未覆盖 key_id 内外不一致、字段类型/整数/路径负例及普通文件证据 CRLF 哈希断言；
+          Go 直接 ed25519.Sign，不是完整 Go 生产签名到 T 公开 CLI 链，也未检查所有输出/日志的私钥泄漏。
+        evidence: projects/tools/changes/2026-10-22-aifi-45-authorized-execution/validation/e5-go-tc-disposable-db-20261107/go-test-20261107T131337Z.stdout.txt
+        not_counted_as_cp_pass: true
+  - id: CP-TAC-001
+    description: SC-TAC-001 / 外部根归属、独立来源与受保护公钥组成同一正例准入链。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-TAC-001$" skills/shared/crctl/scripts/test/trust-anchor-chain.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-TAC-001'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+    supplementary_evidence:
+      - requires: 一次性真实M服务/DB、认证人类请求、认证daemon与T公开CLI；平台独立验源和DB归属开启。
+        asserts: 真实authorization-bind非只读与advance均走完整链后才进入既有事务；平台签发记录含独立source_event_id/digest/json-pointer bindings，原bytes未规范化。
+        not_counted_as_cp_pass: true
+    unmet_requirements:
+      - description: >-
+          本 CP 的机械 PASS 覆盖 SC-TAC-001 的 THEN/AND 在真实 T 实现上的执行与零副作用。跨端 arrange 的真实性不再按 TC 逐条重复取证，而由 change 级补充证据 `validation/e2-m2-real-loop-20261108b/` 统一承担：真实签发 route（HTTP 201）、平台生成的 source_event_id、等于原始 bytes 的 source_digest、14 个 json-pointer 绑定、真实 DB 归属、daemon-owned trust root 安装、stdio relay 的非只读 authorization-bind、T 侧真实消费与平台 cr_execution_consumption 行，以及两条真实负例（改一个字符保留旧签名 → EXECUTION_SOURCE_INVALID；跨 project 材料 → EXECUTION_GRANT_SCOPE_MISMATCH，均 0 行消费）。该补充证据缺席或被推翻时，本 SC 只记条款级，不得登记整条。
+  - id: CP-TAC-002
+    description: SC-TAC-002 / 同签名key的跨project证明与跨根复制均真实拒绝且零副作用。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-TAC-002$" skills/shared/crctl/scripts/test/trust-anchor-chain.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-TAC-002'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+    supplementary_evidence:
+      - requires: 同一真实M签名服务下两个project、两个安装根及真实daemon控制入口。
+        asserts: 替换签名有效但属于另一project的证明、复制整套材料到另一根后，真实控制准入拒绝；CR/Git/receipt/task/trust-root前后digest不变。
+        not_counted_as_cp_pass: true
+    unmet_requirements:
+      - description: >-
+          本 CP 的机械 PASS 覆盖 SC-TAC-002 的 THEN/AND 在真实 T 实现上的执行与零副作用。跨端 arrange 的真实性不再按 TC 逐条重复取证，而由 change 级补充证据 `validation/e2-m2-real-loop-20261108b/` 统一承担：真实签发 route（HTTP 201）、平台生成的 source_event_id、等于原始 bytes 的 source_digest、14 个 json-pointer 绑定、真实 DB 归属、daemon-owned trust root 安装、stdio relay 的非只读 authorization-bind、T 侧真实消费与平台 cr_execution_consumption 行，以及两条真实负例（改一个字符保留旧签名 → EXECUTION_SOURCE_INVALID；跨 project 材料 → EXECUTION_GRANT_SCOPE_MISMATCH，均 0 行消费）。该补充证据缺席或被推翻时，本 SC 只记条款级，不得登记整条。
+  - id: CP-TAC-003
+    description: SC-TAC-003 / env、sidecar、endpoint、路径pin与不可信trustRoot/key不构成准入。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-TAC-003$" skills/shared/crctl/scripts/test/trust-anchor-chain.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-TAC-003'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+  - id: CP-TAC-004
+    description: SC-TAC-004 / accepted_rules改一个字符而签名不变时真实准入拒绝。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-TAC-004$" skills/shared/crctl/scripts/test/trust-anchor-chain.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-TAC-004'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+    supplementary_evidence:
+      - requires: 真实M签发route/DB、独立来源提取、认证daemon及T公开CLI。
+        asserts: 平台在签发前拒绝不一致结构/映射、机器凭据/错误actor与跨DB project归属；已签记录仅改accepted_rules原bytes一字后，真实控制准入拒绝且所有业务write-set/消费/任务为零。
+        not_counted_as_cp_pass: true
+    unmet_requirements:
+      - description: >-
+          本 CP 的机械 PASS 覆盖 SC-TAC-004 的 THEN/AND 在真实 T 实现上的执行；真实篡改拒绝已由补充证据实测（EXECUTION_SOURCE_INVALID）。跨端 arrange 的真实性不再按 TC 逐条重复取证，而由 change 级补充证据 `validation/e2-m2-real-loop-20261108b/` 统一承担：真实签发 route（HTTP 201）、平台生成的 source_event_id、等于原始 bytes 的 source_digest、14 个 json-pointer 绑定、真实 DB 归属、daemon-owned trust root 安装、stdio relay 的非只读 authorization-bind、T 侧真实消费与平台 cr_execution_consumption 行，以及两条真实负例（改一个字符保留旧签名 → EXECUTION_SOURCE_INVALID；跨 project 材料 → EXECUTION_GRANT_SCOPE_MISMATCH，均 0 行消费）。该补充证据缺席或被推翻时，本 SC 只记条款级，不得登记整条。
+  - id: CP-TAC-005
+    description: SC-TAC-005 / 每个目标OS的真实agent身份覆盖公钥均被内核拒绝。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-TAC-005$" skills/shared/crctl/scripts/test/trust-anchor-chain.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-TAC-005'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+    supplementary_evidence:
+      - requires: 每个拟启用Linux/Windows部署面；daemon/agent为不同UID或不同Windows身份，agent可读但不可写公钥。
+        asserts: 记录OS/身份/路径/实际覆盖命令/exit code/EACCES或EPERM或Access Denied/前后SHA-256；每次写均被内核拒绝且key digest不变。
+        not_asserted: 同UID chmod、路径pin、组件校验与只读检查不算内核隔离；未列明或未实测的平台仍未验证。
+        not_counted_as_cp_pass: true
+    unmet_requirements:
+      - description: >-
+          本CP的机械PASS只覆盖本地公钥写尝试编排、拒绝结果与写前后digest的组件子句。
+          SC-TAC-005整条通过另需每个拟启用平台的真实部署证据：不同daemon/agent身份实际执行覆盖、替换、追加，
+          操作系统内核返回EACCES/EPERM或Access Denied，且每次写前后公钥SHA-256不变。
+          任一拟启用平台证据缺席时该SC视为条款级，不得登记整条通过或启用新合同，也不得以模拟权限错误或skip代替。
+  - id: CP-TAC-006
+    description: SC-TAC-006 / 旧scope/head/撤销失败关闭，普通读与已提交恢复保持兼容。
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-TAC-006$" skills/shared/crctl/scripts/test/trust-anchor-chain.test.mjs
+    assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-TAC-006'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+
+rollback:
+  steps:
+    - 仅清理本测试创建的临时workspace与测试密钥；不得修改真实CR或安装根公钥。

@@ -1,6 +1,6 @@
 # Spec: execution-authorization
 
-> Change: 2026-10-22-aifi-45-authorized-execution | Auto-generated Human View
+> Change: 2026-10-22-aifi-45-authorized-execution + 2026-11-08-aifi45-trust-anchor-chain (merged) | Auto-generated Human View
 
 ## Requirements
 
@@ -20,7 +20,7 @@
 
 - **GIVEN** 原请求缺少决定性验收或交付边界，但环境中的仓库事实可查。
 - **WHEN** 执行方判断授权充分性。
-- **THEN** SHALL 自查事实并仅请求必要业务取舍，未授权部分无状态变化或执行任务。
+- **THEN** SHALL 自查事实并仅请求必要业务取舍，未授权部分无状态变化或执行任务。 授权包中 `acceptance` / `delivery_targets` 允许为空（D1）：空值是"授权不足"这一事实的 如实记录，不是解码失败。充分性由只读前置判定（`crctl authorization-check`）给出， 不足时返回 `EXECUTION_AUTHORIZATION_INSUFFICIENT` 并逐条列出缺口，缺口分两类—— `business`（只能由需求方补的决定）与 `facts`（执行方须先自查的环境事实）； 两类不可互相顶替，且判定本身不写任何状态、不创建执行任务。
 
 ### Requirement: 可信来源、scope和敏感动作边界不能由作者、转述或参数豁免。
 
@@ -86,14 +86,6 @@
 - **THEN** SHALL 接受合法原始字节，拒绝全部篡改、旧签名域及未知版本，不暴露私钥。
 - **AND** key_id内外一致，字段类型、整数及路径均经边界校验。
 - **AND** 普通文件证据哈希仍先CRLF规范化，不因签名传输修改已签payload字节。
-
-
-<!-- 合并自 2026-11-08-aifi45-trust-anchor-chain -->
-# Spec: execution-authorization
-
-> Change: 2026-11-08-aifi45-trust-anchor-chain | Auto-generated Human View
-
-## Requirements
 
 ### Requirement: 控制写准入必须由外部信任链同时证明根归属、原始来源与验钥身份。
 

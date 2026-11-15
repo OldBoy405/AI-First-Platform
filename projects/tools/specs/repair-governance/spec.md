@@ -1,6 +1,6 @@
 # Spec: repair-governance
 
-> Change: 2026-10-22-aifi-45-authorized-execution | Auto-generated Human View
+> Change: 2026-10-22-aifi-45-authorized-execution + 2026-11-08-aifi45-trust-anchor-chain (merged) | Auto-generated Human View
 
 ## Requirements
 
@@ -91,14 +91,6 @@
 - **THEN** SHALL 拒绝全部无效分支；仅对适用正例在CR锁内CAS解除精确stop并新建progress_epoch，同恢复只生效一次。
 - **AND** 旧streak、stop与累计消耗完整保留，恢复不跳过预算准入。
 - **AND** 停机只读取证有界，需要纠正性执行或副作用仍需恢复授权与额度，不能另开无限诊断。
-
-
-<!-- 合并自 2026-11-08-aifi45-trust-anchor-chain -->
-# Spec: repair-governance
-
-> Change: 2026-11-08-aifi45-trust-anchor-chain | Auto-generated Human View
-
-## Requirements
 
 ### Requirement: 修复与恢复先复用控制准入信任缝，再执行原有额度与停止裁决。
 
