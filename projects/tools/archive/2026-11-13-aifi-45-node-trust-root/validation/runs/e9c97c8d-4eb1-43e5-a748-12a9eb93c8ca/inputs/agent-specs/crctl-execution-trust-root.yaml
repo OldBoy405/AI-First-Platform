@@ -1,0 +1,87 @@
+# agent_spec.yaml — Agent 验证规格（Canonical YAML）
+meta:
+  task_id: crctl-execution-trust-root
+  change_id: 2026-11-13-aifi-45-node-trust-root
+  created: '2026-11-13'
+  task_type: code
+  system: tools 仓 skills/shared/crctl/scripts（Node 测试，本地临时目录 fixture，不起数据库、daemon 或模型）
+  preconditions:
+    - 工作目录为 tools 仓根；父进程环境未设置 CRCTL_EXECUTION_TRUST_ROOT（新测试自己为子进程构造 env，并显式清除该变量）。
+    - 每个 action 用 `--test-name-pattern` 只运行一个 TC；该 flag 必须放在文件参数之前。只有 `ok 1 - TC-NTR-xxx` 出现才算该用例跑过：零匹配时 node 会输出文件级 `ok 1 - <文件名>` 且退出 0，不算通过。
+    - 不读取、不依赖、不格式化、不提交工作树里未提交的 M008 planRecovery 改动。
+rollback:
+  steps:
+    - 测试只写入各自的临时目录并在结束时删除；失败后无需额外回滚，仅需人工确认没有遗留的临时目录。
+steps:
+  - id: CP-NTR-001
+    description: SC-NTR-001 / 仅设变量时 advance 与同值 flag 一致，receipt 写入所选根。
+    action: node --test --test-name-pattern=TC-NTR-001 --test-reporter=tap skills/shared/crctl/scripts/test/node-trust-root.test.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'ok 1 - TC-NTR-001'
+  - id: CP-NTR-002
+    description: SC-NTR-002 / authorization-bind --check 经变量与 flag 的输出字节一致且零副作用。
+    action: node --test --test-name-pattern=TC-NTR-002 --test-reporter=tap skills/shared/crctl/scripts/test/node-trust-root.test.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'ok 1 - TC-NTR-002'
+  - id: CP-NTR-003
+    description: SC-NTR-003 / 变量与 flag 同值通过、异值在读取工作区前拒绝。
+    action: node --test --test-name-pattern=TC-NTR-003 --test-reporter=tap skills/shared/crctl/scripts/test/node-trust-root.test.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'ok 1 - TC-NTR-003'
+  - id: CP-NTR-004
+    description: SC-NTR-004 / 非法变量值被实际选用时拒绝且不回退，不消费信任根的分支忽略。
+    action: node --test --test-name-pattern=TC-NTR-004 --test-reporter=tap skills/shared/crctl/scripts/test/node-trust-root.test.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'ok 1 - TC-NTR-004'
+  - id: CP-NTR-005
+    description: SC-NTR-005 / 八命令之外的命令不受变量影响。
+    action: node --test --test-name-pattern=TC-NTR-005 --test-reporter=tap skills/shared/crctl/scripts/test/node-trust-root.test.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'ok 1 - TC-NTR-005'
+  - id: CP-NTR-006
+    description: SC-NTR-006 / authorization-scope、sensitive-action、repair、register、archive 经变量与同值 flag 一致。
+    action: node --test --test-name-pattern=TC-NTR-006 --test-reporter=tap skills/shared/crctl/scripts/test/node-trust-root.test.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'ok 1 - TC-NTR-006'
+  - id: CP-NTR-007
+    description: SC-NTR-007 / 自备信任根在变量与 flag 通道的本地准入结果一致，不声称平台授权。
+    action: node --test --test-name-pattern=TC-NTR-007 --test-reporter=tap skills/shared/crctl/scripts/test/node-trust-root.test.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'ok 1 - TC-NTR-007'
+  - id: CP-NTR-008
+    description: SC-NTR-008 / 无变量无 flag 且 .crctl 无授权时 advance 仍以 EXECUTION_CONSUMPTION_REQUIRED 拒绝。
+    action: node --test --test-name-pattern=TC-NTR-008 --test-reporter=tap skills/shared/crctl/scripts/test/node-trust-root.test.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'ok 1 - TC-NTR-008'
+  - id: CP-NTR-009
+    description: SC-NTR-005（未设置变量的回归部分）/ 现有四个 trust 相关测试文件在未设置变量时全部通过。
+    action: node --test --test-reporter=tap skills/shared/crctl/scripts/test/trust-anchor-chain.test.mjs skills/shared/crctl/scripts/test/execution-authorization.test.mjs skills/shared/crctl/scripts/test/delivery-trust-anchor-chain.test.mjs skills/shared/crctl/scripts/test/repair-trust-anchor-chain.test.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: '# fail 0'

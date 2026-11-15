@@ -1,0 +1,165 @@
+# 2026-11-13-aifi-45-node-trust-root.yaml — Canonical Proposal (YAML-first, V2.9)
+meta:
+  change_id: "2026-11-13-aifi-45-node-trust-root"
+  title: "授权节点内 crctl 可定位 daemon 信任根，提供 workspace 的 authority 事实，并让 crctl 自己的 git 调用不经 agent 的 git shim（tools 侧，与 multica 2026-11-13-aifi-45-real-execution-closure 成对）"
+  created: "2026-11-13T22:43:56.935801"
+  status: draft
+  version: "2.9"
+
+why:
+  problem: |
+    授权执行（authorized-execution/v1）的 execution-grant 与公钥由 multica daemon 安装在 daemon 自有的信任根
+    （~/.multica/execution-trust/<ws>/），原因是 CR 工作区内的 .crctl 对受管 agent 可写（ADJ-AIFI45-003）。
+    目前 crctl 只有命令行 --trust-root 一种方式选择这个信任根；tools 的所有节点 skill 里的 crctl advance
+    命令都不带它，也没有环境变量或默认路径。因此授权节点内 agent 运行的 crctl advance 读取的是旧位置
+    <安装根>/.crctl/grants，找不到 execution-grant，以 EXECUTION_CONSUMPTION_REQUIRED 拒绝，节点无法完成
+    门控推进，也就无法在 run 内产生执行回执。该结论来自静态读码（crctl.mjs:1474-1480、
+    execution-authorization.mjs:111-145、各 SKILL.md、multica daemon.go 的 env 注入），没有真实运行验证。
+    multica 的 real-execution-closure 需要这个问题被解决后才能进行真实运行（切片 4–6）。
+
+    2026-11-14 并入第二处接缝：multica 的无模型替身运行（A0，真实 podman 整栈、替身 pi，零模型费用）显示，
+    daemon 在启动每个 pipeline 节点任务前会执行 crctl workspace inspect <CR> --workspace <root> --detail，
+    要求输出含 targetSpecId（或 kebab 名）与有效的 targetVersion，缺失即以 TARGET_SPEC_AUTHORITY_DRIFT 或
+    WRITEBACK_VERSION_UNASSIGNED/INVALID 拒绝启动。tools HEAD 的该命令输出键只有 op、cr、mode、txId、
+    resources、changed、operationalWorkspace、operationalWorkspaceError、freshness，git log -S 证明历史上
+    从未输出过这两个键；daemon 单测用手写 JSON，所以一直没被发现。不补这两个字段，授权节点在 writer 节点启动前
+    就会被 daemon 拒绝，信任根变量也没有机会被验证。该结论来自读码与宿主机复跑 crctl，尚未端到端观察。
+
+    2026-11-14 再并入第三处接缝：A0 再往下走时发现，daemon 在每个任务 agent 的 PATH 前置一个 git shim
+    （{envRoot}/bin/git，内容是 multica gitguard-exec <真实 git> <调用者> "$@" 的包装），其后端读取
+    MULTICA_CONTROLLED_SHELL_RULES；agent 环境里没有该变量（multica 的 agent 环境构造丢弃全部继承来的
+    MULTICA_* 变量，daemon 也不重新发布），shim 因此对每一次 git 失败关闭。crctl 自己的 git 调用共 10 处
+    （crctl.mjs 2、lib/change-scope.mjs 4、lib/workspace-transactions.mjs 4）都是经 PATH 解析的
+    spawnSync('git')，在 agent 环境里同样命中该 shim；deriveInstallRoot 在 git 失败时回落到传入路径，
+    所以此前没暴露。A0 三组对照（真实 podman 整栈、替身 writer、零模型费用；不是任何 TC 的证据）：
+    ①现状：crctl 的 git 被 shim 拒绝，两个候选 --workspace 都在 next 或 inspect 失败，advance 一次也没能执行；
+    ②仅让 shim 看到规则变量：拒绝变为白名单拒绝，crctl 内部的 rev-parse --git-common-dir
+    （deriveInstallRoot 的输入）与 advance 里的 show HEAD:<CR>/execution-contract.yml 被拒，安装根被回落成
+    CR worktree，第一次 advance 以 EXECUTION_BINDING_INVALID 失败，没走到平台；③仅让 crctl 子进程的 PATH
+    去掉 shim 目录、不发布规则变量：next、inspect、两次 advance 全部成功，没有任何白名单拒绝，
+    basis.grant_head 等于授权 head，平台侧 consumption=1、effects=1/1/1；agent 自己直接调用的 git 仍失败关闭。
+    因此授权节点里的 crctl advance 在现状下无法工作，信任根变量也没有机会被验证。
+
+what_changes:
+  - description: "crctl 增加信任根定位环境变量 CRCTL_EXECUTION_TRUST_ROOT，语义等同于同值的命令行 --trust-root"
+    type: new
+  - description: "合并集中在一处（main 的 flag 解析边界），仅对当前实际消费 trustRoot 的八个命令生效：advance、authorization-bind、authorization-scope、sensitive-action、repair-admit、repair-resume、register、archive；其他命令（含 kb/workspace/business/writeback-apply/git、repair-assess/repair-outcome）完全不受影响"
+    type: modified
+  - description: "变量与 --trust-root 并存：值相同通过，不同以 EXECUTION_TRUST_ROOT_INVALID 拒绝；变量被实际选作信任根而值不合法时拒绝，不回退到旧的 .crctl 位置；未设置时行为与现状完全一致"
+    type: modified
+  - description: "multica 侧（daemon 对授权节点注入该变量）在 multica 成对 change 内实现，不在本 change 内"
+    type: new
+  - description: "（2026-11-14 并入）crctl workspace inspect --detail 的成功输出新增 targetSpecId 与 targetVersion 两个键（字符串或 null），取值只复用既有读取器（resolveTargetSpecMode、readCrMdTargetVersion）；既有键、类型与值不变，默认（非 detail）输出不变；daemon 读这两个键的方式不变"
+    type: new
+  - description: "（2026-11-14 并入）同步 crctl-detail 金样本 workspace-inspect.json 的字段路径集合，并新增测试断言新字段的取值与既有输出不变"
+    type: modified
+  - description: "（2026-11-14 并入）crctl 在 main 入口最先的位置，从自己进程的 PATH 移除放有 controlled-shell git shim 的目录（目录内的 git 或 git.cmd 是小于 4096 字节的文件且内容含 gitguard-exec），使 crctl 自己 spawn 的 git 到达真实 git；没有 shim 时 PATH 逐字不变；agent 直接调用的 git、shim 与 rules.json 白名单、crctl 自己的 controlledGit 白名单与调用者名均不变"
+    type: new
+
+capabilities:
+  new: []
+  modified:
+    - name: crctl-execution-trust-root
+      description: "crctl 对执行授权信任根的选择方式：除 --trust-root 外，接受 daemon 注入的环境变量，规则一致、失败即拒绝；并为 workspace inspect --detail 补充 daemon 核对 authority 所需的两个事实键，并让 crctl 自己 spawn 的 git 不经 agent 的 git shim（2026-11-14 并入）"
+
+constraints:
+  - "只表达结果与边界：授权节点内的 crctl 能读到 daemon 信任根里的 grant 与公钥；不改 grant/签名/锚点合同，不改 verdict 与 binding 合同。"
+  - "不把 grant 放到 agent 可写位置（拒绝向 {root}/.crctl/grants 复制），不引入本地签名回退。"
+  - "未设置变量时所有命令行为与现状一致（legacy 与既有 --trust-root 用法不变）；变量与 --trust-root 同时出现且不一致时拒绝，不能默默择一。"
+  - "本变更不新增 agent 能力：agent 今天已能传 --trust-root <任意绝对目录>，本地准入只证明所选根内文件自洽（自造密钥、自签 grant 与本地假 endpoint 在现有代码下可本地准入），不证明平台授权；变量不是隔离证明，平台侧事实（预消费回执、head、撤销）才是权威。design.md 必须写明这一口径。"
+  - "tools 工作树现有未提交改动（M008 planRecovery：merge-effects.mjs 及其测试，AGENTS.md、CUSTOM.md）归属未明，不吞并、不提交、不触碰。例外：test/golden/crctl-detail/workspace-inspect.json 的工作树内容已核实与 HEAD 一致（git diff HEAD --quiet 返回 0，git status 的 M 仅是 stat 差异），本 change 可编辑它；每次编辑前须重新核实，若内容与 HEAD 不一致则停止并报告，提交时只含本 change 的改动。"
+  - "补字段只增不改：workspace inspect --detail 的既有输出键、类型、值与默认（summary）输出不变；不新增 authority 裁决、错误码或 flag；authority 裁决失败或读不到时对应键为 null，由调用方沿用既有错误码失败关闭，inspect 本身仍成功退出。"
+  - "对 crctl.mjs 的改动须是对 HEAD 的纯行插入（multica 真实运行驱动使用的固定来源 crctl 副本要求覆盖版只许对 HEAD 增行）；若实现需要改既有行，必须先暂停并回到设计，而不是绕过该检查。"
+  - "git shim 剥离只做一件事：从 crctl 自己进程的 PATH 移除放有 shim 的目录；不增删其他环境变量，不改 crctl 以外的进程，不放宽 agent 直接调用 git 的任何行为。逻辑放在 HEAD 中不存在的新文件 lib/git-shim-path.mjs（crctl.mjs 只纯插入一行 import 与 main 内的一处调用）；multica 固定来源副本的覆盖清单须同步包含该新文件（multica 侧脚本事项，不在本 change 内）。"
+  - "跨仓独立记录：本 change 的 Gate 与 multica 的 Gate 各自独立，互不代签；Gate 不授权提交、推送或部署。"
+  - "不做真实模型调用，不起数据库；测试用 crctl 本仓的 node 测试即可。"
+
+stakeholders:
+  - "tools（crctl）维护者"
+  - "multica daemon 维护者（成对 change 负责注入变量）"
+  - "AIFI-45 授权执行链使用者"
+
+risk_areas:
+  - capability: crctl-execution-trust-root
+    risk: "workspace inspect --detail 新增输出键被现有消费者（节点 skill、crctl-detail 金样本、cr-cost 等）按严格结构读取而失败。"
+    mitigation: "只增键不改既有键；crctl-summary.test.mjs 对金样本做字段集合、稳定值、易变形态三层比对并检查默认面是 detail 面的真子集；BUILD 时 grep 消费者，C1 复核。"
+  - capability: crctl-execution-trust-root
+    risk: "authority 裁决抛错（drift）时 targetSpecId 为 null，与 legacy 的 null 混同。"
+    mitigation: "daemon 对 null 以既有 TARGET_SPEC_AUTHORITY_DRIFT 失败关闭，两种情况对它都是拒绝；不在 inspect 里新增错误字段，避免扩大合同。"
+  - capability: crctl-execution-trust-root
+    risk: "环境变量由 agent 进程继承，agent 可以改写或指向自备目录；自备目录内自造的密钥、grant 与本地假 endpoint 在现有代码下可本地准入并写本地 receipt（与今天传 --trust-root 完全等价）。"
+    mitigation: "不新增能力、不声称隔离；测试断言环境变量通道“不比 flag 更宽松也不更严格”，而不是“自造信任根必被拒绝”；平台权威核验由 multica 成对 change 承担；路径检查仍沿用 installDirectory 的既有规则。"
+  - capability: crctl-execution-trust-root
+    risk: "统一解析后，授权节点内原本走 legacy 路径的命令（register、archive、repair 系列等）会因 trust-root 存在而进入 control admission，行为改变面比 advance 大。"
+    mitigation: "SPEC 逐命令列出受影响面；只在授权节点（daemon 注入变量）生效，未注入时不变；不满足则回到用户裁定是否缩到 advance。"
+  - capability: crctl-execution-trust-root
+    risk: "daemon 与 tools 版本错位：daemon 注入了变量而旧 crctl 不认识（静默忽略后旧行为），或相反。"
+    mitigation: "crctl 单侧不能区分旧 crctl 与有意选择 legacy，故不宣称版本错位必然硬失败；由 multica 成对 change 承担：对授权节点无条件注入、收尾以平台权威回执判断成败（无回执即不推进），并约定发布顺序先 tools 后 daemon 注入；不新增 crctl 能力探测。"
+
+  - capability: crctl-execution-trust-root
+    risk: "shim 的识别依赖其文件内容含字面量 gitguard-exec；multica 改变 shim 形态后剥离静默失效，crctl 的 git 重新被 shim 拦截。"
+    mitigation: "失效方向是失败关闭（回到 A0 观察到的 B4 失败），不会放宽；字面量写入接口锚定，测试固定该标记，multica 的 A0 与真实运行端到端兜底；不为此在 crctl 里增加 shim 形态探测或 daemon 通知通道。"
+  - capability: crctl-execution-trust-root
+    risk: "PATH 过滤作用于 crctl 的全部子进程，包括按测试方案声明执行的命令（runTestPlan 继承 process.env）；或被误读为放宽 agent 的 git 限制，或误剥 PATH 上其他目录。"
+    mitigation: "只改 crctl 自己进程的 PATH，agent 直接调用的 git 不变（A0 对照实验已观察）；只移除含 shim 标记的目录，其余目录与顺序不变，由单测固定；声明命令由 crctl 代表授权流程执行、不是 agent 直接调用，影响面已在 design 决策 8 明示并交用户在 Gate 审阅时确认；crctl 的 controlledGit 白名单、调用者名与命令面不变；shim 本就不是隔离（agent 可用绝对路径或改 PATH 绕过）。"
+non_goals:
+  - "不改 workspace inspect 既有输出键与 detail/summary 的划分，不新增 authority 裁决、错误码、flag，不改 normalizeTargetVersion、resolveTargetSpecMode 或任何写入路径（register、writeback-apply 等）。"
+  - "不改 daemon 读 targetSpecId/targetVersion 的方式与错误码（那是 multica 成对 change 的既有事实）。"
+  - "不改节点 skill 的 crctl 命令行（不在每个 SKILL.md 里加 --trust-root）。"
+  - "不新增签名、公钥固定、新信任根、变量认证、OS 身份隔离或本地静态验签回退；不声称防止本地伪造链造成的工作区写入。"
+  - "不改 grant、签名、binding、receipt、verdict 的格式与合同，不改状态机和 gates.json。"
+  - "不证明 agent 与 daemon 的操作系统级隔离（沿用 ADJ-AIFI45-003 的“接缝而非隔离证明”口径）。"
+  - "不处理 M008 planRecovery 等未提交改动，不处理 CR 账本入口变更。"
+  - "不做 multica 侧代码、真实运行或发布。"
+  - "不改 agent 直接调用 git 的行为，不改 shim 的生成、规则文件 rules.json 的白名单与 crctl 的 controlledGit 白名单，不在 daemon 侧发布 MULTICA_CONTROLLED_SHELL_RULES（A0 对照证明它既不充分也非必要，且会把 agent 直接 git 从全拒放宽为按白名单）。"
+  - "不逐处修改 crctl 内的 spawnSync('git') 调用点，不新增 flag、环境变量、错误码或 shim 形态探测。"
+
+open_questions:
+  - id: Q1
+    question: "采用环境变量，而不是改所有 SKILL.md 命令行传 --trust-root"
+    resolved: "已确认：采用环境变量"
+  - id: Q2
+    question: "变量与 --trust-root 冲突时怎么办"
+    resolved: "已确认：值不同拒绝，相同通过"
+  - id: Q3
+    question: "变量对所有接受 --trust-root 的命令生效，还是只对 advance"
+    resolved: "已确认：统一生效，限八个实际消费者（SPEC 逐命令列出影响面）"
+  - id: Q4
+    question: "变量名"
+    resolved: "CRCTL_EXECUTION_TRUST_ROOT（SPEC 定稿，multica 成对 change 使用同一字面量）"
+
+  - id: Q5
+    question: "补 workspace inspect authority 字段（B2）并入本 change 还是另开 change"
+    resolved: "用户 2026-11-14 裁定：并入本 change（AI 的只读成本核对：两处改动都未提交、同落在 crctl.mjs 与被冻结的 crctl/scripts 输入目录，另开不省旧检查重跑）。proposal 范围描述随之变化：Gate 1 与 Gate 2 重审，Gate 3 实现后重签。"
+
+  - id: Q6
+    question: "B4（agent 环境里 git shim 对每次 git 失败关闭）的处理：用户 2026-11-14 选 P（daemon 发布规则变量 + crctl 的 git 绕开 shim 白名单）并入本 change，还是另开"
+    resolved: "用户裁定：P，并入本 change。AI 依据 A0 三组对照把 P 收窄：只做 crctl 的一半（design 决策 8），daemon 不发布规则变量——该收窄点尚待用户在 Gate 1 重审时确认或推翻。proposal 范围描述随之变化：Gate 1 与 Gate 2 重审，Gate 3 实现后重签。"
+
+critical:
+  is_critical: false
+  risk_assessment:
+    cross_system: true
+    financial: false
+    safety_critical: false
+
+anchoring:
+  level: L1
+  anchor_implementations: []
+  reference_changes:
+    - 2026-11-13-aifi-45-real-execution-closure
+    - 2026-11-08-aifi45-trust-anchor-chain
+    - 2026-10-29-trusted-verdict-outcome-binding
+
+success_criteria:
+  - "设置合法的信任根环境变量时，八个生效命令与传同一值的 --trust-root 行为一致（可比的只读输出逐字节一致，其余稳定结果一致）。"
+  - "变量被实际选作信任根而不是绝对路径、不存在、不是目录、位于或包含安装根时，crctl 以 EXECUTION_TRUST_ROOT_INVALID 拒绝，不回退到 .crctl；legacy 或不消费信任根的分支与同值 flag 一样忽略该值。"
+  - "变量与 --trust-root 不一致时拒绝；一致时通过。"
+  - "未设置变量时，crctl 现有测试全部不变地通过（legacy 与 --trust-root 用法无差异）；对八命令之外的命令设置任意变量，结果与未设置一致。"
+  - "同一自备信任根及材料经环境变量与 --trust-root 选择时，本地准入结果一致，环境变量不比 flag 更宽松或更严格；缺 key、签名无效或 binding 不匹配仍按现有规则拒绝；本地准入成功不构成平台授权证明（取代原“伪造 grant 或公钥不能准入”一条，该条与现有代码不符）。"
+  - "multica 成对 change 的 daemon 注入后，授权节点里 crctl advance 的授权读取成功（该条在 multica 的真实运行验证，本 change 只负责 crctl 侧）。"
+  - "crctl workspace inspect <CR> --detail 在 cr.md 与 _backlog.yml 的 target-spec-id 一致且有效、cr.md 有 target-version 时，输出非空的 targetSpecId 与 targetVersion，值等于既有读取器的结果；legacy（两侧都无）、单侧缺失或不一致时 targetSpecId 为 null，cr.md 无 target-version 时 targetVersion 为 null；unassigned 等原值逐字透传，不在 inspect 里判断有效性；退出码与既有错误码不变。"
+  - "除新增两键外，workspace inspect 的既有输出键、类型、值与默认（summary）面不变，crctl-summary.test.mjs 对金样本的三层比对继续通过。"
+  - "multica 的 daemon 在真实 crctl 上通过 inspectPipelineAuthority（在 multica 的无模型替身运行与真实运行中观察，本 change 只负责 crctl 侧）。"
+  - "crctl 进程启动后其 PATH 不含放有 controlled-shell git shim 的目录（识别：目录内 git 或 git.cmd 为小于 4096 字节的文件且内容含 gitguard-exec），其余目录及相对顺序不变，没有 shim 时 PATH 逐字不变；crctl 的 controlledGit 白名单、调用者名与命令面不变，agent 直接调用的 git 不受影响。"
+  - "multica 的无模型替身运行与真实运行中，授权节点里经 git shim 环境（shim 在 PATH 上、无规则变量）的 crctl next、workspace inspect 与两次 advance 成功（在 multica 观察，本 change 只负责 crctl 侧）。"
