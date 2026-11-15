@@ -20,7 +20,7 @@ M-S2 → M-S3最小通知/消费者幂等 → S6跨仓三路径/全量/独立审
 | S2 | P0 | 高 | L | M可信入口配套 | AUTH-001/002/004/007/008/009 | 目标/来源/scope/head绑定、durable隔离事务与幂等消费 | S1 |
 | S3 | P0 | 高 | L | 单writer | RPR-001～012 | CR累计准入、恢复/追加/进展/stop-resume | S2 |
 | S4 | P0/P1 | 高 | L | 单writer | AUTH-005/006、EVD-001～005 | 敏感动作聚合限额和内容/独立验证门禁 | S2/S3 |
-| S5 | P0 | 高 | L | T/M各单writer | EVD-006～010 | 旧入口防旁路、显式迁移、发布与registry版本配套 | S4、M调度 |
+| S5 | P0 | 高 | L | T/M各单writer | EVD-006～010 | 旧入口防旁路、registry 版本配套；EVD-009 表征可先规划；EVD-008 保留原要求，M004/D9 本期偏差未撤销，后续移交 `2026-10-29-legacy-execution-migration`，详见[当前计划](../../../multica/changes/2026-10-22-aifi-45-authorized-execution/validation/implementation-plan-20261030.md) §3 | 完整 TC 依赖 S4、M 调度 |
 | S6 | P0/P1 | 高 | L | 独立审查并行 | 全49TC及现有回归 | 三条真实隔离路径、14类检查、实际证据与Gate3 | 全部 |
 
 ## 五步分析与Rationale

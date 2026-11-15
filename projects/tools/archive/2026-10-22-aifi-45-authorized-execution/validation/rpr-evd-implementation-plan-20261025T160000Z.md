@@ -1,5 +1,7 @@
 # RPR / EVD 实现计划（逐条可执行）— 2026-10-25
 
+> **历史计划快照，不作为当前执行授权或现状。** 本文“零命中”“现在就能开工”等结论反映 2026-10-25 的调查，源码与条件已变化。EVD-008/009 用户确认方向、优先级及当前阻断以[当前实施计划](../../../../multica/changes/2026-10-22-aifi-45-authorized-execution/validation/implementation-plan-20261030.md) §3 为准；原合同和完整验收未变。
+
 > **先纠正一条错话**：我在 gate3 closeout §9 写过“剩余 40 条形态只有三种 = 写测试文件”。
 > 那句话对 RUN/NTF 成立（缺 Go 测试），但对 **RPR 12 与 EVD 10 不成立**：tools 侧
 > `grep -rn "repair"` 与 `evidence-delivery|delivery-contract` 在 `skills/shared/crctl/scripts` 下**零命中**，
@@ -41,8 +43,8 @@
 | EVD-005 | 生成规则/输入/工具/业务规则/授权/验收任一语义变化 → 不得免审 | test 报告的 plan/输入/工具版本字段 | 否 |
 | EVD-006 | 在途 legacy CR（无 `execution-contract`）不追溯阻断、不自动获新额度 | `cr.md#execution-contract` 缺失 ⇒ 走 legacy 判决，直接 deliver 并注明 | 否 |
 | EVD-007 | tools/生成物/Agent-Skill/Runner 版本**未知或不一致** ⇒ 标未就绪、保留旧恢复路径 | `crctl upgrade-check` 的既有事实 + 组件清单 | **是**（组件清单从哪来，见 D3） |
-| EVD-008 | 显式迁移：历史可核实则保留并算剩余；不可核实则拒绝 | 授权 lineage + 消耗历史 + 未决任务 | 部分（迁移动词） |
-| EVD-009 | 发布事务边界失败后恢复同一操作，**不重复**审批/修复扣额/cycle reset | 复用 merge/checkpoint journal 的既有 receipt | 否 |
+| EVD-008 | 显式迁移：历史可核实则保留并算剩余；不可核实则拒绝 | 授权 lineage + 消耗历史 + 未决任务 | 当时估计；现由 D8/D9、M004 与当前计划限定，本期不新增迁移入口 |
+| EVD-009 | 发布事务边界失败后恢复同一操作，**不重复**审批/修复扣额/cycle reset | 复用 merge/checkpoint journal 的既有 receipt | 当时估计；现有 receipt 与完整恢复合同的缺口见当前计划 §3 |
 | EVD-010 | scope 未变但 review 后的实际 subject/release tree 或 cycle 已变 → 拒绝旧证据，走最小重验 | annotation `subject-sha256` / `release-subjects` + 当前 git 树 + `review-loop` cycle | 否 |
 
 ### 1.3 建议切片顺序（每条都能独立验收）
@@ -50,7 +52,7 @@
 1. **切片 1（无决策依赖）**：EVD-003 + EVD-010 + EVD-006（作者自报/旧证据/legacy 不追溯）。三者都只读既有标注与 git 树。
 2. **切片 2**：EVD-001 + EVD-002（内容/缺口判定 + 点名缺失）。
 3. **切片 3**：EVD-004 + EVD-005（机械例外，依赖 test 报告字段）。
-4. **切片 4**：EVD-007（需 D3）、EVD-008（迁移）、EVD-009（发布事务恢复）。
+4. **切片 4（历史排序）**：EVD-007（需 D3）、EVD-008（迁移已按 M004 移交）、EVD-009（发布事务恢复）；当前次序和约束见现行计划 §3。
 
 ## 2. RPR（12 条）→ 一个 lib + 三个动词
 

@@ -1,0 +1,90 @@
+meta:
+  change_id: 2026-10-22-aifi-45-authorized-execution
+  created: '2026-10-22'
+  updated: '2026-11-06'
+
+adjustments:
+  - id: ADJ-AIFI45-001
+    original_design_ref: 'design.md：workspace_id/project_id/cr_id当前验证绑定、dispatch attestation；SC-AUTH-008、SC-AUTH-010'
+    actual_change: '用户原文“采纳你的建议，继续别停下来等指令”已采纳补正并授权继续BUILD，普通模式保持。wire-contract.md明确每进程challenge、实际根/进程/scope/head/部署绑定及独立签名域；T已实现只读包检查和绑定证明负例边界（48/48，0跳过），真实消费仍拒绝。M资源链/可信签发与共同入口锁接线继续中，完整真实链未验收，故仍unresolved；不再停等同一方向确认。'
+    reason: '现有deriveInstallRoot只定位Git根；bindTaskWorkspace环境变量无来源认证；daemon根投影丢失project/resource身份。已安装公钥能验包，但不能独立证明当前安装根的workspace/project，复制可编辑sidecar不构成新信任锚。'
+    impact_scope: 'T授权绑定/准入/敏感操作/恢复与M认证、资源投影、dispatch及统一wake接口；AUTH-001/008/009/010、RPR-005/006及RUN-001～010相关路径须重审，不减少原TC。详见authorization-trust-gap.md。'
+    severity: major
+    affected_capabilities: [execution-authorization, repair-governance, authorized-runner]
+    status_note_20261108: 'RPR-005 的 and 两条（跨 run 采纳原结果须有可信映射与当前适用性重验；映射保留原根任务与 origin、不新增消费或覆盖归因）经实测确认由既有签名 repair-resume 承载（supersedes_grant/previous_head_digest/stop_origin/stop_version/changed_path 绑定、stop CAS、head CAS、REPAIR_RESUME_EVIDENCE_STALE），2026-11-08 已补断言并转整条，未新增机制。这不关闭本偏离：本条目关注的是安装根的 workspace/project/cr 归属可信度与签发链，repair-resume 的签名包同样没有独立的根归属证明。RPR-005 最弱一环（resume 后再 admit 实为同 origin 的 stored-receipt replay，不读 resumes 记录）已在 validation/e5-tc-status-20261107.md 与 test-report.md §4.1 写明。本备注不是生效声明。'
+    adjudication_20261108: '转 backlog（非取舍）。安装根无法独立证明 workspace/project 归属，属设计未覆盖的能力缺口而非实现背离：需平台侧可信绑定。本层不得以可编辑 sidecar 或路径 pin 冒充信任锚，这是「本期不制造伪信任锚」原则的直接后果。依据：deriveInstallRoot 只定位 Git 根；deriveInstallRoot/bindTaskWorkspace 无来源认证。'
+    resolved: false
+  - id: ADJ-AIFI45-002
+    original_design_ref: 'design.md：source_event_id/source_digest/source_bindings及独立提取核验；SC-AUTH-001、SC-AUTH-003'
+    actual_change: '用户已明确采纳并要求继续。wire-contract.md定义第一条structured-human-request/v1：完整原bytes冻结、server生成身份/14字段映射、独立域签名与默认关闭；Go构造组件和真实Node静态验签互通曾33/33通过（作者回报）。HTTP真实认证/持久化/重投与严格JSON补正进行中；T独立来源核对、自由文本/附件/已接受规则路径未完成，仍unresolved，禁止历史归因冒充授权。'
+    reason: '现有issue_source_context明确为read_only_historical_background，捕获人不等于授权人；comment可编辑且trigger_summary截断。设计未定义上述来源数据合同。旧governance human guard也不足以排除全部已标记机器凭据，新入口必须复用严格可信actor判据。'
+    impact_scope: 'T来源/签名payload与M真实认证授权入口、来源存储和传输；AUTH-001/002/003/010及RUN-001/002/003/010需要对应边界和失效测试。'
+    severity: major
+    affected_capabilities: [execution-authorization, authorized-runner]
+    adjudication_20261108: '转 backlog（非取舍）。source_event_id/source_bindings 与独立提取核验未接通 T 侧，依赖 M 侧来源合同；现有 issue_source_context 明确是只读历史背景，捕获人不等于授权人。依据：已有 structured-human-request/v1 与严格 actor 判据，但 T 侧来源核对未接。'
+    resolved: false
+  - id: ADJ-AIFI45-003
+    original_design_ref: 'design.md/wire-contract.md：执行授权文件与验签公钥的落地位置（独立验证前提）；SC-AUTH-004/006'
+    actual_change: '历史：早期零源码隔离可行性实证发现(1)执行授权文件磁盘安装步骤不存在、(2)legacy grant/公钥落 {root}/.crctl 可被agent换key自签；后授权Podman PoC，systemd尝试不可用已完整回退，最终无限额PoC exit0（`resourceLimitsEnforced:false`）。本轮部分实现：T 新增 `--trust-root <绝对目录>`，声明后 grant/公钥/来源sidecar/绑定证明只从该目录 `grants/`、`keys/` 读取；该目录位于或包含工作区安装根（realpath）→ `EXECUTION_TRUST_ROOT_INVALID`；未声明时保持 legacy。实测旧码 2 例 FAIL（trust root 被忽略、工作区内 trust root 反被接受），修复后授权文件 106/106。M 新增 daemon 自有安装器 `internal/daemon/execution_trust.go`：`<daemonHome>/.multica/execution-trust/<workspace-uuid>`、0700/0600、临时文件+rename、同内容幂等、异内容冲突拒写（公钥不被静默替换）、拒绝工作区内/链接的根与越界名称；4 新断言 PASS，1 例 Win 目录链接 SKIP。第二轮：M 新增 daemon 拉取接口 `GET /api/daemon/crs/{crID}/execution-authorization`（DaemonAuth 组，仅返回该 workspace 冻结初始记录+服务公钥，不标 delivered、不含 current-head/撤销/claim）与 `Client.InstallExecutionAuthorization`→`ExecutionTrustStore.InstallAuthorizationRecord`（安装前以下发公钥验签，校验 workspace/CR/key_id/grant UUID，写 keys→source→grant，同记录幂等、异内容冲突；Link 发布不覆盖）。真实 RED：记录属另一 CR 时旧安装器返回 nil；修复后组件链 真实授权HTTP→隔离DB→daemon GET→安装→真实 crctl `--check --trust-root` digest 一致，legacy 路径看不到该 grant，跨 workspace 404、无绑定 403、缺记录 404 且不落文件。governance 扩大回归 598/598。执行授权记录不再有落入工作区的路径；legacy stage grant 仍写 {root}/.crctl（不追溯）。第三轮已接 handleTask→prepareClaimedPipelineTask→安装→真实 crctl --check --trust-root；真实 Auth/DB-backed mdt/DaemonAuth 投递验证无 context/cache 注入。source/hash/HTTP 限额/根身份实际 RED 后修复，Windows Stat 惰性 ID 根因修复后换根20/20；本轮 governance606/606、daemon36=35P/1S，事件见 M preflight-regression.json；verifier 缺显式否定事实用例实际 RED 后修复。另有 POST/JSONB GET 同包误冲突与重复包装键联合真实3FAIL，修复后7PASS；仅固定运输包装，不改签名/来源原bytes，复用现有JSON scanner。STDD 三路独立评审因项目缺模型映射按规则默认回退，未宣称档位生效。仍未完成：不可删 activation、可信 current-head/撤销/DB claim、隔离控制通道与消费事务；静态成功仍拒消费。'
+    reason: '验签公钥若落在被管进程可写集合内，独立验证即失效；技能与文件均可被替换时，签名只证明"谁签过"而非"当前读到的是谁的键"。虽然文件安装器和真实静态核验已经接线，但实际产品隔离边界、当前授权与可信 claim 仍缺，不能以同 UID 目录权限或路径 pin 声称已隔离。'
+    impact_scope: 'T 授权文件读取根/公钥信任根、M grant 下发路径及执行位置选择；AUTH-004/006/008、RUN-001/002/009 需补"公钥/授权文件不落agent可写集"的正负向验证。不减少原 TC。'
+    severity: major
+    affected_capabilities: [execution-authorization, authorized-runner]
+    adjudication_20261108: '转 backlog，且是部署前置。验签公钥落在被管进程可写集合内时独立验证失效；同 UID 或路径 pin 不构成隔离，本层不声称已隔离。与 Windows 隔离 leaf 的处置一致：Windows runner 部署前须以第二 Windows 身份做一次真实拒绝验证（Start-Process -Credential，零新依赖）。'
+    resolved: false
+  - id: ADJ-AIFI45-004
+    original_design_ref: 'design.md §2；wire-contract.md §1；canonical/specs/code/execution-authorization.yaml#SC-AUTH-002'
+    actual_change: '拟对齐不足授权记录：用户已采纳明确空 acceptance 或 delivery_targets 可如实签名记录、不足不得执行的方向；缺失、null、错类型仍无效。先验证真实消费和副作用入口对不足 fail-closed，再考虑放开签发与 head 读取；当前 Go 仍拒绝签发。可信人类补充来源、后继 profile、前驱 CAS、敏感授权和累计消费继承均未决定，任何候选协议未获批准。后续原始用户消息经历史会话核对为“请按照刚刚的方案实施，子代理委派使用LLM分层”；现按方案 WP0 准备，但具体双端签名合同、真实消费防线与资源授权仍须分别满足适用条件，未因此批准或实现。'
+    reason: 'SC-AUTH-002、wire 非空要求及两语言行为不一致；Go initial/head 共享解析器，先放松解析会改变消费者防线。repair 独立入口的可信来源和准入亦未闭合。'
+    impact_scope: 'T AUTH-002/003/008/010 和 repair 消费；M 签发、head、binding、consumption、activation 及实际执行入口联动。签名正确、结构合法、业务充分和当前准入分别验证；原 TC 不减少。双侧记录互相引用，具体协议归属和签名合同范围待裁定。'
+    severity: major
+    affected_capabilities: [execution-authorization, repair-governance]
+    adjudication_20261108: '主诉已缩小，仍 open。repair 独立入口现已真验签 + 形状校验 + policy_version 必填且等于当前版本；残余为 SC-AUTH-002 非空要求的两语言行为差异，以及 repair 可信来源未闭。依据：lib/execution-authorization.mjs 的 validateRepairGrant/assertCurrentPolicyVersion、test/repair-governance.test.mjs 的 TC-AUTH-003 负例（零副作用）。'
+    resolved: false
+  - id: ADJ-AIFI45-005
+    original_design_ref: 'design.md §3–4；canonical/specs/code/repair-governance.yaml#SC-RPR-004,SC-RPR-005,SC-RPR-006,SC-RPR-007,SC-RPR-009,SC-RPR-012'
+    actual_change: '拟处理 repair 旧账本兼容：按 origin 归属修正无进展计算，并处理可能已漏停历史、旧 stop、alias 与重放。用户针对“新路径须可证明历史完整；旧账本不迁移、不清零，无法证明的记录冻结；恢复授权和 stop CAS 接通前不开放恢复”的建议原话：“同意这个旧账本处理范围，按流程完成剩余项，非必要不要停下来等指令催”。库 resume 已临时关闭（包括重放）；同 origin 重放引入尚未提交的新授权时曾试行明确拒绝，因可能限制 SC-RPR-005 返回既有 receipt 而已撤回。用户随后针对整体根因修订建议明确“采纳你的建议，实施”：收敛重复规则，分离授权生效与回执重放，统一账本读取校验和实际写边界，不新增服务/表/全局锁或通用 permit。现库重放返回原回执，当前已提交统计另置 current 并明示 grant_applied=false；新准入不再顺便扩额，历史缺字段/损坏统一拒绝而不补空，删除影子 policy 及不可达旧恢复实现。响应字段语义与 legacy 兼容变化见 validation/repair-root-consolidation-20261102/PLAN.md，组件结果不代表 SC-RPR-007 的可信独立扩额已实现。本轮用户对可信历史、合法收尾与发布恢复建议明确“采纳你的建议，实施。委派遵循llm分层”：候选由 review-loop.yml 承载 T 已提交业务历史，优先评估 M 受保护控制面保存独立锚，区分历史查询/原 receipt 重放与已启动的有界收尾；不因额尽或撤销一律误杀合法收尾，也不把旧 JSON 自证为可信。该方向不是已证实的权威来源、实际已启动事实或具体跨端合同；具体完整性权威、旧账本全路径冻结、恢复机制、完整 stop/version 与可信独立恢复授权仍待落实；不得重置既有消费或据 stop_at 猜造旧记录。后续原始用户消息经历史会话核对为“请按照刚刚的方案实施，子代理委派使用LLM分层”；按 validation/root-cause-convergence-implementation-plan.md 从 WP0 准备，裁决前受保护前驱、预算沿 lineage、进展与 stop 按规范 origin 为计划方向；可信 genesis、共同锁、跨端原子边界和具体协议仍未决定或实现，旧账不迁移不清零。用户随后明确：“允许 daemon／受控 T 与 Agent 使用不同 OS 身份及权限，可以部署在 Linux 上，并支持 Windows 本机执行。数据库整体回档：同意。”据此前提案，整体回档后冻结新增准入，直至以独立可信事实核验历史，不自动重建 genesis 或清零；该确认不证明当前隔离有效，具体身份、权限、独立事实与安全恢复方案尚待实现验证，部署和真实资源使用仍需各自适用授权。'
+    reason: '现 assessment 按 origin 保存但使用全局 epoch，其他 origin resume 可截断其连续无进展计数；旧账本可能缺历史，resume 不保留完整旧 stop。内存 RED 只证明组件控制流，不证明真实账本或锁。'
+    impact_scope: 'T repair admit、assessment、resume/replay 和旧账本；锁内额度、停止、幂等与历史继承均需验证。M004 的旧合同 EVD-008 迁移缺口不因此关闭，原 TC 不减少。'
+    severity: major
+    affected_capabilities: [repair-governance]
+    adjudication_20261108: '主诉已关闭，残余登记后可归档。streak 按 origin 自己的 epoch 解析，其他 origin resume 不再截断其无进展计数；resume 保留旧 stop/streak/consumed 且不新增消费。依据：lib/repair-governance.mjs:611-612 的显式注释与 :540 的 per-origin epoch 解析；test/repair-governance.test.mjs 的 TC-RPR-005 跨 run 断言。残余：「完整旧 stop 快照」仍只有引用级，见 validation/e5-open-items-ownership-20261108.md。'
+    resolved: true
+  - id: ADJ-AIFI45-006
+    original_design_ref: 'design.md §3、§5；change-requests/CR-2026-031/sdd.md §3.2–3.3、§4.3；projects/tools/archive/2026-10-27-trusted-verdict-channel/canonical/specs/code/trusted-merge-gate.yaml 的 SC-MG-015/016/017/020 及 multica 对端 SC-VC-012/035；配对草案见 projects/multica/changes/2026-10-29-trusted-verdict-outcome-binding/validation/remote-recovery-paired-amendment-draft-20261103.md'
+    actual_change: '用户已同意状态机负责合法转换、复用现有每 CR 锁确保互斥、不新增全局锁的方向，公共事务目标根和恢复本期不处理恶意本地替换；普通并发、非恶意变化与崩溃恢复仍须证明。此范围不豁免 Agent/daemon 的凭据与代签隔离合同。目标根无法独立证明时冻结并保留现场，已完成事务不倒回；独立授权根来源、锁接入与顺序、陈旧锁、旧事务、人工恢复以及 AIFI-45 与 CR-031 公共原语的归属均未决定，不视为已实现。用户对另一轮整体根因收敛建议的独立消息原话：“采纳你的建议，将建议整理成为一份实施计划，然后实施落地”；不可与针对本计划“先不实施”的另一条消息混为同一条。候选方向是在既有 journal 中绑定候选提交，明确 ref CAS 发布点、尽量避免发布前修改共享文件；设计仍须核对现有合同、生产调用方、持久顺序、未知结果、投影冲突和旧事务，见 validation/root-cause-convergence-implementation-plan.md。用户本轮采纳优先评审 ref 先发布、工作区/index 后投影，以及远端目标达成与本 attempt 效果分离的方向；具体协议、持久屏障、旧版兼容与现行 SC-MG-015/016 等的双端配对修订及适用审批仍未完成，不能把候选写成现行合同。该方向尚未实现，也不取消原 TC、旧历史冻结或对资源/Gate 的限制。后续原始用户消息经历史会话核对为“请按照刚刚的方案实施，子代理委派使用LLM分层”；按 validation/root-cause-convergence-implementation-plan.md 先做 WP0 的合同/隔离准备，局部提交点、候选 OID、投影待办及远端效果归属仍须适用 B4 和双端合同决定，不将执行授权解释为资源 HOLD、原 TC 或 Gate 豁免。针对“无法证明效果归属时保留原 attempt 并等待对账；不重推、不编造结果，也不改写已 settled 记录”的具体提问，用户本轮原话为“第二条同意”；该取舍已确认，无需重复询问。双端身份映射、证明来源、016 的 attempt+1、uncertain 的后续转换、混跑与回滚等具体合同仍须按适用流程决定及配对修订；用户未因此批准草案全部候选、数据迁移、真实资源测试、部署或 Gate，登记不表示合同已生效。对端登记 ADJ-AIFI45-M005。用户对后续整体最小方案的原话为“采纳你的建议，实施”：接受必要时评估成熟跨平台锁依赖，按现有每 CR 及资源锁域处理，不另建锁服务或全局锁；发布须保留原暂存及相对 HEAD 的暂存差异，无法证明则保留现场并停止，不能把拒绝算作支持正例。具体依赖、旧 writer 隔离、提交与投影协议及资源许可仍需适用流程核定，方向采纳不等于安装或批准合同。'
+    reason: '状态机本身不证明互斥，journal 自报目标根不构成独立权威；现有原语未证明覆盖全部生产入口及 linked worktree。'
+    impact_scope: 'T register、merge、writeback、archive 与 ledger/recovery；需验证真实写边界、部分提交和恢复，不减少原 TC。远端 effect、原 attempt、在途 push、settlement 及 T/M 恢复身份映射须配对闭合，保留合法 no_effect 正例及其他原请求恢复；不凭本条变更 CR 状态或宣称跨仓合同已生效。'
+    severity: major
+    affected_capabilities: [execution-authorization, repair-governance, evidence-delivery-contract]
+    adjudication_20261108: '部分关闭，仍 open。互斥与写者覆盖面已闭合：四个账本入口统一 workspace-backlog 外锁、checkpoint 双锁、按序唯一节点闸门、linked worktree 同根同 inode 已验证。残余：journal 自报目标根仍不构成独立权威（依赖平台可信绑定）。依据：validation/e1-backlog-lock-20261106/、e1-checkpoint-overlap-20261106.md、e1-backlog-writer-paths-20261106.md、e1-backlog-lock-20261106/lock-identity.md。'
+    resolved: false
+  - id: ADJ-AIFI45-007
+    original_design_ref: 'design.md；canonical/specs/code/evidence-delivery-contract.yaml#SC-EVD-008,SC-EVD-009；现有 checkpoint/outbox 行为，详见 validation/checkpoint-per-batch-facts-b4-draft-20261103.md'
+    actual_change: '登记拟议 checkpoint 多批事实设计供人工评审：整体计划已选择逐批保留结果、N+1 不隐式 supersede N、老单槽冻结并仅按可核实规则导入其自身；结果与投递事实分开。用户对整体方案的原话为“请按照刚刚的方案实施，子代理委派使用LLM分层”，已授权按计划实施并先推进 WP0；事实落点、冻结和导入细则、显式处置权限与 CAS、ACK、跨端顺序及恢复合同仍待适用决定，资源使用或 Gate 未因此批准。候选未实施，登记不等于具体合同批准。用户对后续整体最小方案的原话为“采纳你的建议，实施”：采纳将业务幂等身份与投递生命周期分离、进程内拒收运维计数在重启后重新累计的方向；业务额度/stop/消费事实不得因此清零。T/M 合同、同投递重试身份、旧文件/旧 writer、未知和迟到 ACK、不可复用路径及最终操作归属须配对核定，不能仅凭随机文件名或记录方向证明安全。现行合同若冲突须先按适用 B4 程序处理；不解除 HOLD、不批准真实资源或 Gate。'
+    reason: '当前 latest 快照整块替换，journal 及 outbox 可在完成后删除；服务端 accepted 文件名不等于已认证内容摘要，接收端 checkpoint 投影自身未验证因果顺序。当前机制尚未证明多批结果及投递、确认和崩溃恢复的完整性。'
+    impact_scope: 'T checkpoint、outbox、发布恢复与每 CR 锁；M daemon ACK 和 CR checkpoint/status/snapshot 投影须配对审查。保留原 SC-EVD-008 分别授权的合法迁移及 SC-EVD-009，保留全部原 TC；真实 FS/Git/CLI/DB 与跨进程验证仍受资源授权限制；其他 HOLD 仍按 validation/root-cause-convergence-implementation-plan.md §1.3 执行。'
+    severity: major
+    affected_capabilities: [evidence-delivery-contract]
+    adjudication_20261108: '部分关闭，仍 open。投递与恢复侧已加固：outbox 复核、checkpoint 版本锁、WP5 CHECKPOINT_OUTBOX_NOT_PERSISTED fail-closed。残余：多批结果与投递/确认/崩溃恢复的整体完整性仍未证明。依据：validation/e0-wp5-fail-closed-20261106/、test/checkpoint-version-lock.test.mjs。'
+    resolved: false
+  - id: ADJ-AIFI45-008
+    original_design_ref: 'CR-2026-065 SDD §3.2 I1/I3 与 suite-gate 逐文件执行合同；validation/suite-manifest-drift-20261102.md §2026-11-03'
+    actual_change: '用户原话“采纳上述最小入口修正建议，实施”：既有登记面已精确列出 HOLD，新入口执行前校验登记和文件范围且不直接启动 HOLD 文件；必需 HOLD 使 run/report 整体 BLOCK，正常无 HOLD 正例和既有失败判定经有限组件验证。当次入口代码静态复核未发现 P1/P2，不代替正式跨合同对齐或真实资源验证；后续跨合同复核发现既有基线/非收敛及报告语义仍需对齐。该授权不解除 checkpoint-outbox-cli.test.mjs 的 HOLD、不授权启动其他未预检文件、不覆盖此前误执行历史或自动推进 Gate。'
+    reason: '原 suite-gate 按全部登记文件启动且登记失效时可回退磁盘集合；HOLD 文件已登记，单靠人工记忆停止不构成入口防护，普通测试例外也不等于禁止执行。'
+    impact_scope: 'T suite-gate run/report、gate-registry.json、逐文件测试和报告合同；manifest 保持完整，必需 HOLD 不得伪装通过。旧入口和手工直接运行不在新 runner 保证内，具体隔离资源仍需单独授权；不改历史记录或归档基线。跨合同条款与报告边界草案见 validation/suite-hold-paired-contract-draft-20261104.md，尚未获适用批准；草案不改变 resolved 状态。'
+    severity: major
+    affected_capabilities: [evidence-delivery-contract]
+    adjudication_20261108: '已关闭。登记失效不再回退磁盘集合（SUITE_REGISTRY_MISSING/SCHEMA_INVALID 直接 block，且磁盘集合与 manifest 不等即 SUITE_MANIFEST_FILE_DRIFT），HOLD 改为登记数据（带 kind/evidence，外部依赖类产出 partial 而非 pass），需要真实平台的用例已移出 hermetic 套件到 integration/。依据：test/suite-gate.mjs、test/gate-registry.json（94 files / 0 hold）、validation/e5-layering-reapprove-20261108.md。'
+    resolved: true
+  - id: ADJ-AIFI45-009
+    original_design_ref: 'test-plan.md#TC-RPR-006；canonical/specs/code/repair-governance.yaml#SC-RPR-006；EXEC-20 旧 journal 恢复正例；specs/ai-first-platform/SDD.md 中 CR-2026-075 默认 ledger 恢复与非 Git 合同；validation/execution-terminal-state-contract-draft-20261103.md'
+    actual_change: '用户就“继续需要允许登记已采纳的合同配对并批准独占测试夹具”明确回复“批准。继续完成所有未完成的项，中途非必要不要一直中断汇报。”授权范围内活动事务采用可信已提交、可信未提交和未知三态：可信已提交复用按适用协议核验的原 receipt；可信未提交须有可核实的发布前事实、原执行者不能迟到以及资源归属和排他；其余保留原事务现场和 journal 对账，不换键重执行。不将缺 receipt 或本地 complete 单独当作未提交或已提交证明。登记已获允许，原条款适用关系、配对修订生效、真实 producer、旧 writer 切换及验证仍分别待完成；不把登记或夹具许可冒充 Gate3、部署或协议已生效。'
+    reason: 'EXEC-20 的旧 written 且无 candidate/receipt 可由从未发布与已发布后 ref 回拨两种历史产生；无 sampler 的 complete 还会直接返回 committed。默认 HEAD/消息判据无法提供共同提交事实。现有旧输入的自动回滚或已提交结果与未知保锚方向存在真实行为差异，不能称为等价兼容。'
+    impact_scope: 'T 共享 durable、crctl 默认恢复与执行适配器、活动旧 journal 及实际 caller；须核定 CR-2026-075 后续适用和默认 API 配对，覆盖 complete 与消息判据。保留按协议可核实的非 Git 合法回滚、合法旧 receipt 与后继复用、受控发布前自动回滚、原测试及历史证据，不新增当前 HEAD 必须同树条件；不迁移、回填或改写历史 CR 实例。独占测试夹具许可不解除旧 DB、旧 runner、HOLD、提交推送及部署限制。'
+    severity: major
+    affected_capabilities: [execution-authorization, repair-governance]
+    status_note_20261108: 'EVD-007 的「保留旧安全恢复路径」此前记为由 TC-EVD-006 的用例覆盖；该判断被推翻——EVD-006 断言的是恢复规则本身，EVD-007 断言的是「未就绪与恢复路径的关系」，属于两个事实，后者当时无人断言。2026-11-08 已在 TC-EVD-007 内补三条断言（readiness 未就绪使交付判 blocked；同场景下既有 release receipt 仍 allowed 且 digest 不变；blocked 结果不含 delivered/go_live 真值），并做了变异验证（强制 ready:true 后该断言变红）。顶层用例数未变，未改实现。本条仅为记录，不改变 resolved。'
+    status_note_20261106: '合同配对已实施并验证（2026-11-06，用户批准"B4/C6 合同配对现在做"）：receipt 适用协议由 journal 绑定的 candidate.commitOid 是否等于 receipt sha 判定，而非 receipt 缺字段；旧协议允许真超集，绑定候选严格限于写集；candidate 存在但字段畸形时 TX_JOURNAL_INVALID，不降级。旧协议真超集由错误拒绝变为接受（修复前 5/6 → 修复后 6/6），绑定候选溢出与严格相等两侧行为均符合合同。证据：validation/e2-tap-receipt-pairing-20261106/README.md、test/receipt-protocol-pairing.test.mjs。仍未满足 resolved：真实 producer、旧 writer 切换、EXEC-20 旧 journal 真实样本、非 Git 回滚与部分暂存配对、Gate3 均未完成；本备注不是生效声明。'
+    adjudication_20261108: '仍 open。receipt 适用协议已按 journal 绑定的 candidate.commitOid 配对；未完成项不变：真实 producer、旧 writer 切换、EXEC-20 真实旧 journal 样本、非 Git 回滚与部分暂存配对。本条不得因配对实施而被读作协议已生效。'
+    resolved: false

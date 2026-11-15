@@ -38,14 +38,32 @@ steps:
     description: SC-EVD-007 / 配套及部署未知拒启用、不删旧恢复。
     action: node --test --test-reporter=tap --test-name-pattern="^TC-EVD-007$" skills/shared/crctl/scripts/test/delivery-contract.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-EVD-007'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+    unmet_requirements:
+      - description: >-
+          真实 Runner 已在一次性实例上走过完整链路（validation/e5-evd-007-runner-20261107/README.md：
+          真实 `multica daemon` + npm `@earendil-works/pi-coding-agent` 1.5.0、本地 CA + TLS、
+          真实 task dispatched→running→completed 13.168s / 5 次 tool call、grant 投递与 ACK、
+          readiness judge 与 `crctl evidence-check` 24/24），因此原先“只到控制面”的说法已不适用。
+          仍未满足的是：本地自签 CA 不是生产信任链；只测单 runner，无并发、断网、多机；
+          不测业务正确性。这些边界不得被读作生产就绪或 Gate3 通过。
   - id: CP-EVD-008
     description: SC-EVD-008 / 显式迁移保留历史，不可核实时拒绝。
     action: node --test --test-reporter=tap --test-name-pattern="^TC-EVD-008$" skills/shared/crctl/scripts/test/delivery-contract.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-EVD-008'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
   - id: CP-EVD-009
     description: SC-EVD-009 / 发布事务恢复不再消费授权或修复。
-    action: node --test --test-reporter=tap --test-name-pattern="^TC-EVD-009$" skills/shared/crctl/scripts/test/delivery-contract.test.mjs
+    action: node --test --test-reporter=tap --test-name-pattern="^TC-EVD-009$" skills/shared/crctl/scripts/test/evidence-receipt-reuse.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-EVD-009'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+    supplementary_evidence:
+      - requires: 独立 Node 测试环境；旧用例只覆盖 receipt 投影与恢复判定，不需要真实三仓 remote 或故障注入。
+        action: node --test --test-reporter=tap --test-name-pattern="^TC-EVD-009$" skills/shared/crctl/scripts/test/delivery-contract.test.mjs
+        asserts: >-
+          保留 releaseReceiptOf/evaluateReleaseRecovery 的纯函数分工：验证 merge 实际写出的 receipt 可被恢复规则接受，
+          重放复用 receipt，并分别拒绝 reapprove、recharge、facts reset 和缺失 receipt digest。
+        not_asserted: >-
+          不证明真实 merge/writeback/checkpoint 在 fault 注入后的恢复；该端到端分工由本条正式 action 的
+          evidence-receipt-reuse.test.mjs 承担，旧用例不得单独登记整条 CP PASS。
+        not_counted_as_cp_pass: true
   - id: CP-EVD-010
     description: SC-EVD-010 / scope不变也拒绝旧tree/cycle证据并最小重验。
     action: node --test --test-reporter=tap --test-name-pattern="^TC-EVD-010$" skills/shared/crctl/scripts/test/delivery-contract.test.mjs

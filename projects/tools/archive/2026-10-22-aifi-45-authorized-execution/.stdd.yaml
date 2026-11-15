@@ -1,0 +1,199 @@
+approval_receipts:
+- confirmed_actor: ai
+  confirmed_at: '2026-11-08T16:11:36'
+  confirmed_by: dialog
+  confirmed_evidence: 确认Gate 3
+  note: reapproved; prior input_fingerprint=07c978d7332845172c8fc8bc43289495313edfd2bedd1ccf9cb257bdcf0014d3
+  receipt_id: gate3-2026-11-08T16:11:36
+  recorded_at: '2026-11-08T17:53:28'
+  status: superseded
+change_id: 2026-10-22-aifi-45-authorized-execution
+complexity_score: 17
+current_phase: deliver
+design_adjustments:
+  count: 0
+last_modified: '2026-11-08T18:55:44.777439'
+long_range:
+  enabled: false
+  mode: normal
+mode: thorough
+phases:
+  build:
+    confirmed_actor: ai
+    confirmed_at: '2026-11-08T17:53:28'
+    confirmed_by: dialog
+    confirmed_evidence: 确认按分层方案调整 Gate 3
+    input_fingerprint: 04e146ef4baf583f438bd06e2364d53acba0a93b3bc465061f4a2e5e24ca2918
+    input_manifest:
+    - change_id: 2026-10-22-aifi-45-authorized-execution
+      child_id: null
+      kind: projection
+      logical_path: .stdd.yaml
+      project_id: tools
+      projection_version: v1
+      sha256: 06924f8511c947a6bc7f47e69faf1fa21d66028279797321f046a251b03348a2
+    - change_id: 2026-10-22-aifi-45-authorized-execution
+      child_id: null
+      kind: raw
+      logical_path: canonical/.canon-index.yaml
+      project_id: tools
+      projection_version: v1
+      sha256: 8c559545ea9469416a3c356f834fa379af58f4a3b92525f396f041884843091d
+    - change_id: 2026-10-22-aifi-45-authorized-execution
+      child_id: null
+      kind: projection
+      logical_path: canonical/proposals/2026-10-22-aifi-45-authorized-execution.yaml
+      project_id: tools
+      projection_version: v1
+      sha256: 153f3aff86b84ffab4b2a2a4638d596aa5509794dc73cd4af67d9192b5870ac2
+    - change_id: 2026-10-22-aifi-45-authorized-execution
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/agent/evidence-delivery-contract.yaml
+      project_id: tools
+      projection_version: v1
+      sha256: b0b0a06d2498e67392374791a2bde6a29d2873316279c0d4ca730ecd38d78476
+    - change_id: 2026-10-22-aifi-45-authorized-execution
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/agent/execution-authorization.yaml
+      project_id: tools
+      projection_version: v1
+      sha256: dd9f3a386461d433dc66cfc1a23025e0ece07262fa14ebbc9885137d08a24bcf
+    - change_id: 2026-10-22-aifi-45-authorized-execution
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/agent/repair-governance.yaml
+      project_id: tools
+      projection_version: v1
+      sha256: 566c1c69928d4130e9d72a032d9a96df271aaa59fe22b6a2c517e6fa1fda755d
+    - change_id: 2026-10-22-aifi-45-authorized-execution
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/code/evidence-delivery-contract.yaml
+      project_id: tools
+      projection_version: v1
+      sha256: cea9d7b737276c247c702fe58279a94a1e1fc4275498f0e253b7fa854726b38d
+    - change_id: 2026-10-22-aifi-45-authorized-execution
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/code/execution-authorization.yaml
+      project_id: tools
+      projection_version: v1
+      sha256: 32367826964c2ac86ef832aa5bed60b45ded1fbb785062644b7b72415a5eec96
+    - change_id: 2026-10-22-aifi-45-authorized-execution
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/code/repair-governance.yaml
+      project_id: tools
+      projection_version: v1
+      sha256: c786c1e6cde94e0dfd32893c601516c06b7f72313e8e162683310ea99b814797
+    - change_id: 2026-10-22-aifi-45-authorized-execution
+      child_id: null
+      kind: raw
+      logical_path: design.md
+      project_id: tools
+      projection_version: v1
+      sha256: 3f7328aa5d300043877a8b913261ec4cb9fdbde7a0edb7b576fdbcdde392c0ac
+    - change_id: 2026-10-22-aifi-45-authorized-execution
+      child_id: null
+      kind: projection
+      logical_path: proposal.md
+      project_id: tools
+      projection_version: v1
+      sha256: 47838e9bb0d103b6511c660ad5ecb21aa8e157c4471cde951fe96d71a5334b12
+    - change_id: 2026-10-22-aifi-45-authorized-execution
+      child_id: null
+      kind: raw
+      logical_path: specs/evidence-delivery-contract/spec.md
+      project_id: tools
+      projection_version: v1
+      sha256: 7333cbc44fc8808d5f4ed36993e0341ab7ee8b383046c518484659cfc1456b2b
+    - change_id: 2026-10-22-aifi-45-authorized-execution
+      child_id: null
+      kind: raw
+      logical_path: specs/execution-authorization/spec.md
+      project_id: tools
+      projection_version: v1
+      sha256: 70535e107ac072147fed81e35b2d51a7978b2f7685ed83336e66754f07de1fe8
+    - change_id: 2026-10-22-aifi-45-authorized-execution
+      child_id: null
+      kind: raw
+      logical_path: specs/repair-governance/spec.md
+      project_id: tools
+      projection_version: v1
+      sha256: ec8158ca3c3e42ffae11be41d64f066686e27e6dff11cfcd20090ea06b623092
+    - change_id: 2026-10-22-aifi-45-authorized-execution
+      child_id: null
+      kind: raw
+      logical_path: test-plan.md
+      project_id: tools
+      projection_version: v1
+      sha256: 4f2c397d02daf8528ce3d2131a138618958b982cfa69e134b2b43fec0c8737b2
+    - change_id: 2026-10-22-aifi-45-authorized-execution
+      child_id: null
+      kind: raw
+      logical_path: test-report.md
+      project_id: tools
+      projection_version: v1
+      sha256: 3a63850078f89677fa932c1d67e1dff828cd2119ee817dd7d291070445bb4ce2
+    slices_completed:
+      '1':
+        new_tests: 2
+        note: AUTH-003/010 各恰 1 条顶层 TC 函数，CP action 实测 1..1 全绿。new_tests 口径为「本切片 TC
+          对应的 顶层测试函数数」（逐切片历史新增数当时未留档），不是历史新增计数。
+        status: done
+        tc_coverage: 2/2
+        verified_at: '2026-11-08T16:30:00'
+      '2':
+        new_tests: 6
+        note: AUTH-001/002/004/007/008/009 均有测试函数且 CP 成立；其中 AUTH-007 证据等级为条款级—— canonical
+          要求「历史送达记录仍可查询」，本仓只有「已安装包仍可复验」，无 history API。
+        status: done
+        tc_coverage: 6/6
+        verified_at: '2026-11-08T16:30:00'
+      '3':
+        new_tests: 12
+        note: RPR-001..012 均有测试函数且 CP 成立。RPR-005 的 and 两条由既有签名 repair-resume 承载， 本轮补断言后转整条；其最弱一环（resume
+          后再 admit 实为 stored-receipt replay，不读 resumes）已在 validation/e5-tc-status-20261107.md
+          与 test-report.md §4.1 写明。
+        status: done
+        tc_coverage: 12/12
+        verified_at: '2026-11-08T16:30:00'
+      '4':
+        new_tests: 7
+        note: AUTH-005/006 + EVD-001..005 均有测试函数且 CP 成立。AUTH-005/006 的本地 CP 走 in-process
+          stub， 真实拒绝需平台，故另有真实平台证据登记为 supplementary_evidence（not_counted_as_cp_pass）。
+        status: done
+        tc_coverage: 7/7
+        verified_at: '2026-11-08T16:30:00'
+      '5':
+        new_tests: 5
+        note: EVD-006..010 均有测试函数且 CP 成立。其中 EVD-007 证据等级为条款级： 「保留旧安全恢复路径」由 TC-EVD-006
+          的用例断言，不在自己 CP 入口内。
+        status: done
+        tc_coverage: 5/5
+        verified_at: '2026-11-08T16:30:00'
+    status: completed
+  deliver:
+    status: in_progress
+  spec:
+    confirmed_actor: ai
+    confirmed_at: '2026-10-22T20:00:00'
+    confirmed_by: dialog
+    confirmed_evidence: 确认 Gate 2
+    status: completed
+  understand:
+    confirmed_actor: ai
+    confirmed_at: '2026-10-22T15:43:46'
+    confirmed_by: dialog
+    confirmed_evidence: 确认这份 Gate 1
+    status: completed
+score_confidence: preliminary
+status: archived
+task_type: code
+traceability:
+  spec_scenarios: 0
+  tc_cases: 0
+  test_functions: 0
+version: '3.0'

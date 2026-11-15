@@ -2,7 +2,7 @@
 
 > BUILD新增安全回归：公开CLI在缺可信current-head/revoke/claim时拒绝fresh proof/source消费、零receipt/HEAD写；预置receipt不激活。新断言真实RED后撤回独立writer。最新显式TAP三文件162/161PASS/0FAIL/1文件symlink EPERM/exit0，旧grant选择14/14/0skip/exit0；这不是49个完整TC通过，完整TC仍0。真实CLI PoC的下载/环境故障与runtime结果分列`isolation-evidence.md`，不把下载timeout当行为RED。
 
-> STDD Phase 2 / Gate 2 草案。对应3份canonical code spec及agent spec；所有新增TC均待Gate2后实施，当前未运行、不宣称PASS。
+> STDD Phase 2 / Gate 2 草案。对应3份canonical code spec及agent spec；下表完整业务TC尚未通过验收，不因上方组件子断言通过而宣称PASS。此处不改变实际 Gate 状态。
 > 行为源：`canonical/specs/code/`；检查动作源：`canonical/specs/agent/`。每行完整表达Arrange/Act/Assert；预期来自需求与spec，不从实现反算。
 
 ## 一、测试策略
@@ -61,11 +61,11 @@
 | **ID** | TC-RPR-001 | SC-RPR-001 | P0 | 真首次实施及多条失败自测；另有未解决阻断新run | 正常实施及尝试冒充首次 | 真首次不扣；命令/测试数不计次；阻断分支不能绕准入 |
 | **ID** | TC-RPR-002 | SC-RPR-002 | P0 | limit=6、consumed=5 | 准入第6并PASS，再请求7 | 第6可验证交付；第7拒绝且无新任务 |
 | **ID** | TC-RPR-003 | SC-RPR-003 | P0 | 一次已准入修复 | 失败、内部命令、技术重试 | 已消费恰1不返还；内部重试不另扣且受原上限 |
-| **ID** | TC-RPR-004 | SC-RPR-004 | P0 | 多阶段/cycle累计耗尽 | reset、切阶段、supersede再准入 | 总消耗不变，第7仍拒绝 |
+| **ID** | TC-RPR-004 | SC-RPR-004 | P0 | limit=6，多阶段/cycle累计耗尽，且无有效追加 | reset、切阶段、supersede再准入 | 总消耗不变，额度仍耗尽时第7次拒绝 |
 | **ID** | TC-RPR-005 | SC-RPR-005 | P0 | 一个origin，并发/换ID/跨run与adoption映射 | 准入、显式接管及当前适用性重验 | 一条消费同repair/根键；有映射可收原结果，无映射旧证据不推进 |
 | **ID** | TC-RPR-006 | SC-RPR-006 | P0 | 无关staged变化、授权并发变更、提交边界故障 | 准入/恢复/异义冲突 | 锁内CAS；commit前回滚、commit后复用；不夹带、不覆盖，无未提交派发 |
-| **ID** | TC-RPR-007 | SC-RPR-007 | P0 | consumed=6，签出+2，另有并发同前驱grant及旧包 | 追加、重复投递、head CAS和旧包重绑 | limit=8/consumed=6；同前驱最多一份成功，重放不加额不回退head |
-| **ID** | TC-RPR-008 | SC-RPR-008 | P0 | 无签名继续、负/溢出数、改本地默认 | 扩额/解除停止 | 拒绝新消费，历史不清零 |
+| **ID** | TC-RPR-007 | SC-RPR-007 | P0 | consumed=6，有权者签出引用原授权的+2凭据，另有同前驱并发及旧包 | 分别验证追加、并发head CAS、重放和旧包重绑 | limit=8/consumed=6，完整旧授权与消耗历史保留；同前驱最多一份成功，失败者须重新明确授权；重放不加额，旧包不回退head或scope |
+| **ID** | TC-RPR-008 | SC-RPR-008 | P0 | 模糊继续、无签名增量、负/溢出数及改本地默认分别构造 | 扩额/解除停止 | 拒绝新增额度及派发，不擅自解除停止，历史不清零 |
 | **ID** | TC-RPR-009 | SC-RPR-009 | P0 | 同根因两次纠正均无进展但仍有余额 | 请求下一次修复 | stopped:no-progress；无任务；升级有证据/路径/余额/所需动作 |
 | **ID** | TC-RPR-010 | SC-RPR-010 | P0 | 同名blocker但独立证明测试改善 | assessment后准入 | 可继续且仍累计，不按名称/数量误停 |
 | **ID** | TC-RPR-011 | SC-RPR-011 | P0 | 无测试改善但假设被有效排除并改变判断 | 独立核验诊断 | 算进展，保留具体artifact/判断影响，不接受空泛其他进展 |
@@ -111,6 +111,6 @@
 
 先AUTH签名/边界 → RPR单次准入/六次上限/事务 → 独立进展 → EVD内容/旧合同 → M真实派发与通知 → 全量/故障/独立审查。每个切片失败先定位根因，不把历史缺陷一概重修。
 
-三条代表路径均在隔离环境完成：普通授权（AUTH-001/009＋RUN-001/007＋EVD-001/009＋NTF-001/002）；高风险（AUTH-003～006/008＋RUN-002/009/010）；失败恢复（RPR-002～012＋RUN-003～008＋NTF-003～007）。真实线上版本、真实新CR试点和存量迁移另需专项授权；未执行明确未验证。
+三条代表路径须在经预检和授权的隔离环境完成；目前没有三条完整路径的验收证据：普通授权（AUTH-001/009＋RUN-001/007＋EVD-001/009＋NTF-001/002）；高风险（AUTH-003～006/008＋RUN-002/009/010）；失败恢复（RPR-002～012＋RUN-003～008＋NTF-003～007）。真实线上版本、真实新CR试点和存量迁移另需专项授权；未执行明确未验证。
 
 本仓32 TC：P0=29、P1=3、P2=0；配套M 17 TC。完整业务TC通过数仍0；已执行组件子断言见phase-context/build-evidence，不冒充本表TC或切片验收。CP必须精确完整标题+真实成功行及零fail/skip/todo，规格校验不等于业务通过。

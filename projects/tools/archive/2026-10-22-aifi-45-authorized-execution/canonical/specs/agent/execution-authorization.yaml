@@ -33,14 +33,49 @@ steps:
     description: SC-AUTH-005 / 四类未授权敏感动作分别拒绝。
     action: node --test --test-reporter=tap --test-name-pattern="^TC-AUTH-005$" skills/shared/crctl/scripts/test/execution-authorization.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-AUTH-005'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+    supplementary_evidence:
+      - requires: >-
+          一次性 PostgreSQL、仓库自身 go run ./cmd/migrate up、localhost/multica-backend:main 真实后端，
+          并设置 AIFI45_REAL_PLATFORM_URL 与 AIFI45_REAL_DAEMON_TOKEN；缺 env 时该测试明确 SKIP，不得计为 CP PASS。
+        action: node --test --test-reporter=tap skills/shared/crctl/scripts/integration/tc-auth-005-006-real-platform.mjs
+        asserts: >-
+          既有真实平台证据中 T 侧 real-platform 2/2 PASS；普通授权下 production、data-destructive、permission、
+          commitment-spend 四类动作均由真实 HTTP 返回 403/EXECUTION_SENSITIVE_ACTION_UNAUTHORIZED，
+          本地 HEAD/.crctl 不变且普通 CR 无平台回执。
+        evidence: validation/e5-real-platform-20261107/README.md
+        not_counted_as_cp_pass: true
   - id: CP-AUTH-006
     description: SC-AUTH-006 / 专项授权精确适用且操作重试仅消费一次。
     action: node --test --test-reporter=tap --test-name-pattern="^TC-AUTH-006$" skills/shared/crctl/scripts/test/execution-authorization.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-AUTH-006'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+    supplementary_evidence:
+      - requires: >-
+          一次性 PostgreSQL、仓库自身 go run ./cmd/migrate up、localhost/multica-backend:main 真实后端，
+          并设置 AIFI45_REAL_PLATFORM_URL 与 AIFI45_REAL_DAEMON_TOKEN；缺 env 时该测试明确 SKIP，不得计为 CP PASS。
+        action: node --test --test-reporter=tap skills/shared/crctl/scripts/integration/tc-auth-005-006-real-platform.mjs
+        asserts: >-
+          既有真实平台证据中 T 侧 real-platform 2/2 PASS；同 operation_id 重放返回同一 receipt 且 replayed=true，
+          换 operation_id 返回 409/EXECUTION_SENSITIVE_ACTION_EXHAUSTED，改 target/environment/kind 均返回 403，
+          本地 HEAD/.crctl 不变；真实 DB 对列出 CR 仅保留 1 条回执。
+        evidence: validation/e5-real-platform-20261107/README.md
+        not_counted_as_cp_pass: true
   - id: CP-AUTH-007
     description: SC-AUTH-007 / 送达ACK不等于业务消费。
     action: node --test --test-reporter=tap --test-name-pattern="^TC-AUTH-007$" skills/shared/crctl/scripts/test/execution-authorization.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-AUTH-007'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+    supplementary_evidence:
+      - requires: >-
+          从 multica/server 执行；专用一次性 PostgreSQL、DATABASE_URL、仓库自身 go run ./cmd/migrate up，
+          且沿用 e5 证据所固定的 M 脏工作树快照。
+        action: go test ./internal/governance -run '^TestTCAuth007DeliveredWithoutConsumptionDoesNotAdvance$' -count=1 -v
+        asserts: >-
+          既有 M 侧真实路由/DB 测试 PASS：未消费时 activation=409、consumption/activation 均 0 行、
+          binding issuance 保留 1 行；只计这些 M 侧子句，不登记 T 侧整条通过。
+        not_asserted: >-
+          未覆盖 delivered/ACK 回调、T 侧 status/gate/next、公开 CLI 状态/Git 副作用；
+          送达历史仅由 DB 行数证明，不是 history API 端到端查询。
+        evidence: projects/tools/changes/2026-10-22-aifi-45-authorized-execution/validation/e5-go-tc-disposable-db-20261107/go-test-20261107T131337Z.stdout.txt
+        not_counted_as_cp_pass: true
   - id: CP-AUTH-008
     description: SC-AUTH-008 / 跨租户项目与版本不适用拒绝。
     action: node --test --test-reporter=tap --test-name-pattern="^TC-AUTH-008$" skills/shared/crctl/scripts/test/execution-authorization.test.mjs
@@ -49,10 +84,36 @@ steps:
     description: SC-AUTH-009 / 已提交同语义重放同receipt，异义冲突。
     action: node --test --test-reporter=tap --test-name-pattern="^TC-AUTH-009$" skills/shared/crctl/scripts/test/execution-authorization.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-AUTH-009'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+    supplementary_evidence:
+      - requires: >-
+          从 multica/server 执行；专用一次性 PostgreSQL、DATABASE_URL、仓库自身 go run ./cmd/migrate up，
+          且沿用 e5 证据所固定的 M 脏工作树快照。
+        action: go test ./internal/governance -run '^TestTCAuth009ConsumptionReplayIsIdempotentAndConflictIsExplicit$' -count=1 -v
+        asserts: >-
+          既有 M 侧真实 consumption route/DB 测试 PASS：同 generation 重放返回同一 receipt、changed=false，
+          不同 challenge 返回 409/EXECUTION_CONSUMPTION_CONFLICT，最终 consumption 恰 1 行。
+        not_asserted: >-
+          未注入响应/发布故障，未测同键不同 subject，未断言不生成伪审批；
+          未逐字段比较冲突前后旧记录，故不覆盖完整故障恢复与全部异义冲突子句。
+        evidence: projects/tools/changes/2026-10-22-aifi-45-authorized-execution/validation/e5-go-tc-disposable-db-20261107/go-test-20261107T131337Z.stdout.txt
+        not_counted_as_cp_pass: true
   - id: CP-AUTH-010
     description: SC-AUTH-010 / Go原始字节golden跨Node验签及全部负例。
     action: node --test --test-reporter=tap --test-name-pattern="^TC-AUTH-010$" skills/shared/crctl/scripts/test/execution-authorization.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-AUTH-010'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
+    supplementary_evidence:
+      - requires: >-
+          从 multica/server 执行；专用一次性 PostgreSQL、DATABASE_URL、仓库自身 go run ./cmd/migrate up，
+          AIFI45_TOOLS_ROOT 指向 tools-aifi45、真实 node 可用，且沿用 e5 证据所固定的 M 脏工作树快照。
+        action: go test ./internal/governance -run '^TestTCAuth010GoSignedBytesWithNonASCIIAndCRLFVerifyInNode$' -count=1 -v
+        asserts: >-
+          既有 M 侧 Go→真实 Node 子进程测试 6/6 子断言 PASS：生产 verifyExecutionEnvelope 接受原始字节，
+          拒绝翻位、跨签名域、未知版本和外来 key 签名，安装公钥目录只含 .pub 文件。
+        not_asserted: >-
+          未覆盖 key_id 内外不一致、字段类型/整数/路径负例及普通文件证据 CRLF 哈希断言；
+          Go 直接 ed25519.Sign，不是完整 Go 生产签名到 T 公开 CLI 链，也未检查所有输出/日志的私钥泄漏。
+        evidence: projects/tools/changes/2026-10-22-aifi-45-authorized-execution/validation/e5-go-tc-disposable-db-20261107/go-test-20261107T131337Z.stdout.txt
+        not_counted_as_cp_pass: true
 rollback:
   steps:
     - 仅清理本测试创建的临时workspace与测试密钥；不得修改真实CR或安装根公钥。
