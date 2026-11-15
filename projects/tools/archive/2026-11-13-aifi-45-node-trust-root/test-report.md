@@ -3,7 +3,8 @@
 > 测试日期：2026-11-14
 > 测试环境：Windows（Git Bash），node v24.15.0，`node --test`；无数据库、daemon、模型或外部网络
 > 被测版本：tools 仓 HEAD `e52b808` + 本变更未提交改动（未提交、未推送）；覆盖 S1–S5（2026-11-14 并入 B2、B4 后重做）
-> 选定 run：`c8385d47-d636-43b7-b12f-8db5d8615a16`（`validation/runs/c8385d47-d636-43b7-b12f-8db5d8615a16/tc-evidence.json`）；此前 S1–S3 的 run `e9c97c8d-…`（9 项）已被取代，不再引用
+> **2026-11-15 重取证说明**：原选定 run `c8385d47-…` 冻结的输入包含 `skills/shared/crctl/scripts/lib/merge-effects.mjs` 与其测试的当时未提交字节，之后 `crctl.mjs`、`AGENTS.md` 等输入又继续演进，因此该 run 的任何提交都无法通过 `bind-commit` 的输入校验（无法生成交付回执）。经用户授权执行 `stdd rollback` → 先提交那份未提交改动（`e271133`）→ 以当前树重跑 12 个 CP 得到新 run `f4d3a4f8-…` → 重新确认 Gate 3 → 重新归档。下文的 run 标识、结果与覆盖数字均以新 run 为准；原 run 作为历史证据保留在 `validation/runs/` 下。
+> 选定 run：`f4d3a4f8-b0c0-4918-9d4e-63d87f306194`（`validation/runs/f4d3a4f8-b0c0-4918-9d4e-63d87f306194/tc-evidence.json`）；此前 S1–S3 的 run `e9c97c8d-…`（9 项）已被取代，不再引用
 > 结果以选定 run 为准；未执行项写明“未执行”。
 
 ## 一、总体概况
@@ -151,7 +152,7 @@ code=strong、test_config=balanced、docs_skills=economy，requested 同上、ac
 
 ## 七-B、失败模式检查（C4）与经验库
 
-### 7.1 CLI 确定性子集（选定 run `c8385d47-d636-43b7-b12f-8db5d8615a16`，原文要点；(b) 一行沿用 S1–S3 阶段的说明）
+### 7.1 CLI 确定性子集（选定 run `f4d3a4f8-b0c0-4918-9d4e-63d87f306194`，原文要点；(b) 一行沿用 S1–S3 阶段的说明）
 
 | 检查 | 结果 | 要点 |
 |---|---|---|
