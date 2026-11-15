@@ -2,9 +2,11 @@ designs: {}
 proposals:
   2026-11-06-stdd-default-cr-opt-in: proposals/2026-11-06-stdd-default-cr-opt-in.yaml
   2026-11-13-aifi-45-node-trust-root: proposals/2026-11-13-aifi-45-node-trust-root.yaml
+  2026-11-15-controlled-shell-snapshot-read-shapes: proposals/2026-11-15-controlled-shell-snapshot-read-shapes.yaml
   2026-11-15-crctl-report-active-count: proposals/2026-11-15-crctl-report-active-count.yaml
 specs:
   agent:
+    controlled-shell-git-show-shapes: specs/agent/controlled-shell-git-show-shapes.yaml
     crctl-execution-trust-root: specs/agent/crctl-execution-trust-root.yaml
     crctl-report: specs/agent/crctl-report.yaml
     evidence-delivery-contract: specs/agent/evidence-delivery-contract.yaml
@@ -13,6 +15,7 @@ specs:
     repair-governance: specs/agent/repair-governance.yaml
     workflow-routing: specs/agent/2026-11-06-stdd-default-cr-opt-in.yaml
   code:
+    controlled-shell-git-show-shapes: specs/code/controlled-shell-git-show-shapes.yaml
     crctl-execution-trust-root: specs/code/crctl-execution-trust-root.yaml
     crctl-report: specs/code/crctl-report.yaml
     evidence-delivery-contract: specs/code/evidence-delivery-contract.yaml

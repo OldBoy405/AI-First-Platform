@@ -1,0 +1,48 @@
+# controlled-shell-git-show-shapes 的 Canonical CP：两个可执行检查点（放行表、拒绝表，各自独立执行）。
+# TC-CSS-003（rules.json 修改范围）、TC-CSS-004（multica 6 个测试）、TC-CSS-005（文档一致）是人工检查，不绑定 CP，见 test-plan.md 的证据计划。
+meta:
+  task_id: controlled-shell-git-show-shapes
+  change_id: "2026-11-15-controlled-shell-snapshot-read-shapes"
+  created: "2026-11-15T18:30:00+08:00"
+  task_type: code
+  system: "controlled-shell rules.json 的 git show 白名单（只读数据文件 + 一个 node --test 用例文件）"
+  preconditions:
+    - "cwd 为 tools 业务根（evidence runner 的固定工作目录）；action 经平台默认 shell 执行，Windows 下解释器用反斜杠路径。"
+    - "只读：不修改任何文件、账本或状态；使用已核实的 ..\\stdd\\.venv\\Scripts\\python.exe，不安装依赖。"
+    - "action 只含 ASCII：用例标题里带 TCCSS001、TCCSS002 令牌，断言解析 node --test 摘要的 pass/fail 计数。"
+
+steps:
+  - id: CP-CSS-001
+    description: >-
+      REQ-CSS-001 / SC-001 / TC-CSS-001；confidence=high。
+      GIVEN 真实 rules.json 的 show 形状；WHEN 只运行标题含 TCCSS001 的用例；
+      THEN SHALL 通过（该用例对放行表每个参数组合断言被放行，计数 1 个用例、0 失败）。
+    action: >-
+      node --test --test-name-pattern "TCCSS001" skills/shared/crctl/scripts/test/controlled-shell-rules.test.mjs 2>&1 | ..\stdd\.venv\Scripts\python.exe -B -X utf8 -c "import sys,re;t=sys.stdin.read();p=int(re.search('pass ([0-9]+)',t).group(1));f=int(re.search('fail ([0-9]+)',t).group(1));print('pass',p,'fail',f);assert f==0 and p==1;print('CP-CSS-001 PASS')"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "pass 1 fail 0"
+      - type: stdout_contains
+        expected: "CP-CSS-001 PASS"
+
+  - id: CP-CSS-002
+    description: >-
+      REQ-CSS-002 / SC-002 / TC-CSS-002；confidence=high。
+      GIVEN 真实 rules.json 的 show 形状；WHEN 只运行标题含 TCCSS002 的用例；
+      THEN SHALL 通过（该用例对拒绝表 11 种近似形状断言均不被放行，计数 1 个用例、0 失败）。
+    action: >-
+      node --test --test-name-pattern "TCCSS002" skills/shared/crctl/scripts/test/controlled-shell-rules.test.mjs 2>&1 | ..\stdd\.venv\Scripts\python.exe -B -X utf8 -c "import sys,re;t=sys.stdin.read();p=int(re.search('pass ([0-9]+)',t).group(1));f=int(re.search('fail ([0-9]+)',t).group(1));print('pass',p,'fail',f);assert f==0 and p==1;print('CP-CSS-002 PASS')"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "pass 1 fail 0"
+      - type: stdout_contains
+        expected: "CP-CSS-002 PASS"
+
+rollback:
+  steps:
+    - "检查失败时只报告，不自动修改文件、账本或状态。"
+    - "需要撤销形状修改时，先取得授权，再依据实际差异定点逆向 rules.json 的 show.shapes 三行；禁止 reset／checkout／stash。"

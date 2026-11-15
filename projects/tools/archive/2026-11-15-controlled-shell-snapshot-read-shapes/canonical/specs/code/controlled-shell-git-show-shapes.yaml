@@ -1,0 +1,76 @@
+# controlled-shell-git-show-shapes 的行为规格（Canonical YAML）。
+# Change: 2026-11-15-controlled-shell-snapshot-read-shapes
+meta:
+  capability: controlled-shell-git-show-shapes
+  change_id: "2026-11-15-controlled-shell-snapshot-read-shapes"
+  created: "2026-11-15T18:30:00+08:00"
+  confidence: high
+
+requirements:
+  - id: REQ-CSS-001
+    description: >-
+      `controlled-shell/rules.json` 的 `git[sub=show]` 放行 5 种形状：原有 2 种（review-annotations/*.yml，
+      以及 _backlog.yml／_history.yml／CR-…/cr.md）与新增 3 种（`--name-only --format= <40hex>`、
+      `<40hex>:change-requests/CR-…/test-report.md`、`<40hex>:change-requests/CR-…/trace.tests[.yml|.yaml|.json]`）。
+    scenarios:
+      - id: SC-001
+        confidence: high
+        evidence: "proposal.yaml success_criteria[0]；multica crevents_test.go:946 的正例清单"
+        given: >-
+          真实 `rules.json` 的 `git[sub=show]` 形状，按 `crctl.mjs controlledGit` 的方式构造（`new RegExp`），
+          匹配对象为 `args.join(' ')`
+        when: "对放行表中每个参数组合做匹配"
+        then: "SHALL 每个都被放行"
+        and:
+          - "放行表含：`--name-only --format= <40hex>`；`<40hex>:change-requests/CR-2026-002/test-report.md`；`…/trace.tests`、`.yml`、`.yaml`、`.json` 四种后缀；账本式 KEY（`CR-FS-2026-003`、`CR-AFP-2026-1000`）"
+          - "原有 2 种形状各至少 1 个正例（`review-annotations/requirement.yml`、`_backlog.yml`、`_history.yml`、`CR-2026-002/cr.md`）"
+
+  - id: REQ-CSS-002
+    description: >-
+      放宽不得放宽到近似形状：简写 sha、rev 或分支名、路径穿越、非批准文件、后缀松弛、大小写或长度不合法的 KEY 一律拒绝。
+    scenarios:
+      - id: SC-002
+        confidence: high
+        evidence: "proposal.yaml success_criteria[1]；multica crevents_test.go 的 11 种拒绝形状"
+        given: "同 SC-001 的匹配方式与真实 `rules.json`"
+        when: "对拒绝表中每个参数组合做匹配"
+        then: "SHALL 每个都不被任何 show 形状放行"
+        and:
+          - "拒绝表为 11 种：`HEAD:…/_backlog.yml`；7 位简写 sha；`_backlog.yml/../_history.yml` 路径穿越；`CR-2026-002/prd.md`；`trace.tests.exe`；`test-report.md/../cr.md` 路径穿越；`approval.yml`；`package.json`；`_backlog.yml_extra`；小写 KEY `CR-fs-2026-003`；9 位 KEY `CR-ABCDEFGHI-2026-003`"
+
+  - id: REQ-CSS-003
+    description: >-
+      本 change 对 `rules.json` 的修改范围只有 `git[sub=show].shapes`，不改 callers、其他子命令、
+      forbiddenFlags、protectedPaths。
+    scenarios:
+      - id: SC-003
+        confidence: high
+        evidence: "proposal.yaml constraints[0]、success_criteria[2]"
+        given: "改前（HEAD）与改后的 `rules.json`"
+        when: "对两个版本做逐字段比较（把 `git[sub=show].shapes` 排除在外）"
+        then: "SHALL 其余全部相同"
+        and:
+          - "`git[sub=show].shapes` 相对改前只增不减，原两条形状逐字保留"
+
+  - id: REQ-CSS-004
+    description: >-
+      在 multica 仓用本仓已提交的 `rules.json` 运行其 6 个依赖该规则的测试，全部通过。
+    scenarios:
+      - id: SC-004
+        confidence: medium
+        evidence: "proposal.yaml success_criteria[3]；2026-11-15 临时副本实测"
+        given: "multica 工作区，`MULTICA_CONTROLLED_SHELL_RULES` 指向本仓已提交的 `rules.json`"
+        when: "运行 `go test ./internal/daemon -run '^(TestM26B2TestFactsPayload|TestM26B2TestFactsPreserveFailures|TestM26B4CollectorKeepsBothReviewStages|TestM26B4ScanEmitsIndependentTestEvent|TestM26B4ScanTestOnlyAndReviewOnly|TestProposedSnapshotReadShapes)$'`"
+        then: "SHALL 6 个测试全部通过，且 multica HEAD sha 与命令输出记入 test-report"
+
+  - id: REQ-CSS-005
+    description: >-
+      文档与规则一致：`controlled-shell/SKILL.md` 的 `show` 说明列出 5 种形状；CUSTOM-TODO-017 的描述与 rules.json 相符，
+      并说明 `callers` 当前仅声明、不强制。
+    scenarios:
+      - id: SC-005
+        confidence: high
+        evidence: "proposal.yaml success_criteria[4]；design.md 决策 4"
+        given: "改后的 SKILL.md、CUSTOM.md 与 rules.json"
+        when: "人工逐条对照 `show` 的形状清单与 TODO-017 的描述"
+        then: "SHALL 清单与描述和 rules.json 逐条一致，且不含相互矛盾的说法"

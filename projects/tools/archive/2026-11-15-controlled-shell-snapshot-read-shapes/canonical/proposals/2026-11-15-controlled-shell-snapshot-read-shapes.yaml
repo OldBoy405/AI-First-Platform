@@ -1,0 +1,87 @@
+# 2026-11-15-controlled-shell-snapshot-read-shapes.yaml — Canonical Proposal (YAML-first, V2.9)
+# AI 起草、AI 修改、AI 消费。Human View 由 `stdd canon generate` 生成。
+
+meta:
+  change_id: "2026-11-15-controlled-shell-snapshot-read-shapes"
+  title: "controlled-shell 白名单放宽 test-facts / 快照所需的 3 种 git show 只读形状"
+  created: "2026-11-15T17:40:00"
+  status: draft
+  version: "2.9"
+
+why:
+  problem: |
+    multica 的 daemon 在 CR 终态 settle 与测试事实采集时，以 system-orchestrator 身份对一个 40 位提交读取三类对象：
+    `git show --name-only --format= <40hex>`、`git show <40hex>:change-requests/CR-…/test-report.md`、`git show <40hex>:change-requests/CR-…/trace.tests[.yml|.yaml|.json]`。
+    tools 的 `skills/shared/controlled-shell/rules.json` 中 `git[sub=show]` 只放行两种形状（review-annotations/*.yml，以及 _backlog / _history / cr.md），上述三种被 guard 拒绝。
+    CUSTOM-TODO-017 声称「rules.json 已补」这三种形状，但 `git log --all -S'trace\.tests' -- skills/shared/controlled-shell/rules.json` 为空，与代码不符；这是跨仓契约缺口（multica 的 fork-ci-test-evidence-trust 的 ADJ-005，major，移交后续 change，至今未决）。
+    2026-11-15 实测（multica server/internal/daemon，MULTICA_CONTROLLED_SHELL_RULES 指向 tools 的真实 rules.json）：
+    6 个测试失败——TestProposedSnapshotReadShapes、TestM26B2TestFactsPayload、TestM26B2TestFactsPreserveFailures、TestM26B4CollectorKeepsBothReviewStages、TestM26B4ScanEmitsIndependentTestEvent、TestM26B4ScanTestOnlyAndReviewOnly；
+    不指向 rules.json（回落到测试内联 fixture）时 6 个全部通过，因此 CI 里它们的失败被 fixture 回落掩盖。
+    把三种形状加进 show 后（临时副本，未提交），同样 6 个测试全部通过。
+  motivation: |
+    用户已于 2026-11-15 裁定「放宽三种形状」（而非撤回 TODO-017 措辞）。
+    不修则 multica 的 M3（升级 tools pin 并让 backend-tests 使用真实 rules.json）无法进行；修了才能让 TODO-017 的描述成为事实，并让 multica 的消费方与 tools 的权威规则一致。
+
+what_changes:
+  - id: C1
+    type: modified
+    description: "controlled-shell/rules.json 的 git[sub=show].shapes 增加三条：`^--name-only --format= [0-9a-f]{40}$`、`^[0-9a-f]{40}:change-requests/<CR-ID>/test-report\\.md$`、`^[0-9a-f]{40}:change-requests/<CR-ID>/trace\\.tests(?:\\.yml|\\.yaml|\\.json)?$`；callers 仍仅 system-orchestrator，原两条形状不变。"
+  - id: C2
+    type: new
+    description: "新增 1 个 tools 测试：加载真实 rules.json，对 show 形状做允许/拒绝对照表——3 种新形状及原两种形状的正例必须放行，multica 已固化的 11 种近似形状（简写 sha、HEAD、路径穿越、非批准文件、小写或过长 KEY、后缀松弛等）必须拒绝。"
+  - id: C3
+    type: modified
+    description: "controlled-shell/SKILL.md 的 show 形状说明与 rules.json 同步。"
+  - id: C4
+    type: modified
+    description: "CUSTOM.md 的 CUSTOM-TODO-017 描述改为与代码一致，并登记本 change 的提交。"
+
+capabilities:
+  new: []
+  modified:
+    - name: controlled-shell-git-show-shapes
+      description: "system-orchestrator 可对 40 位提交读取 test-facts 发现、test-report.md、trace.tests* 三类只读对象；不放行其他对象、简写 sha、分支名、路径穿越。"
+
+constraints:
+  - "只改 git[sub=show] 的 shapes；不改 callers、其他子命令、forbiddenFlags、protectedPaths。"
+  - "新形状必须 `^…$` 锚定、完整 40 位小写 hex、CR-ID 片段与现有一致；不放行 rev 或分支名。"
+  - "匹配语义以 multica 的 Go gitguard 为准（参数用空格拼接后整体匹配锚定正则）；tools 侧测试只镜像该语义，真实消费方的证明在 multica 的 M3。"
+  - "tools 推送必须先于 multica M3；推送另行取得用户授权，本 change 不自行 push。"
+  - "tools 文档与注释用中文。"
+
+stakeholders:
+  - "tools 维护者（controlled-shell 规则的权威）"
+  - "multica daemon 的 test-facts 与 settle 采集（规则的消费方）"
+
+risk_areas:
+  - capability: controlled-shell-git-show-shapes
+    risk: "放宽安全白名单：新形状若书写过宽（例如漏锚定、允许简写 sha 或路径穿越），会让 system-orchestrator 读到不应读的对象。"
+    mitigation: "对照表测试同时覆盖正例与 11 种近似拒绝形状；形状全部 ^…$ 锚定；只涉及只读的 git show，且写保护 protectedPaths 不动。"
+  - capability: controlled-shell-git-show-shapes
+    risk: "tools 侧测试对匹配语义的镜像与 Go 消费方不一致，导致 tools 测试通过而真实消费方拒绝。"
+    mitigation: "提交前用 multica 的 6 个测试对真实 rules.json 做一次交叉验证并记入 test-report；之后 M3 再把该验证固化进 multica CI。"
+
+non_goals:
+  - "不改 multica 代码，不升级 `.github/aifirst-tools-pin`，不接线 MULTICA_CONTROLLED_SHELL_RULES（M3）。"
+  - "不改 daemon 是否发布 MULTICA_CONTROLLED_SHELL_RULES（已在 A0 决定不做）。"
+  - "不处理 crctl report / spec-dashboard 口径（T2，另行决定）。"
+  - "不扩展到 show 之外的子命令。"
+
+critical:
+  is_critical: false
+  risk_assessment:
+    safety_critical: false
+    financial: false
+    cross_system: true
+
+anchoring:
+  level: L1
+  reference_changes: []
+  anchor_implementations: []
+
+success_criteria:
+  - "rules.json 的 show 形状放行 3 种新形状及原 2 种形状，callers 仍仅 system-orchestrator；对照表测试中所有正例通过。"
+  - "对照表测试中 11 种近似形状全部被拒绝。"
+  - "rules.json 相对改前只有 git[sub=show].shapes 一处变化（diff 复核，写入 test-report）。"
+  - "multica 的 6 个测试（TestProposedSnapshotReadShapes 等）在 MULTICA_CONTROLLED_SHELL_RULES 指向本仓 rules.json 时全部通过（跨仓一次性验证，写入 test-report）。"
+  - "controlled-shell/SKILL.md 与 CUSTOM-TODO-017 的描述与 rules.json 一致。"
