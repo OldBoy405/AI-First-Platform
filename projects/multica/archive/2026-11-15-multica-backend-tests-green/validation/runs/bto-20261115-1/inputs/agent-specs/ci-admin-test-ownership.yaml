@@ -1,0 +1,27 @@
+# ci-admin-test-ownership 的 Agent 验证规格（Canonical YAML）。
+# Change: 2026-11-15-multica-backend-tests-green
+meta:
+  task_id: ci-admin-test-ownership
+  change_id: "2026-11-15-multica-backend-tests-green"
+  created: "2026-11-15T19:00:00+08:00"
+  task_type: code
+  system: "scripts/aifi45-disposable/ci-evidence.mjs 的管理员流对账（纯函数，无外部依赖）"
+  preconditions:
+    - "cwd 为 multica 业务根；只读 node --test，不连接数据库、不启动容器。"
+steps:
+  - id: CP-CAO-001
+    description: >-
+      REQ-CAO-001 / SC-CAO-001 / TC-CAO-001；confidence=high。GIVEN 好样本与 skip、缺失、fail、流不完整、重复 pass 五类坏样本；WHEN 只运行标题含 TCCAO001 的用例；THEN SHALL 通过（好样本对账通过，每个坏样本对账失败并点名包与测试）。
+    action: >-
+      node --test --test-name-pattern "TCCAO001" scripts/aifi45-disposable/ci-evidence.test.mjs 2>&1 | ..\stdd\.venv\Scripts\python.exe -B -X utf8 -c "import sys,re;t=sys.stdin.read();p=int(re.search('pass ([0-9]+)',t).group(1));f=int(re.search('fail ([0-9]+)',t).group(1));print('pass',p,'fail',f);assert f==0 and p==6;print('CP-CAO-001 PASS')"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "fail 0"
+      - type: stdout_contains
+        expected: "CP-CAO-001 PASS"
+rollback:
+  steps:
+    - "检查失败时只报告；run-selection 自行按 nonce 与完整 ID 释放它创建的实例，不执行共享库清理，不按名称模式清理。"
+    - "需要撤销代码修改时，先取得授权，再依据实际差异定点逆向；禁止 reset／checkout／stash。"

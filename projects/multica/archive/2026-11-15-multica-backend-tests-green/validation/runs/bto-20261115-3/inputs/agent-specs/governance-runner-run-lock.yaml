@@ -1,0 +1,41 @@
+# governance-runner-run-lock 的 Agent 验证规格（Canonical YAML）。
+# Change: 2026-11-15-multica-backend-tests-green
+meta:
+  task_id: governance-runner-run-lock
+  change_id: "2026-11-15-multica-backend-tests-green"
+  created: "2026-11-15T19:00:00+08:00"
+  task_type: code
+  system: "server/internal/governance 的 Runner 运行锁（withRunLock）与并发唤醒"
+  preconditions:
+    - "cwd 为 multica 业务根；action 经平台默认 shell 执行，Windows 下解释器用反斜杠路径。"
+    - "selection 检查经 scripts/aifi45-disposable/run-selection.mjs 的 --only 运行 selections.json 中同名选择：每次由其自建并释放一次性 podman 实例，使用受限一次性角色，禁止外部 admin 连接、共享库与非本次创建的容器；要求退出 0、skip 为 0、fail 为 0。"
+    - "零匹配、skip、名称不存在都不算通过。"
+steps:
+  - id: CP-RRL-001
+    description: >-
+      REQ-RRL-001 / SC-RRL-001 / TC-RRL-001；confidence=high。GIVEN 池上限 4 的一次性库与既有 TestMTick003；WHEN 经 run-selection 运行 governance-mtick003；THEN SHALL 通过（不挂起，派发恰好 1 个任务）。
+    action: >-
+      node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only governance-mtick003
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "PASS governance-mtick003 "
+      - type: stdout_contains
+        expected: "skip=0"
+  - id: CP-RRL-002
+    description: >-
+      REQ-RRL-002 / SC-RRL-002 / TC-RRL-002；confidence=medium。GIVEN 一次性库；WHEN 经 run-selection 运行 governance-run-lock（互斥串行、释放、取消释放等待者）；THEN SHALL 全部通过。
+    action: >-
+      node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only governance-run-lock
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "PASS governance-run-lock "
+      - type: stdout_contains
+        expected: "skip=0"
+rollback:
+  steps:
+    - "检查失败时只报告；run-selection 自行按 nonce 与完整 ID 释放它创建的实例，不执行共享库清理，不按名称模式清理。"
+    - "需要撤销代码修改时，先取得授权，再依据实际差异定点逆向；禁止 reset／checkout／stash。"

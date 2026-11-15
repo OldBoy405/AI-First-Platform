@@ -1,10 +1,17 @@
 designs: {}
 proposals:
   2026-11-13-aifi-45-real-execution-closure: proposals/2026-11-13-aifi-45-real-execution-closure.yaml
+  2026-11-15-multica-backend-tests-green: proposals/2026-11-15-multica-backend-tests-green.yaml
 specs:
   agent:
+    backend-tests-ownership: specs/agent/backend-tests-ownership.yaml
+    ci-admin-test-ownership: specs/agent/ci-admin-test-ownership.yaml
+    governance-runner-run-lock: specs/agent/governance-runner-run-lock.yaml
     real-execution-closure: specs/agent/real-execution-closure.yaml
     workspace-delete-execution-tables: specs/agent/workspace-delete-execution-tables.yaml
   code:
     authorized-runner: specs/code/authorized-runner.yaml
+    backend-tests-ownership: specs/code/backend-tests-ownership.yaml
+    ci-admin-test-ownership: specs/code/ci-admin-test-ownership.yaml
+    governance-runner-run-lock: specs/code/governance-runner-run-lock.yaml
 version: '2.9'

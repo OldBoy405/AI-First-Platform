@@ -1,0 +1,54 @@
+# governance-runner-run-lock 的行为规格（Canonical YAML）。
+# Change: 2026-11-15-multica-backend-tests-green
+meta:
+  capability: governance-runner-run-lock
+  change_id: "2026-11-15-multica-backend-tests-green"
+  created: "2026-11-15T19:00:00+08:00"
+  confidence: medium
+
+requirements:
+  - id: REQ-RRL-001
+    description: >-
+      同一个 run 的并发唤醒（周期扫描、启动扫描、事件唤醒）在连接池上限为 4 时全部完成，
+      并且只派发 1 个任务；等待锁的唤醒不占用池连接。
+    scenarios:
+      - id: SC-RRL-001
+        confidence: high
+        evidence: "proposal.yaml success_criteria[2]；2026-11-15 实测：池 16 通过、池 4 挂起"
+        given: >-
+          一次性迁移库；governance 测试包的连接池上限为 4；一个活动 run；
+          6 个 `ResumeActiveRuns`、1 个 `Reconcile`、1 个事件唤醒并发发起（既有 `TestMTick003`）
+        when: "运行 `TestMTick003`"
+        then: "SHALL 在超时内完成（不挂起）"
+        and:
+          - "派发的任务数恰好为 1，run 持有的任务数为 1"
+          - "第一个节点仍在第 1 次尝试"
+
+  - id: REQ-RRL-002
+    description: >-
+      `withRunLock` 保持原先的锁语义：同一 run 的 `fn` 严格串行，锁在 `fn` 结束后释放，等待中被取消的调用返回取消错误
+      且不留下锁或连接。
+    scenarios:
+      - id: SC-RRL-002
+        confidence: medium
+        evidence: "design.md 决策 3；原 `pg_advisory_lock` 语义；ctx 取消语义"
+        given: >-
+          一次性迁移库；同一个 run id；两个 goroutine 调用 `withRunLock`，`fn` 内用计数器检测并发进入；
+          另有一个持锁且未返回的 `fn`，以及一个在等锁、随后 ctx 被取消的调用
+        when: "两个调用并发执行并随后同一 run id 再调用一次；以及在持锁期间取消等锁调用的 ctx"
+        then: "SHALL 任意时刻最多 1 个 `fn` 在执行，第一次调用返回后锁被释放使第三次调用无需等待即可进入；被取消的等锁调用返回 `ctx.Err()`"
+        and:
+          - "取消返回后，池里已获取的连接数不超过持锁者占用的那 1 条"
+          - "持锁者返回后，同一 run id 的下一次调用可立即获得锁"
+
+  - id: REQ-RRL-003
+    description: >-
+      三处同类的等锁点（`Reconcile`、`reconcileCode`、`reconcileRequirement`）都使用 `withRunLock`；
+      `upsertRequirementRun` 的等锁点保持不变（其临界区已在锁连接上）。
+    scenarios:
+      - id: SC-RRL-003
+        confidence: high
+        evidence: "design.md 决策 3、4"
+        given: "改后的 `runner.go`、`runner_code.go`、`runner_requirement.go`、`runner_requirement_entry.go`"
+        when: "人工评审 diff 与全文搜索 `pg_advisory_lock(`"
+        then: "SHALL 前三个文件不再包含阻塞式 `pg_advisory_lock(`，三处都调用 `withRunLock`；`runner_requirement_entry.go` 仍使用原等锁点且无改动"

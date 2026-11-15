@@ -1,0 +1,53 @@
+# backend-tests-ownership 的 Agent 验证规格（Canonical YAML）。
+# Change: 2026-11-15-multica-backend-tests-green
+meta:
+  task_id: backend-tests-ownership
+  change_id: "2026-11-15-multica-backend-tests-green"
+  created: "2026-11-15T19:00:00+08:00"
+  task_type: code
+  system: "scripts/aifi45-disposable 的测试归属表与 selections、bigm 用例的受限角色运行"
+  preconditions:
+    - "cwd 为 multica 业务根；action 经平台默认 shell 执行，Windows 下解释器用反斜杠路径。"
+    - "selection 检查经 scripts/aifi45-disposable/run-selection.mjs 的 --only 运行 selections.json 中同名选择：每次由其自建并释放一次性 podman 实例，使用受限一次性角色，禁止外部 admin 连接、共享库与非本次创建的容器；要求退出 0、skip 为 0、fail 为 0。"
+    - "零匹配、skip、名称不存在都不算通过。"
+steps:
+  - id: CP-BTO-001
+    description: >-
+      REQ-BTO-001 / SC-BTO-001 / TC-BTO-001；confidence=high。GIVEN 受限一次性角色；WHEN 经 run-selection 运行 bigm-restricted-role；THEN SHALL 通过。
+    action: >-
+      node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only bigm-restricted-role
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "PASS bigm-restricted-role "
+      - type: stdout_contains
+        expected: "skip=0"
+  - id: CP-BTO-002
+    description: >-
+      REQ-BTO-002 / SC-BTO-002 / TC-BTO-002；confidence=high。GIVEN 改后的 test-ownership.json；WHEN 运行 check 与 skip-regex；THEN SHALL check 退出 0 并报告 8 个条目，且 skip 正则含 4 个新登记测试名。
+    action: >-
+      node scripts/aifi45-disposable/test-ownership.mjs check && node scripts/aifi45-disposable/test-ownership.mjs skip-regex | ..\stdd\.venv\Scripts\python.exe -B -X utf8 -c "import sys;t=sys.stdin.read();m=['TestExecuteBackfillUpdatesOnlyEligibleCodexRowsAndRebuildsRollup','TestHook_DirectV034Upgrade','TestHook_FreshDatabaseStampsWatermarkOnly','TestExecutionMigrationDownRoundTrip'];miss=[n for n in m if n not in t];print('missing',miss);assert not miss;print('CP-BTO-002 PASS')"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "test ownership OK: 8 entry(ies)"
+      - type: stdout_contains
+        expected: "CP-BTO-002 PASS"
+  - id: CP-BTO-003
+    description: >-
+      REQ-BTO-002 / SC-BTO-003 / TC-BTO-003；confidence=high。GIVEN 已有 selection governance-migration-roundtrip；WHEN 经 run-selection 单独运行；THEN SHALL 通过（自己的一次性库，不与其他包共享）。
+    action: >-
+      node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only governance-migration-roundtrip
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "PASS governance-migration-roundtrip "
+      - type: stdout_contains
+        expected: "skip=0"
+rollback:
+  steps:
+    - "检查失败时只报告；run-selection 自行按 nonce 与完整 ID 释放它创建的实例，不执行共享库清理，不按名称模式清理。"
+    - "需要撤销代码修改时，先取得授权，再依据实际差异定点逆向；禁止 reset／checkout／stash。"

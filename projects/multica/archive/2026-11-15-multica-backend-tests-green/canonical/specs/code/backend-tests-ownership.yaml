@@ -1,0 +1,65 @@
+# backend-tests-ownership 的行为规格（Canonical YAML）。
+# Change: 2026-11-15-multica-backend-tests-green
+meta:
+  capability: backend-tests-ownership
+  change_id: "2026-11-15-multica-backend-tests-green"
+  created: "2026-11-15T19:00:00+08:00"
+  confidence: high
+
+requirements:
+  - id: REQ-BTO-001
+    description: "bigm 用例在受限角色的一次性库上通过（读统计用 `pg_stats`）。"
+    scenarios:
+      - id: SC-BTO-001
+        confidence: high
+        evidence: "proposal.yaml success_criteria[0]；2026-11-15 实测"
+        given: "一次性库与 `NOSUPERUSER NOCREATEDB` 的一次性角色，已迁移"
+        when: "运行 `TestIssuePropertiesBigramIndexBuildsOnlyWherePGBigmExists`"
+        then: "SHALL 通过"
+        and:
+          - "角色权限与改前相同（不加 CREATEDB、不加 pg_read_all_stats）"
+
+  - id: REQ-BTO-002
+    description: >-
+      4 个测试的归属被声明且通过检查：3 个 `ci-admin`、1 个 `independent`（`DownRoundTrip`）；它们都被共享 run 的 skip 正则排除。
+    scenarios:
+      - id: SC-BTO-002
+        confidence: high
+        evidence: "proposal.yaml success_criteria[3]；design.md 决策 2、6"
+        given: "改后的 `test-ownership.json`"
+        when: "运行 `test-ownership.mjs check` 与 `test-ownership.mjs skip-regex`"
+        then: "SHALL `check` 退出码为 0，且 skip 正则同时包含这 4 个测试名"
+        and:
+          - "原有的 4 个 independent 条目与 allowed-skips 仍在"
+      - id: SC-BTO-003
+        confidence: high
+        evidence: "proposal.yaml success_criteria[3]；已有 selection `governance-migration-roundtrip`"
+        given: "podman 可用；`selections.json` 的 `governance-migration-roundtrip`"
+        when: "运行 `run-selection.mjs --selections selections.json --only governance-migration-roundtrip`"
+        then: "SHALL 该 selection 通过（自己的一次性库上，单独运行）"
+
+  - id: REQ-BTO-003
+    description: "claim deadline 用例有定性记录，不修也不 skip，除非复现并确认根因。"
+    scenarios:
+      - id: SC-BTO-004
+        confidence: medium
+        evidence: "proposal.yaml what_changes C5；success_criteria[4]"
+        given: "C1–C4 已落地；`--cpus=2` 的 Go 容器与一次性库"
+        when: "对 `TestClaimTasksByRuntime_PartialSuccessFitsClientDeadlines` 重复运行至少 20 次"
+        then: "SHALL `design-adjustments.md` 记录运行次数、失败次数、失败的错误全文与是否带 `-race`，并写出结论（复现并修复，或无法复现及依据）"
+
+  - id: REQ-BTO-004
+    description: "真实 CI 与台账：落地后 backend-tests 不再出现原 7 个失败；`CUSTOM.md` 登记本 change 的定制。"
+    scenarios:
+      - id: SC-BTO-005
+        confidence: high
+        evidence: "proposal.yaml success_criteria[4]"
+        given: "本 change 的提交已推送（另行取得授权），CI 对该提交跑完 backend-tests"
+        when: "对比该 run 的失败集合与 run 43687569973 的 8 例"
+        then: "SHALL 原 7 例（4 个权限、`DownRoundTrip`、`TestMTick003` 超时、`DeleteWorkspace`）不再出现；claim 用例按 SC-BTO-004 的结论处理，run id 记入 test-report"
+      - id: SC-BTO-006
+        confidence: high
+        evidence: "proposal.yaml success_criteria[5]；`CUSTOM.md` 台账行模板"
+        given: "改后的 `CUSTOM.md`"
+        when: "检查本 change 的登记行与换行"
+        then: "SHALL 登记行列出本 change 触达的 multica 定制，文件为 CRLF 且无裸 LF"
