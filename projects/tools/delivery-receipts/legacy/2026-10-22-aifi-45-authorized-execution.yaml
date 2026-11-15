@@ -36,7 +36,7 @@ evidence_in_repo:
 
 known_gaps:
   - "该归档下 validation/ 的证据文件从未被 Git 跟踪（约 2128 个，36 MB），只在本地检出中存在。"
-  - "该 change 的 canonical YAML（evidence-delivery-contract、execution-authorization、repair-governance）只在归档内，项目级 canonical/specs/{code,agent}/ 没有对应 YAML；项目级只有 Human View。"
+  - "该 change 的 canonical YAML 已作为基线合并到项目级（2026-11-15，见 canonical/specs/{code,agent}/ 与索引）；合并时并入了 2026-11-08 的增量，Human View 由 stdd 渲染器重新生成。"
   - "Gate 3 批准回执在 .stdd.yaml 中标记为 superseded（receipt_id gate3-2026-11-08T16:11:36）。"
 
 checked_at: "2026-11-15"

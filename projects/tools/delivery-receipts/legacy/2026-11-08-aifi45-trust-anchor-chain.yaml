@@ -27,8 +27,8 @@ evidence_in_repo:
 
 known_gaps:
   - "整个归档（87 个文件）此前从未被 Git 跟踪，2026-11-15 之前只在本地检出中；本次随记录提交入库。"
-  - "该 change 的 canonical YAML 覆盖 evidence-delivery-contract、execution-authorization、repair-governance 三个 capability，但项目级 canonical/specs/{code,agent}/ 均无对应 YAML；项目级只有 Human View（specs/<capability>/spec.md 已存在）。"
-  - "该 change 与 2026-10-22、2026-11-13 两代 AIFI-45 工作范围重叠；哪一份 canonical 应成为项目基线尚未裁定，本次不擅自合并。"
+  - "该 change 的三条增量规格（REQ-TAC-001..003 / CP-TAC-001..010）已并入项目级基线（2026-11-15）；基线主体取自 2026-10-22 的完整规格，见 canonical/specs/{code,agent}/<capability>.yaml 顶部注释。"
+  - "与 2026-10-22、2026-11-13 两代 AIFI-45 工作范围重叠；已按「10-22 完整规格为基线 + 11-08 增量为补丁」合并，未处置 11-13 代（其范围是另一 capability）。"
 
 checked_at: "2026-11-15"
 checked_by: "AI (pi session)，只读核对"
