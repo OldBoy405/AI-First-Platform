@@ -1,0 +1,264 @@
+approval_receipts:
+- confirmed_actor: ai
+  confirmed_at: '2026-11-15T11:55:19'
+  confirmed_by: dialog
+  confirmed_evidence: 确认 Gate 2,长程模式
+  note: reapproved
+  prior_input_fingerprint: 8f66642ee84b7ca14f9bb251d2c820f86025321769c522bf79f90a19db04ecb6
+  prior_input_manifest_json: '[{"change_id":"2026-11-15-crctl-report-active-count","child_id":null,"kind":"raw","logical_path":"canonical/.canon-index.yaml","project_id":"tools","projection_version":"v2","sha256":"7ad799fe1f9666badf17966bdf91628fdd522b2baf6671a74fcfbdab186c44ba"},{"change_id":"2026-11-15-crctl-report-active-count","child_id":null,"kind":"projection","logical_path":"canonical/proposals/2026-11-15-crctl-report-active-count.yaml","project_id":"tools","projection_version":"v2","sha256":"5a9d33b62f65e30fff1870a6e47db20fb102c1eae788d96561f194f55948f48f"},{"change_id":"2026-11-15-crctl-report-active-count","child_id":null,"kind":"raw","logical_path":"canonical/specs/agent/2026-11-15-crctl-report-active-count.yaml","project_id":"tools","projection_version":"v2","sha256":"9597ec114be4d005502b6cf4033b9e17d64538b037bf7610dafa8e070d9d1d44"},{"change_id":"2026-11-15-crctl-report-active-count","child_id":null,"kind":"raw","logical_path":"canonical/specs/agent/crctl-report.yaml","project_id":"tools","projection_version":"v2","sha256":"741ef7f34074e47f96e47dd151de224f1bfb5fc76b6b3ef9328f5e2e5a5a26ce"},{"change_id":"2026-11-15-crctl-report-active-count","child_id":null,"kind":"raw","logical_path":"canonical/specs/code/2026-11-15-crctl-report-active-count.yaml","project_id":"tools","projection_version":"v2","sha256":"61535a5bae2dce23de69b65c8e7e5251e3a675330872668e75235997f948227d"},{"change_id":"2026-11-15-crctl-report-active-count","child_id":null,"kind":"raw","logical_path":"canonical/specs/code/crctl-report.yaml","project_id":"tools","projection_version":"v2","sha256":"4d6a0f5fb01c9c7826f967498cf92dba64b5db4f7b3953e511d58314a32ea328"},{"change_id":"2026-11-15-crctl-report-active-count","child_id":null,"kind":"raw","logical_path":"design.md","project_id":"tools","projection_version":"v2","sha256":"2af92c286da7ff64373ac1e2e901a38cc99a5d51e04519b6060ca28fd2c88c2a"},{"change_id":"2026-11-15-crctl-report-active-count","child_id":null,"kind":"projection","logical_path":"proposal.md","project_id":"tools","projection_version":"v2","sha256":"e891f3c70f0af4846a03f3c266b9df39a4ebf5eb4b270a800830fdf36a6ea956"},{"change_id":"2026-11-15-crctl-report-active-count","child_id":null,"kind":"raw","logical_path":"specs/crctl-report/spec.md","project_id":"tools","projection_version":"v2","sha256":"44156d304f576840bc439735534545c6db12c4ba274fac600531d5cac5bc22da"},{"change_id":"2026-11-15-crctl-report-active-count","child_id":null,"kind":"raw","logical_path":"test-plan.md","project_id":"tools","projection_version":"v2","sha256":"1099e24b3176ebd4525357236a99100d5e2ed83b8a3b21ef18415c846d7d6b18"}]'
+  receipt_id: gate2-2026-11-15T11:55:19
+  recorded_at: '2026-11-15T12:36:40'
+  status: superseded
+change_id: 2026-11-15-crctl-report-active-count
+complexity_score: 3
+current_phase: deliver
+last_modified: '2026-11-15T12:37:05.662441'
+long_range:
+  enabled: true
+  host_note: pi 宿主；Step 8a.5 的权限写入不适用，未修改任何权限配置
+  mode: full_auto
+  pre_auth_completed: true
+  pre_auth_evidence: 确认 Gate 2,长程模式
+  pre_auth_timestamp: '2026-11-15T12:05:00'
+  scope_note: 覆盖 tools 仓内 crctl.mjs、crctl.test.mjs、cr-dashboard SKILL.md 的写入，本地 node
+    --test、git 只读； 不覆盖：git 提交/推送/部署、修改受审文档（proposal/design/test-plan/canonical specs）、
+    触碰工作树既有未提交改动（merge-effects.mjs 及测试、golden、AGENTS.md、CUSTOM.md、.crctl/）、改动 multica
+    仓； 简单与执行类任务给修改指导后委派 balanced。
+mode: lightweight
+phases:
+  build:
+    confirmed_actor: ai
+    confirmed_at: '2026-11-15T12:37:01'
+    confirmed_by: dialog
+    confirmed_evidence: 重签 Gate 2；TC-RPT-007 确认；Gate 3 确认
+    input_fingerprint: 88587099b8b60b38e0030a6181235605d885ddf2979c6ac2c51af4d8524ecc23
+    input_manifest:
+    - change_id: 2026-11-15-crctl-report-active-count
+      child_id: null
+      kind: projection
+      logical_path: .stdd.yaml
+      project_id: tools
+      projection_version: v2
+      sha256: cff859f9dbfe0f83fe80fcbb934a9deef6efb4fd38590588b0a5c730a9eab668
+    - change_id: 2026-11-15-crctl-report-active-count
+      child_id: null
+      kind: raw
+      logical_path: canonical/.canon-index.yaml
+      project_id: tools
+      projection_version: v2
+      sha256: 7ad799fe1f9666badf17966bdf91628fdd522b2baf6671a74fcfbdab186c44ba
+    - change_id: 2026-11-15-crctl-report-active-count
+      child_id: null
+      kind: projection
+      logical_path: canonical/proposals/2026-11-15-crctl-report-active-count.yaml
+      project_id: tools
+      projection_version: v2
+      sha256: 5a9d33b62f65e30fff1870a6e47db20fb102c1eae788d96561f194f55948f48f
+    - change_id: 2026-11-15-crctl-report-active-count
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/agent/crctl-report.yaml
+      project_id: tools
+      projection_version: v2
+      sha256: 6187946c2856fb3a05429afa48b94f99584afc9e83b9c072598d8b991a724ff4
+    - change_id: 2026-11-15-crctl-report-active-count
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/code/crctl-report.yaml
+      project_id: tools
+      projection_version: v2
+      sha256: f9b961075a2e49fa632c02cd3983b64603a73abbcdd04b9d081f33254008397a
+    - change_id: 2026-11-15-crctl-report-active-count
+      child_id: null
+      kind: raw
+      logical_path: design-adjustments.md
+      project_id: tools
+      projection_version: v2
+      sha256: 5266c435866f963efa8f9be12a82cb415c6bfbb20e0dfc34851f16ac291f57a0
+    - change_id: 2026-11-15-crctl-report-active-count
+      child_id: null
+      kind: raw
+      logical_path: design.md
+      project_id: tools
+      projection_version: v2
+      sha256: c4ea457d69511ad5a9526cda0f66df9a0f5339efcc3fb1a0eeab8e66bf6fbe57
+    - change_id: 2026-11-15-crctl-report-active-count
+      child_id: null
+      kind: raw
+      logical_path: pending-adjustments.md
+      project_id: tools
+      projection_version: v2
+      sha256: 3478a161aee16b348c38a9519b72d21778453d397941cd9e12873895c45cc688
+    - change_id: 2026-11-15-crctl-report-active-count
+      child_id: null
+      kind: projection
+      logical_path: proposal.md
+      project_id: tools
+      projection_version: v2
+      sha256: e891f3c70f0af4846a03f3c266b9df39a4ebf5eb4b270a800830fdf36a6ea956
+    - change_id: 2026-11-15-crctl-report-active-count
+      child_id: null
+      kind: raw
+      logical_path: specs/crctl-report/spec.md
+      project_id: tools
+      projection_version: v2
+      sha256: 722c1779274b6b25ff2c52808156b094e69fcfec869a045d89ff35bede5c7259
+    - change_id: 2026-11-15-crctl-report-active-count
+      child_id: null
+      kind: raw
+      logical_path: test-plan.md
+      project_id: tools
+      projection_version: v2
+      sha256: c63f44a3bcf2c603ed5670b8435291eac94bc10a47ca259b2ac677c312449ca7
+    - change_id: 2026-11-15-crctl-report-active-count
+      child_id: null
+      kind: raw
+      logical_path: test-report.md
+      project_id: tools
+      projection_version: v2
+      sha256: ae92d3a2c53d3265330e8cffd106dc3011e21b06688804c3cd0c39389f3fab33
+    - change_id: 2026-11-15-crctl-report-active-count
+      child_id: null
+      kind: raw
+      logical_path: validation/runs/99d50b37-e758-4e38-82d5-51de30f79240/agent-verification-report.md
+      project_id: tools
+      projection_version: v2
+      sha256: cc81387a51a0fc3df771063b99a21a552f3d615115cdf1c6d297b59d7640103d
+    - change_id: 2026-11-15-crctl-report-active-count
+      child_id: null
+      kind: projection
+      logical_path: validation/runs/99d50b37-e758-4e38-82d5-51de30f79240/inputs/agent-specs/crctl-report.yaml
+      project_id: tools
+      projection_version: v2
+      sha256: 40928ed72c5d6a5c5866b09271a499361e526ae9e489fb6181877d8f276f0c49
+    - change_id: 2026-11-15-crctl-report-active-count
+      child_id: null
+      kind: projection
+      logical_path: validation/runs/99d50b37-e758-4e38-82d5-51de30f79240/inputs/config.yaml
+      project_id: tools
+      projection_version: v2
+      sha256: 6533bfe04c6d3b0896098955bddef3505350644ee9b1a4b7c4143f5dabd26f63
+    - change_id: 2026-11-15-crctl-report-active-count
+      child_id: null
+      kind: raw
+      logical_path: validation/runs/99d50b37-e758-4e38-82d5-51de30f79240/inputs/test-plan.md
+      project_id: tools
+      projection_version: v2
+      sha256: c63f44a3bcf2c603ed5670b8435291eac94bc10a47ca259b2ac677c312449ca7
+    - change_id: 2026-11-15-crctl-report-active-count
+      child_id: null
+      kind: projection
+      logical_path: validation/runs/99d50b37-e758-4e38-82d5-51de30f79240/tc-evidence.json
+      project_id: tools
+      projection_version: v2
+      sha256: c741e16124e8577532f4c897ae6d55cfcbceb39670a568b3b0ad89e73620c151
+    selected_evidence:
+    - validation/runs/99d50b37-e758-4e38-82d5-51de30f79240/agent-verification-report.md
+    - validation/runs/99d50b37-e758-4e38-82d5-51de30f79240/inputs/agent-specs/crctl-report.yaml
+    - validation/runs/99d50b37-e758-4e38-82d5-51de30f79240/inputs/config.yaml
+    - validation/runs/99d50b37-e758-4e38-82d5-51de30f79240/inputs/test-plan.md
+    - validation/runs/99d50b37-e758-4e38-82d5-51de30f79240/tc-evidence.json
+    slices_completed:
+      '1':
+        new_tests: 4
+        note: lightweight 单隐式切片；证据 run 05ed653a-aa3b-417d-a242-b936f68fb5d0
+        status: done
+        tc_coverage: 7/7
+        verified_at: '2026-11-15T12:40:00'
+    status: completed
+  deliver:
+    status: in_progress
+  spec:
+    confirmed_actor: ai
+    confirmed_at: '2026-11-15T12:36:40'
+    confirmed_by: dialog
+    confirmed_evidence: 重签 Gate 2；TC-RPT-007 确认；Gate 3 确认
+    input_fingerprint: 94a2af4ea51493956c6ae09d2d717a57b1b0fe392c839a4daa380f9458b6acbd
+    input_manifest:
+    - change_id: 2026-11-15-crctl-report-active-count
+      child_id: null
+      kind: raw
+      logical_path: canonical/.canon-index.yaml
+      project_id: tools
+      projection_version: v2
+      sha256: 7ad799fe1f9666badf17966bdf91628fdd522b2baf6671a74fcfbdab186c44ba
+    - change_id: 2026-11-15-crctl-report-active-count
+      child_id: null
+      kind: projection
+      logical_path: canonical/proposals/2026-11-15-crctl-report-active-count.yaml
+      project_id: tools
+      projection_version: v2
+      sha256: 5a9d33b62f65e30fff1870a6e47db20fb102c1eae788d96561f194f55948f48f
+    - change_id: 2026-11-15-crctl-report-active-count
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/agent/crctl-report.yaml
+      project_id: tools
+      projection_version: v2
+      sha256: 6187946c2856fb3a05429afa48b94f99584afc9e83b9c072598d8b991a724ff4
+    - change_id: 2026-11-15-crctl-report-active-count
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/code/crctl-report.yaml
+      project_id: tools
+      projection_version: v2
+      sha256: f9b961075a2e49fa632c02cd3983b64603a73abbcdd04b9d081f33254008397a
+    - change_id: 2026-11-15-crctl-report-active-count
+      child_id: null
+      kind: raw
+      logical_path: design.md
+      project_id: tools
+      projection_version: v2
+      sha256: c4ea457d69511ad5a9526cda0f66df9a0f5339efcc3fb1a0eeab8e66bf6fbe57
+    - change_id: 2026-11-15-crctl-report-active-count
+      child_id: null
+      kind: projection
+      logical_path: proposal.md
+      project_id: tools
+      projection_version: v2
+      sha256: e891f3c70f0af4846a03f3c266b9df39a4ebf5eb4b270a800830fdf36a6ea956
+    - change_id: 2026-11-15-crctl-report-active-count
+      child_id: null
+      kind: raw
+      logical_path: specs/crctl-report/spec.md
+      project_id: tools
+      projection_version: v2
+      sha256: 722c1779274b6b25ff2c52808156b094e69fcfec869a045d89ff35bede5c7259
+    - change_id: 2026-11-15-crctl-report-active-count
+      child_id: null
+      kind: raw
+      logical_path: test-plan.md
+      project_id: tools
+      projection_version: v2
+      sha256: c63f44a3bcf2c603ed5670b8435291eac94bc10a47ca259b2ac677c312449ca7
+    status: completed
+  understand:
+    confirmed_actor: ai
+    confirmed_at: '2026-11-15T11:42:36'
+    confirmed_by: dialog
+    confirmed_evidence: 确认
+    input_fingerprint: 80aa4eac0fedb5f8b74189be7c2280a5f65a642ef7a6cc642cb81e32786a5ad0
+    input_manifest:
+    - change_id: 2026-11-15-crctl-report-active-count
+      child_id: null
+      kind: projection
+      logical_path: canonical/proposals/2026-11-15-crctl-report-active-count.yaml
+      project_id: tools
+      projection_version: v2
+      sha256: 5a9d33b62f65e30fff1870a6e47db20fb102c1eae788d96561f194f55948f48f
+    - change_id: 2026-11-15-crctl-report-active-count
+      child_id: null
+      kind: projection
+      logical_path: proposal.md
+      project_id: tools
+      projection_version: v2
+      sha256: e891f3c70f0af4846a03f3c266b9df39a4ebf5eb4b270a800830fdf36a6ea956
+    status: completed
+score_confidence: preliminary
+status: archived
+task_type: code
+traceability:
+  spec_scenarios: 0
+  tc_cases: 0
+  test_functions: 0
+version: '3.0'

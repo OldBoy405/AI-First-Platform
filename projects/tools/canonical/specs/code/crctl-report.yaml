@@ -1,0 +1,98 @@
+# crctl-report 的行为规格（Canonical YAML）。
+# Change: 2026-11-15-crctl-report-active-count
+meta:
+  capability: crctl-report
+  change_id: "2026-11-15-crctl-report-active-count"
+  created: "2026-11-15T11:52:00+08:00"
+  confidence: high
+
+requirements:
+  - id: REQ-RPT-001
+    description: >-
+      `crctl report` 的 `active` 只统计状态不在终态集合内的 CR；`total` 与 `statusHistogram`
+      按 CR 编号去重，同一 CR 在 CR 目录与 `_history.yml` 同时出现时只计一次。
+    scenarios:
+      - id: SC-001
+        confidence: high
+        evidence: "proposal.yaml success_criteria[0]；why.problem 中 76/76 重合的实测"
+        given: >-
+          夹具工作区有 3 个 CR 目录（frontmatter 分别为 archived、withdrawn、archived），
+          3 个 id 全部同时登记在 `change-requests/_history.yml` 且 final-status 一致；tools 包
+          `dir-graph.yaml` 声明 `change-request-track.state_machine.terminal: [archived, rejected, withdrawn]`
+        when: "执行 `crctl report --workspace <ws>`"
+        then: "SHALL 返回 `active` 为 0、`total` 为 3"
+        and:
+          - "`archived` 为 3"
+          - "`statusHistogram` 为 `{archived: 2, withdrawn: 1}`"
+          - "`statusHistogram` 各状态计数之和等于 `total`"
+      - id: SC-002
+        confidence: high
+        evidence: "proposal.yaml success_criteria[1]"
+        given: >-
+          夹具含：目录 CR `developing`（不在 history）；目录 CR `archived` 且在 history；
+          目录 CR `rejected`（终态，不在 history）；仅 history 的 `CR-OLD`（final-status withdrawn）
+        when: "执行 `crctl report --workspace <ws>`"
+        then: "SHALL 返回 `active` 为 1（`active` 是计数，不输出逐条列表），且 `statusHistogram` 中唯一的非终态键为 `developing`"
+        and:
+          - "`total` 为 4"
+          - "`archived` 为 2"
+          - "`statusHistogram` 为 `{developing: 1, archived: 1, rejected: 1, withdrawn: 1}`"
+      - id: SC-007
+        confidence: high
+        evidence: "design.md D1；既有 `resolveTerminalForQuery` 的 history 优先判定"
+        given: "目录 `cr.md` frontmatter 为 `developing`，同一 id 在 `_history.yml` 中 final-status 为 `withdrawn`"
+        when: "执行 `crctl report --workspace <ws>`"
+        then: "SHALL 以 history 的 final-status 为准：`active` 为 0"
+        and:
+          - "`statusHistogram` 为 `{withdrawn: 1}`，不出现 `developing`"
+
+  - id: REQ-RPT-002
+    description: >-
+      `report` 的终态集合只取自 tools 包 `dir-graph.yaml#change-request-track.state_machine.terminal`；
+      取不到时命令硬失败，不猜、不回退。
+    scenarios:
+      - id: SC-003
+        confidence: high
+        evidence: "proposal.yaml success_criteria[2]；constraints 末条"
+        given: "tools 包 `dir-graph.yaml` 的 `state_machine` 不含 `terminal`，或 `terminal` 不是字符串数组"
+        when: "执行 `crctl report --workspace <ws>`"
+        then: "SHALL 以非零状态退出，`stderr.error.code` 为 `REPORT_TERMINAL_UNAVAILABLE`"
+        and:
+          - "stdout 不输出 `op: report` 报表"
+
+  - id: REQ-RPT-003
+    description: "既有 `report` 与 `report --period` 行为不回归：断言与输出字段保持不变。"
+    scenarios:
+      - id: SC-004
+        confidence: high
+        evidence: "proposal.yaml success_criteria[3]；constraints 中 archived/periodActivity/period/sla 不变"
+        given: "既有两条 `report` 用例逐字未改"
+        when: "运行整个 `crctl.test.mjs`（不加名称过滤）"
+        then: "SHALL 全部通过：`fail 0`，且通过数不少于 305（原有 301 + 新增 4）"
+        and:
+          - "`period`、`periodActivity`、`sla`、`archived` 的语义与旧实现一致"
+
+  - id: REQ-RPT-004
+    description: "对真实知识库工作区，在途数不再包含已归档 CR，总数不再重复计数。"
+    scenarios:
+      - id: SC-005
+        confidence: high
+        evidence: "proposal.yaml success_criteria[4]；why.problem 的实测数字"
+        given: "知识库主 checkout（76 个 CR 目录全部登记在 `_history.yml`）"
+        when: "执行 `crctl report --workspace '../AI First Platform'`"
+        then: "SHALL 返回 `active` 为 0"
+        and:
+          - "`total` 等于目录与 history 的不同编号数"
+          - "`statusHistogram` 各状态计数之和等于 `total`"
+
+  - id: REQ-RPT-005
+    description: "`cr-dashboard` 技能文档对 `report` 口径的描述与实现一致，且不内建终态枚举副本。"
+    scenarios:
+      - id: SC-006
+        confidence: medium
+        evidence: "proposal.yaml success_criteria[5]；what_changes C3"
+        given: "`skills/cr/cr-dashboard/SKILL.md` 的 Step 2 口径段"
+        when: "人工阅读该段"
+        then: "SHALL 明示终态不计入在途、重复登记不重复计数"
+        and:
+          - "终态来源指向 `dir-graph.yaml#change-request-track.state_machine.terminal`，不复制枚举"

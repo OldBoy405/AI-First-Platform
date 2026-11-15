@@ -1,0 +1,97 @@
+# crctl-report 的 Canonical CP：六个可执行检查点（每条 command 用例一个，不共用执行结果）。
+# TC-RPT-007（cr-dashboard 文字）是人工检查，不绑定 CP，见 test-plan.md 的证据计划。
+meta:
+  task_id: crctl-report
+  change_id: "2026-11-15-crctl-report-active-count"
+  created: "2026-11-15T11:52:00+08:00"
+  task_type: code
+  system: "crctl report 的在途数/直方图口径（Node CLI，只读）"
+  preconditions:
+    - "cwd 为 tools 业务根（evidence runner 的固定工作目录）；action 经平台默认 shell 执行，Windows 下解释器用反斜杠路径。"
+    - "只读：不修改任何文件、账本或状态；使用已核实的 ..\\stdd\\.venv\\Scripts\\python.exe，不安装依赖。"
+    - "action 只含 ASCII：用例标题里带 TCRPT001..004 令牌，断言解析 node --test 摘要的 pass/fail 计数与 report JSON 的字段值。"
+
+steps:
+  - id: CP-RPT-001
+    description: >-
+      REQ-RPT-001 / SC-001 / TC-RPT-001；confidence=high。
+      GIVEN 夹具中 3 个终态 CR 同时存在于目录与 _history.yml，tools 包声明 terminal；
+      WHEN 只运行标题含 TCRPT001 的用例；THEN SHALL 通过（该用例断言 active=0、total=3、直方图 {archived:2, withdrawn:1}）。
+    action: >-
+      node --test --test-name-pattern "TCRPT001" skills/shared/crctl/scripts/test/crctl.test.mjs 2>&1 | ..\stdd\.venv\Scripts\python.exe -B -X utf8 -c "import sys,re;t=sys.stdin.read();p=int(re.search('pass ([0-9]+)',t).group(1));f=int(re.search('fail ([0-9]+)',t).group(1));print('pass',p,'fail',f);assert f==0 and p==1;print('CP-RPT-001 PASS')"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "CP-RPT-001 PASS"
+
+  - id: CP-RPT-002
+    description: >-
+      REQ-RPT-001 / SC-002 / TC-RPT-002；confidence=high。
+      GIVEN 夹具混有非终态目录 CR、终态目录 CR、仅在 history 的 CR；
+      WHEN 只运行标题含 TCRPT002 的用例；THEN SHALL 通过（该用例断言 active=1、total=4、直方图四项各 1）。
+    action: >-
+      node --test --test-name-pattern "TCRPT002" skills/shared/crctl/scripts/test/crctl.test.mjs 2>&1 | ..\stdd\.venv\Scripts\python.exe -B -X utf8 -c "import sys,re;t=sys.stdin.read();p=int(re.search('pass ([0-9]+)',t).group(1));f=int(re.search('fail ([0-9]+)',t).group(1));print('pass',p,'fail',f);assert f==0 and p==1;print('CP-RPT-002 PASS')"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "CP-RPT-002 PASS"
+
+  - id: CP-RPT-003
+    description: >-
+      REQ-RPT-001 / SC-007 / TC-RPT-003；confidence=high。
+      GIVEN 目录 frontmatter 为 developing 而 history 记为 withdrawn；
+      WHEN 只运行标题含 TCRPT003 的用例；THEN SHALL 通过（该用例断言以 history 为准、active=0、直方图只有 withdrawn）。
+    action: >-
+      node --test --test-name-pattern "TCRPT003" skills/shared/crctl/scripts/test/crctl.test.mjs 2>&1 | ..\stdd\.venv\Scripts\python.exe -B -X utf8 -c "import sys,re;t=sys.stdin.read();p=int(re.search('pass ([0-9]+)',t).group(1));f=int(re.search('fail ([0-9]+)',t).group(1));print('pass',p,'fail',f);assert f==0 and p==1;print('CP-RPT-003 PASS')"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "CP-RPT-003 PASS"
+
+  - id: CP-RPT-004
+    description: >-
+      REQ-RPT-002 / SC-003 / TC-RPT-004；confidence=high。
+      GIVEN 配置侧 5 例（缺 terminal／非数组／空数组／含首尾空白／dir-graph 解析失败）与账本侧 5 例（history 重复 id／缺 final-status／顶层非数组／id 非字符串／cr.md status 非字符串）；
+      WHEN 只运行标题含 TCRPT004 的用例；THEN SHALL 通过（断言 status=1、各自错误码、无报表输出）。
+    action: >-
+      node --test --test-name-pattern "TCRPT004" skills/shared/crctl/scripts/test/crctl.test.mjs 2>&1 | ..\stdd\.venv\Scripts\python.exe -B -X utf8 -c "import sys,re;t=sys.stdin.read();p=int(re.search('pass ([0-9]+)',t).group(1));f=int(re.search('fail ([0-9]+)',t).group(1));print('pass',p,'fail',f);assert f==0 and p==1;print('CP-RPT-004 PASS')"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "CP-RPT-004 PASS"
+
+  - id: CP-RPT-005
+    description: >-
+      REQ-RPT-003 / SC-004 / TC-RPT-005；confidence=high。
+      GIVEN 既有 report 与 report --period 用例断言逐字未改；WHEN 运行整个 crctl.test.mjs；
+      THEN SHALL 全部通过：fail 为 0，通过数不少于 305（原有 301 + 新增 4）。
+    action: >-
+      node --test skills/shared/crctl/scripts/test/crctl.test.mjs 2>&1 | ..\stdd\.venv\Scripts\python.exe -B -X utf8 -c "import sys,re;t=sys.stdin.read();p=int(re.search('pass ([0-9]+)',t).group(1));f=int(re.search('fail ([0-9]+)',t).group(1));print('pass',p,'fail',f);assert f==0 and p>=305;print('CP-RPT-005 PASS')"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "CP-RPT-005 PASS"
+
+  - id: CP-RPT-006
+    description: >-
+      REQ-RPT-004 / SC-005 / TC-RPT-006；confidence=high。
+      GIVEN 知识库主 checkout 的 change-requests 目录与 _history.yml；
+      WHEN 运行 crctl report 并由独立脚本重算「目录 ∪ history 的不同编号数」；
+      THEN SHALL active 为 0、total 等于重算值、直方图计数之和也等于该值。
+    action: >-
+      node skills/shared/crctl/scripts/crctl.mjs report --workspace "../AI First Platform" | ..\stdd\.venv\Scripts\python.exe -B -X utf8 -c "import json,sys,yaml,pathlib;d=json.load(sys.stdin);kb=pathlib.Path('../AI First Platform/change-requests');ids={p.name for p in kb.iterdir() if p.name.startswith('CR-') and '.' not in p.name};h={e['id'] for e in yaml.safe_load((kb/'_history.yml').read_text(encoding='utf-8'))['history'] if e.get('id')};n=len(ids|h);print('active',d['active'],'total',d['total'],'expect_total',n,'hist_sum',sum(d['statusHistogram'].values()));assert d['active']==0 and d['total']==n and sum(d['statusHistogram'].values())==n;print('CP-RPT-006 PASS')"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "CP-RPT-006 PASS"
+
+rollback:
+  steps:
+    - "检查失败时只报告，不自动修改文件、账本或状态。"
+    - "需要撤销口径修改时，先取得授权，再依据实际差异定点逆向；禁止 reset／checkout／stash。"
