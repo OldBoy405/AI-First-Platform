@@ -1,18 +1,20 @@
 # Spec: authorized-runner
 
-> Change: 2026-10-22-aifi-45-authorized-execution | Auto-generated Human View
+> Change: 2026-10-22-aifi-45-authorized-execution（最新修订并入 2026-11-13-aifi-45-real-execution-closure） | Auto-generated Human View
 
 ## Requirements
+
+> 修订 2026-11-15（change 2026-11-13-aifi-45-real-execution-closure）：SC-RUN-001 收紧为 requirement/architecture 两类 run，SC-RUN-006 的撤销分支改为「不派发、不推进、admission=HEAD_REJECTED、历史行不改写」，SC-RUN-007 的范围收敛到有生产启动入口的 run 类型。其余分支与条款保持原文。
 
 ### Requirement: 实际认证入口绑定充分授权，ACK与已提交业务消费分离。
 
 #### Scenario: SC-RUN-001
 
-- **GIVEN** 认证owner/admin原请求包含完整授权包，且新policy配套已就绪。
-- **WHEN** 通过真实project入口启动普通变更并进入后续阶段。
-- **THEN** SHALL 绑定原授权并经crctl适用裁决自动执行，不要求重复阶段人类确认。
-- **AND** 完整原请求bytes与资源选择冻结；已认证workspace/CR/issue/project与所选资源由实际DB校验，不从body替代。
-- **AND** 初始已签repository_bindings和coordinator_binding固定目标仓/CR控制根UUID及身份版本；同原请求返回原包，不按可变资源行重新签发。
+- **GIVEN** 认证 owner/admin 原请求包含完整授权包，且新 policy 配套已就绪。
+- **WHEN** 通过真实认证入口启动 requirement 或 architecture 类普通变更，并由真实 daemon 与真实 agent 执行其节点。
+- **THEN** SHALL 绑定原授权并经 crctl 适用裁决自动推进，不要求重复阶段人类确认。
+- **AND** 原 SC-RUN-001 的其余 AND 条款（原请求字节与资源选择冻结、实际数据库校验、初始已签 repository_bindings 与 coordinator_binding、同原请求返回原包）保持不变。
+- **AND** 范围收敛：开发（code）与回写阶段在生产中没有 run 启动入口，不在本场景保证内。本 change 的真实运行证据只覆盖 architecture；requirement run 的真实运行仅在 Gate 2 另选时才产生，否则只有静态节点表与组件测试。
 
 #### Scenario: SC-RUN-002
 
@@ -55,18 +57,21 @@
 #### Scenario: SC-RUN-006
 
 - **GIVEN** T拒绝新准入或查询故障；另有已花完最后名额的有效receipt、撤销revision及签名resume分支。
-- **WHEN** Runner处理新修复、原修复验证恢复或继续请求。
+- **WHEN** Runner处理新修复、原修复验证恢复或继续请求；撤销情况下经下一次认领、节点完成或 ResumeActiveRuns 发现路径处理，包括服务重启之后。
 - **THEN** SHALL 拒绝新的未准入修复但允许最后已准入修复的测试、独立验证和PASS交付，不能自算预算或伪装首次实施。
-- **AND** 撤销时未启动任务停止，已运行只允许有界安全收尾且不返还消耗。
+- **AND** 撤销时未启动任务停止，已运行只允许有界安全收尾且不返还消耗（原条款保持）。
+- **AND** 撤销后的停止 SHALL 由本 change 保证：不派发新的节点任务、不推进节点，等待原因可被查询为 admission（HEAD_REJECTED）；已有历史行（CR 更新、审批记录、任务、回执、effect）SHALL NOT 被删除或改写，run 不被伪造成 completed 或 failed。
 - **AND** 无进展后仅适用T已提交resume receipt可恢复，不以ACK或模糊继续代替。
+- **AND** 原 SC-RUN-006 的其余分支（新准入修复的测试与交付、已运行任务有界收尾）不在本 change 保证内，保持原文，列后继登记。
 
 ### Requirement: 唯一Runner必须接通实际四阶段入口、事件、启动发现和失败恢复。
 
 #### Scenario: SC-RUN-007
 
-- **GIVEN** 新policy普通已授权变更依次进入需求、设计、开发及回写，服务在阶段交接处重启。
-- **WHEN** 经真实认证入口、统一Reconcile、periodic发现和真实TaskService驱动。
-- **THEN** SHALL 在每阶段按当前模板与权限完成唯一派发和恢复，不依赖人工命令或直接调用walker。
+- **GIVEN** 新 policy 的普通已授权变更的 architecture run（或 requirement run）推进到节点交接处，服务在该处重启。
+- **WHEN** 经真实认证入口、统一 Reconcile、periodic 发现和真实 TaskService 驱动。
+- **THEN** SHALL 每个节点恰有一个任务（无重复、无遗漏），已推进的节点不回退，不依赖人工命令或直接调用 walker。
+- **AND** 范围收敛：开发（code）与回写阶段在生产中无启动入口，ResumeActiveRuns 只扫描 requirement 与 architecture；原 SC-RUN-007 对这两个阶段的要求不在本 change 满足，不得宣称。
 
 #### Scenario: SC-RUN-008
 

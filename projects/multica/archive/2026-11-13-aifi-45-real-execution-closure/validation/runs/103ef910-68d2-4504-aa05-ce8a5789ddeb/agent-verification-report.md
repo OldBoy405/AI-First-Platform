@@ -1,0 +1,15 @@
+# Agent Verification Report
+
+- "CP-REC-001": PASS (exit_code=0)
+- "CP-REC-002": PASS (exit_code=0)
+- "CP-REC-003": PASS (exit_code=0)
+- "CP-REC-004": FAIL (exit_code=1)
+- "CP-REC-005": FAIL (exit_code=2)
+- "CP-REC-006": PASS (exit_code=0)
+- "CP-REC-007": PASS (exit_code=0)
+- "CP-REC-008": FAIL (exit_code=1)
+- "CP-REC-009": PASS (exit_code=0)
+- "CP-REC-010": PASS (exit_code=0)
+- "CP-WSD-005": PASS (exit_code=0)
+- "CP-WSD-006": PASS (exit_code=0)
+- "CP-WSD-007": PASS (exit_code=0)

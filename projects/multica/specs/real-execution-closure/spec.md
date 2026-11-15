@@ -1,0 +1,95 @@
+# Spec: real-execution-closure
+
+> Change: 2026-11-13-aifi-45-real-execution-closure | Auto-generated Human View
+
+## Requirements
+
+### Requirement: 已授权节点的执行证据由平台生产者在 agent 启动前产生，不依赖 agent 恰好走到一次门控写；不放宽已归档的锚点合同与「一 generation 一条回执」。采用方案 D1-B（G2-1 已确认）；授权节点的信任根由 daemon 注入（SC-REC-008）；strict 的 comment 触发 source 任务在启动前同样取得自己的 consumption（SC-REC-009）；节点 authority 事实由 tools 的 workspace inspect 提供（SC-REC-010）。
+
+#### Scenario: SC-REC-001
+
+- **GIVEN** daemon 认领一个节点任务，其 claim 带合同值 authorized-execution/v1、空值（legacy）或未知的非空值。
+- **WHEN** daemon 准备启动该任务的 agent。
+- **THEN** SHALL 对 authorized 节点在启动 agent 之前，经现有 strict 路径取得并持久化该任务当前 generation 的唯一 consumption 回执及该任务自身的 effect，之后才启动 agent；run 结束时 SHALL NOT 再次消费。任一前置步骤失败 SHALL 不启动 agent；未知的非空合同值 SHALL 拒绝启动；空合同值 SHALL 走原路径且行为不变。
+- **AND** 该回执与 effect 的 request id 属于该节点任务，不属于 source 任务，也不借用他任务的消费事实。
+- **AND** 同 generation 重放不新增回执或 effect（沿用 consumption-effect 的 changed=false 语义）。
+- **AND** 同一 workspace 内，不同 generation 的本地预消费 SHALL 各用自己的信任根（含 source 任务与重新派发的 generation），传给 crctl 的 --trust-root 与注入节点 agent 的 CRCTL_EXECUTION_TRUST_ROOT SHALL 是该 generation 自己的根；不改 tools 的本地 receipt 键与合同。
+
+#### Scenario: SC-REC-002
+
+- **GIVEN** 同一 workspace/CR 的节点任务 claim：(a) 无初始 execution approve 记录；(b) 有初始记录且当前 head 仍为 approve；(c) 有初始记录但当前 head 已被撤销。
+- **WHEN** server 按数据库校验 pipeline claim 并生成 claim 响应。
+- **THEN** SHALL 对 (a) 返回空合同值，对 (b) 和 (c) 返回 authorized-execution/v1；(c) SHALL NOT 因 head 非 approve 而降级为 legacy。
+- **AND** 合同值只由数据库中的审批记录推出，不取自请求 body、issue 评论或 daemon 自报。
+
+#### Scenario: SC-REC-003
+
+- **GIVEN** 已成功预消费的 authorized 节点 run 的 binding endpoint；另有 source endpoint、legacy 节点 endpoint 和未成功预消费的节点 endpoint。
+- **WHEN** crctl 依次提交 challenge：同字节重放、第二个不同 challenge、第三个不同 challenge。
+- **THEN** SHALL 对 authorized 且已预消费的节点 endpoint 至多接受 2 个不同 challenge，相同字节幂等重放，第三个不同 challenge 返回 409；其余三种 endpoint SHALL 仍只接受 1 个 challenge。
+- **AND** 每个 challenge 仍各自完整校验（Ed25519 签名、current head、manifest、task/attempt/generation、TSID 与 256 上限）。
+- **AND** 接受 advance proof SHALL NOT 产生第二次平台 consumption。
+- **AND** 本场景明示修订归档合同 SC-AUTH-007 对 authorized 节点 endpoint 的单 challenge 上限；签名 schema、签发主体、其余 endpoint 的合同不变。
+
+#### Scenario: SC-REC-008
+
+- **GIVEN** daemon 为一个 workspace 打开了 daemon 专属信任库（store.Root），并认领了节点任务：(a) 合同值为 authorized-execution/v1 且已成功预消费；(b) 合同值为空（legacy）。agent 的 custom_env 可能配置了同名变量。
+- **WHEN** daemon 为该任务组装 agent 子进程环境。
+- **THEN** SHALL 仅对 (a) 在 agent 环境中设置 CRCTL_EXECUTION_TRUST_ROOT，其值是该任务 grant 所安装的信任库根（即 daemon 自己调用 crctl 时传入的 --trust-root 实参）；(b) 的环境 SHALL NOT 含该变量，即使 custom_env 配置了它；(a) 中 custom_env 的同名配置 SHALL NOT 改变注入值。
+- **AND** daemon 进程自身环境 SHALL NOT 被写入或修改；一个任务的注入 SHALL NOT 出现在另一个任务的环境中。
+- **AND** 注入只定位信任根，SHALL NOT 被当作授权依据：授权依据仍是平台侧该任务当前 generation 的预消费回执，与 agent 的 crctl 本地准入结果无关；不新增 agent 能力，不声称隔离。
+- **AND** SHALL NOT 在 daemon 探测 crctl 能力或增加握手；发布顺序为 tools 先于 daemon 注入。旧版 crctl 不认该变量时，授权节点的 advance 失败关闭、节点不推进。
+- **AND** agent 读不到该信任根（权限或沙箱）时的失败关闭、不回退 .crctl，由成对 tools change 断言，本场景不重复；在真实运行 A 中观察，读不到即按止损点处理。
+
+#### Scenario: SC-REC-009
+
+- **GIVEN** daemon 认领一个 comment 触发、没有 pipeline 载体的任务，其 trigger comment 声明 authorized-execution/v1；CR 身份来自 comment 声明、任务自己的 CR 关联或 issue 上唯一的 CR 关联。
+- **WHEN** daemon 准备启动该 source 任务的 agent。
+- **THEN** SHALL 在启动 agent 之前，用与节点任务相同的链路（信任库、授权安装、current head 与 lineage/digest/revision 核对、带完整元组比对的 claim、consumeClaimedExecution）取得并持久化该 source 任务当前 generation 的唯一 consumption 回执及其自身 effect，之后才启动 agent；任一步失败或 CR 身份无法唯一确定（无声明无关联、issue 多个关联、声明与关联冲突）SHALL 不启动 agent 并报 EXECUTION_BINDING_UNAVAILABLE 或对应的既有错误码，SHALL NOT 猜测 CR。
+- **AND** source 的 CR 号与 CR 根只作为本次准备的局部值传递，SHALL NOT 写入 Task.Pipeline* 字段，SHALL NOT 设置 ExecutionPreconsumed 或 ExecutionTrustRoot，SHALL NOT 为其打开 binding endpoint，run 结束 SHALL NOT 再次消费。
+- **AND** 预检使用的 CR 根 SHALL 与该任务运行时 resolveTaskWorkspaceBinding 得到的根相同。
+- **AND** 无 strict 声明的 legacy 任务与已有的节点任务路径行为不变；同 generation 重放不新增回执或 effect。
+
+#### Scenario: SC-REC-010
+
+- **GIVEN** 一个带有效 target-spec-id（cr.md 与 _backlog.yml 一致）与有效 target-version 的 CR 工作区，由 daemon 固定来源的 crctl 读取其 authority 事实。
+- **WHEN** daemon 对 pipeline 节点任务调用 crctl workspace inspect --detail。
+- **THEN** SHALL 该输出含 targetSpecId 与 targetVersion，使 inspectPipelineAuthority 通过；缺失、不一致或 unassigned 时 SHALL 继续以既有错误码失败关闭，不启动 agent。
+- **AND** 补字段只增不改：既有输出键、类型与值不变；daemon 对这两个键的读法不变。
+- **AND** 本场景没有 multica 侧单独的测试：字段与金样本由 tools 侧 TC-NTR-010/011 测试，节点真实越过 authority 事实由 TC-REC-004 观察。
+
+### Requirement: 真实 daemon 与真实 agent 在获授权的一次性环境中完成一次 architecture run：授权来自真实认证入口，每个被推进的 agent 节点都有自己的回执与 effect，run 停在架构人工门。命令型检查，失败即非零退出。
+
+#### Scenario: SC-REC-004
+
+- **GIVEN** 获授权一次性环境中的真实 backend、真实 daemon、真实 agent；一个已处于 requirement-approved 的新 CR；agent 工作区没有预置 execution grant。
+- **WHEN** 真实认证的 owner/admin 请求授权路由，daemon 用真实 task token 安装并消费该授权，独立 T 从原请求字节重提取来源；再对同一授权改一个来源字段、不改签名后重提取。
+- **THEN** SHALL 重提取结果与原签发一致，改字段后 SHALL 拒签。授权 SHALL 来自真实认证请求，SHALL NOT 来自 fixture 签名或预置 grant。
+
+#### Scenario: SC-REC-005
+
+- **GIVEN** 同一环境与同一授权，经生产入口 StartArchitecture 启动 architecture run。
+- **WHEN** 编写架构设计（writer）与架构设计评审（reviewer）两个 agent 节点由真实 agent 依次执行，run 推进到架构人工门。
+- **THEN** SHALL 每个被推进的 agent 节点在推进前都有自己当前 generation 的唯一 consumption 回执与自身 effect，SHALL NOT 借用 source 或他任务的消费事实；writer 的两次 advance 只对应一条回执，reviewer 零次写入同样有回执；run SHALL 停在架构人工门，人工门不创建 agent 任务。
+- **AND** 独立数据库查询得到的 command、verdict、settlement 的 request id 等于对应节点任务的 id。
+- **AND** CR 状态到达 tech-design-review-pending。
+
+### Requirement: 真实运行驱动在所有路径释放自建资源，缺授权时在产生任何资源或模型请求之前拒绝，阶段失败时停在止损点。
+
+#### Scenario: SC-REC-006
+
+- **GIVEN** 真实运行驱动在以下情形之一下启动：缺少授权配置；setup 中途失败；运行中超时或被终止；某一阶段断言失败。
+- **WHEN** 驱动执行。
+- **THEN** SHALL 缺配置时在创建任何资源或发起任何模型请求之前拒绝并非零退出；其余每种情形 SHALL 释放本次登记的全部资源并输出 remaining=0；阶段失败 SHALL 非零退出、输出失败的阶段、节点与原因，且 SHALL NOT 继续后续阶段或宣称后续保证。
+- **AND** 只按 nonce 与完整 ID 清理，SHALL NOT 触碰 multica-postgres、multica-backend 或未知资源；secret 不写入日志。
+- **AND** 模型 SHALL 由配置显式指定；驱动 SHALL 拒绝空模型和 Fable 系列模型；未知的 scenario 或参数 SHALL 拒绝并非零退出，不静默走默认分支。
+
+### Requirement: 既有测试不回归，已转绿的探针不再作为已知失败被排除。
+
+#### Scenario: SC-REC-007
+
+- **GIVEN** 本 change 的全部代码改动完成。
+- **WHEN** 在 run-selection 自建的一次性库上运行 selections.json 的全部选择。
+- **THEN** SHALL 全部选择 0 FAIL、0 skip、至少一个叶子 PASS，并释放实例（remaining=0）。
+- **AND** TestWorkspaceDeletionRefusesNewCommand 转绿后，test-ownership 中对它的已知失败排除 SHALL 被移除，使其成为普通 CI 回归。
+- **AND** diff 不含无关改动，不新增第二套账本、journal 或迁移历史回执。

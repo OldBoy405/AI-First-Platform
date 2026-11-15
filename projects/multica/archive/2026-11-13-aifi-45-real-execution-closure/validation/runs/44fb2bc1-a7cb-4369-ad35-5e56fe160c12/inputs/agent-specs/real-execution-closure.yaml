@@ -1,0 +1,123 @@
+# agent_spec.yaml — Agent 验证规格（Canonical YAML）
+
+meta:
+  task_id: real-execution-closure
+  change_id: 2026-11-13-aifi-45-real-execution-closure
+  created: '2026-11-13'
+  task_type: code
+  system: multica daemon/server 的节点证据生产与撤销停止、真实运行驱动 scripts/aifi45-real-run、隔离 Postgres
+  preconditions:
+    - 组件检查（CP-REC-001/002/003/006/008/009）经 scripts/aifi45-disposable/run-selection.mjs 的 --only 运行 selections.json 中同名选择；每次由 supervisor 自建并释放一次性实例，禁止外部 admin 连接、共享库与 multica-postgres、multica-backend、aifi45-disposable 等非本次创建的资源。选择要求退出 0、skip 为 0、fail 为 0、至少一个叶子 PASS。
+    - 真实运行检查（CP-REC-004/005）由 stdd agent verify --cp 直接执行，其运行本身即证据运行，不另有预跑；总次数计入 architecture run 上限 3 次。它们需要 BUILD 前用户逐项授权真实模型次数与费用（非 Fable）、podman、一次性数据库与 backend/daemon；授权记在 scripts/aifi45-real-run/.local/run-config.json（不入库），缺失时驱动在创建任何资源前拒绝并非零退出。
+    - CP-REC-007 需要 podman 授权但不发起模型请求。
+    - 零匹配、skip、名称不存在、阶段 INCONCLUSIVE 都不算通过。
+rollback:
+  steps:
+    - 只释放本轮 supervisor 或驱动按 nonce 与完整 ID 创建的一次性实例、容器、网络与临时目录；不执行共享库 cleanup，不按名称模式清理。
+steps:
+  - id: CP-REC-001
+    description: SC-REC-001 / authorized 节点启动前一次消费、run 结束不重复；前置失败不启动 agent；未知合同值拒绝；空值走原路径。
+    action: node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only rec-001
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'PASS rec-001 '
+  - id: CP-REC-002
+    description: SC-REC-002 / claim 合同值只由数据库初始审批记录推出；撤销后不降级 legacy。
+    action: node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only rec-002
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'PASS rec-002 '
+  - id: CP-REC-003
+    description: SC-REC-003 / authorized 且已预消费节点 endpoint 至多 2 个不同 challenge、同字节幂等、第三个 409；其余 endpoint 仍为 1。
+    action: node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only rec-003
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'PASS rec-003 '
+  - id: CP-REC-004
+    description: SC-REC-004 / SC-REC-005 / SC-RUN-001 / SC-RUN-007 真实 architecture run A：真实来源与篡改拒签、writer 双 advance 一条回执、reviewer 零写有回执、到人工门、节点交接处重启不重复。
+    action: node scripts/aifi45-real-run/run.mjs --scenario architecture-main --config scripts/aifi45-real-run/.local/run-config.json
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'PASS real-run source '
+      - type: stdout_contains
+        expected: 'PASS real-run source-tamper-rejected '
+      - type: stdout_contains
+        expected: 'PASS real-run writer-two-advances-one-receipt '
+      - type: stdout_contains
+        expected: 'PASS real-run review-zero-advance-own-effect '
+      - type: stdout_contains
+        expected: 'PASS real-run human-gate '
+      - type: stdout_contains
+        expected: 'PASS real-run restart-dedup '
+      - type: stdout_contains
+        expected: 'PASS real-run cleanup remaining=0'
+  - id: CP-REC-005
+    description: SC-RUN-006 / 真实 run B：writer 运行中撤销授权，之后 reviewer 不派发、节点不推进，重启后保持；撤销前节点已 passed 则 INCONCLUSIVE 非零退出。
+    action: node scripts/aifi45-real-run/run.mjs --scenario architecture-revoke --config scripts/aifi45-real-run/.local/run-config.json
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'PASS real-run revoke-stop '
+      - type: stdout_contains
+        expected: 'PASS real-run restart-revoke-stop '
+      - type: stdout_contains
+        expected: 'PASS real-run cleanup remaining=0'
+  - id: CP-REC-006
+    description: SC-RUN-006 / 经真实路由撤销后，ResumeActiveRuns 与新 Runner 实例都不派发、不推进，历史行不变。
+    action: node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only rec-revoke
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'PASS rec-revoke '
+  - id: CP-REC-007
+    description: SC-REC-006 / 驱动清理冒烟（无模型）：缺配置拒绝、未知参数拒绝、setup 中途失败、运行中超时、阶段失败，均 remaining=0 且停在失败阶段。
+    action: node scripts/aifi45-real-run/run.mjs --scenario cleanup-smoke
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'PASS real-run refuse-without-config '
+      - type: stdout_contains
+        expected: 'PASS real-run cleanup-setup-failure remaining=0'
+      - type: stdout_contains
+        expected: 'PASS real-run cleanup-timeout remaining=0'
+      - type: stdout_contains
+        expected: 'PASS real-run stop-on-stage-failure '
+      - type: stdout_contains
+        expected: 'PASS real-run reject-unknown-argument '
+  - id: CP-REC-008
+    description: SC-REC-007 / 既有 selections 全组回归（含已转绿的 command 探针与 33 处迁移后的 fixture）。
+    action: node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'PASS handler-wsd-no-recreate-command '
+      - type: stdout_contains
+        expected: 'remaining=0'
+  - id: CP-REC-009
+    description: SC-REC-008 / authorized 节点的 agent 环境含 CRCTL_EXECUTION_TRUST_ROOT（值为该任务 grant 所在信任库根），legacy 节点不含，custom_env 无法覆盖；daemon 进程环境不变。
+    action: node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only rec-009
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'PASS rec-009 '
+  - id: CP-REC-010
+    description: SC-REC-009 / comment 触发的 strict source 任务在启动前取得自己的 consumption（局部范围，不写 Pipeline*、不设 ExecutionPreconsumed/信任根、无 endpoint）；CR 身份不唯一或预检失败时不启动 agent。
+    action: node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only rec-010
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'PASS rec-010 '

@@ -1,8 +1,10 @@
 # Spec: workspace-delete-execution-tables
 
-> Change: 2026-11-12-fork-ci-test-evidence-trust | Auto-generated Human View
+> Change: 2026-11-12-fork-ci-test-evidence-trust（最新修订并入 2026-11-13-aifi-45-real-execution-closure） | Auto-generated Human View
 
 ## Requirements
+
+> 修订 2026-11-15（change 2026-11-13-aifi-45-real-execution-closure）：SC-WSD-005 取代「command 半句保持红灯」的条款，SC-WSD-006 新增删除与写入并发的交错保证及 workspace 行锁强度。
 
 ### Requirement: 19 张 cr_execution_* 表按 D2 策略登记并有行为测试；删除路径只删 notice 与 dispatch_root，保留类保持不变；不得仅改清单。
 
@@ -35,9 +37,22 @@
 
 #### Scenario: SC-WSD-005
 
-- **GIVEN** workspace A 已删除、其 contract_selection 行按保留策略仍存在（D2「命令禁新建」半句），
-- **WHEN** 经现有创建路径为该 selection 新建 reservation 或 command。
-- **THEN** reservation 半句 SHALL 被拒绝，本 change SHALL 在 CreateReservationTx 内加 workspace 存在性检查使其成立；command 半句经探针实测当前代码放行，按 U3 用户裁定（R5）不在本 change 内修复，SHALL 保持探针断言原样（红灯即为已声明的发现），SHALL 登记为可找回的已知失败并指向后继议题，不得静默放宽断言、不得改触发器、不得把红灯洗成绿灯。
-- **AND** 本 change SHALL NOT 实现 command 与 cursor 的收敛转移。
-- **AND** 两个半句 SHALL 各自独立成测试函数，使 reservation 半句可独立绿、command 半句可独立红。
-- **AND** command 半句的登记 SHALL 能被 test-ownership check 与归档后的基线规格找回。
+- **GIVEN** workspace A 已删除，其 contract_selection 行按保留策略仍存在；生产消费路径使用的是由 workspace 与 CR 派生、没有 selection 行的 lineage。
+- **WHEN** 经现有创建路径为该 workspace 新建 reservation，或经 ApplyControlCommandTx（包含生产消费入口）新建 command。
+- **THEN** SHALL 两半句都被拒绝；command 半句由已声明的红灯转为满足，TestWorkspaceDeletionRefusesNewCommand 的断言 SHALL NOT 放宽、改名或删除。
+- **AND** ApplyControlCommandTx 的 workspace 归属 SHALL 由调用方的已认证 workspace 提供，SHALL NOT 由 ReservationID 反推（生产中它是消费回执 id）；不改命令签名与 schema。
+- **AND** SHALL NOT 实现 command 与 cursor 的收敛转移，不删除保留的历史行。
+- **AND** reservation 半句与 command 半句仍各自独立成测试函数。
+- **AND** ApplyControlCommandTx 收到已删除或不存在的 workspace id SHALL 以 ErrReservationWorkspaceGone 拒绝；未提供 WorkspaceID SHALL 以 ErrControlStoreInvalid 拒绝。
+- **AND** 本场景取代原 SC-WSD-005 中「command 半句保持红灯、登记为已知失败」的条款；红灯登记的取回点保留在归档中，不改写。
+
+#### Scenario: SC-WSD-006
+
+- **GIVEN** reservation 或 command 的写入与同一 workspace 的删除并发。
+- **WHEN** 分别取两种交错：写入先取得 workspace 锁，删除先取得 workspace 锁。
+- **THEN** SHALL 删除之后不留下新的 reservation、command、cursor、verdict、settlement 行：写入先到则删除等待写入提交，删除先到则写入得到 no-row 并回滚。
+- **AND** 加锁顺序固定为 workspace → claim → head → lineage → cursor，不出现反序死锁。
+- **AND** 探针不用固定 sleep 决定先后，等待 DB 锁状态须有 deadline；重复 reservation 的既有幂等行为不变。
+- **AND** 保留证据与消费回执契约不变；不新增外键、级联或后台补偿。
+- **AND** 写入侧对 workspace 行只取 FOR KEY SHARE：对该行的 FOR UPDATE（删除）SHALL 被阻塞，普通 UPDATE（如 issue_counter 递增）SHALL NOT 被阻塞。
+- **AND** 生产消费入口 SHALL 在 claim 与 head 加锁之前持有该锁；该顺序由生产 handler 保证并被独立测试，不只由 store 函数保证。

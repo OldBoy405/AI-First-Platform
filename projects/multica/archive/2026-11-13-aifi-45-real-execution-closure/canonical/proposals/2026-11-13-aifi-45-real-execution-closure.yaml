@@ -1,0 +1,173 @@
+# 2026-11-13-aifi-45-real-execution-closure.yaml — Canonical Proposal (YAML-first, V2.9)
+# AI 起草、AI 修改、AI 消费。Human View 由 `stdd canon generate` 生成。
+
+meta:
+  change_id: "2026-11-13-aifi-45-real-execution-closure"
+  title: "AIFI-45：真实 daemon+agent 授权执行闭环（节点证据、受控停止、删除后终态安全）"
+  created: "2026-11-13T19:54:14"
+  status: draft
+  version: "2.9"
+
+why:
+  problem: |
+    AIFI-45 的准入、签发、发现、一次性库入口都已在组件级交付，但「一个充分授权的新变更，经真实 daemon 和
+    真实 agent，能产生节点回执并被推进」从未被真实运行证明。admission-task-binding（2026-11-11，已归档）
+    把完成类动作锚在节点自己的任务上，并在报告里把「真实 daemon+agent 跑一次架构 run」列为未验证的上线前置；
+    其 design 称节点证据的生产者修复「属于 daemon/T 的后继 change」，且承认无法从服务端代码证明生产中的节点
+    agent 一定会请求 binding proof（永久等待是已接受的 fail-closed 风险，不是已验证的发生率）。本变更就是该后继。
+
+    本会话只读核对得到的事实（读代码与记录得出，均未运行）：
+    1) 节点证据的生产链：daemon 对带 CR 的 run 在环境里放一个单次 endpoint（MULTICA_EXECUTION_BINDING_ENDPOINT），
+       run 结束时仅当该 endpoint 实际签出过 challenge 才写 consumption 回执（daemon.go 约 8765–8777；
+       execution_binding_endpoint.go）。唯一的请求方是 crctl 的 requestExecutionBinding，且只经
+       requireControlAdmission 调用，即只有 advance / repair-admit / repair-resume / authorization-bind /
+       register / archive 这些控制写会触发（control-admission.mjs:94，crctl.mjs 五个调用点）。
+    2) 节点注册表提示词直接调用的 crctl 只有只读的 workspace inspect 与 next；控制写由节点 skill 内部的
+       crctl advance 触发，且有的 skill 在某些状态下会跳过 advance（例如 write-tech-design 在 status 已为
+       tech-designing 时直接续写）。因此回执是否产生取决于该节点 run 是否恰好走到一次门控 advance —— 假设 H1。
+    3) endpoint 是单次一证：第一个 challenge 获胜，同一 challenge 可重试，不同 challenge 返回 409
+       （claim()）；challenge 含每次随机的 32 字节。因此若同一 run 内出现第二次门控 advance，它取不到证明 ——
+       假设 H2。目前没有例证：write-dev-tasks 的 split 与 finalize 是互斥模式、各为独立节点，单次执行只有一次
+       advance；是否存在其他节点会在一个 run 内做多次门控写，需逐节点核对，核对不到则 H2 作废。
+       H1/H2 在现有三份归档设计里都没有记载；均须先由本地探针回答，再谈方案。
+    4) 生产中只有两个 run 启动入口：StartArchitecture（runner.go:1924）与 StartRequirement
+       （runner_requirement_entry.go:362）；周期发现 ResumeActiveRuns（runner.go:1825）按 admission-task-binding
+       的核查只覆盖这两类（复核：只调 StartupScan 与 StartupScanRequirement）。没有 code 类 run 的生产启动或派发
+       入口：gate 投影会按 CR 状态为 code-implementation 建 run 行（gate_projection.go、crsync.go），但不派发任务，
+       ReconcileCode（runner_code.go）没有非测试调用方。所以 SC-RUN-007 所说的「开发、回写」阶段在生产中现有
+       入口无法推进；M008（merge 效果恢复）的真实恢复入口依赖回写阶段，随之不可达。
+    5) 删除 workspace 后：reservation 顺序路径已拒绝（fork-ci 变更 R5），command 半句是用户裁定保留的红灯
+       （ADJ-017）；根因是 ApplyControlCommandTx 唯一的生产调用方把消费回执 id 当作 ReservationID 传入
+       （execution_control_store_state.go:148），照 reservation 的做法加查找会直接断生产路径，需要另一套边界；
+       reservation 的并发窗口也未处理。
+    6) 登记状态：M007（五项合同裁定）、M008（可信 no-effect 与重新准入）、M010（跨仓投递身份）均为
+       successor_change、resolved:false；M008 条款已批准，实现与证据未完成。
+
+    已完成、本变更复用不重做：准入按任务+generation 绑定（23 个选择 292 PASS）、consumption effect 签发
+    （M005）、信任锚链 TAC 系列与 Linux 公钥隔离、周期发现与重启去重（组件级）、一次性库 supervisor。
+  motivation: |
+    不先证明「节点回执在真实运行里确实产生」，后续任何停止、恢复、投递身份的合同都建立在一个未验证的前提上；
+    若它不成立，run 会在首个节点完成处永久等待，其余工作都没有意义。所以本变更以真实运行为主线，并把它
+    设为止损点：首次真实运行失败时，只修回执生产，其余保证重新取舍。
+
+what_changes:
+  - id: C1
+    description: "先用不带模型的本地探针在一次性库内回答 H1/H2：逐节点列出（需求、架构两条 run）会走几次门控控制写；单次一证 endpoint 对同 run 第二个不同 challenge 的实际行为。结论写入 design 的已回答事实，再据此在 SPEC 阶段裁定节点证据的生产方式（技能侧保证每节点恰一次门控写，或 daemon 侧为节点任务自取证明）。不预选方案，不放宽验证方（沿用 admission-task-binding Q1：完成类动作仍锚在节点自有任务）。"
+    type: new
+  - id: C2
+    description: "按 C1 裁定的方案补齐节点证据的生产者，使节点任务在推进前有自己当前 generation 的 consumption 回执与自身 effect；复用既有准入、签发、发现入口，不新增 journal、outbox 或第二套账本。"
+    type: modified
+  - id: C3
+    description: "真实运行验证：在获授权的一次性环境中，以真实认证入口签发的授权，经真实 daemon+真实 agent 跑 architecture run（需求 run 视成本经 Gate 2 决定是否同跑），含节点交接处一次重启。"
+    type: new
+  - id: C4
+    description: "受控停止：真实运行中撤销授权后，run 不再派发新节点任务、不推进，状态可查询且重启后保持；不删历史。RUN-006 的「额度用尽后最后已准入修复可完成」分支是否纳入见待裁定 Q5。"
+    type: modified
+  - id: C5
+    description: "workspace 删除后的终态安全：为 command 创建加 workspace 边界且不破坏消费回执契约，使 TestWorkspaceDeletionRefusesNewCommand 由红转绿（断言不放宽）；处理 reservation 创建与 workspace 删除的并发窗口。不含 command/cursor 收敛转移，不删保留的历史证据。"
+    type: modified
+  - id: C6
+    description: "按 CUSTOM.md 现行结构登记定制；全组既有 selections 在一次性库上回归；STDD 追溯用 change id，不编造 CR 编号；若触及 daemon.go，顺带校正 recordConsumptionAfterDelivery 的陈旧注释（注释称生产为 false，New() 实际设为 true）。"
+    type: modified
+
+capabilities:
+  new:
+    - name: "real-execution-closure"
+      description: "充分授权的新变更经真实 daemon+agent：授权来源可核实、节点证据由生产者产生、推进由发现路径驱动、重启不重复、撤销后不推进；节点证据的生产方式在本变更内裁定。"
+  modified:
+    - name: "authorized-runner"
+      description: "SC-RUN-001 的真实入口、SC-RUN-007 的真实发现与重启恢复范围收敛到 requirement 与 architecture 两类 run；SC-RUN-006 取撤销后不推进的最小闭合，其余分支见 Q5。"
+    - name: "workspace-delete-execution-tables"
+      description: "SC-WSD-005 的 command 半句由已声明红灯转为满足，并补 reservation 并发窗口。"
+
+constraints:
+  - "UNDERSTAND 只到 Gate 1：不进入 SPEC，不改业务仓代码；Gate 1 确认不等于授权真实模型调用、数据库、隔离环境、凭据、提交、推送或部署，这些各自授权。"
+  - "真实模型调用先确认次数和费用；不使用 Fable 模型发起请求（用户既有偏好）；预期 architecture run 上限见 Q6。"
+  - "数据库只用 scripts/aifi45-disposable 自建、自释放的一次性实例；不操作 multica-postgres、multica-backend、旧 HOLD 库或任何未核实归属的容器。本变更需要自己的资源授权，fork-ci 变更的 U5 授权不延续。"
+  - "子代理委派遵循 STDD 分层：`stdd config models --format json` 为准（strong=GB-JP/kimi-k3.1-pro:max，balanced=GB-JP/deepseek-flash:max，economy=Gobao/deepseek-flash:high；design/retry→strong，assist→balanced）；主会话不属于任何档位；configured/requested/actual 分开记录，缺运行元数据时 actual 记 unknown。"
+  - "跨仓：主记录放 multica。若 SPEC 发现必须改 T（tools）代码（节点 skill、crctl 取证入口、ADJ-002 生产调用方），停止并请用户选择成对 tools change 与各自 Gate（先例 2026-10-29-trusted-verdict-outcome-binding），不双写、不互认批准。"
+  - "tools 工作树现有未提交改动（AGENTS.md、CUSTOM.md、merge-effects.mjs 及其测试、一个 golden 文件）归属未明，其中 merge-effects.mjs 是 M008 的 planRecovery 收紧；本变更不读取为依据、不吞并、不提交。tools 另有在途变更 2026-11-06-stdd-default-cr-opt-in（build 阶段），与本变更无关。"
+  - "multica 代码注释用英文；改 multica 代码须按其当时 CUSTOM.md 的结构登记定制；格式不接受 STDD change id 时停止确认，不编造 CR 身份。"
+  - "不脱离既有记录改写历史：归档 change 的冻结产物不改；已接受的局限（ADJ-M001/M002 accepted risk）先核实，需改合同的提出明确修订，不当作缺陷顺手修。"
+
+stakeholders:
+  - "multica 服务端与 daemon 维护者"
+  - "tools（crctl 与节点 skill）维护者"
+  - "AIFI-45 授权执行链的使用者与审批人"
+
+risk_areas:
+  - capability: "real-execution-closure"
+    risk: "H1 成立：节点回执取决于 agent 是否恰好走到一次门控 advance，生产中大量节点永远没有回执，run 在首个节点完成处永久等待。"
+    mitigation: "C1 先用本地探针回答；成立则 C2 只做证据生产者，真实运行失败即止损，其余保证经用户确认后再定。"
+  - capability: "real-execution-closure"
+    risk: "H2 成立（目前无例证）：若有节点在一个 run 内做多次门控 advance，第二次会失败；H1/H2 的修复都可能落在 T（skill 或 crctl）一侧，触发跨仓成对变更。"
+    mitigation: "不预选方案；需改 T 时按约束停止并请用户选择，不自行双写。"
+  - capability: "authorized-runner"
+    risk: "真实 agent 行为不确定，一次真实运行不能证明所有节点的稳定性；费用随运行次数上升。"
+    mitigation: "只做有限的真实运行（Q6），成功标准只承诺这一条链；其余以组件级回归支撑，不宣称统计意义的稳定。"
+  - capability: "workspace-delete-execution-tables"
+    risk: "给 ApplyControlCommandTx 加 workspace 边界会破坏消费回执契约，或波及 33 处测试调用点。"
+    mitigation: "边界设计在 SPEC 单独成节并写明契约；不满足即回到用户裁定，不静默放宽断言。"
+  - capability: "authorized-runner"
+    risk: "真实库与真实 daemon 验证依赖 podman 虚拟机与 daemon 进程，此前记录显示 podman 未运行。"
+    mitigation: "仅启动、使用 supervisor 自建的一次性实例；按完整 ID 与标签回读释放；daemon 与服务进程同样自管自释放。"
+
+non_goals:
+  - "不含 M007 五项合同裁定（人类补充来源、后继 profile、前驱 CAS、敏感授权、既有额度继承）与放开签发：它们处理授权不足时如何补充或继承，与「充分授权」无关，且放开签发是放松 fail-closed；仅取「真实入口对授权不足 fail-closed」作为已有组件用例的负例，不新增检查。"
+  - "不含 M008 的可信 no-effect、旧执行者迟到与自动重新准入：需要一个现在不存在的可信生产者，等于新建信任根；现状 halt/uncertain 已是安全态。M008 依赖回写阶段可达，随 Q1 结论后置。"
+  - "不含 M010 跨仓投递身份与 ACK 重设计：它不在本变更主线的正常路径上；除非后续证据指出主线某步骤依赖它，否则保持登记。"
+  - "不含 code 类 run 的生产启动入口与周期发现；开发、回写阶段不在真实运行范围内（Q1）。"
+  - "不含 wait_reason=admission 在派发成功后残留的清除：归档记录为既有行为、spec 未要求；仅当真实运行证明它误导操作时，另行提出。"
+  - "不含 ADJ-001 的平台侧独立查询面：现状由签发请求携带并核 DB 归属行，属加固项；除非 SPEC 证明主线依赖它。"
+  - "不含真实 backend CI、WSL AIFI-ISO、管理员更新凭据后的合同检查（沿用 fork-ci 变更的正式移交，集中作为独立外部验收）；不含 legacy-execution-migration 的历史迁移；不含 STDD 工具维护与 Skill 同步。"
+  - "不新增 journal、outbox 或第二套账本；不改签名合同本身；不迁移或回填历史 consumption。"
+
+open_questions:
+  - id: Q1
+    question: "范围：真实运行只覆盖 requirement 与 architecture 两类 run，开发与回写阶段因没有生产启动入口不在范围，M008 随之后置，是否同意？"
+    recommendation: "同意。"
+    decision: "按建议（用户 Gate 1 确认：Q1–Q6 按建议）"
+  - id: Q2
+    question: "节点证据的生产方式：技能侧保证每节点恰一次门控写，还是 daemon 侧为节点任务自取证明？"
+    recommendation: "Gate 1 不选；C1 探针回答 H1/H2 后在 SPEC 提出方案，需改 T 代码时按成对 tools change 另行确认。完成类动作仍锚在节点自有任务，不改为锚 source。"
+    decision: "按建议（用户 Gate 1 确认：Q1–Q6 按建议）"
+  - id: Q3
+    question: "G1 口径：现有认证入口（owner/admin 经 POST /crs/{id}/execution-authorization，服务端生成 source_event_id 与 source 摘录绑定）签发的授权，是否算「真实人类事件」？tools 登记的 ADJ-002 剩余缺口原文为「真实人类事件入口（当前 fixture 签发）与跨仓 production caller」。"
+    recommendation: "算：真实运行必须用它签发授权，并对该授权做一次来源篡改被拒的负例；若你认为还缺什么，请指出具体缺口。"
+    decision: "按建议（用户 Gate 1 确认：Q1–Q6 按建议）"
+  - id: Q4
+    question: "C5 只做 workspace 边界（不含 command/cursor 收敛转移），并接受 ApplyControlCommandTx 的消费回执契约需要单独边界设计，是否同意？"
+    recommendation: "同意；这与此前 CI 变更裁定的「不实现 command/cursor 收敛」一致。"
+    decision: "按建议（用户 Gate 1 确认：Q1–Q6 按建议）"
+  - id: Q5
+    question: "C4 是否只取「撤销后不推进、重启后保持」，把 RUN-006 的「额度用尽后最后已准入修复可完成」分支继续留在登记？该分支需要真实 repair 路径。"
+    recommendation: "只取撤销最小闭合；repair 分支留登记。"
+    decision: "按建议（用户 Gate 1 确认：Q1–Q6 按建议）"
+  - id: Q6
+    question: "真实模型调用：预期 architecture run 上限 3 次（首次、含重启的对照、撤销对照，尽量复用同一 run），模型由你指定且不用 Fable；是否接受这个上限作为 Gate 2 之后、BUILD 之前再单独确认费用的依据？"
+    recommendation: "接受；确认时再给每次预估费用。"
+    decision: "按建议（用户 Gate 1 确认：Q1–Q6 按建议）"
+
+critical:
+  is_critical: false
+  risk_assessment:
+    safety_critical: false
+    financial: false
+    cross_system: true
+
+anchoring:
+  level: L1
+  reference_changes:
+    - "2026-11-11-aifi-45-admission-task-binding"
+    - "2026-11-10-aifi-45-m005-consumption-effect"
+    - "2026-11-12-fork-ci-test-evidence-trust"
+    - "2026-10-22-aifi-45-authorized-execution"
+  anchor_implementations: []
+
+success_criteria:
+  - "真实链路：在获授权的一次性环境中，真实 daemon + 真实 agent 对一个新 CR 完成一次 architecture run；每个被推进的节点，在推进前都有该节点任务当前 generation 的 consumption 回执与自身 effect，没有借用 source 或他任务的消费事实；run 到达架构人工门。"
+  - "真实来源：同一次运行使用的授权由真实认证的 owner/admin 请求签发，而非 fixture 签名；T 侧从原请求字节独立重提取的来源与之一致；对同一授权改一个来源字段而不改签名，T 侧拒绝。"
+  - "重启与去重：在节点交接处重启 daemon/服务一次后，发现路径使每个节点恰有一个任务（无重复、无遗漏），已推进的节点不回退。"
+  - "受控停止：运行中撤销授权后，run 不再派发新节点任务、不推进节点，状态可被查询为 fail-closed，重启后保持；已有历史行未删除。"
+  - "终态安全：workspace 删除后，创建 command 被拒（TestWorkspaceDeletionRefusesNewCommand 由红转绿，断言未放宽）；reservation 创建与 workspace 删除并发时不留下删除后的新行（一个并发探针）；消费回执契约与保留的历史行不变。"
+  - "不回归：既有 selections 全组在一次性库上 0 FAIL、0 skip；diff 内没有无关改动，没有第二套账本；首次真实运行若失败，停在止损点并记录失败节点与原因，不继续宣称后续保证。"

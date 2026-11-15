@@ -1,0 +1,39 @@
+# agent_spec.yaml — Agent 验证规格（Canonical YAML）；MODIFIED/ADDED 增量：只含 SC-WSD-005 与 SC-WSD-006 的检查点。
+
+meta:
+  task_id: workspace-delete-execution-tables
+  change_id: 2026-11-13-aifi-45-real-execution-closure
+  created: '2026-11-13'
+  task_type: code
+  system: multica handler 的 workspace 删除路径与 governance 的 reservation/command 写入，隔离 Postgres
+  preconditions:
+    - 每个 action 经 scripts/aifi45-disposable/run-selection.mjs 的 --only 运行 selections.json 中同名选择；由 supervisor 自建并释放一次性实例，不连 localhost:5432 与旧容器。
+    - 选择要求退出 0、skip 为 0、fail 为 0、至少一个叶子 PASS；零匹配、skip 或名称不存在均不算通过。
+rollback:
+  steps:
+    - 只释放本轮 run-selection 创建的一次性实例。
+steps:
+  - id: CP-WSD-005
+    description: SC-WSD-005 / 删除后新建 command 被拒；TestWorkspaceDeletionRefusesNewCommand 由红转绿且断言原样保留。
+    action: node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only handler-wsd-no-recreate-command
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'PASS handler-wsd-no-recreate-command '
+  - id: CP-WSD-006
+    description: SC-WSD-006 / reservation 与 command 对删除的两种并发交错都不留下删除后的新行。
+    action: node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only handler-wsd-race
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'PASS handler-wsd-race '
+  - id: CP-WSD-007
+    description: SC-WSD-006 / 生产消费入口在 claim 与 head 之前持有 workspace 行锁（FOR UPDATE 被阻塞），且不强于删除互斥所需（普通 UPDATE 不被阻塞）。
+    action: node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only governance-wsd-lock
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'PASS governance-wsd-lock '
