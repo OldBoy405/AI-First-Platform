@@ -1,0 +1,15 @@
+# workflow-routing 的 Canonical agent 规格；文件位置沿用 CLI 脚手架，受控索引引用该路径。
+# 该能力只有一个人工检查（TC-WFR-001，盲评），没有可执行检查点；证据见 test-plan.md 的证据计划。
+meta:
+  task_id: workflow-routing
+  change_id: "2026-11-06-stdd-default-cr-opt-in"
+  created: "2026-11-06T03:07:30.589Z"
+  task_type: documentation
+  system: "知识库工作区的 STDD 默认／CR 显式选择入口"
+
+steps: []
+
+rollback:
+  steps:
+    - "检查失败时只报告，不自动恢复文件、状态或账本。"
+    - "需要撤销入口修改时，先取得授权，再依据实际差异定点逆向；保留用户原有修改，禁止 reset／checkout／stash。"

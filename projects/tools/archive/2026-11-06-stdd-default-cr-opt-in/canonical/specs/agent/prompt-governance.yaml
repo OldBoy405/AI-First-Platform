@@ -1,0 +1,42 @@
+# prompt-governance 的 Canonical CP：只含两个可执行检查点（TC-PG-002、TC-PG-003）。
+# TC-PG-001 与 workflow-routing 的 TC-WFR-001 是人工检查，不绑定 CP，见 test-plan.md 的证据计划。
+meta:
+  task_id: prompt-governance
+  change_id: "2026-11-06-stdd-default-cr-opt-in"
+  created: "2026-11-06T03:13:23.482Z"
+  task_type: documentation
+  system: "知识库、tools 和全局偏好的分层提示词约束"
+  preconditions:
+    - "cwd 为 tools 业务根（evidence runner 的固定工作目录）；action 经 shell 执行，Windows 下命令名须用反斜杠路径。"
+    - "只读：不修改任何文件、状态或账本；使用已核实的 ..\\stdd\\.venv\\Scripts\\python.exe，不安装依赖。"
+    - "action 只含 ASCII：全局文件第 2 行的批准原文在 design D5 中给出，这里只比较它的 SHA-256。"
+
+steps:
+  - id: CP-PG-001
+    description: >-
+      REQ-PG-002 / SC-PG-002 / TC-PG-002；confidence=high。
+      GIVEN dir-graph.yaml 与全局 APPEND_SYSTEM.md 已修改；WHEN 与固定基线比较；
+      THEN SHALL dir-graph.yaml 除 ai-first-platform-docs、tools 两个仓库的 description 外，与固定基线提交 1a409847af4f049dbbd06ed8e86e6d7267d7496a 的版本完全相等，且全局文件第 2 行的 LF SHA-256 等于批准原文的哈希；
+      AND 同次运行打印 AGENTS.md、README.md、CONTEXT.md、dir-graph.yaml、APPEND_SYSTEM.md 的 LF SHA-256 供人工评审引用。
+    action: >-
+      ..\stdd\.venv\Scripts\python.exe -B -X utf8 -c "import hashlib,subprocess,yaml;from pathlib import Path;kb=Path('../AI First Platform');lf=lambda b:b.decode('utf-8').replace('\r\n','\n');sha=lambda t:hashlib.sha256(t.encode('utf-8')).hexdigest();base=yaml.safe_load(lf(subprocess.run(['git','-C',str(kb),'show','1a409847af4f049dbbd06ed8e86e6d7267d7496a:dir-graph.yaml'],capture_output=True,check=True).stdout));cur=yaml.safe_load(lf((kb/'dir-graph.yaml').read_bytes()));norm=lambda g:{k:([{a:b for a,b in r.items() if not(a=='description' and r['id'] in ('ai-first-platform-docs','tools'))} for r in v] if k=='repositories' else v) for k,v in g.items()};assert norm(base)==norm(cur),'dir-graph business config changed';glob=Path.home()/'.pi/agent/APPEND_SYSTEM.md';assert sha(lf(glob.read_bytes()).split('\n')[1])=='454be8cb0b169eeb3e6c642cc5e67e648d606d6bca8e640e5b1e610c0e8acd3b','global line 2 differs';[print(p.name,sha(lf(p.read_bytes()))) for p in (kb/'AGENTS.md',kb/'README.md',kb/'CONTEXT.md',kb/'dir-graph.yaml',glob)];print('CP-PG-001 PASS')"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "CP-PG-001 PASS"
+
+  - id: CP-PG-002
+    description: >-
+      REQ-PG-003 / SC-PG-003 / TC-PG-003；confidence=high。
+      GIVEN tools AGENTS.md 已修改；WHEN 运行对其内容有结构依赖的既有测试 contract-scan.test.mjs（它读取 AGENTS.md 的“修改 Pipeline”节并断言其中第 9 条）；THEN SHALL 全部通过。
+    action: >-
+      node --test skills/shared/crctl/scripts/test/contract-scan.test.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+
+rollback:
+  steps:
+    - "检查失败时只报告，不自动修改文件、状态、账本或质量配置。"
+    - "需要撤销入口修改时，先取得授权，再依据实际差异定点逆向；保留用户在 SPEC／BUILD 期间后来修改的内容，禁止 reset／checkout／stash。"

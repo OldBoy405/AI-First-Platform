@@ -1,0 +1,283 @@
+approval_receipts:
+- confirmed_actor: ai
+  confirmed_at: '2026-11-06T11:08:58'
+  confirmed_by: dialog
+  confirmed_evidence: 确认 Gate 1，standard
+  note: reapproved
+  receipt_id: gate1-2026-11-06T11:08:58
+  recorded_at: '2026-11-15T10:27:24'
+  status: superseded
+- confirmed_actor: ai
+  confirmed_at: '2026-11-06T11:44:36'
+  confirmed_by: dialog
+  confirmed_evidence: “确认 Gate 2，采用 A，普通模式
+  note: reapproved
+  receipt_id: gate2-2026-11-06T11:44:36
+  recorded_at: '2026-11-15T10:27:24'
+  status: superseded
+change_id: 2026-11-06-stdd-default-cr-opt-in
+complexity_score: null
+current_phase: build
+design_adjustments:
+  count: 0
+last_modified: '2026-11-15T10:52:12'
+mode: standard
+phases:
+  build:
+    confirmed_actor: ai
+    confirmed_at: '2026-11-15T11:03:06'
+    confirmed_by: dialog
+    confirmed_evidence: 确认 Gate 3
+    input_fingerprint: a4d7c9a96019184af6d0c612ce70715a61c107df828e13741acf30d3a8a1bd61
+    input_manifest:
+    - change_id: 2026-11-06-stdd-default-cr-opt-in
+      child_id: null
+      kind: projection
+      logical_path: .stdd.yaml
+      project_id: tools
+      projection_version: v2
+      sha256: 9ea1f83f357435e23e4785add81cef2601cd54e5da072401f56aa286ca5e4c44
+    - change_id: 2026-11-06-stdd-default-cr-opt-in
+      child_id: null
+      kind: raw
+      logical_path: canonical/.canon-index.yaml
+      project_id: tools
+      projection_version: v2
+      sha256: 225f077a06ecc217f1afcb97a5c38950e9d27b3fdf45c101c9115db052692284
+    - change_id: 2026-11-06-stdd-default-cr-opt-in
+      child_id: null
+      kind: projection
+      logical_path: canonical/proposals/2026-11-06-stdd-default-cr-opt-in.yaml
+      project_id: tools
+      projection_version: v2
+      sha256: df9443f78c450365c6d1bf12d4edd9bb3abe2cce69b9a0d2ec14e2af57723085
+    - change_id: 2026-11-06-stdd-default-cr-opt-in
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/agent/2026-11-06-stdd-default-cr-opt-in.yaml
+      project_id: tools
+      projection_version: v2
+      sha256: b1ac5c3b77463c0daf2f45b3012d50186330f72b95c3128e2c6a4bb2b1ee4015
+    - change_id: 2026-11-06-stdd-default-cr-opt-in
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/agent/prompt-governance.yaml
+      project_id: tools
+      projection_version: v2
+      sha256: 9d65b44869b3ab90d3e85d2c2312920a86142128bc687fac9b610372fef40abb
+    - change_id: 2026-11-06-stdd-default-cr-opt-in
+      child_id: null
+      kind: raw
+      logical_path: design-adjustments.md
+      project_id: tools
+      projection_version: v2
+      sha256: 821b1b7fd0938f0bb9798c43e41d9890dfef3062edcd0ef9a30947ef3eec9593
+    - change_id: 2026-11-06-stdd-default-cr-opt-in
+      child_id: null
+      kind: raw
+      logical_path: design.md
+      project_id: tools
+      projection_version: v2
+      sha256: 3fbe40205d0181a6a87ab057f36e06cb3af91dc549c14f04bd8b9e3dd4aea0f2
+    - change_id: 2026-11-06-stdd-default-cr-opt-in
+      child_id: null
+      kind: raw
+      logical_path: pending-adjustments.md
+      project_id: tools
+      projection_version: v2
+      sha256: 715a73478e7ddfa6b3e689e34869d4765d161f11499b50b721820ea7bb18bf87
+    - change_id: 2026-11-06-stdd-default-cr-opt-in
+      child_id: null
+      kind: projection
+      logical_path: proposal.md
+      project_id: tools
+      projection_version: v2
+      sha256: 47684fb923c77ff11a165e7055f0ff5201ca956bd840a4cb86d42a54b199c7a8
+    - change_id: 2026-11-06-stdd-default-cr-opt-in
+      child_id: null
+      kind: raw
+      logical_path: specs/prompt-governance/spec.md
+      project_id: tools
+      projection_version: v2
+      sha256: 9389a57dc597fee1c92031d40d2f815437a731b50bf13d7910c6aa5df39a32db
+    - change_id: 2026-11-06-stdd-default-cr-opt-in
+      child_id: null
+      kind: raw
+      logical_path: specs/workflow-routing/spec.md
+      project_id: tools
+      projection_version: v2
+      sha256: 232d968ce90aa21da86b18a30b56cb8b8cab183375d22524c227e77c9d89802b
+    - change_id: 2026-11-06-stdd-default-cr-opt-in
+      child_id: null
+      kind: raw
+      logical_path: test-plan.md
+      project_id: tools
+      projection_version: v2
+      sha256: a126b60f2f246536ddd489450c82935d88b06f61aeab4b8d6b3a0e1aee2eceb4
+    - change_id: 2026-11-06-stdd-default-cr-opt-in
+      child_id: null
+      kind: raw
+      logical_path: test-report.md
+      project_id: tools
+      projection_version: v2
+      sha256: cac0ad86cf94db765cbf522e1fd14bcc1a7f1a18b40508eb7fd1d9d0e0370fe3
+    - change_id: 2026-11-06-stdd-default-cr-opt-in
+      child_id: null
+      kind: raw
+      logical_path: validation/runs/f16c6ed3-7c01-40b9-ad07-8a7ff7a110c4/agent-verification-report.md
+      project_id: tools
+      projection_version: v2
+      sha256: 9af024b1f43fda4a8827e9224fb067ceb4ac44e36c7ff22dd792586cdb7060c1
+    - change_id: 2026-11-06-stdd-default-cr-opt-in
+      child_id: null
+      kind: projection
+      logical_path: validation/runs/f16c6ed3-7c01-40b9-ad07-8a7ff7a110c4/inputs/agent-specs/prompt-governance.yaml
+      project_id: tools
+      projection_version: v2
+      sha256: 96749476a02d42b4ba003e8beb50532ee832c3920e6cbfd10af8c27fa8a8f441
+    - change_id: 2026-11-06-stdd-default-cr-opt-in
+      child_id: null
+      kind: projection
+      logical_path: validation/runs/f16c6ed3-7c01-40b9-ad07-8a7ff7a110c4/inputs/config.yaml
+      project_id: tools
+      projection_version: v2
+      sha256: 6533bfe04c6d3b0896098955bddef3505350644ee9b1a4b7c4143f5dabd26f63
+    - change_id: 2026-11-06-stdd-default-cr-opt-in
+      child_id: null
+      kind: raw
+      logical_path: validation/runs/f16c6ed3-7c01-40b9-ad07-8a7ff7a110c4/inputs/test-plan.md
+      project_id: tools
+      projection_version: v2
+      sha256: a126b60f2f246536ddd489450c82935d88b06f61aeab4b8d6b3a0e1aee2eceb4
+    - change_id: 2026-11-06-stdd-default-cr-opt-in
+      child_id: null
+      kind: projection
+      logical_path: validation/runs/f16c6ed3-7c01-40b9-ad07-8a7ff7a110c4/tc-evidence.json
+      project_id: tools
+      projection_version: v2
+      sha256: f360ed0c236eb192551f7ea19d54361ebe1af03f99282a68cd028893615c7c5d
+    selected_evidence:
+    - validation/runs/f16c6ed3-7c01-40b9-ad07-8a7ff7a110c4/agent-verification-report.md
+    - validation/runs/f16c6ed3-7c01-40b9-ad07-8a7ff7a110c4/inputs/agent-specs/prompt-governance.yaml
+    - validation/runs/f16c6ed3-7c01-40b9-ad07-8a7ff7a110c4/inputs/config.yaml
+    - validation/runs/f16c6ed3-7c01-40b9-ad07-8a7ff7a110c4/inputs/test-plan.md
+    - validation/runs/f16c6ed3-7c01-40b9-ad07-8a7ff7a110c4/tc-evidence.json
+    slices_completed:
+      '1':
+        new_tests: 0
+        status: done
+        tc_coverage: 3/3
+        verified_at: '2026-11-15T10:50:00'
+      '2':
+        new_tests: 0
+        status: done
+        tc_coverage: 3/3
+        verified_at: '2026-11-15T10:50:00'
+    status: completed
+  deliver:
+    status: pending
+  spec:
+    confirmed_actor: ai
+    confirmed_at: '2026-11-15T10:27:24'
+    confirmed_by: dialog
+    confirmed_evidence: 已经审阅 opt-in 的完整差异，重签 Gate 1 和 Gate 2， ADJ-002 ：已知并接受。请按照以上的建议推进
+    input_fingerprint: 70d26a4a45817b865dfff4563ac7af746e78a80af266087dd927fd63ff6da421
+    input_manifest:
+    - change_id: 2026-11-06-stdd-default-cr-opt-in
+      child_id: null
+      kind: raw
+      logical_path: canonical/.canon-index.yaml
+      project_id: tools
+      projection_version: v2
+      sha256: 225f077a06ecc217f1afcb97a5c38950e9d27b3fdf45c101c9115db052692284
+    - change_id: 2026-11-06-stdd-default-cr-opt-in
+      child_id: null
+      kind: projection
+      logical_path: canonical/proposals/2026-11-06-stdd-default-cr-opt-in.yaml
+      project_id: tools
+      projection_version: v2
+      sha256: df9443f78c450365c6d1bf12d4edd9bb3abe2cce69b9a0d2ec14e2af57723085
+    - change_id: 2026-11-06-stdd-default-cr-opt-in
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/agent/2026-11-06-stdd-default-cr-opt-in.yaml
+      project_id: tools
+      projection_version: v2
+      sha256: b1ac5c3b77463c0daf2f45b3012d50186330f72b95c3128e2c6a4bb2b1ee4015
+    - change_id: 2026-11-06-stdd-default-cr-opt-in
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/agent/prompt-governance.yaml
+      project_id: tools
+      projection_version: v2
+      sha256: 9d65b44869b3ab90d3e85d2c2312920a86142128bc687fac9b610372fef40abb
+    - change_id: 2026-11-06-stdd-default-cr-opt-in
+      child_id: null
+      kind: raw
+      logical_path: design.md
+      project_id: tools
+      projection_version: v2
+      sha256: 3fbe40205d0181a6a87ab057f36e06cb3af91dc549c14f04bd8b9e3dd4aea0f2
+    - change_id: 2026-11-06-stdd-default-cr-opt-in
+      child_id: null
+      kind: projection
+      logical_path: proposal.md
+      project_id: tools
+      projection_version: v2
+      sha256: 47684fb923c77ff11a165e7055f0ff5201ca956bd840a4cb86d42a54b199c7a8
+    - change_id: 2026-11-06-stdd-default-cr-opt-in
+      child_id: null
+      kind: raw
+      logical_path: specs/prompt-governance/spec.md
+      project_id: tools
+      projection_version: v2
+      sha256: 9389a57dc597fee1c92031d40d2f815437a731b50bf13d7910c6aa5df39a32db
+    - change_id: 2026-11-06-stdd-default-cr-opt-in
+      child_id: null
+      kind: raw
+      logical_path: specs/workflow-routing/spec.md
+      project_id: tools
+      projection_version: v2
+      sha256: 232d968ce90aa21da86b18a30b56cb8b8cab183375d22524c227e77c9d89802b
+    - change_id: 2026-11-06-stdd-default-cr-opt-in
+      child_id: null
+      kind: raw
+      logical_path: test-plan.md
+      project_id: tools
+      projection_version: v2
+      sha256: a126b60f2f246536ddd489450c82935d88b06f61aeab4b8d6b3a0e1aee2eceb4
+    status: completed
+  understand:
+    confirmed_actor: ai
+    confirmed_at: '2026-11-15T10:27:24'
+    confirmed_by: dialog
+    confirmed_evidence: 已经审阅 opt-in 的完整差异，重签 Gate 1 和 Gate 2， ADJ-002 ：已知并接受。请按照以上的建议推进
+    input_fingerprint: 1982dfea3ab5d14aa928fa4a437464884f26ec4f57b37d17f59b127a3b997f44
+    input_manifest:
+    - change_id: 2026-11-06-stdd-default-cr-opt-in
+      child_id: null
+      kind: projection
+      logical_path: canonical/proposals/2026-11-06-stdd-default-cr-opt-in.yaml
+      project_id: tools
+      projection_version: v2
+      sha256: df9443f78c450365c6d1bf12d4edd9bb3abe2cce69b9a0d2ec14e2af57723085
+    - change_id: 2026-11-06-stdd-default-cr-opt-in
+      child_id: null
+      kind: projection
+      logical_path: proposal.md
+      project_id: tools
+      projection_version: v2
+      sha256: 47684fb923c77ff11a165e7055f0ff5201ca956bd840a4cb86d42a54b199c7a8
+    status: completed
+resume_context: 2026-11-15 BUILD 已验证：Gate 1/2 已重签，run f16c6ed3-7c01-40b9-ad07-8a7ff7a110c4
+  原生 TC 证据 4/4（2 命令通过、2 人工经用户确认），C4–C7 已写 test-report，slices_completed 已写，ADJ-001~003
+  用户已接受。受审文档不得再改。下一步：向用户展示 Gate 3 确认框，用户明确确认后才可 gate approve --gate 3 --run；交付须用户逐文件授权，tasks
+  4.1 交付前重算哈希。不得代签、提交、推送、部署。详见 phase-context.md、tasks.md、test-report.md。
+score_confidence: null
+status: archived
+task_type: documentation
+traceability:
+  spec_scenarios: 0
+  tc_cases: 0
+  test_functions: 0
+version: '3.0'
