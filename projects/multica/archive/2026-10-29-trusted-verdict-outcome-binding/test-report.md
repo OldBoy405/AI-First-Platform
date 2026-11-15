@@ -41,7 +41,11 @@ multica（`server/`）：
 - `AIFI45_TOOLS_ROOT=<tools> go test ./internal/governance/crosslang_test -count=1` → ok
 - `go test execution_control_protocol.go execution_verdict_trust.go execution_verdict_trust_test.go -run 'TestVerifyTrustedVerdictEffect|TestControlProtocol'` → ok（3 Test / 41 subtests）
 - `go test -c` 编译 `./cmd/server`、`./internal/daemon`、`./internal/governance` → 均成功
-- **未执行**：任何需要 `DATABASE_URL` 的用例（`TestMain` 直接失败，不跳过），含 `TestTC_RUN_003`、`TestVerdictWriterVerifiesAttestation`、daemon worker/recovery
+- **未执行**：任何需要 `DATABASE_URL` 的用例（`TestMain` 直接失败，不跳过），含 `TestTC_RUN_003`、`TestVerdictWriterVerifiesAttestation`、daemon worker/recovery。
+  2026-11-10 16:36 尝试用官方入口 `scripts/aifi45-db/run.mjs` 执行，runner 自测 11/11 通过，但正式运行在创建数据库前即被拒绝：
+  它固定的 podman 实例是 `666bfec52ac3…`（127.0.0.1:55432），本机不存在；可见的 `multica-postgres` 是另一个容器（127.0.0.1:5432）。
+  按 runner 自身边界（不得用环境变量改指其他服务器、不得手建库），我没有替换目标、没有直连 preserved 库、没有手建数据库。
+  结论：这些用例需要重新提供被固定的可弃用实例（或由负责人重新 pin）后才能执行，属环境/授权事项，不是代码问题。
 
 tools：
 - `node --test execution-control-protocol.test.mjs control-operation-domain.test.mjs control-payload-decode-limit.test.mjs control-json-duplicate-keys.test.mjs` → **61 pass / 0 fail**
