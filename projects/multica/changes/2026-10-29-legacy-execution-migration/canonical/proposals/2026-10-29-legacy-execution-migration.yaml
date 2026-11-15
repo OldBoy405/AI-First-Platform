@@ -1,4 +1,4 @@
-# 占位 proposal；不代表需求、方案、迁移或 Gate 已确认。
+# 触发式占位 proposal；不代表需求、方案、迁移或 Gate 已确认。
 meta:
   change_id: "2026-10-29-legacy-execution-migration"
   title: "Legacy 执行授权与历史消耗迁移"
@@ -8,9 +8,21 @@ meta:
 
 why:
   problem: |
-    AIFI-45 的 TC-EVD-008 要求在历史事实可核实时，显式迁移并保留授权及历史消耗、计算剩余额度。当前 D8=A：本期不迁移 legacy 业务历史；迁移判定函数没有生产入口，正向验收未完成。现独立登记后续工作，避免以拒绝路径或已有通道组件的完成替代该验收。
+    AIFI-45 的 TC-EVD-008 要求：历史事实可核实时，显式迁移并保留授权及历史消耗，并计算剩余额度。
+    D8=A：本期不迁移 legacy 业务历史。2026-11-10 用户范围裁定：该正例移出 AIFI-45 本期分母，记 OUT_OF_SCOPE（不是 PASS），由本变更在启动条件发生时验收。
+
+    事实更新（2026-11-15 对照源码核实）：tools 已有公开可写的 `crctl evidence-migrate` 命令（`crctl.mjs` 的 `cmdEvidenceMigrate`，
+    调用 `lib/legacy-migration.mjs` 的 `evaluateExplicitMigration`，2026-11-08 随 commit `ea8d081` 接入），所以早先“判定函数没有生产入口”的前提已不成立。
+    该命令要求：已安装且可验证的初始授权；`approval.yml` 中每个历史阶段都有 subject 与 receipt digest；`--consumed`、`--limit` 为合法整数且 consumed 不超过 limit；已有合同登记与本次事实一致。
+    该命令不做：核验各 receipt 本身的真伪；把 `--consumed` 与历史对账；核验未决任务、当前 head 或迁移者权限——消耗量和上限来自调用参数。
+    该命令是否已部署、是否被用于真实旧 workspace，均无证据。因此它不能视为“可信存量迁移已验收”，TC-EVD-008 仍为 OUT_OF_SCOPE。
+
+    启动条件（可观察事实，满足任一才启动本变更）：
+    1. D8 被改为“迁移 legacy 业务历史”。
+    2. 出现必须在新合同下继续执行、且带旧授权或旧消耗的非终态 CR（包括任何人拟对真实旧 workspace 运行 `evidence-migrate`）。
+    2026-11-15 核对：知识库主 checkout 的 76 个 CR frontmatter 为 68 archived、8 withdrawn，均为终态，`_backlog.yml` 活动列表为空，未发现满足条件 2 的存量。该核对不覆盖 CR 事务工作区，也不覆盖本知识库之外的 workspace。
   motivation: |
-    负责人 Ray。满足下列任一条件时启动本变更：D8 改为迁移 legacy 业务历史；准备对包含在途旧授权或旧消耗历史的 workspace 生产启用；拟为 evaluateExplicitMigration 接生产入口。
+    负责人 Ray。迁移是安全敏感的执行合同变更，无真实存量时不应预先建设；用可观察的启动条件代替“拟接生产入口”这类代码状态条件。
 
 what_changes:
   - id: C1
@@ -24,16 +36,18 @@ capabilities:
   modified: []
 
 constraints:
-  - "本文件仅登记占位；当前不推进 SPEC/BUILD，不执行迁移，不接生产入口。"
+  - "本文件仅登记占位；当前不推进 SPEC/BUILD，不执行迁移。design.md、test-plan.md 与 agent spec 仍是脚手架模板，没有设计、TC 或 CP。"
   - "必须明确并核实授权 lineage、历史消耗、未决任务三类可信事实源及其完整性。"
+  - "消耗量与额度上限须来自可核验的权威来源；调用者自行给出且未与历史对账的数字不是可信事实。"
   - "未知、不完整或相互矛盾的历史事实应冻结或拒绝，不能通过替换 lineage、grant 或 store 掩盖缺口。"
-  - "D8=A 继续有效；2026-11-10 用户范围裁定：TC-EVD-008 移出 AIFI-45 本期分母，记 OUT_OF_SCOPE（不是 PASS），其迁移正例由本变更在启动条件发生时验收；占位不自动通过任何验收。"
+  - "历史无法核实时，只能拒绝，或由额度所有人显式、留痕地接受按新额度重新开始；新建 run 或重新授权不得成为清零历史消耗的手段。"
+  - "D8=A 继续有效；TC-EVD-008 记 OUT_OF_SCOPE（不是 PASS），其迁移正例由本变更在启动条件发生时验收；占位不自动通过任何验收。"
 
 stakeholders:
   - "Ray（负责人）"
 
 non_goals:
-  - "本占位不创建生产迁移入口，不移动或重写旧授权、旧消耗与在途任务。"
+  - "本占位不新增、不修改、不停用任何生产入口（包括 tools 已有的 evidence-migrate），不移动或重写旧授权、旧消耗与在途任务。"
   - "本占位不替代 AIFI-45 的运行准入接线及独立验收。"
 
 success_criteria:
