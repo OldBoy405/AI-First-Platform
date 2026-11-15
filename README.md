@@ -2,6 +2,12 @@
 
 本仓库只包含设计文档本身，不 vendor 任何外部代码。三个核心模块（multica / openwiki / tools）以 commit SHA 引用的方式记录在 `docs/references/`，实际代码按需 clone 到仓库外部（约定路径见各引用文件）。
 
+## 工作流入口
+
+工作区规则和流程选择见 [AGENTS.md](AGENTS.md)：新开发变更默认 STDD，已有变更沿用原流程；明确选择 tools CR 时按其现行流程执行。只读分析不自动创建变更。
+
+STDD 从目标业务仓的 `.stdd/binding.yaml` 确认记录根和项目 ID，再按实际安装加载当前阶段技能。资源母本位于 `../stdd/`，现有项目记录位于 `projects/`；知识库根没有绑定时，不应从此处猜测项目或回退旧模式。
+
 ## 目录说明
 
 - [`AI-First平台介绍.html`](AI-First平台介绍.html) — 对外产品介绍（Mermaid/SVG 图示）

@@ -1,7 +1,7 @@
 # dir-graph.yaml — AI First Platform 工作区目录规约
 # 权威来源：本文件描述本仓库自身结构与 repositories 声明。
-# CR 状态机、gates、pipeline 模板不在本文件重复声明，由 ../tools/ 包提供，
-# crctl 在本地找不到声明时自动回退到 tools 包同名文件（见 AGENTS.md）。
+# CR 状态机、gates、pipeline 模板不在本文件重复声明。
+# crctl 以 workspace.tools_package_path 定位 tools 包作为权威入口（见 AGENTS.md）。
 schema: "ai-first.tools.dir-graph/v1"
 
 workspace:
@@ -34,7 +34,7 @@ repositories:
     active: true
     remote: "https://github.com/OldBoy405/AI-First-tools.git"
     commit_prefixes: ["[cr] ", "Merge ", "merge ", "feat(", "feat:", "fix(", "fix:", "docs(", "docs:", "chore(", "chore:", "test(", "test:", "refactor(", "perf("]
-    description: "AI First 方法论包（9 Agent / 56 Skill / 8 Pipeline + crctl；计数口径见 docs/references/tools.md，2026-08-19 由 59 订正）；CR-2026-027 起声明为参与仓，消除 merge Skill 隐藏特例（原 prose 硬编码，见 CR-2026-027 PRD FR-5）"
+    description: "AI First 方法论包，包含 Agent、Skill、Pipeline 和 crctl；能力清单以 tools 的对应索引为准。"
 
 target_workspace_contract:
   required_roots:
