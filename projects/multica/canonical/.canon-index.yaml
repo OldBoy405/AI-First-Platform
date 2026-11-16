@@ -2,8 +2,10 @@ designs: {}
 proposals:
   2026-11-13-aifi-45-real-execution-closure: proposals/2026-11-13-aifi-45-real-execution-closure.yaml
   2026-11-15-multica-backend-tests-green: proposals/2026-11-15-multica-backend-tests-green.yaml
+  2026-11-16-multica-execution-evidence-closure: proposals/2026-11-16-multica-execution-evidence-closure.yaml
 specs:
   agent:
+    2026-11-16-multica-execution-evidence-closure: specs/agent/2026-11-16-multica-execution-evidence-closure.yaml
     backend-tests-ownership: specs/agent/backend-tests-ownership.yaml
     ci-admin-test-ownership: specs/agent/ci-admin-test-ownership.yaml
     governance-runner-run-lock: specs/agent/governance-runner-run-lock.yaml
@@ -13,5 +15,7 @@ specs:
     authorized-runner: specs/code/authorized-runner.yaml
     backend-tests-ownership: specs/code/backend-tests-ownership.yaml
     ci-admin-test-ownership: specs/code/ci-admin-test-ownership.yaml
+    ci-backend-environment: specs/code/ci-backend-environment.yaml
     governance-runner-run-lock: specs/code/governance-runner-run-lock.yaml
+    selection-reconciliation: specs/code/selection-reconciliation.yaml
 version: '2.9'

@@ -1,0 +1,33 @@
+meta:
+  capability: governance-runner-run-lock
+  change_id: "2026-11-16-multica-execution-evidence-closure"
+  created: "2026-11-16"
+  confidence: medium
+
+requirements:
+  - id: REQ-MEC-001
+    description: "三个恢复入口仅在锁后活动 run 的 ID 等于已取锁 ID 时推进；对象消失或切换时本次无效果返回。"
+    scenarios:
+      - id: SC-MEC-001
+        confidence: medium
+        evidence: "proposal C1、success_criteria[0]；design 决策 1、2"
+        given: "一次性迁移库；architecture/requirement/code 三个入口各有合法 A；独占 Runner 池上限 4；控制连接持 A 锁，恢复调用已完成锁前查询并进入取锁路径"
+        when: "分别保持 A 不变、使 A 终态且创建同归属合法 B、使 A 终态且无后继；changed 情形另持 B 锁再释放 A，随后另一次恢复并释放 B"
+        then: "SHALL unchanged 推进 A；changed 的第一次恢复返回且 B 的节点/任务/状态不变，第二次恢复等待 B 锁后推进 B 恰好一次；no-active 无效果返回"
+        and:
+          - "三种入口均走原生产恢复函数、原 digest/admission 与假 enqueuer；不加生产 hook，不以替身身份判定函数代替"
+          - "B created_at 使用明确顺序；architecture 至少三次、requirement/code 至少两次 Runner 独占池新增获取证明交错已达取锁边界，全部等待有 deadline"
+          - "换目标不增加业务 attempt、不将 B 标为 failed；下一次既有唤醒负责恢复，不承诺同次立即推进"
+          - "非 ErrNoRows 的查询错误与 digest 错误继续传播；writeback 和 requirement 创建锁不被扩大修改"
+  - id: REQ-MEC-002
+    description: "保持现有同 run 串行、释放、取消、等待不占连接，以及池 4 并发唤醒只派发一次的保证。"
+    scenarios:
+      - id: SC-MEC-002
+        confidence: high
+        evidence: "proposal C1；既有 governance-runner-run-lock 基线；design 决策 2、4"
+        given: "同一次 governance-run-lock selection 包含两个原锁测试、TestReconcileRunIdentity 与 TestMTick003，带 race，governance TestMain 的池上限为 4"
+        when: "经既有 run-selection 执行与精确对账"
+        then: "SHALL 四个顶层测试完整通过，pass=4/fail=0/skip=0；同 run 回调最多一个并发进入、取消返回 ctx.Err、等待不占用持锁者需要的连接、释放后可再次进入"
+        and:
+          - "TestMTick003 派发任务数和 run 任务数恰好为 1，首节点 attempt 为 1；不改既有断言"
+          - "新身份测试内部用普通表循环，不产生名单外子测试事件；runner 本轮只执行这一个 selection，不重复运行原 governance-mtick003 入口"

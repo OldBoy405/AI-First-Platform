@@ -1,0 +1,40 @@
+meta:
+  task_id: "2026-11-16-multica-execution-evidence-closure"
+  change_id: "2026-11-16-multica-execution-evidence-closure"
+  created: "2026-11-16"
+  task_type: code
+  system: "三个 Runner 恢复入口与既有 selection/CI 接线"
+  preconditions:
+    - "cwd 为 multica 业务根；SPEC 阶段仅 dry-run，不执行本文件命令。"
+    - "BUILD 执行须有一次性库测试授权；沿用已有 podman/run-selection 身份及资源归属检查，不连接生产、共享开发库或旧容器。"
+    - "继承已核实与 .github/aifirst-tools-pin 对应的 AIFI45_TOOLS_ROOT、CRCTL_MJS、MULTICA_CONTROLLED_SHELL_RULES；当前 tools checkout 不等于 pin 或不可用时停止，不猜开发机目录。"
+    - "Go/Node/pg/镜像等既有环境可用；不自动安装依赖、改权限、运行真实 agent；governance TestMain 固定 MaxConns=4。"
+steps:
+  - id: CP-MEC-001
+    description: "一次性库中的四个明确锁与恢复测试须全部通过，内部证明三入口身份切换和原串行、取消、池4保证。"
+    action: >-
+      node -e "const r=require('node:child_process').spawnSync(process.execPath,['scripts/aifi45-disposable/run-selection.mjs','--selections','scripts/aifi45-disposable/selections.json','--only','governance-run-lock'],{stdio:'inherit',env:{...process.env,GOFLAGS:'-race -count=1'}});process.exit(r.status??1);"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "PASS governance-run-lock pass=4 fail=0 skip=0"
+  - id: CP-MEC-002
+    description: "离线事件矩阵、精确名单及已有 pin/CI 接线测试须全部通过，元数据不能使缺测或失败流变绿。"
+    action: >-
+      node --test --test-reporter=tap scripts/aifi45-disposable/selection.test.mjs scripts/aifi45-disposable/selection-decision.test.mjs scripts/aifi45-disposable/tools-pin.test.mjs scripts/ci-scope.test.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "# fail 0"
+      - type: stdout_contains
+        expected: "# skipped 0"
+      - type: stdout_contains
+        expected: "TC-MEC-002 event matrix"
+      - type: stdout_contains
+        expected: "TC-MEC-002 CI wiring"
+rollback:
+  steps:
+    - "失败先保存本次事实并报告，不自动改归档、排除测试、放宽门禁、重签 Gate 或清理未知资源。"
+    - "新增实现如需撤销仅在明确授权下按实际差异逆向；不自动 reset、stash、push 或部署。"
