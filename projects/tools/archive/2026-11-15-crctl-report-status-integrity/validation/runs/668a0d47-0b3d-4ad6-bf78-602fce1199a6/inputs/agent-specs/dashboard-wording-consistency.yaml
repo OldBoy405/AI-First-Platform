@@ -1,0 +1,30 @@
+# dashboard-wording-consistency 的 Agent 验证规格（Canonical YAML）。
+# Change: 2026-11-15-crctl-report-status-integrity
+meta:
+  task_id: dashboard-wording-consistency
+  change_id: "2026-11-15-crctl-report-status-integrity"
+  created: "2026-11-15T19:30:00+08:00"
+  task_type: code
+  system: "skills/spec/spec-dashboard/SKILL.md 的口径措辞与 lint-prompts"
+  preconditions:
+    - "cwd 为 tools 业务根；直接运行既有 Node 工具，不安装依赖，不改被检查文件。"
+    - "内容读取先规范 CRLF；只核对本 change 约定的冲突句与必要引用，不新增 lint 规则。"
+steps:
+  - id: CP-DWC-001
+    description: >-
+      看板文件须保留 report 的必要引用且删除三处冲突口径，既有 lint 为零 findings。
+    action: >-
+      node skills/shared/crctl/scripts/lint-prompts.mjs --mode enforce && node -e "const fs=require('node:fs');const s=fs.readFileSync('skills/spec/spec-dashboard/SKILL.md','utf8').replaceAll('\r\n','\n');const bad=['cr.md\x60 frontmatter \x60status\x60','change-requests/_backlog.yml','archived / rejected / withdrawn |'].filter(x=>s.includes(x));const need=['report.statusHistogram','report.active'].filter(x=>!s.includes(x));console.log('bad',JSON.stringify(bad),'need',JSON.stringify(need));if(bad.length||need.length)process.exit(1);console.log('CP-DWC-001 PASS');"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "0 findings"
+      - type: stdout_contains
+        expected: "bad [] need []"
+      - type: stdout_contains
+        expected: "CP-DWC-001 PASS"
+rollback:
+  steps:
+    - "检查失败时只报告，不自动修改文件、账本或状态。"
+    - "需要撤销代码修改时，先取得授权，再依据实际差异定点逆向；禁止 reset／checkout／stash。"

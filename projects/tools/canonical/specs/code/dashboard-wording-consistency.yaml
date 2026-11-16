@@ -1,0 +1,22 @@
+# dashboard-wording-consistency 的行为规格（Canonical YAML）。
+# Change: 2026-11-15-crctl-report-status-integrity
+meta:
+  capability: dashboard-wording-consistency
+  change_id: "2026-11-15-crctl-report-status-integrity"
+  created: "2026-11-15T19:30:00+08:00"
+  confidence: high
+
+requirements:
+  - id: REQ-DWC-001
+    description: >-
+      `skills/spec/spec-dashboard/SKILL.md` 对在途 CR 的口径引用 `crctl report` 的输出，不再自行定义分组规则、不再把终态行放在「在途」表里、
+      不再用 `_backlog.yml` 判空。
+    scenarios:
+      - id: SC-DWC-001
+        confidence: high
+        evidence: "proposal.yaml success_criteria[4]；design.md 决策 5；cr-dashboard/SKILL.md 的同口径措辞"
+        given: "改后的 spec-dashboard/SKILL.md"
+        when: "检查文件内容并运行 `lint-prompts.mjs --mode enforce`"
+        then: "SHALL 文件含 `report.statusHistogram` 与 `report.active`；不含旧分组句（按 cr.md frontmatter status 分组计数）、旧判空句（`change-requests/_backlog.yml` 为空）、表内终态行（`archived / rejected / withdrawn` 的数量行）；lint 为 0 findings"
+        and:
+          - "表后有一句说明：上表只列非终态状态，终态 CR 不属于在途，在途总数取 `report.active`"

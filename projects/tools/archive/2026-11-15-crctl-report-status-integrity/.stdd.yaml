@@ -1,0 +1,316 @@
+approval_receipts:
+- confirmed_actor: ai
+  confirmed_at: '2026-11-15T17:57:34'
+  confirmed_by: dialog
+  confirmed_evidence: 确认 T2 的 Gate 1；授权multica 的 podman 取证，以及 C5 里 20 次重复运行（我建议交 balanced
+    子代理，由你验收）。按步骤执行类的、取证、简单任务可以交给balanced子代理
+  note: reapproved
+  prior_input_fingerprint: f3049aed4e49e8051d91efdb2ca90c68307c4907d54b6319de6f466d6d178c3e
+  prior_input_manifest_json: '[{"change_id":"2026-11-15-crctl-report-status-integrity","child_id":null,"kind":"projection","logical_path":"canonical/proposals/2026-11-15-crctl-report-status-integrity.yaml","project_id":"tools","projection_version":"v3","sha256":"951ee33e65572f44a49cebc0de96579d37b64d97be376b2b5c40b55d73c579e2"},{"change_id":"2026-11-15-crctl-report-status-integrity","child_id":null,"kind":"projection","logical_path":"proposal.md","project_id":"tools","projection_version":"v3","sha256":"bb777d96eeaad0c61fb91216b21235dc9ee153e6e196af992d76aff3b5ac4fb5"}]'
+  receipt_id: gate1-2026-11-15T17:57:34
+  recorded_at: '2026-11-16T00:36:19'
+  status: superseded
+change_id: 2026-11-15-crctl-report-status-integrity
+complexity_score: 5
+current_phase: build
+last_modified: '2026-11-16T13:48:25.729742'
+long_range:
+  enabled: true
+  mode: full_auto
+  pre_auth_completed: true
+  pre_auth_timestamp: '2026-11-16T13:40:07'
+mode: standard
+phases:
+  build:
+    confirmed_actor: ai
+    confirmed_at: '2026-11-16T14:36:22'
+    confirmed_by: dialog
+    confirmed_evidence: 确认 Gate 3 通过，按上述 run 执行 approve
+    input_fingerprint: 6c0a777b97f3148c58dc462694ee8b9ff32406838d987a8647cf114709a2c272
+    input_manifest:
+    - change_id: 2026-11-15-crctl-report-status-integrity
+      child_id: null
+      kind: projection
+      logical_path: .stdd.yaml
+      project_id: tools
+      projection_version: v3
+      sha256: 09fcbd7fe9280f1a6dc6ec5659aa1c7865d01f84cae220085d481ce1df7d2006
+    - change_id: 2026-11-15-crctl-report-status-integrity
+      child_id: null
+      kind: raw
+      logical_path: canonical/.canon-index.yaml
+      project_id: tools
+      projection_version: v3
+      sha256: 4aa4034fa43fb836e3f349739957f9c310ef6764aad1475b2dfa91ed63ea0827
+    - change_id: 2026-11-15-crctl-report-status-integrity
+      child_id: null
+      kind: projection
+      logical_path: canonical/proposals/2026-11-15-crctl-report-status-integrity.yaml
+      project_id: tools
+      projection_version: v3
+      sha256: 5f67259b66fe05a5636ea0468cd0364a39ae901a41115bdd821f0f26f472efcd
+    - change_id: 2026-11-15-crctl-report-status-integrity
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/agent/crctl-report-status-integrity.yaml
+      project_id: tools
+      projection_version: v3
+      sha256: b4640c525e0c52d96a8859ec6505d3c337b2fdd2720e382513347cb571dfc010
+    - change_id: 2026-11-15-crctl-report-status-integrity
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/agent/dashboard-wording-consistency.yaml
+      project_id: tools
+      projection_version: v3
+      sha256: a3fde5cda0c83c0045efcd1876e75c5f84a8ef658254c339184bfad6d5904cc7
+    - change_id: 2026-11-15-crctl-report-status-integrity
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/code/crctl-report-status-integrity.yaml
+      project_id: tools
+      projection_version: v3
+      sha256: 72662c947f647bac85b0e166721562f302530dba00eacdec4f08ec26aee94663
+    - change_id: 2026-11-15-crctl-report-status-integrity
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/code/dashboard-wording-consistency.yaml
+      project_id: tools
+      projection_version: v3
+      sha256: af2f9944e9c7548f20481c7561e6e7441d16854a6df25efba499964a16925bca
+    - change_id: 2026-11-15-crctl-report-status-integrity
+      child_id: null
+      kind: raw
+      logical_path: design-adjustments.md
+      project_id: tools
+      projection_version: v3
+      sha256: 312985317e48d8a54d48f4cc771444f8cbda90d9bae95d81806c7c7a1fa0d184
+    - change_id: 2026-11-15-crctl-report-status-integrity
+      child_id: null
+      kind: raw
+      logical_path: design.md
+      project_id: tools
+      projection_version: v3
+      sha256: 8a28aa7770432f4735886692c65839cce8bcc173cffae6708b050f26967f5dea
+    - change_id: 2026-11-15-crctl-report-status-integrity
+      child_id: null
+      kind: projection
+      logical_path: proposal.md
+      project_id: tools
+      projection_version: v3
+      sha256: 51020713c0e62c27a52a4d9e9624e471868471ae7f0608d99dfa6e58343ee1c5
+    - change_id: 2026-11-15-crctl-report-status-integrity
+      child_id: null
+      kind: raw
+      logical_path: specs/crctl-report-status-integrity/spec.md
+      project_id: tools
+      projection_version: v3
+      sha256: c341790420c91c83cbc69e2ce804b281ab18753bc8ec56e99772d3cbc22ee83b
+    - change_id: 2026-11-15-crctl-report-status-integrity
+      child_id: null
+      kind: raw
+      logical_path: specs/dashboard-wording-consistency/spec.md
+      project_id: tools
+      projection_version: v3
+      sha256: 24c5206b27d9bf0adeb2b5eb681e3b21471eb1005f363cd025a3dce32a788a9b
+    - change_id: 2026-11-15-crctl-report-status-integrity
+      child_id: null
+      kind: raw
+      logical_path: test-plan.md
+      project_id: tools
+      projection_version: v3
+      sha256: a91a9389b5fd5d587efe2a3d9362ad3c1e964e23f0eb6e2b60b6ccb26bd21bdd
+    - change_id: 2026-11-15-crctl-report-status-integrity
+      child_id: null
+      kind: raw
+      logical_path: test-report.md
+      project_id: tools
+      projection_version: v3
+      sha256: 25c3670970bf62d85ccf20f863c87a179041ed8b122d3dadbabf590956247df0
+    - change_id: 2026-11-15-crctl-report-status-integrity
+      child_id: null
+      kind: raw
+      logical_path: validation/runs/4338f56c-a380-4ca0-b8df-b1916e0b2145/agent-verification-report.md
+      project_id: tools
+      projection_version: v3
+      sha256: 10ab7550fb53fe28fa466ab877f6b3cd120febb0f88881541a20ab4a811415b5
+    - change_id: 2026-11-15-crctl-report-status-integrity
+      child_id: null
+      kind: projection
+      logical_path: validation/runs/4338f56c-a380-4ca0-b8df-b1916e0b2145/inputs/agent-specs/crctl-report-status-integrity.yaml
+      project_id: tools
+      projection_version: v3
+      sha256: 22c12554bc4c9b017e8f8b3f01a5968ddd79ec9dea298670cb16e505bf003ca6
+    - change_id: 2026-11-15-crctl-report-status-integrity
+      child_id: null
+      kind: projection
+      logical_path: validation/runs/4338f56c-a380-4ca0-b8df-b1916e0b2145/inputs/agent-specs/dashboard-wording-consistency.yaml
+      project_id: tools
+      projection_version: v3
+      sha256: 3c90478153152e098f94ab02681d8d0fafec664654cd4196b6feb77ad4b19bbe
+    - change_id: 2026-11-15-crctl-report-status-integrity
+      child_id: null
+      kind: projection
+      logical_path: validation/runs/4338f56c-a380-4ca0-b8df-b1916e0b2145/inputs/config.yaml
+      project_id: tools
+      projection_version: v3
+      sha256: 6533bfe04c6d3b0896098955bddef3505350644ee9b1a4b7c4143f5dabd26f63
+    - change_id: 2026-11-15-crctl-report-status-integrity
+      child_id: null
+      kind: raw
+      logical_path: validation/runs/4338f56c-a380-4ca0-b8df-b1916e0b2145/inputs/test-plan.md
+      project_id: tools
+      projection_version: v3
+      sha256: a91a9389b5fd5d587efe2a3d9362ad3c1e964e23f0eb6e2b60b6ccb26bd21bdd
+    - change_id: 2026-11-15-crctl-report-status-integrity
+      child_id: null
+      kind: projection
+      logical_path: validation/runs/4338f56c-a380-4ca0-b8df-b1916e0b2145/tc-evidence.json
+      project_id: tools
+      projection_version: v3
+      sha256: 36f348d97520812341ecc41974e47d8d78903c79c34798ba6907aa9e96f4367f
+    selected_evidence:
+    - validation/runs/4338f56c-a380-4ca0-b8df-b1916e0b2145/agent-verification-report.md
+    - validation/runs/4338f56c-a380-4ca0-b8df-b1916e0b2145/inputs/agent-specs/crctl-report-status-integrity.yaml
+    - validation/runs/4338f56c-a380-4ca0-b8df-b1916e0b2145/inputs/agent-specs/dashboard-wording-consistency.yaml
+    - validation/runs/4338f56c-a380-4ca0-b8df-b1916e0b2145/inputs/config.yaml
+    - validation/runs/4338f56c-a380-4ca0-b8df-b1916e0b2145/inputs/test-plan.md
+    - validation/runs/4338f56c-a380-4ca0-b8df-b1916e0b2145/tc-evidence.json
+    slices_completed:
+      '1':
+        new_tests: 4
+        status: done
+        tc_coverage: 1/1
+        verified_at: '2026-11-16T13:48:26.068237'
+      '2':
+        new_tests: 1
+        status: done
+        tc_coverage: 1/1
+        verified_at: '2026-11-16T14:04:43.995507'
+      '3':
+        new_tests: 0
+        status: done
+        tc_coverage: 1/1
+        verified_at: '2026-11-16T14:00:21.330648'
+      '4':
+        new_tests: 0
+        status: done
+        tc_coverage: 2/2
+        verified_at: '2026-11-16T14:25:53.714743'
+    status: completed
+  deliver:
+    status: pending
+  spec:
+    confirmed_actor: ai
+    confirmed_at: '2026-11-16T00:36:38'
+    confirmed_by: dialog
+    confirmed_evidence: tools：重审 Gate 1，并确认本轮 Gate 2；multica：确认上述 Gate 1 提案范围，包括第四数暂不收口。
+    input_fingerprint: f765abe0bff015aa0bc4880766a413af29973c11f401075117adae8abd06195a
+    input_manifest:
+    - change_id: 2026-11-15-crctl-report-status-integrity
+      child_id: null
+      kind: raw
+      logical_path: canonical/.canon-index.yaml
+      project_id: tools
+      projection_version: v3
+      sha256: 4aa4034fa43fb836e3f349739957f9c310ef6764aad1475b2dfa91ed63ea0827
+    - change_id: 2026-11-15-crctl-report-status-integrity
+      child_id: null
+      kind: projection
+      logical_path: canonical/proposals/2026-11-15-crctl-report-status-integrity.yaml
+      project_id: tools
+      projection_version: v3
+      sha256: 5f67259b66fe05a5636ea0468cd0364a39ae901a41115bdd821f0f26f472efcd
+    - change_id: 2026-11-15-crctl-report-status-integrity
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/agent/crctl-report-status-integrity.yaml
+      project_id: tools
+      projection_version: v3
+      sha256: b4640c525e0c52d96a8859ec6505d3c337b2fdd2720e382513347cb571dfc010
+    - change_id: 2026-11-15-crctl-report-status-integrity
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/agent/dashboard-wording-consistency.yaml
+      project_id: tools
+      projection_version: v3
+      sha256: a3fde5cda0c83c0045efcd1876e75c5f84a8ef658254c339184bfad6d5904cc7
+    - change_id: 2026-11-15-crctl-report-status-integrity
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/code/crctl-report-status-integrity.yaml
+      project_id: tools
+      projection_version: v3
+      sha256: 72662c947f647bac85b0e166721562f302530dba00eacdec4f08ec26aee94663
+    - change_id: 2026-11-15-crctl-report-status-integrity
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/code/dashboard-wording-consistency.yaml
+      project_id: tools
+      projection_version: v3
+      sha256: af2f9944e9c7548f20481c7561e6e7441d16854a6df25efba499964a16925bca
+    - change_id: 2026-11-15-crctl-report-status-integrity
+      child_id: null
+      kind: raw
+      logical_path: design.md
+      project_id: tools
+      projection_version: v3
+      sha256: 8a28aa7770432f4735886692c65839cce8bcc173cffae6708b050f26967f5dea
+    - change_id: 2026-11-15-crctl-report-status-integrity
+      child_id: null
+      kind: projection
+      logical_path: proposal.md
+      project_id: tools
+      projection_version: v3
+      sha256: 51020713c0e62c27a52a4d9e9624e471868471ae7f0608d99dfa6e58343ee1c5
+    - change_id: 2026-11-15-crctl-report-status-integrity
+      child_id: null
+      kind: raw
+      logical_path: specs/crctl-report-status-integrity/spec.md
+      project_id: tools
+      projection_version: v3
+      sha256: c341790420c91c83cbc69e2ce804b281ab18753bc8ec56e99772d3cbc22ee83b
+    - change_id: 2026-11-15-crctl-report-status-integrity
+      child_id: null
+      kind: raw
+      logical_path: specs/dashboard-wording-consistency/spec.md
+      project_id: tools
+      projection_version: v3
+      sha256: 24c5206b27d9bf0adeb2b5eb681e3b21471eb1005f363cd025a3dce32a788a9b
+    - change_id: 2026-11-15-crctl-report-status-integrity
+      child_id: null
+      kind: raw
+      logical_path: test-plan.md
+      project_id: tools
+      projection_version: v3
+      sha256: a91a9389b5fd5d587efe2a3d9362ad3c1e964e23f0eb6e2b60b6ccb26bd21bdd
+    status: completed
+  understand:
+    confirmed_actor: ai
+    confirmed_at: '2026-11-16T00:36:19'
+    confirmed_by: dialog
+    confirmed_evidence: tools：重审 Gate 1，并确认本轮 Gate 2；multica：确认上述 Gate 1 提案范围，包括第四数暂不收口。
+    input_fingerprint: d8aad074c0412fd72a02fd87562430bd5cf8b8482c57a23ed08ea7a5098e05df
+    input_manifest:
+    - change_id: 2026-11-15-crctl-report-status-integrity
+      child_id: null
+      kind: projection
+      logical_path: canonical/proposals/2026-11-15-crctl-report-status-integrity.yaml
+      project_id: tools
+      projection_version: v3
+      sha256: 5f67259b66fe05a5636ea0468cd0364a39ae901a41115bdd821f0f26f472efcd
+    - change_id: 2026-11-15-crctl-report-status-integrity
+      child_id: null
+      kind: projection
+      logical_path: proposal.md
+      project_id: tools
+      projection_version: v3
+      sha256: 51020713c0e62c27a52a4d9e9624e471868471ae7f0608d99dfa6e58343ee1c5
+    status: completed
+score_confidence: preliminary
+status: archived
+task_type: code
+traceability:
+  spec_scenarios: 0
+  tc_cases: 0
+  test_functions: 0
+version: '3.0'

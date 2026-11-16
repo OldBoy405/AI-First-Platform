@@ -1,0 +1,51 @@
+# crctl-report-status-integrity 的 Agent 验证规格（Canonical YAML）。
+# Change: 2026-11-15-crctl-report-status-integrity
+meta:
+  task_id: crctl-report-status-integrity
+  change_id: "2026-11-15-crctl-report-status-integrity"
+  created: "2026-11-15T19:30:00+08:00"
+  task_type: code
+  system: "crctl report 子命令（crctl.mjs#cmdReport）及其临时夹具测试"
+  preconditions:
+    - "cwd 为 tools 业务根；直接用 Node 和显式文件路径，经平台默认 shell 执行，不使用额外 Python 管道或环境变量前缀。"
+    - "测试只修改 os.tmpdir 里的夹具与本地测试 remote，不改真实仓库账本或状态，不安装依赖。"
+    - "TCRSI001..004 与 TCRSI005 为顶层测试标识；内部用普通循环覆盖表驱动样本，CP 核对全部标识及 TAP pass/fail，零匹配不得通过。"
+steps:
+  - id: CP-RSI-001
+    description: >-
+      状态输入矩阵须同时通过缺失、未知状态、全部合法状态及合法动态键、坏声明四个测试，测试内部逐项断言错误对象与计数。
+    action: >-
+      node --test --test-reporter=tap --test-name-pattern "TCRSI00[1-4]" skills/shared/crctl/scripts/test/crctl.test.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "# pass 4"
+      - type: stdout_contains
+        expected: "# fail 0"
+      - type: stdout_contains
+        expected: "TCRSI001"
+      - type: stdout_contains
+        expected: "TCRSI002"
+      - type: stdout_contains
+        expected: "TCRSI003"
+      - type: stdout_contains
+        expected: "TCRSI004"
+  - id: CP-RSI-005
+    description: >-
+      已发布与未发布归档的真实 Git 夹具须通过，内部断言 report/status 的终态结论与 active、archived、直方图具体值。
+    action: >-
+      node --test --test-reporter=tap --test-name-pattern "TCRSI005" skills/shared/crctl/scripts/test/archive-tx.test.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "# pass 1"
+      - type: stdout_contains
+        expected: "# fail 0"
+      - type: stdout_contains
+        expected: "TCRSI005"
+rollback:
+  steps:
+    - "检查失败时只报告，不自动修改文件、账本或状态。"
+    - "需要撤销代码修改时，先取得授权，再依据实际差异定点逆向；禁止 reset／checkout／stash。"
