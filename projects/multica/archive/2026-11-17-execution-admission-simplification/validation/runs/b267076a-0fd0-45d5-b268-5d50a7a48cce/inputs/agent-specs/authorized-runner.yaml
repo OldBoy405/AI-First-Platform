@@ -1,0 +1,100 @@
+# authorized-runner 的 Agent 验证规格（Canonical YAML）
+# M1 折中（Gate 2 重审）：run-selection 命令型 CP 的断言携带 exit_code + PASS 标签 + fail=0 + skip=0 计数观测；
+# 具体业务正确性由该 selection 的 expected 名单对账的 Go 测试承载（精确测试身份、全部通过、零 fail/skip）。
+# Change: 2026-11-17-execution-admission-simplification
+meta:
+  task_id: authorized-runner
+  change_id: "2026-11-17-execution-admission-simplification"
+  created: "2026-11-17T23:20:00+08:00"
+  task_type: code
+  system: "默认部署的执行授权签发（默认契约与可省略字段）及其与 Runner、daemon strict 链的衔接"
+  preconditions:
+    - "cwd 为 multica 业务根；action 经平台默认 shell 执行（Windows=cmd.exe）。"
+    - "selection 检查经 run-selection.mjs --only 运行 selections.json 中同名选择，使用自建一次性 podman 实例；要求退出 0、skip 为 0、fail 为 0；零匹配、skip、expected 缺项都不算通过。"
+    - "TC-RUN-105 经 scripts/aifi45-real-run 的不消耗模型的 stub 场景：驱动自建隔离栈（server、daemon、stub 执行器），需要本机可用的 node、crctl 固定副本与 podman；运行前须已取得用户对一次性实例与该驱动的授权，禁止触碰现网库与现网 daemon。"
+    - "selection 名称与驱动的 --default-contract 选项及输出标记均为计划值，Phase 3 实现时若有调整须经设计调整记录同步本规格。"
+steps:
+  - id: CP-RUN-101
+    description: >-
+      REQ-RUN-101 / SC-RUN-101 / TC-RUN-101；confidence=high。GIVEN grant 送达并 ACK、头有效而无锚点回执；WHEN 经 run-selection 运行 run-003（ACK 与周期唤醒）；THEN SHALL 依头推进、无头或撤销头仅唤醒核验，重复唤醒不重复派发。
+    action: >-
+      node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only run-003
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "PASS run-003 "
+      - type: stdout_contains
+        expected: "skip=0"
+      - type: stdout_contains
+        expected: "fail=0"
+  - id: CP-RUN-102
+    description: >-
+      REQ-RUN-102 / SC-RUN-102～104 / TC-RUN-102；confidence=high。GIVEN 签名服务存在、无 manifest、owner 已认证；WHEN 经 run-selection 运行 run-default-contract-issue；THEN SHALL 省略三字段 201 且随后读 head 有效、显式相等 201、任一不等 409 EXECUTION_CONTRACT_MISMATCH 且无新记录。
+    action: >-
+      node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only run-default-contract-issue
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "PASS run-default-contract-issue "
+      - type: stdout_contains
+        expected: "skip=0"
+      - type: stdout_contains
+        expected: "fail=0"
+  - id: CP-RUN-103
+    description: >-
+      REQ-RUN-102 / SC-RUN-105、106 / TC-RUN-103；confidence=high。GIVEN 三种装配（无密钥无 manifest；有 manifest 与密钥；半配置）；WHEN 经 run-selection 运行 run-default-contract-wiring；THEN SHALL 无密钥正常启动且授权端点 503、显式 manifest 优先、半配置与 manifest 无密钥仍拒绝启动。
+    action: >-
+      node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only run-default-contract-wiring
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "PASS run-default-contract-wiring "
+      - type: stdout_contains
+        expected: "skip=0"
+      - type: stdout_contains
+        expected: "fail=0"
+  - id: CP-RUN-104
+    description: >-
+      REQ-RUN-103 / SC-RUN-107 / TC-RUN-104；confidence=high。GIVEN 默认部署；WHEN 经 run-selection 运行 run-authz-boundary；THEN SHALL task token 与 cloud PAT 403 EXECUTION_HUMAN_SOURCE_REQUIRED、非 owner/admin 403 FORBIDDEN_AUTHORIZER、无 project 的 CR 409 EXECUTION_SCOPE_UNRESOLVED，且均不写授权记录。
+    action: >-
+      node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only run-authz-boundary
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "PASS run-authz-boundary "
+      - type: stdout_contains
+        expected: "skip=0"
+      - type: stdout_contains
+        expected: "fail=0"
+  - id: CP-RUN-105
+    description: >-
+      REQ-RUN-104 / SC-RUN-108 / TC-RUN-105；confidence=medium。GIVEN 隔离栈以默认契约启动（不传 manifest 参数），授权头经省略字段的请求签发；WHEN 运行 architecture-stub 的 default-contract 模式；THEN SHALL 首个节点任务被 daemon 认领并经 grant 安装、crctl 检查、binding 与平台 receipt 后完成。
+    action: >-
+      node scripts/aifi45-real-run/run.mjs --scenario architecture-stub --default-contract
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "PASS stub-run scenario architecture-stub-default-contract"
+  - id: CP-RUN-106
+    description: >-
+      REQ-RUN-104 / SC-RUN-109 / TC-RUN-106；confidence=medium。GIVEN 与 DAYA-5 同形的 requirement run（源任务从未消费、CR 起初无头、头经真实授权路由以默认契约签发）；WHEN 经 run-selection 运行 run-requirement-shape；THEN SHALL writer 任务带 cr_id 与 pipeline_node_run_id 入队，writer 完成后 review-requirement 任务被派发，全程不等待源任务消耗回执。
+    action: >-
+      node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only run-requirement-shape
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "PASS run-requirement-shape "
+      - type: stdout_contains
+        expected: "skip=0"
+      - type: stdout_contains
+        expected: "fail=0"
+rollback:
+  steps:
+    - "检查失败时只报告；run-selection 与驱动自行按 nonce 与完整 ID 释放自建实例，不执行共享库清理，不按名称模式清理。"
+    - "需要撤销代码修改时，先取得授权，再依据实际差异定点逆向；禁止 reset／checkout／stash，且不得影响 multica 工作树中与本变更无关的未提交改动。"

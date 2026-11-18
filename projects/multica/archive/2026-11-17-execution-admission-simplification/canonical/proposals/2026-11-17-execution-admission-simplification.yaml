@@ -1,0 +1,123 @@
+# 2026-11-17-execution-admission-simplification.yaml — Canonical Proposal (YAML-first, V2.9)
+# AI 起草、AI 修改、AI 消费。Human View 由 `stdd canon generate` 生成。
+
+meta:
+  change_id: "2026-11-17-execution-admission-simplification"
+  title: "执行准入收缩为单一授权头判定，并让等待原因对人可见"
+  created: "2026-11-17T22:49:27.592691"
+  status: draft
+  version: "2.9"
+
+why:
+  problem: |
+    DAYA-5（CR-MES-2026-001）的 requirement 流水线自 11 月 9 日起停在 write-requirement-prd 节点，
+    8 天内无人发现，review-requirement 从未派发。只读排查（2026-11-17，只读事务、仅限该 issue/CR）确认：
+    (1) 直接阻塞是 Runner 入队前的准入判定返回 HEAD_UNAVAILABLE（CR 无执行授权头，execution 授权记录为 0），节点无任务；
+    (2) 即便补上授权头，还有三道串联前置：默认部署不给 server 传入可信契约启动参数（docker/entrypoint.sh 不转发参数，
+    签发端点返回 503）；CR 的 shell_issue_id 为空，授权所需的 project 无法解析（409 EXECUTION_SCOPE_UNRESOLVED），
+    该绑定只由显式 CR bind 写入，本 CR 注册后未执行；源任务虽 completed 却没有 consumption 回执与 effect，
+    准入随后停在 WAIT_CONSUMPTION；
+    (3) resume 在“已入队”和“因准入等待”两种情况下都返回 200 加 run ID，等待没有对任何人呈现。
+    这些缺口同源：准入被实现为“授权、送达证明、消耗回执、effect/verdict 链”的串联证明，任何一环没接通都会无声停住；
+    而该证明链的设计前提是 Agent 为不可信客户端（归档设计 ADJ-AIFI45-M005-TRUST）。
+  motivation: |
+    用户 2026-11-17 明确：multica 本项目不以防止任务恶意操作为目标。在这一威胁模型下，准入真正需要保证的是：
+    只有有权人类的、当前有效的授权才能启动实施；授权绑定正确范围且叫停后不再派发；派发幂等；
+    等待对人可见。这些由一份当前授权记录加一个判定点即可支撑，不需要对源任务做密码学消费证明。
+    当前链路的维护与部署成本（每次补 manifest、补回执）已超出所支撑的保证，并让普通业务执行被基础设施握手挡住。
+    用户已确认：接受修订 AIFI-45 信任模型（本 change 取代其准入部分）、代码范围以 multica 为主、
+    shell_issue_id 缺失经排查为流程步骤缺口、修复额度不依赖准入所读的消耗链。
+
+what_changes:
+  - id: C1
+    type: modified
+    description: |
+      Runner 的执行准入判定只以 CR 当前执行授权头为依据：头存在、为 approve 记录、且与 workspace 和 CR 同属一个范围。
+      不再要求源任务当前 generation 的消耗回执与该任务的 effect/verdict 链。四类受保护动作（节点置 passed、人工门通过、
+      两条派发路径）继续经同一判定点、同一锁，叫停与入队不交错。
+  - id: C2
+    type: modified
+    description: |
+      默认部署无需额外启动参数即可签发人工执行授权。签发仍只接受经认证的人类 owner/admin；
+      project 范围仍只取自 CR 到同 workspace shell issue 的关系，不取自请求体。
+  - id: C3
+    type: new
+    description: |
+      requirement 流水线的 resume 回执（architecture 若有同类 resume 入口，Phase 2 核实后同样处理），以及一个只读的运行状态读面，如实返回当前状态与等待原因
+      （已入队含任务标识 / 等待准入含原因 / 其他既有等待原因 / 已完成）。原因取自 Runner 已记录在节点上的等待信息，
+      不新增表、状态或错误码；原有 run_id、changed 字段保持不变。
+
+capabilities:
+  new:
+    - name: execution-wait-visibility
+      description: "流水线等待对人和调用方可见：回执与只读状态读面回显等待原因，等待态不再呈现为已推进。"
+  modified:
+    - name: admission-task-binding
+      description: "准入不再把任务 generation 的消耗回执与 effect 作为放行条件；仅判定当前授权头。取代归档变更 2026-11-11-aifi-45-admission-task-binding 的锚点任务规则。"
+    - name: authorized-runner
+      description: "SC-RUN-003 的放行条件改为当前授权头有效；默认部署可签发人工执行授权；敏感动作人工门、派发幂等与旧证据不推进当前节点保持不变。"
+
+constraints:
+  - "保证 G1：只有一份当前有效、由经认证的人类 owner/admin 做出的授权，才能让 Runner 启动实施；task-token、作者自述和请求体不能建立或放宽授权。"
+  - "保证 G2：授权绑定正确的 workspace / project / CR；指向其他 workspace 或 CR 的授权头按无头处理；授权被叫停后不再派发新任务，并发时不出现叫停后仍入队。"
+  - "保证 G3：生产发布、破坏性数据操作、权限扩大、对外承诺或支出等敏感动作仍需单独人工授权，本变更不放宽。"
+  - "保证 G4：派发幂等，旧 cycle、旧任务的证据不推进当前节点；重复 reconcile 不产生第二个任务。"
+  - "保证 G5：任何等待都对人和调用方可见并带原因；等待态不得被呈现为已推进。"
+  - "已有授权头的 CR 无需迁移；已入队任务不受影响；回执与状态读面的新增字段向后兼容，旧 CLI 忽略即可。"
+  - "不修改 tools 仓（crctl）、daemon 的预消费与 binding endpoint、签名信封格式，以及 consumption / effect 的写入路径；它们仅不再作为准入条件。"
+  - "不改变 CR 与 shell issue 的显式绑定流程；project 归属缺失时由现有授权端点的明确错误与 C3 的可见性暴露。"
+  - "实施期间不对现网 multica-postgres 做任何写入；依赖数据库的测试只在获授权的一次性实例上运行；部署、重启、对 DAYA-5 的授权与恢复各自另行授权。"
+  - "multica 代码注释使用英文；按 CUSTOM.md 现行结构登记定制，并追溯到本 change 标识。"
+
+stakeholders:
+  - "multica 维护者（需求方，已确认威胁模型与范围）"
+  - "工作区 owner/admin（唯一可签发执行授权的人）"
+  - "协调 agent 与 writer/reviewer agent（resume 回执和状态读面的调用方）"
+
+risk_areas:
+  - capability: admission-task-binding
+    risk: "准入不再校验源任务的消耗回执与 effect 后，不再防“Agent 谎报已消费或借用他任务证据”。这是用户已明确接受的威胁模型变化，并取代已批准的 M005 信任调整。"
+    mitigation: "敏感动作人工门与独立 reviewer 保留；Gate 1 由用户确认接受该取舍；归档变更与旧绑定不改动。"
+  - capability: admission-task-binding
+    risk: "既有测试大量断言 WAIT_CONSUMPTION / WAIT_TRUSTED_T_COMMIT，需随语义改写，易误删对叫停、跨范围、幂等的覆盖。"
+    mitigation: "Phase 2 给出受保护动作到保证的映射表；改写后每个动作仍有“无头不放行、有效头放行、叫停后不放行、跨范围头不放行”的用例。"
+  - capability: authorized-runner
+    risk: "默认契约值的来源与 tools 侧一致性：静态阅读显示 digest 只是被签发、挑战、授权三处比较一致的标识，loader 接受任意 64 位十六进制，但未经实机联调。"
+    mitigation: "Phase 2 在一次性环境中让签发、daemon 取件与 crctl 检查按默认值同跑一次；不一致则停下复核设计。"
+  - capability: execution-wait-visibility
+    risk: "node 无任务不等于未通过（投影器可直接写 passed，人工节点无任务），单节点任务状态函数也不含等待原因，直接复用会误判。"
+    mitigation: "状态由节点状态、runner 等待信息与最新任务共同给出，边界在 Phase 2 逐条枚举并用例验证。"
+  - capability: authorized-runner
+    risk: "CR 注册后未执行显式 bind 的流程缺口可能不止 DAYA-5；本次只读排查按授权范围只覆盖该 CR，未核实其他 CR 的占比。"
+    mitigation: "不在本变更修复绑定流程；C3 使缺失可见，占比核查另行取得授权后进行。"
+
+non_goals:
+  - "不防止恶意或故意的错误操作，不以不可信 Agent 为威胁模型；不删除签名信封、daemon 预消费、binding endpoint 及 consumption/effect 链，只把它们从准入条件中摘除。"
+  - "不逐个异常补丁：不为 HEAD_UNAVAILABLE、WAIT_CONSUMPTION 等分别写处理分支，等待原因原样回显。"
+  - "不新增超时、重试、告警、巡检、通知系统。"
+  - "不做“可信原始请求直接构成授权”（目标方案 §3.1）的自动签发，不改变人工授权入口。"
+  - "不修改 crctl next/status，不修改 tools 仓；不改 run 复用，不清理既有 run。"
+  - "不操作 DAYA-5 及任何现网数据：不补授权头、不改 shell_issue_id、不 resume、不重启。"
+  - "不迁移 legacy 执行授权与历史消耗（另有 2026-10-29-legacy-execution-migration）。"
+
+critical:
+  is_critical: false
+  risk_assessment:
+    safety_critical: false
+    financial: false
+    cross_system: false
+
+anchoring:
+  level: L2
+  reference_changes: []
+  anchor_implementations: []
+
+success_criteria:
+  - "CR 无执行授权头时，四类受保护动作均不放行、不入队，等待原因为 HEAD_UNAVAILABLE，可在回执与状态读面读到。"
+  - "CR 有当前 approve 授权头（同 workspace 与 CR）时，即使源任务没有消耗回执和 effect，四类受保护动作均放行；重复 reconcile 后任务与节点行数不变。"
+  - "授权头被叫停后不再产生新的派发；叫停与入队并发时，不出现叫停提交后仍入队的结果。"
+  - "指向其他 workspace 或其他 CR 的授权头按无头处理，不借用其决定。"
+  - "默认部署（不传任何契约启动参数）下，经认证的 owner/admin 对已有 project 归属的 CR 提交授权请求，返回创建成功并设置授权头；task-token 或非人类来源的请求仍被拒绝；CR 无 project 归属时仍返回 EXECUTION_SCOPE_UNRESOLVED 并带明确说明。"
+  - "resume 回执与只读状态读面在等待准入时返回等待原因，不呈现为已推进；已入队时返回任务标识；原有 run_id、changed 字段不变，缺失新字段的旧调用方不受影响。"
+  - "既有受影响测试按新语义更新后全部通过，被改写用例对应的保证（无头、有效头、叫停、跨范围、幂等）各至少保留一个；未新增删除即无法解释的跳过。"
+  - "在获授权的一次性环境中，用与 DAYA-5 同形的 CR（无消耗回执的源任务、人工授权后）完成一次真实验证：writer 节点入队并推进到 review-requirement 的派发；不接触现网数据。"

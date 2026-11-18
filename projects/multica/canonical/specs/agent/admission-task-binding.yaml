@@ -1,0 +1,90 @@
+# admission-task-binding 的 Agent 验证规格（Canonical YAML）
+# M1 折中（Gate 2 重审）：run-selection 命令型 CP 的断言携带 exit_code + PASS 标签 + fail=0 + skip=0 计数观测；
+# 具体业务正确性由该 selection 的 expected 名单对账的 Go 测试承载（精确测试身份、全部通过、零 fail/skip）。
+# Change: 2026-11-17-execution-admission-simplification
+meta:
+  task_id: admission-task-binding
+  change_id: "2026-11-17-execution-admission-simplification"
+  created: "2026-11-17T23:20:00+08:00"
+  task_type: code
+  system: "server/internal/governance 的 Runner 执行准入（DecideAdmission、decideUnderHeadLock、四类受保护动作）"
+  preconditions:
+    - "cwd 为 multica 业务根；action 经平台默认 shell 执行（Windows=cmd.exe），Go 命令用 `go -C server`，含 | 的正则用双引号。"
+    - "selection 检查经 scripts/aifi45-disposable/run-selection.mjs 的 --only 运行 selections.json 中同名选择：每次由其自建并释放一次性 podman 实例，使用受限一次性角色，禁止外部 admin 连接、共享库与非本次创建的容器；要求退出 0、skip 为 0、fail 为 0。运行前须已取得用户对一次性实例的授权，禁止触碰现网 multica-postgres。"
+    - "零匹配、skip、expected 名单缺项、名称不存在都不算通过。selection 名称为计划值，Phase 3 登记 selections.json 时若有调整，须经设计调整记录同步本规格。"
+steps:
+  - id: CP-ATB-101
+    description: >-
+      REQ-ATB-101 / SC-ATB-101～104 / TC-ATB-101；confidence=high。GIVEN 无头、有效头无任何回执、撤销头、跨 workspace/CR 头；
+      WHEN 经 run-selection 运行 ath-head-matrix（判定函数表 + 四类受保护动作各一）；THEN SHALL 分别得到 HEAD_UNAVAILABLE、ADMITTED、HEAD_REJECTED、HEAD_UNAVAILABLE 且不放行/放行与预期一致。
+    action: >-
+      node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only ath-head-matrix
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "PASS ath-head-matrix "
+      - type: stdout_contains
+        expected: "skip=0"
+      - type: stdout_contains
+        expected: "fail=0"
+  - id: CP-ATB-102
+    description: >-
+      REQ-ATB-102 / SC-ATB-105 / TC-ATB-102；confidence=high。GIVEN 判定持有头锁；WHEN 经 run-selection 运行 ath-lock-revoke；THEN SHALL 撤销被阻塞到效果结束、panic 释放锁、撤销后原 Runner 与重启后均不推进。
+    action: >-
+      node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only ath-lock-revoke
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "PASS ath-lock-revoke "
+      - type: stdout_contains
+        expected: "skip=0"
+      - type: stdout_contains
+        expected: "fail=0"
+  - id: CP-ATB-103
+    description: >-
+      REQ-ATB-102 / SC-ATB-106、107 / TC-ATB-103；confidence=medium。GIVEN run 已注册而 CR 无头；WHEN 经 run-selection 运行 ath-discovery（真实授权路由签发后检查队列，两次 ResumeActiveRuns）；THEN SHALL 签发后发现前无任务、首次发现后恰 1 个首节点任务、再次发现计数与首任务 id 不变，且源任务无消耗时首节点仍 passed 并派发后续。
+    action: >-
+      node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only ath-discovery
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "PASS ath-discovery "
+      - type: stdout_contains
+        expected: "skip=0"
+      - type: stdout_contains
+        expected: "fail=0"
+  - id: CP-ATB-104
+    description: >-
+      REQ-ATB-103 / SC-ATB-108 / TC-ATB-104；confidence=medium。GIVEN 有效头与缺 source_task_id 的 run；WHEN 经 run-selection 运行 ath-source-task；THEN SHALL 置 passed 与人工门放行、入队仍返回 AUTHORITY_MISMATCH 且无任务。
+    action: >-
+      node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only ath-source-task
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "PASS ath-source-task "
+      - type: stdout_contains
+        expected: "skip=0"
+      - type: stdout_contains
+        expected: "fail=0"
+  - id: CP-ATB-105
+    description: >-
+      REQ-ATB-104 / SC-ATB-109 / TC-ATB-105；confidence=high。GIVEN T1 在 G1 消费；WHEN 经 run-selection 运行既有 m005-consumption-effect（改写后）；THEN SHALL 同 generation 重放 200 且 changed=false 行数不变，G2 提交 201 回执 +1 且 command/verdict/settlement +0，准入仍为 ADMITTED。
+    action: >-
+      node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only m005-consumption-effect
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "PASS m005-consumption-effect "
+      - type: stdout_contains
+        expected: "skip=0"
+      - type: stdout_contains
+        expected: "fail=0"
+rollback:
+  steps:
+    - "检查失败时只报告；run-selection 自行按 nonce 与完整 ID 释放它创建的实例，不执行共享库清理，不按名称模式清理。"
+    - "需要撤销代码修改时，先取得授权，再依据实际差异定点逆向；禁止 reset／checkout／stash，且不得影响 multica 工作树中与本变更无关的未提交改动。"

@@ -1,0 +1,91 @@
+# execution-wait-visibility — 行为规格（Canonical YAML，新增能力）
+# Change: 2026-11-17-execution-admission-simplification
+
+meta:
+  capability: "execution-wait-visibility"
+  change_id: "2026-11-17-execution-admission-simplification"
+  created: "2026-11-17T23:20:00+08:00"
+  confidence: medium
+
+requirements:
+  - id: "REQ-EWV-001"
+    description: >-
+      流水线运行的当前进展由 pipeline_run、前沿节点与其最新任务的事实推出；等待原因只在前沿节点无活动任务时采信，残留的旧 runner 标记不得让已入队或已通过的节点显示为等待。
+    scenarios:
+      - id: "SC-EWV-001"
+        confidence: high
+        evidence: "design.md D5"
+        given: "run 状态分别为 completed、failed、cancelled。"
+        when: "计算该 run 的进展。"
+        then: "SHALL state 分别为 completed、failed、cancelled；failed 时 SHALL 带前沿节点 runner.error.code（若有）。"
+      - id: "SC-EWV-002"
+        confidence: high
+        evidence: "design.md D5；取证 C3 第 2 项（runner 残留）"
+        given: "run 为 running；前沿节点的最新任务为 queued、deferred、dispatched、waiting_local_directory 或 running 之一；节点 runner 里残留着旧的 wait_reason=admission。"
+        when: "计算该 run 的进展。"
+        then: "SHALL state 为 in_flight，并带 node_id、attempt、task_id、task_status；SHALL NOT 显示为 waiting。"
+      - id: "SC-EWV-003"
+        confidence: high
+        evidence: "design.md D5；DAYA-5 现状"
+        given: >-
+          run 为 running；前沿节点无活动任务；runner 为 wait_reason=admission 且 admission 取各种字符串，
+          包括历史值 WAIT_CONSUMPTION 与 WAIT_TRUSTED_T_COMMIT。
+        when: "计算该 run 的进展。"
+        then: "SHALL state 为 waiting，带 wait_reason 与 admission 的原样字符串（不做枚举校验）；前沿节点已有最新任务时再带 task_status。"
+        and:
+          - "其他既有等待原因（projection_stale、review_evidence、authority_postcondition 等）同样原样作为 wait_reason 透传。"
+      - id: "SC-EWV-004"
+        confidence: medium
+        evidence: "design.md D5；取证 C3 第 8 项"
+        given: "run 为 waiting_approval，前沿是未送达审批的人工节点。"
+        when: "计算该 run 的进展。"
+        then: "SHALL state 为 waiting_human 并带该节点的 node_id。"
+      - id: "SC-EWV-005"
+        confidence: medium
+        evidence: "design.md D5；取证 C3 第 3、8 项（无任务不等于等待）"
+        given: "run 为 running，但没有 status=running 的前沿节点；或前沿节点既无活动任务也无 wait_reason；另有被 projector 直接写 passed 的无任务节点。"
+        when: "计算该 run 的进展。"
+        then: "SHALL state 为 idle 且不带等待原因；SHALL NOT 把无任务的 passed 节点或无任务的人工节点判为 waiting。"
+
+  - id: "REQ-EWV-002"
+    description: >-
+      requirement 的 resume 与 architecture 的 start 回执在 run_id、changed 之外新增 progress；原字段与语义不变；进展读取失败不使已提交的请求失败，也不被呈现为已推进。
+    scenarios:
+      - id: "SC-EWV-006"
+        confidence: high
+        evidence: "proposal.yaml success_criteria 第 6 条；design.md D6"
+        given: "一个因准入等待的 requirement run，以及一个已入队的 run。"
+        when: "分别对其调用 resume（requirement）与 start（architecture）。"
+        then: >-
+          SHALL 回执仍含 run_id 与 changed 且语义不变；等待准入的回执 progress.state 为 waiting 并带 admission 原因；已入队的回执 progress.state 为 in_flight 并带 task_id。
+        and:
+          - "缺失 progress 字段的旧调用方行为不变（CLI 的 JSON 输出为原 map 加新字段）。"
+      - id: "SC-EWV-007"
+        confidence: medium
+        evidence: "design.md D6"
+        given: "run 已提交，但进展读取发生数据库错误。"
+        when: "返回回执。"
+        then: "SHALL 仍返回成功状态与 run_id、changed，省略 progress 并记录日志；SHALL NOT 在回执中声称已推进。"
+
+  - id: "REQ-EWV-003"
+    description: >-
+      提供成员级只读的运行进展读面与 CLI 命令；与 Runner 开关同开同关；不新增表、状态或错误码。
+    scenarios:
+      - id: "SC-EWV-008"
+        confidence: high
+        evidence: "proposal.yaml what_changes C3；design.md D6"
+        given: "Runner 已启用；一个 workspace 内的 run；该 workspace 的成员、非成员，以及绑定另一个 workspace 的任务令牌。"
+        when: "GET /api/workspaces/{workspaceID}/pipeline-runs/{runID}。"
+        then: >-
+          SHALL 对成员返回 200 与 run_id、pipeline_id、cr_id、status、progress；对非成员返回 404；对绑定其他 workspace 的任务令牌返回 403；
+          run 不属于该 workspace 时返回 404。
+        and:
+          - "Runner 未启用时该路由不挂载，与 POST 路由一致。"
+      - id: "SC-EWV-009"
+        confidence: medium
+        evidence: "design.md D6"
+        given: "CLI 对上述路由与 requirement、architecture 的 POST 回执的响应。"
+        when: "运行 multica cr pipeline status --run <id>，以及 start、resume 的 table 输出。"
+        then: "SHALL status 使用普通客户端认证读取并输出 STATE 与 REASON；start、resume 的 table 新增这两列；JSON 输出透传完整 map。"
+        and:
+          - "已有 start、resume 的请求体、路径与令牌前缀检查不变。"

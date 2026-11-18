@@ -3,19 +3,25 @@ proposals:
   2026-11-13-aifi-45-real-execution-closure: proposals/2026-11-13-aifi-45-real-execution-closure.yaml
   2026-11-15-multica-backend-tests-green: proposals/2026-11-15-multica-backend-tests-green.yaml
   2026-11-16-multica-execution-evidence-closure: proposals/2026-11-16-multica-execution-evidence-closure.yaml
+  2026-11-17-execution-admission-simplification: proposals/2026-11-17-execution-admission-simplification.yaml
 specs:
   agent:
     2026-11-16-multica-execution-evidence-closure: specs/agent/2026-11-16-multica-execution-evidence-closure.yaml
+    admission-task-binding: specs/agent/admission-task-binding.yaml
+    authorized-runner: specs/agent/authorized-runner.yaml
+    execution-wait-visibility: specs/agent/execution-wait-visibility.yaml
     backend-tests-ownership: specs/agent/backend-tests-ownership.yaml
     ci-admin-test-ownership: specs/agent/ci-admin-test-ownership.yaml
     governance-runner-run-lock: specs/agent/governance-runner-run-lock.yaml
     real-execution-closure: specs/agent/real-execution-closure.yaml
     workspace-delete-execution-tables: specs/agent/workspace-delete-execution-tables.yaml
   code:
+    admission-task-binding: specs/code/admission-task-binding.yaml
     authorized-runner: specs/code/authorized-runner.yaml
     backend-tests-ownership: specs/code/backend-tests-ownership.yaml
     ci-admin-test-ownership: specs/code/ci-admin-test-ownership.yaml
     ci-backend-environment: specs/code/ci-backend-environment.yaml
+    execution-wait-visibility: specs/code/execution-wait-visibility.yaml
     governance-runner-run-lock: specs/code/governance-runner-run-lock.yaml
     selection-reconciliation: specs/code/selection-reconciliation.yaml
 version: '2.9'
