@@ -1,0 +1,25 @@
+meta:
+  capability: merge-facts-timeout
+  change_id: 2026-11-18-merge-facts-timeout
+  created: '2026-11-18T23:06:10+08:00'
+  confidence: high
+
+requirements:
+  - id: REQ-MFT-001
+    confidence: high
+    description: 挂起请求具有可兑现的现有超时，不改变正常响应或已有传输分类。
+    scenarios:
+      - id: SC-MFT-001
+        confidence: high
+        evidence: proposal.yaml C1 和成功标准 1
+        given: merge-facts 等待一个不会完成的合法测试请求，等待超时是进程唯一待处理任务。
+        when: 既有超时阈值到达。
+        then: 客户端 SHALL 返回 MERGE_FACTS_UNAVAILABLE 以及超时原因，而不是提前退出。
+        and: []
+      - id: SC-MFT-002
+        confidence: high
+        evidence: proposal.yaml C1 和成功标准 2
+        given: merge-facts 已收到正常响应或可分类的错误响应。
+        when: 客户端处理结果。
+        then: 客户端 SHALL 按原有传输分类返回结果。
+        and: []

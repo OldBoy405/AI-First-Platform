@@ -1,0 +1,257 @@
+approval_receipts:
+- confirmed_actor: ai
+  confirmed_at: '2026-11-18T23:16:13'
+  confirmed_by: dialog
+  confirmed_evidence: 确认 Gate 2，按上述范围连续执行 BUILD
+  note: reapproved
+  prior_input_fingerprint: 3ba3d90d42143607375b45cfd126b4c750c101af84714d9a3590afa951c73a4a
+  prior_input_manifest_json: '[{"change_id":"2026-11-18-merge-facts-timeout","child_id":null,"kind":"raw","logical_path":"canonical/.canon-index.yaml","project_id":"tools","projection_version":"v3","sha256":"4aa4034fa43fb836e3f349739957f9c310ef6764aad1475b2dfa91ed63ea0827"},{"change_id":"2026-11-18-merge-facts-timeout","child_id":null,"kind":"projection","logical_path":"canonical/proposals/2026-11-18-merge-facts-timeout.yaml","project_id":"tools","projection_version":"v3","sha256":"355999070f2ba4d691708e7a3fe6880871f0c8e75cc9b91ce2752e36e9d0ce4e"},{"change_id":"2026-11-18-merge-facts-timeout","child_id":null,"kind":"raw","logical_path":"canonical/specs/agent/merge-facts-timeout.yaml","project_id":"tools","projection_version":"v3","sha256":"242bedaa00524866f12460b810ecfc214fa3abe4bbd88d8952e6da79a8bb7c43"},{"change_id":"2026-11-18-merge-facts-timeout","child_id":null,"kind":"raw","logical_path":"canonical/specs/code/merge-facts-timeout.yaml","project_id":"tools","projection_version":"v3","sha256":"9871a786e08e9d2d46c9943e7da5b085a1baf6211a80e6a34521c9e4242b94a0"},{"change_id":"2026-11-18-merge-facts-timeout","child_id":null,"kind":"raw","logical_path":"design.md","project_id":"tools","projection_version":"v3","sha256":"79704990a4bcd66e700673af704ba8d8f9f2ecb902f155ad4348717b9f803568"},{"change_id":"2026-11-18-merge-facts-timeout","child_id":null,"kind":"projection","logical_path":"proposal.md","project_id":"tools","projection_version":"v3","sha256":"1ce0cb2d284a4a6eaab4c5237f307de7f07f97f7e61da1c853b634d8237fa5df"},{"change_id":"2026-11-18-merge-facts-timeout","child_id":null,"kind":"raw","logical_path":"specs/merge-facts-timeout/spec.md","project_id":"tools","projection_version":"v3","sha256":"54408a76f19cfb058e25e4025e6bef31fd621656ba1f8e811c1f66444728d53a"},{"change_id":"2026-11-18-merge-facts-timeout","child_id":null,"kind":"raw","logical_path":"test-plan.md","project_id":"tools","projection_version":"v3","sha256":"f2a5c94d605b334db754bd08f62042c8ea103a18781d7755054cc5f0958ddec3"}]'
+  receipt_id: gate2-2026-11-18T23:16:13
+  recorded_at: '2026-11-19T00:10:24'
+  status: superseded
+change_id: 2026-11-18-merge-facts-timeout
+complexity_score: 0
+current_phase: deliver
+last_modified: '2026-11-19T01:08:07.388572'
+long_range:
+  enabled: true
+  mode: full_auto
+  pre_auth_completed: true
+  pre_auth_timestamp: '2026-11-18T23:16:13'
+mode: lightweight
+phases:
+  build:
+    confirmed_actor: ai
+    confirmed_at: '2026-11-19T00:53:47'
+    confirmed_by: dialog
+    confirmed_evidence: 确认 Gate 3，提交、推送、归档
+    input_fingerprint: b37a9e7d6c90404277c4fb421252537e9137e2b8c5b395d29d55c5bb7c4bac19
+    input_manifest:
+    - change_id: 2026-11-18-merge-facts-timeout
+      child_id: null
+      kind: projection
+      logical_path: .stdd.yaml
+      project_id: tools
+      projection_version: v3
+      sha256: 7527d7df5e47e6026f6121e78d4e8663b3c452eff80a33667cb2d7403caa3476
+    - change_id: 2026-11-18-merge-facts-timeout
+      child_id: null
+      kind: raw
+      logical_path: canonical/.canon-index.yaml
+      project_id: tools
+      projection_version: v3
+      sha256: 4aa4034fa43fb836e3f349739957f9c310ef6764aad1475b2dfa91ed63ea0827
+    - change_id: 2026-11-18-merge-facts-timeout
+      child_id: null
+      kind: projection
+      logical_path: canonical/proposals/2026-11-18-merge-facts-timeout.yaml
+      project_id: tools
+      projection_version: v3
+      sha256: 355999070f2ba4d691708e7a3fe6880871f0c8e75cc9b91ce2752e36e9d0ce4e
+    - change_id: 2026-11-18-merge-facts-timeout
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/agent/merge-facts-timeout.yaml
+      project_id: tools
+      projection_version: v3
+      sha256: 702ac09b9119fdf0a9c974a8a4521147cabb76abf39bb211ebf88268b8fbe004
+    - change_id: 2026-11-18-merge-facts-timeout
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/code/merge-facts-timeout.yaml
+      project_id: tools
+      projection_version: v3
+      sha256: 9871a786e08e9d2d46c9943e7da5b085a1baf6211a80e6a34521c9e4242b94a0
+    - change_id: 2026-11-18-merge-facts-timeout
+      child_id: null
+      kind: raw
+      logical_path: design-adjustments.md
+      project_id: tools
+      projection_version: v3
+      sha256: cd3ecb1ed147bcc69bde8d7215b74c14c88af745de80c3aab220779319a396b5
+    - change_id: 2026-11-18-merge-facts-timeout
+      child_id: null
+      kind: raw
+      logical_path: design.md
+      project_id: tools
+      projection_version: v3
+      sha256: 44f1793f0e64e6bdcc00974657209753d399190197c8cd23b18d48da35e7d0b8
+    - change_id: 2026-11-18-merge-facts-timeout
+      child_id: null
+      kind: raw
+      logical_path: pending-adjustments.md
+      project_id: tools
+      projection_version: v3
+      sha256: 6f0623de956595c80d99d368cd05f254693ab9e0ab047e4200251719366c31d7
+    - change_id: 2026-11-18-merge-facts-timeout
+      child_id: null
+      kind: projection
+      logical_path: proposal.md
+      project_id: tools
+      projection_version: v3
+      sha256: 1ce0cb2d284a4a6eaab4c5237f307de7f07f97f7e61da1c853b634d8237fa5df
+    - change_id: 2026-11-18-merge-facts-timeout
+      child_id: null
+      kind: raw
+      logical_path: specs/merge-facts-timeout/spec.md
+      project_id: tools
+      projection_version: v3
+      sha256: 54408a76f19cfb058e25e4025e6bef31fd621656ba1f8e811c1f66444728d53a
+    - change_id: 2026-11-18-merge-facts-timeout
+      child_id: null
+      kind: raw
+      logical_path: test-plan.md
+      project_id: tools
+      projection_version: v3
+      sha256: f377d179ffd3eefbf183fd71828220ababd2fb94b2af08b59e7b4050e4c1453c
+    - change_id: 2026-11-18-merge-facts-timeout
+      child_id: null
+      kind: raw
+      logical_path: test-report.md
+      project_id: tools
+      projection_version: v3
+      sha256: 2ac4a131360d171facff61764832998db92f0587763460f77e1348d1a864ff9f
+    - change_id: 2026-11-18-merge-facts-timeout
+      child_id: null
+      kind: raw
+      logical_path: validation/runs/mft-r2-20261119/agent-verification-report.md
+      project_id: tools
+      projection_version: v3
+      sha256: 0b5ec775ba005afb7a4b915213adf685178446aed9fb6e278553352cd592390f
+    - change_id: 2026-11-18-merge-facts-timeout
+      child_id: null
+      kind: projection
+      logical_path: validation/runs/mft-r2-20261119/inputs/agent-specs/merge-facts-timeout.yaml
+      project_id: tools
+      projection_version: v3
+      sha256: 02608a10b4ffe5375ed7f007e956b5cfa653485d2e2a5b769f7a8c84e0ddd724
+    - change_id: 2026-11-18-merge-facts-timeout
+      child_id: null
+      kind: projection
+      logical_path: validation/runs/mft-r2-20261119/inputs/config.yaml
+      project_id: tools
+      projection_version: v3
+      sha256: 6533bfe04c6d3b0896098955bddef3505350644ee9b1a4b7c4143f5dabd26f63
+    - change_id: 2026-11-18-merge-facts-timeout
+      child_id: null
+      kind: raw
+      logical_path: validation/runs/mft-r2-20261119/inputs/test-plan.md
+      project_id: tools
+      projection_version: v3
+      sha256: f377d179ffd3eefbf183fd71828220ababd2fb94b2af08b59e7b4050e4c1453c
+    - change_id: 2026-11-18-merge-facts-timeout
+      child_id: null
+      kind: projection
+      logical_path: validation/runs/mft-r2-20261119/tc-evidence.json
+      project_id: tools
+      projection_version: v3
+      sha256: 978fbd502a6edc905e1f244dddb2bb3e5cd3795bf702b90d2da335cd050b51a9
+    selected_evidence:
+    - validation/runs/mft-r2-20261119/agent-verification-report.md
+    - validation/runs/mft-r2-20261119/inputs/agent-specs/merge-facts-timeout.yaml
+    - validation/runs/mft-r2-20261119/inputs/config.yaml
+    - validation/runs/mft-r2-20261119/inputs/test-plan.md
+    - validation/runs/mft-r2-20261119/tc-evidence.json
+    slices_completed:
+      S1:
+        new_tests: 1
+        status: done
+        tc_coverage: 1/1
+        verified_at: '2026-11-19T00:39:24.445545'
+    status: completed
+  deliver:
+    status: in_progress
+  spec:
+    confirmed_actor: ai
+    confirmed_at: '2026-11-19T00:10:24'
+    confirmed_by: dialog
+    confirmed_evidence: 确认修订后的 Gate 2
+    input_fingerprint: 43f3c1d29ce5cdf6b55cef1186badd7570d5cd02b4a4e4d24fc5951eccbf549a
+    input_manifest:
+    - change_id: 2026-11-18-merge-facts-timeout
+      child_id: null
+      kind: raw
+      logical_path: canonical/.canon-index.yaml
+      project_id: tools
+      projection_version: v3
+      sha256: 4aa4034fa43fb836e3f349739957f9c310ef6764aad1475b2dfa91ed63ea0827
+    - change_id: 2026-11-18-merge-facts-timeout
+      child_id: null
+      kind: projection
+      logical_path: canonical/proposals/2026-11-18-merge-facts-timeout.yaml
+      project_id: tools
+      projection_version: v3
+      sha256: 355999070f2ba4d691708e7a3fe6880871f0c8e75cc9b91ce2752e36e9d0ce4e
+    - change_id: 2026-11-18-merge-facts-timeout
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/agent/merge-facts-timeout.yaml
+      project_id: tools
+      projection_version: v3
+      sha256: 702ac09b9119fdf0a9c974a8a4521147cabb76abf39bb211ebf88268b8fbe004
+    - change_id: 2026-11-18-merge-facts-timeout
+      child_id: null
+      kind: raw
+      logical_path: canonical/specs/code/merge-facts-timeout.yaml
+      project_id: tools
+      projection_version: v3
+      sha256: 9871a786e08e9d2d46c9943e7da5b085a1baf6211a80e6a34521c9e4242b94a0
+    - change_id: 2026-11-18-merge-facts-timeout
+      child_id: null
+      kind: raw
+      logical_path: design.md
+      project_id: tools
+      projection_version: v3
+      sha256: 44f1793f0e64e6bdcc00974657209753d399190197c8cd23b18d48da35e7d0b8
+    - change_id: 2026-11-18-merge-facts-timeout
+      child_id: null
+      kind: projection
+      logical_path: proposal.md
+      project_id: tools
+      projection_version: v3
+      sha256: 1ce0cb2d284a4a6eaab4c5237f307de7f07f97f7e61da1c853b634d8237fa5df
+    - change_id: 2026-11-18-merge-facts-timeout
+      child_id: null
+      kind: raw
+      logical_path: specs/merge-facts-timeout/spec.md
+      project_id: tools
+      projection_version: v3
+      sha256: 54408a76f19cfb058e25e4025e6bef31fd621656ba1f8e811c1f66444728d53a
+    - change_id: 2026-11-18-merge-facts-timeout
+      child_id: null
+      kind: raw
+      logical_path: test-plan.md
+      project_id: tools
+      projection_version: v3
+      sha256: f377d179ffd3eefbf183fd71828220ababd2fb94b2af08b59e7b4050e4c1453c
+    status: completed
+  understand:
+    confirmed_actor: ai
+    confirmed_at: '2026-11-18T23:06:10'
+    confirmed_by: dialog
+    confirmed_evidence: 确认独立轻量变更的 Gate 1
+    input_fingerprint: 0d184b10e1243586502b87ccb3a88250340aefc65f3cb6c0a3816fdab426c13d
+    input_manifest:
+    - change_id: 2026-11-18-merge-facts-timeout
+      child_id: null
+      kind: projection
+      logical_path: canonical/proposals/2026-11-18-merge-facts-timeout.yaml
+      project_id: tools
+      projection_version: v3
+      sha256: 355999070f2ba4d691708e7a3fe6880871f0c8e75cc9b91ce2752e36e9d0ce4e
+    - change_id: 2026-11-18-merge-facts-timeout
+      child_id: null
+      kind: projection
+      logical_path: proposal.md
+      project_id: tools
+      projection_version: v3
+      sha256: 1ce0cb2d284a4a6eaab4c5237f307de7f07f97f7e61da1c853b634d8237fa5df
+    status: completed
+score_confidence: preliminary
+status: archived
+task_type: code
+traceability:
+  spec_scenarios: 0
+  tc_cases: 0
+  test_functions: 0
+version: '3.0'

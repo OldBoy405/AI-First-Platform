@@ -1,0 +1,54 @@
+meta:
+  change_id: 2026-11-18-merge-facts-timeout
+  title: 让 merge-facts 等待到已有超时结果
+  created: '2026-11-18T23:04:49+08:00'
+  status: draft
+
+why:
+  problem: Linux Node 20 的全量回归中，merge-facts 的挂起请求用例因事件循环提前退出被取消，随后同文件另外四个用例也被取消；干净 HEAD 同环境复现。
+  motivation: 恢复既有超时合同，并补齐 Tools 精简变更的 Linux 全量验证，不将基线修复混入原变更。
+
+what_changes:
+  - id: C1
+    type: modified
+    description: merge-facts 等待挂起请求时，即使没有其他活跃任务，也返回既有超时结果；正常响应行为不变。
+
+capabilities:
+  new: []
+  modified:
+    - name: merge-facts-timeout
+      description: 现有客户端的挂起请求按既有时间阈值返回 MERGE_FACTS_UNAVAILABLE。
+
+constraints:
+  - 保留现有超时配置、错误码、正常响应和授权判定；不引入新重试或兜底。
+  - 改动限于 Tools 客户端的超时路径与必要验证；不改配置、不新增依赖、不调用现网服务。
+  - 复用本机 AIFI-ISO 现有 Node 20 测试环境与受限身份；不再访问外部网络。
+
+stakeholders:
+  - Tools 维护者与 Linux 回归执行者。
+
+risk_areas:
+  - capability: merge-facts-timeout
+    risk: 超时修复不能延迟已返回的请求或改变传输结果分类。
+    mitigation: 复用现有超时与正常响应断言，检查测试文件完整执行且无取消。
+
+non_goals:
+  - 不修改凭据、授权、合并判定、对外接口或状态账本；不把此修补写入原精简变更的范围。
+  - 不修改 writeback 的 updated 或跨秒 noop 行为；不改门禁阈值或添加例外。
+
+critical:
+  is_critical: false
+  risk_assessment:
+    safety_critical: false
+    financial: false
+    cross_system: false
+
+anchoring:
+  level: L1
+  reference_changes: []
+  anchor_implementations: []
+
+success_criteria:
+  - 当请求未完成且超时是唯一待处理任务时，现有客户端返回带超时原因的 MERGE_FACTS_UNAVAILABLE，不提前退出。
+  - 现有 merge-facts 正常响应及错误分类测试全部通过，取消数为 0。
+  - 在隔离工作副本验证现有 Linux Node 20 suite-gate；不跳过、不豁免失败。

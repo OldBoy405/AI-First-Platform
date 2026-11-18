@@ -1,0 +1,26 @@
+meta:
+  task_id: merge-facts-timeout
+  change_id: 2026-11-18-merge-facts-timeout
+  task_type: code
+  system: Tools merge-facts 客户端
+  preconditions:
+    - 从 Tools 业务仓根执行；测试只用进程内 fetch 夹具。
+
+steps:
+  - id: CP-MFT-001
+    description: 既有挂起请求超时断言和正常及错误响应分类断言全部执行通过。
+    action: node --test --test-reporter=tap skills/shared/crctl/scripts/test/merge-facts.test.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: '# pass 13'
+      - type: stdout_contains
+        expected: '# fail 0'
+      - type: stdout_contains
+        expected: '# cancelled 0'
+      - type: stdout_contains
+        expected: '# skipped 0'
+
+rollback:
+  steps: []
