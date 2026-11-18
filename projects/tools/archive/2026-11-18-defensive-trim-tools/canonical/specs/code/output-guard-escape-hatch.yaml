@@ -1,0 +1,25 @@
+meta:
+  capability: output-guard-escape-hatch
+  change_id: "2026-11-18-defensive-trim-tools"
+  created: "2026-11-18"
+  confidence: high
+
+requirements:
+  - id: REQ-OGE-001
+    confidence: high
+    description: OutputGuard 的 Pre 与 Post 对同次 shell 调用只认命令首行的逃生标记。
+    scenarios:
+      - id: SC-OGE-001
+        confidence: high
+        evidence: "proposal.yaml success_criteria[6]"
+        given: 同一 shell 调用首行有合法逃生标记及原因，后续有命令（含 CRLF 的情形）。
+        when: 用同一命令调用 Pre 与 Post。
+        then: SHALL 在两端以 escape-hatch 跳过封顶，Post 返回完整正文。
+        and: []
+      - id: SC-OGE-002
+        confidence: high
+        evidence: "proposal.yaml success_criteria[6]"
+        given: 首行是普通 shell 命令，只有第二行有合法标记。
+        when: 用同一命令调用 Pre 与 Post。
+        then: SHALL 在两端执行普通判定，ruleId 均非 escape-hatch。
+        and: []

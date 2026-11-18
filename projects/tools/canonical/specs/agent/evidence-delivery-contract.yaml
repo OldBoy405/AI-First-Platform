@@ -1,17 +1,21 @@
 # 合并基线：2026-10-22-aifi-45-authorized-execution（完整规格）
 # 已并入：2026-11-08-aifi45-trust-anchor-chain 的增量条目（REQ-TAC / CP-TAC）
 # 合并日期：2026-11-15；来源文件仍在各自 archive 内
+# 2026-11-19 并入：2026-11-18-defensive-trim-tools（CP-EVD-101–104）
 meta:
   task_id: evidence-delivery-contract
   change_id: 2026-10-22-aifi-45-authorized-execution
   task_type: code
   system: tools公开gate/next/writeback及registry合同边界
   preconditions:
+    - 以下五项记录 2026-11-15 旧基线的条件与当时状态，仅适用于 CP-EVD-001–010 和 CP-TAC-009/010；新 CP 的条件列于其后。
     - Gate2后实施；所有CP当前待实现。
     - 使用独立临时Git与新旧policy夹具，不向真实CR派发；确实选中TC且无skip。
     - MUST精确选中顶层完整TC；带后缀的组件子断言不得登记整TC完成。
     - MUST核真实子进程TAP成功行及fail/skip/todo为0；零测试、ctx代码回显或skip不得算通过。
     - 静态check或单元helper不代证真实gate/next/writeback链；当前完整TC与片均未完成。
+    - 'CP-EVD-101–104：从 Tools 业务根用 Windows cmd.exe、Node 24 和 ..\stdd\.venv\Scripts\python.exe 执行。'
+    - CP-EVD-101–104 测试就绪后，每个 ASCII 令牌对应一个以它开头的顶层用例，夹具位于临时目录。
 steps:
   - id: CP-EVD-001
     description: SC-EVD-001 / 最小内容完整无固定套餐也能gate及累积回写。
@@ -87,6 +91,30 @@ steps:
     action: node --test --test-reporter=tap --test-name-pattern="^TC-TAC-010$" skills/shared/crctl/scripts/test/delivery-trust-anchor-chain.test.mjs
     assertions: [{type: exit_code, expected: 0}, {type: stdout_contains, expected: 'ok 1 - TC-TAC-010'}, {type: stdout_contains, expected: '# fail 0'}, {type: stdout_contains, expected: '# skipped 0'}, {type: stdout_contains, expected: '# todo 0'}]
 
+  - id: CP-EVD-101
+    description: 确认交付配置读错或声明非列表时以指定配置错误退出。
+    action: >-
+      node --test --test-reporter=tap --test-name-pattern "TCEVD101" skills/shared/crctl/scripts/test/evidence-delivery-gate.test.mjs 2>&1 | ..\stdd\.venv\Scripts\python.exe -B -X utf8 -c "import re,sys;t=sys.stdin.read();assert '\n# pass 1\n# fail 0\n' in t and re.search(r'(?m)^ok \d+ - TCEVD101\b',t),t;print('CP-EVD-101 PASS; pass 1 fail 0')"
+    assertions: &result
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: "pass 1 fail 0"}
+  - id: CP-EVD-102
+    description: 确认组件键缺省与显式空列表均可正常交付。
+    action: >-
+      node --test --test-reporter=tap --test-name-pattern "TCEVD102" skills/shared/crctl/scripts/test/evidence-delivery-gate.test.mjs 2>&1 | ..\stdd\.venv\Scripts\python.exe -B -X utf8 -c "import re,sys;t=sys.stdin.read();assert '\n# pass 1\n# fail 0\n' in t and re.search(r'(?m)^ok \d+ - TCEVD102\b',t),t;print('CP-EVD-102 PASS; pass 1 fail 0')"
+    assertions: *result
+  - id: CP-EVD-103
+    description: 确认配置错误不影响 legacy 交付或原合同拒绝。
+    action: >-
+      node --test --test-reporter=tap --test-name-pattern "TCEVD103" skills/shared/crctl/scripts/test/evidence-delivery-gate.test.mjs 2>&1 | ..\stdd\.venv\Scripts\python.exe -B -X utf8 -c "import re,sys;t=sys.stdin.read();assert '\n# pass 1\n# fail 0\n' in t and re.search(r'(?m)^ok \d+ - TCEVD103\b',t),t;print('CP-EVD-103 PASS; pass 1 fail 0')"
+    assertions: *result
+  - id: CP-EVD-104
+    description: 确认匹配时放行、阻断时报告原始组件 findings 及其顺序。
+    action: >-
+      node --test --test-reporter=tap --test-name-pattern "TCEVD104" skills/shared/crctl/scripts/test/evidence-delivery-gate.test.mjs 2>&1 | ..\stdd\.venv\Scripts\python.exe -B -X utf8 -c "import re,sys;t=sys.stdin.read();assert '\n# pass 1\n# fail 0\n' in t and re.search(r'(?m)^ok \d+ - TCEVD104\b',t),t;print('CP-EVD-104 PASS; pass 1 fail 0')"
+    assertions: *result
+
 rollback:
   steps:
     - 清理临时仓库；保留实际平台文档归属、用户未提交修改及累积基线。
+    - CP-EVD-101–104 检查失败只报告，由测试清理其临时夹具。

@@ -1,0 +1,73 @@
+meta:
+  capability: writeback-source-consistency
+  change_id: "2026-11-18-defensive-trim-tools"
+  created: "2026-11-18"
+  confidence: high
+
+requirements:
+  - id: REQ-WSC-001
+    confidence: medium
+    description: 候选正文与 beforeSha256 来自同次读取，只有文件不存在才记为 null，读取失败不等于不存在。beforeSha256 使用 UTF-8 解码后、换行归一化前的文本计算。
+    scenarios:
+      - id: SC-WSC-001
+        confidence: medium
+        evidence: "proposal.yaml constraints[2]"
+        given: 已有目标的 CRLF 底稿为 A。
+        when: 固定生成器首次读出 A 后，目标文件换成 B。
+        then: SHALL 按 A 生成候选正文，并用 A 的 SHA-256 填写 beforeSha256。
+        and: []
+      - id: SC-WSC-002
+        confidence: high
+        evidence: "proposal.yaml success_criteria[4]"
+        given: 目标分别缺失、已有空底稿、零字节任务索引或零字节规格索引。
+        when: 运行对应的固定生成器。
+        then: SHALL 对缺失目标记 beforeSha256 为 null，已有空底稿和零字节任务索引使用空内容的 SHA-256。
+        and:
+          - 零字节规格索引以 STRUCTURE_MISMATCH 拒绝。
+      - id: SC-WSC-003
+        confidence: high
+        evidence: "proposal.yaml success_criteria[4]"
+        given: 目标读取遇到非 ENOENT 错误。
+        when: 生成候选或经应用预检与 CR 归档写集合共用的读取边界读取目标。
+        then: SHALL 上抛含目标路径和原因的读错误，不当作文件不存在或误报 before 冲突。
+        and: []
+  - id: REQ-WSC-002
+    confidence: high
+    description: 应用端独立读取当前目标，不覆盖生成候选后改变的目标。
+    scenarios:
+      - id: SC-WSC-004
+        confidence: high
+        evidence: "proposal.yaml success_criteria[3]"
+        given: 以 A 生成候选并在建 journal 后、应用前中断，随后目标改成与 before 和 after 均不同的 B。
+        when: writeback-apply 续办并应用候选。
+        then: SHALL 报告 TX_RECOVERY_CONFLICT 及路径、before、after、actual，B 字节不变，origin 不前进。
+        and: []
+  - id: REQ-WSC-003
+    confidence: high
+    description: >-
+      新事务比较当前固定生成器 SHA，journal 续办只认冻结候选。
+      journal 续办不比较当前生成器 SHA。
+      SDD.md:476 的描述对新事务仍成立，不修订平台 SDD。
+    scenarios:
+      - id: SC-WSC-005
+        confidence: high
+        evidence: "proposal.yaml success_criteria[5]"
+        given: 事务中断已有 journal，之后仅升级固定生成脚本。
+        when: 使用原参数续办 writeback-apply。
+        then: SHALL 以同一 txId 完成，只发布一次且发布原候选内容。
+        and: []
+      - id: SC-WSC-006
+        confidence: high
+        evidence: "proposal.yaml success_criteria[5]"
+        given: 中断事务的 manifest 字节改变且冻结摘要失配，但自摘要仍有效，或仅 blob 内容改变。
+        when: 使用原参数续办 writeback-apply。
+        then: SHALL 分别以 TX_INPUT_CONFLICT 或 WRITEBACK_BLOB_HASH_MISMATCH 拒绝续办。
+        and:
+          - 两种情况均无重生成、目标不变。
+      - id: SC-WSC-007
+        confidence: high
+        evidence: "proposal.yaml success_criteria[5]"
+        given: 事务没有 journal，候选声明的生成器 SHA 与当前固定脚本不符。
+        when: writeback-apply 校验新事务的候选。
+        then: SHALL 以 WRITEBACK_GENERATOR_MISMATCH 拒绝且不建立 journal。
+        and: []

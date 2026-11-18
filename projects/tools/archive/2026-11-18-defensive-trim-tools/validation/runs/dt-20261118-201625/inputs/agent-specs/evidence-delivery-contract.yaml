@@ -1,0 +1,37 @@
+meta:
+  task_id: evidence-delivery-contract
+  change_id: "2026-11-18-defensive-trim-tools"
+  created: "2026-11-18"
+  task_type: code
+  system: crctl 交付配置与组件就绪
+  preconditions:
+    - '从 Tools 业务根用 Windows cmd.exe、Node 24 和 ..\stdd\.venv\Scripts\python.exe 执行。'
+    - 测试就绪后，每个 ASCII 令牌对应一个以它开头的顶层用例，夹具位于临时目录。
+
+steps:
+  - id: CP-EVD-101
+    description: 确认交付配置读错或声明非列表时以指定配置错误退出。
+    action: >-
+      node --test --test-reporter=tap --test-name-pattern "TCEVD101" skills/shared/crctl/scripts/test/evidence-delivery-gate.test.mjs 2>&1 | ..\stdd\.venv\Scripts\python.exe -B -X utf8 -c "import re,sys;t=sys.stdin.read();assert '\n# pass 1\n# fail 0\n' in t and re.search(r'(?m)^ok \d+ - TCEVD101\b',t),t;print('CP-EVD-101 PASS; pass 1 fail 0')"
+    assertions: &result
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: "pass 1 fail 0"}
+  - id: CP-EVD-102
+    description: 确认组件键缺省与显式空列表均可正常交付。
+    action: >-
+      node --test --test-reporter=tap --test-name-pattern "TCEVD102" skills/shared/crctl/scripts/test/evidence-delivery-gate.test.mjs 2>&1 | ..\stdd\.venv\Scripts\python.exe -B -X utf8 -c "import re,sys;t=sys.stdin.read();assert '\n# pass 1\n# fail 0\n' in t and re.search(r'(?m)^ok \d+ - TCEVD102\b',t),t;print('CP-EVD-102 PASS; pass 1 fail 0')"
+    assertions: *result
+  - id: CP-EVD-103
+    description: 确认配置错误不影响 legacy 交付或原合同拒绝。
+    action: >-
+      node --test --test-reporter=tap --test-name-pattern "TCEVD103" skills/shared/crctl/scripts/test/evidence-delivery-gate.test.mjs 2>&1 | ..\stdd\.venv\Scripts\python.exe -B -X utf8 -c "import re,sys;t=sys.stdin.read();assert '\n# pass 1\n# fail 0\n' in t and re.search(r'(?m)^ok \d+ - TCEVD103\b',t),t;print('CP-EVD-103 PASS; pass 1 fail 0')"
+    assertions: *result
+  - id: CP-EVD-104
+    description: 确认匹配时放行、阻断时报告原始组件 findings 及其顺序。
+    action: >-
+      node --test --test-reporter=tap --test-name-pattern "TCEVD104" skills/shared/crctl/scripts/test/evidence-delivery-gate.test.mjs 2>&1 | ..\stdd\.venv\Scripts\python.exe -B -X utf8 -c "import re,sys;t=sys.stdin.read();assert '\n# pass 1\n# fail 0\n' in t and re.search(r'(?m)^ok \d+ - TCEVD104\b',t),t;print('CP-EVD-104 PASS; pass 1 fail 0')"
+    assertions: *result
+
+rollback:
+  steps:
+    - 检查失败只报告，由测试清理其临时夹具。

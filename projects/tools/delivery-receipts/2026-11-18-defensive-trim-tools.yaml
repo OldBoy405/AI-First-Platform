@@ -1,0 +1,40 @@
+schema_version: 1
+project_id: tools
+change: 2026-11-18-defensive-trim-tools
+parent_batch: null
+run_id: dt-20261118-201625
+evidence_record: validation/runs/dt-20261118-201625/tc-evidence.json
+business_commit: 71d05871a3f937f29a7f68fbf5b022741ab242e8
+bound_at: '2026-11-19T07:49:00'
+project_inputs:
+- path: output-guard/core.mjs
+  sha256: af6adf2c84bc89f68baeef4bb61a60fa0a82fc3df7dea19df70055b6fb4e12b6
+- path: output-guard/policy.json
+  sha256: 56783a88eae24b5c6f0c1c980e521196439c4e917086d6142b18fc43af906e5a
+- path: output-guard/test/core.test.mjs
+  sha256: 148f5021e5104fad80e0f08601ee77d2a24113e1c7ae42800c353e91918697a4
+- path: skills/shared/crctl/scripts/crctl.mjs
+  sha256: f3f04e80980646ccdad925e59ba4ec7d8f3a0d06c962bc7017f78c28cf3a0fa3
+- path: skills/shared/crctl/scripts/lib/component-readiness.mjs
+  sha256: f69c8e2ce9c15a6987beaa6741a2884038226505bc6cd5d9c511202d19c17752
+- path: skills/shared/crctl/scripts/lib/durable-tx.mjs
+  sha256: a388ec943c8148b9fb51423c6c67dba597bd5c66ad8be20676c5e62937eb01c8
+- path: skills/shared/crctl/scripts/lib/evidence-delivery.mjs
+  sha256: 96ab999fa8bf2544f1cddb1e555f9d9a1b06ff5ebbb84492a309dd733b33a0bd
+- path: skills/shared/crctl/scripts/lib/workspace-transactions.mjs
+  sha256: 8e2ba6edccdb53f2c21bc6e9e505805090d894fc82ddb1fbee9c6112cb18dac0
+- path: skills/shared/crctl/scripts/test/evidence-delivery-gate.test.mjs
+  sha256: abcc862fdbedad841531772a4911891847838786bb81061ad30a68844667657f
+- path: skills/shared/crctl/scripts/test/writeback-tx.test.mjs
+  sha256: 75ac4f3ce63c02fe93ed9a37cfa81c70c8e78d790252e7e136c27670df79863e
+- path: skills/writeback/scripts/lib.mjs
+  sha256: 14d87d6d2c9d710edd36e9c2f155adb8a684f46ba8bc4574bd2145517e1c373c
+- path: skills/writeback/scripts/test/writeback.test.mjs
+  sha256: 563e0fe25ad5088798e60da6566356c4ed9509213b97d9cd9c1c4e5e2e08bb4c
+- path: skills/writeback/scripts/writeback-prd-sdd.mjs
+  sha256: 5a8f593ce29b4af164f048a854b179c68864ac2be416f51ccb904b49f89b2417
+- path: skills/writeback/scripts/writeback-tasks.mjs
+  sha256: da42a889d2b664d767c134257014d47a41fb2cf09bae73f5397904ccba037291
+- path: skills/writeback/scripts/writeback-traceability.mjs
+  sha256: 38b398de38f03c43381005e91e099b3ea8a70db35fd0c0ec74d7856b88629eec
+project_inputs_sha256: f11d67b37eb87d96ba645e8f5e2497e8b60c098bd56820f2c75c65a9283fc13b

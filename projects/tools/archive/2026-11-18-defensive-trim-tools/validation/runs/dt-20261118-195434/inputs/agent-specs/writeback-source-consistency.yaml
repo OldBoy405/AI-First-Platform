@@ -1,0 +1,62 @@
+meta:
+  task_id: writeback-source-consistency
+  change_id: "2026-11-18-defensive-trim-tools"
+  created: "2026-11-18"
+  task_type: code
+  system: 固定回写生成器与事务预检、应用和续办
+  preconditions:
+    - '从 Tools 业务根用 Windows cmd.exe、Node 24 和 ..\stdd\.venv\Scripts\python.exe 执行。'
+    - 测试就绪后，每个 ASCII 令牌对应一个以它开头的顶层用例，夹具位于临时目录。
+
+steps:
+  - id: CP-WSC-001
+    description: 确认目标替换为 B 时正文与摘要仍取自首次读出的 A。
+    action: >-
+      node --test --test-reporter=tap --test-name-pattern "TCWSC001" skills/writeback/scripts/test/writeback.test.mjs 2>&1 | ..\stdd\.venv\Scripts\python.exe -B -X utf8 -c "import re,sys;t=sys.stdin.read();assert '\n# pass 1\n# fail 0\n' in t and re.search(r'(?m)^ok \d+ - TCWSC001\b',t),t;print('CP-WSC-001 PASS; pass 1 fail 0')"
+    assertions: &result
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: "pass 1 fail 0"}
+  - id: CP-WSC-002
+    description: 确认缺失与空文件的摘要区分及零字节规格索引拒绝。
+    action: >-
+      node --test --test-reporter=tap --test-name-pattern "TCWSC002" skills/writeback/scripts/test/writeback.test.mjs 2>&1 | ..\stdd\.venv\Scripts\python.exe -B -X utf8 -c "import re,sys;t=sys.stdin.read();assert '\n# pass 1\n# fail 0\n' in t and re.search(r'(?m)^ok \d+ - TCWSC002\b',t),t;print('CP-WSC-002 PASS; pass 1 fail 0')"
+    assertions: *result
+  - id: CP-WSC-003
+    description: 确认固定生成器报告非 ENOENT 读错误的路径和原因。
+    action: >-
+      node --test --test-reporter=tap --test-name-pattern "TCWSC003" skills/writeback/scripts/test/writeback.test.mjs 2>&1 | ..\stdd\.venv\Scripts\python.exe -B -X utf8 -c "import re,sys;t=sys.stdin.read();assert '\n# pass 1\n# fail 0\n' in t and re.search(r'(?m)^ok \d+ - TCWSC003\b',t),t;print('CP-WSC-003 PASS; pass 1 fail 0')"
+    assertions: *result
+  - id: CP-WSC-004
+    description: 确认目标在应用前改变会触发冲突，B 字节不变且 origin 不前进。
+    action: >-
+      node --test --test-reporter=tap --test-name-pattern "TCWSC004" skills/shared/crctl/scripts/test/writeback-tx.test.mjs 2>&1 | ..\stdd\.venv\Scripts\python.exe -B -X utf8 -c "import re,sys;t=sys.stdin.read();assert '\n# pass 1\n# fail 0\n' in t and re.search(r'(?m)^ok \d+ - TCWSC004\b',t),t;print('CP-WSC-004 PASS; pass 1 fail 0')"
+    assertions: *result
+  - id: CP-WSC-005
+    description: 确认应用预检上抛目标读错误而非报告 before 冲突。
+    action: >-
+      node --test --test-reporter=tap --test-name-pattern "TCWSC005" skills/shared/crctl/scripts/test/writeback-tx.test.mjs 2>&1 | ..\stdd\.venv\Scripts\python.exe -B -X utf8 -c "import re,sys;t=sys.stdin.read();assert '\n# pass 1\n# fail 0\n' in t and re.search(r'(?m)^ok \d+ - TCWSC005\b',t),t;print('CP-WSC-005 PASS; pass 1 fail 0')"
+    assertions: *result
+  - id: CP-WSC-006
+    description: 确认仅升级生成脚本后，同一事务只发布一次原候选。
+    action: >-
+      node --test --test-reporter=tap --test-name-pattern "TCWSC006" skills/shared/crctl/scripts/test/writeback-tx.test.mjs 2>&1 | ..\stdd\.venv\Scripts\python.exe -B -X utf8 -c "import re,sys;t=sys.stdin.read();assert '\n# pass 1\n# fail 0\n' in t and re.search(r'(?m)^ok \d+ - TCWSC006\b',t),t;print('CP-WSC-006 PASS; pass 1 fail 0')"
+    assertions: *result
+  - id: CP-WSC-007
+    description: 确认自摘要有效的 manifest 漂移仍报 TX_INPUT_CONFLICT。
+    action: >-
+      node --test --test-reporter=tap --test-name-pattern "TCWSC007" skills/shared/crctl/scripts/test/writeback-tx.test.mjs 2>&1 | ..\stdd\.venv\Scripts\python.exe -B -X utf8 -c "import re,sys;t=sys.stdin.read();assert '\n# pass 1\n# fail 0\n' in t and re.search(r'(?m)^ok \d+ - TCWSC007\b',t),t;print('CP-WSC-007 PASS; pass 1 fail 0')"
+    assertions: *result
+  - id: CP-WSC-008
+    description: 确认 blob 内容漂移时报 WRITEBACK_BLOB_HASH_MISMATCH。
+    action: >-
+      node --test --test-reporter=tap --test-name-pattern "TCWSC008" skills/shared/crctl/scripts/test/writeback-tx.test.mjs 2>&1 | ..\stdd\.venv\Scripts\python.exe -B -X utf8 -c "import re,sys;t=sys.stdin.read();assert '\n# pass 1\n# fail 0\n' in t and re.search(r'(?m)^ok \d+ - TCWSC008\b',t),t;print('CP-WSC-008 PASS; pass 1 fail 0')"
+    assertions: *result
+  - id: CP-WSC-009
+    description: 确认新事务因脚本 SHA 不符而拒绝，且不建立 journal。
+    action: >-
+      node --test --test-reporter=tap --test-name-pattern "TCWSC009" skills/shared/crctl/scripts/test/writeback-tx.test.mjs 2>&1 | ..\stdd\.venv\Scripts\python.exe -B -X utf8 -c "import re,sys;t=sys.stdin.read();assert '\n# pass 1\n# fail 0\n' in t and re.search(r'(?m)^ok \d+ - TCWSC009\b',t),t;print('CP-WSC-009 PASS; pass 1 fail 0')"
+    assertions: *result
+
+rollback:
+  steps:
+    - 检查失败只报告，由测试清理其临时夹具。

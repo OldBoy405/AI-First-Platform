@@ -5,6 +5,7 @@ proposals:
   2026-11-15-controlled-shell-snapshot-read-shapes: proposals/2026-11-15-controlled-shell-snapshot-read-shapes.yaml
   2026-11-15-crctl-report-active-count: proposals/2026-11-15-crctl-report-active-count.yaml
   2026-11-15-crctl-report-status-integrity: proposals/2026-11-15-crctl-report-status-integrity.yaml
+  2026-11-18-defensive-trim-tools: proposals/2026-11-18-defensive-trim-tools.yaml
   2026-11-18-merge-facts-timeout: proposals/2026-11-18-merge-facts-timeout.yaml
 specs:
   agent:
@@ -16,9 +17,11 @@ specs:
     evidence-delivery-contract: specs/agent/evidence-delivery-contract.yaml
     execution-authorization: specs/agent/execution-authorization.yaml
     merge-facts-timeout: specs/agent/merge-facts-timeout.yaml
+    output-guard-escape-hatch: specs/agent/output-guard-escape-hatch.yaml
     prompt-governance: specs/agent/prompt-governance.yaml
     repair-governance: specs/agent/repair-governance.yaml
     workflow-routing: specs/agent/2026-11-06-stdd-default-cr-opt-in.yaml
+    writeback-source-consistency: specs/agent/writeback-source-consistency.yaml
   code:
     controlled-shell-git-show-shapes: specs/code/controlled-shell-git-show-shapes.yaml
     crctl-execution-trust-root: specs/code/crctl-execution-trust-root.yaml
@@ -28,5 +31,7 @@ specs:
     evidence-delivery-contract: specs/code/evidence-delivery-contract.yaml
     execution-authorization: specs/code/execution-authorization.yaml
     merge-facts-timeout: specs/code/merge-facts-timeout.yaml
+    output-guard-escape-hatch: specs/code/output-guard-escape-hatch.yaml
     repair-governance: specs/code/repair-governance.yaml
+    writeback-source-consistency: specs/code/writeback-source-consistency.yaml
 version: '2.9'

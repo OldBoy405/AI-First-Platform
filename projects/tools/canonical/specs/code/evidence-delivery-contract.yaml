@@ -1,6 +1,7 @@
 # 合并基线：2026-10-22-aifi-45-authorized-execution（完整规格）
 # 已并入：2026-11-08-aifi45-trust-anchor-chain 的增量条目（REQ-TAC / CP-TAC）
 # 合并日期：2026-11-15；来源文件仍在各自 archive 内
+# 2026-11-19 并入：2026-11-18-defensive-trim-tools（REQ-EVD-101/102）
 meta:
   capability: evidence-delivery-contract
   change_id: 2026-10-22-aifi-45-authorized-execution
@@ -107,3 +108,34 @@ requirements:
         then: SHALL 全部失败关闭，不占用registration key，不创建CR/worktree/registry记录，不写归档journal、交付记录、Git/index或平台任务。
         and:
           - 环境变量、sidecar、同名CR、图路径或有效但属于其他project的签名SHALL不得使交付事实获得当前project归属。
+  - id: REQ-EVD-101
+    confidence: high
+    description: 只有适用组件就绪要求的 CR 才读取交付工作区配置，且只有成功读取有效配置才能认定组件未声明。
+    scenarios:
+      - id: SC-EVD-101
+        confidence: high
+        evidence: canonical/proposals/2026-11-18-defensive-trim-tools.yaml#success_criteria[0]
+        given: 已选定且未被合同诊断拒绝的合同 CR，其交付工作区 dir-graph.yaml 缺失、不可读，或 workspace.components 已声明但非列表（含显式 null）。
+        when: 运行 evidence-check 或同一采集器的 evidenceDelivery gate。
+        then: SHALL 退出 1，报告 EVIDENCE_COMPONENT_CONFIG_INVALID、文件路径和原因，无放行输出。
+        and:
+          - "配置可读且有效，components 真正缺省或为 [] 时，若其余证据齐全则 decision: deliver。"
+      - id: SC-EVD-102
+        confidence: high
+        evidence: canonical/proposals/2026-11-18-defensive-trim-tools.yaml#constraints[6]
+        given: 交付工作区组件配置错误，CR 为真正的 legacy，或已被合同非法、登记非法、降级或不一致诊断拒绝。
+        when: 运行 evidence-check 或同一采集器的 evidenceDelivery gate。
+        then: SHALL 对 legacy 按原交付条件判定，对已拒绝的 CR 报告原合同诊断，均不报组件配置错误。
+        and: []
+  - id: REQ-EVD-102
+    confidence: high
+    description: 组件判定器是就绪结论的唯一来源，交付只合并其 findings。
+    scenarios:
+      - id: SC-EVD-103
+        confidence: high
+        evidence: canonical/proposals/2026-11-18-defensive-trim-tools.yaml#success_criteria[1]
+        given: 适用组件就绪要求的合同 CR 有非空组件声明。
+        when: 根据实际观测判定交付。
+        then: SHALL 在组件匹配且其他条件满足时放行，有组件 findings 时阻断并原样按顺序报告。
+        and:
+          - 授权或验证也有 finding 时，与组件 findings 一并报告。

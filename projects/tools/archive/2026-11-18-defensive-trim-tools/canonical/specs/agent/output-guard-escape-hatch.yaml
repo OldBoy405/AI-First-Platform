@@ -1,0 +1,27 @@
+meta:
+  task_id: output-guard-escape-hatch
+  change_id: "2026-11-18-defensive-trim-tools"
+  created: "2026-11-18"
+  task_type: code
+  system: OutputGuard 的 Pre/Post 首行逃生判定
+  preconditions:
+    - '从 Tools 业务根用 Windows cmd.exe、Node 24 和 ..\stdd\.venv\Scripts\python.exe 执行。'
+    - 测试就绪后，每个 ASCII 令牌对应一个以它开头的顶层用例。
+
+steps:
+  - id: CP-OGE-001
+    description: 确认合法首行标记在两端均命中，Post 返回完整正文。
+    action: >-
+      node --test --test-reporter=tap --test-name-pattern "TCOGE001" output-guard/test/core.test.mjs 2>&1 | ..\stdd\.venv\Scripts\python.exe -B -X utf8 -c "import re,sys;t=sys.stdin.read();assert '\n# pass 1\n# fail 0\n' in t and re.search(r'(?m)^ok \d+ - TCOGE001\b',t),t;print('CP-OGE-001 PASS; pass 1 fail 0')"
+    assertions: &result
+      - {type: exit_code, expected: 0}
+      - {type: stdout_contains, expected: "pass 1 fail 0"}
+  - id: CP-OGE-002
+    description: 确认标记仅在第二行时两端均走普通判定。
+    action: >-
+      node --test --test-reporter=tap --test-name-pattern "TCOGE002" output-guard/test/core.test.mjs 2>&1 | ..\stdd\.venv\Scripts\python.exe -B -X utf8 -c "import re,sys;t=sys.stdin.read();assert '\n# pass 1\n# fail 0\n' in t and re.search(r'(?m)^ok \d+ - TCOGE002\b',t),t;print('CP-OGE-002 PASS; pass 1 fail 0')"
+    assertions: *result
+
+rollback:
+  steps:
+    - 检查失败只报告。
