@@ -13,6 +13,7 @@ meta:
     - "selection 检查经 run-selection.mjs --only 运行 selections.json 中同名选择，使用自建一次性 podman 实例；要求退出 0、skip 为 0、fail 为 0；零匹配、skip、expected 缺项都不算通过。"
     - "TC-RUN-105 经 scripts/aifi45-real-run 的不消耗模型的 stub 场景：驱动自建隔离栈（server、daemon、stub 执行器），需要本机可用的 node、crctl 固定副本与 podman；运行前须已取得用户对一次性实例与该驱动的授权，禁止触碰现网库与现网 daemon。"
     - "selection 名称与驱动的 --default-contract 选项及输出标记均为计划值，Phase 3 实现时若有调整须经设计调整记录同步本规格。"
+    - "CP-RUN-201～203 运行前须获准使用 runner 自建的 nonce 一次性库和实例，不接现网库、daemon 或容器；各 CP 串行执行，字节互操作使用固定 Tools 的实际 crctl。"
 steps:
   - id: CP-RUN-101
     description: >-
@@ -94,6 +95,52 @@ steps:
         expected: "skip=0"
       - type: stdout_contains
         expected: "fail=0"
+  # 合并 change 2026-11-18-defensive-trim-multica（变更日期 2026-11-18）。
+  - id: CP-RUN-201
+    description: "TC-RUN-201：部署值、重放与基线字节（SC-RUN-201～203）。"
+    action: >-
+      node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only run-default-contract-issue
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "PASS run-default-contract-issue "
+      - type: stdout_contains
+        expected: "skip=0"
+      - type: stdout_contains
+        expected: "fail=0"
+      - type: stdout_contains
+        expected: "remaining=0"
+  - id: CP-RUN-202
+    description: "TC-RUN-202：历史批准、冻结原文与撤销链（SC-RUN-204～205）。"
+    action: >-
+      node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only run-authorization-head
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "PASS run-authorization-head "
+      - type: stdout_contains
+        expected: "skip=0"
+      - type: stdout_contains
+        expected: "fail=0"
+      - type: stdout_contains
+        expected: "remaining=0"
+  - id: CP-RUN-203
+    description: "TC-RUN-203：双向交错、幂等回执及未列明动作（SC-RUN-206～207）。"
+    action: >-
+      node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only run-sensitive-action
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "PASS run-sensitive-action "
+      - type: stdout_contains
+        expected: "skip=0"
+      - type: stdout_contains
+        expected: "fail=0"
+      - type: stdout_contains
+        expected: "remaining=0"
 rollback:
   steps:
     - "检查失败时只报告；run-selection 与驱动自行按 nonce 与完整 ID 释放自建实例，不执行共享库清理，不按名称模式清理。"

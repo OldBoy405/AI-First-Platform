@@ -1,0 +1,58 @@
+# Spec: authorized-runner
+
+> Change: 2026-11-18-defensive-trim-multica | Auto-generated Human View
+
+## Requirements
+
+### Requirement: 授权入口一次准备请求，重放与首次签发共用准备结果。
+
+#### Scenario: SC-RUN-201
+
+- **GIVEN** 已认证授权人有一个可签发的 CR 及适用部署合同。
+- **WHEN** 通过签发 HTTP 入口提交合同字段缺失、为 ""、显式相等或合法但不同的申请。
+- **THEN** SHALL 对缺失或 "" 补部署值，对显式相等照常签发，返回 201 并在同一事务保存记录和设置初始头。
+- **AND** 合法但不同返回 409 EXECUTION_CONTRACT_MISMATCH，且不写授权记录、不更新头。
+
+#### Scenario: SC-RUN-202
+
+- **GIVEN** CR 已有初始授权记录。
+- **WHEN** 通过签发 HTTP 入口重送请求。
+- **THEN** SHALL 在授权人、冻结字节与摘要、锁内解析的项目都匹配原授权时返回 200 reused=true 和原信封，不写新记录、不更新头。
+- **AND** 任一不匹配返回 409 EXECUTION_AUTHORIZATION_CONFLICT。
+
+#### Scenario: SC-RUN-203
+
+- **GIVEN** 基线有完整及需补值的合法申请样本，且签发所用密钥、ID、时间及可信事实相同。
+- **WHEN** 经准备和签发生成冻结原文、payload 和签名。
+- **THEN** SHALL 生成与基线逐字节相等的冻结原文（完整输入的 CRLF 和 -0 原样）、原始 payload 和 Ed25519 签名。
+
+### Requirement: 头读取核验存储协议和当前授权事实，不按现行申请规则重审历史。
+
+#### Scenario: SC-RUN-204
+
+- **GIVEN** 历史批准符合存储协议和当前授权事实，但冻结原文有现行新申请不允许的字段。
+- **WHEN** 经生产授权头 GET 读取该批准及其冻结原文被篡改的对照。
+- **THEN** SHALL 对有效批准返回 200 和原头摘要、原 record、原公钥。
+- **AND** 冻结原文被篡改、与已签摘要不符时拒绝读取。
+
+#### Scenario: SC-RUN-205
+
+- **GIVEN** CR 有已签的撤销记录及其初始批准。
+- **WHEN** 通过生产授权头 GET 读取有效撤销链，以及前驱、签名或 revision 损坏的对照。
+- **THEN** SHALL 返回有效撤销记录并拒绝损坏链。
+
+### Requirement: 敏感动作与撤销共享 CR 排他锁，按提交顺序确定结算结果。
+
+#### Scenario: SC-RUN-206
+
+- **GIVEN** 两个独立 CR 均有有效专项授权。
+- **WHEN** 经生产入口交错发起动作与撤销，分别让动作和撤销先取得 CR 排他锁。
+- **THEN** SHALL 在动作先行时返回动作 200 且仅写一笔 effect，随后撤销返回 201。
+- **AND** 撤销先行时，动作返回 409 EXECUTION_AUTHORIZATION_HEAD_INVALID，不查重、不扣额、不写 effect。
+
+#### Scenario: SC-RUN-207
+
+- **GIVEN** 头有效，且有专项列明和未列明的动作。
+- **WHEN** 重试同一已列明动作的 operation_id，并请求未列明动作。
+- **THEN** SHALL 对同一 operation_id 仅写一条 effect，返回原回执且不多扣额度。
+- **AND** 未列明的动作结算为零（ordinary_grant_has_no_effect）。

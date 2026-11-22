@@ -1,0 +1,61 @@
+{
+  "name": "run-sensitive-action",
+  "package": "./cmd/server",
+  "run": "^TestTC_RUN_010$",
+  "expected": [
+    {
+      "package": "github.com/multica-ai/multica/server/cmd/server",
+      "test": "TestTC_RUN_010",
+      "leaf": false
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/cmd/server",
+      "test": "TestTC_RUN_010/action_commits_first",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/cmd/server",
+      "test": "TestTC_RUN_010/revoke_commits_first",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/cmd/server",
+      "test": "TestTC_RUN_010/forged_scope_is_refused",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/cmd/server",
+      "test": "TestTC_RUN_010/listed_grant_does_not_widen",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/cmd/server",
+      "test": "TestTC_RUN_010/listed_scope_is_consumed_once",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/cmd/server",
+      "test": "TestTC_RUN_010/ordinary_grant_has_no_effect",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/cmd/server",
+      "test": "TestTC_RUN_010/unknown_body_is_refused",
+      "leaf": true
+    }
+  ],
+  "ok": true,
+  "reasons": [],
+  "reconciliationLine": "",
+  "stage": "test",
+  "totals": {
+    "pass": 8,
+    "fail": 0,
+    "skip": 0,
+    "packages": 1
+  },
+  "reconciliation": {
+    "status": "matched"
+  },
+  "failures": []
+}

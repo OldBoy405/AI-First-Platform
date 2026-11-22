@@ -1,0 +1,28 @@
+# ci-backend-environment — modified
+meta:
+  capability: ci-backend-environment
+  change_id: "2026-11-18-defensive-trim-multica"
+  created: "2026-11-18"
+  confidence: high
+
+requirements:
+  - id: REQ-CBE-101
+    confidence: high
+    description: "默认合同实跑只使用 Tools pin 所指提交；仅显式 HEAD 选择工作树 overlay。"
+    scenarios:
+      - id: SC-CBE-101
+        confidence: high
+        evidence: "proposal.yaml success_criteria[6]"
+        given: "默认合同实跑的 Tools 仓库 HEAD 与工作树均不同于 pin 所指的旧提交。"
+        when: "真实 Tools 阶段读取合法 pin、HEAD、带空白、多行或其他非法 pin。"
+        then: "SHALL 经 parsePin 严格读取单行 40 位小写 hex（可带单个 LF 或 CRLF），合法时取材与所指提交一致。"
+        and:
+          - "HEAD 或其他非法 pin 返回 TOOLS_FAILED，不创建 stage 目录、不进入 overlay。"
+      - id: SC-CBE-102
+        confidence: high
+        evidence: "proposal.yaml success_criteria[6]"
+        given: "临时仓库的提交树与工作树有不同内容。"
+        when: "调用 stageCrctl，分别传入固定提交、缺失或非提交对象、显式 HEAD，或省略 ref。"
+        then: "SHALL 按指定提交取材，报告该 commit、两份等于其 crctl 字节摘要的摘要及空 addedFiles；省略 ref 或对象缺失、不是该 commit 时失败且不回退。"
+        and:
+          - "仅显式 HEAD 走 overlay，可取纯追加内容，拒绝删除或重写。"

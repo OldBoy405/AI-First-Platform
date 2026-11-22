@@ -70,7 +70,7 @@ requirements:
     and:
     - 保留凭据诊断早于 checkout、受限一次性 DATABASE_URL、既有事件流/admin 对账及 always teardown；不新增 job、依赖或 overlay
     - 规则 env 使用 github.workspace 的明确路径，不使用不能在 YAML env 中自动展开的 $AIFI45_TOOLS_ROOT 字面串
-    - 两个生成器只执行 --check，合同漂移即停止报告，不修改生成物/digest；callers 和 Git 对象类型既有边界不变
+    - 两个生成器只执行 --check，合同漂移即停止报告，不修改生成物/digest；callers 既有边界不变；Git 对象类型既有边界不变，但实跑固定提交取材须按 SC-CBE-102 核验指定提交对象
 - id: REQ-MEC-006
   confidence: medium
   description: 最终业务提交的实际 CI 执行成功并证明六个既有快照测试实际读取权威规则，是权威目标合同；本地/fixture/skipped/自动 N/A 不能替代。本轮因平台账单/额度阻塞经用户明确裁定延期（TC-MEC-003 记 not_applicable，接受风险），权威 CI 验证仍未完成，额度恢复后另行验证。
@@ -131,3 +131,24 @@ requirements:
     - 已有托管 CI 与独立测试归属 SHALL 保留；现有 hosted 后端 job 仅为同一夹具合同补供给、凭据隔离、回收与 regular 包级串行，不以本地成功替代 hosted 实际结论。
     - 如更换 Tools pin，SHALL 在正式 run 前取得单独采用授权及真实规则 allow/deny、crctl 兼容结果；正式运行 SHALL 使用同一不可变提交的规则和 crctl，不得混用。
     - 迁移测试 SHALL 使用现行真实 SQL 保留上／下迁移与不合法数据断言；Pi SHALL 对每个已绑定路径只追加一次技能参数，OMP 原发现行为不变。
+# merged from 2026-11-18-defensive-trim-multica (2026-11-22): appended REQ-CBE-101/SC-CBE-101/102; SC-MEC-005 fixed-stage object check exception
+- id: REQ-CBE-101
+  confidence: high
+  description: "默认合同实跑只使用 Tools pin 所指提交；仅显式 HEAD 选择工作树 overlay。"
+  scenarios:
+  - id: SC-CBE-101
+    confidence: high
+    evidence: "canonical/proposals/2026-11-18-defensive-trim-multica.yaml#success_criteria[6]"
+    given: "默认合同实跑的 Tools 仓库 HEAD 与工作树均不同于 pin 所指的旧提交。"
+    when: "真实 Tools 阶段读取合法 pin、HEAD、带空白、多行或其他非法 pin。"
+    then: "SHALL 经 parsePin 严格读取单行 40 位小写 hex（可带单个 LF 或 CRLF），合法时取材与所指提交一致。"
+    and:
+    - "HEAD 或其他非法 pin 返回 TOOLS_FAILED，不创建 stage 目录、不进入 overlay。"
+  - id: SC-CBE-102
+    confidence: high
+    evidence: "canonical/proposals/2026-11-18-defensive-trim-multica.yaml#success_criteria[6]"
+    given: "临时仓库的提交树与工作树有不同内容。"
+    when: "调用 stageCrctl，分别传入固定提交、缺失或非提交对象、显式 HEAD，或省略 ref。"
+    then: "SHALL 按指定提交取材，报告该 commit、两份等于其 crctl 字节摘要的摘要及空 addedFiles；省略 ref 或对象缺失、不是该 commit 时失败且不回退。"
+    and:
+    - "仅显式 HEAD 走 overlay，可取纯追加内容，拒绝删除或重写。"

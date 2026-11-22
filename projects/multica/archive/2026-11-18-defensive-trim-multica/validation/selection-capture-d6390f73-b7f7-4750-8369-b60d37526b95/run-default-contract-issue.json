@@ -1,0 +1,181 @@
+{
+  "name": "run-default-contract-issue",
+  "package": "./internal/governance",
+  "run": "^(TestDefaultExecutionContractIsPinnedLabels|TestExecutionAuthorizationContractFieldsOptional|TestCompleteExecutionContractFieldsIsDeterministic|TestExecutionAuthorizeDefaultContractOmittedFieldsHeadValid|TestExecutionGrantCheckAgainstRealCrctlCLI|TestExecutionAuthorizationBaselineBytes|TestExecutionAuthorizePersistsAndReplaysSource|TestExecutionAuthorizeRejectsCrossWorkspaceAndProjectMismatch|TestExecutionAuthorizeRejectsStaleOrForeignResource|TestExecutionAuthorizeRequiresFrozenCoordinatorRoot)$",
+  "expected": [
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizeRejectsCrossWorkspaceAndProjectMismatch",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizeRejectsStaleOrForeignResource",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizeRequiresFrozenCoordinatorRoot",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestDefaultExecutionContractIsPinnedLabels",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizationBaselineBytes",
+      "leaf": false
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizationBaselineBytes/complete_CRLF",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizationBaselineBytes/completed",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizePersistsAndReplaysSource",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionGrantCheckAgainstRealCrctlCLI",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizationContractFieldsOptional",
+      "leaf": false
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizationContractFieldsOptional/all_three_omitted",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizationContractFieldsOptional/all_three_empty_strings",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizationContractFieldsOptional/one_omitted,_two_equal",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizationContractFieldsOptional/all_three_explicit_and_equal",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizationContractFieldsOptional/policy_digest_differs",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizationContractFieldsOptional/template_digest_differs",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizationContractFieldsOptional/policy_version_differs",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizationContractFieldsOptional/malformed_digest_is_not_omitted",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizationContractFieldsOptional/non-string_digest_is_not_omitted",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizationContractFieldsOptional/unknown_field_still_refused",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizationContractFieldsOptional/omitted_version_with_non-string_digest_is_refused",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizationContractFieldsOptional/omitted_version_with_malformed_digest_is_refused",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestCompleteExecutionContractFieldsIsDeterministic",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizeDefaultContractOmittedFieldsHeadValid",
+      "leaf": false
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizeDefaultContractOmittedFieldsHeadValid/omitted",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizeDefaultContractOmittedFieldsHeadValid/explicit-equal",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizeDefaultContractOmittedFieldsHeadValid/explicit-empty",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizeDefaultContractOmittedFieldsHeadValid/raw-size-limit",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizeDefaultContractOmittedFieldsHeadValid/explicit-empty-identity-precedence",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizeDefaultContractOmittedFieldsHeadValid/explicit-mismatch",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizationContractFieldsOptional/literal_null_is_refused,_not_completed",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizeDefaultContractOmittedFieldsHeadValid/literal-null-refused",
+      "leaf": true
+    }
+  ],
+  "ok": true,
+  "reasons": [],
+  "reconciliationLine": "",
+  "stage": "test",
+  "totals": {
+    "pass": 32,
+    "fail": 0,
+    "skip": 0,
+    "packages": 1
+  },
+  "reconciliation": {
+    "status": "matched"
+  },
+  "failures": []
+}

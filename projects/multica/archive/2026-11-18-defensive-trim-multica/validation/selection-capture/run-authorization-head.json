@@ -1,0 +1,121 @@
+{
+  "name": "run-authorization-head",
+  "package": "./internal/governance",
+  "run": "^(TestExecutionAuthorizationHeadHTTPHistoricalSource|TestExecutionAuthorizationRevokeHTTPInitialToRevoke|TestExecutionAuthorizationRevokeHTTPHeadRejectsDamagedChain)$",
+  "expected": [
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizationHeadHTTPHistoricalSource",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizationRevokeHTTPInitialToRevoke",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizationRevokeHTTPHeadRejectsDamagedChain",
+      "leaf": false
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizationRevokeHTTPHeadRejectsDamagedChain/root_missing",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizationRevokeHTTPHeadRejectsDamagedChain/root_signature",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizationRevokeHTTPHeadRejectsDamagedChain/root_source",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizationRevokeHTTPHeadRejectsDamagedChain/root_project",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizationRevokeHTTPHeadRejectsDamagedChain/revoke_signature",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizationRevokeHTTPHeadRejectsDamagedChain/revoke_source",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizationRevokeHTTPHeadRejectsDamagedChain/binding_kind",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizationRevokeHTTPHeadRejectsDamagedChain/extra_scope_field",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizationRevokeHTTPHeadRejectsDamagedChain/unknown_purpose",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizationRevokeHTTPHeadRejectsDamagedChain/signed_wrong_predecessor",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizationRevokeHTTPHeadRejectsDamagedChain/signed_wrong_digest",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizationRevokeHTTPHeadRejectsDamagedChain/signed_wrong_lineage",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizationRevokeHTTPHeadRejectsDamagedChain/signed_skipped_revision",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizationRevokeHTTPHeadRejectsDamagedChain/signed_wrong_policy",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizationRevokeHTTPHeadRejectsDamagedChain/DB_decision",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizationRevokeHTTPHeadRejectsDamagedChain/DB_actor",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestExecutionAuthorizationRevokeHTTPHeadRejectsDamagedChain/current_project_missing",
+      "leaf": true
+    }
+  ],
+  "ok": true,
+  "reasons": [],
+  "reconciliationLine": "",
+  "stage": "test",
+  "totals": {
+    "pass": 20,
+    "fail": 0,
+    "skip": 0,
+    "packages": 1
+  },
+  "reconciliation": {
+    "status": "matched"
+  },
+  "failures": []
+}

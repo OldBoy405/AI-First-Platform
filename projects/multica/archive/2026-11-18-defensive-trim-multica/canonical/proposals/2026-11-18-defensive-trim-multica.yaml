@@ -1,0 +1,138 @@
+# 2026-11-18-defensive-trim-multica.yaml — Canonical Proposal (YAML-first, V2.9)
+# AI 起草、AI 修改、AI 消费。Human View 由 `stdd canon generate` 生成。
+# 来源：docs/analysis/Multica与Tools防御性编程精简方案.md 第 1 节（除 `null` 拒绝）、第 2 节、第 3 节状态读取、第 6 节（实施拆分第 3 项）。
+
+meta:
+  change_id: "2026-11-18-defensive-trim-multica"
+  title: "Multica 防御性编程精简：授权一次准备、敏感动作锁一次、状态读一次、实跑取材只认固定提交"
+  created: "2026-11-18T15:40:00"
+  status: draft
+  version: "2.9"
+
+why:
+  problem: |
+    2026-11-18 对 Multica 二开代码（仅带 AIFIRST 标记或在 CUSTOM-LEDGER.md 登记的 fork 代码）的只读审查，逐条对 HEAD `0c47c67e7` 核实，发现四处防御性编程问题：
+    (1) 授权签发与读取：请求先在 HTTP 入口补默认合同值，`BuildExecutionAuthorization` 内又补一次（`execution_authorization_http.go` 与 `execution_authorization.go`），
+        身份、仓库与协调器选择还分别重扫请求；授权头读取端对已冻结原文重跑新请求解析器 `decodeExecutionRawRequest`、`parseExecutionScopeBody` 及仓库/协调器绑定校验，
+        使“收紧申请填写规则”会连带作废历史批准；`validateExecutionContractFields` 只被测试调用，测试用它代替生产验证。
+    (2) 敏感动作结算：`ApplySensitiveActionTx` 在已持 CR 锁的事务内再发一次 `FOR UPDATE` 并重查决定，`decision == "reject"` 才返回的 `no_effect` 在持锁条件下不可达。
+    (3) 状态读取：GET 先读一次 `pipeline_run.status`，`progressOf` 又独立读一次，两次结果拼进同一响应，可能出现 `status: running` 与 `progress.state: completed`；
+        存在但不是对象的 runner 详情被兜底为空 map，运行中分支报 `idle`，失败分支静默丢失错误码；`progressOf` 的 `default` 返回 `idle`；
+        `MountPipelineRunProgressRoute` 只供测试调用。
+    (4) 实跑取材：`stack.mjs` 读 pin 后只做 `trim`，未复用 `parsePin`；`crctl-stage` 的 ref 接受 `HEAD`，使无效 pin 写成 `HEAD` 时静默走工作树 overlay；
+        固定提交模式下 `assertPureAddition(headCrctl, headCrctl)` 自己比自己，`crctl` 还被写两次。
+  motivation: |
+    用户 2026-11-18 确认本方案：自用环境，不抵御操作者故意改库、改账本或重签凭证，只防人或 Agent 选错对象、配置写错、并发覆盖及中断后重复执行；
+    保留现有鉴权、作用域、验签、撤销、并发和恢复约束，不引入统一校验框架、额外账本、新依赖或跨请求缓存。
+    治理对象：(a) 重复校验与不可达分支（删）、(b) 把错误当正常结果的静默兜底（改为直接报错，行为变严）、(c) 只供测试调用的生产函数及只覆盖被删分支的测试（连同删除，测试改走真实入口）。
+    本 change 取方案第 3 项；其落点依赖的在途 change `2026-11-17-execution-admission-simplification` 已于 2026-11-18 交付（业务提交 `0c47c67e7`，含字面 `null` 拒绝 PA-008），现可开启。
+
+what_changes:
+  - id: C1
+    type: modified
+    description: |
+      授权签发一次准备：入口一次产出补全后的确切字节与已解析字段，重放比较与首次签发共用该结果；`BuildExecutionAuthorization` 不再补第二次，
+      不再为身份、仓库、协调器选择分别重扫请求。首次签发仍从数据库确认工作区、项目、CR 和真实资源绑定；重放不重读当前仓库资源绑定，
+      但保留锁内由 CR 解析项目并与已签 payload 比对的作用域核对。合法输入的冻结及签名字节兼容性不变。
+  - id: C2
+    type: modified
+    description: |
+      授权头读取不重审旧申请：当前授权头按存储协议核验签名、冻结原文摘要、头指针及作用域、适用合同与撤销关系，一次返回摘要及已验证 payload，
+      供激活、绑定、消费和敏感动作直接使用；冻结原文不再进入新请求解析器，也不由读取端逐字段重做签发。
+      无需重签或回写历史记录。删除只供测试调用的 `validateExecutionContractFields`，历史读取测试改走生产授权头入口。
+  - id: C3
+    type: modified
+    description: |
+      敏感动作锁住一次：事务按现有顺序锁住 CR 及其指向的授权记录，在锁内核验当前授权，再完成动作/目标/环境匹配、操作查重、额度判断和回执写入，锁保留到提交；
+      额度结算依赖这笔事务已核验的授权，不再重取 CR 锁、重查决定；由授权入口拒绝撤销头，删除之后不可达的 `no_effect` 分支。
+  - id: C4
+    type: modified
+    description: |
+      状态读取：已作工作区核对的那一行 `pipeline_run.status` 同时填 `status` 并选择 `progress` 分支（start/resume 尚无该状态时仍读一次），保留成员鉴权、跨工作区 404 和既有启动/恢复 POST 路由；
+      无持久化 runner 详情是正常情况，存在但不是对象的详情改为报错（覆盖运行中与失败两个分支）；`progressOf` 的 `default` 由返回 `idle` 改为报错；
+      错误交给现有进度错误出口（GET 返回读取失败；已提交的 start/resume 保留 `run_id`、`changed`、记录错误并省略 `progress`）。
+      生产继续使用叶子 GET，移除只供测试调用的 `MountPipelineRunProgressRoute`，测试改走 `NewRouterWithOptions`。
+  - id: C5
+    type: modified
+    description: |
+      实跑取材：默认合同实跑读取 pin 时复用 `parsePin`，无效值（含 `HEAD`）在 pin 解析处直接报错，不得降级到可读工作树的模式；
+      固定提交模式按提交树物化文件一次，去掉自比的纯追加检查和第二次写入；只有明确选择现有工作树 overlay 模式时才读工作树并做纯追加检查。
+      保留现有实际 commit 与摘要输出，不另建 pin 格式、开关或取材框架。
+  - id: C6
+    type: modified
+    description: |
+      契约与台账同步：只同步受影响的现行契约与验收（历史授权不再按新申请规则重审；其余保持现有契约不变）；按 `CUSTOM.md` 结构在 `CUSTOM-LEDGER.md` 登记每处 fork 代码改动，追溯真实流程的变更和任务标识，格式不接受该标识时停止并确认，不编造 CR 身份。
+
+capabilities:
+  new: []
+  modified:
+    - name: authorized-runner
+      description: "授权签发一次准备；历史授权读取只核验已签记录、不重审旧申请；敏感动作结算同事务锁一次，撤销与结算有确定顺序、同一操作重试不多扣。字面 null 拒绝已由在途 change 落实，不再重复。"
+    - name: execution-wait-visibility
+      description: "status 与 progress 对同一运行状态作答，损坏的等待详情不报 idle，读取失败走既有错误出口。"
+    - name: ci-backend-environment
+      description: "aifi45 实跑取材作为单一 tools pin 的消费者：声称验证固定提交时，实际使用的 Tools 文件只来自该提交；overlay 模式须明确选择。Phase 2 核实归属后可调整。"
+
+constraints:
+  - "保证 G1：只有合法的新请求能取默认值；读取历史授权不重新审理旧申请，收紧申请填写规则不会自动作废历史批准；签名或原文损坏、作用域或部署合同不符、授权已撤销，仍不得用于执行。"
+  - "保证 G2：撤销与结算有确定顺序；撤销先取得锁则后来的动作不扣额，动作先取得锁则结算后撤销才生效；同一操作重试不多扣，授权未列出的动作不扣。"
+  - "保证 G3：`status` 与 `progress` 对同一个运行状态作答；损坏的等待详情不会变成 `idle`；无详情的正常结果仍可读；“运行中但无 running 节点 → idle”是合法可达状态，保留。"
+  - "保证 G4：声称验证固定提交时，实际使用的 Tools 文件只来自该提交；无效 pin 不降级到工作树模式。"
+  - "边界：Multica 只改带 `AIFIRST` 标记或在 `CUSTOM-LEDGER.md` 登记的 fork 代码段；上游基底文件里的上游原有代码不动；代码注释用英文，本仓库文档用中文。"
+  - "边界：授权头复用之后再收拢敏感动作结算；不为此临时拼出运行/节点/任务的全局一致快照；`wait_reason`、`error` 等由 Runner 写入的嵌套字段不逐个校验，不扩成整份持久化详情的通用校验器。"
+  - "边界：保留成员鉴权、跨工作区 404、既有启动/恢复 POST 路由；合法输入的冻结与签名字节兼容性不变；数据库 CHECK 之外不增加状态。"
+  - "边界：保留现有鉴权、作用域、验签、撤销、并发与恢复约束；不引入统一校验框架、额外账本、新依赖或跨请求缓存；不为测试数量增加防护；不改写历史记录或归档证据。"
+  - "边界：测试从真实入口观察结果（签发 HTTP、授权头、敏感动作事务、`NewRouterWithOptions`、真实 `stageCrctl`），不在生产代码中保留只供测试调用的判定；数据库测试只用 `run-selection.mjs` 自建的一次性实例（tmpfs、随机端口与密码、TTL 回收），不碰现网 Podman 库和现网 daemon。"
+  - "边界：multica 工作树当前有与本 change 无关的未提交改动（pi agent、chat 等）；实施与提交须隔离，不得混入。"
+
+stakeholders:
+  - "Multica 维护者（governance 授权、Runner、aifi45 实跑工具链）"
+  - "人工授权人（owner/admin）与读取授权状态的成员"
+  - "Tools 维护者（实跑读取 Tools 固定提交；Tools 侧改动在另一个 change）"
+
+risk_areas:
+  - capability: authorized-runner
+    risk: "授权头读取不再重跑解析与绑定校验后，若“把原文映射为签名 payload”的签发端有缺陷，错误将被读取端原样信任。"
+    mitigation: "按存储协议核验签名、原文摘要、头指针、作用域、合同与撤销；映射正确性由签发端及其测试负责；保留作用域、验签、撤销回归。"
+  - capability: authorized-runner
+    risk: "结算不再自己取锁与重查决定后，若有调用方绕开授权入口，将无锁结算。"
+    mitigation: "当前唯一生产调用方位于完整头核验之后；“不把结算函数当作另一个不经授权的入口”是本次约束；以现有事务测试验证撤销/结算顺序而非统计 SQL 次数。"
+  - capability: execution-wait-visibility
+    risk: "原本被兜底为 `idle` 的坏详情改为报错后，GET 对既有坏数据开始失败。"
+    mitigation: "缺失（无 runner 详情）仍可读；只有存在但非对象才报错；start/resume 已提交的结果仍返回 run_id 与 changed，仅省略 progress。"
+  - capability: ci-backend-environment
+    risk: "实跑 pin 严格解析后，既有未规范的 pin 文件（如 CRLF、前后空白）会开始失败。"
+    mitigation: "`parsePin` 已兼容单个换行与 CRLF；无效值在 pin 解析处直接报错并指出原因。"
+  - capability: authorized-runner
+    risk: "multica 工作树有他人未提交改动，落点文件（governance、router、aifi45 脚本）可能与之重叠。"
+    mitigation: "Phase 3 实施前核对重叠；整文件提交前先隔离；沿用 `--only` 逐文件。"
+
+non_goals:
+  - "不含字面 JSON `null` 的拒绝：已由 `2026-11-17-execution-admission-simplification` 落实并交付（PA-008），本 change 不重复也不回退。"
+  - "不含 Tools 侧（交付就绪、回写、OutputGuard）：属另一个 STDD change `2026-11-18-defensive-trim-tools`。"
+  - "不改上游基底代码，不涉及 Multica 上游；不对台账全部二开代码做普查（第二批，两个 change 交付后另起）。"
+  - "不撤销已提交的 start/resume，不新增运行状态、表或错误码；不为 GET 新增全局一致快照。"
+  - "不改写 `execution-wait-visibility` 以外的进度语义，不引入 pin 新格式、新开关或新取材框架。"
+
+critical:
+  is_critical: false
+  risk_assessment:
+    safety_critical: false
+    financial: false
+    cross_system: false
+
+anchoring:
+  level: L2
+  reference_changes:
+    - "2026-11-17-execution-admission-simplification"
+  anchor_implementations: []
+
+success_criteria:
+  - "走真实签发 HTTP 入口：缺字段或 `\"\"` 正常补齐，同一请求重放仍使用已冻结记录；格式合法但合同不同仍返回 `409 EXECUTION_CONTRACT_MISMATCH`；合法输入的冻结与签名字节与改动前一致。"
+  - "构造签发后再收紧新请求规则的情形：历史批准仍可经授权头读取；已签记录的原文摘要不符被拒；作用域、验签、撤销既有回归保持通过。"
+  - "`BuildExecutionAuthorization` 内无第二次默认值补全；`validateExecutionContractFields` 已删除且无任何测试依赖它。"
+  - "撤销先取得锁，后来的动作不扣额；动作先取得锁，结算后撤销才生效；有效授权下同一操作重试不多扣；授权未列出的动作不扣；`ApplySensitiveActionTx` 内无第二次 CR 锁与决定重查，无不可达 `no_effect` 分支。"
+  - "同一 GET 响应不出现 `status: running` 与 `progress.state: completed`；无持久化详情的运行仍正常返回；存在非对象的 runner 详情时 GET 返回读取失败，start/resume 成功回执保留 run_id 与 changed 并省略 progress，二者都不呈现 idle；`progressOf` 的 default 不再返回 `idle`。"
+  - "经 `NewRouterWithOptions` 的集成测试（请求越过鉴权）：Runner 关闭时不注册 GET；开启时成员 GET 可达且原有 POST 不被遮蔽；`MountPipelineRunProgressRoute` 已移除。"
+  - "在临时 git 仓库调用真实 `stageCrctl`：pin 合法时，即使工作树 `crctl` 有改动，取材仍与固定提交一致；pin 写成 `HEAD` 或其他无效值时直接失败，不进入 overlay；明确选择的 overlay 模式沿用现有正例与非追加拒绝用例。"
+  - "每处 fork 代码改动已按 `CUSTOM.md` 结构登记于 `CUSTOM-LEDGER.md`，使用真实的追溯标识；既有受影响测试按新语义更新后通过，被改写用例对应的保证各至少保留一个，未新增删除即无法解释的跳过。"

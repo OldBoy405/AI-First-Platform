@@ -75,6 +75,37 @@ steps:
         expected: "--- PASS: TestRunCrPipelineResumeCarriesTemplateSupersedeOnlyWhenNamed"
       - type: stdout_contains
         expected: "--- PASS: TestRunCrPipelineResumeRefusesNonTaskToken"
+  # --- merged from 2026-11-18-defensive-trim-multica (2026-11-22): 追加 CP-EWV-101/102，保留原检查点 ---
+  - id: CP-EWV-101
+    description: "TC-EWV-101：同一状态、坏详情、未知状态和成功回执（SC-EWV-101～103）。"
+    action: >-
+      node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only ewv-progress
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "PASS ewv-progress "
+      - type: stdout_contains
+        expected: "skip=0"
+      - type: stdout_contains
+        expected: "fail=0"
+      - type: stdout_contains
+        expected: "remaining=0"
+  - id: CP-EWV-102
+    description: "TC-EWV-102：真实凭证下的生产 GET 与两个 POST（SC-EWV-104）。"
+    action: >-
+      node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only ewv-route
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "PASS ewv-route "
+      - type: stdout_contains
+        expected: "skip=0"
+      - type: stdout_contains
+        expected: "fail=0"
+      - type: stdout_contains
+        expected: "remaining=0"
 rollback:
   steps:
     - "检查失败时只报告；run-selection 自行按 nonce 与完整 ID 释放它创建的实例，不执行共享库清理，不按名称模式清理。"

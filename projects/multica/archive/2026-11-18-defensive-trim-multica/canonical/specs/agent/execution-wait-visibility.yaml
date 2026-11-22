@@ -1,0 +1,43 @@
+meta:
+  task_id: execution-wait-visibility
+  change_id: "2026-11-18-defensive-trim-multica"
+  task_type: code
+  system: "运行进展、POST 回执与生产路由"
+  preconditions:
+    - "从 Multica 根运行，事先获准使用由 runner 自建的 nonce 一次性库和实例，不接现网库、daemon 或容器。"
+    - "各 CP 串行执行。"
+    - "selection 名称为计划值，Phase 3 登记 selections.json 时若有调整须经设计调整同步本规格。"
+steps:
+  - id: CP-EWV-101
+    description: "TC-EWV-101：同一状态、坏详情、未知状态和成功回执（SC-EWV-101～103）。"
+    action: >-
+      node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only ewv-progress --evidence-dir "../AI First Platform/projects/multica/changes/2026-11-18-defensive-trim-multica/validation/selection-capture"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "PASS ewv-progress "
+      - type: stdout_contains
+        expected: "skip=0"
+      - type: stdout_contains
+        expected: "fail=0"
+      - type: stdout_contains
+        expected: "remaining=0"
+  - id: CP-EWV-102
+    description: "TC-EWV-102：真实凭证下的生产 GET 与两个 POST（SC-EWV-104）。"
+    action: >-
+      node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only ewv-route --evidence-dir "../AI First Platform/projects/multica/changes/2026-11-18-defensive-trim-multica/validation/selection-capture"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "PASS ewv-route "
+      - type: stdout_contains
+        expected: "skip=0"
+      - type: stdout_contains
+        expected: "fail=0"
+      - type: stdout_contains
+        expected: "remaining=0"
+rollback:
+  steps:
+    - "失败只报告；runner 按 nonce 和完整 ID 释放自建实例。"

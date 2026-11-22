@@ -1,0 +1,71 @@
+{
+  "name": "ewv-route",
+  "package": "./cmd/server",
+  "run": "^TestPipelineRunsPostRoutesSurviveProgressGetMount$",
+  "expected": [
+    {
+      "package": "github.com/multica-ai/multica/server/cmd/server",
+      "test": "TestPipelineRunsPostRoutesSurviveProgressGetMount",
+      "leaf": false
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/cmd/server",
+      "test": "TestPipelineRunsPostRoutesSurviveProgressGetMount/architecture-design_post_reaches_handler",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/cmd/server",
+      "test": "TestPipelineRunsPostRoutesSurviveProgressGetMount/requirement-authoring_post_reaches_handler",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/cmd/server",
+      "test": "TestPipelineRunsPostRoutesSurviveProgressGetMount/member_reads_progress",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/cmd/server",
+      "test": "TestPipelineRunsPostRoutesSurviveProgressGetMount/non_member_is_404",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/cmd/server",
+      "test": "TestPipelineRunsPostRoutesSurviveProgressGetMount/no_credential_is_401",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/cmd/server",
+      "test": "TestPipelineRunsPostRoutesSurviveProgressGetMount/foreign_workspace_task_token_is_403",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/cmd/server",
+      "test": "TestPipelineRunsPostRoutesSurviveProgressGetMount/run_of_another_workspace_is_404",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/cmd/server",
+      "test": "TestPipelineRunsPostRoutesSurviveProgressGetMount/invalid_run_id_is_404",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/cmd/server",
+      "test": "TestPipelineRunsPostRoutesSurviveProgressGetMount/runner_off_mounts_no_route",
+      "leaf": true
+    }
+  ],
+  "ok": true,
+  "reasons": [],
+  "reconciliationLine": "",
+  "stage": "test",
+  "totals": {
+    "pass": 10,
+    "fail": 0,
+    "skip": 0,
+    "packages": 1
+  },
+  "reconciliation": {
+    "status": "matched"
+  },
+  "failures": []
+}

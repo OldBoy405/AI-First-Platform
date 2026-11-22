@@ -1,8 +1,10 @@
 # Spec: authorized-runner
 
-> Change: 2026-10-22-aifi-45-authorized-execution（最新修订并入 2026-11-17-execution-admission-simplification） | Auto-generated Human View
+> Change: 2026-10-22-aifi-45-authorized-execution（已并入 2026-11-17-execution-admission-simplification） | Auto-generated Human View
 
 ## Requirements
+
+> 合并 change 2026-11-18-defensive-trim-multica（变更日期 2026-11-18）：新增 REQ-RUN-201～203 / SC-RUN-201～207；SC-RUN-102～104 的首发结果及 SC-RUN-107 的请求体范围不符出口限定于首次签发，精确重放及非精确重放见 SC-RUN-202。
 
 > 修订 2026-11-18（change 2026-11-17-execution-admission-simplification）：SC-RUN-003 的触发条件「锚点 task 当前 generation 的 consumption 回执或它自己的 effect 尚未提交」已由 SC-RUN-101 的「CR 当前授权头有效即放行」取代；SC-RUN-003 其余 AND 条款（真实 daemon_token、project/resource 投影、verdict 验签与绑定等）原样保留。新增 SC-RUN-102～109（默认部署可签发、入口边界不放宽、默认契约与 daemon strict 链联调）。
 
@@ -111,23 +113,24 @@
 
 #### Scenario: SC-RUN-102
 
-- **GIVEN** 审批签名服务存在；未传 manifest 路径与 sha256；工作区 owner 已认证；CR 有可解析的 project。
+- **GIVEN** 审批签名服务存在；未传 manifest 路径与 sha256；工作区 owner 已认证；CR 有可解析的 project，尚无初始授权记录和授权头，且其余首发条件满足。
 - **WHEN** 提交授权请求，且省略 policy_version、policy_digest、template_digest 三个字段。
 - **THEN** SHALL 返回 201 并设置该 CR 的授权头；签名 payload、冻结请求与部署契约三者的三个值一致， 随后读取该头为有效（不得出现 EXECUTION_AUTHORIZATION_HEAD_INVALID）。
+- **AND** 满足 SC-RUN-202 条件的精确重放返回 200 reused=true 和原记录，不写新记录、不更新头。
 
 #### Scenario: SC-RUN-103
 
-- **GIVEN** 同 SC-RUN-102 的部署与 CR。
+- **GIVEN** 同 SC-RUN-102 的部署与 CR（首次签发）。
 - **WHEN** 提交授权请求，三个字段显式给出且与部署契约逐一相等。
 - **THEN** SHALL 返回 201 并设置授权头。
 
 #### Scenario: SC-RUN-104
 
-- **GIVEN** 同 SC-RUN-102 的部署与 CR。
+- **GIVEN** 同 SC-RUN-102 的部署与 CR（首次签发）。
 - **WHEN** 提交授权请求，三个字段中任意一个给出了格式合法但与部署契约不同的值。
 - **THEN** SHALL 返回 409 EXECUTION_CONTRACT_MISMATCH，不写入任何授权记录，不改变头。
 - **AND** 字段显式给出空字符串按省略处理；多出未知字段仍被拒绝。
-- **AND** 格式非法的值（非字符串、非小写 64 位 hex）在契约比较之前先按 EXECUTION_SOURCE_INVALID / EXECUTION_SCOPE_INVALID 拒绝，不被补齐为默认值。
+- **AND** 首次签发时，格式非法的值（非字符串、非小写 64 位 hex）在契约比较之前先按 EXECUTION_SOURCE_INVALID / EXECUTION_SCOPE_INVALID 拒绝，不被补齐为默认值。
 
 #### Scenario: SC-RUN-105
 
@@ -149,7 +152,7 @@
 - **GIVEN** 默认部署，签名服务存在。
 - **WHEN** 分别以 task token、cloud PAT、非 owner/admin 成员的身份提交授权请求；以及对一个 shell issue 缺失或无 project 的 CR 提交请求。
 - **THEN** SHALL 对 task token 与 cloud PAT 返回 403 EXECUTION_HUMAN_SOURCE_REQUIRED；对非 owner/admin 返回 403 FORBIDDEN_AUTHORIZER； 对无法解析 project 的 CR 返回 409 EXECUTION_SCOPE_UNRESOLVED；以上均不写入授权记录。
-- **AND** project 不取自请求体；请求体里的 workspace/project/CR 与可信范围不一致时仍为 400 EXECUTION_SCOPE_INVALID。
+- **AND** project 不取自请求体；首次签发时，请求体里的 workspace/project/CR 与可信范围不一致仍为 400 EXECUTION_SCOPE_INVALID。通过通常认证、项目解析和请求大小及形状检查后，冻结字节不同的重放返回 409 EXECUTION_AUTHORIZATION_CONFLICT；精确重放见 SC-RUN-202。
 
 ### Requirement: 默认契约签发的头能走通 daemon 的 strict 预验证链（binding、crctl 检查、节点预消费）；这是联调证据，不是对 daemon 的修改。
 
@@ -166,3 +169,57 @@
 - **WHEN** 发现路径运行：writer 任务入队，完成并投影后再次发现。
 - **THEN** SHALL writer 任务带 cr_id 与 pipeline_node_run_id 入队，完成后 review-requirement 节点的任务被派发；全程不出现对源任务消耗回执的等待。
 - **AND** 不接触现网数据；与 SC-RUN-108 合起来共同支撑提案成功标准第 8 条。
+
+### Requirement: 授权入口一次准备请求，重放与首次签发共用准备结果。
+
+#### Scenario: SC-RUN-201
+
+- **GIVEN** 已认证授权人有一个 CR 及适用部署合同；CR 有可解析的 project，尚无初始授权记录和授权头，且其余首发条件满足。
+- **WHEN** 通过签发 HTTP 入口提交合同字段缺失、为 ""、显式相等或合法但不同的申请。
+- **THEN** SHALL 对缺失或 "" 补部署值；合同字段相等时签发，返回 201 并在同一事务保存记录和设置初始头。
+- **AND** 合法但不同返回 409 EXECUTION_CONTRACT_MISMATCH，且不写授权记录、不更新头。
+
+#### Scenario: SC-RUN-202
+
+- **GIVEN** CR 已有初始授权记录。
+- **WHEN** 通过签发 HTTP 入口重送请求，并通过通常认证、项目解析和请求大小及形状检查。
+- **THEN** SHALL 在授权人、冻结字节与摘要、锁内解析的项目都匹配原授权时返回 200 reused=true 和原信封，不写新记录、不更新头。
+- **AND** 任一不匹配返回 409 EXECUTION_AUTHORIZATION_CONFLICT。
+- **AND** 重放不重查当前资源绑定、不核验当前头；返回原记录不代表当前头有效。
+
+#### Scenario: SC-RUN-203
+
+- **GIVEN** 基线有完整及需补值的合法申请样本，且签发所用密钥、ID、时间及可信事实相同。
+- **WHEN** 经准备和签发生成冻结原文、payload 和签名。
+- **THEN** SHALL 生成与基线逐字节相等的冻结原文（完整输入的 CRLF 和 -0 原样）、原始 payload 和 Ed25519 签名。
+
+### Requirement: 头读取核验存储协议和当前授权事实，不按现行申请规则重审历史。
+
+#### Scenario: SC-RUN-204
+
+- **GIVEN** 历史批准符合存储协议和当前授权事实，但冻结原文有现行新申请不允许的字段。
+- **WHEN** 经生产授权头 GET 读取该批准及其冻结原文被篡改的对照。
+- **THEN** SHALL 对有效批准返回 200 和原头摘要、原 record、原公钥。
+- **AND** 冻结原文被篡改、与已签摘要不符时拒绝读取。
+
+#### Scenario: SC-RUN-205
+
+- **GIVEN** CR 有已签的撤销记录及其初始批准。
+- **WHEN** 通过生产授权头 GET 读取有效撤销链，以及前驱、签名或 revision 损坏的对照。
+- **THEN** SHALL 返回有效撤销记录并拒绝损坏链。
+
+### Requirement: 敏感动作与撤销共享 CR 排他锁，按提交顺序确定结算结果。
+
+#### Scenario: SC-RUN-206
+
+- **GIVEN** 两个独立 CR 均有有效专项授权。
+- **WHEN** 经生产入口交错发起动作与撤销，分别让动作和撤销先取得 CR 排他锁。
+- **THEN** SHALL 在动作先行时返回动作 200 且仅写一笔 effect，随后撤销返回 201。
+- **AND** 撤销先行时，动作返回 409 EXECUTION_AUTHORIZATION_HEAD_INVALID，不查重、不扣额、不写 effect。
+
+#### Scenario: SC-RUN-207
+
+- **GIVEN** 头有效，且有专项列明和未列明的动作。
+- **WHEN** 重试同一已列明动作的 operation_id，并请求未列明动作。
+- **THEN** SHALL 对同一 operation_id 仅写一条 effect，返回原回执且不多扣额度。
+- **AND** 未列明的动作结算为零（ordinary_grant_has_no_effect）。

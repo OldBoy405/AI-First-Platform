@@ -1,0 +1,58 @@
+meta:
+  task_id: authorized-runner
+  change_id: "2026-11-18-defensive-trim-multica"
+  task_type: code
+  system: "授权签发、头读取与敏感动作"
+  preconditions:
+    - "从 Multica 根运行，事先获准使用由 runner 自建的 nonce 一次性库和实例，不接现网库、daemon 或容器。"
+    - "各 CP 串行执行，字节互操作使用固定 Tools 的实际 crctl。"
+    - "selection 名称为计划值，Phase 3 登记 selections.json 时若有调整须经设计调整同步本规格。"
+steps:
+  - id: CP-RUN-201
+    description: "TC-RUN-201：部署值、重放与基线字节（SC-RUN-201～203）。"
+    action: >-
+      node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only run-default-contract-issue --evidence-dir "../AI First Platform/projects/multica/changes/2026-11-18-defensive-trim-multica/validation/selection-capture"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "PASS run-default-contract-issue "
+      - type: stdout_contains
+        expected: "skip=0"
+      - type: stdout_contains
+        expected: "fail=0"
+      - type: stdout_contains
+        expected: "remaining=0"
+  - id: CP-RUN-202
+    description: "TC-RUN-202：历史批准、冻结原文与撤销链（SC-RUN-204～205）。"
+    action: >-
+      node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only run-authorization-head --evidence-dir "../AI First Platform/projects/multica/changes/2026-11-18-defensive-trim-multica/validation/selection-capture"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "PASS run-authorization-head "
+      - type: stdout_contains
+        expected: "skip=0"
+      - type: stdout_contains
+        expected: "fail=0"
+      - type: stdout_contains
+        expected: "remaining=0"
+  - id: CP-RUN-203
+    description: "TC-RUN-203：双向交错、幂等回执及未列明动作（SC-RUN-206～207）。"
+    action: >-
+      node scripts/aifi45-disposable/run-selection.mjs --selections scripts/aifi45-disposable/selections.json --only run-sensitive-action --evidence-dir "../AI First Platform/projects/multica/changes/2026-11-18-defensive-trim-multica/validation/selection-capture"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "PASS run-sensitive-action "
+      - type: stdout_contains
+        expected: "skip=0"
+      - type: stdout_contains
+        expected: "fail=0"
+      - type: stdout_contains
+        expected: "remaining=0"
+rollback:
+  steps:
+    - "失败只报告；runner 按 nonce 和完整 ID 释放自建实例。"

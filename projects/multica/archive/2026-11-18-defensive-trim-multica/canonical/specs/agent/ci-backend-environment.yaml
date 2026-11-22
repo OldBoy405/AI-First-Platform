@@ -1,0 +1,21 @@
+meta:
+  task_id: ci-backend-environment
+  change_id: "2026-11-18-defensive-trim-multica"
+  task_type: code
+  system: "实跑 pin 与显式 overlay 取材"
+  preconditions:
+    - "从 Multica 根在 Windows 用 Node 和 Git 串行执行本 CP，仅使用临时 Git 夹具。"
+    - "按下方命令中的文件顺序共 10 + 25 + 16 例；预期 50 pass、0 fail，Windows 跳过 1 个既有 shell 夹具。"
+steps:
+  - id: CP-CBE-101
+    description: "TC-CBE-101：严格 pin、固定提交取材和显式 HEAD（SC-CBE-101～102）。"
+    action: >-
+      node --test --test-reporter=tap scripts/aifi45-real-run/crctl-stage.test.mjs scripts/aifi45-real-run/stack.test.mjs scripts/aifi45-disposable/tools-pin.test.mjs
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "# pass 50\n# fail 0\n"
+rollback:
+  steps:
+    - "失败只报告，测试清理其自建临时夹具。"

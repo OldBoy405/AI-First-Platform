@@ -1,0 +1,246 @@
+{
+  "name": "ewv-progress",
+  "package": "./internal/governance",
+  "run": "^(TestPipelineProgressDerivationTable|TestPipelineProgressGETReadBoundaries|TestPipelineReceiptCarriesProgress|TestRequirementResumeReceiptShowsAdmissionWait|TestArchitectureStartReceiptCarriesProgress)$",
+  "expected": [
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineProgressDerivationTable/unknown_status_is_an_error",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineProgressGETReadBoundaries",
+      "leaf": false
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineProgressGETReadBoundaries/status_from_scope_read",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineProgressGETReadBoundaries/runner_key_missing",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineProgressGETReadBoundaries/running_runner_is_array",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineProgressGETReadBoundaries/running_runner_is_scalar",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineProgressGETReadBoundaries/running_runner_is_null",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineProgressGETReadBoundaries/failed_runner_is_array",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineProgressGETReadBoundaries/failed_runner_is_scalar",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineProgressGETReadBoundaries/failed_runner_is_null",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineReceiptCarriesProgress",
+      "leaf": false
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineReceiptCarriesProgress/waiting_admission",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineReceiptCarriesProgress/in_flight",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineReceiptCarriesProgress/read_failure_omits_progress",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineReceiptCarriesProgress/missing_run_omits_progress",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestRequirementResumeReceiptShowsAdmissionWait",
+      "leaf": false
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestRequirementResumeReceiptShowsAdmissionWait/bad_detail_preserves_success",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestArchitectureStartReceiptCarriesProgress",
+      "leaf": false
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestArchitectureStartReceiptCarriesProgress/bad_detail_preserves_success",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineProgressDerivationTable",
+      "leaf": false
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineProgressDerivationTable/run_completed",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineProgressDerivationTable/run_cancelled",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineProgressDerivationTable/run_failed_carries_error_code",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineProgressDerivationTable/run_failed_without_error_code",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineProgressDerivationTable/in_flight_queued_ignores_residual_wait",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineProgressDerivationTable/in_flight_deferred_ignores_residual_wait",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineProgressDerivationTable/in_flight_dispatched_ignores_residual_wait",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineProgressDerivationTable/in_flight_waiting_local_directory_ignores_residual_wait",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineProgressDerivationTable/in_flight_running_ignores_residual_wait",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineProgressDerivationTable/waiting_admission_HEAD_UNAVAILABLE",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineProgressDerivationTable/waiting_admission_HEAD_REJECTED",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineProgressDerivationTable/waiting_admission_WAIT_CONSUMPTION",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineProgressDerivationTable/waiting_admission_WAIT_TRUSTED_T_COMMIT",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineProgressDerivationTable/waiting_admission_with_finished_task_reports_task_status",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineProgressDerivationTable/waiting_other_reason_projection_stale",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineProgressDerivationTable/waiting_other_reason_review_evidence",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineProgressDerivationTable/waiting_other_reason_authority_postcondition",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineProgressDerivationTable/waiting_human",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineProgressDerivationTable/idle_running_run_with_running_human_node",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineProgressDerivationTable/idle_without_frontier_running_node",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineProgressDerivationTable/idle_frontier_without_task_or_wait",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineProgressDerivationTable/idle_passed_node_without_task_keeps_residual_wait_untrusted",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineProgressDerivationTable/idle_running_run_with_only_passed_human_node",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineProgressDerivationTable/missing_run_is_an_error",
+      "leaf": true
+    },
+    {
+      "package": "github.com/multica-ai/multica/server/internal/governance",
+      "test": "TestPipelineProgressDerivationTable/json_omits_empty_fields",
+      "leaf": true
+    }
+  ],
+  "ok": true,
+  "reasons": [],
+  "reconciliationLine": "",
+  "stage": "test",
+  "totals": {
+    "pass": 45,
+    "fail": 0,
+    "skip": 0,
+    "packages": 1
+  },
+  "reconciliation": {
+    "status": "matched"
+  },
+  "failures": []
+}
