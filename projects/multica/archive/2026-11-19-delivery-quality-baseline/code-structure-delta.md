@@ -1,0 +1,60 @@
+# Code Structure Delta — 2026-11-19-delivery-quality-baseline
+> 生成时间: 2026-11-21T02:47:11.497369 | Git commit: 0c47c67
+> 置信度: 0.70 (AI-generated — 以源代码为准)
+
+## 变更文件
+
+- `apps/desktop/scripts/package.mjs`
+- `apps/desktop/scripts/package.test.mjs`
+- `apps/web/next-env.d.ts`
+- `e2e/issue-task-history-trigger.mjs`
+- `e2e/issue-task-history.spec.ts`
+- `packages/views/governance/spec-trace/spec-trace.tsx`
+- `packages/views/inbox/components/container-jump-banner.tsx`
+- `packages/views/projects/components/cr-gate-card.tsx`
+- `packages/views/projects/components/discussion-pane.tsx`
+- `packages/views/projects/components/project-chat-panel.test.tsx`
+- `packages/views/projects/components/project-chat-panel.tsx`
+- `packages/views/projects/components/project-private-ask.tsx`
+- `packages/views/projects/components/project-queue-bar.tsx`
+- `packages/views/projects/components/project-team-agent-chat.tsx`
+- `packages/views/skills/components/market-page.tsx`
+- `packages/views/skills/components/skill-market-card.tsx`
+- `scripts/aifi45-disposable/ci-evidence.mjs`
+- `scripts/aifi45-disposable/ci-evidence.test.mjs`
+- `scripts/aifi45-disposable/ci-provision.mjs`
+- `scripts/aifi45-disposable/ci-provision.test.mjs`
+- `scripts/aifi45-disposable/frontend-quality.mjs`
+- `scripts/aifi45-disposable/frontend-quality.test.mjs`
+- `scripts/aifi45-disposable/issue-task-history-trigger.test.mjs`
+- `scripts/aifi45-disposable/provision.mjs`
+- `scripts/aifi45-disposable/provision.test.mjs`
+- `scripts/aifi45-disposable/test-ownership.test.mjs`
+- `scripts/aifi45-disposable/tools-pin.test.mjs`
+- `scripts/ci-scope.test.mjs`
+- `scripts/test-go.test.sh`
+- `server/cmd/migrate/migrate_workspace_seam_test.go`
+- `server/cmd/server/chat_submission_contract_test.go`
+- `server/cmd/server/listeners.go`
+- `server/cmd/server/listeners_scope_test.go`
+- `server/internal/daemon/execenv/runtime_config_test.go`
+- `server/internal/daemon/health_test.go`
+- `server/internal/daemon/pi_skill_identity_test.go`
+- `server/internal/daemon/repo_checkout_url_test.go`
+- `server/internal/daemon/skills_for_env_test.go`
+- `server/internal/governance/execution_start_claim_test.go`
+- `server/internal/governance/execution_task_claim_project_test.go`
+- `server/internal/governance/execution_terminal_claim_test.go`
+- `server/internal/handler/chat.go`
+- `server/internal/handler/private_project_task_scope_test.go`
+- `server/internal/handler/private_project_test.go`
+- `server/internal/handler/search_test.go`
+- `server/internal/service/issue.go`
+- `server/internal/service/runtime_teardown.go`
+- `server/internal/service/task.go`
+- `server/internal/service/task_failure_event_test.go`
+- `server/internal/testutil/isolated_db.go`
+- `server/internal/testutil/isolated_db_test.go`
+- `server/pkg/agent/pi.go`
+- `server/pkg/db/generated/chat.sql.go`
+- `server/pkg/db/queries/chat.sql`

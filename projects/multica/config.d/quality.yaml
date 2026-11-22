@@ -1,10 +1,8 @@
 # STDD 质量检查配置 — multica fork（Go server + pnpm monorepo）
 #
-# quality.test = make test：需 .env + docker postgres（REQUIRE_ENV →
-# scripts/ensure-postgres.sh → migrate up → scripts/test-go.sh --race）。
-# 切片期不要跑它，单切片用目标包命令（go test ./internal/<pkg>/...）。
-# e2e 由 scripts/check.sh 承担（还会跑 typecheck + TS test + Playwright），
-# 需 .env 且会拉起 backend/web，只在 Gate 3 前跑一次。
+# 正式后端检查消费本轮 CI 的已迁移一次性库、专用管理员环境和临时产物目录。
+# 浏览器检查只连接本轮自建的 API/web 与独立一次性库；不读取开发 .env。
+# 切片使用针对性检查，最终验收同时执行 pnpm test 与以下必跑项。
 
 verify:
   max_iterations: 5
@@ -32,15 +30,17 @@ test:
   coverage_target: 0
 
 quality:
-  test: "make test"
+  test: "make ENV_FILE=/dev/null test-ci"
   lint: "pnpm lint"
   typecheck: "pnpm typecheck"
   e2e:
     enabled: true
     runner: playwright
-    command: "bash scripts/check.sh"
+    command: >-
+      bash -ec 'DATABASE_URL="${MULTICA_E2E_DATABASE_URL:?}" pnpm exec playwright test --project=chromium --reporter=line e2e/issue-task-history.spec.ts'
     scope: critical_only
-    critical_paths: []
+    critical_paths:
+      - e2e/issue-task-history.spec.ts
   coverage:
     enabled: false
     tool: go-cover

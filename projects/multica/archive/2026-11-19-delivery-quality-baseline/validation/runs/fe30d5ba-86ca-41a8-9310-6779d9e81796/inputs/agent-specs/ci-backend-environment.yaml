@@ -1,0 +1,40 @@
+meta:
+  task_id: ci-backend-environment
+  change_id: '2026-11-19-delivery-quality-baseline'
+  task_type: code
+  system: Multica 交付质量后端入口
+  preconditions:
+    - 代表性非 root Linux 的干净测试检出绑定到同一 multica 记录根，使用 STDD 3.0.7。
+    - 本次主库及每例独立夹具已按现有供给器创建并迁移；独立管理员环境和 RUNNER_TEMP 已准备，不读取普通 .env。
+    - 实际 Tools 检出与项目同一固定 pin；若更换，审批及隔离兼容记录已就绪，规则与 crctl 不跨提交。
+
+steps:
+  - id: CP-DQB-001
+    description: 用既有夹具验证正式入口、生命周期和 hosted 接线；缺失、重复绑定或子步骤错误均硬失败。
+    action: >-
+      bash -ec 'node --test scripts/aifi45-disposable/ci-provision.test.mjs; node --test --test-name-pattern="^backend-tests provisions a one-time database, reconciles the evidence and tears it down$" scripts/ci-scope.test.mjs; bash scripts/test-go.test.sh'
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'backend-tests provisions a one-time database, reconciles the evidence and tears it down'
+      - type: stdout_contains
+        expected: 'test-ci wiring: regular=1 admin=1 agent=1 isolated-env=1 fail-fast=1'
+      - type: stdout_contains
+        expected: 'test-ci fixtures: required=1 regular-only=1'
+  - id: CP-DQB-002
+    description: 用经批准的固定 Tools 和本轮已迁移夹具执行配置所列完整后端命令；同轮回收在外层验收记录。
+    action: make ENV_FILE=/dev/null test-ci
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: 'ci evidence OK: 5 required package(s), 20 declared skip(s)'
+      - type: stdout_contains
+        expected: 'admin evidence OK: 3 ci-admin test(s) passed'
+      - type: stdout_contains
+        expected: '"Action":"pass","Package":"github.com/multica-ai/multica/server/pkg/agent"'
+
+rollback:
+  steps:
+    - 停止当前质量结论，只使用既有 down 与本次 ownership 去回收当前测试资源，不操作其他服务。

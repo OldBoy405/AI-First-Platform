@@ -1,0 +1,78 @@
+# 2026-11-19-delivery-quality-baseline.yaml — Canonical Proposal (YAML-first, V2.9)
+# AI 起草、AI 修改、AI 消费。Human View 由 `stdd canon generate` 生成。
+
+meta:
+  change_id: "2026-11-19-delivery-quality-baseline"
+  title: "恢复 Multica 交付质量基线"
+  created: "2026-11-19T01:10:39.517429"
+  status: draft
+  version: "2.9"
+
+why:
+  problem: >-
+    2026-11-18-defensive-trim-multica 的 6 项定向验收已通过，但项目质量检查阻塞交付。
+    干净基线与变更版的 lint 均报相同的 21 个错误；隔离 Linux CI 对照中两侧的全量 Go 测试均未通过。
+    原项目配置的 make test 和 scripts/check.sh 未在已授权的隔离数据库边界内验证，且 critical_paths 为空。
+    非 root Linux 复核确认固定 Tools 合同不匹配、隔离夹具无建库权限、迁移测试引用漂移及 Pi 技能参数重复；换 pin 不能单独恢复全绿。
+  motivation: "恢复可重复通过的正式项目检查，使原变更能在修复后的基线上完成最终验收，而不把基线修复混入原功能补丁。"
+
+what_changes:
+  - id: C1
+    type: modified
+    description: "项目配置与 CI：对齐正式验证入口；现有 hosted backend-tests 只允许修改隔离夹具供给、凭据隔离、回收接线和 regular 包级串行，不新增 runner 或改测试分组。"
+  - id: C2
+    type: modified
+    description: "代码和测试：修复基线 lint、迁移测试引用与重复 Pi 技能参数，解除 Desktop 测试收集和运行历史时序阻塞。经用户批准，另纳入 Pi 自然退出读取期限、合法 claim 夹具 owner 与对应掩蔽负例对齐、迁移 709 teardown 残留、chat 私有内容路由与创建者投递、丢失的 member delegation 记录，以及仅测试的 catalog/搜索期望对齐。任务 2.19 仅对齐 daemon/execenv 的既有测试：仓库检出鉴权夹具、技能身份与来源、技能列表路由规则；不改对应生产行为、鉴权边界或测试选择。保留原行为与拒绝、零写入断言；未经裁定的其他红项不预批修复。"
+  - id: C3
+    type: modified
+    description: "基础设施与证据：确需空库的测试分别使用本轮预置的独立空库和受限凭据；采用经用户单独裁定的固定 Tools `71d0587`（含已接受的 agent git show 五形状放宽），规则与 crctl 取自同一提交。夹具文件作为本轮唯一回收记录，含测试映射与主库/夹具身份；归属不明时保留记录并报错，不自动删除。"
+
+capabilities:
+  new: []
+  modified:
+    - name: ci-backend-environment
+      description: "正式全量后端检查继续使用受管的一次性库、Tools pin 和既有证据对账。"
+    - name: ci-credential-and-frontend-typecheck
+      description: "项目级验证明确执行前端 lint、类型检查及选定的必跑 E2E，并以实际结果判定。"
+
+constraints:
+  - "保留现有测试义务、分组、清理、失败传播及证据对账。经用户批准，将 allowed-skips 从 11 补至 20，仅限已定位的平台/helper 条件，并按声明的子例边界对账；接受 Views 六文件的文件级例外，不据此证明清单内无新回归。不接入已有数据库或服务，不给常规或夹具角色 CREATEDB，不把管理员凭据传给 regular 或 agent。Tools pin 采用用户已裁定的 Tools main `71d05871a3f937f29a7f68fbf5b022741ab242e8`。"
+  - "已裁定的权限变化：采用 main 中 agent 对现有 5 种 git show 形状开放（caller 由仅 system-orchestrator 改为 *）；不新增参数形状、不改全局禁用 flags 与受保护路径、不授予 agent 编排器写入权限。用户已明确接受该变化并授权换 pin。"
+  - "正式 CI 夹具回收限于单任务顺序使用本轮记录；旧记录仍可能被使用时不得复用其资源身份（包括 nonce）。创建未确认时即使暂未发现对象也保留记录并报错，可能需要人工核实和清理；不将未回收资源计为完整通过。不防恶意篡改记录或对象，也不承诺机器断电后的文件持久性。"
+  - "正式配置和实际执行一致；重用仍有效的已取得证据，不做等价重复验证，不把本地验证当成托管 CI 证据。"
+  - "不修改原精简变更的补丁或已取证记录；原变更的最终验收与交付仍经其自己的门禁。"
+
+stakeholders:
+  - "Multica 维护者与 2026-11-18-defensive-trim-multica 交付负责人。"
+
+risk_areas:
+  - capability: ci-backend-environment
+    risk: "环境差异或基线相同失败被误判为正式检查通过。"
+    mitigation: "只按正式入口在干净检出获得真实结果；阻塞失败按实际原因归因，保留已有检查与隔离。"
+  - capability: ci-backend-environment
+    risk: "采用的 Tools main 同时含 git show 调用者放宽与 crctl report 失败行为变化。"
+    mitigation: "用户已接受 git show 对现有 5 形状开放；在 71d0587 上定向复验真实 allow/deny、execenv 准备、crctl 多条目合并与 report 回归，全部从同一提交取得，不拼接不同版本。"
+  - capability: ci-backend-environment
+    risk: "创建结果或持久确认不明时，无法仅凭名称、相同 marker 或某一时刻未查到对象证明归属或创建已终止；保守处理可能留下临时资源或需人工确认空记录。"
+    mitigation: "用户接受归属不明时保留记录并报错、不自动删除；按证据回收已确认对象，未解决残留须人工核实且不计为完整验收。"
+
+non_goals:
+  - "无关重构、扩大浏览器测试范围、另写 runner 或增加兜底路径。"
+  - "本 change 的提交、推送或部署须按其交付门禁另行确认；不改变原精简变更的审批边界。"
+
+critical:
+  is_critical: false
+  risk_assessment:
+    safety_critical: false
+    financial: false
+    cross_system: false
+
+anchoring:
+  level: L1
+  reference_changes: []
+  anchor_implementations: []
+
+success_criteria:
+  - "正式质量入口与配置一致；必跑 E2E 路径明确且实际执行，现有必跑检查未被降级。"
+  - "修复后的干净检出通过正式全量测试、lint、类型检查和指定 E2E，结果与对应源码可追溯；自建服务和一次性库已回收。前端按已批准的六文件级例外判定，不据此证明清单内无新回归。"
+  - "原精简补丁及其现有证据未变更；基线通过后方可按原变更流程推进最终验收。"
