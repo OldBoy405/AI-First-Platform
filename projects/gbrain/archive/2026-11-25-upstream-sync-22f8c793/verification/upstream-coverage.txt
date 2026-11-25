@@ -1,0 +1,19 @@
+上游窗口覆盖核对（TC-USM-004 人工证据）
+==========================================
+
+窗口：BASE=17b68cef4f4267ca0e5710b42f6ddc95acf9fe51 → UPSTREAM=22f8c793b1fa56bb46835801878b2053be940098
+统计：5879 条改动路径 = 新增 3359 / 修改 2513 / 删除 3 / 改名 4。
+目录分布：test 2093、src 1755、rust 913、docs 316、behavior-changes.d 281、scripts 152、skills 80、plugin 68、plugin-variants 57、apple 48、.github 32、changelog.d 14。
+删除/改名路径与 FORK 新增路径无交集（comm 交集为 0），不存在“上游删掉 fork 新增文件”的情况。
+
+高风险链核对结论（以候选树实际运行结果为准）：
+1. Inbox：`test/ingestion/ingest-capture.test.ts`、`test/inbox-workflow.test.ts` 通过（含 managed/unmanaged 落库 frontmatter/content/provenance 用例），预处理→importAs 顺序保留。
+2. Admin：`test/serve-http-admin-route-guard.test.ts` 通过（无会话先拒、合法会话可达），Admin 套件 `(cd admin && bun run test)` rc=0；嵌入清单经 build:admin 重建且 check:admin-embedded 通过。
+3. query.trace：`test/query-trace.test.ts`、`test/search-remote-page-cap.test.ts` 通过，trace 信封保留 retrieval 元数据；上游 delivered 预取参数并存。
+4. 来源隔离/权限：`test/e2e/source-isolation-pglite.test.ts` 14 用例通过；引擎合并保留 privacy/sourceScope/liveOriginFilter，worldLinkContexts 过滤先于 fork 行上限。
+5. op 合同：`test/operation-manifest.test.ts`、`test/parity.test.ts`、`test/mcp-tool-defs.test.ts` 通过（同一批次 111 用例 0 失败）。
+6. 迁移链路：顺序检查（base=UPSTREAM）v336→v337、registry 测试 2/2、空库双跑探针 applied=337 / second=0。
+7. 生成物：regen:all 二次无漂移，check:regen-all / check:admin-embedded 通过；上游 regen 清单（18 artifact，含 behavior-changes 与 public-surface）已生效。
+8. 门禁：check:module-size / check:page-body-readers（748 rows）/ check:core-world-reads / check:resolver 均通过。
+
+未跑项：Postgres/engine-parity E2E、Admin Playwright（`admin/e2e/publish-copy-button.pw.ts`）、旧 fork 库副本升级探针、Windows 全量 `bun run test`。均已在台账登记，不冒充通过。

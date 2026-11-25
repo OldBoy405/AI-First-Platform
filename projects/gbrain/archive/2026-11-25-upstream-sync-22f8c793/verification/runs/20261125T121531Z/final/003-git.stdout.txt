@@ -1,0 +1,790 @@
+.qoder/repowiki/knowledge/zh/Bun 驱动的依赖管理与多工作区策略/dependency_management.md:6: trailing whitespace.
++- **版本策略**: 
+.qoder/repowiki/knowledge/zh/日志与审计系统/logging_system.md:39: trailing whitespace.
++1.  **严禁混用 Stdout/Stderr**: 
+.qoder/repowiki/zh/content/开发者指南/API设计与模式/验证模式设计.md:117: trailing whitespace.
++2. **validatePageSlug**: 页面slug格式验证  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:38: trailing whitespace.
++本技术文档聚焦于 gbrain 搜索性能优化系统，围绕以下关键能力展开：  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:39: trailing whitespace.
++- 令牌预算管理（Token Budget），在搜索管线末端以贪心方式控制上下文窗口占用，确保下游模型调用安全；  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:40: trailing whitespace.
++- 自动截断（Autocut），基于重排序器相关性分数的“悬崖”检测，智能裁剪结果集，提升精度与响应时间平衡；  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:41: trailing whitespace.
++- 查询缓存（Semantic Query Cache），以向量相似度为依据进行命中判定，结合两层失效门控保障一致性；  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:42: trailing whitespace.
++- 缓存失效策略与一致性保证，通过页面生成时钟与快照实现跨模式隔离与正确过期；  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:43: trailing whitespace.
++- 性能基准与监控，包括检索质量评估、延迟与内存占用测量工具链；  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:84: trailing whitespace.
++- 令牌预算管理：对最终候选集按标题与块文本的字符估算进行累计计数，在不改变原始顺序的前提下，从顶部开始贪心裁剪，直至累计超出预算或无法再容纳首个候选项。  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:85: trailing whitespace.
++- 自动截断：在重排序器给出的 rerank_score 上寻找最大归一化差距（悬崖），据此决定保留数量，避免固定 Top-K 带来的噪声与“20 vs 1”精度问题。  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:86: trailing whitespace.
++- 查询缓存：以查询嵌入的余弦距离阈值判断命中，命中后直接返回存储的结果与元数据；未命中则执行完整检索流程并将结果写回缓存。  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:133: trailing whitespace.
++- 计数策略：采用字符/4 的启发式估算，避免引入重型分词器；对空串返回 0，单字符也至少计 1 令牌，向上取整确保安全预算。  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:134: trailing whitespace.
++- 执行时机：在所有评分、重排、去重、两阶段扩展之后，作为最后裁剪阶段，不重新排序，保持调用者提供的顺序契约。  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:135: trailing whitespace.
++- 边界行为：未设置预算或非正数时视为无操作；首个候选项即超预算时返回空集；输入为空时直接返回空集。  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:158: trailing whitespace.
++- 输入信号：仅使用 cross-encoder rerank_score，当少于两个有有限分数项时无操作；若最高分为非正值或非有限数亦无操作。  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:159: trailing whitespace.
++- 判定逻辑：对有限分数降序排序并归一化，寻找最大归一化差距（jumpRatio 阈值），保留不低于阈值边界的所有条目；支持可选 preserve 回调保护特定条目（如别名精确匹配注入）。  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:160: trailing whitespace.
++- 默认配置：enabled=true，jumpRatio=0.2，minKeep=1；可通过配置与调用参数覆盖。  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:187: trailing whitespace.
++- 命中判定：以查询嵌入与缓存中最接近的向量进行余弦距离比较，低于阈值且未过期才命中；命中后异步提升命中计数。  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:188: trailing whitespace.
++- 存储内容：查询文本、source_id、knobsHash、嵌入、结果数组、元数据、TTL、页面生成快照与最大生成号。  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:189: trailing whitespace.
++- 多源隔离：按 source_id 限定作用域，避免跨脑缓存污染；knobsHash 将不同模式写入独立行，防止交叉污染。  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:190: trailing whitespace.
++- 清理与统计：支持全量清空、仅清理过期行、统计总数/新鲜/陈旧/命中次数；后台写入采用挂起任务集合并带超时的冲刷机制。  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:233: trailing whitespace.
++- 第一层（全局时钟）：通过页面生成序列的 last_value 与缓存行存储的 max_generation_at_store 比较，若未推进则认为全局新鲜；该序列由每条语句触发器推进，非事务内读取，只可能过度失效，绝不提供陈旧。  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:234: trailing whitespace.
++- 第二层（页面快照）：若第一层通过，则进一步比对 page_generations JSONB 快照；任一页面被删除或 generation 改变即失效；v0.41.19+ 规定空快照不可作为“真空有效”，必须依赖第一层判定。  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:235: trailing whitespace.
++- 严格性演进：修复了旧版 MAX(generation) 读取与 DELETE 不触发触发器导致的静默陈旧问题；升级路径短暂时允许一次缓存缺失，随后自然填充。  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:265: trailing whitespace.
++- 主要阶段：关键词检索 → 向量检索 → RRF 融合 → 归一化 → Boost（编译真相/标题/别名/情感/时效/反向链接/图信号等）→ 重排（可选）→ 去重 → 自动截断（可选）→ 令牌预算（必经）→ 返回。  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:266: trailing whitespace.
++- 并发与稳定性：后台写入采用挂起任务集合并带超时冲刷，避免长时间阻塞断开；查询嵌入支持共享截止时间，确保在 CLI 强制退出前完成清理。  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:300: trailing whitespace.
++  - 优势：常数时间贪心裁剪，避免昂贵的重排；对英文近似误差约±10-15%，对混合代码/Unicode 约±5-25%，保守估算更利于安全预算。  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:301: trailing whitespace.
++  - 使用建议：在高成本下游（如大模型对话）前设置预算；若需要更高精度，可在事后用真实 token 数与估算差值调整预算再次裁剪。  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:303: trailing whitespace.
++  - 优势：基于 rerank_score 的悬崖检测，避免固定 Top-K 带来的噪声；在枚举类查询上保持召回稳定，在一般查询上显著提升精度。  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:304: trailing whitespace.
++  - 使用建议：默认开启；针对特定场景微调 jumpRatio 与 minKeep；确保 reranker 已启用并产生有限分数。  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:306: trailing whitespace.
++  - 优势：命中可绕过关键词/向量/重排/去重等全部步骤，显著降低延迟；两层门控确保一致性；多源与多模式隔离避免污染。  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:307: trailing whitespace.
++  - 使用建议：合理设置相似度阈值与 TTL；定期清理陈旧行；在模式切换时利用 knobsHash 避免交叉污染；必要时禁用缓存进行对比测试。  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:309: trailing whitespace.
++  - 延迟：使用 _read_latency_workload.ts 产出 p50/p95/p99 百分位与回归阈值；rss 测量脚本 measure_rss.sh 对峰值内存进行回归控制。  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:322: trailing whitespace.
++  - 检查 reranker 是否启用且产生有限分数；确认调用参数 autocut 非 false；核对 jumpRatio 与 minKeep 设置。  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:323: trailing whitespace.
++  - 参考：[autocut-eval.test.ts:116-180](file://test/search/autocut-eval.test.ts#L116-L180)、[query-op-autocut.test.ts:1-33](file://test/search/query-op-autocut.test.ts#L1-L33)  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:325: trailing whitespace.
++  - 确认 source_id 与 knobsHash 一致；检查页面生成时钟是否推进；空快照在新规则下会失效，属预期行为。  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:326: trailing whitespace.
++  - 参考：[query-cache-gate.ts:163-190](file://src/core/search/query-cache-gate.ts#L163-L190)、[query-cache-gate.test.ts:1-30](file://test/query-cache-gate.test.ts#L1-L30)  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:328: trailing whitespace.
++  - hybridSearchCached 会共享查询嵌入截止时间并设置最小预算，确保健康嵌入不会被饥饿；必要时调整环境变量阈值。  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:329: trailing whitespace.
++  - 参考：[hybrid.ts:707-771](file://src/core/search/hybrid.ts#L707-L771)  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:331: trailing whitespace.
++  - 使用 search diagnose 命令查看各层排名与诊断报告，定位问题发生在关键词、向量、融合还是后融合阶段。  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:332: trailing whitespace.
++  - 参考：[search-diagnose.test.ts:1-66](file://test/search/search-diagnose.test.ts#L1-L66)  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:334: trailing whitespace.
++  - 使用 invalidateQueryCache 按 source_id 或全库清理；确认写入后门控逻辑正确识别变更。  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:351: trailing whitespace.
++  - 自动截断在枚举类查询上保持召回稳定，在一般查询上显著提升精度，同时限制召回回退幅度；参见 [autocut-eval.test.ts:135-180](file://test/search/autocut-eval.test.ts#L135-L180)。  
+.qoder/repowiki/zh/content/搜索与检索/搜索性能优化.md:352: trailing whitespace.
++  - 检索质量基准提供传统 IR 指标与“块级指标”综合评估，便于发现 Boost/意图分类带来的收益与潜在回归；参见 [benchmark-search-quality.ts:542-751](file://test/benchmark-search-quality.ts#L542-L751)。  
+.qoder/repowiki/zh/content/数据库设计/表结构设计.md:82: trailing whitespace.
++  
+.qoder/repowiki/zh/content/数据库设计/表结构设计.md:88: trailing whitespace.
++  
+.qoder/repowiki/zh/content/数据库设计/表结构设计.md:94: trailing whitespace.
++  
+.qoder/repowiki/zh/content/数据库设计/表结构设计.md:99: trailing whitespace.
++  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:31: trailing whitespace.
++本文件面向GBrain知识图谱系统，聚焦以下目标：  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:32: trailing whitespace.
++- 实体提取机制：wikilink解析、类型化边创建、零LLM实现  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:33: trailing whitespace.
++- 图遍历与多跳查询能力  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:34: trailing whitespace.
++- 搜索中图信号的应用：邻近性提升、交叉来源验证、会话去拥挤  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:35: trailing whitespace.
++- Obsidian风格链接解析与全局basename解析  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:36: trailing whitespace.
++- 图查询示例与性能优化建议  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:37: trailing whitespace.
++- 图结构设计、索引策略与维护最佳实践  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:38: trailing whitespace.
++- 知识发现与洞察生成的工作原理  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:41: trailing whitespace.
++- 核心数据模型位于数据库模式文件中，定义了页面、内容块、链接、标签、时间线等表及索引，支撑检索与图遍历  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:42: trailing whitespace.
++- 链接抽取与类型推断逻辑集中在链接抽取模块，支持多种wikilink格式与前言字段（frontmatter）  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:43: trailing whitespace.
++- 图信号在检索后融合阶段应用，对结果进行邻近性、跨源协同与会话去拥挤增强  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:44: trailing whitespace.
++- 图遍历通过操作注册与引擎接口暴露，支持深度限制与方向/类型过滤  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:91: trailing whitespace.
++- 链接抽取与类型推断：从markdown、wikilink与前言字段中提取实体引用，推断关系类型（如工作于、投资于、创办、顾问、出席、提及），零LLM  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:92: trailing whitespace.
++- 图信号增强：基于邻近性、跨源协同与会话去拥挤对检索结果进行乘性调整  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:93: trailing whitespace.
++- 图遍历：以指定节点为起点，按深度、方向与类型过滤进行多跳探索  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:94: trailing whitespace.
++- 全局basename解析：可选地将裸wikilink解析到同名basename的多个目标页  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:136: trailing whitespace.
++- 多源输入：markdown实体引用、Obsidian风格wikilink、裸slug引用、前言字段  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:137: trailing whitespace.
++- 解析与去重：对wikilink进行目录白名单匹配、合格/未合格解析、裸名解析（可选）；同一页面内重复候选去重  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:138: trailing whitespace.
++- 类型推断：基于上下文窗口内的动词与角色先验规则，确定关系类型（创办、投资于、顾问、工作于、出席、提及）  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:171: trailing whitespace.
++- 深度限制：防止指数级扩展导致资源耗尽，默认上限常量保护  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:172: trailing whitespace.
++- 方向与类型过滤：支持in/out/both与单类型筛选，返回路径或节点  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:173: trailing whitespace.
++- 权限与作用域：遍历时遵循调用方的source作用域，避免拓扑泄漏  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:200: trailing whitespace.
++- 邻近性提升：若top-K中有≥2个其他top-K页面指向某页，则视为该查询的枢纽，小幅提升其分数  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:201: trailing whitespace.
++- 跨源协同：若某页被≥2个不同来源指向，则额外提升，与邻近性叠加  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:202: trailing whitespace.
++- 会话去拥挤：对共享会话前缀（如chat/日期）的多条结果，仅保留最高分，其余降权  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:228: trailing whitespace.
++- Obsidian风格wikilink：支持[[dir/slug]]与[[source:dir/slug|显示文本]]  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:229: trailing whitespace.
++- 全局basename解析：当开启标志位时，裸wikilink（如[[struktura]]）按basename解析到所有匹配页，产生多条边  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:241: trailing whitespace.
++- 实体候选提取：结合检索回传的实体前缀slug与问题文本的名词短语，生成高精候选  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:242: trailing whitespace.
++- 轨迹路由：对候选实体发起轨迹查询，整合上下文形成合成答案与缺口分析  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:251: trailing whitespace.
++- 数据模型依赖：pages与content_chunks承载内容与嵌入；links承载图边；timeline与tags辅助检索与排序  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:252: trailing whitespace.
++- 处理链路：link-extraction依赖schema中的pages/links定义；graph-signals依赖links与content_chunks统计；operations依赖engine接口与schema约束  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:360: trailing whitespace.
++- 检索后融合阶段的图信号：邻近性与跨源提升为小幅度乘性调整，会话去拥挤避免弱片段挤占token预算，整体保持稳定排序  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:361: trailing whitespace.
++- 遍历深度限制：默认上限常量防止指数爆炸，结合frontierCap可进一步限制每层扩展数量  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:362: trailing whitespace.
++- 索引策略：links表按from/to/source/origin建立索引；pages按type/frontmatter/title/trgm等建立索引；content_chunks按embedding/HNSW与部分列建立索引  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:363: trailing whitespace.
++- 批量写入自适应重试：批量插入/更新在瞬断时自动重试，降低外部连接池波动影响  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:376: trailing whitespace.
++- 图信号失败开路：当邻近度/跨源统计查询失败时，返回原始结果并记录审计日志，不影响整体流程  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:377: trailing whitespace.
++- 遍历深度异常：若出现深度过大导致CPU飙升，检查调用端是否超过默认上限，必要时显式设置较小深度  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:378: trailing whitespace.
++- 全局basename解析：关闭标志位时裸wikilink会被静默丢弃；开启后需确认是否存在同名冲突页  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:379: trailing whitespace.
++- 会话去拥挤误判：若实体类结果被错误分组，确认slug是否符合会话前缀识别规则（包含chat/session/sessions或日期段）  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:395: trailing whitespace.
++  - 实体提取：在页面写入后，自动扫描wikilink与前言字段，生成typed edges并持久化  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:396: trailing whitespace.
++  - 图信号：启用graph_signals后，检索结果在融合阶段获得邻近性/跨源/会话去拥挤增强  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:397: trailing whitespace.
++  - 多跳查询：以某人/公司为起点，按“工作于/投资于/顾问”等类型过滤，设定深度上限进行探索  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:398: trailing whitespace.
++  - 全局basename：开启后，[[struktura]]可解析到多个同名页，分别生成边  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:400: trailing whitespace.
++  - 启用全局basename前评估冲突页数量，必要时先进行重命名  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:401: trailing whitespace.
++  - 对高频图信号场景，关注失败审计日志，定位上游查询瓶颈  
+.qoder/repowiki/zh/content/知识图谱/知识图谱.md:402: trailing whitespace.
++  - 在大图遍历中合理设置frontierCap与深度上限，避免资源耗尽  
+.qoder/repowiki/zh/content/管理与运维/部署配置.md:4: trailing whitespace.
++**本文引用的文件**   
+.qoder/repowiki/zh/content/集成与扩展/Recipe系统/凭证网关Recipe.md:31: trailing whitespace.
++本文件为“凭证网关Recipe”的技术文档，面向需要在系统中安全接入Google服务（如Gmail、Google Calendar、Google Contacts）的用户与工程师。该Recipe提供两种可选的网关模式：  
+.qoder/repowiki/zh/content/集成与扩展/Recipe系统/凭证网关Recipe.md:32: trailing whitespace.
++- 选项A：ClawVisor托管网关（推荐），由第三方服务统一处理OAuth、令牌刷新与加密，安装一次即可被多个Google服务Recipe共享使用。  
+.qoder/repowiki/zh/content/集成与扩展/Recipe系统/数据同步Recipe/邮件同步Recipe.md:4: trailing whitespace.
++**本文档引用的文件**   
+.qoder/repowiki/zh/content/集成与扩展/嵌入提供商/本地提供商.md:4: trailing whitespace.
++**本文引用的文件**   
+.qoder/repowiki/zh/content/集成与扩展/插件开发/插件开发.md:4: trailing whitespace.
++**本文引用的文件**   
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:29: trailing whitespace.
++本文件面向GBrain系统的架构设计，聚焦以下关键主题：  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:30: trailing whitespace.
++- 双引擎架构（PGLite与Postgres）的设计动机、边界与迁移路径  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:31: trailing whitespace.
++- 脑仓库作为“系统记录”的存储契约与重建能力  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:32: trailing whitespace.
++- “脑”与“源”的双重组织轴及其路由与隔离策略  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:33: trailing whitespace.
++- 混合检索（向量+关键词+RRF+图遍历+重排序）与知识图谱自连接机制  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:34: trailing whitespace.
++- 作业队列（Minions）的协议化设计与可扩展性  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:35: trailing whitespace.
++- 系统边界、组件交互与数据流图  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:39: trailing whitespace.
++GBrain采用“接口契约优先”的分层设计：  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:40: trailing whitespace.
++- 核心接口定义于BrainEngine，屏蔽具体存储实现差异  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:41: trailing whitespace.
++- 引擎工厂按配置动态加载Postgres或PGLite引擎  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:42: trailing whitespace.
++- 检索、去重、推理、图遍历等上层逻辑与引擎解耦  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:85: trailing whitespace.
++- 双引擎接口与工厂  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:86: trailing whitespace.
++  - BrainEngine统一抽象页面CRUD、向量/关键词检索、链接/回链、时间线、原始数据、版本、健康统计、迁移与嵌入查询等能力  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:87: trailing whitespace.
++  - 引擎工厂按配置动态导入，避免无谓加载PGLite WASM  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:88: trailing whitespace.
++- 检索与图谱  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:89: trailing whitespace.
++  - 混合检索：向量(HNSW/pgvector)+关键词(tsvector)+RRF融合+源因子重排+重排序器  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:90: trailing whitespace.
++  - 图自连接：写入时自动抽取实体引用生成类型化边，支持多跳遍历  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:91: trailing whitespace.
++- 作业队列（Minions）  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:92: trailing whitespace.
++  - 基于Postgres的队列协议，支持暂停/恢复、令牌计费、收件箱、会话轨迹、资源治理等  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:93: trailing whitespace.
++- 系统记录契约  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:105: trailing whitespace.
++下图展示系统边界、组件交互与数据流：  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:106: trailing whitespace.
++- 输入：用户命令/技能调用/MCP请求  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:107: trailing whitespace.
++- 处理：引擎工厂选择引擎 → 上层逻辑（检索/图/队列） → 引擎执行  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:108: trailing whitespace.
++- 输出：结果返回（检索/合成/图谱/作业状态）  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:138: trailing whitespace.
++- 设计目标  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:139: trailing whitespace.
++  - 零配置默认（PGLite）与生产级扩展（Postgres+pgvector）并存，引擎可插拔，CLI/MCP/技能无需感知  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:140: trailing whitespace.
++- 能力矩阵与差异  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:141: trailing whitespace.
++  - 关键能力（CRUD/关键词/向量/模糊slug/图遍历/事务/JSONB）在两种引擎保持一致  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:142: trailing whitespace.
++  - 并发与托管：Postgres支持连接池；PGLite单进程，便于本地与无服务器场景  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:143: trailing whitespace.
++  - 迁移：双向导出/导入，无损切换  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:144: trailing whitespace.
++- 何时选择  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:145: trailing whitespace.
++  - 小规模/个人/零运维：PGLite  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:204: trailing whitespace.
++- 核心原则  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:205: trailing whitespace.
++  - 脑仓库（Git仓库）为系统记录；数据库是可重建的派生缓存  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:206: trailing whitespace.
++  - 灾难恢复：删除派生表后，通过同步与提取即可完全重建  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:207: trailing whitespace.
++  - 私密性：可通过.gitignore与隐私层策略控制敏感内容是否进入仓库  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:208: trailing whitespace.
++- 三类数据域  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:209: trailing whitespace.
++  - FS_canonical：以markdown为源的用户知识（如Facts/Takes/Links/Timeline/Tags）  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:210: trailing whitespace.
++  - 派生自FS但非用户手写的：pages/content_chunks/page_versions等  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:211: trailing whitespace.
++  - DB_only by design：运行时基础设施状态（如OAuth、作业队列、审计日志等）  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:232: trailing whitespace.
++- 轴一：脑（数据库）  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:233: trailing whitespace.
++  - 一个脑对应一套数据库（PGLite文件/自管Postgres/Supabase）  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:234: trailing whitespace.
++  - 支持多脑挂载（mounts），用于跨团队/跨项目隔离与共享  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:235: trailing whitespace.
++- 轴二：源（仓库内内容）  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:236: trailing whitespace.
++  - 每个脑内可有多个源（source），同一slug在不同源中独立  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:237: trailing whitespace.
++  - 路由：--brain/--source或环境变量/点文件，最长前缀匹配  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:238: trailing whitespace.
++- 使用场景  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:239: trailing whitespace.
++  - 单人多源：个人脑内多仓库交叉检索  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:240: trailing whitespace.
++  - 团队共享：挂载团队脑，按源隔离  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:261: trailing whitespace.
++- 检索堆栈  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:262: trailing whitespace.
++  - 向量：HNSW(pgvector)/cosine相似  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:263: trailing whitespace.
++  - 关键词：tsvector+ts_rank  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:264: trailing whitespace.
++  - RRF融合：不偏袒任一策略  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:265: trailing whitespace.
++  - 源因子重排：对精选源加权，对排除前缀降权  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:266: trailing whitespace.
++  - 重排序：ZeroEntropy交叉编码器（默认平衡模式启用）  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:267: trailing whitespace.
++  - 结果：证据标签+创建安全提示，便于下游判断是否需要新增页面  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:268: trailing whitespace.
++- 图谱自连接  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:269: trailing whitespace.
++  - 写入页面时抽取实体引用，生成类型化边（如attended/works_at/…）  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:270: trailing whitespace.
++  - 遍历：递归CTE（Postgres）或等价算法（PGLite）  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:271: trailing whitespace.
++  - 价值：解决向量无法捕捉的事实链路问题，带来显著召回增益  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:302: trailing whitespace.
++- 协议化与平台无关  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:303: trailing whitespace.
++  - 通过Postgres原生队列承载任务生命周期：提交/认领/完成/失败/重试  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:304: trailing whitespace.
++  - 支持暂停/恢复、令牌计费、收件箱（带已读回执）、会话轨迹、资源治理  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:305: trailing whitespace.
++- 实时事件与兼容性  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:306: trailing whitespace.
++  - Postgres使用LISTEN/NOTIFY推送变更；PGLite使用轮询回退  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:307: trailing whitespace.
++- 扩展性  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:336: trailing whitespace.
++- 单机单脑（默认）：本地PGLite或Supabase  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:337: trailing whitespace.
++- 薄客户端：代理在本地，脑在远程（HTTP MCP + OAuth），CLI被限制不可直接操作远程DB  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:338: trailing whitespace.
++- 分离式引擎：每份工作树拥有独立PGLite代码索引，制品仍共享远程脑  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:361: trailing whitespace.
++- 组件耦合与内聚  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:362: trailing whitespace.
++  - BrainEngine高度内聚：统一抽象所有存储相关操作  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:363: trailing whitespace.
++  - 上层模块（检索/图/队列/技能）仅依赖接口，降低耦合  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:364: trailing whitespace.
++- 直接与间接依赖  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:365: trailing whitespace.
++  - 引擎工厂依赖动态导入，避免PGLite WASM在Postgres场景加载  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:366: trailing whitespace.
++  - 检索与图谱依赖引擎提供的向量/关键词/图能力  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:367: trailing whitespace.
++  - 队列依赖Postgres原生特性（LISTEN/NOTIFY在Postgres启用）  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:368: trailing whitespace.
++- 外部依赖与集成点  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:369: trailing whitespace.
++  - Postgres + pgvector（Supabase或自管）  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:370: trailing whitespace.
++  - PGLite（WASM）  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:371: trailing whitespace.
++  - MCP（HTTP/stdio）与OAuth  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:397: trailing whitespace.
++- 检索性能  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:398: trailing whitespace.
++  - 向量：HNSW索引+余弦相似度，支持GPU加速的pgvector  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:399: trailing whitespace.
++  - 关键词：GIN+tsvector/ts_rank，支持模糊slug匹配  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:400: trailing whitespace.
++  - RRF融合与源因子重排在SQL层完成，减少上层开销  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:401: trailing whitespace.
++  - 重排序器（ZeroEntropy）在平衡模式下启用，提升排序质量  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:402: trailing whitespace.
++- 图遍历  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:403: trailing whitespace.
++  - 递归CTE（Postgres）或等效算法（PGLite），结合边类型与上下文推断，避免LLM调用  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:404: trailing whitespace.
++- 队列与并发  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:405: trailing whitespace.
++  - LISTEN/NOTIFY提供近实时事件推送；PGLite使用轮询回退  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:406: trailing whitespace.
++  - 资源治理（CPU/内存阈值）与电路断路保护，防止过载  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:407: trailing whitespace.
++- 存储与迁移  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:408: trailing whitespace.
++  - 双引擎能力矩阵一致，迁移无损；PGLite单进程适合本地与轻量场景  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:409: trailing whitespace.
++  - Postgres连接池与Supabase托管优化高并发与可用性  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:412: trailing whitespace.
++- 初始化与嵌入模型  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:413: trailing whitespace.
++  - 若维度不匹配，使用诊断命令输出修复建议；在非TTY环境可显式指定嵌入模型  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:414: trailing whitespace.
++- 同步超时与锁竞争  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:415: trailing whitespace.
++  - 使用per-source循环+超时控制；利用断锁清理与最大年龄参数自愈  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:416: trailing whitespace.
++- 连接中断与重试  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:417: trailing whitespace.
++  - 引擎层批量写入具备自恢复重试；PGLite无池化，重试极少触发  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:418: trailing whitespace.
++- 诊断与验证  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:419: trailing whitespace.
++  - 使用doctor检查隐藏策略、批量重试健康、断连审计等  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:420: trailing whitespace.
++  - 使用长时评测与回放框架评估检索变化影响  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:429: trailing whitespace.
++- 术语速查  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:430: trailing whitespace.
++  - 脑：数据库实例  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:431: trailing whitespace.
++  - 源：脑内的内容仓库  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:432: trailing whitespace.
++  - 检索：向量+关键词+RRF融合+图增强+重排序  
+.qoder/repowiki/zh/content/项目概述/架构概览/架构概览.md:433: trailing whitespace.
++  - 图谱：基于实体引用的类型化边网络  
+.qoder/repowiki/zh/content/项目概述/核心功能特性/自连接知识图谱/实体提取机制.md:500: trailing whitespace.
++- `company`：公司实体  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:27: trailing whitespace.
++GBrain 是一个“个人知识大脑”系统，其使命是让每个 AI 代理都拥有一个“脑层”，在检索之外提供“合成答案”。它通过“混合检索 + 自链接知识图谱 + 24/7 自主循环”的三位一体，实现从“页面列表”到“可执行答案”的跃迁：  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:28: trailing whitespace.
++- 混合检索：向量（语义相似）+ 关键词（精确匹配）+ RRF 融合 + 图谱遍历，给出“合成答案”与“证据来源”，而非简单页面列表。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:29: trailing whitespace.
++- 自链接知识图谱：每页写入时自动抽取实体引用并建立“已出席/就职于/投资于/创办/顾问”等类型化边，无需 LLM，图谱随写入而增长。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:32: trailing whitespace.
++GBrain 的核心价值主张在于：  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:33: trailing whitespace.
++- 以“合成答案 + 来源标注 + 缺失分析”替代“页面列表”，显著提升决策效率与可信度。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:34: trailing whitespace.
++- 以“零 LLM 成本的自动实体抽取 + 类型化边”构建自组织知识图谱，解决“关系检索”难题。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:38: trailing whitespace.
++GBrain 的工程采用“文档驱动 + 可插拔引擎 + 多拓扑部署”的组织方式：  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:39: trailing whitespace.
++- 文档层：RETRIEVAL、ENGINES、topologies、brains-and-sources 等文档定义了检索理论、引擎抽象、部署拓扑与知识组织轴。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:40: trailing whitespace.
++- 引擎层：统一的 BrainEngine 接口屏蔽存储差异，支持 PostgresEngine 与 PGLiteEngine 并可扩展。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:41: trailing whitespace.
++- 数据层：以 pages/chunks/links/tags/timeline 等表为核心，配合索引与触发器，支撑检索、图谱与时间线。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:89: trailing whitespace.
++- 检索与合成层  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:90: trailing whitespace.
++  - 混合检索：向量（HNSW + pgvector）、关键词（BM25 + tsvector）、RRF 融合、源因子重排、意图感知重写、别名跳跃、标题短语增强、证据与创建安全提示。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:91: trailing whitespace.
++  - 合成答案：在检索结果上进行跨块最佳池聚合、去重、重排与交叉编码重排后，输出带来源标注与缺失分析的答案。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:92: trailing whitespace.
++- 自链接知识图谱  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:93: trailing whitespace.
++  - 写入即抽取：标准 Markdown 链接、Obsidian wikilink、类型化链接块，三类正则匹配，批量写入 typed edges；启发式推断类型（如 attended/works_at 等）。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:94: trailing whitespace.
++  - 图遍历：typed-edge 回溯与多跳查询，弥补向量/关键词无法捕捉的事实链路。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:95: trailing whitespace.
++- 24/7 自主循环  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:96: trailing whitespace.
++  - 信号检测（消息/想法/待办/链接）→ 脑优先查询（本地向量/关键词/图谱）→ 页面写入与自动链接 → 定时增强（去重、纠错、评分、矛盾检测、任务准备）。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:97: trailing whitespace.
++- 可插拔引擎  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:98: trailing whitespace.
++  - 统一 BrainEngine 接口，屏蔽底层存储差异；PostgresEngine（Supabase/自管）与 PGLiteEngine（零配置嵌入）并存，支持双向迁移。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:99: trailing whitespace.
++- 模式包与结构化  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:109: trailing whitespace.
++下图展示了 GBrain 的系统边界与关键交互：  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:110: trailing whitespace.
++- 输入：消息/捕获/Webhook/技能调用  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:111: trailing whitespace.
++- 处理：信号检测、脑优先检索、自动链接、定时增强  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:112: trailing whitespace.
++- 输出：合成答案、图谱查询、版本回溯、审计日志  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:155: trailing whitespace.
++- 检索四策略协同：向量（语义相似）、关键词（精确匹配）、RRF（无全局加权投票）、图谱（类型化边遍历）。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:156: trailing whitespace.
++- named-thing 检索：每页最佳池、标题短语增强、别名跳跃、证据与创建安全提示，确保“命名实体”检索稳健。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:157: trailing whitespace.
++- 合成答案：在检索结果上进行跨块最佳池聚合、去重、重排与交叉编码重排后，输出带来源标注与缺失分析的答案。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:185: trailing whitespace.
++- 实体抽取：标准 Markdown 链接、Obsidian wikilink、类型化链接块三类正则，批量写入 edges。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:186: trailing whitespace.
++- 类型化边：启发式推断（attended/works_at/invested_in/founded/advises 等），支持手动/工具/前端字段派生的边共存与可追溯。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:187: trailing whitespace.
++- 图遍历：基于 typed edges 的多跳查询，用于“关系型问题”（如“本季度 Bob 投资了什么？”）。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:213: trailing whitespace.
++- 信号检测：捕获想法、实体提及、时间敏感待办、名称、链接。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:214: trailing whitespace.
++- 脑优先查询：在任何外部 API 调用前，先查本地脑，成本最低、速度最快、最贴身。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:215: trailing whitespace.
++- 自动链接：每页写入即触发 wikilink 解析与新实体/页面桩的创建，图谱持续增长。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:216: trailing whitespace.
++- 定时增强：去重人员页、修复引用、评分显著性、发现矛盾、准备次日任务。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:237: trailing whitespace.
++- 统一接口：生命周期、页面 CRUD、搜索（关键词/向量）、块管理、链接/标签/时间线/原始数据/版本/健康统计/迁移方法等。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:238: trailing whitespace.
++- 两种实现：PostgresEngine（Supabase/自管，生产级）与 PGLiteEngine（零配置嵌入，适合起步）。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:293: trailing whitespace.
++- 作用：声明页面类型、链接谓词、事实抽取规则与专家路由，使“无结构笔记”演进为“可查询的知识图谱”。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:294: trailing whitespace.
++- 能力：whoknows/find_experts/graph-query 等结构化能力基于类型与链接谓词生效。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:295: trailing whitespace.
++- 可演化：支持 agent 协作编目，原子锁、审计日志、跨进程失效与回滚。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:315: trailing whitespace.
++- 单脑拓扑：单机本地 DB（PGLite 或 Supabase），所有命令直接操作本地。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:316: trailing whitespace.
++- 薄客户端拓扑：代理在本地仅消费远端主机上的脑，HTTP MCP + OAuth，主机负责所有检索/嵌入/索引。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:344: trailing whitespace.
++- 检索层依赖：向量索引（HNSW）、全文索引（tsvector/GIN）、触发器（search_vector）、图谱（links 表 + typed edges）。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:345: trailing whitespace.
++- 引擎层依赖：BrainEngine 将检索/图谱/版本/健康等能力抽象为统一接口，具体实现依赖 Postgres/PGLite 的 SQL 能力。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:346: trailing whitespace.
++- 部署层依赖：薄客户端与分离式引擎通过 MCP 与 OAuth 通信，拓扑选择取决于规模与隔离需求。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:370: trailing whitespace.
++- 检索性能：HNSW 向量索引 + BM25 全文索引 + RRF 融合 + 每页最佳池聚合，兼顾召回与相关性；别名跳跃与标题短语增强降低“命名实体”漏检。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:371: trailing whitespace.
++- 图谱性能：typed edges + 递归 CTE（Postgres）或深度跟踪循环（PGLite），在种子节点上进行多跳遍历；建议合理设置深度与过滤条件。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:372: trailing whitespace.
++- 存储与并发：PostgresEngine 支持连接池与并发访问；PGLiteEngine 为单进程，适合本地起步。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:373: trailing whitespace.
++- 成本控制：可关闭重排器、禁用多查询扩展、限制令牌预算，平衡质量与成本。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:377: trailing whitespace.
++- 嵌入维度不匹配：运行 doctor 指令，按提示修复配置或执行检索升级。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:378: trailing whitespace.
++- 同步超时：采用 per-source 循环 + 超时保护，利用断点续跑与锁自愈机制。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:379: trailing whitespace.
++- 图谱链接丢失（Supabase）：检查批量写入重试与连接自愈配置，关注断连审计日志。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:380: trailing whitespace.
++- reindex 清空自动标签：v0.41.37 起标签对齐改为只增不减，需重新导入并使用 reindex 重建。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:381: trailing whitespace.
++- 大脑同步卡顿：开启 trace 定位卡住文件，必要时禁用 schema-pack 正则或停止服务端再同步。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:382: trailing whitespace.
++- Windows 迁移失败（DNS 解析）：v0.41.37 采用内联迁移，避免子进程 spawn 导致的 DNS 错误。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:391: trailing whitespace.
++- 实际使用场景与工作流示例（来自 README）：  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:392: trailing whitespace.
++  - 会前准备：输入“明天与 Alice 的会议需要了解什么？”→ 输出“Alice 在 Acme 工作，你们上次沟通在 4 月 22 日，目前有三个悬而未决事项，并提醒你可能遗漏邮件/Slack 中的更新”。  
+.qoder/repowiki/zh/content/项目概述/项目概述.md:393: trailing whitespace.
++  - 代理集成：通过 MCP 将 GBrain 作为记忆层接入 Claude Code/Cursor/Hermes/OpenClaw，实现“脑优先查询 + 合成答案 + 来源标注”。  
+.qoder/skills/entity-state-design/examples.md:46: trailing whitespace.
++    
+.qoder/skills/entity-state-design/examples.md:50: trailing whitespace.
++    
+.qoder/skills/entity-state-design/examples.md:52: trailing whitespace.
++    
+.qoder/skills/entity-state-design/examples.md:55: trailing whitespace.
++    
+.qoder/skills/entity-state-design/examples.md:58: trailing whitespace.
++    
+.qoder/skills/entity-state-design/examples.md:164: trailing whitespace.
++    
+.qoder/skills/entity-state-design/examples.md:167: trailing whitespace.
++    
+.qoder/skills/entity-state-design/examples.md:170: trailing whitespace.
++    
+.qoder/skills/entity-state-design/examples.md:173: trailing whitespace.
++    
+.qoder/skills/entity-state-design/examples.md:176: trailing whitespace.
++    
+.qoder/skills/entity-state-design/examples.md:179: trailing whitespace.
++    
+.qoder/skills/entity-state-design/templates.md:25: trailing whitespace.
++    
+.qoder/skills/entity-state-design/templates.md:28: trailing whitespace.
++    
+.qoder/skills/entity-state-design/templates.md:32: trailing whitespace.
++    
+.qoder/skills/entity-state-design/templates.md:35: trailing whitespace.
++    
+.qoder/skills/entity-state-design/templates.md:39: trailing whitespace.
++    
+.qoder/skills/entity-state-design/templates.md:42: trailing whitespace.
++    
+.qoder/skills/entity-state-design/templates.md:79: trailing whitespace.
++                                
+admin/docs/ASK_PAGE_COMPARISON.zh.md:3: trailing whitespace.
++> 对照基准：`admin/docs/前端案例/03.GBrain _ 项目案例_精确检索.mhtml`（案例站 `#/ask`）  
+admin/docs/ASK_PAGE_COMPARISON.zh.md:4: trailing whitespace.
++> 实现代码：`admin/src/pages/brain/Ask.tsx`、`admin/src/components/brain/PipelineSteps.tsx`  
+admin/docs/GRAPH_PAGE_COMPARISON.zh.md:3: trailing whitespace.
++> 对照基准：`admin/docs/前端案例/04.GBrain _ 项目案例_知识网路.mhtml`（案例站 `#/graph`）  
+admin/docs/GRAPH_PAGE_COMPARISON.zh.md:4: trailing whitespace.
++> 实现代码：`admin/src/pages/brain/Graph.tsx`、`admin/src/components/brain/ForceGraph.tsx`、`TypedLinkDemo.tsx`、`graph-model.ts`  
+admin/docs/GRAPH_PAGE_COMPARISON.zh.md:5: trailing whitespace.
++> 后端契约：`src/core/operations.ts`（`traverse_graph` / `get_stats` / `schema_stats`）、`src/core/link-extraction.ts`（后端抽边，与前端 demo 同思路）  
+admin/docs/INBOX_API.zh.md:3: trailing whitespace.
++> 版本对齐：P1 专用 Inbox 契约（`list_inbox` / `get_inbox_item` / `trigger_inbox_enrichment` / `discard_inbox_items`）  
+admin/docs/INBOX_API.zh.md:4: trailing whitespace.
++> 后端来源：`src/core/operations.ts`、`src/core/inbox.ts`、`src/core/types.ts`  
+admin/docs/INBOX_API.zh.md:5: trailing whitespace.
++> 前端类型镜像：`admin/src/lib/op-types.ts`  
+admin/docs/INBOX_PAGE_ANALYSIS.zh.md:3: trailing whitespace.
++> 来源：`admin/docs/前端案例/02.GBrain _ 项目案例_内容入库.mhtml`（beyondata.com FF-GBrain 项目案例 `#/inbox`）  
+admin/docs/INBOX_PAGE_ANALYSIS.zh.md:4: trailing whitespace.
++> 快照日期：2026-06-27  
+admin/docs/INBOX_PAGE_ANALYSIS.zh.md:52: trailing whitespace.
++**技术栈（案例侧）**：Astro + React island（`CaseMockup`）+ Tailwind + CSS 变量 token + Lucide 图标。  
+admin/docs/INBOX_PAGE_ANALYSIS.zh.md:166: trailing whitespace.
++1. **元数据层**  
+admin/docs/INBOX_PAGE_ANALYSIS.zh.md:169: trailing whitespace.
++2. **原文预览层**  
+admin/docs/INBOX_PAGE_ANALYSIS.zh.md:172: trailing whitespace.
++3. **Enrichment 输出层**（`data-testid="enrichment-output"`）  
+admin/docs/INBOX_PAGE_ANALYSIS.zh.md:173: trailing whitespace.
++   - 标题：`ENRICHMENT 输出 · 4 步流水线已完成`  
+admin/docs/INBOX_PAGE_ANALYSIS.zh.md:174: trailing whitespace.
++   - **RAW**：无 frontmatter 的纯 Markdown  
+admin/docs/INBOX_PAGE_ANALYSIS.zh.md:223: trailing whitespace.
++工具栏文案：**enrichment 4 步流水线 · Why?**  
+admin/docs/INBOX_PAGE_ANALYSIS.zh.md:237: trailing whitespace.
++- **可审计**：每步可单独检查，而非黑盒 LLM 一次吐完  
+admin/docs/INBOX_PAGE_ANALYSIS.zh.md:238: trailing whitespace.
++- **确定性优先**：typed-link 用英文动词正则，零 LLM token  
+admin/docs/INBOX_PAGE_ANALYSIS.zh.md:239: trailing whitespace.
++- **可重跑**：RAW 保留，enriched 可再生成  
+admin/docs/INBOX_PAGE_ANALYSIS.zh.md:359: trailing whitespace.
++1. **心智模型清晰**：「收件箱 → 审查 → 合并」类比邮件客户端，学习成本低。  
+admin/docs/INBOX_PAGE_ANALYSIS.zh.md:360: trailing whitespace.
++2. **信任感强**：RAW/ENRICHED 并排 + 边证据引文，降低「AI 乱改」焦虑。  
+admin/docs/INBOX_PAGE_ANALYSIS.zh.md:361: trailing whitespace.
++3. **批量 + 单条兼顾**：14 条待 enrich 可全选触发，也可点 `in-006` 细看。  
+admin/docs/INBOX_PAGE_ANALYSIS.zh.md:362: trailing whitespace.
++4. **信息密度适中**：左栏卡片一屏 10+ 条；右栏 `max-h-[200px]` 滚动 pre，不撑爆布局。  
+admin/docs/INBOX_PAGE_ANALYSIS.zh.md:363: trailing whitespace.
++5. **教育性设计**：Why? 按钮把「4 步串行 vs 一次 LLM」讲透，适合培训场景。  
+admin/docs/JOBS_PAGE_COMPARISON.zh.md:3: trailing whitespace.
++> 对照基准：`admin/docs/前端案例/06.GBrain _ 项目案例_后台调度.mhtml`（案例站 `#/jobs`）  
+admin/docs/JOBS_PAGE_COMPARISON.zh.md:4: trailing whitespace.
++> 实现代码：`admin/src/pages/brain/Jobs.tsx`、`JobQueueColumns.tsx`、`DeterministicExplainer.tsx`、`DreamCycleCard.tsx`、`TraceWaterfall.tsx`  
+admin/docs/JOBS_PAGE_COMPARISON.zh.md:5: trailing whitespace.
++> 后端契约：`src/commands/jobs-watch.ts`（`readSnapshot`）、`src/core/operations.ts`（`list_jobs` / `submit_job` / `get_status_snapshot`）、`src/core/cycle.ts`（`ALL_PHASES`）  
+admin/docs/JOBS_PAGE_COMPARISON.zh.md:167: trailing whitespace.
++**相关文件**：`admin/src/components/brain/JobQueueColumns.tsx`  
+admin/docs/SKILLS_PAGE_COMPARISON.zh.md:3: trailing whitespace.
++> 对照基准：`admin/docs/前端案例/07.GBrain _ 项目案例_技能进化.mhtml`（案例站 `#/skills`）  
+admin/docs/SKILLS_PAGE_COMPARISON.zh.md:4: trailing whitespace.
++> 实现代码：`admin/src/pages/brain/Skills.tsx`  
+admin/docs/SKILLS_PAGE_COMPARISON.zh.md:5: trailing whitespace.
++> 后端契约：`src/core/skill-catalog.ts`（`list_skills` / `get_skill`）、`src/core/skill-trigger-index.ts`  
+admin/docs/SKILLS_PAGE_COMPARISON.zh.md:6: trailing whitespace.
++> Skillify 源文：`skills/skillify/SKILL.md`、`src/commands/skillify.ts`  
+admin/docs/SKILLS_PAGE_COMPARISON.zh.md:306: trailing whitespace.
++1. SKILL.md  
+admin/docs/SKILLS_PAGE_COMPARISON.zh.md:307: trailing whitespace.
++2. Code（确定性脚本，如适用）  
+admin/docs/SKILLS_PAGE_COMPARISON.zh.md:308: trailing whitespace.
++3. Cross-modal eval（v1.1 信息性，不 gate skillpack-check）  
+admin/docs/SKILLS_PAGE_COMPARISON.zh.md:309: trailing whitespace.
++4. Unit tests  
+admin/docs/SKILLS_PAGE_COMPARISON.zh.md:310: trailing whitespace.
++5. Integration tests  
+admin/docs/SKILLS_PAGE_COMPARISON.zh.md:311: trailing whitespace.
++6. LLM evals  
+admin/docs/SKILLS_PAGE_COMPARISON.zh.md:312: trailing whitespace.
++7. Resolver trigger（`skills/RESOLVER.md`）  
+admin/docs/SKILLS_PAGE_COMPARISON.zh.md:313: trailing whitespace.
++8. Resolver eval（routing-eval）  
+admin/docs/SKILLS_PAGE_COMPARISON.zh.md:314: trailing whitespace.
++9. Scope 声明  
+admin/docs/SKILLS_PAGE_COMPARISON.zh.md:315: trailing whitespace.
++10. E2E  
+admin/docs/SKILLS_PAGE_COMPARISON.zh.md:326: trailing whitespace.
++| 按钮位置 | 工具栏 `ml-auto` | 工具栏右侧 `shrink-0` | 
+admin/docs/SYNTHESIZE_PAGE_COMPARISON.zh.md:3: trailing whitespace.
++> 对照基准：`admin/docs/前端案例/05.GBrain _ 项目案例_整理沉淀.mhtml`（案例站 `#/synthesize`）  
+admin/docs/SYNTHESIZE_PAGE_COMPARISON.zh.md:4: trailing whitespace.
++> 实现代码：`admin/src/pages/brain/Synthesize.tsx`、`admin/src/lib/useConflicts.ts`  
+admin/docs/SYNTHESIZE_PAGE_COMPARISON.zh.md:5: trailing whitespace.
++> 后端契约：`src/core/operations.ts`（`find_conflicts` / `compile_truth` / `adopt_compiled_truth`）、`src/core/compile-truth.ts`、`src/core/conflicts.ts`  
+admin/docs/WHY_BUTTON_PLAN.zh.md:4: trailing whitespace.
++> 依据：`admin/docs/前端案例/*.mhtml` 逆向 + `INBOX_PAGE_ANALYSIS.zh.md` §六  
+admin/docs/WHY_BUTTON_PLAN.zh.md:11: trailing whitespace.
++在 Brain 8 页中复刻案例的 **Why? 教育按钮**：悬停给一句「为什么这样设计」，点击打开**原理说明 + 源码引用**面板。  
+admin/docs/WHY_BUTTON_PLAN.zh.md:16: trailing whitespace.
++- 不复刻 beyondata 课件平台的 `data-onboarding-root` / `data-ff-autopilot` 全站引导系统  
+admin/docs/WHY_BUTTON_PLAN.zh.md:17: trailing whitespace.
++- 不做右下角「查看引导」浮 dock（案例 `CaseExitBridge` 专属）  
+admin/docs/WHY_BUTTON_PLAN.zh.md:49: trailing whitespace.
++- **行内后缀**：静态说明文案 + `·` + `Why?`（工具栏 `ml-auto` 右对齐）  
+admin/docs/WHY_BUTTON_PLAN.zh.md:50: trailing whitespace.
++- **区块标题后缀**：如 typed-link 列表标题旁再挂一颗  
+admin/docs/WHY_BUTTON_PLAN.zh.md:57: trailing whitespace.
++1. **问题标题**（与 `title` 一致，问句形式）  
+admin/docs/WHY_BUTTON_PLAN.zh.md:58: trailing whitespace.
++2. **设计取舍**（2–4 条 bullet：可审计 / 确定性 / 成本 / 可重跑）  
+admin/docs/WHY_BUTTON_PLAN.zh.md:59: trailing whitespace.
++3. **对照表**（可选：案例式「4 步串行 vs 一次 LLM」）  
+admin/docs/WHY_BUTTON_PLAN.zh.md:78: trailing whitespace.
++- 案例是**单例 onboarding root**；对齐为 layout 级一个面板，避免 z-index / 滚动锁冲突  
+admin/docs/WHY_BUTTON_PLAN.zh.md:85: trailing whitespace.
++- 宽：`--width-brain-drawer`（已有 `clamp(18rem, 40vw, 25rem)`）  
+admin/docs/WHY_BUTTON_PLAN.zh.md:86: trailing whitespace.
++- 遮罩点击关闭、`✕` 关闭  
+admin/docs/WHY_BUTTON_PLAN.zh.md:105: trailing whitespace.
++}) 
+admin/docs/WHY_BUTTON_PLAN.zh.md:108: trailing whitespace.
++- 从 `WHY_TOPICS[topic].tooltip` 读 `title`  
+admin/docs/WHY_BUTTON_PLAN.zh.md:109: trailing whitespace.
++- `data-why-topic={topic}` 保留，便于 E2E：`getByTestId` 或 `querySelector('[data-why-topic="…"]')`  
+admin/docs/WHY_BUTTON_PLAN.zh.md:122: trailing whitespace.
++- `BrainLayout` 包裹 `<WhyProvider>`  
+admin/docs/WHY_BUTTON_PLAN.zh.md:176: trailing whitespace.
++- bullets：可审计（每步可 diff）/ 确定性 typed-link 零 LLM / 失败可重跑单步 / RAW 永久保留  
+admin/docs/WHY_BUTTON_PLAN.zh.md:177: trailing whitespace.
++- comparison：4 步串行 vs 一次 LLM 总结（黑盒、难回归、难 ablate）  
+admin/docs/WHY_BUTTON_PLAN.zh.md:182: trailing whitespace.
++- bullets：`inferLinkType` 优先级 `founded > invested_in > advises > works_at > mentions`  
+admin/docs/WHY_BUTTON_PLAN.zh.md:205: trailing whitespace.
++- [ ] hover 出现案例同款 tooltip 文案  
+admin/docs/WHY_BUTTON_PLAN.zh.md:206: trailing whitespace.
++- [ ] hover 按钮浅青底 + accent 边框  
+admin/docs/WHY_BUTTON_PLAN.zh.md:207: trailing whitespace.
++- [ ] click 右侧 Drawer，显示 4 段结构内容  
+admin/docs/WHY_BUTTON_PLAN.zh.md:208: trailing whitespace.
++- [ ] 点击「触发 enrichment」与 Why 互不影响  
+admin/docs/WHY_BUTTON_PLAN.zh.md:209: trailing whitespace.
++- [ ] `bunx vitest run` 通过；`bun run typecheck` 通过  
+admin/docs/WHY_BUTTON_PLAN.zh.md:225: trailing whitespace.
++- Hash 深链：`#/inbox?why=enrichment-pipeline` 自动 `openWhy`  
+admin/docs/WHY_BUTTON_PLAN.zh.md:226: trailing whitespace.
++- 源码引用可点击：链到 `https://github.com/garrytan/gbrain/blob/master/{path}`  
+admin/docs/WHY_BUTTON_PLAN.zh.md:227: trailing whitespace.
++- `localStorage` 记录「已读」topic（弱提示，非必需）  
+admin/docs/WHY_BUTTON_PLAN.zh.md:228: trailing whitespace.
++- 第 12 topic：对照最新在线案例或 `#/` 今日动态页补一条  
+admin/docs/WHY_BUTTON_PLAN.zh.md:262: trailing whitespace.
++- 作用域：`[data-surface='brain']` 内，token 来自 `tailwind.css` `@theme`  
+admin/docs/WHY_BUTTON_PLAN.zh.md:263: trailing whitespace.
++- `WhyButton`：`cursor-pointer`；`focus-visible:ring-2 ring-accent/40`（键盘可见）  
+admin/docs/WHY_BUTTON_PLAN.zh.md:264: trailing whitespace.
++- `WhyPanel`：标题 `type-serif`；正文 `text-brain-sm text-ink-soft`；源码 `font-mono text-brain-xs`  
+admin/docs/WHY_BUTTON_PLAN.zh.md:265: trailing whitespace.
++- 面板打开时：`body overflow` 不锁（与现有 Drawer 一致）；`Escape` 调用 `close()`  
+admin/docs/WHY_BUTTON_PLAN.zh.md:282: trailing whitespace.
++- 不测 topic 全文快照（易碎）；测 **topic id → 面板标题 + 至少一条 source path**  
+admin/docs/WHY_BUTTON_PLAN.zh.md:312: trailing whitespace.
++1. 读 `Drawer.tsx`、`BrainLayout.tsx`、`Inbox.tsx`  
+admin/docs/WHY_BUTTON_PLAN.zh.md:313: trailing whitespace.
++2. 实现 `why-topics.ts`（先 2 条）  
+admin/docs/WHY_BUTTON_PLAN.zh.md:314: trailing whitespace.
++3. 实现 `WhyProvider` + `WhyPanel` + `WhyButton`  
+admin/docs/WHY_BUTTON_PLAN.zh.md:315: trailing whitespace.
++4. 改 `BrainLayout` → `Inbox` → `TypedLinkTable`  
+admin/docs/WHY_BUTTON_PLAN.zh.md:316: trailing whitespace.
++5. 写测试 → `bunx vitest run` → `bun run typecheck`  
+admin/docs/WHY_BUTTON_PLAN.zh.md:317: trailing whitespace.
++6. 阶段 B 按 FRONTEND_PLAN 页面优先级（ask → graph → jobs）铺开  
+admin/src/components/brain/index.tsx:30: new blank line at EOF.
+admin/src/layouts/BrainLayout.tsx:267: new blank line at EOF.
+docs/operations/CONFIG_PLANES_AND_MODEL_ROUTING.zh.md:3: trailing whitespace.
++> 整理日期：2026-07-16  
+docs/operations/CONFIG_PLANES_AND_MODEL_ROUTING.zh.md:4: trailing whitespace.
++> 适用：Windows + PGLite + Ollama embedding + DeepSeek chat  
+docs/operations/CONFIG_PLANES_AND_MODEL_ROUTING.zh.md:13: trailing whitespace.
++密钥一律脱敏；不要把 API Key 提交进 git。  
+docs/operations/CONFIG_PLANES_AND_MODEL_ROUTING.zh.md:71: trailing whitespace.
++旧库 → `brain.pglite.bak`（已有 `.bak` 时须先挪走）。清库后按 §1.5 B 重写 DB 旋钮。  
+docs/operations/CONFIG_PLANES_AND_MODEL_ROUTING.zh.md:96: trailing whitespace.
++原则：**文件 = 是谁 / 连哪 / Key；DB = 怎么搜 / 哪档模型；Env = Ollama 服务或临时覆盖。**  
+docs/operations/CONFIG_PLANES_AND_MODEL_ROUTING.zh.md:174: trailing whitespace.
++- JSON 里写 `models.tier.deep` **无效**。  
+docs/operations/CONFIG_PLANES_AND_MODEL_ROUTING.zh.md:175: trailing whitespace.
++- 只改文件 `chat_model`、DB 无 tier → Ask/dream 仍可能显示 Opus。  
+docs/operations/CONFIG_PLANES_AND_MODEL_ROUTING.zh.md:182: trailing whitespace.
++> 状态以当日 `config.json` + PGLite `config` 表 + 进程 Env 实测为准。  
+docs/operations/CONFIG_PLANES_AND_MODEL_ROUTING.zh.md:239: trailing whitespace.
++- ✓ 且建议「必配」的项：清库/`reinit` 后务必按 §1.5 B 写回。  
+docs/operations/CONFIG_PLANES_AND_MODEL_ROUTING.zh.md:240: trailing whitespace.
++- ✗ 且建议「可不配」的项：保持现状即可，不是缺陷。  
+docs/operations/CONFIG_PLANES_AND_MODEL_ROUTING.zh.md:241: trailing whitespace.
++- Ollama 三项是**服务进程**环境变量，与 GBrain 文件/DB 平面无关。  
+docs/operations/CONFIG_PLANES_AND_MODEL_ROUTING.zh.md:248: trailing whitespace.
++> 按 §1.7「建议平面」整理。含你当前已配的全部有效项。  
+docs/operations/CONFIG_PLANES_AND_MODEL_ROUTING.zh.md:449: trailing whitespace.
++- 改 DB：`gbrain config get <key>`；改文件后重启 `serve`。  
+docs/operations/CONFIG_PLANES_AND_MODEL_ROUTING.zh.md:451: trailing whitespace.
++- 大改配置后重跑 §1.2 / 更新 §1.7「当前是否已配」。  
+docs/operations/CONFIG_PLANES_AND_MODEL_ROUTING.zh.md:453: new blank line at EOF.
+docs/operations/OPS_CHECKLIST.windows-ollama.zh.md:3: trailing whitespace.
++> 面向本机 PGLite + `ollama:qwen3-embedding:4b` @ **1024 维** 的日常运维速查。  
+docs/operations/OPS_CHECKLIST.windows-ollama.zh.md:4: trailing whitespace.
++> 完整说明见 [`OPS_MANUAL.zh.md`](OPS_MANUAL.zh.md)（**§2.6 入库落盘 · §3.4 绑定目录 · §9 指令总表**）。  
+docs/operations/OPS_CHECKLIST.windows-ollama.zh.md:5: trailing whitespace.
++> DeepSeek Chat、Tier 注入优先级、Schema Pack / Takes / Reranker 见手册 [**§8**](OPS_MANUAL.zh.md#8-模型-tier可选升级与检索精排)。  
+docs/operations/OPS_CHECKLIST.windows-ollama.zh.md:95: trailing whitespace.
++**为何 `bun install` 要加 `--ignore-scripts`？**  
+docs/operations/OPS_CHECKLIST.windows-ollama.zh.md:228: trailing whitespace.
++**全局**（所有项目）：新建 `%USERPROFILE%\.cursor\mcp.json`  
+docs/operations/OPS_CHECKLIST.windows-ollama.zh.md:278: trailing whitespace.
++在 Cursor 对话中试：`搜索 brain 里关于 xxx 的内容`。  
+docs/operations/OPS_MANUAL.zh.md:3: trailing whitespace.
++> 基于仓库 `docs/`、`src/core/config.ts`、`src/cli.ts` 及当前代码行为整理。  
+docs/operations/OPS_MANUAL.zh.md:1062: trailing whitespace.
++Admin：`http://localhost:3131/admin`（启动时 stderr 的 bootstrap token 登录）。  
+docs/operations/OPS_MANUAL.zh.md:1802: new blank line at EOF.

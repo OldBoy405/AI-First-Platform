@@ -1,0 +1,83 @@
+meta:
+  task_id: "upstream-sync-verification"
+  change_id: "2026-11-25-upstream-sync-22f8c793"
+  task_type: code
+  system: "GBrain fork 上游 v0.60.772.0 合并候选及二开行为回归"
+  preconditions:
+    - "Gate 1 与 Gate 2 已确认，冻结 SHA、回滚锚点与同步分支未变化。"
+    - "命令在独立同步 worktree 执行，Bun 为 1.4.4，根依赖以 frozen lockfile 和 ignore-scripts 安装。"
+    - "验证 helper 对每条命令记录 rc、耗时、完整输出与 pass/fail/skip/timeout；任一超时、必需用例缺失或必需 skip 都返回非零。"
+    - "Bun 定向测试使用 JUnit 输出核对必需用例名和断言通过数，不以 0 fail 代替实际覆盖；Admin 测试使用其机器可读结果核对必需用例。"
+    - "人工检查由审阅者依据候选树、Git 对象和实际运行输出确认，不以口头描述代替证据。"
+steps:
+  - id: "CP-USM-001"
+    description: "核对冻结输入、祖先关系、提交计数、VERSION 和回滚锚点。"
+    action: "python \"C:/Users/GOBAO/Downloads/AI/AI First Platform/projects/gbrain/changes/2026-11-25-upstream-sync-22f8c793/verification/verify_upstream_sync.py\" freeze"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "freeze_ok=True"
+      - type: stdout_contains
+        expected: "fork_commits=62 upstream_commits=2434"
+      - type: stdout_contains
+        expected: "upstream_version=0.60.772.0 rollback_anchor_ok=True main_worktree_unchanged=True"
+  - id: "CP-USM-002"
+    description: "核对 67 条双边路径裁决表、527 条 fork 增量与按路径登记的门禁基线。"
+    action: "python \"C:/Users/GOBAO/Downloads/AI/AI First Platform/projects/gbrain/changes/2026-11-25-upstream-sync-22f8c793/verification/verify_upstream_sync.py\" bilateral"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "both_changed_paths=67 fork_delta_paths=527 upstream_delta_paths=5879"
+      - type: stdout_contains
+        expected: "adjudication_rows=67 adjudication_missing=0"
+      - type: stdout_contains
+        expected: "module_size_gate=ok page_body_gate=ok core_world_reads_gate=ok duplicate_skill_routes=0 generated_from_sources=True"
+  - id: "CP-USM-003"
+    description: "验证迁移顺延为 v337、顺序与注册关系、空库升级幂等和旧库偏差登记。"
+    action: "python \"C:/Users/GOBAO/Downloads/AI/AI First Platform/projects/gbrain/changes/2026-11-25-upstream-sync-22f8c793/verification/verify_upstream_sync.py\" migrations"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "migration_order_rc=0 base_max=336 fork_versions=[337] new_migrations=1"
+      - type: stdout_contains
+        expected: "registry_rc=0 registry_version=337 registry_duplicates=0"
+      - type: stdout_contains
+        expected: "empty_db_applied_to=337 second_run_applied=0 old_db_gap_recorded=True"
+  - id: "CP-USM-004"
+    description: "重建生成物并验证 freshness、嵌入清单和二次生成无漂移。"
+    action: "python \"C:/Users/GOBAO/Downloads/AI/AI First Platform/projects/gbrain/changes/2026-11-25-upstream-sync-22f8c793/verification/verify_upstream_sync.py\" generated"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "regen_rc=0 check_regen_rc=0 second_regen_drift=False"
+      - type: stdout_contains
+        expected: "admin_embedded_rc=0 admin_dist_present=True version=0.60.772.0"
+  - id: "CP-USM-005"
+    description: "验证 typecheck、受影响定向回归、Admin 套件与 PGLite E2E 的候选树信号。"
+    action: "python \"C:/Users/GOBAO/Downloads/AI/AI First Platform/projects/gbrain/changes/2026-11-25-upstream-sync-22f8c793/verification/verify_upstream_sync.py\" quality"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "typecheck_rc=0 targeted_rc=0 targeted_skips=0 admin_suite_rc=0"
+      - type: stdout_contains
+        expected: "source_isolation_passed=True e2e_skips=0 unrun_recorded=True"
+  - id: "CP-USM-006"
+    description: "执行最终索引、空白、双父 diff、台账与交付边界审计并生成机器可读结果。"
+    action: "python \"C:/Users/GOBAO/Downloads/AI/AI First Platform/projects/gbrain/changes/2026-11-25-upstream-sync-22f8c793/verification/verify_upstream_sync.py\" final"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "final_audit_ok=True unmerged_paths=0 new_whitespace_warnings=0"
+      - type: stdout_contains
+        expected: "fork_parent_diff_ok=True upstream_parent_diff_ok=True ledger_updated=True delivery_boundary_ok=True"
+rollback:
+  steps:
+    - "停止候选验证，保留独立 worktree 和日志，不触碰 master 或运行中的 brain。"
+    - "若候选需放弃，由用户确认后删除本轮创建的 worktree/分支；FORK 和 pre-sync/2026-11-25-2e50b638f2 不变。"
+    - "若已验证候选需回滚，使用 pre-sync/2026-11-25-2e50b638f2 作为锚点，不重置用户其他工作。"

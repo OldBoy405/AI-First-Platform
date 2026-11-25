@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="bun test" tests="14" assertions="83" failures="0" skipped="0" time="4.5637838">
+  <testsuite name="test\e2e\source-isolation-pglite.test.ts" file="test\e2e\source-isolation-pglite.test.ts" tests="14" assertions="83" failures="0" skipped="0" time="4.5039663" hostname="">
+    <testsuite name="v0.34.1 source-isolation regression (#861)" file="test\e2e\source-isolation-pglite.test.ts" line="85" tests="14" assertions="83" failures="0" skipped="0" time="2.161" hostname="">
+      <testcase name="searchKeyword with sourceId=default excludes src-b rows" classname="v0.34.1 source-isolation regression (#861)" time="0.181412" file="test\e2e\source-isolation-pglite.test.ts" line="86" assertions="8" />
+      <testcase name="searchKeyword with sourceId=src-b excludes default rows" classname="v0.34.1 source-isolation regression (#861)" time="0.111257" file="test\e2e\source-isolation-pglite.test.ts" line="100" assertions="8" />
+      <testcase name="searchKeyword with sourceIds=[default,src-b] returns both" classname="v0.34.1 source-isolation regression (#861)" time="0.116558" file="test\e2e\source-isolation-pglite.test.ts" line="111" assertions="5" />
+      <testcase name="searchKeyword with sourceIds=[default] only returns default" classname="v0.34.1 source-isolation regression (#861)" time="0.126146" file="test\e2e\source-isolation-pglite.test.ts" line="121" assertions="4" />
+      <testcase name="searchKeyword with no source scope returns all sources" classname="v0.34.1 source-isolation regression (#861)" time="0.120805" file="test\e2e\source-isolation-pglite.test.ts" line="131" assertions="4" />
+      <testcase name="listPages with sourceId=default hides src-b rows" classname="v0.34.1 source-isolation regression (#861)" time="0.110112" file="test\e2e\source-isolation-pglite.test.ts" line="138" assertions="6" />
+      <testcase name="listPages with sourceIds=[default,src-b] returns the union" classname="v0.34.1 source-isolation regression (#861)" time="0.103135" file="test\e2e\source-isolation-pglite.test.ts" line="145" assertions="6" />
+      <testcase name="traverseGraph with sourceId=default does not surface src-b roots" classname="v0.34.1 source-isolation regression (#861)" time="0.116046" file="test\e2e\source-isolation-pglite.test.ts" line="153" assertions="4" />
+      <testcase name="traverseGraph with sourceId=src-b finds the src-b page" classname="v0.34.1 source-isolation regression (#861)" time="0.118254" file="test\e2e\source-isolation-pglite.test.ts" line="162" assertions="5" />
+      <testcase name="traversePaths with sourceId=default does not surface src-b paths" classname="v0.34.1 source-isolation regression (#861)" time="0.108842" file="test\e2e\source-isolation-pglite.test.ts" line="168" assertions="4" />
+      <testcase name="searchVector with sourceId filters HNSW candidate pool" classname="v0.34.1 source-isolation regression (#861)" time="0.138036" file="test\e2e\source-isolation-pglite.test.ts" line="174" assertions="13" />
+      <testcase name="AuthInfo path: ctx.sourceId scoping propagates through op handlers" classname="v0.34.1 source-isolation regression (#861)" time="0.398273" file="test\e2e\source-isolation-pglite.test.ts" line="204" assertions="6" />
+      <testcase name="AuthInfo.allowedSources path: ctx.auth.allowedSources widens read scope" classname="v0.34.1 source-isolation regression (#861)" time="0.208983" file="test\e2e\source-isolation-pglite.test.ts" line="229" assertions="5" />
+      <testcase name="#876 federated_read empty array means no federated reads" classname="v0.34.1 source-isolation regression (#861)" time="0.208242" file="test\e2e\source-isolation-pglite.test.ts" line="257" assertions="5" />
+    </testsuite>
+  </testsuite>
+</testsuites>

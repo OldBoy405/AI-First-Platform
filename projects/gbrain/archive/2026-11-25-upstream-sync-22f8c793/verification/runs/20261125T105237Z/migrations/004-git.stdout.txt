@@ -1,0 +1,35 @@
+import type { Migration } from './types.ts';
+
+// GBrain Custom: Inbox workflow state lives on pages, not in a second queue
+// table. Existing inbox/* pages predate the workflow metadata; backfill a raw
+// snapshot and an explicit legacy marker without inventing provenance.
+//
+// Renumber history: v126 → v133 → v142 → v160 → v239 → v275 → v298. The runner applies
+// `version > current` only, so a duplicate id means one of the two silently
+// never runs (schema_version records whichever applied first) — always take
+// upstream-max + 1. SKEW for brains sitting at v160 under the old spelling:
+// they recorded THIS migration there, so upstream's real v160 never ran on
+// them; after this renumber upstream v161..v238 apply normally and this one
+// re-applies as v239, then v275, and now v298 (idempotent). Probe takes.embedding against
+// config.embedding_dimensions after upgrading and re-apply that DDL by hand
+// when the column width is stale (see CUSTOM.md → 阶段记录).
+export const v298: Migration = {
+  version: 298,
+  name: 'inbox_workflow_frontmatter',
+  idempotent: true,
+  sql: `
+      UPDATE pages
+      SET frontmatter = COALESCE(frontmatter, '{}'::jsonb) || jsonb_build_object(
+        'raw_content', COALESCE(frontmatter->'raw_content', to_jsonb(compiled_truth)),
+        'inbox_status', COALESCE(frontmatter->'inbox_status', '"pending_frontmatter"'::jsonb),
+        'inbox_legacy_source', COALESCE(frontmatter->'inbox_legacy_source', 'true'::jsonb)
+      )
+      WHERE slug LIKE 'inbox/%'
+        AND deleted_at IS NULL
+        AND (
+          NOT (COALESCE(frontmatter, '{}'::jsonb) ? 'raw_content')
+          OR NOT (COALESCE(frontmatter, '{}'::jsonb) ? 'inbox_status')
+          OR NOT (COALESCE(frontmatter, '{}'::jsonb) ? 'inbox_legacy_source')
+        );
+    `,
+};

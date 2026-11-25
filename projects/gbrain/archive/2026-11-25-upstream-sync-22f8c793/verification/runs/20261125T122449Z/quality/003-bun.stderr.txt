@@ -1,0 +1,24 @@
+
+test\e2e\source-isolation-pglite.test.ts:
+  Setting up brain schema (v337)...
+  332 migration(s) applied
+(pass) v0.34.1 source-isolation regression (#861) > searchKeyword with sourceId=default excludes src-b rows [181.41ms]
+(pass) v0.34.1 source-isolation regression (#861) > searchKeyword with sourceId=src-b excludes default rows [111.26ms]
+(pass) v0.34.1 source-isolation regression (#861) > searchKeyword with sourceIds=[default,src-b] returns both [116.56ms]
+(pass) v0.34.1 source-isolation regression (#861) > searchKeyword with sourceIds=[default] only returns default [126.15ms]
+(pass) v0.34.1 source-isolation regression (#861) > searchKeyword with no source scope returns all sources [120.81ms]
+(pass) v0.34.1 source-isolation regression (#861) > listPages with sourceId=default hides src-b rows [110.11ms]
+(pass) v0.34.1 source-isolation regression (#861) > listPages with sourceIds=[default,src-b] returns the union [103.13ms]
+(pass) v0.34.1 source-isolation regression (#861) > traverseGraph with sourceId=default does not surface src-b roots [116.05ms]
+(pass) v0.34.1 source-isolation regression (#861) > traverseGraph with sourceId=src-b finds the src-b page [118.25ms]
+(pass) v0.34.1 source-isolation regression (#861) > traversePaths with sourceId=default does not surface src-b paths [108.84ms]
+(pass) v0.34.1 source-isolation regression (#861) > searchVector with sourceId filters HNSW candidate pool [138.04ms]
+[gbrain] vector search unavailable (missing_env) — results are keyword-only. Run `gbrain doctor` to diagnose.
+(pass) v0.34.1 source-isolation regression (#861) > AuthInfo path: ctx.sourceId scoping propagates through op handlers [398.27ms]
+(pass) v0.34.1 source-isolation regression (#861) > AuthInfo.allowedSources path: ctx.auth.allowedSources widens read scope [208.98ms]
+(pass) v0.34.1 source-isolation regression (#861) > #876 federated_read empty array means no federated reads [208.24ms]
+
+ 14 pass
+ 0 fail
+ 83 expect() calls
+Ran 14 tests across 1 file. [4.56s]

@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="bun test" tests="137" assertions="7319" failures="0" skipped="0" time="69.5442427">
+  <testsuite name="test\cli-dispatch-phase.test.ts" file="test\cli-dispatch-phase.test.ts" tests="4" assertions="9" failures="0" skipped="0" time="1.2640647" hostname="">
+    <testsuite name="CLI dispatch shape (master AST)" file="test\cli-dispatch-phase.test.ts" line="87" tests="4" assertions="9" failures="0" skipped="0" time="0.675" hostname="">
+      <testcase name="extraction is stable and agrees with the runtime exports" classname="CLI dispatch shape (master AST)" time="0.381223" file="test\cli-dispatch-phase.test.ts" line="88" assertions="5" />
+      <testcase name="membership sets, alias table and known inconsistencies match the golden" classname="CLI dispatch shape (master AST)" time="0.094067" file="test\cli-dispatch-phase.test.ts" line="96" assertions="1" />
+      <testcase name="per-command phase, thin-client mode and subcommand routing rules match the golden" classname="CLI dispatch shape (master AST)" time="0.099916" file="test\cli-dispatch-phase.test.ts" line="100" assertions="1" />
+      <testcase name="every handleCliOnly case loads through a string-literal import() (EO13 baseline)" classname="CLI dispatch shape (master AST)" time="0.101201" file="test\cli-dispatch-phase.test.ts" line="104" assertions="2" />
+    </testsuite>
+  </testsuite>
+  <testsuite name="test\cli-goldens.test.ts" file="test\cli-goldens.test.ts" tests="3" assertions="4" failures="0" skipped="0" time="3.5499848" hostname="">
+    <testsuite name="A16b CLI goldens" file="test\cli-goldens.test.ts" line="75" tests="3" assertions="4" failures="0" skipped="0" time="0.005" hostname="">
+      <testcase name="help, version, unknown command and --help placement match the golden" classname="A16b CLI goldens" time="0.001332" file="test\cli-goldens.test.ts" line="84" assertions="1" />
+      <testcase name="--tools-json bytes match the golden" classname="A16b CLI goldens" time="0.004562" file="test\cli-goldens.test.ts" line="88" assertions="1" />
+      <testcase name="the scrubbed version is exactly package.json version" classname="A16b CLI goldens" time="0.000431" file="test\cli-goldens.test.ts" line="92" assertions="2" />
+    </testsuite>
+  </testsuite>
+  <testsuite name="test\engine-sql-sql-text.test.ts" file="test\engine-sql-sql-text.test.ts" tests="15" assertions="57" failures="0" skipped="0" time="0.1915467" hostname="">
+    <testsuite name="EO8 classification" file="test\engine-sql-sql-text.test.ts" line="39" tests="2" assertions="7" failures="0" skipped="0" time="0.001" hostname="">
+      <testcase name="every PostgresEngine prototype member is classified exactly once" classname="EO8 classification" time="0.001471" file="test\engine-sql-sql-text.test.ts" line="40" assertions="3" />
+      <testcase name="every in-scope method has at least one case and every case targets an in-scope method" classname="EO8 classification" time="0.000844" file="test\engine-sql-sql-text.test.ts" line="48" assertions="4" />
+    </testsuite>
+    <testsuite name="EO8 SQL-text goldens (fake sql, flag off)" file="test\engine-sql-sql-text.test.ts" line="60" tests="13" assertions="50" failures="0" skipped="0" time="0.154" hostname="">
+      <testcase name="pages: every method completes and its SQL text matches master" classname="EO8 SQL-text goldens (fake sql, flag off)" time="0.032679" file="test\engine-sql-sql-text.test.ts" line="62" assertions="4" />
+      <testcase name="links: every method completes and its SQL text matches master" classname="EO8 SQL-text goldens (fake sql, flag off)" time="0.029165" file="test\engine-sql-sql-text.test.ts" line="62" assertions="4" />
+      <testcase name="tags: every method completes and its SQL text matches master" classname="EO8 SQL-text goldens (fake sql, flag off)" time="0.002938" file="test\engine-sql-sql-text.test.ts" line="62" assertions="4" />
+      <testcase name="timeline: every method completes and its SQL text matches master" classname="EO8 SQL-text goldens (fake sql, flag off)" time="0.004183" file="test\engine-sql-sql-text.test.ts" line="62" assertions="4" />
+      <testcase name="sources: every method completes and its SQL text matches master" classname="EO8 SQL-text goldens (fake sql, flag off)" time="0.001643" file="test\engine-sql-sql-text.test.ts" line="62" assertions="4" />
+      <testcase name="files: every method completes and its SQL text matches master" classname="EO8 SQL-text goldens (fake sql, flag off)" time="0.001525" file="test\engine-sql-sql-text.test.ts" line="62" assertions="4" />
+      <testcase name="chunks: every method completes and its SQL text matches master" classname="EO8 SQL-text goldens (fake sql, flag off)" time="0.021471" file="test\engine-sql-sql-text.test.ts" line="62" assertions="4" />
+      <testcase name="facts: every method completes and its SQL text matches master" classname="EO8 SQL-text goldens (fake sql, flag off)" time="0.011134" file="test\engine-sql-sql-text.test.ts" line="62" assertions="4" />
+      <testcase name="takes: every method completes and its SQL text matches master" classname="EO8 SQL-text goldens (fake sql, flag off)" time="0.006961" file="test\engine-sql-sql-text.test.ts" line="62" assertions="4" />
+      <testcase name="salience: every method completes and its SQL text matches master" classname="EO8 SQL-text goldens (fake sql, flag off)" time="0.004947" file="test\engine-sql-sql-text.test.ts" line="62" assertions="4" />
+      <testcase name="code-edges: every method completes and its SQL text matches master" classname="EO8 SQL-text goldens (fake sql, flag off)" time="0.004728" file="test\engine-sql-sql-text.test.ts" line="62" assertions="4" />
+      <testcase name="cjk-search: every method completes and its SQL text matches master" classname="EO8 SQL-text goldens (fake sql, flag off)" time="0.005287" file="test\engine-sql-sql-text.test.ts" line="62" assertions="4" />
+      <testcase name="driver facts (tagged vs unsafe, param count, unsafe options) match master" classname="EO8 SQL-text goldens (fake sql, flag off)" time="0.034497" file="test\engine-sql-sql-text.test.ts" line="70" assertions="2" />
+    </testsuite>
+  </testsuite>
+  <testsuite name="test\export-surface-golden.test.ts" file="test\export-surface-golden.test.ts" tests="4" assertions="105" failures="0" skipped="0" time="40.5650412" hostname="">
+    <testsuite name="export-surface golden" file="test\export-surface-golden.test.ts" line="41" tests="4" assertions="105" failures="0" skipped="0" time="40.53" hostname="">
+      <testcase name="runtime export names per subpath and engine prototype methods match master" classname="export-surface golden" time="0.101559" file="test\export-surface-golden.test.ts" line="42" assertions="3" />
+      <testcase name=".d.ts-level type surface per subpath matches master" classname="export-surface golden" time="40.406959" file="test\export-surface-golden.test.ts" line="55" assertions="2" />
+      <testcase name="every registered error code (RegistryCode) is still registered" classname="export-surface golden" time="0.001732" file="test\export-surface-golden.test.ts" line="60" assertions="3" />
+      <testcase name="external consumer fixture imports every subpath through the package name" classname="export-surface golden" time="0.022221" file="test\export-surface-golden.test.ts" line="66" assertions="97" />
+    </testsuite>
+  </testsuite>
+  <testsuite name="test\inbox-workflow.test.ts" file="test\inbox-workflow.test.ts" tests="15" assertions="56" failures="0" skipped="0" time="7.3370255" hostname="">
+    <testsuite name="Inbox operation definitions" file="test\inbox-workflow.test.ts" line="66" tests="1" assertions="5" failures="0" skipped="0" time="0.111" hostname="">
+      <testcase name="registers dedicated read/write operations" classname="Inbox operation definitions" time="0.111397" file="test\inbox-workflow.test.ts" line="67" assertions="5" />
+    </testsuite>
+    <testsuite name="Inbox deterministic workflow" file="test\inbox-workflow.test.ts" line="76" tests="14" assertions="51" failures="0" skipped="0" time="2.314" hostname="">
+      <testcase name="capture metadata preserves raw body and source" classname="Inbox deterministic workflow" time="0.07665" file="test\inbox-workflow.test.ts" line="77" assertions="4" />
+      <testcase name="list/get project canonical inbox state and typed links" classname="Inbox deterministic workflow" time="0.349164" file="test\inbox-workflow.test.ts" line="89" assertions="9" />
+      <testcase name="list_inbox honors source scope" classname="Inbox deterministic workflow" time="0.110066" file="test\inbox-workflow.test.ts" line="122" assertions="1" />
+      <testcase name="trigger is idempotent for the same raw revision" classname="Inbox deterministic workflow" time="0.168312" file="test\inbox-workflow.test.ts" line="139" assertions="4" />
+      <testcase name="trigger rejects non-inbox slugs and skips out-of-scope pages" classname="Inbox deterministic workflow" time="0.095844" file="test\inbox-workflow.test.ts" line="161" assertions="3" />
+      <testcase name="handler merges deterministically and reconciles explicit links" classname="Inbox deterministic workflow" time="0.244756" file="test\inbox-workflow.test.ts" line="187" assertions="4" />
+      <testcase name="handler lands on failed (not a workflow stage) when enrichment throws" classname="Inbox deterministic workflow" time="0.110498" file="test\inbox-workflow.test.ts" line="203" assertions="3" />
+      <testcase name="list_inbox stats exclude merging from pending_enrich and count failed" classname="Inbox deterministic workflow" time="0.121914" file="test\inbox-workflow.test.ts" line="218" assertions="6" />
+      <testcase name="capture classifies content shipping its own frontmatter as pending_typed_link" classname="Inbox deterministic workflow" time="0.076242" file="test\inbox-workflow.test.ts" line="234" assertions="2" />
+      <testcase name="discard soft-deletes only inbox pages" classname="Inbox deterministic workflow" time="0.095634" file="test\inbox-workflow.test.ts" line="247" assertions="3" />
+      <testcase name="discard hard mode requires confirm_destructive" classname="Inbox deterministic workflow" time="0.093159" file="test\inbox-workflow.test.ts" line="258" assertions="2" />
+      <testcase name="discard hard mode permanently removes inbox pages when confirmed" classname="Inbox deterministic workflow" time="0.123087" file="test\inbox-workflow.test.ts" line="267" assertions="3" />
+      <testcase name="discard hard mode deletes a merging page when confirmed (no permanent zombie)" classname="Inbox deterministic workflow" time="0.101762" file="test\inbox-workflow.test.ts" line="278" assertions="3" />
+      <testcase name="migration backfills legacy inbox frontmatter" classname="Inbox deterministic workflow" time="0.553621" file="test\inbox-workflow.test.ts" line="295" assertions="4" />
+    </testsuite>
+  </testsuite>
+  <testsuite name="test\mcp-tool-defs.test.ts" file="test\mcp-tool-defs.test.ts" tests="26" assertions="3830" failures="0" skipped="0" time="0.1822401" hostname="">
+    <testsuite name="buildToolDefs" file="test\mcp-tool-defs.test.ts" line="80" tests="11" assertions="789" failures="0" skipped="0" time="0.133" hostname="">
+      <testcase name="output equals pre-extraction inline mapping byte-for-byte" classname="buildToolDefs" time="0.004285" file="test\mcp-tool-defs.test.ts" line="81" assertions="1" />
+      <testcase name="explicit strictParams:false / empty opts stay byte-identical to the default emission (WP3)" classname="buildToolDefs" time="0.003836" file="test\mcp-tool-defs.test.ts" line="87" assertions="2" />
+      <testcase name="ops without annotations or a mutating tag keep the pre-annotations shape exactly (no annotations key; none exist today)" classname="buildToolDefs" time="0.002209" file="test\mcp-tool-defs.test.ts" line="93" assertions="10" />
+      <testcase name="#5037: annotations derive conservatively from the required mutating/idempotent tags" classname="buildToolDefs" time="0.001375" file="test\mcp-tool-defs.test.ts" line="104" assertions="104" />
+      <testcase name="preserves operation count" classname="buildToolDefs" time="0.001098" file="test\mcp-tool-defs.test.ts" line="124" assertions="1" />
+      <testcase name="accepts an arbitrary Operation subset (for subagent tool registry)" classname="buildToolDefs" time="0.000499" file="test\mcp-tool-defs.test.ts" line="128" assertions="2" />
+      <testcase name="empty input returns empty array" classname="buildToolDefs" time="0.00039" file="test\mcp-tool-defs.test.ts" line="135" assertions="1" />
+      <testcase name="every def has object inputSchema with properties + required array" classname="buildToolDefs" time="0.001214" file="test\mcp-tool-defs.test.ts" line="139" assertions="648" />
+      <testcase name="put_page warns that content is a whole-page replacement and requires a canonical read first" classname="buildToolDefs" time="0.001105" file="test\mcp-tool-defs.test.ts" line="147" assertions="9" />
+      <testcase name="GBRAIN_MCP_INSTRUCTIONS carries the same put_page contract phrases (triple-home tie)" classname="buildToolDefs" time="0.108929" file="test\mcp-tool-defs.test.ts" line="161" assertions="4" />
+      <testcase name="delete_page / restore_page descriptions disclose the on-disk file side effect (#4829)" classname="buildToolDefs" time="0.012177" file="test\mcp-tool-defs.test.ts" line="178" assertions="7" />
+    </testsuite>
+    <testsuite name="default ToolAnnotations (#5952, ported)" file="test\mcp-tool-defs.test.ts" line="216" tests="5" assertions="119" failures="0" skipped="0" time="0.001" hostname="">
+      <testcase name="writes never carry readOnlyHint: true" classname="default ToolAnnotations (#5952, ported)" time="0.000486" file="test\mcp-tool-defs.test.ts" line="227" assertions="4" />
+      <testcase name="a read-scoped op that declares mutating is never marked read-only" classname="default ToolAnnotations (#5952, ported)" time="0.000653" file="test\mcp-tool-defs.test.ts" line="233" assertions="6" />
+      <testcase name="an untagged synthetic op stays unannotated" classname="default ToolAnnotations (#5952, ported)" time="0.000573" file="test\mcp-tool-defs.test.ts" line="241" assertions="2" />
+      <testcase name="an op&apos;s own annotations win verbatim, with nothing merged in" classname="default ToolAnnotations (#5952, ported)" time="0.000478" file="test\mcp-tool-defs.test.ts" line="247" assertions="2" />
+      <testcase name="every derived readOnlyHint sits on a non-mutating op" classname="default ToolAnnotations (#5952, ported)" time="0.001535" file="test\mcp-tool-defs.test.ts" line="253" assertions="105" />
+    </testsuite>
+    <testsuite name="buildToolDefs strictParams emission (WP3/D14.1)" file="test\mcp-tool-defs.test.ts" line="262" tests="4" assertions="2910" failures="0" skipped="0" time="0.004" hostname="">
+      <testcase name="every strict def closes the schema and declares _meta + dry_run" classname="buildToolDefs strictParams emission (WP3/D14.1)" time="0.000816" file="test\mcp-tool-defs.test.ts" line="265" assertions="1080" />
+      <testcase name="an op with a REAL declared dry_run param keeps its own schema (no clobber)" classname="buildToolDefs strictParams emission (WP3/D14.1)" time="0.000505" file="test\mcp-tool-defs.test.ts" line="276" assertions="2" />
+      <testcase name="strict mode changes ONLY additionalProperties + the passthrough keys (_meta, dry_run, room)" classname="buildToolDefs strictParams emission (WP3/D14.1)" time="0.003158" file="test\mcp-tool-defs.test.ts" line="286" assertions="1612" />
+      <testcase name="default emission never carries additionalProperties" classname="buildToolDefs strictParams emission (WP3/D14.1)" time="0.001145" file="test\mcp-tool-defs.test.ts" line="303" assertions="216" />
+    </testsuite>
+    <testsuite name="param description completeness (WP3)" file="test\mcp-tool-defs.test.ts" line="319" tests="2" assertions="2" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="every non-localOnly op param carries a non-empty description" classname="param description completeness (WP3)" time="0.000819" file="test\mcp-tool-defs.test.ts" line="320" assertions="1" />
+      <testcase name="every non-localOnly op carries a non-empty area (WP4)" classname="param description completeness (WP3)" time="0.000461" file="test\mcp-tool-defs.test.ts" line="337" assertions="1" />
+    </testsuite>
+    <testsuite name="paramDefToSchema structural guard" file="test\mcp-tool-defs.test.ts" line="393" tests="4" assertions="10" failures="0" skipped="0" time="0.003" hostname="">
+      <testcase name="every operation inputSchema array has items.type set (no bare arrays)" classname="paramDefToSchema structural guard" time="0.002273" file="test\mcp-tool-defs.test.ts" line="394" assertions="1" />
+      <testcase name="extract_facts.entity_hints declares items.type as string" classname="paramDefToSchema structural guard" time="0.001387" file="test\mcp-tool-defs.test.ts" line="403" assertions="4" />
+      <testcase name="paramDefToSchema recursively propagates nested items.items.type" classname="paramDefToSchema structural guard" time="0.000472" file="test\mcp-tool-defs.test.ts" line="412" assertions="3" />
+      <testcase name="paramDefToSchema preserves description on nested items" classname="paramDefToSchema structural guard" time="0.000416" file="test\mcp-tool-defs.test.ts" line="429" assertions="2" />
+    </testsuite>
+  </testsuite>
+  <testsuite name="test\operation-manifest.test.ts" file="test\operation-manifest.test.ts" tests="4" assertions="5" failures="0" skipped="0" time="0.5714115" hostname="">
+    <testsuite name="operation manifest" file="test\operation-manifest.test.ts" line="17" tests="4" assertions="5" failures="0" skipped="0" time="0.529" hostname="">
+      <testcase name="committed file matches a fresh render (run `bun run build:operation-manifest`)" classname="operation manifest" time="0.002633" file="test\operation-manifest.test.ts" line="18" assertions="1" />
+      <testcase name="committed loader table matches a fresh render (run `bun run build:operation-manifest`)" classname="operation manifest" time="0.004074" file="test\operation-manifest.test.ts" line="22" assertions="1" />
+      <testcase name="every operation minus its handler, same order, same key order" classname="operation manifest" time="0.001716" file="test\operation-manifest.test.ts" line="26" assertions="1" />
+      <testcase name="serve and CLI dispatcher modules do not load operations.ts at import" classname="operation manifest" time="0.522831" file="test\operation-manifest.test.ts" line="31" assertions="2" />
+    </testsuite>
+  </testsuite>
+  <testsuite name="test\parity.test.ts" file="test\parity.test.ts" tests="10" assertions="3072" failures="0" skipped="0" time="0.0183204" hostname="">
+    <testsuite name="operations contract parity" file="test\parity.test.ts" line="5" tests="10" assertions="3072" failures="0" skipped="0" time="0.001" hostname="">
+      <testcase name="every operation has a unique name" classname="operations contract parity" time="0.000822" file="test\parity.test.ts" line="6" assertions="1" />
+      <testcase name="every operation has required fields" classname="operations contract parity" time="0.000659" file="test\parity.test.ts" line="11" assertions="864" />
+      <testcase name="operationsByName matches operations array" classname="operations contract parity" time="0.00052" file="test\parity.test.ts" line="20" assertions="217" />
+      <testcase name="every required param has a type" classname="operations contract parity" time="0.000992" file="test\parity.test.ts" line="27" assertions="964" />
+      <testcase name="mutating operations have dry_run support" classname="operations contract parity" time="0.000524" file="test\parity.test.ts" line="35" assertions="96" />
+      <testcase name="CLI names are unique across operations" classname="operations contract parity" time="0.000609" file="test\parity.test.ts" line="44" assertions="1" />
+      <testcase name="CLI positional params reference valid param names" classname="operations contract parity" time="0.000455" file="test\parity.test.ts" line="51" assertions="60" />
+      <testcase name="CLI stdin param references a valid param name" classname="operations contract parity" time="0.000436" file="test\parity.test.ts" line="61" assertions="4" />
+      <testcase name="operations count is at least 30" classname="operations contract parity" time="0.000389" file="test\parity.test.ts" line="69" assertions="1" />
+      <testcase name="MCP tool definitions can be generated from operations" classname="operations contract parity" time="0.001773" file="test\parity.test.ts" line="73" assertions="864" />
+    </testsuite>
+  </testsuite>
+  <testsuite name="test\query-trace.test.ts" file="test\query-trace.test.ts" tests="4" assertions="11" failures="0" skipped="0" time="3.8546566" hostname="">
+    <testsuite name="query.trace retrieval diagnostics" file="test\query-trace.test.ts" line="46" tests="4" assertions="11" failures="0" skipped="0" time="0.945" hostname="">
+      <testcase name="trace on preserves the complete emitted retrieval metadata" classname="query.trace retrieval diagnostics" time="0.552688" file="test\query-trace.test.ts" line="47" assertions="3" />
+      <testcase name="trace off preserves the upstream result array" classname="query.trace retrieval diagnostics" time="0.188865" file="test\query-trace.test.ts" line="71" assertions="3" />
+      <testcase name="empty trace result preserves envelope and diagnostics" classname="query.trace retrieval diagnostics" time="0.135349" file="test\query-trace.test.ts" line="83" assertions="3" />
+      <testcase name="CLI JSON preserves trace retrieval metadata" classname="query.trace retrieval diagnostics" time="0.070874" file="test\query-trace.test.ts" line="94" assertions="2" />
+    </testsuite>
+  </testsuite>
+  <testsuite name="test\serve-http-admin-route-guard.test.ts" file="test\serve-http-admin-route-guard.test.ts" tests="10" assertions="74" failures="0" skipped="0" time="4.1733479" hostname="">
+    <testsuite name="serve-http admin route guard (structural)" file="test\serve-http-admin-route-guard.test.ts" line="199" tests="7" assertions="61" failures="0" skipped="0" time="0.007" hostname="">
+      <testcase name="anti-vacuity floor: the extractor still sees the known admin surface" classname="serve-http admin route guard (structural)" time="0.001052" file="test\serve-http-admin-route-guard.test.ts" line="200" assertions="33" />
+      <testcase name="must-carry set: /metrics and /admin/events are found and carry requireAdmin" classname="serve-http admin route guard (structural)" time="0.000635" file="test\serve-http-admin-route-guard.test.ts" line="238" assertions="6" />
+      <testcase name="every /admin route carries requireAdmin before its handler, or is explicitly allowlisted" classname="serve-http admin route guard (structural)" time="0.000599" file="test\serve-http-admin-route-guard.test.ts" line="247" assertions="1" />
+      <testcase name="allowlist is not stale: every entry matches its declared unguarded occurrences" classname="serve-http admin route guard (structural)" time="0.000532" file="test\serve-http-admin-route-guard.test.ts" line="259" assertions="10" />
+      <testcase name="mutation: dropping requireAdmin from /metrics in src/commands/serve-http-metrics.ts is a violation at that file:line" classname="serve-http admin route guard (structural)" time="0.003582" file="test\serve-http-admin-route-guard.test.ts" line="288" assertions="4" />
+      <testcase name="mutation: dropping requireAdmin from /admin/api/stats in src/commands/serve-http-admin-api.ts is a violation at that file:line" classname="serve-http admin route guard (structural)" time="0.003886" file="test\serve-http-admin-route-guard.test.ts" line="288" assertions="4" />
+      <testcase name="self-test: extractor + guard logic CAN fail on a known-bad route (anti-vacuity)" classname="serve-http admin route guard (structural)" time="0.000743" file="test\serve-http-admin-route-guard.test.ts" line="300" assertions="3" />
+    </testsuite>
+    <testsuite name="admin operation proxy runtime contract" file="test\serve-http-admin-route-guard.test.ts" line="385" tests="3" assertions="13" failures="0" skipped="0" time="1.065" hostname="">
+      <testcase name="unauthenticated op request is rejected before dispatch" classname="admin operation proxy runtime contract" time="0.438473" file="test\serve-http-admin-route-guard.test.ts" line="435" assertions="5" />
+      <testcase name="authenticated op request dispatches with remote context" classname="admin operation proxy runtime contract" time="0.324507" file="test\serve-http-admin-route-guard.test.ts" line="444" assertions="4" />
+      <testcase name="admin op emits exactly one independent audit event" classname="admin operation proxy runtime contract" time="0.303508" file="test\serve-http-admin-route-guard.test.ts" line="457" assertions="4" />
+    </testsuite>
+  </testsuite>
+  <testsuite name="test\ingestion\ingest-capture.test.ts" file="test\ingestion\ingest-capture.test.ts" tests="42" assertions="96" failures="0" skipped="0" time="7.753669" hostname="">
+    <testsuite name="defaultSlugForEvent" file="test\ingestion\ingest-capture.test.ts" line="73" tests="3" assertions="3" failures="0" skipped="0" time="0.247" hostname="">
+      <testcase name="builds inbox/YYYY-MM-DD-&lt;hash6&gt; slug" classname="defaultSlugForEvent" time="0.103998" file="test\ingestion\ingest-capture.test.ts" line="74" assertions="1" />
+      <testcase name="stable for same content (deterministic hash)" classname="defaultSlugForEvent" time="0.077567" file="test\ingestion\ingest-capture.test.ts" line="80" assertions="1" />
+      <testcase name="UTC date math (no tz drift)" classname="defaultSlugForEvent" time="0.067559" file="test\ingestion\ingest-capture.test.ts" line="86" assertions="1" />
+    </testsuite>
+    <testsuite name="ingest_capture handler — slug resolution" file="test\ingestion\ingest-capture.test.ts" line="93" tests="3" assertions="4" failures="0" skipped="0" time="0.343" hostname="">
+      <testcase name="uses caller-provided job.data.slug when present" classname="ingest_capture handler — slug resolution" time="0.123318" file="test\ingestion\ingest-capture.test.ts" line="94" assertions="2" />
+      <testcase name="uses event.metadata.slug when set" classname="ingest_capture handler — slug resolution" time="0.109766" file="test\ingestion\ingest-capture.test.ts" line="102" assertions="1" />
+      <testcase name="falls back to inbox/YYYY-MM-DD-&lt;hash6&gt; when no slug provided" classname="ingest_capture handler — slug resolution" time="0.111052" file="test\ingestion\ingest-capture.test.ts" line="109" assertions="1" />
+    </testsuite>
+    <testsuite name="ingest_capture handler — validation + routing" file="test\ingestion\ingest-capture.test.ts" line="117" tests="7" assertions="17" failures="0" skipped="0" time="0.653" hostname="">
+      <testcase name="throws when event missing" classname="ingest_capture handler — validation + routing" time="0.06696" file="test\ingestion\ingest-capture.test.ts" line="118" assertions="1" />
+      <testcase name="throws on invalid event payload (caught at the handler boundary)" classname="ingest_capture handler — validation + routing" time="0.069673" file="test\ingestion\ingest-capture.test.ts" line="123" assertions="1" />
+      <testcase name="rejects binary content_type with helpful message" classname="ingest_capture handler — validation + routing" time="0.067937" file="test\ingestion\ingest-capture.test.ts" line="129" assertions="1" />
+      <testcase name="untrusted_payload flag round-trips to the result" classname="ingest_capture handler — validation + routing" time="0.119597" file="test\ingestion\ingest-capture.test.ts" line="141" assertions="1" />
+      <testcase name="trusted (default) payload round-trips as false" classname="ingest_capture handler — validation + routing" time="0.117957" file="test\ingestion\ingest-capture.test.ts" line="148" assertions="1" />
+      <testcase name="source provenance round-trips into the result" classname="ingest_capture handler — validation + routing" time="0.106463" file="test\ingestion\ingest-capture.test.ts" line="155" assertions="2" />
+      <testcase name="unmanaged capture persists prepared content and provenance" classname="ingest_capture handler — validation + routing" time="0.109619" file="test\ingestion\ingest-capture.test.ts" line="167" assertions="10" />
+    </testsuite>
+    <testsuite name="ingest_capture handler — provenance write-through (#1522)" file="test\ingestion\ingest-capture.test.ts" line="190" tests="3" assertions="13" failures="0" skipped="0" time="0.343" hostname="">
+      <testcase name="trusted event with a registered source id routes the page write there and persists source_kind/source_uri" classname="ingest_capture handler — provenance write-through (#1522)" time="0.114606" file="test\ingestion\ingest-capture.test.ts" line="199" assertions="5" />
+      <testcase name="unregistered emitter source_id (webhook-&lt;clientId&gt;) keeps default-source routing but still persists provenance" classname="ingest_capture handler — provenance write-through (#1522)" time="0.109734" file="test\ingestion\ingest-capture.test.ts" line="220" assertions="5" />
+      <testcase name="untrusted event cannot choose its write source even when the id is registered (fail-closed)" classname="ingest_capture handler — provenance write-through (#1522)" time="0.120342" file="test\ingestion\ingest-capture.test.ts" line="234" assertions="3" />
+    </testsuite>
+    <testsuite name="ingest_capture handler — write-source attribution" file="test\ingestion\ingest-capture.test.ts" line="254" tests="17" assertions="38" failures="0" skipped="0" time="1.976" hostname="">
+      <testcase name="job.data.sourceId naming a live source routes the write there without fallback" classname="ingest_capture handler — write-source attribution" time="0.12294" file="test\ingestion\ingest-capture.test.ts" line="299" assertions="2" />
+      <testcase name="job.data.sourceId naming a missing source falls back to default for a non-webhook capture" classname="ingest_capture handler — write-source attribution" time="0.109931" file="test\ingestion\ingest-capture.test.ts" line="320" assertions="2" />
+      <testcase name="job.data.sourceId naming an archived source falls back to default for a non-webhook capture" classname="ingest_capture handler — write-source attribution" time="0.108171" file="test\ingestion\ingest-capture.test.ts" line="342" assertions="2" />
+      <testcase name="foreign-key violation retries a non-webhook capture once under default" classname="ingest_capture handler — write-source attribution" time="0.133913" file="test\ingestion\ingest-capture.test.ts" line="367" assertions="3" />
+      <testcase name="untrusted event without job.data.sourceId stays under default" classname="ingest_capture handler — write-source attribution" time="0.1163" file="test\ingestion\ingest-capture.test.ts" line="409" assertions="2" />
+      <testcase name="trusted event without job.data.sourceId uses its live event.source_id" classname="ingest_capture handler — write-source attribution" time="0.115721" file="test\ingestion\ingest-capture.test.ts" line="426" assertions="2" />
+      <testcase name="job.data.sourceId === &apos;default&apos; (the unscoped-client production shape) writes under default" classname="ingest_capture handler — write-source attribution" time="0.12514" file="test\ingestion\ingest-capture.test.ts" line="443" assertions="2" />
+      <testcase name="provenance survives the FK-violation retry" classname="ingest_capture handler — write-source attribution" time="0.112739" file="test\ingestion\ingest-capture.test.ts" line="465" assertions="5" />
+      <testcase name="a non-FK error propagates instead of being retried as a source fallback" classname="ingest_capture handler — write-source attribution" time="0.08927" file="test\ingestion\ingest-capture.test.ts" line="495" assertions="2" />
+      <testcase name="a 23503 from an UNRELATED constraint propagates instead of falling back to default" classname="ingest_capture handler — write-source attribution" time="0.092887" file="test\ingestion\ingest-capture.test.ts" line="518" assertions="2" />
+      <testcase name="an FK violation with no requested source propagates (nothing to fall back from)" classname="ingest_capture handler — write-source attribution" time="0.090587" file="test\ingestion\ingest-capture.test.ts" line="546" assertions="1" />
+      <testcase name="trusted event with an UNREGISTERED source_id stays under default SILENTLY (no fallback report — #1522 daemon path unchanged)" classname="ingest_capture handler — write-source attribution" time="0.111502" file="test\ingestion\ingest-capture.test.ts" line="562" assertions="2" />
+      <testcase name="a 23503 naming another table&apos;s FK to sources() propagates, not falls back" classname="ingest_capture handler — write-source attribution" time="0.092631" file="test\ingestion\ingest-capture.test.ts" line="581" assertions="2" />
+      <testcase name="the pages source FK is matched via the driver&apos;s structured constraint field" classname="ingest_capture handler — write-source attribution" time="0.115916" file="test\ingestion\ingest-capture.test.ts" line="611" assertions="2" />
+      <testcase name="untrusted content cannot smuggle gate-owned frontmatter markers (#1699)" classname="ingest_capture handler — write-source attribution" time="0.123621" file="test\ingestion\ingest-capture.test.ts" line="640" assertions="2" />
+      <testcase name="a default-bound write is not shadowed by a same-slug page in another source" classname="ingest_capture handler — write-source attribution" time="0.203688" file="test\ingestion\ingest-capture.test.ts" line="667" assertions="4" />
+      <testcase name="a trusted daemon event cannot plant gate-owned markers either (#6259)" classname="ingest_capture handler — write-source attribution" time="0.121484" file="test\ingestion\ingest-capture.test.ts" line="712" assertions="1" />
+    </testsuite>
+    <testsuite name="ingest_capture handler — integration with importFromContent" file="test\ingestion\ingest-capture.test.ts" line="737" tests="3" assertions="6" failures="0" skipped="0" time="0.388" hostname="">
+      <testcase name="imported event lands as a page in the DB" classname="ingest_capture handler — integration with importFromContent" time="0.131162" file="test\ingestion\ingest-capture.test.ts" line="738" assertions="3" />
+      <testcase name="repeat ingest of same content returns skipped status (content_hash dedup at importFromContent level)" classname="ingest_capture handler — integration with importFromContent" time="0.134999" file="test\ingestion\ingest-capture.test.ts" line="751" assertions="2" />
+      <testcase name="chunks count is reported on imported events" classname="ingest_capture handler — integration with importFromContent" time="0.123497" file="test\ingestion\ingest-capture.test.ts" line="761" assertions="1" />
+    </testsuite>
+    <testsuite name="ingest_capture handler — tombstones (#3756)" file="test\ingestion\ingest-capture.test.ts" line="773" tests="6" assertions="15" failures="0" skipped="0" time="0.59" hostname="">
+      <testcase name="soft-deletes an existing page and reports status deleted" classname="ingest_capture handler — tombstones (#3756)" time="0.10709" file="test\ingestion\ingest-capture.test.ts" line="774" assertions="5" />
+      <testcase name="tombstone for a missing page reports skipped" classname="ingest_capture handler — tombstones (#3756)" time="0.08223" file="test\ingestion\ingest-capture.test.ts" line="797" assertions="1" />
+      <testcase name="untrusted payloads must not delete" classname="ingest_capture handler — tombstones (#3756)" time="0.091836" file="test\ingestion\ingest-capture.test.ts" line="804" assertions="2" />
+      <testcase name="tombstone with the flag OMITTED is rejected (fail-closed, explicit trusted marker required)" classname="ingest_capture handler — tombstones (#3756)" time="0.09148" file="test\ingestion\ingest-capture.test.ts" line="823" assertions="3" />
+      <testcase name="tombstone delete is scoped to the resolved source" classname="ingest_capture handler — tombstones (#3756)" time="0.10417" file="test\ingestion\ingest-capture.test.ts" line="840" assertions="2" />
+      <testcase name="event.slug wins over the generated default for upserts too" classname="ingest_capture handler — tombstones (#3756)" time="0.115937" file="test\ingestion\ingest-capture.test.ts" line="862" assertions="2" />
+    </testsuite>
+  </testsuite>
+</testsuites>

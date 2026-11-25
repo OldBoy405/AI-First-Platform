@@ -1,0 +1,90 @@
+meta:
+  change_id: "2026-11-25-upstream-sync-22f8c793"
+  title: "按二开合并规则同步上游 v0.60.772.0"
+  created: "2026-11-25T17:22:33.069269"
+  status: draft
+  version: "2.9"
+
+why:
+  problem: |
+    fork 已完成 v0.60.638.0（17b68cef）合并，当前 master 的 VERSION 为 0.60.638.0。
+    上游最新 tip 已到 22f8c793b1 / 0.60.772.0；相对 17b68cef 的初步评估为
+    2434 提交、5879 个改动路径、67 个双边改动路径。上游迁移区间已到 v336，
+    其中新增 v298，与 fork 的 v298-inbox-workflow-frontmatter 撞号。
+    本轮只追赶这个上游窗口，不扩展 Graph 修复或新定制。
+  motivation: |
+    缩短 fork 与上游的版本差，按 CUSTOM.md 以上游为基底重接二开行为，
+    保持 Inbox、Admin、query.trace、来源隔离、权限和迁移顺序不丢失。
+
+what_changes:
+  - id: C1
+    type: modified
+    description: "冻结本轮 FORK/UPSTREAM/BASE、同步分支和回滚锚点，重新核对 fork 归因与双边路径清单。"
+  - id: C2
+    type: modified
+    description: "合入上游 22f8c793b1，按行为处理双边文件和无文本冲突；不新增 Graph 修复或其他定制能力。"
+  - id: C3
+    type: modified
+    description: "将 fork Inbox 迁移从 v298 顺延到上游 v336 之后，重生成 registry/latest 与受影响生成物。"
+  - id: C4
+    type: modified
+    description: "执行受影响链路和常规质量检查，更新台账与 STDD 证据，经 Gate 3 后再按授权交付。"
+
+capabilities:
+  new: []
+  modified:
+    - name: "upstream-sync-merge"
+      description: "在新上游窗口内合并更新，保持 fork 已登记行为、权限、顺序和生成物一致性。"
+
+constraints:
+  - "冻结输入和窗口在 Gate 1 核准；后续变化须重审对应 Gate。"
+  - "所有保留的 fork 改动须对应台账编号或生成物真源；无法归因的不得带入候选。"
+  - "保持来源隔离、远端权限收紧、Admin 鉴权顺序、private/soft-delete 过滤等既有安全不变量。"
+  - "迁移只做顺延与注册重建；不得手拼 registry、lock、嵌入清单或 golden。"
+  - "验证使用隔离环境；根 bun install 的 postinstall 不得无保护执行。"
+  - "本轮不新增 Graph 修复、不追赶后续上游版本；提交、推送、部署和生产迁移须另行授权。"
+
+stakeholders:
+  - "fork 维护者：需要可审计、可回滚的上游追赶候选。"
+  - "GBrain 本地使用者：依赖现有 Inbox、Admin、query.trace 和权限行为。"
+  - "后续同步执行者：需要准确的迁移上限、冲突裁决和验证基线。"
+
+risk_areas:
+  - capability: "upstream-sync-merge"
+    risk: "窗口包含 2434 提交、5879 路径和 67 个双边路径，容易在无文本冲突处丢失 fork 行为。"
+    mitigation: "先冻结并重新归因，再按 CUSTOM.md 逐路径裁决；高风险链路用定向行为证据。"
+  - capability: "upstream-sync-merge"
+    risk: "上游 v298-v336 与 fork v298 撞号，错误编号会让迁移被静默跳过。"
+    mitigation: "把 fork 迁移顺延到 v336 之后，重生成 registry/latest，并用顺序与注册测试验证。"
+  - capability: "upstream-sync-merge"
+    risk: "Windows runner/verify 基线失败被误当成合并回归或被当成通过。"
+    mitigation: "沿用已登记基线，同项同因单独定性；未运行、超时和 skip 不记为通过。"
+
+non_goals:
+  - "不修复现有 Graph 可见性缺口，不新增任何 fork 能力。"
+  - "不同步 v0.60.772.0 之后的上游版本。"
+  - "不重构无关代码，不清理上游既有告警或本地文档欠债。"
+  - "不提交、不推送、不部署、不执行生产迁移、不创建 release tag，直到对应 Gate/授权完成。"
+  - "不修改 CI、全局运行时或共享基础设施。"
+
+critical:
+  is_critical: true
+  risk_assessment:
+    safety_critical: false
+    financial: false
+    cross_system: true
+
+anchoring:
+  level: L2
+  reference_changes: []
+  anchor_implementations: []
+
+success_criteria:
+  - "冻结的 FORK/UPSTREAM/BASE、上游 VERSION 0.60.772.0、回滚锚点和同步分支均有 Git 证据；主工作区未被合并改变。"
+  - "相对 BASE 的 fork 改动继续全部归因，67 个初步双边路径按行为裁决；保留能力无丢失、无重复实现。"
+  - "上游 5879 个改动路径均已核对；Inbox、Admin、query.trace、来源隔离和权限行为保持。"
+  - "fork Inbox 迁移位于上游 v336 之后，registry/latest 由生成器重建，无重复 version。"
+  - "生成物由真源重建；freshness 检查通过，同输入第二次生成无漂移。"
+  - "typecheck、受影响定向回归、Admin 测试和必要 E2E 取得候选树信号；失败逐条定性，未运行/超时/skip 不冒充通过。"
+  - "台账记录本轮 SHA、迁移顺延、冲突裁决、验证结果和未跑项；Gate 3 通过前不落地。"
+  - "交付动作仅在单独授权后执行；不创建 release tag，不执行生产 brain 内容同步。"

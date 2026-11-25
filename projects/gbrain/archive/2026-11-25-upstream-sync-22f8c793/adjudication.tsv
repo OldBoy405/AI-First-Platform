@@ -1,0 +1,68 @@
+path	category	note	ledger
+.gitignore	C	fork admin/node_modules 等忽略项与上游新增忽略行取并集，无同键冲突	#26
+AGENTS.md	C	保留两处 CUSTOM (Qoder) 围栏 4 行，吸收上游文档改写	#25
+admin/dist/index.html	E	由根 build:admin 重建	gen
+docs/TOOL_CATALOG.md	E	由工具目录生成器重建	gen
+docs/architecture/key-files/core-ai.md	C	保留 fork 说明行，吸收上游改写	#28
+docs/integrations/embedding-providers.md	C	保留 fork provider 增量，吸收上游文档更新	#2
+llms-full.txt	E	由 build:llms 重建，保留 AGENTS.md includeInFull:false	gen
+plugin-variants/gbrain-coding/skills/functional-area-resolver/SKILL.md	E	由 plugin 树生成器重建	gen
+plugin-variants/gbrain-daily/skills/strategic-reading/SKILL.md	E	由 plugin 树生成器重建	gen
+plugin/README.md	E	由 plugin 树生成器重建	gen
+plugin/skills/functional-area-resolver/SKILL.md	E	由 plugin 树生成器重建	gen
+plugin/skills/skill-creator/SKILL.md	E	由 plugin 树生成器重建	gen
+plugin/skills/strategic-reading/SKILL.md	E	由 plugin 树生成器重建	gen
+scripts/core-world-reads-baseline.tsv	C	保留 fork reviewed 行，吸收上游 ratchet 行；以 check:core-world-reads 复验	#27
+scripts/derive-starter-ops.ts	C	保留 fork 派生逻辑，吸收上游新增算子；以 regen/check:agent-contract 复验	#17
+scripts/llms-config.ts	E	配置即真源：保留 fork includeInFull:false 与预算，吸收上游新条目	#25
+scripts/module-size-limits.tsv	C	以上游表为基底，fork 专用行保留；合并后按 check:module-size 实测抬升	#27
+scripts/page-body-readers-baseline.tsv	C	两侧新增行按路径并集合并（11 fork + 22 上游），以 check:page-body-readers 复验	#27
+scripts/run-unit-parallel.sh	C	保留 fork Windows runner 修复，吸收上游 runner 更新	#23
+scripts/structural-suites.tsv	E	由 classify-tests 重建	gen
+skills/RESOLVER.md	C	保留 fork 技能路由，吸收上游新增路由；duplicate=0 由 bilateral 检查	#18
+skills/functional-area-resolver/SKILL.md	C	保留 fork 触发词，吸收上游技能更新	#18
+skills/skill-creator/SKILL.md	C	保留 fork 触发词，吸收上游技能更新	#18
+skills/strategic-reading/SKILL.md	C	保留 fork 触发词，吸收上游技能更新	#18
+skills/skills.lock.json	E	由 skills manifest 生成器重建	gen
+src/admin-embedded.ts	E	由根 build:admin 重建	gen
+src/cli/main.ts	D	同时保留 trace 信封解包与上游 room 文档拆分：room 判定排除 trace 信封，JSON 输出先分支 trace 再 room.wrap	#9
+src/commands/serve-http-admin-api.ts	D	保留 admin 先鉴权后分派顺序，吸收上游路由改动；serve-http-admin-route-guard 复验	#13
+src/commands/serve-http-oauth.ts	D	保留 admin cookie 代理鉴权顺序，吸收上游 OAuth 改动	#14
+src/commands/serve-http.ts	D	保留 CUSTOM ADMIN ROUTES 挂载顺序，吸收上游 serve 重构	#12
+src/commands/status.ts	C	保留 fork 状态字段，吸收上游新增字段	#8
+src/core/ai/gateway.ts	C	保留 fork providerId 逻辑，吸收上游网关变更	#3
+src/core/engine-sql/links.ts	D	walk 保留上游 liveOriginFilter，同时保留 fork per-layer frontierCap（layerCap）	#10/#11
+src/core/engine.ts	C	保留 fork 上限/合同字段，吸收上游签名与注释；engine-surface-coverage 复验	#10/#11
+src/core/minions/handlers/ingest-capture.ts	D	保留 fork 预处理 frontmatter 后由 importAs 写入处理 content 的顺序，吸收上游 handler 变更；inbox-workflow 复验	#4
+src/core/operation-load.ts	C	保留 fork area 手写映射，吸收上游新 op 加载项	#7
+src/core/operation-loaders.generated.ts	E	由 op manifest 生成器重建	gen
+src/core/operation-manifest.generated.ts	E	由 op manifest 生成器重建	gen
+src/core/operations.ts	C	保留 fork 操作注册，吸收上游新操作与合同	#7
+src/core/ops/jobs.ts	C	保留 fork execution_lane，吸收上游 jobs 变更	#8
+src/core/ops/links.ts	D	上游 worldLinkContexts 可见性过滤在前，fork nodeLimit 截断在后	#10/#11
+src/core/ops/pages.ts	C	保留 fork runAutoLink 导出与调用，吸收上游页面操作	#4
+src/core/ops/search.ts	D	query 预取 delivered 由上游新参数承载，trace 信封与 onResponseMeta 由 fork 保留；参数顺序 delivered 后接 onResponseMeta	#9
+src/core/pglite-engine.ts	C	保留 fork 引擎列/上限，吸收上游引擎增长；engine-parity 与 surface 检查	#10/#11
+src/core/postgres-engine.ts	C	保留 fork 引擎列/上限，吸收上游引擎增长；engine-parity 与 surface 检查	#10/#11
+src/core/schema-migrations/latest.generated.ts	E	由迁移生成器重建（顺延后为 337）	gen
+src/core/schema-migrations/registry.generated.ts	E	由迁移生成器重建	gen
+src/core/skill-frontmatter.ts	C	保留 fork frontmatter 解析调整，吸收上游更新	#19
+src/core/skills/bundled-skills.generated.ts	E	由 bundled skills 生成器重建	gen
+src/core/types.ts	C	保留 fork 类型字段，吸收上游类型演进	#7/#10
+src/mcp/surface.ts	C	保留 fork MCP surface 增量，吸收上游工具目录	#17
+test/ai/gateway-chat.test.ts	C	保留 fork 用例，吸收上游用例更新	#3
+test/dispatch-response-meta.serial.test.ts	C	保留 fork _meta 用例，吸收上游更新	#9
+test/doctor-categories.test.ts	C	保留 fork 分类用例，吸收上游更新	#8
+test/engine-surface-coverage.test.ts	C	保留 fork 覆盖断言，吸收上游新增方法	#10
+test/fixtures/goldens/cli/help-and-errors.json	E	金标准：由 regen:all --goldens 或合同测试入口更新	gen
+test/fixtures/goldens/cli/tools-json.json	E	金标准：由 regen:all --goldens 更新	gen
+test/fixtures/goldens/exports/runtime.json	E	金标准：由 regen:all --goldens 更新	gen
+test/fixtures/goldens/exports/types.json	E	金标准：由 regen:all --goldens 更新	gen
+test/fixtures/goldens/sql-text/_classification.json	E	金标准：由 regen:all --goldens 更新	gen
+test/fixtures/goldens/sql-text/_driver.json	E	金标准：由 regen:all --goldens 更新	gen
+test/fixtures/goldens/sql-text/links.json	E	金标准：由 regen:all --goldens 更新	gen
+test/helpers/postgres-engine-sql-cases.ts	C	保留 fork SQL 用例，吸收上游新增用例	#10/#11
+test/ingestion/ingest-capture.test.ts	C	保留 fork managed/unmanaged 用例，吸收上游用例更新	#4
+test/model-pricing.test.ts	C	保留 fork 定价用例，吸收上游更新	#7
+test/retrieval-op-redaction.test.ts	C	保留 fork 脱敏用例，吸收上游更新	#7
+test/search-remote-page-cap.test.ts	C	保留 fork page cap 用例，吸收上游更新	#10

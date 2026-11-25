@@ -1,0 +1,77 @@
+{
+  "action": "migrations",
+  "run_id": "20261125T101001Z",
+  "root": "C:\\Users\\GOBAO\\Downloads\\AI\\gbrain-sync-2026-11-25-22f8c793",
+  "ok": true,
+  "timeout": false,
+  "summary": {
+    "migration_order_rc": 0,
+    "migration_order_skipped": false,
+    "base_max": 336,
+    "fork_versions": [
+      337
+    ],
+    "new_migrations": 1,
+    "registry_rc": 0,
+    "registry_version": 337,
+    "registry_duplicates": 0,
+    "registry_fail": 0,
+    "empty_db_applied_to": 337,
+    "second_run_applied": 0,
+    "old_db_gap_recorded": true,
+    "database_upgrade_verified": false
+  },
+  "commands": [
+    {
+      "argv": [
+        "bun",
+        "run",
+        "check:schema-migration-order"
+      ],
+      "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\gbrain-sync-2026-11-25-22f8c793",
+      "started_at": "2026-11-25T10:10:01.877283+00:00",
+      "ended_at": "2026-11-25T10:10:02.175731+00:00",
+      "duration_ms": 299,
+      "rc": 0,
+      "timeout": false,
+      "status": "pass",
+      "stdout_file": "001-bun.stdout.txt",
+      "stderr_file": "001-bun.stderr.txt"
+    },
+    {
+      "argv": [
+        "bun",
+        "test",
+        "--timeout=60000",
+        "test/schema-migration-registry.test.ts",
+        "--reporter=junit",
+        "--reporter-outfile=C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform\\projects\\gbrain\\changes\\2026-11-25-upstream-sync-22f8c793\\verification\\runs\\20261125T101001Z\\migrations\\registry.junit.xml"
+      ],
+      "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\gbrain-sync-2026-11-25-22f8c793",
+      "started_at": "2026-11-25T10:10:02.176358+00:00",
+      "ended_at": "2026-11-25T10:10:02.381015+00:00",
+      "duration_ms": 205,
+      "rc": 0,
+      "timeout": false,
+      "status": "pass",
+      "stdout_file": "002-bun.stdout.txt",
+      "stderr_file": "002-bun.stderr.txt"
+    },
+    {
+      "argv": [
+        "bun",
+        "-e",
+        "import { PGLiteEngine } from './src/core/pglite-engine.ts';import { runMigrations } from './src/core/migrate.ts';const engine = new PGLiteEngine();await engine.connect({ engine: 'pglite', database_path: 'C:/Users/GOBAO/Downloads/AI/AI First Platform/projects/gbrain/changes/2026-11-25-upstream-sync-22f8c793/verification/runs/20261125T101001Z/migrations/pglite-empty' });try {await engine.initSchema();const first = await runMigrations(engine);const second = await runMigrations(engine);console.log(`empty_db_applied_to=${first.current}`);console.log(`second_run_applied=${second.applied}`);} finally { await engine.disconnect(); }"
+      ],
+      "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\gbrain-sync-2026-11-25-22f8c793",
+      "started_at": "2026-11-25T10:10:02.384648+00:00",
+      "ended_at": "2026-11-25T10:10:08.557080+00:00",
+      "duration_ms": 6173,
+      "rc": 0,
+      "timeout": false,
+      "status": "pass",
+      "stdout_file": "003-bun.stdout.txt",
+      "stderr_file": "003-bun.stderr.txt"
+    }
+  ]
+}

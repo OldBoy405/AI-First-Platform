@@ -1,0 +1,165 @@
+{
+  "action": "freeze",
+  "run_id": "20261125T095245Z",
+  "root": "C:\\Users\\GOBAO\\Downloads\\AI\\gbrain-sync-2026-11-25-22f8c793",
+  "ok": true,
+  "timeout": false,
+  "summary": {
+    "freeze_ok": true,
+    "fork_commits": 62,
+    "upstream_commits": 2434,
+    "upstream_version": "0.60.772.0",
+    "rollback_anchor_ok": true,
+    "main_worktree_unchanged": true
+  },
+  "commands": [
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\gbrain-sync-2026-11-25-22f8c793",
+      "started_at": "2026-11-25T09:52:45.923018+00:00",
+      "ended_at": "2026-11-25T09:52:45.940380+00:00",
+      "duration_ms": 18,
+      "rc": 0,
+      "timeout": false,
+      "status": "pass",
+      "stdout_file": "001-git.stdout.txt",
+      "stderr_file": "001-git.stderr.txt"
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "MERGE_HEAD"
+      ],
+      "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\gbrain-sync-2026-11-25-22f8c793",
+      "started_at": "2026-11-25T09:52:45.940994+00:00",
+      "ended_at": "2026-11-25T09:52:45.957483+00:00",
+      "duration_ms": 17,
+      "rc": 128,
+      "timeout": false,
+      "status": "fail",
+      "stdout_file": "002-git.stdout.txt",
+      "stderr_file": "002-git.stderr.txt"
+    },
+    {
+      "argv": [
+        "git",
+        "merge-base",
+        "2e50b638f28a338b6687ffb0a620f4c4ca659552",
+        "22f8c793b1fa56bb46835801878b2053be940098"
+      ],
+      "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\gbrain-sync-2026-11-25-22f8c793",
+      "started_at": "2026-11-25T09:52:45.958001+00:00",
+      "ended_at": "2026-11-25T09:52:46.126473+00:00",
+      "duration_ms": 169,
+      "rc": 0,
+      "timeout": false,
+      "status": "pass",
+      "stdout_file": "003-git.stdout.txt",
+      "stderr_file": "003-git.stderr.txt"
+    },
+    {
+      "argv": [
+        "git",
+        "rev-list",
+        "--left-right",
+        "--count",
+        "2e50b638f28a338b6687ffb0a620f4c4ca659552...22f8c793b1fa56bb46835801878b2053be940098"
+      ],
+      "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\gbrain-sync-2026-11-25-22f8c793",
+      "started_at": "2026-11-25T09:52:46.127025+00:00",
+      "ended_at": "2026-11-25T09:52:46.291638+00:00",
+      "duration_ms": 165,
+      "rc": 0,
+      "timeout": false,
+      "status": "pass",
+      "stdout_file": "004-git.stdout.txt",
+      "stderr_file": "004-git.stderr.txt"
+    },
+    {
+      "argv": [
+        "git",
+        "show",
+        "22f8c793b1fa56bb46835801878b2053be940098:VERSION"
+      ],
+      "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\gbrain-sync-2026-11-25-22f8c793",
+      "started_at": "2026-11-25T09:52:46.292185+00:00",
+      "ended_at": "2026-11-25T09:52:46.326540+00:00",
+      "duration_ms": 35,
+      "rc": 0,
+      "timeout": false,
+      "status": "pass",
+      "stdout_file": "005-git.stdout.txt",
+      "stderr_file": "005-git.stderr.txt"
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "pre-sync/2026-11-25-2e50b638f2^{commit}"
+      ],
+      "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\gbrain-sync-2026-11-25-22f8c793",
+      "started_at": "2026-11-25T09:52:46.327075+00:00",
+      "ended_at": "2026-11-25T09:52:46.367307+00:00",
+      "duration_ms": 41,
+      "rc": 0,
+      "timeout": false,
+      "status": "pass",
+      "stdout_file": "006-git.stdout.txt",
+      "stderr_file": "006-git.stderr.txt"
+    },
+    {
+      "argv": [
+        "git",
+        "branch",
+        "--show-current"
+      ],
+      "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\gbrain-sync-2026-11-25-22f8c793",
+      "started_at": "2026-11-25T09:52:46.367829+00:00",
+      "ended_at": "2026-11-25T09:52:46.383805+00:00",
+      "duration_ms": 16,
+      "rc": 0,
+      "timeout": false,
+      "status": "pass",
+      "stdout_file": "007-git.stdout.txt",
+      "stderr_file": "007-git.stderr.txt"
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\gbrain",
+      "started_at": "2026-11-25T09:52:46.384369+00:00",
+      "ended_at": "2026-11-25T09:52:46.399972+00:00",
+      "duration_ms": 16,
+      "rc": 0,
+      "timeout": false,
+      "status": "pass",
+      "stdout_file": "008-git.stdout.txt",
+      "stderr_file": "008-git.stderr.txt"
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain",
+        "--untracked-files=no"
+      ],
+      "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\gbrain",
+      "started_at": "2026-11-25T09:52:46.400568+00:00",
+      "ended_at": "2026-11-25T09:52:46.476649+00:00",
+      "duration_ms": 76,
+      "rc": 0,
+      "timeout": false,
+      "status": "pass",
+      "stdout_file": "009-git.stdout.txt",
+      "stderr_file": "009-git.stderr.txt"
+    }
+  ]
+}
