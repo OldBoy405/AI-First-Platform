@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="bun test" tests="15" assertions="90" failures="0" skipped="0" time="6.6745616">
+  <testsuite name="test\admin-embed-spawn.test.ts" file="test\admin-embed-spawn.test.ts" tests="5" assertions="16" failures="0" skipped="0" time="4.3215415" hostname="">
+    <testsuite name="admin embed E2E — /admin served from embedded manifest (v0.36.1.x #1090)" file="test\admin-embed-spawn.test.ts" line="142" tests="5" assertions="16" failures="0" skipped="0" time="0.01" hostname="">
+      <testcase name="GET /admin/ returns 200 with the React SPA shell HTML" classname="admin embed E2E — /admin served from embedded manifest (v0.36.1.x #1090)" time="0.003469" file="test\admin-embed-spawn.test.ts" line="153" assertions="4" />
+      <testcase name="GET /admin (no trailing slash) redirects to /admin/" classname="admin embed E2E — /admin served from embedded manifest (v0.36.1.x #1090)" time="0.004145" file="test\admin-embed-spawn.test.ts" line="169" assertions="5" />
+      <testcase name="GET /admin/index.html (explicit path) also returns the SPA HTML" classname="admin embed E2E — /admin served from embedded manifest (v0.36.1.x #1090)" time="0.001313" file="test\admin-embed-spawn.test.ts" line="190" assertions="2" />
+      <testcase name="GET /admin/agents (SPA-routed deep link) falls back to index.html" classname="admin embed E2E — /admin served from embedded manifest (v0.36.1.x #1090)" time="0.001092" file="test\admin-embed-spawn.test.ts" line="199" assertions="3" />
+      <testcase name="GET /admin/api/stats (API route) is NOT swallowed by the SPA fallback — returns auth challenge" classname="admin embed E2E — /admin served from embedded manifest (v0.36.1.x #1090)" time="0.001146" file="test\admin-embed-spawn.test.ts" line="211" assertions="2" />
+    </testsuite>
+  </testsuite>
+  <testsuite name="test\serve-http-admin-route-guard.test.ts" file="test\serve-http-admin-route-guard.test.ts" tests="10" assertions="74" failures="0" skipped="0" time="2.3018096" hostname="">
+    <testsuite name="serve-http admin route guard (structural)" file="test\serve-http-admin-route-guard.test.ts" line="199" tests="7" assertions="61" failures="0" skipped="0" time="0.004" hostname="">
+      <testcase name="anti-vacuity floor: the extractor still sees the known admin surface" classname="serve-http admin route guard (structural)" time="0.000505" file="test\serve-http-admin-route-guard.test.ts" line="200" assertions="33" />
+      <testcase name="must-carry set: /metrics and /admin/events are found and carry requireAdmin" classname="serve-http admin route guard (structural)" time="0.000334" file="test\serve-http-admin-route-guard.test.ts" line="238" assertions="6" />
+      <testcase name="every /admin route carries requireAdmin before its handler, or is explicitly allowlisted" classname="serve-http admin route guard (structural)" time="0.00026" file="test\serve-http-admin-route-guard.test.ts" line="247" assertions="1" />
+      <testcase name="allowlist is not stale: every entry matches its declared unguarded occurrences" classname="serve-http admin route guard (structural)" time="0.000322" file="test\serve-http-admin-route-guard.test.ts" line="259" assertions="10" />
+      <testcase name="mutation: dropping requireAdmin from /metrics in src/commands/serve-http-metrics.ts is a violation at that file:line" classname="serve-http admin route guard (structural)" time="0.002232" file="test\serve-http-admin-route-guard.test.ts" line="288" assertions="4" />
+      <testcase name="mutation: dropping requireAdmin from /admin/api/stats in src/commands/serve-http-admin-api.ts is a violation at that file:line" classname="serve-http admin route guard (structural)" time="0.002244" file="test\serve-http-admin-route-guard.test.ts" line="288" assertions="4" />
+      <testcase name="self-test: extractor + guard logic CAN fail on a known-bad route (anti-vacuity)" classname="serve-http admin route guard (structural)" time="0.000323" file="test\serve-http-admin-route-guard.test.ts" line="300" assertions="3" />
+    </testsuite>
+    <testsuite name="admin operation proxy runtime contract" file="test\serve-http-admin-route-guard.test.ts" line="385" tests="3" assertions="13" failures="0" skipped="0" time="0.168" hostname="">
+      <testcase name="unauthenticated op request is rejected before dispatch" classname="admin operation proxy runtime contract" time="0.065897" file="test\serve-http-admin-route-guard.test.ts" line="435" assertions="5" />
+      <testcase name="authenticated op request dispatches with remote context" classname="admin operation proxy runtime contract" time="0.049377" file="test\serve-http-admin-route-guard.test.ts" line="444" assertions="4" />
+      <testcase name="admin op emits exactly one independent audit event" classname="admin operation proxy runtime contract" time="0.05404" file="test\serve-http-admin-route-guard.test.ts" line="457" assertions="4" />
+    </testsuite>
+  </testsuite>
+</testsuites>

@@ -1,0 +1,21 @@
+regen:all: schema (src/schema-embedded) ok
+regen:all: schema migrations bundle ok
+regen:all: error-code registry docs ok
+regen:all: agent operator protocol blocks ok
+regen:all: lookup table copies ok
+regen:all: harness adapter reference ok
+regen:all: operation manifest ok
+regen:all: MCP tool catalog ok
+regen:all: skills manifest ok
+regen:all: bundled skills module ok
+regen:all: eval metric glossary ok
+regen:all: CLI flag registry ok
+regen:all: plugin tree + persona variants ok
+regen:all: structural suites manifest ok
+regen:all: QM memory-provider contract ok
+regen:all: llms.txt + llms-full.txt ok
+regen:all: every generated artifact was already fresh; nothing changed.
+Not regenerated here (need Postgres):
+  GBRAIN_TEST_UPDATE_GOLDENS=1 DATABASE_URL=<test db> bun test --timeout=60000 test/e2e/schema-catalog-golden.test.ts
+  GBRAIN_TEST_UPDATE_GOLDENS=1 DATABASE_URL=<test db> bun test --timeout=60000 test/e2e/doctor-json-golden.test.ts
+Contract goldens (deliberate): bun run regen:all --goldens regenerates test/export-surface-golden.test.ts, test/cli-goldens.test.ts, test/cli-dispatch-phase.test.ts, test/engine-sql-sql-text.test.ts.

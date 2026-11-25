@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="bun test" tests="114" assertions="288704" failures="0" skipped="0" time="326.3279009">
+  <testsuite name="test\cycle-world-fence-rows.test.ts" file="test\cycle-world-fence-rows.test.ts" tests="3" assertions="15" failures="0" skipped="0" time="3.164395" hostname="">
+    <testsuite name="dream phases read a world page without its non-world fence rows (pglite)" file="test\cycle-world-fence-rows.test.ts" line="27" tests="3" assertions="15" failures="0" skipped="0" time="0.101" hostname="">
+      <testcase name="propose_takes: the extractor input and the proposals hold only world rows" classname="dream phases read a world page without its non-world fence rows (pglite)" time="0.027885" file="test\cycle-world-fence-rows.test.ts" line="40" assertions="8" />
+      <testcase name="patterns: the subagent prompt holds only world rows of a reflection" classname="dream phases read a world page without its non-world fence rows (pglite)" time="0.002165" file="test\cycle-world-fence-rows.test.ts" line="62" assertions="3" />
+      <testcase name="patterns: quote grounding never certifies a quote only a hidden row holds" classname="dream phases read a world page without its non-world fence rows (pglite)" time="0.072912" file="test\cycle-world-fence-rows.test.ts" line="71" assertions="4" />
+    </testsuite>
+  </testsuite>
+  <testsuite name="test\extract-atoms-world-fence-rows.test.ts" file="test\extract-atoms-world-fence-rows.test.ts" tests="2" assertions="54" failures="0" skipped="0" time="6.676804" hostname="">
+    <testsuite name="atoms extracted from a world page never carry a non-world fence row" file="test\extract-atoms-world-fence-rows.test.ts" line="86" tests="2" assertions="54" failures="0" skipped="0" time="4.612" hostname="">
+      <testcase name="cycle phase: the prompt, the atoms and a remote read of each atom hold only world rows" classname="atoms extracted from a world page never carry a non-world fence row" time="0.286421" file="test\extract-atoms-world-fence-rows.test.ts" line="109" assertions="27" />
+      <testcase name="managed brain: the published atoms hold only world rows" classname="atoms extracted from a world page never carry a non-world fence row" time="4.326613" file="test\extract-atoms-world-fence-rows.test.ts" line="121" assertions="27" />
+    </testsuite>
+  </testsuite>
+  <testsuite name="test\fix-wave-5-integration.test.ts" file="test\fix-wave-5-integration.test.ts" tests="4" assertions="122" failures="0" skipped="0" time="109.0679619" hostname="">
+    <testsuite name="#5731 restore with managed writeSingleFact and the #5401 drain (pglite)" file="test\fix-wave-5-integration.test.ts" line="112" tests="1" assertions="19" failures="0" skipped="0" time="9.582" hostname="">
+      <testcase name="restore, drain, recall and search find the restored fact; an absent entity stays separate" classname="#5731 restore with managed writeSingleFact and the #5401 drain (pglite)" time="9.582109" file="test\fix-wave-5-integration.test.ts" line="113" assertions="19" />
+    </testsuite>
+    <testsuite name="explicit_only across repair --all, the remediation plan, remediate and the banner (pglite)" file="test\fix-wave-5-integration.test.ts" line="176" tests="1" assertions="21" failures="0" skipped="0" time="11.57" hostname="">
+      <testcase name="both real kinds are listed with their preview command and never run" classname="explicit_only across repair --all, the remediation plan, remediate and the banner (pglite)" time="11.570349" file="test\fix-wave-5-integration.test.ts" line="177" assertions="21" />
+    </testsuite>
+    <testsuite name="#5558 with the stop hook and session-end capture (pglite)" file="test\fix-wave-5-integration.test.ts" line="248" tests="1" assertions="66" failures="0" skipped="0" time="4.764" hostname="">
+      <testcase name="no hook output carries buffered text, and session capture still ingests the transcript" classname="#5558 with the stop hook and session-end capture (pglite)" time="4.76415" file="test\fix-wave-5-integration.test.ts" line="249" assertions="66" />
+    </testsuite>
+    <testsuite name="#5790 with #5409: a 12k-file read-only mirror (pglite)" file="test\fix-wave-5-integration.test.ts" line="315" tests="1" assertions="16" failures="0" skipped="0" time="78.611" hostname="">
+      <testcase name="a 12,000-file source onboards as a read-only mirror; its syncs stay database-only" classname="#5790 with #5409: a 12k-file read-only mirror (pglite)" time="78.611659" file="test\fix-wave-5-integration.test.ts" line="316" assertions="16" />
+    </testsuite>
+  </testsuite>
+  <testsuite name="test\purge-eval-fixes.test.ts" file="test\purge-eval-fixes.test.ts" tests="8" assertions="36" failures="0" skipped="0" time="10.3901047" hostname="">
+    <testsuite name="purge eval fixes" file="test\purge-eval-fixes.test.ts" line="78" tests="8" assertions="36" failures="0" skipped="0" time="6.032" hostname="">
+      <testcase name="39-2: stored request outcomes carrying the claim are redacted and the receipt says so honestly" classname="purge eval fixes" time="0.974635" file="test\purge-eval-fixes.test.ts" line="79" assertions="4" />
+      <testcase name="W3: a page purge leaves no timeline text in its add_timeline_entry receipts, compacted ones included" classname="purge eval fixes" time="1.311097" file="test\purge-eval-fixes.test.ts" line="96" assertions="6" />
+      <testcase name="W3: timeline text is matched whole in its own receipts, so redacting 5,000 of them costs one set lookup per string" classname="purge eval fixes" time="0.192588" file="test\purge-eval-fixes.test.ts" line="110" assertions="3" />
+      <testcase name="39-3: remembering a purged claim refuses with purged_content (verb path, local and remote mapping)" classname="purge eval fixes" time="0.651088" file="test\purge-eval-fixes.test.ts" line="120" assertions="3" />
+      <testcase name="39-4: refused and no-op writes of purged content keep no copy in their journal entry" classname="purge eval fixes" time="0.976591" file="test\purge-eval-fixes.test.ts" line="130" assertions="3" />
+      <testcase name="39-5: the fact receipt lists every swept inventory store, files and persistence_effects included" classname="purge eval fixes" time="0.689606" file="test\purge-eval-fixes.test.ts" line="141" assertions="2" />
+      <testcase name="39-6: the page receipt is store by store, verified, and names other pages that keep a claim in prose" classname="purge eval fixes" time="0.605914" file="test\purge-eval-fixes.test.ts" line="149" assertions="12" />
+      <testcase name="39-7: an older version of a purged page is refused as well as its last content" classname="purge eval fixes" time="0.634717" file="test\purge-eval-fixes.test.ts" line="168" assertions="3" />
+    </testsuite>
+  </testsuite>
+  <testsuite name="test\repair-atom-fence-rows.test.ts" file="test\repair-atom-fence-rows.test.ts" tests="4" assertions="31" failures="0" skipped="0" time="6.814944" hostname="">
+    <testcase name="atom_fence_rows is a host-only wave check that names the atom-fence-rows repair" classname="" time="0.000753" file="test\repair-atom-fence-rows.test.ts" line="38" assertions="2" />
+    <testsuite name="gbrain repair atom-fence-rows (pglite)" file="test\repair-atom-fence-rows.test.ts" line="45" tests="3" assertions="29" failures="0" skipped="0" time="4.152" hostname="">
+      <testcase name="doctor warns with the count and the preview command, the preview lists exactly the carrying atoms and changes nothing, the apply narrows them" classname="gbrain repair atom-fence-rows (pglite)" time="0.669141" file="test\repair-atom-fence-rows.test.ts" line="92" assertions="20" />
+      <testcase name="a fence quoted in a code block counts as hidden, as it does for a world reader" classname="gbrain repair atom-fence-rows (pglite)" time="0.022492" file="test\repair-atom-fence-rows.test.ts" line="132" assertions="4" />
+      <testcase name="managed brain: the apply narrows the previewed atom through the coordinator" classname="gbrain repair atom-fence-rows (pglite)" time="3.461219" file="test\repair-atom-fence-rows.test.ts" line="147" assertions="5" />
+    </testsuite>
+  </testsuite>
+  <testsuite name="test\repair-explicit-only.test.ts" file="test\repair-explicit-only.test.ts" tests="10" assertions="222" failures="0" skipped="0" time="2.5323889" hostname="">
+    <testsuite name="registry" file="test\repair-explicit-only.test.ts" line="66" tests="1" assertions="50" failures="0" skipped="0" time="0.001" hostname="">
+      <testcase name="google-file-modes, stale-atoms, extractor-facts and loop-facts are registered explicit-only and excluded from the --all set" classname="registry" time="0.001136" file="test\repair-explicit-only.test.ts" line="67" assertions="50" />
+    </testsuite>
+    <testsuite name="execution-time enforcement" file="test\repair-explicit-only.test.ts" line="75" tests="3" assertions="98" failures="0" skipped="0" time="0.01" hostname="">
+      <testcase name="runRepair refuses an explicit-only handler that was not named, then previews it when named" classname="execution-time enforcement" time="0.007954" file="test\repair-explicit-only.test.ts" line="76" assertions="2" />
+      <testcase name="the shared runner refuses an unnamed explicit-only kind" classname="execution-time enforcement" time="0.001198" file="test\repair-explicit-only.test.ts" line="86" assertions="1" />
+      <testcase name="a supplied remediation step naming an explicit-only kind refuses the whole run before any step starts" classname="execution-time enforcement" time="0.002058" file="test\repair-explicit-only.test.ts" line="92" assertions="95" />
+    </testsuite>
+    <testsuite name="surfaces that list instead of run" file="test\repair-explicit-only.test.ts" line="106" tests="6" assertions="74" failures="0" skipped="0" time="0.392" hostname="">
+      <testcase name="gbrain repair --all and the no-kind preview never run explicit kinds and list their preview commands" classname="surfaces that list instead of run" time="0.186092" file="test\repair-explicit-only.test.ts" line="107" assertions="5" />
+      <testcase name="gbrain repair --all --apply exits 0 when explicit kinds are the only ones left" classname="surfaces that list instead of run" time="0.088109" file="test\repair-explicit-only.test.ts" line="117" assertions="3" />
+      <testcase name="naming an explicit kind runs it (here: the extractor-facts preview) instead of explicit_kind_required" classname="surfaces that list instead of run" time="0.009607" file="test\repair-explicit-only.test.ts" line="125" assertions="2" />
+      <testcase name="help marks explicit kinds with their preview and keeps them out of the --all list; --expect is accepted only for them" classname="surfaces that list instead of run" time="0.001886" file="test\repair-explicit-only.test.ts" line="131" assertions="55" />
+      <testcase name="the remediation plan never plans explicit kinds and lists each with its preview command" classname="surfaces that list instead of run" time="0.108771" file="test\repair-explicit-only.test.ts" line="147" assertions="6" />
+      <testcase name="the banner and the remediation classification report explicit_kind_required with the preview, never an apply" classname="surfaces that list instead of run" time="0.00052" file="test\repair-explicit-only.test.ts" line="158" assertions="3" />
+    </testsuite>
+  </testsuite>
+  <testsuite name="test\sync-classify-6712.test.ts" file="test\sync-classify-6712.test.ts" tests="57" assertions="288051" failures="0" skipped="0" time="2.1923476" hostname="">
+    <testsuite name="rows (v3.2 §2.3)" file="test\sync-classify-6712.test.ts" line="82" tests="45" assertions="155" failures="0" skipped="0" time="0.001" hostname="">
+      <testcase name="1 held at its level" classname="rows (v3.2 §2.3)" time="0.001152" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="1 a re-screen-due hold does not settle: the pass re-runs it" classname="rows (v3.2 §2.3)" time="0.000655" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="1 a re-screen-due hold on a page-less file is held, not imported or legacy (b2)" classname="rows (v3.2 §2.3)" time="0.00047" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="1 a hold over a database-ahead level stands (never imported over)" classname="rows (v3.2 §2.3)" time="0.000382" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="2 spelling" classname="rows (v3.2 §2.3)" time="0.000211" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="3 untracked: committed, not in T, no live page" classname="rows (v3.2 §2.3)" time="0.000198" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="4 kept: live, committed, absent from T, file present" classname="rows (v3.2 §2.3)" time="0.000175" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="5 delete with proof" classname="rows (v3.2 §2.3)" time="0.000183" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="6 delete_drift without proof" classname="rows (v3.2 §2.3)" time="0.000177" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="7 gone" classname="rows (v3.2 §2.3)" time="0.000186" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="8 deleted_same (tombstone)" classname="rows (v3.2 §2.3)" time="0.000185" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="8 deleted_same (marker)" classname="rows (v3.2 §2.3)" time="0.000194" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="9 deleted_edited (tombstone)" classname="rows (v3.2 §2.3)" time="0.000186" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="8 a sync-made tombstone whose file is back unchanged imports (a revert, a branch switch)" classname="rows (v3.2 §2.3)" time="0.00018" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="9 a sync-made tombstone whose file is back edited imports" classname="rows (v3.2 §2.3)" time="0.000175" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="1 a sync-made tombstone whose file is back under an import hold at its level stays held (the import itself refused)" classname="rows (v3.2 §2.3)" time="0.000194" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="1 a deletion-side hold an older version raised over a sync-made tombstone whose file is back is re-run" classname="rows (v3.2 §2.3)" time="0.000199" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="7 a sync-made tombstone whose file is still gone stays gone" classname="rows (v3.2 §2.3)" time="0.000195" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="9 deleted_edited (marker without OIDs, fail closed)" classname="rows (v3.2 §2.3)" time="0.000182" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="10 legacy_same: a marker that records a deletion" classname="rows (v3.2 §2.3)" time="0.000193" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="10 a baseline-equal legacy marker without a deletion settles nothing (b1)" classname="rows (v3.2 §2.3)" time="0.000195" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="10 a legacy-marked path under a full obligation imports (b5)" classname="rows (v3.2 §2.3)" time="0.000216" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="10 a legacy-marked file that changed imports" classname="rows (v3.2 §2.3)" time="0.000176" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="11 dirty, absorbed" classname="rows (v3.2 §2.3)" time="0.000232" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="11 dirty, not absorbed" classname="rows (v3.2 §2.3)" time="0.000227" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="11 dirty unknown is never clean" classname="rows (v3.2 §2.3)" time="0.000183" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="11 dirty, published" classname="rows (v3.2 §2.3)" time="0.000181" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="12 matched" classname="rows (v3.2 §2.3)" time="0.000164" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="13 adopt by hash" classname="rows (v3.2 §2.3)" time="0.000182" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="13 adopt by revision (arm 1, pre-PR 0 record)" classname="rows (v3.2 §2.3)" time="0.000198" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="14 reparse: parser changed on fileSame ∧ dbSame" classname="rows (v3.2 §2.3)" time="0.000175" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="14 reparse: open full episode" classname="rows (v3.2 §2.3)" time="0.000197" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="15 db_ahead db_only" classname="rows (v3.2 §2.3)" time="0.000185" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="16 import with proof" classname="rows (v3.2 §2.3)" time="0.000197" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="16 a new file" classname="rows (v3.2 §2.3)" time="0.00019" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="17 legacy_unverified" classname="rows (v3.2 §2.3)" time="0.0002" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="17 a hold someone asked to re-screen at a legacy_unverified level re-runs as drift (#7931)" classname="rows (v3.2 §2.3)" time="0.000215" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="17 an older unscreened unknown-side hold at a legacy_unverified level re-runs as drift (#7199)" classname="rows (v3.2 §2.3)" time="0.000194" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="17 any other hold at a legacy_unverified level stands" classname="rows (v3.2 §2.3)" time="0.000171" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="18 keep_db" classname="rows (v3.2 §2.3)" time="0.000172" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="19 drift (both)" classname="rows (v3.2 §2.3)" time="0.00017" file="test\sync-classify-6712.test.ts" line="126" assertions="3" />
+      <testcase name="drift side: unknown without a record revision; db_ahead sub-labels" classname="rows (v3.2 §2.3)" time="0.000306" file="test\sync-classify-6712.test.ts" line="133" assertions="3" />
+      <testcase name="row 15: keep_db writes only db_only on a clean committed path; an open full obligation skips db_only/unproven" classname="rows (v3.2 §2.3)" time="0.000278" file="test\sync-classify-6712.test.ts" line="139" assertions="6" />
+      <testcase name="overlay: an unsettled class with open work is in flight; a settled class stays settled" classname="rows (v3.2 §2.3)" time="0.00021" file="test\sync-classify-6712.test.ts" line="149" assertions="2" />
+      <testcase name="glossary: every class has an action tag" classname="rows (v3.2 §2.3)" time="0.000236" file="test\sync-classify-6712.test.ts" line="154" assertions="21" />
+    </testsuite>
+    <testsuite name="P0 properties" file="test\sync-classify-6712.test.ts" line="190" tests="8" assertions="287875" failures="0" skipped="0" time="2.13" hostname="">
+      <testcase name="(f) total, deterministic, and equal to the state-space reference model" classname="P0 properties" time="0.416083" file="test\sync-classify-6712.test.ts" line="191" assertions="278258" />
+      <testcase name="(f) exhaustive over the core alphabet" classname="P0 properties" time="0.383553" file="test\sync-classify-6712.test.ts" line="203" assertions="1" />
+      <testcase name="(j) no page-less import while a deleted marker or a person&apos;s tombstone matches the level" classname="P0 properties" time="0.263676" file="test\sync-classify-6712.test.ts" line="223" assertions="2482" />
+      <testcase name="(j2) a tombstone sync made from a file&apos;s absence imports the file once it is back, a deletion-side hold over it included" classname="P0 properties" time="0.27298" file="test\sync-classify-6712.test.ts" line="232" assertions="1728" />
+      <testcase name="(k) an edit to a swept legacy page imports with no Decision" classname="P0 properties" time="0.000729" file="test\sync-classify-6712.test.ts" line="242" assertions="3" />
+      <testcase name="fail closed: a committed path with uncommitted bytes never imports, adopts or writes DB-wins" classname="P0 properties" time="0.277147" file="test\sync-classify-6712.test.ts" line="252" assertions="2491" />
+      <testcase name="GBRA-133 S-27/S-28: a committed path no file backs (deleted, skip-worktree, sparse) classifies at its committed level, as a clean one does, except for the DB-wins write" classname="P0 properties" time="0.311103" file="test\sync-classify-6712.test.ts" line="260" assertions="2898" />
+      <testcase name="no DB-wins write without keep_db on a clean committed path, and never for unproven pages" classname="P0 properties" time="0.20882" file="test\sync-classify-6712.test.ts" line="269" assertions="14" />
+    </testsuite>
+    <testsuite name="pass kind (v3.2 §2.2)" file="test\sync-classify-6712.test.ts" line="280" tests="4" assertions="21" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="idle when nothing disqualifies it" classname="pass kind (v3.2 §2.2)" time="0.000381" file="test\sync-classify-6712.test.ts" line="284" assertions="1" />
+      <testcase name="probe 49 (pure): a re-screen-due hold alone runs a hold-only round, not a full round" classname="pass kind (v3.2 §2.2)" time="0.000244" file="test\sync-classify-6712.test.ts" line="285" assertions="2" />
+      <testcase name="#7866: fullRound alone forces a full round for the converged head, with full_round_due and without open_episode" classname="pass kind (v3.2 §2.2)" time="0.000208" file="test\sync-classify-6712.test.ts" line="290" assertions="2" />
+      <testcase name="every obligation disqualifies idle (probe 30: --full or a retry at an unchanged HEAD runs a full round)" classname="pass kind (v3.2 §2.2)" time="0.000268" file="test\sync-classify-6712.test.ts" line="294" assertions="16" />
+    </testsuite>
+  </testsuite>
+  <testsuite name="test\sync-restored-file-purge.test.ts" file="test\sync-restored-file-purge.test.ts" tests="26" assertions="173" failures="0" skipped="0" time="185.4271021" hostname="">
+    <testsuite name="pglite: a file Git restores after a sync deleted its page comes back" file="test\sync-restored-file-purge.test.ts" line="103" tests="9" assertions="50" failures="0" skipped="0" time="80.949" hostname="">
+      <testcase name="git revert of the deleting commit: the same page row is live again and status is synced" classname="pglite: a file Git restores after a sync deleted its page comes back" time="9.766347" file="test\sync-restored-file-purge.test.ts" line="104" assertions="6" />
+      <testcase name="a sync on a branch without the files, then back on main: the pages are live again" classname="pglite: a file Git restores after a sync deleted its page comes back" time="10.558753" file="test\sync-restored-file-purge.test.ts" line="118" assertions="5" />
+      <testcase name="deleted in one commit, re-added by a later one (same bytes and edited): both pages are live with the committed text" classname="pglite: a file Git restores after a sync deleted its page comes back" time="8.026709" file="test\sync-restored-file-purge.test.ts" line="128" assertions="6" />
+      <testcase name="a sync on a detached older commit, then back on main: the page the newest commit added is live again" classname="pglite: a file Git restores after a sync deleted its page comes back" time="7.977497" file="test\sync-restored-file-purge.test.ts" line="142" assertions="3" />
+      <testcase name="a file moved into a dot-folder and back: the page is live again" classname="pglite: a file Git restores after a sync deleted its page comes back" time="7.593716" file="test\sync-restored-file-purge.test.ts" line="156" assertions="3" />
+      <testcase name="working-tree mode: a file missing from disk for one sync and then back is live again" classname="pglite: a file Git restores after a sync deleted its page comes back" time="9.173928" file="test\sync-restored-file-purge.test.ts" line="168" assertions="5" />
+      <testcase name="a hold an older version raised over a sync-deleted page whose file came back edited is re-run: the page imports and the hold clears" classname="pglite: a file Git restores after a sync deleted its page comes back" time="9.305199" file="test\sync-restored-file-purge.test.ts" line="181" assertions="6" />
+      <testcase name="a brain an older version left with the page deleted beside its restored file heals on the next plain sync" classname="pglite: a file Git restores after a sync deleted its page comes back" time="8.65915" file="test\sync-restored-file-purge.test.ts" line="214" assertions="4" />
+      <testcase name="the upgrade&apos;s first sync brings back a sync-deleted page but leaves a page a person deleted deleted, though Git holds its file" classname="pglite: a file Git restores after a sync deleted its page comes back" time="9.892496" file="test\sync-restored-file-purge.test.ts" line="231" assertions="12" />
+    </testsuite>
+    <testsuite name="pglite: the retention purge never removes a file that is committed" file="test\sync-restored-file-purge.test.ts" line="255" tests="17" assertions="123" failures="0" skipped="0" time="104.329" hostname="">
+      <testcase name="working-tree mode: a sync-deleted page whose committed file stays off disk is purged database-only, not deferred forever" classname="pglite: the retention purge never removes a file that is committed" time="8.87772" file="test\sync-restored-file-purge.test.ts" line="256" assertions="7" />
+      <testcase name="a sync-made tombstone whose returned file sync holds is refused with the hold, not deferred, and the file stays" classname="pglite: the retention purge never removes a file that is committed" time="9.207376" file="test\sync-restored-file-purge.test.ts" line="273" assertions="8" />
+      <testcase name="an old shared-origin delete of the same slug does not exempt a later sync-made tombstone: the restored file stays" classname="pglite: the retention purge never removes a file that is committed" time="10.069692" file="test\sync-restored-file-purge.test.ts" line="291" assertions="6" />
+      <testcase name="a file committed between the purge&apos;s preparation and its publication is not removed" classname="pglite: the retention purge never removes a file that is committed" time="8.42321" file="test\sync-restored-file-purge.test.ts" line="315" assertions="9" />
+      <testcase name="an older version purged the page and committed the file&apos;s removal; a revert of that commit imports the file as a new page" classname="pglite: the retention purge never removes a file that is committed" time="8.100352" file="test\sync-restored-file-purge.test.ts" line="337" assertions="9" />
+      <testcase name="cycle phase: a person&apos;s delete undone in Git is purged database-only and the file stays" classname="pglite: the retention purge never removes a file that is committed" time="6.443685" file="test\sync-restored-file-purge.test.ts" line="361" assertions="9" />
+      <testcase name="cycle phase: a sync-deleted page with a byte-identical live twin whose file is back waits for the sync that restores it" classname="pglite: the retention purge never removes a file that is committed" time="7.155394" file="test\sync-restored-file-purge.test.ts" line="375" assertions="9" />
+      <testcase name="cycle phase: a tombstone with no sync-deletion record and a compacted receipt is purged database-only and its committed file stays" classname="pglite: the retention purge never removes a file that is committed" time="4.943743" file="test\sync-restored-file-purge.test.ts" line="388" assertions="6" />
+      <testcase name="cycle phase: a person&apos;s delete whose file stays gone purges as before" classname="pglite: the retention purge never removes a file that is committed" time="3.744058" file="test\sync-restored-file-purge.test.ts" line="409" assertions="4" />
+      <testcase name="purge job: a person&apos;s delete undone in Git is purged database-only and the file stays" classname="pglite: the retention purge never removes a file that is committed" time="4.294131" file="test\sync-restored-file-purge.test.ts" line="361" assertions="9" />
+      <testcase name="purge job: a sync-deleted page with a byte-identical live twin whose file is back waits for the sync that restores it" classname="pglite: the retention purge never removes a file that is committed" time="5.97241" file="test\sync-restored-file-purge.test.ts" line="375" assertions="9" />
+      <testcase name="purge job: a tombstone with no sync-deletion record and a compacted receipt is purged database-only and its committed file stays" classname="pglite: the retention purge never removes a file that is committed" time="4.779842" file="test\sync-restored-file-purge.test.ts" line="388" assertions="6" />
+      <testcase name="purge job: a person&apos;s delete whose file stays gone purges as before" classname="pglite: the retention purge never removes a file that is committed" time="3.998012" file="test\sync-restored-file-purge.test.ts" line="409" assertions="4" />
+      <testcase name="CLI purge-deleted: a person&apos;s delete undone in Git is purged database-only and the file stays" classname="pglite: the retention purge never removes a file that is committed" time="4.714271" file="test\sync-restored-file-purge.test.ts" line="361" assertions="9" />
+      <testcase name="CLI purge-deleted: a sync-deleted page with a byte-identical live twin whose file is back waits for the sync that restores it" classname="pglite: the retention purge never removes a file that is committed" time="4.916517" file="test\sync-restored-file-purge.test.ts" line="375" assertions="9" />
+      <testcase name="CLI purge-deleted: a tombstone with no sync-deletion record and a compacted receipt is purged database-only and its committed file stays" classname="pglite: the retention purge never removes a file that is committed" time="4.37006" file="test\sync-restored-file-purge.test.ts" line="388" assertions="6" />
+      <testcase name="CLI purge-deleted: a person&apos;s delete whose file stays gone purges as before" classname="pglite: the retention purge never removes a file that is committed" time="4.32509" file="test\sync-restored-file-purge.test.ts" line="409" assertions="4" />
+    </testsuite>
+  </testsuite>
+</testsuites>

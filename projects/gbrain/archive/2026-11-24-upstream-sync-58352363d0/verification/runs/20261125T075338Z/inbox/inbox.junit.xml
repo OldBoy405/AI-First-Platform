@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="bun test" tests="62" assertions="200" failures="0" skipped="0" time="32.7672448">
+  <testsuite name="test\g6-ingestion-strict.test.ts" file="test\g6-ingestion-strict.test.ts" tests="5" assertions="48" failures="0" skipped="0" time="24.0612924" hostname="">
+    <testsuite name="[pglite] G6: inbox-folder captures on a strict source" file="test\g6-ingestion-strict.test.ts" line="47" tests="5" assertions="48" failures="0" skipped="0" time="23.728" hostname="">
+      <testcase name="three dropped files: every captured page at HEAD, clean tree, no census gap, one commit per group" classname="[pglite] G6: inbox-folder captures on a strict source" time="5.89846" file="test\g6-ingestion-strict.test.ts" line="50" assertions="8" />
+      <testcase name="managed capture persists prepared content and provenance" classname="[pglite] G6: inbox-folder captures on a strict source" time="3.655302" file="test\g6-ingestion-strict.test.ts" line="74" assertions="9" />
+      <testcase name="managed auto-link uses the committed snapshot and permission guard" classname="[pglite] G6: inbox-folder captures on a strict source" time="5.524101" file="test\g6-ingestion-strict.test.ts" line="96" assertions="11" />
+      <testcase name="an untrusted capture is stored external_untrusted with gate-owned markers stripped; a trusted tombstone deletes through the door" classname="[pglite] G6: inbox-folder captures on a strict source" time="4.09908" file="test\g6-ingestion-strict.test.ts" line="135" assertions="12" />
+      <testcase name="an untrusted capture that overwrites a page keeps the non-world facts row its caller could not see, in the file and the database" classname="[pglite] G6: inbox-folder captures on a strict source" time="4.552752" file="test\g6-ingestion-strict.test.ts" line="160" assertions="8" />
+    </testsuite>
+  </testsuite>
+  <testsuite name="test\inbox-workflow.test.ts" file="test\inbox-workflow.test.ts" tests="15" assertions="56" failures="0" skipped="0" time="3.6304845" hostname="">
+    <testsuite name="Inbox operation definitions" file="test\inbox-workflow.test.ts" line="66" tests="1" assertions="5" failures="0" skipped="0" time="0.086" hostname="">
+      <testcase name="registers dedicated read/write operations" classname="Inbox operation definitions" time="0.086482" file="test\inbox-workflow.test.ts" line="67" assertions="5" />
+    </testsuite>
+    <testsuite name="Inbox deterministic workflow" file="test\inbox-workflow.test.ts" line="76" tests="14" assertions="51" failures="0" skipped="0" time="1.068" hostname="">
+      <testcase name="capture metadata preserves raw body and source" classname="Inbox deterministic workflow" time="0.047993" file="test\inbox-workflow.test.ts" line="77" assertions="4" />
+      <testcase name="list/get project canonical inbox state and typed links" classname="Inbox deterministic workflow" time="0.087633" file="test\inbox-workflow.test.ts" line="89" assertions="9" />
+      <testcase name="list_inbox honors source scope" classname="Inbox deterministic workflow" time="0.066182" file="test\inbox-workflow.test.ts" line="122" assertions="1" />
+      <testcase name="trigger is idempotent for the same raw revision" classname="Inbox deterministic workflow" time="0.074406" file="test\inbox-workflow.test.ts" line="139" assertions="4" />
+      <testcase name="trigger rejects non-inbox slugs and skips out-of-scope pages" classname="Inbox deterministic workflow" time="0.054538" file="test\inbox-workflow.test.ts" line="161" assertions="3" />
+      <testcase name="handler merges deterministically and reconciles explicit links" classname="Inbox deterministic workflow" time="0.109636" file="test\inbox-workflow.test.ts" line="187" assertions="4" />
+      <testcase name="handler lands on failed (not a workflow stage) when enrichment throws" classname="Inbox deterministic workflow" time="0.072873" file="test\inbox-workflow.test.ts" line="203" assertions="3" />
+      <testcase name="list_inbox stats exclude merging from pending_enrich and count failed" classname="Inbox deterministic workflow" time="0.060242" file="test\inbox-workflow.test.ts" line="218" assertions="6" />
+      <testcase name="capture classifies content shipping its own frontmatter as pending_typed_link" classname="Inbox deterministic workflow" time="0.040885" file="test\inbox-workflow.test.ts" line="234" assertions="2" />
+      <testcase name="discard soft-deletes only inbox pages" classname="Inbox deterministic workflow" time="0.045704" file="test\inbox-workflow.test.ts" line="247" assertions="3" />
+      <testcase name="discard hard mode requires confirm_destructive" classname="Inbox deterministic workflow" time="0.048863" file="test\inbox-workflow.test.ts" line="258" assertions="2" />
+      <testcase name="discard hard mode permanently removes inbox pages when confirmed" classname="Inbox deterministic workflow" time="0.055268" file="test\inbox-workflow.test.ts" line="267" assertions="3" />
+      <testcase name="discard hard mode deletes a merging page when confirmed (no permanent zombie)" classname="Inbox deterministic workflow" time="0.049625" file="test\inbox-workflow.test.ts" line="278" assertions="3" />
+      <testcase name="migration backfills legacy inbox frontmatter" classname="Inbox deterministic workflow" time="0.262398" file="test\inbox-workflow.test.ts" line="295" assertions="4" />
+    </testsuite>
+  </testsuite>
+  <testsuite name="test\ingestion\ingest-capture.test.ts" file="test\ingestion\ingest-capture.test.ts" tests="42" assertions="96" failures="0" skipped="0" time="5.0011302" hostname="">
+    <testsuite name="defaultSlugForEvent" file="test\ingestion\ingest-capture.test.ts" line="73" tests="3" assertions="3" failures="0" skipped="0" time="0.138" hostname="">
+      <testcase name="builds inbox/YYYY-MM-DD-&lt;hash6&gt; slug" classname="defaultSlugForEvent" time="0.054382" file="test\ingestion\ingest-capture.test.ts" line="74" assertions="1" />
+      <testcase name="stable for same content (deterministic hash)" classname="defaultSlugForEvent" time="0.041926" file="test\ingestion\ingest-capture.test.ts" line="80" assertions="1" />
+      <testcase name="UTC date math (no tz drift)" classname="defaultSlugForEvent" time="0.043139" file="test\ingestion\ingest-capture.test.ts" line="86" assertions="1" />
+    </testsuite>
+    <testsuite name="ingest_capture handler — slug resolution" file="test\ingestion\ingest-capture.test.ts" line="93" tests="3" assertions="4" failures="0" skipped="0" time="0.209" hostname="">
+      <testcase name="uses caller-provided job.data.slug when present" classname="ingest_capture handler — slug resolution" time="0.066829" file="test\ingestion\ingest-capture.test.ts" line="94" assertions="2" />
+      <testcase name="uses event.metadata.slug when set" classname="ingest_capture handler — slug resolution" time="0.074013" file="test\ingestion\ingest-capture.test.ts" line="102" assertions="1" />
+      <testcase name="falls back to inbox/YYYY-MM-DD-&lt;hash6&gt; when no slug provided" classname="ingest_capture handler — slug resolution" time="0.069552" file="test\ingestion\ingest-capture.test.ts" line="109" assertions="1" />
+    </testsuite>
+    <testsuite name="ingest_capture handler — validation + routing" file="test\ingestion\ingest-capture.test.ts" line="117" tests="7" assertions="17" failures="0" skipped="0" time="0.422" hostname="">
+      <testcase name="throws when event missing" classname="ingest_capture handler — validation + routing" time="0.036379" file="test\ingestion\ingest-capture.test.ts" line="118" assertions="1" />
+      <testcase name="throws on invalid event payload (caught at the handler boundary)" classname="ingest_capture handler — validation + routing" time="0.03743" file="test\ingestion\ingest-capture.test.ts" line="123" assertions="1" />
+      <testcase name="rejects binary content_type with helpful message" classname="ingest_capture handler — validation + routing" time="0.043139" file="test\ingestion\ingest-capture.test.ts" line="129" assertions="1" />
+      <testcase name="untrusted_payload flag round-trips to the result" classname="ingest_capture handler — validation + routing" time="0.075569" file="test\ingestion\ingest-capture.test.ts" line="141" assertions="1" />
+      <testcase name="trusted (default) payload round-trips as false" classname="ingest_capture handler — validation + routing" time="0.075793" file="test\ingestion\ingest-capture.test.ts" line="148" assertions="1" />
+      <testcase name="source provenance round-trips into the result" classname="ingest_capture handler — validation + routing" time="0.078993" file="test\ingestion\ingest-capture.test.ts" line="155" assertions="2" />
+      <testcase name="unmanaged capture persists prepared content and provenance" classname="ingest_capture handler — validation + routing" time="0.078151" file="test\ingestion\ingest-capture.test.ts" line="167" assertions="10" />
+    </testsuite>
+    <testsuite name="ingest_capture handler — provenance write-through (#1522)" file="test\ingestion\ingest-capture.test.ts" line="190" tests="3" assertions="13" failures="0" skipped="0" time="0.241" hostname="">
+      <testcase name="trusted event with a registered source id routes the page write there and persists source_kind/source_uri" classname="ingest_capture handler — provenance write-through (#1522)" time="0.093107" file="test\ingestion\ingest-capture.test.ts" line="199" assertions="5" />
+      <testcase name="unregistered emitter source_id (webhook-&lt;clientId&gt;) keeps default-source routing but still persists provenance" classname="ingest_capture handler — provenance write-through (#1522)" time="0.074413" file="test\ingestion\ingest-capture.test.ts" line="220" assertions="5" />
+      <testcase name="untrusted event cannot choose its write source even when the id is registered (fail-closed)" classname="ingest_capture handler — provenance write-through (#1522)" time="0.074881" file="test\ingestion\ingest-capture.test.ts" line="234" assertions="3" />
+    </testsuite>
+    <testsuite name="ingest_capture handler — write-source attribution" file="test\ingestion\ingest-capture.test.ts" line="254" tests="17" assertions="38" failures="0" skipped="0" time="1.386" hostname="">
+      <testcase name="job.data.sourceId naming a live source routes the write there without fallback" classname="ingest_capture handler — write-source attribution" time="0.084952" file="test\ingestion\ingest-capture.test.ts" line="299" assertions="2" />
+      <testcase name="job.data.sourceId naming a missing source falls back to default" classname="ingest_capture handler — write-source attribution" time="0.078711" file="test\ingestion\ingest-capture.test.ts" line="320" assertions="2" />
+      <testcase name="job.data.sourceId naming an archived source falls back to default" classname="ingest_capture handler — write-source attribution" time="0.090704" file="test\ingestion\ingest-capture.test.ts" line="342" assertions="2" />
+      <testcase name="foreign-key violation retries once under default" classname="ingest_capture handler — write-source attribution" time="0.080808" file="test\ingestion\ingest-capture.test.ts" line="367" assertions="3" />
+      <testcase name="untrusted event without job.data.sourceId stays under default" classname="ingest_capture handler — write-source attribution" time="0.081369" file="test\ingestion\ingest-capture.test.ts" line="409" assertions="2" />
+      <testcase name="trusted event without job.data.sourceId uses its live event.source_id" classname="ingest_capture handler — write-source attribution" time="0.067793" file="test\ingestion\ingest-capture.test.ts" line="426" assertions="2" />
+      <testcase name="job.data.sourceId === &apos;default&apos; (the unscoped-client production shape) writes under default" classname="ingest_capture handler — write-source attribution" time="0.073674" file="test\ingestion\ingest-capture.test.ts" line="443" assertions="2" />
+      <testcase name="provenance survives the FK-violation retry" classname="ingest_capture handler — write-source attribution" time="0.09906" file="test\ingestion\ingest-capture.test.ts" line="465" assertions="5" />
+      <testcase name="a non-FK error propagates instead of being retried as a source fallback" classname="ingest_capture handler — write-source attribution" time="0.057911" file="test\ingestion\ingest-capture.test.ts" line="495" assertions="2" />
+      <testcase name="a 23503 from an UNRELATED constraint propagates instead of falling back to default" classname="ingest_capture handler — write-source attribution" time="0.067443" file="test\ingestion\ingest-capture.test.ts" line="518" assertions="2" />
+      <testcase name="an FK violation with no requested source propagates (nothing to fall back from)" classname="ingest_capture handler — write-source attribution" time="0.082884" file="test\ingestion\ingest-capture.test.ts" line="546" assertions="1" />
+      <testcase name="trusted event with an UNREGISTERED source_id stays under default SILENTLY (no fallback report — #1522 daemon path unchanged)" classname="ingest_capture handler — write-source attribution" time="0.082138" file="test\ingestion\ingest-capture.test.ts" line="562" assertions="2" />
+      <testcase name="a 23503 naming another table&apos;s FK to sources() propagates, not falls back" classname="ingest_capture handler — write-source attribution" time="0.060478" file="test\ingestion\ingest-capture.test.ts" line="581" assertions="2" />
+      <testcase name="the pages source FK is matched via the driver&apos;s structured constraint field" classname="ingest_capture handler — write-source attribution" time="0.091833" file="test\ingestion\ingest-capture.test.ts" line="611" assertions="2" />
+      <testcase name="untrusted content cannot smuggle gate-owned frontmatter markers (#1699)" classname="ingest_capture handler — write-source attribution" time="0.079269" file="test\ingestion\ingest-capture.test.ts" line="640" assertions="2" />
+      <testcase name="a default-bound write is not shadowed by a same-slug page in another source" classname="ingest_capture handler — write-source attribution" time="0.134036" file="test\ingestion\ingest-capture.test.ts" line="667" assertions="4" />
+      <testcase name="a trusted daemon event cannot plant gate-owned markers either (#6259)" classname="ingest_capture handler — write-source attribution" time="0.082785" file="test\ingestion\ingest-capture.test.ts" line="712" assertions="1" />
+    </testsuite>
+    <testsuite name="ingest_capture handler — integration with importFromContent" file="test\ingestion\ingest-capture.test.ts" line="737" tests="3" assertions="6" failures="0" skipped="0" time="0.271" hostname="">
+      <testcase name="imported event lands as a page in the DB" classname="ingest_capture handler — integration with importFromContent" time="0.107156" file="test\ingestion\ingest-capture.test.ts" line="738" assertions="3" />
+      <testcase name="repeat ingest of same content returns skipped status (content_hash dedup at importFromContent level)" classname="ingest_capture handler — integration with importFromContent" time="0.086277" file="test\ingestion\ingest-capture.test.ts" line="751" assertions="2" />
+      <testcase name="chunks count is reported on imported events" classname="ingest_capture handler — integration with importFromContent" time="0.07873" file="test\ingestion\ingest-capture.test.ts" line="761" assertions="1" />
+    </testsuite>
+    <testsuite name="ingest_capture handler — tombstones (#3756)" file="test\ingestion\ingest-capture.test.ts" line="773" tests="6" assertions="15" failures="0" skipped="0" time="0.387" hostname="">
+      <testcase name="soft-deletes an existing page and reports status deleted" classname="ingest_capture handler — tombstones (#3756)" time="0.065232" file="test\ingestion\ingest-capture.test.ts" line="774" assertions="5" />
+      <testcase name="tombstone for a missing page reports skipped" classname="ingest_capture handler — tombstones (#3756)" time="0.059831" file="test\ingestion\ingest-capture.test.ts" line="797" assertions="1" />
+      <testcase name="untrusted payloads must not delete" classname="ingest_capture handler — tombstones (#3756)" time="0.060742" file="test\ingestion\ingest-capture.test.ts" line="804" assertions="2" />
+      <testcase name="tombstone with the flag OMITTED is rejected (fail-closed, explicit trusted marker required)" classname="ingest_capture handler — tombstones (#3756)" time="0.055845" file="test\ingestion\ingest-capture.test.ts" line="823" assertions="3" />
+      <testcase name="tombstone delete is scoped to the resolved source" classname="ingest_capture handler — tombstones (#3756)" time="0.064749" file="test\ingestion\ingest-capture.test.ts" line="840" assertions="2" />
+      <testcase name="event.slug wins over the generated default for upserts too" classname="ingest_capture handler — tombstones (#3756)" time="0.084603" file="test\ingestion\ingest-capture.test.ts" line="862" assertions="2" />
+    </testsuite>
+  </testsuite>
+</testsuites>

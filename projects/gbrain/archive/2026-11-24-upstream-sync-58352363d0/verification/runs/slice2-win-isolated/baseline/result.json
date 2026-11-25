@@ -1,0 +1,90 @@
+{
+  "action": "windows_git_config_ab",
+  "run_id": "slice2-win-isolated",
+  "ok": true,
+  "environment": {
+    "bun": "1.4.4",
+    "git": "2.54.0.windows.1",
+    "system_core_autocrlf": true,
+    "system_config_origin": "file:C:/Program Files/Git/etc/gitconfig",
+    "isolated_environment": {
+      "GIT_CONFIG_NOSYSTEM": "1"
+    }
+  },
+  "root_cause": {
+    "classification": "windows_environment_baseline",
+    "summary": "With system core.autocrlf=true and no explicit text/eol attributes, Git checks out CRLF while the sync probe hashes raw bytes and has no attribute evidence to classify the folded bytes as clean_eol. Restored files therefore become unknown/dirty and settle without import; git add also emits enough per-file CRLF warnings to exceed execFileSync's default maxBuffer in the 12k-file test.",
+    "candidate_product_change_required": false
+  },
+  "restore_ab": {
+    "system_config_candidate": {
+      "pass": 0,
+      "fail": 1,
+      "assertion": "test/sync-restored-file-purge.test.ts:111 expect(after?.deleted_at).toBeNull()"
+    },
+    "system_config_pristine_upstream": {
+      "pass": 0,
+      "fail": 1,
+      "assertion": "test/sync-restored-file-purge.test.ts:111 expect(after?.deleted_at).toBeNull()"
+    },
+    "isolated_candidate_single_case": {
+      "pass": 1,
+      "fail": 0,
+      "output": "gbrain-sync-restore-candidate-nosystem.out"
+    },
+    "isolated_pristine_upstream_single_case": {
+      "pass": 1,
+      "fail": 0,
+      "output": "gbrain-sync-restore-upstream-nosystem.out"
+    },
+    "isolated_candidate_full_file": {
+      "pass": 26,
+      "fail": 0,
+      "expect_calls": 173,
+      "output": "gbrain-sync-restore-candidate-nosystem-full.out"
+    }
+  },
+  "large_mirror_ab": {
+    "system_config_candidate": {
+      "error": "spawnSync git ENOBUFS (stdout or stderr buffer reached maxBuffer size limit)",
+      "location": "test/fix-wave-5-integration.test.ts:322"
+    },
+    "isolated_pristine_upstream": {
+      "pass": 1,
+      "fail": 0,
+      "output": "gbrain-sync-12k-upstream-nosystem.out"
+    },
+    "isolated_fixed_fork": {
+      "pass": 1,
+      "fail": 0,
+      "output": "gbrain-sync-12k-fork-nosystem.out"
+    },
+    "isolated_candidate": {
+      "pass": 1,
+      "fail": 0,
+      "output": "gbrain-sync-12k-candidate-nosystem.out"
+    }
+  },
+  "slice2_test_delta": {
+    "candidate_upstream_targeted_pass": 114,
+    "fixed_fork_common_pass": 71,
+    "new_test_files": 4,
+    "new_cases_in_new_files": 35,
+    "added_cases_in_common_files": 9,
+    "removed_cases_in_common_files": 1,
+    "new_tests_for_slice_registration": 44,
+    "net_case_delta": 43,
+    "junit": "fork-common.junit.xml"
+  },
+  "artifacts": {
+    "original_failed_run": "../../slice2/upstream/",
+    "corrected_parser_reparse_of_original_junit": {
+      "pass": 101,
+      "fail": 13,
+      "skip": 0
+    },
+    "final_targeted_run": "../upstream/",
+    "migrations": "../migrations/",
+    "generated": "../generated/"
+  }
+}

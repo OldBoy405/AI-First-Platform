@@ -1,0 +1,74 @@
+
+test\query-trace.test.ts:
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[gbrain] vector search unavailable (missing_env) — results are keyword-only. Run `gbrain doctor` to diagnose.
+(pass) query.trace retrieval diagnostics > trace on preserves the complete emitted retrieval metadata [247.85ms]
+(pass) query.trace retrieval diagnostics > trace off preserves the upstream result array [85.52ms]
+(pass) query.trace retrieval diagnostics > empty trace result preserves envelope and diagnostics [64.04ms]
+[gbrain search] 2 more pages matched only by meaning and were left out (default remote cap 3). Pass --limit to read them.
+(pass) query.trace retrieval diagnostics > CLI JSON preserves trace retrieval metadata [32.55ms]
+
+test\search-remote-page-cap.test.ts:
+(pass) capVectorOnlyPages > keeps every lexical page and fills with vector-only pages up to the cap, in rank order [0.58ms]
+(pass) capVectorOnlyPages > more lexical pages than the cap are all kept and no vector-only page is added [0.29ms]
+(pass) capVectorOnlyPages > pages are distinct per source, and a null cap or a set under the cap is returned untouched [0.23ms]
+(pass) remotePageCap callers and the cap line > a delegated host subagent call is not capped; a remote call is [0.29ms]
+(pass) remotePageCap callers and the cap line > a subagent job delegated by a remote OAuth client stays capped [0.26ms]
+(pass) remotePageCap callers and the cap line > the line names only the pages the cap left out, and the flag the reader passes [0.19ms]
+(pass) remotePageCap callers and the cap line > a thin-client CLI search prints the cap line on stderr with --limit [0.94ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[serve-http] WARNING: --public-url is set but --bind is not. Default bind changed to 127.0.0.1 in v0.34.1; remote clients reaching the public URL will be refused. Pass --bind 0.0.0.0 to accept all interfaces.
+[serve-http] NOTE: skill publishing is OFF — connected agents can't call list_skills / get_skill, so this brain’s skill catalog is invisible to them (core tools like search / query / think still work). Enable it with: gbrain config set mcp.publish_skills true
+[gbrain-serve] dispatch op=search args_sha256=1ba769c563066ef1
+(pass) remote page cap (pglite) > search: a query no page matches lexically returns the top vector pages up to the default cap, and says so in _meta and to the model [166.46ms]
+[gbrain-serve] dispatch op=search args_sha256=a0a82902b503ba25
+(pass) remote page cap (pglite) > search: a call the cap leaves alone carries no cap line [118.73ms]
+[gbrain-serve] dispatch op=search args_sha256=8d5a25dc3bd6a9ba
+(pass) remote page cap (pglite) > search: every lexically matched page survives the cap, and vector-only pages are left out [95.54ms]
+[gbrain-serve] dispatch op=search args_sha256=8d5a25dc3bd6a9ba
+(pass) remote page cap (pglite) > search: with no embedding model every keyword match comes back, past the cap [65.50ms]
+[gbrain-serve] dispatch op=search args_sha256=a0a82902b503ba25
+(pass) remote page cap (pglite) > search: an explicit limit keeps today's rows [63.03ms]
+[gbrain-serve] dispatch op=search args_sha256=1ba769c563066ef1
+[gbrain-serve] dispatch op=search args_sha256=1ba769c563066ef1
+(pass) remote page cap (pglite) > search: search.remote_page_cap sets the cap and 0 turns it off [121.86ms]
+[gbrain-serve] dispatch op=search args_sha256=1ba769c563066ef1
+[gbrain-serve] dispatch op=search args_sha256=1ba769c563066ef1
+[gbrain-serve] dispatch op=search args_sha256=1ba769c563066ef1
+[gbrain-serve] dispatch op=search args_sha256=1ba769c563066ef1
+(pass) remote page cap (pglite) > search: a malformed search.remote_page_cap falls back to the default cap [275.24ms]
+[gbrain-serve] dispatch op=search args_sha256=99d0d008d1dfe1cb
+(pass) remote page cap (pglite) > search: a paged call (offset > 0) is not capped [67.14ms]
+(pass) remote page cap (pglite) > search: a trusted local call is not capped [79.18ms]
+[gbrain-serve] dispatch op=query args_sha256=ddc138bae5a2e023
+(pass) remote page cap (pglite) > remote page cap remains available in trace retrieval metadata [91.43ms]
+[gbrain-serve] dispatch op=query args_sha256=6744dbe045f77e8e
+(pass) remote page cap (pglite) > MCP query trace preserves response metadata [101.14ms]
+[gbrain-serve] dispatch op=query args_sha256=c823f976872e70c2
+(pass) remote page cap (pglite) > query: a query no page matches lexically returns the top vector pages up to the default cap, and says so in _meta and to the model [83.85ms]
+[gbrain-serve] dispatch op=query args_sha256=81bf58e6b24ecf13
+(pass) remote page cap (pglite) > query: a call the cap leaves alone carries no cap line [69.54ms]
+[gbrain-serve] dispatch op=query args_sha256=45771deb6b27ca85
+(pass) remote page cap (pglite) > query: every lexically matched page survives the cap, and vector-only pages are left out [82.60ms]
+[gbrain-serve] dispatch op=query args_sha256=45771deb6b27ca85
+(pass) remote page cap (pglite) > query: with no embedding model every keyword match comes back, past the cap [32.74ms]
+[gbrain-serve] dispatch op=query args_sha256=81bf58e6b24ecf13
+(pass) remote page cap (pglite) > query: an explicit limit keeps today's rows [68.57ms]
+[gbrain-serve] dispatch op=query args_sha256=c823f976872e70c2
+[gbrain-serve] dispatch op=query args_sha256=c823f976872e70c2
+(pass) remote page cap (pglite) > query: search.remote_page_cap sets the cap and 0 turns it off [126.35ms]
+[gbrain-serve] dispatch op=query args_sha256=c823f976872e70c2
+[gbrain-serve] dispatch op=query args_sha256=c823f976872e70c2
+[gbrain-serve] dispatch op=query args_sha256=c823f976872e70c2
+[gbrain-serve] dispatch op=query args_sha256=c823f976872e70c2
+(pass) remote page cap (pglite) > query: a malformed search.remote_page_cap falls back to the default cap [248.98ms]
+[gbrain-serve] dispatch op=query args_sha256=35cf5d9cd2de7d46
+(pass) remote page cap (pglite) > query: a paged call (offset > 0) is not capped [62.62ms]
+(pass) remote page cap (pglite) > query: a trusted local call is not capped [71.38ms]
+
+ 31 pass
+ 0 fail
+ 69 expect() calls
+Ran 31 tests across 2 files. [6.88s]

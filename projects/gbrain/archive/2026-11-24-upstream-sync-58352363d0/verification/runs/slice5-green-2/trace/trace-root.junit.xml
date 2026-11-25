@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="bun test" tests="31" assertions="69" failures="0" skipped="0" time="6.3752741">
+  <testsuite name="test\query-trace.test.ts" file="test\query-trace.test.ts" tests="4" assertions="11" failures="0" skipped="0" time="2.5285428" hostname="">
+    <testsuite name="query.trace retrieval diagnostics" file="test\query-trace.test.ts" line="46" tests="4" assertions="11" failures="0" skipped="0" time="0.414" hostname="">
+      <testcase name="trace on preserves the complete emitted retrieval metadata" classname="query.trace retrieval diagnostics" time="0.235782" file="test\query-trace.test.ts" line="47" assertions="3" />
+      <testcase name="trace off preserves the upstream result array" classname="query.trace retrieval diagnostics" time="0.085322" file="test\query-trace.test.ts" line="71" assertions="3" />
+      <testcase name="empty trace result preserves envelope and diagnostics" classname="query.trace retrieval diagnostics" time="0.063291" file="test\query-trace.test.ts" line="83" assertions="3" />
+      <testcase name="CLI JSON preserves trace retrieval metadata" classname="query.trace retrieval diagnostics" time="0.031823" file="test\query-trace.test.ts" line="94" assertions="2" />
+    </testsuite>
+  </testsuite>
+  <testsuite name="test\search-remote-page-cap.test.ts" file="test\search-remote-page-cap.test.ts" tests="27" assertions="58" failures="0" skipped="0" time="3.7987699" hostname="">
+    <testsuite name="capVectorOnlyPages" file="test\search-remote-page-cap.test.ts" line="44" tests="3" assertions="6" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="keeps every lexical page and fills with vector-only pages up to the cap, in rank order" classname="capVectorOnlyPages" time="0.000568" file="test\search-remote-page-cap.test.ts" line="45" assertions="2" />
+      <testcase name="more lexical pages than the cap are all kept and no vector-only page is added" classname="capVectorOnlyPages" time="0.000282" file="test\search-remote-page-cap.test.ts" line="52" assertions="1" />
+      <testcase name="pages are distinct per source, and a null cap or a set under the cap is returned untouched" classname="capVectorOnlyPages" time="0.000223" file="test\search-remote-page-cap.test.ts" line="57" assertions="3" />
+    </testsuite>
+    <testsuite name="remotePageCap callers and the cap line" file="test\search-remote-page-cap.test.ts" line="69" tests="4" assertions="7" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="a delegated host subagent call is not capped; a remote call is" classname="remotePageCap callers and the cap line" time="0.000249" file="test\search-remote-page-cap.test.ts" line="72" assertions="2" />
+      <testcase name="a subagent job delegated by a remote OAuth client stays capped" classname="remotePageCap callers and the cap line" time="0.000234" file="test\search-remote-page-cap.test.ts" line="77" assertions="1" />
+      <testcase name="the line names only the pages the cap left out, and the flag the reader passes" classname="remotePageCap callers and the cap line" time="0.000206" file="test\search-remote-page-cap.test.ts" line="82" assertions="3" />
+      <testcase name="a thin-client CLI search prints the cap line on stderr with --limit" classname="remotePageCap callers and the cap line" time="0.000927" file="test\search-remote-page-cap.test.ts" line="89" assertions="1" />
+    </testsuite>
+    <testsuite name="remote page cap (pglite)" file="test\search-remote-page-cap.test.ts" line="105" tests="20" assertions="45" failures="0" skipped="0" time="1.892" hostname="">
+      <testcase name="search: a query no page matches lexically returns the top vector pages up to the default cap, and says so in _meta and to the model" classname="remote page cap (pglite)" time="0.150465" file="test\search-remote-page-cap.test.ts" line="163" assertions="3" />
+      <testcase name="search: a call the cap leaves alone carries no cap line" classname="remote page cap (pglite)" time="0.109364" file="test\search-remote-page-cap.test.ts" line="171" assertions="2" />
+      <testcase name="search: every lexically matched page survives the cap, and vector-only pages are left out" classname="remote page cap (pglite)" time="0.078791" file="test\search-remote-page-cap.test.ts" line="177" assertions="1" />
+      <testcase name="search: with no embedding model every keyword match comes back, past the cap" classname="remote page cap (pglite)" time="0.055847" file="test\search-remote-page-cap.test.ts" line="182" assertions="2" />
+      <testcase name="search: an explicit limit keeps today&apos;s rows" classname="remote page cap (pglite)" time="0.055257" file="test\search-remote-page-cap.test.ts" line="194" assertions="1" />
+      <testcase name="search: search.remote_page_cap sets the cap and 0 turns it off" classname="remote page cap (pglite)" time="0.104603" file="test\search-remote-page-cap.test.ts" line="199" assertions="2" />
+      <testcase name="search: a malformed search.remote_page_cap falls back to the default cap" classname="remote page cap (pglite)" time="0.230816" file="test\search-remote-page-cap.test.ts" line="215" assertions="4" />
+      <testcase name="search: a paged call (offset &gt; 0) is not capped" classname="remote page cap (pglite)" time="0.054795" file="test\search-remote-page-cap.test.ts" line="233" assertions="3" />
+      <testcase name="search: a trusted local call is not capped" classname="remote page cap (pglite)" time="0.06841" file="test\search-remote-page-cap.test.ts" line="240" assertions="1" />
+      <testcase name="remote page cap remains available in trace retrieval metadata" classname="remote page cap (pglite)" time="0.076372" file="test\search-remote-page-cap.test.ts" line="136" assertions="4" />
+      <testcase name="MCP query trace preserves response metadata" classname="remote page cap (pglite)" time="0.090746" file="test\search-remote-page-cap.test.ts" line="146" assertions="3" />
+      <testcase name="query: a query no page matches lexically returns the top vector pages up to the default cap, and says so in _meta and to the model" classname="remote page cap (pglite)" time="0.074019" file="test\search-remote-page-cap.test.ts" line="163" assertions="3" />
+      <testcase name="query: a call the cap leaves alone carries no cap line" classname="remote page cap (pglite)" time="0.070863" file="test\search-remote-page-cap.test.ts" line="171" assertions="2" />
+      <testcase name="query: every lexically matched page survives the cap, and vector-only pages are left out" classname="remote page cap (pglite)" time="0.093127" file="test\search-remote-page-cap.test.ts" line="177" assertions="1" />
+      <testcase name="query: with no embedding model every keyword match comes back, past the cap" classname="remote page cap (pglite)" time="0.030629" file="test\search-remote-page-cap.test.ts" line="182" assertions="2" />
+      <testcase name="query: an explicit limit keeps today&apos;s rows" classname="remote page cap (pglite)" time="0.066864" file="test\search-remote-page-cap.test.ts" line="194" assertions="1" />
+      <testcase name="query: search.remote_page_cap sets the cap and 0 turns it off" classname="remote page cap (pglite)" time="0.132277" file="test\search-remote-page-cap.test.ts" line="199" assertions="2" />
+      <testcase name="query: a malformed search.remote_page_cap falls back to the default cap" classname="remote page cap (pglite)" time="0.246906" file="test\search-remote-page-cap.test.ts" line="215" assertions="4" />
+      <testcase name="query: a paged call (offset &gt; 0) is not capped" classname="remote page cap (pglite)" time="0.054195" file="test\search-remote-page-cap.test.ts" line="233" assertions="3" />
+      <testcase name="query: a trusted local call is not capped" classname="remote page cap (pglite)" time="0.058972" file="test\search-remote-page-cap.test.ts" line="240" assertions="1" />
+    </testsuite>
+  </testsuite>
+</testsuites>

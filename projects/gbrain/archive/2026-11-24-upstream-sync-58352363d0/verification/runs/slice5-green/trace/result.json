@@ -1,0 +1,86 @@
+{
+  "action": "trace",
+  "run_id": "slice5-green",
+  "root": "C:\\Users\\GOBAO\\Downloads\\AI\\gbrain-sync-2026-11-24-17b68cef",
+  "ok": false,
+  "timeout": false,
+  "summary": {
+    "trace_root_rc": 0,
+    "trace_serial_rc": 0,
+    "trace_admin_rc": 1,
+    "trace_skips": 0,
+    "trace_timeout": false,
+    "trace_on_case_passed": true,
+    "trace_off_case_passed": true,
+    "empty_trace_case_passed": true,
+    "page_cap_case_passed": true,
+    "mcp_meta_case_passed": true,
+    "cli_trace_case_passed": true,
+    "admin_meta_case_passed": true,
+    "ask_trace_case_passed": true,
+    "trace_required_cases_missing": 0,
+    "trace_fail": 1
+  },
+  "commands": [
+    {
+      "argv": [
+        "bun",
+        "test",
+        "--timeout=60000",
+        "test/query-trace.test.ts",
+        "test/search-remote-page-cap.test.ts",
+        "--reporter=junit",
+        "--reporter-outfile=C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform\\projects\\gbrain\\changes\\2026-11-24-upstream-sync-58352363d0\\verification\\runs\\slice5-green\\trace\\trace-root.junit.xml"
+      ],
+      "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\gbrain-sync-2026-11-24-17b68cef",
+      "started_at": "2026-11-24T16:29:39.371647+00:00",
+      "ended_at": "2026-11-24T16:29:45.855362+00:00",
+      "duration_ms": 6484,
+      "rc": 0,
+      "timeout": false,
+      "status": "pass",
+      "stdout_file": "001-bun.stdout.txt",
+      "stderr_file": "001-bun.stderr.txt"
+    },
+    {
+      "argv": [
+        "bun",
+        "test",
+        "--timeout=60000",
+        "test/dispatch-response-meta.serial.test.ts",
+        "--reporter=junit",
+        "--reporter-outfile=C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform\\projects\\gbrain\\changes\\2026-11-24-upstream-sync-58352363d0\\verification\\runs\\slice5-green\\trace\\trace-serial.junit.xml"
+      ],
+      "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\gbrain-sync-2026-11-24-17b68cef",
+      "started_at": "2026-11-24T16:29:45.856529+00:00",
+      "ended_at": "2026-11-24T16:29:46.253205+00:00",
+      "duration_ms": 397,
+      "rc": 0,
+      "timeout": false,
+      "status": "pass",
+      "stdout_file": "002-bun.stdout.txt",
+      "stderr_file": "002-bun.stderr.txt"
+    },
+    {
+      "argv": [
+        "bun",
+        "x",
+        "vitest",
+        "run",
+        "src/lib/mcp-client.test.ts",
+        "src/pages/brain/__tests__/Ask.page.test.tsx",
+        "--reporter=json",
+        "--outputFile=C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform\\projects\\gbrain\\changes\\2026-11-24-upstream-sync-58352363d0\\verification\\runs\\slice5-green\\trace\\trace-admin.json"
+      ],
+      "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\gbrain-sync-2026-11-24-17b68cef\\admin",
+      "started_at": "2026-11-24T16:29:46.254279+00:00",
+      "ended_at": "2026-11-24T16:29:48.842324+00:00",
+      "duration_ms": 2589,
+      "rc": 1,
+      "timeout": false,
+      "status": "fail",
+      "stdout_file": "003-bun.stdout.txt",
+      "stderr_file": "003-bun.stderr.txt"
+    }
+  ]
+}

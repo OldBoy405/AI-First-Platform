@@ -1,0 +1,23 @@
+bun test v1.4.4 (38afee6c8)
+
+test\setup.test.ts:
+81 | 
+82 | describe('gbrain setup claude-code: install lifecycle', () => {
+83 |   test('fresh install creates a keyless brain, wires MCP + read-context hooks only, verifies; a second run changes nothing', async () => {
+84 |     const b = box();
+85 |     const first = await setup(b, ['claude-code', '--json']);
+86 |     expect(first.exitCode).toBe(0);
+                                ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 2
+
+      at <anonymous> (D:\AI\gbrain-fork-ab-2026-11-24-8f0e2d99\test\setup.test.ts:86:28)
+(fail) gbrain setup claude-code: install lifecycle > fresh install creates a keyless brain, wires MCP + read-context hooks only, verifies; a second run changes nothing [1338.38ms]
+
+ 0 pass
+ 58 filtered out
+ 1 fail
+ 1 expect() calls
+Ran 1 test across 1 file. [2.94s]

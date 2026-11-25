@@ -1,0 +1,82 @@
+
+test\dispatch-response-meta.serial.test.ts:
+(pass) dispatch response meta (WP2/D3/D8) > empty results → second content block + _meta.retrieval [31.51ms]
+(pass) dispatch response meta (WP2/D3/D8) > clean miss → second block says retrieval healthy, degraded absent [2.89ms]
+(pass) dispatch response meta (WP2/D3/D8) > non-empty results → body + degraded_recall notice only, _meta.retrieval still present (D3: on ALL responses) [5.31ms]
+116 |     nextMeta = DEGRADED_META;
+117 |     const out = await dispatchToolCall(engineStub, 'query', { query: 'anything at all', trace: true }, {
+118 |       remote: true, transport: 'http', sourceId: 'default',
+119 |     });
+120 |     const body = JSON.parse(out.content[0].text);
+121 |     expect(body.trace.retrieval).toEqual((out._meta as Record<string, any>).retrieval);
+                                       ^
+error: expect(received).toEqual(expected)
+
+- {
+-   "crag": {
+-     "confidence": "weak",
+-     "escalate_to_think": true,
+-     "query_shape": "factual",
+-     "reason": "weak_semantic_top",
+-   },
+-   "degraded": [
+-     {
+-       "stage": "embed_unavailable",
+-     },
+-   ],
+-   "expansion_applied": false,
+-   "projection_readiness": {
+-     "ready": true,
+-     "status": "ready",
+-   },
+-   "retrieved_count": 3,
+-   "returned_count": 1,
+-   "rows": "lean",
+-   "timings": {
+-     "other_ms": 1,
+-     "overlapped_ms": {
+-       "meta_embedding_held": 0,
+-       "meta_entity_facts": 0,
+-       "meta_filter_hint": 0,
+-       "meta_freshness": 0,
+-       "meta_held": 0,
+-       "meta_readiness": 0,
+-       "meta_safe_index": 0,
+-       "meta_saved_facts": 0,
+-     },
+-     "parts_ms": {
+-       "response": {
+-         "evidence": 0,
+-         "feedback": 0,
+-         "meta": 1,
+-         "trust": 0,
+-       },
+-     },
+-     "stages_ms": {
+-       "alias_fanout": 0,
+-       "anchoring": 0,
+-       "facts_arm": 2,
+-       "response": 1,
+-       "setup": 0,
+-     },
+-     "total_ms": 4,
+-   },
+-   "vector_enabled": false,
+- }
++ undefined
+
+- Expected  - 51
++ Received  + 1
+
+      at <anonymous> (C:\Users\GOBAO\Downloads\AI\gbrain-sync-2026-11-24-17b68cef\test\dispatch-response-meta.serial.test.ts:121:34)
+(fail) dispatch response meta (WP2/D3/D8) > query trace keeps degraded retrieval diagnostics independent of _meta [6.96ms]
+[warn] [mcp] _meta hook failed for search: hot memory down; degrading to no hook keys
+(pass) dispatch response meta (WP2/D3/D8) > metaHook failure never drops the retrieval key (per-key isolation) [4.13ms]
+(pass) dispatch response meta (WP2/D3/D8) > metaHook keys merge alongside retrieval, not over it [3.02ms]
+(pass) buildEmptyRetrievalBlock (unit) > a ranking-only stage (reranker_skipped) never impairs recall → still a clean miss [0.33ms]
+(pass) buildEmptyRetrievalBlock (unit) > hint passthrough + stage dedupe + garbage tolerance [0.32ms]
+
+ 7 pass
+ 1 fail
+ 37 expect() calls
+Ran 8 tests across 1 file. [401.00ms]

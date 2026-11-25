@@ -1,0 +1,465 @@
+
+test\cycle-world-fence-rows.test.ts:
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+(pass) dream phases read a world page without its non-world fence rows (pglite) > propose_takes: the extractor input and the proposals hold only world rows [20.71ms]
+(pass) dream phases read a world page without its non-world fence rows (pglite) > patterns: the subagent prompt holds only world rows of a reflection [1.83ms]
+(pass) dream phases read a world page without its non-world fence rows (pglite) > patterns: quote grounding never certifies a quote only a hidden row holds [58.72ms]
+
+test\extract-atoms-world-fence-rows.test.ts:
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[backup] checked 1 asset(s): 1 without a git remote (computed_by=serve)
+(pass) atoms extracted from a world page never carry a non-world fence row > cycle phase: the prompt, the atoms and a remote read of each atom hold only world rows [186.09ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+(pass) atoms extracted from a world page never carry a non-world fence row > managed brain: the published atoms hold only world rows [2543.56ms]
+
+test\fix-wave-5-integration.test.ts:
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[extract-conversation-facts] published 1 page(s) in batch request d825fe49-52fa-49ae-a6e8-a5cd250d39fc (1 committed, 0 skipped, 0 blocked)
+(pass) #5731 restore with managed writeSingleFact and the #5401 drain (pglite) > restore, drain, recall and search find the restored fact; an absent entity stays separate [3955.63ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[repair.visibility.plan] start
+[repair.visibility.plan] reading facts
+[repair.visibility.plan] facts: 0 to repair (0 remotely readable) in 2 ms
+[repair.visibility.plan] reading events
+[repair.visibility.plan] events: 0 to repair in 0 ms
+[repair.visibility.plan] reading aliases
+[repair.visibility.plan] aliases: 0 to repair in 1 ms
+[repair.visibility.plan] reading lineage
+[repair.visibility.plan] lineage: 0 to repair in 0 ms
+[repair.visibility.plan] 4/4 (100%)
+[repair.visibility.plan] 4/4 (100%) done
+[repair.visibility.plan] start
+[repair.visibility.plan] reading facts
+[repair.visibility.plan] facts: 0 to repair (0 remotely readable) in 1 ms
+[repair.visibility.plan] reading events
+[repair.visibility.plan] events: 0 to repair in 0 ms
+[repair.visibility.plan] reading aliases
+[repair.visibility.plan] aliases: 0 to repair in 0 ms
+[repair.visibility.plan] reading lineage
+[repair.visibility.plan] lineage: 0 to repair in 1 ms
+[repair.visibility.plan] 4/4 (100%)
+[repair.visibility.plan] 4/4 (100%) done
+[repair.visibility.plan] start
+[repair.visibility.plan] reading facts
+[repair.visibility.plan] facts: 0 to repair (0 remotely readable) in 1 ms
+[repair.visibility.plan] reading events
+[repair.visibility.plan] events: 0 to repair in 0 ms
+[repair.visibility.plan] reading aliases
+[repair.visibility.plan] aliases: 0 to repair in 0 ms
+[repair.visibility.plan] reading lineage
+[repair.visibility.plan] lineage: 0 to repair in 1 ms
+[repair.visibility.plan] 4/4 (100%)
+[repair.visibility.plan] 4/4 (100%) done
+[repair.visibility.plan] start
+[repair.visibility.plan] reading facts
+[repair.visibility.plan] facts: 0 to repair (0 remotely readable) in 1 ms
+[repair.visibility.plan] reading events
+[repair.visibility.plan] events: 0 to repair in 0 ms
+[repair.visibility.plan] reading aliases
+[repair.visibility.plan] aliases: 0 to repair in 0 ms
+[repair.visibility.plan] reading lineage
+[repair.visibility.plan] lineage: 0 to repair in 0 ms
+[repair.visibility.plan] 4/4 (100%)
+[repair.visibility.plan] 4/4 (100%) done
+[repair.visibility.plan] start
+[repair.visibility.plan] reading facts
+[repair.visibility.plan] facts: 0 to repair (0 remotely readable) in 0 ms
+[repair.visibility.plan] reading events
+[repair.visibility.plan] events: 0 to repair in 0 ms
+[repair.visibility.plan] reading aliases
+[repair.visibility.plan] aliases: 0 to repair in 0 ms
+[repair.visibility.plan] reading lineage
+[repair.visibility.plan] lineage: 0 to repair in 1 ms
+[repair.visibility.plan] 4/4 (100%)
+[repair.visibility.plan] 4/4 (100%) done
+(pass) explicit_only across repair --all, the remediation plan, remediate and the banner (pglite) > both real kinds are listed with their preview command and never run [4192.62ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[facts] sources.local_path unset for source_id=default — falling through to DB-only inserts. Attach a working tree via `gbrain sources add default --path <dir>` to enable system-of-record fence writes.
+[facts] capture dedup: lane=sweep:corpus dropped a duplicate of fact #1 (rule=same_entity)
+(pass) #5558 with the stop hook and session-end capture (pglite) > no hook output carries buffered text, and session capture still ingests the transcript [1845.40ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[sources.manifest_hash] start
+[sources.manifest_hash] 121/12003 (1%)
+[sources.manifest_hash] 242/12003 (2%)
+[sources.manifest_hash] 363/12003 (3%)
+[sources.manifest_hash] 484/12003 (4%)
+[sources.manifest_hash] 605/12003 (5%)
+[sources.manifest_hash] 726/12003 (6%)
+[sources.manifest_hash] 847/12003 (7%)
+[sources.manifest_hash] 968/12003 (8%)
+[sources.manifest_hash] 1089/12003 (9%)
+[sources.manifest_hash] 1210/12003 (10%)
+[sources.manifest_hash] 1331/12003 (11%)
+[sources.manifest_hash] 1452/12003 (12%)
+[sources.manifest_hash] 1573/12003 (13%)
+[sources.manifest_hash] 1694/12003 (14%)
+[sources.manifest_hash] 1815/12003 (15%)
+[sources.manifest_hash] 1936/12003 (16%)
+[sources.manifest_hash] 2057/12003 (17%)
+[sources.manifest_hash] 2178/12003 (18%)
+[sources.manifest_hash] 2299/12003 (19%)
+[sources.manifest_hash] 2420/12003 (20%)
+[sources.manifest_hash] 2541/12003 (21%)
+[sources.manifest_hash] 2662/12003 (22%)
+[sources.manifest_hash] 2783/12003 (23%)
+[sources.manifest_hash] 2904/12003 (24%)
+[sources.manifest_hash] 3025/12003 (25%)
+[sources.manifest_hash] 3146/12003 (26%)
+[sources.manifest_hash] 3267/12003 (27%)
+[sources.manifest_hash] 3388/12003 (28%)
+[sources.manifest_hash] 3509/12003 (29%)
+[sources.manifest_hash] 3630/12003 (30%)
+[sources.manifest_hash] 3751/12003 (31%)
+[sources.manifest_hash] 3872/12003 (32%)
+[sources.manifest_hash] 3993/12003 (33%)
+[sources.manifest_hash] 4114/12003 (34%)
+[sources.manifest_hash] 4235/12003 (35%)
+[sources.manifest_hash] 4356/12003 (36%)
+[sources.manifest_hash] 4477/12003 (37%)
+[sources.manifest_hash] 4598/12003 (38%)
+[sources.manifest_hash] 4719/12003 (39%)
+[sources.manifest_hash] 4840/12003 (40%)
+[sources.manifest_hash] 4961/12003 (41%)
+[sources.manifest_hash] 5082/12003 (42%)
+[sources.manifest_hash] 5203/12003 (43%)
+[sources.manifest_hash] 5324/12003 (44%)
+[sources.manifest_hash] 5445/12003 (45%)
+[sources.manifest_hash] 5566/12003 (46%)
+[sources.manifest_hash] 5687/12003 (47%)
+[sources.manifest_hash] 5808/12003 (48%)
+[sources.manifest_hash] 5929/12003 (49%)
+[sources.manifest_hash] 6050/12003 (50%)
+[sources.manifest_hash] 6171/12003 (51%)
+[sources.manifest_hash] 6292/12003 (52%)
+[sources.manifest_hash] 6413/12003 (53%)
+[sources.manifest_hash] 6534/12003 (54%)
+[sources.manifest_hash] 6655/12003 (55%)
+[sources.manifest_hash] 6776/12003 (56%)
+[sources.manifest_hash] 6897/12003 (57%)
+[sources.manifest_hash] 7018/12003 (58%)
+[sources.manifest_hash] 7139/12003 (59%)
+[sources.manifest_hash] 7260/12003 (60%)
+[sources.manifest_hash] 7381/12003 (61%)
+[sources.manifest_hash] 7502/12003 (62%)
+[sources.manifest_hash] 7623/12003 (63%)
+[sources.manifest_hash] 7744/12003 (64%)
+[sources.manifest_hash] 7865/12003 (65%)
+[sources.manifest_hash] 7986/12003 (66%)
+[sources.manifest_hash] 8107/12003 (67%)
+[sources.manifest_hash] 8228/12003 (68%)
+[sources.manifest_hash] 8349/12003 (69%)
+[sources.manifest_hash] 8470/12003 (70%)
+[sources.manifest_hash] 8591/12003 (71%)
+[sources.manifest_hash] 8712/12003 (72%)
+[sources.manifest_hash] 8833/12003 (73%)
+[sources.manifest_hash] 8954/12003 (74%)
+[sources.manifest_hash] 9075/12003 (75%)
+[sources.manifest_hash] 9196/12003 (76%)
+[sources.manifest_hash] 9317/12003 (77%)
+[sources.manifest_hash] 9438/12003 (78%)
+[sources.manifest_hash] 9559/12003 (79%)
+[sources.manifest_hash] 9680/12003 (80%)
+[sources.manifest_hash] 9801/12003 (81%)
+[sources.manifest_hash] 9922/12003 (82%)
+[sources.manifest_hash] 10043/12003 (83%)
+[sources.manifest_hash] 10164/12003 (84%)
+[sources.manifest_hash] 10285/12003 (85%)
+[sources.manifest_hash] 10406/12003 (86%)
+[sources.manifest_hash] 10527/12003 (87%)
+[sources.manifest_hash] 10648/12003 (88%)
+[sources.manifest_hash] 10769/12003 (89%)
+[sources.manifest_hash] 10890/12003 (90%)
+[sources.manifest_hash] 11011/12003 (91%)
+[sources.manifest_hash] 11132/12003 (92%)
+[sources.manifest_hash] 11253/12003 (93%)
+[sources.manifest_hash] 11374/12003 (94%)
+[sources.manifest_hash] 11495/12003 (95%)
+[sources.manifest_hash] 11616/12003 (96%)
+[sources.manifest_hash] 11737/12003 (97%)
+[sources.manifest_hash] 11858/12003 (98%)
+[sources.manifest_hash] 11979/12003 (99%)
+[sources.manifest_hash] 12003/12003 (100%)
+[sources.manifest_hash] 12003/12003 (100%) done
+(pass) #5790 with #5409: a 12k-file read-only mirror (pglite) > a 12,000-file source onboards as a read-only mirror; its syncs stay database-only [70041.27ms]
+
+test\purge-eval-fixes.test.ts:
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+(pass) purge eval fixes > 39-2: stored request outcomes carrying the claim are redacted and the receipt says so honestly [2550.86ms]
+(pass) purge eval fixes > W3: a page purge leaves no timeline text in its add_timeline_entry receipts, compacted ones included [7212.77ms]
+(pass) purge eval fixes > W3: timeline text is matched whole in its own receipts, so redacting 5,000 of them costs one set lookup per string [585.19ms]
+(pass) purge eval fixes > 39-3: remembering a purged claim refuses with purged_content (verb path, local and remote mapping) [1349.58ms]
+(pass) purge eval fixes > 39-4: refused and no-op writes of purged content keep no copy in their journal entry [2401.13ms]
+(pass) purge eval fixes > 39-5: the fact receipt lists every swept inventory store, files and persistence_effects included [1407.96ms]
+(pass) purge eval fixes > 39-6: the page receipt is store by store, verified, and names other pages that keep a claim in prose [475.56ms]
+(pass) purge eval fixes > 39-7: an older version of a purged page is refused as well as its last content [380.85ms]
+
+test\repair-atom-fence-rows.test.ts:
+(pass) atom_fence_rows is a host-only wave check that names the atom-fence-rows repair [0.82ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+(pass) gbrain repair atom-fence-rows (pglite) > doctor warns with the count and the preview command, the preview lists exactly the carrying atoms and changes nothing, the apply narrows them [1493.30ms]
+(pass) gbrain repair atom-fence-rows (pglite) > a fence quoted in a code block counts as hidden, as it does for a world reader [32.19ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+(pass) gbrain repair atom-fence-rows (pglite) > managed brain: the apply narrows the previewed atom through the coordinator [3830.72ms]
+
+test\repair-explicit-only.test.ts:
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+(pass) registry > google-file-modes, stale-atoms, extractor-facts and loop-facts are registered explicit-only and excluded from the --all set [1.09ms]
+(pass) execution-time enforcement > runRepair refuses an explicit-only handler that was not named, then previews it when named [8.93ms]
+(pass) execution-time enforcement > the shared runner refuses an unnamed explicit-only kind [1.48ms]
+(pass) execution-time enforcement > a supplied remediation step naming an explicit-only kind refuses the whole run before any step starts [3.05ms]
+[repair.visibility.plan] start
+[repair.visibility.plan] reading facts
+[repair.visibility.plan] facts: 0 to repair (0 remotely readable) in 3 ms
+[repair.visibility.plan] reading events
+[repair.visibility.plan] events: 0 to repair in 1 ms
+[repair.visibility.plan] reading aliases
+[repair.visibility.plan] aliases: 0 to repair in 1 ms
+[repair.visibility.plan] reading lineage
+[repair.visibility.plan] lineage: 0 to repair in 2 ms
+[repair.visibility.plan] 4/4 (100%)
+[repair.visibility.plan] 4/4 (100%) done
+[repair.visibility.plan] start
+[repair.visibility.plan] reading facts
+[repair.visibility.plan] facts: 0 to repair (0 remotely readable) in 3 ms
+[repair.visibility.plan] reading events
+[repair.visibility.plan] events: 0 to repair in 1 ms
+[repair.visibility.plan] reading aliases
+[repair.visibility.plan] aliases: 0 to repair in 1 ms
+[repair.visibility.plan] reading lineage
+[repair.visibility.plan] lineage: 0 to repair in 1 ms
+[repair.visibility.plan] 4/4 (100%)
+[repair.visibility.plan] 4/4 (100%) done
+[repair.visibility.plan] start
+[repair.visibility.plan] reading facts
+[repair.visibility.plan] facts: 0 to repair (0 remotely readable) in 2 ms
+[repair.visibility.plan] reading events
+[repair.visibility.plan] events: 0 to repair in 1 ms
+[repair.visibility.plan] reading aliases
+[repair.visibility.plan] aliases: 0 to repair in 0 ms
+[repair.visibility.plan] reading lineage
+[repair.visibility.plan] lineage: 0 to repair in 1 ms
+[repair.visibility.plan] 4/4 (100%)
+[repair.visibility.plan] 4/4 (100%) done
+(pass) surfaces that list instead of run > gbrain repair --all and the no-kind preview never run explicit kinds and list their preview commands [185.77ms]
+(pass) surfaces that list instead of run > gbrain repair --all --apply exits 0 when explicit kinds are the only ones left [147.25ms]
+(pass) surfaces that list instead of run > naming an explicit kind runs it (here: the extractor-facts preview) instead of explicit_kind_required [12.21ms]
+(pass) surfaces that list instead of run > help marks explicit kinds with their preview and keeps them out of the --all list; --expect is accepted only for them [10.02ms]
+[repair.visibility.plan] start
+[repair.visibility.plan] reading facts
+[repair.visibility.plan] facts: 0 to repair (0 remotely readable) in 2 ms
+[repair.visibility.plan] reading events
+[repair.visibility.plan] events: 0 to repair in 1 ms
+[repair.visibility.plan] reading aliases
+[repair.visibility.plan] aliases: 0 to repair in 0 ms
+[repair.visibility.plan] reading lineage
+[repair.visibility.plan] lineage: 0 to repair in 1 ms
+[repair.visibility.plan] 4/4 (100%)
+[repair.visibility.plan] 4/4 (100%) done
+[repair.visibility.plan] start
+[repair.visibility.plan] reading facts
+[repair.visibility.plan] facts: 0 to repair (0 remotely readable) in 3 ms
+[repair.visibility.plan] reading events
+[repair.visibility.plan] events: 0 to repair in 0 ms
+[repair.visibility.plan] reading aliases
+[repair.visibility.plan] aliases: 0 to repair in 1 ms
+[repair.visibility.plan] reading lineage
+[repair.visibility.plan] lineage: 0 to repair in 1 ms
+[repair.visibility.plan] 4/4 (100%)
+[repair.visibility.plan] 4/4 (100%) done
+(pass) surfaces that list instead of run > the remediation plan never plans explicit kinds and lists each with its preview command [125.51ms]
+(pass) surfaces that list instead of run > the banner and the remediation classification report explicit_kind_required with the preview, never an apply [1.10ms]
+
+test\sync-classify-6712.test.ts:
+(pass) rows (v3.2 §2.3) > 1 held at its level [0.80ms]
+(pass) rows (v3.2 §2.3) > 1 a re-screen-due hold does not settle: the pass re-runs it [0.68ms]
+(pass) rows (v3.2 §2.3) > 1 a re-screen-due hold on a page-less file is held, not imported or legacy (b2) [0.51ms]
+(pass) rows (v3.2 §2.3) > 1 a hold over a database-ahead level stands (never imported over) [0.45ms]
+(pass) rows (v3.2 §2.3) > 2 spelling [0.42ms]
+(pass) rows (v3.2 §2.3) > 3 untracked: committed, not in T, no live page [0.44ms]
+(pass) rows (v3.2 §2.3) > 4 kept: live, committed, absent from T, file present [0.40ms]
+(pass) rows (v3.2 §2.3) > 5 delete with proof [0.41ms]
+(pass) rows (v3.2 §2.3) > 6 delete_drift without proof [0.38ms]
+(pass) rows (v3.2 §2.3) > 7 gone [0.38ms]
+(pass) rows (v3.2 §2.3) > 8 deleted_same (tombstone) [0.37ms]
+(pass) rows (v3.2 §2.3) > 8 deleted_same (marker) [0.40ms]
+(pass) rows (v3.2 §2.3) > 9 deleted_edited (tombstone) [0.41ms]
+(pass) rows (v3.2 §2.3) > 8 a sync-made tombstone whose file is back unchanged imports (a revert, a branch switch) [0.75ms]
+(pass) rows (v3.2 §2.3) > 9 a sync-made tombstone whose file is back edited imports [0.43ms]
+(pass) rows (v3.2 §2.3) > 1 a sync-made tombstone whose file is back under an import hold at its level stays held (the import itself refused) [0.40ms]
+(pass) rows (v3.2 §2.3) > 1 a deletion-side hold an older version raised over a sync-made tombstone whose file is back is re-run [0.42ms]
+(pass) rows (v3.2 §2.3) > 7 a sync-made tombstone whose file is still gone stays gone [0.39ms]
+(pass) rows (v3.2 §2.3) > 9 deleted_edited (marker without OIDs, fail closed) [0.42ms]
+(pass) rows (v3.2 §2.3) > 10 legacy_same: a marker that records a deletion [0.37ms]
+(pass) rows (v3.2 §2.3) > 10 a baseline-equal legacy marker without a deletion settles nothing (b1) [0.40ms]
+(pass) rows (v3.2 §2.3) > 10 a legacy-marked path under a full obligation imports (b5) [0.47ms]
+(pass) rows (v3.2 §2.3) > 10 a legacy-marked file that changed imports [0.38ms]
+(pass) rows (v3.2 §2.3) > 11 dirty, absorbed [0.45ms]
+(pass) rows (v3.2 §2.3) > 11 dirty, not absorbed [0.46ms]
+(pass) rows (v3.2 §2.3) > 11 dirty unknown is never clean [0.41ms]
+(pass) rows (v3.2 §2.3) > 11 dirty, published [0.37ms]
+(pass) rows (v3.2 §2.3) > 12 matched [0.40ms]
+(pass) rows (v3.2 §2.3) > 13 adopt by hash [0.41ms]
+(pass) rows (v3.2 §2.3) > 13 adopt by revision (arm 1, pre-PR 0 record) [0.40ms]
+(pass) rows (v3.2 §2.3) > 14 reparse: parser changed on fileSame ∧ dbSame [0.38ms]
+(pass) rows (v3.2 §2.3) > 14 reparse: open full episode [0.34ms]
+(pass) rows (v3.2 §2.3) > 15 db_ahead db_only [0.34ms]
+(pass) rows (v3.2 §2.3) > 16 import with proof [0.39ms]
+(pass) rows (v3.2 §2.3) > 16 a new file [0.35ms]
+(pass) rows (v3.2 §2.3) > 17 legacy_unverified [0.39ms]
+(pass) rows (v3.2 §2.3) > 17 a hold someone asked to re-screen at a legacy_unverified level re-runs as drift (#7931) [0.38ms]
+(pass) rows (v3.2 §2.3) > 17 an older unscreened unknown-side hold at a legacy_unverified level re-runs as drift (#7199) [0.38ms]
+(pass) rows (v3.2 §2.3) > 17 any other hold at a legacy_unverified level stands [0.35ms]
+(pass) rows (v3.2 §2.3) > 18 keep_db [0.36ms]
+(pass) rows (v3.2 §2.3) > 19 drift (both) [0.34ms]
+(pass) rows (v3.2 §2.3) > drift side: unknown without a record revision; db_ahead sub-labels [0.51ms]
+(pass) rows (v3.2 §2.3) > row 15: keep_db writes only db_only on a clean committed path; an open full obligation skips db_only/unproven [0.49ms]
+(pass) rows (v3.2 §2.3) > overlay: an unsettled class with open work is in flight; a settled class stays settled [0.42ms]
+(pass) rows (v3.2 §2.3) > glossary: every class has an action tag [0.40ms]
+(pass) P0 properties > (f) total, deterministic, and equal to the state-space reference model [636.95ms]
+(pass) P0 properties > (f) exhaustive over the core alphabet [348.50ms]
+(pass) P0 properties > (j) no page-less import while a deleted marker or a person's tombstone matches the level [308.43ms]
+(pass) P0 properties > (j2) a tombstone sync made from a file's absence imports the file once it is back, a deletion-side hold over it included [303.73ms]
+(pass) P0 properties > (k) an edit to a swept legacy page imports with no Decision [0.68ms]
+(pass) P0 properties > fail closed: a committed path with uncommitted bytes never imports, adopts or writes DB-wins [308.72ms]
+(pass) P0 properties > GBRA-133 S-27/S-28: a committed path no file backs (deleted, skip-worktree, sparse) classifies at its committed level, as a clean one does, except for the DB-wins write [304.17ms]
+(pass) P0 properties > no DB-wins write without keep_db on a clean committed path, and never for unproven pages [253.04ms]
+(pass) pass kind (v3.2 §2.2) > idle when nothing disqualifies it [0.56ms]
+(pass) pass kind (v3.2 §2.2) > probe 49 (pure): a re-screen-due hold alone runs a hold-only round, not a full round [0.42ms]
+(pass) pass kind (v3.2 §2.2) > #7866: fullRound alone forces a full round for the converged head, with full_round_due and without open_episode [0.40ms]
+(pass) pass kind (v3.2 §2.2) > every obligation disqualifies idle (probe 30: --full or a retry at an unchanged HEAD runs a full round) [0.48ms]
+
+test\sync-restored-file-purge.test.ts:
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: a file Git restores after a sync deleted its page comes back > git revert of the deleting commit: the same page row is live again and status is synced [6725.06ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: a file Git restores after a sync deleted its page comes back > a sync on a branch without the files, then back on main: the pages are live again [6628.85ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: a file Git restores after a sync deleted its page comes back > deleted in one commit, re-added by a later one (same bytes and edited): both pages are live with the committed text [6692.07ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: a file Git restores after a sync deleted its page comes back > a sync on a detached older commit, then back on main: the page the newest commit added is live again [7184.20ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: a file Git restores after a sync deleted its page comes back > a file moved into a dot-folder and back: the page is live again [6448.06ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: a file Git restores after a sync deleted its page comes back > working-tree mode: a file missing from disk for one sync and then back is live again [6623.69ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: a file Git restores after a sync deleted its page comes back > a hold an older version raised over a sync-deleted page whose file came back edited is re-run: the page imports and the hold clears [6604.04ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: a file Git restores after a sync deleted its page comes back > a brain an older version left with the page deleted beside its restored file heals on the next plain sync [6526.54ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: a file Git restores after a sync deleted its page comes back > the upgrade's first sync brings back a sync-deleted page but leaves a page a person deleted deleted, though Git holds its file [6390.40ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: the retention purge never removes a file that is committed > working-tree mode: a sync-deleted page whose committed file stays off disk is purged database-only, not deferred forever [6177.15ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: the retention purge never removes a file that is committed > a sync-made tombstone whose returned file sync holds is refused with the hold, not deferred, and the file stays [5953.99ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: the retention purge never removes a file that is committed > an old shared-origin delete of the same slug does not exempt a later sync-made tombstone: the restored file stays [6510.34ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: the retention purge never removes a file that is committed > a file committed between the purge's preparation and its publication is not removed [5628.13ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: the retention purge never removes a file that is committed > an older version purged the page and committed the file's removal; a revert of that commit imports the file as a new page [7231.66ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+[cycle.purge] start
+[cycle.purge] done
+(pass) pglite: the retention purge never removes a file that is committed > cycle phase: a person's delete undone in Git is purged database-only and the file stays [5642.05ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+[cycle.purge] start
+[cycle.purge] done
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: the retention purge never removes a file that is committed > cycle phase: a sync-deleted page with a byte-identical live twin whose file is back waits for the sync that restores it [6511.47ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+[cycle.purge] start
+[cycle.purge] done
+(pass) pglite: the retention purge never removes a file that is committed > cycle phase: a tombstone with no sync-deletion record and a compacted receipt is purged database-only and its committed file stays [6118.48ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+[cycle.purge] start
+[cycle.purge] done
+(pass) pglite: the retention purge never removes a file that is committed > cycle phase: a person's delete whose file stays gone purges as before [5416.29ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: the retention purge never removes a file that is committed > purge job: a person's delete undone in Git is purged database-only and the file stays [5733.18ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: the retention purge never removes a file that is committed > purge job: a sync-deleted page with a byte-identical live twin whose file is back waits for the sync that restores it [6535.36ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: the retention purge never removes a file that is committed > purge job: a tombstone with no sync-deletion record and a compacted receipt is purged database-only and its committed file stays [6112.57ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: the retention purge never removes a file that is committed > purge job: a person's delete whose file stays gone purges as before [5310.50ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: the retention purge never removes a file that is committed > CLI purge-deleted: a person's delete undone in Git is purged database-only and the file stays [5570.37ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: the retention purge never removes a file that is committed > CLI purge-deleted: a sync-deleted page with a byte-identical live twin whose file is back waits for the sync that restores it [6518.27ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: the retention purge never removes a file that is committed > CLI purge-deleted: a tombstone with no sync-deletion record and a compacted receipt is purged database-only and its committed file stays [6204.19ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: the retention purge never removes a file that is committed > CLI purge-deleted: a person's delete whose file stays gone purges as before [5305.85ms]
+
+ 114 pass
+ 0 fail
+ 288704 expect() calls
+Ran 114 tests across 8 files. [286.81s]

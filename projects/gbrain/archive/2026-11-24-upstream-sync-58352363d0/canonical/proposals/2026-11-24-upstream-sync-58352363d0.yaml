@@ -1,0 +1,103 @@
+meta:
+  change_id: "2026-11-24-upstream-sync-58352363d0"
+  title: "按二开合并规则同步上游 v0.60.638.0"
+  created: "2026-11-24T16:11:59.758740"
+  status: draft
+  version: "2.9"
+
+why:
+  problem: |
+    fork 最近登记的上游基底是 v0.60.636.0（553b547334）。截至 2026-11-24，
+    上游 master 已到 v0.60.768.0，落后 132 个 patch release；直接追平会形成
+    2388 提交、34 个新增迁移和广泛跨模块验证面。按 CUSTOM.md 的小增量
+    原则，本轮先同步 v0.60.638.0，恢复短周期同步，并把后续版本作为独立变更。
+    目标取 upstream/master 的同版本 merge 17b68cef，而非不含后续 master 合并的
+    release commit 58352363d0。既有规则与台账拆分已完成路径级核账：相对
+    553b547334 的 516 个 fork 改动均可归入台账 #1–#32、生成物登记或本地文档；
+    未发现未登记路径。
+  motivation: |
+    以可审计的小窗口吸收上游访问控制、world-row 读取、恢复/清除与 atom 提取
+    修复，同时保持二开 Inbox、真理沉淀、Graph、Admin 与诊断行为不丢失、不双实现。
+
+what_changes:
+  - id: C1
+    type: modified
+    description: "将 fork 的代码基底从上游 v0.60.636.0 更新到 v0.60.638.0，并按行为保留仍有效的二开增量。"
+  - id: C2
+    type: modified
+    description: "按冲突决策表处理共享文件与无文本冲突的行为交叉，移除已被上游吸收的重复实现；对阻断本轮已承诺合同的 Inbox managed 内容、Graph 可见性和 query.trace 诊断三项既有基线缺口仅做最小修复，并更新台账状态。"
+  - id: C3
+    type: modified
+    description: "从各自真源重建受影响的生成物，验证候选树可重复生成且不产生漂移。"
+  - id: C4
+    type: modified
+    description: "补齐受影响的高风险链路回归与迁移顺序证据，记录固定 fork 基线和候选树的 A/B 结果；三项基线缺口修复须与合并引入变化分别归因。"
+  - id: C5
+    type: modified
+    description: "更新二开台账与本轮 STDD 证据，提供仅通过验证的同步分支候选，交付动作另行授权。"
+
+capabilities:
+  new: []
+  modified:
+    - name: "upstream-sync-merge"
+      description: "在明确的上游窗口和回滚锚点下合并更新，保持 fork 定制的行为、权限、顺序和生成物一致性。"
+    - name: "fork-custom-behavior"
+      description: "继续提供 Inbox 工作流、真理沉淀、Graph 扩展、Admin Brain 层和查询诊断等已登记能力。"
+
+constraints:
+  - "冻结 FORK=8f0e2d99983885d980fef98d6d5088c2649b38e5、UPSTREAM=17b68cef4f4267ca0e5710b42f6ddc95acf9fe51、BASE=553b5473344af4b8d9e09ebb8078e4e51a6d15eb；目标变化须重审对应 Gate。"
+  - "所有仍保留的 fork 改动须能对应台账编号或生成物真源；无法归因的改动不得带入候选。"
+  - "候选必须保持来源隔离、远端权限收紧、Admin 鉴权顺序和既有安全不变量；不得为通过验证放宽门槛。"
+  - "实际受影响的高风险链路须有能区分正确与错误行为的定向证据；未运行、失败、跳过或未归因均不得记为通过。"
+  - "Inbox managed 内容、Graph 可见性和 query.trace 诊断三项修复仅限实现本轮已承诺的合同，不得顺带重构或新增能力；固定 FORK 已存在的缺口与合并引入回归分别归因。"
+  - "生成物须由真源重建；不得手工拼合迁移 registry、Admin 嵌入清单或锁文件。"
+  - "根工作区的现有未跟踪本地状态不得纳入版本库；不得覆盖或清理用户的在途文件。"
+  - "验证使用隔离环境，根 bun install 的 postinstall 不得在本机 brain 上无保护执行。"
+  - "提交同步候选、合入 master、推送、部署和生产迁移均须分别取得授权；Gate 批准不自动授予这些动作。"
+
+stakeholders:
+  - "fork 维护者：需要可审计、可回滚的同步候选。"
+  - "GBrain 本地使用者：依赖现有 Brain/Admin/Inbox/Graph 行为和既有数据库升级路径。"
+  - "后续同步执行者：需要准确台账、冲突裁决和验证基线。"
+
+risk_areas:
+  - capability: "fork-custom-behavior"
+    risk: "Git 无文本冲突但上游调用顺序、权限或结果信封变化，导致二开行为静默丢失。"
+    mitigation: "对 Inbox、Admin、Query trace、Graph 与迁移执行链做双向行为核对和定向回归。"
+  - capability: "upstream-sync-merge"
+    risk: "生成物被手工 resolve，或依赖安装触发当前 brain 的迁移。"
+    mitigation: "真源重生成并做二次 freshness 检查；依赖安装使用隔离环境和 ignore-scripts。"
+  - capability: "fork-custom-behavior"
+    risk: "Windows 既有失败、超时或 base-ref 假阳性被误判为本轮通过或回归。"
+    mitigation: "固定 FORK 做同工具链 A/B；必需但未完成的检查保留未通过并补足信号。"
+
+non_goals:
+  - "不同步 v0.60.638.0 之后的版本，不把 132 个 patch release 的欠债并入本轮。"
+  - "不重构无关上游代码，不顺手清理上游告警或既有本地文档欠债。"
+  - "不安装或升级全局运行时，不修改 CI、共享基础设施或支付/额度。"
+  - "不提交或推送候选到远端，不切换 master，不部署服务。"
+  - "不对运行中的 brain 执行生产迁移、备份恢复或 writer/source 变更。"
+
+critical:
+  is_critical: true
+  risk_assessment:
+    safety_critical: false
+    financial: false
+    cross_system: true
+
+anchoring:
+  level: L2
+  reference_changes: []
+  anchor_implementations: []
+
+success_criteria:
+  - "冻结输入可复核：FORK=8f0e2d99983885d980fef98d6d5088c2649b38e5、UPSTREAM=17b68cef4f4267ca0e5710b42f6ddc95acf9fe51、BASE=553b5473344af4b8d9e09ebb8078e4e51a6d15eb、59 个 fork 侧提交、13 个上游侧提交和回滚锚点均有 Git 证据，且 master 工作区未被合并改变。"
+  - "相对 BASE 的 516 个 fork 改动继续全部归因；候选中仍保留的 #1–#32 能力无丢失，已上游化项无重复实现。"
+  - "Inbox unmanaged 与 managed 捕获都实际消费处理后的 frontmatter/content 和 provenance；Admin op 代理先鉴权后分派且审计不重复；两条路径均有定向行为证据。"
+  - "query.trace 开启时在 trace.retrieval 保留完整上游诊断且 Admin 不丢弃 MCP _meta，关闭时保持上游结果形状；Graph 遍历与无根总览在双引擎和 source/private/软删除约束下不漏列、不越权，不可见边不污染 degree。"
+  - "本轮上游末位仍为 v297，fork Inbox 迁移保持 v298；迁移顺序与 registry 检查通过，且不把版本号相等当作旧库结构完整的证据。"
+  - "生成物从真源重建后 check:regen-all 与 check:admin-embedded 通过，同输入二次运行相对候选暂存区无漂移。"
+  - "typecheck、根单测、Admin 测试及受影响链路定向回归取得候选树信号；必需 E2E/引擎检查按影响面执行，未跑项明确列出且不放行。"
+  - "所有失败均与固定 FORK 的同项同因结果对照并定性；Inbox/Graph/trace 三项既有基线缺口与合并引入回归分别归因，新增回归已修复并复跑，环境超时未被伪装为通过。"
+  - "最终不存在未解决索引冲突；cached diff 的 whitespace 告警逐条对照冻结 FORK/UPSTREAM 基线，本轮新增告警为零，并分别对 FORK 与 UPSTREAM 完成分父审计。"
+  - "台账记录本轮 SHA、裁决、挂钩归因、迁移结论、验证结果和未跑项；Gate 3 前候选仍位于独立同步分支，未经授权不落地。"

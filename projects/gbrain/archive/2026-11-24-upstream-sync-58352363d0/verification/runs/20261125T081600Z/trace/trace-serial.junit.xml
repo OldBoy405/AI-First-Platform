@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="bun test" tests="8" assertions="39" failures="0" skipped="0" time="0.4812751">
+  <testsuite name="test\dispatch-response-meta.serial.test.ts" file="test\dispatch-response-meta.serial.test.ts" tests="8" assertions="39" failures="0" skipped="0" time="0.4269459" hostname="">
+    <testsuite name="dispatch response meta (WP2/D3/D8)" file="test\dispatch-response-meta.serial.test.ts" line="62" tests="6" assertions="30" failures="0" skipped="0" time="0.057" hostname="">
+      <testcase name="empty results → second content block + _meta.retrieval" classname="dispatch response meta (WP2/D3/D8)" time="0.035546" file="test\dispatch-response-meta.serial.test.ts" line="63" assertions="13" />
+      <testcase name="clean miss → second block says retrieval healthy, degraded absent" classname="dispatch response meta (WP2/D3/D8)" time="0.003112" file="test\dispatch-response-meta.serial.test.ts" line="88" assertions="6" />
+      <testcase name="non-empty results → body + degraded_recall notice only, _meta.retrieval still present (D3: on ALL responses)" classname="dispatch response meta (WP2/D3/D8)" time="0.005745" file="test\dispatch-response-meta.serial.test.ts" line="101" assertions="5" />
+      <testcase name="query trace keeps degraded retrieval diagnostics independent of _meta" classname="dispatch response meta (WP2/D3/D8)" time="0.006775" file="test\dispatch-response-meta.serial.test.ts" line="114" assertions="3" />
+      <testcase name="metaHook failure never drops the retrieval key (per-key isolation)" classname="dispatch response meta (WP2/D3/D8)" time="0.004372" file="test\dispatch-response-meta.serial.test.ts" line="126" assertions="1" />
+      <testcase name="metaHook keys merge alongside retrieval, not over it" classname="dispatch response meta (WP2/D3/D8)" time="0.004016" file="test\dispatch-response-meta.serial.test.ts" line="133" assertions="2" />
+    </testsuite>
+    <testsuite name="buildEmptyRetrievalBlock (unit)" file="test\dispatch-response-meta.serial.test.ts" line="143" tests="2" assertions="9" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="a ranking-only stage (reranker_skipped) never impairs recall → still a clean miss" classname="buildEmptyRetrievalBlock (unit)" time="0.00059" file="test\dispatch-response-meta.serial.test.ts" line="144" assertions="3" />
+      <testcase name="hint passthrough + stage dedupe + garbage tolerance" classname="buildEmptyRetrievalBlock (unit)" time="0.000379" file="test\dispatch-response-meta.serial.test.ts" line="153" assertions="6" />
+    </testsuite>
+  </testsuite>
+</testsuites>

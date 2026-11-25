@@ -1,0 +1,528 @@
+
+test\query-trace.test.ts:
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[gbrain] vector search unavailable (missing_env) — results are keyword-only. Run `gbrain doctor` to diagnose.
+55 |       token_budget: 600,
+56 |       explain_target: 'notes/quillmarsh-ledger',
+57 |     }) as { results: Array<{ slug: string }>; trace: { retrieval?: Record<string, unknown> } };
+58 | 
+59 |     expect(out.results.map(row => row.slug)).toContain('notes/quillmarsh-ledger');
+60 |     expect(out.trace.retrieval).toEqual(meta.retrieval);
+                                     ^
+error: expect(received).toEqual(expected)
+
+- {
+-   "cache": "disabled",
+-   "crag": {
+-     "confidence": "strong",
+-     "query_shape": "factual",
+-     "reason": "exact_lookup",
+-   },
+-   "degraded": [
+-     {
+-       "reason": "no_provider",
+-       "stage": "embed_unavailable",
+-     },
+-   ],
+-   "delivery": {
+-     "applied_unit": "page",
+-     "blocks": 1,
+-     "budget_tokens": 600,
+-     "budget_used": 15,
+-     "coordinates": "utf16",
+-     "dropped": 0,
+-     "dropped_reasons": {},
+-     "fallbacks": [],
+-     "page_rank_cut": {
+-       "applied_cost": 15,
+-       "caller_budget": 600,
+-       "candidates": 1,
+-       "factor": 1.5,
+-       "kept": 1,
+-       "mode": "whole_pages",
+-       "target": 900,
+-     },
+-     "requested_unit": "page",
+-     "return_window": 1,
+-     "tokenizer": "cl100k",
+-     "tokens_delivered": 11,
+-   },
+-   "expansion_applied": false,
+-   "explain_target": {
+-     "arms": [
+-       {
+-         "arm": "keyword",
+-         "rank": 1,
+-       },
+-       {
+-         "arm": "title",
+-         "rank": 1,
+-       },
+-     ],
+-     "code": "target_returned",
+-     "rank": 1,
+-     "stages": [
+-       {
+-         "present": true,
+-         "rank": 1,
+-         "stage": "arm:keyword",
+-       },
+-       {
+-         "present": true,
+-         "rank": 1,
+-         "stage": "arm:title",
+-       },
+-       {
+-         "present": false,
+-         "stage": "arm:relational",
+-       },
+-       {
+-         "present": true,
+-         "rank": 1,
+-         "stage": "fused",
+-       },
+-       {
+-         "present": true,
+-         "rank": 1,
+-         "stage": "deduped",
+-       },
+-       {
+-         "present": true,
+-         "rank": 1,
+-         "stage": "return_pool",
+-       },
+-       {
+-         "present": true,
+-         "rank": 1,
+-         "stage": "limit_slice",
+-       },
+-       {
+-         "present": true,
+-         "rank": 1,
+-         "stage": "token_budget",
+-       },
+-     ],
+-     "state": "retrieved",
+-     "target": {
+-       "slug": "notes/quillmarsh-ledger",
+-       "source_id": "default",
+-     },
+-     "why": "The page is result #1; score_details on that row shows how its score was formed.",
+-   },
+-   "projection_readiness": {
+-     "ready": true,
+-     "status": "ready",
+-   },
+-   "retrieved_count": 1,
+-   "returned_count": 1,
+-   "timings": {
+-     "other_ms": 13,
+-     "overlapped_ms": {
+-       "keyword_arm": 5,
+-       "meta_embedding_held": 3,
+-       "meta_entity_facts": 1,
+-       "meta_filter_hint": 6,
+-       "meta_freshness": 3,
+-       "meta_held": 2,
+-       "meta_readiness": 9,
+-       "meta_safe_index": 1,
+-       "meta_saved_facts": 9,
+-       "title_arm": 6,
+-     },
+-     "parts_ms": {
+-       "response": {
+-         "evidence": 75,
+-         "feedback": 0,
+-         "meta": 11,
+-         "trust": 1,
+-       },
+-     },
+-     "stages_ms": {
+-       "alias_fanout": 1,
+-       "anchoring": 0,
+-       "facts_arm": 4,
+-       "lexical": 7,
+-       "post_fusion": 13,
+-       "relational": 3,
+-       "response": 88,
+-       "setup": 20,
+-     },
+-     "total_ms": 149,
+-   },
+-   "vector_enabled": false,
+- }
++ undefined
+
+- Expected  - 140
++ Received  + 1
+
+      at <anonymous> (C:\Users\GOBAO\Downloads\AI\gbrain-sync-2026-11-24-17b68cef\test\query-trace.test.ts:60:33)
+(fail) query.trace retrieval diagnostics > trace on preserves the complete emitted retrieval metadata [239.72ms]
+(pass) query.trace retrieval diagnostics > trace off preserves the upstream result array [82.78ms]
+85 |     const out = await operationsByName.query.handler(ctx, {
+86 |       query: 'zxqv-no-such-page', expand: false, trace: true,
+87 |     }) as { results: unknown[]; trace: { retrieval?: Record<string, unknown> } };
+88 | 
+89 |     expect(out.results).toEqual([]);
+90 |     expect(out.trace.retrieval).toEqual(meta.retrieval);
+                                     ^
+error: expect(received).toEqual(expected)
+
+- {
+-   "cache": "disabled",
+-   "crag": {
+-     "confidence": "weak",
+-     "escalate_to_think": true,
+-     "query_shape": "factual",
+-     "reason": "zero_results",
+-   },
+-   "degraded": [
+-     {
+-       "reason": "no_provider",
+-       "stage": "embed_unavailable",
+-     },
+-     {
+-       "stage": "keyword_zero",
+-     },
+-   ],
+-   "expansion_applied": false,
+-   "projection_readiness": {
+-     "ready": true,
+-     "status": "ready",
+-   },
+-   "retrieved_count": 0,
+-   "returned_count": 0,
+-   "timings": {
+-     "other_ms": 0,
+-     "overlapped_ms": {
+-       "keyword_arm": 13,
+-       "meta_embedding_held": 2,
+-       "meta_entity_facts": 0,
+-       "meta_filter_hint": 4,
+-       "meta_freshness": 2,
+-       "meta_held": 1,
+-       "meta_readiness": 1,
+-       "meta_safe_index": 0,
+-       "meta_saved_facts": 4,
+-       "title_arm": 15,
+-     },
+-     "parts_ms": {
+-       "response": {
+-         "evidence": 0,
+-         "feedback": 0,
+-         "meta": 4,
+-         "trust": 0,
+-       },
+-     },
+-     "stages_ms": {
+-       "alias_fanout": 0,
+-       "anchoring": 0,
+-       "facts_arm": 3,
+-       "lexical": 15,
+-       "post_fusion": 1,
+-       "relational": 0,
+-       "response": 4,
+-       "setup": 4,
+-     },
+-     "total_ms": 27,
+-   },
+-   "token_budget": {
+-     "budget": 12000,
+-     "dropped": 0,
+-     "kept": 0,
+-     "used": 0,
+-   },
+-   "vector_enabled": false,
+- }
++ undefined
+
+- Expected  - 66
++ Received  + 1
+
+      at <anonymous> (C:\Users\GOBAO\Downloads\AI\gbrain-sync-2026-11-24-17b68cef\test\query-trace.test.ts:90:33)
+(fail) query.trace retrieval diagnostics > empty trace result preserves envelope and diagnostics [62.57ms]
+[gbrain search] 2 more pages matched only by meaning and were left out (default remote cap 3). Pass --limit to read them.
+(pass) query.trace retrieval diagnostics > CLI JSON preserves trace retrieval metadata [32.31ms]
+
+test\search-remote-page-cap.test.ts:
+(pass) capVectorOnlyPages > keeps every lexical page and fills with vector-only pages up to the cap, in rank order [0.50ms]
+(pass) capVectorOnlyPages > more lexical pages than the cap are all kept and no vector-only page is added [0.29ms]
+(pass) capVectorOnlyPages > pages are distinct per source, and a null cap or a set under the cap is returned untouched [0.23ms]
+(pass) remotePageCap callers and the cap line > a delegated host subagent call is not capped; a remote call is [0.27ms]
+(pass) remotePageCap callers and the cap line > a subagent job delegated by a remote OAuth client stays capped [0.25ms]
+(pass) remotePageCap callers and the cap line > the line names only the pages the cap left out, and the flag the reader passes [0.20ms]
+(pass) remotePageCap callers and the cap line > a thin-client CLI search prints the cap line on stderr with --limit [0.88ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[serve-http] WARNING: --public-url is set but --bind is not. Default bind changed to 127.0.0.1 in v0.34.1; remote clients reaching the public URL will be refused. Pass --bind 0.0.0.0 to accept all interfaces.
+[serve-http] NOTE: skill publishing is OFF — connected agents can't call list_skills / get_skill, so this brain’s skill catalog is invisible to them (core tools like search / query / think still work). Enable it with: gbrain config set mcp.publish_skills true
+[gbrain-serve] dispatch op=search args_sha256=1ba769c563066ef1
+(pass) remote page cap (pglite) > search: a query no page matches lexically returns the top vector pages up to the default cap, and says so in _meta and to the model [150.20ms]
+[gbrain-serve] dispatch op=search args_sha256=a0a82902b503ba25
+(pass) remote page cap (pglite) > search: a call the cap leaves alone carries no cap line [97.66ms]
+[gbrain-serve] dispatch op=search args_sha256=8d5a25dc3bd6a9ba
+(pass) remote page cap (pglite) > search: every lexically matched page survives the cap, and vector-only pages are left out [74.52ms]
+[gbrain-serve] dispatch op=search args_sha256=8d5a25dc3bd6a9ba
+(pass) remote page cap (pglite) > search: with no embedding model every keyword match comes back, past the cap [53.73ms]
+[gbrain-serve] dispatch op=search args_sha256=a0a82902b503ba25
+(pass) remote page cap (pglite) > search: an explicit limit keeps today's rows [51.83ms]
+[gbrain-serve] dispatch op=search args_sha256=1ba769c563066ef1
+[gbrain-serve] dispatch op=search args_sha256=1ba769c563066ef1
+(pass) remote page cap (pglite) > search: search.remote_page_cap sets the cap and 0 turns it off [97.54ms]
+[gbrain-serve] dispatch op=search args_sha256=1ba769c563066ef1
+[gbrain-serve] dispatch op=search args_sha256=1ba769c563066ef1
+[gbrain-serve] dispatch op=search args_sha256=1ba769c563066ef1
+[gbrain-serve] dispatch op=search args_sha256=1ba769c563066ef1
+(pass) remote page cap (pglite) > search: a malformed search.remote_page_cap falls back to the default cap [229.14ms]
+[gbrain-serve] dispatch op=search args_sha256=99d0d008d1dfe1cb
+(pass) remote page cap (pglite) > search: a paged call (offset > 0) is not capped [55.65ms]
+(pass) remote page cap (pglite) > search: a trusted local call is not capped [62.67ms]
+[gbrain-serve] dispatch op=query args_sha256=ddc138bae5a2e023
+136 |         test('remote page cap remains available in trace retrieval metadata', async () => {
+137 |           const out = await callTool(serve.base, token, 'query', { query: 'saltpan orbit', expand: false, trace: true });
+138 |           const body = JSON.parse(out.content[0]!.text) as { results: Array<{ slug: string }>; trace?: { retrieval?: Record<string, unknown> } };
+139 |           const cap = { cap: DEFAULT_REMOTE_PAGE_CAP, kept_pages: DEFAULT_REMOTE_PAGE_CAP, dropped_pages: LEXICAL.length + VECTOR_ONLY.length - DEFAULT_REMOTE_PAGE_CAP };
+140 |           expect(new Set(body.results.map(row => row.slug)).size).toBe(DEFAULT_REMOTE_PAGE_CAP);
+141 |           expect(body.trace?.retrieval?.page_cap).toEqual(cap);
+                                                        ^
+error: expect(received).toEqual(expected)
+
+- {
+-   "cap": 3,
+-   "dropped_pages": 9,
+-   "kept_pages": 3,
+- }
++ undefined
+
+- Expected  - 5
++ Received  + 1
+
+      at <anonymous> (C:\Users\GOBAO\Downloads\AI\gbrain-sync-2026-11-24-17b68cef\test\search-remote-page-cap.test.ts:141:51)
+(fail) remote page cap (pglite) > remote page cap remains available in trace retrieval metadata [70.89ms]
+[gbrain-serve] dispatch op=query args_sha256=6744dbe045f77e8e
+148 |             query: 'quillmarsh ledger', expand: false, trace: true,
+149 |             return_unit: 'page', token_budget: 600, explain_target: 'notes/alpha',
+150 |           });
+151 |           const body = JSON.parse(out.content[0]!.text) as { results: Array<{ slug: string }>; trace?: { retrieval?: Record<string, unknown> } };
+152 |           expect(body.results.length).toBeGreaterThan(0);
+153 |           expect(body.trace?.retrieval).toEqual((out._meta as any)?.retrieval);
+                                              ^
+error: expect(received).toEqual(expected)
+
+- {
+-   "cache": "disabled",
+-   "cost": {
+-     "calls": 1,
+-     "embedding": {
+-       "calls": 1,
+-       "estimated_token_calls": 1,
+-       "input_tokens": 5,
+-       "output_tokens": 0,
+-       "usd": 0.000001,
+-     },
+-     "estimated_usd": 0.000001,
+-   },
+-   "crag": {
+-     "confidence": "strong",
+-     "query_shape": "factual",
+-     "reason": "high_vector_match",
+-   },
+-   "degraded": [
+-     {
+-       "reason": "no_key",
+-       "stage": "reranker_skipped",
+-     },
+-   ],
+-   "delivery": {
+-     "applied_unit": "page",
+-     "blocks": 5,
+-     "budget_tokens": 600,
+-     "budget_used": 258,
+-     "coordinates": "utf16",
+-     "dropped": 0,
+-     "dropped_reasons": {},
+-     "fallbacks": [],
+-     "page_rank_cut": {
+-       "applied_cost": 59,
+-       "caller_budget": 600,
+-       "candidates": 5,
+-       "factor": 1.5,
+-       "kept": 5,
+-       "mode": "whole_pages",
+-       "target": 900,
+-     },
+-     "requested_unit": "page",
+-     "return_window": 1,
+-     "tokenizer": "cl100k",
+-     "tokens_delivered": 144,
+-   },
+-   "expansion_applied": false,
+-   "explain_target": {
+-     "arms": [
+-       {
+-         "arm": "keyword_raw",
+-         "rank": 1,
+-       },
+-       {
+-         "arm": "vector",
+-         "rank": 1,
+-       },
+-       {
+-         "arm": "keyword",
+-         "rank": 1,
+-       },
+-     ],
+-     "code": "target_returned",
+-     "rank": 1,
+-     "stages": [
+-       {
+-         "present": true,
+-         "rank": 1,
+-         "stage": "arm:keyword_raw",
+-       },
+-       {
+-         "present": false,
+-         "stage": "arm:title_raw",
+-       },
+-       {
+-         "present": true,
+-         "rank": 1,
+-         "stage": "arm:vector",
+-       },
+-       {
+-         "present": true,
+-         "rank": 1,
+-         "stage": "arm:keyword",
+-       },
+-       {
+-         "present": true,
+-         "rank": 1,
+-         "stage": "fused",
+-       },
+-       {
+-         "present": true,
+-         "rank": 1,
+-         "stage": "deduped",
+-       },
+-       {
+-         "present": true,
+-         "rank": 1,
+-         "stage": "reranked",
+-       },
+-       {
+-         "present": true,
+-         "rank": 1,
+-         "stage": "return_pool",
+-       },
+-       {
+-         "present": true,
+-         "rank": 1,
+-         "stage": "limit_slice",
+-       },
+-       {
+-         "present": true,
+-         "rank": 1,
+-         "stage": "token_budget",
+-       },
+-     ],
+-     "state": "retrieved",
+-     "target": {
+-       "slug": "notes/alpha",
+-       "source_id": "default",
+-     },
+-     "why": "The page is result #1; score_details on that row shows how its score was formed.",
+-   },
+-   "page_cap": {
+-     "cap": 3,
+-     "dropped_pages": 7,
+-     "kept_pages": 5,
+-   },
+-   "projection_readiness": {
+-     "ready": true,
+-     "status": "ready",
+-   },
+-   "retrieved_count": 12,
+-   "returned_count": 5,
+-   "rows": "lean",
+-   "timings": {
+-     "other_ms": 0,
+-     "overlapped_ms": {
+-       "embed": 1,
+-       "keyword_arm": 1,
+-       "meta_embedding_held": 1,
+-       "meta_entity_facts": 0,
+-       "meta_filter_hint": 1,
+-       "meta_freshness": 1,
+-       "meta_held": 1,
+-       "meta_readiness": 1,
+-       "meta_safe_index": 1,
+-       "meta_saved_facts": 1,
+-       "title_arm": 17,
+-       "vector": 15,
+-     },
+-     "parts_ms": {
+-       "response": {
+-         "evidence": 5,
+-         "feedback": 0,
+-         "meta": 2,
+-         "trust": 0,
+-       },
+-     },
+-     "stages_ms": {
+-       "alias_fanout": 0,
+-       "anchoring": 0,
+-       "embed": 0,
+-       "facts_arm": 12,
+-       "fuse": 30,
+-       "lexical": 17,
+-       "post_fusion": 18,
+-       "relational": 0,
+-       "rerank": 0,
+-       "response": 8,
+-       "setup": 6,
+-       "vector": 0,
+-     },
+-     "total_ms": 91,
+-   },
+-   "vector_enabled": true,
+- }
++ undefined
+
+- Expected  - 177
++ Received  + 1
+
+      at <anonymous> (C:\Users\GOBAO\Downloads\AI\gbrain-sync-2026-11-24-17b68cef\test\search-remote-page-cap.test.ts:153:41)
+(fail) remote page cap (pglite) > MCP query trace preserves response metadata [102.32ms]
+[gbrain-serve] dispatch op=query args_sha256=c823f976872e70c2
+(pass) remote page cap (pglite) > query: a query no page matches lexically returns the top vector pages up to the default cap, and says so in _meta and to the model [77.65ms]
+[gbrain-serve] dispatch op=query args_sha256=81bf58e6b24ecf13
+(pass) remote page cap (pglite) > query: a call the cap leaves alone carries no cap line [65.28ms]
+[gbrain-serve] dispatch op=query args_sha256=45771deb6b27ca85
+(pass) remote page cap (pglite) > query: every lexically matched page survives the cap, and vector-only pages are left out [90.36ms]
+[gbrain-serve] dispatch op=query args_sha256=45771deb6b27ca85
+(pass) remote page cap (pglite) > query: with no embedding model every keyword match comes back, past the cap [30.35ms]
+[gbrain-serve] dispatch op=query args_sha256=81bf58e6b24ecf13
+(pass) remote page cap (pglite) > query: an explicit limit keeps today's rows [65.10ms]
+[gbrain-serve] dispatch op=query args_sha256=c823f976872e70c2
+[gbrain-serve] dispatch op=query args_sha256=c823f976872e70c2
+(pass) remote page cap (pglite) > query: search.remote_page_cap sets the cap and 0 turns it off [128.42ms]
+[gbrain-serve] dispatch op=query args_sha256=c823f976872e70c2
+[gbrain-serve] dispatch op=query args_sha256=c823f976872e70c2
+[gbrain-serve] dispatch op=query args_sha256=c823f976872e70c2
+[gbrain-serve] dispatch op=query args_sha256=c823f976872e70c2
+(pass) remote page cap (pglite) > query: a malformed search.remote_page_cap falls back to the default cap [240.01ms]
+[gbrain-serve] dispatch op=query args_sha256=35cf5d9cd2de7d46
+(pass) remote page cap (pglite) > query: a paged call (offset > 0) is not capped [54.90ms]
+(pass) remote page cap (pglite) > query: a trusted local call is not capped [60.48ms]
+
+4 tests failed:
+(fail) query.trace retrieval diagnostics > trace on preserves the complete emitted retrieval metadata [239.72ms]
+(fail) query.trace retrieval diagnostics > empty trace result preserves envelope and diagnostics [62.57ms]
+(fail) remote page cap (pglite) > remote page cap remains available in trace retrieval metadata [70.89ms]
+(fail) remote page cap (pglite) > MCP query trace preserves response metadata [102.32ms]
+
+ 27 pass
+ 4 fail
+ 64 expect() calls
+Ran 31 tests across 2 files. [6.44s]

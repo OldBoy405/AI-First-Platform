@@ -1,0 +1,89 @@
+{
+  "action": "remaining",
+  "run_id": "20261125T080827Z",
+  "root": "C:\\Users\\GOBAO\\Downloads\\AI\\gbrain-sync-2026-11-24-17b68cef",
+  "ok": true,
+  "timeout": false,
+  "summary": {
+    "remaining_root_rc": 0,
+    "remaining_admin_rc": 0,
+    "remaining_timeout": false,
+    "remaining_required_cases_missing": 0,
+    "jobs_suite_passed": true,
+    "duplicate_operation_registrations": 0,
+    "remaining_root_fail": 0,
+    "remaining_admin_fail": 0,
+    "remaining_root_skips_classified": 0,
+    "remaining_admin_skips_classified": 0
+  },
+  "commands": [
+    {
+      "argv": [
+        "bun",
+        "test",
+        "--timeout=60000",
+        "test/ai/build-gateway-config.test.ts",
+        "test/ai/gateway-chat.test.ts",
+        "test/ai/gateway.test.ts",
+        "test/compile-truth.test.ts",
+        "test/minions.test.ts",
+        "test/operation-manifest.test.ts",
+        "test/parity.test.ts",
+        "test/mcp-tool-defs.test.ts",
+        "test/skill-brain-first.test.ts",
+        "test/doctor-categories.test.ts",
+        "test/build-llms.test.ts",
+        "test/init-env-detection.test.ts",
+        "test/embedding-dim-check.test.ts",
+        "test/model-pricing.test.ts",
+        "test/takes-reservation-callers.test.ts",
+        "--reporter=junit",
+        "--reporter-outfile=C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform\\projects\\gbrain\\changes\\2026-11-24-upstream-sync-58352363d0\\verification\\runs\\20261125T080827Z\\remaining\\remaining.junit.xml"
+      ],
+      "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\gbrain-sync-2026-11-24-17b68cef",
+      "started_at": "2026-11-25T08:08:27.272798+00:00",
+      "ended_at": "2026-11-25T08:08:44.080052+00:00",
+      "duration_ms": 16808,
+      "rc": 0,
+      "timeout": false,
+      "status": "pass",
+      "stdout_file": "001-bun.stdout.txt",
+      "stderr_file": "001-bun.stderr.txt"
+    },
+    {
+      "argv": [
+        "bun",
+        "-e",
+        "import { operations } from './src/core/operations.ts'; const names=operations.map(o=>o.name); const duplicates=names.filter((n,i)=>names.indexOf(n)!==i); console.log(`duplicate_operation_registrations=${new Set(duplicates).size}`); process.exit(duplicates.length?1:0);"
+      ],
+      "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\gbrain-sync-2026-11-24-17b68cef",
+      "started_at": "2026-11-25T08:08:44.083449+00:00",
+      "ended_at": "2026-11-25T08:08:44.447287+00:00",
+      "duration_ms": 364,
+      "rc": 0,
+      "timeout": false,
+      "status": "pass",
+      "stdout_file": "002-bun.stdout.txt",
+      "stderr_file": "002-bun.stderr.txt"
+    },
+    {
+      "argv": [
+        "bun",
+        "x",
+        "vitest",
+        "run",
+        "--reporter=json",
+        "--outputFile=C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform\\projects\\gbrain\\changes\\2026-11-24-upstream-sync-58352363d0\\verification\\runs\\20261125T080827Z\\remaining\\remaining-admin.json"
+      ],
+      "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\gbrain-sync-2026-11-24-17b68cef\\admin",
+      "started_at": "2026-11-25T08:08:44.448104+00:00",
+      "ended_at": "2026-11-25T08:08:50.294106+00:00",
+      "duration_ms": 5846,
+      "rc": 0,
+      "timeout": false,
+      "status": "pass",
+      "stdout_file": "003-bun.stdout.txt",
+      "stderr_file": "003-bun.stderr.txt"
+    }
+  ]
+}

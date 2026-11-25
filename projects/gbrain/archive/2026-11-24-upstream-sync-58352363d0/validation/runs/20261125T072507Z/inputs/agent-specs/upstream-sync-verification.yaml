@@ -1,0 +1,141 @@
+meta:
+  task_id: "upstream-sync-verification"
+  change_id: "2026-11-24-upstream-sync-58352363d0"
+  task_type: code
+  system: "GBrain fork 上游 v0.60.638.0 合并候选及二开行为回归"
+  preconditions:
+    - "Gate 1 与 Gate 2 已确认，冻结 SHA 和回滚锚点未变化。"
+    - "命令在独立同步 worktree 执行，Bun 为 1.4.4，根依赖以 frozen lockfile 和 ignore-scripts 安装。"
+    - "验证 helper 对每条命令记录 run、rc、耗时、完整输出、pass/fail/skip/timeout；任一超时、必需用例缺失或必需 skip 都返回非零。"
+    - "Bun 定向测试使用 JUnit 输出核对必需用例名和断言通过数，不以 0 fail 代替实际覆盖；Admin 测试使用其机器可读结果核对必需用例。"
+    - "人工检查由审阅者依据候选树、Git 对象和实际运行输出确认，不以口头描述代替证据。"
+steps:
+  - id: "CP-USM-001"
+    description: "核对冻结输入、祖先关系、提交计数、VERSION 和回滚锚点。"
+    action: "python \"C:/Users/GOBAO/Downloads/AI/AI First Platform/projects/gbrain/changes/2026-11-24-upstream-sync-58352363d0/verification/verify_upstream_sync.py\" freeze"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "freeze_ok=True"
+      - type: stdout_contains
+        expected: "fork_commits=59 upstream_commits=13"
+      - type: stdout_contains
+        expected: "upstream_version=0.60.638.0 rollback_anchor_ok=True main_worktree_unchanged=True"
+  - id: "CP-USM-002"
+    description: "核对六个双边改动文件、fork 基线行数和上游新增门禁行的候选裁决。"
+    action: "python \"C:/Users/GOBAO/Downloads/AI/AI First Platform/projects/gbrain/changes/2026-11-24-upstream-sync-58352363d0/verification/verify_upstream_sync.py\" bilateral"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "both_changed_paths=6"
+      - type: stdout_contains
+        expected: "module_size_fork_rows=11 page_body_fork_rows=11 atom_fence_rows=2"
+      - type: stdout_contains
+        expected: "duplicate_skill_routes=0 atom_fence_trailing_whitespace=0 generated_from_sources=True"
+  - id: "CP-USM-003"
+    description: "验证上游恢复文件、保留已提交文件、purge 和 world-row/repair 行为。"
+    action: "python \"C:/Users/GOBAO/Downloads/AI/AI First Platform/projects/gbrain/changes/2026-11-24-upstream-sync-58352363d0/verification/verify_upstream_sync.py\" upstream"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "upstream_rc=0 upstream_fail=0 upstream_skips=0 upstream_timeout=False"
+      - type: stdout_contains
+        expected: "upstream_required_cases_missing=0"
+  - id: "CP-USM-004"
+    description: "验证迁移顺序和 registry，并确认 latest 为 297、fork 迁移为 298。"
+    action: "python \"C:/Users/GOBAO/Downloads/AI/AI First Platform/projects/gbrain/changes/2026-11-24-upstream-sync-58352363d0/verification/verify_upstream_sync.py\" migrations"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "migration_order_rc=0 migration_order_skipped=False base_max=297 fork_versions=298 new_migrations=0"
+      - type: stdout_contains
+        expected: "registry_rc=0 database_upgrade_verified=False"
+  - id: "CP-USM-005"
+    description: "重建生成物并验证 freshness 和二次生成无漂移。"
+    action: "python \"C:/Users/GOBAO/Downloads/AI/AI First Platform/projects/gbrain/changes/2026-11-24-upstream-sync-58352363d0/verification/verify_upstream_sync.py\" generated"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "admin_dist_present=True admin_embedded_skipped=False regen_rc=0"
+      - type: stdout_contains
+        expected: "second_regen_drift=False generated_stable=True"
+  - id: "CP-FCB-001"
+    description: "验证 Inbox unmanaged/managed 实际写入顺序、frontmatter/content/provenance 与 auto-link 守卫。"
+    action: "python \"C:/Users/GOBAO/Downloads/AI/AI First Platform/projects/gbrain/changes/2026-11-24-upstream-sync-58352363d0/verification/verify_upstream_sync.py\" inbox"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "inbox_rc=0 inbox_fail=0 inbox_skips=0 inbox_timeout=False"
+      - type: stdout_contains
+        expected: "managed_case_passed=True unmanaged_case_passed=True inbox_required_cases_missing=0"
+  - id: "CP-FCB-002"
+    description: "验证 Admin op 代理鉴权顺序、合法分派和审计不重复。"
+    action: "python \"C:/Users/GOBAO/Downloads/AI/AI First Platform/projects/gbrain/changes/2026-11-24-upstream-sync-58352363d0/verification/verify_upstream_sync.py\" admin"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "admin_rc=0 admin_fail=0 admin_skips=0 admin_timeout=False"
+      - type: stdout_contains
+        expected: "denied_before_dispatch_case_passed=True audit_once_case_passed=True admin_required_cases_missing=0"
+  - id: "CP-FCB-003"
+    description: "验证 query.trace 开启、关闭、空结果、page cap 与 MCP/Admin 诊断保留。"
+    action: "python \"C:/Users/GOBAO/Downloads/AI/AI First Platform/projects/gbrain/changes/2026-11-24-upstream-sync-58352363d0/verification/verify_upstream_sync.py\" trace"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "trace_root_rc=0 trace_admin_rc=0 trace_skips=0 trace_timeout=False"
+      - type: stdout_contains
+        expected: "trace_on_case_passed=True trace_off_case_passed=True empty_trace_case_passed=True page_cap_case_passed=True mcp_meta_case_passed=True cli_trace_case_passed=True admin_meta_case_passed=True trace_required_cases_missing=0"
+  - id: "CP-FCB-004"
+    description: "验证 Graph 元数据、行上限、无根概览和可见性约束，并取得 PGLite 与 Postgres 双引擎信号。"
+    action: "python \"C:/Users/GOBAO/Downloads/AI/AI First Platform/projects/gbrain/changes/2026-11-24-upstream-sync-58352363d0/verification/verify_upstream_sync.py\" graph"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "pglite_rc=0 postgres_rc=0 pglite_skips=0 postgres_skips=0 postgres_executed=True graph_timeout=False"
+      - type: stdout_contains
+        expected: "overview_privacy_case_passed=True both_metadata_case_passed=True graph_required_cases_missing=0"
+  - id: "CP-FCB-005"
+    description: "验证 AI、Truth、Jobs、op 合同、Admin 与技能路由的保留能力。"
+    action: "python \"C:/Users/GOBAO/Downloads/AI/AI First Platform/projects/gbrain/changes/2026-11-24-upstream-sync-58352363d0/verification/verify_upstream_sync.py\" remaining"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "remaining_root_rc=0 remaining_admin_rc=0 remaining_timeout=False remaining_required_cases_missing=0"
+      - type: stdout_contains
+        expected: "jobs_suite_passed=True duplicate_operation_registrations=0"
+  - id: "CP-USM-006"
+    description: "在候选树运行类型检查和主仓单测并保存完整输出、skip 与退出码。"
+    action: "python \"C:/Users/GOBAO/Downloads/AI/AI First Platform/projects/gbrain/changes/2026-11-24-upstream-sync-58352363d0/verification/verify_upstream_sync.py\" core"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "typecheck_rc=0 unit_rc=0 unit_timeout=False"
+      - type: stdout_contains
+        expected: "unit_fail=0 unit_skips_classified=True"
+  - id: "CP-USM-007"
+    description: "执行最终索引、空白、双亲和交付边界审计并生成机器可读结果。"
+    action: "python \"C:/Users/GOBAO/Downloads/AI/AI First Platform/projects/gbrain/changes/2026-11-24-upstream-sync-58352363d0/verification/verify_upstream_sync.py\" final"
+    assertions:
+      - type: exit_code
+        expected: 0
+      - type: stdout_contains
+        expected: "final_audit_ok=True unmerged_paths=0 new_whitespace_warnings=0"
+      - type: stdout_contains
+        expected: "fork_parent_diff_ok=True upstream_parent_diff_ok=True delivery_boundary_ok=True"
+rollback:
+  steps:
+    - "停止候选验证，保留独立 worktree 和日志，不触碰 master 或运行中的 brain。"
+    - "若候选需放弃，由用户确认后删除本轮创建的 worktree/分支；FORK 和 pre-sync/2026-11-24-58352363d0 不变。"
+    - "若已验证候选需回滚，使用 pre-sync/2026-11-24-58352363d0 作为锚点，不重置用户其他工作。"

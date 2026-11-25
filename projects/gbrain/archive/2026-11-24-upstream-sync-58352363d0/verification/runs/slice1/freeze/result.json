@@ -1,0 +1,204 @@
+{
+  "action": "freeze",
+  "run_id": "slice1",
+  "root": "C:\\Users\\GOBAO\\Downloads\\AI\\gbrain-sync-2026-11-24-17b68cef",
+  "ok": true,
+  "timeout": false,
+  "summary": {
+    "freeze_ok": true,
+    "fork_commits": 59,
+    "upstream_commits": 13,
+    "upstream_version": "0.60.638.0",
+    "rollback_anchor_ok": true,
+    "main_worktree_unchanged": true,
+    "candidate_commit_created": false,
+    "fork_paths": 516,
+    "upstream_paths": 72
+  },
+  "commands": [
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\gbrain-sync-2026-11-24-17b68cef",
+      "started_at": "2026-11-24T12:51:12.141834+00:00",
+      "ended_at": "2026-11-24T12:51:12.155040+00:00",
+      "duration_ms": 14,
+      "rc": 0,
+      "timeout": false,
+      "status": "pass",
+      "stdout_file": "001-git.stdout.txt",
+      "stderr_file": "001-git.stderr.txt"
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "MERGE_HEAD"
+      ],
+      "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\gbrain-sync-2026-11-24-17b68cef",
+      "started_at": "2026-11-24T12:51:12.155787+00:00",
+      "ended_at": "2026-11-24T12:51:12.168744+00:00",
+      "duration_ms": 14,
+      "rc": 0,
+      "timeout": false,
+      "status": "pass",
+      "stdout_file": "002-git.stdout.txt",
+      "stderr_file": "002-git.stderr.txt"
+    },
+    {
+      "argv": [
+        "git",
+        "merge-base",
+        "8f0e2d99983885d980fef98d6d5088c2649b38e5",
+        "17b68cef4f4267ca0e5710b42f6ddc95acf9fe51"
+      ],
+      "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\gbrain-sync-2026-11-24-17b68cef",
+      "started_at": "2026-11-24T12:51:12.169415+00:00",
+      "ended_at": "2026-11-24T12:51:12.309919+00:00",
+      "duration_ms": 141,
+      "rc": 0,
+      "timeout": false,
+      "status": "pass",
+      "stdout_file": "003-git.stdout.txt",
+      "stderr_file": "003-git.stderr.txt"
+    },
+    {
+      "argv": [
+        "git",
+        "rev-list",
+        "--left-right",
+        "--count",
+        "8f0e2d99983885d980fef98d6d5088c2649b38e5...17b68cef4f4267ca0e5710b42f6ddc95acf9fe51"
+      ],
+      "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\gbrain-sync-2026-11-24-17b68cef",
+      "started_at": "2026-11-24T12:51:12.310792+00:00",
+      "ended_at": "2026-11-24T12:51:12.433743+00:00",
+      "duration_ms": 124,
+      "rc": 0,
+      "timeout": false,
+      "status": "pass",
+      "stdout_file": "004-git.stdout.txt",
+      "stderr_file": "004-git.stderr.txt"
+    },
+    {
+      "argv": [
+        "git",
+        "show",
+        "17b68cef4f4267ca0e5710b42f6ddc95acf9fe51:VERSION"
+      ],
+      "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\gbrain-sync-2026-11-24-17b68cef",
+      "started_at": "2026-11-24T12:51:12.434393+00:00",
+      "ended_at": "2026-11-24T12:51:12.460015+00:00",
+      "duration_ms": 26,
+      "rc": 0,
+      "timeout": false,
+      "status": "pass",
+      "stdout_file": "005-git.stdout.txt",
+      "stderr_file": "005-git.stderr.txt"
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "pre-sync/2026-11-24-58352363d0^{commit}"
+      ],
+      "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\gbrain-sync-2026-11-24-17b68cef",
+      "started_at": "2026-11-24T12:51:12.460611+00:00",
+      "ended_at": "2026-11-24T12:51:12.485838+00:00",
+      "duration_ms": 26,
+      "rc": 0,
+      "timeout": false,
+      "status": "pass",
+      "stdout_file": "006-git.stdout.txt",
+      "stderr_file": "006-git.stderr.txt"
+    },
+    {
+      "argv": [
+        "git",
+        "branch",
+        "--show-current"
+      ],
+      "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\gbrain-sync-2026-11-24-17b68cef",
+      "started_at": "2026-11-24T12:51:12.486444+00:00",
+      "ended_at": "2026-11-24T12:51:12.497860+00:00",
+      "duration_ms": 12,
+      "rc": 0,
+      "timeout": false,
+      "status": "pass",
+      "stdout_file": "007-git.stdout.txt",
+      "stderr_file": "007-git.stderr.txt"
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\gbrain",
+      "started_at": "2026-11-24T12:51:12.498449+00:00",
+      "ended_at": "2026-11-24T12:51:12.508481+00:00",
+      "duration_ms": 11,
+      "rc": 0,
+      "timeout": false,
+      "status": "pass",
+      "stdout_file": "008-git.stdout.txt",
+      "stderr_file": "008-git.stderr.txt"
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain",
+        "--untracked-files=no"
+      ],
+      "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\gbrain",
+      "started_at": "2026-11-24T12:51:12.509156+00:00",
+      "ended_at": "2026-11-24T12:51:12.572049+00:00",
+      "duration_ms": 63,
+      "rc": 0,
+      "timeout": false,
+      "status": "pass",
+      "stdout_file": "009-git.stdout.txt",
+      "stderr_file": "009-git.stderr.txt"
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--name-only",
+        "553b5473344af4b8d9e09ebb8078e4e51a6d15eb",
+        "8f0e2d99983885d980fef98d6d5088c2649b38e5"
+      ],
+      "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\gbrain-sync-2026-11-24-17b68cef",
+      "started_at": "2026-11-24T12:51:12.572657+00:00",
+      "ended_at": "2026-11-24T12:51:12.643548+00:00",
+      "duration_ms": 72,
+      "rc": 0,
+      "timeout": false,
+      "status": "pass",
+      "stdout_file": "010-git.stdout.txt",
+      "stderr_file": "010-git.stderr.txt"
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--name-only",
+        "553b5473344af4b8d9e09ebb8078e4e51a6d15eb",
+        "17b68cef4f4267ca0e5710b42f6ddc95acf9fe51"
+      ],
+      "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\gbrain-sync-2026-11-24-17b68cef",
+      "started_at": "2026-11-24T12:51:12.644591+00:00",
+      "ended_at": "2026-11-24T12:51:12.680702+00:00",
+      "duration_ms": 37,
+      "rc": 0,
+      "timeout": false,
+      "status": "pass",
+      "stdout_file": "011-git.stdout.txt",
+      "stderr_file": "011-git.stderr.txt"
+    }
+  ]
+}

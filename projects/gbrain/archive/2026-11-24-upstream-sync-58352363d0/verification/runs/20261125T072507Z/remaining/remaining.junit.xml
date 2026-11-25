@@ -1,0 +1,847 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="bun test" tests="578" assertions="8483" failures="0" skipped="0" time="24.6854204">
+  <testsuite name="test\build-llms.test.ts" file="test\build-llms.test.ts" tests="12" assertions="190" failures="0" skipped="0" time="0.2480886" hostname="">
+    <testsuite name="build-llms generator" file="test\build-llms.test.ts" line="10" tests="7" assertions="176" failures="0" skipped="0" time="0.061" hostname="">
+      <testcase name="every configured path exists on disk" classname="build-llms generator" time="0.010157" file="test\build-llms.test.ts" line="12" assertions="156" />
+      <testcase name="generator output is deterministic across runs" classname="build-llms generator" time="0.019681" file="test\build-llms.test.ts" line="29" assertions="2" />
+      <testcase name="llms.txt follows llmstxt.org spec shape" classname="build-llms generator" time="0.007319" file="test\build-llms.test.ts" line="37" assertions="6" />
+      <testcase name="committed llms.txt + llms-full.txt match current generator output" classname="build-llms generator" time="0.011443" file="test\build-llms.test.ts" line="58" assertions="2" />
+      <testcase name="content contract: llms.txt references required entry points" classname="build-llms generator" time="0.007621" file="test\build-llms.test.ts" line="72" assertions="4" />
+      <testcase name="content contract: AGENTS.md mirrors README + INSTALL_FOR_AGENTS install path" classname="build-llms generator" time="0.00067" file="test\build-llms.test.ts" line="80" assertions="5" />
+      <testcase name="llms-full.txt stays within size budget" classname="build-llms generator" time="0.00784" file="test\build-llms.test.ts" line="90" assertions="1" />
+    </testsuite>
+    <testsuite name="CLAUDE.md restructure content contracts" file="test\build-llms.test.ts" line="106" tests="5" assertions="14" failures="0" skipped="0" time="0.016" hostname="">
+      <testcase name="CLAUDE.md keeps the inline ship IRON RULES (must NOT move to a doc)" classname="CLAUDE.md restructure content contracts" time="0.001008" file="test\build-llms.test.ts" line="109" assertions="3" />
+      <testcase name="CLAUDE.md carries the resolver + cross-cutting invariants (orientation survived)" classname="CLAUDE.md restructure content contracts" time="0.000586" file="test\build-llms.test.ts" line="119" assertions="4" />
+      <testcase name="AGENTS.md keeps its boot order + points at the new docs (not reduced to a pointer)" classname="CLAUDE.md restructure content contracts" time="0.000618" file="test\build-llms.test.ts" line="128" assertions="3" />
+      <testcase name="llms.txt indexes the relocated docs" classname="CLAUDE.md restructure content contracts" time="0.00823" file="test\build-llms.test.ts" line="135" assertions="3" />
+      <testcase name="llms-full.txt does NOT inline KEY_FILES.md (link-only; keeps the bundle lean)" classname="CLAUDE.md restructure content contracts" time="0.007975" file="test\build-llms.test.ts" line="142" assertions="1" />
+    </testsuite>
+  </testsuite>
+  <testsuite name="test\compile-truth.test.ts" file="test\compile-truth.test.ts" tests="10" assertions="25" failures="0" skipped="0" time="4.9932846" hostname="">
+    <testsuite name="compiled-truth op registration" file="test\compile-truth.test.ts" line="45" tests="1" assertions="4" failures="0" skipped="0" time="0.106" hostname="">
+      <testcase name="three ops registered with correct scope" classname="compiled-truth op registration" time="0.106903" file="test\compile-truth.test.ts" line="46" assertions="4" />
+    </testsuite>
+    <testsuite name="compileTruth core (stubbed LLM)" file="test\compile-truth.test.ts" line="54" tests="4" assertions="10" failures="0" skipped="0" time="0.385" hostname="">
+      <testcase name="merges candidates and parses diff from stub JSON" classname="compileTruth core (stubbed LLM)" time="0.11085" file="test\compile-truth.test.ts" line="55" assertions="4" />
+      <testcase name="warns on missing candidate but still compiles the rest" classname="compileTruth core (stubbed LLM)" time="0.09397" file="test\compile-truth.test.ts" line="72" assertions="2" />
+      <testcase name="returns empty result when no candidates exist" classname="compileTruth core (stubbed LLM)" time="0.086814" file="test\compile-truth.test.ts" line="80" assertions="2" />
+      <testcase name="malformed LLM output falls back to raw body + warning" classname="compileTruth core (stubbed LLM)" time="0.096778" file="test\compile-truth.test.ts" line="86" assertions="2" />
+    </testsuite>
+    <testsuite name="adopt_compiled_truth op" file="test\compile-truth.test.ts" line="94" tests="3" assertions="9" failures="0" skipped="0" time="0.348" hostname="">
+      <testcase name="persists body + compiled_from provenance, readable back" classname="adopt_compiled_truth op" time="0.189133" file="test\compile-truth.test.ts" line="95" assertions="6" />
+      <testcase name="rejects empty compiled_markdown" classname="adopt_compiled_truth op" time="0.078443" file="test\compile-truth.test.ts" line="114" assertions="1" />
+      <testcase name="dry run does not write" classname="adopt_compiled_truth op" time="0.081347" file="test\compile-truth.test.ts" line="123" assertions="2" />
+    </testsuite>
+    <testsuite name="find_conflicts op" file="test\compile-truth.test.ts" line="134" tests="2" assertions="2" failures="0" skipped="0" time="0.305" hostname="">
+      <testcase name="returns empty groups + note when no probe data and no topic" classname="find_conflicts op" time="0.105338" file="test\compile-truth.test.ts" line="135" assertions="2" />
+      <testcase name="cluster fallback groups topic-overlapping pages (≥2 members)" classname="find_conflicts op" time="0.200768" file="test\compile-truth.test.ts" line="144" assertions="0" />
+    </testsuite>
+  </testsuite>
+  <testsuite name="test\doctor-categories.test.ts" file="test\doctor-categories.test.ts" tests="10" assertions="22" failures="0" skipped="0" time="0.106185" hostname="">
+    <testsuite name="doctor-categories drift guard" file="test\doctor-categories.test.ts" line="55" tests="3" assertions="1" failures="0" skipped="0" time="0.054" hostname="">
+      <testcase name="every doctor-emitted check name belongs to exactly one category set" classname="doctor-categories drift guard" time="0.026256" file="test\doctor-categories.test.ts" line="56" assertions="0" />
+      <testcase name="no check name appears in more than one category set" classname="doctor-categories drift guard" time="0.000922" file="test\doctor-categories.test.ts" line="78" assertions="1" />
+      <testcase name="every categorized name is currently used in doctor check emitters (no stale entries)" classname="doctor-categories drift guard" time="0.028351" file="test\doctor-categories.test.ts" line="98" assertions="0" />
+    </testsuite>
+    <testsuite name="categorizeCheck" file="test\doctor-categories.test.ts" line="125" tests="7" assertions="21" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="returns the right category for a known brain name" classname="categorizeCheck" time="0.000801" file="test\doctor-categories.test.ts" line="130" assertions="3" />
+      <testcase name="returns the right category for onboard data-quality check names" classname="categorizeCheck" time="0.000922" file="test\doctor-categories.test.ts" line="136" assertions="5" />
+      <testcase name="returns the right category for a known skill name" classname="categorizeCheck" time="0.000793" file="test\doctor-categories.test.ts" line="144" assertions="2" />
+      <testcase name="returns the right category for a known ops name" classname="categorizeCheck" time="0.000474" file="test\doctor-categories.test.ts" line="149" assertions="3" />
+      <testcase name="returns the right category for a known meta name" classname="categorizeCheck" time="0.000271" file="test\doctor-categories.test.ts" line="155" assertions="2" />
+      <testcase name="returns the right category for onboard schema-pack check names without warning" classname="categorizeCheck" time="0.000307" file="test\doctor-categories.test.ts" line="160" assertions="3" />
+      <testcase name="unknown check name falls through to meta with a stderr warn (once per process)" classname="categorizeCheck" time="0.000358" file="test\doctor-categories.test.ts" line="178" assertions="3" />
+    </testsuite>
+  </testsuite>
+  <testsuite name="test\embedding-dim-check.test.ts" file="test\embedding-dim-check.test.ts" tests="43" assertions="97" failures="0" skipped="0" time="4.4535193" hostname="">
+    <testsuite name="readContentChunksEmbeddingDim" file="test\embedding-dim-check.test.ts" line="57" tests="2" assertions="4" failures="0" skipped="0" time="1.41" hostname="">
+      <testcase name="returns dims from a migrated brain (1536d via legacy-embedding preload)" classname="readContentChunksEmbeddingDim" time="0.004403" file="test\embedding-dim-check.test.ts" line="58" assertions="2" />
+      <testcase name="returns { exists: false, dims: null } on a fresh brain (no initSchema)" classname="readContentChunksEmbeddingDim" time="1.406252" file="test\embedding-dim-check.test.ts" line="74" assertions="2" />
+    </testsuite>
+    <testsuite name="embeddingMismatchMessage" file="test\embedding-dim-check.test.ts" line="93" tests="9" assertions="30" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="Postgres branch inlines all four recipe steps for HNSW-eligible dims" classname="embeddingMismatchMessage" time="0.000419" file="test\embedding-dim-check.test.ts" line="94" assertions="7" />
+      <testcase name="Postgres recipe NULLs embeddings BEFORE the column alter (pgvector refuses cross-dim casts)" classname="embeddingMismatchMessage" time="0.000224" file="test\embedding-dim-check.test.ts" line="111" assertions="3" />
+      <testcase name="Postgres recipe stamps embedding_pending_since where it NULLs the vectors" classname="embeddingMismatchMessage" time="0.000161" file="test\embedding-dim-check.test.ts" line="131" assertions="1" />
+      <testcase name="Postgres branch skips HNSW recreate when requested dims exceed pgvector cap" classname="embeddingMismatchMessage" time="0.000197" file="test\embedding-dim-check.test.ts" line="138" assertions="4" />
+      <testcase name="source: doctor uses a different header than source: init" classname="embeddingMismatchMessage" time="0.000186" file="test\embedding-dim-check.test.ts" line="155" assertions="2" />
+      <testcase name="PGLite branch keeps data: keep-width init and migration, no hand-run wipe, not ALTER COLUMN" classname="embeddingMismatchMessage" time="0.000481" file="test\embedding-dim-check.test.ts" line="165" assertions="8" />
+      <testcase name="PGLite branch omits the keep-width line when the model cannot produce the existing width" classname="embeddingMismatchMessage" time="0.000348" file="test\embedding-dim-check.test.ts" line="185" assertions="2" />
+      <testcase name="PGLite branch falls back to default database path when omitted" classname="embeddingMismatchMessage" time="0.000286" file="test\embedding-dim-check.test.ts" line="198" assertions="1" />
+      <testcase name="PGLite branch must NOT recommend `gbrain config set embedding_model` (no-op after Lane C.2)" classname="embeddingMismatchMessage" time="0.000228" file="test\embedding-dim-check.test.ts" line="210" assertions="2" />
+    </testsuite>
+    <testsuite name="resolveSchemaEmbeddingDim" file="test\embedding-dim-check.test.ts" line="229" tests="24" assertions="47" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="OpenAI text-embedding-3-large resolves at default 1536" classname="resolveSchemaEmbeddingDim" time="0.000199" file="test\embedding-dim-check.test.ts" line="230" assertions="1" />
+      <testcase name="Voyage voyage-4 resolves at recipe default" classname="resolveSchemaEmbeddingDim" time="0.000179" file="test\embedding-dim-check.test.ts" line="241" assertions="4" />
+      <testcase name="Voyage Matryoshka explicit dim (512) accepted" classname="resolveSchemaEmbeddingDim" time="0.000177" file="test\embedding-dim-check.test.ts" line="251" assertions="2" />
+      <testcase name="Voyage Matryoshka invalid dim (1280) rejected — 1280 is not a Voyage step" classname="resolveSchemaEmbeddingDim" time="0.000192" file="test\embedding-dim-check.test.ts" line="260" assertions="2" />
+      <testcase name="OpenAI text-3-large rejects 2048 (not in declared dims_options)" classname="resolveSchemaEmbeddingDim" time="0.000208" file="test\embedding-dim-check.test.ts" line="269" assertions="2" />
+      <testcase name="OpenAI text-3-large accepts 768 (declared in recipe dims_options)" classname="resolveSchemaEmbeddingDim" time="0.000162" file="test\embedding-dim-check.test.ts" line="278" assertions="2" />
+      <testcase name="Ollama accepts an arbitrary model at its recipe-default dim" classname="resolveSchemaEmbeddingDim" time="0.000164" file="test\embedding-dim-check.test.ts" line="288" assertions="2" />
+      <testcase name="Ollama accepts a custom Matryoshka dim for any model (768)" classname="resolveSchemaEmbeddingDim" time="0.000147" file="test\embedding-dim-check.test.ts" line="294" assertions="2" />
+      <testcase name="ollama accepts a custom dim for a modern model via trust_custom_dims" classname="resolveSchemaEmbeddingDim" time="0.000161" file="test\embedding-dim-check.test.ts" line="304" assertions="2" />
+      <testcase name="Ollama accepts a custom dim not in any fixed allow-list (1024)" classname="resolveSchemaEmbeddingDim" time="0.000251" file="test\embedding-dim-check.test.ts" line="313" assertions="2" />
+      <testcase name="litellm accepts a user-declared custom dim via trust_custom_dims" classname="resolveSchemaEmbeddingDim" time="0.000233" file="test\embedding-dim-check.test.ts" line="322" assertions="2" />
+      <testcase name="Ollama accepts the model native width above the HNSW cap (2560)" classname="resolveSchemaEmbeddingDim" time="0.000331" file="test\embedding-dim-check.test.ts" line="331" assertions="2" />
+      <testcase name="llama-server accepts a user-declared custom dim via trust_custom_dims" classname="resolveSchemaEmbeddingDim" time="0.000305" file="test\embedding-dim-check.test.ts" line="340" assertions="2" />
+      <testcase name="llama-server accepts an explicit user-declared dim (bring-your-own-backend)" classname="resolveSchemaEmbeddingDim" time="0.000252" file="test\embedding-dim-check.test.ts" line="349" assertions="2" />
+      <testcase name="litellm accepts an explicit user-declared dim (proxied backend)" classname="resolveSchemaEmbeddingDim" time="0.000216" file="test\embedding-dim-check.test.ts" line="358" assertions="2" />
+      <testcase name="[REGRESSION] openrouter (declares dims_options, NOT flagged) still fail-closed on an unlisted dim" classname="resolveSchemaEmbeddingDim" time="0.000268" file="test\embedding-dim-check.test.ts" line="367" assertions="2" />
+      <testcase name="[REGRESSION] trust_custom_dims does NOT bypass the pgvector column cap" classname="resolveSchemaEmbeddingDim" time="0.000197" file="test\embedding-dim-check.test.ts" line="376" assertions="2" />
+      <testcase name="unknown provider rejected with provider list hint" classname="resolveSchemaEmbeddingDim" time="0.000354" file="test\embedding-dim-check.test.ts" line="388" assertions="2" />
+      <testcase name="missing colon rejected" classname="resolveSchemaEmbeddingDim" time="0.000191" file="test\embedding-dim-check.test.ts" line="394" assertions="1" />
+      <testcase name="negative dim rejected" classname="resolveSchemaEmbeddingDim" time="0.000182" file="test\embedding-dim-check.test.ts" line="399" assertions="2" />
+      <testcase name="zero dim rejected" classname="resolveSchemaEmbeddingDim" time="0.000142" file="test\embedding-dim-check.test.ts" line="408" assertions="1" />
+      <testcase name="non-integer dim rejected" classname="resolveSchemaEmbeddingDim" time="0.00014" file="test\embedding-dim-check.test.ts" line="416" assertions="1" />
+      <testcase name="dim exceeding pgvector column cap rejected" classname="resolveSchemaEmbeddingDim" time="0.000175" file="test\embedding-dim-check.test.ts" line="424" assertions="2" />
+      <testcase name="regression: bug-reporter scenario — OpenAI auto-pick resolves at 1536" classname="resolveSchemaEmbeddingDim" time="0.000277" file="test\embedding-dim-check.test.ts" line="433" assertions="3" />
+    </testsuite>
+    <testsuite name="resolveSchemaMultimodalDim" file="test\embedding-dim-check.test.ts" line="443" tests="5" assertions="9" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="voyage voyage-multimodal-3 accepted" classname="resolveSchemaMultimodalDim" time="0.000392" file="test\embedding-dim-check.test.ts" line="444" assertions="3" />
+      <testcase name="OpenAI text-embedding-3-large rejected — not multimodal" classname="resolveSchemaMultimodalDim" time="0.000315" file="test\embedding-dim-check.test.ts" line="453" assertions="2" />
+      <testcase name="voyage text-only model (voyage-3-large) rejected via allow-list" classname="resolveSchemaMultimodalDim" time="0.000444" file="test\embedding-dim-check.test.ts" line="461" assertions="2" />
+      <testcase name="unknown provider rejected" classname="resolveSchemaMultimodalDim" time="0.000513" file="test\embedding-dim-check.test.ts" line="469" assertions="1" />
+      <testcase name="dim above pgvector cap rejected" classname="resolveSchemaMultimodalDim" time="0.000299" file="test\embedding-dim-check.test.ts" line="476" assertions="1" />
+    </testsuite>
+    <testsuite name="cased embedding configs fail loud at init (#4123 WIDE — behavior change, pinned deliberately)" file="test\embedding-dim-check.test.ts" line="485" tests="3" assertions="7" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="cased Voyage id at an unsupported width is REJECTED with the valid-sizes hint (was: silently wrong-width vectors)" classname="cased embedding configs fail loud at init (#4123 WIDE — behavior change, pinned deliberately)" time="0.000307" file="test\embedding-dim-check.test.ts" line="486" assertions="2" />
+      <testcase name="cased Voyage id at a SUPPORTED width passes" classname="cased embedding configs fail loud at init (#4123 WIDE — behavior change, pinned deliberately)" time="0.000265" file="test\embedding-dim-check.test.ts" line="497" assertions="1" />
+      <testcase name="cased OpenAI id out of range is rejected with the allowed-sizes hint (Tier-1 recipe options)" classname="cased embedding configs fail loud at init (#4123 WIDE — behavior change, pinned deliberately)" time="0.000343" file="test\embedding-dim-check.test.ts" line="505" assertions="4" />
+    </testsuite>
+  </testsuite>
+  <testsuite name="test\init-env-detection.test.ts" file="test\init-env-detection.test.ts" tests="27" assertions="39" failures="0" skipped="0" time="0.0763554" hostname="">
+    <testsuite name="groupReadyByProvider — embedding touchpoint" file="test\init-env-detection.test.ts" line="20" tests="8" assertions="11" failures="0" skipped="0" time="0.002" hostname="">
+      <testcase name="OPENAI_API_KEY alone → openai is ready" classname="groupReadyByProvider — embedding touchpoint" time="0.001921" file="test\init-env-detection.test.ts" line="21" assertions="1" />
+      <testcase name="VOYAGE_API_KEY alone → voyage is ready" classname="groupReadyByProvider — embedding touchpoint" time="0.000493" file="test\init-env-detection.test.ts" line="26" assertions="1" />
+      <testcase name="v0.46.3: file-plane voyage_api_key folds into readiness (buildGatewayConfig env)" classname="groupReadyByProvider — embedding touchpoint" time="0.001077" file="test\init-env-detection.test.ts" line="31" assertions="2" />
+      <testcase name="OPENAI_API_KEY + VOYAGE_API_KEY → both providers in ready list" classname="groupReadyByProvider — embedding touchpoint" time="0.000538" file="test\init-env-detection.test.ts" line="47" assertions="2" />
+      <testcase name="each provider appears at most once (codex finding #2 dedup)" classname="groupReadyByProvider — embedding touchpoint" time="0.000737" file="test\init-env-detection.test.ts" line="57" assertions="1" />
+      <testcase name="empty-string env var counts as not set" classname="groupReadyByProvider — embedding touchpoint" time="0.000594" file="test\init-env-detection.test.ts" line="67" assertions="1" />
+      <testcase name="Anthropic alone → not in embedding ready (no embedding touchpoint on anthropic recipe)" classname="groupReadyByProvider — embedding touchpoint" time="0.000468" file="test\init-env-detection.test.ts" line="72" assertions="1" />
+      <testcase name="regression: bug reporter scenario — only OPENAI_API_KEY set → openai picked, Voyage not present" classname="groupReadyByProvider — embedding touchpoint" time="0.000571" file="test\init-env-detection.test.ts" line="77" assertions="2" />
+    </testsuite>
+    <testsuite name="groupReadyByProvider — chat touchpoint" file="test\init-env-detection.test.ts" line="85" tests="3" assertions="3" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="OPENAI_API_KEY → openai chat ready" classname="groupReadyByProvider — chat touchpoint" time="0.000552" file="test\init-env-detection.test.ts" line="86" assertions="1" />
+      <testcase name="VOYAGE_API_KEY alone → no chat ready (Voyage has no chat touchpoint)" classname="groupReadyByProvider — chat touchpoint" time="0.000546" file="test\init-env-detection.test.ts" line="91" assertions="1" />
+      <testcase name="ANTHROPIC_API_KEY → anthropic chat ready" classname="groupReadyByProvider — chat touchpoint" time="0.000514" file="test\init-env-detection.test.ts" line="96" assertions="1" />
+    </testsuite>
+    <testsuite name="groupReadyByProvider — expansion touchpoint" file="test\init-env-detection.test.ts" line="102" tests="3" assertions="3" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="OPENAI_API_KEY → openai expansion ready" classname="groupReadyByProvider — expansion touchpoint" time="0.0005" file="test\init-env-detection.test.ts" line="103" assertions="1" />
+      <testcase name="VOYAGE_API_KEY alone → no expansion ready (Voyage is embedding-only)" classname="groupReadyByProvider — expansion touchpoint" time="0.000428" file="test\init-env-detection.test.ts" line="108" assertions="1" />
+      <testcase name="DEEPSEEK_API_KEY → deepseek expansion ready" classname="groupReadyByProvider — expansion touchpoint" time="0.000531" file="test\init-env-detection.test.ts" line="113" assertions="1" />
+    </testsuite>
+    <testsuite name="findEnvKeyTypos" file="test\init-env-detection.test.ts" line="119" tests="8" assertions="11" failures="0" skipped="0" time="0.001" hostname="">
+      <testcase name="detects OPENAPI_API_KEY → OPENAI_API_KEY" classname="findEnvKeyTypos" time="0.00142" file="test\init-env-detection.test.ts" line="120" assertions="3" />
+      <testcase name="no typo when canonical name is also set (false-positive guard)" classname="findEnvKeyTypos" time="0.000761" file="test\init-env-detection.test.ts" line="128" assertions="1" />
+      <testcase name="empty env returns no typos" classname="findEnvKeyTypos" time="0.000552" file="test\init-env-detection.test.ts" line="137" assertions="1" />
+      <testcase name="canonical name set produces no typo for itself" classname="findEnvKeyTypos" time="0.000489" file="test\init-env-detection.test.ts" line="142" assertions="1" />
+      <testcase name="non-API-KEY shaped vars ignored (HOME, PATH, etc.)" classname="findEnvKeyTypos" time="0.000397" file="test\init-env-detection.test.ts" line="147" assertions="1" />
+      <testcase name="empty-string env var skipped (no suggestion)" classname="findEnvKeyTypos" time="0.000377" file="test\init-env-detection.test.ts" line="152" assertions="1" />
+      <testcase name="detects VOYAG_API_KEY → VOYAGE_API_KEY (1 char delete)" classname="findEnvKeyTypos" time="0.000406" file="test\init-env-detection.test.ts" line="157" assertions="2" />
+      <testcase name="very-different name returns no typo (far beyond edit distance)" classname="findEnvKeyTypos" time="0.000403" file="test\init-env-detection.test.ts" line="164" assertions="1" />
+    </testsuite>
+    <testsuite name="seedAIOptionsFromConfig — #1058 cold-install env fallback" file="test\init-env-detection.test.ts" line="171" tests="5" assertions="11" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="null config (no config.json, no DATABASE_URL) falls back to GBRAIN_* env vars" classname="seedAIOptionsFromConfig — #1058 cold-install env fallback" time="0.000369" file="test\init-env-detection.test.ts" line="172" assertions="4" />
+      <testcase name="null config + no env vars → empty seed (Tier-3 detection takes over)" classname="seedAIOptionsFromConfig — #1058 cold-install env fallback" time="0.000233" file="test\init-env-detection.test.ts" line="185" assertions="1" />
+      <testcase name="persisted config wins (loadConfig already merged env when non-null)" classname="seedAIOptionsFromConfig — #1058 cold-install env fallback" time="0.000259" file="test\init-env-detection.test.ts" line="190" assertions="2" />
+      <testcase name="embedding_disabled sentinel honored on re-init" classname="seedAIOptionsFromConfig — #1058 cold-install env fallback" time="0.000281" file="test\init-env-detection.test.ts" line="199" assertions="2" />
+      <testcase name="non-numeric GBRAIN_EMBEDDING_DIMENSIONS ignored, model still seeds" classname="seedAIOptionsFromConfig — #1058 cold-install env fallback" time="0.000378" file="test\init-env-detection.test.ts" line="205" assertions="2" />
+    </testsuite>
+  </testsuite>
+  <testsuite name="test\mcp-tool-defs.test.ts" file="test\mcp-tool-defs.test.ts" tests="26" assertions="3592" failures="0" skipped="0" time="0.0546585" hostname="">
+    <testsuite name="buildToolDefs" file="test\mcp-tool-defs.test.ts" line="80" tests="11" assertions="741" failures="0" skipped="0" time="0.028" hostname="">
+      <testcase name="output equals pre-extraction inline mapping byte-for-byte" classname="buildToolDefs" time="0.004544" file="test\mcp-tool-defs.test.ts" line="81" assertions="1" />
+      <testcase name="explicit strictParams:false / empty opts stay byte-identical to the default emission (WP3)" classname="buildToolDefs" time="0.005163" file="test\mcp-tool-defs.test.ts" line="87" assertions="2" />
+      <testcase name="ops without annotations or a mutating tag keep the pre-annotations shape exactly (no annotations key; none exist today)" classname="buildToolDefs" time="0.002418" file="test\mcp-tool-defs.test.ts" line="93" assertions="10" />
+      <testcase name="#5037: annotations derive conservatively from the required mutating/idempotent tags" classname="buildToolDefs" time="0.001943" file="test\mcp-tool-defs.test.ts" line="104" assertions="98" />
+      <testcase name="preserves operation count" classname="buildToolDefs" time="0.001107" file="test\mcp-tool-defs.test.ts" line="124" assertions="1" />
+      <testcase name="accepts an arbitrary Operation subset (for subagent tool registry)" classname="buildToolDefs" time="0.000374" file="test\mcp-tool-defs.test.ts" line="128" assertions="2" />
+      <testcase name="empty input returns empty array" classname="buildToolDefs" time="0.000255" file="test\mcp-tool-defs.test.ts" line="135" assertions="1" />
+      <testcase name="every def has object inputSchema with properties + required array" classname="buildToolDefs" time="0.000827" file="test\mcp-tool-defs.test.ts" line="139" assertions="606" />
+      <testcase name="put_page warns that content is a whole-page replacement and requires a canonical read first" classname="buildToolDefs" time="0.000872" file="test\mcp-tool-defs.test.ts" line="147" assertions="9" />
+      <testcase name="GBRAIN_MCP_INSTRUCTIONS carries the same put_page contract phrases (triple-home tie)" classname="buildToolDefs" time="0.012674" file="test\mcp-tool-defs.test.ts" line="161" assertions="4" />
+      <testcase name="delete_page / restore_page descriptions disclose the on-disk file side effect (#4829)" classname="buildToolDefs" time="0.003011" file="test\mcp-tool-defs.test.ts" line="178" assertions="7" />
+    </testsuite>
+    <testsuite name="default ToolAnnotations (#5952, ported)" file="test\mcp-tool-defs.test.ts" line="216" tests="5" assertions="115" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="writes never carry readOnlyHint: true" classname="default ToolAnnotations (#5952, ported)" time="0.000331" file="test\mcp-tool-defs.test.ts" line="227" assertions="4" />
+      <testcase name="a read-scoped op that declares mutating is never marked read-only" classname="default ToolAnnotations (#5952, ported)" time="0.00038" file="test\mcp-tool-defs.test.ts" line="233" assertions="6" />
+      <testcase name="an untagged synthetic op stays unannotated" classname="default ToolAnnotations (#5952, ported)" time="0.000628" file="test\mcp-tool-defs.test.ts" line="241" assertions="2" />
+      <testcase name="an op&apos;s own annotations win verbatim, with nothing merged in" classname="default ToolAnnotations (#5952, ported)" time="0.000302" file="test\mcp-tool-defs.test.ts" line="247" assertions="2" />
+      <testcase name="every derived readOnlyHint sits on a non-mutating op" classname="default ToolAnnotations (#5952, ported)" time="0.000992" file="test\mcp-tool-defs.test.ts" line="253" assertions="101" />
+    </testsuite>
+    <testsuite name="buildToolDefs strictParams emission (WP3/D14.1)" file="test\mcp-tool-defs.test.ts" line="262" tests="4" assertions="2724" failures="0" skipped="0" time="0.004" hostname="">
+      <testcase name="every strict def closes the schema and declares _meta + dry_run" classname="buildToolDefs strictParams emission (WP3/D14.1)" time="0.000622" file="test\mcp-tool-defs.test.ts" line="265" assertions="1010" />
+      <testcase name="an op with a REAL declared dry_run param keeps its own schema (no clobber)" classname="buildToolDefs strictParams emission (WP3/D14.1)" time="0.0005" file="test\mcp-tool-defs.test.ts" line="276" assertions="2" />
+      <testcase name="strict mode changes ONLY additionalProperties + the two passthrough keys" classname="buildToolDefs strictParams emission (WP3/D14.1)" time="0.00339" file="test\mcp-tool-defs.test.ts" line="286" assertions="1510" />
+      <testcase name="default emission never carries additionalProperties" classname="buildToolDefs strictParams emission (WP3/D14.1)" time="0.001001" file="test\mcp-tool-defs.test.ts" line="303" assertions="202" />
+    </testsuite>
+    <testsuite name="param description completeness (WP3)" file="test\mcp-tool-defs.test.ts" line="319" tests="2" assertions="2" failures="0" skipped="0" time="0.001" hostname="">
+      <testcase name="every non-localOnly op param carries a non-empty description" classname="param description completeness (WP3)" time="0.001147" file="test\mcp-tool-defs.test.ts" line="320" assertions="1" />
+      <testcase name="every non-localOnly op carries a non-empty area (WP4)" classname="param description completeness (WP3)" time="0.000715" file="test\mcp-tool-defs.test.ts" line="337" assertions="1" />
+    </testsuite>
+    <testsuite name="paramDefToSchema structural guard" file="test\mcp-tool-defs.test.ts" line="393" tests="4" assertions="10" failures="0" skipped="0" time="0.003" hostname="">
+      <testcase name="every operation inputSchema array has items.type set (no bare arrays)" classname="paramDefToSchema structural guard" time="0.002387" file="test\mcp-tool-defs.test.ts" line="394" assertions="1" />
+      <testcase name="extract_facts.entity_hints declares items.type as string" classname="paramDefToSchema structural guard" time="0.001655" file="test\mcp-tool-defs.test.ts" line="403" assertions="4" />
+      <testcase name="paramDefToSchema recursively propagates nested items.items.type" classname="paramDefToSchema structural guard" time="0.000614" file="test\mcp-tool-defs.test.ts" line="412" assertions="3" />
+      <testcase name="paramDefToSchema preserves description on nested items" classname="paramDefToSchema structural guard" time="0.000479" file="test\mcp-tool-defs.test.ts" line="429" assertions="2" />
+    </testsuite>
+  </testsuite>
+  <testsuite name="test\minions.test.ts" file="test\minions.test.ts" tests="220" assertions="732" failures="0" skipped="0" time="12.2147823" hostname="">
+    <testsuite name="MinionQueue: CRUD" file="test\minions.test.ts" line="71" tests="9" assertions="19" failures="0" skipped="0" time="0.053" hostname="">
+      <testcase name="add creates a job with waiting status" classname="MinionQueue: CRUD" time="0.008286" file="test\minions.test.ts" line="72" assertions="7" />
+      <testcase name="add with empty name throws" classname="MinionQueue: CRUD" time="0.00405" file="test\minions.test.ts" line="83" assertions="1" />
+      <testcase name="getJob returns job by ID" classname="MinionQueue: CRUD" time="0.004152" file="test\minions.test.ts" line="87" assertions="3" />
+      <testcase name="getJob returns null for missing ID" classname="MinionQueue: CRUD" time="0.00425" file="test\minions.test.ts" line="95" assertions="1" />
+      <testcase name="getJobs returns all jobs" classname="MinionQueue: CRUD" time="0.006196" file="test\minions.test.ts" line="100" assertions="1" />
+      <testcase name="getJobs filters by status" classname="MinionQueue: CRUD" time="0.008512" file="test\minions.test.ts" line="107" assertions="2" />
+      <testcase name="removeJob deletes terminal jobs" classname="MinionQueue: CRUD" time="0.012578" file="test\minions.test.ts" line="115" assertions="2" />
+      <testcase name="removeJob rejects active jobs" classname="MinionQueue: CRUD" time="0.00322" file="test\minions.test.ts" line="126" assertions="1" />
+      <testcase name="duplicate submit creates new row" classname="MinionQueue: CRUD" time="0.004847" file="test\minions.test.ts" line="132" assertions="1" />
+    </testsuite>
+    <testsuite name="MinionQueue: State Machine" file="test\minions.test.ts" line="141" tests="6" assertions="20" failures="0" skipped="0" time="0.038" hostname="">
+      <testcase name="waiting → active via claim" classname="MinionQueue: State Machine" time="0.006626" file="test\minions.test.ts" line="142" assertions="6" />
+      <testcase name="active → completed via completeJob" classname="MinionQueue: State Machine" time="0.008441" file="test\minions.test.ts" line="153" assertions="4" />
+      <testcase name="active → failed via failJob" classname="MinionQueue: State Machine" time="0.006059" file="test\minions.test.ts" line="163" assertions="3" />
+      <testcase name="failed → delayed (retry with backoff)" classname="MinionQueue: State Machine" time="0.006469" file="test\minions.test.ts" line="172" assertions="2" />
+      <testcase name="delayed → waiting (promote)" classname="MinionQueue: State Machine" time="0.006207" file="test\minions.test.ts" line="180" assertions="4" />
+      <testcase name="failed → dead (exhausted attempts)" classname="MinionQueue: State Machine" time="0.006327" file="test\minions.test.ts" line="189" assertions="1" />
+    </testsuite>
+    <testsuite name="calculateBackoff" file="test\minions.test.ts" line="199" tests="4" assertions="204" failures="0" skipped="0" time="0.001" hostname="">
+      <testcase name="exponential backoff" classname="calculateBackoff" time="0.001568" file="test\minions.test.ts" line="200" assertions="1" />
+      <testcase name="fixed backoff" classname="calculateBackoff" time="0.000779" file="test\minions.test.ts" line="208" assertions="1" />
+      <testcase name="jitter within range" classname="calculateBackoff" time="0.000893" file="test\minions.test.ts" line="216" assertions="201" />
+      <testcase name="attempts_made=0 edge case (exponential)" classname="calculateBackoff" time="0.000749" file="test\minions.test.ts" line="233" assertions="1" />
+    </testsuite>
+    <testsuite name="MinionQueue: Stall Detection" file="test\minions.test.ts" line="245" tests="3" assertions="11" failures="0" skipped="0" time="0.046" hostname="">
+      <testcase name="detect stalled job (lock_until expired)" classname="MinionQueue: Stall Detection" time="0.012898" file="test\minions.test.ts" line="246" assertions="3" />
+      <testcase name="stall counter increments and eventually dead-letters" classname="MinionQueue: Stall Detection" time="0.022072" file="test\minions.test.ts" line="262" assertions="5" />
+      <testcase name="max_stalled → dead" classname="MinionQueue: Stall Detection" time="0.012939" file="test\minions.test.ts" line="297" assertions="3" />
+    </testsuite>
+    <testsuite name="MinionQueue: #1737 attempt accounting on dead-letter" file="test\minions.test.ts" line="315" tests="3" assertions="15" failures="0" skipped="0" time="0.036" hostname="">
+      <testcase name="wall-clock dead-letter increments attempts_made (no more 0/N (started:M))" classname="MinionQueue: #1737 attempt accounting on dead-letter" time="0.012573" file="test\minions.test.ts" line="316" assertions="6" />
+      <testcase name="wall-clock dead-letter is terminal — does NOT retry even with attempts remaining" classname="MinionQueue: #1737 attempt accounting on dead-letter" time="0.009369" file="test\minions.test.ts" line="338" assertions="3" />
+      <testcase name="stall dead-letter increments attempts_made; requeue does NOT" classname="MinionQueue: #1737 attempt accounting on dead-letter" time="0.015995" file="test\minions.test.ts" line="353" assertions="6" />
+    </testsuite>
+    <testsuite name="MinionQueue: #1737 per-handler default timeout" file="test\minions.test.ts" line="383" tests="7" assertions="10" failures="0" skipped="0" time="0.024" hostname="">
+      <testcase name="long handler with no explicit timeout_ms gets the 30-min default stamped" classname="MinionQueue: #1737 per-handler default timeout" time="0.003905" file="test\minions.test.ts" line="384" assertions="1" />
+      <testcase name="autopilot-cycle + subagent also get the long default" classname="MinionQueue: #1737 per-handler default timeout" time="0.005335" file="test\minions.test.ts" line="389" assertions="2" />
+      <testcase name="facts-absorb gets the 10-min LLM-extraction default (#3207)" classname="MinionQueue: #1737 per-handler default timeout" time="0.003433" file="test\minions.test.ts" line="401" assertions="1" />
+      <testcase name="extract gets its 30-min default from the handler map (#5761)" classname="MinionQueue: #1737 per-handler default timeout" time="0.005497" file="test\minions.test.ts" line="408" assertions="3" />
+      <testcase name="contextual per-chunk reindex gets the 60-min default" classname="MinionQueue: #1737 per-handler default timeout" time="0.00369" file="test\minions.test.ts" line="417" assertions="1" />
+      <testcase name="explicit timeout_ms always wins over the default" classname="MinionQueue: #1737 per-handler default timeout" time="0.003103" file="test\minions.test.ts" line="424" assertions="1" />
+      <testcase name="short handler keeps null timeout_ms (tight wall-clock default applies)" classname="MinionQueue: #1737 per-handler default timeout" time="0.002641" file="test\minions.test.ts" line="429" assertions="1" />
+    </testsuite>
+    <testsuite name="MinionQueue: claim-time timeout fallback" file="test\minions.test.ts" line="443" tests="3" assertions="13" failures="0" skipped="0" time="0.011" hostname="">
+      <testcase name="legacy NULL-timeout long-handler row gets the map budget stamped at claim" classname="MinionQueue: claim-time timeout fallback" time="0.004995" file="test\minions.test.ts" line="444" assertions="7" />
+      <testcase name="name outside the map keeps NULL budget at claim (fail-open, todays behavior)" classname="MinionQueue: claim-time timeout fallback" time="0.004901" file="test\minions.test.ts" line="467" assertions="4" />
+      <testcase name="explicit timeout_ms is never overridden at claim" classname="MinionQueue: claim-time timeout fallback" time="0.003974" file="test\minions.test.ts" line="476" assertions="2" />
+    </testsuite>
+    <testsuite name="MinionQueue: v0.13.1 max_stalled schema default (#219)" file="test\minions.test.ts" line="486" tests="2" assertions="15" failures="0" skipped="0" time="0.024" hostname="">
+      <testcase name="job submitted with no explicit max_stalled uses schema default of 5" classname="MinionQueue: v0.13.1 max_stalled schema default (#219)" time="0.002318" file="test\minions.test.ts" line="487" assertions="1" />
+      <testcase name="default=5 rescues across 4 consecutive stalls, dead-letters on the 5th" classname="MinionQueue: v0.13.1 max_stalled schema default (#219)" time="0.022737" file="test\minions.test.ts" line="492" assertions="14" />
+    </testsuite>
+    <testsuite name="MinionQueue: v0.13.1 MinionJobInput.max_stalled plumbing" file="test\minions.test.ts" line="519" tests="6" assertions="6" failures="0" skipped="0" time="0.014" hostname="">
+      <testcase name="honored end-to-end when provided" classname="MinionQueue: v0.13.1 MinionJobInput.max_stalled plumbing" time="0.002811" file="test\minions.test.ts" line="520" assertions="1" />
+      <testcase name="clamps input &gt; 100 to 100" classname="MinionQueue: v0.13.1 MinionJobInput.max_stalled plumbing" time="0.003429" file="test\minions.test.ts" line="525" assertions="1" />
+      <testcase name="clamps input &lt; 1 to 1" classname="MinionQueue: v0.13.1 MinionJobInput.max_stalled plumbing" time="0.002246" file="test\minions.test.ts" line="530" assertions="1" />
+      <testcase name="clamps negative input to 1" classname="MinionQueue: v0.13.1 MinionJobInput.max_stalled plumbing" time="0.002682" file="test\minions.test.ts" line="535" assertions="1" />
+      <testcase name="non-integer inputs are floored before clamp" classname="MinionQueue: v0.13.1 MinionJobInput.max_stalled plumbing" time="0.003239" file="test\minions.test.ts" line="540" assertions="1" />
+      <testcase name="undefined leaves schema default intact (5)" classname="MinionQueue: v0.13.1 MinionJobInput.max_stalled plumbing" time="0.002595" file="test\minions.test.ts" line="545" assertions="1" />
+    </testsuite>
+    <testsuite name="MinionQueue: v0.13.1 live-queue rescue regression (#219)" file="test\minions.test.ts" line="551" tests="2" assertions="2" failures="0" skipped="0" time="0.012" hostname="">
+      <testcase name="a row at max_stalled=1 is rescued by v13 backfill" classname="MinionQueue: v0.13.1 live-queue rescue regression (#219)" time="0.005666" file="test\minions.test.ts" line="552" assertions="1" />
+      <testcase name="backfill does not touch terminal-status rows" classname="MinionQueue: v0.13.1 live-queue rescue regression (#219)" time="0.007303" file="test\minions.test.ts" line="568" assertions="1" />
+    </testsuite>
+    <testsuite name="MinionQueue: Dependencies" file="test\minions.test.ts" line="590" tests="5" assertions="11" failures="0" skipped="0" time="0.044" hostname="">
+      <testcase name="parent waits for child" classname="MinionQueue: Dependencies" time="0.010448" file="test\minions.test.ts" line="591" assertions="4" />
+      <testcase name="child fail → fail_parent" classname="MinionQueue: Dependencies" time="0.006872" file="test\minions.test.ts" line="611" assertions="2" />
+      <testcase name="child fail → continue policy" classname="MinionQueue: Dependencies" time="0.007888" file="test\minions.test.ts" line="620" assertions="2" />
+      <testcase name="child fail → remove_dep" classname="MinionQueue: Dependencies" time="0.008918" file="test\minions.test.ts" line="634" assertions="1" />
+      <testcase name="orphan handling (parent deleted)" classname="MinionQueue: Dependencies" time="0.013237" file="test\minions.test.ts" line="642" assertions="2" />
+    </testsuite>
+    <testsuite name="MinionWorker" file="test\minions.test.ts" line="656" tests="5" assertions="10" failures="0" skipped="0" time="0.333" hostname="">
+      <testcase name="register handler" classname="MinionWorker" time="0.001953" file="test\minions.test.ts" line="657" assertions="1" />
+      <testcase name="start without handlers throws" classname="MinionWorker" time="0.001884" file="test\minions.test.ts" line="663" assertions="1" />
+      <testcase name="worker claims and executes job" classname="MinionWorker" time="0.114726" file="test\minions.test.ts" line="668" assertions="4" />
+      <testcase name="handler throws non-Error value" classname="MinionWorker" time="0.110191" file="test\minions.test.ts" line="691" assertions="2" />
+      <testcase name="UnrecoverableError bypasses retry" classname="MinionWorker" time="0.107695" file="test\minions.test.ts" line="709" assertions="2" />
+    </testsuite>
+    <testsuite name="MinionQueue: Lock Management" file="test\minions.test.ts" line="730" tests="3" assertions="7" failures="0" skipped="0" time="0.015" hostname="">
+      <testcase name="lock renewed during execution" classname="MinionQueue: Lock Management" time="0.007247" file="test\minions.test.ts" line="731" assertions="2" />
+      <testcase name="lock renewal fails with wrong token" classname="MinionQueue: Lock Management" time="0.004675" file="test\minions.test.ts" line="744" assertions="1" />
+      <testcase name="claim sets lock_token, lock_until, attempts_started" classname="MinionQueue: Lock Management" time="0.004242" file="test\minions.test.ts" line="752" assertions="4" />
+    </testsuite>
+    <testsuite name="MinionQueue: Claim Mechanics" file="test\minions.test.ts" line="764" tests="4" assertions="9" failures="0" skipped="0" time="0.025" hostname="">
+      <testcase name="claim from empty queue returns null" classname="MinionQueue: Claim Mechanics" time="0.00208" file="test\minions.test.ts" line="765" assertions="1" />
+      <testcase name="claim respects priority ordering" classname="MinionQueue: Claim Mechanics" time="0.010614" file="test\minions.test.ts" line="770" assertions="3" />
+      <testcase name="claim only claims registered names" classname="MinionQueue: Claim Mechanics" time="0.007704" file="test\minions.test.ts" line="785" assertions="3" />
+      <testcase name="promote delayed but not future jobs" classname="MinionQueue: Claim Mechanics" time="0.006275" file="test\minions.test.ts" line="799" assertions="2" />
+    </testsuite>
+    <testsuite name="MinionQueue: Prune" file="test\minions.test.ts" line="811" tests="2" assertions="6" failures="0" skipped="0" time="0.018" hostname="">
+      <testcase name="only prunes terminal statuses, respects age filter" classname="MinionQueue: Prune" time="0.009057" file="test\minions.test.ts" line="812" assertions="1" />
+      <testcase name="dryRun counts prunable jobs without deleting" classname="MinionQueue: Prune" time="0.009227" file="test\minions.test.ts" line="824" assertions="5" />
+    </testsuite>
+    <testsuite name="MinionQueue: Stats" file="test\minions.test.ts" line="845" tests="1" assertions="3" failures="0" skipped="0" time="0.01" hostname="">
+      <testcase name="getStats returns status breakdown" classname="MinionQueue: Stats" time="0.010783" file="test\minions.test.ts" line="846" assertions="3" />
+    </testsuite>
+    <testsuite name="MinionQueue: Cancel &amp; Retry" file="test\minions.test.ts" line="858" tests="5" assertions="20" failures="0" skipped="0" time="0.053" hostname="">
+      <testcase name="cancel active job sets cancelled" classname="MinionQueue: Cancel &amp; Retry" time="0.005346" file="test\minions.test.ts" line="859" assertions="1" />
+      <testcase name="retry dead job re-queues" classname="MinionQueue: Cancel &amp; Retry" time="0.007294" file="test\minions.test.ts" line="866" assertions="2" />
+      <testcase name="retry resets started_at/attempts_made/attempts_started/stalled_counter" classname="MinionQueue: Cancel &amp; Retry" time="0.006897" file="test\minions.test.ts" line="878" assertions="5" />
+      <testcase name="retry survives handleWallClockTimeouts after re-claim, even long after the original attempt" classname="MinionQueue: Cancel &amp; Retry" time="0.013017" file="test\minions.test.ts" line="900" assertions="6" />
+      <testcase name="retry survives one stall after re-claim, even after the original stall budget was exhausted" classname="MinionQueue: Cancel &amp; Retry" time="0.022198" file="test\minions.test.ts" line="932" assertions="6" />
+    </testsuite>
+    <testsuite name="MinionQueue: Pause/Resume" file="test\minions.test.ts" line="971" tests="5" assertions="7" failures="0" skipped="0" time="0.022" hostname="">
+      <testcase name="pause waiting job → paused" classname="MinionQueue: Pause/Resume" time="0.004816" file="test\minions.test.ts" line="972" assertions="1" />
+      <testcase name="pause active job clears lock" classname="MinionQueue: Pause/Resume" time="0.006574" file="test\minions.test.ts" line="978" assertions="3" />
+      <testcase name="pause completed job returns null" classname="MinionQueue: Pause/Resume" time="0.004524" file="test\minions.test.ts" line="987" assertions="1" />
+      <testcase name="resume paused job → waiting" classname="MinionQueue: Pause/Resume" time="0.005177" file="test\minions.test.ts" line="995" assertions="1" />
+      <testcase name="resume non-paused job returns null" classname="MinionQueue: Pause/Resume" time="0.00363" file="test\minions.test.ts" line="1002" assertions="1" />
+    </testsuite>
+    <testsuite name="MinionQueue: Inbox" file="test\minions.test.ts" line="1011" tests="6" assertions="12" failures="0" skipped="0" time="0.033" hostname="">
+      <testcase name="send message to active job from admin" classname="MinionQueue: Inbox" time="0.006428" file="test\minions.test.ts" line="1016" assertions="4" />
+      <testcase name="send message from parent job succeeds" classname="MinionQueue: Inbox" time="0.008644" file="test\minions.test.ts" line="1026" assertions="1" />
+      <testcase name="send message from unauthorized sender returns null" classname="MinionQueue: Inbox" time="0.003945" file="test\minions.test.ts" line="1040" assertions="1" />
+      <testcase name="send message to completed job returns null" classname="MinionQueue: Inbox" time="0.006302" file="test\minions.test.ts" line="1047" assertions="1" />
+      <testcase name="readInbox returns unread messages and marks read" classname="MinionQueue: Inbox" time="0.007601" file="test\minions.test.ts" line="1055" assertions="4" />
+      <testcase name="readInbox with wrong token returns empty" classname="MinionQueue: Inbox" time="0.003298" file="test\minions.test.ts" line="1071" assertions="1" />
+    </testsuite>
+    <testsuite name="MinionQueue: Token Accounting" file="test\minions.test.ts" line="1083" tests="4" assertions="9" failures="0" skipped="0" time="0.023" hostname="">
+      <testcase name="updateTokens accumulates counts" classname="MinionQueue: Token Accounting" time="0.006296" file="test\minions.test.ts" line="1084" assertions="3" />
+      <testcase name="updateTokens with wrong token returns false" classname="MinionQueue: Token Accounting" time="0.004685" file="test\minions.test.ts" line="1097" assertions="1" />
+      <testcase name="completeJob rolls up tokens to parent" classname="MinionQueue: Token Accounting" time="0.01146" file="test\minions.test.ts" line="1104" assertions="2" />
+      <testcase name="new jobs start with zero tokens" classname="MinionQueue: Token Accounting" time="0.002974" file="test\minions.test.ts" line="1117" assertions="3" />
+    </testsuite>
+    <testsuite name="MinionQueue: Replay" file="test\minions.test.ts" line="1127" tests="4" assertions="10" failures="0" skipped="0" time="0.016" hostname="">
+      <testcase name="replay completed job creates new job" classname="MinionQueue: Replay" time="0.00722" file="test\minions.test.ts" line="1128" assertions="7" />
+      <testcase name="replay with data override merges data" classname="MinionQueue: Replay" time="0.006232" file="test\minions.test.ts" line="1143" assertions="1" />
+      <testcase name="replay non-terminal job returns null" classname="MinionQueue: Replay" time="0.00284" file="test\minions.test.ts" line="1152" assertions="1" />
+      <testcase name="replay nonexistent job returns null" classname="MinionQueue: Replay" time="0.001369" file="test\minions.test.ts" line="1158" assertions="1" />
+    </testsuite>
+    <testsuite name="MinionWorker: Concurrent" file="test\minions.test.ts" line="1166" tests="3" assertions="4" failures="0" skipped="0" time="0.321" hostname="">
+      <testcase name="worker provides AbortSignal in context" classname="MinionWorker: Concurrent" time="0.106322" file="test\minions.test.ts" line="1167" assertions="2" />
+      <testcase name="worker provides readInbox in context" classname="MinionWorker: Concurrent" time="0.106794" file="test\minions.test.ts" line="1186" assertions="1" />
+      <testcase name="worker provides updateTokens in context" classname="MinionWorker: Concurrent" time="0.109256" file="test\minions.test.ts" line="1204" assertions="1" />
+    </testsuite>
+    <testsuite name="MinionWorker: v7 Behavior" file="test\minions.test.ts" line="1225" tests="5" assertions="11" failures="0" skipped="0" time="1.064" hostname="">
+      <testcase name="pause flips ctx.signal.aborted mid-handler" classname="MinionWorker: v7 Behavior" time="0.212338" file="test\minions.test.ts" line="1226" assertions="2" />
+      <testcase name="catch block skips failJob when ctx.signal.aborted" classname="MinionWorker: v7 Behavior" time="0.211598" file="test\minions.test.ts" line="1264" assertions="3" />
+      <testcase name="worker tracks 3 in-flight jobs (bookkeeping, not PG concurrency)" classname="MinionWorker: v7 Behavior" time="0.119188" file="test\minions.test.ts" line="1302" assertions="3" />
+      <testcase name="setTimeout safety net cleared on normal completion (no leaked timer)" classname="MinionWorker: v7 Behavior" time="0.309688" file="test\minions.test.ts" line="1344" assertions="2" />
+      <testcase name="setTimeout safety net fires abort when handler stalls" classname="MinionWorker: v7 Behavior" time="0.213512" file="test\minions.test.ts" line="1370" assertions="1" />
+    </testsuite>
+    <testsuite name="MinionQueue: Token rollup guard" file="test\minions.test.ts" line="1403" tests="1" assertions="3" failures="0" skipped="0" time="0.013" hostname="">
+      <testcase name="token rollup is no-op when parent already terminal" classname="MinionQueue: Token rollup guard" time="0.013009" file="test\minions.test.ts" line="1404" assertions="3" />
+    </testsuite>
+    <testsuite name="MinionQueue: Inbox cascade" file="test\minions.test.ts" line="1428" tests="1" assertions="2" failures="0" skipped="0" time="0.009" hostname="">
+      <testcase name="inbox messages cascade-deleted when parent job deleted" classname="MinionQueue: Inbox cascade" time="0.009794" file="test\minions.test.ts" line="1429" assertions="2" />
+    </testsuite>
+    <testsuite name="MinionQueue: Depth tracking" file="test\minions.test.ts" line="1455" tests="3" assertions="6" failures="0" skipped="0" time="0.022" hostname="">
+      <testcase name="depth increments 0 → 1 → 2" classname="MinionQueue: Depth tracking" time="0.007653" file="test\minions.test.ts" line="1456" assertions="3" />
+      <testcase name="depth exceeding maxSpawnDepth rejected" classname="MinionQueue: Depth tracking" time="0.010414" file="test\minions.test.ts" line="1467" assertions="2" />
+      <testcase name="per-submit max_spawn_depth override works" classname="MinionQueue: Depth tracking" time="0.005799" file="test\minions.test.ts" line="1478" assertions="1" />
+    </testsuite>
+    <testsuite name="MinionQueue: max_children" file="test\minions.test.ts" line="1488" tests="3" assertions="13" failures="0" skipped="0" time="0.051" hostname="">
+      <testcase name="max_children=NULL means unlimited" classname="MinionQueue: max_children" time="0.031683" file="test\minions.test.ts" line="1489" assertions="11" />
+      <testcase name="max_children=N rejects N+1th submit" classname="MinionQueue: max_children" time="0.011309" file="test\minions.test.ts" line="1499" assertions="1" />
+      <testcase name="terminal children do not count toward max_children" classname="MinionQueue: max_children" time="0.009397" file="test\minions.test.ts" line="1507" assertions="1" />
+    </testsuite>
+    <testsuite name="MinionQueue: handleTimeouts" file="test\minions.test.ts" line="1523" tests="4" assertions="10" failures="0" skipped="0" time="0.182" hostname="">
+      <testcase name="claim populates timeout_at when timeout_ms set" classname="MinionQueue: handleTimeouts" time="0.006802" file="test\minions.test.ts" line="1524" assertions="2" />
+      <testcase name="handleTimeouts dead-letters expired active jobs" classname="MinionQueue: handleTimeouts" time="0.058502" file="test\minions.test.ts" line="1531" assertions="6" />
+      <testcase name="handleTimeouts ignores stalled jobs (lock_until &gt; now guard)" classname="MinionQueue: handleTimeouts" time="0.063524" file="test\minions.test.ts" line="1553" assertions="1" />
+      <testcase name="jobs without timeout_ms never timeout" classname="MinionQueue: handleTimeouts" time="0.055032" file="test\minions.test.ts" line="1568" assertions="1" />
+    </testsuite>
+    <testsuite name="MinionQueue: Cascade cancel" file="test\minions.test.ts" line="1581" tests="3" assertions="8" failures="0" skipped="0" time="0.036" hostname="">
+      <testcase name="cancel cascades to all descendants" classname="MinionQueue: Cascade cancel" time="0.016787" file="test\minions.test.ts" line="1582" assertions="5" />
+      <testcase name="re-parented child (parent_job_id null) escapes cascade" classname="MinionQueue: Cascade cancel" time="0.013181" file="test\minions.test.ts" line="1598" assertions="2" />
+      <testcase name="already-terminal descendant not clobbered" classname="MinionQueue: Cascade cancel" time="0.007825" file="test\minions.test.ts" line="1613" assertions="1" />
+    </testsuite>
+    <testsuite name="MinionQueue: removeOnComplete/Fail" file="test\minions.test.ts" line="1632" tests="5" assertions="12" failures="0" skipped="0" time="0.037" hostname="">
+      <testcase name="removeOnComplete=true deletes row on completion" classname="MinionQueue: removeOnComplete/Fail" time="0.006714" file="test\minions.test.ts" line="1633" assertions="3" />
+      <testcase name="removeOnComplete=false keeps row (default)" classname="MinionQueue: removeOnComplete/Fail" time="0.00718" file="test\minions.test.ts" line="1645" assertions="2" />
+      <testcase name="removeOnFail=true deletes row on dead" classname="MinionQueue: removeOnComplete/Fail" time="0.00704" file="test\minions.test.ts" line="1654" assertions="2" />
+      <testcase name="removeOnFail does NOT delete on retryable (delayed)" classname="MinionQueue: removeOnComplete/Fail" time="0.005336" file="test\minions.test.ts" line="1664" assertions="2" />
+      <testcase name="removeOnFail with fail_parent still fires parent hook before delete" classname="MinionQueue: removeOnComplete/Fail" time="0.012014" file="test\minions.test.ts" line="1673" assertions="3" />
+    </testsuite>
+    <testsuite name="MinionQueue: Idempotency" file="test\minions.test.ts" line="1697" tests="9" assertions="17" failures="0" skipped="0" time="0.056" hostname="">
+      <testcase name="same idempotency_key returns same job id" classname="MinionQueue: Idempotency" time="0.007515" file="test\minions.test.ts" line="1698" assertions="2" />
+      <testcase name="different idempotency_keys produce different jobs" classname="MinionQueue: Idempotency" time="0.006825" file="test\minions.test.ts" line="1707" assertions="1" />
+      <testcase name="null idempotency_key allows duplicate inserts (default behavior)" classname="MinionQueue: Idempotency" time="0.005244" file="test\minions.test.ts" line="1713" assertions="1" />
+      <testcase name="concurrent inserts with same key collapse to one row" classname="MinionQueue: Idempotency" time="0.013891" file="test\minions.test.ts" line="1719" assertions="2" />
+      <testcase name="different data with same idempotency_key returns first job (documented semantics)" classname="MinionQueue: Idempotency" time="0.004405" file="test\minions.test.ts" line="1734" assertions="2" />
+      <testcase name="dead job with idempotency_key allows re-submission" classname="MinionQueue: Idempotency" time="0.008636" file="test\minions.test.ts" line="1741" assertions="3" />
+      <testcase name="cancelled job with idempotency_key allows re-submission" classname="MinionQueue: Idempotency" time="0.005724" file="test\minions.test.ts" line="1763" assertions="2" />
+      <testcase name="completed job with idempotency_key still blocks re-submission" classname="MinionQueue: Idempotency" time="0.003416" file="test\minions.test.ts" line="1778" assertions="2" />
+      <testcase name="active job with idempotency_key still blocks re-submission" classname="MinionQueue: Idempotency" time="0.005135" file="test\minions.test.ts" line="1793" assertions="2" />
+    </testsuite>
+    <testsuite name="MinionQueue: child_done" file="test\minions.test.ts" line="1811" tests="6" assertions="16" failures="0" skipped="0" time="0.155" hostname="">
+      <testcase name="child completion posts child_done into parent inbox" classname="MinionQueue: child_done" time="0.008857" file="test\minions.test.ts" line="1816" assertions="5" />
+      <testcase name="child_done survives child removeOnComplete delete" classname="MinionQueue: child_done" time="0.010348" file="test\minions.test.ts" line="1836" assertions="2" />
+      <testcase name="child_done NOT posted if parent already terminal" classname="MinionQueue: child_done" time="0.006577" file="test\minions.test.ts" line="1855" assertions="1" />
+      <testcase name="readChildCompletions returns only child_done messages" classname="MinionQueue: child_done" time="0.010561" file="test\minions.test.ts" line="1873" assertions="4" />
+      <testcase name="readChildCompletions since cursor filters older entries" classname="MinionQueue: child_done" time="0.112915" file="test\minions.test.ts" line="1896" assertions="3" />
+      <testcase name="readChildCompletions with wrong token returns empty" classname="MinionQueue: child_done" time="0.009231" file="test\minions.test.ts" line="1921" assertions="1" />
+    </testsuite>
+    <testsuite name="MinionQueue: Attachments" file="test\minions.test.ts" line="1935" tests="9" assertions="17" failures="0" skipped="0" time="0.04" hostname="">
+      <testcase name="addAttachment + listAttachments round-trip" classname="MinionQueue: Attachments" time="0.007965" file="test\minions.test.ts" line="1942" assertions="5" />
+      <testcase name="getAttachment round-trips bytes exactly" classname="MinionQueue: Attachments" time="0.005016" file="test\minions.test.ts" line="1958" assertions="3" />
+      <testcase name="rejects oversize attachment" classname="MinionQueue: Attachments" time="0.003812" file="test\minions.test.ts" line="1973" assertions="1" />
+      <testcase name="rejects invalid base64" classname="MinionQueue: Attachments" time="0.003723" file="test\minions.test.ts" line="1986" assertions="1" />
+      <testcase name="rejects duplicate filename per job_id" classname="MinionQueue: Attachments" time="0.00463" file="test\minions.test.ts" line="1997" assertions="1" />
+      <testcase name="rejects path traversal in filename" classname="MinionQueue: Attachments" time="0.005085" file="test\minions.test.ts" line="2013" assertions="1" />
+      <testcase name="rejects null byte in filename" classname="MinionQueue: Attachments" time="0.00338" file="test\minions.test.ts" line="2024" assertions="1" />
+      <testcase name="attachments cascade-delete when job deleted" classname="MinionQueue: Attachments" time="0.005518" file="test\minions.test.ts" line="2035" assertions="1" />
+      <testcase name="deleteAttachment removes a single attachment" classname="MinionQueue: Attachments" time="0.005102" file="test\minions.test.ts" line="2053" assertions="3" />
+    </testsuite>
+    <testsuite name="MinionQueue: v0.19.1 handleWallClockTimeouts (Layer 3 kill shot)" file="test\minions.test.ts" line="2077" tests="3" assertions="9" failures="0" skipped="0" time="0.011" hostname="">
+      <testcase name="evicts active job past 2× timeout_ms — sets dead + wall-clock error_text" classname="MinionQueue: v0.19.1 handleWallClockTimeouts (Layer 3 kill shot)" time="0.004369" file="test\minions.test.ts" line="2078" assertions="4" />
+      <testcase name="timeout_ms NULL fallback uses 2 × lockDuration × max_stalled threshold" classname="MinionQueue: v0.19.1 handleWallClockTimeouts (Layer 3 kill shot)" time="0.005321" file="test\minions.test.ts" line="2099" assertions="3" />
+      <testcase name="respects threshold — active job within window is NOT killed" classname="MinionQueue: v0.19.1 handleWallClockTimeouts (Layer 3 kill shot)" time="0.002923" file="test\minions.test.ts" line="2122" assertions="2" />
+    </testsuite>
+    <testsuite name="MinionQueue: v0.19.1 maxWaiting — cap correctness + race (D2/H2)" file="test\minions.test.ts" line="2142" tests="8" assertions="17" failures="0" skipped="0" time="0.052" hostname="">
+      <testcase name="coalesces 3rd submission when cap is 2 — returns existing most-recent waiting row" classname="MinionQueue: v0.19.1 maxWaiting — cap correctness + race (D2/H2)" time="0.009053" file="test\minions.test.ts" line="2143" assertions="3" />
+      <testcase name="clamps maxWaiting: 0 → 1 (strictest cap)" classname="MinionQueue: v0.19.1 maxWaiting — cap correctness + race (D2/H2)" time="0.005366" file="test\minions.test.ts" line="2155" assertions="1" />
+      <testcase name="floors maxWaiting: 1.7 → 1" classname="MinionQueue: v0.19.1 maxWaiting — cap correctness + race (D2/H2)" time="0.006103" file="test\minions.test.ts" line="2161" assertions="1" />
+      <testcase name="concurrent submitters respect the cap under Promise.all race (H2)" classname="MinionQueue: v0.19.1 maxWaiting — cap correctness + race (D2/H2)" time="0.008202" file="test\minions.test.ts" line="2167" assertions="2" />
+      <testcase name="cross-queue isolation — same name in queue A does NOT suppress queue B (H2 secondary)" classname="MinionQueue: v0.19.1 maxWaiting — cap correctness + race (D2/H2)" time="0.00803" file="test\minions.test.ts" line="2183" assertions="3" />
+      <testcase name="cross-source isolation — waiting sync for source A does NOT swallow source B (multi-source regression)" classname="MinionQueue: v0.19.1 maxWaiting — cap correctness + race (D2/H2)" time="0.006835" file="test\minions.test.ts" line="2194" assertions="3" />
+      <testcase name="unset maxWaiting — normal submit path, no coalesce, no cap" classname="MinionQueue: v0.19.1 maxWaiting — cap correctness + race (D2/H2)" time="0.005332" file="test\minions.test.ts" line="2208" assertions="1" />
+      <testcase name="maxWaiting + snake_case source_id: scoped per source, not wildcard" classname="MinionQueue: v0.19.1 maxWaiting — cap correctness + race (D2/H2)" time="0.005501" file="test\minions.test.ts" line="2220" assertions="3" />
+    </testsuite>
+    <testsuite name="MinionQueue: maxPending — single-flight (waiting + live-lock active)" file="test\minions.test.ts" line="2247" tests="12" assertions="31" failures="0" skipped="0" time="0.096" hostname="">
+      <testcase name="cap 1: second submission coalesces onto the waiting row (coalesced metadata set)" classname="MinionQueue: maxPending — single-flight (waiting + live-lock active)" time="0.007432" file="test\minions.test.ts" line="2257" assertions="3" />
+      <testcase name="LIVE-LOCK active row suppresses dispatch (the issue-#2 fix)" classname="MinionQueue: maxPending — single-flight (waiting + live-lock active)" time="0.00621" file="test\minions.test.ts" line="2265" assertions="3" />
+      <testcase name="EXPIRED-lock active row does NOT suppress — fresh insert (wedge detectors stay fed)" classname="MinionQueue: maxPending — single-flight (waiting + live-lock active)" time="0.006751" file="test\minions.test.ts" line="2274" assertions="3" />
+      <testcase name="waiting row preferred over live active on cap-hit" classname="MinionQueue: maxPending — single-flight (waiting + live-lock active)" time="0.008127" file="test\minions.test.ts" line="2283" assertions="3" />
+      <testcase name="dead row frees the cap" classname="MinionQueue: maxPending — single-flight (waiting + live-lock active)" time="0.005527" file="test\minions.test.ts" line="2293" assertions="2" />
+      <testcase name="EXACT source scope: NULL-source submission never coalesces onto a per-source row (and vice versa)" classname="MinionQueue: maxPending — single-flight (waiting + live-lock active)" time="0.017778" file="test\minions.test.ts" line="2303" assertions="3" />
+      <testcase name="snake_case source_id scoping: two sources keep independent caps; same source coalesces" classname="MinionQueue: maxPending — single-flight (waiting + live-lock active)" time="0.009373" file="test\minions.test.ts" line="2316" assertions="2" />
+      <testcase name="camelCase sourceId scoping parity" classname="MinionQueue: maxPending — single-flight (waiting + live-lock active)" time="0.008218" file="test\minions.test.ts" line="2324" assertions="2" />
+      <testcase name="clamp: maxPending 0 → 1; floor: 1.7 → 1" classname="MinionQueue: maxPending — single-flight (waiting + live-lock active)" time="0.009656" file="test\minions.test.ts" line="2332" assertions="2" />
+      <testcase name="race: concurrent submissions hold the cap (PGLite smoke; PG e2e pins the real guarantee)" classname="MinionQueue: maxPending — single-flight (waiting + live-lock active)" time="0.008586" file="test\minions.test.ts" line="2342" assertions="1" />
+      <testcase name="both guards supplied: maxPending checked first, both enforced" classname="MinionQueue: maxPending — single-flight (waiting + live-lock active)" time="0.008053" file="test\minions.test.ts" line="2350" assertions="4" />
+      <testcase name="ON CONFLICT idempotency race fallback also carries coalesced metadata" classname="MinionQueue: maxPending — single-flight (waiting + live-lock active)" time="0.005098" file="test\minions.test.ts" line="2366" assertions="3" />
+    </testsuite>
+    <testsuite name="resolveWorkerConcurrency (v0.19.1 H3): clamp + validation" file="test\minions.test.ts" line="2377" tests="7" assertions="7" failures="0" skipped="0" time="0.005" hostname="">
+      <testcase name="flag=4 env-unset → 4" classname="resolveWorkerConcurrency (v0.19.1 H3): clamp + validation" time="0.002348" file="test\minions.test.ts" line="2388" assertions="1" />
+      <testcase name="flag-unset env=8 → 8" classname="resolveWorkerConcurrency (v0.19.1 H3): clamp + validation" time="0.000829" file="test\minions.test.ts" line="2391" assertions="1" />
+      <testcase name="flag=2 env=8 → 2 (flag wins)" classname="resolveWorkerConcurrency (v0.19.1 H3): clamp + validation" time="0.000923" file="test\minions.test.ts" line="2394" assertions="1" />
+      <testcase name="both unset → 1" classname="resolveWorkerConcurrency (v0.19.1 H3): clamp + validation" time="0.000793" file="test\minions.test.ts" line="2397" assertions="1" />
+      <testcase name="garbage env &quot;foo&quot; → clamped to 1 (H3)" classname="resolveWorkerConcurrency (v0.19.1 H3): clamp + validation" time="0.002665" file="test\minions.test.ts" line="2400" assertions="1" />
+      <testcase name="env=0 → clamped to 1 (H3 — prevents silent wedge)" classname="resolveWorkerConcurrency (v0.19.1 H3): clamp + validation" time="0.001004" file="test\minions.test.ts" line="2403" assertions="1" />
+      <testcase name="env=-5 → clamped to 1 (H3)" classname="resolveWorkerConcurrency (v0.19.1 H3): clamp + validation" time="0.000898" file="test\minions.test.ts" line="2406" assertions="1" />
+    </testsuite>
+    <testsuite name="parseMaxWaitingFlag (v0.19.1 H5): CLI flag wiring" file="test\minions.test.ts" line="2411" tests="5" assertions="5" failures="0" skipped="0" time="0.003" hostname="">
+      <testcase name="absent → undefined (no cap, default submit path)" classname="parseMaxWaitingFlag (v0.19.1 H5): CLI flag wiring" time="0.000931" file="test\minions.test.ts" line="2417" assertions="1" />
+      <testcase name="--max-waiting 2 → 2 (happy path)" classname="parseMaxWaitingFlag (v0.19.1 H5): CLI flag wiring" time="0.001438" file="test\minions.test.ts" line="2420" assertions="1" />
+      <testcase name="--max-waiting 200 → clamped to 100" classname="parseMaxWaitingFlag (v0.19.1 H5): CLI flag wiring" time="0.001063" file="test\minions.test.ts" line="2423" assertions="1" />
+      <testcase name="--max-waiting 0 → throws" classname="parseMaxWaitingFlag (v0.19.1 H5): CLI flag wiring" time="0.000711" file="test\minions.test.ts" line="2426" assertions="1" />
+      <testcase name="--max-waiting abc → throws" classname="parseMaxWaitingFlag (v0.19.1 H5): CLI flag wiring" time="0.001411" file="test\minions.test.ts" line="2429" assertions="1" />
+    </testsuite>
+    <testsuite name="backpressure-audit (v0.19.1 Q1): JSONL on coalesce" file="test\minions.test.ts" line="2434" tests="1" assertions="5" failures="0" skipped="0" time="0.013" hostname="">
+      <testcase name="logBackpressureCoalesce writes one JSONL line per coalesce" classname="backpressure-audit (v0.19.1 Q1): JSONL on coalesce" time="0.013574" file="test\minions.test.ts" line="2435" assertions="5" />
+    </testsuite>
+    <testsuite name="MinionQueue: v0.19.1 wall-clock + handleTimeouts non-interference (T1)" file="test\minions.test.ts" line="2467" tests="1" assertions="2" failures="0" skipped="0" time="0.005" hostname="">
+      <testcase name="wall-clock sweep does NOT evict a job that handleTimeouts would handle" classname="MinionQueue: v0.19.1 wall-clock + handleTimeouts non-interference (T1)" time="0.005723" file="test\minions.test.ts" line="2468" assertions="2" />
+    </testsuite>
+    <testsuite name="MinionWorker: --max-rss watchdog" file="test\minions.test.ts" line="2493" tests="5" assertions="8" failures="0" skipped="0" time="0.767" hostname="">
+      <testcase name="per-job check: handler bumps RSS, post-job check trips, sibling aborts" classname="MinionWorker: --max-rss watchdog" time="0.112519" file="test\minions.test.ts" line="2505" assertions="3" />
+      <testcase name="periodic timer: zero job completions, watchdog still fires" classname="MinionWorker: --max-rss watchdog" time="0.120052" file="test\minions.test.ts" line="2547" assertions="1" />
+      <testcase name="shutdownAbort fires (closes shell-handler zombie gap)" classname="MinionWorker: --max-rss watchdog" time="0.112323" file="test\minions.test.ts" line="2581" assertions="1" />
+      <testcase name="below threshold: no-op (no shutdown)" classname="MinionWorker: --max-rss watchdog" time="0.316396" file="test\minions.test.ts" line="2610" assertions="2" />
+      <testcase name="maxRssMb=0 disables watchdog entirely" classname="MinionWorker: --max-rss watchdog" time="0.107022" file="test\minions.test.ts" line="2642" assertions="1" />
+    </testsuite>
+    <testsuite name="connectWithRetry / isRetryableDbConnectError" file="test\minions.test.ts" line="2668" tests="6" assertions="15" failures="0" skipped="0" time="0.013" hostname="">
+      <testcase name="isRetryableDbConnectError matches transient patterns" classname="connectWithRetry / isRetryableDbConnectError" time="0.001905" file="test\minions.test.ts" line="2669" assertions="5" />
+      <testcase name="isRetryableDbConnectError rejects permanent errors" classname="connectWithRetry / isRetryableDbConnectError" time="0.001081" file="test\minions.test.ts" line="2678" assertions="3" />
+      <testcase name="connectWithRetry: 1st rejects transient, 2nd succeeds" classname="connectWithRetry / isRetryableDbConnectError" time="0.003876" file="test\minions.test.ts" line="2685" assertions="1" />
+      <testcase name="connectWithRetry: 3 transient rejects → throws" classname="connectWithRetry / isRetryableDbConnectError" time="0.006323" file="test\minions.test.ts" line="2699" assertions="2" />
+      <testcase name="connectWithRetry: permanent error does NOT retry" classname="connectWithRetry / isRetryableDbConnectError" time="0.001276" file="test\minions.test.ts" line="2715" assertions="2" />
+      <testcase name="connectWithRetry: noRetry honored" classname="connectWithRetry / isRetryableDbConnectError" time="0.001304" file="test\minions.test.ts" line="2731" assertions="2" />
+    </testsuite>
+    <testsuite name="MinionWorker: abort signal propagation (v0.20.5)" file="test\minions.test.ts" line="2752" tests="3" assertions="10" failures="0" skipped="0" time="0.733" hostname="">
+      <testcase name="handler receiving abort signal can exit cleanly" classname="MinionWorker: abort signal propagation (v0.20.5)" time="0.209892" file="test\minions.test.ts" line="2753" assertions="3" />
+      <testcase name="handler ignoring abort signal still gets abort fired" classname="MinionWorker: abort signal propagation (v0.20.5)" time="0.214872" file="test\minions.test.ts" line="2781" assertions="3" />
+      <testcase name="worker claims new jobs after timeout eviction (no wedge)" classname="MinionWorker: abort signal propagation (v0.20.5)" time="0.310478" file="test\minions.test.ts" line="2819" assertions="4" />
+    </testsuite>
+    <testsuite name="checkAborted (v0.20.5 cycle signal)" file="test\minions.test.ts" line="2872" tests="3" assertions="3" failures="0" skipped="0" time="0.001" hostname="">
+      <testcase name="undefined signal does not throw" classname="checkAborted (v0.20.5 cycle signal)" time="0.00105" file="test\minions.test.ts" line="2874" assertions="1" />
+      <testcase name="non-aborted signal does not throw" classname="checkAborted (v0.20.5 cycle signal)" time="0.00046" file="test\minions.test.ts" line="2887" assertions="1" />
+      <testcase name="aborted signal throws with reason" classname="checkAborted (v0.20.5 cycle signal)" time="0.000708" file="test\minions.test.ts" line="2894" assertions="1" />
+    </testsuite>
+    <testsuite name="MinionWorker: self-health-check" file="test\minions.test.ts" line="2910" tests="3" assertions="3" failures="0" skipped="0" time="0.365" hostname="">
+      <testcase name="health check is active when GBRAIN_SUPERVISED is not set" classname="MinionWorker: self-health-check" time="0.15302" file="test\minions.test.ts" line="2911" assertions="1" />
+      <testcase name="health check is skipped when GBRAIN_SUPERVISED=1" classname="MinionWorker: self-health-check" time="0.106456" file="test\minions.test.ts" line="2940" assertions="1" />
+      <testcase name="healthCheckInterval=0 disables health check" classname="MinionWorker: self-health-check" time="0.106148" file="test\minions.test.ts" line="2965" assertions="1" />
+    </testsuite>
+    <testsuite name="MinionWorker: self-health-check behavior (v0.22.14)" file="test\minions.test.ts" line="3031" tests="6" assertions="13" failures="0" skipped="0" time="1.241" hostname="">
+      <testcase name="emits unhealthy{db_dead} after dbFailExitAfter consecutive DB probe failures" classname="MinionWorker: self-health-check behavior (v0.22.14)" time="0.100856" file="test\minions.test.ts" line="3032" assertions="3" />
+      <testcase name="DB recovery resets the failure counter (no exit after intermittent failures)" classname="MinionWorker: self-health-check behavior (v0.22.14)" time="0.189975" file="test\minions.test.ts" line="3071" assertions="1" />
+      <testcase name="emits unhealthy{stalled} after stallExitAfterMs of continuous idle with waiting jobs" classname="MinionWorker: self-health-check behavior (v0.22.14)" time="0.13015" file="test\minions.test.ts" line="3113" assertions="2" />
+      <testcase name="inFlight &gt; 0 blocks stall detection (long-running legitimate job)" classname="MinionWorker: self-health-check behavior (v0.22.14)" time="0.408514" file="test\minions.test.ts" line="3160" assertions="1" />
+      <testcase name="regression (D1): waiting jobs of unregistered handler names do NOT trigger stall exit" classname="MinionWorker: self-health-check behavior (v0.22.14)" time="0.41266" file="test\minions.test.ts" line="3212" assertions="3" />
+      <testcase name="regression (R3): constructor throws when stallExitAfterMs &lt;= stallWarnAfterMs" classname="MinionWorker: self-health-check behavior (v0.22.14)" time="0.002081" file="test\minions.test.ts" line="3266" assertions="3" />
+    </testsuite>
+    <testsuite name="MinionWorker: inFlight generation-safety (#4145 R2-1)" file="test\minions.test.ts" line="3289" tests="1" assertions="6" failures="0" skipped="0" time="0.216" hostname="">
+      <testcase name="a stale execution&apos;s finally does not delete the reclaimed execution&apos;s entry" classname="MinionWorker: inFlight generation-safety (#4145 R2-1)" time="0.216793" file="test\minions.test.ts" line="3290" assertions="6" />
+    </testsuite>
+    <testsuite name="MinionQueue: stall-sweep reclaim grace (#4145)" file="test\minions.test.ts" line="3347" tests="5" assertions="17" failures="0" skipped="0" time="0.045" hostname="">
+      <testcase name="a lock that lapsed WITHIN the grace window is NOT reclaimed (starved-owner head start)" classname="MinionQueue: stall-sweep reclaim grace (#4145)" time="0.033711" file="test\minions.test.ts" line="3358" assertions="4" />
+      <testcase name="a lock that lapsed BEYOND the grace window IS reclaimed" classname="MinionQueue: stall-sweep reclaim grace (#4145)" time="0.006095" file="test\minions.test.ts" line="3368" assertions="4" />
+      <testcase name="grace=0 restores the exact legacy predicate (lock_until &lt; now())" classname="MinionQueue: stall-sweep reclaim grace (#4145)" time="0.005929" file="test\minions.test.ts" line="3378" assertions="2" />
+      <testcase name="env knob GBRAIN_MINION_STALL_RECLAIM_GRACE_MS resolves; bad value warns + falls back" classname="MinionQueue: stall-sweep reclaim grace (#4145)" time="0.001254" file="test\minions.test.ts" line="3386" assertions="6" />
+      <testcase name="grace env warn fires once per bad value, not per call (warn-once dedupe)" classname="MinionQueue: stall-sweep reclaim grace (#4145)" time="0.000929" file="test\minions.test.ts" line="3400" assertions="1" />
+    </testsuite>
+    <testsuite name="MinionQueue: per-job lock lease (#4145)" file="test\minions.test.ts" line="3422" tests="10" assertions="43" failures="0" skipped="0" time="2.58" hostname="">
+      <testcase name="claim stamps the handler-map default (300s) for subagent and derives lock_until from it" classname="MinionQueue: per-job lock lease (#4145)" time="0.002814" file="test\minions.test.ts" line="3423" assertions="4" />
+      <testcase name="a sync job gets the 5-minute default lease while an unmapped job claimed the same way keeps 30s" classname="MinionQueue: per-job lock lease (#4145)" time="0.005508" file="test\minions.test.ts" line="3435" assertions="4" />
+      <testcase name="an unmapped handler keeps NULL lease → worker default horizon (legacy behavior)" classname="MinionQueue: per-job lock lease (#4145)" time="0.004091" file="test\minions.test.ts" line="3448" assertions="3" />
+      <testcase name="explicit submit value wins over the map and is clamped to [5s, 1h]" classname="MinionQueue: per-job lock lease (#4145)" time="0.005423" file="test\minions.test.ts" line="3458" assertions="3" />
+      <testcase name="claim precedence: an explicit row lease beats the handler map at the claim UPDATE" classname="MinionQueue: per-job lock lease (#4145)" time="0.005028" file="test\minions.test.ts" line="3469" assertions="3" />
+      <testcase name="worker renews with the per-job lease, not the worker default (launchJob wiring)" classname="MinionQueue: per-job lock lease (#4145)" time="2.522807" file="test\minions.test.ts" line="3482" assertions="3" />
+      <testcase name="MCP submit_job threads lock_duration_ms through the shared clamp (round-trip)" classname="MinionQueue: per-job lock lease (#4145)" time="0.012866" file="test\minions.test.ts" line="3517" assertions="3" />
+      <testcase name="idempotent re-submit never mutates the first submitter&apos;s lease (INSERT-only)" classname="MinionQueue: per-job lock lease (#4145)" time="0.002492" file="test\minions.test.ts" line="3535" assertions="3" />
+      <testcase name="REGRESSION pin: NULL-lease rows keep the exact legacy wall-clock null-fallback" classname="MinionQueue: per-job lock lease (#4145)" time="0.006245" file="test\minions.test.ts" line="3543" assertions="3" />
+      <testcase name="repeated infrastructure evictions eventually dead-letter via max_stalled (lifetime accumulation pin)" classname="MinionQueue: per-job lock lease (#4145)" time="0.017883" file="test\minions.test.ts" line="3570" assertions="14" />
+    </testsuite>
+  </testsuite>
+  <testsuite name="test\model-pricing.test.ts" file="test\model-pricing.test.ts" tests="35" assertions="511" failures="0" skipped="0" time="0.0153279" hostname="">
+    <testsuite name="CANONICAL_PRICING — table integrity" file="test\model-pricing.test.ts" line="27" tests="14" assertions="371" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="every entry has finite positive rates and a provider-prefixed key" classname="CANONICAL_PRICING — table integrity" time="0.000517" file="test\model-pricing.test.ts" line="28" assertions="195" />
+      <testcase name="Opus 5 present at $5/$25 (same tier as Opus 4.8)" classname="CANONICAL_PRICING — table integrity" time="0.000303" file="test\model-pricing.test.ts" line="41" assertions="1" />
+      <testcase name="Opus 4.8 present at $5/$25 (closes gbrain#1819)" classname="CANONICAL_PRICING — table integrity" time="0.000267" file="test\model-pricing.test.ts" line="45" assertions="1" />
+      <testcase name="Opus 4.7 at $5/$25 (not the stale $15/$75)" classname="CANONICAL_PRICING — table integrity" time="0.000279" file="test\model-pricing.test.ts" line="49" assertions="1" />
+      <testcase name="Sonnet 5 and 5.5 present at $2/$10 (launch price became the standard rate)" classname="CANONICAL_PRICING — table integrity" time="0.000318" file="test\model-pricing.test.ts" line="53" assertions="2" />
+      <testcase name="gpt-6.1-sol present at its $2/$10 list rate (the fence repair default meters exactly, #6188)" classname="CANONICAL_PRICING — table integrity" time="0.000302" file="test\model-pricing.test.ts" line="58" assertions="1" />
+      <testcase name="Fable 5 present at $10/$50" classname="CANONICAL_PRICING — table integrity" time="0.000429" file="test\model-pricing.test.ts" line="62" assertions="1" />
+      <testcase name="Fable 5.1 uses $0.25 cache reads while Fable 5 remains at $1.00" classname="CANONICAL_PRICING — table integrity" time="0.000364" file="test\model-pricing.test.ts" line="66" assertions="2" />
+      <testcase name="Gemini 2.0 Flash reconciled to $0.10/$0.40; legacy alias agrees" classname="CANONICAL_PRICING — table integrity" time="0.00041" file="test\model-pricing.test.ts" line="76" assertions="2" />
+      <testcase name="the live Gemini ids are priced alongside the retired ones" classname="CANONICAL_PRICING — table integrity" time="0.000348" file="test\model-pricing.test.ts" line="85" assertions="2" />
+      <testcase name="every anthropic: row carries its declared cache-read multiplier and cache_write = 1.25x input" classname="CANONICAL_PRICING — table integrity" time="0.000468" file="test\model-pricing.test.ts" line="93" assertions="30" />
+      <testcase name="every long_prompt tier is finite, above its base row, and derives its cache rates like the row" classname="CANONICAL_PRICING — table integrity" time="0.000444" file="test\model-pricing.test.ts" line="105" assertions="6" />
+      <testcase name="every cache-read multiplier override names a canonical row with matching cache_read" classname="CANONICAL_PRICING — table integrity" time="0.000388" file="test\model-pricing.test.ts" line="126" assertions="4" />
+      <testcase name="cache fields, when present, are finite positive with read &lt; input &lt; write" classname="CANONICAL_PRICING — table integrity" time="0.000586" file="test\model-pricing.test.ts" line="134" assertions="123" />
+    </testsuite>
+    <testsuite name="canonicalLookup — id normalization" file="test\model-pricing.test.ts" line="156" tests="8" assertions="13" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="bare anthropic id → hit (defaults to anthropic provider)" classname="canonicalLookup — id normalization" time="0.000559" file="test\model-pricing.test.ts" line="157" assertions="1" />
+      <testcase name="colon form → hit" classname="canonicalLookup — id normalization" time="0.000371" file="test\model-pricing.test.ts" line="161" assertions="1" />
+      <testcase name="slash form → hit" classname="canonicalLookup — id normalization" time="0.000351" file="test\model-pricing.test.ts" line="165" assertions="1" />
+      <testcase name="non-anthropic bare id → miss (preserves prior null contract)" classname="canonicalLookup — id normalization" time="0.000399" file="test\model-pricing.test.ts" line="169" assertions="1" />
+      <testcase name="nested OpenRouter id with NO declared entry → MISS (markup ≠ native pricing)" classname="canonicalLookup — id normalization" time="0.000276" file="test\model-pricing.test.ts" line="173" assertions="1" />
+      <testcase name="OpenRouter id WITH a declared static entry → hit on its own rate, not the vendor alias" classname="canonicalLookup — id normalization" time="0.000322" file="test\model-pricing.test.ts" line="177" assertions="4" />
+      <testcase name="slash-bearing model tail kept as exact key (together Llama)" classname="canonicalLookup — id normalization" time="0.000264" file="test\model-pricing.test.ts" line="198" assertions="1" />
+      <testcase name="null / empty → undefined (no throw)" classname="canonicalLookup — id normalization" time="0.000324" file="test\model-pricing.test.ts" line="205" assertions="3" />
+    </testsuite>
+    <testsuite name="DRIFT GUARD — derived views stay equal to canonical (re-hardcode trip-wire)" file="test\model-pricing.test.ts" line="212" tests="6" assertions="80" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="ANTHROPIC_PRICING (bare) equals canonical anthropic: entries" classname="DRIFT GUARD — derived views stay equal to canonical (re-hardcode trip-wire)" time="0.00042" file="test\model-pricing.test.ts" line="213" assertions="15" />
+      <testcase name="takes-quality pricing equals canonical for every canonical key" classname="DRIFT GUARD — derived views stay equal to canonical (re-hardcode trip-wire)" time="0.000548" file="test\model-pricing.test.ts" line="221" assertions="39" />
+      <testcase name="openai recipe expansion cost equals canonical gpt-5.6-luna input price" classname="DRIFT GUARD — derived views stay equal to canonical (re-hardcode trip-wire)" time="0.000388" file="test\model-pricing.test.ts" line="227" assertions="3" />
+      <testcase name="A-N1: DeepSeek rows carry the vendor PEAK rates; legacy flash id stays in lockstep with deepseek-flash" classname="DRIFT GUARD — derived views stay equal to canonical (re-hardcode trip-wire)" time="0.000244" file="test\model-pricing.test.ts" line="239" assertions="3" />
+      <testcase name="A-N1: every deepseek recipe chat/expansion model is priced and the touchpoint costs equal canonical deepseek-flash" classname="DRIFT GUARD — derived views stay equal to canonical (re-hardcode trip-wire)" time="0.000439" file="test\model-pricing.test.ts" line="245" assertions="10" />
+      <testcase name="cross-modal panel models are all priced from canonical" classname="DRIFT GUARD — derived views stay equal to canonical (re-hardcode trip-wire)" time="0.000297" file="test\model-pricing.test.ts" line="258" assertions="10" />
+    </testsuite>
+    <testsuite name="S1A — raw-index consumers price provider-prefixed ids" file="test\model-pricing.test.ts" line="278" tests="1" assertions="1" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="estimateAnthropicCost prices anthropic:claude-opus-4-8 (was zero pre-fix)" classname="S1A — raw-index consumers price provider-prefixed ids" time="0.000307" file="test\model-pricing.test.ts" line="279" assertions="1" />
+    </testsuite>
+    <testsuite name="no heavy import (cycle guard)" file="test\model-pricing.test.ts" line="287" tests="1" assertions="1" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="model-pricing.ts imports only model-id.ts (relative)" classname="no heavy import (cycle guard)" time="0.000499" file="test\model-pricing.test.ts" line="288" assertions="1" />
+    </testsuite>
+    <testsuite name="canonicalLookup — case-insensitive fallback (#4123 / TODOS case-sensitivity)" file="test\model-pricing.test.ts" line="300" tests="4" assertions="42" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="cased provider prefix resolves" classname="canonicalLookup — case-insensitive fallback (#4123 / TODOS case-sensitivity)" time="0.000232" file="test\model-pricing.test.ts" line="301" assertions="1" />
+      <testcase name="cased model tail resolves" classname="canonicalLookup — case-insensitive fallback (#4123 / TODOS case-sensitivity)" time="0.00023" file="test\model-pricing.test.ts" line="305" assertions="1" />
+      <testcase name="nested OpenRouter ids still intentionally MISS (markup never repriced as native)" classname="canonicalLookup — case-insensitive fallback (#4123 / TODOS case-sensitivity)" time="0.000222" file="test\model-pricing.test.ts" line="309" assertions="1" />
+      <testcase name="no two canonical keys collide case-insensitively (folded-view safety pin)" classname="canonicalLookup — case-insensitive fallback (#4123 / TODOS case-sensitivity)" time="0.000299" file="test\model-pricing.test.ts" line="313" assertions="39" />
+    </testsuite>
+    <testsuite name="D3 peak-rate label" file="test\model-pricing.test.ts" line="324" tests="1" assertions="3" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="an estimate touching a deepseek row says it is a peak-rate upper bound; router rows and others do not" classname="D3 peak-rate label" time="0.000382" file="test\model-pricing.test.ts" line="325" assertions="3" />
+    </testsuite>
+  </testsuite>
+  <testsuite name="test\operation-manifest.test.ts" file="test\operation-manifest.test.ts" tests="4" assertions="5" failures="0" skipped="0" time="0.8462701" hostname="">
+    <testsuite name="operation manifest" file="test\operation-manifest.test.ts" line="17" tests="4" assertions="5" failures="0" skipped="0" time="0.835" hostname="">
+      <testcase name="committed file matches a fresh render (run `bun run build:operation-manifest`)" classname="operation manifest" time="0.0027" file="test\operation-manifest.test.ts" line="18" assertions="1" />
+      <testcase name="committed loader table matches a fresh render (run `bun run build:operation-manifest`)" classname="operation manifest" time="0.005753" file="test\operation-manifest.test.ts" line="22" assertions="1" />
+      <testcase name="every operation minus its handler, same order, same key order" classname="operation manifest" time="0.001871" file="test\operation-manifest.test.ts" line="26" assertions="1" />
+      <testcase name="serve and CLI dispatcher modules do not load operations.ts at import" classname="operation manifest" time="0.827812" file="test\operation-manifest.test.ts" line="31" assertions="2" />
+    </testsuite>
+  </testsuite>
+  <testsuite name="test\parity.test.ts" file="test\parity.test.ts" tests="10" assertions="2871" failures="0" skipped="0" time="0.0122669" hostname="">
+    <testsuite name="operations contract parity" file="test\parity.test.ts" line="5" tests="10" assertions="2871" failures="0" skipped="0" time="0.005" hostname="">
+      <testcase name="every operation has a unique name" classname="operations contract parity" time="0.004938" file="test\parity.test.ts" line="6" assertions="1" />
+      <testcase name="every operation has required fields" classname="operations contract parity" time="0.000719" file="test\parity.test.ts" line="11" assertions="808" />
+      <testcase name="operationsByName matches operations array" classname="operations contract parity" time="0.000532" file="test\parity.test.ts" line="20" assertions="203" />
+      <testcase name="every required param has a type" classname="operations contract parity" time="0.000955" file="test\parity.test.ts" line="27" assertions="904" />
+      <testcase name="mutating operations have dry_run support" classname="operations contract parity" time="0.000525" file="test\parity.test.ts" line="35" assertions="87" />
+      <testcase name="CLI names are unique across operations" classname="operations contract parity" time="0.000374" file="test\parity.test.ts" line="44" assertions="1" />
+      <testcase name="CLI positional params reference valid param names" classname="operations contract parity" time="0.000319" file="test\parity.test.ts" line="51" assertions="55" />
+      <testcase name="CLI stdin param references a valid param name" classname="operations contract parity" time="0.000218" file="test\parity.test.ts" line="61" assertions="3" />
+      <testcase name="operations count is at least 30" classname="operations contract parity" time="0.000201" file="test\parity.test.ts" line="69" assertions="1" />
+      <testcase name="MCP tool definitions can be generated from operations" classname="operations contract parity" time="0.001347" file="test\parity.test.ts" line="73" assertions="808" />
+    </testsuite>
+  </testsuite>
+  <testsuite name="test\skill-brain-first.test.ts" file="test\skill-brain-first.test.ts" tests="57" assertions="131" failures="0" skipped="0" time="0.0992003" hostname="">
+    <testsuite name="parseSkillFrontmatter" file="test\skill-brain-first.test.ts" line="65" tests="11" assertions="31" failures="0" skipped="0" time="0.001" hostname="">
+      <testcase name="returns null when no frontmatter fence is present" classname="parseSkillFrontmatter" time="0.000606" file="test\skill-brain-first.test.ts" line="66" assertions="1" />
+      <testcase name="parses frontmatter on CRLF checkouts (Windows core.autocrlf)" classname="parseSkillFrontmatter" time="0.001674" file="test\skill-brain-first.test.ts" line="70" assertions="3" />
+      <testcase name="parses name, mutating, writes_pages, writes_to" classname="parseSkillFrontmatter" time="0.000793" file="test\skill-brain-first.test.ts" line="87" assertions="5" />
+      <testcase name="parses inline array forms for writes_to / tools / triggers" classname="parseSkillFrontmatter" time="0.000693" file="test\skill-brain-first.test.ts" line="108" assertions="3" />
+      <testcase name="canonical brain_first: exempt populates the typed field" classname="parseSkillFrontmatter" time="0.000533" file="test\skill-brain-first.test.ts" line="123" assertions="2" />
+      <testcase name="kebab-case brain-first triggers noncanonical_key typo" classname="parseSkillFrontmatter" time="0.000504" file="test\skill-brain-first.test.ts" line="130" assertions="4" />
+      <testcase name="CamelCase BrainFirst triggers noncanonical_key typo" classname="parseSkillFrontmatter" time="0.000479" file="test\skill-brain-first.test.ts" line="139" assertions="2" />
+      <testcase name="quoted value triggers quoted_value typo" classname="parseSkillFrontmatter" time="0.00052" file="test\skill-brain-first.test.ts" line="146" assertions="2" />
+      <testcase name="capitalized value triggers capitalized_value typo" classname="parseSkillFrontmatter" time="0.000471" file="test\skill-brain-first.test.ts" line="153" assertions="2" />
+      <testcase name="unknown value triggers unknown_value typo" classname="parseSkillFrontmatter" time="0.000678" file="test\skill-brain-first.test.ts" line="160" assertions="2" />
+      <testcase name="formatBrainFirstTypoHint produces paste-ready strings for every reason" classname="parseSkillFrontmatter" time="0.000461" file="test\skill-brain-first.test.ts" line="167" assertions="5" />
+    </testsuite>
+    <testsuite name="stripFrontmatter" file="test\skill-brain-first.test.ts" line="188" tests="3" assertions="4" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="removes leading YAML fence" classname="stripFrontmatter" time="0.000478" file="test\skill-brain-first.test.ts" line="189" assertions="1" />
+      <testcase name="leaves content unchanged when no fence is present" classname="stripFrontmatter" time="0.000386" file="test\skill-brain-first.test.ts" line="194" assertions="1" />
+      <testcase name="CRITICAL F6 — frontmatter exclusion prevents tools: [web_search] false-positive" classname="stripFrontmatter" time="0.000573" file="test\skill-brain-first.test.ts" line="198" assertions="2" />
+    </testsuite>
+    <testsuite name="offset helpers" file="test\skill-brain-first.test.ts" line="219" tests="3" assertions="4" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="findFirstBrainRefOffset finds earliest gbrain ref" classname="offset helpers" time="0.000295" file="test\skill-brain-first.test.ts" line="220" assertions="1" />
+      <testcase name="findFirstExternalRefOffset finds earliest external pattern" classname="offset helpers" time="0.000346" file="test\skill-brain-first.test.ts" line="226" assertions="1" />
+      <testcase name="returns -1 when no match" classname="offset helpers" time="0.000239" file="test\skill-brain-first.test.ts" line="232" assertions="2" />
+    </testsuite>
+    <testsuite name="CONVENTION_CALLOUT_RE" file="test\skill-brain-first.test.ts" line="242" tests="5" assertions="5" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="matches plain-text path form (brain-ops shape)" classname="CONVENTION_CALLOUT_RE" time="0.000246" file="test\skill-brain-first.test.ts" line="243" assertions="1" />
+      <testcase name="matches relative plain-text form (perplexity-research shape)" classname="CONVENTION_CALLOUT_RE" time="0.00021" file="test\skill-brain-first.test.ts" line="248" assertions="1" />
+      <testcase name="matches markdown-link form (auto-fix output shape)" classname="CONVENTION_CALLOUT_RE" time="0.000204" file="test\skill-brain-first.test.ts" line="253" assertions="1" />
+      <testcase name="does NOT match a non-blockquote mention of brain-first" classname="CONVENTION_CALLOUT_RE" time="0.000258" file="test\skill-brain-first.test.ts" line="258" assertions="1" />
+      <testcase name="does NOT match an unrelated Convention callout" classname="CONVENTION_CALLOUT_RE" time="0.000224" file="test\skill-brain-first.test.ts" line="263" assertions="1" />
+    </testsuite>
+    <testsuite name="PHASE_HEADING_RE" file="test\skill-brain-first.test.ts" line="273" tests="4" assertions="4" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="matches ## Phase 1: Brain-First Lookup" classname="PHASE_HEADING_RE" time="0.000233" file="test\skill-brain-first.test.ts" line="274" assertions="1" />
+      <testcase name="matches ### Step 0: Brain Context" classname="PHASE_HEADING_RE" time="0.000227" file="test\skill-brain-first.test.ts" line="278" assertions="1" />
+      <testcase name="does NOT match # Phase 1 (H1, not H2+)" classname="PHASE_HEADING_RE" time="0.00024" file="test\skill-brain-first.test.ts" line="282" assertions="1" />
+      <testcase name="does NOT match Phase 2 etc." classname="PHASE_HEADING_RE" time="0.000201" file="test\skill-brain-first.test.ts" line="286" assertions="1" />
+    </testsuite>
+    <testsuite name="EXTERNAL_LOOKUP_PATTERNS" file="test\skill-brain-first.test.ts" line="295" tests="3" assertions="11" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="all 8 patterns are present and named" classname="EXTERNAL_LOOKUP_PATTERNS" time="0.000248" file="test\skill-brain-first.test.ts" line="296" assertions="1" />
+      <testcase name="captain_api regex handles all four shapes" classname="EXTERNAL_LOOKUP_PATTERNS" time="0.000249" file="test\skill-brain-first.test.ts" line="310" assertions="5" />
+      <testcase name="exa requires a separator (avoids matching exam, exalt)" classname="EXTERNAL_LOOKUP_PATTERNS" time="0.000243" file="test\skill-brain-first.test.ts" line="319" assertions="5" />
+    </testsuite>
+    <testsuite name="FORMERLY_HARDCODED_EXEMPT" file="test\skill-brain-first.test.ts" line="333" tests="2" assertions="8" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="preserves all 40+ entries from PR #1206 allowlist" classname="FORMERLY_HARDCODED_EXEMPT" time="0.0002" file="test\skill-brain-first.test.ts" line="334" assertions="7" />
+      <testcase name="contains at least 40 entries (preserves PR #1206 intent)" classname="FORMERLY_HARDCODED_EXEMPT" time="0.000208" file="test\skill-brain-first.test.ts" line="345" assertions="1" />
+    </testsuite>
+    <testsuite name="analyzeSkillBrainFirst (fixture corpus)" file="test\skill-brain-first.test.ts" line="354" tests="9" assertions="27" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="compliant-callout → ok via compliant_callout reason" classname="analyzeSkillBrainFirst (fixture corpus)" time="0.000928" file="test\skill-brain-first.test.ts" line="355" assertions="3" />
+      <testcase name="compliant-phase → ok via compliant_phase reason" classname="analyzeSkillBrainFirst (fixture corpus)" time="0.000796" file="test\skill-brain-first.test.ts" line="364" assertions="2" />
+      <testcase name="compliant-position → ok via compliant_position reason" classname="analyzeSkillBrainFirst (fixture corpus)" time="0.000649" file="test\skill-brain-first.test.ts" line="372" assertions="2" />
+      <testcase name="missing-brain-first → warn via missing_brain_first" classname="analyzeSkillBrainFirst (fixture corpus)" time="0.000837" file="test\skill-brain-first.test.ts" line="380" assertions="4" />
+      <testcase name="exempt-frontmatter → ok via exempt_explicit" classname="analyzeSkillBrainFirst (fixture corpus)" time="0.000735" file="test\skill-brain-first.test.ts" line="390" assertions="2" />
+      <testcase name="no-external → ok via exempt_no_external" classname="analyzeSkillBrainFirst (fixture corpus)" time="0.000736" file="test\skill-brain-first.test.ts" line="398" assertions="3" />
+      <testcase name="multi-pattern → warn with all 3 external patterns matched" classname="analyzeSkillBrainFirst (fixture corpus)" time="0.000704" file="test\skill-brain-first.test.ts" line="407" assertions="5" />
+      <testcase name="typo-frontmatter → warn with typo_hint surfaced" classname="analyzeSkillBrainFirst (fixture corpus)" time="0.000743" file="test\skill-brain-first.test.ts" line="418" assertions="4" />
+      <testcase name="negation-prose → ok via compliant_position (brain ref appears first)" classname="analyzeSkillBrainFirst (fixture corpus)" time="0.000884" file="test\skill-brain-first.test.ts" line="428" assertions="2" />
+    </testsuite>
+    <testsuite name="analyzeSkillBrainFirst (PR #1206 regression preservation)" file="test\skill-brain-first.test.ts" line="441" tests="4" assertions="5" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="PR test case: good skill with Step 0 brain context passes" classname="analyzeSkillBrainFirst (PR #1206 regression preservation)" time="0.000474" file="test\skill-brain-first.test.ts" line="442" assertions="1" />
+      <testcase name="PR test case: bad skill with web_search but no brain-first → warn" classname="analyzeSkillBrainFirst (PR #1206 regression preservation)" time="0.000513" file="test\skill-brain-first.test.ts" line="449" assertions="1" />
+      <testcase name="PR test case: skill with brain search reference is not flagged" classname="analyzeSkillBrainFirst (PR #1206 regression preservation)" time="0.000494" file="test\skill-brain-first.test.ts" line="455" assertions="1" />
+      <testcase name="PR test case: skill without external lookups not flagged" classname="analyzeSkillBrainFirst (PR #1206 regression preservation)" time="0.000376" file="test\skill-brain-first.test.ts" line="461" assertions="2" />
+    </testsuite>
+    <testsuite name="buildBrainFirstSummaryLine" file="test\skill-brain-first.test.ts" line="473" tests="4" assertions="7" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="ok results render with reason tag" classname="buildBrainFirstSummaryLine" time="0.000326" file="test\skill-brain-first.test.ts" line="474" assertions="1" />
+      <testcase name="warn results include external patterns + hint" classname="buildBrainFirstSummaryLine" time="0.000296" file="test\skill-brain-first.test.ts" line="485" assertions="2" />
+      <testcase name="warn results with formerly_hardcoded_exempt include the PR #1206 hint" classname="buildBrainFirstSummaryLine" time="0.000607" file="test\skill-brain-first.test.ts" line="497" assertions="2" />
+      <testcase name="warn results carry typo hint through to message" classname="buildBrainFirstSummaryLine" time="0.0006" file="test\skill-brain-first.test.ts" line="509" assertions="2" />
+    </testsuite>
+    <testsuite name="audit-skill-brain-first (snapshot+diff)" file="test\skill-brain-first.test.ts" line="548" tests="9" assertions="25" failures="0" skipped="0" time="0.038" hostname="">
+      <testcase name="loadSnapshot returns present:false when file missing" classname="audit-skill-brain-first (snapshot+diff)" time="0.001745" file="test\skill-brain-first.test.ts" line="549" assertions="2" />
+      <testcase name="writeSnapshotAtomically + loadSnapshot round-trip" classname="audit-skill-brain-first (snapshot+diff)" time="0.011403" file="test\skill-brain-first.test.ts" line="557" assertions="4" />
+      <testcase name="diffAgainstSnapshot detects added/removed/unchanged" classname="audit-skill-brain-first (snapshot+diff)" time="0.000632" file="test\skill-brain-first.test.ts" line="568" assertions="3" />
+      <testcase name="diff result is sorted for determinism" classname="audit-skill-brain-first (snapshot+diff)" time="0.000404" file="test\skill-brain-first.test.ts" line="578" assertions="3" />
+      <testcase name="corrupt snapshot JSON treated as missing with warn-once" classname="audit-skill-brain-first (snapshot+diff)" time="0.00286" file="test\skill-brain-first.test.ts" line="587" assertions="2" />
+      <testcase name="appendAuditEventsForTransitions writes one line per added/removed" classname="audit-skill-brain-first (snapshot+diff)" time="0.015212" file="test\skill-brain-first.test.ts" line="597" assertions="4" />
+      <testcase name="no-transition diff produces zero audit writes (A2 contract)" classname="audit-skill-brain-first (snapshot+diff)" time="0.001226" file="test\skill-brain-first.test.ts" line="612" assertions="1" />
+      <testcase name="logBrainFirstEvent writes a fixed event" classname="audit-skill-brain-first (snapshot+diff)" time="0.008385" file="test\skill-brain-first.test.ts" line="621" assertions="5" />
+      <testcase name="computeBrainFirstAuditFilename produces ISO-week format" classname="audit-skill-brain-first (snapshot+diff)" time="0.000502" file="test\skill-brain-first.test.ts" line="633" assertions="1" />
+    </testsuite>
+  </testsuite>
+  <testsuite name="test\takes-reservation-callers.test.ts" file="test\takes-reservation-callers.test.ts" tests="1" assertions="1" failures="0" skipped="0" time="0.4213942" hostname="">
+    <testcase name="every parseTakesFence caller is reviewed for reservation rows" classname="" time="0.394877" file="test\takes-reservation-callers.test.ts" line="45" assertions="1" />
+  </testsuite>
+  <testsuite name="test\ai\build-gateway-config.test.ts" file="test\ai\build-gateway-config.test.ts" tests="35" assertions="55" failures="0" skipped="0" time="0.267546" hostname="">
+    <testsuite name="buildGatewayConfig env-baseURL passthrough" file="test\ai\build-gateway-config.test.ts" line="52" tests="9" assertions="14" failures="0" skipped="0" time="0.009" hostname="">
+      <testcase name="LLAMA_SERVER_BASE_URL flows through to base_urls.llama-server" classname="buildGatewayConfig env-baseURL passthrough" time="0.001946" file="test\ai\build-gateway-config.test.ts" line="54" assertions="1" />
+      <testcase name="OLLAMA_BASE_URL flows through to base_urls.ollama" classname="buildGatewayConfig env-baseURL passthrough" time="0.001123" file="test\ai\build-gateway-config.test.ts" line="54" assertions="1" />
+      <testcase name="LMSTUDIO_BASE_URL flows through to base_urls.lmstudio" classname="buildGatewayConfig env-baseURL passthrough" time="0.001207" file="test\ai\build-gateway-config.test.ts" line="54" assertions="1" />
+      <testcase name="LITELLM_BASE_URL flows through to base_urls.litellm" classname="buildGatewayConfig env-baseURL passthrough" time="0.001355" file="test\ai\build-gateway-config.test.ts" line="54" assertions="1" />
+      <testcase name="OPENROUTER_BASE_URL flows through to base_urls.openrouter" classname="buildGatewayConfig env-baseURL passthrough" time="0.00186" file="test\ai\build-gateway-config.test.ts" line="54" assertions="1" />
+      <testcase name="DEEPSEEK_BASE_URL flows through to base_urls.deepseek" classname="buildGatewayConfig env-baseURL passthrough" time="0.001368" file="test\ai\build-gateway-config.test.ts" line="54" assertions="1" />
+      <testcase name="unset env vars do NOT populate base_urls keys" classname="buildGatewayConfig env-baseURL passthrough" time="0.001395" file="test\ai\build-gateway-config.test.ts" line="65" assertions="6" />
+      <testcase name="caller-provided provider_base_urls override env (config wins)" classname="buildGatewayConfig env-baseURL passthrough" time="0.001298" file="test\ai\build-gateway-config.test.ts" line="77" assertions="1" />
+      <testcase name="provider_chat_options passes through unchanged" classname="buildGatewayConfig env-baseURL passthrough" time="0.001236" file="test\ai\build-gateway-config.test.ts" line="89" assertions="1" />
+    </testsuite>
+    <testsuite name="buildGatewayConfig config-plane API-key folding" file="test\ai\build-gateway-config.test.ts" line="103" tests="13" assertions="23" failures="0" skipped="0" time="0.013" hostname="">
+      <testcase name="openrouter_api_key folds into gateway env as OPENROUTER_API_KEY" classname="buildGatewayConfig config-plane API-key folding" time="0.001071" file="test\ai\build-gateway-config.test.ts" line="104" assertions="1" />
+      <testcase name="a real OPENROUTER_API_KEY process.env value wins over the config-plane fallback" classname="buildGatewayConfig config-plane API-key folding" time="0.001062" file="test\ai\build-gateway-config.test.ts" line="113" assertions="1" />
+      <testcase name="voyage_api_key folds into gateway env as VOYAGE_API_KEY" classname="buildGatewayConfig config-plane API-key folding" time="0.001217" file="test\ai\build-gateway-config.test.ts" line="126" assertions="1" />
+      <testcase name="a real VOYAGE_API_KEY process.env value wins over the config-plane fallback" classname="buildGatewayConfig config-plane API-key folding" time="0.001012" file="test\ai\build-gateway-config.test.ts" line="135" assertions="1" />
+      <testcase name="dashscope_api_key folds into gateway env as DASHSCOPE_API_KEY" classname="buildGatewayConfig config-plane API-key folding" time="0.001038" file="test\ai\build-gateway-config.test.ts" line="147" assertions="1" />
+      <testcase name="a real DASHSCOPE_API_KEY process.env value wins over the config-plane fallback" classname="buildGatewayConfig config-plane API-key folding" time="0.000956" file="test\ai\build-gateway-config.test.ts" line="156" assertions="1" />
+      <testcase name="litellm_api_key folds into gateway env as LITELLM_API_KEY" classname="buildGatewayConfig config-plane API-key folding" time="0.001031" file="test\ai\build-gateway-config.test.ts" line="169" assertions="1" />
+      <testcase name="a real LITELLM_API_KEY process.env value wins over the config-plane fallback" classname="buildGatewayConfig config-plane API-key folding" time="0.001251" file="test\ai\build-gateway-config.test.ts" line="178" assertions="1" />
+      <testcase name="together_api_key folds into gateway env as TOGETHER_API_KEY" classname="buildGatewayConfig config-plane API-key folding" time="0.001162" file="test\ai\build-gateway-config.test.ts" line="187" assertions="1" />
+      <testcase name="a real TOGETHER_API_KEY process.env value wins over the config-plane fallback" classname="buildGatewayConfig config-plane API-key folding" time="0.000839" file="test\ai\build-gateway-config.test.ts" line="196" assertions="1" />
+      <testcase name="google_api_key folds into gateway env as GOOGLE_GENERATIVE_AI_API_KEY" classname="buildGatewayConfig config-plane API-key folding" time="0.00122" file="test\ai\build-gateway-config.test.ts" line="207" assertions="1" />
+      <testcase name="deepseek_api_key folds into gateway env as DEEPSEEK_API_KEY (#4808)" classname="buildGatewayConfig config-plane API-key folding" time="0.000771" file="test\ai\build-gateway-config.test.ts" line="219" assertions="1" />
+      <testcase name="every KNOWN_CONFIG_KEYS *_api_key field reaches the gateway env" classname="buildGatewayConfig config-plane API-key folding" time="0.004755" file="test\ai\build-gateway-config.test.ts" line="232" assertions="11" />
+    </testsuite>
+    <testsuite name="buildGatewayConfig GEMINI_API_KEY alias (#3500)" file="test\ai\build-gateway-config.test.ts" line="256" tests="3" assertions="3" failures="0" skipped="0" time="0.003" hostname="">
+      <testcase name="GEMINI_API_KEY aliases to GOOGLE_GENERATIVE_AI_API_KEY" classname="buildGatewayConfig GEMINI_API_KEY alias (#3500)" time="0.001018" file="test\ai\build-gateway-config.test.ts" line="260" assertions="1" />
+      <testcase name="canonical GOOGLE_GENERATIVE_AI_API_KEY env wins over the GEMINI_API_KEY alias" classname="buildGatewayConfig GEMINI_API_KEY alias (#3500)" time="0.001078" file="test\ai\build-gateway-config.test.ts" line="270" assertions="1" />
+      <testcase name="GEMINI_API_KEY (process env) wins over the config-plane google_api_key" classname="buildGatewayConfig GEMINI_API_KEY alias (#3500)" time="0.001071" file="test\ai\build-gateway-config.test.ts" line="280" assertions="1" />
+    </testsuite>
+    <testsuite name="buildGatewayConfig file-plane API key injection" file="test\ai\build-gateway-config.test.ts" line="293" tests="2" assertions="2" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="deepseek_api_key maps to DEEPSEEK_API_KEY when env unset" classname="buildGatewayConfig file-plane API key injection" time="0.000962" file="test\ai\build-gateway-config.test.ts" line="294" assertions="1" />
+      <testcase name="process.env DEEPSEEK_API_KEY wins over config file" classname="buildGatewayConfig file-plane API key injection" time="0.000745" file="test\ai\build-gateway-config.test.ts" line="312" assertions="1" />
+    </testsuite>
+    <testsuite name="buildGatewayConfig env empty-string clobber guard (#1249)" file="test\ai\build-gateway-config.test.ts" line="326" tests="3" assertions="4" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="an empty-string process.env value does NOT clobber a valid config-plane key" classname="buildGatewayConfig env empty-string clobber guard (#1249)" time="0.000639" file="test\ai\build-gateway-config.test.ts" line="327" assertions="1" />
+      <testcase name="a real process.env value still wins over the config-plane fallback" classname="buildGatewayConfig env empty-string clobber guard (#1249)" time="0.000553" file="test\ai\build-gateway-config.test.ts" line="337" assertions="1" />
+      <testcase name="legitimate falsy-but-present values (&apos;0&apos; / &apos;false&apos;) are preserved, not dropped" classname="buildGatewayConfig env empty-string clobber guard (#1249)" time="0.000674" file="test\ai\build-gateway-config.test.ts" line="346" assertions="2" />
+    </testsuite>
+    <testsuite name="buildGatewayConfig OCR-model threading (#4107)" file="test\ai\build-gateway-config.test.ts" line="358" tests="2" assertions="2" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="embedding_image_ocr_model reaches the gateway config" classname="buildGatewayConfig OCR-model threading (#4107)" time="0.000722" file="test\ai\build-gateway-config.test.ts" line="361" assertions="1" />
+      <testcase name="absent embedding_image_ocr_model stays undefined (expansion fallback signal preserved)" classname="buildGatewayConfig OCR-model threading (#4107)" time="0.000662" file="test\ai\build-gateway-config.test.ts" line="368" assertions="1" />
+    </testsuite>
+    <testsuite name="buildGatewayConfig import side effect guard" file="test\ai\build-gateway-config.test.ts" line="385" tests="3" assertions="7" failures="0" skipped="0" time="0.202" hostname="">
+      <testcase name="direct CLI entry --help still prints help to stdout (regression guard)" classname="buildGatewayConfig import side effect guard" time="0.079266" file="test\ai\build-gateway-config.test.ts" line="410" assertions="3" />
+      <testcase name="importing buildGatewayConfig does NOT trigger main() (no help on stdout)" classname="buildGatewayConfig import side effect guard" time="0.001018" file="test\ai\build-gateway-config.test.ts" line="417" assertions="2" />
+      <testcase name="subprocess importing buildGatewayConfig sees no CLI help on stdout" classname="buildGatewayConfig import side effect guard" time="0.122474" file="test\ai\build-gateway-config.test.ts" line="435" assertions="2" />
+    </testsuite>
+  </testsuite>
+  <testsuite name="test\ai\gateway-chat.test.ts" file="test\ai\gateway-chat.test.ts" tests="43" assertions="117" failures="0" skipped="0" time="0.0404242" hostname="">
+    <testsuite name="chat touchpoint — recipe registry" file="test\ai\gateway-chat.test.ts" line="41" tests="5" assertions="52" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="all hosted tool-loop providers ship a chat touchpoint with supports_subagent_loop" classname="chat touchpoint — recipe registry" time="0.000524" file="test\ai\gateway-chat.test.ts" line="42" assertions="24" />
+      <testcase name="the set of recipes declaring supports_prompt_cache is the expected one" classname="chat touchpoint — recipe registry" time="0.00034" file="test\ai\gateway-chat.test.ts" line="53" assertions="16" />
+      <testcase name="Voyage remains embedding-only" classname="chat touchpoint — recipe registry" time="0.000354" file="test\ai\gateway-chat.test.ts" line="90" assertions="1" />
+      <testcase name="Ollama declares local chat without subagent tool-loop support" classname="chat touchpoint — recipe registry" time="0.000337" file="test\ai\gateway-chat.test.ts" line="94" assertions="7" />
+      <testcase name="openai-compat chat recipes have base_url_default" classname="chat touchpoint — recipe registry" time="0.000313" file="test\ai\gateway-chat.test.ts" line="105" assertions="4" />
+    </testsuite>
+    <testsuite name="expansion — structured-output capability gating" file="test\ai\gateway-chat.test.ts" line="113" tests="3" assertions="5" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="openai-compat chat recipes default to no structured-output support" classname="expansion — structured-output capability gating" time="0.000441" file="test\ai\gateway-chat.test.ts" line="114" assertions="3" />
+      <testcase name="recipeSupportsStructuredOutputs is false when no chat touchpoint exists" classname="expansion — structured-output capability gating" time="0.000333" file="test\ai\gateway-chat.test.ts" line="123" assertions="1" />
+      <testcase name="recipeSupportsStructuredOutputs is true when a recipe opts in" classname="expansion — structured-output capability gating" time="0.00032" file="test\ai\gateway-chat.test.ts" line="128" assertions="1" />
+    </testsuite>
+    <testsuite name="expansion — schemaless recovery (parseExpansionResponse)" file="test\ai\gateway-chat.test.ts" line="137" tests="5" assertions="7" failures="0" skipped="0" time="0.002" hostname="">
+      <testcase name="recovers queries from clean JSON" classname="expansion — schemaless recovery (parseExpansionResponse)" time="0.002584" file="test\ai\gateway-chat.test.ts" line="140" assertions="1" />
+      <testcase name="recovers queries from fenced JSON" classname="expansion — schemaless recovery (parseExpansionResponse)" time="0.000471" file="test\ai\gateway-chat.test.ts" line="144" assertions="1" />
+      <testcase name="recovers queries from prose-wrapped JSON" classname="expansion — schemaless recovery (parseExpansionResponse)" time="0.000433" file="test\ai\gateway-chat.test.ts" line="148" assertions="1" />
+      <testcase name="returns null for non-JSON so the caller can drop expansion cleanly" classname="expansion — schemaless recovery (parseExpansionResponse)" time="0.000538" file="test\ai\gateway-chat.test.ts" line="152" assertions="1" />
+      <testcase name="returns null when the JSON violates the schema" classname="expansion — schemaless recovery (parseExpansionResponse)" time="0.000511" file="test\ai\gateway-chat.test.ts" line="156" assertions="3" />
+    </testsuite>
+    <testsuite name="chat touchpoint — model resolver + aliases (Codex F-OV-5)" file="test\ai\gateway-chat.test.ts" line="163" tests="9" assertions="23" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="parseModelId handles dated and undated forms identically at parse time" classname="chat touchpoint — model resolver + aliases (Codex F-OV-5)" time="0.000289" file="test\ai\gateway-chat.test.ts" line="164" assertions="2" />
+      <testcase name="resolveRecipe expands pre-4.6 dateless alias to dated canonical" classname="chat touchpoint — model resolver + aliases (Codex F-OV-5)" time="0.000245" file="test\ai\gateway-chat.test.ts" line="175" assertions="1" />
+      <testcase name="resolveRecipe leaves dateless 4.6+ models unchanged (they ARE canonical)" classname="chat touchpoint — model resolver + aliases (Codex F-OV-5)" time="0.000229" file="test\ai\gateway-chat.test.ts" line="182" assertions="2" />
+      <testcase name="reverse alias rescues v0.31.6-shipped broken Sonnet 4.6 ID (regression)" classname="chat touchpoint — model resolver + aliases (Codex F-OV-5)" time="0.000229" file="test\ai\gateway-chat.test.ts" line="189" assertions="1" />
+      <testcase name="assertTouchpoint accepts chat for chat-capable native + openai-compat providers" classname="chat touchpoint — model resolver + aliases (Codex F-OV-5)" time="0.00033" file="test\ai\gateway-chat.test.ts" line="200" assertions="7" />
+      <testcase name="assertTouchpoint accepts expansion for deepseek v4" classname="chat touchpoint — model resolver + aliases (Codex F-OV-5)" time="0.000237" file="test\ai\gateway-chat.test.ts" line="212" assertions="2" />
+      <testcase name="assertTouchpoint rejects chat on embedding-only providers with a fix hint" classname="chat touchpoint — model resolver + aliases (Codex F-OV-5)" time="0.000306" file="test\ai\gateway-chat.test.ts" line="222" assertions="1" />
+      <testcase name="assertTouchpoint accepts unlisted models on native recipes (no runtime allowlist)" classname="chat touchpoint — model resolver + aliases (Codex F-OV-5)" time="0.000439" file="test\ai\gateway-chat.test.ts" line="227" assertions="5" />
+      <testcase name="assertTouchpoint accepts arbitrary model on openai-compat tier" classname="chat touchpoint — model resolver + aliases (Codex F-OV-5)" time="0.000309" file="test\ai\gateway-chat.test.ts" line="238" assertions="2" />
+    </testsuite>
+    <testsuite name="chat touchpoint — gateway config plumbing" file="test\ai\gateway-chat.test.ts" line="245" tests="7" assertions="7" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="default chat_model is anthropic:claude-sonnet-4-6" classname="chat touchpoint — gateway config plumbing" time="0.000549" file="test\ai\gateway-chat.test.ts" line="248" assertions="1" />
+      <testcase name="explicit chat_model overrides the default" classname="chat touchpoint — gateway config plumbing" time="0.000386" file="test\ai\gateway-chat.test.ts" line="253" assertions="1" />
+      <testcase name="chat_fallback_chain plumbed and retrievable" classname="chat touchpoint — gateway config plumbing" time="0.000458" file="test\ai\gateway-chat.test.ts" line="261" assertions="1" />
+      <testcase name="chat_fallback_chain defaults to empty array" classname="chat touchpoint — gateway config plumbing" time="0.000374" file="test\ai\gateway-chat.test.ts" line="275" assertions="1" />
+      <testcase name="isAvailable(&quot;chat&quot;) returns true when default Anthropic + key present" classname="chat touchpoint — gateway config plumbing" time="0.000355" file="test\ai\gateway-chat.test.ts" line="280" assertions="1" />
+      <testcase name="isAvailable(&quot;chat&quot;) returns false when configured provider has no key" classname="chat touchpoint — gateway config plumbing" time="0.000339" file="test\ai\gateway-chat.test.ts" line="285" assertions="1" />
+      <testcase name="isAvailable(&quot;chat&quot;) returns false on embedding-only chat target" classname="chat touchpoint — gateway config plumbing" time="0.000301" file="test\ai\gateway-chat.test.ts" line="290" assertions="1" />
+    </testsuite>
+    <testsuite name="chat touchpoint — config alias resolution" file="test\ai\gateway-chat.test.ts" line="297" tests="1" assertions="1" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="isAvailable(&quot;chat&quot;) accepts undated alias and resolves correctly" classname="chat touchpoint — config alias resolution" time="0.000273" file="test\ai\gateway-chat.test.ts" line="300" assertions="1" />
+    </testsuite>
+    <testsuite name="chat touchpoint — provider_chat_options passthrough" file="test\ai\gateway-chat.test.ts" line="309" tests="8" assertions="8" failures="0" skipped="0" time="0.003" hostname="">
+      <testcase name="provider-scoped option reaches generateText providerOptions[recipe.id]" classname="chat touchpoint — provider_chat_options passthrough" time="0.003322" file="test\ai\gateway-chat.test.ts" line="337" assertions="1" />
+      <testcase name="model-scoped option overrides provider-scoped option" classname="chat touchpoint — provider_chat_options passthrough" time="0.000575" file="test\ai\gateway-chat.test.ts" line="351" assertions="1" />
+      <testcase name="no provider_chat_options keeps providerOptions undefined when cache is off" classname="chat touchpoint — provider_chat_options passthrough" time="0.000384" file="test\ai\gateway-chat.test.ts" line="374" assertions="1" />
+      <testcase name="call-scoped providerOptions merge last without dropping configured siblings" classname="chat touchpoint — provider_chat_options passthrough" time="0.000756" file="test\ai\gateway-chat.test.ts" line="383" assertions="1" />
+      <testcase name="call-scoped providerOptions win over configured options on key conflict" classname="chat touchpoint — provider_chat_options passthrough" time="0.000436" file="test\ai\gateway-chat.test.ts" line="399" assertions="1" />
+      <testcase name="anthropic call-scoped thinking override wins without dropping configured siblings (#5331)" classname="chat touchpoint — provider_chat_options passthrough" time="0.000367" file="test\ai\gateway-chat.test.ts" line="418" assertions="1" />
+      <testcase name="thinking: &apos;off&apos; replaces a configured thinking object instead of merging into it (#5331)" classname="chat touchpoint — provider_chat_options passthrough" time="0.000546" file="test\ai\gateway-chat.test.ts" line="442" assertions="1" />
+      <testcase name="anthropic cacheControl survives provider_chat_options merging" classname="chat touchpoint — provider_chat_options passthrough" time="0.000401" file="test\ai\gateway-chat.test.ts" line="464" assertions="1" />
+    </testsuite>
+    <testsuite name="chat touchpoint — per-part providerMetadata round trip (#4201)" file="test\ai\gateway-chat.test.ts" line="490" tests="2" assertions="4" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="chat() captures part providerMetadata onto ChatBlocks (inbound half)" classname="chat touchpoint — per-part providerMetadata round trip (#4201)" time="0.000622" file="test\ai\gateway-chat.test.ts" line="498" assertions="2" />
+      <testcase name="next-turn request echoes the signature as providerOptions (outbound half)" classname="chat touchpoint — per-part providerMetadata round trip (#4201)" time="0.000762" file="test\ai\gateway-chat.test.ts" line="521" assertions="2" />
+    </testsuite>
+    <testsuite name="chat touchpoint — reasoning-item round trip (OpenAI Responses API)" file="test\ai\gateway-chat.test.ts" line="568" tests="2" assertions="6" failures="0" skipped="0" time="0.001" hostname="">
+      <testcase name="chat() captures a reasoning part into a ChatBlock (inbound half)" classname="chat touchpoint — reasoning-item round trip (OpenAI Responses API)" time="0.001441" file="test\ai\gateway-chat.test.ts" line="576" assertions="4" />
+      <testcase name="a reasoning part with a non-string text field does not poison the call" classname="chat touchpoint — reasoning-item round trip (OpenAI Responses API)" time="0.000617" file="test\ai\gateway-chat.test.ts" line="598" assertions="2" />
+    </testsuite>
+    <testsuite name="chat — typed provider error status carried to the top level" file="test\ai\gateway-chat.test.ts" line="618" tests="1" assertions="4" failures="0" skipped="0" time="0.003" hostname="">
+      <testcase name="claude-cli 429 envelope error keeps apiErrorStatus readable on the normalized error" classname="chat — typed provider error status carried to the top level" time="0.003246" file="test\ai\gateway-chat.test.ts" line="624" assertions="4" />
+    </testsuite>
+  </testsuite>
+  <testsuite name="test\ai\gateway.test.ts" file="test\ai\gateway.test.ts" tests="45" assertions="95" failures="0" skipped="0" time="0.7194635" hostname="">
+    <testsuite name="gateway configuration" file="test\ai\gateway.test.ts" line="34" tests="2" assertions="6" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="configureGateway sets current models and dims" classname="gateway configuration" time="0.000607" file="test\ai\gateway.test.ts" line="37" assertions="3" />
+      <testcase name="defaults are Voyage 1024d as of v0.36.0.0 (D3)" classname="gateway configuration" time="0.000297" file="test\ai\gateway.test.ts" line="49" assertions="3" />
+    </testsuite>
+    <testsuite name="gateway.embedOne options" file="test\ai\gateway.test.ts" line="60" tests="1" assertions="2" failures="0" skipped="0" time="0.002" hostname="">
+      <testcase name="passes maxRetries=0 to the provider transport for health probes" classname="gateway.embedOne options" time="0.002184" file="test\ai\gateway.test.ts" line="66" assertions="2" />
+    </testsuite>
+    <testsuite name="gateway.isAvailable (silent-drop regression surface)" file="test\ai\gateway.test.ts" line="89" tests="8" assertions="12" failures="0" skipped="0" time="0.001" hostname="">
+      <testcase name="returns false when gateway not configured" classname="gateway.isAvailable (silent-drop regression surface)" time="0.000315" file="test\ai\gateway.test.ts" line="92" assertions="1" />
+      <testcase name="embedding available when OPENAI_API_KEY set and model is openai" classname="gateway.isAvailable (silent-drop regression surface)" time="0.000366" file="test\ai\gateway.test.ts" line="99" assertions="1" />
+      <testcase name="embedding UNAVAILABLE when OPENAI_API_KEY missing even if config names openai" classname="gateway.isAvailable (silent-drop regression surface)" time="0.000234" file="test\ai\gateway.test.ts" line="108" assertions="1" />
+      <testcase name="embedding AVAILABLE for google when GOOGLE_GENERATIVE_AI_API_KEY set even if OPENAI_API_KEY is NOT (Codex silent-drop regression)" classname="gateway.isAvailable (silent-drop regression surface)" time="0.000252" file="test\ai\gateway.test.ts" line="117" assertions="1" />
+      <testcase name="embedding AVAILABLE for ollama with no API key (local)" classname="gateway.isAvailable (silent-drop regression surface)" time="0.000429" file="test\ai\gateway.test.ts" line="126" assertions="1" />
+      <testcase name="anthropic rejects embedding touchpoint (has no embedding model)" classname="gateway.isAvailable (silent-drop regression surface)" time="0.000531" file="test\ai\gateway.test.ts" line="135" assertions="1" />
+      <testcase name="expansion available when ANTHROPIC_API_KEY set" classname="gateway.isAvailable (silent-drop regression surface)" time="0.00049" file="test\ai\gateway.test.ts" line="144" assertions="1" />
+      <testcase name="expansion available for chat-capable openai-compat providers (deepseek/groq/together/openrouter)" classname="gateway.isAvailable (silent-drop regression surface)" time="0.001296" file="test\ai\gateway.test.ts" line="155" assertions="5" />
+    </testsuite>
+    <testsuite name="model-resolver" file="test\ai\gateway.test.ts" line="171" tests="6" assertions="8" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="parseModelId splits on first colon" classname="model-resolver" time="0.000473" file="test\ai\gateway.test.ts" line="172" assertions="1" />
+      <testcase name="parseModelId handles model ids with colons" classname="model-resolver" time="0.000248" file="test\ai\gateway.test.ts" line="179" assertions="1" />
+      <testcase name="parseModelId rejects missing colon" classname="model-resolver" time="0.000315" file="test\ai\gateway.test.ts" line="186" assertions="1" />
+      <testcase name="parseModelId rejects empty provider or model" classname="model-resolver" time="0.000247" file="test\ai\gateway.test.ts" line="190" assertions="2" />
+      <testcase name="resolveRecipe finds known providers" classname="model-resolver" time="0.000228" file="test\ai\gateway.test.ts" line="195" assertions="2" />
+      <testcase name="resolveRecipe throws AIConfigError for unknown provider" classname="model-resolver" time="0.00026" file="test\ai\gateway.test.ts" line="201" assertions="1" />
+    </testsuite>
+    <testsuite name="dims.dimsProviderOptions" file="test\ai\gateway.test.ts" line="206" tests="12" assertions="15" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="OpenAI text-embedding-3 returns dimensions param" classname="dims.dimsProviderOptions" time="0.000295" file="test\ai\gateway.test.ts" line="207" assertions="1" />
+      <testcase name="OpenAI ada-002 returns undefined (no dim param)" classname="dims.dimsProviderOptions" time="0.00021" file="test\ai\gateway.test.ts" line="212" assertions="1" />
+      <testcase name="Google gemini-embedding returns outputDimensionality" classname="dims.dimsProviderOptions" time="0.000216" file="test\ai\gateway.test.ts" line="217" assertions="1" />
+      <testcase name="OpenAI-compatible gemini-embedding returns dimensions" classname="dims.dimsProviderOptions" time="0.000224" file="test\ai\gateway.test.ts" line="222" assertions="1" />
+      <testcase name="OpenAI-compatible text-embedding-004 (legacy Gemini id via a router) returns dimensions" classname="dims.dimsProviderOptions" time="0.000138" file="test\ai\gateway.test.ts" line="227" assertions="1" />
+      <testcase name="Anthropic returns undefined (no embedding model)" classname="dims.dimsProviderOptions" time="0.000134" file="test\ai\gateway.test.ts" line="235" assertions="1" />
+      <testcase name="openai-compatible returns undefined for providers without a dim param" classname="dims.dimsProviderOptions" time="0.000122" file="test\ai\gateway.test.ts" line="240" assertions="1" />
+      <testcase name="Ollama pins the configured dimensions for any model id" classname="dims.dimsProviderOptions" time="0.000152" file="test\ai\gateway.test.ts" line="245" assertions="3" />
+      <testcase name="providerId is back-compat: omitting it keeps the pre-Ollama behavior" classname="dims.dimsProviderOptions" time="0.000162" file="test\ai\gateway.test.ts" line="256" assertions="1" />
+      <testcase name="Voyage flexible-dim models return dimensions for the SDK shim" classname="dims.dimsProviderOptions" time="0.00015" file="test\ai\gateway.test.ts" line="261" assertions="2" />
+      <testcase name="Voyage model without flexible dimensions returns undefined" classname="dims.dimsProviderOptions" time="0.000143" file="test\ai\gateway.test.ts" line="268" assertions="1" />
+      <testcase name="voyage-4-nano returns undefined (open-weight, fixed-dim)" classname="dims.dimsProviderOptions" time="0.000135" file="test\ai\gateway.test.ts" line="277" assertions="1" />
+    </testsuite>
+    <testsuite name="Voyage openai-compatible request shim" file="test\ai\gateway.test.ts" line="283" tests="4" assertions="21" failures="0" skipped="0" time="0.082" hostname="">
+      <testcase name="sends output_dimension on the actual Voyage embedding request body" classname="Voyage openai-compatible request shim" time="0.069386" file="test\ai\gateway.test.ts" line="286" assertions="3" />
+      <testcase name="through the Vercel AI Gateway the width also rides providerOptions.voyage.outputDimension" classname="Voyage openai-compatible request shim" time="0.00256" file="test\ai\gateway.test.ts" line="355" assertions="3" />
+      <testcase name="the direct Voyage API and look-alike hosts never get providerOptions (Voyage answers 400 on it)" classname="Voyage openai-compatible request shim" time="0.008514" file="test\ai\gateway.test.ts" line="362" assertions="10" />
+      <testcase name="a width mismatch through a custom base URL names the proxy as the likely cause; the default route keeps the migrate hint" classname="Voyage openai-compatible request shim" time="0.003627" file="test\ai\gateway.test.ts" line="370" assertions="5" />
+    </testsuite>
+    <testsuite name="Voyage OOM-cap: too-large response throws (Codex P3 follow-up)" file="test\ai\gateway.test.ts" line="388" tests="3" assertions="7" failures="0" skipped="0" time="0.598" hostname="">
+      <testcase name="Layer 1 — Content-Length above cap propagates as VoyageResponseTooLargeError" classname="Voyage OOM-cap: too-large response throws (Codex P3 follow-up)" time="0.001703" file="test\ai\gateway.test.ts" line="391" assertions="2" />
+      <testcase name="Layer 2 — oversized base64 embedding string propagates (not swallowed)" classname="Voyage OOM-cap: too-large response throws (Codex P3 follow-up)" time="0.59791" file="test\ai\gateway.test.ts" line="427" assertions="1" />
+      <testcase name="VoyageResponseTooLargeError is exported as a tagged class" classname="Voyage OOM-cap: too-large response throws (Codex P3 follow-up)" time="0.000761" file="test\ai\gateway.test.ts" line="463" assertions="4" />
+    </testsuite>
+    <testsuite name="Voyage flexible-dim runtime validation" file="test\ai\gateway.test.ts" line="478" tests="7" assertions="22" failures="0" skipped="0" time="0" hostname="">
+      <testcase name="rejects 1536 (the default that bites Voyage-first users) with AIConfigError" classname="Voyage flexible-dim runtime validation" time="0.000694" file="test\ai\gateway.test.ts" line="479" assertions="2" />
+      <testcase name="rejects 3072 with AIConfigError" classname="Voyage flexible-dim runtime validation" time="0.000434" file="test\ai\gateway.test.ts" line="486" assertions="1" />
+      <testcase name="accepts every Voyage-allowed flexible dim" classname="Voyage flexible-dim runtime validation" time="0.000475" file="test\ai\gateway.test.ts" line="491" assertions="4" />
+      <testcase name="VOYAGE_VALID_OUTPUT_DIMS pins exactly the four Voyage values" classname="Voyage flexible-dim runtime validation" time="0.00036" file="test\ai\gateway.test.ts" line="498" assertions="1" />
+      <testcase name="isValidVoyageOutputDim returns true only for the four valid sizes" classname="Voyage flexible-dim runtime validation" time="0.000328" file="test\ai\gateway.test.ts" line="502" assertions="8" />
+      <testcase name="voyage-3-lite (non-flexible-dim) bypasses the validator — still returns undefined" classname="Voyage flexible-dim runtime validation" time="0.000352" file="test\ai\gateway.test.ts" line="513" assertions="2" />
+      <testcase name="AIConfigError fix hint names the canonical recovery commands" classname="Voyage flexible-dim runtime validation" time="0.000373" file="test\ai\gateway.test.ts" line="521" assertions="4" />
+    </testsuite>
+    <testsuite name="embedding response integrity" file="test\ai\gateway.test.ts" line="535" tests="2" assertions="2" failures="0" skipped="0" time="0.018" hostname="">
+      <testcase name="rejects partial embedding responses instead of silently dropping rows" classname="embedding response integrity" time="0.016499" file="test\ai\gateway.test.ts" line="538" assertions="1" />
+      <testcase name="checks every returned vector dimension, not just the first one" classname="embedding response integrity" time="0.00221" file="test\ai\gateway.test.ts" line="569" assertions="1" />
+    </testsuite>
+  </testsuite>
+</testsuites>

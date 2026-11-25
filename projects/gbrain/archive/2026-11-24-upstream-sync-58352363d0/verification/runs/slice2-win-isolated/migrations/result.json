@@ -1,0 +1,74 @@
+{
+  "action": "migrations",
+  "run_id": "slice2-win-isolated",
+  "root": "C:\\Users\\GOBAO\\Downloads\\AI\\gbrain-sync-2026-11-24-17b68cef",
+  "ok": true,
+  "timeout": false,
+  "summary": {
+    "migration_order_rc": 0,
+    "migration_order_skipped": false,
+    "base_max": 297,
+    "fork_versions": [
+      298
+    ],
+    "new_migrations": 0,
+    "registry_rc": 0,
+    "registry_fail": 0,
+    "registry_skips": 0,
+    "database_upgrade_verified": false
+  },
+  "commands": [
+    {
+      "argv": [
+        "bun",
+        "run",
+        "check:schema-migration-order"
+      ],
+      "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\gbrain-sync-2026-11-24-17b68cef",
+      "started_at": "2026-11-24T14:29:20.021978+00:00",
+      "ended_at": "2026-11-24T14:29:20.281686+00:00",
+      "duration_ms": 260,
+      "rc": 0,
+      "timeout": false,
+      "status": "pass",
+      "stdout_file": "001-bun.stdout.txt",
+      "stderr_file": "001-bun.stderr.txt"
+    },
+    {
+      "argv": [
+        "bun",
+        "test",
+        "--timeout=60000",
+        "test/schema-migration-registry.test.ts",
+        "--reporter=junit",
+        "--reporter-outfile=C:\\Users\\GOBAO\\Downloads\\AI\\AI First Platform\\projects\\gbrain\\changes\\2026-11-24-upstream-sync-58352363d0\\verification\\runs\\slice2-win-isolated\\migrations\\registry.junit.xml"
+      ],
+      "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\gbrain-sync-2026-11-24-17b68cef",
+      "started_at": "2026-11-24T14:29:20.282401+00:00",
+      "ended_at": "2026-11-24T14:29:20.444083+00:00",
+      "duration_ms": 162,
+      "rc": 0,
+      "timeout": false,
+      "status": "pass",
+      "stdout_file": "002-bun.stdout.txt",
+      "stderr_file": "002-bun.stderr.txt"
+    },
+    {
+      "argv": [
+        "git",
+        "ls-tree",
+        "--name-only",
+        "8f0e2d99983885d980fef98d6d5088c2649b38e5:src/core/schema-migrations"
+      ],
+      "cwd": "C:\\Users\\GOBAO\\Downloads\\AI\\gbrain-sync-2026-11-24-17b68cef",
+      "started_at": "2026-11-24T14:29:20.448509+00:00",
+      "ended_at": "2026-11-24T14:29:20.474270+00:00",
+      "duration_ms": 27,
+      "rc": 0,
+      "timeout": false,
+      "status": "pass",
+      "stdout_file": "003-git.stdout.txt",
+      "stderr_file": "003-git.stderr.txt"
+    }
+  ]
+}

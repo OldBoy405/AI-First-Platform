@@ -1,0 +1,16 @@
+
+test\dispatch-response-meta.serial.test.ts:
+(pass) dispatch response meta (WP2/D3/D8) > empty results → second content block + _meta.retrieval [35.55ms]
+(pass) dispatch response meta (WP2/D3/D8) > clean miss → second block says retrieval healthy, degraded absent [3.11ms]
+(pass) dispatch response meta (WP2/D3/D8) > non-empty results → body + degraded_recall notice only, _meta.retrieval still present (D3: on ALL responses) [5.75ms]
+(pass) dispatch response meta (WP2/D3/D8) > query trace keeps degraded retrieval diagnostics independent of _meta [6.77ms]
+[warn] [mcp] _meta hook failed for search: hot memory down; degrading to no hook keys
+(pass) dispatch response meta (WP2/D3/D8) > metaHook failure never drops the retrieval key (per-key isolation) [4.37ms]
+(pass) dispatch response meta (WP2/D3/D8) > metaHook keys merge alongside retrieval, not over it [4.02ms]
+(pass) buildEmptyRetrievalBlock (unit) > a ranking-only stage (reranker_skipped) never impairs recall → still a clean miss [0.59ms]
+(pass) buildEmptyRetrievalBlock (unit) > hint passthrough + stage dedupe + garbage tolerance [0.38ms]
+
+ 8 pass
+ 0 fail
+ 39 expect() calls
+Ran 8 tests across 1 file. [481.00ms]

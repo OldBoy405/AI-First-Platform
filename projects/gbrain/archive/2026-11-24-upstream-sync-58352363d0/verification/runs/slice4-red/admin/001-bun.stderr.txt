@@ -1,0 +1,39 @@
+
+test\admin-embed-spawn.test.ts:
+(pass) admin embed E2E — /admin served from embedded manifest (v0.36.1.x #1090) > GET /admin/ returns 200 with the React SPA shell HTML [1.77ms]
+(pass) admin embed E2E — /admin served from embedded manifest (v0.36.1.x #1090) > GET /admin (no trailing slash) redirects to /admin/ [2.41ms]
+(pass) admin embed E2E — /admin served from embedded manifest (v0.36.1.x #1090) > GET /admin/index.html (explicit path) also returns the SPA HTML [0.79ms]
+(pass) admin embed E2E — /admin served from embedded manifest (v0.36.1.x #1090) > GET /admin/agents (SPA-routed deep link) falls back to index.html [0.71ms]
+(pass) admin embed E2E — /admin served from embedded manifest (v0.36.1.x #1090) > GET /admin/api/stats (API route) is NOT swallowed by the SPA fallback — returns auth challenge [0.75ms]
+
+test\serve-http-admin-route-guard.test.ts:
+(pass) serve-http admin route guard (structural) > anti-vacuity floor: the extractor still sees the known admin surface [0.51ms]
+(pass) serve-http admin route guard (structural) > must-carry set: /metrics and /admin/events are found and carry requireAdmin [0.32ms]
+(pass) serve-http admin route guard (structural) > every /admin route carries requireAdmin before its handler, or is explicitly allowlisted [0.27ms]
+(pass) serve-http admin route guard (structural) > allowlist is not stale: every entry matches its declared unguarded occurrences [0.26ms]
+(pass) serve-http admin route guard (structural) > mutation: dropping requireAdmin from /metrics in src/commands/serve-http-metrics.ts is a violation at that file:line [2.14ms]
+(pass) serve-http admin route guard (structural) > mutation: dropping requireAdmin from /admin/api/stats in src/commands/serve-http-admin-api.ts is a violation at that file:line [2.21ms]
+(pass) serve-http admin route guard (structural) > self-test: extractor + guard logic CAN fail on a known-bad route (anti-vacuity) [0.52ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+(pass) admin operation proxy runtime contract > unauthenticated op request is rejected before dispatch [77.35ms]
+448 |     }, true);
+449 |     expect(res.status).toBe(200);
+450 |     const payload = await res.json() as { result: { isError?: boolean; content: Array<{ text: string }> } };
+451 |     expect(payload.result.isError).toBe(true);
+452 |     const error = JSON.parse(payload.result.content[0].text) as { error: { code: string; message: string } };
+453 |     expect(error.error.code).toBe('permission_denied');
+                                   ^
+error: expect(received).toBe(expected)
+
+Expected: "permission_denied"
+Received: undefined
+
+      at <anonymous> (C:\Users\GOBAO\Downloads\AI\gbrain-sync-2026-11-24-17b68cef\test\serve-http-admin-route-guard.test.ts:453:30)
+(fail) admin operation proxy runtime contract > authenticated op request dispatches with remote context [139.51ms]
+(pass) admin operation proxy runtime contract > admin op emits exactly one independent audit event [74.84ms]
+
+ 14 pass
+ 1 fail
+ 89 expect() calls
+Ran 15 tests across 2 files. [7.12s]

@@ -1,0 +1,19 @@
+{
+  "action": "browser",
+  "run_id": "slice5-green-2",
+  "ok": true,
+  "url": "http://127.0.0.1:5173/admin/#/ask",
+  "observations": {
+    "query_args_trace": true,
+    "retrieval_getter_reads": 1,
+    "result_card_rendered": true,
+    "trace_waterfall_rendered": true,
+    "local_storage_entries": 0,
+    "session_storage_entries": 0
+  },
+  "method": "Local Vite server with a mocked /admin/api/op MCP response carrying _meta.retrieval; DOM click used because the in-app browser viewport was unavailable.",
+  "limitations": [
+    "No external service or paid model call was made.",
+    "The mocked response verifies the Admin consumption path; server and MCP metadata equality are covered by the automated trace tests."
+  ]
+}

@@ -1,0 +1,172 @@
+# Phase 2 DRAFT — 冻结本轮必须保持的接口与行为不变量；Gate 2 尚未确认。
+meta:
+  change_id: 2026-11-24-upstream-sync-58352363d0
+  level: L2
+  status: draft
+  baseline: 8f0e2d99983885d980fef98d6d5088c2649b38e5
+  upstream_target: 17b68cef4f4267ca0e5710b42f6ddc95acf9fe51
+  scope: Inbox 写入、Admin op 代理、query.trace、Graph 遍历与迁移顺序
+
+inbox_capture:
+  source_refs:
+    - src/core/inbox.ts:85
+    - src/core/minions/handlers/ingest-capture.ts:297
+    - src/core/minions/handlers/ingest-capture.ts:377
+    - src/core/import-file.ts:254
+  prepareInboxCaptureContent:
+    signature: 'prepareInboxCaptureContent(content: string, input: { sourceKind: string; receivedAt: string; metadata?: Record<string, unknown> }): string'
+    output: 保留用户 frontmatter 与正文，并至少写入 inbox_status、raw_content、source_kind、captured_at；有 metadata 时写入 ingestion_metadata。
+    invariants:
+      - 无 frontmatter 的正文到达状态为 pending_frontmatter；已有 frontmatter 为 pending_typed_link。
+      - 已有用户字段优先，不得被捕获元数据覆盖。
+  importFromContent:
+    signature: 'importFromContent(engine: BrainEngine, slug: string, content: string, opts?: Parameters<typeof importFromContent>[3]): Promise<ImportResult>'
+    option_source: src/core/import-file.ts:258-357
+    note: 源码使用内联 options 对象 intersect ImportFenceOptions；不存在导出的 ImportFromContentOptions 类型。
+    fork_relevant_options:
+      sourceId: 'string | undefined；写入必须绑定该 source。'
+      source_kind: 'string | null | undefined'
+      source_uri: 'string | null | undefined'
+      ingested_via: 'string | null | undefined'
+      expectedBaseRevision: 'string | null | undefined；与快照不一致必须拒绝。'
+      beforeCommit: '((tx: BrainEngine, slug: string) => Promise<void>) | undefined'
+    ordering: Inbox 预处理必须先于实际 importAs/importFromContent 或 managed put_page，且两条持久化分支都消费处理后的 content。
+  managed_put_page:
+    operation: put_page
+    params:
+      slug: string
+      source_id: string
+      content: string
+      content_origin: tool_output
+      source_kind: string
+      source_uri: string
+      ingested_via: ingest_capture
+      expected_revision: 'string | undefined；来自同一 source 的写前快照。'
+      request_id: 'string | undefined；幂等请求存在时透传。'
+      keep_hidden_rows: 'boolean | undefined；不可信 payload 为 true。'
+    invariant: content 必须等于 prepareInboxCaptureContent 的返回值，不得回退为原始 event.content。
+  result:
+    type: IngestCaptureResult
+    fields:
+      slug: string
+      status: 'imported | skipped | deleted | error'
+      chunks: number
+      untrusted_payload: boolean
+      source_kind: string
+      source_uri: string
+      source_fallback: '{ requested: string; effective: "default"; reason: "not_registered" | "archived" | "fk_violation" } | undefined'
+
+admin_op_proxy:
+  source_ref: src/commands/serve-http-admin-op.ts:62
+  mount:
+    signature: 'mountAdminOpProxy(app: Express, ctx: ServeHttpContext): void'
+  route:
+    method: POST
+    path: /admin/api/op
+    middleware_order: [requireAdmin, express.json]
+    request:
+      name: 'string，必填；缺失或非字符串返回 HTTP 400。'
+      arguments: 'Record<string, unknown> | undefined'
+    source_header: x-gbrain-source-id
+    source_default: default
+    unknown_operation: HTTP 404，error=unknown_operation
+    dispatch:
+      function: dispatchToolCall
+      context:
+        remote: true
+        transport: http
+        sourceId: string
+        auth: '{ token: ""; clientId: "admin-ui"; clientName: "admin-ui"; scopes: ["admin"]; sourceId }'
+        metaHook: getBrainHotMemoryMeta
+    response: '{ jsonrpc: "2.0", id: 0, result: ToolResult }'
+    audit:
+      table: mcp_request_log
+      identity: admin-ui
+      broadcasts: 每个已分派请求恰好一条 SSE；不得复制 /mcp 的 Bearer 请求日志。
+    invariants:
+      - 无有效 Admin 会话时不得解析业务参数、查找 op 或调用 handler。
+      - remote 必须严格为 true，不得降级为可信本地调用。
+
+query_trace:
+  source_refs:
+    - src/core/ops/search.ts:121-153
+    - src/core/ops/search.ts:1236-1260
+    - src/mcp/dispatch.ts:832-837
+    - src/cli/main.ts:829-844
+    - src/cli/main.ts:1664-1700
+    - admin/src/lib/mcp-client.ts:100-117
+    - admin/src/lib/op-types.ts:123
+    - admin/src/pages/brain/Ask.tsx:102
+  parameter:
+    name: trace
+    type: boolean
+    default: false
+  trace_off_result: SearchResult[]
+  trace_on_result:
+    results: SearchResult[]
+    trace:
+      total_ms: number
+      cache_status: 'hit | miss | disabled'
+      cache_hit: boolean
+      vector_enabled: boolean
+      expansion_applied: boolean
+      intent: 'string | null'
+      detail_resolved: 'string | null'
+      autocut: 'Record<string, unknown> | null'
+      adaptive_return: 'Record<string, unknown> | null'
+      token_budget: 'Record<string, unknown> | null'
+      retrieval: 'Record<string, unknown>；完整保留 ctx.emitResponseMeta("retrieval", ...) 实际发出的对象。'
+  transport_meta:
+    mcp: ToolResult._meta.retrieval 保留同一 op-emitted 对象；不得用 trace.retrieval 替换传输层职责。
+    admin: Mcp client 保留 ToolResult._meta；Ask 将 _meta.retrieval 合并入 trace.retrieval，且不得修改 content 中的 results。
+  invariants:
+    - trace 包裹不得丢弃上游 evidence/page cap/degraded/explain-target 诊断元数据。
+    - trace 关闭或省略时不得改变上游原有结果形状。
+    - 空结果也必须遵守相同信封；Admin Ask 可继续固定传 trace=true。
+    - 既有 trace 摘要字段保持兼容；完整诊断以 retrieval 对象为准，不得从 capturedMeta 重新猜测。
+
+graph_traversal:
+  source_refs:
+    - src/core/engine.ts:1646
+    - src/core/types.ts:1677
+    - src/core/engine-sql/links.ts
+  traversePaths:
+    signature: 'traversePaths(slug: string, opts?: PageReadScope & { depth?: number; linkType?: string; direction?: "in" | "out" | "both"; frontierCap?: number }): Promise<GraphPath[]>'
+  traversePathsDetailed:
+    signature: 'traversePathsDetailed(slug: string, opts?: LinkReadScope & { depth?: number; linkType?: string; direction?: "in" | "out" | "both"; frontierCap?: number }): Promise<{ paths: GraphPath[]; truncated: boolean }>'
+  graphOverview:
+    signature: 'graphOverview(opts?: { nodeLimit?: number; sourceId?: string; sourceIds?: string[]; excludePrivate?: boolean }): Promise<GraphNode[]>'
+    op_policy: graph_overview 通过 readPolicyOpts(ctx) 取得 excludePrivate；remote/undefined 默认 fail-closed。
+  GraphPath:
+    from_slug: string
+    from_source_id: string
+    to_slug: string
+    to_source_id: string
+    link_type: string
+    context: string
+    depth: number
+    to_title: 'string | undefined；both 方向必须由查询填充。'
+    to_type: 'string | undefined；both 方向必须由查询填充。'
+  invariants:
+    - frontierCap 复用上游层 cap，不得由 fork 默认值提前截断测试所需的完整遍历。
+    - 两引擎都保持 source/private/软删除过滤与行上限。
+    - graphOverview 的 degree 聚合、top_nodes、边两端和 private origin 必须使用同一可见性范围；不可见边不得影响排序或 nodeLimit。
+    - graph_overview 的 remote/undefined 上下文必须排除 private；可信 local 保持既有可见范围。
+    - PGLite 继续使用 plannerRead；不得为绕过 planner 而退化为无约束查询。
+
+migration_order:
+  source_ref: src/core/schema-migrations/v298-inbox-workflow-frontmatter.ts:16
+  upstream_latest: 297
+  fork_migration:
+    version: 298
+    name: inbox_workflow_frontmatter
+    idempotent: true
+  invariants:
+    - registry 中 v298 唯一，文件名、导出名和 version 一致。
+    - 本轮不得引入未合入上游的 v299-v331。
+    - 顺序与 registry 通过不等于既有数据库结构探针通过；未探针时必须标记数据库升级未验证。
+
+validation:
+  phase2: 只验证结构、引用、Scenario/TC 映射和接口不变量，不执行合并或产品测试。
+  build_order: Gate 1 更正冻结输入并获确认、Gate 2 获确认且执行模式登记后，才可创建候选并实施。
+  anchor_status: draft；Gate 2 确认后锁定，不得把锚点存在当作行为测试已通过。

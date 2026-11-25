@@ -1,0 +1,126 @@
+bun test v1.4.4 (38afee6c8)
+
+test\sync-restored-file-purge.test.ts:
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: a file Git restores after a sync deleted its page comes back > git revert of the deleting commit: the same page row is live again and status is synced [4731.84ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: a file Git restores after a sync deleted its page comes back > a sync on a branch without the files, then back on main: the pages are live again [4713.35ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: a file Git restores after a sync deleted its page comes back > deleted in one commit, re-added by a later one (same bytes and edited): both pages are live with the committed text [6192.98ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: a file Git restores after a sync deleted its page comes back > a sync on a detached older commit, then back on main: the page the newest commit added is live again [6921.32ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: a file Git restores after a sync deleted its page comes back > a file moved into a dot-folder and back: the page is live again [5903.38ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: a file Git restores after a sync deleted its page comes back > working-tree mode: a file missing from disk for one sync and then back is live again [6087.12ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: a file Git restores after a sync deleted its page comes back > a hold an older version raised over a sync-deleted page whose file came back edited is re-run: the page imports and the hold clears [6428.79ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: a file Git restores after a sync deleted its page comes back > a brain an older version left with the page deleted beside its restored file heals on the next plain sync [5890.79ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: a file Git restores after a sync deleted its page comes back > the upgrade's first sync brings back a sync-deleted page but leaves a page a person deleted deleted, though Git holds its file [6411.04ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: the retention purge never removes a file that is committed > working-tree mode: a sync-deleted page whose committed file stays off disk is purged database-only, not deferred forever [6162.68ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: the retention purge never removes a file that is committed > a sync-made tombstone whose returned file sync holds is refused with the hold, not deferred, and the file stays [5935.73ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: the retention purge never removes a file that is committed > an old shared-origin delete of the same slug does not exempt a later sync-made tombstone: the restored file stays [6031.93ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: the retention purge never removes a file that is committed > a file committed between the purge's preparation and its publication is not removed [5284.14ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: the retention purge never removes a file that is committed > an older version purged the page and committed the file's removal; a revert of that commit imports the file as a new page [6810.19ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+[cycle.purge] start
+[cycle.purge] done
+(pass) pglite: the retention purge never removes a file that is committed > cycle phase: a person's delete undone in Git is purged database-only and the file stays [5340.50ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+[cycle.purge] start
+[cycle.purge] done
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: the retention purge never removes a file that is committed > cycle phase: a sync-deleted page with a byte-identical live twin whose file is back waits for the sync that restores it [6269.73ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+[cycle.purge] start
+[cycle.purge] done
+(pass) pglite: the retention purge never removes a file that is committed > cycle phase: a tombstone with no sync-deletion record and a compacted receipt is purged database-only and its committed file stays [5750.87ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+[cycle.purge] start
+[cycle.purge] done
+(pass) pglite: the retention purge never removes a file that is committed > cycle phase: a person's delete whose file stays gone purges as before [5209.07ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: the retention purge never removes a file that is committed > purge job: a person's delete undone in Git is purged database-only and the file stays [5286.89ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: the retention purge never removes a file that is committed > purge job: a sync-deleted page with a byte-identical live twin whose file is back waits for the sync that restores it [6018.78ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: the retention purge never removes a file that is committed > purge job: a tombstone with no sync-deletion record and a compacted receipt is purged database-only and its committed file stays [5946.17ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: the retention purge never removes a file that is committed > purge job: a person's delete whose file stays gone purges as before [5094.68ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: the retention purge never removes a file that is committed > CLI purge-deleted: a person's delete undone in Git is purged database-only and the file stays [5302.15ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: the retention purge never removes a file that is committed > CLI purge-deleted: a sync-deleted page with a byte-identical live twin whose file is back waits for the sync that restores it [5998.99ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: the retention purge never removes a file that is committed > CLI purge-deleted: a tombstone with no sync-deletion record and a compacted receipt is purged database-only and its committed file stays [5773.74ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+[import] WARNING: notes/twin.md shares content_hash with notes/twin-copy (a0832605) but not its frontmatter.id. Indexing both.
+(pass) pglite: the retention purge never removes a file that is committed > CLI purge-deleted: a person's delete whose file stays gone purges as before [5066.76ms]
+
+ 26 pass
+ 0 fail
+ 173 expect() calls
+Ran 26 tests across 1 file. [151.05s]

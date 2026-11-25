@@ -1,0 +1,26 @@
+
+test\admin-embed-spawn.test.ts:
+(pass) admin embed E2E — /admin served from embedded manifest (v0.36.1.x #1090) > GET /admin/ returns 200 with the React SPA shell HTML [2.69ms]
+(pass) admin embed E2E — /admin served from embedded manifest (v0.36.1.x #1090) > GET /admin (no trailing slash) redirects to /admin/ [13.40ms]
+(pass) admin embed E2E — /admin served from embedded manifest (v0.36.1.x #1090) > GET /admin/index.html (explicit path) also returns the SPA HTML [7.73ms]
+(pass) admin embed E2E — /admin served from embedded manifest (v0.36.1.x #1090) > GET /admin/agents (SPA-routed deep link) falls back to index.html [1.23ms]
+(pass) admin embed E2E — /admin served from embedded manifest (v0.36.1.x #1090) > GET /admin/api/stats (API route) is NOT swallowed by the SPA fallback — returns auth challenge [0.89ms]
+
+test\serve-http-admin-route-guard.test.ts:
+(pass) serve-http admin route guard (structural) > anti-vacuity floor: the extractor still sees the known admin surface [0.62ms]
+(pass) serve-http admin route guard (structural) > must-carry set: /metrics and /admin/events are found and carry requireAdmin [0.37ms]
+(pass) serve-http admin route guard (structural) > every /admin route carries requireAdmin before its handler, or is explicitly allowlisted [0.31ms]
+(pass) serve-http admin route guard (structural) > allowlist is not stale: every entry matches its declared unguarded occurrences [0.30ms]
+(pass) serve-http admin route guard (structural) > mutation: dropping requireAdmin from /metrics in src/commands/serve-http-metrics.ts is a violation at that file:line [3.83ms]
+(pass) serve-http admin route guard (structural) > mutation: dropping requireAdmin from /admin/api/stats in src/commands/serve-http-admin-api.ts is a violation at that file:line [3.17ms]
+(pass) serve-http admin route guard (structural) > self-test: extractor + guard logic CAN fail on a known-bad route (anti-vacuity) [0.45ms]
+  Setting up brain schema (v298)...
+  293 migration(s) applied
+(pass) admin operation proxy runtime contract > unauthenticated op request is rejected before dispatch [108.01ms]
+(pass) admin operation proxy runtime contract > authenticated op request dispatches with remote context [73.34ms]
+(pass) admin operation proxy runtime contract > admin op emits exactly one independent audit event [77.35ms]
+
+ 15 pass
+ 0 fail
+ 90 expect() calls
+Ran 15 tests across 2 files. [9.42s]
